@@ -15,6 +15,38 @@ Int_t createMapFile(Bool_t specialVersion = kFALSE, Bool_t commitVersion = kFALS
   
   // Data
   
+  // 2012 pp, 8 TeV, pass2
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12a.pass2/outputCheckShapeEtaTree_2015_06_05__18_52__NewSplines___2015_05_29__12_14.root", normalisation, "LHC12a", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12a.pass2/outputCheckShapeEtaTree_2015_06_05__22_40__CorrectedWithMap_outputCheckShapeEtaTree_2015_06_05__18_52__NewSplines___2015_05_29__12_14___2015_06_05__22_39.root", normalisation, "LHC12a", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12b.pass2/outputCheckShapeEtaTree_2015_06_16__20_16__NewSplines___2015_05_29__12_55.root", normalisation, "LHC12b", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12b.pass2/outputCheckShapeEtaTree_2015_06_16__20_28__CorrectedWithMap_outputCheckShapeEtaTree_2015_06_16__20_16__NewSplines___2015_05_29__12_55___2015_06_16__20_27.root", normalisation, "LHC12b", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12c.pass2/outputCheckShapeEtaTree_2015_05_29__15_17__NewSplines___2015_05_29__15_15.root", normalisation, "LHC12c", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12c.pass2/outputCheckShapeEtaTree_2015_05_29__16_40__CorrectedWithMap_outputCheckShapeEtaTree_2015_05_29__15_17__NewSplines___2015_05_29__15_15___2015_05_29__15_46.root", normalisation, "LHC12c", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12d.pass2/outputCheckShapeEtaTree_2015_05_29__16_50__NewSplines___2015_05_29__16_49.root", normalisation, "LHC12d", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12d.pass2/outputCheckShapeEtaTree_2015_05_29__17_22__CorrectedWithMap_outputCheckShapeEtaTree_2015_05_29__16_50__NewSplines___2015_05_29__16_49___2015_05_29__17_20.root", normalisation, "LHC12d", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12e.pass2/outputCheckShapeEtaTree_2015_06_16__20_22__NewSplines___2015_05_29__16_47.root", normalisation, "LHC12e", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12e.pass2/outputCheckShapeEtaTree_2015_06_16__20_27__CorrectedWithMap_outputCheckShapeEtaTree_2015_06_16__20_22__NewSplines___2015_05_29__16_47___2015_06_16__20_25.root", normalisation, "LHC12e", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12f.pass2/outputCheckShapeEtaTree_2015_05_29__17_22__NewSplines___2015_05_29__17_21.root", normalisation, "LHC12f", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12f.pass2/outputCheckShapeEtaTree_2015_05_29__17_31__CorrectedWithMap_outputCheckShapeEtaTree_2015_05_29__17_22__NewSplines___2015_05_29__17_21___2015_05_29__17_29.root", normalisation, "LHC12f", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12g_pp.pass2/outputCheckShapeEtaTree_2015_05_29__17_31__NewSplines___2015_05_29__17_30.root", normalisation, "LHC12g_pp", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12g_pp.pass2/outputCheckShapeEtaTree_2015_05_29__17_37__CorrectedWithMap_outputCheckShapeEtaTree_2015_05_29__17_31__NewSplines___2015_05_29__17_30___2015_05_29__17_36.root", normalisation, "LHC12g_pp", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12h.pass2/outputCheckShapeEtaTree_2015_06_16__20_58__NewSplines___2015_05_29__17_37.root", normalisation, "LHC12h", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12h.pass2/outputCheckShapeEtaTree_2015_06_16__21_08__CorrectedWithMap_outputCheckShapeEtaTree_2015_06_16__20_58__NewSplines___2015_05_29__17_37___2015_06_16__21_07.root", normalisation, "LHC12h", 2, kFALSE, kTRUE);
+  
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12i.pass2/outputCheckShapeEtaTree_2015_06_16__20_34__NewSplines___2015_05_29__17_43.root", normalisation, "LHC12i", 2, kFALSE, kFALSE);
+  addMapToFile("etaMaps/gridOutput/pp/8TeV/LHC12i.pass2/outputCheckShapeEtaTree_2015_06_16__20_40__CorrectedWithMap_outputCheckShapeEtaTree_2015_06_16__20_34__NewSplines___2015_05_29__17_43___2015_06_16__20_37.root", normalisation, "LHC12i", 2, kFALSE, kTRUE);
+  
+  
+  
+  
+  
   // Re-reconstruction 2010
   addMapToFile("etaMaps/gridOutput/pp/7TeV/LHC10b.pass4/outputCheckShapeEtaTree_2014_11_17__15_17__NewSplines___2014_11_17__15_13.root", normalisation, "LHC10b", 4, kFALSE, kFALSE);
   addMapToFile("etaMaps/gridOutput/pp/7TeV/LHC10b.pass4/outputCheckShapeEtaTree_2014_11_17__15_31__CorrectedWithMap_outputCheckShapeEtaTree_2014_11_17__15_17__NewSplines___2014_11_17__15_13___2014_11_17__15_29.root", normalisation, "LHC10b", 4, kFALSE, kTRUE);

@@ -248,16 +248,108 @@ Int_t addMapToFile(TString filePathNameMapToAdd, TString normalisation, TString 
     runLow[0] = 136782;
     runUp[0] = 139846;
   }*/
-  else if (period.Contains("LHC12G") == 1 && isMC) {
-    //LHC12g (same map for 12g1, 12g4, ...) -> 5.023 ATeV (pPb)
-    period = "LHC12G";
-    mapTitle = Form("LHC12g.pass%d", pass);
+  else if (period.Contains("LHC12A") == 1 && !isMC) {
+    //LHC12a -> 8 TeV (pp)
+    mapTitle = Form("LHC12a.pass%d", pass);
     
     runLow = new Int_t[nRunRanges];
     runUp = new Int_t[nRunRanges];
-    /*TODO look up?!
-    runLow[0] = 136782;
-    runUp[0] = 139846;*/
+    
+    runLow[0] = 170719;
+    runUp[0] = 177311;
+  }
+  else if (period.Contains("LHC12B") == 1 && !isMC) {
+    //LHC12b -> 8 TeV (pp)
+    mapTitle = Form("LHC12b.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 177312;
+    runUp[0] = 179356;
+  }
+  else if (period.Contains("LHC12C") == 1 && !isMC) {
+    //LHC12c -> 8 TeV (pp)
+    mapTitle = Form("LHC12c.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 179357;
+    runUp[0] = 183173;
+  }
+  else if (period.Contains("LHC12D") == 1 && !isMC) {
+    //LHC12d -> 8 TeV (pp)
+    mapTitle = Form("LHC12d.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 183174;
+    runUp[0] = 186345;
+  }
+  else if (period.Contains("LHC12E") == 1 && !isMC) {
+    //LHC12e -> 8 TeV (pp)
+    mapTitle = Form("LHC12e.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 186346;
+    runUp[0] = 186635;
+  }
+  else if (period.Contains("LHC12F") == 1 && !isMC) {
+    //LHC12f -> 8 TeV (pp)
+    mapTitle = Form("LHC12f.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 186636;
+    runUp[0] = 188166;
+  }
+  else if (period.Contains("LHC12G_PPB") == 1 && isMC) {
+    //LHC12g (same map for 12g1, 12g4, ...) -> 5.023 ATeV (pPb)
+    period = "LHC12G";
+    mapTitle = Form("LHC12g_pPb.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 188167;
+    runUp[0] = 188418;
+  }
+  else if (period.Contains("LHC12G_PP") == 1 && !isMC) {
+    //LHC12g -> 8 TeV (pp)
+    mapTitle = Form("LHC12g_pp.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 188419;
+    runUp[0] = 188719;
+  }
+  else if (period.Contains("LHC12H") == 1 && !isMC) {
+    //LHC12h -> 8 TeV (pp)
+    mapTitle = Form("LHC12h.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 188720;
+    runUp[0] = 192738;
+  }
+  else if (period.Contains("LHC12I") == 1 && !isMC) {
+    //LHC12i and LHC12j -> 8 TeV (pp)
+    mapTitle = Form("LHC12i.pass%d", pass);
+    
+    runLow = new Int_t[nRunRanges];
+    runUp = new Int_t[nRunRanges];
+    
+    runLow[0] = 192739;
+    //runUp[0] = 193766;
+    //runLow[1] = 193767;
+    runUp[0] = 194479;
   }
   else if (period.Contains("LHC13B2_FIXN1") == 1 && isMC) {
     //LHC13b2_fixn1 -> 5.023 ATeV (pPb)
