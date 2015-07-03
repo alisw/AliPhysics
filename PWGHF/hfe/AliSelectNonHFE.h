@@ -38,16 +38,20 @@ class AliSelectNonHFE : public TNamed {
   Bool_t IsULS() const {return fIsULS;};
   void FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent *fVevent);
   void SetAlgorithm(TString Algorithm) {fAlgorithm = Algorithm;};
+	
   void SetAdditionalCuts(Double_t PtMin, Int_t TpcNcls) {fPtMin = PtMin; fTpcNcls = TpcNcls; fHasPtCut=kTRUE; };
   void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
+	
   void SetChi2OverNDFCut(Double_t Chi2OverNDFCut) {fChi2OverNDFCut = Chi2OverNDFCut;};
   void SetDCACut(Double_t dcaCut) {fdcaCut = dcaCut;};
   void SetHistAngleBack(TH1F *HistAngleBack) {fHistAngleBack = HistAngleBack;};
   void SetHistAngle(TH1F *HistAngle) {fHistAngle = HistAngle;};
   void SetHistDCABack(TH1F *HistDCABack) {fHistDCABack = HistDCABack;};
   void SetHistDCA(TH1F *HistDCA) {fHistDCA = HistDCA;};
-  void SetHistMassBack(TH1F *HistMassBack) {fHistMassBack = HistMassBack;};
-  void SetHistMass(TH1F *HistMass) {fHistMass = HistMass;};
+	
+  void SetHistMassBack(TH1F *HistMassBack, Double_t weight=1) {fHistMassBack = HistMassBack; fweight2=weight;};
+  void SetHistMass(TH1F *HistMass, Double_t weight=1) {fHistMass = HistMass; fweight1=weight;};
+	
   void SetInvariantMassCut(Double_t MassCut) {fMassCut = MassCut;};
   void SetOpeningAngleCut(Double_t AngleCut) {fAngleCut = AngleCut;};
   void SetPIDresponse(AliPIDResponse* PIDResponse) {fPIDResponse = PIDResponse;};
@@ -82,6 +86,10 @@ class AliSelectNonHFE : public TNamed {
   Int_t			fNLS;					//Number of Unlike signal pairs
   Int_t			fNULS;					//Number of like signal pairs
   Int_t			fTpcNcls;				//Minimum Number of clusters in the TPC
+  Double_t      fweight1;				//weight to fill the invariant mass plot
+  Double_t      fweight2;				//weight to fill the invariant mass plot
+
+	
   Int_t			*fLSPartner;	        //! Pointer for the LS partners index
   Int_t			*fULSPartner;	        //! Pointer for the ULS partners index
   TH1F			*fHistMass;				//! Invariant mass histogram for Unlike sign pairs
