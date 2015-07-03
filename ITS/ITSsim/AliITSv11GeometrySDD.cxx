@@ -1103,6 +1103,7 @@ void AliITSv11GeometrySDD::CreateBasicObjects() {
   fRaccordoL->AddNode(vtube1Rac, 1,trTube1Rac);
   fRaccordoL->AddNode(vtube2Rac, 1,trTube2Rac);
   fRaccordoL->AddNode(vtube3Rac, 1,trTube3Rac);
+  fRaccordoL->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 }
 
 
@@ -1524,6 +1525,9 @@ void AliITSv11GeometrySDD::ForwardLayer3(TGeoVolume *moth) {
     virtualForward3Pos->AddNode(lay3EndLadder, iLadd*2, ctEndLaddPos);
     virtualForward3Neg->AddNode(lay3EndLadder, iLadd*2, ctEndLaddNeg);
   }
+  
+  virtualForward3Pos->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+  virtualForward3Neg->GetShape()->ComputeBBox();
 
   if(GetDebug(1)) {
     virtualForward3Pos->CheckOverlaps(0.01);
@@ -1784,6 +1788,9 @@ void AliITSv11GeometrySDD::ForwardLayer4(TGeoVolume *moth) {
     virtualForward4Neg->AddNode(lay4EndLadder, iLadd*2, ctEndLaddNeg);
   }
 
+  virtualForward4Pos->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+  virtualForward4Neg->GetShape()->ComputeBBox();
+
   // 180deg Y rotation to compensate the cancellation of ITSD volume
   // (idortm[199] in AliITSv11Hybrid : z--->  -z;   x ---> -x;   y ---> y)
   TGeoRotation *y180 = new TGeoRotation();
@@ -1965,6 +1972,8 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateLadder(Int_t iLay) {
   };
 
   //**********************************
+  virtualLadder->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
   if(GetDebug(1)) virtualLadder->CheckOverlaps(0.01);
   return virtualLadder;
 }
@@ -3497,6 +3506,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateEndLadder(Int_t iLay) {
   virtualEnd->AddNode(fRaccordoL, 1, trRaccordo1);
   virtualEnd->AddNode(fRaccordoL, 2, trRaccordo2);
 
+  virtualEnd->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
   if(GetDebug(1)) virtualEnd->CheckOverlaps(0.01);
 
   return virtualEnd;
@@ -3606,6 +3617,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateLadderFoot() {
   TGeoVolume *vFootLeft = new TGeoVolume("vFootLeft",footLeft,stesalite);
   vFootLeft->SetLineColor(fColorStesalite);
   virtualFoot->AddNode(vFootLeft, 1, footLeftTr);
+
+  virtualFoot->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   if(GetDebug(3)){ // Remove compiler warning.
     ladFingerPrint->InspectShape();
@@ -3905,6 +3918,8 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateCarlosCard(Int_t iLay) {
   qz1.AddCheckPoint( (TGeoVolume *) assemblySupCarlos, 1, p2, vX);
   qz1.CreateAndInsertBoxCableSegment(1,90);
 
+  assemblySupCarlos->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
   return assemblySupCarlos;
 }
 
@@ -4148,6 +4163,9 @@ Int_t AliITSv11GeometrySDD::CreateLVCard() {
   fCardLVR->AddNode(vAlLVcooling2, 2,alLVcooling2TrBR);
   fCardLVR->AddNode(vAlLVcooling3, 1,alLVcooling3TrR);
 
+  fCardLVL->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+  fCardLVR->GetShape()->ComputeBBox();
+
   return kTRUE;
 }
 
@@ -4204,6 +4222,9 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(){
   capa1->AddNode(vCapa1End, 1, capa1EndTr1);
   capa1->AddNode(vCapa1End, 2, capa1EndTr2);
 
+  capa1->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
+
   highVCard->AddNode(capa1, 1, capa1PosTr);
 
   // capa2
@@ -4230,6 +4251,9 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(){
   capa2->AddNode(vCapa2Middle, 1,0);
   capa2->AddNode(vCapa2End, 1, capa2EndTr1);
   capa2->AddNode(vCapa2End, 2, capa2EndTr2);
+
+  capa2->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+  
 
   highVCard->AddNode(capa2, 1, capa2PosTr);
 
@@ -4281,6 +4305,7 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(){
   highVCard->AddNode(capa3, 4, capa3PosTr4);
   highVCard->AddNode(capa3, 5, capa3PosTr5);
 
+  capa3->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
   //====================================
   //--- connexions to LV card
 
@@ -4333,6 +4358,9 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(){
   TGeoTranslation *trConnexion8 = new TGeoTranslation( fgkConnexLVHVx,
 					fgkConnexLVHVy1+3*fgkConnexLVHVdy,
 				       -fgkHVCardCeramZ/2-fgkConnexLVHVlen/2 );
+
+  connexion->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+    
 
   highVCard->AddNode(connexion, 1, trConnexion1);
   highVCard->AddNode(connexion, 2, trConnexion2);
@@ -4429,6 +4457,8 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateHVCard(){
 
   highVCard->AddNode(fCommonVol[0], 1, cbScrewHead1);
   highVCard->AddNode(fCommonVol[0], 2, cbScrewHead2);
+
+  highVCard->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   return highVCard;
 }
@@ -4626,6 +4656,8 @@ TGeoVolumeAssembly*  AliITSv11GeometrySDD::CreateEndLadderCards(Int_t iLay) {
 
     endLadderCards->AddNode(assemblySupCarlos, iCard, carlosPos);
   }
+
+  endLadderCards->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   return endLadderCards;
 }
@@ -5036,6 +5068,9 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateSupportRing() {
 
   supportRing->AddNode(vRubyCageSquare, 0, 0);
   //supportRing->AddNode(vRubyCageV, 0, 0);
+
+  supportRing->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
+
   return supportRing;
 }
 
@@ -5480,6 +5515,8 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssembly(Int_t iLay) {
       virtualDet->AddNode(sensorSDD, i, sensorPos);
     };
   }
+
+  virtualDet->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
   
   if(GetDebug(1)) virtualDet->CheckOverlaps(0.01);
   return virtualDet;
@@ -5523,6 +5560,8 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssemblyLadd2() {
       virtualDet->AddNode(sensorSDD, i, sensorPos);
     };
   }
+  
+  virtualDet->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
   
   if(GetDebug(1)) virtualDet->CheckOverlaps(0.01);
   return virtualDet;
@@ -6000,6 +6039,8 @@ void AliITSv11GeometrySDD::SDDCables(TGeoVolume *moth)
 
   CreateAndInsetConeCablePart(endConeSDDCable, 353, 1*3,3*4, fgkSDDCableR5,
 			      fgkSDDCableZ5,fgkSDDCableR6,fgkSDDCableZ6);
+
+  endConeSDDCable->GetShape()->ComputeBBox(); //RS: enforce recompting of BBox
 
   moth->AddNode(endConeSDDCable, 1, 0);
 
