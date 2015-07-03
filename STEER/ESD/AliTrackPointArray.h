@@ -21,6 +21,7 @@ class TGeoRotation;
 class AliTrackPoint : public TObject {
 
  public:
+
   AliTrackPoint();
   AliTrackPoint(Float_t x, Float_t y, Float_t z, const Float_t *cov, UShort_t volid, Float_t charge = 0, Float_t drifttime = 0,Float_t chargeratio = 0, Int_t clutype = 0);
   AliTrackPoint(const Float_t *xyz, const Float_t *cov, UShort_t volid, Float_t charge = 0, Float_t drifttime = 0,Float_t chargeratio = 0, Int_t clutype=0);
@@ -92,6 +93,8 @@ class AliTrackPoint : public TObject {
 class AliTrackPointArray : public TObject {
 
  public:
+
+  enum {kTOFBugFixed=BIT(14)};
 
   AliTrackPointArray();
   AliTrackPointArray(Int_t npoints);
