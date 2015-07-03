@@ -49,7 +49,10 @@ set(SRCS
   AliRDHFCutsLctoV0.cxx 
   AliRDHFCutsD0toKpipipi.cxx 
   AliRDHFCutsDStartoKpipi.cxx 
+  AliRDHFCutsLctoeleLambdafromAODtracks.cxx
   AliRDHFCutsLctopK0sfromAODtracks.cxx
+  AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
+  AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx 
   AliAnalysisTaskSEVertexingHF.cxx 
@@ -65,7 +68,10 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelor.cxx 
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
+  AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
+  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
+  AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliCFVertexingHF.cxx 
   AliCFVertexingHF2Prong.cxx 
