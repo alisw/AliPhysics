@@ -2331,11 +2331,12 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mDet, Float_t bz
     return kFALSE;
   }
   if(!IsRowCross()){ 
-    Double_t padEffLength(fPad[0] - TMath::Abs(dzdx));
+    //    Double_t padEffLength(fPad[0] - TMath::Abs(dzdx));
+    Double_t padEffLength(fPad[0]);
     //
     // correct Z for most probable value accounting for the fact that it is not RC
     double zCorrNRC = tgl*recoParam->GetZCorrCoefNRC();
-    padEffLength -= zCorrNRC*2;
+    padEffLength -= TMath::Abs(zCorrNRC*2);
     fZfit[0] += zCorrNRC;
     fYfit[0] += GetTilt()*zCorrNRC;
     fS2Z = padEffLength*padEffLength/12.;
