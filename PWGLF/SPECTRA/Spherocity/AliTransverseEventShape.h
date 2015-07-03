@@ -30,7 +30,8 @@ class AliTransverseEventShape : public TObject {
   AliTransverseEventShape(const AliTransverseEventShape& pd);
   AliTransverseEventShape &operator=(const AliTransverseEventShape &c);
   virtual void Init();
-  
+
+  void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}  
   void  SetUseHybridESA(Bool_t usehyb) {fUseHybrid = usehyb;}
   void  SetTrackFilterESAHyb1(AliAnalysisFilter* trackH1F) {fTrackFilterHybrid1 = trackH1F;}
   void  SetTrackFilterESAHyb2(AliAnalysisFilter* trackH2F) {fTrackFilterHybrid2 = trackH2F;}
@@ -43,9 +44,10 @@ class AliTransverseEventShape : public TObject {
   void  SetTrackPtMinESA(Float_t ptminF)   {fPtMinCutESA = ptminF;}
   void  SetTrackPtMaxESA(Float_t ptmaxF)   {fPtMaxCutESA = ptmaxF;}
   
-  void SaveHistos(const char* folder = 0);
-  
-  TH1D * GetHistData( Int_t bin_histo );
+  void SaveHistosSo(const char* folder = 0 );
+  void SaveHistosSt(const char* folder = 0 );  
+
+  TH1D * GetHistData( Int_t bin_histo, TString lMethod  );
   
   //Utility functions
   //for the base virtual event class: all methods are common
@@ -61,6 +63,7 @@ class AliTransverseEventShape : public TObject {
   Float_t MinVal( Float_t A, Float_t B ); 
   
  private:
+  Bool_t fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t fUseHybrid;
   AliAnalysisFilter *fTrackFilterHybrid1;
   AliAnalysisFilter *fTrackFilterHybrid2;
@@ -73,16 +76,21 @@ class AliTransverseEventShape : public TObject {
   Float_t fPtMaxCutESA;
   Float_t fPtMinCutESA;
   Int_t   fRunNumber; // for control of run changes
-  TH1D    *fheta;
-  TH1D    *fhphi;
-  TH1D    *fhpt;
-  TH1D    *fhetaMC;
-  TH1D    *fhphiMC;
-  TH1D    *fhptMC;
-  TH1D    *fAverageAmplitudes; 
-  
-  
+  TH1D    *fhetaSo;
+  TH1D    *fhphiSo;
+  TH1D    *fhptSo;
+  TH1D    *fhetaSt;
+  TH1D    *fhphiSt;
+  TH1D    *fhptSt;
+  TH1D    *fhetaSoMC;
+  TH1D    *fhphiSoMC;
+  TH1D    *fhptSoMC;
+  TH1D    *fhetaStMC;
+  TH1D    *fhphiStMC;
+  TH1D    *fhptStMC;
+
+
   ClassDef(AliTransverseEventShape,2) // base helper class
-    };
+};
 #endif
 
