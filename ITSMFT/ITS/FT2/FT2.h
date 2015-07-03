@@ -7,7 +7,9 @@
 #include "AliESDpid.h"
 #include "AliPIDResponse.h"
 #include "AliITSURecoLayer.h"
-
+#include "AliNDLocalRegression.h"
+#include "AliTPCParam.h"
+#include "AliTPCRecoParam.h"
 //#define DEBUG 11
 //#define DEBUG 1
 
@@ -44,12 +46,20 @@ protected:
 	Double_t fTPCmomentum;				// momentum after TPC reconstruction
 	Double_t fTPCSignal;				// TPC signal
 	UShort_t fTPCSignalN;
-	Double_t fAbsPdgCode;				// |pdg code| of particle
-	Double_t fPdgCode;					// pdg code of particle
+	Int_t fAbsPdgCode;				// |pdg code| of particle
+	Int_t fPdgCode;					// pdg code of particle
 	Int_t fAbsPdgCodeForTracking;		// |pdg code| used for tracking of particle
 	Double_t fTrueMass;					// true mass of the particle
 	Double_t fInnerTrackParameters[7];	// (fAlpha,fX,fP[5]) at inner TPC radius
 	
+	Double_t fProbeITSClusterIsCls[8];		// (ITScluster?,x,y,z)
+	Double_t fProbeITSClusterX[8];				// (ITScluster?,x,y,z)
+	Double_t fProbeITSClusterY[8];				// (ITScluster?,x,y,z)
+	Double_t fProbeITSClusterZ[8];				// (ITScluster?,x,y,z)
+	Double_t fProbeTPCClusterIsCls[160];	// (TPCcluster?,x,y,z)
+	Double_t fProbeTPCClusterX[160];			// (TPCcluster?,x,y,z)
+	Double_t fProbeTPCClusterY[160];			// (TPCcluster?,x,y,z)
+	Double_t fProbeTPCClusterZ[160];			// (TPCcluster?,x,y,z)
 	Int_t		fProbeNClTPC;			// N used TPC clusters
 	Int_t		fProbeNClITS;			// N used ITS clusters
 	Int_t		fProbeNClITSFakes;		// N used ITS Fake clusters
@@ -61,9 +71,10 @@ protected:
 	Bool_t fIsAbsorbed;									// is particle absorbed?
 	Double_t fDecayRadius;								// radius when particle decayed
 	Double_t fAbsorbtionRadius;						// radius when particle was absorbed
+	Bool_t fLostInItsTpcMatching;					// was track lost due to ITS-TPC matching efficiency?
 	Int_t fTrackToClusterChi2CutITS;		// is particle rejected by ITS track to cluster chi2?
 	Double_t chiwITS[7];								// chi2 for each layer of the ITS
-	
+	Double_t fProbeZAtCutOffCheck;	// z coordinate when the probe is check for z
 	ClassDef(FTProbe,1)
 };
 
@@ -73,20 +84,18 @@ class FT2 : public TObject
 public:
 	enum {kMaxITSLr=7, kMaxHitPerLr=2};
 	struct FT2TPCLayer {
-  FT2TPCLayer(int id=-1,float xr=0,float x2x=0,float resRPhi=0,float resZ=0,float effL=0) :
-		rowId(id),x(xr),x2x0(x2x),rphiRes(resRPhi),zRes(resZ),eff(effL),isDead(resRPhi>kRidiculous||resZ>kRidiculous),
-		hitY(0),hitZ(0),hitSect(-1) {if (isDead) effL=-1;}
+  FT2TPCLayer(int id=-1,float xr=0,float x2x=0, float pitchL =0) :
+		rowId(id),x(xr),x2x0(x2x),isDead(0),pitch(pitchL)/*,isDead(resRPhi>kRidiculous||resZ>kRidiculous)*/,
+		hitY(0),hitZ(0),hitSect(-1) {if (isDead) cout <<" isDead" << endl;}
 		Int_t    rowId;
 		Float_t  x;
 		Float_t  x2x0;
-		Float_t  rphiRes;
-		Float_t  zRes;
-		Float_t  eff;
 		Bool_t   isDead;
+		Float_t  pitch;
 		//
 		Float_t  hitY;
 		Float_t  hitZ;
-		Float_t  hitSect;
+		Int_t  hitSect;
 		//
 		void GetXYZLab(Float_t xyz[3]) const
 		{
@@ -104,17 +113,18 @@ public:
 	void InitTPCParaFile(const char *TPCparaFile);
 	void InitXSectionFile(const char *XSectionFile);
 	void InitTPCPIDResponse();
-	void InitDetector(Bool_t addTPC=kTRUE, Float_t sigYTPC=0.1, Float_t sigZTPC=0.1,
-					  Float_t effTPC=1.00, Float_t scEdge=2.6); // effTPC = 0.99
+	void InitDetector(Bool_t addTPC=kTRUE,Float_t scEdge=2.0); //used to be 2.6; 2.0 determined by Marian and Johannes from 2013 data
 	//
 	void PrintLayout();
 	//
 	Bool_t ProcessTrack(TParticle* trc, AliVertex* vtx);
 	void   SetSimMat(Bool_t v=kTRUE) {fSimMat = v;}
+	void   SetTuneOnDataOrMC(Bool_t t=kFALSE) {fTuneOnDataOrMC = t;}
 	void   SetAllowDecay(Bool_t d=kTRUE) {fAllowDecay = d;}
 	void   SetMinTPCHits(int v=0)  {fMinTPCHits=v;} // 60
 	void   SetMinITSLrHit(int v=0)  {fMinITSLrHit=v;}
 	void   SetUsePIDForTracking(Bool_t usePID) {fUsePIDForTracking=usePID;}
+	void	 SetRunNumber( TString runnumber) {fRunNumber = runnumber;}
 	Int_t  ProbeDecayAbsorb(double* posIni);
 	//
 	Int_t    GetNClITSFakes()  const {return fNClITSFakes;}
@@ -144,6 +154,8 @@ public:
 	void     SetCorrelITSFakesSigY(Int_t lr, double v)  {fCorrelITSFakesSigY[lr] = v;}
 	void     SetCorrelITSFakesSigZ(Int_t lr, double v)  {fCorrelITSFakesSigZ[lr] = v;}
 	//
+	void		SetMCTrueTrackMultiplicity(Int_t mult)			{fTrueMCtrackMult = mult;}
+	//
 	void     SetdNdY(double v=-1) {fdNdY = v;}
 	Double_t GetdNdY() const {return fdNdY;}
 	Double_t HitDensity(double r2, double tgl) const;
@@ -158,8 +170,8 @@ public:
 	//
 	Int_t CutOnTrackToClusterChi2ITS();
 protected:
-	void AddTPC(Float_t sigY=0.1, Float_t sigZ=0.1, Float_t eff=1.00, Float_t scEdge=2.6); // eff=0.99
-	void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0,Float_t sigY, Float_t sigZ, Float_t eff);
+	void AddTPC(Float_t scEdge=2.6);
+	void AddTPCLayer(Int_t rowID, Float_t x, Float_t x2x0, Float_t pitch);
 	Bool_t InitProbe(TParticle* trc);
 	Bool_t MakeITSKalmanOut();
 	Bool_t PrepareProbe();
@@ -175,13 +187,14 @@ protected:
 	const AliExternalTrackParam* GetSmoothedEstimate(int ilr,const AliExternalTrackParam* trcInw, double* trPos,double* trCov);
 	Int_t  ReconstructOnITSLayer(int ilr, double chi2Cut=70.);
 	
-	Bool_t ReconstructProbe();
+	Bool_t ReconstructProbe(TParticle *part);
 	AliPIDResponse::EDetPidStatus GetComputeTPCProbability (const AliVTrack *track, Int_t nSpecies, Double_t p[]) const;
 	//
 protected:
 	AliITSUReconstructor* fITSRec; // interface for reconstructor
 	AliITSURecoDet* fITS;          // interface for ITS
 	Bool_t fUsePIDForTracking;
+	TString fRunNumber;
 	Bool_t fIsTPC;                 // TPC added
 	AliPIDResponse* fPIDResponse;
 	TFile *fTPCParaFile;
@@ -189,11 +202,15 @@ protected:
 	TH1F* fXSectionHp[6];
 	Float_t fTPCSectorEdge;        // cut in cm on sector edge
 	Double_t fMaxSnpTPC;           // stop particle if snp>fMaxSnpTPC
+	Int_t fTPCInnerRows;
+	Int_t fTPCMiddleRows;
+	Int_t fTPCOuterRows;
 	std::vector<FT2TPCLayer_t> fTPCLayers;
 	std::vector<int>           fTPCHitLr;
 	Int_t                      fNTPCHits; //!
 	Int_t                      fMinTPCHits; // require min amount of TPC hits
 	Int_t                      fMinITSLrHit; // require min amount of ITS lr hit
+	Int_t											 fTrueMCtrackMult; // mc track multiplicity
 	Double_t fDCA[2],fDCACov[3];   //! dca to vertex and its covariance
 	//
 	FTProbe fProbe;  // track
@@ -202,6 +219,7 @@ protected:
 	Bool_t  fUseKalmanOut;                 //! use KalmanOut estimate for fakes
 	//Double_t              fProbeMass; // probe mass
 	Double_t              fBz;        // bz
+	Bool_t								fTuneOnDataOrMC; // used to tune some parameters on data or MC input; can only be used in second iteration
 	Bool_t                fSimMat;    // simulate material effects in probe preparation
 	Bool_t								fAllowDecay; // necessary for standlone FT2 mode
 	Int_t                 fCurrITSLr; //! current ITS layer under tracking
@@ -225,9 +243,21 @@ protected:
 	Double_t fITSHitYZ[kMaxITSLr][kMaxHitPerLr][2]; //! tracking Y,Z of each hit
 	//
 	Double_t fdNdY;             // if positive, use it for fakes simulation
-	TF1 *fTPCClsLossProb;		// parameterization of the TPC cluster pick up probability
-	TF3 *fTPCDistortionRPhi;	// parameterization of the TPC field distortions in rphi
-	TF3 *fTPCDistortionR;		// parameterization of the TPC field distortions in r
+	AliNDLocalRegression *fTPCClsLossProbIROC;					// parameterization of the TPC cluster pick up probability in the IROC
+	AliNDLocalRegression *fTPCClsLossProbOROCmedium;		// parameterization of the TPC cluster pick up probability in the OROC (medium)
+	AliNDLocalRegression *fTPCClsLossProbOROClong;			// parameterization of the TPC cluster pick up probability in the OROC (long)
+	AliNDLocalRegression *fTpcPidSignal[5];							// parameterization of the TPC signal (e,mu,pi,K,p)
+	AliNDLocalRegression *fTPCDistortionRPhi;						// parameterization of the TPC field distortions in rphi
+	AliNDLocalRegression *fTPCDistortionR;							// parameterization of the TPC field distortions in r
+	AliNDLocalRegression *fTPCfMCChi2;									// parameterization of the TPC standardized chi2
+	AliNDLocalRegression *fTPCft2Chi2;									// parameterization of the FT2 standardized chi2
+	AliNDLocalRegression *fItsTpcMatchingfMC;						// parameterization of the ITS+TPC matching efficiency in full MC
+	AliNDLocalRegression *fItsTpcMatchingft2;						// parameterization of the ITS+TPC matching efficiency in FT2
+
+	TF1 *fTpcClusterAcc;
+	TF1 *fTPCClusterErrorParam; // parameterization of the TPC cluster error in y and z
+	AliTPCParam *fTPCParam; // TPC param
+	AliTPCRecoParam *fTPCRecoParam; // TPC reco param
 	Bool_t   fAllocCorrelatedITSFakes; // simulate noise hits accompanying the probe
 	Double_t fNCorrelITSFakes[kMaxITSLr]; // av.number of accompanying hits
 	Double_t fCorrelITSFakesSigY[kMaxITSLr]; // their width in Y
