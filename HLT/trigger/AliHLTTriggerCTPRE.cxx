@@ -21,6 +21,7 @@ const char* AliHLTTriggerCTPRE::fgkDefaultOCDBEntry="HLT/ConfigHLT/CTPREtrigger"
 AliHLTTriggerCTPRE::~AliHLTTriggerCTPRE()
 {
   //dtor
+  delete fRegexp;
 }
 
 //_____________________________________________________________________________
