@@ -32,6 +32,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   
   TTree *ttree=new TTree("trending","tree of trending variables");
   Int_t adReady=0,invalidInput=0,qaNotFound=0,adActive=0,adQANotfound=0,noEntries=0;
+  Int_t LHCstate = -1; Float_t runTime = 0;
   Float_t meanTotalChargeADA = -1024, meanTotalChargeADC = -1024;
   Float_t meanTimeADA = -1024, meanTimeADC = -1024;
   Float_t meanTimeSigmaADA = -1024, meanTimeSigmaADC = -1024;
@@ -91,6 +92,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TString lhcState(fGRPData->GetLHCState());
   
   //-----------------------Trending variables------------------------------------------------
+  ttree->Branch("LHCstate",&LHCstate,"LHC state;;State/I");
+  ttree->Branch("runTime",&runTime,"runTime;;Duration(min)/F");
   ttree->Branch("meanTotalChargeADA",&meanTotalChargeADA,"Mean total charge ADA;;Charge (ADC counts)/F");
   ttree->Branch("meanTotalChargeADC",&meanTotalChargeADC,"Mean total charge ADC;;Charge (ADC counts)/F");
   ttree->Branch("meanTimeADA",&meanTimeADA,"Mean time ADA;;Time (ns)/F");
@@ -142,6 +145,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	 machineMode.Data(),lhcState.Data());
   
   time_t duration = fGRPData->GetTimeEnd() - fGRPData->GetTimeStart();
+  runTime = (Float_t)(duration/60);
 
   if(!activeDetList.Contains("AD"))
     { 
@@ -161,12 +165,10 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     printf("RUN NO PHYSICS\n");
     return 0;
     }
-
-  if(duration<300)
-    { 
-    printf("RUNS SHORTER THAN 5 MIN\n");
-    return 0;
-    }
+  if(lhcState.Contains("NO BEAM"))LHCstate = 0;
+  if(lhcState.Contains("SQUEEZE"))LHCstate = 1;
+  if(lhcState.Contains("ADJUST"))LHCstate = 2;
+  if(lhcState.Contains("STABLE BEAMS"))LHCstate = 3;
       
   char adQAdirName[5]="ADQA";
   QAfile->Print();
@@ -274,24 +276,29 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   meanTotalChargeADA = fHistTotalChargePerEventADA->GetMean();
   meanTotalChargeADC = fHistTotalChargePerEventADC->GetMean();
   
-  Int_t minFitRange = 48;
-  Int_t maxFitRange = 65;
+  Float_t mean = fHistMeanTimeADA->GetMean();
+  
+  Int_t minFitRange = mean-5;
+  Int_t maxFitRange = mean+5;
+  
   fHistMeanTimeADA->Fit("gaus","R+","",minFitRange,maxFitRange);
   TF1 *fitTimeADA = (TF1*) fHistMeanTimeADA->GetFunction("gaus");
   meanTimeADA = fitTimeADA->GetParameter(1);
   meanTimeSigmaADA = fitTimeADA->GetParameter(2);
   meanTimeErrADA = fitTimeADA->GetParError(1);
   meanTimeSigmaErrADA = fitTimeADA->GetParError(2);
+
+  mean = fHistMeanTimeADC->GetMean();
+  minFitRange = mean-5;
+  maxFitRange = mean+5;
   
-  minFitRange = 55;
-  maxFitRange = 70;
   fHistMeanTimeADC->Fit("gaus","R+","",minFitRange,maxFitRange);
   TF1 *fitTimeADC = (TF1*) fHistMeanTimeADC->GetFunction("gaus");
   meanTimeADC = fitTimeADC->GetParameter(1);
   meanTimeSigmaADC = fitTimeADC->GetParameter(2);
   meanTimeErrADC = fitTimeADC->GetParError(1);
   meanTimeSigmaErrADC = fitTimeADC->GetParError(2);
-  
+
   const Double_t fTOFADA = 56.63;
   TH1D *hSlewingSlice;
   slewingChi2ADA = 0;
@@ -338,13 +345,19 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	channelTitle += i;
 	hChargeSliceAll[i]->SetTitle(channelTitle.Data());
   
-  	minFitRange = 7;
-  	maxFitRange = 20;
+  	minFitRange = 0;
+  	maxFitRange = 40;
 
-  	hChargeSliceAll[i]->Fit("landau","R+","",minFitRange,maxFitRange);
-  	TF1 *fitLandau = (TF1*) hChargeSliceAll[i]->GetFunction("landau");
-  	MPV[i] = fitLandau->GetParameter(1); //MPV
-	MPVErr[i] = fitLandau->GetParError(1); 
+  	Int_t fitStatus = hChargeSliceTime[i]->Fit("landau","R+","",minFitRange,maxFitRange);
+	if(fitStatus ==0){
+  		TF1 *fitLandau = (TF1*) hChargeSliceTime[i]->GetFunction("landau");
+  		MPV[i] = fitLandau->GetParameter(1); //MPV
+		MPVErr[i] = fitLandau->GetParError(1); 
+		}
+	else{
+		MPV[i] = -1.0;
+		MPVErr[i] = 0.0;
+		}
 	}
   
   AliCDBEntry *entCD = man->Get("AD/Calib/Data");
