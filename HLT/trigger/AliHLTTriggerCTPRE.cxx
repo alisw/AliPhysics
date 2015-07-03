@@ -62,11 +62,19 @@ int AliHLTTriggerCTPRE::DoTrigger()
     
     if (!fGlob.IsNull()) 
     {
-      decision = decision || Globncmp(triggerName, fGlob.Data(), strnlen(triggerName,100), fGlob.Length());
+      if (Globncmp(triggerName, fGlob.Data(), strnlen(triggerName,100), fGlob.Length()))
+      {
+        decision = kTRUE;
+        break;
+      }
     }
     if (!(fRegexp->GetPattern()).IsNull())
     {
-      decision = decision || (fRegexp->Match(triggerName)>0);
+      if ((fRegexp->Match(triggerName)>0))
+      {
+        decision = kTRUE;
+        break;
+      }
     }
   }
   
