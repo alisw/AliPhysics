@@ -1138,11 +1138,11 @@ void AliTPCMonitor::DrawHists(Int_t histos)
       // Executables
     if(fExecPlaneMax==0)
     {
-      TString carry1=Form(".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
+      TString carry1=Form(".x %s/TPC/TPCmon/macros/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
       ciroc->AddExec("pad",carry1.Data());
       coroc->AddExec("pad",carry1.Data());
       
-      TString carry2=Form(".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
+      TString carry2=Form(".x %s/TPC/TPCmon/macros/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
       ciroc->AddExec("row",carry2.Data());
       coroc->AddExec("row",carry2.Data());
       fExecPlaneMax=1;
@@ -1260,7 +1260,7 @@ void AliTPCMonitor::DrawHists(Int_t histos)
       cglobC->cd() ; fHistGlobalMaxC->Draw("COLZ");
       cglobA->cd() ; fHistGlobalMaxA->Draw("COLZ");
       
-      TString nameom=Form(".x  %s/TPC/AliTPCMonitorExec.C(3)",gSystem->Getenv("ALICE_ROOT"));
+      TString nameom=Form(".x  %s/TPC/TPCmon/macros/AliTPCMonitorExec.C(3)",gSystem->Getenv("ALICE_ROOT"));
       
       if(fExecGlob==0)
       {
@@ -1302,8 +1302,8 @@ void AliTPCMonitor::DrawRMSMap()
   crmsiroc->cd();  fHistIROCRMS->Draw("COLZ");
   crmsoroc->cd();  fHistOROCRMS->Draw("COLZ");
   
-  TString carry1=Form(".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
-  TString carry2=Form(".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry1=Form(".x %s/TPC/TPCmon/macros/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry2=Form(".x %s/TPC/TPCmon/macros/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
   
   if(fExecPadIrocRms==0)
   {
@@ -2023,8 +2023,8 @@ void AliTPCMonitor::ResizeCanv()
 {
   // Resize canvases and delete some of them
   
-  TString carry1=Form(".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
-  TString carry3=Form(".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry1=Form(".x %s/TPC/TPCmon/macros/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry3=Form(".x %s/TPC/TPCmon/macros/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
   if(fVerb) cout <<  " canv 1 " << endl;
   
   if(gROOT->GetListOfCanvases()->FindObject(        "coroc_ch")) {  delete gROOT->GetListOfCanvases()->FindObject("coroc_ch") ; }
@@ -2080,7 +2080,7 @@ void AliTPCMonitor::ResizeCanv()
 Int_t AliTPCMonitor::ExecProcess() 
 {
   // Executable for global Histogram
-  // Will be called from /TPC/AliTPCMonitorExec.C(3)
+  // Will be called from /TPC/TPCmon/macros/AliTPCMonitorExec.C(3)
   // Call ProcessEvent for same event and sector pointed at
   
   Int_t side   = 0;

@@ -77,4 +77,4 @@ For debugging purposes the payload (10bit words format) for each equipment can b
 
 The main window size which also determines the canvas sizes can be changed in
 
-${ALICE_ROOT}/TPC/Monitor/AliTPCMonitorConfig.txt
+${ALICE_ROOT}/TPC/TPCmon/AliTPCMonitorConfig.txt
