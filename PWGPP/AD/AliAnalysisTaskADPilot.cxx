@@ -12,7 +12,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskADQA class
+//                 AliAnalysisTaskADPilot class
 //            This task is for QAing the AD data from ESD/AOD
 //              Origin:michal.broz@cern.ch
 //-----------------------------------------------------------------
@@ -22,10 +22,14 @@
 #include "TH3F.h"
 #include "TF1.h"
 
-
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
+#include "TSpline.h"
 
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
@@ -33,12 +37,12 @@
 #include "AliESDADfriend.h"
 #include "AliESDVZERO.h"
 
-#include "AliAnalysisTaskADQA.h"
+#include "AliAnalysisTaskADPilot.h"
 
-ClassImp(AliAnalysisTaskADQA)
+ClassImp(AliAnalysisTaskADPilot)
 
 //________________________________________________________________________
-AliAnalysisTaskADQA::AliAnalysisTaskADQA() 
+AliAnalysisTaskADPilot::AliAnalysisTaskADPilot() 
   : AliAnalysisTaskSE(),fListHist(0),fHistTotalChargePerEventADA(0),fHistTotalChargePerEventADC(0),
     fHistChargePerPM_All(0), fHistChargePerPM_BB(0), fHistChargePerPM_BG(0), fHistChargePerPM_Time(0), fHistTimePerPM_Corr(0), fHistTimePerPM_UnCorr(0),
     fHistWidthPerPM(0),fHistTimeVsChargeADA_Corr(0), fHistTimeVsChargeADC_Corr(0),fHistTimeVsChargeADA_UnCorr(0),fHistTimeVsChargeADC_UnCorr(0),fHistWidthVsCharge(0),
@@ -51,12 +55,15 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA()
     fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
-    fHistTimeVsChargePerPM_UnCorr(0)
+    fHistTimeVsChargePerPM_UnCorr(0),
+    fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
+    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),
+    fRun(0),fOldRun(0)
 {
   // Dummy constructor
 }
 //________________________________________________________________________
-AliAnalysisTaskADQA::AliAnalysisTaskADQA(const char *name) 
+AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name) 
   : AliAnalysisTaskSE(name),fListHist(0),fHistTotalChargePerEventADA(0),fHistTotalChargePerEventADC(0),
     fHistChargePerPM_All(0), fHistChargePerPM_BB(0), fHistChargePerPM_BG(0), fHistChargePerPM_Time(0), fHistTimePerPM_Corr(0), fHistTimePerPM_UnCorr(0),
     fHistWidthPerPM(0),fHistTimeVsChargeADA_Corr(0), fHistTimeVsChargeADC_Corr(0),fHistTimeVsChargeADA_UnCorr(0),fHistTimeVsChargeADC_UnCorr(0),fHistWidthVsCharge(0),
@@ -69,20 +76,24 @@ AliAnalysisTaskADQA::AliAnalysisTaskADQA(const char *name)
     fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
-    fHistTimeVsChargePerPM_UnCorr(0)
+    fHistTimeVsChargePerPM_UnCorr(0),
+    fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
+    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),
+    fRun(0),fOldRun(0)
 {
   // Constructor
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class());
 }
 //________________________________________________________________________
-AliAnalysisTaskADQA::~AliAnalysisTaskADQA(){
+AliAnalysisTaskADPilot::~AliAnalysisTaskADPilot(){
   // Destructor
   if (fListHist) { delete fListHist; fListHist = 0x0; }
 }
 //________________________________________________________________________
-void AliAnalysisTaskADQA::UserCreateOutputObjects()
+void AliAnalysisTaskADPilot::UserCreateOutputObjects()
 {
+
   // Create histograms
   // Called once
 
@@ -368,13 +379,92 @@ if(!fHistTimeVsChargePerPM_UnCorr) {
 					kNChannelBins, kChannelMin, kChannelMax,"Leading time [ns]","ADC counts","Channel");
     fListHist->Add(fHistTimeVsChargePerPM_UnCorr);
   } 
+//Robust time testing
+if (!fHistMedianTimeADA) {
+    fHistMedianTimeADA = CreateHist1D("fHistMedianTimeADA","Median Time in ADA",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"Time","Entries");
+    fListHist->Add(fHistMedianTimeADA);
+  }   
+
+if (!fHistMedianTimeADC) {
+    fHistMedianTimeADC = CreateHist1D("fHistMedianTimeADC","Median Time in ADC",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"Time","Entries");
+    fListHist->Add(fHistMedianTimeADC);
+  }   
+if (!fHistRobustTimeADA) {
+    fHistRobustTimeADA = CreateHist1D("fHistRobustTimeADA","Robust Time in ADA",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"Time","Entries");
+    fListHist->Add(fHistRobustTimeADA);
+  }   
+
+if (!fHistRobustTimeADC) {
+    fHistRobustTimeADC = CreateHist1D("fHistRobustTimeADC","Robust Time in ADC",kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax,"Time","Entries");
+    fListHist->Add(fHistRobustTimeADC);
+  }   
+if (!fHistNTimesMedianADA) {
+    fHistNTimesMedianADA = CreateHist1D("fHistNTimesMedianADA","Number of channels with time for median in ADA",9,-0.5,8.5,"Number of times in median in ADA per event","Entries");
+    fListHist->Add(fHistNTimesMedianADA);
+  } 
+if (!fHistNTimesMedianADC) {
+    fHistNTimesMedianADC = CreateHist1D("fHistNTimesMedianADC","Number of channels with time for median in ADC",9,-0.5,8.5,"Number of times in median in ADC per event","Entries");
+    fListHist->Add(fHistNTimesMedianADC);
+  } 
+
+if (!fHistNTimesRobustADA) {
+    fHistNTimesRobustADA = CreateHist1D("fHistNTimesRobustADA","Number of channels with time for Robust in ADA",9,-0.5,8.5,"Number of times in Robust in ADA per event","Entries");
+    fListHist->Add(fHistNTimesRobustADA);
+  } 
+if (!fHistNTimesRobustADC) {
+    fHistNTimesRobustADC = CreateHist1D("fHistNTimesRobustADC","Number of channels with time for Robust in ADC",9,-0.5,8.5,"Number of times in Robust in ADC per event","Entries");
+    fListHist->Add(fHistNTimesRobustADC);
+  } 
+if (!fHistMedianIndDiffVsChargeADA) {
+    fHistMedianIndDiffVsChargeADA = CreateHist2D("fHistMedianIndDiffVsChargeADA","Corrected Time vs Charge",1024,-50,50, kNChargeChannelBins/10,kChargeChannelMin,kChargeChannelMax,"Time difference [ns]","ADC counts");
+    fListHist->Add(fHistMedianIndDiffVsChargeADA);
+  }
+if (!fHistMedianIndDiffVsChargeADC) {
+    fHistMedianIndDiffVsChargeADC = CreateHist2D("fHistMedianIndDiffVsChargeADC","Corrected Time vs Charge",1024,-50,50, kNChargeChannelBins/10,kChargeChannelMin,kChargeChannelMax,"Time difference [ns]","ADC counts");
+    fListHist->Add(fHistMedianIndDiffVsChargeADC);
+  }
+
    
   // Post output data.
   PostData(1, fListHist);
 }
+//________________________________________________________________________
+void AliAnalysisTaskADPilot::SetTimeSlewing()
+{
+ 
+    AliCDBManager *man = AliCDBManager::Instance();
+    man->SetDefaultStorage("alien://Folder=/alice/data/2015/OCDB");
+    man->SetRun(fRun);
+
+    AliCDBEntry *ent = man->Get("AD/Calib/TimeSlewing");
+    TList *fListSplines = (TList*)ent->GetObject();
+    
+    for(Int_t i=0; i<16; i++) fTimeSlewingSpline[i] = dynamic_cast<TSpline3*> (fListSplines->At(i));
+}
+
+//____________________________________________________________________________
+Float_t AliAnalysisTaskADPilot::CorrectLeadingTime(Int_t i, Float_t time, Float_t adc)
+{
+  // Correct the leading time
+  // for slewing effect and
+  // misalignment of the channels
+  const Double_t fTOF[4] = {65.30,65.12,56.54,56.71};
+  const Double_t fRes = 25.0/256.0;
+   
+  if (time < 1e-6) return -1024;
+
+  // In case of pathological signals
+  if (adc < 1) return time;
+
+  // Slewing and offset correction
+  time -= fTimeSlewingSpline[i]->Eval(TMath::Log10(1.0/adc))*fRes;
+  time += fTOF[i/4];
+  
+  return time;
+}
 
 //________________________________________________________________________
-void AliAnalysisTaskADQA::UserExec(Option_t *) 
+void AliAnalysisTaskADPilot::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -400,6 +490,14 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
   }
   AliESDADfriend* esdADfriend = fESDfriend->GetADfriend();
   
+  
+  fRun=fEvent->GetRunNumber();
+  
+  if (fRun!=fOldRun){
+    SetTimeSlewing();
+    fOldRun=fRun;
+  }
+
   Float_t totChargeADA = 0;
   Float_t totChargeADC = 0;
   Int_t nBBflagsADA = 0;
@@ -420,14 +518,16 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 	if(esdAD->GetBGFlag(i))fHistChargePerPM_BG->Fill(i,esdAD->GetAdc(i));
 	if(esdAD->GetTime(i)>1e-6)fHistChargePerPM_Time->Fill(i,esdAD->GetAdc(i));
 	
-	fHistTimePerPM_Corr->Fill(i,esdAD->GetTime(i));
-	
-	if(i<8)fHistTimeVsChargeADC_Corr->Fill(esdAD->GetTime(i),esdAD->GetAdc(i));
-        if(i>7)fHistTimeVsChargeADA_Corr->Fill(esdAD->GetTime(i),esdAD->GetAdc(i));
 	fHistWidthPerPM->Fill(i,esdAD->GetWidth(i));
 	fHistWidthVsCharge->Fill(esdAD->GetWidth(i),esdAD->GetAdc(i));
 	
 	if(esdADfriend){
+		Float_t corrTime = CorrectLeadingTime(i,esdADfriend->GetTime(i),esdAD->GetAdc(i));
+		fHistTimePerPM_Corr->Fill(i,corrTime);
+	
+		if(i<8)fHistTimeVsChargeADC_Corr->Fill(corrTime,esdAD->GetAdc(i));
+        	if(i>7)fHistTimeVsChargeADA_Corr->Fill(corrTime,esdAD->GetAdc(i));
+		
 		if(!esdAD->GetBBFlag(i)) {
 			fHistChargeNoFlag->Fill(esdAD->GetAdc(i));
 			fHistTimeNoFlag->Fill(i,esdADfriend->GetTime(i));
@@ -487,19 +587,29 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
   fHistNBGCoincidencesADA->Fill(nBGCoincidencesADA);
   fHistNBGCoincidencesADC->Fill(nBGCoincidencesADC);
   fHistNBGCoincidencesADAVsADC->Fill(nBGCoincidencesADA,nBGCoincidencesADC);
-  fHistMeanTimeADA->Fill(esdAD->GetADATime());
-  fHistMeanTimeADC->Fill(esdAD->GetADCTime());
-  if(esdAD->GetADATime()!= -1024 && esdAD->GetADCTime()!= -1024){
-  	fHistMeanTimeDifference->Fill(esdAD->GetADATime()-esdAD->GetADCTime());
-	fHistMeanTimeCorrelation->Fill(esdAD->GetADATime(),esdAD->GetADCTime());
-	fHistMeanTimeSumDiff->Fill(esdAD->GetADATime()-esdAD->GetADCTime(),esdAD->GetADATime()+esdAD->GetADCTime());
-	}
-  fHistDecision->Fill(esdAD->GetADADecision(),esdAD->GetADCDecision());
     
   //Triggers
-  UShort_t fTriggerBC = esdAD->GetTriggerBits();
-  for(Int_t i = 0; i<6; i++) if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i);
-  for(Int_t i = 12; i<16; i++) if(fTriggerBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerMasked->Fill(i-6);
+  Bool_t UBA = kFALSE;
+  Bool_t UBC = kFALSE;
+  Bool_t UGA = kFALSE;
+  Bool_t UGC = kFALSE;
+
+  if(nBBCoincidencesADA>=1) UBA = kTRUE;
+  if(nBBCoincidencesADC>=1) UBC = kTRUE;
+  if(nBGCoincidencesADA>=1) UGA = kTRUE;
+  if(nBGCoincidencesADC>=1) UGC = kTRUE;
+  
+  if(UBA && UBC) fHistTriggerMasked->Fill(0);
+  if(UBA || UBC) fHistTriggerMasked->Fill(1);
+  if(UGA && UBC) fHistTriggerMasked->Fill(2);
+  if(UGA)fHistTriggerMasked->Fill(3);
+  if(UGC && UBA) fHistTriggerMasked->Fill(4);
+  if(UGC) fHistTriggerMasked->Fill(5);
+  if(UBA)fHistTriggerMasked->Fill(6);
+  if(UBC) fHistTriggerMasked->Fill(7); 
+  if(UGA || UGC) fHistTriggerMasked->Fill(8);
+  if((UGA && UBC) || (UGC && UBA))fHistTriggerMasked->Fill(9);
+	
   
   if(esdADfriend){
   	UShort_t fTriggerUnBC = esdADfriend->GetTriggerInputs();
@@ -507,6 +617,122 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 	for(Int_t i = 12; i<16; i++) if(fTriggerUnBC & (1 << i) ? kTRUE : kFALSE) fHistTriggerUnMasked->Fill(i-6);	
   }
   
+  if(esdADfriend){
+  //Robusts time testing
+  const Int_t minAdc = 5;
+  
+  Double_t timeBasicADA=0, timeBasicADC=0;
+  Double_t weightBasicADA =0., weightBasicADC = 0.;
+  
+  Double_t timesADA[8], timesADC[8];
+  Double_t weightADA[8], weightADC[8];
+  UInt_t   ntimeADA=0, ntimeADC=0;
+  UInt_t   itimeADA[8], itimeADC[8];
+  
+  for (Int_t i = 0; i < 16; ++i) {
+    Float_t adc = esdAD->GetAdc(i);
+    if (adc > minAdc) {
+      Float_t time = CorrectLeadingTime(i,esdADfriend->GetTime(i),esdAD->GetAdc(i));
+	if(time > 1.e-6){
+		Float_t timeErr = 1/adc;
+		if (i<8) {
+			itimeADC[ntimeADC] = i;
+	    		timesADC[ntimeADC] = time;
+	    		weightADC[ntimeADC] = 1.0/(timeErr*timeErr);
+			timeBasicADC += time/(timeErr*timeErr);
+			weightBasicADC += 1.0/(timeErr*timeErr);
+			ntimeADC++;
+	  		}
+		else{
+			itimeADA[ntimeADA] = i-8;
+	    		timesADA[ntimeADA] = time;
+	    		weightADA[ntimeADA] = 1.0/(timeErr*timeErr);
+			timeBasicADA += time/(timeErr*timeErr);
+			weightBasicADA += 1.0/(timeErr*timeErr);
+			ntimeADA++;
+	  		}
+      		}
+    	}
+  } // end of loop over channels
+  if(weightBasicADA > 1) timeBasicADA /= weightBasicADA; 
+  else timeBasicADA = -1024.;
+  if(weightBasicADC > 1) timeBasicADC /= weightBasicADC;
+  else timeBasicADC = -1024.;
+  
+  Double_t medianTimeADA = 0;
+  if (ntimeADA > 0) medianTimeADA = TMath::Median(ntimeADA,timesADA,weightADA);
+  Double_t medianTimeADC = 0;
+  if (ntimeADC > 0) medianTimeADC = TMath::Median(ntimeADC,timesADC,weightADC);
+  
+  Float_t robTimeAW = 0,robTimeCW = 0;
+  Float_t robWeightA = 0,robWeightC = 0;
+  Int_t nrobTimeA = 0, nrobTimeC = 0;
+  for(Int_t i = 0; i < ntimeADA; ++i) {
+    fHistMedianIndDiffVsChargeADA->Fill(medianTimeADA-timesADA[i],TMath::Sqrt(weightADA[i]));
+    if (TMath::Abs(timesADA[i]-medianTimeADA) < 4/TMath::Sqrt(weightADA[i])) {
+      nrobTimeA++;
+      robTimeAW += timesADA[i]*weightADA[i];
+      robWeightA += weightADA[i];
+    }
+  }
+  for(Int_t i = 0; i < ntimeADC; ++i) {
+    fHistMedianIndDiffVsChargeADC->Fill(medianTimeADC-timesADC[i],TMath::Sqrt(weightADC[i]));
+    if (TMath::Abs(timesADC[i]-medianTimeADC) < 4/TMath::Sqrt(weightADC[i])) {
+      nrobTimeC++;
+      robTimeCW += timesADC[i]*weightADC[i];
+      robWeightC += weightADC[i];
+    }
+  }
+
+  if (robWeightA > 0) robTimeAW = robTimeAW/robWeightA;
+  else robTimeAW = -1024;
+  if (robWeightC > 0) robTimeCW = robTimeCW/robWeightC;
+  else robTimeCW = -1024;
+  
+  fHistMeanTimeADA->Fill(timeBasicADA);
+  fHistMeanTimeADC->Fill(timeBasicADC);
+  if(timeBasicADA!= -1024 && timeBasicADC!= -1024){
+  	fHistMeanTimeDifference->Fill(timeBasicADA-timeBasicADC);
+	fHistMeanTimeCorrelation->Fill(timeBasicADA,timeBasicADC);
+	fHistMeanTimeSumDiff->Fill(timeBasicADA-timeBasicADC,timeBasicADA+timeBasicADC);
+	}
+	
+  //Decisions
+  Int_t ADADecision=0;
+  Int_t ADCDecision=0; 
+  const Float_t fADADist = 56.7;
+  const Float_t fADCDist = 65.19;
+  const Float_t TimeWindowBBALow = -3.3;
+  const Float_t TimeWindowBBAUp = 3.3;
+  const Float_t TimeWindowBBCLow = -1.8;
+  const Float_t TimeWindowBBCUp = 1.8;
+  const Float_t TimeWindowBGALow = 90;
+  const Float_t TimeWindowBGAUp = 140;
+  const Float_t TimeWindowBGCLow = 90;
+  const Float_t TimeWindowBGCUp = 140;
+
+  if(timeBasicADA > (fADADist + TimeWindowBBALow) && timeBasicADA < (fADADist + TimeWindowBBAUp)) ADADecision=1;
+  else if(timeBasicADA > (fADADist + TimeWindowBGALow) && timeBasicADA < (fADADist + TimeWindowBGAUp)) ADADecision=2;
+  else if(timeBasicADA>-1024.+1.e-6) ADADecision=3;
+  else ADADecision=0;
+  
+  if(timeBasicADC > (fADCDist + TimeWindowBBCLow) && timeBasicADC < (fADCDist + TimeWindowBBCUp)) ADCDecision=1;
+  else if(timeBasicADC > (fADCDist + TimeWindowBGCLow) && timeBasicADC < (fADCDist + TimeWindowBGCUp)) ADCDecision=2;
+  else if(timeBasicADC>-1024.+1.e-6) ADCDecision=3;
+  else ADCDecision=0;
+	
+  fHistDecision->Fill(ADADecision,ADCDecision);
+  
+  fHistMedianTimeADA->Fill(medianTimeADA);
+  fHistMedianTimeADC->Fill(medianTimeADC);
+  fHistNTimesMedianADA->Fill(ntimeADA);
+  fHistNTimesMedianADC->Fill(ntimeADC);
+  fHistRobustTimeADA->Fill(robTimeAW);
+  fHistRobustTimeADC->Fill(robTimeCW);
+  fHistNTimesRobustADA->Fill(nrobTimeA);
+  fHistNTimesRobustADC->Fill(nrobTimeC);
+  }
+
   //Triggers from VZERO for reference
   AliESDVZERO* esdVZERO = fESD->GetVZEROData();
   if(esdVZERO){
@@ -520,14 +746,14 @@ void AliAnalysisTaskADQA::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskADQA::Terminate(Option_t *) 
+void AliAnalysisTaskADPilot::Terminate(Option_t *) 
 {
  // Draw result to the screen
   // Called once at the end of the query
 
 }
 //________________________________________________________________________
-TH1F * AliAnalysisTaskADQA::CreateHist1D(const char* name, const char* title,Int_t nBins, 
+TH1F * AliAnalysisTaskADPilot::CreateHist1D(const char* name, const char* title,Int_t nBins, 
 				    Double_t xMin, Double_t xMax,
 				    const char* xLabel, const char* yLabel)
 {
@@ -538,7 +764,7 @@ TH1F * AliAnalysisTaskADQA::CreateHist1D(const char* name, const char* title,Int
   return result;
 }
 //________________________________________________________________________
-TH2F * AliAnalysisTaskADQA::CreateHist2D(const char* name, const char* title,Int_t nBinsX, 
+TH2F * AliAnalysisTaskADPilot::CreateHist2D(const char* name, const char* title,Int_t nBinsX, 
 				    Double_t xMin, Double_t xMax,
 				    Int_t nBinsY,
 				    Double_t yMin, Double_t yMax,
@@ -554,7 +780,7 @@ TH2F * AliAnalysisTaskADQA::CreateHist2D(const char* name, const char* title,Int
 }
 
 //________________________________________________________________________
-TH3F * AliAnalysisTaskADQA::CreateHist3D(const char* name, const char* title,Int_t nBinsX, 
+TH3F * AliAnalysisTaskADPilot::CreateHist3D(const char* name, const char* title,Int_t nBinsX, 
 				    Double_t xMin, Double_t xMax,
 				    Int_t nBinsY,
 				    Double_t yMin, Double_t yMax,

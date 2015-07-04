@@ -1,13 +1,14 @@
-#ifndef ALIANALYSISTASKADQA_H
-#define ALIANALYSISTASKADQA_H
+#ifndef ALIANALYSISTASKADPILOT_H
+#define ALIANALYSISTASKADPILOT_H
 
 /*  See cxx source for full Copyright notice */
 
 //-----------------------------------------------------------------
-//                 AliAnalysisTaskADQA class
+//                 AliAnalysisTaskADPilot class
 //            This task is for QAing the AD data from ESD/AOD
 //              Origin: Michal Broz
 //-----------------------------------------------------------------
+#include "TSpline.h"
 
 class TString;
 class TList;
@@ -15,18 +16,19 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TF1;
+class TSpline3;
 
 #include "AliAnalysisTaskSE.h"
 
 class AliESDEvent;
 
 
-class AliAnalysisTaskADQA : public AliAnalysisTaskSE {
+class AliAnalysisTaskADPilot : public AliAnalysisTaskSE {
  public:
 
-  AliAnalysisTaskADQA();
-  AliAnalysisTaskADQA(const char *name);
- ~AliAnalysisTaskADQA();
+  AliAnalysisTaskADPilot();
+  AliAnalysisTaskADPilot(const char *name);
+ ~AliAnalysisTaskADPilot();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -98,13 +100,31 @@ private:
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;
-  TH3F	      *fHistTimeVsChargePerPM_UnCorr;  
+  TH3F	      *fHistTimeVsChargePerPM_UnCorr;
   
-   
-  AliAnalysisTaskADQA(const AliAnalysisTaskADQA&);            // not implemented
-  AliAnalysisTaskADQA& operator=(const AliAnalysisTaskADQA&); // not implemented
+  /*Robust time testing*/
+  TH1F	      *fHistMedianTimeADA;
+  TH1F	      *fHistMedianTimeADC;
+  TH1F	      *fHistNTimesMedianADA;
+  TH1F	      *fHistNTimesMedianADC;
+  TH1F	      *fHistRobustTimeADA;
+  TH1F	      *fHistRobustTimeADC;
+  TH1F	      *fHistNTimesRobustADA;
+  TH1F	      *fHistNTimesRobustADC;
+  TH2F	      *fHistMedianIndDiffVsChargeADA;
+  TH2F	      *fHistMedianIndDiffVsChargeADC;
   
-  ClassDef(AliAnalysisTaskADQA, 3);
+  Int_t        fRun;
+  Int_t        fOldRun;
+  void         SetTimeSlewing();
+  TSpline3     *fTimeSlewingSpline[16]; //Time slewing splines
+  Float_t      CorrectLeadingTime(Int_t i, Float_t time, Float_t adc);
+  
+
+  AliAnalysisTaskADPilot(const AliAnalysisTaskADPilot&);            // not implemented
+  AliAnalysisTaskADPilot& operator=(const AliAnalysisTaskADPilot&); // not implemented
+  
+  ClassDef(AliAnalysisTaskADPilot, 1);
 };
 
 #endif

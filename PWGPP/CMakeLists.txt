@@ -210,6 +210,7 @@ set ( SRCS17
 #file ( GLOB SRCS18 "AD/*.cxx" )
 set ( SRCS18
   AD/AliAnalysisTaskADQA.cxx
+  AD/AliAnalysisTaskADPilot.cxx
   )  
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19 
@@ -315,7 +316,9 @@ install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
               DESTINATION PWGPP/TRD)
 install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
 install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
-install(FILES AD/AddTaskADQA.C DESTINATION PWGPP/AD)
+install(FILES AD/AddTaskADQA.C 
+	      AD/AddTaskADPilot.C
+	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C 
  	      AD/trending/MakeTrendingADQA.C 
 	      DESTINATION PWGPP/AD/trending)
