@@ -100,41 +100,41 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   int rc = 0;
   //init ZMQ stuff
   fZMQcontext = zmq_ctx_new();
-  HLTMessage(Form("ctx create ptr %p errno %i",fZMQcontext,errno));
+  HLTMessage(Form("ctx create ptr %p errno %s",fZMQcontext,strerror(errno)));
   if (!fZMQcontext) return -1;
   fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
-  HLTMessage(Form("socket create ptr %p errno %i",fZMQout,errno));
+  HLTMessage(Form("socket create ptr %p errno %s",fZMQout,strerror(errno)));
   if (!fZMQout) return -1;
 
   //set socket options
   int lingerValue = 10;
   rc = zmq_setsockopt(fZMQout, ZMQ_LINGER, &lingerValue, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i errno=%i", lingerValue, rc, errno));
+  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i errno=%s", lingerValue, rc, strerror(errno)));
   int highWaterMarkSend = 100;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i errno=%i",highWaterMarkSend, rc, errno));
+  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i errno=%s",highWaterMarkSend, rc, strerror(errno)));
   int highWaterMarkRecv = 100;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i errno=%i",highWaterMarkRecv, rc, errno));
+  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i errno=%s",highWaterMarkRecv, rc, strerror(errno)));
   int rcvtimeo = 1000;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%i",rcvtimeo, rc, errno));
+  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%s",rcvtimeo, rc, strerror(errno)));
   int sndtimeo = 1000;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDTIMEO, &sndtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i",sndtimeo, rc, errno));
+  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%s",sndtimeo, rc, strerror(errno)));
 
   //connect or bind, after setting socket options
   if (fZMQconnectMode.EqualTo("connect")) 
   {
     HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
     rc = zmq_connect(fZMQout,fZMQendpoint.Data());
-    HLTMessage(Form("connect rc %i errno %i",rc,errno));
+    HLTMessage(Form("connect rc %i errno %s",rc,strerror(errno)));
   }
   else 
   {
     HLTMessage(Form("ZMQ bind to %s",fZMQendpoint.Data()));
     rc = zmq_bind(fZMQout,fZMQendpoint.Data());
-    HLTMessage(Form("bind rc=%i errno=%i",rc,errno));
+    HLTMessage(Form("bind rc=%i errno=%s",rc,strerror(errno)));
   }
   return 0;
 }
@@ -212,9 +212,13 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       fLastPushbackDelayTime=time.Get();
     }
 
-    //Bool_t nothingSelected=kTRUE; //if we select nothing, send a void reply
-    int iBlock=0;
-    const AliHLTComponentBlockData* inputBlock=NULL;
+    //first make a map of selected blocks, and identify the last one
+    //so we can properly mark the last block for multipart ZMQ sending later
+    int iBlock = 0;
+    const AliHLTComponentBlockData* inputBlock = NULL;
+    std::vector<bool> selectedBlocksMap(evtData.fBlockCnt, false);
+    int lastSelectedBlock = -1;
+    for (UInt_t i=0; i<evtData.fBlockCnt; i++) selectedBlocksMap[i] = false;
     for (inputBlock=GetFirstInputBlock();
         inputBlock!=NULL;
         inputBlock=GetNextInputBlock(), iBlock++) 
@@ -226,29 +230,47 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
           continue;
       }
 
-      //check if the block is selected
+      //check if the data type matches the request
       char blockTopic[kAliHLTComponentDataTypeTopicSize];
       DataType2Topic(inputBlock->fDataType, blockTopic);
-      if (!Topicncmp(requestTopic, blockTopic, requestTopicSize)) continue;
-      //nothingSelected=kFALSE;
+      if (Topicncmp(requestTopic, blockTopic, requestTopicSize))
+      {
+        selectedBlocksMap[iBlock] = true;
+        lastSelectedBlock = iBlock;
+      }
+    }
+
+    //send the selected blocks
+    iBlock = 0;
+    inputBlock = NULL;
+    for (inputBlock=GetFirstInputBlock();
+        inputBlock!=NULL;
+        inputBlock=GetNextInputBlock(), iBlock++) 
+    {
+      //check if the block is selected
+      if (!selectedBlocksMap[iBlock]) continue;
+
+      char blockTopic[kAliHLTComponentDataTypeTopicSize];
+      DataType2Topic(inputBlock->fDataType, blockTopic);
 
       //send:
       //  first part : AliHLTComponentDataType in string format
       //  second part: Payload
       rc = zmq_send(fZMQout, &blockTopic, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
-      HLTMessage(Form("send topic rc %i errno %i",rc,errno));
-      rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, ZMQ_SNDMORE);
-      HLTMessage(Form("send data rc %i errno %i",rc,errno));
+      HLTMessage(Form("send topic rc %i errno %s",rc,strerror(errno)));
+      rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (iBlock==lastSelectedBlock)?0:ZMQ_SNDMORE);
+      HLTMessage(Form("send data rc %i errno %s",rc,strerror(errno)));
     }
     
     //send an empty message if we really need a reply (ZMQ_REP mode)
-    //if (nothingSelected && fZMQsocketType==ZMQ_REP)
-    //{ 
+    //only in case no blocks were selected
+    if (lastSelectedBlock == -1 && fZMQsocketType==ZMQ_REP)
+    { 
       rc = zmq_send(fZMQout, 0, 0, ZMQ_SNDMORE);
-      HLTMessage(Form("send endframe rc %i errno %i",rc,errno));
+      HLTMessage(Form("send endframe rc %i errno %s",rc,strerror(errno)));
       rc = zmq_send(fZMQout, 0, 0, 0);
-      HLTMessage(Form("send endframe rc %i errno %i",rc,errno));
-    //}
+      HLTMessage(Form("send endframe rc %i errno %s",rc,strerror(errno)));
+    }
   }
 
   outputBlocks.clear();
