@@ -1176,7 +1176,7 @@ void AliTPCclusterer::FindClusters(AliTPCCalROC * noiseROC)
    
   fNcluster=0;
   fLoop=1;
-  Int_t crtime = Int_t((fParam->GetZLength(fSector)-fRecoParam->GetCtgRange()*fRx)/fZWidth-fParam->GetNTBinsL1()-5);
+  Int_t crtime = Int_t((fParam->GetZLength(fSector)-fRecoParam->GetCtgRange()*fRx)/fZWidth+fParam->GetNTBinsL1()-5);
   Float_t minMaxCutAbs       = fRecoParam->GetMinMaxCutAbs();
   Float_t minLeftRightCutAbs = fRecoParam->GetMinLeftRightCutAbs();
   Float_t minUpDownCutAbs    = fRecoParam->GetMinUpDownCutAbs();
