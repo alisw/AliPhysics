@@ -30,10 +30,10 @@ public:
   Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1) const;
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
   static Double_t   CalculateMIPvalue(TH1F * hist);
-  AliExternalTrackParam *MakeTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
-  AliExternalTrackParam *MakeCombinedTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
+  static AliExternalTrackParam *MakeTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
+  static AliExternalTrackParam *MakeCombinedTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
 
-  void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
+  static void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
   //
   void FillHistoPerformance(const AliExternalTrackParam *par0, const AliExternalTrackParam *par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, const AliExternalTrackParam *param0Combined, Int_t cross);
   static void MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstream, const TObjArray * corrArray, Int_t step, Int_t run);
