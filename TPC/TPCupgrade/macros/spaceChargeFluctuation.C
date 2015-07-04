@@ -10,7 +10,7 @@
 
   .x $HOME/NimStyle.C
   .x $HOME/rootlogon.C
-  .L $ALICE_ROOT/TPC/Upgrade/macros/spaceChargeFluctuation.C+ 
+  .L $ALICE_ROOT/TPC/TPCupgrade/macros/spaceChargeFluctuation.C+ 
 
  
   
