@@ -38,9 +38,11 @@ class AliNDLocalRegression : public TNamed {
   void SetStreamer( TTreeSRedirector *streamer){ fStreamer=streamer;}
   //
   // function to access the Local Regression from the TFormula
-  static void AddVisualCorrection(AliNDLocalRegression* corr, Int_t position);
+  static void AddVisualCorrection(AliNDLocalRegression* corr, Int_t position=0);
   static AliNDLocalRegression*  GetVisualCorrection(Int_t position);
   static AliNDLocalRegression*  GetVisualCorrection(const char *corName){return (fgVisualCorrection==NULL) ? 0: ( AliNDLocalRegression*) fgVisualCorrection->FindObject(corName);}
+  static Int_t GetVisualCorrectionIndex(const char *corName);
+  Int_t GetVisualCorrectionIndex(){return GetVisualCorrectionIndex(GetName());}
   static TObjArray*  GetVisualCorrections() { return fgVisualCorrection;}
   //
   static Double_t GetCorrND(Double_t index, Double_t par0);
@@ -49,6 +51,8 @@ class AliNDLocalRegression : public TNamed {
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1);
   static Double_t GetCorrND(Double_t index, Double_t par0,Double_t par1, Double_t par2);
   static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2);
+  static Double_t GetCorrND(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
+  static Double_t GetCorrNDError(Double_t index, Double_t par0,Double_t par1, Double_t par2, Double_t par3);
 
  protected:
   THn *fHistPoints;                   //   histogram local point distoribution

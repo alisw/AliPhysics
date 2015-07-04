@@ -193,6 +193,10 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
     AliError(TString::Format("Empty point list\t%s\t%s\n",formulaVal,selection).Data());
     return kFALSE; 
   }
+  if (tree->GetVal(0)==NULL || (tree->GetVal(1)==NULL)){
+    AliError(TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
+    return kFALSE; 
+  }
   TVectorD values(entriesVal,tree->GetVal(0));
   TVectorD errors(entriesVal,tree->GetVal(1));
   // 2.b) variables
@@ -305,7 +309,10 @@ Double_t AliNDLocalRegression::EvalError(Double_t *point ){
 }
 
 
-
+Int_t  AliNDLocalRegression::GetVisualCorrectionIndex(const char *corName){
+  //
+  return TMath::Hash(corName)%1000000;
+}
 
     
 void AliNDLocalRegression::AddVisualCorrection(AliNDLocalRegression* corr, Int_t position){
@@ -315,10 +322,16 @@ void AliNDLocalRegression::AddVisualCorrection(AliNDLocalRegression* corr, Int_t
   /// e.g correction partial derivatives
   ///
   /// NOTE - class is not owner of correction
+  if (position==0) {
+    position=GetVisualCorrectionIndex(corr->GetName());
+  }
   
-  if (!fgVisualCorrection) fgVisualCorrection=new TObjArray(10000);
+  if (!fgVisualCorrection) fgVisualCorrection=new TObjArray(1000000);
   if (position>=fgVisualCorrection->GetEntriesFast())
     fgVisualCorrection->Expand((position+10)*2);
+  if (fgVisualCorrection->At(position)!=NULL){
+    ::Error("AliNDLocalRegression::AddVisualCorrection","Correction %d already defined Old: %s New: %s",position,fgVisualCorrection->At(position)->GetName(), corr->GetName());
+  }
   fgVisualCorrection->AddAt(corr, position);
 }
 
@@ -377,3 +390,25 @@ Double_t AliNDLocalRegression::GetCorrNDError(Double_t index, Double_t par0, Dou
   Double_t par[3]={par0,par1,par2};
   return corr->EvalError(par);
 }
+
+
+
+Double_t AliNDLocalRegression::GetCorrND(Double_t index, Double_t par0, Double_t par1, Double_t par2, Double_t par3){
+  //
+  //
+  AliNDLocalRegression *corr = (AliNDLocalRegression*)fgVisualCorrection->At(index);
+  if (!corr) return 0;
+  Double_t par[4]={par0,par1,par2,par3};
+  return corr->Eval(par);
+}
+
+Double_t AliNDLocalRegression::GetCorrNDError(Double_t index, Double_t par0, Double_t par1, Double_t par2, Double_t par3){
+  //
+  //
+  AliNDLocalRegression *corr = (AliNDLocalRegression*)fgVisualCorrection->At(index);
+  if (!corr) return 0;
+  Double_t par[4]={par0,par1,par2,par3};
+  return corr->EvalError(par);
+}
+
+
