@@ -67,6 +67,10 @@ private:
   Float_t fMaxPedWidth; //Pedestal width cut
   Int_t fChargeChannelZoomMin; //Min for Zoom on charge
   Int_t fChargeChannelZoomMax; //Max for Zoom on charge
+  Float_t fTimeRatioBBZoomMin; //Min for Zoom time/BB ratio
+  Float_t fTimeRatioBBZoomMax; //Max for Zoom time/BB ratio
+  Float_t fTimeRatioBGZoomMin; //Min for Zoom time/BG ratio
+  Float_t fTimeRatioBGZoomMax; //Max for Zoom time/BG ratio
   Float_t fMaxNoTimeRate; 
   Float_t fMaxNoFlagRate;
   Float_t fMaxBBVariation;

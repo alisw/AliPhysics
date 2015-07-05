@@ -251,17 +251,24 @@ void AliADQADataMakerRec::InitESDs()
   TH2F * h4 = new TH2F("H2D_Charge_Channel", "ADC Charge per channel;Channel;Charge (ADC counts)",16, 0, 16, 1024, 0, 1024) ;  
   Add2ESDsList(h4, kChargeChannel, !expert, image)  ;  
   
-  TH2F * h5 = new TH2F("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",16,0,16, 3062, 0.976562, 300) ;  
+  TH2F * h5 = new TH2F("H2D_Time_Channel", "Time per channel;Channel;Time (ns)",16,0,16, 1638, -79.980469, 79.980469);  
   Add2ESDsList(h5, kTimeChannel, !expert, image)  ;  
   
-  TH1F * h6 = new TH1F("H1D_ADA_Time", "Mean ADA Time;Time (ns);Counts",1000, -100., 100.);
+  TH1F * h6 = new TH1F("H1D_ADA_Time", "Mean ADA Time;Time (ns);Counts",1638, -79.980469, 79.980469);
   Add2ESDsList(h6,kESDADATime, !expert, image); 
   
-  TH1F * h7 = new TH1F("H1D_ADC_Time", "Mean ADC Time;Time (ns);Counts",1000, -100., 100.);
+  TH1F * h7 = new TH1F("H1D_ADC_Time", "Mean ADC Time;Time (ns);Counts",1638, -79.980469, 79.980469);
   Add2ESDsList(h7,kESDADCTime, !expert, image); 
   
   TH1F * h8 = new TH1F("H1D_Diff_Time", "Diff Time ADA - ADC;Diff Time ADA - ADC (ns);Counts",1000, -200., 200.);
   Add2ESDsList(h8,kESDDiffTime, !expert, image); 
+  
+  TH2F * h9 = new TH2F("H2D_ADA_TimeVsCharge", "TimeVsCharge ADA;Time (ns); Charge(ADC counts);Counts",1638, -79.980469, 79.980469,5000,0,5000);
+  Add2ESDsList(h9,kESDADATimeVsCharge, !expert, image);
+  
+  TH2F * h10 = new TH2F("H2D_ADC_TimeVsCharge", "TimeVsCharge ADC;Time (ns); Charge(ADC counts);Counts",1638, -79.980469, 79.980469,5000,0,5000);
+  Add2ESDsList(h10,kESDADCTimeVsCharge, !expert, image);
+  
   //
   ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line	
 }
@@ -389,16 +396,18 @@ void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
 		  
     FillESDsData(kCellMultiADA,esdAD->GetNbPMADA());
     FillESDsData(kCellMultiADC,esdAD->GetNbPMADC());   
-    	
+	
     for(Int_t i=0;i<16;i++) {
       FillESDsData(kChargeChannel,(Float_t) i,(Float_t) esdAD->GetAdc(i));
       if (i < 8) {
 	if(esdAD->BBTriggerADC(i)) FillESDsData(kBBFlag,(Float_t) i);
 	if(esdAD->BGTriggerADC(i)) FillESDsData(kBGFlag,(Float_t) i);
+	FillESDsData(kESDADCTimeVsCharge,esdAD->GetTime(i),esdAD->GetAdc(i));
       }
       else {
 	if(esdAD->BBTriggerADA(i-8)) FillESDsData(kBBFlag,(Float_t) i);  
 	if(esdAD->BGTriggerADA(i-8)) FillESDsData(kBGFlag,(Float_t) i);
+	FillESDsData(kESDADATimeVsCharge,esdAD->GetTime(i),esdAD->GetAdc(i));
       }		  	
       Float_t time = (Float_t) esdAD->GetTime(i);
       FillESDsData(kTimeChannel,(Float_t) i,time);
@@ -440,8 +449,10 @@ void AliADQADataMakerRec::InitRaws()
   const Float_t kTdcTimeMin    =  fQAParam->GetTdcTimeMin();
   const Float_t kTdcTimeMax    = fQAParam->GetTdcTimeMax();
   const Int_t kNTdcTimeBinsFlag  = fQAParam->GetNTdcTimeBinsFlag();
-  const Float_t kTdcTimeMinFlag    =  fQAParam->GetTdcTimeMinFlag();
-  const Float_t kTdcTimeMaxFlag    = fQAParam->GetTdcTimeMaxFlag();
+  const Float_t kTdcTimeMinBBFlag    =  fQAParam->GetTdcTimeMinBBFlag();
+  const Float_t kTdcTimeMaxBBFlag    =  fQAParam->GetTdcTimeMaxBBFlag();
+  const Float_t kTdcTimeMinBGFlag    =  fQAParam->GetTdcTimeMinBGFlag();
+  const Float_t kTdcTimeMaxBGFlag    =  fQAParam->GetTdcTimeMaxBGFlag();
   const Int_t kNTdcTimeRatioBins  = fQAParam->GetNTdcTimeRatioBins();
   const Float_t kTdcTimeRatioMin    =  fQAParam->GetTdcTimeRatioMin();
   const Float_t kTdcTimeRatioMax    = fQAParam->GetTdcTimeRatioMax();
@@ -540,9 +551,11 @@ void AliADQADataMakerRec::InitRaws()
     // Creation of Charge EoI histograms 
     h2i = new TH2I(Form("H2I_ChargeEoI_Int%d",iInt), Form("Maximum charge per clock (Int%d);Channel;Charge [ADC counts]",iInt)
 		   ,kNChannelBins, kChannelMin, kChannelMax, 1025, 0, 1025);
-    Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), !expert, image, saveCorr); iHisto++;
-    
-  }	
+    Add2RawsList(h2i,(iInt == 0 ? kChargeEoIInt0 : kChargeEoIInt1), !expert, image, saveCorr); iHisto++;  
+  }
+  
+  h2i = new TH2I("H2I_ChargeSaturation", "Maximum charge per clock, both Ints;Channel;Charge [ADC counts]",kNChannelBins, kChannelMin, kChannelMax, 1025, 0, 1025);
+  Add2RawsList(h2i,kChargeSaturation, !expert, image, saveCorr); iHisto++;	
   
   // Creation of Time histograms 
   h2i = new TH2I("H2I_Width", "HPTDC Width;Channel;Width [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcWidthBins, kTdcWidthMin, kTdcWidthMax);
@@ -558,10 +571,10 @@ void AliADQADataMakerRec::InitRaws()
   h2i = new TH2I("H2I_HPTDCTime", "HPTDC Time;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBins, kTdcTimeMin, kTdcTimeMax);
   Add2RawsList(h2i,kHPTDCTime, !expert, image, saveCorr); iHisto++;
   
-  h2i = new TH2I("H2I_HPTDCTime_BB", "HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBinsFlag, kTdcTimeMinFlag, kTdcTimeMaxFlag);
+  h2i = new TH2I("H2I_HPTDCTime_BB", "HPTDC Time w/ BB Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBinsFlag, kTdcTimeMinBBFlag, kTdcTimeMaxBBFlag);
   Add2RawsList(h2i,kHPTDCTimeBB, !expert, image, !saveCorr); iHisto++;
 
-  h2i = new TH2I("H2I_HPTDCTime_BG", "HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBinsFlag, kTdcTimeMinFlag, kTdcTimeMaxFlag);
+  h2i = new TH2I("H2I_HPTDCTime_BG", "HPTDC Time w/ BG Flag condition;Channel;Leading Time [ns]",kNChannelBins, kChannelMin, kChannelMax, kNTdcTimeBinsFlag, kTdcTimeMinBGFlag, kTdcTimeMaxBGFlag);
   Add2RawsList(h2i,kHPTDCTimeBG, !expert, image, !saveCorr); iHisto++;
   
   //With wide binning for ratio
@@ -591,7 +604,7 @@ void AliADQADataMakerRec::InitRaws()
   h2d = new TH2F("H2D_MeanTimeCorr", "AD Mean time t_{A} vs t_{C};Mean time ADA [ns];Mean time ADC [ns]", kNMeanTimeCorrBins,kMeanTimeCorrMin,kMeanTimeCorrMax,kNMeanTimeCorrBins, kMeanTimeCorrMin,kMeanTimeCorrMax) ;  
   Add2RawsList(h2d,kMeanTimeCorr, expert, !image, !saveCorr);   iHisto++;
  
-  h2d = new TH2F("H2D_MeanTimeSumDiff", "AD Mean time t_{A} - t_{C} vs t_{A} + t_{C}; AD Mean time t_{A} - t_{C} [ns];AD Mean time t_{A} + t_{C} [ns]", 307, -150.000000, 149.804688, 410, 0.000000, 400.390625);  
+  h2d = new TH2F("H2D_MeanTimeSumDiff", "AD Mean time t_{A} - t_{C} vs t_{A} + t_{C}; AD Mean time t_{A} - t_{C} [ns];AD Mean time t_{A} + t_{C} [ns]", 307, -150.000000, 149.804688, 410, 200.0, 600.390625);  
   Add2RawsList(h2d,kMeanTimeSumDiff, expert, !image, !saveCorr);   iHisto++;
  
   //Slewing histograms
@@ -882,6 +895,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       FillRawsData(kChargeEoI,offlineCh,adc[offlineCh]);
 
       FillRawsData((integrator[offlineCh] == 0 ? kChargeEoIInt0 : kChargeEoIInt1),offlineCh,charge);
+      FillRawsData(kChargeSaturation,offlineCh,charge);
 
       Float_t sigma = fCalibData->GetSigma(offlineCh+16*integrator[offlineCh]);
 		  
@@ -1054,16 +1068,17 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     FillRawsData(kChargeAD,chargeADA + chargeADC);
     
     //Decisions
+    Int_t windowOffset = (fCalibData->GetTriggerCountOffset(0) - 3242)*25;
     Int_t ADADecision=0;
     Int_t ADCDecision=0; 
 
-    if(timeADA > (fADADist + fRecoParam->GetTimeWindowBBALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBBAUp())) ADADecision=1;
-    else if(timeADA > (fADADist + fRecoParam->GetTimeWindowBGALow()) && timeADA < (fADADist + fRecoParam->GetTimeWindowBGAUp())) ADADecision=2;
+    if(timeADA > (fADADist - windowOffset + 5*fRecoParam->GetTimeWindowBBALow()) && timeADA < (fADADist - windowOffset  + 5*fRecoParam->GetTimeWindowBBAUp())) ADADecision=1;
+    else if(timeADA > (-fADADist - windowOffset + 5*fRecoParam->GetTimeWindowBGALow()) && timeADA < (-fADADist - windowOffset + 5*fRecoParam->GetTimeWindowBGAUp())) ADADecision=2;
     else if(timeADA>-1024.+1.e-6) ADADecision=3;
     else ADADecision=0;
     
-    if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBBCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBBCUp())) ADCDecision=1;
-    else if(timeADC > (fADCDist + fRecoParam->GetTimeWindowBGCLow()) && timeADC < (fADCDist + fRecoParam->GetTimeWindowBGCUp())) ADCDecision=2;
+    if(timeADC > (fADCDist - windowOffset + 5*fRecoParam->GetTimeWindowBBCLow()) && timeADC < (fADCDist - windowOffset + 5*fRecoParam->GetTimeWindowBBCUp())) ADCDecision=1;
+    else if(timeADC > (-fADCDist - windowOffset + 5*fRecoParam->GetTimeWindowBGCLow()) && timeADC < (-fADCDist - windowOffset + 5*fRecoParam->GetTimeWindowBGCUp())) ADCDecision=2;
     else if(timeADC>-1024.+1.e-6) ADCDecision=3;
     else ADCDecision=0;
 

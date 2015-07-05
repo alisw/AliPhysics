@@ -63,6 +63,10 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fMaxPedWidth(1.5),
   fChargeChannelZoomMin(0),
   fChargeChannelZoomMax(50),
+  fTimeRatioBBZoomMin(170),
+  fTimeRatioBBZoomMax(210),
+  fTimeRatioBGZoomMin(50),
+  fTimeRatioBGZoomMax(90),
   fMaxNoTimeRate(10e-3),
   fMaxNoFlagRate(10e-2),
   fMaxBBVariation(5),
@@ -78,6 +82,10 @@ AliADQAChecker::AliADQAChecker() : AliQACheckerBase("AD","AD Quality Assurance D
   fMaxPedWidth = fQAParam->GetMaxPedWidth();
   fChargeChannelZoomMin = fQAParam->GetChargeChannelZoomMin();
   fChargeChannelZoomMax = fQAParam->GetChargeChannelZoomMax();
+  fTimeRatioBBZoomMin =  fQAParam->GetTdcTimeMinBBFlag();
+  fTimeRatioBBZoomMax =  fQAParam->GetTdcTimeMaxBBFlag();
+  fTimeRatioBGZoomMin =  fQAParam->GetTdcTimeMinBGFlag();
+  fTimeRatioBGZoomMax =  fQAParam->GetTdcTimeMaxBGFlag();
   fMaxNoTimeRate = fQAParam->GetMaxNoTimeRate();
   fMaxNoFlagRate = fQAParam->GetMaxNoFlagRate();
   fMaxBBVariation = fQAParam->GetMaxBBVariation();
@@ -398,20 +406,23 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
      		if(funcName.Contains("TPaveText")){
       			TPaveText *QAbox = (TPaveText*)hNEventsBBFlag->GetListOfFunctions()->At(i);
       			
+			TH1F *histoRate = (TH1F*)hNEventsBBFlag->Clone("histoRate");
+			histoRate->Sumw2();
+			if(nEvents != 0) histoRate->Scale(1/nEvents);
+			
 			Float_t meanRateADA  = 0;
 			Float_t meanRateADC  = 0;
 			for(Int_t i=1; i<=8; i++){
-				meanRateADC += hNEventsBBFlag->GetBinContent(i);
-				meanRateADA += hNEventsBBFlag->GetBinContent(i+8);
+				meanRateADC += histoRate->GetBinContent(i);
+				meanRateADA += histoRate->GetBinContent(i+8);
 				}
 			meanRateADA = meanRateADA/8;
 			meanRateADC = meanRateADC/8;
 			Bool_t highVar = kFALSE;
 			
 			for(Int_t i=1; i<=8; i++){
-				if(hNEventsBBFlag->GetBinError(i) == 0 || hNEventsBBFlag->GetBinError(i+8) == 0) continue;
-				if(((TMath::Abs(hNEventsBBFlag->GetBinContent(i)-meanRateADC))>fMaxBBVariation) || 
-				   ((TMath::Abs(hNEventsBBFlag->GetBinContent(i+8)-meanRateADA))>fMaxBBVariation)){
+				if(((TMath::Abs(histoRate->GetBinContent(i)-meanRateADC))>fMaxBBVariation) || 
+				   ((TMath::Abs(histoRate->GetBinContent(i+8)-meanRateADA))>fMaxBBVariation)){
 					test = 0.7;
 					highVar = kTRUE;
 					}
@@ -440,20 +451,23 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
      		if(funcName.Contains("TPaveText")){
       			TPaveText *QAbox = (TPaveText*)hNEventsBGFlag->GetListOfFunctions()->At(i);
       			
+			TH1F *histoRate = (TH1F*)hNEventsBGFlag->Clone("histoRate");
+			histoRate->Sumw2();
+			if(nEvents != 0) histoRate->Scale(1/nEvents);
+			
 			Float_t meanRateADA  = 0;
 			Float_t meanRateADC  = 0;
 			for(Int_t i=1; i<=8; i++){
-				meanRateADC += hNEventsBGFlag->GetBinContent(i);
-				meanRateADA += hNEventsBGFlag->GetBinContent(i+8);
+				meanRateADC += histoRate->GetBinContent(i);
+				meanRateADA += histoRate->GetBinContent(i+8);
 				}
 			meanRateADA = meanRateADA/8;
 			meanRateADC = meanRateADC/8;
 			Bool_t highVar = kFALSE;
 			
 			for(Int_t i=1; i<=8; i++){
-				if(hNEventsBGFlag->GetBinError(i) == 0 || hNEventsBGFlag->GetBinError(i+8) == 0) continue;
-				if(((TMath::Abs(hNEventsBGFlag->GetBinContent(i)-meanRateADC))>fMaxBGVariation) || 
-				   ((TMath::Abs(hNEventsBGFlag->GetBinContent(i+8)-meanRateADA))>fMaxBGVariation)){
+				if(((TMath::Abs(histoRate->GetBinContent(i)-meanRateADC))>fMaxBGVariation) || 
+				   ((TMath::Abs(histoRate->GetBinContent(i+8)-meanRateADA))>fMaxBGVariation)){
 					test = 0.7;
 					highVar = kTRUE;
 					}
@@ -617,7 +631,80 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
 				}		
     			}
 		}
-    	}  
+    	}
+    TH2F *hChargeSaturation = (TH2F*)list->At(AliADQADataMakerRec::kChargeSaturation);
+    if (!hChargeSaturation) {
+      AliWarning("ChargeSaturation histogram is not found");
+    }
+    else {
+    	if(hChargeSaturation->GetListOfFunctions()->GetEntries()<1) hChargeSaturation->GetListOfFunctions()->Add(new TPaveText(0.4,0.53,0.85,0.85,"NDC"));
+    	for(Int_t i=0; i<hChargeSaturation->GetListOfFunctions()->GetEntries(); i++){
+     		TString funcName = hChargeSaturation->GetListOfFunctions()->At(i)->ClassName();
+     		if(funcName.Contains("TPaveText")){
+      			TPaveText *QAbox = (TPaveText*)hChargeSaturation->GetListOfFunctions()->At(i);
+      			QAbox->Clear();
+
+    			TH1D *hChargeSlice;
+			
+			TString messageText = " "; 
+			TString satTextADA = " A-side = ";
+			TString satTextADC = " C-side = ";
+			Char_t satValue[5];
+			Bool_t	medSat = kFALSE; 
+			Bool_t	highSat = kFALSE;
+			Bool_t	hugeSat = kFALSE;
+			
+    			for(Int_t i=0; i<2; i++){
+      				hChargeSlice = hChargeSaturation->ProjectionY("hChargeSlice",8*i+1,8*i+9);
+				Double_t saturation;
+				if(hChargeSlice->Integral() != 0) saturation = hChargeSlice->Integral(1000,1025)/hChargeSlice->Integral();
+				sprintf(satValue, "%1.3f", saturation);
+				if(i == 0) satTextADC +=satValue; 
+				if(i == 1) satTextADA +=satValue;
+				if(saturation > fSatMed && saturation < fSatHigh){
+					test = 0.7;
+					medSat = kTRUE;
+					}
+				if(saturation > fSatHigh && saturation < fSatHuge){
+					test = 0.3;
+					highSat = kTRUE;
+					}
+				if(saturation > fSatHuge){
+					test = 0.1;
+					hugeSat = kTRUE;
+					}
+				}
+			if(!medSat && !highSat && !hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kGreen);
+        			QAbox->AddText("Saturation OK");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(medSat && !highSat && !hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kYellow);
+        			QAbox->AddText("Medium Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(highSat && !hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kOrange);
+        			QAbox->AddText("High Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}
+			if(hugeSat){
+				QAbox->Clear();
+        			QAbox->SetFillColor(kRed);
+        			QAbox->AddText("Very High Saturation");
+				QAbox->AddText(satTextADA.Data());
+				QAbox->AddText(satTextADC.Data());
+				}		
+    			}
+		}
+    	}    
     TH2F *hBBFlagVsClock = (TH2F*)list->At(AliADQADataMakerRec::kBBFlagVsClock);
     if (!hBBFlagVsClock) {
       AliWarning("BBFlagVsClock histogram is not found");
@@ -637,7 +724,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     			for(Int_t i=0; i<16; i++){
       				hClockSlice = hBBFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
 				Double_t center = hClockSlice->GetBinContent(11);
-				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
+				Double_t around = hClockSlice->Integral(5,10) + hClockSlice->Integral(12,17);
 				if(center == 0){
 					if(i>7)notSynchADA = kTRUE;
 					if(i<8)notSynchADC = kTRUE;
@@ -685,7 +772,7 @@ Double_t AliADQAChecker::CheckRaws(TObjArray * list) const
     			for(Int_t i=0; i<16; i++){
       				hClockSlice = hBGFlagVsClock->ProjectionY("hClockSlice",i+1,i+1);
 				Double_t center = hClockSlice->GetBinContent(11);
-				Double_t around = hClockSlice->Integral(0,10) + hClockSlice->Integral(12,21);
+				Double_t around = hClockSlice->Integral(5,10) + hClockSlice->Integral(12,14);
 				if(center == 0){
 					if(i>7)notSynchADA = kTRUE;
 					if(i<8)notSynchADC = kTRUE;
@@ -1023,7 +1110,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
     	pClockFg->Divide(4, 1);
     	pCoinc->Divide(4, 1);
     	pPed->Divide(2, 1);
-    	pMaxCh->Divide(2, 1);
+    	pMaxCh->Divide(3, 1);
 	pMeanTime->Divide(4, 1);
 	pDecision->Divide(3, 1);
 	
@@ -1132,9 +1219,12 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kHPTDCTimeRebin + iHist);
 		histoRatio = (TH1*)histo->Clone("histoRatio");
 		histoRatio->Divide(histoDenominator);
+		if(iHist == 1)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
+		if(iHist == 2)histoRatio->GetYaxis()->SetRangeUser(fTimeRatioBGZoomMin,fTimeRatioBGZoomMax);
 		histoRatio->DrawCopy("COLZ");
 		}
 	pad = pTimeRatio->cd(4);
+	//gPad->SetLogy();
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kNEventsBBFlag);
 	histoBlue = (TH1*)histo->Clone("histoBlue");
 	histoBlue->Sumw2();
@@ -1198,7 +1288,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 		histo->DrawCopy("COLZ");
 		}
 	//Saturation monitoring pad
-	for(Int_t iHist = 0; iHist<2; iHist++){
+	for(Int_t iHist = 0; iHist<3; iHist++){
 		pad = pMaxCh->cd(iHist+1);
 		gPad->SetLogz();
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeEoIInt0+iHist);
@@ -1234,14 +1324,14 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	gPad->SetLogy();
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADA);
 	histoBlue = (TH1*)histo->Clone("histoBlue");
-	histoBlue->GetXaxis()->SetRangeUser(50,90);
+	histoBlue->GetXaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
 	histoBlue->SetTitle("Mean time ADA");
 	histoBlue->DrawCopy();
 	pad = pDecision->cd(3);
 	gPad->SetLogy();
 	histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kMeanTimeADC);
 	histoRed = (TH1*)histo->Clone("histoRed");
-	histoRed->GetXaxis()->SetRangeUser(50,90);
+	histoRed->GetXaxis()->SetRangeUser(fTimeRatioBBZoomMin,fTimeRatioBBZoomMax);
 	histoRed->SetTitle("Mean time ADC");
 	histoRed->DrawCopy();
 	pad = pDecision->cd(2);
@@ -1276,8 +1366,8 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	histo->DrawCopy("colz");
     }
     
-    //fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
-    fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
+    fImage[esIndex]->SaveAs(Form("QAsummary_%d_%d.png",AliQAChecker::Instance()->GetRunNumber(),esIndex));
+    //fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps"); 
   }
 }
  

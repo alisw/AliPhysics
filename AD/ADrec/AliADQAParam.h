@@ -30,8 +30,10 @@ class AliADQAParam : public TNamed
   void SetTdcTimeMax (Float_t val) { fTdcTimeMax = val; }
   //HPTDC time flag
   void SetNTdcTimeBinsFlag (Int_t val) { fNTdcTimeBinsFlag = val; }
-  void SetTdcTimeMinFlag (Float_t val) { fTdcTimeMinFlag = val; }
-  void SetTdcTimeMaxFlag (Float_t val) { fTdcTimeMaxFlag = val; }
+  void SetTdcTimeMinBBFlag (Float_t val) { fTdcTimeMinBBFlag = val; }
+  void SetTdcTimeMaxBBFlag (Float_t val) { fTdcTimeMaxBBFlag = val; }
+  void SetTdcTimeMinBGFlag (Float_t val) { fTdcTimeMinBGFlag = val; }
+  void SetTdcTimeMaxBGFlag (Float_t val) { fTdcTimeMaxBGFlag = val; }
   //HPTDC TimeRatio
   void SetNTdcTimeRatioBins (Int_t val) { fNTdcTimeRatioBins = val; }
   void SetTdcTimeRatioMin (Float_t val) { fTdcTimeRatioMin = val; }
@@ -89,8 +91,10 @@ class AliADQAParam : public TNamed
   Float_t GetTdcTimeMax() const { return fTdcTimeMax; }
   //HPTDC time with flag
   Int_t GetNTdcTimeBinsFlag() const { return fNTdcTimeBinsFlag; }
-  Float_t GetTdcTimeMinFlag() const { return fTdcTimeMinFlag; }
-  Float_t GetTdcTimeMaxFlag() const { return fTdcTimeMaxFlag; }
+  Float_t GetTdcTimeMinBBFlag() const { return fTdcTimeMinBBFlag; }
+  Float_t GetTdcTimeMaxBBFlag() const { return fTdcTimeMaxBBFlag; }
+  Float_t GetTdcTimeMinBGFlag() const { return fTdcTimeMinBGFlag; }
+  Float_t GetTdcTimeMaxBGFlag() const { return fTdcTimeMaxBGFlag; }
   //HPTDC TimeRatio
   Int_t GetNTdcTimeRatioBins() const { return fNTdcTimeRatioBins; }
   Float_t GetTdcTimeRatioMin() const { return fTdcTimeRatioMin; }
@@ -149,8 +153,10 @@ class AliADQAParam : public TNamed
   Float_t fTdcTimeMin;	
   Float_t fTdcTimeMax;
   Int_t	fNTdcTimeBinsFlag;	//Time bining with BB/BG flag
-  Float_t fTdcTimeMinFlag;	
-  Float_t fTdcTimeMaxFlag;
+  Float_t fTdcTimeMinBBFlag;	
+  Float_t fTdcTimeMaxBBFlag;
+  Float_t fTdcTimeMinBGFlag;	
+  Float_t fTdcTimeMaxBGFlag;
   Int_t	fNTdcTimeRatioBins;	//Time ratio w_flag/All bining
   Float_t fTdcTimeRatioMin;	
   Float_t fTdcTimeRatioMax;

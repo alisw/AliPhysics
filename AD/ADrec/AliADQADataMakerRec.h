@@ -37,7 +37,7 @@ public:
 		   kChargeVsClockInt0,kChargeVsClockInt1,kMaxChargeClock,
 		   kNBBCoincADA,kNBBCoincADC,kNBGCoincADA,kNBGCoincADC,
 		   kPedestalDiffInt0,kPedestalDiffInt1,
-		   kChargeEoIInt0,kChargeEoIInt1,
+		   kChargeEoIInt0,kChargeEoIInt1,kChargeSaturation,
 		   kNBBCoincCorr,kNBGCoincCorr,
 		   kTriggers,kDecisions,
 		   kMeanTimeADA,kMeanTimeADC,kMeanTimeDiff,kMeanTimeCorr,kMeanTimeSumDiff,
@@ -59,7 +59,7 @@ public:
 		   
   enum HESDType_t {kCellMultiADA,kCellMultiADC,
 		   kBBFlag,kBGFlag,kChargeChannel,kTimeChannel,
-		   kESDADATime,kESDADCTime,kESDDiffTime};
+		   kESDADATime,kESDADCTime,kESDDiffTime,kESDADATimeVsCharge,kESDADCTimeVsCharge};
 	
 public:
   AliADQADataMakerRec() ;            // constructor
