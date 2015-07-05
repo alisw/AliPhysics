@@ -1487,7 +1487,7 @@ Double_t AliESDtrack::GetTOFExpTDiff(Double_t b, Bool_t pidTPConly) const
       2./curv*TMath::ASin(kRTOF*curv/2.)*TMath::Sqrt(1.+GetTgl()*GetTgl()) : kRTOF;
     tdif -= path/kCSpeed*TMath::Sqrt(1.+m*m/(p*p));
   }
-  return tdif;
+  return tdif*kps2ns;
 }
 
 //______________________________________________________________________________

@@ -248,8 +248,11 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
 
     // use TOF info about bunch crossing
     if(fSelectOnTOFBunchCrossing) {
-      int bc = track->GetTOFBunchCrossing(fFieldkG);
-      if (bc>AliVTrack::kTOFBCNA) bc /= bcRound;
+      double tdiff = track->GetTOFExpTDiff(fFieldkG);
+      int bc = TMath::Nint(tdiff/25);
+      // use only values with good margin
+      if (bc<=AliVTrack::kTOFBCNA || TMath::Abs(tdiff/25.-bc)>0.4) bc = AliVTrack::kTOFBCNA;
+      else bc /= bcRound;
       t->SetUniqueID(UInt_t(bc + kTOFBCShift));
     }
     //
