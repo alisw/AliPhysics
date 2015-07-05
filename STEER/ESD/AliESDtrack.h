@@ -90,6 +90,8 @@ public:
   Double_t GetIntegratedTimesOld(Int_t i) const {if(fTrackTime) return fTrackTime[i]; else return 0;};
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
+  Double_t GetTOFExpTDiff(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
+  //
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
   Double_t GetMassForTracking() const;
   void     SetPIDForTracking(Int_t pid) {fPIDForTracking = pid;}
