@@ -214,15 +214,13 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
 
     //first make a map of selected blocks, and identify the last one
     //so we can properly mark the last block for multipart ZMQ sending later
-    int iBlock = 0;
     const AliHLTComponentBlockData* inputBlock = NULL;
-    std::vector<bool> selectedBlocksMap(evtData.fBlockCnt, false);
-    int lastSelectedBlock = -1;
-    for (UInt_t i=0; i<evtData.fBlockCnt; i++) selectedBlocksMap[i] = false;
-    for (inputBlock=GetFirstInputBlock();
-        inputBlock!=NULL;
-        inputBlock=GetNextInputBlock(), iBlock++) 
+    std::vector<int> selectedBlockIdx;
+    for (int iBlock = 0;
+         iBlock < evtData.fBlockCnt;
+         iBlock++) 
     {
+      inputBlock = &blocks[iBlock];
       //don't include provate data unless explicitly asked to
       if (!fIncludePrivateBlocks)
       {
@@ -235,21 +233,16 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       DataType2Topic(inputBlock->fDataType, blockTopic);
       if (Topicncmp(requestTopic, blockTopic, requestTopicSize))
       {
-        selectedBlocksMap[iBlock] = true;
-        lastSelectedBlock = iBlock;
+        selectedBlockIdx.push_back(iBlock);
       }
     }
 
     //send the selected blocks
-    iBlock = 0;
-    inputBlock = NULL;
-    for (inputBlock=GetFirstInputBlock();
-        inputBlock!=NULL;
-        inputBlock=GetNextInputBlock(), iBlock++) 
+    for (int iSelectedBlock = 0;
+         iSelectedBlock < selectedBlockIdx.size();
+         iSelectedBlock++) 
     {
-      //check if the block is selected
-      if (!selectedBlocksMap[iBlock]) continue;
-
+      inputBlock = &blocks[selectedBlockIdx[iSelectedBlock]];
       char blockTopic[kAliHLTComponentDataTypeTopicSize];
       DataType2Topic(inputBlock->fDataType, blockTopic);
 
@@ -258,13 +251,13 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       //  second part: Payload
       rc = zmq_send(fZMQout, &blockTopic, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
       HLTMessage(Form("send topic rc %i errno %s",rc,strerror(errno)));
-      rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (iBlock==lastSelectedBlock)?0:ZMQ_SNDMORE);
+      rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (iSelectedBlock == (selectedBlockIdx.size()-1))?0:ZMQ_SNDMORE);
       HLTMessage(Form("send data rc %i errno %s",rc,strerror(errno)));
     }
     
     //send an empty message if we really need a reply (ZMQ_REP mode)
     //only in case no blocks were selected
-    if (lastSelectedBlock == -1 && fZMQsocketType==ZMQ_REP)
+    if (selectedBlockIdx.size() == 0 && fZMQsocketType==ZMQ_REP)
     { 
       rc = zmq_send(fZMQout, 0, 0, ZMQ_SNDMORE);
       HLTMessage(Form("send endframe rc %i errno %s",rc,strerror(errno)));
