@@ -170,6 +170,7 @@ public:
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
+  virtual Double_t GetTOFExpTDiff(Double_t b=0, Bool_t pidTPConly=kTRUE) const {return kTOFBCNA*25;}
   virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
 
   //---------------------------------------------------------------------------
