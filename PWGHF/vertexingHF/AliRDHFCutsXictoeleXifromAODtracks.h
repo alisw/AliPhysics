@@ -69,6 +69,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   void SetProdXiCosineOfPoiningAngleMin(Double_t a){fProdXiCosineOfPoiningAngleMin=a;}
   void SetProdV0CosineOfPoiningAngleXiMin(Double_t a){fProdV0CosineOfPoiningAngleXiMin=a;}
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
+  void SetProdCascEtaRange(Double_t a, Double_t b){fProdCascEtaMin=a;fProdCascEtaMax=b;}
+  void SetProdCascRapRange(Double_t a, Double_t b){fProdCascRapMin=a;fProdCascRapMax=b;}
   void SetProdRoughMassTol(Double_t a){fProdRoughMassTol=a;}
   void SetProdRoughPtMin(Double_t a){fProdRoughPtMin=a;}
   
@@ -94,6 +96,8 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughMassTol(){return fProdRoughMassTol;}
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
+  void GetProdCascEtaRange(Double_t &a, Double_t &b){a=fProdCascEtaMin;b=fProdCascEtaMax;}
+  void GetProdCascRapRange(Double_t &a, Double_t &b){a=fProdCascRapMin;b=fProdCascRapMax;}
 
   Bool_t GetUseCascadePID(){return fUseCascadePID;}
   void SetUseCascadePID(Bool_t a){fUseCascadePID=a;}
@@ -149,6 +153,10 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t fProdXiCosineOfPoiningAngleMin;  //Min Xi cos pointing angle  to PV
   Double_t fProdV0CosineOfPoiningAngleXiMin;  //Min V0 cos pointing angle  to Xi vertex
   Double_t fProdCascNTPCClustersMin;         //Minimum number of TPC clusters
+	Double_t fProdCascEtaMin; //Minimum eta of cascade
+	Double_t fProdCascEtaMax; //Maximum eta of cascade
+	Double_t fProdCascRapMin; //Minimum rapidity of cascade
+	Double_t fProdCascRapMax; //Maximum rapidity of cascade
   Double_t fProdRoughMassTol;       //Mass cut for Lc used before object creation
   Double_t fProdRoughPtMin;         //pT cut for Lc used before object creation
 
@@ -164,7 +172,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	Double_t fSigmaElectronTOFMax;//nSigma to exclude for Kaon band
   
 
-  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,1);
+  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,2);
 };
 
 #endif

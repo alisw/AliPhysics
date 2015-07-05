@@ -69,6 +69,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetProdDcaV0PiToPrimVertexMin(Double_t a){fProdDcaV0PiToPrimVertexMin=a;}
   void SetProdV0ProperDecayLengthMax(Double_t a){fProdV0ProperDecayLengthMax=a;}
   void SetProdMassRejK0s(Double_t a){fProdMassRejK0s=a;}
+  void SetProdV0EtaRange(Double_t a, Double_t b){fProdV0EtaMin=a;fProdV0EtaMax=b;}
+  void SetProdV0RapRange(Double_t a, Double_t b){fProdV0RapMin=a;fProdV0RapMax=b;}
   
   void SetProdRoughMassTol(Double_t a){fProdRoughMassTol=a;}
   void SetProdRoughPtMin(Double_t a){fProdRoughPtMin=a;}
@@ -91,6 +93,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Double_t GetProdDcaV0PiToPrimVertexMin(){return fProdDcaV0PiToPrimVertexMin;}
   Double_t GetProdV0ProperDecayLengthMax(){return fProdV0ProperDecayLengthMax;}
   Double_t GetProdMassRejK0s(){return fProdMassRejK0s;}
+  void GetProdV0EtaRange(Double_t &a, Double_t &b){a=fProdV0EtaMin;b=fProdV0EtaMax;}
+  void GetProdV0RapRange(Double_t &a, Double_t &b){a=fProdV0RapMin;b=fProdV0RapMax;}
 
   Double_t GetProdRoughMassTol(){return fProdRoughMassTol;}
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
@@ -148,6 +152,10 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Double_t fProdDcaV0PiToPrimVertexMin;  //Min Dca between v0-pion and PV 
   Double_t fProdV0ProperDecayLengthMax;        //mL/p of cascade
   Double_t fProdMassRejK0s;          //Rejection range of Omega mass from PDG value
+	Double_t fProdV0EtaMin; //Minimum eta of cascade
+	Double_t fProdV0EtaMax; //Maximum eta of cascade
+	Double_t fProdV0RapMin; //Minimum rapidity of cascade
+	Double_t fProdV0RapMax; //Maximum rapidity of cascade
   Double_t fProdRoughMassTol;       //Mass cut for Lc used before object creation
   Double_t fProdRoughPtMin;         //pT cut for Lc used before object creation
 
@@ -162,7 +170,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fSigmaElectronTOFMin;//nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTOFMax;//nSigma to exclude for Kaon band
 
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,1);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,2);
 };
 
 #endif

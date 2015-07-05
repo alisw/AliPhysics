@@ -75,8 +75,12 @@ AliRDHFCuts(name),
   fProdXiCosineOfPoiningAngleMin(-1.),
   fProdV0CosineOfPoiningAngleXiMin(-1.),
   fProdCascNTPCClustersMin(0.0),
-fProdRoughMassTol(0.25),
-fProdRoughPtMin(0.0),
+  fProdCascEtaMin(-9999.),
+  fProdCascEtaMax(9999.),
+  fProdCascRapMin(-9999.),
+  fProdCascRapMax(9999.),
+	fProdRoughMassTol(0.25),
+	fProdRoughPtMin(0.0),
 	fExcludePionTPC(kFALSE),
 	fExcludeProtonTPC(kFALSE),
 	fExcludeKaonTPC(kFALSE),
@@ -142,6 +146,10 @@ AliRDHFCutsOmegactoeleOmegafromAODtracks::AliRDHFCutsOmegactoeleOmegafromAODtrac
   fProdXiCosineOfPoiningAngleMin(source.fProdXiCosineOfPoiningAngleMin),
   fProdV0CosineOfPoiningAngleXiMin(source.fProdV0CosineOfPoiningAngleXiMin),
   fProdCascNTPCClustersMin(source.fProdCascNTPCClustersMin),
+  fProdCascEtaMin(source.fProdCascEtaMin),
+  fProdCascEtaMax(source.fProdCascEtaMax),
+  fProdCascRapMin(source.fProdCascRapMin),
+  fProdCascRapMax(source.fProdCascRapMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin),
 	fExcludePionTPC(source.fExcludePionTPC),
@@ -196,6 +204,10 @@ AliRDHFCutsOmegactoeleOmegafromAODtracks &AliRDHFCutsOmegactoeleOmegafromAODtrac
   fProdXiCosineOfPoiningAngleMin = source.fProdXiCosineOfPoiningAngleMin;
   fProdV0CosineOfPoiningAngleXiMin = source.fProdV0CosineOfPoiningAngleXiMin;
   fProdCascNTPCClustersMin = source.fProdCascNTPCClustersMin;
+  fProdCascEtaMin = source.fProdCascEtaMin;
+  fProdCascEtaMax = source.fProdCascEtaMax;
+  fProdCascRapMin = source.fProdCascRapMin;
+  fProdCascRapMax = source.fProdCascRapMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
 	fExcludePionTPC = source.fExcludePionTPC;
@@ -634,6 +646,12 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
       if(isPion<1) return kFALSE;
     }
   }
+
+	Double_t RapOmega = casc->RapOmega();
+	if(RapOmega<fProdCascRapMin || RapOmega>fProdCascRapMax) return kFALSE;
+
+	Double_t EtaOmega = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
+	if(EtaOmega<fProdCascEtaMin || EtaOmega>fProdCascEtaMax) return kFALSE;
 
   
   return kTRUE;

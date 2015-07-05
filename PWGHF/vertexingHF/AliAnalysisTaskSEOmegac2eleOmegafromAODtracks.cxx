@@ -134,14 +134,33 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fHistoEleOmegaMassvsElePtMCGen(0),
   fHistoElePtMCS(0),
   fHistoElePtMCGen(0),
+  fHistoElePtvsEtaRS(0),
+  fHistoElePtvsEtaWS(0),
+  fHistoElePtvsEtaRSMix(0),
+  fHistoElePtvsEtaWSMix(0),
+  fHistoElePtvsEtaMCS(0),
+  fHistoElePtvsEtaMCGen(0),
+  fHistoElePtvsOmegaPtRS(0),
+  fHistoElePtvsOmegaPtWS(0),
+  fHistoElePtvsOmegaPtRSMix(0),
+  fHistoElePtvsOmegaPtWSMix(0),
+  fHistoElePtvsOmegaPtMCS(0),
+  fHistoElePtvsOmegaPtMCGen(0),
   fHistoBachPt(0),
+  fHistoBachPtMCS(0),
+  fHistoBachPtMCGen(0),
   fHistod0Bach(0),
   fHistoXiMassvsPt(0),
   fHistoOmegaMassvsPt(0),
+  fHistoOmegaMassvsPtMCS(0),
+  fHistoOmegaMassvsPtMCGen(0),
   fHistoElectronTPCPID(0),
   fHistoElectronTOFPID(0),
   fHistoElectronTPCSelPID(0),
   fHistoElectronTOFSelPID(0),
+  fHistoElectronTPCPIDSelTOF(0),
+  fHistoElectronTPCPIDSelTOFSmallEta(0),
+  fHistoElectronTPCPIDSelTOFLargeEta(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -211,14 +230,33 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fHistoEleOmegaMassvsElePtMCGen(0),
   fHistoElePtMCS(0),
   fHistoElePtMCGen(0),
+  fHistoElePtvsEtaRS(0),
+  fHistoElePtvsEtaWS(0),
+  fHistoElePtvsEtaRSMix(0),
+  fHistoElePtvsEtaWSMix(0),
+  fHistoElePtvsEtaMCS(0),
+  fHistoElePtvsEtaMCGen(0),
+  fHistoElePtvsOmegaPtRS(0),
+  fHistoElePtvsOmegaPtWS(0),
+  fHistoElePtvsOmegaPtRSMix(0),
+  fHistoElePtvsOmegaPtWSMix(0),
+  fHistoElePtvsOmegaPtMCS(0),
+  fHistoElePtvsOmegaPtMCGen(0),
   fHistoBachPt(0),
+  fHistoBachPtMCS(0),
+  fHistoBachPtMCGen(0),
   fHistod0Bach(0),
   fHistoXiMassvsPt(0),
   fHistoOmegaMassvsPt(0),
+  fHistoOmegaMassvsPtMCS(0),
+  fHistoOmegaMassvsPtMCGen(0),
   fHistoElectronTPCPID(0),
   fHistoElectronTOFPID(0),
   fHistoElectronTPCSelPID(0),
   fHistoElectronTOFSelPID(0),
+  fHistoElectronTPCPIDSelTOF(0),
+  fHistoElectronTPCPIDSelTOFSmallEta(0),
+  fHistoElectronTPCPIDSelTOFLargeEta(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -544,11 +582,11 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeAnalysis
 
   Bool_t  seleTrkFlags[nTracks];
   Int_t nSeleTrks=0;
-  SelectTrack(aodEvent,nTracks,nSeleTrks,seleTrkFlags);
+  SelectTrack(aodEvent,nTracks,nSeleTrks,seleTrkFlags,mcArray);
 
   Bool_t  seleCascFlags[nCascs];
   Int_t     nSeleCasc=0;
-  SelectCascade(aodEvent,nCascs,nSeleCasc,seleCascFlags);
+  SelectCascade(aodEvent,nCascs,nSeleCasc,seleCascFlags,mcArray);
 
   //------------------------------------------------
   // Cascade loop 
@@ -874,32 +912,50 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 		cont2[1] = trk->Pt();
 		cont2[2] = fCentrality;
 
+		Double_t cont_eleptvseta[3];
+		cont_eleptvseta[0] = trk->Pt();
+		cont_eleptvseta[1] = trk->Eta();
+		cont_eleptvseta[2] = fCentrality;
+
+		Double_t cont_eleptvsomegapt[3];
+		cont_eleptvsomegapt[0] = trk->Pt();
+		cont_eleptvsomegapt[1] = sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY());
+		cont_eleptvsomegapt[2] = fCentrality;
+
 		if(mixing_flag){
 			if(trk->Charge()*casc->ChargeXi()<0){
 				fHistoEleOmegaMassRSMix->Fill(cont);
 				fHistoEleOmegaMassvsElePtRSMix->Fill(cont2);
-				if(cont[0]<2.5){
+				if(cont[0]<2.7){
 					fHistoElePtRSMix->Fill(trk->Pt(),fCentrality);
+					fHistoElePtvsEtaRSMix->Fill(cont_eleptvseta);
+					fHistoElePtvsOmegaPtRSMix->Fill(cont_eleptvsomegapt);
 				}
 			}else{
 				fHistoEleOmegaMassWSMix->Fill(cont);
 				fHistoEleOmegaMassvsElePtWSMix->Fill(cont2);
-				if(cont[0]<2.5){
+				if(cont[0]<2.7){
 					fHistoElePtWSMix->Fill(trk->Pt(),fCentrality);
+					fHistoElePtvsEtaWSMix->Fill(cont_eleptvseta);
+					fHistoElePtvsOmegaPtWSMix->Fill(cont_eleptvsomegapt);
 				}
 			}
 		}else{
 			if(trk->Charge()*casc->ChargeXi()<0){
 				fHistoEleOmegaMassRS->Fill(cont);
 				fHistoEleOmegaMassvsElePtRS->Fill(cont2);
-				if(cont[0]<2.5){
+				if(cont[0]<2.7){
 					fHistoElePtRS->Fill(trk->Pt(),fCentrality);
+					fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
+					fHistoElePtvsOmegaPtRS->Fill(cont_eleptvsomegapt);
 				}
 			}else{
 				fHistoEleOmegaMassWS->Fill(cont);
 				fHistoEleOmegaMassvsElePtWS->Fill(cont2);
-				if(cont[0]<2.5){
+				if(cont[0]<2.7){
 					fHistoElePtWS->Fill(trk->Pt(),fCentrality);
+					fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
+					fHistoElePtvsOmegaPtWS->Fill(cont_eleptvsomegapt);
 				}
 			}
 		}
@@ -910,8 +966,10 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 				if(abs(pdgcode)==4332 && abs(mcpdgele_array[1])==4332 && abs(mcpdgcasc_array[1])==4332){
 						fHistoEleOmegaMassMCS->Fill(cont);
 						fHistoEleOmegaMassvsElePtMCS->Fill(cont2);
-						if(cont[0]<2.5){
+						if(cont[0]<2.7){
 							fHistoElePtMCS->Fill(trk->Pt(),fCentrality);
+							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
+							fHistoElePtvsOmegaPtMCS->Fill(cont_eleptvsomegapt);
 						}
 				}
 			}
@@ -961,7 +1019,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineEleTreeVariables()
   return;
 }
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliAODTrack *trk) 
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray) 
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree 
@@ -970,6 +1028,20 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliA
 	if(!trk) return;
 
 	fHistoBachPt->Fill(trk->Pt());
+
+	if(fUseMCInfo)
+	{
+		Int_t labEle = trk->GetLabel();
+		if(labEle>=0){
+			AliAODMCParticle *mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
+			if(mcetrk){
+				Int_t pdgEle = mcetrk->GetPdgCode();
+				if(abs(pdgEle)==11){
+					fHistoBachPtMCS->Fill(trk->Pt());
+				}
+			}
+		}
+	}
 
 	if(!fWriteEachVariableTree) return;
 
@@ -1059,7 +1131,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineCascTreeVariables()
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODcascade *casc) 
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray) 
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree (tree not implemented yet)
@@ -1067,6 +1139,15 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODca
 	if(!casc) return;
 	fHistoXiMassvsPt->Fill(casc->MassXi(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
 	fHistoOmegaMassvsPt->Fill(casc->MassOmega(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
+
+	if(fUseMCInfo){
+		Int_t pdgDgcasc[2]={321,3122};
+		Int_t pdgDgv0[2]={2212,211};
+		Int_t labcasc = MatchToMCCascade(casc,3334,pdgDgcasc,pdgDgv0,mcArray); // the cascade
+		if(labcasc>=0){
+			fHistoOmegaMassvsPtMCS->Fill(casc->MassOmega(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
+		}
+	}
 
 	if(!fWriteEachVariableTree) return;
 
@@ -1171,18 +1252,26 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCROOTObjects(AliAODMCPa
 	Double_t cascpx = mccascpart->Px();
 	Double_t cascpy = mccascpart->Py();
 	Double_t cascpz = mccascpart->Pz();
-	Double_t cascE = sqrt(cascpx*cascpx+cascpy*cascpy+cascpz*cascpz+1.32171*1.32171);
+	Double_t cascE = sqrt(cascpx*cascpx+cascpy*cascpy+cascpz*cascpz+1.67245*1.67245);
 
-	Double_t InvMassEleLambda = sqrt(pow(eE+cascE,2)-pow(epx+cascpx,2)-pow(epy+cascpy,2)-pow(epz+cascpz,2));
+	Double_t InvMassEleOmega = sqrt(pow(eE+cascE,2)-pow(epx+cascpx,2)-pow(epy+cascpy,2)-pow(epz+cascpz,2));
 
 	Double_t cont[3];
-	cont[0] = InvMassEleLambda;
+	cont[0] = InvMassEleOmega;
 	cont[1] = mcpart->Pt();
 	cont[2] = fCentrality;
 	Double_t cont2[3];
-	cont2[0] = InvMassEleLambda;
+	cont2[0] = InvMassEleOmega;
 	cont2[1] = mcepart->Pt();
 	cont2[2] = fCentrality;
+	Double_t cont_eleptvseta[3];
+	cont_eleptvseta[0] = mcepart->Pt();
+	cont_eleptvseta[1] = mcepart->Eta();
+	cont_eleptvseta[2] = fCentrality;
+	Double_t cont_eleptvsomegapt[3];
+	cont_eleptvsomegapt[0] = mcepart->Pt();
+	cont_eleptvsomegapt[1] = mccascpart->Pt();
+	cont_eleptvsomegapt[2] = fCentrality;
 
 	AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
 	Float_t etamin, etamax;
@@ -1192,8 +1281,10 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCROOTObjects(AliAODMCPa
 		fHistoEleOmegaMassMCGen->Fill(cont);
 		if(fabs(mcepart->Eta())<etamax){
 			fHistoEleOmegaMassvsElePtMCGen->Fill(cont2);
-			if(InvMassEleLambda<2.5){
+			if(InvMassEleOmega<2.7){
 				fHistoElePtMCGen->Fill(mcepart->Pt(),fCentrality);
+				fHistoElePtvsEtaMCGen->Fill(cont_eleptvseta);
+				fHistoElePtvsOmegaPtMCGen->Fill(cont_eleptvsomegapt);
 			}
 		}
 	}
@@ -1248,18 +1339,9 @@ void  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineGeneralHistograms() {
 
   fHCentrality = new TH1F("fHCentrality","conter",100,0.,100.);
 
-  fHistoElectronTPCPID=new TH2F("fHistoElectronTPCPID","",50,0.,5.,50,-20.,20.);
-  fHistoElectronTOFPID=new TH2F("fHistoElectronTOFPID","",50,0.,5.,50,-20.,20.);
-  fHistoElectronTPCSelPID=new TH2F("fHistoElectronTPCSelPID","",50,0.,5.,50,-20.,20.);
-  fHistoElectronTOFSelPID=new TH2F("fHistoElectronTOFSelPID","",50,0.,5.,50,-20.,20.);
-
   fOutput->Add(fCEvents);
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
-  fOutput->Add(fHistoElectronTPCPID);
-  fOutput->Add(fHistoElectronTOFPID);
-  fOutput->Add(fHistoElectronTPCSelPID);
-  fOutput->Add(fHistoElectronTOFSelPID);
 
   return;
 }
@@ -1318,17 +1400,74 @@ void  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineAnalysisHistograms()
   fHistoElePtMCGen=new TH2F("fHistoElePtMCGen","MC Gen e pt",100,0.,10.,10,0.,100.);
   fOutputAll->Add(fHistoElePtMCGen);
 
+  Int_t bins_eleptvseta[3]=		{50,20	,10};
+  Double_t xmin_eleptvseta[3]={0.,-1.	,0.0};
+  Double_t xmax_eleptvseta[3]={5.,1.	,100};
+
+  fHistoElePtvsEtaRS = new THnSparseF("fHistoElePtvsEtaRS","",3,bins_eleptvseta,xmin_eleptvseta,xmax_eleptvseta);
+  fOutputAll->Add(fHistoElePtvsEtaRS);
+  fHistoElePtvsEtaWS = new THnSparseF("fHistoElePtvsEtaWS","",3,bins_eleptvseta,xmin_eleptvseta,xmax_eleptvseta);
+  fOutputAll->Add(fHistoElePtvsEtaWS);
+  fHistoElePtvsEtaRSMix = new THnSparseF("fHistoElePtvsEtaRSMix","",3,bins_eleptvseta,xmin_eleptvseta,xmax_eleptvseta);
+  fOutputAll->Add(fHistoElePtvsEtaRSMix);
+  fHistoElePtvsEtaWSMix = new THnSparseF("fHistoElePtvsEtaWSMix","",3,bins_eleptvseta,xmin_eleptvseta,xmax_eleptvseta);
+  fOutputAll->Add(fHistoElePtvsEtaWSMix);
+  fHistoElePtvsEtaMCS = new THnSparseF("fHistoElePtvsEtaMCS","",3,bins_eleptvseta,xmin_eleptvseta,xmax_eleptvseta);
+  fOutputAll->Add(fHistoElePtvsEtaMCS);
+  fHistoElePtvsEtaMCGen = new THnSparseF("fHistoElePtvsEtaMCGen","",3,bins_eleptvseta,xmin_eleptvseta,xmax_eleptvseta);
+  fOutputAll->Add(fHistoElePtvsEtaMCGen);
+
+  Int_t bins_eleptvsomegapt[3]=	{50,20	,10};
+  Double_t xmin_eleptvsomegapt[3]={0.,0.	,0.0};
+  Double_t xmax_eleptvsomegapt[3]={5.,5.	,100};
+
+  fHistoElePtvsOmegaPtRS = new THnSparseF("fHistoElePtvsOmegaPtRS","",3,bins_eleptvsomegapt,xmin_eleptvsomegapt,xmax_eleptvsomegapt);
+  fOutputAll->Add(fHistoElePtvsOmegaPtRS);
+  fHistoElePtvsOmegaPtWS = new THnSparseF("fHistoElePtvsOmegaPtWS","",3,bins_eleptvsomegapt,xmin_eleptvsomegapt,xmax_eleptvsomegapt);
+  fOutputAll->Add(fHistoElePtvsOmegaPtWS);
+  fHistoElePtvsOmegaPtRSMix = new THnSparseF("fHistoElePtvsOmegaPtRSMix","",3,bins_eleptvsomegapt,xmin_eleptvsomegapt,xmax_eleptvsomegapt);
+  fOutputAll->Add(fHistoElePtvsOmegaPtRSMix);
+  fHistoElePtvsOmegaPtWSMix = new THnSparseF("fHistoElePtvsOmegaPtWSMix","",3,bins_eleptvsomegapt,xmin_eleptvsomegapt,xmax_eleptvsomegapt);
+  fOutputAll->Add(fHistoElePtvsOmegaPtWSMix);
+  fHistoElePtvsOmegaPtMCS = new THnSparseF("fHistoElePtvsOmegaPtMCS","",3,bins_eleptvsomegapt,xmin_eleptvsomegapt,xmax_eleptvsomegapt);
+  fOutputAll->Add(fHistoElePtvsOmegaPtMCS);
+  fHistoElePtvsOmegaPtMCGen = new THnSparseF("fHistoElePtvsOmegaPtMCGen","",3,bins_eleptvsomegapt,xmin_eleptvsomegapt,xmax_eleptvsomegapt);
+  fOutputAll->Add(fHistoElePtvsOmegaPtMCGen);
+
   //------------------------------------------------
   // checking histograms
   //------------------------------------------------
   fHistoBachPt = new TH1F("fHistoBachPt","Bachelor p_{T}",100,0.0,5.0);
   fOutputAll->Add(fHistoBachPt);
+  fHistoBachPtMCS = new TH1F("fHistoBachPtMCS","Bachelor p_{T}",100,0.0,5.0);
+  fOutputAll->Add(fHistoBachPtMCS);
+  fHistoBachPtMCGen = new TH1F("fHistoBachPtMCGen","Bachelor p_{T}",100,0.0,5.0);
+  fOutputAll->Add(fHistoBachPtMCGen);
   fHistod0Bach = new TH1F("fHistod0Bach","Bachelor d_{0}",100,-0.5,0.5);
   fOutputAll->Add(fHistod0Bach);
   fHistoXiMassvsPt=new TH2F("fHistoXiMassvsPt","Xi mass",100,1.32-0.05,1.32+0.05,20,0.,10.);
   fOutputAll->Add(fHistoXiMassvsPt);
   fHistoOmegaMassvsPt=new TH2F("fHistoOmegaMassvsPt","Omega mass",100,1.67-0.05,1.67+0.05,20,0.,10.);
   fOutputAll->Add(fHistoOmegaMassvsPt);
+  fHistoOmegaMassvsPtMCS=new TH2F("fHistoOmegaMassvsPtMCS","Omega mass",100,1.67-0.05,1.67+0.05,20,0.,10.);
+  fOutputAll->Add(fHistoOmegaMassvsPtMCS);
+  fHistoOmegaMassvsPtMCGen=new TH2F("fHistoOmegaMassvsPtMCGen","Omega mass",100,1.67-0.05,1.67+0.05,20,0.,10.);
+  fOutputAll->Add(fHistoOmegaMassvsPtMCGen);
+
+  fHistoElectronTPCPID=new TH2F("fHistoElectronTPCPID","",50,0.,5.,50,-20.,20.);
+  fOutputAll->Add(fHistoElectronTPCPID);
+  fHistoElectronTOFPID=new TH2F("fHistoElectronTOFPID","",50,0.,5.,50,-20.,20.);
+  fOutputAll->Add(fHistoElectronTOFPID);
+  fHistoElectronTPCSelPID=new TH2F("fHistoElectronTPCSelPID","",50,0.,5.,50,-20.,20.);
+  fOutputAll->Add(fHistoElectronTPCSelPID);
+  fHistoElectronTOFSelPID=new TH2F("fHistoElectronTOFSelPID","",50,0.,5.,50,-20.,20.);
+  fOutputAll->Add(fHistoElectronTOFSelPID);
+  fHistoElectronTPCPIDSelTOF=new TH2F("fHistoElectronTPCPIDSelTOF","",10,0.,5.,500,-10.,10.);
+  fOutputAll->Add(fHistoElectronTPCPIDSelTOF);
+  fHistoElectronTPCPIDSelTOFSmallEta=new TH2F("fHistoElectronTPCPIDSelTOFSmallEta","",10,0.,5.,500,-10.,10.);
+  fOutputAll->Add(fHistoElectronTPCPIDSelTOFSmallEta);
+  fHistoElectronTPCPIDSelTOFLargeEta=new TH2F("fHistoElectronTPCPIDSelTOFLargeEta","",10,0.,5.,500,-10.,10.);
+  fOutputAll->Add(fHistoElectronTPCPIDSelTOFLargeEta);
 
   return;
 }
@@ -1771,7 +1910,7 @@ Int_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MatchToMCCascade(AliAODcasc
 	return labxib;
 }
 //________________________________________________________________________
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags)
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags, TClonesArray *mcArray)
 {
   //
   // Select good tracks using fAnalCuts (AliRDHFCuts object) and return the array of their ids
@@ -1792,27 +1931,38 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectTrack( const AliVEvent
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
     
     AliAODTrack *aodt = (AliAODTrack*)track;
+		Double_t nsigma_tpcele = -9999;
+		Double_t nsigma_tofele = -9999;
+		if(fAnalCuts->GetIsUsePID()){
+			nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodt,AliPID::kElectron);
+			nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodt,AliPID::kElectron);
+		}
 
     if(!fAnalCuts) continue;
     if(fAnalCuts->SingleTrkCuts(aodt,fVtx1)){
       seleFlags[i]=kTRUE;
       nSeleTrks++;
-			fHistoElectronTPCSelPID->Fill(aodt->Pt(),fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodt,AliPID::kElectron));
-			fHistoElectronTOFSelPID->Fill(aodt->Pt(),fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodt,AliPID::kElectron));
-			FillElectronROOTObjects(aodt);
+			fHistoElectronTPCSelPID->Fill(aodt->Pt(),nsigma_tpcele);
+			fHistoElectronTOFSelPID->Fill(aodt->Pt(),nsigma_tofele);
+			FillElectronROOTObjects(aodt,mcArray);
 			if(fDoEventMixing){
 				fElectronTracks->AddLast(new AliAODTrack(*aodt));
 			}
     }
-
-		if(fAnalCuts->GetIsUsePID()){
-			fHistoElectronTPCPID->Fill(aodt->Pt(),fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodt,AliPID::kElectron));
-			fHistoElectronTOFPID->Fill(aodt->Pt(),fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodt,AliPID::kElectron));
+		fHistoElectronTPCPID->Fill(aodt->Pt(),nsigma_tpcele);
+		fHistoElectronTOFPID->Fill(aodt->Pt(),nsigma_tofele);
+		if(fabs(nsigma_tofele)<3.){
+			fHistoElectronTPCPIDSelTOF->Fill(aodt->Pt(),nsigma_tpcele);
+			Double_t eleeta = aodt->Eta();
+			if(fabs(eleeta)<0.6)
+				fHistoElectronTPCPIDSelTOFSmallEta->Fill(aodt->Pt(),nsigma_tpcele);
+			if(fabs(eleeta)>0.6 && fabs(eleeta)<0.8)
+				fHistoElectronTPCPIDSelTOFLargeEta->Fill(aodt->Pt(),nsigma_tpcele);
 		}
   } // end loop on tracks
 }
 //________________________________________________________________________
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectCascade( const AliVEvent *event,Int_t nCascs,Int_t &nSeleCasc, Bool_t *seleCascFlags)
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectCascade( const AliVEvent *event,Int_t nCascs,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray)
 {
   //
   // Select good Casc using fAnalCuts (AliRDHFCuts object) and return the array of their ids
@@ -1832,7 +1982,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectCascade( const AliVEve
 				seleCascFlags[icasc] = kTRUE;
 				nSeleCasc++;
 
-				FillCascROOTObjects(casc);
+				FillCascROOTObjects(casc, mcArray);
       }
     }
 }
@@ -1939,31 +2089,46 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArray 
 	for(Int_t i=0;i<nmcpart;i++)
 	{
 		AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
-		if(TMath::Abs(mcpart->GetPdgCode())!=4332) continue;
-		//cout<<"Lambdac"<<endl;
-		Bool_t e_flag = kFALSE;
-		Bool_t xi_flag = kFALSE;
-		AliAODMCParticle *mcepart = 0;
-		AliAODMCParticle *mccascpart = 0;
-		for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
-		{
-			if(idau<0) break;
-			AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
-			if(!mcdau) continue;
-			if(TMath::Abs(mcdau->GetPdgCode())==11){
-				e_flag = kTRUE;
-				mcepart = mcdau;
+		if(TMath::Abs(mcpart->GetPdgCode())==4332){
+			Bool_t e_flag = kFALSE;
+			Bool_t xi_flag = kFALSE;
+			AliAODMCParticle *mcepart = 0;
+			AliAODMCParticle *mccascpart = 0;
+			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			{
+				if(idau<0) break;
+				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+				if(!mcdau) continue;
+				if(TMath::Abs(mcdau->GetPdgCode())==11){
+					e_flag = kTRUE;
+					mcepart = mcdau;
+				}
+				if(TMath::Abs(mcdau->GetPdgCode())==3334){
+					xi_flag = kTRUE;
+					mccascpart = mcdau;
+				}
 			}
-			if(TMath::Abs(mcdau->GetPdgCode())==3334){
-				xi_flag = kTRUE;
-				mccascpart = mcdau;
-			}
+
+			Int_t decaytype = -9999;
+			if(e_flag && xi_flag) decaytype = 0;
+
+			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype);
 		}
+		if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
+			AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
+			Float_t etamin, etamax;
+			esdcuts->GetEtaRange(etamin,etamax);
+			if(fabs(mcpart->Eta())<etamax)
+				fHistoBachPtMCGen->Fill(mcpart->Pt());
+		}
+		if(TMath::Abs(mcpart->GetPdgCode())==3334){
+			Double_t etamin, etamax, rapmin, rapmax;
+			fAnalCuts->GetProdCascEtaRange(etamin,etamax);
+			fAnalCuts->GetProdCascRapRange(rapmin,rapmax);
 
-		Int_t decaytype = -9999;
-		if(e_flag && xi_flag) decaytype = 0;
-
-		FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype);
+			if((fabs(mcpart->Y())<rapmax) && (fabs(mcpart->Eta())<etamax))
+				fHistoOmegaMassvsPtMCGen->Fill(1.67245, mcpart->Pt());
+		}
 	}
 	return;
 }

@@ -74,8 +74,12 @@ AliRDHFCuts(name),
   fProdXiCosineOfPoiningAngleMin(-1.),
   fProdV0CosineOfPoiningAngleXiMin(-1.),
   fProdCascNTPCClustersMin(0.0),
-fProdRoughMassTol(0.25),
-fProdRoughPtMin(0.0),
+  fProdCascEtaMin(-9999.),
+  fProdCascEtaMax(9999.),
+  fProdCascRapMin(-9999.),
+  fProdCascRapMax(9999.),
+	fProdRoughMassTol(0.25),
+	fProdRoughPtMin(0.0),
 	fExcludePionTPC(kFALSE),
 	fExcludeProtonTPC(kFALSE),
 	fExcludeKaonTPC(kFALSE),
@@ -140,6 +144,10 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   fProdXiCosineOfPoiningAngleMin(source.fProdXiCosineOfPoiningAngleMin),
   fProdV0CosineOfPoiningAngleXiMin(source.fProdV0CosineOfPoiningAngleXiMin),
   fProdCascNTPCClustersMin(source.fProdCascNTPCClustersMin),
+  fProdCascEtaMin(source.fProdCascEtaMin),
+  fProdCascEtaMax(source.fProdCascEtaMax),
+  fProdCascRapMin(source.fProdCascRapMin),
+  fProdCascRapMax(source.fProdCascRapMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin),
 	fExcludePionTPC(source.fExcludePionTPC),
@@ -193,6 +201,10 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
   fProdXiCosineOfPoiningAngleMin = source.fProdXiCosineOfPoiningAngleMin;
   fProdV0CosineOfPoiningAngleXiMin = source.fProdV0CosineOfPoiningAngleXiMin;
   fProdCascNTPCClustersMin = source.fProdCascNTPCClustersMin;
+  fProdCascEtaMin = source.fProdCascEtaMin;
+  fProdCascEtaMax = source.fProdCascEtaMax;
+  fProdCascRapMin = source.fProdCascRapMin;
+  fProdCascRapMax = source.fProdCascRapMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
 	fExcludePionTPC = source.fExcludePionTPC;
@@ -550,6 +562,7 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
   Double_t massOmega = casc->MassOmega();
   if(TMath::Abs(massOmega-momegaPDG)<fProdMassRejOmega)
     return kFALSE;
+
   
   Double_t lPosXi[3];
   lPosXi[0] = casc->DecayVertexXiX();
@@ -625,6 +638,11 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
     }
   }
 
+	Double_t RapXi = casc->RapXi();
+	if(RapXi<fProdCascRapMin || RapXi>fProdCascRapMax) return kFALSE;
+
+	Double_t EtaXi = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
+	if(EtaXi<fProdCascEtaMin || EtaXi>fProdCascEtaMax) return kFALSE;
   
   return kTRUE;
 }
