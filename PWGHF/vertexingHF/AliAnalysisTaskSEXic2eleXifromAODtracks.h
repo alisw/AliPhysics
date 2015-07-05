@@ -49,14 +49,14 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODcascade *casc, AliAODTrack *trk, TClonesArray *mcArray, Bool_t mixing);
-  void FillElectronROOTObjects(AliAODTrack *trk);
-  void FillCascROOTObjects(AliAODcascade *casc);
+  void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
+  void FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
-  void SelectCascade( const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags);
-  void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
+  void SelectCascade( const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray);
+  void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags, TClonesArray *mcArray);
 
   // set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
@@ -164,14 +164,35 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElePtMCS;         //e spectra (Efficiency numerator)
   TH2F* fHistoElePtMCGen;         //e spectra (Efficiency denominator)
 
+  THnSparse* fHistoElePtvsEtaRS;         //e spectra (right-sign)
+  THnSparse* fHistoElePtvsEtaWS;         //e spectra (wrong-sign)
+  THnSparse* fHistoElePtvsEtaRSMix;         //e spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsEtaWSMix;         //e spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsEtaMCS;         //e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaMCGen;         //e spectra (wrong-sign) efficiency denominator
+
+  THnSparse* fHistoElePtvsXiPtRS;         //e-Xi spectra (right-sign)
+  THnSparse* fHistoElePtvsXiPtWS;         //e-Xi spectra (wrong-sign)
+  THnSparse* fHistoElePtvsXiPtRSMix;         //e-Xi spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsXiPtWSMix;         //e-Xi spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsXiPtMCS;         //e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsXiPtMCGen;         //e-Xi spectra (wrong-sign) efficiency denominator
+
   TH1F* fHistoBachPt;      //! Bachelor pT histogram
+  TH1F* fHistoBachPtMCS;      //! Bachelor pT histogram (efficiency numerator)
+  TH1F* fHistoBachPtMCGen;      //! Bachelor pT histogram (efficiency denominator)
   TH1F* fHistod0Bach;      //! Bachelor d0 histogram
   TH2F* fHistoXiMassvsPt;     //! Xi mass vs pt histogram
+  TH2F* fHistoXiMassvsPtMCS;     //! Xi mass vs pt histogram
+  TH2F* fHistoXiMassvsPtMCGen;     //! Xi mass vs pt histogram
   TH2F* fHistoOmegaMassvsPt;     //! Omega mass vs pt histogram
   TH2F* fHistoElectronTPCPID;     //! TPC electron PID
   TH2F* fHistoElectronTOFPID;     //! TOF electron PID
   TH2F* fHistoElectronTPCSelPID;     //! TPC electron PID after selection
   TH2F* fHistoElectronTOFSelPID;     //! TOF electron PID after selection
+  TH2F* fHistoElectronTPCPIDSelTOF;     //! TPC electron PID after TOF 3 sigma cut
+  TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
+  TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
 
   //Mixing
   Int_t fDoEventMixing; // flag for event mixing
@@ -186,7 +207,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; // array of electron-compatible tracks
 
 
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,1); // class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,2); // class for Xic->e Xi
 };
 #endif
 

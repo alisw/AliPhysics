@@ -73,6 +73,10 @@ AliRDHFCuts(name),
   fProdDcaV0PiToPrimVertexMin(0.),
   fProdV0ProperDecayLengthMax(99999.),
   fProdMassRejK0s(0.),
+  fProdV0EtaMin(-9999.),
+  fProdV0EtaMax(9999.),
+  fProdV0RapMin(-9999.),
+  fProdV0RapMax(9999.),
 	fProdRoughMassTol(0.25),
 	fProdRoughPtMin(0.0),
 	fExcludePionTPC(kFALSE),
@@ -138,6 +142,10 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdDcaV0PiToPrimVertexMin(source.fProdDcaV0PiToPrimVertexMin),
   fProdV0ProperDecayLengthMax(source.fProdV0ProperDecayLengthMax),
   fProdMassRejK0s(source.fProdMassRejK0s),
+  fProdV0EtaMin(source.fProdV0EtaMin),
+  fProdV0EtaMax(source.fProdV0EtaMax),
+  fProdV0RapMin(source.fProdV0RapMin),
+  fProdV0RapMax(source.fProdV0RapMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin),
 	fExcludePionTPC(source.fExcludePionTPC),
@@ -190,6 +198,10 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdDcaV0PiToPrimVertexMin=source.fProdDcaV0PiToPrimVertexMin;
   fProdV0ProperDecayLengthMax=source.fProdV0ProperDecayLengthMax;
   fProdMassRejK0s=source.fProdMassRejK0s;
+  fProdV0EtaMin = source.fProdV0EtaMin;
+  fProdV0EtaMax = source.fProdV0EtaMax;
+  fProdV0RapMin = source.fProdV0RapMin;
+  fProdV0RapMax = source.fProdV0RapMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
 	fExcludePionTPC = source.fExcludePionTPC;
@@ -616,6 +628,12 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
       if(isProton<1) return kFALSE;
       if(isPion<1) return kFALSE;
     }
+
+	Double_t RapLambda = v0->RapLambda();
+	if(RapLambda<fProdV0RapMin || RapLambda>fProdV0RapMax) return kFALSE;
+
+	Double_t EtaLambda = v0->PseudoRapV0();
+	if(EtaLambda<fProdV0EtaMin || EtaLambda>fProdV0EtaMax) return kFALSE;
 
   return kTRUE;
 }
