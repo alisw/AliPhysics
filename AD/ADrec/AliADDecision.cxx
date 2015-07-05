@@ -110,7 +110,7 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
     Float_t adc = esdAD->GetAdc(i);
     if (adc > GetRecoParam()->GetAdcThresHold()) {
       Float_t time = esdAD->GetTime(i);
-	if(time > 1.e-6){
+	if(time > (AliADReconstructor::kInvalidTime+1.e-6)){
 		Float_t timeErr = 1;
 		if (adc>1) timeErr = 1/adc;
 
@@ -153,8 +153,8 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   if (timeADA > (fADADist + GetRecoParam()->GetTimeWindowBBALow()) &&
       timeADA < (fADADist + GetRecoParam()->GetTimeWindowBBAUp())) 
     esdAD->SetADADecision(AliESDAD::kADBB);
-  else if (timeADA > (fADADist + GetRecoParam()->GetTimeWindowBGALow()) &&
-	   timeADA < (fADADist + GetRecoParam()->GetTimeWindowBGAUp()))
+  else if (timeADA > (-fADADist + GetRecoParam()->GetTimeWindowBGALow()) &&
+	   timeADA < (-fADADist + GetRecoParam()->GetTimeWindowBGAUp()))
     esdAD->SetADADecision(AliESDAD::kADBG);
   else if (timeADA > (AliADReconstructor::kInvalidTime + 1e-6))
     esdAD->SetADADecision(AliESDAD::kADFake);
@@ -162,8 +162,8 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   if (timeADC > (fADCDist + GetRecoParam()->GetTimeWindowBBCLow()) &&
       timeADC < (fADCDist + GetRecoParam()->GetTimeWindowBBCUp())) 
     esdAD->SetADCDecision(AliESDAD::kADBB);
-  else if (timeADC > (fADCDist + GetRecoParam()->GetTimeWindowBGCLow()) &&
-	   timeADC < (fADCDist + GetRecoParam()->GetTimeWindowBGCUp()))
+  else if (timeADC > (-fADCDist + GetRecoParam()->GetTimeWindowBGCLow()) &&
+	   timeADC < (-fADCDist + GetRecoParam()->GetTimeWindowBGCUp()))
     esdAD->SetADCDecision(AliESDAD::kADBG);
   else if (timeADC > (AliADReconstructor::kInvalidTime + 1e-6))
     esdAD->SetADCDecision(AliESDAD::kADFake);

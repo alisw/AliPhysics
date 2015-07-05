@@ -18,20 +18,29 @@ void MakeADQAParamEntry(const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
   ADQAParam->SetMaxPedDiff(1);
   ADQAParam->SetMaxPedWidth(1.5);
   ADQAParam->SetSatMed(0.1);
-  ADQAParam->SetSatHigh(0.2);
-  ADQAParam->SetSatHuge(0.5);
+  ADQAParam->SetSatHigh(0.3);
+  ADQAParam->SetSatHuge(0.7);
+  
+  ADQAParam->SetAsynchronBB(0.5);
+  ADQAParam->SetAsynchronBG(1.0);
+  
+  ADQAParam->SetMaxBBVariation(0.2);
+  ADQAParam->SetMaxBGVariation(0.2);
+  
+  ADQAParam->SetChargeChannelZoomMin(0);
+  ADQAParam->SetChargeChannelZoomMax(50);
   
   ADQAParam->SetNTdcTimeBins(3062); 
   ADQAParam->SetTdcTimeMin(0.976562); 
   ADQAParam->SetTdcTimeMax(300.0); 
   
-  ADQAParam->SetNChargeChannelBins(10000);
+  ADQAParam->SetNChargeChannelBins(7000);
   ADQAParam->SetChargeChannelMin(0);
-  ADQAParam->SetChargeChannelMax(10000);
+  ADQAParam->SetChargeChannelMax(7000);
   
-  ADQAParam->SetNChargeSideBins(8000);
+  ADQAParam->SetNChargeSideBins(5000);
   ADQAParam->SetChargeSideMin(10);
-  ADQAParam->SetChargeSideMax(80000);
+  ADQAParam->SetChargeSideMax(50000);
 
   // save in CDB storage
   AliCDBMetaData *md= new AliCDBMetaData();
