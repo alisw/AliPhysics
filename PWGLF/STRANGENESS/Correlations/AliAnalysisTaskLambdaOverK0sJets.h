@@ -1,7 +1,5 @@
-
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. * 
- * See cxx source for full Copyright notice */ 
-
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice */
 /*
                 AliAnalysisTaskLambdaOverK0sJets class
 
@@ -35,8 +33,8 @@ class TString;
 class TObjArray;
 
 // pt for V0
-const int    kN1 = 8; 
-const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
+const int    kN1 = 6;
+const float  kPtBinV0[kN1+1] = {1.5, 2.0, 2.6, 3.2, 4.0, 5.5, 8.0};
 
 const int    kNVtxZ = 10; 
 const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
