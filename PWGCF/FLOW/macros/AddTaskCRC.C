@@ -20,6 +20,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
                              Bool_t bUseZDC=kFALSE,
                              Bool_t bRecenterZDC=kFALSE,
                              Bool_t bDivSigma=kTRUE,
+                             Bool_t bZDCMCCen=kTRUE,
                              Bool_t bEventCutsQA=kFALSE,
                              Bool_t bTrackCutsQA=kFALSE,
                              TString Label="",
@@ -104,6 +105,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
   AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
   taskFE->SetCentralityRange(centrMin,centrMax);
   taskFE->SetCentralityEstimator("V0M");
+  taskFE->SetUseMCCen(bZDCMCCen);
  }
  // add the task to the manager
  mgr->AddTask(taskFE);

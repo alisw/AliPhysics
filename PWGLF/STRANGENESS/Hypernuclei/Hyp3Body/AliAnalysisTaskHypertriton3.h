@@ -148,9 +148,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   // Data and MC histograms
   TH1F               *fHistpionTPCcls;             //!<! TPC clusters distribution of candidate \f$\pi\f$
   TH1F               *fHistpTpion;                 //!<! \f$\p^{T}\f$ distribution of candidate \f$\pi\f$
-  TH2F               *fHistCorrDCAdprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
-  TH2F               *fHistCorrDCApprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
-  TH2F               *fHistCorrDCApiprimary;       //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
+  //TH2F               *fHistCorrDCAdprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
+  //TH2F               *fHistCorrDCApprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
+  //TH2F               *fHistCorrDCApiprimary;       //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
   TH1F               *fHistDCApiprimary;           //!<! DCA pion-primary vertex distribution
   TH1F               *fHistDCApprimary;            //!<! DCA proton-primary vertex distribution
   TH1F               *fHistDCAdprimary;            //!<! DCA deuteron-primary vertex distribution
@@ -170,8 +170,21 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDCAXYpionvtx;           //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAZpionvtx;            //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
   TH1F               *fHistDecayLengthH3L;         //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistAngle_deu_pro;          //!<! Angle between deuteron and proton vectors
+  TH1F               *fHistAngle_deu_pion;         //!<! Angle between deuteron and pion vectors
+  TH1F               *fHistAngle_pro_pion;         //!<! Angle between proton and pion vectors
+  TH2F               *fHistAngleCorr_dp_dpi;       //!<! Correlation between angle_dp vs angle_dpi
+  TH2F               *fHistAngleCorr_dp_ppi;       //!<! Correlation between angle_dp vs angle_ppi
+  TH2F               *fHistAngleCorr_ppi_dpi;      //!<! Correlation between angle_ppi vs angle_dpi
   TH1F               *fHistHyperRapidity;          //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistCosPointingAngle;       //!<! Cosine of pointing angle distribution of candidate mother particle
+  TH1F               *fHistDecayMomCM_X;           //!<! X momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Y;           //!<! Y momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Z;           //!<! Z momentum component of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XY;          //!<! p_{X} vs p_{Y} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XZ;          //!<! p_{X} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_YZ;          //!<! p_{Y} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM;             //!<! hypertriton momentum in the center-of-mass
   TH1F               *fHistMassHypertriton;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistMassAntiHypertriton;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$
   // MC only histograms
