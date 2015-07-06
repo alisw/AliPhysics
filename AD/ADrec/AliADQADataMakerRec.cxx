@@ -950,8 +950,11 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
       FillRawsData(kBBFlagsPerChannel, offlineCh,nbbFlag);
       FillRawsData(kBGFlagsPerChannel, offlineCh,nbgFlag);
-      if((nbbFlag+nbgFlag)>0 && time[offlineCh]<1e-6)FillRawsData(kFlagNoTime,offlineCh);
-      if((nbbFlag+nbgFlag)==0 && time[offlineCh]>1e-6)FillRawsData(kTimeNoFlag,offlineCh);
+      //if((nbbFlag+nbgFlag)>0 && time[offlineCh]<1e-6)FillRawsData(kFlagNoTime,offlineCh);
+      //if((nbbFlag+nbgFlag)==0 && time[offlineCh]>1e-6)FillRawsData(kTimeNoFlag,offlineCh);
+      
+      if((flagBB[offlineCh] || flagBG[offlineCh]) && time[offlineCh]<1e-6)FillRawsData(kFlagNoTime,offlineCh);
+      if((!flagBB[offlineCh] && !flagBG[offlineCh]) && time[offlineCh]>1e-6)FillRawsData(kTimeNoFlag,offlineCh);
       
       FillRawsData(kTimeSlewingOff,time[offlineCh],adc[offlineCh]);
       FillRawsData(kTimeSlewingOn,timeCorr[offlineCh],adc[offlineCh]);
