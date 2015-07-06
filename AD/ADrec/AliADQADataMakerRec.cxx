@@ -884,7 +884,7 @@ void AliADQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       }
       else charge = -1024;		
       
-      FillRawsData(kMaxChargeClock,offlineCh,imax-10);
+      if(charge != -1024) FillRawsData(kMaxChargeClock,offlineCh,imax-10);
        
       integrator[offlineCh] = rawStream->GetIntegratorFlag(iChannel,imax);
       

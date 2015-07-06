@@ -1175,6 +1175,7 @@ void AliADQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, Al
 	for(Int_t iHist = 0; iHist<3; iHist++){
 		pad = pChargeZoom->cd(iHist+1);
 		histo=(TH1*)list[esIndex]->At(AliADQADataMakerRec::kChargeVsClockInt0+iHist);
+		if(iHist==2)gPad->SetLogz();
 		histo->DrawCopy("COLZ");
 		}
 	
