@@ -77,6 +77,8 @@ int main(int argc, char **argv) {
   Int_t    kNPostClocks; //Post-clocks for charge integration
   Int_t    kNPedSigma; //Cut on pedestal number of sigmas
   Int_t	   kNBinsCharge; //Number of bins in charge distribution
+  Int_t	   kMinTime;
+  Int_t    kMaxTime;
   
   status = daqDA_DB_getFile("AD0_TimeSlewing_DA.config","AD0_TimeSlewing_DA.config");
   if (status) {
@@ -87,22 +89,26 @@ int main(int argc, char **argv) {
        kNPostClocks = 10;
        kNPedSigma = 3;
        kNBinsCharge = 1000;
+       kMinTime = 1740;
+       kMaxTime = 2252;
   } else {
       /* open the config file and retrieve cuts */
       FILE *fpConfig = fopen("AD0_TimeSlewing_DA.config","r");
-      int res = fscanf(fpConfig,"%d %d %d %d %d",&kMinEvents,&kNPreClocks,&kNPostClocks,&kNPedSigma,&kNBinsCharge);
-      if(res!=5) {
+      int res = fscanf(fpConfig,"%d %d %d %d %d %d %d",&kMinEvents,&kNPreClocks,&kNPostClocks,&kNPedSigma,&kNBinsCharge,&kMinTime,&kMaxTime);
+      if(res!=7) {
 	    printf("Failed to get values from Config file (AD0_TimeSlewing_DA.config): wrong file format - 4 integers are expected - \n");
        	    kMinEvents = 50000;
             kNPreClocks = 1;  
             kNPostClocks = 10;
             kNPedSigma = 3;
 	    kNBinsCharge = 1000;
+	    kMinTime = 1740;
+	    kMaxTime = 2252;
       }
       fclose(fpConfig);
   }
-  printf("Minimal number of events requested = %d; Integrating charge in [-%d + %d] LHC clocks around maximum; Number of pedestal sigma cut = %d; Number of bins on charge axis = %d\n",
-          kMinEvents, kNPreClocks, kNPostClocks, kNPedSigma, kNBinsCharge);
+  printf("Minimal number of events requested = %d; Integrating charge in [-%d + %d] LHC clocks around maximum; Number of pedestal sigma cut = %d; Number of bins on charge axis = %d; Time range [%d , %d]\n",
+          kMinEvents, kNPreClocks, kNPostClocks, kNPedSigma, kNBinsCharge,kMinTime,kMaxTime);
   
 
   // Online pedestals (using FEE channel numbering), 
@@ -145,7 +151,7 @@ int main(int argc, char **argv) {
   for (Int_t i=0; i<16; i++) {
        	sprintf(TimeVsChargeName,"hTimeVsCharge%d",i);
        	sprintf(texte,"hTimeVsCharge ch%d",i);
-       	hTimeVsCharge[i]  = new TH2F(TimeVsChargeName,texte,kNBinsCharge,-4,0,4000,1,4001);
+       	hTimeVsCharge[i]  = new TH2F(TimeVsChargeName,texte,kNBinsCharge,-4,0,kMaxTime-kMinTime,kMinTime,kMaxTime);
         }
        
    
@@ -287,8 +293,15 @@ int main(int argc, char **argv) {
 	
 	for(Int_t j=0; j<kNBinsCharge;j++){
   		hTimeSlice = hTimeVsCharge[i]->ProjectionY("hTimeSlice",j+1,j+1);
-		hMeanTimeVsCharge[i]->SetBinContent(j+1,hTimeSlice->GetMean());
-        	if(hTimeSlice->GetEntries()>0)hMeanTimeVsCharge[i]->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
+		if(hTimeSlice->GetEntries()<100 && j>kNBinsCharge/2){
+			hMeanTimeVsCharge[i]->SetBinContent(j+1,hMeanTimeVsCharge[i]->GetBinContent(j));
+			hMeanTimeVsCharge[i]->SetBinError(j+1,hMeanTimeVsCharge[i]->GetBinError(j));
+			}
+		else{
+			hMeanTimeVsCharge[i]->SetBinContent(j+1,hTimeSlice->GetMean());
+        		if(hTimeSlice->GetEntries()>0)hMeanTimeVsCharge[i]->SetBinError(j+1,1/TMath::Power(hTimeSlice->GetEntries(),2));
+			}
+		
   		}
 	}
 	
@@ -321,6 +334,8 @@ int main(int argc, char **argv) {
 
   TFile *splineFile = new TFile("AD0_SlewingSplines.root","RECREATE");
   for(Int_t i=0; i<16; i++) fListSplines->Add(fTimeSlewingSpline[i]); 
+  //for(Int_t i=0; i<16; i++) fListSplines->Add(hTimeVsCharge[i]);
+  //for(Int_t i=0; i<16; i++) fListSplines->Add(hMeanTimeVsCharge[i]);
   fListSplines->Write("fListSplines",1);
   splineFile->Close();
   
