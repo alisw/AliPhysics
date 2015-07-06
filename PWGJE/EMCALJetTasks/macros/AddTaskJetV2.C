@@ -22,8 +22,9 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   Double_t   trackptcut         = .15,
   Bool_t     LHC10h             = kFALSE,
   Bool_t     addEPweights       = kFALSE,
-  Bool_t     baseClassHistos    = kTRUE
-  )
+  Bool_t     baseClassHistos    = kTRUE,
+  Float_t    minEta             = -.7,
+  Float_t    maxEta             = .7)
 {  
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -82,8 +83,13 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
       jetCont->SetName("Jets");
       jetCont->SetPercAreaCut(jetareacut);
       jetCont->SetRhoName(nrho);
+      if(minEta > -.7 || maxEta < 0.7) {
+          jetCont->SetJetAcceptanceType(AliJetContainer::kUser);
+          jetCont->SetJetEtaLimits(minEta, maxEta);
+      }
       if(partCont)      jetCont->ConnectParticleContainer(partCont);
       if(clusterCont)   jetCont->ConnectClusterContainer(clusterCont);
+      jetCont->PrintCuts();
   }
 
   // task specific setters

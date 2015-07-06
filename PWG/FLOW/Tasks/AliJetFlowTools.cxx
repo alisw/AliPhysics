@@ -77,7 +77,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
     fRMS                (kTRUE),
     fSymmRMS            (0),
-    fConstantUE         (kTRUE),
+    fConstantUE         (kFALSE),
     fRho0               (kFALSE),
     fBootstrap          (kFALSE),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
