@@ -430,8 +430,8 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 			CopyCorrectionFromFile(filenames[0],"eff",eff);
 		else
 			eff[i]->Divide(eff[i],MCTruth[i],1,1,"B");
-		
-		
+		cout<<"EFF0"<<endl;	
+		eff[i]->Print("all");
 		contPID[i]->Sumw2();
 		rawspectramc[i]->Sumw2();
 		//contPID[i]->Add(contPID[i],rawspectramc[i],-1,1);
@@ -521,6 +521,8 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 		CopyCorrectionFromFile(filenames[2],"contWDfit",contWDfit);
 		CopyCorrectionFromFile(filenames[2],"contMatfit",contMatfit);
 		CopyCorrectionFromFile(filenames[2],"primaryfit",primaryfit);
+		cout<<"CONT FIT0"<<endl;
+		contfit[0]->Print("all");
 
 	}
 	else 
@@ -531,6 +533,8 @@ void AnalysisBoth (UInt_t options,TString outdate, TString outnamedata, TString 
 	{
 			if(((options&kdodca)==kdodca)||((options&kuseseccontaminatiofromfile)==kuseseccontaminatiofromfile))
 			{
+				cout<<"CONT FIT"<<endl;
+				contfit[i]->Print("all");
 				if((options&kuseprimaryPIDcont)||(i!=1&&i!=4)) //if we do not use cont PId only for primary  and this is a kaon that do not use fit
 					confinal[i]->Add(contfit[i]);
 				GetCorrectedSpectra(spectra[i],rawspectradata[i],eff[i],confinal[i]);
@@ -963,18 +967,6 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						mc->Add(hmc3);
 					TFractionFitter* fit = new TFractionFitter(hToFit,mc); // initialise
 					fit->Constrain(0,0.0,1.0);               // constrain fraction 1 to be between 0 and 1
-  					Double_t defaultStep = 0.01;
-					for (int iparm = 0; iparm < Npar; ++iparm) 
-					{
-      						TString name("frac"); name += iparm;
-						if(iparm==0)
-							fit->GetFitter()->SetParameter(iparm,name.Data(),0.85,0.01,0.0,1.0);
-						else if (Npar==2)
-							fit->GetFitter()->SetParameter(iparm,name.Data(),0.15,0.01,0.0,1.0);
-						else
-							fit->GetFitter()->SetParameter(iparm,name.Data(),0.075,0.01,0.0,1.0);
-	
-					}
 					if(fitsettings&0x1)
 						fit->Constrain(1,0.0,1.0);               // constrain fraction 1 to be between 0 and 1
 					if(fitsettings&0x2)
@@ -985,7 +977,24 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					hToFit->GetXaxis()->SetRange(binFitRange[0],binFitRange[1]);
 				//	hToFit->SetTitle(Form("DCA distr - %s %s %s %lf",sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),lowedge));
 					hToFit->SetTitle("");
-					Int_t status = fit->Fit();               // perform the fit
+					Int_t nfits=0;
+					Int_t status = 1;
+					while (status!=0&&nfits<20)
+					{
+						for (int iparm = 0; iparm < Npar; ++iparm)
+                                        	{
+                                                	TString name("frac"); name += iparm;
+                                                	if(iparm==0)
+                                                	        fit->GetFitter()->SetParameter(iparm,name.Data(),0.85-0.02*nfits,0.01,0.0,1.0);
+                                                	else if (Npar==2)
+                                                	        fit->GetFitter()->SetParameter(iparm,name.Data(),0.15+0.02*nfits,0.01,0.0,1.0);
+                                                	else
+                                                        	fit->GetFitter()->SetParameter(iparm,name.Data(),0.075+0.01*nfits,0.01,0.0,1.0);
+
+                                        	}
+						status = fit->Fit(); // perform the fit
+						nfits++;
+					}
 					cout << "fit status: " << status << endl;
 					debug<<"fit status: " << status << endl;
 		
@@ -1209,13 +1218,22 @@ void GetCorrectedSpectra(TH1F* corr,TH1F* raw,TH1F* eff, TH1F* con)
 		corr->SetBinContent(i,1);
 		corr->SetBinError(i,0);
 	}
-	corr->Sumw2(); 
+	
+	corr->Sumw2();
+	cout<<"CORR"<<endl;
+	corr->Print("all");	 
 	corr->Add(con,-1);
-	corr->Sumw2(); 	
+	corr->Sumw2();
+	cout<<"EFF"<<endl;
+	eff->Print("all"); 	
 	corr->Divide(eff);
 	corr->Sumw2(); 
+	eff->Print("all");
 	corr->Multiply(raw);
+	cout<<"Final"<<endl;
+	corr->Print("all");
 	corr->Sumw2(); 
+	corr->Print("all");
 }
 void GetCorrectedSpectraLeonardo(TH1F* spectra,TH1F* correction, TH1F* hprimaryData,TH1F* hprimaryMC)
 {
@@ -1887,6 +1905,8 @@ void CopyCorrectionFromFile(TString filename,TString correctionname,TH1F** corrt
 				Float_t content=histtmp->GetBinContent(ibin);
 				Float_t error=histtmp->GetBinError(ibin);
 				Int_t bin=corrtab[index]->FindBin(histtmp->GetBinCenter(ibin));
+				if(content>0.0)
+					cout<<"TEST1 "<<content<<" "<<error<<endl;
 				corrtab[index]->SetBinContent(bin,content);
 				corrtab[index]->SetBinError(bin,error);
 				

@@ -692,10 +692,6 @@ public:
  TProfile* GetCRCVZQVecAHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecA[r][c];};
  void SetCRCVZQVecCHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCVZQVecC[r][c] = TH;};
  TProfile* GetCRCVZQVecCHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecC[r][c];};
- void SetCRCVZQVecNAHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCVZQVecNA[r][c] = TH;};
- TProfile* GetCRCVZQVecNAHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecNA[r][c];};
- void SetCRCVZQVecNCHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCVZQVecNC[r][c] = TH;};
- TProfile* GetCRCVZQVecNCHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecNC[r][c];};
  
  void SetCRCZDCEvPlA(TH1D* const TH, Int_t const r, Int_t const c) {this->fCRCZDCEvPlA[r][c] = TH;};
  TH1D* GetCRCZDCEvPlA(Int_t const r, Int_t const c) const {return this->fCRCZDCEvPlA[r][c];};
@@ -1160,8 +1156,6 @@ private:
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
  TProfile *fCRCVZQVecA[fCRCMaxnRun][2]; //! Q Vectors VZERO-A
  TProfile *fCRCVZQVecC[fCRCMaxnRun][2]; //! Q Vectors VZERO-C
- TProfile *fCRCVZQVecNA[fCRCMaxnRun][2]; //! Normalized Q Vectors VZERO-A
- TProfile *fCRCVZQVecNC[fCRCMaxnRun][2]; //! Normalized Q Vectors VZERO-C
  
  TH1D *fCRCZDCEvPlA[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane ZDCN-A
  TH1D *fCRCZDCEvPlC[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane ZDCN-C
@@ -1173,7 +1167,7 @@ private:
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List
  const static Int_t fCRCVZnCR = 9;
- const static Int_t fCRCVZnEtaBin = 8;
+ const static Int_t fCRCVZnEtaBin = 7;
  TList *fCRCVZRbRList; //! CRC list of histograms RbR
  TList *fCRCVZRunsList[fCRCMaxnRun]; //! list of runs
  TMatrixD *fCRCQVZRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
@@ -1192,7 +1186,7 @@ private:
  // CRCZDC
  TList *fCRCZDCList; //! ZDCERO CRC List
  const static Int_t fCRCZDCnCR = 9;
- const static Int_t fCRCZDCnEtaBin = 8;
+ const static Int_t fCRCZDCnEtaBin = 7;
  TList *fCRCZDCRbRList; //! CRC list of histograms RbR
  TList *fCRCZDCRunsList[fCRCMaxnRun]; //! list of runs
  TMatrixD *fCRCQZDCRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
