@@ -333,6 +333,7 @@ install(DIRECTORY EVS DESTINATION PWGPP)
 install(DIRECTORY scripts DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/scripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
+install(DIRECTORY benchmark DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
