@@ -695,7 +695,7 @@ int AliHLTReconstructor::BuildCTPTriggerClassString(TString& triggerclasses) con
       AliTriggerClass* trclass = NULL;
       if (classesArray.At(iclass) && (trclass=dynamic_cast<AliTriggerClass*>(classesArray.At(iclass)))!=NULL) {
 	TString entry;
-	int trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
+	int trindex = trclass->GetIndex();
 	entry.Form("%02d:%s:", trindex, trclass->GetName());
 	AliTriggerCluster* cluster=NULL;
 	TObject* clusterobj=config->GetClusters().FindObject(trclass->GetCluster());
