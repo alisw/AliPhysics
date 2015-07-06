@@ -1336,6 +1336,8 @@ void MakePatternStore(AliDAConfig& cfg)
 int main(Int_t argc, Char_t **argv) 
 {
     /// main routine
+
+    printf("MTRda version v.06072015.01 \n");
   
     // needed for streamer application
     gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo", "*", "TStreamerInfo", "RIO", "TStreamerInfo()"); 
