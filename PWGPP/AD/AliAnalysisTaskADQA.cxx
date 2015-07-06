@@ -368,7 +368,7 @@ if (!fHistMaxChargeValueInt1) {
     fListHist->Add(fHistMaxChargeValueInt1);
   }
 if(!fHistTimeVsChargePerPM_UnCorr) {
-    fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",800, 400, 1200, 
+    fHistTimeVsChargePerPM_UnCorr = CreateHist3D("fHistTimeVsChargePerPM_UnCorr","Raw Time vs Charge per PM",2600, 400, 3000, 
     					200,-4,0,
 					kNChannelBins, kChannelMin, kChannelMax,"Leading time [ns]","ADC counts","Channel");
     fListHist->Add(fHistTimeVsChargePerPM_UnCorr);
