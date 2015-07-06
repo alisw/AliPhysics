@@ -2886,6 +2886,10 @@ get_realpath()
       # file *must* be local
       local tmppwd="$PWD"
     fi
+  elif [[ -d "$1" ]]
+  then
+   ( cd "$1" &>/dev/null; echo "$PWD" )
+    return 0
   else
     # file *cannot* exist
     return 1 # failure
