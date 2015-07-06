@@ -36,6 +36,7 @@
 #include "TCutG.h"
 #include "TProfile.h"
 #include "TF2.h"
+#include "THnSparse.h"
 
 
 
@@ -138,10 +139,12 @@ fHistProton_BetavsPTOFafterPIDTPCTOF(0),
 fHistProton_dEdxvsPTPCafterPIDTPCTOF(0),
 fhistPionEtaDistAfter(0),
 fhistKaonEtaDistAfter(0),
-fhistProtonEtaDistAfter(0)
+fhistProtonEtaDistAfter(0),
+fSparseAll(0)
 //fSparseSpecies(0),
 //fvalueSpecies(0)
 {
+    for(int i=0;i<4;i++){fvalueAll[i]=0;}
     for(int i=0;i<150;i++){
         fPurityFunction[i]=NULL;
     }
@@ -217,10 +220,12 @@ fHistProton_BetavsPTOFafterPIDTPCTOF(0),
 fHistProton_dEdxvsPTPCafterPIDTPCTOF(0),
 fhistPionEtaDistAfter(0),
 fhistKaonEtaDistAfter(0),
-fhistProtonEtaDistAfter(0)
+fhistProtonEtaDistAfter(0),
+fSparseAll(0)
 //fSparseSpecies(0),
-//fvalueSpecies(0)root
+//fvalueSpecies(0)
 {
+    for(int i=0;i<4;i++){fvalueAll[i]=0;}
     //Default Constructor
     for(int i=0;i<150;i++){
         fPurityFunction[i]=NULL;
@@ -240,13 +245,7 @@ AliAnalysisTaskPIDconfig::~AliAnalysisTaskPIDconfig()
         delete fPurityFunction[i];
     }
     
-    
-    //   delete fPID;
-    //  delete fPIDqa;
-    //   delete fTrackCuts;
-    // delete fSparseSpecies;
-    //delete []fvalueSpecies;
-    
+    delete fSparseAll;
     
 }
 //______________________________________________________________________
@@ -286,6 +285,7 @@ void AliAnalysisTaskPIDconfig::UserCreateOutputObjects()
     
     SetupTPCTOFqa();
     SetupEventInfo();
+    
     
     PostData(1,fListQA);
     
@@ -528,6 +528,15 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                                 TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
                                 if (hist1){
                                     hist1->Fill(nsigmaTPC,nsigmaTOF,p);}
+                                
+                                //--------THnsparse---------
+                                fvalueAll[0] = p;
+                                fvalueAll[1] = eta;
+                                fvalueAll[2] = nsigmaTOF;
+                                fvalueAll[3] = nsigmaTPC;
+                                THnSparseD *fSparseAll = (THnSparseD*)fListQAtpctof->At(ispecie+(AliPID::kSPECIESC)*3.0);
+                                fSparseAll->Fill(fvalueAll);
+                                
                             }
                         }
                         if(p_bin>7 && fPurityFunction[index]->Eval(nsigmaTOF,nsigmaTPC)>fPurityLevel){//p_bin>7
@@ -656,6 +665,15 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                     if (hTOFnSigmavsP){
                         hTOFnSigmavsP->Fill(track->P(),nsigmaTOF);}
                     
+                    //--------THnsparse---------
+                    fvalueAll[0] = p;
+                    fvalueAll[1] = eta;
+                    fvalueAll[2] = nsigmaTOF;
+                    fvalueAll[3] = nsigmaTPC;
+                    THnSparseD *fSparseAll = (THnSparseD*)fListQAtpctof->At(ispecie+(AliPID::kSPECIESC)*3.0);
+                    fSparseAll->Fill(fvalueAll);
+                    
+                    
                 }
             }
         }//probMis
@@ -736,6 +754,22 @@ void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
         fhistTOFnSigmavsP = new TH2F(Form("NsigmaP_TOF_%s",AliPID::ParticleName(ispecie)),Form("TOF n#sigma %s vs. p ;p [GeV];TOF n#sigma",AliPID::ParticleName(ispecie)),60,0,6,150,-10,20);
         fListQAtpctof->Add(fhistTOFnSigmavsP);
     }
+    
+    Int_t binsv1[4]={60,20,200,200}; //p,eta,tofsig,tpcsig
+    Double_t xminv1[4]={0.1,-1,-20,-20};
+    Double_t xmaxv1[4]={6,1,20,20};
+    
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+        fSparseAll = new THnSparseD (Form("fSparse_%s",AliPID::ParticleName(ispecie)),Form("fSparse_%s",AliPID::ParticleName(ispecie)),4,binsv1,xminv1,xmaxv1);
+        fSparseAll->GetAxis(0)->SetTitle("p_{T}");
+        fSparseAll->GetAxis(1)->SetTitle("#eta");
+        fSparseAll->GetAxis(2)->SetTitle("TOFn#sigma");
+        fSparseAll->GetAxis(3)->SetTitle("TPCn#sigma");
+        
+        fListQAtpctof->Add(fSparseAll);
+    }
+    
+    
     
 }
 //______________________________________________________________________________
