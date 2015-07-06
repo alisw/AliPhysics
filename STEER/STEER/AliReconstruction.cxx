@@ -4222,32 +4222,17 @@ Bool_t AliReconstruction::GetEventInfo()
   Int_t nclasses = classesArray.GetEntriesFast();
   for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
     AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
-    if (trclass && trclass->GetMask()>0) {
-      Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
-      if (fesd) fesd->SetTriggerClass(trclass->GetName(),trindex);
-      if (trmask & (1ull << trindex)) {
-	trclasses += " ";
-	trclasses += trclass->GetName();
-	trclasses += " ";
-	clustmask |= trclass->GetCluster()->GetClusterMask();
-	if (TriggerMatches2Alias(trclass->GetName(),fCosmicAlias)) fEventInfo.SetCosmicTrigger(kTRUE);
-	else if (TriggerMatches2Alias(trclass->GetName(),fLaserAlias))  fEventInfo.SetCalibLaserTrigger(kTRUE);
-	else fEventInfo.SetBeamTrigger(kTRUE);
-      }
-    }
-    if (trclass && trclass->GetMaskNext50()>0) {
-      Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMaskNext50()))+50;
-      if (fesd) fesd->SetTriggerClass(trclass->GetName(),trindex);
-      if (trmaskNext50 & (1ull << (trindex-50))) {
-	trclasses += " ";
-	trclasses += trclass->GetName();
-	trclasses += " ";
-	clustmask |= trclass->GetCluster()->GetClusterMask();
-	if (TriggerMatches2Alias(trclass->GetName(),fCosmicAlias)) fEventInfo.SetCosmicTrigger(kTRUE);
-	else if (TriggerMatches2Alias(trclass->GetName(),fLaserAlias))  fEventInfo.SetCalibLaserTrigger(kTRUE);
-	else fEventInfo.SetBeamTrigger(kTRUE);
-      }
-    }
+    Int_t trindex = trclass->GetIndex()-1;
+    if (fesd) fesd->SetTriggerClass(trclass->GetName(),trindex);
+    Bool_t match = trindex<50 ? (trmask & (1ull << trindex)) : (trmaskNext50 & (1ull << (trindex-50)));
+    if (!match) continue;
+    trclasses += " ";
+    trclasses += trclass->GetName();
+    trclasses += " ";
+    clustmask |= trclass->GetCluster()->GetClusterMask();
+    if (TriggerMatches2Alias(trclass->GetName(),fCosmicAlias)) fEventInfo.SetCosmicTrigger(kTRUE);
+    else if (TriggerMatches2Alias(trclass->GetName(),fLaserAlias))  fEventInfo.SetCalibLaserTrigger(kTRUE);
+    else fEventInfo.SetBeamTrigger(kTRUE);
   }
   fEventInfo.SetTriggerClasses(trclasses);
 
@@ -4896,14 +4881,9 @@ void AliReconstruction::ProcessTriggerAliases()
     // active classes mentioned in the alias will be converted to their masks
     for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
       AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
-      if (trclass && trclass->GetMask()>0) {
-	Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
-	fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
-      }
-      if (trclass && trclass->GetMaskNext50()>0) {
-	Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMaskNext50()))+50;
-	fRawReader->LoadTriggerClass(trclass->GetName(),trindex);
-      }
+      if (!trclass) continue;
+      int trindex = trclass->GetIndex();
+      fRawReader->LoadTriggerClass(trclass->GetName(),trindex);      
     }
     //
     // nullify all remaining triggers mentioned in the alias
