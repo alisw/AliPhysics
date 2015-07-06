@@ -232,6 +232,7 @@ class AliADCalibData: public TNamed {
  protected:
   void     InitLightYields();
   void     InitPMGains();
+  void     InitCalibThresholds();
   Bool_t   IsClkValid(UShort_t clock) const;
 
   Float_t  fPedestal[32];     // Mean pedestal values - used offline
@@ -288,8 +289,10 @@ class AliADCalibData: public TNamed {
   Float_t *fLightYields;       //! Light Yields channel by channel (read from separate OCDB entry)
   Float_t *fPMGainsA;          //! PM gain factors channel by channel (read from separate OCDB entry)
   Float_t *fPMGainsB;          //! PM gain factors channel by channel (read from separate OCDB entry)
+  Float_t *fThrCalibA;	       //! Thereshold calibration parameters channel by channel (read from separate OCDB entry)
+  Float_t *fThrCalibB;	       //! Thereshold calibration parameters channel by channel (read from separate OCDB entry)
 
-  ClassDef(AliADCalibData,1)    // AD Calibration data
+  ClassDef(AliADCalibData,2)    // AD Calibration data
 };
 
 #endif

@@ -40,6 +40,8 @@ AliADCalibData::AliADCalibData():
   fLightYields(NULL),
   fPMGainsA(NULL),
   fPMGainsB(NULL),
+  fThrCalibA(NULL),
+  fThrCalibB(NULL),
   fBBAThreshold(0),
   fBBCThreshold(0) ,  
   fBGAThreshold(0) ,  
@@ -104,6 +106,8 @@ AliADCalibData::AliADCalibData(const char* name) :
   fLightYields(NULL),
   fPMGainsA(NULL),
   fPMGainsB(NULL),
+  fThrCalibA(NULL),
+  fThrCalibB(NULL),
   fBBAThreshold(0),
   fBBCThreshold(0) ,  
   fBGAThreshold(0) ,  
@@ -165,7 +169,9 @@ AliADCalibData::AliADCalibData(const AliADCalibData& calibda) :
   TNamed(calibda),
   fLightYields(NULL),
   fPMGainsA(NULL),
-  fPMGainsB(NULL)
+  fPMGainsB(NULL),
+  fThrCalibA(NULL),
+  fThrCalibB(NULL)
 {
 // copy constructor
 
@@ -243,6 +249,10 @@ AliADCalibData::~AliADCalibData()
     delete [] fPMGainsA;
   if (fPMGainsB)
     delete [] fPMGainsB;
+    if (fThrCalibA)
+    delete [] fThrCalibA;
+  if (fThrCalibB)
+    delete [] fThrCalibB;
 }
 
 //________________________________________________________________
@@ -325,22 +335,35 @@ Float_t AliADCalibData::GetADCperMIP(Int_t channel)
     ADCperMIP = TMath::Power(hv/fPMGainsA[channel],fPMGainsB[channel]);
   return ADCperMIP;
 }
+//________________________________________________________________
+void  AliADCalibData::InitCalibThresholds()
+{
+  // Initialize the PM gain factors
+  // Read from a separate OCDB entry
+  if (fThrCalibA) return;
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("AD/Calib/Thresholds");
+  if (!entry) AliFatal("AD Thresholds are not found in OCDB !");
+  TH2F *thrCalib = (TH2F*)entry->GetObject();
+
+  fThrCalibA = new Float_t[16];
+  fThrCalibB = new Float_t[16];
+  for(Int_t i = 0 ; i < 16; ++i) {
+    fThrCalibA[i] = thrCalib->GetBinContent(i+1,1);
+    fThrCalibB[i] = thrCalib->GetBinContent(i+1,2);
+  }
+}
 
 //________________________________________________________________
 Float_t AliADCalibData::GetCalibDiscriThr(Int_t channel)
 {
   // The method returns actual TDC discri threshold
   // extracted from the data.
-
+  if (!fThrCalibA) InitCalibThresholds();
+  
   Float_t thr = GetDiscriThr(channel);
 
-  Float_t calThr = 0;
-  if (thr <= 1.) 
-    calThr = 3.1;
-  else if (thr >= 2.)
-    calThr = (3.1+1.15*thr-1.7);
-  else
-    calThr = (3.1-0.3*thr+0.3*thr*thr);
+  Float_t calThr = fThrCalibA[channel]*thr + fThrCalibB[channel];
 
   return calThr;
 }
@@ -1217,14 +1240,15 @@ printf("======================================================\n");
 printf("\n"); 
  
   for(Int_t pmNumber = 0; pmNumber < 16; ++pmNumber) {
-    printf("ChOff = %d, ChOn = %d, HV = %.1f, MIP = %.1f ADC, Dead = %s, Threshold = %.1f, DelayHit = %.2f\n",
+    printf("ChOff = %d, ChOn = %d, HV = %.1f, MIP = %.1f ADC, Dead = %s, DelayHit = %.2f, Thr_DCS = %.1f, Thr_Calib = %.1f\n",
 	   pmNumber,
 	   kOnlineChannel[pmNumber],
 	   GetMeanHV(pmNumber),
 	   GetADCperMIP(pmNumber),
 	   IsChannelDead(pmNumber)?"yes":"no",
+	   GetTimeOffset(pmNumber),
 	   GetDiscriThr(pmNumber),
-	   GetTimeOffset(pmNumber)
+	   GetCalibDiscriThr(pmNumber)
 	   );
   }
   
