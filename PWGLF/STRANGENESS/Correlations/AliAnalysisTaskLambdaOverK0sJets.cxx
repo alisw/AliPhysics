@@ -3146,6 +3146,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
     Float_t nsigPosProton = 0.;
     Float_t nsigNegProton = 0.;
 
+      /*
     if(fUsePID && !fIsMC) {     
       const AliAODPid *pidNeg = ntrack->GetDetPid();
       const AliAODPid *pidPos = ptrack->GetDetPid();
@@ -3168,7 +3169,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
 	
       }
       
-    }
+    }*/
 
     // **********************************
     // Disentangle the V0 candidate
