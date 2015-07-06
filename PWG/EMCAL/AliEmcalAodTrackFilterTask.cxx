@@ -29,7 +29,8 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fDist(440),
   fTrackEfficiency(0),
   fTracksIn(0),
-  fTracksOut(0)
+  fTracksOut(0),
+  fKeepInvMassTag(kFALSE)
 {
   // Constructor.
 
@@ -52,7 +53,8 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fDist(440),
   fTrackEfficiency(0),
   fTracksIn(0),
-  fTracksOut(0)
+  fTracksOut(0),
+  fKeepInvMassTag(kFALSE)
 {
   // Constructor.
 
@@ -177,7 +179,16 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       if (label == 0) 
 	AliDebug(2,Form("Track %d with label==0", iTracks));
     }
-    newt->SetLabel(label);
+    if(fKeepInvMassTag && !fIsMC && (track->GetLabel() == 1011000 ||
+       track->GetLabel() == 1012000 ||
+       track->GetLabel() == 1021000 ||
+       track->GetLabel() == 1022000 ||
+       track->GetLabel() == 1031000 ||
+	track->GetLabel() == 1032000)){
+      newt->SetLabel(track->GetLabel());
+    }
+    else
+      newt->SetLabel(label);
     if (type==0) {
       newt->SetBit(BIT(22),0);
       newt->SetBit(BIT(23),0);
