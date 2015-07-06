@@ -9,7 +9,7 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
 						Bool_t isTrigger 		= kFALSE,
                         char * period           = "b",
                         Int_t EMCalThreshould   = 0,
-                        Bool_t isTender = kFALSE,
+                        Bool_t isTender = kFALSE
                 )
 {
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
