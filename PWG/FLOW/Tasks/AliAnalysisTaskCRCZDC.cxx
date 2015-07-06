@@ -141,6 +141,7 @@ fShuffleTracks(kFALSE),
 fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
+fUseMCCen(kTRUE),
 fCentrLowLim(0),
 fCentrUpLim(0),
 fCentrEstimator(0),
@@ -261,6 +262,7 @@ fShuffleTracks(kFALSE),
 fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
+fUseMCCen(kTRUE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator("V0M"),
@@ -737,52 +739,58 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    towZPAlg[it] = 8*towZNA[it];
   }
   
-  Double_t xyZNC[2]={-99.,-99.}, xyZNA[2]={-99.,-99.};
-  aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
+  // Get centroid from ZDCs *******************************************************
   
-//  const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-//  const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-//  const Float_t alpha=0.395;
-//  Float_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
-//  Float_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA;
-//  Float_t zncEnergy=0., znaEnergy=0.;
-//  //
-//  for(Int_t i=1; i<5; i++){
-//   zncEnergy += towZNC[i];
-//   znaEnergy += towZNA[i];
-//  }
-//  for(Int_t i=1; i<5; i++){
-//   if(towZNC[i]>0.) {
-//    wZNC = TMath::Power(towZNC[i], alpha);
-//    numXZNC += x[i]*wZNC;
-//    numYZNC += y[i]*wZNC;
-//    denZNC += wZNC;
-//   }
-//   if(towZNA[i]>0.) {
-//    wZNA = TMath::Power(towZNA[i], alpha);
-//    numXZNA += x[i]*wZNA;
-//    numYZNA += y[i]*wZNA;
-//    denZNA += wZNA;
-//   }
-//  }
-//  if(denZNC!=0) {
-//   xyZNC[0] = numXZNC/denZNC;
-//   xyZNC[1] = numYZNC/denZNC;
-//  }
-//  else{
-//   xyZNC[0] = xyZNC[1] = 0.;
-//  }
-//  if(denZNA!=0){
-//   xyZNA[0] = numXZNA/denZNA;
-//   xyZNA[1] = numYZNA/denZNA;
-//  }
-//  else{
-//   xyZNA[0] = xyZNA[1] = 0.;
-//  }
+  Double_t xyZNC[2]={999.,999.}, xyZNA[2]={999.,999.};
+  Float_t zncEnergy=0., znaEnergy=0.;
+  for(Int_t i=0; i<5; i++){
+   zncEnergy += towZNC[i];
+   znaEnergy += towZNA[i];
+  }
+  
+  if (fUseMCCen) {
+   aodZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
+  } else {
+   const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+   const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+   const Float_t alpha = 0.395;
+   Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
+   Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
+   for(Int_t i=0; i<4; i++){
+    if(towZNC[i+1]>0.) {
+     wZNC = TMath::Power(towZNC[i+1], alpha);
+     numXZNC += x[i]*wZNC;
+     numYZNC += y[i]*wZNC;
+     denZNC += wZNC;
+    }
+    if(towZNA[i+1]>0.) {
+     wZNA = TMath::Power(towZNA[i+1], alpha);
+     numXZNA += x[i]*wZNA;
+     numYZNA += y[i]*wZNA;
+     denZNA += wZNA;
+    }
+   }
+   if(denZNC!=0) {
+    xyZNC[0] = numXZNC/denZNC;
+    xyZNC[1] = numYZNC/denZNC;
+   }
+   else{
+    xyZNC[0] = xyZNC[1] = 999.;
+   }
+   if(denZNA!=0) {
+    xyZNA[0] = numXZNA/denZNA;
+    xyZNA[1] = numYZNA/denZNA;
+   }
+   else{
+    xyZNA[0] = xyZNA[1] = 999.;
+   }
+  }
   
   fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
   fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
-  fFlowEvent->SetZDC2Qsub(xyZNC,towZNC[0],xyZNA,towZNA[0]);
+  fFlowEvent->SetZDC2Qsub(xyZNC,zncEnergy,xyZNA,znaEnergy);
+  
+  // ******************************************************************************
   
   Float_t tdcSum = aodZDC->GetZDCTimeSum();
   Float_t tdcDiff = aodZDC->GetZDCTimeDiff();
