@@ -136,6 +136,7 @@ private:
 
 	AliHLTAsyncMemberProcessor<AliHLTAsyncCalibrationComponent> fAsyncProcessor;
 	int fAsyncProcessorQueueDepth;
+	int fNEvents;
 
 	ClassDef(AliHLTAsyncCalibrationComponent, 0)
 };

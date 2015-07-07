@@ -248,6 +248,8 @@ private:
   Bool_t fWriteAnalysisToFile;
   Bool_t fEnableDebug; //enable debug output - sysinfo,debug streamer, other files
   Bool_t fResetAfterPush; //reset the calibration after pushing for merging
+  Int_t fNEvents;		//Number of events processed
+  Int_t fPushEventModulo; //Push every n-th event
 
   ClassDef(AliHLTTPCCalibManagerComponent, 1)
 };

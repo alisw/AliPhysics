@@ -73,7 +73,7 @@ void AliHLTTPCClusterTransformationPrepareComponent::GetInputDataTypes( vector<A
   // see header file for class documentation
 
   list.clear(); 
-  list.push_back( kAliHLTDataTypeCustomTrigger | kAliHLTDataOriginHLT );
+  list.push_back( kAliHLTDataTypeTObject | kAliHLTDataOriginHLT );
 }
 
 AliHLTComponentDataType AliHLTTPCClusterTransformationPrepareComponent::GetOutputDataType() { 
@@ -220,40 +220,41 @@ int AliHLTTPCClusterTransformationPrepareComponent::ScanConfigurationArgument(in
 Int_t AliHLTTPCClusterTransformationPrepareComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/) {
 	// see header file for class documentation
 
-	// -- Only use data event
-	if (!IsDataEvent()) return(0);
-	
-/*	int new_calib_data = true;
-	for ( const TObject *iter = GetFirstInputBlock(kAliHLTDataTypeCustomTrigger); iter != NULL; iter = GetNextInputObject() )
-	{
-		new_calib_data = true;
-	}
-	
-	if (new_calib_data)*/
-	{
-		//Workaround for offline simulation. In offline simulation there is one shared static instance of AliHLTTPCFastTransform, so we have to reset the sector borders every time.
-		if (fMinInitSec != -1 && fMaxInitSec != -1)
-		{
-			fgTransform.SetInitSec(fMinInitSec, fMaxInitSec);
-		}
-		fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCClusterTransformationPrepareComponent::AsyncGenerateFastTransformObject, NULL);
-	}
-	
 	AliHLTTPCFastTransformObject* transformMap = NULL;
 	if (fTmpFastTransformObject)
 	{
+		HLTImportant("Shipping initial transformation map");
 		//If we have prepared a first transform map in DoInit, we ship this as soon as possible
 		transformMap = fTmpFastTransformObject;
 		fTmpFastTransformObject = NULL;
 	}
-	else
+
+	// -- Only use data event
+	if (IsDataEvent())
 	{
+		int new_calib_data = 0;
+		for ( const TObject *iter = GetFirstInputObject(); iter != NULL; iter = GetNextInputObject() )
+		{
+			new_calib_data++;
+		}
+		
+		if (new_calib_data)
+		{
+			HLTImportant("Received new calibration data (%d objects), regenerating transformation map", new_calib_data);
+			//Workaround for offline simulation. In offline simulation there is one shared static instance of AliHLTTPCFastTransform, so we have to reset the sector borders every time.
+			if (fMinInitSec != -1 && fMaxInitSec != -1)
+			{
+				fgTransform.SetInitSec(fMinInitSec, fMaxInitSec);
+			}
+			fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCClusterTransformationPrepareComponent::AsyncGenerateFastTransformObject, NULL);
+		}
+		
 		//If a new transform map is available from an async creation task, we ship the newest one.
 		while (fAsyncProcessor.IsQueuedTaskCompleted())
 		{
 			if (transformMap) delete transformMap;
 			transformMap = (AliHLTTPCFastTransformObject*) fAsyncProcessor.RetrieveQueuedTaskResult();
-		}		
+		}
 	}
 	
 	//If there is a new map, ship it

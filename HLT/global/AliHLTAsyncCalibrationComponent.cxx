@@ -28,7 +28,8 @@ ClassImp(AliHLTAsyncCalibrationComponent)
 AliHLTAsyncCalibrationComponent::AliHLTAsyncCalibrationComponent() :
 AliHLTProcessor(),
 fAsyncProcessor(),
-fAsyncProcessorQueueDepth(0)
+fAsyncProcessorQueueDepth(0),
+fNEvents(0)
 {
 }
 
@@ -128,11 +129,10 @@ Int_t AliHLTAsyncCalibrationComponent::DoDeinit() {
 Int_t AliHLTAsyncCalibrationComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/) {
 	// see header file for class documentation
 
-	HLTImportant("AliHLTAsyncCalibrationComponent::DoEvent");
-
 	// -- Only use data event
 	if (IsDataEvent())
 	{
+		HLTImportant("AliHLTAsyncCalibrationComponent::DoEvent");
 		// -- Get ESD object
 		// -------------------
 		AliESDEvent *esdEvent = NULL;
@@ -157,7 +157,14 @@ Int_t AliHLTAsyncCalibrationComponent::DoEvent(const AliHLTComponentEventData& e
 			}
 			else
 			{
-				fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTAsyncCalibrationComponent::CalibrationTask, esdEvent);
+				if (fNEvents++ % 3 == 0)
+				{
+					fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTAsyncCalibrationComponent::CalibrationTask, esdEvent);
+				}
+				else
+				{
+					delete esdEvent;
+				}
 			}
 		}
 	}

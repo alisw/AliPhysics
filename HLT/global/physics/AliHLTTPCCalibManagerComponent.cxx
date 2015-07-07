@@ -100,7 +100,9 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   fAddTaskMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C"),
   fWriteAnalysisToFile(kFALSE),
   fEnableDebug(kFALSE),
-  fResetAfterPush(kTRUE)
+  fResetAfterPush(kTRUE),
+  fPushEventModulo(0),
+  fNEvents(0)
 {
   // an example component which implements the ALICE HLT processor
   // interface and does some analysis on the input raw data
@@ -270,7 +272,11 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   //pushes once every n seconds if
   //configured with -pushback-period=n
   //fAnalysisManager->GetOutputs() is an TObjArray of AliAnalysisDataContainer objects
-  PushAndReset(fAnalysisManager->GetOutputs()); 
+  fNEvents++;
+  if (fPushEventModulo == 0 || fNEvents % fPushEventModulo == 0)
+  {
+	PushAndReset(fAnalysisManager->GetOutputs()); 
+  }
 
   stopwatch.Stop();
   AliSysInfo::AddStamp("analysisTiming",vEvent->GetNumberOfTracks(),stopwatch.RealTime()*1000,stopwatch.CpuTime()*1000);
@@ -390,6 +396,11 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
   {
     fAddTaskMacro=value;
     HLTInfo("fAddTaskMacro=%s\n",fAddTaskMacro.Data());
+  }
+  else if (option.Contains("PushEventModulo"))
+  {
+    fPushEventModulo=atoi(value.Data());
+    HLTInfo("fPushEventModulo=%d\n",fPushEventModulo);
   }
   else if (option.Contains("ResetAfterPush"))
   {
