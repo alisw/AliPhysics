@@ -4882,7 +4882,7 @@ void AliReconstruction::ProcessTriggerAliases()
     for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
       AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
       if (!trclass) continue;
-      int trindex = trclass->GetIndex();
+      int trindex = trclass->GetIndex()-1;
       fRawReader->LoadTriggerClass(trclass->GetName(),trindex);      
     }
     //
