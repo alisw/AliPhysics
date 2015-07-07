@@ -200,7 +200,7 @@ void AliZDCQADataMakerRec::InitRaws()
 //  hRawTDCs->SetMaximum(-300); hRawTDCs->SetMinimum(-340);
   Add2RawsList(hRawTDCs, 23, !expert, image);
   
-  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;(ZNC-ZNA) (ns);(ZNC+ZNA) (ns)", 240,-60.,60.,240,-60.,-60.);
+  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;(ZNC-ZNA) (ns);(ZNC+ZNA) (ns)", 240,-60.,60.,200,-200.,-100.);
   Add2RawsList(hTimeZDC, 24, !expert, image);
   
   TH2F *hZNCrawCentr  = new TH2F("hZNCrawCentr", "ZNC centroid;X (cm);Y(cm)", 100,-3.5,3.5,100,-3.5,3.5);
@@ -632,7 +632,7 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	 else if(stream.GetChannel()==20 && tdcValue!=0.) tdcGate = tdcValue;
 	 else if(stream.GetChannel()==21 && tdcValue!=0.) l0 = tdcValue;
 	 
-	 if(stream.GetChannel()==16 && tdcGate!=0. && l0!=0.){
+	 if(stream.GetChannel()>23 && tdcGate!=0. && l0!=0.){
 	      if(zncTDC!=0.){
 	        Float_t znc = zncTDC-tdcGate;
 	        FillRawsData(14,znc);
@@ -843,7 +843,7 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	TH1F* h18 =  dynamic_cast<TH1F*> (GetRawsData(18, itc));
 	TH1F* h19 =  dynamic_cast<TH1F*> (GetRawsData(19, itc));
 	TProfile* h20 = dynamic_cast<TProfile*> (GetRawsData(20, itc));
-	//TProfile* h21 =  dynamic_cast<TProfile*> (GetRawsData(21, itc));
+	TProfile* h21 = dynamic_cast<TProfile*> (GetRawsData(21, itc));
 	TH1F* h22 =  dynamic_cast<TH1F*> (GetRawsData(22, itc));
 	TH1F* h23 =  dynamic_cast<TH1F*> (GetRawsData(23, itc));
 	TH2F* h24 =  dynamic_cast<TH2F*> (GetRawsData(24, itc));
@@ -861,7 +861,8 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	      h22->SetBinContent(ibin, h20->GetBinContent(ibin)); 
 	      h22->SetBinError(ibin, h20->GetBinError(ibin));
 	    }
-	    h22->SetLineColor(kBlue+1); h22->SetLineWidth(2);
+	    h22->SetLineColor(kBlue+3); 
+	    h22->SetLineWidth(2);
 	  }
 	  else printf("Warning: Raw ADC QA histo not found \n\n");
 	}
@@ -872,7 +873,7 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	}
 	else{
 	  /*for(Int_t ibin=1; ibin<=h21->GetNbinsX(); ibin++){
-	    printf("  bin %d  TDC %f\n",ibin,  h21->GetBinContent(ibin));
+	    //printf("  bin %d  TDC %f\n",ibin,  h21->GetBinContent(ibin));
 	    h23->SetBinContent(ibin, h21->GetBinContent(ibin)); 
 	    h23->SetBinError(ibin, h21->GetBinError(ibin));
 	  }*/
@@ -890,7 +891,7 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    h23->SetBinContent(6, h19->GetMean());
 	    h23->SetBinError(6, h19->GetRMS());
 	    //
-	    h23->SetLineColor(kAzure+6); 
+	    h23->SetLineColor(kAzure+8); 
 	    h23->SetLineWidth(2);
 	  }
 	  else printf(" Warning: Raw TDC QA histo not found\n\n");
