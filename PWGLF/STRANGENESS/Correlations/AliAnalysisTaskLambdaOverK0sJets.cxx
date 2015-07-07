@@ -40,7 +40,7 @@
 #include "AliAODcascade.h"
 
 #include "AliCFContainer.h"
-#include "AliCentrality.h"
+#include "AliCentrality.h"
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
