@@ -1615,11 +1615,11 @@ void AliCDBManager::SetRun(Int_t run) {
 void AliCDBManager::ClearPromptCache(){
 // clear AliCDBEntry prompt cache
 
-  AliDebug(2, Form("PROMPT cache entries to be deleted: %d",fEntryCache.GetEntries()));
+  AliDebug(2, Form("PROMPT cache entries to be deleted: %d",fPromptEntryCache.GetEntries()));
 
   fPromptEntryCache.DeleteAll();
 
-  AliDebug(2, Form("After deleting - PROMPT cache entries: %d",fEntryCache.GetEntries()));
+  AliDebug(2, Form("After deleting - PROMPT cache entries: %d",fPromptEntryCache.GetEntries()));
 }
 
 //_____________________________________________________________________________
