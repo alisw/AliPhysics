@@ -87,6 +87,7 @@ fMVMaxWghNtr(10.),
 fMVFinalWBinary(kTRUE),
 fBCSpacing(50),
 fMVVertices(0),
+fDisableBCInCPass0(kTRUE),
 fClusterize(kFALSE),
 fDeltaZCutForCluster(0.1),
 fnSigmaZCutForCluster(999999.)
@@ -140,6 +141,7 @@ fMVMaxWghNtr(10.),
 fMVFinalWBinary(kTRUE),
 fBCSpacing(50),
 fMVVertices(0),
+fDisableBCInCPass0(kTRUE),
 fClusterize(kFALSE),
 fDeltaZCutForCluster(0.1),
 fnSigmaZCutForCluster(999999.)
@@ -1041,6 +1043,14 @@ void AliVertexerTracks::SetCuts(Double_t *cuts, Int_t ncuts)
   if ( (fAlgo==kMultiVertexer || fClusterize) && fBCSpacing>0) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
   else                       SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
   //
+  // Don't use BCSpacing in CPass0
+  TString cpass = gSystem->Getenv("CPass");
+  if (cpass=="0" && fDisableBCInCPass0) {
+    AliInfoF("CPass%s declared, switch off using BC from TOF",cpass.Data());
+    SetBCSpacing(-25);
+    SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
+  }
+
   return;
 }
 //---------------------------------------------------------------------------
