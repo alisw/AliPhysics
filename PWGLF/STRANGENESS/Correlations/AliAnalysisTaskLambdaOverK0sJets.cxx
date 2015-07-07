@@ -80,7 +80,7 @@ static Int_t   nMaxEvMix = 250;
 AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *name) :
 AliAnalysisTaskSE(name),
 
-fAOD(0),  fCollision("PbPb2010"), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fDoMixEvt(kFALSE), fTriggerFB(768), fTrigPtMin(5.), fTrigPtMax(10.), fTrigPtMCMin(5.), fTrigPtMCMax(10000.), fTrigEtaMax(0.8), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
+fAOD(0),  fCollision("PbPb2010"), fIsMC(kFALSE), fUsePID(kFALSE), fCentMin(0.), fCentMax(90.), fDoQA(kFALSE), fDoMixEvt(kFALSE), fTriggerFB(768), fTrigPtMin(5.), fTrigPtMax(10.), fTrigPtMCMin(5.), fTrigPtMCMax(10000.), fTrigEtaMax(0.8), fTriggerNCls(10), fCheckIDTrig(kFALSE), fSeparateInjPart(kTRUE), fEndOfHijingEvent(-1),  fPIDResponse(0),
 
   fMinPtDaughter(0.160), fMaxEtaDaughter(0.8), fMaxDCADaughter(1.0), fUseEtaCut(kFALSE), fYMax(0.7), fDCAToPrimVtx(0.1), fMinCPA(0.998), fNSigma(3.0), fDaugNClsTPC(70.), fMinCtau(0.), fMaxCtau(3.), fIdTrigger(-1), fIsV0LP(0), fPtV0LP(0.), fIsSndCheck(0),
 
@@ -2429,7 +2429,7 @@ Bool_t AliAnalysisTaskLambdaOverK0sJets::AcceptTrack(const AliAODTrack *t)
   if( !(t->TestFilterBit(fTriggerFB)) )  return kFALSE;
  
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1); 
-  if (nCrossedRowsTPC < 70) return kFALSE;  
+  if (nCrossedRowsTPC < fTriggerNCls) return kFALSE;
   
    // Point in the SPD
   Int_t SPDHits = t->HasPointOnITSLayer(0) + t->HasPointOnITSLayer(1);
