@@ -274,6 +274,8 @@ void AliEveSaveViews::SaveWithDialog()
     bool logo        = settings.GetValue("screenshot.logo.draw",true);
     bool info        = settings.GetValue("screenshot.info.draw",true);
     bool projections = settings.GetValue("screenshot.projections.draw",true);
+    const char *energyLabel= settings.GetValue("screenshot.force.energy","Energy: unknown");
+    if(strcmp(energyLabel,"")==0)energyLabel="Energy: unknown";
     
     gEve->GetBrowser()->RaiseWindow();
     gEve->FullRedraw3D();
@@ -318,8 +320,8 @@ void AliEveSaveViews::SaveWithDialog()
         viewFilename = Form("view-%d.png", index);
         
         // Save OpenGL view in file and read it back using BB (missing method in Root returning TASImage)
-        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
-        TASImage *viewImg = new TASImage(viewFilename);
+//        view->GetGLViewer()->SavePictureUsingBB(viewFilename);
+//        TASImage *viewImg = new TASImage(viewFilename);
         
         //        tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingBB();
         
@@ -328,14 +330,15 @@ void AliEveSaveViews::SaveWithDialog()
         // This improves the quality of pictures in some specific cases
         // but is causes a bug (moving mouse over views makes them disappear
         // on new event being loaded
+
+        TASImage *viewImg;
+         if(index==0){
+             viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
+         }
+         else {
+             viewImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
+         }
         
-        //         if(index==0){
-        //         tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(width3DView, height3DView);
-        //         }
-        //         else {
-        //         tempImg = (TASImage*)view->GetGLViewer()->GetPictureUsingFBO(widthChildView, heightChildView);
-        //         }
-        //
         
         if(viewImg){
             // copy view image in the composite image
@@ -418,7 +421,7 @@ void AliEveSaveViews::SaveWithDialog()
         }
         else
         {
-            energy = "Energy: unknown";
+            energy = energyLabel;
         }
         int fontSize = 0.015*height;
         compositeImg->BeginPaint();
@@ -446,7 +449,7 @@ void AliEveSaveViews::SaveWithDialog()
     }
     
     imgToSave->WriteImage(fileinfo.fFilename);
-    
+        
     if(compositeImg){delete compositeImg;compositeImg=0;}
     if(imgToSave){delete imgToSave;imgToSave=0;}
 }

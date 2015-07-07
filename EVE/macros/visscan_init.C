@@ -98,6 +98,19 @@ void visscan_init(const TString& cdburi = "",
     
     dataSource->AddAODfriend("AliAOD.VertexingHF.root");
     
+    gInterpreter->AddIncludePath(Form("%s/../src/MONITOR/MONITOR", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/STEER/", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/ANALYSIS/ANALYSISalice", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/STEER/STEERbase", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/STEER/ESD", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/EVE/EveBase", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/STEER/STEER", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/STEER/AOD", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/RAW/RAWdatarec", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/RAW/RAWDatabase", gSystem->Getenv("ALICE_ROOT")));
+    gInterpreter->AddIncludePath(Form("%s/../src/STEER/CDB", gSystem->Getenv("ALICE_ROOT")));
+    
     TEveUtil::LoadMacro("alieve_init.C+");
     alieve_init(cdburi, path, -1, showHLTESDTree);
     

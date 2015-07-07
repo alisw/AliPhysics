@@ -11,7 +11,7 @@
 /// \file alieve_init.C
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include <AliQAHistViewer.h>
+//#include <AliQAHistViewer.h>
 
 #include <TString.h>
 #include <TSystem.h>

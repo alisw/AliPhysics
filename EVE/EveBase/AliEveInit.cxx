@@ -441,6 +441,12 @@ void AliEveInit::GetConfig(TEnv *settings)
             cout<<"Error - could not find eve_config file!."<<endl;
             exit(0);
         }
+        else{
+            cout<<"Read config from standard location"<<endl;
+        }
+    }
+    else{
+        cout<<"Read config from home directory"<<endl;
     }
 }
 
