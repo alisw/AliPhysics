@@ -1073,7 +1073,7 @@ if(ftwoplus1){
         nBinsCentorMult = 12; fMinCentorMult = 0.0, fMaxCentorMult = 100.0;}
     
     if(!fSetSystemValue){
-        nBinsCentorMult = 3; fMinCentorMult = 0.0;  fMaxCentorMult = 250.0;}
+        nBinsCentorMult = 2; fMinCentorMult = 0.0;  fMaxCentorMult = 250.0;}
     
     
     if(ftwoplus1){
@@ -1162,8 +1162,8 @@ if(ftwoplus1){
         
         if(fuseVarCentBins){
             
-            const Int_t nvarBinsCent = 3;
-            Double_t varBinsCent[nvarBinsCent+1] = {0., 20., 50., 250.};
+            const Int_t nvarBinsCent = 2;
+            Double_t varBinsCent[nvarBinsCent+1] = {0., 35., 250.};
             if(ftwoplus1){
                 THnTrig1CentZvtxDEtaDPhi->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
                 THnTrig2CentZvtxDEtaDPhi->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
