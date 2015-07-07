@@ -82,6 +82,7 @@ public:
     fSplineArrayV0Cgen(0),
     fSplineArrayTPCgen(0),
     fQvecMC(0),
+    fQtrkbit(128),
     fNch(0),
     fQvecCalibType(0),
     fV0Aeff(0)
@@ -109,6 +110,7 @@ public:
   void  SetRejectionFractionTPC(Float_t rej)  { fRejectionFractionTPC = rej; }
   void  SetEtaTPCmin(Float_t min)  { fEtaTPCmin = min; }
   void  SetEtaTPCmax(Float_t max)  { fEtaTPCmax = max; }
+  void  SetQtrkbit (UInt_t val)  { fQtrkbit = val; }
 
 
   UInt_t GetEventSelectionBit()   const           { return fSelectBit;}
@@ -252,6 +254,7 @@ private:
   TObjArray * fSplineArrayV0Cgen;    // TSpline array for VZERO-C for generated tracks
   TObjArray * fSplineArrayTPCgen;    // TSpline array for TPC for generated tracks
   Double_t fQvecMC; //q-vector value from MC
+  UInt_t fQtrkbit; // filterbit for q2_TPC distribution
 
   Int_t fNch;
   Int_t fQvecCalibType; //0. centrality - 1. Nch
@@ -260,7 +263,7 @@ private:
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
 
-  ClassDef(AliSpectraAODEventCuts, 13);
+  ClassDef(AliSpectraAODEventCuts, 14);
 
 };
 #endif
