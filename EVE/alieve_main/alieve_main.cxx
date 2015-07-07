@@ -67,9 +67,6 @@ int main(int argc, char **argv)
     gROOT->SetMacroPath(macPath);
 
     bool storageManager=false;
-    bool mfFix=false;
-    int solenoidPolarity=0;
-    int dipolePolarity=0;
     const char* cdbPath="local:///local/cdb";
     bool classesMode=false;
     AliEveEventManager::EDataSource dataSource=AliEveEventManager::kSourceOffline;
@@ -85,32 +82,9 @@ int main(int argc, char **argv)
         if(strcmp(argv[i],"mcresidual")==0){cdbPath = "mcresidual://"; }
 
         if(strcmp(argv[i],"sm")==0){storageManager=true;}
-        if(strcmp(argv[i],"mf++")==0){
-            mfFix=true;
-            solenoidPolarity=1;
-            dipolePolarity=1;
-        }
-        if(strcmp(argv[i],"mf-+")==0){
-            mfFix=true;
-            solenoidPolarity=-1;
-            dipolePolarity=1;
-        }
-        if(strcmp(argv[i],"mf--")==0){
-            mfFix=true;
-            solenoidPolarity=-1;
-            dipolePolarity=-1;
-        }
-        if(strcmp(argv[i],"mf+-")==0){
-            mfFix=true;
-            solenoidPolarity=1;
-            dipolePolarity=-1;
-        }
     }
     
     // make sure logger is instantiated
-    
-    cout<<"Agruments read"<<endl;
-    
     AliLog::GetRootLogger();
     TRint *app = new TRint("App", &argc, argv);
 
@@ -127,8 +101,6 @@ int main(int argc, char **argv)
         cout<<"\n\nException while initializing config manager"<<endl;
         AliErrorGeneral("alieve_main",exc.Data());
     }
-
-    if(mfFix){gROOT->ProcessLine(Form(".x mf_fix.C(%d,%d)",solenoidPolarity,dipolePolarity));}
 
     if(classesMode){
         AliEveInit *init = new AliEveInit(".",dataSource);
