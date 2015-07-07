@@ -36,12 +36,12 @@ public:
   void SetT0best(Int_t icase, Float_t time) { fT0best[icase] = time;}
 
   const Float_t * GetFITtime() const {return fFITtime;}
-  void SetFITtime(Float_t time[160]) {
-    for (Int_t i=0; i<160; i++) fFITtime[i] = time[i];
+  void SetFITtime(Float_t time[240]) {
+    for (Int_t i=0; i<240; i++) fFITtime[i] = time[i];
   }
   const Float_t * GetFITamplitude() const {return fFITamplitude;}
-  void SetFITamplitude(Float_t amp[160]) {
-    for (Int_t i=0; i<160; i++) fFITamplitude[i] = amp[i];
+  void SetFITamplitude(Float_t amp[240]) {
+    for (Int_t i=0; i<240; i++) fFITamplitude[i] = amp[i];
   }
 
   void    Reset();
@@ -52,11 +52,11 @@ private:
 
   Float_t   fT0[3];     // interaction time in ps with 1st time( A&C, A, C)
   Float_t   fFITzVertex;       // vertex z position estimated by the T0, cm
-  Float_t   fFITtime[160];      // best TOF on each T0 PMT
-  Float_t   fFITamplitude[160]; // number of particles(MIPs) on each T0 PMT
+  Float_t   fFITtime[240];      // best TOF on each T0 PMT
+  Float_t   fFITamplitude[240]; // number of particles(MIPs) on each T0 PMT
   Float_t   fT0best[3]; // interaction time in ps ( A&C, A, C) with best time
   
-  ClassDef(AliESDFIT,1)
+  ClassDef(AliESDFIT,2)
 };
 
 

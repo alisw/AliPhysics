@@ -152,7 +152,9 @@ class AliVertexerTracks : public TObject {
   void SetUseTrackClusterization(Bool_t opt=kFALSE){fClusterize=opt;}
   void SetDeltaZCutForCluster(Double_t cut){fDeltaZCutForCluster=cut;}
   void SetnSigmaZCutForCluster(Double_t cut){fnSigmaZCutForCluster=cut;}
+  void SetDisableBCInCPass0(Bool_t v=kTRUE) {fDisableBCInCPass0 = v;}
 
+  Bool_t GetDisableBCInCPass0()      const {return fDisableBCInCPass0;}
   Bool_t GetUseTrackClusterization() const {return fClusterize;}
   Double_t GetDeltaZCutForCluster() const {return fDeltaZCutForCluster;}
   Double_t GetnSigmaZCutForCluster() const {return fnSigmaZCutForCluster;}
@@ -238,6 +240,7 @@ class AliVertexerTracks : public TObject {
   Int_t    fBCSpacing;                 // BC Spacing in ns (will define the rounding of BCid)
   TObjArray* fMVVertices;              // array of found vertices
 
+  Bool_t   fDisableBCInCPass0;         // do not use BC from TOF in CPass0
   Bool_t   fClusterize;                // flag to activate track clusterization into vertices before vertex finder
   Double_t fDeltaZCutForCluster;       // minimum distance in z between tracks to create new cluster
   Double_t fnSigmaZCutForCluster;      // minimum distacnce in number of sigma along z to create new cluster
@@ -246,7 +249,7 @@ class AliVertexerTracks : public TObject {
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,17) // 3D Vertexing with tracks 
+  ClassDef(AliVertexerTracks,18) // 3D Vertexing with tracks 
 };
 
 #endif
