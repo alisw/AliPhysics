@@ -2,7 +2,7 @@
   Last update: 26/03/2012, vzero branch, in PbPb macro execute the vzero code, a bug was fixed 
 */
 
-AliAnalysisTask* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt[], Float_t minc[], Float_t maxc[] )
+AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt[], Float_t minc[], Float_t maxc[] )
 {
   // Creates a pid task and adds it to the analysis manager
   
@@ -23,8 +23,8 @@ AliAnalysisTask* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, In
     Error("AddTaskHighPtDeDx", "This task requires an input event handler");
     return NULL;
   }  
-   
- 
+  
+
 
   //
   // Add track filters, with Golden Cuts
@@ -133,7 +133,7 @@ AliAnalysisTask* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, In
       //taskHighPtDeDx[i]->SetStoreMcIn(kFALSE);     // def: kFALSE
       taskHighPtDeDx[i]->SetStoreMcIn(kTRUE);     // def: kFALSE
 
-      mgr->AddTaskHighPtDeDx(taskHighPtDeDx[i]);
+      mgr->AddTask(taskHighPtDeDx[i]);
       
     }
     
@@ -185,7 +185,7 @@ AliAnalysisTask* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, In
     taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
     taskHighPtDeDx->SetStoreMcIn(kFALSE);     // def: kFALSE
 
-    mgr->AddTaskHighPtDeDx(taskHighPtDeDx);
+    mgr->AddTask(taskHighPtDeDx);
       
     // Create ONLY the output containers for the data produced by the
     // task.  Get and connect other common input/output containers via
@@ -243,7 +243,7 @@ AliAnalysisTask* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, In
     taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
     taskHighPtDeDx->SetStoreMcIn(kTRUE);     // def: kFALSE
 
-    mgr->AddTaskHighPtDeDx(taskHighPtDeDx);
+    mgr->AddTask(taskHighPtDeDx);
       
     // Create ONLY the output containers for the data produced by the
     // task.  Get and connect other common input/output containers via
