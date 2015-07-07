@@ -457,11 +457,11 @@ void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTr
     jetINT7->AddTriggerStringPattern("EJE", kTRUE);
     jetINT7->AddTriggerStringPattern("CEMC7", kTRUE);
     jetINT8->AddTriggerStringPattern("EJE", kTRUE);
-    jetINT8->AddTriggerStringPattern("CEMC7", kTRUE);
+    jetINT8->AddTriggerStringPattern("CEMC8", kTRUE);
     gammaINT7->AddTriggerStringPattern("EGA", kTRUE);
     gammaINT7->AddTriggerStringPattern("CEMC7", kTRUE);
     gammaINT8->AddTriggerStringPattern("EGA", kTRUE);
-    gammaINT8->AddTriggerStringPattern("CEMC7", kTRUE);
+    gammaINT8->AddTriggerStringPattern("CEMC8", kTRUE);
   } else {
     jetINT7->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJHigh);
     jetINT7->AddTriggerBit(AliVEvent::kINT7);
