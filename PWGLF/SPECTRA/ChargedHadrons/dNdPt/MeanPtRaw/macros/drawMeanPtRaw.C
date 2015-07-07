@@ -74,7 +74,7 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
   Int_t nCutSettings = hsMpt->GetAxis(2)->GetNbins();
   
   for(Int_t iCutSetting = 0; iCutSetting < nCutSettings; iCutSetting++) {
-	hsMpt->GetAxis(2)->SetRange(iCutSetting, iCutSetting);
+	hsMpt->GetAxis(2)->SetRange(iCutSetting+1, iCutSetting+1); // +1 to overcome underflow bin
 	std::vector<TProfile> pVecTemp;
 	for(Int_t iPtCut = 0; iPtCut < nPtCuts; iPtCut++) {
 	  hsMpt->GetAxis(1)->SetRangeUser(dVecPtMin.at(iPtCut), dVecPtMax.at(iPtCut));
