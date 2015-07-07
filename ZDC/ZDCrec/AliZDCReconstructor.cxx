@@ -279,7 +279,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
       }
   }
   // Ch. debug
-  //printf("\n  TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n",
+  //printf("\n  TDC channels   ZEM1 %d ZEM2 %d ZNC %d ZPC %d ZNA %d  ZPA %d L0 %d\n\n",
   //tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
    // Ch. debug
@@ -435,12 +435,14 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        rawData.SetCabledSignal(tdcSignalCode[itdc]);
        // setting TDC channels from raw data (=0 if reconstructing from digits!!!!)
        // NB -> I want to store the ch. in tdcCabling variable ONLY if it is not yet stored!!!
-       if(tdcSignalCode[itdc]==kZNAD && tdcCabling[0]<0) tdcCabling[0] = itdc;
-       else if(tdcSignalCode[itdc]==kZPAD && tdcCabling[1]<0)  tdcCabling[1] = itdc;
-       else if(tdcSignalCode[itdc]==kZEM1D && tdcCabling[2]<0) tdcCabling[2] = itdc;
-       else if(tdcSignalCode[itdc]==kZEM2D && tdcCabling[3]<0) tdcCabling[3] = itdc;
-       else if(tdcSignalCode[itdc]==kZNCD && tdcCabling[4]<0)  tdcCabling[4] = itdc;
-       else if(tdcSignalCode[itdc]==kZPCD && tdcCabling[5]<0)  tdcCabling[5] = itdc;
+       // NB -> THE ORDER MUST BE THE SAME AS THE ONE IN ZDCMAPPINGDA.cxx (7/7/2015)
+       // otherwise calibrated TDC won't be centered around zero (wrong offset subtracted)
+       if(tdcSignalCode[itdc]==kZEM1D && tdcCabling[2]<0) tdcCabling[0] = itdc;
+       else if(tdcSignalCode[itdc]==kZEM2D && tdcCabling[3]<0) tdcCabling[1] = itdc;
+       else if(tdcSignalCode[itdc]==kZNCD && tdcCabling[4]<0)  tdcCabling[2] = itdc;
+       else if(tdcSignalCode[itdc]==kZPCD && tdcCabling[5]<0)  tdcCabling[3] = itdc;
+       else if(tdcSignalCode[itdc]==kZNAD && tdcCabling[0]<0)  tdcCabling[4] = itdc;
+       else if(tdcSignalCode[itdc]==kZPAD && tdcCabling[1]<0)  tdcCabling[5] = itdc;
        else if(tdcSignalCode[itdc]==kL0 && tdcCabling[6]<0)    tdcCabling[6] = itdc;
        //
        if(itdc==iprevtdc) ihittdc++;
@@ -448,7 +450,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        if(ihittdc<4) tdcData[itdc][ihittdc] = rawData.GetZDCTDCDatum();
        iprevtdc=itdc;
        // Ch. debug
-       //if(ihittdc==0) printf("   TDC%d %d  ",itdc, tdcData[itdc][ihittdc]);
+       //if(ihittdc==0) printf("   TDC%d %f ns  ",itdc, 0.025*tdcData[itdc][ihittdc]);
        //printf("   TDCch.%d signal %d \n",itdc, rawData.GetCabledSignal());
    }// ZDC TDC DATA
    // ***************************** Reading PU
@@ -465,7 +467,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   
   }//loop on raw data
   // Ch. debug
-  //printf("\n  TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n", tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
+  //printf("\n  TDC channels  ZEM1 %d ZEM2 %d ZNC %d ZPC %d ZNA %d  ZPA %d L0 %d\n\n", tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
   // PEDESTAL subtraction
   for(int ich=0; ich<24; ich++){
@@ -1398,12 +1400,14 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
     for(Int_t lk=0; lk<4; lk++){
       tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
       //
-      if(lk==0 && tdcCabling[0]>0. && jk==tdcCabling[0] && TMath::Abs(tdcValues[jk][lk])>1e-09)      fESDZDC->SetZNATDChit(kTRUE);
-      else if(lk==0 && tdcCabling[1]>0. && jk==tdcCabling[1] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPATDChit(kTRUE);
-      else if(lk==0 && tdcCabling[2]>0. && jk==tdcCabling[2] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZEM1TDChit(kTRUE);
-      else if(lk==0 && tdcCabling[3]>0. && jk==tdcCabling[3] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZEM2TDChit(kTRUE);
-      else if(lk==0 && tdcCabling[4]>0. && jk==tdcCabling[4] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNCTDChit(kTRUE);
-      else if(lk==0 && tdcCabling[5]>0. && jk==tdcCabling[5] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPCTDChit(kTRUE);
+      // NB -> THE ORDER MUST BE THE SAME AS THE ONE IN ZDCMAPPINGDA.cxx (7/7/2015)
+      // otherwise calibrated TDC won't be centered around zero (wrong offset subtracted)
+      if(tdcCabling[0]>0. && jk==tdcCabling[0] && TMath::Abs(tdcValues[jk][lk])>1e-09)      fESDZDC->SetZEM1TDChit(kTRUE);
+      else if(tdcCabling[1]>0. && jk==tdcCabling[1] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZEM2TDChit(kTRUE);
+      else if(tdcCabling[2]>0. && jk==tdcCabling[2] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNCTDChit(kTRUE);
+      else if(tdcCabling[3]>0. && jk==tdcCabling[3] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPCTDChit(kTRUE);
+      else if(tdcCabling[4]>0. && jk==tdcCabling[4] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZNATDChit(kTRUE);
+      else if(tdcCabling[5]>0. && jk==tdcCabling[5] && TMath::Abs(tdcValues[jk][lk])>1e-09) fESDZDC->SetZPATDChit(kTRUE);
     }
   }
   
@@ -1412,7 +1416,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   // we try to keep the TDC oscillations as low as possible!
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
-      if(tdcValues[jk][lk]!=0.){
+      if(TMath::Abs(tdcValues[jk][lk])>1e-09){
         // Feb2013 -> TDC corrected entry filled ONLY IF tdc has a hit && L0 TDC ch. is defined
         if(TMath::Abs(tdcValues[jk][lk])>1e-09 && tdcCabling[6]>0.){
 	   tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[tdcCabling[6]][0])+fMeanPhase;
@@ -1420,6 +1424,8 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
 	   for(int idch=0; idch<6; idch++){
 	      if(jk==tdcCabling[idch]){
 	        tdcCorrected[jk][lk] -= tdcOffset[idch];
+                // Ch. debug
+		//printf("ch.%d -> %d (TDC raw - L0)  %f  offset %f  TDC corrected %f\n", jk,idch, 0.025*(tdcValues[jk][lk]-tdcValues[tdcCabling[6]][0]), tdcOffset[idch], tdcCorrected[jk][lk]);
               }
 	   }
 	}
