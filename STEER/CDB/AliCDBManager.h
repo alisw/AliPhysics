@@ -58,6 +58,12 @@ class AliCDBManager: public TObject {
 
     void SetSpecificStorage(const char* calibType, const char* dbString, Int_t version = -1, Int_t subVersion = -1);
 
+    //this puts an object in the fPromptEntryCache to override some storage with
+    //in-memory object (to be used online)
+    void PromptCacheEntry(const char* calibType, AliCDBEntry* entry);
+    void SetPromptCacheFlag(Bool_t f) {fPromptCache = f;}
+    Bool_t GetPromptCacheFlag() const {return fPromptCache;}
+
     AliCDBStorage* GetSpecificStorage(const char* calibType);
 
     void SetDrain(const char* dbString);
@@ -116,6 +122,7 @@ class AliCDBManager: public TObject {
     ~AliCDBManager();
 
     void ClearCache();
+    void ClearPromptCache();
     void UnloadFromCache(const char* path);
     const TMap* GetEntryCache() const {return &fEntryCache;}
 
@@ -184,6 +191,7 @@ class AliCDBManager: public TObject {
     TMap fActiveStorages;		//! list of active storages
     TMap fSpecificStorages;         //! list of detector-specific storages
     TMap fEntryCache;    	  	//! cache of the retrieved objects
+    TMap fPromptEntryCache;   //! cache for in-memory objects to override objects on storage (to be used online)
 
     TList* fIds;           	//! List of the retrieved object Id's (to be streamed to file)
     TMap* fStorageMap;      //! list of storages (to be streamed to file)
@@ -197,6 +205,7 @@ class AliCDBManager: public TObject {
 
     Int_t fRun;			//! The run number
     Bool_t fCache;			//! The cache flag
+    Bool_t fPromptCache; //! The prompt cache flag
     Bool_t fLock; 	//! Lock flag, if ON default storage and run number cannot be reset
 
     Bool_t fSnapshotMode;           //! flag saying if we are in snapshot mode
