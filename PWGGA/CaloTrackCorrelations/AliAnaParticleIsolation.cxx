@@ -184,7 +184,9 @@ fhENoIsoPileUp(),                 fhPtNoIsoPileUp(),
 fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMulti(0),
 fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
-fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
+fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
+fhMCConversionVertex()
+
 {
   InitParameters();
   
@@ -274,6 +276,8 @@ fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
     fhELambda0LocMax1[i] = 0 ;              fhELambda1LocMax1[i] = 0 ;
     fhELambda0LocMax2[i] = 0 ;              fhELambda1LocMax2[i] = 0 ;
     fhELambda0LocMaxN[i] = 0 ;              fhELambda1LocMaxN[i] = 0 ;
+    
+    fhMCConversionVertex[i] = 0 ;
   }
   
   // Acceptance
@@ -2850,7 +2854,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtCellTrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
         fhConeSumPtCellTrackTrigEtaPhi->SetYTitle("#phi_{trigger} (rad)");
         outputContainer->Add(fhConeSumPtCellTrackTrigEtaPhi) ;
-        
       }
       
       if(fFillUEBandSubtractHistograms)
@@ -3199,6 +3202,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           outputContainer->Add(fhELambda1LocMaxN[iso]) ;
         } // NLM
       } // SS histo
+      
+      if(IsDataMC())
+      {
+        fhMCConversionVertex[iso] = new TH2F(Form("hMCPhotonConversionVertex%s",isoName[iso].Data()),
+                                             Form("%s, cluster from converted photon, #it{p}_{T} vs vertex distance, %s",isoTitle[iso].Data(),parTitle.Data()),
+                                             nptbins,ptmin,ptmax,500,0,500);
+        fhMCConversionVertex[iso]->SetYTitle("#it{R} (cm)");
+        fhMCConversionVertex[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCConversionVertex[iso]) ;
+      }
+      
     } // control histograms for isolated and non isolated objects
     
     
@@ -4234,6 +4248,34 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
     
+    // Conversion radius
+    if( IsDataMC()                                                                 &&        
+        GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
+        GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
+       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)        &&
+       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)        
+      )
+    {
+      Int_t pdg  = 0, status  = 0, momLabel  = -1;
+      Int_t pdgD = 0, statusD = 0, daugLabel = -1;
+      Bool_t ok = kFALSE, okD = kFALSE;
+      
+      //fPrimaryMom = 
+      GetMCAnalysisUtils()->GetMother(aod->GetLabel(),GetReader(), pdg, status, ok, momLabel);     
+      //fMomentum = 
+      GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetReader(),pdgD, statusD, okD, daugLabel, fProdVertex);
+      
+      if(okD)
+      {
+        Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
+        
+        //printf("Iso %d, Conversion: mom pdg %d (stat %d), 1st daugher %d (stat %d), mom label %d, org label %d, daugh label %d, prodR %f\n", isolated, pdg,status, pdgD, statusD, 
+        //       momLabel, aod->GetLabel(),daugLabel,prodR);
+        
+        fhMCConversionVertex[isolated]->Fill(pt,prodR,GetEventWeight());
+      }
+    }
+    
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone or in UE band
     //---------------------------------------------------------------
@@ -4395,6 +4437,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhENoIsoPileUp[6] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[6]->Fill(pt, GetEventWeight()) ; }
       }
     } // non iso
+    
+    
+    
+    
+    
   }// aod loop
 }
 

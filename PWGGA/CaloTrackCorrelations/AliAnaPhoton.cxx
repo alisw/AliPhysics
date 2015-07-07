@@ -54,7 +54,7 @@ fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(kFALSE),    fFillOnlySimpleSSHisto(1),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
-fMomentum(),                  fPrimaryMom(),
+fMomentum(),                  fPrimaryMom(),               fProdVertex(),
 // Histograms
 
 // Control histograms
@@ -102,7 +102,8 @@ fhPtPhotonNPileUpSPDVtxTimeCut(0),    fhPtPhotonNPileUpTrkVtxTimeCut(0),
 fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 
 fhEClusterSM(0),                      fhEPhotonSM(0),
-fhPtClusterSM(0),                     fhPtPhotonSM(0)
+fhPtClusterSM(0),                     fhPtPhotonSM(0),
+fhMCConversionVertex(0)
 {
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
@@ -2192,8 +2193,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbedPi0ELambda0FullBkg->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0FullBkg) ;
       }// embedded histograms
-      
     }// Fill SS MC histograms
+    
+    fhMCConversionVertex = new TH2F("hMCPhotonConversionVertex","cluster from converted photon, #it{p}_{T} vs vertex distance",
+                                    nptbins,ptmin,ptmax,500,0,500);
+    fhMCConversionVertex->SetYTitle("#it{R} (cm)");
+    fhMCConversionVertex->SetXTitle("#it{p}_{T} (GeV)");
+    outputContainer->Add(fhMCConversionVertex) ;
     
   } // Histos with MC
   
@@ -2575,8 +2581,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       Float_t eprim   = 0;
       Float_t ptprim  = 0;
       Bool_t ok = kFALSE;
-      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
-                 
+      Int_t pdg = 0, status = 0, momLabel = -1;
+      
+      //fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+      fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(), pdg, status, ok, momLabel);     
+      
       if(ok)
       {
         eprim   = fPrimaryMom.Energy();
@@ -2613,6 +2622,22 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
             
           fhMCDeltaE [kmcConversion] ->Fill(ecluster , eprim-ecluster  , GetEventWeight());
           fhMCDeltaPt[kmcConversion] ->Fill(ptcluster, ptprim-ptcluster, GetEventWeight());
+          
+          Int_t pdgD = 0, statusD = 0, daugLabel = -1;
+          Bool_t okD = kFALSE;
+          
+          //fMomentum = 
+          GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetReader(),pdgD, statusD, okD, daugLabel, fProdVertex);
+          
+          if(okD)
+          {
+            Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
+
+            //printf("Conversion: mom pdg %d (stat %d), 1st daugher %d (stat %d), mom label %d, org label %d, daugh label %d, prodR %f\n",pdg,status, pdgD, statusD, 
+            //       momLabel, label,daugLabel,prodR);
+
+            fhMCConversionVertex->Fill(ptcluster,prodR,GetEventWeight());
+          }
         }
         
         if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) )
