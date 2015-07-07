@@ -197,8 +197,8 @@ private:
     
    //______________________________| Mixed Event Pool
     Bool_t DefineMixedEventPoolpp(){
-        Int_t  NofCentBins  = 1;
-        Double_t MBins[]={0, 250.};
+        Int_t  NofCentBins  = 2;
+        Double_t MBins[]={0,35,250.};
         Double_t * CentrORMultBins = MBins;
         
         Int_t NofZVrtxBins  = 10;
