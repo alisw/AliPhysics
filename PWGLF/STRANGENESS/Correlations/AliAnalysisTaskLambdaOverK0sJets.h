@@ -84,7 +84,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetDoMix(Bool_t doMixEvt=kTRUE) {fDoMixEvt=doMixEvt;} 
   void SetTriggerFilterBit(Int_t triggerFB=768){fTriggerFB=triggerFB;}
   void SetTriggerPt(Float_t ptMinTrig=8., Float_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
-  void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
+  void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;}
+  void SetTriggerNCls(Float_t nclsTrig=10){fTriggerNCls=nclsTrig;}
   void SetCheckIDTrig(Bool_t checkIDTrig=kFALSE){fCheckIDTrig=checkIDTrig;}
   void SetSeparateInjectedPart(Bool_t doSep=kTRUE) {fSeparateInjPart=doSep;} 
 
@@ -147,6 +148,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t  fTrigPtMCMin;                 //  Minimum pt for trigger particle in MC
   Float_t  fTrigPtMCMax;                 //  Maximum pt for trigger particle in MC
   Float_t  fTrigEtaMax;                  //  Maximum eta for trigger particle
+  Float_t  fTriggerNCls;                 //  Number of Crossed pas rows in the TPC
   Bool_t   fCheckIDTrig;                 //  Do comparison with V0's daughter tracks?
   Bool_t   fSeparateInjPart;             //  Separate MC injected particles in case of correlation 
   Int_t    fEndOfHijingEvent;            //  Limit natural-injected MC  particles 
