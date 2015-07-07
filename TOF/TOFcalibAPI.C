@@ -1,4 +1,4 @@
-/*
+/*
  * calibapi.cxx
  * set of functions to read TOFcompactCalib data and
  * deal with TOF calibration in a centralized way
@@ -166,14 +166,14 @@ runCalib(const Char_t *filename, const Char_t *paramfilename = NULL, Bool_t useT
     fillCalibHistos(useTimeZeroTOF, useLHCClockPhase);
     writeCalibHistos("calibhistos.root");
     writeCalibParams("calibparams.root");
-    
+
     return kFALSE;
 }
 
 //_____________________________________________________________
 
 Bool_t
-checkCalib(const Char_t *filename, const Char_t *paramfilename = NULL, Bool_t useTimeZeroTOF = kFALSE, Bool_t useLHCClockPhase = kFALSE, Bool_t runExtended = kFALSE, Int_t evMax = kMaxInt)
+checkCalib(const Char_t *filename, const Char_t *paramfilename = NULL, Bool_t useTimeZeroTOF = kFALSE, Bool_t useLHCClockPhase = kFALSE, Bool_t runExtended = kTRUE, Int_t evMax = kMaxInt)
 {
     
     /* open data */
@@ -549,9 +549,9 @@ fillCalibHistos(Bool_t useTimeZeroTOF = kFALSE, Bool_t useLHCClockPhase = kFALSE
     else
         printf("fillCalibHistos: not using time-zero TOF\n");
     if (useLHCClockPhase)
-        printf("fillTimeZeroFillHisto: BPTX clock-phase requested\n");
+        printf("fillCalibHistos: BPTX clock-phase requested\n");
     else
-        printf("fillTimeZeroFillHisto: not using BPTX clock-phase\n");
+        printf("fillCalibHistos: not using BPTX clock-phase\n");
     Float_t hitmap[2], deltat;
     for (curev = 0; curev < nevents; curev++) {
         /* get and check event */
@@ -597,7 +597,7 @@ fillPerfHistos(Bool_t useTimeZeroTOF = kFALSE, Bool_t useLHCClockPhase = kFALSE)
         hChannelHitMap->Reset();
     
     if (!hPerfHistoDeltaT)
-        hPerfHistoDeltaT = new TH2F("hPerfHistoDeltaT", "", 1000, 0., 10., 2000, -24400., 24400.);
+        hPerfHistoDeltaT = new TH2F("hPerfHistoDeltaT", "", 250, 0., 5., 20000, -244000., 244000.);
     else
         hPerfHistoDeltaT->Reset();
     
@@ -1404,7 +1404,7 @@ monitor()
 //_____________________________________________________________
 
 Bool_t
-updateParOfflineEntry(const Char_t *paramfilename, const Char_t *ocdbfilename, Int_t startrun, Int_t endrun = AliCDBRunRange::Infinity(), const Char_t *dbString = "alien://?folder=/alice/cern.ch/user/r/rpreghen/OCDB?user=rpreghen?se=ALICE::CERN::SE")
+updateParOfflineEntry(const Char_t *paramfilename, const Char_t *ocdbfilename, Int_t startrun, Int_t endrun = AliCDBRunRange::Infinity(), const Char_t *dbString = "alien://?folder=/alice/cern.ch/user/r/rpreghen/OCDB")
 {
     
     TFile *paramfile = TFile::Open(paramfilename);
