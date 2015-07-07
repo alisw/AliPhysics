@@ -240,17 +240,17 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fWSimu[2];              ///<  Constant and slope of the linear correction factor for the shower
                                        ///<  Shape weight in simulation, about 1-0.07*w
   
-  TLorentzVector fClusterMomentum;     //!<! Cluster momentum
-  TLorentzVector fSubClusterMom1;      //!<! Sub-Cluster momentum
-  TLorentzVector fSubClusterMom2;      //!<! Sub-Cluster momentum
-  TLorentzVector fSubClusterMomSum;    //!<! Sub-Cluster momentum sum, armenteros
-  TLorentzVector fSubClusterMomBoost;  //!<! Sub-Cluster momentum boosted, armenteros
+  TLorentzVector fClusterMomentum;     //!<! Cluster momentum, temporary container
+  TLorentzVector fSubClusterMom1;      //!<! Sub-Cluster momentum, temporary container
+  TLorentzVector fSubClusterMom2;      //!<! Sub-Cluster momentum, temporary container
+  TLorentzVector fSubClusterMomSum;    //!<! Sub-Cluster momentum sum, armenteros, temporary container
+  TLorentzVector fSubClusterMomBoost;  //!<! Sub-Cluster momentum boosted, armenteros, temporary container
   
-  TLorentzVector fPrimaryMom;          //!<! Primary momentum
-  TLorentzVector fGrandMotherMom;      //!<! Primary momentum
-  TLorentzVector fMCDaughMom1;         //!<! Primary momentum
-  TLorentzVector fMCDaughMom2;         //!<! Primary momentum
-  TVector3       fProdVertex;          //!<! primary production vertex
+  TLorentzVector fPrimaryMom;          //!<! Primary momentum, temporary container
+  TLorentzVector fGrandMotherMom;      //!<! Primary momentum, temporary container
+  TLorentzVector fMCDaughMom1;         //!<! Primary momentum, temporary container
+  TLorentzVector fMCDaughMom2;         //!<! Primary momentum, temporary container
+  TVector3       fProdVertex;          //!<! primary production vertex, temporary container
 
   //Histograms
   

@@ -70,7 +70,7 @@ fConeSizes(),                     fPtThresholds(),
 fPtFractions(),                   fSumPtThresholds(),
 fMomentum(),                      fMomIso(),
 fMomDaugh1(),                     fMomDaugh2(),
-fTrackVector(),
+fTrackVector(),                   fProdVertex(),
 // Histograms
 fhEIso(0),                        fhPtIso(0),
 fhPtCentralityIso(0),             fhPtEventPlaneIso(0),
@@ -4454,7 +4454,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if( !mcparticles ) return;
     nprim = mcparticles->GetEntriesFast();
   }
-  
+
   for(Int_t i=0 ; i < nprim; i++)
   {
     if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
@@ -4480,7 +4480,6 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       //Photon kinematics
       primStack->Momentum(fMomentum);
-      
     }
     else
     {
@@ -4564,9 +4563,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
      // printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
       Int_t d1Pdg = 0, d1Status = 0; Bool_t ok1 = kFALSE;
       Int_t d2Pdg = 0, d2Status = 0; Bool_t ok2 = kFALSE;
-     
-      if ( ndaugh > 0 ) fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label);
-      if ( ndaugh > 1 ) fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label);
+
+      if ( ndaugh > 0 ) fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label,fProdVertex);
+      if ( ndaugh > 1 ) fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label,fProdVertex);
       
       //printf("pi0 daug %d: a) %d, b) %d\n", ndaugh,pi0d1Label,pi0d2Label);
       //if ( ndaugh !=2 ) printf("PDG: %d, %d\n",d1Pdg,d2Pdg);
@@ -4751,9 +4750,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(ndaugh==2)
           {
             Int_t d1Pdg = 0, d1Status = 0;
-            fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,pi0label,GetReader(),d1Pdg, d1Status,ok1, d1Label);
+            fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,pi0label,GetReader(),d1Pdg, d1Status,ok1, d1Label,fProdVertex);
             Int_t d2Pdg = 0, d2Status = 0;
-            fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,pi0label,GetReader(),d2Pdg, d2Status,ok2, d2Label);
+            fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,pi0label,GetReader(),d2Pdg, d2Status,ok2, d2Label,fProdVertex);
             if(d2Pdg != d1Pdg && d1Pdg!=22) okpi0 = kFALSE;
             
             // Check the momentum and location of second daughter
