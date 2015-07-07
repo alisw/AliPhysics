@@ -36,12 +36,12 @@ ClassImp(AliZDCQAChecker)
 AliZDCQAChecker::AliZDCQAChecker() : 
   AliQACheckerBase("ZDC","ZDC Quality Assurance Data Maker"), 
   fQAThresholds(NULL),
-  fZDCQAThr_ZNCTDCRefThr(-322.7),
-  fZDCQAThr_ZPCTDCRefThr(-321.4),
-  fZDCQAThr_ZNATDCRefThr(-321.6),
-  fZDCQAThr_ZPATDCRefThr(-321.7),
-  fZDCQAThr_ZEM1TDCRefThr(-316.2),
-  fZDCQAThr_ZEM2TDCRefThr(-315.4)
+  fZDCQAThr_ZNCTDCRefThr(-337.7),
+  fZDCQAThr_ZPCTDCRefThr(-337.),
+  fZDCQAThr_ZNATDCRefThr(-336.6),
+  fZDCQAThr_ZPATDCRefThr(-335.5),
+  fZDCQAThr_ZEM1TDCRefThr(-309.4),
+  fZDCQAThr_ZEM2TDCRefThr(-309.5)
 {
    //constructor
 }
@@ -249,6 +249,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      refTDCs[3] = fZDCQAThr_ZPATDCRefThr;
 	      refTDCs[4] = fZDCQAThr_ZEM1TDCRefThr;
 	      refTDCs[5] = fZDCQAThr_ZEM2TDCRefThr;
+for(int i=0; i<6; i++) printf(" ZDCQAThr[%d] = %f\n",i,refTDCs[i]);
 	      //
 	      Float_t resTDC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
@@ -262,13 +263,17 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      }
 	      rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
+
 	      // Changed to have the general flag for DQM histo according to histo messages
               test[specie] += res;
               count[specie]++;
 	      //
-	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
-	      else if(rv<1. && rv>0.75) messages.Add(new TObjString("Minor problem with TDCs"));
-	      else messages.Add(new TObjString("IF this is a PHYSICS RUN ZDC has a serious problem!"));
+	      if(rv>=0.99) messages.Add(new TObjString("TDCs are OK!")); 
+	      else if(rv<0.99 && rv>0.75) messages.Add(new TObjString("Minor problem with TDCs"));
+	      else{
+	        messages.Add(new TObjString("IF this is a PHYSICS RUN"));
+	        messages.Add(new TObjString("ZDC can have a problem!"));
+	      }
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    irawHisto++;
