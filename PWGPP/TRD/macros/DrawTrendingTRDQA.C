@@ -202,6 +202,7 @@ void DrawAllHistograms(TList* l) {
     // some exceptions
     if(TString(o->GetName()).Contains("BeamIntensity")) c->SetLogy();
     TH1 *h((TH1*)o);
+    if(nRuns>40) h->GetXaxis()->LabelsOption("v");
     h->Draw("PE1");
     c->Print(Form("%s.png", TString(o->GetName()).Remove(0,1).Data()));
     delete c;
