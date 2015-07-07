@@ -2,7 +2,7 @@
   Last update: 26/03/2012, vzero branch, in PbPb macro execute the vzero code, a bug was fixed 
 */
 
-AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt[], Float_t minc[], Float_t maxc[] )
+AliAnalysisTask* AddTaskHighPtDeDx(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt[], Float_t minc[], Float_t maxc[] )
 {
   // Creates a pid task and adds it to the analysis manager
   
@@ -23,8 +23,8 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     Error("AddTaskHighPtDeDx", "This task requires an input event handler");
     return NULL;
   }  
-  
-
+   
+ 
 
   //
   // Add track filters, with Golden Cuts
@@ -133,7 +133,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
       //taskHighPtDeDx[i]->SetStoreMcIn(kFALSE);     // def: kFALSE
       taskHighPtDeDx[i]->SetStoreMcIn(kTRUE);     // def: kFALSE
 
-      mgr->AddTask(taskHighPtDeDx[i]);
+      mgr->AddTaskHighPtDeDx(taskHighPtDeDx[i]);
       
     }
     
@@ -185,7 +185,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
     taskHighPtDeDx->SetStoreMcIn(kFALSE);     // def: kFALSE
 
-    mgr->AddTask(taskHighPtDeDx);
+    mgr->AddTaskHighPtDeDx(taskHighPtDeDx);
       
     // Create ONLY the output containers for the data produced by the
     // task.  Get and connect other common input/output containers via
@@ -214,7 +214,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
 
 
 
- if(typerun==4){//pPb analysis..
+ if(typerun==4){//pPb analysis
    cout<<"<<<<<<<<<<<<<<<<<<<<<<<<<<                 Runing pPb    <<<<<<<<<<<<<<"<<endl;
     
     AliAnalysisTaskHighPtDeDx* taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx("taskHighPtDeDxpp");
@@ -243,7 +243,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetRequireRecV0(kTRUE); // def: kTRUE
     taskHighPtDeDx->SetStoreMcIn(kTRUE);     // def: kFALSE
 
-    mgr->AddTask(taskHighPtDeDx);
+    mgr->AddTaskHighPtDeDx(taskHighPtDeDx);
       
     // Create ONLY the output containers for the data produced by the
     // task.  Get and connect other common input/output containers via
