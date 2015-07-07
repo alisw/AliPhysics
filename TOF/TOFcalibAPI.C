@@ -196,10 +196,14 @@ checkCalib(const Char_t *filename, const Char_t *paramfilename = NULL, Bool_t us
     
     /* fill with extended range */
     if (runExtended) {
+        deltatMin = -244000.;
+        deltatMax = +244000.;
+        fillCalibHistos(useTimeZeroTOF, useLHCClockPhase);
+        writeCalibHistos("checkcalib.extended-250ns.root");
         deltatMin = -24400.;
         deltatMax = +24400.;
         fillCalibHistos(useTimeZeroTOF, useLHCClockPhase);
-        writeCalibHistos("checkcalib.extended.root");
+        writeCalibHistos("checkcalib.extended-25ns.root");
     }
     
     /* fill with limited range */
