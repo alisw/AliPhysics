@@ -348,7 +348,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtPhotonSM ;                             //!<! photon-like cluster E distribution per SM
   
   TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion.
-  
+  TH2F * fhMCConversionLambda0Rcut[6];              //!<! Shower shape of photon conversions, depending on conversion vertex.
+
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
     

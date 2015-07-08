@@ -187,7 +187,7 @@ fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMult
 fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
 fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
-fhMCConversionVertex()
+fhMCConversionVertex(),           fhMCConversionLambda0Rcut()
 
 {
   InitParameters();
@@ -290,6 +290,8 @@ fhMCConversionVertex()
     fhELambda0LocMaxN[i] = 0 ;              fhELambda1LocMaxN[i] = 0 ;
     
     fhMCConversionVertex[i] = 0 ;
+    for(Int_t iR = 0; iR < 6; iR++) fhMCConversionLambda0Rcut[iR][i] = 0;            
+
   }
   
   // Acceptance
@@ -3141,6 +3143,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }
     }
     
+    TString region[] = {"ITS","TPC","TRD","TOF","Top EMCal","In EMCal"}; // conversion regions
+
     for(Int_t iso = 0; iso < 2; iso++)
     {
       if(fFillTMHisto)
@@ -3384,8 +3388,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhMCConversionVertex[iso]->SetYTitle("#it{R} (cm)");
         fhMCConversionVertex[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCConversionVertex[iso]) ;
+        
+        if(fFillSSHisto)
+        {
+          for(Int_t iR = 0; iR < 6; iR++)
+          {
+            fhMCConversionLambda0Rcut[iR][iso] = new TH2F(Form("hMCPhotonConversionLambda0%s_R%d",isoName[iso].Data(),iR),
+                                                          Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s",isoTitle[iso].Data(),region[iR].Data()),
+                                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+            fhMCConversionLambda0Rcut[iR][iso]->SetYTitle("#lambda_{0}^{2}");
+            fhMCConversionLambda0Rcut[iR][iso]->SetXTitle("#it{p}_{T} (GeV)");
+            outputContainer->Add(fhMCConversionLambda0Rcut[iR][iso]) ;
+          }
+        }
       }
-      
     } // control histograms for isolated and non isolated objects
     
     
@@ -4418,6 +4434,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t energy     = aod->E();
     Float_t phi        = aod->Phi();
     Float_t eta        = aod->Eta();
+    Float_t m02        = aod->GetM02();
     
     AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
     
@@ -4446,6 +4463,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         //       momLabel, aod->GetLabel(),daugLabel,prodR);
         
         fhMCConversionVertex[isolated]->Fill(pt,prodR,GetEventWeight());
+        
+        if(fFillSSHisto)
+        {
+          if      ( prodR < 75.  ) fhMCConversionLambda0Rcut[0][isolated]->Fill(pt,m02,GetEventWeight());
+          if      ( prodR < 275. ) fhMCConversionLambda0Rcut[1][isolated]->Fill(pt,m02,GetEventWeight());
+          else if ( prodR < 375. ) fhMCConversionLambda0Rcut[2][isolated]->Fill(pt,m02,GetEventWeight());
+          else if ( prodR < 400. ) fhMCConversionLambda0Rcut[3][isolated]->Fill(pt,m02,GetEventWeight());
+          else if ( prodR < 430. ) fhMCConversionLambda0Rcut[4][isolated]->Fill(pt,m02,GetEventWeight());
+          else                     fhMCConversionLambda0Rcut[5][isolated]->Fill(pt,m02,GetEventWeight());
+        }
       }
     }
     
