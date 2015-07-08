@@ -77,7 +77,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
     fRMS                (kTRUE),
     fSymmRMS            (0),
-    fConstantUE         (kFALSE),
+    fConstantUE         (kTRUE),
     fRho0               (kFALSE),
     fBootstrap          (kFALSE),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
@@ -145,7 +145,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fDptOut             (0x0),
     fFullResponseIn     (0x0),
     fFullResponseOut    (0x0),
-    fPivot              (50.),
+    fPivot              (55.),
     fSubdueError        (kTRUE),
     fUnfoldedSpectrumIn (0x0),
     fUnfoldedSpectrumOut(0x0) { // class constructor
@@ -3366,7 +3366,7 @@ void AliJetFlowTools::DoIntermediateSystematicsOnV2(
     if(fConstantUE) {
         Int_t ctr(0);
         Double_t av(0), avct(0);
-        for(Int_t k(2); k < 8; k++) {
+        for(Int_t k(3); k < 8; k++) {
             av+=relativeErrorInUp->GetBinError(k+1);
             avct+=relativeErrorInUp->GetBinContent(k+1);
             ctr++;
@@ -4905,7 +4905,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
         for(Int_t i(gOffsetStart); i < counts; i++) {
 
             // quadratic sum of statistical and uncorrelated systematic error
-            Double_t e = gStat->At(i);;
+            Double_t e = gStat->At(i);
 
             // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
             // also the numerator of equation 3 of phenix paper
@@ -4927,7 +4927,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
         for(Int_t i(gOffsetStart); i < counts; i++) {
 
             // quadratic sum of statistical and uncorrelated systematic error
-            Double_t e = gStat->At(i);;
+            Double_t e = gStat->At(i) + gPwrtToStatArray->At(i);
 
             // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
             // also the numerator of equation 3 of phenix paper
@@ -4964,7 +4964,7 @@ TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
     printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
 #endif
     // return the fitting function, pass the p-value w.r.t. 0 by reference
-    const Int_t DOF(4);
+    const Int_t DOF(7-2);       // dof is n-2
     TF2 *f1 = new TF2("ndhist", AliJetFlowTools::ConstructFunctionnd, -100, 100, -100, 100, 0);
     printf(" > locating minima < \n");
     Double_t x(0), y(0);
