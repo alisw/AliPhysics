@@ -326,6 +326,9 @@ if(ROOTSYS)
                 set_target_properties(RootExtra PROPERTIES COMPILE_FLAGS "${LIBXML2_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR}")
                 set_target_properties(RootExtra PROPERTIES LINKER_LANGUAGE CXX)
                 target_link_libraries(RootExtra ${ROOT_LIBDIR}/libfreetype.a ${ROOT_LIBDIR}/libpcre.a ${ROOT_LIBDIR}/liblzma.a ${LIBXML2_LIBRARIES} ${OPENSSL_LIBRARIES})
+		install(TARGETS RootExtra 
+		  ARCHIVE DESTINATION lib
+		  LIBRARY DESTINATION lib)
             else()
                 message(FATAL_ERROR "OpenSSL not found. Coould not generate the static RootExtra. Please install Openssl")
             endif()
