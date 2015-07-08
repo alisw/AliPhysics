@@ -585,7 +585,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTimePileUpMainVertexZDiamond;             //!<! Time of cluster vs difference of z diamond and pile-up vertex.
   
   TH2F *   fhMCConversionVertex[2];                    //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. Iso and not iso
-
+  TH2F *   fhMCConversionLambda0Rcut[6][2];            //!<! Shower shape of photon conversions, depending on conversion vertex.
   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;

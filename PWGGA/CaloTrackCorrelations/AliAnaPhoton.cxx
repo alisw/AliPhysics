@@ -103,7 +103,7 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 
 fhEClusterSM(0),                      fhEPhotonSM(0),
 fhPtClusterSM(0),                     fhPtPhotonSM(0),
-fhMCConversionVertex(0)
+fhMCConversionVertex(0),              fhMCConversionLambda0Rcut()
 {
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
@@ -193,6 +193,8 @@ fhMCConversionVertex(0)
     fhdEdx[i] = 0;                            fhEOverP[i] = 0;
     fhEOverPTRD[i] = 0;
   }
+  
+  for(Int_t i = 0; i < 6; i++) fhMCConversionLambda0Rcut[i] = 0;            
   
   // Initialize parameters
   InitParameters();
@@ -2200,7 +2202,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhMCConversionVertex->SetYTitle("#it{R} (cm)");
     fhMCConversionVertex->SetXTitle("#it{p}_{T} (GeV)");
     outputContainer->Add(fhMCConversionVertex) ;
-    
+        
+    if(fFillSSHistograms)
+    {
+      TString region[] = {"ITS","TPC","TRD","TOF","Top EMCal","In EMCal"};
+      for(Int_t iR = 0; iR < 6; iR++)
+      {
+        fhMCConversionLambda0Rcut[iR] = new TH2F(Form("hMCPhotonConversionLambda0_R%d",iR),
+                                                 Form("cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s",region[iR].Data()),
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhMCConversionLambda0Rcut[iR]->SetYTitle("#lambda_{0}^{2}");
+        fhMCConversionLambda0Rcut[iR]->SetXTitle("#it{p}_{T} (GeV)");
+        outputContainer->Add(fhMCConversionLambda0Rcut[iR]) ;
+      } // R cut
+    }
   } // Histos with MC
   
   return outputContainer ;
@@ -2533,8 +2548,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     fhEPhoton   ->Fill(ecluster , GetEventWeight());
     fhPtPhoton  ->Fill(ptcluster, GetEventWeight());
       
-    fhPhiPhoton ->Fill(ptcluster,phicluster, GetEventWeight());
-    fhEtaPhoton ->Fill(ptcluster,etacluster, GetEventWeight());
+    fhPhiPhoton ->Fill(ptcluster, phicluster, GetEventWeight());
+    fhEtaPhoton ->Fill(ptcluster, etacluster, GetEventWeight());
       
     if     (ecluster   > 0.5) fhEtaPhiPhoton  ->Fill(etacluster, phicluster, GetEventWeight());
     else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster, GetEventWeight());
@@ -2637,6 +2652,17 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
             //       momLabel, label,daugLabel,prodR);
 
             fhMCConversionVertex->Fill(ptcluster,prodR,GetEventWeight());
+            
+            if(fFillSSHistograms)
+            {
+              Float_t m02 = ph->GetM02();
+              if      ( prodR < 75.  ) fhMCConversionLambda0Rcut[0]->Fill(ptcluster,m02,GetEventWeight());
+              if      ( prodR < 275. ) fhMCConversionLambda0Rcut[1]->Fill(ptcluster,m02,GetEventWeight());
+              else if ( prodR < 375. ) fhMCConversionLambda0Rcut[2]->Fill(ptcluster,m02,GetEventWeight());
+              else if ( prodR < 400. ) fhMCConversionLambda0Rcut[3]->Fill(ptcluster,m02,GetEventWeight());
+              else if ( prodR < 430. ) fhMCConversionLambda0Rcut[4]->Fill(ptcluster,m02,GetEventWeight());
+              else                     fhMCConversionLambda0Rcut[5]->Fill(ptcluster,m02,GetEventWeight());
+            }
           }
         }
         
