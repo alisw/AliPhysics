@@ -101,7 +101,8 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *ntrackcuts = "standard",
     const char *components = "particles:clusters:tracks:mcjets:recjets:triggers:patchevent",
     const char * triggersetup = "pPb2013",
-    bool useOfflinePatches = kFALSE
+    bool useOfflinePatches = kFALSE,
+    const char *options = ""
 )
 {
   //AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
@@ -193,7 +194,11 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 
   double jetpt[4] = {40., 60., 80., 100.};
   EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *defaultselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("defaultselect");
-  defaultselect->SetEventSelection(new EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection());
+  EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection *eventselect = EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection();
+  TString optstring(options);
+  if(optstring.Contains("oldpileup")) eventselect->SetOldPileupSelection();
+  if(optstring.Contains("oldvertex")) eventselect->SetOldVertexSelection();
+  defaultselect->SetEventSelection(eventselect);
   EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts *kineCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts();
   kineCuts->SetPtRange(2., 100.);
   defaultselect->SetKineCuts(kineCuts);
