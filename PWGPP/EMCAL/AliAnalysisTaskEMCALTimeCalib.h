@@ -20,6 +20,11 @@
 ///
 /// 2015.06.03 Extended to DCal, added setters and getters
 /// 2015.06.11 Added AODs and lego train
+/// 2015.06.29 Geometry removed from Nofify to UserCreateOutputObjects
+///            Added second step of calibration with time cut
+/// 2015.07.08 Added geometry check in Notify and set once, 
+///            added T0 time from TOF histos
+///            added reference file protection
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -48,7 +53,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   enum { kNSM = 20, kNBCmask = 4 };
 
    AliAnalysisTaskEMCALTimeCalib() : AliAnalysisTaskSE(),
-    fEvent(0),
     fRunNumber(-1),
     fTOFmaker(0),
     fOutputList(0),
@@ -67,6 +71,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMinTime(0),
     fMaxTime(0),
     fhcalcEvtTime(0),
+    fhEvtTimeHeader(0),
+    fhEvtTimeDiff(0),
     fhEventType(0),
     fhTOFT0vsEventNumber(0),
     fhTcellvsTOFT0(0),
@@ -136,7 +142,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
 
   void SetDefaultCuts();
-  void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root");
+  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
 
  private:
   
@@ -146,17 +152,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Bool_t CheckCellRCU(Int_t nSupMod,Int_t icol,Int_t irow);
 
   // data members
-
-  /// pointer to ESD or AOD object
-  AliVEvent   *fEvent ;       //->
- 
   Int_t          fRunNumber ; //!<! run number
   
-  // Use the RemakePID method in the task::UserExec                  //
-  // Double_t* calcolot0;                                            //
-  // calcolot0=fTOFmaker->RemakePID(fEvent);                           //
-  // calcolot0[0] = calculated event time                            //
-
   /// pointer to get T0 from TOF
   AliTOFT0maker *fTOFmaker;   //->
   
@@ -164,7 +161,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TList         *fOutputList; //->
   
   /// pointer to EMCal geometry
-  AliEMCALGeometry *fgeom;    //->
+  AliEMCALGeometry *fgeom;              ///< EMCAL geometry
   TString        fGeometryName ;        ///< geometry name
    
   // setable variables for cuts
@@ -192,7 +189,9 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
-  TH1F          *fhEventType;           //!<! spectrum calcolot0[0]
+  TH1F          *fhEvtTimeHeader;       //!<! spectrum time from header
+  TH1F          *fhEvtTimeDiff;         //!<! spectrum time difference
+  TH1F          *fhEventType;           //!<! event type
   TH1F          *fhTOFT0vsEventNumber;  //!<! TOF T0 evolution as a function of time 
   TH2F          *fhTcellvsTOFT0;        //!<! time of cell vs TOF T0 time
   TH2F          *fhTcellvsTOFT0HD;      //!<! time of cell vs TOF T0 time for higher energy threshold
@@ -231,7 +230,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib& operator=(const AliAnalysisTaskEMCALTimeCalib&); 
   
 /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTimeCalib, 1) ;
+  ClassDef(AliAnalysisTaskEMCALTimeCalib, 2) ;
 /// \endcond
 };
 
