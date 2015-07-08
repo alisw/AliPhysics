@@ -82,7 +82,6 @@ public:
     void          SetESDtracksByCategory(bool set){fDrawESDtracksByCategory=set;}
     void          SetESDtracksByType(bool set){fDrawESDtracksByType=set;}
     void          SetESDcolorsByCategory(Color_t colors[9]){fESDdrawer->SetColorsByCategory(colors);}
-    void          SetESDcolorsByType(Color_t colors[15]){fESDdrawer->SetColorsByType(colors);}
     void          SetESDwidth(Width_t width){fESDdrawer->SetWidth(width);}
     void          SetESDdashNoRefit(bool dashNoRefit){fESDdrawer->SetDashNoRefit(dashNoRefit);}
     void          SetESDdrawNoRefit(bool drawNoRefit){fESDdrawer->SetDrawNoRefit(drawNoRefit);}

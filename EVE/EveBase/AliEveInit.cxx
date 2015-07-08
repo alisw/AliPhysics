@@ -84,9 +84,7 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     
     cout<<"\n\nOCDB path:"<<ocdbStorage<<endl<<endl<<endl;
-    
-    bool customPreset = false; // should custom colors presets be used
-    
+        
     //==============================================================================
     // Event Manager and different data sources
     //==============================================================================
@@ -216,10 +214,6 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     gSystem->ProcessEvents();
     gEve->Redraw3D(true);
     
-    if(customPreset){
-        Color_t colors[9] = {kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan,kCyan};
-        man->SetESDcolorsByType(colors);
-    }
     man->SetESDwidth(width);
     man->SetESDdashNoRefit(dashNoRefit);
     man->SetESDdrawNoRefit(drawNoRefit);

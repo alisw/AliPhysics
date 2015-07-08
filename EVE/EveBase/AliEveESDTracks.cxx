@@ -24,6 +24,7 @@
 #include <AliEveTrackCounter.h>
 #include <AliEveMagField.h>
 #include <AliEveEventManager.h>
+#include <AliEveInit.h>
 
 #include <iostream>
 
@@ -48,25 +49,6 @@ fWidth(1)
     fColorsByCategory[6] = kGreen;
     fColorsByCategory[7] = kGreen+1;
     fColorsByCategory[8] = kGreen+2;
-    
-    // default color scheme by type:
-    fColorsByType[0] = kBlue;         // e
-    fColorsByType[1] = kGreen;        // mu
-    fColorsByType[2] = kRed;          // pi      (1)
-    fColorsByType[3] = kYellow;       // K       (3)
-    fColorsByType[4] = kOrange-3;     // Pr      (2)
-    fColorsByType[5] = kOrange-3;     // Dtr     (2)
-    fColorsByType[6] = kOrange-3;     // Trit    (2)
-    fColorsByType[7] = kOrange-3;     // He3     (2)
-    fColorsByType[8] = kYellow+3;     // Alpha
-    fColorsByType[9] = kWhite;        // Photon
-    fColorsByType[10]= kMagenta;      // pi0
-    fColorsByType[11]= kPink;         // neutron
-    fColorsByType[12]= kOrange+1;     // K0
-    fColorsByType[13]= kGray;         // EleCon
-    fColorsByType[14]= kGray;         // unknown
-    
-    
 }
 
 AliEveESDTracks::~AliEveESDTracks()
@@ -113,7 +95,7 @@ TString AliEveESDTracks::GetTitle(AliESDtrack* t)
              "pT = %.3f + %.3f - %.3f [%.3f]\n"
              "P  = (%.3f, %.3f, %.3f)\n"
              "V  = (%.3f, %.3f, %.3f)\n",
-             idx.Data(), lbl.Data(), t->Charge(), 0,
+             idx.Data(), lbl.Data(), t->Charge(), AliPID::ParticleCode(t->GetPID()),
              pt, ptM - pt, pt - ptm, ptsig*ptsq,
              p[0], p[1], p[2],
              v[0], v[1], v[2]);
@@ -639,6 +621,27 @@ TEveElementList* AliEveESDTracks::ByType()
     // Import ESD tracks, separate them into several containers
     // according to primary-vertex cut and ITS&TPC refit status.
     
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    Color_t colors[15];
+    // default color scheme by type:
+    colors[0] = settings.GetValue("tracks.byType.electron",600);
+    colors[1] = settings.GetValue("tracks.byType.muon",416);
+    colors[2] = settings.GetValue("tracks.byType.pion",632);
+    colors[3] = settings.GetValue("tracks.byType.kaon",400);
+    colors[4] = settings.GetValue("tracks.byType.proton",797);
+    colors[5] = settings.GetValue("tracks.byType.deuteron",797);
+    colors[6] = settings.GetValue("tracks.byType.triton",797);
+    colors[7] = settings.GetValue("tracks.byType.he3",797);
+    colors[8] = settings.GetValue("tracks.byType.alpha",403);
+    colors[9] = settings.GetValue("tracks.byType.photon",0);
+    colors[10]= settings.GetValue("tracks.byType.pi0",616);
+    colors[11]= settings.GetValue("tracks.byType.neutron",900);
+    colors[12]= settings.GetValue("tracks.byType.kaon0",801);
+    colors[13]= settings.GetValue("tracks.byType.elecon",920);
+    colors[14]= settings.GetValue("tracks.byType.unknown",920);
+
+    
     AliESDEvent *esd = AliEveEventManager::GetMaster()->AssertESD();
     
     TEveElementList* cont = new TEveElementList("ESD Tracks by PID");
@@ -671,7 +674,7 @@ TEveElementList* AliEveESDTracks::ByType()
     for (int i=0; i<15; i++) {
         tc[i] = 0;
         SetupPropagator(tl[i]->GetPropagator(), magF, maxR);
-        tl[i]->SetMainColor(fColorsByType[i]);
+        tl[i]->SetMainColor(colors[i]);
         tl[i]->SetLineWidth(fWidth);
         cont->AddElement(tl[i]);
     }
