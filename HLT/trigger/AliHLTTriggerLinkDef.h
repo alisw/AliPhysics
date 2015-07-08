@@ -39,5 +39,6 @@
 #pragma link C++ class AliHLTTriggerCounters+;
 #pragma link C++ class AliHLTTriggerCounters::AliCounter+;
 #pragma link C++ class AliHLTTRDTriggerComponent+;
+#pragma link C++ class AliHLTTriggerCTPRE+;
 
 #endif
