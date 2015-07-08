@@ -1994,7 +1994,7 @@ goSubmitBatch()
       submit ${JOBID1} 1 ${nFiles} 000 "${alirootEnv} ${self}" CPass0 ${targetDirectory} ${localInputList} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} -1 "${extraOpts[@]}"
 
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "${JOBID1wait}" 1 1 000 "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass0.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
+      submit "${JOBID1wait}" 1 1 000 "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass0.job\*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
       LASTJOB=${JOBID1wait}
 
     fi #end running CPass0
@@ -2099,7 +2099,7 @@ goSubmitBatch()
 
       ################################################################################
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "${JOBID4wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass1.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
+      submit "${JOBID4wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass1.job\*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
       LASTJOB=${JOBID4wait}
       ################################################################################
 
@@ -2155,9 +2155,9 @@ goSubmitBatch()
   #################################################################################
   #################################################################################
   #if [ ${runESDfiltering} -eq 1 ]; then
-  #  submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/filtering.cpass1.run*.done" "${#listOfRuns[@]}" ${maxSecondsToWait}
+  #  submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/filtering.cpass1.run/\*.done" "${#listOfRuns[@]}" ${maxSecondsToWait}
   #else
-    submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/merge.cpass1.run*.done" ${#listOfRuns[@]} ${maxSecondsToWait}
+    submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/merge.cpass1.run\*.done" ${#listOfRuns[@]} ${maxSecondsToWait}
   #fi
   LASTJOB=${JOBID5wait}
 
