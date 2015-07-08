@@ -785,13 +785,13 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     }
   }
   
+  fhNMergedFiles = new TH1F("hNMergedFiles",   "Number of merged output files"     , 1 , 0 , 1  ) ;
+  fhNMergedFiles->SetYTitle("# files");
+  fhNMergedFiles->Fill(1); // Fill here with one entry, while merging it will count the rest
+  fOutputContainer->Add(fhNMergedFiles);
+  
   if(fScaleFactor > 0)
-  {
-    fhNMergedFiles = new TH1F("hNMergedFiles",   "Number of merged output files"     , 1 , 0 , 1  ) ;
-    fhNMergedFiles->SetYTitle("# files");
-    fhNMergedFiles->Fill(1); // Fill here with one entry, while merging it will count the rest
-    fOutputContainer->Add(fhNMergedFiles);
-    
+  {    
     fhScaleFactor = new TH1F("hScaleFactor",   "Number of merged output files"     , 1 , 0 , 1  ) ;
     fhScaleFactor->SetYTitle("scale factor");
     fhScaleFactor->SetBinContent(1,fScaleFactor); // Fill here
