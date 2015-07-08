@@ -657,10 +657,10 @@ void AliT0QADataMakerRec::InitESDs()
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
   //indices in lookup table lookUpTable_tanay.txt 
-  enum { kTZeroRefPoint=49, kTZeroFirstCfdC=1, kTZeroFirstLedC=13, kTZeroFirstQT0C=25,kTZeroFirstQT1C=26,
+  enum { kTZeroRefPoint=0, kTZeroFirstCfdC=1, kTZeroFirstLedC=13, kTZeroFirstQT0C=25,kTZeroFirstQT1C=26,
          kTZeroVertex=50, kTZeroOrA=51, kTZeroOrC=52, kT0multAQ0=53, kT0multAQ1=54, kTZeroMultCent=55, kTZeroMultSemi=56,
          kTZeroFirstCfdA=57, kTZeroFirstLedA=69, kTZeroFirstQT0A=81,kTZeroFirstQT1A=82,
-         kT0multCQ0=105, kT0multCQ1=106 
+         kT0multCQ0=105, kT0multCQ1=106, kT0meaner=49 
   }; 
 
   Int_t  time[24] ;
@@ -804,7 +804,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
   FillRawsData(214, numPmtC);
      
  
-  Int_t trChannel[6] = {kTZeroRefPoint, kTZeroVertex, kTZeroOrA, kTZeroOrC, kTZeroMultCent, kTZeroMultSemi};
+  Int_t trChannel[6] = {kT0meaner, kTZeroVertex, kTZeroOrA, kTZeroOrC, kTZeroMultCent, kTZeroMultSemi};
   Float_t ch2cm = 24.4*0.029979;     
   Int_t nhitsOrA=0;
   Int_t nhitsOrC=0;
