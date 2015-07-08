@@ -99,6 +99,7 @@ fEMCdEdx(0),
 fEMCTPCnsig(0),
 fEMCTPCNpts(0),
 fClsEAftMatch(0),
+fClsEtaPhiAftMatch(0),
 fHistdEdxEop(0),
 fHistNsigEop(0),
 fHistEop(0),
@@ -172,6 +173,7 @@ fEMCdEdx(0),
 fEMCTPCnsig(0),
 fEMCTPCNpts(0),
 fClsEAftMatch(0),
+fClsEtaPhiAftMatch(0),
 fHistdEdxEop(0),
 fHistNsigEop(0),
 fHistEop(0),
@@ -329,6 +331,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 500, 0.0, 50.0);
     fOutputList->Add(fClsEAftMatch);
+    
+    fClsEtaPhiAftMatch = new TH2F("fClsEtaPhiAftMatch","EMCAL cluster #eta and #phi distribution after track matching;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList->Add(fClsEtaPhiAftMatch);
     
     fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
     fOutputList->Add(fHistEop);
@@ -707,6 +712,13 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             
             Double_t clustMatchE = clustMatch->E();
             fClsEAftMatch->Fill(clustMatchE);
+            
+            Float_t  emcx[3]; // cluster pos
+            clustMatch->GetPosition(emcx);
+            TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
+            Double_t emcphi = clustpos.Phi();
+            Double_t emceta = clustpos.Eta();
+            fClsEtaPhiAftMatch->Fill(emceta,emcphi);
             
             //EMCAL EID info
             Double_t eop = -1.0;
