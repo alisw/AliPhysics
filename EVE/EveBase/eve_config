@@ -16,6 +16,22 @@ tracks.noRefit.show:		1
 tracks.byType.show:     	1
 tracks.byCategory.show:		0
 
+tracks.byType.electron:     600
+tracks.byType.muon:         416
+tracks.byType.pion:         632
+tracks.byType.kaon:         400
+tracks.byType.proton:       797
+tracks.byType.deuteron:     797
+tracks.byType.triton:       797
+tracks.byType.he3:          797
+tracks.byType.alpha:        403
+tracks.byType.photon:       0
+tracks.byType.pi0:          616
+tracks.byType.neutron:      900
+tracks.byType.kaon0:        801
+tracks.byType.elecon:       920
+tracks.byType.unknown:      920
+
 clusters.show:          	0
 kinks.show:             	0
 V0s.show:               	0

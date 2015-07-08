@@ -31,9 +31,6 @@ public:
     void SetColorsByCategory(Color_t colors[9]){
         for(int i=0;i<9;i++){fColorsByCategory[i]=colors[i];}
     }
-    void SetColorsByType(Color_t colors[15]){
-        for(int i=0;i<15;i++){fColorsByType[i]=colors[i];}
-    }
     void SetWidth(Width_t width){fWidth=width;}
     void SetDashNoRefit(bool dashNoRefit){fDashNoRefit=dashNoRefit;}
     void SetDrawNoRefit(bool drawNoRefit){fDrawNoRefit=drawNoRefit;}
@@ -63,7 +60,6 @@ private:
 
     TEveElementList* ByAnalCuts();
     Color_t fColorsByCategory[9];
-    Color_t fColorsByType[15];
     Width_t fWidth;
     bool fDashNoRefit;
     bool fDrawNoRefit;
