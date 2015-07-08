@@ -1,11 +1,12 @@
-void PopulateLocalOCDB(const char* storageUri, const char* dets="ALL", Int_t runMin=0, Int_t runMax=0)
+void PopulateLocalOCDB(const char* storageUri="local://$ALICE_ROOT/OCDB", const char* dets="ALL", Int_t runMin=0, Int_t runMax=0)
 {
   // dets: comma-separated list of detectors for which to make the CDB objects
   //
+  /*
   TString storageString(storageUri);
   if(!storageUri || storageString.IsNull()) {
     storageUri = gSystem->ExpandPathName("local://$ALICE_ROOT/OCDB");
-  }
+  }*/
   AliCDBManager *cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(storageUri);
   if (runMax==0)
@@ -19,6 +20,7 @@ void PopulateLocalOCDB(const char* storageUri, const char* dets="ALL", Int_t run
       detectors += detectorNames[i];
       detectors += ",";
     }
+    detectors.Chop();
   }
 
   // For the 'MakeZeroMisalignment' macros
