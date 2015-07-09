@@ -92,6 +92,8 @@ private:
     TH2F        *fEMCTPCNpts;//!EMC Npoints used for dedx
     TH1F        *fClsEAftMatch;//!EMC Cluster energy after track matching
     TH2F        *fClsEtaPhiAftMatch;//!EMC Cluster eta phi distribution after track matching
+    TH2F        *fClsEtaPhiAftMatchEMCin;//!EMC Cluster eta phi distribution after track matching inside EMC phi acceptance
+    TH2F        *fClsEtaPhiAftMatchEMCout;//!EMC Cluster eta phi distribution after track matching outside EMC phi acceptance
     TH2F        *fHistdEdxEop;//!E/p vs dedx
     TH2F        *fHistNsigEop;//!E/p vs dedx
     TH2F        *fHistEop;//!pt vs E/p
