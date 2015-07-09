@@ -38,8 +38,11 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
 
   void SetJetContainerBase(Int_t c)                             { fContainerBase     = c   ; }
   void SetJetContainerNoEmb(Int_t c)                            { fContainerNoEmb    = c   ; }
+  void SetJetContainerOverlap(Int_t c)                          { fContainerOverlap  = c   ; }
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetSingleTrackEmbedding(Bool_t b, Int_t min = 99999, Int_t max = 999999) { fSingleTrackEmb = b; fMinLabelEmb = min; fMaxLabelEmb = max; }
+  void SetRemoveOverlapTrackJet(Bool_t b, Double_t r)                       { fOverlap = b; fRadius = r; if(!fSingleTrackEmb) Printf("No effect, since fSingleTrackEmb is false");  }
+
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
   void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
 
@@ -58,6 +61,8 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
  private:
   Int_t                               fContainerBase;              // jets to be analyzed
   Int_t                               fContainerNoEmb;             // subtracted jets from Pb-Pb only events
+  Int_t                               fContainerOverlap;           // jets (jetO) with a pT cut selection to reject overlapping embedded single track (used only in single track embedding) 
+
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fSingleTrackEmb;             // single track embedding
   Bool_t                              fCreateTree;                 // create output tree
@@ -65,6 +70,9 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   ResponseReference                   fResponseReference;          // true axis of response matrix
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
   Bool_t                              fPartialExclusion;           // randomly esclude areas according to Ncoll
+  Bool_t                              fOverlap;                    // activate the check on overlap between single particle embedded and jetO (jet with a pT of at least 5 Gev/c)
+  Double_t                               fRadius;                     // Radius that define overlap
+
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
   TLorentzVector  *fJet1Vec;                                       // jet1(AA) vector  
   TLorentzVector  *fJet2Vec;                                       // jet2(probe) vector
@@ -101,11 +109,12 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   TH2F          **fh2PtRawSubFacV2;                                //! raw pT vs 0.5(rho+rhom)^2*V2
   TH2F          **fh2PtCorrSubFacV2;                               //! subtracted pT vs 0.5(rho+rhom)^2*V2
   TH2F          **fh2NConstSubFacV2;                               //! N constituents vs 0.5(rho+rhom)^2*V2
+  TH2F          *fRjetTrvspTj;                                     //! distance in R between each jetO and embedded single track (those below fRadius are rejected)
 
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 9)
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 10)
 };
 #endif
 

@@ -11,7 +11,9 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
 						   TString      trigClass      = "",
 						   TString      kEmcalTriggers = "",
 						   TString      tag            = "MCMatch",
-						   Bool_t       bCreateTree    = kFALSE)
+						   Bool_t       bCreateTree    = kFALSE,
+						   Bool_t       removeoverlap  = kFALSE,
+						   const char * njetsOverl     = "")
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -31,7 +33,7 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
       return NULL;
     }
 
-  TString wagonName = Form("JetShapeDeriv_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
+  TString wagonName = Form("JetShapeDeriv_%s_TC%s%s%s",njetsBase,trigClass.Data(),tag.Data(), removeoverlap ? "noOvl" : "");
 
   //Configure jet tagger task
   AliAnalysisTaskJetShapeDeriv *task = new AliAnalysisTaskJetShapeDeriv(wagonName.Data());
@@ -42,8 +44,7 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
 
-  task->SetJetContainerBase(0);
-
+  Int_t contindx = 0;
   TString strType(type);
   AliJetContainer *jetContBase = task->AddJetContainer(njetsBase,strType,R);
   if(jetContBase) {
@@ -52,6 +53,8 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
     jetContBase->SetPercAreaCut(0.6);
+    task->SetJetContainerBase(contindx);
+    contindx+=1;
   }
 
   AliJetContainer *jetContNoEmb = task->AddJetContainer(njetsNoEmb,strType,R);
@@ -62,8 +65,26 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
     jetContNoEmb->ConnectClusterContainer(clusterCont);
     jetContNoEmb->SetPercAreaCut(0.6);
     jetContNoEmb->SetJetPtCut(-1e6);
+    task->SetJetContainerNoEmb(contindx);
+    contindx+=1;
   }
 
+  AliJetContainer *jetContOverl = 0x0;
+  if(removeoverlap) {
+     jetContOverl = task->AddJetContainer(njetsOverl,strType,R);
+     task->SetRemoveOverlapTrackJet(kTRUE, R);
+     if(jetContOverl) {
+     	jetContOverl->SetRhoName(nrhoBase);
+     	jetContOverl->SetRhoMassName(nrhoMass);
+     	jetContOverl->ConnectParticleContainer(trackCont);
+     	jetContOverl->ConnectClusterContainer(clusterCont);
+     	jetContOverl->SetPercAreaCut(0.6);
+     	jetContOverl->SetJetPtCut(-1e6);
+     	task->SetJetContainerOverlap(contindx);
+     	contindx+=1;
+     }
+  }
+  
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
   task->SetCentralityEstimator(CentEst);
   task->SelectCollisionCandidates(pSel);
