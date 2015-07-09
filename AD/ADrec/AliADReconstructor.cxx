@@ -19,6 +19,10 @@
 //  Class for AD reconstruction                                         //
 //////////////////////////////////////////////////////////////////////////////
 #include <TParameter.h>
+#include <TGeoManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoPhysicalNode.h>
+#include <AliGeomManager.h>
 
 #include "AliRawReader.h"
 #include "AliGRPObject.h"
@@ -89,8 +93,47 @@ AliADReconstructor:: AliADReconstructor():
 		       -TimeDelays->GetBinContent(i+1)
 		       -kADOffset);
    }
+   
+  Float_t zADC1 = TMath::Abs(GetZPosition("AD/ADC1"));//outer 
+  Float_t zADC2 = TMath::Abs(GetZPosition("AD/ADC2"));//inner
+  Float_t zADA1 = TMath::Abs(GetZPosition("AD/ADA1"));//inner
+  Float_t zADA2 = TMath::Abs(GetZPosition("AD/ADA2"));//outer
+  // distance in time units from nominal vertex to AD
+  fLayerDist[0] = zADC1/TMath::Ccgs()*1e9;
+  fLayerDist[1] = zADC2/TMath::Ccgs()*1e9;
+  fLayerDist[2] = zADA1/TMath::Ccgs()*1e9;
+  fLayerDist[3] = zADA2/TMath::Ccgs()*1e9; 
+  for(Int_t i=0;i<4;i++)cout<<fLayerDist[i]<<" ";
 
 }
+//________________________________________________________________________________
+Double_t AliADReconstructor::GetZPosition(const char* symname)
+{
+// Get the global z coordinate of the given AD alignable volume
+//
+  Double_t *tr;
+  TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
+  if (!pne) {
+    AliFatalClass(Form("TGeoPNEntry with symbolic name %s does not exist!",symname));
+    return 0;
+  }
+
+  TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
+  if(pnode){
+          TGeoHMatrix* hm = pnode->GetMatrix();
+           tr = hm->GetTranslation();
+  }else{
+          const char* path = pne->GetTitle();
+          if(!gGeoManager->cd(path)){
+                  AliFatalClass(Form("Volume path %s not valid!",path));
+                  return 0;
+          }
+         tr = gGeoManager->GetCurrentMatrix()->GetTranslation();
+  }
+  return tr[2];
+
+}
+
 
 //_____________________________________________________________________________
 AliADReconstructor& AliADReconstructor::operator = 
@@ -502,8 +545,6 @@ Float_t AliADReconstructor::CorrectLeadingTime(Int_t i, Float_t time, Float_t ad
   // Correct the leading time
   // for slewing effect and
   // misalignment of the channels
-  const Double_t fTOF[4] = {65.30,65.12,56.54,56.71};
-  
   if (time < 1e-6) return kInvalidTime;
 
   // In case of pathological signals
@@ -512,7 +553,7 @@ Float_t AliADReconstructor::CorrectLeadingTime(Int_t i, Float_t time, Float_t ad
   // Slewing and offset correction
   Int_t board = AliADCalibData::GetBoardNumber(i);
   time -= fTimeSlewingSpline[i]->Eval(TMath::Log10(1/adc))*fCalibData->GetTimeResolution(board);
-  time += fTOF[i/4];
+  time += fLayerDist[i/4];
   
   // Channel alignment and general offset subtraction
   //time -= fHptdcOffset[i];
