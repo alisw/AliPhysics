@@ -436,7 +436,7 @@ namespace EMCalTriggerPtAnalysis {
     bool isPileupEvent = fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.);
     isPileupEvent = isPileupEvent || (TMath::Abs(vtxTracks->GetZ() - vtxSPD->GetZ()) > 0.5);
     double covSPD[6]; vtxSPD->GetCovarianceMatrix(covSPD);
-    isPileupEvent = isPileupEvent || (TString(vtxSPD->GetTitle()).Contains("vertexer: Z") && TMath::Sqrt(covSPD[5]) > 0.25); // selection effectively inactive in old versions of the code
+    isPileupEvent = isPileupEvent || (vtxSPD->IsFromVertexerZ() && TMath::Sqrt(covSPD[5]) > 0.25); // selection effectively inactive in old versions of the code
 
     // Fill event-based histogram
     const double &zv = vtxTracks->GetZ();

@@ -882,9 +882,7 @@ Bool_t  AliAnalysisTaskJetServices::IsVertexValid ( const AliESDVertex* vtx) {
   if(vtxName.Contains("SPDVertex"))fEventCutInfoESD |= kVertexSPD;
   if(vtxName.Contains("PrimaryVertex"))fEventCutInfoESD |= kVertexGlobal;
 
-
-  TString vtxTitle(vtx->GetTitle());
-  if(vtxTitle.Contains("vertexer: Z")){
+  if(vtx->IsFromVertexerZ()) {
     if(vtx->GetDispersion()>0.02)return kFALSE;   
   }
   fEventCutInfoESD |= kSPDDispersionCut;

@@ -1736,14 +1736,13 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
 		if(spdVtx->GetNContributors()<=0) return;
-		TString vtxTyp = spdVtx->GetTitle();
 		Double_t cov[6]={0};
 		spdVtx->GetCovarianceMatrix(cov);
 		Double_t zRes = TMath::Sqrt(cov[5]);
 		
 		fzRes1->Fill(zRes);
 		//Yvonne e-mail from 12 June 2015 says it has a bug on "vertexer:Z".
-		//if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+		//if(spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
 		
 		//new line:
 		if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
@@ -1814,7 +1813,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		Double_t cov[6]={0};
 		spdVtx->GetCovarianceMatrix(cov);
 		Double_t zRes = TMath::Sqrt(cov[5]);
-		if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+		if(spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
 		if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
 		if(TMath::Abs(zvtx) > 10) return;
 	}

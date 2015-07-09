@@ -321,8 +321,7 @@ Bool_t AliAnalysisMuMuEventCutter::IsSPDzQA(const AliVEvent& event, /*const AliV
     const AliVVertex* SPDVertex = event.GetPrimaryVertexSPD();
     if ( SPDVertex )
     {
-      TString vtxTyp = SPDVertex->GetTitle();
-     if ( SPDVertex->GetNContributors() > 0 && !vtxTyp.Contains("vertexer: Z") )
+     if ( SPDVertex->GetNContributors() > 0 && !SPDVertex->IsFromVertexerZ() )
      {
        Double_t cov[6]={0};
        SPDVertex->GetCovarianceMatrix(cov);
