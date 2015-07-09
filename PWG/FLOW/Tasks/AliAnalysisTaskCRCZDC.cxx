@@ -181,6 +181,7 @@ fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fRunSet("2010"),
+fRunList(NULL),
 fCRCnRun(0)
 {
  for(int i=0; i<5; i++){
@@ -306,6 +307,7 @@ fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fRunSet(RunSet),
+fRunList(NULL),
 fCRCnRun(0)
 {
  
