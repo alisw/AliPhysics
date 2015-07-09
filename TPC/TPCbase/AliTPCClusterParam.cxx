@@ -89,7 +89,7 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 #include "THnBase.h"
-
+#include "TFormulaPrimitive.h"
 #include "AliMathBase.h"
 
 /// \cond CLASSIMP
@@ -125,6 +125,21 @@ AliTPCClusterParam* AliTPCClusterParam::fgInstance = 0;
 
 
 
+Double_t AliTPCClusterParamClusterResolutionY(Double_t x, Double_t s0, Double_t s1){
+  //
+  // cluster resoultion
+  Double_t result = AliTPCClusterParam::SGetError0Par(0,s0,x,s1);
+  return result;
+}
+
+Double_t AliTPCClusterParamClusterResolutionZ(Double_t x, Double_t s0, Double_t s1){
+  //
+  // cluster resoultion
+  Double_t result = AliTPCClusterParam::SGetError0Par(1,s0,x,s1);
+  return result;
+}
+
+
 
 //_ singleton implementation __________________________________________________
 AliTPCClusterParam* AliTPCClusterParam::Instance()
@@ -134,6 +149,13 @@ AliTPCClusterParam* AliTPCClusterParam::Instance()
 
   if (fgInstance == 0){
     fgInstance = new AliTPCClusterParam();
+    //
+    ::Info("AliTPCClusterParam::Instance()","registering of the cluster param function primitives");
+    ::Info("AliTPCClusterParam::Instance()","clusterResolutionYAliRoot");
+    TFormulaPrimitive::AddFormula(new TFormulaPrimitive("clusterResolutionYAliRoot","clusterResolutionYAliRoot",AliTPCClusterParamClusterResolutionY));
+    ::Info("AliTPCClusterParam::Instance()","clusterResolutionZAliRoot");
+    TFormulaPrimitive::AddFormula(new TFormulaPrimitive("clusterResolutionZAliRoot","clusterResolutionZAliRoot",AliTPCClusterParamClusterResolutionZ));
+
   }
   return fgInstance;
 }
