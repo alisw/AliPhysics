@@ -42,12 +42,14 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fContainerBase(0),
   fContainerSub(1),
   fContainerNoEmb(2),
+  fContainerOverlap(3),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
   fJetMassVarType(kMass),
   fResponseReference(kDet),
   fUseSumw2(0),
+  fOverlap(0),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -106,12 +108,14 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fContainerBase(0),
   fContainerSub(1),
   fContainerNoEmb(2),
+  fContainerOverlap(3),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
   fJetMassVarType(kMass),
   fResponseReference(kDet),
   fUseSumw2(0),
+  fOverlap(0),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -301,7 +305,11 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   
   fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
   fOutput->Add(fhnDeltaMassAndBkgInfo);
-
+  
+  if(fOverlap){
+     fRjetTrvspTj = new TH2F("fRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
+     fOutput->Add(fRjetTrvspTj);
+  }
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -352,16 +360,23 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
   AliEmcalJet *jetR  = NULL; //true jet for response matrix
   AliEmcalJet *jetS = NULL;  //subtracted jet
+  AliEmcalJet *jetO  = NULL; //hard-ish jet to avoid overlap of single track with
   AliVParticle *vpe  = NULL; //embedded particle
   
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
   AliJetContainer *jetContS = GetJetContainer(fContainerSub);
+  AliJetContainer *jetContO = GetJetContainer(fContainerOverlap);
 
   //Get leading jet in Pb-Pb event without embedded objects
   AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
   AliEmcalJet *jetL = NULL;
   if(jetContNoEmb) jetL = jetContNoEmb->GetLeadingJet("rho");
   
+  if(fOverlap && !jetContO){
+     Printf("Jet Container %d not found, return", fContainerOverlap);
+     return kFALSE;
+  }
+
   //rho
   AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetContS->GetRhoName()));
   fRho = 0;
@@ -423,11 +438,25 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
       if(fSingleTrackEmb) {
       	 vpe = GetEmbeddedConstituent(jet1);
-      	 if(vpe) {
-      	    fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
-      	    fMatch = 1;
-      	 }
-      	 
+      	 if(vpe){
+      	    Bool_t reject = kFALSE;
+      	    if(fOverlap){
+      	       Int_t Njets = jetContO->GetNAcceptedJets();
+      	       jetContO->ResetCurrentID();
+      	       while(jetO = jetContO->GetNextAcceptJet()){
+      	       	  Double_t deltaR = jetO->DeltaR(vpe);
+      	       	  fRjetTrvspTj->Fill(deltaR, jetO->Pt());
+      	       	  if(deltaR < fRadius) {
+      	       	     reject = kTRUE;
+      	       	     break;
+      	       	  }
+      	       }
+      	    }
+      	    if(!reject) {
+      	       fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
+      	       fMatch = 1;
+      	    }
+      	 } 
       } else {
       	 jet2 = jet1->ClosestJet();
       	 fraction = jetCont->GetFractionSharedPt(jet1);

@@ -42,6 +42,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetShapeDeriv", kTRUE),
   fContainerBase(0),
   fContainerNoEmb(1),
+  fContainerOverlap(2),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
@@ -49,6 +50,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fResponseReference(kDet),
   fUseSumw2(0),
   fPartialExclusion(0),
+  fOverlap(0),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -134,6 +136,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
   fContainerNoEmb(1),
+  fContainerOverlap(2),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
@@ -141,6 +144,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fResponseReference(kDet),
   fUseSumw2(0),
   fPartialExclusion(0),
+  fOverlap(0),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -411,7 +415,10 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
   fOutput->Add(fhnDeltaMassAndBkgInfo);
 
-
+  if(fOverlap){
+     fRjetTrvspTj = new TH2F("fRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
+     fOutput->Add(fRjetTrvspTj);
+  }
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -464,6 +471,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   AliEmcalJet *jet1  = NULL; //AA jet
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
   AliEmcalJet *jetR  = NULL; //true jet for response matrix
+  AliEmcalJet *jetO  = NULL; //hard-ish jet to avoid overlap of single track with
   AliVParticle *vpe  = NULL; //embedded particle
 
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
@@ -471,6 +479,13 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
      Printf("Jet Container %d not found, return", fContainerBase);
      return kFALSE;
   }
+  AliJetContainer *jetContO = GetJetContainer(fContainerOverlap);
+
+  if(fOverlap && !jetContO){
+     Printf("Jet Container %d not found, return", fContainerOverlap);
+     return kFALSE;
+  }
+
   //rho
   AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetCont->GetRhoName()));
   fRho = 0;
@@ -536,7 +551,19 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
        	     
        	     if(rnd.Rndm()<=prob) reject = kTRUE; //reject cone
        	  }
-          if(!reject){	  
+       	  if(fOverlap){
+       	     Int_t Njets = jetContO->GetNAcceptedJets();
+       	     jetContO->ResetCurrentID();
+       	     while(jetO = jetContO->GetNextAcceptJet()){
+       	     	Double_t deltaR = jetO->DeltaR(vpe);
+       	     	fRjetTrvspTj->Fill(deltaR, jetO->Pt());
+       	     	if( deltaR < fRadius) {
+       	     	   reject = kTRUE;
+       	     	   break;
+       	     	}
+       	     }
+       	  }
+          if(!reject){
              fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
              fMatch = 1;
        	  }
@@ -592,14 +619,15 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
       fhnMassResponse[fCentBin]->Fill(varsp);
       
-      varsp[0] = var-var2;
-      varsp[1] = ptjet1-ptJetR;
-      varsp[2] = var;
-      varsp[3] = var2;
-      varsp[4] = ptjet1;
-      varsp[5] = ptJetR;
+      Double_t varsp1[6];
+      varsp1[0] = var-var2;
+      varsp1[1] = ptjet1-ptJetR;
+      varsp1[2] = var;
+      varsp1[3] = var2;
+      varsp1[4] = ptjet1;
+      varsp1[5] = ptJetR;
 
-      fhnDeltaMass[fCentBin]->Fill(varsp);
+      fhnDeltaMass[fCentBin]->Fill(varsp1);
       
       //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
       Double_t varsp2[8] = {var-var2, ptjet1-ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
