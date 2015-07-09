@@ -103,7 +103,6 @@ AliADReconstructor:: AliADReconstructor():
   fLayerDist[1] = zADC2/TMath::Ccgs()*1e9;
   fLayerDist[2] = zADA1/TMath::Ccgs()*1e9;
   fLayerDist[3] = zADA2/TMath::Ccgs()*1e9; 
-  for(Int_t i=0;i<4;i++)cout<<fLayerDist[i]<<" ";
 
 }
 //________________________________________________________________________________
