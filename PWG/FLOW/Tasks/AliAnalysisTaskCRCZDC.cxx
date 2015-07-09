@@ -22,9 +22,11 @@
 
 #include "Riostream.h" //needed as include
 #include "TChain.h"
+#include "TList.h"
 #include "TTree.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
+#include "TProfile.h"
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -83,18 +85,17 @@
 
 ClassImp(AliAnalysisTaskCRCZDC)
 
-
 //________________________________________________________________________
 AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC():
-AliAnalysisTaskSE(),
+AliAnalysisTaskSE(""),
 fAnalysisType("AUTOMATIC"),
-fRPType("Global"),
+fRPType(""),
 fCFManager1(NULL),
 fCFManager2(NULL),
 fCutsEvent(NULL),
 fCutsRP(NULL),
 fCutsPOI(NULL),
-fCutContainer(NULL),
+fCutContainer(new TList()),
 fQAList(NULL),
 fMinMult(0),
 fMaxMult(10000000),
@@ -142,9 +143,9 @@ fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
-fCentrLowLim(0),
-fCentrUpLim(0),
-fCentrEstimator(0),
+fCentrLowLim(0.),
+fCentrUpLim(100.),
+fCentrEstimator("V0M"),
 fOutput(0x0),
 fhZNCvsZNA(0x0),
 fhZPCvsZPA(0x0),
@@ -178,9 +179,10 @@ fhZPApmcvscentr(0x0),
 fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
-fhZPApmcLR(0x0)
+fhZPApmcLR(0x0),
+fRunSet("2010"),
+fCRCnRun(0)
 {
- // Default constructor
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
   fhZNAPM[i] = 0x0;
@@ -203,10 +205,13 @@ fhZPApmcLR(0x0)
   fhZPAPMQiPMC[i] = 0x0;
   fhPMCvsPMQ[i] = 0x0;
  }
+ this->InitializeRunArrays();
+ fMyTRandom3 = new TRandom3(1);
+ gRandom->SetSeed(fMyTRandom3->Integer(65539));
 }
 
 //________________________________________________________________________
-AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, UInt_t iseed, Bool_t bCandidates):
+AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, TString RunSet, UInt_t iseed, Bool_t bCandidates):
 AliAnalysisTaskSE(name),
 fAnalysisType("AUTOMATIC"),
 fRPType(RPtype),
@@ -299,7 +304,9 @@ fhZPApmcvscentr(0x0),
 fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
-fhZPApmcLR(0x0)
+fhZPApmcLR(0x0),
+fRunSet(RunSet),
+fCRCnRun(0)
 {
  
  for(int i=0; i<5; i++){
@@ -324,6 +331,7 @@ fhZPApmcLR(0x0)
   fhZPAPMQiPMC[i] = 0x0;
   fhPMCvsPMQ[i] = 0x0;
  }
+ this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(iseed);
  gRandom->SetSeed(fMyTRandom3->Integer(65539));
  
@@ -347,6 +355,18 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
  
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskCRCZDC::InitializeRunArrays()
+{
+ fRunList = NULL;
+ for(Int_t r=0;r<fCRCMaxnRun;r++) {
+  fCRCQVecListRun[r] = NULL;
+  for(Int_t i=0;i<fCRCnTow;i++) {
+   fhnTowerGain[r][i] = NULL;
+  }
+ }
 }
 
 //________________________________________________________________________
@@ -386,8 +406,8 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  fFlowEvent = new AliFlowEvent(10000);
  
  //printf("  AliAnalysisTaskCRCZDC::UserCreateOutputObjects()\n\n");
- fOutput = new TList;
- fOutput->SetOwner();
+ fOutput = new TList();
+ fOutput->SetOwner(kTRUE);
  //fOutput->SetName("output");
  
  for(int i=0; i<5; i++){
@@ -562,6 +582,36 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  fOutput->Add(fhZPCpmcLR);
  fhZPApmcLR = new TH1F("hZPApmcLR","ZPA PMC lr", 100, 0., 10.);
  fOutput->Add(fhZPApmcLR);
+ 
+ //********************************************************************
+ 
+ Int_t dRun10h[] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
+ 
+ Int_t dRun11h[] = {167902, 167903, 167915, 167920, 167985, 167987, 167988, 168066, 168068, 168069, 168076, 168104, 168105, 168107, 168108, 168115, 168212, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168461, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 169965, 170027, 170036,170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593};
+ 
+ if(fRunSet.EqualTo("2010")) {fCRCnRun=92;}
+ if(fRunSet.EqualTo("2011")) {fCRCnRun=119;}
+ 
+ fRunList = new Int_t[fCRCnRun];
+ Int_t d=0;
+ for(Int_t r=0; r<fCRCnRun; r++) {
+  if(fRunSet.EqualTo("2010")) {fRunList[d] = dRun10h[r];}
+  if(fRunSet.EqualTo("2011")) {fRunList[d] = dRun11h[r];}
+  d++;
+ }
+
+ for(Int_t r=0;r<fCRCnRun;r++) {
+  fCRCQVecListRun[r] = new TList();
+  fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
+  fCRCQVecListRun[r]->SetOwner(kTRUE);
+  fOutput->Add(fCRCQVecListRun[r]);
+  for(Int_t i=0;i<fCRCnTow;i++) {
+   fhnTowerGain[r][i] = new TProfile(Form("fhnTowerGain[%d][%d]",fRunList[r],i),
+                                     Form("fhnTowerGain[%d][%d]",fRunList[r],i),20,0.,100.,"s");
+   fhnTowerGain[r][i]->Sumw2();
+   fCRCQVecListRun[r]->Add(fhnTowerGain[r][i]);
+  }
+ }
  
  PostData(2, fOutput);
 }
@@ -789,6 +839,22 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
   fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
   fFlowEvent->SetZDC2Qsub(xyZNC,zncEnergy,xyZNA,znaEnergy);
+  
+  Int_t RunBin=-1, bin=0, RunNum=fFlowEvent->GetRun();
+  for(Int_t c=0;c<fCRCnRun;c++) {
+   if(fRunList[c]==RunNum) RunBin=bin;
+   else bin++;
+  }
+  if(RunBin!=-1) {
+   for(Int_t i=0; i<4; i++){
+    if(towZNC[i+1]>0.) {
+     fhnTowerGain[RunBin][i]->Fill(centrperc,TMath::Power(towZNC[i+1], 0.395));
+    }
+    if(towZNA[i+1]>0.) {
+     fhnTowerGain[RunBin][i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], 0.395));
+    }
+   }
+  }
   
   // ******************************************************************************
   

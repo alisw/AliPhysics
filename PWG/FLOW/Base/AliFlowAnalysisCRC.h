@@ -165,6 +165,7 @@ public:
  virtual void CalculateCRCZDC();
  virtual void CalculateCRCPtCorr();
  virtual void CalculateCRCQVec();
+ virtual void CalculateVZvsZDC();
  // 2h.) Various
  virtual void FillVarious();
  
@@ -692,6 +693,8 @@ public:
  TProfile* GetCRCVZQVecAHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecA[r][c];};
  void SetCRCVZQVecCHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCVZQVecC[r][c] = TH;};
  TProfile* GetCRCVZQVecCHist(Int_t const r, Int_t const c) const {return this->fCRCVZQVecC[r][c];};
+ void SetCRCVZQVecCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCVZQVecCov[r][i] = TH;};
+ TProfile* GetCRCVZQVecCov(Int_t const r, Int_t const i) const {return this->fCRCVZQVecCov[r][i];};
  
  void SetCRCZDCEvPlA(TH1D* const TH, Int_t const r, Int_t const c) {this->fCRCZDCEvPlA[r][c] = TH;};
  TH1D* GetCRCZDCEvPlA(Int_t const r, Int_t const c) const {return this->fCRCZDCEvPlA[r][c];};
@@ -705,10 +708,11 @@ public:
  TProfile* GetCRCZDCQVecACorrHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecACorr[r][c];};
  void SetCRCZDCQVecCCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecCCorr[r][c] = TH;};
  TProfile* GetCRCZDCQVecCCorrHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecCCorr[r][c];};
-// void SetRunBinMin(Int_t const n) {this->fCRCRunBinMin = n;};
-// Int_t GetRunBinMin() const {return this->fCRCRunBinMin;}
-// void SetRunBinMax(Int_t const n) {this->fCRCRunBinMax = n;};
-// Int_t GetRunBinMax() const {return this->fCRCRunBinMax;}
+ void SetCRCZDCQVecCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCZDCQVecCov[r][i] = TH;};
+ TProfile* GetCRCZDCQVecCov(Int_t const r, Int_t const i) const {return this->fCRCZDCQVecCov[r][i];};
+ 
+ void SetCRCVZvsZDCCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCVZvsZDCCov[r][i] = TH;};
+ TProfile* GetCRCVZvsZDCCov(Int_t const r, Int_t const i) const {return this->fCRCVZvsZDCCov[r][i];};
  
  // CRC VZERO:
  // 12.a) EbE Corr:
@@ -1156,6 +1160,7 @@ private:
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
  TProfile *fCRCVZQVecA[fCRCMaxnRun][2]; //! Q Vectors VZERO-A
  TProfile *fCRCVZQVecC[fCRCMaxnRun][2]; //! Q Vectors VZERO-C
+ TProfile *fCRCVZQVecCov[fCRCMaxnRun][4]; //! VZs Q Vectors correlations
  
  TH1D *fCRCZDCEvPlA[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane ZDCN-A
  TH1D *fCRCZDCEvPlC[fCRCMaxnRun][fCRCMaxnCen]; //! Ev Plane ZDCN-C
@@ -1163,6 +1168,9 @@ private:
  TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
  TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
  TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
+ TProfile *fCRCZDCQVecCov[fCRCMaxnRun][4]; //! ZDCs Q Vectors correlations
+ 
+ TProfile *fCRCVZvsZDCCov[fCRCMaxnRun][16]; //! ZDC vs VZ Q Vectors correlations
  
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List
