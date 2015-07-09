@@ -1808,6 +1808,11 @@ void AliTPC::DigitizeRow(Int_t irow,Int_t isec,TObjArray **rows)
       if(fDigitsSwitch == 0){	
 	Float_t gain = gainROC->GetValue(irow,ip);  // get gain for given - pad-row pad	
 	Float_t noisePad = noiseROC->GetValue(irow,ip);	
+        //protection for nan
+        if ( !(noisePad<10000000) ){
+          noisePad=0.;
+        }
+
 	//
 	q*=gain;
 	q+=GetNoise()*noisePad;
