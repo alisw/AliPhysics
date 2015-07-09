@@ -50,6 +50,7 @@ public:
 
   AliCDBStorage     *SetStorage(const char* uri);
   void GetCollisionMode();
+  Double_t GetZPosition(const char* symname);
 
   AliADCalibData *GetCalibData() const; 
   void GetTimeSlewingSplines();
@@ -77,8 +78,9 @@ private:
   Float_t            fBeamEnergy;     // beam energy
   Float_t            fHptdcOffset[16];  //! HPTDC time offsets channel by channel
   TSpline3	     *fTimeSlewingSpline[16]; //Time slewing splines
+  Float_t	     fLayerDist[4];    //Z position of layers
 
-  ClassDef(AliADReconstructor, 3)  // class for the AD reconstruction
+  ClassDef(AliADReconstructor, 4)  // class for the AD reconstruction
 };
 
 #endif
