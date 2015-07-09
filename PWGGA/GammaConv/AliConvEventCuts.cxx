@@ -1578,7 +1578,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	weight = 1;
 	
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
-	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC12a15a") != 0) return kTRUE;
+	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
+		periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0) return kTRUE;
 
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		if(dynamic_cast<AliMCEvent*>(MCEvent)){
@@ -1619,7 +1620,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					if(jet->Pt() > 3 * ptHard){
 						eventAccepted= kFALSE;
 					}	
-					if (periodName.CompareTo("LHC15a3b") == 0 ){
+					if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
 						Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
 															21,	28, 36, 45, 57, 
 															70, 85, 1000};
@@ -1630,7 +1631,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 						if (bin < 12) weight = weightsBins[bin];
 					}
-					if (periodName.CompareTo("LHC15a3a") == 0 ){
+					if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
 						Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
 															84,		117, 	152,	191, 	1000};
 						Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
@@ -1659,7 +1660,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 				if(jet->Pt() > 3 * ptHard){
 					eventAccepted= kFALSE;
 				}	
-				if (periodName.CompareTo("LHC15a3b") == 0 ){
+				if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
 					Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
 														21,	28, 36, 45, 57, 
 														70, 85, 1000};
@@ -1670,7 +1671,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 					if (bin < 12) weight = weightsBins[bin];
 				}
-				if (periodName.CompareTo("LHC15a3a") == 0 ){
+				if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
 					Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
 														84,		117, 	152,	191, 	1000};
 					Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
