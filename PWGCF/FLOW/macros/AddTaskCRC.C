@@ -102,10 +102,11 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
   AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
 //  taskFE->SetAnalysisType(analysisType);
  } else {
-  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
+  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, TPCMultOut);
   taskFE->SetCentralityRange(centrMin,centrMax);
   taskFE->SetCentralityEstimator("V0M");
   taskFE->SetUseMCCen(bZDCMCCen);
+  taskFE->SetRunSet(TPCMultOut);
  }
  // add the task to the manager
  mgr->AddTask(taskFE);
