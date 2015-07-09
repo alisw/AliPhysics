@@ -318,7 +318,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistCentralityClass = new TH1F("fHistCentralityClass","Centrality Class; centrality class; entries",11,-0.5,10.5);
   fHistCentralityPercentile = new TH1F("fHistCentralityPercentile","Centrality; centrality percentile; entries",101,-0.5,100.5);
   
-  fHistTrigger = new TH1F("fHistTrigger","Trigger statistics",3,-0.5,3.5);
+  fHistTrigger = new TH1F("fHistTrigger","Trigger statistics",4,-0.5,3.5);
   fHistTrigger->GetXaxis()->SetBinLabel(1,"kMB");
   fHistTrigger->GetXaxis()->SetBinLabel(2,"kCentral");
   fHistTrigger->GetXaxis()->SetBinLabel(3,"kSemiCentral");
@@ -431,7 +431,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistDecayMomCM_YZ = new TH2F("fHistDecayMomCM_YZ","p_{^{3}H_{#Lambda},Y} vs p_{^{3}H_{#Lambda},Z} in center-of-mass; p_{Y} (GeV/c); p_{Z} (GeV/c)",200.,-2.,2.,200.,-2.,2.);
   fHistDecayMomCM = new TH1F("fHistDecayMomCM","^{3}H_{#Lambda} momentum in center-of-mass; p_{^{3}H_{#Lambda}} (GeV/c); entries/0.01",150,0.,3.);
   fHistMassHypertriton = new TH1F("fHistMassHypertriton", "Invariant mass distribution d+p+#pi^{-};invariant mass d+p+#pi^{-} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
-  fHistMassAntiHypertriton = new TH1F("fHistMassAntiHypertriton", "Invariant mass distribution #bard + #barp + #pi^{+};invariant mass #bard + #barp + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
+  fHistMassAntiHypertriton = new TH1F("fHistMassAntiHypertriton", "Invariant mass distribution #bar{d} + #bar{p} + #pi^{+};invariant mass #bar{d} + #bar{p} + #pi^{+} (GeV/c^{2}); entries ", 400, 2.9, 3.1);
 
   if(fMC){
     fHistParticle = new TH1F("fHistParticle","Check particle candidate",23,-0.5,22.5);
