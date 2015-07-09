@@ -93,6 +93,9 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   // Fill up offline trigger decisions
   // using the TDC data (already corrected for
   // slewing and misalignment between channels)
+  
+  esdAD->SetBit(AliESDAD::kDecisionFilled,kTRUE);
+  esdAD->SetBit(AliESDAD::kTriggerBitsFilled,kTRUE);
 
   // loop over AD channels
   Double_t timeADA =0., timeADC = 0.;
