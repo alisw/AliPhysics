@@ -4927,7 +4927,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
         for(Int_t i(gOffsetStart); i < counts; i++) {
 
             // quadratic sum of statistical and uncorrelated systematic error
-            Double_t e = gStat->At(i) + gPwrtToStatArray->At(i);
+            Double_t e = TMath::Sqrt(gStat->At(i)*gStat->At(i) + gPwrtToStatArray->At(i)*gPwrtToStatArray->At(i));
 
             // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
             // also the numerator of equation 3 of phenix paper
