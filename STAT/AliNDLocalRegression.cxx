@@ -221,34 +221,48 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   Double_t *binHypFit  = new Double_t[2*fHistPoints->GetNdimensions()];
   //
   TLinearFitter fitter(1+2*fNParameters,TString::Format("hyp%d",2*fNParameters).Data());
-  for (Int_t ibin=0; ibin<nbins; ibin++){
+  TLinearFitter fitterNW(1+2*fNParameters,TString::Format("hyp%d",2*fNParameters).Data());
+  for (Int_t ibin=1; ibin<=nbins; ibin++){       // underflow and overflow bins  - should be skipped
     fHistPoints->GetBinContent(ibin,fBinIndex); // 
+    Bool_t isUnderOverFlow=kFALSE;
     for (Int_t idim=0; idim<fNParameters; idim++){
       fBinCenter[idim]=fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
+      if (fBinIndex[idim]==0)  isUnderOverFlow=kTRUE;
+      if (fBinIndex[idim]>fHistPoints->GetAxis(idim)->GetNbins())  isUnderOverFlow=kTRUE;
     }
+    if (!isUnderOverFlow) continue;
     fitter.ClearPoints();
+    fitterNW.ClearPoints();
     // add fit points    
     for (Int_t ipoint=0; ipoint<entriesVal; ipoint++){
       Double_t weight=1;
+      Bool_t isAbove=kTRUE;
       for (Int_t idim=0; idim<fNParameters; idim++){
 	TVectorD &vecVar=*((TVectorD*)(pointArray.UncheckedAt(idim)));
 	TVectorD &vecKernel=*((TVectorD*)(kernelArray.UncheckedAt(idim)));
 	fBinDelta[idim]=vecVar[ipoint]-fBinCenter[idim];       	
 	weight*=TMath::Gaus(fBinDelta[idim],0,vecKernel[ipoint]);
-	if (weight<weightCut) continue;
+	if (weight<weightCut) {
+	  isAbove=kFALSE;
+	  break;
+	}
 	binHypFit[2*idim]=fBinDelta[idim];
 	binHypFit[2*idim+1]=fBinDelta[idim]*fBinDelta[idim];
       }      
-      if (weight<weightCut) continue;
+      if (!isAbove) continue;
       fitter.AddPoint(binHypFit,values[ipoint], errors[ipoint]/weight);
+      fitterNW.AddPoint(binHypFit,values[ipoint], errors[ipoint]);
     }
     TVectorD * fitParam=new TVectorD(fNParameters*2+1);
     TVectorD * fitQuality=new TVectorD(3);
     TMatrixD * fitCovar=new TMatrixD(fNParameters*2+1,fNParameters*2+1);
     Double_t normRMS=0;
+    Double_t normRMSNW=0;
     Int_t nBinPoints=fitter.GetNpoints();
     if (fitter.GetNpoints()>fNParameters*2+2){
       fitter.Eval();
+      fitterNW.Eval();
+      normRMSNW=fitterNW.GetChisquare()/(fitterNW.GetNpoints()-fitterNW.GetNumberFreeParameters());
       normRMS=fitter.GetChisquare()/(fitter.GetNpoints()-fitter.GetNumberFreeParameters());
       fitter.GetParameters(*fitParam);
       fitter.GetCovarianceMatrix(*fitCovar);
@@ -264,9 +278,11 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
 	"ibin="<<ibin<<                // bin index
 	"nBinPoints="<<nBinPoints<<    // center of the bin
 	"binCenter.="<<&pfBinCenter<<  // 
-	"normRMS="<<normRMS<<          
+	"normRMS="<<normRMS<<          //   
+	"normRMSNW="<<normRMSNW<<          //   
 	"fitParam.="<<fitParam<<
 	"fitCovar.="<<fitCovar<<
+	"fitQuality.="<<fitQuality<<
 	"\n";
     }
   }
@@ -282,8 +298,10 @@ Double_t AliNDLocalRegression::Eval(Double_t *point ){
   fHistPoints->GetBinContent(ibin,fBinIndex); 
   for (Int_t idim=0; idim<fNParameters; idim++){
     fBinCenter[idim]=fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
-  } 
+  }
+  if ((fLocalFitParam->At(ibin))==NULL) return 0;
   TVectorD &vecParam = *((TVectorD*)fLocalFitParam->At(ibin));
+  
   Double_t value=vecParam[0];
   for (Int_t ipar=0; ipar<fNParameters; ipar++){
     Double_t delta=point[ipar]-fBinCenter[ipar];
@@ -302,6 +320,7 @@ Double_t AliNDLocalRegression::EvalError(Double_t *point ){
   for (Int_t idim=0; idim<fNParameters; idim++){
     fBinCenter[idim]=fHistPoints->GetAxis(idim)->GetBinCenter(fBinIndex[idim]);
   } 
+  if ((fLocalFitParam->At(ibin))==NULL) return 0;
   TMatrixD &vecCovar = *((TMatrixD*)fLocalFitCovar->At(ibin));
   //TVectorD &vecQuality = *((TVectorD*)fLocalFitQuality->At(ibin));
   Double_t value=TMath::Sqrt(vecCovar(0,0));  // fill covariance to be used 
