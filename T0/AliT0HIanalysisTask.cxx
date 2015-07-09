@@ -215,10 +215,9 @@ void AliT0HIanalysisTask::UserExec(Option_t *)
 	  fNcont = fESD->GetPrimaryVertexSPD()->GetNContributors();
 	  fNcontTPC = fESD->GetPrimaryVertexTPC()->GetNContributors();
 	  const AliESDVertex *vtxESD = fESD->GetPrimaryVertex();
-	  TString vtxTyp = vtxESD->GetTitle();
 	  //	  printf(" %s \n", vtxTyp.Data() );
 	  Bool_t fVtxOK = kFALSE;
-	  if ( !vtxTyp.Contains("vertexer: Z") ||
+	  if ( !vtxESD->IsFromVertexerZ() ||
 	       (vtxESD->GetDispersion()<0.04 && vtxESD->GetZRes()<0.25)) {
 	    fVtxOK = kTRUE;
 	    fVertexPrim = vtxESD->GetZ();
