@@ -62,14 +62,18 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
   void SetDCAProtonPrimaryVtx(double dcaprotonpv) {fDCAPPVmin = dcaprotonpv;}
   void SetDCADeuteronPrimaryVtx(double dcadeuteronpv) {fDCADPVmin = dcadeuteronpv;}
+  
   void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
   void SetDecayLength(double maxdl) {fDecayLength = maxdl;}
   void SetMinDecayLength(double mindl) {fMinDecayLength = mindl;}
+  void SetRapidity(double rapid) {fRapidity = rapid;}
   void SetMaxPtMother(double maxpt) {fPtMother = maxpt;}
+
   void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
   void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
   void SetDCAProDecayVtx(double maxpro) {fDCAProSVmax = maxpro;}
   void SetDCADeuDecayVtx(double maxdeu) {fDCADeuSVmax = maxdeu;}
+
   void SetDCADeuteronProton(double maxdp) {fDCAdp = maxdp;}
   void SetDCAPionProton(double maxpip) {fDCApip = maxpip;}
   void SetDCADeuteronPion(double maxdpi) {fDCAdpi = maxdpi;}
@@ -96,11 +100,12 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //Cut variables
   Double_t           fDCAPiPVmin;                  ///< Cut on Min DCA of \f$\pi\f$ from primary vertex
-  Double_t           fDCAPPVmin;                  ///< Cut on Min DCA of p from primary vertex
-  Double_t           fDCADPVmin;                  ///< Cut on Min DCA of d from primary vertex
+  Double_t           fDCAPPVmin;                   ///< Cut on Min DCA of p from primary vertex
+  Double_t           fDCADPVmin;                   ///< Cut on Min DCA of d from primary vertex
   Double_t           fCosPointingAngle;            ///< Cut on Cosine of the pointing angle
   Double_t           fDecayLength;                 ///< Cut on Decay length
-  Double_t           fMinDecayLength;                 ///< Cut on minimum Decay length
+  Double_t           fMinDecayLength;              ///< Cut on minimum Decay length
+  Double_t           fRapidity;                    ///< Cut on absolute value of mother rapidity y
   Double_t           fPtMother;                    ///< Cut on mother reconstructed \f$p_{T}\f$
   Double_t           fDCAPiSVxymax;                ///< Cut on \f$\pi DCA_{xy}\f$ from reconstructed secondary vertex
   Double_t           fDCAPiSVzmax;                 ///< Cut on \f$\pi DCA_{z}\f$ from reconstructed secondary vertex
