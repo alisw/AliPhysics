@@ -32,6 +32,7 @@ set(SRCS
   AliPWGFunc.cxx
   AliLatexTable.cxx
   AliFigure.cxx
+  AliCanvas.cxx
   AliHelperPID.cxx
   AliNamedArrayI.cxx
   AliNamedString.cxx
