@@ -100,41 +100,41 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   int rc = 0;
   //init ZMQ stuff
   fZMQcontext = zmq_ctx_new();
-  HLTMessage(Form("ctx create ptr %p errno %s",fZMQcontext,strerror(errno)));
+  HLTMessage(Form("ctx create ptr %p errno %s",fZMQcontext,(rc<0)?strerror(errno):0));
   if (!fZMQcontext) return -1;
   fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
-  HLTMessage(Form("socket create ptr %p errno %s",fZMQout,strerror(errno)));
+  HLTMessage(Form("socket create ptr %p errno %s",fZMQout,(rc<0)?strerror(errno):0));
   if (!fZMQout) return -1;
 
   //set socket options
   int lingerValue = 10;
   rc = zmq_setsockopt(fZMQout, ZMQ_LINGER, &lingerValue, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i errno=%s", lingerValue, rc, strerror(errno)));
+  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i errno=%s", lingerValue, rc, (rc<0)?strerror(errno):0));
   int highWaterMarkSend = 100;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i errno=%s",highWaterMarkSend, rc, strerror(errno)));
+  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i errno=%s",highWaterMarkSend, rc, (rc<0)?strerror(errno):0));
   int highWaterMarkRecv = 100;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i errno=%s",highWaterMarkRecv, rc, strerror(errno)));
+  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i errno=%s",highWaterMarkRecv, rc, (rc<0)?strerror(errno):0));
   int rcvtimeo = 1000;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%s",rcvtimeo, rc, strerror(errno)));
+  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%s",rcvtimeo, rc, (rc<0)?strerror(errno):0));
   int sndtimeo = 1000;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDTIMEO, &sndtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%s",sndtimeo, rc, strerror(errno)));
+  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%s",sndtimeo, rc, (rc<0)?strerror(errno):0));
 
   //connect or bind, after setting socket options
   if (fZMQconnectMode.EqualTo("connect")) 
   {
     HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
     rc = zmq_connect(fZMQout,fZMQendpoint.Data());
-    HLTMessage(Form("connect rc %i errno %s",rc,strerror(errno)));
+    HLTMessage(Form("connect rc %i errno %s",rc,(rc<0)?strerror(errno):0));
   }
   else 
   {
     HLTMessage(Form("ZMQ bind to %s",fZMQendpoint.Data()));
     rc = zmq_bind(fZMQout,fZMQendpoint.Data());
-    HLTMessage(Form("bind rc=%i errno=%s",rc,strerror(errno)));
+    HLTMessage(Form("bind rc=%i errno=%s",rc,(rc<0)?strerror(errno):0));
   }
   return 0;
 }
@@ -250,9 +250,9 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       //  first part : AliHLTComponentDataType in string format
       //  second part: Payload
       rc = zmq_send(fZMQout, &blockTopic, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
-      HLTMessage(Form("send topic rc %i errno %s",rc,strerror(errno)));
+      HLTMessage(Form("send topic rc %i errno %s",rc,(rc<0)?strerror(errno):0));
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (iSelectedBlock == (selectedBlockIdx.size()-1))?0:ZMQ_SNDMORE);
-      HLTMessage(Form("send data rc %i errno %s",rc,strerror(errno)));
+      HLTMessage(Form("send data rc %i errno %s",rc,(rc<0)?strerror(errno):0));
     }
     
     //send an empty message if we really need a reply (ZMQ_REP mode)
@@ -260,9 +260,9 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     if (selectedBlockIdx.size() == 0 && fZMQsocketType==ZMQ_REP)
     { 
       rc = zmq_send(fZMQout, 0, 0, ZMQ_SNDMORE);
-      HLTMessage(Form("send endframe rc %i errno %s",rc,strerror(errno)));
+      HLTMessage(Form("send endframe rc %i errno %s",rc,(rc<0)?strerror(errno):0));
       rc = zmq_send(fZMQout, 0, 0, 0);
-      HLTMessage(Form("send endframe rc %i errno %s",rc,strerror(errno)));
+      HLTMessage(Form("send endframe rc %i errno %s",rc,(rc<0)?strerror(errno):0));
     }
   }
 
