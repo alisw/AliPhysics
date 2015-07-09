@@ -88,3 +88,23 @@ install(TARGETS ${MODULE}
 
 # Header installation into $CMAKE_INSTALL_PREFIX/include
 install(FILES ${HDRS} DESTINATION include)
+
+# Static version
+if(ALIROOT_STATIC)
+    add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:${MODULE}-object>)
+    set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
+    
+    # list of shared dependencies / the name of the variable containing the list of static ones
+    generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
+    target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
+
+    # Public include folders that will be propagated to the dependecies
+    target_include_directories(${MODULE}-static PUBLIC ${incdirs})
+
+    set_target_properties(${MODULE}-static PROPERTIES LINK_FLAGS "-Wl,--whole-archive")
+
+    # Installation
+    install(TARGETS ${MODULE}-static
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib)
+endif(ALIROOT_STATIC)

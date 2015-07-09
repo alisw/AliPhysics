@@ -181,7 +181,7 @@ add_definitions("-DLIBHLTSIM_VERSION=${LIBHLTSIM_VERSION}")
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
-add_library(${MODULE} SHARED $<TARGET_OBJECTS:STEER-object>)
+add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
 target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
