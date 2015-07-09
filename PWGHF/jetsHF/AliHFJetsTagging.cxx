@@ -86,11 +86,10 @@ Bool_t AliHFJetsTagging::IsEventSelectedTrackCounting(const AliAODEvent*event){
   const AliVVertex* spdVtx =     dynamic_cast<const AliVVertex*>(event->GetPrimaryVertexSPD()) ;
   TString vtxTtl = trkVtx->GetTitle();
   if (!vtxTtl.Contains("VertexerTracks"))  return kFALSE;
-  TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if ((vtxTyp.Contains("vertexer: Z") && (zRes>0.25)))return kFALSE;
+  if (spdVtx->IsFromVertexerZ() && (zRes>0.25) )return kFALSE;
   if ((TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5))return kFALSE;  
   if(trkVtx->GetNContributors()<2) return kFALSE;
   if(spdVtx->GetNContributors()<1) return kFALSE;

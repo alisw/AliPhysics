@@ -72,7 +72,7 @@ bool AliEMCalTriggerEventSelection::FalseVertexSelectionPA2013(const AliVEvent *
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (TString(spdVtx->GetTitle()).Contains("vertexer:Z") && (zRes>0.25)) return kFALSE; // doing this incorrectly on purpose
+  if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return kFALSE; // doing this incorrectly on purpose
   if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return kFALSE;
 
   if (TMath::Abs(zvtx) > 10) return kFALSE;

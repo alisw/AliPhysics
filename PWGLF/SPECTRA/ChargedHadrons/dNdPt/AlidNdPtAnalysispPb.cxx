@@ -1417,8 +1417,7 @@ void AlidNdPtAnalysispPb::Process(AliESDEvent *const esdEvent, AliMCEvent *const
       // SPD vertex
       vtxESD = esdEvent->GetPrimaryVertexSPD();
       if (vtxESD->GetNContributors()>0) {
-      TString vtxTyp = vtxESD->GetTitle();
-      if ( !vtxTyp.Contains("vertexer: Z") || (vtxESD->GetDispersion()<0.04 && vtxESD->GetZRes()<0.25)) isRecVertex = kTRUE;
+      if ( !vtxESD->IsFromVertexerZ() || (vtxESD->GetDispersion()<0.04 && vtxESD->GetZRes()<0.25)) isRecVertex = kTRUE;
       }       
       
     } else {
