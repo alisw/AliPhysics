@@ -92,6 +92,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fCosPointingAngle(0.998),
   fDecayLength(15.),
   fMinDecayLength(1.),
+  fRapidity(1.),
   fPtMother(10.),
   fDCAPiSVxymax(0.6),
   fDCAPiSVzmax(0.8),
@@ -1168,6 +1169,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	Hypertriton=posD+posP+negPi;
 	rapidity = Hypertriton.Rapidity();
 	fHistHyperRapidity->Fill(rapidity);
+	
+	if(TMath::Abs(rapidity) > fRapidity) continue;
+
 	h1.SetXYZ(-dlh[0],-dlh[1],-dlh[2]);
 	pointingAngleH = Hypertriton.Angle(h1);
 
