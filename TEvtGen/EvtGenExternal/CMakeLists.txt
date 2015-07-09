@@ -21,7 +21,7 @@ include_directories(${AliRoot_SOURCE_DIR}/TEvtGen/${MODULE})
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/PYTHIA8/pythia8209/include
+                    ${AliRoot_SOURCE_DIR}/PYTHIA8/pythia8/include
                     ${AliRoot_SOURCE_DIR}/TEvtGen
                     ${AliRoot_SOURCE_DIR}/TEvtGen/EvtGen
                     ${AliRoot_SOURCE_DIR}/TEvtGen/Photos/src/photosCInterfaces
@@ -50,7 +50,7 @@ add_library(${MODULE} SHARED ${SRCS})
 
 # Do not generate the ROOT map
 # Dependecies
-set(LIBDEPS Photos Tauola pythia8209 EvtGen)
+set(LIBDEPS Photos Tauola pythia8 EvtGen)
 
 # Additional compilation flags
 set (EVTGEN_PYTHIA "ON")
