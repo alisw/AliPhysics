@@ -100,6 +100,8 @@ fEMCTPCnsig(0),
 fEMCTPCNpts(0),
 fClsEAftMatch(0),
 fClsEtaPhiAftMatch(0),
+fClsEtaPhiAftMatchEMCin(0),
+fClsEtaPhiAftMatchEMCout(0),
 fHistdEdxEop(0),
 fHistNsigEop(0),
 fHistEop(0),
@@ -174,6 +176,8 @@ fEMCTPCnsig(0),
 fEMCTPCNpts(0),
 fClsEAftMatch(0),
 fClsEtaPhiAftMatch(0),
+fClsEtaPhiAftMatchEMCin(0),
+fClsEtaPhiAftMatchEMCout(0),
 fHistdEdxEop(0),
 fHistNsigEop(0),
 fHistEop(0),
@@ -334,6 +338,13 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fClsEtaPhiAftMatch = new TH2F("fClsEtaPhiAftMatch","EMCAL cluster #eta and #phi distribution after track matching;#eta;#phi",100,-0.9,0.9,200,0,6.3);
     fOutputList->Add(fClsEtaPhiAftMatch);
+    
+    fClsEtaPhiAftMatchEMCin = new TH2F("fClsEtaPhiAftMatchEMCin","EMCAL cluster #eta and #phi distribution after track matching inside EMC #phi acceptence;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList->Add(fClsEtaPhiAftMatchEMCin);
+    
+    fClsEtaPhiAftMatchEMCout = new TH2F("fClsEtaPhiAftMatchEMCout","EMCAL cluster #eta and #phi distribution after track matching outside EMC #phi acceptence;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+    fOutputList->Add(fClsEtaPhiAftMatchEMCout);
+    
     
     fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
     fOutputList->Add(fHistEop);
@@ -672,16 +683,22 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         //Track properties//
         ///////////////////
         Double_t dEdx =-999, fTPCnSigma=-999;
+        Double_t TrkPhi=-999, TrkPt=-999, TrkEta=-999, TrkP = -999;
         dEdx = track->GetTPCsignal();
         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         
+        TrkPhi = track->Phi();
+        TrkPt = track->Pt();
+        TrkEta = track->Eta();
+        TrkP = track->P();
+        
         if(track->GetID()<0) fNegTrkIDPt->Fill(track->Pt());
-        fTrkPt->Fill(track->Pt());
-        fTrketa->Fill(track->Eta());
-        fTrkphi->Fill(track->Phi());
-        fdEdx->Fill(track->P(),dEdx);
-        fTPCNpts->Fill(track->P(),track->GetTPCsignalN());
-        fTPCnsig->Fill(track->P(),fTPCnSigma);
+        fTrkPt->Fill(TrkPt);
+        fTrketa->Fill(TrkEta);
+        fTrkphi->Fill(TrkPhi);
+        fdEdx->Fill(TrkP,dEdx);
+        fTPCNpts->Fill(TrkP,track->GetTPCsignalN());
+        fTPCnsig->Fill(TrkP,fTPCnSigma);
         
         ///////////////////////////
         //Track matching to EMCAL//
@@ -695,6 +712,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
         if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
         
+        Double_t emcphi = -999, emceta=-999;
+        
         if(clustMatch && clustMatch->IsEMCAL())
         {
             /////////////////////////////////////////////
@@ -703,12 +722,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             fEMCTrkMatch->Fill(clustMatch->GetTrackDx(),clustMatch->GetTrackDz());
             if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
             
-            fEMCTrkPt->Fill(track->Pt());
-            fEMCTrketa->Fill(track->Eta());
-            fEMCTrkphi->Fill(track->Phi());
-            fEMCdEdx->Fill(track->P(),dEdx);
-            fEMCTPCnsig->Fill(track->P(),fTPCnSigma);
-            fEMCTPCNpts->Fill(track->P(),track->GetTPCsignalN());
+            fEMCTrkPt->Fill(TrkPt);
+            fEMCTrketa->Fill(TrkEta);
+            fEMCTrkphi->Fill(TrkPhi);
+            fEMCdEdx->Fill(TrkP,dEdx);
+            fEMCTPCnsig->Fill(TrkP,fTPCnSigma);
+            fEMCTPCNpts->Fill(TrkP,track->GetTPCsignalN());
             
             Double_t clustMatchE = clustMatch->E();
             fClsEAftMatch->Fill(clustMatchE);
@@ -716,9 +735,17 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             Float_t  emcx[3]; // cluster pos
             clustMatch->GetPosition(emcx);
             TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
-            Double_t emcphi = clustpos.Phi();
-            Double_t emceta = clustpos.Eta();
+            emcphi = clustpos.Phi();
+            emceta = clustpos.Eta();
             fClsEtaPhiAftMatch->Fill(emceta,emcphi);
+            
+            if(TrkPhi > 1.396  && TrkPhi < 3.141) //emc acceptance (80 to 180 degrees)
+            {
+                fClsEtaPhiAftMatchEMCin->Fill(emceta,emcphi);
+            }
+            else{
+                fClsEtaPhiAftMatchEMCout->Fill(emceta,emcphi);
+            }
             
             //EMCAL EID info
             Double_t eop = -1.0;
