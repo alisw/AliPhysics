@@ -1186,17 +1186,17 @@ void AliAnalysisTaskEPCorrAA::FillMixedHistos(TObjArray* partNew, TObjArray* par
 			if(diffTrigEP < 0) diffTrigEP = diffTrigEP + 2*TMath::Pi();
 			
 			// H : near EP axis, M : intermidiate, L : perpendicular to EP
-			if( (0 < diffTrigEP) && (diffTrigEP < (1./6.)*TMath::Pi()) ) fHistdEtadPhiMixedH[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
-			if( ((5./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (7./6.)*TMath::Pi()) ) fHistdEtadPhiMixedH[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
-			if( ((11./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (12./6.)*TMath::Pi()) ) fHistdEtadPhiMixedH[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
+			if( (0 < diffTrigEP) && (diffTrigEP < (1./6.)*TMath::Pi()) ) fHistdEtadPhiMixedH[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
+			if( ((5./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (7./6.)*TMath::Pi()) ) fHistdEtadPhiMixedH[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
+			if( ((11./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (12./6.)*TMath::Pi()) ) fHistdEtadPhiMixedH[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
 
-			if( ((1./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (2./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMone[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
-			if( ((7./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (8./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMone[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
-			if( ((4./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (5./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMtwo[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
-			if( ((10./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (11./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMtwo[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
+			if( ((1./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (2./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMone[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
+			if( ((7./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (8./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMone[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
+			if( ((4./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (5./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMtwo[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
+			if( ((10./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (11./6.)*TMath::Pi()) ) fHistdEtadPhiMixedMtwo[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
 
-			if( ((2./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (4./6.)*TMath::Pi()) ) fHistdEtadPhiMixedL[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
-			if( ((8./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (10./6.)*TMath::Pi()) ) fHistdEtadPhiMixedL[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed);
+			if( ((2./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (4./6.)*TMath::Pi()) ) fHistdEtadPhiMixedL[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
+			if( ((8./6.)*TMath::Pi() < diffTrigEP ) && (diffTrigEP < (10./6.)*TMath::Pi()) ) fHistdEtadPhiMixedL[cBin][zBin][pTBinT][pTBinA]->Fill(deltaEtaMixed, deltaPhiMixed, useWeight);
 
 
 
