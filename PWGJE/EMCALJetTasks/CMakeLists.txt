@@ -97,6 +97,7 @@ set(SRCS
     Tracks/AliReducedHighPtEvent.cxx
     Tracks/AliReducedHighPtEventCreator.cxx
     Tracks/AliAnalysisTaskTrackDCA.cxx
+    Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
