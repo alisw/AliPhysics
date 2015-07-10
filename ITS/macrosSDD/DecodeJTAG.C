@@ -86,7 +86,16 @@ void DecodeJTAG(Int_t nDDL, Int_t nCarlos=0, TString type="PHY"){
 	}
 	if(word&0x0000FF00){
 	  if(doPrint) printf(" --- Baselines present");
-	  for(Int_t iwb=0;iwb<16;iwb++) retcode=fscanf(fil,"%x\n",&word);
+	  for(Int_t iwb=0;iwb<16;iwb++){
+	    retcode=fscanf(fil,"%x\n",&word);
+	    if(doPrint){
+	      Int_t b1=word&0x000000FF;
+	      Int_t b2=(word&0x0000FF00)>>8;
+	      Int_t b3=(word&0x00FF0000)>>16;
+	      Int_t b4=(word&0xFF000000)>>24;
+	      printf("\n  Eq. %d %d %d %d",b1,b2,b3,b4);
+	    }
+	  }
 	}else{
 	  if(doPrint) printf(" --- No baseline equalization");
 	}
