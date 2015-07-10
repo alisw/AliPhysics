@@ -264,6 +264,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
 
 void AliEveDataSourceOnline::NextEvent()
 {
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->Lock();
 #endif
     if(fIsNewEventAvaliable)
@@ -313,6 +314,7 @@ void AliEveDataSourceOnline::NextEvent()
     }
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->UnLock();
+#endif
     gSystem->ProcessEvents();
 }
 
