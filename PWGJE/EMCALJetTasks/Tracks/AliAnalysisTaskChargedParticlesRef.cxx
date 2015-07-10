@@ -21,6 +21,7 @@
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
+#include "AliAODTrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -170,16 +171,24 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   // - Central eta (-0.8, -0.2), old binning,
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
-  AliESDEvent *esd = dynamic_cast<AliESDEvent *>(fInputEvent);
-  if(!esd) return;
-  AliESDtrack *checktrack(NULL);
+  AliVTrack *checktrack(NULL);
   int ptmin[5] = {1,2,5,10,20}; // for eta distributions
-  for(int itrk = 0; itrk < esd->GetNumberOfTracks(); ++itrk){
-    checktrack = esd->GetTrack(itrk);
+  for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
+    checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
     if(!checktrack) continue;
     if(TMath::Abs(checktrack->Eta()) > 0.8) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    if(!fTrackCuts->AcceptTrack(checktrack)) continue;
+
+    // Distinguish track selection for ESD and AOD tracks
+    AliESDtrack *esdtrack(NULL);
+    AliAODTrack *aodtrack(NULL);
+    if((esdtrack = dynamic_cast<AliESDtrack *>(checktrack))){
+      if(!TrackSelectionESD(esdtrack)) continue;
+    } else if((aodtrack = dynamic_cast<AliAODTrack *>(checktrack))){
+      if(!TrackSelectionAOD(aodtrack)) continue;
+    } else {
+      continue;
+    }
 
     // fill histograms allEta
     if(isMinBias){
@@ -339,4 +348,25 @@ void AliAnalysisTaskChargedParticlesRef::CreateNewPtBinning(TArrayD& binning) co
   for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
     binning[ib++] = *it;
 }
+
+/**
+ * Run track selection for ESD tracks
+ * @param track The track to check
+ * @return True if the track is selected, false otherwise
+ */
+Bool_t AliAnalysisTaskChargedParticlesRef::TrackSelectionESD(AliESDtrack* track) {
+  return fTrackCuts->AcceptTrack(track);
+}
+
+/**
+ * Run track selection for AOD tracks
+ * @param track The track to check
+ * @return True if the track is selected, false otherwise
+ */
+Bool_t AliAnalysisTaskChargedParticlesRef::TrackSelectionAOD(AliAODTrack* track) {
+  if(!track->TestFilterBit(AliAODTrack::kTrkGlobal)) return false;
+  if(track->GetTPCNCrossedRows() < 120) return false;
+  return true;
+}
+
 } /* namespace EMCalTriggerPtAnalysis */

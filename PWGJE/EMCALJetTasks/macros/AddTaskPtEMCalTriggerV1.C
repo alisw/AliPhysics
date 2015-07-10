@@ -10,7 +10,8 @@
  * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  * \date Dec 12, 2014
  */
-#if !(defined (__CINT__) || defined (__CLING__)) || defined (__MAKECINT__) || defined (__ROOTCLING__)
+#if !defined (__CINT__) || defined (__CLING__) || defined (__MAKECINT__) || defined (__ROOTCLING__)
+// CLING requires header files for the JIT-compiler
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"

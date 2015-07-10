@@ -7,7 +7,9 @@
 
 class TArrayD;
 class AliAnalysisUtils;
+class AliAODTrack;
 class AliESDtrackCuts;
+class AliESDtrack;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -31,6 +33,9 @@ protected:
   void CreateOldPtBinning(TArrayD &binning) const;
   void CreateNewPtBinning(TArrayD &binning) const;
 
+  Bool_t TrackSelectionESD(AliESDtrack *track);
+  Bool_t TrackSelectionAOD(AliAODTrack *track);
+
   AliESDtrackCuts                 *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
   AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
@@ -39,7 +44,9 @@ private:
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);
   AliAnalysisTaskChargedParticlesRef &operator=(const AliAnalysisTaskChargedParticlesRef &);
 
+  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskChargedParticlesRef, 1);
+  /// \endcond
 };
 
 } /* namespace EMCalTriggerPtAnalysis */
