@@ -116,6 +116,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	hVertexZ(NULL),
 	hTriggerClass(NULL),
 	hTriggerClassSelected(NULL),
+	hTriggerClassesCorrelated(NULL),
 	hReweightMCHistPi0(NULL),
 	hReweightMCHistEta(NULL),
 	hReweightMCHistK0s(NULL),
@@ -200,6 +201,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	hVertexZ(ref.hVertexZ),
 	hTriggerClass(NULL),
 	hTriggerClassSelected(NULL),
+	hTriggerClassesCorrelated(NULL),
 	hReweightMCHistPi0(ref.hReweightMCHistPi0),
 	hReweightMCHistEta(ref.hReweightMCHistEta),
 	hReweightMCHistK0s(ref.hReweightMCHistK0s),
@@ -267,137 +269,152 @@ AliConvEventCuts::~AliConvEventCuts() {
 //________________________________________________________________________
 void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
-   // Initialize Cut Histograms for QA (only initialized and filled if function is called)
-   TH1::AddDirectory(kFALSE);
+	// Initialize Cut Histograms for QA (only initialized and filled if function is called)
+	TH1::AddDirectory(kFALSE);
 
-   if(fHistograms != NULL){
-      delete fHistograms;
-      fHistograms=NULL;
-   }
-   if(fHistograms==NULL){
-      fHistograms=new TList();
-      fHistograms->SetOwner(kTRUE);
-      if(name=="")fHistograms->SetName(Form("ConvEventCuts_%s",GetCutNumber().Data()));
-      else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
-   }
+	if(fHistograms != NULL){
+		delete fHistograms;
+		fHistograms=NULL;
+	}
+	if(fHistograms==NULL){
+		fHistograms=new TList();
+		fHistograms->SetOwner(kTRUE);
+		if(name=="")fHistograms->SetName(Form("ConvEventCuts_%s",GetCutNumber().Data()));
+		else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
+	}
 
-   if (hReweightMCHistPi0){
-      hReweightMCHistPi0->SetName("MCInputForWeightingPi0");
-      fHistograms->Add(hReweightMCHistPi0);
-   }
-   if (hReweightMCHistEta){
-      hReweightMCHistEta->SetName("MCInputForWeightingEta");
-      fHistograms->Add(hReweightMCHistEta);
-   }
-   if (hReweightMCHistK0s){
-      hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
-      fHistograms->Add(hReweightMCHistK0s);
-   }
+	if (hReweightMCHistPi0){
+		hReweightMCHistPi0->SetName("MCInputForWeightingPi0");
+		fHistograms->Add(hReweightMCHistPi0);
+	}
+	if (hReweightMCHistEta){
+		hReweightMCHistEta->SetName("MCInputForWeightingEta");
+		fHistograms->Add(hReweightMCHistEta);
+	}
+	if (hReweightMCHistK0s){
+		hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
+		fHistograms->Add(hReweightMCHistK0s);
+	}
 
-   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
-   fHistograms->Add(hCentrality);
-      
-   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
-   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
-   
-   hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
-   fHistograms->Add(hVertexZ);
-   
-   // Event Cuts and Info
-   if(preCut){
-      fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
-      fHistoEventCuts->GetXaxis()->SetBinLabel(1,"in");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(2,"OfflineTrigger");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(3,"nvtxcontr");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(4,"VertexZ");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(5,"pileup");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(6,"centrsel");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(7,"out");
-      fHistograms->Add(fHistoEventCuts);
+	hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
+	fHistograms->Add(hCentrality);
+		
+	hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
+	//fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
 
-      hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
-      fHistograms->Add(hVertexZ);
+	hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
+	fHistograms->Add(hVertexZ);
 
-      hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
-      hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
-      hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
-      hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
-      hTriggerClass->GetXaxis()->SetBinLabel( 4,"kHighMult");
-      hTriggerClass->GetXaxis()->SetBinLabel( 5,"kEMC1");
-      hTriggerClass->GetXaxis()->SetBinLabel( 6,"kCINT5");
-      hTriggerClass->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
-      hTriggerClass->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
-      hTriggerClass->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
-      hTriggerClass->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
-      hTriggerClass->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
-      hTriggerClass->GetXaxis()->SetBinLabel(12,"kMUS7");
-      hTriggerClass->GetXaxis()->SetBinLabel(13,"kPHI1");
-      hTriggerClass->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
-      hTriggerClass->GetXaxis()->SetBinLabel(15,"kEMCEJE");
-      hTriggerClass->GetXaxis()->SetBinLabel(16,"kEMCEGA");
-      hTriggerClass->GetXaxis()->SetBinLabel(17,"kCentral");
-      hTriggerClass->GetXaxis()->SetBinLabel(18,"kSemiCentral");
-      hTriggerClass->GetXaxis()->SetBinLabel(19,"kDG5");
-      hTriggerClass->GetXaxis()->SetBinLabel(20,"kZED");
-      hTriggerClass->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
-      hTriggerClass->GetXaxis()->SetBinLabel(22,"kINT8");
-      hTriggerClass->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
-      hTriggerClass->GetXaxis()->SetBinLabel(28,"kUserDefined");
-      hTriggerClass->GetXaxis()->SetBinLabel(29,"kTRD");
-      hTriggerClass->GetXaxis()->SetBinLabel(30,"kFastOnly");
-      hTriggerClass->GetXaxis()->SetBinLabel(31,"kAnyINT");
-      hTriggerClass->GetXaxis()->SetBinLabel(32,"kAny");
-      hTriggerClass->GetXaxis()->SetBinLabel(33,"V0AND");
-      hTriggerClass->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
-      hTriggerClass->GetXaxis()->SetBinLabel(35,"failed Physics Selection");
-	  hTriggerClass->GetXaxis()->SetBinLabel(36,"mimickedTrigger");
-      fHistograms->Add(hTriggerClass);
-   }
-   if(!preCut){
-      hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",35,-0.5,34.5);
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 1,"kMB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 2,"kINT7");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 3,"kMUON");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 4,"kHighMult");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 5,"kEMC1");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 6,"kCINT5");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(12,"kMUS7");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(13,"kPHI1");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(15,"kEMCEJE");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(16,"kEMCEGA");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(17,"kCentral");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(18,"kSemiCentral");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(19,"kDG5");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(20,"kZED");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(22,"kINT8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(28,"kUserDefined");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(29,"kTRD");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(30,"kFastOnly");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(31,"kAnyINT");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(32,"kAny");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
-	  fHistograms->Add(hTriggerClassSelected);
-      
-   }
-   TH1::AddDirectory(kTRUE);
+	// Event Cuts and Info
+	if(preCut){
+		fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
+		fHistoEventCuts->GetXaxis()->SetBinLabel(1,"in");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(2,"OfflineTrigger");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(3,"nvtxcontr");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(4,"VertexZ");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(5,"pileup");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(6,"centrsel");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(7,"out");
+		fHistograms->Add(fHistoEventCuts);
+
+		hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
+		fHistograms->Add(hVertexZ);
+
+		hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
+		hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
+		hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
+		hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
+		hTriggerClass->GetXaxis()->SetBinLabel( 4,"kHighMult");
+		hTriggerClass->GetXaxis()->SetBinLabel( 5,"kEMC1");
+		hTriggerClass->GetXaxis()->SetBinLabel( 6,"kCINT5");
+		hTriggerClass->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
+		hTriggerClass->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
+		hTriggerClass->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
+		hTriggerClass->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
+		hTriggerClass->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
+		hTriggerClass->GetXaxis()->SetBinLabel(12,"kMUS7");
+		hTriggerClass->GetXaxis()->SetBinLabel(13,"kPHI1");
+		hTriggerClass->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
+		hTriggerClass->GetXaxis()->SetBinLabel(15,"kEMCEJE");
+		hTriggerClass->GetXaxis()->SetBinLabel(16,"kEMCEGA");
+		hTriggerClass->GetXaxis()->SetBinLabel(17,"kCentral");
+		hTriggerClass->GetXaxis()->SetBinLabel(18,"kSemiCentral");
+		hTriggerClass->GetXaxis()->SetBinLabel(19,"kDG5");
+		hTriggerClass->GetXaxis()->SetBinLabel(20,"kZED");
+		hTriggerClass->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
+		hTriggerClass->GetXaxis()->SetBinLabel(22,"kINT8");
+		hTriggerClass->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
+		hTriggerClass->GetXaxis()->SetBinLabel(28,"kUserDefined");
+		hTriggerClass->GetXaxis()->SetBinLabel(29,"kTRD");
+		hTriggerClass->GetXaxis()->SetBinLabel(30,"kFastOnly");
+		hTriggerClass->GetXaxis()->SetBinLabel(31,"kAnyINT");
+		hTriggerClass->GetXaxis()->SetBinLabel(32,"kAny");
+		hTriggerClass->GetXaxis()->SetBinLabel(33,"V0AND");
+		hTriggerClass->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
+		hTriggerClass->GetXaxis()->SetBinLabel(35,"failed Physics Selection");
+		hTriggerClass->GetXaxis()->SetBinLabel(36,"mimickedTrigger");
+		fHistograms->Add(hTriggerClass);
+	}
+	if(!preCut){
+		hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",35,-0.5,34.5);
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 1,"kMB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 2,"kINT7");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 3,"kMUON");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 4,"kHighMult");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 5,"kEMC1");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 6,"kCINT5");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(12,"kMUS7");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(13,"kPHI1");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(15,"kEMCEJE");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(16,"kEMCEGA");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(17,"kCentral");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(18,"kSemiCentral");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(19,"kDG5");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(20,"kZED");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(22,"kINT8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(28,"kUserDefined");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(29,"kTRD");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(30,"kFastOnly");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(31,"kAnyINT");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(32,"kAny");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
+		fHistograms->Add(hTriggerClassSelected);
+		
+		if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){
+			hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",10,-0.5,9.5);
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 3,"kEMC1");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel(	4,"kEMC7");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 5,"kEMCEJE");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 6,"kEMCEJ1");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 7,"kEMCEJ2");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 8,"kEMCEGA");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 9,"kEMCEG1");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 10,"kEMCEG2");
+			fHistograms->Add(hTriggerClassesCorrelated);
+		}
+		
+	}
+	TH1::AddDirectory(kTRUE);
 }
 
 ///________________________________________________________________________
@@ -1881,6 +1898,18 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 // 				}
 				if (fSpecialSubTrigger>0 && !isMC){
 					if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
+					else if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){
+						if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
+						if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassesCorrelated->Fill(1);
+						if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassesCorrelated->Fill(2);
+						if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassesCorrelated->Fill(3);
+						if (firedTrigClass.Contains("7EJE") || firedTrigClass.Contains("8EJE")) hTriggerClassesCorrelated->Fill(4);
+						if (firedTrigClass.Contains("7EJ1") || firedTrigClass.Contains("8EJ1")) hTriggerClassesCorrelated->Fill(5);
+						if (firedTrigClass.Contains("7EJ2") || firedTrigClass.Contains("8EJ2")) hTriggerClassesCorrelated->Fill(6);
+						if (firedTrigClass.Contains("7EGA") || firedTrigClass.Contains("8EGA")) hTriggerClassesCorrelated->Fill(7);
+						if (firedTrigClass.Contains("7EG1") || firedTrigClass.Contains("8EG1")) hTriggerClassesCorrelated->Fill(8);
+						if (firedTrigClass.Contains("7EG2") || firedTrigClass.Contains("8EG2")) hTriggerClassesCorrelated->Fill(9);
+					}	
 				} else if (isMC){
 					if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
 // 						isSelected = 0;
