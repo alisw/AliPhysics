@@ -392,9 +392,12 @@ Int_t AliTriggerRunScalers::ConsistencyCheck(Int_t position,Bool_t correctOverfl
         if ((c2_64[i] - c1_64[i]) < (c2_64[i+1] - c1_64[i+1]) ) {
                  if ( ((c2_64[i+1] - c1_64[i+1]) - (c2_64[i] - c1_64[i])) < 16ull ) {AliWarningClass("Trigger scaler Level[i+1] > Level[i]. Diff < 16!");}
                  else {
+		    ULong64_t delta= (c2_64[i+1] - c1_64[i+1]) - (c2_64[i] - c1_64[i]);
   		    cout << "(level+1)>level pos= " << position << " i= "<< i << " ";
-		    cout << c1_64[i] << " " << c1_64[i+1] << " "<< c2_64[i] << " " << c2_64[i+1] << endl;
-		    return 1; 
+		    cout << c1_64[i] << " " << c1_64[i+1] << " "<< c2_64[i] << " " << c2_64[i+1] << " delta:";
+		    cout << delta << endl;
+		    if(i != 1)return 1; // Difference for LMA a L0B can be bigger due to the way counters are read
+		    else if(delta>512ull) return 1;
 		 }
 	 }
       }
