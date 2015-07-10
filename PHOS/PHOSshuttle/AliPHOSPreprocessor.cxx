@@ -68,6 +68,7 @@ AliPreprocessor("PHS",shuttle)
 
   AddRunType("PHYSICS");
   AddRunType("LED");
+  AddRunType("PEDESTAL");
 }
 
 //_______________________________________________________________________________________
@@ -95,7 +96,15 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
     else
       return 1;
   }
-
+  
+  if(runType=="PEDESTAL") {
+    
+    Bool_t pedOK = ProcessPEDRun();
+    
+    if(pedOK) return 0;
+    else return 1;
+  }
+  
   Log(Form("Unknown run type %s. Do nothing and return OK.",runType.Data()));
   return 0;
 
@@ -191,6 +200,29 @@ Bool_t AliPHOSPreprocessor::ProcessLEDRun()
   
   //return result;
   return kTRUE;
+}
+
+Bool_t AliPHOSPreprocessor::ProcessPEDRun()
+{
+  
+  TList* list = GetFileSources(kDAQ, "PED");
+  
+  if(!list) {
+    Log("Sources list for PED run not found, exit.");
+    return kFALSE;
+  }
+  
+  if(!list->GetEntries()) {
+    Log("Sources list for PED run is empty, exit.");
+    return kFALSE;
+  }
+
+  //Store data to reference storage
+  Bool_t refOK = StoreReferencePED(list);
+  
+  if(refOK) Log(Form("PEDESTAL reference data successfully stored."));  
+  return refOK;
+  
 }
 
 Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
@@ -470,6 +502,19 @@ Bool_t AliPHOSPreprocessor::StoreReferenceLED(TList* list)
   
 }
 
+Bool_t AliPHOSPreprocessor::StoreReferencePED(TList* list)
+{
+  //Put PEDESTAL run histograms to the reference storage.
+  
+  TObjString *source = dynamic_cast<TObjString *> (list->First());
+  if(!source) return kFALSE;
+  
+  TString fileName = GetFile(kDAQ, "PED", source->GetName());
+  
+  Bool_t resultRef = StoreReferenceFile(fileName.Data(),"PEDRefPHOS.root");
+  return resultRef;
+  
+}
 
 Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliPHOSEmcBadChannelsMap* badMap, AliPHOSEmcCalibData& calibData)
 {

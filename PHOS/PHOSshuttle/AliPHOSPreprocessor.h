@@ -27,6 +27,7 @@ class AliPHOSPreprocessor : public AliPreprocessor {
 
   virtual UInt_t Process(TMap* valueSet);
   Bool_t ProcessLEDRun();
+  Bool_t ProcessPEDRun();
   Bool_t FindBadChannelsEmc();
   Bool_t CalibrateEmc();
   Float_t HG2LG(Int_t module, Int_t X, Int_t Z, TFile* f);
@@ -37,8 +38,9 @@ class AliPHOSPreprocessor : public AliPreprocessor {
   Bool_t DoFindBadChannelsEmc(Int_t system, TList* sources, AliPHOSEmcBadChannelsMap& badMap);
   Bool_t StoreReferenceEmc(Int_t system, TList* list);
   Bool_t StoreReferenceLED(TList* list);
+  Bool_t StoreReferencePED(TList* list);
 
-  ClassDef(AliPHOSPreprocessor,4);
+  ClassDef(AliPHOSPreprocessor,5);
 
 };
 
