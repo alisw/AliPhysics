@@ -154,7 +154,7 @@ void AliEveTrackCounter::RegisterTracklets(TEveTrackList* tlist, Bool_t goodTrac
   // If goodTracks is true, they are considered as primary/good
   // tracks.
 
-  AliESDEvent     *esd = AliEveEventManager::AssertESD();
+  AliESDEvent     *esd = AliEveEventManager::GetMaster()->AssertESD();
   AliMultiplicity *mul = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
 
   tlist->IncDenyDestroy();
@@ -270,7 +270,7 @@ void AliEveTrackCounter::DoTrackletAction(AliEveTracklet* track)
 
       case kCA_ToggleTrack:
       {
-         AliESDEvent     *esd = AliEveEventManager::AssertESD();
+         AliESDEvent     *esd = AliEveEventManager::GetMaster()->AssertESD();
 	 AliMultiplicity *mul = const_cast<AliMultiplicity*>(esd->GetMultiplicity());
 
          if (track->GetLineStyle() == 1)
@@ -311,7 +311,7 @@ void AliEveTrackCounter::OutputEventTracks()
   {
     TFile *f = TFile::Open("scan_results.root", "UPDATE");
 
-    AliESDEvent     *esd = AliEveEventManager::AssertESD();
+    AliESDEvent     *esd = AliEveEventManager::GetMaster()->AssertESD();
     TClonesArray    *trk = static_cast<TClonesArray*>   (esd->GetList()->FindObject("Tracks"));
     AliMultiplicity *mul = const_cast <AliMultiplicity*>(esd->GetMultiplicity());
 

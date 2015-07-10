@@ -48,7 +48,7 @@ AliEveTOFStrip::AliEveTOFStrip(const Text_t* n, const Text_t* t) :
 {
   // ctr
 
-  //fGeoManager = AliEveEventManager::AssertGeometry();
+  //fGeoManager = AliEveEventManager::GetMaster()->AssertGeometry();
   if (!fGeoManager) printf("ERROR: no TGeo\n");
 
 }

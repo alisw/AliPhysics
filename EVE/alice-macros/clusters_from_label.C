@@ -20,7 +20,7 @@
 
 TEvePointSet* clusters_from_label(Int_t label=0, TEveElement* cont=0)
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   TEvePointSet* clusters = new TEvePointSet(64);
   clusters->SetOwnIds(kTRUE);
 

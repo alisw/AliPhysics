@@ -100,11 +100,11 @@ void emcal_all
   }
   
   AliESDEvent* esd = 0x0;
-  if(iESD) esd = AliEveEventManager::AssertESD();
+  if(iESD) esd = AliEveEventManager::GetMaster()->AssertESD();
   // esd check already in AssertESD function 
       
   //  gGeoManager = gEve->GetDefaultGeometry();
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
   
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
   //TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();

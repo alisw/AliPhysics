@@ -82,7 +82,7 @@ TEveCaloDataHist* emcal_esdclustercellsV2()
     Info("histo2d_all_events", "Filling histogram...");
     
     // Access to esdTree
-    AliESDEvent* esd = AliEveEventManager::AssertESD();
+    AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
     
     TTree* t = AliEveEventManager::GetMaster()->GetESDTree();
     

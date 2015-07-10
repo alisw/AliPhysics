@@ -20,6 +20,7 @@
 #include "AliEveMacroExecutor.h"
 #include "AliEveMacroExecutorWindow.h"
 #include "AliEveMacro.h"
+#include "AliEvePreferencesWindow.h"
 
 //Storage Manager:
 #ifdef ZMQ
@@ -48,12 +49,12 @@ namespace
 {
  enum EAliEveMenu_e
  {
-	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent
+	 kAEMDefault, kAEMScreen, kAEMProjector, kAEMNotransparency, kAEMTransparentDark, kAEMTransparentLight, kAEMTransparentMonoDark, kAEMTransparentMonoLight, kAEMGreen, kAEMBright, kAEMYellow, kAEMTpc, kAEMAll, kAEM3d, kAEMRphi, kAEMRhoz, kAEMAllhr, kAEM3dhr, kAEMRphihr, kAEMRhozhr, kAEMSavemacros, kAEMLoadmacros, kAEMSave, kAEMOpen, kAEMSetDefault, kAEMResiduals,  kAEMCuts, kAEMVectors, kAEMGui, kStorageListEvents, kStorageMarkEvent, kPreferences
  };
 }
  
 //______________________________________________________________________________
-AliEveConfigManager* AliEveConfigManager::InitializeMaster()
+AliEveConfigManager* AliEveConfigManager::InitializeMaster(bool storageManager)
 {
   // Get main instance.
 
@@ -62,7 +63,7 @@ AliEveConfigManager* AliEveConfigManager::InitializeMaster()
   if (fgMaster)
     throw kEH + "Master already initialized.";
 
-  fgMaster = new AliEveConfigManager;
+  fgMaster = new AliEveConfigManager(storageManager);
   return fgMaster;
 }
 
@@ -80,7 +81,7 @@ AliEveConfigManager* AliEveConfigManager::GetMaster()
 }
 
 //______________________________________________________________________________
-AliEveConfigManager::AliEveConfigManager() :
+AliEveConfigManager::AliEveConfigManager(bool storageManager) :
   TObject(),
   fAnalysisPopup(0),
   fAliEvePopup(0),
@@ -156,6 +157,8 @@ AliEveConfigManager::AliEveConfigManager() :
   fAliEveVizDBs->AddSeparator();
 
   fAliEvePopup = new TGPopupMenu(gClient->GetRoot());
+    fAliEvePopup->AddEntry("&Preferences", kPreferences);
+    fAliEvePopup->AddSeparator();
   fAliEvePopup->AddEntry("&Set Default Settings", kAEMSetDefault);
   fAliEvePopup->AddSeparator();
   fAliEvePopup->AddPopup("&Geometries/VizDBs", fAliEveGeometries);
@@ -187,11 +190,14 @@ AliEveConfigManager::AliEveConfigManager() :
 
   //Storage Manager:
 #ifdef ZMQ
-    gEve->GetBrowser()->StartEmbedding(0);
-    AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
-    gEve->GetBrowser()->StopEmbedding("List");
-    
-    fListEventsTab->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+    if(storageManager)
+    {
+        gEve->GetBrowser()->StartEmbedding(0);
+        AliStorageAdministratorPanelListEvents* fListEventsTab = AliStorageAdministratorPanelListEvents::GetInstance();
+        gEve->GetBrowser()->StopEmbedding("List");
+
+        fListEventsTab->Connect("SelectedEvent()","AliEveConfigManager",this,"SetEventInEventManager()");
+    }
 #endif
   
   fLoadCheck = kFALSE;
@@ -1061,6 +1067,12 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
 #endif
           break;
       }
+      case kPreferences:
+      {
+          AliEvePreferencesWindow *preferences = AliEvePreferencesWindow::Instance();
+          
+          break;
+      }
           
       default:
       {
@@ -1083,7 +1095,8 @@ void AliEveConfigManager::SetEventInEventManager()
 	    cout<<"SETTING EVENT IN ED"<<endl;
 	    //fListEventsWindow->onExit();
         manager->SetAutoLoad(kFALSE);
-        manager->PrepareForNewEvent(event);
+//        manager->PrepareForNewEvent(event);
+        cout<<"\n\nSetting new event should be implemented in AliEveConfigManager, but is not\n\n"<<endl;
     }
 #endif
 }

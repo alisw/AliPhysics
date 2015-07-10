@@ -142,7 +142,7 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
 
 AliEveCascadeList* esd_cascade()
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   AliESDVertex* primVertex = (AliESDVertex*) esd->GetPrimaryVertex();
 

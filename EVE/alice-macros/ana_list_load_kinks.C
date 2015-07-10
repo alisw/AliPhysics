@@ -118,9 +118,9 @@ void ana_list_load_kinks(AliEveListAnalyser* objects = 0, TEveElement *cont = 0)
     return;
   }
 
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   if (!objects) objects = new AliEveListAnalyser("Analysis Objects");
   

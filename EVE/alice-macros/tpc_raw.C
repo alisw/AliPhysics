@@ -74,7 +74,7 @@ void tpc_raw(Int_t mode = 3)
 {
   gStyle->SetPalette(1, 0);
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
   AliEveEventManager::AssertMagField();
   
   AliRawReader *reader = AliEveEventManager::AssertRawReader();
@@ -152,13 +152,13 @@ TTree* readHLTClusters(AliRawReader *fRawReader)
 *  GRP Stuff
 **************************/
   AliGRPManager manGRP;
-  AliRecoParam* recoParam = AliEveEventManager::AssertRecoParams();
+  AliRecoParam* recoParam = InitRecoParam();
   
   AliEveEventManager* curEventMan = (AliEveEventManager*)gEve->GetCurrentEvent();
   
   const AliRunInfo* runInfo = manGRP.GetRunInfo();
   const THashTable* cosmicTriggers = manGRP.GetCosmicTriggers();
-  const AliEventInfo* eventinfo = curEventMan->GetEventInfo();
+  const AliEventInfo* eventinfo = GetEventInfo();
   
   recoParam->SetEventSpecie(runInfo,*eventinfo,cosmicTriggers);
   
@@ -266,3 +266,216 @@ void renderHLTClusters(TTree* clustersTree)
 
   return;
 }
+
+const AliEventInfo* GetEventInfo()
+{
+    // Fill the event info object
+    
+    AliCentralTrigger *aCTP = NULL;
+    if (AliEveEventManager::AssertRawReader()) {
+        fEventInfo.SetEventType(AliEveEventManager::AssertRawReader()->GetType());
+        
+        ULong64_t mask = AliEveEventManager::AssertRawReader()->GetClassMask();
+        fEventInfo.SetTriggerMask(mask);
+        UInt_t clmask = AliEveEventManager::AssertRawReader()->GetDetectorPattern()[0];
+        fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(clmask));
+        
+        aCTP = new AliCentralTrigger();
+        TString configstr("");
+        if (!aCTP->LoadConfiguration(configstr)) { // Load CTP config from OCDB
+            AliError("No trigger configuration found in OCDB! The trigger configuration information will not be used!");
+            delete aCTP;
+            return 0;
+        }
+        aCTP->SetClassMask(mask);
+        aCTP->SetClusterMask(clmask);
+        
+        if (AliEveEventManager::AssertRunLoader()) {
+            AliCentralTrigger* rlCTP = AliEveEventManager::AssertRunLoader()->GetTrigger();
+            if (rlCTP) {
+                rlCTP->SetClassMask(mask);
+                rlCTP->SetClusterMask(clmask);
+            }
+        }
+    }
+    else {
+        fEventInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
+        
+        if (AliEveEventManager::AssertRunLoader() && (!AliEveEventManager::AssertRunLoader()->LoadTrigger())) {
+            aCTP = AliEveEventManager::AssertRunLoader()->GetTrigger();
+            fEventInfo.SetTriggerMask(aCTP->GetClassMask());
+            // get inputs from actp - just get
+            AliESDHeader* esdheader = AliEveEventManager::AssertESD()->GetHeader();
+            esdheader->SetL0TriggerInputs(aCTP->GetL0TriggerInputs());
+            esdheader->SetL1TriggerInputs(aCTP->GetL1TriggerInputs());
+            esdheader->SetL2TriggerInputs(aCTP->GetL2TriggerInputs());
+            fEventInfo.SetTriggerCluster(AliDAQ::ListOfTriggeredDetectors(aCTP->GetClusterMask()));
+        }
+        else {
+            AliWarning("No trigger can be loaded! The trigger information will not be used!");
+            return 0;
+        }
+    }
+    
+    AliTriggerConfiguration *config = aCTP->GetConfiguration();
+    if (!config) {
+        AliError("No trigger configuration has been found! The trigger configuration information will not be used!");
+        if (AliEveEventManager::AssertRawReader()) delete aCTP;
+        return 0;
+    }
+    
+    TString declTriggerClasses;
+    
+    // Load trigger aliases and declare the trigger classes included in aliases
+    AliCDBEntry * entry = AliCDBManager::Instance()->Get("GRP/CTP/Aliases");
+    if (entry) {
+        THashList * lst = dynamic_cast<THashList*>(entry->GetObject());
+        if (lst) {
+            lst->Sort(kSortDescending); // to avoid problems with substrings
+            if (AliEveEventManager::AssertRawReader()) AliEveEventManager::AssertRawReader()->LoadTriggerAlias(lst);
+            // Now declare all the triggers present in the aliases
+            TIter iter(lst);
+            TNamed *nmd = 0;
+            while((nmd = dynamic_cast<TNamed*>(iter.Next()))){
+                declTriggerClasses += " ";
+                declTriggerClasses += nmd->GetName();
+            }
+        }
+        else {
+            AliError("Cannot cast the object with trigger aliases to THashList!");
+        }
+    }
+    else {
+        AliError("No OCDB entry for the trigger aliases!");
+    }
+    
+    // Load trigger classes for this run
+    UChar_t clustmask = 0;
+    TString trclasses;
+    ULong64_t trmask = fEventInfo.GetTriggerMask();
+    const TObjArray& classesArray = config->GetClasses();
+    Int_t nclasses = classesArray.GetEntriesFast();
+    for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
+        AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
+        if (trclass && trclass->GetMask()>0) {
+            Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
+            if (AliEveEventManager::AssertESD()) AliEveEventManager::AssertESD()->SetTriggerClass(trclass->GetName(),trindex);
+            if (AliEveEventManager::AssertRawReader()) AliEveEventManager::AssertRawReader()->LoadTriggerClass(trclass->GetName(),trindex);
+            if (trmask & (1ull << trindex)) {
+                trclasses += " ";
+                trclasses += trclass->GetName();
+                trclasses += " ";
+                clustmask |= trclass->GetCluster()->GetClusterMask();
+            }
+        }
+    }
+    fEventInfo.SetTriggerClasses(trclasses);
+    
+    if (!aCTP->CheckTriggeredDetectors()) {
+        if (AliEveEventManager::AssertRawReader()) delete aCTP;
+        return 0;
+    }
+    
+    if (AliEveEventManager::AssertRawReader()) delete aCTP;
+    
+    // everything went ok, return pointer
+    return (&fEventInfo);
+}
+
+AliRecoParam* AliEveEventManager::InitRecoParam()
+{
+    // This is mostly a reap-off from reconstruction
+    // The method accesses OCDB and retrieves all
+    // the available reco-param objects from there.
+    
+    AliRecoParam *fgRecoParam = new AliRecoParam;
+    const Int_t  kNDetectors = 14;
+    
+    static const TEveException kEH("AliEveEventManager::InitRecoParam");
+    
+    Bool_t isOK = kTRUE;
+    
+    if (fgRecoParam->GetDetRecoParamArray(kNDetectors)) {
+        ::Info(kEH, "Using custom GRP reconstruction parameters");
+    }
+    else {
+        ::Info(kEH, "Loading GRP reconstruction parameter objects");
+        
+        AliCDBPath path("GRP","Calib","RecoParam");
+        AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+        if(!entry){
+            ::Warning(kEH, "Couldn't find GRP RecoParam entry in OCDB");
+            isOK = kFALSE;
+        }
+        else {
+            TObject *recoParamObj = entry->GetObject();
+            if (dynamic_cast<TObjArray*>(recoParamObj)) {
+                // GRP has a normal TobjArray of AliDetectorRecoParam objects
+                // Registering them in AliRecoParam
+                fgRecoParam->AddDetRecoParamArray(kNDetectors,dynamic_cast<TObjArray*>(recoParamObj));
+            }
+            else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+                // GRP has only onse set of reco parameters
+                // Registering it in AliRecoParam
+                ::Info(kEH, "Single set of GRP reconstruction parameters found");
+                dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
+                fgRecoParam->AddDetRecoParam(kNDetectors,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
+            }
+            else {
+                ::Error(kEH, "No valid GRP RecoParam object found in the OCDB");
+                isOK = kFALSE;
+            }
+            entry->SetOwner(0);
+        }
+    }
+    
+    const char* fgkDetectorName[kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE" };
+    
+    
+    for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+        
+        if (fgRecoParam->GetDetRecoParamArray(iDet)) {
+            ::Info(kEH, "Using custom reconstruction parameters for detector %s",fgkDetectorName[iDet]);
+            continue;
+        }
+        
+        ::Info(kEH, "Loading reconstruction parameter objects for detector %s",fgkDetectorName[iDet]);
+        
+        AliCDBPath path(fgkDetectorName[iDet],"Calib","RecoParam");
+        AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+        if(!entry){
+            ::Warning(kEH, "Couldn't find RecoParam entry in OCDB for detector %s",fgkDetectorName[iDet]);
+            isOK = kFALSE;
+        }
+        else {
+            TObject *recoParamObj = entry->GetObject();
+            if (dynamic_cast<TObjArray*>(recoParamObj)) {
+                // The detector has a normal TobjArray of AliDetectorRecoParam objects
+                // Registering them in AliRecoParam
+                fgRecoParam->AddDetRecoParamArray(iDet,dynamic_cast<TObjArray*>(recoParamObj));
+            }
+            else if (dynamic_cast<AliDetectorRecoParam*>(recoParamObj)) {
+                // The detector has only onse set of reco parameters
+                // Registering it in AliRecoParam
+                ::Info(kEH, "Single set of reconstruction parameters found for detector %s",fgkDetectorName[iDet]);
+                dynamic_cast<AliDetectorRecoParam*>(recoParamObj)->SetAsDefault();
+                fgRecoParam->AddDetRecoParam(iDet,dynamic_cast<AliDetectorRecoParam*>(recoParamObj));
+            }
+            else {
+                ::Error(kEH, "No valid RecoParam object found in the OCDB for detector %s",fgkDetectorName[iDet]);
+                isOK = kFALSE;
+            }
+            entry->SetOwner(0);
+            
+        }
+    }
+    
+    if(!isOK) {
+        delete fgRecoParam;
+        fgRecoParam = 0;
+    }
+    
+    return fgRecoParam;
+}
+
+

@@ -17,7 +17,7 @@
 
 void geom_its()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
 
@@ -27,7 +27,7 @@ void geom_its()
 
 void geom_its_spd()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("ITSV_1");
   node = node->GetVolume()->FindNode("ITSSPD_1");
@@ -39,7 +39,7 @@ void geom_its_spd()
 
 void geom_its_sdd()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   //TEveGeoTopNode *its_re;
   TGeoNode       *n1, *n2;
@@ -57,7 +57,7 @@ void geom_its_sdd()
 
 void geom_its_ssd()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   //TEveGeoTopNode *its_re;
   TGeoNode       *n1, *n2;

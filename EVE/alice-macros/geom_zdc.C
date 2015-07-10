@@ -19,7 +19,7 @@
 
 void geom_zdc()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TEveElementList* list = new TEveElementList("ZDC");
   gEve->AddGlobalElement(list);

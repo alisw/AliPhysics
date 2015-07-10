@@ -8,24 +8,29 @@
  **************************************************************************/
 
 #include "AliEveEventManagerEditor.h"
-#include "AliEveEventManager.h"
+#include "AliEveDataSource.h"
+#include "AliEveDataSourceOffline.h"
+#ifdef ZMQ
+#include "AliStorageAdministratorPanelListEvents.h"
+#include "AliStorageAdministratorPanelMarkEvent.h"
+#endif
 
 #include <AliESDEvent.h>
 
 #include <TVirtualPad.h>
-#include "TColor.h"
-
+#include <TColor.h>
 #include <TEveGValuators.h>
 #include <TGButton.h>
 #include <TGTextView.h>
 #include <TGLabel.h>
 
-#include "Riostream.h"
+#include <TTimeStamp.h>
+#include <AliRawReader.h>
+#include <AliDAQ.h>
+#include <AliRawEventHeaderBase.h>
 
-#ifdef ZMQ
-#include "AliStorageAdministratorPanelListEvents.h"
-#include "AliStorageAdministratorPanelMarkEvent.h"
-#endif
+
+#include "Riostream.h"
 
 //______________________________________________________________________________
 // GUI editor for AliEveEventManager.
@@ -85,7 +90,7 @@ void AliEveEventManagerEditor::SetModel(TObject* obj)
     
     fM = static_cast<AliEveEventManager*>(obj);
     
-    fEventInfo->LoadBuffer(fM->GetEventInfoVertical());
+    fEventInfo->LoadBuffer(GetEventInfoVertical());
 }
 
 /******************************************************************************/
@@ -99,7 +104,7 @@ void AliEveEventManagerEditor::DumpEventInfo()
     ofstream f("event_info.txt", ios::out | ios::app);
     
     f << "================================================================================\n\n";
-    f << fM->GetEventInfoHorizontal() << std::endl << std::endl;
+    f << GetEventInfoHorizontal() << std::endl << std::endl;
     
     f.close();
 }
@@ -116,7 +121,7 @@ void AliEveEventManagerEditor::DumpEventInfo()
 
 ClassImp(AliEveEventManagerWindow)
 
-AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr,bool storageManager) :
+AliEveEventManagerWindow::AliEveEventManagerWindow(AliEveEventManager* mgr,bool storageManager,AliEveEventManager::EDataSource defaultDataSource) :
 TGMainFrame(gClient->GetRoot(), 400, 100, kVerticalFrame),
 fM            (mgr),
 fFirstEvent   (0),
@@ -197,8 +202,15 @@ fEventInfo    (0)
         else{
             fStorageStatus = MkLabel(f,"",0,8,8);
         }
-        fEventServerStatus = MkLabel(f,"Reconstruction: Waiting",0,10,10);
-        fEventServerStatus->SetTextColor(0xFFA500);
+        
+        TGHButtonGroup *horizontal = new TGHButtonGroup(f, "Data Source");
+//        horizontal->SetTitlePos(TGGroupFrame::kCenter);
+        fSwitchToHLT     = new TGRadioButton(horizontal, "HLT",AliEveEventManager::kSourceHLT);
+        fSwitchToOnline  = new TGRadioButton(horizontal, "Online",AliEveEventManager::kSourceOnline);
+        fSwitchToOffline = new TGRadioButton(horizontal, "Offline",AliEveEventManager::kSourceOffline);
+        horizontal->SetButton(defaultDataSource);
+        horizontal->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(AliEveEventManager::EDataSource)");
+        f->AddFrame(horizontal, new TGLayoutHints(kLHintsExpandX));
     }
     
     fEventInfo = new TGTextView(this, 400, 600);
@@ -238,7 +250,8 @@ AliEveEventManagerWindow::~AliEveEventManagerWindow()
 void AliEveEventManagerWindow::DoFirstEvent()
 {
     // Load previous event
-    fM->GotoEvent(0);
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    dataSource->GotoEvent(0);
 }
 
 //______________________________________________________________________________
@@ -250,7 +263,8 @@ void AliEveEventManagerWindow::DoPrevEvent()
 //        fM->GotoEvent(1);
 //    }
 //    else {
-        fM->GotoEvent((Int_t) fEventId->GetNumber()-1);
+        AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+        dataSource->GotoEvent((Int_t) fEventId->GetNumber()-1);
         
 //    }
     
@@ -267,7 +281,8 @@ void AliEveEventManagerWindow::DoNextEvent()
 //    }
 //    else {
 //        cout<<"next event, offline mode"<<endl;
-        fM->GotoEvent((Int_t) fEventId->GetNumber()+1);
+        AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+        dataSource->GotoEvent((Int_t) fEventId->GetNumber()+1);
 //    }
 }
 
@@ -275,14 +290,16 @@ void AliEveEventManagerWindow::DoNextEvent()
 void AliEveEventManagerWindow::DoLastEvent()
 {
     // Load previous event
-    fM->GotoEvent(-1);
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    dataSource->GotoEvent(-1);
 }
 
 //______________________________________________________________________________
 void AliEveEventManagerWindow::DoMarkEvent()
 {
     // Mark current event
-    fM->MarkCurrentEvent();
+    cout<<"\n\n mark event not implemented!!\n\n"<<endl;
+//    fM->MarkCurrentEvent();
 }
 
 //______________________________________________________________________________
@@ -296,7 +313,8 @@ void AliEveEventManagerWindow::DoScreenshot()
 void AliEveEventManagerWindow::DoSetEvent()
 {
     // Set current event
-    fM->GotoEvent((Int_t) fEventId->GetNumber());
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    dataSource->GotoEvent((Int_t) fEventId->GetNumber());
 }
 
 //______________________________________________________________________________
@@ -305,9 +323,10 @@ void AliEveEventManagerWindow::DoRefresh()
     // Refresh event status.
     
     Int_t ev = fM->GetEventId();
-    fM->Close();
-    fM->Open();
-    fM->GotoEvent(ev);
+//    fM->Close();
+//    fM->Open();
+    AliEveDataSource *currentDataSource = fM->GetCurrentDataSource();
+    currentDataSource->GotoEvent(ev);
 }
 
 //______________________________________________________________________________
@@ -335,6 +354,11 @@ void AliEveEventManagerWindow::DoSetTrigSel()
     fM->SetTrigSel(fTrigSel->GetSelectedEntry()->EntryId());
 }
 
+void AliEveEventManagerWindow::DoSwitchDataSource(AliEveEventManager::EDataSource source)
+{
+    fM->ChangeDataSource(source);
+}
+
 //______________________________________________________________________________
 void AliEveEventManagerWindow::Update(int state)
 {
@@ -342,7 +366,7 @@ void AliEveEventManagerWindow::Update(int state)
     
     if (state==1)
     {
-        fRefresh->SetEnabled(!autoLoad);
+//        fRefresh->SetEnabled(!autoLoad);
         
         fEventId->SetNumber(fM->GetEventId());
         fEventId->SetState(kTRUE);
@@ -412,13 +436,9 @@ void AliEveEventManagerWindow::EventServerChangedState(int state)
     cout<<"MAN EDITOR - change state called"<<endl;
     if (state == 0)// Event Server off
     {
-        fEventServerStatus->SetText("Reconstruction: DOWN");
-        fEventServerStatus->SetTextColor(0xFF0000);
     }
     else if(state == 1)// SM on
     {
-        fEventServerStatus->SetText("Reconstruction: OK");
-        fEventServerStatus->SetTextColor(0x00FF00);
     }
 //    SetCleanup(kDeepCleanup);
     Layout();
@@ -463,3 +483,90 @@ TGLabel* AliEveEventManagerWindow::MkLabel(TGCompositeFrame* p,
     return l;
 }
 
+TString AliEveEventManagerEditor::GetEventInfoHorizontal() const
+{
+    // Dumps the event-header contents in vertical formatting.
+    
+    TString rawInfo, esdInfo;
+    
+    if (!AliEveEventManager::AssertRawReader())
+    {
+        rawInfo = "No raw-data event info is available!\n";
+    }
+    else
+    {
+        const UInt_t* attr = AliEveEventManager::AssertRawReader()->GetAttributes();
+        TTimeStamp ts(AliEveEventManager::AssertRawReader()->GetTimestamp());
+        rawInfo.Form("RAW event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
+                     "Trigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x  Timestamp: %s\n",
+                     AliEveEventManager::AssertRawReader()->GetRunNumber(),AliEveEventManager::AssertRawReader()->GetType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertRawReader()->GetType()),
+                     AliEveEventManager::AssertRawReader()->GetPeriod(),AliEveEventManager::AssertRawReader()->GetOrbitID(),AliEveEventManager::AssertRawReader()->GetBCID(),
+                     AliEveEventManager::AssertRawReader()->GetClassMask(),
+                     *(AliEveEventManager::AssertRawReader())->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(AliEveEventManager::AssertRawReader())->GetDetectorPattern()),
+                     attr[0],attr[1],attr[2], ts.AsString("s"));
+    }
+    
+    if (!AliEveEventManager::AssertESD())
+    {
+        esdInfo = "No ESD event info is available!";
+    }
+    else
+    {
+        TString acttrclasses   = AliEveEventManager::AssertESD()->GetESDRun()->GetActiveTriggerClasses();
+        TString firedtrclasses = AliEveEventManager::AssertESD()->GetFiredTriggerClasses();
+        TTimeStamp ts(AliEveEventManager::AssertESD()->GetTimeStamp());
+        esdInfo.Form("ESD event info: Run#: %d  Event type: %d (%s)  Period: %x  Orbit: %x  BC: %x\n"
+                     "Active trigger classes: %s\nTrigger: %llx (%s)\nEvent# in file: %d  Timestamp: %s, MagField: %.2e",
+                     AliEveEventManager::AssertESD()->GetRunNumber(),
+                     AliEveEventManager::AssertESD()->GetEventType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertESD()->GetEventType()),
+                     AliEveEventManager::AssertESD()->GetPeriodNumber(),AliEveEventManager::AssertESD()->GetOrbitNumber(),AliEveEventManager::AssertESD()->GetBunchCrossNumber(),
+                     acttrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetTriggerMask(),firedtrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetEventNumberInFile(), ts.AsString("s"), AliEveEventManager::AssertESD()->GetMagneticField());
+    }
+    
+    return rawInfo + esdInfo;
+}
+
+TString AliEveEventManagerEditor::GetEventInfoVertical() const
+{
+    // Dumps the event-header contents in vertical formatting.
+    
+    TString rawInfo, esdInfo;
+    
+    if (!AliEveEventManager::AssertRawReader())
+    {
+        rawInfo = "No raw-data event info is available!\n";
+    }
+    else
+    {
+        const UInt_t* attr = AliEveEventManager::AssertRawReader()->GetAttributes();
+        rawInfo.Form("Raw-data event info:\nRun#: %d\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx\nDetectors: %x (%s)\nAttributes:%x-%x-%x\nTimestamp: %x\n",
+                     AliEveEventManager::AssertRawReader()->GetRunNumber(),AliEveEventManager::AssertRawReader()->GetType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertRawReader()->GetType()),
+                     AliEveEventManager::AssertRawReader()->GetPeriod(),AliEveEventManager::AssertRawReader()->GetOrbitID(),AliEveEventManager::AssertRawReader()->GetBCID(),
+                     AliEveEventManager::AssertRawReader()->GetClassMask(),
+                     *(AliEveEventManager::AssertRawReader())->GetDetectorPattern(),AliDAQ::ListOfTriggeredDetectors(*(AliEveEventManager::AssertRawReader())->GetDetectorPattern()),
+                     attr[0],attr[1],attr[2],
+                     AliEveEventManager::AssertRawReader()->GetTimestamp());
+    }
+    
+    if (!AliEveEventManager::AssertESD())
+    {
+        esdInfo = "No ESD event info is available!\n";
+    }
+    else
+    {
+        TString acttrclasses   = AliEveEventManager::AssertESD()->GetESDRun()->GetActiveTriggerClasses();
+        TString firedtrclasses = AliEveEventManager::AssertESD()->GetFiredTriggerClasses();
+        esdInfo.Form("ESD event info:\nRun#: %d\nActive trigger classes: %s\nEvent type: %d (%s)\nPeriod: %x\nOrbit: %x   BC: %x\nTrigger: %llx (%s)\nEvent# in file:%d\nTimestamp: %x\n",
+                     AliEveEventManager::AssertESD()->GetRunNumber(),
+                     acttrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetEventType(),AliRawEventHeaderBase::GetTypeName(AliEveEventManager::AssertESD()->GetEventType()),
+                     AliEveEventManager::AssertESD()->GetPeriodNumber(),AliEveEventManager::AssertESD()->GetOrbitNumber(),AliEveEventManager::AssertESD()->GetBunchCrossNumber(),
+                     AliEveEventManager::AssertESD()->GetTriggerMask(),firedtrclasses.Data(),
+                     AliEveEventManager::AssertESD()->GetEventNumberInFile(),
+                     AliEveEventManager::AssertESD()->GetTimeStamp());
+    }
+    
+    return rawInfo + "\n" + esdInfo;
+}

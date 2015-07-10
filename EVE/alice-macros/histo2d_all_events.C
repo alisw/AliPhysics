@@ -55,7 +55,7 @@ TEveCaloDataHist* histo2d_all_events()
       Info("histo2d_all_events", "Filling histogram...");
    
       // Access to esdTree
-      AliESDEvent* esd = AliEveEventManager::AssertESD();
+      AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
       TTree* t = AliEveEventManager::GetMaster()->GetESDTree();
 
       // Creating 2D histograms

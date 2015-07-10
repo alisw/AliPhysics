@@ -21,7 +21,7 @@ void geom_vzero()
 {
   static const TEveException kEH("geom_vzero() ");
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TEveElementList* list = new TEveElementList("VZero");
   gEve->AddGlobalElement(list);

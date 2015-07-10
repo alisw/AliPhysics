@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/EVE/${MODULE})
 include_directories(
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliRoot_SOURCE_DIR}/HLT/BASE
                     ${AliRoot_SOURCE_DIR}/ITS/ITSbase
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
                     ${AliRoot_SOURCE_DIR}/MONITOR/alionlinereco
@@ -49,6 +50,8 @@ set(SRCS
     AliEveConfigManager.cxx
     AliEveCosmicRayFitter.cxx
     AliEveCosmicRayFitterEditor.cxx
+    AliEveDataSource.cxx
+    AliEveDataSourceOffline.cxx
     AliEveESDTracks.cxx
     AliEveEventManager.cxx
     AliEveEventManagerEditor.cxx
@@ -60,6 +63,7 @@ set(SRCS
     AliEveHF.cxx
     AliEveHFEditor.cxx
     AliEveHFListEditor.cxx
+    AliEveInit.cxx
     AliEveJetPlane.cxx
     AliEveJetPlaneEditor.cxx
     AliEveJetPlaneGL.cxx
@@ -74,8 +78,7 @@ set(SRCS
     AliEveMagField.cxx
     AliEveMainWindow.cxx
     AliEveMultiView.cxx
-    AliEveOffline.cxx
-    AliEveOfflineEventManager.cxx
+    AliEvePreferencesWindow.cxx
     AliEveSaveViews.cxx
     AliEveTrackCounter.cxx
     AliEveTrackCounterEditor.cxx
@@ -94,8 +97,8 @@ set(SRCS
 if(ZEROMQ_FOUND)
     set(SRCS
         ${SRCS}
-        AliEveOnline.cxx
-        AliEveOnlineEventManager.cxx
+        AliEveDataSourceHLTZMQ.cxx
+        AliEveDataSourceOnline.cxx
        )
 endif(ZEROMQ_FOUND)
 
@@ -109,12 +112,14 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint ASImage)
+set(LIBDEPS STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint HLTbase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
-target_link_libraries(${MODULE} STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint ASImage)
+target_link_libraries(${MODULE} ${LIBDEPS})
+
+#target_link_libraries(${MODULE} STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint)
 
 # Additional compilation flags
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
@@ -130,3 +135,4 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+install(FILES "eve_config" DESTINATION EVE/EveBase)

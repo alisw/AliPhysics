@@ -189,7 +189,7 @@ void alieve_online_on_new_event()
     {
         Double_t x[3] = { 0, 0, 0 };
         
-        AliESDEvent* esd = AliEveEventManager::AssertESD();
+        AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
         esd->GetPrimaryVertex()->GetXYZ(x);
         
         TTimeStamp ts(esd->GetTimeStamp());

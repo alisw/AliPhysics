@@ -47,7 +47,7 @@
 
 void emcal_esdcells()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
   
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
   if (!node) return;
@@ -145,7 +145,7 @@ void emcal_esdcells()
 
   // EMCAL data reading
   
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
   
   if(!esd)
   {

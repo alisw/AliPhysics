@@ -23,7 +23,7 @@
 
 TEvePointSet* phos_clusters(TEveElement* cont=0)
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("PHOS");

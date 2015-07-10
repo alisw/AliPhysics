@@ -49,9 +49,9 @@ Bool_t fMatrixEMSet = kFALSE;
 
 void emcal_esdcellsV3()
 {   
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
   
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("XEN1_1");
   if (!node) return;

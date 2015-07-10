@@ -82,7 +82,7 @@ AliEveJetPlane* jetplane()
 
   // Render Jet Plane
   gJPScene->AddElement(jp);
-  AliEveEventManager::RegisterTransient(jp);
+  AliEveEventManager::GetMaster->RegisterTransient(jp);
 
   gEve->Redraw3D();
 

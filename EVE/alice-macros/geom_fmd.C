@@ -19,7 +19,7 @@
 
 void geom_fmd()
 {
-  gGeoManager = AliEveEventManager::AssertGeometry();
+  gGeoManager = AliEveEventManager::GetMaster()->AssertGeometry();
 
   TEveElementList* list = new TEveElementList("FMD");
   gEve->AddGlobalElement(list);

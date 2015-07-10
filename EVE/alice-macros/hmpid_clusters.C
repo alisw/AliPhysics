@@ -45,7 +45,7 @@ TEvePointSet* hmpid_clusters(TEveElement* cont=0)
   TEvePointSet* clusters = new TEvePointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliRunLoader* rl = AliEveEventManager::AssertRunLoader();
   rl->LoadRecPoints("HMPID");

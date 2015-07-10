@@ -172,7 +172,7 @@ public:
     
     if (fileName.Contains("ESD")) { 
       std::cout << "Adding ESD file " << fileName << std::endl;
-      AliEveEventManager::SetESDFileName(fileName);
+      AliEveEventManager::GetMaster()->GetDataSourceOffline()->SetESDFileName(fileName);
     }
     else if (fileName.EndsWith(".root") || fileName.EndsWith(".raw")) { 
       std::cout << "Adding raw file " << fileName << std::endl;

@@ -20,6 +20,7 @@
 #include <AliEveMacroExecutor.h>
 #include <AliEveTrackFitter.h>
 #include <AliEveTrackCounter.h>
+#include <AliEveDataSourceOffline.h>
 
 #include "../alice-macros/geom_gentle.C"
 #include "../alice-macros/geom_gentle_trd.C"
@@ -100,13 +101,20 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
         fFileDialog->MapWindow();
         
         if(fFileDialog->accepted()) {
-         AliEveEventManager::SetESDFileName(fFileDialog->GetPathESD());
-         AliEveEventManager::SetESDfriendFileName(fFileDialog->GetPathESDfriend());
-         AliEveEventManager::SetAODFileName(fFileDialog->GetPathAOD());
-         AliEveEventManager::AddAODfriend(fFileDialog->GetPathAODfriend());
-         AliEveEventManager::SetRawFileName(fFileDialog->GetPathRaw());
-         AliEveEventManager::SetCdbUri(fFileDialog->GetCDBStoragePath());
-         loadFiles();        
+            
+            AliEveEventManager* evMan = AliEveEventManager::GetMaster();
+            AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)evMan->GetDataSourceOffline();
+            
+            if(dataSource)
+            {
+             dataSource->SetESDFileName(fFileDialog->GetPathESD());
+             dataSource->SetESDfriendFileName(fFileDialog->GetPathESDfriend());
+             dataSource->SetAODFileName(fFileDialog->GetPathAOD());
+             dataSource->AddAODfriend(fFileDialog->GetPathAODfriend());
+             dataSource->SetRawFileName(fFileDialog->GetPathRaw());
+             evMan->SetCdbUri(fFileDialog->GetCDBStoragePath());
+             loadFiles();
+            }
         }
         break;
     }
@@ -117,10 +125,14 @@ void AliEveMainWindow::onMenuFileItem(UInt_t id)
         fFileDialog->setMode(kAliEveFDRemote);
         fFileDialog->MapWindow();
         if(fFileDialog->accepted()) {
-         AliEveEventManager::SetFilesPath(fFileDialog->GetUrl());
-         AliEveEventManager::SetCdbUri(fFileDialog->GetCDBStoragePath());
-         
-         
+            AliEveEventManager* evMan = AliEveEventManager::GetMaster();
+            AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)evMan->GetDataSourceOffline();
+            
+            if(dataSource)
+            {
+                 dataSource->SetFilesPath(fFileDialog->GetUrl());
+                 evMan->SetCdbUri(fFileDialog->GetCDBStoragePath());
+            }
 
     // Open event
     if (fFileDialog->GetUrl().BeginsWith("alien:"))

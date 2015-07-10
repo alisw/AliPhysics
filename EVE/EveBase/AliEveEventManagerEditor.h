@@ -10,9 +10,13 @@
 #ifndef AliEveEventManagerEditor_H
 #define AliEveEventManagerEditor_H
 
+#include "AliEveEventManager.h"
+
 #include "TGedFrame.h"
 #include "TGComboBox.h"
 #include <TObjString.h>
+#include "TGButton.h"
+#include "TGButtonGroup.h"
 
 class AliEveEventManager;
 class TEveGValuator;
@@ -48,6 +52,9 @@ protected:
    TGTextView          *fEventInfo;     // Text box with event info.
 
 private:
+    TString GetEventInfoHorizontal() const;
+    TString GetEventInfoVertical() const;
+    
    AliEveEventManagerEditor(const AliEveEventManagerEditor&);            // Not implemented
    AliEveEventManagerEditor& operator=(const AliEveEventManagerEditor&); // Not implemented
 
@@ -66,7 +73,7 @@ private:
 class AliEveEventManagerWindow : public TGMainFrame
 {
 public:
-  AliEveEventManagerWindow(AliEveEventManager* mgr, bool storageManager=false);
+    AliEveEventManagerWindow(AliEveEventManager* mgr, bool storageManager=false,AliEveEventManager::EDataSource defaultDataSource = AliEveEventManager::kSourceOffline);
   virtual ~AliEveEventManagerWindow();
 
   void DoFirstEvent();
@@ -75,6 +82,7 @@ public:
   void DoLastEvent();
   void DoMarkEvent();
     void DoScreenshot();
+    void DoSwitchDataSource(AliEveEventManager::EDataSource source);
 
   void DoSetEvent();
 
@@ -86,7 +94,7 @@ public:
   void Update(int=1);
   void EventServerChangedState(int state);
   void StorageManagerChangedState(int state);
-
+    
 protected:
   AliEveEventManager   *fM;            // Model object.
     
@@ -97,6 +105,10 @@ protected:
     TGTextButton         *fRefresh;      // Refresh event-file state
     TGTextButton         *fMarkEvent;    // Mark current event
     TGTextButton         *fScreenshot;   // Save screenshot to file
+    
+    TGRadioButton *fSwitchToHLT;         // switch data source to HLT
+    TGRadioButton *fSwitchToOnline;      // switch data source to Online
+    TGRadioButton *fSwitchToOffline;     // switch data source to Offline
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id
@@ -106,7 +118,6 @@ protected:
 
   TGComboBox           *fTrigSel;      // Trigger selection combo box
   TGLabel              *fStorageStatus; // Display status of Storage Manager
-  TGLabel              *fEventServerStatus; // Display status of Event Server
 
   TGTextView           *fEventInfo;    // Text box with event info
 

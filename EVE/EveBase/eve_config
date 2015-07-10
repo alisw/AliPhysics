@@ -1,0 +1,60 @@
+#===============================================================#
+#           This is Event Display config file.                  #
+#                                                               #
+# You can copy it to your home directory and set custom values. #
+#                                                               #
+#===============================================================#
+
+HLTESDtree.show:        	0
+MUON.show:              	1
+TRD.geom.color:         	kGray
+MUON.geom.color:        	kGray
+
+tracks.width:           	2
+tracks.noRefit.dash:		1
+tracks.noRefit.show:		1
+tracks.byType.show:     	1
+tracks.byCategory.show:		0
+
+tracks.byType.electron:     600
+tracks.byType.muon:         416
+tracks.byType.pion:         632
+tracks.byType.kaon:         400
+tracks.byType.proton:       797
+tracks.byType.deuteron:     797
+tracks.byType.triton:       797
+tracks.byType.he3:          797
+tracks.byType.alpha:        403
+tracks.byType.photon:       0
+tracks.byType.pi0:          616
+tracks.byType.neutron:      900
+tracks.byType.kaon0:        801
+tracks.byType.elecon:       920
+tracks.byType.unknown:      920
+
+clusters.show:          	0
+kinks.show:             	0
+V0s.show:               	0
+cascades.show:          	0
+rawData.show:           	0
+primary.vertex.show:		0
+hits.show:              	0
+digits.show:            	0
+
+events.autoload.set:		0
+ALICE_LIVE.send:        	0
+
+OCDB.default.path:      	local://$(ALICE_ROOT)/../src/OCDB/
+
+logbook.host:           	logbook_host
+logbook.port:           	0000
+logbook.db:             	logbook_db
+logbook.user:           	logbook_user
+logbook.pass:           	logbook_pass
+
+screenshot.logo.draw		1
+screenshot.info.draw		1
+screenshot.projections.draw	1
+screenshot.force.energy     Energy: 13 TeV
+
+HLT.ZMQ.proxy:              tcp://localhost:60201

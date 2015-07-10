@@ -18,7 +18,7 @@
 
 void geom_all()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TEveGeoTopNode* topn_re = new TEveGeoTopNode(gGeoManager, gGeoManager->GetTopNode());
   gEve->AddGlobalElement(topn_re);

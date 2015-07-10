@@ -26,14 +26,14 @@ public:
     ~AliEveESDTracks();
     
     TEveElementList* ByCategory();
+    TEveElementList* ByType();
     
-    void SetColors(Color_t colors[9]){
-        for(int i=0;i<9;i++){fColors[i]=colors[i];}
+    void SetColorsByCategory(Color_t colors[9]){
+        for(int i=0;i<9;i++){fColorsByCategory[i]=colors[i];}
     }
-    void SetWidths(Width_t widths[9]){
-        for(int i=0;i<9;i++){fWidths[i]=widths[i];}
-    }
-    void SetDashBad(bool dashBad){fDashBad=dashBad;}
+    void SetWidth(Width_t width){fWidth=width;}
+    void SetDashNoRefit(bool dashNoRefit){fDashNoRefit=dashNoRefit;}
+    void SetDrawNoRefit(bool drawNoRefit){fDrawNoRefit=drawNoRefit;}
     
 private:
     bool fUseIPonFailedITSrefit;
@@ -59,9 +59,13 @@ private:
     Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
 
     TEveElementList* ByAnalCuts();
-    Color_t fColors[9];
-    Width_t fWidths[9];
-    bool fDashBad;
+    Color_t fColorsByCategory[9];
+    Width_t fWidth;
+    bool fDashNoRefit;
+    bool fDrawNoRefit;
+    
+    AliEveESDTracks(const AliEveESDTracks&);
+    AliEveESDTracks& operator=(const AliEveESDTracks&);
 };
 
 #endif

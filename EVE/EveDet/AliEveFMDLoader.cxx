@@ -113,7 +113,7 @@ AliEveFMDLoader::AliEveFMDLoader(const char* name, Bool_t useBoxes,
   
   
   // Initialize the FMD geometry manager 
-  TGeoManager* geoMan  = AliEveEventManager::AssertGeometry();
+  TGeoManager* geoMan  = AliEveEventManager::GetMaster()->AssertGeometry();
   if (!geoMan) return;
   geoMan->GetTopVolume()->cd(0);
 
@@ -691,7 +691,7 @@ AliEveFMDLoader::LoadESD()
   
   ClearDigitSets(kESD);
 
-  AliESDEvent* esd =  AliEveEventManager::AssertESD();
+  AliESDEvent* esd =  AliEveEventManager::GetMaster()->AssertESD();
   if (!esd) { 
     AliError("No ESD");
     return;

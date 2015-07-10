@@ -19,7 +19,7 @@
 
 void geom_ad()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   TGeoNode* node = gGeoManager->GetTopVolume()->FindNode("AD_1");
   if (!node) {

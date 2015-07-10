@@ -23,11 +23,11 @@ void alieve_create_vsd(Int_t nEvents=1, Int_t minTracks=0)
   {
     if (minTracks)
     {
-      AliESDEvent* esd = AliEveEventManager::AssertESD();
+      AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
       while (esd->GetNumberOfTracks() < minTracks)
       {
 	AliEveEventManager::GetMaster()->NextEvent();
-	esd = AliEveEventManager::AssertESD();
+	esd = AliEveEventManager::GetMaster()->AssertESD();
       }
     }
     vc.CreateVSD("AliVSD.root");

@@ -17,10 +17,10 @@
 
 void clusters()
 {
-  AliEveEventManager::AssertGeometry();
+  AliEveEventManager::GetMaster()->AssertGeometry();
 
   AliRunLoader *rl        = AliEveEventManager::AssertRunLoader();
-  AliESDEvent  *esd       = AliEveEventManager::AssertESD();
+  AliESDEvent  *esd       = AliEveEventManager::GetMaster()->AssertESD();
   AliEveEventManager::AssertESDfriend();
   AliEveEventManager::AssertMagField();
 

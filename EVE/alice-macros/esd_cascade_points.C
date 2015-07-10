@@ -17,7 +17,7 @@
 
 void esd_cascade_fill_pointset(TEvePointSet* ps)
 {
-  AliESDEvent* esd = AliEveEventManager::AssertESD();
+  AliESDEvent* esd = AliEveEventManager::GetMaster()->AssertESD();
 
   Int_t NCascades = esd->GetNumberOfCascades();
 

@@ -450,7 +450,7 @@ void AliEveTRDChamber::SetGeometry(AliTRDgeometry *geo)
 // 
 // eg_shape->StampColorSelection();
   if(!(gGeoManager)){
-    AliEveEventManager::AssertGeometry();
+    AliEveEventManager::GetMaster()->AssertGeometry();
     if(!(gGeoManager)){
       AliError("Geo manager not available.");
       return;

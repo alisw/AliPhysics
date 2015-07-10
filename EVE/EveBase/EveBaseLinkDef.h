@@ -27,8 +27,17 @@
 
 // AliEveEventManager
 #pragma link C++ class AliEveEventManager+;
+#pragma link C++ class AliEveDataSourceOffline+;
 #pragma link C++ class AliEveEventManagerEditor+;
 #pragma link C++ class AliEveEventManagerWindow+;
+#pragma link C++ class AliEveDataSource+;
+#ifdef ZMQ
+#pragma link C++ class AliEveDataSourceHLTZMQ+;
+#pragma link C++ class AliEveDataSourceOnline+;
+#endif
+
+// AliEveSaveViews
+#pragma link C++ class AliEveSaveViews+;
 
 // AliEveEventSelector
 #pragma link C++ class AliEveEventSelector+;
@@ -39,6 +48,9 @@
 #pragma link C++ class AliEveMacroEditor+;
 #pragma link C++ class AliEveMacroExecutor+;
 #pragma link C++ class AliEveMacroExecutorWindow+;
+
+// AliEvePreferencesWindow
+#pragma link C++ class AliEvePreferencesWindow+;
 
 // Special GED editor for VizDB interaction.
 #pragma link C++ class AliEveGedEditor+;

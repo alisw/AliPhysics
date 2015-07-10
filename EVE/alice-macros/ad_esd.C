@@ -23,7 +23,7 @@ void ad_esd(Int_t maxCharge = 300, Bool_t showLegend = kFALSE)
 {
   gStyle->SetPalette(1, 0);
 
-  AliESDAD *adESD = AliEveEventManager::AssertESD()->GetADData();
+  AliESDAD *adESD = AliEveEventManager::GetMaster()->AssertESD()->GetADData();
 
   gEve->DisableRedraw();
 
