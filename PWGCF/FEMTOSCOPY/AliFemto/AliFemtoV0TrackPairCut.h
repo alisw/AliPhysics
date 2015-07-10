@@ -61,23 +61,23 @@ private:
 #endif
 };
 
-inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut &c) :
+inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut &c):
   AliFemtoPairCut(c),
-  fNPairsPassed(0),
-  fNPairsFailed(0),
-  fV0Max(1.0),
-  fShareQualityMax(1.0),
-  fShareFractionMax(1.0),
-  fRemoveSameLabel(0),
-  fTrackTPCOnly(0),
-  fDataType(kAOD),
-  fDTPCMin(0),
-  fDTPCExitMin(0),
-  fKstarCut(0),
-  fFirstParticleType(kLambda),
-  fSecondParticleType(kProton),
-  fMinAvgSepTrackPos(0),
-  fMinAvgSepTrackNeg(0)
+  fNPairsPassed(c.fNPairsPassed),
+  fNPairsFailed(c.fNPairsFailed),
+  fV0Max(c.fV0Max),
+  fShareQualityMax(c.fShareQualityMax),
+  fShareFractionMax(c.fShareFractionMax),
+  fRemoveSameLabel(c.fRemoveSameLabel),
+  fTrackTPCOnly(c.fTrackTPCOnly),
+  fDataType(c.fDataType),
+  fDTPCMin(c.fDTPCMin),
+  fDTPCExitMin(c.fDTPCExitMin),
+  fKstarCut(c.fKstarCut),
+  fFirstParticleType(c.fFirstParticleType),
+  fSecondParticleType(c.fSecondParticleType),
+  fMinAvgSepTrackPos(c.fMinAvgSepTrackPos),
+  fMinAvgSepTrackNeg(c.fMinAvgSepTrackNeg)
 {
   /* no-op */
 }
