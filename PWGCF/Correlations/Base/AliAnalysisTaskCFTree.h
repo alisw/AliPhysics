@@ -28,7 +28,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   void SetHybridConstrainedMask(UInt_t mask)  { fHybridConstrainedMask = mask; }
   void SetTPConlyConstrainedMask(UInt_t mask) { fTPConlyConstrainedMask = mask; }
   // Event cut setters
-  void SetEventSelectionBit(UInt_t val) { fSelectBit = val; }
+  void SetEventSelectionBit(AliBits val){ fSelectBit = val; }
   void SetZVertex(Float_t val)          { fZVertexCut = val; }
   // Track cut setters
   void SetTrackFilterBit(UInt_t val)    { fTrackFilterBit = val; }
@@ -79,7 +79,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   Bool_t fIsPileupMV;         //  tree var: is pileup from MV flag
 
   // Event cuts
-  UInt_t fSelectBit;          // event selection bit
+  AliBits fSelectBit;         // event selection bit
   Float_t fZVertexCut;        // Z-vertex cut
   // Track cuts
   UInt_t fTrackFilterBit;     // track filter bits to be stored

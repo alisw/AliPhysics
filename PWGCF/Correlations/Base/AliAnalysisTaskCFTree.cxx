@@ -31,6 +31,7 @@
 #include "AliAnalysisFilter.h"
 #include "AliVMultiplicity.h"
 #include "AliAnalysisUtils.h"
+#include "AliTrigger.h"
 // root
 #include <RVersion.h>
 #include "TMath.h"
@@ -67,7 +68,7 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
   fSelectMask(),
   fIsPileupSPD(0),
   fIsPileupMV(0),
-  fSelectBit(AliVEvent::kAny),
+  fSelectBit(AliTrigger::kAny),
   fZVertexCut(10.),
   fTrackFilterBit(0xffffffff),
   fTrackEtaCut(1.0),

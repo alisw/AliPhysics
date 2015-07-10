@@ -40,6 +40,7 @@ set(SRCS
     AliOADBTrackFix.cxx
     AliOADBTriggerAnalysis.cxx
     AliPPVsMultUtils.cxx
+    AliTrigger.cxx
 )
 
 # Headers from sources
