@@ -103,6 +103,7 @@ void AliEveDataSourceOnline::GetNextEvent()
                     }
                     fCurrentEvent[fWritingToEventIndex] = tmpEvent;
                     fIsNewEventAvaliable = true;
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->UnLock();
 #endif
                 }
