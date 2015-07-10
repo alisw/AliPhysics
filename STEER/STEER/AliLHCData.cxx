@@ -635,7 +635,7 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
     }
     int dim = 0;
     if (!bconf->IsProcessed1()) {
-      AliWarning(Form("Bunch conf. for beam%d has no marked interacting bunches, store all luminosity for all filled bunches",useBeam));
+      AliWarningF("Bunch conf. for beam%d has no marked interacting bunches, store all luminosity for all %d filled bunches",useBeam,nbunch);
       dim = nbunch;
     }
     else { // count number of interacting bunches
@@ -663,7 +663,7 @@ Int_t AliLHCData::FillBCLuminosities(int refs[2],const char* rec, const char* re
 	  AliError(Form("ANOMALOUS VALUE %e for slot %d of %s: exceeds %e",vcheck, ind, rec, maxAbsVal));
 	  vcheck = 0.;
 	}
-	(*curValD)[i] = vcheck;
+	(*curValD)[cnt] = vcheck;
       }
       cnt++;
     }
