@@ -38,9 +38,9 @@
 /// Syntax is :
 ///
 /// NumberOfDataSources: n
-/// DataSource.%d: ID NAME RANGES
+/// DataSource.%d: ID;NAME;RANGES
 ///
-/// ID = ORIGIN;URI;TYPE
+/// ID = ORIGIN|URI|TYPE
 /// URI = depends on source
 ///
 /// where ORIGIN might be OCDB or FILE
@@ -48,26 +48,23 @@
 /// (see AliMUONPainterDataSourceFrame::CreateRawDataSource())
 /// (see AliMUONPainterDataSourceFrame::CreateACFDataSource())
 ///
-/// URI is a source dependent set of information (separated by ;) needed to recreate the source, e.g.
-/// local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB;216253
+/// URI is a source dependent set of information (separated by |) needed to recreate the source, e.g.
+/// local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB|216253
 ///
 /// TYPE is the data source type (e.g. PED, RAW, CALZ, see AliMUONPainterDataSourceTypes)
 ///
 /// NAME is a (unique) shortname for display, e.g. PED216253(alien)
 ///
-/// RANGES is a set of space separated range definition. A range definition indicates,
+/// RANGES is a set of "|"-separated range definition. A range definition indicates,
 /// for one of the dimension of the data source, the min and max value to be plotted.
-/// Syntax is DIMNAME;XMIN;XMAX
+/// Syntax is DIMNAME/XMIN/XMAX
 ///
 /// The full line ID NAME RANGES is called the data source descriptor
 ///
 /// Examples :
 ///
-/// DataSource.0: OCDB;local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB;216253;PED PED216253(cvmfs)  Mean;0;500 Sigma;0;5
+/// DataSource.0: OCDB|local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB|228901|PED;PED228901(cvmfs);Mean/0/500|Sigma/0/2
 ///
-/// DataSource.1: RAW;/alice/data/2015/LHC15c/000216293/raw/15000216293018.10.root;local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB; ;0.000000e+00;4.096000e+03;-1;-1[-1]
-///
-/// DataSource.2: ACF;/Users/laurent/Code.nogit/OCDB/occupancy-asciifiles/occupancy.000119969023.130;OCC
 ///
 /// Apart from data source descriptions, the following keywords are recognized :
 ///
@@ -75,7 +72,12 @@
 ///
 /// which is used to suppress the automatic creation of summary canvases when opening a pedestal source
 ///
-/// defaultRange: TYPE1;DIMNAME1;XMIN1;XMAX1 TYPE1;DIMNAME2;XMIN2;XMAX2 TYPE2;DIMNAME3;XMIN3;XMAX3
+///
+/// defaultRange: TYPE1/DIMNAME1/XMIN1/XMAX1|TYPE1/DIMNAME2/XMIN2/XMAX2
+///
+/// example of defaultRange :
+///
+/// defaultRange: PED/Mean/0/500|PED/Sigma/0/2|OCC/occ/0/0.01|HV/mean of HV/0/1650|
 ///
 /// which is used to define default ranges for some dimensions of some source types
 ///
