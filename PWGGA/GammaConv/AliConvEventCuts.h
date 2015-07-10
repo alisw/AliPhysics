@@ -269,6 +269,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TH1F 						*hVertexZ; 								// vertex z distribution for selected events
 		TH1F 						*hTriggerClass; 						// fired offline trigger class
 		TH1F 						*hTriggerClassSelected;					// selected fired offline trigger class
+		TH1F 						*hTriggerClassesCorrelated;				// selected trigger class correlation with others
 		TH1D 						*hReweightMCHistPi0;					// histogram input for reweighting Pi0
 		TH1D 						*hReweightMCHistEta; 					// histogram input for reweighting Eta
 		TH1D 						*hReweightMCHistK0s; 					// histogram input for reweighting K0s
@@ -298,7 +299,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		
 	private:
 
-		ClassDef(AliConvEventCuts,8)
+		ClassDef(AliConvEventCuts,9)
 };
 
 
