@@ -98,9 +98,12 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhJetRadius(0x0),
   fhJetAngularity(0x0),
   fhJetPTD(0x0),
+  fhJetCounter(0x0),
   fhNumberOfJetTracks(0x0),
   fhSubJetPt(0x0),
+  fhSubJetMass(0x0),
   fhSubJetRadius(0x0),
+  fhSubJetCounter(0x0),
   fhSubJetPtFrac(0x0),
   fhSubJetPtFrac2(0x0),
   fhSubJetPtLoss(0x0),
@@ -109,9 +112,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhSubJetEnergyFrac2(0x0),
   fhSubJetEnergyLoss(0x0),
   fhSubJetEnergyLoss2(0x0),
-  fhEventCounter(0x0),
-  fhJetCounter(0x0),
-  fhSubJetCounter(0x0),
   fhPtRatio(0x0),
   fhParticleSubJetPtFrac(0x0),
   fhDetectorSubJetPtFrac(0x0),
@@ -127,6 +127,8 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhDetectorSubJetiness2(0x0),
   fhSubJetiness2Ratio(0x0),
   fhSubJetiness2(0x0),
+  fh2to1SubJetinessRatio(0x0),
+  fhEventCounter(0x0),
   fTreeResponseMatrixAxis(0)
 
 {
@@ -164,9 +166,12 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhJetRadius(0x0),
   fhJetAngularity(0x0),
   fhJetPTD(0x0),
+  fhJetCounter(0x0),
   fhNumberOfJetTracks(0x0),
   fhSubJetPt(0x0),
+  fhSubJetMass(0x0),
   fhSubJetRadius(0x0),
+  fhSubJetCounter(0x0),
   fhSubJetPtFrac(0x0),
   fhSubJetPtFrac2(0x0),
   fhSubJetPtLoss(0x0),
@@ -175,9 +180,6 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhSubJetEnergyFrac2(0x0),
   fhSubJetEnergyLoss(0x0),
   fhSubJetEnergyLoss2(0x0),
-  fhEventCounter(0x0),
-  fhJetCounter(0x0),
-  fhSubJetCounter(0x0),
   fhPtRatio(0x0),
   fhParticleSubJetPtFrac(0x0),
   fhDetectorSubJetPtFrac(0x0),
@@ -193,6 +195,8 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhDetectorSubJetiness2(0x0),
   fhSubJetiness2Ratio(0x0),
   fhSubJetiness2(0x0),
+  fh2to1SubJetinessRatio(0x0),
+  fhEventCounter(0x0),
   fTreeResponseMatrixAxis(0)
   
 {
@@ -267,6 +271,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJetRadius);
     fhSubJetPt= new TH1F("fhSubJetPt", "SubJet Pt", 1500, -0.5,149.5);
     fOutput->Add(fhSubJetPt);
+    fhSubJetMass= new TH1F("fhSubJetMass", "Sub Jet Mass", 4000,-0.5, 39.5);
+    fOutput->Add(fhSubJetMass);
     fhSubJetPtFrac= new TH1F("fhSubJetPtFrac", "Pt Fraction of Highest Pt Subjet compared to original Jet",101, -0.05,1.05);
     fOutput->Add(fhSubJetPtFrac);
     fhSubJetPtFrac2= new TH1F("fhSubJetPtFrac2", "Pt Fraction of Two Highest Pt Subjets compared to original Jet",101, -0.05,1.05);
@@ -746,6 +752,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	      if((Jet2=Reclusterer->GetJet(i))){
 		fhEventCounter->Fill(6); //Number of overall subjets in all events 		
 		fhSubJetPt->Fill(Jet2->Pt()); 
+		fhSubJetMass->Fill(Jet2->M());
 	      // cout << Jet2->Area()<<endl;
 		fhSubJetRadius->Fill(TMath::Sqrt((Jet2->Area()/TMath::Pi()))); //Radius of SubJets per event  
 		if((Jet2->Pt())>HighestSubJetPt){ //This finds the highest pt subjet in each jet
