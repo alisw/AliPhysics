@@ -89,9 +89,45 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name) 
   : AliAnalysisTaskSE(name)
-  ,fAssPtCut(0.3)
+  ,fAssPtCut(0.5)
   ,fAssTPCnCut(80)
   ,fAssITSrefitCut(kTRUE)
+  ,fP2_lowPtEta0010(0) 
+  ,fP3_lowPtEta0010(0) 
+  ,fP4_lowPtEta0010(0) 
+  ,fP2_highPtEta0010(0) 
+  ,fP3_highPtEta0010(0) 
+  ,fP4_highPtEta0010(0) 
+  ,fP2_lowPtPi00010(0) 
+  ,fP3_lowPtPi00010(0) 
+  ,fP4_lowPtPi00010(0) 
+  ,fP2_highPtPi00010(0) 
+  ,fP3_highPtPi00010(0) 
+  ,fP4_highPtPi00010(0) 
+  ,fP2_lowPtEta1020(0) 
+  ,fP3_lowPtEta1020(0) 
+  ,fP4_lowPtEta1020(0) 
+  ,fP2_highPtEta1020(0) 
+  ,fP3_highPtEta1020(0) 
+  ,fP4_highPtEta1020(0) 
+  ,fP2_lowPtPi01020(0) 
+  ,fP3_lowPtPi01020(0) 
+  ,fP4_lowPtPi01020(0) 
+  ,fP2_highPtPi01020(0) 
+  ,fP3_highPtPi01020(0) 
+  ,fP4_highPtPi01020(0) 
+  ,fP2_lowPtEta2040(0) 
+  ,fP3_lowPtEta2040(0) 
+  ,fP4_lowPtEta2040(0) 
+  ,fP2_highPtEta2040(0) 
+  ,fP3_highPtEta2040(0) 
+  ,fP4_highPtEta2040(0) 
+  ,fP2_lowPtPi02040(0) 
+  ,fP3_lowPtPi02040(0) 
+  ,fP4_lowPtPi02040(0) 
+  ,fP2_highPtPi02040(0) 
+  ,fP3_highPtPi02040(0) 
+  ,fP4_highPtPi02040(0) 
   ,fESD(0)
   ,fAOD(0)
   ,fVevent(0)
@@ -202,9 +238,45 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
-  ,fAssPtCut(0.3)
+  ,fAssPtCut(0.5)
   ,fAssTPCnCut(80)
   ,fAssITSrefitCut(kTRUE)
+  ,fP2_lowPtEta0010(0) 
+  ,fP3_lowPtEta0010(0) 
+  ,fP4_lowPtEta0010(0) 
+  ,fP2_highPtEta0010(0) 
+  ,fP3_highPtEta0010(0) 
+  ,fP4_highPtEta0010(0) 
+  ,fP2_lowPtPi00010(0) 
+  ,fP3_lowPtPi00010(0) 
+  ,fP4_lowPtPi00010(0) 
+  ,fP2_highPtPi00010(0) 
+  ,fP3_highPtPi00010(0) 
+  ,fP4_highPtPi00010(0) 
+  ,fP2_lowPtEta1020(0) 
+  ,fP3_lowPtEta1020(0) 
+  ,fP4_lowPtEta1020(0) 
+  ,fP2_highPtEta1020(0) 
+  ,fP3_highPtEta1020(0) 
+  ,fP4_highPtEta1020(0) 
+  ,fP2_lowPtPi01020(0) 
+  ,fP3_lowPtPi01020(0) 
+  ,fP4_lowPtPi01020(0) 
+  ,fP2_highPtPi01020(0) 
+  ,fP3_highPtPi01020(0) 
+  ,fP4_highPtPi01020(0) 
+  ,fP2_lowPtEta2040(0) 
+  ,fP3_lowPtEta2040(0) 
+  ,fP4_lowPtEta2040(0) 
+  ,fP2_highPtEta2040(0) 
+  ,fP3_highPtEta2040(0) 
+  ,fP4_highPtEta2040(0) 
+  ,fP2_lowPtPi02040(0) 
+  ,fP3_lowPtPi02040(0) 
+  ,fP4_lowPtPi02040(0) 
+  ,fP2_highPtPi02040(0) 
+  ,fP3_highPtPi02040(0) 
+  ,fP4_highPtPi02040(0) 
   ,fESD(0)
   ,fAOD(0)
   ,fVevent(0)
@@ -677,7 +749,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	  
 	  fInclElec[iCent]->Fill(pt,iDecay,MCweight);
 	  
-	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,(Double_t)iDecay};
+	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay};
           fCorr->Fill(corr,MCweight);
 	  
 	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
@@ -1018,25 +1090,37 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT, Int_t iCe
   double weight = 1.0;
     
   if (iCent==0){
-    double parLowPt[4] = {0.00386062,0.913163,54.9096,84.0142};
-    double parHighPt[4] = {0.02824,0.1246,3.56903,5.60296};
+//     double parLowPt[4] = {0.00386062,0.913163,54.9096,84.0142};
+//     double parHighPt[4] = {0.02824,0.1246,3.56903,5.60296};
 
+    double parLowPt[4] = {0.00386062,fP2_lowPtPi00010,fP3_lowPtPi00010,fP4_lowPtPi00010};
+    double parHighPt[4] = {0.02824,fP2_highPtPi00010,fP3_highPtPi00010,fP4_highPtPi00010};
+
+    
     if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
     if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);  
 
     
   }
   if (iCent==1){
-    double parLowPt[4] = {0.000197581,0.960398,174.617,269.436};
-    double parHighPt[4] = {0.0435973,0.0732613,3.43644,5.56708};
+//     double parLowPt[4] = {0.000197581,0.960398,174.617,269.436};
+//     double parHighPt[4] = {0.0435973,0.0732613,3.43644,5.56708};
+
+    double parLowPt[4] = {0.000197581,fP2_lowPtPi01020,fP3_lowPtPi01020,fP4_lowPtPi01020};
+    double parHighPt[4] = {0.0435973,fP2_highPtPi01020,fP3_highPtPi01020,fP4_highPtPi01020};
+
     
     if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
     if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);  
   }
   if (iCent==2){
-    double parLowPt[4] = {0.00395183,0.905839,52.3325,78.9736};
-    double parHighPt[4] = {0.0639772,0.0954623,3.21665,5.67225};
-    
+//     double parLowPt[4] = {0.00395183,0.905839,52.3325,78.9736};
+//     double parHighPt[4] = {0.0639772,0.0954623,3.21665,5.67225};
+
+    double parLowPt[4] = {0.00395183,fP2_lowPtPi02040,fP3_lowPtPi02040,fP4_lowPtPi02040};
+    double parHighPt[4] = {0.0639772,fP2_highPtPi02040,fP3_highPtPi02040,fP4_highPtPi02040};
+
+
     if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
     if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);  
 
@@ -1050,23 +1134,33 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT, Int_t iCe
   double weight = 1.0;
     
   if (iCent==0){
-    double parLowPt[4] = {0.00218816,0.903496,52.9872,73.6404};
-    double parHighPt[4] = {0.0742314,0.296077,3.33914,5.86723};
+//     double parLowPt[4] = {0.00218816,0.903496,52.9872,73.6404};
+//     double parHighPt[4] = {0.0742314,0.296077,3.33914,5.86723};
+    
+    double parLowPt[4] = {0.00218816,fP2_lowPtEta0010,fP3_lowPtEta0010,fP4_lowPtEta0010};
+    double parHighPt[4] = {0.0742314,fP2_highPtEta0010,fP3_highPtEta0010,fP4_highPtEta0010};
     
     if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
     if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);  
   }
   if (iCent==1){
-    double parLowPt[4] = {0.00218739,0.889904,49.5944,66.8576};
-    double parHighPt[4] = {0.124957,0.216147,3.09109,5.76838};
-    
+//     double parLowPt[4] = {0.00218739,0.889904,49.5944,66.8576};
+//     double parHighPt[4] = {0.124957,0.216147,3.09109,5.76838};
+
+    double parLowPt[4] = {0.00218739,fP2_lowPtEta1020,fP3_lowPtEta1020,fP4_lowPtEta1020};
+    double parHighPt[4] = {0.124957,fP2_highPtEta1020,fP3_highPtEta1020,fP4_highPtEta1020};
+
+
     if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
     if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);  
   }
   if (iCent==2){
-    double parLowPt[4] = {0.00326269,0.911628,57.3255,78.6103};
-    double parHighPt[4] = {0.134015,0.207723,3.00919,5.83206};
-    
+//     double parLowPt[4] = {0.00326269,0.911628,57.3255,78.6103};
+//     double parHighPt[4] = {0.134015,0.207723,3.00919,5.83206};
+
+    double parLowPt[4] = {0.00326269,fP2_lowPtEta2040,fP3_lowPtEta2040,fP4_lowPtEta2040};
+    double parHighPt[4] = {0.134015,fP2_highPtEta2040,fP3_highPtEta2040,fP4_highPtEta2040};
+
     if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
     if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);  
   }
