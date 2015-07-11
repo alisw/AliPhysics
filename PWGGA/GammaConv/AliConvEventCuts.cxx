@@ -1898,17 +1898,19 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 // 				}
 				if (fSpecialSubTrigger>0 && !isMC){
 					if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
-					else if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){
-						if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
-						if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassesCorrelated->Fill(1);
-						if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassesCorrelated->Fill(2);
-						if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassesCorrelated->Fill(3);
-						if (firedTrigClass.Contains("7EJE") || firedTrigClass.Contains("8EJE")) hTriggerClassesCorrelated->Fill(4);
-						if (firedTrigClass.Contains("7EJ1") || firedTrigClass.Contains("8EJ1")) hTriggerClassesCorrelated->Fill(5);
-						if (firedTrigClass.Contains("7EJ2") || firedTrigClass.Contains("8EJ2")) hTriggerClassesCorrelated->Fill(6);
-						if (firedTrigClass.Contains("7EGA") || firedTrigClass.Contains("8EGA")) hTriggerClassesCorrelated->Fill(7);
-						if (firedTrigClass.Contains("7EG1") || firedTrigClass.Contains("8EG1")) hTriggerClassesCorrelated->Fill(8);
-						if (firedTrigClass.Contains("7EG2") || firedTrigClass.Contains("8EG2")) hTriggerClassesCorrelated->Fill(9);
+					else if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
+						if (hTriggerClassesCorrelated){
+							if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
+							if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassesCorrelated->Fill(1);
+							if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassesCorrelated->Fill(2);
+							if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassesCorrelated->Fill(3);
+							if (firedTrigClass.Contains("7EJE") || firedTrigClass.Contains("8EJE")) hTriggerClassesCorrelated->Fill(4);
+							if (firedTrigClass.Contains("7EJ1") || firedTrigClass.Contains("8EJ1")) hTriggerClassesCorrelated->Fill(5);
+							if (firedTrigClass.Contains("7EJ2") || firedTrigClass.Contains("8EJ2")) hTriggerClassesCorrelated->Fill(6);
+							if (firedTrigClass.Contains("7EGA") || firedTrigClass.Contains("8EGA")) hTriggerClassesCorrelated->Fill(7);
+							if (firedTrigClass.Contains("7EG1") || firedTrigClass.Contains("8EG1")) hTriggerClassesCorrelated->Fill(8);
+							if (firedTrigClass.Contains("7EG2") || firedTrigClass.Contains("8EG2")) hTriggerClassesCorrelated->Fill(9);
+						}	
 					}	
 				} else if (isMC){
 					if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
