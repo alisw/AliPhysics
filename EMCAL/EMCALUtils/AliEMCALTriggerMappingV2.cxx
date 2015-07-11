@@ -36,7 +36,7 @@ AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2() : AliEMCALTriggerMapping()
   // Ctor
   SetUniqueID(2);
   
-  for(Int_t iTRU=0; iTRU<46; iTRU++){
+  for(Int_t iTRU=0; iTRU<fNTotalTRU; iTRU++){
     fTRUFastOROffsetX[iTRU] = 0 ;
     fTRUFastOROffsetY[iTRU] = 0 ;
     fnFastORInTRUPhi[ iTRU] = 0 ;
@@ -56,7 +56,7 @@ AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2(const Int_t ntru, const AliEM
   // Ctor
   SetUniqueID(2);
   
-  for(Int_t iTRU=0; iTRU<46; iTRU++){
+  for(Int_t iTRU=0; iTRU<fNTotalTRU; iTRU++){
     fTRUFastOROffsetX[iTRU] = 0;
     fTRUFastOROffsetY[iTRU] = 0;
     fnFastORInTRUPhi[ iTRU] = 0;
@@ -84,6 +84,7 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromTRU(const Int_t iTRU, cons
     AliError(Form("Out of range! iTRU=%d, iADC=%d", iTRU, iADC));	
     return kFALSE;
   }
+  
   Int_t x = fTRUFastOROffsetX[iTRU] +    (iADC % fnFastORInTRUEta[iTRU])  ;
   Int_t y = fTRUFastOROffsetY[iTRU] + int(iADC / fnFastORInTRUEta[iTRU])  ;
   id      = y*fNEta*2 + x         ;
@@ -328,7 +329,7 @@ Bool_t AliEMCALTriggerMappingV2::Init_TRU_offset(){
   for(int iSM=0; iSM<fNumberOfSuperModules; iSM++){
     Int_t       SM_type   = GetSMType(iSM);
     Int_t       TRU_type  = 0             ;
-    
+        
     Int_t nTRU_inSM         = fNTRU                ;
     Int_t nTRU_inSM_phi     = fNTRUPhi             ;
     Int_t nTRU_inSM_eta     = fNTRUEta             ;
@@ -336,27 +337,28 @@ Bool_t AliEMCALTriggerMappingV2::Init_TRU_offset(){
     Int_t nModule_inTRU_eta = fNModulesInTRUEta    ;
     
     //kEMCAL_Standard -> default value
-    if(     SM_type == kEMCAL_3rd      ){
+    if(     SM_type == kEMCAL_3rd  ||   SM_type == kDCAL_Ext  ){
       nTRU_inSM         = (Int_t)((Float_t)nTRU_inSM         / 3. );
       nTRU_inSM_eta     = (Int_t)((Float_t)nTRU_inSM_eta     / 3. );
       nModule_inTRU_phi = (Int_t)((Float_t)nModule_inTRU_phi / 3. );
       nModule_inTRU_eta = nModule_inTRU_eta                  * 3   ;
     }
-    else if(SM_type == kDCAL_Standard  ){
-      nTRU_inSM         = (Int_t)((Float_t)nTRU_inSM      * 2./3. );
-      nTRU_inSM_eta     = (Int_t)((Float_t)nTRU_inSM_eta  * 2./3. );
-    }
-    else if(SM_type == kDCAL_Ext       ){
-      nTRU_inSM         = (Int_t)((Float_t)nTRU_inSM         / 3. );
-      nTRU_inSM_eta     = (Int_t)((Float_t)nTRU_inSM_eta     / 3. );
-      nModule_inTRU_phi = (Int_t)((Float_t)nModule_inTRU_phi / 3. );
-      nModule_inTRU_eta =                  nModule_inTRU_eta * 3   ;
-    }
+//    else if(SM_type == kDCAL_Standard  ){
+//      nTRU_inSM         = (Int_t)((Float_t)nTRU_inSM      * 2./3. );
+//      nTRU_inSM_eta     = (Int_t)((Float_t)nTRU_inSM_eta  * 2./3. );
+//    }
+//    else if(SM_type == kDCAL_Ext       ){
+//      nTRU_inSM         = (Int_t)((Float_t)nTRU_inSM         / 3. );
+//      nTRU_inSM_eta     = (Int_t)((Float_t)nTRU_inSM_eta     / 3. );
+//      nModule_inTRU_phi = (Int_t)((Float_t)nModule_inTRU_phi / 3. );
+//      nModule_inTRU_eta =                  nModule_inTRU_eta * 3   ;
+//    }
 
     //TRU ieta/iphi offset calculation 
     for(Int_t i=0; i<nTRU_inSM; i++){
       fnFastORInTRUPhi[iTRU]  = nModule_inTRU_phi ;
       fnFastORInTRUEta[iTRU]  = nModule_inTRU_eta ;
+           
       if((iTRU+1) >= fNTotalTRU)break;
       
       TRU_type  = 0 ;

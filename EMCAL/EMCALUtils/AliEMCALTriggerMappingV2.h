@@ -21,7 +21,7 @@ public:
   //static constant
   //********************************************
   static const Int_t  fNumberOfSuperModules = 20  ;//Total SM in EMCAL
-  static const Int_t  fNTotalTRU            = 46  ;//Total TRU in EMCAL
+  static const Int_t  fNTotalTRU            = 52  ;//Total TRU in EMCAL
   static const Int_t  fNTRU                 =  3  ;//#TRUs/SM  
   static const Int_t  fNTRUEta              =  3  ;//#TRUs/SM in Eta  
   static const Int_t  fNTRUPhi              =  1  ;//#TRUs/SM in Phi
@@ -103,10 +103,10 @@ private:
   //********************************************
   //fastOR offset parameters
   //********************************************
-  Int_t   fTRUFastOROffsetX[46] ;//FastOR offset[#of TRU]
-  Int_t   fTRUFastOROffsetY[46] ;//
-  Int_t   fnFastORInTRUPhi[ 46] ;//TRU size
-  Int_t   fnFastORInTRUEta[ 46] ;//
+  Int_t   fTRUFastOROffsetX[fNTotalTRU] ;//FastOR offset[#of TRU]
+  Int_t   fTRUFastOROffsetY[fNTotalTRU] ;//
+  Int_t   fnFastORInTRUPhi[ fNTotalTRU] ;//TRU size
+  Int_t   fnFastORInTRUEta[ fNTotalTRU] ;//
   
   Int_t   fSMFastOROffsetX[ 20] ;//FastOR offset[#of SM ]
   Int_t   fSMFastOROffsetY[ 20] ;//
