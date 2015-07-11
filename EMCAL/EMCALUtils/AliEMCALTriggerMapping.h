@@ -33,6 +33,7 @@ public:
   virtual Bool_t GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4])                                           const = 0;
   virtual Bool_t GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx)                                                 const = 0;
   virtual Bool_t GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx)                                              const = 0;
+  virtual Int_t  GetTRUIndexFromOnline(Int_t hwAdd, Int_t ddl, Int_t sm)                                             const = 0;
   virtual Bool_t GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx)                                              const = 0;
   virtual Bool_t GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size)          const = 0;
 

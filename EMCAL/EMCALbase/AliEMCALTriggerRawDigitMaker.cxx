@@ -110,28 +110,25 @@ void AliEMCALTriggerRawDigitMaker::SetIO(AliRawReader* reader, AliCaloRawStreamV
 	fTriggerData   = data;
 }
 
-//_______________
+///
+/// Add bunch list
+///
+//_________________
 void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunchlist)
-{
-	// Add bunch list
-	
-	Int_t    hwAdd   = fCaloRawStream->GetHWAddress();
-	UShort_t iRCU    = fCaloRawStream->GetDDLNumber() % 2; // 0/1
-	UShort_t iBranch = ( hwAdd >> 11 ) & 0x1;              // 0/1
-	
-	// TRU id	
-	Int_t iTRU = ( (iRCU << 1) | iBranch ) - 1; // 0..2
-	
-	iTRU  = (fCaloRawStream->GetModule() % 2) ? 2 * (2 - iTRU) + 1 : 2 * iTRU;
-	
-	iTRU += 6 * int(fCaloRawStream->GetModule()/2);
-	
-	if (AliDebugLevel())
+{	
+  Int_t    hwAdd   = fCaloRawStream->GetHWAddress();
+  UShort_t iRCU    = fCaloRawStream->GetDDLNumber() % 2; // 0/1
+  Int_t    iSM     = fCaloRawStream->GetModule();
+  
+  Int_t iTRU = fGeometry->GetTriggerMapping()->GetTRUIndexFromOnline(hwAdd,iRCU,iSM);
+      
+  if (AliDebugLevel())
 	{
+    UShort_t iBranch = ( hwAdd >> 11 ) & 0x1; // 0/1
 		printf("===\n");
 		printf("| Hw Adress: 0x%x => SM# %2d / RCU# %d / Branch# %d / TRU# %2d / ADC# %2d\n",
 			   hwAdd, fCaloRawStream->GetModule(), iRCU, iBranch, iTRU, fCaloRawStream->GetColumn());
-	}
+  }
 	
 	Int_t idx;
 	
