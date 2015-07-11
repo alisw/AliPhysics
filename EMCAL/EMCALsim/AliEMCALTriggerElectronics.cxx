@@ -49,7 +49,7 @@ ClassImp(AliEMCALTriggerElectronics)
 
 //__________________
 AliEMCALTriggerElectronics::AliEMCALTriggerElectronics(const AliEMCALTriggerDCSConfig *dcsConf) : TObject(),
-fTRU(new TClonesArray("AliEMCALTriggerTRU",32)),
+fTRU(new TClonesArray("AliEMCALTriggerTRU",52)),
 fSTU(0x0),
 fGeometry(0)
 {

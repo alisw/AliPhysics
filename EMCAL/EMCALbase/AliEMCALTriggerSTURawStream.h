@@ -75,7 +75,7 @@ private:
 	                                                                  
 	Int_t                                    fGetRawData;          // Get Raw Data
 	                                                                  
-	UInt_t                                          fADC[32][96];  // ADC
+	UInt_t                                          fADC[52][96];  // ADC
 	                                                                  
 	UInt_t                                          fV0A;          // V0A
     UInt_t                                          fV0C;          // V0C

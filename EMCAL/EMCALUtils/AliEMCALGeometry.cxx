@@ -179,7 +179,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
                   MODULENAME(), "AliEMCALGeometry", FUNCTIONNAME(), __FILE__, __LINE__);  
   
   if ((fEMCGeometry->GetGeoName()).Contains("DCAL")) {
-    fTriggerMapping = new AliEMCALTriggerMappingV2(46, this);
+    fTriggerMapping = new AliEMCALTriggerMappingV2(52, this);
     AliLog::Message(AliLog::kInfo, "EMCAL Trigger Mapping Version V2 Enabled",
                     MODULENAME(), "AliEMCALGeometry", FUNCTIONNAME(), __FILE__, __LINE__);
 
