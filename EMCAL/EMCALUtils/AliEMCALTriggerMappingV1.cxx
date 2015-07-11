@@ -264,6 +264,40 @@ Int_t AliEMCALTriggerMappingV1::GetTRUIndexFromOnlineIndex(const Int_t id) const
   return idx;
 }
 
+///
+/// \return TRU  global offline number from:
+/// \param hardware address
+/// \param ddl number
+/// \param super-module number
+/// Used in AliEMCALTriggerRawDigitMaker::Add()
+///
+
+Int_t  AliEMCALTriggerMappingV1::GetTRUIndexFromOnline(Int_t hwAdd, Int_t ddl, Int_t sm) const
+{  
+  // 1/3 SMs
+  if ( sm == 10 ) return 30;
+  if ( sm == 11 ) return 31;
+  
+  // Full EMCal
+  
+  UShort_t iBranch = ( hwAdd >> 11 ) & 0x1;              // 0/1
+  
+  Int_t iTRU = ( (ddl << 1) | iBranch ) - 1; // 0..2
+    
+  iTRU  = (sm % 2) ? 2 * (2 - iTRU) + 1 : 2 * iTRU;
+    
+  iTRU += 6 * int(sm/2);
+
+  if (iTRU > 31 || iTRU < 0) 
+  {
+    AliError(Form("TRU index out of range: %d",iTRU));
+    return -1;
+  }
+  
+  return iTRU;
+}
+
+
 //________________________________________________________________________________________________
 Bool_t AliEMCALTriggerMappingV1::GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const
 {

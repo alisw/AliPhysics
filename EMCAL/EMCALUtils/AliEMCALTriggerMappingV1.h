@@ -33,6 +33,7 @@ public:
   Int_t               GetTRUIndexFromSTUIndex(const Int_t id) const;
   Bool_t           GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const;
   Int_t            GetTRUIndexFromOnlineIndex(const Int_t id) const;
+  Int_t            GetTRUIndexFromOnline(Int_t hwAdd, Int_t ddl, Int_t sm) const;
   Bool_t           GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const;
   Int_t            GetOnlineIndexFromTRUIndex(const Int_t id) const;
   Bool_t            GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const;
