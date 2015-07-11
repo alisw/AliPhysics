@@ -314,10 +314,20 @@ Bool_t AliV0ReaderV1::Notify()
 				TObjArray *arr = fileName.Tokenize("/");
 				for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
 					TObjString* testObjString = (TObjString*)arr->At(i);
-					if (testObjString->GetString().Contains("LHC")){
+					if (testObjString->GetString().BeginsWith("LHC")){
 						fPeriodName = testObjString->GetString();
 						i = arr->GetEntriesFast();
 					}
+				}
+				if (fPeriodName.CompareTo("")==0){
+					TObjArray *arr2 = fileName.Tokenize("__");
+					for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+						TObjString* testObjString = (TObjString*)arr2->At(i);
+						if (testObjString->GetString().BeginsWith("LHC")){
+							fPeriodName = testObjString->GetString();
+							i = arr2->GetEntriesFast();
+						}
+					}	
 				}
 			}
 		}
