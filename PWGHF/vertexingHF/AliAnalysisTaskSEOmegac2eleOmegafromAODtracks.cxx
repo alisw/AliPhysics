@@ -146,6 +146,11 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fHistoElePtvsOmegaPtWSMix(0),
   fHistoElePtvsOmegaPtMCS(0),
   fHistoElePtvsOmegaPtMCGen(0),
+  fHistoElePtvsd0RS(0),
+  fHistoElePtvsd0WS(0),
+  fHistoElePtvsd0RSMix(0),
+  fHistoElePtvsd0WSMix(0),
+  fHistoElePtvsd0MCS(0),
   fHistoBachPt(0),
   fHistoBachPtMCS(0),
   fHistoBachPtMCGen(0),
@@ -242,6 +247,11 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fHistoElePtvsOmegaPtWSMix(0),
   fHistoElePtvsOmegaPtMCS(0),
   fHistoElePtvsOmegaPtMCGen(0),
+  fHistoElePtvsd0RS(0),
+  fHistoElePtvsd0WS(0),
+  fHistoElePtvsd0RSMix(0),
+  fHistoElePtvsd0WSMix(0),
+  fHistoElePtvsd0MCS(0),
   fHistoBachPt(0),
   fHistoBachPtMCS(0),
   fHistoBachPtMCGen(0),
@@ -922,6 +932,11 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 		cont_eleptvsomegapt[1] = sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY());
 		cont_eleptvsomegapt[2] = fCentrality;
 
+		Double_t cont_eleptvsd0[3];
+		cont_eleptvsd0[0] = trk->Pt();
+		cont_eleptvsd0[1] = exobj->Getd0Prong(0);
+		cont_eleptvsd0[2] = fCentrality;
+
 		if(mixing_flag){
 			if(trk->Charge()*casc->ChargeXi()<0){
 				fHistoEleOmegaMassRSMix->Fill(cont);
@@ -930,6 +945,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 					fHistoElePtRSMix->Fill(trk->Pt(),fCentrality);
 					fHistoElePtvsEtaRSMix->Fill(cont_eleptvseta);
 					fHistoElePtvsOmegaPtRSMix->Fill(cont_eleptvsomegapt);
+					fHistoElePtvsd0RSMix->Fill(cont_eleptvsd0);
 				}
 			}else{
 				fHistoEleOmegaMassWSMix->Fill(cont);
@@ -938,6 +954,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 					fHistoElePtWSMix->Fill(trk->Pt(),fCentrality);
 					fHistoElePtvsEtaWSMix->Fill(cont_eleptvseta);
 					fHistoElePtvsOmegaPtWSMix->Fill(cont_eleptvsomegapt);
+					fHistoElePtvsd0WSMix->Fill(cont_eleptvsd0);
 				}
 			}
 		}else{
@@ -948,6 +965,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 					fHistoElePtRS->Fill(trk->Pt(),fCentrality);
 					fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
 					fHistoElePtvsOmegaPtRS->Fill(cont_eleptvsomegapt);
+					fHistoElePtvsd0RS->Fill(cont_eleptvsd0);
 				}
 			}else{
 				fHistoEleOmegaMassWS->Fill(cont);
@@ -956,6 +974,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 					fHistoElePtWS->Fill(trk->Pt(),fCentrality);
 					fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
 					fHistoElePtvsOmegaPtWS->Fill(cont_eleptvsomegapt);
+					fHistoElePtvsd0WS->Fill(cont_eleptvsd0);
 				}
 			}
 		}
@@ -970,6 +989,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 							fHistoElePtMCS->Fill(trk->Pt(),fCentrality);
 							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
 							fHistoElePtvsOmegaPtMCS->Fill(cont_eleptvsomegapt);
+							fHistoElePtvsd0MCS->Fill(cont_eleptvsd0);
 						}
 				}
 			}
@@ -1355,9 +1375,9 @@ void  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineAnalysisHistograms()
   //------------------------------------------------
   // Basic histogram
   //------------------------------------------------
-  Int_t bins_base[3]=		{50				,100		,10};
-  Double_t xmin_base[3]={0.,0		,0.00};
-  Double_t xmax_base[3]={5.,10.	,100};
+  Int_t bins_base[3]=		{16				,100		,10};
+  Double_t xmin_base[3]={1.6,0		,0.00};
+  Double_t xmax_base[3]={3.6,10.	,100};
   fHistoEleOmegaMass = new THnSparseF("fHistoEleOmegaMass","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleOmegaMass);
   fHistoEleOmegaMassRS = new THnSparseF("fHistoEleOmegaMassRS","",3,bins_base,xmin_base,xmax_base);
@@ -1433,6 +1453,21 @@ void  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoElePtvsOmegaPtMCS);
   fHistoElePtvsOmegaPtMCGen = new THnSparseF("fHistoElePtvsOmegaPtMCGen","",3,bins_eleptvsomegapt,xmin_eleptvsomegapt,xmax_eleptvsomegapt);
   fOutputAll->Add(fHistoElePtvsOmegaPtMCGen);
+
+  Int_t bins_eleptvsd0[3]=	{50 ,50	,10};
+  Double_t xmin_eleptvsd0[3]={0.,-0.2	,0.0};
+  Double_t xmax_eleptvsd0[3]={5.,0.2	,100};
+
+  fHistoElePtvsd0RS = new THnSparseF("fHistoElePtvsd0RS","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
+  fOutputAll->Add(fHistoElePtvsd0RS);
+  fHistoElePtvsd0WS = new THnSparseF("fHistoElePtvsd0WS","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
+  fOutputAll->Add(fHistoElePtvsd0WS);
+  fHistoElePtvsd0RSMix = new THnSparseF("fHistoElePtvsd0RSMix","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
+  fOutputAll->Add(fHistoElePtvsd0RSMix);
+  fHistoElePtvsd0WSMix = new THnSparseF("fHistoElePtvsd0WSMix","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
+  fOutputAll->Add(fHistoElePtvsd0WSMix);
+  fHistoElePtvsd0MCS = new THnSparseF("fHistoElePtvsd0MCS","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
+  fOutputAll->Add(fHistoElePtvsd0MCS);
 
   //------------------------------------------------
   // checking histograms
