@@ -537,15 +537,19 @@ Bool_t AliRawReader::IsEventSelected() const
 
   if (  fIsTriggerClassLoaded && !fSelectTriggerExpr.IsNull()) {
     TString expr(fSelectTriggerExpr);
-    ULong64_t mask = GetClassMask();
-    for(Int_t itrigger = 0; itrigger < 50; itrigger++) {
-      if (mask & ((ULong64_t)1 << itrigger)) {
-	expr.ReplaceAll(Form("[%d]",itrigger),"1");
-      }
-      else {
-	expr.ReplaceAll(Form("[%d]",itrigger),"0");
-      }
+    ULong64_t mask   = GetClassMask();
+    ULong64_t maskNext50 = GetClassMaskNext50();
+    if (mask) {
+      for(Int_t itrigger = 0; itrigger < 50; itrigger++) 
+	if (mask & (1ull << itrigger)) expr.ReplaceAll(Form("[%d]",itrigger),"1");
+	else       	               expr.ReplaceAll(Form("[%d]",itrigger),"0");
     }
+    if (maskNext50) {
+      for(Int_t itrigger = 0; itrigger < 50; itrigger++) 
+	if (maskNext50 & (1ull << itrigger)) expr.ReplaceAll(Form("[%d]",itrigger+50),"1");
+	else       	                     expr.ReplaceAll(Form("[%d]",itrigger+50),"0");
+    }
+    // 
     // Possibility to introduce downscaling
     TPRegexp("(%\\s*\\d+)").Substitute(expr,Form("&& !(%d$1)",GetEventIndex()),"g");
     Int_t error;
