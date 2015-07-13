@@ -32,13 +32,12 @@ public:
   virtual Bool_t GetPositionInEMCALFromAbsFastORIndex(Int_t id, Int_t& iEta, Int_t& iPhi)                const = 0;
   virtual Bool_t GetFastORIndexFromCellIndex(Int_t id, Int_t& idx)                                       const = 0;
   virtual Bool_t GetCellIndexFromFastORIndex(Int_t id, Int_t idx[4])                                     const = 0;
-  virtual Bool_t GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx)                                           const = 0;
+  virtual Bool_t GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx, Int_t detector)                           const = 0;
   virtual Bool_t GetTRUIndexFromOnlineIndex(Int_t id, Int_t& idx)                                        const = 0;
   virtual Int_t  GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t ddl, Int_t sm)                            const = 0;
   virtual Bool_t GetOnlineIndexFromTRUIndex(Int_t id, Int_t& idx)                                        const = 0;
   virtual Bool_t GetFastORIndexFromL0Index(Int_t iTRU, Int_t id, Int_t idx[], Int_t size)                const = 0;
-
-  virtual Int_t  GetTRUIndexFromSTUIndex(   Int_t id)                                                    const = 0;
+  virtual Int_t  GetTRUIndexFromSTUIndex(   Int_t id, Int_t detector)                                    const = 0;
   virtual Int_t  GetTRUIndexFromOnlineIndex(Int_t id)                                                    const = 0;
   virtual Int_t  GetOnlineIndexFromTRUIndex(Int_t id)                                                    const = 0;
   

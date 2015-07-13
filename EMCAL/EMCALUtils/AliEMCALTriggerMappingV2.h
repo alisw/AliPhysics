@@ -20,18 +20,20 @@ public:
   //********************************************
   //static constant
   //********************************************
-  static const Int_t  fNumberOfSuperModules = 20  ;//Total SM in EMCAL
-  static const Int_t  fNTotalTRU            = 52  ;//Total TRU in EMCAL
-  static const Int_t  fNTRU                 =  3  ;//#TRUs/SM  
-  static const Int_t  fNTRUEta              =  3  ;//#TRUs/SM in Eta  
-  static const Int_t  fNTRUPhi              =  1  ;//#TRUs/SM in Phi
-  static const Int_t  fNEta                 = 24  ;//#FastOR/SM in Eta
-  static const Int_t  fNPhi                 = 12  ;//#FastOR/SM in Phi 
-  static const Int_t  fNModulesInTRU        = 96  ;//#FastOR/TRU
-  static const Int_t  fNModulesInTRUEta     =  8  ;//#FastOR/TRU in Eta
-  static const Int_t  fNModulesInTRUPhi     = 12  ;//#FastOR/TRU in Phi
-  static const Int_t  fSTURegionNEta        = 2 * fNTRUEta * fNModulesInTRUEta;                //EMCAL+DCAL region eta size
-  static const Int_t  fSTURegionNPhi        = 8 * fNTRUPhi * fNModulesInTRUPhi + 2 * fNPhi / 3;//EMCAL+DCAL region phi size
+  static const Int_t  fNumberOfSuperModules = 20                                      ;//Total SM in EMCAL
+  static const Int_t  fNTotalTRU            = 52                                      ;//Total TRU in EMCAL
+  static const Int_t  fNModulesInTRUEta     =  8                                      ;//#FastOR/TRU in Eta
+  static const Int_t  fNModulesInTRUPhi     = 12                                      ;//#FastOR/TRU in Phi
+  static const Int_t  fNModulesInTRU        = fNModulesInTRUEta * fNModulesInTRUPhi   ;//#FastOR/TRU
+  static const Int_t  fNTRUEta              =  3                                      ;//#TRUs/SM in Eta  
+  static const Int_t  fNTRUPhi              =  1                                      ;//#TRUs/SM in Phi
+  static const Int_t  fNTRU                 = fNTRUEta * fNTRUPhi                     ;//#TRUs/SM  
+  static const Int_t  fNEta                 = fNModulesInTRUEta * fNTRUEta            ;//#FastOR/SM in Eta
+  static const Int_t  fNPhi                 = fNModulesInTRUPhi * fNTRUPhi            ;//#FastOR/SM in Phi 
+  static const Int_t  fSTURegionNEta        = 2/*Aside,Cside*/ * fNEta                ;//EMCAL+DCAL region eta size
+  static const Int_t  fSTURegionNPhi        = (5 * fNPhi) + (1 * fNPhi/3)   /*EMCAL*/      
+                                            + (3 * fNPhi) + (1 * fNPhi/3)   /*DCAL */ ;//#FastOR/EMCALs in Phi
+  static const Int_t  fSTURegionN           = fSTURegionNEta * fSTURegionNPhi         ;//#FastOR/EMCALs
   
   //********************************************
   //SM type 
@@ -43,6 +45,11 @@ public:
     kDCAL_Standard  = 3, 
     kDCAL_Ext       = 4 
   }; // possible SM Type
+  enum fDetType { 
+    kEMCAL  = 0, 
+    kDCAL   = 1, 
+    kPHOS   = 2
+  }; 
 	
 
   //********************************************
@@ -77,13 +84,13 @@ public:
   //********************************************
   //TRU index
   //********************************************
-  Bool_t  GetTRUIndexFromSTUIndex(    Int_t id, Int_t& idx) const;
-  Int_t   GetTRUIndexFromSTUIndex(    Int_t id            ) const;
-  Bool_t  GetTRUIndexFromOnlineIndex( Int_t id, Int_t& idx) const;
-  Int_t   GetTRUIndexFromOnlineIndex( Int_t id            ) const;
+  Bool_t  GetTRUIndexFromSTUIndex(    Int_t id, Int_t& idx , Int_t detector ) const;
+  Int_t   GetTRUIndexFromSTUIndex(    Int_t id             , Int_t detector ) const;
+  Bool_t  GetTRUIndexFromOnlineIndex( Int_t id, Int_t& idx) const{idx = id  ; return kTRUE  ;};
+  Int_t   GetTRUIndexFromOnlineIndex( Int_t id            ) const{return id ;};
+  Bool_t  GetOnlineIndexFromTRUIndex( Int_t id, Int_t& idx) const{idx = id  ; return kTRUE  ;};
+  Int_t   GetOnlineIndexFromTRUIndex( Int_t id            ) const{return id ;};
   Int_t   GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t ddl, Int_t sm) const;
-  Bool_t  GetOnlineIndexFromTRUIndex( Int_t id, Int_t& idx) const;
-  Int_t   GetOnlineIndexFromTRUIndex( Int_t id            ) const;
 
   //********************************************
   //L0 Index
@@ -108,13 +115,14 @@ private:
   Int_t   fTRUFastOROffsetY[fNTotalTRU] ;//
   Int_t   fnFastORInTRUPhi[ fNTotalTRU] ;//TRU size
   Int_t   fnFastORInTRUEta[ fNTotalTRU] ;//
+  Bool_t  fTRUIsCside[ fNTotalTRU] ;//
   
-  Int_t   fSMFastOROffsetX[ 20] ;//FastOR offset[#of SM ]
-  Int_t   fSMFastOROffsetY[ 20] ;//
-  Int_t   fnFastORInSMPhi[  20] ;//SM size
-  Int_t   fnFastORInSMEta[  20] ;//
+  Int_t   fSMFastOROffsetX[ fNumberOfSuperModules] ;//FastOR offset[#of SM ]
+  Int_t   fSMFastOROffsetY[ fNumberOfSuperModules] ;//
+  Int_t   fnFastORInSMPhi[  fNumberOfSuperModules] ;//SM size
+  Int_t   fnFastORInSMEta[  fNumberOfSuperModules] ;//
 
-  Int_t   fnModuleInEMCALPhi    ;//#FastOR/EMCAL in Phi
+  Int_t   fnModuleInEMCALPhi[5]    ;//#FastOR/EMCAL in Phi
 
   //********************************************
   //Initialization of FastOR index offset of each SM/TRU
@@ -139,6 +147,10 @@ private:
     if( iSM < 20) return kDCAL_Ext       ;
     return -1 ;
   }
+  Bool_t  GetSMIsCside(Int_t iSM)   const {
+    return (iSM%2 == 1)? kTRUE : kFALSE ;
+  }
+  static const Bool_t flag = kFALSE  ;
     
   ClassDef(AliEMCALTriggerMappingV2,1)
 };
