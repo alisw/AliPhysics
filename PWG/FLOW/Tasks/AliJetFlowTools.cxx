@@ -1628,7 +1628,7 @@ void AliJetFlowTools::Style(Bool_t legacy)
         gStyle->SetPadColor(10);
         gStyle->SetPadTickX(1);
         gStyle->SetPadTickY(1);
-        gStyle->SetPadBottomMargin(0.15);
+        gStyle->SetPadBottomMargin(0.17);
         gStyle->SetPadLeftMargin(0.15);
         gStyle->SetHistLineWidth(1);
         gStyle->SetHistLineColor(kRed);
@@ -1735,7 +1735,7 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2);
-    h->SetMarkerSize(1);
+    h->SetMarkerSize(1.5);
     if(legacy) {
         h->SetTitle("");
         h->GetYaxis()->SetLabelSize(0.05);
@@ -1779,7 +1779,7 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
        }
        case kRatio : {
             h->SetMarkerStyle(8);
-            h->SetMarkerSize(1);
+            h->SetMarkerSize(1.5);
        } break;
        case kDeltaPhi : {
             h->GetYaxis()->SetTitle("[counts]");
@@ -1800,7 +1800,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2);
-    h->SetMarkerSize(1);
+    h->SetMarkerSize(1.5);
     h->SetTitle("");
     h->SetFillColor(kCyan);
     if(legacy) {
@@ -1840,7 +1840,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
             h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} {EP, |#Delta#eta|>0.9 } ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
             h->SetMarkerStyle(8);
-            h->SetMarkerSize(1);
+            h->SetMarkerSize(1.5);
        } break;
        default : break;
     }
