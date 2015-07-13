@@ -122,6 +122,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Double_t GetCentWeight(Int_t centbin);
   Double_t GetEPweight(Int_t bin);
   Bool_t   RejectEvent(Double_t cent, Int_t centbin);
+  Bool_t   RejectEventPlane(Double_t EP, Int_t EPbin);
   Bool_t   IsFromHFdecay(TParticle *particle);
   Bool_t   IsFromLMdecay(TParticle *particle);
   Bool_t   IsPrimary(TParticle *particle);
