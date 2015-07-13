@@ -39,7 +39,7 @@ void TestEMCALSimulation(Int_t nev =10, Bool_t raw = kFALSE) {
   TStopwatch timer;
   timer.Start();
 
-  simulator.SetRunNumber(159582); // LHC11d run
+//  simulator.SetRunNumber(159582); // LHC11d run
   
   simulator.Run(nev);
 

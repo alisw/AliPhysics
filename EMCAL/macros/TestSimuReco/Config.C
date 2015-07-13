@@ -55,7 +55,7 @@ Float_t EtaToTheta(Float_t arg);
 void    LoadPythia();
 AliGenerator *GenParamCalo(Int_t nPart, Int_t type, TString calo);
 
-Int_t  year = 2012;
+Int_t  year = 2015;
 Bool_t checkGeoAndRun = kFALSE;
 
 void Config()
