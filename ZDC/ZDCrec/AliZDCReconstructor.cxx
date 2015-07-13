@@ -483,7 +483,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 	}
       }
   // Ch. debug
-  printf("ZDC rec.ADC: ch.%d (code %d) rawADC %d subMode %d meanPed %f pedfromcorr = %f  -> corrADC HR %f \n", ich, adcSignal[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], corrCoeff1[ich]*adcOutOfTime[ich][0]+corrCoeff0[ich], adcCorr[ich][0]);
+  //printf("ZDC rec.ADC: ch.%d (code %d) rawADC %d subMode %d meanPed %f pedfromcorr = %f  -> corrADC HR %f \n", ich, adcSignal[ich], adcInTime[ich][0], chPedSubMode[ich], meanPed[ich], corrCoeff1[ich]*adcOutOfTime[ich][0]+corrCoeff0[ich], adcCorr[ich][0]);
   }
   
   
