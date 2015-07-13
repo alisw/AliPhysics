@@ -13,16 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-
- 
-
-
-Author: 
-H. YOKOYAMA Tsukuba University
-R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
 #include "AliEMCALTriggerMapping.h"
 #include "AliEMCALTriggerMappingV2.h"
 #include "AliEMCALGeometry.h"
@@ -51,7 +41,7 @@ AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2() : AliEMCALTriggerMapping()
   fnModuleInEMCALPhi  = 0 ;
 }
 //________________________________________________________________________________________________
-AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2(const Int_t ntru, const AliEMCALGeometry* geo) : AliEMCALTriggerMapping(ntru, geo)
+AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2(Int_t ntru, const AliEMCALGeometry* geo) : AliEMCALTriggerMapping(ntru, geo)
 {
   // Ctor
   SetUniqueID(2);
@@ -75,7 +65,7 @@ AliEMCALTriggerMappingV2::AliEMCALTriggerMappingV2(const Int_t ntru, const AliEM
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t iADC, Int_t& id) const
+Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromTRU(Int_t iTRU, Int_t iADC, Int_t& id) const
 {
   //Trigger mapping method, get  FastOr Index from TRU
   if (iTRU > fNTotalTRU-1     || iTRU < 0 || 
@@ -93,7 +83,7 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromTRU(const Int_t iTRU, cons
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const
+Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInTRU(Int_t iTRU, Int_t iEta, Int_t iPhi, Int_t& id) const
 {
   //Trigger mapping method, get Index if FastOr from Position in TRU
   if (iTRU > fNTotalTRU-1               || iTRU < 0 || 
@@ -111,7 +101,7 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInTRU(const Int_t 
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, const Int_t iEta, const Int_t iPhi, Int_t& id) const
+Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInSM(Int_t  iSM, Int_t iEta, Int_t iPhi, Int_t& id) const
 {
   //Trigger mapping method, from position in SM Index get FastOR index 
   if (iSM  > fNumberOfSuperModules-1  || iSM  < 0 || 
@@ -129,7 +119,7 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInSM(const Int_t  
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, const Int_t iPhi, Int_t& id) const
+Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInEMCAL(Int_t iEta, Int_t iPhi, Int_t& id) const
 {
   //Trigger mapping method, from position in EMCAL Index get FastOR index 
   if (
@@ -145,7 +135,7 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInEMCAL(const Int_
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iADC) const
+Bool_t AliEMCALTriggerMappingV2::GetTRUFromAbsFastORIndex(Int_t id, Int_t& iTRU, Int_t& iADC) const
 {
   //Trigger mapping method, get TRU number from FastOr Index
   Int_t iEta_TRU , iPhi_TRU , iSM , iEta_SM , iPhi_SM ;
@@ -158,7 +148,7 @@ Bool_t AliEMCALTriggerMappingV2::GetTRUFromAbsFastORIndex(const Int_t id, Int_t&
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetPositionInTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const
+Bool_t AliEMCALTriggerMappingV2::GetPositionInTRUFromAbsFastORIndex(Int_t id, Int_t& iTRU, Int_t& iEta, Int_t& iPhi) const
 {
   //Trigger mapping method, get position in TRU from FasOr Index
   Int_t iADC , iSM , iEta_SM , iPhi_SM ;
@@ -171,7 +161,7 @@ Bool_t AliEMCALTriggerMappingV2::GetPositionInTRUFromAbsFastORIndex(const Int_t 
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetPositionInSMFromAbsFastORIndex(const Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const
+Bool_t AliEMCALTriggerMappingV2::GetPositionInSMFromAbsFastORIndex(Int_t id, Int_t& iSM, Int_t& iEta, Int_t& iPhi) const
 {
   //Trigger mapping method, get position in Super Module from FasOr Index
   Int_t iTRU , iADC , iEta_TRU , iPhi_TRU ;
@@ -184,7 +174,7 @@ Bool_t AliEMCALTriggerMappingV2::GetPositionInSMFromAbsFastORIndex(const Int_t i
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetPositionInEMCALFromAbsFastORIndex(const Int_t id, Int_t& iEta, Int_t& iPhi) const
+Bool_t AliEMCALTriggerMappingV2::GetPositionInEMCALFromAbsFastORIndex(Int_t id, Int_t& iEta, Int_t& iPhi) const
 {
   //Trigger mapping method, get position in EMCAL from FastOR index
   Int_t id_tmp = ConvAbsFastORIndexB2A(id);
@@ -200,7 +190,7 @@ Bool_t AliEMCALTriggerMappingV2::GetPositionInEMCALFromAbsFastORIndex(const Int_
 
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetFastORIndexFromCellIndex(const Int_t id, Int_t& idx) const
+Bool_t AliEMCALTriggerMappingV2::GetFastORIndexFromCellIndex(Int_t id, Int_t& idx) const
 {
   // Trigger mapping method, from cell index get FastOR index 
 
@@ -213,7 +203,7 @@ Bool_t AliEMCALTriggerMappingV2::GetFastORIndexFromCellIndex(const Int_t id, Int
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const
+Bool_t AliEMCALTriggerMappingV2::GetCellIndexFromFastORIndex(Int_t id, Int_t idx[4]) const
 {
   //Trigger mapping method, from FASTOR index get cell index 
   Int_t iSM=-1, iEta=-1, iPhi=-1;
@@ -231,7 +221,7 @@ Bool_t AliEMCALTriggerMappingV2::GetCellIndexFromFastORIndex(const Int_t id, Int
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const
+Bool_t AliEMCALTriggerMappingV2::GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx) const
 {
   //Trigger mapping method, from STU index get TRU index 
   idx = GetTRUIndexFromSTUIndex(id);
@@ -239,7 +229,7 @@ Bool_t AliEMCALTriggerMappingV2::GetTRUIndexFromSTUIndex(const Int_t id, Int_t& 
 }
 
 //________________________________________________________________________________________________
-Int_t AliEMCALTriggerMappingV2::GetTRUIndexFromSTUIndex(const Int_t id) const
+Int_t AliEMCALTriggerMappingV2::GetTRUIndexFromSTUIndex(Int_t id) const
 {
   //Trigger mapping method, from STU index get TRU index 
   if (id > fNTotalTRU-1 || id < 0){
@@ -249,7 +239,7 @@ Int_t AliEMCALTriggerMappingV2::GetTRUIndexFromSTUIndex(const Int_t id) const
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const
+Bool_t AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineIndex(Int_t id, Int_t& idx) const
 {
   //Trigger mapping method, from STU index get TRU index 
   idx = GetTRUIndexFromOnlineIndex(id);
@@ -257,7 +247,7 @@ Bool_t AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineIndex(const Int_t id, Int_
 }
 
 //________________________________________________________________________________________________
-Int_t AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineIndex(const Int_t id) const
+Int_t AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineIndex(Int_t id) const
 {
   //Trigger mapping method, from STU index get TRU index 
   if (id > fNTotalTRU-1 || id < 0){
@@ -268,12 +258,12 @@ Int_t AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineIndex(const Int_t id) const
 
 ///
 /// \return TRU  global offline number from:
-/// \param hardware address
+/// \param hwAdd: hardware address
 /// \param ddl number
-/// \param super-module number
+/// \param sm: uper-module number
 /// Used in AliEMCALTriggerRawDigitMaker::Add()
 ///
-Int_t  AliEMCALTriggerMappingV2::GetTRUIndexFromOnline(Int_t hwAdd, Int_t ddl, Int_t sm) const
+Int_t  AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t ddl, Int_t sm) const
 {    
   // 1/3 SMs
   
@@ -304,7 +294,7 @@ Int_t  AliEMCALTriggerMappingV2::GetTRUIndexFromOnline(Int_t hwAdd, Int_t ddl, I
 
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const
+Bool_t AliEMCALTriggerMappingV2::GetOnlineIndexFromTRUIndex(Int_t id, Int_t& idx) const
 {
   //Trigger mapping method, from STU index get TRU index 
   idx = GetOnlineIndexFromTRUIndex(id);
@@ -312,7 +302,7 @@ Bool_t AliEMCALTriggerMappingV2::GetOnlineIndexFromTRUIndex(const Int_t id, Int_
 }
 
 //________________________________________________________________________________________________
-Int_t AliEMCALTriggerMappingV2::GetOnlineIndexFromTRUIndex(const Int_t id) const
+Int_t AliEMCALTriggerMappingV2::GetOnlineIndexFromTRUIndex(Int_t id) const
 {
   //Trigger mapping method, from STU index get TRU index 
   if (id > fNTotalTRU-1 || id < 0){
@@ -322,7 +312,7 @@ Int_t AliEMCALTriggerMappingV2::GetOnlineIndexFromTRUIndex(const Int_t id) const
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const
+Bool_t AliEMCALTriggerMappingV2::GetFastORIndexFromL0Index(Int_t iTRU, Int_t id, Int_t idx[], Int_t size) const
 {
   //Trigger mapping method, from L0 index get FastOR index 
 
@@ -472,7 +462,7 @@ Bool_t AliEMCALTriggerMappingV2::Init_SM_offset(){
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(
-    const Int_t id, 
+    Int_t id, 
     Int_t& iTRU , Int_t& iADC , Int_t& iEta_TRU , Int_t& iPhi_TRU , 
     Int_t& iSM  ,               Int_t& iEta_SM  , Int_t& iPhi_SM  
     ) const
@@ -523,9 +513,7 @@ Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(
 }
 
 //________________________________________________________________________________________________
-Int_t AliEMCALTriggerMappingV2::ConvAbsFastORIndexA2B(
-    const Int_t idA
-    )const
+Int_t AliEMCALTriggerMappingV2::ConvAbsFastORIndexA2B(Int_t idA) const
 {
   const Int_t nModulePhiEMCAL = 64  ;
   const Int_t nModulePhiDCAL  = 40  ;
@@ -550,9 +538,7 @@ Int_t AliEMCALTriggerMappingV2::ConvAbsFastORIndexA2B(
   return idB ;
 }
 //________________________________________________________________________________________________
-Int_t AliEMCALTriggerMappingV2::ConvAbsFastORIndexB2A(
-    const Int_t idB
-    )const
+Int_t AliEMCALTriggerMappingV2::ConvAbsFastORIndexB2A(Int_t idB) const
 {
   const Int_t nTRUsEMCAL = 32     ; 
   const Int_t nTRUsDCAL = 14 + 6 ; 
