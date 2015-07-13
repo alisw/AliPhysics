@@ -113,7 +113,7 @@ bool AliEMCalTriggerMCParticleAnalysisComponent::IsPhysicalPrimary(const AliVPar
 	if(aodpart){
 		return aodpart->IsPhysicalPrimary();
 	}
-	return mcev->IsPhysicalPrimary(TMath::Abs(part->GetLabel()));
+	return mcev->IsPhysicalPrimary(part->GetLabel());                 // No abs value since default value is -1
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

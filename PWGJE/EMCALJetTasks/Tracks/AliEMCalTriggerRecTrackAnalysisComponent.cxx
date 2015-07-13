@@ -246,7 +246,7 @@ const AliVParticle * AliEMCalTriggerRecTrackAnalysisComponent::IsMCTrueTrack(
   if(aodpart){
     if(!aodpart->IsPhysicalPrimary()) return NULL;
   } else {
-    if(!evnt->IsPhysicalPrimary(label)) return NULL;
+    if(!evnt->IsPhysicalPrimary(mcpart->GetLabel())) return NULL;
   }
   return mcpart;
 }
