@@ -9,6 +9,7 @@
 // Author: A. Rossi, andrea.rossi@cern.ch E. Bruna, elena.bruna@to.infn.it
 //***********************************************************
 
+#include "AliTrigger.h"
 #include <TString.h>
 
 #include "AliAnalysisCuts.h"
@@ -49,53 +50,53 @@ class AliRDHFJetsCuts : public AliAnalysisCuts
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
 
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
-  void SetUseAnyTrigger(){fTriggerMask=AliVEvent::kAny;}
+  void SetUseAnyTrigger(){fTriggerMask=AliTrigger::kAny;}
   void EnableMBTrigger(){
-    fTriggerMask|=AliVEvent::kMB;
+    fTriggerMask|=AliTrigger::kMB;
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableMBTrigger(){
-    fTriggerMask=AliVEvent::kMB;
+    fTriggerMask=AliTrigger::kMB;
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseMBTriggerExclusively(){
-    fTriggerMask=AliVEvent::kMB;
+    fTriggerMask=AliTrigger::kMB;
     fUseOnlyOneTrigger=kTRUE;
   }
   void EnableCentralTrigger(){
-    fTriggerMask|=AliVEvent::kCentral;
+    fTriggerMask|=AliTrigger::kCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableCentralTrigger(){
-    fTriggerMask=AliVEvent::kCentral;
+    fTriggerMask=AliTrigger::kCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseCentralTriggerExclusively(){
-    fTriggerMask=AliVEvent::kCentral;
+    fTriggerMask=AliTrigger::kCentral;
     fUseOnlyOneTrigger=kTRUE;
   }
   void EnableSemiCentralTrigger(){
-    fTriggerMask|=AliVEvent::kSemiCentral;
+    fTriggerMask|=AliTrigger::kSemiCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableSemiCentralTrigger(){
-    fTriggerMask=AliVEvent::kSemiCentral;
+    fTriggerMask=AliTrigger::kSemiCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseSemiCentralTriggerExclusively(){
-    fTriggerMask=AliVEvent::kSemiCentral;
+    fTriggerMask=AliTrigger::kSemiCentral;
     fUseOnlyOneTrigger=kTRUE;
   }
   void EnableEMCALTrigger(){
-    fTriggerMask|=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fTriggerMask|=(AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableEMCALTrigger(){
-    fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fTriggerMask=(AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   } 
   void SetUseEMCALTriggerExclusively(){
-    fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fTriggerMask=(AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
     fUseOnlyOneTrigger=kTRUE;
   }
   void SetRemoveTrackletOutliers(Bool_t opt) {fRemoveTrackletOutliers=opt;}
@@ -288,3 +289,4 @@ class AliRDHFJetsCuts : public AliAnalysisCuts
 };
 
 #endif
+

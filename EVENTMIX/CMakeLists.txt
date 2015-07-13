@@ -21,6 +21,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/EVENTMIX)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
                    )
 
 # Sources
@@ -43,7 +44,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice AOD ESD STEERBase Core Gpad Hist RIO Tree)
+set(LIBDEPS OADB ANALYSIS ANALYSISalice AOD ESD STEERBase Core Gpad Hist RIO Tree)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

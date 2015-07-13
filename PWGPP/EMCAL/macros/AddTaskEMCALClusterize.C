@@ -252,62 +252,62 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   if(trigger=="EMC7")
   {
     printf("Clusterizing task trigger EMC7\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kEMC7);
+    clusterize->SelectCollisionCandidates(AliTrigger::kEMC7);
   }
   else if (trigger=="INT7")
   {
     printf("Clusterizing task trigger INT7\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kINT7);
+    clusterize->SelectCollisionCandidates(AliTrigger::kINT7);
   }
   else if(trigger=="EMC1")
   {
     printf("Clusterizing task trigger EMC1\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kEMC1);
+    clusterize->SelectCollisionCandidates(AliTrigger::kEMC1);
   }
   else if(trigger=="MB")
   {
     printf("Clusterizing task trigger MB\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kMB);
+    clusterize->SelectCollisionCandidates(AliTrigger::kMB);
   }  
   else if(trigger=="PHOS")
   {
     printf("Clusterizing task trigger PHOS\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kPHI7);
+    clusterize->SelectCollisionCandidates(AliTrigger::kPHI7);
   }  
   else if(trigger=="PHOSPb")
   {
     printf("Clusterizing task trigger PHOSPb\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kPHOSPb);
+    clusterize->SelectCollisionCandidates(AliTrigger::kPHOSPb);
   }
   else if(trigger=="AnyINT")
   {
     printf("Clusterizing task trigger AnyINT\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kAnyINT);
+    clusterize->SelectCollisionCandidates(AliTrigger::kAnyINT);
   }  
   else if(trigger=="INT")
   {
     printf("Clusterizing task trigger AnyINT\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kAny);
+    clusterize->SelectCollisionCandidates(AliTrigger::kAny);
   }
   else if(trigger=="EMCEGA")
   {
     printf("Clusterizing task trigger EMC Gamma\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+    clusterize->SelectCollisionCandidates(AliTrigger::kEMCEGA);
   } 
   else if(trigger=="EMCEJE")
   {
     printf("Clusterizing task trigger EMC Jet\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+    clusterize->SelectCollisionCandidates(AliTrigger::kEMCEJE);
   }
   else if(trigger=="Central")
   {
     printf("Clusterizing task trigger Central\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kCentral);
+    clusterize->SelectCollisionCandidates(AliTrigger::kCentral);
   } 
   else if(trigger=="SemiCentral")
   {
     printf("Clusterizing task trigger SemiCentral\n");
-    clusterize->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    clusterize->SelectCollisionCandidates(AliTrigger::kSemiCentral);
   }
   
   // Set clusters branch name, make sure the analysis after this one reads this name
@@ -330,3 +330,4 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   }
   return clusterize;
 }
+

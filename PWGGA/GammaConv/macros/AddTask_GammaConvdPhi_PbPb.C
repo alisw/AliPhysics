@@ -339,7 +339,7 @@ AliAnalysisTask *AddTask_GammaConvdPhi_PbPb(TString v0Cut = "1090002002092970023
     task->SetV0Filter(v0cuts);
   }
 
-  task->SelectCollisionCandidates(AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral);
+  task->SelectCollisionCandidates(AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral);
 
   mgr->AddTask(task);
   mgr->ConnectInput  (task,  0, cinput );
@@ -348,5 +348,6 @@ AliAnalysisTask *AddTask_GammaConvdPhi_PbPb(TString v0Cut = "1090002002092970023
   
   return task;
 }
+
 
 

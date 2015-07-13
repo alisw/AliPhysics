@@ -51,6 +51,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
@@ -503,17 +504,17 @@ void AliAnalysisTaskExtractV0AOD::UserExec(Option_t *)
    AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
    //kMB: default selection, also if fTriggerMask is something not understood...
-   isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+   isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
 
    if( fTriggerMask == "kINT7" )
-     isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+     isSelected = (maskIsSelected & AliTrigger::kINT7) == AliTrigger::kINT7;
    if( fTriggerMask == "kINT8" )
-     isSelected = (maskIsSelected & AliVEvent::kINT8) == AliVEvent::kINT8;
+     isSelected = (maskIsSelected & AliTrigger::kINT8) == AliTrigger::kINT8;
    if( fTriggerMask == "kAnyINT" )
-     isSelected = (maskIsSelected & AliVEvent::kAnyINT) == AliVEvent::kAnyINT;
+     isSelected = (maskIsSelected & AliTrigger::kAnyINT) == AliTrigger::kAnyINT;
 
    //pp at 2.76TeV: special case, ignore FastOnly
-   if ( (fkLowEnergyPP == kTRUE) && (maskIsSelected& AliVEvent::kFastOnly) ){
+   if ( (fkLowEnergyPP == kTRUE) && (maskIsSelected& AliTrigger::kFastOnly) ){
       PostData(1, fListHistV0);
       PostData(2, fTree);
       return;
@@ -914,3 +915,4 @@ void AliAnalysisTaskExtractV0AOD::CheckChargeV0(AliESDv0 *v0)
    }
    return;
 } 
+

@@ -19,6 +19,7 @@
 //							   //
 /////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TTree.h>
 //#include <TList.h>
 #include <TFile.h>
@@ -287,7 +288,7 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       sprintf(fTrigClass,"%s",triggerClass.Data());
       
       // use response of AliPhysicsSelection
-      fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);       
+      fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kAnyINT);       
       fIsPileupFromSPD = esd->IsPileupFromSPD(6, 0.8);
       //fIsPileupFromSPD = esd->IsPileupFromSPDInMultBins();
 
@@ -395,3 +396,4 @@ void AliAnalysisTaskZDCTreeMaker::Terminate(Option_t */*option*/)
   //
   printf(" **** AliAnalysisTaskZDCTreeMaker::Terminate() \n");
 }
+

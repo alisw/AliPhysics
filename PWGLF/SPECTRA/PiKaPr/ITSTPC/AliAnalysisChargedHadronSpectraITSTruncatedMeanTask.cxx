@@ -5,6 +5,7 @@
 //last line of comments
 
 
+#include "AliTrigger.h"
 #include "AliAnalysisChargedHadronSpectraITSTruncatedMeanTask.h"
 #include "AliAnalysisManager.h"
 
@@ -797,8 +798,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	  AliBits isSelected;
 	 if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))
 	  	isSelected=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-	//Printf("Mask_selection %u %u", isSelected,AliVEvent::kMB);  
-        if(!(isSelected&AliVEvent::kMB))
+	//Printf("Mask_selection %u %u", isSelected,AliTrigger::kMB);  
+        if(!(isSelected&AliTrigger::kMB))
         {
 		 isphysevent=0;
 		// Printf("No phys event.........\n");
@@ -1954,3 +1955,4 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::SetMultiplicityCut(Int
 		fUpMultiplicity=up;
 	}	
 }	
+

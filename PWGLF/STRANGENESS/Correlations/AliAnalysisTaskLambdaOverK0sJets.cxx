@@ -15,6 +15,7 @@
 
 //git test
 
+#include "AliTrigger.h"
 #include <TCanvas.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -4429,11 +4430,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   Bool_t isSelectedSemiCentral = kFALSE;
   Bool_t isSelectedMB          = kFALSE;
   if( fCollision.Contains("PbPb2010") )
-    isSelected = (maskIsSelected & AliVEvent::kMB);
+    isSelected = (maskIsSelected & AliTrigger::kMB);
   else if( fCollision.Contains("PbPb2011") ){
-    isSelectedCentral   =  maskIsSelected  &  AliVEvent::kCentral;
-    isSelectedSemiCentral   =  maskIsSelected  &  AliVEvent::kSemiCentral;
-    isSelectedMB   =  maskIsSelected   &  AliVEvent::kMB;
+    isSelectedCentral   =  maskIsSelected  &  AliTrigger::kCentral;
+    isSelectedSemiCentral   =  maskIsSelected  &  AliTrigger::kSemiCentral;
+    isSelectedMB   =  maskIsSelected   &  AliTrigger::kMB;
     if( isSelectedCentral || isSelectedSemiCentral || isSelectedMB ) 	isSelected = kTRUE;
   }
 
@@ -5614,3 +5615,4 @@ void AliAnalysisTaskLambdaOverK0sJets::Terminate(Option_t *)
   return;
 
 }
+

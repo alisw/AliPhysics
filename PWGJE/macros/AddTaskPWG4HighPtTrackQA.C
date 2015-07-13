@@ -19,7 +19,7 @@ void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 
   else if(iAODanalysis==1) { //run on AODs
     if(doEfficiency==1){
       gROOT->LoadMacro(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGJE/macros/AddTaskHybridTrackEfficiency.C"));
-      AddTaskHybridTrackEfficiencyQA_AOD_train(prodType.Data(),isPbPb,AliVEvent::kMB,kTRUE,kFALSE);
+      AddTaskHybridTrackEfficiencyQA_AOD_train(prodType.Data(),isPbPb,AliTrigger::kMB,kTRUE,kFALSE);
     }
     AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
   }
@@ -27,12 +27,12 @@ void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 
 
 void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b")
 {
-  AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliVEvent::kINT7);
-  AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kINT7);
+  AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliTrigger::kINT7);
+  AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliTrigger::kINT7);
   
   if(!strcmp(prodType,"LHC13d") || !strcmp(prodType,"LHC13e") || !strcmp(prodType,"LHC13f")) {
-    AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliVEvent::kEMCEJE);
-    AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kEMCEJE);
+    AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliTrigger::kEMCEJE);
+    AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliTrigger::kEMCEJE);
   }
 }
 
@@ -62,9 +62,9 @@ void AddTaskPWG4HighPtTrackQAAll2011(char *prodType = "LHC11h",Bool_t isPbPb=kTR
 {    
 
   Int_t cent = 10;
-  UInt_t iPhysicsSelectionFlag = AliVEvent::kMB;
-  UInt_t iPhysicsSelectionFlagCentral = AliVEvent::kCentral;
-  UInt_t iPhysicsSelectionFlagSemiCentral = AliVEvent::kSemiCentral;
+  UInt_t iPhysicsSelectionFlag = AliTrigger::kMB;
+  UInt_t iPhysicsSelectionFlagCentral = AliTrigger::kCentral;
+  UInt_t iPhysicsSelectionFlagSemiCentral = AliTrigger::kSemiCentral;
 
   
   AliPWG4HighPtTrackQA *taskTrackQA00cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlag);
@@ -132,8 +132,8 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
 {    
 
   Int_t cent = 10;
-  UInt_t iPhysicsSelectionFlag = AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral;
-  UInt_t iPhysicsSelectionFlagEMCEJE = AliVEvent::kEMCEJE;
+  UInt_t iPhysicsSelectionFlag = AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral;
+  UInt_t iPhysicsSelectionFlagEMCEJE = AliTrigger::kEMCEJE;
   
   AliPWG4HighPtTrackQA *taskTrackQA00cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlag);
   AliPWG4HighPtTrackQA *taskTrackQA01cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlag);
@@ -181,8 +181,8 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
 
   int cent = 10;
 
-  UInt_t iPhysicsSelectionFlagCentral = AliVEvent::kCentral;
-  UInt_t iPhysicsSelectionFlagSemiCentral = AliVEvent::kSemiCentral;
+  UInt_t iPhysicsSelectionFlagCentral = AliTrigger::kCentral;
+  UInt_t iPhysicsSelectionFlagSemiCentral = AliTrigger::kSemiCentral;
 
   AliPWG4HighPtTrackQA *taskTrackQA00C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagCentral);
   AliPWG4HighPtTrackQA *taskTrackQA01C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlagCentral);
@@ -205,11 +205,11 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
 
 void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 768) 
 {  
-  UInt_t iPhysicsSelectionFlagMB          = AliVEvent::kMB; 
-  UInt_t iPhysicsSelectionFlagCentral     = AliVEvent::kCentral;
-  UInt_t iPhysicsSelectionFlagSemiCentral = AliVEvent::kSemiCentral;
-  UInt_t iPhysicsSelectionFlagINT7        = AliVEvent::kINT7; 
-  UInt_t iPhysicsSelectionFlagEMCEJE      = AliVEvent::kEMCEJE; 
+  UInt_t iPhysicsSelectionFlagMB          = AliTrigger::kMB; 
+  UInt_t iPhysicsSelectionFlagCentral     = AliTrigger::kCentral;
+  UInt_t iPhysicsSelectionFlagSemiCentral = AliTrigger::kSemiCentral;
+  UInt_t iPhysicsSelectionFlagINT7        = AliTrigger::kINT7; 
+  UInt_t iPhysicsSelectionFlagEMCEJE      = AliTrigger::kEMCEJE; 
 
   Int_t cent = 10;
 
@@ -333,7 +333,7 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
   }
 }
 
-AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_t isPbPb=kTRUE,Int_t iAODanalysis = 0, Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB)
+AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_t isPbPb=kTRUE,Int_t iAODanalysis = 0, Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0, UInt_t iPhysicsSelectionFlag = AliTrigger::kMB)
 {
   /*
     trackType: 0 = global
@@ -485,25 +485,25 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   trackCuts->SetPtRange(0.15, 1e10);
   
   TString trigName = "";
-  if (iPhysicsSelectionFlag == AliVEvent::kAnyINT)
+  if (iPhysicsSelectionFlag == AliTrigger::kAnyINT)
     trigName += "kAnyINT";
-  else if (iPhysicsSelectionFlag == AliVEvent::kAny)
+  else if (iPhysicsSelectionFlag == AliTrigger::kAny)
     trigName += "kAny";
-  else if(iPhysicsSelectionFlag == AliVEvent::kINT7)
+  else if(iPhysicsSelectionFlag == AliTrigger::kINT7)
     trigName += "kINT7";
-  else if(iPhysicsSelectionFlag == AliVEvent::kINT8)
+  else if(iPhysicsSelectionFlag == AliTrigger::kINT8)
     trigName += "kINT8";
-  else if(iPhysicsSelectionFlag == AliVEvent::kMB)
+  else if(iPhysicsSelectionFlag == AliTrigger::kMB)
     trigName += "kMB";
-  else if(iPhysicsSelectionFlag == AliVEvent::kCentral)
+  else if(iPhysicsSelectionFlag == AliTrigger::kCentral)
     trigName += "kCentral";
-  else if(iPhysicsSelectionFlag == AliVEvent::kSemiCentral)
+  else if(iPhysicsSelectionFlag == AliTrigger::kSemiCentral)
     trigName += "kSemiCentral";
-  else if(iPhysicsSelectionFlag == AliVEvent::kEMC7)
+  else if(iPhysicsSelectionFlag == AliTrigger::kEMC7)
     trigName += "kEMC7";
-  else if(iPhysicsSelectionFlag == AliVEvent::kEMCEJE)
+  else if(iPhysicsSelectionFlag == AliTrigger::kEMCEJE)
     trigName += "kEMCEJE";
-  else if(iPhysicsSelectionFlag == AliVEvent::kEMCEGA)
+  else if(iPhysicsSelectionFlag == AliTrigger::kEMCEGA)
     trigName += "kEMCEGA";
 
 
@@ -543,3 +543,4 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   // Return task pointer at the end
   return taskPWG4TrackQA;
 }
+

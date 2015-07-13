@@ -51,6 +51,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
@@ -1608,7 +1609,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
     UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
-    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+    isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
     fEvSel_Triggered = isSelected;
 
     //------------------------------------------------
@@ -2795,3 +2796,4 @@ Bool_t AliAnalysisTaskStrangenessVsMultiplicityMC::IsINELgtZERO(AliESDEvent *lES
 
     return lReturnValue;
 }
+

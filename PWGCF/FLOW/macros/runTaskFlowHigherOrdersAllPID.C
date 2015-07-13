@@ -212,7 +212,7 @@ void runTaskFlowHigherOrdersAllPID(
       //gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowHigherOrdersAllPID.C");
   //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowCentralityBayesian.C");
   //  gROOT->LoadMacro("~/Desktop/work/PhD/flow/AddTaskFlowCentralityBayesian.C");
-      AliAnalysisTaskFlowEvent* FlowTask = AddTaskFlowHigherOrdersAllPID(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,0.,80.,"AnalysisResults",kTRUE,768,768,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0,kFALSE,-0.8,0.8,"");
+      AliAnalysisTaskFlowEvent* FlowTask = AddTaskFlowHigherOrdersAllPID(AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB,0.,80.,"AnalysisResults",kTRUE,768,768,AliPID::kPion,AliFlowTrackCuts::kTOFbayesian,0,kFALSE,-0.8,0.8,"");
 /////////////////////////////////////////
 
     //Add the PID response
@@ -517,4 +517,5 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskn
 
     return plugin;
 }
+
 

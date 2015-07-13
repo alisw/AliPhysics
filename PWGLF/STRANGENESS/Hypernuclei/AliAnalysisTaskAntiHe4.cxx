@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "TChain.h"
 #include "TTree.h"
@@ -983,11 +984,11 @@ void AliAnalysisTaskAntiHe4::ResetEvent() {
 Bool_t AliAnalysisTaskAntiHe4::IsTriggered() {
   // Check if Event is triggered and fill Trigger Histogram
 
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kMB))          fTriggerFired[0] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kCentral))     fTriggerFired[1] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fTriggerFired[2] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      fTriggerFired[3] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      fTriggerFired[4] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kMB))          fTriggerFired[0] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kCentral))     fTriggerFired[1] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kSemiCentral)) fTriggerFired[2] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kEMCEJE))      fTriggerFired[3] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kEMCEGA))      fTriggerFired[4] = kTRUE;
 
   Bool_t isTriggered = kFALSE;
 
@@ -1083,3 +1084,4 @@ void AliAnalysisTaskAntiHe4::MCGenerated(AliStack* stack)
 
     }//end MC
 }
+

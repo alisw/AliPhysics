@@ -1,4 +1,5 @@
 #if !defined (__CINT__) || (defined(__MAKECINT__))
+#include "AliTrigger.h"
 #include <iostream>
 #include "AliAnalysisGrid.h"
 #include "TSystem.h"
@@ -58,7 +59,7 @@ AliESEEvtCut * EvtCuts(Int_t mc) {
   evcuts->SetCalibFile(fCalib);
   evcuts->SetIsLHC10h(kTRUE);
   evcuts->PrintCuts();
-  //  evcuts->SetEventSelectionBit(AliVEvent::kAny);
+  //  evcuts->SetEventSelectionBit(AliTrigger::kAny);
 
   evt->SetEventCuts(evcuts);
   evt->Init();
@@ -114,7 +115,7 @@ void runGridESE(
   task->SetEvtCuts(evtCuts);
   task->SetSetter(setter);
 
-  //task->SelectCollisionCandidates(AliVEvent::kMB);// FIXME
+  //task->SelectCollisionCandidates(AliTrigger::kMB);// FIXME
   // enable debug printouts
   mgr->SetDebugLevel(10);
   //    mgr->SetNSysInfo(100);
@@ -258,3 +259,4 @@ void LoadLibs() {
   gSystem->Load("libPWGDevNanoAOD");
 
 }
+

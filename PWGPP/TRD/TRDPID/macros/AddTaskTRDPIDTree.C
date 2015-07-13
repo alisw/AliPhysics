@@ -9,8 +9,8 @@ AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0){
 
   //========= Add task to the ANALYSIS manager =====
   AliTRDPIDTree *task = new AliTRDPIDTree("TRDPIDTree");
-  if(trigger==0) task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7 | AliVEvent::kINT8);
-  else task->SelectCollisionCandidates(AliVEvent::kTRD);
+  if(trigger==0) task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kINT7 | AliTrigger::kINT8);
+  else task->SelectCollisionCandidates(AliTrigger::kTRD);
   if(system==1) task->SetppAnalysis();
   if(system==2) task->SetpPbAnalysis();
   if(system==3) task->SetPbPbAnalysis();
@@ -44,3 +44,4 @@ AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0){
 
   return task;
 }
+

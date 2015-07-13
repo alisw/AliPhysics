@@ -47,6 +47,7 @@
 //-----------------------------------------------------------------
 
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include "TList.h"
@@ -1683,8 +1684,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
    // - Selection for ESD and AOD
    AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
-   if      (fCollidingSystem == "pp" ) isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-   else if (fCollidingSystem == "pPb") isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+   if      (fCollidingSystem == "pp" ) isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
+   else if (fCollidingSystem == "pPb") isSelected = (maskIsSelected & AliTrigger::kINT7) == AliTrigger::kINT7;
    if(!isSelected){
        PostData(1, fListHistCascade);
        PostData(2, fCFContCascadePIDAsXiMinus);
@@ -3350,3 +3351,4 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::Terminate(Option_t *) {
   fHistTrackMultiplicityBeforeAnySel->DrawCopy("E");
  */
 }
+

@@ -125,7 +125,7 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     task->SetJetRAcceptance(jetRAccept);
     task->SetCentralityTag(centEst.Data());
     task->SetScaleFactor(scaleFac);
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SelectCollisionCandidates(AliTrigger::kINT7);
     task->SetNColl(7);
     task->SetNEFSignalJetCut(NEFSignalJetCut);
     task->DoNEFCalibration(doNEF);
@@ -146,3 +146,4 @@ AliAnalysisTaskFullpAJets *AddTaskFullpAJets(const char* proj_name, const Double
     
     return task;
 }
+

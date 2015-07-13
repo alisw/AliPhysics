@@ -25,6 +25,7 @@
 #ifndef ALIPWG4HIGHPTSPECTRA_CXX
 #define ALIPWG4HIGHPTSPECTRA_CXX
 
+#include "AliTrigger.h"
 #include "AliPWG4HighPtSpectra.h"
 
 #include "TVector3.h"
@@ -80,7 +81,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fStack(0x0),
   fArrayMCAOD(0x0),
   fVtx(0x0),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fIsPbPb(0),
   fCentClass(10),
   fTrackType(0),
@@ -120,7 +121,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fStack(0x0),
   fArrayMCAOD(0x0),
   fVtx(0x0),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fIsPbPb(0),
   fCentClass(10),
   fTrackType(0),
@@ -233,7 +234,7 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent()
 
   //Trigger
   AliBits isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(fTriggerMask != AliVEvent::kAny && !(isSelected&fTriggerMask)) { //Select collison candidates
+  if(fTriggerMask != AliTrigger::kAny && !(isSelected&fTriggerMask)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     fNEventReject->Fill("Trigger",1);
     selectEvent = kFALSE;
@@ -1033,3 +1034,4 @@ Bool_t AliPWG4HighPtSpectra::IsHIJINGParticle(Int_t label)
 }
 
 #endif
+

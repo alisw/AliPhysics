@@ -19,6 +19,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -72,7 +73,7 @@ AliAnalysisTaskMultiDielectronNewTaku::AliAnalysisTaskMultiDielectronNewTaku() :
   fListCF(),
   fTree(NULL),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
   fTriggerAnalysis(0x0),
@@ -136,7 +137,7 @@ AliAnalysisTaskMultiDielectronNewTaku::AliAnalysisTaskMultiDielectronNewTaku(con
   fListCF(),
   fTree(NULL),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fTriggerOnV0AND(kFALSE),
   fRejectPileup(kFALSE),
   fTriggerAnalysis(0x0),
@@ -472,11 +473,11 @@ void AliAnalysisTaskMultiDielectronNewTaku::UserExec(Option_t *)
     Bool_t  isEvT = kFALSE;
     /*
     isEvT = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() 
-	     & AliVEvent::kMB);
+	     & AliTrigger::kMB);
     */
     isEvT = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() 
-	     //& AliVEvent::kSemiCentral);
-	     & AliVEvent::kCentral);
+	     //& AliTrigger::kSemiCentral);
+	     & AliTrigger::kCentral);
 
     //AliTriggerAnalysis *fTrigAna = new AliTriggerAnalysis();
     if (isEvT){
@@ -496,27 +497,27 @@ void AliAnalysisTaskMultiDielectronNewTaku::UserExec(Option_t *)
     isEvT = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
     //AliTriggerAnalysis *fTrigAna = new AliTriggerAnalysis();
     if (isEvT){
-      if(isEvT & AliVEvent::kMB) fEvent->Fill(10);
-      if(isEvT & AliVEvent::kINT7) fEvent->Fill(11);
-      if(isEvT & AliVEvent::kMUON) fEvent->Fill(12);
-      if(isEvT & AliVEvent::kHighMult) fEvent->Fill(13);
-      if(isEvT & AliVEvent::kEMC1) fEvent->Fill(14);
-      if(isEvT & AliVEvent::kCINT5) fEvent->Fill(15);
-      if(isEvT & AliVEvent::kMUSPB) fEvent->Fill(16);
-      if(isEvT & AliVEvent::kMUSHPB) fEvent->Fill(17);
-      if(isEvT & AliVEvent::kMuonLikePB) fEvent->Fill(18);
-      if(isEvT & AliVEvent::kMuonUnlikePB) fEvent->Fill(19);
-      if(isEvT & AliVEvent::kEMC7) fEvent->Fill(20);
-      if(isEvT & AliVEvent::kMUS7) fEvent->Fill(21);
-      if(isEvT & AliVEvent::kPHI1) fEvent->Fill(22);
-      if(isEvT & AliVEvent::kPHOSPb) fEvent->Fill(23);
-      if(isEvT & AliVEvent::kEMCEJE) fEvent->Fill(24);
-      if(isEvT & AliVEvent::kEMCEGA) fEvent->Fill(25);
-      if(isEvT & AliVEvent::kCentral) fEvent->Fill(26);
-      if(isEvT & AliVEvent::kSemiCentral) fEvent->Fill(27);
-      if(isEvT & AliVEvent::kDG5) fEvent->Fill(28);
-      if(isEvT & AliVEvent::kZED) fEvent->Fill(29);
-      if(isEvT & AliVEvent::kAny) fEvent->Fill(30);
+      if(isEvT & AliTrigger::kMB) fEvent->Fill(10);
+      if(isEvT & AliTrigger::kINT7) fEvent->Fill(11);
+      if(isEvT & AliTrigger::kMUON) fEvent->Fill(12);
+      if(isEvT & AliTrigger::kHighMult) fEvent->Fill(13);
+      if(isEvT & AliTrigger::kEMC1) fEvent->Fill(14);
+      if(isEvT & AliTrigger::kCINT5) fEvent->Fill(15);
+      if(isEvT & AliTrigger::kMUSPB) fEvent->Fill(16);
+      if(isEvT & AliTrigger::kMUSHPB) fEvent->Fill(17);
+      if(isEvT & AliTrigger::kMuonLikePB) fEvent->Fill(18);
+      if(isEvT & AliTrigger::kMuonUnlikePB) fEvent->Fill(19);
+      if(isEvT & AliTrigger::kEMC7) fEvent->Fill(20);
+      if(isEvT & AliTrigger::kMUS7) fEvent->Fill(21);
+      if(isEvT & AliTrigger::kPHI1) fEvent->Fill(22);
+      if(isEvT & AliTrigger::kPHOSPb) fEvent->Fill(23);
+      if(isEvT & AliTrigger::kEMCEJE) fEvent->Fill(24);
+      if(isEvT & AliTrigger::kEMCEGA) fEvent->Fill(25);
+      if(isEvT & AliTrigger::kCentral) fEvent->Fill(26);
+      if(isEvT & AliTrigger::kSemiCentral) fEvent->Fill(27);
+      if(isEvT & AliTrigger::kDG5) fEvent->Fill(28);
+      if(isEvT & AliTrigger::kZED) fEvent->Fill(29);
+      if(isEvT & AliTrigger::kAny) fEvent->Fill(30);
     }
     */
   }
@@ -525,7 +526,7 @@ void AliAnalysisTaskMultiDielectronNewTaku::UserExec(Option_t *)
 
 
   // Was event selected ?
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
     isSelected&=fTriggerMask;
@@ -560,14 +561,14 @@ void AliAnalysisTaskMultiDielectronNewTaku::UserExec(Option_t *)
 
 
   Bool_t isEvT1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() 
-		   & AliVEvent::kCentral);
+		   & AliTrigger::kCentral);
 
   Bool_t isEvT2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() 
-		   & AliVEvent::kSemiCentral);
+		   & AliTrigger::kSemiCentral);
 
 
   Bool_t isEvT3 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() 
-		   & AliVEvent::kMB);
+		   & AliTrigger::kMB);
   
   fkTriggerCent = 0;
   if(!isEvT1 && !isEvT2 && !isEvT3){
@@ -1068,4 +1069,5 @@ void AliAnalysisTaskMultiDielectronNewTaku::SetBranches(TTree *t){
 
 
 }
+
 

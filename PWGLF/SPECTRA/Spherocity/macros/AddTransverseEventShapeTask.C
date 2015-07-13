@@ -1,7 +1,7 @@
 AliAnaTransverseEventShapeTask* AddTask(Bool_t AnalysisMC = kFALSE,
 					Int_t typerun =0, // 0 for pp and 1 for Pb-Pb or pPb
 					TString  type ="ESD",
-					UInt_t kTriggerInt = AliVEvent::kMB, //for pPb kINT7, for pp or PbPb kMB
+					UInt_t kTriggerInt = AliTrigger::kMB, //for pPb kINT7, for pp or PbPb kMB
 					Float_t minCent = 0.,
 					Float_t maxCent = 80.,
 					char *centralityEstimator = "V0A",//for pPb V0A for PbPb V0M
@@ -98,3 +98,4 @@ AliAnaTransverseEventShapeTask* AddTask(Bool_t AnalysisMC = kFALSE,
 
 
 }
+

@@ -21,7 +21,7 @@ TString names("demo_1;demo_2");
      Bool_t kRot = 0;
      Bool_t kMix = 1;
 
-     ULong64_t triggerMask = AliVEvent::kINT7;
+     ULong64_t triggerMask = AliTrigger::kINT7;
      Bool_t randomizeDau = kTRUE;
      
      
@@ -387,4 +387,5 @@ const AliDielectronEventCuts *GetEventCuts(){
   
   return eventCuts;
 }
+
 

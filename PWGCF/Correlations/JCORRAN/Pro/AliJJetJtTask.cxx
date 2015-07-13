@@ -22,6 +22,7 @@
 // Adapted for AliAnalysisTaskSE and AOD objects  
 //////////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "AliAODEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliAnalysisTaskSE.h"
@@ -251,7 +252,7 @@ bool AliJJetJtTask::IsGoodEvent(AliVEvent *event) {
 
 		fEventHist->Fill( 0 );
 
-		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliTrigger::kMB );
 
 		if( triggerkMB ){
 			triggeredEventMB = kTRUE;  //event triggered as minimum bias
@@ -287,3 +288,4 @@ void AliJJetJtTask::Terminate(Option_t *)
 	fJJetJtAnalysis->WriteHistograms();
 
 }
+

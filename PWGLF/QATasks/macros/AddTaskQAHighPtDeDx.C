@@ -1,7 +1,7 @@
 AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
 			                         Int_t typerun =1, // 0 for pp and 1 for Pb-Pb or pPb
 			                         TString  type ="ESD",
-			                         AliBits kTriggerInt = AliVEvent::kINT7, //for pPb kINT7, for pp or PbPb kMB
+			                         AliBits kTriggerInt = AliTrigger::kINT7, //for pPb kINT7, for pp or PbPb kMB
 			                         Float_t minCent = 0.,
                                      Float_t maxCent = 80.,
 			                         char *centralityEstimator = "V0A",//for pPb V0A for PbPb V0M
@@ -15,7 +15,7 @@ AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
   //       Bool_t AnalysisMC = kFALSE,
   //       Int_t typerun =0,
   //       TString  type ="AOD",
-  //       AliBits kTriggerInt = AliVEvent::kMB,
+  //       AliBits kTriggerInt = AliTrigger::kMB,
   //       Float_t minCent = 0.,//This does not affect pp
   //       Float_t maxCent = 80.,//This does not affect pp
   //       char *centralityEstimator = "V0A",//for pPb V0A for PbPb V0M. This does not affect pp
@@ -24,7 +24,7 @@ AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
   //       Bool_t AnalysisMC = kFALSE,
   //       Int_t typerun =1,
   //       TString  type ="AOD",
-  //       AliBits kTriggerInt = AliVEvent::kMB,
+  //       AliBits kTriggerInt = AliTrigger::kMB,
   //       Float_t minCent = 0.,
   //       Float_t maxCent = 80.,
   //       char *centralityEstimator = "V0M",
@@ -108,3 +108,4 @@ AliAnalysisTask* AddTaskQAHighPtDeDx(Bool_t AnalysisMC = kFALSE,
   
   
 }
+

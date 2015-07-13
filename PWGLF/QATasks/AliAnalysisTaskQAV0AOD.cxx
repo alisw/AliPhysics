@@ -51,6 +51,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
@@ -334,7 +335,7 @@ void AliAnalysisTaskQAV0AOD::UserExec(Option_t *)
    AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
    Bool_t isSelected = 0;
    //kMB: default selection, also if fTriggerMask is something not understood...
-   isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+   isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
 
    //Standard Min-Bias Selection
    if ( ! isSelected ) { 
@@ -621,3 +622,4 @@ void AliAnalysisTaskQAV0AOD::Terminate(Option_t *)
    fHistEvent->SetMarkerStyle(22);
    fHistEvent->DrawCopy("E");
 }
+

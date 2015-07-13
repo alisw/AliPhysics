@@ -73,7 +73,7 @@ CheckLoadLibrary("libPWG0selectors");
   task->SetUseMCInfo(hasMC);
 
   // trigger
-  task->SelectCollisionCandidates(AliVEvent::kMB); 
+  task->SelectCollisionCandidates(AliTrigger::kMB); 
 
  //
  // set analysis options from the Helper here !!!
@@ -126,4 +126,5 @@ CheckLoadLibrary("libPWG0selectors");
   mgr->ConnectOutput(task, 1, coutput);
 
 }
+
 

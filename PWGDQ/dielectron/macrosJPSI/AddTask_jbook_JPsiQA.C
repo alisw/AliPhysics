@@ -38,7 +38,7 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod="", Bool_t gridconf=kFALSE){
 
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
   
@@ -98,3 +98,4 @@ AliAnalysisTask *AddTask_jbook_JPsiQA(TString prod="", Bool_t gridconf=kFALSE){
   
   return task;
 }
+

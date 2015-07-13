@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -162,7 +163,7 @@ void AliAnalysisTaskPMDSim::UserExec(Option_t *)
   }
   fHistTotEvent->Fill(5);
   //event selection
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
   if (! isSelected) return;
   fHistTotEventAfterPhySel->Fill(5);
   //Vertex selection
@@ -293,3 +294,4 @@ void AliAnalysisTaskPMDSim::Terminate(Option_t *)
     return;
   }
 }//Terminate
+

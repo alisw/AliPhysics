@@ -41,7 +41,7 @@ void runJetAna(
   // PSel task
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, 
-                                                                      AliVEvent::kAnyINT /*| AliVEvent::kCentral| AliVEvent::kSemiCentral*/,
+                                                                      AliTrigger::kAnyINT /*| AliTrigger::kCentral| AliTrigger::kSemiCentral*/,
                                                                       10,10);
 
   // Setup task
@@ -113,10 +113,10 @@ void runJetAna(
   AliAnalysisTaskScale *scaleTask = AddTaskScale(tracksName, clusNameCorr);
   }
   if (1) {
-    AliBits val = AliVEvent::kAny;
-    //val = AliVEvent::kAnyINT | AliVEvent::kCentral| AliVEvent::kSemiCentral;
-    //val = AliVEvent::kEMCEGA;
-    //val = AliVEvent::kEMCEJE;
+    AliBits val = AliTrigger::kAny;
+    //val = AliTrigger::kAnyINT | AliTrigger::kCentral| AliTrigger::kSemiCentral;
+    //val = AliTrigger::kEMCEGA;
+    //val = AliTrigger::kEMCEJE;
     val = AliEmcalPhysicsSelection::kEmcalHT;
 
     TObjArray *toptasks = mgr->GetTasks();
@@ -214,4 +214,5 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname,
   // TODO
   return 0;
 }
+
 

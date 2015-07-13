@@ -25,6 +25,7 @@
 //      -> event_stat_barrel.root trending_barrel.root 145230_145230_0_120345.stat
 //    aliroot -b -q QAtrain_duo.C\(\"_outer\"\,158285\,\"Stage_5.xml\"\,5\)
 //      -> event_stat_outer.root trending_outer.root 145230_145230_0_132897.stat
+#include "AliTrigger.h"
 #include "Riostream.h"
 void LoadLibraries();
 void AddAnalysisTasks(const char *); 
@@ -33,10 +34,10 @@ void QAmerge(const char *,const char *, Int_t);
 Int_t iCollisionType = 0; // 0=pp, 1=PbPb
 // Trigger mask.
 
-AliBits kTriggerInt = AliVEvent::kAnyINT;
-AliBits kTriggerMuonBarrel = AliVEvent::kMUU7 | AliVEvent::kMuonUnlikeLowPt8 ;
-AliBits kTriggerEMC   = AliVEvent::kEMC7 | AliVEvent::kEMCEJE | AliVEvent::kEMCEGA;
-AliBits kTriggerHM   = AliVEvent::kHighMult;
+AliBits kTriggerInt = AliTrigger::kAnyINT;
+AliBits kTriggerMuonBarrel = AliTrigger::kMUU7 | AliTrigger::kMuonUnlikeLowPt8 ;
+AliBits kTriggerEMC   = AliTrigger::kEMC7 | AliTrigger::kEMCEJE | AliTrigger::kEMCEGA;
+AliBits kTriggerHM   = AliTrigger::kHighMult;
 // Main trigger mask used:
 AliBits kTriggerMask = kTriggerInt;
 
@@ -467,7 +468,7 @@ void AddAnalysisTasks(const char *suffix)
     taskPHOSCellQA1->SelectCollisionCandidates(kTriggerMask);
     taskPHOSCellQA1->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.3,1.0);
     AliAnalysisTaskCaloCellsQA *taskPHOSCellQA2 = AddTaskCaloCellsQA(4, 1, NULL,"PHOSCellsQA_PHI7"); 
-    taskPHOSCellQA2->SelectCollisionCandidates(AliVEvent::kPHI7);
+    taskPHOSCellQA2->SelectCollisionCandidates(AliTrigger::kPHI7);
     taskPHOSCellQA2->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.3,1.0);
     // Pi0 QA fo PbPb
     if (iCollisionType) {
@@ -493,11 +494,11 @@ void AddAnalysisTasks(const char *suffix)
   if (doFBFqa && (ibarrel || iall)) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskFBFqa.C");
     AliAnalysisTaskSE *qaFBFMB = (AliAnalysisTaskSE*) AddTaskFBFqa("qaFBFmb",kFALSE);
-    qaFBFMB->SelectCollisionCandidates(AliVEvent::kMB);
+    qaFBFMB->SelectCollisionCandidates(AliTrigger::kMB);
     AliAnalysisTaskSE *qaFBFSC = (AliAnalysisTaskSE*) AddTaskFBFqa("qaFBFsc",kFALSE);
-    qaFBFSC->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    qaFBFSC->SelectCollisionCandidates(AliTrigger::kSemiCentral);
     AliAnalysisTaskSE *qaFBFCE = (AliAnalysisTaskSE*) AddTaskFBFqa("qaFBFce",kFALSE);
-    qaFBFCE->SelectCollisionCandidates(AliVEvent::kCentral);
+    qaFBFCE->SelectCollisionCandidates(AliTrigger::kCentral);
   }
 }
 
@@ -555,3 +556,4 @@ void QAmerge(const char *suffix, const char *dir, Int_t stage)
   out.close();
   timer.Print();
 }
+

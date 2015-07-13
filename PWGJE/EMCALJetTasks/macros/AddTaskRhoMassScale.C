@@ -3,7 +3,7 @@ AliAnalysisTaskRhoMassScale* AddTaskRhoMassScale(const char *rhomNeutral,
 						 const char *rhomCh2xEmcal,
 						 const char *ntracks,
 						 const Double_t kMinTrackPt = 0.15,
-						 AliBits pSel        = AliVEvent::kAny,
+						 AliBits pSel        = AliTrigger::kAny,
 						 const char * njetsNeutral  = "",
 						 const char * njetsCharged   = "",
 						 const Double_t R        = 0.4,
@@ -72,4 +72,5 @@ AliAnalysisTaskRhoMassScale* AddTaskRhoMassScale(const char *rhomNeutral,
 
   return task;  
 }
+
 

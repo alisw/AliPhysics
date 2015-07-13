@@ -1,4 +1,5 @@
 // ROOT
+#include "AliTrigger.h"
 #include "TFile.h"
 #include "TList.h"
 #include "TH1.h"
@@ -1124,7 +1125,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::DetectTriggers()
   // TString trgClasses = InputEvent()->GetFiredTriggerClasses();
 
   // physics selection
-  if (physSel & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral))
+  if (physSel & (AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral))
     MarkTrigger(kTriggerInt);
 
   return kTRUE;
@@ -2038,3 +2039,4 @@ TH3* AliAnalysisTaskJetProtonCorr::AddHistogram(Hist_t hist, const char *hid, TS
   fOutputList->Add(h);
   return (TH3*) h;
 }
+

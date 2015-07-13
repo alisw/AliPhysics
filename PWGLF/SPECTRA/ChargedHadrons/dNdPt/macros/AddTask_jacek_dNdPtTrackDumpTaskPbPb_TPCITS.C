@@ -87,7 +87,7 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   //task->SetProcessAll(kFALSE);
 
   // trigger
-  //task->SelectCollisionCandidates(AliVEvent::kMB); 
+  //task->SelectCollisionCandidates(AliTrigger::kMB); 
 
   //
   // set analysis options from the Helper here !!!
@@ -124,4 +124,5 @@ void AddTask_jacek_dNdPtTrackDumpTaskPbPb_TPCITS()
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("filtered6", TTree::Class(), AliAnalysisManager::kOutputContainer, "FilterEvents_Trees.root");
   mgr->ConnectOutput(task, 6, coutput6);
 }
+
 

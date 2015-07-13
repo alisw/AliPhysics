@@ -1,4 +1,5 @@
 #ifndef __CINT__
+#include "AliTrigger.h"
 #include <AliAnalysisManager.h>
 #include <AliMultiInputEventHandler.h>
 #include <AliMixEventPool.h>
@@ -54,7 +55,7 @@ void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysis
       // adds event pool (comment it and u will have default mixing)
       mixHandler->SetEventPool ( evPool );
 
-//    mixHandler->SelectCollisionCandidates(AliVEvent::kAny);
+//    mixHandler->SelectCollisionCandidates(AliTrigger::kAny);
 
 //    mixHandler->DoMixIfNotEnoughEvents(kFALSE);
 
@@ -89,3 +90,4 @@ Bool_t RsnLoadMacroFromMixHandler(TString macro,TString path="") {
 
    return kFALSE;
 }
+

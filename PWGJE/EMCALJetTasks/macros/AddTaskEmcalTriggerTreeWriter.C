@@ -1,4 +1,5 @@
 #if !defined (__CINT__) || defined (__MAKECINT__)
+#include "AliTrigger.h"
 #include "AliAnalysisManager.h"
 #include "AliESDtrackCuts.h"
 #include <TList.h>
@@ -19,8 +20,8 @@ AliAnalysisTask* AddTaskEmcalTriggerTreeWriter(){
         }
         
         AliAnalysisTaskEmcalTriggerTreeWriter *treewriter = new AliAnalysisTaskEmcalTriggerTreeWriter("TriggerTreewriterTask");
-        //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
-        treewriter->SelectCollisionCandidates(AliVEvent::kAny);
+        //pttriggertask->SelectCollisionCandidates(AliTrigger::kINT7 | AliTrigger::kEMC7);                          // Select both INT7 or EMC7 triggered events
+        treewriter->SelectCollisionCandidates(AliTrigger::kAny);
         mgr->AddTask(treewriter);
 
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -32,3 +33,4 @@ AliAnalysisTask* AddTaskEmcalTriggerTreeWriter(){
            
         return treewriter;
 }
+

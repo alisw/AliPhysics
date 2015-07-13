@@ -43,6 +43,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TClonesArray.h>
 #include <TCanvas.h>
 #include <TObjArray.h>
@@ -329,7 +330,7 @@ void AliTRDcheckESD::UserExec(Option_t *){
     fPhysSelTriggersEnabled = kTRUE;
   }
     
-  UInt_t isSelected = AliVEvent::kAny;
+  UInt_t isSelected = AliTrigger::kAny;
   if(inputHandler){
     if(inputHandler->GetEventSelection()) {
       isSelected = inputHandler->IsEventSelected();
@@ -2235,3 +2236,4 @@ Int_t AliTRDcheckESD::GetNAssignedTriggers() {
   //
   return fNAssignedTriggers;
 }
+

@@ -23,6 +23,7 @@
 
 /* $Id: */
 
+#include "AliTrigger.h"
 #include <TFile.h>
 #include <TTree.h>
 #include <TChain.h>
@@ -110,7 +111,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   ,fAODEntries(-1)
   ,fAODEntriesSum(0)
   ,fAODEntriesMax(0)
-  ,fOfflineTrgMask(AliVEvent::kAny)
+  ,fOfflineTrgMask(AliTrigger::kAny)
   ,fMinContribVtx(1)
   ,fVtxZMin(-8.)
   ,fVtxZMax(8.)
@@ -256,7 +257,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
 ,fAODEntries(-1)
 ,fAODEntriesSum(0)
 ,fAODEntriesMax(0)
-,fOfflineTrgMask(AliVEvent::kAny)
+,fOfflineTrgMask(AliTrigger::kAny)
 ,fMinContribVtx(1)
 ,fVtxZMin(-8.)
 ,fVtxZMax(8.)
@@ -2456,3 +2457,4 @@ void AliAnalysisTaskFastEmbedding::LoadDiceTrackMapRootFile() {
 void AliAnalysisTaskFastEmbedding:: SetEfficiencyMap(TH1 *h1) {
   fhEffH1 = (TH1*)h1->Clone("fhEffH1");
 }
+

@@ -9,6 +9,7 @@
  * @ingroup pwglf_forward_trains_examples
  */
 
+#include "AliTrigger.h"
 #include "TrainSetup.C"
 #include <AliESDInputHandlerRP.h>
 #include <AliCDBManager.h>
@@ -74,10 +75,10 @@ public:
       fRun(0),
       fFlags(kDefaultFlags), 
       fModules(kDefaultModules), 
-      fTriggerMask(AliVEvent::kAnyINT), 
-      fTriggerHM(AliVEvent::kHighMult),
-      fTriggerEMC(AliVEvent::kEMC7), 
-      fTriggerMUONBarrel(AliVEvent::kMUU7),
+      fTriggerMask(AliTrigger::kAnyINT), 
+      fTriggerHM(AliTrigger::kHighMult),
+      fTriggerEMC(AliTrigger::kEMC7), 
+      fTriggerMUONBarrel(AliTrigger::kMUU7),
       fCollisionType(0) // 0: pp, 1: PbPb
   {}
   void SetFlags(UShort_t flags) { fFlags = flags; }
@@ -378,3 +379,4 @@ protected:
 //
 // EOF
 //
+

@@ -33,9 +33,9 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiRAAPbPb
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    // create the task and connect with physics selection
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask("RSN", isMC);
-   if (centr == 1)   task->UseESDTriggerMask(AliVEvent::kCentral);
-   if (centr == 2)   task->UseESDTriggerMask(AliVEvent::kSemiCentral);
-   if (centr == 3)   task->UseESDTriggerMask(AliVEvent::kMB);
+   if (centr == 1)   task->UseESDTriggerMask(AliTrigger::kCentral);
+   if (centr == 2)   task->UseESDTriggerMask(AliTrigger::kSemiCentral);
+   if (centr == 3)   task->UseESDTriggerMask(AliTrigger::kMB);
 
    mgr->AddTask(task);
 
@@ -123,3 +123,4 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiRAAPbPb
 
    return task;
 }
+

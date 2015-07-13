@@ -7,6 +7,7 @@
 //        Martin Vala (martin.vala@cern.ch)
 //
 
+#include "AliTrigger.h"
 #include <TFile.h>
 #include <TChain.h>
 #include <TChainElement.h>
@@ -574,7 +575,7 @@ Bool_t AliMixInputEventHandler::IsEventCurrentSelected()
 
    AliDebug(AliLog::kDebug + 5, Form("<-"));
    Bool_t isSelected = kTRUE;
-   if (fOfflineTriggerMask && fOfflineTriggerMask != AliVEvent::kAny) {
+   if (fOfflineTriggerMask && fOfflineTriggerMask != AliTrigger::kAny) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliMultiInputEventHandler *mh = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
       if (mh) {
@@ -625,3 +626,4 @@ Bool_t AliMixInputEventHandler::GetEntryMixedEvent(Int_t id) {
 
    return kTRUE;
 }
+

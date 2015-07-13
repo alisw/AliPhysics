@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------
 
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include "TList.h"
@@ -1655,8 +1656,8 @@ void AliAnalysisTaskCheckPerformanceCascade::UserExec(Option_t *)
    
         AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
         Bool_t isSelected = 0;
-        if(     fTriggerMaskType == "kMB")           isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-        else if(fTriggerMaskType == "kHighMult")     isSelected = (maskIsSelected & AliVEvent::kHighMult) == AliVEvent::kHighMult;
+        if(     fTriggerMaskType == "kMB")           isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
+        else if(fTriggerMaskType == "kHighMult")     isSelected = (maskIsSelected & AliTrigger::kHighMult) == AliTrigger::kHighMult;
         else                                         isSelected = 1; // default = select anyway (use case = run without Phys Selection task)
         
         if ( ! isSelected ) { 
@@ -2969,3 +2970,4 @@ void AliAnalysisTaskCheckPerformanceCascade::Terminate(Option_t *)
   fHistMCTrackMultiplicity->DrawCopy("E");
 
 }
+

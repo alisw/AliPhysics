@@ -46,7 +46,7 @@ AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
  // taskMF->SetTPCNclus(nclus);
  // taskMF->SetAODtrackCutBit(AODfilterBit);
   
-  taskMF->SelectCollisionCandidates(AliVEvent::kMB);
+  taskMF->SelectCollisionCandidates(AliTrigger::kMB);
 
   mgr->AddTask(taskMF);
   
@@ -62,3 +62,4 @@ AliAnalysisDataContainer *coutFA = mgr->CreateContainer(taskname.Data(),
 }
 
   
+

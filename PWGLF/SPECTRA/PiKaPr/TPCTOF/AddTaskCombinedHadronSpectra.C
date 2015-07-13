@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskCombinedHadronSpectra(Int_t identifier = 0, Bool_t isMC 
 
   //normal tracks
   AliAnalysisCombinedHadronSpectra *task = new AliAnalysisCombinedHadronSpectra("janielskTaskCombinedHadron");
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
 
   //switches
   if (isMC) task->SetIsMCtrue(isMC);
@@ -85,3 +85,4 @@ AliAnalysisTask *AddTaskCombinedHadronSpectra(Int_t identifier = 0, Bool_t isMC 
 
   return task;
 }
+

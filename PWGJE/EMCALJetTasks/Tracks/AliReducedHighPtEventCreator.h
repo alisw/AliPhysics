@@ -134,7 +134,7 @@ public:
    * Set trigger bit for min. bias event selection
    * \param minbiasbit Bit number of the min. bias bit in AliVEvent
    */
-  void SetMinBiasSelection(AliVEvent::EOfflineTriggerTypes minbiasbit) { fMinBiasSelection = minbiasbit; }
+  void SetMinBiasSelection(AliBits minbiasbit) { fMinBiasSelection = minbiasbit; }
 
   /**
    * Switch for applying selection on a given centrality range in the tree production
@@ -184,7 +184,7 @@ protected:
   TString                   fCentralityMethod;            ///< Method to obtain the event centrality
   TString                   fTriggerSetup;                ///< Trigger setup
   Float_t                   fSelectCentralityRange[2];    // Range for centraltity selection
-  AliVEvent::EOfflineTriggerTypes fMinBiasSelection;      ///< Trigger bit for min. bias event tagging
+  AliBits fMinBiasSelection;      ///< Trigger bit for min. bias event tagging
 
 private:
   AliReducedHighPtEventCreator(const AliReducedHighPtEventCreator &);

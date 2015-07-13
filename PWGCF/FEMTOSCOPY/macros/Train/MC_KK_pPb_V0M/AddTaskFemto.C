@@ -60,10 +60,10 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //Local:
   //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
   //10-90% only two triggers: SemiCentral and MB
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
-  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
+  //taskfemto->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kSemiCentral);// this a new line for train
+  taskfemto->SelectCollisionCandidates(AliTrigger::kINT7);
   //0-10 % all three triggers
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
+  //taskfemto->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
 
   //MC PID (not needed for data):
@@ -88,3 +88,4 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
    // Return task pointer at the end
    return taskfemto;
 }
+

@@ -14,6 +14,7 @@
 **************************************************************************/
 
 // c++ headers
+#include "AliTrigger.h"
 #include <iostream>
 #include <string.h>
 
@@ -367,11 +368,11 @@ void AliAnalysisTaskUpcPhi::RunAODtrig()
   Double_t percentile = centrality->GetCentralityPercentileUnchecked("V0M");
   //Double_t percentile = centrality->GetCentralityPercentile("V0M");
   
-  if(((selectionMask & AliVEvent::kMB) == AliVEvent::kMB) && percentile<=80 && percentile>=0) fHistMBTriggersPerRun->Fill(fRunNum);
+  if(((selectionMask & AliTrigger::kMB) == AliTrigger::kMB) && percentile<=80 && percentile>=0) fHistMBTriggersPerRun->Fill(fRunNum);
   
-  if(((selectionMask & AliVEvent::kCentral) == AliVEvent::kCentral) && percentile<=6 && percentile>=0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
+  if(((selectionMask & AliTrigger::kCentral) == AliTrigger::kCentral) && percentile<=6 && percentile>=0 && (trigger.Contains("CVHN_R2-B"))) fHistCentralTriggersPerRun->Fill(fRunNum);
 
-  if(((selectionMask & AliVEvent::kSemiCentral) == AliVEvent::kSemiCentral) && percentile<=50 && percentile>=15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
+  if(((selectionMask & AliTrigger::kSemiCentral) == AliTrigger::kSemiCentral) && percentile<=50 && percentile>=15) fHistSemiCentralTriggersPerRun->Fill(fRunNum);
     
 PostData(3, fListTrig);
 
@@ -626,3 +627,4 @@ void AliAnalysisTaskUpcPhi::Terminate(Option_t *)
 
   cout<<"Analysis complete."<<endl;
 }//Terminate
+

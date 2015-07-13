@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -305,7 +306,7 @@ void AliAnaVZEROTrigger::UserExec(Option_t *)
   Bool_t goodEvent = kTRUE;
   Bool_t isSelected;
   if (fUsePhysSel)
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
   else
     isSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
 
@@ -475,4 +476,5 @@ Float_t AliAnaVZEROTrigger::GetThrC(Int_t j) const
   Float_t thrA = (fMinThr + ((Float_t)j)*(fMaxThr-fMinThr)/((Float_t)fNThr-1.));
   return (thrA*fRatio);
 }
+
 

@@ -10,6 +10,7 @@
 // need an external object to be passed to the task itself.
 //
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include <TH1.h>
@@ -295,7 +296,7 @@ Char_t AliRsnMiniMonitorTask::CheckCurrentEvent()
       output = 'E';
       // ESD specific check: Physics Selection
       // --> if this is failed, the event is rejected
-      isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+      isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
       if (!isSelected) {
          AliDebugClass(2, "Event does not pass physics selections");
          fRsnEvent.SetRef(0x0);
@@ -409,3 +410,4 @@ Double_t AliRsnMiniMonitorTask::ComputeCentrality(Bool_t isESD)
       }
    }
 }
+

@@ -56,77 +56,77 @@ void runAnaTrigProof(Int_t mode = 0, const char *folder = "/alice/data",
     AliOADBPhysicsSelection * oadbDefaultPbPb = new AliOADBPhysicsSelection("oadbCustomPbPb");
   
     Int_t triggerCount = 0;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CPBI1-B-NOPF-ALLNOTRD,CPBI2_B1-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CPBI[1|2_B1]-AC-NOPF-ALLNOTRD","AC",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CPBI[1|2_B1]-E-NOPF-ALLNOTRD","E",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kMB,"+CPBI1-B-NOPF-ALLNOTRD,CPBI2_B1-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kMB,"+CPBI[1|2_B1]-AC-NOPF-ALLNOTRD","AC",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kMB,"+CPBI[1|2_B1]-E-NOPF-ALLNOTRD","E",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
     triggerCount++;
     // Bug in early running, CVHN_R2-B-NOPF-ALLNOTRD needed explicitly up to run 167814 (to be moved to custom object as soon as all other things are fine)
-    //   oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD","B",triggerCount);
-    // oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD","B",triggerCount);
-    // oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD","AC",triggerCount);
-    // oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD","E",triggerCount);
+    //   oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD","B",triggerCount);
+    // oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD","B",triggerCount);
+    // oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD","AC",triggerCount);
+    // oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD","E",triggerCount);
     // Also include the semicentral class in the online classes selection (in order not to loose event due to the different time sharing of central and semi-central)
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD,CVLN[|_B2|_R1]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD,CVLN-AC-NOPF-ALLNOTRD","AC",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD,CVLN-E-NOPF-ALLNOTRD","E",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD,CVLN[|_B2|_R1]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD,CVLN-AC-NOPF-ALLNOTRD","AC",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD,CVLN-E-NOPF-ALLNOTRD","E",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C && Central");
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
     triggerCount++;
     // semicentral includes central ones (and might have different downscaling)
     // Bug in early running, CVHN_R2-B-NOPF-ALLNOTRD,CVLN_B2-B-NOPF-ALLNOTRD needed explicitly up to run 167814 (to be moved to custom object as soon as all other things are fine)
-    //   oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kSemiCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD,CVLN-B-NOPF-ALLNOTRD,CVLN_B2-B-NOPF-ALLNOTRD,CVLN-B-PF-ALLNOTRD","B",triggerCount);
-    //  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kSemiCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD,CVLN[|_B2]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kSemiCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD,CVLN[|_B2|_R1]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kSemiCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD,CVLN-AC-NOPF-ALLNOTRD","AC",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kSemiCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD,CVLN-E-NOPF-ALLNOTRD","E",triggerCount);
+    //   oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kSemiCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD,CVLN-B-NOPF-ALLNOTRD,CVLN_B2-B-NOPF-ALLNOTRD,CVLN-B-PF-ALLNOTRD","B",triggerCount);
+    //  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kSemiCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD,CVLN[|_B2]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kSemiCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD,CVLN[|_B2|_R1]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kSemiCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD,CVLN-AC-NOPF-ALLNOTRD","AC",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kSemiCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD,CVLN-E-NOPF-ALLNOTRD","E",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C && SemiCentral && !Central");
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
     triggerCount++;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kEMCEJE,"+CPBI2EJE-B-NOPF-CENTNOTRD","B",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kEMCEJE,"+CPBI2EJE-ACE-NOPF-CENTNOTRD","ACE",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kEMCEJE,"+CPBI2EJE-B-NOPF-CENTNOTRD","B",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kEMCEJE,"+CPBI2EJE-ACE-NOPF-CENTNOTRD","ACE",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
     // TODO EMC offline check missing, https://savannah.cern.ch/bugs/index.php?87104
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
     
     triggerCount++;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kEMCEGA,"+CPBI2EGA-B-NOPF-CENTNOTRD","B",triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kEMCEGA,"+CPBI2EGA-ACE-NOPF-CENTNOTRD","ACE",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kEMCEGA,"+CPBI2EGA-B-NOPF-CENTNOTRD","B",triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kEMCEGA,"+CPBI2EGA-ACE-NOPF-CENTNOTRD","ACE",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
     // TODO EMC offline check missing, https://savannah.cern.ch/bugs/index.php?87104
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
   
     triggerCount++;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMUSPB,"+CPBI1MSL-B-NOPF-MUON","B",  triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMUSPB,"+CPBI1MSL-ACE-NOPF-MUON","ACE",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kMUSPB,"+CPBI1MSL-B-NOPF-MUON","B",  triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kMUSPB,"+CPBI1MSL-ACE-NOPF-MUON","ACE",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");                                         
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
     triggerCount++;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMUSHPB,"+CPBI1MSH-B-NOPF-MUON","B",  triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMUSHPB,"+CPBI1MSH-ACE-NOPF-MUON","ACE",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kMUSHPB,"+CPBI1MSH-B-NOPF-MUON","B",  triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kMUSHPB,"+CPBI1MSH-ACE-NOPF-MUON","ACE",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");                                         
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
     
     triggerCount++;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMuonUnlikePB,"+CPBI1MUL-B-NOPF-MUON","B",  triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMuonUnlikePB,"+CPBI1MUL-ACE-NOPF-MUON","ACE",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kMuonUnlikePB,"+CPBI1MUL-B-NOPF-MUON","B",  triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kMuonUnlikePB,"+CPBI1MUL-ACE-NOPF-MUON","ACE",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");                                         
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
     triggerCount++;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMuonLikePB,"+CPBI1MLL-B-NOPF-MUON","B",  triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMuonLikePB,"+CPBI1MLL-ACE-NOPF-MUON","ACE",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kMuonLikePB,"+CPBI1MLL-B-NOPF-MUON","B",  triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kMuonLikePB,"+CPBI1MLL-ACE-NOPF-MUON","ACE",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");                                         
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
     triggerCount++;
-    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kPHOSPb,"+CPBI2PHS-B-NOPF-CENTNOTRD","B",  triggerCount);
-    oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kPHOSPb,"+CPBI2PHS-ACE-NOPF-CENTNOTRD","ACE",triggerCount);
+    oadbDefaultPbPb->AddCollisionTriggerClass   ( AliTrigger::kPHOSPb,"+CPBI2PHS-B-NOPF-CENTNOTRD","B",  triggerCount);
+    oadbDefaultPbPb->AddBGTriggerClass          ( AliTrigger::kPHOSPb,"+CPBI2PHS-ACE-NOPF-CENTNOTRD","ACE",triggerCount);
     oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
     oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
   
@@ -188,4 +188,5 @@ void runAnaTrigProof(Int_t mode = 0, const char *folder = "/alice/data",
     mgr->StartAnalysis("local", chain);
   }
 }
+
 

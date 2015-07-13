@@ -20,6 +20,7 @@
 //                 Author: Peter Kalinak  peter.kalinak@cern.ch
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include <stdio.h>
@@ -1574,9 +1575,9 @@ void AliAnalysisTaskPerformanceStrangeAOD::UserExec(Option_t *)
   
   // Physics selection                                                                                                                                      
   AliBits maskIsSelected = inputHandler->IsEventSelected();
-  //		Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
+  //		Bool_t isSelected = (maskIsSelected & AliTrigger::kMB);
   Bool_t isSelected = (maskIsSelected);
-  //		Bool_t isSelected = (maskIsSelected & !(AliVEvent::kOnlyFast) );
+  //		Bool_t isSelected = (maskIsSelected & !(AliTrigger::kOnlyFast) );
   if (!isSelected) return;
 
   fHistNumberEvents->Fill(1.5);
@@ -2934,4 +2935,5 @@ Double_t AliAnalysisTaskPerformanceStrangeAOD::MyRapidity(Double_t rE, Double_t 
   return 0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
 } 
 //----------------------------------------------------------------------------
+
 

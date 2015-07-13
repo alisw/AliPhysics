@@ -76,13 +76,14 @@ AliAnalysisTaskLRC *AddTaskLRCtrain(
     taskLRC->SetIonsAnalysis(isIonsAnalysis);
     // to be set in the train wagon config: taskLRC->SetCentralityClass(min, max);
     
-    taskLRC->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
+    taskLRC->SelectCollisionCandidates(AliTrigger::kMB); // if physics selection performed in UserExec(), this line should be commented
     mgr->AddTask(taskLRC);
     
     configureLRCtaskOutput(taskLRC, /*strOutputRootFolder,*/ strPrefixTaskName, strRunMode);
     
     return taskLRC;
 }
+
 
 
 

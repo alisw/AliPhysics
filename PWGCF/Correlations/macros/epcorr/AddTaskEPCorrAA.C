@@ -16,7 +16,7 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
 //  taskCentrality->SetPass(2);
-    taskCentrality->SelectCollisionCandidates( AliVEvent::kAny );
+    taskCentrality->SelectCollisionCandidates( AliTrigger::kAny );
 
     // PID
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -26,7 +26,7 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
     // Physics Selection
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); // 150608
     AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(0, kTRUE); // 0 (real), 1 (MC gen or rec.)
-//  physSelTask->SelectCollisionCandidates(AliVEvent::kMB);
+//  physSelTask->SelectCollisionCandidates(AliTrigger::kMB);
 
 	// V0 Event Plane
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
@@ -35,7 +35,7 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
 	// My Task
     AliAnalysisTaskEPCorrAA* EPCorrAATask = new AliAnalysisTaskEPCorrAA(containerName);
 //    AliAnalysisTaskSE* EPCorrAATask = new AliAnalysisTaskEPCorrAA(containerName);
-//    EPCorrAATask->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
+//    EPCorrAATask->SelectCollisionCandidates(AliTrigger::kMB); // if physics selection performed in UserExec(), this line should be commented
 
     // Add the task.
     mgr->AddTask(EPCorrAATask);
@@ -53,3 +53,4 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
     return EPCorrAATask;
 
 }
+

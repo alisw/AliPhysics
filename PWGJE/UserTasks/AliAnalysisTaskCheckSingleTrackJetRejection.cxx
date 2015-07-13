@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 //#include <string.h>
 //#include <TStyle.h>
 #include <list>
@@ -337,7 +338,7 @@ void AliAnalysisTaskCheckSingleTrackJetRejection::UserExec(Option_t *)
 
 				AliInputEventHandler* inputHandler = (AliInputEventHandler*)
 								((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-				if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
+				if(!(inputHandler->IsEventSelected() & AliTrigger::kMB)){
 								if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
 								return;
 				}
@@ -648,5 +649,6 @@ Bool_t AliAnalysisTaskCheckSingleTrackJetRejection::PythiaInfoFromFile(const cha
 //				return totalevent;
 //
 //}
+
 
 

@@ -7,6 +7,7 @@
 // Outputs:
 //  - AnalysisResults.root
 //
+#include "AliTrigger.h"
 #include "AliForwardMCFlowTaskQC.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
@@ -295,7 +296,7 @@ Bool_t AliForwardMCFlowTaskQC::CheckTrigger(const AliAODForwardMult* aodfm) cons
   //
   if (aodfm) return aodfm->IsTriggerBits(AliAODForwardMult::kB);
   else return (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-                 ->IsEventSelected() & AliVEvent::kMB);
+                 ->IsEventSelected() & AliTrigger::kMB);
 
 }
 // _____________________________________________________________________
@@ -430,3 +431,4 @@ Double_t AliForwardMCFlowTaskQC::GetCentFromB() const
 //
 //
 // EOF
+

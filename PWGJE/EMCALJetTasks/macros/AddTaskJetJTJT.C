@@ -6,7 +6,7 @@ AliAnalysisTaskJetJTJT* AddTaskJetJTJT(
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
   const char *nrho               = "Rho",
-  Int_t       trigger            = AliVEvent::kMB,
+  Int_t       trigger            = AliTrigger::kMB,
   Int_t       nCentBins          = 1,
   Double_t    jetradius          = 0.4,
   Double_t    jetptcut           = 1,
@@ -142,3 +142,4 @@ AliAnalysisTaskJetJTJT* AddTaskJetJTJT(
 
   return jtTask;
 }
+

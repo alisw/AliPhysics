@@ -53,9 +53,9 @@ if(!useMC)
 
     physSelTask->GetPhysicsSelection()->SetCustomOADBObjects(oadb,fsDefault);
   
-      // task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+      // task->SelectCollisionCandidates(AliTrigger::kUserDefined);
     }
-       task->SelectCollisionCandidates(AliVEvent::kMB);
+       task->SelectCollisionCandidates(AliTrigger::kMB);
    }
 
  TString basefilename = AliAnalysisManager::GetCommonFileName();
@@ -72,3 +72,4 @@ if(!useMC)
 
    return;
  }
+

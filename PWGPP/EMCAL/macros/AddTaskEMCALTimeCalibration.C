@@ -52,7 +52,7 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   }
     
   AliAnalysisTaskEMCALTimeCalib *taskmbemcal = new AliAnalysisTaskEMCALTimeCalib("TimeCalibTask");
-  taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+  taskmbemcal->SelectCollisionCandidates(AliTrigger::kEMC1|AliTrigger::kEMC7|AliTrigger::kEMC8|AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
   taskmbemcal->SetGeometryName(geometryName);
   taskmbemcal->SetMinClusterEnergy (minClusterEne);
   taskmbemcal->SetMaxClusterEnergy (maxClusterEne);
@@ -86,3 +86,4 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 
   return taskmbemcal;
 }
+

@@ -79,7 +79,7 @@ void Pi0Spectrum(const char* dataset="")
   task1->SetRecalib(2, 0.9822);
   task1->SetRecalib(3, 1.0072);
 
-  task1->SelectCollisionCandidates(AliVEvent::kMB);
+  task1->SelectCollisionCandidates(AliTrigger::kMB);
   mgr->AddTask(task1);
   
   // Create containers for input/output
@@ -96,3 +96,4 @@ void Pi0Spectrum(const char* dataset="")
   }
   
 }
+

@@ -10,6 +10,7 @@
 // need an external object to be passed to the task itself.
 //
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include <TH1.h>
@@ -96,7 +97,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    AliAnalysisTaskSE(name),
    fUseMC(useMC),
    fEvNum(0),
-   fTriggerMask(AliVEvent::kMB),
+   fTriggerMask(AliTrigger::kMB),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
    fUseAOD049CentralityPatch(kFALSE),
@@ -1503,3 +1504,4 @@ AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput(const char *name, const c
 
    return newDef;
 }
+

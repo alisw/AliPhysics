@@ -18,6 +18,7 @@
 // Authors:
 //   Markus Fasel <M.Fasel@gsi.de>
 //
+#include "AliTrigger.h"
 #include <TBits.h>
 #include <TString.h>
 
@@ -154,10 +155,10 @@ void AliHFEdebugTreeTask::UserExec(Option_t *){
 
   // Derive trigger 
   AliBits trigger = fInputHandler->IsEventSelected();
-  Bool_t isMBTrigger = trigger & AliVEvent::kMB;
-  Bool_t isCentralTrigger = trigger & AliVEvent::kCentral;
-  Bool_t isSemicentralTrigger = trigger & AliVEvent::kSemiCentral;
-  Bool_t isEMCALTrigger = trigger & AliVEvent::kEMCEJE;
+  Bool_t isMBTrigger = trigger & AliTrigger::kMB;
+  Bool_t isCentralTrigger = trigger & AliTrigger::kCentral;
+  Bool_t isSemicentralTrigger = trigger & AliTrigger::kSemiCentral;
+  Bool_t isEMCALTrigger = trigger & AliTrigger::kEMCEJE;
 
   // Check if MC information is available
   Bool_t mcthere = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) != NULL;
@@ -846,4 +847,5 @@ Bool_t AliHFEdebugTreeTask::CheckITSstatus( const AliESDtrack * const esdtrack, 
   }
   return status;
 }
+
 

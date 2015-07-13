@@ -19,6 +19,7 @@
 //  Author: Deepa Thomas, Shingo Sakai      //
 //////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -513,25 +514,25 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         Double_t multiplicity = header->GetRefMultiplicity();
         
         fTrigMulti->Fill(-0.5, multiplicity);
-        if(evSelMask & AliVEvent::kAny) fTrigMulti->Fill(0.5, multiplicity);
-        if(evSelMask & AliVEvent::kMB) fTrigMulti->Fill(1.5, multiplicity);
-        if(evSelMask & AliVEvent::kINT7) fTrigMulti->Fill(2.5, multiplicity);
-        if(evSelMask & AliVEvent::kINT8) fTrigMulti->Fill(3.5, multiplicity);
-        if(evSelMask & AliVEvent::kEMC1) fTrigMulti->Fill(4.5, multiplicity);
-        if(evSelMask & AliVEvent::kEMC7) fTrigMulti->Fill(5.5, multiplicity);
-        if(evSelMask & AliVEvent::kEMC8) fTrigMulti->Fill(6.5, multiplicity);
-        if(evSelMask & AliVEvent::kEMCEJE) fTrigMulti->Fill(7.5, multiplicity);
-        if(evSelMask & AliVEvent::kEMCEGA) fTrigMulti->Fill(8.5, multiplicity);
-        if(evSelMask & AliVEvent::kEMCEGA & EG2tr) fTrigMulti->Fill(9.5, multiplicity);
+        if(evSelMask & AliTrigger::kAny) fTrigMulti->Fill(0.5, multiplicity);
+        if(evSelMask & AliTrigger::kMB) fTrigMulti->Fill(1.5, multiplicity);
+        if(evSelMask & AliTrigger::kINT7) fTrigMulti->Fill(2.5, multiplicity);
+        if(evSelMask & AliTrigger::kINT8) fTrigMulti->Fill(3.5, multiplicity);
+        if(evSelMask & AliTrigger::kEMC1) fTrigMulti->Fill(4.5, multiplicity);
+        if(evSelMask & AliTrigger::kEMC7) fTrigMulti->Fill(5.5, multiplicity);
+        if(evSelMask & AliTrigger::kEMC8) fTrigMulti->Fill(6.5, multiplicity);
+        if(evSelMask & AliTrigger::kEMCEJE) fTrigMulti->Fill(7.5, multiplicity);
+        if(evSelMask & AliTrigger::kEMCEGA) fTrigMulti->Fill(8.5, multiplicity);
+        if(evSelMask & AliTrigger::kEMCEGA & EG2tr) fTrigMulti->Fill(9.5, multiplicity);
         
-        if(evSelMask & AliVEvent::kMB) trigger =0;
-        if(evSelMask & AliVEvent::kINT7) trigger =1;
-        if(evSelMask & AliVEvent::kINT8) trigger =2;
-        if(evSelMask & AliVEvent::kEMC1) trigger =3;
-        if(evSelMask & AliVEvent::kEMC7) trigger =4;
-        if(evSelMask & AliVEvent::kEMC8) trigger =5;
-        if(evSelMask & AliVEvent::kEMCEJE) trigger =6;
-        if(evSelMask & AliVEvent::kEMCEGA) trigger =7;
+        if(evSelMask & AliTrigger::kMB) trigger =0;
+        if(evSelMask & AliTrigger::kINT7) trigger =1;
+        if(evSelMask & AliTrigger::kINT8) trigger =2;
+        if(evSelMask & AliTrigger::kEMC1) trigger =3;
+        if(evSelMask & AliTrigger::kEMC7) trigger =4;
+        if(evSelMask & AliTrigger::kEMC8) trigger =5;
+        if(evSelMask & AliTrigger::kEMCEJE) trigger =6;
+        if(evSelMask & AliTrigger::kEMCEGA) trigger =7;
     }
     
     ////////////////////
@@ -922,3 +923,4 @@ void AliAnalysisTaskHFEemcQA::Terminate(Option_t *)
     }
     
 }
+

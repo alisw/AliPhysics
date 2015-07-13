@@ -1,4 +1,5 @@
 // ROOT
+#include "AliTrigger.h"
 #include "TFile.h"
 #include "TList.h"
 #include "TH1.h"
@@ -599,13 +600,13 @@ Bool_t AliAnalysisTaskJetsTriggerTRD::DetectTriggers()
 
   if (fDebug > 2)
     printf("trg: %8s %8s %8s %8s %8s %8s %8s (%s)\n",
-           (physSel & AliVEvent::kAnyINT)  ? "kAnyINT"  : " ",
-           (physSel & AliVEvent::kCINT5)   ? "kCINT5" : " ",
-           (physSel & AliVEvent::kINT7)    ? "kINT7" : " ",
-           (physSel & AliVEvent::kINT8)    ? "kINT8" : " ",
-           (physSel & AliVEvent::kMB)      ? "kMB"   : " ",
-           (physSel & AliVEvent::kEMC7)    ? "kEMC7" : " ",
-           (physSel & AliVEvent::kTRD)     ? "kTRD" : " ",
+           (physSel & AliTrigger::kAnyINT)  ? "kAnyINT"  : " ",
+           (physSel & AliTrigger::kCINT5)   ? "kCINT5" : " ",
+           (physSel & AliTrigger::kINT7)    ? "kINT7" : " ",
+           (physSel & AliTrigger::kINT8)    ? "kINT8" : " ",
+           (physSel & AliTrigger::kMB)      ? "kMB"   : " ",
+           (physSel & AliTrigger::kEMC7)    ? "kEMC7" : " ",
+           (physSel & AliTrigger::kTRD)     ? "kTRD" : " ",
            trgClasses.Data()
            );
 
@@ -619,13 +620,13 @@ Bool_t AliAnalysisTaskJetsTriggerTRD::DetectTriggers()
 	   );
 
   // physics selection
-  if ((physSel & (AliVEvent::kMB)))
+  if ((physSel & (AliTrigger::kMB)))
     MarkTrigger(kTrgMinBias);
 
-  if ((physSel & (AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral)))
+  if ((physSel & (AliTrigger::kAnyINT | AliTrigger::kCentral | AliTrigger::kSemiCentral)))
     MarkTrigger(kTrgPbPb);
 
-  if ((physSel & (AliVEvent::kINT7))) {
+  if ((physSel & (AliTrigger::kINT7))) {
     MarkTrigger(kTrgInt7);
     if (trgClasses.Contains("WU")) {
       MarkTrigger(kTrgInt7_WU);
@@ -634,18 +635,18 @@ Bool_t AliAnalysisTaskJetsTriggerTRD::DetectTriggers()
     }
   }
 
-  if ((physSel & (AliVEvent::kINT8)))
+  if ((physSel & (AliTrigger::kINT8)))
     MarkTrigger(kTrgInt8);
 
-  if ((physSel & (AliVEvent::kEMC7)) &&
+  if ((physSel & (AliTrigger::kEMC7)) &&
       trgClasses.Contains("CEMC7"))
     MarkTrigger(kTrgEMC7);
 
-  if ((physSel & (AliVEvent::kEMC8)) &&
+  if ((physSel & (AliTrigger::kEMC8)) &&
       trgClasses.Contains("CEMC8"))
     MarkTrigger(kTrgEMC8);
 
-  if ((physSel & (AliVEvent::kEMCEJE))) {
+  if ((physSel & (AliTrigger::kEMCEJE))) {
     MarkTrigger(kTrgEMCEJE);
     if (trgClasses.Contains("WU")) {
       MarkTrigger(kTrgEMCEJE_WU);
@@ -654,7 +655,7 @@ Bool_t AliAnalysisTaskJetsTriggerTRD::DetectTriggers()
     }
   }
 
-  if ((physSel & (AliVEvent::kEMCEGA)))
+  if ((physSel & (AliTrigger::kEMCEGA)))
     MarkTrigger(kTrgEMCEGA);
 
   // for the TRD-triggered events we use the classes
@@ -858,3 +859,4 @@ TH3* AliAnalysisTaskJetsTriggerTRD::AddHistogram(Hist_t hist, const char *hid, T
   fOutputList->Add(h);
   return (TH3*) h;
 }
+

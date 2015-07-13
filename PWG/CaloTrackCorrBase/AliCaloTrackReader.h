@@ -23,6 +23,7 @@
 //_________________________________________________________________________
 
 // --- ROOT system ---
+#include "AliTrigger.h"
 #include <TObject.h> 
 #include <TString.h>
 class TObjArray ; 
@@ -297,10 +298,10 @@ public:
   // Event selection when mixed event is used
   
   AliBits          GetEventTriggerMask()             const { return fEventTriggerMask        ; }
-  void             SetEventTriggerMask(AliBits evtTrig = AliVEvent::kAny) 
+  void             SetEventTriggerMask(AliBits evtTrig = AliTrigger::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
   AliBits          GetMixEventTriggerMask()          const { return fMixEventTriggerMask     ; }
-  void             SetMixEventTriggerMask(AliBits evtTrig = AliVEvent::kAnyINT)
+  void             SetMixEventTriggerMask(AliBits evtTrig = AliTrigger::kAnyINT)
                                                            { fMixEventTriggerMask = evtTrig  ; }
 	Bool_t           IsEventTriggerAtSEOn()            const { return fEventTriggerAtSE        ; }
   void             SwitchOnEventTriggerAtSE()              { fEventTriggerAtSE      = kTRUE  ; }
@@ -742,10 +743,10 @@ public:
   AliBits          fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kAnyINT.
   Bool_t           fEventTriggerAtSE;              ///<  Select triggered event at SE base task or here.
   
-  Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kAnyInt.
-  Bool_t           fEventTrigCentral ;             ///<  Event is AliVEvent::kCentral on its name,  it should correspond to PbPb.
-  Bool_t           fEventTrigSemiCentral ;         ///<  Event is AliVEvent::kSemiCentral on its name,  it should correspond to PbPb.
-  Bool_t           fEventTrigEMCALL0 ;             ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1.
+  Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliTrigger::kMB, AliTrigger::kAnyInt.
+  Bool_t           fEventTrigCentral ;             ///<  Event is AliTrigger::kCentral on its name,  it should correspond to PbPb.
+  Bool_t           fEventTrigSemiCentral ;         ///<  Event is AliTrigger::kSemiCentral on its name,  it should correspond to PbPb.
+  Bool_t           fEventTrigEMCALL0 ;             ///<  Event is EMCal L0 on its name, it should correspond to AliTrigger::kEMC7, AliTrigger::kEMC1.
   Bool_t           fEventTrigEMCALL1Gamma1 ;       ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigEMCALL1Gamma2 ;       ///<  Event is L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigEMCALL1Jet1 ;         ///<  Event is L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
@@ -873,6 +874,7 @@ public:
 } ;
 
 #endif //ALICALOTRACKREADER_H
+
 
 
 

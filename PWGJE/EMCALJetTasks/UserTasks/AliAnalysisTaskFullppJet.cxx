@@ -5,6 +5,7 @@
 // -R. Ma, Mar 2011
 // **************************************
 
+#include "AliTrigger.h"
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TFormula.h>
@@ -986,17 +987,17 @@ void AliAnalysisTaskFullppJet::UserExec(Option_t *)
   if(fCheckTPCOnlyVtx) CheckTPCOnlyVtx(trigger);
   if(!fIsMC)
     {
-      if (trigger & AliVEvent::kFastOnly) return;  // Reject fast trigger cluster
+      if (trigger & AliTrigger::kFastOnly) return;  // Reject fast trigger cluster
       if(fPeriod.CompareTo("lhc11a",TString::kIgnoreCase)==0)
 	{
-	  if (trigger & AliVEvent::kMB)       fTriggerType = 0;
-	  else if(trigger & AliVEvent::kEMC1) fTriggerType = 1;
+	  if (trigger & AliTrigger::kMB)       fTriggerType = 0;
+	  else if(trigger & AliTrigger::kEMC1) fTriggerType = 1;
 	  else fTriggerType = -1;
 	}
       else if (fPeriod.CompareTo("lhc11c",TString::kIgnoreCase)==0 || fPeriod.CompareTo("lhc11d",TString::kIgnoreCase)==0)
 	{
-	  if (trigger & AliVEvent::kINT7)     fTriggerType = 0;
-	  else if(trigger & AliVEvent::kEMC7) fTriggerType = 1;
+	  if (trigger & AliTrigger::kINT7)     fTriggerType = 0;
+	  else if(trigger & AliTrigger::kEMC7) fTriggerType = 1;
 	  else fTriggerType = -1;
 	}
       else
@@ -1007,7 +1008,7 @@ void AliAnalysisTaskFullppJet::UserExec(Option_t *)
   else
     {
       if(!fPhySelForMC) fTriggerType = 0;
-      else if (trigger & AliVEvent::kAnyINT) fTriggerType = 0;
+      else if (trigger & AliTrigger::kAnyINT) fTriggerType = 0;
       else fTriggerType = -1;
       
       if(fOfflineTrigger)
@@ -3025,9 +3026,9 @@ void AliAnalysisTaskFullppJet::CheckTPCOnlyVtx(const AliBits trigger)
   // Check the fraction of accepted events that have only TPC vertex
   //
   Int_t lTriggerType = -1;
-  if (trigger & AliVEvent::kMB)       lTriggerType = 1;
-  if (trigger & AliVEvent::kFastOnly) lTriggerType = 0;
-  if (trigger & AliVEvent::kEMC1)     lTriggerType = 2;
+  if (trigger & AliTrigger::kMB)       lTriggerType = 1;
+  if (trigger & AliTrigger::kFastOnly) lTriggerType = 0;
+  if (trigger & AliTrigger::kEMC1)     lTriggerType = 2;
   if(lTriggerType==-1) return;
   fhEventStatTPCVtx->Fill(0.5+lTriggerType*3);
   if(HasPrimaryVertex()) fhEventStatTPCVtx->Fill(1.5+lTriggerType*3);
@@ -3072,3 +3073,4 @@ Bool_t AliAnalysisTaskFullppJet::IsLEDEvent() const
 
   return isLED;
 }
+

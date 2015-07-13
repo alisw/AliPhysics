@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TString.h>
 #include <TH1.h>
@@ -266,8 +267,8 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 
   // TRIGGER SELECTION
   // MB & HM triggers
-  Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
-         triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
+  Bool_t triggerMB = (inputHandler->IsEventSelected()& AliTrigger::kMB),
+         triggerHM = (inputHandler->IsEventSelected()& AliTrigger::kHighMult);
   if(!triggerHM && !triggerMB){
     AliDebug(2, "Miss trigger");
 //     ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
@@ -752,3 +753,4 @@ Int_t AliMEStender::MakeMultiplicityV0MMC(AliMCEvent * const mc)
 
 	return charged;
 }
+

@@ -1,4 +1,4 @@
-AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(char* bGen = "AODMC2b", char* bRec1 = "AOD", UInt_t filterMask = 128, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny, Char_t *jf = "ANTIKT", Float_t radius = 0.4, Int_t nSkip = 0, Bool_t kReadJetBranch = kTRUE, char* suffix ="", Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9, Float_t ptJetCut = 10.,  char* anaJetType = "alljet", Float_t vertexWindow = 10., Int_t ffmPower = 2, Int_t bType = 1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = -25, Int_t nUsedJets = 8, char* jfTask = "clusters", Bool_t kRandom = kFALSE);
+AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(char* bGen = "AODMC2b", char* bRec1 = "AOD", UInt_t filterMask = 128, UInt_t iPhysicsSelectionFlag = AliTrigger::kAny, Char_t *jf = "ANTIKT", Float_t radius = 0.4, Int_t nSkip = 0, Bool_t kReadJetBranch = kTRUE, char* suffix ="", Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9, Float_t ptJetCut = 10.,  char* anaJetType = "alljet", Float_t vertexWindow = 10., Int_t ffmPower = 2, Int_t bType = 1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = -25, Int_t nUsedJets = 8, char* jfTask = "clusters", Bool_t kRandom = kFALSE);
 
 AliAnalysisTaskJetFFMoments* AddTaskJetFFMoments(Float_t radius = 0.4, Float_t ptTrackCut = 0.15, Char_t *jf = "ANTIKT", Float_t ptJetCut = 10, char* anaJetType = "alljet", Int_t ffmPower = 2, char* bGen = "", Int_t bType = 1, Double_t bcut1 = 0.4, Double_t bcut2 = TMath::Pi(), double mu = -25, Int_t nUsedJets = 8, char* jfTask = "clusters", Int_t nSkip = 0, Bool_t kRandom = kFALSE, char* suffix);
 
@@ -197,3 +197,4 @@ AliAnalysisTaskJetFFMoments *AddTaskJetFFMoments(char* bGen, char* bRec1, UInt_t
  
  return ffm;
 }
+

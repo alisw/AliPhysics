@@ -30,7 +30,7 @@ AliRsnMiniAnalysisTask * AddTaskLStarPPb
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask = AliVEvent::kINT7;
+  UInt_t      triggerMask = AliTrigger::kINT7;
   Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013
   Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013
   Int_t       MinPlpContribSPD = 5; //default value if used
@@ -174,3 +174,4 @@ AliRsnMiniAnalysisTask * AddTaskLStarPPb
 
    return task;
 }
+

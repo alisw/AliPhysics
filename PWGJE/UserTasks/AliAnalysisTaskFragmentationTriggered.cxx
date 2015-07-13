@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TList.h"
 #include "TTree.h"
 #include "TH3F.h"
@@ -1249,7 +1250,7 @@ const AliAODVertex *vtx = aodEvent->GetPrimaryVertex();
  if(!mcEvent){
 
  if (kmbtrigger){
-   if (!( inputHandler->IsEventSelected() & AliVEvent::kINT7) )  
+   if (!( inputHandler->IsEventSelected() & AliTrigger::kINT7) )  
      return;
    // std::cout <<"The used trigger classes after kAnyInt selection are.." << triggerclasses << endl;
   fHistCuts->Fill(1); // after trigger selection 
@@ -1261,7 +1262,7 @@ const AliAODVertex *vtx = aodEvent->GetPrimaryVertex();
 
  if (khjttrigger){
   
-   if (!(inputHandler->IsEventSelected() & AliVEvent::kTRD) )
+   if (!(inputHandler->IsEventSelected() & AliTrigger::kTRD) )
      return;
    fHistCuts->Fill(1);
    //   std::cout<<"The used trigger classes after kTRD selection are.."<< triggerclasses << endl;
@@ -3140,3 +3141,4 @@ void AliAnalysisTaskFragmentationTriggered::Terminate(const Option_t * /* option
 {
   return;
 }
+

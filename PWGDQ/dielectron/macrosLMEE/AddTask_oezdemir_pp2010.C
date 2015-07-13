@@ -38,7 +38,7 @@ AliAnalysisTask *AddTask_oezdemir_pp2010(Bool_t getFromAlien=kFALSE,TString cFil
   task->SetEventFilter( GetEventCuts() );
 
   //Min Bias?
-  task->SetTriggerMask(AliVEvent::kMB);
+  task->SetTriggerMask(AliTrigger::kMB);
   task->SetRandomizeDaughters(kTRUE);
   mgr->AddTask(task);
 
@@ -82,3 +82,4 @@ AliAnalysisTask *AddTask_oezdemir_pp2010(Bool_t getFromAlien=kFALSE,TString cFil
 
   return task;
 }
+

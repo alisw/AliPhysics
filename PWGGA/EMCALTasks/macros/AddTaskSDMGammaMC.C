@@ -32,8 +32,8 @@ void AddTaskAliAnalysisTaskGammaMC()
     
     sprintf(saythis,"GammaMCTask_%d",i);
     task[i] = new AliAnalysisTaskGammaMC(saythis);
-    task[i]->SelectCollisionCandidates(AliVEvent::kINT7);//LHC13b/c
-    //task[i]->SelectCollisionCandidates(AliVEvent::kMB);
+    task[i]->SelectCollisionCandidates(AliTrigger::kINT7);//LHC13b/c
+    //task[i]->SelectCollisionCandidates(AliTrigger::kMB);
     task[i]->SetRecalScheme(RecalScheme[i]);
     
     task[i]->SetFidPhiMinMax(1.39626, 3.15);// my defaults: 1.39626, 3.15
@@ -60,3 +60,4 @@ void AddTaskAliAnalysisTaskGammaMC()
   
 
 }
+

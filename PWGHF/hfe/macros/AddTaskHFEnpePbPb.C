@@ -241,7 +241,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
   else		task->SetHasMCData(kFALSE);
 
   if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";
@@ -257,3 +257,4 @@ AliAnalysisTask *RegisterTaskNPEPbPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
 
   return NULL;
 }
+

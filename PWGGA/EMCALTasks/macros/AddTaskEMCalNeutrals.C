@@ -21,7 +21,7 @@ AliEMCalpi0Task* AddTaskEMCalNeutrals( void )
 
     // create task
     AliEMCalpi0Task* clusterEvaluation = new AliEMCalpi0Task( "clusterEvaluation" );
-    clusterEvaluation->SelectCollisionCandidates(AliVEvent::kSemiCentral| AliVEvent::kCentral|AliVEvent::kMB );
+    clusterEvaluation->SelectCollisionCandidates(AliTrigger::kSemiCentral| AliTrigger::kCentral|AliTrigger::kMB );
 
     // add task to manager
     analysisManager->AddTask(clusterEvaluation);
@@ -33,3 +33,4 @@ AliEMCalpi0Task* AddTaskEMCalNeutrals( void )
     return clusterEvaluation;
 
 }
+

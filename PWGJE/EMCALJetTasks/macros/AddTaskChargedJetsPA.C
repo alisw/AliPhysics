@@ -2,7 +2,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   const char*         containerSuffix         = "",
   Double_t            jetRadius               = 0.4,
   const char*         centralityType          = "V0A",
-  AliBits             trigger                 = AliVEvent::kINT7,
+  AliBits             trigger                 = AliTrigger::kINT7,
   Bool_t              isPA                    = kTRUE,
   Bool_t              isMC                    = kFALSE,
   Bool_t              doJetProfileAnalysis    = kFALSE,
@@ -27,19 +27,19 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
    
   TString triggerName(Form("Trigger_%s", trigger.GetBitString().Data()));
   TString triggerName;
-  if (trigger == AliVEvent::kAnyINT)
+  if (trigger == AliTrigger::kAnyINT)
     triggerName = "kAnyINT";
-  else if (trigger == AliVEvent::kAny)
+  else if (trigger == AliTrigger::kAny)
     triggerName = "kAny";
-  else if(trigger == AliVEvent::kINT7)
+  else if(trigger == AliTrigger::kINT7)
     triggerName = "kINT7";
-  else if(trigger == AliVEvent::kMB)
+  else if(trigger == AliTrigger::kMB)
     triggerName = "kMB";
-  else if(trigger == AliVEvent::kEMC7)
+  else if(trigger == AliTrigger::kEMC7)
     triggerName = "kEMC7";
-  else if(trigger == AliVEvent::kEMCEJE)
+  else if(trigger == AliTrigger::kEMCEJE)
     triggerName = "kEMCEJE";
-  else if(trigger == AliVEvent::kEMCEGA)
+  else if(trigger == AliTrigger::kEMCEGA)
     triggerName = "kEMCEGA";
 
   // #### Define manager and data container names
@@ -80,18 +80,18 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // anti-kt
     AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // kt
     cout << " Jet finder tasks added: " <<  jetFinderTask << " + " <<  jetFinderTaskKT << endl;
-    jetFinderTask->SelectCollisionCandidates(AliVEvent::kAny);
-    jetFinderTaskKT->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderTask->SelectCollisionCandidates(AliTrigger::kAny);
+    jetFinderTaskKT->SelectCollisionCandidates(AliTrigger::kAny);
 
     // #### Define external rho task
     AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // anti-kt
     AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,minJetTrackPt,0.300,0.005,recombscheme, "Jet", 0.0); // kt
-    jetFinderRho->SelectCollisionCandidates(AliVEvent::kAny);
-    jetFinderRhoKT->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderRho->SelectCollisionCandidates(AliTrigger::kAny);
+    jetFinderRhoKT->SelectCollisionCandidates(AliTrigger::kAny);
     cout << " Jet finder tasks (used for bgrd) added: " <<  jetFinderRho << " + " <<  jetFinderRhoKT << endl;
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
     AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", bgrdName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,bgrdName.Data(),kTRUE);
-    rhotask->SelectCollisionCandidates(AliVEvent::kAny);
+    rhotask->SelectCollisionCandidates(AliTrigger::kAny);
     cout << " Background task added: " <<  rhotask << endl;
   }
 
@@ -165,3 +165,4 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   cout << " ############ MACRO EXECUTION SUCCESSFUL, will return " << task << " ############\n";
   return task;
 }
+

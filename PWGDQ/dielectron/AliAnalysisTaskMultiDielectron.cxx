@@ -19,6 +19,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TH1D.h>
 
@@ -49,7 +50,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fListHistos(),
   fListCF(),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fExcludeTriggerMask(),
   fTriggerOnV0AND(kFALSE),
   fFiredTrigger(""),
@@ -75,7 +76,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fListHistos(),
   fListCF(),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fExcludeTriggerMask(),
   fTriggerOnV0AND(kFALSE),
   fFiredTrigger(""),
@@ -200,7 +201,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   }
   
   // Was event selected ?
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   Bool_t isRejected = kFALSE;
   if( fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
@@ -362,4 +363,5 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
 }
+
 

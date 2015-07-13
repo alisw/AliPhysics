@@ -14,6 +14,7 @@
 //           Michele Floris, CERN
 //-------------------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "AliAnalysisCuts.h"
 #include "TList.h"
 #include "TObjString.h"
@@ -93,8 +94,8 @@ public:
   void SetBIFactors(const AliESDEvent * aESD);
   
   void SetUseBXNumbers(Bool_t flag = kTRUE) {fUseBXNumbers = flag;}
-  void SetComputeBG   (UInt_t flag = AliVEvent::kMB) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
-  void SetUseMuonTriggers(Bool_t) { Printf("ERROR: Use of AliPhysicsSelection::SetUseMuonTriggers is deprecated. Use AliVEvent::kMUON selection instead."); }
+  void SetComputeBG   (UInt_t flag = AliTrigger::kMB) {fComputeBG    = flag; if(flag) fUseBXNumbers = flag;}
+  void SetUseMuonTriggers(Bool_t) { Printf("ERROR: Use of AliPhysicsSelection::SetUseMuonTriggers is deprecated. Use AliTrigger::kMUON selection instead."); }
   void SetBin0Callback( const char * cb) {fBin0CallBack = cb;} 
   void SetBin0CallbackViaPointer( Bin0Callback_t cb) {fBin0CallBackPointer = cb;}// WARNING: THIS SHOULD NOT BE USED, WILL BE REMOVED SOON
   
@@ -157,3 +158,4 @@ private:
 };
 
 #endif
+

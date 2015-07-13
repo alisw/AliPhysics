@@ -62,7 +62,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterPWGJETrain(Bool_t useKineFilter=kTRUE,
    mgr->AddTask(esdfilter);
 
    if(usePhysicsSelection){
-     esdfilter->SelectCollisionCandidates(AliVEvent::kAny);
+     esdfilter->SelectCollisionCandidates(AliTrigger::kAny);
    }  
 
    // Filtering of MC particles (decays conversions etc)
@@ -73,7 +73,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterPWGJETrain(Bool_t useKineFilter=kTRUE,
    AliAnalysisTaskMCParticleFilter *kinefilter = 0;
    if (useKineFilter) {
       kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Kine Filter");
-      if(usePhysicsSelection)kinefilter->SelectCollisionCandidates(AliVEvent::kAny);
+      if(usePhysicsSelection)kinefilter->SelectCollisionCandidates(AliTrigger::kAny);
       mgr->AddTask(kinefilter);
    }   
 
@@ -326,3 +326,4 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
    return kTRUE;
 
 }
+

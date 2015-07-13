@@ -5,6 +5,7 @@
 //Does event Mixing using AliEventPoolManager
 /////////
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEmcalJetHMEC.h"
 
 #include "TChain.h"
@@ -53,7 +54,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fTrkEta(0.9),
   fDoEventMixing(0),
   fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
-  fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
+  fTriggerEventType(AliTrigger::kEMCEJE), fMixingEventType(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fCentBinSize(1),
@@ -104,7 +105,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fTrkEta(0.9),
   fDoEventMixing(0),
   fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
-  fTriggerEventType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
+  fTriggerEventType(AliTrigger::kEMCEJE), fMixingEventType(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fCentBinSize(1),
@@ -993,3 +994,4 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
 
   return TRefficiency;
 }
+

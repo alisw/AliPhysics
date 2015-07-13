@@ -70,7 +70,7 @@ void runFlowOnDataExample() {
   // add the task to the manager
   mgr->AddTask(taskFE);
   // set the trigger selection
-  taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+  taskFE->SelectCollisionCandidates(AliTrigger::kMB);
 
     // define the event cuts object
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
@@ -168,7 +168,7 @@ void runFlowOnDataExample() {
       // create the flow analysis tasks
       taskQC[i] = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_n=%i", i+2));
       // set the triggers 
-      taskQC[i]->SelectCollisionCandidates(AliVEvent::kMB);
+      taskQC[i]->SelectCollisionCandidates(AliTrigger::kMB);
       // and set the correct harmonic n
       taskQC[i]->SetHarmonic(i+2);
 
@@ -203,3 +203,4 @@ void runFlowOnDataExample() {
 
   
 }
+

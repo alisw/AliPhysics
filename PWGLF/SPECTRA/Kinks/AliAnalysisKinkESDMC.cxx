@@ -20,6 +20,7 @@
 //       Nominal Radius 120-210 cm, kaon Rap < 0.5 , eta < 0.8
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -755,7 +756,7 @@ void AliAnalysisKinkESDMC::UserExec(Option_t *)
 
 //  Phys sel    2012 EFF calculation      
 Bool_t isSelected =
-((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB;
+((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliTrigger::kMB;
 
          if ( isSelected ==kFALSE) return;   //  24/6/11 apo MF
 //
@@ -1309,3 +1310,4 @@ const AliESDVertex* AliAnalysisKinkESDMC::GetEventVertex(const AliESDEvent* esd)
      return 0;
   }
 }
+

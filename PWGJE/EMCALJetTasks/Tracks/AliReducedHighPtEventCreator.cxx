@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include "AliTrigger.h"
 #include <map>
 #include <vector>
 
@@ -65,7 +66,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fOutputTree(NULL),
   fOutputEvent(NULL),
   fTrackSelections(NULL),
-  fEventSelectionBits(AliVEvent::kAny),
+  fEventSelectionBits(AliTrigger::kAny),
   fSwapTriggerThresholds(kFALSE),
   fMinClusterE(-1),
   fMaxClusterE(1000),
@@ -76,7 +77,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fTriggerSetup("4classes"),
-  fMinBiasSelection(AliVEvent::kINT7)
+  fMinBiasSelection(AliTrigger::kINT7)
 {
   fSelectCentralityRange[0] = 0.;
   fSelectCentralityRange[1] = 100.;
@@ -91,7 +92,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fOutputTree(NULL),
   fOutputEvent(NULL),
   fTrackSelections(NULL),
-  fEventSelectionBits(AliVEvent::kAny),
+  fEventSelectionBits(AliTrigger::kAny),
   fSwapTriggerThresholds(kFALSE),
   fMinClusterE(-1),
   fMaxClusterE(1000),
@@ -102,7 +103,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fTriggerSetup("4classes"),
-  fMinBiasSelection(AliVEvent::kINT7)
+  fMinBiasSelection(AliTrigger::kINT7)
 {
   DefineOutput(2, TTree::Class());
 
@@ -496,4 +497,5 @@ AliReducedTrackSelectionContainer::~AliReducedTrackSelectionContainer() {
 }
 
 } /* namespace HighPtTracks */
+
 

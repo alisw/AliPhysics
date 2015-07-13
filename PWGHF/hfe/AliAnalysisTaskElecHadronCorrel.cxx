@@ -25,6 +25,7 @@
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH2F.h"
@@ -800,17 +801,17 @@ void AliAnalysisTaskElecHadronCorrel::UserExec(Option_t*)
 
   if(fTriggerMB && fTriggerCentral){
     // trigger selection
-    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral))) return;
+    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kCentral))) return;
   }
 
   if(fTriggerMB && !fTriggerCentral){
     // trigger selection
-    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) return;
+    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kSemiCentral))) return;
   }
 
   if(!fTriggerMB){
     // trigger selection
-    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kEMCEGA))) return;
+    if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kEMCEGA))) return;
   }
   // centrality selection 
   //  SetCentralityParameters(0., 7., fkCentralityMethod);
@@ -2677,3 +2678,4 @@ void AliAnalysisTaskElecHadronCorrel::SetCentralityParameters(Double_t Centralit
   fCentralityMax = CentralityMax;
   fkCentralityMethod = CentralityMethod;
 }
+

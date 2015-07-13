@@ -49,8 +49,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPb_TPC
    TString taskName = Form("TPCPhiMeson%s%s_%i", (isPP? "pp" : "pPb"), (isMC ? "MC" : "Data"), (Int_t)type1 );
    
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
-   //task->SelectCollisionCandidates(AliVEvent::kINT7);
-   task->UseESDTriggerMask(AliVEvent::kINT7);
+   //task->SelectCollisionCandidates(AliTrigger::kINT7);
+   task->UseESDTriggerMask(AliTrigger::kINT7);
    if (isPP) 
      task->UseMultiplicity("QUALITY");
    else
@@ -156,3 +156,4 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPb_TPC
    
    return task;
 }
+

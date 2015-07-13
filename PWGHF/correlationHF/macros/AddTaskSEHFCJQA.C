@@ -56,7 +56,7 @@ AliAnalysisTaskSEHFCJqa* AddTaskSEHFCJQA(TString fileout="standard",Int_t readmc
     //    cuts->ResetMaskAndEnableMBTrigger();
     //cuts->SetUseAnyTrigger();
     //cuts->SetTriggerMask(0);
-    cuts->SetTriggerMask(AliVEvent::kEMC1 | AliVEvent::kEMC7 | AliVEvent::kEMC8);
+    cuts->SetTriggerMask(AliTrigger::kEMC1 | AliTrigger::kEMC7 | AliTrigger::kEMC8);
     cuts->SetTriggerClass("");
 
     AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
@@ -146,3 +146,4 @@ AliAnalysisTaskSEHFCJqa* AddTaskSEHFCJQA(TString fileout="standard",Int_t readmc
 
   return hfTask;
 }
+

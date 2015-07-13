@@ -32,7 +32,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiMassStudy
    Double_t    maxClsCrossedRows = 0.8,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
-   UInt_t      triggerMask = AliVEvent::kMB,
+   UInt_t      triggerMask = AliTrigger::kMB,
    Int_t       signedPdg = 333,
    TString     monitorOpt = "NoSIGN",  //Flag for AddMonitorOutput.C e.g."NoSIGN"
    Bool_t      useCrossedRows = kFALSE,
@@ -62,7 +62,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiMassStudy
 
 
    //if(is2011PbPb)
-   //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+   //task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
    //else
    task->SelectCollisionCandidates(triggerMask);
 
@@ -169,3 +169,4 @@ return 0x0;
    
    return task;
 }
+

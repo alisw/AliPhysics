@@ -19,7 +19,7 @@ bSelHijingParticles: kTRUE, select only particles from Hijing event. kFALSE, sel
 usePythiaxsec: kFALSE, do not use the Pythia cross section information file. This might reduce the number of errors and file opening issues. 
 */
 
-void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodType = "LHC11h", TString beamType = "PbPb", AliBits triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodType = "LHC11h", TString beamType = "PbPb", AliBits triggerMask = AliTrigger::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -39,7 +39,7 @@ void AddTaskHybridTrackEfficiency(TString hybridTrackDef = "2011", char *prodTyp
   }
 }
 
-void AddTaskHybridTrackEfficiencyAOD(char *prodType = "LHC11h", TString beamType = "PbPb", AliBits triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiencyAOD(char *prodType = "LHC11h", TString beamType = "PbPb", AliBits triggerMask = AliTrigger::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   Int_t filterMask1; //standard global tracks
   Int_t filterMask2; //complementary tracks
@@ -85,7 +85,7 @@ void AddTaskHybridTrackEfficiencyAOD(char *prodType = "LHC11h", TString beamType
   }
 }
 
-void AddTaskHybridTrackEfficiencyESD2010(char *prodType = "LHC10h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiencyESD2010(char *prodType = "LHC10h", TString beamType = "PbPb", UInt_t triggerMask = AliTrigger::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,0,triggerMask,"CENT_10_RAA"  ,bSelHijingParticles,usePythiaxsec); // RAA track cuts
   AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,1,triggerMask,"CENT_10_RESTR",bSelHijingParticles,usePythiaxsec); // High quality tracks
@@ -102,7 +102,7 @@ void AddTaskHybridTrackEfficiencyESD2010(char *prodType = "LHC10h", TString beam
   }
 }
 
-void AddTaskHybridTrackEfficiencyESD2011(char *prodType = "LHC10h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiencyESD2011(char *prodType = "LHC10h", TString beamType = "PbPb", UInt_t triggerMask = AliTrigger::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   AliPWG4HighPtSpectra *taskSpectra00cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,0,triggerMask,"CENT_10_RAA"  ,bSelHijingParticles,usePythiaxsec); // RAA track cuts
   AliPWG4HighPtSpectra *taskSpectra01cent10 = ConfigureTaskPWG4HighPtSpectra(prodType,beamType,10,0,5,triggerMask,"CENT_10_RESTR",bSelHijingParticles,usePythiaxsec); // High quality tracks
@@ -117,7 +117,7 @@ void AddTaskHybridTrackEfficiencyESD2011(char *prodType = "LHC10h", TString beam
   }
 }
 
-void AddTaskHybridTrackEfficiencyQA_AOD_train(char *prodType = "LHC11h", TString beamType = "PbPb", UInt_t triggerMask = AliVEvent::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
+void AddTaskHybridTrackEfficiencyQA_AOD_train(char *prodType = "LHC11h", TString beamType = "PbPb", UInt_t triggerMask = AliTrigger::kMB, Bool_t bSelHijingParticles = kFALSE, Bool_t usePythiaxsec = kFALSE)
 {
   Int_t filterMask1; //standard global tracks
   Int_t filterMask2; //complementary tracks
@@ -160,7 +160,7 @@ void AddTaskHybridTrackEfficiencyQA_AOD_train(char *prodType = "LHC11h", TString
 }
 
 AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", TString beamType = "PbPb", Int_t centClass = 0, 
-						     Int_t trackType = 0, Int_t cuts = 0, AliBits triggerMask = AliVEvent::kMB,
+						     Int_t trackType = 0, Int_t cuts = 0, AliBits triggerMask = AliTrigger::kMB,
 						     TString taskName, Bool_t bSelHijingParticles = kFALSE,
                                                      Bool_t usePythiaxsec = kTRUE, Int_t filterMask = 0)
 {
@@ -411,19 +411,19 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   manNeg->SetParticleCutsList(kStepMCAcceptance,mcList);
 
   TString trigName = "";
-  if (triggerMask == AliVEvent::kAnyINT)
+  if (triggerMask == AliTrigger::kAnyINT)
     trigName += "kAnyINT";
-  else if (triggerMask == AliVEvent::kAny)
+  else if (triggerMask == AliTrigger::kAny)
     trigName += "kAny";
-  else if(triggerMask == AliVEvent::kINT7)
+  else if(triggerMask == AliTrigger::kINT7)
     trigName += "kINT7";
-  else if(triggerMask == AliVEvent::kMB)
+  else if(triggerMask == AliTrigger::kMB)
     trigName += "kMB";
-  else if(triggerMask == AliVEvent::kEMC7)
+  else if(triggerMask == AliTrigger::kEMC7)
     trigName += "kEMC7";
-  else if(triggerMask == AliVEvent::kEMCEJE)
+  else if(triggerMask == AliTrigger::kEMCEJE)
     trigName += "kEMCEJE";
-  else if(triggerMask == AliVEvent::kEMCEGA)
+  else if(triggerMask == AliTrigger::kEMCEGA)
     trigName += "kEMCEGA";
 
 
@@ -479,3 +479,4 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   // Return task pointer at the end
   return taskPWG4HighPtSpectra;
 }
+

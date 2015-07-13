@@ -434,7 +434,7 @@ You can set a trigger by calling
 AliAnalysisTaskFlowEvent::SelectCollisionCandidates(UInt_t offlineTriggerMask);\end{lstlisting}
 where \texttt{offlineTriggerMask} is the trigger mask corresponding to the desired trigger. A list of all available triggers, with a short descrption, can be found in the header file of the \texttt{AliVEvent} class\footnote{\texttt{\$ALICE\_ROOT/...}}. This function, however, is not implement in the \texttt{AliAnalysisTaskFlowEvent} itself, but rather in the base class of which most of the analysis task classes within \texttt{AliROOT} are derived: the \texttt{AliAnalysisTaskSE} class (which is designed to handle a single event, hence the suffix `SE'). For each event that is written from a file, but function \texttt{AliAnalysisTaskSE::Exec()} is called, which - among other things - checks if an event passes the requested trigger selection, and if so, calls the \texttt{UserExec()} function of your analysis task. In the case of the \texttt{AliAnalysisTaskFlowEvent} this is the \texttt{AliAnalysisTaskFlowEvent::UserExec()}, which creates \texttt{AliFlowSimpleTracks} and fills the flow event. 
 
-A general remark about trigger selection in flow analyses is that the non-uniform acceptance correction methods that are implemented in the flow package assume a flat \textbf{Q} vector distribution. Specific triggers (e.g. EMCal triggers) result in a \textbf{Q} vector bias which should \emph{not} be corrected as they invalidate that assumption. A safe approach is therefore using a minimum bias trigger for your analysis (such as \texttt{AliVEvent::kMB}), other triggers selections will not a-priori lead to problems, but use them with caution!
+A general remark about trigger selection in flow analyses is that the non-uniform acceptance correction methods that are implemented in the flow package assume a flat \textbf{Q} vector distribution. Specific triggers (e.g. EMCal triggers) result in a \textbf{Q} vector bias which should \emph{not} be corrected as they invalidate that assumption. A safe approach is therefore using a minimum bias trigger for your analysis (such as \texttt{AliTrigger::kMB}), other triggers selections will not a-priori lead to problems, but use them with caution!
 
 \subsubsection{Event cuts}\index{event selection!event cuts}
 In addition to trigger selection, generally one wants to perform additional event (quality) selection. The flow package contains an event cuts class which can be used to perform event selection, the \texttt{AliFlowEventCuts} object\footnote{\texttt{\$ALICE\_ROOT/PWG/FLOW/Tasks/AliFlowEventCuts.cxx}}. \index{AliFlowEventCuts}
@@ -1512,7 +1512,7 @@ The manager and input data are present, so we can create the flow event task and
   // add the task to the manager
   mgr->AddTask(taskFE);
   // set the trigger selection
-  taskFE->SelectCollisionCandidates(AliVEvent::kMB);\end{lstlisting}
+  taskFE->SelectCollisionCandidates(AliTrigger::kMB);\end{lstlisting}
 Note that in the last step you have set the trigger configuration\index{example!trigger selection}. Always make sure that you run on a trigger that makes sense for your analysis. A general remark is that the non-uniform acceptance correction methods that are implemented in the flow package, assume a flat \textbf{Q} vector distribution. Specific triggers (e.g. EMCal triggers) result in a \textbf{Q} vector bias which should \emph{not} be corrected as they invalidate that assumption\footnote{The actual event selection based on triggers is done in the \texttt{AliAnalysisTaskSE} class (to be specific, the trigger is checked in \texttt{AliAnalysisTaskSE::Exec()}) from which the \texttt{AliAnalysisTaskFlowEvent} is derived. The full set of available triggers can be found in the virtual event header \texttt{AliVEvent.h}. }.
 
 In addition to the trigger selection, one might want to do some more event selection\index{example!event selection}. The flow package has a common event selection class, which we will add to your flow event
@@ -1632,7 +1632,7 @@ Now that the flow event task is connected to input data, the flow analysis tasks
       // create the flow analysis tasks
       taskQC[i] = new AliAnalysisTaskQCumulants(Form("TaskQCumulants_n=%i", i+2));
       // set thei triggers 
-      taskQC[i]->SelectCollisionCandidates(AliVEvent::kMB);
+      taskQC[i]->SelectCollisionCandidates(AliTrigger::kMB);
       // and set the correct harmonic n
       taskQC[i]->SetHarmonic(i+2);
 
@@ -1734,6 +1734,7 @@ So what is `the magic'? This is filling your flow event from the \texttt{TTree}.
 
 // we'll feed to class with your custom particles, 
 // so this include will be necessary
+#include "AliTrigger.h"
 #include myParticle.h
 
 // this is the class constructor
@@ -2726,3 +2727,4 @@ In reality we never deal with a detector with uniform azimuthal coverage, hence 
 \end{figure} 
 \printindex
 \end{document}
+

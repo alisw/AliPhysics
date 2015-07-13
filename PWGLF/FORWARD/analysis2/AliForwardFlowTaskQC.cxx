@@ -8,6 +8,7 @@
 // Outputs:
 //  - AnalysisResults.root or forward_flow.root
 //
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
@@ -767,7 +768,7 @@ Bool_t AliForwardFlowTaskQC::CheckTrigger(const AliAODForwardMult* aodfm) const
   if (aodfm) return aodfm->IsTriggerBits(AliAODForwardMult::kOffline);
   // this may need to be changed for 2011 data to handle kCentral and so on...
   else return (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-                 ->IsEventSelected() & AliVEvent::kMB);
+                 ->IsEventSelected() & AliTrigger::kMB);
 }
 // _____________________________________________________________________
 Bool_t AliForwardFlowTaskQC::GetCentrality(const AliAODForwardMult* aodfm) 
@@ -2975,3 +2976,4 @@ Int_t AliForwardFlowTaskQC::CumuHistos::GetPos(Int_t n, UInt_t nua) const
 //
 //
 // EOF
+

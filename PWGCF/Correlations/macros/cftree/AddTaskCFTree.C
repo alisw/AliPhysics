@@ -1,6 +1,6 @@
 AliAnalysisTaskCFTree *AddTaskCFTree(
     Int_t analysisMode = 0,
-    AliBits selectionBit = AliVEvent::kMB,
+    AliBits selectionBit = AliTrigger::kMB,
     Double_t zVtxMax = 10,
     Double_t etaMax = 1,
     Double_t ptMin = 0.15,
@@ -29,4 +29,5 @@ AliAnalysisTaskCFTree *AddTaskCFTree(
   mgr->ConnectOutput (ana, 1, coutput2);
   return ana;
 }
+
 

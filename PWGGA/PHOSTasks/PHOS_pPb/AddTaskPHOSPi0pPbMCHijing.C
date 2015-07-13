@@ -1,6 +1,6 @@
 AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMCHijing (const char* name = "PHOSPi0pPbMCHijing",
 					    const char* options = "",
-					       AliBits offlineTriggerMask = AliVEvent::kINT7,
+					       AliBits offlineTriggerMask = AliTrigger::kINT7,
 					       const char* centrality = "V0M",
 					       const Int_t nCentBins = 5,
 					       const Int_t centEdge0 = 0,
@@ -27,7 +27,7 @@ AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMCHijing (const char* name = "PHOSPi0
 
   AliAnalysisTaskPi0FlowMCHijing* task = new AliAnalysisTaskPi0FlowMCHijing(Form("%sTask", name));
 
-  if( AliVEvent::kINT7 == offlineTriggerMask ) {
+  if( AliTrigger::kINT7 == offlineTriggerMask ) {
     if (nCentBins<1) {
       ::Error("AddTaskPHOSPi0pPb", Form("Invalid number of centrality bins: %d",nCentBins));
       return NULL;
@@ -66,4 +66,5 @@ AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMCHijing (const char* name = "PHOSPi0
   
   return task;
 }
+
 

@@ -58,7 +58,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 //=============================================================================
 
-  AliBits eventSelMask = AliVEvent::kMUSPB;
+  AliBits eventSelMask = AliTrigger::kMUSPB;
 //AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kTPCstandalone;
 //AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kV0;
   AliFlowTrackCuts::trackParameterType rptype  = AliFlowTrackCuts::kSPDtracklet;
@@ -268,7 +268,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-//  taskFE->SelectCollisionCandidates(AliVEvent::kUserDefined);
+//  taskFE->SelectCollisionCandidates(AliTrigger::kUserDefined);
     taskFE->SelectCollisionCandidates(eventSelMask);
     cout<<"Using Physics Selection"<<endl;
   }
@@ -595,3 +595,4 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
   }
 }
+

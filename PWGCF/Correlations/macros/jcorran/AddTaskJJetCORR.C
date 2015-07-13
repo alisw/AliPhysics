@@ -1,5 +1,5 @@
 AliJJetCORRTask * AddTaskJJetCORR (
-		Int_t       trigger            = AliVEvent::kEMCEJE,
+		Int_t       trigger            = AliTrigger::kEMCEJE,
 		TString  taskName      = "JJetCORRTask"   ,
 		TString  jetTaskName   = "AliJJetTask" ,
 		TString  cardName      = "cardAlice_pp.input",
@@ -54,3 +54,4 @@ AliJJetCORRTask * AddTaskJJetCORR (
 
 
 }
+

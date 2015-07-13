@@ -61,7 +61,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT086(TString configMacroName, const char 
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013_AOD086/KchHBT086 KchHBT086
   //---------------------------------------------------------------------------------
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
-  taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// Keep this line to AOD086 despite MB trigger for the MB was in AOD086 only.
+  taskfemto->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);// Keep this line to AOD086 despite MB trigger for the MB was in AOD086 only.
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -83,3 +83,4 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT086(TString configMacroName, const char 
    // Return task pointer at the end
    return taskfemto;
 }
+

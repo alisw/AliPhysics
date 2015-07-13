@@ -16,6 +16,7 @@ class AliAODEvent;
 class AliSpectraAODTrackCuts;
 class TProfile;
 
+#include "AliTrigger.h"
 #include "TNamed.h"
 #include "TFile.h"
 #include "TKey.h"
@@ -31,7 +32,7 @@ public:
   AliSpectraAODEventCuts() :
     TNamed(),
     fAOD(0),
-    fSelectBit(AliVEvent::kMB),
+    fSelectBit(AliTrigger::kMB),
     fCentralityMethod(),
     fTrackBits(1),
     fIsMC(0),
@@ -264,4 +265,5 @@ private:
   ClassDef(AliSpectraAODEventCuts, 14);
 };
 #endif
+
 

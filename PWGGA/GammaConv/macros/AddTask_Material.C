@@ -66,7 +66,7 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "0000000",
 				fV0ReaderV1->SetEventCuts(fEventCuts);
 				fEventCuts->SetFillCutHistograms("",kTRUE);
 				if (IsHeavyIon==2){
-					fEventCuts->SelectCollisionCandidates(AliVEvent::kINT7);
+					fEventCuts->SelectCollisionCandidates(AliTrigger::kINT7);
 					fEventCuts->DoEtaShift(doEtaShiftV0Reader);
 				}
 			}
@@ -124,3 +124,4 @@ void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "0000000",
 	//connect containers
 	return;
 }
+

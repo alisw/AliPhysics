@@ -332,8 +332,8 @@ void AddTaskFlow(Float_t centrMin=-1,
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    //taskFE->SelectCollisionCandidates(AliVEvent::kUserDefined);
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    //taskFE->SelectCollisionCandidates(AliTrigger::kUserDefined);
+    taskFE->SelectCollisionCandidates(AliTrigger::kMB);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
@@ -689,6 +689,7 @@ void AddTaskFlow(Float_t centrMin=-1,
     if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
   }
 }
+
 
 
 

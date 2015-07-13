@@ -1,7 +1,7 @@
 AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMC (Bool_t kWeightsApplied = kFALSE,
                                                const char* name = "PHOSPi0pPbMC",
                                                const char* options = "",
-                                               AliBits offlineTriggerMask = AliVEvent::kINT7,
+                                               AliBits offlineTriggerMask = AliTrigger::kINT7,
                                                const char* centrality = "V0M",
                                                const Int_t nCentBins = 5,
                                                const Int_t centEdge0 = 0,
@@ -70,3 +70,4 @@ AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMC (Bool_t kWeightsApplied = kFALSE,
     
     return task;
 }
+

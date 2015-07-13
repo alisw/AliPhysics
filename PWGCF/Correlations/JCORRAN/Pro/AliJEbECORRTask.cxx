@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TTree.h>
 #include <TH1D.h>
@@ -429,7 +430,7 @@ bool AliJEbECORRTask::IsGoodEvent(AliVEvent *event) {
 
 		fHistos->fhEvents->Fill( 0 );
 
-		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+		Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliTrigger::kMB );
 
 		if( triggerkMB ){
 			triggeredEventMB = kTRUE;  //event triggered as minimum bias
@@ -625,3 +626,4 @@ void AliJEbECORRTask::ScaleNotEquidistantHisto(TH1D *hid, const double sc=1){
 		hid->SetBinError(i,hid->GetBinError(i)*sc/hid->GetBinWidth(i));
 	}  
 }
+

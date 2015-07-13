@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "Riostream.h"
 void LoadLibraries();
 void AddAnalysisTasks(); 
@@ -8,11 +9,11 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 Int_t  iCollisionType = 0;
 // Trigger mask.
 // Still need to change:
-AliBits kTriggerInt = AliVEvent::kAnyINT;
-AliBits kTriggerMuonAll = AliVEvent::kMUL7 | AliVEvent::kMUSH7 | AliVEvent::kMUU7 | AliVEvent::kMUS7;
-AliBits kTriggerMuonBarell = AliVEvent::kMUU7;
-AliBits kTriggerEMC   = AliVEvent::kEMC7;
-AliBits kTriggerHM   = AliVEvent::kHighMult;
+AliBits kTriggerInt = AliTrigger::kAnyINT;
+AliBits kTriggerMuonAll = AliTrigger::kMUL7 | AliTrigger::kMUSH7 | AliTrigger::kMUU7 | AliTrigger::kMUS7;
+AliBits kTriggerMuonBarell = AliTrigger::kMUU7;
+AliBits kTriggerEMC   = AliTrigger::kEMC7;
+AliBits kTriggerHM   = AliTrigger::kHighMult;
 // Main trigger mask used:
 AliBits kTriggerMask = kTriggerInt;
 
@@ -594,3 +595,4 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetFileForTestMode(gSystem->ExpandPathName("$ALICE_PHYSICS/PWGPP/PilotTrain/files.txt"));
    return plugin;
 }
+

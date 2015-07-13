@@ -20,6 +20,7 @@ class AliESDpid;
 class AliESDtrackCuts;
 class AliCFContainer;
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
@@ -57,7 +58,7 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 
         Int_t           fDebugCascade;          // Denug Flag for this task devoted to cascade
         TString         fAnalysisType;          // "ESD" or "AOD" analysis type	
-        TString         fTriggerMaskType;       // type of trigger to use in UserExec : AliVEvent::kMB or kHighMult ?
+        TString         fTriggerMaskType;       // type of trigger to use in UserExec : AliTrigger::kMB or kHighMult ?
         Short_t         fCollidingSystems;      // 0 = pp collisions or 1 = AA collisions
 
         AliESDpid       *fESDpid;                       // Tool data member to manage the TPC Bethe-Bloch info
@@ -270,3 +271,4 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 };
 
 #endif
+

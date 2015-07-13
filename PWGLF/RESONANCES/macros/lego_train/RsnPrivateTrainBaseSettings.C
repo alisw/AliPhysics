@@ -3,7 +3,7 @@ TList *RsnPrivateTrainBaseSettings() {
    Bool_t valid;
    TString legoTrainPath = AliAnalysisManager::GetGlobalStr("RsnLegoTrainPath",valid);
    Int_t usePhysSel        = -1;
-//   usePhysSel              = AliVEvent::kMB;
+//   usePhysSel              = AliTrigger::kMB;
 
    Int_t usePIDResponseTask      = 1;
    Int_t useCentralityTask       = 0;
@@ -63,3 +63,4 @@ TList *RsnPrivateTrainBaseSettings() {
    AliAnalysisManager::SetGlobalStr("rsnLegoTrainAliROOTversion",alirootver.Data());
 
 }
+

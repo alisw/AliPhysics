@@ -32,7 +32,7 @@ AliAnalysisTaskEMCALPi0V2ShSh *AddTaskEMCALPi0V2ShSh()
   
   AliAnalysisTaskEMCALPi0V2ShSh *task = new AliAnalysisTaskEMCALPi0V2ShSh("EMCALPi0ShowerShV2");
   
-  task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  task->SelectCollisionCandidates(AliTrigger::kSemiCentral);
   
   if(!ismc)
     {		
@@ -46,4 +46,5 @@ AliAnalysisTaskEMCALPi0V2ShSh *AddTaskEMCALPi0V2ShSh()
     }
   return task;
 }
+
 

@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGPP/Alignment)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliRoot_SOURCE_DIR}/ALIGN
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
+                    ${AliPhysics_SOURCE_DIR}/OADB
 		    )
 
 # Sources - alphabetical order
@@ -44,7 +45,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGTools PWGUDbase EventMixing)
+set(LIBDEPS OADB ANALYSISalice PWGTools PWGUDbase EventMixing)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

@@ -19,6 +19,7 @@
 //       based on AliAnalysisTaskMultiDielectron (04.2015)               //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TH1D.h>
 #include <TRandom3.h> // added
@@ -192,7 +193,7 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
   }
   
   // Was event selected ?
-  ULong64_t isSelected = AliVEvent::kAny;
+  ULong64_t isSelected = AliTrigger::kAny;
   Bool_t isRejected = kFALSE;
   if( fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
@@ -708,4 +709,5 @@ void AliAnalysisTaskRandomRejection::FinishTaskOutput()
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
 }
+
 

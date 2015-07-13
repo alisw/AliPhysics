@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TFormula.h>
@@ -64,7 +65,7 @@ AliAnalysisTaskHJetDphi::AliAnalysisTaskHJetDphi() :
   fVerbosity(0), fIsEmbedding(kFALSE), fAnaType(0), fPeriod("lhc11h"), fCollisionSystem("PbPb"),
   fIsMC(kFALSE), fAnalyzeMCTruth(kFALSE), fMC(0), 
   fEvent(0x0), fESD(0x0), fAODIn(0x0), fAODOut(0x0), fAODExtension(0x0),
-  fOfflineTrgMask(AliVEvent::kAny), fTriggerType(-1), fCentrality(-1), fMaxVtxZ(10),
+  fOfflineTrgMask(AliTrigger::kAny), fTriggerType(-1), fCentrality(-1), fMaxVtxZ(10),
   fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE), fRequireSharedClsCut(kTRUE),
   fIsInit(kFALSE), fNonStdFile(""), fMcParticleArrName(""), fMcParticleArray(0x0),  fMcParticlelMap(0x0), 
   fEmbTrkArrName(""), fEmbTrkArray(0x0), fTrackArrName(""), fTrackArray(0x0), 
@@ -123,7 +124,7 @@ AliAnalysisTaskHJetDphi::AliAnalysisTaskHJetDphi(const char *name) :
   fVerbosity(0), fIsEmbedding(kFALSE), fAnaType(0), fPeriod("lhc11h"), fCollisionSystem("PbPb"),
   fIsMC(kFALSE), fAnalyzeMCTruth(kFALSE), fMC(0), 
   fEvent(0x0), fESD(0x0), fAODIn(0x0), fAODOut(0x0), fAODExtension(0x0),
-  fOfflineTrgMask(AliVEvent::kAny), fTriggerType(-1), fCentrality(-1), fMaxVtxZ(10),
+  fOfflineTrgMask(AliTrigger::kAny), fTriggerType(-1), fCentrality(-1), fMaxVtxZ(10),
   fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE), fRequireSharedClsCut(kTRUE),
   fIsInit(kFALSE), fNonStdFile(""), fMcParticleArrName(""), fMcParticleArray(0x0),  fMcParticlelMap(0x0), 
   fEmbTrkArrName(""), fEmbTrkArray(0x0), fTrackArrName(""), fTrackArray(0x0), 
@@ -580,15 +581,15 @@ void AliAnalysisTaskHJetDphi::UserExec(Option_t *)
 
   // physics selection
   AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(fOfflineTrgMask==AliVEvent::kAny) fTriggerType = 0;
+  if(fOfflineTrgMask==AliTrigger::kAny) fTriggerType = 0;
   else
     {
       if(trigger & fOfflineTrgMask) fTriggerType=0;
 
       if(fPeriod.Contains("lhc11a",TString::kIgnoreCase))
 	{
-	  if (trigger & AliVEvent::kMB)     { fTriggerType=0; }
-	  if (trigger & AliVEvent::kEMC1)   { fTriggerType=1; }
+	  if (trigger & AliTrigger::kMB)     { fTriggerType=0; }
+	  if (trigger & AliTrigger::kEMC1)   { fTriggerType=1; }
 	}  
     }
   if(fTriggerType==-1) return;
@@ -605,8 +606,8 @@ void AliAnalysisTaskHJetDphi::UserExec(Option_t *)
   
   if(fTriggerType==0)
     {
-      if(trigger & AliVEvent::kCentral) fhEventStat->Fill(5.5);
-      else if (trigger & AliVEvent::kCentral) fhEventStat->Fill(6.5);
+      if(trigger & AliTrigger::kCentral) fhEventStat->Fill(5.5);
+      else if (trigger & AliTrigger::kCentral) fhEventStat->Fill(6.5);
       else fhEventStat->Fill(4.5);
     }
 
@@ -1378,3 +1379,4 @@ void AliAnalysisTaskHJetDphi::Terminate(Option_t *)
 {
   // Called once at the end of the query
 }
+

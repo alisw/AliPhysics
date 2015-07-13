@@ -72,7 +72,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
   // Note that some default values refer to pPb data 2013
   // settings from AddTaskKStarPPB.C by Francesca Bellini
   //-------------------------------------------
-  UInt_t      triggerMask = AliVEvent::kINT7;
+  UInt_t      triggerMask = AliTrigger::kINT7;
   Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013
   Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013
   Int_t       MinPlpContribSPD = 5; //default value if used
@@ -82,7 +82,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
   if (evtCutSetID==eventCutSet::kOld) {
-    triggerMask = AliVEvent::kAnyINT;
+    triggerMask = AliTrigger::kAnyINT;
     rmFirstEvtChunk = kFALSE;
     rejectPileUp = kFALSE;
     useVtxCut2013pA = kFALSE;
@@ -180,25 +180,25 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
 
      if(collSyst==kPPb)  task->UseESDTriggerMask(triggerMask);
      else if(collSyst==kPbPb) {
-       if (centr == 1) { task->UseESDTriggerMask(AliVEvent::kCentral); }
-       else  if (centr == 2) {  task->UseESDTriggerMask(AliVEvent::kSemiCentral);}
-       else  if (centr == 3) {  task->UseESDTriggerMask(AliVEvent::kMB); }
-       else { task->UseESDTriggerMask(AliVEvent::kMB  | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
+       if (centr == 1) { task->UseESDTriggerMask(AliTrigger::kCentral); }
+       else  if (centr == 2) {  task->UseESDTriggerMask(AliTrigger::kSemiCentral);}
+       else  if (centr == 3) {  task->UseESDTriggerMask(AliTrigger::kMB); }
+       else { task->UseESDTriggerMask(AliTrigger::kMB  | AliTrigger::kCentral | AliTrigger::kSemiCentral); }
      }
 
    if(collSyst==kPPb) 
      task->SelectCollisionCandidates(triggerMask); //
    else if ( collSyst == kPP ) 
-     task->SelectCollisionCandidates(AliVEvent::kMB); //
+     task->SelectCollisionCandidates(AliTrigger::kMB); //
    else {
      if (centr == 1) { 
-       task->SelectCollisionCandidates(AliVEvent::kCentral); }
+       task->SelectCollisionCandidates(AliTrigger::kCentral); }
      if (centr == 2) { 
-       task->SelectCollisionCandidates(AliVEvent::kSemiCentral); }
+       task->SelectCollisionCandidates(AliTrigger::kSemiCentral); }
      if (centr == 3) { 
-       task->SelectCollisionCandidates(AliVEvent::kMB); }
+       task->SelectCollisionCandidates(AliTrigger::kMB); }
      else { 
-       task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral); }
+       task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral); }
    }
  
 
@@ -325,3 +325,4 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    
    return task;
 }
+

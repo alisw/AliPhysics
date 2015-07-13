@@ -25,13 +25,13 @@ AliAnalysisTask *AddTask_shin_pPbTRD(){
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieDataTRDtrigger");
   if (!hasMC ) task->UsePhysicsSelection();//taking out for testing
-  task->SetTriggerMask(AliVEvent::kTRD); 
+  task->SetTriggerMask(AliTrigger::kTRD); 
   task->SetFiredTriggerName("CINT7WUHJT-B-NOPF-CENT",kTRUE);
   //task->SetTRDtrigger(3);
   //  task->SetFiredTriggerName("HQU",kFALSE);//take not kTRUE in order not to get both triggers, exclude (since not yet otherwise possible)
   //
   //not yet implemented to get a logical or of 2 different trigger classes, therefore exclude HJT, not exactly what I want...	
-  //   if (list.Contains("LHC11d")) task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);
+  //   if (list.Contains("LHC11d")) task->SetTriggerMask(AliTrigger::kEMCEJE+AliTrigger::kEMC7+AliTrigger::kEMCEGA);
   //if (list.Contains("LHC12h")) task->SetTRDtrigger(1+2);
   mgr->AddTask(task);
 
@@ -89,3 +89,4 @@ AliAnalysisTask *AddTask_shin_pPbTRD(){
   
   return task;
 }
+

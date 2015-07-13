@@ -273,7 +273,7 @@ void AddAnalysisTasks()
       gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
       AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(useMC,useBKrejection);
-      mgr->AddStatisticsTask(AliVEvent::kMB);
+      mgr->AddStatisticsTask(AliTrigger::kMB);
    }
    
    // AOD tags
@@ -1005,3 +1005,4 @@ Bool_t LoadConfig(const char *filename)
    ::Info("AnalysisTrainNew.C::LoadConfig", "Train configuration loaded from file %s", filename);
    return kTRUE;
 }
+

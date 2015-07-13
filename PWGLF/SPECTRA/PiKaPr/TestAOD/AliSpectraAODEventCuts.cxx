@@ -18,6 +18,7 @@
 //         AliSpectraAODEventCuts class
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TLegend.h"
@@ -49,7 +50,7 @@ ClassImp(AliSpectraAODEventCuts)
 AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) : 
 TNamed(name, "AOD Event Cuts"),
 fAOD(0),
-fSelectBit(AliVEvent::kMB),
+fSelectBit(AliTrigger::kMB),
 fCentralityMethod("V0M"),
 fTrackBits(1),
 fIsMC(0),
@@ -1033,4 +1034,5 @@ Int_t AliSpectraAODEventCuts::GetNchBin(TH2D * h){
   return (fNch*h->GetNbinsX())/h->GetXaxis()->GetXmax();
 
 }
+
 

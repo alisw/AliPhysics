@@ -14,6 +14,7 @@
  **************************************************************************/
 
 // Root
+#include "AliTrigger.h"
 #include "TGeoManager.h"
 #include "TFile.h"
 #include "TROOT.h"
@@ -46,7 +47,7 @@ ClassImp(AliAnalysisTaskCaloFilter) ;
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
 AliAnalysisTaskSE("CaloFilterTask"), 
 fCaloFilter(0),           fEventSelection(), 
-fAcceptAllMBEvent(kFALSE),fMBTriggerMask(AliVEvent::kMB), 
+fAcceptAllMBEvent(kFALSE),fMBTriggerMask(AliTrigger::kMB), 
 fCorrect(kFALSE), 
 fEMCALGeo(0x0),           fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -78,7 +79,7 @@ fESDEvent(0x0),           fAODEvent(0x0)
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
 AliAnalysisTaskSE(name), 
 fCaloFilter(0),           fEventSelection(), 
-fAcceptAllMBEvent(kFALSE),fMBTriggerMask(AliVEvent::kMB), 
+fAcceptAllMBEvent(kFALSE),fMBTriggerMask(AliTrigger::kMB), 
 fCorrect(kFALSE),
 fEMCALGeo(0x0),           fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -1060,4 +1061,5 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   
   //printf("Filtered event, end processing : %s\n",fAODEvent->GetFiredTriggerClasses().Data());
 }
+
 

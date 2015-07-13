@@ -17,6 +17,7 @@ class TTree;
 class TParticle;
 class TVector3;
 
+#include "AliTrigger.h"
 #include "AliAnalysisManager.h"
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
@@ -547,9 +548,9 @@ void AliAnalysisTaskNucleiv2SP::UserExec(Option_t *)
   if(TMath::Abs(vtx->GetZ())>fVzmax) return;
   fHistEventMultiplicity->Fill(3);
 
-  Bool_t isSelectedCentral     = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
-  Bool_t isSelectedSemiCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
-  Bool_t isSelectedMB          = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelectedCentral     = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kCentral);
+  Bool_t isSelectedSemiCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kSemiCentral);
+  Bool_t isSelectedMB          = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
     
   fHistTrackMultiplicity->Fill(TrackNumber,percentile); 
     
@@ -873,4 +874,5 @@ void AliAnalysisTaskNucleiv2SP::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 }
+
 

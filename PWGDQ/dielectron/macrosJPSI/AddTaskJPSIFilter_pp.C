@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
 				      Bool_t gridconf=kFALSE,
-				      AliBits triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
+				      AliBits triggers=AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB,
 				      TString period="",
 				      Bool_t storeLS = kFALSE,
 				      Bool_t hasMC_aod = kFALSE){
@@ -91,8 +91,8 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
   //Create task and add it to the analysis manager
   AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
   task->SetTriggerMask(triggers);
-  //  task->SetTriggerMask(AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kEMCEGA|AliVEvent::kEMCEJE);
-  //  task->SetTriggerMask(AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral);
+  //  task->SetTriggerMask(AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral|AliTrigger::kEMCEGA|AliTrigger::kEMCEJE);
+  //  task->SetTriggerMask(AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral);
   if (!hasMC) task->UsePhysicsSelection();
 
   //   //Add event filter
@@ -141,3 +141,4 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
   
   return task;
 }
+

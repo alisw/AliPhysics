@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "TParticle.h"
@@ -37,7 +38,7 @@ AliAnalysisCuts(),
   fPtMin(-15),
   fPtMax(15),
   fIsCharged(kTRUE),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fMinVtxType(0),
   fMinVtxContr(1),
   fMaxVtxZ(10.),
@@ -81,7 +82,7 @@ AliAnalysisCuts(name,title),
   fPtMin(-15),
   fPtMax(15),
   fIsCharged(kTRUE),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fMinVtxType(0),
   fMinVtxContr(1),
   fMaxVtxZ(10.),
@@ -689,3 +690,4 @@ Bool_t AliSingleTrackEffCuts::IsRecoParticlePID(TObject *obj)
 
   return isSelected;
 }
+

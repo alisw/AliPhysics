@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "AliTrigger.h"
 #include <map>
 #include <cstring>
 #include <iostream>
@@ -368,19 +369,19 @@ namespace EMCalTriggerPtAnalysis {
 
     double triggers[5]; memset(triggers, 0, sizeof(double) * 5);
     double triggerbits[4]; memset(triggerbits, 0, sizeof(double) * 4);
-    if(fInputHandler->IsEventSelected() & AliVEvent::kINT7){
+    if(fInputHandler->IsEventSelected() & AliTrigger::kINT7){
       triggers[0] = 1.;
       triggerbits[0] = 1.;
     }
 
     // check triggerbits
-    if(fInputHandler->IsEventSelected() & AliVEvent::kEMC7){
+    if(fInputHandler->IsEventSelected() & AliTrigger::kEMC7){
       triggerbits[1] = 1.;
     }
-    if(fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA){
+    if(fInputHandler->IsEventSelected() & AliTrigger::kEMCEGA){
       triggerbits[2] = 1.;
     }
-    if(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE){
+    if(fInputHandler->IsEventSelected() & AliTrigger::kEMCEJE){
       triggerbits[3] = 1.;
     }
     try{
@@ -1075,3 +1076,4 @@ namespace EMCalTriggerPtAnalysis {
     mycontainer.Add(new TObjString(contname));
   }
 }
+

@@ -17,6 +17,7 @@
 // Author: Denise Godoy
 
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH2F.h"
@@ -481,7 +482,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   centWeight =GetCentWeight(centBin);
  
 //   rejectEvent = RejectEvent(cent,centBin);
-//   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
+//   if (iCent==0 && GetCollisionCandidates()!=AliTrigger::kEMCEGA && rejectEvent) return;
   
   // Trigger study and selection of V0 low threshold trigger in 10-20%
 
@@ -493,7 +494,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   if (fESD->GetFiredTriggerClasses().Contains("CPBI1-B-NOPF-ALLNOTRD") || fESD->GetFiredTriggerClasses().Contains("CPBI2_B1-B-NOPF-ALLNOTRD")) fTrigger->Fill((Double_t)4,(Double_t)iCent); //kMB
  
   Bool_t SelColl = kTRUE;
-  if(GetCollisionCandidates()==AliVEvent::kAny)
+  if(GetCollisionCandidates()==AliTrigger::kAny)
   {
      SelColl = kFALSE;
      TString firedTrigger;
@@ -523,7 +524,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
  
   Double_t wEvent = EPweight*centWeight;
   
-  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ){
+  if (iCent==0 && GetCollisionCandidates()!=AliTrigger::kEMCEGA ){
     fevPlaneV0[iCent]->Fill(evPlaneV0,wEvent);
     fCentAftFlt->Fill(cent,wEvent);
   }
@@ -714,7 +715,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     Int_t iDecay = 0;
 
     // checking centrality and event plane distributions for events with electron above the trigger threshold
-    if (fTPCnSigma>=-1 && fTPCnSigma<3 && fEMCalnSigma>0 && fEMCalnSigma<3 && pt>=8 && GetCollisionCandidates()==AliVEvent::kEMCEGA && !IsSameEvent){
+    if (fTPCnSigma>=-1 && fTPCnSigma<3 && fEMCalnSigma>0 && fEMCalnSigma<3 && pt>=8 && GetCollisionCandidates()==AliTrigger::kEMCEGA && !IsSameEvent){
 	fevPlaneV0AftThr[iCent]->Fill(evPlaneV0);
 	fCentAftThr->Fill(cent);
         IsSameEvent=kTRUE;
@@ -765,7 +766,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     else{
       if(m20>0.02 && m02>0.02){ 
 	Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,0.};
-	if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fCorr->Fill(corr,wEvent);
+	if (iCent==0 && GetCollisionCandidates()!=AliTrigger::kEMCEGA ) fCorr->Fill(corr,wEvent);
 	else fCorr->Fill(corr);
 	
 	SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,fEMCalnSigma,fTPCnSigma);
@@ -773,11 +774,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
       }
     }
     
-    if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fChargPartV2[iCent]->Fill(iPt,cosdphi,wEvent); 
+    if (iCent==0 && GetCollisionCandidates()!=AliTrigger::kEMCEGA ) fChargPartV2[iCent]->Fill(iPt,cosdphi,wEvent); 
     else fChargPartV2[iCent]->Fill(iPt,cosdphi); 
     
     if (clsE>0){
-      if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA )  fMtcPartV2[iCent]->Fill(iPt,cosdphi,wEvent);
+      if (iCent==0 && GetCollisionCandidates()!=AliTrigger::kEMCEGA )  fMtcPartV2[iCent]->Fill(iPt,cosdphi,wEvent);
       else  fMtcPartV2[iCent]->Fill(iPt,cosdphi); 
     }
     
@@ -1542,3 +1543,4 @@ void AliAnalysisTaskFlowTPCEMCalEP::InitParameters()
   fTrackCuts->SetMinNClustersTPC(100);
   fTrackCuts->SetPtRange(0.5,100);
 }
+

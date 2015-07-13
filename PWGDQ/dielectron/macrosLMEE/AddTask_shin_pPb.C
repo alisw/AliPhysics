@@ -22,7 +22,7 @@ AliAnalysisTask *AddTask_shin_pPb(){
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
   if (!hasMC ) task->UsePhysicsSelection();
-  task->SetTriggerMask(AliVEvent::kINT7); 
+  task->SetTriggerMask(AliTrigger::kINT7); 
   mgr->AddTask(task);
 
   
@@ -77,3 +77,4 @@ AliAnalysisTask *AddTask_shin_pPb(){
   
   return task;
 }
+

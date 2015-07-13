@@ -39,7 +39,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
   
   //Event plane task
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
+  eventplaneTask->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kSemiCentral | AliTrigger::kCentral | AliTrigger::kEMCEGA | AliTrigger::kEMCEJE);
 
   eventplaneTask->SetTrackType("TPC");
   eventplaneTask->SetUsePtWeight();
@@ -73,7 +73,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
   
   // Flattened semi central trigger
 
-  taskcorrMB->SelectCollisionCandidates(AliVEvent::kAny);
+  taskcorrMB->SelectCollisionCandidates(AliTrigger::kAny);
 
   TString containerName1 = mgr->GetCommonFileName();
   containerName1 += ":PWGHF_hfeCalcorrSemiCentralV2";
@@ -88,7 +88,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
   mgr->ConnectOutput(taskcorrMB, 1, coutput1);
 
   // Central trigger
-  taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  taskMB->SelectCollisionCandidates(AliTrigger::kSemiCentral | AliTrigger::kCentral);
 
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeCalCentralV2";
@@ -103,7 +103,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
   mgr->ConnectOutput(taskMB, 1, coutput1);
   
   //L1 gamma trigger
-  taskTR->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  taskTR->SelectCollisionCandidates(AliTrigger::kEMCEGA);
 
   TString containerName3 = mgr->GetCommonFileName();
   containerName3 += ":PWGHF_hfeCalL1GammaV2";
@@ -122,7 +122,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
     AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,fP2_lowPtEta0010,fP3_lowPtEta0010,fP4_lowPtEta0010,fP2_highPtEta0010,fP3_highPtEta0010,fP4_highPtEta0010,fP2_lowPtPi00010,fP3_lowPtPi00010,fP4_lowPtPi00010,fP2_highPtPi00010,fP3_highPtPi00010,fP4_highPtPi00010,fP2_lowPtEta1020,fP3_lowPtEta1020,fP4_lowPtEta1020,fP2_highPtEta1020,fP3_highPtEta1020,fP4_highPtEta1020,fP2_lowPtPi01020,fP3_lowPtPi01020,fP4_lowPtPi01020,fP2_highPtPi01020,fP3_highPtPi01020,fP4_highPtPi01020,fP2_lowPtEta2040,fP3_lowPtEta2040,fP4_lowPtEta2040,fP2_highPtEta2040,fP3_highPtEta2040,fP4_highPtEta2040,fP2_lowPtPi02040,fP3_lowPtPi02040,fP4_lowPtPi02040,fP2_highPtPi02040,fP3_highPtPi02040,fP4_highPtPi02040);
     mgr->AddTask(taskMC);
     
-    taskMC->SelectCollisionCandidates(AliVEvent::kMB);
+    taskMC->SelectCollisionCandidates(AliTrigger::kMB);
     
     TString containerName4 = mgr->GetCommonFileName();
     containerName4 += ":PWGHF_hfeCalMCV2";
@@ -140,4 +140,5 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
   
   return NULL;
 }
+
 

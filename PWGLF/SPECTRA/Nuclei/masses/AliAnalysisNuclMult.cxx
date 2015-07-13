@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisNuclMult.h"
 
 // ROOT includes
@@ -250,20 +251,20 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     unsigned bit=(1<<i);
     if(inputHandler->IsEventSelected() & bit) htriggerMask->Fill(i);
   }
-  if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerMask->Fill(33-1);
-  if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerMask->Fill(34-1);
+  if(inputHandler->IsEventSelected() & AliTrigger::kAny) htriggerMask->Fill(33-1);
+  if(inputHandler->IsEventSelected() & AliTrigger::kAnyINT) htriggerMask->Fill(34-1);
   
-  if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)) {
+  if(!(inputHandler->IsEventSelected() & AliTrigger::kMB)) {
     for(Int_t i=0;i<32;i++) {
       unsigned bit=(1<<i);
       if(inputHandler->IsEventSelected() & bit) htriggerMask_noMB->Fill(i);
     }
-    if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerMask_noMB->Fill(33-1);
-    if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerMask_noMB->Fill(34-1);
+    if(inputHandler->IsEventSelected() & AliTrigger::kAny) htriggerMask_noMB->Fill(33-1);
+    if(inputHandler->IsEventSelected() & AliTrigger::kAnyINT) htriggerMask_noMB->Fill(34-1);
   }
   
-  if(multiplicityMin!=-999) isPhysSelected = ((inputHandler->IsEventSelected() & AliVEvent::kMB) || (inputHandler->IsEventSelected() & AliVEvent::kHighMult));
-  else isPhysSelected = (inputHandler->IsEventSelected() & AliVEvent::kMB);
+  if(multiplicityMin!=-999) isPhysSelected = ((inputHandler->IsEventSelected() & AliTrigger::kMB) || (inputHandler->IsEventSelected() & AliTrigger::kHighMult));
+  else isPhysSelected = (inputHandler->IsEventSelected() & AliTrigger::kMB);
   if(!isPhysSelected) return;
 
   const AliVVertex* vtxEVENT = fEvent->GetPrimaryVertex();
@@ -505,3 +506,4 @@ void AliAnalysisNuclMult::Terminate(Option_t *)
 { 
   printf("Terminate()\n");
 }
+

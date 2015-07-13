@@ -30,6 +30,7 @@
  */
 
 // root includes
+#include "AliTrigger.h"
 #include <TStyle.h>
 #include <TRandom3.h>
 #include <TChain.h>
@@ -1961,7 +1962,7 @@ Bool_t AliAnalysisTaskJetV2::PassesCuts(AliVEvent* event)
             AliAODEvent* aodEvent = static_cast<AliAODEvent*>(InputEvent());
             if(aodEvent) trigger = ((AliVAODHeader*)(aodEvent->GetHeader()))->GetOfflineTrigger();
             else return kFALSE;
-            if((trigger & AliVEvent::kMB) == 0) return kFALSE;
+            if((trigger & AliTrigger::kMB) == 0) return kFALSE;
         } break;
         default : { 
             if(!event || !AliAnalysisTaskEmcal::IsEventSelected()) return kFALSE;
@@ -2314,25 +2315,25 @@ void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, Ali
     //    UInt_t(0 0 1) == UInt_t(1 0 1) returns false
     
     // preparing the combined trigger masks
-    AliBits MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
-    AliBits CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
-    AliBits SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    AliBits ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    AliBits MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
-    AliBits CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
-    AliBits SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
-    AliBits ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    AliBits MB_EMCEJE(AliTrigger::kMB | AliTrigger::kEMCEJE);
+    AliBits CEN_EMCEJE(AliTrigger::kCentral | AliTrigger::kEMCEJE);
+    AliBits SEM_EMCEJE(AliTrigger::kSemiCentral | AliTrigger::kEMCEJE);
+    AliBits ALL_EMCEJE(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kEMCEJE);
+    AliBits MB_EMCEGA(AliTrigger::kMB | AliTrigger::kEMCEGA);
+    AliBits CEN_EMCEGA(AliTrigger::kCentral | AliTrigger::kEMCEGA);
+    AliBits SEM_EMCEGA(AliTrigger::kSemiCentral | AliTrigger::kEMCEGA);
+    AliBits ALL_EMCEGA(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kEMCEGA);
     // actual routine
     if(IsInPlane(dPhi)) {
         // in plane bookkeeping of fired triggers. not 'exclusive' so no == necessary
         if(trigger == 0)                                fHistTriggerQAIn[fInCentralitySelection]->Fill(1, pt);
-        if(trigger & AliVEvent::kAny)                   fHistTriggerQAIn[fInCentralitySelection]->Fill(2, pt);
-        if(trigger & AliVEvent::kAnyINT)                fHistTriggerQAIn[fInCentralitySelection]->Fill(3, pt);
-        if(trigger & AliVEvent::kMB)                    fHistTriggerQAIn[fInCentralitySelection]->Fill(4, pt);
-        if(trigger & AliVEvent::kCentral)               fHistTriggerQAIn[fInCentralitySelection]->Fill(5, pt);
-        if(trigger & AliVEvent::kSemiCentral)           fHistTriggerQAIn[fInCentralitySelection]->Fill(6, pt);
-        if(trigger & AliVEvent::kEMCEJE)                fHistTriggerQAIn[fInCentralitySelection]->Fill(7, pt);
-        if(trigger & AliVEvent::kEMCEGA)                fHistTriggerQAIn[fInCentralitySelection]->Fill(8, pt);
+        if(trigger & AliTrigger::kAny)                   fHistTriggerQAIn[fInCentralitySelection]->Fill(2, pt);
+        if(trigger & AliTrigger::kAnyINT)                fHistTriggerQAIn[fInCentralitySelection]->Fill(3, pt);
+        if(trigger & AliTrigger::kMB)                    fHistTriggerQAIn[fInCentralitySelection]->Fill(4, pt);
+        if(trigger & AliTrigger::kCentral)               fHistTriggerQAIn[fInCentralitySelection]->Fill(5, pt);
+        if(trigger & AliTrigger::kSemiCentral)           fHistTriggerQAIn[fInCentralitySelection]->Fill(6, pt);
+        if(trigger & AliTrigger::kEMCEJE)                fHistTriggerQAIn[fInCentralitySelection]->Fill(7, pt);
+        if(trigger & AliTrigger::kEMCEGA)                fHistTriggerQAIn[fInCentralitySelection]->Fill(8, pt);
         // in plane bookkeeping of trigger combinations (for efficiency)
         if((trigger & MB_EMCEJE) == MB_EMCEJE)          fHistTriggerQAIn[fInCentralitySelection]->Fill(9, pt);
         if((trigger & CEN_EMCEJE) == CEN_EMCEJE)        fHistTriggerQAIn[fInCentralitySelection]->Fill(10, pt);
@@ -2345,13 +2346,13 @@ void AliAnalysisTaskJetV2::FillWeightedTriggerQA(Double_t dPhi, Double_t pt, Ali
     } else {
         // out-of-plane bookkeeping of fired triggers. not 'exclusive' so no == necessary
         if(trigger == 0)                                fHistTriggerQAOut[fInCentralitySelection]->Fill(1, pt);
-        if(trigger & AliVEvent::kAny)                   fHistTriggerQAOut[fInCentralitySelection]->Fill(2, pt);
-        if(trigger & AliVEvent::kAnyINT)                fHistTriggerQAOut[fInCentralitySelection]->Fill(3, pt);
-        if(trigger & AliVEvent::kMB)                    fHistTriggerQAOut[fInCentralitySelection]->Fill(4, pt);
-        if(trigger & AliVEvent::kCentral)               fHistTriggerQAOut[fInCentralitySelection]->Fill(5, pt);
-        if(trigger & AliVEvent::kSemiCentral)           fHistTriggerQAOut[fInCentralitySelection]->Fill(6, pt);
-        if(trigger & AliVEvent::kEMCEJE)                fHistTriggerQAOut[fInCentralitySelection]->Fill(7, pt);
-        if(trigger & AliVEvent::kEMCEGA)                fHistTriggerQAOut[fInCentralitySelection]->Fill(8, pt);
+        if(trigger & AliTrigger::kAny)                   fHistTriggerQAOut[fInCentralitySelection]->Fill(2, pt);
+        if(trigger & AliTrigger::kAnyINT)                fHistTriggerQAOut[fInCentralitySelection]->Fill(3, pt);
+        if(trigger & AliTrigger::kMB)                    fHistTriggerQAOut[fInCentralitySelection]->Fill(4, pt);
+        if(trigger & AliTrigger::kCentral)               fHistTriggerQAOut[fInCentralitySelection]->Fill(5, pt);
+        if(trigger & AliTrigger::kSemiCentral)           fHistTriggerQAOut[fInCentralitySelection]->Fill(6, pt);
+        if(trigger & AliTrigger::kEMCEJE)                fHistTriggerQAOut[fInCentralitySelection]->Fill(7, pt);
+        if(trigger & AliTrigger::kEMCEGA)                fHistTriggerQAOut[fInCentralitySelection]->Fill(8, pt);
         // out-of-plane bookkeeping of trigger combinations (for efficiency)
         if((trigger & MB_EMCEJE) == MB_EMCEJE)          fHistTriggerQAOut[fInCentralitySelection]->Fill(9, pt);
         if((trigger & CEN_EMCEJE) == CEN_EMCEJE)        fHistTriggerQAOut[fInCentralitySelection]->Fill(10, pt);
@@ -2856,22 +2857,22 @@ void AliAnalysisTaskJetV2::PrintTriggerSummary(AliBits trigger)
     
     // print accepted trigger combinations
     printf(" ====== accepted trigger combinations ======= \n");
-    AliBits MB_EMCEJE(AliVEvent::kMB | AliVEvent::kEMCEJE);
-    AliBits CEN_EMCEJE(AliVEvent::kCentral | AliVEvent::kEMCEJE);
-    AliBits SEM_EMCEJE(AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    AliBits ALL_EMCEJE(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEJE);
-    AliBits MB_EMCEGA(AliVEvent::kMB | AliVEvent::kEMCEGA);
-    AliBits CEN_EMCEGA(AliVEvent::kCentral | AliVEvent::kEMCEGA);
-    AliBits SEM_EMCEGA(AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
-    AliBits ALL_EMCEGA(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kEMCEGA);
+    AliBits MB_EMCEJE(AliTrigger::kMB | AliTrigger::kEMCEJE);
+    AliBits CEN_EMCEJE(AliTrigger::kCentral | AliTrigger::kEMCEJE);
+    AliBits SEM_EMCEJE(AliTrigger::kSemiCentral | AliTrigger::kEMCEJE);
+    AliBits ALL_EMCEJE(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kEMCEJE);
+    AliBits MB_EMCEGA(AliTrigger::kMB | AliTrigger::kEMCEGA);
+    AliBits CEN_EMCEGA(AliTrigger::kCentral | AliTrigger::kEMCEGA);
+    AliBits SEM_EMCEGA(AliTrigger::kSemiCentral | AliTrigger::kEMCEGA);
+    AliBits ALL_EMCEGA(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kEMCEGA);
     if(trigger == 0)                                printf("(trigger == 0)\n");
-    if(trigger & AliVEvent::kAny)                   printf("(trigger & AliVEvent::kAny)\n");
-    if(trigger & AliVEvent::kAnyINT)                printf("(trigger & AliVEvent::kAnyINT\n");
-    if(trigger & AliVEvent::kMB)                    printf("(trigger & AliVEvent::kMB)\n");       
-    if(trigger & AliVEvent::kCentral)               printf("(trigger & AliVEvent::kCentral)\n");
-    if(trigger & AliVEvent::kSemiCentral)           printf("(trigger & AliVEvent::kSemiCentral)\n");
-    if(trigger & AliVEvent::kEMCEJE)                printf("(trigger & AliVEvent::kEMCEJE)\n"); 
-    if(trigger & AliVEvent::kEMCEGA)                printf("(trigger & AliVEvent::kEMCEGA)\n");
+    if(trigger & AliTrigger::kAny)                   printf("(trigger & AliTrigger::kAny)\n");
+    if(trigger & AliTrigger::kAnyINT)                printf("(trigger & AliTrigger::kAnyINT\n");
+    if(trigger & AliTrigger::kMB)                    printf("(trigger & AliTrigger::kMB)\n");       
+    if(trigger & AliTrigger::kCentral)               printf("(trigger & AliTrigger::kCentral)\n");
+    if(trigger & AliTrigger::kSemiCentral)           printf("(trigger & AliTrigger::kSemiCentral)\n");
+    if(trigger & AliTrigger::kEMCEJE)                printf("(trigger & AliTrigger::kEMCEJE)\n"); 
+    if(trigger & AliTrigger::kEMCEGA)                printf("(trigger & AliTrigger::kEMCEGA)\n");
     if((trigger & MB_EMCEJE) == MB_EMCEJE)          printf("(trigger & MB_EMCEJE) == MB_EMCEJE)\n");
     if((trigger & CEN_EMCEJE) == CEN_EMCEJE)        printf("(trigger & CEN_EMCEJE) == CEN_EMCEJE)\n");
     if((trigger & SEM_EMCEJE) == SEM_EMCEJE)        printf("(trigger & SEM_EMCEJE) == SEM_EMCEJE)\n");
@@ -2882,3 +2883,4 @@ void AliAnalysisTaskJetV2::PrintTriggerSummary(AliBits trigger)
     if((trigger & ALL_EMCEGA) == ALL_EMCEGA)        printf("(trigger & ALL_EMCEGA) == ALL_EMCEGA)\n");
 }
 //_____________________________________________________________________________
+

@@ -14,7 +14,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   ana->SetMode(analysisMode);// data or corrections mode
   
 //  if (analysisMode == 0) // data
-//    ana->SelectCollisionCandidates(AliVEvent::kMB);
+//    ana->SelectCollisionCandidates(AliTrigger::kMB);
 
   // common config,
   ana->SetDebugLevel(0); 
@@ -58,7 +58,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
 //   ana->SetRejectCentralityOutliers();
   
   //pA
-/*  ana->SetEventSelectionBit(AliVEvent::kCINT5);
+/*  ana->SetEventSelectionBit(AliTrigger::kCINT5);
   ana->SetTwoTrackEfficiencyCut();
   ana->SetStepsFillSkip(kFALSE, kTRUE);*/
 //   ana->SetCentralityMethod("ZNA_MANUAL");
@@ -102,3 +102,4 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
    
   return ana;
 }
+

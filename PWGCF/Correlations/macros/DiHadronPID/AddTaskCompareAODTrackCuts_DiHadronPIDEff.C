@@ -35,7 +35,7 @@ AliAnalysisTaskCompareAODTrackCuts* AddTaskCompareAODTrackCuts_DiHadronPIDEff(
 
         // Configure and add Event Cuts.
 	AliAODEventCutsDiHadronPID* eventcuts = new AliAODEventCutsDiHadronPID("EventCuts");
-	eventcuts->SetTrigger(AliVEvent::kMB);
+	eventcuts->SetTrigger(AliTrigger::kMB);
 	eventcuts->SetCentrality(MaxCentrality, MinCentrality);
 	eventcuts->SetMaxVertexZ(maxVertexZ);
 	eventcuts->SetCentralityEstimator(CentralityEstimator);
@@ -108,3 +108,4 @@ AliAnalysisTaskCompareAODTrackCuts* AddTaskCompareAODTrackCuts_DiHadronPIDEff(
 	return EfficiencyTask;
 
 }
+

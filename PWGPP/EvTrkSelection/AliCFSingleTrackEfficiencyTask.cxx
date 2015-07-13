@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TCanvas.h"
 #include "TParticle.h"
 #include "TH1I.h"
@@ -42,7 +43,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask() :
   fQAHistList(0x0),
   fTrackCuts(0x0),
   fMCCuts(0x0),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fSetFilterBit(kFALSE),
   fbit(0),
   fEvalCentrality(kFALSE),
@@ -63,7 +64,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fQAHistList(0x0),
   fTrackCuts(trackcuts),
   fMCCuts(mccuts),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fSetFilterBit(kFALSE),
   fbit(0),
   fEvalCentrality(kFALSE),
@@ -733,3 +734,4 @@ Double_t AliCFSingleTrackEfficiencyTask::GetCentrality()
 
   return cent;
 }
+

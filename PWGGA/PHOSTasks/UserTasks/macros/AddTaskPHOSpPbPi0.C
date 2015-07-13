@@ -46,9 +46,9 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isM
   task->SetUseTOFCut(kTRUE);       // use TOF cut
   task->SetDebugLevel(-1);
 
-  if (triggerTag==0) task->SelectCollisionCandidates(AliVEvent::kINT7);
-  else if (triggerTag==1) task->SelectCollisionCandidates(AliVEvent::kPHI7);
-  else if (triggerTag==2) task->SelectCollisionCandidates(AliVEvent::kMB);
+  if (triggerTag==0) task->SelectCollisionCandidates(AliTrigger::kINT7);
+  else if (triggerTag==1) task->SelectCollisionCandidates(AliTrigger::kPHI7);
+  else if (triggerTag==2) task->SelectCollisionCandidates(AliTrigger::kMB);
 
   mgr->AddTask(task);
 
@@ -66,3 +66,4 @@ AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isM
 
   return task;
 }
+

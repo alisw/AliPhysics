@@ -19,6 +19,7 @@
 //   author: Alberica Toia
 //*****************************************************
 
+#include "AliTrigger.h"
 #include "AliCentralitySelectionTask.h"
 
 #include <TTree.h>
@@ -1855,9 +1856,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     if (fEGA) fHOutCentV0MEGA->Fill(fCentV0M);
     if (fPHS) fHOutCentV0MPHS->Fill(fCentV0M);
 
-    if (((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) && (runType==0)) ||
-	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7) && (runType==1)) || 
-	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) && (runType==2)) ) { // fill the QA histograms only for MB events!
+    if (((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB) && (runType==0)) ||
+	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kINT7) && (runType==1)) || 
+	((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB) && (runType==2)) ) { // fill the QA histograms only for MB events!
 
       fHOutQuality->Fill(fQuality);
       fHOutVertex->Fill(zvtx);
@@ -2207,4 +2208,5 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t zdc, Float_t v0) 
   else 
     return kFALSE;
 }
+
 

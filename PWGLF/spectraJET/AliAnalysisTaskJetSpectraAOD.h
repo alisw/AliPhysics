@@ -9,6 +9,7 @@ class AliSpectraAODEventCuts;
 class AliHelperPID;
 class AliAODJet;
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
@@ -27,7 +28,7 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
      fJetBranchName(""),
      fListJets(0),
      fBackgroundBranch(""),
-     fOfflineTrgMask(AliVEvent::kMB),
+     fOfflineTrgMask(AliTrigger::kMB),
      fFilterMask(0),
      fJetPtMin(0),
      fJetEtaMin(0x0),
@@ -77,7 +78,7 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   //jet setter
   void     SetBranchNames(const TString &branch);
   void     SetRecBackgroundBranch(const TString &bckbranch);
-  void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; } 
+  void     SetOfflineTrgMask(AliBits mask) { fOfflineTrgMask = mask; } 
   void     SetFilterMask(UInt_t i){fFilterMask = i;}
   void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
   void     SetEtaJet(Float_t etamin,Float_t etamax)   { fJetEtaMin = etamin; fJetEtaMax = etamax; }
@@ -120,7 +121,7 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   TList                       * fListJets;        //! jet lists
   TString                       fBackgroundBranch;
   
-  AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline trigs 
+  AliBits fOfflineTrgMask;   // mask of offline trigs 
    
   UInt_t  fFilterMask;       // filter bit for slecected tracks
   Float_t fJetPtMin;         // minimum jet pT
@@ -155,3 +156,4 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
 };
 
 #endif
+

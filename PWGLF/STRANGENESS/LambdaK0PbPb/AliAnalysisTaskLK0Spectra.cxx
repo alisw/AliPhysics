@@ -20,6 +20,7 @@
 //                 Author: H.Ricaud, H.Ricaud@gsi.de
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include <stdio.h>
@@ -1773,7 +1774,7 @@ void AliAnalysisTaskLK0Spectra::UserExec(Option_t *)
   // Trigger Selection ! Warning Works only for ESD, add protection in case of AOD loop
   //******************
 
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kMB);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliTrigger::kMB);
   if (!isSelected) return;
 
   fHistNumberEvents->Fill(1.5);  
@@ -3435,4 +3436,5 @@ Double_t AliAnalysisTaskLK0Spectra::MyRapidity(Double_t rE, Double_t rPz) const
   return 0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
 } 
 //----------------------------------------------------------------------------
+
 

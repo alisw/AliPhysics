@@ -340,7 +340,7 @@ void AddTaskFlowCentralityPIDSP(AliBits centralitysel,
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFE->SelectCollisionCandidates(AliTrigger::kMB);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
@@ -681,6 +681,7 @@ void AddTaskFlowCentralityPIDSP(AliBits centralitysel,
     if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
   }
 }
+
 
 
 

@@ -16,6 +16,7 @@
 // Analysis task for B2 (AOD)
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#include "AliTrigger.h"
 #include <AliAnalysisTaskSE.h>
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
@@ -852,7 +853,7 @@ Bool_t AliAnalysisTaskB2AOD::IsV0AND(AliBits /*triggerBits*/) const
 //
 // signals in both V0A and V0C
 //
-	//return ( (triggerBits&AliVEvent::kINT7) == AliVEvent::kINT7 );
+	//return ( (triggerBits&AliTrigger::kINT7) == AliTrigger::kINT7 );
 	
 	AliAODVZERO* vzero = fAODevent->GetVZEROData();
 	if(vzero == 0) return kFALSE;
@@ -867,7 +868,7 @@ Bool_t AliAnalysisTaskB2AOD::IsFastOnly(AliBits triggerBits) const
 //
 // kFastOnly trigger
 //
-	return ( (triggerBits&AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
+	return ( (triggerBits&AliTrigger::kFastOnly) == AliTrigger::kFastOnly );
 }
 
 Bool_t AliAnalysisTaskB2AOD::IsMB(AliBits triggerBits) const
@@ -875,7 +876,7 @@ Bool_t AliAnalysisTaskB2AOD::IsMB(AliBits triggerBits) const
 //
 // MB event
 //
-	return ( (triggerBits&AliVEvent::kMB) == AliVEvent::kMB );
+	return ( (triggerBits&AliTrigger::kMB) == AliTrigger::kMB );
 }
 
 AliAODMCParticle* AliAnalysisTaskB2AOD::GetParticle(const AliAODTrack* trk) const
@@ -1061,3 +1062,4 @@ Double_t AliAnalysisTaskB2AOD::GetRapidity(Double_t p, Double_t pz, Double_t m) 
 	
 	return 0.5*TMath::Log( (e+pz)/(e-pz) );
 }
+

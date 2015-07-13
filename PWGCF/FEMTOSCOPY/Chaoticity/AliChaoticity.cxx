@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <iostream>
 #include <math.h>
 #include "TChain.h"
@@ -1418,11 +1419,11 @@ void AliChaoticity::Exec(Option_t *)
   
   // Trigger Cut
   if(fAOD->GetRunNumber() >= 136851 && fAOD->GetRunNumber() <= 139517){// 10h data
-  Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
   if(!isSelected1 && !fMCcase) {return;}
   }else if(fAOD->GetRunNumber() >= 167693 && fAOD->GetRunNumber() <= 170593){// 11h data
-    Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
-    Bool_t isSelected2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
+    Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kCentral);
+    Bool_t isSelected2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kSemiCentral);
     if(!isSelected1 && !isSelected2 && !fMCcase) {return;}
   }else {return;}
 
@@ -4317,3 +4318,4 @@ void AliChaoticity::FourVectProdTerms(Float_t pV1[], Float_t pV2[], Float_t pV3[
   QS3v2 += (pV1[2]-pV2[2])*(pV2[3]-pV3[3]) - (pV1[3]-pV2[3])*(pV2[2]-pV3[2]);  
 }
 //________________________________________________________________________
+

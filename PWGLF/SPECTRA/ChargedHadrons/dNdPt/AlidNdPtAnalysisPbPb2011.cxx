@@ -28,6 +28,7 @@
 // last change: 2011-04-04 by M.Knichel
 //------------------------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
@@ -796,7 +797,7 @@ void AlidNdPtAnalysisPbPb2011::Process(AliESDEvent *const esdEvent, AliMCEvent *
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    //isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    //isEventTriggered = inputHandler->IsEventSelected() & AliTrigger::kMB;
     isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
     
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
@@ -2137,3 +2138,4 @@ TFolder* AlidNdPtAnalysisPbPb2011::CreateFolder(TString name,TString title) {
   
   return folder;
 }
+

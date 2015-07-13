@@ -1,6 +1,7 @@
 #ifndef AliEmcalJet_H
 #define AliEmcalJet_H
 
+#include "AliTrigger.h"
 #include <vector>
 #include <algorithm>
 #include <utility>
@@ -143,7 +144,7 @@ class AliEmcalJet : public AliVParticle
   void              SetPtSubVect(Double_t ps)          { fPtSubVect      = ps;             }
 
   // Trigger
-  Bool_t            IsTriggerJet(AliBits trigger=AliVEvent::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
+  Bool_t            IsTriggerJet(AliBits trigger=AliTrigger::kEMCEJE) const   { return (Bool_t)((fTriggers & trigger) != 0); }
   void              SetTrigger(AliBits trigger)                              { fTriggers  = trigger;                        }
   void              AddTrigger(AliBits trigger)                              { fTriggers |= trigger;                        }
 
@@ -367,3 +368,4 @@ class AliEmcalJet : public AliVParticle
   ClassDef(AliEmcalJet,17) // Emcal jet class in cylindrical coordinates
 };
 #endif
+

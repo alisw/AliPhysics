@@ -57,7 +57,7 @@ AliAnalysisTaskHJetEmbed *AddTaskHJetEmbedPYTHIA(const TString period      = "lh
     taskEmbed->SetCollisionSystem("pp");
   
   if(period.Contains("lhc11h",TString::kIgnoreCase))
-    taskEmbed->SelectCollisionCandidates(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+    taskEmbed->SelectCollisionCandidates(AliTrigger::kAnyINT | AliTrigger::kCentral | AliTrigger::kSemiCentral);
   
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("EmbedPYTHIA_TT%1.0f%1.0f",minTTPt,maxTTPt),TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s",  AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput(taskEmbed,0,mgr->GetCommonInputContainer());
@@ -65,3 +65,4 @@ AliAnalysisTaskHJetEmbed *AddTaskHJetEmbedPYTHIA(const TString period      = "lh
       
   return taskEmbed;
 }
+

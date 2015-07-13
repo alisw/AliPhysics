@@ -594,20 +594,20 @@ protected:
      Int_t id = 0;
      // B (bunch-crossing) trigger - or of CINT5 (V0-OR) 
      // and SPD COSMB (FASTOR)
-     cPS->AddCollisionTriggerClass(AliVEvent::kMB,
+     cPS->AddCollisionTriggerClass(AliTrigger::kMB,
                                    "+CINT5-B-NOPF-ALLNOTRD,"
 				   "+C0SMB-B-NOPF-ALLNOTRD","B",    id);
      // Control triggers 
-     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+     cPS->AddBGTriggerClass       (AliTrigger::kMB,
                                    "+CINT5-A-NOPF-ALLNOTRD,"
                                    "+C0SMB-A-NOPF-ALLNOTRD","A",    id);
-     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+     cPS->AddBGTriggerClass       (AliTrigger::kMB,
                                    "+CINT5-C-NOPF-ALLNOTRD,"
                                    "+C0SMB-C-NOPF-ALLNOTRD","C",    id);
-     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+     cPS->AddBGTriggerClass       (AliTrigger::kMB,
                                    "+CINT5-E-NOPF-ALLNOTRD,"
                                    "+C0SMB-E-NOPF-ALLNOTRD","E",    id);
-     cPS->AddBGTriggerClass       (AliVEvent::kMB,
+     cPS->AddBGTriggerClass       (AliTrigger::kMB,
                                    "+CINT5-ACE-NOPF-ALLNOTRD,"
                                    "+C0SMB-ACE-NOPF-ALLNOTRD","ACE",id);
      // How to replay hardware trigger 
@@ -663,7 +663,7 @@ protected:
       // --- Create and add the task ---------------------------------
       CoupleCar("AddTaskPhysicsSelection.C", Form("%d", mc));
       mgr->RegisterExtraFile("event_stat.root");
-      mgr->AddStatisticsTask(AliVEvent::kAny);
+      mgr->AddStatisticsTask(AliTrigger::kAny);
       
       // --- Retrive object from input handler -----------------------
       ps = dynamic_cast<AliPhysicsSelection*>(input->GetEventSelection());
@@ -1449,3 +1449,4 @@ protected:
   Railway*     fRailway;
 };
 #endif
+

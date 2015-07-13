@@ -23,6 +23,7 @@
  **************************************************************************/
 
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -66,7 +67,7 @@ fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
 fIsPbPb(kTRUE),
-fOfflineTrgMask(AliVEvent::kAny),
+fOfflineTrgMask(AliTrigger::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.),
 fVtxZMax(10.),
@@ -200,7 +201,7 @@ fAODExtension(0x0),
 fBackgroundBranch(""),
 fNonStdFile(""),
 fIsPbPb(kTRUE),
-fOfflineTrgMask(AliVEvent::kAny),
+fOfflineTrgMask(AliTrigger::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.),
 fVtxZMax(10.),
@@ -1548,4 +1549,5 @@ void AliAnalysisTaskJetCore::GetDimParams(Int_t iEntry, TString &label, Int_t &n
    }
 
 }
+
 

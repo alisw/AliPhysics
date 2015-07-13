@@ -1,4 +1,4 @@
-AddTaskPidVZEROSP_2(Int_t centralityselection=AliVEvent::kAny,Float_t etamin=-0.8,Float_t etamax=0.8,Int_t side=0,Int_t filterbit=1,Bool_t TOFbeta=kFALSE){
+AddTaskPidVZEROSP_2(Int_t centralityselection=AliTrigger::kAny,Float_t etamin=-0.8,Float_t etamax=0.8,Int_t side=0,Int_t filterbit=1,Bool_t TOFbeta=kFALSE){
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDSP.C");
 
   const Int_t ncentr = 4;
@@ -81,6 +81,7 @@ createSPres(){
   }
   fo->Close();
 }
+
 
 
 

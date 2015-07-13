@@ -18,6 +18,7 @@
 //      pions from kink topology are 'identified' in this code
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TCanvas.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
@@ -1227,7 +1228,7 @@ void AliAnalysisPionKinksMCESD::UserExec(Option_t *) {
 
 
 //----------------------------- Physics selection ------------------------------//
-	Bool_t IsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB;
+	Bool_t IsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliTrigger::kMB;
 	if ( IsSelected ==kFALSE) return;
 	
 //--------------- Data Multiplicity after Physics selection --------------------//
@@ -1797,4 +1798,5 @@ Bool_t AliAnalysisPionKinksMCESD::IsRealPionKink(AliESDkink* kink, AliStack* MCs
 		return kFALSE;
 	}
 }
+
 

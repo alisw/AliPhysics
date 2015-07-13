@@ -1,6 +1,7 @@
 #ifndef ALISINGLETRACKEFFICUTS_H
 #define ALISINGLETRACKEFFICUTS_H
 
+#include "AliTrigger.h"
 #include <TString.h>
 #include "TObject.h"
 
@@ -88,7 +89,7 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
   void SetCutOnZVertexSPD(Int_t cut) { fCutOnZVertexSPD=cut; }
 
   // Select event trigger mask
-  void SetTriggerMask(AliBits mask=AliVEvent::kAny) { fTriggerMask=mask; }
+  void SetTriggerMask(AliBits mask=AliTrigger::kAny) { fTriggerMask=mask; }
   AliBits GetTriggerMask(){ return fTriggerMask; }
 
   // Set minimum number of ITS, TPC, TOF or MUON clusters
@@ -175,3 +176,4 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
  };
 
 #endif
+

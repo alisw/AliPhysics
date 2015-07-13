@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -117,7 +118,7 @@ void AliAnalysisTaskPMD::UserExec(Option_t *)
   }
   fHistTotEvent->Fill(5);
   //event selection
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
   if (! isSelected) return;
   fHistTotEventAfterPhySel->Fill(5);
   //printf("There are %d tracks in this event\n", fESD->GetNumberOfPmdTracks());
@@ -199,3 +200,4 @@ void AliAnalysisTaskPMD::Terminate(Option_t *)
     return;
   }
 }
+

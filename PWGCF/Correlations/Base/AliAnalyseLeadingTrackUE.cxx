@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "AliTrigger.h"
 #include <TList.h>
 #include <TMath.h>
 #include <TObjArray.h>
@@ -64,7 +65,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fTrackPhiCutEvPlMin(0.),
   fTrackPhiCutEvPlMax(0.),
   fTrackPtMin(0),
-  fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
+  fEventSelection(AliTrigger::kMB|AliTrigger::kUserDefined),
   fDCAXYCut(0),
   fSharedClusterCut(-1),
   fCrossedRowsCut(-1),
@@ -1079,3 +1080,4 @@ Bool_t AliAnalyseLeadingTrackUE::CheckTrack(AliVParticle * part)
     return kTRUE;
   return kFALSE;
 }
+

@@ -18,6 +18,7 @@
 //          Andrew Castro (UTK)
 //      andrew.john.castro@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////////
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEmcalJetHF.h"
 // general ROOT includes                                                                                                                                                  
 #include <TCanvas.h>
@@ -259,22 +260,22 @@ void AliAnalysisTaskEmcalJetHF::UserCreateOutputObjects()
   fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(13,"IsRecalcJet");
   fHistMaxTriggerBitInfo->GetXaxis()->SetBinLabel(14,"IsRecalcGamma");
       
-  fHistEventSelection->GetXaxis()->SetBinLabel(1,"AliVEvent::kMB");
-  fHistEventSelection->GetXaxis()->SetBinLabel(2,"AliVEvent::kINT7");
-  fHistEventSelection->GetXaxis()->SetBinLabel(3,"AliVEvent::kHighMult");
-  fHistEventSelection->GetXaxis()->SetBinLabel(4,"AliVEvent::kEMC1");
-  fHistEventSelection->GetXaxis()->SetBinLabel(5,"AliVEvent::kCINT5");
-  fHistEventSelection->GetXaxis()->SetBinLabel(6,"AliVEvent::kEMC7");
-  fHistEventSelection->GetXaxis()->SetBinLabel(7,"AliVEvent::kEMC8");
-  fHistEventSelection->GetXaxis()->SetBinLabel(8,"AliVEvent::kEMCEJE");
-  fHistEventSelection->GetXaxis()->SetBinLabel(9,"AliVEvent::kEMCEGA");
-  fHistEventSelection->GetXaxis()->SetBinLabel(10,"AliVEvent::kCentral");
-  fHistEventSelection->GetXaxis()->SetBinLabel(11,"AliVEvent::kSemiCentral");
-  fHistEventSelection->GetXaxis()->SetBinLabel(12,"AliVEvent::kZED");
-  fHistEventSelection->GetXaxis()->SetBinLabel(13,"AliVEvent::kINT8");
-  fHistEventSelection->GetXaxis()->SetBinLabel(14,"AliVEvent::kFastOnly");
-  fHistEventSelection->GetXaxis()->SetBinLabel(15,"AliVEvent::kAnyINT");
-  fHistEventSelection->GetXaxis()->SetBinLabel(16,"AliVEvent::kAny");
+  fHistEventSelection->GetXaxis()->SetBinLabel(1,"AliTrigger::kMB");
+  fHistEventSelection->GetXaxis()->SetBinLabel(2,"AliTrigger::kINT7");
+  fHistEventSelection->GetXaxis()->SetBinLabel(3,"AliTrigger::kHighMult");
+  fHistEventSelection->GetXaxis()->SetBinLabel(4,"AliTrigger::kEMC1");
+  fHistEventSelection->GetXaxis()->SetBinLabel(5,"AliTrigger::kCINT5");
+  fHistEventSelection->GetXaxis()->SetBinLabel(6,"AliTrigger::kEMC7");
+  fHistEventSelection->GetXaxis()->SetBinLabel(7,"AliTrigger::kEMC8");
+  fHistEventSelection->GetXaxis()->SetBinLabel(8,"AliTrigger::kEMCEJE");
+  fHistEventSelection->GetXaxis()->SetBinLabel(9,"AliTrigger::kEMCEGA");
+  fHistEventSelection->GetXaxis()->SetBinLabel(10,"AliTrigger::kCentral");
+  fHistEventSelection->GetXaxis()->SetBinLabel(11,"AliTrigger::kSemiCentral");
+  fHistEventSelection->GetXaxis()->SetBinLabel(12,"AliTrigger::kZED");
+  fHistEventSelection->GetXaxis()->SetBinLabel(13,"AliTrigger::kINT8");
+  fHistEventSelection->GetXaxis()->SetBinLabel(14,"AliTrigger::kFastOnly");
+  fHistEventSelection->GetXaxis()->SetBinLabel(15,"AliTrigger::kAnyINT");
+  fHistEventSelection->GetXaxis()->SetBinLabel(16,"AliTrigger::kAny");
     
   const Int_t fgkNCentBins = 21;
   Float_t kMinCent   = 0.;
@@ -367,22 +368,22 @@ Bool_t AliAnalysisTaskEmcalJetHF::Run()
   if (!fJets)    return kTRUE;
 
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(fFillHists>0)     if(trig & AliVEvent::kMB)          fHistEventSelection->Fill(1);
-  if(fFillHists>0)     if(trig & AliVEvent::kINT7)        fHistEventSelection->Fill(2);
-  if(fFillHists>0)     if(trig & AliVEvent::kHighMult)    fHistEventSelection->Fill(3);
-  if(fFillHists>0)     if(trig & AliVEvent::kEMC1)        fHistEventSelection->Fill(4);
-  if(fFillHists>0)     if(trig & AliVEvent::kCINT5)       fHistEventSelection->Fill(5);
-  if(fFillHists>0)     if(trig & AliVEvent::kEMC7)        fHistEventSelection->Fill(6);
-  if(fFillHists>0)     if(trig & AliVEvent::kEMC8)        fHistEventSelection->Fill(7);
-  if(fFillHists>0)     if(trig & AliVEvent::kEMCEJE)      fHistEventSelection->Fill(8);
-  if(fFillHists>0)     if(trig & AliVEvent::kEMCEGA)      fHistEventSelection->Fill(9);
-  if(fFillHists>0)     if(trig & AliVEvent::kCentral)     fHistEventSelection->Fill(10);
-  if(fFillHists>0)     if(trig & AliVEvent::kSemiCentral) fHistEventSelection->Fill(11);
-  if(fFillHists>0)     if(trig & AliVEvent::kZED)         fHistEventSelection->Fill(12);
-  if(fFillHists>0)     if(trig & AliVEvent::kINT8)        fHistEventSelection->Fill(13);
-  if(fFillHists>0)     if(trig & AliVEvent::kFastOnly)    fHistEventSelection->Fill(14);
-  if(fFillHists>0)     if(trig & AliVEvent::kAnyINT)      fHistEventSelection->Fill(15);
-  if(fFillHists>0)     if(trig & AliVEvent::kAny)         fHistEventSelection->Fill(16);
+  if(fFillHists>0)     if(trig & AliTrigger::kMB)          fHistEventSelection->Fill(1);
+  if(fFillHists>0)     if(trig & AliTrigger::kINT7)        fHistEventSelection->Fill(2);
+  if(fFillHists>0)     if(trig & AliTrigger::kHighMult)    fHistEventSelection->Fill(3);
+  if(fFillHists>0)     if(trig & AliTrigger::kEMC1)        fHistEventSelection->Fill(4);
+  if(fFillHists>0)     if(trig & AliTrigger::kCINT5)       fHistEventSelection->Fill(5);
+  if(fFillHists>0)     if(trig & AliTrigger::kEMC7)        fHistEventSelection->Fill(6);
+  if(fFillHists>0)     if(trig & AliTrigger::kEMC8)        fHistEventSelection->Fill(7);
+  if(fFillHists>0)     if(trig & AliTrigger::kEMCEJE)      fHistEventSelection->Fill(8);
+  if(fFillHists>0)     if(trig & AliTrigger::kEMCEGA)      fHistEventSelection->Fill(9);
+  if(fFillHists>0)     if(trig & AliTrigger::kCentral)     fHistEventSelection->Fill(10);
+  if(fFillHists>0)     if(trig & AliTrigger::kSemiCentral) fHistEventSelection->Fill(11);
+  if(fFillHists>0)     if(trig & AliTrigger::kZED)         fHistEventSelection->Fill(12);
+  if(fFillHists>0)     if(trig & AliTrigger::kINT8)        fHistEventSelection->Fill(13);
+  if(fFillHists>0)     if(trig & AliTrigger::kFastOnly)    fHistEventSelection->Fill(14);
+  if(fFillHists>0)     if(trig & AliTrigger::kAnyINT)      fHistEventSelection->Fill(15);
+  if(fFillHists>0)     if(trig & AliTrigger::kAny)         fHistEventSelection->Fill(16);
     
   // what kind of event do we have: AOD or ESD?
   Bool_t useAOD;
@@ -1151,6 +1152,7 @@ void AliAnalysisTaskEmcalJetHF::GetDimParamsJetTrigger(Int_t iEntry, TString &la
           
   } // end of switch
 } //______________________________________________________________end of getting dim-params
+
 
 
 

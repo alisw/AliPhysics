@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliLog.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -397,8 +398,8 @@ void AliAnalysisTaskDiMuonCorrelations::FillHistograms(Int_t centrality, Int_t o
 
 Bool_t AliAnalysisTaskDiMuonCorrelations::IsTriggerFired() {
   
-  Bool_t isSelected = ((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMUL7) ||
-		       (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMUU7));
+  Bool_t isSelected = ((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMUL7) ||
+		       (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMUU7));
 
   return isSelected;
 }
@@ -530,4 +531,5 @@ void AliAnalysisTaskDiMuonCorrelations::Terminate(Option_t *) {
 }
 
 //====================================================================================================================================================
+
 

@@ -23,7 +23,7 @@ AliEventShapeSelectionTask *AddTaskEventShape(Bool_t fillHistos=kTRUE, Bool_t ao
   //
   AliEventShapeSelectionTask *eventshapeTask = new AliEventShapeSelectionTask("EventShapeSelection");
   eventshapeTask->SetInput(inputDataType);
-  eventshapeTask->SelectCollisionCandidates(AliVEvent::kAny);
+  eventshapeTask->SelectCollisionCandidates(AliTrigger::kAny);
   mgr->AddTask(eventshapeTask);
   
   mgr->ConnectInput(eventshapeTask, 0, mgr->GetCommonInputContainer());
@@ -38,3 +38,4 @@ AliEventShapeSelectionTask *AddTaskEventShape(Bool_t fillHistos=kTRUE, Bool_t ao
 
   return centralityTask;
 }   
+

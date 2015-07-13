@@ -337,7 +337,7 @@ cutsRP->SetQA(doQA);
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFE->SelectCollisionCandidates(AliTrigger::kMB);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
@@ -675,6 +675,7 @@ cutsRP->SetQA(doQA);
     if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
   }
 }
+
 
 
 

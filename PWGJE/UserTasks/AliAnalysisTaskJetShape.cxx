@@ -2,6 +2,7 @@
 // Author martin.poghosyan@cern.ch
 //
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1.h"
@@ -81,7 +82,7 @@ ClassImp(AliAnalysisTaskJetShape)
   fkIsPhysSel(0),  
   fNonStdFile(""),
   fFilterMask(0),
-  fOfflineTrgMask(AliVEvent::kAny),
+  fOfflineTrgMask(AliTrigger::kAny),
   fCentMin(0.),
   fCentMax(80.),
   fEvtClassMin(0),
@@ -2469,6 +2470,7 @@ TH3F *AliAnalysisTaskJetShape::Hist3D(const char* name, Int_t nBinsx, Double_t x
 
 
 //#endif
+
 
 
 

@@ -66,6 +66,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
@@ -1223,8 +1224,8 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
   // - Selection for ESD and AOD
   AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
-  if      (fCollidingSystem == "pp" ) isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-  else if (fCollidingSystem == "pPb") isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+  if      (fCollidingSystem == "pp" ) isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
+  else if (fCollidingSystem == "pPb") isSelected = (maskIsSelected & AliTrigger::kINT7) == AliTrigger::kINT7;
   if(! isSelected){
       PostData(1, fListHistCascade);
       PostData(2, fCFContCascadePIDXiMinus);
@@ -2404,3 +2405,4 @@ void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *)
  		legendOmega->Draw();
      */
 }
+

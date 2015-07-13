@@ -290,7 +290,7 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFE->SelectCollisionCandidates(AliTrigger::kMB);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
@@ -621,6 +621,7 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
 
   return taskFE;
 }
+
 
 
 

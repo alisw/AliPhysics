@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -170,7 +171,7 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
 
   // EVENT SELECTION ********************
   //collision candidate
-  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) return;
+  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB)) return;
 
   //****** Multiplicity selection *********
   Int_t fcent = 0;
@@ -480,3 +481,4 @@ void AliAnalysisTaskParticleFractions::UserExec(Option_t *)
   }
   PostData(1, fHistoList);
 }
+

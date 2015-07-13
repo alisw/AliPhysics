@@ -17,7 +17,7 @@ AliAnalysisTaskDiJetCorrelations *AddTaskDiJetCorrelations(TString suffixName=""
   
   //____________________________________| Correlation class setting..
   AliAnalysisTaskDiJetCorrelations *dijetcorrelations = new AliAnalysisTaskDiJetCorrelations("");
-  dijetcorrelations->SelectCollisionCandidates(AliVEvent::kMB);
+  dijetcorrelations->SelectCollisionCandidates(AliTrigger::kMB);
   dijetcorrelations->SetSystem(ppOrPbPb); //PbPb = kTRUE
   dijetcorrelations->SetSEorME(SEorME); //kTRUE for mixed events
   if(SEorME)dijetcorrelations->SetMESettings(500, 25000, 8); //evt,track,minMixEvents
@@ -95,3 +95,4 @@ TH3F *GetEfficiencyCorr(TString effLoc){
   return (TH3F*)tmp1->Clone("fEffHist3D");
 }
  */
+

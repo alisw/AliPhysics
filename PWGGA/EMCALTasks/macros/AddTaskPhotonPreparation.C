@@ -14,7 +14,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
   const char*    pTracksName        = "PicoTracks",
   const char*    usedMCParticles    = "MCParticlesSelected",
   const char*    usedClusters       = "CaloClusters",
-  const UInt_t   pSel               = AliVEvent::kEMC7,
+  const UInt_t   pSel               = AliTrigger::kEMC7,
   const Bool_t   doHistos           = kTRUE,
   const Bool_t   makePicoTracks     = kTRUE,
   const Bool_t   makeTrigger        = kTRUE,
@@ -292,5 +292,6 @@ Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s emctracks Ana: %s",inp
 
     return task;
 }
+
 
 

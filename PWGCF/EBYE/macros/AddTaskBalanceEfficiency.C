@@ -44,7 +44,7 @@ AliAnalysisTaskEfficiencyBF *AddTaskBalanceEfficiency(
   // centrality
   taskEfficiencyBF->SetCentralityEstimator(centralityEstimator);
   taskEfficiencyBF->SetCentralityPercentileRange(centrMin,centrMax);
-  taskEfficiencyBF->SelectCollisionCandidates(AliVEvent::kMB);
+  taskEfficiencyBF->SelectCollisionCandidates(AliTrigger::kMB);
 
   // vertex
   taskEfficiencyBF->SetVertexDiamond(.3,.3,vertexZ);
@@ -83,3 +83,4 @@ AliAnalysisTaskEfficiencyBF *AddTaskBalanceEfficiency(
 
   return taskEfficiencyBF;
 }
+

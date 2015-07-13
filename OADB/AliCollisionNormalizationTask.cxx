@@ -9,6 +9,7 @@
 //         CERN
 
 
+#include "AliTrigger.h"
 #include "AliCollisionNormalizationTask.h"
 
 #include <TFile.h>
@@ -126,7 +127,7 @@ void AliCollisionNormalizationTask::UserExec(Option_t*)
   // (statistics histogram would be altered)
 
   // FIXME: using only MB events, foresee more events?
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
 
   // Get the Multiplicity cut
   const AliMultiplicity* mult = aESD->GetMultiplicity();
@@ -222,3 +223,4 @@ Bool_t AliCollisionNormalizationTask::IsEventInBinZero() {
   return isZeroBin;
 
 }
+

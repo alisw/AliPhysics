@@ -105,7 +105,7 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   
 
   // trigger  
-  task->SelectCollisionCandidates(AliVEvent::kMB); 
+  task->SelectCollisionCandidates(AliTrigger::kMB); 
 
 
 /// Set analysis options from the helper
@@ -126,8 +126,8 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   fdNdPtAnalysis->SetAnalysisMode(analysisMode); 
   fdNdPtAnalysis->SetParticleMode(particleMode); 
   //fdNdPtAnalysis->SetTrigger(trigger);
-  fdNdPtAnalysis->SetTriggerMask(AliVEvent::kMB);
-  //fdNdPtAnalysis->SetTriggerMask(AliVEvent::kEMC1);  
+  fdNdPtAnalysis->SetTriggerMask(AliTrigger::kMB);
+  //fdNdPtAnalysis->SetTriggerMask(AliTrigger::kEMC1);  
   if(hasMC) 
   {
     //physTrigSel->SetAnalyzeMC();
@@ -177,4 +177,5 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
 //   return task; 
 
 }
+
 

@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TMath.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -116,7 +117,7 @@ void AliAnalysisTaskQAPmdflow::UserExec(Option_t *)
   TH1F* hPmdNcelA = static_cast<TH1F*>(fOutput->At(3));
   
   //Bool_t passevent = fEventCuts->IsSelected(event);
-  //Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  //Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
 
   Int_t ntracks = 0;
   
@@ -167,4 +168,5 @@ AliAnalysisTaskQAPmdflow::~AliAnalysisTaskQAPmdflow()
   delete fPOITrackCuts;
   delete fEventCuts;
 }
+
 

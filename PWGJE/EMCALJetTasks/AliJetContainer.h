@@ -12,6 +12,7 @@ class AliClusterContainer;
 class AliLocalRhoParameter;
 class AliPythiaInfo;
 
+#include "AliTrigger.h"
 #include <TMath.h>
 #include "AliRhoParameter.h"
 #include "AliEmcalContainer.h"
@@ -63,7 +64,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetPtBiasJetTrack(Float_t b)                         { fPtBiasJetTrack = b                ; }
   void                        SetLeadingHadronType(Int_t t)                        { fLeadingHadronType = t             ; }
   void                        SetJetBitMap(UInt_t m)                               { fJetBitMap      = m                ; }
-  void                        SetJetTrigger(UInt_t t=AliVEvent::kEMCEJE)           { fJetTrigger     = t                ; }
+  void                        SetJetTrigger(UInt_t t=AliTrigger::kEMCEJE)           { fJetTrigger     = t                ; }
   void                        SetTagStatus(Int_t i)                                { fTagStatus      = i                ; }
 
   virtual void                SetRhoName(const char *n)                            { fRhoName        = n                ; }
@@ -169,3 +170,4 @@ class AliJetContainer : public AliEmcalContainer {
 };
 
 #endif
+

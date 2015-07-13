@@ -39,7 +39,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   
   
   // central trigger
-  hfetaskCent->SelectCollisionCandidates(AliVEvent::kCentral);
+  hfetaskCent->SelectCollisionCandidates(AliTrigger::kCentral);
   
   TString containerName = mgr->GetCommonFileName();
   containerName += ":PWGHF_hfeCalCentral";
@@ -50,7 +50,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   mgr->ConnectOutput(hfetaskCent, 1, coutput1);
 
   //L1 gamma trigger
-  hfetaskTrig->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  hfetaskTrig->SelectCollisionCandidates(AliTrigger::kEMCEGA);
   
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeCalTrigEGA";
@@ -62,8 +62,8 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
   
   
   // semi-central
-  //hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
-  hfetaskTrig2->SelectCollisionCandidates(AliVEvent::kAny);
+  //hfetaskTrig2->SelectCollisionCandidates(AliTrigger::kSemiCentral | AliTrigger::kCentral);
+  hfetaskTrig2->SelectCollisionCandidates(AliTrigger::kAny);
   
   TString containerName3 = mgr->GetCommonFileName();
   containerName3 += ":PWGHF_hfeCalSemiCentral";
@@ -79,7 +79,7 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
     //MB trigger
     AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,0.5,0.1,masscut,-5,1);
     mgr->AddTask(hfetaskMB);
-    hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
+    hfetaskMB->SelectCollisionCandidates(AliTrigger::kMB);
 
     TString containerName4 = mgr->GetCommonFileName();
     containerName4 += ":PWGHF_hfeCalkMB";
@@ -92,3 +92,4 @@ AliAnalysisTask *AddTaskHFECal(Bool_t MassConst, Bool_t MassWidthCut, Bool_t Mas
 
   return NULL;
 }
+

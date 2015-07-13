@@ -74,10 +74,10 @@ AliPhysicsSelection *physTrigSel =  new AliPhysicsSelection();
 
   //TString datatype=gSystem->Getenv("CONFIG_FILE");
   //if ( datatype == "PbPb" ){
-  //  task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+  //  task->SelectCollisionCandidates(AliTrigger::kUserDefined);
   //}
   //else
-  task->SelectCollisionCandidates(AliVEvent::kMB); 
+  task->SelectCollisionCandidates(AliTrigger::kMB); 
 
 
 //     }
@@ -144,4 +144,5 @@ AliPhysicsSelection *physTrigSel =  new AliPhysicsSelection();
 
 
 }
+
 

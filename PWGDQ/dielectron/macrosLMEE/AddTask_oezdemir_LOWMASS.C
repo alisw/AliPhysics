@@ -40,7 +40,7 @@ eventCuts->SetMinVtxContributors(1);
 
   task->SetEventFilter(eventCuts);
   //2010/2011	Min Bias?
-  task->SetTriggerMask(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);
+  task->SetTriggerMask(AliTrigger::kINT7+AliTrigger::kMB+AliTrigger::kINT8);
 
   mgr->AddTask(task);
 
@@ -89,3 +89,4 @@ eventCuts->SetMinVtxContributors(1);
 
   return task;
 }
+

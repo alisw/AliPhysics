@@ -8,10 +8,10 @@ AliAnalysisTaskSE *AddTaskPLam(){
   // Add the proton-lambda task
   AliAnalysisTaskSE *taskPLam = new AliAnalysisTaskProtonLambda("TaskProtonLambda");
   if (!taskPLam){printf("E-AddTaskPLam: Couldn't create the task!\n");return 0;}
-  AliBits triggerMask=AliVEvent::kMB;
-  triggerMask|=AliVEvent::kCentral;
-  triggerMask|=AliVEvent::kSemiCentral;
-  taskPLam->SelectCollisionCandidates(triggerMask); // std is AliVEvent::kMB
+  AliBits triggerMask=AliTrigger::kMB;
+  triggerMask|=AliTrigger::kCentral;
+  triggerMask|=AliTrigger::kSemiCentral;
+  taskPLam->SelectCollisionCandidates(triggerMask); // std is AliTrigger::kMB
   mgr->AddTask(taskPLam);
   
   // Create containers for output
@@ -28,3 +28,4 @@ AliAnalysisTaskSE *AddTaskPLam(){
   // Return the task
   return taskPLam;
 }
+

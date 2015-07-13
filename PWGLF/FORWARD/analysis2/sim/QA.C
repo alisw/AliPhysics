@@ -24,21 +24,21 @@
  * needs
  */
 // Trigger mask.
-AliBits kTriggerInt        = AliVEvent::kAnyINT;
-AliBits kTriggerMuonAll    = (AliVEvent::kMUL7       | 
-			     AliVEvent::kMUSH7      | 
-			     AliVEvent::kMUU7       |
-			     AliVEvent::kMUS7       |
-			     AliVEvent::kMUSPB      |
-			     AliVEvent::kMUSHPB     |
-			     AliVEvent::kMuonLikePB | 
-			     AliVEvent::kMuonUnlikePB);
-AliBits kTriggerMuonBarell = AliVEvent::kMUU7;
-AliBits kTriggerEMC        = (AliVEvent::kEMC7   | 
-			     AliVEvent::kEMC8   | 
-			     AliVEvent::kEMCEJE | 
-			     AliVEvent::kEMCEGA);
-AliBits kTriggerHM         = AliVEvent::kHighMult;
+AliBits kTriggerInt        = AliTrigger::kAnyINT;
+AliBits kTriggerMuonAll    = (AliTrigger::kMUL7       | 
+			     AliTrigger::kMUSH7      | 
+			     AliTrigger::kMUU7       |
+			     AliTrigger::kMUS7       |
+			     AliTrigger::kMUSPB      |
+			     AliTrigger::kMUSHPB     |
+			     AliTrigger::kMuonLikePB | 
+			     AliTrigger::kMuonUnlikePB);
+AliBits kTriggerMuonBarell = AliTrigger::kMUU7;
+AliBits kTriggerEMC        = (AliTrigger::kEMC7   | 
+			     AliTrigger::kEMC8   | 
+			     AliTrigger::kEMCEJE | 
+			     AliTrigger::kEMCEGA);
+AliBits kTriggerHM         = AliTrigger::kHighMult;
 AliBits kTriggerMask       = kTriggerInt;
 
 /**
@@ -511,7 +511,7 @@ void AddAnalysisTasks(const char *cdb_location)
 
     AliAnalysisTaskCaloCellsQA *taskPHOSCellQA2 = 
       AddTaskCaloCellsQA(4, 1, NULL,"PHOSCellsQA_PHI7"); 
-    taskPHOSCellQA2->SelectCollisionCandidates(AliVEvent::kPHI7);
+    taskPHOSCellQA2->SelectCollisionCandidates(AliTrigger::kPHI7);
     taskPHOSCellQA2->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.3,1.0);
 
     // Pi0 QA fo PbPb
@@ -537,13 +537,13 @@ void AddAnalysisTasks(const char *cdb_location)
     gROOT->LoadMacro(pwgpp+"/macros/AddTaskFBFqa.C");
     AliAnalysisTaskSE *qaFBFMB = (AliAnalysisTaskSE*)AddTaskFBFqa("qaFBFmb",
 								  kFALSE);
-    qaFBFMB->SelectCollisionCandidates(AliVEvent::kMB);
+    qaFBFMB->SelectCollisionCandidates(AliTrigger::kMB);
     AliAnalysisTaskSE *qaFBFSC = (AliAnalysisTaskSE*)AddTaskFBFqa("qaFBFsc",
 								  kFALSE);
-    qaFBFSC->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    qaFBFSC->SelectCollisionCandidates(AliTrigger::kSemiCentral);
     AliAnalysisTaskSE *qaFBFCE = (AliAnalysisTaskSE*)AddTaskFBFqa("qaFBFce",
 								  kFALSE);
-    qaFBFCE->SelectCollisionCandidates(AliVEvent::kCentral);
+    qaFBFCE->SelectCollisionCandidates(AliTrigger::kCentral);
   }
 }
 /** 
@@ -711,4 +711,5 @@ void QA(UInt_t      run,
 // 
 // EOF
 // 
+
 

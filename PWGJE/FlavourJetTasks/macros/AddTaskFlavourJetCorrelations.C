@@ -2,7 +2,7 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   Bool_t theMCon = kFALSE,
   Bool_t reco = kTRUE /*must be true if theMCon is false*/,
   TString jetArrname = "",
-  AliBits pSel=AliVEvent::kAny,
+  AliBits pSel=AliTrigger::kAny,
   TString trigClass="",
   TString suffix = "",
   TString trackArrname = "PicoTracks",
@@ -81,3 +81,4 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
   Printf("Input and Output connected to the manager");
   return task ;
 }
+

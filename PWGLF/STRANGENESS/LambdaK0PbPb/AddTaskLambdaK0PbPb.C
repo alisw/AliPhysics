@@ -60,9 +60,9 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
       task[itask]->SetUsePID("withoutPID"); // withPID or withoutPID
     cout << "5" << endl;
     task[itask]->SetTrackCuts(myTracksCuts);
-    //    task[itask]->SetCollisionCandidates(AliVEvent::kMB | AliVEvent::kMUON);
-    //   task[itask]->SelectCollisionCandidates(AliVEvent::kMB);
-    task[itask]->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kMB);
+    //    task[itask]->SetCollisionCandidates(AliTrigger::kMB | AliTrigger::kMUON);
+    //   task[itask]->SelectCollisionCandidates(AliTrigger::kMB);
+    task[itask]->SelectCollisionCandidates(AliTrigger::kINT7 | AliTrigger::kMB);
    
     mgr->AddTask(task[itask]);
   
@@ -142,5 +142,6 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
 
   return task;
 }   
+
 
 

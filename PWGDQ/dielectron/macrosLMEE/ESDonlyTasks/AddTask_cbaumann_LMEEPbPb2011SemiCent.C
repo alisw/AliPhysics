@@ -46,7 +46,7 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011SemiCent(Bool_t runRejection=kFALS
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEDataSemiCent");
   if (!hasMC){ task->UsePhysicsSelection();
   }
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 
   //load dielectron configuration file
@@ -118,3 +118,4 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011SemiCent(Bool_t runRejection=kFALS
 
   return task;
 }
+

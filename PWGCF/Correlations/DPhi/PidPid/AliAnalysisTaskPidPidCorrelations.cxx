@@ -31,6 +31,7 @@
 */
 
 //_____ ROOT fMyAODHeaders
+#include "AliTrigger.h"
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -142,7 +143,7 @@ AliAnalysisTaskPidPidCorrelations::AliAnalysisTaskPidPidCorrelations() // All da
 //   , fVariablesTreeCorr ( 0x0 )
 //   , fCorrVariables ( 0 )
 
-  , fTriggerType (AliVEvent::kMB)
+  , fTriggerType (AliTrigger::kMB)
   , fMyMcType ( -1 )
 //   , fFilterBit ( 128 )
   , fFilterType ( 2 )
@@ -275,7 +276,7 @@ AliAnalysisTaskPidPidCorrelations::AliAnalysisTaskPidPidCorrelations(const char 
 //   , fVariablesTreeCorr ( 0x0 )
 //   , fCorrVariables ( 0 )
   
-  , fTriggerType ( AliVEvent::kMB )
+  , fTriggerType ( AliTrigger::kMB )
   , fMyMcType ( -1 )
 //   , fFilterBit ( 128 )
   , fFilterType ( 2 )
@@ -3217,4 +3218,5 @@ void AliAnalysisTaskPidPidCorrelations::Terminate(Option_t *)
 
   return;
 }
+
 

@@ -4,6 +4,7 @@
 //
 // Author: C.Loizides
 
+#include "AliTrigger.h"
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -106,19 +107,19 @@ void AliEmcalPhysicsSelectionTask::UserExec(const Option_t *opt)
 
   AliEmcalPhysicsSelection *ps=static_cast<AliEmcalPhysicsSelection *>(fPhysicsSelection);
   fHEvtTypes->Fill(0);
-  if (res&AliVEvent::kAnyINT)
+  if (res&AliTrigger::kAnyINT)
     fHEvtTypes->Fill(1);
   if (ps->IsFastOnly())
     fHEvtTypes->Fill(2);
-  if (res&AliVEvent::kCentral)
+  if (res&AliTrigger::kCentral)
     fHEvtTypes->Fill(3);
-  if (res&AliVEvent::kSemiCentral)
+  if (res&AliTrigger::kSemiCentral)
     fHEvtTypes->Fill(4);
-  if ((res&AliVEvent::kEMC1) || (res&AliVEvent::kEMC7))
+  if ((res&AliTrigger::kEMC1) || (res&AliTrigger::kEMC7))
     fHEvtTypes->Fill(5);
-  if (res&AliVEvent::kEMCEJE)
+  if (res&AliTrigger::kEMCEJE)
     fHEvtTypes->Fill(6);
-  if (res&AliVEvent::kEMCEGA)
+  if (res&AliTrigger::kEMCEGA)
     fHEvtTypes->Fill(7);
   if (res&AliEmcalPhysicsSelection::kEmcalOk)
     fHEvtTypes->Fill(8);
@@ -171,3 +172,4 @@ void AliEmcalPhysicsSelectionTask::Terminate(Option_t *)
   }
   fOutput->Remove(fPhysicsSelection);
 }
+

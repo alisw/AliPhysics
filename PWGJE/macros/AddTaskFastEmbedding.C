@@ -37,7 +37,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
    task->SetEvtSelecMode(AliAnalysisTaskFastEmbedding::kEventsJetPt);
 
    // event selection
-   task->SetOfflineTrgMask(AliVEvent::kMB);
+   task->SetOfflineTrgMask(AliTrigger::kMB);
    task->SetCentMin(0.);
    task->SetCentMax(10.);
 
@@ -232,4 +232,5 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(const char* aodpath, const ch
 
    return task;
 }
+
 

@@ -1,4 +1,4 @@
-AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( AliBits uTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral , 
+AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( AliBits uTriggerMask = AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral , 
 						Double_t dNCrossedRowsTPC = 100,
 						Int_t iFilterBit = AliAODTrack::kTrkGlobal,
 						char *contName = "dNdPtPbPbAOD",
@@ -31,9 +31,9 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( AliBits uTriggerMask = AliVEvent
   combinedName.Form("%s%s",contName, suffix);
   ::Info("AddTask_dNdPt_PbPbAOD",Form("Name of Task: %s", combinedName.Data()));
   AlidNdPtAnalysisPbPbAOD *task = new AlidNdPtAnalysisPbPbAOD(combinedName.Data());
-  //   UInt_t triggerMask = AliVEvent::kMB;
-  //   triggerMask |= AliVEvent::kCentral;
-  //   triggerMask |= AliVEvent::kSemiCentral;
+  //   UInt_t triggerMask = AliTrigger::kMB;
+  //   triggerMask |= AliTrigger::kCentral;
+  //   triggerMask |= AliTrigger::kSemiCentral;
   
   task->SelectCollisionCandidates(uTriggerMask);
   
@@ -109,3 +109,4 @@ Double_t binsPhi[] = {
   
   return task;
 }   
+

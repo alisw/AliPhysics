@@ -1,4 +1,4 @@
-AddTaskPidQC(Int_t centralityselection=AliVEvent::kAny,Float_t etamin=-0.8,Float_t etamax=0.8){
+AddTaskPidQC(Int_t centralityselection=AliTrigger::kAny,Float_t etamin=-0.8,Float_t etamax=0.8){
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/FLOW/macros/AddTaskFlowCentralityPIDQC.C");
 
   const Int_t ncentr = 9;
@@ -127,6 +127,7 @@ createQC2res(){
   }
   fo->Close();
 }
+
 
 
 

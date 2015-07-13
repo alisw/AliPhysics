@@ -3,6 +3,7 @@
  *                          University of Houston
  *                      sandun.pahula.hewage@cern.ch
  *****************************************************************************************/
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TList.h>
 #include <TChain.h>
@@ -662,7 +663,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	// Physics Selection
 	//------------------------------------------------ 
 	AliBits maskIsSelected = inEvMain->IsEventSelected();
-	Bool_t isSelected = maskIsSelected & AliVEvent::kMB;
+	Bool_t isSelected = maskIsSelected & AliTrigger::kMB;
     if (!isSelected) return;
 	
 	//------------------------------------------------
@@ -1375,3 +1376,4 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 					
 												
 												
+

@@ -4,6 +4,7 @@
 //
 // Author: S.Aiola, C.Loizides
 
+#include "AliTrigger.h"
 #include "AliJetEmbeddingFromAODTask.h"
 
 // C++ standard library
@@ -57,7 +58,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask() :
   fAODMCParticlesName(),
   fMinCentrality(-1),
   fMaxCentrality(-1),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fJetMinPt(0),
@@ -130,7 +131,7 @@ AliJetEmbeddingFromAODTask::AliJetEmbeddingFromAODTask(const char *name, Bool_t 
   fAODMCParticlesName(AliAODMCParticle::StdBranchName()),
   fMinCentrality(-1),
   fMaxCentrality(-1),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fZVertexCut(10),
   fMaxVertexDist(999),
   fJetMinPt(0),
@@ -880,3 +881,4 @@ TLorentzVector AliJetEmbeddingFromAODTask::GetLeadingJet(TClonesArray *tracks, T
 
   return jet;
 }
+

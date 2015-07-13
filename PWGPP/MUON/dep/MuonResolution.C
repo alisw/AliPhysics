@@ -7,6 +7,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 // ROOT includes
+#include "AliTrigger.h"
 #include <fstream>
 #include <TString.h>
 #include <TStopwatch.h>
@@ -527,7 +528,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   if (eventSelectionMask != 0) {
     AliMuonEventCuts eventCuts("muEventCuts", "muEventCuts");
     eventCuts.SetFilterMask(eventSelectionMask);
-    if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliVEvent::kAny);
+    if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliTrigger::kAny);
     if (selectTrigger) eventCuts.SetTrigClassPatterns(eventCuts.GetDefaultTrigClassPatterns());
     muonResolution->SetMuonEventCuts(eventCuts);
   }
@@ -832,4 +833,5 @@ TChain* CreateChain(Int_t mode, TString input)
   else if (mode == kLocal) return CreateChainFromFile(input.Data());
   else return NULL;
 }
+
 

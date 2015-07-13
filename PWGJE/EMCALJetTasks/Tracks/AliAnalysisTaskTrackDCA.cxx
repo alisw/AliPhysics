@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include "AliTrigger.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -106,8 +107,8 @@ void AliAnalysisTaskTrackDCA::UserExec(Option_t *){
 
   // Check triggers - split them up in INT7 (V0) and INT8 (T0)
   std::vector<std::string> triggers;
-  if(fInputHandler->IsEventSelected() & AliVEvent::kINT7) triggers.push_back("MinBiasINT7");
-  if(fInputHandler->IsEventSelected() & AliVEvent::kINT8) triggers.push_back("MinBiasINT8");
+  if(fInputHandler->IsEventSelected() & AliTrigger::kINT7) triggers.push_back("MinBiasINT7");
+  if(fInputHandler->IsEventSelected() & AliTrigger::kINT8) triggers.push_back("MinBiasINT8");
   TString triggerstring = esdev->GetFiredTriggerClasses();
   if(triggerstring.Contains("EGA")){
     if(triggerstring.Contains("CEMC7")) triggers.push_back("EGAINT7");
@@ -220,3 +221,4 @@ void AliAnalysisTaskTrackDCA::CreateLinearBinning(TArrayD& binning, int nbins, d
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
+

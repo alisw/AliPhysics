@@ -9,6 +9,7 @@
  * @ingroup pwglf_forward_scripts_tasks
  * 
  */
+#include "AliTrigger.h"
 #include <AliAnalysisTaskSE.h>
 #include <AliESDtrackCuts.h>
 class TList;
@@ -390,7 +391,7 @@ CentralMultTask::CheckEvent(const AliESDEvent& esd, Double_t& vz)
 
   // Trigger mask 
   AliBits   mask     = ih->IsEventSelected();   
-  Bool_t   isMinBias = (mask & AliVEvent::kMB) ? 1 : 0;
+  Bool_t   isMinBias = (mask & AliTrigger::kMB) ? 1 : 0;
   UShort_t ret       = 0;
   if (isMinBias) ret |= kValidTrigger;
   
@@ -612,7 +613,7 @@ AddTaskCentralTracks()
   CentralMultTask* task = new CentralMultTask("Global", 2, 10);
   // if physics selection performed in UserExec(),
   // this line should be commented 
-  // task->SelectCollisionCandidates(AliVEvent::kMB); 
+  // task->SelectCollisionCandidates(AliTrigger::kMB); 
   mgr->AddTask(task);
 
   // create containers for input/output
@@ -633,3 +634,4 @@ AddTaskCentralTracks()
 //
 // EOF
 // 
+

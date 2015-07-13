@@ -1,6 +1,7 @@
 // QA task for central production study
 // author: Martin Poghosyan
 
+#include "AliTrigger.h"
 #include <TList.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -247,7 +248,7 @@ void AliAnalysisTaskCPQA::LoopESD()
       else if(fESD->IsTriggerClassFired("CINT1-E-NOPF-ALL"))      TrType=3;
 
       AliBits mask =  ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-      fkIsPhysSel=(mask & AliVEvent::kMB) ? 1 : 0; // check if minimum bias trigger class fired
+      fkIsPhysSel=(mask & AliTrigger::kMB) ? 1 : 0; // check if minimum bias trigger class fired
  
 
       if(!fkIsPhysSel) return;
@@ -302,4 +303,5 @@ void AliAnalysisTaskCPQA::LoopESD()
 
   return;
 }   
+
 

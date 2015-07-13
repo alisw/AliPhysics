@@ -67,8 +67,8 @@ AliAnalysisTask*  AddAliEbyEHigherMomentsTaskPID(Double_t vx,
   else if( particle == "Kaon") { taskHM->SetParticleSpecies(AliPID::kKaon); }
   else if( particle == "Pion" ){ taskHM->SetParticleSpecies(AliPID::kPion); }
   
-  if(trigger) taskHM->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  else taskHM->SelectCollisionCandidates(AliVEvent::kMB);
+  if(trigger) taskHM->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
+  else taskHM->SelectCollisionCandidates(AliTrigger::kMB);
    
   // cout << " Check analysis type " << analysisType << endl;
   
@@ -82,3 +82,4 @@ AliAnalysisTask*  AddAliEbyEHigherMomentsTaskPID(Double_t vx,
   
   return taskHM;
 }
+

@@ -20,6 +20,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -74,7 +75,7 @@ fESD(0x0),
 mcEvent(0x0),
 fPIDResponse(0x0),
 fSelectPhysics(kFALSE),
-fTriggerMask(AliVEvent::kAny),
+fTriggerMask(AliTrigger::kAny),
 fEventFilter(0x0),
 fRequireVtx(kFALSE),
 fCheckV0daughterElectron(kFALSE),
@@ -168,7 +169,7 @@ fESD(0x0),
 mcEvent(0x0),
 fPIDResponse(0x0),
 fSelectPhysics(kFALSE),
-fTriggerMask(AliVEvent::kAny),
+fTriggerMask(AliTrigger::kAny),
 fEventFilter(0x0),
 fRequireVtx(kFALSE),
 fCheckV0daughterElectron(kFALSE),
@@ -397,7 +398,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   // taken from AliAnalysisTaskMultiDielectron::UserExec():
   // -----
   // Was event selected ?
-  ULong64_t isSelected = AliVEvent::kAny;
+  ULong64_t isSelected = AliTrigger::kAny;
   //Bool_t isRejected = kFALSE;
   if( fSelectPhysics && inputHandlerESD){
     if((isESD && inputHandlerESD->GetEventSelection()) || isAOD){
@@ -1319,3 +1320,4 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hOpenPhiV,    57);
   
 }
+

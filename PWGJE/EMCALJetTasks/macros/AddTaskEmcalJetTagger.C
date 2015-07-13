@@ -23,7 +23,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 						     Int_t       rhoType             = 1,
 						     const char *type                = "EMCAL",
 						     const char *CentEst             = "V0M",
-						     Int_t       pSel                = AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
+						     Int_t       pSel                = AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB,
 						     TString     trigClass           = "",
 						     TString     kEmcalTriggers      = "",
 						     TString     kPeriod             = "LHC11h",
@@ -57,10 +57,10 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
     jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data(),ptminTrack,kFALSE,kFALSE);
   else if (strcmp(type,"EMCAL")==0)
     jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data(),ptminTrack,kFALSE,kFALSE);
-  jetFinderTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskBase->SelectCollisionCandidates(AliTrigger::kAny);
 
   AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag2.Data(),ptminTag,kFALSE,kFALSE);
-  jetFinderTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskTag->SelectCollisionCandidates(AliTrigger::kAny);
 
   if(tag1.EqualTo("JetPythia"))
     jetFinderTaskBase->SetTrackLabelRange(99999,9999999);
@@ -80,7 +80,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
     rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme,tag1);
     if(rhoTaskBase) {
       rhoTaskBase->SetCentralityEstimator(CentEst);  
-      rhoTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
+      rhoTaskBase->SelectCollisionCandidates(AliTrigger::kAny);
       if (strcmp(type,"TPC")==0)
 	rhoNameBase = rhoTaskBase->GetOutRhoName();    
       if (strcmp(type,"EMCAL")==0)
@@ -89,7 +89,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
     if(rhoTaskTag) {
       rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.,recombScheme,tag2);
       rhoTaskTag->SetCentralityEstimator(CentEst); 
-      rhoTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
+      rhoTaskTag->SelectCollisionCandidates(AliTrigger::kAny);
       rhoNameTag  = rhoTaskTag->GetOutRhoName();
     }
   }
@@ -214,7 +214,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data(),1.);
-  jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderAKt->SelectCollisionCandidates(AliTrigger::kAny);
   if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
     jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data(),0.);
 
@@ -266,7 +266,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
 
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTask;
   }
-  jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderKt->SelectCollisionCandidates(AliTrigger::kAny);
   if(tag.EqualTo("JetPythia")) {
     jetFinderKt->SetTrackLabelRange(99999,9999999);
     jetFinderAKt->SetTrackLabelRange(99999,9999999);
@@ -274,3 +274,4 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
 
   return rhoTaskBase;
 }
+

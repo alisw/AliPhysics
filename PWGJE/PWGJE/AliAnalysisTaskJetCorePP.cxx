@@ -24,6 +24,7 @@
  **************************************************************************/
 
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TClonesArray.h"
 #include "TTree.h"
@@ -99,7 +100,7 @@ fJetParamR(0.4),
 fBgJetParamR(0.3),
 fBgMaxJetPt(8.0),
 fBgConeR(0.4),
-fOfflineTrgMask(AliVEvent::kAny),
+fOfflineTrgMask(AliTrigger::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.0),
 fVtxZMax(10.0),
@@ -273,7 +274,7 @@ fJetParamR(0.4),
 fBgJetParamR(0.3),
 fBgMaxJetPt(8.0),
 fBgConeR(0.4),
-fOfflineTrgMask(AliVEvent::kAny),
+fOfflineTrgMask(AliTrigger::kAny),
 fMinContribVtx(1),
 fVtxZMin(-10.0),
 fVtxZMax(10.0),
@@ -2718,3 +2719,4 @@ void AliAnalysisTaskJetCorePP::ReadTClonesArray(TString bname, TList *list){
 
    return;
 }
+

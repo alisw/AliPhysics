@@ -12,6 +12,7 @@
  */
 #if !defined (__CINT__) || defined (__CLING__) || defined (__MAKECINT__) || defined (__ROOTCLING__)
 // CLING requires header files for the JIT-compiler
+#include "AliTrigger.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
@@ -146,8 +147,8 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 
   bool isSwapEta = TString(period).CompareTo("LHC13f") ? kFALSE : kTRUE;
   EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1 *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTriggerV1(Form("ptemcaltriggertask%s", ntrackcuts));
-  //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
-  pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
+  //pttriggertask->SelectCollisionCandidates(AliTrigger::kINT7 | AliTrigger::kEMC7);                          // Select both INT7 or EMC7 triggered events
+  pttriggertask->SelectCollisionCandidates(AliTrigger::kAny);
 
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig *trgconf = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig;
   if(isMC && !useOfflinePatches) trgconf->SetSwapThresholds();
@@ -394,7 +395,7 @@ void CreateTriggerClassespPb2013(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalT
   // Min Bias trigger
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass *minbiastrigger = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("MinBias", "min. bias events");
   minbiastrigger->SetMinBiasTrigger(kTRUE);
-  minbiastrigger->AddTriggerBit(AliVEvent::kINT7);
+  minbiastrigger->AddTriggerBit(AliTrigger::kINT7);
   task->AddTriggerClass(minbiastrigger);
 
   // EMCAL trigger classes
@@ -447,11 +448,11 @@ void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTr
   // Min Bias triggers (INT7 and INT8)
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * mbINT7 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("MinBiasINT7", "min. bias events (INT7)");
   mbINT7->SetMinBiasTrigger(kTRUE);
-  mbINT7->AddTriggerBit(AliVEvent::kINT7);
+  mbINT7->AddTriggerBit(AliTrigger::kINT7);
   task->AddTriggerClass(mbINT7);
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * mbINT8 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("MinBiasINT8", "min. bias events (INT8)");
   mbINT8->SetMinBiasTrigger(kTRUE);
-  mbINT8->AddTriggerBit(AliVEvent::kINT8);
+  mbINT8->AddTriggerBit(AliTrigger::kINT8);
   task->AddTriggerClass(mbINT8);
 
   EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass * jetINT7 = new EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass("EMCJetINT7", "EMCAL jet triggered events (INT7)");
@@ -470,13 +471,13 @@ void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTr
     gammaINT8->AddTriggerStringPattern("CEMC8", kTRUE);
   } else {
     jetINT7->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJHigh);
-    jetINT7->AddTriggerBit(AliVEvent::kINT7);
+    jetINT7->AddTriggerBit(AliTrigger::kINT7);
     jetINT8->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJHigh);
-    jetINT8->AddTriggerBit(AliVEvent::kINT8);
+    jetINT8->AddTriggerBit(AliTrigger::kINT8);
     gammaINT7->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCGHigh);
-    gammaINT7->AddTriggerBit(AliVEvent::kINT7);
+    gammaINT7->AddTriggerBit(AliTrigger::kINT7);
     gammaINT8->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCGHigh);
-    gammaINT8->AddTriggerBit(AliVEvent::kINT8);
+    gammaINT8->AddTriggerBit(AliTrigger::kINT8);
   }
 
   task->AddTriggerClass(jetINT7);
@@ -569,3 +570,4 @@ EMCalTriggerPtAnalysis::AliEMCalPtTaskVTrackSelection *TrackCutsFactory(const ch
   else if(!strcmp(trackCutsName, "hybrid")) return CreateHybridTrackCuts(isAOD);
   return NULL;
 }
+

@@ -5,7 +5,7 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
    const char *acctype = "TPC",
    const TString sRunPeriod = "LHC10b",
    const Int_t    uBeamType = 0,
-   const AliBits uTriggerMask = AliVEvent::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
+   const AliBits uTriggerMask = AliTrigger::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
    const Bool_t bIsMC = kFALSE,
    const Bool_t bIsReco = kFALSE,
    const Bool_t bIsMap = kFALSE,
@@ -163,7 +163,7 @@ void AddTasksFlavourJet(const Int_t iCandType = 1 /*0 = D0, 1=Dstar...*/,
 //run with multiple R
 void AddTasksFlavourJet(
    /*input for Jet Finder*/   
-   const AliBits uTriggerMask = AliVEvent::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
+   const AliBits uTriggerMask = AliTrigger::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
    const TString sRunPeriod = "LHC13b", /*for track selection*/
    Bool_t tmpoadb2012flag=kFALSE, /*kTRUE for LHC12h and LHC12i*/
    const Bool_t bIsMC = kFALSE,
@@ -249,7 +249,7 @@ void AddTasksFlavourJet(
 //run with HF tracks cuts (filterbit 4 and 9  -> 16, 512)
 void AddTasksFlavourJet(
    /*input for Jet Finder*/   
-   const AliBits uTriggerMask = AliVEvent::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
+   const AliBits uTriggerMask = AliTrigger::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
    const Bool_t bIsMC = kFALSE,
    const Double_t R=0.4,
    /*input for D mesons*/ 
@@ -369,5 +369,6 @@ void AddMyAnalysis(TString& jetname, Double_t aRadius,
       );
    
 }
+
 
 

@@ -78,7 +78,7 @@ AddTaskLongRangeCorrelations(Int_t    trackFilter  = 128, // TPC only
       taskLRC->SetCentralityRange(centMin[i], centMax[i]);
       taskLRC->SetPtRange(ptMin, 1e20);
       taskLRC->SetPhiRange(phiMin, phiMax);
-      taskLRC->SelectCollisionCandidates(AliVEvent::kMB);
+      taskLRC->SelectCollisionCandidates(AliTrigger::kMB);
       taskLRC->SetSelectPrimaryMCParticles(selPrimMC, selPrimMCData);
       
       switch (cutDeltaEta) {
@@ -107,3 +107,4 @@ AddTaskLongRangeCorrelations(Int_t    trackFilter  = 128, // TPC only
 
   return taskLRC;
 }
+

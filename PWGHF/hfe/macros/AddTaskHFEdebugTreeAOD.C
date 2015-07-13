@@ -16,7 +16,7 @@ AliAnalysisTask *AddTaskHFEdebugTreeAOD(){
   task->SetFileName("HFEdebug.root");
   task->SetMinNclustersTPC(30);
   task->SetMinNclustersITS(2);
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
 
    
   mgr->AddTask(task);
@@ -32,3 +32,4 @@ AliAnalysisTask *AddTaskHFEdebugTreeAOD(){
   return task;
   
 }
+

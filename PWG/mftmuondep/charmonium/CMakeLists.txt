@@ -21,6 +21,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/mftmuondep/charmonium)
 
 # Aditional include directories in alphabetical order
 include_directories(${AliPhysics_SOURCE_DIR}/EVENTMIX
+                    ${AliPhysics_SOURCE_DIR}/OADB
                    )
 # Sources - alphabetical order
 set(SRCS
@@ -42,7 +43,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Ex: ${AliPhysics_SOURCE_DIR}/ANALYSIS/ANALYSIS -> ANALYSIS
 #     ${AliPhysics_SOURCE_DIR}/EVENTMIX - EventMixing
 set(ROOT_DEPENDENCIES Core EG Hist MathCore)
-set(ALIROOT_DEPENDENCIES STEERBase AOD ANALYSIS ANALYSISalice EventMixing MUONrec MFTbase)
+set(ALIROOT_DEPENDENCIES OADB STEERBase AOD ANALYSIS ANALYSISalice EventMixing MUONrec MFTbase)
 
 # Generate the ROOT map used to automatically load the dependecies
 # Load only the upper level libraries, there is no need to load the dependecies

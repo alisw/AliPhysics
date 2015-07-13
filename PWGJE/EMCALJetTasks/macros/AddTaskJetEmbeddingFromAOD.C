@@ -17,7 +17,7 @@ AliJetEmbeddingFromAODTask* AddTaskJetEmbeddingFromAOD(
   Bool_t          includeNoITS  = kFALSE,
   Double_t        minCent       = 0,
   Double_t        maxCent       = 10,
-  UInt_t          mask          = AliVEvent::kAny,
+  UInt_t          mask          = AliTrigger::kAny,
   const Bool_t    copyArray     = kTRUE,  
   const Bool_t    makeQA        = kFALSE,
   Int_t           nFiles        = 1234567890,
@@ -135,3 +135,4 @@ TObjArray* GenerateFileList(const char* list, Int_t nFiles)
 
   return array;
 }
+

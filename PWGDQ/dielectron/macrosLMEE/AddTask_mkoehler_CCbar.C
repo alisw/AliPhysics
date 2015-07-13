@@ -43,7 +43,7 @@ AliAnalysisTask *AddTask_mkoehler_CCbar(Bool_t hasMC_aod = kFALSE){
 
   // pileup rejection
 //    task->SetRejectPileup();
-   task->SetTriggerMask(AliVEvent::kEMC7);
+   task->SetTriggerMask(AliTrigger::kEMC7);
    task->UsePhysicsSelection();
   //----------------------
   //create data containers
@@ -71,3 +71,4 @@ AliAnalysisTask *AddTask_mkoehler_CCbar(Bool_t hasMC_aod = kFALSE){
   
   return task;
 }
+

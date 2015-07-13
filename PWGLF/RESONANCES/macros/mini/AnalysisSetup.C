@@ -92,7 +92,7 @@ TString AnalysisSetup(Int_t       nmix,
      ::Info("AnalysisSetup", "Add physics selection");
      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC);
-     physSelTask->SelectCollisionCandidates(AliVEvent::kMB); 
+     physSelTask->SelectCollisionCandidates(AliTrigger::kMB); 
      if (noV0) {
        ::Info("AnalysisSetup", "Skip of V0 info is required");
        physSelTask->GetPhysicsSelection()->SetSkipV0(kTRUE);
@@ -146,3 +146,4 @@ TString AnalysisSetup(Int_t       nmix,
 
   
   
+

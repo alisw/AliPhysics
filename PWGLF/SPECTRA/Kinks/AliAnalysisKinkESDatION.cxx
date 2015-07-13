@@ -9,6 +9,7 @@
 //      Kaons from kink topology are 'identified' in this code
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -312,8 +313,8 @@ void AliAnalysisKinkESDatION::UserExec(Option_t *)
 ///*
 //   ==================check of Physics selection?
        Bool_t isSelected =
-//    ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB;
-((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kCentral;// 10/3/14
+//    ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliTrigger::kMB;
+((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliTrigger::kCentral;// 10/3/14
 
         if ( isSelected ==kFALSE) return;   //  
 
@@ -723,3 +724,4 @@ const AliESDVertex* AliAnalysisKinkESDatION::GetEventVertex(const AliESDEvent* e
      return 0;
   }
 }
+

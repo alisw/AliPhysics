@@ -33,7 +33,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
    Double_t    maxClsCrossedRows = 0.8,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
-   UInt_t      triggerMask = AliVEvent::kMB,
+   UInt_t      triggerMask = AliTrigger::kMB,
    Int_t       PbPb2011CentFlat = 0,
    Int_t       nmix = 0,
    Float_t     maxDiffVzMix = 1.0,
@@ -64,7 +64,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
    
    if(PbPb2011CentFlat)
      task->SetUseCentralityPatchPbPb2011(PbPb2011CentFlat);
-   //task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);        
+   //task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);        
    task->SelectCollisionCandidates(triggerMask);
 
 
@@ -174,3 +174,4 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskTPCKStarSyst
    
    return task;
 }
+

@@ -36,6 +36,7 @@
 // mutlAcc      : number of ESD tracks after AcceptanceCuts
 //------------------------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
@@ -1132,7 +1133,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    //isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    //isEventTriggered = inputHandler->IsEventSelected() & AliTrigger::kMB;
     isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
@@ -2922,3 +2923,4 @@ TFolder *folder = 0;
 
   return folder;
 }
+

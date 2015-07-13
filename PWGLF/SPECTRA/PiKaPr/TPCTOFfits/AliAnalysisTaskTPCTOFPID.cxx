@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisTaskTPCTOFPID.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -258,7 +259,7 @@ AliAnalysisTaskTPCTOFPID::InitEvent()
     if (!fMCStack) return kFALSE;
   }
   /* event selection */
-  fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+  fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kAny);
   fIsEventSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   fIsPileupFromSPD = fESDEvent->IsPileupFromSPD();
 
@@ -437,4 +438,5 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
 void AliAnalysisTaskTPCTOFPID::Terminate(Option_t *) {
   printf("Terminate!\n");
 }
+
 

@@ -22,6 +22,7 @@
 // Modified: Jacek Otwinowski (GSI)                                      //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -176,7 +177,7 @@ void AliAnalysisNoiseTPC::UserExec(Option_t *)
 
   Bool_t isSelectedMB = kFALSE;
   // check MB
-  isSelectedMB = inputHandler->IsEventSelected() & AliVEvent::kMB;
+  isSelectedMB = inputHandler->IsEventSelected() & AliTrigger::kMB;
 
   // get physics selection
   physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
@@ -298,5 +299,6 @@ void AliAnalysisNoiseTPC::Terminate(Option_t *)
   Printf("*** CONSTRUCTOR CALLED ****");
 
 }
+
 
 

@@ -91,7 +91,7 @@ void runTaskFluctuations(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
     //Add the centrality determination task
     gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-    //taskCentrality->SelectCollisionCandidates(AliVEvent::kMB);
+    //taskCentrality->SelectCollisionCandidates(AliTrigger::kMB);
   }
 
   // Load the analysis task:
@@ -440,4 +440,5 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   return chain;
 
 } // end of TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
+
 

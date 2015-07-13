@@ -29,72 +29,72 @@ AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "",
   if(trigger=="EMC8")
   {
     printf("counter trigger EMC8\n");
-    counter->SelectCollisionCandidates(AliVEvent::kEMC8);
+    counter->SelectCollisionCandidates(AliTrigger::kEMC8);
   }
   else if(trigger=="EMC7")
   {
     printf("counter trigger EMC7\n");
-    counter->SelectCollisionCandidates(AliVEvent::kEMC7);
+    counter->SelectCollisionCandidates(AliTrigger::kEMC7);
   }
   else if (trigger=="INT7")
   {
     printf("counter trigger INT7\n");
-    counter->SelectCollisionCandidates(AliVEvent::kINT7);
+    counter->SelectCollisionCandidates(AliTrigger::kINT7);
   }
   if(trigger=="EMC1")
   {
     printf("counter trigger EMC1\n");
-    counter->SelectCollisionCandidates(AliVEvent::kEMC1);
+    counter->SelectCollisionCandidates(AliTrigger::kEMC1);
   }
   else if(trigger=="MB")
   {
     printf("counter trigger MB\n");
-    counter->SelectCollisionCandidates(AliVEvent::kMB);
+    counter->SelectCollisionCandidates(AliTrigger::kMB);
   }
   else if(trigger=="PHOS")
   {
     printf("counter trigger PHOS\n");
-    counter->SelectCollisionCandidates(AliVEvent::kPHI7);
+    counter->SelectCollisionCandidates(AliTrigger::kPHI7);
   }
   else if(trigger=="PHOSPb")
   {
     printf("counter trigger PHOSPb\n");
-    counter->SelectCollisionCandidates(AliVEvent::kPHOSPb);
+    counter->SelectCollisionCandidates(AliTrigger::kPHOSPb);
   }
   else if(trigger=="AnyINT")
   {
     printf("counter trigger AnyINT\n");
-    counter->SelectCollisionCandidates(AliVEvent::kAnyINT);
+    counter->SelectCollisionCandidates(AliTrigger::kAnyINT);
   }  
   else if(trigger=="INT")
   {
     printf("counter trigger AnyINT\n");
-    counter->SelectCollisionCandidates(AliVEvent::kAny);
+    counter->SelectCollisionCandidates(AliTrigger::kAny);
   }
   else if(trigger=="EMCEGA")
   {
     printf("counter trigger EMC Gamma\n");
-    counter->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+    counter->SelectCollisionCandidates(AliTrigger::kEMCEGA);
   } 
   else if(trigger=="EMCEJE")
   {
     printf("counter trigger EMC Jet\n");
-    counter->SelectCollisionCandidates(AliVEvent::kEMCEJE);
+    counter->SelectCollisionCandidates(AliTrigger::kEMCEJE);
   }
   else if(trigger=="Central")
   {
     printf("counter trigger Central\n");
-    counter->SelectCollisionCandidates(AliVEvent::kCentral);
+    counter->SelectCollisionCandidates(AliTrigger::kCentral);
   } 
   else if(trigger=="SemiCentral")
   {
     printf("counter trigger SemiCentral\n");
-    counter->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    counter->SelectCollisionCandidates(AliTrigger::kSemiCentral);
   }
   else if(trigger=="SemiOrCentral")
   {
     printf("counter trigger SemiCentral Or Central\n");
-    counter->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+    counter->SelectCollisionCandidates(AliTrigger::kSemiCentral | AliTrigger::kCentral);
   }
   
   TString outputFile = AliAnalysisManager::GetCommonFileName(); 
@@ -109,4 +109,5 @@ AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "",
   return counter;
   
 }
+
 

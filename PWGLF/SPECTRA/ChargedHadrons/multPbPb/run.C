@@ -1,6 +1,7 @@
 // TODO:
 // 1. Check cuts for 2010 (Jochen?)
 // 2. Run with many centrality bins at once
+#include "AliTrigger.h"
 #include <string.h>
 
 enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID, kMyRunModeProofLite};
@@ -160,7 +161,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracks.C");
     AliAnalysisTaskMultPbTracks * task = AddTaskMultPbPbTracks("multPbPbtracks.root", cuts, centrSelector); 
     task->SetIsMC(useMCKinematics);
-    task->SetOfflineTrigger(AliVEvent::kMB);
+    task->SetOfflineTrigger(AliTrigger::kMB);
     if(optionStr.Contains("TPC")) task->SetTPCOnly();
     if(optionStr.Contains("NoElectrons")) task->RejectElectrons(kTRUE);
     if(useMCKinematics) task->GetHistoManager()->SetSuffix("MC");
@@ -181,7 +182,7 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
       cout << "MC KINEMATICS:" << useMCKinematics << endl;
       
       tasks[icentr]->SetIsMC(useMCKinematics);
-      tasks[icentr]->SetOfflineTrigger(AliVEvent::kMB);
+      tasks[icentr]->SetOfflineTrigger(AliTrigger::kMB);
       if(optionStr.Contains("TPC")) tasks[icentr]->SetTPCOnly();
       if(optionStr.Contains("NoElectrons")) task[icentr]->RejectElectrons(kTRUE);
       if(useMCKinematics) tasks[icentr]->GetHistoManager()->SetSuffix("MC");
@@ -403,3 +404,4 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
   }
 
 }
+

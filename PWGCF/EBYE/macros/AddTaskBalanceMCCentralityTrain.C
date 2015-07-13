@@ -114,7 +114,7 @@ AliAnalysisTaskBF *AddTaskBalanceMCCentralityTrain(Double_t centrMin=0.,
   // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
   // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
   // documentation in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWG1EvSelDocumentation
-  //taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+  //taskBF->SelectCollisionCandidates(AliTrigger::kMB);
     
   // vertex cut (x,y,z)
   taskBF->SetVertexDiamond(.3,.3,vertexZ);
@@ -139,3 +139,4 @@ AliAnalysisTaskBF *AddTaskBalanceMCCentralityTrain(Double_t centrMin=0.,
 
   return taskBF;
 }
+

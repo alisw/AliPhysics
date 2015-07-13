@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE, AliBits triggerSel=(AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kINT8), AliBits collCands=(AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kINT8)){
+AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE, AliBits triggerSel=(AliTrigger::kINT7 | AliTrigger::kMB | AliTrigger::kINT8), AliBits collCands=(AliTrigger::kINT7 | AliTrigger::kMB | AliTrigger::kINT8)){
 
 
   //get the current analysis manager
@@ -38,8 +38,8 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE, AliBits triggerS
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
   if ((!hasMC) && enablePS) taskMB->UsePhysicsSelection();
-  //taskMB->SelectCollisionCandidates(AliVEvent::kMB);
-//  taskMB->SetTriggerMask(AliVEvent::kINT7|AliVEvent::kMB|AliVEvent::kINT8);
+  //taskMB->SelectCollisionCandidates(AliTrigger::kMB);
+//  taskMB->SetTriggerMask(AliTrigger::kINT7|AliTrigger::kMB|AliTrigger::kINT8);
   taskMB->SetTriggerMask(triggerSel);
   taskMB->SelectCollisionCandidates(collCands);
 
@@ -97,3 +97,4 @@ AliAnalysisTask *AddTask_cbaumann_LMEEpp(Bool_t enablePS=kTRUE, AliBits triggerS
   return taskMB;
 
 }
+

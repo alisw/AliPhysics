@@ -44,7 +44,7 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
     taskEffContBF->SetCentralityEstimator(centralityEstimator);
     taskEffContBF->SetCentralityPercentileRange(centrMin,centrMax);
   }
-  taskEffContBF->SelectCollisionCandidates(AliVEvent::kMB);
+  taskEffContBF->SelectCollisionCandidates(AliTrigger::kMB);
 
   // vertex
   taskEffContBF->SetVertexDiamond(.3,.3,vertexZ);
@@ -80,3 +80,4 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
   
   return taskEffContBF;
 }
+

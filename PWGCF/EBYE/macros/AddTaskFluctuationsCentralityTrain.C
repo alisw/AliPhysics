@@ -43,7 +43,7 @@ void AddTaskFluctuationsCentralityTrain(const char* analysisType = "ESD",
     taskFluctuations->SetVertexDiamond(3.,3.,10.);
     taskFluctuations->SetCentralityEstimator(centralityEstimator);
     //taskFluctuations->SetCentralityBins20();
-    taskFluctuations->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFluctuations->SelectCollisionCandidates(AliTrigger::kMB);
   }
 
   TString type = analysisType;
@@ -65,3 +65,4 @@ void AddTaskFluctuationsCentralityTrain(const char* analysisType = "ESD",
 
   return;
 }
+

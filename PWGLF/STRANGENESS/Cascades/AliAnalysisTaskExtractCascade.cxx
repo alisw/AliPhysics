@@ -51,6 +51,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
@@ -1007,10 +1008,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     
     AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
-    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+    isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
     
     //pA triggering: CINT7
-    if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+    if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliTrigger::kINT7) == AliTrigger::kINT7;
     
     //Standard Min-Bias Selection
     if ( ! isSelected ) {
@@ -1751,3 +1752,4 @@ Double_t AliAnalysisTaskExtractCascade::MyRapidity(Double_t rE, Double_t rPz) co
     }
     return ReturnValue;
 }
+

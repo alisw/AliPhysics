@@ -214,10 +214,10 @@ taskPID->SetUseTPCEtaCorrection(kTRUE);
   }
   else
  {
-	task1->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
-	task2->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
-	task3->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
-	task4->GetEventCuts()->SetTriggerSettings(AliVEvent::kINT7);
+	task1->GetEventCuts()->SetTriggerSettings(AliTrigger::kINT7);
+	task2->GetEventCuts()->SetTriggerSettings(AliTrigger::kINT7);
+	task3->GetEventCuts()->SetTriggerSettings(AliTrigger::kINT7);
+	task4->GetEventCuts()->SetTriggerSettings(AliTrigger::kINT7);
 
 
 }	
@@ -327,3 +327,4 @@ AliAnalysisGrid* CreateAlienHandler(TString mode="test",TString daystring)
   plugin->SetSplitMode("se");
   return plugin;
 }
+

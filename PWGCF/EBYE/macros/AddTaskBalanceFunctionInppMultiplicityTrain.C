@@ -58,7 +58,7 @@ AliAnalysisTaskBF *AddTaskBalanceFunctionInppMultiplicityTrain(Int_t nMultMin = 
     // offline trigger selection (AliVEvent.h)
     // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
     // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
-    taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+    taskBF->SelectCollisionCandidates(AliTrigger::kMB);
   }
   else if(analysisType == "AOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
@@ -95,3 +95,4 @@ AliAnalysisTaskBF *AddTaskBalanceFunctionInppMultiplicityTrain(Int_t nMultMin = 
 
   return taskBF;
 }
+

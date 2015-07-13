@@ -157,7 +157,7 @@ void runEx(
 	gROOT->LoadMacro("AliAnalysisTaskCDex.cxx+g");
 
 	AliAnalysisTaskSE* task = new AliAnalysisTaskCDex(taskname);
-	task->SelectCollisionCandidates(AliVEvent::kMB);
+	task->SelectCollisionCandidates(AliTrigger::kMB);
 	mgr->AddTask(task);
 
 	// INPUT ---------------------------------------------------------------------
@@ -311,3 +311,4 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname,
 
 	return plugin;
 }
+

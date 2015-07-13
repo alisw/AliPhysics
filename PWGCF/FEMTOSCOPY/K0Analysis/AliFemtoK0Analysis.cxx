@@ -55,6 +55,7 @@
 
 
  
+#include "AliTrigger.h"
 #include <iostream>
 #include <math.h>
 #include "TMath.h"
@@ -535,9 +536,9 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   fAOD = dynamic_cast<AliAODEvent*> (InputEvent());
   if (!fAOD) {Printf("ERROR: fAOD not available"); return;}
 
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral));
-  bool isCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
-  //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral));
+  bool isCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kCentral);
+  //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
   if(!isSelected) {
    //cout << "Failed trigger selection." << endl; 
    return;
@@ -1592,3 +1593,4 @@ bool AliFemtoK0Analysis::RejectEventCentFlat(float MagField, float CentPercent)
 
  return RejectEvent;
 }
+

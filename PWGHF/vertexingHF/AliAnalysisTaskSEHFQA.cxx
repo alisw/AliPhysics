@@ -22,6 +22,7 @@
 // Author: Chiara Bianchin, chiara.bianchin@pd.infn.it
 /////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TCanvas.h>
@@ -1463,64 +1464,64 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	trigCount->Count(Form("triggerType:NoPhysSelSemiCent/Run:%d",runNumber));
       }
     }
-    if(evSelMask & AliVEvent::kAny){
+    if(evSelMask & AliTrigger::kAny){
       hTrigC->Fill(0.,centrality);
       hTrigM->Fill(0.,multiplicity);
       trigCount->Count(Form("triggerType:Any/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:Any/Run:%d",runNumber));
     }  
-    if(evSelMask & AliVEvent::kMB){
+    if(evSelMask & AliTrigger::kMB){
       hTrigC->Fill(1.,centrality);
       hTrigM->Fill(1.,multiplicity);
       trigCount->Count(Form("triggerType:MB/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:MB/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kINT7){ 
+    if(evSelMask & AliTrigger::kINT7){ 
       hTrigC->Fill(2.,centrality);
       hTrigM->Fill(2.,multiplicity);
       trigCount->Count(Form("triggerType:CINT7/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:CINT7/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kINT8){ 
+    if(evSelMask & AliTrigger::kINT8){ 
       hTrigC->Fill(3.,centrality);
       hTrigM->Fill(3.,multiplicity);
       trigCount->Count(Form("triggerType:INT8/Run:%d",runNumber));   
       trigCount2->Count(Form("triggerType:INT8/Run:%d",runNumber));      
     }
-    if(evSelMask & AliVEvent::kCINT5){ 
+    if(evSelMask & AliTrigger::kCINT5){ 
       hTrigC->Fill(4.,centrality);
       hTrigM->Fill(4.,multiplicity);
     }
-    if(evSelMask & AliVEvent::kCentral){
+    if(evSelMask & AliTrigger::kCentral){
       hTrigC->Fill(5.,centrality);
       hTrigM->Fill(5.,multiplicity);
       trigCount->Count(Form("triggerType:Cent/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kSemiCentral){ 
+    if(evSelMask & AliTrigger::kSemiCentral){ 
       hTrigC->Fill(6.,centrality);
       hTrigM->Fill(6.,multiplicity);
       trigCount->Count(Form("triggerType:SemiCent/Run:%d",runNumber));
     }
 
-    if(evSelMask & AliVEvent::kEMC1){
+    if(evSelMask & AliTrigger::kEMC1){
       hTrigC->Fill(7.,centrality);
       hTrigM->Fill(7.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC1/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kEMC7) && trigClass.Contains("CEMC7")){
+    if((evSelMask & AliTrigger::kEMC7) && trigClass.Contains("CEMC7")){
       hTrigC->Fill(8.,centrality);
       hTrigM->Fill(8.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC7/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kEMC8) && trigClass.Contains("CEMC8")){
+    if((evSelMask & AliTrigger::kEMC8) && trigClass.Contains("CEMC8")){
       hTrigC->Fill(9.,centrality);
       hTrigM->Fill(9.,multiplicity);
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMC8/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kEMCEJE){
+    if(evSelMask & AliTrigger::kEMCEJE){
        trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
        if(trigClass.Contains("CEMC7EJE")) {
 	 trigCount2->Count(Form("triggerType:EMCJET7/Run:%d",runNumber));
@@ -1534,7 +1535,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	 hTrigM->Fill(12.,multiplicity);
        }
     }
-    if(evSelMask & AliVEvent::kEMCEGA){
+    if(evSelMask & AliTrigger::kEMCEGA){
       if(trigClass.Contains("CEMC7EGA")) {
 	hTrigC->Fill(11.,centrality);
 	hTrigM->Fill(11.,multiplicity);
@@ -1546,50 +1547,50 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
       trigCount2->Count(Form("triggerType:EMCGAMMA/Run:%d",runNumber));
     }
-    if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
+    if(evSelMask & (((AliTrigger::kCMUS5 | AliTrigger::kMUSH7) | (AliTrigger::kMUL7 | AliTrigger::kMUU7)) |  (AliTrigger::kMUS7 | AliTrigger::kMUON))){
       hTrigC->Fill(14.,centrality);
       hTrigM->Fill(14.,multiplicity);
       trigCount->Count(Form("triggerType:MUON/Run:%d",runNumber));
     }
-    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){ 
+    if(evSelMask & (AliTrigger::kPHI1 | AliTrigger::kPHI7)){ 
       hTrigC->Fill(15.,centrality);
       hTrigM->Fill(15.,multiplicity);
     }
-    if(evSelMask & (AliVEvent::kTRD)){
+    if(evSelMask & (AliTrigger::kTRD)){
       hTrigC->Fill(16.,centrality);
       hTrigM->Fill(16.,multiplicity);
       trigCount2->Count(Form("triggerType:TRD/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliTrigger::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       hTrigC->Fill(17.,centrality);
       hTrigM->Fill(17.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHJT/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliTrigger::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       hTrigC->Fill(18.,centrality);
       hTrigM->Fill(18.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHSE/Run:%d",runNumber));
     }
-    if(evSelMask & (AliVEvent::kHighMult)){
+    if(evSelMask & (AliTrigger::kHighMult)){
       hTrigC->Fill(19.,centrality);
       hTrigM->Fill(19.,multiplicity);
       trigCount2->Count(Form("triggerType:HighMult/Run:%d",runNumber));
     }
-    if(evSelMask & AliVEvent::kSPI7){
+    if(evSelMask & AliTrigger::kSPI7){
       if(trigClass.Contains("CSPI7")) {
 	hTrigC->Fill(20.,centrality);
 	hTrigM->Fill(20.,multiplicity);
 	trigCount2->Count(Form("triggerType:SPI7/Run:%d",runNumber));
       }
     }
-    if(evSelMask & AliVEvent::kSPI){
+    if(evSelMask & AliTrigger::kSPI){
       if(trigClass.Contains("CSPI8")) {
 	hTrigC->Fill(21.,centrality);
 	hTrigM->Fill(21.,multiplicity);
         trigCount2->Count(Form("triggerType:SPI8/Run:%d",runNumber));
       }
     }
-    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
+    if(evSelMask & (AliTrigger::kDG5 | AliTrigger::kZED)){
       hTrigC->Fill(22.,centrality);
       hTrigM->Fill(22.,multiplicity);
     }
@@ -1666,89 +1667,89 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     TH2F* hTrigSM=(TH2F*)fOutputEvSelection->FindObject("hTrigMulSel");
     hTrigS->Fill(-1.,centrality);
     hTrigSM->Fill(-1.,multiplicity);
-    if(evSelMask & AliVEvent::kAny) {
+    if(evSelMask & AliTrigger::kAny) {
       hTrigS->Fill(0.,centrality);
       hTrigSM->Fill(0.,multiplicity);}
-    if(evSelMask & AliVEvent::kMB) {
+    if(evSelMask & AliTrigger::kMB) {
       hTrigS->Fill(1.,centrality);
       hTrigSM->Fill(1.,multiplicity);}
-    if(evSelMask & AliVEvent::kINT7){
+    if(evSelMask & AliTrigger::kINT7){
       hTrigS->Fill(2.,centrality);
       hTrigSM->Fill(2.,multiplicity);}
-    if(evSelMask & AliVEvent::kINT8){
+    if(evSelMask & AliTrigger::kINT8){
       hTrigS->Fill(3.,centrality);
       hTrigSM->Fill(3.,multiplicity);}
-    if(evSelMask & AliVEvent::kCINT5){ 
+    if(evSelMask & AliTrigger::kCINT5){ 
       hTrigS->Fill(4.,centrality);
       hTrigSM->Fill(4.,multiplicity);}
-    if(evSelMask & AliVEvent::kCentral){
+    if(evSelMask & AliTrigger::kCentral){
       hTrigS->Fill(5.,centrality);
       hTrigSM->Fill(5.,multiplicity);}
-    if(evSelMask & AliVEvent::kSemiCentral){
+    if(evSelMask & AliTrigger::kSemiCentral){
       hTrigS->Fill(6.,centrality);
       hTrigSM->Fill(6.,multiplicity);}
-    if(evSelMask & AliVEvent::kEMC1){
+    if(evSelMask & AliTrigger::kEMC1){
       hTrigS->Fill(7.,centrality);
       hTrigSM->Fill(7.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kEMC7) && trigClass.Contains("CEMC7")){
+    if((evSelMask & AliTrigger::kEMC7) && trigClass.Contains("CEMC7")){
       hTrigS->Fill(8.,centrality);
       hTrigSM->Fill(8.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kEMC8) && trigClass.Contains("CEMC8")){
+    if((evSelMask & AliTrigger::kEMC8) && trigClass.Contains("CEMC8")){
       hTrigS->Fill(9.,centrality);
       hTrigSM->Fill(9.,multiplicity);
     }
-      if((evSelMask & AliVEvent::kEMCEJE) && trigClass.Contains("CEMC7EJE")){
+      if((evSelMask & AliTrigger::kEMCEJE) && trigClass.Contains("CEMC7EJE")){
       hTrigS->Fill(10.,centrality);
       hTrigSM->Fill(10.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kEMCEGA) && trigClass.Contains("CEMC7EGA")){
+    if((evSelMask & AliTrigger::kEMCEGA) && trigClass.Contains("CEMC7EGA")){
       hTrigS->Fill(11.,centrality);
       hTrigSM->Fill(11.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kEMCEJE) && trigClass.Contains("CEMC8EJE")){
+    if((evSelMask & AliTrigger::kEMCEJE) && trigClass.Contains("CEMC8EJE")){
       hTrigS->Fill(12.,centrality);
       hTrigSM->Fill(12.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kEMCEGA) && trigClass.Contains("CEMC8EGA")){
+    if((evSelMask & AliTrigger::kEMCEGA) && trigClass.Contains("CEMC8EGA")){
       hTrigS->Fill(13.,centrality);
       hTrigSM->Fill(13.,multiplicity);
     }
-    if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
+    if(evSelMask & (((AliTrigger::kCMUS5 | AliTrigger::kMUSH7) | (AliTrigger::kMUL7 | AliTrigger::kMUU7)) |  (AliTrigger::kMUS7 | AliTrigger::kMUON))){
       hTrigS->Fill(14.,centrality);
       hTrigSM->Fill(14.,multiplicity);}
-    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){
+    if(evSelMask & (AliTrigger::kPHI1 | AliTrigger::kPHI7)){
       hTrigS->Fill(15.,centrality);
       hTrigSM->Fill(15.,multiplicity);}
-    if(evSelMask & (AliVEvent::kTRD)){
+    if(evSelMask & (AliTrigger::kTRD)){
       hTrigS->Fill(16.,centrality);
       hTrigSM->Fill(16.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliTrigger::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       hTrigS->Fill(17.,centrality);
       hTrigSM->Fill(17.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliTrigger::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       hTrigS->Fill(18.,centrality);
       hTrigSM->Fill(18.,multiplicity);
     }
-    if(evSelMask & (AliVEvent::kHighMult)){
+    if(evSelMask & (AliTrigger::kHighMult)){
       hTrigS->Fill(19.,centrality);
       hTrigSM->Fill(19.,multiplicity);}
-    if(evSelMask & AliVEvent::kSPI7){
+    if(evSelMask & AliTrigger::kSPI7){
       if(trigClass.Contains("CSPI7")) {
 	hTrigS->Fill(20.,centrality);
 	hTrigSM->Fill(20.,multiplicity);
       }
     }
-    if(evSelMask & AliVEvent::kSPI){
+    if(evSelMask & AliTrigger::kSPI){
       if(trigClass.Contains("CSPI8")) {
 	hTrigS->Fill(21.,centrality);
 	hTrigSM->Fill(21.,multiplicity);
       }
     }
-    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
+    if(evSelMask & (AliTrigger::kDG5 | AliTrigger::kZED)){
       hTrigS->Fill(22.,centrality);
       hTrigSM->Fill(22.,multiplicity);}
   }
@@ -2463,12 +2464,12 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
   ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(0., cc);
 
   UInt_t mask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  UInt_t trigger=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+  UInt_t trigger=AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral;
   if(mask & trigger) {
     ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(1.,cc); // fired
-    if (mask & AliVEvent::kMB) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(2.,cc);
-    if (mask & AliVEvent::kCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(3.,cc);
-    if (mask & AliVEvent::kSemiCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(4.,cc);
+    if (mask & AliTrigger::kMB) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(2.,cc);
+    if (mask & AliTrigger::kCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(3.,cc);
+    if (mask & AliTrigger::kSemiCentral) ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(4.,cc);
     Bool_t rejected=false;
     if(cc<0 || cc>60) rejected=true;
     const AliVVertex *vertex = aod->GetPrimaryVertex();
@@ -2565,5 +2566,6 @@ void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
   }
 
 }
+
 
 

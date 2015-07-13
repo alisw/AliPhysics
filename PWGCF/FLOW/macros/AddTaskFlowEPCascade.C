@@ -69,7 +69,7 @@ AliAnalysisTask *AddTaskFlowEPCascade(Float_t centrMin=0, Float_t centrMax=100,
   //task->SetFlowTrackCuts(cutsRP);
   task->SetVertexCut(vtxCut);
   task->SetFlowDauTrackCuts(cutsDaughter);
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
   mgr->AddTask(task);
 
   AliAnalysisDataContainer *coutput1 =
@@ -84,4 +84,5 @@ AliAnalysisTask *AddTaskFlowEPCascade(Float_t centrMin=0, Float_t centrMax=100,
   
   return task;
 }
+
 

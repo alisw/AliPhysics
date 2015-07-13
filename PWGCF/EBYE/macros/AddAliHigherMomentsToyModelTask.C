@@ -62,8 +62,8 @@ AliAnalysisTask* AddAliHigherMomentsToyModelTask(Double_t vx,
   taskHM->SetAODtrackCutBit(AODfilterBit);
   taskHM->SetKinematicsCutsAOD(ptl,pth,eta);
   taskHM->SetUsePid(usepid);
-  if(trigger) taskHM->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  else taskHM->SelectCollisionCandidates(AliVEvent::kMB);
+  if(trigger) taskHM->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
+  else taskHM->SelectCollisionCandidates(AliTrigger::kMB);
   
   if( usepid ){
     taskHM->SetNSigmaCut(nsigma);
@@ -88,3 +88,4 @@ AliAnalysisTask* AddAliHigherMomentsToyModelTask(Double_t vx,
   
   return taskHM;
 }
+

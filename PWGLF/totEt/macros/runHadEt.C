@@ -315,11 +315,11 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
    if(!data) task2->SetMcData();
    //Add thing here to select collision type!!
    if(dataset==2013){//pPb 5 TeV
-     //task2->SelectCollisionCandidates(AliVEvent::kAnyINT ) ;
-     task2->SelectCollisionCandidates(AliVEvent::kINT7 ) ;
+     //task2->SelectCollisionCandidates(AliTrigger::kAnyINT ) ;
+     task2->SelectCollisionCandidates(AliTrigger::kINT7 ) ;
    }
-   else{   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}}
-   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+   else{   if(dataset!=20100){task2->SelectCollisionCandidates(AliTrigger::kMB ) ;}}
+   //if(dataset!=20100){task2->SelectCollisionCandidates(AliTrigger::kMB ) ;}
    mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
@@ -342,3 +342,4 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   timer.Stop();
   timer.Print();
 }
+

@@ -22,6 +22,7 @@
 
 /* $Id: */
 
+#include "AliTrigger.h"
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -777,7 +778,7 @@ void AliAnalysisTaskJetProperties::UserExec(Option_t *)
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
+  if(!(inputHandler->IsEventSelected() & AliTrigger::kMB)){
     if(inputHandler->InheritsFrom("AliESDInputHandler") && fUsePhysicsSelection){ // PhysicsSelection only with ESD input
       fh1EvtSelection->Fill(1.);
       if (fDebug > 2 ) Printf(" Trigger Selection: event REJECTED ... ");
@@ -1788,3 +1789,4 @@ Int_t AliAnalysisTaskJetProperties::GetListOfTracks(TList *list, Int_t type)
   return iCount;
 }
 //_______________________________________________________________________________
+

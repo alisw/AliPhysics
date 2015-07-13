@@ -19,6 +19,7 @@
 /// general Histos and Tree
 ///
 /// \author Astrid Morreale
+#include "AliTrigger.h"
 #include "AliEMCalpi0Task.h"
 #include "Alipi0EventStatStruct.h"
 #include "Alipi0ClusterStatStruct.h"
@@ -250,11 +251,11 @@ void AliEMCalpi0Task::UserExec( Option_t* )
     /// ULong64_t triggerMask  = event->GetTriggerMask();
     /// verification triggered classes that fired.
 
-    fEventStatStruct->isMB           = Mask & AliVEvent::kMB;
-    fEventStatStruct->isAnyINT       = Mask & AliVEvent::kAnyINT;
-    fEventStatStruct->isCentral      = Mask & AliVEvent::kCentral;
-    fEventStatStruct->isSemiCentral  = Mask & AliVEvent::kSemiCentral;
-    fEventStatStruct->isEga          = Mask & AliVEvent::kEMCEGA;
+    fEventStatStruct->isMB           = Mask & AliTrigger::kMB;
+    fEventStatStruct->isAnyINT       = Mask & AliTrigger::kAnyINT;
+    fEventStatStruct->isCentral      = Mask & AliTrigger::kCentral;
+    fEventStatStruct->isSemiCentral  = Mask & AliTrigger::kSemiCentral;
+    fEventStatStruct->isEga          = Mask & AliTrigger::kEMCEGA;
     fEventStatStruct->kAllMB = (
         fEventStatStruct->isMB ||
         fEventStatStruct->isCentral ||
@@ -596,11 +597,11 @@ void AliEMCalpi0Task::FillMixed( const TLorentzVector& p1, const TLorentzVector&
 
     // ULong64_t triggerMask = event->GetTriggerMask();
 
-    mixedDiClusterStat.isMBmx          = (eventSelectionMask&AliVEvent::kMB);
-    mixedDiClusterStat.isAnyINTmx      = (eventSelectionMask&AliVEvent::kAnyINT);
-    mixedDiClusterStat.isCentralmx     = (eventSelectionMask&AliVEvent::kCentral);
-    mixedDiClusterStat.isSemiCentralmx = (eventSelectionMask&AliVEvent::kSemiCentral);
-    mixedDiClusterStat.isEgamx         = (eventSelectionMask&AliVEvent::kEMCEGA);
+    mixedDiClusterStat.isMBmx          = (eventSelectionMask&AliTrigger::kMB);
+    mixedDiClusterStat.isAnyINTmx      = (eventSelectionMask&AliTrigger::kAnyINT);
+    mixedDiClusterStat.isCentralmx     = (eventSelectionMask&AliTrigger::kCentral);
+    mixedDiClusterStat.isSemiCentralmx = (eventSelectionMask&AliTrigger::kSemiCentral);
+    mixedDiClusterStat.isEgamx         = (eventSelectionMask&AliTrigger::kEMCEGA);
 
     mixedDiClusterStat.kAllMBmx= (
         mixedDiClusterStat.isMBmx ||
@@ -635,3 +636,4 @@ void AliEMCalpi0Task::FillMixed( const TLorentzVector& p1, const TLorentzVector&
 //________________________________________________________________________
 void AliEMCalpi0Task::Terminate(const Option_t*)
 {}
+

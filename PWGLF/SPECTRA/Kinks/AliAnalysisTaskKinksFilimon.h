@@ -5,6 +5,7 @@
 // Author: Filimon Roukoutakis, University of Athens
 // Uses AliESDkinkCuts helper class to identify K and pi from their kink decays to mu. These are fed to a function that searches for K0*(892) and phi(1020) resonances by combining with "partner" tracks (unlike and like sign). Works on MC, ESD and AOD (AOD currently limited).
 
+#include "AliTrigger.h"
 #include <AliAnalysisTaskSE.h>
 #include <AliVEvent.h>
 #include <AliInputEventHandler.h>
@@ -46,7 +47,7 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
  public:
   enum EResonanceType { kPhi=333, kKstar0=313, kLambda1520=3124 };
   enum ECollisionType { kPP, kPbPb, kPPb, kAA };
-  AliAnalysisTaskKinksFilimon() : AliAnalysisTaskSE(), fOutputContClass(0), fOutputCont(0), fMainInputHandler(0), fIsAOD(kFALSE), fUseMC(kFALSE), fFillCutHist(kFALSE), fEventSelectionCutsMC(kFALSE), fCollisionType(kPP), fOfflineTriggerType(AliVEvent::kMB), fPartIdDedx(AliPID::kElectron), fPIDResponse(0), fRecEventCuts(0), fRecCentCuts(0), fCommonKineTrackCuts(0), fEsdTrackCutsKinkMother(0), fEsdTrackCutsKinkDaughter(0), fEsdTrackCutsPartner(0), fEsdPIDCutsArray(), fRecKinkCutsKaon(0), fAODFilterMap(0), /*fRecKinkCutsPion(0),*/ /*fMcKinkCutsPion(0),*/ fHistPtYTemplate(0), fHistRPhiZTemplate(0), fKaonMass(0), fMuonMass(0), fPionMass(0), fProtonMass(0), fElectronMass(0), fPhiMassRangeMin(0), fPhiMassRangeMax(0), fKstarMassRangeMin(0), fKstarMassRangeMax(0), fLambdaMassRangeMin(0), fLambdaMassRangeMax(0),
+  AliAnalysisTaskKinksFilimon() : AliAnalysisTaskSE(), fOutputContClass(0), fOutputCont(0), fMainInputHandler(0), fIsAOD(kFALSE), fUseMC(kFALSE), fFillCutHist(kFALSE), fEventSelectionCutsMC(kFALSE), fCollisionType(kPP), fOfflineTriggerType(AliTrigger::kMB), fPartIdDedx(AliPID::kElectron), fPIDResponse(0), fRecEventCuts(0), fRecCentCuts(0), fCommonKineTrackCuts(0), fEsdTrackCutsKinkMother(0), fEsdTrackCutsKinkDaughter(0), fEsdTrackCutsPartner(0), fEsdPIDCutsArray(), fRecKinkCutsKaon(0), fAODFilterMap(0), /*fRecKinkCutsPion(0),*/ /*fMcKinkCutsPion(0),*/ fHistPtYTemplate(0), fHistRPhiZTemplate(0), fKaonMass(0), fMuonMass(0), fPionMass(0), fProtonMass(0), fElectronMass(0), fPhiMassRangeMin(0), fPhiMassRangeMax(0), fKstarMassRangeMin(0), fKstarMassRangeMax(0), fLambdaMassRangeMin(0), fLambdaMassRangeMax(0),
   fhRecMultUnbiased(0), fhRecMult(0), fhRecMultCentralityUnbiased(0), fhRecMultCentrality(0), fhRecAllPtY(0), fhESDnKinks(0), fhESDKinkQt(0), fhESDKinkAngle(0), fhESDKinkPAngle(0), fhESDKinkDCA(0), fhESDAllKinkPtY(0), fhESDUnknownKinkPtY(0), fhESDKaonKinkPtY(0), fhESDPionKinkPtY(0), fhESDKaonKinkPtEta(0), fhESDKPlusKinkPtY(0), fhESDKMinusKinkPtY(0), fhESDKPlusKinkPt(0), fhESDKMinusKinkPt(0), fhESDPiPlusKinkPtY(0), fhESDPiMinusKinkPtY(0), fhESDKaonKinkPtYCent(0), fhESDPionKinkPtYCent(0), fhESDKPlusKinkPtYCent(0), fhESDPiPlusKinkPtYCent(0), fhESDKMinusKinkPtYCent(0), fhESDPiMinusKinkPtYCent(0), fhRecPrimaryVertexRPhiZ(0), fhESDAllKinkDecaysRPhiZ(0), fhESDKaonKinkDecaysRPhiZ(0), fhESDPionKinkDecaysRPhiZ(0), fhESDKaonKinkQt(0), fhESDKaonKinkAngle(0), fhESDPionKinkQt(0), fhESDPionKinkAngle(0), fhESDMomentumTPCSignalKaonKinks(0), fhESDKaonKinksMotherAndDaughterTPCncls(0), fhESDKaonKinksMotherVSDaughterTPCncls(0), fhESDMomentumTPCSignalPionKinks(0), fhESDPionKinksMotherAndDaughterTPCncls(0), fhESDPionKinksMotherVSDaughterTPCncls(0), fhESDKaonOverPionEbE(0), fhESDInvMassKinkDecayMuNu(0),
   fhMCmainVertexRPhiZ(0), fhMCKaonKinkDecaysRPhiZ(0), fhMCmult(0), fhMCmultPrim(0), fhMCPtYall(0), fhMCPtYprim(0), fhMCpdg(0), fhMCPtYprimKaon(0), fhMCPtYprimKPlus(0), fhMCPtYprimKMinus(0), fhMCPtprimKPlus(0), fhMCPtprimKMinus(0), fhMCPtYCentprimKaon(0), fhMCPtYCentprimKPlus(0), fhMCPtYCentprimKMinus(0), fhMCPtYkinkKaonFiducial(0), fhMCPtYkinkKPlusFiducial(0), fhMCPtYkinkKMinusFiducial(0), fhMCKinkKaonQt(0), fhMCKinkKaonAngle(0), fhMCKaonKinkDecaysTrackLength(0), fhMCKaonKinkDecaysTrackTime(0), fhMCkaonMotherPdg(0), fhMCpionMotherPdg(0), fhMCPhiPtY(0), fhMCPtYprimPhi(0), fhMCPhiInvMassPtYtest(0), fhMCInvMassPtprimPhi(0), fhMCInvMassPtCentprimPhi(0), fhMCKstarPtY(0), fhMCPtYprimKstar(0), fhMCInvMassPtprimKstar(0), fhMCInvMassPtCentprimKstar(0), fhMCLambdaPtY(0), fhMCPtYprimLambda(0), fhMCInvMassPtprimLambda(0), fhMCInvMassPtCentprimLambda(0), fhMCPhi2KaonPtY(0), fhMCKstar2KaonPtY(0), fhMCKaon2MuonPtY(0), fhMCKaon2PionPtY(0), fhMCPtYprimPion(0), fhMCPtYprimPiPlus(0), fhMCPtYprimPiMinus(0), fhMCPtYCentprimPion(0), fhMCPtYCentprimPiPlus(0), fhMCPtYCentprimPiMinus(0), fhMCPionKinkDecaysRPhiZ(0), fhMCPion2MuonPtY(0), fhMCPtYkinkPionFiducial(0), fhMCPtYkinkPiPlusFiducial(0), fhMCPtYkinkPiMinusFiducial(0), fhMCKinkPionQt(0), fhMCKinkPionAngle(0), fhMCMotherDaughterPdg(0), fhMCKaonOverPionEbE(0), fhMCPhiDecayOpeningAngle(0), fhMCKstarDecayOpeningAngle(0), fhMCLambdaDecayOpeningAngle(0), 
   fhESDKinkQtTrueMC(0), fhESDKinkAngleTrueMC(0), fhESDKaonKinkPtYTrueMC(0), fhESDKaonKinkPtYFakeMC(0), fhESDKaonKinkPtYTrueMCsecondary(0), fhESDKPlusKinkPtYTrueMC(0), fhESDKPlusKinkPtYFakeMC(0), fhESDKPlusKinkPtYTrueMCsecondary(0), fhESDKMinusKinkPtYTrueMC(0), fhESDKMinusKinkPtYFakeMC(0), fhESDKMinusKinkPtYTrueMCsecondary(0), fhESDPionKinkPtYTrueMC(0), fhESDPionKinkPtYFakeMC(0), fhESDPionKinkPtYTrueMCsecondary(0), fhESDPiPlusKinkPtYTrueMC(0), fhESDPiPlusKinkPtYFakeMC(0), fhESDPiPlusKinkPtYTrueMCsecondary(0), fhESDPiMinusKinkPtYTrueMC(0), fhESDPiMinusKinkPtYFakeMC(0), fhESDPiMinusKinkPtYTrueMCsecondary(0), fhESDPhi2KaonPtYTrueMC(0), fhESDPhiPtYtestTrueMC(0), fhESDPhiPtYtestFakeMC(0), fhESDPhiPtYtestLikeSignTrueMC(0), fhESDPhiPtYtestLikeSignFakeMC(0), fhESDKstar2KaonPtYTrueMC(0), fhESDKstarPtYtestTrueMC(0), fhESDKstarPtYtestFakeMC(0), fhESDKstarPtYtestLikeSignTrueMC(0), fhESDKstarPtYtestLikeSignFakeMC(0), fhESDLambda2KaonPtYTrueMC(0),
@@ -54,7 +55,7 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
   fhRecPhiInvMassPtYtest(0), fhRecPhiInvMassPtYtestLikeSign(0), fhRecPhiPtYtest(0), fhRecPhiPtYtestLikeSign(0), fhRecPhiInvMassPt(0), fhRecPhiInvMassPtLikeSign(0), fhRecPhiInvMassBothKinks(0), fhRecPhiInvMassBothKinksLikeSign(0), fhRecKstarPtYtest(0), fhRecKstarPtYtestLikeSign(0), fhRecKstarInvMassPt(0), fhRecKstarInvMassPtLikeSign(0), fhRecKstarInvMassBothKinks(0), fhRecKstarInvMassBothKinksLikeSign(0), fhRecLambdaPtYtest(0), fhRecLambdaPtYtestLikeSign(0), fhRecLambdaInvMassPt(0), fhRecLambdaInvMassPtLikeSign(0)
 	{}
   AliAnalysisTaskKinksFilimon(const char *name);
-  AliAnalysisTaskKinksFilimon(const char *name, const AliVEvent::EOfflineTriggerTypes offlineTriggerType, AliESDkinkCuts* esdKinkCuts, AliESDtrackCuts* esdTrackCutsKinkMother, AliESDtrackCuts* esdTrackCutsKinkDaughter, AliESDtrackCuts* esdTrackCutsPartner, TArrayF esdPIDcutsResonances, /*const AliCFParticleGenCuts* genTrackCuts, const TH1* histPtTemplate=0,*/ const Bool_t useMC=kTRUE, const Bool_t fillCutHist=kFALSE, const TH2* histPtYTemplate=0, const THnSparseF* histRPhiZTemplate=0, const ECollisionType collisionType=kPP, TClass* outputContClass=TList::Class(), const UInt_t aodFilterMap=AliAODTrack::kTrkTPCOnly);
+  AliAnalysisTaskKinksFilimon(const char *name, const AliBits offlineTriggerType, AliESDkinkCuts* esdKinkCuts, AliESDtrackCuts* esdTrackCutsKinkMother, AliESDtrackCuts* esdTrackCutsKinkDaughter, AliESDtrackCuts* esdTrackCutsPartner, TArrayF esdPIDcutsResonances, /*const AliCFParticleGenCuts* genTrackCuts, const TH1* histPtTemplate=0,*/ const Bool_t useMC=kTRUE, const Bool_t fillCutHist=kFALSE, const TH2* histPtYTemplate=0, const THnSparseF* histRPhiZTemplate=0, const ECollisionType collisionType=kPP, TClass* outputContClass=TList::Class(), const UInt_t aodFilterMap=AliAODTrack::kTrkTPCOnly);
   virtual ~AliAnalysisTaskKinksFilimon();
   
   virtual void   UserCreateOutputObjects();
@@ -67,9 +68,9 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
 	class AliRecEventCuts : public AliAnalysisCuts {
 	public:
     enum { kProcessedEvents = 1, kPhysSelEvents/*, kAcceptedEvents*/ /* Centrality, multiplicity, vtx combined cut */, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kTPCasPV, kZeroCont, kNVtxCuts=4 }; // Consult AliSpectraBothEventCuts
-		AliRecEventCuts() : AliAnalysisCuts(), fFillCutHist(kFALSE), fOfflineTriggerType(AliVEvent::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0), fhEventCuts(0x0) {};
-		AliRecEventCuts(const char* name, const char* title) : AliAnalysisCuts(name, title), fFillCutHist(kFALSE), fOfflineTriggerType(AliVEvent::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0), fhEventCuts(0x0) {};
-    AliRecEventCuts(const char* name, const char* title, const AliVEvent::EOfflineTriggerTypes offlineTriggerTypes, const Bool_t fillCutHist = kTRUE, const Double_t minMult = -1, const Double_t maxMult = 1e10, const Double_t minVtxZ = -10, const Double_t maxVtxZ = 10, const Double_t minCent = -1, const Double_t maxCent = 101) : AliAnalysisCuts(name, title), fFillCutHist(fillCutHist), fOfflineTriggerType(offlineTriggerTypes), fMinMult(minMult), fMaxMult(maxMult), fMinVtxZ(minVtxZ), fMaxVtxZ(maxVtxZ), fMinCent(minCent), fMaxCent(maxCent), fhEventCuts(0x0) {
+		AliRecEventCuts() : AliAnalysisCuts(), fFillCutHist(kFALSE), fOfflineTriggerType(AliTrigger::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0), fhEventCuts(0x0) {};
+		AliRecEventCuts(const char* name, const char* title) : AliAnalysisCuts(name, title), fFillCutHist(kFALSE), fOfflineTriggerType(AliTrigger::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0), fhEventCuts(0x0) {};
+    AliRecEventCuts(const char* name, const char* title, const AliBits offlineTriggerTypes, const Bool_t fillCutHist = kTRUE, const Double_t minMult = -1, const Double_t maxMult = 1e10, const Double_t minVtxZ = -10, const Double_t maxVtxZ = 10, const Double_t minCent = -1, const Double_t maxCent = 101) : AliAnalysisCuts(name, title), fFillCutHist(fillCutHist), fOfflineTriggerType(offlineTriggerTypes), fMinMult(minMult), fMaxMult(maxMult), fMinVtxZ(minVtxZ), fMaxVtxZ(maxVtxZ), fMinCent(minCent), fMaxCent(maxCent), fhEventCuts(0x0) {
 	    fhEventCuts = new TH1F(Form("%s::fhEventCuts", GetName()), Form("%s; Cut type; Number of events", GetTitle()), kNVtxCuts, kProcessedEvents, kNVtxCuts);
 			fhEventCuts->SetOption("text0");
 	    TAxis* axis = fhEventCuts->GetXaxis();
@@ -92,7 +93,7 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
 		inline TH1* GetHist() const { return(fhEventCuts); };
 	private:
 		Bool_t fFillCutHist;
-    AliVEvent::EOfflineTriggerTypes fOfflineTriggerType;
+    AliBits fOfflineTriggerType;
 		Double_t fMinMult;
 		Double_t fMaxMult;
 		Double_t fMinVtxZ;
@@ -108,9 +109,9 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
 	class AliRecCentCuts : public AliAnalysisCuts {
 	public:
     //enum { kProcessedEvents = 1, kPhysSelEvents/*, kAcceptedEvents*/ /* Centrality, multiplicity, vtx combined cut */, kVtxRange, kVtxCentral, kVtxNoEvent, kQVector, kTPCasPV, kZeroCont, kNVtxCuts=4 }; // Consult AliSpectraBothEventCuts
-		AliRecCentCuts() : AliAnalysisCuts(), fFillCutHist(kFALSE), fCentEstimator(0x0), fhCentTemplate(0x0), /*fOfflineTriggerType(AliVEvent::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0),*/ fhEventCuts(0x0) {};
-		AliRecCentCuts(const char* name, const char* title) : AliAnalysisCuts(name, title), fFillCutHist(kFALSE), fCentEstimator(0x0), fhCentTemplate(0x0), /*fOfflineTriggerType(AliVEvent::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0),*/ fhEventCuts(0x0) {};
-    AliRecCentCuts(const char* name, const char* title, const char* centEstimator, TH1* const histCentTemplate, const Bool_t fillCutHist = kTRUE/*const AliVEvent::EOfflineTriggerTypes offlineTriggerTypes, const Double_t minMult = -1, const Double_t maxMult = 1e10, const Double_t minVtxZ = -10, const Double_t maxVtxZ = 10, const Double_t minCent = -1, const Double_t maxCent = 101*/) : AliAnalysisCuts(name, title), fFillCutHist(fillCutHist), fCentEstimator(centEstimator), fhCentTemplate(histCentTemplate), /*fOfflineTriggerType(offlineTriggerTypes), fMinMult(minMult), fMaxMult(maxMult), fMinVtxZ(minVtxZ), fMaxVtxZ(maxVtxZ), fMinCent(minCent), fMaxCent(maxCent),*/ fhEventCuts(0x0) {
+		AliRecCentCuts() : AliAnalysisCuts(), fFillCutHist(kFALSE), fCentEstimator(0x0), fhCentTemplate(0x0), /*fOfflineTriggerType(AliTrigger::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0),*/ fhEventCuts(0x0) {};
+		AliRecCentCuts(const char* name, const char* title) : AliAnalysisCuts(name, title), fFillCutHist(kFALSE), fCentEstimator(0x0), fhCentTemplate(0x0), /*fOfflineTriggerType(AliTrigger::kMB), fMinMult(0), fMaxMult(0), fMinVtxZ(0), fMaxVtxZ(0), fMinCent(0), fMaxCent(0),*/ fhEventCuts(0x0) {};
+    AliRecCentCuts(const char* name, const char* title, const char* centEstimator, TH1* const histCentTemplate, const Bool_t fillCutHist = kTRUE/*const AliBits offlineTriggerTypes, const Double_t minMult = -1, const Double_t maxMult = 1e10, const Double_t minVtxZ = -10, const Double_t maxVtxZ = 10, const Double_t minCent = -1, const Double_t maxCent = 101*/) : AliAnalysisCuts(name, title), fFillCutHist(fillCutHist), fCentEstimator(centEstimator), fhCentTemplate(histCentTemplate), /*fOfflineTriggerType(offlineTriggerTypes), fMinMult(minMult), fMaxMult(maxMult), fMinVtxZ(minVtxZ), fMaxVtxZ(maxVtxZ), fMinCent(minCent), fMaxCent(maxCent),*/ fhEventCuts(0x0) {
 #if 0
 	    fhEventCuts = new TH1F(Form("%s::fhEventCuts", GetName()), Form("%s; Cut type; Number of events", GetTitle()), kNVtxCuts, kProcessedEvents, kNVtxCuts);
 			fhEventCuts->SetOption("text0");
@@ -139,7 +140,7 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
 		Bool_t fFillCutHist;
 		const char* fCentEstimator;
 		TH1* /*const*/ fhCentTemplate;
-    /*AliVEvent::EOfflineTriggerTypes fOfflineTriggerType;
+    /*AliBits fOfflineTriggerType;
 		Double_t fMinMult;
 		Double_t fMaxMult;
 		Double_t fMinVtxZ;
@@ -181,7 +182,7 @@ class AliAnalysisTaskKinksFilimon : public AliAnalysisTaskSE {
 	const Bool_t fFillCutHist;
 	const Bool_t fEventSelectionCutsMC;
 	const ECollisionType fCollisionType;
-  const AliVEvent::EOfflineTriggerTypes fOfflineTriggerType;
+  const AliBits fOfflineTriggerType;
 	const AliPID::EParticleType fPartIdDedx;
 	AliPIDResponse* fPIDResponse;
 	AliRecEventCuts* fRecEventCuts;
@@ -521,3 +522,4 @@ inline Bool_t PassesESDTrackCuts(AliAODTrack* const aodTrack, AliESDtrackCuts* c
 }
 
 #endif
+

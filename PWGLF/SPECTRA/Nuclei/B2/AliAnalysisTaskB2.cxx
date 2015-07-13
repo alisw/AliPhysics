@@ -16,6 +16,7 @@
 // Analysis task for B2
 // author: Eulogio Serradilla <eulogio.serradilla@cern.ch>
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include <TTree.h>
 #include <TChain.h>
@@ -957,7 +958,7 @@ Bool_t AliAnalysisTaskB2::IsFastOnly(AliBits triggerBits) const
 //
 // kFastOnly trigger
 //
-	return ( (triggerBits&AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
+	return ( (triggerBits&AliTrigger::kFastOnly) == AliTrigger::kFastOnly );
 }
 
 Bool_t AliAnalysisTaskB2::IsMB(AliBits triggerBits) const
@@ -965,7 +966,7 @@ Bool_t AliAnalysisTaskB2::IsMB(AliBits triggerBits) const
 //
 // MB event
 //
-	return ( (triggerBits&AliVEvent::kMB) == AliVEvent::kMB );
+	return ( (triggerBits&AliTrigger::kMB) == AliTrigger::kMB );
 }
 
 Bool_t AliAnalysisTaskB2::AcceptTOFtrack(const AliESDtrack* trk) const
@@ -1274,3 +1275,4 @@ Double_t AliAnalysisTaskB2::GetRapidity(Double_t p, Double_t pz, Double_t m) con
 	
 	return 0.5*TMath::Log( (e+pz)/(e-pz) );
 }
+

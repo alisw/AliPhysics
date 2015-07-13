@@ -34,11 +34,11 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpp(
 	//Trigger
 	if(!isMC)
 	{
-		if(triggerIndex == 0) task->SelectCollisionCandidates(AliVEvent::kINT7);
-		if(triggerIndex == 1) task->SelectCollisionCandidates(AliVEvent::kEMC7);
-		if(triggerIndex == 2) task->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-		if(triggerIndex == 3) task->SelectCollisionCandidates(AliVEvent::kEMCEJE); //Jet Trigger
-		//if(triggerIndex == 4) task->SelectCollisionCandidates(AliVEvent::kEMC8);
+		if(triggerIndex == 0) task->SelectCollisionCandidates(AliTrigger::kINT7);
+		if(triggerIndex == 1) task->SelectCollisionCandidates(AliTrigger::kEMC7);
+		if(triggerIndex == 2) task->SelectCollisionCandidates(AliTrigger::kEMCEGA);
+		if(triggerIndex == 3) task->SelectCollisionCandidates(AliTrigger::kEMCEJE); //Jet Trigger
+		//if(triggerIndex == 4) task->SelectCollisionCandidates(AliTrigger::kEMC8);
 		
 	}
 	
@@ -54,3 +54,4 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpp(
 	
 	return task;
 }
+

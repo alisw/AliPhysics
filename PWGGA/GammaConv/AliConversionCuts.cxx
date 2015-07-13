@@ -32,6 +32,7 @@
 //***********************************************************************************
 //***********************************************************************************
 //***********************************************************************************
+#include "AliTrigger.h"
 #include "AliConversionCuts.h"
 
 #include "AliKFVertex.h"
@@ -2288,39 +2289,39 @@ Bool_t AliConversionCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
    // allows to run MB & 6 other different trigger classes in parallel with the same photon cut
    case 4:
       fSpecialTrigger=4; // trigger alias kTRD 
-      fOfflineTriggerMask=AliVEvent::kTRD;
+      fOfflineTriggerMask=AliTrigger::kTRD;
       fTriggerSelectedManually = kTRUE;
-	  fSpecialTriggerName="AliVEvent::kTRD";
+	  fSpecialTriggerName="AliTrigger::kTRD";
       break;
    case 5:
       fSpecialTrigger=5; // trigger alias kEMC
-      fOfflineTriggerMask=AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 ;
+      fOfflineTriggerMask=AliTrigger::kEMC7 | AliTrigger::kEMC8 | AliTrigger::kEMC1 ;
       fTriggerSelectedManually = kTRUE;
-	  fSpecialTriggerName="AliVEvent::kEMC7/kEMC8/kEMC1";
+	  fSpecialTriggerName="AliTrigger::kEMC7/kEMC8/kEMC1";
       break;
    case 6:
       fSpecialTrigger=6; // trigger alias kPHI
-      fOfflineTriggerMask=AliVEvent::kPHI7 | AliVEvent::kPHI1 | AliVEvent::kPHI8 | AliVEvent::kPHOSPb;
+      fOfflineTriggerMask=AliTrigger::kPHI7 | AliTrigger::kPHI1 | AliTrigger::kPHI8 | AliTrigger::kPHOSPb;
       fTriggerSelectedManually = kTRUE;
-	  fSpecialTriggerName="AliVEvent::kPHI7/kPHI1/kPHI8/kPHOSPb";
+	  fSpecialTriggerName="AliTrigger::kPHI7/kPHI1/kPHI8/kPHOSPb";
       break;
    case 7:
       fSpecialTrigger=7; // trigger alias kHighMult
-      fOfflineTriggerMask=AliVEvent::kHighMult;
+      fOfflineTriggerMask=AliTrigger::kHighMult;
       fTriggerSelectedManually = kTRUE;
-	  fSpecialTriggerName="AliVEvent::kHighMult";
+	  fSpecialTriggerName="AliTrigger::kHighMult";
       break;
     case 8:
       fSpecialTrigger=8; // trigger alias kEMCEGA
-      fOfflineTriggerMask=AliVEvent::kEMCEGA;
+      fOfflineTriggerMask=AliTrigger::kEMCEGA;
       fTriggerSelectedManually = kTRUE;
-	  fSpecialTriggerName="AliVEvent::kEMCEGA";
+	  fSpecialTriggerName="AliTrigger::kEMCEGA";
       break;
     case 9:
       fSpecialTrigger=9; // trigger alias kEMCEJE
-      fOfflineTriggerMask=AliVEvent::kEMCEJE;
+      fOfflineTriggerMask=AliTrigger::kEMCEJE;
       fTriggerSelectedManually = kTRUE;
-	  fSpecialTriggerName="AliVEvent::kEMCEJE";
+	  fSpecialTriggerName="AliTrigger::kEMCEJE";
       break;
    default:
       AliError("Warning: Special Trigger Not known");
@@ -2343,9 +2344,9 @@ Bool_t AliConversionCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTrigger
 		case 1: //with TZERO
 			fSpecialTrigger=0;
 			fSpecialSubTrigger=0; 
-			fOfflineTriggerMask=AliVEvent::kINT8;
+			fOfflineTriggerMask=AliTrigger::kINT8;
 			fTriggerSelectedManually = kTRUE;
-			fSpecialTriggerName="AliVEvent::kINT8";
+			fSpecialTriggerName="AliTrigger::kINT8";
 			break;
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
@@ -2411,22 +2412,22 @@ Bool_t AliConversionCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTrigger
 // 			AliInfo("Info: Nothing to be done");
 			break;
 		case 1: // CEMC1 - V0OR and EMCAL fired
-			fOfflineTriggerMask=AliVEvent::kEMC1;
-			fSpecialTriggerName="AliVEvent::kEMC1";
+			fOfflineTriggerMask=AliTrigger::kEMC1;
+			fSpecialTriggerName="AliTrigger::kEMC1";
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CEMC1";
 			break;
 		case 2: // CEMC7 - V0AND and EMCAL fired 
 			fSpecialSubTrigger=1; 
-			fOfflineTriggerMask=AliVEvent::kEMC7;
-			fSpecialTriggerName="AliVEvent::kEMC7";
+			fOfflineTriggerMask=AliTrigger::kEMC7;
+			fSpecialTriggerName="AliTrigger::kEMC7";
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CEMC7";
 			break;
 		case 3: // CEMC8  - T0OR and EMCAL fired
-			fOfflineTriggerMask=AliVEvent::kEMC8;
-			fSpecialTriggerName="AliVEvent::kEMC8";
+			fOfflineTriggerMask=AliTrigger::kEMC8;
+			fSpecialTriggerName="AliTrigger::kEMC8";
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CEMC8";
@@ -2443,22 +2444,22 @@ Bool_t AliConversionCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTrigger
 // 			AliInfo("Info: Nothing to be done");
 			break;
 		case 1: // CEMC1 - V0OR and EMCAL fired
-			fOfflineTriggerMask=AliVEvent::kPHI1;
-			fSpecialTriggerName="AliVEvent::kPHI1";
+			fOfflineTriggerMask=AliTrigger::kPHI1;
+			fSpecialTriggerName="AliTrigger::kPHI1";
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPHI1";
 			break;
 		case 2: // CEMC7 - V0AND and EMCAL fired 
 			fSpecialSubTrigger=1; 
-			fOfflineTriggerMask=AliVEvent::kPHI7;
-			fSpecialTriggerName="AliVEvent::kPHI7";
+			fOfflineTriggerMask=AliTrigger::kPHI7;
+			fSpecialTriggerName="AliTrigger::kPHI7";
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPHI7";
 			break;
 		case 3: // CEMC8  - T0OR and EMCAL fired
-			fOfflineTriggerMask=AliVEvent::kPHI8;
-			fSpecialTriggerName="AliVEvent::kPHI8";
+			fOfflineTriggerMask=AliTrigger::kPHI8;
+			fSpecialTriggerName="AliTrigger::kPHI8";
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPHI8";
@@ -3775,7 +3776,7 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
 // 	AliTRDTriggerAnalysis *trdSelection=  new AliTRDTriggerAnalysis();
 // 	trdSelection->CalcTriggers(fInputEvent);
 	
-	UInt_t isSelected = AliVEvent::kAny;
+	UInt_t isSelected = AliTrigger::kAny;
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
 	//    cout << 	periodName.Data() << endl;
 	
@@ -3784,15 +3785,15 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
 	
 		TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();  
 		if (!fTriggerSelectedManually){
-			if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
+			if (fPreSelCut) fOfflineTriggerMask = AliTrigger::kAny;
 			else {
-				if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-				else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
+				if (fIsHeavyIon == 1) fOfflineTriggerMask = AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral;
+				else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliTrigger::kINT7;
 				else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC12f") == 0  || periodName.CompareTo("LHC12g") == 0  || periodName.CompareTo("LHC12h") == 0  || periodName.CompareTo("LHC12i") == 0  ||periodName.CompareTo("LHC13g") == 0 ) {
-					fOfflineTriggerMask = AliVEvent::kINT7;      
+					fOfflineTriggerMask = AliTrigger::kINT7;      
 	// 				cout << "will take kINT7 as trigger mask" << endl; 
 				}	
-				else fOfflineTriggerMask = AliVEvent::kMB;
+				else fOfflineTriggerMask = AliTrigger::kMB;
 			}
 		}
 		// Get the actual offline trigger mask for the event and AND it with the
@@ -3831,96 +3832,96 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
 			}				
 		} 	 
 	}
-	fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
+	fIsSDDFired = !(fInputHandler->IsEventSelected() & AliTrigger::kFastOnly);
 
 	// Fill Histogram
 	if(hTriggerClass){
 		if (fIsSDDFired) hTriggerClass->Fill(33);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(0);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClass->Fill(1);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClass->Fill(2);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kHighMult)hTriggerClass->Fill(3);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClass->Fill(4);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClass->Fill(5);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kCMUS5)hTriggerClass->Fill(6);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSPB)hTriggerClass->Fill(6);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUSH7)hTriggerClass->Fill(7);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSHPB)hTriggerClass->Fill(7);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUL7)hTriggerClass->Fill(8);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikePB)hTriggerClass->Fill(8);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUU7)hTriggerClass->Fill(9);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikePB)hTriggerClass->Fill(9);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClass->Fill(10);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kEMC8)hTriggerClass->Fill(10);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUS7)hTriggerClass->Fill(11);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI1)hTriggerClass->Fill(12);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI7)hTriggerClass->Fill(13);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHI8)hTriggerClass->Fill(13);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHOSPb)hTriggerClass->Fill(13);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)hTriggerClass->Fill(14);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)hTriggerClass->Fill(15);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClass->Fill(16);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClass->Fill(17);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kDG5)hTriggerClass->Fill(18);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kZED)hTriggerClass->Fill(19);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kSPI7)hTriggerClass->Fill(20);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kSPI)hTriggerClass->Fill(20);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kINT8)hTriggerClass->Fill(21);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt8)hTriggerClass->Fill(22);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt8)hTriggerClass->Fill(23);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt8)hTriggerClass->Fill(24);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt8)hTriggerClass->Fill(25);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt0)hTriggerClass->Fill(26);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)hTriggerClass->Fill(27);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kTRD)hTriggerClass->Fill(28);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClass->Fill(29);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClass->Fill(30);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClass->Fill(31);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMB)hTriggerClass->Fill(0);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kINT7)hTriggerClass->Fill(1);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUON)hTriggerClass->Fill(2);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kHighMult)hTriggerClass->Fill(3);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMC1)hTriggerClass->Fill(4);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kCINT5)hTriggerClass->Fill(5);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kCMUS5)hTriggerClass->Fill(6);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMUSPB)hTriggerClass->Fill(6);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUSH7)hTriggerClass->Fill(7);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMUSHPB)hTriggerClass->Fill(7);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUL7)hTriggerClass->Fill(8);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMuonLikePB)hTriggerClass->Fill(8);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUU7)hTriggerClass->Fill(9);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMuonUnlikePB)hTriggerClass->Fill(9);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMC7)hTriggerClass->Fill(10);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kEMC8)hTriggerClass->Fill(10);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUS7)hTriggerClass->Fill(11);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kPHI1)hTriggerClass->Fill(12);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kPHI7)hTriggerClass->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kPHI8)hTriggerClass->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kPHOSPb)hTriggerClass->Fill(13);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMCEJE)hTriggerClass->Fill(14);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMCEGA)hTriggerClass->Fill(15);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kCentral)hTriggerClass->Fill(16);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kSemiCentral)hTriggerClass->Fill(17);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kDG5)hTriggerClass->Fill(18);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kZED)hTriggerClass->Fill(19);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kSPI7)hTriggerClass->Fill(20);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kSPI)hTriggerClass->Fill(20);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kINT8)hTriggerClass->Fill(21);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonSingleLowPt8)hTriggerClass->Fill(22);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonSingleHighPt8)hTriggerClass->Fill(23);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonLikeLowPt8)hTriggerClass->Fill(24);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonUnlikeLowPt8)hTriggerClass->Fill(25);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonUnlikeLowPt0)hTriggerClass->Fill(26);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kUserDefined)hTriggerClass->Fill(27);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kTRD)hTriggerClass->Fill(28);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kFastOnly)hTriggerClass->Fill(29);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kAnyINT)hTriggerClass->Fill(30);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kAny)hTriggerClass->Fill(31);
 		if (!fInputHandler->IsEventSelected()) hTriggerClass->Fill(34);
 	}
 
 	if(hTriggerClassSelected && isSelected){
 		if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassSelected->Fill(1);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClassSelected->Fill(2);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kHighMult)hTriggerClassSelected->Fill(3);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassSelected->Fill(4);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5)hTriggerClassSelected->Fill(5);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kCMUS5)hTriggerClassSelected->Fill(6);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSPB)hTriggerClassSelected->Fill(6);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUSH7)hTriggerClassSelected->Fill(7);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMUSHPB)hTriggerClassSelected->Fill(7);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUL7)hTriggerClassSelected->Fill(8);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikePB)hTriggerClassSelected->Fill(8);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUU7)hTriggerClassSelected->Fill(9);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikePB)hTriggerClassSelected->Fill(9);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassSelected->Fill(10);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kEMC8)hTriggerClassSelected->Fill(10);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMUS7)hTriggerClassSelected->Fill(11);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI1)hTriggerClassSelected->Fill(12);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kPHI7)hTriggerClassSelected->Fill(13);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHI8)hTriggerClassSelected->Fill(13);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kPHOSPb)hTriggerClassSelected->Fill(13);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)hTriggerClassSelected->Fill(14);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA)hTriggerClassSelected->Fill(15);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kCentral)hTriggerClassSelected->Fill(16);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)hTriggerClassSelected->Fill(17);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kDG5)hTriggerClassSelected->Fill(18);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kZED)hTriggerClassSelected->Fill(19);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kSPI7)hTriggerClassSelected->Fill(20);
-	//       if (fInputHandler->IsEventSelected() & AliVEvent::kSPI)hTriggerClassSelected->Fill(20);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kINT8)hTriggerClassSelected->Fill(21);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt8)hTriggerClassSelected->Fill(22);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt8)hTriggerClassSelected->Fill(23);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt8)hTriggerClassSelected->Fill(24);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt8)hTriggerClassSelected->Fill(25);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt0)hTriggerClassSelected->Fill(26);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)hTriggerClassSelected->Fill(27);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kTRD)hTriggerClassSelected->Fill(28);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClassSelected->Fill(29);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClassSelected->Fill(30);
-		if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClassSelected->Fill(31);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMB)hTriggerClassSelected->Fill(0);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kINT7)hTriggerClassSelected->Fill(1);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUON)hTriggerClassSelected->Fill(2);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kHighMult)hTriggerClassSelected->Fill(3);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMC1)hTriggerClassSelected->Fill(4);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kCINT5)hTriggerClassSelected->Fill(5);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kCMUS5)hTriggerClassSelected->Fill(6);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMUSPB)hTriggerClassSelected->Fill(6);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUSH7)hTriggerClassSelected->Fill(7);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMUSHPB)hTriggerClassSelected->Fill(7);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUL7)hTriggerClassSelected->Fill(8);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMuonLikePB)hTriggerClassSelected->Fill(8);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUU7)hTriggerClassSelected->Fill(9);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kMuonUnlikePB)hTriggerClassSelected->Fill(9);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMC7)hTriggerClassSelected->Fill(10);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kEMC8)hTriggerClassSelected->Fill(10);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMUS7)hTriggerClassSelected->Fill(11);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kPHI1)hTriggerClassSelected->Fill(12);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kPHI7)hTriggerClassSelected->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kPHI8)hTriggerClassSelected->Fill(13);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kPHOSPb)hTriggerClassSelected->Fill(13);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMCEJE)hTriggerClassSelected->Fill(14);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kEMCEGA)hTriggerClassSelected->Fill(15);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kCentral)hTriggerClassSelected->Fill(16);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kSemiCentral)hTriggerClassSelected->Fill(17);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kDG5)hTriggerClassSelected->Fill(18);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kZED)hTriggerClassSelected->Fill(19);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kSPI7)hTriggerClassSelected->Fill(20);
+	//       if (fInputHandler->IsEventSelected() & AliTrigger::kSPI)hTriggerClassSelected->Fill(20);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kINT8)hTriggerClassSelected->Fill(21);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonSingleLowPt8)hTriggerClassSelected->Fill(22);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonSingleHighPt8)hTriggerClassSelected->Fill(23);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonLikeLowPt8)hTriggerClassSelected->Fill(24);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonUnlikeLowPt8)hTriggerClassSelected->Fill(25);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kMuonUnlikeLowPt0)hTriggerClassSelected->Fill(26);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kUserDefined)hTriggerClassSelected->Fill(27);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kTRD)hTriggerClassSelected->Fill(28);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kFastOnly)hTriggerClassSelected->Fill(29);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kAnyINT)hTriggerClassSelected->Fill(30);
+		if (fInputHandler->IsEventSelected() & AliTrigger::kAny)hTriggerClassSelected->Fill(31);
 	}
 
 	if(!isSelected)return kFALSE;
@@ -4696,3 +4697,4 @@ UChar_t AliConversionCuts::DeterminePhotonQualityAOD(AliAODConversionPhoton* pho
 //***********************************************************************************
 //***********************************************************************************
 //***********************************************************************************
+

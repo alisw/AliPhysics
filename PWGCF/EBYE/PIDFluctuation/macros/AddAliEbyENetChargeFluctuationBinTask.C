@@ -105,7 +105,7 @@ help->Print();
       task[iEta]->SetTrackFilterBit(aodFilterBit);
     }
     task[iEta]->SetSystemType(sysii);
-    task[iEta]->SetEventSelectionBit(AliVEvent::kMB);
+    task[iEta]->SetEventSelectionBit(AliTrigger::kMB);
     task[iEta]->SetCentralityEstimator(centralityEstimator);
     task[iEta]->SetVertexDiamond(vx,vy,vz);
     task[iEta]->SetKinematicsCuts(ptl,pth,eEta,gRap);
@@ -145,3 +145,4 @@ help->Print();
   
   return;
 }
+

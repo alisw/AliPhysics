@@ -19,6 +19,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TH1D.h>
 #include <TList.h>
@@ -63,7 +64,7 @@ AliAnalysisTaskSingleParticle::AliAnalysisTaskSingleParticle() :
   fHistos(0x0),
   fHistogramList(),
   fSelectPhysics(kTRUE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fRejectPileup(kFALSE),
   fFillTRDfriendPH(kFALSE),
   fEventFilter(0x0),
@@ -93,7 +94,7 @@ AliAnalysisTaskSingleParticle::AliAnalysisTaskSingleParticle(const char *name) :
   fHistos(0x0),
   fHistogramList(),
   fSelectPhysics(kTRUE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fRejectPileup(kFALSE),
   fFillTRDfriendPH(kFALSE),
   fEventFilter(0x0),
@@ -269,7 +270,7 @@ void AliAnalysisTaskSingleParticle::UserExec(Option_t *)
     AliFatal("This task needs the PID response attached to the input event handler!");   
   } 
   // Was event selected ?
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
     isSelected&=fTriggerMask;
@@ -528,4 +529,5 @@ void AliAnalysisTaskSingleParticle::FillContainer(Int_t step, const Double_t* va
   if(!fFillTRDfriendPH)
     fCfContainer->Fill(valuesCF, step);
 }
+
 

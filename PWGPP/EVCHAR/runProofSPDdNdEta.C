@@ -142,10 +142,10 @@ void Analysis(TString dataset, TString outFileCorr, TString outFileData, TString
       physSel->AddCollisionTriggerClass("+CMBAC-B-NOPF-ALL");
 //    }
 
-    task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+    task->SelectCollisionCandidates(AliTrigger::kUserDefined);
   } else {
 
-    task->SelectCollisionCandidates(AliVEvent::kMB);
+    task->SelectCollisionCandidates(AliTrigger::kMB);
   }
 
   // centrality selection

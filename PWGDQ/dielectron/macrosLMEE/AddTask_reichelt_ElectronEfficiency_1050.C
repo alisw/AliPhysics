@@ -1,8 +1,8 @@
 AliAnalysisTask *AddTask_reichelt_ElectronEfficiency_1050(Char_t* outputFileName="reichelt_ElectronEfficiency_1050.root", 
                                                      Bool_t getFromAlien=kFALSE,
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree' in config file! (enable for LEGO trains)
-                                                     Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral),
-                                                     Int_t collCands=AliVEvent::kAny,
+                                                     Int_t triggerNames=(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral),
+                                                     Int_t collCands=AliTrigger::kAny,
                                                      Bool_t forcePhysSelAndTrigMask=kFALSE // possibility to activate UsePhysicsSelection and SetTriggerMask for MC (may be needed for new MC productions according to Mahmut) as well as for AOD data.
                                                      )
 {
@@ -137,3 +137,4 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency_1050(Char_t* outputFileName
   return task;
 
 }//AddTask
+

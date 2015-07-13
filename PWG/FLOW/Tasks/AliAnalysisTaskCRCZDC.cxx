@@ -20,6 +20,7 @@
  *         (margutti@nikhef.nl)   *
  **********************************/
 
+#include "AliTrigger.h"
 #include "Riostream.h" //needed as include
 #include "TChain.h"
 #include "TList.h"
@@ -756,7 +757,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
  AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
  
- if(hdr->IsEventSelected() & AliVEvent::kAny) {
+ if(hdr->IsEventSelected() & AliTrigger::kAny) {
   
   AliCentrality* centrality = aod->GetCentrality();
   Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
@@ -954,3 +955,4 @@ void AliAnalysisTaskCRCZDC::Terminate(Option_t */*option*/)
   //if(!fOutput) printf("ERROR: fOutput not available\n");
   */
 }
+

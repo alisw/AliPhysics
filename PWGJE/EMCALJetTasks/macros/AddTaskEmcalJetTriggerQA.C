@@ -10,7 +10,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 							   TString     trigClass           = "",
 							   TString     kEmcalCellsName     = "",
 							   const char *CentEst             = "V0A",
-							   Int_t       pSel                = AliVEvent::kINT7,
+							   Int_t       pSel                = AliTrigger::kINT7,
 							   Float_t     nefCut              = 10.,
 							   TString     kEmcalTriggers      = "",
 							   TString     kPeriod             = "LHC13b",
@@ -55,8 +55,8 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
     jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
     jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   }
-  jetFinderTask1->SelectCollisionCandidates(AliVEvent::kAny);
-  jetFinderTask2->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTask1->SelectCollisionCandidates(AliTrigger::kAny);
+  jetFinderTask2->SelectCollisionCandidates(AliTrigger::kAny);
 
   TString strJets1 = jetFinderTask1->GetName();
   TString strJets2 = jetFinderTask2->GetName();
@@ -66,7 +66,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
     rhoTask = AttachRhoTask(kBeamType,kTracksName,kClusName,R,ptminTrack,etminClus);
     if(rhoTask) {
       rhoTask->SetCentralityEstimator(CentEst);  
-      rhoTask->SelectCollisionCandidates(AliVEvent::kAny);
+      rhoTask->SelectCollisionCandidates(AliTrigger::kAny);
     }
     else {
       Warning("AddTaskEmcalJetTriggerQA","Asked for rho task but configuration unknown. Continuing configuration without rho task.");
@@ -148,8 +148,8 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
   AliEmcalJetTask *jetFinderAKt;
   jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",minJetPt);
   jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
-  jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
-  jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderKt->SelectCollisionCandidates(AliTrigger::kAny);
+  jetFinderAKt->SelectCollisionCandidates(AliTrigger::kAny);
 
   if(kBeamType == "pPb") {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
@@ -200,3 +200,4 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
 
   return rhoTaskBase;
 }
+

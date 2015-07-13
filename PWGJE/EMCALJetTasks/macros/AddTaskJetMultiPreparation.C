@@ -9,7 +9,7 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
   const Double_t phiMatch           = 0.03,
   const Double_t etaMatch           = 0.015,
   const Double_t minPtEt            = 0.15,
-  const UInt_t   pSel               = AliVEvent::kAny,
+  const UInt_t   pSel               = AliTrigger::kAny,
   const Bool_t   trackclus          = kTRUE,
   const Bool_t   doHistos           = kFALSE,
   const Bool_t   makePicoTracks     = kTRUE,
@@ -213,3 +213,4 @@ AliAnalysisTaskSE* AddTaskJetMultiPreparation(
     // Return one task that represents the jet preparation on LEGO trains
     return emcalParts;
 }
+

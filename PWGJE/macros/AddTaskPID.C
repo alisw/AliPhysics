@@ -23,7 +23,7 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   
   //========= Add task to the ANALYSIS manager =====
   AliAnalysisTaskPID *task = new AliAnalysisTaskPID(taskName.Data());
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kINT7);
   
   
   
@@ -167,3 +167,4 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
 
   return task;
 }
+

@@ -35,6 +35,7 @@
 //            paola.pagano@sa.infn.it
 //-------------------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -2097,7 +2098,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
 	if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ6")))->Fill(zVertex);
 
 	TString firedTriggerClasses = aodEvent->GetFiredTriggerClasses(); // trigger class
-	AliBits fTriggerMask=AliVEvent::kAnyINT;
+	AliBits fTriggerMask=AliTrigger::kAnyINT;
 	Bool_t check1 = kFALSE;
 	if ( !fUseMCInfo && // don't do for MC...
 	     (aodEvent->GetRunNumber()<136851 || aodEvent->GetRunNumber()>139517) ) { // ...and for PbPb 2010 data
@@ -2120,7 +2121,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
 	  if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ16")))->Fill(zVertex);
 	}
 
-	fTriggerMask=AliVEvent::kAny;
+	fTriggerMask=AliTrigger::kAny;
 	Bool_t isSelectedBBB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
 	if (!isSelectedBBB) {
 	  fCEvents->Fill(10);
@@ -2167,7 +2168,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelectionWithCandidates(AliAODEve
   Float_t zVertex = fVtx1->GetZ();
   TString titleVtx=fVtx1->GetTitle();
   TString firedTriggerClasses = aodEvent->GetFiredTriggerClasses(); // trigger class
-  AliBits fTriggerMask=AliVEvent::kAnyINT;
+  AliBits fTriggerMask=AliTrigger::kAnyINT;
 
   ((TH1F*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(6);
   if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ6a")))->Fill(zVertex);
@@ -2194,7 +2195,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelectionWithCandidates(AliAODEve
     if (fAdditionalChecks) ((TH1F*)(fOutput->FindObject("hZ16a")))->Fill(zVertex);
   }
 
-  fTriggerMask=AliVEvent::kAny;
+  fTriggerMask=AliTrigger::kAny;
   Bool_t isSelectedBBBa = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
   if (!isSelectedBBBa) {
     ((TH1F*)(fOutput->FindObject("hEventsWithCandidates")))->Fill(10);
@@ -3878,3 +3879,4 @@ void AliAnalysisTaskSELc2V0bachelor::TrackRotation(AliRDHFCutsLctoV0 * cuts, Ali
   return;
 
 }
+

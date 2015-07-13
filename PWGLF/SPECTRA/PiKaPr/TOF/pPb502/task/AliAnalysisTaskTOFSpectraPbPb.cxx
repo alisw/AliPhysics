@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisTaskTOFSpectraPbPb.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -162,7 +163,7 @@ AliAnalysisTaskTOFSpectraPbPb::InitEvent()
     if (!fMCStack) return kFALSE;
   }
   /* event selection */
-  fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+  fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kAny);
   fIsEventSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   fIsPileupFromSPD = fESDEvent->IsPileupFromSPD();
 
@@ -346,4 +347,5 @@ AliAnalysisTaskTOFSpectraPbPb::UserExec(Option_t *option)
   } /* end of loop over ESD tracks */
   
 }
+
 

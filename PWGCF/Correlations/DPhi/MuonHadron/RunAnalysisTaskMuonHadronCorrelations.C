@@ -127,7 +127,7 @@ Bool_t RunAnalysisTaskMuonHadronCorrelations(Int_t runNumber = 188362, const cha
   // -------------------------------
   //  gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //  AddTaskPhysicsSelection(0);
-  mgr->AddStatisticsTask(AliVEvent::kAny);
+  mgr->AddStatisticsTask(AliTrigger::kAny);
   
   gROOT->LoadMacro("AddAnalysisTaskMuonHadronCorrelations.C");
   AddAnalysisTaskMuonHadronCorrelations();
@@ -147,3 +147,4 @@ Bool_t RunAnalysisTaskMuonHadronCorrelations(Int_t runNumber = 188362, const cha
   return kTRUE;
 
 };
+

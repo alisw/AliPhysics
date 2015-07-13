@@ -29,6 +29,7 @@
 #define LOG_NO_INFO
 // #define LOG_NO_DEBUG
 
+#include "AliTrigger.h"
 #include <TH1F.h>
 #include <TF1.h>
 #include <TRandom3.h>
@@ -1344,7 +1345,7 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::UserExec(Option_t *){
   UInt_t maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   TString firedTriggerClasses=fESD->GetFiredTriggerClasses();
   //  if(!firedTriggerClasses.Contains("CINT1B")) return;
-  if((maskPhysSel & AliVEvent::kMB)==0){
+  if((maskPhysSel & AliTrigger::kMB)==0){
     PostData(1,fOutput);
     PostData(2,fListCuts);
     return;
@@ -2387,3 +2388,4 @@ void AliAnalysisTaskSEITSsaSpectraMultiplicity::Terminate(Option_t *) {
   infomsg("End of Terminate");
   return;
 }
+

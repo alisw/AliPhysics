@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEoutput.root", 
  Bool_t flag1=kFALSE, Bool_t configsPreloaded=kFALSE, Bool_t getFromAlien=kFALSE, 
- Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral), Int_t collCands=AliVEvent::kAny) 
+ Int_t triggerNames=(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral), Int_t collCands=AliTrigger::kAny) 
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -109,3 +109,4 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection(Char_t* outputFileName="LMEEou
   
   return task;
 }
+

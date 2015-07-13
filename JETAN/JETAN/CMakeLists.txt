@@ -21,6 +21,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/JETAN/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
                    )
 
 # Sources in alphabetical order
@@ -61,7 +62,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase ESD AOD ANALYSIS ANALYSISalice EMCALUtils EG Eve Net Smatrix)
+set(LIBDEPS OADB STEERBase ESD AOD ANALYSIS ANALYSISalice EMCALUtils EG Eve Net Smatrix)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

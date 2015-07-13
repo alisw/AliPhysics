@@ -20,6 +20,7 @@
  **************************************************************************/
 
  
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -927,7 +928,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   }
 
   Bool_t selectEvent =  false;
-  Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
+  Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliTrigger::kMB)==AliTrigger::kMB;
 
   Float_t cent = 0;
   Float_t zVtx  = 0;
@@ -2329,3 +2330,4 @@ Double_t AliAnalysisTaskJetCluster::RelativePhi(Double_t mphi,Double_t vphi){
   else if (dphi > TMath::Pi()) dphi -= (2*TMath::Pi());
   return dphi;//dphi in [-Pi, Pi]
 }
+

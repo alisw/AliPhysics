@@ -27,11 +27,11 @@ AliAnalysisTask *AddTask_mwinn_JPsiMCcontrol(){
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
   if (!hasMC&&(!list.Contains("LHC12h")) ) task->UsePhysicsSelection();//taking out for testing
-  if (list.Contains("LHC13b"))task->SetTriggerMask(AliVEvent::kINT7); //kINT7?, MB-trigger for MB pPb
-  if (list.Contains("LHC13c"))task->SetTriggerMask(AliVEvent::kINT7); //kINT7?, MB-trigger for MB pPb
-  if (list.Contains("LHC13d"))task->SetTriggerMask(AliVEvent::kTRD); //TRD trigger
-  if (list.Contains("LHC13e"))task->SetTriggerMask(AliVEvent::kTRD); //TRD trigger
-  if (list.Contains("LHC11d")) task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);
+  if (list.Contains("LHC13b"))task->SetTriggerMask(AliTrigger::kINT7); //kINT7?, MB-trigger for MB pPb
+  if (list.Contains("LHC13c"))task->SetTriggerMask(AliTrigger::kINT7); //kINT7?, MB-trigger for MB pPb
+  if (list.Contains("LHC13d"))task->SetTriggerMask(AliTrigger::kTRD); //TRD trigger
+  if (list.Contains("LHC13e"))task->SetTriggerMask(AliTrigger::kTRD); //TRD trigger
+  if (list.Contains("LHC11d")) task->SetTriggerMask(AliTrigger::kEMCEJE+AliTrigger::kEMC7+AliTrigger::kEMCEGA);
   //if (list.Contains("LHC12h")) task->SetTRDtrigger(1+2);
   mgr->AddTask(task);
 
@@ -100,3 +100,4 @@ AliAnalysisTask *AddTask_mwinn_JPsiMCcontrol(){
   
   return task;
 }
+

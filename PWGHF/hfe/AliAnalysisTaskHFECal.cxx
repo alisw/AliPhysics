@@ -17,6 +17,7 @@
 // Author: Shingo Sakai
 
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH2F.h"
@@ -540,8 +541,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
   Bool_t SelColl = kTRUE;
   //cout <<"check trigger : " << GetCollisionCandidates() << endl;  
-  //cout <<"check kAny : " << AliVEvent::kAny<< endl;  
-  if(GetCollisionCandidates()==AliVEvent::kAny)
+  //cout <<"check kAny : " << AliTrigger::kAny<< endl;  
+  if(GetCollisionCandidates()==AliTrigger::kAny)
     {
      //cout <<"kAny selection"<< endl;  
      SelColl = kFALSE; 
@@ -2348,4 +2349,5 @@ double AliAnalysisTaskHFECal::NsigmaCorrection(double tmpeta, float central)
  return shift;
 
 }
+
 

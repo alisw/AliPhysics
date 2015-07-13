@@ -67,14 +67,14 @@ AliAnalysisTask* AddTask_jpsi_Default(
   
   // add special triggers
   switch(iPeriod) {
-  case k11d: task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);     break;
-  case k11h: task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral); break;
-  case k12h: task->SetTriggerMask(AliVEvent::kAnyINT); break;                                      
-  case k13b: task->SetTriggerMask(AliVEvent::kINT7); break;
-  case k13c: task->SetTriggerMask(AliVEvent::kINT7); break;
-  case k13d: task->SetTriggerMask(AliVEvent::kAnyINT); break;
-  case k13e: task->SetTriggerMask(AliVEvent::kAnyINT); break;
-  case k13f: task->SetTriggerMask(AliVEvent::kAnyINT); break;
+  case k11d: task->SetTriggerMask(AliTrigger::kEMCEJE+AliTrigger::kEMC7+AliTrigger::kEMCEGA);     break;
+  case k11h: task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral); break;
+  case k12h: task->SetTriggerMask(AliTrigger::kAnyINT); break;                                      
+  case k13b: task->SetTriggerMask(AliTrigger::kINT7); break;
+  case k13c: task->SetTriggerMask(AliTrigger::kINT7); break;
+  case k13d: task->SetTriggerMask(AliTrigger::kAnyINT); break;
+  case k13e: task->SetTriggerMask(AliTrigger::kAnyINT); break;
+  case k13f: task->SetTriggerMask(AliTrigger::kAnyINT); break;
   }
   mgr->AddTask(task);
   
@@ -174,3 +174,4 @@ AliAnalysisTask* AddTask_jpsi_Default(
 	
 	return task;
 }
+

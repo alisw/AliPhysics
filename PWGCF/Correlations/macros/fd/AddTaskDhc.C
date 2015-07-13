@@ -16,7 +16,7 @@ AliDhcTask *AddTaskDhc(
   Bool_t  doTrigMatch = kFALSE,
   Bool_t  doMassCut   = kFALSE,
   Bool_t  doFillSame  = kFALSE,
-  UInt_t  trigsel     = AliVEvent::kINT7
+  UInt_t  trigsel     = AliTrigger::kINT7
 )
 {
   Char_t chExtraName[256];
@@ -185,3 +185,4 @@ AliDhcTask *AddTaskDhc(
   
   return dhcTask;
 }
+

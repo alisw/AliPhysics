@@ -4,6 +4,7 @@
 * See cxx source for full Copyright notice */ 
 /* $Id$ */
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventPoolManager.h"
 #include "AliAODTrackCutsDiHadronPID.h"
@@ -55,7 +56,7 @@ public:
 	void SetExtendPtAxis(Bool_t extendptaxis) {fExtendPtAxis = extendptaxis;}
 
 	// Overrides methods from AliAnalyisTaskSE.
-	void SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kMB);
+	void SelectCollisionCandidates(AliBits offlineTriggerMask = AliTrigger::kMB);
 	void SetDebugLevel(Int_t level);
 
 	// Getters.
@@ -152,3 +153,4 @@ private:
 };
 
 #endif
+

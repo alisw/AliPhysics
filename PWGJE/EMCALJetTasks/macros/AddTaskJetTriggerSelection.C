@@ -4,7 +4,7 @@ AliJetTriggerSelectionTask* AddTaskJetTriggerSelection(
   const char *nclusters          = "CaloClusters",
   TF1        *eth                = 0,
   Double_t    maxdistance        = 0.15,
-  UInt_t      triggerbits        = AliVEvent::kEMCEJE,
+  UInt_t      triggerbits        = AliTrigger::kEMCEJE,
   const char *taskname           = "AliJetTriggerSelectionTask"
 )
 {  
@@ -49,3 +49,4 @@ AliJetTriggerSelectionTask* AddTaskJetTriggerSelection(
   
   return jetTask;
 }
+

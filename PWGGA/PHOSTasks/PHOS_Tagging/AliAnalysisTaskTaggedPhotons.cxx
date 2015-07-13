@@ -29,6 +29,7 @@
 //*-- Dmitry Blau, Dmitri Peresunko 
 //////////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
@@ -522,8 +523,8 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   
   if((!fIsFastMC) && (!fIsMC)){
 
-    Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
-    Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
+    Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kINT7)  ; 
+    Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kPHI7);
 
     if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
       PostData(1, fOutputContainer);
@@ -2055,3 +2056,4 @@ Bool_t AliAnalysisTaskTaggedPhotons::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz
   else
     return kTRUE ;
 }
+

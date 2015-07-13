@@ -1,7 +1,7 @@
 // Author: B. Sahlmueller
 // Analysis task for neutral pions (into two gammas), and for direct photons by subtraction method
 
-AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
+AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliTrigger::kMB,
                                       Bool_t mcmode = 0, 
                                       Bool_t addsig = 0, 
 				      Bool_t issys = 0,
@@ -79,13 +79,13 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   char name[256];
 
   sprintf(name,"histosPi0Gamma%s","MB");
-  if(triggermask == AliVEvent::kINT7){
+  if(triggermask == AliTrigger::kINT7){
     sprintf(name,"histosPi0Gamma%s","INT7");
   }
-  if(triggermask == AliVEvent::kEMC1){
+  if(triggermask == AliTrigger::kEMC1){
     sprintf(name,"histosPi0Gamma%s","EMC1");
   }
-  if(triggermask == AliVEvent::kEMC7){
+  if(triggermask == AliTrigger::kEMC7){
     sprintf(name,"histosPi0Gamma%s","EMC7");
   }
 
@@ -108,3 +108,4 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   return task;
   
 }
+

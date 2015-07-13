@@ -1,4 +1,4 @@
-AliAnalysisTask* AddTaskKinksFilimon(const char* const taskName, const Bool_t useMC, const Short_t lCollidingSystems=0 /*0 = pp, 1 = PbPb, 2 = pPb, 3 = AA*/, const AliVEvent::EOfflineTriggerTypes offlineTriggerType=AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral) {
+AliAnalysisTask* AddTaskKinksFilimon(const char* const taskName, const Bool_t useMC, const Short_t lCollidingSystems=0 /*0 = pp, 1 = PbPb, 2 = pPb, 3 = AA*/, const AliVEvent::EOfflineTriggerTypes offlineTriggerType=AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral) {
 #if 0
  const AliAnalysisTaskKinksFilimon::ECollisionType collisionType = AliAnalysisTaskKinksFilimon::kPP;
  switch (lCollidingSystems) {
@@ -249,3 +249,4 @@ AliAnalysisTask* AddTaskKinksFilimon(const char* const taskName, const Bool_t us
   return(0);
 
 }
+

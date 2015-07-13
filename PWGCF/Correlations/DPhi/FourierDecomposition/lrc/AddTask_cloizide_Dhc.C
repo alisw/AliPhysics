@@ -17,7 +17,7 @@ AliAnalysisTask *AddTask_cloizide_Dhc()
   gROOT->ProcessLine(".L AliDhcTask_opt.cxx+");
 
   AliDhcTask *dhcTask = new AliDhcTask("Task_cloizide_Dhc");
-  dhcTask->SelectCollisionCandidates(AliVEvent::kMB);
+  dhcTask->SelectCollisionCandidates(AliTrigger::kMB);
   dhcTask->SetVerbosity(10);
   mgr->AddTask(dhcTask);
 
@@ -31,3 +31,4 @@ AliAnalysisTask *AddTask_cloizide_Dhc()
 
   return 0;
 }
+

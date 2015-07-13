@@ -7,7 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void AddTaskFlowCentralityPIDMH(AliBits centralitysel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+void AddTaskFlowCentralityPIDMH(AliBits centralitysel = AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral,
 				Float_t centrMin=10.,
 				Float_t centrMax=20.,
 				Bool_t isPID = kTRUE,
@@ -318,7 +318,7 @@ void AddTaskFlowCentralityPIDMH(AliBits centralitysel = AliVEvent::kMB | AliVEve
   }
   taskFE->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+    taskFE->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE);
@@ -659,6 +659,7 @@ void AddTaskFlowCentralityPIDMH(AliBits centralitysel = AliVEvent::kMB | AliVEve
     if (FillQAntuple) mgr->ConnectOutput(taskQAflow,2,coutputQAtaskTree);
   }
 }
+
 
 
 

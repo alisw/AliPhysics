@@ -3,6 +3,7 @@
 
 // $Id$
 
+#include "AliTrigger.h"
 #include "AliPhysicsSelectionTask.h"
 
 class AliEmcalPhysicsSelection;
@@ -21,7 +22,7 @@ class AliEmcalPhysicsSelectionTask : public AliPhysicsSelectionTask {
   Int_t          GetNCalled() const         { return fNCalled;    }
   Int_t          GetNAccepted() const       { return fNAccepted;  }
   void           SetDoWriteHistos(Bool_t b) { fDoWriteHistos = b; }
-  void           SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kMB) 
+  void           SelectCollisionCandidates(AliBits offlineTriggerMask = AliTrigger::kMB) 
                   { static_cast<AliEmcalPhysicsSelection*>(fPhysicsSelection)->SetTriggers(offlineTriggerMask); }
 
  protected:
@@ -38,3 +39,4 @@ class AliEmcalPhysicsSelectionTask : public AliPhysicsSelectionTask {
   ClassDef(AliEmcalPhysicsSelectionTask, 2); // Emcal physics selection task
 };
 #endif
+

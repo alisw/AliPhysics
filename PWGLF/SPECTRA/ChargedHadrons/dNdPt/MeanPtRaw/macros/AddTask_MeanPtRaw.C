@@ -35,7 +35,7 @@ AliAnalysisTaskMeanPtRaw *AddTask_MeanPtRaw(char *contName = "MeanPtRaw", char *
   task->AddAliESDtrackCut(esdTrackCuts0, "TPC-only tracking, cut number 42");
   task->AddAliESDtrackCut(esdTrackCuts1, "TPC+ITS combine tracking + DCAr(pt) (2011)");
   task->AddAliESDtrackCut(esdTrackCuts2, "TPC+ITS combine tracking + DCAr(pt) (2010)");
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
   task->SetMaxVertexZ(10.);    // cm
 
 
@@ -50,4 +50,5 @@ AliAnalysisTaskMeanPtRaw *AddTask_MeanPtRaw(char *contName = "MeanPtRaw", char *
 
   return task;
 }
+
 

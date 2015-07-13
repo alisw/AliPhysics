@@ -30,7 +30,7 @@ AliAnalysisTaskAODFilterBitQA *AddTaskAODFilterBitQA(TString taskname = "AODFilt
 
   // ==========================================================================
   // user customization part
-  taskAODFilterBitQA->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  taskAODFilterBitQA->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
   // ==========================================================================
 
 
@@ -49,3 +49,4 @@ AliAnalysisTaskAODFilterBitQA *AddTaskAODFilterBitQA(TString taskname = "AODFilt
 
   return taskAODFilterBitQA;
 }
+

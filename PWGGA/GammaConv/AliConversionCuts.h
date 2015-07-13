@@ -17,6 +17,7 @@
 //***********************************************************************************
 //***********************************************************************************
 
+#include "AliTrigger.h"
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -109,11 +110,11 @@ class AliConversionCuts : public AliAnalysisCuts {
 
 
    Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
-   void SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kAny) {
+   void SelectCollisionCandidates(AliBits offlineTriggerMask = AliTrigger::kAny) {
       fOfflineTriggerMask = offlineTriggerMask;
       fTriggerSelectedManually = kTRUE;
    }
-   void SelectSpecialTrigger(AliBits offlineTriggerMask = AliVEvent::kAny, TString TriggerClassName = "AliVEvent::kAny" ) {
+   void SelectSpecialTrigger(AliBits offlineTriggerMask = AliTrigger::kAny, TString TriggerClassName = "AliTrigger::kAny" ) {
       fOfflineTriggerMask = offlineTriggerMask;
       fSpecialTriggerName = TriggerClassName;
       cout << fSpecialTriggerName.Data() << endl;
@@ -488,3 +489,4 @@ inline void AliConversionCuts::InitAODpidUtil(Int_t type) {
 //***********************************************************************************
 //***********************************************************************************
 //***********************************************************************************
+

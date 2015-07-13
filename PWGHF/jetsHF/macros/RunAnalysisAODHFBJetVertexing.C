@@ -20,6 +20,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 /* If you want to compile the macro put here all include                  */
+#include "AliTrigger.h"
 #include <TSystem.h>
 #include <TObject.h>
 #include <TROOT.h>
@@ -233,7 +234,7 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
   //  gROOT->ProcessLine(".L AliHFJetsContainerVertex.cxx+g");
   //  gROOT->ProcessLine(".L AliAnalysisTaskEmcalJetBtagSV.cxx+g");
   
-  UInt_t iPhysSelectionFlag = AliVEvent::kAny;
+  UInt_t iPhysSelectionFlag = AliTrigger::kAny;
   const char *dataType = "AOD";
   
   TString kTracksInName = "HybridTracks";
@@ -258,7 +259,7 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
   // Physics selection task
   if ( !bIsMC ) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPhysicsSelection.C");
-    AliVEvent::EOfflineTriggerTypes pSel = AliVEvent::kAny;
+    AliVEvent::EOfflineTriggerTypes pSel = AliTrigger::kAny;
     AliPhysicsSelectionTask *physSelTask = AddTaskEmcalPhysicsSelection(kTRUE, kTRUE, pSel, 0., 0., 10, kTRUE, -1, -1, -1, -1);
     if ( !physSelTask ) {
       ::Error("AddWagonsTask", "no physSelTask but running on data");
@@ -277,7 +278,7 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
                                                      "MCParticlesSelected",
                                                      "",
                                                      "",
-                                                     2., 0., 0.03, 0.015, 0.15, 0 /*AliVEvent::kAny*/,
+                                                     2., 0., 0.03, 0.015, 0.15, 0 /*AliTrigger::kAny*/,
                                                      kFALSE,
                                                      kFALSE,
                                                      kTRUE,
@@ -306,7 +307,7 @@ void AddWagonsTask(const Bool_t bIsMC, const Bool_t doBkgRej) {
     AliAnalysisTaskEmcalJetTagger *tagger = AddTaskEmcalJetTagger(jetFinderTask->GetName(),
                                                                   jetFinderTaskMC->GetName(),
                                                                   0.4, "", "", "PicoTracks", "", 0,
-                                                                  "V0M", AliVEvent::kAny, "", "");
+                                                                  "V0M", AliTrigger::kAny, "", "");
     tagger->SetNCentBins(1);
     tagger->SetForceBeamType(AliAnalysisTaskEmcal::kpA);
     tagger->SetIsPythia(kTRUE);

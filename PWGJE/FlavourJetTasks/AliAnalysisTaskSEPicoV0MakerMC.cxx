@@ -21,6 +21,7 @@
 // Author: X-M. Zhang, xmzhang@lbl.gov
 /////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <iostream>
 
 #include <TString.h>
@@ -888,7 +889,7 @@ Bool_t AliAnalysisTaskSEPicoV0MakerMC::IsEventNotAcpt()
 
   AliBits wMask = fInputHandler->IsEventSelected();
   if ((wMask & fTriggerMask) != fTriggerMask) return (fEventAcptMask==0);
-  if (fIsSkipFastOnly) if ((wMask & AliVEvent::kFastOnly) == AliVEvent::kFastOnly) return (fEventAcptMask==0);
+  if (fIsSkipFastOnly) if ((wMask & AliTrigger::kFastOnly) == AliTrigger::kFastOnly) return (fEventAcptMask==0);
 
   fEventAcptMask |= AliPicoHeaderCJ::kEventAccTrigger;
 //=============================================================================
@@ -1139,3 +1140,4 @@ void AliAnalysisTaskSEPicoV0MakerMC::SetV0Cuts(Double_t d[14])
 
   return;
 }
+

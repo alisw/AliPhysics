@@ -7,7 +7,7 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 							     Int_t       rhoType             = 0,
 							     TString     trigClass           = "",
 							     const char *CentEst             = "V0A",
-							     Int_t       pSel                = AliVEvent::kINT7,
+							     Int_t       pSel                = AliTrigger::kINT7,
 							     Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 							     Double_t    ptTrackBias         = 0.,
 							     Int_t       responseVar         = 0,
@@ -38,13 +38,13 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 
   AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus);
   AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
-  jetFinderTaskFull->SelectCollisionCandidates(AliVEvent::kAny);
-  jetFinderTaskCharged->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskFull->SelectCollisionCandidates(AliTrigger::kAny);
+  jetFinderTaskCharged->SelectCollisionCandidates(AliTrigger::kAny);
 
   AliEmcalJetTask* jetFinderTaskFullMC = AddTaskEmcalJet(kMCTracksName ,"", kANTIKT, R, kFULLJETS, kPartLevPtCut, kPartLevPtCut);
   AliEmcalJetTask* jetFinderTaskChargedMC = AddTaskEmcalJet(kMCTracksName ,"", kANTIKT, R, kCHARGEDJETS, kPartLevPtCut, kPartLevPtCut);
-  jetFinderTaskFullMC->SelectCollisionCandidates(AliVEvent::kAny);
-  jetFinderTaskChargedMC->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskFullMC->SelectCollisionCandidates(AliTrigger::kAny);
+  jetFinderTaskChargedMC->SelectCollisionCandidates(AliTrigger::kAny);
 
   TString strJetsFull = jetFinderTaskFull->GetName();
   TString strJetsCh   = jetFinderTaskCharged->GetName();
@@ -116,3 +116,4 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   
   return taskDiJetResp;
 }
+

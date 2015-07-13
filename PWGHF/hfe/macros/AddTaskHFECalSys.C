@@ -34,7 +34,7 @@ AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int 
   mgr->AddTask(hfetaskTrig);
   
   // Semi-central trigger
-  hfetaskCent->SelectCollisionCandidates(AliVEvent::kCentral);
+  hfetaskCent->SelectCollisionCandidates(AliTrigger::kCentral);
   
   TString Output1(TString::Format("HFE_Results_EMCALCentral%d",sysID));
   TString containerName = mgr->GetCommonFileName();
@@ -47,7 +47,7 @@ AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int 
   mgr->ConnectOutput(hfetaskCent, 1, coutput1);
   
   //L1 gamma trigger
-  hfetaskTrig->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  hfetaskTrig->SelectCollisionCandidates(AliTrigger::kEMCEGA);
   
   TString Output2(TString::Format("HFE_Results_EMCalTrigEGA%d",sysID));
   TString containerName2 = mgr->GetCommonFileName();
@@ -62,7 +62,7 @@ AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int 
     //MB trigger
     AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECalSys(MCthere,TPCclust,TPCclustPID,Nits,ITSstat,QAhist);
     mgr->AddTask(hfetaskMB);
-    hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
+    hfetaskMB->SelectCollisionCandidates(AliTrigger::kMB);
 
     TString Output3(TString::Format("HFE_Results_EMCalMB%d",sysID));
     TString containerName3 = mgr->GetCommonFileName();
@@ -77,3 +77,4 @@ AliAnalysisTask *AddTaskHFECalSys(int sysID, int TPCclust, int TPCclustPID, int 
 
   return NULL;
 }
+

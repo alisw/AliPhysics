@@ -38,7 +38,7 @@ AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Int_t passN=2, Bool_t isM
   taskMuonsHF->SetUseMC(isMC);
   taskMuonsHF->SetIsOutputTree(isTree);
   taskMuonsHF->SetEvsHCuts(cutsEvsH);
-  if (isSel) taskMuonsHF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kMUON);
+  if (isSel) taskMuonsHF->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kMUON);
   mgr->AddTask(taskMuonsHF);
 
   mgr->ConnectInput(taskMuonsHF, 0, mgr->GetCommonInputContainer());
@@ -50,3 +50,4 @@ AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Int_t passN=2, Bool_t isM
 
   return taskMuonsHF;
 }
+

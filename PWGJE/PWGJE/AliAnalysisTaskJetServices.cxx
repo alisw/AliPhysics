@@ -21,6 +21,7 @@
  **************************************************************************/
 
  
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TRandom.h>
 #include <TString.h>
@@ -80,7 +81,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fUsePhysicsSelection(kFALSE),
   fMC(kFALSE),
   fFilterAODCollisions(kFALSE),
-  fPhysicsSelectionFlag(AliVEvent::kMB),
+  fPhysicsSelectionFlag(AliTrigger::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
   fFilterMask(0),
@@ -155,7 +156,7 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fUsePhysicsSelection(kFALSE),
   fMC(kFALSE),
   fFilterAODCollisions(kFALSE),
-  fPhysicsSelectionFlag(AliVEvent::kMB),
+  fPhysicsSelectionFlag(AliTrigger::kMB),
   fSelectionInfoESD(0),
   fEventCutInfoESD(0),
   fFilterMask(0),
@@ -1266,3 +1267,4 @@ void AliAnalysisTaskJetServices::SetTrigger(Int_t i,AliBits it,const char* c){
     
   } 
 }
+

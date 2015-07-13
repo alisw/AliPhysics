@@ -1,5 +1,6 @@
 // $Id$
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEMCALIsoPhoton.h"
 
 #include <TCanvas.h>
@@ -590,24 +591,24 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   Bool_t isSelected = 0;
   if(fPeriod.Contains("11a")){
     if(fTrigBit.Contains("kEMC"))
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kEMC1);
     else
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
   }
   else{
     if(fTrigBit.Contains("kEMC"))
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kEMC7);
     else
       if(fTrigBit.Contains("kMB"))
-	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
       else
-	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+	isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kINT7);
   }
   if(fPeriod.Contains("11h")){
     if(fTrigBit.Contains("kAny"))
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kAny);
     if(fTrigBit.Contains("kAnyINT"))
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kAnyINT);
   }
   if(fIsMc)
     isSelected = kTRUE;
@@ -2237,3 +2238,4 @@ void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *)
 {
   // Called once at the end of the query.
 }
+

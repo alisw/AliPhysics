@@ -58,10 +58,10 @@ AliAnalysisTask *AddTask_Remi_LMEEPbPb2011AOD_Cent(Char_t* outputFileName="LMEEo
   LMEECutLibRemi* cutlib = new LMEECutLibRemi();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-  //  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
+  //  task->SelectCollisionCandidates(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
   //  task->SetRejectPileup();
-  task->SelectCollisionCandidates(AliVEvent::kAny);  
+  task->SelectCollisionCandidates(AliTrigger::kAny);  
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLibRemi::kPbPb2011pidITSTPCTOF)); //
   
   //load dielectron configuration file
@@ -134,3 +134,4 @@ AliAnalysisTask *AddTask_Remi_LMEEPbPb2011AOD_Cent(Char_t* outputFileName="LMEEo
 
   return task;
 }
+

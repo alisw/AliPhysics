@@ -29,6 +29,7 @@ class AliESDv0;
 class AliAODVertex;
 class AliAODv0;
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include <Riostream.h>
 #include <iostream>
@@ -1616,11 +1617,11 @@ void AliAnalysisTaskLambdaNAOD::BinLogAxis(const THnSparse *h, Int_t axisNumber)
 Bool_t AliAnalysisTaskLambdaNAOD::IsTriggered() {
   // Check if Event is triggered and fill Trigger Histogram
 
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kMB))          fTriggerFired[0] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kCentral))     fTriggerFired[1] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fTriggerFired[2] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      fTriggerFired[3] = kTRUE;
-  if ((fEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      fTriggerFired[4] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kMB))          fTriggerFired[0] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kCentral))     fTriggerFired[1] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kSemiCentral)) fTriggerFired[2] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kEMCEJE))      fTriggerFired[3] = kTRUE;
+  if ((fEventHandler->IsEventSelected() & AliTrigger::kEMCEGA))      fTriggerFired[4] = kTRUE;
 
   Bool_t isTriggered = kFALSE;
 
@@ -2118,3 +2119,4 @@ Double_t AliAnalysisTaskLambdaNAOD::ImpactParameter(AliVTrack *track, Double_t d
      kfParticle->Z() = kfParticle->GetZ() + dz;
 
      }*/
+

@@ -181,7 +181,7 @@ AliAnalysisTaskIDFFTCF *AddTaskIDFFTCF(
    if(!filterMaskTracks) task->SetFilterMask(filterMask);
    else task->SetFilterMask(filterMaskTracks);
 
-   task->SetEventSelectionMask(AliVEvent::kMB);
+   task->SetEventSelectionMask(AliTrigger::kMB);
    task->SetEventClass(eventClass);
   
    // Set default parameters 
@@ -264,3 +264,4 @@ AliAnalysisTaskIDFFTCF *AddTaskIDFFTCF(
 
    return task;
 }
+

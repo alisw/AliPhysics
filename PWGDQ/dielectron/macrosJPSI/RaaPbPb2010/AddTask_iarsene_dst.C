@@ -18,7 +18,7 @@ AliAnalysisTask *AddTask_iarsene_dst(){
   
   //create task and add it to the manager
   AliAnalysisTaskCorrelationTree *task=new AliAnalysisTaskCorrelationTree("DSTTreeMaker");
-  //if(trainConfig.Contains("PbPb")) task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  //if(trainConfig.Contains("PbPb")) task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
   //if(trainConfig=="pp") task->SetRejectPileup();
   if(!hasMC) task->UsePhysicsSelection(kFALSE);
   mgr->AddTask(task);
@@ -1009,3 +1009,4 @@ void SetEtaCorrection()
     }
   }
 }
+

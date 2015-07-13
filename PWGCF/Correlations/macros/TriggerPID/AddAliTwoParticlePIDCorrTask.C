@@ -39,7 +39,7 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pP
    PIDCorr->SetAnalysisType(AnalysisType);
    
    //Trigger - Physics Selection
-   // PIDCorr->SelectCollisionCandidates(AliVEvent::kINT7);
+   // PIDCorr->SelectCollisionCandidates(AliTrigger::kINT7);
 
    mgr->AddTask(PIDCorr);
 
@@ -63,3 +63,4 @@ if(RequestEventPlane==kTRUE)  mgr->ConnectOutput (PIDCorr, 3, coutput3 );
 
   return PIDCorr;
 }
+

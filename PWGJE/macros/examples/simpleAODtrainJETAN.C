@@ -67,7 +67,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   const Float_t kR = 0.3;
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskJetCluster.C");
-  jetclu = AddTaskJetCluster("AOD","",kHighPtFilterMask,AliVEvent::kAny,"ANTIKT",kR,0,kTRUE, AliAnalysisManager::GetGlobalStr("kJetDeltaAODName",gDebug),0.15,0.9,10,0);
+  jetclu = AddTaskJetCluster("AOD","",kHighPtFilterMask,AliTrigger::kAny,"ANTIKT",kR,0,kTRUE, AliAnalysisManager::GetGlobalStr("kJetDeltaAODName",gDebug),0.15,0.9,10,0);
 
   jetclu->SetEventSelection(kTRUE); 
   jetclu->SetJetTypes(1<<0|1<<2|1<<3);
@@ -79,7 +79,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
 
   // output dir: PWGJE_cluster_AOD__ANTIKT03_B0_Filter00272_Cut00150_Skip00
 
-  jetclukt = AddTaskJetCluster("AOD","",kHighPtFilterMask,AliVEvent::kAny,"KT",kR,0,kTRUE,AliAnalysisManager::GetGlobalStr("kJetDeltaAODName",gDebug),0.15,0.9,10,0);
+  jetclukt = AddTaskJetCluster("AOD","",kHighPtFilterMask,AliTrigger::kAny,"KT",kR,0,kTRUE,AliAnalysisManager::GetGlobalStr("kJetDeltaAODName",gDebug),0.15,0.9,10,0);
   jetclukt->SetBackgroundCalc(kTRUE);
   jetclukt->SetEventSelection(kTRUE); 
   jetclukt->SetCentralityCut(0.,80.);
@@ -87,7 +87,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   jetclukt->SetFilterMaskBestPt(kHighPtFilterMaskBest);
   //jetclukt->SetDebugLevel(1);
 
-  AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA|AliVEvent::kEMC1);
+  AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral|AliTrigger::kEMCEJE|AliTrigger::kEMCEGA|AliTrigger::kEMC1);
 
   Int_t kRpar = Int_t(10*kR + 0.001);
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskJetBackgroundSubtract.C");
@@ -105,7 +105,7 @@ void simpleAODtrainJETAN(const Char_t *mode="full"){
   // Need to add 'type = AOD' as third argument -- only for MC...
   fftask = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", kHighPtFilterMask, kR,2,150.,kEvtClass, "_Skip00");
   //fftask->SetPhiCorrHistoBins(); 
-  fftask->SetEventSelectionMask(AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral);
+  fftask->SetEventSelectionMask(AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral);
   fftask->UseAODInputJets(kFALSE);  // to pick up jets from the output AOD
   //fftask->SetDebugLevel(1);
 
@@ -203,3 +203,4 @@ AliAnalysisGrid* CreateAlienHandler(const Char_t *mode)
    plugin->SetSplitMode("se");
    return plugin;
 }
+

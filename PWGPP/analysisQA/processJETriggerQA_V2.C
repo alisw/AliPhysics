@@ -125,13 +125,13 @@ void processJETriggerQA_V2(TString strFileIn    = "AnalysisResults.root",
 
   TString longtrigname = "";
   UInt_t emcalPhysSelbit = 1<<31;
-  if(triggerbit==AliVEvent::kAny) longtrigname = "kAny";
-  else if(triggerbit==AliVEvent::kAnyINT) longtrigname = "kAnyINT";
+  if(triggerbit==AliTrigger::kAny) longtrigname = "kAny";
+  else if(triggerbit==AliTrigger::kAnyINT) longtrigname = "kAnyINT";
   else if(triggerbit==emcalPhysSelbit) longtrigname = "EmcalPhysicsSelectionTask";
   else {
-    if(triggerbit & AliVEvent::kCentral) longtrigname += "kCentral";
-    if(triggerbit & AliVEvent::kSemiCentral) longtrigname += "kSemiCentral";
-    if(triggerbit & AliVEvent::kMB)  longtrigname += "kMB";
+    if(triggerbit & AliTrigger::kCentral) longtrigname += "kCentral";
+    if(triggerbit & AliTrigger::kSemiCentral) longtrigname += "kSemiCentral";
+    if(triggerbit & AliTrigger::kMB)  longtrigname += "kMB";
   }
 
   if(trigsuffix=="EJE")  longtrigname += " and kEMCEJE";
@@ -345,3 +345,4 @@ void SetLeg(TLegend* le){
    le->SetFillStyle(0);
    le->SetTextSize(0.05);
 }
+

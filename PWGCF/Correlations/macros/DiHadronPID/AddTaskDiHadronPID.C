@@ -59,7 +59,7 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 
     // Configure and add Event Cuts.
 	AliAODEventCutsDiHadronPID* eventcuts = new AliAODEventCutsDiHadronPID("EventCuts");
-	eventcuts->SetTrigger(AliVEvent::kMB);
+	eventcuts->SetTrigger(AliTrigger::kMB);
 	eventcuts->SetCentrality(MaxCentrality, MinCentrality);
 	eventcuts->SetMaxVertexZ(maxVertexZ);
 	eventcuts->SetCentralityEstimator(CentralityEstimator);
@@ -132,3 +132,4 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPID(
 	return DiHadronPIDTask;
 
 }
+

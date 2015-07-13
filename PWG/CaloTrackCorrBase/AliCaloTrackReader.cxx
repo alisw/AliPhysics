@@ -14,6 +14,7 @@
  **************************************************************************/
 
 // --- ROOT system ---
+#include "AliTrigger.h"
 #include <TFile.h>
 #include <TGeoManager.h>
 #include <TStreamerInfo.h>
@@ -818,8 +819,8 @@ void AliCaloTrackReader::InitParameters()
   fReadAODMCParticles    = kFALSE; // Check in the constructor of the other readers if it was set or in the configuration file
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName = "";
-  fEventTriggerMask      = AliVEvent::kAny;
-  fMixEventTriggerMask   = AliVEvent::kAnyINT;
+  fEventTriggerMask      = AliTrigger::kAny;
+  fMixEventTriggerMask   = AliTrigger::kAnyINT;
   fEventTriggerAtSE      = kTRUE; // Use only events that pass event selection at SE base class
   
   fAcceptFastCluster = kTRUE;
@@ -2747,7 +2748,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
   else
 	{
 	  // EMC L1 Gamma
-	  if     ( fEventTriggerMask & AliVEvent::kEMCEGA      )
+	  if     ( fEventTriggerMask & AliTrigger::kEMCEGA      )
     {
       //printf("EGA trigger bit\n");
       if     (GetFiredTriggerClasses().Contains("EG"))
@@ -2761,7 +2762,7 @@ void AliCaloTrackReader::SetEventTriggerBit()
       }
     }
 	  // EMC L1 Jet
-	  else if( fEventTriggerMask & AliVEvent::kEMCEJE      )
+	  else if( fEventTriggerMask & AliTrigger::kEMCEJE      )
     {
       //printf("EGA trigger bit\n");
       if     (GetFiredTriggerClasses().Contains("EJ"))
@@ -2775,29 +2776,29 @@ void AliCaloTrackReader::SetEventTriggerBit()
       }
     }
 		// EMC L0
-	  else if((fEventTriggerMask & AliVEvent::kEMC7) ||
-            (fEventTriggerMask & AliVEvent::kEMC1)       )
+	  else if((fEventTriggerMask & AliTrigger::kEMC7) ||
+            (fEventTriggerMask & AliTrigger::kEMC1)       )
     {
       //printf("L0 trigger bit\n");
 	    fEventTrigEMCALL0 = kTRUE;
     }
 	  // Min Bias Pb-Pb
-	  else if( fEventTriggerMask & AliVEvent::kCentral     )
+	  else if( fEventTriggerMask & AliTrigger::kCentral     )
     {
       //printf("MB semi central trigger bit\n");
 	    fEventTrigSemiCentral = kTRUE;
     }
 	  // Min Bias Pb-Pb
-	  else if( fEventTriggerMask & AliVEvent::kSemiCentral )
+	  else if( fEventTriggerMask & AliTrigger::kSemiCentral )
     {
       //printf("MB central trigger bit\n");
 	    fEventTrigCentral = kTRUE;
     }
 	  // Min Bias pp, PbPb, pPb
-	  else if((fEventTriggerMask & AliVEvent::kMB  ) ||
-            (fEventTriggerMask & AliVEvent::kINT7) ||
-            (fEventTriggerMask & AliVEvent::kINT8) ||
-            (fEventTriggerMask & AliVEvent::kAnyINT) )
+	  else if((fEventTriggerMask & AliTrigger::kMB  ) ||
+            (fEventTriggerMask & AliTrigger::kINT7) ||
+            (fEventTriggerMask & AliTrigger::kINT8) ||
+            (fEventTriggerMask & AliTrigger::kAnyINT) )
     {
       //printf("MB trigger bit\n");
 	    fEventTrigMinBias = kTRUE;
@@ -2884,5 +2885,6 @@ void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
     fVertex[i][2] = 0.0 ;
   }
 }
+
 
 

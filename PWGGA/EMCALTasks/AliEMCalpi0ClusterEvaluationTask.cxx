@@ -22,6 +22,7 @@
 ///
 /// \author Astrid Morreale
 //-----------------------------------------------------------------------------
+#include "AliTrigger.h"
 #include "AliEMCalpi0ClusterEvaluationTask.h"
 
 #include <Riostream.h>
@@ -399,17 +400,17 @@ void AliEMCalpi0ClusterEvaluationTask::UserExec( Option_t* )
 
     ////verification triggered classes that fired.
 
-    isMB           = Mask & AliVEvent::kMB;
-    isAnyINT       = Mask & AliVEvent::kAnyINT;
-    isCentral      = Mask & AliVEvent::kCentral;
-    isSemiCentral  = Mask & AliVEvent::kSemiCentral;
-    isEga          = Mask & AliVEvent::kEMCEGA;
+    isMB           = Mask & AliTrigger::kMB;
+    isAnyINT       = Mask & AliTrigger::kAnyINT;
+    isCentral      = Mask & AliTrigger::kCentral;
+    isSemiCentral  = Mask & AliTrigger::kSemiCentral;
+    isEga          = Mask & AliTrigger::kEMCEGA;
     /*
-    isMB             = (Mask== AliVEvent::kMB)? 1 : 0;
-    isAnyINT         = (Mask== AliVEvent::kAnyINT)? 1 : 0;
-    isCentral        = (Mask== AliVEvent::kCentral)? 1 : 0;
-    isSemiCentral    = (Mask== AliVEvent::kSemiCentral)? 1 : 0;
-    isEga            = (Mask== AliVEvent::kEMCEGA)? 1 : 0;
+    isMB             = (Mask== AliTrigger::kMB)? 1 : 0;
+    isAnyINT         = (Mask== AliTrigger::kAnyINT)? 1 : 0;
+    isCentral        = (Mask== AliTrigger::kCentral)? 1 : 0;
+    isSemiCentral    = (Mask== AliTrigger::kSemiCentral)? 1 : 0;
+    isEga            = (Mask== AliTrigger::kEMCEGA)? 1 : 0;
     */
     //if( isMB ||isCentral||isSemiCentral ){ kAllMB=kTRUE;}
     //else kAllMB = kFALSE;
@@ -707,19 +708,19 @@ void AliEMCalpi0ClusterEvaluationTask::FillMixed( const TLorentzVector& p1, cons
 
    // ULong64_t triggerMask = event->GetTriggerMask();
 
-    isMBmx         = (eventSelectionMask&AliVEvent::kMB);
-    isAnyINTmx      = (eventSelectionMask&AliVEvent::kAnyINT);
-    isCentralmx     = (eventSelectionMask&AliVEvent::kCentral);
-    isSemiCentralmx = (eventSelectionMask&AliVEvent::kSemiCentral);
-    isEgamx         = (eventSelectionMask&AliVEvent::kEMCEGA);
+    isMBmx         = (eventSelectionMask&AliTrigger::kMB);
+    isAnyINTmx      = (eventSelectionMask&AliTrigger::kAnyINT);
+    isCentralmx     = (eventSelectionMask&AliTrigger::kCentral);
+    isSemiCentralmx = (eventSelectionMask&AliTrigger::kSemiCentral);
+    isEgamx         = (eventSelectionMask&AliTrigger::kEMCEGA);
 
 
 
-    //     isMBmx          = (eventSelectionMask== AliVEvent::kMB)? 1 : 0;
-    //     isAnyINTmx      = (eventSelectionMask== AliVEvent::kAnyINT)? 1 : 0;
-    //     isCentralmx     = (eventSelectionMask== AliVEvent::kCentral)? 1 : 0;
-    //     isSemiCentralmx = (eventSelectionMask== AliVEvent::kSemiCentral)? 1 : 0;
-    //     isEgamx         = (eventSelectionMask== AliVEvent::kEMCEGA)? 1 : 0;
+    //     isMBmx          = (eventSelectionMask== AliTrigger::kMB)? 1 : 0;
+    //     isAnyINTmx      = (eventSelectionMask== AliTrigger::kAnyINT)? 1 : 0;
+    //     isCentralmx     = (eventSelectionMask== AliTrigger::kCentral)? 1 : 0;
+    //     isSemiCentralmx = (eventSelectionMask== AliTrigger::kSemiCentral)? 1 : 0;
+    //     isEgamx         = (eventSelectionMask== AliTrigger::kEMCEGA)? 1 : 0;
     kAllMBmx= (isMBmx || isAnyINTmx||isCentralmx||isSemiCentralmx );
 
     // Centrality
@@ -770,3 +771,4 @@ void AliEMCalpi0ClusterEvaluationTask::Terminate(const Option_t*)
     }
 
 }
+

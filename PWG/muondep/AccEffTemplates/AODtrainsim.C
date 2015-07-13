@@ -128,7 +128,7 @@ void AddAnalysisTasks(Int_t merge){
   if (iCollision && useCentrality) {
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-    taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
+    taskCentrality->SelectCollisionCandidates(AliTrigger::kAny);
   }
 
   if (iMUONRefit) {
@@ -150,7 +150,7 @@ void AddAnalysisTasks(Int_t merge){
   if (useMC && useTR && iMUONPerformance) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMuonPerformance.C");
     AliAnalysisTaskMuonPerformance* muonPerformance = AddTaskMuonPerformance();
-    if (usePhysicsSelection) muonPerformance->SelectCollisionCandidates(AliVEvent::kAny);
+    if (usePhysicsSelection) muonPerformance->SelectCollisionCandidates(AliTrigger::kAny);
     muonPerformance->SetDefaultStorage(VAR_OCDB_PATH);
     muonPerformance->SetAlignStorage(VAR_REC_ALIGNDATA);
     muonPerformance->UseMCKinematics(kTRUE);
@@ -160,7 +160,7 @@ void AddAnalysisTasks(Int_t merge){
   if (iMUONEfficiency) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMUONTrackingEfficiency.C");
     AliAnalysisTaskMuonTrackingEff* muonEfficiency = AddTaskMUONTrackingEfficiency(kTRUE, kTRUE);
-    if (usePhysicsSelection) muonEfficiency->SelectCollisionCandidates(AliVEvent::kAny);
+    if (usePhysicsSelection) muonEfficiency->SelectCollisionCandidates(AliTrigger::kAny);
     muonEfficiency->SetDefaultStorage(VAR_OCDB_PATH);
     muonEfficiency->SetAlignStorage(VAR_REC_ALIGNDATA);
     muonEfficiency->UseMCLabel(kTRUE);
@@ -244,3 +244,4 @@ void AODmerge()
   out.close();
   timer.Print();
 }
+

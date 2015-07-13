@@ -105,7 +105,7 @@ void AddTask_dNdPtpPb_test()
    task->SetUseMCInfo(hasMC);
    
    // trigger selection: MB
-   task->SelectCollisionCandidates(AliVEvent::kCINT5); 
+   task->SelectCollisionCandidates(AliTrigger::kCINT5); 
    
    //
    // set analysis options from the Helper here
@@ -129,8 +129,8 @@ void AddTask_dNdPtpPb_test()
      fdNdPtAnalysisPbPb->SetParticleMode(particleMode); 
      //      fdNdPtAnalysisPbPb->SetCentralityEstimator("ZNA");
      fdNdPtAnalysisPbPb->SetCentralityEstimator("V0M");
-     fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kCINT5);
-     //fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kEMC1);
+     fdNdPtAnalysisPbPb->SetTriggerMask(AliTrigger::kCINT5);
+     //fdNdPtAnalysisPbPb->SetTriggerMask(AliTrigger::kEMC1);
      
      // cut to remove tpc sector
      //fdNdPtAnalysisPbPb->SetRecAcceptanceCuts(recCuts);
@@ -216,4 +216,5 @@ void AddTask_dNdPtpPb_test()
 							     
 							     
 }
+
 

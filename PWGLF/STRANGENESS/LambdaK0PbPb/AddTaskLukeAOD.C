@@ -33,7 +33,7 @@ AliAnalysisTaskLukeAOD * AddTaskLukeAOD(const char * outfilename, bool	isMonteCa
 	sprintf(taskName,"example_task");
 	
 	AliAnalysisTaskLukeAOD * task = new AliAnalysisTaskLukeAOD(taskName);
-	task->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
+	task->SelectCollisionCandidates(AliTrigger::kMB); // if physics selection performed in UserExec(), this line should be commented
 	
 	task->SetIsMonteCarlo		(isMonteCarlo);
 	task->SetCutCosPa			(cutCosPa);
@@ -59,5 +59,6 @@ AliAnalysisTaskLukeAOD * AddTaskLukeAOD(const char * outfilename, bool	isMonteCa
     
   return task;
 }   
+
 
 

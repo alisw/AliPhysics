@@ -1,10 +1,10 @@
 Bool_t ConfigWithFlagsJetSpectrum2();
 AliAnalysisTaskJetSpectrum2 *jetspec = 0;
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* nonStdFile="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,Int_t hjet=0, UInt_t iEventSelectionMask = 0,Int_t iCl = 0, Bool_t bRCSparseDimensions = kFALSE);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* nonStdFile="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliTrigger::kMB,Int_t hjet=0, UInt_t iEventSelectionMask = 0,Int_t iCl = 0, Bool_t bRCSparseDimensions = kFALSE);
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,Int_t hjet=0,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,char* back = ""){
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliTrigger::kMB,Int_t hjet=0,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,char* back = ""){
 
   TString cBack = back;
 
@@ -232,3 +232,4 @@ Bool_t ConfigWithFlagsJetSpectrum2(){
 
 
 }
+

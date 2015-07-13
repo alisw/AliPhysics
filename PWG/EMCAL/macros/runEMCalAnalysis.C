@@ -19,6 +19,7 @@
 //
 // Authors: R. Haake, S. Aiola, M. Verweij
 
+#include "AliTrigger.h"
 #include <ctime>
 #include "TGrid.h"
 
@@ -37,7 +38,7 @@ void runEMCalAnalysis(
          UInt_t         numLocalFiles       = 1,                          // number of files analyzed locally  
          const char*    runPeriod           = "LHC11h",                    // set the run period (used on grid)
          const char*    uniqueName          = "EMCal_LEGOTrainTest",     // sets base string for the name of the task on the grid
-         UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task except for the analysis tasks
+         UInt_t         pSel                = AliTrigger::kAny,             // used event selection for every task except for the analysis tasks
          Bool_t         useTender           = kTRUE,                       // trigger, if tender, track and cluster selection should be used (always)
          Bool_t         isMC                = kFALSE,                      // trigger, if MC handler should be used
          // Here you have to specify additional code files you want to use but that are not in aliroot
@@ -348,3 +349,4 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
 
   return plugin;
 }
+

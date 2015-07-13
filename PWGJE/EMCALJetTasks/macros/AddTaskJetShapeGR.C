@@ -9,7 +9,7 @@ AliAnalysisTaskJetShapeGR *AddTaskJetShapeGR(const char * njetsBase,
 					     const char * ntracksTrue,
 					     const char * type           = "TPC",
 					     const char * CentEst        = "V0M",
-					     Int_t        pSel           = AliVEvent::kAny,
+					     Int_t        pSel           = AliTrigger::kAny,
 					     TString      trigClass      = "",
 					     TString      kEmcalTriggers = "",
 					     TString      tag            = "MCMatch")
@@ -100,3 +100,4 @@ AliAnalysisTaskJetShapeGR *AddTaskJetShapeGR(const char * njetsBase,
 
 
 }
+

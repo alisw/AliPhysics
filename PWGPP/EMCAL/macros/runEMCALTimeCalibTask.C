@@ -116,18 +116,18 @@ void runEMCALTimeCalibTask(Int_t type=0, Bool_t isESD=kTRUE, Bool_t isPhysicsSel
   //   cu->SwitchOnBadChannelsRemoval(); 
 
   // Create task
-  //UInt_t kTriggerInt = AliVEvent::kAnyINT;
-  //UInt_t kTriggerEMC   = AliVEvent::kEMC8 || AliVEvent::kEMC7 || AliVEvent::kEMCEJE || AliVEvent::kEMCEGA;
+  //UInt_t kTriggerInt = AliTrigger::kAnyINT;
+  //UInt_t kTriggerEMC   = AliTrigger::kEMC8 || AliTrigger::kEMC7 || AliTrigger::kEMCEJE || AliTrigger::kEMCEGA;
   
   AliAnalysisTaskEMCALTimeCalib *taskmbemcal = new AliAnalysisTaskEMCALTimeCalib("TimeCalibTask");
   //  AliEMCALRecoUtils *reco = taskmbemcal->GetEMCALRecoUtils();
   //  taskmbemcal->PrintInfo();
   //  reco->SwitchOnRejectExoticCluster();
 
-  taskmbemcal->SelectCollisionCandidates(AliVEvent::kEMC1|AliVEvent::kEMC7|AliVEvent::kEMC8|AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+  taskmbemcal->SelectCollisionCandidates(AliTrigger::kEMC1|AliTrigger::kEMC7|AliTrigger::kEMC8|AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
   taskmbemcal->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
 
-  //taskmbemcal->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  //taskmbemcal->SelectCollisionCandidates(AliTrigger::kAnyINT);
   //taskmbemcal->SetDebugLevel(10);
 
   // Add task(s)
@@ -186,3 +186,4 @@ TChain *CreateChainFromCollection(const char* xmlfile, const char *treeName="esd
 }
 
 // End of macro
+

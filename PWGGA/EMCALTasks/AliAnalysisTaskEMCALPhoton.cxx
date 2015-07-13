@@ -4,6 +4,7 @@
 //
 //
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -288,11 +289,11 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   Bool_t isSelected = kTRUE;
   if(fPeriod.Contains("11")){
     if(fPeriod.Contains("11a"))
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kEMC1);
     if(fPeriod.Contains("11c") ||fPeriod.Contains("11d") )
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC7);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kEMC7);
     if(fPeriod.Contains("11h") )
-      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);//kEMCEGA);
+      isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kAny);//kEMCEGA);
 
   }
   if(fIsMC){
@@ -1248,3 +1249,4 @@ void AliAnalysisTaskEMCALPhoton::Terminate(Option_t *)
       fTree->Write();
   }
 }
+

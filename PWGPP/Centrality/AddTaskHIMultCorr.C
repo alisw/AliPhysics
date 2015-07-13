@@ -61,7 +61,7 @@ AliAnalysisTaskHIMultCorr *AddTaskHIMultCorr(){
   // -- Add task to the ANALYSIS manager
 
   AliAnalysisTaskHIMultCorr *task =  new AliAnalysisTaskHIMultCorr("AliAnalysisTaskHIMultCorrVZERO");
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
   task->SetUseCentrality(1);  // V0
   task->SetESDCuts(esdCuts);
   task->SetESDCuts2(esdCuts2);
@@ -71,7 +71,7 @@ AliAnalysisTaskHIMultCorr *AddTaskHIMultCorr(){
   
 #ifdef USE_SPD
   AliAnalysisTaskHIMultCorr *taskSPD = new AliAnalysisTaskHIMultCorr("AliAnalysisTaskHIMultCorrSPD");
-  taskSPD->SelectCollisionCandidates(AliVEvent::kMB);
+  taskSPD->SelectCollisionCandidates(AliTrigger::kMB);
   taskSPD->SetUseCentrality(2);  // SPD
   taskSPD->SetESDCuts(esdCuts);
   taskSPD->SetESDCuts2(esdCuts2);
@@ -120,3 +120,4 @@ AliAnalysisTaskHIMultCorr *AddTaskHIMultCorr(){
 
   return task;
 }
+

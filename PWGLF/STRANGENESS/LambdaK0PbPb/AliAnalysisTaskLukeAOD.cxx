@@ -25,6 +25,7 @@
  * Edited by Arvinder Palaha
  * Edited by Luke Hanratty for AODS
  */
+#include "AliTrigger.h"
 #include "AliAnalysisTaskLukeAOD.h"
 
 #include "Riostream.h"
@@ -1114,7 +1115,7 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 	}
 	
 	
-	//Bool_t isSelected = (maskIsSelected && AliVEvent::kMB);
+	//Bool_t isSelected = (maskIsSelected && AliTrigger::kMB);
 	/*if (!isSelected) 
 	 {
 	 Printf("ERROR: failed physics selection");
@@ -1943,3 +1944,4 @@ void AliAnalysisTaskLukeAOD::Terminate(Option_t *)
 	c->cd(2);
 	fHistEta->DrawCopy("E");
 }
+

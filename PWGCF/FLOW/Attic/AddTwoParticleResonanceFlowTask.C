@@ -141,8 +141,8 @@ AliAnalysisTwoParticleResonanceFlowTask* AddTwoParticleResonanceFlowTask(Bool_t 
       else task->SetMixingBins(c, v);
    }
    // set triggers
-   if (bCentralTrigger) task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-   else                 task->SelectCollisionCandidates(AliVEvent::kMB);
+   if (bCentralTrigger) task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
+   else                 task->SelectCollisionCandidates(AliTrigger::kMB);
    if(debug) cout << "    --> Set trigger selection to ";
    if(debug&&bCentralTrigger) cout << " kMB, kCentral, kSemiCentral " << endl;
    if(debug&&(!bCentralTrigger)) cout << " kMB " << endl;
@@ -541,3 +541,4 @@ namespace TwoParticleResonanceFlow {
     }
 //_____________________________________________________________________________
 } // end of namespace TwoParticleResonanceFlow
+

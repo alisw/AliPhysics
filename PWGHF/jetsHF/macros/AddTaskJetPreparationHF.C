@@ -12,7 +12,7 @@ AliAnalysisTaskSE *AddTaskJetPreparationHF(
                                            Double_t phiMatch                 = 0.03,
                                            Double_t etaMatch                 = 0.015,
                                            Double_t minPtEt                  = 0.15,
-                                           UInt_t   pSel                     = AliVEvent::kAny,
+                                           UInt_t   pSel                     = AliTrigger::kAny,
                                            Bool_t   trackclus                = kTRUE,
                                            Bool_t   doHistos                 = kFALSE,
                                            Bool_t   makePicoTracks           = kTRUE,
@@ -195,3 +195,4 @@ AliAnalysisTaskSE *AddTaskJetPreparationHF(
   // Return one task that represents the jet preparation on LEGO trains
   return aodfilter;
 }
+

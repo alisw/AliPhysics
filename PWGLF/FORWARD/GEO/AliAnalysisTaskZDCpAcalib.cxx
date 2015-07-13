@@ -19,6 +19,7 @@
 //							   //
 /////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TTree.h>
 #include <TList.h>
 #include <TFile.h>
@@ -211,7 +212,7 @@ void AliAnalysisTaskZDCpAcalib::UserExec(Option_t */*option*/)
       
       // use response of AliPhysicsSelection
       fIsEventSelected =
-      (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);       
+      (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kINT7);       
 
           
       AliESDVZERO *vzeroESD = esd->GetVZEROData();
@@ -266,3 +267,4 @@ void AliAnalysisTaskZDCpAcalib::Terminate(Option_t */*option*/)
   //
   printf(" **** AliAnalysisTaskZDCpAcalib::Terminate() \n");
 }
+

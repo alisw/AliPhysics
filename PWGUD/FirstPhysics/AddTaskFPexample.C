@@ -20,7 +20,7 @@ void AddTaskFPexample(AliAnalysisManager *mgr,
   gROOT->LoadMacro("AliAnalysisTaskFPexample.cxx++g");
 
   AliAnalysisTaskFPexample* task = new AliAnalysisTaskFPexample(taskname);
-  task->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
+  task->SelectCollisionCandidates(AliTrigger::kMB); // if physics selection performed in UserExec(), this line should be commented
   task->SetCutTrackPt(0.15, 1e10);
   task->SetCutEta(0.8);
   task->SetCutVertexZ(10);
@@ -43,3 +43,4 @@ void AddTaskFPexample(AliAnalysisManager *mgr,
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
 }
+

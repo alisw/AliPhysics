@@ -83,7 +83,7 @@ AliAnalysisTask* AddTaskFilteredTree(TString outputFile="")
   //task->SetFillTrees(kFALSE); // only histograms are filled
 
   // trigger
-  //task->SelectCollisionCandidates(AliVEvent::kMB); 
+  //task->SelectCollisionCandidates(AliTrigger::kMB); 
 
   //
   // set analysis options from the Helper here !!!
@@ -172,3 +172,4 @@ AliESDtrackCuts* CreateCuts(Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 
   return esdTrackCuts;
 }
+

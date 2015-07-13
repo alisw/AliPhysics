@@ -4,6 +4,7 @@
 //
 // Author: C.Loizides
 
+#include "AliTrigger.h"
 #include "AliEmcalPhysicsSelection.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -95,13 +96,13 @@ AliBits AliEmcalPhysicsSelection::GetSelectionBits(const TObject* obj)
   fClusMaxE    = -1;
   fTrackMaxPt  = -1;
 
-  if ((res & AliVEvent::kAnyINT)      || 
-      (res & AliVEvent::kSemiCentral) || 
-      (res & AliVEvent::kCentral)     || 
-      (res & AliVEvent::kEMC1)        || 
-      (res & AliVEvent::kEMC7)        || 
-      (res & AliVEvent::kEMCEJE)      || 
-      (res & AliVEvent::kEMCEGA))
+  if ((res & AliTrigger::kAnyINT)      || 
+      (res & AliTrigger::kSemiCentral) || 
+      (res & AliTrigger::kCentral)     || 
+      (res & AliTrigger::kEMC1)        || 
+      (res & AliTrigger::kEMC7)        || 
+      (res & AliTrigger::kEMCEJE)      || 
+      (res & AliTrigger::kEMCEGA))
     fIsGoodEvent = kTRUE;
   else {
     return AliBits();
@@ -161,7 +162,7 @@ AliBits AliEmcalPhysicsSelection::GetSelectionBits(const TObject* obj)
   const Short_t nCells   = cells->GetNumberOfCells();
     
   // mark LHC11a fast only partition if requested 
-  if (res & AliVEvent::kFastOnly) {
+  if (res & AliTrigger::kFastOnly) {
     fIsFastOnly = kTRUE;
     if (fMarkFastOnly||fSkipFastOnly) {
       if (nCells>0) {
@@ -261,9 +262,9 @@ AliBits AliEmcalPhysicsSelection::GetSelectionBits(const TObject* obj)
       fIsLedEvent = kTRUE;
     else {
       if ((runN>=146858) && (runN<=146860)) {
-        if ((res&AliVEvent::kMB) && (nCellCount[3]>=21))
+        if ((res&AliTrigger::kMB) && (nCellCount[3]>=21))
           fIsLedEvent = kTRUE;
-        else if ((res&AliVEvent::kEMC1) && (nCellCount[3]>=35))
+        else if ((res&AliTrigger::kEMC1) && (nCellCount[3]>=35))
           fIsLedEvent = kTRUE;
       }
     }
@@ -286,3 +287,4 @@ AliBits AliEmcalPhysicsSelection::GetSelectionBits(const TObject* obj)
 
   return res;
 }
+

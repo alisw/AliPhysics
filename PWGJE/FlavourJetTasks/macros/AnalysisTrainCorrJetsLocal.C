@@ -19,6 +19,7 @@
 //
 // Authors: R. Haake, S. Aiola
 
+#include "AliTrigger.h"
 #include <ctime>
 #include "TGrid.h"
 
@@ -39,7 +40,7 @@ void AnalysisTrainCorrJetsLocal (
          UInt_t         numLocalFiles       = 10,                          // number of files analyzed locally  
          const char*    runPeriod           = "LHC10f7a",                    // set the run period (used on grid)
          const char*    uniqueName          = "DJetNewCodeMCSandBchJ",     // sets base string for the name of the task on the grid
-         UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task except for the analysis tasks
+         UInt_t         pSel                = AliTrigger::kAny,             // used event selection for every task except for the analysis tasks
          Bool_t         useTender           = kFALSE,                      // trigger, if tender task should be used
          Bool_t         isMC                = kTRUE,                      // trigger, if MC handler should be used
 	 Bool_t         isReco                = kTRUE,
@@ -124,7 +125,7 @@ void AnalysisTrainCorrJetsLocal (
   //  const char *acctype = "TPC",
   //  const TString sRunPeriod = "LHC10b",
   //  const Int_t    uBeamType = 0,
-  //  const UInt_t uTriggerMask = AliVEvent::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
+  //  const UInt_t uTriggerMask = AliTrigger::kMB, /*for jets; the D mesons trigger is defined in the cut object*/
   //  const Bool_t bIsMC = kFALSE,
   //  const Bool_t bIsReco = kFALSE,
   //  const Bool_t bIsMap = kFALSE,
@@ -352,3 +353,4 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
 
   return plugin;
 }
+

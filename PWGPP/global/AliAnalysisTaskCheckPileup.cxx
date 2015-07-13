@@ -20,6 +20,7 @@
 //*************************************************************************
 
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TTree.h>
 #include <TBranch.h>
@@ -101,7 +102,7 @@ AliAnalysisTaskSE("PileupTask"),
   fMVWeiZDiffCut(15.),
   fMVCheckPlpFromDifferentBC(kFALSE),
   fZDiamondCut(10.),
-  fTriggerMask(AliVEvent::kAny)
+  fTriggerMask(AliTrigger::kAny)
 {
   // Constructor
 
@@ -459,5 +460,6 @@ void AliAnalysisTaskCheckPileup::Terminate(Option_t *)
   }
   return;
 }
+
 
 

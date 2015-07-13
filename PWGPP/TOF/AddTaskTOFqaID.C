@@ -1,15 +1,15 @@
 /*  created by fbellini@cern.ch on 29/04/2013 */
 /*  last modified by fbellini   on 29/04/2013 */
 
-// UInt_t kTriggerMuonAll = AliVEvent::kMUL7 | AliVEvent::kMUSH7 | AliVEvent::kMUU7 | AliVEvent::kMUS7;
-// UInt_t kTriggerMuonBarell = AliVEvent::kMUU7;
-// UInt_t kTriggerEMC   = AliVEvent::kEMC7;
-// UInt_t kTriggerHM   = AliVEvent::kHighMult;
-// UInt_t kTriggerInt = AliVEvent::kAnyINT;
+// UInt_t kTriggerMuonAll = AliTrigger::kMUL7 | AliTrigger::kMUSH7 | AliTrigger::kMUU7 | AliTrigger::kMUS7;
+// UInt_t kTriggerMuonBarell = AliTrigger::kMUU7;
+// UInt_t kTriggerEMC   = AliTrigger::kEMC7;
+// UInt_t kTriggerHM   = AliTrigger::kHighMult;
+// UInt_t kTriggerInt = AliTrigger::kAnyINT;
 // UInt_t kTriggerMask = kTriggerInt;
 
 AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE, 
-				   AliBits triggerMask = AliVEvent::kAnyINT, 
+				   AliBits triggerMask = AliTrigger::kAnyINT, 
 				   Int_t   trackCutSetTOFqa = 0, 
 				   Bool_t  flagEnableChargeSplit = kFALSE,
 				   TString cutName = "",
@@ -96,3 +96,4 @@ AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE,
   mgr->ConnectOutput(task, 5, cTriggerTOFqa);
   return task;
 }
+

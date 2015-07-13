@@ -380,12 +380,13 @@ AliAnalysisTask *AddTask_GammaConvdPhi_pp(TString v0Cut = "000001100209366300380
   }
 
   mgr->AddTask(task);
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
   mgr->ConnectInput  (task,  0, cinput );
   mgr->ConnectOutput (task,  0, coutput0);
   mgr->ConnectOutput (task,  1, coutput1);
   
   return task;
 }
+
 
 

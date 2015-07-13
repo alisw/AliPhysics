@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include <TChain.h>
@@ -90,7 +91,7 @@ void AliAnalysisTaskEventCount::UserExec(Option_t *)
 
    // assign first checks
    fCheck[kAll]               = kTRUE;
-   fCheck[kPassPhysicsSel]    = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+   fCheck[kPassPhysicsSel]    = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
    fCheck[kGoodPrimaryVertex] = kFALSE;
    fCheck[kHas1TrackAny]      = kFALSE;
    fCheck[kHas1TrackQuality]  = kFALSE;
@@ -147,3 +148,4 @@ void AliAnalysisTaskEventCount::Terminate(Option_t *)
       return;
    }
 }
+

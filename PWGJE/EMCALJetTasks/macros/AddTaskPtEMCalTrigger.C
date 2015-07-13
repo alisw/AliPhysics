@@ -1,4 +1,5 @@
 #if !defined (__CINT__) || defined (__MAKECINT__)
+#include "AliTrigger.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskPtEMCalTrigger.h"
 #include "AliESDtrackCuts.h"
@@ -33,8 +34,8 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
   }
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger("ptemcaltriggertask");
-  //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
-  pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
+  //pttriggertask->SelectCollisionCandidates(AliTrigger::kINT7 | AliTrigger::kEMC7);                          // Select both INT7 or EMC7 triggered events
+  pttriggertask->SelectCollisionCandidates(AliTrigger::kAny);
   if(!TString(period).CompareTo("LHC13f")) pttriggertask->SetSwapEta();
   mgr->AddTask(pttriggertask);
   pttriggertask->SetPtRange(2., 100.);
@@ -97,3 +98,4 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
 
   return pttriggertask;
 }
+

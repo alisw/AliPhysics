@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisTaskPIDFluctuation.h"
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
@@ -298,7 +299,7 @@ AliAnalysisTaskPIDFluctuation::AcceptEvent(AliVEvent *event) const
   fHistoEventCounter->Fill(kAllEvents);
   
   /* check physics selection */
-  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) return kFALSE;
+  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB)) return kFALSE;
   fHistoEventCounter->Fill(kPhysicsSelection);
 
   /* check primary vertex */
@@ -759,3 +760,4 @@ AliAnalysisTaskPIDFluctuation::MeasureNuDyn(const Char_t *filename, Int_t i1, In
 }
 
 //___________________________________________________________
+

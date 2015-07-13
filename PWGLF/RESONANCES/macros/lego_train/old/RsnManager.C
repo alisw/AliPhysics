@@ -13,7 +13,7 @@ TList *RsnManager() {
    Int_t mcMon             = 0;
    
    Int_t usePhysSel        = -1;
-//   usePhysSel              = AliVEvent::kMB;
+//   usePhysSel              = AliTrigger::kMB;
    Int_t useCentralityTask = 0;
    Int_t useEventPlaneTask = 0;
    
@@ -169,4 +169,5 @@ Bool_t RsnManagerLoadMacro(TString macro,TString path="") {
 
    return kFALSE;
 }
+
 

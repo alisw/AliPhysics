@@ -19,6 +19,7 @@
 //							   //
 /////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -469,7 +470,7 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
 //     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
 //     AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
 //     printf("  PS selection %d\n",hdr->IsEventSelected());
-//     if(hdr->IsEventSelected() & AliVEvent::kAnyINT){      
+//     if(hdr->IsEventSelected() & AliTrigger::kAnyINT){      
       
       AliCentrality *centrality = esd->GetCentrality();
       Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
@@ -626,7 +627,7 @@ void AliAnalysisTaskZDCpA::UserExec(Option_t */*option*/)
     // PHYSICS SELECTION
     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
-    if(hdr->IsEventSelected() & AliVEvent::kAnyINT){	  
+    if(hdr->IsEventSelected() & AliTrigger::kAnyINT){	  
            
       AliCentrality* centrality = aod->GetCentrality();
       Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
@@ -757,3 +758,4 @@ void AliAnalysisTaskZDCpA::Terminate(Option_t */*option*/)
   //if(!fOutput) printf("ERROR: fOutput not available\n");
 */
 }
+

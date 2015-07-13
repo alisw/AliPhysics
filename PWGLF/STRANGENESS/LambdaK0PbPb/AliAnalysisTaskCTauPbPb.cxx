@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <TCanvas.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -398,7 +399,7 @@ void AliAnalysisTaskCTauPbPb::UserExec(Option_t *)
   AliAnalysisManager *mgr= AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *hdr=(AliInputEventHandler*)mgr->GetInputEventHandler();
   AliBits maskIsSelected = hdr->IsEventSelected();
-  Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
+  Bool_t isSelected = (maskIsSelected & AliTrigger::kMB);
   if (!isSelected) return;
 
 
@@ -954,3 +955,4 @@ void AliAnalysisTaskCTauPbPb::Terminate(Option_t *)
     }
   }
 }
+

@@ -1,6 +1,6 @@
 AliAnalysisTaskPPJetSpectra *jetAnal = 0;
 
-AliAnalysisTaskPPJetSpectra *AddTaskPPJetSpectra(TString name = "", TString recBranch = "", TString genBranch = "", TString recBckg = "", TString genBckg= "", UInt_t fEvtSelMask=AliVEvent::kMB, Float_t fEvtClass = -1,  Int_t nVtxContCut=0, Double_t fVtxZcut = 10, Double_t fVtxRcut = 1, UInt_t nTrackFilter = 272, Double_t trackPtMin = 0.15, Double_t trackPtMax = 100., Double_t trackEtaAbs = 0.9, Double_t fJetPtMin= 5, Double_t fJetEta = 0.9, Double_t fJetZ = 0.99)
+AliAnalysisTaskPPJetSpectra *AddTaskPPJetSpectra(TString name = "", TString recBranch = "", TString genBranch = "", TString recBckg = "", TString genBckg= "", UInt_t fEvtSelMask=AliTrigger::kMB, Float_t fEvtClass = -1,  Int_t nVtxContCut=0, Double_t fVtxZcut = 10, Double_t fVtxRcut = 1, UInt_t nTrackFilter = 272, Double_t trackPtMin = 0.15, Double_t trackPtMax = 100., Double_t trackEtaAbs = 0.9, Double_t fJetPtMin= 5, Double_t fJetEta = 0.9, Double_t fJetZ = 0.99)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -48,3 +48,4 @@ AliAnalysisTaskPPJetSpectra *AddTaskPPJetSpectra(TString name = "", TString recB
   
   return task;
 }
+

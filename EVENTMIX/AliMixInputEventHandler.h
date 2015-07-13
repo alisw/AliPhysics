@@ -10,6 +10,7 @@
 #ifndef ALIMIXINPUTEVENTHANDLER_H
 #define ALIMIXINPUTEVENTHANDLER_H
 
+#include "AliTrigger.h"
 #include <TObjArray.h>
 #include <TEntryList.h>
 #include <TArrayI.h>
@@ -65,7 +66,7 @@ public:
    Long64_t                CurrentEntryMix() const { return fCurrentEntryMix; }
    Int_t                   NumberMixed() const { return fNumberMixed; }
 
-   void                    SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
+   void                    SelectCollisionCandidates(UInt_t offlineTriggerMask = AliTrigger::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
    Bool_t                  IsEventCurrentSelected();
    Bool_t                  IsMixingIfNotEnoughEvents() { return fDoMixIfNotEnoughEvents;}
 
@@ -114,3 +115,4 @@ private:
 };
 
 #endif
+

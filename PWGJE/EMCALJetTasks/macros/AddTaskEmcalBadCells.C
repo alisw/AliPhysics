@@ -1,6 +1,6 @@
 AliAnalysisTaskEmcalBadCells *AddTaskEmcalBadCells(
 						   const char *CentEst             = "V0A",
-						   Int_t       pSel                = AliVEvent::kINT7,
+						   Int_t       pSel                = AliTrigger::kINT7,
 						   TString     kEmcalCellsName     = "emcalCells",
 						   TString     tag                 = ""
 ) {
@@ -48,3 +48,4 @@ AliAnalysisTaskEmcalBadCells *AddTaskEmcalBadCells(
   return task;
 
 }
+

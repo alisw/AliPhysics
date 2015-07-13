@@ -112,11 +112,11 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  mgr->AddTask(taskFE);
  // set the trigger selection
  if (EvTrigger == "Cen")
-  taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  taskFE->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
  else if (EvTrigger == "MB")
-  taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+  taskFE->SelectCollisionCandidates(AliTrigger::kMB);
  else if (EvTrigger == "Any")
-  taskFE->SelectCollisionCandidates(AliVEvent::kAny);
+  taskFE->SelectCollisionCandidates(AliTrigger::kAny);
  
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
@@ -244,11 +244,11 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  taskQC->SetRunSet(TPCMultOut);
  // set thei triggers
  if (EvTrigger == "Cen")
-  taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  taskQC->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
  else if (EvTrigger == "MB")
-  taskQC->SelectCollisionCandidates(AliVEvent::kMB);
+  taskQC->SelectCollisionCandidates(AliTrigger::kMB);
  else if (EvTrigger == "Any")
-  taskQC->SelectCollisionCandidates(AliVEvent::kAny);
+  taskQC->SelectCollisionCandidates(AliTrigger::kAny);
  // and set the correct harmonic n
  taskQC->SetHarmonic(1);
  // set standard flow settings
@@ -323,3 +323,4 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  
  return taskQC;
 }
+

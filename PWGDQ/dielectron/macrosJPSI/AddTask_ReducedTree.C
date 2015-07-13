@@ -13,7 +13,7 @@ AliAnalysisTask *AddTask_ReducedTree(){
   
   //create task and add it to the manager
   AliAnalysisTaskReducedTree *task=new AliAnalysisTaskReducedTree("DSTTreeMaker");
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
   //if(trainConfig=="pp") task->SetRejectPileup();
   if(!hasMC) task->UsePhysicsSelection(kTRUE);
   mgr->AddTask(task);
@@ -1065,3 +1065,4 @@ void SetDielectronMCSignals(AliDielectron *die)
     }
   }
 }*/
+

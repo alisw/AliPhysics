@@ -15,6 +15,7 @@
 
 //Modified.....
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskPIDCORR.h"
 
 #include "Riostream.h"
@@ -496,7 +497,7 @@ void AliAnalysisTaskPIDCORR::UserExec(Option_t *)
 
 
 
-Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
     if(!isSelected) return;
 
 fAODVertex = fAOD->GetPrimaryVertex();
@@ -1223,3 +1224,4 @@ void AliAnalysisTaskPIDCORR::Terminate(Option_t *)
 }
  
 		  
+

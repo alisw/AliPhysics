@@ -16,6 +16,7 @@
 // Analysis task for Dijet-hadron correlations
 //
 // Author: T.Kobayashi
+#include "AliTrigger.h"
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -449,11 +450,11 @@ Bool_t AliAnalysisTaskDijetHadron::FillHistograms()
   Int_t fTriggerType =-1;
   AliBits trigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
-      if (trigger & AliVEvent::kAnyINT)      { fTriggerType=0; }
-      else if (trigger & AliVEvent::kCentral)     { fTriggerType=0; }
-      else if (trigger & AliVEvent::kSemiCentral) { fTriggerType=0; }
-      else if (trigger & AliVEvent::kEMCEGA)      { fTriggerType=1; }
-      else if (trigger & AliVEvent::kEMCEJE)      { fTriggerType=2; }
+      if (trigger & AliTrigger::kAnyINT)      { fTriggerType=0; }
+      else if (trigger & AliTrigger::kCentral)     { fTriggerType=0; }
+      else if (trigger & AliTrigger::kSemiCentral) { fTriggerType=0; }
+      else if (trigger & AliTrigger::kEMCEGA)      { fTriggerType=1; }
+      else if (trigger & AliTrigger::kEMCEJE)      { fTriggerType=2; }
 
   // Vertex cut 
   const AliVVertex* vtx = fEvent->GetPrimaryVertex();
@@ -1156,4 +1157,5 @@ Double_t AliAnalysisTaskDijetHadron::GetDPhi(Double_t mphi,Double_t vphi)
 
   return delta_phi;//delta_phi in [-1/2*Pi, 3/2*Pi]                                                                                                    
 }
+
 

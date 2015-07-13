@@ -6,6 +6,7 @@
 /// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
+#include "AliTrigger.h"
 #include "AliFemtoEventReaderESDChain.h"
 
 #include "TFile.h"
@@ -45,7 +46,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fEvent(0x0),
   fTrackType(kGlobal),
   fEstEventMult(kReferenceITSTPC), 
-  fEventTrig(AliVEvent::kMB), //trigger
+  fEventTrig(AliTrigger::kMB), //trigger
   fESDpid(0),
   fIsPidOwner(0),
   fReadV0(0),
@@ -81,7 +82,7 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fEvent(0x0),
   fTrackType(kGlobal),
   fEstEventMult(kReferenceITSTPC),
-  fEventTrig(AliVEvent::kMB), //trigger
+  fEventTrig(AliTrigger::kMB), //trigger
   fESDpid(0),
   fIsPidOwner(0),
   fReadV0(0),
@@ -1318,3 +1319,4 @@ void AliFemtoEventReaderESDChain::SetIsPileUpEvent(Bool_t ispileup)
 {
   fisPileUp = ispileup;
 }
+

@@ -25,6 +25,7 @@
 // Author: A.Dainese, andrea.dainese@pd.infn.it
 //*************************************************************************
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TTree.h>
 #include <TNtuple.h>
@@ -109,7 +110,7 @@ AliAnalysisTaskSE(name),
   fhSPDVertexDiffZPileDefault(0),
   fhSPDContributorsPile(0),
   fhSPDDispContributors(0),
-  fTriggerType(AliVEvent::kMB),
+  fTriggerType(AliTrigger::kMB),
   fhntrksSPDvsSPDcls(0),
   fhntrksZvsSPDcls(0)
 {
@@ -922,3 +923,4 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
 
   return vertexer.FindPrimaryVertex(evt);
 }
+

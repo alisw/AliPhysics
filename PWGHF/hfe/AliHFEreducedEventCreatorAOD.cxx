@@ -19,6 +19,7 @@
 // Authors:
 //   M.Fasel <M.Fasel@gsi.de>
 //
+#include "AliTrigger.h"
 #include <TArrayI.h>
 #include <TBits.h>
 #include <TFile.h>
@@ -251,10 +252,10 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   // Derive trigger 
   AliDebug(1, "Get triggers\n");
   AliBits trigger = fInputHandler->IsEventSelected();
-  if(trigger & AliVEvent::kMB) fHFEevent->SetMBTrigger();
-  if(trigger & AliVEvent::kCentral) fHFEevent->SetCentralTrigger();
-  if(trigger & AliVEvent::kSemiCentral) fHFEevent->SetCentralTrigger();
-  if(trigger & AliVEvent::kEMCEJE) fHFEevent->SetEMCALTrigger();
+  if(trigger & AliTrigger::kMB) fHFEevent->SetMBTrigger();
+  if(trigger & AliTrigger::kCentral) fHFEevent->SetCentralTrigger();
+  if(trigger & AliTrigger::kSemiCentral) fHFEevent->SetCentralTrigger();
+  if(trigger & AliTrigger::kEMCEJE) fHFEevent->SetEMCALTrigger();
 
   // Get Primary Vertex
   AliDebug(1, "Get Primary Vertex\n");
@@ -644,4 +645,5 @@ Bool_t AliHFEreducedEventCreatorAOD::IsTOFmismatch(const AliVTrack *const track,
   AliPIDResponse::EDetPidStatus status = pid->ComputeTOFProbability(track, AliPID::kSPECIESC, probs);
   return status == AliPIDResponse::kDetMismatch;
 }
+
 

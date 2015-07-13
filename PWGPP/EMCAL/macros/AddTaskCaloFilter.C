@@ -81,10 +81,10 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
     
     filter->SetTrackPtCut(minE);
 
-    //filter->SetMBTriggerMask(AliVEvent::kAnyINT);
-    filter->SetMBTriggerMask(AliVEvent::kMB); // not working for all productions
+    //filter->SetMBTriggerMask(AliTrigger::kAnyINT);
+    filter->SetMBTriggerMask(AliTrigger::kMB); // not working for all productions
     
-    filter->SelectCollisionCandidates(AliVEvent::kAny) ;
+    filter->SelectCollisionCandidates(AliTrigger::kAny) ;
     
     printf("--- Select events with 1 cluster with at least %2.2f GeV and N = %d ---\n",minE,minN);
   }
@@ -102,13 +102,13 @@ AliAnalysisTaskCaloFilter * AddTaskCaloFilter(const Bool_t  bias      = kTRUE,
     
     filter->SetTrackPtCut(-1);
     
-    filter->SelectCollisionCandidates(AliVEvent::kMB);// | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ;
+    filter->SelectCollisionCandidates(AliTrigger::kMB);// | AliTrigger::kCentral | AliTrigger::kSemiCentral ) ;
     
     printf("--- Select Min Bias events ---\n");
   }
 
   
-  //    filter->SelectCollisionCandidates(AliVEvent::kAny) ;
+  //    filter->SelectCollisionCandidates(AliTrigger::kAny) ;
       
   if(correct)   filter->SwitchOnClusterCorrection();
   else          filter->SwitchOffClusterCorrection();  

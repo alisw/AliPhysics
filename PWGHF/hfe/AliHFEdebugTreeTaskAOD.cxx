@@ -18,6 +18,7 @@
 // Authors:
 //   R.Bailhache <R.Bailhache@gsi.de>
 //
+#include "AliTrigger.h"
 #include <TBits.h>
 #include <TString.h>
 #include <TArrayI.h>
@@ -191,10 +192,10 @@ void AliHFEdebugTreeTaskAOD::UserExec(Option_t *){
 
   // Derive trigger 
   AliBits trigger = fInputHandler->IsEventSelected();
-  Bool_t isMBTrigger = trigger & AliVEvent::kMB;
-  Bool_t isCentralTrigger = trigger & AliVEvent::kCentral;
-  Bool_t isSemicentralTrigger = trigger & AliVEvent::kSemiCentral;
-  Bool_t isEMCALTrigger = trigger & AliVEvent::kEMCEJE;
+  Bool_t isMBTrigger = trigger & AliTrigger::kMB;
+  Bool_t isCentralTrigger = trigger & AliTrigger::kCentral;
+  Bool_t isSemicentralTrigger = trigger & AliTrigger::kSemiCentral;
+  Bool_t isEMCALTrigger = trigger & AliTrigger::kEMCEJE;
 
   // Get Primary Vertex
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
@@ -631,4 +632,5 @@ void AliHFEdebugTreeTaskAOD::Terminate(Option_t *){
   fDebugTree=0x0;
 
 }
+
 

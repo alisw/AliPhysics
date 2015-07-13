@@ -1,6 +1,6 @@
 AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
 					    const char* options = "",
-					    AliBits offlineTriggerMask = AliVEvent::kCentral,
+					    AliBits offlineTriggerMask = AliTrigger::kCentral,
 					    AliAnalysisTaskPi0Flow::TriggerSelection internalTriggerSelection = AliAnalysisTaskPi0Flow::kNoSelection )
 {
   //Add a task AliAnalysisTaskPi0Flow to the analysis train
@@ -22,7 +22,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
 
   // Binning
   // Central:
-  if( AliVEvent::kCentral == offlineTriggerMask ) {
+  if( AliTrigger::kCentral == offlineTriggerMask ) {
     const int nbins = 4;
     Double_t cbin[nbins+1] = {0., 5., 8., 9., 10.};
     TArrayD tbin(nbins+1, cbin);
@@ -31,7 +31,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
     task->SetCentralityBinning(tbin, tNMixed);
   }
   // SemiCentral:
-  if( AliVEvent::kSemiCentral == offlineTriggerMask ) {
+  if( AliTrigger::kSemiCentral == offlineTriggerMask ) {
     const int nbins = 8;
     Double_t cbin[nbins+1] = {10., 11., 12., 13., 15., 20., 30., 40., 50.};
     TArrayD tbin(nbins+1, cbin);
@@ -40,7 +40,7 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
     task->SetCentralityBinning(tbin, tNMixed);
   }
   // MB or PHOS Trigger:
-  if( AliVEvent::kMB == offlineTriggerMask || AliVEvent::kPHOSPb == offlineTriggerMask ) {
+  if( AliTrigger::kMB == offlineTriggerMask || AliTrigger::kPHOSPb == offlineTriggerMask ) {
     const int nbins = 8;
     Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
     TArrayD tbin(nbins+1, cbin);
@@ -68,3 +68,4 @@ AliAnalysisTaskPi0Flow* AddTaskPHOSPi0Flow (const char* name = "PHOSPi0Flow",
   
   return task;
 }
+

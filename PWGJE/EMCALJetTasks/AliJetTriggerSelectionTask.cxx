@@ -4,6 +4,7 @@
 //
 // Author: S.Aiola
 
+#include "AliTrigger.h"
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TF1.h>
@@ -24,7 +25,7 @@ AliJetTriggerSelectionTask::AliJetTriggerSelectionTask() :
   AliAnalysisTaskEmcalJet("AliJetTriggerSelectionTask", kFALSE),
   fEnergyThreshold(0),
   fMaxDistance2(0.0225),
-  fTriggerBits(AliVEvent::kEMCEJE),
+  fTriggerBits(AliTrigger::kEMCEJE),
   fTaskSettingsOk(kFALSE),
   fNTriggers(0),
   fVZERO(0),
@@ -44,7 +45,7 @@ AliJetTriggerSelectionTask::AliJetTriggerSelectionTask(const char *name) :
   AliAnalysisTaskEmcalJet(name, kFALSE),
   fEnergyThreshold(0),
   fMaxDistance2(0.0225),
-  fTriggerBits(AliVEvent::kEMCEJE),
+  fTriggerBits(AliTrigger::kEMCEJE),
   fTaskSettingsOk(kFALSE),
   fNTriggers(0),
   fVZERO(0),
@@ -183,3 +184,4 @@ Bool_t AliJetTriggerSelectionTask::IsTriggerJet(AliEmcalJet *jet)
   
   return kFALSE;
 }
+

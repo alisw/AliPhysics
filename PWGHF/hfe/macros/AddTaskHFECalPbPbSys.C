@@ -28,7 +28,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   AliAnalysisTaskHFECal *hfetask = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetask);
   // semi-central
-  hfetask->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+  hfetask->SelectCollisionCandidates(AliTrigger::kSemiCentral);
   TString containerName3 = mgr->GetCommonFileName();
   containerName3 += ":PWGHF_hfeCalSemiCentral";
   containerName3 += ID;
@@ -40,7 +40,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   // central
   AliAnalysisTaskHFECal *hfetask1 = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetask1);
-  hfetask1->SelectCollisionCandidates(AliVEvent::kCentral);
+  hfetask1->SelectCollisionCandidates(AliTrigger::kCentral);
   TString containerName1 = mgr->GetCommonFileName();
   containerName1 += ":PWGHF_hfeCalCentral";
   containerName1 += ID;
@@ -52,7 +52,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   //trigger
   AliAnalysisTaskHFECal *hfetaskTrig = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetaskTrig);
-  hfetaskTrig->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  hfetaskTrig->SelectCollisionCandidates(AliTrigger::kEMCEGA);
   TString containerName2 = mgr->GetCommonFileName();
   containerName2 += ":PWGHF_hfeCalkTrig";
   containerName2 += ID;
@@ -65,7 +65,7 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
   //MB trigger
   AliAnalysisTaskHFECal *hfetaskMB = ConfigHFECal(MCthere,MassConst,MassWidthCut,MassCal,MassNonlinear,asspTCut,angleCut,MassCut,NsigCut,0);
   mgr->AddTask(hfetaskMB);
-  hfetaskMB->SelectCollisionCandidates(AliVEvent::kMB);
+  hfetaskMB->SelectCollisionCandidates(AliTrigger::kMB);
   TString containerName4 = mgr->GetCommonFileName();
   containerName4 += ":PWGHF_hfeCalkMB";
   containerName4 += ID;
@@ -77,3 +77,4 @@ AliAnalysisTask *AddTaskHFECalPbPbSys(Bool_t MassConst, Bool_t MassWidthCut, Boo
 
   return NULL;
 }
+

@@ -21,6 +21,7 @@
 //
 // Author: A.Dainese, andrea.dainese@pd.infn.it
 /////////////////////////////////////////////////////////////
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include "AliVEvent.h"
@@ -60,7 +61,7 @@ fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
-fTriggerMask(AliVEvent::kAnyINT),
+fTriggerMask(AliTrigger::kAnyINT),
 fUseOnlyOneTrigger(kFALSE),
 fTrackCuts(0),
 fnPtBins(1),
@@ -1073,16 +1074,16 @@ void AliRDHFCuts::PrintTrigger() const{
   printf("Selected trigger classes: %s %s\n",fTriggerClass[0].Data(),fTriggerClass[1].Data());
 
   cout<<" Trigger selection pattern: ";
-  if( fTriggerMask & AliVEvent::kAny ) cout<<" kAny ";
-  if( fTriggerMask & AliVEvent::kAnyINT ) cout<<" kAnyINT ";
-  if( fTriggerMask & AliVEvent::kINT7 ) cout<<" kINT7 ";
-  if( fTriggerMask & AliVEvent::kMB ) cout<<" kMB ";
-  if( fTriggerMask & AliVEvent::kCINT5 ) cout<<" kCINT5 ";
-  if( fTriggerMask & AliVEvent::kCentral ) cout<<" kCentral ";
-  if( fTriggerMask & AliVEvent::kSemiCentral ) cout<<" kSemiCentral ";
-  if( fTriggerMask & AliVEvent::kEMCEGA ) cout<<" kEMCEGA ";
-  if( fTriggerMask & AliVEvent::kHighMult ) cout<<" kHighMult ";
-  if( fTriggerMask & AliVEvent::kFastOnly ) cout<<" kFastOnly ";
+  if( fTriggerMask & AliTrigger::kAny ) cout<<" kAny ";
+  if( fTriggerMask & AliTrigger::kAnyINT ) cout<<" kAnyINT ";
+  if( fTriggerMask & AliTrigger::kINT7 ) cout<<" kINT7 ";
+  if( fTriggerMask & AliTrigger::kMB ) cout<<" kMB ";
+  if( fTriggerMask & AliTrigger::kCINT5 ) cout<<" kCINT5 ";
+  if( fTriggerMask & AliTrigger::kCentral ) cout<<" kCentral ";
+  if( fTriggerMask & AliTrigger::kSemiCentral ) cout<<" kSemiCentral ";
+  if( fTriggerMask & AliTrigger::kEMCEGA ) cout<<" kEMCEGA ";
+  if( fTriggerMask & AliTrigger::kHighMult ) cout<<" kHighMult ";
+  if( fTriggerMask & AliTrigger::kFastOnly ) cout<<" kFastOnly ";
   cout << endl<< endl;
 
 }
@@ -1565,3 +1566,4 @@ Bool_t AliRDHFCuts::RecomputePrimaryVertex(AliAODEvent* event) const{
 
    return kTRUE;
 }
+

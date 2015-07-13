@@ -16,6 +16,7 @@ class AliVEvent;
 class AliSpectraBothTrackCuts;
 //class AliSpectraBothHistoManager;
 
+#include "AliTrigger.h"
 #include "TH1I.h"
 #include "TNamed.h"
 #include "AliSpectraBothTrackCuts.h"
@@ -41,7 +42,7 @@ kNVtxCuts};
 enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};	
 
   // Constructors
- AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentEstimator(""), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
+ AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentEstimator(""), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliTrigger::kMB),fTrackCuts(0),
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0),fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),fNMCProcessType(-1),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
 {
 
@@ -59,7 +60,7 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   void 	SetUseSDDPatchforLHC11a(Int_t useSDDPatchforLHC11a) {fUseSDDPatchforLHC11a=useSDDPatchforLHC11a;} ;  
   Int_t GetUseSDDPatchforLHC11a() {return fUseSDDPatchforLHC11a;};   
 
-   void   SetTriggerSettings(AliBits triggerSettings = AliVEvent::kMB) {fTriggerSettings = triggerSettings;};
+   void   SetTriggerSettings(AliBits triggerSettings = AliTrigger::kMB) {fTriggerSettings = triggerSettings;};
    AliBits  GetTriggerSettings() {return fTriggerSettings;};
 
 
@@ -206,4 +207,5 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   
 };
 #endif
+
 

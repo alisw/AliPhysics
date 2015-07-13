@@ -73,7 +73,7 @@ AliAnalysisTaskEmcalJetBtagSV *AddTaskEmcalJetBtagSV(const char *trackcontname =
     // Set centrality 
     cuts->SetMinCentrality(minC);
     cuts->SetMaxCentrality(maxC);
-    cuts->SetTriggerMask(AliVEvent::kAny);
+    cuts->SetTriggerMask(AliTrigger::kAny);
     cuts->SetTriggerClass(trigClass);
     cuts->PrintAll();
     hfTask->SetCuts(cuts);
@@ -113,12 +113,12 @@ Bool_t DefineCutsTask(AliAnalysisTaskEmcalJetBtagSV *task, Float_t minC, Float_t
     cuts->SetMinCentrality(minC);
     cuts->SetMaxCentrality(maxC);
     cuts->SetUsePhysicsSelection(kFALSE);
-    if (corrections_mode) cuts->SetTriggerMask(AliVEvent::kAny);
+    if (corrections_mode) cuts->SetTriggerMask(AliTrigger::kAny);
     else {cuts->SetOptPileup(1);
     cuts->ConfigurePileupCuts(5,0.8);
     // cuts->SetUsePhysicsSelection(kFALSE);
     cuts->SetTriggerClass("CINT7");
-    cuts->SetTriggerMask(AliVEvent::kINT7);
+    cuts->SetTriggerMask(AliTrigger::kINT7);
     } // pPb minbias only
     task->SetCuts(cuts);
     delete cuts;
@@ -159,5 +159,6 @@ Bool_t DefineCutsTagger(AliHFJetsTaggingVertex *tg){
     return kTRUE;
 
 }
+
 
 

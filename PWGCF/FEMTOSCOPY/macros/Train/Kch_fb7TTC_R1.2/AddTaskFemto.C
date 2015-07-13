@@ -57,10 +57,10 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
   //10-90% only two triggers: SemiCentral and MB
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
-  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
+  //taskfemto->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kSemiCentral);// this a new line for train
+  taskfemto->SelectCollisionCandidates(AliTrigger::kINT7);
   //0-10 % all three triggers
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
+  //taskfemto->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -82,3 +82,4 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
    // Return task pointer at the end
    return taskfemto;
 }
+

@@ -19,6 +19,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <iostream>
 using namespace std;
 
@@ -60,7 +61,7 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree() :
   fListDielectron(),
   fListHistos(),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fRejectPileup(kFALSE),
   fEventFilter(0x0),
   fTrackFilter(0x0),
@@ -92,7 +93,7 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
   fListDielectron(),
   fListHistos(),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fRejectPileup(kFALSE),
   fEventFilter(0x0),
   fTrackFilter(0x0),
@@ -190,7 +191,7 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *option)
   fFlowTrackCuts->SetEvent(InputEvent());
   
   // Was event selected ?
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   if(fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
@@ -273,7 +274,7 @@ void AliAnalysisTaskCorrelationTree::FillEventInfo()
   Bool_t isAOD = (event->IsA()==AliAODEvent::Class());
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   if(inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
@@ -709,3 +710,4 @@ void AliAnalysisTaskCorrelationTree::FinishTaskOutput()
   fTreeFile->Write();
   fTreeFile->Close();
 }
+

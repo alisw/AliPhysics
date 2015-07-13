@@ -28,12 +28,12 @@ To clean:
 
 */
 
-//UInt_t kTriggerInt=AliVEvent::kMB;
+//UInt_t kTriggerInt=AliTrigger::kMB;
 //UInt_t *kTriggerInt=new UInt_t[2];
-//kTriggerInt[0]=AliVEvent::kMB;
-//kTriggerInt[1]=AliVEvent::kINT7;
+//kTriggerInt[0]=AliTrigger::kMB;
+//kTriggerInt[1]=AliTrigger::kINT7;
 
-UInt_t kTriggerInt[2] = { AliVEvent::kMB, AliVEvent::kINT7 };
+UInt_t kTriggerInt[2] = { AliTrigger::kMB, AliTrigger::kINT7 };
 Float_t minCent[6] = { 0.0, 5.0, 10.0, 20.0, 40.0, 60.0 };
 Float_t maxCent[6] = { 5.0, 10.0, 20.0, 40.0, 60.0, 80.0 };
 void runAAF(Int_t nFilesMax, char* type = "local", char* textFileName = "esd.txt", Int_t task = 2);
@@ -653,3 +653,4 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
 
 
  */
+

@@ -1,6 +1,7 @@
 #ifndef ALIGLOALGTASK_H
 #define ALIGLOALGTASK_H
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskSE.h"
 #include <TString.h>
 #include <TStopwatch.h>
@@ -20,7 +21,7 @@ class AliGloAlgTask : public AliAnalysisTaskSE {
   virtual void  Terminate(Option_t *);
   //
   UInt_t     GetTriggerSelection()                            const {return fTrigSel;}
-  void       SetTriggerSelection(UInt_t sel=AliVEvent::kAny)        {fTrigSel = sel;}
+  void       SetTriggerSelection(UInt_t sel=AliTrigger::kAny)        {fTrigSel = sel;}
   //
   void        SetConfMacroName(const char* nm="alignConf.C")        {fConfMacroName = nm;}
   const char* GetConfMacroName()                              const {return fConfMacroName.Data();}
@@ -54,3 +55,4 @@ class AliGloAlgTask : public AliAnalysisTaskSE {
 
 
 #endif
+

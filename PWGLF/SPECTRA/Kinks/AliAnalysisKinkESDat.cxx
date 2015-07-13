@@ -13,6 +13,7 @@
 //     Nov 2014 : Nominal R->120-210 cm,  Rapidity kaon 0.5, eta< 0.8
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -324,7 +325,7 @@ void AliAnalysisKinkESDat::UserExec(Option_t *)
 //
 //==================check of Physics selection?
        Bool_t isSelected =
-((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB;
+((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliTrigger::kMB;
 
          if ( isSelected ==kFALSE) return;   //  24/6/11 apo MF
 //
@@ -736,3 +737,4 @@ const AliESDVertex* AliAnalysisKinkESDat::GetEventVertex(const AliESDEvent* esd)
      return 0;
   }
 }
+

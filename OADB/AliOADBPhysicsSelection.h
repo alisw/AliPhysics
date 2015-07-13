@@ -10,19 +10,19 @@
 //     Author: Michele Floris, CERN
 //    
 // This class contains the parameters needed to configure the physics
-// selection. The online trigger class must be associated to an
-// offline trigger mask, as defined in
-// AliVEvent::EOfflineTriggerTypes.  The offline condition, even for
+// selection. The online trigger class must be associated to an offline
+// trigger mask, as defined in AliTrigger.  The offline condition, even for
 // the same trigger mask, can be different for every different online
 // trigger, so it must be given as a parameter in the Add...Class
 // methods.  It's up to the user to set the appropriate offline
 // conditions when filling the class.
 // -------------------------------------------------------------------------
 
-#include <TNamed.h>
-#include "AliVEvent.h"
+#include "TNamed.h"
 #include "TList.h"
 #include "TMap.h"
+#include "TObjString.h"
+#include "AliBits.h"
 
 class TObjArray;
 class TArrayI;
@@ -40,11 +40,6 @@ class AliOADBPhysicsSelection : public TNamed {
   AliOADBPhysicsSelection& operator=(const AliOADBPhysicsSelection& cont);
   void Init();
   // Getters
-  // These take a mask of trigger bits, because you can activate several triggers at once
-  // TList * GetCollTrigClass(AliVEvent::EOfflineTriggerTypes trig) const; 
-  // TList * GetBGTrigClass(AliVEvent::EOfflineTriggerTypes trig) const;    
-  // TList * GetTrigClass(AliVEvent::EOfflineTriggerTypes trig, TList ** listClasses) const ; 
-
   TList * GetCollTrigClass(UInt_t triggerBit) { return fCollTrigClasses[triggerBit];}
   TList * GetBGTrigClass(UInt_t triggerBit)   { return fBGTrigClasses[triggerBit];  }
   const TString GetBeamSide (const char * trigger) ;
@@ -77,8 +72,8 @@ protected:
   UInt_t fNtriggerBits; // Size of the arrays below. Initialized using NTRIGGERBITS
   UInt_t fNtriggerLogics; // number of possible trigger logics, initialized using NTRIGGERLOGICS. To be increased if needed.
 
-  TList ** fCollTrigClasses  ; //[fNtriggerBits] Array of collision trigger classes, corresponding to the different trigger bits defined in AliVEvent
-  TList ** fBGTrigClasses    ; //[fNtriggerBits] Array of background trigger classes, corresponding to the different trigger bits defined in AliVEvent
+  TList ** fCollTrigClasses  ; //[fNtriggerBits] Array of collision trigger classes, corresponding to the different trigger bits defined in AliTrigger
+  TList ** fBGTrigClasses    ; //[fNtriggerBits] Array of background trigger classes, corresponding to the different trigger bits defined in AliTrigger
   TObjString * fHardwareTrigger ; //[fNtriggerLogics] Array of online trigger condition, corresponding to the different trigger logics set in Add...TriggerClass
   TObjString * fOfflineTrigger  ; //[fNtriggerLogics] Array of offline trigger condition, corresponding to the different trigger logics set in Add...TriggerClass
   TMap * fBeamSide;             // Map from the trigger classname to the beam side ("B", "A", "C", "E", "AC")

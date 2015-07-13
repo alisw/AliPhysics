@@ -19,6 +19,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TH1D.h>
 
@@ -43,7 +44,7 @@ AliAnalysisTaskDielectronME::AliAnalysisTaskDielectronME() :
   fListCF(),
   fPoolDepth(2),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fEventStat(0x0)
 {
   //
@@ -59,7 +60,7 @@ AliAnalysisTaskDielectronME::AliAnalysisTaskDielectronME(const char *name) :
   fListCF(),
   fPoolDepth(2),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kMB),
+  fTriggerMask(AliTrigger::kMB),
   fEventStat(0x0)
 {
   //
@@ -128,7 +129,7 @@ void AliAnalysisTaskDielectronME::UserExec(Option_t *)
   }
 
   // Was event selected ?
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   if( fSelectPhysics && inputHandler && inputHandler->GetEventSelection() ) {
     isSelected = inputHandler->IsEventSelected();
     isSelected&=fTriggerMask;
@@ -182,4 +183,5 @@ void AliAnalysisTaskDielectronME::FinishTaskOutput()
     die->SaveDebugTree();
   }
 }
+
 

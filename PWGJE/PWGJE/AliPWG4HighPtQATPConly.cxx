@@ -25,6 +25,7 @@
 #ifndef ALIPWG4HIGHPTQATPCONLY_CXX
 #define ALIPWG4HIGHPTQATPCONLY_CXX
 
+#include "AliTrigger.h"
 #include "AliPWG4HighPtQATPConly.h"
 
 #include "TVector3.h"
@@ -861,7 +862,7 @@ Bool_t AliPWG4HighPtQATPConly::SelectEvent() {
 
   //Trigger
   AliBits isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  if(!(isSelected&AliVEvent::kMB)) { //Select collison candidates
+  if(!(isSelected&AliTrigger::kMB)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     fNEventReject->Fill("Trigger",1);
     selectEvent = kFALSE;
@@ -1108,3 +1109,4 @@ void AliPWG4HighPtQATPConly::Terminate(Option_t *)
 }
 
 #endif
+

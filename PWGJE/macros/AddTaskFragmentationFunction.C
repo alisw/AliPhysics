@@ -175,7 +175,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
   if(!filterMaskTracks) task->SetFilterMask(filterMask);
   else task->SetFilterMask(filterMaskTracks);
   
-  task->SetEventSelectionMask(AliVEvent::kMB);
+  task->SetEventSelectionMask(AliTrigger::kMB);
   task->SetEventClass(eventClass);
   
   // Set default parameters 
@@ -258,3 +258,4 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
   
   return task;
 }
+

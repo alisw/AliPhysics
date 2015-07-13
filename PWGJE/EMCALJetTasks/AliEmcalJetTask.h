@@ -12,6 +12,7 @@ namespace fastjet {
   class PseudoJet;
 }
 
+#include "AliTrigger.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliFJWrapper.h"
@@ -108,7 +109,7 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   Int_t                  GetIndexSub(Double_t phi_sub, std::vector<fastjet::PseudoJet>& constituents_unsub);
 
   Bool_t                 IsLocked() const;
-  void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
+  void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliTrigger::kMB);
   void                   SetRadius(Double_t r);
   void                   SetType(Int_t t);           
   void                   SelectPhysicalPrimaries(Bool_t s);
@@ -177,3 +178,4 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   ClassDef(AliEmcalJetTask, 19) // Jet producing task
 };
 #endif
+

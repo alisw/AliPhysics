@@ -21,6 +21,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TVector3;
+#include "AliTrigger.h"
 #include "THnSparse.h"
  
 class AliESDpid;
@@ -72,7 +73,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 
 
         TString         fAnalysisType;                  // "ESD" or "AOD" analysis type
-        TString         fTriggerMaskType;               // type of trigger to use in UserExec : AliVEvent::kMB or kHighMult ?
+        TString         fTriggerMaskType;               // type of trigger to use in UserExec : AliTrigger::kMB or kHighMult ?
         Short_t         fCollidingSystems;              // 0 = pp collisions or 1 = AA collisions
 
         AliESDpid       *fESDpid;                       // Tool data member to manage the TPC Bethe-Bloch info
@@ -248,3 +249,4 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
 };
 
 #endif
+

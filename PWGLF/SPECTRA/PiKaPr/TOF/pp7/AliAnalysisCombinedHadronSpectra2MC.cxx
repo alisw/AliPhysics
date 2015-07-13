@@ -24,6 +24,7 @@
 
 
 
+#include "AliTrigger.h"
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -836,7 +837,7 @@ void AliAnalysisCombinedHadronSpectra2MC::UserExec(Option_t *)
 
 
   Bool_t isSelected = kFALSE;
-  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kMB);
+  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliTrigger::kMB);
 
   if (!isSelected) {
     return;
@@ -1330,4 +1331,5 @@ void AliAnalysisCombinedHadronSpectra2MC::Terminate(Option_t *)
   
   system("touch ok.job");
 }
+
 

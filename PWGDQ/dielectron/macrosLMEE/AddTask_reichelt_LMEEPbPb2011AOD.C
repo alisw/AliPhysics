@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEoutput.root", 
  Bool_t flag1=kFALSE, Bool_t flag2=kFALSE, Bool_t getFromAlien=kFALSE, 
- AliBits triggerNames=(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral), AliBits collCands=AliVEvent::kAny) 
+ AliBits triggerNames=(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral), AliBits collCands=AliTrigger::kAny) 
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -103,3 +103,4 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   
   return task;
 }
+

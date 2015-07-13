@@ -57,7 +57,7 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT(TString configMacroName, const char *co
   //
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
   //2010 triggers: MB only
-  taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
+  taskfemto->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -79,3 +79,4 @@ AliAnalysisTaskFemto *AddTaskFemtoKchHBT(TString configMacroName, const char *co
    // Return task pointer at the end
    return taskfemto;
 }
+

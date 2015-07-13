@@ -4,6 +4,7 @@
 //
 // Author: B. Sahlmueller, based on code by C. Loizides
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEMCALPi0Gamma.h"
 #include <TAxis.h>
 #include <TChain.h>
@@ -1355,7 +1356,7 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
    offtrigger =  fAodEv->GetHeader()->GetOfflineTrigger();
    }
    */
-  if (!fMcMode && (offtrigger & AliVEvent::kFastOnly)) {
+  if (!fMcMode && (offtrigger & AliTrigger::kFastOnly)) {
     AliWarning(Form("EMCAL not in fast only partition"));
     return;
   }
@@ -1513,9 +1514,9 @@ void AliAnalysisTaskEMCALPi0Gamma::UserExec(Option_t *)
       fIsLedEvent = kTRUE;
     } else {
       if ((runnumber>=146858) && (runnumber<=146860)) {
-	if ((fInputHandler->IsEventSelected() & AliVEvent::kMB) && (nCellCount[3]>=21))
+	if ((fInputHandler->IsEventSelected() & AliTrigger::kMB) && (nCellCount[3]>=21))
 	  fIsLedEvent = kTRUE;
-	else if ((fInputHandler->IsEventSelected() & AliVEvent::kEMC1) && (nCellCount[3]>=35))
+	else if ((fInputHandler->IsEventSelected() & AliTrigger::kEMC1) && (nCellCount[3]>=35))
 	  fIsLedEvent = kTRUE;
       }
     }
@@ -2682,7 +2683,7 @@ void AliAnalysisTaskEMCALPi0Gamma::FillNtuple()
     Bool_t v0B = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0C);
     Bool_t v0A = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0A);
     fHeader->fV0And        = v0A && v0B;
-    fHeader->fIsHT         = (fHeader->fOffTriggers & AliVEvent::kEMC1) || (fHeader->fOffTriggers & AliVEvent::kEMC7);
+    fHeader->fIsHT         = (fHeader->fOffTriggers & AliTrigger::kEMC1) || (fHeader->fOffTriggers & AliTrigger::kEMC7);
     am->LoadBranch("SPDPileupVertices");
     am->LoadBranch("TrkPileupVertices");
     fHeader->fIsPileup     = fEsdEv->IsPileupFromSPD(3,0.8);
@@ -4555,5 +4556,6 @@ V0Hit::V0Hit()
 : thishit()
 {
 }
+
 
 

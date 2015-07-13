@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TCanvas.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
@@ -488,7 +489,7 @@ void AliAnalysisPionKinksESD::UserExec(Option_t *) {
 
 
 //----------------------------- Physics selection ------------------------------//
-	Bool_t IsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB;
+	Bool_t IsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliTrigger::kMB;
 	if ( IsSelected ==kFALSE) return;
 	
 //--------------- Data Multiplicity after Physics selection --------------------//
@@ -809,4 +810,5 @@ Bool_t AliAnalysisPionKinksESD::IsPrimaryTrack(AliESDtrack* ESDtrack) const { //
 	if (!fMaxDCAtoVtxCut->AcceptTrack(ESDtrack))	return kFALSE;
 	else return kTRUE;
 }
+
 

@@ -2,7 +2,7 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
 				    TString cfg="ConfigJpsi_jb_PbPb.C",
 				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
-				    AliBits triggers=AliVEvent::kAnyINT
+				    AliBits triggers=AliTrigger::kAnyINT
 				    ){
 
   //get the current analysis manager
@@ -56,7 +56,7 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
   configFile+=cfg.Data();
 
   // trigger selection
-  ULong64_t triggerSets[]={AliVEvent::kAnyINT};
+  ULong64_t triggerSets[]={AliTrigger::kAnyINT};
   const char* triggerNames[]={"MinBias"};
   Int_t j=0;
 
@@ -131,3 +131,4 @@ AliAnalysisTask *AddTask_pdill_JPsi(TString config="1",
 
   return task;
 }
+

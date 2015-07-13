@@ -75,7 +75,7 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(Bool_t emb = kTRUE, Char_t* t
    Printf("Branch2: %s",branch2.Data());
 
    task->SetBranchNames(branch1,branch2);
-   //task->SetOfflineTrgMask(AliVEvent::kMB);
+   //task->SetOfflineTrgMask(AliTrigger::kMB);
 
    task->SetEvtClassMin(eventClassMin);
    task->SetEvtClassMax(eventClassMax);
@@ -137,7 +137,7 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(TString branch1 = "", TString
    Printf("Branch3: %s",branch3.Data());
 
    task->SetBranchNames(branch1,branch2,branch3);
-   task->SetOfflineTrgMask(AliVEvent::kMB);
+   task->SetOfflineTrgMask(AliTrigger::kMB);
 
    task->SetEvtClassMin(eventClassMin);
    task->SetEvtClassMax(eventClassMax);
@@ -174,4 +174,5 @@ AliAnalysisTaskJetResponseV2* AddTaskJetResponseV2(TString branch1 = "", TString
 
    return task;
 }
+
 

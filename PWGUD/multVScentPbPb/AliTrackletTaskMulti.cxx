@@ -26,6 +26,7 @@
 ...
 */
 
+#include "AliTrigger.h"
 #include "TFile.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -237,7 +238,7 @@ AliTrackletTaskMulti::AliTrackletTaskMulti(const char *name)
     fNStdCut(1.),
     fMCV0Scale(1.),
     //
-    fTrigSel(AliVEvent::kINT7),
+    fTrigSel(AliTrigger::kINT7),
     //
     fMultReco(0),
     fRPTree(0),
@@ -475,7 +476,7 @@ void AliTrackletTaskMulti::UserExec(Option_t *)
   // =============================================================================>>>
   //
   Int_t trg = handler->IsEventSelected();
-  fIsSelected = trg & fTrigSel; //AliVEvent::kINT7;
+  fIsSelected = trg & fTrigSel; //AliTrigger::kINT7;
   /*
   if (!fUseMC) {
     TString trigStr(esd->GetFiredTriggerClasses());
@@ -1703,3 +1704,4 @@ void AliTrackletTaskMulti::SetCentPercentiles(Double_t *arr, Int_t nbins)
   }
   //
 }
+

@@ -51,6 +51,7 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "TList.h"
 #include "TH1.h"
@@ -909,20 +910,20 @@ void AliAnalysisTaskExtractV0::UserExec(Option_t *)
     AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
     Bool_t isSelectedExtra = kTRUE; //extra sel, default YES
-    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+    isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
 
     if( fkSkipTrigger == kFALSE ) {
         //pA triggering: CINT7
-        if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+        if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliTrigger::kINT7) == AliTrigger::kINT7;
 
         //Extra selection applies if with/without SDD is to be dealth with
         if( fkFastOnly == "kFastOnly") {
             //If not kFastOnly, isSelectedExtra will be kFALSE; procedure will reject it
-            isSelectedExtra = (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly;
+            isSelectedExtra = (maskIsSelected & AliTrigger::kFastOnly) == AliTrigger::kFastOnly;
         }
         if( fkFastOnly == "NotkFastOnly") {
             //If not kFastOnly, isSelectedExtra will be kTRUE; procedure will accept it
-            isSelectedExtra = !( (maskIsSelected & AliVEvent::kFastOnly) == AliVEvent::kFastOnly );
+            isSelectedExtra = !( (maskIsSelected & AliTrigger::kFastOnly) == AliTrigger::kFastOnly );
         }
 
         //Standard Min-Bias Selection
@@ -1416,3 +1417,4 @@ void AliAnalysisTaskExtractV0::CheckChargeV0(AliESDv0 *v0)
     }
     return;
 }
+

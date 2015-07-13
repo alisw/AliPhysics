@@ -93,7 +93,7 @@ void MyAnalysisMacroUni
   //  /*
   //gROOT->ProcessLine(".L AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask* physicsSelectionTask = AddTaskPhysicsSelection(useMC,0);
-  mltTask->SelectCollisionCandidates();//AliVEvent::kMB);
+  mltTask->SelectCollisionCandidates();//AliTrigger::kMB);
   //
   //  */
   // Run analysis
@@ -260,10 +260,11 @@ void AddPhysicsSelection(Bool_t isMC)
     */
   } 
   // if you use the following line, your task only gets the selected events
-  //  task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+  //  task->SelectCollisionCandidates(AliTrigger::kUserDefined);
   //  task->SelectCollisionCandidates();
   //
   //Alternatively, in the UserExec of your task:
-  //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kUserDefined);
+  //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kUserDefined);
   //
 }
+

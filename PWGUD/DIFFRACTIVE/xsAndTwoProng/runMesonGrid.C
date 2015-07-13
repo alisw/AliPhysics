@@ -193,7 +193,7 @@ void runMeson(
 	printf("taskConfig=0x%x\n", taskConfig);
 
 	AliAnalysisTaskSE* task = new AliAnalysisTaskCDMeson(taskname, taskConfig);
-	task->SelectCollisionCandidates(AliVEvent::kMB);
+	task->SelectCollisionCandidates(AliTrigger::kMB);
 	mgr->AddTask(task);
 
 	// INPUT ---------------------------------------------------------------------
@@ -397,3 +397,4 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname,
 
 	return plugin;
 }
+

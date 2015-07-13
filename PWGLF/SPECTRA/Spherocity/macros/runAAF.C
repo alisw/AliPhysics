@@ -18,7 +18,7 @@ Bool_t esdAna     = kTRUE; //FALSE if AOD
 Bool_t analysisMC = kFALSE;
 Bool_t ispileuprej= kFALSE;
 char *centralityEstimator = "V0A";
-UInt_t kTriggerInt = AliVEvent::kMB;//pPb: kINT7, other kMB
+UInt_t kTriggerInt = AliTrigger::kMB;//pPb: kINT7, other kMB
 
 void runAAF(Int_t nFilesMax, char* textFileName = "esd.txt", Int_t task = 2);
 TChain* CreateChainCAF(Int_t nFilesMax, TFileCollection* coll, char* treeName);
@@ -272,6 +272,7 @@ TChain* CreateChainLocal(Int_t nFilesMax, char* filename, char* treeName)
 
   return chain;
 }
+
 
 
 

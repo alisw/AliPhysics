@@ -1,4 +1,5 @@
 #ifndef __CINT__
+#include "AliTrigger.h"
 #include "AliAnalysisTaskCorrelation3p.h"
 #endif
 AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreePartTracks",
@@ -11,7 +12,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
 						      const Double_t Acceptancecut = 0.9,
 						      const Double_t MaxNumberOfTracks = 200,
 						      const char* period = "10b",
-						      UInt_t offlineTriggerMask = AliVEvent::kMB,
+						      UInt_t offlineTriggerMask = AliTrigger::kMB,
 						      const Int_t MaxNEventsMix = 1000,
 						      const Int_t MinNTracksMix = 100,
 						      const Int_t NMBins = 7,
@@ -105,3 +106,4 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracks (const char* name = "ThreeP
 
   return task;
 };
+

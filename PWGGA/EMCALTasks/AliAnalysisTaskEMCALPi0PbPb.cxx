@@ -4,6 +4,7 @@
 //
 // Author: C.Loizides, E.Braidot
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEMCALPi0PbPb.h"
 #include <TAxis.h>
 #include <TChain.h>
@@ -605,7 +606,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     am->LoadBranch("header");
     offtrigger =  ((AliVAODHeader*)fAodEv->GetHeader())->GetOfflineTrigger();
   }
-  if (!fMcMode && (offtrigger & AliVEvent::kFastOnly)) {
+  if (!fMcMode && (offtrigger & AliTrigger::kFastOnly)) {
     AliWarning(Form("EMCAL not in fast only partition"));
     return;
   }
@@ -1658,7 +1659,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     Bool_t v0A = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0A);
     fHeader->fV0And        = v0A && v0B;
     // ---> EK: fOffTriggers not compatible with AliBits
-    // fHeader->fIsHT         = (fHeader->fOffTriggers & AliVEvent::kEMC1) || (fHeader->fOffTriggers & AliVEvent::kEMC7);
+    // fHeader->fIsHT         = (fHeader->fOffTriggers & AliTrigger::kEMC1) || (fHeader->fOffTriggers & AliTrigger::kEMC7);
     // <--- EK
     am->LoadBranch("SPDPileupVertices");
     am->LoadBranch("TrkPileupVertices");
@@ -2544,3 +2545,4 @@ void AliStaCluster::GetMom(TLorentzVector& p, AliStaVertex *vertex)
   }
   GetMom(p, v);
 }
+

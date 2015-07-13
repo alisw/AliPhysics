@@ -23,6 +23,7 @@
 #define AliAnalysisTaskV0ForRAA_cxx
 
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskV0ForRAA.h"
 
 #include "Riostream.h"
@@ -2365,8 +2366,8 @@ void AliAnalysisTaskV0ForRAA::UserExec(Option_t *) {
     //   TString trCl = fESD->GetFiredTriggerClasses();
     //if(!(trCl.Contains("ALLNOTRD")) && fSelSDD) return;
     AliBits maskSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    if((maskSel& AliVEvent::kFastOnly) && fSelSDD) return;
-    if(!(maskSel& AliVEvent::kFastOnly) && fSelNoSDD) return;
+    if((maskSel& AliTrigger::kFastOnly) && fSelSDD) return;
+    if(!(maskSel& AliTrigger::kFastOnly) && fSelNoSDD) return;
 	 
 
     //-- Monitor event cuts --//
@@ -4773,3 +4774,4 @@ Int_t  AliAnalysisTaskV0ForRAA::FindPDGCode(AliStack *stackRec,AliESDtrack *trac
   }
   
 }
+

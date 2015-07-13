@@ -11,6 +11,7 @@
 // Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
+#include "AliTrigger.h"
 #include <TString.h>
 
 #include "AliAnalysisCuts.h"
@@ -65,119 +66,119 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliBits GetTriggerMask() {return fTriggerMask;}
   Bool_t GetUseOnlyOneTrigger() {return fUseOnlyOneTrigger;}
 
-  void SetUseAnyTrigger() {fTriggerMask=AliVEvent::kAny;}
+  void SetUseAnyTrigger() {fTriggerMask=AliTrigger::kAny;}
   void EnableMBTrigger(){
-    fTriggerMask|=AliVEvent::kMB;
+    fTriggerMask|=AliTrigger::kMB;
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableMBTrigger(){
-    fTriggerMask=AliVEvent::kMB;
+    fTriggerMask=AliTrigger::kMB;
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseMBTriggerExclusively(){
-    fTriggerMask=AliVEvent::kMB;
+    fTriggerMask=AliTrigger::kMB;
     fUseOnlyOneTrigger=kTRUE;
   }
   void EnableCentralTrigger(){
-    fTriggerMask|=AliVEvent::kCentral;
+    fTriggerMask|=AliTrigger::kCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableCentralTrigger(){
-    fTriggerMask=AliVEvent::kCentral;
+    fTriggerMask=AliTrigger::kCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseCentralTriggerExclusively(){
-    fTriggerMask=AliVEvent::kCentral;
+    fTriggerMask=AliTrigger::kCentral;
     fUseOnlyOneTrigger=kTRUE;
   }
   void EnableSemiCentralTrigger(){
-    fTriggerMask|=AliVEvent::kSemiCentral;
+    fTriggerMask|=AliTrigger::kSemiCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableSemiCentralTrigger(){
-    fTriggerMask=AliVEvent::kSemiCentral;
+    fTriggerMask=AliTrigger::kSemiCentral;
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseSemiCentralTriggerExclusively(){
-    fTriggerMask=AliVEvent::kSemiCentral;
+    fTriggerMask=AliTrigger::kSemiCentral;
     fUseOnlyOneTrigger=kTRUE;
   }
   void EnableEMCALTrigger(){
-    fTriggerMask|=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fTriggerMask|=(AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   }
   void ResetMaskAndEnableEMCALTrigger(){
-    fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fTriggerMask=(AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
     fUseOnlyOneTrigger=kFALSE;
   } 
   void SetUseEMCALTriggerExclusively(){
-    fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fTriggerMask=(AliTrigger::kEMCEJE|AliTrigger::kEMCEGA);
     fUseOnlyOneTrigger=kTRUE;
   }
   //
   //  Setters (helpers) for pp 2012 data
   void SetUseInt1TriggerPP2012(){
-    fTriggerMask=AliVEvent::kMB;
+    fTriggerMask=AliTrigger::kMB;
     fTriggerClass[0]="CINT1";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseInt7TriggerPP2012(){
-    fTriggerMask=AliVEvent::kINT7;
+    fTriggerMask=AliTrigger::kINT7;
     fTriggerClass[0]="CINT7";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseInt8TriggerPP2012(){
-    fTriggerMask=AliVEvent::kINT8;
+    fTriggerMask=AliTrigger::kINT8;
     fTriggerClass[0]="CINT8";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseEMCAL7TriggerPP2012(){
-    fTriggerMask=AliVEvent::kEMC7;
+    fTriggerMask=AliTrigger::kEMC7;
     fTriggerClass[0]="CEMC7";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseEMCAL8TriggerPP2012(){
-    fTriggerMask=AliVEvent::kEMC8;
+    fTriggerMask=AliTrigger::kEMC8;
     fTriggerClass[0]="CEMC8";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseEMCALJET7TriggerPP2012(){
-    fTriggerMask=AliVEvent::kEMCEJE;
+    fTriggerMask=AliTrigger::kEMCEJE;
     fTriggerClass[0]="CEMC7EJE";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseEMCALJET8TriggerPP2012(){
-    fTriggerMask=AliVEvent::kEMCEJE;
+    fTriggerMask=AliTrigger::kEMCEJE;
     fTriggerClass[0]="CEMC8EJE";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseEMCALGA7TriggerPP2012(){
-    fTriggerMask=AliVEvent::kEMCEGA;
+    fTriggerMask=AliTrigger::kEMCEGA;
     fTriggerClass[0]="CEMC7EGA";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseEMCALGA8TriggerPP2012(){
-    fTriggerMask=AliVEvent::kEMCEGA;
+    fTriggerMask=AliTrigger::kEMCEGA;
     fTriggerClass[0]="CEMC8EGA";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseSPI7TriggerPP2012(){
-    fTriggerMask=AliVEvent::kSPI7;
+    fTriggerMask=AliTrigger::kSPI7;
     fTriggerClass[0]="CSPI7";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseSPI8TriggerPP2012(){
-    fTriggerMask=AliVEvent::kSPI;
+    fTriggerMask=AliTrigger::kSPI;
     fTriggerClass[0]="CSPI8";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseHighMult7TriggerPP2012(){
-    fTriggerMask=AliVEvent::kHighMult;
+    fTriggerMask=AliTrigger::kHighMult;
     fTriggerClass[0]="CSHM7";
     fUseOnlyOneTrigger=kFALSE;
   }
   void SetUseHighMult8TriggerPP2012(){
-    fTriggerMask=AliVEvent::kHighMult;
+    fTriggerMask=AliTrigger::kHighMult;
     fTriggerClass[0]="CSHM8";
     fUseOnlyOneTrigger=kFALSE;
   }
@@ -431,3 +432,4 @@ class AliRDHFCuts : public AliAnalysisCuts
 };
 
 #endif
+

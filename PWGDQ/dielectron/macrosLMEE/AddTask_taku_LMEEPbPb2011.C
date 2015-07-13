@@ -55,7 +55,7 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_t se
   if (!hasMC){ 
     task->UsePhysicsSelection();
   }
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
   task->RejectConversion(2.0);
   task->RejectOP(0.035);
@@ -201,3 +201,4 @@ AliAnalysisTask *AddTask_taku_LMEEPbPb2011(Bool_t runRejection=kFALSE, Bool_t se
 
   return task;
 }
+

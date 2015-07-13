@@ -89,7 +89,7 @@ void runBalancePsiEfficiencyTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA
   centralityTask->SetMCInput();
   //centralityTask->SetPass(2);
   //AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-  //taskCentrality->SelectCollisionCandidates(AliVEvent::kMB);
+  //taskCentrality->SelectCollisionCandidates(AliTrigger::kMB);
 
   if(kUsePID) {
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -424,4 +424,5 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   return chain;
 
 } // end of TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
+
 

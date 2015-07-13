@@ -17,6 +17,7 @@
 //         AliAnalysisTaskJetSpectraAOD class
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TLegend.h"
@@ -68,7 +69,7 @@ AliAnalysisTaskJetSpectraAOD::AliAnalysisTaskJetSpectraAOD(const char *name) : A
   fJetBranchName(""),
   fListJets(0),
   fBackgroundBranch(""),
-  fOfflineTrgMask(AliVEvent::kMB),
+  fOfflineTrgMask(AliTrigger::kMB),
   fFilterMask(0),
   fJetPtMin(0x0),
   fJetEtaMin(0x0),
@@ -442,3 +443,4 @@ void AliAnalysisTaskJetSpectraAOD::SetRecBackgroundBranch(const TString &bckbran
 {
    fBackgroundBranch = bckbranch;
 }
+

@@ -3,7 +3,7 @@ class AliFlowTrackCuts;
 class AliFlowEventCuts;
 
 
-void AddTaskPIDFlow(Int_t triggerSelectionString=AliVEvent::kMB,
+void AddTaskPIDFlow(Int_t triggerSelectionString=AliTrigger::kMB,
                                    Float_t etamin=-0.8,
                                    Float_t etamax=0.8,
                                    Float_t EtaGap=0.2,
@@ -425,5 +425,6 @@ AliFlowTrackCuts* DefinePOIcuts(){
     AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("TPConlyPOI");
     return cutsPOI;
 }
+
 
 

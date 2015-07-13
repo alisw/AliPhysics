@@ -22,6 +22,7 @@
 /// \author Diego Stocco
 //-----------------------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "AliVAnalysisMuon.h"
 
 // ROOT includes
@@ -315,7 +316,7 @@ void AliVAnalysisMuon::UserExec(Option_t * /*option*/)
   
   if ( ! fMuonEventCuts->IsSelected(fInputHandler) ) return;
 
-  Int_t physSel = ( fInputHandler->IsEventSelected() & AliVEvent::kAny ) ? kPhysSelPass : kPhysSelReject;
+  Int_t physSel = ( fInputHandler->IsEventSelected() & AliTrigger::kAny ) ? kPhysSelPass : kPhysSelReject;
 
   //
   // Global event info
@@ -721,5 +722,6 @@ TObject* AliVAnalysisMuon::GetWeight ( const Char_t* wgtName )
   /// Get weight
   return fWeights->FindObject(wgtName);
 }
+
 
 

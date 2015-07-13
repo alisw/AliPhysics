@@ -1,4 +1,5 @@
 #include "AliOADBPhysicsSelection.h"
+#include "AliTrigger.h"
 #include "TList.h"
 #include "TString.h"
 #include "TObjString.h"
@@ -14,13 +15,13 @@ ClassImp(AliOADBPhysicsSelection)
 
 
 AliOADBPhysicsSelection::AliOADBPhysicsSelection() : 
-TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(AliVEvent::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
+TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(AliTrigger::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
 {
   // default ctor
 
 }
 AliOADBPhysicsSelection::AliOADBPhysicsSelection(const char* name) : 
-      TNamed(name, "OADB object for the physics selection"), fNtriggerBits(AliVEvent::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
+      TNamed(name, "OADB object for the physics selection"), fNtriggerBits(AliTrigger::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0)
 {
   // ctor, better use this one
   Init();
@@ -34,7 +35,7 @@ void AliOADBPhysicsSelection::Init() {
     return;
   }
 
-  fNtriggerBits = AliVEvent::NTRIGGERBITS;
+  fNtriggerBits = AliTrigger::NTRIGGERBITS;
   fCollTrigClasses = new TList*[fNtriggerBits];
   fBGTrigClasses   = new TList*[fNtriggerBits];
   fHardwareTrigger = new TObjString[fNtriggerLogics];
@@ -58,7 +59,7 @@ AliOADBPhysicsSelection::~AliOADBPhysicsSelection(){
   if(fHardwareTrigger) delete [] fHardwareTrigger;
   if(fOfflineTrigger)  delete [] fOfflineTrigger ;
 
-  for(Int_t ibit = 0; ibit < AliVEvent::NTRIGGERBITS; ibit++){
+  for(Int_t ibit = 0; ibit < AliTrigger::NTRIGGERBITS; ibit++){
 
     if(fCollTrigClasses)
       if(fCollTrigClasses[ibit]) delete fCollTrigClasses[ibit];
@@ -68,7 +69,7 @@ AliOADBPhysicsSelection::~AliOADBPhysicsSelection(){
 
 }
 
-AliOADBPhysicsSelection::AliOADBPhysicsSelection(const AliOADBPhysicsSelection& cont) :TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(AliVEvent::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0) {
+AliOADBPhysicsSelection::AliOADBPhysicsSelection(const AliOADBPhysicsSelection& cont) :TNamed("AliOADBPhysicsSelection", "OADB object for the physics selection"), fNtriggerBits(AliTrigger::NTRIGGERBITS), fNtriggerLogics(NTRIGGERLOGICS),fCollTrigClasses(0),fBGTrigClasses(0),fHardwareTrigger(0),fOfflineTrigger(0),fBeamSide(0) {
   // Copy ctor
   fCollTrigClasses = cont.fCollTrigClasses;
   fBGTrigClasses = cont.fBGTrigClasses;
@@ -139,34 +140,6 @@ void AliOADBPhysicsSelection::CleanKey(TString & str) {
     str.Remove(str.Index("&")); // keep only the class name (no bx, offline trigger...)   
   str.ReplaceAll(" ","");
 }
-
-// Getters
-
-// FIXME: decide about these getters
-// TList * AliOADBPhysicsSelection::GetCollTrigClass(AliVEvent::EOfflineTriggerTypes trig) const { 
-//   // Returns list of collision trigger classes for the requested bits
-//   return GetTrigClass(trig,fCollTrigClasses);
-// }
-
-// TList * AliOADBPhysicsSelection::GetBGTrigClass(AliVEvent::EOfflineTriggerTypes trig) const { 
-//   // Returns list of background trigger classes for the requested bits
-//   return GetTrigClass(trig,fBGTrigClasses);
-// }
-
-// TList * AliOADBPhysicsSelection::GetTrigClass(AliVEvent::EOfflineTriggerTypes trig, TList ** listClasses) const { 
-//   // Returns list of trigger classes for the requested bits
-
-//   TList * list= new TList;  
-//   // Check which bits are on and build the final list
-//   for(UInt_t ibit = 0; ibit < fNtriggerBits; ibit++){
-//     if ((trig&(0x1<<ibit))) {
-//       if(listClasses[ibit]) list->AddAll(listClasses[ibit]);
-//       else AliError(Form("List %d not initialized?",ibit));
-//     }
-//   }
-
-//   return list;
-// }
 
 void AliOADBPhysicsSelection::Print(Option_t* option) const {
 

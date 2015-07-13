@@ -39,7 +39,7 @@ AliAnalysisTask *AddTask_lowmass_lowmasspp(){
   //create task and add it to the manager (MB)
   AliAnalysisTaskMultiDielectron *taskMB = new AliAnalysisTaskMultiDielectron("MultiDieMB");
   if (!hasMC) taskMB->UsePhysicsSelection();
-  taskMB->SelectCollisionCandidates(AliVEvent::kMB);
+  taskMB->SelectCollisionCandidates(AliTrigger::kMB);
   taskMB->SetRejectPileup();
 	}
 
@@ -47,7 +47,7 @@ AliAnalysisTask *AddTask_lowmass_lowmasspp(){
   //create task and add it to the manager (HighMult)
   AliAnalysisTaskMultiDielectron *taskHighMult = new AliAnalysisTaskMultiDielectron("MultiDieHighMult");
   if (!hasMC) taskHighMult->UsePhysicsSelection();
-  taskHighMult->SelectCollisionCandidates(AliVEvent::kHighMult);
+  taskHighMult->SelectCollisionCandidates(AliTrigger::kHighMult);
   taskHighMult->SetRejectPileup();
 	}
 
@@ -55,7 +55,7 @@ AliAnalysisTask *AddTask_lowmass_lowmasspp(){
   //create task and add it to the manager (EMC1)
   AliAnalysisTaskMultiDielectron *taskEMC1 = new AliAnalysisTaskMultiDielectron("MultiDieEMC1");
   if (!hasMC) taskEMC1->UsePhysicsSelection();
-  taskEMC1->SelectCollisionCandidates(AliVEvent::kEMC1);
+  taskEMC1->SelectCollisionCandidates(AliTrigger::kEMC1);
   taskEMC1->SetRejectPileup();
 }
 
@@ -203,3 +203,4 @@ if(RunHighMulttrigger){
   return taskMB;
 
 }
+

@@ -34,8 +34,8 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t flavTag        = 999,
    const Int_t esdcuts        = 10001006,
    TString colltype			  = "",
-   UInt_t trigevent           = AliVEvent::kAny,
-   UInt_t mixevent            = AliVEvent::kAny,
+   UInt_t trigevent           = AliTrigger::kAny,
+   UInt_t mixevent            = AliTrigger::kAny,
    UInt_t centbinsize         = 1,
    const Int_t doEffcorrSW    = 0,
    //Bool_t   doEventPlaneRes   = 0,
@@ -159,3 +159,4 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   mgr->ConnectOutput(correlationtask,1,cojeth);
   return correlationtask;
 }
+

@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TList.h>
 
@@ -61,7 +62,7 @@ AliAnalysisTaskMinijet::AliAnalysisTaskMinijet(const char *name)
     fTriggerPtCut(0.7),
     fAssociatePtCut(0.4),
     fMode(0),
-    fTriggerType(AliVEvent::kMB),
+    fTriggerType(AliTrigger::kMB),
     fFilterBit(128),
     fVertexZCut(10.),
     fEtaCut(0.9),
@@ -2142,5 +2143,6 @@ Bool_t AliAnalysisTaskMinijet::CheckLikeSign(const Short_t chargeEventAxis,
     AliInfo("Error: Check values of Charge");
     return false;
 }
+
 
 

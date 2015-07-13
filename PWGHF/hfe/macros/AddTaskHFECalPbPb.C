@@ -34,7 +34,7 @@ AliAnalysisTask *AddTaskHFECalPbPb(int TPCclust){
   //<--- task1 for EMCal trigger
   AliAnalysisTaskHFE *hfetask = ConfigHFECalstandard_PbPb(MCthere,TPCclust);
   //RequestMemory(hfetask, 250*1024);
-  hfetask->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  hfetask->SelectCollisionCandidates(AliTrigger::kEMCEGA);
   mgr->AddTask(hfetask);
 
   //find input container
@@ -53,7 +53,7 @@ AliAnalysisTask *AddTaskHFECalPbPb(int TPCclust){
   //<--- task2 for central trigger
 
   AliAnalysisTaskHFE *hfetask2 = ConfigHFECalstandard_PbPb(MCthere,TPCclust);
-  hfetask2->SelectCollisionCandidates(AliVEvent::kCentral);
+  hfetask2->SelectCollisionCandidates(AliTrigger::kCentral);
   mgr->AddTask(hfetask2);
 
   //find input container
@@ -85,3 +85,4 @@ AliAnalysisTask *AddTaskHFECalPbPb(int TPCclust){
   //return hfetask;
   return NULL;
 }
+

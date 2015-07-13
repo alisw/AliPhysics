@@ -82,7 +82,7 @@ void runGrid(){
   //==== Physics Selection
   gROOT->ProcessLine(".L $ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kMC, kTRUE);
-  physSelTask->SelectCollisionCandidates(AliVEvent::kMB);
+  physSelTask->SelectCollisionCandidates(AliTrigger::kMB);
 
   //============================
   //   JCORRANTask
@@ -107,7 +107,7 @@ void runGrid(){
   jctask->SetStoreTPCTrack(true);
 
   //==event selection
-  jctask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kHighMult);  //Apply offline trigger selection by AliPhysicsSelectionTask
+  jctask->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kHighMult);  //Apply offline trigger selection by AliPhysicsSelectionTask
 
   mgr->AddTask((AliAnalysisTask*) jctask);
 
@@ -213,4 +213,5 @@ void LoadConf( TString filename ){
 
   gROOT->ProcessLine( str.Data() );
 }
+
 

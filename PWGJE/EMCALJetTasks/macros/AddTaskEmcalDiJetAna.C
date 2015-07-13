@@ -6,7 +6,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   Int_t       rhoType             = 0,
 						   TString     trigClass           = "",
 						   const char *CentEst             = "V0A",
-						   Int_t       pSel                = AliVEvent::kINT7,
+						   Int_t       pSel                = AliTrigger::kINT7,
 						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 						   Double_t    ptTrackBias         = 0.,
 						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo,
@@ -38,8 +38,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 
   AliEmcalJetTask* jetFinderTaskFull    = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   AliEmcalJetTask* jetFinderTaskCharged = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
-  jetFinderTaskFull->SelectCollisionCandidates(AliVEvent::kAny);
-  jetFinderTaskCharged->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskFull->SelectCollisionCandidates(AliTrigger::kAny);
+  jetFinderTaskCharged->SelectCollisionCandidates(AliTrigger::kAny);
 
 
   TString strJetsFull = jetFinderTaskFull->GetName();
@@ -53,8 +53,8 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   if(rhoType==1) {
     jetFinderKt   = AddTaskEmcalJet(kTracksName, kClusName, kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",0.);
     jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
-    jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
-    jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderKt->SelectCollisionCandidates(AliTrigger::kAny);
+    jetFinderAKt->SelectCollisionCandidates(AliTrigger::kAny);
 
     TF1 *fScale = new TF1("fScale","[0]",0.,100.);
     fScale->SetParameter(0,scaleFact);
@@ -152,3 +152,4 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   
   return taskDiJet;
 }
+

@@ -82,7 +82,7 @@ AliAnalysisTask *AddTaskPtFlucPbPb(){
 //   task->SetAliESDtrackCuts(esdTrackCuts);
   task->SetAliESDtrackCuts(esdCuts);
 
-  if (!isAMPT) task->SelectCollisionCandidates(AliVEvent::kMB);
+  if (!isAMPT) task->SelectCollisionCandidates(AliTrigger::kMB);
 
   task->SetMaxVertexZ(10.);    // cm
   task->SetMaxVertexZDiff1(-1.);    // <= 0. -> off,    > 0. -> diff in cm
@@ -119,3 +119,4 @@ AliAnalysisTask *AddTaskPtFlucPbPb(){
   return task;
 
 }
+

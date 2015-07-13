@@ -18,6 +18,7 @@
 Author : minwoo.kim@cern.ch
 
  */
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEPCorrAA.h"
 
 #include "Riostream.h"
@@ -630,11 +631,11 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 	//
 	// This can be tested to produce the following
 	//
-	Bool_t bTargetEvents = ( (mask==AliVEvent::kMB) || (mask==AliVEvent::kCentral) || (mask==AliVEvent::kSemiCentral) ) ? 1 : 0; // check if minimum bias trigger class fired
+	Bool_t bTargetEvents = ( (mask==AliTrigger::kMB) || (mask==AliTrigger::kCentral) || (mask==AliTrigger::kSemiCentral) ) ? 1 : 0; // check if minimum bias trigger class fired
 	
 
 
-	//  Bool_t bHighMult = (mask == AliVEvent::kHighMult) ? 1 : 0; // check if high multiplicity trigger class fired
+	//  Bool_t bHighMult = (mask == AliTrigger::kHighMult) ? 1 : 0; // check if high multiplicity trigger class fired
 	//
 	// For more complicated trigger selections, one can directly test both
 	// trigger classes and fired trigger inputs for a particular event, for e.g.
@@ -1502,3 +1503,4 @@ void AliAnalysisTaskEPCorrAA::Terminate(Option_t *)
     return;
 //	cout << "DEBUG : End of Treminate" << endl;
 }
+

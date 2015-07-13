@@ -38,12 +38,12 @@ AliRsnMiniAnalysisTask * AddTaskDelta
     task->SetUseCentralityPatch(kTRUE);
   }
 
-  UInt_t triggerMask = AliVEvent::kMB; // minimum bias selection for pp
+  UInt_t triggerMask = AliTrigger::kMB; // minimum bias selection for pp
   if (isPP) {
     task->UseMultiplicity("QUALITY");
   } else { 
     //is pA
-    triggerMask = AliVEvent::kINT7;
+    triggerMask = AliTrigger::kINT7;
     task->UseCentrality("V0A");
   }
   //set trigger selection  
@@ -175,3 +175,4 @@ AliRsnMiniAnalysisTask * AddTaskDelta
 
   return task;
 }
+

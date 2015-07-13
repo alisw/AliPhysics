@@ -19,6 +19,7 @@
 //  Felix Reidt <Felix.Reidt@cern.ch>
 
 
+#include "AliTrigger.h"
 #include <TH1.h>
 #include <TH2.h>
 #include <TList.h>
@@ -146,7 +147,7 @@ void AliAnalysisTaskCDex::UserExec(Option_t *)
 	// executed for every event which passed the physics selection
 	//
 	// in order to select only correct minimum bias events,
-	// SetCollisionCandidates(AliVEvent::kMB) should be used
+	// SetCollisionCandidates(AliTrigger::kMB) should be used
 
 	fhStatsFlow->Fill(AliCDMesonBaseStripped::kBinTotalInput); // stats flow
 
@@ -434,3 +435,4 @@ void AliAnalysisTaskCDex::AnalyzeVtx()
 		fVtxDst = TMath::Sqrt(fVtxDst);
 	}
 }
+

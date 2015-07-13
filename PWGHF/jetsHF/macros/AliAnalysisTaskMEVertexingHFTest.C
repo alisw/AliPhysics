@@ -1,4 +1,5 @@
 #ifndef __CINT__
+#include "AliTrigger.h"
 #include <AliVEvent.h>
 #endif
 
@@ -85,8 +86,8 @@ Int_t num=0;
  // adds event pool (comment it and u will have default mixing)
  mixHandler->SetEventPool(evPool);
 
- mixHandler->SelectCollisionCandidates(AliVEvent::kAny);
- //mixHandler->SelectCollisionCandidates(AliVEvent::kAnyINT);
+ mixHandler->SelectCollisionCandidates(AliTrigger::kAny);
+ //mixHandler->SelectCollisionCandidates(AliTrigger::kAnyINT);
  //mixHandler->DoMixIfNotEnoughEvents(kFALSE);
 
  multiInputHandler->AddInputEventHandler(mixHandler);
@@ -127,3 +128,4 @@ Int_t num=0;
 
   return;
 }
+

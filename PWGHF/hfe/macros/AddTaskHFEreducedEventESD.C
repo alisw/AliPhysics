@@ -20,8 +20,8 @@ AliAnalysisTask *AddTaskHFEreducedEvent(Bool_t MCthere=kFALSE, Int_t TRDtrigger=
   reducedEventCreator->SetMinNclustersITS(minnbITS);
   if(isRemoveFirstEvent) reducedEventCreator->SetRemoveFirstEventFromChunk();
 
-  if(TRDtrigger==0) reducedEventCreator->SelectCollisionCandidates(AliVEvent::kINT7);
-  else reducedEventCreator->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kTRD);
+  if(TRDtrigger==0) reducedEventCreator->SelectCollisionCandidates(AliTrigger::kINT7);
+  else reducedEventCreator->SelectCollisionCandidates(AliTrigger::kINT7 | AliTrigger::kTRD);
 
   mgr->AddTask(reducedEventCreator);
   
@@ -37,3 +37,4 @@ AliAnalysisTask *AddTaskHFEreducedEvent(Bool_t MCthere=kFALSE, Int_t TRDtrigger=
 
   
 }
+

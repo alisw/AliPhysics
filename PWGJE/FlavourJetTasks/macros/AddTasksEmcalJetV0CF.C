@@ -7,7 +7,7 @@ const Bool_t bIsRespPID = kTRUE;
 const Bool_t bAnaInfoMC = kTRUE;
 const Bool_t bAnaJetsMC = kFALSE;
 
-const AliBits wTriggerMask   = AliVEvent::kINT7;
+const AliBits wTriggerMask   = AliTrigger::kINT7;
 const UInt_t wCollisionType = AliPicoHeaderCJ::kPA;
 //=============================================================================
 
@@ -305,3 +305,4 @@ Bool_t AddTasksEmcalJetV0CF()
 
   return kFALSE;
 }
+

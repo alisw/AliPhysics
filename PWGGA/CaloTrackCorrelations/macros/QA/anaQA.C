@@ -134,7 +134,7 @@ void anaQA(Int_t mode=mLocal)
     if(!kMC)
     {
       AliAnalysisTaskCounter * counterMB = new AliAnalysisTaskCounter("CounterMB");
-      counterMB->SelectCollisionCandidates(AliVEvent::kMB);
+      counterMB->SelectCollisionCandidates(AliTrigger::kMB);
       
       AliAnalysisDataContainer *coutputMB =
       mgr->CreateContainer("counterMB", TList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
@@ -143,7 +143,7 @@ void anaQA(Int_t mode=mLocal)
       mgr->ConnectOutput (counterMB, 1, coutputMB);
       
       AliAnalysisTaskCounter * counterEMC = new AliAnalysisTaskCounter("CounterEMC");
-      counterEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
+      counterEMC->SelectCollisionCandidates(AliTrigger::kEMC7);
       
       AliAnalysisDataContainer *coutputEMC =
       mgr->CreateContainer("counterEMC", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
@@ -152,7 +152,7 @@ void anaQA(Int_t mode=mLocal)
       mgr->ConnectOutput (counterEMC, 1, coutputEMC);
       
       AliAnalysisTaskCounter * counterINT = new AliAnalysisTaskCounter("CounterINT");
-      counterINT->SelectCollisionCandidates(AliVEvent::kINT7);
+      counterINT->SelectCollisionCandidates(AliTrigger::kINT7);
       
       AliAnalysisDataContainer *coutputINT =
       mgr->CreateContainer("counterINT7", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
@@ -175,9 +175,9 @@ void anaQA(Int_t mode=mLocal)
     if(!kMC)
     {
       AliAnalysisTaskCaloTrackCorrelation *taskQAEMC = AddTaskCalorimeterQA("EMC",kMC,"",2012);
-      taskQAEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
+      taskQAEMC->SelectCollisionCandidates(AliTrigger::kEMC7);
       AliAnalysisTaskCaloTrackCorrelation *taskQAINT = AddTaskCalorimeterQA("default",kMC,"",2012);
-      taskQAINT->SelectCollisionCandidates(AliVEvent::kINT7);
+      taskQAINT->SelectCollisionCandidates(AliTrigger::kINT7);
     }
     else
     {
@@ -491,4 +491,5 @@ void CreateChain(const anaModes mode, TChain * chain)
   
   gSystem->ChangeDirectory(ocwd.Data());
 }
+
 

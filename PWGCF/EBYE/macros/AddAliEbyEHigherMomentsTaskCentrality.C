@@ -49,8 +49,8 @@ AliAnalysisTask*  AddAliEbyEHigherMomentsTaskCentrality(Double_t vx,
   taskHM->SetKinematicsCutsAOD(ptl,pth,eta);
   taskHM->SetNumberOfPtBins(nptbins);
   
-  if(trigger) taskHM->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  else taskHM->SelectCollisionCandidates(AliVEvent::kMB);
+  if(trigger) taskHM->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
+  else taskHM->SelectCollisionCandidates(AliTrigger::kMB);
   // cout << " Check analysis type " << analysisType << endl;
   
   mgr->AddTask(taskHM);
@@ -63,3 +63,4 @@ AliAnalysisTask*  AddAliEbyEHigherMomentsTaskCentrality(Double_t vx,
   
   return taskHM;
 }
+

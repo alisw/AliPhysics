@@ -29,19 +29,19 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
   TString Input;
   AliAnalysisTaskPi0V2* taskMB = new  AliAnalysisTaskPi0V2("Pi0v2Task");
   if(EvtType == 1){ //central
-    taskMB->SelectCollisionCandidates(AliVEvent::kCentral);
+    taskMB->SelectCollisionCandidates(AliTrigger::kCentral);
     Input = "kCentral";
   } else if (EvtType == 2){ //SemiCentral
-    taskMB->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    taskMB->SelectCollisionCandidates(AliTrigger::kSemiCentral);
     Input = "kSemiCentral";
   } else if (EvtType == 3){ //kMB 
-    taskMB->SelectCollisionCandidates(AliVEvent::kMB);
+    taskMB->SelectCollisionCandidates(AliTrigger::kMB);
     Input = "kMB";
   } else if (EvtType == 4){ //Central + SemiCentral 
-    taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral);
+    taskMB->SelectCollisionCandidates(AliTrigger::kCentral | AliTrigger::kSemiCentral);
     Input = "Central_SemiCentral";
   } else if (EvtType == 5){ //Central + SemiCentral + kMB
-    taskMB->SelectCollisionCandidates(AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
+    taskMB->SelectCollisionCandidates(AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB);
     Input = "ALLMB";
   }
   taskMB->SetTracksName(trackName.Data());
@@ -75,3 +75,4 @@ AliAnalysisTask *AddTaskEMCALPi0V2 (
 
   return taskMB;
 }
+

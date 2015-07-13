@@ -8,7 +8,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   //   gSystem->Load("libPWGGAPHOSTasks");
   //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
   //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(10); // 10 supermodules
-  //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
+  //   taskQA->SelectCollisionCandidates(AliTrigger::kMB); // if necessary
   //   // taskQA->SetAvoidPileup(kFALSE); // some customization
   //   // taskQA->GetCaloCellsQA()->ActivateFullAnalysis(); // more histograms, not usually necessary
   //   // Int_t badcells[] = {74,103,917};
@@ -19,7 +19,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   //   gSystem->Load("libPWGAPHOSTasks");
   //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/CaloCellQA/macros/AddTaskCaloCellsQA.C");
   //   AliAnalysisTaskCaloCellsQA *taskQA = AddTaskCaloCellsQA(5, 1);
-  //   taskQA->SelectCollisionCandidates(AliVEvent::kMB); // if necessary
+  //   taskQA->SelectCollisionCandidates(AliTrigger::kMB); // if necessary
   //   taskQA->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.1); // increase statistics
   //   // taskQA->SetAvoidPileup(kFALSE); // some customization
   //   // taskQA->GetCaloCellsQA()->ActivateFullAnalysis(); // more histograms, not usually necessary
@@ -86,3 +86,4 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
 
   return task;
 }
+

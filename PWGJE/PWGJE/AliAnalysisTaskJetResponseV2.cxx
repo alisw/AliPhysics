@@ -19,6 +19,7 @@
 //
 
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TMath.h"
@@ -63,7 +64,7 @@ AliAnalysisTaskSE(),
   fNonStdFile(""),
   fBackgroundBranch(""),
   fIsPbPb(kTRUE),
-  fOfflineTrgMask(AliVEvent::kAny),
+  fOfflineTrgMask(AliTrigger::kAny),
   fMinContribVtx(1),
   fVtxZMin(-8.),
   fVtxZMax(8.),
@@ -130,7 +131,7 @@ AliAnalysisTaskJetResponseV2::AliAnalysisTaskJetResponseV2(const char *name) :
   fNonStdFile(""),
   fBackgroundBranch(""),
   fIsPbPb(kTRUE),
-  fOfflineTrgMask(AliVEvent::kAny),
+  fOfflineTrgMask(AliTrigger::kAny),
   fMinContribVtx(1),
   fVtxZMin(-8.),
   fVtxZMax(8.),
@@ -1218,3 +1219,4 @@ Double_t AliAnalysisTaskJetResponseV2::GetPt(AliAODJet *j, Int_t mode=0){
 
   return pt;
 }
+

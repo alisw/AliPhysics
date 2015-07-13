@@ -267,8 +267,8 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
       task->SetWeigth_2(            weight_2        );
       
 
-      if(trigger) task->SelectCollisionCandidates(AliVEvent::kINT7);
-      else task->SelectCollisionCandidates(AliVEvent::kMB);
+      if(trigger) task->SelectCollisionCandidates(AliTrigger::kINT7);
+      else task->SelectCollisionCandidates(AliTrigger::kMB);
 
       cout << "Creating task output container" << endl;
 
@@ -291,3 +291,4 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_dca1
   
   return task;
 }
+

@@ -17,6 +17,7 @@
 // Author:     Daniil Ponomarenko <Daniil.Ponomarenko@cern.ch>
 // 20-Feb-2015
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "THashList.h"
 #include "TObjArray.h"
@@ -1211,52 +1212,52 @@ Bool_t AliPHOSCorrelations::RejectTriggerMaskSelection()
 
     const AliBits physSelMask = fEventHandler->IsEventSelected();
 
-    Bool_t isAny            = physSelMask & AliVEvent::kAny;            // to accept any trigger
+    Bool_t isAny            = physSelMask & AliTrigger::kAny;            // to accept any trigger
 
-    Bool_t isPHI1           = physSelMask & AliVEvent::kPHI1;           // PHOS trigger, CINT1 suite
-    Bool_t isPHI7           = physSelMask & AliVEvent::kPHI7;           // PHOS trigger, CINT7 suite
-    Bool_t isPHI8           = physSelMask & AliVEvent::kPHI8;           // PHOS trigger, CINT8 suite
-    Bool_t isCentral        = physSelMask & AliVEvent::kCentral;        // PbPb central collision trigger
-    Bool_t isSemiCentral    = physSelMask & AliVEvent::kSemiCentral;    // PbPb semicentral collision trigger
-    Bool_t isPHOSPb         = physSelMask & AliVEvent::kPHOSPb;         // PHOS trigger, CINT8 suite for PbPb
+    Bool_t isPHI1           = physSelMask & AliTrigger::kPHI1;           // PHOS trigger, CINT1 suite
+    Bool_t isPHI7           = physSelMask & AliTrigger::kPHI7;           // PHOS trigger, CINT7 suite
+    Bool_t isPHI8           = physSelMask & AliTrigger::kPHI8;           // PHOS trigger, CINT8 suite
+    Bool_t isCentral        = physSelMask & AliTrigger::kCentral;        // PbPb central collision trigger
+    Bool_t isSemiCentral    = physSelMask & AliTrigger::kSemiCentral;    // PbPb semicentral collision trigger
+    Bool_t isPHOSPb         = physSelMask & AliTrigger::kPHOSPb;         // PHOS trigger, CINT8 suite for PbPb
 
-    Bool_t isMB         = physSelMask & AliVEvent::kMB;                 // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
-    Bool_t isINT7       = physSelMask & AliVEvent::kINT7;               // V0AND trigger, offline V0 selection
-    Bool_t isAnyINT     = physSelMask & AliVEvent::kAnyINT;             // to accept any interaction (aka minimum bias) trigger
+    Bool_t isMB         = physSelMask & AliTrigger::kMB;                 // Minimum bias trigger, i.e. interaction trigger, offline SPD or V0 selection
+    Bool_t isINT7       = physSelMask & AliTrigger::kINT7;               // V0AND trigger, offline V0 selection
+    Bool_t isAnyINT     = physSelMask & AliTrigger::kAnyINT;             // to accept any interaction (aka minimum bias) trigger
 
     // Other triggers
-    Bool_t isMUON           = physSelMask & AliVEvent::kMUON;           // Muon trigger, offline SPD or V0 selection
-    Bool_t isHighMult       = physSelMask & AliVEvent::kHighMult;       // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
-    Bool_t isEMC1           = physSelMask & AliVEvent::kEMC1;           // EMCAL trigger
-    Bool_t isCINT5          = physSelMask & AliVEvent::kCINT5;          // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
-    Bool_t isCMUS5          = physSelMask & AliVEvent::kCMUS5;          // Muon trigger, offline V0 selection
-    Bool_t isMUSPB          = physSelMask & AliVEvent::kMUSPB;          // idem for PbPb
-    Bool_t isMUSH7          = physSelMask & AliVEvent::kMUSH7;          // Muon trigger: high pt, single muon, offline V0 selection, CINT7 suite
-    Bool_t isMUSHPB         = physSelMask & AliVEvent::kMUSHPB;         // idem for PbPb
-    Bool_t isMUL7           = physSelMask & AliVEvent::kMUL7;           // Muon trigger: like sign dimuon, offline V0 selection, CINT7 suite
-    Bool_t isMuonLikePB     = physSelMask & AliVEvent::kMuonLikePB;     // idem for PbPb
-    Bool_t isMUU7           = physSelMask & AliVEvent::kMUU7;           // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
-    Bool_t isMuonUnlikePB   = physSelMask & AliVEvent::kMuonUnlikePB;   // idem for PbPb
-    Bool_t isEMC7           = physSelMask & AliVEvent::kEMC7;           // EMCAL trigger, CINT7 suite
-    Bool_t isEMC8           = physSelMask & AliVEvent::kEMC8;           // EMCAL trigger, CINT8 suite
-    Bool_t isMUS7           = physSelMask & AliVEvent::kMUS7;           // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
+    Bool_t isMUON           = physSelMask & AliTrigger::kMUON;           // Muon trigger, offline SPD or V0 selection
+    Bool_t isHighMult       = physSelMask & AliTrigger::kHighMult;       // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
+    Bool_t isEMC1           = physSelMask & AliTrigger::kEMC1;           // EMCAL trigger
+    Bool_t isCINT5          = physSelMask & AliTrigger::kCINT5;          // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
+    Bool_t isCMUS5          = physSelMask & AliTrigger::kCMUS5;          // Muon trigger, offline V0 selection
+    Bool_t isMUSPB          = physSelMask & AliTrigger::kMUSPB;          // idem for PbPb
+    Bool_t isMUSH7          = physSelMask & AliTrigger::kMUSH7;          // Muon trigger: high pt, single muon, offline V0 selection, CINT7 suite
+    Bool_t isMUSHPB         = physSelMask & AliTrigger::kMUSHPB;         // idem for PbPb
+    Bool_t isMUL7           = physSelMask & AliTrigger::kMUL7;           // Muon trigger: like sign dimuon, offline V0 selection, CINT7 suite
+    Bool_t isMuonLikePB     = physSelMask & AliTrigger::kMuonLikePB;     // idem for PbPb
+    Bool_t isMUU7           = physSelMask & AliTrigger::kMUU7;           // Muon trigger, unlike sign dimuon, offline V0 selection, CINT7 suite
+    Bool_t isMuonUnlikePB   = physSelMask & AliTrigger::kMuonUnlikePB;   // idem for PbPb
+    Bool_t isEMC7           = physSelMask & AliTrigger::kEMC7;           // EMCAL trigger, CINT7 suite
+    Bool_t isEMC8           = physSelMask & AliTrigger::kEMC8;           // EMCAL trigger, CINT8 suite
+    Bool_t isMUS7           = physSelMask & AliTrigger::kMUS7;           // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
 
-    Bool_t isEMCEJE         = physSelMask & AliVEvent::kEMCEJE;                 // EMCAL jet patch trigger
-    Bool_t isEMCEGA         = physSelMask & AliVEvent::kEMCEGA;                 // EMCAL gamma trigger
+    Bool_t isEMCEJE         = physSelMask & AliTrigger::kEMCEJE;                 // EMCAL jet patch trigger
+    Bool_t isEMCEGA         = physSelMask & AliTrigger::kEMCEGA;                 // EMCAL gamma trigger
 
-    Bool_t isDG5                = physSelMask & AliVEvent::kDG5;                // Double gap diffractive
-    Bool_t isZED                = physSelMask & AliVEvent::kZED;                // ZDC electromagnetic dissociation
-    Bool_t isSPI7               = physSelMask & AliVEvent::kSPI7;               // Power interaction trigger
-    Bool_t isSPI                = physSelMask & AliVEvent::kSPI;                // Power interaction trigger
-    Bool_t isINT8               = physSelMask & AliVEvent::kINT8;               // CINT8 trigger: 0TVX (T0 vertex) triger
-    Bool_t isMuonSingleLowPt8   = physSelMask & AliVEvent::kMuonSingleLowPt8;   // Muon trigger : single muon, low pt, T0 selection, CINT8 suite
-    Bool_t isMuonSingleHighPt8  = physSelMask & AliVEvent::kMuonSingleHighPt8;  // Muon trigger : single muon, high pt, T0 selection, CINT8 suite
-    Bool_t isMuonLikeLowPt8     = physSelMask & AliVEvent::kMuonLikeLowPt8;     // Muon trigger : like sign muon, low pt, T0 selection, CINT8 suite
-    Bool_t isMuonUnlikeLowPt8   = physSelMask & AliVEvent::kMuonUnlikeLowPt8;   // Muon trigger : unlike sign muon, low pt, T0 selection, CINT8 suite
-    Bool_t isMuonUnlikeLowPt0   = physSelMask & AliVEvent::kMuonUnlikeLowPt0;   // Muon trigger : unlike sign muon, low pt, no additional L0 requirement
-    Bool_t isUserDefined        = physSelMask & AliVEvent::kUserDefined;        // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
-    Bool_t isTRD                = physSelMask & AliVEvent::kTRD;                // TRD trigger
-    Bool_t isFastOnly           = physSelMask & AliVEvent::kFastOnly;           // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
+    Bool_t isDG5                = physSelMask & AliTrigger::kDG5;                // Double gap diffractive
+    Bool_t isZED                = physSelMask & AliTrigger::kZED;                // ZDC electromagnetic dissociation
+    Bool_t isSPI7               = physSelMask & AliTrigger::kSPI7;               // Power interaction trigger
+    Bool_t isSPI                = physSelMask & AliTrigger::kSPI;                // Power interaction trigger
+    Bool_t isINT8               = physSelMask & AliTrigger::kINT8;               // CINT8 trigger: 0TVX (T0 vertex) triger
+    Bool_t isMuonSingleLowPt8   = physSelMask & AliTrigger::kMuonSingleLowPt8;   // Muon trigger : single muon, low pt, T0 selection, CINT8 suite
+    Bool_t isMuonSingleHighPt8  = physSelMask & AliTrigger::kMuonSingleHighPt8;  // Muon trigger : single muon, high pt, T0 selection, CINT8 suite
+    Bool_t isMuonLikeLowPt8     = physSelMask & AliTrigger::kMuonLikeLowPt8;     // Muon trigger : like sign muon, low pt, T0 selection, CINT8 suite
+    Bool_t isMuonUnlikeLowPt8   = physSelMask & AliTrigger::kMuonUnlikeLowPt8;   // Muon trigger : unlike sign muon, low pt, T0 selection, CINT8 suite
+    Bool_t isMuonUnlikeLowPt0   = physSelMask & AliTrigger::kMuonUnlikeLowPt0;   // Muon trigger : unlike sign muon, low pt, no additional L0 requirement
+    Bool_t isUserDefined        = physSelMask & AliTrigger::kUserDefined;        // Set when custom trigger classes are set in AliPhysicsSelection, offline SPD or V0 selection
+    Bool_t isTRD                = physSelMask & AliTrigger::kTRD;                // TRD trigger
+    Bool_t isFastOnly           = physSelMask & AliTrigger::kFastOnly;           // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
 
     // All input events
     FillHistogram("hTriggerPassedEvents", 0 );
@@ -2493,3 +2494,4 @@ void AliPHOSCorrelations::ShowTaskInfo()
     else  AliInfo( Form("Class will use default mass window: from %f to %f GeV.", fMassInvMeanMin, fMassInvMeanMax ) ); 
     AliInfo(Form("fNSigmaWidth = %f", fNSigmaWidth));
 }
+

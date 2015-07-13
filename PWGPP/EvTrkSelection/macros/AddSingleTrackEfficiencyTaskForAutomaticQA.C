@@ -8,7 +8,7 @@
 //
 
 AliAnalysisTask *AddSingleTrackEfficiencyTaskForAutomaticQA(const Bool_t readAOD = 0, // Flag to read AOD:1 or ESD:0
-                                           ULong64_t triggerMask=AliVEvent::kAnyINT,
+                                           ULong64_t triggerMask=AliTrigger::kAnyINT,
                                            Bool_t useCentrality = kFALSE)
 {
 
@@ -40,3 +40,4 @@ AliAnalysisTask *AddSingleTrackEfficiencyTaskForAutomaticQA(const Bool_t readAOD
     
     return;
 }
+

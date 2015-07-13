@@ -10,7 +10,7 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
   Double_t cumPtMax              = 5.0,
   Double_t cumEtaMin             = -1.0,
   Double_t cumEtaMax             = +1.0,
-  UInt_t trigsel                 = AliVEvent::kAnyINT|AliVEvent::kHighMult|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kINT8,
+  UInt_t trigsel                 = AliTrigger::kAnyINT|AliTrigger::kHighMult|AliTrigger::kCentral|AliTrigger::kSemiCentral|AliTrigger::kINT8,
   const char *taskname           = "ATCLQA"
 )
 {  
@@ -76,3 +76,4 @@ AliAnalysisTaskCLQA* AddTaskCLQA(
 
   return qaTask;
 }
+

@@ -2,7 +2,7 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
 						TString cfg="ConfigJpsi_jb_PbPb.C",
 				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
-				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
+				    ULong64_t triggers=AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB,
 						Bool_t bMultiToSingle=kTRUE){
 
   //get the current analysis manager
@@ -57,8 +57,8 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   configFile+=cfg.Data();
 
   // trigger selection
-  ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
-			   AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB};
+  ULong64_t triggerSets[]={AliTrigger::kCentral , AliTrigger::kSemiCentral , AliTrigger::kMB,
+			   AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB};
   const char* triggerNames[]={"Central","SemiCentral","MB","ALL"};
   const char* onlineRejection[]={"","CCENT","",""};
 
@@ -178,3 +178,4 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
 
   return task;
 }
+

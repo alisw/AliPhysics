@@ -224,7 +224,7 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
   //task->SwitchOnPlugin(AliAnalysisTaskHFE::kDEstep);
   //if(useMC && addflag==1) task->SetDebugStreaming();
 
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
 
   task->SetFillNoCuts(kTRUE);
 
@@ -242,3 +242,4 @@ AliAnalysisTaskHFE* ConfigHFEpbpb(Bool_t isaod,
   printf("*************************************\n"); 
   return task;
 }
+

@@ -4,6 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include "AliTrigger.h"
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TFile.h"
@@ -216,7 +217,7 @@ class AliAnalysisTaskPidPidCorrelations : public AliAnalysisTaskSE { //
 //   TTree* 	fVariablesTreeCorr;
 //   Float_t*	fCorrVariables;
   
-  AliBits 		fTriggerType; 	//  sets trigger -> AliVEvent::kMB, AliVEvent::kHighMult
+  AliBits 		fTriggerType; 	//  sets trigger -> AliTrigger::kMB, AliTrigger::kHighMult
   Int_t		fMyMcType ;//
 //   Int_t 		fFilterBit; 		// track selection cuts
   UInt_t  	fFilterType;    // filter type 0 = all, 1 = ITSTPC, 2 = TPC
@@ -422,3 +423,4 @@ class AliPidPidCorrelationReducedTrack : public AliVParticle // TObject
 };
 
 #endif
+

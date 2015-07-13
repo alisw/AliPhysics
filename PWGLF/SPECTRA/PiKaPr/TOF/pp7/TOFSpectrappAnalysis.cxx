@@ -21,6 +21,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -290,7 +291,7 @@ void TOFSpectrappAnalysis::UserExec(Option_t *)
   // check if event is selected by physics selection class
   //
   Bool_t isSelected = kFALSE;
-  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliVEvent::kMB);
+  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()& AliTrigger::kMB);
 
   if (!isSelected) {
     return;

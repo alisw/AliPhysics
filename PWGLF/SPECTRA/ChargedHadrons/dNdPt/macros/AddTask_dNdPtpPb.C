@@ -1,4 +1,4 @@
-void AddTask_dNdPtpPb(AliBits uTriggerMask = AliVEvent::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb", Float_t fEta = -10. )
+void AddTask_dNdPtpPb(AliBits uTriggerMask = AliTrigger::kINT7, Int_t iCutMode = 2014, char *contName = "dNdPtpPb", Float_t fEta = -10. )
 {
 /*
 CheckLoadLibrary("libPWG0base");
@@ -99,9 +99,9 @@ CheckLoadLibrary("libPWG0selectors");
   //j kCINT5 should work for 2012 data, kINT7 for 2013
   
   //fdNdPtAnalysis->SetTrigger(trigger);
- // fdNdPtAnalysis->SetTriggerMask(AliVEvent::kCINT5);
+ // fdNdPtAnalysis->SetTriggerMask(AliTrigger::kCINT5);
   fdNdPtAnalysis->SetTriggerMask(uTriggerMask);
-  //fdNdPtAnalysis->SetTriggerMask(AliVEvent::kEMC1);  
+  //fdNdPtAnalysis->SetTriggerMask(AliTrigger::kEMC1);  
   if(hasMC) 
   {
     //physTrigSel->SetAnalyzeMC();
@@ -189,4 +189,5 @@ CheckLoadLibrary("libPWG0selectors");
   
 
 }
+
 

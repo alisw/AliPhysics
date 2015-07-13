@@ -1,6 +1,6 @@
 AliAnalysisTaskSE * AddTaskMatchingChain(
 					 const char*    periodstr          = "LHC11h",
-					 const UInt_t   pSel               = AliVEvent::kAny,
+					 const UInt_t   pSel               = AliTrigger::kAny,
 					 const char*    inClus             = "EmcCaloClusters",
 					 const Double_t trackeff           = 1.0,
 					 const Bool_t   doAODTrackProp     = kTRUE,
@@ -77,3 +77,4 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
 
   return emcalClus;
 }
+

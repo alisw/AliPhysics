@@ -23,7 +23,7 @@ AliCentralitySelectionTask *AddTaskCentrality(Bool_t fillHistos=kTRUE, Bool_t ao
   //
   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
   centralityTask->SetInput(inputDataType);
-  centralityTask->SelectCollisionCandidates(AliVEvent::kAny);
+  centralityTask->SelectCollisionCandidates(AliTrigger::kAny);
   mgr->AddTask(centralityTask);
   
   mgr->ConnectInput(centralityTask, 0, mgr->GetCommonInputContainer());
@@ -38,3 +38,4 @@ AliCentralitySelectionTask *AddTaskCentrality(Bool_t fillHistos=kTRUE, Bool_t ao
 
   return centralityTask;
 }   
+

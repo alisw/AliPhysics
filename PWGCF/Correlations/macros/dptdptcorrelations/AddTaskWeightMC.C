@@ -251,7 +251,7 @@ AliDptDptInMC *AddTaskWeightMC
       task->SetWeigth_2(            weight_2        );
       task->SetAnalysisType(anadata);
       
-      task->SelectCollisionCandidates(AliVEvent::kMB);
+      task->SelectCollisionCandidates(AliTrigger::kMB);
 
       task->SetResonancesCut(NoResonances);
       task->SetElectronCut(NoElectron);
@@ -276,3 +276,4 @@ AliDptDptInMC *AddTaskWeightMC
   
   return task;
 }
+

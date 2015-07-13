@@ -10,7 +10,7 @@ void AddTaskJetPreparationWrapper(const char *configstring){
   defaultConfig.AddParam("phiMatch", new AliJSONDouble(0.03));
   defaultConfig.AddParam("etaMatch", new AliJSONDouble(0.015));
   defaultConfig.AddParam("minPtEt", new AliJSONDouble(0.15));
-  defaultConfig.AddParam("pSel", new AliJSONInt(AliVEvent::kAny));
+  defaultConfig.AddParam("pSel", new AliJSONInt(AliTrigger::kAny));
   defaultConfig.AddParam("trackclus", new AliJSONBool(kTRUE));
   defaultConfig.AddParam("doHistos", new AliJSONBool(kFALSE));
   defaultConfig.AddParam("makePicoTracks", new AliJSONBool(kTRUE));
@@ -50,3 +50,4 @@ void AddTaskJetPreparationWrapper(const char *configstring){
       hadcorr, Eexcl, phiMatch, etaMatch, minPtEt, pSel, trackclus, doHistos, makePicoTracks, makeTrigger, isEMCALTrain, trackeff,
       doAODTrackProp, modifyMatchObjects, doTriggerQA);
 }
+

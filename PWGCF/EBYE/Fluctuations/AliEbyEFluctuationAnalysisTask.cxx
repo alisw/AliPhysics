@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -121,7 +122,7 @@ void AliEbyEFluctuationAnalysisTask::UserExec(Option_t *) {
   
     fHistEventStats->Fill(1); //all events
     
-    //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
     //if(isSelected) {
       fHistEventStats->Fill(2); //triggered + centrality
       Printf("Event accepted");
@@ -240,3 +241,4 @@ void AliEbyEFluctuationAnalysisTask::Terminate(Option_t *) {
     return;
   }
 }
+

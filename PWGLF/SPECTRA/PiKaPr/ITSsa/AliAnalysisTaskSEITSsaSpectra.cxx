@@ -24,6 +24,7 @@
 // F. Prino, prino@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TH1F.h>
 #include <TF1.h>
 #include <TRandom3.h>
@@ -721,7 +722,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   AliBits maskPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   TString firedTriggerClasses=fESD->GetFiredTriggerClasses();
   //  if(!firedTriggerClasses.Contains("CINT1B")) return;
-  if((maskPhysSel & AliVEvent::kMB)==0) return;
+  if((maskPhysSel & AliTrigger::kMB)==0) return;
   fHistNEvents->Fill(0);
 
   if(fLowEnergypp && !fMC){ // remove events without SDD in pp 2.76 TeV
@@ -1413,3 +1414,4 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
   Printf("end of Terminate");
   return;
 }
+

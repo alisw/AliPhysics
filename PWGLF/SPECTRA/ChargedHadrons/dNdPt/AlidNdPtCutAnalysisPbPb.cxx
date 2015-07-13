@@ -25,6 +25,7 @@
 //
 // Author: J.Otwinowski 04/11/2008 
 //------------------------------------------------------------------------------
+#include "AliTrigger.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -242,7 +243,7 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    isEventTriggered = inputHandler->IsEventSelected() & AliTrigger::kMB;
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     if(!physicsSelection) return;
@@ -1411,3 +1412,4 @@ TFolder *folder = 0;
 
   return folder;
 }
+

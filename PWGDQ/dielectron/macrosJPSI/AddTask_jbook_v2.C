@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_jbook_v2(TString prod="",
 				    Bool_t gridconf=kFALSE,
-				    AliBits triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB) {
+				    AliBits triggers=AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB) {
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -41,8 +41,8 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="",
   AliAnalysisTaskMultiDielectron *task;
 
   // trigger selection
-  ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
-			   AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB};
+  ULong64_t triggerSets[]={AliTrigger::kCentral , AliTrigger::kSemiCentral , AliTrigger::kMB,
+			   AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB};
   const char* triggerNames[]={"Central","SemiCentral","MB","MB+Cent+SemiCent"};
 
   // find out the configured triggers
@@ -59,7 +59,7 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="",
 
   task = new AliAnalysisTaskMultiDielectron((Form("MultiDieJB_%s",triggerNames[j])));
   task->SetTriggerMask(triggers);
-  //task->SetTriggerMask(AliVEvent::kMB);
+  //task->SetTriggerMask(AliTrigger::kMB);
 
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
@@ -103,3 +103,4 @@ AliAnalysisTask *AddTask_jbook_v2(TString prod="",
 
   return task;
 }
+

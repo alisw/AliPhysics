@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisTaskNucleiYield.h"
 
 // ROOT includes
@@ -335,8 +336,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   
   /// This mask contains also the information about the trigger of this events. For this analysis
   /// central, semi-central and minimum bias events are kept.
-  if (!((mask & AliVEvent::kMB) || (mask & AliVEvent::kCentral) ||
-        (mask & AliVEvent::kSemiCentral))) {
+  if (!((mask & AliTrigger::kMB) || (mask & AliTrigger::kCentral) ||
+        (mask & AliTrigger::kSemiCentral))) {
     PostData(1, fList);
     return;
   }
@@ -711,3 +712,4 @@ void AliAnalysisTaskNucleiYield::PtCorrection(float &pt, bool positiveCharge) {
   const Float_t correction = par[0] + par[1] * TMath::Exp(par[2] * pt);
   pt -= correction;
 }
+

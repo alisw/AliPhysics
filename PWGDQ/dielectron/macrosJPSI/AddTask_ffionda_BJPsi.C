@@ -20,7 +20,7 @@ AliAnalysisTask *AddTask_ffionda_BJPsi(Bool_t isMC=kFALSE){
   
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDieData");
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
   if (!hasMC) task->UsePhysicsSelection();
   mgr->AddTask(task);
   
@@ -80,3 +80,4 @@ AliAnalysisTask *AddTask_ffionda_BJPsi(Bool_t isMC=kFALSE){
   mgr->ConnectOutput(task, 3, cOutputHist3);
   return task;
 }
+

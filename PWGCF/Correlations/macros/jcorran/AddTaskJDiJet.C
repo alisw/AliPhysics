@@ -1,5 +1,5 @@
 AliJDiJetTask * AddTaskJDiJet (
-		Int_t    trigger       = AliVEvent::kEMCEJE,
+		Int_t    trigger       = AliTrigger::kEMCEJE,
 		TString  taskName      = "DiJetTask"   ,
 		TString  jetTaskName   = "AliJJetTask" ,
 		TString  cardName      = "cardAlice_pp.input",
@@ -51,3 +51,4 @@ AliJDiJetTask * AddTaskJDiJet (
 
 
 }
+

@@ -40,8 +40,8 @@ AliRsnMiniAnalysisTask * AddTaskLStarPP
      task->SetUseCentralityPatch(kTRUE);
    }
 //S.K.
-//   task->SelectCollisionCandidates(AliVEvent::kMB);
-   task->SelectCollisionCandidates(AliVEvent::kINT7);  // for pPb
+//   task->SelectCollisionCandidates(AliTrigger::kMB);
+   task->SelectCollisionCandidates(AliTrigger::kINT7);  // for pPb
 
    mgr->AddTask(task);
    
@@ -174,3 +174,4 @@ AliRsnMiniAnalysisTask * AddTaskLStarPP
 
    return task;
 }
+

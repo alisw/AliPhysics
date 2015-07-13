@@ -21,6 +21,7 @@
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //=========================================================================//
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TList.h"
 #include "TFile.h"
@@ -260,22 +261,22 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
   fRunNumber = event->GetRunNumber();
   if (fIsTrig) {
     fTrigMask[0] = 0;  
-    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kMB))          
+    if ((fInputEventHandler->IsEventSelected() & AliTrigger::kMB))          
       fTrigMask[0] = 1;
     fTrigMask[1] = 0;  
-    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kCentral))     
+    if ((fInputEventHandler->IsEventSelected() & AliTrigger::kCentral))     
       fTrigMask[1] = 1;
     fTrigMask[2] = 0;  
-    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) 
+    if ((fInputEventHandler->IsEventSelected() & AliTrigger::kSemiCentral)) 
       fTrigMask[2] = 1;
     fTrigMask[3] = 0;  
-    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      
+    if ((fInputEventHandler->IsEventSelected() & AliTrigger::kEMCEJE))      
       fTrigMask[3] = 1;
     fTrigMask[4] = 0;  
-    if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      
+    if ((fInputEventHandler->IsEventSelected() & AliTrigger::kEMCEGA))      
       fTrigMask[4] = 1;
   } else {
-    if (!(fInputEventHandler->IsEventSelected() & AliVEvent::kMB))  return;        
+    if (!(fInputEventHandler->IsEventSelected() & AliTrigger::kMB))  return;        
   }
   
   // AliAODHeader *header = (AliAODHeader*) event->GetHeader();
@@ -575,3 +576,4 @@ Bool_t AliEbyEPidTTask::AcceptTrackLMC(AliVParticle *particle) const {
 void AliEbyEPidTTask::Terminate( Option_t * ){
   Info("AliEbyEPidTTask"," Task Successfully finished");
 }
+

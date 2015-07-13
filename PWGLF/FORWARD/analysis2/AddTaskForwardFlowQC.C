@@ -97,7 +97,7 @@ void AddTaskForwardFlowQC(Int_t    maxMom          = 5,
   
   mgr->AddTask(task);
 //  mgr->SetSkipTerminate(true);
-//  task->SelectCollisionCandidates(AliVEvent::kCentral);
+//  task->SelectCollisionCandidates(AliTrigger::kCentral);
   task->SetFlowFlags(flags);
   
   // --- Set eta gap value -----------------------------------------
@@ -240,3 +240,4 @@ void AddTaskForwardFlowQC(Int_t    maxMom          = 5,
 /*
  * EOF
  */
+

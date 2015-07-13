@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -192,7 +193,7 @@ void AliAnaVZEROEPFlatenning::UserExec(Option_t *)
   Bool_t goodEvent = kTRUE;
   Bool_t isSelected;
   if (fUsePhysSel)
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral));
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kMB | AliTrigger::kSemiCentral | AliTrigger::kCentral));
   else
     isSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
 
@@ -417,3 +418,4 @@ Double_t AliAnaVZEROEPFlatenning::CalculateVZEROEventPlane(const AliVEvent *  ev
 
   return (TMath::ATan2(qyTierce,qxTierce)/2.);
 }
+

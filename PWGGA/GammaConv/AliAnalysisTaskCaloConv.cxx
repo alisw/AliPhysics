@@ -21,6 +21,7 @@
 ////////////////////////////////////////////////
 
 // root
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TH3.h"
 #include "TH2.h"
@@ -318,7 +319,7 @@ void AliAnalysisTaskCaloConv::UserExec(Option_t */*option*/)
 
   fESDEvent=(AliESDEvent*)InputEvent();
   FillHistogram("hEventsTrig",0.5) ;
-  Bool_t isSelected = esdHandler && ((esdHandler->IsEventSelected()& AliVEvent::kMB) == AliVEvent::kMB);
+  Bool_t isSelected = esdHandler && ((esdHandler->IsEventSelected()& AliTrigger::kMB) == AliTrigger::kMB);
   if(!isSelected){
     printf("Not selected !!!!! \n") ;
     PostData(1, fOutputContainer);
@@ -2958,6 +2959,7 @@ void AliAnalysisTaskCaloConv::GetArmenterosQtAlfa(AliKFParticle* positiveKFParti
 
 
  
+
 
 
 

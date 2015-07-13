@@ -9,6 +9,7 @@
 
  *****************************************************************/
 
+#include "AliTrigger.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -504,12 +505,12 @@ Bool_t AliPPVsMultUtils::LoadCalibration(Int_t lLoadThisCalibration)
 
 //______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsMinimumBias(AliVEvent* event)
-// Function to check for minimum-bias trigger (AliVEvent::kMB)
+// Function to check for minimum-bias trigger (AliTrigger::kMB)
 {
     //Code to reject events that aren't kMB
     UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
-    isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
+    isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
     return isSelected;
 }
 
@@ -717,4 +718,5 @@ Bool_t AliPPVsMultUtils::IsEventSelected(AliVEvent *event)
        ) lReturnValue = kTRUE;
     return lReturnValue;
 }
+
 

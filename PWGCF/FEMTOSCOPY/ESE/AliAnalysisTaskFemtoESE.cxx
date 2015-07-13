@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <iostream>
 #include <math.h>
 #include "TChain.h"
@@ -61,7 +62,7 @@ AliAnalysisTaskSE(),
     fEventCuts(0x0),
     fTrackCuts(0x0),
     fFilterBit(128),
-    fSelectBit(AliVEvent::kMB),
+    fSelectBit(AliTrigger::kMB),
     bIsLHC10h(1),
     fEventCounter(0),
     fMixingTracks(10000),
@@ -175,7 +176,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const char* name) :
   fEventCuts(0x0),
   fTrackCuts(0x0),
   fFilterBit(128),
-  fSelectBit(AliVEvent::kMB),
+  fSelectBit(AliTrigger::kMB),
   bIsLHC10h(1),
   fEventCounter(0),
   fMixingTracks(10000),
@@ -324,7 +325,7 @@ AliAnalysisTaskFemtoESE::AliAnalysisTaskFemtoESE(const AliAnalysisTaskFemtoESE &
   fEventCuts(0x0),
   fTrackCuts(0x0),
   fFilterBit(128),
-  fSelectBit(AliVEvent::kMB),
+  fSelectBit(AliTrigger::kMB),
   bIsLHC10h(1),
   fEventCounter(0),
   fMixingTracks(10000),
@@ -1271,9 +1272,9 @@ Bool_t AliAnalysisTaskFemtoESE::EventCut(/*AliAODEvent* fevent*/){
 
   // Trigger Cut
 
-  Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-  Bool_t isSelected2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
-  Bool_t isSelected3 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
+  Bool_t isSelected1 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
+  Bool_t isSelected2 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kCentral);
+  Bool_t isSelected3 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kSemiCentral);
   if(!isSelected1 && !isSelected2 && !isSelected3) {return kFALSE;}
 
   /*  
@@ -1630,3 +1631,4 @@ Double_t AliAnalysisTaskFemtoESE::GetCentralityWeight(Double_t cent)
   else
     return par2/(slope*cent+b);
 }
+

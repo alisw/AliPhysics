@@ -22,6 +22,7 @@
 // Adapted for AliAnalysisTaskSE and AOD objects  
 //////////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "TChain.h"
 //#include "TList.h"
 //#include "TTree.h"
@@ -384,7 +385,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	/*
 	//	Bool_t Trigger_kCentral = kFALSE; // init
 	//	Trigger_kCentral =(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-	->IsEventSelected() & AliVEvent::kCentral);
+	->IsEventSelected() & AliTrigger::kCentral);
 	//	return Trigger_kCentral;
 	//	*/
 }
@@ -785,3 +786,4 @@ void AliJFFlucTask::SetInFileName( TString inName ){
 	}
 
 }
+

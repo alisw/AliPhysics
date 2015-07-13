@@ -117,7 +117,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     
         
        // RDHFDStartoKpipi->SetTriggerClass("");
-       // RDHFDStartoKpipi->SetTriggerMask(AliVEvent::kCentral);
+       // RDHFDStartoKpipi->SetTriggerMask(AliTrigger::kCentral);
     
     if(minDStarPt>RDHFDStartoKpipi->GetMinPtCandidate()){
         cout << "Changing minimum pT of DStar from " << RDHFDStartoKpipi->GetMinPtCandidate() << " to " << minDStarPt << endl;
@@ -406,4 +406,5 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
   return task ;
 
 }
+
 

@@ -3,6 +3,7 @@
 //
 // Author: S.Aiola, M. Verweij
 
+#include "AliTrigger.h"
 #include <RVersion.h>
 #include "AliAnalysisTaskEmcal.h"
 
@@ -60,7 +61,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fUseAliAnaUtils(kFALSE),
   fRejectPileup(kFALSE),
   fTklVsClusSPDCut(kFALSE),
-  fOffTrigger(AliVEvent::kAny),
+  fOffTrigger(AliTrigger::kAny),
   fTrigClass(),
   fTriggerTypeSel(kND),
   fNbins(500),
@@ -144,7 +145,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fUseAliAnaUtils(kFALSE),
   fRejectPileup(kFALSE),
   fTklVsClusSPDCut(kFALSE),
-  fOffTrigger(AliVEvent::kAny),
+  fOffTrigger(AliTrigger::kAny),
   fTrigClass(),
   fTriggerTypeSel(kND),
   fNbins(500),
@@ -787,7 +788,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 {
   // Check if event is selected
 
-  if (fOffTrigger != AliVEvent::kAny) {
+  if (fOffTrigger != AliTrigger::kAny) {
     AliBits res = AliBits();
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
     if (eev) {
@@ -1419,3 +1420,4 @@ Double_t AliAnalysisTaskEmcal::GetParallelFraction(const TVector3& vect1, AliVPa
   Double_t z = (vect1 * vect2) / (vect2 * vect2);
   return z;
 }
+

@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisTaskParticleEfficiency.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -112,7 +113,7 @@ AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
   /*** EVENT SELECTION ***/
 
   /* collision candidate */
-  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) return;
+  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB)) return;
   /* vertex selection */
   const AliESDVertex *vertex = esdEvent->GetPrimaryVertexTracks();
   if (vertex->GetNContributors() < 1) {
@@ -209,4 +210,5 @@ AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
 
   PostData(1, fHistoList);
 }
+
 

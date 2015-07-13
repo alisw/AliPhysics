@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include <TFile.h>
 #include <AliRDHFCutsD0toKpi.h>
@@ -52,7 +53,7 @@ void ModifyFromStandardCuts(Int_t system=1 /*0=pp, 1=PbPb, 2=pp 2.76TeV*/){
   //Trigger mask
   /*
   RDHFD0toKpi->SetTriggerMask(AliBits());
-  RDHFD0toKpi->SetTriggerMask(AliVEvent::kEMC1 | AliVEvent::kEMC7);
+  RDHFD0toKpi->SetTriggerMask(AliTrigger::kEMC1 | AliTrigger::kEMC7);
   RDHFD0toKpi->SetTriggerClass("CEMC");
 
   info+="EMCTr";
@@ -524,4 +525,5 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   fout->Close();
  
 }
+
 

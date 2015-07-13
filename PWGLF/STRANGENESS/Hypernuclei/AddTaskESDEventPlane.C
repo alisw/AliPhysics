@@ -21,7 +21,7 @@ AliEPSelectionTask *AddTaskESDEventPlane(Bool_t useEtaGap=kTRUE,Float_t etaGap=0
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
  
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  eventplaneTask->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kSemiCentral | AliTrigger::kCentral);
   
   if (inputDataType == "AOD"){
     eventplaneTask->SetInput("AOD");
@@ -73,3 +73,4 @@ AliEPSelectionTask *AddTaskESDEventPlane(Bool_t useEtaGap=kTRUE,Float_t etaGap=0
     
   return eventplaneTask;
 }
+

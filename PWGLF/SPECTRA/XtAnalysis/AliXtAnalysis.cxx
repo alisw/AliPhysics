@@ -26,6 +26,7 @@
 **************************************************************************/
 
 // general + root classes
+#include "AliTrigger.h"
 #include <TList.h>
 #include <TChain.h>
 #include <TObjArray.h>
@@ -354,7 +355,7 @@ bool AliXtAnalysis::IsGoodEvent(AliVEvent *event) {
         
         fhEvents->Fill( 1 );
         
-        Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliVEvent::kMB );
+        Bool_t triggerkMB = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ( AliTrigger::kMB );
         
         if( triggerkMB ){
             triggeredEventMB = kTRUE;  //event triggered as minimum bias
@@ -383,3 +384,4 @@ bool AliXtAnalysis::IsGoodEvent(AliVEvent *event) {
     }
     //---------------------------------
 }
+

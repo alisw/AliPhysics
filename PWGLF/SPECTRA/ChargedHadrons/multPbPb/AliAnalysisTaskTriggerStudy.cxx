@@ -5,6 +5,7 @@
 // - Add chi2/cluster plot for primary, secondaries and fakes
 
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskTriggerStudy.h"
 #include "AliESDInputHandler.h"
 #include "AliHistoListWrapper.h"
@@ -226,7 +227,7 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
 
 
   // Physics selection
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
 
   Bool_t vdArray[kNVDEntries];
   vdArray[kVDV0ANDOnline]      = v0AHW && v0CHW && !v0BG ;
@@ -862,3 +863,4 @@ void AliAnalysisTaskTriggerStudy::FillTriggerOverlaps (const char * name, const 
   h->Fill(mask);
 
 }
+

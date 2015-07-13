@@ -1,6 +1,6 @@
 AliAnalysisTaskLambdaStar *AddTaskLambda
 (
-      UInt_t Triggermask = AliVEvent::kCentral,
+      UInt_t Triggermask = AliTrigger::kCentral,
       Bool_t Cirpid = kFALSE,
       Int_t Centmin = 0,
       Int_t Centmax =10,
@@ -48,5 +48,6 @@ AliAnalysisTaskLambdaStar *AddTaskLambda
     
   return task;
 }   
+
 
 

@@ -94,7 +94,7 @@ AliAnalysisTask *AddTaskDielectronTaku(Float_t centrMin, Float_t centrMax,
 
   //======== Event plane =============
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB);
+  eventplaneTask->SelectCollisionCandidates(AliTrigger::kMB);
   eventplaneTask->SetTrackType("TPC");
   eventplaneTask->SetUsePtWeight();
   ///mgr->AddTask(eventplaneTask);
@@ -163,3 +163,4 @@ AliAnalysisTask *AddTaskDielectronTaku(Float_t centrMin, Float_t centrMax,
 
   return task;
 }
+

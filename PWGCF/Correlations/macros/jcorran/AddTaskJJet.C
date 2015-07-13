@@ -1,7 +1,7 @@
 // $Id$
 
 AliJJetTask* AddTaskJJet(
-  Int_t       trigger            = AliVEvent::kEMCEJE,
+  Int_t       trigger            = AliTrigger::kEMCEJE,
   const char *taskname           = "AliJJetTask",
   int       debug 		 = 1	
 )
@@ -102,3 +102,4 @@ AliJJetTask* AddTaskJJet(
 
 	return jtTask;
 }
+

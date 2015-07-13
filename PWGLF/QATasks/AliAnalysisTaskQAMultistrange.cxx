@@ -27,6 +27,7 @@ class AliESDv0;
 class AliAODv0;
 
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 #include "THnSparse.h"
 #include "TVector3.h"
@@ -489,8 +490,8 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
   //------------------
   AliBits maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
-  if      (fCollidingSystem == "pp" || fCollidingSystem == "PbPb") isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-  else if (fCollidingSystem == "pPb")                              isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+  if      (fCollidingSystem == "pp" || fCollidingSystem == "PbPb") isSelected = (maskIsSelected & AliTrigger::kMB) == AliTrigger::kMB;
+  else if (fCollidingSystem == "pPb")                              isSelected = (maskIsSelected & AliTrigger::kINT7) == AliTrigger::kINT7;
   if (!isSelected){ 
        PostData(1, fListHistMultistrangeQA);
        PostData(2, fCFContCascadeCuts); 
@@ -1142,4 +1143,5 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
 void AliAnalysisTaskQAMultistrange::Terminate(Option_t *) {
 
 }
+
 

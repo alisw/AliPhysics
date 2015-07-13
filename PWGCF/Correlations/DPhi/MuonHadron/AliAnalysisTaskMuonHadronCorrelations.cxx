@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliLog.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -431,7 +432,7 @@ void AliAnalysisTaskMuonHadronCorrelations::FillHistograms(Int_t centrality, Int
 
 Bool_t AliAnalysisTaskMuonHadronCorrelations::IsTriggerFired() {
   
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7); 
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kINT7); 
 
   return isSelected;
 }
@@ -596,4 +597,5 @@ void AliAnalysisTaskMuonHadronCorrelations::Terminate(Option_t *) {
 }
 
 //====================================================================================================================================================
+
 

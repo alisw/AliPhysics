@@ -18,6 +18,7 @@
 // -----------------------------------------------------------------------
 //  Author: Misha Veldhoen (misha.veldhoen@cern.ch)
 
+#include "AliTrigger.h"
 #include "AliAODEventCutsDiHadronPID.h"
 
 #include <iostream>
@@ -42,7 +43,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID():
 	TNamed(),
 	fIsPbPb(kTRUE),
 	fIsMC(kFALSE),
-	fTrigger(AliVEvent::kMB),
+	fTrigger(AliTrigger::kMB),
 	fMinCentrality(5.),
 	fMaxCentrality(0.),
 	fCentralityEstimator("V0M"),
@@ -78,7 +79,7 @@ AliAODEventCutsDiHadronPID::AliAODEventCutsDiHadronPID(const char* name):
 	TNamed(name,"AOD Event Cuts"),
 	fIsPbPb(kTRUE),
 	fIsMC(kFALSE),	
-	fTrigger(AliVEvent::kMB),
+	fTrigger(AliTrigger::kMB),
 	fMinCentrality(5.),
 	fMaxCentrality(0.),
 	fCentralityEstimator("V0M"),
@@ -270,10 +271,10 @@ Bool_t AliAODEventCutsDiHadronPID::IsSelected(AliAODEvent* event) {
     if (fTestTrigger) {
 
     	// Find Trigger class.
-    	if (trigger & AliVEvent::kMB) {triggerclass = 0;}
-    	else if (trigger & AliVEvent::kCentral) {triggerclass = 1;}
-    	else if (trigger & AliVEvent::kSemiCentral) {triggerclass = 2;}
-    	else if (trigger & AliVEvent::kINT7) {triggerclass = 3;}    	
+    	if (trigger & AliTrigger::kMB) {triggerclass = 0;}
+    	else if (trigger & AliTrigger::kCentral) {triggerclass = 1;}
+    	else if (trigger & AliTrigger::kSemiCentral) {triggerclass = 2;}
+    	else if (trigger & AliTrigger::kINT7) {triggerclass = 3;}    	
     	else {triggerclass = 4;}
 
 		if (!(trigger & fTrigger)) {select = kFALSE;}	// Event not selected if not matched with the any of the desired triggers.
@@ -368,3 +369,4 @@ void AliAODEventCutsDiHadronPID::PrintCuts() {
 	return;
 
 }
+

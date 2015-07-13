@@ -19,6 +19,7 @@ class TTree;
 class TParticle;
 class TVector3;
 
+#include "AliTrigger.h"
 #include "AliAnalysisManager.h"
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
@@ -717,9 +718,9 @@ void AliAnalysisTaskHelium3PiAOD::UserExec(Option_t *)
 
   Int_t eventtype=-99;
   
-  Bool_t isSelectedCentral     = (inputHandler->IsEventSelected() & AliVEvent::kCentral);
-  Bool_t isSelectedSemiCentral = (inputHandler->IsEventSelected() & AliVEvent::kSemiCentral);
-  Bool_t isSelectedMB          = (inputHandler->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelectedCentral     = (inputHandler->IsEventSelected() & AliTrigger::kCentral);
+  Bool_t isSelectedSemiCentral = (inputHandler->IsEventSelected() & AliTrigger::kSemiCentral);
+  Bool_t isSelectedMB          = (inputHandler->IsEventSelected() & AliTrigger::kMB);
  
   if(isSelectedCentral){
     fHistEventMultiplicity->Fill(3);
@@ -1194,5 +1195,6 @@ void AliAnalysisTaskHelium3PiAOD::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 }
+
 
 

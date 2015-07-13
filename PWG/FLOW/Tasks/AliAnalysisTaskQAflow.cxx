@@ -15,6 +15,7 @@
 
 // AliAnalysisTaskQAflow: some simple QA used in flow analysis
 
+#include "AliTrigger.h"
 #include "TMath.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -223,7 +224,7 @@ void AliAnalysisTaskQAflow::UserExec(Option_t *)
   TH1* hstdspdtrmultA = static_cast<TH1*>(after->At(23));
 
   Bool_t passevent = fEventCuts->IsSelected(event,0x0);
-  Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelectedEventSelection = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
 
   AliMultiplicity* tracklets = const_cast<AliMultiplicity*>(event->GetMultiplicity());
   Int_t ntracklets=0;
@@ -481,3 +482,4 @@ AliAnalysisTaskQAflow::~AliAnalysisTaskQAflow()
   delete fTrackCuts;
   delete fEventCuts;
 }
+

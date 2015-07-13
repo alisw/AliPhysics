@@ -22,13 +22,13 @@ AliAnalysisTaskEPCorrPP* AddTaskEPCorrPP( const char* outputFileName = 0, const 
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"); // 150611
 
     AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(bMCphyssel, kTRUE);
-//  physSelTask->SelectCollisionCandidates(AliVEvent::kMB);
+//  physSelTask->SelectCollisionCandidates(AliTrigger::kMB);
 */
 
 	// My Task
     AliAnalysisTaskEPCorrPP* EPCorrPPTask = new AliAnalysisTaskEPCorrPP(containerName);
 //    AliAnalysisTaskSE* EPCorrPPTask = new AliAnalysisTaskEPCorrPP(containerName);
-//    EPCorrPPTask->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
+//    EPCorrPPTask->SelectCollisionCandidates(AliTrigger::kMB); // if physics selection performed in UserExec(), this line should be commented
 
     // Add the task.
     mgr->AddTask(EPCorrPPTask);
@@ -48,3 +48,4 @@ AliAnalysisTaskEPCorrPP* AddTaskEPCorrPP( const char* outputFileName = 0, const 
 
 
 }
+

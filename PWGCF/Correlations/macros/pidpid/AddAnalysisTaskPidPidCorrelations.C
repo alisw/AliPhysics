@@ -42,8 +42,8 @@ AddAnalysisTaskPidPidCorrelations(Bool_t mc = kFALSE
   //===========================================================================
   AliAnalysisTaskPidPidCorrelations *taskPIDCorr = new AliAnalysisTaskPidPidCorrelations(Form("AliAnalysisTaskPidPidCorrelations__%.0f-%.0f_%s",centrMin,centrMax,centralityEstimator.Data()));
 
-  taskPIDCorr -> SetTriggerMask(AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral);
-//     taskPIDCorr->SelectCollisionCandidates(AliVEvent::kMB);//MB  //now inside task
+  taskPIDCorr -> SetTriggerMask(AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral);
+//     taskPIDCorr->SelectCollisionCandidates(AliTrigger::kMB);//MB  //now inside task
   
   //______ DATA or MC
   taskPIDCorr -> SetMC(mc);
@@ -97,3 +97,4 @@ AddAnalysisTaskPidPidCorrelations(Bool_t mc = kFALSE
   
   return taskPIDCorr;
 }
+

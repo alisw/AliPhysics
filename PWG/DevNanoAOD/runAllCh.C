@@ -161,7 +161,7 @@ void runAllCh(
     task->SetnQvecBins(400);
     task->SetnNchBins(1);
 
-    //    task->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
+    //    task->SelectCollisionCandidates(AliTrigger::kMB); // if physics selection performed in UserExec(), this line should be commented
     mgr->AddTask(task);
     
     // set output root file name for different analysis
@@ -311,4 +311,5 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     printf("Using: PROOF_UseMergers   : %s\n", plugin->GetProofParameter("PROOF_UseMergers"));
     return plugin;
 }
+
 

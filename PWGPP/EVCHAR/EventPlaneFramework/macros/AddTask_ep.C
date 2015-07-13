@@ -38,6 +38,7 @@
 
 
 
+#include "AliTrigger.h"
 //#include<iostream>
 //#include<TSystem.h>
 //#include<TROOT.h>
@@ -148,8 +149,8 @@ void AddTask_ep() {
 
   
   taskEP->SetEventCuts(eventCuts);
-  taskEP->SetTrigger(AliVEvent::kMB);                 // Trigger stream to be used for calibration and QA histograms
-  taskEP->SelectCollisionCandidates(AliVEvent::kMB);  // Events passing trigger and physics selection for analysis
+  taskEP->SetTrigger(AliTrigger::kMB);                 // Trigger stream to be used for calibration and QA histograms
+  taskEP->SelectCollisionCandidates(AliTrigger::kMB);  // Events passing trigger and physics selection for analysis
 
   AddVZERO(EPmanager);
   AddTPC(EPmanager);
@@ -745,3 +746,4 @@ const Int_t gkFMDstep=0;
 //  return chain;
 //}
 //
+

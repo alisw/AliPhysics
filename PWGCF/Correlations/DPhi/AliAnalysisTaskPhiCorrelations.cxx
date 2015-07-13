@@ -15,6 +15,7 @@
 
 /* $Id:$ */
 
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TInterpreter.h>
 #include <TChain.h>
@@ -141,7 +142,7 @@ fCrossedRowsCut(-1),
 fFoundFractionCut(-1),
 fFilterBit(0xFF),
 fTrackStatus(0),
-fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
+fSelectBit(AliTrigger::kMB|AliTrigger::kUserDefined),
 fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
@@ -1051,7 +1052,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   
   // skip fast cluster events here if requested
-  if (fSkipFastCluster && (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly))
+  if (fSkipFastCluster && (fInputHandler->IsEventSelected() & AliTrigger::kFastOnly))
     return;
  
   // Support for ESD and AOD based analysis
@@ -1725,3 +1726,4 @@ Bool_t AliAnalysisTaskPhiCorrelations::InitiateEventPlane(Double_t& evtPlanePhi,
   else
     return 0;
 }
+

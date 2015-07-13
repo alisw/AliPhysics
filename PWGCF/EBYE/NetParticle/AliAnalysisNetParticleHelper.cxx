@@ -1,5 +1,6 @@
 //-*- Mode: C++ -*-
 
+#include "AliTrigger.h"
 #include "TMath.h"
 #include "TAxis.h"
 #include "TSystem.h" 
@@ -420,11 +421,11 @@ Bool_t AliAnalysisNetParticleHelper::IsEventTriggered() {
   for (Int_t ii = 0; ii < fNTriggers; ++ii)
     aTriggerFired[ii] = kFALSE;
 
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kMB))          aTriggerFired[0] = kTRUE;
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kCentral))     aTriggerFired[1] = kTRUE;
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)) aTriggerFired[2] = kTRUE;
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEJE))      aTriggerFired[3] = kTRUE;
-  if ((fInputEventHandler->IsEventSelected() & AliVEvent::kEMCEGA))      aTriggerFired[4] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliTrigger::kMB))          aTriggerFired[0] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliTrigger::kCentral))     aTriggerFired[1] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliTrigger::kSemiCentral)) aTriggerFired[2] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliTrigger::kEMCEJE))      aTriggerFired[3] = kTRUE;
+  if ((fInputEventHandler->IsEventSelected() & AliTrigger::kEMCEGA))      aTriggerFired[4] = kTRUE;
 
   Bool_t isTriggered = kFALSE;
 
@@ -982,3 +983,4 @@ Bool_t AliAnalysisNetParticleHelper::FillEventStats(Int_t *aEventCuts) {
 
   return isRejected;
 }
+

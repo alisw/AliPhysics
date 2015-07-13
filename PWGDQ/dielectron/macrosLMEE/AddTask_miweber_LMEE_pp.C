@@ -43,7 +43,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResul
   if (!hasMC) task->UsePhysicsSelection();
 
   //Add event filter
-  Int_t triggerNames=(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);//pp 2010/2011 Min Bias?
+  Int_t triggerNames=(AliTrigger::kINT7+AliTrigger::kMB+AliTrigger::kINT8);//pp 2010/2011 Min Bias?
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kpp2010All));
   task->SelectCollisionCandidates(triggerNames);
   task->SetTriggerMask(triggerNames);
@@ -98,3 +98,4 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResul
   
   return task;
 }
+

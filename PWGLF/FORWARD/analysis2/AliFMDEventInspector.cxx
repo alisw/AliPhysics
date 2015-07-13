@@ -14,6 +14,7 @@
 // Corrections used: 
 //   - None
 //
+#include "AliTrigger.h"
 #include "AliFMDEventInspector.h"
 #include "AliProdInfo.h"
 #include "AliLog.h"
@@ -936,9 +937,9 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
     Bool_t v0Abb = (v0A == 1 || v0A == 3); // Include fake 
     Bool_t v0Cbb = (v0A == 1 || v0A == 3); // Include fake
     Bool_t isBg  = (v0Abg  || v0Cbg);
-    if (!isBg && v0Abb || v0Cbb || fso > 0) trgMask |= AliVEvent::kMB;
-    if (!isBg && v0Abb || v0Cbb)            trgMask |= AliVEvent::kCINT5; 
-    if (!isBg && v0Abb && v0Cbb)            trgMask |= AliVEvent::kINT7;
+    if (!isBg && v0Abb || v0Cbb || fso > 0) trgMask |= AliTrigger::kMB;
+    if (!isBg && v0Abb || v0Cbb)            trgMask |= AliTrigger::kCINT5; 
+    if (!isBg && v0Abb && v0Cbb)            trgMask |= AliTrigger::kINT7;
     DMSG(fDebug, 1, "HW replay: v0A=%d v0C=%d gfo=%d mask=0x%x",
 	 v0A, v0C, fso, trgMask);
   }
@@ -952,7 +953,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   //   of 2! :-(
     // UInt_t  trgMask  = ih->IsEventSelected();
   Bool_t  offline  = trgMask;
-  Bool_t  fastonly = (trgMask & AliVEvent::kFastOnly);
+  Bool_t  fastonly = (trgMask & AliTrigger::kFastOnly);
   TString trigStr  = esd.GetFiredTriggerClasses();
 
   if (trigStr.IsNull()) fHTrgStatus->Fill(kNoTrgWords);
@@ -975,14 +976,14 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   }
   if (offline) fHTrgStatus->Fill(kTriggered);
   Int_t f = 0;
-  if (trgMask & AliVEvent::kMB)          f += fHTrgStatus->Fill(kMinBias);
-  if (trgMask & AliVEvent::kCINT5)       f += fHTrgStatus->Fill(kMinBiasNoSPD);
-  if (trgMask & AliVEvent::kINT7)        f += fHTrgStatus->Fill(kV0AndTrg);
-  if (trgMask & AliVEvent::kHighMult)    f += fHTrgStatus->Fill(kHighMult);
-  if (trgMask & AliVEvent::kCentral)     f += fHTrgStatus->Fill(kCentral);
-  if (trgMask & AliVEvent::kSemiCentral) f += fHTrgStatus->Fill(kSemiCentral);
-  if (trgMask & AliVEvent::kDG5)         f += fHTrgStatus->Fill(kDiffractive);
-  if (trgMask & AliVEvent::kUserDefined) f += fHTrgStatus->Fill(kUser);
+  if (trgMask & AliTrigger::kMB)          f += fHTrgStatus->Fill(kMinBias);
+  if (trgMask & AliTrigger::kCINT5)       f += fHTrgStatus->Fill(kMinBiasNoSPD);
+  if (trgMask & AliTrigger::kINT7)        f += fHTrgStatus->Fill(kV0AndTrg);
+  if (trgMask & AliTrigger::kHighMult)    f += fHTrgStatus->Fill(kHighMult);
+  if (trgMask & AliTrigger::kCentral)     f += fHTrgStatus->Fill(kCentral);
+  if (trgMask & AliTrigger::kSemiCentral) f += fHTrgStatus->Fill(kSemiCentral);
+  if (trgMask & AliTrigger::kDG5)         f += fHTrgStatus->Fill(kDiffractive);
+  if (trgMask & AliTrigger::kUserDefined) f += fHTrgStatus->Fill(kUser);
   if (f <= 0) fHTrgStatus->Fill(kOther);
   
   // if (!CheckpAExtraV0(esd))             offline = false;
@@ -991,12 +992,12 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 
   if (offline)  triggers |= AliAODForwardMult::kOffline;
   // Only flag as in-elastic if a min-bias trigger is here
-  if (trgMask & AliVEvent::kMB) {
+  if (trgMask & AliTrigger::kMB) {
     triggers |= AliAODForwardMult::kInel;
     CheckINELGT0(esd, nClusters, triggers);
   }
   // Flag as V0-AND if kINT7 is there 
-  if (trgMask & AliVEvent::kINT7) {
+  if (trgMask & AliTrigger::kINT7) {
     triggers |= AliAODForwardMult::kV0AND;
     if (fUseV0AND)
       // If we want to use V0-AND for NSD, flag as NSD 
@@ -1640,4 +1641,5 @@ AliFMDEventInspector::Print(Option_t*) const
 //
 // EOF
 //
+
 

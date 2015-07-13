@@ -1,4 +1,4 @@
-void AddTaskFlowHigherOrdersAllPID(AliBits triggerSelectionString=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral,
+void AddTaskFlowHigherOrdersAllPID(AliBits triggerSelectionString=AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral,
                                    Float_t centrMin=0.,
                                    Float_t centrMax=100.,
                                    Float_t etamin=-0.8,
@@ -251,7 +251,7 @@ void AddTaskFlowHigherOrdersAllPID(AliBits triggerSelectionString=AliVEvent::kMB
   }
   taskFE[i]->SetSubeventEtaRange(minA, maxA, minB, maxB);
   if (UsePhysicsSelection) {
-    taskFE[i]->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFE[i]->SelectCollisionCandidates(AliTrigger::kMB);
     cout<<"Using Physics Selection"<<endl;
   }
   mgr->AddTask(taskFE[i]);
@@ -390,5 +390,6 @@ void AddTaskFlowHigherOrdersAllPID(AliBits triggerSelectionString=AliVEvent::kMB
  
 
 }
+
 
 

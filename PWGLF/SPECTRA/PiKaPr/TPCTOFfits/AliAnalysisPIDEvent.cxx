@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisPIDEvent.h"
 #include "AliVEvent.h"
 
@@ -207,11 +208,11 @@ AliAnalysisPIDEvent::AcceptEvent(Int_t type) const
   if (!fIsCollisionCandidate) return kFALSE;
   if (!AcceptVertex()) return kFALSE;
   if (fCentralityQuality != 0) return kFALSE;
-  if (!(fIsEventSelected & AliVEvent::kINT7)) return kFALSE;
+  if (!(fIsEventSelected & AliTrigger::kINT7)) return kFALSE;
 
   if (type > 0) {
     if (fIsPileupFromSPD) return kFALSE;
-    if (!(fIsEventSelected & AliVEvent::kMB)) return kFALSE;
+    if (!(fIsEventSelected & AliTrigger::kMB)) return kFALSE;
   };
 
 
@@ -491,4 +492,5 @@ AliAnalysisPIDEvent::GetTimeZeroSafeSigma(Float_t momentum) const
 }
 
 //___________________________________________________________
+
 

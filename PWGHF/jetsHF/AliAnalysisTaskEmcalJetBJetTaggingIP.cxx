@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <TClonesArray.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -405,14 +406,14 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelected(){
   const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
   UInt_t res = 0;
   if(aev)res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
-  if ((res & AliVEvent::kAny) == 0) {
+  if ((res & AliTrigger::kAny) == 0) {
     return kFALSE;
   }
-  fhist_Events->Fill("AliVEvent::kAny",1.);
+  fhist_Events->Fill("AliTrigger::kAny",1.);
   if ((res & fOffTrigger) == 0) {
     return kFALSE;
   }
-  fhist_Events->Fill("AliVEvent::kMB", 1.);
+  fhist_Events->Fill("AliTrigger::kMB", 1.);
   if(aev->IsPileupFromSPD(5,0.8, 3.0, 2.0, 5.0)){
     return kFALSE;
   }
@@ -621,8 +622,8 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
   fOutput->Add(glist);
   //Event selection histograms
   AddHistTH1 (&fhist_Events,"fhist_Events","Events","", "Events", 8, 0.,8., kTRUE,glist);
-  fhist_Events->GetXaxis()->SetBinLabel(1,"AliVEvent::kAny");
-  fhist_Events->GetXaxis()->SetBinLabel(2,"AliVEvent::kMB");
+  fhist_Events->GetXaxis()->SetBinLabel(1,"AliTrigger::kAny");
+  fhist_Events->GetXaxis()->SetBinLabel(2,"AliTrigger::kMB");
   fhist_Events->GetXaxis()->SetBinLabel(3,"!Pileup SPD");
   fhist_Events->GetXaxis()->SetBinLabel(4,"Vertex  z < 10 cm");
   fhist_Events->GetXaxis()->SetBinLabel(5,"No VertexerTracks");
@@ -837,3 +838,4 @@ Double_t AliAnalysisTaskEmcalJetBJetTaggingIP::GetPtCorrected(const AliEmcalJet 
     return  jet->Pt() - fJetsCont->GetRhoVal()*jet->Area();
   return -1.;
 }
+

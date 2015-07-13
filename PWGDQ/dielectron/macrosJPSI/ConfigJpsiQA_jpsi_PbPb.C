@@ -24,7 +24,7 @@ Bool_t  hasMC      = kFALSE;
 TString list       = gSystem->Getenv("LIST");
 
 AliDielectron* ConfigJpsiQA_jpsi_PbPb(Int_t cutDefinition, TString prod="",
-				      ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB)
+				      ULong64_t triggers=AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB)
 {
   //
   // Setup the instance of AliDielectron
@@ -110,9 +110,9 @@ void SetupEventCuts(AliDielectron *die, ULong64_t triggers)
   Double_t minCent=0.0, maxCent=80.;
   if(!hasMC) {
     switch(triggers) {
-    case AliVEvent::kCentral:     minCent= 0.; maxCent= 9.; break;
-    case AliVEvent::kSemiCentral: minCent=12.; maxCent=53.; break;
-    case AliVEvent::kMB:          minCent= 0.; maxCent=80.; break;
+    case AliTrigger::kCentral:     minCent= 0.; maxCent= 9.; break;
+    case AliTrigger::kSemiCentral: minCent=12.; maxCent=53.; break;
+    case AliTrigger::kMB:          minCent= 0.; maxCent=80.; break;
     default:                      minCent= 0.; maxCent=80.; break;
     }
   }
@@ -843,3 +843,4 @@ TVectorD *GetRunNumbers() {
   return vec;
      
 }
+

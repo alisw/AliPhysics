@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 // ROOT includes
@@ -163,7 +164,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   TH1F* hNTracks = new TH1F("hNTracks", "number of tracks;n_{tracks}", 20, 0., 20.);
   fList->AddAtAndExpand(hNTracks, kNTracks);
   
-  Int_t muonTrigIndex[] = { AliVEvent::kMuonUnlikePB, AliVEvent::kMuonLikePB, AliVEvent::kMUSHPB, AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB, AliVEvent::kMuonUnlikePB | AliVEvent::kMUSHPB, AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB, AliVEvent::kMuonUnlikePB | AliVEvent::kMuonLikePB | AliVEvent::kMUSHPB};
+  Int_t muonTrigIndex[] = { AliTrigger::kMuonUnlikePB, AliTrigger::kMuonLikePB, AliTrigger::kMUSHPB, AliTrigger::kMuonUnlikePB | AliTrigger::kMuonLikePB, AliTrigger::kMuonUnlikePB | AliTrigger::kMUSHPB, AliTrigger::kMuonLikePB | AliTrigger::kMUSHPB, AliTrigger::kMuonUnlikePB | AliTrigger::kMuonLikePB | AliTrigger::kMUSHPB};
   const Int_t nTrigIndexes = sizeof(muonTrigIndex)/sizeof(muonTrigIndex[0]);
   fMuonTrigIndex.Set(nTrigIndexes, muonTrigIndex);
   TString label[nTrigIndexes] = {"Unlike","Like", "Single Hpt","Like&Unlike","Unlike&Hpt","Like&Hpt","Unlike&Like&Hpt"};
@@ -773,5 +774,6 @@ TList* AliAnalysisTaskMuonQA::BuildListOfTriggers(const TObjArray *obj)
 
   return list;
 }
+
 
 

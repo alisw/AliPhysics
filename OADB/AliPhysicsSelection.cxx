@@ -94,6 +94,7 @@
 //           Michele Floris, CERN
 //-------------------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "Riostream.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -198,7 +199,7 @@ AliBits AliPhysicsSelection::CheckTriggerClass(const AliESDEvent* aEsd, const ch
   Bool_t foundCorrectBC = kFALSE;
   triggerLogic = 0;
   
-  AliBits returnCode = AliVEvent::kUserDefined;
+  AliBits returnCode = AliTrigger::kUserDefined;
   AliDebug(AliLog::kDebug+1, Form("Processing event with triggers %s", aEsd->GetFiredTriggerClasses().Data()));
   
   TString str(trigger);
@@ -1546,3 +1547,4 @@ void AliPhysicsSelection::DetectPassName(){
   AliInfo(Form("pass name: %s\n",passName.Data()));
   fPassName = passName;
 }
+

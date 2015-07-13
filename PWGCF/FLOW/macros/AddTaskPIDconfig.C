@@ -1,5 +1,5 @@
 
-void AddTaskPIDconfig(AliBits CentralityTriggerSelection = AliVEvent::kMB, Int_t centralityMinlimit=0, Int_t centralityMaxlimit=5 ,Double_t FilterBit=1, Bool_t PIDcuts=kFALSE,Bool_t isLHC11h=kFALSE,TString useroutputfile="output"){
+void AddTaskPIDconfig(AliBits CentralityTriggerSelection = AliTrigger::kMB, Int_t centralityMinlimit=0, Int_t centralityMaxlimit=5 ,Double_t FilterBit=1, Bool_t PIDcuts=kFALSE,Bool_t isLHC11h=kFALSE,TString useroutputfile="output"){
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -52,3 +52,4 @@ void AddTaskPIDconfig(AliBits CentralityTriggerSelection = AliVEvent::kMB, Int_t
         
     }
 }
+

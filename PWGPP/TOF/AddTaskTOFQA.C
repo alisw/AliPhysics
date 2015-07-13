@@ -2,7 +2,7 @@
 /*  last modified by fbellini   on 11/11/2011 */
 
 AliAnalysisTaskSE * AddTaskTOFQA(Bool_t flagEnableAdvancedCheck=kFALSE, 
-				 AliBits triggerMask = AliVEvent::kAnyINT,
+				 AliBits triggerMask = AliTrigger::kAnyINT,
 				 Int_t trackCutSetTOFqa = 0,
 				 TString cutName = "") 
 {
@@ -75,3 +75,4 @@ AliAnalysisTaskSE * AddTaskTOFQA(Bool_t flagEnableAdvancedCheck=kFALSE,
   mgr->ConnectOutput(task, 5, cNegTracksTOFqa);
   return task;
 }
+

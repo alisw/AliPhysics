@@ -14,7 +14,7 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrp
 
   //========= Add task to the ANALYSIS manager =====
   AliTPCcalibResidualPID *task=new AliTPCcalibResidualPID("TPCresPID");
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kINT7);
 
   // which THnSparse should be produced
   task->SetProducePIDqa(producePIDqa);
@@ -123,3 +123,4 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrp
   
   return task;
 }
+

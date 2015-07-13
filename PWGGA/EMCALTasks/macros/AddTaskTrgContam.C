@@ -17,7 +17,7 @@ AliAnalysisTaskTrgContam *AddTaskTrgContam(
   //===========================================================================
   AliAnalysisTaskTrgContam* ana = new  AliAnalysisTaskTrgContam("");
   
-  ana->SelectCollisionCandidates( AliVEvent::kEMC1 | AliVEvent::kMB | AliVEvent::kEMC7 | AliVEvent::kINT7);
+  ana->SelectCollisionCandidates( AliTrigger::kEMC1 | AliTrigger::kMB | AliTrigger::kEMC7 | AliTrigger::kINT7);
   
   Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
   if (isMC)
@@ -38,3 +38,4 @@ AliAnalysisTaskTrgContam *AddTaskTrgContam(
    
   return ana;
 }
+

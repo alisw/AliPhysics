@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 //#include <string.h>
 //#include <TStyle.h>
 #include <list>
@@ -621,7 +622,7 @@ void AliAnalysisTaskJetHadronCorrelation::UserExec(Option_t *)
 
 				AliInputEventHandler* inputHandler = (AliInputEventHandler*)
 								((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-				if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)){
+				if(!(inputHandler->IsEventSelected() & AliTrigger::kMB)){
 								if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
 								return;
 				}
@@ -1121,3 +1122,4 @@ Double_t AliAnalysisTaskJetHadronCorrelation::DeltaPhi(Double_t phi1,Double_t ph
 				else if(dphi>( 3./2*pi))dphi = dphi -2*pi;
 				return dphi;
 }
+

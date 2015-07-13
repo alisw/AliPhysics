@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 //#include "exception.h"
 //For running on PbPb data 0-50% most central
 AliAnalysisTask *AddTask_DiHadron(Int_t IncludeLowPtBins=0){
@@ -195,7 +196,7 @@ Int_t isMC=0;//1 for MC 0 for DATA
 //AliPhysicsSelectionTask *PhysicsTask=AddTaskPhysicsSelection(isMC, 0); //isMC is true when processing monte carlo, the second 0 disables the cluster vs tracklets
   gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
   //AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(isMC,0);
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
   //AliCentralitySelectionTask *centSelTask = AliCentralitySelectionTask("CentralitySelection");
  
   mgr->AddTask(task);
@@ -222,3 +223,4 @@ Int_t isMC=0;//1 for MC 0 for DATA
   return task;
   
 }
+

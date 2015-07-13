@@ -137,8 +137,8 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
   // taskTriggeredBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
   // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
   // documentation in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWG1EvSelDocumentation
-  if(bCentralTrigger) taskTriggeredBF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  else                taskTriggeredBF->SelectCollisionCandidates(AliVEvent::kMB);
+  if(bCentralTrigger) taskTriggeredBF->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
+  else                taskTriggeredBF->SelectCollisionCandidates(AliTrigger::kMB);
 
   // centrality estimator (default = V0M)
   taskTriggeredBF->SetCentralityEstimator(centralityEstimator);
@@ -169,3 +169,4 @@ AliAnalysisTaskTriggeredBF *AddTaskBalanceTriggered(Double_t centrMin=0.,
 
   return taskTriggeredBF;
 }
+

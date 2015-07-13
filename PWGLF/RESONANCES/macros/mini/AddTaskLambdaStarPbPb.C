@@ -28,7 +28,7 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    Float_t     nsigmaKaTOF = 3.0,
    Bool_t      enableMonitor = kTRUE,
    Bool_t      IsMcTrueOnly = kFALSE,
-   UInt_t      triggerMask = AliVEvent::kCentral,
+   UInt_t      triggerMask = AliTrigger::kCentral,
    //Bool_t      is2011PbPb = kFALSE,
    Int_t       nmix = 5,
    Float_t     maxDiffVzMix = 1.0,
@@ -136,3 +136,4 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarPbPb
    
    return task;
 }
+

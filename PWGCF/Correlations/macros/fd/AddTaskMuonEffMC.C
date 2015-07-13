@@ -45,7 +45,7 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
   MuonEff->SetNCentBins(NCentBins);
   MuonEff->SetNZvtxBins(NZvtxBins);
   MuonEff->SetNPhiBins(NPhiBins);
-  MuonEff->SelectCollisionCandidates(AliVEvent::kAnyINT);
+  MuonEff->SelectCollisionCandidates(AliTrigger::kAnyINT);
 
   // Add task(s)
   mgr->AddTask(MuonEff); 
@@ -66,3 +66,4 @@ AliMuonEffMC* AddTaskMuonEffMC(Bool_t IsMc = kTRUE,
 
   return MuonEff;
 }
+

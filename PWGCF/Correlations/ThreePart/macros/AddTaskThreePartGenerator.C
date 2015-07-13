@@ -1,4 +1,5 @@
 #ifndef __CINT__
+#include "AliTrigger.h"
 #include "AliAnalysisTaskCorrelation3p.h"
 #endif
 AliAnalysisTaskCorrelation3p* AddTaskThreePartGenerator (const char* name = "ThreePartGenerator",
@@ -9,7 +10,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartGenerator (const char* name = "Thr
 						      const Double_t MaxAssociatedPt = 4.0,
 						      const Double_t Acceptancecut = 0.8,
 						      const Double_t MaxNumberOfTracks = 200,
-						      UInt_t offlineTriggerMask = AliVEvent::kMB,
+						      UInt_t offlineTriggerMask = AliTrigger::kMB,
 						      const Int_t MaxNEventsMix = 1000,
 						      const Int_t MinNTracksMix = 100,
 						      const Int_t NMBins = 1,
@@ -67,3 +68,4 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartGenerator (const char* name = "Thr
 
   return task;
 };
+

@@ -11,7 +11,7 @@ void runGloAlgTask
  TString data="wn.xml",
  // TString data="algColl.txt",
  Int_t nEvents=-1,
- UInt_t trigSel = AliVEvent::kAny
+ UInt_t trigSel = AliTrigger::kAny
  )
 {
   //
@@ -169,3 +169,4 @@ TChain* CreateChainTXT(const char* inpData)
   printf("Created chain with %d entries in %d trees from %s\n",chain->GetEntries(),chain->GetNtrees(),inpData);
   return chain;
 }
+

@@ -4,6 +4,7 @@
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
 // Authors: Svein Lindal, Daniel Lohner                                    *
 
+#include "AliTrigger.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVEvent.h"
@@ -167,12 +168,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TClonesArray* 	GetArrayFromEvent(AliVEvent* fInputEvent, const char *name, const char *clname=0);
 		
 		Bool_t 		InitializeCutsFromCutString(const TString analysisCutSelection);
-		void 		SelectCollisionCandidates(AliBits offlineTriggerMask = AliVEvent::kAny) {
+		void 		SelectCollisionCandidates(AliBits offlineTriggerMask = AliTrigger::kAny) {
 			fOfflineTriggerMask = offlineTriggerMask;
 			fTriggerSelectedManually = kTRUE;
 		}
-		void 		SelectSpecialTrigger(AliBits offlineTriggerMask = AliVEvent::kAny, 
-										 TString TriggerClassName = "AliVEvent::kAny" ) {
+		void 		SelectSpecialTrigger(AliBits offlineTriggerMask = AliTrigger::kAny, 
+										 TString TriggerClassName = "AliTrigger::kAny" ) {
 			fOfflineTriggerMask = offlineTriggerMask;
 			fSpecialTriggerName = TriggerClassName;
 			cout << fSpecialTriggerName.Data() << endl;
@@ -304,3 +305,4 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
 
 #endif
+

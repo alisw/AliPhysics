@@ -38,9 +38,9 @@ void AddTaskEMCALMesonGGSDMpPb(Int_t calibration = 0)
     
     sprintf(saythis,"EMCALMesonGGSDMpPbTask_%d",i);
     task[i] = new AliAnalysisTaskEMCALMesonGGSDMpPb(saythis);
-    //task[i]->SelectCollisionCandidates(AliVEvent::kAny);
-    //task[i]->SelectCollisionCandidates(AliVEvent::kMB);//LHC11a
-    task[i]->SelectCollisionCandidates(AliVEvent::kINT7);//LHC13b/c
+    //task[i]->SelectCollisionCandidates(AliTrigger::kAny);
+    //task[i]->SelectCollisionCandidates(AliTrigger::kMB);//LHC11a
+    task[i]->SelectCollisionCandidates(AliTrigger::kINT7);//LHC13b/c
     task[i]->SetRecalScheme(RecalScheme[i]);
 
     task[i]->SetdRmin_ClustTrack(0.025);//not used at the moment! (Gustavo uses 0.04)
@@ -64,3 +64,4 @@ void AddTaskEMCALMesonGGSDMpPb(Int_t calibration = 0)
   }
 
 }
+

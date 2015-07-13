@@ -19,14 +19,14 @@ AliAnalysisTask *AddTaskJCORRANFilter(Bool_t IsMC = kFALSE, Int_t beamtype = 1){
     //================================================
 
     // set the trigger selection
-    triggerSelection =  AliVEvent::kAny;
-    //										| AliVEvent::kHighMult 
-    //										| AliVEvent::kEMCEGA;
-    //										| AliVEvent::kEMCEJE
-    //										| AliVEvent::kEMC1
-    //										| AliVEvent::kEMC7
-    //                    | AliVEvent::kCentral
-    //                    | AliVEvent::kSemiCentral; 
+    triggerSelection =  AliTrigger::kAny;
+    //										| AliTrigger::kHighMult 
+    //										| AliTrigger::kEMCEGA;
+    //										| AliTrigger::kEMCEJE
+    //										| AliTrigger::kEMC1
+    //										| AliTrigger::kEMC7
+    //                    | AliTrigger::kCentral
+    //                    | AliTrigger::kSemiCentral; 
     //============================
     //   JCORRANTask
     //===========================
@@ -71,4 +71,5 @@ AliAnalysisTask *AddTaskJCORRANFilter(Bool_t IsMC = kFALSE, Int_t beamtype = 1){
 
 	return jctask;
 }
+
 

@@ -12,7 +12,7 @@ AliAnalysisGrid PreparePlugin(TString mode, //can be "full", "test", "offline", 
 //====================================================================
 int nCentBins = 5;
 const float centBins[] = {0,20,40,60,80,100};
-UInt_t trigSel = AliVEvent::kINT7;
+UInt_t trigSel = AliTrigger::kINT7;
 //
 TString rootVer="v5-34-08-6";
 TString alirootVer="v5-05-Rev-30";
@@ -300,3 +300,4 @@ AliAnalysisGrid* PreparePlugin(TString mode, //can be "full", "test", "offline",
   return plugin;
   //
 }
+

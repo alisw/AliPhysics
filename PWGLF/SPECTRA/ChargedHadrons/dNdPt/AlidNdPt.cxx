@@ -14,6 +14,7 @@
  **************************************************************************/
  // last change: 2013-06-13 by M.Knichel
 
+#include "AliTrigger.h"
 #include "AliESDtrackCuts.h"  
 #include "AlidNdPtEventCuts.h"
 #include "AlidNdPtAcceptanceCuts.h"
@@ -42,7 +43,7 @@ AlidNdPt::AlidNdPt(): TNamed()
 , fdNdPtBackgroundCuts(0)
 , fAnalyseOutput(kFALSE)
 , fMergeTHnSparse(kTRUE)
-, fTriggerMask(AliVEvent::kMB)
+, fTriggerMask(AliTrigger::kMB)
 {
   // default constructor
 }
@@ -64,7 +65,7 @@ AlidNdPt::AlidNdPt(Char_t* name, Char_t* title): TNamed(name,title)
 , fdNdPtBackgroundCuts(0)
 , fAnalyseOutput(kFALSE)
 , fMergeTHnSparse(kTRUE)
-, fTriggerMask(AliVEvent::kMB)
+, fTriggerMask(AliTrigger::kMB)
 {
   // constructor
 }
@@ -85,7 +86,7 @@ AlidNdPt::AlidNdPt(const AlidNdPt&): TNamed()
 , fdNdPtBackgroundCuts(0)
 , fAnalyseOutput(kFALSE)
 , fMergeTHnSparse(kTRUE)
-, fTriggerMask(AliVEvent::kMB)
+, fTriggerMask(AliTrigger::kMB)
 {
   // not implemented
 }
@@ -136,3 +137,4 @@ Double_t* AlidNdPt::CloneArray(Int_t n, Double_t* source)
     for (Int_t i=0; i<n ; i++) { dest[i] = source[i]; }
     return dest;
 }
+

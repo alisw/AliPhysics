@@ -50,7 +50,7 @@ void load_libraries( void )
 }
 
 //______________________________________________________
-void AddTaskEMCalpi0ClusterEvaluation( UInt_t triggerMaskPbPb = AliVEvent::kEMCEGA )
+void AddTaskEMCalpi0ClusterEvaluation( UInt_t triggerMaskPbPb = AliTrigger::kEMCEGA )
 {
 
     // load libraries
@@ -105,3 +105,4 @@ void AddTaskEMCalpi0ClusterEvaluation( UInt_t triggerMaskPbPb = AliVEvent::kEMCE
 
 
 }
+

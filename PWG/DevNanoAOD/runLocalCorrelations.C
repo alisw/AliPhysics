@@ -1,4 +1,5 @@
 #if !defined (__CINT__) || (defined(__MAKECINT__))
+#include "AliTrigger.h"
 #include <iostream>
 #include "AliAnalysisGrid.h"
 #include "TSystem.h"
@@ -68,10 +69,10 @@ void runLocalCorrelations(
   task->SetVarList("pt,theta,phi");
   task->SetVarListHead("cstCentr,cstMagField");
 
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
 
 
-  //task->SelectCollisionCandidates(AliVEvent::kMB);// FIXME
+  //task->SelectCollisionCandidates(AliTrigger::kMB);// FIXME
   // enable debug printouts
   mgr->SetDebugLevel(10);
   //    mgr->SetNSysInfo(100);
@@ -114,3 +115,4 @@ void LoadLibs() {
   gSystem->Load("libPWGDevNanoAOD");
 
 }
+

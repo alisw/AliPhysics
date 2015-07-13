@@ -39,10 +39,10 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 	FFtask->SetEffConfig( effMode, FilterBit); 
 	FFtask->SetIsPhiModule( IsPhiModule );
 	FFtask->SetInFileName( InFileNameNUE ); 
-    //int CollisionCandidates = AliVEvent::kCentral;
-	//FFtask->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ; 
+    //int CollisionCandidates = AliTrigger::kCentral;
+	//FFtask->SelectCollisionCandidates( AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral ) ; 
 	//FFTask->SelectCollisionCandidates( CollisionCandidates );
-	//FFtask->SelectCollisionCandidates( AliVEvent::kCentral ) ; 
+	//FFtask->SelectCollisionCandidates( AliTrigger::kCentral ) ; 
 
 	//==== Add task
 	mgr->AddTask((AliAnalysisTask*) FFtask);
@@ -56,4 +56,5 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName="JFFluc",Bool_t IsMC = kFALSE, B
 	mgr->ConnectOutput(FFtask, 1, FFhist);
 	return FFtask;
 }
+
 

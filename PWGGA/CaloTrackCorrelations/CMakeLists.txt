@@ -21,6 +21,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/CaloTrackCorrelations)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                    )
 
@@ -55,7 +56,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics RIO)
-set(ALIROOT_DEPENDENCIES ANALYSIS AOD EMCALUtils ESD PHOSUtils STEERBase PWGCaloTrackCorrBase)
+set(ALIROOT_DEPENDENCIES OADB ANALYSIS AOD EMCALUtils ESD PHOSUtils STEERBase PWGCaloTrackCorrBase)
 
 # Generate the ROOT map
 # Dependecies

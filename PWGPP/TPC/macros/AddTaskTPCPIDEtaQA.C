@@ -12,7 +12,7 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFA
   
   //========= Add task to the ANALYSIS manager =====
   AliTPCPIDEtaQA *task = new AliTPCPIDEtaQA("TPCPIDEtaQA");
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kINT7);
   
   //
   // Add track filters
@@ -105,3 +105,4 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFA
 
   return task;
 }
+

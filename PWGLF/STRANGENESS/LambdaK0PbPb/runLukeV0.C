@@ -128,7 +128,7 @@ void runLukeV0(
     // create task
     gROOT->LoadMacro("AliAnalysisTaskLukeV0.cxx++g");
     AliAnalysisTaskSE* task = new AliAnalysisTaskLukeV0(taskname);
-    task->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
+    task->SelectCollisionCandidates(AliTrigger::kMB); // if physics selection performed in UserExec(), this line should be commented
     mgr->AddTask(task);
     
     // set output root file name for different analysis
@@ -269,4 +269,5 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
 
     return plugin;
 }
+
 

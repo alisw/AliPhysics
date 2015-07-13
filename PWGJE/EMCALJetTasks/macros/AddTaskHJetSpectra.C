@@ -1,7 +1,7 @@
 AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Double_t            jetRadius               = 0.4,  //radius of analyzed jets
   Double_t            jetRadiusBg             = 0.3,  //radius of jets to be removed when estimating cell median bg
-  Int_t               trigger                 = AliVEvent::kINT7,  //trigger
+  Int_t               trigger                 = AliTrigger::kINT7,  //trigger
   Int_t               isMC                    = 0,  //MC flag
   Double_t            randomConeR             = 0.4,  //random cone for deltaPt + perp cone bg
   const char*         containerSuffix         = "",   //tag to the name of container
@@ -21,19 +21,19 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
 
    // #### Detect the demanded trigger with its readable name
    TString triggerName(Form("Trigger_%i", trigger));
-   if(trigger == AliVEvent::kAnyINT)
+   if(trigger == AliTrigger::kAnyINT)
       triggerName = "kAnyINT";
-   else if(trigger == AliVEvent::kAny)
+   else if(trigger == AliTrigger::kAny)
       triggerName = "kAny";
-   else if(trigger == AliVEvent::kINT7)
+   else if(trigger == AliTrigger::kINT7)
       triggerName = "kINT7";
-   else if(trigger == AliVEvent::kMB)
+   else if(trigger == AliTrigger::kMB)
       triggerName = "kMB";
-   else if(trigger == AliVEvent::kEMC7)
+   else if(trigger == AliTrigger::kEMC7)
       triggerName = "kEMC7";
-   else if(trigger == AliVEvent::kEMCEJE)
+   else if(trigger == AliTrigger::kEMCEJE)
       triggerName = "kEMCEJE";
-   else if(trigger == AliVEvent::kEMCEGA)
+   else if(trigger == AliTrigger::kEMCEGA)
       triggerName = "kEMCEGA";
  
    // #### DEFINE MANAGER AND DATA CONTAINER NAMES
@@ -129,3 +129,4 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
  
    return task;
 }
+

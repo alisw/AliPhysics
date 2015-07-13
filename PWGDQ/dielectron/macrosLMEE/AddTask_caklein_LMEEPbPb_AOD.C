@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput.root", 
  Bool_t flag1=kFALSE, Bool_t flag2=kFALSE, Bool_t getFromAlien=kFALSE, 
- AliBits triggerNames=(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral), AliBits collCands=AliVEvent::kAny) 
+ AliBits triggerNames=(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral), AliBits collCands=AliTrigger::kAny) 
 {
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
@@ -105,3 +105,4 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput
   
   return task;
 }
+

@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TFormula.h>
@@ -334,15 +335,15 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
 
   if(fPeriod.Contains("lhc11h",TString::kIgnoreCase))
     {
-      if (trigger & AliVEvent::kAnyINT)      { fTriggerType=0; }
-      else if (trigger & AliVEvent::kCentral)     { fTriggerType=0; }
-      else if (trigger & AliVEvent::kSemiCentral) { fTriggerType=0; }
-      else if (trigger & AliVEvent::kEMCEGA)      { fTriggerType=1; }
-      else if (trigger & AliVEvent::kEMCEJE)      { fTriggerType=2; }
+      if (trigger & AliTrigger::kAnyINT)      { fTriggerType=0; }
+      else if (trigger & AliTrigger::kCentral)     { fTriggerType=0; }
+      else if (trigger & AliTrigger::kSemiCentral) { fTriggerType=0; }
+      else if (trigger & AliTrigger::kEMCEGA)      { fTriggerType=1; }
+      else if (trigger & AliTrigger::kEMCEJE)      { fTriggerType=2; }
     }
   else if(fPeriod.Contains("lhc10h",TString::kIgnoreCase))
     {
-      if (trigger & AliVEvent::kAnyINT)   { fTriggerType=0; }
+      if (trigger & AliTrigger::kAnyINT)   { fTriggerType=0; }
     }
   else if(fPeriod.Contains("lhc12a15a",TString::kIgnoreCase))
     {
@@ -362,8 +363,8 @@ void AliAnalysisTaskHJetEmbed::UserExec(Option_t *)
   
   if(fTriggerType==0)
     {
-      if(trigger & AliVEvent::kCentral) fhEventStat->Fill(5.5);
-      else if (trigger & AliVEvent::kCentral) fhEventStat->Fill(6.5);
+      if(trigger & AliTrigger::kCentral) fhEventStat->Fill(5.5);
+      else if (trigger & AliTrigger::kCentral) fhEventStat->Fill(6.5);
       else fhEventStat->Fill(4.5);
     }
   if(fTriggerType==1) fhEventStat->Fill(7.5);
@@ -869,3 +870,4 @@ void AliAnalysisTaskHJetEmbed::Terminate(Option_t *)
 {
   // Called once at the end of the query
 }
+

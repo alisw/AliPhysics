@@ -22,6 +22,7 @@
 //_________________________________________________________________________
 
 // --- Root ---
+#include "AliTrigger.h"
 #include <TClonesArray.h>
 #include <TGeoManager.h>
 #include <TObjArray.h>
@@ -228,7 +229,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
   }
 
   if (!MCEvent()) {
-    if (offtrigger & AliVEvent::kFastOnly) {
+    if (offtrigger & AliTrigger::kFastOnly) {
       AliError(Form("EMCAL not in fast only partition"));
       return;
     }
@@ -988,3 +989,4 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     }
   }
 }
+

@@ -20,6 +20,7 @@
 //   M.Fasel <M.Fasel@gsi.de>
 //
 //
+#include "AliTrigger.h"
 #include <TArrayI.h>
 #include <TBits.h>
 #include <TFile.h>
@@ -240,11 +241,11 @@ void AliHFEreducedEventCreatorESD::UserExec(Option_t *){
 
   // Derive trigger 
   AliBits trigger = fInputHandler->IsEventSelected();
-  if(trigger & AliVEvent::kMB) fHFEevent->SetMBTrigger();
-  if((trigger & AliVEvent::kINT7)||(trigger & AliVEvent::kINT8)) fHFEevent->SetINTTrigger();
-  if(trigger & AliVEvent::kCentral) fHFEevent->SetCentralTrigger();
-  if(trigger & AliVEvent::kSemiCentral) fHFEevent->SetCentralTrigger();
-  if(trigger & AliVEvent::kEMCEJE) fHFEevent->SetEMCALTrigger();
+  if(trigger & AliTrigger::kMB) fHFEevent->SetMBTrigger();
+  if((trigger & AliTrigger::kINT7)||(trigger & AliTrigger::kINT8)) fHFEevent->SetINTTrigger();
+  if(trigger & AliTrigger::kCentral) fHFEevent->SetCentralTrigger();
+  if(trigger & AliTrigger::kSemiCentral) fHFEevent->SetCentralTrigger();
+  if(trigger & AliTrigger::kEMCEJE) fHFEevent->SetEMCALTrigger();
 
   /*if(fTRDTriggerAnalysis){
     fTRDTriggerAnalysis->CalcTriggers(event);
@@ -633,4 +634,5 @@ Bool_t AliHFEreducedEventCreatorESD::IsTOFmismatch(const AliVTrack *const track,
   AliPIDResponse::EDetPidStatus status = pid->ComputeTOFProbability(track, AliPID::kSPECIESC, probs);
   return status == AliPIDResponse::kDetMismatch;
 }
+
 

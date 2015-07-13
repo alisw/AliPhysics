@@ -17,6 +17,7 @@
 // Analysis task for pi0 and eta meson analysis in pp collisions
 // Authors: Yuri Kharlov, Dmitri Peressounko
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TObjArray.h"
@@ -330,8 +331,8 @@ void AliAnalysisTaskPi0::UserExec(Option_t *)
   //Skip events from fast cluster
 
   // AliBits triggerMask = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
-  // if(triggerMask& AliVEvent::kFastOnly) return; // reject events in the fast cluster only
-  // if(!(triggerMask& AliVEvent::kMB)) return; // check the trigger mask as usual
+  // if(triggerMask& AliTrigger::kFastOnly) return; // reject events in the fast cluster only
+  // if(!(triggerMask& AliTrigger::kMB)) return; // check the trigger mask as usual
 
   FillHistogram("hSelEvents",0) ; // All events accepted by PSel
 
@@ -1061,3 +1062,4 @@ Int_t AliAnalysisTaskPi0::TestBC(Double_t tof){
   Int_t bc = (Int_t)(TMath::Ceil((tof + fBCgap/2)/fBCgap) - 1);
   return bc;
 }
+

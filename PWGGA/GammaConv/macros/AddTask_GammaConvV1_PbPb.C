@@ -1530,13 +1530,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		}
 		EventCutList->Add(analysisEventCuts[i]);		
 		if (trainConfig == 37 || trainConfig == 38){
-			analysisEventCuts[i]->SelectSpecialTrigger(AliVEvent::kMB, "AliVEvent::kMB" );
+			analysisEventCuts[i]->SelectSpecialTrigger(AliTrigger::kMB, "AliTrigger::kMB" );
 		}
 		if (trainConfig == 39 || trainConfig == 40){   
-			analysisEventCuts[i]->SelectSpecialTrigger(AliVEvent::kCentral,"AliVEvent::kCentral" );
+			analysisEventCuts[i]->SelectSpecialTrigger(AliTrigger::kCentral,"AliTrigger::kCentral" );
 		}   
 		if (trainConfig == 41 || trainConfig == 42){   
-			analysisEventCuts[i]->SelectSpecialTrigger(AliVEvent::kSemiCentral,"AliVEvent::kSemiCentral" );
+			analysisEventCuts[i]->SelectSpecialTrigger(AliTrigger::kSemiCentral,"AliTrigger::kSemiCentral" );
 		}   
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 		
@@ -1575,3 +1575,4 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	return;
 
 }
+

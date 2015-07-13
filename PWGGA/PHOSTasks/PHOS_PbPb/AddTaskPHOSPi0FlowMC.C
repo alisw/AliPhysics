@@ -1,6 +1,6 @@
 AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0FlowMC (const char* name = "PHOSPi0FlowMC",
 					    const char* options = ""
-						// , AliBits offlineTriggerMask = AliVEvent::kCentral
+						// , AliBits offlineTriggerMask = AliTrigger::kCentral
 						)
 {
   //Add a task AliAnalysisTaskPi0FlowMC to the analysis train
@@ -51,3 +51,4 @@ AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0FlowMC (const char* name = "PHOSPi0FlowM
   
   return task;
 }
+

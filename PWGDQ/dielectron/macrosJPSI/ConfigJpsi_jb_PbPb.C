@@ -51,7 +51,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t  isESD = kTRUE;
 TString list  = gSystem->Getenv("LIST");
 
-AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE, ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB)
+AliDielectron* ConfigJpsi_jb_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE, ULong64_t triggers=AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB)
 {
   //
   // Setup the instance of AliDielectron
@@ -129,9 +129,9 @@ void SetupEventCuts(AliDielectron *die, ULong64_t triggers, Int_t cutDefinition)
   Double_t minCent=0.0, maxCent=100.;
   if(!die->GetHasMC()) {
     switch(triggers) {
-    // case AliVEvent::kCentral:     minCent= 0.; maxCent=10.; break; //0-9
-    // case AliVEvent::kSemiCentral: minCent=10.; maxCent=50.; break; //12-53
-    // case AliVEvent::kMB:          minCent=10.; maxCent=90.; break;
+    // case AliTrigger::kCentral:     minCent= 0.; maxCent=10.; break; //0-9
+    // case AliTrigger::kSemiCentral: minCent=10.; maxCent=50.; break; //12-53
+    // case AliTrigger::kMB:          minCent=10.; maxCent=90.; break;
     default:                      minCent= 0.; maxCent=90.; break;
     }
   }
@@ -1813,3 +1813,4 @@ TVectorD *GetDeltaPhiBins() {
   (*deltaPhi)[5] = +1.    *pi;
   return deltaPhi;
 }
+

@@ -64,7 +64,7 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   AliAnalysisHFjetTagHFE* jetTask = new AliAnalysisHFjetTagHFE(name);
   jetTask->SetCentRange(0.,100.);
   jetTask->SetNCentBins(nCentBins);
-  //jetTask->SelectCollisionCandidates(AliVEvent::kMB);
+  //jetTask->SelectCollisionCandidates(AliTrigger::kMB);
 
   AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
   if(trackCont) trackCont->SetClassName("AliVTrack");
@@ -80,7 +80,7 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
     jetCont->SetPercAreaCut(jetareacut);
     jetCont->SetJetPtCut(jetptcut);
     jetCont->SetLeadingHadronType(leadhadtype);
-    jetCont->SetJetTrigger(AliVEvent::kCentral);  // missing 
+    jetCont->SetJetTrigger(AliTrigger::kCentral);  // missing 
   }
 
   //-------------------------------------------------------
@@ -121,3 +121,4 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE( AliEmcalJetTask* jetFinderTask,
 
     return jetTask;
     }
+

@@ -31,11 +31,11 @@ void AnalysisMacroGlob(TString dataset="/alice/sim/LHC10f8f_130844",
   //
   if (!isMC) {
     AddPhysicsSelection();
-    task->SelectCollisionCandidates( AliVEvent::kUserDefined );
+    task->SelectCollisionCandidates( AliTrigger::kUserDefined );
     task->SetUseMC(kFALSE);
   }
   else task->SetUseMC(kTRUE);
-  //  else task->SelectCollisionCandidates( AliVEvent::kMB);
+  //  else task->SelectCollisionCandidates( AliTrigger::kMB);
   //
   // Run analysis
   mgr->InitAnalysis();
@@ -180,9 +180,10 @@ void AddPhysicsSelection(Bool_t isMC=kFALSE)
     */
   } 
   // if you use the following line, your task only gets the selected events
-  //  task->SelectCollisionCandidates(AliVEvent::kUserDefined);
+  //  task->SelectCollisionCandidates(AliTrigger::kUserDefined);
   //
   //Alternatively, in the UserExec of your task:
-  //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kUserDefined);
+  //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kUserDefined);
   //
 }
+

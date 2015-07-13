@@ -23,6 +23,7 @@
 //                     zhangxm@iopp.ccnu.edu.cn
 /////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <TMath.h>
 #include <TH1.h>
 #include <TH1D.h>
@@ -59,7 +60,7 @@ AliMuonsHFHeader::AliMuonsHFHeader() :
 TNamed(),
 fAnaMode(0),
 fIsMC(kFALSE),
-fSelMask(AliVEvent::kAny),
+fSelMask(AliTrigger::kAny),
 fIsMB(kFALSE),
 fIsMU(kFALSE),
 fVtxContrsN(0),
@@ -174,8 +175,8 @@ void AliMuonsHFHeader::SetEventInfo(AliInputEventHandler* const handler)
   fSelMask = handler->IsEventSelected();
   if (aod) { fFiredTriggerClass = aod->GetFiredTriggerClasses(); fTrgInpts = aod->GetHeader()->GetL0TriggerInputs(); }
   if (esd) { fFiredTriggerClass = esd->GetFiredTriggerClasses(); fTrgInpts = esd->GetHeader()->GetL0TriggerInputs(); }
-  fIsMB = fSelMask & AliVEvent::kMB;
-  fIsMU = fSelMask & AliVEvent::kMUON;
+  fIsMB = fSelMask & AliTrigger::kMB;
+  fIsMU = fSelMask & AliTrigger::kMUON;
 
   const AliVVertex *vertex = event->GetPrimaryVertex();
   vertex->GetXYZ(fVtx);
@@ -374,11 +375,11 @@ void AliMuonsHFHeader::FillHistosEvnH(TList *list)
   const Int_t nhs    = 3;
   TString tName[nhs] = {       "Vz",       "Vt",        "VtxNcontr" };
   Double_t dist[nhs] = { this->Vz(), this->Vt(), static_cast<Double_t>(this->VtxContrsN()) };
-  if (fIsMC && (fSelMask & AliVEvent::kAny)) {
+  if (fIsMC && (fSelMask & AliTrigger::kAny)) {
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h_%s",tName[i].Data())))->Fill(dist[i]);
   } else {
-    if (fIsMB && (fSelMask & AliVEvent::kMB))   { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MB",tName[i].Data())))->Fill(dist[i]); }
-    if (fIsMU && (fSelMask & AliVEvent::kMUON)) { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MU",tName[i].Data())))->Fill(dist[i]); }
+    if (fIsMB && (fSelMask & AliTrigger::kMB))   { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MB",tName[i].Data())))->Fill(dist[i]); }
+    if (fIsMU && (fSelMask & AliTrigger::kMUON)) { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MU",tName[i].Data())))->Fill(dist[i]); }
   }
 
   return;
@@ -403,13 +404,13 @@ void AliMuonsHFHeader::FillHistosMuon(TList *list, AliMuonInfoStoreRD* const inf
                          static_cast<Double_t>(infoStore->Charge()),
                          infoStore->RabsEnd() };
 
-  if (fIsMC && (fSelMask & AliVEvent::kAny)) {
+  if (fIsMC && (fSelMask & AliTrigger::kAny)) {
     TString sName[7] = { "BottomMu", "CharmMu", "PrimaryMu", "SecondaryMu", "Hadron", "Unidentified", "" };
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s",sName[6].Data(),tName[i].Data())))->Fill(dist[i]);
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s",sName[s].Data(),tName[i].Data())))->Fill(dist[i]);
   } else {
-    if (fIsMB && (fSelMask & AliVEvent::kMB))   { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MB",tName[i].Data())))->Fill(dist[i]); }
-    if (fIsMU && (fSelMask & AliVEvent::kMUON)) { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MU",tName[i].Data())))->Fill(dist[i]); }
+    if (fIsMB && (fSelMask & AliTrigger::kMB))   { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MB",tName[i].Data())))->Fill(dist[i]); }
+    if (fIsMU && (fSelMask & AliTrigger::kMUON)) { for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s","MU",tName[i].Data())))->Fill(dist[i]); }
   }
 
   return; 
@@ -434,15 +435,15 @@ void AliMuonsHFHeader::FillHistosDimu(TList *list, AliDimuInfoStoreRD* const inf
                          infoStore->Momentum().Pt(),
                          infoStore->InvM() };
 
-  if (fIsMC && (fSelMask & AliVEvent::kAny)) {
+  if (fIsMC && (fSelMask & AliTrigger::kAny)) {
     TString sName[7] = { "BBdiff", "BBsame", "DDdiff", "DDsame", "Resonance", "Uncorr", "" };
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s",sName[6].Data(),dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s",sName[s].Data(),dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
   } else {
-    if (fIsMB && (fSelMask & AliVEvent::kMB)) {
+    if (fIsMB && (fSelMask & AliTrigger::kMB)) {
       for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s","MB",dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
     }
-    if (fIsMU && (fSelMask & AliVEvent::kMUON)) {
+    if (fIsMU && (fSelMask & AliTrigger::kMUON)) {
       for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h%s_%s_%s","MU",dimuName.Data(),tName[i].Data())))->Fill(dist[i]);
     }
   }
@@ -516,3 +517,4 @@ UInt_t AliMuonsHFHeader::CollectPUMask(AliVEvent *event)
 
   return collectMask;
 }
+

@@ -6,7 +6,7 @@ Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,6
 //Int_t centralityArray[numberOfCentralityBins+1] = {41,80,146,245,384,576,835,1203,1471,10000}; // in terms of TPC only reference multiplicity
 
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
-Int_t centralitysel = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+Int_t centralitysel = AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral;
 
 void runFlowTaskCentralityPIDMHTrain( Int_t mode = mLocal,
 				      Bool_t useFlowParFiles = kFALSE,
@@ -300,4 +300,5 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   return chain;
 
 } // end of TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
+
 

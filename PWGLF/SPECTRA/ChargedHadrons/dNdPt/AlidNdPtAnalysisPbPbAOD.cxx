@@ -28,6 +28,7 @@
 */ 
 
 
+#include "AliTrigger.h"
 #include "AlidNdPtAnalysisPbPbAOD.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -878,9 +879,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   //   Bool_t isCentral = (event->GetTriggerMask() & (ULong64_t(1)<<4));
   //   Bool_t isSemiCentral = (event->GetTriggerMask() & (ULong64_t(1)<<7));
   
-  //   bIsEventSelectedMB = ( inputHandler->IsEventSelected() & AliVEvent::kMB);
-  //   bIsEventSelectedSemi = ( inputHandler->IsEventSelected() & AliVEvent::kSemiCentral);
-  //   bIsEventSelectedCentral = ( inputHandler->IsEventSelected() & AliVEvent::kCentral);
+  //   bIsEventSelectedMB = ( inputHandler->IsEventSelected() & AliTrigger::kMB);
+  //   bIsEventSelectedSemi = ( inputHandler->IsEventSelected() & AliTrigger::kSemiCentral);
+  //   bIsEventSelectedCentral = ( inputHandler->IsEventSelected() & AliTrigger::kCentral);
   
   bIsEventSelectedMB = (eventAOD->GetTriggerMask() & (ULong64_t(1)<<1));
   bIsEventSelectedCentral = (eventAOD->GetTriggerMask() & (ULong64_t(1)<<4));
@@ -1752,5 +1753,6 @@ void AlidNdPtAnalysisPbPbAOD::Terminate(Option_t *)
 {
   
 }
+
 
 

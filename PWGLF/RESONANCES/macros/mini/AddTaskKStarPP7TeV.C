@@ -51,7 +51,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask = AliVEvent::kMB;
+  UInt_t      triggerMask = AliTrigger::kMB;
   Bool_t      rejectPileUp = kTRUE; //
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
@@ -204,3 +204,4 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
    
    return task;
 }
+

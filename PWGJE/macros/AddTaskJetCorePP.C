@@ -13,7 +13,7 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    Float_t jetFreeAreaFrac = 0.75, //cell area free of jets
    Float_t bgConeR = 0.4,  //R of perp cone jet R 
    Int_t   collisionSystem = 0, //pp=0, pPb=1
-   Int_t   offlineTriggerMask=AliVEvent::kMB, //MinBias=0 
+   Int_t   offlineTriggerMask=AliTrigger::kMB, //MinBias=0 
    Int_t   minContribVtx = 1,
    Float_t vtxZMin = -10.0,
    Float_t vtxZMax = 10.0,
@@ -197,3 +197,4 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
    mgr->ConnectOutput(task, 1, coutputJetCorePP);
    return task;
 }
+

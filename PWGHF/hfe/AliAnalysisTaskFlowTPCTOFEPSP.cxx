@@ -19,6 +19,7 @@
 //   Raphaelle Bailhache <R.Bailhache@gsi.de>
 //   Theodor Rascanu <trascanu@stud.uni-frankfurt.de>
 //
+#include "AliTrigger.h"
 #include "TROOT.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -1222,18 +1223,18 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
     
     // MB, semi-central and central
     
-    if ( !((isEventSelected & AliVEvent::kCentral) |
-	   (isEventSelected & AliVEvent::kSemiCentral) |
-	   (isEventSelected & AliVEvent::kMB)) ) return;
+    if ( !((isEventSelected & AliTrigger::kCentral) |
+	   (isEventSelected & AliTrigger::kSemiCentral) |
+	   (isEventSelected & AliTrigger::kMB)) ) return;
     
   }
   else if(fTriggerUsed==1){
     
     // semi-central Ionut
 
-    if ( !((isEventSelected & AliVEvent::kCentral) |
-	   (isEventSelected & AliVEvent::kSemiCentral) |
-	   (isEventSelected & AliVEvent::kMB)) ) return;
+    if ( !((isEventSelected & AliTrigger::kCentral) |
+	   (isEventSelected & AliTrigger::kSemiCentral) |
+	   (isEventSelected & AliTrigger::kMB)) ) return;
     
     Bool_t isMB = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<1));
     //Bool_t isCentral = (InputEvent()->GetTriggerMask() & (ULong64_t(1)<<4));
@@ -1246,7 +1247,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 
     // semi-central Andrea and Muons
     
-    if ( !(isEventSelected & AliVEvent::kAny) ) return;
+    if ( !(isEventSelected & AliTrigger::kAny) ) return;
     
     //TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
     TString firedTriggerClasses = InputEvent()->GetFiredTriggerClasses();
@@ -2557,3 +2558,4 @@ void AliAnalysisTaskFlowTPCTOFEPSP::GetMesonKine(Int_t centrality)
     }  
   }
 }
+

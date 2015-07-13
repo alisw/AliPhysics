@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <Riostream.h>
 
 #include <TChain.h>
@@ -229,7 +230,7 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
    // second bin counts events passing physics selection
    // all events not passing physics selections are skipped
    fSelectedEvts->Fill(0.1);
-   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
    if (!isSelected) return;
    
    // count CINT1B selected events
@@ -458,3 +459,4 @@ void AliAnalysisTaskResonanceQA::Terminate(Option_t *)
       return;
    }
 }
+

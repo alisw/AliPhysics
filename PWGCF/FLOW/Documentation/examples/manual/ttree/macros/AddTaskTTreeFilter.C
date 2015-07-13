@@ -7,7 +7,7 @@
 
 AliAnalysisTaskTTreeFilter* AddTaskTTreeFilter(
         TString outfile = "myFilteredTree.root",
-        AliBits trigger = AliVEvent::kAnyINT
+        AliBits trigger = AliTrigger::kAnyINT
         ) 
 {
     // check validity of framework setup 
@@ -44,3 +44,4 @@ AliAnalysisTaskTTreeFilter* AddTaskTTreeFilter(
 
     return filter;
 }
+

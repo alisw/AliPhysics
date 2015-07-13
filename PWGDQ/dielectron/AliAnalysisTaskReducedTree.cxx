@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
+#include "AliTrigger.h"
 #include <TChain.h>
 #include <TH1D.h>
 #include <TFile.h>
@@ -71,7 +72,7 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree() :
   fListDielectron(),
   fListHistos(),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fRejectPileup(kFALSE),
   fFillTrackInfo(kTRUE),
   fFillDielectronInfo(kTRUE),
@@ -119,7 +120,7 @@ AliAnalysisTaskReducedTree::AliAnalysisTaskReducedTree(const char *name) :
   fListDielectron(),
   fListHistos(),
   fSelectPhysics(kFALSE),
-  fTriggerMask(AliVEvent::kAny),
+  fTriggerMask(AliTrigger::kAny),
   fRejectPileup(kFALSE),
   fFillTrackInfo(kTRUE),
   fFillDielectronInfo(kTRUE),
@@ -233,7 +234,7 @@ void AliAnalysisTaskReducedTree::UserExec(Option_t *)
   }
 
   // Was event selected ?
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   if(fSelectPhysics && inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
@@ -364,7 +365,7 @@ void AliAnalysisTaskReducedTree::FillEventInfo()
   if(isAOD) aodEvent = static_cast<AliAODEvent*>(event);
   
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  AliBits isSelected = AliVEvent::kAny;
+  AliBits isSelected = AliTrigger::kAny;
   if(inputHandler){
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
       isSelected = inputHandler->IsEventSelected();
@@ -1270,3 +1271,4 @@ void AliAnalysisTaskReducedTree::FinishTaskOutput()
   //fTreeFile->Write();
   //fTreeFile->Close();
 }
+

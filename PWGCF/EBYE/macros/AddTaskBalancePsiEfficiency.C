@@ -35,7 +35,7 @@ AliAnalysisTaskEfficiencyBFPsi *AddTaskBalancePsiEfficiency(TString centralityEs
   // centrality
   taskEfficiencyBFPsi->SetCentralityEstimator(centralityEstimator);
   taskEfficiencyBFPsi->SetCentralityPercentileRange(centrMin,centrMax);
-  taskEfficiencyBFPsi->SelectCollisionCandidates(AliVEvent::kMB);
+  taskEfficiencyBFPsi->SelectCollisionCandidates(AliTrigger::kMB);
 
   // vertex
   taskEfficiencyBFPsi->SetVertexDiamond(.3,.3,vertexZ);
@@ -74,3 +74,4 @@ AliAnalysisTaskEfficiencyBFPsi *AddTaskBalancePsiEfficiency(TString centralityEs
 
   return taskEfficiencyBFPsi;
 }
+

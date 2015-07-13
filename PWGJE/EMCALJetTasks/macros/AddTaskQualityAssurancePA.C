@@ -1,6 +1,6 @@
 AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
   Double_t            jetRadius               = 0.4,
-  Int_t               trigger                 = AliVEvent::kINT7,
+  Int_t               trigger                 = AliTrigger::kINT7,
   Bool_t              isMC                    = kFALSE,
   const char*         usedTracks              = "PicoTracks",
   const char*         usedClusters            = "CaloClustersCorr",
@@ -15,19 +15,19 @@ AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
 {
   // #### Detect the demanded trigger with its readable name
   TString triggerName(Form("Trigger_%i", trigger));
-  if (trigger == AliVEvent::kAnyINT)
+  if (trigger == AliTrigger::kAnyINT)
     triggerName = "kAnyINT";
-  else if (trigger == AliVEvent::kAny)
+  else if (trigger == AliTrigger::kAny)
     triggerName = "kAny";
-  else if(trigger == AliVEvent::kINT7)
+  else if(trigger == AliTrigger::kINT7)
     triggerName = "kINT7";
-  else if(trigger == AliVEvent::kMB)
+  else if(trigger == AliTrigger::kMB)
     triggerName = "kMB";
-  else if(trigger == AliVEvent::kEMC7)
+  else if(trigger == AliTrigger::kEMC7)
     triggerName = "kEMC7";
-  else if(trigger == AliVEvent::kEMCEJE)
+  else if(trigger == AliTrigger::kEMCEJE)
     triggerName = "kEMCEJE";
-  else if(trigger == AliVEvent::kEMCEGA)
+  else if(trigger == AliTrigger::kEMCEGA)
     triggerName = "kEMCEGA";
 
   // #### On EMCaltrain automatically determine the run numbers
@@ -81,3 +81,4 @@ AliAnalysisTaskQualityAssurancePA* AddTaskQualityAssurancePA(
   manager->ConnectOutput(task, 1, contHistos);
   return task;
 }
+

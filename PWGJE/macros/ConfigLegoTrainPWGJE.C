@@ -12,9 +12,9 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
     AliAnalysisManager::SetGlobalStr("kDeltaAODJetName","");
 
     // event selection
-    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB);
+    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliTrigger::kMB);
     AliAnalysisManager::SetGlobalInt("kNTrigger",1);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliTrigger::kMB);    
     AliAnalysisManager::SetGlobalStr("kTriggerName0","kMB");    
     // jet selection
     AliAnalysisManager::SetGlobalDbl("kJetEtaWindow",0.5);
@@ -37,13 +37,13 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
     AliAnalysisManager::SetGlobalStr("kDeltaAODJetName","");
 
 
-    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kEMCEJE);    
+    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral|AliTrigger::kEMCEJE);    
     AliAnalysisManager::SetGlobalInt("kNTrigger",5);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kEMCEJE);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit1",AliVEvent::kMB);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit2",AliVEvent::kCentral);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit3",AliVEvent::kSemiCentral);
-    AliAnalysisManager::SetGlobalInt("kTriggerBit4",AliVEvent::kEMCEJE);
+    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral|AliTrigger::kEMCEJE);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit1",AliTrigger::kMB);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit2",AliTrigger::kCentral);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit3",AliTrigger::kSemiCentral);
+    AliAnalysisManager::SetGlobalInt("kTriggerBit4",AliTrigger::kEMCEJE);
     AliAnalysisManager::SetGlobalStr("kTriggerName0","kMB|kCentral|kSemiCentral|kEMCEJE");    
     AliAnalysisManager::SetGlobalStr("kTriggerName1","kMB");    
     AliAnalysisManager::SetGlobalStr("kTriggerName2","kCentral");    
@@ -90,10 +90,10 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
 
     AliAnalysisManager::SetGlobalStr("kDeltaAODJetName","");
 
-    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliVEvent::kMB|AliVEvent::kAny);
+    AliAnalysisManager::SetGlobalInt("kPhysicsSelectionFlag",AliTrigger::kMB|AliTrigger::kAny);
     AliAnalysisManager::SetGlobalInt("kNTrigger",2);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliVEvent::kAny);    
-    AliAnalysisManager::SetGlobalInt("kTriggerBit1",AliVEvent::kMB);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit0",AliTrigger::kAny);    
+    AliAnalysisManager::SetGlobalInt("kTriggerBit1",AliTrigger::kMB);    
     AliAnalysisManager::SetGlobalStr("kTriggerName0","kAny");    
     AliAnalysisManager::SetGlobalStr("kTriggerName1","kMB");    
 
@@ -111,3 +111,4 @@ void ConfigLegoTrainPWGJE(int iFlag = 0){
 
 
 }
+

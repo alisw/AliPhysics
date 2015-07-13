@@ -7,6 +7,7 @@
   *********************************************************
 */
 
+#include "AliTrigger.h"
 //#include "AliSysInfo.h"
 #include <iostream>
 
@@ -230,8 +231,8 @@ void AliAnalysisTaskEventPlaneCalibration::UserExec(Option_t *){
   AliAODEvent* aodEvent = 0x0;
   if(isAOD) aodEvent = static_cast<AliAODEvent*>(event);
   
-  UInt_t isSelected = AliVEvent::kAny;
-  if(fTriggerMask==0) fTriggerMask=AliVEvent::kAny;
+  UInt_t isSelected = AliTrigger::kAny;
+  if(fTriggerMask==0) fTriggerMask=AliTrigger::kAny;
   if(!IsReduced()){
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if(inputHandler){
@@ -933,6 +934,7 @@ void AliAnalysisTaskEventPlaneCalibration::DefineHistograms(const Char_t* histCl
 
   cout << " done" << endl;
 }
+
 
 
 

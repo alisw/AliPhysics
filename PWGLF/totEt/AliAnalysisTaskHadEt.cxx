@@ -8,6 +8,7 @@
 //University of Tennessee at Knoxville
 //_________________________________________________________________________
 //Necessary to read config macros
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
@@ -158,7 +159,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 //     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
 //   }
   if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111||fRecAnalysis->DataSet()==2009 || fRecAnalysis->DataSet()==2012 || fRecAnalysis->DataSet()==2013){
-    // AliAnalysisTaskSE::	SelectCollisionCandidates(AliVEvent::kINT7 ) ;
+    // AliAnalysisTaskSE::	SelectCollisionCandidates(AliTrigger::kINT7 ) ;
     if(fRecAnalysis->DataSet()==2010)cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
     else{
       if(fRecAnalysis->DataSet()==2012)cout<<"Setting track cuts for the 2012 p+p collisions at 8 TeV"<<endl;
@@ -329,5 +330,6 @@ void AliAnalysisTaskHadEt::Terminate(Option_t *)
         return;
     }
 }
+
 
 

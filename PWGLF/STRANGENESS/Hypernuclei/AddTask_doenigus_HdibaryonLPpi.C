@@ -14,7 +14,7 @@ AliAnalysisTask *AddTask_doenigus_HdibaryonLPpi(){
   mgr->AddTask(taskHdibaryonLPpi);
 
   if (!hasMC){
-    taskHdibaryonLPpi->SelectCollisionCandidates(AliVEvent::kAny);
+    taskHdibaryonLPpi->SelectCollisionCandidates(AliTrigger::kAny);
   }
 
   //================================================
@@ -32,3 +32,4 @@ AliAnalysisTask *AddTask_doenigus_HdibaryonLPpi(){
 
   return taskHdibaryonLPpi;
 }
+

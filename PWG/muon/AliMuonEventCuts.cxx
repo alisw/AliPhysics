@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "AliTrigger.h"
 #include "AliMuonEventCuts.h"
 
 #include "TMath.h"
@@ -378,7 +379,7 @@ void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern, TString trigI
   /// - the single low trigger class fired and containing a single high trigger input
   /// - the single low trigger class fired
   /// - the single low trigger class 7 or 8 fired
-  /// Also, kMUU7|kMUL7 will give events firing either AliVEvent::kMUU7 or AliVEvent::kMUL7
+  /// Also, kMUU7|kMUL7 will give events firing either AliTrigger::kMUU7 or AliTrigger::kMUL7
   /// By default, when specific trigger combinations are provided, the most general case
   /// based on trigger pattern is disabled...but it can be activated with the disableTrigPattern flag
   ///
@@ -996,7 +997,7 @@ Double_t AliMuonEventCuts::GetCentrality ( const AliVEvent* event ) const
 void AliMuonEventCuts::SetDefaultParameters ()
 {
   /// Standard parameters for muon event
-  SetPhysicsSelectionMask(AliVEvent::kAny);
+  SetPhysicsSelectionMask(AliTrigger::kAny);
   SetVertexMinNContributors(1);
   SetVertexVzLimits();
 }
@@ -1035,3 +1036,4 @@ void AliMuonEventCuts::Print(Option_t* option) const
     printf(" ******************** \n");
   }
 }
+

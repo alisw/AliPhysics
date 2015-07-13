@@ -4,6 +4,7 @@
 //
 // Authors: M.Cosentino
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -172,10 +173,10 @@ void AliAnalysisTaskTrgContam::UserExec(Option_t *)
 
   Bool_t isSelected = 0;
   if(fPeriod.Contains("11a"))
-    isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
+    isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kEMC1);
   else
-    isSelected =  ((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) ||
-		   (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral));
+    isSelected =  ((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kCentral) ||
+		   (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kSemiCentral));
   if(!isSelected )
     return; 
 
@@ -358,3 +359,4 @@ void AliAnalysisTaskTrgContam::Terminate(Option_t *)
 {
   // Called once at the end of the query
 }
+

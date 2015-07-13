@@ -55,8 +55,8 @@ AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AODSemiCent(Bool_t runAll=kFALSE,B
   LMEECutLib* cutlib = new LMEECutLib();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-  task->SelectCollisionCandidates(AliVEvent::kAny);  
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
+  task->SelectCollisionCandidates(AliTrigger::kAny);  
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kPbPb2011TPCandTOF)); //
 	
 
@@ -108,3 +108,4 @@ if (PIDbaseline) {
 
   return task;
 }
+

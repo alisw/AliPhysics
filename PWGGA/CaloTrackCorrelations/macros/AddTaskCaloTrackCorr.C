@@ -486,8 +486,8 @@ AliCaloTrackReader * ConfigureReader()
     reader->SwitchOffEventTriggerAtSE();
     AliBits mask =  SetTriggerMaskFromName();
     reader->SetEventTriggerMask(mask); // Only for mixing and SwitchOffEventTriggerAtSE();
-    //reader->SetMixEventTriggerMask(AliVEvent::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
-    reader->SetMixEventTriggerMask(AliVEvent::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+    //reader->SetMixEventTriggerMask(AliTrigger::kMB); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
+    reader->SetMixEventTriggerMask(AliTrigger::kAnyINT); // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
     
     printf("---Trigger selection done in AliCaloTrackReader!!!\n");
   }
@@ -1801,73 +1801,74 @@ AliBits SetTriggerMaskFromName()
   if(kTrig=="EMC7")
   {
     printf("CaloTrackCorr trigger EMC7\n");
-    return AliVEvent::kEMC7;
+    return AliTrigger::kEMC7;
   }
   else if (kTrig=="INT7")
   {
     printf("CaloTrackCorr trigger INT7\n");
-    return AliVEvent::kINT7;
+    return AliTrigger::kINT7;
   }
   else if(kTrig=="EMC1")
   {
     printf("CaloTrackCorr trigger EMC1\n");
-    return AliVEvent::kEMC1;
+    return AliTrigger::kEMC1;
   }
   else if(kTrig=="MB")
   {
     printf("CaloTrackCorr trigger MB\n");
-    return AliVEvent::kMB;
+    return AliTrigger::kMB;
   }  
   else if(kTrig=="PHOS")
   {
     printf("CaloTrackCorr trigger PHOS\n");
-    return AliVEvent::kPHI7;
+    return AliTrigger::kPHI7;
   }  
   else if(kTrig=="PHOSPb")
   {
     printf("CaloTrackCorr trigger PHOSPb\n");
-    return AliVEvent::kPHOSPb;
+    return AliTrigger::kPHOSPb;
   }
   else if(kTrig=="AnyINT")
   {
     printf("CaloTrackCorr trigger AnyINT\n");
-    return AliVEvent::kAnyINT;
+    return AliTrigger::kAnyINT;
   }  
   else if(kTrig=="INT")
   {
     printf("CaloTrackCorr trigger AnyINT\n");
-    return AliVEvent::kAny;
+    return AliTrigger::kAny;
   }
   else if(kTrig=="EMCEGA")
   {
     printf("CaloTrackCorr trigger EMC Gamma\n");
-    return AliVEvent::kEMCEGA;
+    return AliTrigger::kEMCEGA;
   } 
   else if(kTrig=="EMCEJE")
   {
     printf("CaloTrackCorr trigger EMC Jet\n");
-    return AliVEvent::kEMCEJE;
+    return AliTrigger::kEMCEJE;
   }
   else if(kTrig=="Central")
   {
     printf("CaloTrackCorr trigger Central\n");
-    return (AliVEvent::kCentral  | AliVEvent::kMB);
+    return (AliTrigger::kCentral  | AliTrigger::kMB);
   }
   else if(kTrig=="CentralEGA")
   {
     printf("CaloTrackCorr trigger Central+EMCEGA\n");
-    return (AliVEvent::kCentral | AliVEvent::kEMCEGA);
+    return (AliTrigger::kCentral | AliTrigger::kEMCEGA);
   }
   else if(kTrig=="SemiCentral")
   {
     printf("CaloTrackCorr trigger SemiCentral\n");
-    return (AliVEvent::kSemiCentral | AliVEvent::kMB);
+    return (AliTrigger::kSemiCentral | AliTrigger::kMB);
   }
   else if(kTrig=="SemiOrCentral")
   {
     printf("CaloTrackCorr trigger SemiCentral Or Central\n");
-    return (AliVEvent::kSemiCentral | AliVEvent::kCentral  | AliVEvent::kMB);
+    return (AliTrigger::kSemiCentral | AliTrigger::kCentral  | AliTrigger::kMB);
   }
   return AliBits();
 }
+
 

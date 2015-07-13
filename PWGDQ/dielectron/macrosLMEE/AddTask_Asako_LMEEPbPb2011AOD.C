@@ -58,10 +58,10 @@ AliAnalysisTask *AddTask_Asako_LMEEPbPb2011AOD(Bool_t runAll=kFALSE,Bool_t setMC
   LMEECutLibAsako* cutlib = new LMEECutLibAsako();
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData");
   if (!hasMC) task->UsePhysicsSelection();
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-//  task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
+  task->SetTriggerMask(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
+//  task->SelectCollisionCandidates(AliTrigger::kMB+AliTrigger::kCentral+AliTrigger::kSemiCentral);
 //  task->SetRejectPileup();
-  task->SelectCollisionCandidates(AliVEvent::kAny);  
+  task->SelectCollisionCandidates(AliTrigger::kAny);  
   task->SetEventFilter(cutlib->GetEventCuts(LMEECutLibAsako::kPbPb2011TPCandTOF)); //
 	
 
@@ -178,3 +178,4 @@ AliDielectron *lowmass11=ConfigAsakoLMEEPbPb2011AOD(11,hasMC,bESDANA);
 
   return task;
 }
+

@@ -38,8 +38,8 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetCutJetEta(jetEtaCut);
   task->SetDeltaZVertexCut(DeltaVtxZCut);
   task->SetBranchRecBackClusters("clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00"); 
-  //task->SetEventSelectionMask(AliVEvent::kMB); //for 2010 Pb-Pb data !!
-  task->SetEventSelectionMask(AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral); //event selection for 2011 Pb-Pb data
+  //task->SetEventSelectionMask(AliTrigger::kMB); //for 2010 Pb-Pb data !!
+  task->SetEventSelectionMask(AliTrigger::kAnyINT | AliTrigger::kCentral | AliTrigger::kSemiCentral); //event selection for 2011 Pb-Pb data
   task->SetEventClass(eventClass);
   task->SetK0Type(K0type);
   task->SetLaType(Latype); 
@@ -191,3 +191,4 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
    
    return task;
 }
+

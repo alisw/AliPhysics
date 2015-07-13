@@ -1,4 +1,5 @@
 
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TNtuple.h"
@@ -288,7 +289,7 @@ void AliEbyEMultFluctuationTask::UserExec(Option_t *)
 
   }
 
-Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
 if(!isSelected) return;
  fEventCounter->Fill(1);
  //Counter++;
@@ -447,3 +448,4 @@ void AliEbyEMultFluctuationTask::Terminate(Option_t *)
   }
  
 }
+

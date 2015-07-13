@@ -12,7 +12,7 @@ AliAnalysisTaskDiJetCorr1plus1Bkg *AddTaskDiJetCorr1plus1Bkg(TString suffixName 
   
   AliAnalysisTaskDiJetCorr1plus1Bkg *dijetcorr = new AliAnalysisTaskDiJetCorr1plus1Bkg("DiJetCorr");
     
-    dijetcorr->SelectCollisionCandidates(AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kMB);
+    dijetcorr->SelectCollisionCandidates(AliTrigger::kCentral|AliTrigger::kSemiCentral|AliTrigger::kMB);
     
     if(fileTrackeff!="")
         
@@ -86,6 +86,7 @@ AliAnalysisTaskDiJetCorr1plus1Bkg *AddTaskDiJetCorr1plus1Bkg(TString suffixName 
   return dijetcorr;
   
 }
+
 
 
 

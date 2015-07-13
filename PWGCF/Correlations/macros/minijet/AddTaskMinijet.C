@@ -41,8 +41,8 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
   taskMB->SetMaxEta(maxEta);
   taskMB->SetPtRange(ptMin, ptMax);
   taskMB->SetMaxVertexZ(maxVtxZ);
-  taskMB->SetTriggerMask(AliVEvent::kMB);
-  // taskMB->SelectCollisionCandidates(AliVEvent::kMB);//MB  //now inside task
+  taskMB->SetTriggerMask(AliTrigger::kMB);
+  // taskMB->SelectCollisionCandidates(AliTrigger::kMB);//MB  //now inside task
   taskMB->SetFilterBit(filterBit); // used only in AOD case
   taskMB->SetCheckSDD(checkSDD, checkOption);
   taskMB->SetCorrStrangeness(corrStrange);
@@ -72,8 +72,8 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
     taskHM->SetMaxEta(maxEta);
     taskHM->SetPtRange(ptMin, ptMax);
     taskHM->SetMaxVertexZ(maxVtxZ);
-    taskHM->SetTriggerMask(AliVEvent::kHighMult);
-    //taskHM->SelectCollisionCandidates(AliVEvent::kHighMult); // now inside task
+    taskHM->SetTriggerMask(AliTrigger::kHighMult);
+    //taskHM->SelectCollisionCandidates(AliTrigger::kHighMult); // now inside task
     taskHM->SetFilterBit(filterBit); // used only in AOD case
     taskHM->SetCheckSDD(checkSDD, checkOption);
     taskHM->SetCorrStrangeness(corrStrange);
@@ -136,4 +136,5 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
   return taskMB;
 
 }
+
 

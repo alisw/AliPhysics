@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliFakeTrackTask.h"
 #include "AliAnalysisManager.h"
 
@@ -92,7 +93,7 @@ void AliFakeTrackTask::UserExec(Option_t *)
 	//AliBits isSelected;
 /*	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))
 		isSelected=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-     	if(!(isSelected&AliVEvent::kMB))
+     	if(!(isSelected&AliTrigger::kMB))
      	{
 		 PostData(1,  flistout);
 		 return;
@@ -184,3 +185,4 @@ void AliFakeTrackTask::UserExec(Option_t *)
 	PostData(1,  flistout);
 
 } 
+

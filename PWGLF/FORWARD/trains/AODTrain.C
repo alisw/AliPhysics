@@ -13,6 +13,7 @@
 #else 
 class AliAnalysisManager;
 #endif
+#include "AliTrigger.h"
 #include "TrainSetup.C"
 
 /**
@@ -105,7 +106,7 @@ public:
 
     if (fOptions.Has("pid-qa")) {
       seTask = CoupleSECar("AddTaskPIDqa.C");
-      seTask->SelectCollisionCandidates(AliVEvent::kAny);
+      seTask->SelectCollisionCandidates(AliTrigger::kAny);
     }
     
     if (cdb && !tender) {
@@ -332,3 +333,4 @@ public:
 //
 // EOF
 //
+

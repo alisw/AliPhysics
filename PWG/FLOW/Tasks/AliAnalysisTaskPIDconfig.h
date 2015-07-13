@@ -14,6 +14,7 @@
 //
 //==============================================================================
 
+#include "AliTrigger.h"
 #include <TVectorDfwd.h>
 
 #include "AliAnalysisTaskSE.h"
@@ -57,7 +58,7 @@ public:
     void SetCentralityPercentileMax(Int_t b){fCentralityPercentileMax = b;}
     void SetCentralityEstimator(TString b){fCentralityEstimator = b;}
     void SetUseCentrality(Bool_t b=kTRUE){fUseCentrality = b;}
-    void SetCentralityTrigger(Int_t b=AliVEvent::kMB){ fTriggerSelection = b;}
+    void SetCentralityTrigger(Int_t b=AliTrigger::kMB){ fTriggerSelection = b;}
     void SetDCAxyCut(Int_t b){fDCAxyCut = b;}
     void SetDCAzCut(Int_t b){fDCAzCut = b;}
     void SetCutTPCmultiplicityOutliersAOD(Bool_t b){fCutTPCmultiplicityOutliersAOD = b;}
@@ -150,3 +151,4 @@ private:
 };
 
 #endif
+

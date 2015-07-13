@@ -46,7 +46,7 @@ AliAnalysisTask *AddTask_oezdemir_RandomRejection(Bool_t getFromAlien=kFALSE, Bo
   //task->SetEventFilter(eventCuts);
 
   //Min Bias?
-  task->SetTriggerMask(AliVEvent::kMB);
+  task->SetTriggerMask(AliTrigger::kMB);
   task->SetRandomizeDaughters(kFALSE);
   mgr->AddTask(task);
 
@@ -90,3 +90,4 @@ AliAnalysisTask *AddTask_oezdemir_RandomRejection(Bool_t getFromAlien=kFALSE, Bo
 
   return task;
 }
+

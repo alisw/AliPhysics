@@ -29,7 +29,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiRAApPb
 
    // create the task and connect with physics selection
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask("RSN", isMC);
-   task->UseESDTriggerMask(AliVEvent::kINT7);
+   task->UseESDTriggerMask(AliTrigger::kINT7);
    
    // settings
    if (isPP)
@@ -121,3 +121,4 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskPhiRAApPb
 
    return task;
 }
+

@@ -50,7 +50,7 @@ AddAnalysisTaskTOFSpectraPbPb(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE
   task->SetMCFlag(mcFlag);
   task->SetMCTuneFlag(mcTuneFlag);
   task->SetPbPbFlag(pbpbFlag);
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
   task->SetVertexSelectionFlag(kTRUE);
   task->SetVertexCut(10.0);
   task->SetRapidityCut(0.5);
@@ -83,3 +83,4 @@ AddAnalysisTaskTOFSpectraPbPb(Bool_t mcFlag = kFALSE, Bool_t mcTuneFlag = kFALSE
   return task;
   
 }
+

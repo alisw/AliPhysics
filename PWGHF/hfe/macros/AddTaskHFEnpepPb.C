@@ -506,7 +506,7 @@ AliAnalysisTask *RegisterTaskNPEpPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
   if (useMC)	task->SetHasMCData(kTRUE);
   else		task->SetHasMCData(kFALSE);
 
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliTrigger::kINT7);
 
   if(useMC&&(beauty || (weightlevelback>=0))) {
     ConfigWeightFactors(task,kFALSE,WhichWei);
@@ -634,7 +634,7 @@ AliAnalysisTask *RegisterTaskNPEpPbTOFworkaround(Bool_t useMC, Bool_t isAOD, Boo
   if (useMC)	task->SetHasMCData(kTRUE);
   else		task->SetHasMCData(kFALSE);
 
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliTrigger::kINT7);
 
   if(useMC&&(beauty || (weightlevelback>=0))) {
     ConfigWeightFactors(task,kFALSE,WhichWei);
@@ -657,3 +657,4 @@ AliAnalysisTask *RegisterTaskNPEpPbTOFworkaround(Bool_t useMC, Bool_t isAOD, Boo
 
   return NULL;
 }
+

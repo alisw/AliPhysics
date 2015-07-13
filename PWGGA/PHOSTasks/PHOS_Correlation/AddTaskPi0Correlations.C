@@ -167,7 +167,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	// Period setup
 	task->SetPeriodName( TString(options) );
 	// Events
-	task->SelectCollisionCandidates(AliVEvent::kAny);
+	task->SelectCollisionCandidates(AliTrigger::kAny);
 	task->SetCentralityBorders((Double_t)downCentLimit , (Double_t)upCentLimit) ;
 	task->SetEventPlaneMethod("V0");
 	// Mixing
@@ -197,4 +197,5 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 
 	return task;
 }
+
 

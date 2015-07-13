@@ -1,7 +1,7 @@
 // $Id$
 
 AliJJetJtTask* AddTaskJJetJt(
-		Int_t       trigger            = AliVEvent::kEMCEJE,
+		Int_t       trigger            = AliTrigger::kEMCEJE,
 		TString  taskName      = "AliJJetJtTask"   ,
 		TString  jetTaskName   = "AliJJetTask" ,
 		TString  cardName      = "card.input",
@@ -55,3 +55,4 @@ AliJJetJtTask* AddTaskJJetJt(
 
 	return jtTask;
 }
+

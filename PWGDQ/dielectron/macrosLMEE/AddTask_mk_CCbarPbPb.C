@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_mk_CCbarPbPb(TString prod="",AliBits triggers=AliVEvent::kEMCEGA  | AliVEvent::kEMCEJE){
+AliAnalysisTask *AddTask_mk_CCbarPbPb(TString prod="",AliBits triggers=AliTrigger::kEMCEGA  | AliTrigger::kEMCEJE){
   
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -52,7 +52,7 @@ TString checkconfig="$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/Config_mk_CCbarPbPb
   task->SetEventFilter(eventCuts);
 
   // pileup rejection
-  task->SetTriggerMask(AliVEvent::kEMCEGA);
+  task->SetTriggerMask(AliTrigger::kEMCEGA);
   task->UsePhysicsSelection();
    
   mgr->AddTask(task);
@@ -89,3 +89,4 @@ TString checkconfig="$ALICE_ROOT/PWGDQ/dielectron/macrosLMEE/Config_mk_CCbarPbPb
   
   return task;
 }
+

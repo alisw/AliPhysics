@@ -18,6 +18,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
  
+#include "AliTrigger.h"
 #include <TFile.h>
 #include <TList.h>
 #include <TClonesArray.h>
@@ -626,7 +627,7 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
   // Execute analysis for current event
   //
   Bool_t selectEvent =  false;
-  Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
+  Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliTrigger::kMB)==AliTrigger::kMB;
 
   Float_t cent = 0;
   Float_t zVtx  = 0;
@@ -1918,3 +1919,4 @@ Bool_t AliAnalysisTaskJetFFMoments::TrackQAFilter(TList* list, Int_t type)
   return Cut_on_track;
 
 }
+

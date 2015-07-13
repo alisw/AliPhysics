@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_cbaumann_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEoutput.root", 
 	  Bool_t runAll=kFALSE,Bool_t setMC=kFALSE,Bool_t getFromAlien=kFALSE, Bool_t PIDbaseline=kFALSE, Bool_t rejOnly=kTRUE,
-	  AliBits triggerNames=(AliVEvent::kMB|AliVEvent::kCentral|AliVEvent::kSemiCentral),AliBits collCands= AliVEvent::kAny) {
+	  AliBits triggerNames=(AliTrigger::kMB|AliTrigger::kCentral|AliTrigger::kSemiCentral),AliBits collCands= AliTrigger::kAny) {
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -117,3 +117,4 @@ printf("add: %s\n",lowmass3->GetName());
 
   return task;
 }
+

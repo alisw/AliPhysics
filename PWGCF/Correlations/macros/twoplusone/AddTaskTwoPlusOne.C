@@ -24,7 +24,7 @@ AliAnalysisTaskTwoPlusOne *AddTaskTwoPlusOne(const char* outputFileName = 0, Dou
   
   ana->SetAlpha(alpha);
   
-  ana->SelectCollisionCandidates(AliVEvent::kMB);
+  ana->SelectCollisionCandidates(AliTrigger::kMB);
   
   mgr->AddTask(ana);
   
@@ -41,3 +41,4 @@ AliAnalysisTaskTwoPlusOne *AddTaskTwoPlusOne(const char* outputFileName = 0, Dou
    
   return ana;
 }
+

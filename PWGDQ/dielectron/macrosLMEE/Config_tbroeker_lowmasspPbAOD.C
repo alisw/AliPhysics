@@ -20,7 +20,7 @@ TString names ("MB_cut23_pf;MB_cut23");
      Bool_t kRot = 0;
      Bool_t kMix = 1;
 
-     ULong64_t triggerMask = AliVEvent::kINT7;
+     ULong64_t triggerMask = AliTrigger::kINT7;
      Bool_t randomizeDau = kTRUE;
      
      
@@ -456,4 +456,5 @@ AliDielectronEventCuts* GetEventCuts(){
   
   return eventCuts;
 }
+
 

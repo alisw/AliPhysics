@@ -6,7 +6,7 @@ class AliFlowEventCuts;
 class AliFlowEventSimpleCuts;
 
 
-void AddTaskPIDFlowSP(AliBits triggerSelectionString=AliVEvent::kMB,
+void AddTaskPIDFlowSP(AliBits triggerSelectionString=AliTrigger::kMB,
                       Int_t uptoWhichHarmonics = 2, // 2 --> v2 only, 3 --> v2 and v3, and so on
                       Float_t etamin=-0.8,
                       Float_t etamax=0.8,
@@ -377,6 +377,7 @@ AliFlowTrackCuts* DefinePOIcuts(){
     AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI");
     return cutsPOI;
 }
+
 
 
 

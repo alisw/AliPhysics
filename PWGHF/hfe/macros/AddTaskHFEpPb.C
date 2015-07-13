@@ -218,7 +218,7 @@ AliAnalysisTask *RegisterTask(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, Int_
   else{
     task->SetHasMCData(kFALSE);
   }
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliTrigger::kINT7);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";
@@ -265,8 +265,8 @@ AliAnalysisTask *RegisterTaskPID2(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=120, 
     task->SetHasMCData(kFALSE);
   }
 
-  if(TRDtrigger<2) task->SelectCollisionCandidates(AliVEvent::kINT7);
-  else task->SelectCollisionCandidates(AliVEvent::kTRD);
+  if(TRDtrigger<2) task->SelectCollisionCandidates(AliTrigger::kINT7);
+  else task->SelectCollisionCandidates(AliTrigger::kTRD);
 
   Int_t idcaxy = (Int_t)(dcaxy*10.);
   Int_t idcaz = (Int_t)(dcaz*10.);
@@ -343,8 +343,8 @@ AliAnalysisTask *RegisterTaskPID2mbTRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=
     task->SetHasMCData(kFALSE);
   }
 
-  if(TRDtrigger<2) task->SelectCollisionCandidates(AliVEvent::kINT7);
-  else task->SelectCollisionCandidates(AliVEvent::kTRD);
+  if(TRDtrigger<2) task->SelectCollisionCandidates(AliTrigger::kINT7);
+  else task->SelectCollisionCandidates(AliTrigger::kTRD);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";
@@ -412,8 +412,8 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
     task->SetHasMCData(kFALSE);
   }
 
-  if(TRDtrigger<2) task->SelectCollisionCandidates(AliVEvent::kINT7);
-  else task->SelectCollisionCandidates(AliVEvent::kTRD);
+  if(TRDtrigger<2) task->SelectCollisionCandidates(AliTrigger::kINT7);
+  else task->SelectCollisionCandidates(AliTrigger::kTRD);
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";
@@ -432,3 +432,4 @@ AliAnalysisTask *RegisterTaskPID2TRD(Bool_t useMC, Bool_t isAOD, Int_t tpcCls=12
   mgr->AddTask(task);
   return NULL;
 }
+

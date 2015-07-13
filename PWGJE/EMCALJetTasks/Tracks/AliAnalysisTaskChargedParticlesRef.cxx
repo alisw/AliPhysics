@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include "AliTrigger.h"
 #include <vector>
 #include <map>
 
@@ -120,7 +121,7 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
 void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   // Select event
   TString triggerstring = fInputEvent->GetFiredTriggerClasses();
-  Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
+  Bool_t isMinBias = fInputHandler->IsEventSelected() & AliTrigger::kINT7,
       isEJ1 = triggerstring.Contains("EJ1"),
       isEJ2 = triggerstring.Contains("EJ2"),
       isEG1 = triggerstring.Contains("EG1"),
@@ -370,3 +371,4 @@ Bool_t AliAnalysisTaskChargedParticlesRef::TrackSelectionAOD(AliAODTrack* track)
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
+

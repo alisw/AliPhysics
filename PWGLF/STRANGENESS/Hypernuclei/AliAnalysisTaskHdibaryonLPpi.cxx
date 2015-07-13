@@ -18,6 +18,7 @@
 //          (Lambda Proton Pion) and strong (Lambda Lambda) decays
 //-----------------------------------------------------------------
 
+#include "AliTrigger.h"
 #include "Riostream.h"
 #include "TROOT.h"
 #include "TChain.h"
@@ -819,9 +820,9 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
  
   //  Float_t percentile=centrality->GetCentralityPercentile("V0M");
 
-  Bool_t isSelectedCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral);
-  Bool_t isSelectedSemiCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral);
-  Bool_t isSelectedMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelectedCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kCentral);
+  Bool_t isSelectedSemiCentral = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kSemiCentral);
+  Bool_t isSelectedMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
  
   Int_t triggertype = 17;
 
@@ -1584,4 +1585,5 @@ void AliAnalysisTaskHdibaryonLPpi::Terminate(Option_t *)
   // Called once at the end of the query
 
 }
+
 

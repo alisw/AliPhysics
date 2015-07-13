@@ -15,8 +15,8 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const Double_t TrkEta      = 0.9,
    const Int_t nmixingTR      = 5000,
    const Int_t nmixingEV      = 5,
-   UInt_t trigevent           = AliVEvent::kAny,
-   UInt_t mixevent            = AliVEvent::kAny,
+   UInt_t trigevent           = AliTrigger::kAny,
+   UInt_t mixevent            = AliTrigger::kAny,
    Bool_t lessSparseAxes      = 0,
    Bool_t widertrackbin       = 0,
    UInt_t centbinsize         = 1,
@@ -91,3 +91,4 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
 
   return correlationtask;
 }
+

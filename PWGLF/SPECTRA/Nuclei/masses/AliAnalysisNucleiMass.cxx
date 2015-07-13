@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisNucleiMass.h"
 
 // ROOT includes
@@ -502,10 +503,10 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
     //TRIGGER SELECTION
     Int_t iTrigger=-2;
 
-    if(inputHandler->IsEventSelected() & AliVEvent::kMB) iTrigger = 0;
-    if(inputHandler->IsEventSelected() & AliVEvent::kCentral) iTrigger = 16;
-    if(inputHandler->IsEventSelected() & AliVEvent::kSemiCentral) iTrigger = 17;
-    //if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & AliVEvent::kAny) iTrigger = 35;
+    if(inputHandler->IsEventSelected() & AliTrigger::kMB) iTrigger = 0;
+    if(inputHandler->IsEventSelected() & AliTrigger::kCentral) iTrigger = 16;
+    if(inputHandler->IsEventSelected() & AliTrigger::kSemiCentral) iTrigger = 17;
+    //if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) & AliTrigger::kAny) iTrigger = 35;
     
     if(iTriggerSel!=-99) {//if a dedicated trigger is required
       if(iTrigger!=iTriggerSel) return;
@@ -515,8 +516,8 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       Int_t bit=(1<<i);
       if(inputHandler->IsEventSelected() & AliBits(bit)) htriggerbits[iBconf][0]->Fill(i);
     }
-    if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerbits[iBconf][0]->Fill(35);
-    if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerbits[iBconf][0]->Fill(36);
+    if(inputHandler->IsEventSelected() & AliTrigger::kAny) htriggerbits[iBconf][0]->Fill(35);
+    if(inputHandler->IsEventSelected() & AliTrigger::kAnyINT) htriggerbits[iBconf][0]->Fill(36);
     
     htriggerbits[iBconf][1]->Fill(iTrigger);
     
@@ -1210,4 +1211,5 @@ void AliAnalysisNucleiMass::SetPmeanCorrections(){
   return;
   
 }
+
 

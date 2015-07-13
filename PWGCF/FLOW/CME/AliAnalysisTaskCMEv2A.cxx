@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <iostream>
 #include <cstdlib>
 #include <sys/time.h>
@@ -69,7 +70,7 @@ float GetDPhiStar(float phi1, float pt1, float charge1, float phi2, float pt2, f
 AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A() : AliAnalysisTaskSE(),
     debug(0),
     doMC(false),
-    trigger(AliVEvent::kMB),
+    trigger(AliTrigger::kMB),
     dopupcut(true),
     doeffcorr(true),
     centhandle(1),
@@ -590,7 +591,7 @@ AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A() : AliAnalysisTaskSE(),
 AliAnalysisTaskCMEv2A::AliAnalysisTaskCMEv2A(const char *name) : AliAnalysisTaskSE(name),
     debug(0),
     doMC(false),
-    trigger(AliVEvent::kMB),
+    trigger(AliTrigger::kMB),
     dopupcut(true),
     doeffcorr(true),
     centhandle(1),
@@ -2290,9 +2291,9 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 
   //ULong64_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   AliBits mask = handler->IsEventSelected();
-  AliBits amb = AliVEvent::kMB;
-  AliBits acn = AliVEvent::kCentral;
-  AliBits asc = AliVEvent::kSemiCentral;
+  AliBits amb = AliTrigger::kMB;
+  AliBits acn = AliTrigger::kCentral;
+  AliBits asc = AliTrigger::kSemiCentral;
   if(debug>0) cout<<"trigger selection is "<<trigger.GetBitString().Data()<<endl;
   if(debug>0) cout<<"trigger mask is "<<mask.GetBitString().Data()<<endl;
   if(mask&amb)
@@ -5251,5 +5252,6 @@ float GetDPhiStar(float phi1, float pt1, float charge1, float phi2, float pt2, f
   return dphistar;
 
 }
+
 
 

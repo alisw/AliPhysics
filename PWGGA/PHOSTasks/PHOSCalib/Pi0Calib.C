@@ -49,7 +49,7 @@ void Pi0Calib(// const char* dataset="/default/polishch/LHC12c_*_ESDs_pass1_phos
 
   // Add my task
   AliAnalysisTaskPi0Calib *task1 = new AliAnalysisTaskPi0Calib("Pi0Spectrum");
-//   task1->SelectCollisionCandidates(AliVEvent::kAnyINT);
+//   task1->SelectCollisionCandidates(AliTrigger::kAnyINT);
 
 
 /*  
@@ -120,3 +120,4 @@ void Pi0Calib(// const char* dataset="/default/polishch/LHC12c_*_ESDs_pass1_phos
   }
   
 }
+

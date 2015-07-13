@@ -60,7 +60,7 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPIDpp( // for AOD113 2.76TeV
 
     // Configure and add Event Cuts.
 	AliAODEventCutsDiHadronPID* eventcuts = new AliAODEventCutsDiHadronPID("EventCuts");
-	eventcuts->SetTrigger(AliVEvent::kMB);
+	eventcuts->SetTrigger(AliTrigger::kMB);
 	// eventcuts->SetCentrality(MaxCentrality, MinCentrality);
 	eventcuts->SetMaxVertexZ(maxVertexZ);
 	// eventcuts->SetCentralityEstimator(CentralityEstimator);
@@ -136,3 +136,4 @@ AliAnalysisTaskDiHadronPID* AddTaskDiHadronPIDpp( // for AOD113 2.76TeV
 	return DiHadronPIDTask;
 
 }
+

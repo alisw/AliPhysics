@@ -37,7 +37,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
 	//gROOT->LoadMacro("AddTaskEventplane.C");
 	//AliEPSelectionTask3* epsel = AddTaskEventplane();
 	AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection4");
-	eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+	eventplaneTask->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kSemiCentral | AliTrigger::kCentral);
 	if (inputDataType == "AOD"){
 		eventplaneTask->SetInput("AOD");
 	}
@@ -76,7 +76,7 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
-  	//taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral) ;
+  	//taskfemto->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral) ;
 
 	mgr->AddTask(taskfemto);
 
@@ -104,3 +104,4 @@ AliAnalysisTaskFemto *AddTaskFemtoAzimtuhalHBT(TString configMacroName, const ch
    // Return task pointer at the end
    return taskfemto;
 }
+

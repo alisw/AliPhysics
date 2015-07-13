@@ -32,6 +32,7 @@
 #ifndef ALICFMUONRESUPSILON_CXX
 #define ALICFMUONRESUPSILON_CXX
 
+#include "AliTrigger.h"
 #include "TH1.h"
 #include "TParticle.h"
 #include "TChain.h"
@@ -333,8 +334,8 @@ void AliCFMuonResUpsilon::UserExec(Option_t *)
 		Int_t trigside=-1;
 
 		if(!fReadMCInfo) {
-			fIsPhysSelMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB));
-			fIsPhysSelMUON=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMUON));
+			fIsPhysSelMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kMB));
+			fIsPhysSelMUON=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kMUON));
 
 			if(fDistinguishTrigClass) {
 				TString trigclass = fESD->GetFiredTriggerClasses();
@@ -556,8 +557,8 @@ if(fReadMCInfo && !flag) return;
 		Int_t ntrk = fAOD->GetNumberOfTracks();
 
 		if(!fReadMCInfo) {
-			fIsPhysSelMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB));
-			fIsPhysSelMUON=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMUON));
+			fIsPhysSelMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kMB));
+			fIsPhysSelMUON=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kMUON));
 
 			if(fDistinguishTrigClass) {
 				TString trigclass = fAOD->GetFiredTriggerClasses();
@@ -931,3 +932,4 @@ void AliCFMuonResUpsilon::Terminate(Option_t *)
 //________________________________________________________________________
 
 #endif
+

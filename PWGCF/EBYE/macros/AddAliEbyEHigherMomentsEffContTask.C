@@ -75,8 +75,8 @@ AliAnalysisTask* AddAliEbyEHigherMomentsEffContTask(Double_t vx,
     else if( particle == "Pion" ){ taskHM->SetParticleSpecies(AliPID::kPion); }
   }
   
-  if(trigger) taskHM->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-  else taskHM->SelectCollisionCandidates(AliVEvent::kMB);
+  if(trigger) taskHM->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
+  else taskHM->SelectCollisionCandidates(AliTrigger::kMB);
   
   mgr->AddTask(taskHM);
   
@@ -93,3 +93,4 @@ AliAnalysisTask* AddAliEbyEHigherMomentsEffContTask(Double_t vx,
   
   return taskHM;
 }
+

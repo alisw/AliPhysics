@@ -35,7 +35,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Double_t    NTPCcrratio = 0.8,
    Int_t       minSPDclt = 0,
    Double_t    minpt = 0.15,
-   TString     triggerMask = "AliVEvent::kMB",
+   TString     triggerMask = "AliTrigger::kMB",
    Bool_t      useNTPCclt = kTRUE,   
    Bool_t      maxDCAcutFixed = kFALSE,
    Bool_t      ptdepPIDcut = kFALSE,
@@ -78,10 +78,10 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
   
   
   TString eventType = "";
-   if(triggerMask=="AliVEvent::kMB | AliVEvent::kCentral") {trigger = AliVEvent::kMB | AliVEvent::kCentral; eventType+="Central";}
-   else if(triggerMask=="AliVEvent::kMB | AliVEvent::kSemiCentral") {trigger = AliVEvent::kMB | AliVEvent::kSemiCentral; eventType+="SemiCentral";}
-   else if(triggerMask=="AliVEvent::kINT7") {trigger = AliVEvent::kINT7; eventType+="kINT7";}
-   else if(triggerMask=="AliVEvent::kMB") {trigger = AliVEvent::kMB; eventType+="MinimumBias";}
+   if(triggerMask=="AliTrigger::kMB | AliTrigger::kCentral") {trigger = AliTrigger::kMB | AliTrigger::kCentral; eventType+="Central";}
+   else if(triggerMask=="AliTrigger::kMB | AliTrigger::kSemiCentral") {trigger = AliTrigger::kMB | AliTrigger::kSemiCentral; eventType+="SemiCentral";}
+   else if(triggerMask=="AliTrigger::kINT7") {trigger = AliTrigger::kINT7; eventType+="kINT7";}
+   else if(triggerMask=="AliTrigger::kMB") {trigger = AliTrigger::kMB; eventType+="MinimumBias";}
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
@@ -276,3 +276,4 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    
    return task;
 }
+

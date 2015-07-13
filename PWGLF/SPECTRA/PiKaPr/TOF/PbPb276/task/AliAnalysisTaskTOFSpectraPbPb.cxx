@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisTaskTOFSpectraPbPb.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -160,7 +161,7 @@ AliAnalysisTaskTOFSpectraPbPb::InitEvent()
     if (!fMCStack) return kFALSE;
   }
   /* event selection */
-  fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  fIsCollisionCandidate = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB);
   /* vertex selection */
   const AliESDVertex *vertex = fESDEvent->GetPrimaryVertexTracks();
   if (vertex->GetNContributors() < 1) {
@@ -325,4 +326,5 @@ AliAnalysisTaskTOFSpectraPbPb::UserExec(Option_t *option)
   } /* end of loop over ESD tracks */
   
 }
+
 

@@ -1,4 +1,5 @@
 #ifndef __CINT__//|
+#include "AliTrigger.h"
 #include <AliAnalysisManager.h>//|
 #include <AliMultiInputEventHandler.h>//|
 #include <EventMixing/EventMixing/AliMixEventPool.h>//|
@@ -61,13 +62,14 @@ void AddMixingHandler(Double_t centMin = 70, Double_t centMax = 80, Double_t cen
    // only use events with physics selection
    if (usePhysSel){
      if (bCentralTrigger){
-       mixHandler->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+       mixHandler->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral);
      }
      else{ 
-       mixHandler->SelectCollisionCandidates(AliVEvent::kMB);
+       mixHandler->SelectCollisionCandidates(AliTrigger::kMB);
      }
    }
    
    multiInputHandler->AddInputEventHandler(mixHandler);
 
 }
+

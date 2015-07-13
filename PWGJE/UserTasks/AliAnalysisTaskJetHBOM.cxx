@@ -19,6 +19,7 @@
  **************************************************************************/
 
 
+#include "AliTrigger.h"
 #include <TROOT.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -435,7 +436,7 @@ void AliAnalysisTaskJetHBOM::UserExec(Option_t */*option*/)
   if(!fhEffH1 || !fhEffH2 || !fhEffH3)       fUseDiceEfficiency = kFALSE;
   
   Bool_t selectEvent =  false;
-  Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
+  Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliTrigger::kMB)==AliTrigger::kMB;
 
   Float_t cent = 0;
   Float_t zVtx  = 0;
@@ -909,4 +910,5 @@ void AliAnalysisTaskJetHBOM::FitMomentumResolution() {
   }
 
 }
+
 

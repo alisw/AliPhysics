@@ -32,12 +32,12 @@ void ana_example()
 
   // with PS + no pileup
   AliAnalysisTaskCaloCellsQA *task1 = AddTaskCaloCellsQA(4, 0, "CellsQAEMCAL.root");
-  task1->SelectCollisionCandidates(AliVEvent::kMB);
+  task1->SelectCollisionCandidates(AliTrigger::kMB);
   task1->SetBadCells(badcellsEMCAL, nbadEMCAL);
 
   // with PS + with pileup
   AliAnalysisTaskCaloCellsQA *task2 = AddTaskCaloCellsQA(4, 0, "CellsQAEMCAL2.root");
-  task2->SelectCollisionCandidates(AliVEvent::kMB);
+  task2->SelectCollisionCandidates(AliTrigger::kMB);
   task2->SetBadCells(badcellsEMCAL, nbadEMCAL);
   task2->SetAvoidPileup(kFALSE);
 
@@ -52,13 +52,13 @@ void ana_example()
 
   // with PS + no pileup
   AliAnalysisTaskCaloCellsQA *task4 = AddTaskCaloCellsQA(4, 1, "CellsQAPHOS.root");
-  task4->SelectCollisionCandidates(AliVEvent::kMB);
+  task4->SelectCollisionCandidates(AliTrigger::kMB);
   task4->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.1); // increase statistics
   task4->SetBadCells(badcellsPHOS, nbadPHOS);
 
   // with PS + with pileup
   AliAnalysisTaskCaloCellsQA *task5 = AddTaskCaloCellsQA(4, 1, "CellsQAPHOS2.root");
-  task5->SelectCollisionCandidates(AliVEvent::kMB);
+  task5->SelectCollisionCandidates(AliTrigger::kMB);
   task5->GetCaloCellsQA()->SetClusterEnergyCuts(0.3,0.1);
   task5->SetBadCells(badcellsPHOS, nbadPHOS);
   task5->SetAvoidPileup(kFALSE);
@@ -73,3 +73,4 @@ void ana_example()
   if (!mgr->InitAnalysis()) abort();
   mgr->StartAnalysis("local", chain);
 }
+

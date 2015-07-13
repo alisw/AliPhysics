@@ -51,7 +51,7 @@ void AddTaskPIDflowQA( Float_t centrMin=0.,
   AliAnalysisTaskPIDflowQA* task = new AliAnalysisTaskPIDflowQA(Form("taskPIDQA%.0f%.0f",centrMin,centrMax));
 	task->SetAliESDtrackCuts(cutsTrack);
   task->SetEventCuts(cutsEvent);
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliTrigger::kMB);
   //old
   task->GetESDpid()->GetTPCResponse().SetBetheBlochParameters(0.0283086,
                                                     2.63394e+01,
@@ -75,3 +75,4 @@ void AddTaskPIDflowQA( Float_t centrMin=0.,
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutputQAtask);
 }
+

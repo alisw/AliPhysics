@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "TChain.h"
 #include "TTree.h"
 #include "TH1F.h"
@@ -398,7 +399,7 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
   fHistQA[9]->Fill(1);
 
   // collision candidate 
-  // if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)) return;
+  // if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB)) return;
 
 
   //****** Multiplicity selection *********
@@ -936,3 +937,4 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
 
 //void AliAnalysisTaskParticleEfficiency::Terminate(Option_t *) 
 //{}
+

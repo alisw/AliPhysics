@@ -1,5 +1,6 @@
 /* $Id$ */
 
+#include "AliTrigger.h"
 #include "AliMultiplicityTask.h"
 
 #include <TStyle.h>
@@ -241,7 +242,7 @@ void AliMultiplicityTask::Exec(Option_t*)
     return;
   }
     
-  Bool_t eventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+  Bool_t eventTriggered = inputHandler->IsEventSelected() & AliTrigger::kMB;
 
   static AliTriggerAnalysis* triggerAnalysis = 0;
   if (!triggerAnalysis)
@@ -1048,3 +1049,4 @@ void AliMultiplicityTask::Terminate(Option_t *)
 
   Printf("Written result to %s", fileName.Data());
 }
+

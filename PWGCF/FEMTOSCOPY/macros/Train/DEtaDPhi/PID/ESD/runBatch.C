@@ -178,8 +178,8 @@ void runBatch() {
   // 1st Pt task
   gROOT->LoadMacro("AddTaskFemto.C");
   AliAnalysisTaskFemto *taskfemto = AddTaskFemto("./ConfigFemtoAnalysis.C");
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kMB);
-  taskfemto->SelectCollisionCandidates(AliVEvent::kMB);
+  //taskfemto->SelectCollisionCandidates(AliTrigger::kCentral|AliTrigger::kSemiCentral|AliTrigger::kMB);
+  taskfemto->SelectCollisionCandidates(AliTrigger::kMB);
     
   //____________________________________________//
   // Run the analysis
@@ -226,3 +226,4 @@ Int_t setupPar(const char* pararchivename) {
 
   return 1;
 }
+

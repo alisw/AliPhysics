@@ -12,7 +12,7 @@ AliPhiCorrelationsQATask *AddTaskPhiCorrelationsQA()
   //===========================================================================
   AliPhiCorrelationsQATask* ana = new  AliPhiCorrelationsQATask("");
   
-  ana->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kUserDefined);
+  ana->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kUserDefined);
   
   Bool_t isMC = (mgr->GetMCtruthEventHandler() != NULL);
   if (isMC)
@@ -30,3 +30,4 @@ AliPhiCorrelationsQATask *AddTaskPhiCorrelationsQA()
    
   return ana;
 }
+

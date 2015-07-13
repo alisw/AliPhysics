@@ -4,6 +4,7 @@
 // Author: J Mazer
 
 // task head include
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEmcalJetHadEPpid.h"
 
 // general ROOT includes
@@ -84,7 +85,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fCentBinSize(1),
-  fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
+  fTriggerEventType(AliTrigger::kAny), fMixingEventType(AliTrigger::kAny),
   fDoEffCorr(0), fcorrJetPt(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
@@ -203,7 +204,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fCentralityClasses(0), fInCentralitySelection(-1),
   fDoEventMixing(0), fMixingTracks(50000), fNMIXtracks(5000), fNMIXevents(5),
   fCentBinSize(1),
-  fTriggerEventType(AliVEvent::kAny), fMixingEventType(AliVEvent::kAny),
+  fTriggerEventType(AliTrigger::kAny), fMixingEventType(AliTrigger::kAny),
   fDoEffCorr(0), fcorrJetPt(0),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
@@ -858,26 +859,26 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // check and fill a Event Selection QA histogram for different trigger selections
   AliBits trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(trig & AliBits()) fHistEventSelectionQA->Fill(1);
-  if(trig & AliVEvent::kAny) fHistEventSelectionQA->Fill(2);
-  if(trig & AliVEvent::kAnyINT) fHistEventSelectionQA->Fill(3);
-  if(trig & AliVEvent::kMB) fHistEventSelectionQA->Fill(4);
-  if(trig & AliVEvent::kINT7) fHistEventSelectionQA->Fill(5);
-  if(trig & AliVEvent::kEMC1) fHistEventSelectionQA->Fill(6);
-  if(trig & AliVEvent::kEMC7) fHistEventSelectionQA->Fill(7);
-  if(trig & AliVEvent::kEMC8) fHistEventSelectionQA->Fill(8);
-  if(trig & AliVEvent::kEMCEJE) fHistEventSelectionQA->Fill(9);
-  if(trig & AliVEvent::kEMCEGA) fHistEventSelectionQA->Fill(10);
-  if(trig & AliVEvent::kCentral) fHistEventSelectionQA->Fill(11);
-  if(trig & AliVEvent::kSemiCentral) fHistEventSelectionQA->Fill(12);
-  if(trig & AliVEvent::kINT8) fHistEventSelectionQA->Fill(13);
+  if(trig & AliTrigger::kAny) fHistEventSelectionQA->Fill(2);
+  if(trig & AliTrigger::kAnyINT) fHistEventSelectionQA->Fill(3);
+  if(trig & AliTrigger::kMB) fHistEventSelectionQA->Fill(4);
+  if(trig & AliTrigger::kINT7) fHistEventSelectionQA->Fill(5);
+  if(trig & AliTrigger::kEMC1) fHistEventSelectionQA->Fill(6);
+  if(trig & AliTrigger::kEMC7) fHistEventSelectionQA->Fill(7);
+  if(trig & AliTrigger::kEMC8) fHistEventSelectionQA->Fill(8);
+  if(trig & AliTrigger::kEMCEJE) fHistEventSelectionQA->Fill(9);
+  if(trig & AliTrigger::kEMCEGA) fHistEventSelectionQA->Fill(10);
+  if(trig & AliTrigger::kCentral) fHistEventSelectionQA->Fill(11);
+  if(trig & AliTrigger::kSemiCentral) fHistEventSelectionQA->Fill(12);
+  if(trig & AliTrigger::kINT8) fHistEventSelectionQA->Fill(13);
 
-  if(trig & (AliVEvent::kEMCEJE | AliVEvent::kMB)) fHistEventSelectionQA->Fill(14);
-  if(trig & (AliVEvent::kEMCEGA | AliVEvent::kMB)) fHistEventSelectionQA->Fill(15);
-  if(trig & (AliVEvent::kAnyINT | AliVEvent::kMB)) fHistEventSelectionQA->Fill(16);
+  if(trig & (AliTrigger::kEMCEJE | AliTrigger::kMB)) fHistEventSelectionQA->Fill(14);
+  if(trig & (AliTrigger::kEMCEGA | AliTrigger::kMB)) fHistEventSelectionQA->Fill(15);
+  if(trig & (AliTrigger::kAnyINT | AliTrigger::kMB)) fHistEventSelectionQA->Fill(16);
 
-  //if(trig & (AliVEvent::kEMCEJE && AliVEvent::kMB)) fHistEventSelectionQA->Fill(17);
-  //if(trig & (AliVEvent::kEMCEGA && AliVEvent::kMB)) fHistEventSelectionQA->Fill(18);
-  //if(trig & (AliVEvent::kAnyINT && AliVEvent::kMB)) fHistEventSelectionQA->Fill(19);
+  //if(trig & (AliTrigger::kEMCEJE && AliTrigger::kMB)) fHistEventSelectionQA->Fill(17);
+  //if(trig & (AliTrigger::kEMCEGA && AliTrigger::kMB)) fHistEventSelectionQA->Fill(18);
+  //if(trig & (AliTrigger::kAnyINT && AliTrigger::kMB)) fHistEventSelectionQA->Fill(19);
 
   // see if we are running on PbPb and try and get LocalRho object
   if(GetBeamType() == 1) {
@@ -1029,10 +1030,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   }
 
   // fill event mixing QA
-  if(trig & AliVEvent::kEMCEGA) fHistCentZvertGA->Fill(fCent, zVtx);
-  if(trig & AliVEvent::kEMCEJE) fHistCentZvertJE->Fill(fCent, zVtx);
-  if(trig & AliVEvent::kMB) fHistCentZvertMB->Fill(fCent, zVtx);
-  if(trig & AliVEvent::kAny) fHistCentZvertAny->Fill(fCent, zVtx);
+  if(trig & AliTrigger::kEMCEGA) fHistCentZvertGA->Fill(fCent, zVtx);
+  if(trig & AliTrigger::kEMCEJE) fHistCentZvertJE->Fill(fCent, zVtx);
+  if(trig & AliTrigger::kMB) fHistCentZvertMB->Fill(fCent, zVtx);
+  if(trig & AliTrigger::kAny) fHistCentZvertAny->Fill(fCent, zVtx);
 
   // loop over tracks - to get hardest track (highest pt)
   for (Int_t iTracks = 0; iTracks < Ntracks; iTracks++){    
@@ -1592,7 +1593,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     TObjArray* bgTracks;
 
     // next line might not apply for PbPb collisions
-    // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
+    // use only jets from EMCal-triggered events (for lhc11a use AliTrigger::kEMC1)
     //check for a trigger jet
     // fmixingtrack/10 ??
   if(GetBeamType() == 1) if(trigger & fTriggerEventType) { //kEMCEJE)) {     
@@ -1670,8 +1671,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
 //=============================================================================================================
 
-    // use only jets from EMCal-triggered events (for lhc11a use AliVEvent::kEMC1)
-///    if (trigger & AliVEvent::kEMC1) {
+    // use only jets from EMCal-triggered events (for lhc11a use AliTrigger::kEMC1)
+///    if (trigger & AliTrigger::kEMC1) {
     // pp collisions
     if(GetBeamType() == 0) if(trigger & fTriggerEventType) { //kEMC1)) {     
       if (poolpp->IsReady() || poolpp->NTracksInPool() > fNMIXtracks || poolpp->GetCurrentNEvents() >= fNMIXevents) {
@@ -1734,7 +1735,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     // pp collisions
     if(GetBeamType() == 0) {
 
-      // use only tracks from MB events (for lhc11a use AliVEvent::kMB) //kAnyINT as test
+      // use only tracks from MB events (for lhc11a use AliTrigger::kMB) //kAnyINT as test
       if(trigger & fMixingEventType) { //kMB) {
 
         // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
@@ -2947,3 +2948,4 @@ Double_t AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneChi(Double_t res)
     }
     return chi;
 }
+

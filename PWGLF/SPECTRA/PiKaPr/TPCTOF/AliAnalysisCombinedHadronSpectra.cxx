@@ -21,6 +21,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -396,7 +397,7 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
   Bool_t isSelected = kTRUE; // for reasons of backward compatibility --> check is now in AddTask macro
   /*
   Bool_t isSelected = kFALSE;
-  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) == AliVEvent::kMB;
+  isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliTrigger::kMB) == AliTrigger::kMB;
   */
   //
   // monitor vertex position
@@ -917,3 +918,4 @@ Int_t AliAnalysisCombinedHadronSpectra::GetPythiaEventProcessType(const AliHeade
 
   return pythiaGenHeader->ProcessType();
 }
+

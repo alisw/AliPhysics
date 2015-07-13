@@ -21,6 +21,7 @@ class AliESDTrackCuts;
 
 class AliPPVsMultUtils;
 
+#include "AliTrigger.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h" 
@@ -161,7 +162,7 @@ class AliAnalysisTaskdNdEtaRuben : public AliAnalysisTaskSE {
   virtual void  Terminate(Option_t *);
   void       RegisterStat();
   //
-  void       SetTriggerSelection(UInt_t sel=AliVEvent::kINT7) {fTrigSel = sel;}
+  void       SetTriggerSelection(UInt_t sel=AliTrigger::kINT7) {fTrigSel = sel;}
   void       SetCentPercentiles(Float_t *arr, Int_t nbins);
   void       SetCentPercentiles(Double_t *arr, Int_t nbins);
   //
@@ -309,3 +310,4 @@ class AliAnalysisTaskdNdEtaRuben : public AliAnalysisTaskSE {
 
 
 #endif
+

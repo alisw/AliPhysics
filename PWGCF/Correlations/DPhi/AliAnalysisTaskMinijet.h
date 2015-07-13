@@ -13,6 +13,7 @@ class TProfile;
 class THnSparse;
 class AliESDtrackCuts;
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 
@@ -100,7 +101,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Float_t      fTriggerPtCut;               // cut on particle pt used as event axis
   Float_t      fAssociatePtCut;             // cut on particle pt used for correlations
   Int_t        fMode;                       // ESD(=0) of AOD(=1) reading 
-  Int_t        fTriggerType;                // sets trigger -> AliVEvent::kMB, AliVEvent::kHighMult
+  Int_t        fTriggerType;                // sets trigger -> AliTrigger::kMB, AliTrigger::kHighMult
   Int_t        fFilterBit;                  // Filter bit written in ESD filter, select track type
   Float_t      fVertexZCut;                 // vertex cut
   Float_t      fEtaCut;                     // eta acceptance cut
@@ -197,3 +198,4 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
 };
 
 #endif
+

@@ -24,6 +24,7 @@
 // S. Trogolo, trogolo@to.infn.it
 ///////////////////////////////////////////////////////////////////////////
 
+#include "AliTrigger.h"
 #include <Riostream.h>
 //#include <vector>
 
@@ -744,9 +745,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   
   //==========Trigger class==========
   UInt_t maskPhysSel = handl->IsEventSelected();
-  Bool_t isSelectedCentral = (maskPhysSel & AliVEvent::kCentral);
-  Bool_t isSelectedSemiCentral = (maskPhysSel & AliVEvent::kSemiCentral);
-  Bool_t isSelectedMB = (maskPhysSel & AliVEvent::kMB);
+  Bool_t isSelectedCentral = (maskPhysSel & AliTrigger::kCentral);
+  Bool_t isSelectedSemiCentral = (maskPhysSel & AliTrigger::kSemiCentral);
+  Bool_t isSelectedMB = (maskPhysSel & AliTrigger::kMB);
 
   if(isSelectedMB) { // Minimum Bias
     fHistTrigger->Fill(0);
@@ -1392,3 +1393,4 @@ void AliAnalysisTaskHypertriton3::Terminate(Option_t *){
   return;
 
 } // end of Terminate
+

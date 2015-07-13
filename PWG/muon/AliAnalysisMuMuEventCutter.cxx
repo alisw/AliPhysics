@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include "AliAnalysisMuMuEventCutter.h"
 
 /**
@@ -136,7 +137,7 @@ Bool_t AliAnalysisMuMuEventCutter::SelectTriggerClass(const TString& firedTrigge
 Bool_t AliAnalysisMuMuEventCutter::IsPhysicsSelected(const AliInputEventHandler& eventHandler) const
 {
   /// Whether or not the event is physics selected
-  return const_cast<AliInputEventHandler&>(eventHandler).IsEventSelected() & AliVEvent::kAny;
+  return const_cast<AliInputEventHandler&>(eventHandler).IsEventSelected() & AliTrigger::kAny;
 }
 
 //_____________________________________________________________________________
@@ -451,3 +452,4 @@ Bool_t AliAnalysisMuMuEventCutter::IsTZEROPileUp(const AliVEvent& event) const
   }
   return pileupFlag;
 }
+

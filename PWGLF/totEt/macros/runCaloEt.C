@@ -334,7 +334,7 @@ chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
 //     //AliTender *tender = AddTaskEMCALTender( "EMCAL_COMPLETEV1", 0,withNonlinearity,withReclusterizing,trackmatchcuts);
 // AliTender *tender = AddTaskEMCALTender( "EMCAL_FIRSTYEARV1", 0,withNonlinearity,withReclusterizing,trackmatchcuts);
 //     //this also likely needs modification
-// //     tender->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kEMCEGA | AliVEvent::kEMC1 | AliVEvent::kEMC7 );
+// //     tender->SelectCollisionCandidates( AliTrigger::kMB | AliTrigger::kEMCEGA | AliTrigger::kEMC1 | AliTrigger::kEMC7 );
 // //     if(submit){tender->SetDefaultCDBStorage("raw://");} //uncomment if you work on grid
 // //     else{tender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB");} //uncomment if you work local
 
@@ -378,8 +378,8 @@ chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
 
 
     // one can sellect what collision candidates to use
-    // triggered sample only: L1 = AliVEvent::kEMCEGA, AliVEvent::kEMCEJE; L0 = AliVEvent::kEMC1, AliVEvent::kEMC7
-    tender->SelectCollisionCandidates( AliVEvent::kAny );
+    // triggered sample only: L1 = AliTrigger::kEMCEGA, AliTrigger::kEMCEJE; L0 = AliTrigger::kEMC1, AliTrigger::kEMC7
+    tender->SelectCollisionCandidates( AliTrigger::kAny );
     //tender->SetDebugLevel(2);
 
     //AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("histosTrgContam", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
@@ -396,8 +396,8 @@ chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
 	
 	
 	// one can sellect what collision candidates to use
-	// triggered sample only: L1 = AliVEvent::kEMCEGA, AliVEvent::kEMCEJE; L0 = AliVEvent::kEMC1, AliVEvent::kEMC7
-	//tender->SelectCollisionCandidates( AliVEvent::kAny );
+	// triggered sample only: L1 = AliTrigger::kEMCEGA, AliTrigger::kEMCEJE; L0 = AliTrigger::kEMC1, AliTrigger::kEMC7
+	//tender->SelectCollisionCandidates( AliTrigger::kAny );
       }
     }
 
@@ -450,7 +450,7 @@ chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
 
   AliAnalysisTaskTotEt *task1 = new AliAnalysisTaskTotEt(taskName);
   task1->SetMcData(isMc);//necessary to tell the task to basically accept all MC events.
-  task1->SelectCollisionCandidates(AliVEvent::kMB ) ;
+  task1->SelectCollisionCandidates(AliTrigger::kMB ) ;
   mgr->AddTask(task1);
 
   
@@ -474,3 +474,4 @@ chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
   timer.Stop();
   timer.Print();
 }
+

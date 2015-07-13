@@ -91,7 +91,7 @@ void runEffContTaskCentralityTrain(Int_t mode = mLocal, Bool_t DATA = kFALSE) {
 
   //centralityTask->SetPass(2);
   //AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-  //taskCentrality->SelectCollisionCandidates(AliVEvent::kMB);
+  //taskCentrality->SelectCollisionCandidates(AliTrigger::kMB);
 
   // Load the analysis task:
   gROOT->LoadMacro("AddTaskBalanceEffCont.C");
@@ -423,4 +423,5 @@ TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
   return chain;
 
 } // end of TChain* CreateAODChain(const char* aDataDir, Int_t aRuns, Int_t offset)
+
 

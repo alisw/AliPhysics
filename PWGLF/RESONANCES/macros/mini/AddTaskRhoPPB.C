@@ -54,7 +54,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask = AliVEvent::kMB;
+  UInt_t      triggerMask = AliTrigger::kMB;
   Bool_t      rmFirstEvtChunk = kTRUE; //needed for pA 2013
   Bool_t      rejectPileUp = kTRUE; //best if used, for pA 2013
   Int_t       MinPlpContribSPD = 5; //default value if used
@@ -64,7 +64,7 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
   if (evtCutSetID==eventCutSet::kOld) {
-    triggerMask = AliVEvent::kAnyINT;
+    triggerMask = AliTrigger::kAnyINT;
     rmFirstEvtChunk = kFALSE;
     rejectPileUp = kFALSE;
     useVtxCut2013pA = kFALSE;
@@ -250,3 +250,4 @@ AliRsnMiniAnalysisTask * AddTaskRhoPPB
    
    return task;
 }
+

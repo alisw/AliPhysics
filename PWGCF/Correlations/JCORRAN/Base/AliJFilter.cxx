@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 // #include <Riostream.h>
 // #include <TChain.h>
 // #include <TVectorT.h> 
@@ -921,65 +922,65 @@ UInt_t AliJFilter::ConvertTriggerMask(){
 	//convert alice trigger mask to jcorran trigger mask
 	UInt_t triggerMaskJC=0;
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kMB){
+			->IsEventSelected() & AliTrigger::kMB){
 		// minimum bias TBit 0 
 		triggerMaskJC |= (1<<kMinBiasTriggerBitJCorran); 
 		fAliJRunHeader->SetActiveTriggersJCorran( kMinBiasTriggerBitJCorran, "MinBiasTriggerBitJCorran");
 	}
 
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kHighMult){
+			->IsEventSelected() & AliTrigger::kHighMult){
 		//high multiplicity trigger TBit 1 
 		triggerMaskJC |= (1<<kHighMultTriggerBitJCorran);
 		fAliJRunHeader->SetActiveTriggersJCorran( kHighMultTriggerBitJCorran,"HighMultTriggerBitJCorran");
 	}
 
 	if((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-				->IsEventSelected() & AliVEvent::kEMC1) ||
+				->IsEventSelected() & AliTrigger::kEMC1) ||
 			(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			 ->IsEventSelected() & AliVEvent::kEMC7 )){
+			 ->IsEventSelected() & AliTrigger::kEMC7 )){
 		//EMCAL L0   TBit2
 		triggerMaskJC |= (1<<kEmc0TriggerBitJCorran);
 		fAliJRunHeader->SetActiveTriggersJCorran( kEmc0TriggerBitJCorran,"Emc0TriggerBitJCorran");
 	}
 
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kEMCEGA){
+			->IsEventSelected() & AliTrigger::kEMCEGA){
 		//EMCAL Gamma TBit3
 		triggerMaskJC |= (1<<kEmc1GammaTriggerBitJCorran);
 		fAliJRunHeader->SetActiveTriggersJCorran( kEmc1GammaTriggerBitJCorran,"Emc1GammaTriggerBitJCorran");
 	}
 
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kEMCEJE){
+			->IsEventSelected() & AliTrigger::kEMCEJE){
 		//EMCAL JET TBit4
 		triggerMaskJC |= (1<<kEmc1JetTriggerBitJCorran);
 		fAliJRunHeader->SetActiveTriggersJCorran( kEmc1JetTriggerBitJCorran,"Emc1JetTriggerBitJCorran");
 	}
 
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kCentral){
+			->IsEventSelected() & AliTrigger::kCentral){
 		//central trigger TBit 5 
 		triggerMaskJC |= (1<<kCentralTriggerBitJCorran);
 		fAliJRunHeader->SetActiveTriggersJCorran( kCentralTriggerBitJCorran,"CentralTriggerBitJCorran");
 	}
 
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kSemiCentral){
+			->IsEventSelected() & AliTrigger::kSemiCentral){
 		//semi-central trigger TBit 6 
 		triggerMaskJC |= (1<<kSemiCentralTriggerBitJCorran);
 		fAliJRunHeader->SetActiveTriggersJCorran( kSemiCentralTriggerBitJCorran,"SemiCentralTriggerBitJCorran");
 	}
 
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kFastOnly){
+			->IsEventSelected() & AliTrigger::kFastOnly){
 		//semi-central trigger TBit 6 
 		triggerMaskJC |= (1<<kFastOnlyBitJCorran);
 		fAliJRunHeader->SetActiveTriggersJCorran( kFastOnlyBitJCorran ,"FastOnlyBitJCorran");
 	}
 
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			->IsEventSelected() & AliVEvent::kINT7){
+			->IsEventSelected() & AliTrigger::kINT7){
 		// minimum bias TBit 0 
 		triggerMaskJC |= (1<<kINT7TriggerBitJCorran); 
 		fAliJRunHeader->SetActiveTriggersJCorran( kINT7TriggerBitJCorran, "INT7TriggerBitJCorran");
@@ -1149,4 +1150,5 @@ void AliJFilter::AddList(const char* aname, const char* cname, TClonesArray **ob
 	(*obj)->SetName(aname);
 	(*obj)->SetOwner();
 }
+
 

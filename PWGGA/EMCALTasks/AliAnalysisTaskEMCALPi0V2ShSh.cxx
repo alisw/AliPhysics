@@ -1,5 +1,6 @@
 // $Id: AliAnalysisTaskEMCALPi0V2ShSh.cxx$
 
+#include "AliTrigger.h"
 #include "AliAnalysisTaskEMCALPi0V2ShSh.h"
 
 //Root include files 
@@ -436,7 +437,7 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserExec(Option_t *)
   }
 
   //Bool_t isSelected =0;      
-  //isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral));
+  //isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kSemiCentral));
   //if(!isSelected) { return; }
   
   if(event->GetCentrality()){
@@ -749,3 +750,4 @@ void AliAnalysisTaskEMCALPi0V2ShSh::Terminate(Option_t *)
   canvas5->SaveAs("lhc11h_2_Cluster_EvsN_EvsM02.jpg");
   canvas6->SaveAs("lhc11h_2_Cluster_Et_EtvsN_EtvsM02.jpg"); */
 }
+

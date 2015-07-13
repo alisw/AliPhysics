@@ -22,7 +22,7 @@ AliEPSelectionTask *AddTaskEventPlaneTPC(Bool_t useEtaGap=kFALSE,Float_t etaGap=
  
   
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-  eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  eventplaneTask->SelectCollisionCandidates(AliTrigger::kMB | AliTrigger::kSemiCentral | AliTrigger::kCentral);
   if (inputDataType == "AOD"){
     eventplaneTask->SetInput("AOD");
   }
@@ -62,3 +62,4 @@ AliEPSelectionTask *AddTaskEventPlaneTPC(Bool_t useEtaGap=kFALSE,Float_t etaGap=
 
   return eventplaneTask;
 }
+

@@ -151,14 +151,14 @@ void AddDhcTask()
   
   if (dataType == "esd") {
     AliCentralitySelectionTask *centTask = AddTaskCentrality();
-    centTask->SelectCollisionCandidates(AliVEvent::kAny);
+    centTask->SelectCollisionCandidates(AliTrigger::kAny);
     centTask->SetPass(2);
   }
   
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
   
   AliDhcTask *dhcTask = new AliDhcTask("DhcTask");
-  dhcTask->SelectCollisionCandidates(AliVEvent::kMB);
+  dhcTask->SelectCollisionCandidates(AliTrigger::kMB);
   dhcTask->SetVerbosity(verbosity);
 
   // Add task(s)
@@ -180,4 +180,5 @@ void AddDhcTask()
 
   return;
 }
+
 

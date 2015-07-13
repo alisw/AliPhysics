@@ -18,7 +18,7 @@ Bool_t  isESD = kTRUE;
 Bool_t  hasMC = kFALSE;
 TString list  = gSystem->Getenv("LIST");
 
-AliDielectron* ConfigJpsiME_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB)
+AliDielectron* ConfigJpsiME_jpsi_PbPb(Int_t cutDefinition, TString prod="", ULong64_t triggers=AliTrigger::kCentral | AliTrigger::kSemiCentral | AliTrigger::kMB)
 {
   //
   // Setup the instance of AliDielectron
@@ -108,9 +108,9 @@ void SetupEventCuts(AliDielectron *die, ULong64_t triggers, Int_t cutDefinition)
   Double_t minCent=0.0, maxCent=100.;
   if(!hasMC) {
     switch(triggers) {
-    case AliVEvent::kCentral:     minCent= 0.; maxCent= 9.; break;
-    case AliVEvent::kSemiCentral: minCent=12.; maxCent=53.; break;
-    case AliVEvent::kMB:          minCent= 0.; maxCent=80.; break;
+    case AliTrigger::kCentral:     minCent= 0.; maxCent= 9.; break;
+    case AliTrigger::kSemiCentral: minCent=12.; maxCent=53.; break;
+    case AliTrigger::kMB:          minCent= 0.; maxCent=80.; break;
     default:                      minCent= 0.; maxCent=80.; break;
     }
   }
@@ -399,4 +399,5 @@ void InitHF(AliDielectron* die, Int_t cutDefinition)
   hf->AddCutVariable(AliDielectronVarManager::kCentrality, "0.,80.");
   die->SetHistogramArray(hf);
 }
+
 

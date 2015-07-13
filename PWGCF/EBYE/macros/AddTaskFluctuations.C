@@ -32,7 +32,7 @@ AliEbyEFluctuationAnalysisTask *AddTaskFluctuations(const char* analysisType = "
     taskFluctuations->SetVertexDiamond(3.,3.,10.);
     taskFluctuations->SetCentralityEstimator(centralityEstimator);
     taskFluctuations->SetCentralityBins20();
-    taskFluctuations->SelectCollisionCandidates(AliVEvent::kMB);
+    taskFluctuations->SelectCollisionCandidates(AliTrigger::kMB);
   }
 
   TString type = analysisType;
@@ -54,3 +54,4 @@ AliEbyEFluctuationAnalysisTask *AddTaskFluctuations(const char* analysisType = "
   // Return task pointer at the end
   return taskFluctuations;
 }
+

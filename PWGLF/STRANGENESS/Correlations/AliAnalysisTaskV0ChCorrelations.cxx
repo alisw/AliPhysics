@@ -19,6 +19,7 @@
  * Last update edited by Marek Bombara, August 2013, Marek.Bombara@cern.ch
  */
 
+#include "AliTrigger.h"
 #include <TCanvas.h>
 #include <TList.h>
 #include <TH1.h>
@@ -266,14 +267,14 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
     // physics selection
     AliBits maskIsSelected = inEvMain->IsEventSelected();
    // 2010 data trigger selection
-    //Bool_t isSelected = (maskIsSelected & AliVEvent::kMB);
+    //Bool_t isSelected = (maskIsSelected & AliTrigger::kMB);
    // 2011 data trigger selection
-    Bool_t isSelected = ((maskIsSelected & AliVEvent::kMB) || (maskIsSelected & AliVEvent::kCentral) || (maskIsSelected & AliVEvent::kSemiCentral));
+    Bool_t isSelected = ((maskIsSelected & AliTrigger::kMB) || (maskIsSelected & AliTrigger::kCentral) || (maskIsSelected & AliTrigger::kSemiCentral));
     if (!isSelected) return;
 	// calculating the event types
-    if (maskIsSelected & AliVEvent::kMB) fHistTemp->Fill(2);
-    if (maskIsSelected & AliVEvent::kCentral) fHistTemp->Fill(4);
-    if (maskIsSelected & AliVEvent::kSemiCentral) fHistTemp->Fill(6);
+    if (maskIsSelected & AliTrigger::kMB) fHistTemp->Fill(2);
+    if (maskIsSelected & AliTrigger::kCentral) fHistTemp->Fill(4);
+    if (maskIsSelected & AliTrigger::kSemiCentral) fHistTemp->Fill(6);
 
     AliAODEvent* aod = (AliAODEvent*)inEvMain->GetEvent();
     fPIDResponse = inEvMain->GetPIDResponse();
@@ -1139,4 +1140,5 @@ void AliAnalysisTaskV0ChCorrelations::RemovingInjectedSignal(TObjArray* tracks, 
   AliInfo(Form("Reduced from %d to %d", before, tracks->GetEntriesFast()));
 
 }
+
 

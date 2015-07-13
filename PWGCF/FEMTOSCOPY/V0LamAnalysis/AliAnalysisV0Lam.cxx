@@ -1,3 +1,4 @@
+#include "AliTrigger.h"
 #include <iostream>
 #include <math.h>
 #include "TChain.h"
@@ -1276,7 +1277,7 @@ bool AliAnalysisV0Lam::IsInjectedParticle(AliAODv0 *v0, TClonesArray *mcArray, I
 bool AliAnalysisV0Lam::IsCorrectEventTrigger()
 {
   //Pick out Central, SemiCentral, and MinBias events.  False if not using one of those event triggers.
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral));
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliTrigger::kMB | AliTrigger::kCentral | AliTrigger::kSemiCentral));
   return isSelected;
 }
 
@@ -1724,5 +1725,6 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent *event, const i
     }//end current event
   }//end variable cut loop
 }//end DoPairStudies()
+
 
 
