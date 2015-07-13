@@ -1562,7 +1562,7 @@ void drawProjectionsUser(TH2D *gHistBalanceFunction2D = 0x0,
 
      Double_t rangeReduced = reducedRangeForMoments;
      
-     cout<<"Use reduced range = "<<rangeReduced<<endl;
+     cout<<"Use reduced range (user) = "<<rangeReduced<<endl;
      Int_t binLow  = gHistBalanceFunctionSubtracted->GetXaxis()->FindBin(-rangeReduced);
      Int_t binHigh = gHistBalanceFunctionSubtracted->GetXaxis()->FindBin(rangeReduced);
      gHistBalanceFunctionSubtracted->GetXaxis()->SetRange(binLow,binHigh);
@@ -2003,6 +2003,215 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   		  bRootMoments,
 		  kFALSE,
 		  bReduceRangeForMoments,
+		  bFWHM);
+
+  TString outFileName = filename;
+  outFileName.ReplaceAll("correlationFunction","balanceFunction2D");
+  gHistBalanceFunction2D->SetName("gHistBalanceFunctionSubtracted");
+  TFile *fOut = TFile::Open(outFileName.Data(),"recreate");  
+  gHistBalanceFunction2D->Write();
+  fOut->Close();
+  
+}
+
+
+//____________________________________________________________//
+void drawBFPsi2DFromCorrelationFunctionsUser(const char* lhcPeriod = "LHC10h",
+					     Int_t gTrainNumber = 64,
+					     const char* gCentralityEstimator = "V0M",
+					     Int_t gBit = 128,
+					     const char* gEventPlaneEstimator = "VZERO",
+					     Int_t gCentrality = 1,
+					     Double_t psiMin = -0.5, Double_t psiMax = 3.5,
+					     Double_t vertexZMin = -10.,
+					     Double_t vertexZMax = 10.,
+					     Double_t ptTriggerMin = -1.,
+					     Double_t ptTriggerMax = -1.,
+					     Double_t ptAssociatedMin = -1.,
+					     Double_t ptAssociatedMax = -1.,
+					     TString eventClass = "Multiplicity",
+					     Bool_t bRootMoments = kFALSE,
+					     Bool_t bFullPhiForEtaProjection = kFALSE,
+					     Double_t reducedRangeForMomentsEta = 1.6,
+					     Double_t reducedRangeForMomentsPhi = TMath::Pi()/2.,					              Bool_t bFWHM = kFALSE) {
+  //Macro that draws the BF distributions for each centrality bin
+  //for reaction plane dependent analysis
+  //Author: Panos.Christakoglou@nikhef.nl
+  TGaxis::SetMaxDigits(3);
+  gStyle->SetPalette(55,0);
+
+  //Get the input file
+  TString filename = lhcPeriod; 
+  if(lhcPeriod != ""){
+    //filename += "/Train"; filename += gTrainNumber;
+    filename +="/PttFrom";
+    filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+    filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+    filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+    filename += Form("%.1f",ptAssociatedMax); 
+    filename += "/correlationFunction.";
+  }
+  else{
+    filename += "correlationFunction.";
+  }
+  if(eventClass == "Centrality"){
+    filename += Form("Centrality%.1fTo%.1f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else if(eventClass == "Multiplicity"){
+    filename += Form("Multiplicity%.0fTo%.0f",psiMin,psiMax);
+    filename += ".PsiAll.PttFrom";
+  }
+  else{ // "EventPlane" (default)
+    filename += "Centrality";
+    filename += gCentrality; filename += ".Psi";
+    if((psiMin == -0.5)&&(psiMax == 0.5)) filename += "InPlane.Ptt";
+    else if((psiMin == 0.5)&&(psiMax == 1.5)) filename += "Intermediate.Ptt";
+    else if((psiMin == 1.5)&&(psiMax == 2.5)) filename += "OutOfPlane.Ptt";
+    else if((psiMin == 2.5)&&(psiMax == 3.5)) filename += "Rest.PttFrom";
+    else filename += "All.PttFrom";
+  }  
+  filename += Form("%.1f",ptTriggerMin); filename += "To"; 
+  filename += Form("%.1f",ptTriggerMax); filename += "PtaFrom";
+  filename += Form("%.1f",ptAssociatedMin); filename += "To"; 
+  filename += Form("%.1f",ptAssociatedMax); 
+  filename += "_";
+  filename += Form("%.1f",psiMin);
+  filename += "-";
+  filename += Form("%.1f",psiMax);
+  filename += ".root";  
+
+  //Open the file
+  TFile *f = TFile::Open(filename.Data());
+  if((!f)||(!f->IsOpen())) {
+    Printf("The file %s is not found. Aborting...",filename);
+    return listBF;
+  }
+  //f->ls();
+
+  TH2D *gHistPN = dynamic_cast<TH2D *>(f->Get("gHistPNCorrelationFunctions"));
+  if(!gHistPN) return;
+  TH2D *gHistNP = dynamic_cast<TH2D *>(f->Get("gHistNPCorrelationFunctions"));
+  if(!gHistNP) return;
+  TH2D *gHistPP = dynamic_cast<TH2D *>(f->Get("gHistPPCorrelationFunctions"));
+  if(!gHistPP) return;
+  TH2D *gHistNN = dynamic_cast<TH2D *>(f->Get("gHistNNCorrelationFunctions"));
+  if(!gHistNN) return;
+
+  // in order to get unzoomed (in older versions used smaller user ranger)
+  Int_t binMinX = gHistPN->GetXaxis()->FindBin(gHistPN->GetXaxis()->GetXmin()+0.00001);
+  Int_t binMaxX = gHistPN->GetXaxis()->FindBin(gHistPN->GetXaxis()->GetXmax()-0.00001);
+  Int_t binMinY = gHistPN->GetYaxis()->FindBin(gHistPN->GetYaxis()->GetXmin()+0.00001);
+  Int_t binMaxY = gHistPN->GetYaxis()->FindBin(gHistPN->GetYaxis()->GetXmax()-0.00001);
+  gHistPN->GetXaxis()->SetRange(binMinX,binMaxX); gHistPN->GetYaxis()->SetRange(binMinY,binMaxY);
+  gHistNP->GetXaxis()->SetRange(binMinX,binMaxX); gHistNP->GetYaxis()->SetRange(binMinY,binMaxY);
+  gHistPP->GetXaxis()->SetRange(binMinX,binMaxX); gHistPP->GetYaxis()->SetRange(binMinY,binMaxY);
+  gHistNN->GetXaxis()->SetRange(binMinX,binMaxX); gHistNN->GetYaxis()->SetRange(binMinY,binMaxY);
+
+  gHistPN->Sumw2();
+  gHistPP->Sumw2();
+  gHistPN->Add(gHistPP,-1);
+  gHistNP->Sumw2();
+  gHistNN->Sumw2();
+  gHistNP->Add(gHistNN,-1);
+  gHistPN->Add(gHistNP);
+  //gHistPN->Scale(0.5);//not needed anymore, since pT,assoc < pT,trig in all pT bins
+  TH2D *gHistBalanceFunction2D = dynamic_cast<TH2D *>(gHistPN->Clone());
+  gHistBalanceFunction2D->SetStats(kFALSE);
+  gHistBalanceFunction2D->GetXaxis()->SetTitle("#Delta#eta");
+  gHistBalanceFunction2D->GetYaxis()->SetTitle("#Delta#varphi (rad)");
+  gHistBalanceFunction2D->GetZaxis()->SetTitle("B(#Delta#eta,#Delta#varphi)");
+
+  //Draw the results
+  TCanvas *c0 = new TCanvas("c0","Balance function 2D",0,0,600,500);
+  c0->SetFillColor(10); c0->SetHighLightColor(10);
+  c0->SetLeftMargin(0.17); c0->SetTopMargin(0.05);
+  gHistBalanceFunction2D->SetTitle("");
+  gHistBalanceFunction2D->GetZaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunction2D->GetZaxis()->SetNdivisions(10);
+  gHistBalanceFunction2D->GetYaxis()->SetTitleOffset(1.4);
+  gHistBalanceFunction2D->GetYaxis()->SetNdivisions(10);
+  //gHistBalanceFunction2D->GetXaxis()->SetRangeUser(-1.4,1.4); 
+  gHistBalanceFunction2D->GetXaxis()->SetNdivisions(10);
+  gHistBalanceFunction2D->DrawCopy("lego2");
+  gPad->SetTheta(30); // default is 30
+  gPad->SetPhi(-60); // default is 30
+  gPad->Update();  
+ 
+  TString multLatex = Form("Multiplicity: %.1f - %.1f",psiMin,psiMax);
+
+  TString pttLatex = Form("%.1f",ptTriggerMin);
+  pttLatex += " < p_{T}^{t} < "; pttLatex += Form("%.1f",ptTriggerMax);
+  pttLatex += " GeV/c";
+
+  TString ptaLatex = Form("%.1f",ptAssociatedMin);
+  ptaLatex += " < p_{T}^{a} < "; ptaLatex += Form("%.1f",ptAssociatedMax);
+  ptaLatex += " GeV/c";
+
+  TLatex *latexInfo1 = new TLatex();
+  latexInfo1->SetNDC();
+  latexInfo1->SetTextSize(0.045);
+  latexInfo1->SetTextColor(1);
+  latexInfo1->DrawLatex(0.54,0.88,multLatex.Data());
+  latexInfo1->DrawLatex(0.54,0.82,pttLatex.Data());
+  latexInfo1->DrawLatex(0.54,0.76,ptaLatex.Data());
+
+  TString pngName = "BalanceFunction2D."; 
+  pngName += Form("%s: %.1f - %.1f",eventClass.Data(),psiMin,psiMax);
+  pngName += ".PttFrom";  
+  pngName += Form("%.1f",ptTriggerMin); pngName += "To"; 
+  pngName += Form("%.1f",ptTriggerMax); pngName += "PtaFrom";
+  pngName += Form("%.1f",ptAssociatedMin); pngName += "To"; 
+  pngName += Form("%.1f",ptAssociatedMax); 
+  pngName += ".png";
+
+  c0->SaveAs(pngName.Data());
+
+ // do the full range for the projection on eta (for cross checking with published results)
+ if(bFullPhiForEtaProjection){
+   
+   drawProjectionsUser(gHistBalanceFunction2D,
+		   kTRUE,
+		   1,72,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   bRootMoments,
+		   kFALSE,
+		   bReduceRangeForMoments,
+		   bFWHM);
+ }
+ else{
+   drawProjectionsUser(gHistBalanceFunction2D,
+		   kTRUE,
+		   1,36,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   bRootMoments,
+		   kFALSE,
+		   reducedRangeForMomentsEta,
+		   bFWHM);
+ }
+
+  drawProjections(gHistBalanceFunction2D,
+  		  kFALSE,
+  		  1,80,
+  		  gCentrality,
+  		  psiMin,psiMax,
+  		  ptTriggerMin,ptTriggerMax,
+  		  ptAssociatedMin,ptAssociatedMax,
+  		  kTRUE,
+  		  eventClass.Data(),
+  		  bRootMoments,
+		  kFALSE,
+		  reducedRangeForMomentsPhi,
 		  bFWHM);
 
   TString outFileName = filename;
