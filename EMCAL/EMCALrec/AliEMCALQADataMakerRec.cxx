@@ -1232,7 +1232,7 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	  
 	  inSTU->GetADC(i, adc);
 	  
-	  Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(i);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
+	  Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(i,0);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
 				
 	  for (Int_t j = 0; j < 96; j++)
 	    {
@@ -1253,7 +1253,7 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	  if (inSTU->GetL1GammaPatch(i, 0, iTRUSTU, x, y)) // col (0..7), row (0..11)
 	    {
 	      Int_t iTRU;
-	      iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
+	      iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU,0);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
 	      // New position in CALORIMETER!
 	      // if (iTRU<30)
 	      	// Int_t phiG = 11 - y, etaG = x + 8 * int(iTRU/2); // position with new EMCAL TRU configuration !!check iTRU/2.. 
