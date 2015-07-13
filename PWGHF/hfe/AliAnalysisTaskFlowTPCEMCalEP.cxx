@@ -234,7 +234,6 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
-
 //________________________________________________________________________
 AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisElecHadCorrel")
@@ -516,7 +515,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   
   Int_t epBin = fevPlaneV0[0]->FindBin(evPlaneV0);
   Double_t EPweight = 1.;
-  EPweight = GetEPweight(epBin);
+  //EPweight = GetEPweight(epBin);
+
+  Bool_t rejectEventPlane = kFALSE;
+  rejectEventPlane = RejectEventPlane(evPlaneV0,epBin);
+  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEventPlane) return;
  
   Double_t wEvent = EPweight*centWeight;
   
@@ -593,14 +596,14 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t evPlaneTPCpos = TMath::ATan2(Qy2pos, Qx2pos)/2;
 
   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ){
-    fEPres[0]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),wEvent);
-    fEPres[1]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),wEvent);
-    fEPres[2]->Fill(iCent,GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg),wEvent);
+    fEPres[0]->Fill(cent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),wEvent);
+    fEPres[1]->Fill(cent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),wEvent);
+    fEPres[2]->Fill(cent,GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg),wEvent);
   }
   else{
-    fEPres[0]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos));
-    fEPres[1]->Fill(iCent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg));
-    fEPres[2]->Fill(iCent,GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg));
+    fEPres[0]->Fill(cent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos));
+    fEPres[1]->Fill(cent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg));
+    fEPres[2]->Fill(cent,GetCos2DeltaPhi(evPlaneTPCpos,evPlaneTPCneg));
   }
   
   // Selection of pi0 and eta in MC to compute the weight
@@ -747,9 +750,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
 	  GetWeightAndDecay(particle,iCent,iDecay,MCweight);
 	  
-	  fInclElec[iCent]->Fill(pt,iDecay,MCweight);
+	  fInclElec[iCent]->Fill(pt,(Double_t)iDecay,MCweight);
 	  
-	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,iDecay};
+	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,static_cast<Double_t>(iDecay)};
           fCorr->Fill(corr,MCweight);
 	  
 	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
@@ -920,7 +923,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
     fMtcPartV2[i]->Sumw2();
     fOutputList->Add(fMtcPartV2[i]);
     
-    fEPres[i] = new TH2F(Form("fEPres%d",i), "", 3,0,3,100,-1,1);
+    fEPres[i] = new TH2F(Form("fEPres%d",i), "", 100,0,100,100,-1,1);
     fEPres[i]->Sumw2();
     fOutputList->Add(fEPres[i]);    
 
@@ -1360,6 +1363,22 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::RejectEvent(Double_t cent, Int_t centbin)
   
   return kFALSE;
 }
+//_________________________________________
+Bool_t AliAnalysisTaskFlowTPCEMCalEP::RejectEventPlane(Double_t EP, Int_t EPbin)
+{
+  // Reject randomly event plane in 0-10% in order to flatten the EP distribution in MB events  
+  Int_t wBin = EPbin-1;
+  if (wBin<0 || wBin>99) return kFALSE;
+  
+  Double_t weight[] = {0.939203,0.944153,0.945827,0.947285,0.946505,0.951336,0.952845,0.956385,0.957765,0.962094,0.962358,0.963419,0.968211,0.966111,0.972971,0.974466,0.980815,0.977518,0.982518,0.981103,0.985491,0.984252,0.985769,0.984412,0.991329,0.988619,0.991017,0.993163,0.99141,0.99528,0.996371,0.991279,0.99946,1,0.995702,0.996693,0.993997,0.994626,0.997287,0.992805,0.992743,0.987471,0.989508,0.988445,0.985226,0.983833,0.987911,0.976292,0.98043,0.972075,0.971709,0.968377,0.967853,0.9623,0.962017,0.961694,0.953908,0.951831,0.954233,0.951456,0.946106,0.939961,0.936882,0.938738,0.938357,0.934939,0.935751,0.930553,0.92897,0.929475,0.929053,0.92556,0.92445,0.920598,0.917752,0.918213,0.918636,0.916431,0.917554,0.918202,0.924494,0.918116,0.9178,0.919635,0.916228,0.91957,0.923717,0.920313,0.919748,0.927371,0.926132,0.928482,0.927082,0.931297,0.93079,0.932086,0.936174,0.936146,0.935395,0.936564};
+    
+  Double_t centDigits=EP-(Int_t)(EP*100.)/100.;
+  
+  if(centDigits*100.>weight[wBin]) return kTRUE; 
+  
+  return kFALSE;
+}
+
 //_________________________________________
 Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsFromHFdecay(TParticle *particle) 
 {
