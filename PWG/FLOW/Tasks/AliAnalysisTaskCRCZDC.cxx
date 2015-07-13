@@ -362,7 +362,6 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
 //________________________________________________________________________
 void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
- fRunList = NULL;
  for(Int_t r=0;r<fCRCMaxnRun;r++) {
   fCRCQVecListRun[r] = NULL;
   for(Int_t i=0;i<fCRCnTow;i++) {

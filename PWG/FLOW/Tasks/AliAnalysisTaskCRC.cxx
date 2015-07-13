@@ -194,6 +194,7 @@ fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
 fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
+fInvertZDC(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -266,6 +267,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetUseZDC(fUseZDC);
  fQC->SetRecenterZDC(fRecenterZDC);
  fQC->SetDivSigma(fDivSigma);
+ fQC->SetInvertZDC(fInvertZDC);
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
