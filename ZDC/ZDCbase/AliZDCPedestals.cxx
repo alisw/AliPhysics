@@ -117,14 +117,16 @@ void  AliZDCPedestals::Print(Option_t *) const
    // Printing of calibration object
    printf(" \n  Pedestal subtraction mode bit %d\n",AliZDCPedestals::TestPedModeBit());
    printf("\n ####### In-time pedestal values (mean value, sigma) ####### \n");
-   for(int t=0; t<48; t++) 
-      printf("\t ADC%d (%.1f, %.1f)\n",t,fMeanPedestal[t],fMeanPedWidth[t]);
+   for(int t=0; t<48; t++){ 
+      if(t<24) printf("\t ADC%d (%.1f, %.1f) ped.sub.mode %d\n",t,fMeanPedestal[t],fMeanPedWidth[t],fUseCorrFit[t]);
+      else printf("\t ADC%d (%.1f, %.1f) \n",t,fMeanPedestal[t],fMeanPedWidth[t]);
+   }
    //
-   if(AliZDCPedestals::TestPedModeBit()){
+   /*if(AliZDCPedestals::TestPedModeBit()){
      printf("\n\n ####### Out-of-time pedestal values (mean value, sigma) ####### \n");
      for(int t=0; t<48; t++)
        printf("\t ADC-OoT%d (%.1f, %.1f)\n",t,fOOTPedestal[t],fOOTPedWidth[t]);
-   }
+   }*/
 } 
 
 //________________________________________________________________

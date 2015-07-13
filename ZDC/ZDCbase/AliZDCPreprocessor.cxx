@@ -704,7 +704,7 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
     while((source2 = dynamic_cast<TObjString*> (iter2.Next()))){
        TString stringFileName = GetFile(kDAQ, "PEDCORRTOFIT", source2->GetName());
        if(stringFileName.Length() <= 0){
-          Log(Form("No PEDESTALDATA file from source %s!", source2->GetName()));
+          Log(Form("No PEDCORRTOFIT file from source %s!", source2->GetName()));
           return 10;
        }
        const char* pedFileName = stringFileName.Data();
@@ -724,7 +724,7 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
           for(int j=0; j<2; j++){
       	     int aleggi = fscanf(file,"%d",&val[k][1]);
              if(aleggi==0) AliDebug(3," Failing reading data from PEDCORRTOFIT file");
-             //if(j==1) printf("pedVal[%d] -> %f, %f \n",k,pedVal[k][0],pedVal[k][1]);
+             if(j==1) printf("ped ch.%d -> subtraction mode %1.0f, %f \n",k,aleggi);
              pedCalib->SetSubFromCorr(k, aleggi);
           }
       }
@@ -732,7 +732,7 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
     }
   }
   // 
-  //pedCalib->Print("");
+  pedCalib->Print("");
   
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
