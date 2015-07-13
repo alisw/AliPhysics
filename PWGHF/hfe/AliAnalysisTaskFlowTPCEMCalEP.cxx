@@ -475,13 +475,13 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 
   // Random rejection of events in MB in 0-10% to flatten the centrality distribution
   
-//   Bool_t rejectEvent = kFALSE;
+  Bool_t rejectEvent = kFALSE;
   Int_t centBin = fCent->FindBin(cent);
   Double_t centWeight = 1.;
-  centWeight =GetCentWeight(centBin);
+//   centWeight =GetCentWeight(centBin);
  
-//   rejectEvent = RejectEvent(cent,centBin);
-//   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
+  rejectEvent = RejectEvent(cent,centBin);
+  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
   
   // Trigger study and selection of V0 low threshold trigger in 10-20%
 
