@@ -1,5 +1,7 @@
 #ifndef ALIANALYSISTASKCHARGEDPARTICLESREFMC_H
 #define ALIANALYSISTASKCHARGEDPARTICLESREFMC_H
+/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
 #include <TString.h>
@@ -18,7 +20,10 @@ class AliMCEvent;
 namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalHistoContainer;
-
+/**
+ * \class AliAnalysisTaskChargedParticlesRefMC
+ * \brief Unit test class for charged particle distributions (MC case)
+ */
 class AliAnalysisTaskChargedParticlesRefMC: public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskChargedParticlesRefMC();
@@ -55,6 +60,10 @@ protected:
 private:
   AliAnalysisTaskChargedParticlesRefMC(const AliAnalysisTaskChargedParticlesRefMC &);
   AliAnalysisTaskChargedParticlesRefMC &operator=(const AliAnalysisTaskChargedParticlesRefMC &);
+
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskChargedParticlesRefMC, 1);
+  /// \endcond
 };
 
 } /* namespace EMCalTriggerPtAnalysis */
