@@ -13,13 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- 
-
-
- 
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
 
 #include "AliEMCALTriggerRawDigitMaker.h"
 #include "AliEMCALTriggerSTURawStream.h"
@@ -111,7 +104,7 @@ void AliEMCALTriggerRawDigitMaker::SetIO(AliRawReader* reader, AliCaloRawStreamV
 }
 
 ///
-/// Add bunch list
+/// Add bunch list of type AliCaloBunchInfo
 ///
 //_________________
 void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunchlist)
@@ -120,7 +113,7 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
   UShort_t iRCU    = fCaloRawStream->GetDDLNumber() % 2; // 0/1
   Int_t    iSM     = fCaloRawStream->GetModule();
   
-  Int_t iTRU = fGeometry->GetTriggerMapping()->GetTRUIndexFromOnline(hwAdd,iRCU,iSM);
+  Int_t iTRU = fGeometry->GetTriggerMapping()->GetTRUIndexFromOnlineHwAdd(hwAdd,iRCU,iSM);
       
   if (AliDebugLevel())
 	{

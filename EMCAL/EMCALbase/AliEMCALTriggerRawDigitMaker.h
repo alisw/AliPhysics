@@ -45,12 +45,12 @@ protected:
 	AliEMCALTriggerDCSConfigDB*  fDCSConfig;     // DCS config
 	AliEMCALTriggerData*         fTriggerData;   // Trigger data
 	
-	Int_t						 fRawDigitIndex[5952]; // Raw digit indexes
+	Int_t                        fRawDigitIndex[5952]; // Raw digit indexes
 
 private:
 	
-    AliEMCALTriggerRawDigitMaker(const AliEMCALTriggerRawDigitMaker& rhs);            // NOT implemented
-	AliEMCALTriggerRawDigitMaker& operator=(const AliEMCALTriggerRawDigitMaker& rhs); // NOT implemented	
+        AliEMCALTriggerRawDigitMaker(const AliEMCALTriggerRawDigitMaker& rhs);            // NOT implemented
+        AliEMCALTriggerRawDigitMaker& operator=(const AliEMCALTriggerRawDigitMaker& rhs); // NOT implemented	
 	
 	ClassDef(AliEMCALTriggerRawDigitMaker,1)
 };
