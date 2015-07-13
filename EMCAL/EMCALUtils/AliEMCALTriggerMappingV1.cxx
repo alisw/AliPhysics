@@ -201,7 +201,7 @@ Bool_t AliEMCALTriggerMappingV1::GetCellIndexFromFastORIndex(Int_t id, Int_t idx
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV1::GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx) const
+Bool_t AliEMCALTriggerMappingV1::GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx, Int_t detector) const
 {
   // STU mapping: TRU# 0 and 16 are missing 
 
@@ -210,12 +210,12 @@ Bool_t AliEMCALTriggerMappingV1::GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx) c
      return kFALSE;
    }
    
-   idx = GetTRUIndexFromSTUIndex(id);
+   idx = GetTRUIndexFromSTUIndex(id, detector);
    return kTRUE;
 }
 
 //________________________________________________________________________________________________
-Int_t AliEMCALTriggerMappingV1::GetTRUIndexFromSTUIndex(Int_t id) const
+Int_t AliEMCALTriggerMappingV1::GetTRUIndexFromSTUIndex(Int_t id, Int_t detector) const
 {
   // STU mapping: TRU# 0 and 16 are missing 
 

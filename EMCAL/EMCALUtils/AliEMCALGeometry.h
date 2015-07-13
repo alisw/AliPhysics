@@ -376,8 +376,8 @@ public:
   Bool_t GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const { 
     return fTriggerMapping->GetCellIndexFromFastORIndex(id, idx);
   }
-  Bool_t GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const { 
-    return fTriggerMapping->GetTRUIndexFromSTUIndex(id, idx);
+  Bool_t GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx, Int_t detector) const { 
+    return fTriggerMapping->GetTRUIndexFromSTUIndex(id, idx, detector);
   }
   Bool_t GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const { 
     return fTriggerMapping->GetTRUIndexFromOnlineIndex(id, idx);
@@ -388,8 +388,8 @@ public:
   Bool_t GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const { 
     return fTriggerMapping->GetFastORIndexFromL0Index(iTRU, id, idx, size);
   }
-  Int_t  GetTRUIndexFromSTUIndex(const Int_t id) const { 
-    return fTriggerMapping->GetTRUIndexFromSTUIndex(id);
+  Int_t  GetTRUIndexFromSTUIndex(const Int_t id, Int_t detector) const { 
+    return fTriggerMapping->GetTRUIndexFromSTUIndex(id, detector);
   }
   Int_t  GetTRUIndexFromOnlineIndex(const Int_t id) const { 
     return fTriggerMapping->GetTRUIndexFromOnlineIndex(id);

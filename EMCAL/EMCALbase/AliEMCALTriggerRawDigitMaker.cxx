@@ -373,7 +373,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			Int_t nTRU = fGeometry->GetNTotalTRU();
 			for (Int_t i = 0; i < nTRU; i++)
 			{
-				iTRU = fGeometry->GetTRUIndexFromSTUIndex(i);
+			  iTRU = fGeometry->GetTRUIndexFromSTUIndex(i, 0);
 				
 				UInt_t adc[96]; for (Int_t j = 0; j < 96; j++) adc[j] = 0;
 				
@@ -414,7 +414,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		{
 			fSTURawStream->GetL0GammaPatch(i, iTRU, x);
 
-			iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU);
+			iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, 0);
 			
 			const Int_t sizePatchL0 = 
 			((AliEMCALTriggerTRUDCSConfig*)fDCSConfig->GetTriggerDCSConfig()->GetTRUArr()->At(fGeometry->GetOnlineIndexFromTRUIndex(iTRU)))->GetSegmentation() 
@@ -458,7 +458,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			{
 				if (fSTURawStream->GetL1GammaPatch(i, ithr, iTRU, x, y)) // col (0..23), row (0..3)
 				{
-					iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU);
+				  iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU, 0);
 					
 					if (AliDebugLevel()) printf("| STU => Found L1 gamma patch at (%2d , %2d) in TRU# %2d\n", x, y, iTRU);
 					

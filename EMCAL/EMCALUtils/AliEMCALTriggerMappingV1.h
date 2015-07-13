@@ -29,8 +29,8 @@ public:
   Bool_t GetPositionInEMCALFromAbsFastORIndex(Int_t id, Int_t& iEta, Int_t& iPhi) const;
   Bool_t          GetFastORIndexFromCellIndex(Int_t id, Int_t& idx) const;
   Bool_t          GetCellIndexFromFastORIndex(Int_t id, Int_t idx[4]) const;
-  Bool_t              GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx, Int_t detector=0) const;
-  Int_t               GetTRUIndexFromSTUIndex(Int_t id, Int_t detector=0) const;
+  Bool_t              GetTRUIndexFromSTUIndex(Int_t id, Int_t& idx, Int_t detector) const;
+  Int_t               GetTRUIndexFromSTUIndex(Int_t id, Int_t detector) const;
   Bool_t           GetTRUIndexFromOnlineIndex(Int_t id, Int_t& idx) const;
   Int_t            GetTRUIndexFromOnlineIndex(Int_t id) const;
   Int_t            GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t ddl, Int_t sm) const;
