@@ -59,7 +59,7 @@ class AliZDCPedestals: public TNamed {
   
   void  SetPedModeBit(Bool_t on=kTRUE) 
   	{on ? SETBIT(fPedSubModefromOCDB, kPedSubModeFromOCDB) : CLRBIT(fPedSubModefromOCDB, kPedSubModeFromOCDB);}
-  void  SetSubFromCorr(int ich, Bool_t ifv) {fUseCorrFit[ich] = kTRUE;}
+  void  SetSubFromCorr(int ich) {fUseCorrFit[ich] = kTRUE;}
   
  protected:
   // --- Pedestals
