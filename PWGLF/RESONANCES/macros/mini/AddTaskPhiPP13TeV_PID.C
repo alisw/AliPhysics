@@ -152,8 +152,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
-  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
-  gROOT->LoadMacro("./ConfigPhiPP13TeV_PID.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
   if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
