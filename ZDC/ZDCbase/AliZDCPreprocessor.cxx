@@ -724,8 +724,10 @@ UInt_t AliZDCPreprocessor::ProcessPedestalData()
           for(int j=0; j<2; j++){
       	     int aleggi = fscanf(file,"%d",&val[k][1]);
              if(aleggi==0) AliDebug(3," Failing reading data from PEDCORRTOFIT file");
-             if(j==1) printf("ped ch.%d -> subtraction mode %1.0f, %f \n",k,aleggi);
-             pedCalib->SetSubFromCorr(k, aleggi);
+             if(j==1 && val[k][1]==1){
+               pedCalib->SetSubFromCorr(k);
+	       printf("ped ch.%d -> subtraction from correlation mode (%d) \n",k,val[k][j]);
+	     }
           }
       }
       fclose(file);
