@@ -69,7 +69,6 @@ set(SRCS
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
   AliAnalysisTaskFemto.cxx
-  AliAnalysisTaskFemtoMJ.cxx
   AliTwoTrackRes.cxx
   AliFemtoMCTrackCut.cxx
   AliFemtoEventReaderKinematicsChain.cxx
@@ -82,6 +81,7 @@ set(SRCS
   AliFemtoV0SharedDaughterCut.cxx
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
+  AliFemtoCorrFctnDPhiStarDEta.cxx
   )
 
 # Headers from sources
