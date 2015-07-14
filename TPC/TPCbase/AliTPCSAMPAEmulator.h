@@ -47,7 +47,8 @@ private:
   AliTPCSAMPAEmulator(const AliTPCSAMPAEmulator &sig);
   AliTPCSAMPAEmulator& operator = (const  AliTPCSAMPAEmulator &source);
 public:
-  Int_t fDigitFilterType;   //
+  Int_t fDigitFilterType;     //
+  static Int_t fgBaselineExportType;  // swith to export either corrected signal or the perdestal estimator itself  - needed for the performance ssudies   
   //
   // BC3 parameters
   //
