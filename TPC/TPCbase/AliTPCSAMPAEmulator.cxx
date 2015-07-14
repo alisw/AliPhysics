@@ -1,7 +1,6 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-//     Class for emulation of the ALTRO chip (SAMPA digital Chain) in C++                          //
-//     Author: Roland Bramm                                                                        //
+//     Class for emulation of the SAMPA chip (SAMPA digital Chain) in C++                          //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -10,6 +9,21 @@
  
  	author: marian.ivanov@cern.ch
                 mesut.arslandok@cern.ch  
+
+For the moment very limitted subsut of the functionality implemented.
+Only part realted to the Digiital filtering  - SB3 and SB2
+
+In current interface all actions are done in once DigitalFilterFloat(Int_t npoints, Double_t *dataArray,  Double_t &baseline);
+Class control variables:
+   Int_t fDigitFilterType;    //  to select appropraite filter BC3(0), MAFMI(1), BC3MI(2)
+   Int_t fgBaselineExportType; //  to export corrected signal (0) or pedestal estimators  (1)
+
+Interface will change soon - implementing pipe of the filters
+ e.g: 
+  Signal->BC3->Rounding->ZerroSupression
+    https://alice.its.cern.ch/jira/browse/ATO-129
+Using  that the code will be more modular.
+
 */
 
 
@@ -34,17 +48,16 @@
  *	Consturctor of SAMPA Class, some variables are set.\n
  *	The input Data is altered, so after running the complete emulation you have the
  *	SAMPA Processed Data in the Channel Pointer.\n
- *
- *	@param timebins an <tt> int </tt> sets the length of the input Data (Channel)
- *	@param Channel an <tt> short* </tt> Pointer to a 1d Short_tArray with the input Data
  */
 
 
 ClassImp(AliTPCSAMPAEmulator)
 
+Int_t AliTPCSAMPAEmulator::fgBaselineExportType=0;
+
 AliTPCSAMPAEmulator::AliTPCSAMPAEmulator() : 
   TNamed(),
-  fDigitFilterType(0),   // type of the digital filter
+  fDigitFilterType(0),     // type of the digital filter - BC3 default
   //
   fBC3SlopeDown(0.2),    // BC3 slope down parameter
   fBC3SlopeUp(0.1),      // BC3 slope up   parameter
@@ -84,7 +97,8 @@ Bool_t   AliTPCSAMPAEmulator::DigitalFilterFloat(Int_t npoints, Double_t *dataAr
   // 
   if (fDigitFilterType==0) return BC3SlopeFilterFloat(npoints,dataArray,baseline);
   if (fDigitFilterType==1) return MovingAverageFilter(npoints,dataArray,baseline);
-  if (fDigitFilterType==2) return MovingAverageFilter(npoints,dataArray,baseline);
+  //
+  if (fDigitFilterType==2) return  BC3SlopeFilterMI(npoints,dataArray,baseline);
   //
 }
 
@@ -141,8 +155,13 @@ Bool_t  AliTPCSAMPAEmulator::BC3SlopeFilterFloat(Int_t npoints, Double_t *dataAr
       //    return round(slopeBaseline);
       slopeBaseline=TMath::Nint(slopeBaseline*round)/round;
     }
-    dataArray[iTimeBin]-=slopeBaseline;
-    dataArray[iTimeBin]=TMath::Nint(dataArray[iTimeBin]);
+    if (fgBaselineExportType==0){
+      dataArray[iTimeBin]-=slopeBaseline;
+      dataArray[iTimeBin]=TMath::Nint(dataArray[iTimeBin]);
+    }
+    if (fgBaselineExportType==1){
+      dataArray[iTimeBin]=slopeBaseline;
+    }
   }
   return kTRUE;
 };
@@ -180,8 +199,13 @@ Bool_t  AliTPCSAMPAEmulator::BC3SlopeFilterMI(Int_t npoints, Double_t *dataArray
 	slopeBaseline=TMath::Nint(slopeBaseline*round)/round;
       }
     }
-    dataArray[iTimeBin]-=slopeBaseline;
-    dataArray[iTimeBin]=TMath::Nint(dataArray[iTimeBin]);
+    if (fgBaselineExportType==0){
+      dataArray[iTimeBin]-=slopeBaseline;
+      dataArray[iTimeBin]=TMath::Nint(dataArray[iTimeBin]);
+    }
+    if (fgBaselineExportType==1){
+      dataArray[iTimeBin]=slopeBaseline;
+    }
   }
   return kTRUE;
 };
@@ -214,6 +238,9 @@ Bool_t  AliTPCSAMPAEmulator::MovingAverageFilter(Int_t npoints, Double_t *dataAr
     baseline=(baseline*length+data)/(length+1);
     dataArray[iTimeBin]-=baseline;
     dataArray[iTimeBin]=TMath::Nint(dataArray[iTimeBin]);
+    if (fgBaselineExportType==1){
+      dataArray[iTimeBin]=baseline;
+    }
   }
 }
 
