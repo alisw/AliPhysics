@@ -69,6 +69,7 @@ set(SRCS
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
   AliAnalysisTaskFemto.cxx
+  AliAnalysisTaskFemtoMJ.cxx
   AliTwoTrackRes.cxx
   AliFemtoMCTrackCut.cxx
   AliFemtoEventReaderKinematicsChain.cxx
