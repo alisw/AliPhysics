@@ -212,6 +212,8 @@ TString bitNames[NBITS] = {
     return 1; 
   }
   
+  fout->cd();
+  
   for (Int_t j=1;j<=h->GetNbinsY();j++){
     TString label = h->GetYaxis()->GetBinLabel(j);
     // skip background triggers
