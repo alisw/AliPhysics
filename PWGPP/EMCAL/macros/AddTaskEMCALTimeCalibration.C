@@ -20,7 +20,7 @@
 ///
 
 AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile = "", // timeResults.root
-							     TString  geometryName = "EMCAL_COMPLETE12SMV1_DCAL_8SM",
+							     TString  geometryName = "",//EMCAL_COMPLETE12SMV1_DCAL_8SM
 							     Double_t minClusterEne = 1.0,
 							     Double_t maxClusterEne = 500,
 							     Int_t    minNcells = 2,
@@ -32,7 +32,7 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Double_t minTime = -20.,
 							     Double_t maxTime = 20.,
 							     Bool_t   pileupFromSPDFlag = kFALSE,
-							     TString  referenceFileName = "Reference.root")
+							     TString  referenceFileName = "")//Reference.root
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -63,8 +63,11 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMaxRtrack        (maxRtrack);	   
   taskmbemcal->SetMinCellEnergy    (minCellEne);	   
   taskmbemcal->SetMinTime          (minTime);	   
-  taskmbemcal->SetMaxTime          (maxTime);	   
-  taskmbemcal->SetReferenceFileName(referenceFileName);
+  taskmbemcal->SetMaxTime          (maxTime);
+  if(referenceFileName.Length()!=0){   
+    taskmbemcal->SetReferenceFileName(referenceFileName);
+    taskmbemcal->LoadReferenceHistos();
+  }
   if(pileupFromSPDFlag==kTRUE) taskmbemcal->SwitchOnPileupFromSPD();
   else taskmbemcal->SwitchOffPileupFromSPD();
   //taskmbemcal->PrintInfo();

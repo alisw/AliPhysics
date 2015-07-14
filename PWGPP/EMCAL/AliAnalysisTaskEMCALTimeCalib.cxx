@@ -93,6 +93,7 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fhTimeLGEnt(),
   fhTimeLGSum(),
   fhAllAverageBC(),
+  fhAllAverageLGBC(),
   fhTimeDsup(),
   fhTimeDsupBC(),
   fhRawTimeVsIdBC(),
@@ -108,6 +109,8 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   for(Int_t i = 0; i < kNBCmask; i++) 
   {
     fhAllAverageBC[i]=0;
+    fhAllAverageLGBC[i]=0;
+
     fhTimeSumSq[i]=0;
     fhTimeEnt[i]=0;    
     fhTimeSum[i]=0;
@@ -149,13 +152,18 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
 /// Look the proper source to have more information
 /// Modified July 2, 2010 - HKD to take into account
 /// the changes in ALiTOFT0maker
-void AliAnalysisTaskEMCALTimeCalib::LocalInit()
-{
-  AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::LocalInit()");
+//void AliAnalysisTaskEMCALTimeCalib::LocalInit()
+//{
+//  AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::LocalInit()");
+//}
 
+/// Load reference Histograms from file
+//_____________________________________________________________________
+void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
+{
   if(fReferenceFileName.Length()!=0){
     TFile *myFile = TFile::Open(fReferenceFileName.Data());
-    
+    AliInfo(Form("Reference file: %s, pointer %p",fReferenceFileName.Data(),myFile));
     if(myFile==0x0)
       AliDebug(1,"*** NO REFERENCE FILE");
     else 
@@ -165,14 +173,17 @@ void AliAnalysisTaskEMCALTimeCalib::LocalInit()
 	for(Int_t i = 0; i < kNBCmask; i++)
 	  {
 	    fhAllAverageBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvBC%d",i));
+	    fhAllAverageLGBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvLGBC%d",i));
 	  }
 	
 	AliDebug(1,Form("hAllAverage entries %d", (Int_t)fhAllAverageBC[0]->GetEntries() ));
 	AliDebug(1,Form("hAllAverage entries2 %d",(Int_t)fhAllAverageBC[2]->GetEntries() ));
+	AliDebug(1,Form("hAllAverageLG entries %d", (Int_t)fhAllAverageLGBC[0]->GetEntries() ));
+	AliDebug(1,Form("hAllAverageLG entries2 %d",(Int_t)fhAllAverageLGBC[2]->GetEntries() ));
 	
       }
   }//end of reference file is provided
-} // End of AliAnalysisTaskTimeTaskMB2::LocalInit()
+} // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 
 //_____________________________________________________________________
 /// Connect ESD or AOD here
@@ -250,7 +261,7 @@ void AliAnalysisTaskEMCALTimeCalib::PrepareTOFT0maker()
 
   //cout<<"extPID "<<extPID<<" fTOFmaker "<<fTOFmaker<<endl;
   
-}// End
+}// End PrepareTOFT0maker
 
 //________________________________________________________________________
 /// Create histograms
@@ -448,7 +459,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
   PostData(1,fOutputList);
 
   
-} // End of AliAnalysisTaskTimeTaskMB2::UserCreateOuputObjects()
+} // End of AliAnalysisTaskEMCALTimeCalib::UserCreateOuputObjects()
 
 //________________________________________________________________________
 /// Main loop executed for each event
@@ -628,10 +639,18 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       else {fhEneVsAbsIdLG->Fill(absId,amp);}
       
       fhTimeVsBC->Fill(1.*BunchCrossNumber,hkdtime-timeBCoffset);
-      if(fhAllAverageBC[nBC]!=0){
-	offset = fhAllAverageBC[nBC]->GetBinContent(absId);//comming from file after first iteration
-	//if(offset==0)cout<<"offset 0 in SM "<<nSupMod<<endl;
+      if(isHighGain==kTRUE){
+	if(fhAllAverageBC[nBC]!=0) {//comming from file after the first iteration
+	  offset = fhAllAverageBC[nBC]->GetBinContent(absId);
+	}
+      } else {
+	if(fhAllAverageLGBC[nBC]!=0) {//comming from file after the first iteration
+	  offset = fhAllAverageLGBC[nBC]->GetBinContent(absId);
+	}
       }
+      //if(offset==0)cout<<"offset 0 in SM "<<nSupMod<<endl;
+      
+
       if(amp>0.5) {					
 	fhTimeDsup[nSupMod]->Fill(amp,hkdtime-offset);
 	fhTimeDsupBC[nSupMod][nBC]->Fill(amp,hkdtime-offset);
@@ -678,6 +697,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   // Post output data.
   //cout<<"Post data and delete caloClusters"<<endl;
   caloClusters->Delete();
+  delete caloClusters;
 // } // end if trigger type 
 
   PostData(1, fOutputList);  
@@ -689,7 +709,6 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 void AliAnalysisTaskEMCALTimeCalib::Terminate(Option_t *)
 {
   fOutputList = dynamic_cast<TList*> (GetOutputData(1));
-  fgeom->Delete();
   
   if(fTOFmaker) delete fTOFmaker;
 
@@ -699,7 +718,7 @@ void AliAnalysisTaskEMCALTimeCalib::Terminate(Option_t *)
     AliDebug(1,"ERROR: Output list not available");
     return;
   }
-} // Enf of AliAnalysisTaskEMCALTimeCalib::Terminate
+} // End of AliAnalysisTaskEMCALTimeCalib::Terminate
 
 //________________________________________________________________________
 /// Selection criteria of good cluster are set here
@@ -746,7 +765,7 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::AcceptCluster(AliVCluster* clus)
   }
 
   return kTRUE;
-}
+}//End AliAnalysisTaskEMCALTimeCalib::AcceptCluster
 
 //________________________________________________________________________
 /// Check RCU for cell given by Super Module, column index, row index
@@ -776,7 +795,7 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::CheckCellRCU(Int_t nSupMod,Int_t icol,Int_
     AliFatal(Form("Wrong EMCAL/DCAL RCU number = %d\n", iRCU));
 
   return kTRUE;
-}
+}//End AliAnalysisTaskEMCALTimeCalib::CheckCellRCU
 
 //________________________________________________________________________
 /// Set default cuts for calibration
@@ -790,8 +809,8 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMaxLambda0=0.4;
   fMaxRtrack=0.025;
   fMinCellEnergy=0.4;//0.1//0.4
-  fReferenceFileName="Reference.root";
-  fGeometryName="EMCAL_COMPLETE12SMV1_DCAL_8SM";
+  fReferenceFileName="";//Reference.root
+  fGeometryName="";//EMCAL_COMPLETE12SMV1_DCAL_8SM
   fPileupFromSPD=kFALSE;
   fMinTime=-20.;
   fMaxTime=20.;
