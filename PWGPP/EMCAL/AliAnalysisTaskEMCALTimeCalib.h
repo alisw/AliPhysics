@@ -25,6 +25,10 @@
 /// 2015.07.08 Added geometry check in Notify and set once, 
 ///            added T0 time from TOF histos
 ///            added reference file protection
+/// 2015.07.14 corrected geometry pointer in terminate
+///            added reference histograms for low gain
+///            modified loading of reference file
+///            modified default parameters in AddTask
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -88,6 +92,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhTimeLGEnt(),
     fhTimeLGSum(),
     fhAllAverageBC(),
+    fhAllAverageLGBC(),
     fhTimeDsup(),
     fhTimeDsupBC(),
     fhRawTimeVsIdBC(),
@@ -103,7 +108,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib(const char *name);
   virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
   
-  virtual void   LocalInit();
+  //  virtual void   LocalInit();
   virtual Bool_t Notify();
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -142,6 +147,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
 
   void SetDefaultCuts();
+  void LoadReferenceHistos();
   static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
 
  private:
@@ -208,8 +214,11 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhTimeLGEnt  [kNBCmask]; //!<!  4
   TH1F		*fhTimeLGSum  [kNBCmask]; //!<!  4
 
+  // histos with reference values after the first iteration  
+  TH1D		*fhAllAverageBC     [kNBCmask]; //!<! 4 BCmask High gain
+  TH1D		*fhAllAverageLGBC     [kNBCmask]; //!<! 4 BCmask Low gain
+
   // control histos
-  TH1D		*fhAllAverageBC     [kNBCmask]; //!<! 4 BCmask
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM
   TH2F		*fhTimeDsupBC[kNSM][kNBCmask];  //!<! 20 x 4
 
