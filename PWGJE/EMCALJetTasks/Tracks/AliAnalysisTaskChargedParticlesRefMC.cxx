@@ -114,7 +114,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTProfile("hCrossSectionEvent", "PYTHIA cross section (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
   TString triggers[6] = {"True", "MB", "EJ1", "EJ2", "EG1", "EG2"};
-  for(TString *trg = triggers; trg < triggers+5; trg++){
+  for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hVertexBefore%s", trg->Data()), Form("Vertex distribution before z-cut for trigger class %s", trg->Data()), 500, -50, 50);
     fHistos->CreateTH1(Form("hVertexAfter%s", trg->Data()), Form("Vertex distribution after z-cut for trigger class %s", trg->Data()), 100, -10, 10);
@@ -152,6 +152,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
   // Fill reference distribution for the primary vertex before any z-cut
+  fHistos->FillTH1("hVertexBeforeTrue", vtx->GetZ());
   if(isMinBias) fHistos->FillTH1("hVertexBeforeMB", vtx->GetZ());
   if(isEJ1) fHistos->FillTH1("hVertexBeforeEJ1", vtx->GetZ());
   if(isEJ2) fHistos->FillTH1("hVertexBeforeEJ2", vtx->GetZ());
@@ -163,6 +164,8 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
+  fHistos->FillTH1("hEventCountTrue", 1);
+  fHistos->FillTH1("hVertexAfterTrue", vtx->GetZ());
   if(isMinBias){
     fHistos->FillTH1("hEventCountMB", 1);
     fHistos->FillTH1("hVertexAfterMB", vtx->GetZ());
@@ -216,9 +219,20 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     // Particle selected
     fHistos->FillTH1("hPtEtaAllNewBinningTrue", TMath::Abs(truepart->Pt()));
     fHistos->FillTH1("hPtEtaAllOldBinningTrue", TMath::Abs(truepart->Pt()));
+
     for(int icut = 0; icut < 5; icut++){
       if(TMath::Abs(truepart->Pt()) > static_cast<double>(ptmin[icut])){
-        fHistos->FillTH1(Form("hEtaDistAllPt%dMB", ptmin[icut]), truepart->Eta());
+        fHistos->FillTH1(Form("hEtaDistAllPt%dTrue", ptmin[icut]), truepart->Eta());
+      }
+    }
+
+    if(truepart->Eta() > -0.8 && truepart->Eta() < -0.2){
+      fHistos->FillTH1("hPtEtaCentNewBinningTrue", TMath::Abs(truepart->Pt()));
+      fHistos->FillTH1("hPtEtaCentOldBinningTrue", TMath::Abs(truepart->Pt()));
+      for(int icut = 0; icut < 5; icut++){
+        if(TMath::Abs(truepart->Pt()) > static_cast<double>(ptmin[icut])){
+          fHistos->FillTH1(Form("hEtaDistCutPt%dTrue", ptmin[icut]), truepart->Eta());
+        }
       }
     }
   }
@@ -590,16 +604,10 @@ Bool_t AliAnalysisTaskChargedParticlesRefMC::TrackSelectionAOD(AliAODTrack* trac
 TString AliAnalysisTaskChargedParticlesRefMC::GetFiredTriggerClasses(const TClonesArray* triggerpatches) {
   TString triggerstring = "";
   Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
-  /*
-    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCGHigh, 140);
-    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCGLow, 89);
-    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCJHigh, 260);
-    trgconf->SetEnergyThreshold(EMCalTriggerPtAnalysis::kTAEMCJLow, 127);
-   */
-  double  minADC_EJ1 = 0.,
-          minADC_EJ2 = 0.,
-          minADC_EG1 = 0.,
-          minADC_EG2 = 0.;
+  double  minADC_EJ1 = 260.,
+          minADC_EJ2 = 127.,
+          minADC_EG1 = 140.,
+          minADC_EG2 = 89.;
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEmcalTriggerPatchInfo *patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
