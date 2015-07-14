@@ -9,7 +9,7 @@
 class TArrayD;
 class TClonesArray;
 
-class AliAnalysisUtil;
+class AliAnalysisUtils;
 class AliAODTrack;
 class AliESDtrack;
 class AliESDtrackCuts;
