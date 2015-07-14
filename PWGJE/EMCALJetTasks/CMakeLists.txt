@@ -134,6 +134,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
     UserTasks/AliAnalysisTaskJetMatching.cxx
+    UserTasks/AliAnalysisTaskJetsEvshape.cxx
     UserTasks/AliAnalysisTaskJetShapeConst.cxx
     UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
