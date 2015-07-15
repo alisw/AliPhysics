@@ -483,7 +483,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TFile                 *fPurityFunctionsFile;       //! purity functions file
   TDirectory            *fPurityFunctionsList;     //! purity functions list
     
-  TF2                   *fPurityFunction[150]; //TF2 purity functions
+  TF2                   *fPurityFunction[180]; //TF2 purity functions
   
   Int_t  fMaxITSclusterShared;
   Double_t  fMaxITSChi2;

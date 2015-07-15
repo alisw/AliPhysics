@@ -198,7 +198,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
     
-  for(Int_t i(0) ; i < 150; i++) {
+  for(Int_t i(0) ; i < 180; i++) {
      fPurityFunction[i]=NULL;
   }
 
@@ -325,7 +325,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = kTRUE;
     
-  for(int i=0;i<150;i++){
+  for(int i=0;i<180;i++){
      fPurityFunction[i]=NULL;
   }
 
@@ -461,7 +461,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   }
   for(Int_t i(0); i < 8; i++) fUseVZERORing[i] = that.fUseVZERORing[i];
   
-  for(Int_t i(0); i < 150; i++) {
+  for(Int_t i(0); i < 180; i++) {
      fPurityFunction[i]=that.fPurityFunction[i];
   }
     
@@ -641,7 +641,7 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
     fPurityFunctionsFile->Close();
     fPurityFunctionsFile = 0x0;
   }
-  for(int i=0;i<150;i++){
+  for(int i=0;i<180;i++){
     if(fPurityFunction[i]) {
         delete fPurityFunction[i];
         fPurityFunction[i] = 0;
@@ -3730,7 +3730,7 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaPurityCut(const AliAODTrack* track)
     
     Int_t p_int = -999;
     Double_t pInterval=0;
-    for(int i=0;i<50;i++){
+    for(int i=0;i<60;i++){
         pInterval=0.1*i;
         if(track->P()>pInterval && track->P()<pInterval+0.1){p_int = i;}
     }
@@ -3744,7 +3744,7 @@ Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaPurityCut(const AliAODTrack* track)
     Float_t nsigmaTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,fParticleID);
     Float_t nsigmaTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,track,fParticleID);
     
-    int index = (fParticleID-2)*50 + p_int;
+    int index = (fParticleID-2)*60 + p_int;
     if ( (track->IsOn(AliAODTrack::kITSin))){
         if(p_int<2) return kFALSE;
         
@@ -5163,9 +5163,9 @@ void AliFlowTrackCuts::SetTPCTOFNsigmaPIDPurityFunctions(Float_t PurityLevel)
         }
     }
     
-    for(int i=0;i<150;i++){
-        int ispecie = i/50;
-        int iPbin = i%50;
+    for(int i=0;i<180;i++){
+        int ispecie = i/60;
+        int iPbin = i%60;
         fPurityFunction[i] = (TF2*)Species_functions[ispecie]->FindObject(Form("PurityFunction_%d%d",iPbin,iPbin+1));
         if(!fPurityFunction[i]){printf("Purity function does not exist"); return;}
     }
