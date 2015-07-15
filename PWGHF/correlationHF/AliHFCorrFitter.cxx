@@ -223,7 +223,7 @@ void AliHFCorrFitter::SetFunction()
     fFit->SetParLimits(0,0,9999.);
     fFit->SetParLimits(1,0,999.);
     fFit->SetParLimits(2,-1,1);
-    fFit->SetParLimits(3,0,3.14/2.);
+    fFit->SetParLimits(3,0,3.14/3.);
     fFit->SetParLimits(4,0,999.);
     fFit->SetParLimits(5,2.,4);
     fFit->SetParLimits(6,0,3.14/2.);
@@ -287,7 +287,7 @@ void AliHFCorrFitter::SetFunction()
     fFit->SetParLimits(0,0.,999.);
     fFit->SetParLimits(1,0,999.);
     fFit->SetParLimits(2,-0.55,0.55);
-    fFit->SetParLimits(3,0,3.14/4.); 
+    fFit->SetParLimits(3,0,3.14/3.); 
     fFit->SetParLimits(4,0,999.);
     fFit->SetParLimits(5,2.85,3.55);   
     fFit->SetParLimits(6,0,3.14/2.);   
@@ -325,7 +325,7 @@ void AliHFCorrFitter::SetFunction()
     fFit->SetParLimits(5,2.85,3.55);
     fFit->SetParLimits(6,0,3.14/2.);
     fFit->SetParLimits(7,0.5,1.);// the range is set from 0.5 to 1 to guarantee that the first gaussian is the one with the highest yield
-    fFit->SetParLimits(8,0,3.14/4.);
+    fFit->SetParLimits(8,0,3.14/2.);
 
     fFit->SetParameter(0,0.6);
     fFit->SetParameter(1,3); 
@@ -361,7 +361,7 @@ case 4:
     fFit->SetParLimits(0,0.,999.);
     fFit->SetParLimits(1,0.,999.);
     fFit->SetParLimits(2,-0.55,0.55);
-    fFit->SetParLimits(3,0,3.14/4.);
+    fFit->SetParLimits(3,0,3.14/3.);
     fFit->SetParLimits(4,0,999.);
     fFit->SetParLimits(5,2.85,3.55);
     fFit->SetParLimits(6,0,3.14/4.);
@@ -414,7 +414,7 @@ case 4:
     fFit->SetParLimits(0,0.,999.);
     fFit->SetParLimits(1,0,999.);
     fFit->SetParLimits(2,-0.55,0.55);
-    fFit->SetParLimits(3,0,3.14/4.);
+    fFit->SetParLimits(3,0,3.14/3.);
     fFit->SetParLimits(4,0,999.);
     fFit->SetParLimits(5,2.85,3.55);
     fFit->SetParLimits(6,0,3.14/2.);
