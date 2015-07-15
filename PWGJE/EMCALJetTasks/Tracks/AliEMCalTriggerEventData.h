@@ -28,7 +28,7 @@ namespace EMCalTriggerPtAnalysis {
 
 /**
  * \class AliEMCalTriggerEventData
- * \brief Simple event container within the high-\f$ \pt \f$ track analysis
+ * \brief Simple event container within the high-\f$ p_{t} \f$ track analysis
  *
  * This class combines the reconstructed event (and if available the Monte-Carlo evnet) with the
  * containers from the EMCAL jet framework relevant for this taks and the

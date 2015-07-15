@@ -25,7 +25,6 @@ namespace EMCalTriggerPtAnalysis {
  */
 class AliEMCalTriggerEventData;
 
-class AliEMCalTriggerEventSelection: public TObject {
 /**
  * \class AliEMCalTriggerEventSelection
  * \brief Class for event selection in the analysis of triggered events
@@ -33,6 +32,7 @@ class AliEMCalTriggerEventSelection: public TObject {
  * Basic event selection component: Selects events according to the pA cut and a vertex-z cut
  * For more sophisticated event selection the method IsEventSelected has to be overwritten
  */
+class AliEMCalTriggerEventSelection: public TObject {
 public:
   AliEMCalTriggerEventSelection();
   /**
