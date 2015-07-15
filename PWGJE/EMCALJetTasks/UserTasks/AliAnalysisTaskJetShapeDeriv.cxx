@@ -418,7 +418,22 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   if(fOverlap){
      fRjetTrvspTj = new TH2F("fRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
      fOutput->Add(fRjetTrvspTj);
+     
+     fNJetsSelEv = new TH1F("fNJetsSelEv", "N of jets selected; #it{N}_{jets}/ev;Entries", 20., 0.,19);
+     fOutput->Add(fNJetsSelEv);
+     
+     fJetEtaPhi = new TH2F("fJetEtaPhi", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, 0., 2*TMath::Pi());
+     fOutput->Add(fJetEtaPhi);
+     
+     hpTTracksJetO = new TH1F("hTrackpTO", "Track pT (signal jet); p_{T}", 500,0.,50.);
+     fOutput->Add(hpTTracksJetO);
+
   }
+  hpTTracksJet1 = new TH1F("hTrackpT1", "Track pT ; p_{T}", 500,0.,50.);
+  fOutput->Add(hpTTracksJet1);
+  hpTTrackCont = new TH1F(Form("hpTTrackCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
+  fOutput->Add(hpTTrackCont);
+  
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -479,13 +494,23 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
      Printf("Jet Container %d not found, return", fContainerBase);
      return kFALSE;
   }
+  //Printf("FillHistograms::Jet container %p", jetCont);
   AliJetContainer *jetContO = GetJetContainer(fContainerOverlap);
 
   if(fOverlap && !jetContO){
      Printf("Jet Container %d not found, return", fContainerOverlap);
      return kFALSE;
   }
-
+  AliParticleContainer *trackCont = GetParticleContainer(0);
+  //if(trackCont) Printf("Ci sono");
+  
+  
+  for(Int_t i=0; i<trackCont->GetNParticles(); i++){
+     AliVParticle *vp= static_cast<AliVParticle*>(trackCont->GetAcceptParticle(i));
+     if(!vp) continue;
+     hpTTrackCont->Fill(vp->Pt());
+  }
+  
   //rho
   AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetCont->GetRhoName()));
   fRho = 0;
@@ -500,7 +525,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
      AliError(Form("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data()));
       
   } else fRhoM = rhomParam->GetVal();
-  
+    
   //Get leading jet in Pb-Pb event without embedded objects
   AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
   AliEmcalJet *jetL = NULL;
@@ -511,7 +536,15 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     jet2 = NULL;
     if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
       continue;
+    //print constituents of different jet containers
+    //jet1
     
+    for(Int_t i=0; i<jet1->GetNumberOfTracks(); i++) {
+       AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+       //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+       //Int_t lab = TMath::Abs(vp->GetLabel());
+       if(vp) hpTTracksJet1 -> Fill(vp->Pt());
+    }
     Double_t mjet1 = jet1->GetSecondOrderSubtracted();
     Double_t mUnsubjet1 = jet1->M();
     Double_t ptjet1 = jet1->Pt()-fRho*jet1->Area();
@@ -553,10 +586,22 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
        	  }
        	  if(fOverlap){
        	     Int_t Njets = jetContO->GetNAcceptedJets();
+       	     fNJetsSelEv->Fill(Njets);
        	     jetContO->ResetCurrentID();
        	     while(jetO = jetContO->GetNextAcceptJet()){
+       	     	  //print constituents of different jet containers
+       	     	  //jetO
+       	     	  //Printf("N particle %d",jetO->GetNumberOfTracks());
+       	     	  for(Int_t i=0; i<jetO->GetNumberOfTracks(); i++) {
+       	     	     AliVParticle* vp = static_cast<AliVParticle*>(jetO->TrackAt(i, jetContO->GetParticleContainer()->GetArray()));
+       	     	     //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+       	     	     //Int_t lab = TMath::Abs(vp->GetLabel());
+       	     	     if(vp) hpTTracksJetO -> Fill(vp->Pt());
+       	     	  }
+
        	     	Double_t deltaR = jetO->DeltaR(vpe);
        	     	fRjetTrvspTj->Fill(deltaR, jetO->Pt());
+       	     	fJetEtaPhi->Fill(jetO->Eta(), jetO->Phi());
        	     	if( deltaR < fRadius) {
        	     	   reject = kTRUE;
        	     	   break;
@@ -654,20 +699,23 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 AliVParticle* AliAnalysisTaskJetShapeDeriv::GetEmbeddedConstituent(AliEmcalJet *jet) {
 
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
+  //Printf("JEt container %p", jetCont);
   AliVParticle *vp = 0x0;
   AliVParticle *vpe = 0x0; //embedded particle
   Int_t nc = 0;
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
     vp = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
     //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+    //Printf("vp %p", vp);
+    if(!vp) continue;
     Int_t lab = TMath::Abs(vp->GetLabel());
     if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
       continue;
-
     if(!vpe) vpe = vp;
     else if(vp->Pt()>vpe->Pt()) vpe = vp;
     nc++;
   }
+
   AliDebug(11,Form("Found %d embedded particles",nc));
   return vpe;
 }
