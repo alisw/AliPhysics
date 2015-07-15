@@ -22803,7 +22803,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCVZ()
      fCRCVZCorrPro[r][c][eg][h]->Sumw2();
      fCRCVZRunsList[r]->Add(fCRCVZCorrPro[r][c][eg][h]);
      fCRCVZCorrProd2p2pHist[r][c][eg][h] = new TProfile(Form("fCRCVZCorrProd2p2pHist[%d][%d][%d][%d]",r,c,eg,h),
-                                                         Form("fCRCVZCorrProd2p2pHist[%d][%d][%d][%d]",r,c,eg,h),pow(fCRCVZnCR,2),0.,pow(fCRCVZnCR,2.),"s");
+                                                         Form("fCRCVZCorrProd2p2pHist[%d][%d][%d][%d]",r,c,eg,h),pow((double)fCRCVZnCR,(double)2),0.,pow((double)fCRCVZnCR,(double)2.),"s");
      fCRCVZCorrProd2p2pHist[r][c][eg][h]->Sumw2();
      fCRCVZRunsList[r]->Add(fCRCVZCorrProd2p2pHist[r][c][eg][h]);
      fCRCVZNUAPro[r][c][eg][h] = new TProfile(Form("fCRCVZNUAPro[%d][%d][%d][%d]",r,c,eg,h),
@@ -22864,7 +22864,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCZDC()
      fCRCZDCCorrPro[r][c][eg][h]->Sumw2();
      fCRCZDCRunsList[r]->Add(fCRCZDCCorrPro[r][c][eg][h]);
      fCRCZDCCorrProd2p2pHist[r][c][eg][h] = new TProfile(Form("fCRCZDCCorrProd2p2pHist[%d][%d][%d][%d]",r,c,eg,h),
-                                                         Form("fCRCZDCCorrProd2p2pHist[%d][%d][%d][%d]",r,c,eg,h),pow(fCRCZDCnCR,2),0.,pow(fCRCZDCnCR,2.),"s");
+                                                         Form("fCRCZDCCorrProd2p2pHist[%d][%d][%d][%d]",r,c,eg,h),pow((double)fCRCZDCnCR,(double)2),0.,pow((double)fCRCZDCnCR,(double)2.),"s");
      fCRCZDCCorrProd2p2pHist[r][c][eg][h]->Sumw2();
      fCRCZDCRunsList[r]->Add(fCRCZDCCorrProd2p2pHist[r][c][eg][h]);
      fCRCZDCNUAPro[r][c][eg][h] = new TProfile(Form("fCRCZDCNUAPro[%d][%d][%d][%d]",r,c,eg,h),
