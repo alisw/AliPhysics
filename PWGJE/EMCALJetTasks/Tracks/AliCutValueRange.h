@@ -1,9 +1,14 @@
+/**
+ * \file AliCutValueRange.h
+ * \brief Class containing a range for a value to cut on
+ *
+ * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * \since Dec 12, 2014
+ */
 #ifndef ALICUTVALUERANGE_H
 #define ALICUTVALUERANGE_H
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
-
-// Author: Markus Fasel
 
 #include <TObject.h>
 
@@ -16,12 +21,25 @@
  */
 namespace EMCalTriggerPtAnalysis{
 
+/**
+ * \class AliCutValueRange
+ * \brief Class containing a range for a value to cut on
+ *
+ * Class defining a range in which a value to be checked is valid. Can be used
+ * as a cut. In case a negative comparison (value valid only outside this range)
+ * is desired, this is handled when setting the object to negate (function Negate()).
+ * The class is a template, expecting the comparison operators to be overloaded.
+ *
+ */
 template<typename t>
 class AliCutValueRange : public TObject {
 public:
 	AliCutValueRange();
 	AliCutValueRange(t min, t max);
 	AliCutValueRange(t limit, bool isUpper);
+	/**
+	 * Destructor, nothing to do
+	 */
 	virtual ~AliCutValueRange() {}
 
 	void SetLimits(t min, t max){
@@ -30,24 +48,54 @@ public:
 		fHasLimit[0] = fHasLimit[1] = true;
 	}
 	void UnsetLimits(){ fHasLimit[0] = fHasLimit[1] = false; }
+	/**
+	 * Set a limit
+	 * @param value Value of the limit
+	 * @param isUpper Indicator for upper (true) or lower (false) limit
+	 */
 	void SetLimit(t value, bool isUpper){
 		int bin = isUpper ? 1 : 0;
 		fLimits[bin] = value;
 		fHasLimit[bin] = true;
 	}
+	/**
+	 * Make cut range open in one direction
+	 * @param isUpper Indictator for upper (true) or lower (false)
+	 */
 	void UnsetLimit(bool isUpper){
 		int bin = isUpper ? 1 : 0;
 		fHasLimit[bin] = false;
 	}
+	/**
+	 * Define that the decision should be negated
+	 */
 	void Negate() { fNegate = true; }
+	/**
+	 * Define that decision should not be negated
+	 */
 	void SetPositive() { fNegate = false; }
+	/**
+	 * Define whether we use larger equal instead of larger
+	 * @param doUse
+	 */
+	void SetUseLargerEqual(Bool_t doUse = true) { fUseLargerEqual = doUse; }
+	/**
+	 * Define whether we use smaller equal instead of smaller
+	 * @param doUse if true we use smaller equal, otherwise smaller
+	 */
+	void SetUseSmallerEqual(Bool_t doUse = true) { fUseSmallerEqual = doUse; }
 	bool IsInRange(t value) const;
-private:
-	t       fLimits[2];
-	bool    fHasLimit[2];
-	bool    fNegate;
 
+private:
+	t       fLimits[2];                 ///< Specifies the limit in either of the direction (not used unless fHasLimit of that direction is true)
+	bool    fHasLimit[2];               ///< Specifies whether limit in any of the two directions is set
+	bool    fNegate;                    ///< Defines whether result should be inverted
+	bool    fUseSmallerEqual;           ///< Use smaller equal for upper bound (true by default)
+	bool    fUseLargerEqual;            ///< Use larger equal for lower bound (true by default)
+
+	/// \cond CLASSIMP
 	ClassDef(AliCutValueRange, 1);     // Value range for cuts
+	/// \endcond
 };
 
 }

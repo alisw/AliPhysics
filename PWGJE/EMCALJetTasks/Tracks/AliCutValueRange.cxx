@@ -12,60 +12,55 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/*
- * Class defining a range in which a value to be checked is valid. Can be used
- * as a cut. In case a negative comparison (value valid only outside this range)
- * is desired, this is handled when setting the object to negate (function Negate()).
- * The class is a template, expecting the comparison operators to be overloaded.
- *
- *   Author: Markus Fasel
- */
-
 #include "AliCutValueRange.h"
 
+/// \cond CLASSIMP
 templateClassImp(EMCalTriggerPtAnalysis::AliCutValueRange)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-	//______________________________________________________________________________
+	/**
+	 * Dummy constructor, producing a range open to both sides
+	 */
 	template<typename t>
 	AliCutValueRange<t>::AliCutValueRange():
-	fNegate(false)
+	fNegate(false),
+	fUseSmallerEqual(true),
+	fUseLargerEqual(true)
 	{
-		/*
-		 * Dummy constructor, producing a range open to both sides
-		 */
 		fHasLimit[0] = fHasLimit[1] = false;
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * Constructor, producing a range closed to both sides
+	 *
+	 * @param min lower limit
+	 * @param max upper limit
+	 */
 	template<typename t>
 	AliCutValueRange<t>::AliCutValueRange(t min, t max):
-	fNegate(false)
+	fNegate(false),
+	fUseSmallerEqual(true),
+	fUseLargerEqual(true)
 	{
-		/*
-		 * Constructor, producing a range closed to both sides
-		 *
-		 * @param min: lower limit
-		 * @param max: upper limit
-		 */
 		fLimits[0] = min;
 		fLimits[1] = max;
 		fHasLimit[0] = fHasLimit[1] = true;
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * Constructor, producing a range closed to both sides
+	 *
+	 * @param limit the limit to be set
+	 * @param isUpper defining whether the limit is the upper (case true) or lower limit
+	 */
 	template<typename t>
 	AliCutValueRange<t>::AliCutValueRange(t limit, bool isUpper):
-	fNegate(false)
+	fNegate(false),
+	fUseSmallerEqual(true),
+	fUseLargerEqual(true)
 	{
-		/*
-		 * Constructor, producing a range closed to both sides
-		 *
-		 * @param limit: the limit to be set
-		 * @param isUpper: defining whether the limit is the upper (case true) or lower limit
-		 */
 		if(isUpper){
 			fLimits[1] = limit;
 			fHasLimit[0] = false;
@@ -77,25 +72,32 @@ namespace EMCalTriggerPtAnalysis {
 		}
 	}
 
-	//______________________________________________________________________________
+	/**
+	 * Check whether value is within a given range
+	 *
+	 * @param value value to be checked
+	 * @return comparison result
+	 */
 	template<typename t>
 	bool AliCutValueRange<t>::IsInRange(t value) const {
-		/*
-		 * Check whether value is within a given range
-		 *
-		 * @param value: value to be checked
-		 * @return: comparison result
-		 */
 		bool result = true;
 		if(fHasLimit[0] && fHasLimit[1]){
-			// Double-sided limited
-			result = fNegate ? (value < fLimits[0] || value > fLimits[1]) : (value > fLimits[0] && value < fLimits[1]);
+			// Double-sided limited, correct choise of comparison operator
+		  Bool_t withinUpper = fUseSmallerEqual ? (value <= fLimits[1]) : (value < fLimits[1]),
+		         withinLower = fUseLargerEqual ? (value >= fLimits[1]) : (value > fLimits[1]);
+		  result = withinLower && withinUpper;
+			if(fNegate)
+			  result = !result;
 		} else if(fHasLimit[1]) {
-			// only upper bound
-			result = fNegate ? (value > fLimits[1]) : (value < fLimits[1]);
+			// only upper bound, correct choise of comparison operator
+			result = fUseSmallerEqual ? (value <= fLimits[1]) : (value < fLimits[1]);
+			if(fNegate)
+			  result = !result;
 		} else if(fHasLimit[0]){
-			// only lower bound
-			result = fNegate ? (value < fLimits[0]) : (value > fLimits[0]);
+			// only lower bound, correct choise of comparison operator
+			result = fUseLargerEqual ? (value >= fLimits[0]) : (value > fLimits[0]);
+			if(fNegate)
+			  result = !result;
 		}
 		return result;
 	}
