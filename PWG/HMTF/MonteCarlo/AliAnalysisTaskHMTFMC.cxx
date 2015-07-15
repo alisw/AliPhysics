@@ -18,6 +18,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 
 #include <iostream>
 #include "AliPDG.h"
@@ -96,6 +97,7 @@ void AliAnalysisTaskHMTFMC::UserExec(Option_t *)
   // Here we need some generator-dependent logic, in case we need to extract useful information from the headers.
   AliGenPythiaEventHeader * headPy  = 0;
   AliGenDPMjetEventHeader * headPho = 0;
+  AliGenHepMCEventHeader * headHepMC = 0x0;
   AliGenEventHeader * htmp = mcEvent->GenEventHeader();
   if(!htmp) {
     AliError("Cannot Get MC Header!!");
@@ -105,6 +107,8 @@ void AliAnalysisTaskHMTFMC::UserExec(Option_t *)
     headPy =  (AliGenPythiaEventHeader*) htmp;
   } else if (TString(htmp->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
     headPho = (AliGenDPMjetEventHeader*) htmp;
+  } else if (TString(htmp->IsA()->GetName()) == "AliGenHepMCEventHeader") {
+    headHepMC = (AliGenHepMCEventHeader*) htmp;
   } else {
     AliWarning("Unknown header");
   }
@@ -208,6 +212,6 @@ void AliAnalysisTaskHMTFMC::Terminate(Option_t *)
   c->cd(2);
   hMotherPDG->Draw();
 
-  std::cout << "Processed " << fHistIev->GetBinContent(0) << " events, equivalent to "<< fHistIev->GetBinContent(1) << " generated events."  << std::endl;
+  std::cout << "Processed " << fHistIev->GetBinContent(1) << " events, equivalent to "<< fHistIev->GetBinContent(2) << " generated events."  << std::endl;
   
 }
