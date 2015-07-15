@@ -181,11 +181,14 @@ Bool_t  AliTPCSAMPAEmulator::BC3SlopeFilterMI(Int_t npoints, Double_t *dataArray
   //    The filter is floating point. To simulate the integer behavior of the hardware based filter, define INTFILTER and choose the slopes to be binary compatible (1.0, 0.5, 0.25 etc.).
   // #define SLOPEUP		1.0
   // #define SLOPEDOWN	2.0
+  
+  Double_t *tmpArray= new Double_t[npoints];      
+  memcpy(tmpArray, dataArray, npoints*sizeof(Double_t));
 
   if (npoints<=1) return kFALSE;
   for (Int_t iTimeBin=0; iTimeBin<npoints; iTimeBin++){
-    Double_t data=dataArray[iTimeBin];
-    Double_t maxDiff=TMath::Max( TMath::Abs(dataArray[(iTimeBin+npoints+1)%npoints]-data),  TMath::Abs(dataArray[(iTimeBin+npoints-1)%npoints]-data));
+    Double_t data=tmpArray[iTimeBin];
+    Double_t maxDiff=TMath::Max( TMath::Abs(tmpArray[(iTimeBin+npoints+1)%npoints]-data),  TMath::Abs(tmpArray[(iTimeBin+npoints-1)%npoints]-data));
     if (maxDiff<=diffCutMI){
       if (data>slopeBaseline) {
 	slopeBaseline+=slopeUp;
