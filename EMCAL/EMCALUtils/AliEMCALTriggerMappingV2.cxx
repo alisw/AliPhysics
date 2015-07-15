@@ -82,8 +82,9 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromTRU(Int_t iTRU, Int_t iADC
   }
   
   Int_t iADCtmp = (fTRUIsCside[ iTRU])? (fNModulesInTRU - iADC - 1) : iADC   ;
-  Int_t x = fTRUFastOROffsetX[iTRU] + int(iADCtmp / fnFastORInTRUPhi[iTRU])  ;
-  Int_t y = fTRUFastOROffsetY[iTRU] + int(iADCtmp % fnFastORInTRUPhi[iTRU])  ;
+  Int_t x = fTRUFastOROffsetX[iTRU]                              + int(iADCtmp / fnFastORInTRUPhi[iTRU])  ;
+  //Int_t y = fTRUFastOROffsetY[iTRU]                              + int(iADCtmp % fnFastORInTRUPhi[iTRU])  ;//XXX
+  Int_t y = fTRUFastOROffsetY[iTRU] + fnFastORInTRUPhi[iTRU] - 1 - int(iADCtmp % fnFastORInTRUPhi[iTRU])  ;//XXX
   id      = y * fSTURegionNEta + x          ;
   id      = ConvAbsFastORIndexA2B(id)       ;
   return kTRUE  ;
@@ -101,7 +102,8 @@ Bool_t AliEMCALTriggerMappingV2::GetAbsFastORIndexFromPositionInTRU(Int_t iTRU, 
     return kFALSE;
   }
   Int_t iEtatmp = (fTRUIsCside[ iTRU])? (fnFastORInTRUEta[iTRU] - 1 - iEta) : iEta  ;
-  Int_t iPhitmp = (fTRUIsCside[ iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi) : iPhi  ;
+  //Int_t iPhitmp = (fTRUIsCside[ iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi) : iPhi  ;//XXX
+  Int_t iPhitmp = (!fTRUIsCside[ iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi) : iPhi  ;//XXX
   Int_t x = fTRUFastOROffsetX[iTRU] + iEtatmp ;
   Int_t y = fTRUFastOROffsetY[iTRU] + iPhitmp ;
   id      = y * fSTURegionNEta + x            ;
@@ -443,7 +445,7 @@ Bool_t AliEMCALTriggerMappingV2::Init_SM_offset(){
 }
 
 //________________________________________________________________________________________________
-Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(
+Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(//conv from A
     Int_t id, 
     Int_t& iTRU , Int_t& iADC , Int_t& iEta_TRU , Int_t& iPhi_TRU , 
     Int_t& iSM  ,               Int_t& iEta_SM  , Int_t& iPhi_SM  
@@ -462,9 +464,11 @@ Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(
   iEta_TRU  = int(iADC / fnFastORInTRUPhi[iTRU]) ;
   iPhi_TRU  = int(iADC % fnFastORInTRUPhi[iTRU]) ;
 
-  iADC      = (fTRUIsCside[iTRU])? (fNModulesInTRU         - 1 - iADC      ) : iADC      ;
+  //iADC      = (fTRUIsCside[iTRU])? (fNModulesInTRU         - 1 - iADC      ) : iADC      ;
   iEta_TRU  = (fTRUIsCside[iTRU])? (fnFastORInTRUEta[iTRU] - 1 - iEta_TRU  ) : iEta_TRU  ;
-  iPhi_TRU  = (fTRUIsCside[iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi_TRU  ) : iPhi_TRU  ;
+  //iPhi_TRU  = (fTRUIsCside[iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi_TRU  ) : iPhi_TRU  ;//XXX
+  iPhi_TRU  = (!fTRUIsCside[iTRU])? (fnFastORInTRUPhi[iTRU] - 1 - iPhi_TRU  ) : iPhi_TRU  ;//XXX
+  iADC      = iPhi_TRU + fnFastORInTRUPhi[iTRU] * iEta_TRU  ;//XXX
   
   //SM
   Int_t x   = id % fSTURegionNEta ;
