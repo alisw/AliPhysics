@@ -88,7 +88,7 @@ declare -i cpCode=1 # THIS WILL MAKE THE COMMITTED MACRO TO BE COPIED AND USED I
 declare -ai useScriptFDpaths=( 1 1 1 ) #THIS IS USEFUL IN CASE YOU DO NOT WANT TO RECOMPUTE THE FD BUT USE THE PATHS SET BY THE SCRIPT FOR THE FILES COMING FROM THE FD SUBTRACTION
 declare -i doFeedDownGlob=1
 declare -ia doFeedDownMes=( 1 1 1 ) ## Dzero, Dstar, Dplus values
-declare doInitAndReflStep=0  ## NOTE THAT THIS STEP IS NECESSARY ALSO IN CASE THE PLOTS DO NOT HAVE TO BE REFLECTED. THE "reflect" PARAMETER ABOVE IS WHAT DETERMINED WHETHER OR NOT THE PLOTS WILL BE REFLECTED INSIDE THIS STEP. THIS PARAMETER IS JUST A SWITCH: YOU CAN SET IT TO 0 IN CASE YOU ALREADY DID IT AND YOU DO NOT WANT TO REPEAT IT
+declare doInitAndReflStep=1  ## NOTE THAT THIS STEP IS NECESSARY ALSO IN CASE THE PLOTS DO NOT HAVE TO BE REFLECTED. THE "reflect" PARAMETER ABOVE IS WHAT DETERMINED WHETHER OR NOT THE PLOTS WILL BE REFLECTED INSIDE THIS STEP. THIS PARAMETER IS JUST A SWITCH: YOU CAN SET IT TO 0 IN CASE YOU ALREADY DID IT AND YOU DO NOT WANT TO REPEAT IT
 declare doAverage=1
 declare doNicePlot=1
 declare doCompareMesons=1
@@ -163,6 +163,7 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/SubtractFD.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoNiceSpecieComparisonPlot.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/CompareFitResults.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoNiceFitPlots.C .
 fi
 
 #############  CREATE BASIC DIRECTORY TREE #############
@@ -429,6 +430,17 @@ if [ ${dofit} = 1 ]; then
 fi
 collsyst=${firstcollsyst}
 
+if [ ${dofit} = 1 ]; then
+  cd ${baseDir}/AllPlots/Averages/FitResults
+  mkdir NiceStylePlots
+  cd NiceStylePlots
+  root -b <<EOF &> NiceStylePlots.log
+  .L ${HFCJlocalCodeDir}/DoNiceFitPlots.C
+  SetInputDirectory("${baseDir}/AllPlots/Averages/FitResults")
+  DoNiceFitPlots()
+  .q
+EOF
+fi
 
 if [ ${doFitResultComparisonPPpPb} = 1 ];then
     mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb
