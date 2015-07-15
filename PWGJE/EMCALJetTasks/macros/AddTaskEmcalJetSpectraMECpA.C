@@ -161,6 +161,7 @@ AliAnalysisTaskEmcalJetSpectraMECpA* AddTaskEmcalJetSpectraMECpA(
   AliAnalysisTaskEmcalJetSpectraMECpA *spectratask = new AliAnalysisTaskEmcalJetSpectraMECpA(name);
   spectratask->SetJetsName(nJets.Data());
   spectratask->SetCentralityEstimator(CentEst);
+  spectratask->SetVzRange(-10,10);
 
   if(type==0){
     //spectratask->SetAnaType(typeTPC);
