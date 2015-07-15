@@ -210,6 +210,7 @@ Bool_t  AliTPCSAMPAEmulator::BC3SlopeFilterMI(Int_t npoints, Double_t *dataArray
       dataArray[iTimeBin]=slopeBaseline;
     }
   }
+  delete [] tmpArray;
   return kTRUE;
 };
 
