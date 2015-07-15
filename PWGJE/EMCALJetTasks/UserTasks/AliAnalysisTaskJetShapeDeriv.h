@@ -110,11 +110,15 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   TH2F          **fh2PtCorrSubFacV2;                               //! subtracted pT vs 0.5(rho+rhom)^2*V2
   TH2F          **fh2NConstSubFacV2;                               //! N constituents vs 0.5(rho+rhom)^2*V2
   TH2F          *fRjetTrvspTj;                                     //! distance in R between each jetO and embedded single track (those below fRadius are rejected)
-
+  TH1F 	        *fNJetsSelEv;                                      //! number of selected signal jets per event
+  TH2F          *fJetEtaPhi;                                       //! eta-phi distribution of the selected signal jets
+   TH1F 	        *hpTTracksJet1;
+   TH1F 	        *hpTTracksJetO;
+   TH1F 	        *hpTTrackCont;
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 10)
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 11) //updated to the new histograms, -1 if don't commit
 };
 #endif
 

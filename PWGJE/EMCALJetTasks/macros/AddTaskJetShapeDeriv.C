@@ -13,7 +13,8 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
 						   TString      tag            = "MCMatch",
 						   Bool_t       bCreateTree    = kFALSE,
 						   Bool_t       removeoverlap  = kFALSE,
-						   const char * njetsOverl     = "")
+						   const char * njetsOverl     = "",
+						   const char * ntmptracksOvlJ = "")
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -42,6 +43,7 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
   //task->SetVzRange(-10.,10.);
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
+  AliParticleContainer *trackContO = task->AddParticleContainer(ntmptracksOvlJ);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
 
   Int_t contindx = 0;
@@ -76,7 +78,7 @@ AliAnalysisTaskJetShapeDeriv *AddTaskJetShapeDeriv(const char * njetsBase,
      if(jetContOverl) {
      	jetContOverl->SetRhoName(nrhoBase);
      	jetContOverl->SetRhoMassName(nrhoMass);
-     	jetContOverl->ConnectParticleContainer(trackCont);
+     	jetContOverl->ConnectParticleContainer(trackContO);
      	jetContOverl->ConnectClusterContainer(clusterCont);
      	jetContOverl->SetPercAreaCut(0.6);
      	jetContOverl->SetJetPtCut(-1e6);
