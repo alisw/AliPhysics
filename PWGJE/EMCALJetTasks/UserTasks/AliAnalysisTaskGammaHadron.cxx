@@ -392,13 +392,9 @@ cluster= GetReader()->GetInputEvent()->GetCaloCluster(idTrig);
 		{
 			if (!leadingTrack || leadingTrack->Pt() < leadingTrack->Pt()) leadingTrack = track;
 
-<<<<<<< HEAD
-			//std::cout<<"nPart.Phi(): "<<nPart.Phi()<<", track->Phi(): "<<track->Phi()<<std::endl;
-			deltaPhi=fabs(nPart.Phi()-track->Phi());
-=======
-			//cout<<"CaloClusterVec.Phi(): "<<CaloClusterVec.Phi()<<", track->Phi(): "<<track->Phi()<<endl;
+			//std::cout<<"CaloClusterVec.Phi(): "<<CaloClusterVec.Phi()<<", track->Phi(): "<<track->Phi()<<std::endl;
 			deltaPhi=fabs(CaloClusterVec.Phi()-track->Phi());
->>>>>>> Added p_t distribution of the assoc. hadron
+
 			if(deltaPhi>(TMath::Pi()/2.0))
 			{
 				//cluster and any hadron
