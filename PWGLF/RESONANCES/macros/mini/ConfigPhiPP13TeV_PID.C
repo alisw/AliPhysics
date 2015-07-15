@@ -71,22 +71,20 @@ Bool_t ConfigPhiPP13TeV_PID
   // [2] = like ++
   // [3] = like --
 
-  Bool_t  use    [12]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly ,isMC,isMC,isMC,isMC, useMixLS , useMixLS    };
-  Bool_t  useIM  [12]={ 1        ,1         ,  1       ,  1       , 1      ,  1      ,  1      ,  1      ,  0      , 0      , 1         , 1           };
-  TString name   [12]={"UnlikePM","UnlikeMP","MixingPM","MixingMP","LikePP","LikeMM","TruesPM","TruesMP","ResPM" ,"ResMP" ,"MixingPP","MixingMM"  };
-  TString comp   [12]={"PAIR"    ,"PAIR"    , "MIX"    , "MIX"    ,"PAIR"  ,"PAIR"  , "TRUE"  , "TRUE"  ,"TRUE"  ,"TRUE"  ,"MIX"     ,"MIX"       };
-  TString output [12]={"SPARSE"  ,"SPARSE"  , "SPARSE" , "SPARSE" ,"SPARSE","SPARSE", "SPARSE","SPARSE" ,"SPARSE","SPARSE","SPARSE"  ,"SPARSE"    };
-  Int_t   pdgCode[12]={333       ,333       , 333      , 333      ,333     ,333     , 333     ,  333    ,333     , 333    , 333      ,333         };
-  Char_t  charge1[12]={'+'       ,'-'       , '+'      , '-'      ,'+'     ,'-'     , '+'     ,  '-'    ,'+'     , '-'    ,'+'       ,'-'         };
-  Char_t  charge2[12]={'-'       ,'+'       , '-'      , '+'      ,'+'     ,'-'     , '-'     ,  '+'    ,'-'     , '+'    ,'+'       ,'-'         };
-  Int_t   cutID1 [12]={ iCutK    , iCutK    ,  iCutK   ,  iCutK   , iCutK  , iCutK  ,  iCutK  ,   iCutK , iCutK  , iCutK  ,iCutK     ,iCutK       };
-  Int_t   cutID2 [12]={ iCutK    , iCutK    ,  iCutK   ,  iCutK   , iCutK  , iCutK  ,  iCutK  ,   iCutK , iCutK  , iCutK  ,iCutK     ,iCutK       };
+  Bool_t  use    [8]={!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly,!IsMcTrueOnly, isMC,isMC, useMixLS,useMixLS};
+  Bool_t  useIM  [8]={ 1      ,  1     , 1      ,  1     ,  1     ,  0     , 1        , 1        };
+  TString name   [8]={"Unlike","Mixing","LikePP","LikeMM","Trues" ,"Res"   ,"MixingPP","MixingMM"};
+  TString comp   [8]={"PAIR"  , "MIX"  ,"PAIR"  ,"PAIR"  , "TRUE" ,"TRUE"  ,"MIX"     ,"MIX"     };
+  TString output [8]={"SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE","SPARSE"  ,"SPARSE"  };
+  Int_t   pdgCode[8]={333     , 333    ,333     ,333     , 333    ,333     , 333      ,333       };
+  Char_t  charge1[8]={'+'     , '+'    ,'+'     ,'-'     , '+'    ,'+'     ,'+'       ,'-'       };
+  Char_t  charge2[8]={'-'     , '-'    ,'+'     ,'-'     , '-'    ,'-'     ,'+'       ,'-'       };
 
-  for(Int_t i=0;i<12;i++){
+  for(Int_t i=0;i<8;i++){
     if(!use[i]) continue;
-    AliRsnMiniOutput* out=task->CreateOutput(Form("kstar_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
-    out->SetCutID(0,cutID1[i]);
-    out->SetCutID(1,cutID2[i]);
+    AliRsnMiniOutput* out=task->CreateOutput(Form("phi_%s%s",name[i].Data(),suffix),output[i].Data(),comp[i].Data());
+    out->SetCutID(0,iCutK);
+    out->SetCutID(1,iCutK);
     out->SetDaughter(0,AliRsnDaughter::kKaon);
     out->SetDaughter(1,AliRsnDaughter::kKaon);
     out->SetCharge(0,charge1[i]);
