@@ -611,7 +611,7 @@ namespace EMCalTriggerPtAnalysis {
   }
 
   /**
-   * Creating the default pt binning.
+   * Creating the default \f$ p_{t} \f$ binning.
    *
    * @param binning Array where to store the results.
    */
@@ -684,7 +684,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param name Name of the axis
    * @param title Title of the axis
    * @param binning axis binning
-   * @param labels (@optional) array of bin labels
+   * @param labels array of bin labels
    */
   void AliAnalysisTaskPtEMCalTrigger::DefineAxis(TAxis& axis, const char* name,
       const char* title, const TArrayD& binning, const char** labels) {
@@ -706,7 +706,7 @@ namespace EMCalTriggerPtAnalysis {
    * @param nbins Number of bins
    * @param min lower limit of the axis
    * @param max upper limit of the axis
-   * @param labels (@optional) array of bin labels
+   * @param labels array of bin labels
    */
   void AliAnalysisTaskPtEMCalTrigger::DefineAxis(TAxis& axis, const char* name,
       const char* title, int nbins, double min, double max,
