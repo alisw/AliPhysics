@@ -53,10 +53,11 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliHeader.h"
+#include "AliVParticle.h"
+#include "AliStack.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliGenEventHeader.h"
-#include "AliGenHijingEventHeader.h"
 #include "AliPhysicsSelectionTask.h"
 #include "AliPhysicsSelection.h"
 #include "AliBackgroundSelection.h"
@@ -69,6 +70,7 @@
 
 // Interface to Event generators to get Reaction Plane Angle
 #include "AliGenCocktailEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenGeVSimEventHeader.h"
 #include "AliGenEposEventHeader.h"
@@ -337,6 +339,7 @@ fCRCnRun(0)
  fMyTRandom3 = new TRandom3(iseed);
  gRandom->SetSeed(fMyTRandom3->Integer(65539));
  
+ DefineInput(0, TChain::Class());
  // Define output slots here
  // Define here the flow event output
  DefineOutput(1, AliFlowEventSimple::Class());
@@ -375,9 +378,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 {
  // Create the output containers
  
- if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC" || fAnalysisType == "AUTOMATIC"))
+ if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "AUTOMATIC"))
  {
-  AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD, MC and AUTOMATIC are allowed.");
+  AliError("WRONG ANALYSIS TYPE! only MCkine, AOD and AUTOMATIC are allowed.");
   exit(1);
  }
  
@@ -592,12 +595,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  
  if(fRunSet.EqualTo("2010")) {fCRCnRun=92;}
  if(fRunSet.EqualTo("2011")) {fCRCnRun=119;}
+ if(fRunSet.EqualTo("MCkine")) {fCRCnRun=1;}
  
  fRunList = new Int_t[fCRCnRun];
  Int_t d=0;
  for(Int_t r=0; r<fCRCnRun; r++) {
-  if(fRunSet.EqualTo("2010")) {fRunList[d] = dRun10h[r];}
-  if(fRunSet.EqualTo("2011")) {fRunList[d] = dRun11h[r];}
+  if(fRunSet.EqualTo("2010"))   fRunList[d] = dRun10h[r];
+  if(fRunSet.EqualTo("2011"))   fRunList[d] = dRun11h[r];
+  if(fRunSet.EqualTo("MCkine")) fRunList[d] = 1;
   d++;
  }
 
@@ -621,29 +626,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 {
  // Execute analysis for current event:
- 
- if(!InputEvent()){
-  printf("ERROR: InputEvent not available");
-  return;
- }
- 
+ AliMCEvent*  McEvent = MCEvent();
  AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
- if(!aod){
-  printf("AODs not available");
-  return;
- }
- 
- // Main loop
- // Called for each event
- //delete fFlowEvent;
- AliMCEvent*  mcEvent = MCEvent();                              // from TaskSE
  AliMultiplicity* myTracklets = NULL;
  AliESDPmdTrack* pmdtracks = NULL;//pmd
  
  int availableINslot=1;
  
- if (!(fCutsRP&&fCutsPOI&&fCutsEvent))
- {
+ if (!(fCutsRP&&fCutsPOI&&fCutsEvent)) {
   AliError("cuts not set");
   return;
  }
@@ -661,12 +651,77 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   //then make the event
   fFlowEvent->Fill( fCutsRP, fCutsPOI );
-  //fFlowEvent = new AliFlowEvent( fCutsRP, fCutsPOI );
   
-  //    if (myESD)
-  fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),mcEvent));
-  fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),mcEvent));
-  if (mcEvent && mcEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(mcEvent);
+  fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
+  fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
+  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+  
+ }
+ 
+ if(fAnalysisType ==  "MCkine") {
+  
+  AliInputEventHandler* McHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if(McHandler) McEvent = McHandler->MCEvent();
+  else {
+   AliError("ERROR: Could not retrieve MCtruthEventHandler");
+   return;
+  }
+  if (!(fCFManager1&&fCFManager2)) {
+   AliError("ERROR: No pointer to correction framework cuts! ");
+   return;
+  }
+  if (!McEvent) {
+   AliError("ERROR: Could not retrieve MC event");
+   return;
+  }
+  
+  fCFManager1->SetMCEventInfo(McEvent);
+  fCFManager2->SetMCEventInfo(McEvent);
+  
+  Int_t nTracks = McEvent->GetNumberOfTracks();
+  Int_t nPrimTr = McEvent->GetNumberOfPrimaries();
+  
+  // make event
+  fFlowEvent = new AliFlowEvent(nTracks);
+  //loop over tracks
+  for (Int_t itrkN=0; itrkN<nTracks; itrkN++)
+  {
+   //get input particle
+   AliMCParticle* pParticle = dynamic_cast<AliMCParticle*>(McEvent->GetTrack(itrkN));
+   if (!pParticle) continue;
+   AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
+   pTrack->SetSource(AliFlowTrack::kFromMC);
+   
+   //check if track passes the cuts
+   if (McEvent->IsPhysicalPrimary(itrkN) && pTrack->Charge()!=0) {
+    
+    pTrack->SetForRPSelection(kTRUE);
+    fFlowEvent->IncrementNumberOfPOIs(0);
+    pTrack->SetForPOISelection(kTRUE);
+    fFlowEvent->IncrementNumberOfPOIs(1);
+    
+    fFlowEvent->AddTrack(pTrack) ;
+   }
+   
+  }//for all tracks
+  
+  // if monte carlo event get reaction plane from monte carlo (depends on generator)
+  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+  // set reference multiplicity
+  fFlowEvent->SetReferenceMultiplicity(McEvent->GetNumberOfTracks());
+  // tag subevents
+  fFlowEvent->TagSubeventsInEta(fMinA,fMaxA,fMinB,fMaxB);
+  // set centrality from impact parameter
+  Double_t ImpPar = 0.;
+  AliGenEventHeader* genHeader = McEvent->GenEventHeader();
+  if(genHeader){
+   AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+   if(pythiaGenHeader) ImpPar = pythiaGenHeader->GetImpactParameter();
+   AliGenHijingEventHeader*  hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+   if(hijingGenHeader) ImpPar = hijingGenHeader->ImpactParameter();
+  }
+  Double_t CenPer = 0.4097756068776738*pow(ImpPar,2.);
+  fFlowEvent->SetCentrality(CenPer);
  }
  
  //inject candidates
@@ -708,8 +763,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  //check final event cuts
  Int_t mult = fFlowEvent->NumberOfTracks();
  //  AliInfo(Form("FlowEvent has %i tracks",mult));
- if (mult<fMinMult || mult>fMaxMult)
- {
+ if (mult<fMinMult || mult>fMaxMult) {
   AliWarning("FlowEvent cut on multiplicity"); return;
  }
  
@@ -755,7 +809,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
  AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
  
- if(hdr->IsEventSelected() & AliVEvent::kAny) {
+ if(hdr->IsEventSelected() & AliVEvent::kAny & fAnalysisType != "MCkine") {
   
   AliCentrality* centrality = aod->GetCentrality();
   Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
@@ -846,6 +900,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    if(fRunList[c]==RunNum) RunBin=bin;
    else bin++;
   }
+  if(fRunSet.EqualTo("MCkine")) RunBin=0;
   if(RunBin!=-1) {
    for(Int_t i=0; i<4; i++){
     if(towZNC[i+1]>0.) {

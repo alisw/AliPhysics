@@ -59,14 +59,6 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
   return NULL;
  }
  
- // set the analysis type automatically
- TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
- if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
- // or manually, if specified
- if(analysisTypeUser != ""){
-  analysisType = analysisTypeUser;
- }
- 
  // define CRC suffix
  TString CRCsuffix = ":CRC";
  
@@ -99,16 +91,16 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  taskFEname += suffix;
  // create instance of the class
  Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
- if(!bUseZDC) {
-  AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
-//  taskFE->SetAnalysisType(analysisType);
- } else {
-  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, TPCMultOut);
-  taskFE->SetCentralityRange(centrMin,centrMax);
-  taskFE->SetCentralityEstimator("V0M");
-  taskFE->SetUseMCCen(bZDCMCCen);
-  taskFE->SetRunSet(TPCMultOut);
- }
+ AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, TPCMultOut);
+ taskFE->SetCentralityRange(centrMin,centrMax);
+ taskFE->SetCentralityEstimator("V0M");
+ taskFE->SetUseMCCen(bZDCMCCen);
+ taskFE->SetRunSet(TPCMultOut);
+ // set the analysis type
+ TString analysisType = "AUTOMATIC";
+ if (analysisTypeUser != "") analysisType = analysisTypeUser;
+ if (analysisTypeUser == "AOD" || analysisTypeUser == "ESD") analysisType = "AUTOMATIC";
+ taskFE->SetAnalysisType(analysisType);
  // add the task to the manager
  mgr->AddTask(taskFE);
  // set the trigger selection
@@ -122,11 +114,12 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
  // configure some event cuts, starting with centrality
- if(analysisType == "MC") {
-  cutsEvent->SetImpactParameterRange(centrMin,centrMax);
+ if(analysisTypeUser == "MCkine") {
+  cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetQA(kFALSE);
+  SetCFManager(taskFE);
  }
- else if (analysisType == "AOD") {
+ else if (analysisTypeUser == "AOD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   // method used for centrality determination
   cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
@@ -148,13 +141,17 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("RP cuts");
  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI cuts");
  
- if (analysisType == "MC") {
+ if (analysisTypeUser == "MCkine") {
   // Track cuts for RPs
   cutsRP->SetParamType(AliFlowTrackCuts::kMC);
   cutsRP->SetCutMC(kTRUE);
   cutsRP->SetPtRange(ptMin,ptMax);
   cutsRP->SetEtaRange(etaMin,etaMax);
   cutsRP->SetQA(bTrackCutsQA);
+  if(bUseVZERO) {
+   cutsRP->SetEtaRange(-10.,+10.);
+   cutsRP->SetEtaGap(-1.,1.);
+  }
   // Track cuts for POIs
   cutsPOI->SetParamType(AliFlowTrackCuts::kMC);
   cutsPOI->SetCutMC(kTRUE);
@@ -162,7 +159,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bTrackCutsQA);
  }
- else if (analysisType == "AOD") {
+ if (analysisTypeUser == "AOD") {
   // Track cuts for RPs
   if(bUseVZERO) {
    if (TPCMultOut == "2011")
@@ -196,7 +193,6 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  
  taskFE->SetCutsRP(cutsRP);
  taskFE->SetCutsPOI(cutsPOI);
- 
  taskFE->SetSubeventEtaRange(-10.,-1.,1.,10.);
  
  // get the default name of the output file ("AnalysisResults.root")
@@ -325,3 +321,106 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  
  return taskQC;
 }
+
+//****************************************************************************************************
+
+void SetCFManager(AliAnalysisTaskCRCZDC* task)
+{
+  // CORRFW correction framework cuts
+  //----------Event cuts----------
+  
+  TObjArray* mcEventList = new TObjArray(0);
+  AliCFEventGenCuts* mcEventCuts = new AliCFEventGenCuts("mcEventCuts","MC-level event cuts");
+  mcEventList->AddLast(mcEventCuts);
+  
+  TObjArray* recEventList = new TObjArray(0);
+  AliCFEventRecCuts* recEventCuts = new AliCFEventRecCuts("recEventCuts","rec-level event cuts");
+  recEventList->AddLast(recEventCuts);
+  
+  //----------Cuts for RP----------
+  TObjArray* mcListRP = new TObjArray(0);
+  AliCFTrackKineCuts *mcKineCutsRP = new AliCFTrackKineCuts("mcKineCutsRP","MC-level kinematic cuts");
+  mcListRP->AddLast(mcKineCutsRP);
+  AliCFParticleGenCuts *mcGenCutsRP = new AliCFParticleGenCuts("mcGenCutsRP","MC particle generation cuts for RP");
+  mcGenCutsRP->SetRequireIsPrimary();
+  mcListRP->AddLast(mcGenCutsRP);
+  
+  TObjArray* fPIDCutListRP = new TObjArray(0) ;
+  AliCFTrackCutPid* cutPidRP = NULL;
+  fPIDCutListRP->AddLast(cutPidRP);
+  
+  TObjArray* recListRP = new TObjArray(0) ;
+  AliCFTrackKineCuts *recKineCutsRP = new AliCFTrackKineCuts("recKineCutsRP","rec-level kine cuts");
+  recListRP->AddLast(recKineCutsRP);
+  AliCFTrackQualityCuts *recQualityCutsRP = new AliCFTrackQualityCuts("recQualityCutsRP","rec-level quality cuts");
+  recQualityCutsRP->SetMinNClusterTPC(70);
+  recListRP->AddLast(recQualityCutsRP);
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCutsRP = new AliCFTrackIsPrimaryCuts("recIsPrimaryCutsRP","rec-level isPrimary cuts");
+  recIsPrimaryCutsRP->UseSPDvertex(kTRUE);
+  recIsPrimaryCutsRP->UseTPCvertex(kTRUE);
+  recListRP->AddLast(recIsPrimaryCutsRP);
+  
+  TObjArray* accListRP = new TObjArray(0) ;
+  AliCFAcceptanceCuts *mcAccCutsRP = new AliCFAcceptanceCuts("mcAccCutsRP","MC acceptance cuts");
+  mcAccCutsRP->SetMinNHitITS(2);
+  accListRP->AddLast(mcAccCutsRP);
+  
+  //----------Cuts for POI----------
+  TObjArray* mcListPOI = new TObjArray(0);
+  AliCFTrackKineCuts *mcKineCutsPOI = new AliCFTrackKineCuts("mcKineCutsPOI","MC-level kinematic cuts");
+  mcListPOI->AddLast(mcKineCutsPOI);
+  AliCFParticleGenCuts *mcGenCutsPOI = new AliCFParticleGenCuts("mcGenCutsPOI","MC particle generation cuts for POI");
+  mcGenCutsPOI->SetRequireIsPrimary();
+  mcListPOI->AddLast(mcGenCutsPOI);
+  
+  TObjArray* fPIDCutListPOI = new TObjArray(0) ;
+  AliCFTrackCutPid* cutPidPOI = NULL;
+  fPIDCutListPOI->AddLast(cutPidPOI);
+  
+  TObjArray* recListPOI = new TObjArray(0) ;
+  AliCFTrackKineCuts *recKineCutsPOI = new AliCFTrackKineCuts("recKineCutsPOI","rec-level kine cuts");
+  recListPOI->AddLast(recKineCutsPOI);
+  AliCFTrackQualityCuts *recQualityCutsPOI = new AliCFTrackQualityCuts("recQualityCutsPOI","rec-level quality cuts");
+  recQualityCutsPOI->SetMinNClusterTPC(70);
+  recListPOI->AddLast(recQualityCutsPOI);
+  AliCFTrackIsPrimaryCuts *recIsPrimaryCutsPOI = new AliCFTrackIsPrimaryCuts("recIsPrimaryCutsPOI","rec-level isPrimary cuts");
+  recIsPrimaryCutsPOI->UseSPDvertex(kTRUE);
+  recIsPrimaryCutsPOI->UseTPCvertex(kTRUE);
+  recListPOI->AddLast(recIsPrimaryCutsPOI);
+  
+  TObjArray* accListPOI = new TObjArray(0) ;
+  AliCFAcceptanceCuts *mcAccCutsPOI = new AliCFAcceptanceCuts("mcAccCutsPOI","MC acceptance cuts");
+  mcAccCutsPOI->SetMinNHitITS(2);
+  accListPOI->AddLast(mcAccCutsPOI);
+  
+  //----------Add Cut Lists to the CF Manager----------
+  printf("CREATE INTERFACE AND CUTS\n");
+  AliCFManager* cfmgrRP = new AliCFManager();
+  cfmgrRP->SetNStepEvent(3);
+  cfmgrRP->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList);
+  cfmgrRP->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList);
+  cfmgrRP->SetNStepParticle(4);
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListRP);
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartAccCuts,accListRP);
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartRecCuts,recListRP);
+  cfmgrRP->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutListRP);
+  
+  AliCFManager* cfmgrPOI = new AliCFManager();
+  cfmgrPOI->SetNStepEvent(3);
+  cfmgrPOI->SetEventCutsList(AliCFManager::kEvtGenCuts,mcEventList);
+  cfmgrPOI->SetEventCutsList(AliCFManager::kEvtRecCuts,recEventList);
+  cfmgrPOI->SetNStepParticle(4);
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartGenCuts,mcListPOI);
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartAccCuts,accListPOI);
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartRecCuts,recListPOI);
+  cfmgrPOI->SetParticleCutsList(AliCFManager::kPartSelCuts,fPIDCutListPOI);
+  
+  // Set the cuts for the flowevent
+  task->SetCFManager1(cfmgrRP);
+  task->SetCFManager2(cfmgrPOI);
+}
+
+
+
+
+
