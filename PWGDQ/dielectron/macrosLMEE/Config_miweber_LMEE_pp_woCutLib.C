@@ -4,15 +4,16 @@ AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 const AliDielectronEventCuts *GetEventCuts();
 
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
-Bool_t kRot = 0;
-Bool_t kMix = 1;
+Bool_t kRot = kFALSE;
+Bool_t kMix = kTRUE;
+Bool_t kNoPairing   = kFALSE;
 Bool_t randomizeDau = kTRUE;
      
 TString names("ppData1;ppData2");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 Bool_t MCenabled=kFALSE;
-const Int_t nPF = 2; // use prefiltering for cuts lower than nPF
+const Int_t nPF = 0; // use prefiltering for cuts lower than nPF
 
 AliDielectron* Config_miweber_LMEE_pp_woCutLib(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t isRandomRej=kFALSE)
 {
@@ -64,7 +65,7 @@ AliDielectron* Config_miweber_LMEE_pp_woCutLib(Int_t cutDefinition=1, Bool_t bES
  InitHistograms(die,cutDefinition);
  //  InitCF(die,cutDefinition);
  
- die->SetNoPairing(kFALSE);
+ die->SetNoPairing(kNoPairing);
  
  return die;
 
