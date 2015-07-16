@@ -458,11 +458,11 @@ Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(//conv from A
   }
   Int_t idB = ConvAbsFastORIndexA2B(id) ;
   //TRU
-  iTRU      = int(idB / fNModulesInTRU)  ;
+  iTRU      = idB / fNModulesInTRU  ;
 
-  iADC      = int(idB  % fNModulesInTRU        ) ;
-  iEta_TRU  = int(iADC / fnFastORInTRUPhi[iTRU]) ;
-  iPhi_TRU  = int(iADC % fnFastORInTRUPhi[iTRU]) ;
+  iADC      = idB  % fNModulesInTRU         ;
+  iEta_TRU  = fnFastORInTRUPhi[iTRU] ? iADC / fnFastORInTRUPhi[iTRU] : 0;
+  iPhi_TRU  = fnFastORInTRUPhi[iTRU] ? iADC % fnFastORInTRUPhi[iTRU] : 0;
 
   //iADC      = (fTRUIsCside[iTRU])? (fNModulesInTRU         - 1 - iADC      ) : iADC      ;
   iEta_TRU  = (fTRUIsCside[iTRU])? (fnFastORInTRUEta[iTRU] - 1 - iEta_TRU  ) : iEta_TRU  ;
@@ -477,8 +477,8 @@ Bool_t AliEMCALTriggerMappingV2::GetInfoFromAbsFastORIndex(//conv from A
   Int_t idtmp = (y<fnModuleInEMCALPhi[2])? id : (id + fNModulesInTRU * 4) ;
   iSM = 2 * (int)(idtmp/(2 * fNEta * fNPhi)) + (int)(fTRUIsCside[iTRU]);
 
-  iEta_SM = x   % fnFastORInSMEta[iSM] ;
-  iPhi_SM = idB % fnFastORInSMPhi[iSM] ;
+  iEta_SM = fnFastORInSMEta[iSM] ? x   % fnFastORInSMEta[iSM] : 0 ;
+  iPhi_SM = fnFastORInSMPhi[iSM] ? idB % fnFastORInSMPhi[iSM] : 0;
   if(flag &&  GetSMIsCside(iSM) && GetSMType(iSM)==kDCAL_Standard )       iEta_SM -= 8  ;
   if(flag && GetSMType(iSM)==kDCAL_Standard && (iEta_SM<0 || iEta_SM>=16)) iEta_SM = -1  ;
   
