@@ -99,7 +99,8 @@ fCRCEtaMax(0.),
 fnCenBin(7),
 fCenBinWidth(10.),
 fQVecList(NULL),
-fRunSet("2010")
+fRunSet("2010"),
+fMultWeight("TPCmVZuZDCu")
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -271,6 +272,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
+ fQC->SetMultWeight(fMultWeight);
  // Multiparticle correlations vs multiplicity:
  fQC->SetnBinsMult(fnBinsMult);
  fQC->SetMinMult(fMinMult);

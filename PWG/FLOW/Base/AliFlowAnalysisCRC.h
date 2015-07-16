@@ -782,6 +782,8 @@ public:
  TH1D* GetCenHist() const {return this->fCenHist;}
  void SetRunNumber(Int_t const n) {this->fRunNum = n;};
  Int_t GetRunNumber() const {return this->fRunNum;}
+ void SetMultWeight(TString const n) {this->fMultWeight = n;};
+ TString GetMultWeight() const {return this->fMultWeight;};
  
 private:
  
@@ -1106,6 +1108,7 @@ private:
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
  Int_t fRunNum;
+ TString fMultWeight;
  
  TList *fCRCIntList; //! list to hold CRC histograms
  const static Int_t fCRCnCR = 16;
