@@ -86,5 +86,5 @@ test_paranoidCopy(){
     resultDiff=`diff -r  testdirParanoidCopySource testdirParanoidCopyDest/testdirParanoidCopySource`
     hrlen=${#resultDiff}
     [ $hrlen = 0 ]   && alilog_success     "test_paranoidCopy"	
-    [ $hrlen != 0 ] && alilog_success      "test_paranoidCopy"	
+    [ $hrlen != 0 ] && alilog_error      "test_paranoidCopy"	
 }
