@@ -173,6 +173,8 @@ public:
  Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
  void SetRunSet(TString const n) {this->fRunSet = n;};
  TString GetRunSet() const {return this->fRunSet;};
+ void SetMultWeight(TString const n) {this->fMultWeight = n;};
+ TString GetMultWeight() const {return this->fMultWeight;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -246,6 +248,7 @@ private:
  Int_t fnCenBin;
  Double_t fCenBinWidth;
  TString fRunSet;
+ TString fMultWeight;
  TList *fQVecList;           // list with weights
  
  ClassDef(AliAnalysisTaskCRC, 2);

@@ -19,6 +19,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
                              Bool_t bUseVZEROCalib=kFALSE,
                              Bool_t bUseZDC=kFALSE,
                              Bool_t bRecenterZDC=kFALSE,
+                             TString sMultWeight="TPCmVZuZDCu",
                              Bool_t bDivSigma=kTRUE,
                              Bool_t bZDCMCCen=kTRUE,
                              Bool_t bInvertZDC=kFALSE,
@@ -267,6 +268,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bInvertZDC);
+ taskQC->SetMultWeight(sMultWeight);
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {
