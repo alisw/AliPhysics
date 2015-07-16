@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TEvtGen
                     ${AliRoot_SOURCE_DIR}/TEvtGen/THepMCParser
+                    ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
                    )
 
 # Sources
@@ -93,6 +94,7 @@ set(SRCS
     AliOmegaDalitz.cxx
     AliSlowNucleonModel.cxx
     AliSlowNucleonModelExp.cxx
+    AliGenPerformance.cxx
 )
 
 # Headers from sources
