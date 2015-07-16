@@ -1,11 +1,6 @@
 ///
 /// \file AliFemtoSimpleAnalysis.h
 ///
-/// \class AliFemtoSimpleAnalysis
-/// \brief The most basic analysis there is.
-///
-/// Most other analyses (e.g. AliFemtoVertexAnalysis) inherit from this one.
-///
 
 #ifndef ALIFEMTO_SIMPLE_ANALYSIS_H
 #define ALIFEMTO_SIMPLE_ANALYSIS_H
@@ -23,16 +18,45 @@
 
 class AliFemtoPicoEventCollectionVectorHideAway;
 
+///
+/// \class AliFemtoSimpleAnalysis
+/// \brief The most basic (concrete) analysis there is.
+///
+/// Most other analyses (e.g. AliFemtoVertexAnalysis) inherit from this one. 
+/// Provides basic functionality for the analysis. To properly set up the 
+/// analysis the following steps should be taken:
+///
+/// - create particle cuts and add them via SetFirstParticleCut and
+///  SetSecondParticleCut. If one analyzes identical particle
+///  correlations, the first particle cut must be also the second
+///  particle cut.
+///
+/// - create pair cuts and add them via SetPairCut
+///
+/// - create one or many correlation functions and add them via
+///  AddCorrFctn method.
+///
+/// - specify how many events are to be strored in the mixing buffer for
+///  background construction
+///
+/// Then, when the analysis is run, for each event, the EventBegin is
+/// called before any processing is done, then the ProcessEvent is called
+/// which takes care of creating real and mixed pairs and sending them
+/// to all the registered correlation functions. At the end of each event,
+/// after all pairs are processed, EventEnd is called. After the whole
+/// analysis finishes (there is no more events to process) Finish() is
+/// called.
+///
 class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 
 // friend class AliFemtoLikeSignAnalysis;
 
 public:
   AliFemtoSimpleAnalysis();
-  AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& OriginalAnalysis);  // copy constructor
+  AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& OriginalAnalysis);  /// Copy all parameters from another analysis. Cuts are cloned, mixing buffer and fNeventsProcessed are NOT copied
   virtual ~AliFemtoSimpleAnalysis();
 
-  AliFemtoSimpleAnalysis& operator=(const AliFemtoSimpleAnalysis& aAna);
+  AliFemtoSimpleAnalysis& operator=(const AliFemtoSimpleAnalysis& aAna);  /// Copy all parameters from another analysis. Cuts are cloned from the other analysis. Mixing buffer and fNeventsProcessed are NOT copied
 
   // Gets and Sets
 
@@ -82,9 +106,9 @@ protected:
 
   void AddEventProcessed();
   void MakePairs(const char* type, 
-		 AliFemtoParticleCollection* ParticlesPassingCut1,
-		 AliFemtoParticleCollection* ParticlesPssingCut2=0,
-		 Bool_t enablePairMonitors=kFALSE);
+        		 AliFemtoParticleCollection* ParticlesPassingCut1,
+        		 AliFemtoParticleCollection* ParticlesPssingCut2=NULL,
+        		 Bool_t enablePairMonitors=kFALSE);
 
   AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway; //!<! Mixing Buffer used for Analyses which wrap this one
 
@@ -143,4 +167,6 @@ inline void AliFemtoSimpleAnalysis::SetMinSizePartCollection(unsigned int minSiz
 inline void AliFemtoSimpleAnalysis::SetVerboseMode(Bool_t aVerbose){fVerbose = aVerbose;}
 inline void AliFemtoSimpleAnalysis::SetV0SharedDaughterCut(Bool_t aPerform) { fPerformSharedDaughterCut = aPerform; }
 inline void AliFemtoSimpleAnalysis::SetEnablePairMonitors(Bool_t aEnable) { fEnablePairMonitors = aEnable; }
+
 #endif
+
