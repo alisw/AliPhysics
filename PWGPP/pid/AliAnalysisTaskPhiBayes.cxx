@@ -713,8 +713,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
     }
     
     if(tofMatch1){
-      nSigmaComb = TMath::Sqrt(nSigmaTOF*nSigmaTOF + nSigmaTPC*nSigmaTPC);
-      nSigmaCombRef = TMath::Sqrt(nSigmaTOFRef*nSigmaTOFRef + nSigmaTPCRef*nSigmaTPCRef);
+      nSigmaComb = TMath::Sqrt(0.5*(nSigmaTOF*nSigmaTOF + nSigmaTPC*nSigmaTPC));
+      nSigmaCombRef = TMath::Sqrt(0.5*(nSigmaTOFRef*nSigmaTOFRef + nSigmaTPCRef*nSigmaTPCRef));
       if(nSigmaTOF < 5 && fCentrality < 20 && KpTrack->Pt() < 0.9 && KpTrack->Pt() > 0.8){
 	fCombsignal->Fill(nSigmaComb);
       }
@@ -841,8 +841,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
       fPhiPhi = phiV.Phi();
 
       if(tofMatch2){
-	nSigmaComb2 = TMath::Sqrt(nSigmaTOF2*nSigmaTOF2+ nSigmaTPC2*nSigmaTPC2);
-	nSigmaComb2Ref = TMath::Sqrt(nSigmaTOF2Ref*nSigmaTOF2Ref+ nSigmaTPC2Ref*nSigmaTPC2Ref);
+	nSigmaComb2 = TMath::Sqrt(0.5*(nSigmaTOF2*nSigmaTOF2+ nSigmaTPC2*nSigmaTPC2));
+	nSigmaComb2Ref = TMath::Sqrt(0.5*(nSigmaTOF2Ref*nSigmaTOF2Ref+ nSigmaTPC2Ref*nSigmaTPC2Ref));
 	if(nSigmaTOF2 < 5 && fCentrality < 20 && KnTrack->Pt() < 1.2 && KnTrack->Pt() > 1){
 	  fCombsignal->Fill(nSigmaComb2);
 	}
