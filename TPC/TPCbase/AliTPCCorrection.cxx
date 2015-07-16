@@ -1863,6 +1863,20 @@ TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
 	Double_t dz = xyz[2]-z;
 	Double_t dr=r1-r;
 	Double_t drphi=(phi1-phi)*r;
+
+	AliMagF* mag= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+	if (!mag) AliError("Magnetic field - not initialized");
+	
+	Double_t bxyz[3];
+	Double_t xyz[3] = {r1*TMath::Cos(phi1),r1*TMath::Sin(phi1),z};
+	mag->Field(xyz,bxyz);
+	Double_t br	= 0.;
+	Double_t brfi = 0.;
+	if(r!=0){
+	  br	= (bxyz[0]*xyz[0]+bxyz[1]*xyz[1])/r;
+	  brfi	= (-bxyz[0]*xyz[1]+bxyz[1]*xyz[0])/r;
+	}
+	
 	(*pcstream)<<"distortion"<<
 	  "x="<<x<<           // original position
 	  "y="<<y<<
@@ -1880,6 +1894,12 @@ TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
 	  "dz="<<dz<<
 	  "dr="<<dr<<
 	  "drphi="<<drphi<<
+	  // B-field integ
+	  "bx="<<bxyz[0]<<
+	  "by="<<bxyz[1]<<
+	  "bz="<<bxyz[2]<<
+	  "br="<< br<<
+	  "brfi="<<brfi<<
 	  "\n";
       }
     }
