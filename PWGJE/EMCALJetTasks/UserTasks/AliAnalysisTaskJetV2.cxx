@@ -1804,7 +1804,7 @@ Bool_t AliAnalysisTaskJetV2::CorrectRho(Double_t psi2, Double_t psi3)
     if(NDF == 0 || (float)NDF <= 0.) return kFALSE;
     Double_t CDF(1.-ChiSquareCDF(NDF, ChiSquare(_tempSwap, fFitModulation)));
     Double_t CDFROOT(1.-ChiSquareCDF(NDF, fFitModulation->GetChisquare()));
-    Double_t CDFKolmogorov(KolmogorovTest(_tempSwap, fFitModulation));
+    Double_t CDFKolmogorov(KolmogorovTest(/*_tempSwap, fFitModulation*/));
     // fill the values and centrality correlation (redundant but easy on the eyes)
     fHistPvalueCDF->Fill(CDF);
     fHistPvalueCDFCent->Fill(fCent, CDF);
@@ -1842,7 +1842,7 @@ Bool_t AliAnalysisTaskJetV2::CorrectRho(Double_t psi2, Double_t psi3)
                 CDFControl = 1.-ChiSquareCDF(fFitControl->GetNDF(), ChiSquare(_tempSwap, fFitModulation));
             } break;
             case kKolmogorov : {
-                CDFControl = KolmogorovTest(_tempSwap, fFitControl); 
+                CDFControl = KolmogorovTest(/*_tempSwap, fFitControl*/); 
             } break;
             default: break;
         }

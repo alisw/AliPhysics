@@ -92,7 +92,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             }
            return chi2;
         }
-        /* inline */ Double_t KolmogorovTest(TH1F& histo, TF1* func) const {
+        /* inline */ Double_t KolmogorovTest(/*TH1F& histo, TF1* func*/) const {
             // return the probability from a Kolmogorov test
             return .5;
             /* this test is disabeled as it eats a lot of resources but kept as a dummty to 
