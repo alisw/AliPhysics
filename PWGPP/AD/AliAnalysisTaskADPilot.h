@@ -113,6 +113,8 @@ private:
   TH1F	      *fHistNTimesRobustADC;
   TH2F	      *fHistMedianIndDiffVsChargeADA;
   TH2F	      *fHistMedianIndDiffVsChargeADC;
+  TH2F	      *fHistTimePairSumDiffADA;
+  TH2F	      *fHistTimePairSumDiffADC;
   
   Int_t        fRun;
   Int_t        fOldRun;
