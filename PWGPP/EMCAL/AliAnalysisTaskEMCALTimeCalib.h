@@ -29,6 +29,7 @@
 ///            added reference histograms for low gain
 ///            modified loading of reference file
 ///            modified default parameters in AddTask
+/// 2015.07.17 additional selection criteria for clusters with low gain cell 
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -68,6 +69,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMaxNcells(0),
     fMinLambda0(0),
     fMaxLambda0(0),
+    fMinLambda0LG(0),
+    fMaxLambda0LG(0),
     fMaxRtrack(0),
     fMinCellEnergy(0),
     fReferenceFileName(),
@@ -121,6 +124,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Int_t    GetMaxNcells()         { return fMaxNcells         ; }
   Double_t GetMinLambda0()        { return fMinLambda0        ; }
   Double_t GetMaxLambda0()        { return fMaxLambda0        ; }
+  Double_t GetMinLambda0LG()      { return fMinLambda0LG      ; }
+  Double_t GetMaxLambda0LG()      { return fMaxLambda0LG      ; }
   Double_t GetMaxRtrack()         { return fMaxRtrack         ; }
   Double_t GetMinCellEnergy()     { return fMinCellEnergy     ; }
   TString  GetReferenceFileName() { return fReferenceFileName ; }
@@ -134,6 +139,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMaxNcells        (Int_t    v) { fMaxNcells        = v ; }   
   void SetMinLambda0       (Double_t v) { fMinLambda0       = v ; }	   
   void SetMaxLambda0       (Double_t v) { fMaxLambda0       = v ; }	   
+  void SetMinLambda0LG     (Double_t v) { fMinLambda0LG     = v ; }	   
+  void SetMaxLambda0LG     (Double_t v) { fMaxLambda0LG     = v ; }	   
   void SetMaxRtrack        (Double_t v) { fMaxRtrack        = v ; }	   
   void SetMinCellEnergy    (Double_t v) { fMinCellEnergy    = v ; }	   
   void SetReferenceFileName(TString  v) { fReferenceFileName= v ; }
@@ -156,6 +163,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Bool_t SetEMCalGeometry();
   Bool_t AcceptCluster(AliVCluster* clus);
   Bool_t CheckCellRCU(Int_t nSupMod,Int_t icol,Int_t irow);
+  Bool_t IsLowGainCellInCluster(AliVCluster* clus);
 
   // data members
   Int_t          fRunNumber ; //!<! run number
@@ -180,6 +188,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   
   Double_t       fMinLambda0 ;          ///< minimum cluster lambda0
   Double_t       fMaxLambda0 ;          ///< maximum cluster lambda0
+  Double_t       fMinLambda0LG ;        ///< minimum cluster lambda0 Low Gain
+  Double_t       fMaxLambda0LG ;        ///< maximum cluster lambda0 Low Gain
   
   Double_t       fMaxRtrack ;           ///< maximum cluster track distance
   
