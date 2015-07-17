@@ -70,6 +70,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
+  fh2MSubPtSubAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
   fh3MSubPtTrueLeadPt(0x0),
   fh3MTruePtTrueLeadPt(0x0),
@@ -85,12 +86,19 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fh2PtTrueSubFacV2(0x0),
   fh2PtRawSubFacV2(0x0),
   fh2PtCorrSubFacV2(0x0),
-  fh2NConstSubFacV2(0x0)
+  fh2NConstSubFacV2(0x0),
+  fhRjetTrvspTj(0x0),
+  fhNJetsSelEv(0x0),
+  fhJetEtaPhi(0x0),
+  fhpTTracksJet1(0x0),
+  fhpTTracksJetO(0x0),
+  fhpTTracksCont(0x0)
 {
   // Default constructor.
 
   fh2MSubMatch             = new TH2F*[fNcentBins];
   fh2MSubPtRawAll          = new TH2F*[fNcentBins];
+  fh2MSubPtSubAll          = new TH2F*[fNcentBins];
   fh3MSubPtRawDRMatch      = new TH3F*[fNcentBins];
   fh3MSubPtTrueLeadPt      = new TH3F*[fNcentBins];
   fh3MTruePtTrueLeadPt     = new TH3F*[fNcentBins];
@@ -110,6 +118,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
     fh2MSubPtRawAll[i]          = 0;
+    fh2MSubPtSubAll[i]          = 0;
     fh3MSubPtRawDRMatch[i]      = 0;
     fh3MSubPtTrueLeadPt[i]      = 0;
     fh3MTruePtTrueLeadPt[i]     = 0;
@@ -164,6 +173,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
+  fh2MSubPtSubAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
   fh3MSubPtTrueLeadPt(0x0),
   fh3MTruePtTrueLeadPt(0x0),
@@ -179,12 +189,19 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fh2PtTrueSubFacV2(0x0),
   fh2PtRawSubFacV2(0x0),
   fh2PtCorrSubFacV2(0x0),
-  fh2NConstSubFacV2(0x0)
+  fh2NConstSubFacV2(0x0),
+  fhRjetTrvspTj(0x0),
+  fhNJetsSelEv(0x0),
+  fhJetEtaPhi(0x0),
+  fhpTTracksJet1(0x0),
+  fhpTTracksJetO(0x0),
+  fhpTTracksCont(0x0)
 {
   // Standard constructor.
 
   fh2MSubMatch             = new TH2F*[fNcentBins];
   fh2MSubPtRawAll          = new TH2F*[fNcentBins];
+  fh2MSubPtSubAll          = new TH2F*[fNcentBins];
   fh3MSubPtRawDRMatch      = new TH3F*[fNcentBins];
   fh3MSubPtTrueLeadPt      = new TH3F*[fNcentBins];
   fh3MTruePtTrueLeadPt     = new TH3F*[fNcentBins];
@@ -204,6 +221,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   for (Int_t i = 0; i < fNcentBins; i++) {
    fh2MSubMatch[i]             = 0;
     fh2MSubPtRawAll[i]          = 0;
+    fh2MSubPtSubAll[i]          = 0;
     fh3MSubPtRawDRMatch[i]      = 0;
     fh3MSubPtTrueLeadPt[i]      = 0;
     fh3MTruePtTrueLeadPt[i]     = 0;
@@ -325,9 +343,14 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fOutput->Add(fh2MSubMatch[i]);
 
     histName = Form("fh2MSubPtRawAll_%d",i);
-    histTitle = Form("fh2MSubPtRawAll_%d;%s;#it{p}_{T}",i,varName.Data());
+    histTitle = Form("fh2MSubPtRawAll_%d;%s;#it{p}_{T, unsub}",i,varName.Data());
     fh2MSubPtRawAll[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
     fOutput->Add(fh2MSubPtRawAll[i]);
+    
+    histName = Form("fh2MSubPtSubAll_%d",i);
+    histTitle = Form("fh2MSubPtSubAll_%d;%s;#it{p}_{T, sub}",i,varName.Data());
+    fh2MSubPtSubAll[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2MSubPtSubAll[i]);
 
     histName = Form("fh3MSubPtRawDRMatch_%d",i);
     histTitle = Form("fh3MSubPtRawDRMatch_%d;%s;#it{p}_{T}",i,varName.Data());
@@ -416,23 +439,23 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   fOutput->Add(fhnDeltaMassAndBkgInfo);
 
   if(fOverlap){
-     fRjetTrvspTj = new TH2F("fRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
-     fOutput->Add(fRjetTrvspTj);
+     fhRjetTrvspTj = new TH2F("fhRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
+     fOutput->Add(fhRjetTrvspTj);
      
-     fNJetsSelEv = new TH1F("fNJetsSelEv", "N of jets selected; #it{N}_{jets}/ev;Entries", 20., 0.,19);
-     fOutput->Add(fNJetsSelEv);
+     fhNJetsSelEv = new TH1F("fhNJetsSelEv", "N of jets selected; #it{N}_{jets}/ev;Entries", 20., 0.,19);
+     fOutput->Add(fhNJetsSelEv);
      
-     fJetEtaPhi = new TH2F("fJetEtaPhi", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, 0., 2*TMath::Pi());
-     fOutput->Add(fJetEtaPhi);
+     fhJetEtaPhi = new TH2F("fhJetEtaPhi", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, 0., 2*TMath::Pi());
+     fOutput->Add(fhJetEtaPhi);
      
-     hpTTracksJetO = new TH1F("hTrackpTO", "Track pT (signal jet); p_{T}", 500,0.,50.);
-     fOutput->Add(hpTTracksJetO);
+     fhpTTracksJetO = new TH1F("hTrackpTO", "Track pT (signal jet); p_{T}", 500,0.,50.);
+     fOutput->Add(fhpTTracksJetO);
 
   }
-  hpTTracksJet1 = new TH1F("hTrackpT1", "Track pT ; p_{T}", 500,0.,50.);
-  fOutput->Add(hpTTracksJet1);
-  hpTTrackCont = new TH1F(Form("hpTTrackCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
-  fOutput->Add(hpTTrackCont);
+  fhpTTracksJet1 = new TH1F("hTrackpT1", "Track pT ; p_{T}", 500,0.,50.);
+  fOutput->Add(fhpTTracksJet1);
+  fhpTTracksCont = new TH1F(Form("fhpTTrackCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
+  fOutput->Add(fhpTTracksCont);
   
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
@@ -508,7 +531,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   for(Int_t i=0; i<trackCont->GetNParticles(); i++){
      AliVParticle *vp= static_cast<AliVParticle*>(trackCont->GetAcceptParticle(i));
      if(!vp) continue;
-     hpTTrackCont->Fill(vp->Pt());
+     fhpTTracksCont->Fill(vp->Pt());
   }
   
   //rho
@@ -543,7 +566,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
        AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
        //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
        //Int_t lab = TMath::Abs(vp->GetLabel());
-       if(vp) hpTTracksJet1 -> Fill(vp->Pt());
+       if(vp) fhpTTracksJet1 -> Fill(vp->Pt());
     }
     Double_t mjet1 = jet1->GetSecondOrderSubtracted();
     Double_t mUnsubjet1 = jet1->M();
@@ -556,7 +579,8 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     }
 
     //Fill histograms for all AA jets
-    fh2MSubPtRawAll[fCentBin]->Fill(var,ptjet1);
+    fh2MSubPtRawAll[fCentBin]->Fill(var,ptUnsubjet1);
+    fh2MSubPtSubAll[fCentBin]->Fill(var,ptjet1);
     fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
     fh2PtCorrSubFacV1[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
     fh2NConstSubFacV1[fCentBin]->Fill(jet1->GetNumberOfTracks(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
@@ -586,7 +610,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
        	  }
        	  if(fOverlap){
        	     Int_t Njets = jetContO->GetNAcceptedJets();
-       	     fNJetsSelEv->Fill(Njets);
+       	     fhNJetsSelEv->Fill(Njets);
        	     jetContO->ResetCurrentID();
        	     while(jetO = jetContO->GetNextAcceptJet()){
        	     	  //print constituents of different jet containers
@@ -596,12 +620,12 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
        	     	     AliVParticle* vp = static_cast<AliVParticle*>(jetO->TrackAt(i, jetContO->GetParticleContainer()->GetArray()));
        	     	     //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
        	     	     //Int_t lab = TMath::Abs(vp->GetLabel());
-       	     	     if(vp) hpTTracksJetO -> Fill(vp->Pt());
+       	     	     if(vp) fhpTTracksJetO -> Fill(vp->Pt());
        	     	  }
 
        	     	Double_t deltaR = jetO->DeltaR(vpe);
-       	     	fRjetTrvspTj->Fill(deltaR, jetO->Pt());
-       	     	fJetEtaPhi->Fill(jetO->Eta(), jetO->Phi());
+       	     	fhRjetTrvspTj->Fill(deltaR, jetO->Pt());
+       	     	fhJetEtaPhi->Fill(jetO->Eta(), jetO->Phi());
        	     	if( deltaR < fRadius) {
        	     	   reject = kTRUE;
        	     	   break;

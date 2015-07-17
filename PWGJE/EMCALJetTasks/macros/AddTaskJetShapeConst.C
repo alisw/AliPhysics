@@ -14,7 +14,9 @@ AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
 						   TString      tag            = "MCMatch",
 						   Bool_t       bCreateTree    = kFALSE,
 						   Bool_t       removeoverlap  = kFALSE,
-						   const char * njetsOverl     = ""
+						   const char * njetsOverl     = "",
+						   const char * ntmptracksOvlJ = "",
+						   Double_t     sigJetpTCut    = 5.)
 						   )
 {
 
@@ -45,7 +47,8 @@ AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
-
+  AliParticleContainer *trackContO = task->AddParticleContainer(ntmptracksOvlJ);
+  
   TString strType(type);
   Int_t contindx = 0;
   
@@ -97,7 +100,7 @@ AliAnalysisTaskJetShapeConst *AddTaskJetShapeConst(const char * njetsBase,
      	jetContOverl->ConnectParticleContainer(trackCont);
      	jetContOverl->ConnectClusterContainer(clusterCont);
      	jetContOverl->SetPercAreaCut(0.6);
-     	jetContOverl->SetJetPtCut(-1e6);
+     	jetContOverl->SetJetPtCut(sigJetpTCut);
      	task->SetJetContainerOverlap(contindx);
      	
      	contindx+=1;
