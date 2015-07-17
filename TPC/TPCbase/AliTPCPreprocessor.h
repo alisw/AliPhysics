@@ -21,6 +21,9 @@ class AliTPCPreprocessor : public AliPreprocessor
     AliTPCPreprocessor(const AliTPCPreprocessor &org);
     virtual ~AliTPCPreprocessor();
 
+    void   SetForceSingleRunValidity(Bool_t force=kTRUE) { fForceSingleRun = force; }
+    Bool_t GetForceSingleRunValidity() const { return fForceSingleRun; }
+
   protected:
     virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
     virtual UInt_t Process(TMap* dcsAliasMap);
@@ -47,6 +50,7 @@ class AliTPCPreprocessor : public AliPreprocessor
     AliDCSSensorArray      *fGasComposition;   ///< Gas composition values from DCS
     Bool_t                 fConfigOK;  ///< Identify succesful reading of OCDB Config
     AliTPCROC              *fROC;      ///< TPC Read-Out configuration
+    Bool_t                 fForceSingleRun; ///< Force single run validity for all object, required for manual reprocessing
 
     /// \cond CLASSIMP
     ClassDef(AliTPCPreprocessor, 4)
