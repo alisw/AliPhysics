@@ -69,6 +69,8 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fMaxNcells(0),
   fMinLambda0(0),
   fMaxLambda0(0),
+  fMinLambda0LG(0),
+  fMaxLambda0LG(0),
   fMaxRtrack(0),
   fMinCellEnergy(0),
   fReferenceFileName(),
@@ -589,26 +591,31 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   AliDebug(1,Form("###########Bunch Cross nb = %d nclus = %d",nBC,nclus ));
   //cout << " ###########Bunch Cross nb  = " << nBC <<" nclus= "<< nclus<< endl;
   //Int_t ntracks = event-> GetNumberOfTracks() ; 
-  
+
+  AliVCaloCells &cells= *(event->GetEMCALCells());//it is cluster independent
+  //Variables used plenty in loops
+  Int_t nSupMod=-1, nModule=-1;
+  Int_t iphi=-1, ieta=-1, nIphi=-1, nIeta=-1;
+  Int_t absId=-1;
+  Float_t hkdtime=0.0;
+  Float_t amp=0.0;
+  Bool_t isHighGain=kTRUE;
+
   for (Int_t icl = 0; icl < nclus; icl++) {
     //ESD and AOD CaloCells carries the same information
     AliVCluster* clus = (AliVCluster*)caloClusters->At(icl);
     if(!AcceptCluster(clus)) continue;
-  
-    AliVCaloCells &cells= *(event->GetEMCALCells());
+
     //cout<<"nCells="<< clus->GetNCells();<<endl;
    
     UShort_t * index = clus->GetCellsAbsId() ;
     
     for(Int_t i = 0; i < clus->GetNCells() ; i++) {
-      Int_t absId =   index[i]; // or clus->GetCellNumber(i) ;
-      Float_t hkdtime   = cells.GetCellTime(absId) * 1.0e09; // to get ns
-      Float_t amp       = cells.GetCellAmplitude(absId) ;
-      Bool_t isHighGain = cells.GetCellHighGain(absId);
+      absId      = index[i]; // or clus->GetCellNumber(i) ;
+      hkdtime    = cells.GetCellTime(absId) * 1.0e09; // to get ns
+      amp        = cells.GetCellAmplitude(absId) ;
+      isHighGain = cells.GetCellHighGain(absId);
       //cout<<"cell absID: "<<absId<<" cellTime: "<<hkdtime<<" cellaplit: "<< amp<<endl;	
-      Int_t nSupMod, nModule;//,iRCU;
-      Int_t iphi, ieta, nIphi, nIeta;
-
 
       //main histograms with raw time information 
       if(amp>fMinCellEnergy){
@@ -737,8 +744,8 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::AcceptCluster(AliVCluster* clus)
   
   // remove other than photonlike
   Double_t lambda0=clus->GetM02();
-  if (lambda0>fMaxLambda0 || lambda0<fMinLambda0){
-    AliDebug(1,"lambda0 failed - cluster rejected");
+  if (lambda0>fMaxLambda0LG || lambda0<fMinLambda0LG){
+    AliDebug(1,"lambda0 loose cut failed - cluster rejected");
     return kFALSE;
   }
 
@@ -764,8 +771,32 @@ Bool_t AliAnalysisTaskEMCALTimeCalib::AcceptCluster(AliVCluster* clus)
     return kFALSE;
   }
 
+
+  if(!IsLowGainCellInCluster(clus)) {//no low gain cell in cluster
+    //apply more strict lambda0^2 cut
+    if (lambda0>fMaxLambda0 || lambda0<fMinLambda0){
+      AliDebug(1,"lambda0 strict cut failed - cluster rejected");
+      return kFALSE;
+    }
+  }
+
+
+
+
   return kTRUE;
 }//End AliAnalysisTaskEMCALTimeCalib::AcceptCluster
+
+//________________________________________________________________________
+/// Check if low gain cell is in a cluster
+Bool_t  AliAnalysisTaskEMCALTimeCalib::IsLowGainCellInCluster(AliVCluster* clus){
+  UShort_t * index = clus->GetCellsAbsId() ;
+  AliVCaloCells &cells= *(InputEvent()->GetEMCALCells());
+  for(Int_t i = 0; i < clus->GetNCells() ; i++) {
+    if(cells.GetCellHighGain(index[i])==kFALSE) return kTRUE;//low gain cell
+  }
+  return kFALSE;
+
+}
 
 //________________________________________________________________________
 /// Check RCU for cell given by Super Module, column index, row index
@@ -807,6 +838,8 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
   fMaxNcells=200;
   fMinLambda0=0.1;
   fMaxLambda0=0.4;
+  fMinLambda0LG=0.1;
+  fMaxLambda0LG=4.0;
   fMaxRtrack=0.025;
   fMinCellEnergy=0.4;//0.1//0.4
   fReferenceFileName="";//Reference.root
