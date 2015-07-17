@@ -480,8 +480,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t centWeight = 1.;
 //   centWeight =GetCentWeight(centBin);
  
-  rejectEvent = RejectEvent(cent,centBin);
-  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
+//   rejectEvent = RejectEvent(cent,centBin);
+//   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
   
   // Trigger study and selection of V0 low threshold trigger in 10-20%
 
@@ -515,11 +515,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   
   Int_t epBin = fevPlaneV0[0]->FindBin(evPlaneV0);
   Double_t EPweight = 1.;
-  //EPweight = GetEPweight(epBin);
+  EPweight = GetEPweight(epBin);
 
-  Bool_t rejectEventPlane = kFALSE;
-  rejectEventPlane = RejectEventPlane(evPlaneV0,epBin);
-  if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEventPlane) return;
+//   Bool_t rejectEventPlane = kFALSE;
+//   rejectEventPlane = RejectEventPlane(evPlaneV0,epBin);
+//   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEventPlane) return;
  
   Double_t wEvent = EPweight*centWeight;
   
