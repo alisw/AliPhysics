@@ -73,6 +73,7 @@ private:
   TH2D *fYtYtDenominator; 
 
   TH2F *fPairPurity;
+  TH2F *fDPhiDEtaNumeratorNoCorr;
 
   bool fIfCorrection;
   THnSparseF *fPtCorrectionsNum;

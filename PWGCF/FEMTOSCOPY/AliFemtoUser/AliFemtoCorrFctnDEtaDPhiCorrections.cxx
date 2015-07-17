@@ -42,6 +42,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   fYtYtNumerator(0),
   fYtYtDenominator(0),
   fPairPurity(0),
+  fDPhiDEtaNumeratorNoCorr(0),
   fIfCorrection(0),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
@@ -121,6 +122,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   fYtYtNumerator(0),
   fYtYtDenominator(0),
   fPairPurity(0),
+  fDPhiDEtaNumeratorNoCorr(0),
   fIfCorrection(0),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
@@ -211,6 +213,11 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
     fPairPurity = 0;
  
 
+ if (aCorrFctn.fDPhiDEtaNumeratorNoCorr)
+   fDPhiDEtaNumeratorNoCorr = new TH2F(*aCorrFctn.fDPhiDEtaNumeratorNoCorr);
+ else 
+   fDPhiDEtaNumeratorNoCorr = 0;
+
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
@@ -236,8 +243,10 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
   delete fDPhiDEtaDenominator;
   delete fPtSumDist;
 
-  if(fCalculatePairPurity)
+  if(fCalculatePairPurity){
       delete fPairPurity;
+      delete fDPhiDEtaNumeratorNoCorr;
+  }
  
   if (fDoFullAnalysis) {
     delete fDPhiNumerator;
@@ -247,7 +256,6 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
 
     delete fYtYtNumerator;
     delete fYtYtDenominator;
-    delete fPairPurity;
     delete fPhi;
     delete fEta;
     delete fPtCorrectionsNum;
@@ -337,6 +345,12 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
    fPairPurity = new TH2F(*aCorrFctn.fPairPurity);
  else 
     fPairPurity = 0;
+
+
+ if (aCorrFctn.fDPhiDEtaNumeratorNoCorr)
+   fDPhiDEtaNumeratorNoCorr = new TH2F(*aCorrFctn.fDPhiDEtaNumeratorNoCorr);
+ else 
+   fDPhiDEtaNumeratorNoCorr = 0;
 
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
@@ -449,7 +463,9 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
 
   if(fPairPurity){
     double purityweight = GetPurity(pt1,1)*GetPurity(pt2,2);
+    //cout<<"Pair purity: "<<purityweight<<" 1: "<<GetPurity(pt1,1)<<" 2: "<<GetPurity(pt2,2)<<endl;
     fPairPurity->Fill(dphi,deta,purityweight);
+    fDPhiDEtaNumeratorNoCorr->Fill(dphi,deta,1);
   }
 
   if (fDoFullAnalysis) {
@@ -548,8 +564,10 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::WriteHistos()
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
   fPtSumDist->Write();
-  if(fCalculatePairPurity)
+  if(fCalculatePairPurity){
     fPairPurity->Write();
+    fDPhiDEtaNumeratorNoCorr->Write();
+  }
   /*fDPhiNumerator->Write();
   fDPhiDenominator->Write();
   fDCosNumerator->Write();
@@ -574,8 +592,10 @@ TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
   tOutputList->Add(fDPhiDEtaDenominator);
   tOutputList->Add(fPtSumDist);
 
-  if(fCalculatePairPurity)
+  if(fCalculatePairPurity){
     tOutputList->Add(fPairPurity);
+    tOutputList->Add(fDPhiDEtaNumeratorNoCorr);
+  }
 
   if (fDoFullAnalysis) {
     // tOutputList->Add(fDPhiPtNumerator);
@@ -613,6 +633,11 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::SetCalculatePairPurity(Bool_t dopp)
     strncat(tTitNumDPhi,title, 100);
     fPairPurity = new TH2F(tTitNumDPhi,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
     fPairPurity->Sumw2();
+
+    char tTitNumDPhiNoCorr[101] = "NumDPhiDEtaNoCorr";
+    strncat(tTitNumDPhiNoCorr,title, 100);
+    fDPhiDEtaNumeratorNoCorr = new TH2F(tTitNumDPhiNoCorr,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+    fDPhiDEtaNumeratorNoCorr->Sumw2();
   }
 }
 
