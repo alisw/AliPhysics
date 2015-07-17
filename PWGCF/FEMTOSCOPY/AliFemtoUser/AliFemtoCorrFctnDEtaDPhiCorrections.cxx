@@ -35,11 +35,13 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   fDCosNumerator(0),
   fDCosDenominator(0),
   fDoFullAnalysis(kFALSE),
+  fCalculatePairPurity(kFALSE),
   fPhi(0),
   fEta(0),
   fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
+  fPairPurity(0),
   fIfCorrection(0),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
@@ -67,6 +69,8 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(char* t
   fh3Reco2(0),
   fhCont1(0),
   fhCont2(0),
+  fSinglePurity1(0),
+  fSinglePurity2(0),
   fCorr1D(kFALSE)
 {
 
@@ -110,11 +114,13 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   fDCosNumerator(0),
   fDCosDenominator(0),
   fDoFullAnalysis(kFALSE),
+  fCalculatePairPurity(kFALSE),
   fPhi(0),
   fEta(0),
   fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
+  fPairPurity(0),
   fIfCorrection(0),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
@@ -142,6 +148,8 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
   fh3Reco2(0),
   fhCont1(0),
   fhCont2(0),
+  fSinglePurity1(0),
+  fSinglePurity2(0),
   fCorr1D(kFALSE)
 {
   // copy constructor
@@ -196,6 +204,13 @@ AliFemtoCorrFctnDEtaDPhiCorrections::AliFemtoCorrFctnDEtaDPhiCorrections(const A
  else 
     fYtYtDenominator = 0;
 
+
+ if (aCorrFctn.fPairPurity)
+   fPairPurity = new TH2F(*aCorrFctn.fPairPurity);
+ else 
+    fPairPurity = 0;
+ 
+
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
@@ -221,6 +236,9 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
   delete fDPhiDEtaDenominator;
   delete fPtSumDist;
 
+  if(fCalculatePairPurity)
+      delete fPairPurity;
+ 
   if (fDoFullAnalysis) {
     delete fDPhiNumerator;
     delete fDPhiDenominator;
@@ -229,6 +247,7 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
 
     delete fYtYtNumerator;
     delete fYtYtDenominator;
+    delete fPairPurity;
     delete fPhi;
     delete fEta;
     delete fPtCorrectionsNum;
@@ -250,6 +269,9 @@ AliFemtoCorrFctnDEtaDPhiCorrections::~AliFemtoCorrFctnDEtaDPhiCorrections(){
   if(fh2Reco2) delete fh2Reco2;
   if(fh3Reco1) delete fh3Reco1;
   if(fh3Reco2) delete fh3Reco2;
+
+  delete fSinglePurity1;
+  delete fSinglePurity2;
 
 }
 //_________________________
@@ -310,6 +332,12 @@ AliFemtoCorrFctnDEtaDPhiCorrections& AliFemtoCorrFctnDEtaDPhiCorrections::operat
  else 
    fYtYtDenominator = 0;
  
+
+ if (aCorrFctn.fPairPurity)
+   fPairPurity = new TH2F(*aCorrFctn.fPairPurity);
+ else 
+    fPairPurity = 0;
+
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
@@ -419,6 +447,10 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::AddRealPair( AliFemtoPair* pair){
     fDPhiDEtaNumerator->Fill(dphi, deta);
   }
 
+  if(fPairPurity){
+    double purityweight = GetPurity(pt1,1)*GetPurity(pt2,2);
+    fPairPurity->Fill(dphi,deta,purityweight);
+  }
 
   if (fDoFullAnalysis) {
     //fDPhiPtNumerator->Fill(dphi, ptmin);
@@ -516,6 +548,8 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::WriteHistos()
   fDPhiDEtaNumerator->Write();
   fDPhiDEtaDenominator->Write();
   fPtSumDist->Write();
+  if(fCalculatePairPurity)
+    fPairPurity->Write();
   /*fDPhiNumerator->Write();
   fDPhiDenominator->Write();
   fDCosNumerator->Write();
@@ -539,7 +573,10 @@ TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
   tOutputList->Add(fDPhiDEtaNumerator);
   tOutputList->Add(fDPhiDEtaDenominator);
   tOutputList->Add(fPtSumDist);
- 
+
+  if(fCalculatePairPurity)
+    tOutputList->Add(fPairPurity);
+
   if (fDoFullAnalysis) {
     // tOutputList->Add(fDPhiPtNumerator);
     // tOutputList->Add(fDPhiPtDenominator);
@@ -562,6 +599,23 @@ TList* AliFemtoCorrFctnDEtaDPhiCorrections::GetOutputList()
   return tOutputList;
 
 }
+
+void AliFemtoCorrFctnDEtaDPhiCorrections::SetCalculatePairPurity(Bool_t dopp)
+{
+  fCalculatePairPurity = dopp;
+
+  if(fCalculatePairPurity){
+    int aPhiBins = fDPhiDEtaNumerator->GetNbinsX();
+    int aEtaBins = fDPhiDEtaNumerator->GetNbinsY();
+    const char *title = fDPhiDEtaNumerator->GetTitle();
+
+    char tTitNumDPhi[101] = "PairPurity";
+    strncat(tTitNumDPhi,title, 100);
+    fPairPurity = new TH2F(tTitNumDPhi,title,aPhiBins,fphiL,fphiT,aEtaBins,-2.0,2.0);
+    fPairPurity->Sumw2();
+  }
+}
+
 
 void AliFemtoCorrFctnDEtaDPhiCorrections::SetDoFullAnalysis(Bool_t do2d)
 {
@@ -694,6 +748,16 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile(const ch
   fhntReco2 = (THnT<float>*)(ifileCorrTab->Get(Form("fCorrectionMapData%s",type2)))->Clone();
   fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("SecondariesContamination%s",type1)))->Clone();
   fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("SecondariesContamination%s",type2)))->Clone();
+
+  cout<<"!!!!!!!!!!!!!"<<endl;
+  if(fCalculatePairPurity){
+    fSinglePurity1 = (TH1F*)(ifileCorrTab->Get(Form("hPurity%s",type1)))->Clone();
+    fSinglePurity2 = (TH1F*)(ifileCorrTab->Get(Form("hPurity%s",type2)))->Clone();
+
+  cout<<"!!! load first single purity:" <<  fSinglePurity1<<endl;
+  cout<< "!!! load seconf single purity: "<< fSinglePurity2<<endl;
+
+  }
 
   delete type1;
   delete type2;
@@ -871,7 +935,13 @@ void AliFemtoCorrFctnDEtaDPhiCorrections::LoadCorrectionTabFromROOTFile1D(const 
 
   fhCont1 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type1)));//->Clone();
   fhCont2 = (TH1D*)(ifileCorrTab->Get(Form("CorrectionFactorPtEffandCont%s",type2)));//->Clone();
-  
+   
+
+  if(fCalculatePairPurity){
+    fSinglePurity1 = (TH1F*)(ifileCorrTab->Get(Form("hPurity%s",type1)));
+    fSinglePurity2 = (TH1F*)(ifileCorrTab->Get(Form("hPurity%s",type2)));
+  }
+
   ifileCorrTab->Close();
 
 }
@@ -1249,4 +1319,30 @@ double AliFemtoCorrFctnDEtaDPhiCorrections::CalculateCorrectionWeight(double pT1
     
     return 0;
       
+}
+
+
+
+double AliFemtoCorrFctnDEtaDPhiCorrections::GetPurity(double pT1, int n)
+{
+  double w1=0.;
+  if(n==1){
+    if(pT1 > fSinglePurity1->GetXaxis()->GetXmin() && pT1 < fSinglePurity1->GetXaxis()->GetXmax())
+      {
+	w1 = fSinglePurity1->GetBinContent(fSinglePurity1->FindFixBin(pT1));
+	return w1;
+      } 
+    else
+      return 0;
+  }
+  if(n==2){
+    if(pT1 > fSinglePurity2->GetXaxis()->GetXmin() && pT1 < fSinglePurity2->GetXaxis()->GetXmax())
+      {
+	w1 = fSinglePurity2->GetBinContent(fSinglePurity2->FindFixBin(pT1));
+	return w1;
+      } 
+    else
+      return 0;
+  }
+  
 }
