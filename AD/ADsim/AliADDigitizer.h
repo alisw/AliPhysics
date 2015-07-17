@@ -56,6 +56,7 @@ public:
 						
    AliADCalibData *GetCalibData() const;
    void GetTimeSlewingSplines();
+   void ExtrapolateSplines();
    Float_t UnCorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
 
    TF1*   GetChargeSignalShape() const { return fChargeSignalShape; }
@@ -63,6 +64,7 @@ public:
    
    double ChargeSignalShape(double *x, double *par);
    double TimeSignalShape(double *x, double *par);
+   double ThresholdShape(double *x, double *par);
 
  protected:
  
@@ -83,6 +85,8 @@ public:
    Float_t  fCssOffset[16];
    
    TF1*     fTimeSignalShape;             // function which describes the time response
+   
+   TF1*     fThresholdShape;		  // function which describes theshold shape
 
    Float_t  fAdc[16][kNClocks];      //! Container for ADC samples
    Float_t  fLeadingTime[16];        //! Leading time container
@@ -98,6 +102,7 @@ public:
    Float_t  fHptdcOffset[16];        //! HPTDC time offsets channel by channel
    Float_t  fClockOffset[16];        //! Clock offsets channel by channel
    TSpline3 *fTimeSlewingSpline[16]; //! Time slewing splines
+   TF1      *fTimeSlewingExtpol[16]; //! Extrapolation to low charges
 
    Float_t *fTime[16];               //! Main container used in digitization
    Int_t    fLabels[16][3];          //! Container for MC labels
@@ -105,7 +110,7 @@ public:
 
    DigiTask_t fTask;                 //! The task (to be) executed by the digitizer
    AliAD  *fAD;                //! Pointer to AliDetector object
-   ClassDef(AliADDigitizer,2)     // digitizer for AD
+   ClassDef(AliADDigitizer,3)     // digitizer for AD
 
 };
 

@@ -44,7 +44,8 @@ AliADDecision::AliADDecision()
   :TObject(),
    fADADist(0),
    fADCDist(0),
-   fRecoParam(NULL)
+   fRecoParam(NULL),
+   fEarlyHitCutShape(NULL)
 {
   // Default constructor
   //AD has two layers, filling average 
@@ -57,6 +58,9 @@ AliADDecision::AliADDecision()
   
   //fADADist = 56.6958892608299081;
   //fADCDist = 65.1917667655268360;
+  
+  fEarlyHitCutShape = new TF1("fEarlyHitCutShape", " [0]+(x>[2])*[1]*(x-[2])**2");
+  
 }
 
 //________________________________________________________________________________
@@ -134,16 +138,100 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
     	}
   } // end of loop over channels
   
+  
   if(weightBasicADA > 1) timeBasicADA /= weightBasicADA; 
   else timeBasicADA = -1024.;
   if(weightBasicADC > 1) timeBasicADC /= weightBasicADC;
   else timeBasicADC = -1024.;
   
-  //Use basic time for decisions
+  //Robust time: Pad coincidence and early hit removal
+  Double_t timeRobustADA=0, timeRobustADC=0;
+  Double_t weightRobustADA =0., weightRobustADC = 0.;
+  UInt_t   ntimeRobustADA=0, ntimeRobustADC=0;
+  UInt_t   itimeRobustADA[8], itimeRobustADC[8];
+  
+  fEarlyHitCutShape->SetParameter(0,GetRecoParam()->GetMaxResid());
+  fEarlyHitCutShape->SetParameter(1,GetRecoParam()->GetResidRise());
+  
+  //C-side
+  fEarlyHitCutShape->SetParameter(2,2*fADCDist);
+  for (Int_t i = 0; i < 4; ++i) {
+    Float_t adc1 = esdAD->GetAdc(i);
+    Float_t adc2 = esdAD->GetAdc(i+4);
+    if (adc1 > GetRecoParam()->GetAdcThresHold() && adc2 > GetRecoParam()->GetAdcThresHold()) {
+      Float_t time1 = esdAD->GetTime(i);
+      Float_t time2 = esdAD->GetTime(i+4);
+	if(time1 > (AliADReconstructor::kInvalidTime+1.e-6) && time2 > (AliADReconstructor::kInvalidTime+1.e-6)){
+		Float_t timeErr1 = 1/adc1;
+		Float_t timeErr2 = 1/adc2;
+		Float_t timeDiff = TMath::Abs(time1-time2);
+		Float_t timeSum = time1+time2;
+		Float_t earlyHitCut = 1000;
+		if(TMath::Abs(timeSum - 2*fADCDist) < 20) earlyHitCut = fEarlyHitCutShape->Eval(timeSum);
+		if(timeDiff < earlyHitCut){
+			itimeRobustADC[ntimeRobustADC] = i;
+			ntimeRobustADC++;
+			timeRobustADC += time1/(timeErr1*timeErr1);
+			weightRobustADC += 1./(timeErr1*timeErr1);
+			
+			itimeRobustADC[ntimeRobustADC] = i+4;
+			ntimeRobustADC++;
+			timeRobustADC += time2/(timeErr2*timeErr2);
+			weightRobustADC += 1./(timeErr2*timeErr2);
+			}
+		}
+	}
+		
+  }
+  
+  //A-side
+  fEarlyHitCutShape->SetParameter(2,2*fADADist);
+  for (Int_t i = 8; i < 12; ++i) {
+    Float_t adc1 = esdAD->GetAdc(i);
+    Float_t adc2 = esdAD->GetAdc(i+4);
+    if (adc1 > GetRecoParam()->GetAdcThresHold() && adc2 > GetRecoParam()->GetAdcThresHold()) {
+      Float_t time1 = esdAD->GetTime(i);
+      Float_t time2 = esdAD->GetTime(i+4);
+	if(time1 > (AliADReconstructor::kInvalidTime+1.e-6) && time2 > (AliADReconstructor::kInvalidTime+1.e-6)){
+		Float_t timeErr1 = 1/adc1;
+		Float_t timeErr2 = 1/adc2;
+		Float_t timeDiff = TMath::Abs(time1-time2);
+		Float_t timeSum = time1+time2;
+		Float_t earlyHitCut = 1000;
+		if(TMath::Abs(timeSum - 2*fADADist) < 20) earlyHitCut = fEarlyHitCutShape->Eval(timeSum);
+		if(timeDiff < earlyHitCut){
+			itimeRobustADA[ntimeRobustADA] = i;
+			ntimeRobustADA++;
+			timeRobustADA += time1/(timeErr1*timeErr1);
+			weightRobustADA += 1./(timeErr1*timeErr1);
+			
+			itimeRobustADA[ntimeRobustADA] = i+4;
+			ntimeRobustADA++;
+			timeRobustADA += time2/(timeErr2*timeErr2);
+			weightRobustADA += 1./(timeErr2*timeErr2);
+			}
+		}
+	}
+		
+  }
+  
+  if(weightRobustADA > 1) timeRobustADA /= weightRobustADA; 
+  else timeRobustADA = -1024.;
+  if(weightRobustADC > 1) timeRobustADC /= weightRobustADC;
+  else timeRobustADC = -1024.;
+  
+  /*/Use basic time for decisions
   timeADA = timeBasicADA; timeADC = timeBasicADC;
   weightADA = weightBasicADA; weightADC = weightBasicADC;
   ntimeADA = ntimeBasicADA; ntimeADC = ntimeBasicADC;
-  for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeBasicADA[i]; itimeADC[i] = itimeBasicADC[i];} 
+  for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeBasicADA[i]; itimeADC[i] = itimeBasicADC[i];}/*/
+  
+  //Use Robust time for decisions
+  esdAD->SetBit(AliESDAD::kRobustMeanTime,kTRUE);
+  timeADA = timeRobustADA; timeADC = timeRobustADC;
+  weightADA = weightRobustADA; weightADC = weightRobustADC;
+  ntimeADA = ntimeRobustADA; ntimeADC = ntimeRobustADC;
+  for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeRobustADA[i]; itimeADC[i] = itimeRobustADC[i];}  
 
   esdAD->SetADATime(timeADA);
   esdAD->SetADCTime(timeADC);

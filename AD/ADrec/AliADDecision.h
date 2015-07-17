@@ -11,6 +11,7 @@
 
 class TTree;
 class TClonesArray;
+class TF1;
 class AliESDAD;
 class AliADCalibData;
 class AliADRecoParam;
@@ -41,8 +42,9 @@ private:
    Float_t fADADist;     // Z position of ADA
    Float_t fADCDist;     // Z position of ADC
    const AliADRecoParam* fRecoParam; //! Pointer to AD reco-param object
+   TF1 *fEarlyHitCutShape; //! Shape of cut on early hits
 
-   ClassDef( AliADDecision, 1)  // AD Offline trigger class
+   ClassDef( AliADDecision, 2)  // AD Offline trigger class
 };
 
 #endif // ALIADDECISION_H
