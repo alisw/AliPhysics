@@ -269,6 +269,12 @@ void AliADQADataMakerRec::InitESDs()
   TH2F * h10 = new TH2F("H2D_ADC_TimeVsCharge", "TimeVsCharge ADC;Time (ns); Charge(ADC counts);Counts",1638, -79.980469, 79.980469,5000,0,5000);
   Add2ESDsList(h10,kESDADCTimeVsCharge, !expert, image);
   
+  TH2F * h11 = new TH2F("H2D_ADA_PairTimeSumDiff", "Pair Time Sum Vs Diff ADA; t1+t2 (ns); t1-t2 (ns);Counts",82, 79.980469, 160.058594,410, 0.000000, 40.039062);
+  Add2ESDsList(h11,kESDADAPairTimeSumDiff, !expert, image);
+  
+  TH2F * h12 = new TH2F("H2D_ADC_PairTimeSumDiff", "Pair Time Sum Vs Diff ADC; t1+t2 (ns); t1-t2 (ns);Counts",82, 79.980469, 160.058594,410, 0.000000, 40.039062);
+  Add2ESDsList(h12,kESDADCPairTimeSumDiff, !expert, image);
+  
   //
   ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line	
 }
@@ -412,6 +418,24 @@ void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
       Float_t time = (Float_t) esdAD->GetTime(i);
       FillESDsData(kTimeChannel,(Float_t) i,time);
     }
+    
+    for (Int_t i = 0; i < 4; ++i) {
+      Float_t time1 = esdAD->GetTime(i);
+      Float_t time2 = esdAD->GetTime(i+4);
+      if(time1<-1024.+1.e-6 || time2<-1024.+1.e-6) continue;
+      Float_t timeDiff = TMath::Abs(time1-time2);
+      Float_t timeSum = time1+time2;
+      FillESDsData(kESDADCPairTimeSumDiff,timeSum,timeDiff);
+	}
+		
+     for (Int_t i = 8; i < 12; ++i) {
+      Float_t time1 = esdAD->GetTime(i);
+      Float_t time2 = esdAD->GetTime(i+4);
+      if(time1<-1024.+1.e-6 || time2<-1024.+1.e-6) continue;
+      Float_t timeDiff = TMath::Abs(time1-time2);
+      Float_t timeSum = time1+time2;
+      FillESDsData(kESDADAPairTimeSumDiff,timeSum,timeDiff);
+	}
 				
     Float_t timeADA = esdAD->GetADATime();
     Float_t timeADC = esdAD->GetADCTime();

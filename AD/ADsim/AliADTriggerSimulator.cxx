@@ -143,7 +143,7 @@ void AliADTriggerSimulator::GenerateBGWindows()
 		clk2BG.SetStopTime(clk2BG.GetStopTime()-2);
 		fBGGate[i] = new AliADLogicalSignal(clk1BG & clk2BG);
 		fBGGate[i]->SetStartTime(fBGGate[i]->GetStartTime()+fWindowOffset[i]);
-		fBGGate[i]->SetStopTime(fBGGate[i]->GetStopTime()+fWindowOffset[i]);		
+		fBGGate[i]->SetStopTime(fBGGate[i]->GetStopTime()+fWindowOffset[i]);	
 	}
   }
 }
@@ -218,26 +218,27 @@ void AliADTriggerSimulator::FillFlags(Bool_t *bbFlag, Bool_t *bgFlag, Float_t ti
   	Int_t board   = AliADCalibData::GetBoardNumber(i);
 	
 	Bool_t inBCmask = fBCMask[board]->IsInCoincidence(time[i]);
+	Bool_t inBBwindow = fBBGate[board]->IsInCoincidence(time[i]);
+	Bool_t inBGwindow = fBGGate[board]->IsInCoincidence(time[i]);
+	
+	/*/
 	Bool_t inBBwindow = kFALSE;
 	Bool_t inBGwindow = kFALSE;
 	
 	AliADLogicalSignal fBBGateShifted;
 	AliADLogicalSignal fBGGateShifted;
-	//std::cout<<"CIU = "<<board<<std::endl;
 	for(Int_t j=-10; j<=10; j++){
 		fBBGateShifted.SetStartTime(fBBGate[board]->GetStartTime() + 25*j);
 		fBBGateShifted.SetStopTime(fBBGate[board]->GetStopTime() + 25*j);
 		fBGGateShifted.SetStartTime(fBGGate[board]->GetStartTime() + 25*j);
 		fBGGateShifted.SetStopTime(fBGGate[board]->GetStopTime() + 25*j);
 		
-		//std::cout<<"BB "<<fBBGateShifted.GetStartTime()<<" - "<<fBBGateShifted.GetStopTime()<<std::endl; 
-		//std::cout<<"BG "<<fBGGateShifted.GetStartTime()<<" - "<<fBGGateShifted.GetStopTime()<<std::endl;  
-		
 		if(fBBGateShifted.IsInCoincidence(time[i])) inBBwindow = kTRUE;
 		if(fBGGateShifted.IsInCoincidence(time[i])) inBGwindow = kTRUE;
 		}
-  	bbFlag[i] = inBBwindow && inBCmask;
-	bgFlag[i] = inBGwindow && inBCmask;
+	/*/
+	bbFlag[i] = inBBwindow;
+	bgFlag[i] = inBGwindow;
 	
 	//AliInfo(Form("Ch %d Time=%.1f BCM=%d BB=%d BG=%d",i,time[i],inBCmask,bbFlag[i],bgFlag[i] ));
   	}

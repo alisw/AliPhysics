@@ -34,6 +34,7 @@
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TCanvas.h>
 
 // --- AliRoot header files ---
 #include "AliRun.h"
@@ -147,7 +148,8 @@ Bool_t AliADDigitizer::Init()
   // check if the digitizer was already initialized
   if (fTimeSignalShape) return kTRUE;
   fTimeSignalShape = new TF1("ADTimeSignalShape",this,&AliADDigitizer::TimeSignalShape,0,200,6,"AliADDigitizer","TimeSignalShape");
-  fChargeSignalShape = new TF1("ADChargeSignalShape",this,&AliADDigitizer::ChargeSignalShape,0,140,3,"AliADDigitizer","ChargeSignalShape");
+  fChargeSignalShape = new TF1("ADChargeSignalShape",this,&AliADDigitizer::ChargeSignalShape,0,300,3,"AliADDigitizer","ChargeSignalShape");
+  fThresholdShape = new TF1("ADThresholdShape",this,&AliADDigitizer::ThresholdShape,0,50,1,"AliADDigitizer","ThresholdShape");
 
   fTimeSignalShape->SetParameters(-1.07335e+00,2.16002e+01,-1.26133e-01,
 			           1.41619e+00,5.50334e-01,3.86111e-01);
@@ -178,6 +180,8 @@ Bool_t AliADDigitizer::Init()
   
   //Time slewing splines
   GetTimeSlewingSplines();
+  //Try to extrapolate the splines
+  ExtrapolateSplines();
 
   for(Int_t i = 0 ; i < 16; ++i) {
   
@@ -275,14 +279,16 @@ void AliADDigitizer::DigitizeHits()
   // Digitize the hits to the level of
   // SDigits (fTime arrays)
   Int_t nTotPhot[16];
-  Float_t PMmeanTime[16];
+  Float_t PMTime[16];
+  Float_t PMTimeWeight[16];
   Int_t nPMHits[16];
   
   for(Int_t i = 0 ; i < 16; ++i) {
     memset(fTime[i],0,fNBins[i]*sizeof(Float_t));
     fLabels[i][0] = fLabels[i][1] = fLabels[i][2] = -1;
     nTotPhot[i] = 0;
-    PMmeanTime[i] = 0;
+    PMTime[i] = 10000;
+    PMTimeWeight[i] = 0;
     nPMHits[i] = 0;
   }
   
@@ -320,29 +326,34 @@ void AliADDigitizer::DigitizeHits()
 	 Float_t dt_scintillator = gRandom->Gaus(0,kIntTimeRes);
 	 Float_t t = dt_scintillator + hit->GetTof();
 	 nTotPhot[pmt] += nPhot;
-	 PMmeanTime[pmt] += t*nPhot;
 	 nPMHits[pmt]++;
+	 //PMTime[pmt] += t*nPhot*nPhot;
+	 //PMTimeWeight[pmt] += nPhot*nPhot;
+	 if(PMTime[pmt]>t)PMTime[pmt] = t;
+	 
 	 }//hit loop
      }//track loop
      
   //Now makes SDigits from hits
   for(Int_t iPM = 0; iPM < 16; iPM++) {
-     if(nPMHits[iPM]==0)continue;
-     if(nTotPhot[iPM]==0)continue;
-     PMmeanTime[iPM] = PMmeanTime[iPM]/nTotPhot[iPM];
-     PMmeanTime[iPM] += fHptdcOffset[iPM]; 
+     if(nPMHits[iPM]==0 || nTotPhot[iPM]==0){ 
+        PMTime[iPM] = 0.0;
+     	continue;
+	}
+     //PMTime[iPM] = PMTime[iPM]/PMTimeWeight[iPM];
+     PMTime[iPM] += fHptdcOffset[iPM]; 
      
      fChargeSignalShape->SetParameters(fCssOffset[iPM],fCssTau[iPM],fCssSigma[iPM]);
-     Float_t integral = fChargeSignalShape->Integral(0,140);
+     Float_t integral = fChargeSignalShape->Integral(0,300);
      //std::cout<<"Integral = "<<integral<<std::endl; 
       
      Float_t charge = nTotPhot[iPM]*fPmGain[iPM]*fBinSize[iPM]/integral;
 	     
-     Int_t firstBin = TMath::Max(0,(Int_t)((PMmeanTime[iPM])/fBinSize[iPM]));
+     Int_t firstBin = TMath::Max(0,(Int_t)((PMTime[iPM])/fBinSize[iPM]));
      Int_t lastBin = fNBins[iPM]-1;
      //std::cout<<"First Bin: "<<firstBin<<std::endl;
      for(Int_t iBin = firstBin; iBin <= lastBin; ++iBin) {
-	 Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMmeanTime[iPM];
+	 Float_t tempT = fBinSize[iPM]*(0.5+iBin)-PMTime[iPM];
 	 if(tempT<=0)continue;
 	 fTime[iPM][iBin] += charge*fChargeSignalShape->Eval(tempT);
 	 }
@@ -365,8 +376,8 @@ void AliADDigitizer::DigitizeSDigits()
   for (Int_t ipmt = 0; ipmt < 16; ++ipmt) {
   
     fChargeSignalShape->SetParameters(fCssOffset[ipmt],fCssTau[ipmt],fCssSigma[ipmt]);
-    Float_t maximum = 0.9*fChargeSignalShape->GetMaximum(0,140); 
-    Float_t integral = fChargeSignalShape->Integral(0,140);
+    Float_t maximum = 0.9*fChargeSignalShape->GetMaximum(0,300); 
+    Float_t integral = fChargeSignalShape->Integral(0,300);
     Float_t thr = fCalibData->GetCalibDiscriThr(ipmt)*kChargePerADC*maximum*fBinSize[ipmt]/integral;
     //Float_t thr = 0;
        
@@ -413,14 +424,22 @@ void AliADDigitizer::DigitizeSDigits()
     for (Int_t iClock = 0; iClock < kNClocks; ++iClock) {
       Int_t integrator = (iClock + fEvenOrOdd) % 2;
       AliDebug(1,Form("ADC %d %d %f",j,iClock,fAdc[j][iClock]));
-      adcClock = fAdc[j][iClock];
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
-      if(fAdc[j][iClock]>1023) adcClock = 1023 - fAdcPedestal[j][integrator];
+    }
+    for (Int_t iClock = 0; iClock < kNClocks; ++iClock) {
+      Int_t integrator = (iClock + fEvenOrOdd) % 2;
+      adcClock = (Int_t)fAdc[j][iClock];
+      if(fAdc[j][iClock]>1023) adcClock = 1023;
+      adcClock -= fAdcPedestal[j][integrator];
+      if(adcClock< 4*fAdcSigma[j][integrator]) adcClock = 0;
       adcSignal += adcClock;
     }
+    fThresholdShape->SetParameter(0,fCalibData->GetCalibDiscriThr(j));
+    if(gRandom->Rndm() > fThresholdShape->Eval(adcSignal)) fMCTime[j] = -1024.0;
+    if(fThresholdShape->Eval(adcSignal)<1e-2) fMCTime[j] = -1024.0;
     fLeadingTime[j] = UnCorrectLeadingTime(j,fMCTime[j],adcSignal);
-    if(j<8)fLeadingTime[j] += gRandom->Gaus(0,1); //windth of TS spline
-    else   fLeadingTime[j] += gRandom->Gaus(0,2);
+    if(j<8)fLeadingTime[j] += gRandom->Gaus(1.2,0.1); //windth of TS spline
+    else   fLeadingTime[j] += gRandom->Gaus(1.0,0.4);
     
   }
   //Fill BB and BG flags in trigger simulator
@@ -628,7 +647,7 @@ Float_t AliADDigitizer::UnCorrectLeadingTime(Int_t i, Float_t time, Float_t adc)
   // UnCorrect the MC time
   // for slewing effect and
   // misalignment of the channels
-  const Double_t fTOF[4] = {65.30,65.12,56.54,56.71};
+  const Double_t fTOF[4] = {65.2418, 65.1417, 56.6459, 56.7459};
   
   if (time < 1e-6) return time;
   if (adc < 1) return time;
@@ -639,7 +658,9 @@ Float_t AliADDigitizer::UnCorrectLeadingTime(Int_t i, Float_t time, Float_t adc)
   time -= fHptdcOffset[i];
   //std::cout<<"TOF: "<<time<<std::endl;
   time -= fTOF[i/4];
-  time += fTimeSlewingSpline[i]->Eval(TMath::Log10(1/adc))*fCalibData->GetTimeResolution(board);
+  if(adc<30 && fTimeSlewingExtpol[i]) time += fTimeSlewingExtpol[i]->Eval(TMath::Log10(1/adc))*fCalibData->GetTimeResolution(board);
+  
+  else time += fTimeSlewingSpline[i]->Eval(TMath::Log10(1/adc))*fCalibData->GetTimeResolution(board);
   //std::cout<<"Charge: "<<adc<<std::endl;
   //std::cout<<"Leading time: "<<time<<std::endl;
 
@@ -664,6 +685,35 @@ void AliADDigitizer::GetTimeSlewingSplines()
   
 
 }
+//_____________________________________________________________________________
+void AliADDigitizer::ExtrapolateSplines()
+{
+
+TH1F *hTimeVsSignal;
+
+for(Int_t i=0; i<16; i++){ 
+	TCanvas *c = new TCanvas("c", " ",0,0,1,1);
+	c->cd();
+	fTimeSlewingSpline[i]->Paint();
+	hTimeVsSignal = fTimeSlewingSpline[i]->GetHistogram();
+	
+	TString TimeSlewingFitName = "hTimeSlewingFit";
+	TimeSlewingFitName += i;
+	fTimeSlewingExtpol[i] = new TF1(TimeSlewingFitName.Data(),"[0]+[1]*TMath::Power(10,-x*[2])",-3,0);
+	fTimeSlewingExtpol[i]->SetParameter(0,650);
+	fTimeSlewingExtpol[i]->SetParLimits(0,200,3000);
+	fTimeSlewingExtpol[i]->SetParameter(1,450);
+	fTimeSlewingExtpol[i]->SetParLimits(1,50,1000);
+	fTimeSlewingExtpol[i]->SetParameter(2,-0.5);
+	fTimeSlewingExtpol[i]->SetParLimits(2,-0.9,-0.05);
+	fTimeSlewingExtpol[i]->SetLineColor(kMagenta);
+	Int_t fitStatus =  hTimeVsSignal->Fit(TimeSlewingFitName.Data(),"R"," ",-2.5,-1.5);
+	if(fitStatus != 0) {
+		AliWarning(Form("Extrapolation of spline %d not succesfull",i));
+		fTimeSlewingExtpol[i] = 0x0; 
+		}
+	}
+}
 //____________________________________________________________________________
 double AliADDigitizer::ChargeSignalShape(double *x, double *par)
 {
@@ -672,6 +722,16 @@ double AliADDigitizer::ChargeSignalShape(double *x, double *par)
   Double_t xx = x[0];
  
   return TMath::Exp(-0.5*TMath::Power(TMath::Log((xx+par[0])/par[1])/par[2],2));
+}
+
+//____________________________________________________________________________
+double AliADDigitizer::ThresholdShape(double *x, double *par)
+{
+  // this function simulates the threshold shape
+
+  Double_t xx = x[0];
+ 
+  return 1/(1+TMath::Exp(-xx + par[0]));
 }
 
 //____________________________________________________________________________

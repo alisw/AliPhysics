@@ -59,7 +59,8 @@ public:
 		   
   enum HESDType_t {kCellMultiADA,kCellMultiADC,
 		   kBBFlag,kBGFlag,kChargeChannel,kTimeChannel,
-		   kESDADATime,kESDADCTime,kESDDiffTime,kESDADATimeVsCharge,kESDADCTimeVsCharge};
+		   kESDADATime,kESDADCTime,kESDDiffTime,kESDADATimeVsCharge,kESDADCTimeVsCharge,
+		   kESDADAPairTimeSumDiff,kESDADCPairTimeSumDiff};
 	
 public:
   AliADQADataMakerRec() ;            // constructor
