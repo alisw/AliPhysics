@@ -86,7 +86,11 @@ Int_t AliGenReaderHepMC::NextEvent()
             pdfHeader.pdf1,
             pdfHeader.pdf2
       );
-      printf("Parsed event %d with %d particles.\n", fGenEvent->event_number(), fGenEvent->particles_size());
+      // propagate the event weight from HepMC to the event header
+      HepMC::WeightContainer weights = fGenEvent->weights();
+      if (!weights.empty())
+        fGenEventHeader->SetEventWeight(weights.front());
+      printf("Parsed event %d with %d particles, weight = %e.\n", fGenEvent->event_number(), fGenEvent->particles_size(), fGenEventHeader->EventWeight());
       return fGenEvent->particles_size();
    }
    printf("No more events in the file.\n");
