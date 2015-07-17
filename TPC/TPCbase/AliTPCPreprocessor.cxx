@@ -78,7 +78,8 @@ ClassImp(AliTPCPreprocessor)
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
   fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fGoofie(0),
-  fPressure(0), fGasComposition(0), fConfigOK(kTRUE), fROC(0)
+  fPressure(0), fGasComposition(0), fConfigOK(kTRUE), fROC(0),
+  fForceSingleRun(kFALSE)
 {
   // constructor
   fROC = AliTPCROC::Instance();
@@ -98,7 +99,8 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
  AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor&  ) :
    AliPreprocessor("TPC",0),
    fConfEnv(0), fTemp(0), fHighVoltage(0), fHighVoltageStat(0), fGoofie(0),
-   fPressure(0), fGasComposition(0), fConfigOK(kTRUE), fROC(0)
+   fPressure(0), fGasComposition(0), fConfigOK(kTRUE), fROC(0),
+   fForceSingleRun(kFALSE)
  {
 
    Fatal("AliTPCPreprocessor", "copy constructor not implemented");
@@ -885,9 +887,9 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
      metaData.SetAliRootVersion(ALIROOT_VERSION);
      metaData.SetComment("Preprocessor AliTPC data base entries."); 
  
-     Bool_t storeOK = Store("Calib", "Pedestals", calPadPed, &metaData, 0, kTRUE);
+     Bool_t storeOK = Store("Calib", "Pedestals", calPadPed, &metaData, 0, kTRUE ^ fForceSingleRun);
      if ( !storeOK ) ++result;
-     storeOK = Store("Calib", "PadNoise", calPadRMS, &metaData, 0, kTRUE);
+     storeOK = Store("Calib", "PadNoise", calPadRMS, &metaData, 0, kTRUE ^ fForceSingleRun);
      if ( !storeOK ) ++result;
     }
   } else {
@@ -1068,7 +1070,7 @@ if (pulserObjectsOCDB) {
      metaData.SetAliRootVersion(ALIROOT_VERSION);
      metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-     Bool_t storeOK = Store("Calib", "Pulser", pulserObjects, &metaData, 0, kTRUE);
+     Bool_t storeOK = Store("Calib", "Pulser", pulserObjects, &metaData, 0, kTRUE ^ fForceSingleRun);
      if ( !storeOK ) ++result;
     }  
   } else {
@@ -1134,7 +1136,7 @@ UInt_t AliTPCPreprocessor::ExtractRaw(Int_t sourceFXS)
      metaData.SetAliRootVersion(ALIROOT_VERSION);
      metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-     Bool_t storeOK = Store("Calib", "Raw", rawArray, &metaData, 0, kTRUE);
+     Bool_t storeOK = Store("Calib", "Raw", rawArray, &metaData, 0, kTRUE ^ fForceSingleRun);
      if ( !storeOK ) ++result;
   } else {
     Log ("Error: no entries in raw file list!");
@@ -1328,7 +1330,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
     metaData.SetComment("Preprocessor AliTPC data base entries.");
     
     if ( result == 0 ) {
-      Bool_t storeOK = Store("Calib", "CE", ceObjects, &metaData, 0, kTRUE);
+      Bool_t storeOK = Store("Calib", "CE", ceObjects, &metaData, 0, kTRUE ^ fForceSingleRun);
       if ( !storeOK ) ++result;
     } else {
       Log ("Warning: Average time graphs not available - no OCDB entry written");
