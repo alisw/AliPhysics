@@ -91,7 +91,8 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   Int_t           fMaxLabelEmb;                                    // max label of embedded particles
   Bool_t          fSmallSyst;                                      // flag for the axes ranges in pPb
   TH2F          **fh2MSubMatch;                                    //! subtracted jet mass vs match index (0: no match; 1:match)
-  TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs subtracted jet pT
+  TH2F          **fh2MSubPtRawAll;                                 //! subtracted jet mass vs unsubtracted jet pT
+  TH2F          **fh2MSubPtSubAll;                                 //! subtracted jet mass vs subtracted jet pT
   TH3F          **fh3MSubPtRawDRMatch;                             //! subtracted jet mass vs subtracted jet pT vs distance to leading Pb-Pb jet
   TH3F          **fh3MSubPtTrueLeadPt;                             //! subtracted jet mass vs true jet pT vs LeadPt for matched jets for matched jets 
   TH3F          **fh3MTruePtTrueLeadPt;                            //! true jet mass vs true jet pT vs LeadPt for matched jets for matched jets
@@ -109,16 +110,16 @@ class AliAnalysisTaskJetShapeDeriv : public AliAnalysisTaskEmcalJet {
   TH2F          **fh2PtRawSubFacV2;                                //! raw pT vs 0.5(rho+rhom)^2*V2
   TH2F          **fh2PtCorrSubFacV2;                               //! subtracted pT vs 0.5(rho+rhom)^2*V2
   TH2F          **fh2NConstSubFacV2;                               //! N constituents vs 0.5(rho+rhom)^2*V2
-  TH2F          *fRjetTrvspTj;                                     //! distance in R between each jetO and embedded single track (those below fRadius are rejected)
-  TH1F 	        *fNJetsSelEv;                                      //! number of selected signal jets per event
-  TH2F          *fJetEtaPhi;                                       //! eta-phi distribution of the selected signal jets
-   TH1F 	        *hpTTracksJet1;
-   TH1F 	        *hpTTracksJetO;
-   TH1F 	        *hpTTrackCont;
+  TH2F          *fhRjetTrvspTj;                                     //! distance in R between each jetO and embedded single track (those below fRadius are rejected)
+  TH1F 	        *fhNJetsSelEv;                                      //! number of selected signal jets per event
+  TH2F          *fhJetEtaPhi;                                       //! eta-phi distribution of the selected signal jets
+  TH1F 	        *fhpTTracksJet1;
+  TH1F 	        *fhpTTracksJetO;
+  TH1F 	        *fhpTTracksCont;
   AliAnalysisTaskJetShapeDeriv(const AliAnalysisTaskJetShapeDeriv&);            // not implemented
   AliAnalysisTaskJetShapeDeriv &operator=(const AliAnalysisTaskJetShapeDeriv&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeDeriv, 11) //updated to the new histograms, -1 if don't commit
+  ClassDef(AliAnalysisTaskJetShapeDeriv, 12) //updated to the new histograms, -1 if don't commit
 };
 #endif
 

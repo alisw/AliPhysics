@@ -72,7 +72,13 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0)
+  fhnDeltaMass(0),
+  fhRjetTrvspTj(0x0),
+  fhNJetsSelEv(0x0),
+  fhJetEtaPhi(0x0),
+  fhpTTracksJet1(0x0),
+  fhpTTracksJetO(0x0),
+  fhpTTracksCont(0x0)
 {
   // Default constructor.
 
@@ -138,7 +144,13 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fh3PtTrueDeltaMLeadPt(0x0),
   fh3PtTrueDeltaMRelLeadPt(0x0),
   fhnMassResponse(0x0),
-  fhnDeltaMass(0)
+  fhnDeltaMass(0),
+  fhRjetTrvspTj(0x0),
+  fhNJetsSelEv(0x0),
+  fhJetEtaPhi(0x0),
+  fhpTTracksJet1(0x0),
+  fhpTTracksJetO(0x0),
+  fhpTTracksCont(0x0)
 {
   // Standard constructor.
 
@@ -307,9 +319,24 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   fOutput->Add(fhnDeltaMassAndBkgInfo);
   
   if(fOverlap){
-     fRjetTrvspTj = new TH2F("fRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
-     fOutput->Add(fRjetTrvspTj);
+     fhRjetTrvspTj = new TH2F("fhRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
+     fOutput->Add(fhRjetTrvspTj);
+     fhNJetsSelEv = new TH1F("fhNJetsSelEv", "N of jets selected; #it{N}_{jets}/ev;Entries", 20., 0.,19);
+     fOutput->Add(fhNJetsSelEv);
+     
+     fhJetEtaPhi = new TH2F("fhJetEtaPhi", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, 0., 2*TMath::Pi());
+     fOutput->Add(fhJetEtaPhi);
+     
+     fhpTTracksJetO = new TH1F("hTrackpTO", "Track pT (signal jet); p_{T}", 500,0.,50.);
+     fOutput->Add(fhpTTracksJetO);
+
   }
+  fhpTTracksJet1 = new TH1F("hTrackpT1", "Track pT ; p_{T}", 500,0.,50.);
+  fOutput->Add(fhpTTracksJet1);
+  fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
+  fOutput->Add(fhpTTracksCont);
+
+  
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -402,6 +429,16 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
         continue;
 
+     //print constituents of different jet containers
+     //jet1
+     
+     for(Int_t i=0; i<jet1->GetNumberOfTracks(); i++) {
+     	AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+     	//    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+     	//Int_t lab = TMath::Abs(vp->GetLabel());
+     	if(vp) fhpTTracksJet1 -> Fill(vp->Pt());
+     }
+
       //Get constituent subtacted version of jet
       Int_t ifound = 0;
       Int_t ilab = -1;
@@ -442,10 +479,21 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	    Bool_t reject = kFALSE;
       	    if(fOverlap){
       	       Int_t Njets = jetContO->GetNAcceptedJets();
+      	       fhNJetsSelEv->Fill(Njets);
       	       jetContO->ResetCurrentID();
       	       while(jetO = jetContO->GetNextAcceptJet()){
+      	       	  //print constituents of different jet containers
+       	     	  //jetO
+       	     	  //Printf("N particle %d",jetO->GetNumberOfTracks());
+       	     	  for(Int_t i=0; i<jetO->GetNumberOfTracks(); i++) {
+       	     	     AliVParticle* vp = static_cast<AliVParticle*>(jetO->TrackAt(i, jetContO->GetParticleContainer()->GetArray()));
+       	     	     //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+       	     	     //Int_t lab = TMath::Abs(vp->GetLabel());
+       	     	     if(vp) fhpTTracksJetO -> Fill(vp->Pt());
+       	     	  }
       	       	  Double_t deltaR = jetO->DeltaR(vpe);
-      	       	  fRjetTrvspTj->Fill(deltaR, jetO->Pt());
+      	       	  fhRjetTrvspTj->Fill(deltaR, jetO->Pt());
+      	       	  fhJetEtaPhi->Fill(jetO->Eta(), jetO->Phi());
       	       	  if(deltaR < fRadius) {
       	       	     reject = kTRUE;
       	       	     break;

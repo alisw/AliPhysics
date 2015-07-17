@@ -93,12 +93,17 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
   THnSparse     **fhnDeltaMass;                                    //! deltaM vs deltapT
   THnSparse      *fhnDeltaMassAndBkgInfo;                          //! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
-  TH2F          *fRjetTrvspTj;                                     //! distance in R between each jetO and embedded single track (those below fRadius are rejected)
-
+  TH1F 	        *fhNJetsSelEv;                                      //! number of selected signal jets per event
+  TH2F          *fhRjetTrvspTj;                                     //! distance in R between each jetO and embedded single track (those below fRadius are rejected)
+  TH2F          *fhJetEtaPhi;                                       //! eta-phi distribution of the selected signal jets
+  TH1F 	        *fhpTTracksJet1;
+  TH1F 	        *fhpTTracksJetO;
+  TH1F 	        *fhpTTracksCont;
+  
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 10)
+  ClassDef(AliAnalysisTaskJetShapeConst, 11)
 };
 #endif
 
