@@ -2,7 +2,7 @@
 //==============================================================================
 Int_t       runOnData          = 1;       // Set to 1 if processing real data
 Int_t       iCollision         = 0;       // 0=pp, 1=Pb-Pb
-Int_t       run_flag           = 1000;    // year (2010 pp)
+Int_t       run_flag           = 1100;    // year (2010 pp)
 //==============================================================================
 Bool_t      doCDBconnect        =1;
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
@@ -29,13 +29,14 @@ Int_t       iPWGDQJPSIfilter    = 0;      // JPSI filtering (PWG3)
 Int_t       iPWGHFd2h           = 1;      // D0->2 hadrons (PWG3)
 Int_t       iPWGPP               =1;      // high pt filter task
 Int_t       iPWGLFForward       = 1;      // Forward mult task (PWGLF)
-Bool_t doPIDResponse  = 1;
-Bool_t doPIDqa        = 1; //new
+Int_t       iPWGGAgammaconv    = 1;      // Gamma conversion analysis (PWG4)
+Bool_t   doPIDResponse  = 1;
+Bool_t   doPIDqa        = 1; //new
 
 // ### Configuration macros used for each module
 //==============================================================================
- TString configPWGHFd2h = (iCollision==0)?"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C"
-                          :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_highmult.C";
+ TString configPWGHFd2h = (iCollision==0)?"$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF.C"
+                          :"$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_highmult.C";
                                                  
 // Temporaries.
 void AODmerge();
@@ -77,12 +78,6 @@ void AODtrain(Int_t merge=0)
    if (iPWGDQJPSIfilter) printf("=  PWGDQ j/psi filter                                             =\n");
    if (iPWGHFd2h) printf("=  PWGHF D0->2 hadrons QA                                     =\n");
 
-   // Load common libraries and set include path
-   if (!LoadCommonLibraries()) {
-      ::Error("AnalysisTrain", "Could not load common libraries");
-      return;
-   }
-    
    // Make the analysis manager and connect event handlers
    AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "Production train");
     mgr->SetCacheSize(0);
@@ -90,12 +85,6 @@ void AODtrain(Int_t merge=0)
  //     mgr->SetNSysInfo(100);
       AliSysInfo::SetVerbose(kTRUE);
    }   
-   // Load analysis specific libraries
-   if (!LoadAnalysisLibraries()) {
-      ::Error("AnalysisTrain", "Could not load analysis libraries");
-      return;
-   }   
-
    // Create input handler (input container created automatically)
    // ESD input handler
    AliESDInputHandler *esdHandler = new AliESDInputHandler();
@@ -149,18 +138,18 @@ void AddAnalysisTasks(const char *cdb_location){
   //
    AliAnalysisManager::SetCommonFileName("AODQA.root");
    if (useTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/TENDER/TenderSupplies/AddTaskTender.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/TENDER/TenderSupplies/AddTaskTender.C");
       // IF V0 tender needed, put kTRUE below
       AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
 //      tender->SetDebugLevel(2);
    }
    
    // Clean Geometry: Ruben
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
-  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
-  mgr->AddTask(clgmTask);
-  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
-  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);  
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
+//  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+//  mgr->AddTask(clgmTask);
+//  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+//  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);  
  
    
    //
@@ -169,7 +158,7 @@ void AddAnalysisTasks(const char *cdb_location){
   if (doPIDResponse) {
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
     AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse();
-     PIDResponse->SetUserDataRecoPass(1);
+ //    PIDResponse->SetUserDataRecoPass(1);
 //    PIDResponse->SelectCollisionCandidates(AliVEvent::kAny);
   }  
  
@@ -184,7 +173,7 @@ void AddAnalysisTasks(const char *cdb_location){
   // CDB connection
   //
   if (doCDBconnect && !useTender) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
     AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
     if (!taskCDB) return;
     AliCDBManager *cdb = AliCDBManager::Instance();
@@ -194,7 +183,7 @@ void AddAnalysisTasks(const char *cdb_location){
  
    if (usePhysicsSelection) {
    // Physics selection task
-      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
       AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(useMC);
 //      AliOADBPhysicsSelection * oadbDefaultPbPb = CreateOADBphysicsSelection();      
@@ -205,20 +194,20 @@ void AddAnalysisTasks(const char *cdb_location){
 
 //Jacek
    if (iPWGPP) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTaskFilteredTree.C");
       AddTaskFilteredTree("FilterEvents_Trees.root");
    }   
    
    // Centrality (only Pb-Pb)
    if (useCentrality) {
-      gROOT->LoadMacro("$ALICE_ROOT/OADB/macros/AddTaskCentrality.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
       //taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
    }
    
 // --- PWGLF - Forward (cholm@nbi.dk) -----------------------------
    if (iPWGLFForward && usePhysicsSelection) { 
-        gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C");
      UShort_t pwglfForwardSys = 0; // iCollision+1; // pp:1, PbPb:2, pPb:3
      UShort_t pwglfSNN        = 0;            // GeV, 0==unknown
      Short_t  pwglfField      = 0;
@@ -226,7 +215,7 @@ void AddAnalysisTasks(const char *cdb_location){
 			pwglfForwardSys,       // Collision system
 			pwglfSNN, 
 			pwglfField);
-        gROOT->LoadMacro("$ALICE_ROOT/PWGLF/FORWARD/analysis2/AddTaskCentralMult.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/AddTaskCentralMult.C");
         AddTaskCentralMult(useMC, pwglfForwardSys, pwglfSNN, pwglfField);
    }
  
@@ -251,12 +240,13 @@ void AddAnalysisTasks(const char *cdb_location){
                                   kFALSE,               // disable kinks
                                   run_flag);            // run flag (YY00)
         mgr->RegisterExtraFile("AliAOD.Dimuons.root");
+         AliEMCALGeometry::GetInstance("","");
    }   
 
 // ********** PWG3 wagons ******************************************************           
    // PWGHF vertexing
    if (iPWGHFvertexing) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
       if (!iPWGHFd2h) TFile::Cp(gSystem->ExpandPathName(configPWGHFd2h.Data()), "file:ConfigVertexingHF.C");
       AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
       if (!taskvertexingHF) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSEVertexingHF cannot run for this train conditions - EXCLUDED");
@@ -266,7 +256,7 @@ void AddAnalysisTasks(const char *cdb_location){
       
    // PWGDQ JPSI filtering (only pp)
    if (iPWGDQJPSIfilter && (iCollision==0)) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
       AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter();
       if (!taskJPSIfilter) ::Warning("AnalysisTrainNew", "AliAnalysisTaskDielectronFilter cannot run for this train conditions - EXCLUDED");
       else mgr->RegisterExtraFile("AliAOD.Dielectron.root");
@@ -275,10 +265,18 @@ void AddAnalysisTasks(const char *cdb_location){
 
    // PWGHF D2h
    if (iPWGHFd2h) {   
-     gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddD2HTrain.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/AddD2HTrain.C");
      TFile::Cp(gSystem->ExpandPathName(configPWGHFd2h.Data()), "file:ConfigVertexingHF.C");
      AddD2HTrain(kFALSE, 1,0,0,0,0,0,0,0,0,0,0);                                 
    }
+   
+    //PWGAgammaconv
+    if (iPWGGAgammaconv) {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/GammaConv/macros/AddTask_ConversionAODProduction.C");
+      AliAnalysisTask *taskconv = AddTask_ConversionAODProduction(iCollision, kFALSE);
+      mgr->RegisterExtraFile("AliAODGammaConversion.root");
+   }   
+  
    
    // ********** PWG4 wagons ******************************************************
    // Jet analysis
@@ -291,7 +289,7 @@ void AddAnalysisTasks(const char *cdb_location){
    UInt_t kHighPtFilterMask = 272;// from esd filter
    UInt_t iPhysicsSelectionFlag = 0;
    if (iJETAN) {
-     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJets.C");
+     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskJets.C");
      // Default jet reconstructor running on ESD's
      AliAnalysisTaskJets *taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1.,0); // no background subtraction     
      if (!taskjets) ::Fatal("AnalysisTrainNew", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
@@ -312,7 +310,7 @@ void AddAnalysisTasks(const char *cdb_location){
        if(cTmp.Length()>0)kJetSubtractBranches += Form("%s ",cTmp.Data());
 	 
        // Add the clusters..
-       gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJetCluster.C");
+       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskJetCluster.C");
        AliAnalysisTaskJetCluster *taskCl = 0;
        Float_t fCenUp = 0;
        Float_t fCenLo = 0;
@@ -337,7 +335,7 @@ void AddAnalysisTasks(const char *cdb_location){
 	 
        // DO THE BACKGROUND SUBTRACTION
        if(kIsPbPb&&kJetSubtractBranches.Length()){
-         gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJetBackgroundSubtract.C");
+         gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/AddTaskJetBackgroundSubtract.C");
          AliAnalysisTaskJetBackgroundSubtract *taskSubtract = 0;
          taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,1,"B0","B%d");
          taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
@@ -346,119 +344,6 @@ void AddAnalysisTasks(const char *cdb_location){
      } 
    }
 }
-//______________________________________________________________________________
-Bool_t LoadCommonLibraries()
-{
-// Load common analysis libraries.
-   if (!gSystem->Getenv("ALICE_ROOT")) {
-      ::Error("AnalysisTrainNew.C::LoadCommonLibraries", "Analysis train requires that analysis libraries are compiled with a local AliRoot"); 
-      return kFALSE;
-   }   
-   Bool_t success = kTRUE;
-   // Load framework classes. Par option ignored here.
-   success &= LoadLibrary("libSTEERBase.so");
-   success &= LoadLibrary("libESD.so");
-   success &= LoadLibrary("libAOD.so");
-   success &= LoadLibrary("libANALYSIS.so");
-   success &= LoadLibrary("libOADB.so");
-   success &= LoadLibrary("libANALYSISalice.so");
-     success &= LoadLibrary("libESDfilter.so");
-   success &= LoadLibrary("libCORRFW.so");
-   gROOT->ProcessLine(".include $ALICE_ROOT/include");
-   if (success) {
-      ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Load common libraries:    SUCCESS");
-      ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Include path for Aclic compilation:\n%s",
-              gSystem->GetIncludePath());
-   } else {           
-      ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Load common libraries:    FAILED");
-   }   
-   return success;
-}
-
-//______________________________________________________________________________
-Bool_t LoadAnalysisLibraries()
-{
-// Load common analysis libraries.
-   if (useTender || doCDBconnect) {
-      if (!LoadLibrary("Tender") ||
-          !LoadLibrary("TenderSupplies")) return kFALSE;
-   }       
-   // CDBconnect
-   if (doCDBconnect && !useTender) {
-      if (!LoadLibrary("PWGPP")) return kFALSE;
-   }
-          
-   if (iESDfilter || iPWGMuonTrain) {
-      if (!LoadLibrary("PWGmuon")) return kFALSE;
-   }   
-   // JETAN
-   if (iJETAN) {
-      if (!LoadLibrary("JETAN")) return kFALSE;
-   }
-   if (iJETANdelta) {
-      if (!LoadLibrary("JETAN") ||
-          !LoadLibrary("CGAL") ||
-          !LoadLibrary("fastjet") ||
-          !LoadLibrary("siscone") ||
-          !LoadLibrary("SISConePlugin") ||
-          !LoadLibrary("FASTJETAN")) return kFALSE;
-   }  
-   // PWG2 FORWARD
-   if (iPWGLFForward) {
-      //if (!LoadLibrary("PWGLFforward", mode, kTRUE)) return kFALSE;
-     if (!LoadLibrary("PWGLFforward2")) return kFALSE;
-  }   
-   
-   // PWG3 Vertexing HF
-   if (iPWGHFvertexing || iPWGHFd2h) {
-      if (!LoadLibrary("PWGflowBase") ||
-          !LoadLibrary("PWGflowTasks") ||
-          !LoadLibrary("PWGTRD") ||
-          !LoadLibrary("PWGHFvertexingHF")) return kFALSE;
-   }    
- //    if (iPWGHFvertexing || iPWG3d2h) {
- //     if (!LoadLibrary("PWG3base") ||
- //         !LoadLibrary("PWGHFvertexingHF")) return kFALSE;
- //  }   
-   // PWG3 dielectron
-   if (iPWGDQJPSIfilter) {
-      if (!LoadLibrary("PWGDQdielectron")) return kFALSE;
-   }   
-   
-   ::Info("AnalysisTrainNew.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
-   return kTRUE;
-}
-
-//______________________________________________________________________________
-Bool_t LoadLibrary(const char *module)
-{
-// Load a module library in a given mode. Reports success.
-   Int_t result;
-   TString mod(module);
-   if (!mod.Length()) {
-      ::Error("AnalysisTrainNew.C::LoadLibrary", "Empty module name");
-      return kFALSE;
-   }   
-   // If a library is specified, just load it
-   if (mod.EndsWith(".so")) {
-      mod.Remove(mod.Index(".so"));
-      result = gSystem->Load(mod);
-      if (result < 0) {
-         ::Error("AnalysisTrainNew.C::LoadLibrary", "Could not load library %s", module);
-         return kFALSE;
-      }
-      return kTRUE;
-   } 
-   // Check if the library is already loaded
-   if (strlen(gSystem->GetLibraries(module, "", kFALSE)) > 0) return kTRUE;    
-   result = gSystem->Load(Form("lib%s", module));
-   if (result < 0) {
-      ::Error("AnalysisTrainNew.C::LoadLibrary", "Could not load module %s", module);
-      return kFALSE;
-   }
-   return kTRUE;
-}           
-
 
 //______________________________________________________________________________
 TChain *CreateChain()
@@ -480,7 +365,7 @@ void AODmerge()
   TStopwatch timer;
   timer.Start();
   TString outputDir = "wn.xml";
-  TString outputFiles = "EventStat_temp.root,AODQA.root,AliAOD.root,AliAOD.VertexingHF.root,FilterEvents_Trees.root,AliAOD.Muons.root,AliAOD.Jets.root";
+  TString outputFiles = "EventStat_temp.root,AODQA.root,AliAOD.root,AliAOD.VertexingHF.root,AliAODGammaConversion.root,FilterEvents_Trees.root,AliAOD.Muons.root";
   TString mergeExcludes = "";
   TObjArray *list = outputFiles.Tokenize(",");
   TIter *iter = new TIter(list);
@@ -502,6 +387,10 @@ void AODmerge()
     }
   }
   // all outputs merged, validate
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  mgr->InitAnalysis();
+  mgr->SetGridHandler(new AliAnalysisAlien);
+  mgr->StartAnalysis("gridterminate",0);
   ofstream out;
   out.open("outputs_valid", ios::out);
   out.close();
