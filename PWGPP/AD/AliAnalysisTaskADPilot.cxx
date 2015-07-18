@@ -57,7 +57,9 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot()
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
-    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),fHistTimePairSumDiffADA_NoCut(0),fHistTimePairSumDiffADC_NoCut(0),fHistTimePairSumDiffADA_Cut(0),fHistTimePairSumDiffADC_Cut(0),
+    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),
+    fHistTimePairSumDiffADA_NoCut(0),fHistTimePairSumDiffADC_NoCut(0),fHistTimePairSumDiffADA_Cut(0),fHistTimePairSumDiffADC_Cut(0),
+    fHistTimeVsChargeADA_Ex(0), fHistTimeVsChargeADC_Ex(0),
     fRun(0),fOldRun(0)
 {
   // Dummy constructor
@@ -78,7 +80,9 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
-    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),fHistTimePairSumDiffADA_NoCut(0),fHistTimePairSumDiffADC_NoCut(0),fHistTimePairSumDiffADA_Cut(0),fHistTimePairSumDiffADC_Cut(0),
+    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),
+    fHistTimePairSumDiffADA_NoCut(0),fHistTimePairSumDiffADC_NoCut(0),fHistTimePairSumDiffADA_Cut(0),fHistTimePairSumDiffADC_Cut(0),
+    fHistTimeVsChargeADA_Ex(0), fHistTimeVsChargeADC_Ex(0),
     fRun(0),fOldRun(0)
 {
   // Constructor
@@ -236,11 +240,11 @@ if (!fHistChargeNoFlag) {
     fListHist->Add(fHistChargeNoFlag);
   } 
 if (!fHistTimeNoFlag) {
-    fHistTimeNoFlag = CreateHist2D("fHistTimeNoFlag","Time in PM without BB flag",kNChannelBins, kChannelMin, kChannelMax,kNRawTimeBins, kRawTimeMin, kRawTimeMax,"Time","Entries");
+    fHistTimeNoFlag = CreateHist2D("fHistTimeNoFlag","Time in PM without BB flag",kNChannelBins, kChannelMin, kChannelMax,kNRawTimeBins, kRawTimeMin, kRawTimeMax,"Channel","Time","Entries");
     fListHist->Add(fHistTimeNoFlag);
   }   
 if (!fHistChargeNoTime) {
-    fHistChargeNoTime = CreateHist1D("fHistChargeNoTime","Charge in PM without time measurement",kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"Charge","Entries");
+    fHistChargeNoTime = CreateHist2D("fHistChargeNoTime","Charge in PM without time measurement",kNChannelBins, kChannelMin, kChannelMax,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"Channel","Charge","Entries");
     fListHist->Add(fHistChargeNoTime);
   }
 if (!fHistChargePerCoincidence) {
@@ -447,6 +451,14 @@ if(!fHistTimePairSumDiffADC_Cut) {
     fHistTimePairSumDiffADC_Cut = CreateHist2D("fHistTimePairSumDiffADC_Cut","Time Sum vs Diff  ADC", 410, 0.000000, 400.390625,410, 0.000000, 40.039062,"t1 + t2","t1 - t2");
     fListHist->Add(fHistTimePairSumDiffADC_Cut);
   } 
+if (!fHistTimeVsChargeADA_Ex) {
+    fHistTimeVsChargeADA_Ex = CreateHist2D("fHistTimeVsChargeADA_Ex","Excluded Time vs Charge",kNCorrTimeBins, kCorrTimeMin, kCorrTimeMax, kNChargeChannelBins/10,kChargeChannelMin,kChargeChannelMax,"Leading time [ns]","ADC counts");
+    fListHist->Add(fHistTimeVsChargeADA_Ex);
+  }
+if (!fHistTimeVsChargeADC_Ex) {
+    fHistTimeVsChargeADC_Ex = CreateHist2D("fHistTimeVsChargeADC_Ex","Excluded Time vs Charge",kNCorrTimeBins, kCorrTimeMin, kCorrTimeMax, kNChargeChannelBins/10,kChargeChannelMin,kChargeChannelMax,"Leading time [ns]","ADC counts");
+    fListHist->Add(fHistTimeVsChargeADC_Ex);
+  }
 
    
   // Post output data.
@@ -556,7 +568,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 			fHistChargeNoFlag->Fill(esdAD->GetAdc(i));
 			fHistTimeNoFlag->Fill(i,esdADfriend->GetTime(i));
 			}
-		if(esdADfriend->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(esdAD->GetAdc(i));
+		if(esdADfriend->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(i,esdAD->GetAdc(i));
 	
 		fHistTimePerPM_UnCorr->Fill(i,esdADfriend->GetTime(i));
  		if(i<8) fHistTimeVsChargeADC_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));
@@ -643,7 +655,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   
   if(esdADfriend){
   //Robusts time testing
-  const Int_t minAdc = 5;
+  const Int_t minAdc = 1;
   
   Double_t timeBasicADA=0, timeBasicADC=0;
   Double_t weightBasicADA =0., weightBasicADC = 0.;
@@ -729,6 +741,10 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 			fHistTimePairSumDiffADC_Cut->Fill(timeSum,timeDiff);
 			}
 		}
+	 else{
+	 	if(time1 > (-1024+1.e-6)) fHistTimeVsChargeADC_Ex->Fill(time1,adc1);
+		if(time2 > (-1024+1.e-6)) fHistTimeVsChargeADC_Ex->Fill(time2,adc2);
+	 	}
 	}
 		
   }
@@ -760,6 +776,10 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 			fHistTimePairSumDiffADA_Cut->Fill(timeSum,timeDiff);
 			}
 		}
+	else{
+	 	if(time1 > (-1024+1.e-6)) fHistTimeVsChargeADA_Ex->Fill(time1,adc1);
+		if(time2 > (-1024+1.e-6)) fHistTimeVsChargeADA_Ex->Fill(time2,adc2);
+	 	}
 	}
 		
   }

@@ -73,7 +73,7 @@ private:
   TH2F	      *fHistNBGCoincidencesADAVsADC;
   TH1F	      *fHistChargeNoFlag;
   TH2F	      *fHistTimeNoFlag;
-  TH1F	      *fHistChargeNoTime;
+  TH2F	      *fHistChargeNoTime;
   TH2F	      *fHistChargePerCoincidence;
   
   TH1F	      *fHistMeanTimeADA;
@@ -117,6 +117,8 @@ private:
   TH2F	      *fHistTimePairSumDiffADC_NoCut;
   TH2F	      *fHistTimePairSumDiffADA_Cut;
   TH2F	      *fHistTimePairSumDiffADC_Cut;
+  TH2F	      *fHistTimeVsChargeADA_Ex;
+  TH2F	      *fHistTimeVsChargeADC_Ex;
   
   Int_t        fRun;
   Int_t        fOldRun;
