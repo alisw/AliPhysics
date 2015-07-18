@@ -57,7 +57,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot()
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
-    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),fHistTimePairSumDiffADA(0),fHistTimePairSumDiffADC(0),
+    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),fHistTimePairSumDiffADA_NoCut(0),fHistTimePairSumDiffADC_NoCut(0),fHistTimePairSumDiffADA_Cut(0),fHistTimePairSumDiffADC_Cut(0),
     fRun(0),fOldRun(0)
 {
   // Dummy constructor
@@ -78,7 +78,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
-    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),fHistTimePairSumDiffADA(0),fHistTimePairSumDiffADC(0),
+    fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),fHistTimePairSumDiffADA_NoCut(0),fHistTimePairSumDiffADC_NoCut(0),fHistTimePairSumDiffADA_Cut(0),fHistTimePairSumDiffADC_Cut(0),
     fRun(0),fOldRun(0)
 {
   // Constructor
@@ -429,15 +429,25 @@ if (!fHistMedianIndDiffVsChargeADC) {
     fListHist->Add(fHistMedianIndDiffVsChargeADC);
   }
   
-if(!fHistTimePairSumDiffADA) {
-    fHistTimePairSumDiffADA = CreateHist2D("fHistTimePairSumDiffADA","Time Sum vs Diff  ADA", 410, 0.000000, 400.390625,410, 0.000000, 40.039062,"t1 + t2","t1 - t2");
-    fListHist->Add(fHistTimePairSumDiffADA);
+if(!fHistTimePairSumDiffADA_NoCut) {
+    fHistTimePairSumDiffADA_NoCut = CreateHist2D("fHistTimePairSumDiffADA_NoCut","Time Sum vs Diff  ADA", 410, 0.000000, 400.390625,410, 0.000000, 40.039062,"t1 + t2","t1 - t2");
+    fListHist->Add(fHistTimePairSumDiffADA_NoCut);
   } 
 
-if(!fHistTimePairSumDiffADC) {
-    fHistTimePairSumDiffADC = CreateHist2D("fHistTimePairSumDiffADC","Time Sum vs Diff  ADC", 410, 0.000000, 400.390625,410, 0.000000, 40.039062,"t1 + t2","t1 - t2");
-    fListHist->Add(fHistTimePairSumDiffADC);
+if(!fHistTimePairSumDiffADC_NoCut) {
+    fHistTimePairSumDiffADC_NoCut = CreateHist2D("fHistTimePairSumDiffADC_NoCut","Time Sum vs Diff  ADC", 410, 0.000000, 400.390625,410, 0.000000, 40.039062,"t1 + t2","t1 - t2");
+    fListHist->Add(fHistTimePairSumDiffADC_NoCut);
   } 
+if(!fHistTimePairSumDiffADA_Cut) {
+    fHistTimePairSumDiffADA_Cut = CreateHist2D("fHistTimePairSumDiffADA_Cut","Time Sum vs Diff  ADA", 410, 0.000000, 400.390625,410, 0.000000, 40.039062,"t1 + t2","t1 - t2");
+    fListHist->Add(fHistTimePairSumDiffADA_Cut);
+  } 
+
+if(!fHistTimePairSumDiffADC_Cut) {
+    fHistTimePairSumDiffADC_Cut = CreateHist2D("fHistTimePairSumDiffADC_Cut","Time Sum vs Diff  ADC", 410, 0.000000, 400.390625,410, 0.000000, 40.039062,"t1 + t2","t1 - t2");
+    fListHist->Add(fHistTimePairSumDiffADC_Cut);
+  } 
+
    
   // Post output data.
   PostData(1, fListHist);
@@ -462,7 +472,7 @@ Float_t AliAnalysisTaskADPilot::CorrectLeadingTime(Int_t i, Float_t time, Float_
   // Correct the leading time
   // for slewing effect and
   // misalignment of the channels
-  const Double_t fTOF[4] = {65.30,65.12,56.54,56.71};
+  const Double_t fTOF[4] = {65.2418, 65.1417, 56.6459, 56.7459};
   const Double_t fRes = 25.0/256.0;
    
   if (time < 1e-6) return -1024;
@@ -675,48 +685,90 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   
   Double_t medianTimeADA = 0;
   if (ntimeADA > 0) medianTimeADA = TMath::Median(ntimeADA,timesADA,weightADA);
+  else medianTimeADA = -1024;
   Double_t medianTimeADC = 0;
   if (ntimeADC > 0) medianTimeADC = TMath::Median(ntimeADC,timesADC,weightADC);
+  else medianTimeADC = -1024;
+  
+  const Float_t fADADist = 56.69;
+  const Float_t fADCDist = 65.19;
+  TF1 *fEarlyHitCutShape = new TF1("fEarlyHitCutShape", " [0]+(x>[2])*[1]*(x-[2])**2");
+  fEarlyHitCutShape->SetParameter(0,5.0);
+  fEarlyHitCutShape->SetParameter(1,0.02);
   
   Double_t timeRobustADA=0, timeRobustADC=0;
   Double_t weightRobustADA =0., weightRobustADC = 0.;
   UInt_t   ntimeRobustADA=0, ntimeRobustADC=0;
   UInt_t   itimeRobustADA[8], itimeRobustADC[8];
   
+  fEarlyHitCutShape->SetParameter(2,2*fADCDist -10);
   for (Int_t i = 0; i < 4; ++i) {
     Float_t adc1 = esdAD->GetAdc(i);
     Float_t adc2 = esdAD->GetAdc(i+4);
-    if (adc1 > 5 && adc2 > 5) {
+    if (adc1 > minAdc && adc2 > minAdc) {
       Float_t time1 = CorrectLeadingTime(i,esdADfriend->GetTime(i),esdAD->GetAdc(i));
       Float_t time2 = CorrectLeadingTime(i,esdADfriend->GetTime(i+4),esdAD->GetAdc(i+4));
 	if(time1 > (-1024+1.e-6) && time2 > (-1024+1.e-6)){
+		Float_t timeErr1 = 1/adc1;
+		Float_t timeErr2 = 1/adc2;
 		Float_t timeDiff = TMath::Abs(time1-time2);
 		Float_t timeSum = time1+time2;
-		fHistTimePairSumDiffADC->Fill(timeSum,timeDiff);
+		fHistTimePairSumDiffADC_NoCut->Fill(timeSum,timeDiff);
+		Float_t earlyHitCut = 1000;
+		if(TMath::Abs(timeSum - 2*fADCDist) < 20) earlyHitCut = fEarlyHitCutShape->Eval(timeSum);
+		if(timeDiff < earlyHitCut){
+			itimeRobustADC[ntimeRobustADC] = i;
+			ntimeRobustADC++;
+			timeRobustADC += time1/(timeErr1*timeErr1);
+			weightRobustADC += 1./(timeErr1*timeErr1);
+			
+			itimeRobustADC[ntimeRobustADC] = i+4;
+			ntimeRobustADC++;
+			timeRobustADC += time2/(timeErr2*timeErr2);
+			weightRobustADC += 1./(timeErr2*timeErr2);
+			fHistTimePairSumDiffADC_Cut->Fill(timeSum,timeDiff);
+			}
 		}
 	}
 		
   }
+  fEarlyHitCutShape->SetParameter(2,2*fADADist -10);
   for (Int_t i = 0; i < 4; ++i) {
     Float_t adc1 = esdAD->GetAdc(i+8);
     Float_t adc2 = esdAD->GetAdc(i+12);
-    if (adc1 > 5 && adc2 > 5) {
+    if (adc1 > minAdc && adc2 > minAdc) {
       Float_t time1 = CorrectLeadingTime(i+8,esdADfriend->GetTime(i+8),esdAD->GetAdc(i+8));
       Float_t time2 = CorrectLeadingTime(i+12,esdADfriend->GetTime(i+12),esdAD->GetAdc(i+12));
 	if(time1 > (-1024+1.e-6) && time2 > (-1024+1.e-6)){
+		Float_t timeErr1 = 1/adc1;
+		Float_t timeErr2 = 1/adc2;
 		Float_t timeDiff = TMath::Abs(time1-time2);
 		Float_t timeSum = time1+time2;
-		fHistTimePairSumDiffADA->Fill(timeSum,timeDiff);
+		fHistTimePairSumDiffADA_NoCut->Fill(timeSum,timeDiff);
+		Float_t earlyHitCut = 1000;
+		if(TMath::Abs(timeSum - 2*fADADist) < 20) earlyHitCut = fEarlyHitCutShape->Eval(timeSum);
+		if(timeDiff < earlyHitCut){
+			itimeRobustADA[ntimeRobustADA] = i;
+			ntimeRobustADA++;
+			timeRobustADA += time1/(timeErr1*timeErr1);
+			weightRobustADA += 1./(timeErr1*timeErr1);
+			
+			itimeRobustADA[ntimeRobustADA] = i+4;
+			ntimeRobustADA++;
+			timeRobustADA += time2/(timeErr2*timeErr2);
+			weightRobustADA += 1./(timeErr2*timeErr2);
+			fHistTimePairSumDiffADA_Cut->Fill(timeSum,timeDiff);
+			}
 		}
 	}
 		
   }
-/*/
-  if (robWeightA > 0) robTimeAW = robTimeAW/robWeightA;
-  else robTimeAW = -1024;
-  if (robWeightC > 0) robTimeCW = robTimeCW/robWeightC;
-  else robTimeCW = -1024;
-  /*/
+  
+  if(weightRobustADA > 1) timeRobustADA /= weightRobustADA; 
+  else timeRobustADA = -1024.;
+  if(weightRobustADC > 1) timeRobustADC /= weightRobustADC;
+  else timeRobustADC = -1024.;
+  
   fHistMeanTimeADA->Fill(timeBasicADA);
   fHistMeanTimeADC->Fill(timeBasicADC);
   if(timeBasicADA!= -1024 && timeBasicADC!= -1024){
@@ -728,8 +780,6 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   //Decisions
   Int_t ADADecision=0;
   Int_t ADCDecision=0; 
-  const Float_t fADADist = 56.7;
-  const Float_t fADCDist = 65.19;
   const Float_t TimeWindowBBALow = -2.0;
   const Float_t TimeWindowBBAUp = 2.0;
   const Float_t TimeWindowBBCLow = -1.0;
@@ -755,11 +805,11 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   fHistMedianTimeADC->Fill(medianTimeADC);
   fHistNTimesMedianADA->Fill(ntimeADA);
   fHistNTimesMedianADC->Fill(ntimeADC);
-  /*/
-  fHistRobustTimeADA->Fill(robTimeAW);
-  fHistRobustTimeADC->Fill(robTimeCW);
-  fHistNTimesRobustADA->Fill(nrobTimeA);
-  fHistNTimesRobustADC->Fill(nrobTimeC);/*/
+  
+  fHistRobustTimeADA->Fill(timeRobustADA);
+  fHistRobustTimeADC->Fill(timeRobustADC);
+  fHistNTimesRobustADA->Fill(ntimeRobustADA);
+  fHistNTimesRobustADC->Fill(ntimeRobustADC);
   }
 
   //Triggers from VZERO for reference
