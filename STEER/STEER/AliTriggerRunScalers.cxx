@@ -478,7 +478,7 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
     return 1;
   }
  }
- for(Int_t i=0; i<8; i++)delete overflow[i];
+ for(Int_t i=0; i<8; i++)delete[] overflow[i];
  if(fScalersRecordESD.GetEntriesFast() != fScalersRecord.GetEntriesFast()){
     AliErrorClass("Internal error: #scalers ESD != #scalers \n");
     return 1;
