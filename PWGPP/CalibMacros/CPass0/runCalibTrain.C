@@ -20,7 +20,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliLog::SetGlobalLogLevel(AliLog::kError); 
   gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C");
-  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include"); 
+  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS"); 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
 
   // detector tasks
