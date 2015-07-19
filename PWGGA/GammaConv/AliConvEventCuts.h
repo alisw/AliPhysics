@@ -80,8 +80,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
 		Bool_t 		SetRejectExtraSignalsCut (Int_t extraSignal);
 		void		SetTriggerMimicking(Bool_t value) 					{ fMimicTrigger = value									; 
-																		  AliInfo("enabled trigger mimicking");
-		}
+																		  if(value)AliInfo("enabled trigger mimicking")					; }
+		void 		SetTriggerOverlapRejecion (Bool_t value)			{ fRejectTriggerOverlap = value							; 
+																		  if(value)AliInfo("enabled trigger overlap rejection")			; }
+
 		void 		SetV0ReaderName (TString name) 						{ fV0ReaderName = name									; }
 		void 		SetAddedSignalPDGCode (Int_t addedSignalPDGcode) 	{ fAddedSignalPDGCode = addedSignalPDGcode				; }
 		void 		SetPreSelectionCutFlag (Bool_t preSelFlag)			{ fPreSelCut = preSelFlag								; }   
@@ -296,10 +298,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Double_t					fSecProdBoundary;						// 3D radius of production (cm) for primary-secodary distinction
 		Int_t						fBinJetJetMC;							//
 		Bool_t						fMimicTrigger; 							// enable trigger mimiking
-		
+		Bool_t						fRejectTriggerOverlap;					// enable trigger overlap rejections
 	private:
 
-		ClassDef(AliConvEventCuts,9)
+		ClassDef(AliConvEventCuts,10)
 };
 
 

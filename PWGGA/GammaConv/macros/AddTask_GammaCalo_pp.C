@@ -8,7 +8,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 							Bool_t 		doWeighting 				= kFALSE,							// enables weighting
 							Bool_t 		isUsingTHnSparse 			= kTRUE,							// enable or disable usage of THnSparses for background estimation
 							Int_t 		enableExtQA					= 0,								// enable QA(3), disabled (0)
-							Bool_t 		enableTriggerMimicking		= kFALSE							// enable trigger mimicking
+							Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+							Bool_t 		enableTriggerOverlapRej		= kFALSE							// enable trigger overlap rejection
 ) {
 
 	// ================= Load Librariers =================================
@@ -392,10 +393,11 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		
 		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
 		
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
