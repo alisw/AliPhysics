@@ -154,7 +154,7 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   fEarlyHitCutShape->SetParameter(1,GetRecoParam()->GetResidRise());
   
   //C-side
-  fEarlyHitCutShape->SetParameter(2,2*fADCDist);
+  fEarlyHitCutShape->SetParameter(2,2*fADCDist - 10);
   for (Int_t i = 0; i < 4; ++i) {
     Float_t adc1 = esdAD->GetAdc(i);
     Float_t adc2 = esdAD->GetAdc(i+4);
@@ -185,7 +185,7 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   }
   
   //A-side
-  fEarlyHitCutShape->SetParameter(2,2*fADADist);
+  fEarlyHitCutShape->SetParameter(2,2*fADADist - 10);
   for (Int_t i = 8; i < 12; ++i) {
     Float_t adc1 = esdAD->GetAdc(i);
     Float_t adc2 = esdAD->GetAdc(i+4);
@@ -231,7 +231,7 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
   timeADA = timeRobustADA; timeADC = timeRobustADC;
   weightADA = weightRobustADA; weightADC = weightRobustADC;
   ntimeADA = ntimeRobustADA; ntimeADC = ntimeRobustADC;
-  for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeRobustADA[i]; itimeADC[i] = itimeRobustADC[i];}  
+  for(Int_t i=0; i<8; ++i){itimeADA[i] = itimeRobustADA[i]; itimeADC[i] = itimeRobustADC[i];}
 
   esdAD->SetADATime(timeADA);
   esdAD->SetADCTime(timeADC);

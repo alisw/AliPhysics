@@ -23,17 +23,17 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetEndClock(20);
     ADRecoParam->SetNPreClocks(1);
     ADRecoParam->SetNPostClocks(10);
-    ADRecoParam->SetTimeWindowBBALow(-2.0);
-    ADRecoParam->SetTimeWindowBBAUp(2.0);
+    ADRecoParam->SetTimeWindowBBALow(-2.5);
+    ADRecoParam->SetTimeWindowBBAUp(2.5);
     ADRecoParam->SetTimeWindowBGALow(-4.0);
     ADRecoParam->SetTimeWindowBGAUp(4.0);
-    ADRecoParam->SetTimeWindowBBCLow(-1.0);
-    ADRecoParam->SetTimeWindowBBCUp(1.0);
+    ADRecoParam->SetTimeWindowBBCLow(-1.5);
+    ADRecoParam->SetTimeWindowBBCUp(1.5);
     ADRecoParam->SetTimeWindowBGCLow(-2.0);
     ADRecoParam->SetTimeWindowBGCUp(2.0);
     ADRecoParam->SetAdcThresHold(5);
-    ADRecoParam->SetMaxResid(1.5);
-    ADRecoParam->SetResidRise(0.2);
+    ADRecoParam->SetMaxResid(5.0);
+    ADRecoParam->SetResidRise(0.02);
     recoParamArray->AddLast(ADRecoParam);
   }
   {
@@ -42,17 +42,17 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetEndClock(20);
     ADRecoParam->SetNPreClocks(1);
     ADRecoParam->SetNPostClocks(10);
-    ADRecoParam->SetTimeWindowBBALow(-2.0);
-    ADRecoParam->SetTimeWindowBBAUp(2.0);
+    ADRecoParam->SetTimeWindowBBALow(-2.5);
+    ADRecoParam->SetTimeWindowBBAUp(2.5);
     ADRecoParam->SetTimeWindowBGALow(-4.0);
     ADRecoParam->SetTimeWindowBGAUp(4.0);
-    ADRecoParam->SetTimeWindowBBCLow(-1.0);
-    ADRecoParam->SetTimeWindowBBCUp(1.0);
+    ADRecoParam->SetTimeWindowBBCLow(-1.5);
+    ADRecoParam->SetTimeWindowBBCUp(1.5);
     ADRecoParam->SetTimeWindowBGCLow(-2.0);
     ADRecoParam->SetTimeWindowBGCUp(2.0);
     ADRecoParam->SetAdcThresHold(5);
-    ADRecoParam->SetMaxResid(1.5);
-    ADRecoParam->SetResidRise(0.2);
+    ADRecoParam->SetMaxResid(5.0);
+    ADRecoParam->SetResidRise(0.02);
     ADRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     recoParamArray->AddLast(ADRecoParam);
   }
@@ -61,17 +61,17 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetStartClock(9);
     ADRecoParam->SetEndClock(11);
     ADRecoParam->SetNPostClocks(6);
-    ADRecoParam->SetTimeWindowBBALow(-2.0);
-    ADRecoParam->SetTimeWindowBBAUp(2.0);
+    ADRecoParam->SetTimeWindowBBALow(-2.5);
+    ADRecoParam->SetTimeWindowBBAUp(2.5);
     ADRecoParam->SetTimeWindowBGALow(-4.0);
     ADRecoParam->SetTimeWindowBGAUp(4.0);
-    ADRecoParam->SetTimeWindowBBCLow(-1.0);
-    ADRecoParam->SetTimeWindowBBCUp(1.0);
+    ADRecoParam->SetTimeWindowBBCLow(-1.5);
+    ADRecoParam->SetTimeWindowBBCUp(1.5);
     ADRecoParam->SetTimeWindowBGCLow(-2.0);
     ADRecoParam->SetTimeWindowBGCUp(2.0);
     ADRecoParam->SetAdcThresHold(5);
-    ADRecoParam->SetMaxResid(1.5);
-    ADRecoParam->SetResidRise(0.2);
+    ADRecoParam->SetMaxResid(5.0);
+    ADRecoParam->SetResidRise(0.02);
     ADRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     recoParamArray->AddLast(ADRecoParam);
   }
