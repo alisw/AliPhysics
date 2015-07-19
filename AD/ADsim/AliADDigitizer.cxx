@@ -712,6 +712,7 @@ for(Int_t i=0; i<16; i++){
 		AliWarning(Form("Extrapolation of spline %d not succesfull",i));
 		fTimeSlewingExtpol[i] = 0x0; 
 		}
+	delete c;
 	}
 }
 //____________________________________________________________________________
