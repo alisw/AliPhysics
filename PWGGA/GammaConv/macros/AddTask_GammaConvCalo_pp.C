@@ -9,7 +9,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 									Bool_t 		doWeighting 				= kFALSE,							// enables weighting
 									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
-								    Bool_t 		enableTriggerMimicking		= kFALSE							// enable trigger mimicking
+								    Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+									Bool_t 		enableTriggerOverlapRej		= kFALSE							// enable trigger overlap rejection
 							) {
 
 	// ================= Load Librariers =================================
@@ -263,10 +264,10 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "11111063032230000"; mesonCutArray[0] = "0163103100000000"; // INT7
 		eventCutArray[ 1] = "0005211"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "11111063032230000"; mesonCutArray[1] = "0163103100000000"; // EMC7
 	} else if (trainConfig == 23){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
-		eventCutArray[ 0] = "0008311"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "11111063032200000"; mesonCutArray[0] = "0163103100000000"; // INT7, max M02 off
-		eventCutArray[ 1] = "0008511"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "11111063032200000"; mesonCutArray[1] = "0163103100000000"; // EMC7, max M02 off
-		eventCutArray[ 2] = "0000011"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "11111063032200000"; mesonCutArray[2] = "0163103100000000"; // EMCEG1, max M02 off
-		eventCutArray[ 3] = "0005211"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "11111063032200000"; mesonCutArray[3] = "0163103100000000"; // EMCEG2, max M02 off
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "11111063032200000"; mesonCutArray[0] = "0163103100000000"; // EMCEG1, max M02 off
+		eventCutArray[ 1] = "0005211"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "11111063032200000"; mesonCutArray[1] = "0163103100000000"; // EMCEG2, max M02 off
+		eventCutArray[ 2] = "0008311"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "11111063032200000"; mesonCutArray[2] = "0163103100000000"; // INT7, max M02 off
+		eventCutArray[ 3] = "0008511"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "11111063032200000"; mesonCutArray[3] = "0163103100000000"; // EMC7, max M02 off
 	// ************************************* PHOS cuts ****************************************************
 	// LHC11a	
 	} else if (trainConfig == 31) { //PHOS clusters
@@ -471,10 +472,11 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		
 		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
