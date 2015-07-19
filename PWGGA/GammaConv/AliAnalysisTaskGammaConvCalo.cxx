@@ -76,6 +76,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fBackList(NULL),
 	fMotherList(NULL),
 	fPhotonDCAList(NULL),
+	fGammaERM02(NULL),
 	fTrueList(NULL),
 	fMCList(NULL),
 	fClusterOutputList(NULL),
@@ -101,6 +102,11 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fEtaPhoton(0),
 	fCharCatPhoton(0),
 	fCharPhotonMCInfo(0),
+	tESDGammaERM02(NULL),
+	tESDClusE(0),
+	tESDGammaConvR(0),
+	tESDClusterM02(0),
+	tESDClusterM20(0),
 	fHistoMotherInvMassPt(NULL),
 	fHistoMotherMatchedInvMassPt(NULL),
 	fSparseMotherInvMassPtZM(NULL),
@@ -289,7 +295,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fIsMC(0),
 	fDoTHnSparse(kTRUE),
 	fSetPlotHistsExtQA(kFALSE),
-	fWeightJetJetMC(1)
+	fWeightJetJetMC(1),
+	doConvGammaShowerShapeTree(kFALSE)
 {
   
 }
@@ -310,6 +317,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fBackList(NULL),
 	fMotherList(NULL),
 	fPhotonDCAList(NULL),
+	fGammaERM02(NULL),
 	fTrueList(NULL),
 	fMCList(NULL),
 	fClusterOutputList(NULL),
@@ -335,6 +343,11 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fEtaPhoton(0),
 	fCharCatPhoton(0),
 	fCharPhotonMCInfo(0),
+	tESDGammaERM02(NULL),
+	tESDClusE(0),
+	tESDGammaConvR(0),
+	tESDClusterM02(0),
+	tESDClusterM20(0),
 	fHistoMotherInvMassPt(NULL),
 	fHistoMotherMatchedInvMassPt(NULL),
 	fSparseMotherInvMassPtZM(NULL),
@@ -523,7 +536,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fIsMC(0),
 	fDoTHnSparse(kTRUE),
 	fSetPlotHistsExtQA(kFALSE),
-	fWeightJetJetMC(1)
+	fWeightJetJetMC(1),
+	doConvGammaShowerShapeTree(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -723,6 +737,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 	fHistoClusGammaPt = new TH1F*[fnCuts];
 	fHistoClusOverlapHeadersGammaPt = new TH1F*[fnCuts];
 
+	if(doConvGammaShowerShapeTree)
+	{
+		fGammaERM02 = new TList*[fnCuts];
+		tESDGammaERM02 = new TTree*[fnCuts];
+	}
+
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 		TString cutstringEvent 	= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 		TString cutstringPhoton = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
@@ -863,6 +883,20 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fHistoClusOverlapHeadersGammaPt[iCut] = new TH1F("ClusGammaOverlapHeaders_Pt","ClusGammaOverlapHeaders_Pt",300,0,30);
 		fHistoClusOverlapHeadersGammaPt[iCut]->SetXTitle("p_{T,clus} (GeV/c), selected header w/ overlap");
 		fClusterOutputList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
+
+		if(doConvGammaShowerShapeTree){
+			fGammaERM02[iCut] = new TList();
+			fGammaERM02[iCut]->SetName(Form("%s_%s_%s_%s ConvGamma-Cluster Matched",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+			fGammaERM02[iCut]->SetOwner(kTRUE);
+			fCutFolder[iCut]->Add(fGammaERM02[iCut]);
+
+			tESDGammaERM02[iCut] = new TTree("ESD_ConvGamma_E_ConvR_M02_M20","ESD_ConvGamma_E_ConvR_M02_M20");
+			tESDGammaERM02[iCut]->Branch("ClusterE",&tESDClusE,"tESDClusE/F");
+			tESDGammaERM02[iCut]->Branch("ConvR",&tESDGammaConvR,"tESDGammaConvR/F");
+			tESDGammaERM02[iCut]->Branch("M02",&tESDClusterM02,"tESDClusterM02/F");
+			tESDGammaERM02[iCut]->Branch("M20",&tESDClusterM20,"tESDClusterM20/F");
+			fGammaERM02[iCut]->Add(tESDGammaERM02[iCut]);
+		}
 
 		if (fIsMC == 2){
 			fHistoClusGammaPt[iCut]->Sumw2();
@@ -2998,11 +3032,6 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 	
 	// Conversion Gammas
 	if(fGammaCandidates->GetEntries()>0){
-
-		// vertex
-		Double_t vertex[3] = {0,0,0};
-		InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
-
 		for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
 			AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
 			if (gamma0==NULL) continue;
@@ -3015,12 +3044,17 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 				if (gamma1->GetIsCaloPhoton()){
 					AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
 					matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent );
+					if(matched && doConvGammaShowerShapeTree){
+						tESDClusE = cluster->E();
+						tESDGammaConvR = gamma0->GetConversionRadius();
+						tESDClusterM02 = cluster->GetM02();
+						tESDClusterM20 = cluster->GetM20();
+						tESDGammaERM02[fiCut]->Fill();
+					}
 				}	
-				
+
 				AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
 				pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
-				
-				
 				
 				if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
 					if (matched){

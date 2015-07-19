@@ -917,16 +917,13 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 
 	for(Int_t iModule=0; iModule<nModules; iModule++){nCellsBigger100MeV[iModule]=0; nCellsBigger1500MeV[iModule]=0; EnergyOfMod[iModule]=0;}
 
-	Int_t nMod = -1;
-	Int_t icol = -1;
-	Int_t irow = -1;
-	Int_t imod = -1;
 	for(Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++){
 		Short_t cellNumber=0;
 		Double_t cellAmplitude=0;
 		Double_t cellTime=0;
 		Double_t cellEFrac=0;
 		Int_t cellMCLabel=0;
+		Int_t nMod = -1;
 
 		cells->GetCell(iCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
 		if( GetClusterType() == 1 ){ //EMCAL
@@ -935,8 +932,9 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 			nMod = (Int_t) (1 + (cellNumber-1)/3584);
 		}
 
-		Int_t iTower = -1, iIphi = -1, iIeta = -1;
-		geomEMCAL->GetCellIndex(iCell,imod,iTower,iIphi,iIeta);
+		Int_t imod = -1; Int_t iTower = -1, iIphi = -1, iIeta = -1;
+		Int_t icol = -1; Int_t irow = -1;
+		geomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
 		if (EMCALBadChannelsMap->GetEntries() <= imod) continue;
 		geomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
 		if ((Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow)) {

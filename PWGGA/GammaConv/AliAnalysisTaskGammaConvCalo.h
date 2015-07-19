@@ -62,6 +62,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
 		void SetUseTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
+		void SetDoTreeConvGammaShowerShape(Bool_t flag){doConvGammaShowerShapeTree = flag;}
 
 		// Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -126,6 +127,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TList 								**fBackList;						// Array of lists with BG THnSparseF
 		TList 								**fMotherList;						// Array of lists with Signal THnSparseF
 		TList 								**fPhotonDCAList;					// Array of lists with photon dca trees
+		TList 								**fGammaERM02;						// Array of lists with conv photon shower shape trees
 		TList 								**fTrueList;						// Array of lists with histograms with MC validated reconstructed properties
 		TList 								**fMCList;							// Array of lists with histograms with pure MC information
 		TList								**fClusterOutputList;     			//!Array of lists of output histograms for cluster photons
@@ -160,6 +162,11 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 											// 4: secondary photon from k0s, 
 											// 5: dalitz
 											// 6: primary gamma
+		TTree 								**tESDGammaERM02;					//! tree with E_gamma vs R_conv vs M02 vs M20
+		Float_t								tESDClusE;							//! energy of conv gamma for tree
+		Float_t								tESDGammaConvR;						//! conv R of conv gamma for tree
+		Float_t								tESDClusterM02;					//! M02 of matched cluster for tree
+		Float_t								tESDClusterM20;					//! M20 of matched cluster for tree
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherMatchedInvMassPt;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -361,6 +368,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Bool_t								fDoTHnSparse;						// flag for using THnSparses for background estimation
 		Bool_t								fSetPlotHistsExtQA;					// flag for extended QA hists
 		Double_t							fWeightJetJetMC;					// weight for Jet-Jet MC 
+		Bool_t								doConvGammaShowerShapeTree;			// flag for tree with conv gamma R vs energy vs shower shape
 		
 	private:
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
