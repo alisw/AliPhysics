@@ -2153,8 +2153,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 					FillMultipleCountMap(fMapMultipleCountTrueClusterGammas,motherLab);
 				}
 			}
-			if ( abs(fMCStack->Particle(motherLab)->GetPdgCode()) == 111 && TruePhotonCandidate->IsLargestComponentPhoton() && TruePhotonCandidate->IsMerged() && !TruePhotonCandidate->IsDalitzMerged() && !TruePhotonCandidate->IsMergedPartConv())
+			if ( abs(fMCStack->Particle(motherLab)->GetPdgCode()) == 111 && 
+				TruePhotonCandidate->IsLargestComponentPhoton() && 
+				TruePhotonCandidate->IsMerged() &&
+				!TruePhotonCandidate->IsDalitzMerged() &&
+				!TruePhotonCandidate->IsMergedPartConv()
+			){
 				fHistoTrueClusPi0EM02[fiCut]->Fill(TruePhotonCandidate->E(),clusM02,fWeightJetJetMC);
+			}	
 			Int_t grandMotherLab = fMCStack->Particle(motherLab)->GetMother(0);
 			if (grandMotherLab > -1){
 				if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
