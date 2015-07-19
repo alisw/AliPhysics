@@ -49,6 +49,12 @@
 #include "AliTrackerBase.h"
 #include "AliVCaloCells.h"
 #include "AliVCluster.h"
+#include "AliTender.h"
+#include "AliTenderSupply.h"
+#include "AliEMCALTenderSupply.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliEmcalTenderTask.h"
+
 
 class iostream;
 
@@ -85,6 +91,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistExtQA(NULL),
 	geomEMCAL(NULL),
 	geomPHOS(NULL),
+	EMCALBadChannelsMap(NULL),
+	BadChannels(NULL),
 	nMaxEMCalModules(12),
 	nMaxPHOSModules(5),
 	fClusterType(0),
@@ -192,6 +200,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistExtQA(NULL),
 	geomEMCAL(NULL),
 	geomPHOS(NULL),
+	EMCALBadChannelsMap(NULL),
+	BadChannels(NULL),
 	nMaxEMCalModules(ref.nMaxEMCalModules),
 	nMaxPHOSModules(ref.nMaxPHOSModules),
  	fClusterType(ref.fClusterType),
@@ -486,6 +496,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
 			fHistClusterEnergyFracCellsAfterQA->Sumw2();
 			fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
+			BadChannels = new TProfile("EMCal - Bad Channels","EMCal - Bad Channels",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistExtQA->Add(BadChannels);
 		}
 		else if( GetClusterType() == 2 ){ //PHOS
 			Int_t nMaxCellsPHOS = nMaxPHOSModules*56*64;
@@ -513,6 +525,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
 			fHistClusterEnergyFracCellsAfterQA->Sumw2();
 			fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
+			BadChannels = new TProfile("PHOS - Bad Channels","PHOS - Bad Channels",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistExtQA->Add(BadChannels);
 		}
 		else{AliError(Form("fExtendedMatchAndQA (%i) not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,GetClusterType()));}
 	}
@@ -867,10 +881,28 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 	Int_t* nCellsBigger1500MeV;
 	Double_t* EnergyOfMod;
 
+	AliTender* alitender=0x0;
+	AliEmcalTenderTask* emcaltender=0x0;
+	AliEMCALRecoUtils* recUtils=0x0;
+
+	if(event->IsA()==AliESDEvent::Class()) alitender = (AliTender*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliTender");
+	else if(GetClusterType() == 1 && event->IsA()==AliAODEvent::Class()) emcaltender = (AliEmcalTenderTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalTenderTask");
+
 	if( GetClusterType() == 1 ){ //EMCAL
 		cells = event->GetEMCALCells();
 		geomEMCAL = AliEMCALGeometry::GetInstance();
+		if(alitender){
+			TIter next(alitender->GetSupplies());
+			AliTenderSupply *supply;
+			while ((supply=(AliTenderSupply*)next())) if(supply->IsA()==AliEMCALTenderSupply::Class()) break;
+			recUtils = ((AliEMCALTenderSupply*)supply)->GetRecoUtils();
+			EMCALBadChannelsMap = recUtils->GetEMCALBadChannelStatusMapArray();
+		}else if(emcaltender){
+			recUtils = ((AliEMCALTenderSupply*)emcaltender->GetEMCALTenderSupply())->GetRecoUtils();
+			EMCALBadChannelsMap = recUtils->GetEMCALBadChannelStatusMapArray();
+		}
 		if(!geomEMCAL){ AliFatal("EMCal geometry not initialized!");}
+		if(!EMCALBadChannelsMap){ AliFatal("EMCal bad channels map not initialized!");}
 		nModules = geomEMCAL->GetNumberOfSuperModules();
 	}else if( GetClusterType() == 2 ){ //PHOS
 		cells = event->GetPHOSCells();
@@ -886,6 +918,9 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 	for(Int_t iModule=0; iModule<nModules; iModule++){nCellsBigger100MeV[iModule]=0; nCellsBigger1500MeV[iModule]=0; EnergyOfMod[iModule]=0;}
 
 	Int_t nMod = -1;
+	Int_t icol = -1;
+	Int_t irow = -1;
+	Int_t imod = -1;
 	for(Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++){
 		Short_t cellNumber=0;
 		Double_t cellAmplitude=0;
@@ -899,12 +934,21 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 		}else if( GetClusterType() == 2 ){ //PHOS
 			nMod = (Int_t) (1 + (cellNumber-1)/3584);
 		}
-		if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
-		if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
-		EnergyOfMod[nMod]+=cellAmplitude;
 
-		if(fHistCellEnergyvsCellID) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
-		if(fHistCellTimevsCellID) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
+		Int_t iTower = -1, iIphi = -1, iIeta = -1;
+		geomEMCAL->GetCellIndex(iCell,imod,iTower,iIphi,iIeta);
+		if (EMCALBadChannelsMap->GetEntries() <= imod) continue;
+		geomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+		if ((Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow)) {
+			BadChannels->Fill(cellNumber,1);
+		}else{
+			if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
+			if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
+			EnergyOfMod[nMod]+=cellAmplitude;
+
+			if(fHistCellEnergyvsCellID) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+			if(fHistCellTimevsCellID) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
+		}
 	}
 
 	for(Int_t iModule=0; iModule<nModules; iModule++){
