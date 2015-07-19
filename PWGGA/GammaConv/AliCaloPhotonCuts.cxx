@@ -945,7 +945,8 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 			if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
 			if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
 			EnergyOfMod[nMod]+=cellAmplitude;
-
+			BadChannels->Fill(cellNumber,0);
+			
 			if(fHistCellEnergyvsCellID) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
 			if(fHistCellTimevsCellID) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
 		}
