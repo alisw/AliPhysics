@@ -19,8 +19,8 @@ class AliADRecoParam;
 class AliADDecision : public TObject
 {
  public:
-                   AliADDecision();   // constructor
-   virtual        ~AliADDecision(){}  // destructor
+  AliADDecision();   // constructor
+  virtual        ~AliADDecision() { delete fEarlyHitCutShape; }  // destructor
 
    void FillDecisions(AliESDAD *esdAD);
    Double_t GetZPosition(const char* symname);
