@@ -438,8 +438,8 @@ void AliADDigitizer::DigitizeSDigits()
     if(gRandom->Rndm() > fThresholdShape->Eval(adcSignal)) fMCTime[j] = -1024.0;
     if(fThresholdShape->Eval(adcSignal)<1e-2) fMCTime[j] = -1024.0;
     fLeadingTime[j] = UnCorrectLeadingTime(j,fMCTime[j],adcSignal);
-    if(j<8)fLeadingTime[j] += gRandom->Gaus(1.2,0.1); //windth of TS spline
-    else   fLeadingTime[j] += gRandom->Gaus(1.0,0.4);
+    if(j<8)fLeadingTime[j] += gRandom->Gaus(1.3,0.15); //windth of TS spline
+    else   fLeadingTime[j] += gRandom->Gaus(1.0,0.45);
     
   }
   //Fill BB and BG flags in trigger simulator
