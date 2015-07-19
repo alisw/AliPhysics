@@ -14,6 +14,7 @@
 #include "AliAODTrack.h"
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
+#include "TProfile2D.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "AliAnalysisUtils.h"
@@ -137,6 +138,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 		AliEMCALGeometry	*geomEMCAL;					// pointer to EMCAL geometry
 		AliPHOSGeometry		*geomPHOS;					// pointer to PHOS geometry
+		TObjArray*			EMCALBadChannelsMap;		// pointer to EMCAL bad channel map
+		TProfile*			BadChannels;				// TProfile with bad channels
 		Int_t				nMaxEMCalModules;			// max number of EMCal Modules
 		Int_t				nMaxPHOSModules;			// max number of PHOS Modules
 		
