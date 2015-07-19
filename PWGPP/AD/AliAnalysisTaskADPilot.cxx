@@ -783,6 +783,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 	}
 		
   }
+  delete fEarlyHitCutShape;
   
   if(weightRobustADA > 1) timeRobustADA /= weightRobustADA; 
   else timeRobustADA = -1024.;
