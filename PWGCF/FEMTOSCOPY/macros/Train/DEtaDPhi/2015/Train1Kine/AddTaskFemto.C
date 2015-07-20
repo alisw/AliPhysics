@@ -19,7 +19,7 @@ void AddTaskFemto(TString configMacroName, TString containerName="femtolist", TS
     gProof->Load(configMacroName);
   }
 
-  AliAnalysisTaskFemtoMJ *taskfemto = new AliAnalysisTaskFemtoMJ("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  AliAnalysisTaskFemtoMJ *taskfemto = new AliAnalysisTaskFemtoMJ("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kTRUE);
   mgr->AddTask(taskfemto);
 
 
