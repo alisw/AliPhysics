@@ -20,7 +20,7 @@ class AliADDecision : public TObject
 {
  public:
   AliADDecision();   // constructor
-  virtual        ~AliADDecision() { delete fEarlyHitCutShape; }  // destructor
+  virtual        ~AliADDecision();
 
    void FillDecisions(AliESDAD *esdAD);
    Double_t GetZPosition(const char* symname);
