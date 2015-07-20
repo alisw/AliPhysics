@@ -20,7 +20,7 @@ set(MODULE EveBase)
 include_directories(${AliRoot_SOURCE_DIR}/EVE/${MODULE})
 
 # Additional include folders in alphabetical order
-include_directories(
+include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
