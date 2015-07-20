@@ -158,6 +158,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElePtvsd0RSMix(0),
   fHistoElePtvsd0WSMix(0),
   fHistoElePtvsd0MCS(0),
+  fHistoElePtvsd0PromptMCS(0),
+  fHistoElePtvsd0BFeeddownMCS(0),
   fHistoEleLambdaMassFeeddownXic0MCS(0),
   fHistoEleLambdaMassFeeddownXic0MCGen(0),
   fHistoEleLambdaMassvsElePtFeeddownXic0MCS(0),
@@ -205,6 +207,11 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   //
   // Default Constructor. 
   //
+	for(Int_t i=0;i<17;i++){
+		fHistoElePtvsCutVarsRS[i] = 0;
+		fHistoElePtvsCutVarsWS[i] = 0;
+		fHistoElePtvsCutVarsMCS[i] = 0;
+	}
 }
 
 //___________________________________________________________________________
@@ -282,6 +289,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElePtvsd0RSMix(0),
   fHistoElePtvsd0WSMix(0),
   fHistoElePtvsd0MCS(0),
+  fHistoElePtvsd0PromptMCS(0),
+  fHistoElePtvsd0BFeeddownMCS(0),
   fHistoEleLambdaMassFeeddownXic0MCS(0),
   fHistoEleLambdaMassFeeddownXic0MCGen(0),
   fHistoEleLambdaMassvsElePtFeeddownXic0MCS(0),
@@ -330,6 +339,12 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSELc2eleLambdafromAODtracks","Calling Constructor");
+
+	for(Int_t i=0;i<17;i++){
+		fHistoElePtvsCutVarsRS[i] = 0;
+		fHistoElePtvsCutVarsWS[i] = 0;
+		fHistoElePtvsCutVarsMCS[i] = 0;
+	}
 
   DefineOutput(1,TList::Class());  //conters
   DefineOutput(2,TList::Class());
@@ -1007,7 +1022,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 
 		Double_t cont_eleptvsd0[3];
 		cont_eleptvsd0[0] = trk->Pt();
-		cont_eleptvsd0[1] = elobj->Getd0Prong(0);
+		cont_eleptvsd0[1] = elobj->Getd0Prong(0)*trk->Charge();
 		cont_eleptvsd0[2] = fCentrality;
 
 		if(mixing_flag){
@@ -1039,6 +1054,71 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 					fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
 					fHistoElePtvsLambdaPtRS->Fill(cont_eleptvslambdapt);
 					fHistoElePtvsd0RS->Fill(cont_eleptvsd0);
+
+					for(Int_t ih=0;ih<17;ih++){
+						Double_t cont_eleptvscutvars[3];
+						cont_eleptvscutvars[0] = trk->Pt();
+						cont_eleptvscutvars[2] = fCentrality;
+
+						if(ih==0){
+							cont_eleptvscutvars[1] = trk->GetTPCNcls();
+						}else if(ih==1){
+							cont_eleptvscutvars[1] = trk->GetTPCsignalN();
+						}else if(ih==2){
+							cont_eleptvscutvars[1] = nSigmaTPCele;
+						}else if(ih==3){
+							cont_eleptvscutvars[1] = nSigmaTOFele;
+						}else if(ih==4){
+							cont_eleptvscutvars[1] = trk->Eta();
+						}else if(ih==5){
+							cont_eleptvscutvars[1] = trk->GetITSNcls();
+						}else if(ih==6){
+							if(!anti_lambda_flag)
+								cont_eleptvscutvars[1] = v0->MassLambda();
+							else
+								cont_eleptvscutvars[1] = v0->MassAntiLambda();
+						}else if(ih==7){
+							Double_t lPosV0[3];
+							lPosV0[0] = v0->DecayVertexV0X();
+							lPosV0[1] = v0->DecayVertexV0Y();
+							lPosV0[2] = v0->DecayVertexV0Z();
+							cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+						}else if(ih==8){
+							cont_eleptvscutvars[1] = v0->DcaV0Daughters();
+						}else if(ih==9){
+							if(!anti_lambda_flag)
+								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+							else
+								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+						}else if(ih==10){
+							if(!anti_lambda_flag)
+								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+							else
+								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+						}else if(ih==11){
+							cont_eleptvscutvars[1] =  v0->CosPointingAngle(posVtx);
+						}else if(ih==12){
+							cont_eleptvscutvars[1] =  v0->MassK0Short();
+						}else if(ih==13){
+							cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
+						}else if(ih==14){
+							cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
+						}else if(ih==15){
+							cont_eleptvscutvars[1] =  v0->Eta();
+						}else if(ih==16){
+							Double_t v0px = elobj->PxProng(1);
+							Double_t v0py = elobj->PyProng(1);
+							Double_t v0pz = elobj->PzProng(1);
+							Double_t epx = elobj->PxProng(0);
+							Double_t epy = elobj->PyProng(0);
+							Double_t epz = elobj->PzProng(0);
+							cont_eleptvscutvars[1] = acos((v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz));
+						}else{
+							cont_eleptvscutvars[1] = -9999.;
+						}
+
+						fHistoElePtvsCutVarsRS[ih]->Fill(cont_eleptvscutvars);
+					}
 				}
 			}else if((trk->Charge()<0 && !anti_lambda_flag) || (trk->Charge()>0 && anti_lambda_flag)){
 				fHistoEleLambdaMassWS->Fill(cont);
@@ -1048,6 +1128,71 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 					fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
 					fHistoElePtvsLambdaPtWS->Fill(cont_eleptvslambdapt);
 					fHistoElePtvsd0WS->Fill(cont_eleptvsd0);
+
+					for(Int_t ih=0;ih<17;ih++){
+						Double_t cont_eleptvscutvars[3];
+						cont_eleptvscutvars[0] = trk->Pt();
+						cont_eleptvscutvars[2] = fCentrality;
+
+						if(ih==0){
+							cont_eleptvscutvars[1] = trk->GetTPCNcls();
+						}else if(ih==1){
+							cont_eleptvscutvars[1] = trk->GetTPCsignalN();
+						}else if(ih==2){
+							cont_eleptvscutvars[1] = nSigmaTPCele;
+						}else if(ih==3){
+							cont_eleptvscutvars[1] = nSigmaTOFele;
+						}else if(ih==4){
+							cont_eleptvscutvars[1] = trk->Eta();
+						}else if(ih==5){
+							cont_eleptvscutvars[1] = trk->GetITSNcls();
+						}else if(ih==6){
+							if(!anti_lambda_flag)
+								cont_eleptvscutvars[1] = v0->MassLambda();
+							else
+								cont_eleptvscutvars[1] = v0->MassAntiLambda();
+						}else if(ih==7){
+							Double_t lPosV0[3];
+							lPosV0[0] = v0->DecayVertexV0X();
+							lPosV0[1] = v0->DecayVertexV0Y();
+							lPosV0[2] = v0->DecayVertexV0Z();
+							cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+						}else if(ih==8){
+							cont_eleptvscutvars[1] = v0->DcaV0Daughters();
+						}else if(ih==9){
+							if(!anti_lambda_flag)
+								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+							else
+								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+						}else if(ih==10){
+							if(!anti_lambda_flag)
+								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+							else
+								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+						}else if(ih==11){
+							cont_eleptvscutvars[1] =  v0->CosPointingAngle(posVtx);
+						}else if(ih==12){
+							cont_eleptvscutvars[1] =  v0->MassK0Short();
+						}else if(ih==13){
+							cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
+						}else if(ih==14){
+							cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
+						}else if(ih==15){
+							cont_eleptvscutvars[1] =  v0->Eta();
+						}else if(ih==16){
+							Double_t v0px = elobj->PxProng(1);
+							Double_t v0py = elobj->PyProng(1);
+							Double_t v0pz = elobj->PzProng(1);
+							Double_t epx = elobj->PxProng(0);
+							Double_t epy = elobj->PyProng(0);
+							Double_t epz = elobj->PzProng(0);
+							cont_eleptvscutvars[1] = acos((v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz));
+						}else{
+							cont_eleptvscutvars[1] = -9999.;
+						}
+
+						fHistoElePtvsCutVarsWS[ih]->Fill(cont_eleptvscutvars);
+					}
 				}
 			}
 		}
@@ -1063,6 +1208,84 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
 							fHistoElePtvsLambdaPtMCS->Fill(cont_eleptvslambdapt);
 							fHistoElePtvsd0MCS->Fill(cont_eleptvsd0);
+
+							Int_t labmotherlc = mclc->GetMother();
+							if(labmotherlc>=0){
+								AliAODMCParticle *motherlc = (AliAODMCParticle*)mcArray->At(labmotherlc);
+								Int_t pdgmotherlc = motherlc->GetPdgCode();
+								if(TMath::Abs(pdgmotherlc)==511||TMath::Abs(pdgmotherlc)==521||TMath::Abs(pdgmotherlc)==5122||TMath::Abs(pdgmotherlc)==5132||TMath::Abs(pdgmotherlc)==5232||TMath::Abs(pdgmotherlc)==5332){
+									fHistoElePtvsd0BFeeddownMCS->Fill(cont_eleptvsd0);
+								}else{
+									fHistoElePtvsd0PromptMCS->Fill(cont_eleptvsd0);
+								}
+							}else{
+								fHistoElePtvsd0PromptMCS->Fill(cont_eleptvsd0);
+							}
+
+							for(Int_t ih=0;ih<17;ih++){
+								Double_t cont_eleptvscutvars[3];
+								cont_eleptvscutvars[0] = trk->Pt();
+								cont_eleptvscutvars[2] = fCentrality;
+
+								if(ih==0){
+									cont_eleptvscutvars[1] = trk->GetTPCNcls();
+								}else if(ih==1){
+									cont_eleptvscutvars[1] = trk->GetTPCsignalN();
+								}else if(ih==2){
+									cont_eleptvscutvars[1] = nSigmaTPCele;
+								}else if(ih==3){
+									cont_eleptvscutvars[1] = nSigmaTOFele;
+								}else if(ih==4){
+									cont_eleptvscutvars[1] = trk->Eta();
+								}else if(ih==5){
+									cont_eleptvscutvars[1] = trk->GetITSNcls();
+								}else if(ih==6){
+									if(!anti_lambda_flag)
+										cont_eleptvscutvars[1] = v0->MassLambda();
+									else
+										cont_eleptvscutvars[1] = v0->MassAntiLambda();
+								}else if(ih==7){
+									Double_t lPosV0[3];
+									lPosV0[0] = v0->DecayVertexV0X();
+									lPosV0[1] = v0->DecayVertexV0Y();
+									lPosV0[2] = v0->DecayVertexV0Z();
+									cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+								}else if(ih==8){
+									cont_eleptvscutvars[1] = v0->DcaV0Daughters();
+								}else if(ih==9){
+									if(!anti_lambda_flag)
+										cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+									else
+										cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+								}else if(ih==10){
+									if(!anti_lambda_flag)
+										cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+									else
+										cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+								}else if(ih==11){
+									cont_eleptvscutvars[1] =  v0->CosPointingAngle(posVtx);
+								}else if(ih==12){
+									cont_eleptvscutvars[1] =  v0->MassK0Short();
+								}else if(ih==13){
+									cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
+								}else if(ih==14){
+									cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
+								}else if(ih==15){
+									cont_eleptvscutvars[1] =  v0->Eta();
+								}else if(ih==16){
+									Double_t v0px = elobj->PxProng(1);
+									Double_t v0py = elobj->PyProng(1);
+									Double_t v0pz = elobj->PzProng(1);
+									Double_t epx = elobj->PxProng(0);
+									Double_t epy = elobj->PyProng(0);
+									Double_t epz = elobj->PzProng(0);
+									cont_eleptvscutvars[1] = acos((v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz));
+								}else{
+									cont_eleptvscutvars[1] = -9999.;
+								}
+
+								fHistoElePtvsCutVarsMCS[ih]->Fill(cont_eleptvscutvars);
+							}
 						}
 				}
 				if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgv0_array[1])==3312){
@@ -1257,10 +1480,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
   //
 	if(!v0) return;
 
-	if(TMath::Abs(v0->MassLambda()-1.1156)<0.03){
+	if(TMath::Abs(v0->MassLambda()-1.1156)<fAnalCuts->GetProdV0MassTolLambda()){
 		fHistoLambdaMassvsPt->Fill(v0->MassLambda(),v0->Pt());
 	}
-	if(TMath::Abs(v0->MassAntiLambda()-1.1156)<0.03){
+	if(TMath::Abs(v0->MassAntiLambda()-1.1156)<fAnalCuts->GetProdV0MassTolLambda()){
 		fHistoLambdaMassvsPt->Fill(v0->MassAntiLambda(),v0->Pt());
 	}
 	fHistoK0sMassvsPt->Fill(v0->MassK0Short(),v0->Pt());
@@ -1659,6 +1882,10 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoElePtvsd0WSMix);
   fHistoElePtvsd0MCS = new THnSparseF("fHistoElePtvsd0MCS","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
   fOutputAll->Add(fHistoElePtvsd0MCS);
+  fHistoElePtvsd0PromptMCS = new THnSparseF("fHistoElePtvsd0PromptMCS","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
+  fOutputAll->Add(fHistoElePtvsd0PromptMCS);
+  fHistoElePtvsd0BFeeddownMCS = new THnSparseF("fHistoElePtvsd0BFeeddownMCS","",3,bins_eleptvsd0,xmin_eleptvsd0,xmax_eleptvsd0);
+  fOutputAll->Add(fHistoElePtvsd0BFeeddownMCS);
 
 
 	//Feeddown from Xic0
@@ -1739,6 +1966,93 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFSmallEta);
   fHistoElectronTPCPIDSelTOFLargeEta=new TH2F("fHistoElectronTPCPIDSelTOFLargeEta","",10,0.,5.,500,-10.,10.);
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFLargeEta);
+
+	for(Int_t ih=0;ih<17;ih++){
+		Int_t bins_eleptvscutvars[3];
+		Double_t xmin_eleptvscutvars[3];
+		Double_t xmax_eleptvscutvars[3];
+
+		bins_eleptvscutvars[0] = 50;//electron pT bin
+		xmin_eleptvscutvars[0] = 0.;
+		xmax_eleptvscutvars[0] = 5.;
+		bins_eleptvscutvars[2] = 10;//centrality bin
+		xmin_eleptvscutvars[2] = 0.;
+		xmax_eleptvscutvars[2] = 100.;
+
+		if(ih==0 || ih==1){
+			//0: TPC Ncluster 1: TPC ncluster PID
+			bins_eleptvscutvars[1] = 40;
+			xmin_eleptvscutvars[1] = 0.;
+			xmax_eleptvscutvars[1] = 160.;
+		}else if(ih==2 || ih==3){
+			//2: nSigma(TPC,e) 3: nSigma(TOF,e)
+			bins_eleptvscutvars[1] = 20;
+			xmin_eleptvscutvars[1] = -5.;
+			xmax_eleptvscutvars[1] = 5.;
+		}else if(ih==4){
+			//4: eta
+			bins_eleptvscutvars[1] = 30;
+			xmin_eleptvscutvars[1] = -1.5;
+			xmax_eleptvscutvars[1] = 1.5;
+		}else if(ih==5){
+			//5: nITS cluster
+			bins_eleptvscutvars[1] = 7;
+			xmin_eleptvscutvars[1] = -0.5;
+			xmax_eleptvscutvars[1] = 6.5;
+		}else if(ih==6){
+			//6: Lambda mass
+			bins_eleptvscutvars[1] = 50;
+			xmin_eleptvscutvars[1] = 1.1156-0.03;
+			xmax_eleptvscutvars[1] = 1.1156+0.03;
+		}else if(ih==7){
+			//7: Rfid Lambda
+			bins_eleptvscutvars[1] = 20;
+			xmin_eleptvscutvars[1] = 0.;
+			xmax_eleptvscutvars[1] = 5.;
+		}else if(ih==8){
+			//10: Dca V0
+			bins_eleptvscutvars[1] = 20;
+			xmin_eleptvscutvars[1] = 0.;
+			xmax_eleptvscutvars[1] = 2.;
+		}else if(ih==9 || ih==10 ){
+			//9: DCA V0pr to prim 10: DCA V0pi to prim
+			bins_eleptvscutvars[1] = 20;
+			xmin_eleptvscutvars[1] = 0.;
+			xmax_eleptvscutvars[1] = 0.5;
+		}else if(ih==11){
+			//11: CosPAv0
+			bins_eleptvscutvars[1] = 20;
+			xmin_eleptvscutvars[1] = 0.95;
+			xmax_eleptvscutvars[1] = 1.0;
+		}else if(ih==12){
+			//12:K0s masss
+			bins_eleptvscutvars[1] = 50;
+			xmin_eleptvscutvars[1] = 0.497-0.03;
+			xmax_eleptvscutvars[1] = 0.497+0.03;
+		}else if(ih==13 || ih==14){
+			//13: nSigmaTPC(pr), nSigma(pi)
+			bins_eleptvscutvars[1] = 20;
+			xmin_eleptvscutvars[1] = -5;
+			xmax_eleptvscutvars[1] = 5;
+		}else if(ih==15){
+			//15: eta
+			bins_eleptvscutvars[1] = 30;
+			xmin_eleptvscutvars[1] = -1.5;
+			xmax_eleptvscutvars[1] = 1.5;
+		}else if(ih==16){
+			//16: Opening angle
+			bins_eleptvscutvars[1] = 20;
+			xmin_eleptvscutvars[1] = 0.;
+			xmax_eleptvscutvars[1] = 3.141592/2;
+		}
+
+		fHistoElePtvsCutVarsRS[ih] = new THnSparseF(Form("fHistoElePtvsCutVarsRS[%d]",ih),"",3,bins_eleptvscutvars,xmin_eleptvscutvars,xmax_eleptvscutvars);
+		fOutputAll->Add(fHistoElePtvsCutVarsRS[ih]);
+		fHistoElePtvsCutVarsWS[ih] = new THnSparseF(Form("fHistoElePtvsCutVarsWS[%d]",ih),"",3,bins_eleptvscutvars,xmin_eleptvscutvars,xmax_eleptvscutvars);
+		fOutputAll->Add(fHistoElePtvsCutVarsWS[ih]);
+		fHistoElePtvsCutVarsMCS[ih] = new THnSparseF(Form("fHistoElePtvsCutVarsMCS[%d]",ih),"",3,bins_eleptvscutvars,xmin_eleptvscutvars,xmax_eleptvscutvars);
+		fOutputAll->Add(fHistoElePtvsCutVarsMCS[ih]);
+	}
 
   return;
 }

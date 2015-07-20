@@ -183,6 +183,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElePtvsd0RSMix;         //e pt-d0 spectra (right-sign, mix)
   THnSparse* fHistoElePtvsd0WSMix;         //e pt-d0 spectra (wrong-sign, mix)
   THnSparse* fHistoElePtvsd0MCS;         //e pt-d0 spectra (right-sign) 
+  THnSparse* fHistoElePtvsd0PromptMCS;         //e pt-d0 spectra (right-sign) 
+  THnSparse* fHistoElePtvsd0BFeeddownMCS;         //e pt-d0 spectra (right-sign) 
 
   TH1F* fHistoBachPt;      //! Bachelor pT histogram
   TH1F* fHistoBachPtMCS;      //! Bachelor pT histogram (efficiency numerator)
@@ -199,6 +201,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronTPCPIDSelTOF;     //! TPC electron PID after TOF 3 sigma cut
   TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
+  THnSparse* fHistoElePtvsCutVarsRS[23];         //e pt- cut variables (Right-sign)
+  THnSparse* fHistoElePtvsCutVarsWS[23];         //e pt- cut variables (Wrong-sign)
+  THnSparse* fHistoElePtvsCutVarsMCS[23];         //e pt- cut variables (MCS)
 
   //Mixing
   Int_t fDoEventMixing; // flag for event mixing
@@ -213,7 +218,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; // array of electron-compatible tracks
 
 
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,3); // class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,4); // class for Xic->e Xi
 };
 #endif
 
