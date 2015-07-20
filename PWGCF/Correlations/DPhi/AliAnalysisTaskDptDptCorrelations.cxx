@@ -894,8 +894,8 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
 
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
   name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-  name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
-  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
+  name = "DCAz";    _dcaz     = createHisto1F(name,name, 100, -3.5, 3.5, "dcaZ","counts");
+  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, 0.0, 2.5, "dcaXY","counts");
 
   // name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
@@ -952,7 +952,6 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
 
 void  AliAnalysisTaskDptDptCorrelations::finalizeHistograms()
 {
-  
   AliInfo("AliAnalysisTaskDptDptCorrelations::finalizeHistograms() starting");
   AliInfo(Form("CorrelationAnalyzers::finalizeHistograms()   _eventCount : %d",int(_eventCount)));
   if (_singlesOnly)
@@ -1112,7 +1111,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	{
 	  return;
 	}
-      
+      /* //Only when use VO as centrality estimatator
+
+       if ( centrality < _centralityMin ||  
+	    centrality > _centralityMax )
+	{
+	  return;
+	  }*/
+       
+       
       _eventAccounting->Fill(2);// count all events with right centrality
   
       // filter on z and xy vertex
