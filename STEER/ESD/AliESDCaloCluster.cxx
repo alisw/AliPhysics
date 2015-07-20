@@ -50,14 +50,19 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fNExMax(0),
   fClusterType(kUndef), 
   fTOF(0.),
+  fCoreEnergy(0.),
   fMCEnergyFraction(0.),
-  fCoreEnergy(0.)
+  fIsExotic(kFALSE)
 {
   //
   // The default ESD constructor 
   //
   fGlobalPos[0] = fGlobalPos[1] = fGlobalPos[2] = 0.;
   for(Int_t i=0; i<AliPID::kSPECIESCN; i++) fPID[i] = 0.;
+
+  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
+    fUserDefEnergy[i] = 1.;
+  }
 }
 
 //_______________________________________________________________________
@@ -81,8 +86,9 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fNExMax(clus.fNExMax),
   fClusterType(clus.fClusterType),
   fTOF(clus.fTOF),
+  fCoreEnergy(clus.fCoreEnergy),
   fMCEnergyFraction(clus.fMCEnergyFraction),
-  fCoreEnergy(clus.fCoreEnergy)
+  fIsExotic(clus.fIsExotic)
 {
   //
   // The copy constructor 
@@ -107,6 +113,10 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
 	fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
     }
     
+  }
+
+  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
+    fUserDefEnergy[i] = clus.fUserDefEnergy[i];
   }
 
 }
@@ -186,9 +196,14 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
     fLabels = 0;
   }
 
-  fMCEnergyFraction = source.fMCEnergyFraction;
-
   fCoreEnergy = source.fCoreEnergy;
+  
+  fMCEnergyFraction = source.fMCEnergyFraction;
+  fIsExotic = source.fIsExotic;
+
+  for (Int_t i = 0; i <= kLastUserDefEnergy; i++) {
+    fUserDefEnergy[i] = source.fUserDefEnergy[i];
+  }
   
   return *this;
 
@@ -286,6 +301,33 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
 }
 
 //_______________________________________________________________________
+void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex, VCluUserDefEnergy_t t ) const {
+  // Returns TLorentzVector with momentum of the cluster. Only valid for clusters 
+  // identified as photons or pi0 (overlapped gamma) produced on the vertex
+  // Uses the user defined energy t
+  //Vertex can be recovered with esd pointer doing:  
+  //" Double_t vertex[3] ; esd->GetVertex()->GetXYZ(vertex) ; "
+
+  Double32_t energy = GetUserDefEnergy(t);
+  Float_t    pos[3];
+  GetPosition(pos);
+  
+  if(vertex){//calculate direction from vertex
+    pos[0]-=vertex[0];
+    pos[1]-=vertex[1];
+    pos[2]-=vertex[2];
+  }
+  
+  Double_t r = TMath::Sqrt(pos[0]*pos[0]+
+			   pos[1]*pos[1]+
+			   pos[2]*pos[2]   ) ; 
+  
+  p.SetPxPyPzE( energy*pos[0]/r,  energy*pos[1]/r,  energy*pos[2]/r,  energy) ; 
+  
+}
+
+
+//_______________________________________________________________________
 void  AliESDCaloCluster::SetCellsAbsId(UShort_t *array)
 {
     //  Set the array of cell absId numbers 
@@ -322,4 +364,13 @@ void AliESDCaloCluster::SetPosition(Float_t *x)
   }
 }
 
-
+//______________________________________________________________________________
+Int_t AliESDCaloCluster::GetTrackMatchedIndex(Int_t i) const
+{
+  if (fTracksMatched && i > 0 && i < fTracksMatched->GetSize())  {
+    return fTracksMatched->At(i);
+  }
+  else {
+    return -1;
+  }
+}

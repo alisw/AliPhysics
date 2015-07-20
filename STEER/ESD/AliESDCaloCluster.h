@@ -106,9 +106,7 @@ class AliESDCaloCluster : public AliVCluster
   TArrayI * GetLabelsArray() const    {return  fLabels;}
   Int_t   * GetLabels() const         {if (fLabels) return  fLabels->GetArray(); else return 0;}
 
-  Int_t GetTrackMatchedIndex() const   
-  {if( fTracksMatched &&  fTracksMatched->GetSize() >0)  return  fTracksMatched->At(0); 
-    else return -1;} //Most likely the track associated to the cluster
+  Int_t GetTrackMatchedIndex(Int_t i = 0) const;
   
   Int_t GetLabel() const   {
     if( fLabels &&  fLabels->GetSize() >0)  return  fLabels->At(0); 
@@ -123,6 +121,7 @@ class AliESDCaloCluster : public AliVCluster
     else return (0);}
   
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition ) const;
+  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition, VCluUserDefEnergy_t t ) const;
   
   void  SetNCells(Int_t n)  { fNCells = n;}
   Int_t GetNCells() const   { return fNCells;}
@@ -141,11 +140,18 @@ class AliESDCaloCluster : public AliVCluster
     if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
     else return -1;}
 
-  Double_t    GetMCEnergyFraction() const           { return fMCEnergyFraction ; }
-  void        SetMCEnergyFraction(Double_t e)       { fMCEnergyFraction = e    ; }
+  Double_t    GetCoreEnergy() const                { return fCoreEnergy       ; }
+  void        SetCoreEnergy(Double_t e)            { fCoreEnergy       = e    ; }
 
-  virtual Double_t    GetCoreEnergy() const           {return fCoreEnergy ; }
-  virtual void        SetCoreEnergy(Double_t e)         { fCoreEnergy=e; }
+  Double_t    GetMCEnergyFraction() const          { return fMCEnergyFraction ; }
+  void        SetMCEnergyFraction(Double_t e)      { fMCEnergyFraction = e    ; }
+  
+  Bool_t      GetIsExotic() const                  { return fIsExotic         ; }
+  void        SetIsExotic(Bool_t b)                { fIsExotic         = b    ; }
+
+  Double_t    GetUserDefEnergy(VCluUserDefEnergy_t t) const                     { return E()*fUserDefEnergy[t]                   ; }
+  void        SetUserDefEnergy(VCluUserDefEnergy_t t, Double_t e)               { fUserDefEnergy[t] = E() > 1e-6 ? e / E() : 1.  ; }
+  void        SetUserDefEnergyCorrFactor(VCluUserDefEnergy_t t, Double_t f)     { fUserDefEnergy[t] = f                          ; }
   
  protected:
   
@@ -173,9 +179,11 @@ class AliESDCaloCluster : public AliVCluster
   UChar_t      fNExMax ;           // number of (Ex-)maxima before unfolding  
   Char_t       fClusterType;       // Flag for different cluster type/versions
   Double_t     fTOF;               //[0,0,12] time-of-flight
+  Double32_t   fCoreEnergy;        // energy of the core of cluster
   
-  Double_t     fMCEnergyFraction;          //!MC energy (embedding)
-  Double32_t   fCoreEnergy;          // energy of the core of cluster
+  Double_t     fMCEnergyFraction;  //!MC energy (embedding)
+  Bool_t       fIsExotic;          //!cluster marked as "exotic" (high energy deposition concentrated in a single cell)
+  Double_t     fUserDefEnergy[kLastUserDefEnergy+1]; //!energy of the cluster after other higher level corrections (e.g. non-linearity, hadronic correction, ...)
   
   ClassDef(AliESDCaloCluster,12)  //ESDCaloCluster 
 

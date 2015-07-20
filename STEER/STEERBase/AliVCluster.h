@@ -28,7 +28,7 @@ class AliVCluster : public TObject
   
   enum VClu_t {kUndef = -2, 
 	       kPHOSNeutral, 
-		     kPHOSCharged,
+               kPHOSCharged,
 	       kEMCALClusterv1,		 
 	       kPMDNeutral, 
 	       kPMDCharged};
@@ -47,6 +47,14 @@ class AliVCluster : public TObject
     kUnknown  = 10,
     kCharged  = 11,//For PMD?
     kNeutral  = 12 //For PMD? 
+  };
+
+  enum VCluUserDefEnergy_t {
+    kNonLinCorr          = 0,
+    kHadCorr             = 1,
+    kUserDefEnergy1      = 2,
+    kUserDefEnergy2      = 3,
+    kLastUserDefEnergy   = 4
   };
   
   //Common EMCAL/PHOS/FMD/PMD
@@ -117,15 +125,31 @@ class AliVCluster : public TObject
 
   virtual Int_t       GetNTracksMatched() const     {return 0 ; }
   virtual TObject    *GetTrackMatched(Int_t) const  {return 0 ; }//AODCaloCluster
-  virtual Int_t       GetTrackMatchedIndex() const  {return -1; }//ESDCaloCluster
-
-  virtual Double_t    GetMCEnergyFraction() const           {return 0 ; }
-  virtual void        SetMCEnergyFraction(Double_t)         { ; }
+  virtual Int_t       GetTrackMatchedIndex(Int_t=0) const  {return -1; }//ESDCaloCluster
   
-  virtual Double_t    GetCoreEnergy() const           {return 0 ; }
-  virtual void        SetCoreEnergy(Double_t)         { ; }
+  virtual Double_t    GetCoreEnergy() const         {return 0 ; }
+  virtual void        SetCoreEnergy(Double_t)       { ; }
 
+  virtual Double_t    GetMCEnergyFraction() const   { return 0 ; }
+  virtual void        SetMCEnergyFraction(Double_t) {  ; }
+
+  virtual Bool_t      GetIsExotic() const           { return kFALSE; }
+  virtual void        SetIsExotic(Bool_t b)         {  ; }
+  
+  virtual Double_t    GetUserDefEnergy(VCluUserDefEnergy_t) const         { return 0.  ; }
+  virtual void        SetUserDefEnergy(VCluUserDefEnergy_t, Double_t)     {  ; }
+
+  virtual Double_t    GetUserDefEnergy(Int_t i) const           { return i >= 0 && i <= kLastUserDefEnergy ? GetUserDefEnergy((VCluUserDefEnergy_t)i) : 0.  ; }
+  virtual void        SetUserDefEnergy(Int_t i, Double_t v)     { if (i >= 0 && i <= kLastUserDefEnergy) SetUserDefEnergy((VCluUserDefEnergy_t)i, v)        ; }
+
+  Double_t            GetNonLinCorrEnergy() const      { return GetUserDefEnergy(kNonLinCorr)  ; }
+  void                SetNonLinCorrEnergy(Double_t e)  { SetUserDefEnergy(kNonLinCorr, e)      ; }
+
+  Double_t            GetHadCorrEnergy() const      { return GetUserDefEnergy(kHadCorr)     ; }
+  void                SetHadCorrEnergy(Double_t e)  { SetUserDefEnergy(kHadCorr, e)         ; }
+  
   virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/) const { ; }
+  virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/, VCluUserDefEnergy_t /*t*/) const { ; }
   
   ClassDef(AliVCluster,0)  //VCluster 
     };

@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 //-------------------------------------------------------------------------
 //     AOD calorimeter cluster class (for PHOS and EMCAL)
 //     Author: Markus Oldenburg, CERN, 
@@ -110,6 +108,7 @@ class AliAODCaloCluster : public AliAODCluster {
   }
   
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition ) const;
+  void GetMomentum(TLorentzVector& p, Double_t * vertexPosition, VCluUserDefEnergy_t t ) const;
 
   void AddTrackMatched(TObject *trk) { 
     //Make sure we attach the object to correct process number
@@ -119,6 +118,16 @@ class AliAODCaloCluster : public AliAODCluster {
   void RemoveTrackMatched(TObject *trk) { fTracksMatched.Remove(trk); }
   Bool_t HasTrackMatched(TObject *trk) const;
 
+  Double_t    GetMCEnergyFraction() const          { return fMCEnergyFraction ; }
+  void        SetMCEnergyFraction(Double_t e)      { fMCEnergyFraction = e    ; }
+
+  Bool_t      GetIsExotic() const                  { return fIsExotic         ; }
+  void        SetIsExotic(Bool_t b)                { fIsExotic         = b    ; }
+
+  Double_t    GetUserDefEnergy(VCluUserDefEnergy_t t) const                     { return E()*fUserDefEnergy[t]                   ; }
+  void        SetUserDefEnergy(VCluUserDefEnergy_t t, Double_t e)               { fUserDefEnergy[t] = E() > 1e-6 ? e / E() : 1.  ; }
+  void        SetUserDefEnergyCorrFactor(VCluUserDefEnergy_t t, Double_t f)     { fUserDefEnergy[t] = f                          ; }
+  
  private :
 
   Double32_t   fDistToBadChannel; // Distance to nearest bad channel
@@ -137,6 +146,10 @@ class AliAODCaloCluster : public AliAODCluster {
   Int_t       fNCells ;
   UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
   Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
+  
+  Double_t     fMCEnergyFraction;                    //!MC energy (embedding)
+  Bool_t       fIsExotic;                            //!cluster marked as "exotic" (high energy deposition concentrated in a single cell)
+  Double_t     fUserDefEnergy[kLastUserDefEnergy+1]; //!energy of the cluster after other higher level corrections (e.g. non-linearity, hadronic correction, ...)
 
   ClassDef(AliAODCaloCluster,8);
 };
