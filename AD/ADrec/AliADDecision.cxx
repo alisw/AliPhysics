@@ -63,6 +63,14 @@ AliADDecision::AliADDecision()
   
 }
 
+//______________________________________________________________________
+AliADDecision::~AliADDecision()
+{
+  // d-tor
+  delete fEarlyHitCutShape;
+}
+
+
 //________________________________________________________________________________
 Double_t AliADDecision::GetZPosition(const char* symname)
 {
