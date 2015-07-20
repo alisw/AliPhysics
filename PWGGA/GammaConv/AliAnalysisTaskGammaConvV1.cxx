@@ -1478,19 +1478,19 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 			}
 			if (fIsFromMBHeader && fDoPhotonQA == 2){
 				if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
-				fPtGamma = PhotonCandidate->Pt();
-				fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-				fRConvPhoton = PhotonCandidate->GetConversionRadius();
-				fEtaPhoton = PhotonCandidate->GetPhotonEta();
-				iCatPhoton = PhotonCandidate->GetPhotonQuality();
-				tESDConvGammaPtDcazCat[fiCut]->Fill();
+					fPtGamma = PhotonCandidate->Pt();
+					fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+					fRConvPhoton = PhotonCandidate->GetConversionRadius();
+					fEtaPhoton = PhotonCandidate->GetPhotonEta();
+					iCatPhoton = PhotonCandidate->GetPhotonQuality();
+					tESDConvGammaPtDcazCat[fiCut]->Fill();
 				} else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
-				fPtGamma = PhotonCandidate->Pt();
-				fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-				fRConvPhoton = PhotonCandidate->GetConversionRadius();
-				fEtaPhoton = PhotonCandidate->GetPhotonEta();
-				iCatPhoton = PhotonCandidate->GetPhotonQuality();
-				tESDConvGammaPtDcazCat[fiCut]->Fill();
+					fPtGamma = PhotonCandidate->Pt();
+					fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
+					fRConvPhoton = PhotonCandidate->GetConversionRadius();
+					fEtaPhoton = PhotonCandidate->GetPhotonEta();
+					iCatPhoton = PhotonCandidate->GetPhotonQuality();
+					tESDConvGammaPtDcazCat[fiCut]->Fill();
 				}   
 			}   
 		} else if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut()){ // if Shared Electron cut is enabled, Fill array, add to step one

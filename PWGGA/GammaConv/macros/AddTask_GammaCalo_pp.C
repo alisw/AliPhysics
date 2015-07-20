@@ -1,6 +1,6 @@
 void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change different set of cuts
 							Int_t 		isMC   						= 0, 							// run MC
-							Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+							Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaCalo
 							Int_t 		enableQAClusterTask 		= 0, 								// enable additional QA task
 							TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
                             TString 	cutnumberAODBranch 			= "000000006008400001001500000",
