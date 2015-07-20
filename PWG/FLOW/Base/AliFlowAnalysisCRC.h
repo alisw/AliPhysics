@@ -1109,6 +1109,8 @@ private:
  Double_t fCRCEtaMax;
  Int_t fRunNum;
  TString fMultWeight;
+ Int_t fRunBin;
+ Int_t fCenBin;
  
  TList *fCRCIntList; //! list to hold CRC histograms
  const static Int_t fCRCnCR = 16;
