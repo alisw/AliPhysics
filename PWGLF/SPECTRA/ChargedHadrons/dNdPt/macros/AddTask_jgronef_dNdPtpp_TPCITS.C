@@ -40,7 +40,7 @@ void AddTask_jgronef_dNdPtpp_TPCITS()
   evtCuts->SetZvRange(-zvWindow,zvWindow);
   evtCuts->SetMeanXYZv(0.0,0.0,0.0);
   evtCuts->SetSigmaMeanXYZv(1.0,1.0,10.0);
-  evtCuts->SetTriggerRequired(kFALSE);
+  evtCuts->SetTriggerRequired(kTRUE);
 
 
 /// <b> Create geom. acceptance cuts:</b> \li Eta window #pm 1 \li Minimum pT = 0.1 Gev/c
