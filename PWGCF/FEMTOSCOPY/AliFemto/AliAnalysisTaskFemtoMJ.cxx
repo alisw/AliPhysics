@@ -269,6 +269,7 @@ void AliAnalysisTaskFemtoMJ::CreateOutputObjects()
   //  char fcm[2000];
 //   sprintf(fcm, "%s++", fConfigMacro);
 //   gROOT->LoadMacro(fcm);
+  cout<< "AliAnalysisTaskFemtoMJ: Loading config of the analysis: "<<fConfigMacro<<endl; //!!!
   gROOT->LoadMacro(fConfigMacro);
   //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
   if (!fConfigParams)
@@ -296,22 +297,25 @@ void AliAnalysisTaskFemtoMJ::CreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
 {
+  cout<<"AliAnalysisTaskFemtoMJ::Exec()"<<endl;
   // Task making a femtoscopic analysis.
   if (fOfflineTriggerMask) {
     Bool_t isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
     if (!isSelected) {
       if (fVerbose)
-        cout << "AliAnalysisTaskFemtoMJ: is not selected" << endl;
-      return;
+	cout << "AliAnalysisTaskFemtoMJ: is not selected" << endl;
+      //return;//!!!
     }
   }
   if (fAnalysisType == 1) {
     if (!fESD) {
       if (fVerbose)
-        AliWarning("fESD not available");
-      return;
+	AliWarning("fESD not available");
+      //return;//!!!-
     }
     //Get MC data
+
+    cout<<"AliAnalysisTaskFemtoMJ:: retreiving MCEvent()"<<endl;//!!!
 
     AliMCEvent* mcEvent = MCEvent(); //!!!
     if (!mcEvent) {//!!!
