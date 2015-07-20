@@ -10,7 +10,7 @@
 #ifndef AliTestChildProc_H
 #define AliTestChildProc_H
 
-#include <TGFrame.h>
+#include "TGFrame.h"
 
 //______________________________________________________________________________
 // Short description of AliTestChildProc

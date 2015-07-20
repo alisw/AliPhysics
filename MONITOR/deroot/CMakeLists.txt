@@ -35,7 +35,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} ${SRCS})
-target_link_libraries(${MODULE} STEERBase RAWDatabase)
+target_link_libraries(${MODULE} STEERBase RAWDatabase Core RIO Net)
 
 if(ZEROMQ_FOUND)
     target_link_libraries(${MODULE} MONITORzmq)
