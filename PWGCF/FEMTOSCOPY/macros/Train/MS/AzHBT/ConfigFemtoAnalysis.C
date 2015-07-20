@@ -55,7 +55,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     double PionMass = 0.13956995;
     double KaonMass = 0.493677;
     
-    int runmults[10] = {0, 0, 1, 1, 0, 0, 0, 0, 0, 0};
+    int runmults[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
     int multbins[11] = {0, 50, 100, 200, 300, 400, 500, 700, 800, 900, 990};
     
     const char *chrgs[2] = { "pip", "pim" };
@@ -65,9 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     
     double ktrng[3] = {0.2, 0.3, 0.4};
     
-    int phirange[11] = {-15, 5, 25, 45, 65, 85, 105, 125, 145, 165};
-    // int phirange[7] = {65, 85, 105, 125, 145, 165, 185};
-    
+    int phirange[10] = {-15, 5, 25, 45, 65, 85, 105, 125, 145, 165};
     
     AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
     Reader->SetFilterBit(7);
@@ -88,7 +86,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     AliFemtoPairCutRadialDistanceLM      *sqpcetaphitpcRD[2][11];
     
     AliFemtoKTPairCut             *ktpaircut[2][11][2][11];
-    
+    AliFemtoQinvCorrFctn            *cqqinv[2][11][2];
     AliFemtoBPLCMS3DCorrFctn     *cq3dlcmskttpc[2][11][2][11];
     
     for (int imult=0; imult<10; imult++) {
@@ -96,7 +94,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
             for (int ichg=0; ichg<2; ichg++) {
                 if (runch[ichg]) {
                     
-                    ana[ichg][imult] = new AliFemtoAnalysisAzimuthalPbPb(2, -8.0, 8.0, 1, multbins[imult], multbins[imult+1],36);
+                    ana[ichg][imult] = new AliFemtoAnalysisAzimuthalPbPb(4, -8.0, 8.0, 5, multbins[imult], multbins[imult+1],9);
                     ana[ichg][imult]->SetNumEventsToMix(4);
                     ana[ichg][imult]->SetMinSizePartCollection(4);
                     ana[ichg][imult]->SetEPhistname(Form("hist%i%i",ichg,imult));
@@ -159,7 +157,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                     
                     
                     for (int ikt=0; ikt<1; ikt++){   // 1 kt range
-                        for (int iphi=0; iphi<10; iphi++){
+                      
+                        cqqinv[ichg][imult][ikt] = new AliFemtoQinvCorrFctn(Form("cqqinv%imult%ikT", ichg, imult, ikt),30, 0,0.15);
+                        
+                        for (int iphi=0; iphi<9; iphi++){
                             ktpaircut[ichg][imult][ikt][iphi] = new AliFemtoKTPairCut(ktrng[ikt],ktrng[ikt+1]);
                             ktpaircut[ichg][imult][ikt][iphi]->SetPhiRange(phirange[iphi],phirange[iphi+1]);
                             
@@ -168,6 +169,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
                             cq3dlcmskttpc[ichg][imult][ikt][iphi]->SetPairSelectionCut(ktpaircut[ichg][imult][ikt][iphi]);
                             ana[ichg][imult]->AddCorrFctn(cq3dlcmskttpc[ichg][imult][ikt][iphi]);
                         }
+                        ana[ichg][imult]->AddCorrFctn(cqqinv[ichg][imult][ikt]);
+
                     }
                     Manager->AddAnalysis(ana[ichg][imult]);
                 }
