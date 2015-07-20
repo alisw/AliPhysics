@@ -435,6 +435,15 @@ void AliAnalysisTaskK0sBayes::UserExec(Option_t *)
     // Main loop
     // Called for each event
     
+  AliVEvent *vEvent = InputEvent();
+  for (Int_t itrack=0; itrack<vEvent->GetNumberOfTracks(); ++itrack) {
+    AliAODTrack *aodTrack = const_cast<AliAODTrack*>(static_cast<AliAODTrack*>(vEvent->GetTrack(itrack)));
+    if (!aodTrack) continue;
+    AliAODPid *aodPid = const_cast<AliAODPid*>(aodTrack->GetDetPid());
+    if (!aodPid) continue;
+    aodPid->SetTPCsignalN(126.5/136.5 * aodPid->GetTPCsignalN());
+  } 
+
     fOutputAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fOutputAOD){
 	Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
