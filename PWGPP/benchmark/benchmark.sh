@@ -2811,6 +2811,12 @@ paranoidCp()
   #does not copy links to avoid problems
   sourceFiles=("${@}")
   destination="${sourceFiles[@]:(-1)}" #last element
+    if [ $destination == $sourceFiles ] ; then  
+      echo paranoidCp INFO skip
+      echo paranoidCp INFO destination== $destination 
+      echo paranoidCp INFO sourceFiles== $sourceFiles
+      return 1; 
+  fi
   unset sourceFiles[${#sourceFiles[@]}-1] #remove last element (dst)
   for src in "${sourceFiles[@]}"; do
     if [[ -f "${src}" && ! -h  "${src}" ]]; then
