@@ -940,13 +940,13 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 		if ((Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow)) {
 			BadChannels->Fill(cellNumber,1);
 		}else{
+			BadChannels->Fill(cellNumber,0);
 			if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
 			if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
-			EnergyOfMod[nMod]+=cellAmplitude;
-			BadChannels->Fill(cellNumber,0);
+			if(cellAmplitude > 0.05) EnergyOfMod[nMod]+=cellAmplitude;
 			
-			if(fHistCellEnergyvsCellID) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
-			if(fHistCellTimevsCellID) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
+			if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05)) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+			if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
 		}
 	}
 
