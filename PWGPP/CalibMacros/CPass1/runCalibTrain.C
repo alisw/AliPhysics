@@ -20,9 +20,8 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliLog::SetGlobalLogLevel(AliLog::kError); 
   gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/ConfigCalibTrain.C");
-  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ANALYSIS"); 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
-
+  gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include"); 
+  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
   // detector tasks
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskTPCCalib.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/AddTaskTRDCalib.C");
@@ -112,10 +111,10 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001); 
   //
   // dummy task to clean geometry in Terminate >>>>
-  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
-  mgr->AddTask(clgmTask);
-  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
-  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);
+  //CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+  //mgr->AddTask(clgmTask);
+  //  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+  //   if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);
 
   // Run the analysis
   AliSysInfo::AddStamp("BeforeInitAnalysis");
