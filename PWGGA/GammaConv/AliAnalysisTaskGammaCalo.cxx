@@ -2386,7 +2386,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 		delete PhotonCandidate2;
 		delete pi0cand2;
 		
-		cout << fOpenRPrim << "\t" << fInvMassRTOF << endl;
+// 		cout << fOpenRPrim << "\t" << fInvMassRTOF << endl;
 		
 	}
 	
