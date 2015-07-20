@@ -184,7 +184,10 @@ fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fRunSet("2010"),
 fRunList(NULL),
-fCRCnRun(0)
+fCRCnRun(0),
+fGenHeader(NULL),
+fPythiaGenHeader(NULL),
+fHijingGenHeader(NULL)
 {
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
@@ -310,7 +313,10 @@ fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fRunSet(RunSet),
 fRunList(NULL),
-fCRCnRun(0)
+fCRCnRun(0),
+fGenHeader(NULL),
+fPythiaGenHeader(NULL),
+fHijingGenHeader(NULL)
 {
  
  for(int i=0; i<5; i++){
@@ -407,7 +413,8 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  cc->SetHistWeightvsPhiMax(fHistWeightvsPhiMax);
  cc->SetHistWeightvsPhiMin(fHistWeightvsPhiMin);
  
- fFlowEvent = new AliFlowEvent(10000);
+ if (fAnalysisType != "MCkine") fFlowEvent = new AliFlowEvent(10000);
+ else                           fFlowEvent = new AliFlowEvent(100000);
  
  //printf("  AliAnalysisTaskCRCZDC::UserCreateOutputObjects()\n\n");
  fOutput = new TList();
@@ -639,11 +646,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  }
  
  //DEFAULT - automatically takes care of everything
- if (fAnalysisType == "AUTOMATIC")
- {
+ if (fAnalysisType == "AUTOMATIC") {
+  
   //check event cuts
-  if (InputEvent() && !fCutsEvent->IsSelected(InputEvent(),MCEvent()))
-   return;
+  if (InputEvent() && !fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
   
   //first attach all possible information to the cuts
   fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
@@ -666,23 +672,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    AliError("ERROR: Could not retrieve MCtruthEventHandler");
    return;
   }
-  if (!(fCFManager1&&fCFManager2)) {
-   AliError("ERROR: No pointer to correction framework cuts! ");
-   return;
-  }
   if (!McEvent) {
    AliError("ERROR: Could not retrieve MC event");
    return;
   }
   
-  fCFManager1->SetMCEventInfo(McEvent);
-  fCFManager2->SetMCEventInfo(McEvent);
-  
   Int_t nTracks = McEvent->GetNumberOfTracks();
+  if(!nTracks) return;
   Int_t nPrimTr = McEvent->GetNumberOfPrimaries();
   
-  // make event
-  fFlowEvent = new AliFlowEvent(nTracks);
   //loop over tracks
   for (Int_t itrkN=0; itrkN<nTracks; itrkN++)
   {
@@ -712,16 +710,18 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   // tag subevents
   fFlowEvent->TagSubeventsInEta(fMinA,fMaxA,fMinB,fMaxB);
   // set centrality from impact parameter
-  Double_t ImpPar = 0.;
-  AliGenEventHeader* genHeader = McEvent->GenEventHeader();
-  if(genHeader){
-   AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-   if(pythiaGenHeader) ImpPar = pythiaGenHeader->GetImpactParameter();
-   AliGenHijingEventHeader*  hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
-   if(hijingGenHeader) ImpPar = hijingGenHeader->ImpactParameter();
+  Double_t ImpPar=0., CenPer=0.;
+  fGenHeader = McEvent->GenEventHeader();
+  if(fGenHeader){
+   fPythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(fGenHeader);
+   if(fPythiaGenHeader) ImpPar = fPythiaGenHeader->GetImpactParameter();
+   fHijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(fGenHeader);
+   if(fHijingGenHeader) ImpPar = fHijingGenHeader->ImpactParameter();
+   if(ImpPar) CenPer = 0.4097756068776738*pow(ImpPar,2.);
+   if(CenPer) fFlowEvent->SetCentrality(CenPer);
+   else       fFlowEvent->SetCentrality(0.);
+   fFlowEvent->SetRun(1);
   }
-  Double_t CenPer = 0.4097756068776738*pow(ImpPar,2.);
-  fFlowEvent->SetCentrality(CenPer);
  }
  
  //inject candidates

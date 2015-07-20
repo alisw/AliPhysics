@@ -26,6 +26,10 @@ class TRandom3;
 class AliAnalysisTaskSE;
 class TString;
 class AliESDpid;
+class AliGenEventHeader;
+class AliGenPythiaEventHeader;
+class AliGenHijingEventHeader;
+class AliFlowTrack;
 
 class TROOT;
 class TSystem;
@@ -149,7 +153,12 @@ private:
  Double_t      fMinB;              // Minimum of eta range for subevent B
  Double_t      fMaxB;              // Maximum of eta range for subevent B
  
- Bool_t fQAon;                       // flag to set the filling of the QA hostograms
+ // mc event handlers
+ AliGenEventHeader*        fGenHeader;       //!
+ AliGenPythiaEventHeader*  fPythiaGenHeader; //!
+ AliGenHijingEventHeader*  fHijingGenHeader; //!
+ 
+ Bool_t fQAon;                     // flag to set the filling of the QA hostograms
  Bool_t fLoadCandidates;           // true if reciving candidates collection
  
  // setters for common constants
