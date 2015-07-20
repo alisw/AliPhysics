@@ -221,7 +221,7 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 10., 6000.);   
   fOutput->Add(fhPMCZNAemd);     
   
-  fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,-30);
+  fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,30);
   fOutput->Add(fDebunch);     
     
   PostData(1, fOutput);
@@ -309,10 +309,10 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;
   for(int i=0; i<4; i++){
-    if(esdZDC->GetZDCTDCData(10,i) != 0.){
-      tdcC = esdZDC->GetZDCTDCCorrected(10,i);
-      if(esdZDC->GetZDCTDCData(12,i) != 0.){
-        tdcA = esdZDC->GetZDCTDCCorrected(12,i);
+    if(esdZDC->GetZDCTDCData(16,i) != 0.){
+      tdcC = esdZDC->GetZDCTDCCorrected(16,i);
+      if(esdZDC->GetZDCTDCData(18,i) != 0.){
+        tdcA = esdZDC->GetZDCTDCCorrected(18,i);
         tdcSum = tdcC+tdcA;
         tdcDiff = tdcC-tdcA;
       }
