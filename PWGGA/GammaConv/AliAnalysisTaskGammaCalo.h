@@ -102,6 +102,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TList 								**fMotherList;						// Array of lists with Signal THnSparseF
 		TList 								**fTrueList;						// Array of lists with histograms with MC validated reconstructed properties
 		TList 								**fMCList;							// Array of lists with histograms with pure MC information
+		TList 								**fTreeList;						// Array of lists with tree for validated MC
 		TList 								**fHeaderNameList;					// Array of lists with header names for MC header selection
 		TList 								*fOutputContainer;					// Output container
 		TList 								*fClusterCandidates; 				//! current list of cluster candidates
@@ -123,9 +124,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH2F 								**fHistoMotherEtaPtY;				//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
 		TH2F 								**fHistoMotherPi0PtAlpha;			//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
 		TH2F 								**fHistoMotherEtaPtAlpha;			//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
-		TH3F								**fHistoGammaOpenAngleInvMassPt;	//! array of TH3F with photon , openangle, invmass, pt
-		TH3F								**fHistoPi0OpenAngleInvMassPt;		//! array of TH3F with pi0,  openangle, invmass, pt
-		TH3F								**fHistoEtaOpenAngleInvMassPt;		//! array of TH3F with eta, openangle, invmass, pt
 		TH2F 								**fHistoMotherPi0PtOpenAngle;		//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
 		TH2F 								**fHistoMotherEtaPtOpenAngle;		//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
 		TH2F								**fHistoMotherInvMassECalib;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
@@ -266,6 +264,15 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
 		
+		// tree for identified particle properties
+		TTree 								**tTrueInvMassROpenABPtFlag;					//! array of trees with 
+		Float_t 							fInvMass;										//! InvMass, 
+		Float_t 							fRconv;											//! Rconv, 
+		Float_t 							fOpenRPrim;										//! opening angle at R = 0,
+		Float_t 							fInvMassRTOF;									//! InvMass at R=375 cm,
+		Float_t 							fPt;											//! momentum, 
+		UChar_t 							iFlag;											//! flag (0 = gamma, 1 = pi0, 2 = eta)
+		
 		// additional variables
 		Double_t 							fEventPlaneAngle; 					// EventPlaneAngle
 		TRandom3 							fRandom;							// random 
@@ -286,7 +293,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 8);
+		ClassDef(AliAnalysisTaskGammaCalo, 9);
 };
 
 #endif
