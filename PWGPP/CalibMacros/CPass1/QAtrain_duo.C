@@ -165,12 +165,19 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   if (doStatistics) mgr->AddStatisticsTask(kTriggerMask);
 
 //   Clean Geometry: Ruben
-//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
-//  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
-//  mgr->AddTask(clgmTask);
-//  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
-//  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);  
-
+/*
+  if (gSystem->Exec("cp $ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C ./") ||
+    gROOT->LoadMacro("CleanGeom.C++")) { // comple local copy only
+    printf("Failed to load/compile CleanGeom, exit\n");
+    return;
+  }
+  
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
+  CleanGeom* clgmTask = new CleanGeom("cleanGeom");
+  mgr->AddTask(clgmTask);
+  AliAnalysisDataContainer *dummyInp = mgr->GetCommonInputContainer();
+  if (dummyInp) mgr->ConnectInput(clgmTask,0,dummyInp);  
+*/
   //
   // CDB connection
   // 
