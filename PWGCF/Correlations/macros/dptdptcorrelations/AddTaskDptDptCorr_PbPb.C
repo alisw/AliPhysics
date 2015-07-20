@@ -10,25 +10,25 @@
 AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
 (int    system                  = 0, 
  int    singlesOnly             = 1,
- int    useWeights              = 0, //no weight 
- int    centralityMethod        = 4, // 5 for syst.
+ int    useWeights              = 0, 
+ int    centralityMethod        = 4, 
  int    chargeSet               = 1,
  double zMin                    = -10.0,
  double zMax                    =  10.0,
- int    trackFilterBit          = 1, //Global
+ int    trackFilterBit          = 1,
  int    nClusterMin             = 70, 
  double eta1Min                 = -1.0,
  double eta1Max                 =  1.0,
  double eta2Min                 = -1.0,
  double eta2Max                 =  1.0,
- double dcaZMin                 = -3.2,
- double dcaZMax                 =  3.2,
- double dcaXYMin                = -2.4,
- double dcaXYMax                =  2.4,
+ double dcaZMin                 = -1.2,
+ double dcaZMax                 =  1.2,
+ double dcaXYMin                = -1.2,
+ double dcaXYMax                =  1.2,
  int nCentrality                =  4,
  Bool_t trigger                 = kFALSE,
- const char* taskname           = "ChPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/trkcent/TrkCent_weight.root")
+ const char* taskname           = "CorrPM",
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Calib/Calibration.root")
   
 {
   // Set Default Configuration of this analysis
@@ -44,12 +44,13 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
 
   if (system==0) // PbPb
     {
-    if (centralityMethod == 4 || centralityMethod == 5)
+    if (centralityMethod == 4 )
       {
 	minCentrality[0] = 0.0;   maxCentrality[0]  = 5.0;
-        minCentrality[1] = 30.0;  maxCentrality[1]  = 40.0;
-        minCentrality[2] = 50.0;  maxCentrality[2]  = 60.0;
-        minCentrality[3] = 70.0;  maxCentrality[3]  = 80.0;
+        minCentrality[1] = 10.0;  maxCentrality[1]  = 20.0;
+        minCentrality[2] = 30.0;  maxCentrality[2]  = 40.0;
+        minCentrality[3] = 50.0;  maxCentrality[3]  = 60.0;
+        minCentrality[4] = 70.0;  maxCentrality[4]  = 80.0;
        
       }
     else
