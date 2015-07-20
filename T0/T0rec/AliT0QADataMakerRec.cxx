@@ -518,7 +518,7 @@ void AliT0QADataMakerRec::InitRaws()
 
    
   //FK histograms start from 230
-  TH1F* hRawVertexMinMean = new TH1F("hRawVertexMinMean","online 0TVX vertex signal minus mean; counts",200,-1000,1000);
+  TH1F* hRawVertexMinMean = new TH1F("hRawVertexMinMean","online 0TVX vertex signal minus mean; channels",200,-200,200);
   Add2RawsList(hRawVertexMinMean,230, expert, image, !saveCorr);//FK
 
   TH1F* hCFDSubtrMean = new TH1F("hCFDSubtrMean","CFD minus mean; #PMT; CFD - mean {#channnels}", 24, 0, 24);
