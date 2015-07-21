@@ -196,7 +196,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
   reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
   reader->SetTrackTimeCut(-1e10,1e10);
 
-  reader->SwitchOnFiducialCut();
+  reader->SwitchOffFiducialCut();
   
   // Tracks
   reader->SwitchOffCTS();
