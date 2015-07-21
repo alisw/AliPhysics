@@ -79,7 +79,9 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC():
     fhZNAemd(0x0),
     fhPMCZNCemd(0x0), 
     fhPMCZNAemd(0x0),
-    fDebunch(0x0)
+    fDebunch(0x0),
+    fhTDCZNC(0x0),
+    fhTDCZNA(0x0)
 {   
    // Default constructor
 }   
@@ -108,7 +110,9 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const char *name):
     fhZNAemd(0x0),
     fhPMCZNCemd(0x0), 
     fhPMCZNAemd(0x0),
-    fDebunch(0x0) 
+    fDebunch(0x0) ,
+    fhTDCZNC(0x0),
+    fhTDCZNA(0x0)
 {  
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class()); 
@@ -151,7 +155,9 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const AliAnalysisTaskZDC& ana):
   fhZNAemd(ana.fhZNAemd),
   fhPMCZNCemd(ana.fhPMCZNCemd), 
   fhPMCZNAemd(ana.fhPMCZNAemd),
-  fDebunch(ana.fDebunch)
+  fDebunch(ana.fDebunch),
+  fhTDCZNC(ana.fhTDCZNC),
+  fhTDCZNA(ana.fhTDCZNA)
 {
   //
   // Copy Constructor	
