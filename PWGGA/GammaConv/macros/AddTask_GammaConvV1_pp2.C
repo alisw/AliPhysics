@@ -83,6 +83,9 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
+				if (trainConfig == 21){
+				  fCuts->SetDodEdxSigmaCut(kFALSE);
+				}
 			}
 		}
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
@@ -153,6 +156,8 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000002"; //New standard cut for eta analysis 8 TeV
 	} else if (trainConfig == 20){
   	        eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000022"; //New standard cut for eta analysis 8 TeV	
+	} else if (trainConfig == 21){
+		eventCutArray[ 0] = "0000011"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta analysis 8 TeV
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -182,6 +187,9 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+		if (trainConfig == 21){
+		  analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
+		}
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
