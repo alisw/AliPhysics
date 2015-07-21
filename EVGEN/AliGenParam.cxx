@@ -71,7 +71,8 @@ AliGenParam::AliGenParam()
   fDecayer(0),
   fForceConv(kFALSE),
   fKeepParent(kFALSE),
-  fKeepIfOneChildSelected(kFALSE)
+  fKeepIfOneChildSelected(kFALSE),
+  fPreserveFullDecayChain(kFALSE)
 {
   // Default constructor
 }
@@ -97,7 +98,8 @@ AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, c
    fDecayer(0),
    fForceConv(kFALSE),
    fKeepParent(kFALSE),
-   fKeepIfOneChildSelected(kFALSE)
+   fKeepIfOneChildSelected(kFALSE),
+   fPreserveFullDecayChain(kFALSE)
 {
   // Constructor using number of particles parameterisation id and library
   fName = "Param";
@@ -127,7 +129,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
   fDecayer(0),
   fForceConv(kFALSE),
   fKeepParent(kFALSE),
-  fKeepIfOneChildSelected(kFALSE)
+  fKeepIfOneChildSelected(kFALSE),
+  fPreserveFullDecayChain(kFALSE)
 {
   // Constructor using parameterisation id and number of particles
   //
@@ -708,13 +711,14 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	    Int_t ks = iparticle->GetStatusCode();
 	    // flagged particle
 
-	    if (pFlag[i] == 1) {
-	      ipF = iparticle->GetFirstDaughter();
-	      ipL = iparticle->GetLastDaughter();	
-	      if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
-	      continue;
+	    if(!fPreserveFullDecayChain){
+	      if (pFlag[i] == 1) {
+		ipF = iparticle->GetFirstDaughter();
+		ipL = iparticle->GetLastDaughter();
+		if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
+		continue;
+	      }
 	    }
-
 	    // flag decay products of particles with long life-time (c tau > .3 mum)		      
 		      
 	    if (ks != 1) { 
