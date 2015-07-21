@@ -1539,8 +1539,8 @@ void AliCaloTrackReader::FillInputCTS()
     
     if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),kCTS)) continue;
     
-    AliDebug(2,Form("Selected tracks pt %3.2f, phi %3.2f, eta %3.2f",
-                    fMomentum.Pt(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
+    AliDebug(2,Form("Selected tracks pt %3.2f, phi %3.2f deg, eta %3.2f",
+                    fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
     
     if (fMixedEvent)  track->SetID(itrack);
     
@@ -1574,13 +1574,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   Int_t vindex = 0 ;
   if (fMixedEvent)
     vindex = fMixedEvent->EventIndexForCaloCluster(iclus);
-  
-  
+    
   clus->GetMomentum(fMomentum, fVertex[vindex]);
-  
+
   //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
-  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
-                  fMomentum.E(),fMomentum.Pt(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
+  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+                  fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
 
   if(fRecalculateClusters)
   {
@@ -1635,8 +1634,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if(!goodCluster)
   {
     //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
-    AliDebug(2,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
-                    fMomentum.E(),fMomentum.Pt(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
+    AliDebug(2,Form("Bad cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+                    fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
 
     return;
   }
@@ -1650,6 +1649,11 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     Int_t ieta    = -1;
     Bool_t shared = kFALSE;
     GetCaloUtils()->GetEMCALRecoUtils()->GetMaxEnergyCell(GetCaloUtils()->GetEMCALGeometry(), GetEMCALCells(),clus,absId,iSupMod,ieta,iphi,shared);
+    
+    AliDebug(2,Form("Masked collumn: cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+                    fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+
+    
     if(GetCaloUtils()->MaskFrameCluster(iSupMod, ieta)) return;
   }
   
@@ -1692,7 +1696,13 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   
   SetEMCalEventBC(bc);
   
-  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) return ;
+  if(fEMCALPtMin > clus->E() || fEMCALPtMax < clus->E()) 
+  {
+    AliDebug(2,Form("Too low energy cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+                    fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+
+    return ;
+  }
   
   clus->GetMomentum(fMomentum, fVertex[vindex]);
   
@@ -1701,15 +1711,17 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   if(!IsInTimeWindow(tof,clus->E()))
   {
     fNPileUpClusters++ ;
-    if(fUseEMCALTimeCut) return ;
+    if(fUseEMCALTimeCut) 
+    {
+      AliDebug(2,Form("Out of time window E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, time %e",
+                      fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(),tof));
+
+      return ;
+    }
   }
   else
     fNNonPileUpClusters++;
-  
-  //if((fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10)
-  AliDebug(2,Form("Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
-                  fMomentum.E(),fMomentum.Pt(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
-  
+    
   if (fMixedEvent)
     clus->SetID(iclus) ;
   
@@ -1726,6 +1738,11 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     bEMCAL = kTRUE;
   }
 
+  //if((fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10)
+  AliDebug(2,Form("Selected clusters (EMCAL%d, DCAL%d), E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+                  bEMCAL,bDCAL,fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
+
+  
   // Smear the SS to try to match data and simulations,
   // do it only for simulations.
   if( fSmearShowerShape  && clus->GetNCells() > 2)
@@ -1921,8 +1938,8 @@ void AliCaloTrackReader::FillInputPHOS()
         if(fPHOSPtMin > fMomentum.E() || fPHOSPtMax < fMomentum.E())         continue;
         
         //if(fDebug > 2 && fMomentum.E() > 0.1)
-        AliDebug(2,Form("Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f",
-                        fMomentum.E(),fMomentum.Pt(),fMomentum.Phi()*TMath::RadToDeg(),fMomentum.Eta()));
+        AliDebug(2,Form("Selected clusters E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
+                        fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
         
         if (fMixedEvent)
         {
