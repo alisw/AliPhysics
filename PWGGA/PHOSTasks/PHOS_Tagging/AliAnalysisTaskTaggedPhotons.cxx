@@ -1243,11 +1243,14 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
           if((p1->E()>0.3) && (p2->E()>0.3)){
             FillPIDHistograms("hInvM_Re_Emin3",p1,p2,invMass,kTRUE) ; 
 	    
-	    if(p1->Module()==1 && p2->Module()==1)
-               FillHistogram("hInvM_Re_mod1",invMass,(*p1 + *p2).Pt()) ; 
-	    if(p1->Module()==3 && p2->Module()==3)
-               FillHistogram("hInvM_Re_mod3",invMass,(*p1 + *p2).Pt()) ; 
-	    
+	    if(p1->Module()==1 && p2->Module()==1){
+	       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+               FillHistogram("hInvM_Re_mod1",invMass,(*p1 + *p2).Pt(),w) ; 
+	    }
+	    if(p1->Module()==3 && p2->Module()==3){
+	       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+               FillHistogram("hInvM_Re_mod3",invMass,(*p1 + *p2).Pt(),w) ; 
+	    }
 	    //Fill izolated pi0s
 	    if(nsigma1<2 || nsigma2<2){ //2 sigma band
 	      TLorentzVector pi0=*p1+*p2 ;
@@ -1482,10 +1485,14 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
             if((p1->E())>0.3 && (p2->E()>0.3)){
               FillPIDHistograms("hInvM_Mi_Emin3",p1,p2,invMass,kFALSE) ;
 
-	      if(p1->Module()==1 && p2->Module()==1)
-                FillHistogram("hInvM_Mi_mod1",invMass,(*p1 + *p2).Pt()) ; 
-	      if(p1->Module()==3 && p2->Module()==3)
-                FillHistogram("hInvM_Mi_mod3",invMass,(*p1 + *p2).Pt()) ; 
+	      if(p1->Module()==1 && p2->Module()==1){
+	        Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+                FillHistogram("hInvM_Mi_mod1",invMass,(*p1 + *p2).Pt(),w) ;
+	      }
+	      if(p1->Module()==3 && p2->Module()==3){
+	        Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+                FillHistogram("hInvM_Mi_mod3",invMass,(*p1 + *p2).Pt(),w) ; 
+	      }
 	    
   	    }
  	  }
