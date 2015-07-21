@@ -59,6 +59,7 @@ set(SRCS
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
+  AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
