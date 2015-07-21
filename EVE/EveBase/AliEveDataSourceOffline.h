@@ -35,7 +35,7 @@ public:
     void SetFilesPath(const TString& path);
 
     void GotoEvent(Int_t event);
-    
+        
     virtual Int_t GetMaxEventId(Bool_t refreshESD=kFALSE) const;
 private:
     void Init(){};// to implement

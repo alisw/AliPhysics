@@ -207,15 +207,29 @@ fEventInfo    (0)
             fStorageStatus = MkLabel(f,"",0,8,8);
         }
         
-        TGHButtonGroup *horizontal = new TGHButtonGroup(f, "Data Source");
+        fReloadOffline = new TGTextButton(f, "Reload");
+        fReloadOffline->Connect("Clicked()", cls, this, "DoReloadOffline()");
+        fOfflineRunNumber = new TGNumberEntry(f);
+        f->AddFrame(fOfflineRunNumber,new TGLayoutHints(kLHintsNormal,10,5,0,0));
+        f->AddFrame(fReloadOffline,new TGLayoutHints(kLHintsNormal,10,5,0,0));
+
+        
+        fDataSourceGroup = new TGHButtonGroup(f, "Data Source");
 //        horizontal->SetTitlePos(TGGroupFrame::kCenter);
-        fSwitchToHLT     = new TGRadioButton(horizontal, "HLT",AliEveEventManager::kSourceHLT);
-        fSwitchToOnline  = new TGRadioButton(horizontal, "Online",AliEveEventManager::kSourceOnline);
-        fSwitchToOffline = new TGRadioButton(horizontal, "Offline",AliEveEventManager::kSourceOffline);
-        horizontal->SetButton(defaultDataSource);
-        horizontal->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(AliEveEventManager::EDataSource)");
-        f->AddFrame(horizontal, new TGLayoutHints(kLHintsExpandX));
-    }
+        fSwitchToHLT     = new TGRadioButton(fDataSourceGroup, "HLT",AliEveEventManager::kSourceHLT);
+        fSwitchToOnline  = new TGRadioButton(fDataSourceGroup, "Online",AliEveEventManager::kSourceOnline);
+        fSwitchToOffline = new TGRadioButton(fDataSourceGroup, "Offline",AliEveEventManager::kSourceOffline);
+        
+        fDataSourceGroup->SetButton(defaultDataSource);
+        fDataSourceGroup->Connect("Pressed(Int_t)", cls, this,"DoSwitchDataSource(AliEveEventManager::EDataSource)");
+#ifndef ZMQ
+        fSwitchToHLT->SetEnabled(false);
+        fSwitchToOnline->SetEnabled(false);
+#endif
+        
+        f->AddFrame(fDataSourceGroup, new TGLayoutHints(kLHintsNormal));
+        
+            }
     
     fEventInfo = new TGTextView(this, 400, 600);
     AddFrame(fEventInfo, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
@@ -311,6 +325,22 @@ void AliEveEventManagerWindow::DoScreenshot()
 {
     AliEveSaveViews *viewsSaver = new AliEveSaveViews();
     viewsSaver->SaveWithDialog();
+}
+
+void AliEveEventManagerWindow::DoReloadOffline()
+{
+    TEnv settings;
+    AliEveInit::GetConfig(&settings);
+    
+    const char* path = Form("%s%ld",settings.GetValue("offline.base.path",""),fOfflineRunNumber->GetIntNumber());
+    
+    cout<<"Changing path to:"<<path<<endl;
+    
+    AliEveDataSourceOffline *dataSource = (AliEveDataSourceOffline*)fM->GetDataSourceOffline();
+    dataSource->SetFilesPath(path);
+    fM->ChangeDataSource(AliEveEventManager::kSourceOffline);
+    fDataSourceGroup->SetButton(AliEveEventManager::kSourceOffline);
+    dataSource->GotoEvent(0);
 }
 
 //______________________________________________________________________________

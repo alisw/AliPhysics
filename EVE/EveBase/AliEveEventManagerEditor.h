@@ -82,6 +82,7 @@ public:
   void DoLastEvent();
   void DoMarkEvent();
     void DoScreenshot();
+    void DoReloadOffline();
     void DoSwitchDataSource(AliEveEventManager::EDataSource source);
 
   void DoSetEvent();
@@ -106,9 +107,13 @@ protected:
     TGTextButton         *fMarkEvent;    // Mark current event
     TGTextButton         *fScreenshot;   // Save screenshot to file
     
+    
+    TGHButtonGroup *fDataSourceGroup;    // dataSource buttons group
     TGRadioButton *fSwitchToHLT;         // switch data source to HLT
     TGRadioButton *fSwitchToOnline;      // switch data source to Online
     TGRadioButton *fSwitchToOffline;     // switch data source to Offline
+    TGNumberEntry *fOfflineRunNumber;    // run number for offline files
+    TGTextButton  *fReloadOffline;       // load offline files for specified run
 
   TGNumberEntry        *fEventId;      // Display/edit current event id
   TGLabel              *fInfoLabel;    // Display last available event id

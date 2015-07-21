@@ -61,6 +61,7 @@
 #pragma link C++ class AliEveMagField+;
 #pragma link C++ class AliEveVSDCreator+;
 #pragma link C++ class AliEveMultiView+;
+#pragma link C++ class AliEveEtaPtView+;
 
 // AliEveTrack
 #pragma link C++ class AliEveTrack+;

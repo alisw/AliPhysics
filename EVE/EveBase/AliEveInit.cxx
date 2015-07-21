@@ -39,6 +39,7 @@
 #include <AliEveTrack.h>
 #include <AliEveTrackCounter.h>
 #include <AliEveMagField.h>
+#include <AliEveEtaPtView.h>
 #include <AliEveEventManagerEditor.h>
 #include <AliEveMultiView.h>
 #include <AliEveMacroExecutor.h>
@@ -130,6 +131,9 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kTRUE, kFALSE);
 
     mv->SetDepth(0);
+    
+//    AliEveEtaPtView *epview = new AliEveEtaPtView();
+//    epview->InitGeom();
     
     AddMacros();
     

@@ -92,9 +92,7 @@ void AliEveDataSourceOnline::GetNextEvent()
                 cout<<"received. ("<<tmpEvent->GetRunNumber();
                 if(tmpEvent->GetRunNumber()>=0)
                 {
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->Lock();
-#endif
                     if(fEventInUse == 0){fWritingToEventIndex = 1;}
                     else if(fEventInUse == 1){fWritingToEventIndex = 0;}
                     cout<<","<<tmpEvent->GetEventNumberInFile()<<")"<<endl;
@@ -107,7 +105,6 @@ void AliEveDataSourceOnline::GetNextEvent()
                     fIsNewEventAvaliable = true;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
                     gCINTMutex->UnLock();
-#endif
                 }
             }
             else
@@ -212,9 +209,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
         AliESDEvent *resultEvent = NULL;
         
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->Lock();
-#endif
         
         // send request and receive event:
         eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
@@ -233,9 +228,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
             if(event==2){cout<<"\n\nWARNING -- No next event is avaliable.\n\n"<<endl;}
         }
         
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->UnLock();
-#endif
     }
     else
     {
@@ -247,9 +240,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
         AliZMQManager *eventManager = AliZMQManager::GetInstance();
         AliESDEvent *resultEvent = NULL;
         
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->Lock();
-#endif
         eventManager->Send(requestMessage,SERVER_COMMUNICATION_REQ);
         eventManager->Get(resultEvent,SERVER_COMMUNICATION_REQ);
         
@@ -259,9 +250,7 @@ void AliEveDataSourceOnline::GotoEvent(Int_t event)
             fCurrentData.fESD = resultEvent;
         }
         else{cout<<"\n\nWARNING -- The most recent event is not avaliable.\n\n"<<endl;}
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
         gCINTMutex->UnLock();
-#endif
     }
 }
 
@@ -269,7 +258,6 @@ void AliEveDataSourceOnline::NextEvent()
 {
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->Lock();
-#endif
     if(fIsNewEventAvaliable)
     {
         fEventManager->DestroyTransients();
@@ -315,7 +303,6 @@ void AliEveDataSourceOnline::NextEvent()
         EventServerDown();
         fFailCounter=0;
     }
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
     gCINTMutex->UnLock();
 #endif
     gSystem->ProcessEvents();

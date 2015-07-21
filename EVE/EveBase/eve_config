@@ -58,3 +58,4 @@ screenshot.projections.draw	1
 screenshot.force.energy     Energy: 13 TeV
 
 HLT.ZMQ.proxy:              tcp://localhost:60201
+offline.base.path           /home/user_name/events/

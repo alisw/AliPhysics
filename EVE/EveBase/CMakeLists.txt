@@ -59,6 +59,7 @@ set(SRCS
     AliEveDataSource.cxx
     AliEveDataSourceOffline.cxx
     AliEveESDTracks.cxx
+    AliEveEtaPtView.cxx
     AliEveEventManager.cxx
     AliEveEventManagerEditor.cxx
     AliEveEventSelector.cxx

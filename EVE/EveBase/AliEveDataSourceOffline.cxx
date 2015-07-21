@@ -116,8 +116,8 @@ void AliEveDataSourceOffline::GotoEvent(Int_t event)
     
     if(fCurrentData.fESD->GetRunNumber() != fEventManager->GetCurrentRun())
     {
-        fEventManager->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
         fEventManager->ResetMagneticField();
+        fEventManager->SetCurrentRun(fCurrentData.fESD->GetRunNumber());
     }
     
     if (!fIsOpen){throw (kEH + "Event-files not opened but ED is in offline mode.");}
@@ -538,7 +538,8 @@ void AliEveDataSourceOffline::Close()
     
     if (!fIsOpen)
     {
-        throw (kEH + "Event-files not opened.");
+        cout<<"AliEveEventManager::Close() -- files are not opened"<<endl;
+        return;
     }
     
     if (fEventManager->GetAutoLoadRunning()){
