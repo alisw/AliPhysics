@@ -120,7 +120,8 @@ public:
 	//TPC calibration for 13d period
 	void SetTPCCalibration() {fCalibrateTPC=kTRUE;};
 	void SetTPC_mean_sigma(Double_t CalibrateTPC_mean,Double_t CalibrateTPC_sigma ) { fCalibrateTPC_mean = CalibrateTPC_mean; fCalibrateTPC_sigma = CalibrateTPC_sigma; };
-	void SetTPCcal_cuts(Double_t TPCmin,Double_t TPCmax ) { fTPCcal_CutMin = TPCmin; fTPCcal_CutMax = TPCmax; };
+	void SetTPCcal_cut_min(Double_t TPCmin) { fTPCcal_CutMin = TPCmin; };
+	void SetTPCcal_cut_max(Double_t TPCmax ) {fTPCcal_CutMax = TPCmax; };
 
 
 	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};

@@ -124,7 +124,8 @@ char* period = "b"
 			//printf("======================================================================================\n ");
 		task->SetTPCCalibration();
 		task->SetTPC_mean_sigma(0.63, 1.17);
-		task->SetTPCcal_cuts(-1,3);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
 		
 	}	
 	
@@ -139,7 +140,8 @@ char* period = "b"
 				//printf("======================================================================================\n ");
 		task->SetTPCCalibration();
 		task->SetTPC_mean_sigma(-0.24, 0.92);
-		task->SetTPCcal_cuts(-1,3);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
 			
 		}	
 	
@@ -150,7 +152,8 @@ char* period = "b"
 				//printf("======================================================================================\n ");
 		task->SetTPCCalibration();
 		task->SetTPC_mean_sigma(-0.27, 0.97);
-		task->SetTPCcal_cuts(-1,3);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
 			
 		}
 	 
@@ -297,14 +300,14 @@ char* period = "b"
 		params[0] = -1.5;
 		if(period == "d"){
 			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
-			task->SetTPCcal_cuts(-1.5,3);
+			task->SetTPCcal_cut_min(-1.5);
 		}
 	}
 	else if (configIndex==71){ 
 		params[0] = -0.5;
 		if(period == "d"){
 			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
-			task->SetTPCcal_cuts(-0.5,3);
+			task->SetTPCcal_cut_min(-0.5);
 		}
 		
 	}
@@ -312,7 +315,7 @@ char* period = "b"
 		params[0] = 0;
 		if(period == "d"){
 			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
-			task->SetTPCcal_cuts(0,3);
+			task->SetTPCcal_cut_min(0);
 			
 		}
 	}	
@@ -320,7 +323,7 @@ char* period = "b"
 		params[0] = 0.25;
 		if(period == "d"){
 			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
-			task->SetTPCcal_cuts(0.25,3);
+			task->SetTPCcal_cut_min(0.25);
 			
 		}
 	}
@@ -328,7 +331,7 @@ char* period = "b"
 		params[0] = 0.5;
 		if(period == "d"){
 			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
-			task->SetTPCcal_cuts(0.5,3);
+			task->SetTPCcal_cut_min(0.5);
 			
 		}
 	}
@@ -338,16 +341,20 @@ char* period = "b"
 		if(period =="e"||period =="f"){
 				if(configIndex==200){
 					params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
-					task->SetTPCcal_cuts(-1,3);
+					task->SetTPCcal_cut_min(-1);
 				}
 		}
 		if(period == "d"){
 				params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
-				task->SetTPCcal_cuts(-1,3);
+				task->SetTPCcal_cut_min(-1);
 			
 		}
 	
 	}
+
+	
+		//=========================================
+	
 	
 	if(configIndex==75)Double_t max=1.5;
 	else if(configIndex==76)Double_t max=2.0;
@@ -355,21 +362,21 @@ char* period = "b"
 		Double_t max=2.5;
 		if(period =="d"){
 			Double_t max=5;//looser cut for hfe package. Real cut inside the task.
-			task->SetTPCcal_cuts(-1,2.5);
+			task->SetTPCcal_cut_max(2.5);
 		}
 	}
 	else if(configIndex==78){
 		Double_t max=3.5;
 		if(period =="d"){
 			Double_t max=6;//looser cut for hfe package. Real cut inside the task.
-			task->SetTPCcal_cuts(-1,3.5);
+			task->SetTPCcal_cut_max(3.5);
 		}
 	}
 	else if(configIndex==79){
 		Double_t max=4.0;
 		if(period =="d"){
 			Double_t max=6;//looser cut for hfe package. Real cut inside the task.
-			task->SetTPCcal_cuts(-1,4.0);
+			task->SetTPCcal_cut_max(4.0);
 		}
 	}
 	else{
@@ -378,13 +385,13 @@ char* period = "b"
 			
 			if(configIndex==200){
 				Double_t max=5;//looser cut for hfe package. Real cut inside the task.
-				task->SetTPCcal_cuts(-1,3);
+				task->SetTPCcal_cut_max(3);
 			}
 			
 		}
 		if(period =="d"){
 				Double_t max=5;//looser cut for hfe package. Real cut inside the task.
-				task->SetTPCcal_cuts(-1,3);
+				task->SetTPCcal_cut_max(3);
 		}
 	}
 	
