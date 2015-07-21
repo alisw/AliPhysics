@@ -1,4 +1,4 @@
-void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliRecoParam::kLowMult, const char *outputCDB = "local:///home/mbroz/OCDB") {
+void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliRecoParam::kLowMult, const char *outputCDB = "local://$ALICE_ROOT/OCDB") {
 //========================================================================
 //
 // Steering macro for AD reconstruction parameters
@@ -32,7 +32,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetTimeWindowBGCLow(-2.0);
     ADRecoParam->SetTimeWindowBGCUp(2.0);
     ADRecoParam->SetAdcThresHold(5);
-    ADRecoParam->SetMaxResid(5.0);
+    ADRecoParam->SetMaxResid(1.5);
     ADRecoParam->SetResidRise(0.02);
     recoParamArray->AddLast(ADRecoParam);
   }
@@ -51,7 +51,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetTimeWindowBGCLow(-2.0);
     ADRecoParam->SetTimeWindowBGCUp(2.0);
     ADRecoParam->SetAdcThresHold(5);
-    ADRecoParam->SetMaxResid(5.0);
+    ADRecoParam->SetMaxResid(1.5);
     ADRecoParam->SetResidRise(0.02);
     ADRecoParam->SetEventSpecie(AliRecoParam::kLowMult);
     recoParamArray->AddLast(ADRecoParam);
@@ -70,7 +70,7 @@ void MakeADRecoParamEntry(AliRecoParam::EventSpecie_t defaultEventSpecie=AliReco
     ADRecoParam->SetTimeWindowBGCLow(-2.0);
     ADRecoParam->SetTimeWindowBGCUp(2.0);
     ADRecoParam->SetAdcThresHold(5);
-    ADRecoParam->SetMaxResid(5.0);
+    ADRecoParam->SetMaxResid(1.5);
     ADRecoParam->SetResidRise(0.02);
     ADRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     recoParamArray->AddLast(ADRecoParam);
