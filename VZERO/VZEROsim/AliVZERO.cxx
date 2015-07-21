@@ -550,7 +550,7 @@ void AliVZERO::GetCalibData()
   for(Int_t i = 0 ; i < 64; ++i) {
     Int_t board = AliVZEROCalibData::GetBoardNumber(i);
     fNBins[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
-			     (Float_t)kMaxTDCWidth*fCalibData->GetWidthResolution(board))/
+			     (Float_t)(kMaxTDCWidth+1)*fCalibData->GetWidthResolution(board))/
 			    fCalibData->GetTimeResolution(board));
     fBinSize[i] = fCalibData->GetTimeResolution(board);
   }
