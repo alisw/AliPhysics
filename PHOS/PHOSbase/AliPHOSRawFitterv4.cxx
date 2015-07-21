@@ -91,14 +91,15 @@ Bool_t AliPHOSRawFitterv4::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   Int_t    nPed      = 0;
   UShort_t maxSample = 0;
   Int_t    nMax      = 0;
-
+  Int_t    maxAt=0 ;
+  
   for (Int_t i=0; i<sigLength; i++) {
     if (i>sigLength-kPreSamples) { //inverse signal time order
       nPed++;
       pedMean += signal[i];
       pedRMS  += signal[i]*signal[i] ;
     }
-    if(signal[i] > maxSample ){ maxSample = signal[i]; nMax=0;}
+    if(signal[i] > maxSample ){ maxSample = signal[i]; nMax=0; maxAt=i;}
     if(signal[i] == maxSample) nMax++;
 
   }
@@ -106,6 +107,70 @@ Bool_t AliPHOSRawFitterv4::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   fEnergy = (Double_t)maxSample;
   if (maxSample > 850 && nMax > 2) fOverflow = kTRUE;
   
+  
+  //Fit sample with parabola
+  Double_t m0=0,m1=0,m2=0,m3=0,m4=0, a0=0,a1=0,a2=0 ;
+  Int_t imin=TMath::Max(maxAt-10,0);
+  Int_t imax=TMath::Min(maxAt+17,sigLength);
+  if(imax-imin>2){
+   for (Int_t i=imin; i<imax; i++) {
+    m0+=1;
+    a0+=signal[i] ;
+    m1+=i;
+    a1+=signal[i]*i ;
+    Int_t in=i*i ;
+    m2+=in;
+    a2+=signal[i]*in ;
+    in=in*i ;
+    m3+=in;
+    in=in*i ;
+    m4+=in;
+   }
+  }
+  
+  Double_t denom=(m0*m4-m2*m2)*(m0*m2-m1*m1)-TMath::Power((m0*m3-m1*m2),2);
+  Double_t a=0.,b=0.,c=0.;
+  if(denom!=0){
+     a=((a2*m0-a0*m2)*(m0*m2-m1*m1)-(a1*m0-a0*m1)*(m0*m3-m1*m2))/denom ; 
+     if(a<0.){
+       denom=m0*m2-m1*m1 ;
+       if(denom!=0.)
+         b=(a1*m0-a0*m1-a*(m0*m3-m1*m2))/denom ;
+       if(m0!=0)
+         c=(a0-a*m2-b*m1)/m0 ;
+       if(-0.5*b<imin*a && -0.5*b>imax*a)
+         fEnergy=c-0.25*b*b/a; 
+     }
+  }
+  
+  
+/*  
+//Draw  
+printf("imin=%d, imax=%d, E=%f, a=%f \n",imin,imax,fEnergy,a) ;  
+      TH1I * h = (TH1I*)gROOT->FindObjectAny("hSamples") ;
+      if(!h) h = new TH1I("hSamples","Samples",65,0.,65.) ;
+      h->Reset() ;
+      for (Int_t i=0; i<sigLength; i++) {
+        h->SetBinContent(i+1,float(signal[i])) ;
+      }
+      TF1 * fffit = new TF1("fffit","[0]*x*x+[1]*x+[2]",0.,60.) ;
+      fffit->SetParameters(a,b,c) ;
+      fffit->SetLineColor(2) ;
+      TCanvas * can = (TCanvas*)gROOT->FindObjectAny("cSamples") ;
+      if(!can){
+        can = new TCanvas("cSamples","cSamples",10,10,600,600) ;
+        can->SetFillColor(0) ;
+        can->SetFillStyle(0) ;
+        can->Range(0,0,1,1);
+        can->SetBorderSize(0);
+      }
+      can->cd() ;
+      h->Draw() ;
+      fffit->Draw("same") ;
+      can->Update() ;
+      getchar() ;
+//========Draw  
+*/  
   Double_t pedestal = 0 ;
   if (fPedSubtract) {
     if (nPed > 0) {
