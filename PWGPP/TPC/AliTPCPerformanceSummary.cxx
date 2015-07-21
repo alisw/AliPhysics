@@ -109,7 +109,7 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
   TObjString period(gSystem->Getenv("eperiod"));
   TObjString pass(gSystem->Getenv("epass"));
   TObjString dataType(gSystem->Getenv("edataType"));
-  ::Info(" AliTPCPerformanceSummary::WriteToTTreeSRedirector",TString::Format("%s/%s/%s",dataType.GetName(), period.GetName(),pass.GetName()).Data());
+  ::Info("AliTPCPerformanceSummary::WriteToTTreeSRedirector","%s/%s/%s",dataType.GetName(), period.GetName(), pass.GetName());
   Int_t year=0;
   if (gSystem->Getenv("eyear")) year=atoi(gSystem->Getenv("eyear"));
     if (!pcstream) return;
@@ -2934,14 +2934,20 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   static Bool_t hasRawQA = entry->GetId().GetFirstRun()== man->GetRun();
 
 
-  AliTPCCalPad * padInput[5]={padActive, padLocalMax, padNoThreshold, padMaxCharge};
+  const char   *typeNames[5]={"ActiveChannelMap", "LocaleMaxima", "NoThreshold",   "MaxCharge"  };
+  AliTPCCalPad *padInput [5]={ padActive,          padLocalMax,    padNoThreshold,  padMaxCharge};
   TGraphErrors *grRaw[8]={0};
   TGraphErrors *grStatus[8]={0};
   const char * side[2]={"A","C"};
   Int_t kcolors[5]={1,2,4,3,6};
   Int_t kmarkers[5]={21,25,20,24,26};
    
-  for (Int_t itype=0; itype<4; itype++){    
+  for (Int_t itype=0; itype<4; itype++){
+    if (!padInput[itype]) {
+      ::Error("AliTPCPerformanceSummary::MakeRawOCDBQAPlot","Could not get input for type %d: %s", itype, typeNames[itype]);
+      continue;
+    }
+
     for (Int_t isec=0; isec<72; isec++) {
       value[isec]=padInput[itype]->GetCalROC(isec)->GetMedian() ; 
       if (itype==0) value[isec]=padInput[itype]->GetCalROC(isec)->GetMean(); 
