@@ -52,7 +52,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot()
     fHistNBGflagsADA(0),fHistNBGflagsADC(0),fHistNBGflagsADAVsADC(0),
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
-    fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
+    fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecisionBasic(0),fHistDecisionRobust(0),
     fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
@@ -76,7 +76,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
     fHistNBGflagsADA(0),fHistNBGflagsADC(0),fHistNBGflagsADAVsADC(0),
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
     fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
-    fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecision(0),
+    fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecisionBasic(0),fHistDecisionRobust(0),
     fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
@@ -286,24 +286,41 @@ if (!fHistMeanTimeSumDiff) {
     fHistMeanTimeSumDiff = CreateHist2D("fHistMeanTimeSumDiff","Mean Time in ADA-ADC",307, -150.000000, 149.804688, 410, 0.000000, 400.390625,"AD Mean time t_{A} - t_{C} [ns]","AD Mean time t_{A} + t_{C} [ns]");
     fListHist->Add(fHistMeanTimeSumDiff);
   }   
-if (!fHistDecision) {
-    fHistDecision = CreateHist2D("fHistDecision","Offline decision in ADA-ADC",4,0 ,4,4,0,4,"ADA","ADC");
-    fHistDecision->SetOption("coltext");
-    fHistDecision->GetXaxis()->SetLabelSize(0.06);
-    fHistDecision->GetYaxis()->SetLabelSize(0.06);
-    fHistDecision->GetXaxis()->SetNdivisions(808,kFALSE);
-    fHistDecision->GetYaxis()->SetNdivisions(808,kFALSE);
-    fHistDecision->GetXaxis()->SetBinLabel(1, "Empty");
-    fHistDecision->GetXaxis()->SetBinLabel(2, "BB");
-    fHistDecision->GetXaxis()->SetBinLabel(3, "BG");
-    fHistDecision->GetXaxis()->SetBinLabel(4, "Fake");
-    fHistDecision->GetYaxis()->SetBinLabel(1, "Empty");
-    fHistDecision->GetYaxis()->SetBinLabel(2, "BB");
-    fHistDecision->GetYaxis()->SetBinLabel(3, "BG");
-    fHistDecision->GetYaxis()->SetBinLabel(4, "Fake");
-    fListHist->Add(fHistDecision);
+if (!fHistDecisionBasic) {
+    fHistDecisionBasic = CreateHist2D("fHistDecisionBasic","Offline decision in ADA-ADC based on basic time",4,0 ,4,4,0,4,"ADA","ADC");
+    fHistDecisionBasic->SetOption("coltext");
+    fHistDecisionBasic->GetXaxis()->SetLabelSize(0.06);
+    fHistDecisionBasic->GetYaxis()->SetLabelSize(0.06);
+    fHistDecisionBasic->GetXaxis()->SetNdivisions(808,kFALSE);
+    fHistDecisionBasic->GetYaxis()->SetNdivisions(808,kFALSE);
+    fHistDecisionBasic->GetXaxis()->SetBinLabel(1, "Empty");
+    fHistDecisionBasic->GetXaxis()->SetBinLabel(2, "BB");
+    fHistDecisionBasic->GetXaxis()->SetBinLabel(3, "BG");
+    fHistDecisionBasic->GetXaxis()->SetBinLabel(4, "Fake");
+    fHistDecisionBasic->GetYaxis()->SetBinLabel(1, "Empty");
+    fHistDecisionBasic->GetYaxis()->SetBinLabel(2, "BB");
+    fHistDecisionBasic->GetYaxis()->SetBinLabel(3, "BG");
+    fHistDecisionBasic->GetYaxis()->SetBinLabel(4, "Fake");
+    fListHist->Add(fHistDecisionBasic);
  }
 
+if (!fHistDecisionRobust) {
+    fHistDecisionRobust = CreateHist2D("fHistDecisionRobust","Offline decision in ADA-ADC based on Robust time",4,0 ,4,4,0,4,"ADA","ADC");
+    fHistDecisionRobust->SetOption("coltext");
+    fHistDecisionRobust->GetXaxis()->SetLabelSize(0.06);
+    fHistDecisionRobust->GetYaxis()->SetLabelSize(0.06);
+    fHistDecisionRobust->GetXaxis()->SetNdivisions(808,kFALSE);
+    fHistDecisionRobust->GetYaxis()->SetNdivisions(808,kFALSE);
+    fHistDecisionRobust->GetXaxis()->SetBinLabel(1, "Empty");
+    fHistDecisionRobust->GetXaxis()->SetBinLabel(2, "BB");
+    fHistDecisionRobust->GetXaxis()->SetBinLabel(3, "BG");
+    fHistDecisionRobust->GetXaxis()->SetBinLabel(4, "Fake");
+    fHistDecisionRobust->GetYaxis()->SetBinLabel(1, "Empty");
+    fHistDecisionRobust->GetYaxis()->SetBinLabel(2, "BB");
+    fHistDecisionRobust->GetYaxis()->SetBinLabel(3, "BG");
+    fHistDecisionRobust->GetYaxis()->SetBinLabel(4, "Fake");
+    fListHist->Add(fHistDecisionRobust);
+ }
     
 if(!fHistTriggerMasked) {
     fHistTriggerMasked = CreateHist1D("fHistTriggerMasked","Trigger inputs, from FEE (BC masked)",10,0 ,10,"AD0 Trigger Type","Counts");
@@ -835,7 +852,19 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   else if(timeBasicADC>(-1024.+1.e-6)) ADCDecision=3;
   else ADCDecision=0;
 	
-  fHistDecision->Fill(ADADecision,ADCDecision);
+  fHistDecisionBasic->Fill(ADADecision,ADCDecision);
+  
+  if(timeRobustADA > (fADADist + TimeWindowBBALow) && timeRobustADA < (fADADist + TimeWindowBBAUp)) ADADecision=1;
+  else if(timeRobustADA > (-fADADist + TimeWindowBGALow) && timeRobustADA < (-fADADist + TimeWindowBGAUp)) ADADecision=2;
+  else if(timeRobustADA>(-1024.+1.e-6)) ADADecision=3;
+  else ADADecision=0;
+  
+  if(timeRobustADC > (fADCDist + TimeWindowBBCLow) && timeRobustADC < (fADCDist + TimeWindowBBCUp)) ADCDecision=1;
+  else if(timeRobustADC > (-fADCDist + TimeWindowBGCLow) && timeRobustADC < (-fADCDist + TimeWindowBGCUp)) ADCDecision=2;
+  else if(timeRobustADC>(-1024.+1.e-6)) ADCDecision=3;
+  else ADCDecision=0;
+	
+  fHistDecisionRobust->Fill(ADADecision,ADCDecision);
   
   fHistMedianTimeADA->Fill(medianTimeADA);
   fHistMedianTimeADC->Fill(medianTimeADC);

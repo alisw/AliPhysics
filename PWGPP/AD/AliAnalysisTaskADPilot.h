@@ -83,7 +83,8 @@ private:
   TH1F	      *fHistMeanTimeDifference;
   TH2F	      *fHistMeanTimeCorrelation;
   TH2F	      *fHistMeanTimeSumDiff;
-  TH2F	      *fHistDecision;
+  TH2F	      *fHistDecisionBasic;
+  TH2F	      *fHistDecisionRobust;
   
   TH1F	      *fHistTriggerMasked;
   TH1F	      *fHistTriggerUnMasked;
