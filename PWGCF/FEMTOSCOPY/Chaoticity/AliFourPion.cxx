@@ -63,7 +63,7 @@ AliAnalysisTaskSE(),
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
-  fLinearInterpolation(kTRUE),
+  fInterpolationType(1),
   fMixedChargeCut(kFALSE),
   fRMax(11),
   fRstartMC(5.0),
@@ -238,8 +238,8 @@ AliAnalysisTaskSE(),
 
   
   // Initialize fNormWeight and fNormWeightErr to 0
-  for(Int_t i=0; i<3; i++){// Kt iterator
-    for(Int_t j=0; j<10; j++){// Mbin iterator
+  for(Int_t i=0; i<fKbinsT; i++){// Kt iterator
+    for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=0x0;
       fNormWeight2[i][j]=0x0;
     }
@@ -272,7 +272,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
-  fLinearInterpolation(kTRUE),
+  fInterpolationType(1),
   fMixedChargeCut(kFALSE),
   fRMax(11),
   fRstartMC(5.0),
@@ -450,8 +450,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   }
   
   // Initialize fNormWeight and fNormWeightErr to 0
-  for(Int_t i=0; i<3; i++){// Kt iterator
-    for(Int_t j=0; j<10; j++){// Mbin iterator
+  for(Int_t i=0; i<fKbinsT; i++){// Kt iterator
+    for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=0x0;
       fNormWeight2[i][j]=0x0;
     }
@@ -486,7 +486,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fGenerateSignal(obj.fGenerateSignal),
     fGeneratorOnly(obj.fGeneratorOnly),
     fTabulatePairs(obj.fTabulatePairs),
-    fLinearInterpolation(obj.fLinearInterpolation),
+    fInterpolationType(obj.fInterpolationType),
     fMixedChargeCut(obj.fMixedChargeCut),
     fRMax(obj.fRMax),
     fRstartMC(obj.fRstartMC),
@@ -608,8 +608,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
   }
   
   // Initialize fNormWeight and fNormWeightErr to 0
-  for(Int_t i=0; i<3; i++){// Kt iterator
-    for(Int_t j=0; j<10; j++){// Mbin iterator
+  for(Int_t i=0; i<fKbinsT; i++){// Kt iterator
+    for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=obj.fNormWeight[i][j];
       fNormWeight2[i][j]=obj.fNormWeight2[i][j];
     }
@@ -646,7 +646,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fGenerateSignal = obj.fGenerateSignal;
   fGeneratorOnly = obj.fGeneratorOnly;
   fTabulatePairs = obj.fTabulatePairs;
-  fLinearInterpolation = obj.fLinearInterpolation;
+  fInterpolationType = obj.fInterpolationType;
   fMixedChargeCut = obj.fMixedChargeCut;
   fRMax = obj.fRMax;
   fRstartMC = obj.fRstartMC;
@@ -736,8 +736,8 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
     fFSIos[i]=obj.fFSIos[i];
   }
   
-  for(Int_t i=0; i<3; i++){// Kt iterator
-    for(Int_t j=0; j<10; j++){// Mbin iterator
+  for(Int_t i=0; i<fKbinsT; i++){// Kt iterator
+    for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=obj.fNormWeight[i][j];
       fNormWeight2[i][j]=obj.fNormWeight2[i][j];
     }
@@ -866,8 +866,8 @@ AliFourPion::~AliFourPion()
     if(fFSIos[i]) delete fFSIos[i];
   }
   
-  for(Int_t i=0; i<3; i++){// Kt iterator
-    for(Int_t j=0; j<10; j++){// Mbin iterator
+  for(Int_t i=0; i<fKbinsT; i++){// Kt iterator
+    for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       if(fNormWeight[i][j]) delete fNormWeight[i][j];
       if(fNormWeight2[i][j]) delete fNormWeight2[i][j];
     }
@@ -941,6 +941,12 @@ void AliFourPion::ParInit()
   fKmeanY[0] = 0;// central y
   fKmiddleY[0] = 0;
 
+  // 6x1 (Kt: 0-0.2, 0.2-0.24, 0.24-0.3, 0.3-0.35, 0.35-0.45, 0.45-1.0)
+  if(fKbinsT==6){
+    fKstepT[0] = 0.2; fKstepT[1] = 0.04; fKstepT[2] = 0.06; fKstepT[3] = 0.05; fKstepT[4] = 0.1; fKstepT[5] = 0.55;
+    fKmeanT[0] = 0.188; fKmeanT[1] = 0.222; fKmeanT[2] = 0.270; fKmeanT[3] = 0.324; fKmeanT[4] = 0.395; fKmeanT[5] = 0.551; 
+    fKmiddleT[0] = 0.1; fKmiddleT[1] = 0.22; fKmiddleT[2] = 0.27; fKmiddleT[3] = 0.325; fKmiddleT[4] = 0.4; fKmiddleT[5] = 0.725;
+  }
   // 4x1 (Kt: 0-0.25, 0.25-0.35, 0.35-0.45, 0.45-1.0)
   if(fKbinsT==4){
     fKstepT[0] = 0.25; fKstepT[1] = 0.1; fKstepT[2] = 0.1; fKstepT[3] = 0.55;
@@ -1835,7 +1841,9 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fQsideSum);
   fOutputList->Add(fQlongSum);
   
-  
+  TH2D *fkTDist = new TH2D("fkTDist","", fMbins,.5,fMbins+.5, 100,0.,1);
+  fOutputList->Add(fkTDist);
+
   ////////////////////////////////////
   ///////////////////////////////////  
   
@@ -2605,6 +2613,7 @@ void AliFourPion::UserExec(Option_t *)
 	  if( (en1+en2==0)) {
 	    if(!fGenerateSignal) Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2->Fill(kT12, qinv12);
 	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2QW->Fill(kT12, qinv12, qinv12);
+	    if(qinv12<0.1) ((TH2D*)fOutputList->FindObject("fkTDist"))->Fill(fMbin+1, kT12);
 	    // osl frame
 	    if((kT12 > 0.2) && (kT12 < 0.3)){
 	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[0].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
@@ -3145,10 +3154,10 @@ void AliFourPion::UserExec(Option_t *)
 		if(!fGenerateSignal && !fMCcase) {
 		  momBin12 = fMomResC2SC->GetYaxis()->FindBin(qinv12);
 		  momBin13 = fMomResC2SC->GetYaxis()->FindBin(qinv13);
-		  momBin23 = fMomResC2SC->GetYaxis()->FindBin(qinv23);		  
-		  if(momBin12 >= 20) momBin12 = 19;
-		  if(momBin13 >= 20) momBin13 = 19;
-		  if(momBin23 >= 20) momBin23 = 19;
+		  momBin23 = fMomResC2SC->GetYaxis()->FindBin(qinv23);
+		  if(qinv12 > 0.1) momBin12 = fMomResC2SC->GetYaxis()->FindBin(0.095);
+		  if(qinv13 > 0.1) momBin13 = fMomResC2SC->GetYaxis()->FindBin(0.095);
+		  if(qinv23 > 0.1) momBin23 = fMomResC2SC->GetYaxis()->FindBin(0.095);
 		  //
 		  if(ch1==ch2) MomResCorr12 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin12);
 		  else MomResCorr12 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin12);
@@ -3536,8 +3545,8 @@ void AliFourPion::UserExec(Option_t *)
 		    	  
 		  }
 		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6){
-		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(1, qinv12); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(2, qinv13); 
-		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(3, qinv14); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(4, qinv23); 
+		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(1, qinv12); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(2, qinv13);
+		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(3, qinv14); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(4, qinv23);
 		    ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(5, qinv24); ((TH2D*)fOutputList->FindObject("DistQinv4pion"))->Fill(6, qinv34);
 		  }
 		  
@@ -3545,7 +3554,7 @@ void AliFourPion::UserExec(Option_t *)
 		  Float_t QoutSum = fabs(qout12) + fabs(qout13) + fabs(qout14) + fabs(qout23) + fabs(qout24) + fabs(qout34);
 		  Float_t QsideSum = fabs(qside12) + fabs(qside13) + fabs(qside14) + fabs(qside23) + fabs(qside24) + fabs(qside34);
 		  Float_t QlongSum = fabs(qlong12) + fabs(qlong13) + fabs(qlong14) + fabs(qlong23) + fabs(qlong24) + fabs(qlong34);
-		
+		  
 		  if(!fq2Binning && !fLowMultBinning && fQdirectionBinning==0){
 		    if(KT4<=fKT4transition) EDindex4=0;
 		    else EDindex4=1;
@@ -3580,9 +3589,9 @@ void AliFourPion::UserExec(Option_t *)
 		    momBin14 = fMomResC2SC->GetYaxis()->FindBin(qinv14);
 		    momBin24 = fMomResC2SC->GetYaxis()->FindBin(qinv24);
 		    momBin34 = fMomResC2SC->GetYaxis()->FindBin(qinv34);		  
-		    if(momBin14 >= 20) momBin14 = 19;
-		    if(momBin24 >= 20) momBin24 = 19;
-		    if(momBin34 >= 20) momBin34 = 19;
+		    if(qinv14 > 0.1) momBin14 = fMomResC2SC->GetYaxis()->FindBin(0.095);
+		    if(qinv24 > 0.1) momBin24 = fMomResC2SC->GetYaxis()->FindBin(0.095);
+		    if(qinv34 > 0.1) momBin34 = fMomResC2SC->GetYaxis()->FindBin(0.095);
 		    //
 		    if(ch1==ch4) MomResCorr14 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin14);
 		    else MomResCorr14 = fMomResC2MC->GetBinContent(rBinForTPNMomRes, momBin14);
@@ -4261,7 +4270,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   qSide = fabs(qSide);
   qLong = fabs(qLong);
   Float_t wd=0, xd=0, yd=0, zd=0;
-  //Float_t qinvtemp=GetQinv(0,track1, track2);
+  //Float_t qinvtemp=GetQinv(track1, track2);
   //
   Int_t q2bin=0;
   if(fq2Binning || fLowMultBinning) q2bin = fEDbin;
@@ -4305,7 +4314,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     zd = (qLong-fQmean[fQlIndexL])/(fQmean[fQlIndexH]-fQmean[fQlIndexL]);
   }
   //
-  if(fLinearInterpolation){// Linear Interpolation of osl
+  if(fInterpolationType==0){// Linear Interpolation of osl
     // w interpolation (kt)
     Float_t c000, c100, c010, c001, c110, c101, c011, c111;
     if(q2bin==0){
@@ -4339,6 +4348,11 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     Float_t c1 = c01*(1-yd) + c11*yd;
     // z interpolation (qLong)
     wgt = (c0*(1-zd) + c1*zd);
+    // testing
+    //Float_t c0_2 = fNormWeight[fKtIndexL][fMbin]->Interpolate(qOut,qSide,qLong);
+    //Float_t c1_2 = fNormWeight[fKtIndexH][fMbin]->Interpolate(qOut,qSide,qLong);
+    //Float_t wgt_2 = c0_2*(1-wd) + c1_2*wd;
+    //if(qinvtemp<0.02) cout<<qinvtemp<<"  "<<wgt<<"  "<<wgt_2<<"  "<<ExceedsMeans<<"  "<<qOut<<" "<<qSide<<" "<<qLong<<endl;
   }else{// cubic interpolation of osl
     
     for(Int_t x=0; x<4; x++){
