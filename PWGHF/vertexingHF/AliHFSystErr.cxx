@@ -756,7 +756,7 @@ void AliHFSystErr::InitD0toKpi2010ppLowEn() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.031); // 4% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.019); //  error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
@@ -1581,7 +1581,7 @@ void AliHFSystErr::InitDplustoKpipi2010ppLowEn() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.031); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.019); // error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
@@ -1755,7 +1755,7 @@ void AliHFSystErr::InitDstartoD0pi2010ppLowEn() {
 
 // Normalization
   fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.031); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.019); // error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",20,0,20);
