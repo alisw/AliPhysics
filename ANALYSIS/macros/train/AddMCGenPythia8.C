@@ -51,9 +51,9 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF,Int_t kProces
   AliPythia8::Instance()->ReadString("Random:seed = 0");
 
   if(kCR)             
-    (AliPythia8::Instance())->ReadString("BeamRemnants:reconnectColours = on");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on");
   else
-    (AliPythia8::Instance())->ReadString("BeamRemnants:reconnectColours = off");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = off");
   
  
   AliPythia8::Instance()->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
