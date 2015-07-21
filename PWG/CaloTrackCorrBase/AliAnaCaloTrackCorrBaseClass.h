@@ -284,11 +284,11 @@ public:
   // Some utilities dealing with cluster angles
   
   /// Shift phi angle in case of negative value 360 degrees. Example TLorenzVector::Phi defined in -pi to pi
-  Float_t                GetPhi  (Float_t phi)                   { if ( phi < 0 ) phi += TMath::TwoPi() ; return phi ; }
+  Float_t                GetPhi  (Float_t phi)             const { if ( phi < 0 ) phi += TMath::TwoPi() ; return phi ; }
   
-  Float_t                DegToRad(Float_t deg)                   { deg *= TMath::DegToRad(); return deg ; }
+  Float_t                DegToRad(Float_t deg)             const { deg *= TMath::DegToRad(); return deg ; }
   
-  Float_t                RadToDeg(Float_t rad)                   { rad *= TMath::RadToDeg(); return rad ; }
+  Float_t                RadToDeg(Float_t rad)             const { rad *= TMath::RadToDeg(); return rad ; }
   
   // Calorimeter specific access methods and calculations
   
