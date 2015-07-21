@@ -49,7 +49,8 @@ public:
   virtual void SetForceGammaConversion(Bool_t force=kTRUE) {fForceConv = force;}
   virtual void SetKeepParent(Bool_t keep=kTRUE){fKeepParent= keep;} //Store parent even if it does not have childs within cuts
   virtual void SetKeepIfOneChildSelected(Bool_t keep=kTRUE){fKeepIfOneChildSelected = keep;} //Accept parent and child even if other children are not within cut.
-    
+  virtual void SetPreserveFullDecayChain(Int_t preserve = kFALSE) {fPreserveFullDecayChain = preserve;} //Prevent flagging(/skipping) of decay daughter particles; preserves complete forced decay chain
+ 
   virtual void Draw(const char * opt);
   TF1 *  GetPt() { return fPtPara;}
   TF1 *  GetY() {return fYPara;}
@@ -88,12 +89,13 @@ protected:
   Bool_t      fForceConv;    //
   Bool_t      fKeepParent;   //  Store parent even if it does not have childs within cuts
   Bool_t      fKeepIfOneChildSelected; //Accept parent and child even if other children are not within cut.
-
+  Bool_t      fPreserveFullDecayChain; //Prevent flagging(/skipping) of decay daughter particles; preserves complete forced decay chain
+	
 private:
   AliGenParam(const AliGenParam &Param);
   AliGenParam & operator=(const AliGenParam & rhs);
 
-  ClassDef(AliGenParam, 3) // Generator using parameterised pt- and y-distribution
+  ClassDef(AliGenParam, 4) // Generator using parameterised pt- and y-distribution
 };
 #endif
 
