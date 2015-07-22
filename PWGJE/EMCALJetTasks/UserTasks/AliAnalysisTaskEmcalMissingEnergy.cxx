@@ -191,7 +191,7 @@ AliAnalysisTaskEmcalMissingEnergy::~AliAnalysisTaskEmcalMissingEnergy()
   fSubstructure = new TTree("fSubstructure","fSubstructure");
   fHadronTrigger = new TTree("fHadronTrigger","fHadronTrigger");
 
-  const Int_t nVarS = 4;  
+  const Int_t nVarS = 5;  
   const Int_t nVarH = 5; 
   
   fSubstructureVar = new Float_t [nVarS];
@@ -204,6 +204,7 @@ AliAnalysisTaskEmcalMissingEnergy::~AliAnalysisTaskEmcalMissingEnergy()
   fSubstructureVarNames[1] = "Tau1";
   fSubstructureVarNames[2] = "Tau2";
   fSubstructureVarNames[3] = "Tau3";
+  fSubstructureVarNames[4] = "DeltaR2hardest";
 
   fHadronTriggerVarNames[0] = "TriggerPt";
   fHadronTriggerVarNames[1] = "JetPt";
@@ -494,6 +495,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
   Double_t dR2 = 0.;
   Double_t dR3 = 0.;
   Double_t dRmin = 0.;
+  Double_t dR2hardest = 0.;
   
   if(JetCont){
     JetCont->ResetCurrentID();
@@ -541,6 +543,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 	  fSubstructureVar[1] = tau1_num/tau_den;
 	  fSubstructureVar[2] = -1;
 	  fSubstructureVar[3] = -1;
+	  fSubstructureVar[4] = -1;
 	}
 	
 	else if (2 == SubJetCounter) { // I have just 2 subjets, the second is the hardest
@@ -548,6 +551,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 	  subJet2hardest = Reclusterer->GetJet(0);
 	  tau1_num = 0.;
 	  tau2_num = 0.;
+	  dR2hardest = R_distance(subJet1hardest,subJet2hardest);
 	  for (Int_t i = 0; i < mainJet->GetNumberOfTracks(); i++) { //tau1 & tau2 computation
 	    //mainJetParticle =  static_cast<AliVParticle*>(mainJet->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
 	    mainJetParticle =  static_cast<AliPicoTrack*>(mainJet->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
@@ -575,7 +579,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 	  fSubstructureVar[1] = tau1_num/tau_den;
 	  fSubstructureVar[2] = tau2_num/tau_den;
 	  fSubstructureVar[3] = -1;
-	     
+	  fSubstructureVar[4] = dR2hardest;
 	}
 	
 	else if (SubJetCounter > 2) { // I have more than 2 subjets, the last is the hardest
@@ -585,6 +589,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 	  tau1_num = 0.;
 	  tau2_num = 0.;
 	  tau3_num = 0.;
+	  dR2hardest = R_distance(subJet1hardest,subJet2hardest);
 	  for (Int_t i = 0; i < mainJet->GetNumberOfTracks(); i++) { //tau1 & tau2 computation
 	    //mainJetParticle =  static_cast<AliVParticle*>(mainJet->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
 	    mainJetParticle =  static_cast<AliPicoTrack*>(mainJet->TrackAt(i, JetCont->GetParticleContainer()->GetArray()));
@@ -626,6 +631,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 	  fSubstructureVar[1] = tau1_num/tau_den;
 	  fSubstructureVar[2] = tau2_num/tau_den;
 	  fSubstructureVar[3] = tau3_num/tau_den;
+	  fSubstructureVar[4] = dR2hardest;
 	  
 	}
 	
