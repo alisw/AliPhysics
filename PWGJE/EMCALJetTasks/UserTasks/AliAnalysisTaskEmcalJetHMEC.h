@@ -121,6 +121,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   TH2                   *fHistJetHTT[6][5][3];//!
   THnSparse             *fhnMixedEvents;      //!mixed events matrix
   THnSparse             *fhnJH;      //!Fg events matrix
+  TH3                   *fHistJHPsi; //! Psi angle distribution
 
   Short_t               fRunType; // 0-pp 1-pA 2-AA
 
