@@ -34,6 +34,15 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 
+#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
+
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+
 #include "AliPID.h"
 #include "AliESDpid.h"
 #include "AliAODPid.h"
@@ -69,6 +78,8 @@ fEMCEG1(kFALSE),
 fEMCEG2(kFALSE),
 fTracks_tender(0),
 fCaloClusters_tender(0),
+fMCparticle(0),
+fMCarray(0),
 fOutputList(0),
 fNevents(0),
 fVtxZ(0),
@@ -145,6 +156,8 @@ fEMCEG1(kFALSE),
 fEMCEG2(kFALSE),
 fTracks_tender(0),
 fCaloClusters_tender(0),
+fMCparticle(0),
+fMCarray(0),
 fOutputList(0),
 fNevents(0),
 fVtxZ(0),
@@ -397,10 +410,14 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fInvmassULS = new TH1F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 1000,0,1.0);
     fOutputList->Add(fInvmassULS);
     
-    Int_t bins[8]={8,500,200,400,400,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-    Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
-    Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
-    fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
+    //Int_t bins[8]={8,500,200,400,400,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+    //Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
+    //Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
+    //fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
+    Int_t bins[8]={8,500,200,400,400,400,400,3}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+    Double_t xmin[8]={-0.5,0,-10,0,0,0,0,-0.5};
+    Double_t xmax[8]={7.5,25,10,2,2,2,2,2.5};
+    fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;",8,bins,xmin,xmax);
     fOutputList->Add(fSparseElectron);
     
     PostData(1,fOutputList);
@@ -680,6 +697,20 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         }
         
         ////////////////////
+        // Get MC information
+        ///////////////////
+
+        Int_t ilabel = track->GetLabel();
+        Int_t pdg = -999;
+        Double_t pid_ele = 0.0;
+        if(ilabel>0)
+          {
+	   fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
+	   Int_t pdg = fMCparticle->GetPdgCode();
+           if(fabs(pdg)==11)pid_ele = 1.0;
+          }     
+
+        ////////////////////
         //Track properties//
         ///////////////////
         Double_t dEdx =-999, fTPCnSigma=-999;
@@ -749,13 +780,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             
             //EMCAL EID info
             Double_t eop = -1.0;
-            Double_t m02 = -99999,m20 = -99999,sqm02=-99999.0,sqm20=-99999.0;//Ratm02m20=-999.0;
+            //Double_t m02 = -99999,m20 = -99999,sqm02=-99999.0,sqm20=-99999.0;//Ratm02m20=-999.0;
+            Double_t m02 = -99999,m20 = -99999,sqm02m20=-99999.0;
             if(track->P()>0)eop = clustMatchE/track->P();
             m02 =clustMatch->GetM02();
             m20 =clustMatch->GetM20();
-            sqm02=sqrt(m02);
-            sqm20=sqrt(m20);
-            
+            //sqm02=sqrt(m02);
+            //sqm20=sqrt(m20);
+            sqm02m20 = sqrt(pow(m02,2)+pow(m20,2)); 
             
             //if(m02>0 && m20>0){
             //    Ratm02m20 = m02/m20;
@@ -779,8 +811,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             fvalueElectron[3] = eop;
             fvalueElectron[4] = clustMatch->GetM20();
             fvalueElectron[5] = clustMatch->GetM02();
-            fvalueElectron[6] = sqm20;
-            fvalueElectron[7] = sqm02;
+            //fvalueElectron[6] = sqm20;
+            //fvalueElectron[7] = sqm02;
+            fvalueElectron[6] = sqm02m20;
+            fvalueElectron[7] = pid_ele;
             
             if(fFlagSparse){
                 //cout << "filling sparse"<<endl;
