@@ -208,12 +208,12 @@ void AliADDecision::FillDecisions(AliESDAD *esdAD)
 		Float_t earlyHitCut = 1000;
 		if(TMath::Abs(timeSum - 2*fADADist) < 20) earlyHitCut = fEarlyHitCutShape->Eval(timeSum);
 		if(timeDiff < earlyHitCut){
-			itimeRobustADA[ntimeRobustADA] = i;
+			itimeRobustADA[ntimeRobustADA] = i-8;
 			ntimeRobustADA++;
 			timeRobustADA += time1/(timeErr1*timeErr1);
 			weightRobustADA += 1./(timeErr1*timeErr1);
 			
-			itimeRobustADA[ntimeRobustADA] = i+4;
+			itimeRobustADA[ntimeRobustADA] = i-4;
 			ntimeRobustADA++;
 			timeRobustADA += time2/(timeErr2*timeErr2);
 			weightRobustADA += 1./(timeErr2*timeErr2);
