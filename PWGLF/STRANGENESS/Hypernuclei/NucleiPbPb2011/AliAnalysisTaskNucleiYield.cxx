@@ -48,14 +48,14 @@ ClassImp(AliAnalysisTaskNucleiYield);
 static void BinLogAxis(const TH1 *h) {
   TAxis *axis = const_cast<TAxis*>(h->GetXaxis());
   const Int_t bins = axis->GetNbins();
-  
+
   const Double_t from = axis->GetXmin();
   const Double_t to = axis->GetXmax();
   Double_t *newBins = new Double_t[bins + 1];
-  
+
   newBins[0] = from;
   Double_t factor = pow(to / from, 1. / bins);
-  
+
   for (Int_t i = 1; i <= bins; i++) {
     newBins[i] = factor * newBins[i - 1];
   }
@@ -69,7 +69,7 @@ static void BinLogAxis(const TH1 *h) {
 /// \param partname Name of the analysed particle
 ///
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
-:AliAnalysisTaskSE(taskname.Data())						//
+:AliAnalysisTaskSE(taskname.Data())
 ,fList(0x0)
 ,fPDG(0x0)
 ,fPDGMass(0)
@@ -112,6 +112,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fRequireMinEnergyLoss(0.)
 ,fRequireMagneticField(0)
 ,fRequireVetoSPD(kFALSE)
+,fFixForLHC14a6(kTRUE)
 ,fParticle(AliPID::kUnknown)
 ,fCentBins(0x0)
 ,fDCABins(0x0)
@@ -160,8 +161,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 /// Standard destructor
 ///
 AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
-  // Destructor
-  
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fList) delete fList;
 }
@@ -169,7 +168,7 @@ AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
 /// This function creates all the histograms and all the objects in general used during the analysis
 /// \return void
 ///
-void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
+void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   fList = new TList();
   fList->SetOwner(kTRUE);
 
@@ -179,7 +178,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
   const Float_t *pTbins = fPtBins.GetArray();
   const Float_t *centBins = fCentBins.GetArray();
   const Float_t *dcaBins = fDCABins.GetArray();
-  
+
   fCentrality = new TH1F("fCentrality",";Centrality (%);Events / 1%;",100,0.,100.);
   fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",
                                 nCentBins,centBins);
@@ -188,7 +187,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
   fList->Add(fCentrality);
   fList->Add(fCentralityClasses);
   fList->Add(fFlattenedCentrality);
-  
+
   if (fIsMC) {
     fMTotal = new TH2F("fMTotal",";Centrality (%);p_{T} (GeV/c); Counts",
                        nCentBins,centBins,nPtBins,pTbins);
@@ -217,7 +216,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                               ";p_{T}^{rec} (GeV/c);p_{T}^{MC}-p_{T}^{rec} (GeV/c);Entries",
                               160,0.4,6.,80,-1.,1.);
     fProduction = new TH1F("fProduction",";p (GeV/c);Entries",100,-10,10);
-    
+
     fList->Add(fProduction);
     fList->Add(fMTotal);
     fList->Add(fATotal);
@@ -231,9 +230,9 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     fList->Add(fMDCASecondaryTOF);
     fList->Add(fAPtCorrection);
     fList->Add(fMPtCorrection);
-  
+
   } else {
-  
+
     float tofBins[fTOFnBins + 1];
     const float deltaTOF = (fTOFhighBoundary - fTOFlowBoundary) / fTOFnBins;
     for (int i = 0; i <= fTOFnBins; ++i)
@@ -247,7 +246,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     for (int i = 0; i <= nTpcBins; ++i) {
       tpcBins[i] = -4.f + i * 0.2f;
     }
-    
+
     fATOFsignal = new TH3F("fATOFsignal",
                            ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
                            nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
@@ -282,7 +281,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
                               fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
     fMTPCphiCounts = new TH2F("fMTPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
                               36,0.2,2.);
-    
+
     BinLogAxis(fMTPCeLoss);
     BinLogAxis(fATPCeLoss);
 
@@ -301,7 +300,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects(){
     if (fRequireMinEnergyLoss > 0.) fList->Add(fMTPCphiCounts);
     if (fEnablePerformance) fList->Add(fMTPCeLoss);
   }
-  
+
   PostData(1,fList);
 }
 
@@ -318,13 +317,13 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     PostData(1, fList);
     return;
   }
-  
+
   /// If the setup is fine the current event is loaded in memory together with the analysis manager
   /// and the event handler.
   AliVEvent *ev = dynamic_cast<AliVEvent*> (InputEvent());
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  
+
   /// The first check perfomed is on the physics selection output stored in the mask given by the
   /// handler.
   UInt_t mask = handl->IsEventSelected();
@@ -332,7 +331,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     PostData(1, fList);
     return;
   }
-  
+
   /// This mask contains also the information about the trigger of this events. For this analysis
   /// central, semi-central and minimum bias events are kept.
   if (!((mask & AliVEvent::kMB) || (mask & AliVEvent::kCentral) ||
@@ -340,11 +339,11 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     PostData(1, fList);
     return;
   }
-  
+
   /// To perform the majority of the analysis - and also this one - the standard PID handler is
   /// required.
   fPID = handl->GetPIDResponse();
-  
+
   /// The centrality selection in PbPb uses the percentile determined with V0.
   AliCentrality *centr = ev->GetCentrality();
   float centrality = centr->GetCentralityPercentile("V0M");
@@ -369,11 +368,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     PostData(1, fList);
     return;
   }
-  
+
   /// At the stage of event selection the Flattening is applied. This technique makes flat the
   /// centrality distribution using a pseudo-random selection based on prior probabilities.
   /// A complete description of this technique is present in the documentation of the Flatten
   /// function.
+
   fCentrality->Fill(centrality);
   if (Flatten(centrality)) {
     PostData(1, fList);
@@ -381,7 +381,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
   fCentralityClasses->Fill(centrality);
   fFlattenedCentrality->Fill(centrality);
-  
+
   TClonesArray *stack = 0x0;
   if (fIsMC) {
     // get branch "mcparticles"
@@ -390,7 +390,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       PostData(1, fList);
       return;
     }
-    
+
     /// Making the list of deuterons in acceptance
     fMmc.SetOwner(kFALSE);
     fAmc.SetOwner(kFALSE);
@@ -406,10 +406,10 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       } else if (pdg == -fPDG) {
         if (part->IsPhysicalPrimary()) fATotal->Fill(centrality,part->Pt());
         fAmc.Add(part);
-      } 
+      }
     }
   }
-  
+
   /// Checking how many deuterons in acceptance are reconstructed well
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
@@ -472,12 +472,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fATOFphiSignal->Fill(track->Phi(),pT,m * m - fPDGMassOverZ * fPDGMassOverZ);
       }
     }
-    
+
   } // End AOD track loop
-  
+
   fAmc.Clear();
   fMmc.Clear();
-  
+
   //  Post output data.
   PostData(1,fList);
 }
@@ -506,7 +506,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return kFALSE;
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
-  
+
   /// ITS related cuts
   dca[0] = 0.;
   dca[1] = 0.;
@@ -529,7 +529,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
     if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
   }
-  
+
   return kTRUE;
 }
 
@@ -543,7 +543,7 @@ Float_t AliAnalysisTaskNucleiYield::HasTOF(AliAODTrack *track) {
   Bool_t hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
   const float len = track->GetIntegratedLength();
   Bool_t hasTOF = Bool_t(hasTOFout & hasTOFtime) && len > 350.f;
-  
+
   if (!hasTOF) return -1.;
   const float p = track->GetTPCmomentum();
   const float tim = track->GetTOFsignal() - fPID->GetTOFResponse().GetStartTime(p);
@@ -621,7 +621,7 @@ Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
     AliITSPIDResponse &itsPidResp = fPID->GetITSResponse();
     itsPID = TMath::Abs(itsPidResp.GetNumberOfSigmas(t, fParticle)) < fRequireITSpidSigmas;
   }
-  
+
   if (t->Pt() < fDisableTPCpidAtHighPt) {
     if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
       AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
@@ -634,7 +634,7 @@ Bool_t AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
       tpcPID = TMath::Abs(t->GetTPCsignal() - r) < fRequireTPCpidSigmas * fCustomTPCpid[5] * r;
     }
   }
-  
+
   return itsPID && tpcPID;
 }
 
@@ -696,8 +696,12 @@ Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
     else return gRandom->Rndm() > fFlatteningProbs[int(cent)];
   } else {
     // This flattening is required since a strange peak in VOM distribution is observed in MC
-    return (cent < 1) && gRandom->Rndm() > 0.35;
+    if (fFixForLHC14a6 && cent < 1.e-4f) {
+      // return (cent < 1) && gRandom->Rndm() > 0.35;
+      return true;
+    }
   }
+  return false;
 }
 
 /// This function provides the correction for wrongly calculated \f$p_{\mathrm{T}}\f$.
