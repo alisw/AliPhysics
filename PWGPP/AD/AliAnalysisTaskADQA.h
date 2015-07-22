@@ -55,6 +55,8 @@ private:
   TH2F        *fHistTimePerPM_Corr;
   TH2F	      *fHistTimeVsChargeADA_Corr;
   TH2F	      *fHistTimeVsChargeADC_Corr;
+  TH2F	      *fHistTimeVsChargeADA_Cut;
+  TH2F	      *fHistTimeVsChargeADC_Cut;
   TH2F        *fHistWidthPerPM;
   TH2F	      *fHistWidthVsCharge;
   TH1F        *fHistNBBflagsADA;
