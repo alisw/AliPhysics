@@ -21,7 +21,10 @@ include_directories(${AliRoot_SOURCE_DIR}/EVE/${MODULE})
 
 # Additional include folders in alphabetical order
 include_directories(
+                    ${ROOT_INCLUDE_DIR}
 		    ${AliRoot_SOURCE_DIR}/AD/ADbase
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALbase
                     ${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/EVE/EveBase
@@ -42,6 +45,7 @@ include_directories(
                     ${AliRoot_SOURCE_DIR}/PMD/PMDbase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
                     ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEER

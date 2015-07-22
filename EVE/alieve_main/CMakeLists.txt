@@ -20,7 +20,15 @@ include_directories(${AliRoot_SOURCE_DIR}/EVE/alieve_main)
 
 # Additional include folders in alphabetical order
 include_directories(
+                    ${ROOT_INCLUDE_DIR}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/EVE/EveBase
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatarec
+                    ${AliRoot_SOURCE_DIR}/RAW/RAWDatabase
+                    ${AliRoot_SOURCE_DIR}/STEER/AOD
+                    ${AliRoot_SOURCE_DIR}/STEER/ESD
+                    ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
@@ -34,7 +42,7 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 add_executable(alieve ${SRCS})
-target_link_libraries(alieve STEERBase EveBase ASImage)
+target_link_libraries(alieve STEERBase EveBase Eve Core Rint ASImage)
 
 if(ZEROMQ_FOUND)
     target_link_libraries(alieve MONITORzmq)
@@ -47,10 +55,10 @@ set(SRCSHLT
 )
 
 add_executable(alihlteve ${SRCSHLT})
-target_link_libraries(alihlteve EveBase ASImage)
+target_link_libraries(alihlteve STEERBase EveBase Eve Core Rint ASImage)
 
 if(ZEROMQ_FOUND)
-    target_link_libraries(alihlteve EveBase MONITORzmq)
+    target_link_libraries(alihlteve EveBase Eve Rint MONITORzmq)
 endif(ZEROMQ_FOUND)
 
 # Installation
