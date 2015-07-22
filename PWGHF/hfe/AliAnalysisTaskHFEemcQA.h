@@ -12,6 +12,8 @@ class AliHFEcuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
+class AliAODMCHeader;
+class AliAODMCParticle; // sample
 
 #include "AliAnalysisTaskSE.h"
 
@@ -59,7 +61,11 @@ private:
     
     TClonesArray  *fTracks_tender;
     TClonesArray  *fCaloClusters_tender;
-    
+ 
+    AliAODMCParticle 	*fMCparticle;
+    TClonesArray 	*fMCarray;
+   
+
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fVtxZ;//!Vertex z
