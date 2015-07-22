@@ -31,7 +31,8 @@ HighPtTracks::AliReducedHighPtEventCreator *AddTaskHighPtReducedEventCreator(
     Bool_t isPythia = kFALSE,
     const char *trackContainer = "",
     const char *clusterContainer = "",
-    const char *triggerContainer = ""
+    const char *triggerContainer = "",
+    const char *outputfilename = ""
     ){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -53,9 +54,11 @@ HighPtTracks::AliReducedHighPtEventCreator *AddTaskHighPtReducedEventCreator(
   ReducedEventCutVariation(reducedEventCreator, mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class());
 
   TString commonoutput = TString(mgr->GetCommonFileName()) + ":ReducedEventCreator";
+  TString treeoutputfile = "ReducedHighPtEvent.root";
+  if(TString(outputfilename).Length()) treeoutputfile = outputfilename;
   mgr->ConnectInput(reducedEventCreator, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(reducedEventCreator, 1, mgr->CreateContainer(reducedEventCreator->GetName(), TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
-  mgr->ConnectOutput(reducedEventCreator, 2, mgr->CreateContainer("ReducedEvent", TTree::Class(), AliAnalysisManager::kOutputContainer, "ReducedHighPtEvent.root"));
+  mgr->ConnectOutput(reducedEventCreator, 2, mgr->CreateContainer("ReducedEvent", TTree::Class(), AliAnalysisManager::kOutputContainer, treeoutputfile.Data()));
 
   return reducedEventCreator;
 }
