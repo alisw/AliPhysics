@@ -64,6 +64,7 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   void SetNsigmaTPCTOF(Bool_t);
   void SetNsigmaTPConly(Bool_t);
   void SetNsigma(Double_t);
+  void SetNsigma2(Double_t);
   void SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff);
 
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
@@ -88,8 +89,9 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   long              fStatus;             // staus flag
   ReadPIDMethodType fPIDMethod;          // which PID mehod to use. 0 - nsgima, 1 - contour
   Bool_t            fNsigmaTPCTOF;       // true if squared nsigma from TPC and TOF, false if separately from TPC and TOF
-  Bool_t            fNsigmaTPConly;       // true if nsigma from TPC only
-  Double_t            fNsigma;       // number of sigmas - 3 by default
+  Bool_t            fNsigmaTPConly;      // true if nsigma from TPC only
+  Double_t          fNsigma;             // number of sigmas - 3 by default
+  Double_t          fNsigma2;             // number of sigmas - 3 by default
 
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC
