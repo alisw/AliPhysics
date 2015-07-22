@@ -66,6 +66,7 @@ public:
   TString     GetFiredTriggerClasses(ULong64_t mask,ULong64_t mask2) const;
   void        PrintAllTriggerClasses() const;
   Bool_t      IsTriggerClassFired(ULong64_t mask, const char *name) const;
+  Bool_t      IsTriggerClassFiredNext50(ULong64_t mask, const char *name) const;
   Bool_t      IsTriggerClassFired(ULong64_t mask, ULong64_t mask2,const char *name) const;
   Float_t     GetCurrentL3()               const {return fCurrentL3;}
   Float_t     GetCurrentDip()              const {return fCurrentDip;}

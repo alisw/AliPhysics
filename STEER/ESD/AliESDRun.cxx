@@ -373,12 +373,14 @@ Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const
   // Checks if the trigger class
   // identified by 'name' has been
   // fired. Uses the trigger class mask.
+  // To be used for first classes 0-49
 
   TNamed *trclass = (TNamed *)fTriggerClasses.FindObject(name);
   if (!trclass) return kFALSE;
 
   Int_t iclass = fTriggerClasses.IndexOf(trclass);
   if (iclass < 0) return kFALSE;
+  if (iclass >= 50) return kFALSE;
 
   if (mask & (1ull << iclass))
     return kTRUE;
@@ -386,9 +388,29 @@ Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const
     return kFALSE;
 }
 //______________________________________________________________________________
+Bool_t AliESDRun::IsTriggerClassFiredNext50(ULong64_t mask, const char *name) const
+{
+  // Checks if the trigger class
+  // identified by 'name' has been
+  // fired. Uses the trigger class mask.
+  // To be used for first classes 50-99
+
+  TNamed *trclass = (TNamed *)fTriggerClasses.FindObject(name);
+  if (!trclass) return kFALSE;
+
+  Int_t iclass = fTriggerClasses.IndexOf(trclass);
+  if (iclass < 50) return kFALSE;
+  if (iclass >= 100) return kFALSE;
+
+  if (mask & (1ull << (iclass-50)))
+    return kTRUE;
+  else
+    return kFALSE;
+}
+//______________________________________________________________________________
 Bool_t AliESDRun::IsTriggerClassFired(ULong64_t masklow, ULong64_t maskhigh,const char *name) const
 {
- return (IsTriggerClassFired(masklow,name) || IsTriggerClassFired(maskhigh,name));
+ return (IsTriggerClassFired(masklow,name) || IsTriggerClassFiredNext50(maskhigh,name));
 }
 //_____________________________________________________________________________
 Bool_t AliESDRun::InitMagneticField() const
