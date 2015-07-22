@@ -91,6 +91,7 @@ ClassImp(AliFemtoMJTrackCut)
   fNsigmaTPCTOF(kFALSE),
   fNsigmaTPConly(kFALSE),
   fNsigma(3.),
+  fNsigma2(3.),
     fminTPCclsF(0),
     fminTPCncls(0),
     fminITScls(0),
@@ -137,6 +138,7 @@ ClassImp(AliFemtoMJTrackCut)
   fNsigmaTPCTOF=kFALSE;
   fNsigmaTPConly=kFALSE;
   fNsigma=3.;
+  fNsigma2=3.;
 }
 //------------------------------
 AliFemtoMJTrackCut::~AliFemtoMJTrackCut(){
@@ -1060,8 +1062,13 @@ bool AliFemtoMJTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
   if (fNsigmaTPCTOF) {
     if (mom > 0.5) {
       //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma)
-	return true;
+      if(mom < 2.0) {
+	if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma)
+	  return true;
+      }
+      else
+	if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma2)
+	  return true;	
     }
     else {
       if (TMath::Abs(nsigmaTPCK) < fNsigma)
@@ -1102,8 +1109,13 @@ bool AliFemtoMJTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigma
   if (fNsigmaTPCTOF) {
     if (mom > 0.5) {
       //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma)
-	return true;
+      if(mom < 2.0) {
+	if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma)
+	  return true;
+      }
+      else
+	if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma2)
+	  return true;	
     }
     else {
       if (TMath::Abs(nsigmaTPCPi) < fNsigma)
@@ -1139,8 +1151,13 @@ bool AliFemtoMJTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigm
   if (fNsigmaTPCTOF) {
     if (mom > 0.5) {
 //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma)
-            return true;
+      if(mom < 2.0) {
+	if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma)
+	  return true;
+      }
+      else
+	if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma2)
+	  return true;	
 	}
     else {
         if (TMath::Abs(nsigmaTPCP) < fNsigma)
@@ -1189,8 +1206,13 @@ void AliFemtoMJTrackCut::SetNsigmaTPConly(Bool_t nsigma)
 void AliFemtoMJTrackCut::SetNsigma(Double_t nsigma)
 {
   fNsigma = nsigma;
+  fNsigma2 = nsigma;
 }
 
+void AliFemtoMJTrackCut::SetNsigma2(Double_t nsigma)
+{
+   fNsigma2 = nsigma;
+}
 
 void AliFemtoMJTrackCut::SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req)
 {
