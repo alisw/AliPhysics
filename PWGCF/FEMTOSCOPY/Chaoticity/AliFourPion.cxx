@@ -971,7 +971,7 @@ void AliFourPion::ParInit()
   fQupperBoundQ2 = 2.0;
   fQupperBoundQ3 = 0.6;
   fQupperBoundQ4 = 0.6;
-  fQbinsQ2 = int(fQupperBoundQ2/0.005);
+  fQbinsQ2 = int(fQupperBoundQ2/0.008);
   fQbinsQ3 = int(fQupperBoundQ3/0.005);
   fQbinsQ4 = int(fQupperBoundQ4/0.005);
   fQstepWeights = fQupperBoundWeights/Float_t(kQbinsWeights);
