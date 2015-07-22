@@ -22,7 +22,7 @@
 class AliVZEROLogicalSignal  : public TObject {
 public:
 	AliVZEROLogicalSignal();
-	AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay);
+	AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay, Bool_t run2);
 	virtual ~AliVZEROLogicalSignal();
 	AliVZEROLogicalSignal(const AliVZEROLogicalSignal &signal);
 	AliVZEROLogicalSignal& operator= (const AliVZEROLogicalSignal &signal);

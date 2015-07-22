@@ -41,9 +41,11 @@ ClassImp(AliVZEROTriggerSimulator)
 
 //_____________________________________________________________________________
 AliVZEROTriggerSimulator::AliVZEROTriggerSimulator(TTree * digitsTree, TClonesArray* digits) : 
-TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWord(0)
+TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWord(0),fIsRun2(kFALSE)
 {
 	// constructor
+	fIsRun2 = (AliCDBManager::Instance()->GetRun() >= 215011);
+
 	fTriggerData = LoadTriggerData();
 	LoadClockOffset();
 	
@@ -54,17 +56,19 @@ TObject(),fTriggerData(NULL),fDigitsTree(digitsTree),fDigits(digits),fTriggerWor
 	GenerateBBWindows();
 	GenerateBGWindows();
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-		fBBLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin1(i),0); 
-		fBGLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin2(i),0); 
-		fBBReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin1(i),0);
-		fBGReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin2(i),0);		
+	  fBBLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin1(i),0,fIsRun2); 
+	  fBGLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin2(i),0,fIsRun2); 
+	  fBBReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin1(i),0,fIsRun2);
+	  fBGReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin2(i),0,fIsRun2);		
 	}
 }
 //_____________________________________________________________________________
 AliVZEROTriggerSimulator::AliVZEROTriggerSimulator() : 
-TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
+TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0),fIsRun2(kFALSE)
 {
 	// Default constructor
+	fIsRun2 = (AliCDBManager::Instance()->GetRun() >= 215011);
+
 	fTriggerData = LoadTriggerData();
 	LoadClockOffset();
 
@@ -75,10 +79,10 @@ TObject(),fTriggerData(NULL),fDigitsTree(NULL),fDigits(NULL),fTriggerWord(0)
 	GenerateBBWindows();
 	GenerateBGWindows();
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-		fBBLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin1(i),0); 
-		fBGLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin2(i),0); 
-		fBBReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin1(i),0);
-		fBGReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin2(i),0);		
+	  fBBLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin1(i),0,fIsRun2); 
+	  fBGLatch[i] = new AliVZEROLogicalSignal(fTriggerData->GetLatchWin2(i),0,fIsRun2); 
+	  fBBReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin1(i),0,fIsRun2);
+	  fBGReset[i] = new AliVZEROLogicalSignal(fTriggerData->GetResetWin2(i),0,fIsRun2);		
 	}
 }
 
@@ -109,9 +113,9 @@ void AliVZEROTriggerSimulator::GenerateBBWindows()
   }
   else {
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-		AliVZEROLogicalSignal clk1BB(fTriggerData->GetClk1Win1(i),fTriggerData->GetDelayClk1Win1(i));
-		AliVZEROLogicalSignal clk2BB(fTriggerData->GetClk2Win1(i),fTriggerData->GetDelayClk2Win1(i));
-		fBBGate[i] = new AliVZEROLogicalSignal(clk1BB & clk2BB);
+	  AliVZEROLogicalSignal clk1BB(fTriggerData->GetClk1Win1(i),fTriggerData->GetDelayClk1Win1(i),fIsRun2);
+	  AliVZEROLogicalSignal clk2BB(fTriggerData->GetClk2Win1(i),fTriggerData->GetDelayClk2Win1(i),fIsRun2);
+	  fBBGate[i] = new AliVZEROLogicalSignal(clk1BB & clk2BB);
 	}
   }
 }
@@ -129,9 +133,9 @@ void AliVZEROTriggerSimulator::GenerateBGWindows()
   }
   else {
 	for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-		AliVZEROLogicalSignal clk1BG(fTriggerData->GetClk1Win2(i),fTriggerData->GetDelayClk1Win2(i));
-		AliVZEROLogicalSignal clk2BG(fTriggerData->GetClk2Win2(i),fTriggerData->GetDelayClk2Win2(i));
-		fBGGate[i] = new AliVZEROLogicalSignal(clk1BG & clk2BG);
+	  AliVZEROLogicalSignal clk1BG(fTriggerData->GetClk1Win2(i),fTriggerData->GetDelayClk1Win2(i),fIsRun2);
+	  AliVZEROLogicalSignal clk2BG(fTriggerData->GetClk2Win2(i),fTriggerData->GetDelayClk2Win2(i),fIsRun2);
+	  fBGGate[i] = new AliVZEROLogicalSignal(clk1BG & clk2BG);
 		// In VZERO-A we have a shift by -25ns which is controlled by
 		// 'Delay Win2' = 7 instead of default 6.
 		// The flag is not stored in OCDB so we have manually shift the
@@ -201,11 +205,13 @@ void AliVZEROTriggerSimulator::LoadClockOffset()
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
 
+  Float_t fOffsetCorr[AliVZEROTriggerData::kNCIUBoards] = {250.1, 250.1, 250.1, 250.6, 251.1, 251.1, 251.1, 251.1};
   for(Int_t board = 0; board < AliVZEROTriggerData::kNCIUBoards; ++board) {
     fClockOffset[board] = (((Float_t)calibdata->GetRollOver(board)-
 			    (Float_t)calibdata->GetTriggerCountOffset(board))*25.0-
 			   l1Delay+
 			   kV0Offset);
+    if (fIsRun2) fClockOffset[board] += fOffsetCorr[board];
     AliDebug(1,Form("Board %d Offset %f",board,fClockOffset[board]));
   }
 }

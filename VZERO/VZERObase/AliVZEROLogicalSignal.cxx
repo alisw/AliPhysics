@@ -32,27 +32,44 @@ AliVZEROLogicalSignal::AliVZEROLogicalSignal() : TObject(), fStart(0.), fStop(0.
 	// Default constructor
 }
 //_____________________________________________________________________________
-AliVZEROLogicalSignal::AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay) : TObject(), fStart(0.), fStop(0.)
+AliVZEROLogicalSignal::AliVZEROLogicalSignal(UShort_t profilClock, UInt_t delay, Bool_t run2) : TObject(), fStart(0.), fStop(0.)
 {
 	// Constructor using the profilClock and delay parameters comming from the FEE
 	
 	Bool_t word;
 	Bool_t up=kFALSE;
 	Bool_t down=kFALSE;
-	
-	for(int i=0 ; i<5 ; i++) {
-	        Int_t shift = (i<4) ? (3-i) : 4;
-	        word = (profilClock >> shift) & 0x1;
-		if(word&&!up) {
-		        fStart = 5. * (i + 1);
-			up = kTRUE;
-		}
-		if(!word&&up&&!down) {
-		        fStop = 5. * (i + 1);
-			down = kTRUE;
-		}		
+
+	if (!run2) {
+	  for(int i=0 ; i<5 ; i++) {
+	    Int_t shift = (i<4) ? (3-i) : 4;
+	    word = (profilClock >> shift) & 0x1;
+	    if(word&&!up) {
+	      fStart = 5. * (i + 1);
+	      up = kTRUE;
+	    }
+	    if(!word&&up&&!down) {
+	      fStop = 5. * (i + 1);
+	      down = kTRUE;
+	    }		
+	  }
+	  if(!down) fStop = 30.;
 	}
-	if(!down) fStop = 30.;
+	else {
+	  for(int i=0 ; i<5 ; i++) {
+	    Int_t shift = (i<2) ? (1-i) : (6-i);
+	    word = (profilClock >> shift) & 0x1;
+	    if(word&&!up) {
+	      fStart = 5. * (i + 3);
+	      up = kTRUE;
+	    }
+	    if(!word&&up&&!down) {
+	      fStop = 5. * (i + 3);
+	      down = kTRUE;
+	    }		
+	  }
+	  if(!down) fStop = 40.;
+	}
 	
 	fStart += delay*1e-2; // Add 10 ps par register unit
 	fStop  += delay*1e-2; 
