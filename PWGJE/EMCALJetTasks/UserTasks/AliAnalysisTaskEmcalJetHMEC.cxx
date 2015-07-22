@@ -66,6 +66,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0), 
+  fHistJHPsi(0),
   fHistJetHEtaPhi(0), 
   fhnMixedEvents(0x0),
   fhnJH(0x0)
@@ -119,6 +120,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
   fHistClusEtaPhiEn(0),  
+  fHistJHPsi(0),
   fHistJetHEtaPhi(0),
   fhnMixedEvents(0x0),
   fhnJH(0x0)
@@ -156,7 +158,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
 
-  fHistClusEtaPhiEn = new TH3F("fHistClusEtaPhiEn","Clus eta-phi-energy",900,-1.8,1.8,720,-3.2,3.2,10,0,10);
+  fHistClusEtaPhiEn = new TH3F("fHistClusEtaPhiEn","Clus eta-phi-energy",900,-1.8,1.8,720,-3.2,3.2,20,0,20);
+
+  fHistJHPsi = new TH3F("fHistJHPsi","Jet-Hadron ntr-trpt-dpsi",20,0,100,200,0,20,120,0,180);
 
   TString name;
 
@@ -231,6 +235,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
   fOutput->Add(fHistClusEtaPhiEn);
+  fOutput->Add(fHistJHPsi);
 
   PostData(1, fOutput);
 
@@ -471,6 +476,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // see if event is selected
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
+  TVector3 vector_jet, vector_hdr;
+
   for (Int_t ijet = 0; ijet < Njets; ijet++){    
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
     if (!jet) continue; 
@@ -484,6 +491,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     Double_t jetphi = jet->Phi();
     Double_t jetPt = jet->Pt();
     Double_t jeteta=jet->Eta();
+
+    vector_jet.SetXYZ( jet->Px(), jet->Py(), jet->Pz() );
 
     Double_t leadjet=0;
     if (ijet==ijethi) leadjet=1;
@@ -525,7 +534,12 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 	    fHistTrackPt->Fill(track->Pt());
 	  	  
 	    if (track->Pt()<0.15) continue;
-	  
+
+            vector_hdr.SetXYZ( track->Px(), track->Py(), track->Pz() );
+            if ( (jetPt>20.) && (jetPt<60.) ) {
+              fHistJHPsi->Fill(Ntracks, track->Pt(), vector_hdr.Angle(vector_jet) * TMath::RadToDeg() );
+            }
+
 	    Double_t trackphi = track->Phi();
 	    if (trackphi > TMath::Pi())
 	      trackphi = trackphi-2*TMath::Pi();
