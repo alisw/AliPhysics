@@ -51,7 +51,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot()
     fHistNBBCoincidencesADA(0),fHistNBBCoincidencesADC(0),fHistNBBCoincidencesADAVsADC(0),
     fHistNBGflagsADA(0),fHistNBGflagsADC(0),fHistNBGflagsADAVsADC(0),
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
-    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
+    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistFlagNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecisionBasic(0),fHistDecisionRobust(0),
     fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
@@ -75,7 +75,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
     fHistNBBCoincidencesADA(0),fHistNBBCoincidencesADC(0),fHistNBBCoincidencesADAVsADC(0),
     fHistNBGflagsADA(0),fHistNBGflagsADC(0),fHistNBGflagsADAVsADC(0),
     fHistNBGCoincidencesADA(0),fHistNBGCoincidencesADC(0),fHistNBGCoincidencesADAVsADC(0),
-    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistChargePerCoincidence(0),
+    fHistChargeNoFlag(0),fHistTimeNoFlag(0), fHistChargeNoTime(0),fHistFlagNoTime(0),fHistChargePerCoincidence(0),
     fHistMeanTimeADA(0),fHistMeanTimeADC(0),fHistMeanTimeDifference(0),fHistMeanTimeCorrelation(0),fHistMeanTimeSumDiff(0),fHistDecisionBasic(0),fHistDecisionRobust(0),
     fHistTriggerMasked(0),fHistTriggerUnMasked(0),fHistTriggerOthers(0),
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
@@ -257,6 +257,10 @@ if (!fHistChargeNoTime) {
     fHistChargeNoTime = CreateHist2D("fHistChargeNoTime","Charge in PM without time measurement",kNChannelBins, kChannelMin, kChannelMax,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"Channel","Charge","Entries");
     fListHist->Add(fHistChargeNoTime);
   }
+if (!fHistFlagNoTime) {
+    fHistFlagNoTime = CreateHist1D("fHistFlagNoTime","events with BB/BG flag but no time",kNChannelBins, kChannelMin, kChannelMax,"Channel","Entries");
+    fListHist->Add(fHistFlagNoTime);
+  } 
 if (!fHistChargePerCoincidence) {
      fHistChargePerCoincidence = CreateHist2D("fHistChargePerCoincidence","Charge in PM per coincidence",5,-0.5,4.5,kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"Number of BB coincidences","Charge","Entries");
      fListHist->Add(fHistChargePerCoincidence);
@@ -596,6 +600,8 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 			fHistTimeNoFlag->Fill(i,esdADfriend->GetTime(i));
 			}
 		if(esdADfriend->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(i,esdAD->GetAdc(i));
+		if(esdADfriend->GetTime(i) < 1e-6) fHistChargeNoTime->Fill(i,esdAD->GetAdc(i));
+		if(esdADfriend->GetTime(i) < 1e-6 && (esdAD->GetBBFlag(i)||esdAD->GetBGFlag(i)))fHistFlagNoTime->Fill(i);
 	
 		fHistTimePerPM_UnCorr->Fill(i,esdADfriend->GetTime(i));
  		if(i<8) fHistTimeVsChargeADC_UnCorr->Fill(esdADfriend->GetTime(i),esdAD->GetAdc(i));

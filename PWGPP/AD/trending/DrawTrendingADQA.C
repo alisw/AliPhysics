@@ -64,6 +64,10 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   Float_t MPV[16], MPVErr[16];
   Float_t meanPedestal[32],widthPedestal[32];
   Float_t slewingChi2ADA = -1024, slewingChi2ADC = -1024; 
+  Float_t ratePhysADAND = -1024, ratePhysADOR = -1024;
+  Float_t ratePhysBBA = -1024, ratePhysBBC = -1024;
+  Float_t ratePhysBGA = -1024, ratePhysBGC = -1024;
+  Float_t channelTimeMean[16], channelTimeSigma[16];
   
   ttree->SetBranchAddress("adReady",&adReady);
   ttree->SetBranchAddress("invalidInput",&invalidInput);
@@ -102,6 +106,14 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("slewingChi2ADC",&slewingChi2ADC);
   ttree->SetBranchAddress("saturationADA",&saturationADA);
   ttree->SetBranchAddress("saturationADC",&saturationADC);
+  ttree->SetBranchAddress("ratePhysADAND",&ratePhysADAND);
+  ttree->SetBranchAddress("ratePhysADOR",&ratePhysADOR);
+  ttree->SetBranchAddress("ratePhysBBA",&ratePhysBBA);
+  ttree->SetBranchAddress("ratePhysBBC",&ratePhysBBC);
+  ttree->SetBranchAddress("ratePhysBGA",&ratePhysBGA);
+  ttree->SetBranchAddress("ratePhysBGC",&ratePhysBGC);
+  ttree->SetBranchAddress("channelTimeMean", &channelTimeMean[0]);
+  ttree->SetBranchAddress("channelTimeSigma", &channelTimeSigma[0]);
   
   //----------------------Make trending histos------------------------------------
   ttree->GetEntry(0);
@@ -117,6 +129,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   TH1F *hRunTime = new TH1F("hRunTime","Run duration;;Time (min)",nRuns,-0.5,nRuns-0.5);
   TH1I *hLHCstate = new TH1I("hLHCstate","LHC state;;State",nRuns,-0.5,nRuns-0.5);
+  TH1I *hNEvents = new TH1I("hNEvents","Number of events;;Number of events",nRuns,-0.5,nRuns-0.5);
       
   TH1F *hMeanTotalChargeADA = new TH1F("hMeanTotalChargeADA","Mean total charge;;Charge (ADC counts)",nRuns,-0.5,nRuns-0.5);
   TH1F *hMeanTotalChargeADC = new TH1F("hMeanTotalChargeADC","Mean total charge;;Charge (ADC counts)",nRuns,-0.5,nRuns-0.5);
@@ -141,11 +154,21 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   TH2F *hMeanPedestal = new TH2F("hMeanPedestal","Pedestal mean per channel;;Pedestal (ADC counts)",32,-0.5,31.5,nRuns,-0.5,nRuns-0.5);
   TH2F *hWidthPedestal = new TH2F("hWidthPedestal","Pedestal width per channel;;Width (ADC counts)",32,-0.5,31.5,nRuns,-0.5,nRuns-0.5);
   
-  TH1F *hSlewingChi2ADA = new TH1F("hSlewingChi2ADA","Time slewing Chi2 ADA;;Chi2",nRuns,-0.5,nRuns-0.5);
-  TH1F *hSlewingChi2ADC = new TH1F("hSlewingChi2ADC","Time slewing Chi2 ADC;;Chi2",nRuns,-0.5,nRuns-0.5);
+  TH1F *hSlewingChi2ADA = new TH1F("hSlewingChi2ADA","Time slewing Chi2;;Chi2",nRuns,-0.5,nRuns-0.5);
+  TH1F *hSlewingChi2ADC = new TH1F("hSlewingChi2ADC","Time slewing Chi2;;Chi2",nRuns,-0.5,nRuns-0.5);
   
   TH1F *hSaturationADA = new TH1F("hSaturationADA","Saturation;;Saturation",nRuns,-0.5,nRuns-0.5);
   TH1F *hSaturationADC = new TH1F("hSaturationADC","Saturation;;Saturation",nRuns,-0.5,nRuns-0.5);
+  
+  TH2F *hChannelTimeMean = new TH2F("hChannelTimeMean","Mean time per channel;Channel;Time (ns)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hChannelTimeSigma = new TH2F("hChannelTimeSigma","Time resolution per channel;Channel;Time (ns)",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  
+  TH1F *hRatePhysADAND = new TH1F("hRatePhysADAND","Physics selection rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRatePhysADOR = new TH1F("hRatePhysADOR","Physics selection rate AD;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRatePhysBBA = new TH1F("hRatePhysBBA","Physics selection rate BB;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRatePhysBBC = new TH1F("hRatePhysBBC","Physics selection rate BB;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRatePhysBGA = new TH1F("hRatePhysBGA","Physics selection rate BG;;Trigger rate",nRuns,-0.5,nRuns-0.5);
+  TH1F *hRatePhysBGC = new TH1F("hRatePhysBGC","Physics selection rate BG;;Trigger rate",nRuns,-0.5,nRuns-0.5);
   
   char ChannelInt[10];
   for(Int_t iPM=0; iPM<16; iPM++){
@@ -157,7 +180,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	}
   
   fListHist.Add(hRunTime);
-  fListHist.Add(hLHCstate);    
+  fListHist.Add(hLHCstate); 
+  fListHist.Add(hNEvents);   
   fListHist.Add(hMeanTotalChargeADA);
   fListHist.Add(hMeanTotalChargeADC);
   fListHist.Add(hMeanTimeADA);
@@ -179,6 +203,14 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   fListHist.Add(hSlewingChi2ADC);
   fListHist.Add(hSaturationADA);
   fListHist.Add(hSaturationADC);
+  fListHist.Add(hChannelTimeMean);
+  fListHist.Add(hChannelTimeSigma);
+  fListHist.Add(hRatePhysADAND);
+  fListHist.Add(hRatePhysADOR);
+  fListHist.Add(hRatePhysBBA);
+  fListHist.Add(hRatePhysBBC);
+  fListHist.Add(hRatePhysBGA);
+  fListHist.Add(hRatePhysBGC);
   
   //----------------------Loop over runs in tree------------------------------------
   char runlabel[6];      
@@ -233,6 +265,10 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hLHCstate->SetBins(goodrun+1,0,goodrun+1);
 	hLHCstate->SetBinContent(goodrun+1,LHCstate);
 	hLHCstate->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hNEvents->SetBins(goodrun+1,0,goodrun+1);
+	hNEvents->SetBinContent(goodrun+1,(Int_t)2*TMath::Power(rateErr,-2));
+	hNEvents->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	hMeanTotalChargeADA->SetBins(goodrun+1,0,goodrun+1);
 	hMeanTotalChargeADA->SetBinContent(goodrun+1,meanTotalChargeADA);
@@ -302,6 +338,36 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	if(hRatioVZEROADOR!=0)hRatioVZEROADOR->SetBinError(goodrun+1,rateErr/rateRatioADV0OR);
 	hRatioVZEROADOR->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
 	
+	hRatePhysADAND->SetBins(goodrun+1,0,goodrun+1);
+	hRatePhysADAND->SetBinContent(goodrun+1,rateADAND);
+	if(rateADAND!=0)hRatePhysADAND->SetBinError(goodrun+1,rateErr/ratePhysADAND);
+	hRatePhysADAND->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRatePhysADOR->SetBins(goodrun+1,0,goodrun+1);
+	hRatePhysADOR->SetBinContent(goodrun+1,ratePhysADOR);
+	if(ratePhysADOR!=0)hRatePhysADOR->SetBinError(goodrun+1,rateErr/ratePhysADOR);
+	hRatePhysADOR->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRatePhysBBA->SetBins(goodrun+1,0,goodrun+1);
+	hRatePhysBBA->SetBinContent(goodrun+1,ratePhysBBA);
+	if(ratePhysBBA!=0)hRatePhysBBA->SetBinError(goodrun+1,rateErr/ratePhysBBA);
+	hRatePhysBBA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRatePhysBBC->SetBins(goodrun+1,0,goodrun+1);
+	hRatePhysBBC->SetBinContent(goodrun+1,ratePhysBBC);
+	if(ratePhysBBC!=0)hRatePhysBBC->SetBinError(goodrun+1,rateErr/ratePhysBBC);
+	hRatePhysBBC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRatePhysBGA->SetBins(goodrun+1,0,goodrun+1);
+	hRatePhysBGA->SetBinContent(goodrun+1,ratePhysBGA);
+	if(ratePhysBGA!=0)hRatePhysBGA->SetBinError(goodrun+1,rateErr/ratePhysBGA);
+	hRatePhysBGA->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hRatePhysBGC->SetBins(goodrun+1,0,goodrun+1);
+	hRatePhysBGC->SetBinContent(goodrun+1,ratePhysBGC);
+	if(ratePhysBGC!=0)hRatePhysBGC->SetBinError(goodrun+1,rateErr/ratePhysBGC);
+	hRatePhysBGC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
 	hMPV->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
 	for(Int_t i=0; i<16; i++){
 		hMPV->SetBinContent(i+1,goodrun+1,MPV[i]);
@@ -332,6 +398,14 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hSaturationADC->SetBins(goodrun+1,0,goodrun+1);
 	hSaturationADC->SetBinContent(goodrun+1,saturationADC);
 	hSaturationADC->GetXaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hChannelTimeMean->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<16; i++) hChannelTimeMean->SetBinContent(i+1,goodrun+1,channelTimeMean[i]);
+	hChannelTimeMean->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hChannelTimeSigma->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<16; i++) hChannelTimeSigma->SetBinContent(i+1,goodrun+1,channelTimeSigma[i]);
+	hChannelTimeSigma->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	goodrun++;
         }
@@ -406,7 +480,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hMeanTimeADC->SetMarkerColor(kRed);
   hMeanTimeADA->SetMarkerStyle(kFullCircle);
   hMeanTimeADC->SetMarkerStyle(kFullCircle);  
-  myScaleSetUp(hMeanTimeADA,hMeanTimeADC);  
+  //myScaleSetUp(hMeanTimeADA,hMeanTimeADC); 
+  hMeanTimeADA->GetYaxis()->SetRangeUser(50,70); 
   hMeanTimeADA->Draw("E");
   hMeanTimeADC->Draw("Esame");
   myLegend1->Draw();
@@ -429,13 +504,91 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hMeanTimeSigmaADC->SetMarkerColor(kRed);
   hMeanTimeSigmaADA->SetMarkerStyle(kFullCircle);
   hMeanTimeSigmaADC->SetMarkerStyle(kFullCircle);
-  myScaleSetUp(hMeanTimeSigmaADA,hMeanTimeSigmaADC);
+  //myScaleSetUp(hMeanTimeSigmaADA,hMeanTimeSigmaADC);
+  hMeanTimeSigmaADA->GetYaxis()->SetRangeUser(0.1,1.0);
   hMeanTimeSigmaADA->Draw("E");
   hMeanTimeSigmaADC->Draw("Esame");
   myLegend1->Draw();
   
   c3->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c3->SaveAs(Form("%s/ADQA__Mean_time_Sigma.png",plotDir.Data()));
+  
+  TCanvas *c21 = new TCanvas("ChannelTime"," ",800,400); 
+  c21->Draw();						
+  c21->cd();
+  TPad *myPad21 = new TPad("myPad21", "The pad",0,0,1,1);
+  myPadSetUp(myPad21,0.15,0.1,0.04,0.15);
+  myPad21->SetGridy();
+  myPad21->Draw();
+  myPad21->cd();
+
+  myHistSetUp(hChannelTimeMean); 
+  hChannelTimeMean->Draw("COLZTEXT");
+  
+  c21->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  
+  TCanvas *c22 = new TCanvas("Channel time 1D"," ",1200,800); 
+  c22->Draw();						
+  c22->cd();
+  TPad *myPad22 = new TPad("myPad22", "The pad",0,0,1,1);
+  myPad22->Divide(4,4);
+  myPad22->Draw();
+  
+  TH1D *hChannelSlice;
+  for(Int_t i = 0; i<16; i++){
+  	myPadSetUp(myPad22->cd(i+1),0.15,0.00,0.05,0.15);
+  	myPad22->cd(i+1);
+  	gPad->SetGridy();
+	hChannelSlice = hChannelTimeMean->ProjectionY("hChannelSlice",i+1,i+1);
+	myHistSetUp(hChannelSlice);
+	hChannelSlice->SetMarkerStyle(kFullCircle);
+	hChannelSlice->SetMarkerSize(0.5);
+	hChannelSlice->GetXaxis()->SetTitle("");
+	hChannelSlice->GetYaxis()->SetTitle("Time mean (ns)");
+	hChannelSlice->SetTitle(Form("Mean time channel %d",i));
+	if(i<8)hChannelSlice->GetYaxis()->SetRangeUser(62,68);
+	else hChannelSlice->GetYaxis()->SetRangeUser(53,59);
+	hChannelSlice->DrawCopy("P");
+	}
+ 
+  c22->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  
+  TCanvas *c31 = new TCanvas("ChannelSigma"," ",800,400); 
+  c31->Draw();						
+  c31->cd();
+  TPad *myPad31 = new TPad("myPad31", "The pad",0,0,1,1);
+  myPadSetUp(myPad31,0.15,0.1,0.04,0.15);
+  myPad31->SetGridy();
+  myPad31->Draw();
+  myPad31->cd();
+
+  myHistSetUp(hChannelTimeSigma); 
+  hChannelTimeSigma->Draw("COLZTEXT");
+  
+  c31->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  
+  TCanvas *c32 = new TCanvas("Channel sigma 1D"," ",1200,800); 
+  c32->Draw();						
+  c32->cd();
+  TPad *myPad32 = new TPad("myPad32", "The pad",0,0,1,1);
+  myPad32->Divide(4,4);
+  myPad32->Draw();
+  
+  for(Int_t i = 0; i<16; i++){
+  	myPadSetUp(myPad32->cd(i+1),0.15,0.00,0.05,0.15);
+  	myPad32->cd(i+1);
+  	gPad->SetGridy();
+	hChannelSlice = hChannelTimeSigma->ProjectionY("hChannelSlice",i+1,i+1);
+	myHistSetUp(hChannelSlice);
+	hChannelSlice->SetMarkerStyle(kFullCircle);
+	hChannelSlice->SetMarkerSize(0.5);
+	hChannelSlice->GetXaxis()->SetTitle("");
+	hChannelSlice->GetYaxis()->SetTitle("Time resolution (ns)");
+	hChannelSlice->SetTitle(Form("Time resolution channel %d",i));
+	hChannelSlice->GetYaxis()->SetRangeUser(0.1,1.1);
+	hChannelSlice->DrawCopy("P");
+	}
+  c32->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   
   TCanvas *c4 = new TCanvas("Rate UB"," ",800,400); 
   c4->Draw();						
@@ -460,6 +613,29 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   c4->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c4->SaveAs(Form("%s/ADQA__RateUB.png",plotDir.Data()));
   
+  TCanvas *c41 = new TCanvas("Physics selection rate BB"," ",800,400); 
+  c41->Draw();						
+  c41->cd();
+  TPad *myPad41 = new TPad("myPad41", "The pad",0,0,1,1);
+  myPadSetUp(myPad41,0.15,0.1,0.04,0.15);
+  myPad41->SetGridy();
+  myPad41->Draw();
+  myPad41->cd();
+
+  myHistSetUp(hRatePhysBBA);
+  myHistSetUp(hRatePhysBBC);
+  hRatePhysBBA->SetMarkerColor(kBlue);
+  hRatePhysBBC->SetMarkerColor(kRed);
+  hRatePhysBBA->SetMarkerStyle(kFullCircle);
+  hRatePhysBBC->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hRatePhysBBA,hRatePhysBBC);
+  hRatePhysBBA->Draw("E");
+  hRatePhysBBC->Draw("Esame");
+  myLegend1->Draw();
+  
+  c41->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c41->SaveAs(Form("%s/ADQA__RatePhysBB.png",plotDir.Data()));
+  
   TCanvas *c5 = new TCanvas("Rate UG"," ",800,400); 
   c5->Draw();						
   c5->cd();
@@ -482,6 +658,29 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   c5->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c5->SaveAs(Form("%s/ADQA__RateUG.png",plotDir.Data()));
+  
+  TCanvas *c51 = new TCanvas("Physics selection rate BG"," ",800,400); 
+  c51->Draw();						
+  c51->cd();
+  TPad *myPad51 = new TPad("myPad51", "The pad",0,0,1,1);
+  myPadSetUp(myPad51,0.15,0.1,0.04,0.15);
+  myPad51->SetGridy();
+  myPad51->Draw();
+  myPad51->cd();
+
+  myHistSetUp(hRatePhysBGA);
+  myHistSetUp(hRatePhysBGC);
+  hRatePhysBGA->SetMarkerColor(kBlue);
+  hRatePhysBGC->SetMarkerColor(kRed);
+  hRatePhysBGA->SetMarkerStyle(kFullCircle);
+  hRatePhysBGC->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hRatePhysBGA,hRatePhysBGC);
+  hRatePhysBGA->Draw("E");
+  hRatePhysBGC->Draw("Esame");
+  myLegend1->Draw();
+  
+  c51->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c51->SaveAs(Form("%s/ADQA__RatePhysBG.png",plotDir.Data()));
   
   TCanvas *c6 = new TCanvas("Rate AD"," ",800,400); 
   c6->Draw();						
@@ -510,6 +709,30 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   
   c6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c6->SaveAs(Form("%s/ADQA__RateAD.png",plotDir.Data()));
+  
+  TCanvas *c61 = new TCanvas("Physics selection rate AD"," ",800,400); 
+  c61->Draw();						
+  c61->cd();
+  TPad *myPad61 = new TPad("myPad61", "The pad",0,0,1,1);
+  myPadSetUp(myPad61,0.15,0.1,0.04,0.15);
+  myPad61->SetGridy();
+  myPad61->Draw();
+  myPad61->cd();
+
+  myHistSetUp(hRatePhysADAND);
+  myHistSetUp(hRatePhysADOR);
+  hRatePhysADAND->SetMarkerColor(kBlue);
+  hRatePhysADOR->SetMarkerColor(kRed);
+  hRatePhysADAND->SetMarkerStyle(kFullCircle);
+  hRatePhysADOR->SetMarkerStyle(kFullCircle);
+  myScaleSetUp(hRatePhysADAND,hRatePhysADOR);
+  hRatePhysADAND->Draw("E");
+  hRatePhysADOR->Draw("Esame");
+
+  myLegend2->Draw();
+  
+  c61->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c61->SaveAs(Form("%s/ADQA__RatePhysAD.png",plotDir.Data()));
   
   TCanvas *c11 = new TCanvas("Rate AD"," ",800,400); 
   c11->Draw();						
@@ -561,20 +784,19 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   myPad71->Divide(4,4);
   myPad71->Draw();
   
-  TH1D *hChannelSlice;
   for(Int_t i = 0; i<16; i++){
   	myPadSetUp(myPad71->cd(i+1),0.15,0.00,0.05,0.15);
   	myPad71->cd(i+1);
   	gPad->SetGridy();
 	hChannelSlice = hMPV->ProjectionY("hChannelSlice",i+1,i+1);
 	myHistSetUp(hChannelSlice);
-	hChannelSlice->SetMarkerStyle(kFullCircle);
-	hChannelSlice->SetMarkerSize(0.5);
+	hChannelSlice->SetLineWidth(1);
+	myScaleSetUp(hChannelSlice);
 	hChannelSlice->GetXaxis()->SetTitle("");
 	hChannelSlice->GetYaxis()->SetTitle("MPV (ADC counts)");
 	hChannelSlice->SetTitle(Form("MPV channel %d",i));
 	hChannelSlice->GetYaxis()->SetRangeUser(2,30);
-	hChannelSlice->DrawCopy("E");
+	hChannelSlice->DrawCopy("HIST");
 	}
  
   c71->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
@@ -596,7 +818,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hSlewingChi2ADC->SetMarkerColor(kRed);
   hSlewingChi2ADA->SetMarkerStyle(kFullCircle);
   hSlewingChi2ADC->SetMarkerStyle(kFullCircle);  
-  myScaleSetUp(hSlewingChi2ADA,hSlewingChi2ADC);  
+  //myScaleSetUp(hSlewingChi2ADA,hSlewingChi2ADC); 
+  hSlewingChi2ADA->GetYaxis()->SetRangeUser(-0.1,1); 
   hSlewingChi2ADA->Draw("P");
   hSlewingChi2ADC->Draw("Psame");
   myLegend1->Draw();
@@ -815,6 +1038,23 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   c10->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
   c10->SaveAs(Form("%s/ADQA__RunTime.png",plotDir.Data()));
   
+  TCanvas *c12 = new TCanvas("Number of events"," ",800,400); 
+  c12->Draw();						
+  c12->cd();
+  TPad *myPad12 = new TPad("myPad12", "The pad",0,0,1,1);
+  myPadSetUp(myPad12,0.15,0.1,0.04,0.15);
+  myPad12->SetGridy();
+  myPad12->Draw();
+  myPad12->cd();
+  gPad->SetLogy();
+
+  myHistSetUp(hNEvents);
+  hNEvents->SetMarkerStyle(kFullCircle);
+  hNEvents->Draw("P");
+ 
+  c12->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
+  c12->SaveAs(Form("%s/ADQA__RunTime.png",plotDir.Data()));
+  
   TCanvas *c11 = new TCanvas("LHC state"," ",800,400); 
   c11->Draw();						
   c11->cd();
@@ -829,7 +1069,6 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   hLHCstate->GetYaxis()->Set(5,-1.5,3.5);
   hLHCstate->GetYaxis()->SetRangeUser(-0.5,3.5);
   
-  //hLHCstate->GetYaxis()->SetBinLabel(1,"Other");
   hLHCstate->GetYaxis()->SetBinLabel(2,"No Beam");
   hLHCstate->GetYaxis()->SetBinLabel(3,"Squeeze");
   hLHCstate->GetYaxis()->SetBinLabel(4,"Adjust");
