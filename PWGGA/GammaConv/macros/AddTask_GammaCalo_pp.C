@@ -122,7 +122,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		numberOfCuts = 6;
 	if (trainConfig == 31  ) 
 		numberOfCuts = 4;
-	if (trainConfig == 32 	|| trainConfig == 101) 
+	if (trainConfig == 32 	|| trainConfig == 101 || trainConfig == 201)
 		numberOfCuts = 1;
 
 	if (trainConfig == 111 || trainConfig == 114 	|| trainConfig == 117 	|| trainConfig == 120 	|| trainConfig == 121 || 
@@ -314,12 +314,16 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 1] = "0005211"; clusterCutArray[1] = "11111020032230000"; mesonCutArray[1] = "0163103100000000"; // EMC7,                                                 500ns timing
 		eventCutArray[ 2] = "0005211"; clusterCutArray[2] = "11111040032230000"; mesonCutArray[2] = "0163103100000000"; // EMC7,                                                 100ns timing
 
-  } else if (trainConfig == 121){ // EMCAL clusters, different special triggers
+	}else if (trainConfig == 121){ // EMCAL clusters, different special triggers
 		eventCutArray[ 0] = "0008112"; clusterCutArray[0] = "11111050032230000"; mesonCutArray[0] = "0163103100000000"; // EMCEG1,
 		eventCutArray[ 1] = "0000012"; clusterCutArray[1] = "11111050032230000"; mesonCutArray[1] = "0163103100000000"; // INT7
 		eventCutArray[ 2] = "0005212"; clusterCutArray[2] = "11111050032230000"; mesonCutArray[2] = "0163103100000000"; // EMC7
-	}
-	else {
+
+	// 7 TeV
+	} else if (trainConfig == 201){ // EMCAL clusters pp 7 TeV
+		eventCutArray[ 0] = "0000011"; clusterCutArray[0] = "11111010032230000"; mesonCutArray[0] = "0163103100000000"; // 1000ns timing cut
+
+	} else {
 		Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
