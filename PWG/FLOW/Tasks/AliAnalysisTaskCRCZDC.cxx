@@ -183,11 +183,11 @@ fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fRunSet("2010"),
-fRunList(NULL),
 fCRCnRun(0),
 fGenHeader(NULL),
 fPythiaGenHeader(NULL),
-fHijingGenHeader(NULL)
+fHijingGenHeader(NULL),
+fFlowTrack(NULL)
 {
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
@@ -210,6 +210,9 @@ fHijingGenHeader(NULL)
   fhZPCPMQiPMC[i] = 0x0;
   fhZPAPMQiPMC[i] = 0x0;
   fhPMCvsPMQ[i] = 0x0;
+ }
+ for(Int_t r=0; r<fCRCMaxnRun; r++) {
+  fRunList[r] = 0;
  }
  this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(1);
@@ -312,11 +315,11 @@ fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
 fRunSet(RunSet),
-fRunList(NULL),
 fCRCnRun(0),
 fGenHeader(NULL),
 fPythiaGenHeader(NULL),
-fHijingGenHeader(NULL)
+fHijingGenHeader(NULL),
+fFlowTrack(NULL)
 {
  
  for(int i=0; i<5; i++){
@@ -341,6 +344,9 @@ fHijingGenHeader(NULL)
   fhZPAPMQiPMC[i] = 0x0;
   fhPMCvsPMQ[i] = 0x0;
  }
+ for(Int_t r=0; r<fCRCMaxnRun; r++) {
+  fRunList[r] = 0;
+ }
  this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(iseed);
  gRandom->SetSeed(fMyTRandom3->Integer(65539));
@@ -362,6 +368,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  }
  delete fMyTRandom3;
  delete fFlowEvent;
+ delete fFlowTrack;
  delete fCutsEvent;
  delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
@@ -413,8 +420,8 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  cc->SetHistWeightvsPhiMax(fHistWeightvsPhiMax);
  cc->SetHistWeightvsPhiMin(fHistWeightvsPhiMin);
  
- if (fAnalysisType != "MCkine") fFlowEvent = new AliFlowEvent(10000);
- else                           fFlowEvent = new AliFlowEvent(100000);
+ fFlowEvent = new AliFlowEvent(10000);
+ fFlowTrack = new AliFlowTrack();
  
  //printf("  AliAnalysisTaskCRCZDC::UserCreateOutputObjects()\n\n");
  fOutput = new TList();
@@ -604,7 +611,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  if(fRunSet.EqualTo("2011")) {fCRCnRun=119;}
  if(fRunSet.EqualTo("MCkine")) {fCRCnRun=1;}
  
- fRunList = new Int_t[fCRCnRun];
  Int_t d=0;
  for(Int_t r=0; r<fCRCnRun; r++) {
   if(fRunSet.EqualTo("2010"))   fRunList[d] = dRun10h[r];
@@ -677,6 +683,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    return;
   }
   
+  fFlowEvent->ClearFast();
+  
   Int_t nTracks = McEvent->GetNumberOfTracks();
   if(!nTracks) return;
   Int_t nPrimTr = McEvent->GetNumberOfPrimaries();
@@ -687,18 +695,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    //get input particle
    AliMCParticle* pParticle = dynamic_cast<AliMCParticle*>(McEvent->GetTrack(itrkN));
    if (!pParticle) continue;
-   AliFlowTrack* pTrack = new AliFlowTrack(pParticle);
-   pTrack->SetSource(AliFlowTrack::kFromMC);
    
    //check if track passes the cuts
-   if (McEvent->IsPhysicalPrimary(itrkN) && pTrack->Charge()!=0) {
-    
-    pTrack->SetForRPSelection(kTRUE);
+   if (McEvent->IsPhysicalPrimary(itrkN) && pParticle->Charge()!=0) {
+    fFlowTrack->Set(pParticle);
+    fFlowTrack->SetSource(AliFlowTrack::kFromMC);
+    fFlowTrack->SetForRPSelection(kTRUE);
     fFlowEvent->IncrementNumberOfPOIs(0);
-    pTrack->SetForPOISelection(kTRUE);
+    fFlowTrack->SetForPOISelection(kTRUE);
     fFlowEvent->IncrementNumberOfPOIs(1);
-    
-    fFlowEvent->AddTrack(pTrack) ;
+    fFlowEvent->InsertTrack(fFlowTrack);
    }
    
   }//for all tracks
@@ -722,41 +728,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    else       fFlowEvent->SetCentrality(0.);
    fFlowEvent->SetRun(1);
   }
- }
- 
- //inject candidates
- if(fLoadCandidates) {
-  TObjArray* candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
-  //if(candidates->GetEntriesFast())
-  //  printf("I received %d candidates\n",candidates->GetEntriesFast());
-  if (candidates)
-  {
-   for(int iCand=0; iCand!=candidates->GetEntriesFast(); ++iCand ) {
-    AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(candidates->At(iCand));
-    if (!cand) continue;
-    //printf(" - Checking at candidate %d with %d daughters: mass %f\n",iCand,cand->GetNDaughters(),cand->Mass());
-    for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
-     //printf("    - Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau) );
-     for(int iRPs=0; iRPs!=fFlowEvent->NumberOfTracks(); ++iRPs ) {
-      AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEvent->GetTrack( iRPs ));
-      if (!iRP) continue;
-      if( !iRP->InRPSelection() )
-       continue;
-      if( cand->GetIDDaughter(iDau) == iRP->GetID() ) {
-       //printf(" was in RP set");
-       //cand->SetDaughter( iDau, iRP );
-       //temporarily untagging all daugters
-       iRP->SetForRPSelection(kFALSE);
-	      fFlowEvent->SetNumberOfRPs( fFlowEvent->GetNumberOfRPs() -1 );
-      }
-     }
-     //printf("\n");
-    }
-    cand->SetForPOISelection(kTRUE);
-    fFlowEvent->InsertTrack( ((AliFlowTrack*) cand) );
-   }
-  }
- }
+  
+ } // end of if(fAnalysisType ==  "MCkine")
  
  if (!fFlowEvent) return; //shuts up coverity
  
@@ -798,18 +771,18 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  
  //fListHistos->Print();
  //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");
- //PostData(1,fFlowEvent);
+ 
+ PostData(1, fFlowEvent);
  
  //********************************************************************************************************************************
  
- // Select PHYSICS events (type=7, for data)
- //if(!fIsMCInput && aod->GetEventType()!=7) return;
+ if(fAnalysisType == "MCkine") return;
  
  // PHYSICS SELECTION
  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
  AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
  
- if(hdr->IsEventSelected() & AliVEvent::kAny & fAnalysisType != "MCkine") {
+ if(hdr->IsEventSelected() & AliVEvent::kAny) {
   
   AliCentrality* centrality = aod->GetCentrality();
   Float_t centrperc = centrality->GetCentralityPercentile(fCentrEstimator.Data());
@@ -980,8 +953,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1000.);
   
  } // PHYSICS SELECTION
- 
- PostData(1, fFlowEvent);
  
  PostData(2, fOutput);
  

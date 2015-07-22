@@ -17628,8 +17628,8 @@ void AliFlowAnalysisCRC::CalculateCRCVZERO()
    
    // VZs only
    
-   Double_t dMVCVA = VCM*VAM;
-   Double_t twoVCVA = (VCRe*VARe+VCIm*VAIm) ;
+//   Double_t dMVCVA = VCM*VAM;
+//   Double_t twoVCVA = (VCRe*VARe+VCIm*VAIm) ;
    fCRCVZCorrPro[fRunBin][0][eg][fCenBin]->Fill(4.5,VCRe*VARe,VCM*VAM);
    fCRCVZCorrPro[fRunBin][1][eg][fCenBin]->Fill(4.5,VCIm*VAIm,VCM*VAM);
    fCRCVZCorrProdTempHist[0][0][fCenBin]->SetBinContent(5,VCRe*VARe);
@@ -17638,32 +17638,32 @@ void AliFlowAnalysisCRC::CalculateCRCVZERO()
    
    // TPC Q - VZs
    
-   Double_t dMQPVC = QPM*VCM;
-   Double_t twoQPVC = (QPRe*VCRe+QPIm*VCIm) ;
+//   Double_t dMQPVC = QPM*VCM;
+//   Double_t twoQPVC = (QPRe*VCRe+QPIm*VCIm) ;
    fCRCVZCorrPro[fRunBin][0][eg][fCenBin]->Fill(5.5,QPRe*VCRe,QPM*VCM);
    fCRCVZCorrPro[fRunBin][1][eg][fCenBin]->Fill(5.5,QPIm*VCIm,QPM*VCM);
    fCRCVZCorrProdTempHist[0][0][fCenBin]->SetBinContent(6,QPRe*VCRe);
    fCRCVZCorrProdTempHist[0][1][fCenBin]->SetBinContent(6,QPIm*VCIm);
    fCRCVZCorrProdTempHist[1][0][fCenBin]->SetBinContent(6,QPM*VCM);
    
-   Double_t dMQNVA = QNM*VAM;
-   Double_t twoQNVA = (QNRe*VARe+QNIm*VAIm) ;
+//   Double_t dMQNVA = QNM*VAM;
+//   Double_t twoQNVA = (QNRe*VARe+QNIm*VAIm) ;
    fCRCVZCorrPro[fRunBin][0][eg][fCenBin]->Fill(6.5,QNRe*VARe,QNM*VAM);
    fCRCVZCorrPro[fRunBin][1][eg][fCenBin]->Fill(6.5,QNIm*VAIm,QNM*VAM);
    fCRCVZCorrProdTempHist[0][0][fCenBin]->SetBinContent(7,QNRe*VARe);
    fCRCVZCorrProdTempHist[0][1][fCenBin]->SetBinContent(7,QNIm*VAIm);
    fCRCVZCorrProdTempHist[1][0][fCenBin]->SetBinContent(7,QNM*VAM);
    
-   Double_t dMQPVA = QPM*VAM;
-   Double_t twoQPVA = (QPRe*VARe+QPIm*VAIm) ;
+//   Double_t dMQPVA = QPM*VAM;
+//   Double_t twoQPVA = (QPRe*VARe+QPIm*VAIm) ;
    fCRCVZCorrPro[fRunBin][0][eg][fCenBin]->Fill(7.5,QPRe*VARe,QPM*VAM);
    fCRCVZCorrPro[fRunBin][1][eg][fCenBin]->Fill(7.5,QPIm*VAIm,QPM*VAM);
    fCRCVZCorrProdTempHist[0][0][fCenBin]->SetBinContent(8,QPRe*VARe);
    fCRCVZCorrProdTempHist[0][1][fCenBin]->SetBinContent(8,QPIm*VAIm);
    fCRCVZCorrProdTempHist[1][0][fCenBin]->SetBinContent(8,QPM*VAM);
    
-   Double_t dMQNVC = QNM*VCM;
-   Double_t twoQNVC = (QNRe*VCRe+QNIm*VCIm) ;
+//   Double_t dMQNVC = QNM*VCM;
+//   Double_t twoQNVC = (QNRe*VCRe+QNIm*VCIm) ;
    fCRCVZCorrPro[fRunBin][0][eg][fCenBin]->Fill(8.5,QNRe*VCRe,QNM*VCM);
    fCRCVZCorrPro[fRunBin][1][eg][fCenBin]->Fill(8.5,QNIm*VCIm,QNM*VCM);
    fCRCVZCorrProdTempHist[0][0][fCenBin]->SetBinContent(9,QNRe*VCRe);
@@ -17715,16 +17715,16 @@ void AliFlowAnalysisCRC::CalculateCRCVZERO()
      
      // TPC q - VZs
      
-     Double_t dMuPVC = uPM*VCM;
-     Double_t twouPVC = (uPRe*VCRe+uPIm*VCIm) ;
+//     Double_t dMuPVC = uPM*VCM;
+//     Double_t twouPVC = (uPRe*VCRe+uPIm*VCIm) ;
      fCRCVZCorrPro[fRunBin][0][eg][fCenBin]->Fill(c+e,uPRe*VCRe,uPM*VCM);
      fCRCVZCorrPro[fRunBin][1][eg][fCenBin]->Fill(c+e,uPIm*VCIm,uPM*VCM);
      fCRCVZCorrProdTempHist[0][0][fCenBin]->SetBinContent(c+1,uPRe*VCRe);
      fCRCVZCorrProdTempHist[0][1][fCenBin]->SetBinContent(c+1,uPIm*VCIm);
      fCRCVZCorrProdTempHist[1][0][fCenBin]->SetBinContent(c+1,uPM*VCM);
      
-     Double_t dMuNVA = uNM*VAM;
-     Double_t twouNVA = (uNRe*VARe+uNIm*VAIm) ;
+//     Double_t dMuNVA = uNM*VAM;
+//     Double_t twouNVA = (uNRe*VARe+uNIm*VAIm) ;
      fCRCVZCorrPro[fRunBin][0][eg][fCenBin]->Fill(2+c+e,uNRe*VARe,uNM*VAM);
      fCRCVZCorrPro[fRunBin][1][eg][fCenBin]->Fill(2+c+e,uNIm*VAIm,uNM*VAM);
      fCRCVZCorrProdTempHist[0][0][fCenBin]->SetBinContent(c+3,uNRe*VARe);
@@ -17791,8 +17791,9 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
  if( fCentralityEBE<5. ) return;
  // cut on multiplicity
  if( VCM<1. || VAM<1. ) return;
- // cut on centroid position
-// if( pow(pow(VCRe,2.)+pow(VCIm,2.),0.5) > 2. || pow(pow(VARe,2.)+pow(VAIm,2.),0.5) > 2. ) return;
+ // scale multiplicity by beam energy [GeV] => number of spectators (?)
+ VCM /= 1380.;
+ VAM /= 1380.;
  
  Double_t EvPlZDCC = TMath::ATan2(VCIm,VCRe);
  fCRCZDCEvPlC[fRunBin][fCenBin]->Fill(EvPlZDCC);
@@ -17803,6 +17804,9 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
  fCRCZDCQVecCov[fRunBin][1]->Fill(fCentralityEBE,VCIm*VAIm);
  fCRCZDCQVecCov[fRunBin][2]->Fill(fCentralityEBE,VCRe*VAIm);
  fCRCZDCQVecCov[fRunBin][3]->Fill(fCentralityEBE,VCIm*VARe);
+ 
+ // Set ZDC weights
+ if (fMultWeight.Contains("ZDCu"))  {VCM = 1.; VAM = 1.;}
  
  Double_t EBW = (fCRCEtaMax-fCRCEtaMin)/fCRCnEtaBins;
  
@@ -17841,8 +17845,8 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
    
    // ZDCs only
    
-   Double_t dMVCVA = VCM*VAM;
-   Double_t twoVCVA = (VCRe*VARe+VCIm*VAIm) ;
+//   Double_t dMVCVA = VCM*VAM;
+//   Double_t twoVCVA = (VCRe*VARe+VCIm*VAIm) ;
    fCRCZDCCorrPro[fRunBin][0][eg][fCenBin]->Fill(4.5,VCRe*VARe,VCM*VAM);
    fCRCZDCCorrPro[fRunBin][1][eg][fCenBin]->Fill(4.5,VCIm*VAIm,VCM*VAM);
    fCRCZDCCorrProdTempHist[0][0][fCenBin]->SetBinContent(5,VCRe*VARe);
@@ -17851,32 +17855,32 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
    
    // TPC Q - ZDCs
    
-   Double_t dMQPVC = QPM*VCM;
-   Double_t twoQPVC = (QPRe*VCRe+QPIm*VCIm) ;
+//   Double_t dMQPVC = QPM*VCM;
+//   Double_t twoQPVC = (QPRe*VCRe+QPIm*VCIm) ;
    fCRCZDCCorrPro[fRunBin][0][eg][fCenBin]->Fill(5.5,QPRe*VCRe,QPM*VCM);
    fCRCZDCCorrPro[fRunBin][1][eg][fCenBin]->Fill(5.5,QPIm*VCIm,QPM*VCM);
    fCRCZDCCorrProdTempHist[0][0][fCenBin]->SetBinContent(6,QPRe*VCRe);
    fCRCZDCCorrProdTempHist[0][1][fCenBin]->SetBinContent(6,QPIm*VCIm);
    fCRCZDCCorrProdTempHist[1][0][fCenBin]->SetBinContent(6,QPM*VCM);
    
-   Double_t dMQNVA = QNM*VAM;
-   Double_t twoQNVA = (QNRe*VARe+QNIm*VAIm) ;
+//   Double_t dMQNVA = QNM*VAM;
+//   Double_t twoQNVA = (QNRe*VARe+QNIm*VAIm) ;
    fCRCZDCCorrPro[fRunBin][0][eg][fCenBin]->Fill(6.5,QNRe*VARe,QNM*VAM);
    fCRCZDCCorrPro[fRunBin][1][eg][fCenBin]->Fill(6.5,QNIm*VAIm,QNM*VAM);
    fCRCZDCCorrProdTempHist[0][0][fCenBin]->SetBinContent(7,QNRe*VARe);
    fCRCZDCCorrProdTempHist[0][1][fCenBin]->SetBinContent(7,QNIm*VAIm);
    fCRCZDCCorrProdTempHist[1][0][fCenBin]->SetBinContent(7,QNM*VAM);
    
-   Double_t dMQPVA = QPM*VAM;
-   Double_t twoQPVA = (QPRe*VARe+QPIm*VAIm) ;
+//   Double_t dMQPVA = QPM*VAM;
+//   Double_t twoQPVA = (QPRe*VARe+QPIm*VAIm) ;
    fCRCZDCCorrPro[fRunBin][0][eg][fCenBin]->Fill(7.5,QPRe*VARe,QPM*VAM);
    fCRCZDCCorrPro[fRunBin][1][eg][fCenBin]->Fill(7.5,QPIm*VAIm,QPM*VAM);
    fCRCZDCCorrProdTempHist[0][0][fCenBin]->SetBinContent(8,QPRe*VARe);
    fCRCZDCCorrProdTempHist[0][1][fCenBin]->SetBinContent(8,QPIm*VAIm);
    fCRCZDCCorrProdTempHist[1][0][fCenBin]->SetBinContent(8,QPM*VAM);
    
-   Double_t dMQNVC = QNM*VCM;
-   Double_t twoQNVC = (QNRe*VCRe+QNIm*VCIm) ;
+//   Double_t dMQNVC = QNM*VCM;
+//   Double_t twoQNVC = (QNRe*VCRe+QNIm*VCIm) ;
    fCRCZDCCorrPro[fRunBin][0][eg][fCenBin]->Fill(8.5,QNRe*VCRe,QNM*VCM);
    fCRCZDCCorrPro[fRunBin][1][eg][fCenBin]->Fill(8.5,QNIm*VCIm,QNM*VCM);
    fCRCZDCCorrProdTempHist[0][0][fCenBin]->SetBinContent(9,QNRe*VCRe);
@@ -17928,16 +17932,16 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
      
      // TPC q - ZDCs
      
-     Double_t dMuPVC = uPM*VCM;
-     Double_t twouPVC = (uPRe*VCRe+uPIm*VCIm) ;
+//     Double_t dMuPVC = uPM*VCM;
+//     Double_t twouPVC = (uPRe*VCRe+uPIm*VCIm) ;
      fCRCZDCCorrPro[fRunBin][0][eg][fCenBin]->Fill(c+e,uPRe*VCRe,uPM*VCM);
      fCRCZDCCorrPro[fRunBin][1][eg][fCenBin]->Fill(c+e,uPIm*VCIm,uPM*VCM);
      fCRCZDCCorrProdTempHist[0][0][fCenBin]->SetBinContent(c+1,uPRe*VCRe);
      fCRCZDCCorrProdTempHist[0][1][fCenBin]->SetBinContent(c+1,uPIm*VCIm);
      fCRCZDCCorrProdTempHist[1][0][fCenBin]->SetBinContent(c+1,uPM*VCM);
      
-     Double_t dMuNVA = uNM*VAM;
-     Double_t twouNVA = (uNRe*VARe+uNIm*VAIm) ;
+//     Double_t dMuNVA = uNM*VAM;
+//     Double_t twouNVA = (uNRe*VARe+uNIm*VAIm) ;
      fCRCZDCCorrPro[fRunBin][0][eg][fCenBin]->Fill(2+c+e,uNRe*VARe,uNM*VAM);
      fCRCZDCCorrPro[fRunBin][1][eg][fCenBin]->Fill(2+c+e,uNIm*VAIm,uNM*VAM);
      fCRCZDCCorrProdTempHist[0][0][fCenBin]->SetBinContent(c+3,uNRe*VARe);
@@ -18054,11 +18058,10 @@ void AliFlowAnalysisCRC::CalculateCRCCorr()
 {
  // quantities:
  Double_t twoAB=0., dM2AB=0.;
- Double_t mp=0., p1n0kRe=0., p1n0kIm=0., p2n0kRe=0., p2n0kIm=0.;
- Double_t mq = 0., q1n0kRe = 0., q1n0kIm = 0., q2n0kRe = 0., q2n0kIm = 0.;
- Double_t mR=0., dReR1n=0., dImR1n = 0., dReR2n = 0., dImR2n = 0.;
+ Double_t mp=0., p1n0kRe=0., p1n0kIm=0.;
+ Double_t mR=0., dReR1n=0., dImR1n = 0.;
  
- Int_t EtaBinA=0, EtaBinB=0, CRCBin=0, EBinMin=0, EBinMax=0, EBinMin2=0, EBinMax2=0;
+ Int_t CRCBin=0, EBinMin=0, EBinMax=0, EBinMin2=0, EBinMax2=0;
  Double_t e = 1E-5;
  
  // fill event plane
@@ -18210,13 +18213,12 @@ void AliFlowAnalysisCRC::CalculateCRCPtCorr()
 {
  // quantities:
  Double_t twoAB=0., dM2AB=0.;
- Double_t mp=0., p1n0kRe=0., p1n0kIm=0., p2n0kRe=0., p2n0kIm=0.;
- Double_t mq = 0., q1n0kRe = 0., q1n0kIm = 0., q2n0kRe = 0., q2n0kIm = 0.;
- Double_t mR=0., dReR1n=0., dImR1n = 0., dReR2n = 0., dImR2n = 0.;
+ Double_t mp=0., p1n0kRe=0., p1n0kIm=0.;
+ Double_t mR=0., dReR1n=0., dImR1n = 0.;
  
- Int_t CRCBin=0, EBinMin=0, EBinMax=0, EBinMin2=0, EBinMax2=0, PtBin=0, GlBinMin=0, GlBinMax=0, GlBinMin2=0, GlBinMax2=0, DummyBin=0.;
+ Int_t CRCBin=0, EBinMin=0, EBinMax=0, EBinMin2=0, EBinMax2=0;
  Double_t e = 1E-5;
- Int_t Bin[4] = { };
+ Int_t Bin[4] = {0};
  Int_t h=0;
  Double_t EBW = (fCRCEtaMax-fCRCEtaMin)/fCRCnEtaBins;
  
@@ -19176,11 +19178,11 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
          NUAbin[0] = 6; NUAbin[1] = ( c == 7 ? 7 : 8 );
         }
         fCRCVZNUAPro[r][i][eg][h]->GetXaxis()->SetRange(NUAbin[0],NUAbin[0]);
-        fCRCVZCorrPro[r][i][eg][h]->GetStats(stats);
+        fCRCVZNUAPro[r][i][eg][h]->GetStats(stats);
         if(stats[0]>0.) NA = stats[4]/stats[0];
         else            NA=0.;
         fCRCVZNUAPro[r][i][eg][h]->GetXaxis()->SetRange(NUAbin[1],NUAbin[1]);
-        fCRCVZCorrPro[r][i][eg][h]->GetStats(stats);
+        fCRCVZNUAPro[r][i][eg][h]->GetStats(stats);
         if(stats[0]>0.) NB = stats[4]/stats[0];
         else            NB=0.;
         Double_t TwoCorr = (sumwx/sumw - NA*NB)*sumw;
@@ -19259,8 +19261,6 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
    
    for(Int_t i=0;i<2;i++) {
     
-    Double_t SPqPVC=0., SPqNVA=0., SPqPVCErr=0., SPqNVAErr=0., Num=0., NumErr=0.;
-    
     //    cout << "EG: "<<eg<<", CEN: "<<h<<" *********************" << endl;
     //    cout << endl;
     Double_t VCVA    = fCRCVZCorrHist[i][eg][h]->GetBinContent(5);
@@ -19293,26 +19293,22 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
     //    cout << "qNVAn: " << qNVAn << " " << qNVAnErr << endl;
     
     if (VCVA != 0.) {
-     
-     SPqPVC = (qPVCp-qPVCn) / pow(2.*TMath::Abs(VCVA),0.5);
+     Double_t SPqPVC = pow(2.,0.5) * (qPVCp-qPVCn) / pow(TMath::Abs(VCVA),0.5);
      if(QPVC<0.) SPqPVC = -SPqPVC;
-     SPqNVA = (qNVAp-qNVAn) / pow(2.*TMath::Abs(VCVA),0.5);
+     Double_t SPqNVA = pow(2.,0.5) * (qNVAp-qNVAn) / pow(TMath::Abs(VCVA),0.5);
      if(QNVA<0.) SPqNVA = -SPqNVA;
-     CFun += SPqPVC+SPqNVA;
      
-     Num = qPVCp-qPVCn;
-     NumErr = pow(qPVCpErr,2.) + pow(qPVCnErr,2.) -2.*fCRCVZCovHist[i][eg][h]->GetBinContent(1,2);
-     if(NumErr>0.) NumErr = pow(NumErr,0.5);
-     else          NumErr = 0.;
-     SPqPVCErr = pow(NumErr/pow(TMath::Abs(VCVA),0.5),2.) + pow(VCVAErr*Num/(2.*pow(TMath::Abs(VCVA),1.5)),2.);
+     Double_t SPqPVCErr = pow(qPVCpErr/pow(TMath::Abs(VCVA),0.5),2.)
+                        + pow(qPVCnErr/pow(TMath::Abs(VCVA),0.5),2.)
+                        + pow(VCVAErr*(qPVCp-qPVCn)/(2.*pow(TMath::Abs(VCVA),1.5)),2.)
+                        - 2.*fCRCVZCovHist[i][eg][h]->GetBinContent(1,2)/TMath::Abs(VCVA);
      if(SPqPVCErr>0.) SPqPVCErr = pow(SPqPVCErr,0.5) / pow(2.,0.5);
      else             SPqPVCErr = 0.;
      
-     Num = qNVAp-qNVAn;
-     NumErr = pow(qNVApErr,2.) + pow(qNVAnErr,2.) -2.*fCRCVZCovHist[i][eg][h]->GetBinContent(3,4);
-     if(NumErr>0.) NumErr = pow(NumErr,0.5);
-     else          NumErr = 0.;
-     SPqNVAErr = pow(NumErr/pow(TMath::Abs(VCVA),0.5),2.) + pow(VCVAErr*Num/(2.*pow(TMath::Abs(VCVA),1.5)),2.);
+     Double_t SPqNVAErr = pow(qNVApErr/pow(TMath::Abs(VCVA),0.5),2.)
+                        + pow(qNVAnErr/pow(TMath::Abs(VCVA),0.5),2.)
+                        + pow(VCVAErr*(qNVAp-qNVAn)/(2.*pow(TMath::Abs(VCVA),1.5)),2.)
+                        - 2.*fCRCVZCovHist[i][eg][h]->GetBinContent(3,4)/TMath::Abs(VCVA);
      if(SPqNVAErr>0.) SPqNVAErr = pow(SPqNVAErr,0.5) / pow(2.,0.5);
      else             SPqNVAErr = 0.;
      
@@ -19321,55 +19317,24 @@ void AliFlowAnalysisCRC::FinalizeCRCVZERO()
      fCRCVZCFunHist[eg][h]->SetBinContent(i+3,SPqNVA);
      fCRCVZCFunHist[eg][h]->SetBinError(i+3,SPqNVAErr);
      
-     Num = qPVCp-qPVCn+qNVAp-qNVAn;
-     NumErr = pow(qPVCpErr,2.) + pow(qPVCnErr,2.) + pow(qNVApErr,2.) + pow(qNVAnErr,2.)
-     + 2.*(- fCRCVZCovHist[i][eg][h]->GetBinContent(1,2)
-           - fCRCVZCovHist[i][eg][h]->GetBinContent(1,3)
-           + fCRCVZCovHist[i][eg][h]->GetBinContent(1,4)
-           + fCRCVZCovHist[i][eg][h]->GetBinContent(2,3)
-           - fCRCVZCovHist[i][eg][h]->GetBinContent(2,4)
-           - fCRCVZCovHist[i][eg][h]->GetBinContent(3,4));
-     if(NumErr>0.) NumErr = pow(NumErr,0.5);
-     else          NumErr = 0.;
-     CFunErr += (pow(NumErr/pow(TMath::Abs(VCVA),0.5),2.) + pow(VCVAErr*Num/(2.*pow(TMath::Abs(VCVA),1.5)),2.)) / 2.;
-     
     }
     
    } // end of for(Int_t i=0;i<2;i++)
    
-   CFun /= 4.;
+   CFun = (fCRCVZCFunHist[eg][h]->GetBinContent(1)+fCRCVZCFunHist[eg][h]->GetBinContent(2))/4.;
+   CFunErr = pow(fCRCVZCFunHist[eg][h]->GetBinError(1),2.)+pow(fCRCVZCFunHist[eg][h]->GetBinError(2),2.);
    if(CFunErr>0.) CFunErr = pow(CFunErr,0.5)/4.;
    else           CFunErr = 0.;
+   cout << "CFUN-P["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
    
-   cout << "CFUN["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
-   
-   fCRCVZCFunHist[eg][h]->SetBinContent(5,CFun);
-   fCRCVZCFunHist[eg][h]->SetBinError(5,CFunErr);
+   CFun = (fCRCVZCFunHist[eg][h]->GetBinContent(3)+fCRCVZCFunHist[eg][h]->GetBinContent(4))/4.;
+   CFunErr = pow(fCRCVZCFunHist[eg][h]->GetBinError(3),2.)+pow(fCRCVZCFunHist[eg][h]->GetBinError(4),2.);
+   if(CFunErr>0.) CFunErr = pow(CFunErr,0.5)/4.;
+   else           CFunErr = 0.;
+   cout << "CFUN-N["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
    
   } // end of for (Int_t h=0;h<fCRCVZnCen;h++)
  } // end of for(Int_t eg=0; eg<fCRCVZnEtaBin; eg++)
-   
-//   if(TMath::Abs(QPVC*VCVA/QPVA) != 0 ) {
-//    SPqPVC = (qPVCp-qPVCn) / pow(TMath::Abs(QPVC*VCVA/QPVA),0.5);
-//    if(QPVC<0.) SPqPVC*=-1.;
-//    SPqNVA = (qNVAp-qNVAn) / pow(TMath::Abs(QNVA*VCVA/QNVC),0.5);
-//    if(QNVA<0.) SPqNVA*=-1.;
-//    
-//    SumCFun = (SPqPVC+SPqNVA)/4.;
-//    
-//    Double_t QPVCDen = TMath::Abs(QPVC*VCVA/QPVA);
-//    Double_t QPVCDenErr = pow(pow(QPVCErr*VCVA/QPVA,2.) + pow(VCVAErr*QPVC/QPVA,2.) + pow(QPVAErr*VCVA*QPVC/pow(QPVA,2.),2.),0.5);
-//    Double_t QNVADen = TMath::Abs(QNVA*VCVA/QNVC);
-//    Double_t QNVADenErr = pow(pow(QNVAErr*VCVA/QNVC,2.) + pow(VCVAErr*QNVA/QNVC,2.) + pow(QNVCErr*VCVA*QNVA/pow(QNVC,2.),2.),0.5);
-//    
-//    Double_t SumCorrErr = pow(qPVCpErr,2.)+pow(qPVCnErr,2.)+pow(qNVApErr,2.)+pow(qNVAnErr,2.);
-//    Double_t SumCorrErrCov = SumCorrErr + 2.*(- fCRCVZCovHist[eg][h]->GetBinContent(1,2)
-//                                              - fCRCVZCovHist[eg][h]->GetBinContent(1,3)
-//                                              + fCRCVZCovHist[eg][h]->GetBinContent(1,4)
-//                                              + fCRCVZCovHist[eg][h]->GetBinContent(2,3)
-//                                              - fCRCVZCovHist[eg][h]->GetBinContent(2,4)
-//                                              - fCRCVZCovHist[eg][h]->GetBinContent(3,4));
-//    SumCFunErr = pow(SumCorrErrCov,0.5) / (4.*((pow(QPVCDen,0.5)+pow(QNVADen,0.5))/2.));
  
  cout << "*************************************" << endl;
  cout << endl;
@@ -19424,13 +19389,13 @@ void AliFlowAnalysisCRC::FinalizeCRCZDC()
          NUAbin[0] = 6; NUAbin[1] = ( c == 7 ? 7 : 8 );
         }
         fCRCZDCNUAPro[r][i][eg][h]->GetXaxis()->SetRange(NUAbin[0],NUAbin[0]);
-        fCRCZDCCorrPro[r][i][eg][h]->GetStats(stats);
+        fCRCZDCNUAPro[r][i][eg][h]->GetStats(stats);
         if(stats[0]>0.) NA = stats[4]/stats[0];
-        else            NA=0.;
+        else            NA = 0.;
         fCRCZDCNUAPro[r][i][eg][h]->GetXaxis()->SetRange(NUAbin[1],NUAbin[1]);
-        fCRCZDCCorrPro[r][i][eg][h]->GetStats(stats);
+        fCRCZDCNUAPro[r][i][eg][h]->GetStats(stats);
         if(stats[0]>0.) NB = stats[4]/stats[0];
-        else            NB=0.;
+        else            NB = 0.;
         Double_t TwoCorr = (sumwx/sumw - NA*NB)*sumw;
         SumTwoCorr += TwoCorr;
        } else {
@@ -19507,8 +19472,6 @@ void AliFlowAnalysisCRC::FinalizeCRCZDC()
    
    for(Int_t i=0;i<2;i++) {
     
-    Double_t SPqPVC=0., SPqNVA=0., SPqPVCErr=0., SPqNVAErr=0., Num=0., NumErr=0.;
-    
 //    cout << "EG: "<<eg<<", CEN: "<<h<<" *********************" << endl;
 //    cout << endl;
     Double_t VCVA    = fCRCZDCCorrHist[i][eg][h]->GetBinContent(5);
@@ -19541,26 +19504,22 @@ void AliFlowAnalysisCRC::FinalizeCRCZDC()
 //    cout << "qNVAn: " << qNVAn << " " << qNVAnErr << endl;
     
     if (VCVA != 0.) {
+     Double_t SPqPVC = pow(2.,0.5) * (qPVCp-qPVCn) / pow(TMath::Abs(VCVA),0.5);
+//     if(QPVC<0.) SPqPVC = -SPqPVC;
+     Double_t SPqNVA = pow(2.,0.5) * (qNVAp-qNVAn) / pow(TMath::Abs(VCVA),0.5);
+//     if(QNVA<0.) SPqNVA = -SPqNVA;
      
-     SPqPVC = (qPVCp-qPVCn) / pow(2.*TMath::Abs(VCVA),0.5);
-     if(QPVC<0.) SPqPVC = -SPqPVC;
-     SPqNVA = (qNVAp-qNVAn) / pow(2.*TMath::Abs(VCVA),0.5);
-     if(QNVA<0.) SPqNVA = -SPqNVA;
-     CFun += SPqPVC+SPqNVA;
-     
-     Num = qPVCp-qPVCn;
-     NumErr = pow(qPVCpErr,2.) + pow(qPVCnErr,2.) -2.*fCRCZDCCovHist[i][eg][h]->GetBinContent(1,2);
-     if(NumErr>0.) NumErr = pow(NumErr,0.5);
-     else          NumErr = 0.;
-     SPqPVCErr = pow(NumErr/pow(TMath::Abs(VCVA),0.5),2.) + pow(VCVAErr*Num/(2.*pow(TMath::Abs(VCVA),1.5)),2.);
+     Double_t SPqPVCErr = pow(qPVCpErr/pow(TMath::Abs(VCVA),0.5),2.)
+               + pow(qPVCnErr/pow(TMath::Abs(VCVA),0.5),2.)
+               + pow(VCVAErr*(qPVCp-qPVCn)/(2.*pow(TMath::Abs(VCVA),1.5)),2.)
+               - 2.*fCRCZDCCovHist[i][eg][h]->GetBinContent(1,2)/TMath::Abs(VCVA);
      if(SPqPVCErr>0.) SPqPVCErr = pow(SPqPVCErr,0.5) / pow(2.,0.5);
      else             SPqPVCErr = 0.;
      
-     Num = qNVAp-qNVAn;
-     NumErr = pow(qNVApErr,2.) + pow(qNVAnErr,2.) -2.*fCRCZDCCovHist[i][eg][h]->GetBinContent(3,4);
-     if(NumErr>0.) NumErr = pow(NumErr,0.5);
-     else          NumErr = 0.;
-     SPqNVAErr = pow(NumErr/pow(TMath::Abs(VCVA),0.5),2.) + pow(VCVAErr*Num/(2.*pow(TMath::Abs(VCVA),1.5)),2.);
+     Double_t SPqNVAErr = pow(qNVApErr/pow(TMath::Abs(VCVA),0.5),2.)
+               + pow(qNVAnErr/pow(TMath::Abs(VCVA),0.5),2.)
+               + pow(VCVAErr*(qNVAp-qNVAn)/(2.*pow(TMath::Abs(VCVA),1.5)),2.)
+               - 2.*fCRCZDCCovHist[i][eg][h]->GetBinContent(3,4)/TMath::Abs(VCVA);
      if(SPqNVAErr>0.) SPqNVAErr = pow(SPqNVAErr,0.5) / pow(2.,0.5);
      else             SPqNVAErr = 0.;
      
@@ -19569,30 +19528,21 @@ void AliFlowAnalysisCRC::FinalizeCRCZDC()
      fCRCZDCCFunHist[eg][h]->SetBinContent(i+3,SPqNVA);
      fCRCZDCCFunHist[eg][h]->SetBinError(i+3,SPqNVAErr);
      
-     Num = qPVCp-qPVCn+qNVAp-qNVAn;
-     NumErr = pow(qPVCpErr,2.) + pow(qPVCnErr,2.) + pow(qNVApErr,2.) + pow(qNVAnErr,2.)
-     + 2.*(- fCRCZDCCovHist[i][eg][h]->GetBinContent(1,2)
-           - fCRCZDCCovHist[i][eg][h]->GetBinContent(1,3)
-           + fCRCZDCCovHist[i][eg][h]->GetBinContent(1,4)
-           + fCRCZDCCovHist[i][eg][h]->GetBinContent(2,3)
-           - fCRCZDCCovHist[i][eg][h]->GetBinContent(2,4)
-           - fCRCZDCCovHist[i][eg][h]->GetBinContent(3,4));
-     if(NumErr>0.) NumErr = pow(NumErr,0.5);
-     else          NumErr = 0.;
-     CFunErr += (pow(NumErr/pow(TMath::Abs(VCVA),0.5),2.) + pow(VCVAErr*Num/(2.*pow(TMath::Abs(VCVA),1.5)),2.)) / 2.;
-     
     }
     
    } // end of for(Int_t i=0;i<2;i++)
    
-   CFun /= 4.;
+   CFun = (fCRCZDCCFunHist[eg][h]->GetBinContent(1)+fCRCZDCCFunHist[eg][h]->GetBinContent(2))/4.;
+   CFunErr = pow(fCRCZDCCFunHist[eg][h]->GetBinError(1),2.)+pow(fCRCZDCCFunHist[eg][h]->GetBinError(2),2.);
    if(CFunErr>0.) CFunErr = pow(CFunErr,0.5)/4.;
    else           CFunErr = 0.;
+   cout << "CFUN-P["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
    
-   cout << "CFUN["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
-   
-   fCRCZDCCFunHist[eg][h]->SetBinContent(5,CFun);
-   fCRCZDCCFunHist[eg][h]->SetBinError(5,CFunErr);
+   CFun = (fCRCZDCCFunHist[eg][h]->GetBinContent(3)+fCRCZDCCFunHist[eg][h]->GetBinContent(4))/4.;
+   CFunErr = pow(fCRCZDCCFunHist[eg][h]->GetBinError(3),2.)+pow(fCRCZDCCFunHist[eg][h]->GetBinError(4),2.);
+   if(CFunErr>0.) CFunErr = pow(CFunErr,0.5)/4.;
+   else           CFunErr = 0.;
+   cout << "CFUN-N["<<eg<<"]["<<h<<"]: " << CFun << " " << CFunErr << endl;
    
   } // end of for (Int_t h=0;h<fCRCZDCnCen;h++)
  } // end of for(Int_t eg=0; eg<fCRCZDCnEtaBin; eg++)
@@ -19737,16 +19687,8 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
      Double_t CFun = Corr1 - Corr2 - Corr3 + Corr4;
      Double_t CFunErr = pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.)
      + 2*(-Cov12-Cov13+Cov14+Cov23-Cov24-Cov34) ;
-     if(CFunErr >= 0.) {
-      CFunErr = pow(CFunErr,0.5);
-      //cout << "Relative gain on error with covariances: " << pow(pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.),0.5)/pow(pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.) + 2*(-Cov12-Cov13+Cov14+Cov23-Cov24-Cov34),0.5) << endl;
-     }
-     else {
-      cout<<" WARNING: Negative CFunErr !!! " <<endl;
-      CFunErr = pow(Corr1Err,2.) + pow(Corr2Err,2.) + pow(Corr3Err,2.) + pow(Corr4Err,2.);
-      if(CFunErr >= 0.) { CFunErr = pow(CFunErr,0.5); }
-      else { CFunErr=0.;}
-     }
+     if(CFunErr >= 0.) CFunErr = pow(CFunErr,0.5);
+     else CFunErr=0.;
      
      fCRCCFunHist[eg][h]->SetBinContent(CFunBin,CFun);
      fCRCCFunHist[eg][h]->SetBinError(CFunBin,CFunErr);
@@ -19758,7 +19700,7 @@ void AliFlowAnalysisCRC::FinalizeCRCCorr()
     } // end of for(Int_t y=0;y<2;y++)
    } // end of for(Int_t c=0;c<2;c++)
    
-   cout << "cfun["<<eg<<"]["<<h<<"]: " << AvCFun/4. << " " << pow(AvCFunErr,0.5)/4. << endl;
+   cout << "cfun["<<eg<<"]["<<h<<"]: " << AvCFun/16. << " " << pow(AvCFunErr,0.5)/16. << endl;
    
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
  } // end of for(Int_t eg=0;eg<fCRCnEtaGap;eg++)
@@ -28313,4 +28255,3 @@ void AliFlowAnalysisCRC::CheckPointersUsedInMake()
  } // end of if(fCalculate2DDiffFlow)
  
 } // end of void AliFlowAnalysisCRC::CheckPointersUsedInMake()
-

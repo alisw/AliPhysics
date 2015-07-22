@@ -157,6 +157,7 @@ private:
  AliGenEventHeader*        fGenHeader;       //!
  AliGenPythiaEventHeader*  fPythiaGenHeader; //!
  AliGenHijingEventHeader*  fHijingGenHeader; //!
+ AliFlowTrack*             fFlowTrack;       //!
  
  Bool_t fQAon;                     // flag to set the filling of the QA hostograms
  Bool_t fLoadCandidates;           // true if reciving candidates collection
@@ -280,9 +281,9 @@ private:
  const static Int_t fCRCnTow = 8;
  Int_t fCRCnRun;
  TString fRunSet;
- Int_t *fRunList;     //! Run list
+ Int_t fRunList[fCRCMaxnRun];                   //! Run list
  TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain
- TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
+ TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
  
  ClassDef(AliAnalysisTaskCRCZDC,3);
  
