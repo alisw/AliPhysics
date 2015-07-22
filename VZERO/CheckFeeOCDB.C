@@ -8,13 +8,15 @@ void CheckFeeOCDB(Int_t run)
   AliCDBEntry *ent1 = man->Get("VZERO/Trigger/Data");
   AliVZEROTriggerData *fTriggerData = (AliVZEROTriggerData*)ent1->GetObject();
 
+  Bool_t isRun2 = (AliCDBManager::Instance()->GetRun() >= 215011);
+
   for (int i=0; i<AliVZEROTriggerData::kNCIUBoards; i++) {
-    AliVZEROLogicalSignal clk1BB(fTriggerData->GetClk1Win1(i),(UInt_t)fTriggerData->GetDelayClk1Win1(i));
-    AliVZEROLogicalSignal clk2BB(fTriggerData->GetClk2Win1(i),(UInt_t)fTriggerData->GetDelayClk2Win1(i));
+    AliVZEROLogicalSignal clk1BB(fTriggerData->GetClk1Win1(i),(UInt_t)fTriggerData->GetDelayClk1Win1(i),isRun2);
+    AliVZEROLogicalSignal clk2BB(fTriggerData->GetClk2Win1(i),(UInt_t)fTriggerData->GetDelayClk2Win1(i),isRun2);
     AliVZEROLogicalSignal bbGate(clk1BB & clk2BB);
 
-    AliVZEROLogicalSignal clk1BG(fTriggerData->GetClk1Win2(i),(UInt_t)fTriggerData->GetDelayClk1Win2(i));
-    AliVZEROLogicalSignal clk2BG(fTriggerData->GetClk2Win2(i),(UInt_t)fTriggerData->GetDelayClk2Win2(i));
+    AliVZEROLogicalSignal clk1BG(fTriggerData->GetClk1Win2(i),(UInt_t)fTriggerData->GetDelayClk1Win2(i),isRun2);
+    AliVZEROLogicalSignal clk2BG(fTriggerData->GetClk2Win2(i),(UInt_t)fTriggerData->GetDelayClk2Win2(i),isRun2);
     AliVZEROLogicalSignal bgGate(clk1BG & clk2BG);
 
     printf("Board=%d\n",i);

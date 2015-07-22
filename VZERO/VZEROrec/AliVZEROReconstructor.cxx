@@ -430,6 +430,8 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 	}
 	fESDVZEROfriend->SetTime(pmNumber,digit->Time());
 	fESDVZEROfriend->SetWidth(pmNumber,digit->Width());
+	fESDVZEROfriend->SetBBFlag(pmNumber,AliVZEROdigit::kNClocks/2,aBBflag[pmNumber]);
+	fESDVZEROfriend->SetBGFlag(pmNumber,AliVZEROdigit::kNClocks/2,aBGflag[pmNumber]);
 
     } // end of loop over digits
   } // end of loop over events in digits tree

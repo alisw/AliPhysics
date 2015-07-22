@@ -96,8 +96,10 @@ private:
 	Float_t  fCharges[64]; // Individual Charge
 	
 	UShort_t fTriggerWord; // Word holding the 16 triggers return by the FEE
+
+	Bool_t fIsRun2; // Run1 or Run2 settings
 		
-	ClassDef( AliVZEROTriggerSimulator, 3 )  
+	ClassDef( AliVZEROTriggerSimulator, 4 )  
 
 };
 
