@@ -406,14 +406,20 @@ void AliADQADataMakerRec::MakeESDs(AliESDEvent* esd)
     for(Int_t i=0;i<16;i++) {
       FillESDsData(kChargeChannel,(Float_t) i,(Float_t) esdAD->GetAdc(i));
       if (i < 8) {
-	if(esdAD->BBTriggerADC(i)) FillESDsData(kBBFlag,(Float_t) i);
+	if(esdAD->BBTriggerADC(i)) {
+		FillESDsData(kBBFlag,(Float_t) i);
+		FillESDsData(kESDADCTimeVsCharge,esdAD->GetTime(i),esdAD->GetAdc(i));
+		}
 	if(esdAD->BGTriggerADC(i)) FillESDsData(kBGFlag,(Float_t) i);
-	FillESDsData(kESDADCTimeVsCharge,esdAD->GetTime(i),esdAD->GetAdc(i));
+	
       }
       else {
-	if(esdAD->BBTriggerADA(i-8)) FillESDsData(kBBFlag,(Float_t) i);  
+	if(esdAD->BBTriggerADA(i-8)){ 
+		FillESDsData(kBBFlag,(Float_t) i); 
+		FillESDsData(kESDADATimeVsCharge,esdAD->GetTime(i),esdAD->GetAdc(i));
+		} 
 	if(esdAD->BGTriggerADA(i-8)) FillESDsData(kBGFlag,(Float_t) i);
-	FillESDsData(kESDADATimeVsCharge,esdAD->GetTime(i),esdAD->GetAdc(i));
+	
       }		  	
       Float_t time = (Float_t) esdAD->GetTime(i);
       FillESDsData(kTimeChannel,(Float_t) i,time);
