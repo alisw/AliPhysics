@@ -307,17 +307,14 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
       //return;//!!!
     }
   }
-  if (fAnalysisType == 1) {
-    if (!fESD) {
-      if (fVerbose)
-	AliWarning("fESD not available");
-      //return;//!!!-
-    }
-    //Get MC data
+ 
+  cout<<"AliAnalysisTaskFemtoMJ:: retreiving MCEvent()"<<endl;//!!!
 
-    cout<<"AliAnalysisTaskFemtoMJ:: retreiving MCEvent()"<<endl;//!!!
+      
 
-    AliMCEvent* mcEvent = MCEvent(); //!!!
+  //jedna metoda
+
+  /*AliMCEvent* mcEvent = MCEvent(); //!!!
     if (!mcEvent) {//!!!
       Printf("ERROR: Could not retrieve MC event");//!!!
       return;//!!!
@@ -326,12 +323,33 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     AliStack *stack = mcEvent->Stack();//!!!
 
     AliMCEventHandler *mctruth = (AliMCEventHandler *)
-                                    ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+    ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
 
-    AliGenHijingEventHeader *hdh = 0;
+    AliGenHijingEventHeader *hdh = 0;*/
+
+    //druga metoda
+    AliMCEventHandler *mctruth = (AliMCEventHandler *)
+                                    ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+    
+    cout<<"mctruth: "<<mctruth<<endl;
+    if(!mctruth)
+      {
+	Printf("ERROR: Could not retrieve MC handler");//!!!
+      }
+
+    AliMCEvent* mcEvent = mctruth->MCEvent();
+    cout<<"mcEvent: "<<mcEvent<<endl;
+    if (!mcEvent) {//!!!
+      Printf("ERROR: Could not retrieve MC event");//!!!
+      return;//!!!
+    }//!!!
+
+      fStack = mcEvent->Stack();//!!!
+
+      AliGenHijingEventHeader *hdh = 0;
 
     cout<<"AliAnalysisTaskFemtoMJ:: Getting MC Event and stack" <<endl;//!!!
-    cout<<"AliAnalysisTaskFemtoMJ:: stack: "<<stack<<" MCevent: "<<mcEvent<<" handler: "<<mctruth<<endl;  //!!!
+    //cout<<"AliAnalysisTaskFemtoMJ:: stack: "<<fStack<<" MCevent: "<<mcEvent<<" handler: "<<mctruth<<endl;  //!!!
 
 
 
@@ -355,6 +373,17 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
       }
     }
 
+
+
+  if (fAnalysisType == 1) {
+    if (!fESD) {
+      if (fVerbose)
+	AliWarning("fESD not available");
+      //return;//!!!-
+    }
+    //Get MC data
+
+  
     // Get ESD
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
