@@ -104,7 +104,7 @@ public:
       static AliTriggerConfiguration* LoadConfigurationFromString(const char* configuration);
       Bool_t    IsSelected( TString detName, TString & detectors ) const;
 
-      enum {kNMaxInputs = 60}; // CTP handles up to 60 trigger detector inputs
+      enum {kNMaxInputs = 64}; // CTP handles up to 60 trigger detector inputs
       enum {kNMaxInteractions = 2}; // CTP handles up to two different interactions
       enum {kNMaxFunctions = 4}; // CTP handles up to 4 different logical functions
       enum {kNMaxClasses = 100}; // Maximum number of trigger classes = 50
