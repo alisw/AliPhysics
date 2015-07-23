@@ -90,7 +90,7 @@
 #include "AliTPCParam.h"
 #include "THnBase.h"
 #include <RVersion.h>
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,3,3)
 #include "TFormulaPrimitive.h"
 #else
 #include "v5/TFormulaPrimitive.h"
@@ -157,13 +157,13 @@ AliTPCClusterParam* AliTPCClusterParam::Instance()
     //
     ::Info("AliTPCClusterParam::Instance()","registering of the cluster param function primitives");
     ::Info("AliTPCClusterParam::Instance()","clusterResolutionYAliRoot");
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,3,3)
     TFormulaPrimitive::AddFormula(new TFormulaPrimitive("clusterResolutionYAliRoot","clusterResolutionYAliRoot",AliTPCClusterParamClusterResolutionY));
 #else
     ROOT::v5::TFormulaPrimitive::AddFormula(new ROOT::v5::TFormulaPrimitive("clusterResolutionYAliRoot","clusterResolutionYAliRoot",AliTPCClusterParamClusterResolutionY));
 #endif
     ::Info("AliTPCClusterParam::Instance()","clusterResolutionZAliRoot");
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,3,3)
     TFormulaPrimitive::AddFormula(new TFormulaPrimitive("clusterResolutionZAliRoot","clusterResolutionZAliRoot",AliTPCClusterParamClusterResolutionZ));
 #else
     ROOT::v5::TFormulaPrimitive::AddFormula(new ROOT::v5::TFormulaPrimitive("clusterResolutionZAliRoot","clusterResolutionZAliRoot",AliTPCClusterParamClusterResolutionZ));
