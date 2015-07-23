@@ -1145,7 +1145,6 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
     Double_t yMaxErr[3] = {((TH1D*)arr.At(1))->GetBinError(1),
 			   ((TH1D*)arr.At(1))->GetBinError(2),
 			   ((TH1D*)arr.At(1))->GetBinError(3)};
-    TGraphErrors * fitPadRegionQmax = new TGraphErrors(3, xMax, yMax, 0, yMaxErr);
     //
     histQtot->FitSlicesY(0,0,-1,0,"QNR",&arr);
     Double_t xTot[3] = {0,1,2};
@@ -1155,6 +1154,13 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
     Double_t yTotErr[3] = {((TH1D*)arr.At(1))->GetBinError(1),
 			   ((TH1D*)arr.At(1))->GetBinError(2),
 			   ((TH1D*)arr.At(1))->GetBinError(3)};
+    Double_t truncationFactor=AliTPCcalibGainMult::GetTruncatedMeanPosition(yTot[0],yTot[1],yTot[2],1000);
+    for (Int_t i=0;i<3; i++){
+      yMax[i]*=truncationFactor;
+      yTot[i]*=truncationFactor;
+    }
+
+    TGraphErrors * fitPadRegionQmax = new TGraphErrors(3, xMax, yMax, 0, yMaxErr);    
     TGraphErrors * fitPadRegionQtot = new TGraphErrors(3, xTot, yTot, 0, yTotErr);
     //
     fitPadRegionQtot->SetName("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");// set proper names according to naming convention

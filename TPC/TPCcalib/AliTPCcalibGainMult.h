@@ -38,6 +38,7 @@ public:
   virtual Long64_t       Merge(TCollection *li);
   virtual void           Analyze();
   void                   DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftrack, AliTPCseed * seed, Int_t index);
+  static Double_t GetTruncatedMeanPosition(Double_t q0, Double_t q1, Double_t q2, Int_t ntracks, Int_t tuneIndex=0, TTreeSRedirector *pcstream=0);
   //
   TH1F   *          GetHistNTracks() const {return fHistNTracks;};
   TH1F   *          GetHistClusterShape() const {return fHistClusterShape;};
