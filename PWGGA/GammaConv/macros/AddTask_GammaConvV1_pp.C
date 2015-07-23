@@ -90,7 +90,7 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 			}
 		}
 
-		}
+		
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
 		// AOD mode
 			fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
