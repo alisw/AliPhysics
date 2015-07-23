@@ -54,7 +54,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kMultLimitpp = 300,
     kMultBinspp = 10,
     kMCarrayLimit = 150000,// 110000
-    kQbinsWeights = 25,// 40 or 25
+    kQbinsWeights = 40,// 40 or 25
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
     kDENtypes = 179,// was 104
