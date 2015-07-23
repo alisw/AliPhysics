@@ -128,7 +128,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   AliFemtoEvent *hbtEvent = 0;
   string tFriendFileName;
 
-  cout << "AliFemtoEventReaderKinematlaicsChain::Starting to read event: "<<fCurEvent<<endl;
+  //cout << "AliFemtoEventReaderKinematlaicsChain::Starting to read event: "<<fCurEvent<<endl;
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
@@ -343,7 +343,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
     }
 
 
-  cout<<"Number of tracks: "<<realnofTracks<<endl;
+  //cout<<"Number of tracks: "<<realnofTracks<<endl;
 
   return hbtEvent; 
 }

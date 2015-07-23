@@ -159,6 +159,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	// Reader->SetMinPlpContribSPD(3);
 	// Reader->SetIsPileUpEvent(kTRUE);
 
+
+
 	AliFemtoEventReaderKinematicsChain* Reader=new AliFemtoEventReaderKinematicsChain();
 
 	AliFemtoManager* Manager = new AliFemtoManager();
@@ -214,7 +216,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(zvertbino, -10.0, 10.0, multbino, multbins[imult], multbins[imult+1]);
 					anetaphitpc[aniter]->SetNumEventsToMix(10);
 					anetaphitpc[aniter]->SetMinSizePartCollection(1);
-					anetaphitpc[aniter]->SetVerboseMode(kTRUE);//~~~~~~~~~~~~~~~~
+					anetaphitpc[aniter]->SetVerboseMode(kFALSE);//~~~~~~~~~~~~~~~~
 
 					//*** Event cut ***
 					mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
@@ -239,9 +241,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
 					dtc2etaphitpc[aniter]->SetCharge(-1.0);
 
-					dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
-					dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
-					dtc3etaphitpc[aniter]->SetEta(-0.8,0.8);
+					dtc1etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
+					dtc2etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
+					dtc3etaphitpc[aniter]->SetEta(nEtaMin,nEtaMax);
 
 					// dtc1etaphitpc[aniter]->SetElectronRejection(true);	
 					// dtc2etaphitpc[aniter]->SetElectronRejection(true);
