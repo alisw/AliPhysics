@@ -101,6 +101,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fDCAdp(0.2),
   fDCApip(0.5),
   fDCAdpi(0.5),
+  fLowCentrality(0.),
+  fHighCentrality(8.),
   fOutput(0x0),
   fHistCount(0x0),
   fHistCentralityClass(0x0),
@@ -792,11 +794,11 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   fHistCentralityClass->Fill(fCentrality);
   fHistCentralityPercentile->Fill(fCentralityPercentile);
 
-  if (fCentrality < 0. || fCentrality > 8.) {
+  if (fCentrality < fLowCentrality || fCentrality > fHighCentrality) {
     PostData(1,fOutput);
     return; //0 bis 80 %
   }
-  
+   
   //==========Multiplicity==========
   Int_t refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, kTRUE);
   fHistMultiplicity->Fill(refMultTpc);
