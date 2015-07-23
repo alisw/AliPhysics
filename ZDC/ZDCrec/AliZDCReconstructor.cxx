@@ -331,9 +331,19 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   //fMapping->Print("");
   //
   Int_t tdcSignalCode[32] = {0};
-  for(int i=0; i<32; i++) tdcSignalCode[i] = fMapping->GetTDCSignalCode(i);
+  // **** Adding a fix since kL0 in RUN1 was not set in the mapping (23/7/2015)
+  Bool_t iskL0set = kFALSE;
+  for(int i=0; i<32; i++){
+     tdcSignalCode[i] = fMapping->GetTDCSignalCode(i);
+     // Ch. debug
+     //printf(" TDC ch.%d  signal %d \n",i, tdcSignalCode[i]);
+  
+     if(fMapping->GetTDCSignalCode(i) == kL0) iskL0set = kTRUE;
+  }
+  // if kL0 is not set (RUN1) it is manually set to ch.15
+  if(!iskL0set) tdcSignalCode[15] = kL0;
   // Ch. debug
-  //for(int i=0; i<32; i++) printf(" TDC ch.%d  signal %d \n",i, tdcSignalCode[i]);
+  //printf(" iskL0set %d  tdcSignalCode[15] %d \n",iskL0set, tdcSignalCode[15]);
   
   Bool_t isScalerOn=kFALSE;
   Int_t jsc=0, itdc=0, iprevtdc=-1, ihittdc=0;
@@ -435,13 +445,14 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        // setting TDC channels from raw data (=0 if reconstructing from digits!!!!)
        // NB -> I want to store the ch. in tdcCabling variable ONLY if it is not yet stored!!!
        // NB -> THE ORDER MUST BE THE SAME AS THE ONE IN ZDCMAPPINGDA.cxx (7/7/2015)
+       //	ZEM1 ZEM2 ZNC ZPC ZNA ZPA
        // otherwise calibrated TDC won't be centered around zero (wrong offset subtracted)
-       if(tdcSignalCode[itdc]==kZEM1D && tdcCabling[2]<0) tdcCabling[0] = itdc;
-       else if(tdcSignalCode[itdc]==kZEM2D && tdcCabling[3]<0) tdcCabling[1] = itdc;
-       else if(tdcSignalCode[itdc]==kZNCD && tdcCabling[4]<0)  tdcCabling[2] = itdc;
-       else if(tdcSignalCode[itdc]==kZPCD && tdcCabling[5]<0)  tdcCabling[3] = itdc;
-       else if(tdcSignalCode[itdc]==kZNAD && tdcCabling[0]<0)  tdcCabling[4] = itdc;
-       else if(tdcSignalCode[itdc]==kZPAD && tdcCabling[1]<0)  tdcCabling[5] = itdc;
+       if(tdcSignalCode[itdc]==kZEM1D && tdcCabling[0]<0) tdcCabling[0] = itdc;
+       else if(tdcSignalCode[itdc]==kZEM2D && tdcCabling[1]<0) tdcCabling[1] = itdc;
+       else if(tdcSignalCode[itdc]==kZNCD && tdcCabling[2]<0)  tdcCabling[2] = itdc;
+       else if(tdcSignalCode[itdc]==kZPCD && tdcCabling[3]<0)  tdcCabling[3] = itdc;
+       else if(tdcSignalCode[itdc]==kZNAD && tdcCabling[4]<0)  tdcCabling[4] = itdc;
+       else if(tdcSignalCode[itdc]==kZPAD && tdcCabling[5]<0)  tdcCabling[5] = itdc;
        else if(tdcSignalCode[itdc]==kL0 && tdcCabling[6]<0)    tdcCabling[6] = itdc;
        //
        if(itdc==iprevtdc) ihittdc++;
@@ -466,7 +477,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   
   }//loop on raw data
   // Ch. debug
-  //printf("\n  TDC channels  ZEM1 %d ZEM2 %d ZNC %d ZPC %d ZNA %d  ZPA %d L0 %d\n\n", tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
+  printf("\n  TDC channels  ZEM1 %d ZEM2 %d ZNC %d ZPC %d ZNA %d  ZPA %d L0 %d\n\n", tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
   // PEDESTAL subtraction
   // Jul 2015: if PedSubMode==kTRUE but coefficients are null, mean value must be subtracted!!!!!
@@ -1391,7 +1402,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   Int_t *tdcCabling = reco.GetTDCchCabling();
   //
   // Ch. debug
-  //printf("\n  FillZDCintoESD: TDC channels  ZNA %d  ZPA %d ZEM1 %d ZEM2 %d ZNC %d ZPC %d L0 %d\n\n",  tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
+  //printf("\n  FillZDCintoESD: TDC channels  ZEM1 %d  ZEM2 %d ZNC %d ZPC %d ZNA %d ZPA %d L0 %d\n\n",  tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
   Int_t tdcValues[32][4] = {{0,}}; 
   Float_t tdcCorrected[32][4] = {{999.,}};
@@ -1432,7 +1443,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
     }
   }
   
-  for(int idch=0; idch<6; idch++){
+  for(int idch=0; idch<7; idch++){
      if(tdcCabling[idch]>0.) fESDZDC->SetZDCTDCChannel(idch, tdcCabling[idch]);
   }
   

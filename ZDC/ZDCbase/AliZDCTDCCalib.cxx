@@ -98,6 +98,7 @@ void  AliZDCTDCCalib::Print(Option_t *) const
 {
    // Printing of calibration object
    printf("\n ####### TDC calibration values ####### \n");
+   printf("   ch. order: ZEM1 ZEM2 ZNC ZPC ZNA ZPA \n");
    for(int t=0; t<6; t++) 
       printf("\t ch.%d (%f, %f)\n",t,fMeanTDC[t],fWidthTDC[t]);
  
