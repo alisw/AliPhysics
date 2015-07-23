@@ -2002,7 +2002,7 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/
   if (padRegion>0) fHistGainSector->GetAxis(1)->SetRangeUser(36.,71.);
   //
   TH2D * histGainSec = fHistGainSector->Projection(0,1);
-  TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, 0.6,2,markers[padRegion],colors[padRegion]);
+  TGraphErrors * gr = TStatToolkit::MakeStat1D(histGainSec, 0, 0.6,4,markers[padRegion],colors[padRegion]);
   delete histGainSec;
   Double_t median = TMath::Median(gr->GetN(),gr->GetY());
   if (median>0){
@@ -2035,4 +2035,70 @@ TGraphErrors* AliTPCcalibGainMult::GetGainPerChamberRobust(Int_t padRegion/*=1*/
 //    }
 //    AliTPCcalibBase::Terminate();
 // }
+
+
+
+Double_t AliTPCcalibGainMult::GetTruncatedMeanPosition(Double_t q0, Double_t q1, Double_t q2, Int_t ntracks, Int_t tuneIndex, TTreeSRedirector *pcstream){
+  //
+  // Simulation of truncated mean position for reweighed IROC(w0),OROCmedium(w1) and OROClong(w2)
+  // Options:
+  //   a.) assume that all pad-rows are used in the dEdx calcualtion
+  //   b.) calculate effective lenght in differnt regions taking into account dead zones
+  //       for some reason fraction is roghly the same therefore we keep scaling win n padrows 
+  //         
+  const Int_t row1=63;
+  const Int_t row2=64+36;
+  const Int_t nRows=159;
+  Double_t qmean=(q0+q1+q2)/3.;
+  Double_t wmean=(q0*row1+q1*(row2-row1)+q2*(nRows-row2))/nRows;
+  TVectorD vecdEdxEqualW(ntracks);
+  TVectorD vecQEqualW(nRows);
+  TVectorD vecQEqualWSorted(nRows);
+  //
+  TVectorD vecdEdx(ntracks);
+  TVectorD vecQ(nRows);
+  TVectorD vecQSorted(nRows);
+  Int_t indexArray[nRows];
+
+  for (Int_t itrack=0; itrack<ntracks; itrack++){
+    for (Int_t irow=0; irow<nRows; irow++){
+      Double_t q=gRandom->Landau(1,0.2);
+      Double_t qnorm=q1;
+      if (irow<row1) qnorm=q0;
+      if (irow>row2) qnorm=q2;
+      vecQEqualW[irow]=q*wmean;
+      vecQ[irow]=q*qnorm;
+    }
+    TMath::Sort(nRows, vecQEqualW.GetMatrixArray(), indexArray,kFALSE);
+    for (Int_t irow=0; irow<nRows; irow++)      vecQEqualWSorted[irow]=vecQEqualW[indexArray[irow]];
+    TMath::Sort(nRows, vecQ.GetMatrixArray(), indexArray,kFALSE);
+    for (Int_t irow=0; irow<nRows; irow++)      vecQSorted[irow]=vecQ[indexArray[irow]];
+    
+    Double_t truncMeanEqualW=TMath::Mean(nRows*0.6,vecQEqualWSorted.GetMatrixArray());
+    Double_t truncMean=TMath::Mean(nRows*0.6,vecQSorted.GetMatrixArray());
+    vecdEdxEqualW[itrack]=truncMeanEqualW;
+    vecdEdx[itrack]=truncMean;
+    if (pcstream && itrack>1){
+      Double_t currentMeanEqualW=TMath::Mean(itrack+1,vecdEdxEqualW.GetMatrixArray());
+      Double_t currentMean=TMath::Mean(itrack+1,vecdEdx.GetMatrixArray());
+      (*pcstream)<<"dEdxTrunc"<<
+	"itrack="<<itrack<<
+	"q0="<<q0<<
+	"q1="<<q1<<
+	"q2="<<q2<<
+	"qmean="<<qmean<<
+	"wmean="<<wmean<<
+	"truncMean="<<truncMean<<
+	"truncMeanEqualW="<<truncMeanEqualW<<
+	"currentMean="<<currentMean<<
+	"currentMeanEqualW="<<currentMeanEqualW<<
+	"tuneIndex="<<tuneIndex<<
+	"\n";
+    }
+  }  
+  Double_t fullTruncMean=TMath::Mean(ntracks,vecdEdx.GetMatrixArray());
+  if (wmean>0) return fullTruncMean/wmean;
+  return 0;
+}
+
 

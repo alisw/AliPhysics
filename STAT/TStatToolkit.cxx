@@ -910,7 +910,8 @@ TGraphErrors * TStatToolkit::MakeStat1D(TH2 * his, Int_t deltaBin, Double_t frac
 	if (returnType==3) {stat= vecLTM[2];	 err =projection->GetRMSError();}
     }
     if (returnType==4|| returnType==5){
-      projection->Fit(&f1,"QN","QN", vecLTM[7], vecLTM[8]);
+      f1.SetParameters(vecLTM[0], vecLTM[1], vecLTM[2]+0.05);
+      projection->Fit(&f1,"QN","QN", vecLTM[7]-vecLTM[2], vecLTM[8]+vecLTM[2]);
       if (returnType==4) {
 	stat= f1.GetParameter(1);
 	err=f1.GetParError(1);
