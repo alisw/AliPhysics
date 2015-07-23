@@ -349,7 +349,7 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
       AliGenHijingEventHeader *hdh = 0;
 
     cout<<"AliAnalysisTaskFemtoMJ:: Getting MC Event and stack" <<endl;//!!!
-    //cout<<"AliAnalysisTaskFemtoMJ:: stack: "<<fStack<<" MCevent: "<<mcEvent<<" handler: "<<mctruth<<endl;  //!!!
+    cout<<"AliAnalysisTaskFemtoMJ:: stack: "<<fStack<<" MCevent: "<<mcEvent<<" handler: "<<mctruth<<endl;  //!!!
 
 
 
@@ -374,6 +374,16 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     }
 
 
+    AliFemtoEventReaderKinematicsChain *fkinec = dynamic_cast<AliFemtoEventReaderKinematicsChain *>(fReader);
+    if (fkinec) {
+      // Process the event with Kine information only
+      fkinec->SetStackSource(fStack);
+      cout<<"AliFemtoEventReaderKinematicsChain::fkinec: "<<fkinec<<", fStack: "<<fStack<<endl;
+      fManager->ProcessEvent();
+    }
+
+
+    PostData(0, fOutputList);
 
   if (fAnalysisType == 1) {
     if (!fESD) {
@@ -412,12 +422,7 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
         fManager->ProcessEvent();
       }
     }
-    AliFemtoEventReaderKinematicsChain *fkinec = dynamic_cast<AliFemtoEventReaderKinematicsChain *>(fReader);
-    if (fkinec) {
-      // Process the event with Kine information only
-      fkinec->SetStackSource(fStack);
-      fManager->ProcessEvent();
-    }
+
 
 
     AliFemtoEventReaderESDChainKine *fesdck = dynamic_cast<AliFemtoEventReaderESDChainKine *>(fReader);
