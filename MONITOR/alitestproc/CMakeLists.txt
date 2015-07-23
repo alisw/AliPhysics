@@ -34,7 +34,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} ${SRCS})
-target_link_libraries(${MODULE} MONITOR Rint)
+target_link_libraries(${MODULE} MONITOR Rint Core)
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
