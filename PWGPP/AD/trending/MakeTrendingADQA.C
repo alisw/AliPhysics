@@ -49,6 +49,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   Float_t ratePhysBBA = -1024, ratePhysBBC = -1024;
   Float_t ratePhysBGA = -1024, ratePhysBGC = -1024;
   Float_t channelTimeMean[16], channelTimeSigma[16];
+  Float_t flagNoTimeFraction[16];
   
 
   TString treePostFileName="trending.root";
@@ -133,6 +134,9 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   ttree->Branch("ratePhysBGC",&ratePhysBGC,"Offline rate BGC;;Rate/F");
   ttree->Branch("channelTimeMean", &channelTimeMean[0], "channelTimeMean[16]/F");
   ttree->Branch("channelTimeSigma", &channelTimeSigma[0], "channelTimeSigma[16]/F");
+  ttree->Branch("channelTimeSigma", &channelTimeSigma[0], "channelTimeSigma[16]/F");
+  ttree->Branch("flagNoTimeFraction", &flagNoTimeFraction[0], "flagNoTimeFraction[16]/F");
+  
 
   if(!QAfile)
     {
@@ -217,8 +221,10 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 
   TH2F *fHistWidthPerPM = dynamic_cast<TH2F*> (flistQA->FindObject("fHistWidthPerPM"));
 
+  TH2F *fHistTimeVsChargeADA_Cut = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADA_Cut"));
   TH2F *fHistTimeVsChargeADA_Corr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADA_Corr"));
   TH2F *fHistTimeVsChargeADA_UnCorr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADA_UnCorr"));
+  TH2F *fHistTimeVsChargeADC_Cut = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADC_Cut"));
   TH2F *fHistTimeVsChargeADC_Corr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADC_Corr"));
   TH2F *fHistTimeVsChargeADC_UnCorr = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeVsChargeADC_UnCorr"));
 
@@ -243,19 +249,22 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TH1F *fHistChargeNoFlag = dynamic_cast<TH1F*> (flistQA->FindObject("fHistChargeNoFlag"));
   TH2F *fHistTimeNoFlag = dynamic_cast<TH2F*> (flistQA->FindObject("fHistTimeNoFlag"));
   TH2F *fHistChargeNoTime = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargeNoTime"));
+  TH1F *fHistFlagNoTime = dynamic_cast<TH1F*> (flistQA->FindObject("fHistFlagNoTime"));
 
   TH2F *fHistChargePerCoincidence = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargePerCoincidence"));
 
-  TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADA"));
-  TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADC"));
-  //TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADA"));
-  //TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADC"));
+  //TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADA"));
+  //TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADC"));
+  TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADA"));
+  TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADC"));
   TH1F *fHistMeanTimeDifference = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeDifference"));
 
   TH2F *fHistMeanTimeCorrelation = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMeanTimeCorrelation"));
   TH2F *fHistMeanTimeSumDiff = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMeanTimeSumDiff"));
 
-  TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecision"));
+  //TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecision"));
+  //TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecisionBasic"));
+  TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecisionRobust"));
 
   TH1F *fHistTriggerMasked = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerMasked"));
   TH1F *fHistTriggerOthers = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerOthers"));
@@ -395,6 +404,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	}
   
   cout<<"Phys sel ADand = "<<ratePhysADAND<<" Phys sel ADor = "<<ratePhysADOR<<" Ratio AND/OR = "<<ratePhysADAND/ratePhysADOR<<endl;
+  
+  for(Int_t i = 0; i<16; i++) flagNoTimeFraction[i] = fHistFlagNoTime->GetBinContent(i+1)/nEvents;
   
   TH1D *hChargeSliceAll[16];
   TH1D *hChargeSliceTime[16];
@@ -715,8 +726,10 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     c42->Print(Form("ADQA_Run_%d.pdf",runNumber)); 
     //-------------------------------------------------------------------
     
+    myHistSetUp(fHistTimeVsChargeADA_Cut);
     myHistSetUp(fHistTimeVsChargeADA_Corr);
     myHistSetUp(fHistTimeVsChargeADA_UnCorr);
+    myHistSetUp(fHistTimeVsChargeADC_Cut);
     myHistSetUp(fHistTimeVsChargeADC_Corr);
     myHistSetUp(fHistTimeVsChargeADC_UnCorr);
 
@@ -724,25 +737,35 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     c5->Draw();
     c5->cd();
     TPad *myPad5 = new TPad("myPad5", "The pad",0,0,1,1);
-    myPad5->Divide(2,2);
+    myPad5->Divide(3,2);
     myPad5->Draw();
     myPadSetUp(myPad5->cd(1),0.15,0.1,0.1,0.15);
     myPadSetUp(myPad5->cd(2),0.15,0.1,0.1,0.15);
     myPadSetUp(myPad5->cd(3),0.15,0.1,0.1,0.15);
     myPadSetUp(myPad5->cd(4),0.15,0.1,0.1,0.15);
+    myPadSetUp(myPad5->cd(5),0.15,0.1,0.1,0.15);
+    myPadSetUp(myPad5->cd(6),0.15,0.1,0.1,0.15);
     myPad5->cd(1);
     gPad->SetLogz();
-    //fHistTimeVsChargeADA_Corr->GetXaxis()->SetRangeUser(40,80);
-    fHistTimeVsChargeADA_Corr->Draw("COLZ");
+    fHistTimeVsChargeADA_Cut->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADA_Cut->Draw("COLZ");
     myPad5->cd(2);
+    gPad->SetLogz();
+    fHistTimeVsChargeADA_Corr->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADA_Corr->Draw("COLZ");
+    myPad5->cd(3);
     gPad->SetLogz();
     //fHistTimeVsChargeADA_UnCorr->GetXaxis()->SetRangeUser(170,220);
     fHistTimeVsChargeADA_UnCorr->Draw("COLZ");
-    myPad5->cd(3);
-    gPad->SetLogz();
-    //fHistTimeVsChargeADC_Corr->GetXaxis()->SetRangeUser(40,80);
-    fHistTimeVsChargeADC_Corr->Draw("COLZ");
     myPad5->cd(4);
+    gPad->SetLogz();
+    fHistTimeVsChargeADC_Cut->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADC_Cut->Draw("COLZ");
+    myPad5->cd(5);
+    gPad->SetLogz();
+    fHistTimeVsChargeADC_Corr->GetXaxis()->SetRangeUser(40,80);
+    fHistTimeVsChargeADC_Corr->Draw("COLZ");
+    myPad5->cd(6);
     gPad->SetLogz();
     //fHistTimeVsChargeADC_UnCorr->GetXaxis()->SetRangeUser(170,220);
     fHistTimeVsChargeADC_UnCorr->Draw("COLZ");
