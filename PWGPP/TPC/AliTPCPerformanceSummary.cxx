@@ -34,6 +34,7 @@
 #include "TPad.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TError.h"
 
 #include "AliGRPObject.h"
 #include "AliTPCcalibDB.h"
@@ -58,6 +59,7 @@
 #include "TGeoGlobalMagField.h"
 #include "AliMathBase.h"
 #include "AliTPCPerformanceSummary.h"
+#include "AliDAQ.h"
 
 using std::ifstream;
 
@@ -81,6 +83,31 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
     if (pTPCgain) {run = pTPCgain->GetRunNumber(); }
     if (pTPC) { run = pTPC->GetRunNumber(); }
   }
+
+  // check the presence of the detectors
+  AliCDBEntry *entry=0x0;
+  try {
+    entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  } catch(...) {
+    Info("AliTPCPerformanceSummary::WriteToTTreeSRedirector","No GRP entry found");
+    entry = 0x0;
+  }
+
+  if (!entry) return;
+
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
+  if (!grpData) {
+    Info("AliTPCPerformanceSummary::WriteToTTreeSRedirector","Failed to get GRP data for run %d\n",run);
+    return;
+  }
+  Int_t activeDetectors = grpData->GetDetectorMask();
+  TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+  //printf("Detectors in the data:\n%s\n",detStr.Data());
+  if ( detStr.Contains("TPC")==0){
+    Info("AliTPCPerformanceSummary::WriteToTTreeSRedirector","TPC not present in run %d", run);
+    return;
+  }
+
   TObjString runType;
   
   Int_t startTimeGRP=0;
@@ -2945,16 +2972,15 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   for (Int_t itype=0; itype<4; itype++){
     if (!padInput[itype]) {
       ::Error("AliTPCPerformanceSummary::MakeRawOCDBQAPlot","Could not get input for type %d: %s", itype, typeNames[itype]);
-      continue;
     }
 
     for (Int_t isec=0; isec<72; isec++) {
-      value[isec]=padInput[itype]->GetCalROC(isec)->GetMedian() ; 
-      if (itype==0) value[isec]=padInput[itype]->GetCalROC(isec)->GetMean(); 
-      if (itype==2) value[isec]=padInput[itype]->GetCalROC(isec)->GetMedian(); 
-      valueRMS[isec]=padInput[itype]->GetCalROC(isec)->GetRMS();
+      value[isec]              =padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMedian():-1;
+      if (itype==0) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMean()  :-1;
+      if (itype==2) value[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetMedian():-1;
+      valueRMS[isec]=padInput[itype]&&padInput[itype]->GetCalROC(isec)?padInput[itype]->GetCalROC(isec)->GetRMS():-1;
       if (value[isec]>0)valueRMS[isec]/=value[isec];
-      valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
+      if (padInput[itype]&&padInput[itype]->GetCalROC(isec)) valueRMS[isec]/=TMath::Sqrt( 16*padInput[itype]->GetCalROC(isec)->GetNchannels()/padInput[itype]->GetCalROC(isec)->GetNrows());
     }
     for (Int_t isec=0; isec<72; isec++) {
       Int_t offset=36*(isec/36);
@@ -2983,13 +3009,16 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
       pad->Draw();
       pad->cd()->SetLogz();
       TH1* histo = 0;
-      if (padInput[itype]->GetMedian()>0){	
+      if (padInput[itype] && padInput[itype]->GetMedian()>0){
         padInput[itype]->Multiply(1./padInput[itype]->GetMedian());
 	histo=padInput[itype]->MakeHisto2D((iplot+1)%2);
 	if (histo->GetMaximum()>2) histo->SetMaximum(2.); 
 	histo->SetName(TString::Format("%s  %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
 	histo->SetTitle(TString::Format("%s %s Side",padInput[itype]->GetTitle(),side[(iplot+1)%2]).Data());
 	histo->Draw("colz");
+      } else {
+        TLatex l;
+        l.DrawLatexNDC(.2,.5,TString::Format("%s not available", typeNames[itype]));
       }
     }
   }
@@ -3005,7 +3034,7 @@ void   AliTPCPerformanceSummary::MakeRawOCDBQAPlot(TTreeSRedirector *pcstream){
   for (Int_t itype=0; itype<4; itype++){
     if (itype==0) grRaw[itype]->Draw("ap");
     grRaw[itype]->Draw("p");
-    legend->AddEntry(grRaw[itype], padInput[itype]->GetTitle(),"p");
+    legend->AddEntry(grRaw[itype], typeNames[itype],"p");
   }
   legend->Draw();
   TLine *line = new TLine(0,0.70,72,0.70);
