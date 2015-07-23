@@ -1,5 +1,5 @@
 #ifndef ALIANALYSISTASKCHARGEDPARTICLESREF_H
-#define ALIANALYSISTASKCHARGEDPARTICLESREF_H_
+#define ALIANALYSISTASKCHARGEDPARTICLESREF_H
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -51,4 +51,4 @@ private:
 
 } /* namespace EMCalTriggerPtAnalysis */
 
-#endif /* ALIANALYSISTASKCHARGEDPARTICLESREF_H_ */
+#endif /* ALIANALYSISTASKCHARGEDPARTICLESREF_H */
