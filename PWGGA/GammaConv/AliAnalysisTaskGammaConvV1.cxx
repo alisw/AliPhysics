@@ -142,6 +142,15 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hMCSecPi0Source(NULL),
 	hMCSecEtaPt(NULL),
 	hMCSecEtaSource(NULL),
+	hMCPhysicalPrimariesPt(NULL),
+	hMCPrimaryPionPlusPt(NULL),
+	hMCPrimaryPionMinusPt(NULL),
+	hMCPrimaryKaonPlusPt(NULL),
+	hMCPrimaryKaonMinusPt(NULL),
+	hMCPrimaryProtonPt(NULL),
+	hMCPrimaryAntiprotonPt(NULL),
+	hMCPrimaryPi0Pt(NULL),
+	hMCPrimaryEtaPt(NULL),
 	hESDTrueMotherInvMassPt(NULL),
 	hESDTruePrimaryMotherInvMassPt(NULL),
 	hESDTruePrimaryMotherW0WeightingInvMassPt(NULL),
@@ -232,6 +241,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	fDoMesonAnalysis(kTRUE),
 	fDoMesonQA(0),
 	fDoPhotonQA(0),
+	fDoChargedPrimary(kFALSE),
 	fIsFromMBHeader(kTRUE),
 	fIsMC(kFALSE),
 	fDoTHnSparse(kTRUE)
@@ -321,6 +331,15 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hMCSecPi0Source(NULL),
 	hMCSecEtaPt(NULL),
 	hMCSecEtaSource(NULL),
+	hMCPhysicalPrimariesPt(NULL),
+	hMCPrimaryPionPlusPt(NULL),
+	hMCPrimaryPionMinusPt(NULL),
+	hMCPrimaryKaonPlusPt(NULL),
+	hMCPrimaryKaonMinusPt(NULL),
+	hMCPrimaryProtonPt(NULL),
+	hMCPrimaryAntiprotonPt(NULL),
+	hMCPrimaryPi0Pt(NULL),
+	hMCPrimaryEtaPt(NULL),
 	hESDTrueMotherInvMassPt(NULL),
 	hESDTruePrimaryMotherInvMassPt(NULL),
 	hESDTruePrimaryMotherW0WeightingInvMassPt(NULL),
@@ -411,6 +430,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	fDoMesonAnalysis(kTRUE),
 	fDoMesonQA(0),
 	fDoPhotonQA(0),
+	fDoChargedPrimary(kTRUE),
 	fIsFromMBHeader(kTRUE),
 	fIsMC(kFALSE),
 	fDoTHnSparse(kTRUE)
@@ -834,10 +854,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		if (fDoPhotonQA > 0){
 			hMCConvGammaR = new TH1F*[fnCuts];
 			hMCConvGammaEta = new TH1F*[fnCuts];
-		hESDTrueConvGammaEta = new TH1F*[fnCuts];
-		hESDTrueConvGammaR = new TH1F*[fnCuts];
-                hESDTrueConvGammaRMC = new TH1F*[fnCuts];
-                hESDTrueConvGammaPtMC = new TH1F*[fnCuts];
+			hESDTrueConvGammaEta = new TH1F*[fnCuts];
+			hESDTrueConvGammaR = new TH1F*[fnCuts];
+            hESDTrueConvGammaRMC = new TH1F*[fnCuts];
+            hESDTrueConvGammaPtMC = new TH1F*[fnCuts];
 		}
 
 		if(fDoMesonAnalysis){
@@ -892,6 +912,18 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			}
 		}
 
+		if(fDoChargedPrimary){
+			hMCPhysicalPrimariesPt = new TH1F*[fnCuts];
+			hMCPrimaryPionPlusPt = new TH1F*[fnCuts];
+			hMCPrimaryPionMinusPt = new TH1F*[fnCuts];
+			hMCPrimaryKaonPlusPt = new TH1F*[fnCuts];
+			hMCPrimaryKaonMinusPt = new TH1F*[fnCuts];
+			hMCPrimaryProtonPt = new TH1F*[fnCuts];
+			hMCPrimaryAntiprotonPt = new TH1F*[fnCuts];
+			hMCPrimaryPi0Pt = new TH1F*[fnCuts];
+			hMCPrimaryEtaPt = new TH1F*[fnCuts];
+		}
+	
 		for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 			TString cutstringEvent 	= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
 			TString cutstringPhoton = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
@@ -1002,6 +1034,33 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 				}
 
 			}
+			
+			if(fDoChargedPrimary){
+				hMCPhysicalPrimariesPt[iCut] = new TH1F("MC_PhysicalPrimaryCharged_Pt","MC_PhysicalPrimaryCharged_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPhysicalPrimariesPt[iCut]);
+				
+				hMCPrimaryPionPlusPt[iCut] = new TH1F("MC_PiPlus_Pt","MC_PiPlus_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryPionPlusPt[iCut]);
+				hMCPrimaryPionMinusPt[iCut] = new TH1F("MC_PiMinus_Pt","MC_PiMinus_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryPionMinusPt[iCut]);
+				
+				hMCPrimaryKaonPlusPt[iCut] = new TH1F("MC_KaonPlus_Pt","MC_KaonPlus_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryKaonPlusPt[iCut]);
+				hMCPrimaryKaonMinusPt[iCut] = new TH1F("MC_KaonMinus_Pt","MC_KaonMinus_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryKaonMinusPt[iCut]);
+				
+				hMCPrimaryProtonPt[iCut] = new TH1F("MC_Proton_Pt","MC_Proton_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryProtonPt[iCut]);
+				hMCPrimaryAntiprotonPt[iCut] = new TH1F("MC_AntiProton_Pt","MC_AntiProton_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryAntiprotonPt[iCut]);
+				
+				hMCPrimaryPi0Pt[iCut] = new TH1F("MC_Pi0Primary_Pt","MC_Pi0Primary_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryPi0Pt[iCut]);
+				hMCPrimaryEtaPt[iCut] = new TH1F("MC_EtaPrimary_Pt","MC_EtaPrimary_Pt",250,0,25);
+				fMCList[iCut]->Add(hMCPrimaryEtaPt[iCut]);
+			}
+
+		
 			fTrueList[iCut] = new TList();
 			fTrueList[iCut]->SetName(Form("%s_%s_%s True histograms",cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
 			fTrueList[iCut]->SetOwner(kTRUE);
@@ -1857,6 +1916,27 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 			AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
 			if (!particle) continue;
 
+			if(fDoChargedPrimary){ //getting charged primary particles
+				Bool_t IsPhysicalPrimary = particle->IsPhysicalPrimary();
+				if( IsPhysicalPrimary && TMath::Abs(particle->Eta()) < 0.8){ // Eta cut used in charged particle spectrum
+					
+					if ( particle->GetPdgCode()== -211 || particle->GetPdgCode()== 211 || 
+							particle->GetPdgCode()== 2212 || particle->GetPdgCode()==-2212 || 
+								particle->GetPdgCode()== 321 || particle->GetPdgCode()==-321 || 
+									particle->GetPdgCode()== 111 || particle->GetPdgCode()== 221 ){
+
+						hMCPhysicalPrimariesPt[fiCut]->Fill(particle->Pt());
+
+						if (particle->GetPdgCode() == 211 ) hMCPrimaryPionPlusPt[fiCut]->Fill(particle->Pt());
+						if (particle->GetPdgCode() == -211 ) hMCPrimaryPionMinusPt[fiCut]->Fill(particle->Pt());
+						if (particle->GetPdgCode() == 321 ) hMCPrimaryKaonPlusPt[fiCut]->Fill(particle->Pt());
+						if (particle->GetPdgCode() == -321 ) hMCPrimaryKaonMinusPt[fiCut]->Fill(particle->Pt());
+						if (particle->GetPdgCode() == 2212 ) hMCPrimaryProtonPt[fiCut]->Fill(particle->Pt());
+						if (particle->GetPdgCode() == -2212 ) hMCPrimaryAntiprotonPt[fiCut]->Fill(particle->Pt()); 
+					}
+				} 
+			}
+
 			Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 			if (!isPrimary) continue;
 
@@ -2004,11 +2084,35 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 	
 	// Loop over all primary MC particle	
 	for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+		
+		if(fDoChargedPrimary){ //getting charged primary particles
+			TParticle* particle = (TParticle *)fMCStack->Particle(i);
+			if (!particle) continue;
+			Bool_t IsPhysicalPrimary = fMCStack->IsPhysicalPrimary(i);
+			
+			if( IsPhysicalPrimary && TMath::Abs(particle->Eta()) < 0.8){ // Eta cut used in charged particle spectrum
+				
+				if ( particle->GetPdgCode()== -211 || particle->GetPdgCode()== 211 || 
+						particle->GetPdgCode()== 2212 || particle->GetPdgCode()==-2212 || 
+							particle->GetPdgCode()== 321 || particle->GetPdgCode()==-321 || 
+								particle->GetPdgCode()== 111 || particle->GetPdgCode()== 221 ){
+
+					hMCPhysicalPrimariesPt[fiCut]->Fill(particle->Pt());
+
+					if (particle->GetPdgCode() == 211 ) hMCPrimaryPionPlusPt[fiCut]->Fill(particle->Pt());
+					if (particle->GetPdgCode() == -211 ) hMCPrimaryPionMinusPt[fiCut]->Fill(particle->Pt());
+					if (particle->GetPdgCode() == 321 ) hMCPrimaryKaonPlusPt[fiCut]->Fill(particle->Pt());
+					if (particle->GetPdgCode() == -321 ) hMCPrimaryKaonMinusPt[fiCut]->Fill(particle->Pt());
+					if (particle->GetPdgCode() == 2212 ) hMCPrimaryProtonPt[fiCut]->Fill(particle->Pt());
+					if (particle->GetPdgCode() == -2212 ) hMCPrimaryAntiprotonPt[fiCut]->Fill(particle->Pt()); 
+				}
+			} 
+		}
+		
 		if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCStack, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){ 
 			// fill primary histogram
 			TParticle* particle = (TParticle *)fMCStack->Particle(i);
 			if (!particle) continue;
-
 			
 			Int_t isMCFromMBHeader = -1;
 			if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
