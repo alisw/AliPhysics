@@ -120,6 +120,22 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
   fLocalFitParam = new TObjArray(fHistPoints->GetNbins());
   fLocalFitQuality = new TObjArray(fHistPoints->GetNbins());
   fLocalFitCovar = new TObjArray(fHistPoints->GetNbins());
+  //
+  // Check histogram
+  //
+  Int_t ndim = histo->GetNdimensions();
+  Bool_t isOK=kTRUE;
+  for (Int_t idim=0; idim<ndim; idim++){
+    TAxis * axis = histo->GetAxis(idim);
+    if (axis->GetNbins()<2) {
+      AliError(TString::Format("Invalid binning nbins<2 %d",  axis->GetNbins()).Data());
+    }
+    if (axis->GetXmin()>=axis->GetXmax()) {
+      AliError(TString::Format("Invalid range <%f,%f", axis->GetXmin(),axis->GetXmax()).Data());
+    }    
+  }
+
+
 }
 
 
