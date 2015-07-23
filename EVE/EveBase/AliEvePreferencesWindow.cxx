@@ -25,7 +25,36 @@ ClassImp(AliEvePreferencesWindow);
 
 
 AliEvePreferencesWindow::AliEvePreferencesWindow():
-TGMainFrame(gClient->GetRoot(),10,10,kMainFrame | kVerticalFrame)
+  TGMainFrame(gClient->GetRoot(),10,10,kMainFrame | kVerticalFrame),
+  fTrackWidth(0),
+  fDashNoRefit(0),
+  fDrawNoRefit(0),
+  fTracksByPID(0),
+  fTracksByCategory(0),
+
+  fShowV0s(0),
+  fShowCascades(0),
+  fShowRawData(0),
+  fShowPrimaryVertex(0),
+  fShowHits(0),
+  fShowDigits(0),
+  fShowClusters(0),
+  fShowKinks(0),
+      
+  fLogbookHost(0),
+  fLogbookPort(0),
+  fLogbookDatabase(0),
+  fLogbookUser(0),
+  fLogbookPassword(0),
+      
+  fShowMuon(0),
+  fShowHLTESDTree(0),
+  fOCDBpath(0),
+  fAutoload(0),
+  fAliceLive(0),
+
+  fSaveAndExitButton(0),
+  fCancel(0)
 {
     SetName("AliEve Preferences");
     SetLayoutBroken(kTRUE);

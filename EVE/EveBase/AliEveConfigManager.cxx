@@ -1069,7 +1069,7 @@ void AliEveConfigManager::AliEvePopupHandler(Int_t id)
       }
       case kPreferences:
       {
-          AliEvePreferencesWindow *preferences = AliEvePreferencesWindow::Instance();
+          AliEvePreferencesWindow::Instance();
           
           break;
       }
