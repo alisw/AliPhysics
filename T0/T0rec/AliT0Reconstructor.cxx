@@ -71,7 +71,7 @@ ClassImp(AliT0Reconstructor)
   fMeanOrC(0),
   fMeanTVDC(0)
 {
-  for (Int_t i=0; i<24; i++)  { fTime0vertex[i] =0;fQT1mean[24]=0;}
+  for (Int_t i=0; i<24; i++)  { fTime0vertex[i] =0; fQT1mean[i]=0;}
 
   //constructor
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
