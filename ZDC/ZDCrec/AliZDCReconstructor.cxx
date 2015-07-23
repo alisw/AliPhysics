@@ -477,7 +477,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   
   }//loop on raw data
   // Ch. debug
-  printf("\n  TDC channels  ZEM1 %d ZEM2 %d ZNC %d ZPC %d ZNA %d  ZPA %d L0 %d\n\n", tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
+  //printf("\n  TDC channels  ZEM1 %d ZEM2 %d ZNC %d ZPC %d ZNA %d  ZPA %d L0 %d\n\n", tdcCabling[0],tdcCabling[1],tdcCabling[2],tdcCabling[3],tdcCabling[4],tdcCabling[5],tdcCabling[6]);
   
   // PEDESTAL subtraction
   // Jul 2015: if PedSubMode==kTRUE but coefficients are null, mean value must be subtracted!!!!!
