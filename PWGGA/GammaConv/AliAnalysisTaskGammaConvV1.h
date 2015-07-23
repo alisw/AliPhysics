@@ -38,6 +38,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
+		void SetDoChargedPrimary(Bool_t flag){fDoChargedPrimary = flag;}
 		void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		void SetDoCentFlattening(Int_t flag){fDoCentralityFlat = flag;}
 		void ProcessPhotonCandidates();
@@ -166,6 +167,15 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hMCSecPi0Source;									//!
 		TH1F 								**hMCSecEtaPt;										//!
 		TH1F 								**hMCSecEtaSource;									//!
+		TH1F 								**hMCPhysicalPrimariesPt;							//!
+		TH1F 								**hMCPrimaryPionPlusPt;								//!
+		TH1F 								**hMCPrimaryPionMinusPt;							//!
+		TH1F 								**hMCPrimaryKaonPlusPt;								//!
+		TH1F 								**hMCPrimaryKaonMinusPt;							//!
+		TH1F 								**hMCPrimaryProtonPt;								//!
+		TH1F 								**hMCPrimaryAntiprotonPt;							//!
+		TH1F 								**hMCPrimaryPi0Pt;									//!
+		TH1F 								**hMCPrimaryEtaPt;									//!		
 		TH2F 								**hESDTrueMotherInvMassPt;							//!
 		TH2F 								**hESDTruePrimaryMotherInvMassPt;					//!
 		TH2F 								**hESDTruePrimaryMotherW0WeightingInvMassPt;		//!
@@ -261,6 +271,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		Bool_t 								fDoMesonAnalysis;									//
 		Int_t 								fDoMesonQA;											//
 		Int_t 								fDoPhotonQA;										//
+		Bool_t 								fDoChargedPrimary;									//
 		Bool_t 								fIsFromMBHeader;									//
 		Bool_t 								fIsMC;												//
 		Bool_t                              fDoTHnSparse;                       				// flag for using THnSparses for background estimation
@@ -271,7 +282,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-		ClassDef(AliAnalysisTaskGammaConvV1, 20);
+		ClassDef(AliAnalysisTaskGammaConvV1, 21);
 };
 
 #endif
