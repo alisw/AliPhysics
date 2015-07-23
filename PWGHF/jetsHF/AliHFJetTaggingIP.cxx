@@ -43,13 +43,12 @@
 ClassImp(AliHFJetTaggingIP)
 //_____________________________________________________________________________
 AliHFJetTaggingIP::AliHFJetTaggingIP(void):
-fUseThresholdFuction(kFALSE),  fAnaTypeAOD(kFALSE),  fCurrentDCA(0.),  fThreshold(-99.),fDiscriminators(),fJetIndices(), fThresholdFuction(NULL),fEvent(NULL), fVertex(NULL), fJet(NULL),fParticles(NULL)	
+fUseThresholdFuction(kFALSE),  fAnaTypeAOD(kFALSE),  fCurrentDCA(0.),  fThreshold(-99.),fDiscriminators(),fJetIndices(), fThresholdFuction(NULL),fEvent(NULL), fVertex(NULL), fVertexRecalculated(NULL), fJet(NULL),fParticles(NULL)
 {
   //========================================================================
   // default constructor
   //========================================================================
   memset (fSelectionCuts,0,sizeof fSelectionCuts);
-  
   fAnaTypeAOD = kFALSE;
   this->InitTrackSelectionParams(0x0);
 }
@@ -138,6 +137,7 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminator(AliEmcalJet * jet,Double_t *discri
       if(!bTrack)continue;
       if(!GetImpactParameter(bTrack, &bSign, &bIp2d)) continue;
       if(!PassedCuts(bTrack,bIp2d))continue;
+      if(fVertexRecalculated) {delete fVertexRecalculated;fVertexRecalculated =NULL;}
       bSignedImpactParameter.push_back(std::make_pair(j,bSign*bIp2d));
     }
   discriminator [0]=-99.;
@@ -183,6 +183,7 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminatorQualityClass(Int_t qtyclass,AliEmca
       bTrack =  (AliVTrack*) ((AliPicoTrack*) fParticles->GetParticle(jet->TrackAt((int)j)))->GetTrack();
       if(!bTrack)continue;
       if(!GetImpactParameter(bTrack, &bSign, &bIp2d)) continue;
+      if (this->fVertexRecalculated) {delete fVertexRecalculated; fVertexRecalculated=NULL;}
       if(!IsInQualityClass((AliAODTrack*)bTrack,qtyclass))continue;
       bSignedImpactParameter.push_back(std::make_pair(j,bSign*bIp2d));
     }
@@ -227,28 +228,34 @@ Bool_t AliHFJetTaggingIP::GetImpactParameter(AliVTrack * bTrack, Double_t *bSign
   const Double_t 	        kBeampiperadius=2.6;
 
   this->fVertex	= (AliVVertex *)this->fEvent->GetPrimaryVertex();
-  AliVertexerTracks 	bVertexer(fEvent->GetMagneticField());
-  bVertexer.SetITSMode();
-  bVertexer.SetMinClusters(4);
+  AliVertexerTracks *bVertexer = new AliVertexerTracks(fEvent->GetMagneticField());
+
+  bVertexer->SetITSMode();
+  bVertexer->SetMinClusters(4);
   bSkipped[0] 		= bTrack->GetID();
-  bVertexer.SetSkipTracks(1,bSkipped);	
-  bVertexer.SetConstraintOn();
+  bVertexer->SetSkipTracks(1,bSkipped);
+  bVertexer->SetConstraintOn();
   fEvent->GetDiamondCovXY(bDiamondcovxy);
 
   Double_t bpos[3]		=	{this->fEvent->GetDiamondX(), this->fEvent->GetDiamondY(),0.};
   Double_t bcov[6]		=	{bDiamondcovxy[0],bDiamondcovxy[1],bDiamondcovxy[2],0.,0.,10.*10.};
   AliESDVertex *bDiamond = new AliESDVertex(bpos,bcov,1.,1);
 
-  bVertexer.SetVtxStart(bDiamond);
+  bVertexer->SetVtxStart(bDiamond);
   delete bDiamond;
   bDiamond=0x0;
 
-  this->fVertex = bVertexer.FindPrimaryVertex(fEvent);
-
+  this->fVertexRecalculated  = bVertexer->FindPrimaryVertex(fEvent);
+  delete bVertexer; bVertexer=NULL;
+  if(this->fVertexRecalculated)this->fVertex = this->fVertexRecalculated ;
 
   AliExternalTrackParam betp ;
   betp.CopyFromVTrack(bTrack);
-  if(!(betp.PropagateToDCA(fVertex,fEvent->GetMagneticField(),kBeampiperadius, bPosAtDCA, bCovar))) return kFALSE;
+  if(!(betp.PropagateToDCA(fVertex,fEvent->GetMagneticField(),kBeampiperadius, bPosAtDCA, bCovar))) {
+	  if(this->fVertexRecalculated) {delete this->fVertexRecalculated;this->fVertexRecalculated =NULL;}
+	  return kFALSE;
+
+  }
   fVertex->GetXYZ(bpV);
   betp.GetXYZ(bpTrack); 
   Double_t bIPVector[3]={bpTrack[0] - bpV[0],bpTrack[1] - bpV[1],bpTrack[2] - bpV[2]};
