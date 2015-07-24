@@ -474,6 +474,7 @@ void AliEMCALTenderSupply::ProcessEvent()
   }
   
   // Initialising parameters once per run number
+  
   if (RunChanged()) 
   { 
     fRun = event->GetRunNumber();
@@ -957,6 +958,7 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   if (!arrayBC)
   {
     AliError(Form("No external hot channel set for run number: %d", runBC));
+    delete contBC;
     return 2; 
   }
 
@@ -976,6 +978,9 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelStatusMap(i,h);
   }
+  
+  delete contBC;
+  
   return 1;  
 }
 
@@ -1034,6 +1039,7 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (!recal)
   {
     AliError(Form("No Objects for run: %d",runRC));
+    delete contRF;
     return 2;
   } 
 
@@ -1041,6 +1047,7 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (!recalpass)
   {
     AliError(Form("No Objects for run: %d - %s",runRC,fFilepass.Data()));
+    delete contRF;
     return 2;
   }
 
@@ -1048,6 +1055,7 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (!recalib)
   {
     AliError(Form("No Recalib histos found for  %d - %s",runRC,fFilepass.Data())); 
+    delete contRF;
     return 2;
   }
 
@@ -1068,6 +1076,9 @@ Int_t AliEMCALTenderSupply::InitRecalib()
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
   }
+  
+  delete contRF;
+  
   return 1;
 }
 
@@ -1166,6 +1177,8 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
     } // rows 
   } // SM loop
   
+  delete contRF;
+  
   return 1;
 }
 
@@ -1224,6 +1237,7 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
   if (!arrayBC)
   {
     AliError(Form("No external time calibration set for run number: %d", runBC));
+    delete contBC;
     return 2; 
   }
   
@@ -1234,6 +1248,7 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
   if (!arrayBCpass)
   {
     AliError(Form("No external time calibration set for: %d -%s", runBC,pass.Data()));
+    delete contBC;
     return 2; 
   }
 
@@ -1255,6 +1270,9 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
   }
+  
+  delete contBC;
+  
   return 1;  
 }
 
