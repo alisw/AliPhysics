@@ -477,6 +477,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         //return;
     }
     
+    fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+
     ///////////////////
     //PID initialised//
     //////////////////
