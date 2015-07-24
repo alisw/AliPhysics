@@ -34,7 +34,7 @@ set(ROOTEXTRALIBS Geom VMC Minuit)
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} alirawdump_main.cxx)
 
-target_link_libraries(${MODULE} STEERBase RAWDatabase ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
+target_link_libraries(${MODULE} STEERBase RAWDatabase EG ESD ${ROOTEXTRALIBS} ${ROOT_LIBRARIES})
 
 # Installation
 install(TARGETS ${MODULE} RUNTIME DESTINATION bin)

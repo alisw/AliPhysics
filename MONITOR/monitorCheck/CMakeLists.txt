@@ -33,7 +33,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Add an executable to the project using the specified source files
 add_executable(${MODULE} ${SRCS})
-target_link_libraries(${MODULE} RAWDatarec Core)
+target_link_libraries(${MODULE} RAWDatarec Cint MathCore Thread Graf3d Graf Hist Gpad EG Geom Matrix Physics Minuit VMC Core)
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
