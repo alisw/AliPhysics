@@ -39,7 +39,7 @@ HighPtTracks::AliReducedHighPtEventCreator *AddTaskHighPtReducedEventCreator(
   // Create task, make event specific settings
   TString taskname = "ReducedEventCreator";
   TString outputname = outputfilename;
-  if(outputname.Length){
+  if(outputname.Length()){
     taskname = outputname(0, outputname.Index(".root"));
   }
   HighPtTracks::AliReducedHighPtEventCreator *reducedEventCreator = new HighPtTracks::AliReducedHighPtEventCreator(taskname.Data());
