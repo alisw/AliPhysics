@@ -86,6 +86,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fCentrality(0x0),
   fCentralityPercentile(0x0),
   fTriggerConfig(1),
+  fSideBand(kFALSE),
   fDCAPiPVmin(0.1),
   fDCAPPVmin(0.),
   fDCADPVmin(0.),
@@ -1169,6 +1170,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(pTmom > fPtMother) continue;
 	
 	Hypertriton=posD+posP+negPi;
+	
+	if(fSideBand == kTRUE && (Hypertriton.M() < 3.08 || Hypertriton.M() > 3.18)) continue;
+	
 	rapidity = Hypertriton.Rapidity();
 	fHistHyperRapidity->Fill(rapidity);
 	
