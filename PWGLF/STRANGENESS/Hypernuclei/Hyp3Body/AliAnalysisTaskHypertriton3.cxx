@@ -102,7 +102,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fDCApip(0.5),
   fDCAdpi(0.5),
   fLowCentrality(0.),
-  fHighCentrality(8.),
+  fHighCentrality(80.),
   fOutput(0x0),
   fHistCount(0x0),
   fHistCentralityClass(0x0),
@@ -787,14 +787,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   //==========Centrality==========
   if(fESDevent->GetEventSpecie() == 4){ // Event Specie == 4 == PbPb
     AliCentrality *centr=fESDevent->GetCentrality();
-    fCentrality = centr->GetCentralityClass10("V0M");
+    fCentrality = centr->GetCentralityClass10("V0M");    
     fCentralityPercentile = centr->GetCentralityPercentile("V0M");
   }
   
   fHistCentralityClass->Fill(fCentrality);
   fHistCentralityPercentile->Fill(fCentralityPercentile);
 
-  if (fCentrality < fLowCentrality || fCentrality > fHighCentrality) {
+  if (fCentralityPercentile < fLowCentrality || fCentralityPercentile > fHighCentrality) {
     PostData(1,fOutput);
     return; //0 bis 80 %
   }
