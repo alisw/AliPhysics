@@ -454,12 +454,12 @@ goCPass1()
                "${batchWorkingDirectory}/${configFile}"
                "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                "${batchWorkingDirectory}/OCDB.root"
-               "${trustedQAtrainMacro}"
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C" 
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C" 
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
-               "${ALICE_ROOT}/ANALYSIS/macros/QAtrain_duo.C"
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
+               "${trustedQAtrainMacro}"
   )
 
   for file in "${filesCPass1[@]}"; do
@@ -2850,8 +2850,8 @@ paranoidCopyFile()
   for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
 
     echo "...attempt $i of $maxCopyTries"
-    rm -f "$dst"
-    cp "$src" "$dst"
+    #rm -f "$dst"
+    cp -n -a "$src" "$dst"
 
     cmp -s "$src" "$dst"
     if [ $? == 0 ] ; then
