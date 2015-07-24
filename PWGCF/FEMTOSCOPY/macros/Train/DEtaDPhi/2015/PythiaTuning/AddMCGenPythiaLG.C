@@ -1,9 +1,8 @@
-AliGenerator* AddMCGenPythiaLG(Float_t e_cms = 7000., Int_t tune = 2 ,Int_t cr = 0, Int_t npart = 1, Bool_t useFemtoPARJ = kTRUE, Float_t PARJ_1 = 0.1, Float_t PARJ_2 = 0.3, Float_t PARJ_3 = 0.4, Float_t PARJ_4 = 0.05, Float_t PARJ_5 = 0.5, Float_t PARJ_6 = 0.5, Float_t PARJ_7 = 0.5, Float_t PARJ_8 = 0.6, Float_t PARJ_9 = 1.2, Float_t PARJ_10 = 0.6 ) 
+AliGenerator* AddMCGenPythiaLG(Float_t e_cms = 7000., Int_t tune = 2 ,Int_t cr = 0, Int_t npart = 1, Bool_t useNewMultipleInteractionsScenario = kFALSE, Bool_t useFemtoPARJ = kTRUE, Float_t PARJ_1 = 0.1, Float_t PARJ_2 = 0.3, Float_t PARJ_3 = 0.4, Float_t PARJ_4 = 0.05, Float_t PARJ_5 = 0.5, Float_t PARJ_6 = 0.5, Float_t PARJ_7 = 0.5, Float_t PARJ_8 = 0.6, Float_t PARJ_9 = 1.2, Float_t PARJ_10 = 0.6 ) 
 {
 
   //Add Pythia generator: min bias
-
-  gSystem->Load("liblhapdf");
+gSystem->Load("liblhapdf");
   gSystem->Load("libpythia6_4_25");
   gSystem->Load("libEGPythia6");
   gSystem->Load("libAliPythia6");
@@ -40,7 +39,10 @@ AliGenerator* AddMCGenPythiaLG(Float_t e_cms = 7000., Int_t tune = 2 ,Int_t cr =
   //   Centre of mass energy 
   genP->SetEnergyCMS(e_cms); // in GeV
     
-  //genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
+  if(useNewMultipleInteractionsScenario)
+    {
+      genP->UseNewMultipleInteractionsScenario(); // for all Pythia versions >= 6.3
+    }
   
   genP->SetMomentumRange(0,999999);
   genP->SetPhiRange(0., 360.);
