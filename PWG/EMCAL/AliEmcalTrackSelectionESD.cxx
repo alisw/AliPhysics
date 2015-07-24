@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -12,11 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <TBits.h>
 #include <TClonesArray.h>
 #include <TObjArray.h>
-#include "AliEMCalPtTaskTrackSelectionESD.h"
 #include <memory>
 
+#include "AliEmcalTrackSelectionESD.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
@@ -25,24 +26,22 @@
 #include "AliVCuts.h"
 
 /// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalPtTaskTrackSelectionESD)
+ClassImp(AliEmcalTrackSelectionESD)
 /// \endcond
-
-namespace EMCalTriggerPtAnalysis {
 
 /**
  * Default constructor
  */
-AliEMCalPtTaskTrackSelectionESD::AliEMCalPtTaskTrackSelectionESD():
-		AliEMCalPtTaskVTrackSelection()
+AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD():
+		AliEmcalTrackSelection()
 {
 }
 
 /**
  * Constructor with cuts
  */
-AliEMCalPtTaskTrackSelectionESD::AliEMCalPtTaskTrackSelectionESD(AliESDtrackCuts* cuts):
-		AliEMCalPtTaskVTrackSelection()
+AliEmcalTrackSelectionESD::AliEmcalTrackSelectionESD(AliVCuts* cuts):
+		AliEmcalTrackSelection()
 {
   this->AddTrackCuts(cuts);
 }
@@ -54,7 +53,7 @@ AliEMCalPtTaskTrackSelectionESD::AliEMCalPtTaskTrackSelectionESD(AliESDtrackCuts
  * \param tracks TClonesArray of tracks (must not be null)
  * \return: TObjArray of selected tracks
  */
-TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(const TClonesArray* const tracks) {
+TObjArray* AliEmcalTrackSelectionESD::GetAcceptedTracks(const TClonesArray* const tracks) {
 	if(!fListOfTracks) fListOfTracks = new TObjArray;
 	else fListOfTracks->Clear();
 	for(TIter trackIter = TIter(tracks).Begin(); trackIter != TIter::End(); ++trackIter){
@@ -69,7 +68,7 @@ TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(const TClonesArray
  * \param event AliESDEvent, via interface of virtual event (must not be null)
  * \return TObjArray of selected tracks
  */
-TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(const AliVEvent* const event) {
+TObjArray* AliEmcalTrackSelectionESD::GetAcceptedTracks(const AliVEvent* const event) {
 	if(!fListOfTracks) fListOfTracks = new TObjArray;
 	else fListOfTracks->Clear();
 	const AliESDEvent *esd = dynamic_cast<const AliESDEvent *>(event);
@@ -90,7 +89,7 @@ TObjArray* AliEMCalPtTaskTrackSelectionESD::GetAcceptedTracks(const AliVEvent* c
  * \param trk: Track to check
  * \return: true if selected, false otherwise
  */
-bool AliEMCalPtTaskTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
+bool AliEmcalTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
   if(!fListOfCuts) return kTRUE;
   AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(trk);
   if(!esdt){
@@ -103,12 +102,15 @@ bool AliEMCalPtTaskTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
     }
   }
 
-  bool result = true;
+  TBits selectedMap(64);        // Counting track cuts among which track was SELECTED
+  Int_t cutcounter = 0;
   for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
-    if(!((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt))) result = false;
+    if((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) selectedMap.SetBitNumber(cutcounter++);
   }
-  return result;
+  // In case of ANY at least one bit has to be set, while in case of ALL all bits have to be set
+  if(fSelectionModeAny){
+    return selectedMap.CountBits(0) > 0;
+  } else {
+    return selectedMap.CountBits(0) == fListOfCuts->GetEntries();
+  }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */
-

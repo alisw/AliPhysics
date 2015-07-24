@@ -40,6 +40,9 @@ set(SRCS
   AliEmcalCompatTask.cxx
   AliEmcalContainer.cxx
   AliEmcalDebugTask.cxx
+  AliEmcalTrackSelection.cxx
+  AliEmcalTrackSelectionESD.cxx
+  AliEmcalTrackSelectionAOD.cxx
   AliEmcalEsdTrackFilterTask.cxx
   AliEmcalMCTrackSelector.cxx
   AliEmcalParticle.cxx
