@@ -442,7 +442,7 @@ void AliAnalysisTaskK0sBayes::UserExec(Option_t *)
       if (!aodTrack) continue;
       AliAODPid *aodPid = const_cast<AliAODPid*>(aodTrack->GetDetPid());
       if (!aodPid) continue;
-      aodPid->SetTPCsignalN(126.5/136.5 * aodPid->GetTPCsignalN());
+      aodPid->SetTPCsignalN(136.5/126.5 * aodPid->GetTPCsignalN());
     } 
   }
 
