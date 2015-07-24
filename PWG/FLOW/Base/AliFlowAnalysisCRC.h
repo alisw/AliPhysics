@@ -1095,6 +1095,7 @@ private:
  // 12.) CRC
  
  TList *fCRCList; //! list to hold CRC histograms
+ TList *fTempList; //! list to hold temp histograms
  TProfile *fCRCFlags; //! profile to hold all flags for CRC
  Bool_t fCalculateCRC; // calculate CRC
  Bool_t fCalculateCRCPt;
@@ -1108,6 +1109,7 @@ private:
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
  Int_t fRunNum;
+ Int_t fCachedRunNum;
  TString fMultWeight;
  Int_t fRunBin;
  Int_t fCenBin;
@@ -1155,6 +1157,11 @@ private:
  TProfile *fCRCQVecImCorr[fCRCMaxnRun][fCRCQVecnCR]; //! Q Vectors Im
  TH2D *fCRCPhiHist[fCRCMaxnRun][fCRCMaxnCen][2]; //! Phi Hist for weights
  
+ // temp
+ TH2D *fRunPhiEtaHist[fCRCMaxnCen][2]; //! Run-by-run PhiEtaHist
+ TProfile *fTPCQHist[fCRCQVecnCR][2];  //! Run-by-run TPCQvecHist
+ TProfile *fZDCQHist[4];               //! Run-by-run ZDCQvecHist
+ 
  TH1D *fCRCEvPl[fCRCMaxnRun][fCRCQVecnCR][fCRCMaxnCen]; //! Ev Plane TPC
  TH1D *fCRCVZEvPlA[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROA
  TH1D *fCRCVZEvPlC[fCRCMaxnRun][fCRCMaxnCen][fCRCnHar]; //! Ev Plane VZEROC
@@ -1174,7 +1181,7 @@ private:
  
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List
- const static Int_t fCRCVZnCR = 9;
+ const static Int_t fCRCVZnCR = 13;
  const static Int_t fCRCVZnEtaBin = 7;
  TList *fCRCVZRbRList; //! CRC list of histograms RbR
  TList *fCRCVZRunsList[fCRCMaxnRun]; //! list of runs
@@ -1191,7 +1198,7 @@ private:
  
  // CRCZDC
  TList *fCRCZDCList; //! ZDCERO CRC List
- const static Int_t fCRCZDCnCR = 9;
+ const static Int_t fCRCZDCnCR = 13;
  const static Int_t fCRCZDCnEtaBin = 7;
  TList *fCRCZDCRbRList; //! CRC list of histograms RbR
  TList *fCRCZDCRunsList[fCRCMaxnRun]; //! list of runs

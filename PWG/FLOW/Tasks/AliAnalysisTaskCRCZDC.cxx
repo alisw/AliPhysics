@@ -672,21 +672,20 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  
  if(fAnalysisType ==  "MCkine") {
   
+  fFlowEvent->ClearFast();
+  
   AliInputEventHandler* McHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if(McHandler) McEvent = McHandler->MCEvent();
-  else {
+  if(!McHandler) {
    AliError("ERROR: Could not retrieve MCtruthEventHandler");
    return;
   }
-  if (!McEvent) {
+  McEvent = McHandler->MCEvent();
+  if(!McEvent) {
    AliError("ERROR: Could not retrieve MC event");
    return;
   }
   
-  fFlowEvent->ClearFast();
-  
   Int_t nTracks = McEvent->GetNumberOfTracks();
-  if(!nTracks) return;
   Int_t nPrimTr = McEvent->GetNumberOfPrimaries();
   
   //loop over tracks
@@ -723,9 +722,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    if(fPythiaGenHeader) ImpPar = fPythiaGenHeader->GetImpactParameter();
    fHijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(fGenHeader);
    if(fHijingGenHeader) ImpPar = fHijingGenHeader->ImpactParameter();
-   if(ImpPar) CenPer = 0.4097756068776738*pow(ImpPar,2.);
-   if(CenPer) fFlowEvent->SetCentrality(CenPer);
-   else       fFlowEvent->SetCentrality(0.);
+   if(ImpPar) CenPer = 0.3859796743103508*pow(ImpPar,2.);
+   if(CenPer>0. && CenPer<100.) fFlowEvent->SetCentrality(CenPer);
+   else return;
    fFlowEvent->SetRun(1);
   }
   
