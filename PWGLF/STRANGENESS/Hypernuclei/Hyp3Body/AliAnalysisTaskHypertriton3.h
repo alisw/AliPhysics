@@ -148,10 +148,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //--> TOF
   TH2F               *fHistTOFsignal;              //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
-  TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
-  TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
-  TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
-  TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
+  //TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
+  //TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
+  //TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
+  //TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
   TH1F               *fHistTOFdeumass;             //!<! TOF mass of deuteron identified with TPC
   TH1F               *fHistTOFpromass;             //!<! TOF mass of proton identified with TPC
 
@@ -181,6 +181,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDCAXYpionvtx;           //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAZpionvtx;            //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
   TH1F               *fHistDecayLengthH3L;         //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistLifetime;               //!<! c*tau distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistAngle_deu_pro;          //!<! Angle between deuteron and proton vectors
   TH1F               *fHistAngle_deu_pion;         //!<! Angle between deuteron and pion vectors
   TH1F               *fHistAngle_pro_pion;         //!<! Angle between proton and pion vectors
@@ -189,6 +190,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistAngleCorr_ppi_dpi;      //!<! Correlation between angle_ppi vs angle_dpi
   TH1F               *fHistHyperRapidity;          //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistCosPointingAngle;       //!<! Cosine of pointing angle distribution of candidate mother particle
+  TH2F               *fHistDalitz_dp_dpi;          //!<! Dalitz plot\f$ m^{2}_{d#pi} vs m^{2}_{dp} \f$
   TH1F               *fHistDecayMomCM_X;           //!<! X momentum component of decaying hypertriton in center-of-mass
   TH1F               *fHistDecayMomCM_Y;           //!<! Y momentum component of decaying hypertriton in center-of-mass
   TH1F               *fHistDecayMomCM_Z;           //!<! Z momentum component of decaying hypertriton in center-of-mass
