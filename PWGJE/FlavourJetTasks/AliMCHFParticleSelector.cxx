@@ -7,20 +7,24 @@
 
 #include <TClonesArray.h>
 
-#include "AliVEvent.h"
-#include "AliMCEvent.h"
-#include "AliAODMCParticle.h"
-#include "AliMCParticle.h"
-#include "AliStack.h"
+#include <AliVEvent.h>
+#include <AliMCEvent.h>
+#include <AliAODMCParticle.h>
+#include <AliMCParticle.h>
+#include <AliStack.h>
+#include <AliLog.h>
 
-#include "AliLog.h"
+#include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
 ClassImp(AliMCHFParticleSelector)
 
 //________________________________________________________________________
 AliMCHFParticleSelector::AliMCHFParticleSelector() : 
   AliEmcalMCTrackSelector("AliMCHFParticleSelector"),
-  fSpecialPDG(0)
+  fSpecialPDG(0),
+  fRejectQuarkNotFound(kTRUE),
+  fRejectDfromB(kTRUE),
+  fKeepOnlyDfromB(kFALSE)
 {
   // Constructor.
 }
@@ -28,7 +32,10 @@ AliMCHFParticleSelector::AliMCHFParticleSelector() :
 //________________________________________________________________________
 AliMCHFParticleSelector::AliMCHFParticleSelector(const char *name) : 
   AliEmcalMCTrackSelector(name),
-  fSpecialPDG(0)
+  fSpecialPDG(0),
+  fRejectQuarkNotFound(kTRUE),
+  fRejectDfromB(kTRUE),
+  fKeepOnlyDfromB(kFALSE)
 {
   // Constructor.
 }
@@ -55,6 +62,29 @@ Bool_t AliMCHFParticleSelector::AcceptParticle(AliAODMCParticle* part) const
   if (fRejectNK && (partPdgCode == 130 || partPdgCode == 2112)) return kFALSE;
 
   Bool_t isSpecialPdg = (fSpecialPDG != 0 && partPdgCode == fSpecialPDG && part->IsPrimary());
+
+  if (isSpecialPdg) {
+    Int_t origin = -1;
+
+    if (fIsESD) {
+      origin = AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(part->Label(), fMC->Stack());
+    }
+    else {
+      origin = AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(part, fParticlesIn);
+    }
+
+    if (origin < 0) isSpecialPdg = kFALSE;
+    
+    if (fRejectQuarkNotFound && origin == 0) {
+      isSpecialPdg = kFALSE;
+    }
+    else if (fRejectDfromB && origin == 2) {
+      isSpecialPdg = kFALSE;
+    }
+    else if (fKeepOnlyDfromB && origin != 2) {
+      isSpecialPdg = kFALSE;
+    }
+  }
 
   if (isSpecialPdg) {
     AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
