@@ -527,15 +527,15 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
     Int_t origin = CheckOrigin(charmPart, fMCarray);
     if (origin < 0) return;
     
-    if (fRejectQuarkNotFound && origin == 0) {
+    if (fRejectQuarkNotFound && origin == kQuarkNotFound) {
       fHistStat->Fill(6);
       return;
     }
-    if (fRejectDfromB && origin == 2) {
+    if (fRejectDfromB && origin == kFromBottom) {
       fHistStat->Fill(7);
       return;
     }
-    if (fKeepOnlyDfromB && origin != 2) {
+    if (fKeepOnlyDfromB && origin != kFromBottom) {
       fHistStat->Fill(8);
       return;
     }
@@ -634,15 +634,15 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
     Int_t origin = CheckOrigin(charmPart, fMCarray);
     if (origin < 0) return;
 
-    if (fRejectQuarkNotFound && origin == 0) {
+    if (fRejectQuarkNotFound && origin == kQuarkNotFound) {
       fHistStat->Fill(6);
       return;
     }
-    if (fRejectDfromB && origin == 2) {
+    if (fRejectDfromB && origin == kFromBottom) {
       fHistStat->Fill(7);
       return;
     }
-    if (fKeepOnlyDfromB && origin != 2) {
+    if (fKeepOnlyDfromB && origin != kFromBottom) {
       fHistStat->Fill(8);
       return;
     }
@@ -1211,7 +1211,6 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, AliSt
 Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray) 
 {
   // Checks whether the mother of the particle comes from a charm or a bottom quark.
-  // Returns: 0 if no quark found; 1 if charm quark found; 2 if bottom quark found; -1 if an error occured
 
   if (!part) return -1;
   if (!mcArray) return -1;
@@ -1244,14 +1243,14 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
 
   if (isQuarkFound) {
     if (isFromB) {
-      return 2;
+      return kFromBottom;
     }
     else {
-      return 1;
+      return kFromCharm;
     }
   }
   else {
-    return 0;
+    return kQuarkNotFound;
   }
 }
 
@@ -1259,7 +1258,6 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
 Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack) 
 {
   // Checks whether the mother of the particle comes from a charm or a bottom quark.
-  // Returns: 0 if no quark found; 1 if charm quark found; 2 if bottom quark found; -1 if an error occured
   
   if (!stack) return -1;
 
@@ -1294,13 +1292,127 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack
 
   if (isQuarkFound) {
     if (isFromB) {
-      return 2;
+      return kFromBottom;
     }
     else {
-      return 1;
+      return kFromCharm;
     }
   }
   else {
-    return 0;
+    return kQuarkNotFound;
   }
+}
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part, TClonesArray* mcArray)
+{
+  // Determine the decay channel
+
+  if (!part) return -1;
+  if (!mcArray) return -1;
+
+  Int_t decay = kDecayOther;
+
+  Int_t absPdgPart = TMath::Abs(part->GetPdgCode());
+  
+  if (part->GetNDaughters() == 2) {
+
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+
+    if (!d1 || !d2) {
+      return decay;
+    }
+    
+    Int_t absPdg1 = TMath::Abs(d1->GetPdgCode());
+    Int_t absPdg2 = TMath::Abs(d2->GetPdgCode());
+    
+    if (absPdgPart == 421) { // D0 -> K pi
+
+      if ((absPdg1 == 211 && absPdg2 == 321) || // pi K
+          (absPdg1 == 321 && absPdg2 == 211)) { // K pi
+        decay = kDecayD0toKpi;
+      }
+    }
+
+    if (absPdgPart == 413) { // D* -> D0 pi
+      
+      if (absPdg1 == 421 && absPdg2 == 211) {  // D0 pi
+        Int_t D0decay = CheckDecayChannel(d1, mcArray);
+        if (D0decay == kDecayD0toKpi) {
+          decay = kDecayDStartoKpipi;
+        }
+      }
+      
+      if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
+        Int_t D0decay = CheckDecayChannel(d2, mcArray);
+        if (D0decay == kDecayD0toKpi) {
+          decay = kDecayDStartoKpipi;
+        }
+      }
+    }
+  }
+
+  return decay;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(Int_t ipart, AliStack* stack)
+{
+  // Determine the decay channel
+  
+  if (!stack) return -1;
+
+  TParticle* part = stack->Particle(ipart);
+  
+  if (!part) return -1;
+  
+  Int_t absPdgPart = TMath::Abs(part->GetPdgCode());
+  
+  Int_t decay = kDecayOther;
+
+  if (part->GetNDaughters() == 2) {
+
+    Int_t id1 = part->GetDaughter(0);
+    Int_t id2 = part->GetDaughter(1);
+    
+    TParticle* d1 = stack->Particle(id1);
+    TParticle* d2 = stack->Particle(id2);
+
+    if (!d1 || !d2) {
+      return decay;
+    }
+    
+    Int_t absPdg1 = TMath::Abs(d1->GetPdgCode());
+    Int_t absPdg2 = TMath::Abs(d2->GetPdgCode());
+    
+  
+    if (part->GetPdgCode() == 421) { // D0 -> K pi
+
+      if ((absPdg1 == 211 && absPdg2 == 321) || // pi K
+          (absPdg1 == 321 && absPdg2 == 211)) { // K pi
+        decay = kDecayD0toKpi;
+      }
+    }
+
+    if (part->GetPdgCode() == 413) { // D* -> D0 pi
+      
+      if (absPdg1 == 421 && absPdg2 == 211) {  // D0 pi
+        Int_t D0decay = CheckDecayChannel(id1, stack);
+        if (D0decay == kDecayD0toKpi) {
+          decay = kDecayDStartoKpipi;
+        }
+      }
+      
+      if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
+        Int_t D0decay = CheckDecayChannel(id2, stack);
+        if (D0decay == kDecayD0toKpi) {
+          decay = kDecayDStartoKpipi;
+        }
+      }
+    }
+  }
+
+  return decay;
+  
 }
