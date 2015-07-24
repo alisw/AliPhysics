@@ -31,6 +31,8 @@ class TClonesArray;
 class AliRDHFCuts;
 class AliAODRecoCascadeHF;
 class AliAODRecoDecayHF2Prong;
+class AliAODRecoDecay;
+class AliStack;
 
 class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal 
 {
@@ -80,8 +82,10 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
   static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
-  static Int_t CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray);
-  static Int_t CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray);
+  static Int_t CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray); // AOD
+  static Int_t CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray); // AOD
+  static Int_t CheckOrigin(AliAODRecoDecay* cand, AliStack* stack); // ESD
+  static Int_t CheckOrigin(Int_t ipart, AliStack* stack); // ESD
 
  protected:
   void ExecOnce();

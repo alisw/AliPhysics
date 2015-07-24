@@ -47,6 +47,7 @@
 #include "AliParticleContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliStack.h"
 
 ClassImp(AliAnalysisTaskSEDmesonsFilterCJ)
 
@@ -524,6 +525,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   if (charmPart) {
     
     Int_t origin = CheckOrigin(charmPart, fMCarray);
+    if (origin < 0) return;
+    
     if (fRejectQuarkNotFound && origin == 0) {
       fHistStat->Fill(6);
       return;
@@ -629,6 +632,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
   if (charmPart) {
     
     Int_t origin = CheckOrigin(charmPart, fMCarray);
+    if (origin < 0) return;
+
     if (fRejectQuarkNotFound && origin == 0) {
       fHistStat->Fill(6);
       return;
@@ -1182,11 +1187,24 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, TClon
 
   if (!mcArray) return -1;
   
-  Int_t labDau0 = static_cast<AliAODTrack*>(cand->GetDaughter(0))->GetLabel();
+  Int_t labDau0 = static_cast<AliVTrack*>(cand->GetDaughter(0))->GetLabel();
   if (labDau0 < 0) return -1;
   
   AliAODMCParticle* part = static_cast<AliAODMCParticle*>(mcArray->At(labDau0));
   return CheckOrigin(part, mcArray);
+}
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, AliStack* stack) 
+{		
+  // Checks whether the mother of the D meson candidate comes from a charm or a bottom quark.
+
+  if (!stack) return -1;
+  
+  Int_t labDau0 = static_cast<AliVTrack*>(cand->GetDaughter(0))->GetLabel();
+  if (labDau0 < 0) return -1;
+
+  return CheckOrigin(labDau0, stack);
 }
 
 //_________________________________________________________________________________________________
@@ -1217,6 +1235,56 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
       
       if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
       mother = mcGranma->GetMother();
+    }
+    else {
+      ::Error("AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin", "Could not retrieve mother particle %d!", mother);
+      break;
+    }
+  }
+
+  if (isQuarkFound) {
+    if (isFromB) {
+      return 2;
+    }
+    else {
+      return 1;
+    }
+  }
+  else {
+    return 0;
+  }
+}
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack) 
+{
+  // Checks whether the mother of the particle comes from a charm or a bottom quark.
+  // Returns: 0 if no quark found; 1 if charm quark found; 2 if bottom quark found; -1 if an error occured
+  
+  if (!stack) return -1;
+
+  TParticle* part = stack->Particle(ipart);
+  if (!part) return -1;
+  
+  Int_t pdgGranma = 0;
+  Int_t mother = part->GetFirstMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma = 0;
+  Bool_t isFromB = kFALSE;
+  Bool_t isQuarkFound = kFALSE;
+  
+  while (mother >= 0) {
+    istep++;
+    TParticle* mcGranma = stack->Particle(mother);
+    if (mcGranma >= 0) {
+      pdgGranma = mcGranma->GetPdgCode();
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+        isFromB = kTRUE;
+      }
+      
+      if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
+      mother = mcGranma->GetFirstMother();
     }
     else {
       ::Error("AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin", "Could not retrieve mother particle %d!", mother);
