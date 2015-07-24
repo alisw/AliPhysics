@@ -56,11 +56,20 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Bool_t GetMC() const         { return fUseMCInfo    ; }
   
   // set usage of generated or reconstucted quantities (relevant for MC)
-  void SetUseReco(Bool_t useReco=kTRUE) { fUseReco = useReco ; }
-  Bool_t GetUseReco() const             { return fUseReco    ; }
+  void SetUseReco(Bool_t useReco=kTRUE)    { fUseReco = useReco           ; }
+  Bool_t GetUseReco() const                { return fUseReco              ; }
 
-  void   SetCombineDmesons(Bool_t c)       { fCombineDmesons = c       ; }
-  Bool_t GetCombineDmesons() const         { return fCombineDmesons    ; }
+  void   SetCombineDmesons(Bool_t c)       { fCombineDmesons = c          ; }
+  Bool_t GetCombineDmesons() const         { return fCombineDmesons       ; }
+
+  void   SetRejectQuarkNotFound(Bool_t c)  { fRejectQuarkNotFound = c     ; }
+  Bool_t GetRejectQuarkNotFound() const    { return fRejectQuarkNotFound  ; }
+
+  void   SetRejectDfromB(Bool_t c)         { fRejectDfromB = c            ; }
+  Bool_t GetRejectDfromB() const           { return fRejectDfromB         ; }
+
+  void   SetKeepOnlyDfromB(Bool_t c)       { fKeepOnlyDfromB = c          ; }
+  Bool_t GetKeepOnlyDfromB() const         { return fKeepOnlyDfromB       ; }
  
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
@@ -80,6 +89,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   void FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar);
   void FillDstarSideBands(AliAODRecoCascadeHF* dstar);
   void AddEventTracks(TClonesArray* coll, AliParticleContainer* tracks);
+  Int_t CheckOrigin(AliAODRecoDecay* cand) const;
+  Int_t CheckOrigin(AliAODMCParticle* part) const;
 
   Bool_t          fUseMCInfo;              //  Use MC info
   Bool_t          fUseReco;                //  use reconstructed tracks when running on MC
@@ -95,6 +106,9 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Double_t        fMaxMass;                //  mass upper limit histogram
   Bool_t          fInhibitTask;            //
   Bool_t          fCombineDmesons;         //  create an additional collection with D meson candidates and the rest of the tracks (for jet finding)
+  Bool_t          fRejectQuarkNotFound;    //  reject D mesons for which the original charm or bottom quark could not be found (MC)
+  Bool_t          fRejectDfromB;           //  reject D mesons coming from a B meson decay (MC)
+  Bool_t          fKeepOnlyDfromB;         //  only accept D mesons coming from a B meson decay (MC)
   AliAODEvent    *fAodEvent;               //!
   TClonesArray   *fArrayDStartoD0pi;       //!
   TClonesArray   *fMCarray;                //!
@@ -138,7 +152,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   AliAnalysisTaskSEDmesonsFilterCJ(const AliAnalysisTaskSEDmesonsFilterCJ &source);
   AliAnalysisTaskSEDmesonsFilterCJ& operator=(const AliAnalysisTaskSEDmesonsFilterCJ& source); 
 
-  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 5); // task for selecting D mesons to be used as an input for D-Jet correlations
+  ClassDef(AliAnalysisTaskSEDmesonsFilterCJ, 6); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
 
 #endif
