@@ -62,3 +62,4 @@
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
 #pragma link C++ class AliFemtoCorrFctnGammaMonitorAlpha+;
 #pragma link C++ class AliFemtoCorrFctn3DPRF+;
+#pragma link C++ class AliFemtoPARJGenPythia+;
