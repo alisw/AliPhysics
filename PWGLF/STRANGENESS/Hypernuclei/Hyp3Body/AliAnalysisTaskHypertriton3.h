@@ -78,7 +78,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDCAPionProton(double maxpip) {fDCApip = maxpip;}
   void SetDCADeuteronPion(double maxdpi) {fDCAdpi = maxdpi;}
 
-  void SetCentralityLimits(double lowc, double highc) {fLowCentrality = lowc; fHighCentrality = highc;}
+  void SetCentrPercentileLimits(double lowc, double highc) {fLowCentrality = lowc; fHighCentrality = highc;}
   
   Double_t GetDCAcut(Int_t part, Double_t dca) const;
 
