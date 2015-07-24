@@ -31,8 +31,8 @@ include_directories(${ROOT_INCLUDE_DIR}
 add_library(${MODULE}-object OBJECT alimdc_main.cxx)
 # Add a library to the project using the object
 add_executable(${MODULE} $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} STEERBase ESD MDC RAWDatabase RAWDatarec)
-
+target_link_libraries(${MODULE} STEERBase EG Geom Gpad Graf3d Graf Hist MathCore Matrix Minuit Physics VMC Cint Thread ESD MDC RAWDatabase RAWDatarec)
+ 
 # Compile and link flags
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)

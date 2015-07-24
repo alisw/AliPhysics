@@ -22,8 +22,8 @@ set(SRCS1
    )
 
 add_executable(dHLTdumpraw ${SRCS1})
-target_link_libraries(dHLTdumpraw AliHLTMUON HLTbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
 
+target_link_libraries(dHLTdumpraw AliHLTMUON HLTbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS AliHLTHOMER Geom Graf Hist MathCore XMLParser Physics Gui EG VMC Matrix Minuit Gpad GenVector GeomPainter Proof Graf3d Cint Thread)
 
 # dHLTrootify executable
 set(SRCS2
@@ -31,7 +31,7 @@ set(SRCS2
 )
 
 add_executable(dHLTrootify ${SRCS2})
-target_link_libraries(dHLTrootify AliHLTMUON HLTbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
+target_link_libraries(dHLTrootify AliHLTMUON HLTbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS AliHLTHOMER Geom Graf Hist MathCore XMLParser Physics Gui EG VMC Matrix Minuit Gpad GenVector GeomPainter Proof Graf3d Cint Thread)
 
 # Installation
 install(TARGETS dHLTdumpraw dHLTrootify RUNTIME DESTINATION bin)
