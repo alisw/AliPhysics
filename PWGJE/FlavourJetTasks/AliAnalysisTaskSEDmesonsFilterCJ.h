@@ -40,6 +40,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
  public:
 
   enum ECandidateType{ kD0toKpi, kDstartoKpipi };
+  enum EParticleOrigin { kQuarkNotFound, kFromCharm, kFromBottom };
+  enum EDecayChannel { kDecayOther, kDecayD0toKpi, kDecayDStartoKpipi };
   
   AliAnalysisTaskSEDmesonsFilterCJ();
   AliAnalysisTaskSEDmesonsFilterCJ(const Char_t* name,AliRDHFCuts* cuts,ECandidateType candtype);
@@ -82,10 +84,14 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
   static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
+
   static Int_t CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray); // AOD
   static Int_t CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray); // AOD
   static Int_t CheckOrigin(AliAODRecoDecay* cand, AliStack* stack); // ESD
   static Int_t CheckOrigin(Int_t ipart, AliStack* stack); // ESD
+  
+  static Int_t CheckDecayChannel(AliAODMCParticle* part, TClonesArray* mcArray); // AOD
+  static Int_t CheckDecayChannel(Int_t ipart, AliStack* stack); // ESD
 
  protected:
   void ExecOnce();

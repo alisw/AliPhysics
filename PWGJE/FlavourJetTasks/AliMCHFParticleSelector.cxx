@@ -24,7 +24,9 @@ AliMCHFParticleSelector::AliMCHFParticleSelector() :
   fSpecialPDG(0),
   fRejectQuarkNotFound(kTRUE),
   fRejectDfromB(kTRUE),
-  fKeepOnlyDfromB(kFALSE)
+  fKeepOnlyDfromB(kFALSE),
+  fKeepOnlyD0toKpi(kFALSE),
+  fKeepOnlyDStartoKpipi(kFALSE)
 {
   // Constructor.
 }
@@ -35,7 +37,9 @@ AliMCHFParticleSelector::AliMCHFParticleSelector(const char *name) :
   fSpecialPDG(0),
   fRejectQuarkNotFound(kTRUE),
   fRejectDfromB(kTRUE),
-  fKeepOnlyDfromB(kFALSE)
+  fKeepOnlyDfromB(kFALSE),
+  fKeepOnlyD0toKpi(kFALSE),
+  fKeepOnlyDStartoKpipi(kFALSE)
 {
   // Constructor.
 }
@@ -44,6 +48,28 @@ AliMCHFParticleSelector::AliMCHFParticleSelector(const char *name) :
 AliMCHFParticleSelector::~AliMCHFParticleSelector()
 {
   // Destructor.
+}
+
+//________________________________________________________________________
+void AliMCHFParticleSelector::SelectCharmtoD0toKpi()
+{
+  SetSpecialPDG(421);
+  SetKeepOnlyD0toKpi(kTRUE);
+  SetKeepOnlyDStartoKpipi(kFALSE);
+  SetRejectDfromB(kTRUE);
+  SetRejectQuarkNotFound(kTRUE);
+  SetKeepOnlyDfromB(kFALSE);
+}
+
+//________________________________________________________________________
+void AliMCHFParticleSelector::SelectCharmtoDStartoKpipi()
+{
+  SetSpecialPDG(413);
+  SetKeepOnlyD0toKpi(kFALSE);
+  SetKeepOnlyDStartoKpipi(kTRUE);
+  SetRejectDfromB(kTRUE);
+  SetRejectQuarkNotFound(kTRUE);
+  SetKeepOnlyDfromB(kFALSE);
 }
 
 //________________________________________________________________________
@@ -75,13 +101,29 @@ Bool_t AliMCHFParticleSelector::AcceptParticle(AliAODMCParticle* part) const
 
     if (origin < 0) isSpecialPdg = kFALSE;
     
-    if (fRejectQuarkNotFound && origin == 0) {
+    if (fRejectQuarkNotFound && origin == AliAnalysisTaskSEDmesonsFilterCJ::kQuarkNotFound) {
       isSpecialPdg = kFALSE;
     }
-    else if (fRejectDfromB && origin == 2) {
+    else if (fRejectDfromB && origin == AliAnalysisTaskSEDmesonsFilterCJ::kFromBottom) {
       isSpecialPdg = kFALSE;
     }
-    else if (fKeepOnlyDfromB && origin != 2) {
+    else if (fKeepOnlyDfromB && origin != AliAnalysisTaskSEDmesonsFilterCJ::kFromBottom) {
+      isSpecialPdg = kFALSE;
+    }
+
+    Int_t decayChannel = -1;
+
+    if (fIsESD) {
+      decayChannel = AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(part->Label(), fMC->Stack());
+    }
+    else {
+      decayChannel = AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(part, fParticlesIn);
+    }
+
+    if (fKeepOnlyD0toKpi && decayChannel != AliAnalysisTaskSEDmesonsFilterCJ::kDecayD0toKpi) {
+      isSpecialPdg = kFALSE;
+    }
+    else if (fKeepOnlyDStartoKpipi && decayChannel != AliAnalysisTaskSEDmesonsFilterCJ::kDecayDStartoKpipi) {
       isSpecialPdg = kFALSE;
     }
   }
