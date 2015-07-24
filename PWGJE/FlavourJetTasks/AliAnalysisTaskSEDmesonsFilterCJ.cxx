@@ -65,6 +65,9 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fMaxMass(0.),
   fInhibitTask(kFALSE),
   fCombineDmesons(kFALSE),
+  fRejectQuarkNotFound(kTRUE),
+  fRejectDfromB(kTRUE),
+  fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
@@ -128,6 +131,9 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fMaxMass(0.),
   fInhibitTask(kFALSE),
   fCombineDmesons(kFALSE),
+  fRejectQuarkNotFound(kTRUE),
+  fRejectDfromB(kTRUE),
+  fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
@@ -516,10 +522,25 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   }
 
   if (charmPart) {
-    fHistStat->Fill(5);
+    
+    Int_t origin = CheckOrigin(charmPart);
+    if (fRejectQuarkNotFound && origin == 0) {
+      fHistStat->Fill(6);
+      return;
+    }
+    if (fRejectDfromB && origin == 2) {
+      fHistStat->Fill(7);
+      return;
+    }
+    if (fKeepOnlyDfromB && origin != 2) {
+      fHistStat->Fill(8);
+      return;
+    }
+    
+    fHistStat->Fill(2);
   }
   else {
-    fHistStat->Fill(2);
+    fHistStat->Fill(5);
   }
   
   // For MC background fill fSideBandArray
@@ -537,7 +558,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   // For data or MC signal fill fCandidateArray
   else {
     // For data or MC with the requirement fUseReco fill with candidates	       
-    if (fUseReco) {
+    if (fUseReco) {      
       new ((*fCandidateArray)[fNCand]) AliAODRecoDecayHF2Prong(*charmCand);
 
       if (fCombineDmesons) {
@@ -606,10 +627,25 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
   }
 
   if (charmPart) {
-    fHistStat->Fill(5);
+    
+    Int_t origin = CheckOrigin(charmPart);
+    if (fRejectQuarkNotFound && origin == 0) {
+      fHistStat->Fill(6);
+      return;
+    }
+    if (fRejectDfromB && origin == 2) {
+      fHistStat->Fill(7);
+      return;
+    }
+    if (fKeepOnlyDfromB && origin != 2) {
+      fHistStat->Fill(8);
+      return;
+    }
+    
+    fHistStat->Fill(2);
   }
   else {
-    fHistStat->Fill(2);
+    fHistStat->Fill(5);
   }
   
   AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
@@ -885,7 +921,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
   // Allocate the histograms for the analysis.
    
   // Statistics 
-  fHistStat = new TH1I("fHistStat", "Statistics",6,-0.5,5.5);
+  fHistStat = new TH1I("fHistStat", "Statistics", 9, -0.5, 8.5);
   fHistStat->GetXaxis()->SetBinLabel(1, "N ev anal");
   fHistStat->GetXaxis()->SetBinLabel(2, "N ev sel");
   if (fUseMCInfo) {
@@ -905,7 +941,11 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
   }
   if (fUseMCInfo) {
     fHistStat->GetXaxis()->SetBinLabel(6, "N Background");
+    fHistStat->GetXaxis()->SetBinLabel(7, "N rej no quark");
+    fHistStat->GetXaxis()->SetBinLabel(8, "N rej from B");
+    fHistStat->GetXaxis()->SetBinLabel(9, "N rej from D");
   }
+  
   fHistStat->SetNdivisions(1);
   fOutput->Add(fHistStat);
    
@@ -1133,4 +1173,69 @@ Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(AliAODRecoDecay* cand, T
   //Printf("Total pt of the daughters = %.3f", pt);
   
   return pt;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand) const 
+{		
+  // Checks whether the mother of the D meson candidate comes from a charm or a bottom quark.
+
+  if (!fMCarray) return -1;
+  
+  Int_t labDau0 = static_cast<AliAODTrack*>(cand->GetDaughter(0))->GetLabel();
+  if (labDau0 < 0) return -1;
+  
+  AliAODMCParticle* part = static_cast<AliAODMCParticle*>(fMCarray->At(labDau0));
+  return CheckOrigin(part);
+}
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part) const 
+{
+  // Checks whether the mother of the particle comes from a charm or a bottom quark.
+  // Returns: 0 if no quark found; 1 if charm quark found; 2 if bottom quark found; -1 if an error occured
+
+  if (!part) return -1;
+  if (!fMCarray) return -1;
+  
+  Int_t pdgGranma = 0;
+  Int_t mother = part->GetMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma = 0;
+  Bool_t isFromB = kFALSE;
+  Bool_t isQuarkFound = kFALSE;
+  
+  while (mother >= 0) {
+    istep++;
+    AliDebug(2, Form("Mother at step %d = %d", istep, mother));
+    AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(fMCarray->At(mother));
+    if (mcGranma >= 0) {
+      pdgGranma = mcGranma->GetPdgCode();
+      AliDebug(2, Form("Pdg mother at step %d = %d", istep, pdgGranma));
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+        isFromB = kTRUE;
+      }
+      
+      if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
+      mother = mcGranma->GetMother();
+      AliDebug(3, Form("mother = %d", mother));
+    }
+    else {
+      AliError(Form("Could not retrieve mother particle %d!", mother));
+      break;
+    }
+  }
+
+  if (isQuarkFound) {
+    if (isFromB) {
+      return 2;
+    }
+    else {
+      return 1;
+    }
+  }
+  else {
+    return 0;
+  }
 }
