@@ -80,6 +80,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
   static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
+  static Int_t CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray);
+  static Int_t CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray);
 
  protected:
   void ExecOnce();
@@ -89,8 +91,6 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   void FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar);
   void FillDstarSideBands(AliAODRecoCascadeHF* dstar);
   void AddEventTracks(TClonesArray* coll, AliParticleContainer* tracks);
-  Int_t CheckOrigin(AliAODRecoDecay* cand) const;
-  Int_t CheckOrigin(AliAODMCParticle* part) const;
 
   Bool_t          fUseMCInfo;              //  Use MC info
   Bool_t          fUseReco;                //  use reconstructed tracks when running on MC
