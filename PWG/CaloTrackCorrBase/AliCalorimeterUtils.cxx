@@ -153,6 +153,8 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           
         } // loop
       } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
+      
+      delete contBC;
     }  // Remove bad
     
     // Energy Recalibration
@@ -198,6 +200,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         } else AliInfo("Do NOT recalibrate EMCAL, no params for pass"); // array pass ok
       } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok
       
+      delete contRF;
       // once set, apply run dependent corrections if requested
       //fEMCALRecoUtils->SetRunDependentCorrections(fRunNumber);
             
@@ -261,6 +264,8 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           } // rows 
         } // SM loop
       } else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
+      
+      delete contRFTD;
     } // Run by Run T calibration    
     
     // Time Recalibration
@@ -303,6 +308,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
       
+      delete contTRF;
     } // Recalibration on    
     
   }// EMCAL
