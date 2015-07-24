@@ -668,6 +668,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitTemperatureCorrections()
     } // SM loop
   }
   else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
+  
+  delete contRFTD; 
 }
 
 
