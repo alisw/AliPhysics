@@ -1123,6 +1123,7 @@ goGenerateMakeflow()
               "runCPass0.sh"
               "recCPass0.C"
               "runQA.sh"
+	      "mergeQAgroups.C"
   )
   for file in ${inputFiles[*]}; do
     [[ -f ${file} ]] && copyFiles+=("${file}")
@@ -2067,6 +2068,7 @@ goSubmitBatch()
                     "${configPath}/recCPass1_OuterDet.C"
                     "${configPath}/runCalibTrain.C"
                     "${configPath}/QAtrain_duo.C"
+                    "${configPath}/mergeQAgroups.C"
                     "${configPath}/localOCDBaccessConfig.C"
                     "${configPath}/OCDB.root"
       )
