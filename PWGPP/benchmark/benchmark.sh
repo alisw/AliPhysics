@@ -879,8 +879,10 @@ goMergeCPass1()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
+                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                     "${trustedQAtrainMacro}"
-                    "${ALICE_ROOT}/ANALYSIS/macros/QAtrain_duo.C"
+
   )
   for file in ${filesMergeCPass1[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .

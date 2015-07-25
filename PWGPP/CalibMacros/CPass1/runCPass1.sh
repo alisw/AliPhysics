@@ -183,8 +183,8 @@ if [ -f QAtrain_duo.C ]; then
     do
 	export QAGROUP=$grp
 	echo running QA for tasks group $QAGROUP
-	echo executing aliroot -b -q -x "QAtrain_duo.C(\"_barrel_grp$grp\",$runNum)"
-	time aliroot -b -q -x "QAtrain_duo.C(\"_barrel_grp$grp\",$runNum)" &> ../qa_barrel_grp$grp.log
+	echo executing aliroot -b -q -x "QAtrain_duo.C(\"_barrel_grp$grp\",$runNum,0,0,\"$ocdbPath\")"
+	time aliroot -b -q -x "QAtrain_duo.C(\"_barrel_grp$grp\",$runNum,0,0,\"$ocdbPath\")" &> ../qa_barrel_grp$grp.log
 #
 	exitcode=$?
 	echo "Exit code: $exitcode"
@@ -250,8 +250,8 @@ if [ -f QAtrain_duo.C ]; then
     do
 	export QAGROUP=$grp
 	echo running QA for tasks group $QAGROUP
-	echo executing aliroot -b -q -x "QAtrain_duo.C(\"_outer_grp$grp\",$runNum)"
-	time aliroot -b -q -x "QAtrain_duo.C(\"_outer_grp$grp\",$runNum)" &> ../qa_outer_grp$grp.log
+	echo executing aliroot -b -q -x "QAtrain_duo.C(\"_outer_grp$grp\",$runNum,0,0,\"$ocdbPath\")"
+	time aliroot -b -q -x "QAtrain_duo.C(\"_outer_grp$grp\",$runNum,0,0,\"$ocdbPath\")" &> ../qa_outer_grp$grp.log
 #
 	exitcode=$?
 	echo "Exit code: $exitcode"
