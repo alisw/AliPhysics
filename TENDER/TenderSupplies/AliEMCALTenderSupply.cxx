@@ -835,13 +835,19 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   if (fDebugLevel>0) 
     AliInfo("Initialising misalignment matrix");  
   
-  if (fLoadGeomMatrices) {
+  if (fLoadGeomMatrices) 
+  {
     for(Int_t mod=0; mod < fEMCALGeo->GetNumberOfSuperModules(); ++mod)
     {
-      if (fEMCALMatrix[mod]){
-        if (fDebugLevel > 2) 
-          fEMCALMatrix[mod]->Print();
+      if (fEMCALMatrix[mod])
+      {
+        if (fDebugLevel > 2) fEMCALMatrix[mod]->Print();
+        
         fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod);  
+      }
+      else
+      {
+        AliWarning(Form("EMCal geometry matrix for SM %d is not available!",mod));
       }
     }
     fGeomMatrixSet = kTRUE;
@@ -888,7 +894,8 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
     }
   }
 
-  if (!mobj) {
+  if (!mobj) 
+  {
     AliFatal("Geometry matrix array not found");
     return kFALSE;
   }
@@ -896,8 +903,17 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
   {
     fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
-    fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
-    fEMCALMatrix[mod]->Print();
+    
+    if ( fEMCALMatrix[mod] )
+    {
+      if (fDebugLevel > 2) fEMCALMatrix[mod]->Print();
+
+      fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod);       
+    }
+    else
+    {
+      AliWarning(Form("EMCal geometry matrix for SM %d is not available!",mod));
+    }
   }
   
   return kTRUE;
