@@ -37,7 +37,7 @@ AliADTrending::AliADTrending() : TH1(), fNEntries(0), fMultiGraphs(NULL)
 	for(int i=0; i<4;i++) fGraphs[i] = NULL;
 	for (int i = 0; i < kDataSize; i++) {
 		fTime[i] = 0;
-		for (int j = 0; j < 8; j++) {
+		for (int j = 0; j < 4; j++) {
 		  fData[j][i] = 0;
 		}
 	}
