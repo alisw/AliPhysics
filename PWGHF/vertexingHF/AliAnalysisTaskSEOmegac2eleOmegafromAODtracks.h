@@ -33,6 +33,7 @@ class AliAODRecoCascadeHF;
 class AliESDVertex;
 class AliAODMCParticle;
 class AliEventPoolManager;
+class AliNormalizationCounter;
 
 class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE 
 {
@@ -200,6 +201,11 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
 
+  AliNormalizationCounter *fCounter;//!Counter for normalization
+	TH1F *fHistonEvtvsRunNumber;
+	TH1F *fHistonElevsRunNumber;
+	TH1F *fHistonOmegavsRunNumber;
+
   //Mixing
   Int_t fDoEventMixing; // flag for event mixing
   Int_t  fNumberOfEventsForMixing; // maximum number of events to be used in event mixing
@@ -213,7 +219,7 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; // array of electron-compatible tracks
 
 
-  ClassDef(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks,3); // class for Omegac->e Omega
+  ClassDef(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks,4); // class for Omegac->e Omega
 };
 #endif
 

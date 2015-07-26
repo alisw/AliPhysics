@@ -75,6 +75,7 @@
 #include "AliCentrality.h"
 #include "AliVertexerTracks.h"
 #include "AliEventPoolManager.h"
+#include "AliNormalizationCounter.h"
 
 using std::cout;
 using std::endl;
@@ -107,6 +108,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fIsINT7(kFALSE),
   fIsEMC7(kFALSE),
   fCandidateVariables(),
+  fCandidateEleVariables(),
+  fCandidateCascVariables(),
+  fCandidateMCVariables(),
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
@@ -168,6 +172,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
+	fCounter(0),
+	fHistonEvtvsRunNumber(0),
+	fHistonElevsRunNumber(0),
+	fHistonXivsRunNumber(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -215,6 +223,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fIsINT7(kFALSE),
   fIsEMC7(kFALSE),
   fCandidateVariables(),
+  fCandidateEleVariables(),
+  fCandidateCascVariables(),
+  fCandidateMCVariables(),
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
@@ -276,6 +287,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
+	fCounter(0),
+	fHistonEvtvsRunNumber(0),
+	fHistonElevsRunNumber(0),
+	fHistonXivsRunNumber(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -303,6 +318,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   DefineOutput(5,TTree::Class());  //My private output
   DefineOutput(6,TTree::Class());  //My private output
   DefineOutput(7,TTree::Class());  //My private output
+  DefineOutput(8,AliNormalizationCounter::Class());
 }
 
 //___________________________________________________________________________
@@ -349,7 +365,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::~AliAnalysisTaskSEXic2eleXifromAODtrack
     delete fMCVariablesTree;
     fMCVariablesTree = 0;
   }
-
+	if(fCounter){
+		delete fCounter;
+		fCounter = 0;
+	}
 }
 
 //_________________________________________________
@@ -388,9 +407,55 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   fCEvents->Fill(1);
 
   //------------------------------------------------
-  // First check if the event has proper vertex and B
+  // First check if the event has proper B
   //------------------------------------------------
-	
+  fBzkG = (Double_t)aodEvent->GetMagneticField(); 
+  AliKFParticle::SetField(fBzkG);
+  if (TMath::Abs(fBzkG)<0.001) {
+    return;
+  }
+  fCEvents->Fill(2);
+
+  fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo);
+  fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent);
+
+  //------------------------------------------------
+  // MC analysis setting
+  //------------------------------------------------
+  TClonesArray *mcArray = 0;
+  AliAODMCHeader *mcHeader=0;
+  if (fUseMCInfo) {
+    // MC array need for maching
+    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!mcArray) {
+      AliError("Could not find Monte-Carlo in AOD");
+      return;
+    }
+    fCEvents->Fill(6); // in case of MC events
+  
+    // load MC header
+    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!mcHeader) {
+      AliError("AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec: MC header branch not found!\n");
+      return;
+    }
+    fCEvents->Fill(7); // in case of MC events
+  
+    Double_t zMCVertex = mcHeader->GetVtxZ();
+    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
+      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
+      return;
+    } else {
+      fCEvents->Fill(17); // in case of MC events
+    }
+    if ((TMath::Abs(zMCVertex) < fAnalCuts->GetMaxVtxZ()) && (!fAnalCuts->IsEventRejectedDuePhysicsSelection()) && (!fAnalCuts->IsEventRejectedDueToTrigger())) {
+			MakeMCAnalysis(mcArray);
+		}
+  }
+
+  //------------------------------------------------
+  // Event selection 
+  //------------------------------------------------
   fVtx1 = (AliAODVertex*)aodEvent->GetPrimaryVertex();
   if (!fVtx1) return;
 
@@ -399,19 +464,6 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   fVtx1->GetCovarianceMatrix(cov);
   fV1 = new AliESDVertex(pos,cov,100.,100,fVtx1->GetName());
 	fVtxZ = pos[2];
-
-  fBzkG = (Double_t)aodEvent->GetMagneticField(); 
-  AliKFParticle::SetField(fBzkG);
-  if (TMath::Abs(fBzkG)<0.001) {
-    delete fV1;
-    return;
-  }
-  fCEvents->Fill(2);
-
-  //------------------------------------------------
-  // Event selection 
-  //------------------------------------------------
-  fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent); // better to initialize before CheckEventSelection call
 
   Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
   Bool_t fIsPhysSelNotOK = fAnalCuts->IsEventRejectedDuePhysicsSelection();
@@ -453,48 +505,35 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   fHCentrality->Fill(fCentrality);
 	fEvNumberCounter++;
 
+	Int_t runnumber_offset = 0;
+	Int_t runnumber = aodEvent->GetRunNumber();
+	if(runnumber<=117222&&runnumber>=114931){
+		runnumber_offset = 114931;//lhc10b
+	}else if(runnumber<=120829&&runnumber>=119159){
+		runnumber_offset = 119159;//lhc10c
+	}else if(runnumber<=126437&&runnumber>=122374){
+		runnumber_offset = 122374;//lhc10d
+	}else if(runnumber<=130840&&runnumber>=127712){
+		runnumber_offset = 127712;//lhc10e
+	}else if(runnumber<=195483&&runnumber>=195344){
+		runnumber_offset = 195344;//lhc13b
+	}else if(runnumber<=195677&&runnumber>=195529){
+		runnumber_offset = 195529;//lhc13c
+	}else if(runnumber<=170593&&runnumber>=167902){
+		runnumber_offset = 167902;//lhc11h
+	}
+	fHistonEvtvsRunNumber->Fill(runnumber-runnumber_offset,1.);
+
   //------------------------------------------------
   // Check if the event has v0 candidate
   //------------------------------------------------
   //Int_t nv0 = aodEvent->GetNumberOfV0s();
   fCEvents->Fill(5);
 
-  //------------------------------------------------
-  // MC analysis setting
-  //------------------------------------------------
-  TClonesArray *mcArray = 0;
-  AliAODMCHeader *mcHeader=0;
-  if (fUseMCInfo) {
-    // MC array need for maching
-    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!mcArray) {
-      AliError("Could not find Monte-Carlo in AOD");
-      return;
-    }
-    fCEvents->Fill(6); // in case of MC events
-  
-    // load MC header
-    mcHeader = (AliAODMCHeader*)aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!mcHeader) {
-      AliError("AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec: MC header branch not found!\n");
-      return;
-    }
-    fCEvents->Fill(7); // in case of MC events
-  
-    Double_t zMCVertex = mcHeader->GetVtxZ();
-    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
-      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
-      return;
-    } else {
-      fCEvents->Fill(17); // in case of MC events
-    }
-  }
 
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
-  if (fUseMCInfo) 
-		MakeMCAnalysis(mcArray);
   MakeAnalysis(aodEvent,mcArray);
 
 
@@ -504,6 +543,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
   PostData(5,fEleVariablesTree);
   PostData(6,fCascVariablesTree);
   PostData(7,fMCVariablesTree);
+  PostData(8,fCounter);    
 
   fIsEventSelected=kFALSE;
 
@@ -571,6 +611,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserCreateOutputObjects()
   DefineMCTreeVariables();
   PostData(7,fMCVariablesTree);
 
+  //Counter for Normalization
+  TString normName="NormalizationCounter";
+  AliAnalysisDataContainer *cont = GetOutputSlot(8)->GetContainer();
+  if(cont)normName=(TString)cont->GetName();
+  fCounter = new AliNormalizationCounter(normName.Data());
+  fCounter->Init();
+
 	if(fDoEventMixing){
 		fElectronTracks = new TObjArray();
 		fElectronTracks->SetOwner();
@@ -614,6 +661,26 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeAnalysis
   Bool_t  seleCascFlags[nCascs];
   Int_t     nSeleCasc=0;
   SelectCascade(aodEvent,nCascs,nSeleCasc,seleCascFlags,mcArray);
+
+	Int_t runnumber_offset = 0;
+	Int_t runnumber = aodEvent->GetRunNumber();
+	if(runnumber<=117222&&runnumber>=114931){
+		runnumber_offset = 114931;//lhc10b
+	}else if(runnumber<=120829&&runnumber>=119159){
+		runnumber_offset = 119159;//lhc10c
+	}else if(runnumber<=126437&&runnumber>=122374){
+		runnumber_offset = 122374;//lhc10d
+	}else if(runnumber<=130840&&runnumber>=127712){
+		runnumber_offset = 127712;//lhc10e
+	}else if(runnumber<=195483&&runnumber>=195344){
+		runnumber_offset = 195344;//lhc13b
+	}else if(runnumber<=195677&&runnumber>=195529){
+		runnumber_offset = 195529;//lhc13c
+	}else if(runnumber<=170593&&runnumber>=167902){
+		runnumber_offset = 167902;//lhc11h
+	}
+	fHistonElevsRunNumber->Fill(runnumber-runnumber_offset,nSeleTrks);
+	fHistonXivsRunNumber->Fill(runnumber-runnumber_offset,nSeleCasc);
 
   //------------------------------------------------
   // Cascade loop 
@@ -1841,6 +1908,13 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFSmallEta);
   fHistoElectronTPCPIDSelTOFLargeEta=new TH2F("fHistoElectronTPCPIDSelTOFLargeEta","",10,0.,5.,500,-10.,10.);
   fOutputAll->Add(fHistoElectronTPCPIDSelTOFLargeEta);
+
+  fHistonEvtvsRunNumber=new TH1F("fHistonEvtvsRunNumber","",5000,-0.5,4999.5);
+  fOutputAll->Add(fHistonEvtvsRunNumber);
+  fHistonElevsRunNumber=new TH1F("fHistonElevsRunNumber","",5000,-0.5,4999.5);
+  fOutputAll->Add(fHistonElevsRunNumber);
+  fHistonXivsRunNumber=new TH1F("fHistonXivsRunNumber","",5000,-0.5,4999.5);
+  fOutputAll->Add(fHistonXivsRunNumber);
 
 	for(Int_t ih=0;ih<23;ih++){
 		Int_t bins_eleptvscutvars[3];
