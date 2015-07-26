@@ -527,6 +527,8 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 
   Bool_t onFlyV0 = v0->GetOnFlyStatus(); // on-the-flight V0s
   if ( onFlyV0 && !fUseOnTheFlyV0 ) return kFALSE;
+	if(!v0) return kFALSE;
+	if(!(v0->GetSecondaryVtx())) return kFALSE;
 
   AliAODTrack *cptrack =  (AliAODTrack*)(v0->GetDaughter(0));
   AliAODTrack *cntrack =  (AliAODTrack*)(v0->GetDaughter(1));
