@@ -103,6 +103,8 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks *AddTaskOmegac2eleOmegafromAODtrac
   mgr->ConnectOutput(task,6,coutputLc6);
   AliAnalysisDataContainer *coutputLc7 = mgr->CreateContainer(Form("eleOmega_mcvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,7,coutputLc7);
+  AliAnalysisDataContainer *coutputLc8 = mgr->CreateContainer(Form("eleOmegaCounter%1d",nTour),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
+  mgr->ConnectOutput(task,8,coutputLc8);
 
   return task;
 

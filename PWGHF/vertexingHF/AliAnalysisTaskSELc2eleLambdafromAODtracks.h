@@ -33,6 +33,7 @@ class AliAODRecoCascadeHF;
 class AliESDVertex;
 class AliAODMCParticle;
 class AliEventPoolManager;
+class AliNormalizationCounter;
 
 class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE 
 {
@@ -231,6 +232,11 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElePtvsCutVarsWS[17];         //e pt- cut variables (Wrong-sign)
   THnSparse* fHistoElePtvsCutVarsMCS[17];         //e pt- cut variables (MCS)
 
+  AliNormalizationCounter *fCounter;//!Counter for normalization
+	TH1F *fHistonEvtvsRunNumber;
+	TH1F *fHistonElevsRunNumber;
+	TH1F *fHistonLambdavsRunNumber;
+
   //Mixing
   Int_t fDoEventMixing; // flag for event mixing
   Int_t  fNumberOfEventsForMixing; // maximum number of events to be used in event mixing
@@ -244,7 +250,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; // array of electron-compatible tracks
 
 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,4); // class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,5); // class for Lc->e Lambda
 };
 #endif
 
