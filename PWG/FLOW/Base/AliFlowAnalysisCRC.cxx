@@ -17572,7 +17572,7 @@ void AliFlowAnalysisCRC::CalculateCRCQVec()
 
 void AliFlowAnalysisCRC::CalculateCRCVZERO()
 {
- Int_t h=0;
+ Int_t h = fHarmonic-1;
  Double_t e = 1E-5;
  Int_t EBinMin=0, EBinMax=0;
  
@@ -17799,7 +17799,7 @@ void AliFlowAnalysisCRC::CalculateCRCVZERO()
 
 void AliFlowAnalysisCRC::CalculateCRCZDC()
 {
- Int_t h=0;
+ Int_t h = fHarmonic-1;
  Double_t e = 1E-5;
  Int_t EBinMin=0, EBinMax=0;
  
@@ -18032,10 +18032,6 @@ void AliFlowAnalysisCRC::CalculateCRCZDC()
 
 void AliFlowAnalysisCRC::CalculateVZvsZDC()
 {
- Int_t h=0;
- Double_t e = 1E-5;
- Int_t EBinMin=0, EBinMax=0;
- 
  // ZDC eta < 0
  Double_t ZDCCRe = (*fCRCQZDCRe)(0,0);
  Double_t ZDCCIm = (*fCRCQZDCIm)(0,0);
@@ -18063,8 +18059,6 @@ void AliFlowAnalysisCRC::CalculateVZvsZDC()
  if( fCentralityEBE<5. ) return;
  // cut on multiplicity
  if( ZDCCM<1. || ZDCAM<1. ) return;
- // cut on centroid position
- if( pow(pow(ZDCCRe,2.)+pow(ZDCCIm,2.),0.5) > 2. || pow(pow(ZDCARe,2.)+pow(ZDCAIm,2.),0.5) > 2. ) return;
  
  // Normalize VZ Q-vector
  VZCRe /= VZCM;
@@ -18128,7 +18122,7 @@ void AliFlowAnalysisCRC::CalculateCRCCorr()
   Double_t dEtaRange = (((fCRCEtaMax-fCRCEtaMin)/2.)-dEtaGap)/2.;
   Double_t dEtaSymm = dEtaGap/2.;
   
-  Int_t h=0;
+  Int_t h = fHarmonic-1;
   
   for(Int_t c=0;c<2;c++) {
    for(Int_t y=0;y<2;y++) {
@@ -20617,7 +20611,7 @@ void AliFlowAnalysisCRC::StoreCRCFlags()
   exit(0);
  }
  
- fCRCFlags->Fill(0.5,(Int_t)fCalculateCRC);
+ fCRCFlags->Fill(0.5,(Int_t)fHarmonic);
  fCRCFlags->Fill(1.5,(Int_t)fCalculateCRCPt);
  fCRCFlags->Fill(2.5,(Int_t)fUseVZERO);
  fCRCFlags->Fill(3.5,(Int_t)fNUAforCRC);
@@ -22058,7 +22052,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
  TProfile *CRCFlags = dynamic_cast<TProfile*>(fCRCList->FindObject("fCRCFlags"));
  if(CRCFlags) {
   this->SetCRCFlags(CRCFlags);
-  fCalculateCRC = (Bool_t)fCRCFlags->GetBinContent(1);
+  fHarmonic = (Bool_t)fCRCFlags->GetBinContent(1);
   fCalculateCRCPt = (Bool_t)fCRCFlags->GetBinContent(2);
   fUseVZERO = (Bool_t)fCRCFlags->GetBinContent(3);
   fNUAforCRC = (Bool_t)fCRCFlags->GetBinContent(4);
@@ -22875,7 +22869,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
  fCRCFlags->SetLabelSize(0.04);
  fCRCFlags->SetLabelOffset(0.02,"Y");
  fCRCFlags->SetStats(kFALSE);
- fCRCFlags->GetXaxis()->SetBinLabel(1,"CalculateCRC");
+ fCRCFlags->GetXaxis()->SetBinLabel(1,"Harmonic");
  fCRCFlags->GetXaxis()->SetBinLabel(2,"CalculateCRCPt");
  fCRCFlags->GetXaxis()->SetBinLabel(3,"UseVZERO");
  fCRCFlags->GetXaxis()->SetBinLabel(4,"NUAforCRC");

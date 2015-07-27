@@ -1,4 +1,5 @@
-AliAnalysisTask * AddTaskCRC(Double_t centrMin,
+AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
+                             Double_t centrMin,
                              Double_t centrMax,
                              Int_t nCenBin,
                              Double_t CenBinWidth,
@@ -249,7 +250,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  else if (EvTrigger == "Any")
   taskQC->SelectCollisionCandidates(AliVEvent::kAny);
  // and set the correct harmonic n
- taskQC->SetHarmonic(1);
+ taskQC->SetHarmonic(nHarmonic);
  // set standard flow settings
  taskQC->SetCalculateDiffFlow(kFALSE);
  taskQC->SetCalculateDiffFlowVsEta(kFALSE);
