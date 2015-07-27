@@ -8,6 +8,7 @@
 main()
 {
   #run in proper mode depending on the selection
+  source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
   if [[ $# -lt 1 ]]; then
     if [[ ! "${0}" =~ "bash" ]]; then
       echo "uses makeflow:"
@@ -459,6 +460,7 @@ goCPass1()
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C" 
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
+               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"	       
                "${trustedQAtrainMacro}"
   )
 
@@ -1292,7 +1294,12 @@ goCreateQAplots()
   outputDir=${3}
   configFile=${4}
   shift 4
-  if ! parseConfig ${configFile} "$@"; then return 1; fi
+  alilog_info  "START:goCreateQAplots with following parameters"
+  echo "$@"
+  if ! parseConfig ${configFile} "$@"; then 
+     alilog_error "goCreateQAplots Parsing congig error"
+     return 1; 
+  fi
   
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -1320,6 +1327,8 @@ goCreateQAplots()
   echo ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
   ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
   cd ${olddir}
+  alilog_info  "END:goCreateQAplots with folloing parameters"
+  echo "$@"
   return 0
 )
 
@@ -2132,6 +2141,7 @@ goSubmitBatch()
                         "${configPath}/merge.C"
                         "${configPath}/mergeMakeOCDB.sh"
                         "${configPath}/QAtrain_duo.C"
+			"${configPath}/mergeQAgroups.C"
       )
       for file in ${filesMergeCPass1[*]}; do
         [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
@@ -2183,6 +2193,18 @@ goSubmitBatch()
 
 goWaitForOutput()
 (
+  #
+  # will be nice to make documentation
+  # Used to fomaly define dependencies of jobs (wait until something finish) 
+  # Based on my experience (MI) with benchmark - we are waiting for particualr files to exist or timeout
+  # In case of infinite waiting time (because of some misbehaving) easiest way to process is to kill job executing this command
+  #      (jobs on batch farm has PID dependency)
+  #
+  
+  # Action:
+  # Input:
+  # Output:
+
   umask 0002
   [[ $# -lt 3 ]] && echo "goWaitForOutput() wrong number of arguments, exiting.." && return 1
   echo Start:goWaitForOutput
