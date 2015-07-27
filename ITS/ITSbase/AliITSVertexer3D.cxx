@@ -1262,7 +1262,7 @@ void AliITSVertexer3D::FindOther3DVertices(TTree *itsClusterTree){
       nolines-=nr;
       if(nolines>=2){
 	Int_t rc=Prepare3DVertex(2);
-	if(rc==0){ 
+	if(rc==0 && fLines.GetEntriesFast()>0){ 
 	  fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0);
 	  if(fVert3D.GetNContributors()>=fMinTrackletsForPilup){
 	    fIsPileup=kTRUE;
