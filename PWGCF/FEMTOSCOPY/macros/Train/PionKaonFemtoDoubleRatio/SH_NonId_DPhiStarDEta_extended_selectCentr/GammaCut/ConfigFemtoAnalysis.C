@@ -297,7 +297,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  sqpcetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kAOD);
 
 	  if(gammacut == 1) {
-	    sqpcetaphitpc[aniter]->SetMaxEEMinv(0.004);
+	    sqpcetaphitpc[aniter]->SetMaxEEMinv(0.002);
 	    sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.008);
 	  }
 
