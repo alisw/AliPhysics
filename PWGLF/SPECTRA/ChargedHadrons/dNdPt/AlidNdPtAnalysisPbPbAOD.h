@@ -50,6 +50,8 @@ class iostream;
 #include "AliESDtrack.h"
 #include "AliEventplane.h"
 
+#include "AliEPSelectionTask.h"
+
 #include "TSystem.h"
 #include "TROOT.h"
 
@@ -84,6 +86,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetCutMaxZVertex( Double_t d)					    { fCutMaxZVertex = d; }
     Double_t GetCutMaxZVertex()						        { return fCutMaxZVertex; }
     
+    // set Ncontributors to vertex
+	void SetNContributorsVertex(Int_t i)					{ fVertexMinContributors = i; }
+	Int_t GetNContributorsVertex()							{ return fVertexMinContributors; }
+    
     // set track kinematic cut parameters
     void SetCutPtRange(Double_t ptmin, Double_t ptmax)		{ fCutPtMin = ptmin; fCutPtMax = ptmax; }
     Double_t GetCutPtMin()						            { return fCutPtMin; }
@@ -99,6 +105,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     // setter and getter track quality cut parameters
     void SetFilterBit(Int_t b)								{ fFilterBit = b; };
     Int_t GetFilterBit()									{ return fFilterBit; }
+    
+    void SetRequireHybridTracking()							{ fHybridTracking = kTRUE; }
+    Bool_t RequireHybridTracking()							{ return fHybridTracking; }
     
     void SetCutRequireTPCRefit(Bool_t *b) 					{ fCutRequireTPCRefit = b; } 
     Bool_t IsTPCRefitRequired() 							{ return fCutRequireTPCRefit; } 
@@ -244,6 +253,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TProfile	*fPsinEPCent; // < sin 2 psi_ep > vs centrality
 	TProfile	*fPcosPhiCent; // < cos 2 phi > vs centrality
 	TProfile	*fPsinPhiCent; // < sin 2 phi > vs centrality
+	TH2F		*fEPContributionDifference; // difference between contribution of track to EP between own calculation and lookup
 
 	// cross check for event plane determination
 	TH2F		*fDeltaPhiCent; // DeltaPhi:Cent - DeltaPhi in the range from -pi to pi
@@ -256,6 +266,14 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
 	TH1F		*fTriggerStringsFired; // distribution of fired trigger strings
 	TH1F		*fTriggerStringComplete; // complete fired trigger string
+	
+	// vertex histograms
+	TH1F		*fVertexZ; // global vertex Z distribution
+	TH1F		*fVertexZSPD; // SPD vertex Z distribution
+	TH1F		*fVertexZTPC; // TPC vertex Z distribution
+	TH1F		*fDeltaVertexZGlobalSPD; // difference between global and SPD vertex Z position
+	TH1F		*fDeltaVertexZGlobalTPC; // difference between global and TPC vertex Z position
+	TH1F		*fVertexContributors; // Ncontributors to vertex
 
 	// global variables
     Bool_t fIsMonteCarlo;
@@ -266,6 +284,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // event cut variables
     Double_t fCutMaxZVertex;
+	Int_t	 fVertexMinContributors; // minimum contributors to vertex
     
     // track kinematic cut variables
     Double_t fCutPtMin;
@@ -275,6 +294,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // track quality cut variables
     Int_t	    fFilterBit;
+	Bool_t		fHybridTracking; // if set true, then AliAODTrack::IsHybridGlobalConstrainedGlobal() is checked in addition to filters, default is false
     Bool_t 	    fUseRelativeCuts;
     Bool_t  	fCutRequireTPCRefit;
     Bool_t 	    fCutRequireITSRefit;
@@ -326,7 +346,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,17); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,18); // has to be at least 1, otherwise not streamable...
 };
 
 #endif
