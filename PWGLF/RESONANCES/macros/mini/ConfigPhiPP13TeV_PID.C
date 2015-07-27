@@ -189,6 +189,20 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
     return kFALSE;
   }
+
+  if(customQualityCutsID==1){
+    trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+    Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
+    trkQualityCut->Print();
+    return kTRUE;
+  }else{
+    trkQualityCut->SetDefaultsTPCOnly(kTRUE);
+    Printf(Form("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
+    trkQualityCut->Print();
+    return kTRUE;
+  }
+
+
   //for pA 2013
   //trkQualityCut->SetDefaults2011();//with filter bit=10
   //reset filter bit to very loose cuts 

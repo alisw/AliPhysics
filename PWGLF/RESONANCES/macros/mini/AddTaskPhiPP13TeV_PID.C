@@ -32,7 +32,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
  Int_t       pairCutSetID=0,
  Int_t       mixingConfigID=0,
  Int_t       aodFilterBit=5,
- Int_t       customQualityCutsID=-1,
+ Int_t       customQualityCutsID=1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
  Float_t     nsigmaKa=2.,
  Bool_t      enableMonitor=kTRUE,
@@ -110,6 +110,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
   AliRsnCutPrimaryVertex* cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
 
+  AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+
   if(isPP && (!isMC)){ 
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  
     ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));   
@@ -117,8 +119,9 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
 
   // define and fill cut set for event cut
   AliRsnCutSet* eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
+  eventCuts->AddCut(cutEventUtils);
   eventCuts->AddCut(cutVertex);
-  eventCuts->SetCutScheme(Form("%s", cutVertex->GetName()));
+  eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
   task->SetEventCuts(eventCuts);
 
   // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
