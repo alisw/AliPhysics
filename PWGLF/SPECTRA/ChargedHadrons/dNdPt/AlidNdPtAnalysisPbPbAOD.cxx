@@ -88,6 +88,7 @@ fPcosEPCent(0),
 fPsinEPCent(0),
 fPcosPhiCent(0),
 fPsinPhiCent(0),
+fEPContributionDifference(0),
 // cross check for event plane determination
 fDeltaPhiCent(0),
 fDeltaPhiSymCent(0),
@@ -96,6 +97,13 @@ fMCGenTracksMult(0),
 fCrossCheckFilterBitPhiCent(0),
 fTriggerStringsFired(0),
 fTriggerStringComplete(0),
+//vertex histograms
+fVertexZ(0),
+fVertexZSPD(0),
+fVertexZTPC(0),
+fDeltaVertexZGlobalSPD(0),
+fDeltaVertexZGlobalTPC(0),
+fVertexContributors(0),
 //global
 fIsMonteCarlo(0),
 fEPselector("Q"),
@@ -103,6 +111,7 @@ fCentEstimator("V0M"),
 fDisabledTriggerString(""),
 // event cut variables
 fCutMaxZVertex(10.),  
+fVertexMinContributors(1),
 // track kinematic cut variables
 fCutPtMin(0.15),
 fCutPtMax(200.),
@@ -110,6 +119,7 @@ fCutEtaMin(-0.8),
 fCutEtaMax(0.8),    
 // track quality cut variables
 fFilterBit(AliAODTrack::kTrkGlobal),
+fHybridTracking(kFALSE),
 fUseRelativeCuts(kFALSE),
 fCutRequireTPCRefit(kTRUE),
 fCutRequireITSRefit(kTRUE),
@@ -389,9 +399,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   fEventStatistics = new TH1F("fEventStatistics","fEventStatistics",10,0,10);
   fEventStatistics->GetYaxis()->SetTitle("number of events");
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   fEventStatistics->SetBit(TH1::kCanRebin);
-#endif
+  #endif
   
   fEventStatisticsCentrality = new TH1F("fEventStatisticsCentrality","fEventStatisticsCentrality",fCentralityNbins-1, fBinsCentrality);
   fEventStatisticsCentrality->GetYaxis()->SetTitle("number of events");
@@ -607,9 +617,9 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   fCutSettings = new TH1F("fCutSettings","fCutSettings",100,0,10);
   fCutSettings->GetYaxis()->SetTitle("cut value");
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   fCutSettings->SetBit(TH1::kCanRebin);
-#endif
+  #endif
   
   fEventplaneDist = new TH1F("fEventplaneDist","fEventplaneDist",200, 0, 2.*TMath::Pi());
   fEventplaneDist->GetXaxis()->SetTitle("#phi (event plane)");
@@ -684,6 +694,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPsinPhiCent->GetYaxis()->SetTitle("#LT sin 2 #phi #GT");
   fPsinPhiCent->Sumw2();
   
+  fEPContributionDifference = new TH2F("fEPContributionDifference","fEPContributionDifference",200,-1,1,200,-1,1);
+  fEPContributionDifference->GetXaxis()->SetTitle("difference Qx (own-lookup)/own");
+  fEPContributionDifference->GetYaxis()->SetTitle("difference Qy (own-lookup)/own");
+  fEPContributionDifference->Sumw2();
+  
   fDeltaPhiCent = new TH2F("fDeltaPhiCent","fDeltaPhiCent",200, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fDeltaPhiCent->GetXaxis()->SetTitle("#Delta #phi");
   fDeltaPhiCent->GetYaxis()->SetTitle("Centrality");
@@ -716,18 +731,49 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCrossCheckFilterBitPhiCent->Sumw2();
   
   fTriggerStringsFired = new TH1F("fTriggerStringsFired","fTriggerStringsFired",15,0,15);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   fTriggerStringsFired->SetBit(TH1::kCanRebin);
-#endif
+  #endif
   fTriggerStringsFired->GetYaxis()->SetTitle("number of fired triggers");
   fTriggerStringsFired->Sumw2();
   
   fTriggerStringComplete = new TH1F("fTriggerStringComplete","fTriggerStringComplete",15,0,15);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   fTriggerStringComplete->SetBit(TH1::kCanRebin);
-#endif
+  #endif
   fTriggerStringComplete->GetYaxis()->SetTitle("number of events");
   fTriggerStringComplete->Sumw2();
+  
+  fVertexZ = new TH1F("fVertexZ","fVertexZ",600, -30, 30);
+  fVertexZ->GetXaxis()->SetTitle("vtx_{z} (cm)");
+  fVertexZ->GetYaxis()->SetTitle("number of events");
+  fVertexZ->Sumw2();
+  
+  fVertexZSPD = new TH1F("fVertexZSPD","fVertexZSPD",600, -30, 30);
+  fVertexZSPD->GetXaxis()->SetTitle("vtxSPD_{z} (cm)");
+  fVertexZSPD->GetYaxis()->SetTitle("number of events");
+  fVertexZSPD->Sumw2();
+  
+  fVertexZTPC = new TH1F("fVertexZTPC","fVertexZTPC",600, -30, 30);
+  fVertexZTPC->GetXaxis()->SetTitle("vtxTPC_{z} (cm)");
+  fVertexZTPC->GetYaxis()->SetTitle("number of events");
+  fVertexZTPC->Sumw2();
+  
+  fDeltaVertexZGlobalSPD = new TH1F("fDeltaVertexZGlobalSPD","fDeltaVertexZGlobalSPD",6000, -30, 30);
+  fDeltaVertexZGlobalSPD->GetXaxis()->SetTitle("vtx_{z} - vtxSPD_{z} (cm)");
+  fDeltaVertexZGlobalSPD->GetYaxis()->SetTitle("number of events");
+  fDeltaVertexZGlobalSPD->Sumw2();
+  
+  fDeltaVertexZGlobalTPC = new TH1F("fDeltaVertexZGlobalTPC","fDeltaVertexZGlobalTPC",6000, -30, 30);
+  fDeltaVertexZGlobalTPC->GetXaxis()->SetTitle("vtx_{z} - vtxTPC_{z} (cm)");
+  fDeltaVertexZGlobalTPC->GetYaxis()->SetTitle("number of events");
+  fDeltaVertexZGlobalTPC->Sumw2();
+  
+  fVertexContributors = new TH1F("fVertexContributors","fVertexContributors",3000, 0 ,3000);
+  fVertexContributors->GetXaxis()->SetTitle("contributors to primary vertex");
+  fVertexContributors->GetYaxis()->SetTitle("number of events");
+  fVertexContributors->Sumw2();
+  
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
@@ -787,6 +833,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fPsinEPCent);
   fOutputList->Add(fPcosPhiCent);
   fOutputList->Add(fPsinPhiCent);
+  fOutputList->Add(fEPContributionDifference);
   
   fOutputList->Add(fDeltaPhiCent);
   fOutputList->Add(fDeltaPhiSymCent);
@@ -798,6 +845,13 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   fOutputList->Add(fTriggerStringsFired);
   fOutputList->Add(fTriggerStringComplete);
+  
+  fOutputList->Add(fVertexZ);
+  fOutputList->Add(fVertexZSPD);
+  fOutputList->Add(fVertexZTPC);
+  fOutputList->Add(fDeltaVertexZGlobalSPD);
+  fOutputList->Add(fDeltaVertexZGlobalTPC);
+  fOutputList->Add(fVertexContributors);
   
   StoreCutSettingsToHistogram();
   
@@ -850,6 +904,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   Double_t dMCEventZv = -100;
   Double_t dEventZv = -100;
+  Double_t dEventZvSPD = -100;
+  Double_t dEventZvTPC = -100;
   Int_t iAcceptedMultiplicity = 0;
   Double_t dEventplaneAngle = -10;
   Double_t dEventplaneAngleCorrected = -10; // event plane angle, where tracks contributing to this angle have been subtracted
@@ -969,6 +1025,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	}
   }
   
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliEPSelectionTask *eptask = 0x0;
+  eptask = dynamic_cast<AliEPSelectionTask *>(man->GetTask("EventplaneSelection"));
+  
   if( (GetEventplaneSelector().CompareTo("Q") == 0) && !epQvector )
   {
 	AliWarning("ERROR: epQvector not available \n");
@@ -997,7 +1057,6 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	for(Int_t iMCtrack = 0; iMCtrack < stack->GetEntriesFast(); iMCtrack++)
 	{
 	  mcPart =(AliAODMCParticle*)stack->At(iMCtrack);
-	  
 	  // check for charge
 	  if( !(IsMCTrackAccepted(mcPart)) ) continue;
 	  
@@ -1068,7 +1127,18 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   //
   
   dEventZv = eventAOD->GetPrimaryVertex()->GetZ();
+  dEventZvSPD = eventAOD->GetPrimaryVertexSPD()->GetZ();
+  dEventZvTPC = eventAOD->GetPrimaryVertexTPC()->GetZ();
+  
+  fVertexZ->Fill(dEventZv);
+  fVertexZSPD->Fill(dEventZvSPD);
+  fVertexZTPC->Fill(dEventZvTPC);
+  fDeltaVertexZGlobalSPD->Fill(dEventZv - dEventZvSPD);
+  fDeltaVertexZGlobalTPC->Fill(dEventZv - dEventZvTPC);
+  fVertexContributors->Fill(eventAOD->GetPrimaryVertex()->GetNContributors());
+  
   if( TMath::Abs(dEventZv) > GetCutMaxZVertex() ) return;
+  if( eventAOD->GetPrimaryVertex()->GetNContributors() < GetNContributorsVertex() ) return;
   
   // count all events, which are within zv distribution
   fAllEventStatisticsCentrality->Fill(dCentrality/*, nTriggerFired*/);
@@ -1131,12 +1201,33 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  
 	  dX = epQvector->X();
 	  dY = epQvector->Y();
-	  if( (dX>-1000) && (dY>-1000) ) // only subtract, if not default!
+	  
+	  if(eptask)
+	  {
+		Double_t rms[2] ={1.,1.};
+		eptask->Recenter(1, rms);
+		
+		Double_t dContribX = (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+		Double_t dContribY = (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+		// 		dX -= (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+		//         dY -= (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+		dX -= dContribX;
+		dY -= dContribY;
+		iSubtractedTracks++;
+		if(track->GetID()>0) 
+		{
+		  if( (dContribX != 0) && (dContribY != 0) ) {
+			fEPContributionDifference->Fill( (dContribX-ep->GetQContributionX(track))/dContribX, (dContribY-ep->GetQContributionY(track))/dContribY);
+		  }
+		}
+	  }
+	  else if( (dX>-1000) && (dY>-1000) && (track->GetID()>0) ) // only subtract, if not default and track Id > 0 to avoid crash
 	  {
 		dX -= ep->GetQContributionX(track);
 		dY -= ep->GetQContributionY(track);
 		iSubtractedTracks++;
 	  }
+	  
 	  TVector2 epCorrected(dX, dY);
 	  dEventplaneAngleCorrected = epCorrected.Phi()/2.; // see AlEPSelectionTask.cxx:354
 	}
@@ -1144,7 +1235,6 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	{
 	  dEventplaneAngleCorrected = dEventplaneAngle; 
 	}
-	
 	Double_t dFillEPCorrectionCheck[] = {dEventplaneAngle, dEventplaneAngleCorrected, dCentrality};
 	fCorrelEventplaneDefaultCorrected->Fill(dFillEPCorrectionCheck);
 	
@@ -1273,7 +1363,6 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  fChargeOverPtRuns->Fill(track->Charge()/track->Pt(), (Double_t)eventAOD->GetRunNumber());
 	}
   } // end track loop
-  
   Int_t iContributorsQVector = ep->GetQContributionXArray()->GetSize();
   if(iContributorsQVector) fEventplaneSubtractedPercentage->Fill((Double_t)iSubtractedTracks/(Double_t)iContributorsQVector, dCentrality);
   
@@ -1490,14 +1579,20 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   fCrossCheckPtresLength->Fill(dLengthInTPC, dSigmaOneOverPt*tr->Pt(), dCentrality);
   fCrossCheckPtresRows->Fill(dCrossedRowsTPC, dSigmaOneOverPt*tr->Pt(), dCentrality);
   
-  
-  // first cut on length
-  
-  if( DoCutLengthInTPCPtDependent() && ( dLengthInTPC < GetPrefactorLengthInTPCPtDependent()*(130-5*TMath::Abs(1./tr->Pt())) )  ) { return kFALSE; }
-  
   // filter bit 5
   //   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { return kFALSE; }
-  if(!(tr->TestFilterBit(GetFilterBit())) ) { return kFALSE; } 
+  
+  //   if(!(tr->TestFilterBit(GetFilterBit())) ) { return kFALSE; } 
+  
+  if( RequireHybridTracking() && !(tr->IsHybridGlobalConstrainedGlobal()) ) { return kFALSE; }
+  if( !(RequireHybridTracking()) && !(tr->TestFilterBit(GetFilterBit())) ) { return kFALSE; } 
+  
+  
+  
+  // cut on length
+  if( DoCutLengthInTPCPtDependent() && ( dLengthInTPC < GetPrefactorLengthInTPCPtDependent()*(130-5*TMath::Abs(1./tr->Pt())) )  ) { return kFALSE; }
+  
+  
   
   // filter bit 4
   //   if(!(tr->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) ) { return kFALSE; }
@@ -1512,38 +1607,27 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   if (IsITSRefitRequired() && !(tr->GetStatus() & AliVTrack::kITSrefit)) { return kFALSE; } // no ITS refit
 	
-	// do a relativ cut in Nclusters, both time at 80% of mean
-	//   if(fIsMonteCarlo) 
-	//   { 
-	  //     if(dNClustersTPC < 88) { return kFALSE; }
-	  //   }
-	  //   else
-	  //   {
-		//     if(dNClustersTPC < 76) { return kFALSE; }
-		//   }
-		
-		// fill histogram for pT resolution correction
-		Double_t dPtResolutionHisto[3] = { dOneOverPt, dSigmaOneOverPt, dCentrality };
-		fPtResptCent->Fill(dPtResolutionHisto);
-		
-		// fill debug histogram for all accepted tracks
-		FillDebugHisto(dCheck, dKine, dCentrality, kTRUE);
-		
-		Double_t dFilterBitPhiCent[3] = {-10, -10, -10};
-		if(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) dFilterBitPhiCent[0] = 0;
-		else if(tr->TestFilterBit(AliAODTrack::kTrkGlobalSDD)) dFilterBitPhiCent[0] = 1;
-		
-		dFilterBitPhiCent[1] = tr->Phi();
-		dFilterBitPhiCent[2] = dCentrality;
-		fCrossCheckFilterBitPhiCent->Fill(dFilterBitPhiCent);
-		
-		// delete pointers
-		
-		return kTRUE;
+	// fill histogram for pT resolution correction
+	Double_t dPtResolutionHisto[3] = { dOneOverPt, dSigmaOneOverPt, dCentrality };
+	fPtResptCent->Fill(dPtResolutionHisto);
+	
+	// fill debug histogram for all accepted tracks
+	FillDebugHisto(dCheck, dKine, dCentrality, kTRUE);
+	
+	Double_t dFilterBitPhiCent[3] = {-10, -10, -10};
+	if(tr->TestFilterBit(AliAODTrack::kTrkGlobal)) dFilterBitPhiCent[0] = 0;
+	else if(tr->TestFilterBit(AliAODTrack::kTrkGlobalSDD)) dFilterBitPhiCent[0] = 1;
+	
+	dFilterBitPhiCent[1] = tr->Phi();
+	dFilterBitPhiCent[2] = dCentrality;
+	fCrossCheckFilterBitPhiCent->Fill(dFilterBitPhiCent);
+	
+	// delete pointers
+	
+	return kTRUE;
 }
 
-Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_t *dKineVar, Double_t dCentrality, Bool_t bIsAccepted)
-{
+Bool_t AlidNdPtAnalysisPbPbAOD::FillDebugHisto(Double_t *dCrossCheckVar, Double_t *dKineVar, Double_t dCentrality, Bool_t bIsAccepted){
   if(bIsAccepted)
   {
 	if(AreCrossCheckCorrelationHistosEnabled())
@@ -1598,6 +1682,7 @@ void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
   if(fUseRelativeCuts) fCutSettings->Fill("fUseRelativeCuts", 1);
   if(fCutRequireTPCRefit) fCutSettings->Fill("fCutRequireTPCRefit", 1);
   if(fCutRequireITSRefit) fCutSettings->Fill("fCutRequireITSRefit", 1);
+  fCutSettings->Fill("RequireHybridTracking", fHybridTracking);
   
   fCutSettings->Fill("fCutMinNumberOfClusters", fCutMinNumberOfClusters);
   fCutSettings->Fill("fCutPercMinNumberOfClusters", fCutPercMinNumberOfClusters);
@@ -1620,6 +1705,8 @@ void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
   if(fCutLengthInTPCPtDependent) fCutSettings->Fill("fCutLengthInTPCPtDependent", 1);
   fCutSettings->Fill("fPrefactorLengthInTPCPtDependent", fPrefactorLengthInTPCPtDependent);
   fCutSettings->Fill(Form("EP selector %s", fEPselector.Data()), 1);
+  
+  if(RequireHybridTracking()) fCutSettings->Fill("RequireHybridTracking", 1);
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])
