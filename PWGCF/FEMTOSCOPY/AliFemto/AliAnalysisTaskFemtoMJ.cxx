@@ -297,7 +297,7 @@ void AliAnalysisTaskFemtoMJ::CreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
 {
-  cout<<"AliAnalysisTaskFemtoMJ::Exec()"<<endl;
+  //cout<<"AliAnalysisTaskFemtoMJ::Exec()"<<endl;
   // Task making a femtoscopic analysis.
   if (fOfflineTriggerMask) {
     Bool_t isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fOfflineTriggerMask);
@@ -308,7 +308,7 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     }
   }
  
-  cout<<"AliAnalysisTaskFemtoMJ:: retreiving MCEvent()"<<endl;//!!!
+  //cout<<"AliAnalysisTaskFemtoMJ:: retreiving MCEvent()"<<endl;//!!!
 
       
 
@@ -331,14 +331,13 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     AliMCEventHandler *mctruth = (AliMCEventHandler *)
                                     ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     
-    cout<<"mctruth: "<<mctruth<<endl;
+    
     if(!mctruth)
       {
 	Printf("ERROR: Could not retrieve MC handler");//!!!
       }
 
     AliMCEvent* mcEvent = mctruth->MCEvent();
-    cout<<"mcEvent: "<<mcEvent<<endl;
     if (!mcEvent) {//!!!
       Printf("ERROR: Could not retrieve MC event");//!!!
       return;//!!!
@@ -348,15 +347,15 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
 
       AliGenHijingEventHeader *hdh = 0;
 
-    cout<<"AliAnalysisTaskFemtoMJ:: Getting MC Event and stack" <<endl;//!!!
-    cout<<"AliAnalysisTaskFemtoMJ:: stack: "<<fStack<<" MCevent: "<<mcEvent<<" handler: "<<mctruth<<endl;  //!!!
+    
+    
 
 
 
 
     if (mctruth) {
     //fStack = mctruth->MCEvent()->Stack(); //tak bylo//!!!
-      cout << "AliAnalysisTaskFemtoMJ:: Inside >mctruth<" <<endl;  //!!!    
+      
 
       AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader *>(mctruth->MCEvent()->GenEventHeader());
 
@@ -378,7 +377,6 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     if (fkinec) {
       // Process the event with Kine information only
       fkinec->SetStackSource(fStack);
-      cout<<"AliFemtoEventReaderKinematicsChain::fkinec: "<<fkinec<<", fStack: "<<fStack<<endl;
       fManager->ProcessEvent();
     }
 
