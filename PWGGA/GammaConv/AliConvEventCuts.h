@@ -267,7 +267,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TH1F 						*fHistoEventCuts;						// bookkeeping for event selection cuts
 		TH1F 						*hCentrality;							// centrality distribution for selected events
 		TH1D						*hCentralityNotFlat;					// centrality distribution loaded for cent. flattening
-		TH2F 						*hCentralityVsNumberOfPrimaryTracks;	// centrality distribution for selected events
+		//TH2F 						*hCentralityVsNumberOfPrimaryTracks;	// centrality distribution for selected events
 		TH1F 						*hVertexZ; 								// vertex z distribution for selected events
 		TH1F 						*hTriggerClass; 						// fired offline trigger class
 		TH1F 						*hTriggerClassSelected;					// selected fired offline trigger class
@@ -284,6 +284,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TString 					fSpecialTriggerName; 					// Name of the Special Triggers
 		TString 					fSpecialSubTriggerName; 				// Name of the Special Triggers
 		Int_t 						fNSpecialSubTriggerOptions;
+		TH2F						*hPileUpSPDClusterTracklet;				// SPD tracklets vs SPD clusters for pileup-correction
 		// trigger information
 		TString 					fV0ReaderName;							// Name of V0Reader
 		AliVCaloTrigger				*fCaloTriggers;							//! calo triggers
@@ -301,7 +302,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t						fRejectTriggerOverlap;					// enable trigger overlap rejections
 	private:
 
-		ClassDef(AliConvEventCuts,10)
+		ClassDef(AliConvEventCuts,11)
 };
 
 

@@ -112,7 +112,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fHistoEventCuts(NULL),
 	hCentrality(NULL),
 	hCentralityNotFlat(NULL),
-	hCentralityVsNumberOfPrimaryTracks(NULL),
+	//hCentralityVsNumberOfPrimaryTracks(NULL),
 	hVertexZ(NULL),
 	hTriggerClass(NULL),
 	hTriggerClassSelected(NULL),
@@ -129,6 +129,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fSpecialTriggerName(""),
 	fSpecialSubTriggerName(""),
 	fNSpecialSubTriggerOptions(0),
+	hPileUpSPDClusterTracklet(NULL),
 	fV0ReaderName(""),
 	fCaloTriggers(NULL),
 	fTriggerPatchInfo(NULL),
@@ -198,7 +199,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fHistoEventCuts(NULL),
 	hCentrality(ref.hCentrality),
 	hCentralityNotFlat(ref.hCentralityNotFlat),
-	hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
+	//hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
 	hVertexZ(ref.hVertexZ),
 	hTriggerClass(NULL),
 	hTriggerClassSelected(NULL),
@@ -215,6 +216,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fSpecialTriggerName(ref.fSpecialTriggerName),
 	fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
 	fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
+	hPileUpSPDClusterTracklet(NULL),
 	fV0ReaderName(ref.fV0ReaderName),
    	fCaloTriggers(NULL),
 	fTriggerPatchInfo(NULL),
@@ -298,10 +300,13 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 		fHistograms->Add(hReweightMCHistK0s);
 	}
 
+	hPileUpSPDClusterTracklet = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",200,0,200,1000,0,1000);
+	fHistograms->Add(hPileUpSPDClusterTracklet);
+
 	hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
 	fHistograms->Add(hCentrality);
 		
-	hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
+	//hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
 	//fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
 
 	hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
@@ -318,9 +323,6 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 		fHistoEventCuts->GetXaxis()->SetBinLabel(6,"centrsel");
 		fHistoEventCuts->GetXaxis()->SetBinLabel(7,"out");
 		fHistograms->Add(fHistoEventCuts);
-
-		hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
-		fHistograms->Add(hVertexZ);
 
 		hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
 		hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
@@ -509,10 +511,17 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
    if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
    if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
    if(hVertexZ)hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
-   if(hCentralityVsNumberOfPrimaryTracks)
-      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
-                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+//   if(hCentralityVsNumberOfPrimaryTracks)
+//      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
+//                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+//                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+
+   // SPD clusters vs tracklets to check for pileup/background
+   Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
+   Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
+   Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+   if(hPileUpSPDClusterTracklet) hPileUpSPDClusterTracklet->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+
    fEventQuality = 0;
    return kTRUE;
 }
@@ -2497,10 +2506,15 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
 
 	if(hVertexZ)hVertexZ->Fill(InputEvent->GetPrimaryVertex()->GetZ());
-	if(hCentralityVsNumberOfPrimaryTracks)
-		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
-												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-												->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());     
+//	if(hCentralityVsNumberOfPrimaryTracks)
+//		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
+//												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+//												->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+
+	Int_t nClustersLayer0 = InputEvent->GetNumberOfITSClusters(0);
+	Int_t nClustersLayer1 = InputEvent->GetNumberOfITSClusters(1);
+	Int_t nTracklets      = InputEvent->GetMultiplicity()->GetNumberOfTracklets();
+	if(hPileUpSPDClusterTracklet) hPileUpSPDClusterTracklet->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
 	return 0;
 }
