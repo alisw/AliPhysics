@@ -101,8 +101,8 @@ Double_t binsPhi[] = {
   task->SetBinsZv(nBinsZv, binsZv);
     
   task->SetFilterBit(iFilterBit);
-  task->SetRequireHybridTracking();
-  task->SetNContributorsVertex(1);
+//   task->SetRequireHybridTracking();
+//   task->SetNContributorsVertex(1);
   
   ::Info("AddTask_dNdPt_PbPbAOD",Form("CrossedRowCut set to %.0f", task->GetCutMinNCrossedRowsTPC()));
   ::Info("AddTask_dNdPt_PbPbAOD",Form("FilterBit set to %d", task->GetFilterBit()));
