@@ -705,7 +705,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         Int_t ilabel = track->GetLabel();
         Int_t pdg = -999;
         Double_t pid_ele = 0.0;
-        if(ilabel>0)
+        if(ilabel>0 && fMCarray)
           {
 	   fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
 	   Int_t pdg = fMCparticle->GetPdgCode();
