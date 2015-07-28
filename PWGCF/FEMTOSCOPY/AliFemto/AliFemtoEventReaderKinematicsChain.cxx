@@ -241,8 +241,11 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       //muon
       else if(pdgcode==13 || pdgcode==-13)
         kinepid[1]=1000;
-      else
+      else {
+	delete trackCopy; 
 	continue;
+      }
+
       trackCopy->SetPidProbElectron(kinepid[0]);
       trackCopy->SetPidProbMuon(kinepid[1]);
       trackCopy->SetPidProbPion(kinepid[2]);
@@ -299,6 +302,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
 	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	//cout<<"Track added: "<<i<<endl;
+
+	
 		
     }
   
