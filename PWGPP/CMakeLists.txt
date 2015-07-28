@@ -316,6 +316,10 @@ install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
               DESTINATION PWGPP/TRD)
 install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
 install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
+install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C 
+	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C 	   
+	      ZDC/macros/MakeTrendZDC.C	         
+	      DESTINATION PWGPP/ZDC/macros)
 install(FILES AD/AddTaskADQA.C 
 	      AD/AddTaskADPilot.C
 	      DESTINATION PWGPP/AD)
