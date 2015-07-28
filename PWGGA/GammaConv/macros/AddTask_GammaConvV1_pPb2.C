@@ -6,7 +6,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 								Bool_t 		doWeightingPart 				= kFALSE,  							// enable Weighting
 								TString 	generatorName 				= "DPMJET",							// generator Name	
 								TString 	cutnumberAODBranch 			= "800000006008400000001500000",	// cutnumber for AOD branch
-								Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								Bool_t		enablePlotVsCentrality		= kFALSE
                            ) {
  
 	// ================= Load Librariers =================================
@@ -243,6 +244,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	if (trainConfig ==13 || trainConfig ==14){
 	        task->SetDoTHnSparse(0);
 	}
+	task->SetDoPlotVsCentrality(enablePlotVsCentrality);
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =

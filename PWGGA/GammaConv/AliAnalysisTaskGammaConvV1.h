@@ -39,6 +39,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
 		void SetDoChargedPrimary(Bool_t flag){fDoChargedPrimary = flag;}
+		void SetDoPlotVsCentrality(Bool_t flag){fDoPlotVsCentrality = flag;}
 		void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		void SetDoCentFlattening(Int_t flag){fDoCentralityFlat = flag;}
 		void ProcessPhotonCandidates();
@@ -272,6 +273,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		Int_t 								fDoMesonQA;											//
 		Int_t 								fDoPhotonQA;										//
 		Bool_t 								fDoChargedPrimary;									//
+		Bool_t 								fDoPlotVsCentrality;
 		Bool_t 								fIsFromMBHeader;									//
 		Bool_t 								fIsMC;												//
 		Bool_t                              fDoTHnSparse;                       				// flag for using THnSparses for background estimation
@@ -282,7 +284,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-		ClassDef(AliAnalysisTaskGammaConvV1, 21);
+		ClassDef(AliAnalysisTaskGammaConvV1, 22);
 };
 
 #endif

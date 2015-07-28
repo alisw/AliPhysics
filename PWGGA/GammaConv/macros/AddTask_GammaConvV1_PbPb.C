@@ -1005,11 +1005,11 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "00216609247602008260400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
 		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "00216609247602008260400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
 	} else if ( trainConfig == 146){ // psi pair 0.2 2D
-		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "00200009247602008280400000"; mesonCutArray[ 0] = "0152501500000000"; // 0-5%
-		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "00200009247602008280400000"; mesonCutArray[ 1] = "0152501500000000"; // 5-10%
-		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "00200009247602008280400000"; mesonCutArray[ 2] = "0152501500000000"; // 0-10%
-		eventCutArray[ 3] = "5243601"; photonCutArray[ 3] = "00200009247602008280400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
-		eventCutArray[ 4] = "5253601"; photonCutArray[ 4] = "00200009247602008280400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00200009247602008280400000"; mesonCutArray[ 0] = "0152501500000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "00200009247602008280400000"; mesonCutArray[ 1] = "0152501500000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "00200009247602008280400000"; mesonCutArray[ 2] = "0152501500000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "00200009247602008280400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "00200009247602008280400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
 	} else if ( trainConfig == 147){ // psi pair 0.2 2D - added signal
 		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "00200009247602008280400000"; mesonCutArray[ 0] = "0152501500000000"; // 0-5%
 		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "00200009247602008280400000"; mesonCutArray[ 1] = "0152501500000000"; // 5-10%
@@ -1017,11 +1017,11 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 3] = "5240002"; photonCutArray[ 3] = "00200009247602008280400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
 		eventCutArray[ 4] = "5250002"; photonCutArray[ 4] = "00200009247602008280400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
 	} else if ( trainConfig == 148){ // psi pair 0.2 2D with phi cut 
-		eventCutArray[ 0] = "6013301"; photonCutArray[ 0] = "00216609247602008280400000"; mesonCutArray[ 0] = "0152501500000000"; // 0-5%
-		eventCutArray[ 1] = "6123301"; photonCutArray[ 1] = "00216609247602008280400000"; mesonCutArray[ 1] = "0152501500000000"; // 5-10%
-		eventCutArray[ 2] = "5013301"; photonCutArray[ 2] = "00216609247602008280400000"; mesonCutArray[ 2] = "0152501500000000"; // 0-10%
-		eventCutArray[ 3] = "5243601"; photonCutArray[ 3] = "00216609247602008280400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
-		eventCutArray[ 4] = "5253601"; photonCutArray[ 4] = "00216609247602008280400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
+		eventCutArray[ 0] = "6010001"; photonCutArray[ 0] = "00216609247602008280400000"; mesonCutArray[ 0] = "0152501500000000"; // 0-5%
+		eventCutArray[ 1] = "6120001"; photonCutArray[ 1] = "00216609247602008280400000"; mesonCutArray[ 1] = "0152501500000000"; // 5-10%
+		eventCutArray[ 2] = "5010001"; photonCutArray[ 2] = "00216609247602008280400000"; mesonCutArray[ 2] = "0152501500000000"; // 0-10%
+		eventCutArray[ 3] = "5240001"; photonCutArray[ 3] = "00216609247602008280400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
+		eventCutArray[ 4] = "5250001"; photonCutArray[ 4] = "00216609247602008280400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
 	} else if ( trainConfig == 149){ // psi pair 0.2 2D with phi cut - added signal
 		eventCutArray[ 0] = "6010002"; photonCutArray[ 0] = "00216609247602008280400000"; mesonCutArray[ 0] = "0152501500000000"; // 0-5%
 		eventCutArray[ 1] = "6120002"; photonCutArray[ 1] = "00216609247602008280400000"; mesonCutArray[ 1] = "0152501500000000"; // 5-10%
@@ -1623,6 +1623,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoChargedPrimary(enableChargedPrimary);
+	task->SetDoPlotVsCentrality(kTRUE);
 	task->SetDoTHnSparse(enableUseTHnSparse);
 	task->SetDoCentFlattening(doFlattening);
 		

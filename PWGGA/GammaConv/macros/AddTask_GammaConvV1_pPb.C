@@ -6,7 +6,8 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 								Int_t 		doWeightingPart 			= 0, 			 					// enable Weighting
 								TString 	generatorName 				= "DPMJET",							// generator Name
                                 TString 	cutnumberAODBranch 			= "800000006008400000150000000", 	// cutnumber for AOD branch
-								Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								Bool_t		enablePlotVsCentrality		= kFALSE
                            ) {
 
 	// ================= Load Librariers =================================
@@ -1315,6 +1316,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+	task->SetDoPlotVsCentrality(enablePlotVsCentrality);
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =
