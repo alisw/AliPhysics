@@ -450,8 +450,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  {
 	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
-                if (allData[2*in+26][iHit] > meanQT1[in]-100 &&  
-		    allData[2*in+26][iHit] < meanQT1[in]+100 ) {
+                if (allData[2*in+26][iHit] > meanQT1[in]-500 &&  
+		    allData[2*in+26][iHit] < meanQT1[in]+500 ) {
 		    chargeQT1[in]=allData[2*in+26][0];
 		    break;
 		}
@@ -475,8 +475,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  {
      	    for (Int_t iHit=0; iHit<5; iHit++) 
 	      {
-		if (allData[2*in+58][iHit] > meanQT1[in]-100 &&  
-		    allData[2*in+58][iHit] < meanQT1[in]+100 )
+		if (allData[2*in+58][iHit] > meanQT1[in]-500 &&  
+		    allData[2*in+58][iHit] < meanQT1[in]+500 )
 		  {
 		    chargeQT1[in]=allData[2*in+58][0];
 		    break;
