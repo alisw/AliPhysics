@@ -25,6 +25,7 @@
 // andreas.morsch@cern.ch
 //
 
+#include "AliFemtoPARJGenPythia.h"
 #include <TMath.h>
 #include <TClonesArray.h>
 #include <TDatabasePDG.h>
@@ -35,7 +36,6 @@
 #include <TTree.h>
 #include "AliConst.h"
 #include "AliDecayerPythia.h"
-#include "AliFemtoPARJGenPythia.h"
 #include "AliFastGlauber.h"
 #include "AliHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -625,16 +625,26 @@ void AliFemtoPARJGenPythia::Init()
 
     if(fUseFemtoPARJ)
       {
-	fPythia->SetPARJ(1,fPARJ_1);
-	fPythia->SetPARJ(2,fPARJ_2);
-	fPythia->SetPARJ(3,fPARJ_3);
-	fPythia->SetPARJ(4,fPARJ_4);
-	fPythia->SetPARJ(5,fPARJ_5);
-	fPythia->SetPARJ(6,fPARJ_6);
-	fPythia->SetPARJ(7,fPARJ_7);
-	fPythia->SetPARJ(8,fPARJ_8);
-	fPythia->SetPARJ(9,fPARJ_9);
-	fPythia->SetPARJ(10,fPARJ_10);
+	if(fPARJ_1 != -999)
+	  fPythia->SetPARJ(1,fPARJ_1);
+	if(fPARJ_2 != -999)
+	  fPythia->SetPARJ(2,fPARJ_2);
+	if(fPARJ_3 != -999)
+	  fPythia->SetPARJ(3,fPARJ_3);
+	if(fPARJ_4 != -999)
+	  fPythia->SetPARJ(4,fPARJ_4);
+	if(fPARJ_5 != -999)
+	  fPythia->SetPARJ(5,fPARJ_5);
+	if(fPARJ_6 != -999)
+	  fPythia->SetPARJ(6,fPARJ_6);
+	if(fPARJ_7 != -999)
+	  fPythia->SetPARJ(7,fPARJ_7);
+	if(fPARJ_8 != -999)
+	  fPythia->SetPARJ(8,fPARJ_8);
+	if(fPARJ_9 != -999)
+	  fPythia->SetPARJ(9,fPARJ_9);
+	if(fPARJ_10 != -999)
+	  fPythia->SetPARJ(10,fPARJ_10);
       }
 
     if (fQuench == 1) {
