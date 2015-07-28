@@ -80,13 +80,13 @@ public:
     else return 999.;
   }
   
-  Int_t GetZDCTDCChannel(int ich) {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[ich]; else return -1;}
-  Int_t GetZNATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[0]; else return -1;}
-  Int_t GetZPATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[1]; else return -1;}
-  Int_t GetZEM1TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[2]; else return -1;}
-  Int_t GetZEM2TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[3]; else return -1;}
-  Int_t GetZNCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[4]; else return -1;}
-  Int_t GetZPCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[5]; else return -1;}
+  Int_t GetZNATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[4]; else return 12;}
+  Int_t GetZPATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[5]; else return 13;}
+  Int_t GetZEM1TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[0]; else return 8;}
+  Int_t GetZEM2TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[1]; else return 9;}
+  Int_t GetZNCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[2]; else return 10;}
+  Int_t GetZPCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[3]; else return 11;}
+  Int_t GetL0TDCChannel()  {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[7]; else return 15;}
 
   Float_t GetZNTDCSum(Int_t ihit) const;
   Float_t GetZNTDCDiff(Int_t ihit) const;
@@ -155,7 +155,7 @@ public:
   void SetZEM1TDChit(Bool_t isf) {fZEM1TDChit = isf;} 
   void SetZEM2TDChit(Bool_t isf) {fZEM2TDChit = isf;} 
   
-  void SetZDCTDCChannel(int ich, int ival) {if(ich<6) fZDCTDCChannels[ich] = ival;}
+  void SetZDCTDCChannel(int ich, int ival) {if(ich<7) fZDCTDCChannels[ich] = ival;}
 
   void    Reset();
   void    Print(const Option_t *opt=0) const;
@@ -196,9 +196,9 @@ private:
   Bool_t       fZEM1TDChit;   // true if ZEM1 TDC has at least 1 hit
   Bool_t       fZEM2TDChit;   // true if ZEM2 TDC has at least 1 hit
   //
-  Int_t        fZDCTDCChannels[6];
+  Int_t        fZDCTDCChannels[7];
   
-  ClassDef(AliESDZDC,19)
+  ClassDef(AliESDZDC,20)
 };
 
 #endif
