@@ -1682,7 +1682,7 @@ void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
   if(fUseRelativeCuts) fCutSettings->Fill("fUseRelativeCuts", 1);
   if(fCutRequireTPCRefit) fCutSettings->Fill("fCutRequireTPCRefit", 1);
   if(fCutRequireITSRefit) fCutSettings->Fill("fCutRequireITSRefit", 1);
-  fCutSettings->Fill("RequireHybridTracking", fHybridTracking);
+  if(fHybridTracking) fCutSettings->Fill("RequireHybridTracking", 1);
   
   fCutSettings->Fill("fCutMinNumberOfClusters", fCutMinNumberOfClusters);
   fCutSettings->Fill("fCutPercMinNumberOfClusters", fCutPercMinNumberOfClusters);
@@ -1706,7 +1706,7 @@ void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
   fCutSettings->Fill("fPrefactorLengthInTPCPtDependent", fPrefactorLengthInTPCPtDependent);
   fCutSettings->Fill(Form("EP selector %s", fEPselector.Data()), 1);
   
-  if(fHybridTracking) fCutSettings->Fill("RequireHybridTracking", 1);
+  
   
   fCutSettings->Fill("NContributorsVertex", fVertexMinContributors);
 }
