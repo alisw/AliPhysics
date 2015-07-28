@@ -295,11 +295,19 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    cutFail3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail%stpcM%i", chrgs[ichg], imult),PionMass);
 					    if(ichg==9) dtc3etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
 					    if(ichg==0||ichg==3||ichg==6||ichg==10) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
-					    if(ichg==1||ichg==4||ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+					    //if(ichg==1||ichg==4||ichg==7||ichg==11) dtc2etaphitpc[aniter]->AddCutMonitor(cutPass3YPtetaphitpc[aniter], cutFail3YPtetaphitpc[aniter]);
+
+					                              
+					    // cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass%stpcM%i", chrgs[ichg], imult),0);
+					    // cutFail1PIDetaphitpc[aniter]  = new AliFemtoCutMonitorParticlePID(Form("cutFail%stpcM%i", chrgs[ichg], imult),0);
+					    // if(ichg==0||ichg==3||ichg==6||ichg==10) dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
+
+
 					  }
 					 
 					//******** Two - track cuts ************
 					sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
+
 					//sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
 					sqpcetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kKine);
 					
