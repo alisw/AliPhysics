@@ -86,7 +86,7 @@ public:
   Int_t GetZEM2TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[1]; else return 9;}
   Int_t GetZNCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[2]; else return 10;}
   Int_t GetZPCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[3]; else return 11;}
-  Int_t GetL0TDCChannel()  {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[7]; else return 15;}
+  Int_t GetL0TDCChannel()  {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[6]; else return 15;}
 
   Float_t GetZNTDCSum(Int_t ihit) const;
   Float_t GetZNTDCDiff(Int_t ihit) const;
