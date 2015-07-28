@@ -522,7 +522,8 @@ void AliEMCALTenderSupply::ProcessEvent()
     }
 
     // init recalibration factors
-    if (needRecalib) {
+    if (needRecalib) 
+    {
       if(fUseAutomaticRecalib)
       {
         Int_t fInitRecalib = InitRecalib();
@@ -847,7 +848,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
       }
       else
       {
-        AliWarning(Form("EMCal geometry matrix for SM %d is not available!",mod));
+        AliError(Form("EMCal geometry matrix for SM %d is not available!",mod));
       }
     }
     fGeomMatrixSet = kTRUE;
@@ -1150,6 +1151,7 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
   }
   
   TH1S *rundeprecal=(TH1S*)contRF->GetObject(runRC);
+    
   if (!rundeprecal)
   {
     AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",runRC));
@@ -1173,10 +1175,21 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
     rundeprecal = (TH1S*) contRF->GetObjectByIndex(closest);  
   } 
   
-  if (fDebugLevel>0) rundeprecal->Print();
-  
   Int_t nSM = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
+  Int_t nbins = rundeprecal->GetNbinsX();
   
+  // Avoid use of Run1 param for Run2
+  if(nSM > 12 && nbins < 12288)
+  {
+    AliError(Form("Total SM is %d but T corrections available for %d channels, skip Init of T recalibration factors",nSM,nbins));
+    
+    delete contRF;
+    
+    return 2;
+  }
+  
+  if (fDebugLevel>0) rundeprecal->Print();
+
   for (Int_t ism=0; ism<nSM; ++ism) 
   {        
     for (Int_t icol=0; icol<48; ++icol) 
