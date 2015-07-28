@@ -108,7 +108,7 @@ set(SRCS
    )
 
 add_executable(hltdimserver ${SRCS})
-target_link_libraries(hltdimserver HLTbase AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Cint Thread STEERBase XMLParser Graf3d RIO Hist Core)
+target_link_libraries(hltdimserver HLTbase AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
 
 # Installation of hltdimserver
 install(TARGETS hltdimserver RUNTIME DESTINATION bin)
