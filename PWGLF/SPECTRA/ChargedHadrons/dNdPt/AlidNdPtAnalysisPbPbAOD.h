@@ -106,7 +106,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetFilterBit(Int_t b)								{ fFilterBit = b; };
     Int_t GetFilterBit()									{ return fFilterBit; }
     
-    void SetRequireHybridTracking()							{ fHybridTracking = kTRUE; }
+    void SetRequireHybridTracking(Bool_t b)					{ fHybridTracking = b; }
     Bool_t RequireHybridTracking()							{ return fHybridTracking; }
     
     void SetCutRequireTPCRefit(Bool_t *b) 					{ fCutRequireTPCRefit = b; } 
@@ -294,7 +294,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // track quality cut variables
     Int_t	    fFilterBit;
-	Bool_t		fHybridTracking; // if set true, then AliAODTrack::IsHybridGlobalConstrainedGlobal() is checked in addition to filters, default is false
+	Bool_t		fHybridTracking;
     Bool_t 	    fUseRelativeCuts;
     Bool_t  	fCutRequireTPCRefit;
     Bool_t 	    fCutRequireITSRefit;
