@@ -1223,31 +1223,27 @@ Int_t AliEMCALGeometry::IsInEMCALOrDCAL(Double_t x, Double_t y, Double_t z) cons
   } 
 }
 
+///
+/// Provides shift-rotation matrix for EMCAL from externally set matrix or 
+/// from TGeoManager
+/// \return alignment matrix for a super module number
+/// \param smod: super module number
+///
 //____________________________________________________________________________
 const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const 
-{
-  //Provides shift-rotation matrix for EMCAL
-	
+{	
   if(smod < 0 || smod > fEMCGeometry->GetNumberOfSuperModules()) 
     AliFatal(Form("Wrong supermodule index -> %d",smod));
 		
-  //If GeoManager exists, take matrixes from it
-	
-  //
-  //    if(fKey110DEG && ind>=10) {
-  //    }
-  //
-  //    if(!gGeoManager->cd(volpath.Data()))
-  //      AliFatal(Form("AliEMCALGeometry::GeoManager cannot find path %s!",volpath.Data()));
-  //
-  //    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
-  
-  //Use matrices set externally
-  if(!gGeoManager || (gGeoManager && fUseExternalMatrices)){
-    if(fkSModuleMatrix[smod]){
+  // Use matrices set externally
+  if(!gGeoManager || (gGeoManager && fUseExternalMatrices))
+  {
+    if(fkSModuleMatrix[smod])
+    {
       return fkSModuleMatrix[smod] ;
     }
-    else{
+    else
+    {
       AliInfo("Stop:");
       printf("\t Can not find EMCAL misalignment matrixes\n") ;
       printf("\t Either import TGeoManager from geometry.root or \n");
@@ -1257,37 +1253,57 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
     }  
   }//external matrices
   
-  if(gGeoManager){
-    const Int_t buffersize = 255;
-    char path[buffersize] ;
-    TString SMName;
-    Int_t tmpType = -1;
-    Int_t SMOrder = 0;
-//Get the order for SM
-    for( Int_t i = 0; i < smod+1; i++){
-      if(GetSMType(i) == tmpType) {
-        SMOrder++;
-      } else {
-        tmpType = GetSMType(i);
-        SMOrder = 1;
-      }
-    } 
-
-    if(GetSMType(smod) == kEMCAL_Standard )      SMName = "SMOD";
-    else if(GetSMType(smod) == kEMCAL_Half )     SMName = "SM10";
-    else if(GetSMType(smod) == kEMCAL_3rd )      SMName = "SM3rd";
-    else if( GetSMType(smod) == kDCAL_Standard ) SMName = "DCSM";
-    else if( GetSMType(smod) == kDCAL_Ext )      SMName = "DCEXT";
-    else AliError("Unkown SM Type!!");
-    snprintf(path,buffersize,"/ALIC_1/XEN1_1/%s_%d", SMName.Data(), SMOrder) ;
-
-    if (!gGeoManager->cd(path)){
-      AliFatal(Form("Geo manager can not find path %s!\n",path));
-    }
-    return gGeoManager->GetCurrentMatrix();
-  }
+  // If gGeoManager exists, take matrix from it
+  if(gGeoManager) return GetMatrixForSuperModuleFromGeoManager(smod);
+  
   return 0 ;
 }
+
+///
+/// Provides shift-rotation matrix for EMCAL from the TGeoManager.
+/// \return alignment matrix for a super module number
+/// \param smod: super module number
+///
+//____________________________________________________________________________
+const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModuleFromGeoManager(Int_t smod) const 
+{  
+  const Int_t buffersize = 255;
+  char  path[buffersize] ;
+  Int_t tmpType = -1;
+  Int_t smOrder = 0;
+  
+  //Get the order for SM
+  for( Int_t i = 0; i < smod+1; i++)
+  {
+    if(GetSMType(i) == tmpType) 
+    {
+      smOrder++;
+    } 
+    else 
+    {
+      tmpType = GetSMType(i);
+      smOrder = 1;
+    }
+  } 
+  
+  Int_t   smType = GetSMType(smod);
+  TString smName = "";
+  
+  if      ( smType == kEMCAL_Standard ) smName = "SMOD";
+  else if ( smType == kEMCAL_Half )     smName = "SM10";
+  else if ( smType == kEMCAL_3rd )      smName = "SM3rd";
+  else if ( smType == kDCAL_Standard )  smName = "DCSM";
+  else if ( smType == kDCAL_Ext )       smName = "DCEXT";
+  else AliError("Unkown SM Type!!");
+  
+  snprintf(path,buffersize,"/ALIC_1/XEN1_1/%s_%d", smName.Data(), smOrder) ;
+  
+  if (!gGeoManager->cd(path))
+    AliFatal(Form("Geo manager can not find path %s!\n",path));
+  
+  return gGeoManager->GetCurrentMatrix();
+}
+
 
 //__________________________________________________________________________________________________________________
 void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, const Float_t depth,
