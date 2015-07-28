@@ -1706,7 +1706,9 @@ void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
   fCutSettings->Fill("fPrefactorLengthInTPCPtDependent", fPrefactorLengthInTPCPtDependent);
   fCutSettings->Fill(Form("EP selector %s", fEPselector.Data()), 1);
   
-  if(RequireHybridTracking()) fCutSettings->Fill("RequireHybridTracking", 1);
+  if(fHybridTracking) fCutSettings->Fill("RequireHybridTracking", 1);
+  
+  fCutSettings->Fill("NContributorsVertex", fVertexMinContributors);
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])
