@@ -499,7 +499,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	nEntriesMultX = projXvsMult->GetEffectiveEntries();
 	nEntriesMultY = projYvsMult->GetEffectiveEntries();
 	
-	if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
+	if ((nEntriesMultX >300) && (nEntriesMultY>300)) {
 	  AliWarning(Form("Setting high pp Mulitplicity environment or p-A high multiplicity"));
 	  highMultppEnvironment=kTRUE;			
 	}

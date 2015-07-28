@@ -76,29 +76,29 @@ void AliMeanVertexCalibTask::UserCreateOutputObjects()
   fOutput->SetOwner();
 
   
-  TH1F* hSPDVertexX = new TH1F("hSPDVertexX","SPDVertex x; x vertex [cm]; events",200,-1,1);
+  TH1F* hSPDVertexX = new TH1F("hSPDVertexX","SPDVertex x; x vertex [cm]; events",500,-0.7,0.7);
   fOutput->Add(hSPDVertexX);
-  TH1F* hSPDVertexY = new TH1F("hSPDVertexY","SPDVertex y; y vertex [cm]; events",200,-1,1);
+  TH1F* hSPDVertexY = new TH1F("hSPDVertexY","SPDVertex y; y vertex [cm]; events",500,-0.7,0.7);
   fOutput->Add(hSPDVertexY);
   TH1F* hSPDVertexZ = new TH1F("hSPDVertexZ","SPDVertex z; z vertex [cm]; events",200,-20,20);
   fOutput->Add(hSPDVertexZ);
-  TH1F* hTRKVertexX = new TH1F("hTRKVertexX","TRKVertex x; x vertex [cm]; events",200,-1,1);
+  TH1F* hTRKVertexX = new TH1F("hTRKVertexX","TRKVertex x; x vertex [cm]; events",500,-0.7,0.7);
   fOutput->Add(hTRKVertexX);
-  TH1F* hTRKVertexY = new TH1F("hTRKVertexY","TRKVertex y; y vertex [cm]; events",200,-1,1);
+  TH1F* hTRKVertexY = new TH1F("hTRKVertexY","TRKVertex y; y vertex [cm]; events",500,-0.7,0.7);
   fOutput->Add(hTRKVertexY);
   TH1F* hTRKVertexZ = new TH1F("hTRKVertexZ","TRKVertex z; z vertex [cm]; events",200,-20,20);
   fOutput->Add(hTRKVertexZ);
 
-  TH2F *hTRKVertexXvsMult = new TH2F("hTRKVertexXvsMult", "TRKVertex X vs mult", 200, -1, 1, 300, 0, 3000);
+  TH2F *hTRKVertexXvsMult = new TH2F("hTRKVertexXvsMult", "TRKVertex X vs mult", 500,-0.7,0.7, 300, 0, 3000);
   fOutput->Add(hTRKVertexXvsMult);
   
-  TH2F *hTRKVertexYvsMult = new TH2F("hTRKVertexYvsMult", "TRKVertex Y vs mult", 200, -1, 1, 300, 0, 3000);
+  TH2F *hTRKVertexYvsMult = new TH2F("hTRKVertexYvsMult", "TRKVertex Y vs mult",500,-0.7,0.7, 300, 0, 3000);
   fOutput->Add(hTRKVertexYvsMult);
   
-  TH2F *hTRKVertexXZ = new TH2F("hTRKVertexXZ", "TRKVertex XZ corr", 200, -1, 1, 200, -20, 20);
+  TH2F *hTRKVertexXZ = new TH2F("hTRKVertexXZ", "TRKVertex XZ corr", 500,-0.7,0.7, 200, -20, 20);
   fOutput->Add(hTRKVertexXZ);
   
-  TH2F *hTRKVertexYZ = new TH2F("hTRKVertexYZ", "TRKVertex YZ corr", 200, -1, 1, 200, -20, 20);
+  TH2F *hTRKVertexYZ = new TH2F("hTRKVertexYZ", "TRKVertex YZ corr", 500,-0.7,0.7, 200, -20, 20);
   fOutput->Add(hTRKVertexYZ);
   
   TH1F* hTRKVertexXdefMult = new TH1F("hTRKVertexXdefMult","TRKVertex x Mult; x vertex [cm] 30<Mult<45; events",500,-1,1);  
@@ -111,23 +111,23 @@ void AliMeanVertexCalibTask::UserCreateOutputObjects()
   TH1F* hTRKVertexYHighMult = new TH1F("hTRKVertexYHighMult","TRKVertex y High Mult; y vertex [cm] Mult>1500; events",500,-0.5,0.5);
   fOutput->Add(hTRKVertexYHighMult);	
   
-  TH1F* hITSSAVertexX = new TH1F("hITSSAVertexX","ITSSAVertex x; x vertex [cm]; events",200,-1,1);
+  TH1F* hITSSAVertexX = new TH1F("hITSSAVertexX","ITSSAVertex x; x vertex [cm]; events",500,-0.7,0.7);
   fOutput->Add(hITSSAVertexX);
-  TH1F* hITSSAVertexY = new TH1F("hITSSAVertexY","ITSSAVertex y; y vertex [cm]; events",200,-1,1);
+  TH1F* hITSSAVertexY = new TH1F("hITSSAVertexY","ITSSAVertex y; y vertex [cm]; events",500,-0.7,0.7);
   fOutput->Add(hITSSAVertexY);
   TH1F* hITSSAVertexZ = new TH1F("hITSSAVertexZ","ITSSAVertex z; z vertex [cm]; events",200,-20,20);
   fOutput->Add(hITSSAVertexZ);
   
-  TH2F *hITSSAVertexXZ = new TH2F("hITSSAVertexXZ", "ITSSAVertex XZ corr", 200, -1, 1, 200, -20, 20);
+  TH2F *hITSSAVertexXZ = new TH2F("hITSSAVertexXZ", "ITSSAVertex XZ corr", 500,-0.7,0.7, 200, -20, 20);
   fOutput->Add(hITSSAVertexXZ);
 
-  TH2F *hITSSAVertexYZ = new TH2F("hITSSAVertexYZ", "ITSSAVertex YZ corr", 200, -1, 1, 200, -20, 20);
+  TH2F *hITSSAVertexYZ = new TH2F("hITSSAVertexYZ", "ITSSAVertex YZ corr", 500,-0.7,0.7, 200, -20, 20);
   fOutput->Add(hITSSAVertexYZ);
 
-  TH2F *hITSSAVertexXvsMult = new TH2F("hITSSAVertexXvsMult", "ITSSAVertex X vs mult", 200, -1, 1, 300, 0, 3000);
+  TH2F *hITSSAVertexXvsMult = new TH2F("hITSSAVertexXvsMult", "ITSSAVertex X vs mult", 500,-0.7,0.7, 300, 0, 3000);
   fOutput->Add(hITSSAVertexXvsMult);
   
-  TH2F *hITSSAVertexYvsMult = new TH2F("hITSSAVertexYvsMult", "ITSSAVertex Y vs mult", 200, -1, 1, 300, 0, 3000);
+  TH2F *hITSSAVertexYvsMult = new TH2F("hITSSAVertexYvsMult", "ITSSAVertex Y vs mult", 500,-0.7,0.7, 300, 0, 3000);
   fOutput->Add(hITSSAVertexYvsMult);
   
   TH1F* hITSSAVertexXdefMult = new TH1F("hITSSAVertexXdefMult","ITSSAVertex x Mult; x vertex [cm] 30<Mult<45; events",500,-1,1);  
