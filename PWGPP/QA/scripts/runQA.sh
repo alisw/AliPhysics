@@ -199,7 +199,7 @@ updateQA()
     while read inputFile; do
       echo
       echo $(date)
-      
+      echo "INFO Input file is:" $inputFile
       #first check if input file exists
       [[ ! -f ${inputFile%\#*} ]] && echo "file ${inputFile%\#*} not accessible" && continue
 
@@ -235,10 +235,12 @@ updateQA()
       #if we are explicit about the input file this takes precedence 
       #over earlier additions
       [[ "${inputFile}" =~ QAresults.root$ ]] && qaFile=${inputFile}
+      [[ "${inputFile}" =~ QAresults_merged.root$ ]] && qaFile=${inputFile}
       [[ "${inputFile}" =~ QAresults_barrel.root$ ]] && qaFile=${inputFile}
       [[ "${inputFile}" =~ QAresults_outer.root$ ]] && qaFileOuter=${inputFile}
       [[ "${inputFile}" =~ FilterEvents_Trees.root$ ]] && highPtTree=${inputFile}
       [[ "${inputFile}" =~ event_stat.root$ ]] && eventStatFile=${inputFile}
+      [[ "${inputFile}" =~ event_stat_barrel.root$ ]] && eventStatFile=${inputFile}
       [[ "${inputFile}" =~ event_stat_outer.root$ ]] && eventStatFileOuter=${inputFile}
       if [[ "${inputFile}" =~ \.zip$ ]]; then
         [[ -z ${qaFile} ]] && qaFile=${inputFile}
