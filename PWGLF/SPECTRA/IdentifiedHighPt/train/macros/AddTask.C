@@ -2,7 +2,7 @@
   Last update: 26/03/2012, vzero branch, in PbPb macro execute the vzero code, a bug was fixed 
 */
 
-AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt[], Float_t minc[], Float_t maxc[] )
+AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt, Float_t minc, Float_t maxc)
 {
   // Creates a pid task and adds it to the analysis manager
   
@@ -98,12 +98,14 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   //========================================================================
   if(typerun==2){//heavy ion analysis
     
-    
-    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx[6];
-    for( Int_t i=0; i<6; ++i ){
+    const Int_t nCent = 1;
+    //    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx[6];
+    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx[nCent];
+    //    for( Int_t i=0; i<6; ++i ){
+    for( Int_t i=0; i<nCent; ++i ){
       taskHighPtDeDx[i]=0;
       Char_t TaskName[256]={0};
-      sprintf(TaskName,"%s_%1.0f_%1.0f",taskname,minc[i],maxc[i]);
+      sprintf(TaskName,"%s_%1.0f_%1.0f",taskname,minc,maxc);
       
       taskHighPtDeDx[i] = new AliAnalysisTaskHighPtDeDx(TaskName);
       TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -118,10 +120,11 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
       taskHighPtDeDx[i]->SetMinPt(0.0); // default 2.0
       taskHighPtDeDx[i]->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
       taskHighPtDeDx[i]->SetTreeOption(1);
-      taskHighPtDeDx[i]->SetTrigger1(kTriggerInt[0]);
-      taskHighPtDeDx[i]->SetTrigger2(kTriggerInt[1]);
-      taskHighPtDeDx[i]->SetMinCent(minc[i]);
-      taskHighPtDeDx[i]->SetMaxCent(maxc[i]);
+      taskHighPtDeDx[i]->SetTrigger1(kTriggerInt);
+      //      taskHighPtDeDx[i]->SetTrigger2(kTriggerInt[1]);
+      taskHighPtDeDx[i]->SetTrigger2(kTriggerInt);
+      taskHighPtDeDx[i]->SetMinCent(minc);
+      taskHighPtDeDx[i]->SetMaxCent(maxc);
       //Set Filtesr
       taskHighPtDeDx[i]->SetTrackFilterGolden(trackFilterGolden);
       taskHighPtDeDx[i]->SetTrackFilter(trackFilter0);
@@ -141,15 +144,15 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     // task.  Get and connect other common input/output containers via
     // the manager as below
     //=======================================================================
-    AliAnalysisDataContainer *cout_hist[6];
-    for( Int_t i=0; i<6; ++i ){
+    AliAnalysisDataContainer *cout_hist[nCent];
+    for( Int_t i=0; i<nCent; ++i ){
       
       cout_hist[i]=0;
       Char_t outFileName[256]={0};
-      sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc[i],maxc[i]);
+      sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc,maxc);
       //AliAnalysisDataContainer *cout_hist    = 0;
       
-      cout_hist[i] = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc[i],maxc[i]), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
+      cout_hist[i] = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
       mgr->ConnectInput (taskHighPtDeDx[i], 0, mgr->GetCommonInputContainer());
       mgr->ConnectOutput(taskHighPtDeDx[i], 1, cout_hist[i]);
       
@@ -174,8 +177,9 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetMinPt(0.0); // default 2.0
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    taskHighPtDeDx->SetTrigger1(kTriggerInt[0]);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    taskHighPtDeDx->SetTrigger1(kTriggerInt);
+    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    taskHighPtDeDx->SetTrigger2(kTriggerInt);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
@@ -232,8 +236,9 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetMinPt(0.0); // default 2.0
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
-    taskHighPtDeDx->SetTrigger1(kTriggerInt[0]);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    taskHighPtDeDx->SetTrigger1(kTriggerInt);
+    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    taskHighPtDeDx->SetTrigger2(kTriggerInt);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
