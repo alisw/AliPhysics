@@ -812,6 +812,14 @@ void AliPIDResponse::SetRecoInfo()
     }
   }
 
+  // New parametrisation for the first 2015 pp runs
+  if (fRun >= 208505) { // <<< This is the first run in 15a
+    fLHCperiod="LHC15F";
+    fBeamType="PP";
+    fBeamTypeNum=kPP;
+    fMCperiodTPC="LHC15G3";
+  }
+
   //exception new pp MC productions from 2011 (11a periods have 10f6a splines!)
   if (fBeamType=="PP" && reg.MatchB(fCurrentFile) && !fCurrentFile.Contains("LHC11a")) { fMCperiodTPC="LHC11B2"; fBeamType="PP";fBeamTypeNum=kPP; }
   // exception for 11f1
