@@ -16,7 +16,9 @@
 
 
 #include "THn.h"
+#include "TCanvas.h"
 #include "AliNDLocalRegression.h"
+
 void UnitTestGaussNoise();
 void UnitTestStreamer();
 
@@ -42,7 +44,8 @@ void UnitTestGaussNoise(){
   //   Bias < 10  *error
   //   Pull < 1+ 3*error
   //   
-  treeIn->Draw("(AliNDLocalRegression::GetCorrND(3,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(3,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(2,xyz0,xyz1)**2)>>pullsGaus01(200,-20,20)","","");
+  TCanvas * canvasUnitGausNoise = new TCanvas("canvasUnitGausNoise","canvasUnitGausNoise");
+  treeIn->Draw("(AliNDLocalRegression::GetCorrND(3,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(3,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(2,xyz0,xyz1)**2)>>pullsGaus32(200,-20,20)","","");
   Double_t meanPullsGaus01 = treeIn->GetHistogram()->GetMean();
   Double_t meanPullsGaus01Err = treeIn->GetHistogram()->GetMeanError();
   Double_t rmsPullsGaus01 = treeIn->GetHistogram()->GetRMS();
@@ -50,17 +53,55 @@ void UnitTestGaussNoise(){
   if (TMath::Abs(meanPullsGaus01)<10*meanPullsGaus01Err) {
     ::Info( "AliNDLocalRegressionTest","mean pull OK %3.3f\t+-%3.3f", meanPullsGaus01, meanPullsGaus01Err);
   }else{
-    ::Error( "AliNDLocalRegressionTest","mean pull OK %3.3f\t+-%3.3f", meanPullsGaus01, meanPullsGaus01Err);
+    ::Error( "AliNDLocalRegressionTest","mean pull NOT OK %3.3f\t+-%3.3f", meanPullsGaus01, meanPullsGaus01Err);
   }
   if (rmsPullsGaus01<1+rmsPullsGaus01Err) {
     ::Info( "AliNDLocalRegressionTest"," rms pull OK %3.3f\t+-%3.3f", rmsPullsGaus01, rmsPullsGaus01Err);
+  }else{
+    ::Error( "AliNDLocalRegressionTest"," rms pull NOT OK %3.3f\t+-%3.3f", rmsPullsGaus01, rmsPullsGaus01Err);
   }
+  //
+  //
+  //
+  canvasUnitGausNoise->SaveAs("AliNDLocalRegressionTest.canvasUnitTestGaussNoise.png");
 }
+
+void UnitTestBreitWignerNoise(){
+  //
+  // Unit Test pulls BreitWigner
+  // Compare 2 Regression objects obtained from 2 independent training sample
+  //
+  // Test:
+  //   Bias < 10  *error
+  //   Pull < 1+ 3*error
+  //   
+  TCanvas * canvasUnitBreitWigner = new TCanvas("canvasUnitBretWigner","canvasUnitBreitWigner");
+  
+  treeIn->Draw("(AliNDLocalRegression::GetCorrND(5,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(4,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(4,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(5,xyz0,xyz1)**2)>>pullsBreiWigner54(200,-20,20)","","");
+  Double_t meanPullsBreitWigner = treeIn->GetHistogram()->GetMean();
+  Double_t meanPullsBreitWignerErr = treeIn->GetHistogram()->GetMeanError();
+  Double_t rmsPullsBreitWigner = treeIn->GetHistogram()->GetRMS();
+  Double_t rmsPullsBreitWignerErr = treeIn->GetHistogram()->GetRMSError();
+  if (TMath::Abs(meanPullsBreitWigner)<10*meanPullsBreitWignerErr) {
+    ::Info( "AliNDLocalRegressionTest::UnitTestBreitWignerNoise","mean pull OK %3.3f\t+-%3.3f", meanPullsBreitWigner, meanPullsBreitWignerErr);
+  }else{
+    ::Error( "AliNDLocalRegressionTest::UnitTestBreitWignerNoise","mean pull NOT OK %3.3f\t+-%3.3f", meanPullsBreitWigner, meanPullsBreitWignerErr);
+  }
+  if (rmsPullsBreitWigner<1+rmsPullsBreitWignerErr) {
+    ::Info( "AliNDLocalRegressionTest::UnitTestBreitWignerNoise"," rms pull OK %3.3f\t+-%3.3f", rmsPullsBreitWigner, rmsPullsBreitWignerErr);
+  }else{
+    ::Error( "AliNDLocalRegressionTest::UnitTestBreitWignerNoise"," rms pull NOT OK %3.3f\t+-%3.3f", rmsPullsBreitWigner, rmsPullsBreitWignerErr);
+  }
+  canvasUnitBreitWigner->SaveAs("AliNDLocalRegressionTest.canvasUnitBreitWigner.png");
+}
+
+
 
 void UnitTestStreamer(){
   //
   // Check consistency of streamer
   //
+  TCanvas * canvasUnitTestStreamer = new TCanvas;
   TFile * f = TFile::Open("fitNDLocalTestStreamer.root","recreate");
   pfitNDGaus0->Write("pfitNDGaus0");
   f->Close();
@@ -70,10 +111,11 @@ void UnitTestStreamer(){
   Int_t entries = treeIn->Draw("AliNDLocalRegression::GetCorrND(100,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1)","");
   Int_t rms = TMath::RMS(entries,treeIn->GetV1());
   if (rms!=0){
-    ::Error( "AliNDLocalRegressionTest","Streamer problem");
+    ::Error( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer problem");
   }else{
-    ::Error( "AliNDLocalRegressionTest","Streamer OK");
+    ::Info( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer OK");
   }
+  canvasUnitTestStreamer->SaveAs(" AliNDLocalRegressionTest.UnitTestStreamer.png");
 }
 
 
@@ -153,10 +195,10 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDBreit1->SetHistogram((THn*)(hN->Clone()));
   //
   pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);
-  pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);
-  pfitNDGaus1->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);
-  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);
-  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);
+  pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Gaussian1
+  pfitNDGaus1->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2
+  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Breit1
+  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit2
   //
   pfitNDIdeal->AddVisualCorrection(pfitNDIdeal,1);
   pfitNDGaus0->AddVisualCorrection(pfitNDGaus0,2);
@@ -164,7 +206,8 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDBreit0->AddVisualCorrection(pfitNDBreit0,4);
   pfitNDBreit1->AddVisualCorrection(pfitNDBreit1,5);
 
-  UnitTestGaussNoise();
+  UnitTestGaussNoise(); 
+  UnitTestBreitWignerNoise();
   UnitTestStreamer();
 }
 
