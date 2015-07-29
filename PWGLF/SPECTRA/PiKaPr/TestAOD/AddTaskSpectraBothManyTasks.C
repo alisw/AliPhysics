@@ -72,7 +72,7 @@ void AddTaskSpectraBothManyTasks(Bool_t mc=kFALSE,
 		if(minrun>0&&maxrun>0)
 			task->GetEventCuts()->SetRunNumberRange(minrun,maxrun);
 		if(ptTofMatchpi>0.0&&ptTofMatchka>0.0&&ptTofMatchpr>0.0)
-			task->GetTrackCuts()->SetPtTOFMatchingPartDepended(0.6,0.5,0.8);
+			task->GetTrackCuts()->SetPtTOFMatchingPartDepended(ptTofMatchpi,ptTofMatchka,ptTofMatchpr);
 	
 
 
