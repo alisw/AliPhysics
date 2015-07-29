@@ -272,6 +272,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fHistoSPDClusterTrackletBackground(NULL),
 	fHistoNV0Tracks(NULL),
 	fProfileEtaShift(NULL),
+	fHistoTruePi0NonLinearity(NULL),
+	fHistoTrueEtaNonLinearity(NULL),
 	fEventPlaneAngle(-100),
 	fRandom(0),
 	fNGammaCandidates(0),
@@ -514,6 +516,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fHistoSPDClusterTrackletBackground(NULL),
 	fHistoNV0Tracks(NULL),
 	fProfileEtaShift(NULL),
+	fHistoTruePi0NonLinearity(NULL),
+	fHistoTrueEtaNonLinearity(NULL),
 	fEventPlaneAngle(-100),
 	fRandom(0),
 	fNGammaCandidates(0),
@@ -1059,12 +1063,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoMCConvGammaEta 				= new TH1F*[fnCuts];
 			fHistoTrueConvGammaEta 				= new TH1F*[fnCuts];
 		}
-		if (fDoClusterQA > 0){	
+		if (fDoClusterQA > 0){
+			fHistoTruePi0NonLinearity			= new TH2F*[fnCuts];
+			fHistoTrueEtaNonLinearity			= new TH2F*[fnCuts];
 			fHistoTrueClusUnConvGammaPt 		= new TH1F*[fnCuts];
 			fHistoTrueClusUnConvGammaMCPt 		= new TH1F*[fnCuts];
 			fHistoTrueClusElectronPt 			= new TH1F*[fnCuts];
 			fHistoTrueClusConvGammaPt 			= new TH1F*[fnCuts];
-			fHistoTrueClusConvGammaMCPt 			= new TH1F*[fnCuts];
+			fHistoTrueClusConvGammaMCPt 		= new TH1F*[fnCuts];
 			fHistoTrueClusConvGammaFullyPt 		= new TH1F*[fnCuts];
 			fHistoTrueClusMergedGammaPt 		= new TH1F*[fnCuts];
 			fHistoTrueClusMergedPartConvGammaPt = new TH1F*[fnCuts];
@@ -1383,7 +1389,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoTrueConvGammaEta[iCut] = new TH1F("ESD_TrueConvGamma_Eta","ESD_TrueConvGamma_Eta",2000,-2,2);
 				fTrueList[iCut]->Add(fHistoTrueConvGammaEta[iCut]);		
 			}	
-			if (fDoClusterQA > 0){	
+			if (fDoClusterQA > 0){
+				fHistoTruePi0NonLinearity[iCut] = new TH2F("TruePi0: E_truth / E_rec Vs E_rec","TruePi0: E_truth / E_rec Vs E_rec",100,0,2,350,0,35);
+				fClusterOutputList[iCut]->Add(fHistoTruePi0NonLinearity[iCut]);
+				fHistoTrueEtaNonLinearity[iCut] = new TH2F("TrueEta: E_truth / E_rec Vs E_rec","TrueEta: E_truth / E_rec Vs E_rec",100,0,2,350,0,35);
+				fClusterOutputList[iCut]->Add(fHistoTrueEtaNonLinearity[iCut]);
 				fHistoTrueClusUnConvGammaPt[iCut] = new TH1F("TrueClusUnConvGamma_Pt","TrueClusUnConvGamma_Pt",300,0,30);
 				fClusterOutputList[iCut]->Add(fHistoTrueClusUnConvGammaPt[iCut]);
 				fHistoTrueClusUnConvGammaMCPt[iCut] = new TH1F("TrueClusUnConvGamma_MCPt","TrueClusUnConvGamma_MCPt",300,0,30);
@@ -2214,7 +2224,6 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
 //						fHistoTrueClusPi0EM02[fiCut]->Fill(TruePhotonCandidate->E(),clusM02);
 			}
 		}
-		
 	}
 	
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
@@ -3160,9 +3169,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 		Int_t gamma1MotherLabel = -1;
 		// check if 
 
+		TParticle * gammaMC1 = 0x0;
 		if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 			// Daughters Gamma 1
-			TParticle * gammaMC1 = (TParticle*)fMCStack->Particle(gamma1MCLabel);
+			gammaMC1 = (TParticle*)fMCStack->Particle(gamma1MCLabel);
 			if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
 				// get mother of interest (pi0 or eta)
 				if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother 
@@ -3258,6 +3268,12 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 				}	
 			}
 			if (!matched){
+				if (fDoClusterQA > 0){
+					if(isTruePi0)
+						fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
+					if(isTrueEta)
+						fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
+				}
 				if (fDoMesonQA > 0){
 					if (isTruePi0){
 						if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
@@ -3401,9 +3417,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 	Int_t gamma1MotherLabel = -1;
 		// check if 
 
+	AliAODMCParticle * gammaMC1 = 0x0;
 	if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
 		// Daughters Gamma 1
-		AliAODMCParticle * gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
+		gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
 		if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){		// largest component is electro magnetic
 			// get mother of interest (pi0 or eta)
 			if (TrueGammaCandidate1->IsLargestComponentPhoton()){														// for photons its the direct mother 
@@ -3464,6 +3481,12 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 		}
 
 		if ( !matched){
+			if (fDoClusterQA > 0){
+				if(isTruePi0)
+					fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
+				if(isTrueEta)
+					fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
+			}
 			if (fDoMesonQA > 0){
 				if (isTruePi0){
 					if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
