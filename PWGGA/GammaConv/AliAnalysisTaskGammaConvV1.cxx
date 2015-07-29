@@ -214,6 +214,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hCentralityVsPrimaryTracks(NULL),
 	hNGammaCandidates(NULL),
 	hNGoodESDTracksVsNGammaCanditates(NULL),
+	fHistoSPDClusterTrackletBackground(NULL),
 	hNV0Tracks(NULL),
 	hEtaShift(NULL),
 	tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
@@ -404,6 +405,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hCentralityVsPrimaryTracks(NULL),
 	hNGammaCandidates(NULL),
 	hNGoodESDTracksVsNGammaCanditates(NULL),
+	fHistoSPDClusterTrackletBackground(NULL),
 	hNV0Tracks(NULL),
 	hEtaShift(NULL),
 	tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
@@ -574,6 +576,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 	}
 	hNGammaCandidates = new TH1I*[fnCuts];
 	hNGoodESDTracksVsNGammaCanditates = new TH2F*[fnCuts];
+	fHistoSPDClusterTrackletBackground = new TH2F*[fnCuts];
 	hNV0Tracks = new TH1I*[fnCuts];
 	hEtaShift = new TProfile*[fnCuts];
 	hESDConvGammaPt = new TH1F*[fnCuts];
@@ -717,6 +720,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		if(fDoCentralityFlat > 0) hNGoodESDTracksVsNGammaCanditates[iCut]->Sumw2();
 		fESDList[iCut]->Add(hNGoodESDTracksVsNGammaCanditates[iCut]);
 
+		fHistoSPDClusterTrackletBackground[iCut] = new TH2F("SPD tracklets vs SPD clusters","SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+		fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
 		
 		if(fIsHeavyIon == 1) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
 		else if(fIsHeavyIon == 2) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",2500,0,2500);
@@ -1374,6 +1379,9 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		
 		hNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
 		if((fDoCentralityFlat > 0)) hNGoodESDTracksWeighted[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]);
+
+		if((fDoCentralityFlat > 0)) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
+		else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
 		
 		if(fDoPlotVsCentrality) hCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent));
 		if((fDoCentralityFlat > 0)) hCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), fWeightCentrality[iCut]);
