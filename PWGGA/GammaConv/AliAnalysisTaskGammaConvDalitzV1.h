@@ -244,6 +244,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1I 									**hNGoodESDTracks;
 		TH2F 									**hNGoodESDTracksVsNGoodGammas;
 		TH2F 									**hNGoodESDTracksVsNGoodVGammas;
+		TH2F									**fHistoSPDClusterTrackletBackground;				//! array of histos with SPD tracklets vs SPD clusters for background rejection
 		TH1I  									**hNV0Tracks;
 		TProfile 								**hEtaShift;
 		TH2F									**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
@@ -281,7 +282,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 		AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskGammaConvDalitzV1, 5 );
+		ClassDef( AliAnalysisTaskGammaConvDalitzV1, 6 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H

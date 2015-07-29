@@ -220,6 +220,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	hNGoodESDTracks(NULL),
 	hNGoodESDTracksVsNGoodGammas(NULL),
 	hNGoodESDTracksVsNGoodVGammas(NULL),
+	fHistoSPDClusterTrackletBackground(NULL),
 	hNV0Tracks(NULL),
 	hEtaShift(NULL),
 	fHistoDoubleCountTruePi0InvMassPt(NULL),
@@ -417,6 +418,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	hNGoodESDTracks(NULL),
 	hNGoodESDTracksVsNGoodGammas(NULL),
 	hNGoodESDTracksVsNGoodVGammas(NULL),
+	fHistoSPDClusterTrackletBackground(NULL),
 	hNV0Tracks(NULL),
 	hEtaShift(NULL),
 	fHistoDoubleCountTruePi0InvMassPt(NULL),
@@ -600,6 +602,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		fQAFolder  								= new TList*[fnCuts];  
 		hNGoodESDTracksVsNGoodGammas			= new TH2F*[fnCuts];
 		hNGoodESDTracksVsNGoodVGammas			= new TH2F*[fnCuts]; 
+		fHistoSPDClusterTrackletBackground		= new TH2F*[fnCuts];
 		hESDDalitzElectronAfterPt				= new TH1F*[fnCuts];
 		hESDDalitzPositronAfterPt				= new TH1F*[fnCuts];
 		hESDDalitzElectronAfterEta				= new TH1F*[fnCuts];
@@ -751,6 +754,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 			
 			hNGoodESDTracksVsNGoodVGammas[iCut] = new TH2F("hNGoodESDTracksVsNVGoodVGammas","hNGoodESDTracksVsNGoodVGammas",200,-0.5,199.5,100,-0.5,99.5);
 			fQAFolder[iCut]->Add(hNGoodESDTracksVsNGoodVGammas[iCut]);
+
+			fHistoSPDClusterTrackletBackground[iCut] = new TH2F("SPD tracklets vs SPD clusters","SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+			fQAFolder[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
 					
 			hESDConvGammaZR[iCut]= new TH2F("ESD_ConvGamma_ConversionPoint_ZR","ESD_ConvGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
 			fQAFolder[iCut]->Add(hESDConvGammaZR[iCut]);
@@ -1476,7 +1482,8 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
 		
 		if ( fDoMesonQA ) {
 			hNGoodESDTracksVsNGoodGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fGoodGammas->GetEntries());
-			hNGoodESDTracksVsNGoodVGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fNVirtualGammas);		
+			hNGoodESDTracksVsNGoodVGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fNVirtualGammas);
+			fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
 		}
 		
 		
