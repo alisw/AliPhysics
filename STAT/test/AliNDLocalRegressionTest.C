@@ -18,11 +18,10 @@
 #include "THn.h"
 #include "TCanvas.h"
 #include "AliNDLocalRegression.h"
+#include "TStyle.h"
 
 void UnitTestGaussNoise();
 void UnitTestStreamer();
-
-
 
 TTree * treeIn=0;
 AliNDLocalRegression *pfitNDIdeal=0;       // ideal fit without noise
@@ -34,6 +33,31 @@ AliNDLocalRegression *pfitNDBreit1=0;       // fit with noisy data  - BreitWigne
 THn   *hN=0; 
 TFormula *pformula= 0;
 
+void PlotData(TH1F *hData,TString xTitle="xTitle",TString yTitle="yTitle",Color_t color=kBlack,TString zTitle="zTitle"){
+  //
+  //
+  //
+  if(color==(kRed+2)){hData->SetMarkerStyle(20);}
+  if(color==(kBlue+2)){hData->SetMarkerStyle(21);}
+  if(color==(kGreen+2)){hData->SetMarkerStyle(22);hData->SetMarkerSize(1.3);}
+  
+  hData->SetMarkerColor(color);
+  hData->SetLineColor(color);
+  hData->GetXaxis()->SetTitle(xTitle.Data());
+  hData->GetYaxis()->SetTitle(yTitle.Data());
+  hData->GetZaxis()->SetTitle(zTitle.Data());
+  hData->GetXaxis()->SetTitleOffset(1.2);
+  hData->GetXaxis()->SetTitleSize(0.05);
+  hData->GetYaxis()->SetTitleOffset(1.3);
+  hData->GetYaxis()->SetTitleSize(0.05);
+  hData->GetXaxis()->SetLabelSize(0.035);
+  hData->GetYaxis()->SetLabelSize(0.035);
+  hData->GetXaxis()->SetDecimals();
+  hData->GetYaxis()->SetDecimals();
+  hData->GetZaxis()->SetDecimals();
+  hData->Sumw2();
+  hData->Draw("pe1");
+}
 
 void UnitTestGaussNoise(){
   //
@@ -44,8 +68,9 @@ void UnitTestGaussNoise(){
   //   Bias < 10  *error
   //   Pull < 1+ 3*error
   //   
-  TCanvas * canvasUnitGausNoise = new TCanvas("canvasUnitGausNoise","canvasUnitGausNoise");
-  treeIn->Draw("(AliNDLocalRegression::GetCorrND(3,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(3,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(2,xyz0,xyz1)**2)>>pullsGaus32(200,-20,20)","","");
+  TCanvas * canvasUnitGausNoise = new TCanvas("canvasUnitGausNoise","canvasUnitGausNoise",800,800);
+  treeIn->Draw("(AliNDLocalRegression::GetCorrND(3,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(3,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(2,xyz0,xyz1)**2)>>pullsGaus32(401,-20.5,20.5)","","");
+	TH1F   *pullsGaus32 = (TH1F*)gPad->GetPrimitive("pullsGaus32");
   Double_t meanPullsGaus01 = treeIn->GetHistogram()->GetMean();
   Double_t meanPullsGaus01Err = treeIn->GetHistogram()->GetMeanError();
   Double_t rmsPullsGaus01 = treeIn->GetHistogram()->GetRMS();
@@ -63,6 +88,7 @@ void UnitTestGaussNoise(){
   //
   //
   //
+	PlotData(pullsGaus32,"Gaus pulls","counts (arb. units)",kRed+2,"zTitle");
   canvasUnitGausNoise->SaveAs("AliNDLocalRegressionTest.canvasUnitTestGaussNoise.png");
 }
 
@@ -75,9 +101,10 @@ void UnitTestBreitWignerNoise(){
   //   Bias < 10  *error
   //   Pull < 1+ 3*error
   //   
-  TCanvas * canvasUnitBreitWigner = new TCanvas("canvasUnitBretWigner","canvasUnitBreitWigner");
+  TCanvas * canvasUnitBreitWigner = new TCanvas("canvasUnitBretWigner","canvasUnitBreitWigner",800,800);
   
-  treeIn->Draw("(AliNDLocalRegression::GetCorrND(5,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(4,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(4,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(5,xyz0,xyz1)**2)>>pullsBreiWigner54(200,-20,20)","","");
+  treeIn->Draw("(AliNDLocalRegression::GetCorrND(5,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(4,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(4,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(5,xyz0,xyz1)**2)>>pullsBreiWigner54(401,-20.5,20.5)","","");
+	TH1F   *pullsBreiWigner54 = (TH1F*)gPad->GetPrimitive("pullsBreiWigner54");
   Double_t meanPullsBreitWigner = treeIn->GetHistogram()->GetMean();
   Double_t meanPullsBreitWignerErr = treeIn->GetHistogram()->GetMeanError();
   Double_t rmsPullsBreitWigner = treeIn->GetHistogram()->GetRMS();
@@ -92,6 +119,7 @@ void UnitTestBreitWignerNoise(){
   }else{
     ::Error( "AliNDLocalRegressionTest::UnitTestBreitWignerNoise"," rms pull NOT OK %3.3f\t+-%3.3f", rmsPullsBreitWigner, rmsPullsBreitWignerErr);
   }
+	PlotData(pullsBreiWigner54,"BreitWigner pulls","counts (arb. units)",kBlue+2,"zTitle");
   canvasUnitBreitWigner->SaveAs("AliNDLocalRegressionTest.canvasUnitBreitWigner.png");
 }
 
@@ -101,20 +129,22 @@ void UnitTestStreamer(){
   //
   // Check consistency of streamer
   //
-  TCanvas * canvasUnitTestStreamer = new TCanvas;
+  TCanvas * canvasUnitTestStreamer = new TCanvas("canvasUnitTestStreamer","canvasUnitTestStreamer",800,800);
   TFile * f = TFile::Open("fitNDLocalTestStreamer.root","recreate");
   pfitNDGaus0->Write("pfitNDGaus0");
   f->Close();
   f = TFile::Open("fitNDLocalTestStreamer.root");
   AliNDLocalRegression *streamTest1 = (AliNDLocalRegression *)f->Get("pfitNDGaus0");
   streamTest1->AddVisualCorrection(streamTest1,100);
-  Int_t entries = treeIn->Draw("AliNDLocalRegression::GetCorrND(100,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1)","");
+  Int_t entries = treeIn->Draw("AliNDLocalRegression::GetCorrND(100,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1)>>streamerTest(201,-1.05,1.05)","");
+	TH1F   *streamerTest = (TH1F*)gPad->GetPrimitive("streamerTest");
   Int_t rms = TMath::RMS(entries,treeIn->GetV1());
   if (rms!=0){
     ::Error( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer problem");
   }else{
     ::Info( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer OK");
   }
+	PlotData(streamerTest,"streamer test","counts (arb. units)",kGreen+2,"zTitle");
   canvasUnitTestStreamer->SaveAs(" AliNDLocalRegressionTest.UnitTestStreamer.png");
 }
 
@@ -126,6 +156,16 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   //
   // Int_t npoints=100000; Int_t ndim=2; const char *sfromula="cos(10*x[0])*cos(15*x[1])"; 
   //
+	gStyle->SetPadRightMargin(0.05);
+	gStyle->SetPadTopMargin(0.05);
+	gStyle->SetPadLeftMargin(0.14);
+	gStyle->SetPadBottomMargin(0.12);
+	gStyle->SetPadTickX(1);
+	gStyle->SetPadTickY(1);
+	gStyle->SetPadGridX(1);
+	gStyle->SetPadGridY(1);
+	gStyle->SetOptStat(0);
+	//
   pformula=new TFormula("pformula", sfromula);
   pfitNDIdeal  = new  AliNDLocalRegression;
   pfitNDGaus0  = new  AliNDLocalRegression;
