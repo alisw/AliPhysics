@@ -1,11 +1,10 @@
-/********************************************************************* *																							 *
- * Configfemtoanalysis.C - configuration macro for the femtoscopic	 *
- * analysis, meant as a QA process for two-particle effects				 *
- *																							 *
- * Author: Adam Kisiel (Adam.Kisiel@cern.ch)									 *
- *																							 *
+/********************************************************************* *
+ * Configfemtoanalysis.C - configuration macro for the femtoscopic
+ * analysis, meant as a QA process for two-particle effects	
+ *								
+ * Author: Adam Kisiel (Adam.Kisiel@cern.ch)		
+ *						
  *********************************************************************/
-
 #if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
 #include "AliFemtoEventReaderESDChain.h"
@@ -157,6 +156,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/4Dmap_FB768_MCOnly_DoubleCounting.root");
 	else if(fileNo==15)
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/4Dmap_FB768_MCDCA_DoubleCounting.root");
+	else if(fileNo==16)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/1Dmap_FB96_MCOnly_ExclusivePIDNsigmaHalf2.root");
 
 	cout<<"Filename: "<<Form("%s",fileName)<<endl;
 
@@ -277,8 +278,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
 					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc1etaphitpc[aniter]->SetNsigma(2.0);
-					dtc2etaphitpc[aniter]->SetNsigma(2.0);
+					dtc1etaphitpc[aniter]->SetNsigma2(2.0);
+					dtc2etaphitpc[aniter]->SetNsigma2(2.0);
 					//dtc3etaphitpc[aniter]->SetNsigma(3.0);
 
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
