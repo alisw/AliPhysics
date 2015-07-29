@@ -274,6 +274,10 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		Float_t 							fPt;											//! momentum, 
 		UChar_t 							iFlag;											//! flag (0 = gamma, 1 = pi0, 2 = eta)
 		
+		// hists for nonlineartiy calibration
+		TH2F								**fHistoTruePi0NonLinearity;					//! E_truth/E_rec vs E_rec for TruePi0s
+		TH2F								**fHistoTrueEtaNonLinearity;					//! E_truth/E_rec vs E_rec for TrueEtas
+
 		// additional variables
 		Double_t 							fEventPlaneAngle; 					// EventPlaneAngle
 		TRandom3 							fRandom;							// random 
@@ -294,7 +298,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 10);
+		ClassDef(AliAnalysisTaskGammaCalo, 11);
 };
 
 #endif
