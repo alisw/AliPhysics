@@ -491,7 +491,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
    // Pile Up Rejection
 
    if(fRemovePileUp){
-      if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
+	  if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
          if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
          fEventQuality = 6;
          return kFALSE;
@@ -2441,7 +2441,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 		return 1; // Check Centrality --> Not Accepted => eventQuality = 1
 		
 	if(isHeavyIon == 0 && GetIsFromPileup()){
-		if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
+		if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
 			return 6; // Check Pileup --> Not Accepted => eventQuality = 6
 		}
 	}
