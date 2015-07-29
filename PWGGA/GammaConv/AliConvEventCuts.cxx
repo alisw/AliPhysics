@@ -129,7 +129,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fSpecialTriggerName(""),
 	fSpecialSubTriggerName(""),
 	fNSpecialSubTriggerOptions(0),
-	hPileUpSPDClusterTracklet(NULL),
+	hSPDClusterTrackletBackground(NULL),
 	fV0ReaderName(""),
 	fCaloTriggers(NULL),
 	fTriggerPatchInfo(NULL),
@@ -216,7 +216,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fSpecialTriggerName(ref.fSpecialTriggerName),
 	fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
 	fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
-	hPileUpSPDClusterTracklet(NULL),
+	hSPDClusterTrackletBackground(NULL),
 	fV0ReaderName(ref.fV0ReaderName),
    	fCaloTriggers(NULL),
 	fTriggerPatchInfo(NULL),
@@ -300,8 +300,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 		fHistograms->Add(hReweightMCHistK0s);
 	}
 
-	hPileUpSPDClusterTracklet = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",200,0,200,1000,0,1000);
-	fHistograms->Add(hPileUpSPDClusterTracklet);
+	hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+	fHistograms->Add(hSPDClusterTrackletBackground);
 
 	hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
 	fHistograms->Add(hCentrality);
@@ -520,7 +520,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
    Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
    Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
    Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
-   if(hPileUpSPDClusterTracklet) hPileUpSPDClusterTracklet->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
    fEventQuality = 0;
    return kTRUE;
@@ -2514,7 +2514,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	Int_t nClustersLayer0 = InputEvent->GetNumberOfITSClusters(0);
 	Int_t nClustersLayer1 = InputEvent->GetNumberOfITSClusters(1);
 	Int_t nTracklets      = InputEvent->GetMultiplicity()->GetNumberOfTracklets();
-	if(hPileUpSPDClusterTracklet) hPileUpSPDClusterTracklet->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+	if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
 	return 0;
 }
