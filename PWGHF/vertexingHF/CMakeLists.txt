@@ -58,6 +58,7 @@ set(SRCS
   AliAnalysisTaskSEVertexingHF.cxx 
   AliAnalysisTaskMEVertexingHF.cxx 
   AliAnalysisTaskSESelectHF.cxx 
+  AliAnalysisTaskSECleanupVertexingHF.cxx
   AliAnalysisTaskSECompareHF.cxx 
   AliAnalysisTaskSEDplus.cxx 
   AliAnalysisTaskSEDs.cxx 
