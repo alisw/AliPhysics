@@ -461,7 +461,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",13,-0.5,12.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents accepted");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"Rejected due to trigger");
@@ -473,6 +473,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
   fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after topological cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after Topological+PID cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"D+ not on-the-fly reco");
  
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
   fHistNEvents->Sumw2();
@@ -844,7 +845,11 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Int_t nOS=0;
   Int_t index;
   Int_t pdgDgDplustoKpipi[3]={321,211,211};
-
+  
+  // vHF object is needed to call the method that refills the missing info of the candidates
+  // if they have been deleted in dAOD reconstruction phase
+  // in order to reduce the size of the file 
+  AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
   if(fDoLS>1){//Normalizations for LS
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
       AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
@@ -863,8 +868,15 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	fHistNEvents->Fill(8);
 	continue;
       }
-    
+
       Int_t passTopolAndPIDCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+
+      if(!(vHF->FillRecoCand(aod,d))) { //Fill the data members of the candidate only if they are empty.
+        fHistNEvents->Fill(12); //monitor how often this fails 
+        continue;
+      }
+
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
 
       if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
 
@@ -1115,6 +1127,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     fCounter->StoreCandidates(aod,nSelectednopid,kTRUE);
     fCounter->StoreCandidates(aod,nSelected,kFALSE);
   }
+  delete vHF;
   //start LS analysis
   if(fDoLS && arrayLikeSign) LSAnalysis(array3Prong,arrayLikeSign,aod,vtx1,nOS);
   
