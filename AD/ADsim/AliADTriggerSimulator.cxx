@@ -263,7 +263,7 @@ void AliADTriggerSimulator::Run() {
 			if (board < 0) continue;
 			
 			if(fCalibData->GetEnableCharge(pmNumber)) {
-				fCharges[pmNumber] = digit->ChargeADC(kNClocks/2);
+				fCharges[pmNumber] = digit->ChargeADC(kADNClocks/2);
 				if(fCalibData->GetPedestalSubtraction(board)) {
 					if(fCharges[pmNumber]>=(Float_t) fCalibData->GetOnlinePedestalCut(integrator,pmNumber)){ 
 						fCharges[pmNumber] -= (Float_t) fCalibData->GetOnlinePedestal(integrator,pmNumber);

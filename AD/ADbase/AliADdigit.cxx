@@ -31,7 +31,7 @@ AliADdigit::AliADdigit()
 {
   // Standard default
   // constructor 
-  for(Int_t iClock = 0; iClock < kNClocks; ++iClock) fChargeADC[iClock] = 0;
+  for(Int_t iClock = 0; iClock < kADNClocks; ++iClock) fChargeADC[iClock] = 0;
 }
 
 //__________________________________________________________________________
@@ -53,11 +53,11 @@ fBGflag(BGflag)
   // Constructor
   // Used in the digitizer
   if (chargeADC) {
-    for(Int_t iClock = 0; iClock < kNClocks; ++iClock)
+    for(Int_t iClock = 0; iClock < kADNClocks; ++iClock)
       fChargeADC[iClock] = chargeADC[iClock];
   }
   else {
-    for(Int_t iClock = 0; iClock < kNClocks; ++iClock)
+    for(Int_t iClock = 0; iClock < kADNClocks; ++iClock)
       fChargeADC[iClock] = 0;
   }
 
@@ -67,7 +67,7 @@ fBGflag(BGflag)
 //__________________________________________________________________________
 Bool_t AliADdigit::GetIntegratorFlag(Int_t clock)
 {
-if (clock >= 0 && clock < kNClocks){
+if (clock >= 0 && clock < kADNClocks){
 	if(clock%2 == 0) return fIntegrator;
 	else return !fIntegrator;
 	}

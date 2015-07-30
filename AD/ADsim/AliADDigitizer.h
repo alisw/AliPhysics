@@ -88,7 +88,7 @@ public:
    
    TF1*     fThresholdShape;		  // function which describes theshold shape
 
-   Float_t  fAdc[16][kNClocks];      //! Container for ADC samples
+   Float_t  fAdc[16][kADNClocks];      //! Container for ADC samples
    Float_t  fLeadingTime[16];        //! Leading time container
    Float_t  fTimeWidth[16];          //! Time width container
    Bool_t   fBBFlag[16];	     //! Container for BB flags
