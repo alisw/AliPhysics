@@ -61,7 +61,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 13;
 	const int numOfkTbins = 5;
 
-	char *parameter[18];
+	char *parameter[20];
 	if(strlen(params)!=0)
 	  {
 	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
@@ -100,6 +100,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	    cout<<"Parameter [16]: (SetMostProbable 2)"<<parameter[16]<<" "<<endl;
 	    parameter[17] = strtok(NULL, ",");
 	    cout<<"Parameter [17]: (SetMostProbable 3)"<<parameter[17]<<" "<<endl;
+	    parameter[18] = strtok(NULL, ",");
+	    cout<<"Parameter [18]: (monitors)"<<parameter[18]<<" "<<endl;
+	    parameter[19] = strtok(NULL, ",");
+	    cout<<"Parameter [19]: (nSigma2)"<<parameter[19]<<" "<<endl;
 	  }
 	int filterbit = atoi(parameter[0]); //96 / 768 / 128 
 	int runktdep = atoi(parameter[1]); //0
@@ -119,6 +123,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	int setMostProb1 = atoi(parameter[15]);
 	int setMostProb2 = atoi(parameter[16]);
 	int setMostProb3 = atoi(parameter[17]);
+	Bool_t ifMonitors=kFALSE; if(atoi(parameter[18])) ifMonitors=kTRUE;//kTRUE 
+	double nSigmaVal2 = atof(parameter[19]); //3.0
 
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
@@ -238,8 +244,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
 					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc1etaphitpc[aniter]->SetNsigma2(2.0);
-					dtc2etaphitpc[aniter]->SetNsigma2(2.0);
+					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					//dtc3etaphitpc[aniter]->SetNsigma(3.0);
 
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
@@ -343,7 +349,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//**************** track Monitors ***************
 
 					
-					if(1)//ichg>8)
+					if(ifMonitors)//ichg>8)
 					  {
 					    if(ichg<2 || ichg==3||ichg==4 || ichg==6|| ichg==7||ichg==9||ichg==10||ichg==11){ 
 					      cutPass3YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass%stpcM%i", chrgs[ichg], imult),PionMass);

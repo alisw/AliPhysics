@@ -60,7 +60,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfChTypes = 13;
 	const int numOfkTbins = 5;
 
-	char *parameter[20];
+	char *parameter[21];
 	if(strlen(params)!=0)
 	  {
 	    parameter[0] = strtok(params, ","); // Splits spaces between words in params
@@ -101,6 +101,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	    cout<<"Parameter [17]: (SetMostProbable 3)"<<parameter[17]<<" "<<endl;
 	    parameter[18] = strtok(NULL, ",");
 	    cout<<"Parameter [18]: (FILE no)"<<parameter[18]<<" "<<endl;
+	    parameter[19] = strtok(NULL, ",");
+	    cout<<"Parameter [19]: (monitors)"<<parameter[19]<<" "<<endl;
+	    parameter[20] = strtok(NULL, ",");
+	    cout<<"Parameter [20]: (nSigma2)"<<parameter[20]<<" "<<endl;
 	  }
 	int filterbit = atoi(parameter[0]); //96 / 768 / 128 
 	int runktdep = atoi(parameter[1]); //0
@@ -160,6 +164,10 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/1Dmap_FB96_MCOnly_ExclusivePIDNsigmaHalf2.root");
 
 	cout<<"Filename: "<<Form("%s",fileName)<<endl;
+
+
+	Bool_t ifMonitors=kFALSE; if(atoi(parameter[19]))ifMonitors=kTRUE;//kTRUE 
+	double nSigmaVal2 = atof(parameter[20]); //2.0 or 3.0
 
 	printf("*** Connect to AliEn ***\n");
 	TGrid::Connect("alien://");
@@ -278,8 +286,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 					dtc1etaphitpc[aniter]->SetNsigma(nSigmaVal);
 					dtc2etaphitpc[aniter]->SetNsigma(nSigmaVal);
-					dtc1etaphitpc[aniter]->SetNsigma2(2.0);
-					dtc2etaphitpc[aniter]->SetNsigma2(2.0);
+					dtc1etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
+					dtc2etaphitpc[aniter]->SetNsigma2(nSigmaVal2);
 					//dtc3etaphitpc[aniter]->SetNsigma(3.0);
 
 					dtc1etaphitpc[aniter]->SetCharge(1.0);
@@ -384,7 +392,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//**************** track Monitors ***************
 
 					
-					if(1)//ichg>8)
+					if(ifMonitors)//ichg>8)
 					  {
 					    //FULL
 					    if(ichg<2 || ichg==3||ichg==4 || ichg==6|| ichg==7||ichg==9||ichg==10||ichg==11){ 
