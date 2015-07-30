@@ -23,11 +23,14 @@
 #pragma link C++ class AliJHistManager+;
 #pragma link C++ class AliJFFlucTask+;
 #pragma link C++ class AliJFFlucAnalysis+;
+#pragma link C++ class AliJXtTask+;
+#pragma link C++ class AliJXtAnalysis+;
 
 #pragma link C++ class AliJCard+;
 #pragma link C++ class AliJBaseCard+;
 #pragma link C++ class AliJEfficiency+;
 #pragma link C++ class AliJTrackCut+;
 #pragma link C++ class AliJRunTable+;
+
 
 #endif /* __CINT__ */
