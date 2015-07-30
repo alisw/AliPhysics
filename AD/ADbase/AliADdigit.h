@@ -24,11 +24,11 @@ public:
     virtual void Print(const Option_t* option="") const;
 
     Int_t   PMNumber()   const {return fPMNumber;}    
-    Short_t ADC()        const {return fChargeADC[kNClocks/2];}
+    Short_t ADC()        const {return fChargeADC[kADNClocks/2];}
     Float_t Time()       const {return fTime;}
     Float_t Width()      const {return fWidth;} 
     Bool_t  Integrator() const {return fIntegrator;}
-    Short_t ChargeADC(Int_t clock) const {return (clock >= 0 && clock < kNClocks) ? fChargeADC[clock] : 0;}
+    Short_t ChargeADC(Int_t clock) const {return (clock >= 0 && clock < kADNClocks) ? fChargeADC[clock] : 0;}
     Bool_t  GetIntegratorFlag(Int_t clock);
     Bool_t  GetBBflag()  const {return fBBflag;}
     Bool_t  GetBGflag()  const {return fBGflag;}
@@ -40,7 +40,7 @@ public:
     Float_t fTime;          // Time of Flight
     Float_t fWidth;         // Width of the time distribution
     Bool_t  fIntegrator;    // Integrator used in central clock
-    Short_t fChargeADC[kNClocks]; // ADC samples as present in raw data
+    Short_t fChargeADC[kADNClocks]; // ADC samples as present in raw data
     Bool_t  fBBflag;	    // BB flag in central clock
     Bool_t  fBGflag;	    // BB flag in central clock
     

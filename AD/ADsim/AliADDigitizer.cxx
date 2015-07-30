@@ -189,7 +189,7 @@ Bool_t AliADDigitizer::Init()
     fCssTau[i] = PulseShapes->GetBinContent(i+1,2);
     fCssSigma[i] = PulseShapes->GetBinContent(i+1,3);
 
-    for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
+    for(Int_t j = 0; j < kADNClocks; ++j) fAdc[i][j] = 0;
     fLeadingTime[i] = fTimeWidth[i] = 0;
 
     fPmGain[i] = fCalibData->GetGain(i);
@@ -201,7 +201,7 @@ Bool_t AliADDigitizer::Init()
 
     Int_t board = AliADCalibData::GetBoardNumber(i);
     fNBins[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0+
-			     (Float_t)kMaxTDCWidth*fCalibData->GetWidthResolution(board))/
+			     (Float_t)kADMaxTDCWidth*fCalibData->GetWidthResolution(board))/
 			    fCalibData->GetTimeResolution(board));
     fNBinsLT[i] = TMath::Nint(((Float_t)(fCalibData->GetMatchWindow(board)+1)*25.0)/
 			      fCalibData->GetTimeResolution(board));
@@ -323,7 +323,7 @@ void AliADDigitizer::DigitizeHits()
 	     break;
 	   }
 	 }
-	 Float_t dt_scintillator = gRandom->Gaus(0,kIntTimeRes);
+	 Float_t dt_scintillator = gRandom->Gaus(0,kADIntTimeRes);
 	 Float_t t = dt_scintillator + hit->GetTof();
 	 nTotPhot[pmt] += nPhot;
 	 nPMHits[pmt]++;
@@ -368,7 +368,7 @@ void AliADDigitizer::DigitizeSDigits()
   // Digits (fAdc arrays)
   Float_t fMCTime[16];
   for(Int_t i = 0 ; i < 16; ++i) {
-    for(Int_t j = 0; j < kNClocks; ++j) fAdc[i][j] = 0;
+    for(Int_t j = 0; j < kADNClocks; ++j) fAdc[i][j] = 0;
     fMCTime[i] = fLeadingTime[i] = fTimeWidth[i] = 0;
   }
 
@@ -378,7 +378,7 @@ void AliADDigitizer::DigitizeSDigits()
     fChargeSignalShape->SetParameters(fCssOffset[ipmt],fCssTau[ipmt],fCssSigma[ipmt]);
     Float_t maximum = 0.9*fChargeSignalShape->GetMaximum(0,300); 
     Float_t integral = fChargeSignalShape->Integral(0,300);
-    Float_t thr = fCalibData->GetCalibDiscriThr(ipmt)*kChargePerADC*maximum*fBinSize[ipmt]/integral;
+    Float_t thr = fCalibData->GetCalibDiscriThr(ipmt)*kADChargePerADC*maximum*fBinSize[ipmt]/integral;
     //Float_t thr = 0;
        
     Bool_t ltFound = kFALSE, ttFound = kFALSE;
@@ -401,19 +401,19 @@ void AliADDigitizer::DigitizeSDigits()
 	}
       }
       Float_t tadc = t - fClockOffset[ipmt];
-      Int_t clock = kNClocks/2 + Int_t(tadc/25.0);
-      if (clock >= 0 && clock < kNClocks)
-	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kChargePerADC;
+      Int_t clock = kADNClocks/2 + Int_t(tadc/25.0);
+      if (clock >= 0 && clock < kADNClocks)
+	fAdc[ipmt][clock] += fTime[ipmt][iBin]/kADChargePerADC;
     }
     AliDebug(1,Form("Channel %d Offset %f Time %f",ipmt,fClockOffset[ipmt],fMCTime[ipmt]));
     Int_t board = AliADCalibData::GetBoardNumber(ipmt);
     if (ltFound && ttFound) {
       fTimeWidth[ipmt] = fCalibData->GetWidthResolution(board)*
 	Float_t(Int_t(fTimeWidth[ipmt]/fCalibData->GetWidthResolution(board)));
-      if (fTimeWidth[ipmt] < Float_t(kMinTDCWidth)*fCalibData->GetWidthResolution(board))
-	fTimeWidth[ipmt] = Float_t(kMinTDCWidth)*fCalibData->GetWidthResolution(board);
-      if (fTimeWidth[ipmt] > Float_t(kMaxTDCWidth)*fCalibData->GetWidthResolution(board))
-	fTimeWidth[ipmt] = Float_t(kMaxTDCWidth)*fCalibData->GetWidthResolution(board);
+      if (fTimeWidth[ipmt] < Float_t(kADMinTDCWidth)*fCalibData->GetWidthResolution(board))
+	fTimeWidth[ipmt] = Float_t(kADMinTDCWidth)*fCalibData->GetWidthResolution(board);
+      if (fTimeWidth[ipmt] > Float_t(kADMaxTDCWidth)*fCalibData->GetWidthResolution(board))
+	fTimeWidth[ipmt] = Float_t(kADMaxTDCWidth)*fCalibData->GetWidthResolution(board);
     }
   }
 
@@ -421,12 +421,12 @@ void AliADDigitizer::DigitizeSDigits()
   for (Int_t j=0; j<16; ++j){
     Float_t adcSignal = 0.0;
     Float_t adcClock = 0.0;
-    for (Int_t iClock = 0; iClock < kNClocks; ++iClock) {
+    for (Int_t iClock = 0; iClock < kADNClocks; ++iClock) {
       Int_t integrator = (iClock + fEvenOrOdd) % 2;
       AliDebug(1,Form("ADC %d %d %f",j,iClock,fAdc[j][iClock]));
       fAdc[j][iClock]  += gRandom->Gaus(fAdcPedestal[j][integrator], fAdcSigma[j][integrator]);
     }
-    for (Int_t iClock = 0; iClock < kNClocks; ++iClock) {
+    for (Int_t iClock = 0; iClock < kADNClocks; ++iClock) {
       Int_t integrator = (iClock + fEvenOrOdd) % 2;
       adcClock = (Int_t)fAdc[j][iClock];
       if(fAdc[j][iClock]>1023) adcClock = 1023;
@@ -537,9 +537,9 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
   DigitsArray();
   treeD->Branch("ADDigit", &fDigits); 
   
-  Short_t *chargeADC = new Short_t[kNClocks];
+  Short_t *chargeADC = new Short_t[kADNClocks];
   for (Int_t i=0; i<16; i++) {      
-    for (Int_t j = 0; j < kNClocks; ++j) {
+    for (Int_t j = 0; j < kADNClocks; ++j) {
       Int_t tempadc = Int_t(fAdc[i][j]);
       if (tempadc > 1023) tempadc = 1023;
       chargeADC[j] = tempadc;

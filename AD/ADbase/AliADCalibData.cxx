@@ -318,7 +318,7 @@ Float_t AliADCalibData::GetGain(Int_t channel)
   Float_t gain = 0;
   if (hv>0)
     //gain = TMath::Exp(fPMGainsA[channel]+fPMGainsB[channel]*TMath::Log(hv));
-    gain = TMath::Power(hv/fPMGainsA[channel],fPMGainsB[channel])*kChargePerADC/kNPhotonsPerMIP;
+    gain = TMath::Power(hv/fPMGainsA[channel],fPMGainsB[channel])*kADChargePerADC/kNPhotonsPerMIP;
   return gain;
 }
 //________________________________________________________________

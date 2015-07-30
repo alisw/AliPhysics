@@ -184,18 +184,18 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
     for(Int_t iChannel=0; iChannel < 16; ++iChannel) {
       Int_t offlineCh = kOfflineChannel[iChannel];
       // ADC charge samples
-      Short_t chargeADC[kNClocks];
+      Short_t chargeADC[kADNClocks];
       aBBflag[offlineCh] = kFALSE;
       aBGflag[offlineCh] = kFALSE;
-      for(Int_t iClock=0; iClock < kNClocks; ++iClock) {
+      for(Int_t iClock=0; iClock < kADNClocks; ++iClock) {
 	chargeADC[iClock] = rawStream.GetPedestal(iChannel,iClock);
 	if(rawStream.GetBBFlag(iChannel,iClock)) aBBflag[offlineCh]=kTRUE;
 	if(rawStream.GetBGFlag(iChannel,iClock)) aBGflag[offlineCh]=kTRUE;
       }
       // Integrator flag
-      Bool_t integrator = rawStream.GetIntegratorFlag(iChannel,kNClocks/2);
-      Bool_t BBflag = rawStream.GetBBFlag(iChannel,kNClocks/2); 
-      Bool_t BGflag = rawStream.GetBGFlag(iChannel,kNClocks/2);
+      Bool_t integrator = rawStream.GetIntegratorFlag(iChannel,kADNClocks/2);
+      Bool_t BBflag = rawStream.GetBBFlag(iChannel,kADNClocks/2); 
+      Bool_t BGflag = rawStream.GetBGFlag(iChannel,kADNClocks/2);
    
       // HPTDC data (leading time and width)
       Int_t board = AliADCalibData::GetBoardNumber(offlineCh);
@@ -208,7 +208,7 @@ void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTre
       
       fESDADfriend->SetBBScalers(offlineCh,rawStream.GetBBScalers(iChannel));
       fESDADfriend->SetBGScalers(offlineCh,rawStream.GetBGScalers(iChannel));
-      for (Int_t iEv = 0; iEv < kNClocks; iEv++) {
+      for (Int_t iEv = 0; iEv < kADNClocks; iEv++) {
 	  fESDADfriend->SetBBFlag(offlineCh,iEv,rawStream.GetBBFlag(iChannel,iEv));
 	  fESDADfriend->SetBGFlag(offlineCh,iEv,rawStream.GetBGFlag(iChannel,iEv));
       }
@@ -307,8 +307,8 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	Bool_t integrator = digit->Integrator();
         Float_t maxadc = 0;
         Int_t imax = -1;
-        Float_t adcPedSub[kNClocks];
-        for(Int_t iClock=0; iClock < kNClocks; ++iClock) {
+        Float_t adcPedSub[kADNClocks];
+        for(Int_t iClock=0; iClock < kADNClocks; ++iClock) {
 	  Short_t charge = digit->ChargeADC(iClock);
 	  Bool_t iIntegrator = (iClock%2 == 0) ? integrator : !integrator;
 	  Int_t k = pmNumber + 16*iIntegrator;
@@ -362,7 +362,7 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
 	    };
 
 	// Fill ESD friend object
-	for (Int_t iEv = 0; iEv < kNClocks; iEv++) {
+	for (Int_t iEv = 0; iEv < kADNClocks; iEv++) {
 	  fESDADfriend->SetPedestal(pmNumber,iEv,(Float_t)digit->ChargeADC(iEv));
 	  fESDADfriend->SetIntegratorFlag(pmNumber,iEv,(iEv%2 == 0) ? integrator : !integrator);
 	}

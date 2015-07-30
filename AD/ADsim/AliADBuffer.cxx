@@ -111,7 +111,7 @@ void AliADBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
   // Being called by Digits2Raw
   
   UInt_t data = 0;
-  for(Int_t i = 0; i < kNClocks; ++i) {
+  for(Int_t i = 0; i < kADNClocks; ++i) {
     if (adc[i] > 1023) {
       AliWarning(Form("ADC (channel=%d) saturated: %d. Truncating to 1023",channel,adc[i]));
       adc[i] = 1023;
@@ -119,7 +119,7 @@ void AliADBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
   }
   
   if(channel%2 == 0) {
-    for(Int_t i = 0; i < (kNClocks/2); ++i) {
+    for(Int_t i = 0; i < (kADNClocks/2); ++i) {
       data =   (adc[2*i] & 0x3ff);
       data |= ((integrator & 0x1) << 10);
 
@@ -128,7 +128,7 @@ void AliADBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
 
       f->WriteBuffer((char*)&data,sizeof(data));
     }
-    fRemainingWord = (adc[kNClocks-1] & 0x3ff);
+    fRemainingWord = (adc[kADNClocks-1] & 0x3ff);
     fRemainingWord |= ((integrator & 0x1) << 10);
   }
   else {
@@ -137,7 +137,7 @@ void AliADBuffer::WriteChannel(Int_t channel, Short_t *adc, Bool_t integrator){
     data |= ((integrator & 0x1) << 26);
     f->WriteBuffer((char*)&data,sizeof(data));
 
-    for(Int_t i = 1; i <= (kNClocks/2); ++i) {
+    for(Int_t i = 1; i <= (kADNClocks/2); ++i) {
       data =   (adc[2*i-1] & 0x3ff);
       data |= ((!integrator & 0x1) << 10);
 
