@@ -2428,10 +2428,14 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 			fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC);
 		}
 		if (fDoClusterQA > 0){
-			if(isTruePi0)
-				fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
-			if(isTrueEta)
-				fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
+			if(isTruePi0){
+				fHistoTruePi0NonLinearity[fiCut]->Fill(gammaMC0->Energy()/TrueGammaCandidate0->E(),TrueGammaCandidate0->E());
+				fHistoTruePi0NonLinearity[fiCut]->Fill(gammaMC1->Energy()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
+			}
+			if(isTrueEta){
+				fHistoTrueEtaNonLinearity[fiCut]->Fill(gammaMC0->Energy()/TrueGammaCandidate0->E(),TrueGammaCandidate0->E());
+				fHistoTrueEtaNonLinearity[fiCut]->Fill(gammaMC1->Energy()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
+			}
 		}
 		if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC != 2){
 // 			if(isTruePi0) {
@@ -2748,10 +2752,14 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 		if (isTruePi0)fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
 		if (isTrueEta)fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
 		if (fDoClusterQA > 0){
-			if(isTruePi0)
-				fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
-			if(isTrueEta)
-				fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
+			if(isTruePi0){
+				fHistoTruePi0NonLinearity[fiCut]->Fill(gammaMC0->E()/TrueGammaCandidate0->E(),TrueGammaCandidate0->E());
+				fHistoTruePi0NonLinearity[fiCut]->Fill(gammaMC1->E()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
+			}
+			if(isTrueEta){
+				fHistoTrueEtaNonLinearity[fiCut]->Fill(gammaMC0->E()/TrueGammaCandidate0->E(),TrueGammaCandidate0->E());
+				fHistoTrueEtaNonLinearity[fiCut]->Fill(gammaMC1->E()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
+			}
 		}
 		if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC != 2){
 // 			if(isTruePi0) {
