@@ -1,63 +1,12 @@
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [1] gSystem->Load("libpythia6.4.25.so");
-// root [2] gSystem->Load("libqpythia.so");
-// root [3] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE/geant3/TGeant3");
-// root [4] AliSimulation sim
-// root [5] sim.SetConfigFile("Config.C++")
-// root [6] sim.Run()
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TRandom.h>
-#include <TDatime.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeant3TGeo.h>
-#include <TGeoGlobalMagField.h>
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliConfig.h"
-#include "AliDecayerPythia.h"
-#include "AliGenPythia.h"
-#include "AliGenDPMjet.h"
-#include "AliGenHerwig.h"
-#include "AliMagF.h"
-#include "AliBODY.h"
-#include "AliMAG.h"
-#include "AliABSOv3.h"
-#include "AliDIPOv3.h"
-#include "AliHALLv3.h"
-#include "AliFRAMEv2.h"
-#include "AliSHILv3.h"
-#include "AliPIPEv3.h"
-#include "AliITSv11.h"
-#include "AliTPCv2.h"
-#include "AliTOFv6T0.h"
-#include "AliHMPIDv3.h"
-#include "AliZDCv4.h"
-#include "AliTRDv1.h"
-#include "AliTRDgeometry.h"
-#include "AliFMDv1.h"
-#include "AliMUONv1.h"
-#include "AliPHOSv1.h"
-#include "AliPHOSSimParam.h"
-#include "AliPMDv1.h"
-#include "AliT0v1.h"
-#include "AliEMCALv2.h"
-#include "AliACORDEv1.h"
-#include "AliVZEROv7.h"
-#include "AliSimulation.h"
-#endif
+// Configuration file for Herwig test
 
 enum PDC06Proc_t
 {
-  kPythia6, kPhojet, kHerwig, kRunMax
+  kPythia6, kHerwig, kRunMax
 };
 
 const char * pprRunName[] =
-{ "kPythia6", "kPhojet", "kHerwig" };
+{ "kPythia6", "kHerwig" };
 
 enum Mag_t
 {
@@ -81,7 +30,6 @@ static PprTrigConf_t strig = kDefaultPPTrig;// default PP trigger configuration
 
 class AliGenPythia;
 AliGenerator *MbPythia();
-AliGenerator *MbPhojet();
 AliGenerator *Herwig();
 void ProcessEnvironmentVars();
 
@@ -107,15 +55,7 @@ void Config()
   gRandom->SetSeed(seed);
   cerr << "Seed for random number generation= " << seed << endl;
 
-  // Libraries required by geant321
-#if defined(__CINT__)
-  gSystem->Load("liblhapdf"); // Parton density functions
-  gSystem->Load("libEGPythia6"); // TGenerator interface
-  gSystem->Load("libpythia6"); // Pythia
-  gSystem->Load("libAliPythia6"); // ALICE specific implementations
-  gSystem->Load("libgeant321");
-#endif
-
+  // Transport
   new TGeant3TGeo("C++ Interface to Geant3");
 
   //=======================================================================
@@ -193,9 +133,6 @@ void Config()
   {
   case kPythia6:
     gener = MbPythia();
-    break;
-  case kPhojet:
-    gener = MbPhojet();
     break;
   case kHerwig:
   default:
@@ -450,36 +387,11 @@ AliGenerator* MbPythia()
   return pythia;
 }
 
-//          DPMJET
-AliGenerator* MbPhojet()
-{
-  comment = comment.Append(" pp at 14 TeV: Phojet low-pt");
-
-#if defined(__CINT__)
-  gSystem->Load("libDPMJET"); // Parton density functions
-  gSystem->Load("libTDPMjet"); // Parton density functions
-#endif
-
-  AliGenDPMjet* dpmjet = new AliGenDPMjet(-1);
-  dpmjet->SetMomentumRange(0, 999999.);
-  dpmjet->SetThetaRange(0., 180.);
-  dpmjet->SetYRange(-12., 12.);
-  dpmjet->SetPtRange(0, 1000.);
-  dpmjet->SetProcess(kDpmMb);
-  dpmjet->SetEnergyCMS(energy);
-
-  return dpmjet;
-}
 
 //          HERWIG
 AliGenerator* Herwig()
 {
   comment = comment.Append("pp at 14 TeV: Herwig");
-
-#if defined(__CINT__)
-  gSystem->Load("libHERWIG"); // HERWIG library
-  gSystem->Load("libTHerwig"); // HERWIG library
-#endif
 
     AliGenHerwig *herwig = new AliGenHerwig(-1);
     // final state kinematic cuts
