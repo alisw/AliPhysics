@@ -308,7 +308,7 @@ c----------------------------------------------------------------------
       end
 
 c----------------------------------------------------------------------
-      subroutine param
+      subroutine paramepos
 c----------------------------------------------------------------------
 c  Set the parameter of the parametrisation of the eikonale.
 c  We group the parameters into 4 array with a dimension of idxD1(=1)

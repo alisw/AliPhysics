@@ -6254,7 +6254,7 @@ c---------------------------------------
       do iclpro=iclpro1,iclpro2 !hadron type (1 - pion, 2 - nucleon, 3 - kaon, 4 - charm) 
       do icltar=icltar1,icltar2 !hadron type (2 - nucleon)
       do iclegy=iclegy2,iclegy1,-1
-        call param
+        call paramepos
       enddo
       do iiclegy=iclegy2,iclegy1,-1
         engy=egyfac**(iiclegy-1)*egylow
