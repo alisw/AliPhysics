@@ -320,16 +320,16 @@ const {
   Double_t bzPhi=pzPhi/ePhi;
  
   TVector3 vecK1Phiframe;
-  TLorentzVector vecK1(PxProng(indexK1),PyProng(indexK1),PzProng(indexK1),EProng(indexK1,321));
-  vecK1.Boost(-bxPhi,-byPhi,-bzPhi);
-  vecK1.Boost(vecK1Phiframe);
-  vecK1Phiframe=vecK1.BoostVector();
+  TLorentzVector* vecK1=new TLorentzVector(PxProng(indexK1),PyProng(indexK1),PzProng(indexK1),EProng(indexK1,321));
+  vecK1->Boost(-bxPhi,-byPhi,-bzPhi);                                          
+  vecK1->Boost(vecK1Phiframe); 
+  vecK1Phiframe=vecK1->BoostVector();   
     
   TVector3 vecPiPhiframe;
-  TLorentzVector vecPi(PxProng(indexPi),PyProng(indexPi),PzProng(indexPi),EProng(indexPi,211));
-  vecPi.Boost(-bxPhi,-byPhi,-bzPhi);
-  vecPi.Boost(vecPiPhiframe);
-  vecPiPhiframe=vecPi.BoostVector();
+  TLorentzVector* vecPi=new TLorentzVector(PxProng(indexPi),PyProng(indexPi),PzProng(indexPi),EProng(indexPi,211));
+  vecPi->Boost(-bxPhi,-byPhi,-bzPhi);                                         
+  vecPi->Boost(vecPiPhiframe); 
+  vecPiPhiframe=vecPi->BoostVector();   
                                                              
   Double_t innera=vecPiPhiframe.Dot(vecK1Phiframe);
   Double_t norm1a=TMath::Sqrt(vecPiPhiframe.Dot(vecPiPhiframe));
@@ -359,10 +359,10 @@ const {
   Double_t bzD=Pz()/E(431);
 
   TVector3 piDsframe;
-  TLorentzVector vecPi(PxProng(indexPi),PyProng(indexPi),PzProng(indexPi),EProng(indexPi,211));
-  vecPi.Boost(-bxD,-byD,-bzD);
-  vecPi.Boost(piDsframe);
-  piDsframe=vecPi.BoostVector();
+  TLorentzVector* vecPi=new TLorentzVector(PxProng(indexPi),PyProng(indexPi),PzProng(indexPi),EProng(indexPi,211));  
+  vecPi->Boost(-bxD,-byD,-bzD);                                                
+  vecPi->Boost(piDsframe); 
+  piDsframe=vecPi->BoostVector();   
  
   TVector3 vecDs(Px(),Py(),Pz());
       
@@ -403,4 +403,11 @@ Double_t AliAODRecoDecayHF3Prong::ComputeSigmaVert(const AliAODEvent* aod) const
   delete secVert;
   return disp;
   
+}
+//--------------------------------------------------------------------------
+void AliAODRecoDecayHF3Prong::DeleteRecoD(){
+  //Delete data member to reduce size of AliAOD.VertexingHF.root
+  //They will be recomputed at the analysis level
+  AliAODRecoDecayHF::DeleteRecoD();//delete data members of AliAODRecoDecayHF
+  if(fSigmaVert) fSigmaVert =0.;
 }

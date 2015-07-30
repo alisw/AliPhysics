@@ -887,7 +887,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 18,-0.5,17.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 19,-0.5,18.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -912,6 +912,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   if(fSys==1) fNentries->GetXaxis()->SetBinLabel(16,"Nev in centr");
   if(fIsRejectSDDClusters) fNentries->GetXaxis()->SetBinLabel(17,"SDD-Cls Rej");
   fNentries->GetXaxis()->SetBinLabel(18,"Phys.Sel.Rej");
+  fNentries->GetXaxis()->SetBinLabel(19,"D0 failed to be filled");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
@@ -978,9 +979,6 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
-  //cout<<"I'm in UserExec"<<endl;
-
-
   //cuts order
   //       printf("    |M-MD0| [GeV]    < %f\n",fD0toKpiCuts[0]);
   //     printf("    dca    [cm]  < %f\n",fD0toKpiCuts[1]);
@@ -992,9 +990,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
   //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
   
-
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-
   TString bname;
   if(fArray==0){ //D0 candidates
     // load D0->Kpi candidates
@@ -1005,9 +1001,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     //cout<<"LS candidates"<<endl;
     bname="LikeSign2Prong";
   }
-
   TClonesArray *inputArray=0;
- 
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
     // event in memory rather than the input (ESD) event.    
@@ -1026,12 +1020,10 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     inputArray=(TClonesArray*)aod->GetList()->FindObject(bname.Data());
   }
 
-
   if(!inputArray || !aod) {
     printf("AliAnalysisTaskSED0Mass::UserExec: input branch not found!\n");
     return;
   }
-  
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
@@ -1110,8 +1102,14 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   if(fDebug>2) printf("Number of D0->Kpi: %d\n",nInD0toKpi);
 
   // FILE *f=fopen("4display.txt","a");
-  // fprintf(f,"Number of D0->Kpi: %d\n",nInD0toKpi);
+  // printf("Number of D0->Kpi: %d\n",nInD0toKpi);
   Int_t nSelectedloose=0,nSelectedtight=0;  
+
+  // vHF object is needed to call the method that refills the missing info of the candidates
+  // if they have been deleted in dAOD reconstruction phase
+  // in order to reduce the size of the file
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
+
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
  
@@ -1120,12 +1118,10 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	continue; //skip the D0 from Dstar
       }
 
-    // Bool_t unsetvtx=kFALSE;
-    // if(!d->GetOwnPrimaryVtx()) {
-    //   d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-    //   unsetvtx=kTRUE;
-    // }
-  
+    if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
+      fNentries->Fill(18); //monitor how often this fails 
+      continue;
+    }
     
     if ( fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(421)) ) {
       nSelectedloose++;
@@ -1173,6 +1169,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   } //end for prongs
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
+  delete vHF;
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
@@ -1732,60 +1729,60 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       //fill pt and phi distrib for prongs with M cut
 
       if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3))){
-	  for(Int_t it=0; it<2; it++){
-	    fillthis="hptD0B_";
-	    fillthis+=ptbin;
-	    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt());
-	    fillthis="hphiD0B_";
-	    fillthis+=ptbin;
-	    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Phi());
+  	for(Int_t it=0; it<2; it++){
+  	  fillthis="hptD0B_";
+ 	  fillthis+=ptbin;
+ 	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt());
+ 	  fillthis="hphiD0B_";
+ 	  fillthis+=ptbin;
+ 	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Phi());
 
-	    Int_t nPointsITS = 0;
-	    for (Int_t il=0; il<6; il++){ 
-	      if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(il)) nPointsITS++;
-	    }
-	    fillthis="hNITSpointsD0vsptB_";
-	    fillthis+=ptbin;
-	    ((TH2F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt(), nPointsITS);
-	    fillthis="hNSPDpointsD0B_";
-	    fillthis+=ptbin;
-	    if(!(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0)) && !(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1))){ //no SPD points
-	      ((TH1I*)listout->FindObject(fillthis))->Fill(0);
-	    } 
-	    if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0) && !(((AliAODTrack*)(fDaughterTracks.UncheckedAt(it)))->HasPointOnITSLayer(1))){ //kOnlyFirst
-	      ((TH1I*)listout->FindObject(fillthis))->Fill(1);
-	    } 
-	    if(!(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0)) && ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1)){ //kOnlySecond
-	      ((TH1I*)listout->FindObject(fillthis))->Fill(2);
-	    }
-	    if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0) && ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1)){ //kboth
-	      ((TH1I*)listout->FindObject(fillthis))->Fill(3);
-	    } 
-	    fillthis="hNclsD0vsptB_";
-	    fillthis+=ptbin;
-	    Float_t mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt();
-	    Float_t ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->GetTPCNcls();
-	    ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);	    
+ 	  Int_t nPointsITS = 0;
+ 	  for (Int_t il=0; il<6; il++){ 
+ 	    if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(il)) nPointsITS++;
+ 	  }
+ 	  fillthis="hNITSpointsD0vsptB_";
+ 	  fillthis+=ptbin;
+	  ((TH2F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt(), nPointsITS);
+	  fillthis="hNSPDpointsD0B_";
+	  fillthis+=ptbin;
+	  if(!(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0)) && !(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1))){ //no SPD points
+	    ((TH1I*)listout->FindObject(fillthis))->Fill(0);
+	  } 
+	  if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0) && !(((AliAODTrack*)(fDaughterTracks.UncheckedAt(it)))->HasPointOnITSLayer(1))){ //kOnlyFirst
+	    ((TH1I*)listout->FindObject(fillthis))->Fill(1);
+	  } 
+	  if(!(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0)) && ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1)){ //kOnlySecond
+	    ((TH1I*)listout->FindObject(fillthis))->Fill(2);
 	  }
-
-
+	  if(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(0) && ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->HasPointOnITSLayer(1)){ //kboth
+	    ((TH1I*)listout->FindObject(fillthis))->Fill(3);
+	  } 
+	  fillthis="hNclsD0vsptB_";
+	  fillthis+=ptbin;
+	  Float_t mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt();
+	  Float_t ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->GetTPCNcls();
+	  ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);	    
 	}
 
-	if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) {
-	  for(Int_t it=0; it<2; it++){
-	    fillthis="hptD0barB_";
-	    fillthis+=ptbin;
-	    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt());
-	    fillthis="hphiD0barB_";
-	    fillthis+=ptbin;
-	    ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Phi());
-	    fillthis="hNclsD0barvsptB_";
-	    fillthis+=ptbin;
-	    Float_t mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt();
-	    Float_t ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->GetTPCNcls();
-	    ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);
-	  }
+
+         }
+
+        if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) {
+ 	for(Int_t it=0; it<2; it++){
+	  fillthis="hptD0barB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt());
+	  fillthis="hphiD0barB_";
+	  fillthis+=ptbin;
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Phi());
+	  fillthis="hNclsD0barvsptB_";
+	  fillthis+=ptbin;
+	  Float_t mom = ((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->Pt();
+	  Float_t ncls = (Float_t)((AliAODTrack*)fDaughterTracks.UncheckedAt(it))->GetTPCNcls();
+	  ((TH2F*)listout->FindObject(fillthis))->Fill(mom, ncls);
 	}
+      }
 	
       fillthis="hd0B_";
       fillthis+=ptbin;
@@ -2004,8 +2001,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //cout<<"check cuts = "<<endl;
   //cuts->PrintAll();
   if (!fIsSelectedCandidate){
-    //cout<<"Not Selected"<<endl;
-    //cout<<"Rejected because "<<cuts->GetWhy()<<endl;
+    //cout<<" cut " << cuts << " Rejected because "<<cuts->GetWhy()<<endl;
     return;
   }
 
@@ -2030,13 +2026,13 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //   return;
   // }
   // else{
-    // if(prong->Charge()==1) {
-    //   ((TH1F*)fDistr->FindObject("hpospair"))->Fill(fCuts->GetNPtBins()+ptbin);
-    //   //fTotPosPairs[ptbin]++;
-    // } else {
-    //   ((TH1F*)fDistr->FindObject("hnegpair"))->Fill(fCuts->GetNPtBins()+ptbin);
-    //   //fTotNegPairs[ptbin]++;
-    // }
+  // if(prong->Charge()==1) {
+  //   ((TH1F*)fDistr->FindObject("hpospair"))->Fill(fCuts->GetNPtBins()+ptbin);
+  //   //fTotPosPairs[ptbin]++;
+  // } else {
+  //   ((TH1F*)fDistr->FindObject("hnegpair"))->Fill(fCuts->GetNPtBins()+ptbin);
+  //   //fTotNegPairs[ptbin]++;
+  // }
   //  }
  
   // for(Int_t it=0;it<2;it++){
@@ -2166,7 +2162,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
       //      cout<<"Filling "<<fillthis<<endl;
 
       //      printf("Fill mass with D0");
-       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
+      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,weigD0);
       
 
       if(fFillPtHist){ 
@@ -2275,7 +2271,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
       fillthis+=ptbin;
       //      printf("Fill mass with D0bar");
 
-	((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar,weigD0bar);
+      ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar,weigD0bar);
       
 
       if(fFillPtHist){ 
@@ -2559,7 +2555,7 @@ Int_t AliAnalysisTaskSED0Mass::CheckOrigin(TClonesArray* arrayMC, AliAODMCPartic
   //
   // checking whether the mother of the particles come from a charm or a bottom quark
   //
-  printf(" AliAnalysisTaskSED0MassV1::CheckOrigin() \n");
+  printf(" AliAnalysisTaskSED0Mass V1::CheckOrigin() \n");
 	
   Int_t pdgGranma = 0;
   Int_t mother = 0;

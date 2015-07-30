@@ -243,12 +243,23 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
   Int_t nSelectedAna =0;
   Int_t nSelectedProd =0;
+  
+  // vHF object is needed to call the method that refills the missing info of the candidates
+  // if they have been deleted in dAOD reconstruction phase
+  // in order to reduce the size of the file
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
   // loop over the tracks to search for candidates soft pion 
   for (Int_t iDStartoD0pi = 0; iDStartoD0pi<arrayDStartoD0pi->GetEntriesFast(); iDStartoD0pi++) {
 
     // D* candidates and D0 from D*
     AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
+     if(!dstarD0pi->GetIsFilled()){
+       if(!(vHF->FillRecoCasc(aodEvent,dstarD0pi))) {//Fill the data members of the candidate only if they are empty.
+         fCEvents->Fill(12); //monitor how often this fails 
+         continue;
+       }
+     } 
     if(!dstarD0pi->GetSecondaryVtx()) continue;
     AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
     if (!theD0particle) continue;
@@ -470,6 +481,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
   
   fCounter->StoreCandidates(aodEvent,nSelectedProd,kTRUE);  
   fCounter->StoreCandidates(aodEvent,nSelectedAna,kFALSE); 
+  
+  delete vHF;
 
   AliDebug(2, Form("Found %i Reco particles that are D*!!",icountReco));
   
@@ -509,8 +522,6 @@ void AliAnalysisTaskSEDStarSpectra::Terminate(Option_t*)
     printf("ERROR: fOutputPID not available\n");
     return;
   }
- 
-
   return;
 }
 //___________________________________________________________________________
@@ -534,7 +545,7 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
     
   // define histograms
   DefineHistograms();
-
+  
   //Counter for Normalization
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
   fCounter->Init();
@@ -551,10 +562,17 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
 void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   // Create histograms
 
-  fCEvents = new TH1F("fCEvents","conter",11,0,11);
+  fCEvents = new TH1F("fCEvents","conter",13,0,13);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetTitle("1");
   fCEvents->GetYaxis()->SetTitle("counts");
+  fCEvents->GetXaxis()->SetBinLabel(2,"no. of events");
+  fCEvents->GetXaxis()->SetBinLabel(3,"good prim vtx and B field");
+  fCEvents->GetXaxis()->SetBinLabel(4,"no event selected");
+  fCEvents->GetXaxis()->SetBinLabel(5,"no vtx contributors");
+  fCEvents->GetXaxis()->SetBinLabel(6,"trigger for PbPb");
+  fCEvents->GetXaxis()->SetBinLabel(7,"no z vtx");
+  fCEvents->GetXaxis()->SetBinLabel(12,"no. of D0 fail to be rec");
   fOutput->Add(fCEvents);
 
   fTrueDiff2 = new TH2F("DiffDstar_pt","True Reco diff vs pt",200,0,15,900,0,0.3);
