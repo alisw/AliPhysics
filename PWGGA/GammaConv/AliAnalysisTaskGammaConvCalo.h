@@ -173,7 +173,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		THnSparseF 							**fSparseMotherInvMassPtZM;			//! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherBackInvMassPt;		//! array of histogram with BG for mixed event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherBackInvMassPtZM;		//! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
-		TH2F 								**fHistoMotherInvMassEalpha;		//! array of histograms with alpha cut of 0.1 for inv mass vs pt
+		TH2F 								**fHistoMotherInvMassPtAlpha;		//! array of histograms with alpha cut of 0.1 for inv mass vs pt
 		TH2F 								**fHistoMotherPi0PtY;				//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
 		TH2F 								**fHistoMotherEtaPtY;				//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
 		TH2F 								**fHistoMotherPi0PtAlpha;			//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
@@ -189,8 +189,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F				 				**fHistoPhotonPairPtconv;			//! array of histo for pairs vs. pt of converted photon
 		TH2F				 				**fHistoPhotonPairMixedEventPtconv;	//! array of histo for pairs vs. pt of converted photon
 		// histograms for rec photon clusters
-		TH1F								** fHistoClusGammaPt;				//! array of histos with cluster, pt
-		TH1F								** fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
+		TH1F								**fHistoClusGammaPt;				//! array of histos with cluster, pt
+		TH1F								**fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
 										
 		//histograms for pure MC quantities
 		TH1I 								**fHistoMCHeaders;					//! array of histos for header names

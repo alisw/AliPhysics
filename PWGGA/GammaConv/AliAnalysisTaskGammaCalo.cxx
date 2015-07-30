@@ -88,7 +88,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fSparseMotherInvMassPtZM(NULL),
 	fHistoMotherBackInvMassPt(NULL),
 	fSparseMotherBackInvMassPtZM(NULL),
-	fHistoMotherInvMassEalpha(NULL),
+	fHistoMotherInvMassPtAlpha(NULL),
 	fHistoMotherPi0PtY(NULL),
 	fHistoMotherEtaPtY(NULL),
 	fHistoMotherPi0PtAlpha(NULL),
@@ -283,7 +283,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fSparseMotherInvMassPtZM(NULL),
 	fHistoMotherBackInvMassPt(NULL),
 	fSparseMotherBackInvMassPtZM(NULL),
-	fHistoMotherInvMassEalpha(NULL),
+	fHistoMotherInvMassPtAlpha(NULL),
 	fHistoMotherPi0PtY(NULL),
 	fHistoMotherEtaPtY(NULL),
 	fHistoMotherPi0PtAlpha(NULL),
@@ -574,7 +574,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 		fHistoMotherInvMassPt = new TH2F*[fnCuts];
 		fHistoMotherInvMass3ClusterPt = new TH2F*[fnCuts];
 		fHistoMotherBackInvMassPt = new TH2F*[fnCuts];
-		fHistoMotherInvMassEalpha = new TH2F*[fnCuts];
+		fHistoMotherInvMassPtAlpha = new TH2F*[fnCuts];
 		if (fDoMesonQA > 0 && fDoMesonQA < 3){
 			fHistoMotherPi0PtY =  new TH2F*[fnCuts];
 			fHistoMotherEtaPtY =  new TH2F*[fnCuts];
@@ -704,8 +704,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 			fESDList[iCut]->Add(fHistoMotherInvMass3ClusterPt[iCut]);
 			fHistoMotherBackInvMassPt[iCut] = new TH2F("ESD_Background_InvMass_Pt","ESD_Background_InvMass_Pt",800,0,0.8,350,0,35);
 			fESDList[iCut]->Add(fHistoMotherBackInvMassPt[iCut]);
-			fHistoMotherInvMassEalpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_alpha","ESD_Mother_InvMass_vs_E_alpha",800,0,0.8,350,0,35);
-			fESDList[iCut]->Add(fHistoMotherInvMassEalpha[iCut]);
+			fHistoMotherInvMassPtAlpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_Pt_Alpha","ESD_Mother_InvMass_vs_Pt_Alpha",800,0,0.8,350,0,35);
+			fESDList[iCut]->Add(fHistoMotherInvMassPtAlpha[iCut]);
 			if(fDoMesonQA == 1 && fIsMC != 2 ){
 				fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_Pt_Calib","ESD_Mother_InvMass_Pt_Calib",800,0,0.8,350,0,35);
 				fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
@@ -717,7 +717,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoMotherInvMassPt[iCut]->Sumw2();
 				fHistoMotherInvMass3ClusterPt[iCut]->Sumw2();
 				fHistoMotherBackInvMassPt[iCut]->Sumw2();
-				fHistoMotherInvMassEalpha[iCut]->Sumw2();
+				fHistoMotherInvMassPtAlpha[iCut]->Sumw2();
 			}
 			
 			if (fDoMesonQA > 0 && fDoMesonQA < 3 ){
@@ -2215,7 +2215,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
 					fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
 					// fill new histograms
 					if(abs(pi0cand->GetAlpha())<0.1)
-						fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E(), fWeightJetJetMC);
+						fHistoMotherInvMassPtAlpha[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
 					
 					if (fDoMesonQA > 0 && fDoMesonQA < 3){
 						if ( pi0cand->M() > 0.05 && pi0cand->M() < 0.17){
@@ -2429,10 +2429,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 		}
 		if (fDoClusterQA > 0){
 			if(isTruePi0)
-				fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate0->E()/gammaMC0->Energy(),gammaMC0->Energy());
 				fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
 			if(isTrueEta)
-				fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate0->E()/gammaMC0->Energy(),gammaMC0->Energy());
 				fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
 		}
 		if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC != 2){
@@ -2751,10 +2749,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 		if (isTrueEta)fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
 		if (fDoClusterQA > 0){
 			if(isTruePi0)
-				fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate0->E()/gammaMC0->E(),gammaMC0->E());
 				fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
 			if(isTrueEta)
-				fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate0->E()/gammaMC0->E(),gammaMC0->E());
 				fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
 		}
 		if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC != 2){
