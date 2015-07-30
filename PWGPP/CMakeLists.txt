@@ -220,6 +220,7 @@ set ( SRCS19
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS20 
   HMTFqa/AliAnalysisMultCorrTaskQA.cxx  
+  HMTFqa/AliAnalysisTaskLeadingPt.cxx  
   )
 
 list ( APPEND SRCS 
