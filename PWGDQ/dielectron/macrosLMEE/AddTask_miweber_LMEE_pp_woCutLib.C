@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_miweber_LMEE_pp_woCutLib(Int_t cutDefinition = 1, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_pp"){
+AliAnalysisTask *AddTask_miweber_LMEE_pp_woCutLib(Int_t cutDefinition = 1, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_pp", Bool_t isNano = kFALSE){
 
 
   //get the current analysis manager
@@ -33,17 +33,24 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp_woCutLib(Int_t cutDefinition = 1, TStri
   
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData_miweber_pp_woCutLib");
-  if (!hasMC) task->UsePhysicsSelection();
+
+  // for MC no  need for physics selection and for Nano AODs this has been done already  
+  if (!hasMC && !isNano) task->UsePhysicsSelection();
 
   //Add event filter
   Int_t triggerNames=(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kINT8);//pp 2010/2011 Min Bias, can be set also from outside
-  task->SelectCollisionCandidates(triggerNames);
-  task->SetTriggerMask(triggerNames);
-  task->SetRejectPileup();
+
+  // for Nano AODs this has been done already  
+  if(!isNano){
+    task->SelectCollisionCandidates(triggerNames);
+    task->SetTriggerMask(triggerNames);
+    task->SetRejectPileup();
+  }
+
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 
   //Add event filter
-  task->SetEventFilter( GetEventCuts() );
+  //task->SetEventFilter( GetEventCuts() );
 
   // Add the task to the manager
   mgr->AddTask(task);
