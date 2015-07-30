@@ -196,7 +196,7 @@ private:
   Bool_t       fZEM1TDChit;   // true if ZEM1 TDC has at least 1 hit
   Bool_t       fZEM2TDChit;   // true if ZEM2 TDC has at least 1 hit
   //
-  Int_t        fZDCTDCChannels[7];
+  Int_t        fZDCTDCChannels[8];
   
   ClassDef(AliESDZDC,20)
 };
