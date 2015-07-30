@@ -3270,9 +3270,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 			if (!matched){
 				if (fDoClusterQA > 0){
 					if(isTruePi0)
-						fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
+						fHistoTruePi0NonLinearity[fiCut]->Fill(gammaMC1->Energy()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
 					if(isTrueEta)
-						fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->Energy(),gammaMC1->Energy());
+						fHistoTrueEtaNonLinearity[fiCut]->Fill(gammaMC1->Energy()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
 				}
 				if (fDoMesonQA > 0){
 					if (isTruePi0){
@@ -3483,9 +3483,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 		if ( !matched){
 			if (fDoClusterQA > 0){
 				if(isTruePi0)
-					fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
+					fHistoTruePi0NonLinearity[fiCut]->Fill(gammaMC1->E()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
 				if(isTrueEta)
-					fHistoTrueEtaNonLinearity[fiCut]->Fill(TrueGammaCandidate1->E()/gammaMC1->E(),gammaMC1->E());
+					fHistoTrueEtaNonLinearity[fiCut]->Fill(gammaMC1->E()/TrueGammaCandidate1->E(),TrueGammaCandidate1->E());
 			}
 			if (fDoMesonQA > 0){
 				if (isTruePi0){
