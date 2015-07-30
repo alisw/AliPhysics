@@ -91,7 +91,7 @@ public:
   void      CookLabels();
   Bool_t    CookPID();
   Bool_t    Fit(UChar_t opt=0); // OBSOLETE
-  Bool_t    FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mdet, Float_t bz, Int_t chg, Int_t opt=0);
+  Bool_t    FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mdet, Float_t bz, Int_t chg, Int_t opt=0, Float_t tgl=0);
   Double_t  EstimatedCrossPoint(AliTRDpadPlane *pp, Float_t bz);
   Bool_t    Init(const AliTRDtrackV1 *track);
   void      Init(const AliRieman *fit);

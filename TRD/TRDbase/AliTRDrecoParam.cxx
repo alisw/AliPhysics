@@ -65,6 +65,9 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fRawStreamVersion("DEFAULT")
   ,fdzdxXcrossFactor(0.)
   ,fMinMaxCutSigma(4.)
+//
+  ,fZCorrCoefNRC(1.619974) // RS temporary
+//
   ,fMinLeftRightCutSigma(8.)
   ,fClusMaxThresh(4.5)
   ,fClusSigThresh(3.5)
@@ -138,6 +141,9 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fRawStreamVersion(ref.fRawStreamVersion)
   ,fdzdxXcrossFactor(ref.fdzdxXcrossFactor)
   ,fMinMaxCutSigma(ref.fMinMaxCutSigma)
+
+  ,fZCorrCoefNRC(ref.fZCorrCoefNRC)
+
   ,fMinLeftRightCutSigma(ref.fMinLeftRightCutSigma)
   ,fClusMaxThresh(ref.fClusMaxThresh)
   ,fClusSigThresh(ref.fClusSigThresh)
@@ -201,6 +207,9 @@ AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
   fRawStreamVersion     = ref.fRawStreamVersion;
   fdzdxXcrossFactor     = ref.fdzdxXcrossFactor;
   fMinMaxCutSigma       = ref.fMinMaxCutSigma;
+
+  fZCorrCoefNRC         = ref.fZCorrCoefNRC;
+
   fMinLeftRightCutSigma = ref.fMinLeftRightCutSigma;
   fClusMaxThresh        = ref.fClusMaxThresh;
   fClusSigThresh        = ref.fClusSigThresh;

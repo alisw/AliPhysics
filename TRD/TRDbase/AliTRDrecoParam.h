@@ -98,7 +98,10 @@ public:
   Double_t GetCorrDZDXxcross() const        { return fdzdxXcrossFactor;}
   void     GetYcorrTailCancel(Int_t it, Double_t par[3]) const;
   Double_t GetS2Ycorr(Bool_t rc, Bool_t chg) const     { return fS2Ycorr[2*rc+chg];}
-
+  //
+  Double_t  GetZCorrCoefNRC()         const {return fZCorrCoefNRC;} // z = Zcenter + fZCorrCoefNRC*tgl (RS temp fix)
+  Double_t  SetZCorrCoefNRC(double v=0)     {return fZCorrCoefNRC=v;} 
+  //
   Bool_t   IsArgon() const                  { return TESTBIT(fFlags, kDriftGas); }
   Bool_t   IsCheckTimeConsistency() const   { return kCheckTimeConsistency;}
   Bool_t   IsOverPtThreshold(Double_t pt) const {return Bool_t(pt>fkPtThreshold);}
@@ -209,6 +212,8 @@ private:
   Double_t  fdzdxXcrossFactor;       // bias in dzdx of estimated xcross [RC]
   Double_t  fYcorrTailCancel[4][3];  // y correction due to wrong tail cancellation. [0] bz<0 && !RC, [1] bz>0 && !RC, [2] bz<0 && RC [3] bz>0 && RC
   Double_t  fS2Ycorr[4];             // inflation factor of error parameterization in r-phi due to wrong estimation of residuals.
+  //
+  Double_t  fZCorrCoefNRC;           // correction for most probable Z value of NRC tracklets: z = Zcenter + fZCorrCoefNRC*tgl (RS temp fix)
   
   // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
@@ -224,7 +229,7 @@ private:
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
 
-  ClassDef(AliTRDrecoParam, 14)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 15)       // Reconstruction parameters for TRD detector
 
 };
 

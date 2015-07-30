@@ -1128,6 +1128,9 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
   for (Int_t i=0; i<nc; i++) {
     AliTOFcluster *c=(AliTOFcluster*)clusters->UncheckedAt(i);
 //PH    fClusters[i]=new AliTOFcluster(*c); fN++;
+
+    if (!c->Misalign()) AliWarning("Can't misalign this cluster !"); // RS
+
     fClusters[i]=c; fN++;
     c->SetESDID(-1);
   // Fill Digits QA histos

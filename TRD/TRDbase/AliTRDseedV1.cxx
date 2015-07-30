@@ -2157,7 +2157,7 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
 
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mDet, Float_t bz, Int_t chg, Int_t opt)
+Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mDet, Float_t bz, Int_t chg, Int_t opt, Float_t tgl)
 {
 //
 // Linear fit of the clusters attached to the tracklet
@@ -2311,7 +2311,7 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mDet, Float_t bz
   // the y variance of the tracklet
   fX   = 0.;//set reference to anode wire
   Double_t par[3] = {0.,0.,fX}, cov[3];
-  if(!AliTRDtrackletOflHelper::Fit(n, xc, yc, sy, par, 1.5, cov)){ 
+  if(!AliTRDtrackletOflHelper::Fit(n, xc, yc, sy, par, 1.5, cov)) { 
     AliDebug(1, Form("Tracklet fit failed D[%03d].", fDet));
     SetErrorMsg(kFitCl);
     return kFALSE; 
@@ -2331,7 +2331,14 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, TGeoHMatrix *mDet, Float_t bz
     return kFALSE;
   }
   if(!IsRowCross()){ 
-    Double_t padEffLength(fPad[0] - TMath::Abs(dzdx));
+    //    Double_t padEffLength(fPad[0] - TMath::Abs(dzdx));
+    Double_t padEffLength(fPad[0]);
+    //
+    // correct Z for most probable value accounting for the fact that it is not RC
+    double zCorrNRC = tgl*recoParam->GetZCorrCoefNRC();
+    padEffLength -= TMath::Abs(zCorrNRC*2);
+    fZfit[0] += zCorrNRC;
+    fYfit[0] += GetTilt()*zCorrNRC;
     fS2Z = padEffLength*padEffLength/12.;
   }
   AliDebug(2, Form("[I]  x[cm]=%6.2f y[cm]=%+5.2f z[cm]=%+6.2f dydx[deg]=%+5.2f", GetX(), GetY(), GetZ(), TMath::ATan(fYfit[1])*TMath::RadToDeg()));

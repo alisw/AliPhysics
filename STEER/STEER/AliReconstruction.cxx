@@ -3791,6 +3791,7 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
       if (nsp) {
 	AliTrackPointArray *sp = new AliTrackPointArray(nsp);
 	track->SetTrackPointArray(sp);
+	sp->SetBit(AliTrackPointArray::kTOFBugFixed);
 	Int_t isptrack = 0;
 	for (Int_t iDet = 5; iDet >= 0; iDet--) {
 	  AliTracker *tracker = fTracker[iDet];
