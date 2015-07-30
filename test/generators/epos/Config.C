@@ -1,68 +1,4 @@
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [1] gSystem->Load("libpythia6.4.25.so");
-// root [2] gSystem->Load("libqpythia.so");
-// root [3] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE/geant3/TGeant3");
-// root [4] AliSimulation sim
-// root [5] sim.SetConfigFile("Config.C++")
-// root [6] sim.Run()
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TRandom.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeant3TGeo.h>
-#include <TPDGCode.h>
-#include <TF1.h>
-#include <TGeoGlobalMagField.h>
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliConfig.h"
-#include "AliGenerator.h"
-#include "AliLog.h"
-#include "AliDecayerPythia.h"
-#include "AliGenHIJINGpara.h"
-#include "AliGenHijing.h"
-#include "AliGenCocktail.h"
-#include "AliGenSlowNucleons.h"
-#include "AliSlowNucleonModelExp.h"
-#include "AliGenParam.h"
-#include "AliGenMUONlib.h"
-#include "AliGenSTRANGElib.h"
-#include "AliGenMUONCocktail.h"
-#include "AliGenCocktail.h"
-#include "AliGenGeVSim.h"
-#include "AliGeVSimParticle.h"
-#include "AliGenPythia.h"
-#include "AliMagF.h"
-#include "AliBODY.h"
-#include "AliMAG.h"
-#include "AliABSOv3.h"
-#include "AliDIPOv3.h"
-#include "AliHALLv3.h"
-#include "AliFRAMEv2.h"
-#include "AliSHILv3.h"
-#include "AliPIPEv3.h"
-#include "AliITSv11.h"
-#include "AliTPCv2.h"
-#include "AliTOFv6T0.h"
-#include "AliHMPIDv3.h"
-#include "AliZDCv4.h"
-#include "AliTRDv1.h"
-#include "AliFMDv1.h"
-#include "AliMUONv1.h"
-#include "AliPHOSv1.h"
-#include "AliPMDv1.h"
-#include "AliT0v1.h"
-#include "AliEMCALv2.h"
-#include "AliACORDEv1.h"
-#include "AliVZEROv7.h"
-#include "AliGenEpos.h"
-#include "AliTRDgeometry.h"
-#include "AliSimulation.h"
-#endif
+// Configuration file for EPOS test
 
 enum PprTrigConf_t
 {
@@ -99,17 +35,7 @@ void Config()
     gRandom->SetSeed(sseed);
     cout<<"Seed for random number generation= "<<gRandom->GetSeed()<<endl; 
 
-
-   // libraries required by geant321
-#if defined(__CINT__)
-    gSystem->Load("liblhapdf");
-    gSystem->Load("libEGPythia6");
-    gSystem->Load("libpythia6");
-    gSystem->Load("libAliPythia6");
-    gSystem->Load("libgeant321");
-    gSystem->Load("libEPOS");
-#endif
-
+    // Transport
     new     TGeant3TGeo("C++ Interface to Geant3");
 
   // Output every 100 tracks
