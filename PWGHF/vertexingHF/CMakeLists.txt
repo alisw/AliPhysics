@@ -54,15 +54,16 @@ set(SRCS
   AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
-  AliAnalysisVertexingHF.cxx
-  AliAnalysisTaskSEVertexingHF.cxx
-  AliAnalysisTaskMEVertexingHF.cxx
-  AliAnalysisTaskSESelectHF.cxx
-  AliAnalysisTaskSECompareHF.cxx
-  AliAnalysisTaskSEDplus.cxx
-  AliAnalysisTaskSEDs.cxx
-  AliAnalysisTaskSELambdac.cxx
-  AliAnalysisTaskSED0Mass.cxx
+  AliAnalysisVertexingHF.cxx 
+  AliAnalysisTaskSEVertexingHF.cxx 
+  AliAnalysisTaskMEVertexingHF.cxx 
+  AliAnalysisTaskSESelectHF.cxx 
+  AliAnalysisTaskSECleanupVertexingHF.cxx
+  AliAnalysisTaskSECompareHF.cxx 
+  AliAnalysisTaskSEDplus.cxx 
+  AliAnalysisTaskSEDs.cxx 
+  AliAnalysisTaskSELambdac.cxx 
+  AliAnalysisTaskSED0Mass.cxx 
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
   AliAnalysisTaskSELc2V0bachelor.cxx
