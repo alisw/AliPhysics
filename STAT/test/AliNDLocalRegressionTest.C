@@ -8,7 +8,6 @@
 
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/../src/STAT/");
-  .L $ALICE_ROOT/../src/STAT/AliNDLocalRegression.cxx+
   .L $ALICE_ROOT/../src/STAT/test/AliNDLocalRegressionTest.C+  
   AliNDLocalRegressionTest(5000);
  
@@ -19,6 +18,7 @@
 #include "TCanvas.h"
 #include "AliNDLocalRegression.h"
 #include "TStyle.h"
+#include "TPaveText.h"
 
 void UnitTestGaussNoise();
 void UnitTestStreamer();
@@ -33,7 +33,7 @@ AliNDLocalRegression *pfitNDBreit1=0;       // fit with noisy data  - BreitWigne
 THn   *hN=0; 
 TFormula *pformula= 0;
 
-void PlotData(TH1F *hData,TString xTitle="xTitle",TString yTitle="yTitle",Color_t color=kBlack,TString zTitle="zTitle"){
+void PlotData(TH1F *hData,TString xTitle="xTitle",TString yTitle="yTitle",Color_t color=kBlack,TString zTitle="zTitle",Double_t rms=999999., Double_t eRms=0.,Double_t mean=999999.,Double_t eMean=0.){
   //
   //
   //
@@ -57,6 +57,26 @@ void PlotData(TH1F *hData,TString xTitle="xTitle",TString yTitle="yTitle",Color_
   hData->GetZaxis()->SetDecimals();
   hData->Sumw2();
   hData->Draw("pe1");
+  
+  if(mean!=999999.){
+    TPaveText *text1 = new TPaveText(0.21,0.82,0.51,0.92,"NDC");
+    text1->SetTextFont(43);
+    text1->SetTextSize(30.);
+    text1->SetBorderSize(1);
+    text1->SetFillColor(kWhite);
+    text1->AddText(Form("Mean: %0.2f #pm %0.2f",mean,eMean));
+    text1->AddText(Form("RMS: %0.2f #pm %0.2f",rms,eRms));
+    text1->Draw();
+  }
+  if(rms!=999999. && mean==999999.){
+    TPaveText *text1 = new TPaveText(0.21,0.87,0.51,0.92,"NDC");
+    text1->SetTextFont(43);
+    text1->SetTextSize(30.);
+    text1->SetBorderSize(1);
+    text1->SetFillColor(kWhite);
+    text1->AddText(Form("RMS: %0.2f",rms));
+    text1->Draw();
+  }
 }
 
 void UnitTestGaussNoise(){
@@ -88,7 +108,7 @@ void UnitTestGaussNoise(){
   //
   //
   //
-	PlotData(pullsGaus32,"Gaus pulls","counts (arb. units)",kRed+2,"zTitle");
+	PlotData(pullsGaus32,"Gaus pulls","counts (arb. units)",kRed+2,"zTitle",rmsPullsGaus01,rmsPullsGaus01Err,meanPullsGaus01,meanPullsGaus01Err);
   canvasUnitGausNoise->SaveAs("AliNDLocalRegressionTest.canvasUnitTestGaussNoise.png");
 }
 
@@ -119,7 +139,7 @@ void UnitTestBreitWignerNoise(){
   }else{
     ::Error( "AliNDLocalRegressionTest::UnitTestBreitWignerNoise"," rms pull NOT OK %3.3f\t+-%3.3f", rmsPullsBreitWigner, rmsPullsBreitWignerErr);
   }
-	PlotData(pullsBreiWigner54,"BreitWigner pulls","counts (arb. units)",kBlue+2,"zTitle");
+	PlotData(pullsBreiWigner54,"BreitWigner pulls","counts (arb. units)",kBlue+2,"zTitle",rmsPullsBreitWigner,rmsPullsBreitWignerErr,meanPullsBreitWigner,meanPullsBreitWignerErr);
   canvasUnitBreitWigner->SaveAs("AliNDLocalRegressionTest.canvasUnitBreitWigner.png");
 }
 
@@ -138,13 +158,13 @@ void UnitTestStreamer(){
   streamTest1->AddVisualCorrection(streamTest1,100);
   Int_t entries = treeIn->Draw("AliNDLocalRegression::GetCorrND(100,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1)>>streamerTest(201,-1.05,1.05)","");
 	TH1F   *streamerTest = (TH1F*)gPad->GetPrimitive("streamerTest");
-  Int_t rms = TMath::RMS(entries,treeIn->GetV1());
+	Int_t rms = TMath::RMS(entries,treeIn->GetV1());
   if (rms!=0){
     ::Error( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer problem");
   }else{
     ::Info( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer OK");
   }
-	PlotData(streamerTest,"streamer test","counts (arb. units)",kGreen+2,"zTitle");
+	PlotData(streamerTest,"streamer test","counts (arb. units)",kGreen+2,"zTitle",rms);
   canvasUnitTestStreamer->SaveAs(" AliNDLocalRegressionTest.UnitTestStreamer.png");
 }
 
@@ -231,6 +251,8 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDIdeal->SetHistogram((THn*)(hN->Clone()));
   pfitNDGaus0->SetHistogram((THn*)(hN->Clone()));
   pfitNDGaus1->SetHistogram((THn*)(hN->Clone()));
+  pfitNDBreit0->SetCuts(5,0.8,1);
+  pfitNDBreit1->SetCuts(5,0.8,1);
   pfitNDBreit0->SetHistogram((THn*)(hN->Clone()));
   pfitNDBreit1->SetHistogram((THn*)(hN->Clone()));
   //
