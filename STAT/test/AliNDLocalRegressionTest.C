@@ -27,8 +27,12 @@ TTree * treeIn=0;
 AliNDLocalRegression *pfitNDIdeal=0;       // ideal fit without noise
 AliNDLocalRegression *pfitNDGaus0=0;       // fit with noisy data  - sample 0
 AliNDLocalRegression *pfitNDGaus1=0;       // fit with noisy data  - sample 1
+AliNDLocalRegression *pfitNDGaus2=0;       // fit with noisy data  - sample 2 - 2 gaussian signal+ backgorund
+AliNDLocalRegression *pfitNDGaus3=0;       // fit with noisy data  - sample 2 - 2 gaussian signal+ backgorund
+
 AliNDLocalRegression *pfitNDBreit0=0;       // fit with noisy data  - BreitWigner 0
 AliNDLocalRegression *pfitNDBreit1=0;       // fit with noisy data  - BreitWigner 1
+AliNDLocalRegression *pfitNDBreit2=0;       // fit with noisy data  - BreitWigner 2 - without outlier removal
 
 THn   *hN=0; 
 TFormula *pformula= 0;
@@ -112,6 +116,41 @@ void UnitTestGaussNoise(){
   canvasUnitGausNoise->SaveAs("AliNDLocalRegressionTest.canvasUnitTestGaussNoise.png");
 }
 
+void UnitTestGaussNoisePlusOutliers(){
+  //
+  // Unit Test pulls Gauss
+  // Compare 2 Regression objects obtained from 2 indpendent training sample
+  //
+  // Test:
+  //   Bias < 10  *error
+  //   Pull < 1+ 3*error
+  //   
+  TCanvas * canvasUnitGausNoisesOutliers = new TCanvas("canvasUnitGausNoisesOutliers","canvasUnitGausNoisesOutliers",800,800);
+  treeIn->Draw("(AliNDLocalRegression::GetCorrND(7,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1))/sqrt(AliNDLocalRegression::GetCorrNDError(7,xyz0,xyz1)**2+AliNDLocalRegression::GetCorrNDError(2,xyz0,xyz1)**2)>>pullsGaus72(401,-20.5,20.5)","","");
+  TH1F   *pullsGaus72 = (TH1F*)gPad->GetPrimitive("pullsGaus72");
+  Double_t meanPullsGaus72 = treeIn->GetHistogram()->GetMean();
+  Double_t meanPullsGaus72Err = treeIn->GetHistogram()->GetMeanError();
+  Double_t rmsPullsGaus72 = treeIn->GetHistogram()->GetRMS();
+  Double_t rmsPullsGaus72Err = treeIn->GetHistogram()->GetRMSError();
+  if (TMath::Abs(meanPullsGaus72)<10*meanPullsGaus72Err) {
+    ::Info( "AliNDLocalRegressionTest::UnitTestGaussNoisePluOutliers","mean pull OK %3.3f\t+-%3.3f", meanPullsGaus72, meanPullsGaus72Err);
+  }else{
+    ::Error( "AliNDLocalRegressionTest::UnitTestGaussNoisePluOutliers","mean pull NOT OK %3.3f\t+-%3.3f", meanPullsGaus72, meanPullsGaus72Err);
+  }
+  if (rmsPullsGaus72<1+rmsPullsGaus72Err) {
+    ::Info( "AliNDLocalRegressionTest::UnitTestGaussNoisePluOutliers"," rms pull OK %3.3f\t+-%3.3f", rmsPullsGaus72, rmsPullsGaus72Err);
+  }else{
+    ::Error( "AliNDLocalRegressionTest::UnitTestGaussNoisePluOutliers"," rms pull NOT OK %3.3f\t+-%3.3f", rmsPullsGaus72, rmsPullsGaus72Err);
+  }
+  //
+  //
+  //
+  PlotData(pullsGaus72,"Gaus pulls","counts (arb. units)",kRed+2,"zTitle",rmsPullsGaus72,rmsPullsGaus72Err,meanPullsGaus72,meanPullsGaus72Err);
+  canvasUnitGausNoisesOutliers->SaveAs("AliNDLocalRegressionTest.UnitTestGaussNoisePluOutliers.png");
+}
+
+
+
 void UnitTestBreitWignerNoise(){
   //
   // Unit Test pulls BreitWigner
@@ -157,41 +196,44 @@ void UnitTestStreamer(){
   AliNDLocalRegression *streamTest1 = (AliNDLocalRegression *)f->Get("pfitNDGaus0");
   streamTest1->AddVisualCorrection(streamTest1,100);
   Int_t entries = treeIn->Draw("AliNDLocalRegression::GetCorrND(100,xyz0,xyz1)-AliNDLocalRegression::GetCorrND(2,xyz0,xyz1)>>streamerTest(201,-1.05,1.05)","");
-	TH1F   *streamerTest = (TH1F*)gPad->GetPrimitive("streamerTest");
-	Int_t rms = TMath::RMS(entries,treeIn->GetV1());
+  TH1F   *streamerTest = (TH1F*)gPad->GetPrimitive("streamerTest");
+  Int_t rms = TMath::RMS(entries,treeIn->GetV1());
   if (rms!=0){
     ::Error( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer problem");
   }else{
     ::Info( "AliNDLocalRegressionTest::UnitTestStreamer","Streamer OK");
   }
-	PlotData(streamerTest,"streamer test","counts (arb. units)",kGreen+2,"zTitle",rms);
+  PlotData(streamerTest,"streamer test","counts (arb. units)",kGreen+2,"zTitle",rms);
   canvasUnitTestStreamer->SaveAs(" AliNDLocalRegressionTest.UnitTestStreamer.png");
 }
 
 
 
-void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfromula="cos(7*x[0]/pi)*sin(19*x[1]/pi)", Double_t err=0.01){
+void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfromula="cos(7*x[0]/pi)*sin(19*x[1]/pi)", Double_t err=1){
   //
   // Local regression test method
   //
   // Int_t npoints=100000; Int_t ndim=2; const char *sfromula="cos(10*x[0])*cos(15*x[1])"; 
   //
-	gStyle->SetPadRightMargin(0.05);
-	gStyle->SetPadTopMargin(0.05);
-	gStyle->SetPadLeftMargin(0.14);
-	gStyle->SetPadBottomMargin(0.12);
-	gStyle->SetPadTickX(1);
-	gStyle->SetPadTickY(1);
-	gStyle->SetPadGridX(1);
-	gStyle->SetPadGridY(1);
-	gStyle->SetOptStat(0);
-	//
+  gStyle->SetPadRightMargin(0.05);
+  gStyle->SetPadTopMargin(0.05);
+  gStyle->SetPadLeftMargin(0.14);
+  gStyle->SetPadBottomMargin(0.12);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetPadGridX(1);
+  gStyle->SetPadGridY(1);
+  gStyle->SetOptStat(0);
+  //
   pformula=new TFormula("pformula", sfromula);
   pfitNDIdeal  = new  AliNDLocalRegression;
   pfitNDGaus0  = new  AliNDLocalRegression;
   pfitNDGaus1  = new  AliNDLocalRegression;
+  pfitNDGaus2  = new  AliNDLocalRegression;
+  pfitNDGaus3  = new  AliNDLocalRegression;
   pfitNDBreit0 = new  AliNDLocalRegression;
   pfitNDBreit1 = new  AliNDLocalRegression;
+  pfitNDBreit2 = new  AliNDLocalRegression;
   //
   // 0.) Initialization of variables and THn
   // 
@@ -199,8 +241,11 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   TTreeSRedirector *pcstreamOutIdeal   = new TTreeSRedirector("fitNDLocalTestOutputIdeal.root","recreate");  
   TTreeSRedirector *pcstreamOutGaus0   = new TTreeSRedirector("fitNDLocalTestOutputGaus0.root","recreate");  
   TTreeSRedirector *pcstreamOutGaus1   = new TTreeSRedirector("fitNDLocalTestOutputGaus1.root","recreate");  
+  TTreeSRedirector *pcstreamOutGaus2   = new TTreeSRedirector("fitNDLocalTestOutputGaus2.root","recreate");  
+  TTreeSRedirector *pcstreamOutGaus3   = new TTreeSRedirector("fitNDLocalTestOutputGaus3.root","recreate");  
   TTreeSRedirector *pcstreamOutBreit0  = new TTreeSRedirector("fitNDLocalTestOutputBreit0.root","recreate");  
   TTreeSRedirector *pcstreamOutBreit1  = new TTreeSRedirector("fitNDLocalTestOutputBreit1.root","recreate");  
+  TTreeSRedirector *pcstreamOutBreit2  = new TTreeSRedirector("fitNDLocalTestOutputBreit2.root","recreate");  
   
   Double_t *xyz     = new Double_t[ndim];
   Double_t *sxyz    = new Double_t[ndim];
@@ -224,11 +269,13 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
     }
     Double_t value=pformula->EvalPar(xyz,0);
     Double_t noise = gRandom->Gaus()*err;
+    Double_t noise2 = noise*(1+(gRandom->Rndm()<0.1)*100);  // noise with 10 percent of outliers
     Double_t noiseBreit = gRandom->BreitWigner()*err;
     (*pcstreamIn)<<"testInput"<<
       "val="<<value<<
       "err="<<err<<
-      "noise="<<noise<<
+      "noise="<<noise<<            // gausian noise 
+      "noise2="<<noise2<<          // gausian noise + 10% of outliers
       "noiseBreit="<<noiseBreit;      
     for (Int_t idim=0; idim<ndim; idim++){
       (*pcstreamIn)<<"testInput"<<chxyz[idim]->Data()<<xyz[idim];
@@ -245,30 +292,54 @@ void AliNDLocalRegressionTest(Int_t npoints=10000, Int_t ndim=2, const char *sfr
   pfitNDIdeal->SetStreamer(pcstreamOutIdeal);
   pfitNDGaus0->SetStreamer(pcstreamOutGaus0);
   pfitNDGaus1->SetStreamer(pcstreamOutGaus1);
+  pfitNDGaus2->SetStreamer(pcstreamOutGaus2);
+  pfitNDGaus3->SetStreamer(pcstreamOutGaus3);
   pfitNDBreit0->SetStreamer(pcstreamOutBreit0);
   pfitNDBreit1->SetStreamer(pcstreamOutBreit1);
+  pfitNDBreit2->SetStreamer(pcstreamOutBreit2);
   //
   pfitNDIdeal->SetHistogram((THn*)(hN->Clone()));
   pfitNDGaus0->SetHistogram((THn*)(hN->Clone()));
   pfitNDGaus1->SetHistogram((THn*)(hN->Clone()));
-  pfitNDBreit0->SetCuts(5,0.8,1);
-  pfitNDBreit1->SetCuts(5,0.8,1);
+  pfitNDGaus2->SetHistogram((THn*)(hN->Clone()));
+  pfitNDGaus3->SetHistogram((THn*)(hN->Clone()));
+  pfitNDGaus2->SetCuts(3,0.8,1);
+  pfitNDGaus3->SetCuts(0,0.8,0);
+
+  pfitNDBreit0->SetCuts(3,0.8,1);
+  pfitNDBreit1->SetCuts(3,0.8,1);
+  pfitNDBreit2->SetCuts(0,0.8,1);
   pfitNDBreit0->SetHistogram((THn*)(hN->Clone()));
   pfitNDBreit1->SetHistogram((THn*)(hN->Clone()));
+  pfitNDBreit2->SetHistogram((THn*)(hN->Clone()));
   //
   pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);
   pfitNDGaus0->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Gaussian1
   pfitNDGaus1->MakeFit(treeIn, "val+noise:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2
-  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Breit1
-  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit2
+  pfitNDGaus2->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2 - with tails robust
+  pfitNDGaus3->MakeFit(treeIn, "val+noise2:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Gaussian2 - with tails non robust
+  pfitNDBreit0->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==0", "0.05:0.05","2:2",0.001);  // sample Breit0
+  pfitNDBreit1->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit1
+  pfitNDBreit2->MakeFit(treeIn, "val+noiseBreit:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);  // sample Breit2 without outlier filtering
   //
   pfitNDIdeal->AddVisualCorrection(pfitNDIdeal,1);
   pfitNDGaus0->AddVisualCorrection(pfitNDGaus0,2);
   pfitNDGaus1->AddVisualCorrection(pfitNDGaus1,3);
+  pfitNDGaus2->AddVisualCorrection(pfitNDGaus2,7);
+  pfitNDGaus3->AddVisualCorrection(pfitNDGaus3,8);
   pfitNDBreit0->AddVisualCorrection(pfitNDBreit0,4);
   pfitNDBreit1->AddVisualCorrection(pfitNDBreit1,5);
-
+  pfitNDBreit2->AddVisualCorrection(pfitNDBreit2,6);
+  
+  delete pcstreamOutGaus0;
+  delete pcstreamOutGaus1;
+  delete pcstreamOutGaus2;
+  delete pcstreamOutGaus3;
+  delete pcstreamOutBreit0;
+  delete pcstreamOutBreit1;
+  delete pcstreamOutBreit2;
   UnitTestGaussNoise(); 
+  UnitTestGaussNoisePlusOutliers();
   UnitTestBreitWignerNoise();
   UnitTestStreamer();
 }

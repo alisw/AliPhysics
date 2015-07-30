@@ -64,6 +64,7 @@
 #include "TTreeStream.h"
 #include "AliMathBase.h"
 #include "TMatrixD.h"
+#include "TRobustEstimator.h"
 
 ClassImp(AliNDLocalRegression)
 
@@ -278,11 +279,14 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
     for (Int_t ipoint=0; ipoint<entriesVal; ipoint++){
       Double_t weight=1;
       if (fCutType>0 && fRobustRMSLTSCut>0){
+	Double_t localRMS=(*fLocalRobustStat)(ibin,2);
+	Double_t localMean=(*fLocalRobustStat)(ibin,1);
+	Double_t localMedian=(*fLocalRobustStat)(ibin,0);
 	if (fCutType==1){
-	  if (TMath::Abs(values[ipoint]-(*fLocalRobustStat)(ibin,0))>fRobustRMSLTSCut*(*fLocalRobustStat)(ibin,2)) continue;
+	  if (TMath::Abs(values[ipoint]-localMedian)>fRobustRMSLTSCut*localRMS) continue;
 	}
 	if (fCutType==2){
-	  if (TMath::Abs(values[ipoint]-(*fLocalRobustStat)(ibin,1))>fRobustRMSLTSCut*(*fLocalRobustStat)(ibin,2)) continue;
+	  if (TMath::Abs(values[ipoint]-localMean)>fRobustRMSLTSCut*localRMS) continue;
 	}
       }
       for (Int_t idim=0; idim<fNParameters; idim++){
@@ -342,7 +346,9 @@ Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &err
   //
   // Calculate robust statistic information
   //
-  if (robustFraction>0) robustFraction=1;
+  TRobustEstimator e;
+
+  if (robustFraction>1) robustFraction=1;
 
   Int_t nbins = fHistPoints->GetNbins();    // 
   Int_t npoints= values.GetNrows();         // number of points for fit
@@ -372,9 +378,9 @@ Bool_t  AliNDLocalRegression::MakeRobustStatistic(TVectorD &values,TVectorD &err
       indexLocal++;
     }
     Double_t median=0,meanX=0, rmsX=0;
-    if (indexLocal*robustFraction>3){
+    if (indexLocal*robustFraction-1>3){
       median=TMath::Median(indexLocal,valueLocal.GetMatrixArray());
-      AliMathBase::EvaluateUni(indexLocal,valueLocal.GetMatrixArray(), meanX,rmsX, indexLocal*robustFraction);
+      e.EvaluateUni(indexLocal,valueLocal.GetMatrixArray(), meanX,rmsX, indexLocal*robustFraction-1);
     }
     (*fLocalRobustStat)(ibin,0)=median;
     (*fLocalRobustStat)(ibin,1)=meanX;
