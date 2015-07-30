@@ -956,12 +956,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			if(fDoMesonQA == 1 && fIsMC != 2 ){
 				fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_E_Calib","ESD_Mother_InvMass_E_Calib",800,0,0.8,300,0,30);
 				fHistoMotherInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
-				fHistoMotherInvMassECalib[iCut]->SetYTitle("p_{T,cluster} (GeV/c)");
+				fHistoMotherInvMassECalib[iCut]->SetYTitle("E_{cluster} (GeV)");
 				fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
 				
 				fHistoMotherInvMassECalibalpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_Calib_alpha","ESD_Mother_InvMass_vs_E_Calib_alpha",800,0,0.8,300,0,30);
 				fHistoMotherInvMassECalibalpha[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
-				fHistoMotherInvMassECalibalpha[iCut]->SetYTitle("p_{T,cluster} (GeV/c)");
+				fHistoMotherInvMassECalibalpha[iCut]->SetYTitle("E_{cluster} (GeV)");
 				fESDList[iCut]->Add(fHistoMotherInvMassECalibalpha[iCut]);
 			}
 
