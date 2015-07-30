@@ -457,7 +457,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",13,-0.5,125);
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",13,-0.5,12.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents accepted");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"Rejected due to trigger");
