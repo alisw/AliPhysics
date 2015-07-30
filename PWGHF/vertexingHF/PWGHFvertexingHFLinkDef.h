@@ -36,7 +36,6 @@
 #pragma link C++ class AliAnalysisTaskSEDs+;
 #pragma link C++ class AliAnalysisTaskSELambdac+;
 #pragma link C++ class AliAnalysisTaskSED0Mass+;
-#pragma link C++ class AliAnalysisTaskSED0MassCutVarFDSub+;
 #pragma link C++ class AliAnalysisTaskSECharmFraction+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelor+;
 #pragma link C++ class AliAnalysisTaskSEDvsMultiplicity+;
@@ -49,7 +48,6 @@
 #pragma link C++ class AliCFVertexingHFCascade+;
 #pragma link C++ class AliCFVertexingHFLctoV0bachelor+;
 #pragma link C++ class AliCFTaskVertexingHF+;
-#pragma link C++ class AliCFTaskVertexingHFCutVarFDSub+;
 #pragma link C++ class AliCFTaskForDStarAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEDStarJets+;
 #pragma link C++ class AliAnalysisTaskSEDStarSpectra+;
@@ -59,7 +57,6 @@
 #pragma link C++ class AliSignificanceCalculator+;
 #pragma link C++ class AliHFMassFitter+;
 #pragma link C++ class AliHFPtSpectrum+;
-#pragma link C++ class AliHFsubtractBFDcuts+;
 #pragma link C++ class AliNormalizationCounter+;
 #pragma link C++ class AliAnalysisTaskSEMonitNorm+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
@@ -72,9 +69,8 @@
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;
 #pragma link C++ class AliAnalysisTaskCountLcEta+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;
-#pragma link C++ class AliAnalysisTaskSELambdacTMVA+;
-#pragma link C++ class AliHFMultiTrials+;
-#pragma link C++ class AliHFMassFitterVAR+;
+
+
 #endif
 
 
