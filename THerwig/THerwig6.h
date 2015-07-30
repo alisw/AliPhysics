@@ -65,7 +65,7 @@ typedef enum
    kHwCharmMCATNLO  = -1704,
    kHwBeautyMCATNLO = -1705,
    kHwJetsMCATNLO   = -1396
-} Process_t;
+} HerwigProcess_t;
 
 class TObjArray;
 
