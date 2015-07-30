@@ -51,8 +51,6 @@ set(SRCS
   AliRDHFCutsDStartoKpipi.cxx
   AliRDHFCutsLctoeleLambdafromAODtracks.cxx
   AliRDHFCutsLctopK0sfromAODtracks.cxx
-  AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
-  AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx 
   AliAnalysisTaskSEVertexingHF.cxx 
@@ -67,12 +65,11 @@ set(SRCS
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
   AliAnalysisTaskSELc2V0bachelor.cxx
+  AliAnalysisTaskSECharmFraction.cxx 
+  AliAnalysisTaskSELc2V0bachelor.cxx 
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
-  AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
-  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
-  AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliCFVertexingHF.cxx
   AliCFVertexingHF2Prong.cxx
@@ -83,7 +80,7 @@ set(SRCS
   AliCFTaskVertexingHFCutVarFDSub.cxx
   AliCFTaskForDStarAnalysis.cxx
   AliAnalysisTaskSEDStarJets.cxx
-  AliAnalysisTaskSEDStarSpectra.cxx
+  AliAnalysisTaskSEDStarSpectra.cxx 
   AliAnalysisTaskSESignificance.cxx
   AliAnalysisTaskSEHFQA.cxx
   AliMultiDimVector.cxx
@@ -111,10 +108,7 @@ set(SRCS
   cutVarFDsub/AliHFCutVarFDsubMinimiser.cxx
   upgrade/AliAnalysisTaskSELambdacUp.cxx
   upgrade/AliAnalysisTaskCountLcEta.cxx
-  AliAnalysisTaskSELc2V0bachelorTMVA.cxx
-  AliAnalysisTaskSELambdacTMVA.cxx
-  AliHFMultiTrials.cxx
-  AliHFMassFitterVAR.cxx
+  AliAnalysisTaskSELc2V0bachelorTMVA.cxx 
   )
 
 # Headers from sources
