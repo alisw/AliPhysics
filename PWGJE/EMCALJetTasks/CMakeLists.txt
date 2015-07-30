@@ -120,6 +120,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetMassResponse.cxx
     UserTasks/AliAnalysisTaskEmcalJetMassStructure.cxx
     UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
+    UserTasks/AliAnalysisTaskEmcalJetSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
     UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
@@ -129,6 +130,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
     UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
     UserTasks/AliAnalysisTaskSubJetFraction.cxx
+    UserTasks/AliAnalysisTaskEmcalTmpSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
