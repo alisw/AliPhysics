@@ -247,7 +247,7 @@ void AliAnalysisTaskEmcalJetSparseMaker::FillSparse()
 
   AliEmcalJet *pJet = 0;
   fContJets->ResetCurrentID();
-  while (pJet=fContJets->GetNextAcceptJet()) {
+  while ((pJet=fContJets->GetNextAcceptJet())) {
     Double_t dJet[] = { fCent, fVertex[2], fEPV0, fAPhi,
                         CalcRelPhiEP(pJet->Phi()),
                         fContJets->GetLeadingHadronPt(pJet),
@@ -339,7 +339,7 @@ Double_t AliAnalysisTaskEmcalJetSparseMaker::CalcAysPlane()
   AliVParticle *pTrk = 0;
   Double_t dQx = 0, dQy = 0.;
   fContTrks->ResetCurrentID();
-  while (pTrk=fContTrks->GetNextAcceptParticle()) {
+  while ((pTrk=fContTrks->GetNextAcceptParticle())) {
     dQx += TMath::Cos(pTrk->Phi());
     dQy += TMath::Sin(pTrk->Phi());
   } TVector2 vQ(dQx,dQy);

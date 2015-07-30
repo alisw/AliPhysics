@@ -291,7 +291,7 @@ void AliAnalysisTaskEmcalTmpSparseMaker::FillSparseTrks()
 
   AliVTrack *pTrk  = 0;
   fContTrks->ResetCurrentID();
-  while (pTrk=static_cast<AliVTrack*>(fContTrks->GetNextAcceptParticle())) {
+  while ((pTrk=static_cast<AliVTrack*>(fContTrks->GetNextAcceptParticle()))) {
     Double_t dV[] = { fCent, fMtCh, fVertex[2], fEPV0, fAPhi,
                       CalcRelPhiEP(pTrk->Phi()),
                       pTrk->Pt(), pTrk->Eta(), pTrk->Phi() };
@@ -315,7 +315,7 @@ void AliAnalysisTaskEmcalTmpSparseMaker::FillSparseClus()
 
   AliVCluster *pClu = 0;
   fContClus->ResetCurrentID();
-  while (pClu=static_cast<AliVCluster*>(fContClus->GetNextAcceptCluster())) {
+  while ((pClu=static_cast<AliVCluster*>(fContClus->GetNextAcceptCluster()))) {
 
     TLorentzVector vClu;
     pClu->GetMomentum(vClu, fVertex);
@@ -345,7 +345,7 @@ void AliAnalysisTaskEmcalTmpSparseMaker::FillSparseJets()
 
   AliEmcalJet *pJet = 0;
   fContJets->ResetCurrentID();
-  while (pJet=fContJets->GetNextAcceptJet()) {
+  while ((pJet=fContJets->GetNextAcceptJet())) {
     Double_t dPtJ = fContJets->GetJetPtCorr(fContJets->GetCurrentID());
 
     if (dPtJ>dLjetPt[0]) {
@@ -543,7 +543,7 @@ Double_t AliAnalysisTaskEmcalTmpSparseMaker::CalcAysPlane()
   AliVParticle *pTrk = 0;
   Double_t dQx = 0, dQy = 0.;
   fContTrks->ResetCurrentID();
-  while (pTrk=fContTrks->GetNextAcceptParticle()) {
+  while ((pTrk=fContTrks->GetNextAcceptParticle())) {
     dQx += TMath::Cos(pTrk->Phi());
     dQy += TMath::Sin(pTrk->Phi());
   } TVector2 vQ(dQx,dQy);
