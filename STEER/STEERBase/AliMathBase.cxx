@@ -76,6 +76,11 @@ void AliMathBase::EvaluateUni(Int_t nvectors, Double_t *data, Double_t &mean
     AliErrorClass(Form("nvectors = %d, should be > 1",nvectors));
     return;
   }
+  if (hh==nvectors){
+    mean=TMath::Mean(nvectors,data);
+    sigma=TMath::RMS(nvectors,data);
+    return;
+  }
   if (hh<2)
     hh=(nvectors+2)/2;
   Double_t faclts[]={2.6477,2.5092,2.3826,2.2662,2.1587,2.0589,1.9660,1.879,1.7973,1.7203,1.6473};
