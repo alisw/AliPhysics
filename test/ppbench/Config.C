@@ -388,8 +388,6 @@ void Config()
     {
         //=================== AD parameters ============================
         AliAD *AD = new AliADv1("AD", "normal AD test");
-	AD->SetADAToInstalled(kTRUE);
-	AD->SetADCToInstalled(kTRUE);
     }
  
         
