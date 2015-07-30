@@ -1,3 +1,4 @@
+Int_t n = 100; // This makes n "visible" to the compiled macro
 void rungen(Int_t nev=1){
   // Simulation and reconstruction
   TStopwatch timer;
@@ -7,8 +8,8 @@ void rungen(Int_t nev=1){
   gSystem->Load("libEGPythia6");   // TGenerator interface
   gSystem->Load("libpythia6");     // Pythia
   gSystem->Load("libAliPythia6");  // ALICE specific implementations
-  gROOT->LoadMacro("fastGen.C+");
-  fastGen(nev);
+  n = nev; // Use the requested number of events
+  gROOT->Macro("fastGen.C++(n)");
   timer.Stop();
   timer.Print();
 }
