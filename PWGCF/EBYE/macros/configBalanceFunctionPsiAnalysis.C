@@ -78,3 +78,29 @@ AliESDtrackCuts *GetTrackCutsObject(Double_t ptMin, Double_t ptMax, Double_t eta
   return cuts;
 }
 
+
+
+
+//__________________________________________________//
+AliBalanceEbyE *GetBalanceFunctionEbyEObject(
+					     Bool_t bResonancesCut = kFALSE,
+					     Bool_t bHBTCut = kFALSE,
+					     Double_t HBTCutValue = 0.02,
+					     Bool_t bConversionCut = kFALSE,
+					     Double_t invMassForConversionCut = 0.04,
+					     Bool_t bMomentumDifferenceCut = kFALSE,
+					     Double_t fQCutMin = 0.0,
+					     Double_t deltaEtaMax = 2.0
+					     ) {
+
+  //Function to setup the AliBalance object and return it
+  AliBalanceEbyE *gBalance = new AliBalanceEbyE();
+  if(bResonancesCut) gBalance->UseResonancesCut();
+  if(bHBTCut) gBalance->UseHBTCut(HBTCutValue);
+  if(bConversionCut) gBalance->UseConversionCut(invMassForConversionCut);
+  if(bMomentumDifferenceCut) gBalance->UseMomentumDifferenceCut(fQCutMin);
+  gBalance->SetDeltaEtaMax(deltaEtaMax);
+  
+  return gBalance;
+}
+
