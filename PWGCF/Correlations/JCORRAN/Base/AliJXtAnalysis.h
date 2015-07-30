@@ -37,7 +37,7 @@ class AliJXtAnalysis : public AliAnalysisTaskSE{
 		void SetEfficiencyConfig(int mode, int filterBit){ fEffMode = mode; fTrackFilterBit = filterBit;};
 		
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
-		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
+		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<std::endl;};
 		
 		void SetEfficiency( AliJEfficiency *effInput ){ fEfficiency = effInput; };
 		void SetTrackFilterBit( int inputBit ){ fTrackFilterBit = inputBit; };
