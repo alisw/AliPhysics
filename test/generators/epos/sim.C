@@ -1,5 +1,12 @@
 void sim(Int_t nev=5) {
+  // Required libraries
 
+  gSystem->Load("liblhapdf");
+  gSystem->Load("libEGPythia6");
+  gSystem->Load("libpythia6");
+  gSystem->Load("libAliPythia6");
+  gSystem->Load("libgeant321");
+  gSystem->Load("libEPOS");
 
   AliSimulation simulator;
   simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
