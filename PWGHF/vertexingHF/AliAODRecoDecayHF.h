@@ -53,6 +53,9 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   AliAODVertex* RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod);  
   void          RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent *aod);
 
+  void     SetIsFilled(Bool_t filled){fIsFilled=filled;}
+  Bool_t   GetIsFilled() const {return fIsFilled;}  
+  virtual void DeleteRecoD();
 
   /// kinematics & topology
   Double_t DecayLength2() const 
@@ -109,8 +112,8 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
 
   /// vertexing KF:
   AliKFParticle *ApplyVertexingKF(Int_t *iprongs,Int_t nprongs,Int_t *pdgs,
-				 Bool_t topoCostraint,Double_t bzkG,
-				 Double_t *mass) const;
+ 				  Bool_t topoCostraint,Double_t bzkG,
+ 				  Double_t *mass) const;
   
   /// misalign
   void Misalign(TString misal="null");
@@ -134,9 +137,10 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   /// track ID of daughters
   UShort_t     *fProngID;  //[fNProngs] track ID of daughters
   ULong_t       fSelectionMap; /// used to store outcome of selection in AliAnalysisVertexingHF
+  Bool_t        fIsFilled;  // kFALSE if data members of candidates are empty to reduce the size of dAOD
 
   /// \cond CLASSIMP
-  ClassDef(AliAODRecoDecayHF,5);  /// base class for AOD reconstructed heavy-flavour decays
+  ClassDef(AliAODRecoDecayHF,6)  // base class for AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 
@@ -224,7 +228,7 @@ inline void AliAODRecoDecayHF::Setd0errProngs(Int_t nprongs,Double_t *d0err)
     printf("Wrong number of momenta, must be nProngs");
     return;
   }
-  if(!fd0) {
+  if(!fd0err) {
     fd0err = new Double32_t[nprongs];
   }
   for(Int_t i=0;i<nprongs;i++) {

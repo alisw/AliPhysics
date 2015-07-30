@@ -66,6 +66,9 @@ class AliAnalysisVertexingHF : public TNamed {
 
   TList* FillListOfCuts();
   void FixReferences(AliAODEvent *aod);  
+  Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd3);
+  Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2Prong *rd2);
+  Bool_t FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rc);
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
@@ -87,6 +90,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetMixEventOn() { fMixEvent=kTRUE; }
   void SetMixEventOff() { fMixEvent=kFALSE; }
   void SetInputAOD() { fInputAOD=kTRUE; }
+  void SetMakeReducedRHF(Bool_t makeredAOD=kFALSE) { fMakeReducedRHF=makeredAOD; }
   Bool_t GetD0toKpi() const { return fD0toKpi; }
   Bool_t GetJPSItoEle() const { return fJPSItoEle; }
   Bool_t Get3Prong() const { return f3Prong; }
@@ -99,6 +103,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t GetInputAOD() const { return fInputAOD; }
   Bool_t GetRecoPrimVtxSkippingTrks() const {return fRecoPrimVtxSkippingTrks;}
   Bool_t GetRmTrksFromPrimVtx() const {return fRmTrksFromPrimVtx;}
+  Bool_t GetMakeReducedRHF() const {return fMakeReducedRHF;}
   void SetFindVertexForDstar(Bool_t vtx=kTRUE) { fFindVertexForDstar=vtx; }
   void SetFindVertexForCascades(Bool_t vtx=kTRUE) { fFindVertexForCascades=vtx; }
 
@@ -222,7 +227,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t GetUseProtonPIDforLambdaC2V0() const {return fUsePIDforLc2V0;}
  
   void SetPidResponse(AliPIDResponse* p){fPidResponse=p;}
-
+  
   //
  private:
   //
@@ -313,8 +318,9 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fOKInvMassD0to4p; /// 4tracks fullfilling D0 inv mass selection
   Bool_t fOKInvMassLctoV0; /// triplet fullfilling Lc inv mass selection
 
-  Int_t fnTrksTotal;
-  Int_t fnSeleTrksTotal;
+  Int_t  fnTrksTotal;
+  Int_t  fnSeleTrksTotal;
+  Bool_t fMakeReducedRHF;// switch the reduction of dAOD size on/off
 
   Double_t fMassDzero;
   Double_t fMassDplus;
@@ -331,7 +337,7 @@ class AliAnalysisVertexingHF : public TNamed {
 		       const TObjArray *trkArray) const;
   AliAODRecoDecayHF2Prong* Make2Prong(TObjArray *twoTrackArray1,AliVEvent *event,
 				      AliAODVertex *secVert,Double_t dcap1n1,
-				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar);
+				      Bool_t &okD0,Bool_t &okJPSI,Bool_t &okD0fromDstar, Bool_t refill=kFALSE, AliAODRecoDecayHF2Prong *rd=0x0);
   AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliVEvent *event,
 				      AliAODVertex *secVert,
 				      Double_t dispersion,
@@ -340,6 +346,13 @@ class AliAnalysisVertexingHF : public TNamed {
 				      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2, 
 				      Bool_t useForLc, Bool_t useForDs,
 				      Bool_t &ok3Prong);
+  AliAODRecoDecayHF3Prong* Make3Prong(TObjArray *threeTrackArray,AliVEvent *event,
+                                      AliAODVertex *secVert,
+                                      Double_t dispersion,
+                                      Double32_t dist12,
+                                      Double32_t dist23,
+                                      Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
+                                      AliAODRecoDecayHF3Prong *rd);
   AliAODRecoDecayHF4Prong* Make4Prong(TObjArray *fourTrackArray,AliVEvent *event,
                                       AliAODVertex *secVert,
                                       const AliAODVertex *vertexp1n1,
@@ -358,6 +371,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   Double_t dca,
 				   Bool_t &okCascades);
 
+  void MapAODtracks(AliVEvent *aod);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray=0x0,AliVEvent *event=0x0) const;
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion,Bool_t useTRefArray=kTRUE) const;
 
@@ -378,7 +392,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
   void SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const;
-
+  
   Bool_t SingleTrkCuts(AliESDtrack *trk,Float_t centralityperc, Bool_t &okDisplaced,Bool_t &okSoftPi, Bool_t &ok3prong) const;
 
   void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit);
@@ -387,17 +401,8 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisVertexingHF,24);  /// Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,25);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 
-
 #endif
-
-
-
-
-
-
-
-

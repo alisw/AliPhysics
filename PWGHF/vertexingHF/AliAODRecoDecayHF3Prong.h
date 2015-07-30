@@ -20,15 +20,15 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
  public:
   
   AliAODRecoDecayHF3Prong();
-   AliAODRecoDecayHF3Prong(AliAODVertex *vtx2,
-			   Double_t *px,Double_t *py,Double_t *pz,
-			   Double_t *d0,Double_t *d0err,
-			   Double_t *dca, Double_t sigvert,
-			   Double_t dist12,Double_t dist23,Short_t charge);
-   AliAODRecoDecayHF3Prong(AliAODVertex *vtx2,
-			   Double_t *d0,Double_t *d0err,
-			   Double_t *dca, Double_t sigvert,
-			   Double_t dist12,Double_t dist23, Short_t charge);
+  AliAODRecoDecayHF3Prong(AliAODVertex *vtx2,
+			  Double_t *px,Double_t *py,Double_t *pz,
+			  Double_t *d0,Double_t *d0err,
+			  Double_t *dca, Double_t sigvert,
+			  Double_t dist12,Double_t dist23,Short_t charge);
+  AliAODRecoDecayHF3Prong(AliAODVertex *vtx2,
+			  Double_t *d0,Double_t *d0err,
+			  Double_t *dca, Double_t sigvert,
+			  Double_t dist12,Double_t dist23, Short_t charge);
 
   AliAODRecoDecayHF3Prong(const AliAODRecoDecayHF3Prong& source);
   AliAODRecoDecayHF3Prong& operator=(const AliAODRecoDecayHF3Prong& source); 
@@ -44,7 +44,8 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t GetDist23toPrim() const { return fDist23toPrim; }
   void SetDist12toPrim(Double_t d) { fDist12toPrim=d; }
   void SetDist23toPrim(Double_t d) { fDist23toPrim=d; }
-
+  void SetSigmaVert(Double_t sigmaVert) { fSigmaVert=sigmaVert; }
+  virtual void DeleteRecoD();
 
   /// D+->Kpipi
   Double_t EDplus() const {return E(411);} 

@@ -308,7 +308,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",11,-0.5,10.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",13,-0.5,12.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"n. passing IsEvSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"n. rejected due to trigger");
@@ -320,7 +320,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of 3 prong candidates");
   fHistNEvents->GetXaxis()->SetBinLabel(10,"no. of Ds after filtering cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(11,"no. of Ds after selection cuts");
-  
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"no. of not on-the-fly rec Ds");
+
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   
   fHistNEvents->Sumw2();
@@ -662,6 +663,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   Int_t nFiltered=0;
   Double_t massPhi=TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
+  // vHF object is needed to call the method that refills the missing info of the candidates
+  // if they have been deleted in dAOD reconstruction phase
+  // in order to reduce the size of the file
+  AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
+
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
@@ -672,7 +678,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     }
     nFiltered++;
     fHistNEvents->Fill(9);
-    
+  
+    if(!(vHF->FillRecoCand(aod,d))) {////Fill the data members of the candidate only if they are empty.
+      fHistNEvents->Fill(18); //monitor how often this fails 
+      continue;
+    }
+
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(vtx1);
@@ -1099,6 +1110,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
   fCounter->StoreCandidates(aod,nFiltered,kTRUE);
   fCounter->StoreCandidates(aod,nSelected,kFALSE);
   
+  delete vHF;
+
   PostData(1,fOutput); 
   PostData(3,fCounter);    
   
