@@ -707,7 +707,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 			fHistoMotherInvMassPtAlpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_Pt_Alpha","ESD_Mother_InvMass_vs_Pt_Alpha",800,0,0.8,350,0,35);
 			fESDList[iCut]->Add(fHistoMotherInvMassPtAlpha[iCut]);
 			if(fDoMesonQA == 1 && fIsMC != 2 ){
-				fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_Pt_Calib","ESD_Mother_InvMass_Pt_Calib",800,0,0.8,350,0,35);
+				fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_E_Calib","ESD_Mother_InvMass_E_Calib",800,0,0.8,350,0,35);
 				fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
 				fHistoMotherInvMassECalibalpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_Calib_alpha","ESD_Mother_InvMass_vs_E_Calib_alpha",800,0,0.8,350,0,35);
 				fESDList[iCut]->Add(fHistoMotherInvMassECalibalpha[iCut]);
