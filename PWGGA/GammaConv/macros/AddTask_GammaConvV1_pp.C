@@ -29,8 +29,8 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 	gSystem->Load("libPWGflowBase");
 	gSystem->Load("libPWGflowTasks");
 	gSystem->Load("libPWGGAGammaConv");
-	cout<< "i m here"<<endl;
-	Int_t isHeavyIon = 0;	
+
+	Int_t isHeavyIon = 0;
 	// ================== GetAnalysisManager ===============================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
@@ -530,7 +530,6 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 	TList *ConvCutList = new TList();
 	TList *MesonCutList = new TList();
 
-        cout<< "In AddTask::"<< periodname << endl;
 	TList *HeaderList = new TList();
 	if (periodname.Contains("LHC12i3")){	
 		TObjString *Header2 = new TObjString("BOX");
@@ -591,7 +590,6 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 			mcInputNamePi0 = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
 			mcInputNameEta = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
 		}	
-		cout<<"HOLA-1 ::"<< mcInputNamePi0 << "  "<< mcInputNameEta<<"  WOSDD???="<<mcNameAdd<<endl;
 		//		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kFALSE, kFALSE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 		
