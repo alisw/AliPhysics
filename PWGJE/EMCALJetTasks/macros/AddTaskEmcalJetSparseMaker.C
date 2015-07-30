@@ -62,7 +62,7 @@ AliAnalysisTaskEmcalJetSparseMaker* AddTaskEmcalJetSparseMaker(
     pContJets->SetJetPtCut(dJetPtMin);
 
 //  pContJets->SetLocalRhoName();
-    pContJets->SetRhoName(sUsedRho.Data()); 
+    pContJets->SetRhoName(sUsedRho.Data());
 
     pContJets->SetLeadingHadronType(kLeadingType);
     if (pContTrks) pContJets->ConnectParticleContainer(pContTrks);

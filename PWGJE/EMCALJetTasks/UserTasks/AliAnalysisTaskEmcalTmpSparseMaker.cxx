@@ -48,7 +48,7 @@ fListOutputJet(0)
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskEmcalTmpSparseMaker::AliAnalysisTaskEmcalTmpSparseMaker(const char *name, const Bool_t bHistos) : 
+AliAnalysisTaskEmcalTmpSparseMaker::AliAnalysisTaskEmcalTmpSparseMaker(const char *name, const Bool_t bHistos) :
 AliAnalysisTaskEmcalJet(name, bHistos),
 fMtCh(0.),
 fMtEm(0.),
