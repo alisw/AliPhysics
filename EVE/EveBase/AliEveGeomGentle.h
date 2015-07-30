@@ -10,6 +10,7 @@
 #define __AliEveGeomGentle__
 
 #include <TEveGeoShape.h>
+#include <TEnv.h>
 
 class AliEveGeomGentle
 {
@@ -20,11 +21,13 @@ public:
     TEveGeoShape* GetGeomGentle(bool register_as_global=kTRUE);
     TEveGeoShape* GetGeomGentleRphi();
     TEveGeoShape* GetGeomGentleRhoz();
-    TEveGeoShape* GetGeomGentleTRD(Color_t color=3);
-    TEveGeoShape* GetGeomGentleMUON(bool updateScene = kTRUE, Color_t color=3);
+    TEveGeoShape* GetGeomGentleTRD();
+    TEveGeoShape* GetGeomGentleEMCAL();
+    TEveGeoShape* GetGeomGentleMUON(bool updateScene = kTRUE);
 
 private:
-    void DrawDeep(TEveGeoShape *gsre, Color_t color);
+    TEnv fSettings;
+    void DrawDeep(TEveGeoShape *gsre);
 };
 
 

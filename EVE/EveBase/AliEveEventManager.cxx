@@ -13,6 +13,9 @@
 #include "AliEveMultiView.h"
 #include "AliEveDataSourceOffline.h"
 #include "AliEveInit.h"
+#include "AliESDtrack.h"
+#include "AliESDMuonTrack.h"
+
 #ifdef ZMQ
 #include "AliEveDataSourceOnline.h"
 #include "AliEveDataSourceHLTZMQ.h"
@@ -539,13 +542,15 @@ void AliEveEventManager::AfterNewEventLoaded()
         
         Double_t x[3] = { 0, 0, 0 };
         
-        fCurrentData->fESD->GetPrimaryVertex()->GetXYZ(x);
+        AliESDEvent *esd = fCurrentData->fESD;
         
-        TTimeStamp ts(fCurrentData->fESD->GetTimeStamp());
+        esd->GetPrimaryVertex()->GetXYZ(x);
+        
+        TTimeStamp ts(esd->GetTimeStamp());
         TString win_title("Eve Main Window -- Timestamp: ");
         win_title += ts.AsString("s");
         win_title += "; Event # in ESD file: ";
-        win_title += fCurrentData->fESD->GetEventNumberInFile();
+        win_title += esd->GetEventNumberInFile();
         gEve->GetBrowser()->SetWindowName(win_title);
         
         TEveElement* top = gEve->GetCurrentEvent();
@@ -560,12 +565,39 @@ void AliEveEventManager::AfterNewEventLoaded()
         gEve->FullRedraw3D();
         gSystem->ProcessEvents();
         
-        if(fFirstEvent)
+//        if(fFirstEvent)
+//        {
+//            gROOT->ProcessLine(".x geom_emcal.C");
+//            fFirstEvent=false;
+//        }
+        
+        double zMax=50.;
+        double xMax=40.;
+        double yMax=40.;
+
+        AliESDtrack *trk;
+        AliESDMuonTrack *muonTrk;
+        
+        bool draw=true;
+        
+        for(int i=0;i<esd->GetNumberOfTracks();i++)
         {
-            gROOT->ProcessLine(".x geom_emcal.C");
-            fFirstEvent=false;
+            trk = esd->GetTrack(i);
+            double v[3];
+            trk->GetXYZ(v);
+            if(fabs(v[0])>xMax || fabs(v[1])>yMax || fabs(v[2])>zMax)draw=false;
         }
-        if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0)
+        for(int i=0;i<esd->GetNumberOfMuonTracks();i++)
+        {
+            muonTrk = esd->GetMuonTrack(i);
+            double v[3];
+            v[0] = muonTrk->GetNonBendingCoorAtDCA();
+            v[1] = muonTrk->GetBendingCoorAtDCA();
+            v[2] = muonTrk->GetZ();
+            if(fabs(v[0])>xMax || fabs(v[1])>yMax || fabs(v[2])>zMax)draw=false;
+        }
+        
+        if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0 && draw)
         {
             fViewsSaver->SaveForAmore();
             fViewsSaver->SendToAmore();

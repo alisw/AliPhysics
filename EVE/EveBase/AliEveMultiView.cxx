@@ -32,7 +32,7 @@ f3DView(0), fRPhiView(0), fRhoZView(0), fMuonView(0),
 fRPhiGeomScene(0), fRhoZGeomScene(0), fMuonGeomScene(0),
 fRPhiEventScene(0), fRhoZEventScene(0), fMuonEventScene(0),
 fGeomGentle(0), fGeomGentleRPhi(0), fGeomGentleRhoZ(0),
-fGeomGentleTrd(0), fGeomGentleMuon(0), fIsMuonView(kFALSE),
+fGeomGentleTrd(0),fGeomGentleEmcal(0), fGeomGentleMuon(0), fIsMuonView(kFALSE),
 fPack(0)
 {
     // Constructor --- creates required scenes, projection managers
@@ -191,6 +191,16 @@ void AliEveMultiView::InitGeomGentleTrd(TEveGeoShape* gtrd)
     if(fIsMuonView) ImportGeomMuon(fGeomGentleTrd);
 }
 
+void AliEveMultiView::InitGeomGentleEmcal(TEveGeoShape* gemcal)
+{
+    // Initialize gentle geometry EMCal.
+    
+    fGeomGentleEmcal = gemcal;
+    ImportGeomRPhi(fGeomGentleEmcal);
+    ImportGeomRhoZ(fGeomGentleEmcal);
+    if(fIsMuonView) ImportGeomMuon(fGeomGentleEmcal);
+}
+
 void AliEveMultiView::InitGeomGentleMuon(TEveGeoShape* gmuon, Bool_t showRPhi, Bool_t showRhoZ, Bool_t showMuon)
 {
     // Initialize gentle geometry for MUON.
@@ -308,9 +318,24 @@ void AliEveMultiView::DestroyAllGeometries()
     // Destroy 3d, r-phi and rho-z geometries.
     
     fGeomGentle->DestroyElements();
+    gEve->RemoveElement(fGeomGentle,gEve->GetGlobalScene());
+    
     fGeomGentleRPhi->DestroyElements();
+    gEve->RemoveElement(fGeomGentleRPhi,gEve->GetGlobalScene());
+    
     fGeomGentleRhoZ->DestroyElements();
-    if(fIsMuonView) fGeomGentleMuon->DestroyElements();
+    gEve->RemoveElement(fGeomGentleRhoZ,gEve->GetGlobalScene());
+    
+    fGeomGentleMuon->DestroyElements();
+    gEve->RemoveElement(fGeomGentleMuon,gEve->GetGlobalScene());
+    
+    fGeomGentleTrd->DestroyElements();
+    gEve->RemoveElement(fGeomGentleTrd,gEve->GetGlobalScene());
+    
+    fGeomGentleEmcal->DestroyElements();
+    gEve->RemoveElement(fGeomGentleEmcal,gEve->GetGlobalScene());
+    
+//    if(fIsMuonView) fGeomGentleMuon->DestroyElements();
     
 }
 

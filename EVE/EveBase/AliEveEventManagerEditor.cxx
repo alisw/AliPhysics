@@ -172,7 +172,6 @@ fEventInfo    (0)
         fScreenshot = b = MkTxtButton(f, "Screenshot", 2*width);
         b->Connect("Clicked()", cls, this, "DoScreenshot()");
         
-        
         MkLabel(f, "||", 0, 8, 8);
         
         fRefresh = b = MkTxtButton(f, "Refresh", width + 8);
@@ -355,6 +354,22 @@ void AliEveEventManagerWindow::DoSetEvent()
 void AliEveEventManagerWindow::DoRefresh()
 {
     // Refresh event status.
+    
+    AliEveMultiView *mv = AliEveMultiView::Instance();
+    AliEveGeomGentle *geomGentle = new AliEveGeomGentle();
+    
+    mv->DestroyAllGeometries();
+    mv->SetDepth(-10);
+    mv->InitGeomGentle(geomGentle->GetGeomGentle(),
+                       geomGentle->GetGeomGentleRphi(),
+                       geomGentle->GetGeomGentleRhoz(),
+                       0);
+    
+    mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
+    mv->InitGeomGentleEmcal(geomGentle->GetGeomGentleEMCAL());
+    mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true), kFALSE, kTRUE, kFALSE);
+    
+    mv->SetDepth(0);
     
     Int_t ev = fM->GetEventId();
 //    fM->Close();

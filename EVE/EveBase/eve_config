@@ -7,8 +7,6 @@
 
 HLTESDtree.show:        	0
 MUON.show:              	1
-TRD.geom.color:         	kGray
-MUON.geom.color:        	kGray
 
 tracks.width:           	2
 tracks.noRefit.dash:		1
@@ -31,6 +29,18 @@ tracks.byType.neutron:      900
 tracks.byType.kaon0:        801
 tracks.byType.elecon:       920
 tracks.byType.unknown:      920
+
+PHOS.color:                 953
+TPC.color:                  3
+HMPID.color:                5
+TRD.color:                  920
+TRD.ref.color:              929
+MUON.color:                 920
+EMCAL.color:                953
+ITS.SPD.color:              924
+ITS.SDD.color:              925
+ITS.SSD.color:              926
+TOF.color:                  930
 
 clusters.show:          	0
 kinks.show:             	0

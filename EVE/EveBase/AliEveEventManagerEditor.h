@@ -107,7 +107,6 @@ protected:
     TGTextButton         *fMarkEvent;    // Mark current event
     TGTextButton         *fScreenshot;   // Save screenshot to file
     
-    
     TGHButtonGroup *fDataSourceGroup;    // dataSource buttons group
     TGRadioButton *fSwitchToHLT;         // switch data source to HLT
     TGRadioButton *fSwitchToOnline;      // switch data source to Online

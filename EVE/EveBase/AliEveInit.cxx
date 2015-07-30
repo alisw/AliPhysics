@@ -69,9 +69,6 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     GetConfig(&settings);
     
     fShowHLTESDtree       = settings.GetValue("HLTESDtree.show", false);      // show HLT ESD tree
-    Color_t colorTRD      = settings.GetValue("TRD.geom.color", kGray);       // color of TRD modules
-    Color_t colorMUON     = settings.GetValue("MUON.geom.color",kGray);       // color of MUON modules
-
     Width_t width         = settings.GetValue("tracks.width",2);              // width of all ESD tracks
     bool dashNoRefit      = settings.GetValue("tracks.noRefit.dash",true);    // dash no-refit tracks
     bool drawNoRefit      = settings.GetValue("tracks.noRefit.show",true);    // show no-refit tracks
@@ -127,8 +124,9 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
                               geomGentle->GetGeomGentleRhoz(),
                               0/*geomGentle->GetGeomGentleRhoz()*/);
     
-    mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD(colorTRD));
-    mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true,colorMUON), kFALSE, kTRUE, kFALSE);
+    mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
+    mv->InitGeomGentleEmcal(geomGentle->GetGeomGentleEMCAL());
+    mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true), kFALSE, kTRUE, kFALSE);
 
     mv->SetDepth(0);
     

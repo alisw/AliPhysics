@@ -38,6 +38,7 @@ public:
 
   void InitGeomGentle(TEveGeoShape* g3d, TEveGeoShape* grphi, TEveGeoShape* grhoz, TEveGeoShape* gmuon);
   void InitGeomGentleTrd(TEveGeoShape* gtrd);
+  void InitGeomGentleEmcal(TEveGeoShape* gemcal);
   void InitGeomGentleMuon(TEveGeoShape* gmuon, Bool_t showRPhi, Bool_t showRhoZ, Bool_t showMuon);
 
   //-------------------------------------------------------------------------
@@ -52,7 +53,7 @@ public:
   void ImportEventRPhi(TEveElement* el);
   void ImportEventRhoZ(TEveElement* el);
   void ImportEventMuon(TEveElement* el);
-
+    
   void DestroyEventRPhi();
   void DestroyEventRhoZ();
   void DestroyEventMuon();
@@ -99,6 +100,7 @@ protected:
   TEveGeoShape          *fGeomGentleRPhi; // Obvious meaning.
   TEveGeoShape          *fGeomGentleRhoZ; // Obvious meaning.
   TEveGeoShape          *fGeomGentleTrd;  // Obvious meaning.
+  TEveGeoShape          *fGeomGentleEmcal;// Obvious meaning.
   TEveGeoShape          *fGeomGentleMuon; // Obvious meaning.
 
   Bool_t		 fIsMuonView;
