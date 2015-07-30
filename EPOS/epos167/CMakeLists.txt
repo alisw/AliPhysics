@@ -103,3 +103,6 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Install data files
+install(DIRECTORY . DESTINATION EPOS/epos167 FILES_MATCHING PATTERN "*.param")
