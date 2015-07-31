@@ -398,6 +398,15 @@ void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent)
           
           fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod) ;  
         }
+        else if(gGeoManager)
+        {
+          AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+          fEMCALGeo->SetMisalMatrix(fEMCALGeo->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+        }
+        else
+        {
+          AliError(Form("Alignment atrix for SM %d is not available",mod));
+        }
       } // SM loop
       
       fEMCALGeoMatrixSet = kTRUE;//At least one, so good
