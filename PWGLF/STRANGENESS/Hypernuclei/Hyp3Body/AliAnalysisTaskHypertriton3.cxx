@@ -102,6 +102,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fDCAdp(0.2),
   fDCApip(0.5),
   fDCAdpi(0.5),
+  fAngledp(TMath::Pi()),
   fLowCentrality(0.),
   fHighCentrality(80.),
   fOutput(0x0),
@@ -1195,16 +1196,17 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
 	if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
 
-	p_dp = posD + posP;
-	p_dpi = posD + negPi;
+	//	p_dp = posD + posP;
+	//	p_dpi = posD + negPi;
 	
-	fHistDalitz_dp_dpi->Fill(p_dpi.M2(),p_dp.M2());
-
+	//fHistDalitz_dp_dpi->Fill(p_dpi.M2(),p_dp.M2());
+	
+	d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());  
+	p1.SetXYZ(trackP->Px(),trackP->Py(),trackP->Pz());
+	pi1.SetXYZ(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz());
+	
 	if(charge_d>0 && charge_p>0 && charge_pi<0){ //Hypertriton
 	  //Angular correlation
-	  d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());  
-	  p1.SetXYZ(trackP->Px(),trackP->Py(),trackP->Pz());
-	  pi1.SetXYZ(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz());
 	  
 	  fHistAngle_deu_pro->Fill(d1.Angle(p1));
 	  fHistAngle_deu_pion->Fill(d1.Angle(pi1));
@@ -1242,6 +1244,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  fHistDecayMomCM_YZ->Fill(HypertritonCM.Py(),HypertritonCM.Pz());
 	  fHistDecayMomCM->Fill(pTotHyperCM);
 	}
+
+	if(d1.Angle(p1) > fAngledp) continue;
 	
 	if(charge_d>0 && charge_p>0 && charge_pi<0)	fHistMassHypertriton->Fill(Hypertriton.M());
 	

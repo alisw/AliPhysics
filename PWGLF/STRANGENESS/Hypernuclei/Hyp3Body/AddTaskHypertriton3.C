@@ -53,6 +53,7 @@ AliAnalysisTaskHypertriton3 *AddTaskHypertriton3(Bool_t readMC=kFALSE,
   taskhyp->SetReadMC(readMC);
   taskhyp->SetFillTree(kFALSE);
   
+  
   mgr->AddTask(taskhyp);
   
   // Create ONLY the output containers for the data produced by the task.
