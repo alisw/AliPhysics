@@ -187,7 +187,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   // pad region equalization
   //
   Int_t binsPadEqual[5]    = { 400, 400,    4,    5,   20};
-  Double_t xminPadEqual[5] = { 0.0, 0.0, -0.5,    0,  -1.}; 
+  Double_t xminPadEqual[5] = { 0.001, 0.001, -0.5,    0,  -1.}; 
   Double_t xmaxPadEqual[5] = { 2.0, 2.0,  3.5, 13000,  +1};
   TString axisNamePadEqual[5]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","dipAngle"};
   TString axisTitlePadEqual[5]  = {"dEdx_padRegion/mean_dEdx Qmax", "dEdx_padRegion/mean_dEdx Qtot","padType","mult","tan(lambda)"};

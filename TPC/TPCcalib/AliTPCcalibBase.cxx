@@ -257,6 +257,7 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
   //
   // Fitting slices of the projection(axisDim1,axisDim2) of a sparse histogram
   // 
+  const Int_t kMinStat=100;
   TF1 funcGaus("funcGaus","gaus");
   TH2D * hist = h->Projection(axisDim1, axisDim2);
   Double_t *xvec = new Double_t[hist->GetNbinsX()];
@@ -280,7 +281,7 @@ TGraphErrors * AliTPCcalibBase::FitSlices(THnSparse *h, Int_t axisDim1, Int_t ax
       if (nsum==0) break;
       if (nsum>minEntries) break;
     }
-    if (nsum<minEntries) continue;
+    if (nsum<kMinStat) continue;
     //
     hist->GetXaxis()->SetRange(imin,imax);
     projectionHist = hist->ProjectionY("gain",imin,imax);
