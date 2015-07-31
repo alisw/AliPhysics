@@ -94,7 +94,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fDecayLength(15.),
   fMinDecayLength(0.),
   fRapidity(1.),
-  fPtMother(10.),
+  fMaxPtMother(10.),
+  fMinPtMother(0.),
   fDCAPiSVxymax(0.6),
   fDCAPiSVzmax(0.8),
   fDCAProSVmax(0.7),
@@ -1177,7 +1178,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	
 	pTmom = TMath::Sqrt((trackD->Pt()*trackD->Pt())+(trackP->Pt()*trackP->Pt())+(trackNPi->Pt()*trackNPi->Pt()));
 	pTotHyper = TMath::Sqrt((Hypertriton.Px()*Hypertriton.Px())+(Hypertriton.Py()*Hypertriton.Py())+(Hypertriton.Pz()*Hypertriton.Pz()));
-	if(pTmom > fPtMother) continue;
+	if(pTmom < fMinPtMother || pTmom > fMaxPtMother) continue;
+
+	if(pTmom < 2.) printf ("*********pt lower than 2 GeV/c*********\n");
 	
 	Hypertriton=posD+posP+negPi;
 	
