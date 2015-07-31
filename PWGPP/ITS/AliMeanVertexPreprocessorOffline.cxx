@@ -393,9 +393,9 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     }
     
     
-    Float_t meanMult = 40.;
-    Float_t p2 = 1.4;
-    Float_t resolVtx = 0.05;
+    Float_t meanMult = 38.;
+    Float_t p2 = 1.3;
+    Float_t resolVtx = 0.04;
     
     Double_t xSigmaMult, ySigmaMult, corrXZ, corrYZ, lumiRegSquaredX, lumiRegSquaredY;
     Double_t covarXZ=0., covarYZ=0.;
