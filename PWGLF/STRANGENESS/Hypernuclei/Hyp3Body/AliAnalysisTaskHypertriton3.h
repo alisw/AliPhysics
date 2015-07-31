@@ -68,8 +68,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDecayLength(double maxdl) {fDecayLength = maxdl;}
   void SetMinDecayLength(double mindl) {fMinDecayLength = mindl;}
   void SetRapidity(double rapid) {fRapidity = rapid;}
-  void SetMaxPtMother(double maxpt) {fPtMother = maxpt;}
-
+  void SetMaxPtMother(double maxpt) {fMaxPtMother = maxpt;}
+  void SetMinPtMother(double minpt) {fMinPtMother = minpt;}
+  
   void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
   void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
   void SetDCAProDecayVtx(double maxpro) {fDCAProSVmax = maxpro;}
@@ -112,7 +113,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDecayLength;                 ///< Cut on Decay length
   Double_t           fMinDecayLength;              ///< Cut on minimum Decay length
   Double_t           fRapidity;                    ///< Cut on absolute value of mother rapidity y
-  Double_t           fPtMother;                    ///< Cut on mother reconstructed \f$p_{T}\f$
+  Double_t           fMaxPtMother;                 ///< Cut on max mother reconstructed \f$p_{T}\f$
+  Double_t           fMinPtMother;                 ///< Cut on min mother reconstructed \f$p_{T}\f$
   Double_t           fDCAPiSVxymax;                ///< Cut on \f$\pi DCA_{xy}\f$ from reconstructed secondary vertex
   Double_t           fDCAPiSVzmax;                 ///< Cut on \f$\pi DCA_{z}\f$ from reconstructed secondary vertex
   Double_t           fDCAProSVmax;                 ///< Cut on proton DCA from reconstructed secondary vertex
