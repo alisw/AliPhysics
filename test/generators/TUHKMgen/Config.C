@@ -1,54 +1,4 @@
-// One can use the configuration macro in compiled mode by
-// root [0] gSystem->Load("libgeant321");
-// root [1] gSystem->Load("libpythia6.4.25.so");
-// root [2] gSystem->Load("libqpythia.so");
-// root [3] gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include\
-//                   -I$ALICE/geant3/TGeant3");
-// root [4] AliSimulation sim
-// root [5] sim.SetConfigFile("Config.C++")
-// root [6] sim.Run()
-
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TPDGCode.h>
-#include <TRandom.h>
-#include <TSystem.h>
-#include <TVirtualMC.h>
-#include <TGeant3TGeo.h>
-#include <TGeoGlobalMagField.h>
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliConfig.h"
-#include "AliDecayerPythia.h"
-#include "AliGenCocktail.h"
-#include "AliGenHIJINGpara.h"
-#include "AliMagF.h"
-#include "AliBODY.h"
-#include "AliMAG.h"
-#include "AliABSOv3.h"
-#include "AliDIPOv3.h"
-#include "AliHALLv3.h"
-#include "AliFRAMEv2.h"
-#include "AliSHILv3.h"
-#include "AliPIPEv3.h"
-#include "AliITSv11.h"
-#include "AliTPCv2.h"
-#include "AliTOFv6T0.h"
-#include "AliHMPIDv3.h"
-#include "AliZDCv4.h"
-#include "AliTRDv1.h"
-#include "AliTRDgeometry.h"
-#include "AliFMDv1.h"
-#include "AliMUONv1.h"
-#include "AliPHOSv1.h"
-#include "AliPMDv1.h"
-#include "AliT0v1.h"
-#include "AliEMCALv2.h"
-#include "AliACORDEv1.h"
-#include "AliVZEROv7.h"
-#include "AliGenUHKM.h"
-#include "AliSimulation.h"
-#endif
+// Configuration file for TUHMKgen
 
 enum PprTrigConf_t
 {
@@ -74,12 +24,6 @@ void Config()
 
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
-  // Load Pythia libraries
-  LoadPythia();
-  // Libraries required by geant321
-#if defined(__CINT__)
-    gSystem->Load("libgeant321");
-#endif
 
     new     TGeant3TGeo("C++ Interface to Geant3");
 
@@ -193,7 +137,6 @@ void Config()
     gener->SetOrigin(0, 0, 0);  //vertex position
     gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
 
-    gSystem->Load("libTUHKMgen");
     AliGenUHKM *tuhkMgen = new AliGenUHKM(nParticles);
     tuhkMgen->SetAllParametersLHC();
     gener->AddGenerator(tuhkMgen,"TUHKM",1);
@@ -398,14 +341,4 @@ void Config()
 
 Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));
-}
-
-
-void LoadPythia()
-{
-    // Load Pythia related libraries
-    gSystem->Load("liblhapdf");      // Parton density functions
-    gSystem->Load("libEGPythia6");   // TGenerator interface
-    gSystem->Load("libpythia6");     // Pythia
-    gSystem->Load("libAliPythia6");  // ALICE specific implementations
 }
