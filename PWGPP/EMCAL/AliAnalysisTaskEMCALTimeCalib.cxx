@@ -166,16 +166,17 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
   if(fReferenceFileName.Length()!=0){
     TFile *myFile = TFile::Open(fReferenceFileName.Data());
     AliInfo(Form("Reference file: %s, pointer %p",fReferenceFileName.Data(),myFile));
-    if(myFile==0x0)
-      AliDebug(1,"*** NO REFERENCE FILE");
-    else 
-      {
+    if(myFile==0x0) {
+      AliFatal("*** NO REFERENCE FILE");
+    } else {
 	AliDebug(1,"*** OK TFILE");
 	// connect ref run here
 	for(Int_t i = 0; i < kNBCmask; i++)
 	  {
 	    fhAllAverageBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvBC%d",i));
+	    if(fhAllAverageBC[i]==0x0) AliFatal(Form("Reference histogram for BC%d does not exist",i));
 	    fhAllAverageLGBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvLGBC%d",i));
+	    if(fhAllAverageLGBC[i]==0x0) AliFatal(Form("Reference LG histogram for BC%d does not exist",i));
 	  }
 	
 	AliDebug(1,Form("hAllAverage entries %d", (Int_t)fhAllAverageBC[0]->GetEntries() ));
@@ -183,8 +184,11 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 	AliDebug(1,Form("hAllAverageLG entries %d", (Int_t)fhAllAverageLGBC[0]->GetEntries() ));
 	AliDebug(1,Form("hAllAverageLG entries2 %d",(Int_t)fhAllAverageLGBC[2]->GetEntries() ));
 	
-      }
-  }//end of reference file is provided
+    }
+  } else {
+//end of reference file is provided
+    AliFatal("You require to load reference histos from file but FILENAME is not provided");
+  }
 } // End of AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 
 //_____________________________________________________________________
@@ -648,11 +652,15 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       fhTimeVsBC->Fill(1.*BunchCrossNumber,hkdtime-timeBCoffset);
       if(isHighGain==kTRUE){
 	if(fhAllAverageBC[nBC]!=0) {//comming from file after the first iteration
-	  offset = fhAllAverageBC[nBC]->GetBinContent(absId);
+	  offset = fhAllAverageBC[nBC]->GetBinContent(absId+1);//channel absId=0 has histogram bin=1
+	} else if(fReferenceFileName.Length()!=0){//protection against missing reference histogram
+	  AliFatal(Form("Reference histogram for BC%d not properly loaded",nBC));
 	}
       } else {
 	if(fhAllAverageLGBC[nBC]!=0) {//comming from file after the first iteration
-	  offset = fhAllAverageLGBC[nBC]->GetBinContent(absId);
+	  offset = fhAllAverageLGBC[nBC]->GetBinContent(absId+1);//channel absId=0 has histogram bin=1
+	} else if(fReferenceFileName.Length()!=0){//protection against missing reference histogram
+	  AliFatal(Form("Reference LG histogram for BC%d not properly loaded",nBC));
 	}
       }
       //if(offset==0)cout<<"offset 0 in SM "<<nSupMod<<endl;
