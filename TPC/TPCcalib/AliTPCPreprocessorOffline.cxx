@@ -118,8 +118,8 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fGainMult(0),
   fAlignTree(0),        // alignment tree
   fSwitchOnValidation(kFALSE), // flag to switch on validation of OCDB parameters
-  fMinGain(2.0),
-  fMaxGain(3.0),
+  fMinGain(1.5),
+  fMaxGain(4.5),
   fMaxVdriftCorr(0.03),
   fNtracksVdrift(0),
   fMinTracksVdrift(0),
@@ -319,6 +319,7 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
     if(gr->GetY()[iPoint] < minGain || gr->GetY()[iPoint] > maxGain)  
     { 
       fCalibrationStatus |= kCalibFailedTimeGain;
+      AliError(TString::Format("Gain point outside of range %f != (%f,%f)",gr->GetY()[iPoint], minGain, maxGain ).Data());
       return kFALSE;
     }
   }
