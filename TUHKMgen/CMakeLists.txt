@@ -85,6 +85,7 @@ endif(${CMAKE_SYSTEM} MATCHES Darwin)
 install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
-install(FILES ${HDRS} DESTINATION include)
+install_relative(FILES ${HDRS} DESTINATION include)
+install_relative(FILES UHKM/particles.data DESTINATION TUHKMgen)
 
 message(STATUS "${MODULE} enabled")
