@@ -41,7 +41,7 @@ class AliBalanceEbyE : public TObject {
 			Double_t vertexZ = 0);
 
   //++++++++++++++++++//
-  TH2D *GetHistBF() {return fHistBFSum;}  
+  TH3D *GetHistBF() {return fHistBFSum;}  
   TH2D *GetQAHistHBTbefore() {return fHistHBTbefore;}
   TH2D *GetQAHistHBTafter() {return fHistHBTafter;}
   TH3D *GetQAHistConversionbefore() {return fHistConversionbefore;}
@@ -76,7 +76,7 @@ class AliBalanceEbyE : public TObject {
   TH2D *fHistPP;//! ebye delta eta - delta phi histogram ++
   TH2D *fHistNN;//! ebye delta eta - delta phi histogram --
   TH2D *fHistBF;//! ebye delta eta - delta phi histogram BF
-  TH2D *fHistBFSum;//! centrality - delta eta - delta phi histogram BF for all events
+  TH3D *fHistBFSum;//! centrality - delta eta - delta phi histogram BF for all events
 
   //QA histograms
   TH2D *fHistHBTbefore; // Delta Eta vs. Delta Phi before HBT inspired cuts

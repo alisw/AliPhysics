@@ -163,8 +163,8 @@ void AliBalanceEbyE::InitHistograms() {
   fHistPP = new TH2D("fHistPP","fHistPP",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
   fHistNN = new TH2D("fHistNN","fHistNN",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
   fHistBF = new TH2D("fHistBF","fHistBF",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  //fHistBFSum = new TH3D("fHistBFSum","fHistBFSum",20,0,100,40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fHistBFSum = new TH2D("fHistBFSum","fHistBFSum",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistBFSum = new TH3D("fHistBFSum","fHistBFSum",20,0,100,40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  //fHistBFSum = new TH2D("fHistBFSum","fHistBFSum",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
 
 
   TH1::AddDirectory(oldStatus);
@@ -463,8 +463,23 @@ void AliBalanceEbyE::CalculateBalance(Double_t gReactionPlane,
   fHistBF->Add(fHistNN,-1.);
   fHistBF->Scale(0.5);
 
-  // add to sum
-  fHistBFSum->Add(fHistBF);
+  // add to sum (2D)
+  //fHistBFSum->Add(fHistBF);
+
+  // add to sum (3D)
+  for(Int_t iCent = 0; iCent < fHistBFSum->GetNbinsX(); iCent++){
+    if(trackVariablesSingle[0] >= fHistBFSum->GetXaxis()->GetBinLowEdge(iCent+1) && trackVariablesSingle[0] < fHistBFSum->GetXaxis()->GetBinUpEdge(iCent+1)){
+      Printf("%f - %f: %f",fHistBFSum->GetXaxis()->GetBinLowEdge(iCent+1),fHistBFSum->GetXaxis()->GetBinUpEdge(iCent+1),trackVariablesSingle[0]);
+      for(Int_t iEta = 0; iEta < fHistBFSum->GetNbinsY(); iEta++){
+	for(Int_t iPhi = 0; iPhi < fHistBFSum->GetNbinsZ(); iPhi++){
+
+	  fHistBFSum->SetBinContent(iCent+1,iEta+1,iPhi+1,fHistBF->GetBinContent(iEta+1,iPhi+1));
+	  fHistBFSum->SetBinError(iCent+1,iEta+1,iPhi+1,fHistBF->GetBinError(iEta+1,iPhi+1));
+	  
+	}
+      }
+    }
+  }
 }  
 
 
