@@ -1,4 +1,13 @@
-void sim(Int_t nev=5) {
+void sim(Int_t nev=1) {
+
+  // Libraries required by the simulation
+  gSystem->Load("liblhapdf"); // Parton density functions
+  gSystem->Load("libEGPythia6"); // TGenerator interface
+  gSystem->Load("libpythia6"); // Pythia
+  gSystem->Load("libAliPythia6"); // ALICE specific implementations
+  gSystem->Load("libgeant321");
+
+  gSystem->Load("libTTherminator"); // Therminator library
 
 
   AliSimulation simulator;
