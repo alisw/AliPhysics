@@ -26,6 +26,7 @@
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TGeoGlobalMagField.h>
+#include <TGeoManager.h>
 #include <TInterpreter.h>
 #include <TObjArray.h>
 #include <TROOT.h>
@@ -845,6 +846,11 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
         if (fDebugLevel > 2) fEMCALMatrix[mod]->Print();
         
         fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod);  
+      }
+      else if(gGeoManager)
+      {
+        AliWarning(Form("Set matrix for SM %d from gGeoManager\n",mod));
+        fEMCALGeo->SetMisalMatrix(fEMCALGeo->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
       }
       else
       {
