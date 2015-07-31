@@ -1232,6 +1232,15 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
         
         fGeom->SetMisalMatrix(fGeomMatrix[mod],mod) ;  
       }
+      else if(gGeoManager)
+      {
+        AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+        fGeom->SetMisalMatrix(fGeom->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+      }
+      else
+      {
+        AliError(Form("Alignment atrix for SM %d is not available",mod));
+      }
       
       fGeomMatrixSet=kTRUE;
       
