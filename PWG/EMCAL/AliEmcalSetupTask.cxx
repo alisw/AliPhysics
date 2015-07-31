@@ -295,7 +295,19 @@ void AliEmcalSetupTask::Setup(Int_t runno)
     if (mobj) {
       for(Int_t mod=0; mod < (geom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
         //AliInfo(Form("Misalignment matrix %d", mod));
-        geom->SetMisalMatrix((TGeoHMatrix*) mobj->At(mod),mod);
+        if(mobj->At(mod))
+        {
+          geom->SetMisalMatrix((TGeoHMatrix*) mobj->At(mod),mod);
+        }
+        else if(gGeoManager)
+        {
+          AliWarning(Form("Set matrix for SM %d from gGeoManager\n",mod));
+          geom->SetMisalMatrix(geom->GetMatrixForSuperModuleFromGeoManager(mod),mod);
+        }
+        else
+        {
+          AliError(Form("Matrix for SM %d is not available\n",mod));
+        }
       } 
     }
   }
