@@ -72,7 +72,9 @@ class AliHFMassFitter : public TNamed {
   Double_t GetRawYield()const {return fRawYield;}
   Double_t GetRawYieldError()const {return fRawYieldErr;}
   Double_t GetChiSquare() const;
+  Double_t GetBkgChiSquare();
   Double_t GetReducedChiSquare() const;
+  Double_t GetBkgReducedChiSquare();
   Double_t GetFitProbability() const;
   void     GetSideBandsBounds(Int_t& lb, Int_t& hb) const;
   Bool_t*  GetFixParam()const {return fFixPar;}
@@ -125,6 +127,8 @@ class AliHFMassFitter : public TNamed {
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
   void SetUseChi2Fit(){fFitOption="E";}
   void SetFitOption(TString opt){fFitOption=opt.Data();};
+
+
  protected:
   
   virtual void     PlotFit(TVirtualPad* pd,Double_t nsigma=3,Int_t writeFitInfo=1)const;
@@ -160,10 +164,11 @@ class AliHFMassFitter : public TNamed {
   Int_t     fSideBandl;        // left side band limit (bin number)
   Int_t     fSideBandr;        // right side band limit (bin number)
   Int_t     fcounter;          // internal counter
+  Int_t     fNpfits;           // Number of points used in the fit
   TString   fFitOption;        // L, LW or Chi2
   TList*    fContourGraph;     // TList of TGraph containing contour plots
 
-  ClassDef(AliHFMassFitter,8); // class for invariant mass fit
+  ClassDef(AliHFMassFitter,9); // class for invariant mass fit
 };
 
 #endif

@@ -76,6 +76,7 @@ AliHFMassFitter::AliHFMassFitter() :
   fSideBandl(0),
   fSideBandr(0),
   fcounter(0),
+  fNpfits(0),
   fFitOption("L,E"),
   fContourGraph(0)
 {
@@ -115,6 +116,7 @@ AliHFMassFitter::AliHFMassFitter (const TH1F *histoToFit, Double_t minvalue, Dou
  fSideBandl(0),
  fSideBandr(0),
  fcounter(0),
+ fNpfits(0),
  fFitOption("L,E"),
  fContourGraph(0)
 {
@@ -172,6 +174,7 @@ AliHFMassFitter::AliHFMassFitter(const AliHFMassFitter &mfit):
   fSideBandl(mfit.fSideBandl),
   fSideBandr(mfit.fSideBandr),
   fcounter(mfit.fcounter),
+  fNpfits(mfit.fNpfits),
   fFitOption(mfit.fFitOption),
   fContourGraph(mfit.fContourGraph)
 {
@@ -202,7 +205,6 @@ AliHFMassFitter::~AliHFMassFitter() {
   
   delete[] fFixPar;
   
-  fcounter = 0;
 }
 
 //_________________________________________________________________________
@@ -233,6 +235,7 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
   fSideBandr= mfit.fSideBandr;
   fFitOption= mfit.fFitOption;
   fcounter= mfit.fcounter;
+  fNpfits = mfit.fNpfits;
   fContourGraph= mfit.fContourGraph;
 
   if(mfit.fParsSize > 0){
@@ -1451,6 +1454,61 @@ Double_t AliHFMassFitter::GetReducedChiSquare() const{
     return -1;
   }
   return funcmass->GetChisquare()/funcmass->GetNDF();
+}
+//_________________________________________________________________________
+Double_t AliHFMassFitter::GetBkgChiSquare() {
+  //Get Chi^2 method for Bkg function (in side bands)
+  TF1 *bkgfunc  = fhistoInvMass->GetFunction("funcbkgRecalc");
+  if(!bkgfunc) {
+    cout<<"Bkg function not found"<<endl;
+    return -1;
+  }
+
+  Float_t chi2 = 0.;
+  Double_t xmin, xmax, xl, xr;
+  Int_t binmin, binmax, binl, binr;
+  Double_t mean  = GetMean();
+  Double_t sigma = GetSigma();
+  
+  fNpfits = 0;
+  
+  xmin = bkgfunc->GetXmin();
+  xmax = bkgfunc->GetXmax();
+  xl   = mean-3*sigma;
+  xr   = mean+3*sigma;
+  
+  binmin = fhistoInvMass->FindBin(xmin);
+  binmax = fhistoInvMass->FindBin(xmax);
+  binl   = fhistoInvMass->FindBin(xl);
+  binr   = fhistoInvMass->FindBin(xr);
+  
+  for (Int_t ib=binmin; ib<=binmax; ib++) {
+    if (!(ib>=binl && ib<=binr)) {
+      Float_t yobs = fhistoInvMass->GetBinContent(ib);
+      Float_t x    = fhistoInvMass->GetBinCenter(ib);
+      Float_t yexp = bkgfunc->Eval(x);
+      if (yexp) {
+        chi2 = chi2 + (yobs-yexp)*(yobs-yexp)/yexp;
+        fNpfits++;
+      }
+    }
+  }
+  return chi2;
+}
+//_________________________________________________________________________
+Double_t AliHFMassFitter::GetBkgReducedChiSquare() {
+  //Get reduced Chi^2 method for Bkg function  (in side bands)
+  TF1 *bkgfunc  = fhistoInvMass->GetFunction("funcbkgRecalc");
+  if(!bkgfunc) {
+    cout<<"Bkg function not found"<<endl;
+    return -1;
+  }
+ 
+  Double_t chi2 = GetBkgChiSquare();
+  Int_t npar    = bkgfunc->GetNpar();
+  Int_t ndf     = fNpfits - npar;
+ 
+  return chi2/ndf;
 }
 
 //_________________________________________________________________________
