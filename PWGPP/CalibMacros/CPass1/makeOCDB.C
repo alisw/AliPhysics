@@ -108,7 +108,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   // TPC part
   AliTPCPreprocessorOffline *procesTPC = 0;
   if (detStr.Contains("TPC") && TPC_qf){
-    TString targetStorageResidual="local://";    
+    TString targetStorageResidual="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
     if (gSystem->Getenv("targetStorageResidual"))  targetStorageResidual=gSystem->Getenv("targetStorageResidual");
     AliCDBStorage *residualStorage = AliCDBManager::Instance()->GetStorage(targetStorageResidual.Data());
     Printf("\n******* Calibrating TPC *******");
@@ -117,11 +117,11 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     // switch on parameter validation
     procesTPC->SetTimeGainRange(0.5,4.0);
     procesTPC->SetMinTracksVdrift(100000);
-    procesTPC->SwitchOnValidation();
+    procesTPC->SwitchOnValidation(kFALSE);
     // Make timegain calibration
-    if (isMagFieldON) procesTPC.CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),residualStorage);
+    if (isMagFieldON) procesTPC->CalibTimeGain("CalibObjects.root", runNumber,AliCDBRunRange::Infinity(),residualStorage);
     // Make vdrift calibration
-    procesTPC.CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),residualStorage);
+    procesTPC->CalibTimeVdrift("CalibObjects.root",runNumber,AliCDBRunRange::Infinity(),residualStorage);
   }
   else {
     Printf("\n******* NOT Calibrating TPC: detStr = %s, TPC_qf = %d *******", detStr.Data(), (Int_t)TPC_qf);
