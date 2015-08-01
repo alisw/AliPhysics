@@ -2882,3 +2882,82 @@ void AliAnalysisTaskJetV2::PrintTriggerSummary(UInt_t trigger)
     if((trigger & ALL_EMCEGA) == ALL_EMCEGA)        printf("(trigger & ALL_EMCEGA) == ALL_EMCEGA)\n");
 }
 //_____________________________________________________________________________
+void AliAnalysisTaskJetV2::DoSimpleSimulation(Int_t nEvents, Float_t v2, Float_t v3, Float_t v4) 
+{
+    // function for simple illustration of in-plane, out-of-plane method
+    
+    // azimuthal distribution 
+    TF1* dNdphi = new TF1("dNdphi", "1.+2.*([0]*TMath::Cos(2.*(x-[1]))+[2]*TMath::Cos(3.*(x-[3]))+[4]*TMath::Cos(4.*(x-[5])))", 0, 2*TMath::Pi());
+
+   // set harmonics
+   dNdphi->SetParameter(0, v2);       // v2
+   dNdphi->SetParameter(2, v3);       // v3
+   dNdphi->SetParameter(4, v4);       // v4
+   Double_t in(0), out(0), r(0);
+   
+   for(Int_t i(0); i < nEvents; i ++) {
+       // orthogonal event planes
+       dNdphi->SetParameter(1, gRandom->Uniform(-TMath::Pi()/2.,TMath::Pi()/2.));
+       dNdphi->SetParameter(3, gRandom->Uniform(-TMath::Pi()/3.,TMath::Pi()/3.));
+       dNdphi->SetParameter(5, gRandom->Uniform(-TMath::Pi()/4.,TMath::Pi()/4.));
+
+       // ep loop
+       Double_t qx(0), qy(0);
+       for(Int_t j(0); j <  100; j++) {
+           Double_t x = dNdphi->GetRandom(0, TMath::TwoPi());
+           qx+=TMath::Cos(2.*x);
+           qy+=TMath::Sin(2.*x);
+       }
+       Double_t ep(TMath::ATan2(qy,qx)/2.);
+ 
+       // track loop
+       for(Int_t j(0); j <  500; j++) {
+           Double_t x(dNdphi->GetRandom(0, TMath::TwoPi())-ep);
+           x = PhaseShift(x, 2);
+           // determine which plane it is in
+           (x > TMath::Pi()/4. && x < 3*TMath::Pi()/4.) ? out++ : in++;
+       }
+       r += TMath::Cos(2.*(ep-dNdphi->GetParameter(1)));
+   }
+
+   r/=100000;
+   cout << " event plane resolution is: " << r << endl;
+
+   Double_t pre = TMath::Pi()/(r*4.);
+   Double_t ratio = pre*((in-out)/(in+out));
+   Double_t eout = TMath::Sqrt(out);
+   Double_t ein = TMath::Sqrt(in);
+   Double_t error2 = (4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout;
+   error2 = error2*pre*pre;
+   if(error2 > 0) error2 = TMath::Sqrt(error2);
+
+   dNdphi->SetTitle("total");
+   dNdphi->DrawCopy();
+   cout << "in: " << in << "\t out: " << out << endl;
+   cout << "v2: " << ratio << "\t error: " << error2 << endl;
+   
+   TF1* dNdphi2 = new TF1("dNdphi", "1.+2.*([0]*TMath::Cos(2.*(x-[1])))", 0, 2*TMath::Pi());
+   TF1* dNdphi3 = new TF1("dNdphi", "1.+2.*([0]*TMath::Cos(3.*(x-[1])))", 0, 2*TMath::Pi());
+   TF1* dNdphi4 = new TF1("dNdphi", "1.+2.*([0]*TMath::Cos(4.*(x-[1])))", 0, 2*TMath::Pi());
+
+   dNdphi2->SetParameter(0, dNdphi->GetParameter(0));
+   dNdphi2->SetParameter(1, dNdphi->GetParameter(1));
+   dNdphi2->SetLineColor(kBlue);
+   dNdphi2->SetLineStyle(7);
+   dNdphi2->SetTitle("v_{2}");
+   dNdphi2->DrawCopy("same");
+
+   dNdphi3->SetParameter(0, dNdphi->GetParameter(2));
+   dNdphi3->SetParameter(1, dNdphi->GetParameter(3));
+   dNdphi3->SetLineColor(kGreen);
+   dNdphi3->SetLineStyle(7);
+   dNdphi3->SetTitle("v_{3}");
+   dNdphi3->DrawCopy("same");
+
+   dNdphi4->SetParameter(0, dNdphi->GetParameter(4));
+   dNdphi4->SetParameter(1, dNdphi->GetParameter(5));
+   dNdphi4->SetLineColor(kMagenta);
+   dNdphi4->SetLineStyle(7);
+   dNdphi4->SetTitle("v_{4}");
+   dNdphi4->DrawCopy("same");
+}

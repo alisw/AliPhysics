@@ -160,6 +160,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
         static TH1F*            GetEventPlaneWeights(TH1F* hist, Int_t c);
         static void             PrintTriggerSummary(UInt_t trigger);
+        static void             DoSimpleSimulation(Int_t nEvents = 100000, Float_t v2 = 0.02, Float_t v3 = 0.04, Float_t v4 = 0.03);
         void                    ExecMe()                                        {ExecOnce();}
         AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
         // local cuts
