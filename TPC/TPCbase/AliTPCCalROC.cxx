@@ -138,6 +138,14 @@ void AliTPCCalROC::Streamer(TBuffer &R__b)
    }
 }
 
+void AliTPCCalROC::Print(Option_t* /*option*/) const{
+  //
+  // Print summary content
+  //
+  printf("|ROC%d|\t%f|\t%f|\t%f|\n",fSector, GetMean(),GetMedian(),GetRMS());
+}
+
+
 
 //
 

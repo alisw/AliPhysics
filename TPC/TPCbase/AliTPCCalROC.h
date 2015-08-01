@@ -25,6 +25,7 @@ class AliTPCCalROC : public TNamed {
   AliTPCCalROC(const AliTPCCalROC &c);
  AliTPCCalROC &operator = (const AliTPCCalROC & param);
   virtual           ~AliTPCCalROC();  
+  virtual void Print(Option_t* option="") const;
   UInt_t        GetSector() const { return fSector;}
   UInt_t        GetNrows() const               { return fNRows;};
   UInt_t        GetNchannels()       const     { return fNChannels;};

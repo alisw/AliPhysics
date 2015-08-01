@@ -136,6 +136,24 @@ void AliTPCCalPad::Copy(TObject &c) const
 }
 
 
+void AliTPCCalPad::Print(Option_t* option) const{
+  //
+  // Print summary content
+  //
+  printf("TPC %s\t%s\n",GetName(),GetTitle());
+  //
+  printf("|\t|%s|\t%s|\t%s|\n", "Mean","Median","RMS");
+  printf("|ALL\t|%f|\t%f|\t%f|\n", GetMean(),GetMedian(),GetRMS());
+  if (TString(option).Contains("list")){
+    for (Int_t isec=0; isec<72; isec++){
+      if (fROC[isec]) fROC[isec]->Print(option);
+    }
+  }
+}
+
+
+
+
 void AliTPCCalPad::SetCalROC(AliTPCCalROC* roc, Int_t sector){
    /// Set AliTPCCalROC copies values from 'roc'
    /// if sector == -1 the sector specified in 'roc' is used
@@ -298,7 +316,7 @@ TGraph  *  AliTPCCalPad::MakeGraph(Int_t type, Float_t ratio){
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetMeanRMS(Double_t &rms)
+Double_t AliTPCCalPad::GetMeanRMS(Double_t &rms) const
 {
     /// Calculates mean and RMS of all ROCs
 
@@ -325,7 +343,7 @@ Double_t AliTPCCalPad::GetMeanRMS(Double_t &rms)
 
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetMean(AliTPCCalPad* outlierPad)
+Double_t AliTPCCalPad::GetMean(AliTPCCalPad* outlierPad) const
 {
     /// return mean of the mean of all ROCs
 
@@ -344,7 +362,7 @@ Double_t AliTPCCalPad::GetMean(AliTPCCalPad* outlierPad)
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetRMS(AliTPCCalPad* outlierPad)
+Double_t AliTPCCalPad::GetRMS(AliTPCCalPad* outlierPad) const
 {
     /// return mean of the RMS of all ROCs
 
@@ -363,7 +381,7 @@ Double_t AliTPCCalPad::GetRMS(AliTPCCalPad* outlierPad)
 }
 
 //_____________________________________________________________________________
-Double_t AliTPCCalPad::GetMedian(AliTPCCalPad* outlierPad)
+Double_t AliTPCCalPad::GetMedian(AliTPCCalPad* outlierPad) const
 {
     /// return mean of the median of all ROCs
 
