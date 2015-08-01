@@ -832,11 +832,20 @@ AliMixture(40,gname3.Data(),amat1,zmat1,density,cnt,wmat1); //sensitive Kr
   AliMedium(26,"Alumina1",36,0, iSXFLD, sXMGMX, 10., 999., .1, .001, .001);
 }
 
-void AliTPC::GenerNoise(Int_t tablesize)
+void AliTPC::GenerNoise(Int_t tablesize, Bool_t normType)
 {
   //
-  //Generate table with noise
-  //
+  //  Generate random table with noise
+  //  This table is used in digitization after renormalization to the pad noise (in ADC TPC/Calib/PadNoise entry)   
+  //   in case norm==kFALSE use normalization to 1
+  //  MI - 01.08.2015 - related to ATO-123, ATO-129
+  //  !!!! IN all old simulation the default normalization factor was ~1 
+  //  !!!! In the RUN3 simulation Chip normalization increased by factor of 1.8 (12->20)          
+  //  !!!!    in OLD logic this lead to the overestimation of the noise by factor 1.8
+  //       As the calibration entry for the noise is and will be expressed in ADC units
+  //       we will keep the default normalization of the table 1 
+  //       Assuming we will keep TPC OCDB entry  for the noise in the ADC Units
+  //  THIS IS TEMPORARY DECISSION, which has to be confirmed by TPC offline group and properly documented   
   if (fTPCParam==0) {
     // error message
     fNoiseDepth=0;
@@ -848,7 +857,11 @@ void AliTPC::GenerNoise(Int_t tablesize)
   fCurrentNoise =0; //!index of the noise in  the noise table 
   
   Float_t norm = fTPCParam->GetNoise()*fTPCParam->GetNoiseNormFac();
-  for (Int_t i=0;i<tablesize;i++) fNoiseTable[i]= gRandom->Gaus(0,norm);      
+  if (normType==kTRUE){
+    for (Int_t i=0;i<tablesize;i++) fNoiseTable[i]= gRandom->Gaus(0,norm);      
+  }else{
+    for (Int_t i=0;i<tablesize;i++) fNoiseTable[i]= gRandom->Gaus(0,1);      
+  }
 }
 
 Float_t AliTPC::GetNoise()
