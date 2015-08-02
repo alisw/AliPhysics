@@ -68,7 +68,7 @@
 using namespace std;
 
 
-Float_t magf = -1;
+
 ClassImp(AliAnalysisTaskLeadingPt)
 	//_____________________________________________________________________________
 	//AliAnalysisTaskLeadingPt::AliAnalysisTaskQAHighPtDeDx(const char *name):
@@ -982,7 +982,6 @@ void AliAnalysisTaskLeadingPt::AnalyzeAOD(AliAODEvent* aodEvent)
 	trackmult08 =  (dynamic_cast<AliAODHeader*>(aodEvent->GetHeader()))->GetRefMultiplicityComb08();
 
 	//UInt_t    time      = 0; // Missing AOD info? aodEvent->GetTimeStamp();
-	magf      = aodEvent->GetMagneticField();
 
 	//Int_t     trackmult = 0; // no pt cuts
 	//Int_t     nadded    = 0;
