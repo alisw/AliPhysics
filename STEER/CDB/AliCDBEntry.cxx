@@ -137,6 +137,16 @@ AliCDBEntry::~AliCDBEntry() {
   }
 }
 
+void AliCDBEntry::Print(Option_t* option) const{
+  //
+  //
+  //
+  PrintId();
+  if (fMetaData) fMetaData->Print(option);
+  if (fObject)   fObject->Print(option);
+  
+}
+
 //_____________________________________________________________________________
 void AliCDBEntry::PrintId() const {
 

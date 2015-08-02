@@ -21,7 +21,7 @@ class AliCDBMetaData: public TObject {
     AliCDBMetaData();
     AliCDBMetaData(const char *responsible, UInt_t beamPeriod=0, const char* alirootVersion="", const char* comment="");
     virtual ~AliCDBMetaData();
-
+    virtual void Print(Option_t* option="") const;
     void 		SetObjectClassName(const char* name) 
     {fObjectClassName = name;};
     const char* 	GetObjectClassName() const 
@@ -52,7 +52,7 @@ class AliCDBMetaData: public TObject {
     TObject* 	GetProperty(const char* property) const;
     Bool_t 		RemoveProperty(const char* property);
 
-    void PrintMetaData();
+    void PrintMetaData() const;
 
   private:
 

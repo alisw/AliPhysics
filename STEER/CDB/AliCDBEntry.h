@@ -44,6 +44,7 @@ class AliCDBEntry: public TObject {
         AliCDBMetaData* metaData, Bool_t owner = kFALSE);
 
     virtual ~AliCDBEntry();
+    virtual void Print(Option_t* option="") const;
 
 
     void 		SetId(const AliCDBId& id) {fId = id;};

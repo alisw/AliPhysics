@@ -66,6 +66,13 @@ AliCDBMetaData::~AliCDBMetaData() {
 
 }
 
+void AliCDBMetaData::Print(Option_t* option) const{
+  //
+  //
+  //
+  PrintMetaData();
+}
+
 //_____________________________________________________________________________
 void AliCDBMetaData::SetProperty(const char* property, TObject* object) {
   // add something to the list of properties
@@ -112,7 +119,7 @@ void AliCDBMetaData::AddDateToComment() {
 }
 
 //_____________________________________________________________________________
-void AliCDBMetaData::PrintMetaData() {
+void AliCDBMetaData::PrintMetaData() const {
   // print the object's metaData
 
   TString message;
