@@ -53,25 +53,25 @@ AliAnalysisTask *AddTask_oezdemir_pp2010(Bool_t getFromAlien=kFALSE,TString cFil
     mgr->CreateContainer("oezdemir_pp2010_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "LMEEoutput_output");
+                         "LMEE_output");
   
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer("oezdemir_pp2010_out",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEEoutput.root");
+                         "LMEE.root");
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("oezdemir_pp2010_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEEoutput.root");
+                         "LMEE.root");
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("oezdemir_pp2010_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEEoutput.root");
+                         "LMEE.root");
 
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
