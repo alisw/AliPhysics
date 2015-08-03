@@ -19,6 +19,10 @@
 
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
+# AliRoot will refuse to compile against a wrong ROOT version
+set(ROOT_VERSION_MIN_5 "5.34.30")
+set(ROOT_VERSION_MIN_6 "6.04.00")
+
 ### CMP0025   Compiler id for Apple Clang is now AppleClang.
 ### CMP0042   MACOSX_RPATH is enabled by default.
 
@@ -199,11 +203,24 @@ else()
   if(ROOTSYS)
     find_package(ROOT REQUIRED)
 
-    # ROOT must be build with XML2 support
+    if(ROOT_VERSION_MAJOR EQUAL 5)
+      set(ROOT_VERSION_MIN "${ROOT_VERSION_MIN_5}")
+    elseif(ROOT_VERSION_MAJOR EQUAL 6)
+      set(ROOT_VERSION_MIN "${ROOT_VERSION_MIN_6}")
+    else()
+      message(FATAL_ERROR "AliRoot works with ROOT 5 or 6 only")
+    endif()
+
+    if(ROOT_VERSION_NORM VERSION_LESS "${ROOT_VERSION_MIN}")
+      message(FATAL_ERROR "AliRoot requires at least ROOT ${ROOT_VERSION_MIN} (you have ${ROOT_VERSION_NORM})")
+    endif()
+
+    # ROOT must be built with XML2 support
     if(NOT ROOT_HASXML)
       message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
     endif(NOT ROOT_HASXML)
-  else()
+
+  else(ROOTSYS)
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
   endif(ROOTSYS)
 
