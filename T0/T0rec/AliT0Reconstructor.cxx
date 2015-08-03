@@ -720,6 +720,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   ****************************************************/
   
   AliDebug(1,Form("Start FillESD T0"));
+
+  if (!clustersTree) {
+    AliDebug(1,Form("No clusters"));
+    return;
+  }
+
   if(!pESD) {
     AliError("No ESD Event");
     return;
