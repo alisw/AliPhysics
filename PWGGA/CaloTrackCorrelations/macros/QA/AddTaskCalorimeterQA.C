@@ -21,12 +21,14 @@
 /// \param outputFile : A string to change the name of the histograms output file, default is AnalysisResults.root
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param printSettings : A bool to enable the print of the settings per task
+/// \param calibrate: if OADB was updated with calibration parameters not used in reconstruction, apply them here.
 ///
 AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="default",
-                                                          Bool_t simulation = kFALSE,
+                                                          Bool_t  simulation = kFALSE,
                                                           TString outputFile = "",
-                                                          Int_t year = 2015, 
-                                                          Bool_t printSettings = kFALSE)
+                                                          Int_t   year = 2015, 
+                                                          Bool_t  printSettings = kFALSE,
+                                                          Bool_t  calibrate = kTRUE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -103,6 +105,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   if(!simulation) reader->AnalyzeOnlyPhysicsEvents(); // in case physics selection was not on
   
+  if(calibrate && !simulation) reader->SwitchOnClusterRecalculation();
+  else                         reader->SwitchOffClusterRecalculation();
+  
   if(printSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
@@ -114,11 +119,39 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   else if (year <  2014) cu->SetNumberOfSuperModulesUsed(10);
   else                   cu->SetNumberOfSuperModulesUsed(20);
   
-  AliEMCALRecoUtils* reco = cu->GetEMCALRecoUtils();
-  reco->SwitchOnRejectExoticCell() ; // reject exotic cells, fill different histograms for exotic clusters and good clusters
-  reco->SetExoticCellDiffTimeCut(10000); // Open  
-  reco->SetExoticCellFractionCut(0.95);  // 1-Ecross/Ecell > 0.95 -> out
-  reco->SetExoticCellMinAmplitudeCut(0.75); // 750 MeV    
+  
+  cu->SwitchOffRecalibration(); // Check the reader if it is taken into account during filtering
+  cu->SwitchOffRunDepCorrection();
+  
+  cu->SwitchOnCorrectClusterLinearity();
+  
+  Bool_t bExotic  = kTRUE;
+  Bool_t bNonLin  = kTRUE;
+  Bool_t bBadMap  = kTRUE;
+  
+  Bool_t bEnCalib = kFALSE;
+  Bool_t bTiCalib = kFALSE;
+  
+  if(calibrate && !simulation)
+  {
+    cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
+    cu->SwitchOffRunDepCorrection();    
+    cu->SwitchOnRecalculateClusterPosition() ;
+    
+    bEnCalib = kTRUE;
+    bTiCalib = kTRUE;
+  }
+  
+  AliEMCALRecoUtils* recou = cu->GetEMCALRecoUtils();
+
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+  ConfigureEMCALRecoUtils(recou,
+                          simulation,
+                          bExotic,
+                          bNonLin,
+                          bEnCalib,
+                          bBadMap,
+                          bTiCalib);  
   
   cu->SetDebug(-1);
   if(printSettings) cu->Print("");	
@@ -177,7 +210,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   emcalQA->GetHistogramRanges()->SetHistoPOverERangeAndNBins(0,2.,50);
   emcalQA->GetHistogramRanges()->SetHistodEdxRangeAndNBins(0.,200.,100);
   emcalQA->GetHistogramRanges()->SetHistodRRangeAndNBins(0.,0.10,50);
-  emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins(400.,850,150);
+  //emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins( 400,900,250);
+  //emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins(-275,275,250);
+  emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins(-275,975,250);  
   emcalQA->GetHistogramRanges()->SetHistoRatioRangeAndNBins(0.,2.,100);
   emcalQA->GetHistogramRanges()->SetHistoVertexDistRangeAndNBins(0.,500.,500);
   emcalQA->GetHistogramRanges()->SetHistoNClusterCellRangeAndNBins(0,50,50);
