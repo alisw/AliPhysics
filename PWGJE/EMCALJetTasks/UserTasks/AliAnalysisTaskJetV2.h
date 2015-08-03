@@ -228,7 +228,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
         void                    SetOutputList(TList* l) {fOutputList = l;}
-        TH1F*                   GetResolutionFromOuptutFile(detectorType detector, Int_t h = 2, TArrayD* c = 0x0);
+        TH1F*                   GetResolutionFromOutputFile(detectorType detector, Int_t h = 2, TArrayD* c = 0x0);
         TH1F*                   CorrectForResolutionDiff(TH1F* v, detectorType detector, TArrayD* cen, Int_t c, Int_t h = 2);
         TH1F*                   CorrectForResolutionInt(TH1F* v, detectorType detector, TArrayD* cen, Int_t h = 2);
         TH1F*                   GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h);

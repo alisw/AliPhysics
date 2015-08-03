@@ -2457,7 +2457,7 @@ void AliAnalysisTaskJetV2::SetUseControlFit(Bool_t c)
     } else fFitControl = 0x0;
 }
 //_____________________________________________________________________________
-TH1F* AliAnalysisTaskJetV2::GetResolutionFromOuptutFile(detectorType det, Int_t h, TArrayD* cen)
+TH1F* AliAnalysisTaskJetV2::GetResolutionFromOutputFile(detectorType det, Int_t h, TArrayD* cen)
 {
     // INTERFACE METHOD FOR OUTPUTFILE
     // get the detector resolution, user has ownership of the returned histogram
@@ -2514,7 +2514,7 @@ TH1F* AliAnalysisTaskJetV2::CorrectForResolutionDiff(TH1F* v, detectorType det, 
     #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    TH1F* r(GetResolutionFromOuptutFile(det, h, cen));
+    TH1F* r(GetResolutionFromOutputFile(det, h, cen));
     if(!r) {
         printf(" > Couldn't find resolution < \n");
         return 0x0;
@@ -2534,7 +2534,7 @@ TH1F* AliAnalysisTaskJetV2::CorrectForResolutionInt(TH1F* v, detectorType det, T
     #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     #endif
-    TH1F* r(GetResolutionFromOuptutFile(det, h, cen));
+    TH1F* r(GetResolutionFromOutputFile(det, h, cen));
     v->Divide(v, r);
     return v;
 }
