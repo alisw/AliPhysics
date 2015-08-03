@@ -140,6 +140,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Float_t  fVtxZ;         // zVertex
   Double_t fBzkG;                 // magnetic field value [kG]
   Float_t  fCentrality;           //Centrality
+  Int_t  fRunNumber;           //Run Number
   Float_t  fTriggerCheck;         //Stores trigger information
   Bool_t  fUseCentralityV0M;         //Stores trigger information
   Int_t  fEvNumberCounter;         //EvNumber counter
@@ -202,9 +203,12 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronTPCPIDSelTOF;     //! TPC electron PID after TOF 3 sigma cut
   TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
+  TH2F* fHistoElectronTPCPIDSelTOFEtaDep[8];     //! TPC electron PID after TOF 3 sigma cut Eta dep
   THnSparse* fHistoElePtvsCutVarsRS[23];         //e pt- cut variables (Right-sign)
   THnSparse* fHistoElePtvsCutVarsWS[23];         //e pt- cut variables (Wrong-sign)
   THnSparse* fHistoElePtvsCutVarsMCS[23];         //e pt- cut variables (MCS)
+  TH2F* fHistoElectronQovPtvsPhi;     //! Electron phi distribution
+  TH2F* fHistoXiQovPtvsPhi;     //! Xi phi distribution
 
   AliNormalizationCounter *fCounter;//!Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;
@@ -224,7 +228,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; // array of electron-compatible tracks
 
 
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,5); // class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,6); // class for Xic->e Xi
 };
 #endif
 
