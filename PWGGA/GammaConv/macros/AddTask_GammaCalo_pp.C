@@ -122,7 +122,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		numberOfCuts = 6;
 	if (trainConfig == 31  ) 
 		numberOfCuts = 4;
-	if (trainConfig == 32 	|| trainConfig == 101 || trainConfig == 201)
+	if (trainConfig == 32 	|| trainConfig == 101 || trainConfig == 102 || trainConfig == 201)
 		numberOfCuts = 1;
 
 	if (trainConfig == 111 || trainConfig == 114 	|| trainConfig == 117 	|| trainConfig == 120 	|| trainConfig == 121 || 
@@ -275,6 +275,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
     // 8 TeV configs
 	} else if (trainConfig == 101){ // EMCAL clusters pp 8 TeV / 7 TeV
 		eventCutArray[ 0] = "0000011"; clusterCutArray[0] = "11111050032230000"; mesonCutArray[0] = "0163103100000000"; // 400 MeV cluster min energy
+	} else if (trainConfig == 102){ // EMCAL clusters pp 8 TeV, same timing cut as in ConvCalo case (6)
+		eventCutArray[ 0] = "0000011"; clusterCutArray[0] = "11111060032230000"; mesonCutArray[0] = "0163103100000000"; // 400 MeV cluster min energy
    // LHC12fa-i and MC
     // default with three cuts
 	} else if (trainConfig == 111){  // EMCAL clusters, different triggers
