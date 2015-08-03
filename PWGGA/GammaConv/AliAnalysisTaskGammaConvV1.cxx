@@ -1935,7 +1935,15 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 
 			if(fDoChargedPrimary){ //getting charged primary particles
 				Bool_t IsPhysicalPrimary = particle->IsPhysicalPrimary();
-				if( IsPhysicalPrimary && TMath::Abs(particle->Eta()) < 0.8){ // Eta cut used in charged particle spectrum
+				Double_t mesonY = 10.;
+				if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
+					mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+				} else{
+					mesonY = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))
+					-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+				}
+
+				if( IsPhysicalPrimary && TMath::Abs(mesonY) < 0.85){ // Rapidity for 11h analysis
 					
 					if ( particle->GetPdgCode()== -211 || particle->GetPdgCode()== 211 || 
 							particle->GetPdgCode()== 2212 || particle->GetPdgCode()==-2212 || 
@@ -2030,9 +2038,18 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
 					hMCK0sPtY[fiCut]->Fill(particle->Pt(),mesonY,weightedK0s);
 				}         
 
-				if(fDoChargedPrimary && TMath::Abs(particle->Eta()) < 0.8 && isPrimary){ //getting charged primary particles
-					if (particle->GetPdgCode() == 111 ) hMCPrimaryPi0Pt[fiCut]->Fill(particle->Pt()); 
-					if (particle->GetPdgCode() == 221 ) hMCPrimaryEtaPt[fiCut]->Fill(particle->Pt()); 
+				if(fDoChargedPrimary && isPrimary){  // Rapidity for 11h analysis
+					Double_t mesonY = 10.;
+					if(particle->E() - particle->Pz() == 0 || particle->E() + particle->Pz() == 0){
+						mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+					} else{
+						mesonY = 0.5*(TMath::Log((particle->E()+particle->Pz()) / (particle->E()-particle->Pz())))
+						-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+					}
+					if(TMath::Abs(mesonY) < 0.85){
+						if (particle->GetPdgCode() == 111 ) hMCPrimaryPi0Pt[fiCut]->Fill(particle->Pt()); 
+						if (particle->GetPdgCode() == 221 ) hMCPrimaryEtaPt[fiCut]->Fill(particle->Pt()); 
+					}
 				}
 				if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
 					AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
@@ -2111,8 +2128,14 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 			TParticle* particle = (TParticle *)fMCStack->Particle(i);
 			if (!particle) continue;
 			Bool_t IsPhysicalPrimary = fMCStack->IsPhysicalPrimary(i);
-			
-			if( IsPhysicalPrimary && TMath::Abs(particle->Eta()) < 0.8){ // Eta cut used in charged particle spectrum
+			Double_t mesonY = 10.;
+			if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
+				mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+			} else {
+				mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))
+				-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+			}
+			if( IsPhysicalPrimary && TMath::Abs(mesonY) < 0.85){  // Rapidity for 11h analysis
 				
 				if ( particle->GetPdgCode()== -211 || particle->GetPdgCode()== 211 || 
 						particle->GetPdgCode()== 2212 || particle->GetPdgCode()==-2212 || 
@@ -2202,9 +2225,18 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 					}	
 				}
 				
-				if(fDoChargedPrimary && TMath::Abs(particle->Eta()) < 0.8){ //getting charged primary particles
-					if (particle->GetPdgCode() == 111 ) hMCPrimaryPi0Pt[fiCut]->Fill(particle->Pt()); 
-					if (particle->GetPdgCode() == 221 ) hMCPrimaryEtaPt[fiCut]->Fill(particle->Pt()); 
+				if(fDoChargedPrimary){
+					Double_t mesonY = 10.;
+					if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
+						mesonY=10.-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+					} else {
+						mesonY = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())))
+						-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
+					}
+					if(TMath::Abs(mesonY) < 0.85){  // Rapidity for 11h analysis
+						if (particle->GetPdgCode() == 111 ) hMCPrimaryPi0Pt[fiCut]->Fill(particle->Pt()); 
+						if (particle->GetPdgCode() == 221 ) hMCPrimaryEtaPt[fiCut]->Fill(particle->Pt()); 
+					}
 				}
 
 				if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
