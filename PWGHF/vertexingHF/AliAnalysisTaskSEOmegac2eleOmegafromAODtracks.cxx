@@ -599,6 +599,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserCreateOutputObjects()
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
   fCounter->Init();
+  PostData(8,fCounter);
 
 	if(fDoEventMixing){
 		fElectronTracks = new TObjArray();

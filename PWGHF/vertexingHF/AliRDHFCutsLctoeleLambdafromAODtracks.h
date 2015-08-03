@@ -19,6 +19,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   enum EPIDStrategy{
     kNSigmaCuts,
     kNSigmaCustomizedCuts,
+    kNSigmaCustomizedPtDepCuts,
     kCombinedCuts
   };
 
@@ -37,6 +38,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Bool_t IsSelectedeID(AliAODTrack* trk);
   Bool_t IsSelectedCustomizedeID(AliAODTrack* trk);
+  Bool_t IsSelectedCustomizedPtDepeID(AliAODTrack* trk);
   Bool_t IsSelectedCombinedeID(AliAODTrack* trk);
 
   void SetPIDStrategy(EPIDStrategy pidStrategy){fPIDStrategy=pidStrategy;}
@@ -48,6 +50,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t GetUseOnTheFlyV0() { return fUseOnTheFlyV0; }
 
   Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODVertex *vert);
+  Bool_t SingleTrkCutsNoPID(AliAODTrack *trk, AliAODVertex *vert);
   Bool_t SingleV0Cuts(AliAODv0 *v0, AliAODVertex *vert);
   Bool_t SelectWithRoughCuts(AliAODv0 *v0, AliAODTrack *trk1);
 
@@ -113,6 +116,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   AliAODPidHF* GetPidPion() const {return fPidObjPion;}
 	void GetSigmaElectronTPCRange(Double_t &a,Double_t &b){a=fSigmaElectronTPCMin;b=fSigmaElectronTPCMax;}
 	void GetSigmaElectronTOFRange(Double_t &a,Double_t &b){a=fSigmaElectronTOFMin;b=fSigmaElectronTOFMax;}
+	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;}
 
 	void SetExcludePionTPC(Bool_t a){fExcludePionTPC=a;}
 	void SetExcludeProtonTPC(Bool_t a){fExcludeProtonTPC=a;}
@@ -122,6 +126,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	void SetExcludenSigmaKaonTPC(Double_t a){fExcludenSigmaKaonTPC=a;}
 	void SetSigmaElectronTPCRange(Double_t a,Double_t b){fSigmaElectronTPCMin=a;fSigmaElectronTPCMax=b;}
 	void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
+	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
 
  protected:
 	
@@ -166,11 +171,13 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fExcludenSigmaProtonTPC;//nSigma to exclude for proton band
 	Double_t fExcludenSigmaKaonTPC;//nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTPCMin;//nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTPCPtDepPar0;//nSigma electron lower limit (par0)
+	Double_t fSigmaElectronTPCPtDepPar1;//nSigma electron lower limit (par1)
 	Double_t fSigmaElectronTPCMax;//nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTOFMin;//nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTOFMax;//nSigma to exclude for Kaon band
 
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,2);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,3);
 };
 
 #endif
