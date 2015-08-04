@@ -37,7 +37,7 @@ CheckLoadLibrary("libPWG0selectors");
   //
   // Create event cuts
   //
-  Float_t zvWindow =10. ;
+  Float_t zvWindow =30. ;
 
   AlidNdPtEventCuts *evtCuts = new AlidNdPtEventCuts("AlidNdPtEventCuts","Event cuts");
   evtCuts->SetZvRange(-zvWindow,zvWindow);
