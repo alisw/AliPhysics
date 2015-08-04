@@ -589,6 +589,59 @@ Bool_t AliEMCALGeometry::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi,
   return kFALSE;
 }
 
+///
+/// Online mapping and numbering is the same for EMCal and DCal SMs but:
+///  - DCal odd SM (13,15,17) has online cols: 16-47; offline cols 0-31.
+///  - Even DCal SMs have the same numbering online and offline 0-31.
+///  - DCal 1/3 SM (18,19), online rows 16-23; offline rows 0-7
+///
+/// Here shift the online cols or rows depending on the
+/// super-module number to match the offline mapping.
+///
+/// \param sm: super module number of the channel/cell
+/// \param iphi: row/phi cell index, modified for DCal
+/// \param ieta: column/eta index, modified for DCal
+///
+//________________________________________________________________________________________________
+void AliEMCALGeometry::ShiftOnlineToOfflineCellIndexes(Int_t sm, Int_t & iphi, Int_t & ieta) const 
+{
+  if ( sm == 13 || sm == 15 || sm == 17 )
+  {
+    // DCal odd SMs
+    ieta -= 16; // Same cabling mapping as for EMCal, not considered offline.
+  }
+  else if ( sm == 18 || sm == 19 )
+  {
+    // DCal 1/3 SMs
+    iphi -= 16; // Needed due to cabling mistake.
+  }
+}
+
+///
+/// Here shift the DCal online cols or rows depending on the
+/// super-module number to match the online mapping. 
+///
+/// Reverse procedure to the one in the method above
+/// ShiftOnlineToOfflineCellIndexes().
+///
+/// \param sm: super module number of the channel/cell
+/// \param iphi: row/phi cell index, modified for DCal
+/// \param ieta: column/eta index, modified for DCal
+///
+//________________________________________________________________________________________________
+void AliEMCALGeometry::ShiftOfflineToOnlineCellIndexes(Int_t sm, Int_t & iphi, Int_t & ieta) const 
+{
+  if ( sm == 13 || sm == 15 || sm == 17 )
+  {
+    // DCal odd SMs
+    ieta += 16; // Same cabling mapping as for EMCal, not considered offline.
+  }
+  else if ( sm == 18 || sm == 19 )
+  {
+    // DCal 1/3 SMs
+    iphi += 16; // Needed due to cabling mistake.
+  }
+}
 
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_t &absId) const

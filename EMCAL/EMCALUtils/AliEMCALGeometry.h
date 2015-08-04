@@ -308,6 +308,9 @@ public:
 					      Int_t &iphim, Int_t &ietam, Int_t &nModule) const;
   Int_t   GetAbsCellIdFromCellIndexes(Int_t nSupMod, Int_t iphi, Int_t ieta) const;
 
+  void    ShiftOnlineToOfflineCellIndexes(Int_t sm, Int_t & iphi, Int_t & ieta) const ;
+  void    ShiftOfflineToOnlineCellIndexes(Int_t sm, Int_t & iphi, Int_t & ieta) const ;
+  
   // Methods for AliEMCALRecPoint - Feb 19, 2006
   Bool_t  RelPosCellInSModule(Int_t absId, 
                               Double_t &xr, Double_t &yr, Double_t &zr) const;
