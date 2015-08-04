@@ -2780,20 +2780,22 @@ void AliTRDCalibraFillHisto::SetRelativeScale(Float_t RelativeScale)
 void  AliTRDCalibraFillHisto::FillCH2d(Int_t x, Float_t y)
 {
   //
-  // FillCH2d: Marian style
+  // FillCH2d: Marian style 
+  // RS: DON'T use Mariany style, such histo is unmergable
   // 
   
   //skip simply the value out of range
   if((y>=fRangeHistoCharge) || (y<0.0)) return;
   if(fRangeHistoCharge < 0.0) return;
-  
+  fCH2d->Fill(x,y); // RS
+  /*
   //Calcul the y place
   Int_t yplace = (Int_t) (fNumberBinCharge*y/fRangeHistoCharge)+1;
   Int_t place = (fNumberBinCharge+2)*(x+1)+yplace;
   
   //Fill
   fCH2d->GetArray()[place]++;
-
+  */
 }
  
 //////////////////////////////////////////////////////////////////////////////////
