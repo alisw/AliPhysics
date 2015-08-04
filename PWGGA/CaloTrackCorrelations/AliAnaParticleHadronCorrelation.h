@@ -156,6 +156,9 @@ public:
   void         SwitchOnBackgroundBinsPtInConeHistograms() { fFillBkgBinsHisto = kTRUE  ; }
   void         SwitchOffBackgroundBinsPtInConeHistograms(){ fFillBkgBinsHisto = kFALSE ; }
   
+  void         SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms() { fFillTaggedDecayHistograms = kTRUE  ; }
+  void         SwitchOffBackgroundBinsTaggedDecayPtInConeHistograms(){ fFillTaggedDecayHistograms = kFALSE ; }
+  
   // Background bins
   void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }
   void         SetBackgroundLimits(Int_t i,Float_t l){ if(i <= fNBkgBin) fBkgBinLimit[i] = l; }

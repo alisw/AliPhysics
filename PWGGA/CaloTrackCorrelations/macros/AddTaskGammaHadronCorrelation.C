@@ -1133,6 +1133,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   ana->SwitchOffLeadHadronSelection(); // Open cuts, just fill histograms
   ana->SwitchOnFillLeadHadronHistograms();
+  ana->SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms();
   ana->SetLeadHadronPhiCut(TMath::DegToRad()*130, TMath::DegToRad()*230.);
   ana->SetLeadHadronPtCut(0.5, 1000);
   
