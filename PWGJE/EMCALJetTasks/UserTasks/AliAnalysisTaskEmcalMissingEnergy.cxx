@@ -320,16 +320,12 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::Run()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 {
-  /*  // Fill histograms.
-  //cout<<"base container"<<endl;
-  AliEmcalJet* jet1 = NULL;
-  AliJetContainer *jetCont = GetJetContainer(0);
-  Float_t kWeight=1;
+  // /*  // Fill histograms.
+  
   if (fCentSelectOn)
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   
-  AliAODTrack *triggerHadron = 0x0;
-  */
+  
   /////////////////////////////////////////// start hadron trigger
   
   const Double_t eta_max = 0.9;
