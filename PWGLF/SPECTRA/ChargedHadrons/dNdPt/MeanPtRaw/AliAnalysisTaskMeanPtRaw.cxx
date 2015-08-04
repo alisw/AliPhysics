@@ -71,7 +71,7 @@ void AliAnalysisTaskMeanPtRaw::UserCreateOutputObjects()
   fPtVsMultRaw->GetAxis(2)->SetTitle("cut setting");
   
   fTrackCutName = new TH1I("fTrackCutName","fTrackCutName",10,0,10);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fTrackCutName->SetBit(TH1::kCanRebin);
 #endif
   fTrackCutName->Sumw2();
