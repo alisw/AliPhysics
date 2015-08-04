@@ -1567,7 +1567,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
        Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, %s",
             fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax);
       fhPtSumInConeBin[ibin]->SetYTitle("d #it{N} / d #it{p}_{T}");
-      fhPtSumInConeBin[ibin]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhPtSumInConeBin[ibin]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtSumInConeBin[ibin]) ;
       
       if(fFillTaggedDecayHistograms)
@@ -1589,7 +1589,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
            Form("Decay bit %d, in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c},  %s",
                 fDecayBits[idecay],fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], parTitle.Data()),nptbins,ptmin,ptmax);
           fhSumPtConeBinDecay[bindecay]->SetYTitle("d #it{N} / d #it{p}_{T}");
-          fhSumPtConeBinDecay[bindecay]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhSumPtConeBinDecay[bindecay]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhSumPtConeBinDecay[bindecay]) ;
         }
       }
@@ -1612,7 +1612,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
            Form("in cone %2.2f <#Sigma #it{p}_{T}< %2.2f GeV/#it{c}, MC %s, %s",
                 fBkgBinLimit[ibin],fBkgBinLimit[ibin+1], mcPartType[imc].Data(), parTitle.Data()),nptbins,ptmin,ptmax);
           fhSumPtConeBinMC[binmc]->SetYTitle("d #it{N} / d #it{p}_{T}");
-          fhSumPtConeBinMC[binmc]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhSumPtConeBinMC[binmc]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
           outputContainer->Add(fhSumPtConeBinMC[binmc]) ;
         } // MC particle loop
       }
@@ -3736,8 +3736,15 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       Float_t pTLeadClusterInCone  = 0;
       Float_t pTSumClusterInCone   = 0;
       
-      CalculateChargedActivityInCone(particle, pTLeadTrackInCone  , pTSumTrackInCone  );
-      CalculateNeutralActivityInCone(particle, pTLeadClusterInCone, pTSumClusterInCone);
+//      CalculateChargedActivityInCone(particle, pTLeadTrackInCone  , pTSumTrackInCone  );
+//      CalculateNeutralActivityInCone(particle, pTLeadClusterInCone, pTSumClusterInCone);
+      
+      //Use Set and not Get because of an error in AliAODPWG4Particle.h --> will be changed later to avoid to wait for new Aliroot tag
+      pTLeadTrackInCone = particle->SetChargedLeadPtInCone();
+      pTLeadClusterInCone = particle->SetNeutralLeadPtInCone();
+      
+      pTSumTrackInCone = particle->SetChargedPtSumInCone();
+      pTSumClusterInCone = particle->SetNeutralPtSumInCone();
       
       Float_t pTLeadInCone = pTLeadTrackInCone;
       if(pTLeadClusterInCone > pTLeadInCone) pTLeadInCone = pTLeadClusterInCone;

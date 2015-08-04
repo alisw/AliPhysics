@@ -963,6 +963,9 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   
   fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
   fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight());
+  
+  aodParticle->SetNeutralLeadPtInCone(coneptLeadCluster);
+  aodParticle->SetNeutralPtSumInCone(coneptsumCluster);
 }
 
 //______________________________________________________________________________________________________
@@ -1101,6 +1104,9 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
 
   fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
   fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight());
+  
+  aodParticle->SetChargedLeadPtInCone(coneptLeadTrack);
+  aodParticle->SetChargedPtSumInCone(coneptsumTrack);
 }
 
 //_____________________________________________________________________________
