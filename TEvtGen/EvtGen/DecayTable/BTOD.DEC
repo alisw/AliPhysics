@@ -322,6 +322,44 @@ Decay B_c+
 0.00028    J/psi      D*+                   SVV_HELAMP 1.0 0.0 1.0 0.0 1.0 0.0;
 Enddecay
 
+
+Decay Lambda_b0
+0.000058   Lambda0   J/psi          HELAMP 1.0 0.0  0.0 0.0  0.0 0.0  0.0 0.0;
+0.000590   p+  D0  pi-                        PHSP;
+0.000043   p+  D0  K-                         PHSP;
+0.005700   Lambda_c+   pi-                    PHSP;
+0.000420   Lambda_c+   K-                     PHSP;
+0.008000   Lambda_c+   pi+  pi-  pi-          PHSP;
+0.065000   Lambda_c+   e-   anti-nu_e         PHSP;
+0.065000   Lambda_c+   mu-  anti-nu_mu        PHSP;
+#0.065000   Lambda_c+   tau- anti-nu_tau      PHSP;
+0.056000   Lambda_c+ pi+     pi-     mu-     anti-nu_mu    PHSP;
+0.056000   Lambda_c+ pi+     pi-     e-      anti-nu_e     PHSP;
+#0.02200   Lambda_c+   D_s-                   PHSP;
+#0.04400   Lambda_c+   D_s*-                  PHSP;
+#0.01000   Lambda_c+   rho-                   PHSP;
+#0.02000   Lambda_c+   a_1-                   PHSP;
+Enddecay
+
+Decay anti-Lambda_b0
+0.000058   anti-Lambda0   J/psi          HELAMP 1.0 0.0  0.0 0.0  0.0 0.0  0.0 0.0;
+0.000590   anti-p-  anti-D0  pi+              PHSP;
+0.000043   anti-p-  anti-D0  K+               PHSP;
+0.005700   anti-Lambda_c-   pi+               PHSP;
+0.000420   anti-Lambda_c-   K+                PHSP;
+0.008000   anti-Lambda_c-   pi-  pi+  pi+     PHSP;
+0.065000   anti-Lambda_c-   e+   nu_e         PHSP;
+0.065000   anti-Lambda_c-   mu+  nu_mu        PHSP;
+0.056000   anti-Lambda_c- pi-     pi+     mu+     nu_mu    PHSP;
+0.056000   anti-Lambda_c- pi-     pi+     e+      nu_e     PHSP;
+Enddecay
+
+#
+#Decay Lambda0           
+#1.000 p+  pi-               HELAMP 1.0 0.0 0.0 0.0;
+#Enddecay
+
+
 #Decay  anti-D*0
 #Enddecay
 
@@ -393,5 +431,13 @@ Enddecay
 #
 Decay  pi0
 Enddecay
+
+#
+Decay  Lambda_c+
+Enddecay
+#
+Decay  anti-Lambda_c-
+Enddecay
+
 
 End
