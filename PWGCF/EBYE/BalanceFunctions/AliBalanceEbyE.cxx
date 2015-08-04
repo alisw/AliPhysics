@@ -469,10 +469,9 @@ void AliBalanceEbyE::CalculateBalance(Double_t gReactionPlane,
   // add to sum (3D)
   for(Int_t iCent = 0; iCent < fHistBFSum->GetNbinsX(); iCent++){
     if(trackVariablesSingle[0] >= fHistBFSum->GetXaxis()->GetBinLowEdge(iCent+1) && trackVariablesSingle[0] < fHistBFSum->GetXaxis()->GetBinUpEdge(iCent+1)){
-      Printf("%f - %f: %f",fHistBFSum->GetXaxis()->GetBinLowEdge(iCent+1),fHistBFSum->GetXaxis()->GetBinUpEdge(iCent+1),trackVariablesSingle[0]);
       for(Int_t iEta = 0; iEta < fHistBFSum->GetNbinsY(); iEta++){
 	for(Int_t iPhi = 0; iPhi < fHistBFSum->GetNbinsZ(); iPhi++){
-
+	  
 	  fHistBFSum->SetBinContent(iCent+1,iEta+1,iPhi+1,fHistBF->GetBinContent(iEta+1,iPhi+1));
 	  fHistBFSum->SetBinError(iCent+1,iEta+1,iPhi+1,fHistBF->GetBinError(iEta+1,iPhi+1));
 	  
