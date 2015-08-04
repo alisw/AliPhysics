@@ -64,3 +64,4 @@
 #pragma link C++ class AliFemtoCorrFctn3DPRF+;
 #pragma link C++ class AliFemtoPARJGenPythia+;
 #pragma link C++ class AliFemtoPairCutRadialDistanceAsymmetric+;
+#pragma link C++ class AliFemtoPairCutPDG+;
