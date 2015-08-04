@@ -1417,7 +1417,9 @@ void AliTPCMonitor::ExecPad()
 //   hp->Reset();
   Int_t nbinsx=fHistChannelTime->GetNbinsX();
   for (Int_t itb=0;itb<GetTimeBins();++itb){
-    hp->GetArray()[itb]=fHistChannelTime->GetArray()[binchannel+itb*(nbinsx+2)];
+    //    hp->GetArray()[itb]=fHistChannelTime->GetArray()[binchannel+itb*(nbinsx+2)];
+    // RS fill in standard way to have histo mergable
+    hp->SetBinContent(itb, fHistChannelTime->GetArray()[binchannel+itb*(nbinsx+2)] );
   }
 //   printf("hi\n");
 //   return;

@@ -371,14 +371,16 @@ Int_t AliTPCCalibPedestal::Update(const Int_t icsector,
   if ( ((Int_t)csignal>fAdcMax) || ((Int_t)csignal<fAdcMin)  ) return 0;
 
   Int_t iChannel  = fROC->GetRowIndexes(icsector)[icRow]+icPad; //  global pad position in sector
+  /*
 
   // fast filling method
   // Attention: the entry counter of the histogram is not increased
   //            this means that e.g. the colz draw option gives an empty plot
-  Int_t bin = (iChannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
-
-  GetHistoPedestal(icsector,kTRUE)->GetArray()[bin]++;
-
+  // nt_t bin = (iChannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
+  //  GetHistoPedestal(icsector,kTRUE)->GetArray()[bin]++;
+  */
+  // RS Fill in standard way to have the histo mergable
+  GetHistoPedestal(icsector,kTRUE)->Fill(csignal,iChannel);
   return 0;
 }
 

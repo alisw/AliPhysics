@@ -231,7 +231,8 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
     nbchannel = (((ccold-1)*8+ (mCm+rOb*4))*crowMax+icRow)+144*crowMax;
     //printf("nbchannel %d, ccold %d, icMcm %d, crowMax %d, icRow %d\n",nbchannel,ccold,icMcm,crowMax,icRow);
   }
-  
+
+  /*
   // fast filling methode.
   // Attention: the entry counter of the histogram is not increased
   //            this means that e.g. the colz draw option gives an empty plot
@@ -241,9 +242,12 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
   if ( !(((Int_t)csignal>=fAdcMax ) || ((Int_t)csignal<fAdcMin)) )
     bin = (nbchannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
 
-  //GetHisto(icdet,kTRUE)->Fill(csignal,nbchannel);
+    GetHisto(icdet,kTRUE)->GetArray()[bin]++;
+  */
+  // RS: don't use tricks, hist will be unmergable
+  GetHisto(icdet,kTRUE)->Fill(csignal,nbchannel);
 
-  GetHisto(icdet,kTRUE)->GetArray()[bin]++;
+
   
   return 0;
 }
