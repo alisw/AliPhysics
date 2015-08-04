@@ -257,7 +257,7 @@ void AliTransportMonitor::Print(Option_t *volName) const
   TH1F *hnames = new TH1F("volume_timing", "relative volume timing", 3,0,3);
   hnames->SetStats(0);
   hnames->SetFillColor(38);
-  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   hnames->SetBit(TH1::kCanRebin);
   #endif
   while ((volMon=(AliTransportMonitorVol*)next())) {

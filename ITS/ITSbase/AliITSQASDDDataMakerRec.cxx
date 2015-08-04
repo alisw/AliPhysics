@@ -533,7 +533,7 @@ Int_t AliITSQASDDDataMakerRec::InitRaws()
 
     //Event Size 
     TH1F *hsize = new TH1F("SDDEventSize","SDD Event Size ",500,-0.5,199.5);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
     hsize->SetBit(TH1::kCanRebin);
 #endif
     hsize->GetXaxis()->SetTitle("Event Size [kB]");
@@ -884,7 +884,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   fSDDhRecPointsTask++;
   
   TH1F *h13 = new TH1F("SDDrdistrib_Layer3" ,"SDD r distribution Layer3" ,100,14.,16.5);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   h13->SetBit(TH1::kCanRebin);
 #endif
   h13->GetXaxis()->SetTitle("r (cm)");
@@ -894,7 +894,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   fSDDhRecPointsTask++;
   
   TH1F *h14 = new TH1F("SDDrdistrib_Layer4" ,"SDD r distribution Layer4" ,100,23.,25.);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   h14->SetBit(TH1::kCanRebin);
 #endif
   h14->GetXaxis()->SetTitle("r (cm)");
@@ -919,7 +919,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 
   
   TH1F *h17 = new TH1F("SDDdrifttime_Layer3","SDDdrifttime_Layer3",45,-0.5,4499.5);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   h17->SetBit(TH1::kCanRebin);
 #endif
   h17->GetXaxis()->SetTitle("Drift time (ns)");
@@ -929,7 +929,7 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
   fSDDhRecPointsTask++;
   
   TH1F *h18 = new TH1F("SDDdrifttime_Layer4","SDDdrifttime_Layer4",45,-0.5,4499.5);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   h18->SetBit(TH1::kCanRebin);
 #endif
   h18->GetXaxis()->SetTitle("Drift time (ns)");
