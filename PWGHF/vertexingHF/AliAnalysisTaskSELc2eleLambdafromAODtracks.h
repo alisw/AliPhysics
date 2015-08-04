@@ -179,7 +179,9 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElePtvsLambdaPtRSMix;         //e-Xi spectra (right-sign, mix)
   THnSparse* fHistoElePtvsLambdaPtWSMix;         //e-Xi spectra (wrong-sign, mix)
   THnSparse* fHistoElePtvsLambdaPtMCS;         //e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtvsLcPtMCS;         //e-Xi spectra (right-sign) efficiency numerator
   THnSparse* fHistoElePtvsLambdaPtMCGen;         //e-Xi spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsLambdaPtMCLcGen;         //e-Xi spectra (wrong-sign) efficiency denominator
 
   THnSparse* fHistoElePtvsd0RS;         //e pt-d0 spectra (right-sign)
   THnSparse* fHistoElePtvsd0WS;         //e pt-d0 spectra (wrong-sign)
@@ -254,7 +256,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; // array of electron-compatible tracks
 
 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,6); // class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,7); // class for Lc->e Lambda
 };
 #endif
 
