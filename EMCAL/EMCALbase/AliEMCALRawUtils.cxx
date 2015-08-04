@@ -172,21 +172,10 @@ void AliEMCALRawUtils::Digits2Raw()
       //
       // In the next lines shift the online cols or rows depending on the
       // SM to match the offline mapping.
-      //
-        
       // Apply the shifts (inverse to those in Raw2Digits):
         
-      if ( nSM == 13 || nSM == 15 || nSM == 17 )
-      {
-        // DCal odd SMs
-        ieta += 16; // Same cabling mapping as for EMCal, not considered offline.
-      }
-        
-      if ( nSM == 18 || nSM == 19 )
-      {
-        // DCal 1/3 SMs
-        iphi += 16; // Needed due to cabling mistake.
-      }
+      fGeom->ShiftOfflineToOnlineCellIndexes(nSM, iphi, ieta);
+      
       //
       //----------------------------------------------------------------------
 
@@ -381,6 +370,11 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
     
       if ( caloFlag > 2 ) continue; // Work with ALTRO and FALTRO
     
+      
+      Int_t sm     = in.GetModule() ;
+      Int_t row    = in.GetRow   () ;
+      Int_t column = in.GetColumn() ;
+      
       //----------------------------------------------------------------------
       //
       // Online mapping and numbering is the same for EMCal and DCal SMs but:
@@ -391,24 +385,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
       // In the next lines shift the online cols or rows depending on the
       // SM to match the offline mapping.
       //
-        
-      Int_t sm     = in.GetModule() ;
-      Int_t row    = in.GetRow   () ;
-      Int_t column = in.GetColumn() ;
-        
-      // Apply the shifts:
-        
-      if ( sm == 13 || sm == 15 || sm == 17 )
-      {
-        // DCal odd SMs
-        column -= 16; // Same cabling mapping as for EMCal, not considered offline.
-      }
-
-      if ( sm == 18 || sm == 19 )
-      {
-        // DCal 1/3 SMs
-        row -= 16; // Needed due to cabling mistake.
-      }
+                
+      fGeom->ShiftOnlineToOfflineCellIndexes(sm, row, column);
+      
       //
       //---------------------------------------------------------------------
         
