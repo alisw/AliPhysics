@@ -145,45 +145,45 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   Int_t  fEvNumberCounter;         //EvNumber counter
 
   //--------------------- My histograms ------------------
-  THnSparse* fHistoEleOmegaMass;         //e-Omega mass spectra
-  THnSparse* fHistoEleOmegaMassRS;         //e-Omega mass spectra (right-sign)
-  THnSparse* fHistoEleOmegaMassWS;         //e-Omega mass spectra (wrong-sign)
-  THnSparse* fHistoEleOmegaMassRSMix;         //e-Omega mass spectra (right-sign)
-  THnSparse* fHistoEleOmegaMassWSMix;         //e-Omega mass spectra (wrong-sign)
-  THnSparse* fHistoEleOmegaMassvsElePtRS;         //e-Omega mass spectra (right-sign)
-  THnSparse* fHistoEleOmegaMassvsElePtWS;         //e-Omega mass spectra (wrong-sign)
-  THnSparse* fHistoEleOmegaMassvsElePtRSMix;         //e-Omega mass-ept spectra (right-sign)
-  THnSparse* fHistoEleOmegaMassvsElePtWSMix;         //e-Omega mass-ept spectra (wrong-sign)
-  TH2F* fHistoElePtRS;         //e spectra (right-sign)
-  TH2F* fHistoElePtWS;         //e spectra (wrong-sign)
-  TH2F* fHistoElePtRSMix;         //e spectra (right-sign, mix)
-  TH2F* fHistoElePtWSMix;         //e spectra (wrong-sign, mix)
-  THnSparse* fHistoEleOmegaMassMCS;         //e-Omega mass spectra (Efficiency numerator)
-  THnSparse* fHistoEleOmegaMassMCGen;         //e-Omega mass spectra (Efficiency denominator)
-  THnSparse* fHistoEleOmegaMassvsElePtMCS;         //e-Omega mass-ept spectra (Efficiency numerator)
-  THnSparse* fHistoEleOmegaMassvsElePtMCGen;         //e-Omega mass-ept spectra (Efficiency denominator)
-  TH2F* fHistoElePtMCS;         //e spectra (Efficiency numerator)
-  TH2F* fHistoElePtMCGen;         //e spectra (Efficiency denominator)
+  THnSparse* fHistoEleOmegaMass;         //! e-Omega mass spectra
+  THnSparse* fHistoEleOmegaMassRS;         //! e-Omega mass spectra (right-sign)
+  THnSparse* fHistoEleOmegaMassWS;         //! e-Omega mass spectra (wrong-sign)
+  THnSparse* fHistoEleOmegaMassRSMix;         //! e-Omega mass spectra (right-sign)
+  THnSparse* fHistoEleOmegaMassWSMix;         //! e-Omega mass spectra (wrong-sign)
+  THnSparse* fHistoEleOmegaMassvsElePtRS;         //! e-Omega mass spectra (right-sign)
+  THnSparse* fHistoEleOmegaMassvsElePtWS;         //! e-Omega mass spectra (wrong-sign)
+  THnSparse* fHistoEleOmegaMassvsElePtRSMix;         //! e-Omega mass-ept spectra (right-sign)
+  THnSparse* fHistoEleOmegaMassvsElePtWSMix;         //! e-Omega mass-ept spectra (wrong-sign)
+  TH2F* fHistoElePtRS;         //! e spectra (right-sign)
+  TH2F* fHistoElePtWS;         //! e spectra (wrong-sign)
+  TH2F* fHistoElePtRSMix;         //! e spectra (right-sign, mix)
+  TH2F* fHistoElePtWSMix;         //! e spectra (wrong-sign, mix)
+  THnSparse* fHistoEleOmegaMassMCS;         //! e-Omega mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleOmegaMassMCGen;         //! e-Omega mass spectra (Efficiency denominator)
+  THnSparse* fHistoEleOmegaMassvsElePtMCS;         //! e-Omega mass-ept spectra (Efficiency numerator)
+  THnSparse* fHistoEleOmegaMassvsElePtMCGen;         //! e-Omega mass-ept spectra (Efficiency denominator)
+  TH2F* fHistoElePtMCS;         //! e spectra (Efficiency numerator)
+  TH2F* fHistoElePtMCGen;         //! e spectra (Efficiency denominator)
 
-  THnSparse* fHistoElePtvsEtaRS;         //e spectra (right-sign)
-  THnSparse* fHistoElePtvsEtaWS;         //e spectra (wrong-sign)
-  THnSparse* fHistoElePtvsEtaRSMix;         //e spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsEtaWSMix;         //e spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsEtaMCS;         //e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsEtaMCGen;         //e spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsEtaRS;         //! e spectra (right-sign)
+  THnSparse* fHistoElePtvsEtaWS;         //! e spectra (wrong-sign)
+  THnSparse* fHistoElePtvsEtaRSMix;         //! e spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsEtaWSMix;         //! e spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsEtaMCS;         //! e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaMCGen;         //! e spectra (wrong-sign) efficiency denominator
 
-  THnSparse* fHistoElePtvsOmegaPtRS;         //e-Omega spectra (right-sign)
-  THnSparse* fHistoElePtvsOmegaPtWS;         //e-Omega spectra (wrong-sign)
-  THnSparse* fHistoElePtvsOmegaPtRSMix;         //e-Omega spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsOmegaPtWSMix;         //e-Omega spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsOmegaPtMCS;         //e-Omega spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsOmegaPtMCGen;         //e-Omega spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsOmegaPtRS;         //! e-Omega spectra (right-sign)
+  THnSparse* fHistoElePtvsOmegaPtWS;         //! e-Omega spectra (wrong-sign)
+  THnSparse* fHistoElePtvsOmegaPtRSMix;         //! e-Omega spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsOmegaPtWSMix;         //! e-Omega spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsOmegaPtMCS;         //! e-Omega spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsOmegaPtMCGen;         //! e-Omega spectra (wrong-sign) efficiency denominator
 
-  THnSparse* fHistoElePtvsd0RS;         //e pt-d0 spectra (right-sign)
-  THnSparse* fHistoElePtvsd0WS;         //e pt-d0 spectra (wrong-sign)
-  THnSparse* fHistoElePtvsd0RSMix;         //e pt-d0 spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsd0WSMix;         //e pt-d0 spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsd0MCS;         //e pt-d0 spectra (right-sign) 
+  THnSparse* fHistoElePtvsd0RS;         //! e pt-d0 spectra (right-sign)
+  THnSparse* fHistoElePtvsd0WS;         //! e pt-d0 spectra (wrong-sign)
+  THnSparse* fHistoElePtvsd0RSMix;         //! e pt-d0 spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsd0WSMix;         //! e pt-d0 spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsd0MCS;         //! e pt-d0 spectra (right-sign) 
 
   TH1F* fHistoBachPt;      //! Bachelor pT histogram
   TH1F* fHistoBachPtMCS;      //! Bachelor pT histogram (efficiency numerator)
@@ -202,9 +202,9 @@ class AliAnalysisTaskSEOmegac2eleOmegafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
 
   AliNormalizationCounter *fCounter;//!Counter for normalization
-	TH1F *fHistonEvtvsRunNumber;
-	TH1F *fHistonElevsRunNumber;
-	TH1F *fHistonOmegavsRunNumber;
+	TH1F *fHistonEvtvsRunNumber;//! nevt vs runnumber
+	TH1F *fHistonElevsRunNumber;//! nele vs runnumber
+	TH1F *fHistonOmegavsRunNumber;//! nOmega vs runnumber
 
   //Mixing
   Int_t fDoEventMixing; // flag for event mixing
