@@ -145,75 +145,75 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Int_t  fEvNumberCounter;         //EvNumber counter
 
   //--------------------- My histograms ------------------
-  THnSparse* fHistoEleLambdaMass;         //e-Lambda mass spectra
-  THnSparse* fHistoEleLambdaMassRS;         //e-Lambda mass spectra right sign
-  THnSparse* fHistoEleLambdaMassWS;         //e-Lambda mass spectra wrong sign
-  THnSparse* fHistoEleLambdaMassRSMix;         //e-Lambda mass spectra right sign (mixed event)
-  THnSparse* fHistoEleLambdaMassWSMix;         //e-Lambda mass spectra wrong sign (mixed event)
-  THnSparse* fHistoEleLambdaMassvsElePtRS;         //e-Lambda mass vs elept spectra right sign
-  THnSparse* fHistoEleLambdaMassvsElePtWS;         //e-Lambda mass vs elept spectra wrong sign
-  THnSparse* fHistoEleLambdaMassvsElePtRSMix;         //e-Lambda mass vs elept spectra right sign (mixed event)
-  THnSparse* fHistoEleLambdaMassvsElePtWSMix;         //e-Lambda mass vs elept spectra wrong sign (mixed event)
-  TH2F* fHistoElePtRS;         //e spectra right sign
-  TH2F* fHistoElePtWS;         //e spectra wrong sign
-  TH2F* fHistoElePtRSMix;         //e spectra right sign (mixed event)
-  TH2F* fHistoElePtWSMix;         //e spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMass;         //! e-Lambda mass spectra
+  THnSparse* fHistoEleLambdaMassRS;         //! e-Lambda mass spectra right sign
+  THnSparse* fHistoEleLambdaMassWS;         //! e-Lambda mass spectra wrong sign
+  THnSparse* fHistoEleLambdaMassRSMix;         //! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSMix;         //! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtRS;         //! e-Lambda mass vs elept spectra right sign
+  THnSparse* fHistoEleLambdaMassvsElePtWS;         //! e-Lambda mass vs elept spectra wrong sign
+  THnSparse* fHistoEleLambdaMassvsElePtRSMix;         //! e-Lambda mass vs elept spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtWSMix;         //! e-Lambda mass vs elept spectra wrong sign (mixed event)
+  TH2F* fHistoElePtRS;         //! e spectra right sign
+  TH2F* fHistoElePtWS;         //! e spectra wrong sign
+  TH2F* fHistoElePtRSMix;         //! e spectra right sign (mixed event)
+  TH2F* fHistoElePtWSMix;         //! e spectra wrong sign (mixed event)
 
 	//Efficiency calculation
-  THnSparse* fHistoEleLambdaMassMCS;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassMCGen;         //EFficiency calculation denominator
-  THnSparse* fHistoEleLambdaMassvsElePtMCS;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassvsElePtMCGen;         //EFficiency calculation denominator
-  TH2F* fHistoElePtMCS;         //EFficiency calculation numerator
-  TH2F* fHistoElePtMCGen;         //EFficiency calculation denominator
+  THnSparse* fHistoEleLambdaMassMCS;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassMCGen;         //! EFficiency calculation denominator
+  THnSparse* fHistoEleLambdaMassvsElePtMCS;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtMCGen;         //! EFficiency calculation denominator
+  TH2F* fHistoElePtMCS;         //! EFficiency calculation numerator
+  TH2F* fHistoElePtMCGen;         //! EFficiency calculation denominator
 
-  THnSparse* fHistoElePtvsEtaRS;         //e spectra (right-sign)
-  THnSparse* fHistoElePtvsEtaWS;         //e spectra (wrong-sign)
-  THnSparse* fHistoElePtvsEtaRSMix;         //e spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsEtaWSMix;         //e spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsEtaMCS;         //e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsEtaMCGen;         //e spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsEtaRS;         //! e spectra (right-sign)
+  THnSparse* fHistoElePtvsEtaWS;         //! e spectra (wrong-sign)
+  THnSparse* fHistoElePtvsEtaRSMix;         //! e spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsEtaWSMix;         //! e spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsEtaMCS;         //! e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaMCGen;         //! e spectra (wrong-sign) efficiency denominator
 
-  THnSparse* fHistoElePtvsLambdaPtRS;         //e-Xi spectra (right-sign)
-  THnSparse* fHistoElePtvsLambdaPtWS;         //e-Xi spectra (wrong-sign)
-  THnSparse* fHistoElePtvsLambdaPtRSMix;         //e-Xi spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsLambdaPtWSMix;         //e-Xi spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsLambdaPtMCS;         //e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtvsLcPtMCS;         //e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtMCGen;         //e-Xi spectra (wrong-sign) efficiency denominator
-  THnSparse* fHistoElePtvsLambdaPtMCLcGen;         //e-Xi spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsLambdaPtRS;         //! e-Xi spectra (right-sign)
+  THnSparse* fHistoElePtvsLambdaPtWS;         //! e-Xi spectra (wrong-sign)
+  THnSparse* fHistoElePtvsLambdaPtRSMix;         //! e-Xi spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsLambdaPtWSMix;         //! e-Xi spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsLambdaPtMCS;         //! e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtvsLcPtMCS;         //! e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtMCGen;         //! e-Xi spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsLambdaPtMCLcGen;         //! e-Xi spectra (wrong-sign) efficiency denominator
 
-  THnSparse* fHistoElePtvsd0RS;         //e pt-d0 spectra (right-sign)
-  THnSparse* fHistoElePtvsd0WS;         //e pt-d0 spectra (wrong-sign)
-  THnSparse* fHistoElePtvsd0RSMix;         //e pt-d0 spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsd0WSMix;         //e pt-d0 spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsd0MCS;         //e pt-d0 spectra (right-sign) 
-  THnSparse* fHistoElePtvsd0PromptMCS;         //e pt-d0 spectra (right-sign) 
-  THnSparse* fHistoElePtvsd0BFeeddownMCS;         //e pt-d0 spectra (right-sign) 
+  THnSparse* fHistoElePtvsd0RS;         //! e pt-d0 spectra (right-sign)
+  THnSparse* fHistoElePtvsd0WS;         //! e pt-d0 spectra (wrong-sign)
+  THnSparse* fHistoElePtvsd0RSMix;         //! e pt-d0 spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsd0WSMix;         //! e pt-d0 spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsd0MCS;         //! e pt-d0 spectra (right-sign) 
+  THnSparse* fHistoElePtvsd0PromptMCS;         //! e pt-d0 spectra (right-sign) 
+  THnSparse* fHistoElePtvsd0BFeeddownMCS;         //! e pt-d0 spectra (right-sign) 
 
 	//Feeddown from Xic0
-  THnSparse* fHistoEleLambdaMassFeeddownXic0MCS;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassFeeddownXic0MCGen;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCS;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCGen;         //EFficiency calculation numerator
-  TH2F* fHistoElePtFeeddownXic0MCS;         //EFficiency calculation numerator
-  TH2F* fHistoElePtFeeddownXic0MCGen;         //EFficiency calculation numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXic0MCS;         //e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXic0MCGen;         //e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCS;         //e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCGen;         //e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoEleLambdaMassFeeddownXic0MCS;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassFeeddownXic0MCGen;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCS;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCGen;         //! EFficiency calculation numerator
+  TH2F* fHistoElePtFeeddownXic0MCS;         //! EFficiency calculation numerator
+  TH2F* fHistoElePtFeeddownXic0MCGen;         //! EFficiency calculation numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXic0MCS;         //! e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXic0MCGen;         //! e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCS;         //! e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCGen;         //! e-Xi spectra (right-sign) efficiency numerator
 
 	//Feeddown from XicPlus
-  THnSparse* fHistoEleLambdaMassFeeddownXicPlusMCS;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassFeeddownXicPlusMCGen;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS;         //EFficiency calculation numerator
-  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen;         //EFficiency calculation numerator
-  TH2F* fHistoElePtFeeddownXicPlusMCS;         //EFficiency calculation numerator
-  TH2F* fHistoElePtFeeddownXicPlusMCGen;         //EFficiency calculation numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCS;         //e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCGen;         //e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCS;         //e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCGen;         //e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoEleLambdaMassFeeddownXicPlusMCS;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassFeeddownXicPlusMCGen;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS;         //! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen;         //! EFficiency calculation numerator
+  TH2F* fHistoElePtFeeddownXicPlusMCS;         //! EFficiency calculation numerator
+  TH2F* fHistoElePtFeeddownXicPlusMCGen;         //! EFficiency calculation numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCS;         //! e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCGen;         //! e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCS;         //! e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCGen;         //! e-Xi spectra (right-sign) efficiency numerator
 
 	//Checking histograms
   TH1F* fHistoBachPt;      //! Bachelor pT histogram
@@ -232,16 +232,16 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
   TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
   TH2F* fHistoElectronTPCPIDSelTOFEtaDep[8];     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
-  THnSparse* fHistoElePtvsCutVarsRS[17];         //e pt- cut variables (Right-sign)
-  THnSparse* fHistoElePtvsCutVarsWS[17];         //e pt- cut variables (Wrong-sign)
-  THnSparse* fHistoElePtvsCutVarsMCS[17];         //e pt- cut variables (MCS)
+  THnSparse* fHistoElePtvsCutVarsRS[17];         //! e pt- cut variables (Right-sign)
+  THnSparse* fHistoElePtvsCutVarsWS[17];         //! e pt- cut variables (Wrong-sign)
+  THnSparse* fHistoElePtvsCutVarsMCS[17];         //! e pt- cut variables (MCS)
   TH2F* fHistoElectronQovPtvsPhi;     //! Electron phi distribution
   TH2F* fHistoLambdaQovPtvsPhi;     //! Lambda phi distribution
 
-  AliNormalizationCounter *fCounter;//!Counter for normalization
-	TH1F *fHistonEvtvsRunNumber;
-	TH1F *fHistonElevsRunNumber;
-	TH1F *fHistonLambdavsRunNumber;
+  AliNormalizationCounter *fCounter;//! Counter for normalization
+	TH1F *fHistonEvtvsRunNumber;//! nevt vs runnumber
+	TH1F *fHistonElevsRunNumber;//! nele vs runnumber
+	TH1F *fHistonLambdavsRunNumber;//! nlambda vs runnumber
 
   //Mixing
   Int_t fDoEventMixing; // flag for event mixing
