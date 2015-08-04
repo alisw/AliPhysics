@@ -205,7 +205,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
 
-  MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,3);
+  MatchJetsGeo(fContainerBase,fContainerTag,fDebug,0.3,3);
 
   return kTRUE;
 }
