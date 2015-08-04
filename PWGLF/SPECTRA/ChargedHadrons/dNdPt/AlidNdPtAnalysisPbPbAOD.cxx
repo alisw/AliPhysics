@@ -415,7 +415,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   fEventStatistics = new TH1F("fEventStatistics","fEventStatistics",10,0,10);
   fEventStatistics->GetYaxis()->SetTitle("number of events");
-  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fEventStatistics->SetBit(TH1::kCanRebin);
   #endif
   
@@ -633,7 +633,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   fCutSettings = new TH1F("fCutSettings","fCutSettings",100,0,10);
   fCutSettings->GetYaxis()->SetTitle("cut value");
-  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fCutSettings->SetBit(TH1::kCanRebin);
   #endif
   
@@ -747,14 +747,14 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fCrossCheckFilterBitPhiCent->Sumw2();
   
   fTriggerStringsFired = new TH1F("fTriggerStringsFired","fTriggerStringsFired",15,0,15);
-  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fTriggerStringsFired->SetBit(TH1::kCanRebin);
   #endif
   fTriggerStringsFired->GetYaxis()->SetTitle("number of fired triggers");
   fTriggerStringsFired->Sumw2();
   
   fTriggerStringComplete = new TH1F("fTriggerStringComplete","fTriggerStringComplete",15,0,15);
-  #if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+  #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fTriggerStringComplete->SetBit(TH1::kCanRebin);
   #endif
   fTriggerStringComplete->GetYaxis()->SetTitle("number of events");
