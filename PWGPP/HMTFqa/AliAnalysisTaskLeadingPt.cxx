@@ -478,7 +478,9 @@ void AliAnalysisTaskLeadingPt::UserExec(Option_t *)
 
 	fn1->Fill(0);
 
-	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+	((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler() ))->SetNeedField();
+
+	if( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
 			->IsEventSelected() & ftrigBit ){
 		fTriggeredEventMB = 1;  //event triggered as minimum bias
 	}
