@@ -104,11 +104,11 @@ class AliAODPWG4Particle : public AliVParticle {
   virtual Int_t   GetSModNumber()        const { return fSuperModule  ; }
 
   // Isolation cone background info
-  virtual Float_t SetChargedLeadPtInCone() const { return fIsoConePtLead[0] ; } 
-  virtual Float_t SetNeutralLeadPtInCone() const { return fIsoConePtLead[1] ; }   
+  virtual Float_t GetChargedLeadPtInCone() const { return fIsoConePtLead[0] ; } 
+  virtual Float_t GetNeutralLeadPtInCone() const { return fIsoConePtLead[1] ; }   
   
-  virtual Float_t SetChargedPtSumInCone () const { return fIsoConeSumPt[0]  ; } 
-  virtual Float_t SetNeutralPtSumInCone () const { return fIsoConeSumPt[1]  ; }   
+  virtual Float_t GetChargedPtSumInCone () const { return fIsoConeSumPt[0]  ; } 
+  virtual Float_t GetNeutralPtSumInCone () const { return fIsoConeSumPt[1]  ; }   
   
   //
   // Specific setters
