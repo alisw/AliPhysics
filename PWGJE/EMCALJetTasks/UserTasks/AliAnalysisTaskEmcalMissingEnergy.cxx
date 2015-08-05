@@ -224,35 +224,35 @@ AliAnalysisTaskEmcalMissingEnergy::~AliAnalysisTaskEmcalMissingEnergy()
 
   // hadron trigger output
 
-  fhJetPt= new TH1F("fhJetPt", "fhJetPt;Jet p_{T} (GeV)", 100, 0, 200);
+  fhJetPt= new TH1F("fhJetPt", "fhJetPt;Jet p_{T} (GeV)", 100, 0, 100);
   fOutput->Add(fhJetPt);
 
-  fhTrackPt= new TH1F("fhTrackPt", "fhTrackPt;Track p_{T} (GeV)", 100, 0, 200);
+  fhTrackPt= new TH1F("fhTrackPt", "fhTrackPt;Track p_{T} (GeV)", 100, 0, 100);
   fOutput->Add(fhTrackPt);
 
-  fhTrackPt_JT= new TH1F("fhTrackPt_JT", "fhTrackPt_JT;Track p_{T} (GeV)", 100, 0, 200);
+  fhTrackPt_JT= new TH1F("fhTrackPt_JT", "fhTrackPt_JT;Track p_{T} (GeV)", 100, 0, 100);
   fOutput->Add(fhTrackPt_JT);
 
-  fhTriggerPt= new TH1F("fhTriggerPt", "fhTriggerPt;Trigger p_{T} (GeV)", 100, 0, 200);
+  fhTriggerPt= new TH1F("fhTriggerPt", "fhTriggerPt;Trigger p_{T} (GeV)", 100, 0, 100);
   fOutput->Add(fhTriggerPt);
 
-  fhJetTriggeredPt= new TH1F("fhJetTriggeredPt", "fhJetTriggeredPt;Triggered Jet p_{T} (GeV)", 100, 0, 200);
+  fhJetTriggeredPt= new TH1F("fhJetTriggeredPt", "fhJetTriggeredPt;Triggered Jet p_{T} (GeV)", 100, 0, 100);
   fOutput->Add(fhJetTriggeredPt);
 
-  fhTriggerVSjetPt= new TH2F("fhTriggerVSjetPt", "fhTriggerVSjetPt;Trigger p_{T} (GeV);Jet p_{T} (GeV)", 100, 0, 200,  100, 0, 200);
+  fhTriggerVSjetPt= new TH2F("fhTriggerVSjetPt", "fhTriggerVSjetPt;Trigger p_{T} (GeV);Jet p_{T} (GeV)", 100, 0, 200,  100, 0, 100);
   fOutput->Add(fhTriggerVSjetPt);
 
-  fhdPhiTrigVSjetPtNOCUT= new TH2F("fhdPhiTrigVSjetPtNOCUT", "fhdPhiTrigVSjetPtNOCUT;#Delta#phi (Trig-Jet);Jet p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 200);
+  fhdPhiTrigVSjetPtNOCUT= new TH2F("fhdPhiTrigVSjetPtNOCUT", "fhdPhiTrigVSjetPtNOCUT;#Delta#phi (Trig-Jet);Jet p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 100);
   fOutput->Add(fhdPhiTrigVSjetPtNOCUT);
 
-  fhdPhiTrigVSjetPt= new TH2F("fhdPhiTrigVSjetPt", "fhdPhiTrigVSjetPt;#Delta#phi (Trig-Jet);Jet p_{T} (GeV)", 100, TMath::Pi() - 0.6, TMath::Pi(),  100, 0, 200);
+  fhdPhiTrigVSjetPt= new TH2F("fhdPhiTrigVSjetPt", "fhdPhiTrigVSjetPt;#Delta#phi (Trig-Jet);Jet p_{T} (GeV)", 100, TMath::Pi() - 0.6, TMath::Pi(),  100, 0, 100);
   fOutput->Add(fhdPhiTrigVSjetPt);
 
 
-  fhdPhiPartVSjetPt= new TH2F("fhdPhiPartVSjetPt", "fhdPhiPartVSjetPt;#Delta#phi (Part-Jet);Jet p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 200);
+  fhdPhiPartVSjetPt= new TH2F("fhdPhiPartVSjetPt", "fhdPhiPartVSjetPt;#Delta#phi (Part-Jet);Jet p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 100);
   fOutput->Add(fhdPhiPartVSjetPt);
 
-  fhdPhiPartVSjetPtVSPartPt= new TH3F("fhdPhiPartVSjetPtVSPartPt", "fhdPhiPartVSjetPtVSPartPt;#Delta#phi (Part-Jet);Jet p_{T} (GeV);Part p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 200, 100, 0, 200);
+  fhdPhiPartVSjetPtVSPartPt= new TH3F("fhdPhiPartVSjetPtVSPartPt", "fhdPhiPartVSjetPtVSPartPt;#Delta#phi (Part-Jet);Jet p_{T} (GeV);Part p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 100, 100, 0, 100);
   /*fhdPhiPartVSjetPtVSPartPt->GetXaxis()->SetTitle("Delta phi");
   fhdPhiPartVSjetPtVSPartPt->GetYaxis()->SetTitle("Jet Pt");
   fhdPhiPartVSjetPtVSPartPt->GetZaxis()->SetTitle("Particle Pt");*/
@@ -297,10 +297,10 @@ AliAnalysisTaskEmcalMissingEnergy::~AliAnalysisTaskEmcalMissingEnergy()
   fOutput->Add(fhTau3OverTau2);
   
 
-  fhTau2vsJetPt = new TH2F("fhTau2vsJetPt", "fhTau2vsJetPt;#tau_{2}; Jet p_{T} (GeV)", 100, 0, 1,  100, 0, 200);
+  fhTau2vsJetPt = new TH2F("fhTau2vsJetPt", "fhTau2vsJetPt;#tau_{2}; Jet p_{T} (GeV)", 100, 0, 1,  100, 0, 100);
   fOutput->Add(fhTau2vsJetPt);
 
-  fhTau2OverTau1vsJetPt = new TH2F("fhTau2OverTau1vsJetPt", "fhTau2OverTau1vsJetPt;#tau_{2} / #tau_{1}; Jet p_{T} (GeV)", 100, 0, 1,  100, 0, 200);
+  fhTau2OverTau1vsJetPt = new TH2F("fhTau2OverTau1vsJetPt", "fhTau2OverTau1vsJetPt;#tau_{2} / #tau_{1}; Jet p_{T} (GeV)", 100, 0, 1,  100, 0, 100);
   fOutput->Add(fhTau2OverTau1vsJetPt);
 
   fOutput->Add(fSubstructure);
@@ -320,12 +320,16 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::Run()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 {
-  // /*  // Fill histograms.
-  
+  /*  // Fill histograms.
+  //cout<<"base container"<<endl;
+  AliEmcalJet* jet1 = NULL;
+  AliJetContainer *jetCont = GetJetContainer(0);
+  Float_t kWeight=1;
   if (fCentSelectOn)
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   
-  
+  AliAODTrack *triggerHadron = 0x0;
+  */
   /////////////////////////////////////////// start hadron trigger
   
   const Double_t eta_max = 0.9;
