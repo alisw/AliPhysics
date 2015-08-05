@@ -152,6 +152,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElePtvsXiPtMCS(0),
   fHistoElePtvsXiPtvsXicPtMCS(0),
   fHistoElePtvsXiPtMCGen(0),
+  fHistoElePtvsXiPtvsXicPtMCGen(0),
   fHistoElePtvsXiPtMCXicGen(0),
   fHistoElePtvsd0RS(0),
   fHistoElePtvsd0WS(0),
@@ -275,6 +276,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElePtvsXiPtMCS(0),
   fHistoElePtvsXiPtvsXicPtMCS(0),
   fHistoElePtvsXiPtMCGen(0),
+  fHistoElePtvsXiPtvsXicPtMCGen(0),
   fHistoElePtvsXiPtMCXicGen(0),
   fHistoElePtvsd0RS(0),
   fHistoElePtvsd0WS(0),
@@ -1708,6 +1710,11 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 	cont_eleptvsxipt[0] = mcepart->Pt();
 	cont_eleptvsxipt[1] = mccascpart->Pt();
 	cont_eleptvsxipt[2] = fCentrality;
+	Double_t cont_eleptvsxiptvsxicpt[4];
+	cont_eleptvsxiptvsxicpt[0] = mcepart->Pt();
+	cont_eleptvsxiptvsxicpt[1] = mccascpart->Pt();
+	cont_eleptvsxiptvsxicpt[2] = mcpart->Pt();
+	cont_eleptvsxiptvsxicpt[3] = fCentrality;
 
 	AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
 	Float_t etamin, etamax;
@@ -1723,9 +1730,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMCROOTObjects(AliAODMCParticle
 				fHistoElePtvsXiPtMCGen->Fill(cont_eleptvsxipt);
 			}
 		}
-		if(fabs(mcpart->Y())<0.5){
+		if(fabs(mcpart->Y())<0.7){
 			if(InvMassEleXi<2.5){
 				fHistoElePtvsXiPtMCXicGen->Fill(cont_eleptvsxipt);
+				fHistoElePtvsXiPtvsXicPtMCGen->Fill(cont_eleptvsxiptvsxicpt);
 			}
 		}
 	}
@@ -1884,6 +1892,8 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   Double_t xmax_eleptvsxiptvsxicpt[4]={5.,5.,10.,100};
   fHistoElePtvsXiPtvsXicPtMCS = new THnSparseF("fHistoElePtvsXiPtvsXicPtMCS","",4,bins_eleptvsxiptvsxicpt,xmin_eleptvsxiptvsxicpt,xmax_eleptvsxiptvsxicpt);
   fOutputAll->Add(fHistoElePtvsXiPtvsXicPtMCS);
+  fHistoElePtvsXiPtvsXicPtMCGen = new THnSparseF("fHistoElePtvsXiPtvsXicPtMCGen","",4,bins_eleptvsxiptvsxicpt,xmin_eleptvsxiptvsxicpt,xmax_eleptvsxiptvsxicpt);
+  fOutputAll->Add(fHistoElePtvsXiPtvsXicPtMCGen);
 
   Int_t bins_eleptvsd0[3]=	{50 ,50	,10};
   Double_t xmin_eleptvsd0[3]={0.,-0.2	,0.0};

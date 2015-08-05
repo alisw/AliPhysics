@@ -156,6 +156,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElePtvsLambdaPtMCS(0),
   fHistoElePtvsLambdaPtvsLcPtMCS(0),
   fHistoElePtvsLambdaPtMCGen(0),
+  fHistoElePtvsLambdaPtvsLcPtMCGen(0),
   fHistoElePtvsLambdaPtMCLcGen(0),
   fHistoElePtvsd0RS(0),
   fHistoElePtvsd0WS(0),
@@ -299,6 +300,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElePtvsLambdaPtMCS(0),
   fHistoElePtvsLambdaPtvsLcPtMCS(0),
   fHistoElePtvsLambdaPtMCGen(0),
+  fHistoElePtvsLambdaPtvsLcPtMCGen(0),
   fHistoElePtvsLambdaPtMCLcGen(0),
   fHistoElePtvsd0RS(0),
   fHistoElePtvsd0WS(0),
@@ -1768,6 +1770,11 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 	cont_eleptvslambdapt[0] = mcepart->Pt();
 	cont_eleptvslambdapt[1] = mcv0part->Pt();
 	cont_eleptvslambdapt[2] = fCentrality;
+	Double_t cont_eleptvslambdaptvslcpt[4];
+	cont_eleptvslambdaptvslcpt[0] = mcepart->Pt();
+	cont_eleptvslambdaptvslcpt[1] = mcv0part->Pt();
+	cont_eleptvslambdaptvslcpt[2] = mcpart->Pt();
+	cont_eleptvslambdaptvslcpt[3] = fCentrality;
 
 	AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
 	Float_t etamin, etamax;
@@ -1783,9 +1790,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 				fHistoElePtvsLambdaPtMCGen->Fill(cont_eleptvslambdapt);
 			}
 		}
-		if(fabs(mcpart->Y())<0.5){
+		if(fabs(mcpart->Y())<0.7){
 			if(InvMassEleLambda<2.3){
 				fHistoElePtvsLambdaPtMCLcGen->Fill(cont_eleptvslambdapt);
+				fHistoElePtvsLambdaPtvsLcPtMCGen->Fill(cont_eleptvslambdaptvslcpt);
 			}
 		}
 	}else if(decaytype==1){
@@ -1963,6 +1971,8 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   Double_t xmax_eleptvslambdaptvslcpt[4]={5.,5.,10.,100};
   fHistoElePtvsLambdaPtvsLcPtMCS = new THnSparseF("fHistoElePtvsLambdaPtvsLcPtMCS","",4,bins_eleptvslambdaptvslcpt,xmin_eleptvslambdaptvslcpt,xmax_eleptvslambdaptvslcpt);
   fOutputAll->Add(fHistoElePtvsLambdaPtvsLcPtMCS);
+  fHistoElePtvsLambdaPtvsLcPtMCGen = new THnSparseF("fHistoElePtvsLambdaPtvsLcPtMCGen","",4,bins_eleptvslambdaptvslcpt,xmin_eleptvslambdaptvslcpt,xmax_eleptvslambdaptvslcpt);
+  fOutputAll->Add(fHistoElePtvsLambdaPtvsLcPtMCGen);
 
   Int_t bins_eleptvsd0[3]=	{50 ,50	,10};
   Double_t xmin_eleptvsd0[3]={0.,-0.2	,0.0};

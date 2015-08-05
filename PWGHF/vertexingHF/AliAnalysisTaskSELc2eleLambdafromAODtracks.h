@@ -171,17 +171,18 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElePtvsEtaWS;         //! e spectra (wrong-sign)
   THnSparse* fHistoElePtvsEtaRSMix;         //! e spectra (right-sign, mix)
   THnSparse* fHistoElePtvsEtaWSMix;         //! e spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsEtaMCS;         //! e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsEtaMCGen;         //! e spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsEtaMCS;         //! e spectra efficiency numerator
+  THnSparse* fHistoElePtvsEtaMCGen;         //! e spectra efficiency denominator
 
   THnSparse* fHistoElePtvsLambdaPtRS;         //! e-Xi spectra (right-sign)
   THnSparse* fHistoElePtvsLambdaPtWS;         //! e-Xi spectra (wrong-sign)
   THnSparse* fHistoElePtvsLambdaPtRSMix;         //! e-Xi spectra (right-sign, mix)
   THnSparse* fHistoElePtvsLambdaPtWSMix;         //! e-Xi spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsLambdaPtMCS;         //! e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtvsLcPtMCS;         //! e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtMCGen;         //! e-Xi spectra (wrong-sign) efficiency denominator
-  THnSparse* fHistoElePtvsLambdaPtMCLcGen;         //! e-Xi spectra (wrong-sign) efficiency denominator
+  THnSparse* fHistoElePtvsLambdaPtMCS;         //! e-Xi spectra efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtvsLcPtMCS;         //! e-Xi spectra efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtMCGen;         //! e-Xi spectra efficiency denominator
+  THnSparse* fHistoElePtvsLambdaPtvsLcPtMCGen;         //! e-Xi spectra efficiency denominator
+  THnSparse* fHistoElePtvsLambdaPtMCLcGen;         //! e-Xi spectra efficiency denominator
 
   THnSparse* fHistoElePtvsd0RS;         //! e pt-d0 spectra (right-sign)
   THnSparse* fHistoElePtvsd0WS;         //! e pt-d0 spectra (wrong-sign)
@@ -198,10 +199,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCGen;         //! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXic0MCS;         //! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXic0MCGen;         //! EFficiency calculation numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXic0MCS;         //! e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXic0MCGen;         //! e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCS;         //! e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCGen;         //! e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXic0MCS;         //! e spectra efficiency numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXic0MCGen;         //! e spectra efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCS;         //! e-Xi spectra efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXic0MCGen;         //! e-Xi spectra efficiency numerator
 
 	//Feeddown from XicPlus
   THnSparse* fHistoEleLambdaMassFeeddownXicPlusMCS;         //! EFficiency calculation numerator
@@ -210,10 +211,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen;         //! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXicPlusMCS;         //! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXicPlusMCGen;         //! EFficiency calculation numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCS;         //! e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCGen;         //! e spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCS;         //! e-Xi spectra (right-sign) efficiency numerator
-  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCGen;         //! e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCS;         //! e spectra efficiency numerator
+  THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCGen;         //! e spectra efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCS;         //! e-Xi spectra efficiency numerator
+  THnSparse* fHistoElePtvsLambdaPtFeeddownXicPlusMCGen;         //! e-Xi spectra efficiency numerator
 
 	//Checking histograms
   TH1F* fHistoBachPt;      //! Bachelor pT histogram
@@ -256,7 +257,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; // array of electron-compatible tracks
 
 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,7); // class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,8); // class for Lc->e Lambda
 };
 #endif
 
