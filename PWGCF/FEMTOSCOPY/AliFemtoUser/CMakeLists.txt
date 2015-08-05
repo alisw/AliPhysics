@@ -85,7 +85,7 @@ set(SRCS
   AliFemtoCorrFctn3DPRF.cxx
   AliFemtoPARJGenPythia.cxx
   AliFemtoPairCutRadialDistanceAsymmetric.cxx
-  AliFemtoPairCutPDG.cxx
+  AliFemtoPairCutMergedFraction.cxx
   )
 
 # Headers from sources
