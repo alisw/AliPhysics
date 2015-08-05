@@ -93,8 +93,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double shqmax = 1.0;
   int nbinssh = 100;
 
-  //AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
-  AliFemtoEventReaderAODMCTruthChain* Reader = new AliFemtoEventReaderAODMCTruthChain();
+  AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+  // AliFemtoEventReaderAODMCTruthChain* Reader = new AliFemtoEventReaderAODMCTruthChain();
   Reader->SetFilterBit(7);                                                      
   //Reader->SetCentralityPreSelection(0.00001, 310);
   Reader->SetReadV0(1); //Read V0
