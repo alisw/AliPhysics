@@ -154,6 +154,7 @@ AliTPCParam::AliTPCParam()
   SetTitle("75x40_100x60_150x60");
   SetDefault();
   if (!fBBParam) fBBParam= new TObjArray(1000);
+  fRegionGain[0]=fRegionGain[1]=fRegionGain[2]=0.;
 }
 
 AliTPCParam::~AliTPCParam()

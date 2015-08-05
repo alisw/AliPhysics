@@ -176,6 +176,7 @@ public:
   void  SetDiffT(Float_t DiffT){  fDiffT= DiffT;}
   void  SetDiffL(Float_t DiffL){  fDiffL=DiffL;}
   void  SetGasGain(Float_t GasGain){  fGasGain=GasGain;}
+  void  SetRegionGain(UInt_t region, Float_t gain) { fRegionGain[region%3] = gain; }
   void  SetDriftV(Float_t DriftV){  fDriftV= DriftV;}
   void  SetOmegaTau(Float_t OmegaTau){  fOmegaTau=OmegaTau;}
   void  SetAttCoef(Float_t AttCoef){  fAttCoef=AttCoef;}
@@ -334,6 +335,8 @@ public:
   Float_t  GetDiffT() const {return fDiffT;}
   Float_t  GetDiffL() const {return fDiffL;}
   Float_t  GetGasGain() const {return fGasGain;}
+  Float_t  GetRegionGain(UInt_t region) const {return fRegionGain[region%3];}
+  Float_t  GetRegionGainAbsolute(UInt_t region) const { return (fRegionGain[region%3]>1e-10) ? fRegionGain[region%3]*fGasGain : fGasGain; }
   Float_t  GetDriftV() const {return fDriftV;}
   Float_t  GetOmegaTau() const {return fOmegaTau;}
   Float_t  GetAttCoef() const {return fAttCoef;}
@@ -479,6 +482,7 @@ protected :
   Float_t  fDiffT;          ///< tangencial diffusion constant
   Float_t  fDiffL;          ///< longutudinal diffusion constant
   Float_t  fGasGain;        ///< gas gain constant
+  Float_t  fRegionGain[3];  ///< gain in pad regions relative to fGasGain
   Float_t  fDriftV;         ///< drift velocity constant
   Float_t  fOmegaTau;       ///< omega tau ExB coeficient
   Float_t  fAttCoef;        ///< attachment coefitients
@@ -546,7 +550,7 @@ protected :
   void CleanGeoMatrices();
 
   /// \cond CLASSIMP
-  ClassDef(AliTPCParam,10)  //parameter  object for set:TPC
+  ClassDef(AliTPCParam,11)  //parameter  object for set:TPC
   /// \endcond
 };
 

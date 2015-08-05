@@ -2133,6 +2133,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   Double_t correctionHVandPT = calib->GetGainCorrectionHVandPT(timeStamp, calib->GetRun(), isec, 5 ,tpcrecoparam->GetGainCorrectionHVandPTMode());
   gasgain*=correctionHVandPT;
 
+  // get gain in pad regions
+  Float_t gasGainRegions[3]={0.,0.,0.};
+
+  for (UInt_t iregion=0; iregion<3; ++iregion) {
+    gasGainRegions[iregion] = fTPCParam->GetRegionGainAbsolute(iregion);
+  }
+
   Int_t i;
   Float_t xyz[5]={0,0,0,0,0};
 
@@ -2285,15 +2292,28 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	//
 	//
 	// protection for the nonphysical avalanche size (10**6 maximum)
-	//  
+	//
 	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
-	xyz[3]= (Float_t) (-gasgain*TMath::Log(rn)); 
-	index[0]=1;
-	  
+
+        index[0]=1;
 	TransportElectron(xyz,index);    
 	Int_t rowNumber;
 	Int_t padrow = fTPCParam->GetPadRow(xyz,index); 
-	//
+
+        // get pad region
+        UInt_t padRegion=0;
+        if (tpcHit->fSector >= fTPCParam->GetNInnerSector()) {
+          padRegion=1;
+          if (padrow >= fTPCParam->GetNRowUp1()) {
+            padRegion=2;
+          }
+        }
+
+        //         xyz[3]= (Float_t) (-gasgain*TMath::Log(rn));
+        // JW: take into account different gain in the pad regions
+        xyz[3]= (Float_t) (-gasGainRegions[padRegion]*TMath::Log(rn));
+
+        //
 	// Add Time0 correction due unisochronity
 	// xyz[0] - pad row coordinate 
 	// xyz[1] - pad coordinate
