@@ -217,12 +217,26 @@ else()
 
     # ROOT must be built with XML2 support
     if(NOT ROOT_HASXML)
-      message(FATAL_ERROR "ROOT was not build with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
+      message(FATAL_ERROR "ROOT was not built with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
     endif(NOT ROOT_HASXML)
+
 
   else(ROOTSYS)
     message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
   endif(ROOTSYS)
+
+  # FTGL: prefer library from ROOT, look for both libFTGL and libftgl
+  unset(LIB_FTGL)
+  if(${ROOT_FEATURES} MATCHES "builtin_ftgl")
+    message(STATUS "Using FTGL from ROOT")
+    find_library(LIB_FTGL NAMES FTGL PATHS "${ROOT_LIBDIR}" NO_DEFAULT_PATH)
+  else()
+    message(STATUS "Using FTGL from the system")
+    find_library(LIB_FTGL NAMES ftgl FTGL)
+  endif()
+  if(NOT LIB_FTGL)
+    message(FATAL_ERROR "Required library FTGL not found. Please install it, or reconfigure ROOT with --enable-builtin-ftgl")
+  endif()
 
   # ROOT dictionaries and maps
   include(CMakeALICE)
