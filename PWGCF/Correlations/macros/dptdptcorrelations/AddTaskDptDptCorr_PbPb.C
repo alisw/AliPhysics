@@ -17,18 +17,18 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
  double zMax                    =  10.0,
  int    trackFilterBit          = 1,
  int    nClusterMin             = 70, 
- double eta1Min                 = -1.0,
- double eta1Max                 =  1.0,
- double eta2Min                 = -1.0,
- double eta2Max                 =  1.0,
- double dcaZMin                 = -1.2,
- double dcaZMax                 =  1.2,
- double dcaXYMin                = -1.2,
- double dcaXYMax                =  1.2,
- int nCentrality                =  4,
+ double eta1Min                 = -0.8,
+ double eta1Max                 =  0.0,
+ double eta2Min                 = -0.8,
+ double eta2Max                 =  0.0,
+ double dcaZMin                 = -3.2,
+ double dcaZMax                 =  3.2,
+ double dcaXYMin                = -2.4,
+ double dcaXYMax                =  2.4,
+ int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
- const char* taskname           = "CorrPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Calib/Calibration.root")
+ const char* taskname           = "WgtPM",
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Calib/UltraCentCalib.root")
   
 {
   // Set Default Configuration of this analysis
@@ -46,12 +46,9 @@ AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
     {
     if (centralityMethod == 4 )
       {
-	minCentrality[0] = 0.0;   maxCentrality[0]  = 5.0;
-        minCentrality[1] = 10.0;  maxCentrality[1]  = 20.0;
-        minCentrality[2] = 30.0;  maxCentrality[2]  = 40.0;
-        minCentrality[3] = 50.0;  maxCentrality[3]  = 60.0;
-        minCentrality[4] = 70.0;  maxCentrality[4]  = 80.0;
-       
+	minCentrality[0] = 0.0;   maxCentrality[0]  = 5.0; //new
+        minCentrality[1] = 5.0;  maxCentrality[1]   = 10.0;
+        minCentrality[2] = 20.0;  maxCentrality[2]  = 30.0;
       }
     else
       {

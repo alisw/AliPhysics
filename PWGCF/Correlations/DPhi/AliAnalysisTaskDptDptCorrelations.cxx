@@ -1215,7 +1215,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if(charge == 0) continue;
 	  // Kinematics cuts used                                                                                        
 	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
-	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
+	  if( eta < -1.0 || eta > 1.0) continue;
 	  
 	  Double_t pos[3];
 	  newAodTrack->GetXYZ(pos);
@@ -1231,15 +1231,16 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	      DCAXY    >  _dcaXYMax ) continue; 
 	  	  	  
 	  //==== QA ===========================
-	  _dcaz->Fill(DCAZ);
-	  _dcaxy->Fill(DCAXY);
+	  //_dcaz->Fill(DCAZ);
+	  //_dcaxy->Fill(DCAXY);
 	  //_etadis->Fill(eta);
 	  //_phidis->Fill(phi);
 	  //===================================
 	  //*************************************************
 	  	  
 	  //Particle 1
-	  if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
+	  if (_requestedCharge_1 == charge && eta > _min_eta_1 && eta < _max_eta_1 &&
+	      dedx >=  _dedxMin && dedx < _dedxMax)
 	    {
 	      iPhi   = int( phi/_width_phi_1);
 	      
@@ -1309,8 +1310,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 		}
 	    }
 	  
-	  if (!_sameFilter && _requestedCharge_2 == charge && 
-	      dedx >=  _dedxMin && dedx < _dedxMax)
+	  if (!_sameFilter && _requestedCharge_2 == charge && eta > _min_eta_2 && 
+	      eta < _max_eta_2 && dedx >=  _dedxMin && dedx < _dedxMax)
 	       
 	    {
 	      
