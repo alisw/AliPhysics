@@ -102,6 +102,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void EnableRelativeCuts()								{ Printf("[I] Relative Cuts enabled"); fUseRelativeCuts = kTRUE; }
     Bool_t AreRelativeCutsEnabled()							{ return fUseRelativeCuts; }
     
+    void FillEventPtSpectraHistogram(Bool_t b)				{ fFillEventPtSpectraHistogram = b; }
+    Bool_t GetFillEventPtSpectraHistogram()					{ return fFillEventPtSpectraHistogram; }
+    
     // setter and getter track quality cut parameters
     void SetFilterBit(Int_t b)								{ fFilterBit = b; };
     Int_t GetFilterBit()									{ return fFilterBit; }
@@ -205,6 +208,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
     THnSparseF 	*fDeltaphiPtEtaPhiCent; //-> DeltaPhi:Pt:Eta:Phi:Cent, was fDeltaphiPtEtaCent
     THnSparseF 	*fPtResptCent; //-> 1/pt:ResolutionPt:Cent
+    TH2F		*fPtEvent; // pT per event, for 200 events
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
@@ -274,9 +278,18 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TH1F		*fDeltaVertexZGlobalSPD; // difference between global and SPD vertex Z position
 	TH1F		*fDeltaVertexZGlobalTPC; // difference between global and TPC vertex Z position
 	TH1F		*fVertexContributors; // Ncontributors to vertex
+	
+	TH1F		*fVertexZAfterCuts; // global vertex Z distribution after cuts on VertexZ and NContrib
+	TH1F		*fVertexZSPDAfterCuts; // SPD vertex Z distribution after cuts on VertexZ and NContrib
+	TH1F		*fVertexZTPCAfterCuts; // TPC vertex Z distribution after cuts on VertexZ and NContrib
+	TH1F		*fDeltaVertexZGlobalSPDAfterCuts; // difference between global and SPD vertex Z position after cuts on VertexZ and NContrib
+	TH1F		*fDeltaVertexZGlobalTPCAfterCuts; // difference between global and TPC vertex Z position after cuts on VertexZ and NContrib
+	TH1F		*fVertexContributorsAfterCuts; // Ncontributors to vertex after cuts on VertexZ and NContrib
 
 	// global variables
     Bool_t fIsMonteCarlo;
+	Int_t fEventNumberForPtSpectra; 
+	Bool_t fFillEventPtSpectraHistogram;
 	
 	TString fEPselector;
 	TString fCentEstimator;
@@ -346,7 +359,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,18); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,20); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

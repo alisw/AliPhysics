@@ -45,6 +45,7 @@ fMCPt(0),
 fZvPtEtaCent(0),
 fDeltaphiPtEtaPhiCent(0),
 fPtResptCent(0),
+fPtEvent(0),
 fMCRecPrimZvPtEtaCent(0),
 fMCGenZvPtEtaCent(0),
 fMCRecSecZvPtEtaCent(0),
@@ -104,8 +105,16 @@ fVertexZTPC(0),
 fDeltaVertexZGlobalSPD(0),
 fDeltaVertexZGlobalTPC(0),
 fVertexContributors(0),
+fVertexZAfterCuts(0),
+fVertexZSPDAfterCuts(0),
+fVertexZTPCAfterCuts(0),
+fDeltaVertexZGlobalSPDAfterCuts(0),
+fDeltaVertexZGlobalTPCAfterCuts(0),
+fVertexContributorsAfterCuts(0),
 //global
 fIsMonteCarlo(0),
+fEventNumberForPtSpectra(0),
+fFillEventPtSpectraHistogram(kFALSE),
 fEPselector("Q"),
 fCentEstimator("V0M"),
 fDisabledTriggerString(""),
@@ -196,6 +205,8 @@ fBinsRunNumber(0)
   fBinsPhi = 0;
   fBinsDeltaphi = 0;
   fBinsRunNumber = 0;
+  
+  fEventNumberForPtSpectra = 0;
   
   DefineOutput(1, TList::Class());
 }
@@ -309,6 +320,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fPtResptCent->GetAxis(1)->SetTitle("#sigma(1/pT)");
   fPtResptCent->GetAxis(2)->SetTitle("centrality");
   fPtResptCent->Sumw2();
+  
+  fPtEvent = new TH2F("fPtEvent","fPtEvent;pT;eventnumber",fPtNbins-1, fBinsPt,200,0,200);
+  fPtEvent->GetXaxis()->SetTitle("Pt (GeV/c)");
+  fPtEvent->GetYaxis()->SetTitle("event number");
+  fPtEvent->Sumw2();
   
   fMCRecPrimZvPtEtaCent = new THnSparseF("fMCRecPrimZvPtEtaCent","mcZv:mcPt:mcEta:Centrality",4,binsZvPtCorrEtaCent, minbinsZvPtCorrEtaCent, maxbinsZvPtCorrEtaCent);
   fMCRecPrimZvPtEtaCent->SetBinEdges(0,fBinsZv);
@@ -774,11 +790,41 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fVertexContributors->GetYaxis()->SetTitle("number of events");
   fVertexContributors->Sumw2();
   
+  fVertexZAfterCuts = new TH1F("fVertexZAfterCuts","fVertexZAfterCuts",600, -30, 30);
+  fVertexZAfterCuts->GetXaxis()->SetTitle("vtx_{z} (cm) (with vertex cuts)");
+  fVertexZAfterCuts->GetYaxis()->SetTitle("number of events");
+  fVertexZAfterCuts->Sumw2();
+  
+  fVertexZSPDAfterCuts = new TH1F("fVertexZSPD","fVertexZSPD",600, -30, 30);
+  fVertexZSPD->GetXaxis()->SetTitle("vtxSPD_{z} (cm) (with vertex cuts)");
+  fVertexZSPD->GetYaxis()->SetTitle("number of events");
+  fVertexZSPD->Sumw2();
+  
+  fVertexZTPCAfterCuts = new TH1F("fVertexZTPCAfterCuts","fVertexZTPCAfterCuts",600, -30, 30);
+  fVertexZTPCAfterCuts->GetXaxis()->SetTitle("vtxTPC_{z} (cm) (with vertex cuts)");
+  fVertexZTPCAfterCuts->GetYaxis()->SetTitle("number of events");
+  fVertexZTPCAfterCuts->Sumw2();
+  
+  fDeltaVertexZGlobalSPDAfterCuts = new TH1F("fDeltaVertexZGlobalSPDAfterCuts","fDeltaVertexZGlobalSPDAfterCuts",6000, -30, 30);
+  fDeltaVertexZGlobalSPDAfterCuts->GetXaxis()->SetTitle("vtx_{z} - vtxSPD_{z} (cm) (with vertex cuts)");
+  fDeltaVertexZGlobalSPDAfterCuts->GetYaxis()->SetTitle("number of events");
+  fDeltaVertexZGlobalSPDAfterCuts->Sumw2();
+  
+  fDeltaVertexZGlobalTPCAfterCuts = new TH1F("fDeltaVertexZGlobalTPCAfterCuts","fDeltaVertexZGlobalTPCAfterCuts",6000, -30, 30);
+  fDeltaVertexZGlobalTPCAfterCuts->GetXaxis()->SetTitle("vtx_{z} - vtxTPC_{z} (cm) (with vertex cuts)");
+  fDeltaVertexZGlobalTPCAfterCuts->GetYaxis()->SetTitle("number of events");
+  fDeltaVertexZGlobalTPCAfterCuts->Sumw2();
+  
+  fVertexContributorsAfterCuts = new TH1F("fVertexContributorsAfterCuts","fVertexContributorsAfterCuts",3000, 0 ,3000);
+  fVertexContributorsAfterCuts->GetXaxis()->SetTitle("contributors to primary vertex (with vertex cuts)");
+  fVertexContributorsAfterCuts->GetYaxis()->SetTitle("number of events");
+  fVertexContributorsAfterCuts->Sumw2();
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fDeltaphiPtEtaPhiCent);
   fOutputList->Add(fPtResptCent);
+  fOutputList->Add(fPtEvent);
   fOutputList->Add(fPt);
   fOutputList->Add(fMCRecPrimZvPtEtaCent);
   fOutputList->Add(fMCGenZvPtEtaCent);
@@ -853,6 +899,13 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fDeltaVertexZGlobalTPC);
   fOutputList->Add(fVertexContributors);
   
+  fOutputList->Add(fVertexZAfterCuts);
+  fOutputList->Add(fVertexZSPDAfterCuts);
+  fOutputList->Add(fVertexZTPCAfterCuts);
+  fOutputList->Add(fDeltaVertexZGlobalSPDAfterCuts);
+  fOutputList->Add(fDeltaVertexZGlobalTPCAfterCuts);
+  fOutputList->Add(fVertexContributorsAfterCuts);
+  
   StoreCutSettingsToHistogram();
   
   PostData(1, fOutputList);
@@ -914,6 +967,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dReferenceMultiplicity = 0;
   Float_t dMCNRecTracks = 0;
   Float_t dMCNGenTracks = 0;
+  
+  Bool_t bHasEntriesInEventByEventPtSpectrum = kFALSE;
   
   fIsMonteCarlo = kFALSE;
   
@@ -1140,6 +1195,13 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   if( TMath::Abs(dEventZv) > GetCutMaxZVertex() ) return;
   if( eventAOD->GetPrimaryVertex()->GetNContributors() < GetNContributorsVertex() ) return;
   
+  fVertexZAfterCuts->Fill(dEventZv);
+  fVertexZSPDAfterCuts->Fill(dEventZvSPD);
+  fVertexZTPCAfterCuts->Fill(dEventZvTPC);
+  fDeltaVertexZGlobalSPDAfterCuts->Fill(dEventZv - dEventZvSPD);
+  fDeltaVertexZGlobalTPCAfterCuts->Fill(dEventZv - dEventZvTPC);
+  fVertexContributorsAfterCuts->Fill(eventAOD->GetPrimaryVertex()->GetNContributors());
+  
   // count all events, which are within zv distribution
   fAllEventStatisticsCentrality->Fill(dCentrality/*, nTriggerFired*/);
   
@@ -1361,6 +1423,11 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  fDeltaPhiSymCent->Fill(dTrackDeltaphiPtEtaPhiCent[0], dCentrality);
 	  
 	  fChargeOverPtRuns->Fill(track->Charge()/track->Pt(), (Double_t)eventAOD->GetRunNumber());
+	  
+	  if(GetFillEventPtSpectraHistogram() && (dCentrality < 5.)) {
+		fPtEvent->Fill(track->Pt(), fEventNumberForPtSpectra);
+		bHasEntriesInEventByEventPtSpectrum = kTRUE;
+	  }
 	}
   } // end track loop
   Int_t iContributorsQVector = ep->GetQContributionXArray()->GetSize();
@@ -1395,6 +1462,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   PostData(1, fOutputList);
   
+  if(bHasEntriesInEventByEventPtSpectrum) fEventNumberForPtSpectra++;
   // delete pointers:
   //   delete [] iIndexAcceptedTracks;
 }
