@@ -430,7 +430,9 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   Int_t igroup1 = -1;
   Int_t igroup2 = 0;
   
-  Bool_t isMC = furtherOpt.Contains("MC");
+//  Bool_t isMC = furtherOpt.Contains("MC");
+  Bool_t isMC = ( gridSparseArray[1]->GetEntries() > 0. );
+  Int_t nGrids = isMC ? 3 : 1;
   
   TAxis* srcAxis = gridSparseArray[0]->GetAxis(kHvarMotherType);
   Int_t unIdBin = srcAxis->FindBin(fSrcKeys->At(kUnidentified)->GetName());
@@ -452,7 +454,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     for ( Int_t icharge=0; icharge<3; ++icharge ) {
       Int_t icharge1 = ( icharge < 2 ) ? icharge : 0;
       Int_t icharge2 = ( icharge < 2 ) ? icharge : 1;
-      for ( Int_t igrid=0; igrid<3; ++igrid ) {
+      for ( Int_t igrid=0; igrid<nGrids; ++igrid ) {
         if ( gridSparseArray[igrid]->GetEntries() == 0. ) continue;
         if ( gridSparseArray[igrid]->IsA() != AliCFEffGrid::Class() ) {
           SetSparseRange(gridSparseArray[igrid], kHvarEta, "", -3.999, -2.501);
@@ -512,7 +514,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     if ( itype == 1 ) currList = &histoListRatio;
     else if ( itype == 2 ) currList = &histoList[2];
     else nCharges = 2;
-    for ( Int_t igrid=0; igrid<3; ++igrid ) {
+    for ( Int_t igrid=0; igrid<nGrids; ++igrid ) {
       igroup1 = igrid;
       TCanvas* canKine = 0x0;
       TLegend* legKine = 0x0;
@@ -559,7 +561,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   } // loop on types
   
   
-  for ( Int_t igrid=0; igrid<3; igrid++ ) {
+  for ( Int_t igrid=0; igrid<nGrids; igrid++ ) {
     if ( gridSparseArray[igrid]->IsA() == AliCFEffGrid::Class() ) continue;
     SetSparseRange(gridSparseArray[igrid], kHvarCharge, "", 1, gridSparseArray[igrid]->GetAxis(kHvarCharge)->GetNbins(), "USEBIN"); // Reset range
   } // loop on container steps
