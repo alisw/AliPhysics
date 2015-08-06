@@ -11,6 +11,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Int_t AODfilterBit=768,
                              TString TPCMultOut="2010",
                              TString EvTrigger="MB",
+                             Bool_t bCalculateCME=kFALSE,
                              Bool_t bCalculateCRCPt=kFALSE,
                              Bool_t bUseCRCRecentering=kFALSE,
                              TString QVecWeightsFileName,
@@ -27,6 +28,11 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Bool_t bEventCutsQA=kFALSE,
                              Bool_t bTrackCutsQA=kFALSE,
                              TString Label="",
+                             TString sCentrEstimator="V0M",
+                             Double_t dVertexRange=10.,
+                             Double_t dDCAxy=2.4,
+                             Double_t dDCAz=3.2,
+                             Double_t dMinClusTPC=70,
                              const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -95,9 +101,10 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, TPCMultOut);
  taskFE->SetCentralityRange(centrMin,centrMax);
- taskFE->SetCentralityEstimator("V0M");
+ taskFE->SetCentralityEstimator(sCentrEstimator);
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetRunSet(TPCMultOut);
+ taskFE->SetQAOn(bCutsQA);
  // set the analysis type
  TString analysisType = "AUTOMATIC";
  if (analysisTypeUser != "") analysisType = analysisTypeUser;
@@ -126,7 +133,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
   cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
   // vertex-z cut
-  cutsEvent->SetPrimaryVertexZrange(-10.,10.);
+  cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
   // enable the qa plots
   cutsEvent->SetQA(bEventCutsQA);
   // explicit multiplicity outlier cut
@@ -187,6 +194,9 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsPOI->SetAODfilterBit(AODfilterBit);
   cutsPOI->SetMinimalTPCdedx(-999999999);
+  cutsPOI->SetMaxDCAToVertexXY(dDCAxy);
+  cutsPOI->SetMaxDCAToVertexZ(dDCAz);
+  cutsPOI->SetMinNClustersTPC(dMinClusTPC);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bTrackCutsQA);
@@ -262,6 +272,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRCPt(bCalculateCRCPt);
+ taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(bUseZDC);
  taskQC->SetRecenterZDC(bRecenterZDC);

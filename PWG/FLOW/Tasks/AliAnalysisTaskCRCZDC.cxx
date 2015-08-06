@@ -371,7 +371,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  delete fFlowEvent;
  delete fFlowTrack;
  delete fCutsEvent;
- delete fQAList;
+ if (fQAList) delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
  
 }
@@ -429,6 +429,16 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  fOutput->SetOwner(kTRUE);
  //fOutput->SetName("output");
  
+ if (fQAon) {
+  fQAList = new TList();
+  fQAList->SetOwner(kTRUE);
+  fQAList->SetName("AliFlowEventCuts QA");
+  if (fCutsEvent->GetQA()) fQAList->Add(fCutsEvent->GetQA()); //0
+  if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());       //1
+  if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());      //2
+  fOutput->Add(fQAList);
+ }
+
  for(int i=0; i<5; i++){
   char hname[20];
   sprintf(hname,"hZNCPM%d",i);
@@ -666,7 +676,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fFlowEvent->Fill( fCutsRP, fCutsPOI );
   
   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
-  fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
+  fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile(fCentrEstimator.Data()));
   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
   
  }
@@ -742,7 +752,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  //define dead zone
  fFlowEvent->DefineDeadZone(fExcludedEtaMin, fExcludedEtaMax, fExcludedPhiMin, fExcludedPhiMax );
  
- 
  //////////////////////////////////////////////////////////////////////////////
  ///////////////////////////AFTERBURNER
  if (fAfterburnerOn)
@@ -771,7 +780,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  //fListHistos->Print();
  //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");
  
- PostData(1, fFlowEvent);
+//  printf("event : ntr %d, cen %f **********************************************************************************************************\n",fFlowEvent->NumberOfTracks(),fFlowEvent->GetCentrality());
  
  //********************************************************************************************************************************
  
@@ -953,6 +962,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
  } // PHYSICS SELECTION
  
+ PostData(1, fFlowEvent);
+
  PostData(2, fOutput);
  
 }
