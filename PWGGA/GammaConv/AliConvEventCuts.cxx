@@ -64,6 +64,7 @@ const char* AliConvEventCuts::fgkCutNames[AliConvEventCuts::kNCuts] = {
    "SelectSpecialSubTriggerClass",	//4
    "RemovePileUp",					//5
    "RejectExtraSignals",			//6
+   "VertexCut",						//7
 };
 
 
@@ -76,6 +77,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fIsHeavyIon(0),
 	fDetectorCentrality(0),
 	fModCentralityClass(0),
+	fEnableVertexCut(kTRUE),
 	fMaxVertexZ(10),
 	fCentralityMin(0),
 	fCentralityMax(0),
@@ -163,6 +165,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fIsHeavyIon(ref.fIsHeavyIon),
 	fDetectorCentrality(ref.fDetectorCentrality),
 	fModCentralityClass(ref.fModCentralityClass),
+	fEnableVertexCut(ref.fEnableVertexCut),
 	fMaxVertexZ(ref.fMaxVertexZ),
 	fCentralityMin(ref.fCentralityMin),
 	fCentralityMax(ref.fCentralityMax),
@@ -423,107 +426,111 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent){
-   // Process Event Selection
+	// Process Event Selection
 
-   Int_t cutindex=0;
-   if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-   cutindex++;
+	Int_t cutindex=0;
+	if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+	cutindex++;
 
-   // Check for MC event
-   Bool_t isMC = kFALSE;
-   if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
-      // Check if MC event is correctly loaded
-      AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-      if (!mcHandler){
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      if (!mcHandler->InitOk() ){
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      if (!mcHandler->TreeK() ){
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      if (!mcHandler->TreeTR() ) {
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      isMC = kTRUE;
-   }
+	// Check for MC event
+	Bool_t isMC = kFALSE;
+	if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
+		// Check if MC event is correctly loaded
+		AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+		if (!mcHandler){
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		if (!mcHandler->InitOk() ){
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		if (!mcHandler->TreeK() ){
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		if (!mcHandler->TreeTR() ) {
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		isMC = kTRUE;
+	}
 
-   
-   
-   // Event Trigger
-//    cout << "before event trigger" << endl;
-   if(!IsTriggerSelected(fInputEvent, isMC )){
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 3;
-      return kFALSE;
-   }
-   cutindex++;
+	
+	
+	// Event Trigger
+	//    cout << "before event trigger" << endl;
+	if(!IsTriggerSelected(fInputEvent, isMC )){
+		if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+		fEventQuality = 3;
+		return kFALSE;
+	}
+	cutindex++;
 
-   if(fInputEvent->IsA()==AliESDEvent::Class()){
-      AliTriggerAnalysis fTriggerAnalysis;// = new AliTriggerAnalysis;
-      fHasV0AND = fTriggerAnalysis.IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0AND);
-      if(fHasV0AND&&hTriggerClass)hTriggerClass->Fill(32);
-   }
-//   cout << "event number " << ((AliESDEvent*)fInputEvent)->GetEventNumberInFile() << " entered"<< endl;
+	if(fInputEvent->IsA()==AliESDEvent::Class()){
+		AliTriggerAnalysis fTriggerAnalysis;// = new AliTriggerAnalysis;
+		fHasV0AND = fTriggerAnalysis.IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0AND);
+		if(fHasV0AND&&hTriggerClass)hTriggerClass->Fill(32);
+	}
+	//   cout << "event number " << ((AliESDEvent*)fInputEvent)->GetEventNumberInFile() << " entered"<< endl;
 
 
-   // Number of Contributors Cut
-   if(GetNumberOfContributorsVtx(fInputEvent)<=0) {
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 5;
-      return kFALSE;
-   }
-   cutindex++;
+	// Number of Contributors Cut
+	if (fEnableVertexCut){
+		if(GetNumberOfContributorsVtx(fInputEvent)<=0) {
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 5;
+			return kFALSE;
+		}
+	}	
+	cutindex++;
 
-   // Z Vertex Position Cut
-   if(!VertexZCut(fInputEvent)){
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 4;
-      return kFALSE;
-   }
-   cutindex++;
+	// Z Vertex Position Cut
+	if (fEnableVertexCut){
+		if(!VertexZCut(fInputEvent)){
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 4;
+			return kFALSE;
+		}	
+	}
+	cutindex++;
 
-   // Pile Up Rejection
+	// Pile Up Rejection
 
-   if(fRemovePileUp){
-	  if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
-         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-         fEventQuality = 6;
-         return kFALSE;
-      }
-   }
-   cutindex++;
+	if(fRemovePileUp){
+		if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 6;
+			return kFALSE;
+		}
+	}
+	cutindex++;
 
-   // Centrality Selection
-   if(!IsCentralitySelected(fInputEvent,fMCEvent)){
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 1;
-      return kFALSE;
-   }
-   cutindex++;
+	// Centrality Selection
+	if(!IsCentralitySelected(fInputEvent,fMCEvent)){
+		if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+		fEventQuality = 1;
+		return kFALSE;
+	}
+	cutindex++;
 
-   // Fill Event Histograms
-   if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-   if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
-   if(hVertexZ)hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
-//   if(hCentralityVsNumberOfPrimaryTracks)
-//      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
-//                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-//                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+	// Fill Event Histograms
+	if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+	if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
+	if(hVertexZ)hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
+	//   if(hCentralityVsNumberOfPrimaryTracks)
+	//      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
+	//                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+	//                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
 
-   // SPD clusters vs tracklets to check for pileup/background
-   Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
-   Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
-   Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
-   if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+	// SPD clusters vs tracklets to check for pileup/background
+	Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
+	Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
+	Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+	if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
-   fEventQuality = 0;
-   return kTRUE;
+	fEventQuality = 0;
+	return kTRUE;
 }
 
 ///________________________________________________________________________
@@ -714,6 +721,13 @@ Bool_t AliConvEventCuts::SetCut(cutIds cutID, const Int_t value) {
 			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;		
+	case kVertex:
+		if( SetVertexCut(value)) {
+			fCuts[kVertex] = value;
+			UpdateCutString();
+			return kTRUE;
+		} else return kFALSE;		
+
 	case kNCuts:
 		AliError("Cut id out of range");
 		return kFALSE;
@@ -803,6 +817,9 @@ void AliConvEventCuts::PrintCutsWithValues() {
 			if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
 		}
 	}
+	if (fEnableVertexCut) printf("\t Vertex cut with |Z_{vtx}| <%2.2f \n",fMaxVertexZ);
+		else printf("\t No vertex cut \n");
+		
 	printf("MC event cuts: \n");
 	if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
 		else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
@@ -1375,6 +1392,42 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
 	}
 	return kTRUE;
 }
+
+///________________________________________________________________________
+Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
+
+	switch(vertexCut){
+	case 0: // no Vertex required // NOT fully working yet
+		fEnableVertexCut 	= kFALSE;	 
+		fMaxVertexZ 		= 1000;
+		break; 
+	case 1: // vertex within +-15 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 15;
+		break; 
+	case 2: // vertex within +-12.5 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 12.5;
+		break; 
+	case 3: // vertex within +-10 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 10.0;
+		break; 
+	case 4: // vertex within +-7.5 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 7.5;
+		break; 
+	case 5: // vertex within +-5 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 5.;
+		break; 
+	default:
+		AliError(Form("Vertex Cut not defined %d",vertexCut));
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
 
 //-------------------------------------------------------------
 Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
