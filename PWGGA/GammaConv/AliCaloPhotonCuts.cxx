@@ -129,6 +129,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fMinNLM(0),
 	fMaxNLM(1000),
 	fUseNLM(0),
+	fNonLinearity1(0),
+	fNonLinearity2(0),
+	fUseNonLinearity(kFALSE),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
 	fHistAcceptanceCuts(NULL),
@@ -238,6 +241,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fMinNLM(ref.fMinNLM),
 	fMaxNLM(ref.fMaxNLM),
 	fUseNLM(ref.fUseNLM),
+	fNonLinearity1(ref.fNonLinearity1),
+	fNonLinearity2(ref.fNonLinearity2),
+	fUseNonLinearity(ref.fUseNonLinearity),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
 	fHistAcceptanceCuts(NULL),
@@ -1384,6 +1390,20 @@ Bool_t AliCaloPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 
+		case kNonLinearity1:
+			if( SetNonLinearity1(value)) {
+				fCuts[kNonLinearity1] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+
+		case kNonLinearity2:
+			if( SetNonLinearity2(value)) {
+				fCuts[kNonLinearity2] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+
 		case kNCuts:
 			AliError("Cut id out of range");
 			return kFALSE;
@@ -1430,6 +1450,10 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
 	if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
 	if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
+
+	printf("NonLinearity Correction: \n");
+	if (fUseNonLinearity) printf("\t Chose NonLinearity: %i%i\n", fNonLinearity1, fNonLinearity2 );
+	else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 	
 }
 
@@ -1982,6 +2006,34 @@ Bool_t AliCaloPhotonCuts::SetNLM(Int_t nlm)
 		break;
 	default:
 		AliError(Form("NLM Cut not defined %d",nlm));
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+//___________________________________________________________________
+Bool_t AliCaloPhotonCuts::SetNonLinearity1(Int_t nl1)
+{
+	if( nl1 >= 0 && nl1 <=9){
+		fNonLinearity1 = nl1;
+	}
+	else{
+		AliError(Form("NonLinearity Correction (part1) not defined %d",nl1));
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+//___________________________________________________________________
+Bool_t AliCaloPhotonCuts::SetNonLinearity2(Int_t nl2)
+{
+	if( nl2 >= 0 && nl2 <=9){
+		fNonLinearity2 = nl2;
+		if(nl2 == 0) fUseNonLinearity = kFALSE;
+		else if(nl2 > 0) fUseNonLinearity = kTRUE;
+	}
+	else{
+		AliError(Form("NonLinearity Correction (part2) not defined %d",nl2));
 		return kFALSE;
 	}
 	return kTRUE;

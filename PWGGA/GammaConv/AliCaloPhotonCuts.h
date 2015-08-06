@@ -46,6 +46,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 			kEtaMax,
 			kPhiMin,
 			kPhiMax,
+			kNonLinearity1,
+			kNonLinearity2,
 			kDistanceToBadChannel,
 			kTiming,
 			kTrackMatching,
@@ -131,6 +133,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			SetMinM20(Int_t);
 		Bool_t 			SetDispersion(Int_t);
 		Bool_t 			SetNLM(Int_t);
+		Bool_t			SetNonLinearity1(Int_t);
+		Bool_t			SetNonLinearity2(Int_t);
 		
 	protected:
 		TList			*fHistograms;
@@ -178,6 +182,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t 		fMinNLM;							// minimum number of local maxima in cluster
 		Int_t 		fMaxNLM;							// maximum number of local maxima in cluster
 		Bool_t 		fUseNLM;							// flag for switching on NLM cut
+		Int_t		fNonLinearity1;						// selection of nonlinearity correction, part1
+		Int_t		fNonLinearity2;						// selection of nonlinearity correction, part2
+		Bool_t		fUseNonLinearity;					// flag for switching NonLinearity correction
 		
 		// CutString
 		TObjString* fCutString; 							// cut number used for analysis
@@ -251,7 +258,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,5)
+		ClassDef(AliCaloPhotonCuts,6)
 };
 
 #endif
