@@ -71,6 +71,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // Set binning for Histograms (if not set default binning is used)
     void SetBinsMult(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Mult Bins"); fMultNbins = nbins; fBinsMult = GetArrayClone(nbins,edges); }
+    void SetBinsMultFine(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Fine Mult Bins"); fMultFineNbins = nbins; fBinsMultFine = GetArrayClone(nbins,edges); }
     void SetBinsPt(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting pT Bins"); fPtNbins = nbins; fBinsPt = GetArrayClone(nbins,edges); }
     void SetBinsPtCorr(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcorr Bins"); fPtCorrNbins = nbins; fBinsPtCorr = GetArrayClone(nbins,edges); }
     void SetBinsPtCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcheck Bins"); fPtCheckNbins = nbins; fBinsPtCheck = GetArrayClone(nbins,edges); }
@@ -249,6 +250,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F		*fEventplaneSubtractedPercentage; // percentage of subtracted tracks
     
     TH2F		*fChargeOverPtRuns; // charge/pT vs run
+    
+    TH2F		*fVZEROMultCentrality; // VZERO Multiplicity vs Centrality
 
 	// cross check for event plane resolution
 	TH2F		*fEPDistCent; // event plane distribution vs centrality
@@ -285,6 +288,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TH1F		*fDeltaVertexZGlobalSPDAfterCuts; // difference between global and SPD vertex Z position after cuts on VertexZ and NContrib
 	TH1F		*fDeltaVertexZGlobalTPCAfterCuts; // difference between global and TPC vertex Z position after cuts on VertexZ and NContrib
 	TH1F		*fVertexContributorsAfterCuts; // Ncontributors to vertex after cuts on VertexZ and NContrib
+	TH1F		*fVertexContributorsAfterCutsCent; // Ncontributors to vertex after cuts on VertexZ and NContrib for central triggers
+	TH1F		*fVertexContributorsAfterCutsSemi; // Ncontributors to vertex after cuts on VertexZ and NContrib for semicentral triggers
+	TH1F		*fVertexContributorsAfterCutsMB; // Ncontributors to vertex after cuts on VertexZ and NContrib for MB triggers
 
 	// global variables
     Bool_t fIsMonteCarlo;
@@ -334,6 +340,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
     //binning for THNsparse
     Int_t       fMultNbins;
+	Int_t       fMultFineNbins;
     Int_t       fPtNbins;
     Int_t       fPtCorrNbins;
     Int_t       fPtCheckNbins;
@@ -345,6 +352,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	Int_t       fDeltaphiNbins;
 	Int_t		fRunNumberNbins;
     Double_t*   fBinsMult; //[fMultNbins]
+    Double_t*   fBinsMultFine; //[fMultFineNbins]
     Double_t*   fBinsPt; //[fPtNbins]
     Double_t*   fBinsPtCorr; //[fPtCorrNbins]
     Double_t*   fBinsPtCheck; //[fPtCheckNbins]
