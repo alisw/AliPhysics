@@ -3736,15 +3736,16 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       Float_t pTLeadClusterInCone  = 0;
       Float_t pTSumClusterInCone   = 0;
       
-//      CalculateChargedActivityInCone(particle, pTLeadTrackInCone  , pTSumTrackInCone  );
-//      CalculateNeutralActivityInCone(particle, pTLeadClusterInCone, pTSumClusterInCone);
+      // Remove when AliRoot v5-06-38 is available
+      CalculateChargedActivityInCone(particle, pTLeadTrackInCone  , pTSumTrackInCone  );
+      CalculateNeutralActivityInCone(particle, pTLeadClusterInCone, pTSumClusterInCone);
       
-      //Use Set and not Get because of an error in AliAODPWG4Particle.h --> will be changed later to avoid to wait for new Aliroot tag
-      pTLeadTrackInCone = particle->SetChargedLeadPtInCone();
-      pTLeadClusterInCone = particle->SetNeutralLeadPtInCone();
-      
-      pTSumTrackInCone = particle->SetChargedPtSumInCone();
-      pTSumClusterInCone = particle->SetNeutralPtSumInCone();
+      // Uncomment when AliRoot v5-06-38 is available
+//      pTLeadTrackInCone   = particle->GetChargedLeadPtInCone();
+//      pTLeadClusterInCone = particle->GetNeutralLeadPtInCone();
+//      
+//      pTSumTrackInCone    = particle->GetChargedPtSumInCone();
+//      pTSumClusterInCone  = particle->GetNeutralPtSumInCone();
       
       Float_t pTLeadInCone = pTLeadTrackInCone;
       if(pTLeadClusterInCone > pTLeadInCone) pTLeadInCone = pTLeadClusterInCone;
@@ -4899,6 +4900,7 @@ void AliAnaParticleHadronCorrelation::SetAssocPtBinLimit(Int_t ibin, Float_t pt)
 
 //___________________________________________________________________________________________________________
 /// Get the track pT or sum of pT in isolation cone.
+// Remove when AliRoot v5-06-38 is available
 //___________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::CalculateChargedActivityInCone(AliAODPWG4ParticleCorrelation * particle,
                                                                      Float_t & pTLeadTrackInCone, Float_t & pTSumTrackInCone)
@@ -4930,6 +4932,7 @@ void AliAnaParticleHadronCorrelation::CalculateChargedActivityInCone(AliAODPWG4P
 
 //___________________________________________________________________________________________________________
 /// Get the cluster pT or sum of pT in isolation cone.
+// Remove when AliRoot v5-06-38 is available
 //___________________________________________________________________________________________________________
 void AliAnaParticleHadronCorrelation::CalculateNeutralActivityInCone(AliAODPWG4ParticleCorrelation * particle,
                                                                      Float_t & pTLeadClusterInCone, Float_t & pTSumClusterInCone)
