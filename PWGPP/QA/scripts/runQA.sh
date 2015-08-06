@@ -9,7 +9,7 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
 fi
 
 #include $ALICE_PHYSICS/PWGPP/scripts/utilities.sh
-if ! source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh; then 
+if ! source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh; then
   [[ -z "${ALICE_PHYSICS}" ]] && echo "\$ALICE_PHYSICS not defined!"
   echo "could not source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh exiting..."
   exit 1
@@ -126,7 +126,7 @@ updateQA()
   [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" | tee ${logFile} && return 1
   touch ${lockFile}
   [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" | tee ${logFile} && return 1
-  
+
   exec &>${logFile}
 
   ################################################################
@@ -150,7 +150,7 @@ updateQA()
     MAILdebugInfo=${parseConfig__ORIGINAL__MAILdebugInfo}
     MAILcompressLogs=${parseConfig__ORIGINAL__MAILcompressLogs}
     MAILfullProductionLog=${parseConfig__ORIGINAL__MAILfullProductionLog}
-    
+
     #skip if excluded
     if [[ "${excludeDetectors}" =~ ${detector} ]]; then
       echo "${detector} is excluded in config, skipping..."
@@ -162,7 +162,7 @@ updateQA()
       echo "${detector} not included in includeDetectors, skipping..."
       continue
     fi
-    
+
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     hostInfo >> ${logSummary}
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
@@ -181,7 +181,7 @@ updateQA()
     echo "running QA for ${detector}"
     echo "  outputDir=$outputDir"
     echo "  tmpPrefix=$tmpPrefix"
-    
+
     #source the detector script
     #unset the detector functions from previous iterations (detectors)
     unset -f runLevelQA
@@ -232,7 +232,7 @@ updateQA()
         highPtTree=$(egrep -m1 ${runNumber} ${inputListHighPtTrees})
         echo "loaded the highPtTree ${highPtTree} from external file ${inputListHighPtTrees}"
       fi
-      #if we are explicit about the input file this takes precedence 
+      #if we are explicit about the input file this takes precedence
       #over earlier additions
       [[ "${inputFile}" =~ QAresults.root$ ]] && qaFile=${inputFile}
       [[ "${inputFile}" =~ QAresults_merged.root$ ]] && qaFile=${inputFile}
@@ -291,7 +291,7 @@ updateQA()
           eventStatFileOuter=""
         fi
       fi
-     
+
       echo qaFile=$qaFile
       echo qaFileOuter=$qaFileOuter
       echo highPtTree=$highPtTree
@@ -348,7 +348,7 @@ updateQA()
       fi
 
       cd ${tmpDetectorRunDir}
-    
+
     done < ${inputList}
 
     #################################################################
@@ -358,24 +358,24 @@ updateQA()
     echo
 
     #################################################################
-    #(re)do the merging/trending 
+    #(re)do the merging/trending
     for tmpProductionDir in ${!arrOfTouchedProductions[@]}; do
       cd ${tmpProductionDir}
       echo
       echo "running period level stuff in ${tmpProductionDir}"
       echo $(date)
-    
+
       productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
       echo productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
 
       mkdir -p ${productionDir}
-      if [[ ! -d ${productionDir} ]]; then 
+      if [[ ! -d ${productionDir} ]]; then
         echo "cannot make productionDir $productionDir" && continue
       fi
-      
+
       #move runs to final destination
       for dir in ${tmpProductionDir}/000*; do
-        echo 
+        echo
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
         if ! guessRunData "${arrOfTouchedProductions[${tmpProductionDir}]}"; then
           echo "could not guess run data from ${arrOfTouchedProductions[${tmpProductionDir}]}"
@@ -383,7 +383,7 @@ updateQA()
         fi
 
         #before moving - VALIDATE!!!
-        if ! validate ${dir}; then 
+        if ! validate ${dir}; then
           continue
         fi
 
@@ -395,7 +395,7 @@ updateQA()
         echo "moving new ${runNumber} to ${productionDir}"
         mv -f ${dir} ${productionDir}
       done
-   
+
       #go to a temp dir to do the period level stuff in a completely clean dir
       tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
       echo
@@ -413,12 +413,12 @@ updateQA()
       if /bin/ls 000*/trending.root &>/dev/null; then # skip corrupted and empty trending files
         hadd -k trending.root 000*/trending.root &> periodLevelQA.log
       fi
-      
+
       #run the period level trending/QA
       if [[ -f "trending.root" && $(type -t periodLevelQA) =~ "function" ]]; then
         echo running ${detector} periodLevelQA for production ${period}/${pass}
         ( periodLevelQA trending.root ) &>> periodLevelQA.log
-      else 
+      else
         echo "WARNING: not running ${detector} periodLevelQA for production ${period}/${pass}, no trending.root"
       fi
 
@@ -433,7 +433,7 @@ updateQA()
         #TODO: maybe use rsync?
         #lock to avoid conflicts:
         echo "${uniquePID}" > ${periodLevelLock}
-        for x in ${tmpPeriodLevelQAdir}/*; do  
+        for x in ${tmpPeriodLevelQAdir}/*; do
           if [[ -d ${x} ]]; then
             echo "removing ${productionDir}/${x##*/}"
             rm -rf ${productionDir}/${x##*/}
@@ -442,7 +442,7 @@ updateQA()
           fi
           if [[ -f ${x} ]]; then
             echo "moving ${x} to ${productionDir}"
-            mv -f ${x} ${productionDir} 
+            mv -f ${x} ${productionDir}
           fi
         done
         rm -f ${periodLevelLock}
@@ -473,19 +473,19 @@ updateQA()
 
   #make a run/log summary
   #make one big stacktrace tree for core files
-  stackTraceArr=($(awk '/stacktrace\.log/ {print $1}' ${logDirectory}/summary-*-${dateString}.log)) 
+  stackTraceArr=($(awk '/stacktrace\.log/ {print $1}' ${logDirectory}/summary-*-${dateString}.log))
   if [[ ${#stackTraceArr[@]} > 0 ]]; then
     stackTraceTree "${stackTraceArr[@]}" > ${logDirectory}/stacktrace-core-${dateString}.tree
   fi
   #sometimes core files are not available, use the root logs, which sometimes do have a stacktrace
-  stackTraceArr=($(awk '/log[[:space:]]*BAD / {print $1}' ${logDirectory}/summary-*-${dateString}.log)) 
+  stackTraceArr=($(awk '/log[[:space:]]*BAD / {print $1}' ${logDirectory}/summary-*-${dateString}.log))
   if [[ ${#stackTraceArr[@]} > 0 ]]; then
     stackTraceTree "${stackTraceArr[@]}" > ${logDirectory}/stacktrace-log-${dateString}.tree
   fi
   #make stacktrace plots
   plotStackTraceTree ${logDirectory}/stacktrace-core-${dateString}.tree ${logDirectory}/stacktrace-core-${dateString}.png
   plotStackTraceTree ${logDirectory}/stacktrace-log-${dateString}.tree ${logDirectory}/stacktrace-log-${dateString}.png
-  
+
   #process alarms, send emails etc, for each detector separately
   echo ""
   echo "log statistics:"
@@ -498,7 +498,7 @@ updateQA()
     fi
     echo "${detector} = ${arrDetectorStatus[${detector}]}" >> ${logFileShort}
   done
-  
+
   #one email to the responsible - every time with a short summary
   if [[ -n ${MAILTO} && -n ${MAILshortSummary} ]]; then
     echo "mailing short summary to ${MAILTO}"
@@ -522,23 +522,23 @@ executePlanB()
   local detExpertEmailVar="MAILTO_${detector}"
   [[ -n "${!detExpertEmailVar}" ]] && mailTo+=" ${!detExpertEmailVar}"
   [[ -z ${mailTo} ]] && return 1
-  
+
   echo
   echo "trouble detected, sending email to ${mailTo}"
   local mailoptions=""
   local file=""
-  
+
   #attach the log summary
   file="${logSummary}"
   [[ ${MAILcompressLogs} == 1 && -f ${file} ]] && tar czf ${file}.tgz ${file} && file+=".tgz"
   [[ -f ${file} ]] && mailoptions+=" -a ${file}"
-    
+
   #attach the crash plots
   file="${logDirectory}/stacktrace-log-${dateString}.png"
   [[ -f ${file} ]] && mailoptions+=" -a ${file}"
   file="${logDirectory}/stacktrace-core-${dateString}.png"
   [[ -f ${file} ]] && mailoptions+=" -a ${file}"
-  
+
   #attach the full debug info
   if [[ -n "${MAILdebugInfo}" ]]; then
     file="${logDirectory}/stacktrace-log-${dateString}.tree"
@@ -558,7 +558,7 @@ executePlanB()
   [[ -n ${MAILFROM} ]] && mailoptions+=" -r ${MAILFROM}"
 
   printLogStatistics ${logSummary} | mail -s "${detector} QA in need of assistance" ${mailoptions} ${mailTo}
-  
+
   return 0
 }
 
@@ -566,7 +566,7 @@ validate()
 {
   summarizeLogs ${1}/* >> ${logSummary}
   logStatus=$?
-  if [[ ${logStatus} -ne 0 ]]; then 
+  if [[ ${logStatus} -ne 0 ]]; then
     echo "WARNING not validated: ${1}"
     detectorStatus="planB"
     return 1
