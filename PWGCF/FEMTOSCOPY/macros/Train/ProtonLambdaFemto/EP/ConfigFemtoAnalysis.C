@@ -12,7 +12,7 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
-#include "AliFemtoEventReaderAODMCTruthChain.h"
+//#include "AliFemtoEventReaderAODMCTruthChain.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
@@ -100,7 +100,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   Reader->SetReadV0(1); //Read V0
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  //Reader->SetReadMC(kTRUE);
+  //  Reader->SetReadMC(kTRUE);
 
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
