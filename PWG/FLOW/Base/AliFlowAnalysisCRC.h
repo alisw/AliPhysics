@@ -73,6 +73,7 @@ public:
  virtual void InitializeArraysForCRCVZ();
  virtual void InitializeArraysForCRCZDC();
  virtual void InitializeArraysForCRCPt();
+ virtual void InitializeArraysForCME();
  
  // 1.) method Init() and methods called within Init():
  virtual void Init();
@@ -96,6 +97,7 @@ public:
  virtual void BookEverythingForCRCVZ();
  virtual void BookEverythingForCRCZDC();
  virtual void BookEverythingForCRCPt();
+ virtual void BookEverythingForCME();
  virtual void StoreIntFlowFlags();
  virtual void StoreDiffFlowFlags();
  virtual void StoreFlagsForDistributions();
@@ -166,6 +168,7 @@ public:
  virtual void CalculateCRCPtCorr();
  virtual void CalculateCRCQVec();
  virtual void CalculateVZvsZDC();
+ virtual void CalculateCME();
  // 2h.) Various
  virtual void FillVarious();
  
@@ -213,6 +216,7 @@ public:
  virtual void FinalizeCRCVZERO();
  virtual void FinalizeCRCZDC();
  virtual void FinalizeCRCPtCorr();
+ virtual void FinalizeCME();
  // 3h.) Various:
  virtual void FinalizeVarious();
  
@@ -232,6 +236,7 @@ public:
  virtual void GetPointersForCRCVZ();
  virtual void GetPointersForCRCZDC();
  virtual void GetPointersForCRCPt();
+ virtual void GetPointersForCME();
  virtual void GetPointersForVarious();
  
  // 5.) other methods:
@@ -628,6 +633,8 @@ public:
  Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
  void SetCalculateCRCPt(Bool_t const cCRC) {this->fCalculateCRCPt = cCRC;};
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
+ void SetCalculateCME(Bool_t const cCRC) {this->fCalculateCME = cCRC;};
+ Bool_t GetCalculateCME() const {return this->fCalculateCME;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -735,7 +742,7 @@ public:
  void SetCRCVZCorrProdTempHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCVZCorrProdTempHist[c][eg][h] = TH;};
  TH1D* GetCRCVZCorrProdTempHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCVZCorrProdTempHist[c][eg][h];};
  
- // CRC VZ:
+ // CRC ZDC:
  // 12.a) EbE Corr:
  void SetCRCZDCCorrPro(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fCRCZDCCorrPro[r][c][eg][h] = TP;};
  TProfile* GetCRCZDCCorrPro(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fCRCZDCCorrPro[r][c][eg][h];};
@@ -774,6 +781,25 @@ public:
  Int_t GetCRCZDCnCR() const {return this->fCRCZDCnCR;};
  Int_t GetCRCZDCnEtaBin() const {return this->fCRCZDCnEtaBin;};
  
+ // CME:
+ void SetCMEList(TList* const TL) {this->fCMEList = TL;};
+ void SetCMERbRList(TList* const TL) {this->fCMERbRList = TL;};
+ void SetCMERunsList(TList* const TL, Int_t r) {this->fCMERunsList[r] = TL;};
+ // EbE Corr:
+ void SetCMECorPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMECorPro[r][eg][h] = TP;};
+ TProfile* GetCMECorPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMECorPro[r][eg][h];};
+ void SetCMECovPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMECovPro[r][eg][h] = TP;};
+ TProfile* GetCMECovPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMECovPro[r][eg][h];};
+ void SetCMENUAPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMENUAPro[r][eg][h] = TP;};
+ TProfile* GetCMENUAPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMENUAPro[r][eg][h];};
+ // 12.b) Final histo:
+ void SetCMECorHist(TH1D* const TH, Int_t const eg, Int_t const h) {this->fCMECorHist[eg][h] = TH;};
+ TH1D* GetCMECorHist(Int_t const eg, Int_t const h) const {return this->fCMECorHist[eg][h];};
+ void SetCMECovHist(TH2D* const TH, Int_t const eg, Int_t const h) {this->fCMECovHist[eg][h] = TH;};
+ TH2D* GetCMECovHist(Int_t const eg, Int_t const h) const {return this->fCMECovHist[eg][h];};
+ void SetCMEDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEDistHist[eg][h][k] = TH;};
+ TH1D* GetCMEDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEDistHist[eg][h][k];};
+
  // 15.) Various
  void SetVariousList(TList* const Various) {this->fVariousList = Various;};
  void SetMultHist(TH1D* const TH) {this->fMultHist = TH;};
@@ -1099,6 +1125,7 @@ private:
  TProfile *fCRCFlags; //! profile to hold all flags for CRC
  Bool_t fCalculateCRC; // calculate CRC
  Bool_t fCalculateCRCPt;
+ Bool_t fCalculateCME;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
@@ -1126,9 +1153,9 @@ private:
  
  TList *fCRCIntRbRList; //! CRC list of histograms RbR
  TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs
- TH1D *fCRCQRe[2][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCQIm[2][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCMult[2][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ TH1D *fCRCQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
  TProfile *fCRCCorrPro[fCRCMaxnRun][2][fCRCnEtaGap][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TH1D *fCRCSumWeigHist[fCRCMaxnRun][2][fCRCnEtaGap][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
  TProfile *fCRCNUATermsPro[fCRCMaxnRun][4][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms profile
@@ -1232,6 +1259,23 @@ private:
  TNtuple *fCRCPtZDCTNt; //! TNtuple test
  THnSparse *fCRCPtEbEQVec; //!
  
+ // CME
+ TList *fCMEList; //! CME List
+ const static Int_t fCMEnCR = 20;
+ const static Int_t fCMEnEtaBin = 1;
+ const static Int_t fCMEnDist = 4;
+ TList *fCMERbRList; //! CRC list of histograms RbR
+ TList *fCMERunsList[fCRCMaxnRun]; //! list of runs
+// TMatrixD *fCRCQZDCRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
+// TMatrixD *fCRCQZDCIm; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
+// TMatrixD *fCRCZDCMult; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
+ TProfile *fCMECorPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+ TProfile *fCMECovPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
+ TProfile *fCMENUAPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+ TH1D *fCMECorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
+ TH2D *fCMECovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
+ TH1D *fCMEDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMEnDist]; //! <<2'>>, [CRCBin][eg]
+
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
  TH1D *fMultHist; //! Multiplicity distribution

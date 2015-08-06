@@ -90,6 +90,7 @@ fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
+fCalculateCME(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
 fUseNUAforCRC(kFALSE),
@@ -191,6 +192,7 @@ fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
+fCalculateCME(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
 fRecenterZDC(kFALSE),
@@ -264,6 +266,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetExactNoRPs(fExactNoRPs);
  fQC->SetCalculateCRC(fCalculateCRC);
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
+ fQC->SetCalculateCME(fCalculateCME);
  fQC->SetUseVZERO(fUseVZERO);
  fQC->SetUseZDC(fUseZDC);
  fQC->SetRecenterZDC(fRecenterZDC);

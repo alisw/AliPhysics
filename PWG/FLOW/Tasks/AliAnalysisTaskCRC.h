@@ -150,6 +150,8 @@ public:
  Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
  void SetCalculateCRCPt(Bool_t const cCRC) {this->fCalculateCRCPt = cCRC;};
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
+ void SetCalculateCME(Bool_t const cCRC) {this->fCalculateCME = cCRC;};
+ Bool_t GetCalculateCME() const {return this->fCalculateCME;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -236,6 +238,7 @@ private:
  // Charge-Eta Asymmetry
  Bool_t fCalculateCRC; // calculate CRC quantities
  Bool_t fCalculateCRCPt;
+ Bool_t fCalculateCME;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
