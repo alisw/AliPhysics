@@ -142,8 +142,10 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fHistoMCConvGammaEta(NULL),
 	fHistoMCPi0Pt(NULL),
 	fHistoMCPi0WOWeightPt(NULL),
+	fHistoMCPi0WOEvtWeightPt(NULL),
 	fHistoMCEtaPt(NULL),
 	fHistoMCEtaWOWeightPt(NULL),
+	fHistoMCEtaWOEvtWeightPt(NULL),
 	fHistoMCPi0InAccPt(NULL),
 	fHistoMCPi0WOWeightInAccPt(NULL),
 	fHistoMCEtaInAccPt(NULL),
@@ -386,8 +388,10 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fHistoMCConvGammaEta(NULL),
 	fHistoMCPi0Pt(NULL),
 	fHistoMCPi0WOWeightPt(NULL),
+	fHistoMCPi0WOEvtWeightPt(NULL),
 	fHistoMCEtaPt(NULL),
 	fHistoMCEtaWOWeightPt(NULL),
+	fHistoMCEtaWOEvtWeightPt(NULL),
 	fHistoMCPi0InAccPt(NULL),
 	fHistoMCPi0WOWeightInAccPt(NULL),
 	fHistoMCEtaInAccPt(NULL),
@@ -1094,6 +1098,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoMCPi0WOWeightInAccPt 		= new TH1F*[fnCuts];
 			fHistoMCEtaInAccPt 				= new TH1F*[fnCuts];
 			fHistoMCEtaWOWeightInAccPt 		= new TH1F*[fnCuts];
+			if (fIsMC == 2){
+				fHistoMCPi0WOEvtWeightPt 		= new TH1F*[fnCuts];
+				fHistoMCEtaWOEvtWeightPt 		= new TH1F*[fnCuts];
+			}	
+
 			
 			fHistoTruePi0InvMassPt 						= new TH2F*[fnCuts];
 			fHistoTrueEtaInvMassPt 						= new TH2F*[fnCuts];
@@ -1241,6 +1250,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fMCList[iCut]->Add(fHistoMCEtaPt[iCut]);
 				fHistoMCEtaWOWeightPt[iCut] = new TH1F("MC_Eta_WOWeights_Pt","MC_Eta_WOWeights_Pt",300,0,30);
 				fMCList[iCut]->Add(fHistoMCEtaWOWeightPt[iCut]);
+				
 				fHistoMCPi0InAccPt[iCut] = new TH1F("MC_Pi0InAcc_Pt","MC_Pi0InAcc_Pt",300,0,30);
 				fHistoMCPi0InAccPt[iCut]->Sumw2();
 				fMCList[iCut]->Add(fHistoMCPi0InAccPt[iCut]);
@@ -1257,6 +1267,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 					fHistoMCEtaWOWeightPt[iCut]->Sumw2();
 					fHistoMCPi0WOWeightInAccPt[iCut]->Sumw2();
 					fHistoMCEtaWOWeightInAccPt[iCut]->Sumw2();
+					fHistoMCPi0WOEvtWeightPt[iCut] = new TH1F("MC_Pi0_WOEventWeights_Pt","MC_Pi0_WOEventWeights_Pt",300,0,30);
+					fMCList[iCut]->Add(fHistoMCPi0WOEvtWeightPt[iCut]);
+					fHistoMCEtaWOEvtWeightPt[iCut] = new TH1F("MC_Eta_WOEventWeights_Pt","MC_Eta_WOEventWeights_Pt",300,0,30);
+					fMCList[iCut]->Add(fHistoMCEtaWOEvtWeightPt[iCut]);
 				}
 				
 				if (fDoMesonQA > 0){
@@ -2824,6 +2838,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 				if(particle->GetPdgCode() == 111){
 					fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
 					fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+					if (fIsMC == 2) fHistoMCPi0WOEvtWeightPt[fiCut]->Fill(particle->Pt()); 
 					if (fDoMesonQA > 0){
 						fHistoMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted*fWeightJetJetMC); // All MC Pi0
 						fHistoMCPi0PtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
@@ -2831,6 +2846,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 				} else if(particle->GetPdgCode() == 221){
 					fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
 					fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+					if (fIsMC == 2) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt()); 
 					if (fDoMesonQA > 0){
 						fHistoMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted*fWeightJetJetMC); // All MC Pi0
 						fHistoMCEtaPtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
@@ -2848,6 +2864,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 						if(particle->GetPdgCode() == 111){
 							fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc
 							fHistoMCPi0WOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Pi0 with gamma in acc wo weight
+							
 						} else if(particle->GetPdgCode() == 221){
 							fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
 							fHistoMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt()*fWeightJetJetMC); // MC Eta with gamma in acc wo weight
@@ -2971,6 +2988,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
 					if(particle->GetPdgCode() == 111){
 						fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
 						fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+						if (fIsMC == 2) fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt()); 
 						if (fDoMesonQA > 0){
 							fHistoMCPi0PtY[fiCut]->Fill(particle->Pt(),mesonY,weighted*fWeightJetJetMC); // All MC Pi0
 							fHistoMCPi0PtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
@@ -2978,6 +2996,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
 					} else if(particle->GetPdgCode() == 221){
 						fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
 						fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+						if (fIsMC == 2) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt()); 
 						if (fDoMesonQA > 0){
 							fHistoMCEtaPtY[fiCut]->Fill(particle->Pt(),mesonY,weighted*fWeightJetJetMC); // All MC Pi0
 							fHistoMCEtaPtAlpha[fiCut]->Fill(particle->Pt(),alpha,fWeightJetJetMC); // All MC Pi0
