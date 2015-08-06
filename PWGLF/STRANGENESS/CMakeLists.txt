@@ -53,6 +53,7 @@ set(SRCS
   Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
+  Cascades/AliAnalysisTaskPPVsMultCrossCheckMC.cxx
   Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
   Correlations/AliAnalysisTaskV0ChCorrelations.cxx
   Cascades/AliAnalysisTaskCheckCascadepp276.cxx
