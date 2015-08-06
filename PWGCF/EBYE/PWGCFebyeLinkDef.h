@@ -65,4 +65,6 @@
 #pragma link C++ class AliAnalysisNetParticleHelper+;
 #pragma link C++ class AliAnalysisTaskNetParticle+;
 
+#pragma link C++ class AliAnalysisTempFluc+;
+
 #endif
