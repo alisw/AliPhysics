@@ -43,6 +43,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 			kSelectSubTriggerClass,             
 			kremovePileUp,                
 			kExtraSignals, 
+			kVertex,
 			kNCuts
 		};
 
@@ -79,6 +80,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		SetSelectSpecialTrigger (Int_t selectSpecialTrigger);
 		Bool_t 		SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
 		Bool_t 		SetRejectExtraSignalsCut (Int_t extraSignal);
+		Bool_t		SetVertexCut(Int_t vertexCut);
 		void		SetTriggerMimicking(Bool_t value) 					{ fMimicTrigger = value									; 
 																		  if(value)AliInfo("enabled trigger mimicking")					; }
 		void 		SetTriggerOverlapRejecion (Bool_t value)			{ fRejectTriggerOverlap = value							; 
@@ -230,6 +232,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Int_t 						fIsHeavyIon;							// flag for heavy ion
 		Int_t 						fDetectorCentrality;					// centrality detecotor V0M or CL1
 		Int_t 						fModCentralityClass;					// allows to select smaller centrality classes
+		Bool_t 						fEnableVertexCut;						// enable vertex cut
 		Double_t 					fMaxVertexZ;							// max z offset of vertex
 		Int_t 						fCentralityMin;							// centrality selection lower bin value
 		Int_t 						fCentralityMax;							// centrality selection upper bin value
@@ -302,7 +305,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t						fRejectTriggerOverlap;					// enable trigger overlap rejections
 	private:
 
-		ClassDef(AliConvEventCuts,12)
+		ClassDef(AliConvEventCuts,13)
 };
 
 
