@@ -23,5 +23,5 @@
 #pragma link C++ class AliJSONDouble+;
 #pragma link C++ class AliJSONBool+;
 #pragma link C++ class AliJSONString+;
-
+#pragma link C++ class AliAnalysisTaskDummy+;
 #endif
