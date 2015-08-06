@@ -82,6 +82,7 @@ fCorrelEventplaneMCDATA(0),
 fCorrelEventplaneDefaultCorrected(0),
 fEventplaneSubtractedPercentage(0),
 fChargeOverPtRuns(0),
+fVZEROMultCentrality(0),
 // cross check for event plane resolution
 fEPDistCent(0),
 fPhiCent(0),
@@ -111,6 +112,9 @@ fVertexZTPCAfterCuts(0),
 fDeltaVertexZGlobalSPDAfterCuts(0),
 fDeltaVertexZGlobalTPCAfterCuts(0),
 fVertexContributorsAfterCuts(0),
+fVertexContributorsAfterCutsCent(0),
+fVertexContributorsAfterCutsSemi(0),
+fVertexContributorsAfterCutsMB(0),
 //global
 fIsMonteCarlo(0),
 fEventNumberForPtSpectra(0),
@@ -154,6 +158,7 @@ fPrefactorLengthInTPCPtDependent(1),
 fCrossCheckCorrelHisto(kFALSE),
 // binning for THnSparse
 fMultNbins(0),
+fMultFineNbins(0),
 fPtNbins(0),
 fPtCorrNbins(0),
 fPtCheckNbins(0),
@@ -165,6 +170,7 @@ fPhiNbins(0),
 fDeltaphiNbins(0),
 fRunNumberNbins(0),
 fBinsMult(0),
+fBinsMultFine(0),
 fBinsPt(0),
 fBinsPtCorr(0),
 fBinsPtCheck(0),
@@ -184,6 +190,7 @@ fBinsRunNumber(0)
   }
   
   fMultNbins = 0;
+  fMultFineNbins = 0;
   fPtNbins = 0;
   fPtCorrNbins = 0;
   fPtCheckNbins = 0;
@@ -195,6 +202,7 @@ fBinsRunNumber(0)
   fDeltaphiNbins = 0;
   fRunNumberNbins = 0;
   fBinsMult = 0;
+  fBinsMultFine = 0;
   fBinsPt = 0;
   fBinsPtCorr = 0;
   fBinsPtCheck = 0;
@@ -235,6 +243,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   //define default binning
   Double_t binsMultDefault[48] = {-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,19.5, 20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5,200.5, 300.5, 400.5, 500.5, 600.5, 700.5, 800.5, 900.5, 1000.5, 2000.5, 3000.5, 4000.5, 5000.5, 6000.5, 7000.5, 8000.5, 9000.5, 10000.5 }; 
+  Double_t binsMultDefaultFine[160] = {	-0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,19.5, 20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5, 110.5, 120.5, 130.5, 140.5, 150.5, 160.5, 170.5, 180.5, 190.5, 200.5, 210.5, 220.5, 230.5, 240.5, 250.5, 260.5, 270.5, 280.5, 290.5, 300.5, 310.5, 320.5, 330.5, 340.5, 350.5, 360.5, 370.5, 380.5, 390.5, 400.5, 410.5, 420.5, 430.5, 440.5, 450.5, 460.5, 470.5, 480.5, 490.5, 500.5, 550.5, 600.5, 650.5, 700.5, 750.5, 800.5, 850.5, 900.5, 950.5, 1000.5, 1050.5, 1100.5, 1150.5, 1200.5, 1250.5, 1300.5, 1350.5, 1400.5, 1450.5, 1500.5, 1550.5, 1600.5, 1650.5, 1700.5, 1750.5, 1800.5, 1850.5, 1900.5, 1950.5, 2000.5, 2050.5, 2100.5, 2150.5, 2200.5, 2250.5, 2300.5, 2350.5, 2400.5, 2450.5, 2500.5, 2550.5, 2600.5, 2650.5, 2700.5, 2750.5, 2800.5, 2850.5, 2900.5, 2950.5, 3000.5, 3050.5, 3100.5, 3150.5, 3200.5, 3250.5, 3300.5, 3350.5, 3400.5, 3450.5, 3500.5, 3550.5, 3600.5, 3650.5, 3700.5, 3750.5, 3800.5, 3850.5, 3900.5, 3950.5, 4000.5, 4050.5, 4100.5, 4150.5, 4200.5, 4250.5, 4300.5, 4350.5, 4400.5, 4450.5, 4500.5, 4550.5, 4600.5, 4650.5, 4700.5, 4750.5, 4800.5, 4850.5, 4900.5, 4950.5, 5000.5};
   Double_t binsPtDefault[82] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 180.0, 200.0};
   Double_t binsPtCorrDefault[51] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 200.0}; 
   Double_t binsEtaDefault[31] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
@@ -255,6 +264,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   // if no binning is set, use the default
   if (!fBinsMult)		{ SetBinsMult(48,binsMultDefault); }
+  if (!fBinsMultFine)	{ SetBinsMultFine(160,binsMultDefaultFine); }
   if (!fBinsPt)			{ SetBinsPt(82,binsPtDefault); }
   if (!fBinsPtCorr)		{ SetBinsPtCorr(51,binsPtCorrDefault); }
   if (!fBinsPtCheck)	{ SetBinsPtCheck(8,binsPtCheckDefault); }
@@ -279,7 +289,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   Double_t maxbinsPhiPtEtaCent[5]={TMath::Pi()/2.,200,1.5,2.*TMath::Pi(),100};
   
   
-  Int_t binsZvMultCent[3]={fZvNbins-1,fMultNbins-1,fCentralityNbins-1};
+  Int_t binsZvMultCent[3]={fZvNbins-1,fMultFineNbins-1,fCentralityNbins-1};
   
   Int_t binsPhiPtCorrEtaCent[4]={fPtCorrNbins-1,fEtaNbins-1,fPhiNbins-1,fCentralityNbins-1};
   Double_t minbinsPhiPtCorrEtaCent[4] = {0.0, -1.5, 0, 0};
@@ -433,7 +443,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   fZvMultCent = new THnSparseF("fZvMultCent","Zv:mult:Centrality",3,binsZvMultCent);
   fZvMultCent->SetBinEdges(0,fBinsZv);
-  fZvMultCent->SetBinEdges(1,fBinsMult);
+  fZvMultCent->SetBinEdges(1,fBinsMultFine);
   fZvMultCent->SetBinEdges(2,fBinsCentrality);
   fZvMultCent->GetAxis(0)->SetTitle("Zv (cm)");
   fZvMultCent->GetAxis(1)->SetTitle("N_{acc}");
@@ -679,6 +689,12 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fChargeOverPtRuns->SetTitle(cChargeOverPtTitle);
   fChargeOverPtRuns->Sumw2();
   
+  fVZEROMultCentrality = new TH2F("fVZEROMultCentrality","fVZEROMultCentrality",3000,0,30000, fCentralityNbins-1, fBinsCentrality);
+  fVZEROMultCentrality->GetXaxis()->SetTitle("VZERO Multiplicity");
+  fVZEROMultCentrality->GetYaxis()->SetTitle("centrality");
+  fVZEROMultCentrality->Sumw2();
+  
+  
   // cross check for event plane resolution
   fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
   fEPDistCent->GetXaxis()->SetTitle("#phi (#Psi_{EP})");
@@ -819,6 +835,29 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fVertexContributorsAfterCuts->GetXaxis()->SetTitle("contributors to primary vertex (with vertex cuts)");
   fVertexContributorsAfterCuts->GetYaxis()->SetTitle("number of events");
   fVertexContributorsAfterCuts->Sumw2();
+  fVertexContributorsAfterCuts->SetMarkerStyle(21);
+  fVertexContributorsAfterCuts->SetMarkerColor(kBlack);
+	
+  fVertexContributorsAfterCutsCent = new TH1F("fVertexContributorsAfterCutsCent","fVertexContributorsAfterCutsCent",3000, 0 ,3000);
+  fVertexContributorsAfterCutsCent->GetXaxis()->SetTitle("contributors to primary vertex (with vertex cuts)");
+  fVertexContributorsAfterCutsCent->GetYaxis()->SetTitle("number of events with central trigger");
+  fVertexContributorsAfterCutsCent->Sumw2();
+  fVertexContributorsAfterCutsCent->SetMarkerStyle(20);
+  fVertexContributorsAfterCutsCent->SetMarkerColor(kBlue);
+	
+  fVertexContributorsAfterCutsSemi = new TH1F("fVertexContributorsAfterCutsSemi","fVertexContributorsAfterCutsSemi",3000, 0 ,3000);
+  fVertexContributorsAfterCutsSemi->GetXaxis()->SetTitle("contributors to primary vertex (with vertex cuts)");
+  fVertexContributorsAfterCutsSemi->GetYaxis()->SetTitle("number of events with semicentral trigger");
+  fVertexContributorsAfterCutsSemi->Sumw2();
+  fVertexContributorsAfterCutsSemi->SetMarkerStyle(20);
+  fVertexContributorsAfterCutsSemi->SetMarkerColor(kRed);
+	
+  fVertexContributorsAfterCutsMB = new TH1F("fVertexContributorsAfterCutsMB","fVertexContributorsAfterCutsMB",3000, 0 ,3000);
+  fVertexContributorsAfterCutsMB->GetXaxis()->SetTitle("contributors to primary vertex (with vertex cuts)");
+  fVertexContributorsAfterCutsMB->GetYaxis()->SetTitle("number of events with MB trigger");
+  fVertexContributorsAfterCutsMB->Sumw2();
+  fVertexContributorsAfterCutsMB->SetMarkerStyle(20);
+  fVertexContributorsAfterCutsMB->SetMarkerColor(kGreen+1);
   
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
@@ -872,6 +911,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fEventplaneSubtractedPercentage);
   
   fOutputList->Add(fChargeOverPtRuns);
+  fOutputList->Add(fVZEROMultCentrality);
   
   fOutputList->Add(fEPDistCent);
   fOutputList->Add(fPhiCent);
@@ -905,6 +945,10 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fDeltaVertexZGlobalSPDAfterCuts);
   fOutputList->Add(fDeltaVertexZGlobalTPCAfterCuts);
   fOutputList->Add(fVertexContributorsAfterCuts);
+  
+  fOutputList->Add(fVertexContributorsAfterCutsCent);
+  fOutputList->Add(fVertexContributorsAfterCutsSemi);
+  fOutputList->Add(fVertexContributorsAfterCutsMB);
   
   StoreCutSettingsToHistogram();
   
@@ -1201,11 +1245,22 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   fDeltaVertexZGlobalSPDAfterCuts->Fill(dEventZv - dEventZvSPD);
   fDeltaVertexZGlobalTPCAfterCuts->Fill(dEventZv - dEventZvTPC);
   fVertexContributorsAfterCuts->Fill(eventAOD->GetPrimaryVertex()->GetNContributors());
+  if(bIsEventSelectedCentral) { fVertexContributorsAfterCutsCent->Fill(eventAOD->GetPrimaryVertex()->GetNContributors()); }
+  if(bIsEventSelectedSemi) { fVertexContributorsAfterCutsSemi->Fill(eventAOD->GetPrimaryVertex()->GetNContributors()); }
+  if(bIsEventSelectedMB) { fVertexContributorsAfterCutsMB->Fill(eventAOD->GetPrimaryVertex()->GetNContributors()); }
   
   // count all events, which are within zv distribution
   fAllEventStatisticsCentrality->Fill(dCentrality/*, nTriggerFired*/);
   
   fEventStatistics->Fill("after Zv cut",1);
+  
+  Double_t dTotMultVZERO = -1.;
+  for(Int_t iVZERObin = 0; iVZERObin < 64; iVZERObin++)
+  {
+	dTotMultVZERO += eventAOD->GetVZEROEqMultiplicity(iVZERObin);
+  }
+  fVZEROMultCentrality->Fill(dTotMultVZERO, dCentrality);
+
   
   dTrackZvPtEtaCent[0] = dEventZv;
   
