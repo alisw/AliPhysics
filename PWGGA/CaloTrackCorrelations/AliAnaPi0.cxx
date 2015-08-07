@@ -2068,10 +2068,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   // If less than photon 2 entries in the list, skip this event
   if ( nPhot < 2 )
   {
-    AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentrality()));
+    AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentralityBin()));
     
-    if(GetNCentrBin() > 1)
-        fhCentralityNoPair->Fill(GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(), GetEventWeight());
+    if ( GetNCentrBin() > 1 && IsHighMultiplicityAnalysisOn() )
+        fhCentralityNoPair->Fill(GetEventCentralityBin(), GetEventWeight());
     
     return ;
   }
@@ -2089,7 +2089,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //Int_t curVzBin        = GetEventVzBin();
   //Int_t curRPBin        = GetEventRPBin();
   Int_t eventbin        = GetEventMixBin();
-  
+    
   if(eventbin > GetNCentrBin()*GetNZvertBin()*GetNRPBin())
   {
     AliWarning(Form("Mix Bin not expected: cen bin %d, z bin %d, rp bin %d, total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f",
