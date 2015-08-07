@@ -9,7 +9,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Double_t etaMax=0.8,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
-                             TString TPCMultOut="2010",
+                             TString sDataSet="2010",
                              TString EvTrigger="MB",
                              Bool_t bCalculateCME=kFALSE,
                              Bool_t bCalculateCRCPt=kFALSE,
@@ -21,7 +21,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Bool_t bUseVZEROCalib=kFALSE,
                              Bool_t bUseZDC=kFALSE,
                              Bool_t bRecenterZDC=kFALSE,
-                             TString sMultWeight="TPCmVZuZDCu",
+                             TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bDivSigma=kTRUE,
                              Bool_t bZDCMCCen=kTRUE,
                              Bool_t bInvertZDC=kFALSE,
@@ -99,11 +99,11 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskFEname += suffix;
  // create instance of the class
  Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
- AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA, TPCMultOut);
+ AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
  taskFE->SetCentralityRange(centrMin,centrMax);
  taskFE->SetCentralityEstimator(sCentrEstimator);
  taskFE->SetUseMCCen(bZDCMCCen);
- taskFE->SetRunSet(TPCMultOut);
+ taskFE->SetDataSet(sDataSet);
  taskFE->SetQAOn(bCutsQA);
  // set the analysis type
  TString analysisType = "AUTOMATIC";
@@ -138,9 +138,9 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   cutsEvent->SetQA(bEventCutsQA);
   // explicit multiplicity outlier cut
   cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-  if (TPCMultOut == "2011")
+  if (sDataSet == "2011")
    cutsEvent->SetLHC11h(kTRUE);
-  else if (TPCMultOut == "2010")
+  else if (sDataSet == "2010")
    cutsEvent->SetLHC10h(kTRUE);
  }
  
@@ -170,9 +170,9 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  if (analysisTypeUser == "AOD") {
   // Track cuts for RPs
   if(bUseVZERO) {
-   if (TPCMultOut == "2011")
+   if (sDataSet == "2011")
     cutsRP->SetParamType(AliFlowTrackCuts::kDeltaVZERO);
-   else if (TPCMultOut == "2010")
+   else if (sDataSet == "2010")
     cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
    cutsRP->SetEtaRange(-10.,+10.);
    cutsRP->SetEtaGap(-1.,1.);
@@ -251,7 +251,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  // set number of centrality bins
  taskQC->SetnCenBin(nCenBin);
  taskQC->SetCenBinWidth(CenBinWidth);
- taskQC->SetRunSet(TPCMultOut);
+ taskQC->SetDataSet(sDataSet);
  // set thei triggers
  if (EvTrigger == "Cen")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -281,7 +281,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bInvertZDC);
- taskQC->SetMultWeight(sMultWeight);
+ taskQC->SetCorrWeight(sCorrWeight);
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {

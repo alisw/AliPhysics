@@ -54,10 +54,18 @@ class AliFlowAnalysisCRC : public TNamed {
 public:
  AliFlowAnalysisCRC(const char* name="AliFlowAnalysisCRC",
                     Int_t nCen=7,
-                    Double_t CenWidth=10.,
-                    TString RunSet="2010");
+                    Double_t CenWidth=10.);
  virtual ~AliFlowAnalysisCRC();
  
+ enum CorrelationWeights { kMultiplicity,
+                           kUnit
+                          };
+
+ enum DataSet { k2010,
+                k2011,
+                kAny
+               };
+
  // 0.) methods called in the constructor:
  virtual void InitializeArraysForIntFlow();
  virtual void InitializeArraysForDiffFlow();
@@ -93,6 +101,7 @@ public:
  virtual void BookEverythingForMixedHarmonics();
  virtual void BookEverythingForControlHistograms();
  virtual void BookEverythingForBootstrap();
+ virtual void SetRunList();
  virtual void BookEverythingForCRC();
  virtual void BookEverythingForCRCVZ();
  virtual void BookEverythingForCRCZDC();
@@ -808,8 +817,14 @@ public:
  TH1D* GetCenHist() const {return this->fCenHist;}
  void SetRunNumber(Int_t const n) {this->fRunNum = n;};
  Int_t GetRunNumber() const {return this->fRunNum;}
- void SetMultWeight(TString const n) {this->fMultWeight = n;};
- TString GetMultWeight() const {return this->fMultWeight;};
+ void SetDataSet(DataSet set) {this->fDataSet = set;};
+ DataSet GetDataSet() const {return this->fDataSet;}
+ void SetCorrWeightTPC(CorrelationWeights weights) {this->fCorrWeightTPC = weights;};
+ CorrelationWeights GetCorrWeightTPC() const {return this->fCorrWeightTPC;};
+ void SetCorrWeightVZ(CorrelationWeights weights) {this->fCorrWeightVZ = weights;};
+ CorrelationWeights GetCorrWeightVZ() const {return this->fCorrWeightVZ;};
+ void SetCorrWeightZDC(CorrelationWeights weights) {this->fCorrWeightZDC = weights;};
+ CorrelationWeights GetCorrWeightZDC() const {return this->fCorrWeightZDC;};
  
 private:
  
@@ -1137,9 +1152,11 @@ private:
  Double_t fCRCEtaMax;
  Int_t fRunNum;
  Int_t fCachedRunNum;
- TString fMultWeight;
  Int_t fRunBin;
  Int_t fCenBin;
+ CorrelationWeights fCorrWeightTPC;
+ CorrelationWeights fCorrWeightVZ;
+ CorrelationWeights fCorrWeightZDC;
  
  TList *fCRCIntList; //! list to hold CRC histograms
  const static Int_t fCRCnCR = 16;
@@ -1173,8 +1190,8 @@ private:
 // const static Int_t fCRCnRun = 92;
  const static Int_t fCRCQVecnCR = 64;
  Int_t fCRCnRun;
- TString fRunSet;
- Int_t *fRunList;     //! Run list
+ DataSet fDataSet;
+ TArrayI fRunList;    // Run list
  TList *fCRCQVecList; //! Q Vectors list
  TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
  TList *fCRCQVecWeightsList; //! Weights for Q Vectors
@@ -1226,15 +1243,16 @@ private:
  // CRCZDC
  TList *fCRCZDCList; //! ZDCERO CRC List
  const static Int_t fCRCZDCnCR = 13;
- const static Int_t fCRCZDCnEtaBin = 7;
+ const static Int_t fCRCZDCnEtaBin = 5;
  TList *fCRCZDCRbRList; //! CRC list of histograms RbR
+ AliFlowVector* fZDCFlowVect; //!
+ TH1D *fCRCZDCQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCZDCQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCZDCMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
  TList *fCRCZDCRunsList[fCRCMaxnRun]; //! list of runs
- TMatrixD *fCRCQZDCRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
- TMatrixD *fCRCQZDCIm; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
- TMatrixD *fCRCZDCMult; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
  TProfile *fCRCZDCCorrPro[fCRCMaxnRun][2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCRCZDCCorrProd2p2pHist[fCRCMaxnRun][2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
- TProfile *fCRCZDCNUAPro[fCRCMaxnRun][2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+ TProfile *fCRCZDCNUAPro[fCRCMaxnRun][4][fCRCZDCnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TH1D *fCRCZDCCorrProdTempHist[2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! temporary correlation products for covariances, [CRCBin][eg]
  TH1D *fCRCZDCCorrHist[2][fCRCZDCnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
  TH1D *fCRCZDCCFunHist[fCRCZDCnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
@@ -1266,9 +1284,6 @@ private:
  const static Int_t fCMEnDist = 4;
  TList *fCMERbRList; //! CRC list of histograms RbR
  TList *fCMERunsList[fCRCMaxnRun]; //! list of runs
-// TMatrixD *fCRCQZDCRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
-// TMatrixD *fCRCQZDCIm; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
-// TMatrixD *fCRCZDCMult; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
  TProfile *fCMECorPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCMECovPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
  TProfile *fCMENUAPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]

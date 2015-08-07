@@ -173,10 +173,10 @@ public:
  Int_t GetnCenBin() const {return this->fnCenBin;};
  void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
  Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
- void SetRunSet(TString const n) {this->fRunSet = n;};
- TString GetRunSet() const {return this->fRunSet;};
- void SetMultWeight(TString const n) {this->fMultWeight = n;};
- TString GetMultWeight() const {return this->fMultWeight;};
+ void SetDataSet(TString const n) {this->fDataSet = n;};
+ TString GetDataSet() const {return this->fDataSet;};
+ void SetCorrWeight(TString const n) {this->fCorrWeight = n;};
+ TString GetCorrWeight() const {return this->fCorrWeight;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -250,8 +250,8 @@ private:
  Double_t fCRCEtaMax;
  Int_t fnCenBin;
  Double_t fCenBinWidth;
- TString fRunSet;
- TString fMultWeight;
+ TString fDataSet;
+ TString fCorrWeight;
  TList *fQVecList;           // list with weights
  
  ClassDef(AliAnalysisTaskCRC, 2);

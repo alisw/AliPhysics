@@ -44,7 +44,7 @@ public:
  
  enum kAnalysisInput{kESD=1, kAOD=2};
  AliAnalysisTaskCRCZDC();
- AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, TString RunSet="2010", UInt_t seed=666, Bool_t bCandidates=kFALSE);
+ AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, TString DataSet="2010", UInt_t seed=666, Bool_t bCandidates=kFALSE);
  virtual ~AliAnalysisTaskCRCZDC();
  virtual void InitializeRunArrays();
  
@@ -131,7 +131,7 @@ public:
  void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
   fCentrUpLim=centrup;}
  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
- void SetRunSet(TString RunSet) {fRunSet = RunSet;}
+ void SetDataSet(TString DataSet) {fDataSet = DataSet;}
  
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -280,7 +280,7 @@ private:
  const static Int_t fCRCMaxnRun = 211;
  const static Int_t fCRCnTow = 8;
  Int_t fCRCnRun;
- TString fRunSet;
+ TString fDataSet;
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
  TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
