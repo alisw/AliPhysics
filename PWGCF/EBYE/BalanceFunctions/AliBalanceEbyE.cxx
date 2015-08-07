@@ -472,8 +472,16 @@ void AliBalanceEbyE::CalculateBalance(Double_t gReactionPlane,
       for(Int_t iEta = 0; iEta < fHistBFSum->GetNbinsY(); iEta++){
 	for(Int_t iPhi = 0; iPhi < fHistBFSum->GetNbinsZ(); iPhi++){
 	  
-	  fHistBFSum->SetBinContent(iCent+1,iEta+1,iPhi+1,fHistBF->GetBinContent(iEta+1,iPhi+1));
-	  fHistBFSum->SetBinError(iCent+1,iEta+1,iPhi+1,fHistBF->GetBinError(iEta+1,iPhi+1));
+	  Double_t oldContent   = fHistBFSum->GetBinContent(iCent+1,iEta+1,iPhi+1);
+	  Double_t eventContent = fHistBF->GetBinContent(iEta+1,iPhi+1);
+	  Double_t newContent   = oldContent + eventContent;
+
+	  Double_t oldError     = fHistBFSum->GetBinError(iCent+1,iEta+1,iPhi+1);
+	  Double_t eventError   = fHistBF->GetBinError(iEta+1,iPhi+1);
+	  Double_t newError     = TMath::Sqrt(oldError*oldError + eventError*eventError);
+
+	  fHistBFSum->SetBinContent(iCent+1,iEta+1,iPhi+1,newContent);
+	  fHistBFSum->SetBinError(iCent+1,iEta+1,iPhi+1,newError);
 	  
 	}
       }
