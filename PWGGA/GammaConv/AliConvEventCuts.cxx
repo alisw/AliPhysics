@@ -1868,7 +1868,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 			delete triggerSmearing;
 		}	
 		
-		cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
+// 		cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
 		
 		Int_t nclus = 0;
 		nclus = fInputEvent->GetNumberOfCaloClusters();
@@ -1912,7 +1912,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 				delete triggerSmearing;
 			}	
 			
-			cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
+// 			cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
 			
 			Int_t nclus = 0;
 			nclus = fInputEvent->GetNumberOfCaloClusters();
@@ -1949,7 +1949,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 				threshold = triggerSmearing->GetRandom();
 				delete triggerSmearing;
 			}				
-			cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
+// 			cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
 			
 			Int_t nclus = 0;
 			nclus = fInputEvent->GetNumberOfCaloClusters();
