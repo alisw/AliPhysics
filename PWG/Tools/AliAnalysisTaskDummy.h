@@ -15,7 +15,6 @@ public:
   virtual ~AliAnalysisTaskDummy();
 
   virtual void UserCreateOutputObjects() {}
-  virtual Bool_t UserNotify();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *) {}
 
