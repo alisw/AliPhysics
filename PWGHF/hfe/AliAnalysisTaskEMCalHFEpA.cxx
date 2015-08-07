@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: July 13th, 2015.								      //
+	//		version: August 07, 2015.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -203,6 +203,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTOF03(0)
 ,fpid(0)
 ,fEoverP_pt_true_electrons(0)
+,fEoverP_pt_true_HFE(0)
+,fEoverP_pt_not_HFE(0)
+
 ,fEoverP_ntracks_matched(0)
 
 ,fEoverP_ncells(0)
@@ -551,6 +554,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTOF03(0)
 ,fpid(0)
 ,fEoverP_pt_true_electrons(0)
+,fEoverP_pt_true_HFE(0)
+,fEoverP_pt_not_HFE(0)
+
 ,fEoverP_ntracks_matched(0)
 ,fEoverP_ncells(0)
 
@@ -580,6 +586,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 
 ,fEoverP_pt_true_hadrons(0)
 ,fEoverP_pt_true_electrons0(0)
+
 ,fEoverP_pt_true_hadrons0(0)
 ,fEoverP_pt(0)
 ,fEoverP_tpc(0)
@@ -1132,6 +1139,12 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fEoverP_pt_true_electrons = new TH2F("fEoverP_pt_true_electrons",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
 	fOutputList->Add(fEoverP_pt_true_electrons);
 	
+	fEoverP_pt_true_HFE = new TH2F("fEoverP_pt_true_HFE",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_true_HFE);
+	
+	fEoverP_pt_not_HFE = new TH2F("fEoverP_pt_not_HFE",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_not_HFE);
+	
 	fEoverP_ntracks_matched = new TH2F("fEoverP_ntracks_matched",";E/p (GeV/c);NTracksMatched ",200,0,2,10,0,10);
 	fOutputList->Add(fEoverP_ntracks_matched);
 	
@@ -1552,12 +1565,12 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 
 		
-		fPtMCpi0 = new TH1F("fPtMCpi0",";p_{t} (GeV/c);Count",200,0,30);
-		fPtMCeta = new TH1F("fPtMCeta",";p_{T} (GeV/c);Count",200,0,30);
-		fPtMCpi02 = new TH1F("fPtMCpi02",";p_{t} (GeV/c);Count",200,0,30);
-		fPtMCeta2 = new TH1F("fPtMCeta2",";p_{T} (GeV/c);Count",200,0,30);
-		fPtMCpi03 = new TH1F("fPtMCpi03",";p_{t} (GeV/c);Count",200,0,30);
-		fPtMCeta3 = new TH1F("fPtMCeta3",";p_{T} (GeV/c);Count",200,0,30);
+		fPtMCpi0 = new TH1F("fPtMCpi0",";p_{t} (GeV/c);Count",2000,0,100);
+		fPtMCeta = new TH1F("fPtMCeta",";p_{T} (GeV/c);Count",2000,0,100);
+		fPtMCpi02 = new TH1F("fPtMCpi02",";p_{t} (GeV/c);Count",2000,0,100);
+		fPtMCeta2 = new TH1F("fPtMCeta2",";p_{T} (GeV/c);Count",2000,0,100);
+		fPtMCpi03 = new TH1F("fPtMCpi03",";p_{t} (GeV/c);Count",2000,0,100);
+		fPtMCeta3 = new TH1F("fPtMCeta3",";p_{T} (GeV/c);Count",2000,0,100);
 		
 		fPtMC_EMCal_All= new TH1F("fPtMC_EMCal_All",";p_{t} (GeV/c);Count",200,0,40);
 		fPtMC_EMCal_Selected= new TH1F("fPtMC_EMCal_Selected",";p_{t} (GeV/c);Count",200,0,40);
@@ -3677,6 +3690,28 @@ if(!fIspp){
 									if( TMath::Abs(pdg) == 11){		
 										fEoverP_pt_true_electrons->Fill(fPt,(fClus->E() / fP));
 									}
+									
+									
+									
+									//==============
+									//true HFE electrons
+									Bool_t MotherFound = FindMother(track->GetLabel());
+									if(MotherFound){
+										
+										if(fIsHFE1){ 
+											if( TMath::Abs(pdg) == 11){		
+												fEoverP_pt_true_HFE->Fill(fPt,(fClus->E() / fP));
+											}
+										}
+										if(!fIsHFE1){ 
+											if( TMath::Abs(pdg) == 11){		
+												fEoverP_pt_not_HFE->Fill(fPt,(fClus->E() / fP));
+											}
+										}
+										
+									}
+									//==============
+									
 								}
 								
 								
@@ -3702,6 +3737,29 @@ if(!fIspp){
 								if( TMath::Abs(pdg) == 11){
 									fEoverP_pt_true_electrons->Fill(fPt,(fClus->E() / fP));
 								}
+								
+								
+								//==============
+								//true HFE electrons
+								Bool_t MotherFound = FindMother(track->GetLabel());
+								if(MotherFound){
+									
+									if(fIsHFE1){ 
+										if( TMath::Abs(pdg) == 11){		
+											fEoverP_pt_true_HFE->Fill(fPt,(fClus->E() / fP));
+										}
+									}
+									if(!fIsHFE1){ 
+										if( TMath::Abs(pdg) == 11){		
+											fEoverP_pt_not_HFE->Fill(fPt,(fClus->E() / fP));
+										}
+									}
+									
+								}
+								//==============
+
+								
+								
 							}
 
 							
