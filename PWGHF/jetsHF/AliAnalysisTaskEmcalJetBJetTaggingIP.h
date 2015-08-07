@@ -18,11 +18,13 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 class AliHFJetsTagging;
+class AliRDHFJetsCuts;
+
+class AliAnalysisUtils;
 class TRandom3;
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliHFJetsTagging.h"
-
 class AliAnalysisTaskEmcalJetBJetTaggingIP : public AliAnalysisTaskEmcalJet {
 public:
   enum ExendedEFlavourTag{kBeautyJet = 1<<7,kCharmJet  = 1<<8,kLFgJet    = 1<<9};
@@ -41,9 +43,20 @@ public:
   void   SetDoTrackQAConstituent(Bool_t val = kTRUE){fIsTrackQAConstituent=val;};
   void   SetUseCorrectedPt(Bool_t val = kTRUE){fUseCorrectedJetPt=val;};
   void   SetDoBackgroundFluctuations(Bool_t val = kTRUE){fDoRandomCones=val;};  
+  void   SetEventSelectionMethod(int i = 0){fUseEventSelection=i;};
+  void   SetJetSelectionMethod(int i = 0){fUseJetSelection=i;};
+  void   SetJetTaggerMCMethod(int i = 0){fUseMCTagger=i;};
+  virtual AliRDHFJetsCuts * GetJetCutsHF();
 protected:
   virtual Bool_t IsEventSelected();
+  virtual Bool_t IsEventSelectedLegacy( AliAODEvent * aev);
+  virtual Bool_t IsEventSelectedpA( AliAODEvent * aev);
+  virtual Bool_t IsEventSelectedpp( AliAODEvent * aev);
+  virtual Bool_t IsEventSelectedHF( AliAODEvent * aev);
+
   virtual Bool_t IsJetSelected(const AliEmcalJet * jet);
+  virtual Bool_t IsJetSelectedLegacy(const AliEmcalJet * jet);
+  virtual Bool_t IsJetSelectedHF(const AliEmcalJet * jet);
   virtual Bool_t AddTagJet(AliEmcalJet * jet);
   virtual Bool_t IsQuality(const AliAODTrack *track ,EQualityClass qclass );
   virtual Bool_t IsV0DaughterRadius(const AliAODTrack *track ,Double_t &Radius);
@@ -51,11 +64,13 @@ protected:
   virtual Double_t GetPtCorrected(const AliEmcalJet * jet);
   // Jet containers
   AliJetContainer            *fJetsCont;                   //!Jets
-  AliJetContainer            *fJetsContMC;                   //!Jets MC
+  AliJetContainer            *fJetsContMC;                 //!Jets MC
   AliParticleContainer       *fTracksCont;                 //!Tracks
   AliHFJetsTagging           *fTaggingHFClass;             //!Helper
   AliHFJetTaggingIP          *fTrackCountingTagger;        //!Track counting class
-  TRandom3                   *fRandom; //! Random cone input
+  TRandom3                   *fRandom;                     //! Random cone input
+  AliAnalysisUtils           *fUtils;                      //! AliAnlalysisUtils helper object;
+  AliRDHFJetsCuts            *fJetCutsHF;                  // HF jet cuts
 private:
   TClonesArray * fMCparticles; //! Monte Carlo particle stack 
   Bool_t fIsMC;// Is Monte Carlo Event
@@ -63,10 +78,18 @@ private:
   Bool_t fIsTrackQAConstituent;// Run constituent track QA for analysis note plots
   Bool_t fUseCorrectedJetPt;// Subtract average rho
   Bool_t fDoRandomCones;//Get fluctuations
+  Int_t  fUseEventSelection;// Event selection method
+  Int_t  fUseJetSelection;// Jet selection method
+  Int_t  fUseMCTagger;// MC tagger method selection
+
   //Histograms
+
+
   TH1 * fhist_Events;//! Event selection statistics
   TH2 * fhist_Jets;//!   Jet selection statistics
   TH2 * fhist_MonteCarloFlavour;//!
+  TH2 * fhists_SPD_cluster_vs_tracklet_correlation;//! monitor_plot_for pileup rejection
+  TH2 * fhists_SPD_cluster_vs_tracklet_correlation_PostSelection;//! monitor_plot_for pileup rejection
   TH2 * fhist_Tracks_Eta_Phi;//! Regular hybrid tracks
   TH2 * fhist_Tracks_Eta_Phi_Bit4;//! Regular ITS tracks
   TH2 * fhist_Tracks_Eta_Phi_Bit9;//! Regular complementary tracks
@@ -94,7 +117,7 @@ private:
   AliAnalysisTaskEmcalJetBJetTaggingIP &operator=(const AliAnalysisTaskEmcalJetBJetTaggingIP&); // not implemented
 
 
-  ClassDef(AliAnalysisTaskEmcalJetBJetTaggingIP,100) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalJetBJetTaggingIP,101) // jet sample analysis task
 };
 #endif
 
