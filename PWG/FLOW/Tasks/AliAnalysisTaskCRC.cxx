@@ -97,11 +97,11 @@ fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
-fnCenBin(7),
+fnCenBin(10),
 fCenBinWidth(10.),
 fQVecList(NULL),
-fRunSet("2010"),
-fMultWeight("TPCmVZuZDCu")
+fDataSet(""),
+fCorrWeight("TPCuVZuZDCu")
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -202,7 +202,11 @@ fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
-fQVecList(NULL)
+fnCenBin(10),
+fCenBinWidth(10.),
+fQVecList(NULL),
+fDataSet(""),
+fCorrWeight("TPCuVZuZDCu")
 {
  // Dummy constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC()");
@@ -243,7 +247,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  AliDebug(2,"AliAnalysisTaskCRC::UserCreateOutputObjects()");
  
  // Analyser:
- fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth);
  
  // Common:
  fQC->SetBookOnlyBasicCCH(fBookOnlyBasicCCH);
@@ -264,6 +268,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow);
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances);
  fQC->SetExactNoRPs(fExactNoRPs);
+ if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
+ if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
  fQC->SetCalculateCRC(fCalculateCRC);
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
  fQC->SetCalculateCME(fCalculateCME);
@@ -275,7 +281,12 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
- fQC->SetMultWeight(fMultWeight);
+ if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
+ else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
+ if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);
+ else if(fCorrWeight.Contains("VZm"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kMultiplicity);
+ if(fCorrWeight.Contains("ZDCu")) fQC->SetCorrWeightZDC(AliFlowAnalysisCRC::kUnit);
+ else if(fCorrWeight.Contains("ZDCm")) fQC->SetCorrWeightZDC(AliFlowAnalysisCRC::kMultiplicity);
  // Multiparticle correlations vs multiplicity:
  fQC->SetnBinsMult(fnBinsMult);
  fQC->SetMinMult(fMinMult);
@@ -370,7 +381,10 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
  //accessing the merged output list:
  fListHistos = (TList*)GetOutputData(1);
  
- fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth);
+ if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
+ if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
+ fQC->SetRunList();
  
  if(fListHistos) {
   fQC->GetOutputHistograms(fListHistos);

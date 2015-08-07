@@ -106,6 +106,10 @@ fMinA(-1.0),
 fMaxA(-0.01),
 fMinB(0.01),
 fMaxB(1.0),
+fGenHeader(NULL),
+fPythiaGenHeader(NULL),
+fHijingGenHeader(NULL),
+fFlowTrack(NULL),
 fQAon(kFALSE),
 fLoadCandidates(kFALSE),
 fNbinsMult(10000),
@@ -183,12 +187,8 @@ fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
-fRunSet("2010"),
 fCRCnRun(0),
-fGenHeader(NULL),
-fPythiaGenHeader(NULL),
-fHijingGenHeader(NULL),
-fFlowTrack(NULL)
+fDataSet("2010")
 {
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
@@ -221,7 +221,7 @@ fFlowTrack(NULL)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, TString RunSet, UInt_t iseed, Bool_t bCandidates):
+AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, TString DataSet, UInt_t iseed, Bool_t bCandidates):
 AliAnalysisTaskSE(name),
 fAnalysisType("AUTOMATIC"),
 fRPType(RPtype),
@@ -315,7 +315,7 @@ fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
 fhZPApmcLR(0x0),
-fRunSet(RunSet),
+fDataSet(DataSet),
 fCRCnRun(0),
 fGenHeader(NULL),
 fPythiaGenHeader(NULL),
@@ -618,15 +618,15 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  
  Int_t dRun11h[] = {167902, 167903, 167915, 167920, 167985, 167987, 167988, 168066, 168068, 168069, 168076, 168104, 168105, 168107, 168108, 168115, 168212, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168461, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 169965, 170027, 170036,170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593};
  
- if(fRunSet.EqualTo("2010")) {fCRCnRun=92;}
- if(fRunSet.EqualTo("2011")) {fCRCnRun=119;}
- if(fRunSet.EqualTo("MCkine")) {fCRCnRun=1;}
+ if(fDataSet.EqualTo("2010")) {fCRCnRun=92;}
+ if(fDataSet.EqualTo("2011")) {fCRCnRun=119;}
+ if(fDataSet.EqualTo("MCkine")) {fCRCnRun=1;}
  
  Int_t d=0;
  for(Int_t r=0; r<fCRCnRun; r++) {
-  if(fRunSet.EqualTo("2010"))   fRunList[d] = dRun10h[r];
-  if(fRunSet.EqualTo("2011"))   fRunList[d] = dRun11h[r];
-  if(fRunSet.EqualTo("MCkine")) fRunList[d] = 1;
+  if(fDataSet.EqualTo("2010"))   fRunList[d] = dRun10h[r];
+  if(fDataSet.EqualTo("2011"))   fRunList[d] = dRun11h[r];
+  if(fDataSet.EqualTo("MCkine")) fRunList[d] = 1;
   d++;
  }
 
@@ -652,10 +652,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  // Execute analysis for current event:
  AliMCEvent*  McEvent = MCEvent();
  AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
- AliMultiplicity* myTracklets = NULL;
- AliESDPmdTrack* pmdtracks = NULL;//pmd
- 
- int availableINslot=1;
+// AliMultiplicity* myTracklets = NULL;
+// AliESDPmdTrack* pmdtracks = NULL;
+// int availableINslot=1;
  
  if (!(fCutsRP&&fCutsPOI&&fCutsEvent)) {
   AliError("cuts not set");
@@ -697,11 +696,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   }
   
   Int_t nTracks = McEvent->GetNumberOfTracks();
-  Int_t nPrimTr = McEvent->GetNumberOfPrimaries();
+//  Int_t nPrimTr = McEvent->GetNumberOfPrimaries();
   
   //loop over tracks
-  for (Int_t itrkN=0; itrkN<nTracks; itrkN++)
-  {
+  for (Int_t itrkN=0; itrkN<nTracks; itrkN++) {
    //get input particle
    AliMCParticle* pParticle = dynamic_cast<AliMCParticle*>(McEvent->GetTrack(itrkN));
    if (!pParticle) continue;
@@ -881,7 +879,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    if(fRunList[c]==RunNum) RunBin=bin;
    else bin++;
   }
-  if(fRunSet.EqualTo("MCkine")) RunBin=0;
+  if(fDataSet.EqualTo("MCkine")) RunBin=0;
   if(RunBin!=-1) {
    for(Int_t i=0; i<4; i++){
     if(towZNC[i+1]>0.) {
