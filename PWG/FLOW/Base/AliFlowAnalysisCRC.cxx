@@ -19340,7 +19340,7 @@ void AliFlowAnalysisCRC::FinalizeCRCZDC()
        SumWeigSq += sumw2;
        
        if(fNUAforCRC) {
-        Int_t NUAbin[2] = {0.,0.};
+        Int_t NUAbin[2] = {0,0};
         if (i==0) { NUAbin[0] = 0; NUAbin[1] = 1; }
         else      { NUAbin[0] = 2; NUAbin[1] = 3; }
         Double_t NA = fCRCZDCNUAPro[r][NUAbin[0]][eg][h]->GetBinContent(c);
