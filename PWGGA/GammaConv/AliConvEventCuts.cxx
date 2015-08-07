@@ -1815,13 +1815,21 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 									197469, 197692 	 			  // LHC13g
 	};
 	
-	Double_t thresholdEMCalL0[34] = {2.11, 3.43, 1.71, 2.05,   // LHC11a
-									 3.43, 1.94,				  // LHC11a		
-									 3.39, 4.01, 5.25, 5.5, 	  // LHC11b, LHC11c, LHC11d
+	Double_t thresholdEMCalL0[34] = {2.11, 3.43, 1.71, 2.05,   // LHC11a 7 TeV
+									 3.43, 				  // LHC11a	2.76TeV
+									 1.94, 3.39, 4.01, 5.25, 5.5, 	  // LHC11b, LHC11c, LHC11d
 									 2.05, 5.50, 2.05, 5.50, 2.05, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71,
 									 2.01, 1.75, 1.52, 2.01, 1.52, 2.01,      
 									 3.02,
 									 2.01 
+	};
+	Double_t spreadEMCalL0[34] = 	{0., 0., 0, 0,   // LHC11a 7TeV
+									 0.7, 				  // LHC11a 2.76TeV		
+									 0., 0., 0., 0., 0., 	  // LHC11b, LHC11c, LHC11d
+									 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+									 0., 0., 0., 0., 0., 0.,      
+									 0.1,
+									 0.1 
 	};
 
 	Int_t runRangesEMCalL1[4] = {   179796, 					  // LHC12c-i
@@ -1829,14 +1837,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 									197469, 197692 	 			  // LHC13g
 	};
 	
-	Double_t thresholdEMCalL1[3] = { 8.398, 6, 4.91};
+	Double_t thresholdEMCalL1[3] = { 8.398, 6, 6.};
+	Double_t spreadEMCalL1[3] = { 0., 0., 0.4};
 	
 	Int_t runRangesEMCalL1G2[3] = { 195180,						  // LHC13b-f	
 									197469, 197692 	 			  // LHC13g
 	};
 	
-	Double_t thresholdEMCalL1G2[2] = { 4, 3.23};
-
+	Double_t thresholdEMCalL1G2[2] = { 4, 3.9};
+	Double_t spreadEMCalL1G2[2] = { 0, 0.2};
+	
 	Int_t runnumber = fInputEvent->GetRunNumber();	
 	
 	if (fSpecialTrigger == 5 ){
@@ -1848,7 +1858,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 		}
 		if (binRun==34) return kFALSE;
 		Double_t threshold = thresholdEMCalL0[binRun];
-// 		cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
+		
+		if (spreadEMCalL0[binRun] != 0.){
+			TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+			triggerSmearing->SetParameter(0, 1/(spreadEMCalL0[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+			triggerSmearing->SetParameter(1, thresholdEMCalL0[binRun]);
+			triggerSmearing->SetParameter(2, spreadEMCalL0[binRun]);
+			threshold = triggerSmearing->GetRandom();
+			delete triggerSmearing;
+		}	
+		
+		cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
 		
 		Int_t nclus = 0;
 		nclus = fInputEvent->GetNumberOfCaloClusters();
@@ -1882,7 +1902,17 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 			}	
 			if (binRun==3) return kFALSE;
 			Double_t threshold = thresholdEMCalL1[binRun];
-// 			cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
+
+			if (spreadEMCalL1[binRun] != 0.){
+				TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+				triggerSmearing->SetParameter(0, 1/(spreadEMCalL1[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+				triggerSmearing->SetParameter(1, thresholdEMCalL1[binRun]);
+				triggerSmearing->SetParameter(2, spreadEMCalL1[binRun]);
+				threshold = triggerSmearing->GetRandom();
+				delete triggerSmearing;
+			}	
+			
+			cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
 			
 			Int_t nclus = 0;
 			nclus = fInputEvent->GetNumberOfCaloClusters();
@@ -1911,7 +1941,15 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 			}	
 			if (binRun==2) return kFALSE;
 			Double_t threshold = thresholdEMCalL1G2[binRun];
-// 			cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
+			if (spreadEMCalL1G2[binRun] != 0.){
+				TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+				triggerSmearing->SetParameter(0, 1/(spreadEMCalL1G2[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+				triggerSmearing->SetParameter(1, thresholdEMCalL1G2[binRun]);
+				triggerSmearing->SetParameter(2, spreadEMCalL1G2[binRun]);
+				threshold = triggerSmearing->GetRandom();
+				delete triggerSmearing;
+			}				
+			cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
 			
 			Int_t nclus = 0;
 			nclus = fInputEvent->GetNumberOfCaloClusters();
