@@ -65,6 +65,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fShuffledBalance(0),
   fRunMixing(kFALSE),
   fRunMixingEventPlane(kFALSE),
+  fRunEbyE(kFALSE),
   fMixingTracks(50000),
   fMixedBalance(0),
   fPoolMgr(0),
