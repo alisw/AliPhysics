@@ -151,11 +151,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskPi0
   mgr->ConnectOutput (task, 1, cout_pc);
   mgr->ConnectOutput (task, 2, cout_cuts);
     
-  if(!mixOn)
-  {    
+//  if(!mixOn)
+//  {    
     UInt_t mask =  SetTriggerMaskFromName(trigger);
     task->SelectCollisionCandidates(mask);
-  } 
+//  } 
   
   return task;
 }
@@ -600,7 +600,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
   else      ana->SwitchOffOwnMix();
     
   // Cuts
-  if (calorimeter == "EMCAL" ) ana->SetPairTimeCut(70);
+  if (calorimeter == "EMCAL" ) ana->SetPairTimeCut(200);
   
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
@@ -609,6 +609,7 @@ AliAnaPi0* ConfigurePi0Analysis(TString col,           Bool_t simulation,
   if     (col == "pp"  )
   {
     ana->SetNCentrBin(1);
+    ana->SwitchOffTrackMultBins();
     ana->SetNZvertBin(10);
     ana->SetNRPBin(1);
     ana->SetNMaxEvMix(100);
