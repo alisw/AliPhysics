@@ -48,6 +48,7 @@ AliTRDtestG4::AliTRDtestG4()
   ,fTR(NULL)
   ,fStepSize(0)
   ,fWion(0)
+  ,fScaleG4(1.164)
 {
   //
   // Default constructor
@@ -62,6 +63,7 @@ AliTRDtestG4::AliTRDtestG4(const char *name, const char *title)
   ,fTR(NULL)
   ,fStepSize(0.1)
   ,fWion(0)
+  ,fScaleG4(1.164)
 {
   //
   // Standard constructor for Transition Radiation Detector version 1
@@ -420,7 +422,7 @@ void AliTRDtestG4::StepManager()
   const Double_t kBig         = 1.0e+12;
   const Float_t  kEkinMinStep = 1.0e-5;  // Minimum energy for the step size adjustment
 
-  const Double_t kScaleG4     = 1.12;
+  //  const Double_t kScaleG4     = 1.12;
 
   // Set the maximum step size to a very large number for all 
   // neutral particles and those outside the driftvolume
@@ -505,7 +507,7 @@ void AliTRDtestG4::StepManager()
   // Calculate the charge according to GEANT Edep
   // Create a new dEdx hit
   eDep = TMath::Max(TVirtualMC::GetMC()->Edep(),0.0) * 1.0e+09;
-  eDep /= kScaleG4;
+  eDep /= fScaleG4;
   qTot = (Int_t) (eDep / fWion);
   if ((qTot) ||
       (trkStat)) {

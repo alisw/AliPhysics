@@ -44,6 +44,7 @@ class AliTRDtestG4 : public AliTRD {
 
           void     SetStepSize(Double_t s)    { fStepSize = s; }
           void     SetTR(Bool_t tr)           { fTRon = tr;    }
+          void     SetScaleG4(Float_t f)      { fScaleG4 = f;  }
 
           Bool_t   GetTR() const              { return fTRon;  }
   AliTRDsimTR     *GetTRDsim() const          { return fTR;    }
@@ -55,13 +56,14 @@ class AliTRDtestG4 : public AliTRD {
 
           Double_t fStepSize;           //  Used for the fixed step size
           Float_t  fWion;               //  Ionization potential
+	  Float_t  fScaleG4;            //  G4 scaling factor of de/dx rel. to g3 
 
  private:
 
   AliTRDtestG4(const AliTRDtestG4 &trd);
   AliTRDtestG4 &operator=(const AliTRDtestG4 &trd);
 
-  ClassDef(AliTRDtestG4,1)                  //  Transition Radiation Detector (test version for G4 simulations)
+  ClassDef(AliTRDtestG4,2)                  //  Transition Radiation Detector (test version for G4 simulations)
 
 };
 
