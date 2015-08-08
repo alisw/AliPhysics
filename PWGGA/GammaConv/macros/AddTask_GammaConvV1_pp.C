@@ -85,7 +85,7 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
-			if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 85)   ){
+			if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87)   ){
 			  fCuts->SetDodEdxSigmaCut(kFALSE);
 			}
 		}
@@ -519,6 +519,18 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 		eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200008227302008180404000"; mesonCutArray[1] = "0152101500000000"; // variation chi2 50 psi pair 0.2 2D
 		eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200006227302008860404000"; mesonCutArray[2] = "0152101500000000"; // variation chi2 20 psi pair 0.05 2D
 		eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302009250404000"; mesonCutArray[3] = "0252101500000000"; // variation BG scheme track mult
+	} else if (trainConfig == 86) {
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
+		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009227302002250404000"; mesonCutArray[1] = "0152101500000000"; // qT		
+		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009227302009250404000"; mesonCutArray[2] = "0152101500000000"; // qT
+		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009227302008250004000"; mesonCutArray[3] = "0152101500000000"; // cosPA
+	} else if (trainConfig == 87) {
+		eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
+		eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302002250404000"; mesonCutArray[1] = "0152101500000000"; // qT
+		eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302009250404000"; mesonCutArray[2] = "0152101500000000"; // qT
+		eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302008250004000"; mesonCutArray[3] = "0152101500000000"; // cosPA
+
+
 	}	else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -598,7 +610,7 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
 		
-		if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 85) ){
+		if( trainConfig  == 73 || trainConfig  == 74 || (trainConfig  >= 80 && trainConfig  <= 87) ){
 		  
 		  analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
 		  
