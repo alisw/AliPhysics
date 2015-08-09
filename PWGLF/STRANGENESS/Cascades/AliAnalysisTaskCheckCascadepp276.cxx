@@ -1631,8 +1631,8 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
           if (fkQualityCutnTPCcls) {
                 // - Poor quality related to TPC clusters
                 if (lPosTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Pos. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
-                if (lNegTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!",fMinnTPCcls)); continue; }
-                if (lBachTPCClusters < fMinnTPCcls) { AliWarning(Form("Pb / Bach.   track has less than 80 TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                if (lNegTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Neg. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                if (lBachTPCClusters < fMinnTPCcls) { AliWarning(Form("Pb / Bach.   track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
           }
 
           //-----------------------------------
