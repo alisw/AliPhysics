@@ -3,14 +3,14 @@
 
 /*  See cxx source for full Copyright notice */
 
-// //-----------------------------------------------------------------
-// //        AliAnalysisTaskCheckPerformanceCascadePbPb class
-// //            This task is for a performance study of cascade identification.
-// //            It works with MC info and ESD and AOD tree 
-// //            Origin   : A.Maire    Jan2010, antonin.maire@ires.in2p3.fr
-// //            Modified : M.Nicassio Feb2011, maria.nicassio@ba.infn.it
-// //            Modified : D.Colella  Feb2012, domenico.colella@ba.infn.it
-// //-----------------------------------------------------------------
+//-----------------------------------------------------------------
+//        AliAnalysisTaskCheckPerformanceCascadePbPb class
+//            This task is for a performance study of cascade identification.
+//            It works with MC info and ESD and AOD tree 
+//            Origin   : A.Maire    Jan2010, antonin.maire@ires.in2p3.fr
+//            Modified : M.Nicassio Feb2011, maria.nicassio@ba.infn.it
+//            Modified : D.Colella  Feb2012, domenico.colella@ba.infn.it
+//-----------------------------------------------------------------
 
 class TList;
 class TH1F;

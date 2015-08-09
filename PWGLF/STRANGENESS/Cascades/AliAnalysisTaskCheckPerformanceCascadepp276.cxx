@@ -39,9 +39,12 @@
 //                        - Centrality selection deleted
 //                        - 3DHisto denominator moved before any event selection for Normalization
 //                        - injected and natural part of MC selection removed
-// 
-//            Adapted to pPb 5.02 TeV analysis: D. Colella, domenico.colella@ba.infn.it (Sep. 2014)
+//
+//            Adapted to pPb 5.02 TeV analysis: D. Colella, domenico.colella@cern.ch (Sep. 2014)
 //                        - Added the parameter fCollidingSystem, to distingish between pp and pPb procedures
+//
+//            Adapted to pp 13 TeV analysis: D. Colella, domenico.colella@cern.ch (Aug. 2015)
+//                        - Clarify the usage of SDD selection after the introduction of fCollifingSystem
 //                         
 //
 //-----------------------------------------------------------------
@@ -657,7 +660,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
         fListHistCascade->Add(fHistPVx);
    }
    if(! fHistPVy ){
-        fHistPVy = new TH1F("fHistPVy", "Best PV position in y; y (cm); Events", 2000, -0.5, 0.5);
+        fHistPVy = new TH1F("fHistPVy", "Best PV position in y; y (cm); Events", 4000, -1.0, 1.0);
         fListHistCascade->Add(fHistPVy);
    }
    if(! fHistPVz ){
@@ -669,7 +672,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
         fListHistCascade->Add(fHistPVxAnalysis);
    }
    if(! fHistPVyAnalysis ){
-        fHistPVyAnalysis = new TH1F("fHistPVyAnalysis", "Best PV position in y (after events selections); y (cm); Events" , 2000, -0.5, 0.5);
+        fHistPVyAnalysis = new TH1F("fHistPVyAnalysis", "Best PV position in y (after events selections); y (cm); Events" , 4000, -1.0, 1.0);
         fListHistCascade->Add(fHistPVyAnalysis);
    }
    if(! fHistPVzAnalysis ){
@@ -1171,10 +1174,13 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
       fHistV0CosineOfPointingAnglevsPtOmega = new TH2F("fHistV0CosineOfPointingAnglevsPtOmega", "Cos. of V0 Ptng Angl vs cascade Pt; Cos(V0 Point. Angl); Counts", 100, 0., 10., 200, 0.95, 1.0001);
       fListHistCascade->Add(fHistV0CosineOfPointingAnglevsPtOmega);
    }
-
-  //--------------
+  // - Usefull string
+  const Char_t *sddstatus = "";
+  if      (fCollidingSystem == "pp" && fkSDDselectionOn == kTRUE  && fwithSDD == kTRUE)  sddstatus = "_wSDDon";
+  else if (fCollidingSystem == "pp" && fkSDDselectionOn == kTRUE  && fwithSDD == kFALSE) sddstatus = "_wSDDoff";
+  else if (fCollidingSystem == "pp" && fkSDDselectionOn == kFALSE && fwithSDD == kFALSE) sddstatus = "_woSDD";
   // - CFContainer
-  // PID container Xi-
+  // -- PID container Xi-
   if(! fCFContCascadePIDAsXiMinus)  {
      const Int_t  lNbSteps      =  7;
      const Int_t  lNbVariables  =  3;
@@ -1183,7 +1189,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      lNbBinsPerVar[0] = 100;
      lNbBinsPerVar[1] = 800;
      lNbBinsPerVar[2] = 22;
-     fCFContCascadePIDAsXiMinus = new AliCFContainer(Form("fCFContCascadePIDAsXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),"Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
+     fCFContCascadePIDAsXiMinus = new AliCFContainer(Form("fCFContCascadePIDAsXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                                     fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                     "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
        //Setting the bin limits 
      fCFContCascadePIDAsXiMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
      fCFContCascadePIDAsXiMinus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
@@ -1200,9 +1208,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContCascadePIDAsXiMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
      fCFContCascadePIDAsXiMinus->SetVarTitle(1, "M( #Lambda , #pi^{-} ) (GeV/c^{2})");
      fCFContCascadePIDAsXiMinus->SetVarTitle(2, "Y_{#Xi}");
-     fListHistCascade->Add(fCFContCascadePIDAsXiMinus);  
   }
-  // PID container Xi+
+  // -- PID container Xi+
   if(! fCFContCascadePIDAsXiPlus)  {
      const Int_t  lNbSteps      =  7;
      const Int_t  lNbVariables  =  3;
@@ -1211,7 +1218,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      lNbBinsPerVar[0] = 100;
      lNbBinsPerVar[1] = 800;
      lNbBinsPerVar[2] = 22;
-     fCFContCascadePIDAsXiPlus = new AliCFContainer(Form("fCFContCascadePIDAsXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),"Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
+     fCFContCascadePIDAsXiPlus = new AliCFContainer(Form("fCFContCascadePIDAsXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                                    fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                    "Pt_{cascade} Vs M_{#bar{#Xi}^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
        //Setting the bin limits (valid  for v4-18-10-AN)
      fCFContCascadePIDAsXiPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
      fCFContCascadePIDAsXiPlus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
@@ -1228,9 +1237,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContCascadePIDAsXiPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
      fCFContCascadePIDAsXiPlus->SetVarTitle(1, "M( #Lambda , #pi^{+} ) (GeV/c^{2})");
      fCFContCascadePIDAsXiPlus->SetVarTitle(2, "Y_{#Xi}");
-     fListHistCascade->Add(fCFContCascadePIDAsXiPlus);
   }
-  // PID container Omega-
+  // -- PID container Omega-
   if(! fCFContCascadePIDAsOmegaMinus)  {
      const Int_t  lNbSteps      =  7;
      const Int_t  lNbVariables  =  3;
@@ -1239,7 +1247,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      lNbBinsPerVar[0] = 100;
      lNbBinsPerVar[1] = 1000;
      lNbBinsPerVar[2] = 22;
-     fCFContCascadePIDAsOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDAsOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),"Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
+     fCFContCascadePIDAsOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDAsOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                                        fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                        "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
        //Setting the bin limits 
      fCFContCascadePIDAsOmegaMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
      fCFContCascadePIDAsOmegaMinus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
@@ -1256,9 +1266,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContCascadePIDAsOmegaMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
      fCFContCascadePIDAsOmegaMinus->SetVarTitle(1, "M( #Lambda , K^{-} ) (GeV/c^{2})");
      fCFContCascadePIDAsOmegaMinus->SetVarTitle(2, "Y_{#Omega}");
-     fListHistCascade->Add(fCFContCascadePIDAsOmegaMinus);
   }
-  // PID container Omega+
+  // -- PID container Omega+
   if(! fCFContCascadePIDAsOmegaPlus)  {
      const Int_t  lNbSteps      =  7;
      const Int_t  lNbVariables  =  3;
@@ -1267,7 +1276,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      lNbBinsPerVar[0] = 100;
      lNbBinsPerVar[1] = 1000;
      lNbBinsPerVar[2] = 22;  
-     fCFContCascadePIDAsOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDAsOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),"Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
+     fCFContCascadePIDAsOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDAsOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1fi%s",
+                                                       fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                       "Pt_{cascade} Vs M_{#bar{#Omega}^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
        //Setting the bin limits 
      fCFContCascadePIDAsOmegaPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
      fCFContCascadePIDAsOmegaPlus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
@@ -1284,7 +1295,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContCascadePIDAsOmegaPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
      fCFContCascadePIDAsOmegaPlus->SetVarTitle(1, "M( #Lambda , K^{+} ) (GeV/c^{2})");
      fCFContCascadePIDAsOmegaPlus->SetVarTitle(2, "Y_{#Omega}");
-     fListHistCascade->Add(fCFContCascadePIDAsOmegaPlus);
   }
   // Container for optimisation of topological selections 
   if(! fCFContAsCascadeCuts){
@@ -1314,7 +1324,9 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      lNbBinsPerVar[16] = 112;  //Proper lenght of cascade
      lNbBinsPerVar[17] = 112;  //Proper lenght of V0 
      lNbBinsPerVar[18] = 112;  //Distance V0-Xi in the transverse plane  
-     fCFContAsCascadeCuts = new AliCFContainer(Form("fCFContAsCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),"Cut Container for Asso. Cascades", lNbSteps, lNbVariables, lNbBinsPerVar );
+     fCFContAsCascadeCuts = new AliCFContainer(Form("fCFContAsCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                               fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                               "Cut Container for Asso. Cascades", lNbSteps, lNbVariables, lNbBinsPerVar );
        //Setting the bin limits 
        //0 - DcaCascDaughters
      //Double_t *lBinLim0 = new Double_t[ lNbBinsPerVar[0]+1 ];
@@ -1413,7 +1425,6 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserCreateOutputObjects() {
      fCFContAsCascadeCuts->SetVarTitle(16, "mL/p cascade (cm)");
      fCFContAsCascadeCuts->SetVarTitle(17, "mL/p V0 (cm)"); 
      fCFContAsCascadeCuts->SetVarTitle(18, "Distance V0-Cascade in the transverse plane (cm)");
-     fListHistCascade->Add(fCFContAsCascadeCuts);
   }
 
  PostData(1, fListHistCascade); 
@@ -1524,7 +1535,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp276::UserExec(Option_t *) {
    if (fkSDDselectionOn && fCollidingSystem == "pp") {
         TString trcl = " ";
         trcl = lESDevent->GetFiredTriggerClasses();
-        if (fAnalysisType == "ESD") trcl = lESDevent->GetFiredTriggerClasses();
+        if      (fAnalysisType == "ESD") trcl = lESDevent->GetFiredTriggerClasses();
         else if (fAnalysisType == "AOD") trcl = lAODevent->GetFiredTriggerClasses();
         if (fwithSDD){   // ---> Select event with SDD ON
             if(!(trcl.Contains("ALLNOTRD"))) {
