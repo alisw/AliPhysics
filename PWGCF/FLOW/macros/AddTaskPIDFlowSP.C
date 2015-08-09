@@ -7,13 +7,17 @@ class AliFlowEventSimpleCuts;
 
 
 void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
-                      Int_t uptoWhichHarmonics = 2, // 2 --> v2 only, 3 --> v2 and v3, and so on
+                      Float_t Chi2TPCmin = 0.1,
+                      Float_t Chi2TPCmax = 4.0,
+                      Float_t PvtxZ = 10.,
                       Float_t etamin=-0.8,
                       Float_t etamax=0.8,
                       Float_t EtaGap=0.2,
+                      Float_t PurityLevel=0.8,
                       TString fileNameBase="AnalysisResults",
                       TString uniqueStr="Pion_02",
                       TString Qvector ="Qa",
+                      Int_t uptoWhichHarmonics = 2, // 2 --> v2 only, 3 --> v2 and v3, and so on
                       Int_t AODfilterBit = 1,
                       Int_t charge=0,
                       Int_t MinTPCdedx = 10,
@@ -21,12 +25,12 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Int_t ncentralitymax = 50,
                       Int_t maxITSCls = 7,
                       Int_t maxChi2ITSCls = 37,
-                      Float_t PurityLevel=0.8,
                       Bool_t isPID = kTRUE,
                       Bool_t isVZERO = kFALSE, // use vzero sp method
                       Bool_t is2011 = kTRUE,
                       Bool_t isAOD = kTRUE,
                       Bool_t UsePurityPIDmethod = kFALSE,
+                      AliFlowEventCuts::refMultMethod CentrMethodName= AliFlowEventCuts::kTPConly,//kTPConly (TRK), kVZERO(V0M), kV0=kVZERO(V0M), kSPD1clusters(CL1)
                       AliPID::EParticleType particleType=AliPID::kPion,
                       AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
     
@@ -84,8 +88,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         cutsEvent[icentr] = new AliFlowEventCuts(Form("eventcuts_%d",icentr));
         cutsEvent[icentr]->SetLHC11h(is2011);
         cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
-        cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-        cutsEvent[icentr]->SetPrimaryVertexZrange(-10.,10.);
+        cutsEvent[icentr]->SetCentralityPercentileMethod(CentrMethodName);
+        cutsEvent[icentr]->SetPrimaryVertexZrange(-PvtxZ,PvtxZ); // <------//default -10.,10.
         cutsEvent[icentr]->SetQA(doQA);
         cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
         
@@ -142,8 +146,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         //SP_POI[icentr]->SetParamMix(poimix);
         SP_POI[icentr]->SetPtRange(0.2,6.);//
         SP_POI[icentr]->SetMinNClustersTPC(70);
-        SP_POI[icentr]->SetMinChi2PerClusterTPC(0.1);
-        SP_POI[icentr]->SetMaxChi2PerClusterTPC(4.0);
+        SP_POI[icentr]->SetMinChi2PerClusterTPC(Chi2TPCmin); // <------default 0.1
+        SP_POI[icentr]->SetMaxChi2PerClusterTPC(Chi2TPCmax); // <------default 4.0
         
         
         
