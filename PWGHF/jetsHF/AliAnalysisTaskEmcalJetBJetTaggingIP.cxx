@@ -456,9 +456,13 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedLegacy( AliAODEvent 
         return kFALSE;
     }
     fhist_Events->Fill("AliVEvent::kMB", 1.);
+
+    if(!aev->GetPrimaryVertex())    fhist_Events->Fill("NoVertex",1.);
+
     if(aev->IsPileupFromSPD(5,0.8, 3.0, 2.0, 5.0)){
         return kFALSE;
     }
+
     fhist_Events->Fill("!Pileup SPD",1.);
     if(fabs(aev->GetPrimaryVertex()->GetZ())>10.){
         return kFALSE;
@@ -717,7 +721,7 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
     fOutput->Add(glist);
 
     //Event selection histograms
-    AddHistTH1 (&fhist_Events,"fhist_Events","Events","", "Events", 8, 0.,8., kTRUE,glist);
+    AddHistTH1 (&fhist_Events,"fhist_Events","Events","", "Events", 9, 0.,9., kTRUE,glist);
     fhist_Events->GetXaxis()->SetBinLabel(1,"AliVEvent::kAny");
     fhist_Events->GetXaxis()->SetBinLabel(2,"AliVEvent::kMB");
     fhist_Events->GetXaxis()->SetBinLabel(3,"!Pileup SPD");
@@ -726,6 +730,8 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
     fhist_Events->GetXaxis()->SetBinLabel(6,"Vertex Z Resoulution");
     fhist_Events->GetXaxis()->SetBinLabel(7,">1 contributors");
     fhist_Events->GetXaxis()->SetBinLabel(8,">0 contributors SPD");
+    fhist_Events->GetXaxis()->SetBinLabel(9,"NoVertex");
+
     AddHistTH1 (&fhist_Rho,"fhist_Rho","<#rho>","<#rho> in GeV/c", "a.u.", 500, 0.,10., kTRUE,glist);
 
     //  Jet selection statistics histograms
