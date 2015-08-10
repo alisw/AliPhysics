@@ -1337,11 +1337,11 @@ int main(Int_t argc, Char_t **argv)
 {
     /// main routine
 
-    printf("MTRda version v.06072015.01 \n");
-  
     // needed for streamer application
     gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo", "*", "TStreamerInfo", "RIO", "TStreamerInfo()"); 
 
+    printf("MTRda version v.06072015.01 \n");
+  
     /* check that we got some arguments = list of files */
     if (argc<2) {
       printf("Wrong number of arguments\n");
