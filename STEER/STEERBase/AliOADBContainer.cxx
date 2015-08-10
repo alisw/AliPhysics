@@ -296,20 +296,26 @@ void AliOADBContainer::WriteToFile(const char* fname) const
 
 Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
 {
+  // August 2015, Hans: We expand the filename such that
+  // /cvms/blabla matches the variable $ALICE_ROOT
+  // We have to delete the returned char*
+  AliInfo(Form("File: %s and key %s\n",fname,key));
+  fname = gSystem->ExpandPathName(fname);
+  if(!fname){AliError("Can not expand path name");return 1;}
+  AliInfo(Form("File name expanded to %s",fname));
   //
   // Hans: See whether the file is already open
   //
   // For now print info
-  printf("-----------------------------------------------\n");
-  printf("D-InitFromFile for file: %s and key %s\n",fname,key);
-  printf("D-List of already open files:\n");
+  AliInfo("-----------------------------------------------");
+  AliInfo("List of already open files:\n");
   TIter nextFile(gROOT->GetListOfFiles());
   while (1) {
     TObject *obj = nextFile();
     if(!obj)break;
-    printf("%s\n",obj->GetName());
+    AliInfo(Form("%s",obj->GetName()));
   }
-  printf("-----------------------------------------------\n");
+  AliInfo("-----------------------------------------------");
 
   // Declare the file
   TFile* file(0);
@@ -319,13 +325,16 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     file =dynamic_cast<TFile*> (listOfFiles->FindObject(fname));
   }
   if(file){
-    printf("Success! File was already open!\n");
+    AliInfo("Success! File was already open!\n");
   }
   else{
-    printf("Couldn't find file, opening it\n");
+    AliInfo("Couldn't find file, opening it\n");
     file = TFile::Open(fname);
   }
-
+  // Delete pointer from ExpandPathName()
+  delete fname;
+  fname=0;
+  
     // Initialize object from file
     if (!file) return (1);
     AliOADBContainer* cont  = 0;
