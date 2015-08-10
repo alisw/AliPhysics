@@ -185,12 +185,12 @@ struct AAFPluginRailway : public PluginRailway
    */
   virtual const Char_t* UrlHelp() const 
   {
-    return "proof://<host>/<dataset>?plugin[&<options>][#<treename>]";
+    return "proof://alice-caf*/<dataset>?plugin[&<options>][#<treename>]";
   }
   /**
    * @return Short description
    */
-  virtual const char* Desc() const { return "CAF w/plugin"; }
+  virtual const char* Desc() const { return "CAF w/plugin (deprecated)"; }
 };
 #endif
 //
