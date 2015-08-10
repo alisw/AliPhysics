@@ -8,7 +8,9 @@ void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// chang
 									TString 	cutnumberAODBranch 			= "800000006008400000001500000",	// cutnumber for AOD branch
 									Int_t 		enableExtMatchAndQA 		= 0,								// enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
-									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								    Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+									Bool_t 		enableTriggerOverlapRej		= kFALSE							// enable trigger overlap rejection									
 ) {
 
 	// ================= Load Librariers =================================
@@ -234,6 +236,8 @@ void AddTask_GammaConvCalo_pPb(  	Int_t 		trainConfig 				= 1,  								// chang
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		analysisEventCuts[i] = new AliConvEventCuts();   
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
