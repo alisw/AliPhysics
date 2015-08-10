@@ -71,6 +71,7 @@ AliAnalysisTaskEPCorrAA::AliAnalysisTaskEPCorrAA() // All data members should be
 	fPoolMgr(0x0),
 	fMyprimRecoTracks(0x0),
 	fTracksMixing(0x0),
+  fFilterBit(768),
 	fMinNumTrack(50000),
 	fPoolSize(100), // from 1000 (150610)
 	fMinNEventsToMix(5),
@@ -772,7 +773,7 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 //		if(!fTrackCuts->AcceptTrack(aodtrack)) continue;
         if(aodtrack->GetType() != AliAODTrack::kPrimary) continue;
 //        if(!aodtrack->TestFilterBit(kHybridTrackCut)) continue;
-        if(!aodtrack->TestFilterBit(kTPCOnlyTrackCut)) continue;
+        if(!aodtrack->TestFilterBit(fFilterBit)) continue;
 
 		float trackpT = aodtrack->Pt();
 		float trackEta = aodtrack->Eta(); 
@@ -867,7 +868,7 @@ void AliAnalysisTaskEPCorrAA::UserExec(Option_t *)
 //			if(!fTrackCuts->AcceptTrack(aodtrack2)) continue;
             if(aodtrack2->GetType() != AliAODTrack::kPrimary) continue;
 //            if(!aodtrack2->TestFilterBit(kHybridTrackCut)) continue;
-  		    if(!aodtrack2->TestFilterBit(kTPCOnlyTrackCut)) continue;
+  		    if(!aodtrack2->TestFilterBit(fFilterBit)) continue;
 
 			float trackpT2 = aodtrack2->Pt();
 			float trackEta2 = aodtrack2->Eta(); 
@@ -1327,7 +1328,7 @@ TObjArray* AliAnalysisTaskEPCorrAA::AcceptTracksReduced(AliAODEvent *aodevent, b
         if(useCuts) {
             if(track->GetType() != AliAODTrack::kPrimary) continue;
 //            if(!track->TestFilterBit(kHybridTrackCut)) continue;
-        	if(!track->TestFilterBit(kTPCOnlyTrackCut)) continue;
+        	if(!track->TestFilterBit(fFilterBit)) continue;
 
         }
 

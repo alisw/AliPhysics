@@ -45,11 +45,7 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
             kPID = 1
         };
 
-        enum{
-            kTPCOnlyTrackCut = 128,
-            kHybridTrackCut = 768
-        };
-
+    
 		AliAnalysisTaskEPCorrAA();
 		AliAnalysisTaskEPCorrAA(const char *name);
 		virtual ~AliAnalysisTaskEPCorrAA();
@@ -58,6 +54,7 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 		virtual void     UserExec(Option_t *option);
 		virtual void     Terminate(Option_t *);
 
+		void SetFilterBit(Int_t bit) {fFilterBit = bit;}
 		
 	private:
 		TList           *fOutput;        // Output list
@@ -76,7 +73,7 @@ class AliAnalysisTaskEPCorrAA : public AliAnalysisTaskSE {
 //	    double DeltaPhi(double phi1, double phi2);
         int GetParticleID(AliAODTrack* track);
 
-
+	Int_t fFilterBit;//
 		Int_t         fMinNumTrack; // AliEventPoolManager(), Size of track buffer for event mixing (number of tracks to fill the pool)
 		Int_t         fPoolSize; // AliEventPoolManager(), max number of event to mix
 		Int_t         fMinNEventsToMix; //
