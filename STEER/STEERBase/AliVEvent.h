@@ -142,6 +142,7 @@ public:
   virtual ULong64_t GetTriggerMask() const = 0;
   virtual UChar_t   GetTriggerCluster() const = 0;
   virtual TString   GetFiredTriggerClasses() const = 0;
+  virtual Bool_t    IsTriggerClassFired(const char *name) const {return 0;}
   virtual Double_t  GetZDCN1Energy() const = 0;
   virtual Double_t  GetZDCP1Energy() const = 0;
   virtual Double_t  GetZDCN2Energy() const = 0;
