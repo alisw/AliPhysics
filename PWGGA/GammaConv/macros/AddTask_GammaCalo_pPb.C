@@ -8,7 +8,9 @@ void AddTask_GammaCalo_pPb(
 							TString 	generatorName 				= "DPMJET",
                             TString 	cutnumberAODBranch 			= "800000006008400000001500000", 	// cutnumber for AOD branch
 							Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
-							Int_t 		enableExtQA					= 0									// enable QA(3), disabled (0)
+							Int_t 		enableExtQA					= 0,								// enable QA(3), disabled (0)
+							Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+							Bool_t 		enableTriggerOverlapRej		= kFALSE							// enable trigger overlap rejection
 						   ) {
 
 	// ================= Load Librariers =================================
@@ -200,6 +202,8 @@ void AddTask_GammaCalo_pPb(
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		analysisEventCuts[i] = new AliConvEventCuts();   
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
