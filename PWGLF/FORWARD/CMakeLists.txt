@@ -52,8 +52,10 @@ set(SRCS_analysis2
   analysis2/AliBaseMCTrackDensity.cxx
   analysis2/AliMCTruthdNdetaTask.cxx
   analysis2/AliDisplacedVertexSelection.cxx
+  analysis2/AliDisplacedVertexSelectionAD.cxx
   analysis2/AliPoissonCalculator.cxx
   analysis2/AliMCAuxHandler.cxx
+  analysis2/AliTestAD.cxx
   # Forward Aux
   analysis2/AliForwardUtil.cxx
   analysis2/AliFMDMultCuts.cxx
