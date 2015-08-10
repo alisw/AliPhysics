@@ -770,7 +770,10 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/macros \
                          @CMAKE_SOURCE_DIR@/PWGPP/EMCAL/QA/macros \
-                         @CMAKE_SOURCE_DIR@/PWG/EMCAL 
+                         @CMAKE_SOURCE_DIR@/PWG/EMCAL \
+                         @CMAKE_SOURCE_DIR@/PWGHF \
+                         @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF \
+                         @CMAKE_SOURCE_DIR@/PWGHF/vertexingHF/macros
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
