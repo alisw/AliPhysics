@@ -5,15 +5,14 @@
 
 /* $Id$ */ 
 
-//***********************************************************
-// Class AliAODRecoCascadeHF3Prong
-// base class for AOD reconstructed heavy-flavour cascade 3Prong decays
-// (Xic+->pi Xi pi, ...)
-// The convention is: prong 0 is bachelor, prong 1 is cascade
-// prong 2 is bachelor
-//
-// Author: Y.S. Watanabe, wyosuke@cns.s.u-tokyo.ac.jp
-//***********************************************************
+///***********************************************************
+/// \class Class AliAODRecoCascadeHF3Prong
+/// \brief base class for AOD reconstructed heavy-flavour cascade 3Prong decays (Xic+->pi Xi pi, ...)
+/// The convention is: prong 0 is bachelor, prong 1 is cascade
+/// prong 2 is bachelor
+///
+/// \author Author: Y.S. Watanabe, wyosuke@cns.s.u-tokyo.ac.jp
+///***********************************************************
 
 #include <TRef.h>
 #include <TRefArray.h>
@@ -53,7 +52,7 @@ class AliAODRecoCascadeHF3Prong : public AliAODRecoDecayHF3Prong {
   AliAODTrack* GetCascadeNegativeTrack() const { return  (AliAODTrack*)GetCascade()->GetDaughter(1);  }
   AliAODTrack* GetCascadeBachelorTrack() const { return  (AliAODTrack*)GetCascade()->GetDecayVertexXi()->GetDaughter(0);  }
 
-  // Xic invariant mass
+  /// Xic invariant mass
   Double_t InvMassPiXiPi() const {
     UInt_t pdg[3]={211,3312,211}; return InvMass(3,pdg);
   }
@@ -81,7 +80,9 @@ class AliAODRecoCascadeHF3Prong : public AliAODRecoDecayHF3Prong {
 
  protected:
 
-  ClassDef(AliAODRecoCascadeHF3Prong, 1); // heavy-flavour cascade 3prong class
+  /// \cond CLASSIMP
+  ClassDef(AliAODRecoCascadeHF3Prong, 1); /// heavy-flavour cascade 3prong class
+  /// \endcond
 };
 
 #endif

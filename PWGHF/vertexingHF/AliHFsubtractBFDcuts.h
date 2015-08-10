@@ -15,14 +15,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-//  Class for storing and handling D0 meson candidates properties         //
-//  for estimating the feed-down fraction using several sets of cuts      //
-//     Andrea Rossi <andrea.rossi@cern.ch>                                //
-//     Felix Reidt  <felix.reidt@cern.ch>                                 //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+/// \class AliHFsubtractBFDcuts
+///                                                                        //
+///  Class for storing and handling D0 meson candidates properties         //
+///  for estimating the feed-down fraction using several sets of cuts      //
+///     Andrea Rossi <andrea.rossi@cern.ch>                                //
+///     Felix Reidt  <felix.reidt@cern.ch>                                 //
+///                                                                        //
+/////////////////////////////////////////////////////////////////////////////
 #include <vector>
 
 #include "TNamed.h"
@@ -67,41 +68,43 @@ private:
   AliHFsubtractBFDcuts operator=(const AliHFsubtractBFDcuts& c);
 
   Bool_t GetCandidateLabel();
-  Bool_t AnalyseDecay(Bool_t generateString, Bool_t mcOnly);  // check in which decay process a particle was created
+  Bool_t AnalyseDecay(Bool_t generateString, Bool_t mcOnly);  /// check in which decay process a particle was created
   void   CountProngs(Int_t labCurrMother, Int_t labCurrExcl, Bool_t generateString, Bool_t mConly);
-  // counting the prongs of labCurrMother, labCurrExcl is assumed to be a stable particle
-  Bool_t IsStable(Int_t labProng) const;       // Is that prong a stable particle?
-  Bool_t IsInAcceptance(Int_t labProng) const; // Is that prong within the fiducial acceptance
-  AliAODVertex* RecBvtx(TObjArray *tracks) const; // Reconstruct a secondary vertex with the supplied tracks
-  Bool_t CheckBhypothesis(Int_t iAODtrack, Bool_t Bprong); // Method to check Whether the current D0 candidate and the track originate from a B decay
+  /// counting the prongs of labCurrMother, labCurrExcl is assumed to be a stable particle
+  Bool_t IsStable(Int_t labProng) const;       /// Is that prong a stable particle?
+  Bool_t IsInAcceptance(Int_t labProng) const; /// Is that prong within the fiducial acceptance
+  AliAODVertex* RecBvtx(TObjArray *tracks) const; /// Reconstruct a secondary vertex with the supplied tracks
+  Bool_t CheckBhypothesis(Int_t iAODtrack, Bool_t Bprong); /// Method to check Whether the current D0 candidate and the track originate from a B decay
 
-  Bool_t      fIsMC;              // flag for MC/Data
-  Bool_t      fCheckAcceptance;   // flag for checking whether the decay prongs are within acceptance
-  Bool_t      fResolveResonances; // flag resolve resonances in during the prong determination
-  TH3F*       fPtMCGenStep;       //! histo with spectrum at generation level
-  THnSparseF* fCutsData;          //! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
-  THnSparseF* fCutsMC;            //! THnSparse for cut variables (MC at PID level, w/o mass axis)y
-  TList*      fQAhists;           //! List with QA histograms
+  Bool_t      fIsMC;              /// flag for MC/Data
+  Bool_t      fCheckAcceptance;   /// flag for checking whether the decay prongs are within acceptance
+  Bool_t      fResolveResonances; /// flag resolve resonances in during the prong determination
+  TH3F*       fPtMCGenStep;       //!<! histo with spectrum at generation level
+  THnSparseF* fCutsData;          //!<! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
+  THnSparseF* fCutsMC;            //!<! THnSparse for cut variables (MC at PID level, w/o mass axis)y
+  TList*      fQAhists;           //!<! List with QA histograms
 
-  // Event specific variables
-  TClonesArray*             fMCarray;      //! TClonesArray holding the particles of the event to be processed
-  TClonesArray*             fAODtracks;    //! TClonesArray holding the AliAODTracks of the event to be processed
-  AliAODVertex*             fPriVtx;       //! Primary AOD vertex
-  Double_t                  fBkG;          // Magnetic field (z-direction) in units of kG
-  AliAODRecoDecayHF2Prong*  fD0Cand;       // Pointer to the D0 candidate from reconstruction
-  AliNeutralTrackParam*     fD0CandParam;  // Pointer to an AliNeutralTrackParam of the D0 candidata for DCA calculation
-  Int_t                     fLabCand;      // Label of the candidate D0 (charmed hadron in case of a chained decay)
-  Int_t                     fLabMother;    // Label of the mother of the candidate D0 (or charmed hadron)
-  UInt_t                    fNprongs;      // Number of prongs, counting the first charmed hadron as one particle (simulation cuts can lead to loss of prongs!)
-  UInt_t                    fNprongsInAcc; // Number of prongs, counting only the particles within acceptance
-  Bool_t                    fDecayChain;   // Chained decay of charmed hadrons
-  Double_t                  fMotherPt;     // Transverse momentum of the mother particle (B hadron in case of feed-down,
-                                           // the charmed hadron itsself in case of prompt production)
-  Bool_t             fGenerateDecayList;   // Generate the list containig strings with all PDG codes of the decay prongs
-  std::vector<Int_t> fDecayProngs;         // PDG codes of the daughters separated
-  TList*             fDecayStrList;        //! List with all decay strings
+  /// Event specific variables
+  TClonesArray*             fMCarray;      //!<! TClonesArray holding the particles of the event to be processed
+  TClonesArray*             fAODtracks;    //!<! TClonesArray holding the AliAODTracks of the event to be processed
+  AliAODVertex*             fPriVtx;       //!<! Primary AOD vertex
+  Double_t                  fBkG;          /// Magnetic field (z-direction) in units of kG
+  AliAODRecoDecayHF2Prong*  fD0Cand;       /// Pointer to the D0 candidate from reconstruction
+  AliNeutralTrackParam*     fD0CandParam;  /// Pointer to an AliNeutralTrackParam of the D0 candidata for DCA calculation
+  Int_t                     fLabCand;      /// Label of the candidate D0 (charmed hadron in case of a chained decay)
+  Int_t                     fLabMother;    /// Label of the mother of the candidate D0 (or charmed hadron)
+  UInt_t                    fNprongs;      /// Number of prongs, counting the first charmed hadron as one particle (simulation cuts can lead to loss of prongs!)
+  UInt_t                    fNprongsInAcc; /// Number of prongs, counting only the particles within acceptance
+  Bool_t                    fDecayChain;   /// Chained decay of charmed hadrons
+  Double_t                  fMotherPt;     /// Transverse momentum of the mother particle (B hadron in case of feed-down,
+                                           /// the charmed hadron itsself in case of prompt production)
+  Bool_t             fGenerateDecayList;   /// Generate the list containig strings with all PDG codes of the decay prongs
+  std::vector<Int_t> fDecayProngs;         /// PDG codes of the daughters separated
+  TList*             fDecayStrList;        //!<! List with all decay strings
 
+  /// \cond CLASSIMP     
   ClassDef(AliHFsubtractBFDcuts,8);
+  /// \endcond
 };
 
 #endif

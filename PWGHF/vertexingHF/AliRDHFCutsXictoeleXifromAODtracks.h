@@ -6,8 +6,8 @@
 /* $Id$ */
 
 //***********************************************************
-// Class AliRDHFCutsXictoeleXifromAODtracks
-// class for cuts on AOD reconstructed Xic-> ele + Xi
+/// \class Class AliRDHFCutsXictoeleXifromAODtracks
+/// \brief class for cuts on AOD reconstructed Xic-> ele + Xi
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -132,55 +132,56 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	
  private:
 
-  EPIDStrategy fPIDStrategy;        //PID strategy
-  Double_t fCombinedPIDThreshold;   //Threshold used in  IsSelectedCombinedPID 
-  Bool_t fUseCascadePID;            //Use PID for cascade or not
-  AliAODPidHF *fPidObjCascPi;         //PID object for cascade-pion
-  AliAODPidHF *fPidObjCascPr;         //PID object for cascade-proton
-//  Bool_t   fUseOnTheFlyV0;          //Flag to check if we use on-the-fly v0
+  EPIDStrategy fPIDStrategy;        /// PID strategy
+  Double_t fCombinedPIDThreshold;   /// Threshold used in  IsSelectedCombinedPID
+  Bool_t fUseCascadePID;            /// Use PID for cascade or not
+  AliAODPidHF *fPidObjCascPi;         /// PID object for cascade-pion
+  AliAODPidHF *fPidObjCascPr;         /// PID object for cascade-proton
+//  Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
   
-  Int_t fProdTrackTPCNclsPIDMin;      //Min. Number of TPC PID cluster
-  Double_t fProdTrackTPCNclsRatioMin;      //Min. Number of TPC PID cluster
-  Bool_t   fProdUseAODFilterBit;    //Flag for AOD filter Bit used before object creation
-  Double_t fProdMassTolLambda;      //Tolerance of Lambda mass from PDG value
-  Double_t fProdMassTolXi;          //Tolerance of Xi mass from PDG value
-  Double_t fProdMassRejOmega;          //Rejection range of Omega mass from PDG value
-  Double_t fProdRfidMinV0;          //Minimum Decay vertex of V0
-  Double_t fProdRfidMaxV0;          //Max Decay vertex of V0
-  Double_t fProdRfidMinXi;          //Minimum Decay vertex of Xi
-  Double_t fProdRfidMaxXi;          //Max Decay vertex of Xi
-  Double_t fProdCascProperDecayLengthMax;        //mL/p of cascade
-  Double_t fProdDcaXiDaughtersMax;  //Max Dca between Xi daughters
-  Double_t fProdDcaV0DaughtersMax;  //Max Dca between V0 daughters
-  Double_t fProdDcaBachToPrimVertexMin;  //Min Dca between Bachelor and PV 
-  Double_t fProdDcaV0ToPrimVertexMin;  //Min Dca between v0 and PV 
-  Double_t fProdDcaV0PrToPrimVertexMin;  //Min Dca between v0-proton and PV 
-  Double_t fProdDcaV0PiToPrimVertexMin;  //Min Dca between v0-pion and PV 
-  Double_t fProdXiCosineOfPoiningAngleMin;  //Min Xi cos pointing angle  to PV
-  Double_t fProdV0CosineOfPoiningAngleXiMin;  //Min V0 cos pointing angle  to Xi vertex
-  Double_t fProdCascNTPCClustersMin;         //Minimum number of TPC clusters
-	Double_t fProdCascEtaMin; //Minimum eta of cascade
-	Double_t fProdCascEtaMax; //Maximum eta of cascade
-	Double_t fProdCascRapMin; //Minimum rapidity of cascade
-	Double_t fProdCascRapMax; //Maximum rapidity of cascade
-  Double_t fProdRoughMassTol;       //Mass cut for Lc used before object creation
-  Double_t fProdRoughPtMin;         //pT cut for Lc used before object creation
+  Int_t fProdTrackTPCNclsPIDMin;      /// Min. Number of TPC PID cluster
+  Double_t fProdTrackTPCNclsRatioMin;      /// Min. Number of TPC PID cluster
+  Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
+  Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
+  Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
+  Double_t fProdMassRejOmega;          /// Rejection range of Omega mass from PDG value
+  Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
+  Double_t fProdRfidMaxV0;          /// Max Decay vertex of V0
+  Double_t fProdRfidMinXi;          /// Minimum Decay vertex of Xi
+  Double_t fProdRfidMaxXi;          /// Max Decay vertex of Xi
+  Double_t fProdCascProperDecayLengthMax;        /// mL/p of cascade
+  Double_t fProdDcaXiDaughtersMax;  /// Max Dca between Xi daughters
+  Double_t fProdDcaV0DaughtersMax;  /// Max Dca between V0 daughters
+  Double_t fProdDcaBachToPrimVertexMin;  /// Min Dca between Bachelor and PV
+  Double_t fProdDcaV0ToPrimVertexMin;  /// Min Dca between v0 and PV
+  Double_t fProdDcaV0PrToPrimVertexMin;  /// Min Dca between v0-proton and PV
+  Double_t fProdDcaV0PiToPrimVertexMin;  /// Min Dca between v0-pion and PV
+  Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV
+  Double_t fProdV0CosineOfPoiningAngleXiMin;  /// Min V0 cos pointing angle  to Xi vertex
+  Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters
+	Double_t fProdCascEtaMin; /// Minimum eta of cascade
+	Double_t fProdCascEtaMax; /// Maximum eta of cascade
+	Double_t fProdCascRapMin; /// Minimum rapidity of cascade
+	Double_t fProdCascRapMax; /// Maximum rapidity of cascade
+  Double_t fProdRoughMassTol;       /// Mass cut for Lc used before object creation
+  Double_t fProdRoughPtMin;         /// pT cut for Lc used before object creation
 
-	Bool_t fExcludePionTPC;//Flag wheter to exlude pion band
-	Bool_t fExcludeProtonTPC;//Flag wheter to exlude proton band
-	Bool_t fExcludeKaonTPC;//Flag wheter to exlude proton band
-	Double_t fExcludenSigmaPionTPC;//nSigma to exclude for pion band
-	Double_t fExcludenSigmaProtonTPC;//nSigma to exclude for proton band
-	Double_t fExcludenSigmaKaonTPC;//nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTPCMin;//nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTPCPtDepPar0;//nSigma electron lower limit (par0)
-	Double_t fSigmaElectronTPCPtDepPar1;//nSigma electron lower limit (par1)
-	Double_t fSigmaElectronTPCMax;//nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMin;//nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMax;//nSigma to exclude for Kaon band
+	Bool_t fExcludePionTPC; /// Flag wheter to exlude pion band
+	Bool_t fExcludeProtonTPC; /// Flag wheter to exlude proton band
+	Bool_t fExcludeKaonTPC; /// Flag wheter to exlude proton band
+	Double_t fExcludenSigmaPionTPC; /// nSigma to exclude for pion band
+	Double_t fExcludenSigmaProtonTPC; /// nSigma to exclude for proton band
+	Double_t fExcludenSigmaKaonTPC; /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTPCMin; /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTPCPtDepPar0; /// nSigma electron lower limit (par0)
+	Double_t fSigmaElectronTPCPtDepPar1; /// nSigma electron lower limit (par1)
+	Double_t fSigmaElectronTPCMax; /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTOFMin; /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
   
-
+  /// \cond CLASSIMP
   ClassDef(AliRDHFCutsXictoeleXifromAODtracks,3);
+  /// \endcond
 };
 
 #endif

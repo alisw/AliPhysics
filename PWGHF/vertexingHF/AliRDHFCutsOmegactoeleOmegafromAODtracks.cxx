@@ -44,7 +44,9 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliRDHFCutsOmegactoeleOmegafromAODtracks)
+/// \cond CLASSIMP
+ClassImp(AliRDHFCutsOmegactoeleOmegafromAODtracks);
+/// \endcond
 
 //--------------------------------------------------------------------------
 AliRDHFCutsOmegactoeleOmegafromAODtracks::AliRDHFCutsOmegactoeleOmegafromAODtracks(const char* name) :

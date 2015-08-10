@@ -67,7 +67,9 @@
 #include "AliCodeTimer.h"
 #include <cstring>
 
-ClassImp(AliAnalysisVertexingHF)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisVertexingHF);
+/// \endcond
 
 //----------------------------------------------------------------------------
 AliAnalysisVertexingHF::AliAnalysisVertexingHF():
@@ -148,7 +150,7 @@ fMassLambdaC(0.),
 fMassDstar(0.),
 fMassJpsi(0.)
 {
-  // Default constructor
+  /// Default constructor
 
   Double_t d02[2]={0.,0.};
   Double_t d03[3]={0.,0.,0.};
@@ -238,16 +240,16 @@ fMassLambdaC(source.fMassLambdaC),
 fMassDstar(source.fMassDstar),
 fMassJpsi(source.fMassJpsi)
 {
-  //
-  // Copy constructor
-  //
+  ///
+  /// Copy constructor
+  ///
 }
 //--------------------------------------------------------------------------
 AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVertexingHF &source)
 {
-  //
-  // assignment operator
-  //
+  ///
+  /// assignment operator
+  ///
   if(&source == this) return *this;
   fInputAOD = source.fInputAOD;
   fAODMapSize = source.fAODMapSize;
@@ -329,7 +331,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
 }
 //----------------------------------------------------------------------------
 AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
-  // Destructor
+  /// Destructor
   if(fV1) { delete fV1; fV1=0; }
   delete fVertexerTracks;
   if(fTrackFilter) { delete fTrackFilter; fTrackFilter=0; }
@@ -351,7 +353,7 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
 }
 //----------------------------------------------------------------------------
 TList *AliAnalysisVertexingHF::FillListOfCuts() {
-  // Fill list of analysis cuts
+  /// Fill list of analysis cuts
 
   TList *list = new TList();
   list->SetOwner();
@@ -411,9 +413,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 					    TClonesArray *aodLikeSign2ProngTClArr,
 					    TClonesArray *aodLikeSign3ProngTClArr)
 {
-  // Find heavy-flavour vertex candidates
-  // Input:  ESD or AOD
-  // Output: AOD (additional branches added)
+  /// Find heavy-flavour vertex candidates
+  /// Input:  ESD or AOD
+  /// Output: AOD (additional branches added)
   //AliCodeTimerAuto("",0);
 
   if(!fMixEvent){
@@ -1454,8 +1456,8 @@ void AliAnalysisVertexingHF::AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,
 				     const AliVEvent *event,
 				     const TObjArray *trkArray) const
 {
-  // Add the AOD tracks as daughters of the vertex (TRef)
-  // Also add the references to the primary vertex and to the cuts
+  /// Add the AOD tracks as daughters of the vertex (TRef)
+  /// Also add the references to the primary vertex and to the cuts
   //AliCodeTimerAuto("",0);
 
   if(fInputAOD) {
@@ -1479,7 +1481,7 @@ void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,
 					     const AliVEvent *event,
 					     const TObjArray *trkArray) const
 {
-  // Add the AOD tracks as daughters of the vertex (TRef)
+  /// Add the AOD tracks as daughters of the vertex (TRef)
   //AliCodeTimerAuto("",0);
 
   Int_t nDg = v->GetNDaughters();
@@ -1509,8 +1511,8 @@ void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,
 //---------------------------------------------------------------------------
 void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)  
 {
-  // Checks that the references to the daughter tracks are properly
-  // assigned and reassigns them if needed
+  /// Checks that the references to the daughter tracks are properly
+  /// assigned and reassigns them if needed
   //
   //AliCodeTimerAuto("",0);
 
@@ -1593,8 +1595,8 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
 				   Double_t dca,
 				   Bool_t &okDstar) 
 {
-  // Make the cascade as a 2Prong decay and check if it passes Dstar
-  // reconstruction cuts
+  /// Make the cascade as a 2Prong decay and check if it passes Dstar
+  /// reconstruction cuts
   //AliCodeTimerAuto("",0);
 
   okDstar = kFALSE;
@@ -1662,8 +1664,8 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
 				   Bool_t &okCascades) 
 {
   //
-  // Make the cascade as a 2Prong decay and check if it passes 
-  // cascades reconstruction cuts
+  /// Make the cascade as a 2Prong decay and check if it passes
+  /// cascades reconstruction cuts
   //AliCodeTimerAuto("",0);
   
   //  AliDebug(2,Form("         building the cascade"));
@@ -1729,8 +1731,8 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 				   Bool_t &okD0,Bool_t &okJPSI,
 				   Bool_t &okD0fromDstar) 
 {
-  // Make 2Prong candidates and check if they pass D0toKpi or BtoJPSI
-  // reconstruction cuts
+  /// Make 2Prong candidates and check if they pass D0toKpi or BtoJPSI
+  /// reconstruction cuts
   // G.E.Bruno (J/psi), A.Dainese (D0->Kpi)
   //AliCodeTimerAuto("",0);
 
@@ -1834,8 +1836,8 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 			     Double_t dcap1n1,Double_t dcap2n1,Double_t dcap1p2,
 			     Bool_t useForLc, Bool_t useForDs, Bool_t &ok3Prong) 
 {
-  // Make 3Prong candidates and check if they pass Dplus or Ds or Lambdac
-  // reconstruction cuts 
+  /// Make 3Prong candidates and check if they pass Dplus or Ds or Lambdac
+  /// reconstruction cuts
   // E.Bruna, F.Prino
 
   //AliCodeTimerAuto("",0);
@@ -1957,8 +1959,8 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 			     Double_t dcap2n1,Double_t dcap2n2,
                              Bool_t &ok4Prong) 
 {
-  // Make 4Prong candidates and check if they pass D0toKpipipi
-  // reconstruction cuts
+  /// Make 4Prong candidates and check if they pass D0toKpipipi
+  /// reconstruction cuts
   // G.E.Bruno, R.Romita
   //AliCodeTimerAuto("",0);
 
@@ -2065,7 +2067,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 						    AliVEvent *event) const
 {
-  // Returns primary vertex to be used for this candidate
+  /// Returns primary vertex to be used for this candidate
   //AliCodeTimerAuto("",0);
 
   AliESDVertex *vertexESD = 0;
@@ -2172,7 +2174,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 }
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::PrintStatus() const {
-  // Print parameters being used
+  /// Print parameters being used
 
   //printf("Preselections:\n");
   //   fTrackFilter->Dump();
@@ -2226,7 +2228,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
 AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkArray,
 								 Double_t &dispersion,Bool_t useTRefArray) const
 {
-  // Secondary vertex reconstruction with AliVertexerTracks or AliKFParticle
+  /// Secondary vertex reconstruction with AliVertexerTracks or AliKFParticle
   //AliCodeTimerAuto("",0);
 
   AliESDVertex *vertexESD = 0;
@@ -2286,7 +2288,7 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(TObjArray *trkArray){
-  // Invariant mass cut on tracks
+  /// Invariant mass cut on tracks
   //AliCodeTimerAuto("",0);
 
   Int_t retval=kFALSE;
@@ -2304,7 +2306,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(TObjArray *trkArray){
 
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt4prong(TObjArray *trkArray){
-  // Invariant mass cut on tracks
+  /// Invariant mass cut on tracks
   //AliCodeTimerAuto("",0);
 
   Int_t retval=kFALSE;
@@ -2323,7 +2325,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt4prong(TObjArray *trkArray){
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtDstarD0pi(TObjArray *trkArray){
-  // Invariant mass cut on tracks
+  /// Invariant mass cut on tracks
   //AliCodeTimerAuto("",0);
 
   Int_t retval=kFALSE;
@@ -2343,7 +2345,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtDstarD0pi(TObjArray *trkArray){
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtD0Kpi(Double_t *px,
 						       Double_t *py,
 						       Double_t *pz){
-  // Check invariant mass cut and pt candidate cut
+  /// Check invariant mass cut and pt candidate cut
   //AliCodeTimerAuto("",0);
 
   UInt_t pdg2[2];
@@ -2382,7 +2384,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtD0Kpi(Double_t *px,
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtJpsiee(Double_t *px,
 							Double_t *py,
 							Double_t *pz){
-  // Check invariant mass cut and pt candidate cut
+  /// Check invariant mass cut and pt candidate cut
   //AliCodeTimerAuto("",0);
 
   UInt_t pdg2[2];
@@ -2417,7 +2419,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
 							Double_t *py,
 							Double_t *pz,
 							Int_t pidLcStatus){
-  // Check invariant mass cut and pt candidate cut
+  /// Check invariant mass cut and pt candidate cut
   //AliCodeTimerAuto("",0);
 
   UInt_t pdg3[3];
@@ -2491,7 +2493,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt3prong(Double_t *px,
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtDstarD0pi(Double_t *px,
 							   Double_t *py,
 							   Double_t *pz){
-  // Check invariant mass cut and pt candidate cut
+  /// Check invariant mass cut and pt candidate cut
   //AliCodeTimerAuto("",0);
 
   UInt_t pdg2[2];
@@ -2525,7 +2527,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtDstarD0pi(Double_t *px,
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt4prong(Double_t *px,
 							Double_t *py,
 							Double_t *pz){
-  // Check invariant mass cut and pt candidate cut
+  /// Check invariant mass cut and pt candidate cut
   //AliCodeTimerAuto("",0);
 
   UInt_t pdg4[4];
@@ -2581,7 +2583,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt4prong(Double_t *px,
 Bool_t AliAnalysisVertexingHF::SelectInvMassAndPtCascade(Double_t *px,
 							 Double_t *py,
 							 Double_t *pz){
-  // Check invariant mass cut and pt candidate cut
+  /// Check invariant mass cut and pt candidate cut
   //AliCodeTimerAuto("",0);
 
   UInt_t pdg2[2];
@@ -2620,11 +2622,11 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
 						       Int_t &nSeleTrks,
 						       UChar_t *seleFlags,Int_t *evtNumber)
 {
-  // Apply single-track preselection.
-  // Fill a TObjArray with selected tracks (for displaced vertices or
-  // soft pion from D*). Selection flag stored in seleFlags.
-  // Create the AliESDVertex object (convert from AliAODVertex if necessary)
-  // In case of AOD input, also fill fAODMap for track index<->ID
+  /// Apply single-track preselection.
+  /// Fill a TObjArray with selected tracks (for displaced vertices or
+  /// soft pion from D*). Selection flag stored in seleFlags.
+  /// Create the AliESDVertex object (convert from AliAODVertex if necessary)
+  /// In case of AOD input, also fill fAODMap for track index<->ID
   //AliCodeTimerAuto("",0);
 
   const AliVVertex *vprimary = event->GetPrimaryVertex();
@@ -2789,7 +2791,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit) {
   //
-  // Set the selection bit for PID
+  /// Set the selection bit for PID
   //
   //AliCodeTimerAuto("",0);
   if(cuts->GetPidHF()) {
@@ -2808,7 +2810,7 @@ Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack *trk,
 					     Bool_t &okSoftPi,
 					     Bool_t &okFor3Prong) const 
 {
-  // Check if track passes some kinematical cuts  
+  /// Check if track passes some kinematical cuts
 
   // this is needed to store the impact parameters
   //AliCodeTimerAuto("",0);
@@ -2860,11 +2862,11 @@ Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack *trk,
 
 //-----------------------------------------------------------------------------
 AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArray *twoTrackArrayV0){
-  //
-  // Transform ESDv0 to AODv0
-  //
-  //  this function takes the ESDv0 vertex, computes the DCA variables from the ESDv0
-  //  and creates an AODv0 out of them
+  ///
+  /// Transform ESDv0 to AODv0
+  ///
+  ///  this function takes the ESDv0 vertex, computes the DCA variables from the ESDv0
+  ///  and creates an AODv0 out of them
   //
   //AliCodeTimerAuto("",0);
   Double_t vertex[3]; esdV0->GetXYZ(vertex[0],vertex[1],vertex[2]);
@@ -2917,7 +2919,7 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
 }
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const{
-  // Set the stored track parameters at primary vertex into AliESDtrack
+  /// Set the stored track parameters at primary vertex into AliESDtrack
   //AliCodeTimerAuto("",0);
 
   const Double_t *par=extpar->GetParameter();
@@ -2929,7 +2931,7 @@ void AliAnalysisVertexingHF::SetParametersAtVertex(AliESDtrack* esdt, const AliE
 }
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SetMasses(){
-  // Set the hadron mass values from TDatabasePDG 
+  /// Set the hadron mass values from TDatabasePDG
 
   fMassDzero=TDatabasePDG::Instance()->GetParticle(421)->Mass();
   fMassDplus=TDatabasePDG::Instance()->GetParticle(411)->Mass();
@@ -2941,7 +2943,7 @@ void AliAnalysisVertexingHF::SetMasses(){
 //-----------------------------------------------------------------------------
 Bool_t AliAnalysisVertexingHF::CheckCutsConsistency(){
   //
-  // Check the Vertexer and the analysts task consitstecny
+  /// Check the Vertexer and the analysts task consitstecny
   //
 
 

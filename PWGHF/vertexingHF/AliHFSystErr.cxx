@@ -43,8 +43,9 @@
 #include "AliLog.h"
 #include "AliHFSystErr.h"
 
-
-ClassImp(AliHFSystErr)
+/// \cond CLASSIMP
+ClassImp(AliHFSystErr);
+/// \endcond
 
 //--------------------------------------------------------------------------
 AliHFSystErr::AliHFSystErr(const Char_t* name, const Char_t* title) : 
@@ -67,14 +68,14 @@ fIsCentScan(false),
 fIsRapidityScan(false)
 {
   //
-  // Default Constructor
+  /// Default Constructor
   //
 }
 
 //--------------------------------------------------------------------------
 AliHFSystErr::~AliHFSystErr() {
   //  
-  // Default Destructor
+  /// Default Destructor
   //
   /*
 
@@ -92,7 +93,7 @@ AliHFSystErr::~AliHFSystErr() {
 //--------------------------------------------------------------------------
 void AliHFSystErr::Init(Int_t decay){
   //
-  // Variables/histos initialization
+  /// Variables/histos initialization
   //
 
   if ((fRunNumber>11) && fIsLowEnergy==false) { 

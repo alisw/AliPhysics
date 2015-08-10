@@ -43,7 +43,9 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliCFVertexingHFLctoV0bachelor)
+/// \cond CLASSIMP
+ClassImp(AliCFVertexingHFLctoV0bachelor);
+/// \endcond
 
 //_________________________________________
 AliCFVertexingHFLctoV0bachelor::AliCFVertexingHFLctoV0bachelor():

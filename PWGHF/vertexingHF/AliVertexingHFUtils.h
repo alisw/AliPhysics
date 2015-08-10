@@ -4,15 +4,16 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////
-//                                                               //
-// Class with functions useful for different D2H analyses        //
-// - event plane resolution                                      //
-// - <pt> calculation with side band subtraction                 //
-// - tracklet multiplicity calculation                            //
-// Origin: F.Prino, Torino, prino@to.infn.it                     //
-//                                                               //
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+/// \class AliVertexingHFUtils
+///                                                               //
+/// \brief Class with functions useful for different D2H analyses //
+/// - event plane resolution                                      //
+/// - <pt> calculation with side band subtraction                 //
+/// - tracklet multiplicity calculation                            //
+/// \author Origin: F.Prino, Torino, prino@to.infn.it              //
+///                                                               //
+////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
 #include "AliAODTrack.h"
@@ -38,10 +39,10 @@ class AliVertexingHFUtils : public TObject{
   AliVertexingHFUtils(Int_t k);
   virtual ~AliVertexingHFUtils() {};
 
-  // Significance calculator
+  /// Significance calculator
   static void ComputeSignificance(Double_t signal, Double_t  errsignal, Double_t  background, Double_t  errbackground, Double_t &significance,Double_t &errsignificance);
 
-  // Functions for Event plane resolution
+  /// Functions for Event plane resolution
   void SetK(Int_t k){fK=k;}
   void SetSubEvResol(Double_t res){fSubRes=res;}
   void SetSubEventHisto(const TH1F* hSub){
@@ -76,7 +77,7 @@ class AliVertexingHFUtils : public TObject{
   void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   Bool_t HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
-  // Functions for tracklet multiplcity calculation
+  /// Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
     fMinEtaForTracklets=mineta; 
     fMaxEtaForTracklets=maxeta;
@@ -89,17 +90,17 @@ class AliVertexingHFUtils : public TObject{
   static Int_t GetGeneratedPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
   static Int_t GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta);
 
-  // Utilities for V0 multiplicity checks
+  /// Utilities for V0 multiplicity checks
   static Double_t GetVZEROAEqualizedMultiplicity(AliAODEvent* ev);
   static Double_t GetVZEROCEqualizedMultiplicity(AliAODEvent* ev);
 
-  // Functions for computing average pt 
+  /// Functions for computing average pt
   static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
 
-  // Functions for processing trigger information
+  /// Functions for processing trigger information
   static Bool_t CheckT0TriggerFired(AliAODEvent* aodEv);
 
-  // Functions for computing true impact parameter of D meson
+  /// Functions for computing true impact parameter of D meson
   static Double_t GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
   static Double_t GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp);
 
@@ -124,11 +125,13 @@ class AliVertexingHFUtils : public TObject{
 
  private:
 
-  Int_t fK;             // ratio of measured harmonic to event plane harmonic
-  Double_t fSubRes;     // sub-event resolution = sqrt(<cos[n(phiA-phiB)] >)
-  Double_t fMinEtaForTracklets; // min eta for counting tracklets
-  Double_t fMaxEtaForTracklets; // min eta for counting tracklets
+  Int_t fK;             /// ratio of measured harmonic to event plane harmonic
+  Double_t fSubRes;     /// sub-event resolution = sqrt(<cos[n(phiA-phiB)] >)
+  Double_t fMinEtaForTracklets; /// min eta for counting tracklets
+  Double_t fMaxEtaForTracklets; /// min eta for counting tracklets
 
-  ClassDef(AliVertexingHFUtils,0) 
+  /// \cond CLASSIMP    
+  ClassDef(AliVertexingHFUtils,0);
+  /// \endcond
 };
 #endif

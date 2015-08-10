@@ -18,7 +18,7 @@
 /* $Id$ */ 
 
 //-----------------------------------------------------------------------
-// Class for D* corrections --  
+/// \class Class for D* corrections --
 
 #include "AliAnalysisTaskSE.h"
 
@@ -52,17 +52,17 @@ class AliCFTaskForDStarAnalysis : public AliAnalysisTaskSE {
   AliCFTaskForDStarAnalysis(const AliCFTaskForDStarAnalysis& c);
   virtual ~AliCFTaskForDStarAnalysis();
 
-  // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
+  /// ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
   void     UserCreateOutputObjects();
   void     UserExec(Option_t *option);
   void     Terminate(Option_t *);
 
- // UNFOLDING
+ /// UNFOLDING
   void     SetCorrelationMatrix(THnSparse* h) {fCorrelation=h;}
   void     SetAcceptanceUnf(Bool_t AcceptanceUnf) {fAcceptanceUnf = AcceptanceUnf;}
   Bool_t   GetAcceptanceUnf() const {return fAcceptanceUnf;}
 
-  // CORRECTION FRAMEWORK
+  /// CORRECTION FRAMEWORK
   void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
   AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
 
@@ -77,16 +77,18 @@ class AliCFTaskForDStarAnalysis : public AliAnalysisTaskSE {
 
  protected:
  
-  AliCFManager   *fCFManager;   //  pointer to the CF manager
-  TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
-  THnSparse* fCorrelation;      //  response matrix for unfolding
-  Int_t fCountRecoDStarSel;     //  Reco particle found that satisfy cuts in D* selection
-  Int_t fEvents;                //  n. of events
-  Int_t fMinITSClusters;        //  min n. of ITS clusters for RecoDecay
-  Int_t fMinITSClustersSoft;    //  min n. of ITS clusters for RecoDecay soft pion
-  Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
-  
-  ClassDef(AliCFTaskForDStarAnalysis,3); // class for D* corrections
+  AliCFManager   *fCFManager;   ///  pointer to the CF manager
+  TH1I *fHistEventsProcessed;   //!<! simple histo for monitoring the number of events processed
+  THnSparse* fCorrelation;      ///  response matrix for unfolding
+  Int_t fCountRecoDStarSel;     ///  Reco particle found that satisfy cuts in D* selection
+  Int_t fEvents;                ///  n. of events
+  Int_t fMinITSClusters;        ///  min n. of ITS clusters for RecoDecay
+  Int_t fMinITSClustersSoft;    ///  min n. of ITS clusters for RecoDecay soft pion
+  Bool_t fAcceptanceUnf;        ///  flag for unfolding before or after cuts.
+
+  /// \cond CLASSIMP     
+  ClassDef(AliCFTaskForDStarAnalysis,3); /// class for D* corrections
+  /// \endcond
 };
 
 #endif

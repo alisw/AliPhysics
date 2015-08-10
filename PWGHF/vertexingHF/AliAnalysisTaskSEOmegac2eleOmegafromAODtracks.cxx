@@ -80,7 +80,9 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSEOmegac2eleOmegafromAODtracks);
+/// \endcond
 
 //__________________________________________________________________________
 AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegafromAODtracks() : 
