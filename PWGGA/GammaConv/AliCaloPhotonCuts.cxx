@@ -943,7 +943,10 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 		geomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
 		if (EMCALBadChannelsMap->GetEntries() <= imod) continue;
 		geomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
-		if ((Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow)) {
+
+		Int_t iBadCell = 0;
+		iBadCell = (Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+		if (iBadCell > 0) {
 			BadChannels->Fill(cellNumber,1);
 		}else{
 			BadChannels->Fill(cellNumber,0);

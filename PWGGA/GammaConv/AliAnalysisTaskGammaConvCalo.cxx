@@ -1406,9 +1406,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fTrueList[iCut]->Add(fHistoTrueConvGammaEta[iCut]);		
 			}
 
-			fHistoTruePi0NonLinearity[iCut] = new TH2F("TruePi0: E_truth / E_rec Vs E_rec","TruePi0: E_truth / E_rec Vs E_rec",350,0,35,100,0,2);
+			fHistoTruePi0NonLinearity[iCut] = new TH2F("TruePi0: E_truth / E_rec Vs E_rec","TruePi0: E_truth / E_rec Vs E_rec",700,0,35,200,0,2);
 			fClusterOutputList[iCut]->Add(fHistoTruePi0NonLinearity[iCut]);
-			fHistoTrueEtaNonLinearity[iCut] = new TH2F("TrueEta: E_truth / E_rec Vs E_rec","TrueEta: E_truth / E_rec Vs E_rec",350,0,35,100,0,2);
+			fHistoTrueEtaNonLinearity[iCut] = new TH2F("TrueEta: E_truth / E_rec Vs E_rec","TrueEta: E_truth / E_rec Vs E_rec",700,0,35,200,0,2);
 			fClusterOutputList[iCut]->Add(fHistoTrueEtaNonLinearity[iCut]);
 
 			if (fDoClusterQA > 0){
