@@ -3735,17 +3735,12 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       Float_t pTSumTrackInCone     = 0;
       Float_t pTLeadClusterInCone  = 0;
       Float_t pTSumClusterInCone   = 0;
+            
+      pTLeadTrackInCone   = particle->GetChargedLeadPtInCone();
+      pTLeadClusterInCone = particle->GetNeutralLeadPtInCone();
       
-      // Remove when AliRoot v5-06-38 is available
-      CalculateChargedActivityInCone(particle, pTLeadTrackInCone  , pTSumTrackInCone  );
-      CalculateNeutralActivityInCone(particle, pTLeadClusterInCone, pTSumClusterInCone);
-      
-      // Uncomment when AliRoot v5-06-38 is available
-//      pTLeadTrackInCone   = particle->GetChargedLeadPtInCone();
-//      pTLeadClusterInCone = particle->GetNeutralLeadPtInCone();
-//      
-//      pTSumTrackInCone    = particle->GetChargedPtSumInCone();
-//      pTSumClusterInCone  = particle->GetNeutralPtSumInCone();
+      pTSumTrackInCone    = particle->GetChargedPtSumInCone();
+      pTSumClusterInCone  = particle->GetNeutralPtSumInCone();
       
       Float_t pTLeadInCone = pTLeadTrackInCone;
       if(pTLeadClusterInCone > pTLeadInCone) pTLeadInCone = pTLeadClusterInCone;
@@ -4894,76 +4889,5 @@ void AliAnaParticleHadronCorrelation::SetAssocPtBinLimit(Int_t ibin, Float_t pt)
   {
     AliWarning(Form("Bin  number too large %d > %d or small, nothing done", ibin, fNAssocPtBins)) ;
   }
-}
-
-
-
-//___________________________________________________________________________________________________________
-/// Get the track pT or sum of pT in isolation cone.
-// Remove when AliRoot v5-06-38 is available
-//___________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::CalculateChargedActivityInCone(AliAODPWG4ParticleCorrelation * particle,
-                                                                     Float_t & pTLeadTrackInCone, Float_t & pTSumTrackInCone)
-{
-  TObjArray * reftracks   = particle->GetObjArray(fAODNamepTInConeHisto+"Tracks");
-  if(!reftracks) return ;
-  
-  for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++)
-  {
-    AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
-    
-    Float_t pTtrack  = track->Pt();
-    //    Float_t etaAssoc = track->Eta();
-    //    Float_t phiAssoc = track->Phi();
-    //    Float_t etaTrig  = particle->Eta();
-    //    Float_t phiTrig  = particle->Phi();
-    //    Float_t dEta     = etaTrig - etaAssoc;
-    //    Float_t dPhi     = phiTrig - phiAssoc;
-    //    Float_t coneSize = GetIsolationCut()->GetConeSize();
-    
-    pTSumTrackInCone+=pTtrack;
-    if(pTtrack > pTLeadTrackInCone) pTLeadTrackInCone = pTtrack;
-    
-  }
-  
-}
-
-
-
-//___________________________________________________________________________________________________________
-/// Get the cluster pT or sum of pT in isolation cone.
-// Remove when AliRoot v5-06-38 is available
-//___________________________________________________________________________________________________________
-void AliAnaParticleHadronCorrelation::CalculateNeutralActivityInCone(AliAODPWG4ParticleCorrelation * particle,
-                                                                     Float_t & pTLeadClusterInCone, Float_t & pTSumClusterInCone)
-{
-  TObjArray * refclusters = particle->GetObjArray(fAODNamepTInConeHisto+"Clusters");
-  if(!refclusters) return ;
-  
-  if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
-  
-  // Get vertex for cluster momentum calculation
-  Double_t vertex[] = {0,0,0} ; //vertex ;
-  if(GetReader()->GetDataType() != AliCaloTrackReader::kMC)
-    GetReader()->GetVertex(vertex);
-  
-  for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
-  {
-    AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
-    calo->GetMomentum(fMomentum,vertex) ;//Assume that come from vertex in straight line
-    
-    Float_t pTCluster = fMomentum.Pt();
-    //    Float_t etaAssoc  = fMomentum.Eta();
-    //    Float_t phiAssoc  = fMomentum.Phi();
-    //    Float_t etaTrig   = particle->Eta();
-    //    Float_t phiTrig   = particle->Phi();
-    //    Float_t dEta      = etaTrig - etaAssoc;
-    //    Float_t dPhi      = phiTrig - phiAssoc;
-    //    Float_t coneSize  = GetIsolationCut()->GetConeSize();
-    
-    pTSumClusterInCone += pTCluster;
-    if(pTCluster > pTLeadClusterInCone) pTLeadClusterInCone = pTCluster;
-  }
-  
 }
 
