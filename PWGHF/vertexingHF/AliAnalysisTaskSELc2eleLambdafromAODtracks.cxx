@@ -84,7 +84,9 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliAnalysisTaskSELc2eleLambdafromAODtracks)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSELc2eleLambdafromAODtracks);
+/// \endcond
 
 //__________________________________________________________________________
 AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAODtracks() : 
@@ -216,7 +218,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fElectronTracks(0x0)
 {
   //
-  // Default Constructor. 
+  /// Default Constructor.
   //
 	for(Int_t i=0;i<17;i++){
 		fHistoElePtvsCutVarsRS[i] = 0;
@@ -360,7 +362,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fElectronTracks(0x0)
 {
   //
-  // Constructor. Initialization of Inputs and Outputs
+  /// Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSELc2eleLambdafromAODtracks","Calling Constructor");
 
@@ -386,7 +388,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 //___________________________________________________________________________
 AliAnalysisTaskSELc2eleLambdafromAODtracks::~AliAnalysisTaskSELc2eleLambdafromAODtracks() {
   //
-  // destructor
+  /// destructor
   //
   Info("~AliAnalysisTaskSELc2eleLambdafromAODtracks","Calling Destructor");
 
@@ -436,7 +438,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::~AliAnalysisTaskSELc2eleLambdafromAO
 //_________________________________________________
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::Init() {
   //
-  // Initialization
+  /// Initialization
   //
   //
 
@@ -457,7 +459,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::Init() {
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
 {
   //
-  // UserExec
+  /// UserExec
   //
 
   if (!fInputEvent) {
@@ -607,9 +609,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::Terminate(Option_t*)
 {    
-  // The Terminate() function is the last function to be called during
-  // a query. It always runs on the client, it can be used to present
-  // the results graphically or save the results to file.
+  /// The Terminate() function is the last function to be called during
+  /// a query. It always runs on the client, it can be used to present
+  /// the results graphically or save the results to file.
   
   //AliInfo("Terminate","");
   AliAnalysisTaskSE::Terminate();
@@ -632,9 +634,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::Terminate(Option_t*)
 //___________________________________________________________________________
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserCreateOutputObjects() 
 { 
-  //
-  // UserCreateOutputObject
-  //
+  ///
+  /// UserCreateOutputObject
+  ///
   //AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
 
   //------------------------------------------------
@@ -698,7 +700,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
  )
 {
   //
-  // Main Analysis part
+  /// Main Analysis part
   //
 	if(fDoEventMixing && fElectronTracks) fElectronTracks->Delete();
 
@@ -787,9 +789,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables() 
 {
-  //
-  // Define tree variables
-  //
+  ///
+  /// Define tree variables
+  ///
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
@@ -880,9 +882,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, TClonesArray *mcArray, Bool_t mixing_flag) 
 {
-  //
-  // Fill histograms or tree depending on fWriteVariableTree
-  //
+  ///
+  /// Fill histograms or tree depending on fWriteVariableTree
+  ///
 	if(!trk) return;
 	if(!v0) return;
 
@@ -1390,7 +1392,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineEleTreeVariables() 
 {
   //
-  // Define electron tree variables
+  /// Define electron tree variables
   //
 
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
@@ -1430,7 +1432,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineEleTreeVariables()
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray) 
 {
   //
-  // Fill histograms or tree depending on fWriteVariableTree 
+  /// Fill histograms or tree depending on fWriteVariableTree
   //
 
 	if(!trk) return;
@@ -1506,7 +1508,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineV0TreeVariables() 
 {
   //
-  // Define V0 tree variables
+  /// Define V0 tree variables
   //
 
   const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
@@ -1554,7 +1556,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineV0TreeVariables()
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray) 
 {
   //
-  // Fill histograms or tree depending on fWriteVariableTree 
+  /// Fill histograms or tree depending on fWriteVariableTree
   //
 	if(!v0) return;
 
@@ -1690,9 +1692,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineMCTreeVariables() 
 {
-  //
-  // Define electron tree variables
-  //
+  ///
+  /// Define electron tree variables
+  ///
 
   const char* nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
   fMCVariablesTree = new TTree(nameoutput,"MC variables tree");
@@ -1721,7 +1723,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineMCTreeVariables()
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParticle *mcpart, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype) 
 {
   //
-  // Fill histograms or tree depending on fWriteMCVariableTree 
+  /// Fill histograms or tree depending on fWriteMCVariableTree
   //
 	if(!mcpart) return;
 	if(!mcepart) return;
@@ -1827,7 +1829,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 ////__________________________________________________________________________
 void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
   //
-  // This is to define general histograms
+  /// This is to define general histograms
   //
 
   fCEvents = new TH1F("fCEvents","conter",18,-0.5,17.5);
@@ -1881,7 +1883,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineGeneralHistograms() {
 void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms() 
 {
   //
-  // Define analyis histograms
+  /// Define analyis histograms
   //
 	
   //------------------------------------------------
@@ -2182,9 +2184,9 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
 //________________________________________________________________________
 AliAODRecoCascadeHF* AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeCascadeHF(AliAODv0 *v0, AliAODTrack *part, AliAODEvent * aod, AliAODVertex *secVert, Bool_t mixing) 
 {
-  //
-  // Create AliAODRecoCascadeHF object from the argument
-  //
+  ///
+  /// Create AliAODRecoCascadeHF object from the argument
+  ///
 
   if(!v0) return 0x0;
   if(!part) return 0x0;
@@ -2287,8 +2289,8 @@ AliAODRecoCascadeHF* AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeCascadeHF(A
 AliAODVertex* AliAnalysisTaskSELc2eleLambdafromAODtracks::CallPrimaryVertex(AliAODv0 *v0, AliAODTrack *trk, AliAODEvent* aod)
 {
   //
-  // Make an array of tracks which should not be used in primary vertex calculation and 
-  // Call PrimaryVertex function
+  /// Make an array of tracks which should not be used in primary vertex calculation and
+  /// Call PrimaryVertex function
   //
 
   TObjArray *TrackArray = new TObjArray(3);
@@ -2319,8 +2321,8 @@ AliAODVertex* AliAnalysisTaskSELc2eleLambdafromAODtracks::PrimaryVertex(const TO
 								   AliVEvent *event)
 {
   //
-  //Used only for pp
-  //copied from AliAnalysisVertexingHF (except for the following 3 lines)
+  /// Used only for pp
+  /// copied from AliAnalysisVertexingHF (except for the following 3 lines)
   //
 
   Bool_t fRecoPrimVtxSkippingTrks = kTRUE;

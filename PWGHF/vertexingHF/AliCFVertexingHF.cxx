@@ -16,7 +16,7 @@
 // $Id$
 
 //-----------------------------------------------------------------------
-// Class for HF corrections as a function of many variables and step 
+// Class for HF corrections as a function of many variables and step
 // Author : C. Zampolli, CERN
 // D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
 // Base class for HF Unfolding - agrelli@uu.nl
@@ -65,7 +65,7 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
-	// constructor
+	/// constructor
 	//
 
 
@@ -100,7 +100,7 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
-	// constructor with mcArray
+	/// constructor with mcArray
 	//
 	
 	SetDselection(originDselection);
@@ -111,7 +111,7 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 AliCFVertexingHF::~AliCFVertexingHF()
 {
 	//
-	// destructor
+	/// destructor
 	//
 
 	if (fmcArray) fmcArray = 0x0;
@@ -135,7 +135,7 @@ AliCFVertexingHF::~AliCFVertexingHF()
 AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 {	
 	//
-	// assigment operator
+	/// assigment operator
 	//
 
 	if (this!= &c){
@@ -207,7 +207,7 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fConfiguration(c.fConfiguration)
 {  
   //
-  //copy constructor
+  /// copy constructor
   //
   delete fmcArray;
   fmcArray = new TClonesArray(*(c.fmcArray));
@@ -231,10 +231,10 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 //___________________________________________________________
 void AliCFVertexingHF::SetDselection(UShort_t originDselection)
 {
-	// setting the way the D0 will be selected
-	// 0 --> only from c quarks
-	// 1 --> only from b quarks
-	// 2 --> from both c quarks and b quarks
+	/// setting the way the D0 will be selected
+	/// 0 --> only from c quarks
+	/// 1 --> only from b quarks
+	/// 2 --> from both c quarks and b quarks
 		
 	fOriginDselection = originDselection;
 	
@@ -260,7 +260,7 @@ void AliCFVertexingHF::SetDselection(UShort_t originDselection)
 void AliCFVertexingHF::SetMCCandidateParam(Int_t label)
 {
 	//
-	// setting the parameters (candidate and n. daughters)
+	/// setting the parameters (candidate and n. daughters)
 	//	
 	
         fmcPartCandidate = dynamic_cast <AliAODMCParticle*> (fmcArray->At(label));
@@ -277,7 +277,7 @@ void AliCFVertexingHF::SetMCCandidateParam(Int_t label)
 Int_t AliCFVertexingHF::MCcquarkCounting(AliAODMCParticle* mcPart) const
 {
 	//
-	// counting the c-quarks
+	/// counting the c-quarks
 	// 
 
 	Int_t cquarks = 0;
@@ -297,7 +297,7 @@ Int_t AliCFVertexingHF::MCcquarkCounting(AliAODMCParticle* mcPart) const
 Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClonesArray */*mcArray*/) const 
 {
 	// 
-	//checking the family
+	/// checking the family
 	//
 
 	Int_t pdgGranma = CheckOrigin();
@@ -333,7 +333,7 @@ Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClones
 Int_t AliCFVertexingHF::CheckOrigin() const 
 {		
 	//
-	// checking whether the mother of the particles come from a charm or a bottom quark
+	/// checking whether the mother of the particles come from a charm or a bottom quark
 	//
 	
 	Int_t pdgGranma = 0;
@@ -383,8 +383,8 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 Bool_t AliCFVertexingHF::CheckMCDaughters()const 
 {
 	//
-	// checking the daughters
-	// at MC level
+	/// checking the daughters
+	/// at MC level
 
 	AliAODMCParticle *mcPartDaughter;
 	Bool_t checkDaughters = kFALSE;
@@ -422,7 +422,7 @@ Bool_t AliCFVertexingHF::CheckMCDaughters()const
 Bool_t AliCFVertexingHF::FillMCContainer(Double_t *containerInputMC)
 {
 	//
-	// fill the container for Generator level selection
+	/// fill the container for Generator level selection
 	//
 
 	Bool_t mcContainerFilled = kFALSE;  
@@ -491,9 +491,9 @@ Bool_t AliCFVertexingHF::FillRecoContainer(Double_t *containerInput)
 //_____________________________________________________
 Bool_t AliCFVertexingHF::MCAcceptanceStep() const
 {
-	//
-	// checking the MC acceptance step
-	//
+	///
+	/// checking the MC acceptance step
+	///
 
 	Bool_t bMCAccStep = kFALSE;
 	
@@ -532,9 +532,9 @@ Bool_t AliCFVertexingHF::MCAcceptanceStep() const
  //_____________________________________________________
 Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **trackCuts) const
 {		
-	//
-	// check on the kTPCrefit and kITSrefit conditions of the daughters
-	//
+	///
+	/// check on the kTPCrefit and kITSrefit conditions of the daughters
+	///
 	Bool_t bRefitStep = kFALSE;
 	
 	Int_t label0 = fmcPartCandidate->GetDaughter(0);
@@ -616,9 +616,9 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **tr
 
 Bool_t AliCFVertexingHF::RecoStep() 
 { 
-	//
-	//check also vertex and ITS Refit and TPC Refit
-	//
+	///
+	/// check also vertex and ITS Refit and TPC Refit
+	///
 
 	Bool_t bRecoStep = kFALSE;
 	Int_t mcLabel = GetMCLabel();
@@ -657,9 +657,9 @@ Bool_t AliCFVertexingHF::RecoStep()
 //____________________________________________
 Double_t AliCFVertexingHF::GetEtaProng(Int_t iProng) const 
 {
-	//
-	// getting eta of the prong
-	//
+	///
+	/// getting eta of the prong
+	///
 	
 	if (fRecoCandidate){
 		Double_t etaProng = fRecoCandidate->EtaProng(iProng);  
@@ -670,9 +670,9 @@ Double_t AliCFVertexingHF::GetEtaProng(Int_t iProng) const
 //______________________________________________________
 Double_t AliCFVertexingHF::GetPtProng(Int_t iProng) const 
 {
-	//
-	// getting pt of the prong
-	//
+	///
+	/// getting pt of the prong
+	///
 
 	if (fRecoCandidate){
 		Double_t ptProng = fRecoCandidate->PtProng(iProng);  
@@ -686,9 +686,9 @@ Double_t AliCFVertexingHF::GetPtProng(Int_t iProng) const
 
 Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts **trackCuts) const
 {
-	//
-	// reco Acceptance step
-	//
+	///
+	/// reco Acceptance step
+	///
 	
 	Bool_t bRecoAccStep = kFALSE;
 	
@@ -717,9 +717,9 @@ Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts **trackCuts) const
 
 Bool_t AliCFVertexingHF::FillUnfoldingMatrix(UInt_t pdg, Double_t fill[4]) const
 {
-	//
-	// filling the unfolding matrix
-	//
+	///
+	/// filling the unfolding matrix
+	///
 	
 	if(fmcPartCandidate){
 		
@@ -738,9 +738,9 @@ Bool_t AliCFVertexingHF::FillUnfoldingMatrix(UInt_t pdg, Double_t fill[4]) const
 
 Int_t AliCFVertexingHF::CheckReflexion(Char_t isSign)
 {
-	//
-	// check for reflexion (particle/antiparticle)
-	//
+	///
+	/// check for reflexion (particle/antiparticle)
+	///
 
 	Int_t mcLabel = GetMCLabel();
 	
@@ -777,9 +777,9 @@ Int_t AliCFVertexingHF::CheckReflexion(Char_t isSign)
 
 Bool_t AliCFVertexingHF::SetLabelArray()
 {
-	//
-	// setting the label arrays
-	//
+	///
+	/// setting the label arrays
+	///
 
 	Bool_t bLabelArray = kFALSE;
 
@@ -954,9 +954,9 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 
 void AliCFVertexingHF::SetPtAccCut(Float_t* ptAccCut)
 {
-	//
-	// setting the pt cut to be used in the Acceptance steps (MC+Reco)
-	//
+	///
+	/// setting the pt cut to be used in the Acceptance steps (MC+Reco)
+	///
 
 	if (fProngs>0){
 		for (Int_t iP=0; iP<fProngs; iP++){
@@ -972,9 +972,9 @@ void AliCFVertexingHF::SetPtAccCut(Float_t* ptAccCut)
 
 void AliCFVertexingHF::SetEtaAccCut(Float_t* etaAccCut)
 {
-	//
-	// setting the eta cut to be used in the Acceptance steps (MC+Reco)
-	//
+	///
+	/// setting the eta cut to be used in the Acceptance steps (MC+Reco)
+	///
 
 	if (fProngs>0){
 		for (Int_t iP=0; iP<fProngs; iP++){
@@ -987,9 +987,9 @@ void AliCFVertexingHF::SetEtaAccCut(Float_t* etaAccCut)
 
 void AliCFVertexingHF::SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut)
 {
-	//
-	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
-	//
+	///
+	/// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
+	///
 
 	if (fProngs>0){
 		for (Int_t iP=0; iP<fProngs; iP++){
@@ -1004,9 +1004,9 @@ void AliCFVertexingHF::SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut)
 
 void AliCFVertexingHF::SetAccCut()
 {
-	//
-	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
-	//
+	///
+	/// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
+	///
 
 	if (fProngs>0){
 		for (Int_t iP=0; iP<fProngs; iP++){

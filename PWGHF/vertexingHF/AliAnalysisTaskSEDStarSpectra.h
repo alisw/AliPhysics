@@ -15,7 +15,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */ 
+/* $Id$ */
+
+/// \class AliAnalysisTaskSEDStarSpectra
 
 #include <TH2F.h>
 #include <TH3F.h>
@@ -35,7 +37,7 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   AliAnalysisTaskSEDStarSpectra(const Char_t* name,AliRDHFCutsDStartoKpipi* cuts);
   virtual ~AliAnalysisTaskSEDStarSpectra();
 
-  // Implementation of interface methods  
+  /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -43,25 +45,25 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
  
 
- //Background simulation
+ /// Background simulation
   void     SideBandBackground(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
   void     WrongSignForDStar(AliAODRecoCascadeHF *part, AliRDHFCutsDStartoKpipi *cuts, TList *listout);
-    // histos
+    /// histos
   void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
   void     DefineHistograms();
   Int_t CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const;
   void CreateImpactParameterHistos();
 
-  // set analysis type
+  /// set analysis type
   void     SetAnalysisType(Int_t anaType) {fAnalysis = anaType;}
   void     PrintAnalysisType() {printf("Analysis type: %d\n(0: Heidelberg\t1: Utrecht)",fAnalysis);}
- // set MC usage
+ /// set MC usage
   void     SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t   GetMC() const {return fUseMCInfo;}
- // set rare mesons
+ /// set rare mesons
   void     SetRareSearch(Bool_t theRareOn) {fDoSearch = theRareOn;}
   Bool_t   GetRareSearch() const {return fDoSearch;}
-  //impact par study
+  /// impact par study
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpParDstar=doImp;}
   Bool_t GetDoImpactParameterHistos() const {return fDoImpParDstar;}
 
@@ -74,31 +76,33 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   AliAnalysisTaskSEDStarSpectra(const AliAnalysisTaskSEDStarSpectra &source);
   AliAnalysisTaskSEDStarSpectra& operator=(const AliAnalysisTaskSEDStarSpectra& source); 
   
-  Int_t  fEvents;                //  n. of events
-  Int_t  fAnalysis;		 //  0: HD;	1: UU;
-  Double_t fD0Window;		 //  select width on D0Mass
-  Double_t fPeakWindow;          //  select width on DstarMass
-  Bool_t fUseMCInfo;             //  Use MC info
-  Bool_t fDoSearch;              //  Rare mesons
-  TList *fOutput;                //!  User output
-  TList *fOutputAll;             //!  User output2
-  TList *fOutputPID;             //!  User output3
-  Int_t  fNSigma;                //  n sigma for kaon PID
-  AliRDHFCutsDStartoKpipi *fCuts; // Cuts - sent to output slot 3
+  Int_t  fEvents;                ///  n. of events
+  Int_t  fAnalysis;		 ///  0: HD;	1: UU;
+  Double_t fD0Window;		 ///  select width on D0Mass
+  Double_t fPeakWindow;          ///  select width on DstarMass
+  Bool_t fUseMCInfo;             ///  Use MC info
+  Bool_t fDoSearch;              ///  Rare mesons
+  TList *fOutput;                //!<!  User output
+  TList *fOutputAll;             //!<!  User output2
+  TList *fOutputPID;             //!<!  User output3
+  Int_t  fNSigma;                ///  n sigma for kaon PID
+  AliRDHFCutsDStartoKpipi *fCuts; /// Cuts - sent to output slot 3
   // define the histograms
-  TH1F *fCEvents;             //!
-  TH2F *fTrueDiff2;           //!
-  TH1F *fDeltaMassD1;         //! 
-  AliNormalizationCounter *fCounter;//!Counter for normalization slot 4
-  Bool_t fDoImpParDstar;  // imppar studies
-  Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
-  Float_t fLowerImpPar;  // lower limit in impact parameter (um)
-  Float_t fHigherImpPar; // higher limit in impact parameter (um)
-  Bool_t  fDoDStarVsY;   // flag to enable D* vs y 
+  TH1F *fCEvents;             //!<!
+  TH2F *fTrueDiff2;           //!<!
+  TH1F *fDeltaMassD1;         //!<! 
+  AliNormalizationCounter *fCounter;//!<!Counter for normalization slot 4
+  Bool_t fDoImpParDstar;  /// imppar studies
+  Int_t  fNImpParBins;   /// nunber of bins in impact parameter histos
+  Float_t fLowerImpPar;  /// lower limit in impact parameter (um)
+  Float_t fHigherImpPar; /// higher limit in impact parameter (um)
+  Bool_t  fDoDStarVsY;   /// flag to enable D* vs y
 
-  THnSparseF *fHistMassPtImpParTCDs[5];//! histograms for impact paramter studies
+  THnSparseF *fHistMassPtImpParTCDs[5];//!<! histograms for impact paramter studies
 
-  ClassDef(AliAnalysisTaskSEDStarSpectra,9); // class for D* spectra
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskSEDStarSpectra,9); /// class for D* spectra
+  /// \endcond
 };
 
 #endif

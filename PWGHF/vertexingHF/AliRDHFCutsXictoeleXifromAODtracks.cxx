@@ -44,7 +44,10 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliRDHFCutsXictoeleXifromAODtracks)
+/// \cond CLASSIMP
+ClassImp(AliRDHFCutsXictoeleXifromAODtracks);
+/// \endcond
+
 
 //--------------------------------------------------------------------------
 AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const char* name) :

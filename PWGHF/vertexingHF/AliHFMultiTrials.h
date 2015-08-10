@@ -7,6 +7,8 @@
 #include <TString.h>
 #include <TPad.h>
 
+/// \class AliHFMultiTrials
+
 class AliHFMultiTrials : public TNamed {
 
  public:
@@ -77,53 +79,55 @@ class AliHFMultiTrials : public TNamed {
   AliHFMultiTrials(const AliHFMultiTrials &source);
   AliHFMultiTrials& operator=(const AliHFMultiTrials& source); 
 
-  Int_t fNumOfRebinSteps; // number of rebin steps
+  Int_t fNumOfRebinSteps; /// number of rebin steps
   Int_t* fRebinSteps;     //[fNumOfRebinSteps] values of rebin
-  Int_t fNumOfLowLimFitSteps; // number of steps on the min. mass for fit
+  Int_t fNumOfLowLimFitSteps; /// number of steps on the min. mass for fit
   Double_t* fLowLimFitSteps; //[fNumOfLowLimFitSteps] values of low limits for fit
-  Int_t fNumOfUpLimFitSteps; // number of steps on the max. mass for fit
+  Int_t fNumOfUpLimFitSteps; /// number of steps on the max. mass for fit
   Double_t* fUpLimFitSteps; //[fNumOfUpLimFitSteps] values of up limits for fit
-  Int_t fNumOfnSigmaBinCSteps; // number of steps on the bin counting
+  Int_t fNumOfnSigmaBinCSteps; /// number of steps on the bin counting
   Double_t* fnSigmaBinCSteps; //[fNumOfnSigmaBinCSteps] values of nsigma for bin count
 
-  Double_t fSigmaGausMC; // sigma of D meson peak from MC
-  Double_t fSigmaMCVariation; // relative variation of the sigma
-  Double_t fMassD;       // mass of D meson
-  TString fSuffix;       // name to characterize analysis case
-  Int_t fFitOption;      //LL or chi2 fit
-  Bool_t fUseExpoBkg;    // switch for exponential background 
-  Bool_t fUseLinBkg;    // switch for linear background 
-  Bool_t fUsePol2Bkg;    // switch for pol2 background 
-  Bool_t fUsePol3Bkg;    // switch for pol3 background 
-  Bool_t fUsePol4Bkg;    // switch for pol4 background 
-  Bool_t fUsePol5Bkg;    // switch for pol5 background 
+  Double_t fSigmaGausMC; /// sigma of D meson peak from MC
+  Double_t fSigmaMCVariation; /// relative variation of the sigma
+  Double_t fMassD;       /// mass of D meson
+  TString fSuffix;       /// name to characterize analysis case
+  Int_t fFitOption;      /// LL or chi2 fit
+  Bool_t fUseExpoBkg;    /// switch for exponential background
+  Bool_t fUseLinBkg;    /// switch for linear background
+  Bool_t fUsePol2Bkg;    /// switch for pol2 background
+  Bool_t fUsePol3Bkg;    /// switch for pol3 background
+  Bool_t fUsePol4Bkg;    /// switch for pol4 background
+  Bool_t fUsePol5Bkg;    /// switch for pol5 background
 
-  Bool_t fDrawIndividualFits; // flag for drawing fits
+  Bool_t fDrawIndividualFits; /// flag for drawing fits
  
-  TH1F* fHistoRawYieldDistAll;  // histo with yield from all trials
-  TH1F* fHistoRawYieldTrialAll; // histo with yield from all trials
-  TH1F* fHistoSigmaTrialAll;    // histo with gauss sigma from all trials
-  TH1F* fHistoMeanTrialAll;     // histo with gauss mean from all trials
-  TH1F* fHistoChi2TrialAll;     // histo with chi2 from all trials
+  TH1F* fHistoRawYieldDistAll;  /// histo with yield from all trials
+  TH1F* fHistoRawYieldTrialAll; /// histo with yield from all trials
+  TH1F* fHistoSigmaTrialAll;    /// histo with gauss sigma from all trials
+  TH1F* fHistoMeanTrialAll;     /// histo with gauss mean from all trials
+  TH1F* fHistoChi2TrialAll;     /// histo with chi2 from all trials
 
-  TH1F* fHistoRawYieldDistBinCAll; // histo with bin counts from all trials
-  TH2F* fHistoRawYieldTrialBinCAll; // histo with bin counts from all trials
+  TH1F* fHistoRawYieldDistBinCAll; /// histo with bin counts from all trials
+  TH2F* fHistoRawYieldTrialBinCAll; /// histo with bin counts from all trials
 
-  TH1F** fHistoRawYieldDist;  // histo with yield from subsamples of trials
-  TH1F** fHistoRawYieldTrial; // histo with yield from subsamples of trials
-  TH1F** fHistoSigmaTrial;    // histo with gauss sigma from subsamples of trials
-  TH1F** fHistoMeanTrial;     // histo with gauss mean from subsamples of trials
-  TH1F** fHistoChi2Trial;     // histo with chi2 from subsamples of trials
+  TH1F** fHistoRawYieldDist;  /// histo with yield from subsamples of trials
+  TH1F** fHistoRawYieldTrial; /// histo with yield from subsamples of trials
+  TH1F** fHistoSigmaTrial;    /// histo with gauss sigma from subsamples of trials
+  TH1F** fHistoMeanTrial;     /// histo with gauss mean from subsamples of trials
+  TH1F** fHistoChi2Trial;     /// histo with chi2 from subsamples of trials
 
-  TH1F** fHistoRawYieldDistBinC;  // histo with bin counts from subsamples of trials
-  TH2F** fHistoRawYieldTrialBinC; // histo with bin counts from subsamples of trials
+  TH1F** fHistoRawYieldDistBinC;  /// histo with bin counts from subsamples of trials
+  TH2F** fHistoRawYieldTrialBinC; /// histo with bin counts from subsamples of trials
 
-  TNtuple* fNtupleMultiTrials; // tree
+  TNtuple* fNtupleMultiTrials; /// tree
  
-  Double_t fMinYieldGlob;   // minimum yield
-  Double_t fMaxYieldGlob;   // maximum yield 
+  Double_t fMinYieldGlob;   /// minimum yield
+  Double_t fMaxYieldGlob;   /// maximum yield
 
-  ClassDef(AliHFMultiTrials,1); // class for multiple trials of invariant mass fit
+  /// \cond CLASSIMP    
+  ClassDef(AliHFMultiTrials,1); /// class for multiple trials of invariant mass fit
+  /// \endcond
 };
 
 #endif

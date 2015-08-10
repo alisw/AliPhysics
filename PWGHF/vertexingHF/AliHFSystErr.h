@@ -6,9 +6,9 @@
 /* $Id$ */ 
 
 //***********************************************************
-// Class AliRDHFSystErr
-// to handle systematic errors for charm hadrons
-// Author: A.Dainese, andrea.dainese@pd.infn.it
+/// \class Class AliRDHFSystErr
+/// \brief to handle systematic errors for charm hadrons
+/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
 #include <TNamed.h>
@@ -39,15 +39,15 @@ class AliHFSystErr : public TNamed
   Double_t GetTrackingEffErr(Double_t pt) const;
   Double_t GetTotalSystErr(Double_t pt,Double_t feeddownErr=0) const;
 
-  // Setting  the run number
-  //  set the two last numbers of the year (is 10 for 2010)
+  /// Setting  the run number
+  ///  set the two last numbers of the year (is 10 for 2010)
   void SetRunNumber(Int_t number) { 
     fRunNumber = number; 
     AliInfo(Form(" Settings for run year 20%2d",fRunNumber));
   }
   Int_t GetRunNumber() const { return fRunNumber; }
-  // Setting the collision type
-  //  0 is pp, 1 is PbPb, 2 is pPb
+  /// Setting the collision type
+  ///  0 is pp, 1 is PbPb, 2 is pPb
   void SetCollisionType(Int_t type) { 
     fCollisionType = type; 
     if (fCollisionType==0) { AliInfo(" Settings for p-p collisions"); }
@@ -55,8 +55,8 @@ class AliHFSystErr : public TNamed
     else if(fCollisionType==2) { AliInfo(" Settings for p-Pb collisions"); }
   }
   Int_t GetCollisionType() const { return fCollisionType; }
-  // Setting for the centrality class
-  //  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
+  /// Setting for the centrality class
+  ///  0100 for MB, 020 (4080) for 0-20 (40-80) CC and so on
   void SetCentrality(TString centrality) { 
     fCentralityClass = centrality; 
     AliInfo(Form(" Settings for centrality class %s",fCentralityClass.Data()));
@@ -75,7 +75,7 @@ class AliHFSystErr : public TNamed
     AliInfo(" Settings for the PbPb 2010 energy scan");
   }
 
-  // Settings of rapidity ranges for pPb 0-100% CC
+  /// Settings of rapidity ranges for pPb 0-100% CC
   void SetRapidity(TString rapidity) {
     fRapidityRange = rapidity;
     AliInfo(Form(" Settings for rapidity interval %s",fRapidityRange.Data()));
@@ -85,7 +85,7 @@ class AliHFSystErr : public TNamed
     AliInfo("Settings for the pPb vs y measurement");
   }
 
-  // Function to initialize the variables/histograms
+  /// Function to initialize the variables/histograms
   void Init(Int_t decay);
 
   void InitD0toKpi2010PbPb010CentScan();
@@ -242,28 +242,30 @@ class AliHFSystErr : public TNamed
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
-  TH1F *fNorm;            // normalization
-  TH1F *fRawYield;        // raw yield 
-  TH1F *fTrackingEff;     // tracking efficiency
-  TH1F *fBR;              // branching ratio
-  TH1F *fCutsEff;         // cuts efficiency
-  TH1F *fPIDEff;          // PID efficiency
-  TH1F *fMCPtShape;       // MC dNdpt
-  TH1F *fPartAntipart;    // particle=antiparticle
+  TH1F *fNorm;            /// normalization
+  TH1F *fRawYield;        /// raw yield 
+  TH1F *fTrackingEff;     /// tracking efficiency
+  TH1F *fBR;              /// branching ratio
+  TH1F *fCutsEff;         /// cuts efficiency
+  TH1F *fPIDEff;          /// PID efficiency
+  TH1F *fMCPtShape;       /// MC dNdpt
+  TH1F *fPartAntipart;    /// particle=antiparticle
 
-  Int_t fRunNumber;        // Run Number (year)
-  Int_t fCollisionType;    // Collision type: pp=0, PbPb=1
-  TString fCentralityClass;  // Centrality class
-                           // MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
-  TString fRapidityRange;  // Rapidity range fot y measurements 
+  Int_t fRunNumber;        /// Run Number (year)
+  Int_t fCollisionType;    /// Collision type: pp=0, PbPb=1
+  TString fCentralityClass;  /// Centrality class
+                           /// MB:0100, 0-10:010, 0-20:020 ...40-80:4080...
+  TString fRapidityRange;  /// Rapidity range fot y measurements 
 
-  Bool_t fIsLowEnergy;     // flag for the low energy (2.76TeV) run
-  Bool_t fIsLowPtAnalysis; // flag for the low pt analysis (no topological cuts)
+  Bool_t fIsLowEnergy;     /// flag for the low energy (2.76TeV) run
+  Bool_t fIsLowPtAnalysis; /// flag for the low pt analysis (no topological cuts)
 
-  Bool_t fIsCentScan;      // flag fot the PbPb centrality scan
-  Bool_t fIsRapidityScan;  // flag for the pPb vs y measurement
- 
-  ClassDef(AliHFSystErr,6);  // class for systematic errors of charm hadrons
+  Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
+  Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
+
+  /// \cond CLASSIMP    
+  ClassDef(AliHFSystErr,6);  /// class for systematic errors of charm hadrons
+  /// \endcond
 };
 
 #endif

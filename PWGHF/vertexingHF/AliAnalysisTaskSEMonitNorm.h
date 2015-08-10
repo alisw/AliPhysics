@@ -7,12 +7,13 @@
 /* $Id$ */ 
 
 //*************************************************************************
-// 
-// Class for monitoring of information used for open charm normalization
-// (triggers, candles, ...)
-//
-// Origin: davide.caffarri@pd.infn.it
-//
+///
+/// \class AliAnalysisTaskSEMonitNorm
+/// \brief Class for monitoring of information used for open charm normalization
+/// (triggers, candles, ...)
+///
+/// \author Origin: davide.caffarri@pd.infn.it
+///
 //*************************************************************************
 
 
@@ -37,20 +38,21 @@ class AliAnalysisTaskSEMonitNorm : public AliAnalysisTaskSE
 
  protected:
   
-  AliESDEvent *fESD;            // ESD object
-  TList       *fOutput;         //! list send on output slot 0
-  AliCounterCollection *fCounterTrigg; //! counter for the differents triggered events. 
-  AliCounterCollection *fCounterNotTrigg; //! counter for the differents not triggered events.
-  AliCounterCollection *fCounterCandleTrig; //! counter for candles in the triggered events (esd)
-  AliCounterCollection *fCounterCandleNotTrig; //! counter for candles in the triggered events (esd)  
+  AliESDEvent *fESD;            /// ESD object
+  TList       *fOutput;         //!<! list send on output slot 0
+  AliCounterCollection *fCounterTrigg; //!<! counter for the differents triggered events. 
+  AliCounterCollection *fCounterNotTrigg; //!<! counter for the differents not triggered events.
+  AliCounterCollection *fCounterCandleTrig; //!<! counter for candles in the triggered events (esd)
+  AliCounterCollection *fCounterCandleNotTrig; //!<! counter for candles in the triggered events (esd)  
 
  private:    
 
   AliAnalysisTaskSEMonitNorm(const AliAnalysisTaskSEMonitNorm&); // not implemented
   AliAnalysisTaskSEMonitNorm& operator=(const AliAnalysisTaskSEMonitNorm&); // not implemented
 
-  
-  ClassDef(AliAnalysisTaskSEMonitNorm,1); // class for monitoring of normalization information
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskSEMonitNorm,1); /// class for monitoring of normalization information
+  /// \endcond
 };
 
 #endif

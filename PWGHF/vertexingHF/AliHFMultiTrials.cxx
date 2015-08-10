@@ -26,7 +26,9 @@
 #include "AliHFMassFitterVAR.h"
 #include "AliHFMultiTrials.h"
 
-ClassImp(AliHFMultiTrials)
+/// \cond CLASSIMP
+ClassImp(AliHFMultiTrials);
+/// \endcond
 
 
 //_________________________________________________________________________

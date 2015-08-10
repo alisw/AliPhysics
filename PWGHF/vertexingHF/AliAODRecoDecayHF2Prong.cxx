@@ -26,14 +26,16 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 
-ClassImp(AliAODRecoDecayHF2Prong)
+/// \cond CLASSIMP
+ClassImp(AliAODRecoDecayHF2Prong);
+/// \endcond
 
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF2Prong::AliAODRecoDecayHF2Prong() :
   AliAODRecoDecayHF()
 {
   //
-  // Default Constructor
+  /// Default Constructor
   //
 }
 //--------------------------------------------------------------------------
@@ -43,7 +45,7 @@ AliAODRecoDecayHF2Prong::AliAODRecoDecayHF2Prong(AliAODVertex *vtx2,
   AliAODRecoDecayHF(vtx2,2,0,px,py,pz,d0,d0err)
 {
   //
-  // Constructor with AliAODVertex for decay vertex
+  /// Constructor with AliAODVertex for decay vertex
   //
   SetDCA(dca);
 }
@@ -53,7 +55,7 @@ AliAODRecoDecayHF2Prong::AliAODRecoDecayHF2Prong(AliAODVertex *vtx2,
   AliAODRecoDecayHF(vtx2,2,0,d0,d0err)
 {
   //
-  // Constructor with AliAODVertex for decay vertex and without prongs momenta
+  /// Constructor with AliAODVertex for decay vertex and without prongs momenta
   //
   SetDCA(dca);
 }
@@ -62,14 +64,14 @@ AliAODRecoDecayHF2Prong::AliAODRecoDecayHF2Prong(const AliAODRecoDecayHF2Prong &
   AliAODRecoDecayHF(source)
 {
   //
-  // Copy constructor
+  /// Copy constructor
   //
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF2Prong &AliAODRecoDecayHF2Prong::operator=(const AliAODRecoDecayHF2Prong &source)
 {
   //
-  // assignment operator
+  /// assignment operator
   //
   if(&source == this) return *this;
 
@@ -80,22 +82,22 @@ AliAODRecoDecayHF2Prong &AliAODRecoDecayHF2Prong::operator=(const AliAODRecoDeca
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecayHF2Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t &okD0bar) 
   const {
-//
-// This function compares the D0 with a set of cuts:
-//
-// cuts[0] = inv. mass half width [GeV]   
-// cuts[1] = dca [cm]
-// cuts[2] = cosThetaStar 
-// cuts[3] = pTK [GeV/c]
-// cuts[4] = pTPi [GeV/c]
-// cuts[5] = d0K [cm]   upper limit!
-// cuts[6] = d0Pi [cm]  upper limit!
-// cuts[7] = d0d0 [cm^2]
-// cuts[8] = cosThetaPoint
-//
-// If the D0/D0bar doesn't pass the cuts it sets the weights to 0
-// If neither D0 nor D0bar pass the cuts return kFALSE
-//
+///
+/// This function compares the D0 with a set of cuts:
+///
+/// cuts[0] = inv. mass half width [GeV]
+/// cuts[1] = dca [cm]
+/// cuts[2] = cosThetaStar
+/// cuts[3] = pTK [GeV/c]
+/// cuts[4] = pTPi [GeV/c]
+/// cuts[5] = d0K [cm]   upper limit!
+/// cuts[6] = d0Pi [cm]  upper limit!
+/// cuts[7] = d0d0 [cm^2]
+/// cuts[8] = cosThetaPoint
+///
+/// If the D0/D0bar doesn't pass the cuts it sets the weights to 0
+/// If neither D0 nor D0bar pass the cuts return kFALSE
+///
   Double_t mD0,mD0bar,ctsD0,ctsD0bar;
   okD0=1; okD0bar=1;
 
@@ -132,22 +134,22 @@ Bool_t AliAODRecoDecayHF2Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t 
 //-----------------------------------------------------------------------------
 Bool_t AliAODRecoDecayHF2Prong::SelectBtoJPSI(const Double_t *cuts,Int_t &okB)
   const {
-//
-// This function compares the Secondary JPSI candidates with a set of cuts:
-//
-// cuts[0] = inv. mass half width [GeV]
-// cuts[1] = dca [cm]
-// cuts[2] = cosThetaStar (negative electron)
-// cuts[3] = pTP [GeV/c]
-// cuts[4] = pTN [GeV/c]
-// cuts[5] = d0P [cm]   upper limit!
-// cuts[6] = d0N [cm]  upper limit!
-// cuts[7] = d0d0 [cm^2]
-// cuts[8] = cosThetaPoint
-//
-// If the candidate doesn't pass the cuts it sets the weight to 0
-// and return kFALSE
-//
+///
+/// This function compares the Secondary JPSI candidates with a set of cuts:
+///
+/// cuts[0] = inv. mass half width [GeV]
+/// cuts[1] = dca [cm]
+/// cuts[2] = cosThetaStar (negative electron)
+/// cuts[3] = pTP [GeV/c]
+/// cuts[4] = pTN [GeV/c]
+/// cuts[5] = d0P [cm]   upper limit!
+/// cuts[6] = d0N [cm]  upper limit!
+/// cuts[7] = d0d0 [cm^2]
+/// cuts[8] = cosThetaPoint
+///
+/// If the candidate doesn't pass the cuts it sets the weight to 0
+/// and return kFALSE
+///
   Double_t mJPsi,ctsJPsi;
   okB=1;
 

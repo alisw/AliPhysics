@@ -44,7 +44,10 @@
 #include "AliAnalysisTaskSEDplus.h"
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
-ClassImp(AliAnalysisTaskSEDplus)
+
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSEDplus);
+/// \endcond
 
 //________________________________________________________________________
 AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
@@ -81,7 +84,7 @@ AliAnalysisTaskSE(),
   fEtaSelection(0),
   fSystem(0)
 {
-  // Default constructor
+  /// Default constructor
 
   for(Int_t i=0;i<3;i++){
     fHistCentrality[i]=0;
@@ -163,7 +166,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fSystem(0)
 {
   // 
-  // Standrd constructor
+  /// Standrd constructor
   //
   fNPtBins=fRDCutsAnalysis->GetNPtBins();
   
@@ -228,7 +231,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
 AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
 {
   //
-  // Destructor
+  /// Destructor
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
@@ -288,7 +291,7 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
 }  
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t range){
-  // set invariant mass limits
+  /// set invariant mass limits
   Float_t bw=GetBinWidth();
   fUpmasslimit = 1.865+range;
   fLowmasslimit = 1.865-range;
@@ -296,7 +299,7 @@ void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t range){
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t lowlimit, Float_t uplimit){
-  // set invariant mass limits
+  /// set invariant mass limits
   if(uplimit>lowlimit)
     {
       Float_t bw=GetBinWidth();
@@ -328,7 +331,7 @@ Int_t AliAnalysisTaskSEDplus::GetNBinsHistos(){
 void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS){
   //
   //
-  // Fill the Like Sign histograms
+  /// Fill the Like Sign histograms
   //
   if(fDebug>1)printf("started LS\n");
   
@@ -429,7 +432,7 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 //__________________________________________
 void AliAnalysisTaskSEDplus::Init(){
   //
-  // Initialization
+  /// Initialization
   //
   if(fDebug > 1) printf("AnalysisTaskSEDplus::Init() \n");
   
@@ -448,7 +451,7 @@ void AliAnalysisTaskSEDplus::Init(){
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 {
-  // Create the output container
+  /// Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSEDplus::UserCreateOutputObjects() \n");
 
@@ -737,8 +740,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event:
-  // heavy flavor candidates association to MC truth
+  /// Execute analysis for current event:
+  /// heavy flavor candidates association to MC truth
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
@@ -1086,7 +1089,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
-  // Histos for Like Sign bckground
+  /// Histos for Like Sign bckground
 
   TString hisname;
   Int_t indexLS=0;
@@ -1214,7 +1217,7 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
 
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
-  // Histos for impact paramter study
+  /// Histos for impact paramter study
 
   Int_t nmassbins=GetNBinsHistos();
   Double_t maxmult;
@@ -1247,7 +1250,7 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
+  /// Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSEDplus: Terminate() \n");
 
@@ -1269,7 +1272,7 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
 }
 //_________________________________________________________________________________________________
 Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const {
-  // true impact parameter calculation
+  /// true impact parameter calculation
 
   Double_t vtxTrue[3];
   mcHeader->GetVertex(vtxTrue);
@@ -1348,7 +1351,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
 }
 //_________________________________________________________________________________________________
 Float_t AliAnalysisTaskSEDplus::GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const {
-  // Computes weights to adapt strangeness in MC to data
+  /// Computes weights to adapt strangeness in MC to data
 
   for(Int_t iprong=0;iprong<3;iprong++){
     factor[iprong]=1;

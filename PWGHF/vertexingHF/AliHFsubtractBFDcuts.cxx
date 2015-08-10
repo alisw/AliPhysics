@@ -44,7 +44,9 @@
 #include "AliExternalTrackParam.h"
 #include "AliNeutralTrackParam.h"
 
+/// \cond CLASSIMP
 ClassImp(AliHFsubtractBFDcuts);
+/// \endcond
 
 AliHFsubtractBFDcuts::AliHFsubtractBFDcuts()
   : TNamed()

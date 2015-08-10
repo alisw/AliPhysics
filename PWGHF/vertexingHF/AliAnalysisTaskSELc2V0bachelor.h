@@ -27,6 +27,8 @@
 #include "AliRDHFCutsLctoV0.h"
 #include "AliNormalizationCounter.h"
 
+/// \class AliAnalysisTaskSELc2V0bachelor
+
 class TH1F;
 class TClonesArray;
 class AliAODRecoCascade;
@@ -41,14 +43,14 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 				 Bool_t useOnTheFly=kFALSE, Bool_t writeVariableTree=kTRUE, Bool_t additionalChecks=kFALSE, Bool_t trackRotation=kFALSE, Bool_t useTPCpid=kFALSE, Char_t sign=2);
   virtual ~AliAnalysisTaskSELc2V0bachelor();
 
-  // Implementation of interface methods  
+  /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
  
-  // histos
+  /// histos
   void FillLc2pK0Sspectrum(AliAODRecoCascadeHF *part, Int_t isLc,
 			   Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal,
 			   TClonesArray *mcArray);
@@ -57,11 +59,11 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 			       TClonesArray *mcArray,
 			       Int_t &nSelectedAnal, AliRDHFCutsLctoV0 *cutsAnal);
  
-  // set MC usage
+  /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
 
-  // set flag for additional checks
+  /// set flag for additional checks
   void SetAdditionalChecks(Bool_t additionalChecks) {fAdditionalChecks = additionalChecks;}
   Bool_t GetAdditionalChecks() const {return fAdditionalChecks;}
 
@@ -89,7 +91,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetUseTPCPIDtoFillTree(Bool_t a) {fUseTPCPIDtoFillTree=a;}
   Bool_t GetUseTPCPIDtoFillTree() const {return fUseTPCPIDtoFillTree;}
 
-  // set MC usage
+  /// set MC usage
   void SetSign(Char_t sign) {fSign = sign;}
   Char_t GetSign() const {return fSign;}
 
@@ -130,38 +132,40 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 			      Int_t dgLabels[10],Int_t ndg,
 			      Int_t &ndgCk, Int_t *pdgDg, Int_t &labelMother, Int_t &nDauCand) const;
 
-  Bool_t fUseMCInfo;          // Use MC info
-  TList *fOutput;             // User output slot 1 // general histos
-  TList *fOutputAll;          // User output slot 4 // histos without pid and cut on V0
-  TList *fOutputPIDBach;      // User output slot 5 // histos with PID on Bachelor
+  Bool_t fUseMCInfo;          /// Use MC info
+  TList *fOutput;             /// User output slot 1 // general histos
+  TList *fOutputAll;          /// User output slot 4 // histos without pid and cut on V0
+  TList *fOutputPIDBach;      /// User output slot 5 // histos with PID on Bachelor
 
-  TH1F *fCEvents;                    // Histogram to check selected events
-  AliNormalizationCounter *fCounter; // AliNormalizationCounter on output slot 2
-  AliRDHFCutsLctoV0 *fAnalCuts;      // Cuts - sent to output slot 3
-  Bool_t fUseOnTheFlyV0;             // flag to analyze also on-the-fly V0 candidates
-  Bool_t fIsEventSelected;           // flag for event selected
+  TH1F *fCEvents;                    /// Histogram to check selected events
+  AliNormalizationCounter *fCounter; /// AliNormalizationCounter on output slot 2
+  AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 3
+  Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
+  Bool_t fIsEventSelected;           /// flag for event selected
 
-  Bool_t    fWriteVariableTree;       // flag to decide whether to write the candidate variables on a tree variables
-  TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 4
-  Float_t *fCandidateVariables;       //! variables to be written to the tree
-  AliAODVertex *fVtx1;                // primary vertex
-  Float_t fBzkG;                      // magnetic field value [kG]
-  Bool_t fAdditionalChecks;           // flag to fill additional histograms
+  Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
+  TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
+  Float_t *fCandidateVariables;       //!<! variables to be written to the tree
+  AliAODVertex *fVtx1;                /// primary vertex
+  Float_t fBzkG;                      /// magnetic field value [kG]
+  Bool_t fAdditionalChecks;           /// flag to fill additional histograms
 
-  Bool_t fTrackRotation;              // flag to check track rotation
-  TList *fOutputPIDBachTR;            // User output slot 6 // histos with PID on Bachelor and track rotation
+  Bool_t fTrackRotation;              /// flag to check track rotation
+  TList *fOutputPIDBachTR;            /// User output slot 6 // histos with PID on Bachelor and track rotation
 
-  Double_t fMinAngleForRot;//=5*TMath::Pi()/6;
-  Double_t fMaxAngleForRot;//=7*TMath::Pi()/6;
-  Double_t fMinMass;//=mLcPDG-0.250;
-  Double_t fMaxMass;//=mLcPDG+0.250;
-  Int_t fNRotations;//=9;
-  Double_t fPtMinToFillTheTree;//0.
-  Double_t fPtMaxToFillTheTree;//999.
-  Bool_t fUseTPCPIDtoFillTree;//kFALSE
+  Double_t fMinAngleForRot; ///=5*TMath::Pi()/6;
+  Double_t fMaxAngleForRot; ///=7*TMath::Pi()/6;
+  Double_t fMinMass;        ///=mLcPDG-0.250;
+  Double_t fMaxMass;        ///=mLcPDG+0.250;
+  Int_t fNRotations;        ///=9;
+  Double_t fPtMinToFillTheTree;///0.
+  Double_t fPtMaxToFillTheTree;///999.
+  Bool_t fUseTPCPIDtoFillTree;///kFALSE
   Char_t fSign;
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,8); // class for Lc->p K0
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,8); /// class for Lc->p K0
+  /// \endcond
 };
 
 #endif

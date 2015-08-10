@@ -7,12 +7,12 @@
 /* $Id$ */ 
 
 //*************************************************************************
-// AliAnalysisTaskSESignificane to calculate effects on 
-// significance of D mesons  cut 
-// Authors: G. Ortona, ortona@to.infn.it
-// F. Prino, prino@to.infn.it
-// Renu Bala, bala@to.infn.it
-// Chiara Bianchin, cbianchi@pd.infn.it
+/// \class AliAnalysisTaskSESignificane
+/// \brief class to calculate effects on  significance of D mesons  cut
+/// \author Authors: G. Ortona, ortona@to.infn.it
+/// \author F. Prino, prino@to.infn.it
+/// \author Renu Bala, bala@to.infn.it
+/// \author Chiara Bianchin, cbianchi@pd.infn.it
 //*************************************************************************
 
 #include "AliAnalysisTaskSE.h"
@@ -55,7 +55,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Int_t GetDsChannel()const {return fDsChannel;}
   Bool_t GetUseSelBit()const {return fUseSelBit;}
 
-  // Implementation of interface methods
+  /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
   virtual void UserExec(Option_t *option);
@@ -99,35 +99,37 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   enum {kMaxNHist=500000};
   enum {kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi,kD0toKpipipi,kLambdactopKpi};
 
-  TList   *fOutput; //! list send on output slot 0
-  TList *fCutList; //Multidimvector container
-  TH1F *fMassHist[kMaxNHist]; //!hist. for inv mass
-  TH1F *fSigHist[kMaxNHist]; //!hist. for inv mass (sig from MC truth)
-  TH1F *fBkgHist[kMaxNHist]; //!hist. for inv mass (bkg from MC truth)
-  TH1F *fRflHist[kMaxNHist]; //!hist. for inv mass (bkg from MC truth)
-  TH1F* fHistNEvents; //! hist of n of aods
-  Float_t fUpmasslimit;  //upper inv mass limit for histos
-  Float_t fLowmasslimit; //lower inv mass limit for histos
-  AliRDHFCuts *fRDCuts;//prong cut values
-  Int_t fNPtBins; //number of pt bins
-  Bool_t fReadMC;    //flag for access to MC
-  Bool_t fUseSelBit;    //flag to use selection bit (speed up candidates selection)
-  FeedDownEnum fBFeedDown; //flag to search for D from B decays
-  Int_t fDecChannel; //decay channel identifier
-  Int_t fPDGmother;  // PDG code of D meson
-  Int_t fNProngs;         // number of prong of the decay channel  
-  Int_t fPDGdaughters[4]; // PDG codes of daughters
-  TString fBranchName;    // AOD branch name for channel
-  Int_t fSelectionlevel;  //selection level: kALL,kTracks,kCandidate
-  Int_t   fNVars;         // number of selection variables
-  Float_t fVars[kMaxCutVar];       // array with values of cut variables
-  Int_t fNBins;  //number of bins in the mass histograms
-  Int_t fPartOrAndAntiPart;  //fill histograms with particle only (+1), antiparticle only (-1), both (0)
-  Int_t fDsChannel;          // Ds resonant channel selected
-  Int_t fPDGDStarToD0pi[2]; //PDG codes for the particles in the D* -> pi + D0 decay
-  Int_t fPDGD0ToKpi[2];    //PDG codes for the particles in the D0 -> K + pi decay
+  TList   *fOutput; //!<! list send on output slot 0
+  TList *fCutList; /// Multidimvector container
+  TH1F *fMassHist[kMaxNHist]; //!<!hist. for inv mass
+  TH1F *fSigHist[kMaxNHist]; //!<!hist. for inv mass (sig from MC truth)
+  TH1F *fBkgHist[kMaxNHist]; //!<!hist. for inv mass (bkg from MC truth)
+  TH1F *fRflHist[kMaxNHist]; //!<!hist. for inv mass (bkg from MC truth)
+  TH1F* fHistNEvents; //!<! hist of n of aods
+  Float_t fUpmasslimit;  /// upper inv mass limit for histos
+  Float_t fLowmasslimit; /// lower inv mass limit for histos
+  AliRDHFCuts *fRDCuts;/// prong cut values
+  Int_t fNPtBins; /// number of pt bins
+  Bool_t fReadMC;    /// flag for access to MC
+  Bool_t fUseSelBit;    /// flag to use selection bit (speed up candidates selection)
+  FeedDownEnum fBFeedDown; /// flag to search for D from B decays
+  Int_t fDecChannel; /// decay channel identifier
+  Int_t fPDGmother;  /// PDG code of D meson
+  Int_t fNProngs;         /// number of prong of the decay channel
+  Int_t fPDGdaughters[4]; /// PDG codes of daughters
+  TString fBranchName;    /// AOD branch name for channel
+  Int_t fSelectionlevel;  /// selection level: kALL,kTracks,kCandidate
+  Int_t   fNVars;         /// number of selection variables
+  Float_t fVars[kMaxCutVar];       /// array with values of cut variables
+  Int_t fNBins;  /// number of bins in the mass histograms
+  Int_t fPartOrAndAntiPart;  /// fill histograms with particle only (+1), antiparticle only (-1), both (0)
+  Int_t fDsChannel;          /// Ds resonant channel selected
+  Int_t fPDGDStarToD0pi[2]; /// PDG codes for the particles in the D* -> pi + D0 decay
+  Int_t fPDGD0ToKpi[2];    /// PDG codes for the particles in the D0 -> K + pi decay
 
-  ClassDef(AliAnalysisTaskSESignificance,5); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  /// \cond CLASSIMP    
+  ClassDef(AliAnalysisTaskSESignificance,5); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  /// \endcond
 };
 
 #endif
