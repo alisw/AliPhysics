@@ -1113,7 +1113,7 @@ struct dNdetaDrawer
 		const char*   folderName,
 		TMultiGraph*  others, 
 		Int_t         col,
-		const char*   /* txt */,
+		const char*   txt,
 		Double_t&     max,
 		Double_t&     rmax,
 		Double_t&     amax,
@@ -1123,8 +1123,9 @@ struct dNdetaDrawer
     TList* folder = (fOptions & kOldFormat ? const_cast<TList*>(list) :
 		     static_cast<TList*>(list->FindObject(foldName)));
     if (!folder) {
-      Warning("FetchOne", "Couldn't find list '%s' in %s, trying w/o decimals", 
-	      foldName.Data(), list->GetName());
+      Warning("FetchOne",
+	      "Couldn't find list '%s' in %s, trying w/o decimals (%s)", 
+	      foldName.Data(), list->GetName(), txt);
       foldName.ReplaceAll("d00", "");
       foldName.ReplaceAll("d10", "");
       folder = (fOptions & kOldFormat ? const_cast<TList*>(list) :

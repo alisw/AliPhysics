@@ -286,7 +286,6 @@ protected:
    * enable event processing - even if the event is not within cuts.
    * 
    * @param forward Forward object
-   * @param filter  Our negative filter 
    * 
    * @return true if the event is within the cuts. 
    */
