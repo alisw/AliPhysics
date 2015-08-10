@@ -1,9 +1,9 @@
-/********************************************************************* *
- * Configfemtoanalysis.C - configuration macro for the femtoscopic
- * analysis, meant as a QA process for two-particle effects	
- *								
- * Author: Adam Kisiel (Adam.Kisiel@cern.ch)		
- *						
+/********************************************************************* *																							 *
+ * Configfemtoanalysis.C - configuration macro for the femtoscopic	 *
+ * analysis, meant as a QA process for two-particle effects				 *
+ *																							 *
+ * Author: Adam Kisiel (Adam.Kisiel@cern.ch)									 *
+ *																							 *
  *********************************************************************/
 #if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
@@ -161,7 +161,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	else if(fileNo==15)
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/4Dmap_FB768_MCDCA_DoubleCounting.root");
 	else if(fileNo==16)
-	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/1Dmap_FB96_MCOnly_ExclusivePIDNsigmaHalf2.root");
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Corrections/PairPurity/purityEffCont_17Jul2015_test1.root");
+	else if(fileNo==17)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Corrections/PurityMaximizing/purityEffCont1D_FB96_MCOnly_ExclusiveNsigma2_rej3_dEdxcut.root");
 
 	cout<<"Filename: "<<Form("%s",fileName)<<endl;
 
@@ -241,6 +243,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	AliFemtoQinvCorrFctn					*cqinvkttpc[numOfMultBins*numOfChTypes*numOfkTbins];
 	AliFemtoQinvCorrFctn					*cqinvtpc[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDEtaDPhiCorrections			*cdedpetaphi[numOfMultBins*numOfChTypes];
+	AliFemtoCorrFctnDEtaDPhi				*cdedpetaphinocorr[numOfMultBins*numOfChTypes];
 	AliFemtoCorrFctnDEtaDPhiCorrections			*cdedpetaphiPt[numOfMultBins*numOfChTypes*numOfkTbins];
 
 
@@ -491,26 +494,34 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
 					cdedpetaphi[aniter]->SetDoFullAnalysis(kFALSE);
-					if(ichg==0 || ichg==1 || ichg==2)
-					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,0*/);
-					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton,1,1,1,1);
-					else if(ichg==3 || ichg==4 || ichg==5)
-					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon/*,1,1,1,0*/);
-					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon,1,1,1,1);	
-					 
-					else if(ichg==6 || ichg==7 || ichg==8)
-					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion/*,1,1,1,0*/);
-					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion,1,1,1,1);	
 					
+					//cdedpetaphinocorr[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedpnocorr%stpcM%i", chrgs[ichg], imult),29, 29);
+
+					if(ichg==0 || ichg==1 || ichg==2){
+					  //cdedpetaphi[aniter]->SetCalculatePairPurity(kTRUE);
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,0*/);
+					
+					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton,1,1,1,1);
+					}
+					else if(ichg==3 || ichg==4 || ichg==5){
+					  //cdedpetaphi[aniter]->SetCalculatePairPurity(kTRUE);
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon/*,1,1,1,0*/);
+					
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon,1,1,1,1);	
+					}
+					else if(ichg==6 || ichg==7 || ichg==8){
+					  //cdedpetaphi[aniter]->SetCalculatePairPurity(kTRUE);
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion/*,1,1,1,0*/);
+					
+					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion,1,1,1,1);	
+					}
 					else
 					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll/*,1,1,1,0*/);
 					  //cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll,1,1,1,1);
 					
-			     
-
-	     
+			     	     
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
-
+					//anetaphitpc[aniter]->AddCorrFctn(cdedpetaphinocorr[aniter]);
 		
 					if (runktdep)
 					{
