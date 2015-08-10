@@ -295,7 +295,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	 sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
           sqpcetaphitpcRD[aniter] = new AliFemtoPairCutRadialDistanceLM();
-          //sqpcetaphitpc[aniter]->SetMagneticFieldSign(-1);
+          sqpcetaphitpc[aniter]->SetMagneticFieldSign(1);
 
 	  /*sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	  sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
@@ -307,7 +307,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           //sqpcetaphitpcRD[aniter]->SetMinimumRadius(0.8);
 	  //sqpcetaphitpcRD[aniter]->SetEtaDifferenceMinimum(0.02);
 	 // sqpcetaphitpcRD[aniter]->SetPhiStarDifferenceMinimum(0.045);
-	 anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
@@ -317,8 +317,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
            //anetaphitpc[aniter]->AddCorrFctn(cq3dprfkttpc[aniter]);
           cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0, shqmax);
   	  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
-	  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),90, 90);
-	  anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+	 // cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),90, 90);
+	  //anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 
   // Correlation function for two particle correlations which uses dPhi* and dEta as a function variables.
            cdphistardeta08[aniter] = new AliFemtoCorrFctnDPhiStarDEta(Form("cdphistardeta08%stpcM%i", chrgs[ichg], imult), 0.8, 51, -0.05, 0.05, 127, -1.0, 1.0);
