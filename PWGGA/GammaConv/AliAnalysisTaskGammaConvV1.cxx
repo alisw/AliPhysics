@@ -207,6 +207,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
 	hNEventsWeighted(NULL),
 	hNGoodESDTracks(NULL),
 	hNGoodESDTracksWeighted(NULL),
+	hVertexZ(NULL),
+	hVertexZWeighted(NULL),
 	hCentrality(NULL),
 	fDoCentralityFlat(0),
 	fWeightCentrality(NULL),
@@ -398,6 +400,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
 	hNEventsWeighted(NULL),
 	hNGoodESDTracks(NULL),
 	hNGoodESDTracksWeighted(NULL),
+	hVertexZ(NULL),
+	hVertexZWeighted(NULL),
 	hCentrality(NULL),
 	fDoCentralityFlat(0),
 	fWeightCentrality(NULL),
@@ -563,9 +567,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 	if(fDoCentralityFlat > 0) fWeightCentrality = new Double_t[fnCuts];
 	hNEvents = new TH1I*[fnCuts];
 	hNGoodESDTracks = new TH1I*[fnCuts];
+	hVertexZ = new TH1F*[fnCuts];
 	if(fDoCentralityFlat > 0){
 		hNEventsWeighted = new TH1F*[fnCuts];
 		hNGoodESDTracksWeighted = new TH1F*[fnCuts];
+		hVertexZWeighted = new TH1F*[fnCuts];
 	}
 	if(fDoPlotVsCentrality){
 		hCentrality = new TH1F*[fnCuts];
@@ -610,10 +616,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hESDMotherPi0PtOpenAngle =  new TH2F*[fnCuts];
 			hESDMotherEtaPtOpenAngle =  new TH2F*[fnCuts];
 		
-		}   
+		}
 		if(fDoMesonQA ==3){
-	
-		  sPtRDeltaROpenAngle = new THnSparseF*[fnCuts];
+			sPtRDeltaROpenAngle = new THnSparseF*[fnCuts];
 		}
 
 	}
@@ -681,16 +686,23 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		if(fDoCentralityFlat > 0 && fIsHeavyIon == 1){
 			hNGoodESDTracks[iCut] = new TH1I("GoodESDTracksUnweighted","GoodESDTracksUnweighted",4000,0,4000);
 			fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
+			hVertexZ[iCut] = new TH1F("VertexZUnweighted","VertexZUnweighted",1000,-50,50);
+			fESDList[iCut]->Add(hVertexZ[iCut]);
 			
 			hNGoodESDTracksWeighted[iCut] = new TH1F("GoodESDTracks","GoodESDTracks",4000,0,4000); //weighted histogram!!
 			hNGoodESDTracksWeighted[iCut]->Sumw2();
 			fESDList[iCut]->Add(hNGoodESDTracksWeighted[iCut]);
+			hVertexZWeighted[iCut] = new TH1F("VertexZ","VertexZ",1000,-50,50);
+			hVertexZWeighted[iCut]->Sumw2();
+			fESDList[iCut]->Add(hVertexZWeighted[iCut]);
 		} else {
 			
 			if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
 			else if(fIsHeavyIon == 2) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",400,0,400);
 			else hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
 			fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
+			hVertexZ[iCut] = new TH1F("VertexZ","VertexZ",1000,-50,50);
+			fESDList[iCut]->Add(hVertexZ[iCut]);
 		}
 		
 		if(fDoPlotVsCentrality){
@@ -1379,6 +1391,9 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		
 		hNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
 		if((fDoCentralityFlat > 0)) hNGoodESDTracksWeighted[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]);
+		
+		hVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
+		if((fDoCentralityFlat > 0)) hVertexZWeighted[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightCentrality[iCut]);
 
 		if((fDoCentralityFlat > 0)) fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightCentrality[iCut]);
 		else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
