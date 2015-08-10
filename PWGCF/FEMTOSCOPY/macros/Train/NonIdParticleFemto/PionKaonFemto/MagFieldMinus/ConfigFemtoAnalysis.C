@@ -295,7 +295,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	 sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
           sqpcetaphitpcRD[aniter] = new AliFemtoPairCutRadialDistanceLM();
-          //sqpcetaphitpc[aniter]->SetMagneticFieldSign(-1);
+          sqpcetaphitpc[aniter]->SetMagneticFieldSign(-1);
 
 	  /*sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	  sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
@@ -307,7 +307,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           //sqpcetaphitpcRD[aniter]->SetMinimumRadius(0.8);
 	  //sqpcetaphitpcRD[aniter]->SetEtaDifferenceMinimum(0.02);
 	 // sqpcetaphitpcRD[aniter]->SetPhiStarDifferenceMinimum(0.045);
-	 anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
