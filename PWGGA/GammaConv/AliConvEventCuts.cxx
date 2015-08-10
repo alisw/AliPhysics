@@ -1737,7 +1737,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 						if (bin < 10) weight = weightsBins[bin];
 					}					
 				}
-				return eventAccepted;
+				if (weight == 1) return kFALSE;
+				else return eventAccepted;
 			} 	
 		}		
 	} else {		
@@ -1788,7 +1789,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 				}
 
 			}
-			return eventAccepted;
+			if (weight == 1) return kFALSE;
+			else return eventAccepted;
 		} else {
 			return kFALSE;
 		}	
