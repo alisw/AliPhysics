@@ -1214,7 +1214,7 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
       Int_t sizeL1jpatch = 2+(fw >> 16);// NEED TO CHECK THIS!!! 
 
       // To check link
-      Int_t mask = inSTU->GetFrameReceived() ^ inSTU->GetRegionEnable();
+      Long64_t mask = inSTU->GetFrameReceived() ^ inSTU->GetRegionEnable();
 
       for (int i = 0; i < AliEMCALTriggerMappingV2::fNTotalTRU; i++)
 	{
