@@ -1346,11 +1346,14 @@ void AliFemtoMJTrackCut::SetNsigma(Double_t nsigma)
 {
   fNsigma = nsigma;
   fNsigma2 = nsigma;
+  fNsigmaAccept = nsigma;
+  fNsigmaRejection = nsigma;
 }
 
 void AliFemtoMJTrackCut::SetNsigma2(Double_t nsigma)
 {
    fNsigma2 = nsigma;
+   fNsigmaRejection = nsigma;
 }
 
 void AliFemtoMJTrackCut::SetNsigmaRejection(Double_t nsigma)
