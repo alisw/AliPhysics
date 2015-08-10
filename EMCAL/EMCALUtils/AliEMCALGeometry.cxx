@@ -358,11 +358,7 @@ AliEMCALGeometry* AliEMCALGeometry::GetInstanceFromRunNumber(Int_t runNumber,   
     }
 
     return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL",mcname,mctitle) ;
-  }
-  
-  printf("AliEMCALGeometry::GetInstanceFromRunNumber() - Run not assigned to range, default geometry <<%s>>\n",fgkDefaultGeometryName);
-
-  return AliEMCALGeometry::GetInstance(fgkDefaultGeometryName,"EMCAL",mcname,mctitle) ;
+  }  
 }
 
 //________________________________________________________________________________________________
