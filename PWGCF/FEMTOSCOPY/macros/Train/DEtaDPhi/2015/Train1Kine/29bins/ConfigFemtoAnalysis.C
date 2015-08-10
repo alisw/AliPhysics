@@ -84,7 +84,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	    parameter[13] = strtok(NULL, ",");
 	    cout<<"Parameter [13]: (ispileup)"<<parameter[13]<<" "<<endl;
 	    parameter[14] = strtok(NULL, ",");
-	    cout<<"Parameter [14]: (max pT kaons)"<<parameter[14]<<" "<<endl;
+	    cout<<"Parameter [14]: (max pT)"<<parameter[14]<<" "<<endl;
 	    parameter[15] = strtok(NULL, ",");
 	    cout<<"Parameter [15]: (SetMostProbable 1)"<<parameter[15]<<" "<<endl;
 	    parameter[16] = strtok(NULL, ",");
@@ -108,7 +108,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	double nEtaMin = atof(parameter[11]); //-0.8
 	double nEtaMax = atof(parameter[12]);  //0.8
 	bool ifIsPileUp = atoi(parameter[13]); //true
-	double maxPtKaons = atof(parameter[14]);  //4.0
+	double maxPt = atof(parameter[14]);  //4.0
 
 	int setMostProb1 = atoi(parameter[15]);
 	int setMostProb2 = atoi(parameter[16]);
@@ -251,8 +251,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
                                         if (ichg == 0 ||ichg == 1 ||ichg == 2)//protons 0-2
                                           {
-                                            dtc1etaphitpc[aniter]->SetPt(0.5,4);
-                                            dtc2etaphitpc[aniter]->SetPt(0.5,4);
+                                            dtc1etaphitpc[aniter]->SetPt(0.5,maxPt);
+                                            dtc2etaphitpc[aniter]->SetPt(0.5,maxPt);
                                            
 					    dtc1etaphitpc[aniter]->SetPDG(2212);
 					    dtc2etaphitpc[aniter]->SetPDG(2212);
@@ -260,8 +260,8 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					if (ichg == 3 ||ichg == 4 ||ichg == 5)//kaons 3-5
                                           {
-                                            dtc1etaphitpc[aniter]->SetPt(0.3,maxPtKaons);
-                                            dtc2etaphitpc[aniter]->SetPt(0.3,maxPtKaons);
+                                            dtc1etaphitpc[aniter]->SetPt(0.3,maxPt);
+                                            dtc2etaphitpc[aniter]->SetPt(0.3,maxPt);
 
 					    dtc1etaphitpc[aniter]->SetPDG(321);
 					    dtc2etaphitpc[aniter]->SetPDG(321);
@@ -269,20 +269,20 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                           }
                                         if (ichg == 6 ||ichg == 7 ||ichg == 8)//pions 6-8
                                           {
-                                            dtc1etaphitpc[aniter]->SetPt(0.2,4);
-					    dtc2etaphitpc[aniter]->SetPt(0.2,4);
+                                            dtc1etaphitpc[aniter]->SetPt(0.2,maxPt);
+					    dtc2etaphitpc[aniter]->SetPt(0.2,maxPt);
 
 					    dtc1etaphitpc[aniter]->SetPDG(211);
 					    dtc2etaphitpc[aniter]->SetPDG(211);	
                                           }
                                         if (ichg == 9)//all
                                           {
-                                            dtc3etaphitpc[aniter]->SetPt(0.2,4);
+                                            dtc3etaphitpc[aniter]->SetPt(0.2,maxPt);
                                           }
                                         if (ichg == 10 ||ichg == 11 ||ichg == 12)//plus,minus,mixed
                                           {
-                                            dtc1etaphitpc[aniter]->SetPt(0.2,4);
-                                            dtc2etaphitpc[aniter]->SetPt(0.2,4);
+                                            dtc1etaphitpc[aniter]->SetPt(0.2,maxPt);
+                                            dtc2etaphitpc[aniter]->SetPt(0.2,maxPt);
                                           }
 
 				
