@@ -104,6 +104,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fhSubJetMass(0x0),
   fhSubJetRadius(0x0),
   fhSubJetCounter(0x0),
+  fhNumberOfSubJetTracks(0x0),
   fhSubJetPtFrac(0x0),
   fhSubJetPtFrac2(0x0),
   fhSubJetPtLoss(0x0),
@@ -172,6 +173,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fhSubJetMass(0x0),
   fhSubJetRadius(0x0),
   fhSubJetCounter(0x0),
+  fhNumberOfSubJetTracks(0x0),
   fhSubJetPtFrac(0x0),
   fhSubJetPtFrac2(0x0),
   fhSubJetPtLoss(0x0),
@@ -273,6 +275,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fhSubJetPt);
     fhSubJetMass= new TH1F("fhSubJetMass", "Sub Jet Mass", 4000,-0.5, 39.5);
     fOutput->Add(fhSubJetMass);
+    fhNumberOfSubJetTracks= new TH1F("fhNumberOfSubJetTracks", "Number of Tracks within a Sub Jet", 30, -0.5,29.5);
+    fOutput->Add(fhNumberOfSubJetTracks);
     fhSubJetPtFrac= new TH1F("fhSubJetPtFrac", "Pt Fraction of Highest Pt Subjet compared to original Jet",101, -0.05,1.05);
     fOutput->Add(fhSubJetPtFrac);
     fhSubJetPtFrac2= new TH1F("fhSubJetPtFrac2", "Pt Fraction of Two Highest Pt Subjets compared to original Jet",101, -0.05,1.05);
@@ -441,7 +445,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	}
 	else {
 	  if((Jet4 = (Jet3->ClosestJet()))){
-	    fhPtRatio->Fill(Jet3->Pt()/Jet4->Pt());
+	    if ((Jet4->Pt())!=0) fhPtRatio->Fill(Jet3->Pt()/Jet4->Pt());
 	    HighestParticleSubJetPt=-1;
 	    HighestDetectorSubJetPt=-1;
 	    TempSubJetCounterParticle=0;
@@ -753,6 +757,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 		fhEventCounter->Fill(6); //Number of overall subjets in all events 		
 		fhSubJetPt->Fill(Jet2->Pt()); 
 		fhSubJetMass->Fill(Jet2->M());
+		fhNumberOfSubJetTracks->Fill(Jet2->GetNumberOfTracks());
 	      // cout << Jet2->Area()<<endl;
 		fhSubJetRadius->Fill(TMath::Sqrt((Jet2->Area()/TMath::Pi()))); //Radius of SubJets per event  
 		if((Jet2->Pt())>HighestSubJetPt){ //This finds the highest pt subjet in each jet
