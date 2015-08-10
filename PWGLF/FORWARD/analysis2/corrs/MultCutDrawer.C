@@ -333,7 +333,8 @@ struct MultCutDrawer : public SummaryDrawer
   /** 
    * Get multigraph at @a i.  If the stack doesn't exist, make it
    * 
-   * @param i Location (0-based)
+   * @param method Method used 
+   * @param title  Title on plot
    * 
    * @return Stack 
    */
@@ -345,6 +346,17 @@ struct MultCutDrawer : public SummaryDrawer
     fMultiGraphs.Add(mg);
     return mg;
   }
+  /** 
+   * Find summary 
+   * 
+   * @param summaries List of summaries
+   * @param n         Which name 
+   * @param method    Which method 
+   * @param col       The color to use 
+   * @param style     The style to use 
+   * 
+   * @return Found graph or null
+   */
   TGraphErrors* FindSummary(TMultiGraph* summaries,
 			    const TString& n,
 			    const TString& method,
@@ -451,6 +463,7 @@ struct MultCutDrawer : public SummaryDrawer
    * @param method Method to use 
    * @param param  Parameters 
    * @param all    Stack to add for this set of parameters
+   * @param summaries List of summaries
    * 
    * @return Newly created stack 
    */    
