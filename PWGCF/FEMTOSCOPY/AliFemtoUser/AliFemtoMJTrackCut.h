@@ -65,6 +65,8 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   void SetNsigmaTPConly(Bool_t);
   void SetNsigma(Double_t);
   void SetNsigma2(Double_t);
+  void SetNsigmaRejection(Double_t);
+  void SetNsigmaAccept(Double_t);
   void SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff);
 
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
@@ -92,6 +94,8 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   Bool_t            fNsigmaTPConly;      // true if nsigma from TPC only
   Double_t          fNsigma;             // number of sigmas - 3 by default
   Double_t          fNsigma2;             // number of sigmas - 3 by default
+  Double_t          fNsigmaRejection;     // number of sigmas for rejection - 3 by default
+  Double_t          fNsigmaAccept;        // number of sigmas for rejection - 3 by default
 
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC
@@ -140,6 +144,16 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   bool IsPionNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP);
+
+  bool IsKaonNSigmaRejection(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
+  bool IsPionNSigmaRejection(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
+  bool IsProtonNSigmaRejection(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
+
+  bool IsKaonNSigmaAccept(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
+  bool IsPionNSigmaAccept(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
+  bool IsProtonNSigmaAccept(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
+
+
 
   Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
 
