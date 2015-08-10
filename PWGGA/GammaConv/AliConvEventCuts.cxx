@@ -1660,7 +1660,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	Bool_t headerFound 					= kFALSE;
 	AliStack *fMCStack 					= 0x0;
 	TClonesArray *fMCStackAOD 			= 0x0;
-	weight = 1;
+	weight = -1;
 	
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
 	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
@@ -1716,8 +1716,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 						Int_t bin = 0;
 						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 						if (bin < 12) weight = weightsBins[bin];
-					}
-					if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
+					} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
 						Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
 															84,		117, 	152,	191, 	1000};
 						Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
@@ -1725,8 +1724,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 						Int_t bin = 0;
 						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 						if (bin < 9) weight = weightsBins[bin];
-					}
-					if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
+					} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
 						Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
 															84,		117, 	152,	191,  	234,
 															1000};
@@ -1735,9 +1733,11 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 						Int_t bin = 0;
 						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 						if (bin < 10) weight = weightsBins[bin];
-					}					
+					} else {
+						weight = 1;
+					}	
 				}
-				if (weight == 1) return kFALSE;
+				if (weight == -1) return kFALSE;
 				else return eventAccepted;
 			} 	
 		}		
@@ -1767,8 +1767,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					Int_t bin = 0;
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 					if (bin < 12) weight = weightsBins[bin];
-				}
-				if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
+				} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
 					Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
 														84,		117, 	152,	191, 	1000};
 					Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
@@ -1776,8 +1775,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					Int_t bin = 0;
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 					if (bin < 9) weight = weightsBins[bin];
-				}
-				if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
+				} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
 					Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
 														84,		117, 	152,	191,  	234,
 														1000};
@@ -1786,10 +1784,11 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					Int_t bin = 0;
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 					if (bin < 10) weight = weightsBins[bin];
-				}
-
+				} else {
+					weight = 1;
+				}	
 			}
-			if (weight == 1) return kFALSE;
+			if (weight == -1) return kFALSE;
 			else return eventAccepted;
 		} else {
 			return kFALSE;
