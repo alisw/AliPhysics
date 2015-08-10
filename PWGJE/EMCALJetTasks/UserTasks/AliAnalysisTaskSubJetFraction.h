@@ -114,6 +114,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhSubJetMass;
   TH1F                                *fhSubJetRadius;
   TH1F                                *fhSubJetCounter;
+  TH1F                                *fhNumberOfSubJetTracks;
   TH1F                                *fhSubJetPtFrac;
   TH1F                                *fhSubJetPtFrac2;
   TH1F                                *fhSubJetPtLoss;
