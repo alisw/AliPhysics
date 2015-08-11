@@ -11,6 +11,7 @@
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TArrayI.h"
+#include "TPRegexp.h"
 #endif
 
 //_________________________________
@@ -34,59 +35,69 @@ TString GetTriggerShort ( TString trigName )
 }
 
 //_________________________________
-Int_t GetPage ( TString pattern, TString filename )
+void EscapeSpecialCharsForRegex ( TString& str )
+{
+  TString specials = "+ ( )";
+  TObjArray* specialList = specials.Tokenize(" ");
+  for ( Int_t ichar=0; ichar<specialList->GetEntries(); ichar++ ) {
+    TString currChar = static_cast<TObjString*>(specialList->At(ichar))->GetString();
+    if ( str.Contains(currChar.Data()) ) str.ReplaceAll(currChar.Data(),Form("\\%s",currChar.Data()));
+  }
+  delete specialList;
+}
+
+//_________________________________
+Int_t GetPage ( TString pattern, TString filename, TString trigger = "" )
 {
   TString convertedFilename = GetConvertedFilename(filename);
 
   if ( gSystem->AccessPathName(convertedFilename.Data()) != 0 ) {
-    gSystem->Exec(Form("gs -dBATCH -dNOPAUSE -sDEVICE=txtwrite -sOutputFile=- %s > %s",filename.Data(),convertedFilename.Data()));
+    gSystem->Exec(Form("gs -dBATCH -dNOPAUSE -sDEVICE=txtwrite -sOutputFile=- %s | xargs > %s",filename.Data(),convertedFilename.Data()));
   }
 
   ifstream inFile(convertedFilename.Data());
   if ( ! inFile.is_open() ) return -1;
 
-  TObjArray* patternArr = pattern.Tokenize("&");
-  TArrayI foundPages(patternArr->GetEntries());
-  foundPages.Reset(-1);
+  EscapeSpecialCharsForRegex(pattern);
 
-  TString currLine = "";
-  Int_t currPage = -1;
-  Bool_t allOk = kFALSE;
+  TObjArray* patternArr = pattern.Tokenize("&");
+  if ( ! trigger.IsNull() ) {
+    trigger.Prepend("(^|[ ]|/)");
+    trigger.Append("([ ]|$)");
+    patternArr->Add(new TObjString(trigger));
+  }
+
+  TString currLine = "", currToken = "";
+  Int_t currPage = -1, foundPage = -1;
   while ( ! inFile.eof() ) {
-    currLine.ReadLine(inFile);
-    if ( currLine.Contains("Page") ) {
-      currLine.Remove(0,5);
-      currPage = currLine.Atoi();
-      foundPages.Reset(-1);
-    }
-    else {
+    currToken.ReadToken(inFile);
+    if ( currToken == "Page" || inFile.eof() ) {
+      Bool_t isOk = kTRUE;
       for ( Int_t ipat=0; ipat<patternArr->GetEntries(); ipat++ ) {
-        TString currPattern = static_cast<TObjString*>(patternArr->At(ipat))->GetString();
-        if ( currLine.Contains(currPattern.Data()) ) {
-          foundPages[ipat] = currPage;
-          Bool_t matchAll = kTRUE;
-          for ( Int_t jpat=0; jpat<patternArr->GetEntries(); jpat++ ) {
-            if ( foundPages[ipat] != foundPages[jpat] ) {
-              matchAll = kFALSE;
-              break;
-            }
-          }
-          if ( matchAll ) {
-            allOk = kTRUE;
-            break;
-          }
+        TString currPattern(static_cast<TObjString*>(patternArr->At(ipat))->GetString());
+        TPRegexp re(currPattern.Data());
+        if ( ! currLine.Contains(re) ) {
+          isOk = kFALSE;
+          break;
         }
       }
-      if ( allOk ) break;
+      if ( isOk ) {
+        foundPage = currPage;
+        break;
+      }
+      if ( ! inFile.eof() ) {
+        currToken.ReadToken(inFile);
+        currPage = currToken.Atoi();
+        currLine = "";
+      }
     }
+    else currLine += currToken + " ";
   }
   inFile.close();
   delete patternArr;
-  if ( ! allOk ) {
-    printf("Warning: cannot find %s\n",pattern.Data());
-    return -1;
-  }
-  return foundPages[0];
+  if ( foundPage < 0 ) printf("Warning: cannot find %s\n",pattern.Data());
+
+  return foundPage;
 }
 
 
@@ -127,9 +138,9 @@ void MakeDefaultItem ( ofstream& outFile, TString defaultItem = "" )
 }
 
 //_________________________________
-Bool_t MakeSingleFigureSlide ( TString pattern, TString filename, TString title, ofstream &outFile )
+Bool_t MakeSingleFigureSlide ( TString pattern, TString filename, TString title, ofstream &outFile, TString trigger = "" )
 {
-  Int_t pageNum = GetPage(pattern,filename);
+  Int_t pageNum = GetPage(pattern,filename,trigger);
   if ( pageNum<0 ) {
     return kFALSE;
   }
@@ -396,23 +407,23 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
 
   MakeSummary(period,outFile);
 
-  MakeSingleFigureSlide("Selections:  RUN",trackerQA,"Number of events per trigger",outFile);
+  MakeSingleFigureSlide("Selections: RUN",trackerQA,"Number of events per trigger",outFile);
   MakeSingleFigureSlide("L2A from QA",triggerQA,"Reconstruction: reconstructed triggers in QA wrt L2A from OCDB scalers",outFile);
   MakeTriggerSlide(triggerQA,outFile);
 
   for ( Int_t itrig=0; itrig<trigList->GetEntries(); itrig++ ) {
     TString currTrig = trigList->At(itrig)->GetName();
     TString shortTrig = GetTriggerShort(currTrig);
-    MakeSingleFigureSlide(Form("Number of Tracks /%s",currTrig.Data()),trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile);
-    MakeSingleFigureSlide(Form("Sum of trigger tracks (matched + trigger-only) / # events in %s",currTrig.Data()),trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile);
-    MakeSingleFigureSlide(Form("Matched tracks charge asymmetry for %s with acc. cuts",currTrig.Data()),trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile);
-    MakeSingleFigureSlide(Form("Identified beam-gas tracks (pxDCA cuts) in matched tracks for %s",currTrig.Data()),trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile);
+    MakeSingleFigureSlide("Number of Tracks",trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
+    MakeSingleFigureSlide("Sum of trigger tracks (matched + trigger-only) / # events in",trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
+    MakeSingleFigureSlide("Matched tracks charge asymmetry for&with acc. cuts",trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile,currTrig);
+    MakeSingleFigureSlide("Identified beam-gas tracks (pxDCA cuts) in matched tracks for",trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
   }
   MakeSingleFigureSlide("averaged number of associated clusters or of the number of chamber hit per track",trackerQA,"Average number of clusters per track and dispersion",outFile);
   MakeSingleFigureSlide("averaged number of clusters in chamber i per track",trackerQA,"Average number of clusters per chamber",outFile);
 
   StartAppendix(outFile);
-  MakeSingleFigureSlide("Phys. Sel. for all selected triggers",trackerQA,"Physics selection effects",outFile);
+  MakeSingleFigureSlide("Physics Selection Cut on selected triggers:",trackerQA,"Physics selection effects",outFile);
   MakeSingleFigureSlide("<X> of clusters - associated to a track - in chamber i",trackerQA,"Average cluster position per chamber",outFile);
   MakeSingleFigureSlide("averaged normalized",trackerQA,"Tracking quality",outFile);
 
