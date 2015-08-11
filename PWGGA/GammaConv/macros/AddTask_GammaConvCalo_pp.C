@@ -125,7 +125,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		trainConfig == 122 || 	trainConfig == 123) {
 		numberOfCuts = 1;
 	}
-	if (trainConfig == 113 || 	trainConfig == 114 || 	trainConfig == 115 || 	trainConfig == 116) {
+	if (trainConfig == 21 || trainConfig == 22 || trainConfig == 110 || trainConfig == 113 || 	trainConfig == 114 || 	trainConfig == 115 || 	trainConfig == 116) {
 		numberOfCuts = 3;
 	}
 	if (trainConfig == 8 || 	trainConfig == 10 || 	trainConfig == 11 ||	trainConfig == 13 || 	trainConfig == 15||
@@ -256,6 +256,14 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111100043032230000"; mesonCutArray[2] = "0163103100000000"; // time 100ns
 		eventCutArray[ 3] = "00083113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111100033032230000"; mesonCutArray[3] = "0163103100000000"; // time 200ns
 
+	}else if (trainConfig == 21){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0)
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111101053032230000"; mesonCutArray[0] = "0163103100000000"; // NonLinearity kSDMv5
+		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121053032230000"; mesonCutArray[1] = "0163103100000000"; // NonLinearity LHC11a ConvCalo
+		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111122053032230000"; mesonCutArray[2] = "0163103100000000"; // NonLinearity LHC11a Calo
+	}else if (trainConfig == 22){ // EMCAL clusters 2.76 TeV LHC11a, Triggered
+		eventCutArray[ 0] = "00051113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111101053032230000"; mesonCutArray[0] = "0163103100000000"; // NonLinearity kSDMv5
+		eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121053032230000"; mesonCutArray[1] = "0163103100000000"; // NonLinearity LHC11a ConvCalo
+		eventCutArray[ 2] = "00051113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111122053032230000"; mesonCutArray[2] = "0163103100000000"; // NonLinearity LHC11a Calo
 	//LHC13g
 	} else if (trainConfig == 21){  // EMCAL clusters, EMCEGA triggers, track matching 0.035
 		eventCutArray[ 0] = "00083113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000000"; // EMCEG1,
@@ -339,7 +347,10 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	} else if (trainConfig == 109){ // PCM variations
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00202209327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000000"; // restrict acceptance to EMCAL loose
 		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00204409327000008250400000"; clusterCutArray[1] = "1111100063032230000"; mesonCutArray[1] = "0163103100000000"; // restrict acceptance to EMCAL tight
-
+	} else if (trainConfig == 110){ // Different NonLinearities
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111101063032230000"; mesonCutArray[0] = "0163103100000000"; // NonLinearity kSDMv5
+		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000000"; // NonLinearity LHC12 ConvCalo
+		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111112063032230000"; mesonCutArray[2] = "0163103100000000"; // NonLinearity LHC12 Calo
 	} else if (trainConfig == 111){  // EMCAL clusters, EMC triggers (EMC7, EMCEGA, EMCEJE)
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000000"; // INT7
 		eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111100063032230000"; mesonCutArray[1] = "0163103100000000"; // EMC7
