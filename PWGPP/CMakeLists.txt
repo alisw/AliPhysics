@@ -215,6 +215,7 @@ set ( SRCS18
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19 
   BeamGasMonitoring/AliAnalysisMBVeto.cxx
+  BeamGasMonitoring/AliAnalysisBGMonitorQA.cxx
   )  
 
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
