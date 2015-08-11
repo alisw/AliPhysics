@@ -728,6 +728,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 		fHistoMotherInvMassPtAlpha = new TH2F*[fnCuts];
 		fHistoPhotonPairPtconv = new TH2F*[fnCuts];
 		fHistoPhotonPairMixedEventPtconv = new TH2F*[fnCuts];
+		fHistoMotherInvMassECalib = new TH2F*[fnCuts];
 		if (fDoMesonQA > 0){
 			fHistoMotherPi0PtY =  new TH2F*[fnCuts];
 			fHistoMotherEtaPtY =  new TH2F*[fnCuts];
@@ -739,7 +740,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
             fHistoMotherEtaConvPhotonEtaPhi = new TH2F*[fnCuts];
 		}
 		if(fDoMesonQA == 1 && fIsMC != 2){
-			fHistoMotherInvMassECalib = new TH2F*[fnCuts];
+			
 			fHistoMotherInvMassECalibalpha = new TH2F*[fnCuts];
 		}
 	}
@@ -947,7 +948,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoPhotonPairMixedEventPtconv[iCut]->SetXTitle("M_{inv,mixed} (GeV/c^{2})");
 			fHistoPhotonPairMixedEventPtconv[iCut]->SetYTitle("#gamma^{conv} p_{T} (GeV/c)");
 			fESDList[iCut]->Add(fHistoPhotonPairMixedEventPtconv[iCut]);
-
+	
 			if (fIsMC == 2){
 				fHistoMotherInvMassPt[iCut]->Sumw2();
 				fHistoMotherMatchedInvMassPt[iCut]->Sumw2();
@@ -956,12 +957,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoPhotonPairPtconv[iCut]->Sumw2();
 				fHistoPhotonPairMixedEventPtconv[iCut]->Sumw2();
 			}	
+
+			fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_E_Calib","ESD_Mother_InvMass_E_Calib",800,0,0.8,300,0,30);
+			fHistoMotherInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+			fHistoMotherInvMassECalib[iCut]->SetYTitle("E_{cluster} (GeV)");
+			fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
 			
 			if(fDoMesonQA == 1 && fIsMC != 2 ){
-				fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_E_Calib","ESD_Mother_InvMass_E_Calib",800,0,0.8,300,0,30);
-				fHistoMotherInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
-				fHistoMotherInvMassECalib[iCut]->SetYTitle("E_{cluster} (GeV)");
-				fESDList[iCut]->Add(fHistoMotherInvMassECalib[iCut]);
 				
 				fHistoMotherInvMassECalibalpha[iCut] = new TH2F("ESD_Mother_InvMass_vs_E_Calib_alpha","ESD_Mother_InvMass_vs_E_Calib_alpha",800,0,0.8,300,0,30);
 				fHistoMotherInvMassECalibalpha[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
@@ -3152,10 +3154,12 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 							ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1, matched);
 					}
 					if (!matched){
-						if (fDoMesonQA == 1 && fIsMC != 2){
+						if (fDoMesonQA == 1){
 							fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),gamma1->E());
+						}	
+						if (fDoMesonQA == 1 && fIsMC != 2){
 							if(abs(pi0cand->GetAlpha())<0.1)
-							fHistoMotherInvMassECalibalpha[fiCut]->Fill(pi0cand->M(),gamma1->E());            
+								fHistoMotherInvMassECalibalpha[fiCut]->Fill(pi0cand->M(),gamma1->E());            
 						}
 					}
 				}
