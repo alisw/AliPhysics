@@ -56,9 +56,10 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberEvent = "80000003";
-	TString cutnumberPhoton="06000008400100001500000000";   //Online  V0 finder
-	TString ElecCuts      = "90005400000002000000";            //Electron Cuts
+	TString cutnumberEvent  = "80000003";
+	TString cutnumberPhoton = "06000008000100007500000000";   //Online  V0 finder                         
+	TString ElecCuts        = "90005400000002000000";            //Electron Cuts
+				 
 	Bool_t doEtaShift = kFALSE;
 	
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -98,6 +99,10 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
+			if( trainConfig  == 38 ||  trainConfig == 39){
+			  fCuts->SetDodEdxSigmaCut(kFALSE);
+			}
+			
 		}
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
 		// AOD mode
@@ -350,6 +355,16 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009360300007200000000"; ElecCutarray[1] = "90475400833202623700"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth   + new psiPair cut    0.60, 0.0 0.12
 		eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009360300007200000000"; ElecCutarray[2] = "90475400133202623700"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirst  + new psiPair Cut    0.60, 0.0 0.12
 		eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300007200000000"; ElecCutarray[3] = "90475400233002623700"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny    + no psi pair + no weights
+	} else if ( trainConfig == 38 ){
+	        eventCutArray[0] = "80000113"; photonCutArray[0] = "00200009360300007200000000"; ElecCutarray[0] = "90405400233202623710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut    0.60, 0.0 0.12 + pion rejection low 0 -2 weights	
+		eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009360300007200004000"; ElecCutarray[1] = "90405400233202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
+		eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009360300001200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.1
+		eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300002200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.6
+	} else if ( trainConfig == 39 ){
+		eventCutArray[0] = "80000113"; photonCutArray[0] = "00200009360300003200004000"; ElecCutarray[0] = "90405400233202623710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.5
+		eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009360300004200004000"; ElecCutarray[1] = "90405400233202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.3
+		eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009360300008200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.5 2D
+		eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300009200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.3 2D
 	}
 		
 	TList *EventCutList = new TList();
@@ -364,18 +379,19 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	HeaderList->Add(Header3);
 	
 	EventCutList->SetOwner(kTRUE);
-	AliConvEventCuts **analysisEventCuts 	= new AliConvEventCuts*[numberOfCuts];
+	AliConvEventCuts **analysisEventCuts 		= new AliConvEventCuts*[numberOfCuts];
 	ConvCutList->SetOwner(kTRUE);
-	AliConversionPhotonCuts **analysisCuts       = new AliConversionPhotonCuts*[numberOfCuts];
+	AliConversionPhotonCuts **analysisCuts       	= new AliConversionPhotonCuts*[numberOfCuts];
 	MesonCutList->SetOwner(kTRUE);
-	AliConversionMesonCuts **analysisMesonCuts   = new AliConversionMesonCuts*[numberOfCuts];
+	AliConversionMesonCuts **analysisMesonCuts   	= new AliConversionMesonCuts*[numberOfCuts];
 	ElecCutList->SetOwner(kTRUE);
-	AliDalitzElectronCuts **analysisElecCuts     = new AliDalitzElectronCuts*[numberOfCuts];
+	AliDalitzElectronCuts **analysisElecCuts     	= new AliDalitzElectronCuts*[numberOfCuts];
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=36 )  ){
+		if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=36 ) || trainConfig == 38 
+		     || trainConfig == 39 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -405,6 +421,13 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 			cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
 			return 0;
 		}
+		
+		
+			if( (trainConfig == 38 && ( i == 2 || i == 3 )) || trainConfig == 39 )
+			analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
+		
+		
+		
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);

@@ -186,10 +186,12 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1F 									**hMCPi0DalitzElectronPt;
 		TH1F 									**hMCPi0DalitzPositronPt;
 		TH1F 									**hMCPi0Pt;
+		TH1F									**hMCPi0WOWeightPt;
 		TH1F 									**hMCPi0GGPt;
 		TH1F 									**hMCEtaPt;
 		TH1F 									**hMCEtaGGPt;
 		TH1F 									**hMCPi0InAccPt;
+		TH1F 									**hMCPi0WOWeightInAccPt;
 		TH1F									**hMCPi0InAccOpeningAngleGammaElectron;
 		TH1F 									**hMCEtaInAccPt;
 		TH1F 									**hMCChiCPt;
@@ -210,8 +212,10 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDTrueMotherChiCInvMassPt;
 		TH2F 									**hESDTrueMotherChiCDiffInvMassPt;
 		TH2F 									**hESDTrueMotherInvMassPt;
+		TH2F									**hESDTrueMotherW0WeightsInvMassPt;
 		TH2F 									**hESDTrueMotherDalitzInvMassPt;
 		TH2F 									**hESDTrueMotherPi0GGInvMassPt;
+		TH2F									**hESDTrueMotherPi0GGW0WeightsInvMassPt;
 		TH2F 									**hESDTruePrimaryMotherPi0GGInvMassPt;
 		TH2F 									**hESDTrueSecondaryMotherPi0GGInvMassPt;
 		TH2F 									**hESDTruePrimaryMotherInvMassMCPt;
