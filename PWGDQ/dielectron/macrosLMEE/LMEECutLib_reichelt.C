@@ -111,6 +111,8 @@ public:
 	AliAnalysisCuts* GetTrackCutsPre(Int_t cutSet=-1);
 	AliAnalysisCuts* GetESDTrackCutsAna();
   
+  void SetITSSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim);
+  void SetTPCSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim);
   void SetEtaCorrection(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
   
   
@@ -138,11 +140,78 @@ selectedPairCutsAna(LMEECutLib::kPairCut_OFF)
 }
 
 
+void LMEECutLib::SetITSSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim) {
+  //
+  // MC post-correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
+  //
+  TF2 *fCntrdCorr=0x0;
+  TF2 *fWdthCorr=0x0;
+  Double_t fitMinZdim=   0;
+  Double_t fitMaxZdim=4000;
+  Double_t fitMinEta=-0.9, fitMaxEta=+0.9; // Ydim, usually eta
+  
+  if (corrYdim!=AliDielectronVarManager::kEta) { printf(" correction only available for Ydim = eta!\n"); return; }
+  
+  if (corrZdim==AliDielectronVarManager::kNacc)
+  {
+    fCntrdCorr = new TF2("fCntrdCorr", "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    //fWdthCorr  = new TF2("fWdthCorr",  "[9]*([0]+[1]*x+[2]*x*x)+[10]*([3]+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y+[8]*y*y*y*y*y)+[11]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    Double_t parCntrd[]={0.}; //-0.5 for tests
+    //Double_t parWdth[] ={1.0};
+    fCntrdCorr->SetParameters(parCntrd);
+    //fWdthCorr ->SetParameters(parWdth);
+  }
+  else {
+    printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim));
+    printf(" no correction applied!\n");
+    return;
+  }
+  
+//  task->SetCentroidCorrFunctionITS(fCntrdCorr, corrZdim, corrYdim);
+//  //task->SetWidthCorrFunctionITS(fWdthCorr, corrZdim, corrYdim);
+//  
+//  printf(" MC ITS PID eta correction loaded!\n");
+}
+  
+void LMEECutLib::SetTPCSigmaEleCorrectionMC(AliAnalysisTaskElectronEfficiency *task, Int_t corrZdim, Int_t corrYdim) {
+  //
+  // MC post-correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
+  //
+  TF2 *fCntrdCorr=0x0;
+  TF2 *fWdthCorr=0x0;
+  Double_t fitMinZdim=   0;
+  Double_t fitMaxZdim=4000;
+  Double_t fitMinEta=-0.9, fitMaxEta=+0.9; // Ydim, usually eta
+  
+  if (corrYdim!=AliDielectronVarManager::kEta) { printf(" correction only available for Ydim = eta!\n"); return; }
+  
+  if (corrZdim==AliDielectronVarManager::kNacc)
+  {
+    fCntrdCorr = new TF2("fCntrdCorr", "[0]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    //fWdthCorr  = new TF2("fWdthCorr",  "[9]*([0]+[1]*x+[2]*x*x)+[10]*([3]+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y+[8]*y*y*y*y*y)+[11]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
+    Double_t parCntrd[]={0.}; //0.2 for tests
+    //Double_t parWdth[] ={1.0};
+    fCntrdCorr->SetParameters(parCntrd);
+    //fWdthCorr ->SetParameters(parWdth);
+  }
+  else {
+    printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim));
+    printf(" no correction applied!\n");
+    return;
+  }
+  
+//  task->SetCentroidCorrFunction(fCntrdCorr, corrZdim, corrYdim);
+//  //task->SetWidthCorrFunction(fWdthCorr, corrZdim, corrYdim);
+//  
+//  printf(" MC TPC PID eta correction loaded!\n");
+}
+
+
 void LMEECutLib::SetEtaCorrection(AliDielectron *die, Int_t corrZdim, Int_t corrYdim) {
   //
   // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
   //
-  printf("starting LMEECutLib::SetEtaCorrection()\n");
+  printf("starting LMEECutLib::SetEtaCorrection()\n --> for MC task, use ::SetTPCSigmaEleCorrectionMC()!\n");
   printf(" correction Zdim = %s\n", AliDielectronVarManager::GetValueName(corrZdim));
   printf(" correction Ydim = %s\n", AliDielectronVarManager::GetValueName(corrYdim));
   //Bool_t hasMC=die->GetHasMC();
@@ -168,7 +237,7 @@ void LMEECutLib::SetEtaCorrection(AliDielectron *die, Int_t corrZdim, Int_t corr
   
   if (corrYdim!=AliDielectronVarManager::kEta) { printf(" correction only available for Ydim = eta!\n"); return; }
   
-  if (corrZdim==AliDielectronVarManager::kRefMultTPConly) 
+  if (corrZdim==AliDielectronVarManager::kRefMultTPConly)
   {
     fCntrdCorr = new TF2("fCntrdCorr", "[9]*([0]+[1]*x+[2]*x*x)+[10]*([3]+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y+[8]*y*y*y*y*y)+[11]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
     fWdthCorr  = new TF2("fWdthCorr",  "[9]*([0]+[1]*x+[2]*x*x)+[10]*([3]+[4]*y+[5]*y*y+[6]*y*y*y+[7]*y*y*y*y+[8]*y*y*y*y*y)+[11]", fitMinZdim, fitMaxZdim, fitMinEta, fitMaxEta);
@@ -180,7 +249,7 @@ void LMEECutLib::SetEtaCorrection(AliDielectron *die, Int_t corrZdim, Int_t corr
     fWdthCorr ->SetParameters(parWdth);
   }
   else {
-    printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim)); 
+    printf(" no correction available for Zdim = %s!\n", AliDielectronVarManager::GetValueName(corrZdim));
     printf(" no correction applied!\n");
     return;
   }
