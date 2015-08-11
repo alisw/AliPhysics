@@ -127,7 +127,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 
 	if (trainConfig == 111 || trainConfig == 114 	|| trainConfig == 117 	|| trainConfig == 120 	|| trainConfig == 121 || 
 		trainConfig == 53  || trainConfig == 56 	|| trainConfig == 59 	|| trainConfig == 62 	|| trainConfig == 72 || 
-		trainConfig == 75  || trainConfig == 78 	|| trainConfig == 81	|| trainConfig == 110)
+		trainConfig == 75  || trainConfig == 78 	|| trainConfig == 81	|| trainConfig == 110 || trainConfig == 4 || trainConfig == 6)
 		numberOfCuts = 3;
 
   
@@ -156,6 +156,15 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111100050032000000"; mesonCutArray[2] = "0163103100000000"; //no M02 cut
 		eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1113100050032230000"; mesonCutArray[3] = "0163103100000000"; //only modules with TRD infront
 		eventCutArray[ 4] = "00003113"; clusterCutArray[4] = "1111200050032230000"; mesonCutArray[4] = "0163103100000000"; //no modules with TRD infront
+	}else if (trainConfig == 4){ // EMCAL clusters 2.76 TeV NonLinearity
+		eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111101050032230000"; mesonCutArray[0] = "0163103100000000"; // NonLinearity kSDMv5
+		eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111121050032230000"; mesonCutArray[1] = "0163103100000000"; // NonLinearity LHC11a ConvCalo
+		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111122050032230000"; mesonCutArray[2] = "0163103100000000"; // NonLinearity LHC11a Calo
+
+	}else if (trainConfig == 6){ // EMCAL clusters 2.76 TeV NonLinearity
+		eventCutArray[ 0] = "00051113"; clusterCutArray[0] = "1111101050032230000"; mesonCutArray[0] = "0163103100000000"; // NonLinearity kSDMv5
+		eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032230000"; mesonCutArray[1] = "0163103100000000"; // NonLinearity LHC11a ConvCalo
+		eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111122050032230000"; mesonCutArray[2] = "0163103100000000"; // NonLinearity LHC11a Calo
 	// LHC13g	
 	} else if (trainConfig == 5){  // EMCAL clusters, EMCEGA triggers
 		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111100050032220000"; mesonCutArray[0] = "0163103100000000"; // EMCEG1,
