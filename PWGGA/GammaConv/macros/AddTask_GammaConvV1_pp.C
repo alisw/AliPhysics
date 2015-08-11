@@ -590,7 +590,8 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 		analysisEventCuts[i] = new AliConvEventCuts();
 		TString fitNamePi0 = Form("Pi0_Fit_Data_%s",energy.Data());
 		TString fitNameEta = Form("Eta_Fit_Data_%s",energy.Data());
-		TString fAddedSignalString = eventCutArray[i](6,1);
+		TString fAddedSignalString = eventCutArray[i];
+		fAddedSignalString = fAddedSignalString(6,1);
 		Bool_t fAddedSignal = kFALSE;
 		if (fAddedSignalString.CompareTo("2") == 0) fAddedSignal = kTRUE;
 
