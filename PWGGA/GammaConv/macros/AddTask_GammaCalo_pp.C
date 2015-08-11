@@ -127,7 +127,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 
 	if (trainConfig == 111 || trainConfig == 114 	|| trainConfig == 117 	|| trainConfig == 120 	|| trainConfig == 121 || 
 		trainConfig == 53  || trainConfig == 56 	|| trainConfig == 59 	|| trainConfig == 62 	|| trainConfig == 72 || 
-		trainConfig == 75  || trainConfig == 78 	|| trainConfig == 81) 
+		trainConfig == 75  || trainConfig == 78 	|| trainConfig == 81	|| trainConfig == 110)
 		numberOfCuts = 3;
 
   
@@ -277,6 +277,12 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000000"; // 400 MeV cluster min energy
 	} else if (trainConfig == 102){ // EMCAL clusters pp 8 TeV, same timing cut as in ConvCalo case (6)
 		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032230000"; mesonCutArray[0] = "0163103100000000"; // 400 MeV cluster min energy
+
+	} else if (trainConfig == 110){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101063032230000"; mesonCutArray[0] = "0163103100000000"; // NonLinearity kSDMv5
+		eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000000"; // NonLinearity LHC12 ConvCalo
+		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111112063032230000"; mesonCutArray[2] = "0163103100000000"; // NonLinearity LHC12 Calo
+
    // LHC12fa-i and MC
     // default with three cuts
 	} else if (trainConfig == 111){  // EMCAL clusters, different triggers
