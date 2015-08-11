@@ -496,8 +496,13 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
 	cutindex++;
 
 	// Pile Up Rejection
-
-	if(fRemovePileUp){
+	if (fIsHeavyIon == 2){
+		if(fUtils->IsFirstEventInChunk(fInputEvent) || fUtils->IsPileUpEvent(fInputEvent) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent) ){
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 6;
+			return kFALSE;
+		}
+	}else if(fRemovePileUp){
 		if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
 			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
 			fEventQuality = 6;
@@ -1598,9 +1603,7 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
 		if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
 	}						
 	if (fIsHeavyIon == 2){
-		if(fUtils->IsFirstEventInChunk(event)) return kFALSE;
 		if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
-		if(fUtils->IsPileUpEvent(event)) return kFALSE;
 	}
 
 	return kTRUE;

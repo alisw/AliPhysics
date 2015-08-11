@@ -88,6 +88,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
+			if(trainConfig==15 ||trainConfig==16 ||trainConfig==17  ||trainConfig==18  ){
+			  fCuts->SetDodEdxSigmaCut(kFALSE);
+			}
 		}
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
 		// AOD mode
@@ -149,6 +152,14 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //standard, opening angle =0.0   
 	} else if (trainConfig == 14) {   
 		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";   //standard, opening angle =0.0  
+	} else if (trainConfig == 15) {   
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500900000";   //standard, nodEdx, alpha 1 MB
+	} else if (trainConfig == 16) {   
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500900000";   //standard, nodEdx, alpha 1 AddSignal Pi0
+	} else if (trainConfig == 17) {   
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 MB Eta 
+	} else if (trainConfig == 18) {   
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 AddSignal Eta
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -190,7 +201,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if ( trainConfig == 13){
+		if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -201,7 +212,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 				}
 			}
 		}   
-		if ( trainConfig == 14){
+		if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18){
 			if (doWeighting){
 				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
 																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -221,6 +232,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
+		if (trainConfig == 15 || trainConfig==16 || trainConfig==17  || trainConfig==18) {
+		        analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
+		}
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 		
@@ -245,7 +259,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	        task->SetDoTHnSparse(0);
 	}
 	task->SetDoPlotVsCentrality(enablePlotVsCentrality);
-	
+
 	//connect containers
 	AliAnalysisDataContainer *coutput =
 		mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
