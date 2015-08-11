@@ -42,7 +42,7 @@ public:
  /* void SetTOFParticle(Int_t ipart); */
 
   void Write();
-
+  void SetUsePt(Bool_t usept){fIfUsePt=usept;}
   virtual TList *GetOutputList();
 
 private:
@@ -55,7 +55,7 @@ private:
   TH2D *fTPCvsTOFNSigma; // TPC vs TOF
   TH1D *fParticleOrigin; //particle origin from MC
   TH1D *fParticleId;     //true particle identification from MC
-
+  Bool_t fIfUsePt; // Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
 };
 
 #endif
