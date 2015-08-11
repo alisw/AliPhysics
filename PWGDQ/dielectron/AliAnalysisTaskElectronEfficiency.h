@@ -78,6 +78,11 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetPIDResponse(AliPIDResponse *fPIDRespIn)    {fPIDResponse=fPIDRespIn;}
   void          SetRandomizeDaughters(Bool_t random=kTRUE)    {fRandomizeDaughters=random;}
   
+  void          SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetCentroidCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void          SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  
   void          SetBins(Int_t Nptbins, Double_t *PtBins, Int_t Netabins, Double_t *EtaBins, Int_t Nphibins, Double_t *PhiBins) {
     /**/          fPtBins=PtBins;   fEtaBins=EtaBins;   fPhiBins=PhiBins;
     /**/          fNptBins=Nptbins; fNetaBins=Netabins; fNphiBins=Nphibins;
@@ -110,6 +115,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliESDEvent*      fESD;
   AliMCEvent*       mcEvent;
   AliPIDResponse*   fPIDResponse;
+  TH1*              fPostPIDCntrdCorrTPC;     // post pid correction object for centroids in TPC
+  TH1*              fPostPIDWdthCorrTPC;      // post pid correction object for widths in TPC
+  TH1*              fPostPIDCntrdCorrITS;     // post pid correction object for centroids in ITS
+  TH1*              fPostPIDWdthCorrITS;      // post pid correction object for widths in ITS
+  TBits*            fUsedVars;                // used variables by AliDielectronVarManager
+  
   Bool_t            fSelectPhysics;           // Whether to use physics selection
   UInt_t            fTriggerMask;             // Event trigger mask
   AliAnalysisCuts*  fEventFilter;             // event filter
@@ -216,7 +227,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
   
-  ClassDef(AliAnalysisTaskElectronEfficiency, 1);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 2);
 };
 
 #endif
