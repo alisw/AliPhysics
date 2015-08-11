@@ -99,6 +99,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
 		Bool_t 			ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
+		//correct NonLinearity
+		void			CorrectNonLinearity(AliVCluster* cluster, Int_t isMC);
+
 		void 			InitCutHistograms(TString name="");
 		void 			SetFillCutHistograms(TString name="")							{if(!fHistograms){InitCutHistograms(name);} return;}
 		TList*			GetCutHistograms()												{return fHistograms;}

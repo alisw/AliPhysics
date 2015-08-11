@@ -979,6 +979,9 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
 
 	FillClusterCutIndex(kPhotonIn);
 
+	// do NonLinearity if switched on
+	if(fUseNonLinearity) CorrectNonLinearity(cluster,isMC);
+
 //  Double_t vertex[3] = {0,0,0};
 //	event->GetPrimaryVertex()->GetXYZ(vertex);
     // TLorentzvector with cluster
@@ -2041,7 +2044,72 @@ Bool_t AliCaloPhotonCuts::SetNonLinearity2(Int_t nl2)
 	}
 	return kTRUE;
 }
-	
+
+//________________________________________________________________________
+void AliCaloPhotonCuts::CorrectNonLinearity(AliVCluster* cluster, Int_t isMC)
+{
+	if(!fUseNonLinearity) return;
+
+	Int_t switchNonLinearity = fNonLinearity1*10 + fNonLinearity2;
+	Double_t energy = cluster->E();
+
+		// Standard NonLinearity kPi0MCv5 for MC and kSDMv5 for data
+	if(switchNonLinearity == 01){
+		// kPi0MCv5
+	  energy *= 1.01286/(1.0*
+			  (1./(1.+0.0664778*exp(-energy/1.57))
+			  *1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
+
+		// kPi0MCv5+kSDM
+	  if(isMC == 0) energy *= (0.964 + exp(-3.132-0.435*energy*2.0));
+
+		// NonLinearity LHC12 ConvCalo
+	}else if(switchNonLinearity == 11){
+
+		energy *= 1.011/(1.0*
+				(1./(1.+0.04979*exp(-energy/1.3))
+				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
+
+		if(isMC == 0) energy *= (0.9846 + exp(-3.319-2.033*energy));
+
+		// NonLinearity LHC12 Calo
+	}else if(switchNonLinearity == 12){
+
+		energy *= 1.011/(1.0*
+				(1./(1.+0.06539*exp(-energy/1.121))
+				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
+
+		if(isMC == 0) energy *= (0.9676 + exp(-3.216-0.6828*energy*2.0));
+
+		// NonLinearity LHC11a ConvCalo
+	}else if(switchNonLinearity == 21){
+
+		energy *= 1.014/(1.0*
+				(1./(1.+0.04123*exp(-energy/1.045))
+				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
+
+		if(isMC == 0) energy *= (0.9807 + exp(-3.377-0.8535*energy));
+
+
+		// NonLinearity LHC11a Calo
+	}else if(switchNonLinearity == 22){
+
+		energy *= 1.013/(1.0*
+				(1./(1.+0.06115*exp(-energy/0.9535))
+				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
+
+		if(isMC == 0) energy *= (0.9772 + exp(-3.256-0.4449*energy*2.0));
+
+
+	}else{
+		AliError(Form("NonLinearity Correction not defined: %d",switchNonLinearity));
+		return;
+	}
+
+	cluster->SetE(energy);
+	return;
+}
+
 //________________________________________________________________________
 TString AliCaloPhotonCuts::GetCutNumber(){
    // returns TString with current cut number
