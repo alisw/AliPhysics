@@ -271,6 +271,7 @@ private:
 	TH2F				*fTOF03;
 	TH1F				*fpid;	
 	TH2F				*fEoverP_pt_true_electrons;
+	TH2F				*fEoverP_pt_true_electrons_weight;
 	TH2F				*fEoverP_pt_true_HFE;
 	TH2F				*fEoverP_pt_not_HFE;
 	

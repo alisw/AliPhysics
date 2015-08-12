@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 07, 2015.								      //
+	//		version: August 12, 2015.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -203,6 +203,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTOF03(0)
 ,fpid(0)
 ,fEoverP_pt_true_electrons(0)
+,fEoverP_pt_true_electrons_weight(0)
 ,fEoverP_pt_true_HFE(0)
 ,fEoverP_pt_not_HFE(0)
 
@@ -554,6 +555,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTOF03(0)
 ,fpid(0)
 ,fEoverP_pt_true_electrons(0)
+,fEoverP_pt_true_electrons_weight(0)
 ,fEoverP_pt_true_HFE(0)
 ,fEoverP_pt_not_HFE(0)
 
@@ -1139,6 +1141,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fEoverP_pt_true_electrons = new TH2F("fEoverP_pt_true_electrons",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
 	fOutputList->Add(fEoverP_pt_true_electrons);
 	
+	fEoverP_pt_true_electrons_weight = new TH2F("fEoverP_pt_true_electrons_weight",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_true_electrons_weight);
+	
 	fEoverP_pt_true_HFE = new TH2F("fEoverP_pt_true_HFE",";p_{T} (GeV/c);E/p ",1000,0,30,2000,0,2);
 	fOutputList->Add(fEoverP_pt_true_HFE);
 	
@@ -1540,8 +1545,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fPtBackgroundBeforeReco_weight = new TH1F("fPtBackgroundBeforeReco_weight",";p_{T} (GeV/c);Count",300,0,30);
 		if(fFillBackground)fPtBackgroundBeforeReco2 = new TH1F("fPtBackgroundBeforeReco2",";p_{T} (GeV/c);Count",300,0,30);
 		if(fFillBackground)fPtBackgroundBeforeReco2_weight = new TH1F("fPtBackgroundBeforeReco2_weight",";p_{T} (GeV/c);Count",300,0,30);
-		fpT_m_electron= new TH2F("fpT_m_electron","fpT_m_electron",300,0,30,300,0,30);
-		fpT_gm_electron= new TH2F("fpT_gm_electron","fpT_gm_electron",300,0,30,300,0,30);
+		fpT_m_electron= new TH2F("fpT_m_electron","fpT_m_electron",1000,0,100,1000,0,100);
+		fpT_gm_electron= new TH2F("fpT_gm_electron","fpT_gm_electron",1000,0,100,1000,0,100);
 		
 		fPtBackgroundAfterReco = new TH1F("fPtBackgroundAfterReco",";p_{T} (GeV/c);Count",300,0,30);	
 		fPtMCparticleAll = new TH1F("fPtMCparticleAll",";p_{T} (GeV/c);Count",200,0,40);	
@@ -3691,7 +3696,50 @@ if(!fIspp){
 										fEoverP_pt_true_electrons->Fill(fPt,(fClus->E() / fP));
 									}
 									
-									
+									//==========================E/p with weight==============================
+									if( TMath::Abs(pdg) == 11){
+										if(TMath::Abs(fMCparticle->GetPdgCode())==11 && (TMath::Abs(fMCparticleMother->GetPdgCode())==22 || TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221))
+									    {
+											Double_t weight=1;
+												//----------------------------------------------------------------------------
+											if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+												Double_t mPt=fMCparticleMother->Pt();
+												
+												
+												if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
+													Double_t x=mPt;
+													weight=CalculateWeight(111, x);
+													
+												}
+												if(TMath::Abs(fMCparticleMother->GetPdgCode())==221){
+													Double_t x=mPt;
+													weight=CalculateWeight(221, x);
+													
+												}
+												fEoverP_pt_true_electrons_weight->Fill((fPt/weight),(fClus->E() / fP));
+											}//// mother pion or eta
+											else if(fMCparticleMother->GetMother()>0 && (TMath::Abs(fMCparticleGMother->GetPdgCode())==111 || TMath::Abs(fMCparticleGMother->GetPdgCode())==221 )){
+												Double_t gmPt=fMCparticleGMother->Pt();
+												
+												
+												if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
+													Double_t x=gmPt;
+													weight=CalculateWeight(111, x);
+												}
+												
+												
+												if(TMath::Abs(fMCparticleGMother->GetPdgCode())==221){
+													Double_t x=gmPt;
+													weight=CalculateWeight(221, x);
+												}
+												fEoverP_pt_true_electrons_weight->Fill((fPt/weight),(fClus->E() / fP));
+											}//grandmother pion or eta
+											else{
+												fEoverP_pt_true_electrons_weight->Fill((fPt/weight),(fClus->E() / fP));
+											}
+									    }
+									}
+									//==========================E/p with weight==============================
 									
 									//==============
 									//true HFE electrons
