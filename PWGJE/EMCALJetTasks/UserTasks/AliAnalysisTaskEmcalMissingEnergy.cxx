@@ -66,6 +66,7 @@ AliAnalysisTaskEmcalMissingEnergy::AliAnalysisTaskEmcalMissingEnergy() :
   fHolePos(0),
   fHoleWidth(0), 
   fCentSelectOn(kTRUE),
+  fHTon(kTRUE),
   fCentMin(0),
   fCentMax(10),
   fh2ResponseUW(0x0),
@@ -127,6 +128,7 @@ AliAnalysisTaskEmcalMissingEnergy::AliAnalysisTaskEmcalMissingEnergy(const char 
   fHolePos(0),
   fHoleWidth(0), 
   fCentSelectOn(kTRUE),
+  fHTon(kTRUE),
   fCentMin(0),
   fCentMax(10),
   fh2ResponseUW(0x0),
@@ -239,7 +241,7 @@ AliAnalysisTaskEmcalMissingEnergy::~AliAnalysisTaskEmcalMissingEnergy()
   fhJetTriggeredPt= new TH1F("fhJetTriggeredPt", "fhJetTriggeredPt;Triggered Jet p_{T} (GeV)", 100, 0, 100);
   fOutput->Add(fhJetTriggeredPt);
 
-  fhTriggerVSjetPt= new TH2F("fhTriggerVSjetPt", "fhTriggerVSjetPt;Trigger p_{T} (GeV);Jet p_{T} (GeV)", 100, 0, 200,  100, 0, 100);
+  fhTriggerVSjetPt= new TH2F("fhTriggerVSjetPt", "fhTriggerVSjetPt;Trigger p_{T} (GeV);Jet p_{T} (GeV)", 100, 0, 100,  100, 0, 100);
   fOutput->Add(fhTriggerVSjetPt);
 
   fhdPhiTrigVSjetPtNOCUT= new TH2F("fhdPhiTrigVSjetPtNOCUT", "fhdPhiTrigVSjetPtNOCUT;#Delta#phi (Trig-Jet);Jet p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 100);
@@ -408,7 +410,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 
   Int_t trigger_index = SelectTrigger(fminpTTrig,fmaxpTTrig);
       
-  if(trigger_index >= 0) {
+  if(trigger_index >= 0 && fHTon) {
     trigger = static_cast<AliPicoTrack*>(tracksArray->At(trigger_index));
     if (trigger) {
       fhTriggerPt->Fill(trigger->Pt());
@@ -421,7 +423,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 	  if (TMath::Abs(jetTEMP->Eta()) > eta_max - fJetRadius) continue;
 	  
 	  Float_t dphi = RelativePhi(trigger->Phi(), jetTEMP->Phi()); // -pi to pi
-    Float_t dphiFancy = RelativePhiFancy(trigger->Phi(), jetTEMP->Phi()); // -0.5pi to 1.5pi
+	  Float_t dphiFancy = RelativePhiFancy(trigger->Phi(), jetTEMP->Phi()); // -0.5pi to 1.5pi
 	  
 	  fhdPhiTrigVSjetPtNOCUT->Fill(dphiFancy,jetTEMP->Pt());
 	  
@@ -436,8 +438,8 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 	    track = static_cast<AliPicoTrack*>(tracksArray->At(iTrack));
 	    if (!track) continue;
 
-	    if(TMath::Abs(track->Eta())>0.9) continue;
-	    if(track->Pt()<0.15) continue;
+	    if(TMath::Abs(track->Eta())>eta_max) continue;
+	    if(track->Pt()<track_pt_min) continue;
 	    //if(track->GetTrackType() == 2) continue;
 
 	    Float_t DPHI = RelativePhiFancy(jetTEMP->Phi(), track->Phi()); // -0.5 pi to 1.5 pi
@@ -813,7 +815,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
         if (ptSubtracted < fPtThreshold) continue;
      
      
-      if ((fCentSelectOn==kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
+      if ((==kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
       
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
