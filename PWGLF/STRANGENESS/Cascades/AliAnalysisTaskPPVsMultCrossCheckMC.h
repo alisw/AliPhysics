@@ -54,6 +54,8 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+    
+    void SetPureMonteCarlo( Bool_t lSet = kTRUE ) { lPureMonteCarlo = lSet; } 
 
 //---------------------------------------------------------------------------------------
 
@@ -70,6 +72,9 @@ private:
 
     //Histograms (Desired objects in this cross-checking task) 
     TH1F *fHistEventCounter; //! histogram for event counting
+    
+    //Will attempt to read ESD or not... 
+    Bool_t lPureMonteCarlo;
     
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1F *fHistV0M_DataSelection; //!
