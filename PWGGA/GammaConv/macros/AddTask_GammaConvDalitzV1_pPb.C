@@ -56,9 +56,9 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString cutnumberEvent  = "80000003";
+	TString cutnumberEvent  = "80000103";
 	TString cutnumberPhoton = "06000008000100007500000000";   //Online  V0 finder                         
-	TString ElecCuts        = "90005400000002000000";            //Electron Cuts
+	TString ElecCuts        = "90105400000002000000";            //Electron Cuts
 				 
 	Bool_t doEtaShift = kFALSE;
 	
@@ -99,7 +99,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
-			if( trainConfig  == 38 ||  trainConfig == 39){
+			if( trainConfig  == 38 ){
 			  fCuts->SetDodEdxSigmaCut(kFALSE);
 			}
 			
@@ -361,10 +361,10 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009360300001200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.1
 		eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300002200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.6
 	} else if ( trainConfig == 39 ){
-		eventCutArray[0] = "80000113"; photonCutArray[0] = "00200009360300003200004000"; ElecCutarray[0] = "90405400233202623710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.5
-		eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009360300004200004000"; ElecCutarray[1] = "90405400233202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.3
-		eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009360300008200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.5 2D
-		eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300009200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + no PID for gammas + qT < 0.3 2D
+		eventCutArray[0] = "80000113"; photonCutArray[0] = "00200009360300007200004000"; ElecCutarray[0] = "90415400233202623710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
+		eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009310300007200004000"; ElecCutarray[1] = "90405400233202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
+		eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009320300007200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
+		eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300001200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
 	}
 		
 	TList *EventCutList = new TList();
@@ -423,7 +423,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		}
 		
 		
-			if( (trainConfig == 38 && ( i == 2 || i == 3 )) || trainConfig == 39 )
+			if( (trainConfig == 38 && ( i == 2 || i == 3 )) ) 
 			analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
 		
 		
