@@ -50,6 +50,44 @@ AliEMCalTriggerAnaClassManager::AliEMCalTriggerAnaClassManager(const char* name)
 }
 
 /**
+ * Copy constructor
+ * @param ref Reference for the copy
+ */
+AliEMCalTriggerAnaClassManager::AliEMCalTriggerAnaClassManager(const AliEMCalTriggerAnaClassManager &ref):
+  TNamed(ref),
+  fTriggerClasses(NULL),
+  fSelected(NULL)
+{
+  fTriggerClasses = new TObjArray;
+  fTriggerClasses->SetOwner(kFALSE);
+  // Copy trigger classes - only pointers
+  for(TIter classiter = TIter(ref.fTriggerClasses).Begin(); classiter != TIter::End(); ++classiter){
+    fTriggerClasses->Add(*classiter);
+  }
+  fSelected = new TObjArray;
+  fSelected->SetOwner(kFALSE);
+}
+
+/**
+ * Assignment operator
+ * @param ref Reference for assignment
+ * @return Trigger class manager after assignment
+ */
+AliEMCalTriggerAnaClassManager &AliEMCalTriggerAnaClassManager::operator=(const AliEMCalTriggerAnaClassManager &ref){
+  TNamed::operator=(ref);
+  if(this != &ref){
+    fSelected->Clear();
+    fTriggerClasses->Clear();
+    // Copy trigger classes - only pointers
+    for(TIter classiter = TIter(ref.fTriggerClasses).Begin(); classiter != TIter::End(); ++classiter){
+      fTriggerClasses->Add(*classiter);
+    }
+  }
+  return *this;
+}
+
+
+/**
  * Destructor
  */
 AliEMCalTriggerAnaClassManager::~AliEMCalTriggerAnaClassManager() {
