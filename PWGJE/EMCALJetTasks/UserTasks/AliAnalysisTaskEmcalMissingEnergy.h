@@ -59,6 +59,7 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
+  void SetHTon(Bool_t t)                                    { fHTon = t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
@@ -116,6 +117,7 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
   Float_t                             fHoleWidth;                       //width of the hole in radians 
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
+  Bool_t                              fHTon;                       // switch on/off Hadron Trigger analysis
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   
