@@ -49,6 +49,7 @@ set(SRCS
     AliGenEMCocktail.cxx
     AliGenEMlib.cxx
     AliGenExtFile.cxx
+    AliGenExtExec.cxx
     AliGenFixed.cxx
     AliGenFunction.cxx
     AliGenGeVSim.cxx

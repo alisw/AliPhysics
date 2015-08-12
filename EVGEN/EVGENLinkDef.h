@@ -26,6 +26,7 @@
 #pragma link C++ class  AliGenCocktailAfterBurner+;
 #pragma link C++ class  AliGenCocktailEntry+;
 #pragma link C++ class  AliGenExtFile+;
+#pragma link C++ class  AliGenExtExec+;
 #pragma link C++ class  AliGenScan+;
 #pragma link C++ class  AliGenDoubleScan+;
 #pragma link C++ class  AliGenLib+;
