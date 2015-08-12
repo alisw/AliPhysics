@@ -1918,8 +1918,9 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 	for(Long_t i = 0; i < nclus; i++){
 		
 		AliVCluster* clus = NULL;
-		clus = fInputEvent->GetCaloCluster(i);
-		
+		if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+
 		if ( !clus ) continue;
 		if ( !((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC) ) continue;
 		
@@ -1984,6 +1985,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 			delete PhotonCandidate;
 		}
 		
+		delete clus;
 		delete tmpvec;
 	}
 	
