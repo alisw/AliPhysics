@@ -1304,10 +1304,10 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (GetRequireITSRefit() && !(track->GetStatus() & AliESDtrack::kITSrefit) ) pass=kFALSE;
   
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
-  
-  if (fCutDCAToVertexXY && (track->DCA()>GetMaxDCAToVertexXY() || track->DCA()<-GetMaxDCAToVertexXY())) pass=kFALSE;
 
-  if (fCutDCAToVertexZ && (track->ZAtDCA()>GetMaxDCAToVertexZ() || track->ZAtDCA()<-GetMaxDCAToVertexZ())) pass=kFALSE;
+  if (fCutDCAToVertexXY && track->DCA()>GetMaxDCAToVertexXY()) pass=kFALSE;
+
+  if (fCutDCAToVertexZ && track->ZAtDCA()>GetMaxDCAToVertexZ()) pass=kFALSE;
 
   Double_t dedx = track->GetTPCsignal();
   if (dedx < fMinimalTPCdedx) pass=kFALSE;

@@ -675,7 +675,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fFlowEvent->Fill( fCutsRP, fCutsPOI );
   
   fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
-  fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile(fCentrEstimator.Data()));
+  fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
   if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
   
  }
