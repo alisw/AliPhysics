@@ -523,7 +523,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
 	task->SetUseTHnSparse(isUsingTHnSparse);
-	//if(trainConfig==122) task->SetDoTreeConvGammaShowerShape(kTRUE);
+	if(trainConfig==122) task->SetDoTreeConvGammaShowerShape(kTRUE);
 	if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
 	//connect containers
