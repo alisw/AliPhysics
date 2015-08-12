@@ -15,10 +15,22 @@
 #endif
 
 //_________________________________
-TString GetConvertedFilename ( TString filename )
+TString PdfToTxt ( TString filename, Bool_t clear = kFALSE )
 {
   TString convertedFilename = filename;
   convertedFilename.ReplaceAll(".pdf",".txt");
+
+  if ( clear ) {
+    if ( gSystem->AccessPathName(convertedFilename.Data()) == 0 ) {
+      gSystem->Exec(Form("rm %s",convertedFilename.Data()));
+    }
+    return "";
+  }
+
+  if ( gSystem->AccessPathName(convertedFilename.Data()) != 0 ) {
+    gSystem->Exec(Form("gs -dBATCH -dNOPAUSE -sDEVICE=txtwrite -sOutputFile=- %s | xargs > %s",filename.Data(),convertedFilename.Data()));
+  }
+
   return convertedFilename;
 }
 
@@ -46,14 +58,11 @@ void EscapeSpecialCharsForRegex ( TString& str )
   delete specialList;
 }
 
+
 //_________________________________
 Int_t GetPage ( TString pattern, TString filename, TString trigger = "" )
 {
-  TString convertedFilename = GetConvertedFilename(filename);
-
-  if ( gSystem->AccessPathName(convertedFilename.Data()) != 0 ) {
-    gSystem->Exec(Form("gs -dBATCH -dNOPAUSE -sDEVICE=txtwrite -sOutputFile=- %s | xargs > %s",filename.Data(),convertedFilename.Data()));
-  }
+  TString convertedFilename = PdfToTxt(filename);
 
   ifstream inFile(convertedFilename.Data());
   if ( ! inFile.is_open() ) return -1;
@@ -100,6 +109,29 @@ Int_t GetPage ( TString pattern, TString filename, TString trigger = "" )
   return foundPage;
 }
 
+//_________________________________
+TString GetRunList ( TString filename )
+{
+  TString convertedFilename = PdfToTxt(filename);
+
+  ifstream inFile(convertedFilename.Data());
+  if ( ! inFile.is_open() ) return -1;
+
+  TString runList = "", currToken = "";
+  TString keyword = "RUN:";
+  while ( ! inFile.eof() ) {
+    currToken.ReadToken(inFile);
+    if ( currToken.Contains(keyword.Data()) ) {
+      currToken.ReplaceAll(keyword.Data(),"");
+      if ( currToken.Contains(",") || currToken.IsDigit() ) {
+        runList = currToken;
+        break;
+      }
+    }
+  }
+  inFile.close();
+  return runList;
+}
 
 //_________________________________
 void EscapeSpecialChars ( TString& str )
@@ -194,7 +226,7 @@ Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile )
 }
 
 //_________________________________
-void MakeSummary ( TString period, ofstream &outFile )
+void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
 {
   BeginFrame("Summary I",outFile);
   outFile << "General informations" << endl;
@@ -238,6 +270,9 @@ void MakeSummary ( TString period, ofstream &outFile )
   MakeDefaultItem(outFile);
   EndFrame(outFile);
 
+  TString runList = GetRunList(trackerQA);
+  TObjArray* runListArr = runList.Tokenize(",");
+
   BeginFrame("Run summary",outFile);
   outFile << " \\begin{columns}[onlytextwidth,T]" << endl;
   outFile << "  \\footnotesize" << endl;
@@ -245,7 +280,15 @@ void MakeSummary ( TString period, ofstream &outFile )
   outFile << "  \\centering" << endl;
   outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
   outFile << "   \\hline" << endl;
-  outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
+  if ( runListArr->GetEntries() == 0 ) {
+    outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
+  }
+  else {
+    for ( Int_t irun=0; irun<runListArr->GetEntries(); irun++ ) {
+      outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun))->GetString().Atoi() << "}{}" << endl;
+    }
+  }
+  delete runListArr;
   outFile << "   \\hline" << endl;
   outFile << "  \\end{tabular}" << endl;
   outFile << endl;
@@ -405,7 +448,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
   MakePreamble(outFile);
   BeginSlides(period,pass,authors,outFile);
 
-  MakeSummary(period,outFile);
+  MakeSummary(period,outFile,trackerQA);
 
   MakeSingleFigureSlide("Selections: RUN",trackerQA,"Number of events per trigger",outFile);
   MakeSingleFigureSlide("L2A from QA",triggerQA,"Reconstruction: reconstructed triggers in QA wrt L2A from OCDB scalers",outFile);
@@ -445,7 +488,6 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
   // Clean converted txt files
   TString filenames[2] = {trackerQA, triggerQA};
   for ( Int_t ifile=0; ifile<2; ifile++ ) {
-    TString convertedFilename = GetConvertedFilename(filenames[ifile]);
-    if ( gSystem->AccessPathName(convertedFilename.Data()) == 0 ) gSystem->Exec(Form("rm %s",convertedFilename.Data()));
+    PdfToTxt(filenames[ifile],kTRUE);
   }
 }
