@@ -28,7 +28,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Bool_t bEventCutsQA=kFALSE,
                              Bool_t bTrackCutsQA=kFALSE,
                              TString Label="",
-                             TString sCentrEstimator="V0M",
+                             TString sCentrEstimator="V0",
                              Double_t dVertexRange=10.,
                              Double_t dDCAxy=2.4,
                              Double_t dDCAz=3.2,
@@ -101,7 +101,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
  taskFE->SetCentralityRange(centrMin,centrMax);
- taskFE->SetCentralityEstimator(sCentrEstimator);
+ taskFE->SetCentralityEstimator("V0M");
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetDataSet(sDataSet);
  taskFE->SetQAOn(bCutsQA);
@@ -130,8 +130,19 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  else if (analysisTypeUser == "AOD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   // method used for centrality determination
-  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
+  if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+  if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+  AliFlowTrackCuts* RefMultCuts = new AliFlowTrackCuts("RefMultCuts");
+  RefMultCuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
+  RefMultCuts->SetAODfilterBit(AODfilterBit);
+  RefMultCuts->SetMinimalTPCdedx(-999999999);
+  RefMultCuts->SetMaxDCAToVertexXY(dDCAxy);
+  RefMultCuts->SetMaxDCAToVertexZ(dDCAz);
+  RefMultCuts->SetMinNClustersTPC(dMinClusTPC);
+  RefMultCuts->SetPtRange(ptMin,ptMax);
+  RefMultCuts->SetEtaRange(etaMin,etaMax);
+  cutsEvent->SetRefMultCuts(RefMultCuts);
+  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   // vertex-z cut
   cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
   // enable the qa plots
