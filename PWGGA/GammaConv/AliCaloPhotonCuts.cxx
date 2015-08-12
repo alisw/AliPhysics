@@ -952,12 +952,21 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 
 		Int_t imod = -1; Int_t iTower = -1, iIphi = -1, iIeta = -1;
 		Int_t icol = -1; Int_t irow = -1;
-		geomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
-		if (EMCALBadChannelsMap->GetEntries() <= imod) continue;
-		geomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);
+		if( GetClusterType() == 1 ){
+			geomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
+			if (EMCALBadChannelsMap->GetEntries() <= imod) continue;
+			geomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
+		}else if( GetClusterType() == 2 ){
+// BadCellMap implementation for PHOS missing
+		}
 
 		Int_t iBadCell = 0;
-		iBadCell = (Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+		if( GetClusterType() == 1 ){
+			iBadCell = (Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+		}else if( GetClusterType() == 2 ){
+// BadCellMap implementation for PHOS missing
+		}
+
 		if (iBadCell > 0) {
 			BadChannels->Fill(cellNumber,1);
 		}else{
