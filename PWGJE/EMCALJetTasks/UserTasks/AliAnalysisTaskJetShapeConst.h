@@ -99,11 +99,12 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   TH1F 	        *fhpTTracksJet1;
   TH1F 	        *fhpTTracksJetO;
   TH1F 	        *fhpTTracksCont;
+  TH1F 	        *fhptjetSMinusSingleTrack;                         //! pT distribution of jets subtracting the pT of the embedded track
   
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 11)
+  ClassDef(AliAnalysisTaskJetShapeConst, 12)
 };
 #endif
 

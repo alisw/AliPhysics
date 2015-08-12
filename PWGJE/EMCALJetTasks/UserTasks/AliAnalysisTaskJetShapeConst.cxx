@@ -336,6 +336,8 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
 
+  fhptjetSMinusSingleTrack = new TH1F("fhptjetSMinusSingleTrack", "Subtraction of single track #it{p}_{T}; |#it{p}_{T, jet} - #it{p}_{T, Emb Track}|;Entries", 500,-10.,110.);
+  fOutput->Add(fhptjetSMinusSingleTrack);
   
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
@@ -394,6 +396,11 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
   AliJetContainer *jetContS = GetJetContainer(fContainerSub);
   AliJetContainer *jetContO = GetJetContainer(fContainerOverlap);
 
+  AliParticleContainer *trackCont = GetParticleContainer(0); //track used for the jet finder jet1
+  for(Int_t itr=0; itr < trackCont->GetNAcceptedParticles(); itr++){
+     fhpTTracksCont->Fill(trackCont->GetParticle(itr)->Pt());
+  
+  }
   //Get leading jet in Pb-Pb event without embedded objects
   AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
   AliEmcalJet *jetL = NULL;
@@ -462,6 +469,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       Double_t ptjetS = jetS->Pt();
       Double_t ptUnsubjet1 = jet1->Pt();
       Double_t var = mjetS;
+      Double_t ptjetSMinusEmbTrpt = ptjetS;
       if(fJetMassVarType==kRatMPt) {
       	 if(ptjetS>0. || ptjetS<0.) var = mjetS/ptjetS;
       	 else var = -999.;
@@ -477,6 +485,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 vpe = GetEmbeddedConstituent(jet1);
       	 if(vpe){
       	    Bool_t reject = kFALSE;
+      	    ptjetSMinusEmbTrpt =- vpe->Pt();
       	    if(fOverlap){
       	       Int_t Njets = jetContO->GetNAcceptedJets();
       	       fhNJetsSelEv->Fill(Njets);
@@ -504,7 +513,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	       fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
       	       fMatch = 1;
       	    }
-      	 } 
+      	 }
       } else {
       	 jet2 = jet1->ClosestJet();
       	 fraction = jetCont->GetFractionSharedPt(jet1);
@@ -574,6 +583,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
       	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
       	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
+      	 
+      	 fhptjetSMinusSingleTrack->Fill(TMath::Abs(ptjetSMinusEmbTrpt));
 
       }
       
