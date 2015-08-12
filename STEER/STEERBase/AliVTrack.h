@@ -17,6 +17,7 @@
 
 class AliVEvent;
 class AliVVertex;
+class AliESDVertex;
 class AliExternalTrackParam;
 class AliTPCdEdxInfo;
 class AliDetectorPID;
@@ -87,6 +88,7 @@ public:
   virtual AliTPCdEdxInfo * GetTPCdEdxInfo() const {return 0x0;}
   virtual UShort_t GetTPCNcls() const { return 0;}
   virtual UShort_t GetTPCNclsF() const { return 0;}
+  virtual Double_t GetTPCchi2() const {return 0;}
   virtual Double_t GetTRDslice(Int_t /*plane*/, Int_t /*slice*/) const { return -1.; }
   virtual Int_t    GetNumberOfTRDslices() const { return 0; }
   virtual UChar_t  GetTRDncls() const {return 0;}
@@ -97,6 +99,33 @@ public:
   virtual Int_t    GetNumberOfClusters() const {return 0;}
 
   virtual Float_t GetTPCCrossedRows() const {return 0;}
+
+  virtual Bool_t RelateToVVertex(const AliVVertex *vtx,
+			Double_t b, Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVVertexTPC(const AliVVertex *vtx,
+			Double_t b, Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVVertexBxByBz(const AliVVertex *vtx,
+			Double_t b[3], Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVVertexTPCBxByBz(const AliVVertex *vtx,
+			Double_t b[3], Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  
+  virtual Bool_t RelateToVertex(const AliESDVertex *vtx,
+			Double_t b, Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVertexTPC(const AliESDVertex *vtx,
+			Double_t b, Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVertexBxByBz(const AliESDVertex *vtx,
+			Double_t b[3], Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVertexTPCBxByBz(const AliESDVertex *vtx,
+			Double_t b[3], Double_t maxd,
+			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  
   virtual void GetImpactParameters(Float_t [], Float_t []) const {;}
   virtual void GetImpactParameters(Float_t &/*&xy*/,Float_t &/*&z*/) const {;}
   virtual void GetImpactParametersTPC(Float_t &/*&xy*/,Float_t &/*&z*/) const {;}
@@ -132,6 +161,7 @@ public:
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
   virtual Double_t  GetTPCmomentum()     const {return 0.;}
   virtual Double_t  GetTPCTgl()          const {return 0.;}
+  virtual Int_t     GetTPCLabel()        const {return 0;}
   virtual Double_t  GetTgl()             const {return 0.;}
   virtual Double_t  GetTOFsignal()       const {return 0.;}
   virtual Double_t  GetTOFsignalTunedOnData() const {return 0.;}
@@ -203,9 +233,13 @@ public:
   virtual Double_t          GetZ()    const {return 0;}
   virtual const Double_t   *GetParameter() const {return 0;}
   virtual Double_t          GetAlpha() const {return 0;}
+  virtual Double_t          GetSnp()  const {return 0;}
+  virtual Double_t          GetSigmaSnp2() const {return 0;}
   virtual UShort_t          GetTPCncls(Int_t /*row0*/=0, Int_t /*row1*/=159) const {return 0;}
   virtual Double_t          GetTOFsignalDz() const {return 0;}
   virtual Double_t          GetP() const {return 0;}
+  virtual Double_t          GetSignedPt() const {return 0;}
+  virtual Double_t          GetSign() const {return 0;}
   virtual void              GetDirection(Double_t []) const {;}
   virtual Double_t          GetLinearD(Double_t /*xv*/, Double_t /*yv*/) const {return 0;}
   virtual void              GetDZ(Double_t /*x*/,Double_t /*y*/,Double_t /*z*/,Double_t /*b*/,Float_t [] /*dz[2]*/) const {;}

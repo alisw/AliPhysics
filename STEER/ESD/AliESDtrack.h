@@ -437,6 +437,17 @@ public:
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
 
+  Bool_t RelateToVVertexTPC(const AliVVertex *vtx, Double_t b, Double_t maxd,
+                           AliExternalTrackParam *cParam=0);
+  Bool_t 
+  RelateToVVertexTPCBxByBz(const AliVVertex *vtx, Double_t b[3],Double_t maxd,
+                           AliExternalTrackParam *cParam=0);
+  Bool_t RelateToVVertex(const AliVVertex *vtx, Double_t b, Double_t maxd,
+                        AliExternalTrackParam *cParam=0);
+  Bool_t 
+  RelateToVVertexBxByBz(const AliVVertex *vtx, Double_t b[3], Double_t maxd,
+                        AliExternalTrackParam *cParam=0);
+
   void SetImpactParameters( const Float_t p[2], const Float_t cov[3], const Float_t chi2, const AliExternalTrackParam *cParam );
   void SetImpactParametersTPC( const Float_t p[2], const Float_t cov[3], const Float_t chi2);
 

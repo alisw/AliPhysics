@@ -27,6 +27,8 @@
 
 class AliESDEvent;
 class AliESDtrack;
+class AliVTrack;
+class AliVEvent;
 class AliLog;
 class TTree;
 class TH1;
@@ -54,6 +56,7 @@ public:
   virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
   Bool_t AcceptTrack(const AliESDtrack* esdTrack);
+  Bool_t AcceptVTrack(const AliVTrack* vTrack);
   TObjArray* GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTPC = kFALSE);
   Int_t CountAcceptedTracks(const AliESDEvent* const esd);
   
@@ -62,6 +65,7 @@ public:
   static AliESDtrackCuts* GetMultEstTrackCuts(MultEstTrackCuts cut);
 
   static AliESDtrack* GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTrack);
+  static AliESDtrack* GetTPCOnlyTrackFromVEvent(const AliVEvent* vEvent, Int_t iTrack);
   
   // Standard cut definitions
   static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
@@ -187,7 +191,8 @@ public:
   void DrawHistograms();
 
   static Float_t GetSigmaToVertex(const AliESDtrack* const esdTrack);
-  
+  static Float_t GetSigmaToVertexVTrack(const AliVTrack* const vTrack);
+
   static void EnableNeededBranches(TTree* tree);
 
   // void SaveQualityCuts(Char_t* file)
