@@ -161,6 +161,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH1F	 							**fHistoMCSecPi0Source;				//! array of histos with secondary pi0, source
 		TH1F 								**fHistoMCSecEtaPt;					//! array of histos with secondary eta, pT
 		TH1F 								**fHistoMCSecEtaSource;				//! array of histos with secondary eta, source
+		TH2F 								**fHistoMCPi0PtJetPt;				//! array of histos with weighted pi0, pT, hardest jet pt
+		TH2F 								**fHistoMCEtaPtJetPt;				//! array of histos with weighted eta, pT, hardest jet pt
+
 		// MC validated reconstructed quantities mesons
 		TH2F 								**fHistoTruePi0InvMassPt;					//! array of histos with validated mothers, invMass, pt
 		TH2F 								**fHistoTrueEtaInvMassPt;					//! array of histos with validated mothers, invMass, pt
@@ -300,7 +303,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 12);
+		ClassDef(AliAnalysisTaskGammaCalo, 13);
 };
 
 #endif
