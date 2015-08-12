@@ -4,6 +4,7 @@ System:       p-Pb and Pb-Pb
 Authors:      P.Pujahari & C. Pruneau
               Wayne State University 
 Dated:        March 15, 2013
+Code verII: Vertex Z for Systematics (check binning)
 */
 //================================
 #include "TChain.h"
@@ -82,7 +83,7 @@ _useWeights    ( 0),
 _sameFilter    ( false),
 _rejectPileup  ( 1), 
 _rejectPairConversion ( 0), 
-  _vertexZMin           ( -5), //10 
+_vertexZMin           ( -5), //10 
 _vertexZMax           (  5), 
 _vertexXYMin          ( -10),
 _vertexXYMax          (  10),
