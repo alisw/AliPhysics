@@ -10,6 +10,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Float_t Chi2TPCmin = 0.1,
                       Float_t Chi2TPCmax = 4.0,
                       Float_t PvtxZ = 10.,
+                      Float_t DCAvtxXY = 2.4,
+                      Float_t DCAvtxZ = 3.0,
                       Float_t etamin=-0.8,
                       Float_t etamax=0.8,
                       Float_t EtaGap=0.2,
@@ -30,7 +32,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Bool_t is2011 = kTRUE,
                       Bool_t isAOD = kTRUE,
                       Bool_t UsePurityPIDmethod = kFALSE,
-                      AliFlowEventCuts::refMultMethod CentrMethodName= AliFlowEventCuts::kTPConly,//kTPConly (TRK), kVZERO(V0M), kV0=kVZERO(V0M), kSPD1clusters(CL1)
+                      AliFlowEventCuts::refMultMethod CentrMethodName= AliFlowEventCuts::kVZERO,//kTPConly(TRK),kVZERO(V0M), kV0=kVZERO(V0M), kSPD1clusters(CL1)
                       AliPID::EParticleType particleType=AliPID::kPion,
                       AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
     
@@ -52,7 +54,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     
     int centrMin[16] = {0,1,2,3,4,5,6,7,8,9,10,20,30,40,60,70};
     int centrMax[16] = {1,2,3,4,5,6,7,8,9,10,20,30,40,50,70,80};
-
+    
     
     for(int i=0;i<16;i++){
         if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
@@ -146,9 +148,6 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         //SP_POI[icentr]->SetParamMix(poimix);
         SP_POI[icentr]->SetPtRange(0.2,6.);//
         SP_POI[icentr]->SetMinNClustersTPC(70);
-        SP_POI[icentr]->SetMinChi2PerClusterTPC(Chi2TPCmin); // <------default 0.1
-        SP_POI[icentr]->SetMaxChi2PerClusterTPC(Chi2TPCmax); // <------default 4.0
-        
         
         
         if(!isVZERO && Qvector=="Qa"){
@@ -164,15 +163,13 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             SP_POI[icentr]->SetEtaRange( etamin,etamax );
             printf(" > NOTE: Using full TPC as POI selection u < \n");
         }
-        //SP_POI->SetRequireITSRefit(kTRUE);
-        //SP_POI->SetRequireTPCRefit(kTRUE);
-        //SP_POI->SetMinNClustersITS(2);
-        //SP_POI->SetMaxChi2PerClusterITS(1.e+09);
-        //SP_POI[icentr]->SetMaxDCAToVertexXY(2.4);
-        //SP_POI[icentr]->SetMaxDCAToVertexZ(3.0);
-        //SP_POI->SetDCAToVertex2D(kTRUE);
-        //SP_POI->SetMaxNsigmaToVertex(1.e+10);
-        //SP_POI->SetRequireSigmaToVertex(kFALSE);
+        //SP_POI[icentr]->SetRequireITSRefit(kTRUE);
+        //SP_POI[icentr]->SetRequireTPCRefit(kTRUE);
+        //SP_POI[icentr]->SetMinNClustersITS(2);
+        //SP_POI[icentr]->SetMaxChi2PerClusterITS(1.e+09);
+        //SP_POI[icentr]->SetDCAToVertex2D(kTRUE);
+        //SP_POI[icentr]->SetMaxNsigmaToVertex(1.e+10);
+        //SP_POI[icentr]->SetRequireSigmaToVertex(kFALSE);
         //SP_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
         if(isPID){
             SP_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
@@ -184,10 +181,17 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         }
         
         if (charge!=0) SP_POI[icentr]->SetCharge(charge);
-        //SP_POI->SetAllowTOFmismatch(kFALSE);
+        //SP_POI[icentr]->SetAllowTOFmismatch(kFALSE);
+        if(isAOD){
+            SP_POI[icentr]->SetAODfilterBit(AODfilterBit);
+            SP_POI[icentr]->SetMinChi2PerClusterTPC(Chi2TPCmin); // <------default 0.1
+            SP_POI[icentr]->SetMaxChi2PerClusterTPC(Chi2TPCmax); // <------default 4.0
+            SP_POI[icentr]->SetMaxDCAToVertexXY(DCAvtxXY);
+            SP_POI[icentr]->SetMaxDCAToVertexZ(DCAvtxZ);
+        }
+
         SP_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
         SP_POI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
-        if(isAOD) SP_POI[icentr]->SetAODfilterBit(AODfilterBit);
         SP_POI[icentr]->SetQA(doQA);
         SP_POI[icentr]->SetPriors((centrMin[icentr+ncentrminlim]+centrMax[icentr+ncentrminlim])*0.5);
         
