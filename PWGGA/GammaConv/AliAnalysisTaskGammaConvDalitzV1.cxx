@@ -1343,6 +1343,12 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 
 	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
 	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
+
+
+	if(fV0Reader)
+		if((AliConvEventCuts*)fV0Reader->GetEventCuts())
+			if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
+				fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
 	
 	if(fV0Reader)
 		if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())
