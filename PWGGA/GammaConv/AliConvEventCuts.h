@@ -131,6 +131,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 																		  fNameFitDataPi0 =fitNamePi0							;
 																		  fNameFitDataEta =fitNameEta							;
 																		  fNameFitDataK0s =fitNameK0s							; }
+		void 		SetMaxFacPtHard(Float_t value)						{ fMaxFacPtHard = value									; }  
+																		  
 		
 		// Geters
 		TString 	GetCutNumber();
@@ -206,6 +208,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
 		Bool_t 		VertexZCut(AliVEvent *fInputEvent);
 		Bool_t		IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
+		Float_t 	GetPtHard(AliVEvent *MCEvent);
+		Float_t 	GetMaxPtJet() 											{ return fMaxPtJetMC									; }
 		Bool_t 		MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC );
 		Bool_t 		IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC);
 		Bool_t 		HasV0AND()												{ return fHasV0AND										; }
@@ -300,12 +304,13 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t						fEMCALTrigInitialized;					// EMCAL triggers initialized
 		// Primary secondary distinction
 		Double_t					fSecProdBoundary;						// 3D radius of production (cm) for primary-secodary distinction
-		Int_t						fBinJetJetMC;							//
+		Float_t						fMaxPtJetMC;							// maximum jet pt in event
+		Float_t						fMaxFacPtHard;							// maximum factor between maximum jet pt and pt hard generated
 		Bool_t						fMimicTrigger; 							// enable trigger mimiking
 		Bool_t						fRejectTriggerOverlap;					// enable trigger overlap rejections
 	private:
 
-		ClassDef(AliConvEventCuts,13)
+		ClassDef(AliConvEventCuts,14)
 };
 
 

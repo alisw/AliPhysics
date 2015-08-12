@@ -142,7 +142,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fTriggersEMCALSelected(-1),
 	fEMCALTrigInitialized(kFALSE),
 	fSecProdBoundary(1.0),
-	fBinJetJetMC(0),
+	fMaxPtJetMC(0),
+	fMaxFacPtHard(2.5),
 	fMimicTrigger(kFALSE),
 	fRejectTriggerOverlap(kFALSE)
 {
@@ -230,7 +231,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fTriggersEMCALSelected(ref.fTriggersEMCALSelected),
 	fEMCALTrigInitialized(kFALSE),
 	fSecProdBoundary(ref.fSecProdBoundary),
-	fBinJetJetMC(ref.fBinJetJetMC),
+	fMaxPtJetMC(ref.fMaxPtJetMC),
+	fMaxFacPtHard(ref.fMaxFacPtHard),
 	fMimicTrigger(kFALSE),
 	fRejectTriggerOverlap(kFALSE)
 {
@@ -1670,8 +1672,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	Bool_t headerFound 					= kFALSE;
 	AliStack *fMCStack 					= 0x0;
 	TClonesArray *fMCStackAOD 			= 0x0;
-	weight = -1;
-	
+	weight 								= -1;
+	fMaxPtJetMC 						= 0;
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
 	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
 		periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
@@ -1713,59 +1715,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
 					jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
 					//Compare jet pT and pt Hard
-					if(jet->Pt() > 3 * ptHard){
+					if(jet->Pt() > fMaxFacPtHard * ptHard){
 						eventAccepted= kFALSE;
 					}	
-					if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
-						Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
-															21,	28, 36, 45, 57, 
-															70, 85, 1000};
-						Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
-															1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
-															1.933238e-05, 1.562895e-05};
-						Int_t bin = 0;
-						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-						if (bin < 12) weight = weightsBins[bin];
-					} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
-						Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
-															84,		117, 	152,	191, 	1000};
-						Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
-															6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
-						Int_t bin = 0;
-						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-						if (bin < 9) weight = weightsBins[bin];
-					} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
-						Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
-															84,		117, 	152,	191,  	234,
-															1000};
-						Double_t weightsBins[10] 		= {	2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
-															5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
-						Int_t bin = 0;
-						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-						if (bin < 10) weight = weightsBins[bin];
-					} else {
-						weight = 1;
-					}	
-				}
-				if (weight == -1) return kFALSE;
-				else return eventAccepted;
-			} 	
-		}		
-	} else {		
-		AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
-		TString eventHeaderName 		= eventHeader->ClassName();
-		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
-			Bool_t eventAccepted = kTRUE;
-			TParticle * jet =  0;
-			Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
-			Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
-			Float_t tmpjet[]={0,0,0,0};
-			for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
-				dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
-				jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
-				//Compare jet pT and pt Hard
-				if(jet->Pt() > 3 * ptHard){
-					eventAccepted= kFALSE;
+					if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
 				}	
 				if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
 					Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
@@ -1797,7 +1750,59 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 				} else {
 					weight = 1;
 				}	
-			}
+				if (weight == -1) return kFALSE;
+				else return eventAccepted;
+			} 	
+		}		
+	} else {		
+		AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
+		TString eventHeaderName 		= eventHeader->ClassName();
+		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+			Bool_t eventAccepted = kTRUE;
+			TParticle * jet =  0;
+			Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
+			Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+			Float_t tmpjet[]={0,0,0,0};
+			for(Int_t ijet = 0; ijet< nTriggerJets; ijet++){
+				dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
+				jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
+				//Compare jet pT and pt Hard
+				if(jet->Pt() > fMaxFacPtHard * ptHard){
+					eventAccepted= kFALSE;
+				}	
+				if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
+			}	
+			if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
+				Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
+													21,	28, 36, 45, 57, 
+													70, 85, 1000};
+				Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
+													1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
+													1.933238e-05, 1.562895e-05};
+				Int_t bin = 0;
+				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+				if (bin < 12) weight = weightsBins[bin];
+			} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
+				Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
+													84,		117, 	152,	191, 	1000};
+				Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+													6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
+				Int_t bin = 0;
+				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+				if (bin < 9) weight = weightsBins[bin];
+			} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
+				Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
+													84,		117, 	152,	191,  	234,
+													1000};
+				Double_t weightsBins[10] 		= {	2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
+													5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
+				Int_t bin = 0;
+				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+				if (bin < 10) weight = weightsBins[bin];
+			} else {
+				weight = 1;
+			}	
+			
 			if (weight == -1) return kFALSE;
 			else return eventAccepted;
 		} else {
@@ -1807,6 +1812,63 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	
 	return kFALSE;
 }
+
+///________________________________________________________________________
+// Analysing Jet-Jet MC's 
+///________________________________________________________________________
+Float_t AliConvEventCuts::GetPtHard(AliVEvent *MCEvent){
+	AliGenCocktailEventHeader *cHeader 	= 0x0;
+	AliAODMCHeader *cHeaderAOD 			= 0x0;
+	Bool_t headerFound 					= kFALSE;
+	AliStack *fMCStack 					= 0x0;
+	TClonesArray *fMCStackAOD 			= 0x0;
+	
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
+	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
+		periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
+		periodName.CompareTo("LHC13b4_fix") != 0 && periodName.CompareTo("LHC13b4_plus") != 0 ) return -1;
+
+	if(MCEvent->IsA()==AliMCEvent::Class()){
+		if(dynamic_cast<AliMCEvent*>(MCEvent)){
+			cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+			if(cHeader) headerFound 	= kTRUE;
+			fMCStack 					= dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+		}	
+	}
+	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
+		cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+		fMCStackAOD 					= dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		if(cHeaderAOD) headerFound 		= kTRUE;
+	}
+	
+	if(headerFound){
+		TList *genHeaders 				= 0x0;
+		if(cHeader) genHeaders 			= cHeader->GetHeaders();
+		if(cHeaderAOD){
+			genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+			if(genHeaders->GetEntries()==1){
+				return -1;
+			}
+		}
+		AliGenEventHeader* gh 			= 0;
+		for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+			gh 						= (AliGenEventHeader*)genHeaders->At(i);
+			TString GeneratorName 	= gh->GetName();
+			if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
+				return dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
+			} 	
+		}		
+	} else {		
+		AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
+		TString eventHeaderName 		= eventHeader->ClassName();
+		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+			return dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+		}	
+	}	
+	
+	return -1;
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
