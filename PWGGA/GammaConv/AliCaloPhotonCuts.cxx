@@ -131,6 +131,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fUseNLM(0),
 	fNonLinearity1(0),
 	fNonLinearity2(0),
+	fSwitchNonLinearity(0),
 	fUseNonLinearity(kFALSE),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
@@ -146,6 +147,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
     //fHistExoticCellBeforeQA(NULL),
     //fHistExoticCellAfterQA(NULL),
     //fHistNMatchedTracks(NULL),
+	fHistEnergyOfClusterBeforeNL(NULL),
+	fHistEnergyOfClusterAfterNL(NULL),
 	fHistEnergyOfClusterBeforeQA(NULL),
 	fHistEnergyOfClusterAfterQA(NULL),
 	fHistNCellsBeforeQA(NULL),
@@ -243,6 +246,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fUseNLM(ref.fUseNLM),
 	fNonLinearity1(ref.fNonLinearity1),
 	fNonLinearity2(ref.fNonLinearity2),
+	fSwitchNonLinearity(ref.fSwitchNonLinearity),
 	fUseNonLinearity(ref.fUseNonLinearity),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
@@ -258,6 +262,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
     //fHistExoticCellBeforeQA(NULL),
     //fHistExoticCellAfterQA(NULL),
     //fHistNMatchedTracks(NULL),
+	fHistEnergyOfClusterBeforeNL(NULL),
+	fHistEnergyOfClusterAfterNL(NULL),
 	fHistEnergyOfClusterBeforeQA(NULL),
 	fHistEnergyOfClusterAfterQA(NULL),
 	fHistNCellsBeforeQA(NULL),
@@ -445,6 +451,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     //fHistograms->Add(fHistExoticCellAfterQA);
     //fHistNMatchedTracks = new TH1F(Form("NMatchedTracks_%s",GetCutNumber().Data()),"NMatchedTracks",22,-1.5,20.5);
     //fHistograms->Add(fHistNMatchedTracks);
+	if(fUseNonLinearity){
+		fHistEnergyOfClusterBeforeNL = new TH1F(Form("EnergyOfCluster_beforeNonLinearity %s",GetCutNumber().Data()),"EnergyOfCluster_beforeNonLinearity",300,0,30);
+		fHistograms->Add(fHistEnergyOfClusterBeforeNL);
+		fHistEnergyOfClusterAfterNL = new TH1F(Form("EnergyOfCluster_afterNonLinearity %s",GetCutNumber().Data()),"EnergyOfCluster_afterNonLinearity",300,0,30);
+		fHistograms->Add(fHistEnergyOfClusterAfterNL);
+	}
 	fHistEnergyOfClusterBeforeQA = new TH1F(Form("EnergyOfCluster_beforeClusterQA %s",GetCutNumber().Data()),"EnergyOfCluster_beforeClusterQA",300,0,30);
 	fHistograms->Add(fHistEnergyOfClusterBeforeQA);
 	fHistEnergyOfClusterAfterQA = new TH1F(Form("EnergyOfCluster_afterClusterQA %s",GetCutNumber().Data()),"EnergyOfCluster_afterClusterQA",300,0,30);
@@ -980,7 +992,11 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
 	FillClusterCutIndex(kPhotonIn);
 
 	// do NonLinearity if switched on
-	if(fUseNonLinearity) CorrectNonLinearity(cluster,isMC);
+	if(fUseNonLinearity && cluster->IsEMCAL()){
+		if(fHistEnergyOfClusterBeforeNL) fHistEnergyOfClusterBeforeNL->Fill(cluster->E());
+		CorrectEMCalNonLinearity(cluster,isMC);
+		if(fHistEnergyOfClusterAfterNL) fHistEnergyOfClusterAfterNL->Fill(cluster->E());
+	}
 
 //  Double_t vertex[3] = {0,0,0};
 //	event->GetPrimaryVertex()->GetXYZ(vertex);
@@ -1458,7 +1474,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
 
 	printf("NonLinearity Correction: \n");
-	if (fUseNonLinearity) printf("\t Chose NonLinearity: %i%i\n", fNonLinearity1, fNonLinearity2 );
+	if (fUseNonLinearity) printf("\t Chose NonLinearity: %i\n", fSwitchNonLinearity );
 	else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 	
 }
@@ -2037,6 +2053,7 @@ Bool_t AliCaloPhotonCuts::SetNonLinearity2(Int_t nl2)
 		fNonLinearity2 = nl2;
 		if(nl2 == 0) fUseNonLinearity = kFALSE;
 		else if(nl2 > 0) fUseNonLinearity = kTRUE;
+		fSwitchNonLinearity = fNonLinearity1*10 + fNonLinearity2;
 	}
 	else{
 		AliError(Form("NonLinearity Correction (part2) not defined %d",nl2));
@@ -2046,68 +2063,82 @@ Bool_t AliCaloPhotonCuts::SetNonLinearity2(Int_t nl2)
 }
 
 //________________________________________________________________________
-void AliCaloPhotonCuts::CorrectNonLinearity(AliVCluster* cluster, Int_t isMC)
+void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC)
 {
 	if(!fUseNonLinearity) return;
 
-	Int_t switchNonLinearity = fNonLinearity1*10 + fNonLinearity2;
-	Double_t energy = cluster->E();
-
-		// Standard NonLinearity kPi0MCv5 for MC and kSDMv5 for data
-	if(switchNonLinearity == 01){
-		// kPi0MCv5
-	  energy *= 1.01286/(1.0*
-			  (1./(1.+0.0664778*exp(-energy/1.57))
-			  *1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
-
-		// kPi0MCv5+kSDM
-	  if(isMC == 0) energy *= (0.964 + exp(-3.132-0.435*energy*2.0));
-
-		// NonLinearity LHC12 ConvCalo
-	}else if(switchNonLinearity == 11){
-
-		energy *= 1.011/(1.0*
-				(1./(1.+0.04979*exp(-energy/1.3))
-				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
-
-		if(isMC == 0) energy *= (0.9846 + exp(-3.319-2.033*energy));
-
-		// NonLinearity LHC12 Calo
-	}else if(switchNonLinearity == 12){
-
-		energy *= 1.011/(1.0*
-				(1./(1.+0.06539*exp(-energy/1.121))
-				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
-
-		if(isMC == 0) energy *= (0.9676 + exp(-3.216-0.6828*energy*2.0));
-
-		// NonLinearity LHC11a ConvCalo
-	}else if(switchNonLinearity == 21){
-
-		energy *= 1.014/(1.0*
-				(1./(1.+0.04123*exp(-energy/1.045))
-				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
-
-		if(isMC == 0) energy *= (0.9807 + exp(-3.377-0.8535*energy));
-
-
-		// NonLinearity LHC11a Calo
-	}else if(switchNonLinearity == 22){
-
-		energy *= 1.013/(1.0*
-				(1./(1.+0.06115*exp(-energy/0.9535))
-				*1./(1.+0.0967998*exp((energy-219.381)/63.1604))));
-
-		if(isMC == 0) energy *= (0.9772 + exp(-3.256-0.4449*energy*2.0));
-
-
-	}else{
-		AliError(Form("NonLinearity Correction not defined: %d",switchNonLinearity));
+	if (!cluster) {
+		AliInfo("Cluster pointer null!");
 		return;
 	}
 
+	Float_t energy = cluster->E();
+
+	if (energy < 0.05) {
+		// Clusters with less than 50 MeV or negative are not possible
+		AliInfo(Form("Too Low Cluster energy!, E = %f < 0.05 GeV",energy));
+		return;
+	}
+
+	switch(fSwitchNonLinearity){
+
+		// Standard NonLinearity kPi0MCv5 for MC and kSDMv5 for data
+		case 01:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.0664778, 1.57, 0.0967998, 219.381, 63.1604, 1.01286);
+			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.964, -3.132, -0.435);
+			break;
+
+		// NonLinearity LHC12 ConvCalo
+		case 11:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04979, 1.3, 0.0967998, 219.381, 63.1604, 1.011);
+			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9846, -3.319, -2.033);
+			break;
+
+		// NonLinearity LHC12 Calo
+		case 12:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06539, 1.121, 0.0967998, 219.381, 63.1604, 1.011);
+			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9676, -3.216, -0.6828);
+			break;
+
+		// NonLinearity LHC11a ConvCalo
+		case 21:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04123, 1.045, 0.0967998, 219.381, 63.1604, 1.014);
+			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9807, -3.377, -0.8535);
+			break;
+
+		// NonLinearity LHC11a Calo
+		case 22:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
+			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772, -3.256, -0.4449);
+			break;
+
+		// NonLinearity LHC13 pPb ConvCalo
+		case 81:
+			break;
+
+		// NonLinearity LHC13 pPb Calo
+		case 82:
+			break;
+
+		default:
+			AliError(Form("NonLinearity Correction not defined: %d",fSwitchNonLinearity));
+			return;
+
+	}
+
 	cluster->SetE(energy);
+
 	return;
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6){
+	return ( p6 / ( p0 * ( 1. / ( 1. + p1 * exp( -e / p2 ) ) * 1. / ( 1. + p3 * exp( ( e - p4 ) / p5 ) ) ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2){
+	return ( p0 + exp( p1 + ( p2 * e ) ) );
 }
 
 //________________________________________________________________________

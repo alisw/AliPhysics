@@ -100,7 +100,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
 		//correct NonLinearity
-		void			CorrectNonLinearity(AliVCluster* cluster, Int_t isMC);
+		void			CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
+		Float_t			FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
+		Float_t			FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
 
 		void 			InitCutHistograms(TString name="");
 		void 			SetFillCutHistograms(TString name="")							{if(!fHistograms){InitCutHistograms(name);} return;}
@@ -187,6 +189,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 		fUseNLM;							// flag for switching on NLM cut
 		Int_t		fNonLinearity1;						// selection of nonlinearity correction, part1
 		Int_t		fNonLinearity2;						// selection of nonlinearity correction, part2
+		Int_t		fSwitchNonLinearity;				// selection (combined) of NonLinearity
 		Bool_t		fUseNonLinearity;					// flag for switching NonLinearity correction
 		
 		// CutString
@@ -207,6 +210,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 // 		TH2F* 		fHistExoticCellBeforeQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
 // 		TH2F* 		fHistExoticCellAfterQA;					// Exotic cell: 1-Ecross/E cell vs Ecluster after cluster quality cuts
 // 		TH1F* 		fHistNMatchedTracks;					// number of matched tracks
+		TH1F* 		fHistEnergyOfClusterBeforeNL;			// enery per cluster before NonLinearity correction
+		TH1F* 		fHistEnergyOfClusterAfterNL;			// enery per cluster after NonLinearity correction
 		TH1F* 		fHistEnergyOfClusterBeforeQA;			// enery per cluster before acceptance cuts
 		TH1F* 		fHistEnergyOfClusterAfterQA;			// enery per cluster after cluster quality cuts
 		TH1F* 		fHistNCellsBeforeQA;					// number of cells per cluster before acceptance cuts
@@ -261,7 +266,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,6)
+		ClassDef(AliCaloPhotonCuts,7)
 };
 
 #endif
