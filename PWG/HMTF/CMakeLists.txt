@@ -25,6 +25,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisTaskHMTFMCMultEst.cxx
+  AliMultiplicityEstimators.cxx
   MonteCarlo/AliAnalysisTaskHMTFMC.cxx
   )
 
@@ -65,7 +67,9 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 ## Installing the macros
-#install (DIRECTORY MonteCarlo DESTINATION PWG/HMTF)
+install (FILES
+  macros/AddTaskHMTFMCMultEst.C
+  DESTINATION PWG/HMTF/macros)
 
 set (INPUT_FILES
   MonteCarlo/template.jdl
