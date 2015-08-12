@@ -844,7 +844,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
-	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
+	if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 
 	if(fHistClusterEtavsPhiAfterQA) fHistClusterEtavsPhiAfterQA->Fill(phiCluster,etaCluster);
 	if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E());
@@ -1009,7 +1009,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
-	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
+	if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 
 	// Histos before cuts
 	if(fHistClusterEtavsPhiBeforeAcc) fHistClusterEtavsPhiBeforeAcc->Fill(phiCluster,etaCluster);
@@ -1067,7 +1067,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
-	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
+	if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 	
 	// check eta range
 	if (fUseEtaCut){
