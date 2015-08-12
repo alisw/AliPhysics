@@ -352,7 +352,10 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 
   AliEmcalJet* jetTEMP = NULL;
   AliJetContainer *JetCont = GetJetContainer(0);
-  
+
+  if (fCentSelectOn){ 
+    if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
+  }
   /*      OLD WAY
   for(Int_t iTrack=0; iTrack <= tracksArray->GetEntriesFast(); iTrack++){
     
