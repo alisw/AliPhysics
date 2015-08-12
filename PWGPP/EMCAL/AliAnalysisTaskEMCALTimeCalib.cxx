@@ -175,14 +175,16 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 	  {
 	    fhAllAverageBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvBC%d",i));
 	    if(fhAllAverageBC[i]==0x0) AliFatal(Form("Reference histogram for BC%d does not exist",i));
+	    if(fhAllAverageBC[i]->GetEntries()==0)AliWarning(Form("fhAllAverageLGBC[%d]->GetEntries() = 0",i));
 	    fhAllAverageLGBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvLGBC%d",i));
 	    if(fhAllAverageLGBC[i]==0x0) AliFatal(Form("Reference LG histogram for BC%d does not exist",i));
+	    if(fhAllAverageLGBC[i]->GetEntries()==0)AliFatal(Form("fhAllAverageLGBC[%d]->GetEntries() = 0",i));
 	  }
 	
-	AliDebug(1,Form("hAllAverage entries %d", (Int_t)fhAllAverageBC[0]->GetEntries() ));
-	AliDebug(1,Form("hAllAverage entries2 %d",(Int_t)fhAllAverageBC[2]->GetEntries() ));
-	AliDebug(1,Form("hAllAverageLG entries %d", (Int_t)fhAllAverageLGBC[0]->GetEntries() ));
-	AliDebug(1,Form("hAllAverageLG entries2 %d",(Int_t)fhAllAverageLGBC[2]->GetEntries() ));
+	AliDebug(1,Form("hAllAverage entries BC0 %d", (Int_t)fhAllAverageBC[0]->GetEntries() ));
+	AliDebug(1,Form("hAllAverage entries BC2 %d",(Int_t)fhAllAverageBC[2]->GetEntries() ));
+	AliDebug(1,Form("hAllAverageLG entries BC0 %d", (Int_t)fhAllAverageLGBC[0]->GetEntries() ));
+	AliDebug(1,Form("hAllAverageLG entries BC2 %d",(Int_t)fhAllAverageLGBC[2]->GetEntries() ));
 	
     }
   } else {
@@ -582,7 +584,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
   
   Int_t BunchCrossNumber =event->GetBunchCrossNumber(); 
   
-  Float_t offset=0;
+  Float_t offset=0.;
   
   Int_t nBC = 0;
   nBC = BunchCrossNumber%4;
