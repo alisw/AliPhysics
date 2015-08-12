@@ -84,6 +84,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
         fHistClusterEtaPhiWeighted[i] = 0;
         fHistTriggerQAIn[i] = 0;
         fHistTriggerQAOut[i] = 0;
+        fHistEPCorrelations[i]= 0;
         fHistPsiTPCLeadingJet[i] = 0;
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
@@ -142,6 +143,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type, B
         fHistClusterEtaPhiWeighted[i] = 0;
         fHistTriggerQAIn[i] = 0;
         fHistTriggerQAOut[i] = 0;
+        fHistEPCorrelations[i] = 0;
         fHistPsiTPCLeadingJet[i] = 0;
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
@@ -524,6 +526,7 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
                 fHistClusterEtaPhiWeighted[i] = BookTH2F("fHistClusterEtaPhiWeighted", "#eta", "#phi", 100, etaMin, etaMax, 100, phiMin, phiMax, i);
             }
             fHistPsiTPCLeadingJet[i] =          BookTH3F("fHistPsiTPCLeadingJet", "p_{t} [GeV/c]", "#Psi_{TPC}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
+            fHistEPCorrelations[i] =            BookTH2F("fHistEPCorrelations", "EP_V0 average", "EP_V0 #chi", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2.);
             fHistPsiVZEROALeadingJet[i] =       BookTH3F("fHistPsiVZEROALeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROA}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistPsiVZEROCLeadingJet[i] =       BookTH3F("fHistPsiVZEROCLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROC}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistPsiVZEROCombLeadingJet[i] =    BookTH3F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
@@ -1124,6 +1127,13 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneCombinedVZERO(Double_t* comb) cons
 
             comb[0] = .5*TMath::ATan2(Q2[1], Q2[0]);
             comb[1] = (1./3.)*TMath::ATan2(Q3[1], Q3[0]);
+
+            // if requested do the EP correlation histos
+            if(fHistEPCorrelations[fInCentralitySelection]) {
+                fHistEPCorrelations[fInCentralitySelection]->Fill(
+                        .5*TMath::ATan2(qy2a+qy2c,qx2a+qx2c),
+                        comb[0]);
+            }
         } break;
     }
 }
