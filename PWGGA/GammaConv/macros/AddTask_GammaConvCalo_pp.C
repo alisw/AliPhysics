@@ -10,7 +10,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
 								    Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
-									Bool_t 		enableTriggerOverlapRej		= kFALSE							// enable trigger overlap rejection
+									Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+								 	Float_t		maxFacPtHard				= 3.									// maximum factor between hardest jet and ptHard generated
 							) {
 
 	// ================= Load Librariers =================================
@@ -490,6 +491,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 
 		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
 		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);

@@ -131,8 +131,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
 																		  fNameFitDataPi0 =fitNamePi0							;
 																		  fNameFitDataEta =fitNameEta							;
 																		  fNameFitDataK0s =fitNameK0s							; }
-		void 		SetMaxFacPtHard(Float_t value)						{ fMaxFacPtHard = value									; }  
-																		  
+		void 		SetMaxFacPtHard(Float_t value)						{ fMaxFacPtHard = value									; 
+																		  AliInfo(Form("maximum factor between pt hard and jet put to: %2.2f",fMaxFacPtHard));
+																																  }  
 		
 		// Geters
 		TString 	GetCutNumber();

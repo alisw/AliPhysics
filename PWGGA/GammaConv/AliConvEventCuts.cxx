@@ -838,6 +838,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
 	if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
 		else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
 		else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
+	printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);	
 }
 
 ///________________________________________________________________________
@@ -1002,7 +1003,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			break;	
 		case 3: //V0OR with SDD requested (will only work with LHC11a dataset)
 			fSpecialSubTrigger=1; 
-			cout << "V0OR with SDD requested" << endl;	    
+// 			cout << "V0OR with SDD requested" << endl;	    
 			break;
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
@@ -1048,55 +1049,55 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CVHN";
-			cout << "kCentralOpen" << endl;
+// 			cout << "kCentralOpen" << endl;
 			break;
 		case 2: // kCentral - T00 +- 10 cm
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CCENT";
-			cout << "kCentralVertex" << endl;
+// 			cout << "kCentralVertex" << endl;
 			break;
 		case 3: // kCentral - both
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CVHN|CCENT|CSEMI|CVLN";
-			cout << "kCentral both" << endl;
+// 			cout << "kCentral both" << endl;
 			break;
 		case 4: // kSemiCentral - no vertex restriction
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CVLN";
-			cout << "kSemiCentralOpen" << endl;
+// 			cout << "kSemiCentralOpen" << endl;
 			break;
 		case 5: // kSemiCentral - T00 +- 10 cm
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CSEMI";
-			cout << "kSemiCentralVertex" << endl;
+// 			cout << "kSemiCentralVertex" << endl;
 			break;
 		case 6: // kSemiCentral - both
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CSEMI%CVLN";
-			cout << "kSemiCentral both" << endl;
+// 			cout << "kSemiCentral both" << endl;
 			break;
 		case 7: // kMB
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPBI1_|CPBI1-";
-			cout << "kMB 1" << endl;
+// 			cout << "kMB 1" << endl;
 			break;			
 		case 8: // kMB
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPBI2_|CPBI2-";
-			cout << "kMB 2" << endl;
+// 			cout << "kMB 2" << endl;
 			break;			
 		case 9: // kMB
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPBI2_@CPBI2-@CPBI2_@CPBI2-";
-			cout << "kMB both" << endl;
+// 			cout << "kMB both" << endl;
 			break;	
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
