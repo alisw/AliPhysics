@@ -12,10 +12,9 @@ AliAnalysisTaskPPVsMultCrossCheckMC *AddTaskPPVsMultCrossCheckMC( const TString 
    // Check the analysis type using the event handlers connected to the analysis manager.
    //==============================================================================
    if (!mgr->GetInputEventHandler()) {
-      ::Error("AliAnalysisTaskPPVsMultCrossCheckMC", "This task requires an input event handler");
-      return NULL;
+       printf("Caution: No input handler detected!");
    }   
-   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+   //TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
   // Create and configure the task
   AliAnalysisTaskPPVsMultCrossCheckMC *taskAuxiliary = new AliAnalysisTaskPPVsMultCrossCheckMC("taskAuxiliary");

@@ -93,7 +93,7 @@ ClassImp(AliAnalysisTaskPPVsMultCrossCheckMC)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC()
 : AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
 fHistV0MTrueVsMidRapidityTrue(0)
 {
     //Empty constructor (not to be used, always pass name...)
@@ -112,7 +112,7 @@ fHistV0MTrueVsMidRapidityTrue(0)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC(const char *name)
 : AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
 fHistV0MTrueVsMidRapidityTrue(0)
 {
     for(Int_t ih=0; ih<9; ih++){
@@ -302,17 +302,18 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     AliMCEvent  *lMCevent  = 0x0;
     AliStack    *lMCstack  = 0x0;
     
-    Bool_t lPureMonteCarlo = kFALSE;
     
     // Connect to the InputEvent
     // After these lines, we should have an ESD/AOD event + the number of V0s in it.
     
     // Appropriate for ESD analysis!
     
-    lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
-    if (!lESDevent) {
-        AliWarning("AliESDevent not available, going to Pure Monte Carlo Mode! \n");
-        lPureMonteCarlo = kTRUE;
+    if ( !lPureMonteCarlo ){
+        lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
+        if (!lESDevent) {
+            AliWarning("AliESDevent not available, this should be in pure Monte Carlo mode... \n");
+            return;
+        }
     }
     
     lMCevent = MCEvent();
