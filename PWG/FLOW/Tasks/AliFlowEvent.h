@@ -100,9 +100,9 @@ protected:
 
 private:
   Int_t         fApplyRecentering;      // apply recentering of q-vectors? 2010 is 10h style, 2011 is 11h style
+  Bool_t        fDivSigma;              // divide by st.dev. after recentering?
   Int_t         fCachedRun;             //! cached calibration info for vzero
   Int_t         fVZEROcentralityBin;    //! centrality bin for the current event
-  Bool_t        fDivSigma;              // divide by st.dev. after recentering?
   Float_t       fMeanQ[9][2][2];        //! recentering
   Float_t       fWidthQ[9][2][2];       //! recentering
   Float_t       fMeanQv3[9][2][2];      //! recentering
