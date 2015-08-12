@@ -73,7 +73,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fMinFractionShared(0),
   fUseSumw2(0),
   fMatchingDone(0),
-  fTypeAcc(0),
+  fTypeAcc(3),
   fMaxDist(0.3),
   fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
@@ -220,9 +220,9 @@ void AliAnalysisTaskEmcalJetTagger::Init(){
    Double_t phiMin1 = cont1->GetJetPhiMin(), phiMax1 = cont1->GetJetPhiMax();
    Double_t phiMin2 = cont2->GetJetPhiMin(), phiMax2 = cont2->GetJetPhiMax();
    Bool_t isZeroTwoPi1 = kFALSE;
-   if((phiMin1 > -1.e-6 && phiMin1 < 1.e-6) && (phiMax1 > 2.*TMath::Pi()*(1-1.e-6) && phiMax1 < 2.*TMath::Pi()*(1+1.e-6))) isZeroTwoPi1 = kTRUE;
+   if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
    Bool_t isZeroTwoPi2 = kFALSE;
-   if((phiMin2 > -1.e-6 && phiMin2 < 1.e-6) && (phiMax2 > 2.*TMath::Pi()*(1-1.e-6) && phiMax2 < 2.*TMath::Pi()*(1+1.e-6))) isZeroTwoPi2 = kTRUE;
+   if(phiMin2 > -1.e-6 && phiMin2 < 1.e-6) isZeroTwoPi2 = kTRUE;
    
    if(fTypeAcc==1)
       cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
