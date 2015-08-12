@@ -59,6 +59,7 @@
 #include <AliAODPid.h> 
 #include <AliAODMCHeader.h> 
 #include <AliAODHeader.h>
+#include <AliESDUtils.h>
 
 #include "AliAnalysisUtils.h"
 #include "AliPPVsMultUtils.h"
@@ -72,31 +73,35 @@ using namespace std;
 ClassImp(AliAnalysisTaskLeadingPt)
 	//_____________________________________________________________________________
 	//AliAnalysisTaskLeadingPt::AliAnalysisTaskQAHighPtDeDx(const char *name):
-	AliAnalysisTaskLeadingPt::AliAnalysisTaskLeadingPt():
-		AliAnalysisTaskSE(),
-		fESD(0x0),
-		fAOD(0x0),
-		fTrackFilterGolden(0x0),
-		fTrackFilterTPC(0x0),
-		fAnalysisType("ESD"),
-		ftrigBit(0x0),
-		fRandom(0x0),
-		fPileUpRej(kFALSE),
-		fPileUpRejMV(kFALSE),
-		fAliAnalysisUtils(0),
-		fVtxCut(10.0),  
-		fEtaCut(0.9),  
-		fTriggeredEventMB(-999),
-		fVtxStatus(-999),
-		fZvtx(-999),
-		fRun(-999),
-		fEventId(-999),
-		fPtCutLeading(0),
-		fListOfObjects(0),
-		fEvents(0x0),
-		fVtxBeforeCuts(0x0), 
-		fVtxAfterCuts(0x0),
-		fn1(0x0)
+AliAnalysisTaskLeadingPt::AliAnalysisTaskLeadingPt():
+	AliAnalysisTaskSE(),
+	fESD(0x0),
+	fAOD(0x0),
+	fTrackFilterGolden(0x0),
+	fTrackFilterTPC(0x0),
+	fAnalysisType("ESD"),
+	ftrigBit(0x0),
+	fRandom(0x0),
+	fPileUpRej(kFALSE),
+	fPileUpRejMV(kFALSE),
+	fAliAnalysisUtils(0),
+	fVtxCut(10.0),  
+	fEtaCut(0.9),  
+	fTriggeredEventMB(-999),
+	fVtxStatus(-999),
+	fZvtx(-999),
+	fRun(-999),
+	fEventId(-999),
+	fPtCutLeading(0),
+	fListOfObjects(0),
+	fEvents(0x0),
+	fVtxBeforeCuts(0x0), 
+	fVtxAfterCuts(0x0),
+	fn1(0x0),
+	ftrackVsClusters(0),
+	ftrackVsClusters_SPD(0),
+	ftrackVsClusters_MV(0),
+	ftrackVsClusters_SPDMV(0)
 
 
 {
@@ -165,7 +170,11 @@ AliAnalysisTaskLeadingPt::AliAnalysisTaskLeadingPt(const char *name):
 	fEvents(0x0), 
 	fVtxBeforeCuts(0x0), 
 	fVtxAfterCuts(0x0),
-	fn1(0x0)
+	fn1(0x0),
+	ftrackVsClusters(0),
+	ftrackVsClusters_SPD(0),
+	ftrackVsClusters_MV(0),
+	ftrackVsClusters_SPDMV(0)
 
 {
 	// Default constructor (should not be used)
@@ -423,6 +432,15 @@ void AliAnalysisTaskLeadingPt::UserCreateOutputObjects()
 
 	}
 
+	ftrackVsClusters = new TH2F("ftrackVsClusters","nTracklets vs SPD clusters",180,0,180,700,0,700);
+	fListOfObjects->Add( ftrackVsClusters );
+	ftrackVsClusters_SPD = new TH2F("ftrackVsClusters_SPD","nTracklets vs SPD clusters",180,0,180,700,0,700);
+	fListOfObjects->Add(ftrackVsClusters_SPD );
+	ftrackVsClusters_MV = new TH2F("ftrackVsClusters_MV","nTracklets vs SPD clusters",180,0,180,700,0,700);
+	fListOfObjects->Add( ftrackVsClusters_MV );
+	ftrackVsClusters_SPDMV = new TH2F("ftrackVsClusters_SPDMV","nTracklets vs SPD clusters",180,0,180,700,0,700);
+	fListOfObjects->Add( ftrackVsClusters_SPDMV );
+
 	// Post output data.
 	PostData(1, fListOfObjects);
 
@@ -490,6 +508,8 @@ void AliAnalysisTaskLeadingPt::UserExec(Option_t *)
 	if(!fTriggeredEventMB)
 		return; 
 
+	//AliESDUtils::RefitESDVertexTracks(fESD); // para LHC11c_p1 solamente
+
 	fn1->Fill(1);
 
 
@@ -555,6 +575,11 @@ void AliAnalysisTaskLeadingPt::AnalyzeESD(AliESDEvent* esdEvent)
 
 	Int_t trackmult08=0;
 	trackmult08=AliESDtrackCuts::GetReferenceMultiplicity(esdEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+
+    const AliVMultiplicity* mult = esdEvent->GetMultiplicity();
+    if (!mult) { cout<<"No multiplicity object"<<endl; return; }
+    int ntracklet   = mult->GetNumberOfTracklets();
+    int spdClusters = esdEvent->GetNumberOfITSClusters(0) + esdEvent->GetNumberOfITSClusters(1);
 	
 	fn1->Fill(3);
 
@@ -655,6 +680,8 @@ void AliAnalysisTaskLeadingPt::AnalyzeESD(AliESDEvent* esdEvent)
 
 	}//end of track loop
 
+	if(bin_z_08 == 6)
+		ftrackVsClusters->Fill(ntracklet,spdClusters);
 
 
 	Bool_t isPileup = kTRUE;
@@ -759,7 +786,8 @@ void AliAnalysisTaskLeadingPt::AnalyzeESD(AliESDEvent* esdEvent)
 			}
 
 		}//end of track loop
-
+		if(bin_z_08 == 6)
+			ftrackVsClusters_SPD->Fill(ntracklet,spdClusters);
 
 	}
 	
@@ -866,6 +894,8 @@ void AliAnalysisTaskLeadingPt::AnalyzeESD(AliESDEvent* esdEvent)
 			}
 
 		}//end of track loop
+		if(bin_z_08 == 6)
+			ftrackVsClusters_MV->Fill(ntracklet,spdClusters);
 
 	}
 
@@ -967,6 +997,9 @@ void AliAnalysisTaskLeadingPt::AnalyzeESD(AliESDEvent* esdEvent)
 			}
 
 		}//end of track loop
+
+		if(bin_z_08 == 6)
+			ftrackVsClusters_SPDMV->Fill(ntracklet,spdClusters);
 
 	}
 

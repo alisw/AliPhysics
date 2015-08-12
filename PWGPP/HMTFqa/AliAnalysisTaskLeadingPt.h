@@ -115,6 +115,7 @@ class AliAnalysisTaskLeadingPt : public AliAnalysisTaskSE {
   TH1F* fnchH[7];
   TH1F* fptLH[7];
   TH1F* fptH[7];
+  TH2F* ftrackVsClusters;
 
 	//SPD PileUp Rejection
   TH1F* fnchL_SPD[7];
@@ -123,6 +124,7 @@ class AliAnalysisTaskLeadingPt : public AliAnalysisTaskSE {
   TH1F* fnchH_SPD[7];
   TH1F* fptLH_SPD[7];
   TH1F* fptH_SPD[7];
+  TH2F* ftrackVsClusters_SPD;
 
 	//MV PileUp Rejection
   TH1F* fnchL_MV[7];
@@ -131,6 +133,7 @@ class AliAnalysisTaskLeadingPt : public AliAnalysisTaskSE {
   TH1F* fnchH_MV[7];
   TH1F* fptLH_MV[7];
   TH1F* fptH_MV[7];
+  TH2F* ftrackVsClusters_MV;
 
 	//SPD && MV PileUp Rejection
   TH1F* fnchL_SPDMV[7];
@@ -139,6 +142,7 @@ class AliAnalysisTaskLeadingPt : public AliAnalysisTaskSE {
   TH1F* fnchH_SPDMV[7];
   TH1F* fptLH_SPDMV[7];
   TH1F* fptH_SPDMV[7];
+  TH2F* ftrackVsClusters_SPDMV;
 
   AliAnalysisTaskLeadingPt(const AliAnalysisTaskLeadingPt&);            // not implemented
   AliAnalysisTaskLeadingPt& operator=(const AliAnalysisTaskLeadingPt&); // not implemented
