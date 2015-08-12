@@ -596,17 +596,23 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
 {
   // Correct cluster energy from non linearity functions
   
-  if (!cluster) {
+  if (!cluster) 
+  {
     AliInfo("Cluster pointer null!");
     return 0;
   }
   
   Float_t energy = cluster->E();
-
-  if (energy < 0.05) {
-    // Clusters with less than 50 MeV or negative are not possible
-    AliInfo(Form("Too Low Cluster energy!, E = %f < 0.05 GeV",energy));
+  if (energy < 0.100) 
+  {
+    // Clusters with less than 100 MeV or negative are not possible
+    AliInfo(Form("Too low cluster energy!, E = %f < 0.100 GeV",energy));
     return 0;
+  }
+  else if(energy > 300.)
+  {
+    AliInfo(Form("Too high cluster energy!, E = %f GeV, do not apply non linearity",energy));
+    return energy;
   }
   
   switch (fNonLinearityFunction) 
@@ -785,7 +791,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       break;
       
   }
-
+  
   return energy;
 }
 
