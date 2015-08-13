@@ -93,7 +93,7 @@ ClassImp(AliAnalysisTaskPPVsMultCrossCheckMC)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC()
 : AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
 fHistV0MTrueVsMidRapidityTrue(0)
 {
     //Empty constructor (not to be used, always pass name...)
@@ -112,7 +112,7 @@ fHistV0MTrueVsMidRapidityTrue(0)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC(const char *name)
 : AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
 fHistV0MTrueVsMidRapidityTrue(0)
 {
     for(Int_t ih=0; ih<9; ih++){
@@ -157,10 +157,12 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     // Particle Identification Setup
     //------------------------------------------------
     
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-    fPIDResponse = inputHandler->GetPIDResponse();
-    inputHandler->SetNeedField();
+    if ( !lPureMonteCarlo ){
+        AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+        AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+        fPIDResponse = inputHandler->GetPIDResponse();
+        inputHandler->SetNeedField();
+    }
     
     // Multiplicity
     if(! fESDtrackCuts ) {
@@ -326,11 +328,18 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     //-------------------------------------------------------------------
     //Code for the acquisition of the 'perfect' primary vertex position
     Float_t lVertexZMC = -100;
-    TArrayF mcPrimaryVtx;
-    AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
-    if(!mcHeader) return;
-    mcHeader->PrimaryVertex(mcPrimaryVtx);
-    lVertexZMC = mcPrimaryVtx.At(2);
+    
+    if( fCheckVtxZMC ){
+        TArrayF mcPrimaryVtx;
+        AliGenEventHeader* mcHeader=lMCevent->GenEventHeader();
+        if(!mcHeader){
+            Printf("ERROR: Could not retrieve MC header \n");
+            return;
+        }
+        mcHeader->PrimaryVertex(mcPrimaryVtx);
+        lVertexZMC = mcPrimaryVtx.At(2);
+    }
+    if( !fCheckVtxZMC ){lVertexZMC = 0.0; } //Put it at the center if not asked to check
     //-------------------------------------------------------------------
     
     lMCstack = lMCevent->Stack();
