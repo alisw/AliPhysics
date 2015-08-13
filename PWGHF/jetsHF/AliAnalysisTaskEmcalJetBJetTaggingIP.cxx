@@ -7,7 +7,7 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TVector2.h>
-
+#include "TClonesArray.h"
 #include <TList.h>
 #include <TLorentzVector.h>
 #include "AliVCluster.h"
@@ -47,6 +47,7 @@
 #include "AliKFVertex.h"
 #include "AliStack.h"
 #include "TRandom3.h"
+
 #include "AliAnalysisTaskEmcalJetBJetTaggingIP.h"
 
 //Changelog  MC Jet Container retrieval fixed
@@ -68,6 +69,7 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP() : A
     fIsTrackQAConstituent(kFALSE),
     fUseCorrectedJetPt(kFALSE),
     fDoRandomCones(kFALSE),
+    fVetexingMassFitTest(kFALSE),
     fUseEventSelection(0),
     fUseJetSelection(0),
     fUseMCTagger(0),
@@ -88,7 +90,11 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP() : A
     fhist_parton_genjet_dR(NULL),
     fhist_parton_genjet_pT(NULL),
     fhist_parton_genjet_Eta(NULL),
-    fhist_parton_genjet_Phi(NULL)
+    fhist_parton_genjet_Phi(NULL),
+    fHist_2Prong_MassVsJetPt(NULL),
+    fHist_3Prong_MassVsJetPt(NULL),
+    fHist_4Prong_MassVsJetPt(NULL),
+    fHist_5Prong_MassVsJetPt(NULL)
 {
     memset(fhist_TC_sIP_Pt,0,sizeof fhist_TC_sIP_Pt);
     memset(fhist_TC_Eta_Phi,0,sizeof fhist_TC_sIP_Pt);
@@ -96,9 +102,6 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP() : A
     memset(fhist_QualityClasses_Eta_Phi,0,sizeof fhist_QualityClasses_Eta_Phi);
     memset(fhist_momentum_response,0,sizeof fhist_momentum_response);
     SetMakeGeneralHistograms(kTRUE);
-
-
-
 }
 
 //________________________________________________________________________
@@ -118,6 +121,7 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
     fIsTrackQAConstituent(kFALSE),
     fUseCorrectedJetPt(kFALSE),
     fDoRandomCones(kFALSE),
+    fVetexingMassFitTest(kFALSE),
     fUseEventSelection(0),
     fUseJetSelection(0),
     fUseMCTagger(0),
@@ -138,7 +142,11 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
     fhist_parton_genjet_dR(NULL),
     fhist_parton_genjet_pT(NULL),
     fhist_parton_genjet_Eta(NULL),
-    fhist_parton_genjet_Phi(NULL)
+    fhist_parton_genjet_Phi(NULL),
+    fHist_2Prong_MassVsJetPt(NULL),
+    fHist_3Prong_MassVsJetPt(NULL),
+    fHist_4Prong_MassVsJetPt(NULL),
+    fHist_5Prong_MassVsJetPt(NULL)
 {
     // Standard constructor.
     memset(fhist_TC_sIP_Pt,0,sizeof fhist_TC_sIP_Pt);
@@ -189,6 +197,15 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
         if(!IsJetSelected(curjet)) continue;
         Double_t jetPt = 0.;
         fUseCorrectedJetPt ? jetPt = GetPtCorrected(curjet)  : jetPt = curjet->Pt();
+        AliAODVertex * vtx = 0x0 ;
+        Int_t nProng = 0;
+        if(fVetexingMassFitTest){
+            FindVertexNProngSimple(curjet,vtx,nProng);
+            FillVertexingHists(curjet,vtx,nProng,0);
+        }
+
+
+
         if(fIsMC) {
             curjetMatched = curjet->MatchedJet();
             if(curjetMatched) {
@@ -197,7 +214,9 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
                 if(curjetMatched->TestFlavourTag(kLFgJet)) flavourtag =1;
                 else if(curjetMatched->TestFlavourTag(kBeautyJet)) flavourtag=2;
                 else if(curjetMatched->TestFlavourTag(kCharmJet)) flavourtag=3;
-
+                if(fVetexingMassFitTest){
+                    FillVertexingHists(curjet,vtx,nProng,flavourtag);
+                }
                 Double_t ptm = curjetMatched->Pt();
                 Double_t ptmcorr =ptm - fJetsContMC->GetRhoVal()*curjetMatched->Area();
                 Double_t ptr = curjet->Pt();
@@ -214,7 +233,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 
         }
 
-
+        if(vtx) delete vtx;
         //Standard track counting algorithm
 
         fhist_Jet_Pt->Fill(jetPt);
@@ -457,7 +476,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedLegacy( AliAODEvent 
     }
     fhist_Events->Fill("AliVEvent::kMB", 1.);
 
-    if(!aev->GetPrimaryVertex())    fhist_Events->Fill("NoVertex",1.);
+    if(!aev->GetPrimaryVertex() || aev->GetPrimaryVertex()->GetNContributors()<1)fhist_Events->Fill("NoVertex",1.);
 
     if(aev->IsPileupFromSPD(5,0.8, 3.0, 2.0, 5.0)){
         return kFALSE;
@@ -760,6 +779,36 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
     fhists_SPD_cluster_vs_tracklet_correlation_PostSelection = new TH2D("fhists_SPD_cluster_vs_tracklet_correlation_PostSelection",";SPD Tracklets;SPD Clusters",200,0.,200.,1000,0.,1000.);
     fOutput->Add(fhists_SPD_cluster_vs_tracklet_correlation_PostSelection);
 
+    fHist_2Prong_MassVsJetPt = new TH2D("fHist_2Prong_MassVsJetPt","fHist_2Prong_MassVsJetPt;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_3Prong_MassVsJetPt = new TH2D("fHist_3Prong_MassVsJetPt","fHist_3Prong_MassVsJetPt;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_4Prong_MassVsJetPt = new TH2D("fHist_4Prong_MassVsJetPt","fHist_4Prong_MassVsJetPt;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_5Prong_MassVsJetPt = new TH2D("fHist_5Prong_MassVsJetPt","fHist_5Prong_MassVsJetPt;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHE[0] = new TH2D("fHist_MassVsJetPt0HE","fHist_MassVsJetPt_incusive;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHE[1] = new TH2D("fHist_MassVsJetPt1HE","fHist_MassVsJetPt_lfg;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHE[2] = new TH2D("fHist_MassVsJetPt2HE","fHist_MassVsJetPt_beauty;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHE[3] = new TH2D("fHist_MassVsJetPt3HE","fHist_MassVsJetPt_charm;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHP[0] = new TH2D("fHist_MassVsJetPt0HP","fHist_MassVsJetPt_incusive;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHP[1] = new TH2D("fHist_MassVsJetPt1HP","fHist_MassVsJetPt_lfg;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHP[2] = new TH2D("fHist_MassVsJetPt2HP","fHist_MassVsJetPt_beauty;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+    fHist_MassVsJetPtHP[3] = new TH2D("fHist_MassVsJetPt3HP","fHist_MassVsJetPt_charm;inv. mass (GeV/#it{c}^{2}); jet pT (GeV/#it{c}})",1000,0,10.,1000,0,250.);
+
+
+    fOutput->Add(fHist_2Prong_MassVsJetPt);
+    fOutput->Add(fHist_3Prong_MassVsJetPt);
+    fOutput->Add(fHist_4Prong_MassVsJetPt);
+    fOutput->Add(fHist_5Prong_MassVsJetPt);
+
+    fOutput->Add(fHist_MassVsJetPtHE[0]);
+    fOutput->Add(fHist_MassVsJetPtHP[0]);
+    if(fIsMC){
+        fOutput->Add(fHist_MassVsJetPtHE[1]);
+        fOutput->Add(fHist_MassVsJetPtHE[2]);
+        fOutput->Add(fHist_MassVsJetPtHE[3]);
+        fOutput->Add(fHist_MassVsJetPtHP[1]);
+        fOutput->Add(fHist_MassVsJetPtHP[2]);
+        fOutput->Add(fHist_MassVsJetPtHP[3]);
+    }
+
     if(fDoRandomCones){
         AddHistTH1(&fhist_Jet_Background_Fluctuation,"fhist_Jet_Background_Fluctuation","random cone #delta #it{p}_{T}","#delta #it{p}_{T}","count",500,-125.,125.,  kTRUE,glistjets);
     }
@@ -935,4 +984,100 @@ Double_t AliAnalysisTaskEmcalJetBJetTaggingIP::GetPtCorrected(const AliEmcalJet 
     if(jet && fJetsCont)
         return  jet->Pt() - fJetsCont->GetRhoVal()*jet->Area();
     return -1.;
+}
+
+Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::FindVertexNProngSimple(const AliEmcalJet * jet, AliAODVertex * &vtx, Int_t &nProng){
+    //populate array from tracks within jet
+    AliVTrack * bTrack =0x0;
+    TList *lTrackInJet= new TList();
+    for( Int_t j=0; j<jet->GetNumberOfTracks(); ++j)
+    {
+        bTrack =  (AliVTrack*) ((AliPicoTrack*) fTracksCont->GetParticle(jet->TrackAt((int)j)))->GetTrack();
+        lTrackInJet->Add(bTrack);
+    }
+    Int_t nprongs= lTrackInJet->GetEntries();
+    if (nprongs <1) return kFALSE;
+    //Construct Kalmann vertex
+
+    AliKFParticle::SetField(InputEvent()->GetMagneticField());
+    AliKFVertex vertexKF;
+
+    for(Int_t i=0; i<nprongs; i++) {
+      AliVTrack *esdTrack = (AliVTrack*)lTrackInJet->At(i);
+      AliKFParticle daughterKF(*esdTrack,211);
+      vertexKF.AddDaughter(daughterKF);
+    }
+   // Printf("nCont %i",vertexKF.GetNContributors());
+    AliESDVertex * vertexESD = new AliESDVertex(vertexKF.Parameters(),
+                     vertexKF.CovarianceMatrix(),
+                     vertexKF.GetChi2(),
+                     vertexKF.GetNContributors());
+
+    Double_t pos[3],cov[6],chi2perNDF;
+    vertexESD->GetXYZ(pos); // position
+    vertexESD->GetCovMatrix(cov); //covariance matrix
+     chi2perNDF = vertexESD->GetChi2toNDF();
+    Double_t dispersion = vertexESD->GetDispersion();
+
+    AliAODVertex* vertexAOD = new   AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,nprongs);
+
+    for(Int_t i=0; i<nprongs; i++){
+        vertexAOD->AddDaughter((AliAODTrack*)lTrackInJet->At(i));
+    }
+    delete vertexESD; vertexESD=NULL;
+
+    //Printf("N Daughters AOD vertex = %i",vertexAOD->GetNDaughters());
+  //  vertexAOD->Print();
+    vtx=vertexAOD;
+    nProng=nprongs;
+    delete lTrackInJet;
+
+    return kTRUE;
+}
+
+
+Double_t AliAnalysisTaskEmcalJetBJetTaggingIP::GetVertexInvariantMass(AliAODVertex *vtx,Double_t massParticle){
+  Double_t pxyz[3];
+  Double_t pxyzSum[4]={0.,0.,0.,0.};
+
+  for(Int_t jp=0;jp<vtx->GetNDaughters();jp++){
+    AliAODTrack *tr=(AliAODTrack*)vtx->GetDaughter(jp);
+
+    tr->GetPxPyPz(pxyz);
+    pxyzSum[1]+=pxyz[0];
+    pxyzSum[2]+=pxyz[1];
+    pxyzSum[3]+=pxyz[2];
+    pxyzSum[0]+=TMath::Sqrt(massParticle*massParticle+pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]+pxyz[2]*pxyz[2]);
+  }
+  double mass = TMath::Sqrt(pxyzSum[0]*pxyzSum[0]-pxyzSum[1]*pxyzSum[1]-pxyzSum[2]*pxyzSum[2]-pxyzSum[3]*pxyzSum[3]);
+  return  mass; //TMath::Sqrt(pxyzSum[0]*pxyzSum[0]-pxyzSum[1]*pxyzSum[1]-pxyzSum[2]*pxyzSum[2]-pxyzSum[3]*pxyzSum[3]);
+}
+
+void AliAnalysisTaskEmcalJetBJetTaggingIP::FillVertexingHists(const AliEmcalJet *jet , AliAODVertex * vtx, Int_t nProng,Int_t tag){
+    if(!vtx) return;
+    Double_t invMass = GetVertexInvariantMass(vtx,0.13957018); //pion mass assumed
+    if(nProng<2) return;
+    if (nProng>1)fHist_MassVsJetPtHE[tag]->Fill(invMass,jet->Pt());
+    if (nProng>2)fHist_MassVsJetPtHP[tag]->Fill(invMass,jet->Pt());
+
+    switch(nProng)
+    {
+    case 2:
+        fHist_2Prong_MassVsJetPt->Fill(invMass,jet->Pt());
+        break;
+    case 3:
+        fHist_3Prong_MassVsJetPt->Fill(invMass,jet->Pt());
+        break;
+    case 4:
+        fHist_4Prong_MassVsJetPt->Fill(invMass,jet->Pt());
+        break;
+    case 5:
+        fHist_5Prong_MassVsJetPt->Fill(invMass,jet->Pt());
+        break;
+    }
+
+
+
+
+    return;
 }
