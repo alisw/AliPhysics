@@ -44,7 +44,11 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t 		trainConfig 				= 1,  								// cha
 
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-	
+	//**********************************************************************************************
+	//**********************************************************************************************
+		inputHandler->SetInactiveBranches("AliESDFMD"); // Disable FMD branch, see ALIROOT-6222
+	//**********************************************************************************************
+	//**********************************************************************************************
 	Bool_t isMCForOtherTasks = kFALSE;
 	if (isMC > 0) isMCForOtherTasks = kTRUE;
 	

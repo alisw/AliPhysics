@@ -499,17 +499,17 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
 
 	// Pile Up Rejection
 	if (fIsHeavyIon == 2){
-	        if(fUtils->IsFirstEventInChunk(fInputEvent)){
+		if(fUtils->IsFirstEventInChunk(fInputEvent)){
 			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
 			fEventQuality = 6;
 			return kFALSE;
 		}
-	        if(fRemovePileUp){
-	              if(fUtils->IsPileUpEvent(fInputEvent) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent) ){
-		        	if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+		if(fRemovePileUp){
+			if(fUtils->IsPileUpEvent(fInputEvent) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent) ){
+				if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
 				fEventQuality = 6;
 				return kFALSE;
-		      }
+			}
 		}
 	}else if(fRemovePileUp){
 		if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
@@ -2628,7 +2628,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 		return 1; // Check Centrality --> Not Accepted => eventQuality = 1
 		
 	if(isHeavyIon == 0 && GetIsFromPileup()){
-                if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+		if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
 			return 6; // Check Pileup --> Not Accepted => eventQuality = 6
 		}
 	}
