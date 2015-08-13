@@ -192,6 +192,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	void SetCentralityEstimator(char *c) { fCentEstimator = c; }
 	TString GetCentralityEstimator() { return fCentEstimator; }
 	
+	void SetDoMinBiasAnalysis(Bool_t b) { fDoMinBiasAnalysis = b; }
+	Bool_t GetDoMinBiasAnalysis() { return fDoMinBiasAnalysis; }
+	
 	void EnableCrossCheckCorrelationHistos() { fCrossCheckCorrelHisto = kTRUE; }
 	Bool_t AreCrossCheckCorrelationHistosEnabled() { return fCrossCheckCorrelHisto; }
 	
@@ -302,6 +305,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
 	TString fEPselector;
 	TString fCentEstimator;
+	Bool_t fDoMinBiasAnalysis;
 	TString fDisabledTriggerString;
     
     // event cut variables

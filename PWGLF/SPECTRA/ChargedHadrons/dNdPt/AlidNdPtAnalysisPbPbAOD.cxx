@@ -122,6 +122,7 @@ fEventNumberForPtSpectra(0),
 fFillEventPtSpectraHistogram(kFALSE),
 fEPselector("Q"),
 fCentEstimator("V0M"),
+fDoMinBiasAnalysis(kFALSE),
 fDisabledTriggerString(""),
 // event cut variables
 fCutMaxZVertex(10.),  
@@ -1113,6 +1114,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   //   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
   Double_t dCentrality = aCentrality->GetCentralityPercentile(GetCentralityEstimator().Data());
   
+  if(GetDoMinBiasAnalysis()) { dCentrality = 1; }
   if( dCentrality < 0 ) return;
   
   // protection for bias on pt spectra if all triggers selected
