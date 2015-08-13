@@ -85,6 +85,7 @@ set(SRCS
   AliFemtoSpherocityEventCut.cxx
   AliFemtoCorrFctnDPhiStarDEta.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
+  AliFemtoDeltaPtPairCut.cxx	
   )
 
 # Headers from sources
