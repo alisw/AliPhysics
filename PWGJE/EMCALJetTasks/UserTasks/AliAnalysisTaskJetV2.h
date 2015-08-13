@@ -137,6 +137,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             fUsePtWeight = w; 
             if(!fUsePtWeight) fUsePtWeightErrorPropagation = kFALSE; }
         void                    SetUsePtWeightErrorPropagation(Bool_t w)        {fUsePtWeightErrorPropagation = w; }
+        void                    SetUse2DIntegration(Bool_t k)                   {fUse2DIntegration= k;}
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetMaxNoRandomCones(Int_t m)                    {fMaxCones = m; }
@@ -268,6 +269,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         qcRecovery              fQCRecovery;            // recovery type for e-by-e qc method
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
         Bool_t                  fUsePtWeightErrorPropagation;   // recalculate the bin errors in case of pt weighting 
+        Bool_t                  fUse2DIntegration;      // integrate jet background over eta, phi
         detectorType            fDetectorType;          // type of detector used for modulation fit
         analysisType            fAnalysisType;          // analysis type (full or charged jets)
         TString                 fFitModulationOptions;  // fit options for modulation fit
@@ -411,7 +413,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 5);
+        ClassDef(AliAnalysisTaskJetV2, 6);
 };
 
 #endif
