@@ -25,6 +25,7 @@
 #include <TPDGCode.h>
 #include <TLorentzVector.h>
 #include <TClonesArray.h>
+#include <TF1.h>
 
 
 ClassImp(AliDecayerExodus)
@@ -56,6 +57,7 @@ AliDecayerExodus::AliDecayerExodus():
     fEPMassPhi(0),
     fEPMassPhiDalitz(0),
     fEPMassJPsi(0),
+    fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)), /* Polarization Function */
     fInit(0)
 
 {
@@ -70,7 +72,7 @@ void AliDecayerExodus::Init()
 //
    Int_t ibin, nbins;
    Double_t min, maxpion, maxeta, maxomega, maxetaprime, maxphi, binwidth_pion, binwidth_eta, binwidth_omega, binwidth_etaprime, binwidth_phi;
-   Double_t pionmass, etamass, omegamass, etaprimemass, phimass, emass, omasspion, omasseta, omassgamma;
+   Double_t pionmass, etamass, omegamass, etaprimemass, phimass, emass, proton_mass, omasspion, omasseta, omassgamma;
    Double_t epsilon_pion, epsilon_eta, epsilon_omega, epsilon_etaprime, epsilon_phi;
    Double_t delta_pion, delta_eta, delta_omega, delta_etaprime, delta_phi;
    Double_t mLL_pion, mLL_eta, mLL_omega, mLL_etaprime, mLL_phi;
@@ -132,8 +134,6 @@ void AliDecayerExodus::Init()
     delta_omega      = (omasspion / omegamass) * (omasspion / omegamass);
     delta_etaprime   = (omassgamma / etaprimemass) * (omassgamma / etaprimemass);
     delta_phi        = (omasseta / phimass) * (omasseta / phimass);    
-
-
 
     // create pair mass histograms for Dalitz decays of pi0, eta, omega, eta' and phi
     if (!fEPMassPion)          {delete fEPMassPion;        fEPMassPion          = new TH1F("fEPMassPion", "Dalitz electron pair from pion", nbins, min, maxpion); }
@@ -285,7 +285,6 @@ void AliDecayerExodus::Init()
      if (!fEPMassPhi)   {delete fEPMassPhi;   fEPMassPhi    = new TH1F("fEPMassPhi","mass phi",nbins,mass_min,mass_max);}
      if (!fEPMassJPsi)  {delete fEPMassJPsi;  fEPMassJPsi   = new TH1F("fEPMassJPsi","mass jpsi",nbins,mass_min,mass_max);}
 
-
      for (ibin=1; ibin<=nbins; ibin++ )
      {
      mass_bin = mass_min+(Double_t)(ibin-1)*binwidth+binwidth/2.0;
@@ -355,36 +354,29 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
         fInit=1;  
     }
 
-
-   Double_t pmass_pion, pmass_eta, pmass_omega_dalitz, pmass_etaprime, pmass_phi_dalitz;
-   Double_t emass, omass_pion, omass_eta, omass_gamma, epmass_pion, epmass_eta, epmass_omega_dalitz, epmass_etaprime, epmass_phi_dalitz;
-   Double_t e1_pion, e1_eta, e1_omega, e1_etaprime, e1_phi;
-   Double_t p1_pion, p1_eta, p1_omega, p1_etaprime, p1_phi;
-   Double_t e3_gamma_pion, e3_gamma_eta, e3_pion, e3_gamma_etaprime, e3_eta; 
-   Double_t p3_gamma_pion, p3_gamma_eta, p3_pion, p3_gamma_etaprime, p3_eta; 
-
-   Double_t wp_rho, wp_omega, wp_phi, wp_jpsi, epmass_rho, epmass_omega, epmass_phi, epmass_jpsi;
-   Double_t mp_rho, mp_omega, mp_phi, mp_jpsi, md_rho, md_omega, md_phi, md_jpsi;
-   Double_t Ed_rho, Ed_omega, Ed_phi, Ed_jpsi, pd_rho, pd_omega, pd_phi, pd_jpsi;
-
-
-    md_rho =  md_omega =  md_phi =  md_jpsi = 0.;
-
-
-   Double_t costheta, sintheta, cosphi, sinphi, phi;
+   //local variables for dalitz/2-body decay:
+   Double_t pmass, epmass, realp_mass, e1, p1, e3, p3;
+   Double_t wp_res, mp_res, md_res, epmass_res, Ed_res, pd_res;
+   Double_t PolPar;
+   TLorentzVector fProducts_res[2], fProducts_dalitz[3];
+   Int_t idRho=113;
+   Int_t idOmega=223;
+   Int_t idPhi=333;
+   Int_t idJPsi=443;
+   Int_t idPi0=111;
+   Int_t idEta=221;
+   Int_t idEtaPrime=331;
 
    // Get the particle masses of daughters
+   Double_t emass, proton_mass, omass_pion, omass_eta, omass_gamma;
    emass       = (TDatabasePDG::Instance()->GetParticle(11)) ->Mass();  
+   proton_mass = (TDatabasePDG::Instance()->GetParticle(2212)) ->Mass();  
    omass_pion  = (TDatabasePDG::Instance()->GetParticle(111))->Mass();
    omass_eta   = (TDatabasePDG::Instance()->GetParticle(221))->Mass();  
    omass_gamma = (TDatabasePDG::Instance()->GetParticle(22)) ->Mass();   
 
-   // Get the particle widths of mothers for resonances
-   wp_rho   = (TDatabasePDG::Instance()->GetParticle(113))->Width();
-   wp_omega = (TDatabasePDG::Instance()->GetParticle(223))->Width();
-   wp_phi   = (TDatabasePDG::Instance()->GetParticle(333))->Width();
-   wp_jpsi  = (TDatabasePDG::Instance()->GetParticle(443))->Width();
-
+   //flat angular distributions
+   Double_t costheta, sintheta, cosphi, sinphi, phi;
    costheta = (2.0 * gRandom->Rndm()) - 1.;
    sintheta = TMath::Sqrt((1. + costheta) * (1. - costheta));
    phi      = 2.0 * TMath::ACos(-1.) * gRandom->Rndm();
@@ -393,621 +385,220 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
 
 
 //-----------------------------------------------------------------------------//
-//                        Generate Pizero Dalitz decay                         //
+//             Generate Dalitz decays: Pi0/Eta/Omega/EtaPrime/Phi              //
 //-----------------------------------------------------------------------------//
-   
-   if(idpart==111){
-   pmass_pion = pparent->M();
 
-   for(;;){
+  if(idpart==idPi0||idpart==idEta||idpart==idOmega||idpart==idEtaPrime||idpart==idPhi){
+
+   //get the parent mass
+   pmass = pparent->M();
+
    // Sample the electron pair mass from a histogram
-   epmass_pion = fEPMassPion->GetRandom();
-   if (pmass_pion-omass_gamma>epmass_pion && epmass_pion/2.>emass) break;
-   }
-
-   // electron pair kinematics in virtual photon rest frame
-   e1_pion = epmass_pion / 2.;
-   p1_pion = TMath::Sqrt((e1_pion + emass) * (e1_pion - emass));
-
-   // momentum vectors of electrons in virtual photon rest frame
-   Double_t pProd1_pion[3] = {p1_pion * sintheta * cosphi,
-                              p1_pion * sintheta * sinphi,
-                              p1_pion * costheta};
-
-   Double_t pProd2_pion[3] = {-1.0 * p1_pion * sintheta * cosphi,
-                              -1.0 * p1_pion * sintheta * sinphi,
-                              -1.0 * p1_pion * costheta};
-
-
-   // third child kinematics in parent meson rest frame
-   e3_gamma_pion       = (pmass_pion * pmass_pion - epmass_pion * epmass_pion)/(2. * pmass_pion);
-   p3_gamma_pion       = TMath::Sqrt((e3_gamma_pion  * e3_gamma_pion));
-
-
-   // third child 4-vector in parent meson rest frame
-   fProducts_pion[2].SetPx(p3_gamma_pion * sintheta * cosphi);
-   fProducts_pion[2].SetPy(p3_gamma_pion * sintheta * sinphi);
-   fProducts_pion[2].SetPz(p3_gamma_pion * costheta);
-   fProducts_pion[2].SetE(e3_gamma_pion);
-
-
-   // electron 4-vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_pion[3] = {0.};
-   Rot(pProd1_pion, pRot1_pion, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_pion[3] = {0.};
-   Rot(pProd2_pion, pRot2_pion, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_pion[0].SetPx(pRot1_pion[0]);
-   fProducts_pion[0].SetPy(pRot1_pion[1]);
-   fProducts_pion[0].SetPz(pRot1_pion[2]);
-   fProducts_pion[0].SetE(e1_pion);
-   fProducts_pion[1].SetPx(pRot2_pion[0]);
-   fProducts_pion[1].SetPy(pRot2_pion[1]);
-   fProducts_pion[1].SetPz(pRot2_pion[2]);
-   fProducts_pion[1].SetE(e1_pion);
-
-   // boost the dielectron into the parent meson's rest frame
-   Double_t eLPparent_pion = TMath::Sqrt(p3_gamma_pion * p3_gamma_pion + epmass_pion * epmass_pion);
-   TVector3 boostPair_pion( -1.0 * fProducts_pion[2].Px() / eLPparent_pion,
-                       -1.0 * fProducts_pion[2].Py() / eLPparent_pion,
-                       -1.0 * fProducts_pion[2].Pz() / eLPparent_pion);
-   fProducts_pion[0].Boost(boostPair_pion);
-   fProducts_pion[1].Boost(boostPair_pion);
-
-   // boost all decay products into the lab frame
-   TVector3 boostLab_pion(pparent->Px() / pparent->E(),
-                     pparent->Py() / pparent->E(),
-                     pparent->Pz() / pparent->E());
-
-   fProducts_pion[0].Boost(boostLab_pion);
-   fProducts_pion[1].Boost(boostLab_pion);
-   fProducts_pion[2].Boost(boostLab_pion);
-
-   } 
-
-
-//-----------------------------------------------------------------------------//
-//                        Generate Rho resonance decay                         //
-//-----------------------------------------------------------------------------//
-
-   else if(idpart==113){
-   // calculate rho mass
-        if(wp_rho!=0.0){
-          mp_rho = pparent->M();
-          }
-        else{
-        Double_t x_rho=pparent->Px(); Double_t y_rho=pparent->Py(); Double_t z_rho=pparent->Pz();
-        Double_t t_rho=pparent->E();
-        Double_t p_rho=x_rho*x_rho+y_rho*y_rho+z_rho*z_rho;
-        Double_t Q2_rho=abs((t_rho*t_rho)-(p_rho*p_rho));
-        mp_rho = sqrt(Q2_rho);
+   for(;;){
+        if(idpart==idPi0){
+         epmass = fEPMassPion->GetRandom();
+         realp_mass=omass_gamma;
+        }else if(idpart==idEta){
+         epmass = fEPMassEta->GetRandom();
+         realp_mass=omass_gamma;
+        }else if(idpart==idOmega){
+         epmass = fEPMassOmegaDalitz->GetRandom();
+         realp_mass=omass_pion;
+        }else if(idpart==idEtaPrime){
+         epmass = fEPMassEtaPrime->GetRandom();
+         realp_mass=omass_gamma;
+        }else if(idpart==idPhi){
+         epmass = fEPMassPhiDalitz->GetRandom();
+         realp_mass=omass_eta;
+        }else{ printf(" Exodus ERROR: Dalitz mass parametrization not found \n");
+               return;
         }
-   // daughter
-       if ( mp_rho < 2.*md_rho )
-          {
-           printf("Rho into ee Decay kinematically impossible! \n");
-           return;
-           }
-  
-   for( ;; ) {
-   // Sample the electron pair mass from a histogram  
-   epmass_rho = fEPMassRho->GetRandom();
-   if ( mp_rho < 2.*epmass_rho ) break;
+        if(pmass-realp_mass>epmass && epmass/2/2.>emass) break;
    }
 
    // electron pair kinematics in virtual photon rest frame
-   Ed_rho = epmass_rho/2.;
-   pd_rho = TMath::Sqrt((Ed_rho+md_rho)*(Ed_rho-md_rho));
-  
-   // momentum vectors of electrons in virtual photon rest frame 
-   Double_t pProd1_rho[3] = {pd_rho * sintheta * cosphi,
-                             pd_rho * sintheta * sinphi,
-                             pd_rho * costheta};
-  
-   Double_t pProd2_rho[3] = {-1.0 * pd_rho * sintheta * cosphi,
-                             -1.0 * pd_rho * sintheta * sinphi,
-                             -1.0 * pd_rho * costheta};
-                                                                                                                                                                        
-
-   // electron 4 vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_rho[3] = {0.};
-   Rot(pProd1_rho, pRot1_rho, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_rho[3] = {0.};
-   Rot(pProd2_rho, pRot2_rho, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_rho[0].SetPx(pRot1_rho[0]);
-   fProducts_rho[0].SetPy(pRot1_rho[1]);
-   fProducts_rho[0].SetPz(pRot1_rho[2]);
-   fProducts_rho[0].SetE(Ed_rho);
-   fProducts_rho[1].SetPx(pRot2_rho[0]);
-   fProducts_rho[1].SetPy(pRot2_rho[1]);
-   fProducts_rho[1].SetPz(pRot2_rho[2]);
-   fProducts_rho[1].SetE(Ed_rho);
-   
-   
-   // boost decay products into the lab frame 
-   TVector3 boostLab_rho(pparent->Px() / pparent->E(),
-                         pparent->Py() / pparent->E(),
-                         pparent->Pz() / pparent->E());
-   
-   fProducts_rho[0].Boost(boostLab_rho);
-   fProducts_rho[1].Boost(boostLab_rho);
-   }
-
-
-//-----------------------------------------------------------------------------//
-//                        Generate Eta Dalitz decay                            //
-//-----------------------------------------------------------------------------// 
-  
-   else if(idpart==221){
-   pmass_eta = pparent->M();
-
-   for(;;){
-   // Sample the electron pair mass from a histogram
-   epmass_eta = fEPMassEta->GetRandom();
-   if(pmass_eta-omass_gamma>epmass_eta && epmass_eta/2.>emass)
-   break;
-   }
-   
-   // electron pair kinematics in virtual photon rest frame
-   e1_eta = epmass_eta / 2.;
-   p1_eta = TMath::Sqrt((e1_eta + emass) * (e1_eta - emass));
+   e1 = epmass / 2.;
+   p1 = TMath::Sqrt((e1 + emass) * (e1 - emass));
 
    // momentum vectors of electrons in virtual photon rest frame
-   Double_t pProd1_eta[3] = {p1_eta * sintheta * cosphi,
-                             p1_eta * sintheta * sinphi,
-                             p1_eta * costheta};
-   Double_t pProd2_eta[3] = {-1.0 * p1_eta * sintheta * cosphi,
-                             -1.0 * p1_eta * sintheta * sinphi,
-                             -1.0 * p1_eta * costheta};
+   Double_t pProd1[3] = {p1 * sintheta * cosphi,
+                         p1 * sintheta * sinphi,
+                         p1 * costheta};
+   Double_t pProd2[3] = {-1.0 * p1 * sintheta * cosphi,
+                         -1.0 * p1 * sintheta * sinphi,
+                         -1.0 * p1 * costheta};
+   fProducts_dalitz[0].SetPx(pProd1[0]);
+   fProducts_dalitz[0].SetPy(pProd1[1]);
+   fProducts_dalitz[0].SetPz(pProd1[2]);
+   fProducts_dalitz[0].SetE(e1);
+   fProducts_dalitz[1].SetPx(pProd2[0]);
+   fProducts_dalitz[1].SetPy(pProd2[1]);
+   fProducts_dalitz[1].SetPz(pProd2[2]);
+   fProducts_dalitz[1].SetE(e1);
 
    // third child kinematics in parent meson rest frame
-   e3_gamma_eta       = (pmass_eta * pmass_eta - epmass_eta * epmass_eta)/(2. * pmass_eta);
-   p3_gamma_eta       = TMath::Sqrt((e3_gamma_eta * e3_gamma_eta));
-
-
+   e3 = (pmass*pmass + realp_mass*realp_mass - epmass*epmass)/(2. * pmass);
+   p3 = TMath::Sqrt((e3+realp_mass) * (e3-realp_mass));
+   
    // third child 4-vector in parent meson rest frame
-   fProducts_eta[2].SetPx(p3_gamma_eta * sintheta * cosphi);
-   fProducts_eta[2].SetPy(p3_gamma_eta * sintheta * sinphi);
-   fProducts_eta[2].SetPz(p3_gamma_eta * costheta);
-   fProducts_eta[2].SetE(e3_gamma_eta); 
-
-   // electron 4-vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_eta[3] = {0.};
-   Rot(pProd1_eta, pRot1_eta, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_eta[3] = {0.};
-   Rot(pProd2_eta, pRot2_eta, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_eta[0].SetPx(pRot1_eta[0]);
-   fProducts_eta[0].SetPy(pRot1_eta[1]);
-   fProducts_eta[0].SetPz(pRot1_eta[2]);
-   fProducts_eta[0].SetE(e1_eta);
-   fProducts_eta[1].SetPx(pRot2_eta[0]);
-   fProducts_eta[1].SetPy(pRot2_eta[1]);
-   fProducts_eta[1].SetPz(pRot2_eta[2]);
-   fProducts_eta[1].SetE(e1_eta);
+   costheta = (2.0 * gRandom->Rndm()) - 1.;
+   sintheta = TMath::Sqrt((1. + costheta) * (1. - costheta));
+   phi      = 2.0 * TMath::ACos(-1.) * gRandom->Rndm();
+   sinphi   = TMath::Sin(phi);
+   cosphi   = TMath::Cos(phi); 
+   fProducts_dalitz[2].SetPx(p3 * sintheta * cosphi);
+   fProducts_dalitz[2].SetPy(p3 * sintheta * sinphi);
+   fProducts_dalitz[2].SetPz(p3 * costheta);
+   fProducts_dalitz[2].SetE(e3);
+   
 
    // boost the dielectron into the parent meson's rest frame
-   Double_t eLPparent_eta = TMath::Sqrt(p3_gamma_eta * p3_gamma_eta + epmass_eta * epmass_eta);
-   TVector3 boostPair_eta( -1.0 * fProducts_eta[2].Px() / eLPparent_eta,
-                       -1.0 * fProducts_eta[2].Py() / eLPparent_eta,
-                       -1.0 * fProducts_eta[2].Pz() / eLPparent_eta);
-   fProducts_eta[0].Boost(boostPair_eta);
-   fProducts_eta[1].Boost(boostPair_eta);
+   Double_t eLPparent = TMath::Sqrt(p3*p3 + epmass*epmass);
+   TVector3 boostPair( -1.0 * fProducts_dalitz[2].Px() / eLPparent,
+                       -1.0 * fProducts_dalitz[2].Py() / eLPparent,
+                       -1.0 * fProducts_dalitz[2].Pz() / eLPparent);
+   fProducts_dalitz[0].Boost(boostPair);
+   fProducts_dalitz[1].Boost(boostPair);
 
    // boost all decay products into the lab frame
-   TVector3 boostLab_eta(pparent->Px() / pparent->E(),
+   TVector3 boostLab(pparent->Px() / pparent->E(),
                      pparent->Py() / pparent->E(),
                      pparent->Pz() / pparent->E());
+   fProducts_dalitz[0].Boost(boostLab);
+   fProducts_dalitz[1].Boost(boostLab);
+   fProducts_dalitz[2].Boost(boostLab);
 
-   fProducts_eta[0].Boost(boostLab_eta);
-   fProducts_eta[1].Boost(boostLab_eta);
-   fProducts_eta[2].Boost(boostLab_eta);
-
-    }
- 
-   
-//-----------------------------------------------------------------------------//
-//                        Generate Omega Dalitz decay                          //
-//-----------------------------------------------------------------------------//
-
-   else if(idpart==223){
-   pmass_omega_dalitz = pparent->M();
-   for(;;){
-   // Sample the electron pair mass from a histogram
-   epmass_omega_dalitz = fEPMassOmegaDalitz->GetRandom();
-   if(pmass_omega_dalitz-omass_pion>epmass_omega_dalitz && epmass_omega_dalitz/2.>emass)
-   break;}
-
-   // electron pair kinematics in virtual photon rest frame
-   e1_omega = epmass_omega_dalitz / 2.;
-   p1_omega = TMath::Sqrt((e1_omega + emass) * (e1_omega - emass)); 
-
-   // momentum vectors of electrons in virtual photon rest frame
-   Double_t pProd1_omega_dalitz[3] = {p1_omega * sintheta * cosphi,
-                               p1_omega * sintheta * sinphi,
-                               p1_omega * costheta};
-   Double_t pProd2_omega_dalitz[3] = {-1.0 * p1_omega * sintheta * cosphi,
-                               -1.0 * p1_omega * sintheta * sinphi,
-                               -1.0 * p1_omega * costheta};
-
-   // third child kinematics in parent meson rest frame
-   e3_pion       = (pmass_omega_dalitz * pmass_omega_dalitz + omass_pion * omass_pion - epmass_omega_dalitz * epmass_omega_dalitz)/(2. * pmass_omega_dalitz);
-   p3_pion       = TMath::Sqrt((e3_pion + omass_pion)  * (e3_pion - omass_pion));
-
-   // third child 4-vector in parent meson rest frame
-   fProducts_omega_dalitz[2].SetPx(p3_pion * sintheta * cosphi);
-   fProducts_omega_dalitz[2].SetPy(p3_pion * sintheta * sinphi);
-   fProducts_omega_dalitz[2].SetPz(p3_pion * costheta);
-   fProducts_omega_dalitz[2].SetE(e3_pion);
-
-   // lepton 4-vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_omega_dalitz[3] = {0.};
-   Rot(pProd1_omega_dalitz, pRot1_omega_dalitz, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_omega_dalitz[3] = {0.};
-   Rot(pProd2_omega_dalitz, pRot2_omega_dalitz, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_omega_dalitz[0].SetPx(pRot1_omega_dalitz[0]);
-   fProducts_omega_dalitz[0].SetPy(pRot1_omega_dalitz[1]);
-   fProducts_omega_dalitz[0].SetPz(pRot1_omega_dalitz[2]);
-   fProducts_omega_dalitz[0].SetE(e1_omega);
-   fProducts_omega_dalitz[1].SetPx(pRot2_omega_dalitz[0]);
-   fProducts_omega_dalitz[1].SetPy(pRot2_omega_dalitz[1]);
-   fProducts_omega_dalitz[1].SetPz(pRot2_omega_dalitz[2]);
-   fProducts_omega_dalitz[1].SetE(e1_omega); 
-
-   // boost the dielectron into the parent meson's rest frame
-   Double_t eLPparent_omega = TMath::Sqrt(p3_pion * p3_pion + epmass_omega_dalitz * epmass_omega_dalitz);
-   TVector3 boostPair_omega( -1.0 * fProducts_omega_dalitz[2].Px() / eLPparent_omega,
-                       -1.0 * fProducts_omega_dalitz[2].Py() / eLPparent_omega,
-                       -1.0 * fProducts_omega_dalitz[2].Pz() / eLPparent_omega);
-   fProducts_omega_dalitz[0].Boost(boostPair_omega);
-   fProducts_omega_dalitz[1].Boost(boostPair_omega);
-
-   // boost all decay products into the lab frame
-   TVector3 boostLab_omega_dalitz(pparent->Px() / pparent->E(),
-                     pparent->Py() / pparent->E(),
-                     pparent->Pz() / pparent->E());
-
-   fProducts_omega_dalitz[0].Boost(boostLab_omega_dalitz);
-   fProducts_omega_dalitz[1].Boost(boostLab_omega_dalitz);
-   fProducts_omega_dalitz[2].Boost(boostLab_omega_dalitz);
-    
-
-//-----------------------------------------------------------------------------//
-//                       Generate Omega resonance decay                        //
-//-----------------------------------------------------------------------------//
-
-      if(wp_omega!=0.0){
-      // calculate omega mass  
-         mp_omega = pparent->M();
-         }
-      else{
-           Double_t x_omega=pparent->Px(); Double_t y_omega=pparent->Py(); Double_t z_omega=pparent->Pz();
-           Double_t t_omega=pparent->E();
-           Double_t p_omega=x_omega*x_omega+y_omega*y_omega+z_omega*z_omega;
-           Double_t Q2_omega= abs((t_omega*t_omega)-(p_omega*p_omega));
-           mp_omega = sqrt(Q2_omega);
-           }
-
-   // daughter
-   if ( mp_omega< 2.*md_omega )
-      {
-       printf("Omega into ee Decay kinematically impossible! \n");
-       return;
-       }
-
-   for( ;; ) {
-   // Sample the electron pair mass from a histogram 
-   epmass_omega = fEPMassOmega->GetRandom();
-   if( mp_omega < 2.*epmass_omega ) break;
+   if(idpart==idPi0) {
+     fProducts_pion[0]=fProducts_dalitz[0];
+     fProducts_pion[1]=fProducts_dalitz[1];
+     fProducts_pion[2]=fProducts_dalitz[2];
+   }else if(idpart==idEta){
+     fProducts_eta[0]=fProducts_dalitz[0];
+     fProducts_eta[1]=fProducts_dalitz[1];
+     fProducts_eta[2]=fProducts_dalitz[2];
+   }else if(idpart==idOmega){
+     fProducts_omega_dalitz[0]=fProducts_dalitz[0];
+     fProducts_omega_dalitz[1]=fProducts_dalitz[1];
+     fProducts_omega_dalitz[2]=fProducts_dalitz[2];
+   }else if(idpart==idEtaPrime){
+     fProducts_etaprime[0]=fProducts_dalitz[0];
+     fProducts_etaprime[1]=fProducts_dalitz[1];
+     fProducts_etaprime[2]=fProducts_dalitz[2];
+   }else if(idpart==idPhi){
+     fProducts_phi_dalitz[0]=fProducts_dalitz[0];
+     fProducts_phi_dalitz[1]=fProducts_dalitz[1];
+     fProducts_phi_dalitz[2]=fProducts_dalitz[2];
    }
 
-   // electron pair kinematics in virtual photon rest frame
-   Ed_omega = epmass_omega/2.;
-   pd_omega = TMath::Sqrt((Ed_omega+md_omega)*(Ed_omega-md_omega));
-
-   // momentum vectors of electrons in virtual photon rest frame
-   Double_t pProd1_omega[3] = {pd_omega * sintheta * cosphi,
-                               pd_omega * sintheta * sinphi,
-                               pd_omega * costheta};
-
-   Double_t pProd2_omega[3] = {-1.0 * pd_omega * sintheta * cosphi,
-                               -1.0 * pd_omega * sintheta * sinphi,
-                               -1.0 * pd_omega * costheta}; 
-
-
-   // lepton 4 vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_omega[3] = {0.};
-   Rot(pProd1_omega, pRot1_omega, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_omega[3] = {0.};
-   Rot(pProd2_omega, pRot2_omega, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_omega[0].SetPx(pRot1_omega[0]);
-   fProducts_omega[0].SetPy(pRot1_omega[1]);
-   fProducts_omega[0].SetPz(pRot1_omega[2]);
-   fProducts_omega[0].SetE(Ed_omega);
-   fProducts_omega[1].SetPx(pRot2_omega[0]);
-   fProducts_omega[1].SetPy(pRot2_omega[1]);
-   fProducts_omega[1].SetPz(pRot2_omega[2]);
-   fProducts_omega[1].SetE(Ed_omega);
-
-   // boost decay products into the lab frame 
-   TVector3 boostLab_omega(pparent->Px() / pparent->E(),
-                           pparent->Py() / pparent->E(),
-                           pparent->Pz() / pparent->E());
-
-   fProducts_omega[0].Boost(boostLab_omega);
-   fProducts_omega[1].Boost(boostLab_omega);
-
-   }
-
-//-----------------------------------------------------------------------------//
-//                      Generate Etaprime Dalitz decay                         //
-//-----------------------------------------------------------------------------//  
-
-   else if(idpart==331){
-   pmass_etaprime = pparent->M();
-   for(;;){
-   // Sample the electron pair mass from a histogram
-   epmass_etaprime = fEPMassEtaPrime->GetRandom();
-   if(pmass_etaprime-omass_gamma>epmass_etaprime && epmass_etaprime/2.>emass)
-   break;}
-  
-   // electron pair kinematics in virtual photon rest frame
-   e1_etaprime = epmass_etaprime / 2.;
-   p1_etaprime = TMath::Sqrt((e1_etaprime + emass) * (e1_etaprime - emass));
-
-   // momentum vectors of electrons in virtual photon rest frame
-   Double_t pProd1_etaprime[3] = {p1_etaprime * sintheta * cosphi,
-                                  p1_etaprime * sintheta * sinphi,
-                                  p1_etaprime * costheta};
-   Double_t pProd2_etaprime[3] = {-1.0 * p1_etaprime * sintheta * cosphi,
-                                  -1.0 * p1_etaprime * sintheta * sinphi,
-                                  -1.0 * p1_etaprime * costheta};
-
-   // third child kinematics in parent meson rest frame
-   e3_gamma_etaprime       = (pmass_etaprime * pmass_etaprime + omass_gamma * omass_gamma - epmass_etaprime * epmass_etaprime)/(2. * pmass_etaprime);
-   p3_gamma_etaprime       = TMath::Sqrt((e3_gamma_etaprime + omass_gamma)  * (e3_gamma_etaprime - omass_gamma));
-
-   // third child 4-vector in parent meson rest frame
-   fProducts_etaprime[2].SetPx(p3_gamma_etaprime * sintheta * cosphi);
-   fProducts_etaprime[2].SetPy(p3_gamma_etaprime * sintheta * sinphi);
-   fProducts_etaprime[2].SetPz(p3_gamma_etaprime * costheta);
-   fProducts_etaprime[2].SetE(e3_gamma_etaprime);
-
-   // electron 4-vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_etaprime[3] = {0.};
-   Rot(pProd1_etaprime, pRot1_etaprime, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_etaprime[3] = {0.};
-   Rot(pProd2_etaprime, pRot2_etaprime, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_etaprime[0].SetPx(pRot1_etaprime[0]);
-   fProducts_etaprime[0].SetPy(pRot1_etaprime[1]);
-   fProducts_etaprime[0].SetPz(pRot1_etaprime[2]);
-   fProducts_etaprime[0].SetE(e1_etaprime);
-   fProducts_etaprime[1].SetPx(pRot2_etaprime[0]);
-   fProducts_etaprime[1].SetPy(pRot2_etaprime[1]);
-   fProducts_etaprime[1].SetPz(pRot2_etaprime[2]);
-   fProducts_etaprime[1].SetE(e1_etaprime);
-
-   // boost the dielectron into the parent meson's rest frame 
-   Double_t eLPparent_etaprime = TMath::Sqrt(p3_gamma_etaprime * p3_gamma_etaprime + epmass_etaprime * epmass_etaprime);
-   TVector3 boostPair_etaprime( -1.0 * fProducts_etaprime[2].Px() / eLPparent_etaprime,
-                       -1.0 * fProducts_etaprime[2].Py() / eLPparent_etaprime,
-                       -1.0 * fProducts_etaprime[2].Pz() / eLPparent_etaprime);
-   fProducts_etaprime[0].Boost(boostPair_etaprime);
-   fProducts_etaprime[1].Boost(boostPair_etaprime);
-
-   // boost all decay products into the lab frame
-   TVector3 boostLab_etaprime(pparent->Px() / pparent->E(),
-                     pparent->Py() / pparent->E(),
-                     pparent->Pz() / pparent->E());
-
-   fProducts_etaprime[0].Boost(boostLab_etaprime);
-   fProducts_etaprime[1].Boost(boostLab_etaprime);
-   fProducts_etaprime[2].Boost(boostLab_etaprime);
-
-   }
-
-//-----------------------------------------------------------------------------//
-//                        Generate Phi Dalitz decay                            //
-//-----------------------------------------------------------------------------//   
-
-   else if(idpart==333){
-   pmass_phi_dalitz = pparent->M();
-   for(;;){
-   // Sample the electron pair mass from a histogram
-   epmass_phi_dalitz = fEPMassPhiDalitz->GetRandom();
-   if(pmass_phi_dalitz-omass_eta>epmass_phi_dalitz && epmass_phi_dalitz/2.>emass)
-   break;}
-
-   // electron pair kinematics in virtual photon rest frame
-   e1_phi = epmass_phi_dalitz / 2.;
-   p1_phi = TMath::Sqrt((e1_phi + emass) * (e1_phi - emass));
-
-   // momentum vectors of electrons in virtual photon rest frame
-   Double_t pProd1_phi_dalitz[3] = {p1_phi * sintheta * cosphi,
-                                    p1_phi * sintheta * sinphi,
-                                    p1_phi * costheta};
-   Double_t pProd2_phi_dalitz[3] = {-1.0 * p1_phi * sintheta * cosphi,
-                                    -1.0 * p1_phi * sintheta * sinphi,
-                                    -1.0 * p1_phi * costheta};
-
-   // third child kinematics in parent meson rest frame
-   e3_eta       = (pmass_phi_dalitz * pmass_phi_dalitz + omass_eta * omass_eta - epmass_phi_dalitz * epmass_phi_dalitz)/(2. * pmass_phi_dalitz);
-   p3_eta       = TMath::Sqrt((e3_eta + omass_eta)  * (e3_eta - omass_eta));
-
-   // third child 4-vector in parent meson rest frame
-   fProducts_phi_dalitz[2].SetPx(p3_eta * sintheta * cosphi);
-   fProducts_phi_dalitz[2].SetPy(p3_eta * sintheta * sinphi);
-   fProducts_phi_dalitz[2].SetPz(p3_eta * costheta);
-   fProducts_phi_dalitz[2].SetE(e3_eta);
-
-   // electron 4-vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_phi_dalitz[3] = {0.};
-   Rot(pProd1_phi_dalitz, pRot1_phi_dalitz, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_phi_dalitz[3] = {0.};
-   Rot(pProd2_phi_dalitz, pRot2_phi_dalitz, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_phi_dalitz[0].SetPx(pRot1_phi_dalitz[0]);
-   fProducts_phi_dalitz[0].SetPy(pRot1_phi_dalitz[1]);
-   fProducts_phi_dalitz[0].SetPz(pRot1_phi_dalitz[2]);
-   fProducts_phi_dalitz[0].SetE(e1_phi);
-   fProducts_phi_dalitz[1].SetPx(pRot2_phi_dalitz[0]);
-   fProducts_phi_dalitz[1].SetPy(pRot2_phi_dalitz[1]);
-   fProducts_phi_dalitz[1].SetPz(pRot2_phi_dalitz[2]);
-   fProducts_phi_dalitz[1].SetE(e1_phi);
-
-   // boost the dielectron into the parent meson's rest frame
-   Double_t eLPparent_phi = TMath::Sqrt(p3_eta * p3_eta + epmass_phi_dalitz * epmass_phi_dalitz);
-   TVector3 boostPair_phi( -1.0 * fProducts_phi_dalitz[2].Px() / eLPparent_phi,
-                           -1.0 * fProducts_phi_dalitz[2].Py() / eLPparent_phi,
-                           -1.0 * fProducts_phi_dalitz[2].Pz() / eLPparent_phi);
-   fProducts_phi_dalitz[0].Boost(boostPair_phi);
-   fProducts_phi_dalitz[1].Boost(boostPair_phi);
-
-   // boost all decay products into the lab frame
-   TVector3 boostLab_phi_dalitz(pparent->Px() / pparent->E(),
-                                pparent->Py() / pparent->E(),
-                                pparent->Pz() / pparent->E());
-
-   fProducts_phi_dalitz[0].Boost(boostLab_phi_dalitz);
-   fProducts_phi_dalitz[1].Boost(boostLab_phi_dalitz);
-   fProducts_phi_dalitz[2].Boost(boostLab_phi_dalitz);
-
-
-//-----------------------------------------------------------------------------//
-//                        Generate Phi resonance decay                         //
-//-----------------------------------------------------------------------------//
-
-      if(wp_phi!=0.0){
-     // calculate phi mass   
-         mp_phi = pparent->M();
-         }
-      else{
-           Double_t x_phi=pparent->Px(); Double_t y_phi=pparent->Py(); Double_t z_phi=pparent->Pz();
-           Double_t t_phi=pparent->E();
-           Double_t p_phi=x_phi*x_phi+y_phi*y_phi+z_phi*z_phi;
-           Double_t Q2_phi= abs((t_phi*t_phi)-(p_phi*p_phi));
-           mp_phi = sqrt(Q2_phi);
-          }
-    
-   if ( mp_phi< 2.*md_phi )
-   {
-    printf("Phi into ee Decay kinematically impossible! \n");
-    return;
-   }
-
-   for( ;; ) {
-   // Sample the electron pair mass from a histogram
-   epmass_phi = fEPMassPhi->GetRandom();
-   if(mp_phi < 2.*epmass_phi) break;
-   }
-
-   // electron pair kinematics in virtual photon rest frame
-   Ed_phi = epmass_phi/2.;
-   pd_phi = TMath::Sqrt((Ed_phi+md_phi)*(Ed_phi-md_phi));
-
-   // momentum vectors of electrons in virtual photon rest frame
-   Double_t pProd1_phi[3] = {pd_phi * sintheta * cosphi,
-                             pd_phi * sintheta * sinphi,
-                             pd_phi * costheta};
-   Double_t pProd2_phi[3] = {-1.0 * pd_phi * sintheta * cosphi,
-                             -1.0 * pd_phi * sintheta * sinphi,
-                             -1.0 * pd_phi * costheta};
-
-   // electron 4 vectors in properly rotated virtual photon rest frame
-   Double_t pRot1_phi[3] = {0.};
-   Rot(pProd1_phi, pRot1_phi, costheta, -sintheta, -cosphi, -sinphi);
-   Double_t pRot2_phi[3] = {0.};
-   Rot(pProd2_phi, pRot2_phi, costheta, -sintheta, -cosphi, -sinphi);
-   fProducts_phi[0].SetPx(pRot1_phi[0]);
-   fProducts_phi[0].SetPy(pRot1_phi[1]);
-   fProducts_phi[0].SetPz(pRot1_phi[2]);
-   fProducts_phi[0].SetE(Ed_phi);
-   fProducts_phi[1].SetPx(pRot2_phi[0]);
-   fProducts_phi[1].SetPy(pRot2_phi[1]);
-   fProducts_phi[1].SetPz(pRot2_phi[2]);
-   fProducts_phi[1].SetE(Ed_phi);
-
-   // boost decay products into the lab frame
-   TVector3 boostLab_phi(pparent->Px() / pparent->E(),
-                     pparent->Py() / pparent->E(),
-                     pparent->Pz() / pparent->E());
-
-   fProducts_phi[0].Boost(boostLab_phi);
-   fProducts_phi[1].Boost(boostLab_phi);
-
-   }
-
-//-----------------------------------------------------------------------------//
-//                        Generate Jpsi resonance decay                        //
-//-----------------------------------------------------------------------------//
-   
-   else if(idpart==443){
-   // calculate jpsi mass
-     if(wp_jpsi!=0.0){
-        mp_jpsi = pparent->M();
-        }
-     else{
-      /*Double_t x_jpsi=pparent->Px(); 
-      Double_t y_jpsi=pparent->Py(); 
-      Double_t z_jpsi=pparent->Pz();
-      Double_t t_jpsi=pparent->E();
-      Double_t p_jpsi=x_jpsi*x_jpsi+y_jpsi*y_jpsi+z_jpsi*z_jpsi;
-      Double_t Q2_jpsi= abs((t_jpsi*t_jpsi)-(p_jpsi*p_jpsi));
-      mp_jpsi = sqrt(Q2_jpsi);*/
-       
-      mp_jpsi = 3.096;
-
-     }
-    
-     // daughter  
-     if ( mp_jpsi < 2.*md_jpsi )
-        {
-         printf("JPsi into ee Decay kinematically impossible! \n");
-         return;
-        }
-
-  for( ;; ) {
-  // Sample the electron pair mass from a histogram 
-  epmass_jpsi = fEPMassJPsi->GetRandom();
-  if ( mp_jpsi < 2.*epmass_jpsi ) break;
-  } 
-  // electron pair kinematics in virtual photon rest frame
-  Ed_jpsi = epmass_jpsi/2.;
-  pd_jpsi = TMath::Sqrt((Ed_jpsi+md_jpsi)*(Ed_jpsi-md_jpsi));
-
-  // momentum vectors of electrons in virtual photon rest frame 
-  Double_t pProd1_jpsi[3] = {pd_jpsi * sintheta * cosphi,
-                             pd_jpsi * sintheta * sinphi,
-                             pd_jpsi * costheta};
-
-  Double_t pProd2_jpsi[3] = {-1.0 * pd_jpsi * sintheta * cosphi,
-                             -1.0 * pd_jpsi * sintheta * sinphi,
-                             -1.0 * pd_jpsi * costheta};
-
-  
-  // electron 4 vectors in properly rotated virtual photon rest frame
-  Double_t pRot1_jpsi[3] = {0.};
-  Rot(pProd1_jpsi, pRot1_jpsi, costheta, -sintheta, -cosphi, -sinphi);
-  Double_t pRot2_jpsi[3] = {0.};
-  Rot(pProd2_jpsi, pRot2_jpsi, costheta, -sintheta, -cosphi, -sinphi);
-  fProducts_jpsi[0].SetPx(pRot1_jpsi[0]);
-  fProducts_jpsi[0].SetPy(pRot1_jpsi[1]);
-  fProducts_jpsi[0].SetPz(pRot1_jpsi[2]);
-  fProducts_jpsi[0].SetE(Ed_jpsi);
-  fProducts_jpsi[1].SetPx(pRot2_jpsi[0]);
-  fProducts_jpsi[1].SetPy(pRot2_jpsi[1]);
-  fProducts_jpsi[1].SetPz(pRot2_jpsi[2]);
-  fProducts_jpsi[1].SetE(Ed_jpsi);
-
-
-  // boost decay products into the lab frame
-  TVector3 boostLab_jpsi(pparent->Px() / pparent->E(),
-                         pparent->Py() / pparent->E(),
-                         pparent->Pz() / pparent->E());
-
-  fProducts_jpsi[0].Boost(boostLab_jpsi);
-  fProducts_jpsi[1].Boost(boostLab_jpsi);
-           
   }
 
-   return;
+
+//-----------------------------------------------------------------------------//
+//             Generate 2-body resonance decays: Rho/Omega/Phi/JPsi            //
+//-----------------------------------------------------------------------------//
+   
+  if(idpart==idRho||idpart==idOmega||idpart==idPhi||idpart==idJPsi){
+
+
+   //get the parent mass
+   mp_res = pparent->M();
+
+   //check daughters mass
+   md_res=emass;
+   if ( mp_res < 2.*md_res ){
+        printf("res into ee Decay kinematically impossible! \n");
+        return;
+   }
+
+   // Sample the electron pair mass from a histogram and set Polarization
+   for( ;; ) {
+        if(idpart==idRho){
+         epmass_res = fEPMassRho->GetRandom();
+PolPar=0.;
+        }else if(idpart==idOmega){
+ epmass_res = fEPMassOmega->GetRandom();
+PolPar=0.;
+        }else if(idpart==idPhi){
+   epmass_res = fEPMassPhi->GetRandom();
+PolPar=0.;
+        }else if(idpart==idPhi){
+   epmass_res = fEPMassPhi->GetRandom();
+PolPar=0.;
+        }else if(idpart==idJPsi){
+  epmass_res = fEPMassJPsi->GetRandom();
+PolPar=0.;
+        }else{ printf(" Exodus ERROR: Resonance mass G-S parametrization not found \n");
+               return;
+        }
+        if ( mp_res < 2.*epmass_res ) break;
+   }
+
+   // electron pair kinematics in virtual photon rest frame
+   Ed_res = epmass_res/2.;
+   pd_res = TMath::Sqrt((Ed_res+md_res)*(Ed_res-md_res));
+
+   // momentum vectors of electrons in virtual photon rest frame 
+   fPol->SetParameter(0,PolPar);
+   costheta = fPol->GetRandom();
+   sintheta = TMath::Sqrt((1. + costheta)*(1. - costheta));
+   fProducts_res[0].SetPx(pd_res * sintheta * cosphi);
+   fProducts_res[0].SetPy(pd_res * sintheta * sinphi);
+   fProducts_res[0].SetPz(pd_res * costheta);
+   fProducts_res[0].SetE(Ed_res);
+   fProducts_res[1].SetPx(-1.0 * pd_res * sintheta * cosphi);
+   fProducts_res[1].SetPy(-1.0 * pd_res * sintheta * sinphi);
+   fProducts_res[1].SetPz(-1.0 * pd_res * costheta);
+   fProducts_res[1].SetE(Ed_res);
+
+   // Beam parameters in LAB frame
+   TLorentzVector pProj, pTarg; 
+   Double_t BeamE=3500.;
+   pProj.SetPxPyPzE(0.,0.,-1.*BeamE,TMath::Sqrt(BeamE*BeamE+proton_mass*proton_mass)); // Beam 1
+   pTarg.SetPxPyPzE(0.,0.,BeamE,TMath::Sqrt(BeamE*BeamE+proton_mass*proton_mass)); // Beam 2
+
+   //re-build parent with G-S mass
+   TLorentzVector pparent_corr;
+   pparent_corr.SetPx(pparent->Px());
+   pparent_corr.SetPy(pparent->Py());
+   pparent_corr.SetPz(pparent->Pz());
+   pparent_corr.SetE(sqrt(pow(pparent->P(),2)+pow(epmass_res,2)));
+
+   //Boost Beam from CM to Resonance rest frame
+   TVector3 betaResCM;
+   betaResCM = (-1./pparent_corr.E()*pparent_corr.Vect());
+   pProj.Boost(betaResCM);   
+   pTarg.Boost(betaResCM);
+
+   //Define Zaxis in C-S frame and rotate legs to it
+   TVector3 zaxisCS;
+   zaxisCS=(((pProj.Vect()).Unit())-((pTarg.Vect()).Unit())).Unit();
+   fProducts_res[0].RotateUz(zaxisCS);
+   fProducts_res[1].RotateUz(zaxisCS);
+
+   // boost decay products into the lab frame 
+   TVector3 boostLab_res_corr(pparent_corr.Px() / pparent_corr.E(),
+                         pparent_corr.Py() / pparent_corr.E(),
+                         pparent_corr.Pz() / pparent_corr.E());
+   fProducts_res[0].Boost(boostLab_res_corr);
+   fProducts_res[1].Boost(boostLab_res_corr);
+
+   if(idpart==idRho) {
+    fProducts_rho[0]=fProducts_res[0];
+    fProducts_rho[1]=fProducts_res[1];
+   }else if(idpart==idOmega){
+    fProducts_omega[0]=fProducts_res[0];
+    fProducts_omega[1]=fProducts_res[1];
+   }else  if(idpart==idPhi){
+    fProducts_phi[0]=fProducts_res[0];
+    fProducts_phi[1]=fProducts_res[1];
+   }else  if(idpart==idJPsi){
+    fProducts_jpsi[0]=fProducts_res[0];
+    fProducts_jpsi[1]=fProducts_res[1];
+   }
+
+ }
+  
+ return;
 }
 
 void AliDecayerExodus::Rot(Double_t pin[3], Double_t pout[3], Double_t costheta, Double_t sintheta,
@@ -1035,24 +626,24 @@ Int_t AliDecayerExodus::ImportParticles(TClonesArray *particles)
   Int_t pdgD  [3][3] = { {kElectron, -kElectron, 22},     // pizero, eta, etaprime
                          {kElectron, -kElectron, 111},    // omega dalitz
                          {kElectron, -kElectron, 221} };  // phi dalitz
-       
+
   Int_t pdgR [2] = {kElectron, -kElectron}; // rho, omega, phi, jpsi
 
 
 
-    Int_t parentD[3] = { 0,  0, -1}; 
-    Int_t dauD1  [3] = {-1, -1,  1}; 
-    Int_t dauD2  [3] = {-1, -1,  2}; 
+    Int_t parentD[3] = { 0,  0, -1};
+    Int_t dauD1  [3] = {-1, -1,  1};
+    Int_t dauD2  [3] = {-1, -1,  2};
 
     Int_t parentR[2] = {  0,  0};
     Int_t dauR1  [2] = { -1, -1};
     Int_t dauR2  [2] = { -1, -1};
 
-    for (Int_t j = 0; j < 9; j++){ 
+    for (Int_t j = 0; j < 9; j++){
 
-    // pizero   
-    if(j==0){ 
-        for (i = 2; i > -1; i--) { 
+    // pizero
+    if(j==0){
+        for (i = 2; i > -1; i--) {
         px = fProducts_pion[i].Px();
         py = fProducts_pion[i].Py();
         pz = fProducts_pion[i].Pz();
@@ -1071,9 +662,9 @@ Int_t AliDecayerExodus::ImportParticles(TClonesArray *particles)
         e  = fProducts_rho[k].E();
       new(clonesParticles[1 - k]) TParticle(pdgR[k], 1, parentR[k], -1, dauR1[k], dauR2[k], px, py, pz, e, 0., 0., 0., 0.);
       }
-      return (2);  
+      return (2);
       }
- 
+
     // eta
     else if(j==2){
         for (i = 2; i > -1; i--) {
@@ -1083,7 +674,7 @@ Int_t AliDecayerExodus::ImportParticles(TClonesArray *particles)
         e  = fProducts_eta[i].E();
       new(clonesParticles[2 - i]) TParticle(pdgD[0][i], 1, parentD[i], -1, dauD1[i], dauD2[i], px, py, pz, e, 0., 0., 0., 0.);
       }
-      return (3);  
+      return (3);
       }
 
     // omega dalitz
@@ -1093,11 +684,11 @@ Int_t AliDecayerExodus::ImportParticles(TClonesArray *particles)
         py = fProducts_omega_dalitz[i].Py();
         pz = fProducts_omega_dalitz[i].Pz();
         e  = fProducts_omega_dalitz[i].E();
-      new(clonesParticles[2 - i]) TParticle(pdgD[1][i], 1, parentD[i], -1, dauD1[i], dauD2[i], px, py, pz, e, 0., 0., 0., 0.);  
+      new(clonesParticles[2 - i]) TParticle(pdgD[1][i], 1, parentD[i], -1, dauD1[i], dauD2[i], px, py, pz, e, 0., 0., 0., 0.);
       }
-      return (3);  
+      return (3);
       }
-   
+
     // omega direct
     else if(j==4){
          for (k = 1; k > -1; k--) {
@@ -1116,13 +707,13 @@ Int_t AliDecayerExodus::ImportParticles(TClonesArray *particles)
         px = fProducts_etaprime[i].Px();
         py = fProducts_etaprime[i].Py();
         pz = fProducts_etaprime[i].Pz();
-        e  = fProducts_etaprime[i].E();  
-      new(clonesParticles[2 - i]) TParticle(pdgD[0][i], 1, parentD[i], -1, dauD1[i], dauD2[i], px, py, pz, e, 0., 0., 0., 0.);  
+        e  = fProducts_etaprime[i].E();
+      new(clonesParticles[2 - i]) TParticle(pdgD[0][i], 1, parentD[i], -1, dauD1[i], dauD2[i], px, py, pz, e, 0., 0., 0., 0.);
       }
-      return (3);  
+      return (3);
      }
 
-    // phi dalitz 
+    // phi dalitz
      else if(j==6){
          for (i = 2; i > -1; i--) {
          px = fProducts_phi_dalitz[i].Px();
@@ -1159,7 +750,7 @@ Int_t AliDecayerExodus::ImportParticles(TClonesArray *particles)
        return (2);
     }
 
-   }  
+   }
 
    return particles->GetEntries();
 

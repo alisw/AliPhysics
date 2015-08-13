@@ -25,6 +25,7 @@
 
 #include "AliDecayer.h"
 #include <TLorentzVector.h>
+#include <TF1.h>
 
 class TH1F;
 class TClonesArray;
@@ -77,7 +78,9 @@ class AliDecayerExodus : public AliDecayer
     TH1F*         fEPMassPhi;
     TH1F*         fEPMassPhiDalitz;
     TH1F*         fEPMassJPsi;
-     
+
+    TF1* fPol;
+
     // Decay products
     TLorentzVector  fProducts_pion[3];  
     TLorentzVector  fProducts_eta[3];  

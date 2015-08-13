@@ -600,6 +600,17 @@ void AliGenParam::GenerateN(Int_t ntimes)
       Float_t am = particle->Mass();
 	  
       Rndm(random,2);
+
+// --- For Exodus --------------------------------//
+Double_t awidth = particle->Width();
+if(awidth>0){
+ TF1 *rbw = new TF1("rbw","pow([1],2)*pow([0],2)/(pow(x*x-[0]*[0],2)+pow(x*x*[1]/[0],2))",am-5*awidth,am+5*awidth);
+ rbw->SetParameter(0,am);
+ rbw->SetParameter(1,awidth);
+ am = rbw->GetRandom();
+}
+// -----------------------------------------------//
+
       //
       // y
       ty = TMath::TanH(fYPara->GetRandom());
@@ -769,7 +780,11 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	  //
 	  // Parent
 		  
-	  PushTrack(0, -1, iPart, p, origin0, polar, time0, kPPrimary, nt, wgtp, ((decayed)? 11 : 1));
+// --- For Exodus --------------------------------//
+	  //PushTrack(0, -1, iPart, p, origin0, polar, time0, kPPrimary, nt, wgtp, ((decayed)? 11 : 1));
+PushTrack(0, -1, iPart, p[0],p[1],p[2],energy,origin0[0],origin0[1],origin0[2],time0,polar[0],polar[1],polar[2],kPPrimary, nt, wgtp, ((decayed)? 11 : 1));
+// -----------------------------------------------//
+
 	  pParent[0] = nt;
 	  KeepTrack(nt); 
 	  fNprimaries++;
@@ -802,10 +817,11 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	      } else {
 		iparent = -1;
 	      }
-			 
 	      PushTrack(fTrackIt * trackIt[i], iparent, kf,
 			pc, och, polar,
 			time0 + iparticle->T(), kPDecay, nt, weight*wgtch, ksc);
+
+
 	      pParent[i] = nt;
 	      KeepTrack(nt); 
 	      fNprimaries++;
