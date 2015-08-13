@@ -78,7 +78,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fhJetEtaPhi(0x0),
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
-  fhpTTracksCont(0x0)
+  fhpTTracksCont(0x0),
+  fhJet1vsJetTag(0x0)
 {
   // Default constructor.
 
@@ -150,7 +151,8 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fhJetEtaPhi(0x0),
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
-  fhpTTracksCont(0x0)
+  fhpTTracksCont(0x0),
+  fhJet1vsJetTag(0x0)
 {
   // Standard constructor.
 
@@ -339,6 +341,9 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   fhptjetSMinusSingleTrack = new TH1F("fhptjetSMinusSingleTrack", "Subtraction of single track #it{p}_{T}; |#it{p}_{T, jet} - #it{p}_{T, Emb Track}|;Entries", 500,-10.,110.);
   fOutput->Add(fhptjetSMinusSingleTrack);
   
+  fhJet1vsJetTag = new TH2F("fhJet1vsJetTag", "Number of jets vs tagged jets; #it{N}_{jet,Tot}; #it{N}_{jet,Tag}", 30, 1., 30., 30, 1., 30.);
+  fOutput->Add(fhJet1vsJetTag);
+  
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -426,16 +431,18 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
      
   } else fRhoM = rhomParam->GetVal();
   
+  Int_t njet1 = 0, ntagjet2 = 0;
+  
   AliDebug(11,Form("NJets  Incl: %d  Csub: %d",jetCont->GetNJets(),jetContS->GetNJets()));
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
+       njet1++;
       jet2  = NULL;
       jetS  = NULL;
-      
       if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
         continue;
-
+     ntagjet2++;
      //print constituents of different jet containers
      //jet1
      
@@ -603,6 +610,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
     } //jet1 loop
   }//jetCont
   
+  fhJet1vsJetTag->Fill(njet1, ntagjet2);
   
   return kTRUE;
 }
