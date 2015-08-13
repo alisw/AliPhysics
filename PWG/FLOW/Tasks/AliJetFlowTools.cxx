@@ -1,4 +1,4 @@
-/************************************************************************* 
+/************************************************************************ 
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. * 
  *                                                                        * 
  * Author: The ALICE Off-line Project.                                    * 
@@ -1990,7 +1990,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
             //
             TF1* lin = new TF1("lin", "[0]", rangeLow, rangeUp);
             relativeErrorVariationInUp->Fit(lin, "L", "", rangeLow, rangeUp);
-            if(!gMinuit->fISW[1] == 3) printf(" fit is NOT ok ! " );
+            if(gMinuit->fISW[1] != 3) printf(" fit is NOT ok ! " );
             for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
                 relativeErrorVariationInUp->SetBinContent(i+1, lin->GetParameter(0));
             }
