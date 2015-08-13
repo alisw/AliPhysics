@@ -252,7 +252,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F		*fChargeOverPtRuns; // charge/pT vs run
     
     TH2F		*fVZEROMultCentrality; // VZERO Multiplicity vs Centrality
-
+	TH2F		*fVEROMultRefMult; // VZERO Multiplicity vs Reference Multiplicity
+	
 	// cross check for event plane resolution
 	TH2F		*fEPDistCent; // event plane distribution vs centrality
 	TH2F		*fPhiCent;	// particle phi distribution vs centrality
@@ -268,6 +269,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
 	TH1F		*fMCRecTracksMult; // number of reconstructed tracks vs reference multiplcity
 	TH1F		*fMCGenTracksMult; // number of generated tracks vs reference multiplcity
+	
+	
 	
 	THnSparseF	*fCrossCheckFilterBitPhiCent; // FilterBit:Phi:Centrality
 	

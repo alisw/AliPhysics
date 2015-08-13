@@ -83,6 +83,7 @@ fCorrelEventplaneDefaultCorrected(0),
 fEventplaneSubtractedPercentage(0),
 fChargeOverPtRuns(0),
 fVZEROMultCentrality(0),
+fVEROMultRefMult(0),
 // cross check for event plane resolution
 fEPDistCent(0),
 fPhiCent(0),
@@ -694,6 +695,10 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fVZEROMultCentrality->GetYaxis()->SetTitle("centrality");
   fVZEROMultCentrality->Sumw2();
   
+  fVEROMultRefMult = new TH2F("fVEROMultRefMult","fVEROMultRefMult",3000,0,30000,3000,0,30000);
+  fVEROMultRefMult->GetXaxis()->SetTitle("VZERO Multiplicity");
+  fVEROMultRefMult->GetYaxis()->SetTitle("reference multiplicity");
+  fVEROMultRefMult->Sumw2();
   
   // cross check for event plane resolution
   fEPDistCent = new TH2F("fEPDistCent","fEPDistCent",20, -2.*TMath::Pi(), 2.*TMath::Pi(), fCentralityNbins-1, fBinsCentrality);
@@ -912,6 +917,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   
   fOutputList->Add(fChargeOverPtRuns);
   fOutputList->Add(fVZEROMultCentrality);
+  fOutputList->Add(fVEROMultRefMult);
   
   fOutputList->Add(fEPDistCent);
   fOutputList->Add(fPhiCent);
@@ -1023,6 +1029,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	return;
   }
   
+  
   // check, which trigger has been fired
   inputHandler = (AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   // only take tracks of events, which are triggered
@@ -1070,6 +1077,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   fTriggerStringComplete->Fill(sFiredTrigger.Data(), 1);
   
+  if(eventAOD->IsPileupFromSPD()) cout << "Event is pileup " << endl;
   
   //   if(nTriggerFired == 0) { return; }   
   //   if( !bIsEventSelected || nTriggerFired>1 ) return;  
@@ -1261,7 +1269,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   }
   fVZEROMultCentrality->Fill(dTotMultVZERO, dCentrality);
 
-  
+   
   dTrackZvPtEtaCent[0] = dEventZv;
   
   
@@ -1505,18 +1513,22 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dEventZvMultCent[3] = {dEventZv, static_cast<Double_t>(iAcceptedMultiplicity), dCentrality};
   fZvMultCent->Fill(dEventZvMultCent);
   
+  AliAODHeader *aodHeader = (AliAODHeader*)eventAOD->GetHeader();
+  dReferenceMultiplicity = aodHeader->GetRefMultiplicity();
+	
+	
   // store correlation between data and MC eventplane
   if(fIsMonteCarlo) 
   {
 	fCorrelEventplaneMCDATA->Fill(dEventplaneAngle, dMCEventplaneAngle);
-	AliAODHeader *aodHeader = (AliAODHeader*)eventAOD->GetHeader();
-	dReferenceMultiplicity = aodHeader->GetRefMultiplicity();
 	fMCRecTracksMult->Fill(dReferenceMultiplicity, dMCNRecTracks);
 	fMCGenTracksMult->Fill(dReferenceMultiplicity, dMCNGenTracks);
   }
   
   PostData(1, fOutputList);
-  
+
+  fVEROMultRefMult->Fill(dTotMultVZERO, dReferenceMultiplicity);
+ 
   if(bHasEntriesInEventByEventPtSpectrum) fEventNumberForPtSpectra++;
   // delete pointers:
   //   delete [] iIndexAcceptedTracks;
