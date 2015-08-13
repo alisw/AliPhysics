@@ -47,7 +47,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 	//**********************************************************************************************
 	//**********************************************************************************************
-		inputHandler->SetInactiveBranches("AliESDFMD"); // Disable FMD branch, see ALIROOT-6222
+		AliInputEventHandler *inputEventHandler=mgr->GetInputEventHandler();
+		inputEventHandler->SetInactiveBranches("AliESDFMD"); // Disable FMD branch, see ALIROOT-6222
 	//**********************************************************************************************
 	//**********************************************************************************************
 	Bool_t isMCForOtherSettings = 0;
