@@ -56,7 +56,8 @@ public:
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     
     void SetPureMonteCarlo( Bool_t lSet = kTRUE ) { lPureMonteCarlo = lSet; } 
-
+    void SetCheckVtxZMC   ( Bool_t lSet = kTRUE ) { fCheckVtxZMC = lSet;    }
+    
 //---------------------------------------------------------------------------------------
 
 private:
@@ -75,6 +76,7 @@ private:
     
     //Will attempt to read ESD or not... 
     Bool_t lPureMonteCarlo;
+    Bool_t fCheckVtxZMC; 
     
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1F *fHistV0M_DataSelection; //!
