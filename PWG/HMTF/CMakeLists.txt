@@ -86,6 +86,10 @@ install (FILES
   DESTINATION PWG/HMTF/MonteCarlo)
 
 # Install executable scripts
-install (FILES MonteCarlo/runmc MonteCarlo/run.sh MonteCarlo/validation.sh
+install (FILES
+  MonteCarlo/gen_dipsy.sh
+  MonteCarlo/runmc
+  MonteCarlo/run.sh
+  MonteCarlo/validation.sh
   DESTINATION PWG/HMTF/MonteCarlo
   PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
