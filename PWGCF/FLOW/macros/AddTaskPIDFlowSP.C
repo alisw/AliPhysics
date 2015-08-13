@@ -51,14 +51,21 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t minB = +0.5*EtaGap;//
     Double_t maxB = etamax;//
     
-    
-    int centrMin[16] = {0,1,2,3,4,5,6,7,8,9,10,20,30,40,60,70};
-    int centrMax[16] = {1,2,3,4,5,6,7,8,9,10,20,30,40,50,70,80};
-    
-    
-    for(int i=0;i<16;i++){
-        if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
-        if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
+    if(!UsePurityPIDmethod){
+        int centrMin[16] = {0,1,2,3,4,5,6,7,8,9,10,20,30,40,60,70};
+        int centrMax[16] = {1,2,3,4,5,6,7,8,9,10,20,30,40,50,70,80};
+        for(int i=0;i<16;i++){
+            if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
+            if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
+        }
+    }
+    if(UsePurityPIDmethod){
+        int centrMin[3] = {0,20,40};
+        int centrMax[3] = {1,30,50};
+        for(int i=0;i<3;i++){
+            if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
+            if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
+        }
     }
     
     //---------Data selection---------- ESD only!!!
