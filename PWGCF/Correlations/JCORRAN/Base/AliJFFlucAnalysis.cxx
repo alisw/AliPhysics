@@ -88,7 +88,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 
 
 
-
 	// Constructor
 }
 //________________________________________________________________________
@@ -130,7 +129,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fEffMode = 0;
 	fEffFilterBit =0;
 	fInFileName ="";
-	Bool_t IsPhiModule = kFALSE; 
+	Bool_t IsPhiModule = kFALSE;
+	Bool_t IsSCptdep = kFALSE; 
 	fEta_min = 0;
 	fEta_max = 0;
 	fImpactParameter = -1;	
@@ -157,7 +157,6 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	for(int i=0; i<= fNJacek; i++){
 		fPttJacek[i] = pttJacek[i];
 	}
-
 
 
  
@@ -230,6 +229,8 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
 	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(14);
 
+	fBin_Nptbins .Set("PtBin","PtBin", "Pt:%d", AliJBin::kSingle).SetBin(N_ptbins);
+
 	// set AliJTH1D here //
 	fh_cent
 		<< TH1D("h_cent","h_cent", 400, 0, 100) 
@@ -284,6 +285,18 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fCorrBin
 		<< fHistCentBin
 		<< "END" ;
+
+	fh_SC_ptdep_4corr
+		<< TH1D("hvnvm_SC","hvnvm_SC", 5096, -0.1, 0.1)
+		<< fBin_h << fBin_k
+		<< fBin_hh << fBin_kk
+		<< fHistCentBin << fBin_Nptbins
+		<< "END" ;
+	fh_SC_ptdep_2corr
+		<< TH1D("hvn_SC","hvn_SC", 5096, -0.5, 0.5)
+		<< fBin_h << fBin_k
+		<< fHistCentBin << fBin_Nptbins
+		<< "END" ; 
 
 
 	//AliJTH1D set done.
@@ -467,6 +480,62 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	//
 	//
 
+	if(IsSCptdep == kTRUE){
+		const int SCNH =5; // 0, 1, 2(v2), 3(v3), 4(v4)
+		double ptbin_borders[N_ptbins+1] = {0.2, 0.6, 1.0, 1.4, 1.8, 2.2, 3.0, 5.0};
+		//init
+		TComplex QnA_pt[SCNH][N_ptbins];
+		TComplex QnB_pt[SCNH][N_ptbins];
+		TComplex QnB_pt_star[SCNH][N_ptbins];
+		for(int ih=2; ih<SCNH; ih++){
+			for(int ipt=0; ipt<N_ptbins; ipt++){
+				QnA_pt[ih][ipt] = TComplex(0,0);
+				QnB_pt[ih][ipt] = TComplex(0,0);
+				QnB_pt_star[ih][ipt] = TComplex(0,0);
+			}
+		}	
+
+		// calculate Qn for each pt bins	
+		for(int ih=2; ih<SCNH; ih++){
+				for(int ipt=0; ipt<N_ptbins; ipt++){
+						double pt_bin_min = ptbin_borders[ipt];
+						double pt_bin_max = ptbin_borders[ipt+1]; 
+						double QAReal=Get_Qn_Real_pt( Eta_config[kSubA][0], Eta_config[kSubA][1], ih, ipt, pt_bin_min, pt_bin_max);
+						double QAImag=Get_Qn_Img_pt(  Eta_config[kSubA][0], Eta_config[kSubA][1], ih, ipt, pt_bin_min, pt_bin_max);
+
+						double QBReal=Get_Qn_Real_pt( Eta_config[kSubB][0], Eta_config[kSubB][1], ih, ipt, pt_bin_min, pt_bin_max);
+						double QBImag=Get_Qn_Img_pt(  Eta_config[kSubB][0], Eta_config[kSubB][1], ih, ipt, pt_bin_min, pt_bin_max);
+
+						QnA_pt[ih][ipt]= TComplex(QAReal, QAImag);
+						QnB_pt[ih][ipt]= TComplex(QBReal, QBImag);
+						QnB_pt_star[ih][ipt] = TComplex::Conjugate( QnB_pt[ih][ipt] ) ; 
+				}
+		}		
+
+		for(int ipt=0; ipt<N_ptbins; ipt++){
+			for(int ih=2; ih<SCNH; ih++){
+				int ik=1; // v2^2 only (k=1 means ^2)
+				fh_SC_ptdep_2corr[ih][ik][fCBin][ipt]->Fill( ( QnA_pt[ih][ipt]*QnB_pt_star[ih][ipt]).Re()) ;
+			}
+		}
+
+
+
+		for(int ipt=0; ipt<N_ptbins; ipt++){
+			TComplex nV4V4V2V2_pt = (QnA_pt[4][ipt]*QnB_pt_star[4][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[6][ipt] * QnA_pt[4][ipt] *QnA_pt[2][ipt] )) 
+						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[6][ipt]*QnB_pt_star[4][ipt] * QnB_pt_star[2][ipt])) - (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[6][ipt]*QnB_pt_star[6][ipt] ); 
+			TComplex nV3V3V2V2_pt = (QnA_pt[3][ipt]*QnB_pt_star[3][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[5][ipt] * QnA_pt[3][ipt] *QnA_pt[2][ipt] )) 
+						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[5][ipt]*QnB_pt_star[3][ipt] * QnB_pt_star[2][ipt])) - (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[5][ipt]*QnB_pt_star[5][ipt] ); 
+
+			int ik=1;
+			fh_SC_ptdep_4corr[2][1][4][1][fCBin][ipt]->Fill( nV4V4V2V2_pt.Re());
+			fh_SC_ptdep_4corr[2][1][3][1][fCBin][ipt]->Fill( nV3V3V2V2_pt.Re());
+
+		}	
+
+	}//pt dep done
+
+
 	AnaEntry++;
 }
 
@@ -630,4 +699,77 @@ void AliJFFlucAnalysis::SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi
 
 
 
+//________________________________________________________________________
+double AliJFFlucAnalysis::Get_Qn_Real_pt(double eta1, double eta2, int harmonics, int ptbin, double pt_min, double pt_max)
+{
+		if( eta1 > eta2) cout << "ERROR eta1 should be smaller than eta2!!!" << endl;
+		int nh = harmonics;
+		double Qn_real = 0;
+		double Sub_Ntrk =0;
+
+		Long64_t ntracks = fInputList->GetEntriesFast();
+		for( Long64_t it=0; it< ntracks; it++){
+			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
+			double eta = itrack->Eta();
+			double pt = itrack->Pt();
+			if( pt > pt_min && pt < pt_max){
+					if( eta>eta1 &&  eta<eta2 ){ 
+							int isub = -1;
+							if( eta < 0 ) isub = 0;
+							if( eta > 0 ) isub = 1;
+							double phi = itrack->Phi();
+							double phi_module_corr =1; 
+							if( IsPhiModule == kTRUE){
+									phi_module_corr=
+											h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+							}
+							double pt = itrack->Pt();
+							double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+							Qn_real += 1.0 / effCorr * phi_module_corr * TMath::Cos( nh * phi);
+							Sub_Ntrk = Sub_Ntrk + 1.0 / effCorr * phi_module_corr;
+					}
+			}
+		}
+		Qn_real /= Sub_Ntrk;
+		int iside = 0; // eta - 
+		if (eta1 > 0 ) iside = 1; // eta +
+		NSubTracks_pt[iside][ptbin] = Sub_Ntrk; // it will be overwrite for each harmonics but should be same.		
+
+		return Qn_real; 
+}
+//________________________________________________________________________
+//________________________________________________________________________
+double AliJFFlucAnalysis::Get_Qn_Img_pt(double eta1, double eta2, int harmonics, int ptbin, double pt_min, double pt_max)
+{
+		int nh = harmonics;
+		double Qn_img = 0;
+		double Sub_Ntrk =0;
+
+		Long64_t ntracks = fInputList->GetEntriesFast();
+		for( Long64_t it=0; it< ntracks; it++){
+			AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
+			double eta = itrack->Eta();
+			double pt = itrack->Pt();
+			if(pt>pt_min && pt<pt_max){
+					if( eta > eta1 && eta < eta2 ){ 
+							int isub = -1;
+							if( eta < 0 ) isub = 0;
+							if( eta > 0 ) isub = 1;
+							double phi = itrack->Phi();
+							double phi_module_corr =1; 
+							if( IsPhiModule == kTRUE){
+									phi_module_corr=
+											h_phi_module[fCBin][isub]->GetBinContent( (h_phi_module[fCBin][isub]->GetXaxis()->FindBin( phi )) );
+							}
+							double pt = itrack->Pt();
+							double effCorr = fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+							Qn_img += 1./ effCorr * phi_module_corr * TMath::Sin( nh * phi);
+							Sub_Ntrk = Sub_Ntrk + 1./ effCorr * phi_module_corr; 
+					}
+			}
+		}
+		Qn_img /= Sub_Ntrk;
+		return Qn_img; 
+}
+///________________________________________________________________________
 
