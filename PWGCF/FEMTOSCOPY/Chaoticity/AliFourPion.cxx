@@ -3091,7 +3091,7 @@ void AliFourPion::UserExec(Option_t *)
 	      }// MC case
 	      
 	     
-	      
+	     
 	      /////////////////////////////////////////////////////////////
 	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
 		if(en3==0) {
@@ -3250,7 +3250,7 @@ void AliFourPion::UserExec(Option_t *)
 		    }
 		    
 		    // no MRC, no Muon Correction
-		    weight12CC[0] = ((weight12+1) - ffcSq*FSICorr12 - (1-ffcSq));
+		    /*weight12CC[0] = ((weight12+1) - ffcSq*FSICorr12 - (1-ffcSq));
 		    weight12CC[0] /= FSICorr12*ffcSq;
 		    weight13CC[0] = ((weight13+1) - ffcSq*FSICorr13 - (1-ffcSq));
 		    weight13CC[0] /= FSICorr13*ffcSq;
@@ -3278,8 +3278,14 @@ void AliFourPion::UserExec(Option_t *)
 		    weight13CC[2] *= MuonCorr13;
 		    weight23CC[2] = ((weight23+1)*MomResCorr23 - ffcSq*FSICorr23 - (1-ffcSq));
 		    weight23CC[2] /= FSICorr23*ffcSq;
-		    weight23CC[2] *= MuonCorr23;
-		    
+		    weight23CC[2] *= MuonCorr23;*/
+		    //
+		    // new way with all corrections applied before interpolating
+		    weight12CC[2] = weight12;
+		    weight13CC[2] = weight13;
+		    weight23CC[2] = weight23;
+
+
 		    if(weight12CC[2] < 0 || weight13CC[2] < 0 || weight23CC[2] < 0) {// C2^QS can never be less than unity
 		      if(fMbin==0 && bin1==0) {
 			((TH1D*)fOutputList->FindObject("fTPNRejects3pion2"))->Fill(q3, sqrt(fabs(weight12CC[2]*weight13CC[2]*weight23CC[2])));
@@ -3647,7 +3653,7 @@ void AliFourPion::UserExec(Option_t *)
 		      }
 		      
 		      // no MRC, no Muon Correction
-		      weight14CC[0] = ((weight14+1) - ffcSq*FSICorr14 - (1-ffcSq));
+		      /*weight14CC[0] = ((weight14+1) - ffcSq*FSICorr14 - (1-ffcSq));
 		      weight14CC[0] /= FSICorr14*ffcSq;
 		      weight24CC[0] = ((weight24+1) - ffcSq*FSICorr24 - (1-ffcSq));
 		      weight24CC[0] /= FSICorr24*ffcSq;
@@ -3673,7 +3679,7 @@ void AliFourPion::UserExec(Option_t *)
 			weightTotal += sqrt(weight13CC[1]*weight14CC[1]*weight23CC[1]*weight24CC[1]);
 			weightTotal /= 3.;
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[EDindex4].FourPT[12].fBuild->Fill(2, q4, weightTotal);
-		      }
+			}
 		      // both corrections
 		      weight14CC[2] = ((weight14+1)*MomResCorr14 - ffcSq*FSICorr14 - (1-ffcSq));
 		      weight14CC[2] /= FSICorr14*ffcSq;
@@ -3683,8 +3689,15 @@ void AliFourPion::UserExec(Option_t *)
 		      weight24CC[2] *= MuonCorr24;
 		      weight34CC[2] = ((weight34+1)*MomResCorr34 - ffcSq*FSICorr34 - (1-ffcSq));
 		      weight34CC[2] /= FSICorr34*ffcSq;
-		      weight34CC[2] *= MuonCorr34;
+		      weight34CC[2] *= MuonCorr34;*/
+		      //
+		      // new way with all corrections applied before interpolating
+		      weight14CC[2] = weight14;
+		      weight24CC[2] = weight24;
+		      weight34CC[2] = weight34;
 		      
+
+
 		      if(weight14CC[2] < 0 || weight24CC[2] < 0 || weight34CC[2] < 0) {// C2^QS can never be less than unity
 			if(fMbin==0 && bin1==0 && EDindex4==0) {
 			  ((TH1D*)fOutputList->FindObject("fTPNRejects4pion1"))->Fill(q4, sqrt(fabs(weight12CC[2]*weight23CC[2]*weight34CC[2]*weight14CC[2])));
