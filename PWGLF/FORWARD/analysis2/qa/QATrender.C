@@ -682,14 +682,7 @@ public:
     doc.close();
     gSystem->Exec(Form("chmod g+rw %s", OutputName()));
   }
-  /** 
-   * Process a single file 
-   * 
-   * @param filename File to open. 
-   * 
-   * @return true on success 
-   */
-  Bool_t ProcessOne(const char* filename)
+  Bool_t GetInputLists(const char* filename)
   {
     if (fCurrentFile) { 
       fCurrentFile->Close();
@@ -706,6 +699,37 @@ public:
       // Error("ProcessOne", "Failed to get lists from %s", filename);
       return false;
     }
+    return true;
+  }
+  /** 
+   * Process a single file 
+   * 
+   * @param filename File to open. 
+   * 
+   * @return true on success 
+   */
+  Bool_t ProcessOne(const char* filename)
+  {
+    const char* subs[] = { "",
+			   "trending.root",
+			   "trending_barrel.root",
+			   0 };
+    const char** psub = subs;
+    Bool_t ret = false;
+    while (*psub) {
+      TString fn(filename);
+      if ((*psub)[0] != '\0') {
+	Int_t hash = fn.Index("#");
+	if (hash != kNPOS) 
+	  fn.Replace(idx+1,s.Length()-idx-1,*psub);
+	else 
+	  fn = gSystem->ConcateFileName(gSystem->DirName(filename),
+					*psub);
+      }
+      ret = GetInputLists(fn);
+      if (ret) break;
+    }
+    if (!ret) return false;
     
     if (!ProcessGlobal()) { 
       Error("ProcessOne", "Failed to get global stuff from %s", filename);
