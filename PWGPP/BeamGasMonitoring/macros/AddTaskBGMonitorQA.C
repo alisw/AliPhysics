@@ -9,7 +9,15 @@ AliAnalysisBGMonitorQA *AddTaskBGMonitorQA(Bool_t UseTree = kFALSE)
     ::Error("AddTaskMBVeto", "No analysis manager to connect to.");
     return NULL;
   }   
-  
+
+    // Input handlers
+    AliESDInputHandler* esdH = new AliESDInputHandler();
+    
+    esdH->SetReadFriends(kTRUE);
+    mgr->SetInputEventHandler(esdH);
+
+    
+    
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTaskMBVeto", "This task requires an input event handler");
     return NULL;
