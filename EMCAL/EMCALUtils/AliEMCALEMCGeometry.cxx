@@ -344,59 +344,69 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
     }
     CheckAdditionalOptions();	
   }
-  if(fEMCSMSystem)delete[] fEMCSMSystem;
+  
+  //
+  // Init EMCal/DCal SMs type array
+  if(fEMCSMSystem) delete[] fEMCSMSystem;
+  
   fEMCSMSystem = new Int_t[fNumberOfSuperModules];
+  
   for(Int_t i=0;i<fNumberOfSuperModules;i++)
     fEMCSMSystem[i]=kNotExistent;
   
-   Int_t iSM = 0;
-
- // BASIC EMCAL SM
-   if(fGeoName.Contains("WSUC") ){
-     for(int i = 0; i<2; i++){
-       fEMCSMSystem[iSM] = kEMCAL_Standard;
-       iSM++;
-     }
-   } else if(fGeoName.Contains("FIRSTYEAR") ){
-     for(int i = 0; i<4; i++){
-       fEMCSMSystem[iSM] = kEMCAL_Standard;
-       iSM++;
-     }
-   } else if( fGeoName.Contains("PDC06")
-           || fGeoName.Contains("COMPLETE") ){
-     for(int i = 0; i<10; i++){
-       fEMCSMSystem[iSM] = kEMCAL_Standard;
-       iSM++;
-     }
-   }
- // EMCAL 110SM
-   if(fKey110DEG && fGeoName.Contains("12SM") ){
-     for(int i = 0; i<2; i++){
-       fEMCSMSystem[iSM] = kEMCAL_Half;
-       if(fGeoName.Contains("12SMV1") ){
-         fEMCSMSystem[iSM] = kEMCAL_3rd;
-       }
-       iSM++;
-     }
-   }
- // DCAL SM
-   if(fnSupModInDCAL && fGeoName.Contains("DCAL")){
-     if(fGeoName.Contains("8SM")) {
-       for(int i = 0; i<fnSupModInDCAL-2; i++){
-         fEMCSMSystem[iSM] = kDCAL_Standard;
-         iSM++;
-       }
-       for(int i = 0; i<2; i++){
-         fEMCSMSystem[iSM] = kDCAL_Ext;
-         iSM++;
-       }
-     } else {
-       for(int i = 0; i<fnSupModInDCAL; i++){
-         fEMCSMSystem[iSM] = kDCAL_Standard;
-         iSM++;
-       }
-     }
-   }
+  Int_t iSM = 0;
+  
+  //
+  // BASIC EMCAL SM
+  if(fGeoName.Contains("WSUC") ){
+    for(int i = 0; i<2; i++){
+      fEMCSMSystem[iSM] = kEMCAL_Standard;
+      iSM++;
+    }
+  } else if(fGeoName.Contains("FIRSTYEAR") ){
+    for(int i = 0; i<4; i++){
+      fEMCSMSystem[iSM] = kEMCAL_Standard;
+      iSM++;
+    }
+  } else if( fGeoName.Contains("PDC06")
+            || fGeoName.Contains("COMPLETE") ){
+    for(int i = 0; i<10; i++){
+      fEMCSMSystem[iSM] = kEMCAL_Standard;
+      iSM++;
+    }
+  }
+  
+  //
+  // EMCAL 110SM
+  if(fKey110DEG && fGeoName.Contains("12SM") ){
+    for(int i = 0; i<2; i++){
+      fEMCSMSystem[iSM] = kEMCAL_Half;
+      if(fGeoName.Contains("12SMV1") ){
+        fEMCSMSystem[iSM] = kEMCAL_3rd;
+      }
+      iSM++;
+    }
+  }
+  
+  //
+  // DCAL SM
+  if(fnSupModInDCAL && fGeoName.Contains("DCAL")){
+    if(fGeoName.Contains("8SM")) {
+      for(int i = 0; i<fnSupModInDCAL-2; i++){
+        fEMCSMSystem[iSM] = kDCAL_Standard;
+        iSM++;
+      }
+      for(int i = 0; i<2; i++){
+        fEMCSMSystem[iSM] = kDCAL_Ext;
+        iSM++;
+      }
+    } else {
+      for(int i = 0; i<fnSupModInDCAL; i++){
+        fEMCSMSystem[iSM] = kDCAL_Standard;
+        iSM++;
+      }
+    }
+  }
 
   // constant for transition absid <--> indexes
   fNCellsInModule = fNPHIdiv*fNETAdiv;
