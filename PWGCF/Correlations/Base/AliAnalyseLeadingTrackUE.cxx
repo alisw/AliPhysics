@@ -168,6 +168,43 @@ void AliAnalyseLeadingTrackUE::DefineESDCuts(Int_t filterbit) {
     fEsdTrackCutsExtra2->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
     // A track passing fEsdTrackCuts and fEsdTrackCutsExtra2 corresponds to esdTrackCutsHTGC and needs to be constrained
   }
+  else if (filterbit == 2049) // mimic hybrid tracks for LHC11a p4 AOD113
+  {
+    // from http://svn.cern.ch/guest/AliRoot/tags/v5-02-Rev-20/ANALYSIS/macros/AddTaskESDFilter.C
+    
+    fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts"); 
+
+    TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
+    fEsdTrackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
+    fEsdTrackCuts->SetMinNClustersTPC(70);
+    fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
+    fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+    fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+    fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    // ITS
+    // moved down! fEsdTrackCuts->SetRequireITSRefit(kTRUE);
+    fEsdTrackCuts->SetRequireITSRefit(kFALSE);
+    //accept secondaries
+    fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
+    fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
+    fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+    //reject fakes
+    fEsdTrackCuts->SetMaxChi2PerClusterITS(36);
+    fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+
+    fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+
+    // Add SPD requirement 
+    fEsdTrackCutsExtra1 = new AliESDtrackCuts("SPD", "Require 1 cluster in SPD");
+    fEsdTrackCutsExtra1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    fEsdTrackCutsExtra1->SetRequireITSRefit(kTRUE);
+    // A track passing fEsdTrackCuts and fEsdTrackCutsExtra1 corresponds to esdTrackCutsHG0 (bit 16)
+
+    fEsdTrackCutsExtra2 = new AliESDtrackCuts("No_ITS", "No ITS refit");
+    // already implicit above: fEsdTrackCutsExtra2->SetRequireITSRefit(kFALSE);
+    // A track passing fEsdTrackCuts and fEsdTrackCutsExtra2 corresponds to esdTrackCutsGCOnly and needs to be constrained (bit 256)
+  }  
   else if (filterbit == 4096) // require TOF matching
   {
     fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);

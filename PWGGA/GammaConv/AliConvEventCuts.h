@@ -43,6 +43,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 			kSelectSubTriggerClass,             
 			kremovePileUp,                
 			kExtraSignals, 
+			kVertex,
 			kNCuts
 		};
 
@@ -79,9 +80,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		SetSelectSpecialTrigger (Int_t selectSpecialTrigger);
 		Bool_t 		SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
 		Bool_t 		SetRejectExtraSignalsCut (Int_t extraSignal);
+		Bool_t		SetVertexCut(Int_t vertexCut);
 		void		SetTriggerMimicking(Bool_t value) 					{ fMimicTrigger = value									; 
-																		  AliInfo("enabled trigger mimicking");
-		}
+																		  if(value)AliInfo("enabled trigger mimicking")					; }
+		void 		SetTriggerOverlapRejecion (Bool_t value)			{ fRejectTriggerOverlap = value							; 
+																		  if(value)AliInfo("enabled trigger overlap rejection")			; }
+
 		void 		SetV0ReaderName (TString name) 						{ fV0ReaderName = name									; }
 		void 		SetAddedSignalPDGCode (Int_t addedSignalPDGcode) 	{ fAddedSignalPDGCode = addedSignalPDGcode				; }
 		void 		SetPreSelectionCutFlag (Bool_t preSelFlag)			{ fPreSelCut = preSelFlag								; }   
@@ -127,6 +131,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
 																		  fNameFitDataPi0 =fitNamePi0							;
 																		  fNameFitDataEta =fitNameEta							;
 																		  fNameFitDataK0s =fitNameK0s							; }
+		void 		SetMaxFacPtHard(Float_t value)						{ fMaxFacPtHard = value									; 
+																		  AliInfo(Form("maximum factor between pt hard and jet put to: %2.2f",fMaxFacPtHard));
+																																  }  
 		
 		// Geters
 		TString 	GetCutNumber();
@@ -202,6 +209,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
 		Bool_t 		VertexZCut(AliVEvent *fInputEvent);
 		Bool_t		IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
+		Float_t 	GetPtHard(AliVEvent *MCEvent);
+		Float_t 	GetMaxPtJet() 											{ return fMaxPtJetMC									; }
 		Bool_t 		MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC );
 		Bool_t 		IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC);
 		Bool_t 		HasV0AND()												{ return fHasV0AND										; }
@@ -228,6 +237,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Int_t 						fIsHeavyIon;							// flag for heavy ion
 		Int_t 						fDetectorCentrality;					// centrality detecotor V0M or CL1
 		Int_t 						fModCentralityClass;					// allows to select smaller centrality classes
+		Bool_t 						fEnableVertexCut;						// enable vertex cut
 		Double_t 					fMaxVertexZ;							// max z offset of vertex
 		Int_t 						fCentralityMin;							// centrality selection lower bin value
 		Int_t 						fCentralityMax;							// centrality selection upper bin value
@@ -265,10 +275,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TH1F 						*fHistoEventCuts;						// bookkeeping for event selection cuts
 		TH1F 						*hCentrality;							// centrality distribution for selected events
 		TH1D						*hCentralityNotFlat;					// centrality distribution loaded for cent. flattening
-		TH2F 						*hCentralityVsNumberOfPrimaryTracks;	// centrality distribution for selected events
+		//TH2F 						*hCentralityVsNumberOfPrimaryTracks;	// centrality distribution for selected events
 		TH1F 						*hVertexZ; 								// vertex z distribution for selected events
 		TH1F 						*hTriggerClass; 						// fired offline trigger class
 		TH1F 						*hTriggerClassSelected;					// selected fired offline trigger class
+		TH1F 						*hTriggerClassesCorrelated;				// selected trigger class correlation with others
 		TH1D 						*hReweightMCHistPi0;					// histogram input for reweighting Pi0
 		TH1D 						*hReweightMCHistEta; 					// histogram input for reweighting Eta
 		TH1D 						*hReweightMCHistK0s; 					// histogram input for reweighting K0s
@@ -281,6 +292,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		TString 					fSpecialTriggerName; 					// Name of the Special Triggers
 		TString 					fSpecialSubTriggerName; 				// Name of the Special Triggers
 		Int_t 						fNSpecialSubTriggerOptions;
+		TH2F						*hSPDClusterTrackletBackground;			// SPD tracklets vs SPD clusters for background-correction
 		// trigger information
 		TString 					fV0ReaderName;							// Name of V0Reader
 		AliVCaloTrigger				*fCaloTriggers;							//! calo triggers
@@ -293,12 +305,13 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t						fEMCALTrigInitialized;					// EMCAL triggers initialized
 		// Primary secondary distinction
 		Double_t					fSecProdBoundary;						// 3D radius of production (cm) for primary-secodary distinction
-		Int_t						fBinJetJetMC;							//
+		Float_t						fMaxPtJetMC;							// maximum jet pt in event
+		Float_t						fMaxFacPtHard;							// maximum factor between maximum jet pt and pt hard generated
 		Bool_t						fMimicTrigger; 							// enable trigger mimiking
-		
+		Bool_t						fRejectTriggerOverlap;					// enable trigger overlap rejections
 	private:
 
-		ClassDef(AliConvEventCuts,8)
+		ClassDef(AliConvEventCuts,14)
 };
 
 

@@ -1,5 +1,6 @@
-AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const char *containerName = "EPCorrAA_TPCOnly_150619", const char* folderName = "PWGCF_EPCorrelation" )
+AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, Int_t filterbit = 768, const char *containerName = "EPCorrAA_TPCOnly_150619", const char* folderName = "PWGCF_EPCorrelation" )
 {
+
 
     // Get a pointer to the analysis manager.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -36,7 +37,8 @@ AliAnalysisTaskEPCorrAA* AddTaskEPCorrAA( const char* outputFileName = 0, const 
 //    AliAnalysisTaskSE* EPCorrAATask = new AliAnalysisTaskEPCorrAA(containerName);
 //    EPCorrAATask->SelectCollisionCandidates(AliVEvent::kMB); // if physics selection performed in UserExec(), this line should be commented
 
-    // Add the task.
+    // Add the task
+    EPCorrAATask->SetFilterBit(filterbit);
     mgr->AddTask(EPCorrAATask);
 
     // Data containers.

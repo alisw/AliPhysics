@@ -156,31 +156,35 @@ namespace {
 }
 
 //_____________________________________________________________________________
-AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(Int_t runNumber, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("UB")
+AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(Int_t runNumber, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("nb")
 {
   // ctor using a single run number
   SetRunList(runNumber);
+  SetOCDBPath(ocdbPath);
 }
 
 //_____________________________________________________________________________
-AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(const std::vector<int>& runs, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("UB")
+AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(const std::vector<int>& runs, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("nb")
 {
   // ctor using a vector of run numbers
   SetRunList(runs);
+  SetOCDBPath(ocdbPath);
 }
 
 //_____________________________________________________________________________
-AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(const std::set<int>& runs, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("UB")
+AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(const std::set<int>& runs, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("nb")
 {
   // ctor using a set of run numbers
   SetRunList(runs);
+  SetOCDBPath(ocdbPath);
 }
 
 //_____________________________________________________________________________
-AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(const char* runlist, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("UB")
+AliAnalysisTriggerScalers::AliAnalysisTriggerScalers(const char* runlist, const char* ocdbPath) : fRunList(), fOCDBPath(ocdbPath), fShouldCorrectForPileUp(kTRUE), fCrossSectionUnit("nb")
 {
   // ctor from a run list (txt file)
   SetRunList(runlist);
+  SetOCDBPath(ocdbPath);
 }
 
 //_____________________________________________________________________________
@@ -348,14 +352,38 @@ TObject* AliAnalysisTriggerScalers::GetOCDBObject(const char* path, Int_t runNum
   {
     AliInfo(Form("Setting OCDB default storage to %s",fOCDBPath.Data()));
     AliCDBManager::Instance()->SetDefaultStorage(fOCDBPath.Data());
+    if ( !fOCDBPath.BeginsWith("local") )
+    {
+      AliCDBManager::Instance()->SetRun(fRunList[0]);
+    }
   }
   
-  AliCDBManager::Instance()->SetRun(runNumber);
+  static int run(-1);
+  
+  static std::map<std::string,TObject*> cache;
+  
+  if ( run != runNumber )
+  {
+    cache.clear();
+    run = runNumber;
+  }
+  
+  std::map<std::string,TObject*>::const_iterator it = cache.find(path);
+  
+  if ( it != cache.end() )
+  {
+    return it->second;
+  }
   
   gErrorIgnoreLevel=kWarning; // to avoid all the TAlienFile::Open messages...
   
-  AliCDBEntry* e = AliCDBManager::Instance()->Get(path);
-  return e ? e->GetObject() : 0x0;
+  AliCDBEntry* e = AliCDBManager::Instance()->Get(path,runNumber);
+  
+  TObject* o = e ? e->GetObject() : 0x0;
+  
+  cache[std::string(path)] = o;
+  
+  return o;
 }
 
 
@@ -379,7 +407,7 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
                                                                Double_t& lumiTriggerCrossSectionError) const
 {
   /// For one given run, get the trigger class name to be used as the luminometer,
-  /// and its corresponding cross-section
+  /// and its corresponding cross-section (in mb)
   ///
   /// FIXME: all is hard-coded for now... (use OADB for this ?)
   
@@ -399,7 +427,7 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
      {
        // pp 8 TeV main-satellites
        lumiTriggerClassName = "C0TVX-S-NOPF-ALLNOTRD";
-       lumiTriggerCrossSection = 28.0; // FIXME: not from a vdM yet       
+       lumiTriggerCrossSection = 24.9547; // mb
      }
     else
     {
@@ -421,30 +449,22 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
       lumiTriggerCrossSection = 0.755*2000; // FIXME: not from a vdM yet
     }
   }
+  else if ( period.BeginsWith("LHC15") )
+  {
+    lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+    lumiTriggerCrossSection = 39.0; // FIXME: not from a vdM yet
+    if ( runNumber >= 229398 && ( runNumber != 229409 ) && ( runNumber != 229410 ))
+    {
+      lumiTriggerClassName = "C0TVX-B-NOPF-MUON";
+    }
+  }
   else
   {
-    AliError("Not implemented yet");
+    AliError("Period not implemented yet");
   }
   
-  float csMult(1.0);
+  float csMult = Millibarn2CrossSectionUnit();
   
-  if ( fCrossSectionUnit=="PB" )
-  {
-    csMult=1E9;
-  }
-  else if (fCrossSectionUnit=="NB")
-  {
-    csMult=1E6;
-  }
-  else if ( fCrossSectionUnit=="UB" )
-  {
-    csMult=1E3;
-  }
-  else if ( fCrossSectionUnit=="MB" )
-  {
-    csMult=1.0;
-  }
-
   lumiTriggerCrossSection *= csMult;
   lumiTriggerCrossSectionError *= csMult;
 }
@@ -680,10 +700,6 @@ AliAnalysisTriggerScalers::GetTriggerScaler(Int_t runNumber, const char* level, 
   
   Int_t index = GetIndex(triggerClass->GetMask(),triggerClass->GetMaskNext50());
   
-  triggerClass->Print("");
-  
-  std::cout << "Index=" << index << std::endl;
-  
   ULong64_t value(0);
   
   const AliTriggerScalers* sbegin = begin->GetTriggerScalersForClass(index);
@@ -716,6 +732,7 @@ AliAnalysisTriggerScalers::GetTriggerScaler(Int_t runNumber, const char* level, 
   {
     value = send->GetL2CB() - sbegin->GetL2CB();
   }
+
   Int_t ds(1);
   
   // FIXME: get the downscaling factor here for all cases (only BC1 supported here so far)
@@ -953,25 +970,10 @@ AliAnalysisTriggerScalers::IntegratedLuminosityGraph(Int_t runNumber, const char
 
 //______________________________________________________________________________
 void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
-                                                     const char* lumiTrigger,
-                                                     Double_t lumiCrossSection,
                                                      const char* csvOutputFile,
-                                                     const char sep,
-                                                     const char* csUnit)
+                                                     const char sep)
 {
   // Compute the luminosity for a set of triggers
-  
-  // for T0 based lumi (end of pp 2012), use lumiTrigger = C0TVX-S-NOPF-ALLNOTRD and lumiCrossSection = 24.9547 mb (and csUnit="nb")
-  //
-  // for T0 based lumi (pPb 2013), use lumiTrigger = C0TVX-B-NOPF-ALLNOTRD
-  // and lumiCrossSection = 0.755*2000 mb (and csUnit="mub")
-  //
-  // for T0 based lumi (pp 2.76 TeV 2013), use lumiTrigger = C0TVX-B-NOPF-ALLNOTRD
-  // and lumiCrossSection = 18 mb (and csUnit="nb")
-  //
-  // for T0 based lumi (pp 2013), use lumiTrigger=C0TVX-B-NOPF-ALLNOTRD and lumiCrossSection = 39 mb (estimate so far)
-  //
-  //
   
   double intLumi(0);
   
@@ -981,32 +983,7 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
   std::map<std::string,time_t> durationPerTrigger;
   
   TString sTriggerList(triggerList);
-  
-  if ( sTriggerList.Length()==0 )
-  {
-    if ( lumiCrossSection>=39 && strcmp(csUnit,"nb")==0)
-    {
-      // assuming pp 13 TeV
-      sTriggerList = "C0MSL-B-NOPF-ALLNOTRD,C0MSL-B-NOPF-MUON,C0MUL-B-NOPF-MUON";
-    }
-    else if ( lumiCrossSection < 30 && lumiCrossSection  > 20 )
-    {
-      // assuming it's pp 2012
-      sTriggerList = "CMUL8-S-NOPF-ALLNOTRD,CMUL7-S-NOPF-ALLNOTRD,CMUL8-S-NOPF-MUON,CMUL7-S-NOPF-MUON";
     
-    // for C0MUL-SC-NOPF-MUON must use C0TVX-SC as lumiTrigger (with same cross-section as C0TVX=28mb)
-    }
-    else if ( lumiCrossSection < 30 )
-    {
-      // assuming it's pp 2013
-      sTriggerList = "CMSL7-B-NOPF-MUON,CMSH7-B-NOPF-MUON,CMUL7-B-NOPF-MUON,CMSL7-B-NOPF-ALLNOTRD,CMSH7-B-NOPF-ALLNOTRD,CMUL7-B-NOPF-ALLNOTRD";
-    }
-    else
-    {
-      sTriggerList = "CMSL7-B-NOPF-MUON,CMSH7-B-NOPF-MUON,CMUL7-B-NOPF-MUON,CMSL7-B-NOPF-ALLNOTRD,CMSH7-B-NOPF-ALLNOTRD,CMUL7-B-NOPF-ALLNOTRD";
-    }
-  }
-  
   TObjArray* triggerArray = sTriggerList.Tokenize(",");
   triggerArray->SetOwner(kTRUE);
 
@@ -1050,8 +1027,8 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
       (*out) << "recorded " <<  it->first.c_str() << " (integrated)" << sep;
     }
 
-    (*out) << Form("LHC delivered (%s^-1) per fill ",csUnit)
-      << sep << Form("LHC delivered (%s^-1 integrated)",csUnit) << sep;
+    (*out) << Form("LHC delivered (%s^-1) per fill ",fCrossSectionUnit.Data())
+      << sep << Form("LHC delivered (%s^-1 integrated)",fCrossSectionUnit.Data()) << sep;
     (*out) << "lumi tot muon" << sep << "eff (%)" << sep;
     (*out) << std::endl;
     
@@ -1061,36 +1038,16 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
   Int_t currentFillNumber(-1);
   Int_t fillNumber(0);
   
-  float csMult(1.0);
-  TString scsUnit(csUnit);
-  scsUnit.ToUpper();
-  
-  if ( scsUnit=="PB" )
-  {
-    csMult=1E9;
-  }
-  else if (scsUnit=="NB")
-  {
-    csMult=1E6;
-  }
-  else if ( scsUnit=="UB" )
-  {
-    csMult=1E3;
-  }
-  else if ( scsUnit=="MB" )
-  {
-    csMult=1.0;
-  }
-  else
-  {
-    AliError(Form("Don't know how to deal with cross-section unit=%s",csUnit));
-    return;
-  }
-  
-
   for ( std::vector<int>::size_type i = 0; i < fRunList.size(); ++i )
   {
     Int_t runNumber = fRunList[i];
+    
+    TString lumiTriggerClassName;
+    Double_t lumiTriggerCrossSection(0.0);
+    Double_t lumiTriggerCrossSectionError(0.0);
+    
+    GetLuminosityTriggerAndCrossSection(runNumber,lumiTriggerClassName,lumiTriggerCrossSection,lumiTriggerCrossSectionError);
+
     Bool_t atLeastOneTriggerFound(kFALSE);
     
     // find out which trigger classes to use
@@ -1127,8 +1084,8 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
 
     nextTrigger.Reset();
 
-    TString lumiTriggerClassName(lumiTrigger);
-    float lumiSigma = lumiCrossSection*csMult; //in csUnit
+    float lumiSigma = lumiTriggerCrossSection;
+
     AliAnalysisTriggerScalerItem* lumiB = GetTriggerScaler(runNumber,"L0B",lumiTriggerClassName.Data());
 
     if (!lumiB)
@@ -1207,13 +1164,13 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
     }
   }
   
-  AliInfo(Form("Integrated lumi %7.4f %s^-1",intLumi,csUnit));
+  AliInfo(Form("Integrated lumi %7.4f %s^-1",intLumi,fCrossSectionUnit.Data()));
   
   std::map<std::string,float>::const_iterator it;
   
   for ( it = lumiPerTrigger.begin(); it != lumiPerTrigger.end(); ++it )
   {
-    AliInfo(Form("Trigger %30s Lumi %10.4f %s^-1 duration %10ld s",it->first.c_str(),it->second,csUnit,durationPerTrigger[it->first]));
+    AliInfo(Form("Trigger %30s Lumi %10.4f %s^-1 duration %10ld s",it->first.c_str(),it->second,fCrossSectionUnit.Data(),durationPerTrigger[it->first]));
   }
   
   if (out)
@@ -1286,6 +1243,36 @@ TGraph* AliAnalysisTriggerScalers::MakeGraph(const std::vector<int>& vx,
   
   return g;
 }
+
+//______________________________________________________________________________
+Double_t AliAnalysisTriggerScalers::Millibarn2CrossSectionUnit() const
+{
+  /// Conversion factor to go from millibarn to the required x-section unit
+  
+  Double_t csMult = 1.0;
+  
+  if ( fCrossSectionUnit=="pb" )
+  {
+    csMult=1E9;
+  }
+  else if (fCrossSectionUnit=="nb")
+  {
+    csMult=1E6;
+  }
+  else if ( fCrossSectionUnit=="ub" )
+  {
+    csMult=1E3;
+  }
+  else if ( fCrossSectionUnit=="mb" )
+  {
+    csMult=1.0;
+  }
+  else {
+    AliError(Form("Don't know how to go from mb to %s : will use 1.0",fCrossSectionUnit.Data()));
+  }
+  return csMult;
+}
+
 
 //______________________________________________________________________________
 Double_t AliAnalysisTriggerScalers::Mu(Double_t L0B, Double_t Nb)
@@ -1372,7 +1359,8 @@ Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lh
 
 //______________________________________________________________________________
 TGraph* AliAnalysisTriggerScalers::PlotTrigger(const char* triggerClassName,
-                                               const char* what)
+                                               const char* what,
+                                               Bool_t draw)
 {
   // Plot one of the scalers (L0A,L0B,L0AOVERB,etc...) of a given triggerClass
   // Get one value per run.
@@ -1383,26 +1371,118 @@ TGraph* AliAnalysisTriggerScalers::PlotTrigger(const char* triggerClassName,
   double integral(0);
   double mean(0);
   
+  TString swhat(what);
+  swhat.ToUpper();
+  
   for ( std::vector<int>::size_type i = 0; i < fRunList.size(); ++i )
   {
     Int_t runNumber = fRunList[i];
+    Double_t value(0.0);
     
-    AliAnalysisTriggerScalerItem* s = GetTriggerScaler(runNumber,what,triggerClassName);
-    
-    if (!s) continue;
-    
-    x.push_back(runNumber);
-
-    Double_t value = s->ValueCorrectedForDownscale();
-    
-    if ( TString(what).Contains("RATE") )
+    if ( swhat=="L0AOVERB")
     {
-      value = s->Rate();
+      AliAnalysisTriggerScalerItem* a = GetTriggerScaler(runNumber,"L0A",triggerClassName);
+
+      if (!a)
+      {
+        AliWarning(Form("Could not get L0A for trigger %s for run %d",triggerClassName,runNumber));
+        continue;
+      }
+
+      AliAnalysisTriggerScalerItem* b = GetTriggerScaler(runNumber,"L0B",triggerClassName);
+
+      if (!b)
+      {
+        AliWarning(Form("Could not get L0B for trigger %s for run %d",triggerClassName,runNumber));
+        continue;
+      }
+      
+      value = a->ValueCorrectedForDownscale() / b->ValueCorrectedForDownscale();
     }
-  
+    else if( swhat == "MU" )
+    {
+      AliAnalysisTriggerScalerItem* b = GetTriggerScaler(runNumber,"L0B",triggerClassName);
+
+      if (!b)
+      {
+        AliWarning(Form("Could not get L0B for trigger %s for run %d",triggerClassName,runNumber));
+        continue;
+      }
+      
+      Bool_t mainSat = IsMainSatelliteCollision(triggerClassName);
+      
+      AliLHCData* lhc = static_cast<AliLHCData*>(GetOCDBObject("GRP/GRP/LHCData",runNumber));
+
+      Int_t numberOfInteractingBunches = NumberOfInteractingBunches(*lhc,runNumber,mainSat);
+
+      value = Mu(b->ValueCorrectedForDownscale()/b->Duration(),numberOfInteractingBunches);
+    }
+    else if( swhat == "PILEUPFACTOR" )
+    {
+      AliAnalysisTriggerScalerItem* b = GetTriggerScaler(runNumber,"L0B",triggerClassName);
+      
+      if (!b)
+      {
+        AliWarning(Form("Could not get L0B for trigger %s for run %d",triggerClassName,runNumber));
+        continue;
+      }
+      
+      Bool_t mainSat = IsMainSatelliteCollision(triggerClassName);
+      
+      AliLHCData* lhc = static_cast<AliLHCData*>(GetOCDBObject("GRP/GRP/LHCData",runNumber));
+      
+      Int_t numberOfInteractingBunches = NumberOfInteractingBunches(*lhc,runNumber,mainSat);
+      
+      double mu = Mu(b->ValueCorrectedForDownscale()/b->Duration(),numberOfInteractingBunches);
+      
+      value = mu / (1.0-TMath::Exp(-mu));
+    }
+    else if ( swhat =="NBCX" )
+    {
+      Bool_t mainSat = IsMainSatelliteCollision(triggerClassName);
+    
+      AliLHCData* lhc = static_cast<AliLHCData*>(GetOCDBObject("GRP/GRP/LHCData",runNumber));
+    
+      value = NumberOfInteractingBunches(*lhc,runNumber,mainSat);
+    }
+    
+    else if ( swhat.Contains("VSNB") )
+    {
+      AliAnalysisTriggerScalerItem* b = GetTriggerScaler(runNumber,"L0B",triggerClassName);
+      
+      if (!b)
+      {
+        AliWarning(Form("Could not get L0B for trigger %s for run %d",triggerClassName,runNumber));
+        continue;
+      }
+
+      Bool_t mainSat = IsMainSatelliteCollision(triggerClassName);
+      
+      AliLHCData* lhc = static_cast<AliLHCData*>(GetOCDBObject("GRP/GRP/LHCData",runNumber));
+      
+      int nbcx = NumberOfInteractingBunches(*lhc,runNumber,mainSat);
+
+      value = b->ValueCorrectedForDownscale()/b->Duration()/(11245.0*nbcx);
+    }
+
+    else
+    {
+      AliAnalysisTriggerScalerItem* s = GetTriggerScaler(runNumber,what,triggerClassName);
+    
+      if (!s) continue;
+      
+      value = s->ValueCorrectedForDownscale();
+
+      if ( swhat.Contains("RATE") )
+      {
+        value = s->Rate();
+      }
+    }
+    
     integral += value;
     mean += value;
     
+    x.push_back(runNumber);
     y.push_back(value);
   }
   
@@ -1412,7 +1492,26 @@ TGraph* AliAnalysisTriggerScalers::PlotTrigger(const char* triggerClassName,
   
   AliInfo(Form("Integral %e mean %e",integral,mean));
   
-  return new TGraph(x.size(),&x[0],&y[0]);
+  TGraph* g = new TGraph(x.size(),&x[0],&y[0]);
+  TString title(Form("%s-%s",triggerClassName,swhat.Data()));
+  
+  g->SetName(title.Data());
+  g->SetTitle(title.Data());
+  g->GetYaxis()->SetTitle(title.Data());
+  g->GetXaxis()->SetNoExponent();
+  g->GetYaxis()->SetTitleOffset(1.5);
+
+  if ( draw )
+  {
+      TCanvas* c = NewCanvas(g->GetName());
+      g->SetLineColor(1);
+      g->SetMarkerColor(1);
+      g->SetMarkerStyle(21);
+      g->Draw("ALP");
+      c->SaveAs(Form("%s.png",title.Data()));
+  }
+
+  return g;
 }
 
 //______________________________________________________________________________
@@ -1626,7 +1725,6 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         }
         else if ( swhat.Contains("MU") )
         {
-          AliInfo(Form("run %d seconds %d L0b %d NB %d",runNumber,timelapse,l0b,numberOfInteractingBunches));
           if (timelapse==0) continue;
           value = Mu(l0b/timelapse,numberOfInteractingBunches);
           error = 0.0; // FIXME
@@ -1928,6 +2026,50 @@ void AliAnalysisTriggerScalers::ReadIntegers(const char* filename,
   std::sort(integers.begin(),integers.end());
 }
 
+
+//______________________________________________________________________________
+void AliAnalysisTriggerScalers::SetCrossSectionUnit(const char* unit)
+{
+  fCrossSectionUnit=unit;
+  fCrossSectionUnit.ToLower();
+}
+
+//______________________________________________________________________________
+void AliAnalysisTriggerScalers::SetOCDBPath(const char* path)
+{
+  /// Set the OCDB path
+  /// if path=="" then use cvmfs (for the current year) if available or
+  /// raw:// otherwise
+  
+//  int GetPathInfo(const char* path, Long_t* id, Long64_t* size, Long_t* flags, Long_t* modtime)
+
+  TString spath(path);
+
+  if ( strlen(path)==0 )
+  {
+    TDatime now;
+    
+    Long_t id;
+    Long64_t size;
+    Long_t flags;
+    Long_t modtime;
+  
+    spath.Form("/cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB",now.GetYear());
+    
+    if ( gSystem->GetPathInfo(spath.Data(),&id,&size,&flags,&modtime) == 0 )
+    {
+      if ( flags == 3 )
+      {
+        // all looks fine for a cvmfs OCDB. We're done
+        fOCDBPath = "local://";
+        fOCDBPath += spath;
+        return;
+      }
+    }
+  }
+  
+  fOCDBPath = "raw://";
+}
 
 //______________________________________________________________________________
 void AliAnalysisTriggerScalers::SetRunList(Int_t runNumber)

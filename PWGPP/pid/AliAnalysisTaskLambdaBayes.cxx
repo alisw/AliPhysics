@@ -748,8 +748,8 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
     }
     
     if(tofMatch1){
-      nSigmaComb = TMath::Sqrt(nSigmaTOF*nSigmaTOF + nSigmaTPC*nSigmaTPC);
-      nSigmaCombRef = TMath::Sqrt(nSigmaTOFRef*nSigmaTOFRef + nSigmaTPCRef*nSigmaTPCRef);
+      nSigmaComb = TMath::Sqrt(0.5*(nSigmaTOF*nSigmaTOF + nSigmaTPC*nSigmaTPC));
+      nSigmaCombRef = TMath::Sqrt(0.5*(nSigmaTOFRef*nSigmaTOFRef + nSigmaTPCRef*nSigmaTPCRef));
       if(nSigmaTOF < 5 && fCentrality < 20 && KpTrack->Pt() < 1.3 && KpTrack->Pt() > 1.2){
 	fCombsignal->Fill(nSigmaComb);
       }
@@ -868,7 +868,7 @@ void AliAnalysisTaskLambdaBayes::Analyze(AliAODEvent* aodEvent)
       fPhiLambdaC = ksV.Phi();
 
       if(tofMatch2){
-	nSigmaComb2 = TMath::Sqrt(nSigmaTOF2*nSigmaTOF2+ nSigmaTPC2*nSigmaTPC2);
+	nSigmaComb2 = TMath::Sqrt(0.5*(nSigmaTOF2*nSigmaTOF2+ nSigmaTPC2*nSigmaTPC2));
       } else {
 	nSigmaComb2 = TMath::Abs(nSigmaTPC2);
       }

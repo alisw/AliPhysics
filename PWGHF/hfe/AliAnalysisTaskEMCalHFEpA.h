@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: May 18, 2015.								      //
+	//		version: August 07, 2015.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -43,6 +43,7 @@ class AliCaloTrackReader;
 class AliEMCALRecoUtils;
 class AliAODReader;
 class AliCalorimeterUtils;
+class AliAnalysisUtils;
 
 	// --- ROOT system ---
 #include <TObject.h> 
@@ -115,6 +116,14 @@ public:
 	void SetUseTrigger() { fUseTrigger=kTRUE;};
 	void SetUseTender() { fUseTender=kTRUE;};
 	void SetUseShowerShapeCut(Bool_t UseShowerShapeCut=kFALSE) { fUseShowerShapeCut=UseShowerShapeCut;};
+	
+	//TPC calibration for 13d period
+	void SetTPCCalibration() {fCalibrateTPC=kTRUE;};
+	void SetTPC_mean_sigma(Double_t CalibrateTPC_mean,Double_t CalibrateTPC_sigma ) { fCalibrateTPC_mean = CalibrateTPC_mean; fCalibrateTPC_sigma = CalibrateTPC_sigma; };
+	void SetTPCcal_cut_min(Double_t TPCmin) { fTPCcal_CutMin = TPCmin; };
+	void SetTPCcal_cut_max(Double_t TPCmax ) {fTPCcal_CutMax = TPCmax; };
+
+
 	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};
 	void SetEoverPnsigma(Bool_t EoverPnsigma=kFALSE) { fEoverPnsigma=EoverPnsigma;};
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
@@ -141,7 +150,7 @@ private:
 		//Function to process eh analysis
 	void ElectronHadronCorrelation(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack);
 		//Function to find non-HFE and fill histos
-	void Background(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack, Bool_t IsTPConly);
+	void Background(AliVTrack *track, Int_t trackIndex, AliVParticle *vtrack, Bool_t IsTPConly, Bool_t IsWeight,Bool_t MassPtBins);
 		//Selected Hadrons, for mixed event analysis
 	TObjArray* SelectedHadrons();
 		//DiHadron Correlation Background
@@ -153,7 +162,7 @@ private:
 	Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
 	Double_t SetEoverPCutPtDependentMC(Double_t pt);
 	
-		//Flags for specifics analysis
+	//Flags for specifics analysis
 	Bool_t 				fCorrelationFlag;
 	Bool_t				fIspp;
 	Bool_t				fIsMC;
@@ -161,15 +170,20 @@ private:
 	Bool_t				fUseTrigger;
 	Bool_t				fUseTender;
 	Bool_t				fUseShowerShapeCut;
+	
+	//TPC calibration
+	Bool_t				fCalibrateTPC;
+	Double_t            fCalibrateTPC_mean;
+	Double_t            fCalibrateTPC_sigma;
+	
 	Bool_t				fFillBackground;
 	Bool_t				fEoverPnsigma;
 	Bool_t				fAssocWithSPD;
 	
-	
 	Bool_t				fEMCEG1;
 	Bool_t				fEMCEG2;
 	
-		//Used in the function FindMother
+	//Used in the function FindMother
 	Bool_t				fIsHFE1;
 	Bool_t				fIsHFE2;
 	Bool_t				fIsNonHFE;
@@ -237,7 +251,7 @@ private:
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
 	
-		//mc closure
+	//mc closure
 	TH1F				*fPtElec_ULS_mc_closure;
 	TH1F				*fPtElec_LS_mc_closure;
 	TH1F				*fPtElec_ULS2_mc_closure;
@@ -250,13 +264,43 @@ private:
 	TH1F				*fPtElec_ULS2_weight;
 	TH1F				*fPtElec_LS2_weight;
 	
-		//PID Histograms
+	//PID Histograms
 	
 	TH2F				*fTOF01;
 	TH2F				*fTOF02;
 	TH2F				*fTOF03;
 	TH1F				*fpid;	
 	TH2F				*fEoverP_pt_true_electrons;
+	TH2F				*fEoverP_pt_true_electrons_weight;
+	TH2F				*fEoverP_pt_true_HFE;
+	TH2F				*fEoverP_pt_not_HFE;
+	
+	TH2F				*fEoverP_ntracks_matched;
+	TH2F				*fEoverP_ncells;
+	
+	TH2F				*fEmc_Ereco_gamma0;
+	TH2F				*fEmc_Ereco_gamma_ratio0;
+	TH2F				*fEmc_Ereco_ele0;
+	TH2F				*fEmc_Ereco_ele_ratio0;
+	
+	TH2F				*fEmc_Ereco_gamma_all;
+	TH2F				*fEmc_Ereco_gamma_ratio_all;
+	TH2F				*fEmc_Ereco_ele_all;
+	TH2F				*fEmc_Ereco_ele_ratio_all;
+	
+	
+	TH2F				*fEmc_Ereco_gamma;
+	TH2F				*fEmc_Ereco_gamma_ratio;
+	TH1F				*fEmc;
+	TH2F				*fEmc_Ereco_ele;
+	TH2F				*fEmc_Ereco_ele_ratio;
+	
+	TH2F				*fEmc_Ereco_ratio_large_EoverP0;
+	TH2F				*fEmc_Ereco_ratio_small_EoverP0;
+	
+	TH2F				*fEmc_Ereco_ratio_large_EoverP;
+	TH2F				*fEmc_Ereco_ratio_small_EoverP;
+	
 	TH2F				*fEoverP_pt_true_hadrons;
 	TH2F				*fEoverP_pt_true_electrons0;
 	TH2F				*fEoverP_pt_true_hadrons0;
@@ -274,6 +318,13 @@ private:
 	TH2F				*fTPCnsigma_p_TPC_EoverP_cut;
 	
 	TH2F				*fTPCnsigma_pt_2D;
+	TH2F				*fTPCnsigma_pt_2D0;
+	TH2F				*fTPCnsigma_pt_2D1;
+	TH2F				*fTPCnsigma_pt_2D2;
+	TH2F				*fTPCnsigma_pt_2D3;
+	TH2F				*fTPCnsigma_pt_2D4;
+	TH2F				*fTPCnsigma_pt_2D5;
+	
 	TH2F				*fShowerShapeCut;
 	TH2F				*fShowerShapeM02_EoverP;
 	TH2F				*fShowerShapeM20_EoverP;
@@ -294,6 +345,8 @@ private:
 	TH2F				*fNcells_energy_elec_selected;
 	TH2F				*fNcells_energy_not_exotic;
 	TH2F				**fEtaPhi;
+	TH2F				*fEtaPhi_large_EoverP;
+	TH2F				*fEtaPhi_small_EoverP;
 	TH2F				*fEtaPhi_num;
 	TH2F				*fEtaPhi_den;
 	TH2F				*fEtaPhi_data;
@@ -357,7 +410,9 @@ private:
 	TH1F				*fOpAngle;
 	TH1F				*fOpAngleBack;
 	TH1F				*fInvMass2;
+	TH1F				*fInvMass2_weight;
 	TH1F				*fInvMassBack2;
+	TH1F				*fInvMassBack2_weight;
 	
 	TH1F				**fInvMass_pT;
 	TH1F				**fInvMassBack_pT;
@@ -370,6 +425,8 @@ private:
 	Double_t			fMassCut;
 	Double_t			fEtaCutMin;
 	Double_t			fEtaCutMax;
+	Double_t			fTPCcal_CutMin;
+	Double_t			fTPCcal_CutMax;
 	Double_t			fdPhiCut;
 	Double_t			fdEtaCut;
 	Double_t			fEoverPCutMin;
@@ -493,6 +550,7 @@ private:
 												//AliCalorimeterUtils *fCaloUtils;
 	
 	Int_t            fBitEGA;                    // Trigger bit on VCaloTrigger for EGA
+	AliAnalysisUtils *fAnalysisUtils;     // Analysis Utils for pA pileup cut
 
 	 
 		//______________________________________________________________________
@@ -521,6 +579,8 @@ protected:
 private:
 	AliEHCParticle(const AliEHCParticle&);
 	AliEHCParticle& operator=(const AliEHCParticle&);
+	
+	
 	
 	Double_t fEta;
 	Double_t fPhi;

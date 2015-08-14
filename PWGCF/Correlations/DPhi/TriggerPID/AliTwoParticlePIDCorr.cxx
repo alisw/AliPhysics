@@ -5489,11 +5489,10 @@ fHistQA[0]->Fill((gVertexArray.At(0)));fHistQA[1]->Fill((gVertexArray.At(1)));fH
    zvtx = trkVtx->GetZ();
   const AliAODVertex* spdVtx = aod->GetPrimaryVertexSPD();
   if (!spdVtx || spdVtx->GetNContributors()<=0) return -1;
-  TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return -1;
+  if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return -1;
    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return -1;
   }
   else if(fVertextype==2) {//for pp and pb-pb case ,used in AliAnalysisTaskPhiCorelations.cxx

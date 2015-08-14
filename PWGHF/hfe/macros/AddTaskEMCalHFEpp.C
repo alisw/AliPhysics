@@ -43,10 +43,14 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpp(
 	}
 	
 	mgr->AddTask(task);
+
+	TString containerName = mgr->GetCommonFileName();
+        containerName += ":HFE_EMCal_pp";
+        containerName += Form("_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex,EMCalThreshould);
 	
 	//Create containers for input/output
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould), TList::Class(),    AliAnalysisManager::kOutputContainer, "OutPutData.root");
+	AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
 
 	//Connect input/output
 	mgr->ConnectInput(task, 0, cinput);

@@ -49,6 +49,12 @@
 #include "AliTrackerBase.h"
 #include "AliVCaloCells.h"
 #include "AliVCluster.h"
+#include "AliTender.h"
+#include "AliTenderSupply.h"
+#include "AliEMCALTenderSupply.h"
+#include "AliEMCALRecoUtils.h"
+#include "AliEmcalTenderTask.h"
+
 
 class iostream;
 
@@ -85,6 +91,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistExtQA(NULL),
 	geomEMCAL(NULL),
 	geomPHOS(NULL),
+	EMCALBadChannelsMap(NULL),
+	BadChannels(NULL),
 	nMaxEMCalModules(12),
 	nMaxPHOSModules(5),
 	fClusterType(0),
@@ -121,6 +129,10 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fMinNLM(0),
 	fMaxNLM(1000),
 	fUseNLM(0),
+	fNonLinearity1(0),
+	fNonLinearity2(0),
+	fSwitchNonLinearity(0),
+	fUseNonLinearity(kFALSE),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
 	fHistAcceptanceCuts(NULL),
@@ -135,6 +147,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
     //fHistExoticCellBeforeQA(NULL),
     //fHistExoticCellAfterQA(NULL),
     //fHistNMatchedTracks(NULL),
+	fHistEnergyOfClusterBeforeNL(NULL),
+	fHistEnergyOfClusterAfterNL(NULL),
 	fHistEnergyOfClusterBeforeQA(NULL),
 	fHistEnergyOfClusterAfterQA(NULL),
 	fHistNCellsBeforeQA(NULL),
@@ -158,6 +172,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	fHistClusterEM02AfterQA(NULL),
 	fHistClusterIncludedCellsBeforeQA(NULL),
 	fHistClusterIncludedCellsAfterQA(NULL),
+	fHistClusterEnergyFracCellsBeforeQA(NULL),
+	fHistClusterEnergyFracCellsAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -190,6 +206,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistExtQA(NULL),
 	geomEMCAL(NULL),
 	geomPHOS(NULL),
+	EMCALBadChannelsMap(NULL),
+	BadChannels(NULL),
 	nMaxEMCalModules(ref.nMaxEMCalModules),
 	nMaxPHOSModules(ref.nMaxPHOSModules),
  	fClusterType(ref.fClusterType),
@@ -226,6 +244,10 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fMinNLM(ref.fMinNLM),
 	fMaxNLM(ref.fMaxNLM),
 	fUseNLM(ref.fUseNLM),
+	fNonLinearity1(ref.fNonLinearity1),
+	fNonLinearity2(ref.fNonLinearity2),
+	fSwitchNonLinearity(ref.fSwitchNonLinearity),
+	fUseNonLinearity(ref.fUseNonLinearity),
 	fCutString(NULL),
 	fHistCutIndex(NULL),
 	fHistAcceptanceCuts(NULL),
@@ -240,6 +262,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
     //fHistExoticCellBeforeQA(NULL),
     //fHistExoticCellAfterQA(NULL),
     //fHistNMatchedTracks(NULL),
+	fHistEnergyOfClusterBeforeNL(NULL),
+	fHistEnergyOfClusterAfterNL(NULL),
 	fHistEnergyOfClusterBeforeQA(NULL),
 	fHistEnergyOfClusterAfterQA(NULL),
 	fHistNCellsBeforeQA(NULL),
@@ -263,6 +287,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	fHistClusterEM02AfterQA(NULL),
 	fHistClusterIncludedCellsBeforeQA(NULL),
 	fHistClusterIncludedCellsAfterQA(NULL),
+	fHistClusterEnergyFracCellsBeforeQA(NULL),
+	fHistClusterEnergyFracCellsAfterQA(NULL),
     fHistClusterRBeforeQA(NULL),
     fHistClusterRAfterQA(NULL),
     fHistClusterdEtadPhiBeforeQA(NULL),
@@ -425,6 +451,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     //fHistograms->Add(fHistExoticCellAfterQA);
     //fHistNMatchedTracks = new TH1F(Form("NMatchedTracks_%s",GetCutNumber().Data()),"NMatchedTracks",22,-1.5,20.5);
     //fHistograms->Add(fHistNMatchedTracks);
+	if(fUseNonLinearity){
+		fHistEnergyOfClusterBeforeNL = new TH1F(Form("EnergyOfCluster_beforeNonLinearity %s",GetCutNumber().Data()),"EnergyOfCluster_beforeNonLinearity",300,0,30);
+		fHistograms->Add(fHistEnergyOfClusterBeforeNL);
+		fHistEnergyOfClusterAfterNL = new TH1F(Form("EnergyOfCluster_afterNonLinearity %s",GetCutNumber().Data()),"EnergyOfCluster_afterNonLinearity",300,0,30);
+		fHistograms->Add(fHistEnergyOfClusterAfterNL);
+	}
 	fHistEnergyOfClusterBeforeQA = new TH1F(Form("EnergyOfCluster_beforeClusterQA %s",GetCutNumber().Data()),"EnergyOfCluster_beforeClusterQA",300,0,30);
 	fHistograms->Add(fHistEnergyOfClusterBeforeQA);
 	fHistEnergyOfClusterAfterQA = new TH1F(Form("EnergyOfCluster_afterClusterQA %s",GetCutNumber().Data()),"EnergyOfCluster_afterClusterQA",300,0,30);
@@ -476,6 +508,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistExtQA->Add(fHistClusterIncludedCellsBeforeQA);
 			fHistClusterIncludedCellsAfterQA = new TH1F(Form("ClusterIncludedCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_afterClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
 			fHistExtQA->Add(fHistClusterIncludedCellsAfterQA);
+			fHistClusterEnergyFracCellsBeforeQA = new TH1F(Form("ClusterEnergyFracCells_beforeClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_beforeClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistClusterEnergyFracCellsBeforeQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsBeforeQA);
+			fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistClusterEnergyFracCellsAfterQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
+			BadChannels = new TProfile("EMCal - Bad Channels","EMCal - Bad Channels",nMaxCellsEMCAL,0,nMaxCellsEMCAL);
+			fHistExtQA->Add(BadChannels);
 		}
 		else if( GetClusterType() == 2 ){ //PHOS
 			Int_t nMaxCellsPHOS = nMaxPHOSModules*56*64;
@@ -497,6 +537,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 			fHistExtQA->Add(fHistClusterIncludedCellsBeforeQA);
 			fHistClusterIncludedCellsAfterQA = new TH1F(Form("ClusterIncludedCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterIncludedCells_afterClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
 			fHistExtQA->Add(fHistClusterIncludedCellsAfterQA);
+			fHistClusterEnergyFracCellsBeforeQA = new TH1F(Form("ClusterEnergyFracCells_beforeClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_beforeClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistClusterEnergyFracCellsBeforeQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsBeforeQA);
+			fHistClusterEnergyFracCellsAfterQA = new TH1F(Form("ClusterEnergyFracCells_afterClusterQA %s",GetCutNumber().Data()),"ClusterEnergyFracCells_afterClusterQA",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistClusterEnergyFracCellsAfterQA->Sumw2();
+			fHistExtQA->Add(fHistClusterEnergyFracCellsAfterQA);
+			BadChannels = new TProfile("PHOS - Bad Channels","PHOS - Bad Channels",nMaxCellsPHOS,0,nMaxCellsPHOS);
+			fHistExtQA->Add(BadChannels);
 		}
 		else{AliError(Form("fExtendedMatchAndQA (%i) not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,GetClusterType()));}
 	}
@@ -607,7 +655,6 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClo
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *event, Int_t isMC)
 {   // Specific Photon Cuts
-    if(event){} // suppress warning
 
 	Int_t cutIndex = 0;
 	if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex);
@@ -652,11 +699,19 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 	if(fHistM20BeforeQA) fHistM20BeforeQA->Fill(cluster->GetM20());
 	if(fHistDispersionBeforeQA) fHistDispersionBeforeQA->Fill(cluster->GetDispersion());
 // 	if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(cluster->GetNExMax());
+
+	AliVCaloCells* cells = NULL;
 	if(fExtendedMatchAndQA > 1){
+		if(cluster->IsEMCAL()){ //EMCAL
+			cells = event->GetEMCALCells();
+		}else if(cluster->IsPHOS()){ //PHOS
+			cells = event->GetPHOSCells();
+		}
 		if(fHistClusterIncludedCellsBeforeQA){
 			Int_t nCellCluster = cluster->GetNCells();
 			for(Int_t iCell=0;iCell<nCellCluster;iCell++){
 				fHistClusterIncludedCellsBeforeQA->Fill(cluster->GetCellAbsId(iCell));
+				fHistClusterEnergyFracCellsBeforeQA->Fill(cluster->GetCellAbsId(iCell),cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))/cluster->E());
 			}
 		}
 		if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02());
@@ -789,7 +844,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
-	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
+	if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 
 	if(fHistClusterEtavsPhiAfterQA) fHistClusterEtavsPhiAfterQA->Fill(phiCluster,etaCluster);
 	if(fHistClusterTimevsEAfterQA) fHistClusterTimevsEAfterQA->Fill(cluster->GetTOF(), cluster->E());
@@ -807,6 +862,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 			Int_t nCellCluster = cluster->GetNCells();
 			for(Int_t iCell=0;iCell<nCellCluster;iCell++){
 				fHistClusterIncludedCellsAfterQA->Fill(cluster->GetCellAbsId(iCell));
+				fHistClusterEnergyFracCellsAfterQA->Fill(cluster->GetCellAbsId(iCell),cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))/cluster->E());
 			}
 		}
 		if(fHistClusterEM02AfterQA) fHistClusterEM02AfterQA->Fill(cluster->E(),cluster->GetM02());
@@ -843,10 +899,28 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 	Int_t* nCellsBigger1500MeV;
 	Double_t* EnergyOfMod;
 
+	AliTender* alitender=0x0;
+	AliEmcalTenderTask* emcaltender=0x0;
+	AliEMCALRecoUtils* recUtils=0x0;
+
+	if(event->IsA()==AliESDEvent::Class()) alitender = (AliTender*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliTender");
+	else if(GetClusterType() == 1 && event->IsA()==AliAODEvent::Class()) emcaltender = (AliEmcalTenderTask*) AliAnalysisManager::GetAnalysisManager()->GetTopTasks()->FindObject("AliEmcalTenderTask");
+
 	if( GetClusterType() == 1 ){ //EMCAL
 		cells = event->GetEMCALCells();
 		geomEMCAL = AliEMCALGeometry::GetInstance();
+		if(alitender){
+			TIter next(alitender->GetSupplies());
+			AliTenderSupply *supply;
+			while ((supply=(AliTenderSupply*)next())) if(supply->IsA()==AliEMCALTenderSupply::Class()) break;
+			recUtils = ((AliEMCALTenderSupply*)supply)->GetRecoUtils();
+			EMCALBadChannelsMap = recUtils->GetEMCALBadChannelStatusMapArray();
+		}else if(emcaltender){
+			recUtils = ((AliEMCALTenderSupply*)emcaltender->GetEMCALTenderSupply())->GetRecoUtils();
+			EMCALBadChannelsMap = recUtils->GetEMCALBadChannelStatusMapArray();
+		}
 		if(!geomEMCAL){ AliFatal("EMCal geometry not initialized!");}
+		if(!EMCALBadChannelsMap){ AliFatal("EMCal bad channels map not initialized!");}
 		nModules = geomEMCAL->GetNumberOfSuperModules();
 	}else if( GetClusterType() == 2 ){ //PHOS
 		cells = event->GetPHOSCells();
@@ -861,13 +935,13 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 
 	for(Int_t iModule=0; iModule<nModules; iModule++){nCellsBigger100MeV[iModule]=0; nCellsBigger1500MeV[iModule]=0; EnergyOfMod[iModule]=0;}
 
-	Int_t nMod = -1;
 	for(Int_t iCell=0; iCell<cells->GetNumberOfCells(); iCell++){
 		Short_t cellNumber=0;
 		Double_t cellAmplitude=0;
 		Double_t cellTime=0;
 		Double_t cellEFrac=0;
 		Int_t cellMCLabel=0;
+		Int_t nMod = -1;
 
 		cells->GetCell(iCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
 		if( GetClusterType() == 1 ){ //EMCAL
@@ -875,12 +949,35 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 		}else if( GetClusterType() == 2 ){ //PHOS
 			nMod = (Int_t) (1 + (cellNumber-1)/3584);
 		}
-		if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
-		if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
-		EnergyOfMod[nMod]+=cellAmplitude;
 
-		if(fHistCellEnergyvsCellID) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
-		if(fHistCellTimevsCellID) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
+		Int_t imod = -1; Int_t iTower = -1, iIphi = -1, iIeta = -1;
+		Int_t icol = -1; Int_t irow = -1;
+		if( GetClusterType() == 1 ){
+			geomEMCAL->GetCellIndex(cellNumber,imod,iTower,iIphi,iIeta);
+			if (EMCALBadChannelsMap->GetEntries() <= imod) continue;
+			geomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
+		}else if( GetClusterType() == 2 ){
+// BadCellMap implementation for PHOS missing
+		}
+
+		Int_t iBadCell = 0;
+		if( GetClusterType() == 1 ){
+			iBadCell = (Int_t) ((TH2I*)EMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+		}else if( GetClusterType() == 2 ){
+// BadCellMap implementation for PHOS missing
+		}
+
+		if (iBadCell > 0) {
+			BadChannels->Fill(cellNumber,1);
+		}else{
+			BadChannels->Fill(cellNumber,0);
+			if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
+			if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
+			if(cellAmplitude > 0.05) EnergyOfMod[nMod]+=cellAmplitude;
+			
+			if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05)) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+			if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
+		}
 	}
 
 	for(Int_t iModule=0; iModule<nModules; iModule++){
@@ -903,6 +1000,13 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
 
 	FillClusterCutIndex(kPhotonIn);
 
+	// do NonLinearity if switched on
+	if(fUseNonLinearity && cluster->IsEMCAL()){
+		if(fHistEnergyOfClusterBeforeNL) fHistEnergyOfClusterBeforeNL->Fill(cluster->E());
+		CorrectEMCalNonLinearity(cluster,isMC);
+		if(fHistEnergyOfClusterAfterNL) fHistEnergyOfClusterAfterNL->Fill(cluster->E());
+	}
+
 //  Double_t vertex[3] = {0,0,0};
 //	event->GetPrimaryVertex()->GetXYZ(vertex);
     // TLorentzvector with cluster
@@ -914,7 +1018,7 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
-	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
+	if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 
 	// Histos before cuts
 	if(fHistClusterEtavsPhiBeforeAcc) fHistClusterEtavsPhiBeforeAcc->Fill(phiCluster,etaCluster);
@@ -972,7 +1076,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
     TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 	Double_t etaCluster = clusterVector.Eta();
 	Double_t phiCluster = clusterVector.Phi();
-	if (phiCluster < 0) phiCluster= phiCluster+ 2*TMath::Pi();
+	if (phiCluster < 0) phiCluster += 2*TMath::Pi();
 	
 	// check eta range
 	if (fUseEtaCut){
@@ -1317,6 +1421,20 @@ Bool_t AliCaloPhotonCuts::SetCut(cutIds cutID, const Int_t value) {
 				return kTRUE;
 			} else return kFALSE;
 
+		case kNonLinearity1:
+			if( SetNonLinearity1(value)) {
+				fCuts[kNonLinearity1] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+
+		case kNonLinearity2:
+			if( SetNonLinearity2(value)) {
+				fCuts[kNonLinearity2] = value;
+				UpdateCutString();
+				return kTRUE;
+			} else return kFALSE;
+
 		case kNCuts:
 			AliError("Cut id out of range");
 			return kFALSE;
@@ -1363,6 +1481,10 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
 	if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
 	if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
+
+	printf("NonLinearity Correction: \n");
+	if (fUseNonLinearity) printf("\t Chose NonLinearity: %i\n", fSwitchNonLinearity );
+	else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 	
 }
 
@@ -1919,7 +2041,115 @@ Bool_t AliCaloPhotonCuts::SetNLM(Int_t nlm)
 	}
 	return kTRUE;
 }
-	
+
+//___________________________________________________________________
+Bool_t AliCaloPhotonCuts::SetNonLinearity1(Int_t nl1)
+{
+	if( nl1 >= 0 && nl1 <=9){
+		fNonLinearity1 = nl1;
+	}
+	else{
+		AliError(Form("NonLinearity Correction (part1) not defined %d",nl1));
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+//___________________________________________________________________
+Bool_t AliCaloPhotonCuts::SetNonLinearity2(Int_t nl2)
+{
+	if( nl2 >= 0 && nl2 <=9){
+		fNonLinearity2 = nl2;
+		if(nl2 == 0) fUseNonLinearity = kFALSE;
+		else if(nl2 > 0) fUseNonLinearity = kTRUE;
+		fSwitchNonLinearity = fNonLinearity1*10 + fNonLinearity2;
+	}
+	else{
+		AliError(Form("NonLinearity Correction (part2) not defined %d",nl2));
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+//________________________________________________________________________
+void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC)
+{
+	if(!fUseNonLinearity) return;
+
+	if (!cluster) {
+		AliInfo("Cluster pointer null!");
+		return;
+	}
+
+	Float_t energy = cluster->E();
+
+	if (energy < 0.05) {
+		// Clusters with less than 50 MeV or negative are not possible
+		AliInfo(Form("Too Low Cluster energy!, E = %f < 0.05 GeV",energy));
+		return;
+	}
+
+	switch(fSwitchNonLinearity){
+
+		// Standard NonLinearity kPi0MCv5 for MC and kSDMv5 for data
+		case 01:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.0664778, 1.57, 0.0967998, 219.381, 63.1604, 1.01286);
+			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.964, -3.132, -0.435);
+			break;
+
+		// NonLinearity LHC12 ConvCalo
+		case 11:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04979, 1.3, 0.0967998, 219.381, 63.1604, 1.011);
+			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9846, -3.319, -2.033);
+			break;
+
+		// NonLinearity LHC12 Calo
+		case 12:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06539, 1.121, 0.0967998, 219.381, 63.1604, 1.011);
+			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9676, -3.216, -0.6828);
+			break;
+
+		// NonLinearity LHC11a ConvCalo
+		case 21:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04123, 1.045, 0.0967998, 219.381, 63.1604, 1.014);
+			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9807, -3.377, -0.8535);
+			break;
+
+		// NonLinearity LHC11a Calo
+		case 22:
+			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
+			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772, -3.256, -0.4449);
+			break;
+
+		// NonLinearity LHC13 pPb ConvCalo
+		case 81:
+			break;
+
+		// NonLinearity LHC13 pPb Calo
+		case 82:
+			break;
+
+		default:
+			AliError(Form("NonLinearity Correction not defined: %d",fSwitchNonLinearity));
+			return;
+
+	}
+
+	cluster->SetE(energy);
+
+	return;
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6){
+	return ( p6 / ( p0 * ( 1. / ( 1. + p1 * exp( -e / p2 ) ) * 1. / ( 1. + p3 * exp( ( e - p4 ) / p5 ) ) ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2){
+	return ( p0 + exp( p1 + ( p2 * e ) ) );
+}
+
 //________________________________________________________________________
 TString AliCaloPhotonCuts::GetCutNumber(){
    // returns TString with current cut number

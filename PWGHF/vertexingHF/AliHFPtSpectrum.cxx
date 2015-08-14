@@ -52,7 +52,10 @@
 #include "AliHFSystErr.h"
 #include "AliHFPtSpectrum.h"
 
-ClassImp(AliHFPtSpectrum)
+/// \cond CLASSIMP
+ClassImp(AliHFPtSpectrum);
+/// \endcond
+
 
 //_________________________________________________________________________________________________________
 AliHFPtSpectrum::AliHFPtSpectrum(const char* name, const char* title, Int_t option):
@@ -111,7 +114,7 @@ AliHFPtSpectrum::AliHFPtSpectrum(const char* name, const char* title, Int_t opti
   fhStatUncEffbFD(NULL)
 {
   //
-  // Default constructor
+  /// Default constructor
   //
 
   fLuminosity[0]=1.;  fLuminosity[1]=0.;  
@@ -178,7 +181,7 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
   fhStatUncEffbFD(NULL)
 {
   //
-  // Copy constructor
+  /// Copy constructor
   //
 
   for(Int_t i=0; i<2; i++){
@@ -201,7 +204,7 @@ AliHFPtSpectrum::AliHFPtSpectrum(const AliHFPtSpectrum &rhs):
 //_________________________________________________________________________________________________________
 AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
   //
-  // Assignment operator
+  /// Assignment operator
   //
 
   if (&source == this) return *this;
@@ -272,7 +275,7 @@ AliHFPtSpectrum &AliHFPtSpectrum::operator=(const AliHFPtSpectrum &source){
 //_________________________________________________________________________________________________________
 AliHFPtSpectrum::~AliHFPtSpectrum(){
   //
-  // Destructor
+  /// Destructor
   //
   if (fhDirectMCpt) delete fhDirectMCpt;    
   if (fhFeedDownMCpt) delete fhFeedDownMCpt;  
@@ -313,10 +316,10 @@ AliHFPtSpectrum::~AliHFPtSpectrum(){
 
 //_________________________________________________________________________________________________________
 TH1D * AliHFPtSpectrum::RebinTheoreticalSpectra(TH1D *hTheory, const char *name) {
-  //
-  // Function to rebin the theoretical spectrum 
-  //  with respect to the real-data reconstructed spectrum binning 
-  //
+  ///
+  /// Function to rebin the theoretical spectrum
+  ///  with respect to the real-data reconstructed spectrum binning
+  ///
   
   if (!hTheory || !fhRECpt) {
     AliError("Feed-down or reconstructed spectra don't exist");
@@ -366,10 +369,10 @@ TH1D * AliHFPtSpectrum::RebinTheoreticalSpectra(TH1D *hTheory, const char *name)
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetMCptSpectra(TH1D *hDirect, TH1D *hFeedDown){
-  //
-  // Set the MonteCarlo or Theoretical spectra
-  //  both for direct and feed-down contributions
-  //
+  ///
+  /// Set the MonteCarlo or Theoretical spectra
+  ///  both for direct and feed-down contributions
+  ///
   
   if (!hDirect || !hFeedDown || !fhRECpt) {
     AliError("One or both (direct, feed-down) spectra or the reconstructed spectra don't exist");
@@ -395,10 +398,10 @@ void AliHFPtSpectrum::SetMCptSpectra(TH1D *hDirect, TH1D *hFeedDown){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetFeedDownMCptSpectra(TH1D *hFeedDown){
-  //
-  // Set the MonteCarlo or Theoretical spectra
-  //  for feed-down contribution
-  //
+  ///
+  /// Set the MonteCarlo or Theoretical spectra
+  ///  for feed-down contribution
+  ///
   
   if (!hFeedDown || !fhRECpt) {
     AliError("Feed-down or reconstructed spectra don't exist");
@@ -415,11 +418,11 @@ void AliHFPtSpectrum::SetFeedDownMCptSpectra(TH1D *hFeedDown){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetMCptDistributionsBounds(TH1D *hDirectMax, TH1D *hDirectMin, TH1D *hFeedDownMax, TH1D *hFeedDownMin){
-  //
-  // Set the maximum and minimum MonteCarlo or Theoretical spectra
-  //  both for direct and feed-down contributions
-  // used in case uncertainties are asymmetric and ca not be on the "basic histograms"
-  //
+  ///
+  /// Set the maximum and minimum MonteCarlo or Theoretical spectra
+  ///  both for direct and feed-down contributions
+  /// used in case uncertainties are asymmetric and ca not be on the "basic histograms"
+  ///
 
   if (!hDirectMax || !hDirectMin || !hFeedDownMax|| !hFeedDownMin || !fhRECpt) {
     AliError("One or all of the max/min direct/feed-down or the reconstructed spectra don't exist");
@@ -452,11 +455,11 @@ void AliHFPtSpectrum::SetMCptDistributionsBounds(TH1D *hDirectMax, TH1D *hDirect
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetFeedDownMCptDistributionsBounds(TH1D *hFeedDownMax, TH1D *hFeedDownMin){
-  //
-  // Set the maximum and minimum MonteCarlo or Theoretical spectra
-  //   for feed-down contributions
-  // used in case uncertainties are asymmetric and can not be on the "basic histogram"
-  //
+  ///
+  /// Set the maximum and minimum MonteCarlo or Theoretical spectra
+  ///   for feed-down contributions
+  /// used in case uncertainties are asymmetric and can not be on the "basic histogram"
+  ///
 
   if (!hFeedDownMax || !hFeedDownMin || !fhRECpt) {
     AliError("One or all of the max/min direct/feed-down spectra don't exist");
@@ -483,10 +486,10 @@ void AliHFPtSpectrum::SetFeedDownMCptDistributionsBounds(TH1D *hFeedDownMax, TH1
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetDirectAccEffCorrection(TH1D *hDirectEff){
-  //
-  // Set the Acceptance and Efficiency corrections 
-  //   for the direct contribution
-  //
+  ///
+  /// Set the Acceptance and Efficiency corrections
+  ///   for the direct contribution
+  ///
   
   if (!hDirectEff) {
     AliError("The direct acceptance and efficiency corrections doesn't exist");
@@ -499,10 +502,10 @@ void AliHFPtSpectrum::SetDirectAccEffCorrection(TH1D *hDirectEff){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetAccEffCorrection(TH1D *hDirectEff, TH1D *hFeedDownEff){
-  //
-  // Set the Acceptance and Efficiency corrections 
-  //  both for direct and feed-down contributions
-  //
+  ///
+  /// Set the Acceptance and Efficiency corrections
+  ///  both for direct and feed-down contributions
+  ///
   
   if (!hDirectEff || !hFeedDownEff) {
     AliError("One or both (direct, feed-down) acceptance and efficiency corrections don't exist");
@@ -524,9 +527,9 @@ void AliHFPtSpectrum::SetAccEffCorrection(TH1D *hDirectEff, TH1D *hFeedDownEff){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetReconstructedSpectrum(TH1D *hRec) {
-  //
-  // Set the reconstructed spectrum
-  //
+  ///
+  /// Set the reconstructed spectrum
+  ///
   
   if (!hRec) {
     AliError("The reconstructed spectrum doesn't exist");
@@ -554,9 +557,9 @@ void AliHFPtSpectrum::SetReconstructedSpectrum(TH1D *hRec) {
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::SetReconstructedSpectrumSystematics(TGraphAsymmErrors *gRec) {
-  //
-  // Set the reconstructed spectrum (uncorrected yield) systematic uncertainties
-  // 
+  ///
+  /// Set the reconstructed spectrum (uncorrected yield) systematic uncertainties
+  ///
 
   // Check the compatibility with the reconstructed spectrum
   Double_t gbinwidth = gRec->GetErrorXlow(1) + gRec->GetErrorXhigh(1) ;
@@ -574,19 +577,19 @@ void AliHFPtSpectrum::SetReconstructedSpectrumSystematics(TGraphAsymmErrors *gRe
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRatioC, Double_t branchingRatioBintoFinalDecay) {
-  //
-  // Main function to compute the corrected cross-section:
-  // variables : analysed delta_y, BR for the final correction,
-  //             BR b --> D --> decay (relative to the input theoretical prediction)
-  //
-  //   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
-  //
-  // Uncertainties: (stat) delta_sigma = sigma * sqrt ( (delta_spectra/spectra)^2 )
-  //  (syst but feed-down) delta_sigma = sigma * sqrt ( (delta_spectra_syst/spectra)^2 + (delta_lumi/lumi)^2 + (delta_eff_trig/eff_trig)^2 + (delta_eff/eff)^2 )
-  //      (feed-down syst) delta_sigma = sigma * sqrt ( (delta_spectra_fd/spectra_fd)^2 )
-  //
-  //  In HIC the feed-down correction varies with an energy loss hypothesis:
-  //      Raa(c-->D) / Raa(b-->D) for the "fc" method, Raa(b-->D) for the "Nb" method (see exact formulas in the functions)
+  ///
+  /// Main function to compute the corrected cross-section:
+  /// variables : analysed delta_y, BR for the final correction,
+  ///             BR b --> D --> decay (relative to the input theoretical prediction)
+  ///
+  ///   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
+  ///
+  /// Uncertainties: (stat) delta_sigma = sigma * sqrt ( (delta_spectra/spectra)^2 )
+  ///  (syst but feed-down) delta_sigma = sigma * sqrt ( (delta_spectra_syst/spectra)^2 + (delta_lumi/lumi)^2 + (delta_eff_trig/eff_trig)^2 + (delta_eff/eff)^2 )
+  ///      (feed-down syst) delta_sigma = sigma * sqrt ( (delta_spectra_fd/spectra_fd)^2 )
+  ///
+  ///  In HIC the feed-down correction varies with an energy loss hypothesis:
+  ///      Raa(c-->D) / Raa(b-->D) for the "fc" method, Raa(b-->D) for the "Nb" method (see exact formulas in the functions)
   //
 
   //
@@ -816,13 +819,13 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
 
 //_________________________________________________________________________________________________________
 TH1D * AliHFPtSpectrum::EstimateEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco, const char *name) {
-  //
-  // Function that computes the acceptance and efficiency correction
-  //  based on the simulated and reconstructed spectra
-  //  and using the reconstructed spectra bin width
-  //
-  //  eff = reco/sim ; err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
-  // 
+  ///
+  /// Function that computes the acceptance and efficiency correction
+  ///  based on the simulated and reconstructed spectra
+  ///  and using the reconstructed spectra bin width
+  ///
+  ///  eff = reco/sim ; err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
+  ///
 
   if(!fhRECpt){
     AliInfo("Hey, the reconstructed histogram was not set yet !"); 
@@ -875,13 +878,13 @@ TH1D * AliHFPtSpectrum::EstimateEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco, cons
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::EstimateAndSetDirectEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco) {
-  //
-  // Function that computes the Direct  acceptance and efficiency correction
-  //  based on the simulated and reconstructed spectra
-  //  and using the reconstructed spectra bin width
-  //
-  //  eff = reco/sim ; err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
-  // 
+  ///
+  /// Function that computes the Direct  acceptance and efficiency correction
+  ///  based on the simulated and reconstructed spectra
+  ///  and using the reconstructed spectra bin width
+  ///
+  ///  eff = reco/sim ; err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
+  ///
 
   if(!fhRECpt || !hSimu || !hReco){
     AliError("Hey, the reconstructed histogram was not set yet !"); 
@@ -895,13 +898,13 @@ void AliHFPtSpectrum::EstimateAndSetDirectEfficiencyRecoBin(TH1D *hSimu, TH1D *h
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::EstimateAndSetFeedDownEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco) {
-  //
-  // Function that computes the Feed-Down acceptance and efficiency correction
-  //  based on the simulated and reconstructed spectra
-  //  and using the reconstructed spectra bin width
-  //
-  //  eff = reco/sim ; err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
-  // 
+  ///
+  /// Function that computes the Feed-Down acceptance and efficiency correction
+  ///  based on the simulated and reconstructed spectra
+  ///  and using the reconstructed spectra bin width
+  ///
+  ///  eff = reco/sim ; err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
+  ///
   
   if(!fhRECpt || !hSimu || !hReco){
     AliError("Hey, the reconstructed histogram was not set yet !"); 
@@ -915,9 +918,9 @@ void AliHFPtSpectrum::EstimateAndSetFeedDownEfficiencyRecoBin(TH1D *hSimu, TH1D 
 
 //_________________________________________________________________________________________________________
 Bool_t AliHFPtSpectrum::Initialize(){
-  //
-  // Initialization of the variables (histograms)
-  //
+  ///
+  /// Initialization of the variables (histograms)
+  ///
 
   if (fFeedDownOption==0) { 
     AliInfo("Getting ready for the corrections without feed-down consideration");
@@ -988,9 +991,9 @@ Bool_t AliHFPtSpectrum::Initialize(){
 
 //_________________________________________________________________________________________________________
 Bool_t AliHFPtSpectrum::CheckHistosConsistency(TH1D *h1, TH1D *h2){
-  //
-  // Check the histograms consistency (bins, limits)
-  //
+  ///
+  /// Check the histograms consistency (bins, limits)
+  ///
 
   if (!h1 || !h2) {
     AliError("One or both histograms don't exist");
@@ -1022,9 +1025,9 @@ Bool_t AliHFPtSpectrum::CheckHistosConsistency(TH1D *h1, TH1D *h2){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::CalculateCorrectedSpectrumNoFeedDown(){
-  //
-  // Compute the corrected spectrum with no feed-down correction
-  //
+  ///
+  /// Compute the corrected spectrum with no feed-down correction
+  ///
 
 
   // declare the output histograms
@@ -1052,17 +1055,17 @@ void AliHFPtSpectrum::CalculateCorrectedSpectrumNoFeedDown(){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){ 
-  //
-  // Compute fc factor and its uncertainties bin by bin
-  //   fc = 1 / ( 1 + (eff_b/eff_c)*(N_b/N_c) ) 
-  //
-  // uncertainties: (conservative) combine the upper/lower N_b & N_c predictions together
-  //                (extreme) combine the upper N_b predictions with the lower N_c predictions & viceversa
-  //                systematic uncertainty on the acceptance x efficiency b/c ratio are included 
-  //
-  //  In addition, in HIC the feed-down correction varies with an energy loss hypothesis: Raa(c-->D) / Raa(b-->D) = Rcb
-  //	       fc (Rcb) = ( 1. / ( 1 + (eff_b/eff_c)*(N_b/N_c)* (1/Rcb) ) );
-  //
+  ///
+  /// Compute fc factor and its uncertainties bin by bin
+  ///   fc = 1 / ( 1 + (eff_b/eff_c)*(N_b/N_c) )
+  ///
+  /// uncertainties: (conservative) combine the upper/lower N_b & N_c predictions together
+  ///                (extreme) combine the upper N_b predictions with the lower N_c predictions & viceversa
+  ///                systematic uncertainty on the acceptance x efficiency b/c ratio are included
+  ///
+  ///  In addition, in HIC the feed-down correction varies with an energy loss hypothesis: Raa(c-->D) / Raa(b-->D) = Rcb
+  ///	       fc (Rcb) = ( 1. / ( 1 + (eff_b/eff_c)*(N_b/N_c)* (1/Rcb) ) );
+  ///
   AliInfo("Calculating the feed-down correction factor (fc method)");
   
   // define the variables
@@ -1260,17 +1263,17 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
-  //
-  // Compute the feed-down corrected spectrum if feed-down correction is done via fc factor (bin by bin)
-  //    physics = reco * fc / bin-width
-  //
-  //    uncertainty:             (stat) delta_physics = physics * sqrt ( (delta_reco/reco)^2 )
-  //               (syst but feed-down) delta_physics = physics * sqrt ( (delta_reco_syst/reco)^2 )
-  //                   (feed-down syst) delta_physics = physics * sqrt ( (delta_fc/fc)^2 )
-  //
-  //    ( Calculation done bin by bin )
-  //
-  //  In addition, in HIC the feed-down correction varies with an energy loss hypothesis: Raa(c-->D) / Raa(b-->D) = Rcb
+  ///
+  /// Compute the feed-down corrected spectrum if feed-down correction is done via fc factor (bin by bin)
+  ///    physics = reco * fc / bin-width
+  ///
+  ///    uncertainty:             (stat) delta_physics = physics * sqrt ( (delta_reco/reco)^2 )
+  ///               (syst but feed-down) delta_physics = physics * sqrt ( (delta_reco_syst/reco)^2 )
+  ///                   (feed-down syst) delta_physics = physics * sqrt ( (delta_fc/fc)^2 )
+  ///
+  ///    ( Calculation done bin by bin )
+  ///
+  ///  In addition, in HIC the feed-down correction varies with an energy loss hypothesis: Raa(c-->D) / Raa(b-->D) = Rcb
 
   AliInfo(" Calculating the feed-down corrected spectrum (fc method)");
 
@@ -1385,19 +1388,19 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Double_t branchingRatioBintoFinalDecay) {
-  //
-  // Compute the feed-down corrected spectrum if feed-down correction is done via Nb (bin by bin)
-  //    physics =  [ reco  - (lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th) ] / bin-width
-  //
-  //    uncertainty:   (stat)  delta_physics = sqrt ( (delta_reco)^2 )  / bin-width
-  //     (syst but feed-down)  delta_physics = sqrt ( (delta_reco_syst)^2 )  / bin-width
-  //         (feed-down syst)  delta_physics = sqrt ( (k*delta_lumi/lumi)^2 + (k*delta_eff_trig/eff_trig)^2 
-  //                                                   + (k*delta_Nb/Nb)^2 + (k*delta_eff/eff)^2  + (k*global_eff_ratio)^2 ) / bin-width
-  //                    where k = lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th
-  //
-  //  In addition, in HIC the feed-down correction varies with an energy loss hypothesis: Raa(b-->D) = Rb
-  //    physics =  [ reco  - ( Tab * Nevt * delta_y * BR_b * eff_trig * eff_b * Nb_th * Rb ) ] / bin-width
-  //
+  ///
+  /// Compute the feed-down corrected spectrum if feed-down correction is done via Nb (bin by bin)
+  ///    physics =  [ reco  - (lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th) ] / bin-width
+  ///
+  ///    uncertainty:   (stat)  delta_physics = sqrt ( (delta_reco)^2 )  / bin-width
+  ///     (syst but feed-down)  delta_physics = sqrt ( (delta_reco_syst)^2 )  / bin-width
+  ///         (feed-down syst)  delta_physics = sqrt ( (k*delta_lumi/lumi)^2 + (k*delta_eff_trig/eff_trig)^2
+  ///                                                   + (k*delta_Nb/Nb)^2 + (k*delta_eff/eff)^2  + (k*global_eff_ratio)^2 ) / bin-width
+  ///                    where k = lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th
+  ///
+  ///  In addition, in HIC the feed-down correction varies with an energy loss hypothesis: Raa(b-->D) = Rb
+  ///    physics =  [ reco  - ( Tab * Nevt * delta_y * BR_b * eff_trig * eff_b * Nb_th * Rb ) ] / bin-width
+  ///
   AliInfo("Calculating the feed-down correction factor and spectrum (Nb method)");
 
   Double_t value = 0., errvalue = 0., errvalueMax = 0., errvalueMin = 0., kfactor = 0.;
@@ -1596,11 +1599,11 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t combineFeedDown) {
-  //
-  // Function that re-calculates the global systematic uncertainties
-  //   by calling the class AliHFSystErr and combining those
-  //   (in quadrature) with the feed-down subtraction uncertainties
-  //
+  ///
+  /// Function that re-calculates the global systematic uncertainties
+  ///   by calling the class AliHFSystErr and combining those
+  ///   (in quadrature) with the feed-down subtraction uncertainties
+  ///
 
   // Estimate the feed-down uncertainty in percentage
   Int_t nentries = 0;
@@ -1653,9 +1656,9 @@ void AliHFPtSpectrum::ComputeSystUncertainties(AliHFSystErr *systematics, Bool_t
 
 //_________________________________________________________________________________________________________
 void AliHFPtSpectrum::DrawSpectrum(TGraphAsymmErrors *gPrediction) {
-  //
-  // Example method to draw the corrected spectrum & the theoretical prediction
-  //
+  ///
+  /// Example method to draw the corrected spectrum & the theoretical prediction
+  ///
 
   TCanvas *csigma = new TCanvas("csigma","Draw the corrected cross-section & the prediction");
   csigma->SetFillColor(0);
@@ -1692,11 +1695,11 @@ void AliHFPtSpectrum::DrawSpectrum(TGraphAsymmErrors *gPrediction) {
 
 //_________________________________________________________________________________________________________
 TH1D * AliHFPtSpectrum::ReweightHisto(TH1D *hToReweight, TH1D *hReference){
-  //
-  // Function to  reweight histograms for testing purposes: 
-  // This function takes the histo hToReweight and reweights 
-  //  it (its pt shape) with respect to hReference 
-  // 
+  ///
+  /// Function to  reweight histograms for testing purposes:
+  /// This function takes the histo hToReweight and reweights
+  ///  it (its pt shape) with respect to hReference
+  ///
 
   // check histograms consistency
   Bool_t areconsistent=kTRUE;
@@ -1729,11 +1732,11 @@ TH1D * AliHFPtSpectrum::ReweightHisto(TH1D *hToReweight, TH1D *hReference){
 
 //_________________________________________________________________________________________________________
 TH1D * AliHFPtSpectrum::ReweightRecHisto(TH1D *hRecToReweight, TH1D *hMCToReweight, TH1D *hMCReference){
-  //
-  // Function to  reweight histograms for testing purposes: 
-  // This function takes the histo hToReweight and reweights 
-  //  it (its pt shape) with respect to hReference /hMCToReweight
-  // 
+  ///
+  /// Function to  reweight histograms for testing purposes:
+  /// This function takes the histo hToReweight and reweights
+  ///  it (its pt shape) with respect to hReference /hMCToReweight
+  ///
 
   // check histograms consistency
   Bool_t areconsistent=kTRUE;
@@ -1774,9 +1777,9 @@ TH1D * AliHFPtSpectrum::ReweightRecHisto(TH1D *hRecToReweight, TH1D *hMCToReweig
 
 //_________________________________________________________________________________________________________
 Int_t AliHFPtSpectrum::FindTH2YBin(TH2D *histo, Float_t yvalue){
-  //
-  // Function to find the y-axis bin of a TH2 for a given y-value
-  //
+  ///
+  /// Function to find the y-axis bin of a TH2 for a given y-value
+  ///
   
   Int_t nbins = histo->GetNbinsY();
   Int_t ybin=0;

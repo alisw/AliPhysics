@@ -39,7 +39,9 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliRDHFCutsLctopKpi)
+/// \cond CLASSIMP
+ClassImp(AliRDHFCutsLctopKpi);
+/// \endcond
 
 //--------------------------------------------------------------------------
 AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const char* name) : 

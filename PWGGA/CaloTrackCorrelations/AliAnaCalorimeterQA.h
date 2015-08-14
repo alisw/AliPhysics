@@ -304,8 +304,8 @@ public:
   TH2F *   fhClusterMaxCellDiff;                //!<! Difference between cluster energy and energy of cell with more energy, good clusters only
   TH2F *   fhClusterMaxCellDiffNoCut;           //!<! Difference between cluster energy and energy of cell with more energy, no bad cluster rejection
   
-  TH2F *   fhClusterMaxCellDiffAverageTime;     //!<! Difference between cluster average time and time of cell with more energy
-  TH2F *   fhClusterMaxCellDiffWeightedTime;    //!<! Difference between cluster weighted time and time of cell with more energy
+//  TH2F *   fhClusterMaxCellDiffAverageTime;     //!<! Difference between cluster average time and time of cell with more energy
+//  TH2F *   fhClusterMaxCellDiffWeightedTime;    //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhClusterMaxCellECross;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
   
   TH2F *   fhLambda0;                           //!<! Cluster Lambda0    vs Energy
@@ -385,7 +385,7 @@ public:
   TH2F *   fhEtaPhiCell;                        //!<! eta vs phi, cells
    
   TH1F *   fhTime;                              //!<! Time measured in towers/crystals
-  TH2F *   fhTimeVz;                            //!<! Time measured in towers/crystals vs vertex z component, for E > 0.5
+ //TH2F *   fhTimeVz;                            //!<! Time measured in towers/crystals vs vertex z component, for E > 0.5
   TH2F *   fhTimeId;                            //!<! Time vs Absolute cell Id
   TH2F *   fhTimeAmp;                           //!<! Time vs Amplitude
   

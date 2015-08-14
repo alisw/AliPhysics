@@ -257,6 +257,13 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F(Form("hPhotM2A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M2",nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH1F(Form("hPhotM3A3_%s",cPID[iPID]),"Spectrum of all reconstructed particles, M3",nPt,0.,ptMax)) ;
    }
+
+   //Trigger QA
+   fOutputContainer->Add(new TH2F("hInvM_Re_mod1","Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,0.,ptMax)) ;
+   fOutputContainer->Add(new TH2F("hInvM_Re_mod3","Two-photon inv. mass (both in m3)",nM,0.,mMax,nPt,0.,ptMax)) ;
+   fOutputContainer->Add(new TH2F("hInvM_Mi_mod1","Two-photon inv. mass (both in m1)",nM,0.,mMax,nPt,0.,ptMax)) ;
+   fOutputContainer->Add(new TH2F("hInvM_Mi_mod3","Two-photon inv. mass (both in m3)",nM,0.,mMax,nPt,0.,ptMax)) ;
+
   
   
   const Int_t nCenBin=5;
@@ -298,6 +305,8 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   //Invariant mass distributions for fake corrections
   
   for(Int_t iPID=0; iPID<4; iPID++){
+
+
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
@@ -366,6 +375,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       
       for(Int_t mod=1; mod<5; mod++){
         fOutputContainer->Add(new TH1F(Form("hMCMinBiasPhot%d",mod),"MinBias photons",500,0.,50.)) ;
+        fOutputContainer->Add(new TH1F(Form("hMCMinBiasPhotMap%d",mod),"MinBias photons in trigger area",500,0.,50.)) ;
         fOutputContainer->Add(new TH1F(Form("hMCTrigPhot%d",mod),"Triggered photons",500,0.,50.)) ;
       }
  
@@ -449,108 +459,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
          fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
        }    
        fOutputContainer->Add(new TH2F(Form("hMCmass_cent%d",cen),"Mass with reconstructed decay partner",nM,0.,mMax,nPt,0.,ptMax )) ;			
-    }
-    
-/*   
-    fOutputContainer->Add(new TH1F(Form("hMCRecNoLabel_cent%d",cen),"Clusters without label",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCConversionRadius_cent%d",cen),"Clusters without label",600,0.,600.)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCRecPi0Vtx_cent%d",cen),"Secondary pi0s",100,0.,10.,600,0.,600.)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCRecEtaVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCRecOmegaVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCRecEtaprVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCRecK0sVtx_cent%d",cen),"Secondary K0s",100,0.,10.,600,0.,600.)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCRecK0lVtx_cent%d",cen),"Secondary K0l",100,0.,10.,600,0.,600.)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCGammaPi0MisConvR_cent%d",cen),"Converted photons",400,0.,40.,600,0.,600.)) ;
-  
-  
-    fOutputContainer->Add(new TH2F(Form("hMCGammaPi0PrimMgg_cent%d",cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hMCGammaPi0RecMgg_cent%d",cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
- 
-    for(Int_t iPID=0; iPID<4; iPID++){    
-      fOutputContainer->Add(new TH1F(Form("hMCRecNoPrim_%s_cent%d",cPID[iPID],cen),"Reconstructed particles withour primary",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecGamma_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: Gamma",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecPhotConv_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: e+-",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecPi0_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: pi0",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecEta_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: eta",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecOmega_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: Gamma",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecEtapr_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: eta prime",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: bar(p)",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: bar(n)",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecPipm_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: pipm",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecN_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: n",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecP_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: p",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecKpm_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K+-",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0s",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecK0l_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecUnknownCh_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecUnknownNeu_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
-
-      //Decay photons
-      fOutputContainer->Add(new TH1F(Form("hMCRecGammaDir_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, no primary",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecGammaEta_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from eta",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecGammaOmega_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from omega",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecGammaOther_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from other",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecPhotNoPrim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax)) ;
-    
-      //Pi0 decay photons
-      
-      //MC tagging: reasons of partner loss etc.
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnStack_cent%d",cen),"Decay photons with partner not in Stack", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWithFoundPartn_cent%d",cen),"Decay photon with found partner", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWithWrongMass_cent%d",cen),"Decay photon with wrong mass", nPt,0.,ptMax)) ;       
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAccept_cent%d",cen),"Decay photon with parttner not in PHOS acc", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA1_cent%d",cen),"Decay photons with partner missed due geometry Fid. area. 1", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA2_cent%d",cen),"Decay photons with partner missed due geometry Fid. area. 2", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA3_cent%d",cen),"Decay photons with partner missed due geometry Fid. area. 3", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnConv_cent%d",cen),"Decay photons with partner missed due to conversion", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnEmin_cent%d",cen),"Decay photons with partner missed due to low energy", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnOther_cent%d",cen),"Decay photons with partner missed due unknown reason", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAll_cent%d",cen),"Decay photons with partner missed due to any reason", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnNPhot_cent%d",cen),"pi0 decay photon with non-photon partner", nPt,0.,ptMax)) ;
-
-       
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutEmin_cent%d",cen),"Decay photons with rec. partner but failed Emin cut", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutNcell_cent%d",cen),"Decay photons with rec. partner but failed Ncell cut", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutEcross_cent%d",cen),"Decay photons with rec. partner but failed Ecross cut", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutM02_cent%d",cen),"Decay photons with rec. partner but failed M02 cut", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnDefCuts_cent%d",cen),"Decay photons with rec. partner but failed default cuts", nPt,0.,ptMax)) ;
-       fOutputContainer->Add(new TH1F(Form("hMCDecWRecPartn_cent%d",cen),"Decay photons with rec partner", nPt,0.,ptMax)) ;
-       
-       fOutputContainer->Add(new TH2F(Form("hMCmass_cent%d",cen),"Mass with reconstructed decay partner",nM,0.,mMax,nPt,0.,ptMax)) ;			
-      
-      
-      fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0Dalitz_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0NoStack_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCGammaPi02Gamma_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCGammaPi0Rec_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCGammaPi0RecSoft_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hMCGammaPi0RecCells_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0Tagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0FakeTagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0TrueTagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MultyTagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisGeo_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisGeoFA1_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisGeoFA2_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisGeoFA3_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisConv_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisEmin_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisOther_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisFakePrim_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisFoundPrim_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisNPhot_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;  
-
-    //all clusters fake tagged
-    fOutputContainer->Add(new TH1F(Form("hMCAllFakeTagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-
-   
-  }
-  fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisPartner_cent%d",cen),"Spectrum of missed partners",nPt,0.,ptMax)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCGammaPi0MisPartnerEtaPhi_cent%d",cen),"Spectrum of missed partners",100,-0.2,0.2,100,4.5,5.6)) ;
-    }
-*/    
+    }    
   }
 
   //If we work with MC, need to set Sumw2 - we will use weights
@@ -784,6 +693,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 //    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->GetCoreEnergy() );
     inList++;
     
+    p->SetModule(mod) ;
     Int_t isolation = EvalIsolation(&momentum,kTRUE) ;
     p->SetIsolationTag(isolation) ;
     
@@ -817,6 +727,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     if(fIsMC){    
        //Check trigger efficiency
        FillHistogram(Form("hMCMinBiasPhot%d",mod),clu->E()) ;
+       //CheckTrigBadMap
+       if(fPHOSTrigUtils->TestBadMap(mod, cellX,cellZ))
+         FillHistogram(Form("hMCMinBiasPhotMap%d",mod),clu->E()) ;
+       
        if(p->IsTrig())
           FillHistogram(Form("hMCTrigPhot%d",mod),clu->E()) ;
        //Look for MC particle entered PHOS
@@ -1327,8 +1241,16 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         if((p1->E()>0.2) && (p2->E()>0.2)){
           FillPIDHistograms("hInvM_Re_Emin2",p1,p2,invMass,kTRUE) ;
           if((p1->E()>0.3) && (p2->E()>0.3)){
-            FillPIDHistograms("hInvM_Re_Emin3",p1,p2,invMass,kTRUE) ;
-     
+            FillPIDHistograms("hInvM_Re_Emin3",p1,p2,invMass,kTRUE) ; 
+	    
+	    if(p1->Module()==1 && p2->Module()==1){
+	       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+               FillHistogram("hInvM_Re_mod1",invMass,(*p1 + *p2).Pt(),w) ; 
+	    }
+	    if(p1->Module()==3 && p2->Module()==3){
+	       Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+               FillHistogram("hInvM_Re_mod3",invMass,(*p1 + *p2).Pt(),w) ; 
+	    }
 	    //Fill izolated pi0s
 	    if(nsigma1<2 || nsigma2<2){ //2 sigma band
 	      TLorentzVector pi0=*p1+*p2 ;
@@ -1562,6 +1484,16 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
             FillPIDHistograms("hInvM_Mi_Emin2",p1,p2,invMass,kFALSE) ;
             if((p1->E())>0.3 && (p2->E()>0.3)){
               FillPIDHistograms("hInvM_Mi_Emin3",p1,p2,invMass,kFALSE) ;
+
+	      if(p1->Module()==1 && p2->Module()==1){
+	        Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+                FillHistogram("hInvM_Mi_mod1",invMass,(*p1 + *p2).Pt(),w) ;
+	      }
+	      if(p1->Module()==3 && p2->Module()==3){
+	        Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+                FillHistogram("hInvM_Mi_mod3",invMass,(*p1 + *p2).Pt(),w) ; 
+	      }
+	    
   	    }
  	  }
         }

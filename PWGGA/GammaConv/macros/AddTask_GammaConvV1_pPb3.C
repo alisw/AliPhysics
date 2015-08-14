@@ -6,7 +6,8 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 									Int_t 		doWeightingPart 			= 0,  								// enable Weighting
 									TString 	generatorName 				= "DPMJET",							// generator Name	
 									TString 	cutnumberAODBranch 			= "800000016008400000001500000", 	// cutnumber for AOD branch
-									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+									Bool_t		enablePlotVsCentrality		= kFALSE
                            ) {
 
 	Int_t isHeavyIon = 2;
@@ -51,7 +52,7 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 	//=========  Set Cutnumber for V0Reader ================================
 	//offline V0Finder
 	TString cutnumberPhoton = "16000008400100001500000000";
-	TString cutnumberEvent = "8000000";
+	TString cutnumberEvent = "80000103";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -122,15 +123,15 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 	TString stringShift = "";
 	
 	if (trainConfig == 1) {
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 1] = "8000011"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "0162103500900000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 2] = "8000011"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "0162103500900000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 3] = "8000011"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "0162103500900000";  // only photon quality 3  //offline V0Finder
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // all Photon Qualities  //offline V0Finder
+		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "0162103500900000";  // only photon quality 1  //offline V0Finder
+		eventCutArray[ 2] = "80000113"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "0162103500900000";  // only photon quality 2  //offline V0Finder
+		eventCutArray[ 3] = "80000113"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "0162103500900000";  // only photon quality 3  //offline V0Finder
 	} else if (trainConfig == 2) {
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // all Photon Qualities  //offline V0Finder
-		eventCutArray[ 1] = "8000012"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "0162103500900000";  // only photon quality 1  //offline V0Finder
-		eventCutArray[ 2] = "8000012"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "0162103500900000";  // only photon quality 2  //offline V0Finder
-		eventCutArray[ 3] = "8000012"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "0162103500900000";  // only photon quality 3  //offline V0Finder
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "10200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // all Photon Qualities  //offline V0Finder
+		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "10200009217000008260420000"; mesonCutArray[ 1] = "0162103500900000";  // only photon quality 1  //offline V0Finder
+		eventCutArray[ 2] = "80000123"; photonCutArray[ 2] = "10200009217000008260430000"; mesonCutArray[ 2] = "0162103500900000";  // only photon quality 2  //offline V0Finder
+		eventCutArray[ 3] = "80000123"; photonCutArray[ 3] = "10200009217000008260440000"; mesonCutArray[ 3] = "0162103500900000";  // only photon quality 3  //offline V0Finder
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -220,6 +221,7 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
+	task->SetDoPlotVsCentrality(enablePlotVsCentrality);
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =

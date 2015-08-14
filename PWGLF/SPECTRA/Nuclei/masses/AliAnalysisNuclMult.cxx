@@ -40,15 +40,18 @@ AliAnalysisNuclMult::AliAnalysisNuclMult():
   fPPVsMultUtils(0),
   fPIDResponse(NULL),
   fList(new TList()),
-  multiplicityMin(-999),
-  multiplicityMax(999),
+  iMultEstimator(0),
+  multiplicityMin(-999.),
+  multiplicityMax(999.),
   htriggerMask(NULL),
+  htriggerMask_noMB(NULL),
   hNspdVertex(NULL),
   hzvertex(NULL),
   hpileUp(NULL),
   hmult(NULL),
   hNtrack(NULL)
 {
+  for(Int_t i=0;i<9;i++) stdFlagPid[i]=0;
   fList->SetName("results");
   //fList->SetOwner();
 }
@@ -62,15 +65,18 @@ AliAnalysisNuclMult::AliAnalysisNuclMult(const char *name):
   fPPVsMultUtils(0),
   fPIDResponse(NULL),
   fList(new TList()),
-  multiplicityMin(-999),
-  multiplicityMax(999),
+  iMultEstimator(0),
+  multiplicityMin(-999.),
+  multiplicityMax(999.),
   htriggerMask(NULL),
+  htriggerMask_noMB(NULL),
   hNspdVertex(NULL),
   hzvertex(NULL),
   hpileUp(NULL),
   hmult(NULL),
   hNtrack(NULL) 
 {
+  for(Int_t i=0;i<9;i++) stdFlagPid[i]=0;
   DefineOutput(1, TList::Class());
   fList->SetName("results");
 }
@@ -82,35 +88,27 @@ AliAnalysisNuclMult::~AliAnalysisNuclMult()
 //______________________________________________________________________________
 void AliAnalysisNuclMult::UserCreateOutputObjects()
 {
+
+  Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
+
   Char_t nameSpec[18][30];
-  snprintf(nameSpec[0],20,"e_plus");
-  snprintf(nameSpec[1],20,"mu_plus");
-  snprintf(nameSpec[2],20,"pi_plus");
-  snprintf(nameSpec[3],20,"K_plus");
-  snprintf(nameSpec[4],20,"p");
-  snprintf(nameSpec[5],20,"d");
-  snprintf(nameSpec[6],20,"t");
-  snprintf(nameSpec[7],20,"He3");
-  snprintf(nameSpec[8],20,"He4");
-  snprintf(nameSpec[9],20,"e_minus");
-  snprintf(nameSpec[10],20,"mu_minus");
-  snprintf(nameSpec[11],20,"pi_minus");
-  snprintf(nameSpec[12],20,"K_minus");
-  snprintf(nameSpec[13],20,"p_bar");
-  snprintf(nameSpec[14],20,"d_bar");
-  snprintf(nameSpec[15],20,"t_bar");
-  snprintf(nameSpec[16],20,"He3_bar");
-  snprintf(nameSpec[17],20,"He4_bar");
-  
-  htriggerMask = new TH1I("htriggerMask","Trigger mask. Attention: before to cut on multiplicity",32,0,32);
-  const Char_t *xaxisTitle[32]={"kMB","kINT7","kMUON","kHighMult","kEMC1","kCINT5","kCMUS5","kMUSH7","kMUL7","kMUU7","kEMC7","kEMC8","kMUS7","kPHI1","kPHI7","kEMCEJE","kEMCEGA","kCentral","kSemiCentral","kDG5","kZED","kSPI7","kSPI","kINT8","kMuonSingleLowPt8","kMuonSingleHighPt8","kMuonLikeLowPt8","kMuonUnlikeLowPt8","kMuonUnlikeLowPt0","kTRD","kFastOnly","kUserDefined"};
-  for(Int_t i=0;i<32;i++) {
+  snprintf(nameSpec[0],20,"e^{+}"); snprintf(nameSpec[1],20,"#mu^{+}"); snprintf(nameSpec[2],20,"#pi^{+}"); snprintf(nameSpec[3],20,"K^{+}"); snprintf(nameSpec[4],20,"p"); snprintf(nameSpec[5],20,"d"); snprintf(nameSpec[6],20,"t"); snprintf(nameSpec[7],20,"^{3}He"); snprintf(nameSpec[8],20,"^{4}He");
+  snprintf(nameSpec[9],20,"e^{-}"); snprintf(nameSpec[10],20,"#mu^{-}"); snprintf(nameSpec[11],20,"#pi^{-}"); snprintf(nameSpec[12],20,"K^{-}"); snprintf(nameSpec[13],20,"#bar{p}"); snprintf(nameSpec[14],20,"#bar{d}"); snprintf(nameSpec[15],20,"#bar{t}"); snprintf(nameSpec[16],20,"^{3}#bar{He}"); snprintf(nameSpec[17],20,"^{4}#bar{He}");
+
+  htriggerMask = new TH1I("htriggerMask","Trigger mask. Attention: before to cut on multiplicity",34,0,34);
+  const Char_t *xaxisTitle[34]={"kMB","kINT7","kMUON","kHighMult","kEMC1","kCINT5","kCMUS5","kMUSH7","kMUL7","kMUU7","kEMC7","kEMC8","kMUS7","kPHI1","kPHI7","kEMCEJE","kEMCEGA","kCentral","kSemiCentral","kDG5","kZED","kSPI7","kSPI","kINT8","kMuonSingleLowPt8","kMuonSingleHighPt8","kMuonLikeLowPt8","kMuonUnlikeLowPt8","kMuonUnlikeLowPt0","kTRD","kFastOnly","kUserDefined","kAny","kAnyINT"};
+  for(Int_t i=0;i<34;i++) {
     htriggerMask->Fill(xaxisTitle[i],0);
   }
   
-  hNspdVertex = new TH1I("hNspdVertex","Number of vertices determined in the SPD. Attention: before to cut on multiplicity",50,0,50);
+  htriggerMask_noMB = new TH1I("htriggerMask_noMB","Trigger mask excluding MB events. Attention: before to cut on multiplicity",34,0,34);
+  for(Int_t i=0;i<34;i++) {
+    htriggerMask_noMB->Fill(xaxisTitle[i],0);
+  }
+    
+  hNspdVertex = new TH1I("hNspdVertex","Number of vertices determined in the SPD. Attention: before to cut on multiplicity;N_{vtx}^{SPD}",220,-20,200);
 
-  hzvertex = new TH1F("hzvertex","z-vertex distribution. Attention: before to cut on multiplicity",200,-20,20);
+  hzvertex = new TH1F("hzvertex","z-vertex distribution. Attention: before to cut on multiplicity;z_{vtx} (cm)",1000,-50,50);
 
   hpileUp = new TH1I("hpileUp","If the event is tagged as pileup in the SPD. Attention: before to cut on multiplicity",2,0,2);
   const Char_t *xaxisTitle2[2]={"kFALSE","kTRUE"};
@@ -118,9 +116,11 @@ void AliAnalysisNuclMult::UserCreateOutputObjects()
     hpileUp->Fill(xaxisTitle2[i],0);
   }
   
-  hmult = new TH1I("hmult","Multiplicity distribution",1099,-100,999);
+  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
+  if(iMultEstimator==0) hmult->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
+  else if(iMultEstimator==1) hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
 
-  hNtrack = new TH1I("hNtrack","Number of tracks per event",1001,-1,1000);
+  hNtrack = new TH1I("hNtrack","Number of tracks per event (after cuts on event);N_{tracks}",2100,-100,2000);
 
   fdEdxVSp[0] = new TH2F("fdEdxVSp_pos","TPC dE/dx (positive charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);//100,500//500,2000
   fdEdxVSp[1] = new TH2F("fdEdxVSp_neg","TPC dE/dx (negative charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);
@@ -182,10 +182,28 @@ void AliAnalysisNuclMult::UserCreateOutputObjects()
     else fM2vspt[iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,6,1,0,6);
   }
 
+  Char_t name_fpTcorr[200];
+  snprintf(name_fpTcorr,200,"fpTcorr_%s",nameSpec[5]);
+  fpTcorr[0] = new TF1(name_fpTcorr,"[0]-[1]*TMath::Exp(-[2]*x)",0,10);
+  fpTcorr[0]->FixParameter(0,-3.39633e-03);
+  fpTcorr[0]->FixParameter(1,4.38176e-01);
+  fpTcorr[0]->FixParameter(2,3.04490e+00);
+  fpTcorr[0]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
+  fpTcorr[0]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
+
+  snprintf(name_fpTcorr,200,"fpTcorr_%s",nameSpec[5+9]);
+  fpTcorr[1] = new TF1(name_fpTcorr,"[0]-[1]*TMath::Exp(-[2]*x)",0,10);
+  fpTcorr[1]->FixParameter(0,-2.73165e-03);
+  fpTcorr[1]->FixParameter(1,4.66999e-01);
+  fpTcorr[1]->FixParameter(2,3.09068e+00);
+  fpTcorr[1]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
+  fpTcorr[1]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
+  
   fList->Add(htriggerMask);
+  fList->Add(htriggerMask_noMB);
   fList->Add(hNspdVertex);
-  fList->Add(hzvertex);
   fList->Add(hpileUp);
+  fList->Add(hzvertex);
   fList->Add(hmult);
   fList->Add(hNtrack);
   for(Int_t i=0;i<2;i++) fList->Add(fdEdxVSp[i]);
@@ -209,7 +227,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
- 
+  
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fAOD && !fESD){
@@ -223,12 +241,25 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   AliInputEventHandler* inputHandler=(AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse=inputHandler->GetPIDResponse();
   
-  //-----------------Event selection:
-  Bool_t isPhysSelected = kFALSE;
+  //----------------- Event selection --------------:
   
+  //physics selection:
+  Bool_t isPhysSelected = kFALSE;
+  //Trigger mask filled:
   for(Int_t i=0;i<32;i++) {
-    Int_t bit=(1<<i);
+    unsigned bit=(1<<i);
     if(inputHandler->IsEventSelected() & bit) htriggerMask->Fill(i);
+  }
+  if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerMask->Fill(33-1);
+  if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerMask->Fill(34-1);
+  
+  if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)) {
+    for(Int_t i=0;i<32;i++) {
+      unsigned bit=(1<<i);
+      if(inputHandler->IsEventSelected() & bit) htriggerMask_noMB->Fill(i);
+    }
+    if(inputHandler->IsEventSelected() & AliVEvent::kAny) htriggerMask_noMB->Fill(33-1);
+    if(inputHandler->IsEventSelected() & AliVEvent::kAnyINT) htriggerMask_noMB->Fill(34-1);
   }
   
   if(multiplicityMin!=-999) isPhysSelected = ((inputHandler->IsEventSelected() & AliVEvent::kMB) || (inputHandler->IsEventSelected() & AliVEvent::kHighMult));
@@ -238,17 +269,11 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   const AliVVertex* vtxEVENT = fEvent->GetPrimaryVertex();
   
   //event must have at least an SPD-determined primary vertex
-  Int_t NevSpd=-1;
+  Int_t NevSpd=-2;
   NevSpd=vtxEVENT->GetNContributors();
   hNspdVertex->Fill(NevSpd);
   if(NevSpd<1) return;
 
-  //event must have a primary vertex located within |z| < 10 cm
-  Float_t zvtx=999.9;
-  zvtx = vtxEVENT->GetZ();
-  hzvertex->Fill(zvtx);
-  if(TMath::Abs(zvtx)>10) return;
-  
   //event must not be tagged as pileup
   Bool_t isPileUpSpd=kFALSE;
   if(fESD) {
@@ -260,26 +285,26 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   hpileUp->Fill(isPileUpSpd);
   if(isPileUpSpd) return;
   
-  //--------------------Multiplicity determination (Mid-pseudo-rapidity estimator):
-  Int_t mult=0;
-  if(fESD) {
-    mult=AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fESD,AliESDtrackCuts::kTrackletsITSTPC,0.8);
-  }
-  else if(fAOD) {
-    mult=((AliAODHeader * )fEvent->GetHeader())->GetRefMultiplicityComb08();
-  }
-  
-  //printf("%i\n",mult);
-  //getchar();
-  
-  /*//multiplicity (VZERO amplitude estimator)
-  //fPPVsMultUtils = new AliPPVsMultUtils();
-  Float_t temp=0;
-  temp=fPPVsMultUtils->GetMultiplicityPercentile(fEvent,"V0M");
-  printf("%f\n",temp);
-  getchar();
-  */
+   //event must have a primary vertex located within |z| < 10 cm
+  Float_t zvtx=999.9;
+  zvtx = vtxEVENT->GetZ();
+  hzvertex->Fill(zvtx);
+  if(TMath::Abs(zvtx)>10) return;
 
+  //--------------------Multiplicity determination (Mid-pseudo-rapidity estimator):
+  Float_t mult=-99;
+  if(iMultEstimator==0) {
+    mult=fPPVsMultUtils->GetMultiplicityPercentile(fEvent,"V0M");
+  }
+  else if(iMultEstimator==1) {
+    if(fESD) {
+      mult=AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fESD,AliESDtrackCuts::kTrackletsITSTPC,0.8);
+    }
+    else if(fAOD) {
+      mult=((AliAODHeader * )fEvent->GetHeader())->GetRefMultiplicityComb08();
+    }
+  }
+  
   if(multiplicityMin!=-999) {
     if(mult<multiplicityMin || mult>multiplicityMax) return;
   }
@@ -327,7 +352,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     
     //Cut on the DCAxy
     if(TMath::Abs(DCAxy)>1.0) continue;
-    FillDca(DCAxy,DCAz,track);
+    this->FillDca(DCAxy,DCAz,track);
 
     //Cut on the DCAz
     if(TMath::Abs(DCAz)>1.0) continue;
@@ -335,7 +360,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     //------------------------- Track info:
 
     Double_t phi= track->Phi();
-    Double_t charge = (Double_t)track->Charge();
+    Short_t charge = track->Charge();
     Double_t p = track->P();
     Double_t pt = track->Pt();
     Double_t dedx = track->GetTPCsignal();
@@ -344,12 +369,12 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     //------------------------- TPC info:
     
     if(charge>0) fdEdxVSp[0]->Fill(pTPC,dedx);
-    else fdEdxVSp[1]->Fill(pTPC,dedx);
+    else if(charge<0) fdEdxVSp[1]->Fill(pTPC,dedx);
 
     Double_t nsigmaTPC[9];
     Double_t expdedx[9];
     
-    Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
+    //Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
     Int_t FlagPid = 0;
     
     for(Int_t iS=0;iS<9;iS++){
@@ -359,9 +384,13 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       if(TMath::Abs(nsigmaTPC[iS])<3) {
 	FlagPid += ((Int_t)TMath::Power(2,iS));
       }
-      
+    }
+    
+    this->PtCorrection(pt, FlagPid, charge);
+
+    for(Int_t iS=0;iS<9;iS++){
       if(charge>0) fNsigmaTPC[iS]->Fill(pt,nsigmaTPC[iS]);
-      else fNsigmaTPC[iS+9]->Fill(pt,nsigmaTPC[iS]);
+      else if(charge<0) fNsigmaTPC[iS+9]->Fill(pt,nsigmaTPC[iS]);
     }
 
     //-------------------------- TOF info:
@@ -393,7 +422,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     beta=beta/tof;//beta = L/tof/c = t_e/tof
     
     if(charge>0) fBetaTOFvspt[0]->Fill(pt,beta);
-    else fBetaTOFvspt[1]->Fill(pt,beta);
+    else if(charge<0) fBetaTOFvspt[1]->Fill(pt,beta);
     
     Double_t gamma2=1.-(beta*beta);
     if(gamma2<1e-12) continue;
@@ -405,14 +434,14 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     mass2=(p*p)/mass2;
     
     if(charge>0) fM2tof[0]->Fill(pt,mass2);
-    else fM2tof[1]->Fill(pt,mass2);
+    else if(charge<0) fM2tof[1]->Fill(pt,mass2);
     
     for(Int_t iS=0;iS<9;iS++){
       if(FlagPid & stdFlagPid[iS]) {
 	if(charge>0) {
 	  fM2vspt[iS]->Fill(pt,mass2);
 	}	  
-	else {
+	else if(charge<0) {
 	  fM2vspt[iS+9]->Fill(pt,mass2);
 	}
       }
@@ -426,13 +455,13 @@ void AliAnalysisNuclMult::FillDca(Double_t DCAxy, Double_t DCAz, AliVTrack *trac
   
   Double_t nsigmaTPC[9];
 
-  Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
+  //Int_t stdFlagPid[9] = {1,2,4,8,16,32,64,128,256};//e,mu,pi,K,p,d,t,He3,He4
   Int_t FlagPid = 0;
   
   Bool_t kTOF=kFALSE;
   kTOF = (track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME);
 
-  Double_t charge = (Double_t)track->Charge();
+  Short_t charge = track->Charge();
   Double_t pt = track->Pt();
 
   for(Int_t iS=0;iS<9;iS++){
@@ -448,7 +477,7 @@ void AliAnalysisNuclMult::FillDca(Double_t DCAxy, Double_t DCAz, AliVTrack *trac
 	fDca[0][iS]->Fill(DCAxy,DCAz,pt);
 	if(kTOF) fDca[1][iS]->Fill(DCAxy,DCAz,pt);
       }      
-      else {
+      else if(charge<0) {
 	fDca[0][iS+9]->Fill(DCAxy,DCAz,pt);
 	if(kTOF) fDca[1][iS+9]->Fill(DCAxy,DCAz,pt);
       }    
@@ -458,7 +487,21 @@ void AliAnalysisNuclMult::FillDca(Double_t DCAxy, Double_t DCAz, AliVTrack *trac
   return;
 }
 //_____________________________________________________________________________
+void AliAnalysisNuclMult::PtCorrection(Double_t &pt, Int_t FlagPid, Short_t charge) {
+
+  if(FlagPid & stdFlagPid[5]) {
+    if(charge>0) {
+      pt=pt-fpTcorr[0]->Eval(pt);
+    }
+    else if(charge<0) {
+      pt=pt-fpTcorr[1]->Eval(pt);
+    }
+  }
+  
+  return;
+}
+//_____________________________________________________________________________
 void AliAnalysisNuclMult::Terminate(Option_t *)
 { 
-  printf("Terminate()");
+  printf("Terminate()\n");
 }

@@ -1126,12 +1126,14 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     printf("**** SET M02 limits in correlation task *** \n");
     ana->SetM02Cut(0.10,shshMax);
     ana->SwitchOnInvariantMassHistograms();
+    ana->SwitchOnBackgroundBinsPtInConeHistograms();
   }
   
   ana->SetMCGenType(0,7);
   
   ana->SwitchOffLeadHadronSelection(); // Open cuts, just fill histograms
   ana->SwitchOnFillLeadHadronHistograms();
+  ana->SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms();
   ana->SetLeadHadronPhiCut(TMath::DegToRad()*130, TMath::DegToRad()*230.);
   ana->SetLeadHadronPtCut(0.5, 1000);
   

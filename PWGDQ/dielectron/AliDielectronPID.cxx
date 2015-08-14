@@ -53,6 +53,8 @@ Double_t AliDielectronPID::fgCorrdEdx=1.0;
 TF1     *AliDielectronPID::fgFunEtaCorr=0x0;
 TH1     *AliDielectronPID::fgFunCntrdCorr=0x0;
 TH1     *AliDielectronPID::fgFunWdthCorr=0x0;
+TH1     *AliDielectronPID::fgFunCntrdCorrITS=0x0;
+TH1     *AliDielectronPID::fgFunWdthCorrITS=0x0;
 TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
@@ -325,7 +327,17 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     fUsedVars->SetBitNumber(fgFunWdthCorr->GetYaxis()->GetUniqueID(), kTRUE);
     fUsedVars->SetBitNumber(fgFunWdthCorr->GetZaxis()->GetUniqueID(), kTRUE);
   }
-
+  if(fgFunCntrdCorrITS)  {
+    fUsedVars->SetBitNumber(fgFunCntrdCorrITS->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrITS->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorrITS->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+  if(fgFunWdthCorrITS)  {
+    fUsedVars->SetBitNumber(fgFunWdthCorrITS->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrITS->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorrITS->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+  
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -413,7 +425,14 @@ Bool_t AliDielectronPID::IsSelectedITS(AliVTrack * const part, Int_t icut)
   Double_t mom=part->P();
   
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasITS(part, fPartType[icut]);
-  
+
+  // post pid corrections ("eta corrections")
+  if (fPartType[icut]==AliPID::kElectron){
+    // via functions (1-3D)
+    numberOfSigmas-=GetCntrdCorrITS(part);
+    numberOfSigmas/=GetWdthCorrITS(part);
+  }
+
   // test if we are supposed to use a function for the cut
   if (fFunUpperCut[icut]) fNsigmaUp[icut] =fFunUpperCut[icut]->Eval(mom);
   if (fFunLowerCut[icut]) fNsigmaLow[icut]=fFunLowerCut[icut]->Eval(mom);
@@ -436,7 +455,7 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Doubl
   
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTPC(part, fPartType[icut]);
 
-  // eta corrections
+  // post pid corrections ("eta corrections")
   if (fPartType[icut]==AliPID::kElectron){
     // old way 1D
     numberOfSigmas-=fgCorr;

@@ -61,13 +61,9 @@ if(FASTJET)
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" FASTJET_VERSION_PATCH "${FASTJET_VERSION}")
     
     if(FASTJET_VERSION_MAJOR LESS 3)
-        message(FATAL_ERROR "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} version is not suported. Please install a version >= 3.0.*")
+        message(FATAL_ERROR "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} not suported: install at least >= 3.0.*")
     endif()
     
-    if(FASTJET_VERSION_MINOR GREATER 0)
-        message(FATAL_ERROR "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} version is not suported. Please install a version >= 3.0.*")
-    endif()
-
     # Extracting compilation flags
     execute_process(COMMAND ${FASTJET_CONFIG} --cxxflags OUTPUT_VARIABLE FASTJET_CXXFLAGS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(error)

@@ -34,8 +34,9 @@
 #include "AliPIDResponse.h"
 #include "AliPID.h"
 
-ClassImp(AliCFVertexingHFCascade)
-
+/// \cond CLASSIMP
+ClassImp(AliCFVertexingHFCascade);
+/// \endcond
 
 //_________________________________________
 AliCFVertexingHFCascade::AliCFVertexingHFCascade():

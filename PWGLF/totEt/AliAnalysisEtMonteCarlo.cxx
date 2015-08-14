@@ -259,6 +259,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 						  ,fHistGammasFoundOutOfAccAltCent(0)
 						  ,fHistGammasGeneratedCent(0)
 						  ,fHistGammasFoundRecoEnergyCent(0)
+						  ,fHistGammasFoundRecoEnergyTrueEnergyCent(0)
 						  ,fHistAllGammasFoundRecoEnergyCent(0)
 						  ,fHistGammasFoundOutOfAccRecoEnergyCent(0)
 						  ,fHistAllGammasFoundOutOfAccRecoEnergyCent(0)
@@ -516,6 +517,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistGammasFoundAltCent; // enter comment here
     delete fHistGammasGeneratedCent; // enter comment here
     delete fHistGammasFoundRecoEnergyCent;
+    delete fHistGammasFoundRecoEnergyTrueEnergyCent;
     delete fHistAllGammasFoundRecoEnergyCent;
     delete fHistGammasFoundOutOfAccRecoEnergyCent;
     delete fHistAllGammasFoundOutOfAccRecoEnergyCent;
@@ -1511,6 +1513,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  //cout<<"filling reference histogram"<<endl;
 		  if(gammaEnergy>0) fHistGammaEnergyCrossCheckAlt->Fill(gammaEnergy,(fReconstructedEt-gammaEnergy)/fReconstructedEt);
 		  fHistGammasFoundRecoEnergyCent->Fill(fReconstructedE,fCentClass);
+		  fHistGammasFoundRecoEnergyTrueEnergyCent->Fill(fReconstructedE,gammaEnergy,fCentClass);
 		  etGammaCrossCheckAlt += clEt;
 		}
 	      }
@@ -1523,6 +1526,15 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  // cout<<"Found gamma et "<<fReconstructedEt<<" sim et "<< fPrimaryEt<<endl;
 		  if(fPrimaryEt>0) fHistGammaEnergyCrossCheck->Fill(fPrimaryEt,(fReconstructedEt-fPrimaryEt)/fReconstructedEt);
 		  if(fPrimaryEt>0) fHistGammaEnergyCrossCheckCent->Fill(fPrimaryEt,(fReconstructedEt-fPrimaryEt)/fReconstructedEt,fCentClass);
+		  if((fReconstructedEt-fPrimaryEt)/fReconstructedEt>0.4 && fReconstructedEt>1.5){
+		    Int_t n=caloCluster->GetNLabels() ;
+		    cout<<"names ";
+		    for(Int_t i=0;  i<n;  i++){
+		      TParticle*  p=  stack->Particle(caloCluster->GetLabelAt(i)) ;
+		      cout<<p->GetName()<<" ("<<p->Energy()<<") ";
+		    }
+		    cout<<endl;
+		  }
 		  fHistGammasFoundAltCent->Fill(fReconstructedE,fCentClass);
 		}
 	      }
@@ -2205,6 +2217,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
     fHistSimEmEtCent = new TH2F("fHistSimEmEtCent", "fHistSimEmEtCent",200, 0, 200,20,-0.5,19.5);
     fHistGammasFoundOutOfAccAltCent = new TH2F("fHistGammasFoundOutOfAccAltCent", "fHistGammasFoundOutOfAccCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundRecoEnergyCent = new TH2F("fHistGammasFoundRecoEnergyCent", "fHistGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
+    fHistGammasFoundRecoEnergyTrueEnergyCent = new TH3F("fHistGammasFoundRecoEnergyTrueEnergyCent", "fHistGammasFoundRecoEnergyTrueEnergyCent",200, 0, 10,200, 0, 10,20,-0.5,19.5);
     fHistAllGammasFoundRecoEnergyCent = new TH2F("fHistAllGammasFoundRecoEnergyCent", "fHistAllGammasFoundRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
     fHistGammasFoundOutOfAccRecoEnergyCent = new TH2F("fHistGammasFoundOutOfAccRecoEnergyCent", "fHistGammasFoundOutOfAccRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
     fHistAllGammasFoundOutOfAccRecoEnergyCent = new TH2F("fHistAllGammasFoundOutOfAccRecoEnergyCent", "fHistAllGammasFoundOutOfAccRecoEnergyCent",200, 0, 10,20,-0.5,19.5);
@@ -2537,6 +2550,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistGammasFoundAltCent);
     list->Add(fHistGammasGeneratedCent);
     list->Add(fHistGammasFoundRecoEnergyCent);
+    list->Add(fHistGammasFoundRecoEnergyTrueEnergyCent);
     list->Add(fHistAllGammasFoundRecoEnergyCent);
     list->Add(fHistGammasFoundOutOfAccRecoEnergyCent);
     list->Add(fHistAllGammasFoundOutOfAccRecoEnergyCent);

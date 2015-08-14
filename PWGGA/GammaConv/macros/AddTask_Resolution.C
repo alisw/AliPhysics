@@ -1,6 +1,6 @@
-void AddTask_Resolution(	TString 	V0ReaderEventCutNumber 	= "8000000",
+void AddTask_Resolution(	TString 	V0ReaderEventCutNumber 	= "80000003",
 							TString 	V0ReaderPhotonCutNumber = "060000084001001500000000",
-							TString 	TaskEventCutnumber 		= "8000011",
+							TString 	TaskEventCutnumber 		= "80000113",
 							TString 	TaskPhotonCutnumber 	= "092000092170008260400000",
 							Bool_t 		isMC 					= kTRUE, 
 							Int_t 		IsHeavyIon 				= 0, 

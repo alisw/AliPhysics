@@ -31,15 +31,18 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoCascadeHF.h"
 
-ClassImp(AliAODRecoCascadeHF)
+/// \cond CLASSIMP
+ClassImp(AliAODRecoCascadeHF);
+/// \endcond
+
 //-----------------------------------------------------------------------------
 
 AliAODRecoCascadeHF::AliAODRecoCascadeHF() :
   AliAODRecoDecayHF2Prong()
 {
-  //
-  // Default Constructor
-  //
+  ///
+  /// Default Constructor
+  ///
 }
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF::AliAODRecoCascadeHF(AliAODVertex *vtx2, Short_t charge,
@@ -47,9 +50,9 @@ AliAODRecoCascadeHF::AliAODRecoCascadeHF(AliAODVertex *vtx2, Short_t charge,
 					 Double_t *d0, Double_t *d0err, Double_t dca) :
   AliAODRecoDecayHF2Prong(vtx2, px, py, pz, d0, d0err, dca)
 {
-  //
-  //  Constructor with AliAODVertex for decay vertex
-  //
+  ///
+  ///  Constructor with AliAODVertex for decay vertex
+  ///
   SetCharge(charge);
 }
 //-----------------------------------------------------------------------------
@@ -57,24 +60,24 @@ AliAODRecoCascadeHF::AliAODRecoCascadeHF(AliAODVertex *vtx2, Short_t charge,
 					 Double_t *d0, Double_t *d0err, Double_t dca) :
   AliAODRecoDecayHF2Prong(vtx2, d0, d0err, dca)
 {
-  //
-  //  Constructor with decay vertex and without prongs momenta
-  //
+  ///
+  ///  Constructor with decay vertex and without prongs momenta
+  ///
   SetCharge(charge);
 }
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF::AliAODRecoCascadeHF(const AliAODRecoCascadeHF &source) :
   AliAODRecoDecayHF2Prong(source)
 {
-  //
-  // Copy constructor
-  //
+  ///
+  /// Copy constructor
+  ///
 }
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF &AliAODRecoCascadeHF::operator=(const AliAODRecoCascadeHF &source)
 {
   //
-  // assignment operator
+  /// assignment operator
   //
   if(&source == this) return *this;
 
@@ -85,16 +88,16 @@ AliAODRecoCascadeHF &AliAODRecoCascadeHF::operator=(const AliAODRecoCascadeHF &s
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF::~AliAODRecoCascadeHF()
 {
-  //
-  // Default Destructor
-  //
+  ///
+  /// Default Destructor
+  ///
 }
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::InvMassDstarKpipi() const 
 {
-  //
-  // 3 prong invariant mass of the D0 daughters and the soft pion
-  //
+  ///
+  /// 3 prong invariant mass of the D0 daughters and the soft pion
+  ///
   Double_t e[3];
   if (Charge()>0){
     e[0]=Get2Prong()->EProng(0,211);
@@ -115,11 +118,11 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
                                      Int_t *pdgDg,Int_t *pdgDg2prong,
 				     TClonesArray *mcArray, Bool_t isV0) const
 {
-  //
-  // Check if this candidate is matched to a MC signal
-  // If no, return -1
-  // If yes, return label (>=0) of the AliAODMCParticle
-  // 
+  ///
+  /// Check if this candidate is matched to a MC signal
+  /// If no, return -1
+  /// If yes, return label (>=0) of the AliAODMCParticle
+  ///
 
   Int_t ndg=GetNDaughters();
   if(ndg==0) {
@@ -250,17 +253,17 @@ Bool_t AliAODRecoCascadeHF::SelectDstar(const Double_t *cutsDstar,
 Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0, 
 					 Bool_t okLck0sp, Bool_t okLcLpi, Bool_t okLcLbarpi) const 
 {
-  // cuts on Lambdac candidates to V0+bachelor
-  // (to be passed to AliAODRecoDecayHF3Prong::SelectLctoV0())
-  // 0 = inv. mass half width in K0s hypothesis [GeV]   
-  // 1 = inv. mass half width in Lambda hypothesis [GeV]   
-  // 2 = inv. mass V0 in K0s hypothesis half width [GeV]   
-  // 3 = inv. mass V0 in Lambda hypothesis half width [GeV]   
-  // 4 = pT min Bachelor track [GeV/c]
-  // 5 = pT min V0-Positive track [GeV/c]
-  // 6 = pT min V0-Negative track [GeV/c]
-  // 7 = dca cut on the cascade (cm)
-  // 8 = dca cut on the V0 (cm)
+  /// cuts on Lambdac candidates to V0+bachelor
+  /// (to be passed to AliAODRecoDecayHF3Prong::SelectLctoV0())
+  /// 0 = inv. mass half width in K0s hypothesis [GeV]
+  /// 1 = inv. mass half width in Lambda hypothesis [GeV]
+  /// 2 = inv. mass V0 in K0s hypothesis half width [GeV]
+  /// 3 = inv. mass V0 in Lambda hypothesis half width [GeV]
+  /// 4 = pT min Bachelor track [GeV/c]
+  /// 5 = pT min V0-Positive track [GeV/c]
+  /// 6 = pT min V0-Negative track [GeV/c]
+  /// 7 = dca cut on the cascade (cm)
+  /// 8 = dca cut on the V0 (cm)
 
   //   if ( !Getv0() || !Getv0PositiveTrack() || !Getv0NegativeTrack() ) 
   //     { AliInfo(Form("Not adapted for ESDv0s, return true...")); return false; }
@@ -359,9 +362,9 @@ Bool_t AliAODRecoCascadeHF::SelectLctoV0(const Double_t *cutsLctoV0,
 }
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::AngleD0dkpPisoft() const {
-  //
-  // Angle of soft pion to D0 decay plane
-  // 
+  ///
+  /// Angle of soft pion to D0 decay plane
+  ///
 
   TVector3 p3Trk0(Get2Prong()->PxProng(0),Get2Prong()->PyProng(0),Get2Prong()->PzProng(0)); // from D0
   TVector3 p3Trk1(Get2Prong()->PxProng(1),Get2Prong()->PyProng(1),Get2Prong()->PzProng(1)); // from D0
@@ -376,9 +379,9 @@ Double_t AliAODRecoCascadeHF::AngleD0dkpPisoft() const {
 }
 //-----------------------------------------------------------------------------
 Bool_t AliAODRecoCascadeHF::TrigonometricalCut() const {
-  //  
-  // Trigonometrical constraint
-  //
+  ///
+  /// Trigonometrical constraint
+  ///
   TVector3 p3Trk0(Get2Prong()->PxProng(0),Get2Prong()->PyProng(0),Get2Prong()->PzProng(0)); // from D0
   TVector3 p3Trk1(Get2Prong()->PxProng(1),Get2Prong()->PyProng(1),Get2Prong()->PzProng(1)); // from D0
   TVector3 p3Trk2(PxProng(0),PyProng(0),PzProng(0)); // pi_s
@@ -400,9 +403,9 @@ Bool_t AliAODRecoCascadeHF::TrigonometricalCut() const {
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::DecayLengthV0() const
 {
-  //
-  // Returns V0 decay length wrt primary vertex
-  //
+  ///
+  /// Returns V0 decay length wrt primary vertex
+  ///
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
@@ -417,9 +420,9 @@ Double_t AliAODRecoCascadeHF::DecayLengthV0() const
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::DecayLengthXYV0() const
 {
-  //
-  // Returns transverse V0 decay length wrt primary vertex
-  //
+  ///
+  /// Returns transverse V0 decay length wrt primary vertex
+  ///
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
   if (!v0) 
@@ -433,9 +436,9 @@ Double_t AliAODRecoCascadeHF::DecayLengthXYV0() const
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::CosV0PointingAngle() const 
 {
-  //
-  // Returns cosine of V0 pointing angle wrt primary vertex
-  //
+  ///
+  /// Returns cosine of V0 pointing angle wrt primary vertex
+  ///
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
@@ -451,9 +454,9 @@ Double_t AliAODRecoCascadeHF::CosV0PointingAngle() const
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::CosV0PointingAngleXY() const 
 {
-  //
-  // Returns XY cosine of V0 pointing angle wrt primary vertex
-  //
+  ///
+  /// Returns XY cosine of V0 pointing angle wrt primary vertex
+  ///
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
@@ -469,9 +472,9 @@ Double_t AliAODRecoCascadeHF::CosV0PointingAngleXY() const
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::NormalizedV0DecayLength() const
 {
-  //
-  // Returns V0 normalized decay length wrt primary vertex
-  //
+  ///
+  /// Returns V0 normalized decay length wrt primary vertex
+  ///
 
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
@@ -487,9 +490,9 @@ Double_t AliAODRecoCascadeHF::NormalizedV0DecayLength() const
 //-----------------------------------------------------------------------------
 Double_t AliAODRecoCascadeHF::NormalizedV0DecayLengthXY() const
 {
-  //
-  // Returns transverse V0 normalized decay length wrt primary vertex
-  //
+  ///
+  /// Returns transverse V0 normalized decay length wrt primary vertex
+  ///
   AliAODv0 *v0 = (AliAODv0*)Getv0();
 
   if (!v0) 

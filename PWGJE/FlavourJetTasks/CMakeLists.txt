@@ -39,6 +39,7 @@ set(SRCS
     AliAnalysisTaskSEPicoV0Filter.cxx
     AliAnalysisTaskSEPicoV0Maker.cxx
     AliAnalysisTaskSEPicoV0MakerMC.cxx
+    AliMCHFParticleSelector.cxx
     AliPicoHeaderCJ.cxx
     AliPicoJet.cxx
     AliPicoJetHeader.cxx

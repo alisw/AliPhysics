@@ -1,7 +1,5 @@
-
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. * 
- * See cxx source for full Copyright notice */ 
-
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice */
 /*
                 AliAnalysisTaskLambdaOverK0sJets class
 
@@ -12,6 +10,7 @@
                 Origin: X. Sanchez Castro August2012, xsanchez@cern.ch
 */
 
+//try
 
 #ifndef ALIANALYSISTASKLAMBDAOVERK0SJETS_H
 #define ALIANALYSISTASKLAMBDAOVERK0SJETS_H
@@ -34,8 +33,8 @@ class TString;
 class TObjArray;
 
 // pt for V0
-const int    kN1 = 8; 
-const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
+const int    kN1 = 6;
+const float  kPtBinV0[kN1+1] = {1.5, 2.0, 2.6, 3.2, 4.0, 5.5, 8.0};
 
 const int    kNVtxZ = 10; 
 const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
@@ -85,7 +84,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetDoMix(Bool_t doMixEvt=kTRUE) {fDoMixEvt=doMixEvt;} 
   void SetTriggerFilterBit(Int_t triggerFB=768){fTriggerFB=triggerFB;}
   void SetTriggerPt(Float_t ptMinTrig=8., Float_t ptMaxTrig=50.) {fTrigPtMin=ptMinTrig;fTrigPtMax=ptMaxTrig;} 
-  void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;} 
+  void SetTriggerEta(Float_t etaMaxTrig=0.8){fTrigEtaMax=etaMaxTrig;}
+  void SetTriggerNCls(Float_t nclsTrig=10){fTriggerNCls=nclsTrig;}
   void SetCheckIDTrig(Bool_t checkIDTrig=kFALSE){fCheckIDTrig=checkIDTrig;}
   void SetSeparateInjectedPart(Bool_t doSep=kTRUE) {fSeparateInjPart=doSep;} 
 
@@ -148,6 +148,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Float_t  fTrigPtMCMin;                 //  Minimum pt for trigger particle in MC
   Float_t  fTrigPtMCMax;                 //  Maximum pt for trigger particle in MC
   Float_t  fTrigEtaMax;                  //  Maximum eta for trigger particle
+  Float_t  fTriggerNCls;                 //  Number of Crossed pas rows in the TPC
   Bool_t   fCheckIDTrig;                 //  Do comparison with V0's daughter tracks?
   Bool_t   fSeparateInjPart;             //  Separate MC injected particles in case of correlation 
   Int_t    fEndOfHijingEvent;            //  Limit natural-injected MC  particles 

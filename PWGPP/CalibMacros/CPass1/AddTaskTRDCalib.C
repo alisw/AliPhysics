@@ -95,7 +95,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   calibTask->SetMinNbOfContributors(1);
   if((!isLHC10) && (!isLHC11) && (!isLHC12) && (!isLHC13)) {
     printf("RunII \n");
-    calibTask->SetMaxCluster(400.0);
+    calibTask->SetMaxCluster(-1.0);
     calibTask->SetNbMaxCluster(0);
   }
   else {

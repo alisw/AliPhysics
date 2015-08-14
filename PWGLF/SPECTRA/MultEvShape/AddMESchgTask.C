@@ -8,9 +8,9 @@
 #include <AliMESchgTask.h>
 #endif
 
-void AddMESchgTask(Bool_t mc)
+AliMESchgTask *AddMESchgTask(Bool_t mc)
 {
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager(); 
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMESchgTask *chg = new AliMESchgTask("MESchg");
   mgr->AddTask(chg);
   chg->SetPostProcess(kFALSE);
@@ -27,10 +27,10 @@ void AddMESchgTask(Bool_t mc)
 	  ci[2] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCeventInfo"));
 	  ci[3] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCtracks"));
   }
-  Info("AddMESchgTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", 
-							 ci[0]?ci[0]->GetName():"none", 
-							 ci[1]?ci[1]->GetName():"none", 
-							 ci[2]?ci[2]->GetName():"none", 
+  Info("AddMESchgTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"",
+							 ci[0]?ci[0]->GetName():"none",
+							 ci[1]?ci[1]->GetName():"none",
+							 ci[2]?ci[2]->GetName():"none",
 							 ci[3]?ci[3]->GetName():"none"));
 
   // connect containers
@@ -41,5 +41,7 @@ void AddMESchgTask(Bool_t mc)
     mgr->ConnectInput(chg, AliMESbaseTask::kMCtracks, ci[3]);    // connect MC tracks container
   }
   mgr->ConnectOutput(chg, AliMESbaseTask::kQA, mgr->CreateContainer("chgQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:MES", mgr->GetCommonFileName())));
+
+  return chg;
 }
 

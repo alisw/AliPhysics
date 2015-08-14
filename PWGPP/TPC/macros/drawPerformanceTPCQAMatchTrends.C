@@ -28,7 +28,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
     printf("now loading $ALICE_PHYSICS/PWGPP/TPC/macros/qaConfig.C\n");
     gROOT->LoadMacro(  "$ALICE_PHYSICS/PWGPP/TPC/macros/qaConfig.C");
   }
-  
+
   //
   // colors & markers:
   Int_t colPosA=kGreen+2; //kRed;
@@ -43,20 +43,20 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   Int_t marSum=34;//full cross
   Int_t marCorr=31;//snowflake
   // shifting of graphs within one run for better visibility:
-	Float_t sh_gr0=-0.3;
-	Float_t sh_gr1=-0.1;
-	Float_t sh_gr2=+0.1;
-	Float_t sh_gr3=+0.3;
+  Float_t sh_gr0=-0.3;
+  Float_t sh_gr1=-0.1;
+  Float_t sh_gr2=+0.1;
+  Float_t sh_gr3=+0.3;
   // properties of status lines:
   // currently set in 'MakeStatusLines()'
-  
+
   gROOT->Reset();
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
   gStyle->SetLabelSize(0.04,"x");
   gStyle->SetPadTickX(1);
-	gStyle->SetPadTickY(1);
-  
+  gStyle->SetPadTickY(1);
+
   float  ncl_min = 80, ncl_max = 140;
   float  ratio_min = 0.6, ratio_max = 1.2;
   float  mip_min = 30, mip_max = 60;
@@ -67,7 +67,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   float  dca_min = -1.2, dca_max = 1.2;
   float  mult_min = 1, mult_max = 35;
   float  pt_min = 0, pt_max = 1.6;
-  
+
   if( strcmp(runType,"PbPb") == 0){
     ncl_min = 90;  ncl_max = 140;
     ratio_min = 0.5;  ratio_max = 1.1;
@@ -112,58 +112,64 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
     dca_min = -0.6;  dca_max = 0.6;
     mult_min = 5; mult_max = 50;
   }
-  
+
   // make backup of rootfile
   //
   TString sBackupfile(inFile);
   sBackupfile.ReplaceAll(".root",".backup.root");
   gSystem->Exec(Form("cp %s %s", inFile, sBackupfile.Data()));
-  
+
   // open input file
   //
   TFile *_file0 = TFile::Open(inFile, "UPDATE");
   if(!_file0) return;
   _file0->cd();
-  
+
   //
   tree = (TTree*)_file0->Get("tpcQA");
   //TTree *tree = ch->GetTree();
   if(!tree) return;
   int const entries_tree = tree->GetEntries();
-  cout<<"number of tree entries: "<<entries_tree<<endl; 
-  
+  cout<<"number of tree entries: "<<entries_tree<<endl;
+
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanTPCncl:run","");
   int const entries = gr->GetN();
   cout<<"number of graph entries: "<<entries<<endl;
   cout<<"(multiple occurences of runs removed)"<<endl;
-  
+
   if(entries<3)
-    const float norm_runs = 8.0; 
+    const float norm_runs = 8.0;
   else if(entries<20)
     const float norm_runs = 20.0;
   else if(entries<35)
     const float norm_runs = 35.0;
-  else 
+  else
     const float norm_runs = 50.0;
   // 50 is the max number of runs that shall be viewed on a 1700-wide canvas
   // only when there are more runs, the canvas shall become wider than that.
-  
-  int const canvas_width  = int(((entries*1.0)/norm_runs)*1700.0);
+
+  double SpaceForLegend = 0.;
+  int const canvas_width  = SpaceForLegend + int(((entries*1.0)/norm_runs)*1700.0);
   int const canvas_height = 600;
   gStyle->SetPadLeftMargin(0.12*900/canvas_width);
-  gStyle->SetPadRightMargin(0.01);
-  
+  // gStyle->SetPadRightMargin(0.01);
+  gStyle->SetPadRightMargin(SpaceForLegend/canvas_width); // SpaceForLegend pixels of whitespace right next to the histograms
+
   if(entries>50){
     gStyle->SetTickLength(0.03*norm_runs/(entries*1.0),"Y");
     gStyle->SetTitleYOffset((norm_runs/(entries*1.0))*0.8);
     gStyle->SetPadLeftMargin(0.12*norm_runs/(entries*1.0));
     gStyle->SetPadRightMargin(0.01*norm_runs/(entries*1.0));
   }
-  
+
   TCanvas *c1 = new TCanvas("can","can",canvas_width,canvas_height);
   c1->SetGrid(3);
   c1->cd();
-  
+
+  // c1->SetRightMargin(SpaceForLegend/canvas_width);
+  double leftlegend  = 1 - 180./c1->GetWw();
+  double rightlegend = 1 - 10./c1->GetWw();
+
   //
   // process config file qaConfig.C to initialize status aliases (outliers etc.), status bar criteria, status lines, ...
   //
@@ -171,13 +177,13 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   qaConfig(tree, returnStrings);
   // configures outlier criteria and descriptions for the needed TPC variables, as specified in the qaConfig.C.
   // defines aliases according to these criteria.
-  
+
   TString sStatusbarVars  = returnStrings[0];
   TString sStatusbarNames = returnStrings[1];
   TString sCriteria       = returnStrings[2];
   cout << "sStatusbarVars = " << sStatusbarVars.Data() << endl;
   cout << "sCriteria      = " << sCriteria.Data() << endl;
-  
+
   //
   // compute TPC status graphs
   //
@@ -185,7 +191,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   TObjArray* oaStatusbarNames = sStatusbarNames.Tokenize(";");
   TObjArray* oaMultGr = new TObjArray();
   int igr=0;
-  
+
   for (Int_t vari=oaStatusbarVars->GetEntriesFast()-1; vari>=0; vari--) // invert the order of the status graphs
   {
     TString sVar = Form("%s:run", oaStatusbarVars->At(vari)->GetName()); //e.g. -> dcar:run
@@ -194,7 +200,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
     ((TMultiGraph*) oaMultGr->At(igr))->SetTitle(sYtitle.Data());
     igr++;
   }
-  
+
   //
   // save status into Tree and write to rootfile
   // we update the original rootfile trending.root, as it is complicated to 'copy-paste' a TTree...
@@ -213,7 +219,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  statusTree->Write();
 //  file_out->Close();
 //  Printf("Status tree written to file '%s'", file_out->GetName());
-  
+
   //afterwards one can open the rootfile and correlate the trees:
   /*
    // read the trees and draw tests:
@@ -222,15 +228,15 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
    tree->Draw("meanMIP:run","run>0","*");
    TTree* statusTree = (TTree*)_file0->Get("statusTree");
    statusTree->Draw("MIPquality_Warning:run","run>0","*");
-   
+
    // correlate:
    tree->Draw("meanMIP:Tstatus.MIPquality_Warning","run>0","*");
-   
+
    TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"Tstatus.MIPquality_Warning:run","",20,kRed,1.0);
    gr->Draw("AP");
   */
-  
-  
+
+
   cout << "Start plotting of trending graphs... " << endl;
   // configure the pad in which the status graphs are plotted ('status bar')
   Float_t statPadHeight=0.30; //fraction of canvas height (was 0.25 until Aug 2014)
@@ -241,7 +247,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   Float_t plotoutlier;
   //
   c1->cd();
-  
+
   /****** Number of TPC Clusters vs run number ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanTPCncl:run","",marA1,colPosA,1.0);
   gr->SetName("meanTPCncl:run");
@@ -254,14 +260,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr->GetHistogram()->SetMaximum(ncl_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"meanTPCncl:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanTPCncl_vs_run.png");
   c1->Clear();
-  
+
   /****** Ratio of findable TPC clusters vs run number ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanTPCnclF:run","",marA1,colPosA,1.0);
   gr->SetName("meanTPCnclF:run");
@@ -274,14 +280,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr->GetHistogram()->SetMaximum(ratio_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
-	PlotStatusLines(tree,"meanTPCnclF:run","");
-  PlotTimestamp(entries,entries_tree);
+
+  PlotStatusLines(tree,"meanTPCnclF:run","");
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanTPCnclF_vs_run.png");
   c1->Clear();
-  
+
   /****** Mean MIPs ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMIP:run","",marA1,colPosA,1.0);
   gr->SetName("meanMIP:run");
@@ -294,14 +300,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr->GetHistogram()->SetMaximum(mip_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
-	PlotStatusLines(tree,"meanMIP:run","");
-  PlotTimestamp(entries,entries_tree);
+
+  PlotStatusLines(tree,"meanMIP:run","");
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanMIP_vs_run.png");
   c1->Clear();
-  
+
   /****** Mean MIP Resolution ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"resolutionMIP:run","",marA1,colPosA,1.0);
   gr->SetName("resolutionMIP:run");
@@ -314,14 +320,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr->GetHistogram()->SetMaximum(mipr_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"resolutionMIP:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("resolutionMIP_vs_run.png");
   c1->Clear();
-  
+
   /****** Mean energy loss for electrons ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMIPele:run","",marA1,colPosA,1.0);
   gr->SetName("meanMIPele:run");
@@ -334,16 +340,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr->GetHistogram()->SetMaximum(110);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"meanMIPele:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meandEdxele_vs_run.png");
   c1->Clear();
-  
+
   /****** Mean Energy loss electron Resolution ******/
-  
+
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"resolutionMIPele:run","",marA1,colPosA,1.0);
   gr->SetName("resolutionMIPele:run");
   gr->GetHistogram()->SetYTitle("Resolution of electrons dEdx");
@@ -356,18 +362,18 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr->GetHistogram()->SetMaximum(mipr_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"resolutionMIPele:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("resolutionMeandEdxEle_vs_run.png");
   c1->Clear();
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
-  
-  
+
+
+
   /****** Mean VertX ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanVertX:run","",marA1,colPosA,1.0);
   gr->SetName("meanVertX:run");
@@ -380,14 +386,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->GetHistogram()->SetMaximum(vx_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"meanVertX:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanVertX_vs_run.png");
   c1->Clear();
-  
+
   /****** Mean VertY ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanVertY:run","",marA1,colPosA,1.0);
   gr->SetName("meanVertY:run");
@@ -400,14 +406,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->GetHistogram()->SetMaximum(vy_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"meanVertY:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanVertY_vs_run.png");
   c1->Clear();
-  
+
   /****** Mean VertZ ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanVertZ:run","",marA1,colPosA,1.0);
   gr->SetName("meanVertZ:run");
@@ -420,18 +426,18 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->GetHistogram()->SetMaximum(vz_max);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"meanVertZ:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanVertZ_vs_run.png");
   c1->Clear();
-  
-  
+
+
   /****** Offset DCA  ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"offsetdRA:run:offsetdRAErr","",marA1,colPosA,1.0,sh_gr0);
-	gr->SetName("offsetdRA:run");
+  gr->SetName("offsetdRA:run");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"offsetdZA:run:offsetdZAErr","",marA2,colNegA,1.0,sh_gr1);
   gr1->SetName("gr1");
   TGraphErrors *gr2 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"offsetdRC:run:offsetdRCErr","",marC1,colPosC,1.0,sh_gr2);
@@ -454,7 +460,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr2->Draw("P");
   gr3->Draw("P");
   grComb->Draw("P");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -465,15 +471,15 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr3","DCA_{Z}, C Side","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"offsetd_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
-	c1->SaveAs("DCAOffset_vs_run.png");
+  c1->SaveAs("DCAOffset_vs_run.png");
   c1->Clear();
-  
-  
+
+
   /****** Mean Mult  ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMultPos:run:rmsMultPos","",marA1,colPosA,1.0,sh_gr1);
   gr->SetName("meanMultPos:run");
@@ -481,7 +487,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr1->SetName("gr1");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"meanMult_comb2:run","",marSum,colSum,1.2);
   grComb->SetName("grComb");
-  
+
   gr->GetHistogram()->SetYTitle("Multiplicites of Primary Tracks");
   gr->GetHistogram()->SetTitle("|DCA_{R}| < 3cm, |DCA_{Z}| < 3cm, #Cluster > 70");
   ComputeRange(tree, "meanMult_comb2", plotmean, plotoutlier);
@@ -502,14 +508,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr1","Negative Charged Tracks","p");
   leg->AddEntry("grComb","combined = (#Sigma x_{i})/N","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"meanMult_comb2:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("meanMult_vs_run.png");
   c1->Clear();
-  
+
   /****** TPC-ITS matching Efficiency  ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"tpcItsMatchA:run","",marA1,colPosA,1.0,sh_gr0);
   gr->SetName("tpcItsMatchA:run");
@@ -521,7 +527,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr3->SetName("gr3");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"tpcItsMatch_comb4:run","",marSum,colSum,1.2);
   grComb->SetName("grComb");
-  
+
   gr->GetHistogram()->SetYTitle("Matching Efficiencies");
   gr->GetHistogram()->SetTitle("TPC-ITS Matching Efficiency");
   ComputeRange(tree, "tpcItsMatch_comb4", plotmean, plotoutlier);
@@ -533,7 +539,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr2->Draw("P");
   gr3->Draw("P");
   grComb->Draw("P");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -544,14 +550,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr3","TPC-ITS matching ( p_{T}>4GeV/c ), C Side","p");
   leg->AddEntry("grComb","combined = (#Sigma x_{i})/N","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"tpcItsMatch_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("TPC-ITS-matching-efficiency_vs_run.png");
   c1->Clear();
-  
+
   /****** ITS-TPC matching quality  ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"lambdaPull:run","",marA1,colPosA,1.0,sh_gr0);
   gr->SetName("lambdaPull:run");
@@ -577,7 +583,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr2->Draw("P");
   gr3->Draw("P");
   grComb->Draw("P");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -588,14 +594,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr3","z pull bias","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"itsTpcPulls_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
-	c1->SaveAs("ITS-TPC-matching-quality_vs_run.png");
+  c1->SaveAs("ITS-TPC-matching-quality_vs_run.png");
   c1->Clear();
-  
+
   /****** pullPhi for TPC Constrain  ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"tpcConstrainPhiA:run","",marA1,colPosA,1.0,sh_gr1);
   gr->SetName("tpcConstrainPhiA:run");
@@ -603,7 +609,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr1->SetName("gr1");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"tpcConstrainPhi_comb2:run","",marSum,colSum,1.2);
   grComb->SetName("grComb");
-  
+
   gr->GetHistogram()->SetYTitle("(sin#phi_{TPC} - sin#phi_{Global})/#sigma");
   gr->GetHistogram()->SetTitle("");
   ComputeRange(tree, "tpcConstrainPhi_comb2", plotmean, plotoutlier);
@@ -615,7 +621,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->Draw("AP");
   gr1->Draw("P");
   grComb->Draw("P");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -624,16 +630,16 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr1","C Side","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"tpcConstrainPhi_comb2:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("pullPhiConstrain_vs_run.png");
   c1->Clear();
-  
-  
-	/****** 1/Pt  ******/
+
+
+  /****** 1/Pt  ******/
   //  TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"deltaPt:run","");
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"deltaPt:run:deltaPt_Err","",1,1,1);
   DrawPlot(gr0, "deltaPt:run", marSum, 1.2, colSum, "AP");
@@ -641,7 +647,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   DrawPlot(gr2, "deltaPtA:run", marA1, 1.0, colPosA, "P");
   TGraphErrors *gr4 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"deltaPtC:run:deltaPtC_Err","",1,1,1, -sh_gr1);
   DrawPlot(gr4, "deltaPtC:run", marC1, 1.0, colPosC, "P");
-  
+
   gr0->GetHistogram()->SetYTitle("delta (q/pt) ");
   gr0->GetHistogram()->SetTitle("delta (q/pt)");
   ComputeRange(tree, "deltaPt", plotmean, plotoutlier);
@@ -650,7 +656,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr0->GetHistogram()->SetMinimum(-0.008);
 //  gr0->GetHistogram()->SetMaximum(0.008);
   gr0->GetXaxis()->LabelsOption("v");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -659,15 +665,15 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("deltaPtA:run","deltaPtA: A side only","p");
   leg->AddEntry("deltaPtC:run","deltaPtC: C side only","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"deltaPt:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("1overPt_vs_run.png");
   c1->Clear();
-  
-  
+
+
   /****** DCAr fitting parameters  ******/
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcarAP0:run","",marA1,colPosA,1.0,sh_gr0);
   gr->SetName("dcarAP0:run");
@@ -679,7 +685,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr3->SetName("gr3");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcarFitpar_comb4:run","",marSum,colSum,1.2);
   grComb->SetName("grComb");
-  
+
   gr->GetHistogram()->SetYTitle("DCAR Fitting Parameters");
   gr->GetHistogram()->SetTitle("sqrt(P0^{2} + P1^{2}/(pT^{2}))");
   ComputeRange(tree, "dcarFitpar_comb4", plotmean, plotoutlier);
@@ -693,7 +699,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr2->Draw("P");
   gr3->Draw("P");
   grComb->Draw("P");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -704,35 +710,35 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr3","P1, C Side","p");
   leg->AddEntry("grComb","combined = (#Sigma x_{i})/N","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"dcarFitpar_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c1, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c1->SaveAs("dcar_fitting_run.png");
   c1->Clear();
-  
+
   ////////////////////////////////////////////////////////////////////////
   //test DCAR plots
   //DCAr first parameter _0
-  
-  TCanvas *c2  = new  TCanvas("can2","can2",canvas_width,canvas_height); 
+
+  TCanvas *c2  = new  TCanvas("can2","can2",canvas_width,canvas_height);
   c2->cd();
   c2->Update();
   c2->SetGrid(3);
-  
+
   //TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_posA_0:run","",1,1,1,sh_gr0);
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_posA_0:run:dcar_posA_0_Err","",1,1,1,sh_gr0);
   DrawPlot(gr0, "dcar_posA_0:run", marA1, 1.0, colPosA, "AP");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_negA_0:run:dcar_negA_0_Err","",1,1,1,sh_gr1);
   DrawPlot(gr1, "dcar_negA_0:run", marA2, 1.0, colNegA, "P");
   TGraphErrors *gr2 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_posC_0:run:dcar_posC_0_Err","",1,1,1,sh_gr2);
-  DrawPlot(gr2, "dcar_posC_0:run", marC1, 1.0, colPosC, "P");    
+  DrawPlot(gr2, "dcar_posC_0:run", marC1, 1.0, colPosC, "P");
   TGraphErrors *gr3 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_negC_0:run:dcar_negC_0_Err","",1,1,1,sh_gr3);
-  DrawPlot(gr3, "dcar_negC_0:run", marC2, 1.0, colNegC, "P");    
+  DrawPlot(gr3, "dcar_negC_0:run", marC2, 1.0, colNegC, "P");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar0_comb4:run","",1,1,1);
-  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
-  
+  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");
+
   gr0->GetHistogram()->SetYTitle("DCARs");
   ComputeRange(tree, "dcar0_comb4", plotmean, plotoutlier);
   gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
@@ -742,7 +748,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcar_posA_0:run");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -753,33 +759,33 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("dcar_negC_0:run","dcar_negC_0","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"dcar0_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c2, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c2->SaveAs("dcar_0_vs_run.png");//for C,A side and pos/neg particle
   c2->Update();
-  
+
   ////////////////////////////////////////////////////////////////////////
   //DCAr second parameter _1
-  
-  TCanvas *c3  = new  TCanvas("can3","can3",canvas_width,canvas_height); 
+
+  TCanvas *c3  = new  TCanvas("can3","can3",canvas_width,canvas_height);
   c3->cd();
   c3->Update();
   c3->SetGrid(3);
-  
+
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_posA_1:run:dcar_posA_1_Err","",1,1,1,sh_gr0);
   DrawPlot(gr0, "dcar_posA_1:run", marA1, 1.0, colPosA, "AP");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_negA_1:run:dcar_negA_1_Err","",1,1,1,sh_gr1);
   DrawPlot(gr1, "dcar_negA_1:run", marA2, 1.0, colNegA, "P");
   TGraphErrors *gr2 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_posC_1:run:dcar_posC_1_Err","",1,1,1,sh_gr2);
-  DrawPlot(gr2, "dcar_posC_1:run", marC1, 1.0, colPosC, "P");    
+  DrawPlot(gr2, "dcar_posC_1:run", marC1, 1.0, colPosC, "P");
   TGraphErrors *gr3 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_negC_1:run:dcar_negC_1_Err","",1,1,1,sh_gr3);
-  DrawPlot(gr3, "dcar_negC_1:run", marC2, 1.0, colNegC, "P");    
+  DrawPlot(gr3, "dcar_negC_1:run", marC2, 1.0, colNegC, "P");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar1_comb4:run","",1,1,1);
-  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
-  
+  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");
+
   gr0->GetHistogram()->SetYTitle("DCARs");
   ComputeRange(tree, "dcar1_comb4", plotmean, plotoutlier);
   gr0->GetHistogram()->SetMinimum(-plotmean-2*plotoutlier);
@@ -789,7 +795,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcar_posA_1:run");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -800,32 +806,32 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("dcar_negC_1:run","dcar_negC_1","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"dcar1_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c3, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c3->SaveAs("dcar_1_vs_run.png");//for C,A side and pos/neg particle
   c3->Update();
-  
+
   ////////////////////////////////////////////////////////////////////////
   //DCAr third parameter _2
-  
-  TCanvas *c5  = new  TCanvas("can5","can5",canvas_width,canvas_height); 
+
+  TCanvas *c5  = new  TCanvas("can5","can5",canvas_width,canvas_height);
   c5->cd();
   c5->Update();
   c5->SetGrid(3);
-  
+
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_posA_2:run:dcar_posA_2_Err","",1,1,1,sh_gr0);
   DrawPlot(gr0, "dcar_posA_2:run", marA1, 1.0, colPosA, "AP");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_negA_2:run:dcar_negA_2_Err","",1,1,1,sh_gr1);
   DrawPlot(gr1, "dcar_negA_2:run", marA2, 1.0, colNegA, "P");
   TGraphErrors *gr2 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_posC_2:run:dcar_posC_2_Err","",1,1,1,sh_gr2);
-  DrawPlot(gr2, "dcar_posC_2:run", marC1, 1.0, colPosC, "P");    
+  DrawPlot(gr2, "dcar_posC_2:run", marC1, 1.0, colPosC, "P");
   TGraphErrors *gr3 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar_negC_2:run:dcar_negC_2_Err","",1,1,1,sh_gr3);
-  DrawPlot(gr3, "dcar_negC_2:run", marC2, 1.0, colNegC, "P");    
+  DrawPlot(gr3, "dcar_negC_2:run", marC2, 1.0, colNegC, "P");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcar2_comb4:run","",1,1,1);
-  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
+  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");
 
   gr0->GetHistogram()->SetYTitle("DCARs");
   ComputeRange(tree, "dcar2_comb4", plotmean, plotoutlier);
@@ -836,7 +842,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcar_posA_2:run");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -847,33 +853,33 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("dcar_negC_2:run","dcar_negC_2","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"dcar2_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c5, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c5->SaveAs("dcar_2_vs_run.png");//for C,A side and pos/neg particle
   c5->Update();
-  
+
   ////////////////////////////////////////////////////////////////////////
   //DCAz parameters
   //Dcaz first parameter _0
-  
-  TCanvas *c6  = new  TCanvas("can6","can6",canvas_width,canvas_height); 
+
+  TCanvas *c6  = new  TCanvas("can6","can6",canvas_width,canvas_height);
   c6->cd();
   c6->Update();
   c6->SetGrid(3);
-  
+
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_posA_0:run:dcaz_posA_0_Err","",1,1,1,sh_gr0);
   DrawPlot(gr0, "dcaz_posA_0:run", marA1, 1.0, colPosA, "AP");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_negA_0:run:dcaz_negA_0_Err","",1,1,1,sh_gr1);
   DrawPlot(gr1, "dcaz_negA_0:run", marA2, 1.0, colNegA, "P");
   TGraphErrors *gr2 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_posC_0:run:dcaz_posC_0_Err","",1,1,1,sh_gr2);
-  DrawPlot(gr2, "dcaz_posC_0:run", marC1, 1.0, colPosC, "P");    
+  DrawPlot(gr2, "dcaz_posC_0:run", marC1, 1.0, colPosC, "P");
   TGraphErrors *gr3 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_negC_0:run:dcaz_negC_0_Err","",1,1,1,sh_gr3);
-  DrawPlot(gr3, "dcaz_negC_0:run", marC2, 1.0, colNegC, "P");    
+  DrawPlot(gr3, "dcaz_negC_0:run", marC2, 1.0, colNegC, "P");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz0_comb4:run","",1,1,1);
-  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
+  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");
 
   gr0->GetHistogram()->SetYTitle("DCAZs");
   ComputeRange(tree, "dcaz0_comb4", plotmean, plotoutlier);
@@ -884,7 +890,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcaz_posA_0:run");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -895,32 +901,32 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("dcaz_negC_0:run","dcaz_negC_0","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"dcaz0_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c6, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c6->SaveAs("dcaz_0_vs_run.png");//for C,A side and pos/neg particle
   c6->Update();
-  
+
   ////////////////////////////////////////////////////////////////////////
   //Dcaz second parameter _1
-  
-  TCanvas *c7  = new  TCanvas("can7","can7",canvas_width,canvas_height); 
+
+  TCanvas *c7  = new  TCanvas("can7","can7",canvas_width,canvas_height);
   c7->cd();
   c7->Update();
   c7->SetGrid(3);
-  
+
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_posA_1:run:dcaz_posA_1_Err","",1,1,1,sh_gr0);
   DrawPlot(gr0, "dcaz_posA_1:run", marA1, 1.0, colPosA, "AP");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_negA_1:run:dcaz_negA_1_Err","",1,1,1,sh_gr1);
   DrawPlot(gr1, "dcaz_negA_1:run", marA2, 1.0, colNegA, "P");
   TGraphErrors *gr2 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_posC_1:run:dcaz_posC_1_Err","",1,1,1,sh_gr2);
-  DrawPlot(gr2, "dcaz_posC_1:run", marC1, 1.0, colPosC, "P");    
+  DrawPlot(gr2, "dcaz_posC_1:run", marC1, 1.0, colPosC, "P");
   TGraphErrors *gr3 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_negC_1:run:dcaz_negC_1_Err","",1,1,1,sh_gr3);
-  DrawPlot(gr3, "dcaz_negC_1:run", marC2, 1.0, colNegC, "P");    
+  DrawPlot(gr3, "dcaz_negC_1:run", marC2, 1.0, colNegC, "P");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz1_comb4:run","",1,1,1);
-  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
+  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");
 
   gr0->GetHistogram()->SetYTitle("DCAZs");
   ComputeRange(tree, "dcaz1_comb4", plotmean, plotoutlier);
@@ -931,7 +937,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcaz_posA_1:run");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -942,32 +948,32 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("dcaz_negC_1:run","dcaz_negC_1","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"dcaz1_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c7, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c7->SaveAs("dcaz_1_vs_run.png");//for C,A side and pos/neg particle
   c7->Update();
-  
+
   ////////////////////////////////////////////////////////////////////////
   //Dcaz third parameter _2
-  
-  TCanvas *c8  = new  TCanvas("can8","can8",canvas_width,canvas_height); 
+
+  TCanvas *c8  = new  TCanvas("can8","can8",canvas_width,canvas_height);
   c8->cd();
   c8->Update();
   c8->SetGrid(3);
-  
+
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_posA_2:run:dcaz_posA_2_Err","",1,1,1,sh_gr0);
   DrawPlot(gr0, "dcaz_posA_2:run", marA1, 1.0, colPosA, "AP");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_negA_2:run:dcaz_negA_2_Err","",1,1,1,sh_gr1);
   DrawPlot(gr1, "dcaz_negA_2:run", marA2, 1.0, colNegA, "P");
   TGraphErrors *gr2 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_posC_2:run:dcaz_posC_2_Err","",1,1,1,sh_gr2);
-  DrawPlot(gr2, "dcaz_posC_2:run", marC1, 1.0, colPosC, "P"); 
+  DrawPlot(gr2, "dcaz_posC_2:run", marC1, 1.0, colPosC, "P");
   TGraphErrors *gr3 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz_negC_2:run:dcaz_negC_2_Err","",1,1,1,sh_gr3);
   DrawPlot(gr3, "dcaz_negC_2:run", marC2, 1.0, colNegC, "P");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"dcaz2_comb4:run","",1,1,1);
-  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");    
+  DrawPlot(grComb, "grComb", marSum, 1.4, colSum, "P");
 
   gr0->GetHistogram()->SetYTitle("DCAZs");
   ComputeRange(tree, "dcaz2_comb4", plotmean, plotoutlier);
@@ -978,7 +984,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("dcaz_posA_2:run");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -989,22 +995,22 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("dcaz_negC_2:run","dcaz_negC_2","p");
   leg->AddEntry("grComb","combined = #sqrt{#Sigma x_{i}^{2}}","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"dcaz2_comb4:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c8, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c8->SaveAs("dcaz_2_vs_run.png");//for C,A side and pos/neg particle
   c8->Update();
-  
+
   ///////////////////////////////////////////////////////////////////////////////////////////////
   // Plot Occupancy IROC, OROC, A,C side
-  
+
   TCanvas *c9  = new  TCanvas("can9","can9",canvas_width,canvas_height);
   c9->cd();
   c9->Update();
   c9->SetGrid(3);
-  
+
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"iroc_A_side:run","",marA1,colPosA,1.0,sh_gr0);
   gr0->SetName("iroc_A_side:run");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"oroc_A_side:run","",marA2,colNegA,1.0,sh_gr1);
@@ -1013,19 +1019,19 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr2->SetName("gr2");
   TGraphErrors *gr3 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"oroc_C_side:run","",marC2,colNegC,1.0,sh_gr3);
   gr3->SetName("gr3");
-  
+
   gr0->GetHistogram()->SetYTitle("(nr_Chamber) - (nr_Chamber_lowOcc)");
   gr0->GetHistogram()->SetMinimum(14.0);
   gr0->GetHistogram()->SetMaximum(20.0);
   gr0->GetHistogram()->SetTitleOffset(10);
   gr0->GetXaxis()->LabelsOption("v");
   gr0->SetName("occ_AC_Side_IROC_OROC:run");
-  
+
   gr0->Draw("AP");
   gr1->Draw("P");
   gr2->Draw("P");
   gr3->Draw("P");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -1035,27 +1041,27 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr2","iroc_C_side","p");
   leg->AddEntry("gr3","oroc_C_side","p");
   leg->Draw();
-  
-  PlotTimestamp(entries,entries_tree);
+
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c9, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
-  c9->SaveAs("occ_AC_Side_IROC_OROC_vs_run.png");//for C,A side and IROC,OROC                                                                                                 
+  c9->SaveAs("occ_AC_Side_IROC_OROC_vs_run.png");//for C,A side and IROC,OROC
   c9->Update();
-  
+
   /****** attachment parameters for A and C side ******/
-  
+
   TCanvas *c10  = new  TCanvas("can10","can10",canvas_width,canvas_height);
   c10->cd();
   c10->Update();
   c10->SetGrid(3);
-  
+
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeA:run","",marA1,colPosA,1.0,sh_gr1);
   gr->SetName("MIPattachSlopeA:run");
   TGraphErrors *gr1 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeC*(-1):run","",marC1,colPosC,1.0,sh_gr2);
   gr1->SetName("gr1");
   TGraphErrors *grComb = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlope_comb2:run","",marSum,colSum,1.2);
   grComb->SetName("grComb");
-  
+
   gr->GetHistogram()->SetYTitle("Attachment parameter p1");
   gr->GetHistogram()->SetTitle("showing p1 of fit: p0 + p1 * tan(#theta)"); // info from Marian, 19.11.2014. to be checked in code that produces the tree.
   ComputeRange(tree, "MIPattachSlope_comb2", plotmean, plotoutlier);
@@ -1065,7 +1071,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->Draw("AP");
   gr1->Draw("P");
   grComb->Draw("P");
-  
+
   TLegend *leg = new TLegend(0.6,0.75,0.62*sqrt(norm_runs/entries),0.95,"","brNDC");
   leg->SetTextSize(0.03);
   leg->SetFillColor(10);
@@ -1074,20 +1080,20 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   leg->AddEntry("gr1","C Side *(-1)","p");
   leg->AddEntry("grComb","combined = (#Sigma x_{i})/N","p");
   leg->Draw();
-  
+
   PlotStatusLines(tree,"MIPattachSlope_comb2:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c10, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c10->SaveAs("MIPattachSlopes_vs_run.png");
   c10->Clear();
-  
+
 //  //C side
 //  TCanvas *c11  = new  TCanvas("can11","can11",canvas_width,canvas_height);
 //  c11->cd();
 //  c11->Update();
 //  c11->SetGrid(3);
-//  
+//
 //  TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"MIPattachSlopeC*(-1):run","",marA1,colPosA,1.0);
 //  gr->SetName("MIPattachSlopeC:run");
 //  gr->GetHistogram()->SetYTitle("Attachment parameter p1");
@@ -1095,21 +1101,21 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 //  gr->GetHistogram()->SetMaximum(+10);
 //  gr->GetXaxis()->LabelsOption("v");
 //  gr->Draw("AP");
-//  
+//
 //  PlotStatusLines(tree,"MIPattachSlopeC:run","");
-//  PlotTimestamp(entries,entries_tree);
+//  PlotTimestamp(entries,entries_tree,c1);
 //  TStatToolkit::AddStatusPad(c11, statPadHeight, statPadBotMar);
 //  TStatToolkit::DrawStatusGraphs(oaMultGr);
 //  c11->SaveAs("MIPattachSlopeC_vs_run.png");
 //  c11->Clear();
-  
+
   /****** electron and MIPs separation ******/
-  
+
   TCanvas *c12  = new  TCanvas("can12","can12",canvas_width,canvas_height);
   c12->cd();
   c12->Update();
   c12->SetGrid(3);
-  
+
   TGraphErrors *gr = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"electroMIPSeparation:run","",marA1,colPosA,1.0);
   gr->SetName("electroMIPSeparation:run");
   gr->GetHistogram()->SetYTitle("Electron - MIP");
@@ -1118,14 +1124,14 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   gr->GetHistogram()->SetMaximum(plotmean+3*plotoutlier);
   gr->GetXaxis()->LabelsOption("v");
   gr->Draw("AP");
-  
+
   PlotStatusLines(tree,"electroMIPSeparation:run","");
-  PlotTimestamp(entries,entries_tree);
+  PlotTimestamp(entries,entries_tree,c1);
   TStatToolkit::AddStatusPad(c12, statPadHeight, statPadBotMar);
   TStatToolkit::DrawStatusGraphs(oaMultGr);
   c12->SaveAs("ElectroMIPSeparation_vs_run.png");
   c12->Clear();
-  
+
   //
   // save status into Tree and write to rootfile
   //
@@ -1136,7 +1142,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
     statusTree->Write();
     cout << " successful." << endl;
   }
-  
+
   cout << "...done with trending." << endl;
   return 1;
 }
@@ -1147,34 +1153,54 @@ Int_t PlotStatusLines(TTree * tree, const char * expr, const char * cut)
   //the function plots status lines
   char* alias = "varname_OutlierMin:varname_OutlierMax:varname_WarningMin:varname_WarningMax:varname_PhysAccMin:varname_PhysAccMax:varname_RobustMean";
   TMultiGraph* mgStatusLines = TStatToolkit::MakeStatusLines(tree,expr,cut,alias);
-  
+
   if (mgStatusLines) mgStatusLines->Draw("l");
   else { cout << " no mgStatusLines available!" << endl; return 0; }
-  
+
   return 1;
 }
 
-Int_t PlotTimestamp(const int nruns=0, const int nentries=0)
+Int_t PlotTimestamp(const int nruns=0, const int nentries=0, TCanvas* c1)
 {
+  double rightlegend = 1 - 10./c1->GetWw();
   //the function plots a timestamp, the used Aliroot version, and the number of runs
   TString sTimestamp  = gSystem->GetFromPipe("date");
-  TString sAlirootVer = "AliRoot " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_PHYSICS; git describe; cd $wdir;");
-  TLatex* latTime = new TLatex(0.99,0.95,sTimestamp.Data());
+  TString sAlirootVer;
+  if (gSystem->GetFromPipe("echo $ALICE_VER") == "master"){
+    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_ROOT/../src; git describe; cd $wdir;");
+  }
+  else {
+    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("echo $ALICE_VER");
+  }
+
+  TString sAliphysicsVer;
+  if (gSystem->GetFromPipe("echo $ALIPHYSICS_VER") == "master"){
+    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_PHYSICS/../src; git describe; cd $wdir;");
+  }
+  else {
+    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("echo $ALIPHYSICS_VER");
+  }
+  TLatex* latTime = new TLatex(rightlegend,0.13,sTimestamp.Data());
   latTime->SetTextSize(0.03);
   latTime->SetTextAlign(31);
   latTime->SetNDC();
   latTime->Draw("same");
-  TLatex* latAliroot = new TLatex(0.99,0.91,sAlirootVer.Data());
+  TLatex* latAliroot = new TLatex(rightlegend,0.09,sAlirootVer.Data());
   latAliroot->SetTextSize(0.03);
   latAliroot->SetTextAlign(31);
   latAliroot->SetNDC();
   latAliroot->Draw("same");
-  TLatex* latNruns = new TLatex(0.99,0.87,Form("N shown runs: %i (tree entries: %i)",nruns,nentries));
+  TLatex* latAliphysics = new TLatex(rightlegend,0.05,sAliphysicsVer.Data());
+  latAliphysics->SetTextSize(0.03);
+  latAliphysics->SetTextAlign(31);
+  latAliphysics->SetNDC();
+  latAliphysics->Draw("same");
+  TLatex* latNruns = new TLatex(rightlegend,0.01,Form("N shown runs: %i (tree entries: %i)",nruns,nentries));
   latNruns->SetTextSize(0.03);
   latNruns->SetTextAlign(31);
   latNruns->SetNDC();
   if (nruns>0) latNruns->Draw("same");
-  return 1;
+return 1;
 }
 
 Int_t ComputeRange(TTree* tree, const char* varname, Float_t &plotmean, Float_t &plotoutlier)

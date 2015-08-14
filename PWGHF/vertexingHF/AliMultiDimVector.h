@@ -6,15 +6,16 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////
-//                                                               //
-// Class to store number of signal and background candidates     //
-// in bins of cut variables                                      //
-// Origin:       Elena Bruna (bruna@to.infn.it)                  //
-// Updated:      Sergey Senyukov (senyukov@to.infn.it)           //
-//               Francesco Prino (prino@to.infn.it)              //
-// Last Updated: Giacomo Ortona (ortona@to.infn.it)              //
-//                                                               //
+////////////////////////////////////////////////////////////////////
+/// \class AliMultiDimVector
+///                                                               //
+/// Class to store number of signal and background candidates     //
+/// in bins of cut variables                                      //
+/// Origin:       Elena Bruna (bruna@to.infn.it)                  //
+/// Updated:      Sergey Senyukov (senyukov@to.infn.it)           //
+///               Francesco Prino (prino@to.infn.it)              //
+/// Last Updated: Giacomo Ortona (ortona@to.infn.it)              //
+///                                                               //
 ///////////////////////////////////////////////////////////////////
 
 #include "TArrayF.h"
@@ -134,23 +135,24 @@ class AliMultiDimVector :  public TNamed{
   //void SetMinLimits(Int_t nvar, Float_t* minlim);
   //void SetMaxLimits(Int_t nvar, Float_t* maxlim);
  private:
-  static const Int_t fgkMaxNVariables=10;  // max. n. of selection variables
-  static const Int_t fgkMaxNPtBins=10;     // max. n. of Pt bins
+  static const Int_t fgkMaxNVariables=10;  /// max. n. of selection variables
+  static const Int_t fgkMaxNPtBins=10;     /// max. n. of Pt bins
 
-  Int_t     fNVariables;                   // n. of selection variables
-  Int_t     fNPtBins;                      // n. of pt bins
-  Float_t   fPtLimits[fgkMaxNPtBins+1];    // limits of pt bins
-  Int_t     fNCutSteps[fgkMaxNVariables];  // n. of cut step for each variable
+  Int_t     fNVariables;                   /// n. of selection variables
+  Int_t     fNPtBins;                      /// n. of pt bins
+  Float_t   fPtLimits[fgkMaxNPtBins+1];    /// limits of pt bins
+  Int_t     fNCutSteps[fgkMaxNVariables];  /// n. of cut step for each variable
   Float_t   fMinLimits[fgkMaxNVariables];  // lower cut value for each variable
-  Float_t   fMaxLimits[fgkMaxNVariables];  // higher cut value for each variable
-  Bool_t    fGreaterThan[fgkMaxNVariables];// sign of the cut (> or <)
-  TString   fAxisTitles[fgkMaxNVariables]; // titles for variables
-  TArrayF   fVett;                   // array with n. of candidates vs. cuts
-  ULong64_t fNTotCells;              // total number of matrix elements
-  Bool_t    fIsIntegrated;           // flag for integrated matrix 
+  Float_t   fMaxLimits[fgkMaxNVariables];  /// higher cut value for each variable
+  Bool_t    fGreaterThan[fgkMaxNVariables];/// sign of the cut (> or <)
+  TString   fAxisTitles[fgkMaxNVariables]; /// titles for variables
+  TArrayF   fVett;                   /// array with n. of candidates vs. cuts
+  ULong64_t fNTotCells;              /// total number of matrix elements
+  Bool_t    fIsIntegrated;           /// flag for integrated matrix
 
-  ClassDef(AliMultiDimVector,2); // a multi-dimensional vector class
-
+  /// \cond CLASSIMP    
+  ClassDef(AliMultiDimVector,2); /// a multi-dimensional vector class
+  /// \endcond
 };
 
 #endif

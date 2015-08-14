@@ -59,6 +59,7 @@ set(SRCS
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
+  AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
@@ -82,6 +83,8 @@ set(SRCS
   AliFemtoPairCutAntiGammaAlpha.cxx
   AliFemtoCorrFctnGammaMonitorAlpha.cxx
   AliFemtoCorrFctn3DPRF.cxx
+  AliFemtoPairCutRadialDistanceAsymmetric.cxx
+  AliFemtoPairCutMergedFraction.cxx
   )
 
 # Headers from sources

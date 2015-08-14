@@ -12,6 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <cfloat>
 #include <map>
 #include <vector>
 
@@ -20,6 +21,7 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TObjArray.h>
+#include <TRandom.h>
 #include <TString.h>
 #include <TTree.h>
 
@@ -73,6 +75,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
+  fKeepFractionEvents(1.),
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fTriggerSetup("4classes"),
@@ -99,6 +102,7 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
+  fKeepFractionEvents(1.),
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fTriggerSetup("4classes"),
@@ -146,6 +150,7 @@ void AliReducedHighPtEventCreator::UserCreateOutputObjects() {
  * \return True if the event was selected, false otherwise
  */
 Bool_t AliReducedHighPtEventCreator::Run() {
+  AliDebug(1, "Starting creation of the reconstructed event");
   if(!fCaloClusters){
     AliError("Cluster container missing");
     return kFALSE;
@@ -154,7 +159,12 @@ Bool_t AliReducedHighPtEventCreator::Run() {
     AliError("Track container missing");
     return kFALSE;
   }
-  if(this->fInputHandler->IsEventSelected() & fEventSelectionBits) return kFALSE;
+  if(!(this->fInputHandler->IsEventSelected() & fEventSelectionBits)){
+    AliDebug(1, "Trigger not selected");
+    return kFALSE;
+  } else {
+    AliDebug(1, "Trigger selected");
+  }
   if(!SelectEvent(fInputEvent)) return kFALSE;
   new(fOutputEvent) AliReducedHighPtEvent(kTRUE);
 
@@ -305,17 +315,18 @@ void AliReducedHighPtEventCreator::AddVirtualTrackSelection(
 }
 
 /**
- * Apply standard event selection
+ * Apply standard event selection. Includes also downscaling if requested.
+ * Note: Downscaling always applied after full event selection
  * \param event The event to check
  * \return True if the event was selected, false otherwise
  */
 Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
-  if(fApplyCentralitySelection && fInputEvent->GetCentrality()){
+  if(fApplyCentralitySelection && InputEvent()->GetCentrality()){
     AliDebug(1, Form("Centrality selection applied in range %f - %f\n", fSelectCentralityRange[0], fSelectCentralityRange[1]));
-    Float_t centrality = fInputEvent->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
-    AliDebug(1, Form("Centrality before: %f\n", centrality));
+    Float_t centrality = InputEvent()->GetCentrality()->GetCentralityPercentile(fCentralityMethod.Data());
+    AliDebug(1, Form("Centrality before: %f, estimator %s\n", centrality, fCentralityMethod.Data()));
     if(centrality < fSelectCentralityRange[0] || centrality > fSelectCentralityRange[1]) return kFALSE;
-    AliDebug(1, Form("Centrality: %f\n", centrality));
+    AliDebug(1, "Centrality selected");
   }
   const AliVVertex *primvtx = event->GetPrimaryVertex();
   if(!primvtx || !primvtx->GetNContributors()) return kFALSE;
@@ -323,6 +334,11 @@ Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
   if(event->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return kFALSE;
   AliAnalysisUtils eventSelUtil;
   if(!eventSelUtil.IsVertexSelected2013pA(event)) return kFALSE;
+  if(fKeepFractionEvents < (1. - FLT_EPSILON)){
+    // Apply downscaling
+    Float_t choice = gRandom->Uniform(0., 1.);
+    if(choice > fKeepFractionEvents) return kFALSE;     // event rejected by downscaling
+  }
   return kTRUE;
 }
 

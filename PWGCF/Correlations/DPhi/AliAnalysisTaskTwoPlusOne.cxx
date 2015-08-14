@@ -68,6 +68,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fUseAllT1(1),
   fUseBackgroundSameOneSide(0),
   fUseBackgroundSameFromMixedComb(0),
+  fUseSmallerPtAssoc(0),
   fEfficiencyCorrection(0)
 {
 
@@ -103,6 +104,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fHistos->SetUseLeadingPt(fUseLeadingPt);
   fHistos->SetUseAllT1(fUseAllT1);
   fHistos->SetUseBackgroundSameOneSide(fUseBackgroundSameOneSide);
+  fHistos->SetUseSmallerPtAssoc(fUseSmallerPtAssoc);
 
   if (fEfficiencyCorrection)
     fHistos->SetEfficiencyCorrection(fEfficiencyCorrection);

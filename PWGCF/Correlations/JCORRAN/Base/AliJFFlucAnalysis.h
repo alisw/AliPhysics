@@ -43,12 +43,16 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		void SetDebugLevel( int dblv ){fDebugLevel = dblv;};
 		void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; 
 									cout << "fEffMode set = " << fEffMode << endl;};
+		void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loot to check SC pt dep = "<< IsSCptdep << endl;};
 
 		inline void DEBUG(int level, TString msg){if(level<fDebugLevel) std::cout<<level<<"\t"<<msg<<endl;};
 
 
 		double Get_Qn_Real(double eta1, double eta2, int harmonics); 
-		double Get_Qn_Img(double eta1, double eta2, int harmonics); 
+		double Get_Qn_Img(double eta1, double eta2, int harmonics);
+		double Get_Qn_Real_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
+		double Get_Qn_Img_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
+ 
 		double Get_QC_Vn( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
 
 		void Fill_QA_plot(double eta1, double eta2 );
@@ -116,6 +120,15 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		AliJTH1D fh_vn_vn; // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
 
 		AliJTH1D fh_correlator; // some more complex correlator
+
+
+		// addtinal variables for ptbins(Standard Candles only)
+		Bool_t IsSCptdep;  // flag to check SC pt dep or not
+		enum{kPt0, kPt1, kPt2, kPt3, kPt4, kPt5, kPt6, N_ptbins};
+		double NSubTracks_pt[2][N_ptbins];
+		AliJBin fBin_Nptbins;
+		AliJTH1D fh_SC_ptdep_4corr; // for < vn^2 vm^2 >
+		AliJTH1D fh_SC_ptdep_2corr;  // for < vn^2 >
 
 
 		ClassDef(AliJFFlucAnalysis, 1); // example of analysis

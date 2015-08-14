@@ -49,6 +49,9 @@
 #include "AliFemtoCutMonitorCollections.h"
 #include "AliFemtoKKTrackCut.h"
 #include "AliFemtoCorrFctn3DPRF.h"
+#include "AliFemtoCorrFctnNonIdDR.h"
+#include "AliFemtoPairCutRadialDistance.h"
+#include "AliFemtoCorrFctnDPhiStarDEta.h"
 #endif
 
 //_
@@ -139,7 +142,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[40*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[40];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[40*10];
-
+  AliFemtoCorrFctnNonIdDR       *cnonidtpc[40];
+  AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[40];
+  AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta12[40];
+  AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta16[40];
+  AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta20[40];
   // *** Begin pion-pion (positive) analysis ***
   int aniter = 0;  
 
@@ -200,7 +207,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc1etaphitpc[aniter]->SetMass(PionMass);	  
 	  dtc1etaphitpc[aniter]->SetMostProbablePion();	 
-         
+          dtc1etaphitpc[aniter]->SetNsigma(3.0);
+          dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
  
 	  dtc2etaphitpc[aniter]->SetPt(0.15,1.5);
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
@@ -287,42 +295,40 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	 sqpcetaphitpc[aniter] = new AliFemtoPairCutRadialDistance();
           sqpcetaphitpcRD[aniter] = new AliFemtoPairCutRadialDistanceLM();
+          //sqpcetaphitpc[aniter]->SetMagneticFieldSign(-1);
 
-	/*  if( runtype==0){
-	   sqpcetaphitpc[aniter]->SetMaxEEMinv(0.0);
-	   sqpcetaphitpc[aniter]->SetMaxThetaDiff(0.0);
-	   sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(1.5);
-	  // sqpcetaphitpc[aniter]->SetPhiStarDistanceMinimum(0.03);
-	  // sqpcetaphitpc[aniter]->SetRadialDistanceMinimum(0.12, 0.03);
-	  //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
-        }
-
-	  else if (runtype==1){
-	  	    sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(5.0);
-	  	    sqpcetaphitpc[aniter]->SetPhiStarDistanceMinimum(0.03);
-	  //sqpcetaphitpc[aniter]->SetRadialDistanceMinimum(1.2, 0.03);
-	  //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
-}
-	else if ( runtype==2 ){
-	  sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
+	  /*sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	  sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	  sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-          // sqpcetaphitpc[aniter]->SetMinimumRadius(1.6);
+          sqpcetaphitpc[aniter]->SetMinimumRadius(0.8);
+          sqpcetaphitpc[aniter]->SetMagneticFieldSign(1);*/
 	  //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 	  //sqpcetaphitpc[aniter]->SetPhiStarDifferenceMinimum(0.045);  
-          //sqpcetaphitpcRD[aniter]->SetMinimumRadius(1.6);
+          //sqpcetaphitpcRD[aniter]->SetMinimumRadius(0.8);
 	  //sqpcetaphitpcRD[aniter]->SetEtaDifferenceMinimum(0.02);
-	  //sqpcetaphitpcRD[aniter]->SetPhiStarDifferenceMinimum(0.045);
-	  }
-*/
-	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
+	 // sqpcetaphitpcRD[aniter]->SetPhiStarDifferenceMinimum(0.045);
+	 anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
-	 anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 	  
-	   cq3dprfkttpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("cq3d%stpcM%i", chrgs[ichg], imult),200,0.5);
+	   //cq3dprfkttpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("cq3d%stpcM%i", chrgs[ichg], imult),200,0.5);
 	   //cq3dprfkttpc[aniter]->SetPairSelectionCut(ktpcuts[aniter]);
-           anetaphitpc[aniter]->AddCorrFctn(cq3dprfkttpc[aniter]);
+           //anetaphitpc[aniter]->AddCorrFctn(cq3dprfkttpc[aniter]);
+          cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0, shqmax);
+  	  anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
+	  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),90, 90);
+	  anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+
+  // Correlation function for two particle correlations which uses dPhi* and dEta as a function variables.
+           cdphistardeta08[aniter] = new AliFemtoCorrFctnDPhiStarDEta(Form("cdphistardeta08%stpcM%i", chrgs[ichg], imult), 0.8, 51, -0.05, 0.05, 127, -1.0, 1.0);
+            anetaphitpc[aniter]->AddCorrFctn(cdphistardeta08[aniter]);
+            cdphistardeta12[aniter] = new AliFemtoCorrFctnDPhiStarDEta(Form("cdphistardeta12%stpcM%i", chrgs[ichg], imult), 1.2, 51, -0.05, 0.05, 127, -1.0, 1.0);
+            anetaphitpc[aniter]->AddCorrFctn(cdphistardeta12[aniter]);
+            cdphistardeta16[aniter] = new AliFemtoCorrFctnDPhiStarDEta(Form("cdphistardeta16%stpcM%i", chrgs[ichg], imult), 1.6, 51, -0.05, 0.05, 127, -1.0, 1.0);
+            anetaphitpc[aniter]->AddCorrFctn(cdphistardeta16[aniter]);
+            cdphistardeta20[aniter] = new AliFemtoCorrFctnDPhiStarDEta(Form("cdphistardeta20%stpcM%i", chrgs[ichg], imult), 2.0, 51, -0.05, 0.05, 127, -1.0, 1.0);
+            anetaphitpc[aniter]->AddCorrFctn(cdphistardeta20[aniter]);
 
 	  if (runktdep) {
 	    int ktm;

@@ -249,6 +249,8 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
           
         } // loop
     } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
+    
+    delete contBC;
   }  // Remove bad
   
   // Energy Recalibration
@@ -294,6 +296,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       } else AliInfo("Do NOT recalibrate EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok
         
+    delete contRF;
   } // Recalibration on
   
   // Energy Recalibration, apply on top of previous calibration factors
@@ -350,6 +353,8 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         } // rows 
       } // SM loop
     } else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
+    
+    delete contRFTD;
   } // Run by Run T calibration
   
   // Time Recalibration
@@ -392,6 +397,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
     
+    delete contTRF;
   } // Time recalibration on    
   
   // Parameters already set once, so do not it again
@@ -1169,15 +1175,14 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
   {
     if(fGeomName=="")
     {
-      if     (runnumber < 140000) fGeomName = "EMCAL_FIRSTYEARV1";
-      else if(runnumber < 171000) fGeomName = "EMCAL_COMPLETEV1";
-      else if(runnumber < 198000) fGeomName = "EMCAL_COMPLETE12SMV1";
-      else                        fGeomName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+      fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(runnumber);
+      AliInfo(Form("Get EMCAL geometry name <%s> for run %d",fGeom->GetName(),runnumber));
     }
-    
-    AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fGeomName.Data(),runnumber));
-
-		fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+    else
+    {
+      fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+      AliInfo(Form("Set EMCAL geometry name to <%s>",fGeomName.Data()));
+    }
     
     // Init geometry, I do not like much to do it like this ...
     if(fImportGeometryFromFile && !gGeoManager)
@@ -1226,6 +1231,15 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
           fGeomMatrix[mod]->Print();
         
         fGeom->SetMisalMatrix(fGeomMatrix[mod],mod) ;  
+      }
+      else if(gGeoManager)
+      {
+        AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+        fGeom->SetMisalMatrix(fGeom->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+      }
+      else
+      {
+        AliError(Form("Alignment atrix for SM %d is not available",mod));
       }
       
       fGeomMatrixSet=kTRUE;

@@ -2288,7 +2288,7 @@ void AliAnalysisTaskSigma0::ProcessMC(){
                 }
             }
             
-            if( abs( rapLam < fetaCut ) ) {
+            if( TMath::Abs(rapLam) < fetaCut ) {
                 FillHistogram("hMCgenLamEta1",  particle->Pt() );
                 if(  particle->GetPdgCode() == 3122 )    FillHistogram("hMCgenPLamEta1",  particle->Pt() );
                 else if( particle->GetPdgCode() == -3122 )    FillHistogram("hMCgenALamEta1",  particle->Pt() );

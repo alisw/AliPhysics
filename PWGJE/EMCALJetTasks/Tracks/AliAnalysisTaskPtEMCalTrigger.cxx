@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
- * Analysis task of the pt analysis on EMCal-triggered events
- *
- *   Author: Markus Fasel
- */
-
 #include <map>
 #include <cstring>
 #include <iostream>
@@ -62,7 +56,9 @@
 #include "AliParticleContainer.h"
 #include "AliPicoTrack.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -73,7 +69,9 @@ namespace EMCalTriggerPtAnalysis {
   const Double_t jetRadVals[AliAnalysisTaskPtEMCalTrigger::kNJetRadii] = {0.2, 0.3, 0.4, 0.5};
   const Double_t *AliAnalysisTaskPtEMCalTrigger::kJetRadii = jetRadVals;
 
-  //______________________________________________________________________________
+  /**
+   * Dummy constructor, initialising the values with default (NULL) values
+   */
   AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger():
                 		    AliAnalysisTaskEmcalJet(),
                 		    fHistos(NULL),
@@ -88,12 +86,12 @@ namespace EMCalTriggerPtAnalysis {
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
-    /*
-     * Dummy constructor, initialising the values with default (NULL) values
-     */
   }
 
-  //______________________________________________________________________________
+  /**
+   * Main constructor, setting default values for eta and zvertex cut
+   * @param name Name of the task
+   */
   AliAnalysisTaskPtEMCalTrigger::AliAnalysisTaskPtEMCalTrigger(const char *name):
                 		    AliAnalysisTaskEmcalJet(name, kTRUE),
                 		    fHistos(NULL),
@@ -108,9 +106,6 @@ namespace EMCalTriggerPtAnalysis {
                 		    fSwapEta(kFALSE),
                 		    fUseTriggersFromTriggerMaker(kFALSE)
   {
-    /*
-     * Main constructor, setting default values for eta and zvertex cut
-     */
 
     fListTrackCuts = new TList;
     fListTrackCuts->SetOwner(false);
@@ -123,22 +118,20 @@ namespace EMCalTriggerPtAnalysis {
     SetMakeGeneralHistograms(kTRUE);
   }
 
-  //______________________________________________________________________________
+  /**
+   * Destructor, deleting output
+   */
   AliAnalysisTaskPtEMCalTrigger::~AliAnalysisTaskPtEMCalTrigger(){
-    /*
-     * Destructor, deleting output
-     */
     //if(fTrackSelection) delete fTrackSelection;
     if(fHistos) delete fHistos;
     if(fListTrackCuts) delete fListTrackCuts;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Create the list of output objects and define the histograms.
+   * Also adding the track cuts to the list of histograms.
+   */
   void AliAnalysisTaskPtEMCalTrigger::UserCreateOutputObjects(){
-    /*
-     * Create the list of output objects and define the histograms.
-     * Also adding the track cuts to the list of histograms.
-     */
     AliAnalysisTaskEmcal::UserCreateOutputObjects();
     SetCaloTriggerPatchInfoName("EmcalTriggers");
     fHistos = new AliEMCalHistoContainer("PtEMCalTriggerHistograms");
@@ -317,13 +310,12 @@ namespace EMCalTriggerPtAnalysis {
     PostData(1, fOutput);
   }
 
-  //______________________________________________________________________________
+  /**
+   * Runs the event loop
+   *
+   * @param option Additional options
+   */
   Bool_t AliAnalysisTaskPtEMCalTrigger::Run(){
-    /*
-     * Runs the event loop
-     *
-     * @param option: Additional options
-     */
     // Common checks: Have SPD vertex and primary vertex from tracks, and both need to have at least one contributor
     AliDebug(1,Form("Number of calibrated clusters: %d", fCaloClusters->GetEntries()));
     AliDebug(1,Form("Number of matched tracks: %d", fTracks->GetEntries()));
@@ -444,7 +436,7 @@ namespace EMCalTriggerPtAnalysis {
     bool isPileupEvent = fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.);
     isPileupEvent = isPileupEvent || (TMath::Abs(vtxTracks->GetZ() - vtxSPD->GetZ()) > 0.5);
     double covSPD[6]; vtxSPD->GetCovarianceMatrix(covSPD);
-    isPileupEvent = isPileupEvent || (TString(vtxSPD->GetTitle()).Contains("vertexer:Z") && TMath::Sqrt(covSPD[5]) > 0.25);
+    isPileupEvent = isPileupEvent || (vtxSPD->IsFromVertexerZ() && TMath::Sqrt(covSPD[5]) > 0.25); // selection effectively inactive in old versions of the code
 
     // Fill event-based histogram
     const double &zv = vtxTracks->GetZ();
@@ -618,13 +610,12 @@ namespace EMCalTriggerPtAnalysis {
     return true;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Creating the default \f$ p_{t} \f$ binning.
+   *
+   * @param binning Array where to store the results.
+   */
   void AliAnalysisTaskPtEMCalTrigger::CreateDefaultPtBinning(TArrayD &binning) const{
-    /*
-     * Creating the default pt binning.
-     *
-     * @param binning: Array where to store the results.
-     */
     std::vector<double> mybinning;
     std::map<double,double> definitions;
     definitions.insert(std::pair<double,double>(2.5, 0.1));
@@ -648,13 +639,12 @@ namespace EMCalTriggerPtAnalysis {
       binning[ib++] = *it;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Creating default z-Vertex binning.
+   *
+   * @param binning Array where to store the results.
+   */
   void AliAnalysisTaskPtEMCalTrigger::CreateDefaultZVertexBinning(TArrayD &binning) const {
-    /*
-     * Creating default z-Vertex binning.
-     *
-     * @param binning: Array where to store the results.
-     */
     std::vector<double> mybinning;
     double currentval = -10;
     mybinning.push_back(currentval);
@@ -668,13 +658,12 @@ namespace EMCalTriggerPtAnalysis {
       binning[ib++] = *it;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Creating default z-Vertex binning.
+   *
+   * @param binning Array where to store the results.
+   */
   void AliAnalysisTaskPtEMCalTrigger::CreateDefaultEtaBinning(TArrayD& binning) const {
-    /*
-     * Creating default z-Vertex binning.
-     *
-     * @param binning: Array where to store the results.
-     */
     std::vector<double> mybinning;
     double currentval = -0.8;
     mybinning.push_back(currentval);
@@ -688,18 +677,17 @@ namespace EMCalTriggerPtAnalysis {
       binning[ib++] = *it;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Define an axis with a given binning
+   *
+   * @param axis Axis to be defined
+   * @param name Name of the axis
+   * @param title Title of the axis
+   * @param binning axis binning
+   * @param labels array of bin labels
+   */
   void AliAnalysisTaskPtEMCalTrigger::DefineAxis(TAxis& axis, const char* name,
       const char* title, const TArrayD& binning, const char** labels) {
-    /*
-     * Define an axis with a given binning
-     *
-     * @param axis: Axis to be defined
-     * @param name: Name of the axis
-     * @param title: Title of the axis
-     * @param binning: axis binning
-     * @param labels (@optional): array of bin labels
-     */
     axis.Set(binning.GetSize()-1, binning.GetArray());
     axis.SetName(name);
     axis.SetTitle(title);
@@ -709,21 +697,20 @@ namespace EMCalTriggerPtAnalysis {
     }
   }
 
-  //______________________________________________________________________________
+  /**
+   * Define an axis with number of bins from min to max
+   *
+   * @param axis Axis to be defined
+   * @param name Name of the axis
+   * @param title Title of the axis
+   * @param nbins Number of bins
+   * @param min lower limit of the axis
+   * @param max upper limit of the axis
+   * @param labels array of bin labels
+   */
   void AliAnalysisTaskPtEMCalTrigger::DefineAxis(TAxis& axis, const char* name,
       const char* title, int nbins, double min, double max,
       const char** labels) {
-    /*
-     * Define an axis with number of bins from min to max
-     *
-     * @param axis: Axis to be defined
-     * @param name: Name of the axis
-     * @param title: Title of the axis
-     * @param nbins: Number of bins
-     * @param min: lower limit of the axis
-     * @param max: upper limit of the axis
-     * @param labels (@optional): array of bin labels
-     */
     axis.Set(nbins, min, max);
     axis.SetName(name);
     axis.SetTitle(title);
@@ -733,17 +720,15 @@ namespace EMCalTriggerPtAnalysis {
     }
   }
 
-
-  //______________________________________________________________________________
+  /**
+   * Fill event-based histogram
+   *
+   * @param trigger name of the trigger configuration to be processed
+   * @param vz z-position of the vertex
+   * @param isPileup signalises if the event is flagged as pileup event
+   */
   void AliAnalysisTaskPtEMCalTrigger::FillEventHist(const char* trigger,
       double vz, bool isPileup) {
-    /*
-     * Fill event-based histogram
-     *
-     * @param trigger: name of the trigger configuration to be processed
-     * @param vz: z-position of the vertex
-     * @param isPileup: signalises if the event is flagged as pileup event
-     */
     char histname[1024];
     sprintf(histname, "hEventHist%s", trigger);
     try{
@@ -764,18 +749,17 @@ namespace EMCalTriggerPtAnalysis {
     }
   }
 
-  //______________________________________________________________________________
+  /**
+   * Fill track-based histogram with corresponding information
+   *
+   * @param trigger name of the trigger
+   * @param track ESD track selected
+   * @param vz z-position of the vertex
+   * @param isPileup flag event as pileup event
+   * @param cut id of the cut (0 = no cut)
+   */
   void AliAnalysisTaskPtEMCalTrigger::FillTrackHist(const char* trigger,
       const AliVTrack* track, double vz, bool isPileup, int cut, bool isMinBias, double jetradius) {
-    /*
-     * Fill track-based histogram with corresponding information
-     *
-     * @param trigger: name of the trigger
-     * @param track: ESD track selected
-     * @param vz: z-position of the vertex
-     * @param isPileup: flag event as pileup event
-     * @param cut: id of the cut (0 = no cut)
-     */
     double etasign = fSwapEta ? -1. : 1.;
     double data[7] = {TMath::Abs(track->Pt()), etasign * track->Eta(), track->Phi(), vz, 0, static_cast<double>(cut), isMinBias ? 1. : 0.};
     double dataMC[7] = {0., 0., 0., vz, 0, static_cast<double>(cut), isMinBias ? 1. : 0.};
@@ -845,17 +829,16 @@ namespace EMCalTriggerPtAnalysis {
     }
   }
 
-  //______________________________________________________________________________
+  /**
+   * Fill cluster-based histogram with corresponding information
+   *
+   * @param trigger name of the trigger
+   * @param cluster the EMCal cluster information
+   * @param vz z-position of the vertex
+   * @param isPileup flag event as pileup event
+   */
   void AliAnalysisTaskPtEMCalTrigger::FillClusterHist(const char* histname,
       const AliVCluster* clust, double vz, bool isPileup, bool isMinBias) {
-    /*
-     * Fill cluster-based histogram with corresponding information
-     *
-     * @param trigger: name of the trigger
-     * @param cluster: the EMCal cluster information
-     * @param vz: z-position of the vertex
-     * @param isPileup: flag event as pileup event
-     */
     double data[4] =  {clust->E(), vz, 0, isMinBias ? 1. : 0.};
     try{
       fHistos->FillTHnSparse(histname, data);
@@ -876,13 +859,12 @@ namespace EMCalTriggerPtAnalysis {
     }
   }
 
-  //______________________________________________________________________________
+  /**
+   * Fill histogram for MC-true particles with the information pt, eta and phi
+   *
+   * @param track the Monte-Carlo track
+   */
   void AliAnalysisTaskPtEMCalTrigger::FillMCParticleHist(const char *histname, const AliVParticle * const track, double vz, bool isPileup){
-    /*
-     * Fill histogram for MC-true particles with the information pt, eta and phi
-     *
-     * @param track: the Monte-Carlo track
-     */
     double data[5] = {TMath::Abs(track->Pt()), track->Eta(), track->Phi(), vz, 0.};
     fHistos->FillTHnSparse(histname, data);
     if(!isPileup){
@@ -891,49 +873,45 @@ namespace EMCalTriggerPtAnalysis {
     }
   }
 
-  //______________________________________________________________________________
+  /**
+   * Check if the track has an associated MC particle, and that the particle is a physical primary
+   * In case of data we do not do the selection at that step (always return true)
+   *
+   * @param track Track to check
+   * @result true primary track (true or false)
+   */
   bool AliAnalysisTaskPtEMCalTrigger::IsTrueTrack(const AliVTrack *const track) const{
-    /*
-     * Check if the track has an associated MC particle, and that the particle is a physical primary
-     * In case of data we do not do the selection at that step (always return true)
-     *
-     * @param track: Track to check
-     * @result: true primary track (true or false)
-     */
     if(!fMCEvent) return true;
     AliVParticle *mcassociate = fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
     if(!mcassociate) return false;
     return fMCEvent->IsPhysicalPrimary(TMath::Abs(track->GetLabel()));
   }
 
-  //______________________________________________________________________________
+  /**
+   * Add new track cuts to the task
+   *
+   * @param trackCuts Object of type AliESDtrackCuts
+   */
   void AliAnalysisTaskPtEMCalTrigger::AddESDTrackCuts(AliESDtrackCuts* trackCuts) {
-    /*
-     * Add new track cuts to the task
-     *
-     * @param trackCuts: Object of type AliESDtrackCuts
-     */
     fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionESD(trackCuts));
   }
 
-  //______________________________________________________________________________
+  /**
+   * Add new track cuts to the task
+   *
+   * @param trackCuts Object of type AliESDtrackCuts
+   */
   void AliAnalysisTaskPtEMCalTrigger::AddCutsForAOD(AliESDtrackCuts* trackCuts, UInt_t filterbits) {
-    /*
-     * Add new track cuts to the task
-     *
-     * @param trackCuts: Object of type AliESDtrackCuts
-     */
     fListTrackCuts->AddLast(new AliEMCalPtTaskTrackSelectionAOD(trackCuts, filterbits));
   }
 
 
-  //______________________________________________________________________________
+  /**
+   * Build trigger string from the trigger maker
+   *
+   * @return blank-separated string of fired trigger classes
+   */
   TString AliAnalysisTaskPtEMCalTrigger::BuildTriggerString() {
-    /*
-     * Build trigger string from the trigger maker
-     *
-     * @return: blank-separated string of fired trigger classes
-     */
     AliDebug(1, "trigger checking");
     TString result = "";
     if(HasTriggerType(kJ1)) result += "EJ1 ";
@@ -943,13 +921,12 @@ namespace EMCalTriggerPtAnalysis {
     return result;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Accessor for the SPD vertex, creating transparency for ESDs and AODs
+   *
+   * @return the spd vertex
+   */
   const AliVVertex* AliAnalysisTaskPtEMCalTrigger::GetSPDVertex() const {
-    /*
-     * Accessor for the SPD vertex, creating transparency for ESDs and AODs
-     *
-     * @return: the spd vertex
-     */
     AliESDEvent *esd = dynamic_cast<AliESDEvent *>(fInputEvent);
     if(esd){
       return esd->GetPrimaryVertexSPD();
@@ -962,17 +939,17 @@ namespace EMCalTriggerPtAnalysis {
     return NULL;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Correlate track to reconstructed jet
+   *
+   * @param track particle to be checked
+   * @param jets container of recontructed jets
+   * @return The matched jet (NULL if not found)
+   */
   const AliEmcalJet * AliAnalysisTaskPtEMCalTrigger::FoundTrackInJet(
       const AliVParticle * const track, AliJetContainer *const jets) const
   {
-    /*
-     * Correlate track to reconstructed jet
-     *
-     * @param track: particle to be checked
-     * @param jets: container of recontructed jets
-     * @return: The matched jet (NULL if not found)
-     */
+
     const AliEmcalJet *result = NULL;
     const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
     while(tmp){
@@ -985,29 +962,27 @@ namespace EMCalTriggerPtAnalysis {
     return result;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Check if track is in radius around a given jet
+   *
+   * @param track Track to check
+   * @param reconstructed jet jet to probe
+   * @param radius cone radius
+   * @return result of the test (true if track is inside the cone radius, false otherwise)
+   */
   bool AliAnalysisTaskPtEMCalTrigger::IsInRadius(const AliVParticle *const track, const AliEmcalJet *reconstructedJet, Double_t radius) const {
-    /*
-     * Check if track is in radius around a given jet
-     *
-     * @param track: Track to check
-     * @param reconstructed jet: jet to probe
-     * @param radius: cone radius
-     * @return: result of the test (true if track is inside the cone radius, false otherwise)
-     */
     return reconstructedJet->DeltaR(track) < radius;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Check if track is in radius around a given jet
+   *
+   * @param track Track to check
+   * @param reconstructed jet jet to probe
+   * @param radius cone radius
+   * @return result of the test (true if track is inside the cone radius, false otherwise)
+   */
   bool AliAnalysisTaskPtEMCalTrigger::IsInRadius(const AliVCluster *const clust, const AliEmcalJet *reconstructedJet, Double_t radius) const {
-    /*
-     * Check if track is in radius around a given jet
-     *
-     * @param track: Track to check
-     * @param reconstructed jet: jet to probe
-     * @param radius: cone radius
-     * @return: result of the test (true if track is inside the cone radius, false otherwise)
-     */
     double vertexPos[3];
     fInputEvent->GetPrimaryVertex()->GetXYZ(vertexPos);
     TLorentzVector clustVect;
@@ -1021,17 +996,16 @@ namespace EMCalTriggerPtAnalysis {
     return deltaR < radius;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Check whether track is among the jet constituents
+   *
+   * @param track track to check
+   * @param reconstructedJet reconstructed jet to check
+   * @param tracks container with tracks used for jetfinding
+   * @return true if found, false otherwise
+   */
   bool AliAnalysisTaskPtEMCalTrigger::TrackInJet(const AliVParticle* const track,
       const AliEmcalJet* reconstructedJet, const AliParticleContainer * const particles) const {
-    /*
-     * Check whether track is among the jet constituents
-     *
-     * @param track: track to check
-     * @param reconstructedJet: reconstructed jet to check
-     * @param tracks: container with tracks used for jetfinding
-     * @return: true if found, false otherwise
-     */
     bool found = false;
     const AliPicoTrack *picotmp(NULL);
     const AliVParticle *tmp(NULL);
@@ -1047,15 +1021,15 @@ namespace EMCalTriggerPtAnalysis {
     return found;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Check whether a cluster is in a radius around a given jet
+   *
+   * @param clust The cluster to check
+   * @param reconstructedJet reconstructed jet to check
+   * @return the jet containing the cluster (null otherwise)
+   */
   const AliEmcalJet* AliAnalysisTaskPtEMCalTrigger::FoundClusterInJet(const AliVCluster* const clust, AliJetContainer* const jets) const {
-    /*
-     * Check whether a cluster is in a radius around a given jet
-     *
-     * @param clust: The cluster to check
-     * @param reconstructedJet: reconstructed jet to check
-     * @return: the jet containing the cluster (null otherwise)
-     */
+
     const AliEmcalJet *result = NULL;
     const AliEmcalJet *tmp = jets->GetNextAcceptJet(0);
     while(tmp){
@@ -1068,17 +1042,16 @@ namespace EMCalTriggerPtAnalysis {
     return result;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Check whether cluster is among the jet constituents
+   *
+   * @param track track to check
+   * @param reconstructedJet reconstructed jet to check
+   * @param clusters the cluster container
+   * @return true if found, false otherwise
+   */
   bool AliAnalysisTaskPtEMCalTrigger::ClusterInJet(const AliVCluster* const clust,
       const AliEmcalJet* reconstructedJet, const AliClusterContainer* const clusters) const {
-    /*
-     * Check whether cluster is among the jet constituents
-     *
-     * @param track: track to check
-     * @param reconstructedJet: reconstructed jet to check
-     * @param clusters: the cluster container
-     * @return: true if found, false otherwise
-     */
     bool found = false;
     const AliVCluster *tmp(NULL);
     for(int ipart = 0; ipart < reconstructedJet->GetNumberOfTracks(); ipart++){
@@ -1091,14 +1064,13 @@ namespace EMCalTriggerPtAnalysis {
     return found;
   }
 
-  //______________________________________________________________________________
+  /**
+   * Add new Jet input container to the analysis task
+   *
+   * @param contname Name of the container
+   * @param isMC Defines whether the container is for MC truth or not
+   */
   void EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger::AddJetContainerName(const Char_t* contname, Bool_t isMC) {
-    /*
-     * Add new Jet input container to the analysis task
-     *
-     * @param contname: Name of the container
-     * @param isMC: Defines whether the container is for MC truth or not
-     */
     TList &mycontainer = isMC ? fJetContainersMC : fJetContainersData;
     mycontainer.Add(new TObjString(contname));
   }

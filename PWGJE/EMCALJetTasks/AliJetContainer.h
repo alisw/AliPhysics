@@ -46,6 +46,7 @@ class AliJetContainer : public AliEmcalContainer {
   void                        SetJetEtaLimits(Float_t min, Float_t max)            { fJetMinEta = min, fJetMaxEta = max ; }
   void                        SetJetPhiLimits(Float_t min, Float_t max, Float_t offset=0.) { fJetMinPhi = min, fJetMaxPhi = max ; fPhiOffset = offset;}
   void                        SetJetPtCut(Float_t cut)                             { fJetPtCut       = cut              ; }
+  void                        SetJetPtCutMax(Float_t cut)                          { fJetPtCutMax    = cut              ; }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
   void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); 
@@ -110,6 +111,7 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     GetJetPhiMin()                        const    {return fJetMinPhi;}
   Float_t                     GetJetPhiMax()                        const    {return fJetMaxPhi;}
   Float_t                     GetJetPtCut()                         const    {return fJetPtCut;}
+  Float_t                     GetJetPtCutMax()                      const    {return fJetPtCutMax;}
 
   void                        SetClassName(const char *clname);
   void                        SetArray(AliVEvent *event);
@@ -130,6 +132,7 @@ class AliJetContainer : public AliEmcalContainer {
   Float_t                     fPtBiasJetTrack;       //  select jets with a minimum pt track
   Float_t                     fPtBiasJetClus;        //  select jets with a minimum pt cluster
   Float_t                     fJetPtCut;             //  cut on jet pt
+  Float_t                     fJetPtCutMax;          //  cut on jet pt - MAX
   Float_t                     fJetAreaCut;           //  cut on jet area
   Float_t                     fAreaEmcCut;           //  minimum cut on jet emcal area
   Float_t                     fJetMinEta;            //  minimum eta jet acceptance
@@ -162,7 +165,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliJetContainer(const AliJetContainer& obj); // copy constructor
   AliJetContainer& operator=(const AliJetContainer& other); // assignment
 
-  ClassDef(AliJetContainer,12);
+  ClassDef(AliJetContainer,13);
 };
 
 #endif

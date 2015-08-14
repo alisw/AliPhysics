@@ -6,9 +6,9 @@
 /* $Id$ */ 
 
 //***********************************************************
-// Class AliRDHFCutsLctopKpi
-// class for cuts on AOD reconstructed Lc->pKpi
-// Author: A.Dainese, andrea.dainese@pd.infn.it
+/// \class Class AliRDHFCutsLctopKpi
+/// \brief class for cuts on AOD reconstructed Lc->pKpi
+/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -118,14 +118,17 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
  protected:
   AliAODPidHF *fPidObjprot;
   AliAODPidHF *fPidObjpion;
-  Bool_t fUseImpParProdCorrCut; //switch for cut on d0p*d0K vs. d0K*d0pi 
+  Bool_t fUseImpParProdCorrCut; /// switch for cut on d0p*d0K vs. d0K*d0pi
 
 private:
-  EPIDStrategy fPIDStrategy;                // PIS strategy (nsigma, combined)
-  Double_t fPIDThreshold[AliPID::kSPECIES]; // PID threshold for each species
-  ECutsStrategy fCutsStrategy;              // cut strategy (standard or KF)
+  EPIDStrategy fPIDStrategy;                /// PIS strategy (nsigma, combined)
+  Double_t fPIDThreshold[AliPID::kSPECIES]; /// PID threshold for each species
+  ECutsStrategy fCutsStrategy;              /// cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
-  ClassDef(AliRDHFCutsLctopKpi,10);  // class for cuts on AOD reconstructed Lc->pKpi
+
+  /// \cond CLASSIMP    
+  ClassDef(AliRDHFCutsLctopKpi,10);  /// class for cuts on AOD reconstructed Lc->pKpi
+  /// \endcond
 };
 
 #endif

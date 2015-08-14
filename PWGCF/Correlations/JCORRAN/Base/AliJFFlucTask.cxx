@@ -67,11 +67,13 @@ AliJFFlucTask::AliJFFlucTask():
 	IsExcludeWeakDecay = kFALSE;
 	IsCentFlat = kFALSE;
 	IsPhiModule = kFALSE;
+	IsSCptdep = kFALSE; 
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;		
 		}
 	}
+	fzvtxCut = 10;  // defualt z vertex cut
 	//  DefineOutput(1, TDirectory::Class());
 }
 
@@ -101,11 +103,13 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	IsExcludeWeakDecay = kFALSE;
 	IsCentFlat = kFALSE;
 	IsPhiModule = kFALSE;
+	IsSCptdep = kFALSE;
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;		
 		}
 	}
+	fzvtxCut = 10;
 }
 
 //____________________________________________________________________________
@@ -144,6 +148,7 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
 	fFFlucAna->SetDebugLevel(fDebugLevel); 
 	fFFlucAna->SetIsPhiModule( IsPhiModule); 
+	fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
 	// setting histos for phi modulation
 	if( IsPhiModule==kTRUE){
 			for(int icent=0; icent<7; icent++){
@@ -329,7 +334,7 @@ else if( IsMC == kFALSE){
 		for( int it=0; it<nt ; it++){
 				AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 				if(!track) { Error("ReadEventAOD", "Could not receive partice %d", (int) it); continue; };
-				if(track->TestFilterBit( fFilterBit )){ // hybrid cut
+				if(track->TestFilterBit( fFilterBit )){ //
 						double Pt = track->Pt(); 
 						if( fPt_min > 0){
 								if( track->Pt() < fPt_min || track->Pt() > fPt_max ) continue ; // pt cut
@@ -360,7 +365,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	if(vtx){
 		if( vtx->GetNContributors() > 0 ){
 			double zVert = vtx->GetZ();
-			if( zVert > -10 && zVert < 10) Event_status = kTRUE;
+			if( zVert > -1 * fzvtxCut && zVert < fzvtxCut ) Event_status = kTRUE;
 		}
 	}
 

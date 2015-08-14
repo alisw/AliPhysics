@@ -1,13 +1,9 @@
-/**************************************************************************
- AliFemtoSimpleAnalysis - the most basic analysis there is.
- Most others (e.g. AliFemtoVertexAnalysis) wrap this one.
-**************************************************************************/
+///
+/// \file AliFemtoSimpleAnalysis.h
+///
 
 #ifndef ALIFEMTO_SIMPLE_ANALYSIS_H
 #define ALIFEMTO_SIMPLE_ANALYSIS_H
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
 
 #include "AliFemtoAnalysis.h"        // base analysis class
 #include "AliFemtoPairCut.h"     
@@ -22,17 +18,45 @@
 
 class AliFemtoPicoEventCollectionVectorHideAway;
 
+///
+/// \class AliFemtoSimpleAnalysis
+/// \brief The most basic (concrete) analysis there is.
+///
+/// Most other analyses (e.g. AliFemtoVertexAnalysis) inherit from this one. 
+/// Provides basic functionality for the analysis. To properly set up the 
+/// analysis the following steps should be taken:
+///
+/// - create particle cuts and add them via SetFirstParticleCut and
+///  SetSecondParticleCut. If one analyzes identical particle
+///  correlations, the first particle cut must be also the second
+///  particle cut.
+///
+/// - create pair cuts and add them via SetPairCut
+///
+/// - create one or many correlation functions and add them via
+///  AddCorrFctn method.
+///
+/// - specify how many events are to be strored in the mixing buffer for
+///  background construction
+///
+/// Then, when the analysis is run, for each event, the EventBegin is
+/// called before any processing is done, then the ProcessEvent is called
+/// which takes care of creating real and mixed pairs and sending them
+/// to all the registered correlation functions. At the end of each event,
+/// after all pairs are processed, EventEnd is called. After the whole
+/// analysis finishes (there is no more events to process) Finish() is
+/// called.
+///
 class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
 
-/// \class AliFemtoSimpleAnalysis
-/// \brief friend class AliFemtoLikeSignAnalysis;
+// friend class AliFemtoLikeSignAnalysis;
 
- public:
+public:
   AliFemtoSimpleAnalysis();
-  AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& OriginalAnalysis);  // copy constructor
+  AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& OriginalAnalysis);  /// Copy all parameters from another analysis. Cuts are cloned, mixing buffer and fNeventsProcessed are NOT copied
   virtual ~AliFemtoSimpleAnalysis();
 
-  AliFemtoSimpleAnalysis& operator=(const AliFemtoSimpleAnalysis& aAna);
+  AliFemtoSimpleAnalysis& operator=(const AliFemtoSimpleAnalysis& aAna);  /// Copy all parameters from another analysis. Cuts are cloned from the other analysis. Mixing buffer and fNeventsProcessed are NOT copied
 
   // Gets and Sets
 
@@ -41,14 +65,14 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   virtual AliFemtoParticleCut*   FirstParticleCut();
   virtual AliFemtoParticleCut*   SecondParticleCut();
 
-  AliFemtoCorrFctnCollection* CorrFctnCollection();
-  virtual AliFemtoCorrFctn* CorrFctn(int n);     // Access to CFs within the collection
-  void AddCorrFctn(AliFemtoCorrFctn* AnotherCorrFctn);
+  AliFemtoCorrFctnCollection* CorrFctnCollection();     ///< Access to the fCorrFctnCollection
+  virtual AliFemtoCorrFctn* CorrFctn(int n);            ///< Access to CFs within the collection
+  void AddCorrFctn(AliFemtoCorrFctn* AnotherCorrFctn);  ///< Adds a correlation function to the fCorrFctnCollection member
 
-  void SetPairCut(AliFemtoPairCut* ThePairCut);
-  void SetEventCut(AliFemtoEventCut* TheEventCut);
-  void SetFirstParticleCut(AliFemtoParticleCut* TheFirstParticleCut);
-  void SetSecondParticleCut(AliFemtoParticleCut* TheSecondParticleCut);
+  void SetPairCut(AliFemtoPairCut* ThePairCut);                         ///< Sets this analysis' pair cut, and the pair cut's analysis.
+  void SetEventCut(AliFemtoEventCut* TheEventCut);                      ///< Sets this analysis' event cut, and the event cut's analysis.
+  void SetFirstParticleCut(AliFemtoParticleCut* TheFirstParticleCut);   ///< Sets this analysis' particle cut 1, and the particle cut's analysis.
+  void SetSecondParticleCut(AliFemtoParticleCut* TheSecondParticleCut); ///< Sets this analysis' particle cut 2, and the particle cut's analysis.
 
   void SetMinSizePartCollection(unsigned int minSize);
 
@@ -67,31 +91,24 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   bool MixingBufferFull();
 
   bool AnalyzeIdenticalParticles() const;
-  virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
-  virtual TList* ListSettings();         // return list of cut settings for the analysis
-  virtual TList* GetOutputList();        // Return a TList of objects to be written as output
+  virtual AliFemtoString Report();       //!<! Returns reports of all cuts applied and correlation functions being done
+  virtual TList* ListSettings();         ///< return list of cut settings for the analysis
+  virtual TList* GetOutputList();        ///< Return a TList of objects to be written as output
   
-  virtual void EventBegin(const AliFemtoEvent* TheEventToBegin); // startup for EbyE
-  virtual void ProcessEvent(const AliFemtoEvent* EventToProcess);
-  virtual void EventEnd(const AliFemtoEvent* TheEventToWrapUp);   // cleanup for EbyE
-  int GetNeventsProcessed() const;
+  virtual void EventBegin(const AliFemtoEvent* TheEventToBegin);    ///< Startup code each event - calls EventBegin for each member cut and correlation function
+  virtual void ProcessEvent(const AliFemtoEvent* EventToProcess);   ///< Bulk of analysis code - calls EventBegin, checks cuts, fills correlation functions, then calls EventEnd
+  virtual void EventEnd(const AliFemtoEvent* TheEventToWrapUp);     ///< Cleanup code each event - calls EventEnd for each member cut and correlation function
+  int GetNeventsProcessed() const;      ///< Returns number of events which have been passed to ProcessEvent.
 
   virtual void Finish();
 
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassDef(AliFemtoSimpleAnalysis, 0)
-  /// \endcond
-#endif 
-
-
- protected:
+protected:
 
   void AddEventProcessed();
   void MakePairs(const char* type, 
-		 AliFemtoParticleCollection* ParticlesPassingCut1,
-		 AliFemtoParticleCollection* ParticlesPssingCut2=0,
-		 Bool_t enablePairMonitors=kFALSE);
+        		 AliFemtoParticleCollection* ParticlesPassingCut1,
+        		 AliFemtoParticleCollection* ParticlesPssingCut2=NULL,
+        		 Bool_t enablePairMonitors=kFALSE);
 
   AliFemtoPicoEventCollectionVectorHideAway* fPicoEventCollectionVectorHideAway; //!<! Mixing Buffer used for Analyses which wrap this one
 
@@ -117,7 +134,7 @@ class AliFemtoSimpleAnalysis : public AliFemtoAnalysis {
   /// \endcond
 #endif
 
-    };
+};
 
 // Get's
 inline AliFemtoPairCut*              AliFemtoSimpleAnalysis::PairCut() {return fPairCut;}
@@ -150,4 +167,6 @@ inline void AliFemtoSimpleAnalysis::SetMinSizePartCollection(unsigned int minSiz
 inline void AliFemtoSimpleAnalysis::SetVerboseMode(Bool_t aVerbose){fVerbose = aVerbose;}
 inline void AliFemtoSimpleAnalysis::SetV0SharedDaughterCut(Bool_t aPerform) { fPerformSharedDaughterCut = aPerform; }
 inline void AliFemtoSimpleAnalysis::SetEnablePairMonitors(Bool_t aEnable) { fEnablePairMonitors = aEnable; }
+
 #endif
+

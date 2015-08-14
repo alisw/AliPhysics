@@ -31,6 +31,12 @@ class AliVParticle;
 namespace EMCalTriggerPtAnalysis {
 class AliEMCalHistoContainer;
 
+/**
+ * \class AliAnalysisTaskPtEMCalTrigger
+ * \brief Old charged hadron analysis in EMCAL-triggered events
+ *
+ * Analysis task of the pt analysis on EMCal-triggered events
+ */
 class AliAnalysisTaskPtEMCalTrigger : public AliAnalysisTaskEmcalJet {
 public:
   enum EEMCalTriggerType_t{
@@ -82,25 +88,28 @@ private:
   bool IsInRadius(const AliVParticle *const track, const AliEmcalJet *reconstructedJet, Double_t radius) const;
   bool IsInRadius(const AliVCluster *const clust, const AliEmcalJet *reconstructedJet, Double_t radius) const;
 
-  AliEMCalHistoContainer        *fHistos;                 //! Histogram container for the task
-  TList 						            *fListTrackCuts;		      // List of track cuts
+  /// Histogram container for the task
+  AliEMCalHistoContainer        *fHistos;                 //!
+  TList 						            *fListTrackCuts;		      ///< List of track cuts
 
   // Cuts
-  AliCutValueRange<double>      fEtaRange;                // Eta Selection Range
-  AliCutValueRange<double>	    fPtRange;				          // Pt Selection Range
-  AliCutValueRange<double>      fEnergyRange;             // Cluster energy selection range
-  AliCutValueRange<double>      fVertexRange;             // Vertex cut
+  AliCutValueRange<double>      fEtaRange;                ///< Eta Selection Range
+  AliCutValueRange<double>	    fPtRange;				          ///< Pt Selection Range
+  AliCutValueRange<double>      fEnergyRange;             ///< Cluster energy selection range
+  AliCutValueRange<double>      fVertexRange;             ///< Vertex cut
 
   // Jet containers
-  TList                         fJetContainersMC;          // List of jet containers for MC
-  TList                         fJetContainersData;        // List of jet containers for Data
+  TList                         fJetContainersMC;          ///< List of jet containers for MC
+  TList                         fJetContainersData;        ///< List of jet containers for Data
 
   // Settings
-  Bool_t                        fSelectAllTracks;         // Loop over all tracks
-  Bool_t						            fSwapEta;				          // Allow swapping of the eta sign in asymmetric collision systems
-  Bool_t 						            fUseTriggersFromTriggerMaker; // Use trigger classes from trigger maker
+  Bool_t                        fSelectAllTracks;         ///< Loop over all tracks
+  Bool_t						            fSwapEta;				          ///< Allow swapping of the eta sign in asymmetric collision systems
+  Bool_t 						            fUseTriggersFromTriggerMaker; ///< Use trigger classes from trigger maker
 
+  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskPtEMCalTrigger, 1);           // Analysis of EMCal triggered events
+  /// \endcond
 };
 
 }

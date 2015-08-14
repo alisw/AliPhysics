@@ -18,10 +18,10 @@
 /* $Id$ */
 
 //-----------------------------------------------------------------------
-// Class for HF corrections as a function of many variables and step
-// Author : C. Zampolli, CERN
-//			D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
-// Base class for HF Unfolding - agrelli@uu.nl
+/// \class Class for HF corrections as a function of many variables and step
+/// \author Author : C. Zampolli, CERN
+///	\author		D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
+/// \brief Base class for HF Unfolding - agrelli@uu.nl
 //-----------------------------------------------------------------------
 
 
@@ -64,19 +64,19 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   };
 
   enum {
-    kSnail = 0,    // slow configuration, all variables
-    kCheetah = 1   // fast configuration, only a subset of variables
+    kSnail = 0,    /// slow configuration, all variables
+    kCheetah = 1   /// fast configuration, only a subset of variables
   };
 
   enum {
-    kAll = 0,   // all decays (resonant + non-resonant)
-    kNonResonant = 1, // only non resonant
-    kL1520 = 2,  // Lc --> L(1520) + p
-    kKstar = 3,  // Lc --> K* + pi
-    kDelta = 4   // Lc --> Delta + K
+    kAll = 0,   /// all decays (resonant + non-resonant)
+    kNonResonant = 1, /// only non resonant
+    kL1520 = 2,  /// Lc --> L(1520) + p
+    kKstar = 3,  /// Lc --> K* + pi
+    kDelta = 4   /// Lc --> Delta + K
   };
 
-  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; // multiplicity estimators
+  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; /// multiplicity estimators
 
   AliCFTaskVertexingHF();
   AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func = 0x0);
@@ -84,24 +84,24 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c);
   virtual ~AliCFTaskVertexingHF();
 
-  // ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
+  /// ANALYSIS FRAMEWORK STUFF to loop on data and fill output objects
   void     UserCreateOutputObjects();
   void     UserExec(Option_t *option);
   void     Init();
   void     LocalInit() {Init();}
   void     Terminate(Option_t *);
 
-  // UNFOLDING
+  /// UNFOLDING
   void     SetCorrelationMatrix(THnSparse* h) {fCorrelation=h;}
   void     SetAcceptanceUnf(Bool_t AcceptanceUnf) {fAcceptanceUnf = AcceptanceUnf;}
   Bool_t   GetAcceptanceUnf() const {return fAcceptanceUnf;}
 
 
-  // CORRECTION FRAMEWORK RELATED FUNCTIONS
-  void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
-  AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
+  /// CORRECTION FRAMEWORK RELATED FUNCTIONS
+  void           SetCFManager(AliCFManager* io) {fCFManager = io;}   /// global correction manager
+  AliCFManager * GetCFManager()                 {return fCFManager;} /// get corr manager
 
-  // Setters (and getters) for the config macro
+  /// Setters (and getters) for the config macro
   void    SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
   Bool_t  GetFillFromGenerated() const {return fFillFromGenerated;}
   void    SetDecayChannel (Int_t decayChannel) {fDecayChannel = decayChannel;}
@@ -253,66 +253,68 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
 
  protected:
-  AliCFManager   *fCFManager;   //  pointer to the CF manager
-  TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
-  THnSparse* fCorrelation;      //  response matrix for unfolding
+  AliCFManager   *fCFManager;   ///  pointer to the CF manager
+  TH1I *fHistEventsProcessed;   //!<! simple histo for monitoring the number of events processed
+  THnSparse* fCorrelation;      ///  response matrix for unfolding
   TList  *fListProfiles; //list of profile histos for z-vtx correction
-  Int_t fCountMC;               //  MC particle found
-  Int_t fCountAcc;              //  MC particle found that satisfy acceptance cuts
-  Int_t fCountVertex;       //  Reco particle found that satisfy vertex constrained
-  Int_t fCountRefit;        //  Reco particle found that satisfy kTPCrefit and kITSrefit
-  Int_t fCountReco;             //  Reco particle found that satisfy cuts
-  Int_t fCountRecoAcc;          //  Reco particle found that satisfy cuts in requested acceptance
-  Int_t fCountRecoITSClusters;  //  Reco particle found that satisfy cuts in n. of ITS clusters
-  Int_t fCountRecoPPR;          //  Reco particle found that satisfy cuts in PPR
-  Int_t fCountRecoPID;          //Reco PID step
-  Int_t fEvents;                //  n. of events
-  Int_t fDecayChannel;          // decay channel to configure the task
-  Bool_t fFillFromGenerated;    //  flag to indicate whether data container should be filled with generated values also for reconstructed particles
-  UShort_t fOriginDselection;      // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty
-  Bool_t fAcceptanceUnf;        //  flag for unfolding before or after cuts.
-  AliRDHFCuts* fCuts;            // cuts
-  Bool_t fUseWeight;             //flag to decide whether to use pt-weights != 1 when filling the container or not
-  Double_t fWeight;              //weight used to fill the container
-  Bool_t fUseFlatPtWeight;       // flag to decide to use a flat pt shape
-  Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
-  Bool_t fUseNchWeight;         // flag to decide whether to use Ncharged weights != 1 when filling the container or not
-  Bool_t fUseTrackletsWeight;   // flag to decide whether to use Ncharged weights != 1 when filling the container or not
-  Bool_t fUseMultRatioAsWeight; // flag to use directly the ratio of the distributions (fHistoMCNch) instead of computing it
-  Int_t fNvar;                  // number of variables for the container
-  TString fPartName;    // D meson name
-  TString fDauNames;    // daughter in fin state
-  Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
-  Bool_t fCentralitySelection;  //flag to switch off the centrality selection
-  Int_t  fFakeSelection;  //selection flag for fakes tracks
-  Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
-  Bool_t fUseMCVertex;  // flag to use MC vertex (useful when runnign in pp)
-  Int_t  fDsOption;     // Ds decay option (selection level)
-  Int_t  fGenDsOption;     // Ds decay option (generation level)
-  Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
-  TF1* fFuncWeight;     // user-defined function to be used to calculate weights
-  TH1F* fHistoPtWeight; // user-defined histogram to calculate the Pt weights
-  TH1F* fHistoMeasNch;  // histogram with measured Nch distribution (pp 7 TeV)
-  TH1F* fHistoMCNch;  // histogram with Nch distribution from MC production
-  UInt_t fResonantDecay;  // resonant deacy channel to be used if the CF should be run on resonant channels only
-  Int_t fLctoV0bachelorOption; // Lc->V0+bachelor decay option (selection level)
-  Int_t fGenLctoV0bachelorOption; // Lc->V0+bachelor decay option (generation level)
-  Bool_t fUseSelectionBit;     // flag to use selection bit
-  UInt_t fPDGcode; // PDG code
+  Int_t fCountMC;               ///  MC particle found
+  Int_t fCountAcc;              ///  MC particle found that satisfy acceptance cuts
+  Int_t fCountVertex;       ///  Reco particle found that satisfy vertex constrained
+  Int_t fCountRefit;        ///  Reco particle found that satisfy kTPCrefit and kITSrefit
+  Int_t fCountReco;             ///  Reco particle found that satisfy cuts
+  Int_t fCountRecoAcc;          ///  Reco particle found that satisfy cuts in requested acceptance
+  Int_t fCountRecoITSClusters;  ///  Reco particle found that satisfy cuts in n. of ITS clusters
+  Int_t fCountRecoPPR;          ///  Reco particle found that satisfy cuts in PPR
+  Int_t fCountRecoPID;          /// Reco PID step
+  Int_t fEvents;                ///  n. of events
+  Int_t fDecayChannel;          /// decay channel to configure the task
+  Bool_t fFillFromGenerated;    ///  flag to indicate whether data container should be filled with generated values also for reconstructed particles
+  UShort_t fOriginDselection;      /// flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty
+  Bool_t fAcceptanceUnf;        ///  flag for unfolding before or after cuts.
+  AliRDHFCuts* fCuts;            /// cuts
+  Bool_t fUseWeight;             /// flag to decide whether to use pt-weights != 1 when filling the container or not
+  Double_t fWeight;              /// weight used to fill the container
+  Bool_t fUseFlatPtWeight;       /// flag to decide to use a flat pt shape
+  Bool_t fUseZWeight;           /// flag to decide whether to use z-vtx weights != 1 when filling the container or not
+  Bool_t fUseNchWeight;         /// flag to decide whether to use Ncharged weights != 1 when filling the container or not
+  Bool_t fUseTrackletsWeight;   /// flag to decide whether to use Ncharged weights != 1 when filling the container or not
+  Bool_t fUseMultRatioAsWeight; /// flag to use directly the ratio of the distributions (fHistoMCNch) instead of computing it
+  Int_t fNvar;                  /// number of variables for the container
+  TString fPartName;    /// D meson name
+  TString fDauNames;    /// daughter in fin state
+  Char_t fSign;                 /// flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
+  Bool_t fCentralitySelection;  /// flag to switch off the centrality selection
+  Int_t  fFakeSelection;  /// selection flag for fakes tracks
+  Bool_t fRejectIfNoQuark;  /// flag to remove events not geenrated with PYTHIA
+  Bool_t fUseMCVertex;  /// flag to use MC vertex (useful when runnign in pp)
+  Int_t  fDsOption;     /// Ds decay option (selection level)
+  Int_t  fGenDsOption;     /// Ds decay option (generation level)
+  Int_t fConfiguration; /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
+  TF1* fFuncWeight;     /// user-defined function to be used to calculate weights
+  TH1F* fHistoPtWeight; /// user-defined histogram to calculate the Pt weights
+  TH1F* fHistoMeasNch;  /// histogram with measured Nch distribution (pp 7 TeV)
+  TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
+  UInt_t fResonantDecay;  /// resonant deacy channel to be used if the CF should be run on resonant channels only
+  Int_t fLctoV0bachelorOption; /// Lc->V0+bachelor decay option (selection level)
+  Int_t fGenLctoV0bachelorOption; /// Lc->V0+bachelor decay option (generation level)
+  Bool_t fUseSelectionBit;     /// flag to use selection bit
+  UInt_t fPDGcode; /// PDG code
 
-  Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
-  TProfile* fMultEstimatorAvg[4]; // TProfile with mult vas. Z per period
-  Double_t fRefMult;   // refrence multiplcity (period b)
-  Bool_t fZvtxCorrectedNtrkEstimator; // flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
-  Bool_t fIsPPData; // flag for pp data (not checking centrality)
-  Bool_t fIsPPbData; // flag for pPb data (used for multiplicity corrections)
-  Bool_t fUseAdditionalCuts;  // flag to use additional cuts needed for Lc --> K0S + p, TMVA
-  Bool_t fUseCutsForTMVA;     // flag to use additional cuts needed for Lc --> K0S + p, TMVA
-  // these are the pre-selection cuts for the TMVA
-  Bool_t fUseCascadeTaskForLctoV0bachelor;   // flag to define which task to use for Lc --> K0S+p
-  Float_t fCutOnMomConservation; // cut on momentum conservation
+  Int_t fMultiplicityEstimator; /// Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+  TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vas. Z per period
+  Double_t fRefMult;   /// refrence multiplcity (period b)
+  Bool_t fZvtxCorrectedNtrkEstimator; /// flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
+  Bool_t fIsPPData; /// flag for pp data (not checking centrality)
+  Bool_t fIsPPbData; /// flag for pPb data (used for multiplicity corrections)
+  Bool_t fUseAdditionalCuts;  /// flag to use additional cuts needed for Lc --> K0S + p, TMVA
+  Bool_t fUseCutsForTMVA;     /// flag to use additional cuts needed for Lc --> K0S + p, TMVA
+  /// these are the pre-selection cuts for the TMVA
+  Bool_t fUseCascadeTaskForLctoV0bachelor;   /// flag to define which task to use for Lc --> K0S+p
+  Float_t fCutOnMomConservation; /// cut on momentum conservation
 
-  ClassDef(AliCFTaskVertexingHF,24); // class for HF corrections as a function of many variables
+  /// \cond CLASSIMP     
+  ClassDef(AliCFTaskVertexingHF,24); /// class for HF corrections as a function of many variables
+  /// \endcond
 };
 
 #endif

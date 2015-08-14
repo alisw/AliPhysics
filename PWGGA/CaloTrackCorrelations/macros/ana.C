@@ -1208,10 +1208,14 @@ void CheckEnvironmentVariables()
       kYear = 2011;
       if( kRun >= 166500 ) kCollision = "PbPb";
     }
-    else 
+    else if( kRun < 200000 )
     {
       kYear = 2012;
-
+      if( kRun >= 194000 ) kCollision = "pPb";
+    }
+    else
+    {
+      kYear = 2015;
     }
   }
   

@@ -153,6 +153,8 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           
         } // loop
       } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
+      
+      delete contBC;
     }  // Remove bad
     
     // Energy Recalibration
@@ -198,6 +200,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         } else AliInfo("Do NOT recalibrate EMCAL, no params for pass"); // array pass ok
       } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok
       
+      delete contRF;
       // once set, apply run dependent corrections if requested
       //fEMCALRecoUtils->SetRunDependentCorrections(fRunNumber);
             
@@ -261,6 +264,8 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           } // rows 
         } // SM loop
       } else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
+      
+      delete contRFTD;
     } // Run by Run T calibration    
     
     // Time Recalibration
@@ -303,6 +308,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
         } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
       
+      delete contTRF;
     } // Recalibration on    
     
   }// EMCAL
@@ -391,6 +397,15 @@ void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent)
             fEMCALMatrix[mod]->Print();
           
           fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod) ;  
+        }
+        else if(gGeoManager)
+        {
+          AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+          fEMCALGeo->SetMisalMatrix(fEMCALGeo->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+        }
+        else
+        {
+          AliError(Form("Alignment atrix for SM %d is not available",mod));
         }
       } // SM loop
       
@@ -1340,16 +1355,15 @@ void AliCalorimeterUtils::InitEMCALGeometry()
   
   if(fEMCALGeoName=="")
   {
-    if     (fRunNumber <  140000) fEMCALGeoName = "EMCAL_FIRSTYEARV1";
-    else if(fRunNumber <  171000) fEMCALGeoName = "EMCAL_COMPLETEV1";
-    else if(fRunNumber <  198000) fEMCALGeoName = "EMCAL_COMPLETE12SMV1";
-    else                          fEMCALGeoName = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+    fEMCALGeo = AliEMCALGeometry::GetInstanceFromRunNumber(fRunNumber);
+    AliInfo(Form("Get EMCAL geometry name to <%s> for run %d",fEMCALGeo->GetName(),fRunNumber));
   }
-  
-  AliInfo(Form("Set EMCAL geometry name to <%s> for run %d",fEMCALGeoName.Data(),fRunNumber));
+  else
+  {
+    fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
+    AliInfo(Form("Set EMCAL geometry name to <%s>",fEMCALGeoName.Data()));
+  }
 
-  fEMCALGeo = AliEMCALGeometry::GetInstance(fEMCALGeoName);
-  
   // Init geometry, I do not like much to do it like this ...
   if(fImportGeometryFromFile && !gGeoManager)
   {

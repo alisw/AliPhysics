@@ -6,12 +6,11 @@
 
 /* $Id$ */ 
 
-//*************************************************************************
-// Class AliAnalysisTaskMEVertexingHF
-// AliAnalysisTaskME for event mixing, building the background for 
-// heavy-flavour decay candidates
-// Author: R.Romita, r.romita@gsi.de
-//*************************************************************************
+///*************************************************************************
+/// \class Class AliAnalysisTaskMEVertexingHF
+/// \brief AliAnalysisTaskME for event mixing, building the background for heavy-flavour decay candidates
+/// \author Author: R.Romita, r.romita@gsi.de
+///*************************************************************************
 
 
 class TH1F;
@@ -36,23 +35,26 @@ class AliAnalysisTaskMEVertexingHF : public AliAnalysisTaskME {
   virtual void   Terminate(Option_t *);
   
  private:
-  AliAnalysisVertexingHF *fvHF;      // Vertexer heavy flavour
-  AliMixedEvent *fMixedEvent;        // Mixed event
-  TClonesArray  *fVerticesHFTClArr;  //Array of heavy-flavour vertices
-  TClonesArray  *fD0toKpiTClArr;     //Array of D0->Kpi
-  TClonesArray  *fJPSItoEleTClArr;   //Array of Jpsi->ee
-  TClonesArray  *fCharm3ProngTClArr; //Array of D+,Ds,Lc
-  TClonesArray  *fCharm4ProngTClArr; // Array of D0->Kpipipi
-  TClonesArray  *fDstarTClArr;          // Array of D*->D0pi
-  TClonesArray  *fCascadesTClArr;       // Array of Cascades : V0 + track (lambda_c)
-  TClonesArray  *fLikeSign2ProngTClArr; // Array of LikeSign2Prong
-  TClonesArray  *fLikeSign3ProngTClArr; // Array of LikeSign3Prong
+  AliAnalysisVertexingHF *fvHF;      /// Vertexer heavy flavour
+  AliMixedEvent *fMixedEvent;        /// Mixed event
+  TClonesArray  *fVerticesHFTClArr;  /// Array of heavy-flavour vertices
+  TClonesArray  *fD0toKpiTClArr;     /// Array of D0->Kpi
+  TClonesArray  *fJPSItoEleTClArr;   /// Array of Jpsi->ee
+  TClonesArray  *fCharm3ProngTClArr; /// Array of D+,Ds,Lc
+  TClonesArray  *fCharm4ProngTClArr; /// Array of D0->Kpipipi
+  TClonesArray  *fDstarTClArr;          /// Array of D*->D0pi
+  TClonesArray  *fCascadesTClArr;       /// Array of Cascades : V0 + track (lambda_c)
+  TClonesArray  *fLikeSign2ProngTClArr; /// Array of LikeSign2Prong
+  TClonesArray  *fLikeSign3ProngTClArr; /// Array of LikeSign3Prong
 
 
   AliAnalysisTaskMEVertexingHF(const AliAnalysisTaskMEVertexingHF&); // not implemented
   AliAnalysisTaskMEVertexingHF& operator=(const AliAnalysisTaskMEVertexingHF&); // not implemented
-  
-  ClassDef(AliAnalysisTaskMEVertexingHF,1); // event mixing for heavy-flavour vertexing
+    
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskMEVertexingHF,1); /// event mixing for heavy-flavour vertexing
+  /// \endcond
+
 };
 
 #endif

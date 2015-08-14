@@ -98,9 +98,11 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   //========================================================================
   if(typerun==2){//heavy ion analysis
     
-    
-    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx[6];
-    for( Int_t i=0; i<6; ++i ){
+    const Int_t nCent = 1;
+    //    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx[6];
+    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx[nCent];
+    //    for( Int_t i=0; i<6; ++i ){
+    for( Int_t i=0; i<nCent; ++i ){
       taskHighPtDeDx[i]=0;
       Char_t TaskName[256]={0};
       sprintf(TaskName,"%s_%1.0f_%1.0f",taskname,minc[i],maxc[i]);
@@ -119,7 +121,8 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
       taskHighPtDeDx[i]->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
       taskHighPtDeDx[i]->SetTreeOption(1);
       taskHighPtDeDx[i]->SetTrigger1(kTriggerInt[0]);
-      taskHighPtDeDx[i]->SetTrigger2(kTriggerInt[1]);
+      //      taskHighPtDeDx[i]->SetTrigger2(kTriggerInt[1]);
+      taskHighPtDeDx[i]->SetTrigger2(kTriggerInt[0]);
       taskHighPtDeDx[i]->SetMinCent(minc[i]);
       taskHighPtDeDx[i]->SetMaxCent(maxc[i]);
       //Set Filtesr
@@ -141,8 +144,8 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     // task.  Get and connect other common input/output containers via
     // the manager as below
     //=======================================================================
-    AliAnalysisDataContainer *cout_hist[6];
-    for( Int_t i=0; i<6; ++i ){
+    AliAnalysisDataContainer *cout_hist[nCent];
+    for( Int_t i=0; i<nCent; ++i ){
       
       cout_hist[i]=0;
       Char_t outFileName[256]={0};
@@ -175,7 +178,8 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
     taskHighPtDeDx->SetTrigger1(kTriggerInt[0]);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    taskHighPtDeDx->SetTrigger2(kTriggerInt[0]);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);
@@ -214,7 +218,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
 
 
 
- if(typerun==4){//pPb analysis..
+ if(typerun==4){//pPb analysis
    cout<<"<<<<<<<<<<<<<<<<<<<<<<<<<<                 Runing pPb    <<<<<<<<<<<<<<"<<endl;
     
     AliAnalysisTaskHighPtDeDx* taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx("taskHighPtDeDxpp");
@@ -233,7 +237,8 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     taskHighPtDeDx->SetLowPtFraction(0.01); // keep 1% of tracks below min pt
     taskHighPtDeDx->SetTreeOption(1);
     taskHighPtDeDx->SetTrigger1(kTriggerInt[0]);
-    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    //    taskHighPtDeDx->SetTrigger2(kTriggerInt[1]);
+    taskHighPtDeDx->SetTrigger2(kTriggerInt[0]);
     //Set Filtesr
     taskHighPtDeDx->SetTrackFilterGolden(trackFilterGolden);
     taskHighPtDeDx->SetTrackFilter(trackFilter0);

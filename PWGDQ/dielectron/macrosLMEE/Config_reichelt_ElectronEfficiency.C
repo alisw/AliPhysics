@@ -1,5 +1,5 @@
 //TString names=("ITSTPCTOFif_trkSPDfirst_1_kSemi;ITSTPCTOFif_trkSPDfirst5cls_4_kSemi;ITS2gevTPCTOFif_trkSPDfirst_5_tight_kSemi;ITSTPCTOFif_trkSPD5orSDD4cls_4_kSemi;ITS2gevTPCTOFif_trkSPDorSDD_5_tight_kSemi;ITS2gevTPCTOFif_trkSPDfirst5cls_6_tight_kSemi;ITS2gevTPCTOFif_trkSPD5orSDD4cls_6_tight_kSemi");
-TString names=("ITSTPCTOFif_trkSPDfirst_1;ITSTPCTOFif_trkSPDfirst_1_PrefAllm50t80;ITSTPCTOFif_trkSPDfirst_1_PrefAllp236m40");
+TString names=("ITSTPCTOFif_trkSPDfirst_1;ITSTPCTOFif_trkSPDfirst_1_PrefAllm40t80;ITSTPCTOFif_trkSPDfirst_1_PrefAllp236m40");
 
 TObjArray*  arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
@@ -100,6 +100,24 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isESD=kTRUE)
 
 
 //________________________________________________________________
+void SetupITSSigmaEleCorrection(AliAnalysisTaskElectronEfficiency* task)
+{
+  LMEECutLib* LMcutlib = new LMEECutLib();
+  LMcutlib->SetITSSigmaEleCorrectionMC(task, AliDielectronVarManager::kNacc, AliDielectronVarManager::kEta);
+  return;
+}
+
+
+//________________________________________________________________
+void SetupTPCSigmaEleCorrection(AliAnalysisTaskElectronEfficiency* task)
+{
+  LMEECutLib* LMcutlib = new LMEECutLib();
+  LMcutlib->SetTPCSigmaEleCorrectionMC(task, AliDielectronVarManager::kNacc, AliDielectronVarManager::kEta);
+  return;
+}
+
+
+//________________________________________________________________
 AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTRUE)
 {
   std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
@@ -138,24 +156,24 @@ AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutInstance, Bool_t isESD=kTR
       LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
       isPrefilterCutset=kFALSE; // (de)activate prefilter efficiency determination.
     }
-    else if (cutInstance==1+nCutsUsingConfigFunctions) {
-      //LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting, but determine prefilter efficiency
-      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-      LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-      LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee50_theta80;
-      isPrefilterCutset=kTRUE;
-    }
-    else if (cutInstance==2+nCutsUsingConfigFunctions) {
-      //LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
-      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting, but determine prefilter efficiency
-      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-      LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-      LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_phiv236_mee40;
-      isPrefilterCutset=kTRUE;
-    }
+//    else if (cutInstance==1+nCutsUsingConfigFunctions) {
+//      //LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting, but determine prefilter efficiency
+//      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+//      LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+//      LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+//      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
+//      isPrefilterCutset=kTRUE;
+//    }
+//    else if (cutInstance==2+nCutsUsingConfigFunctions) {
+//      //LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
+//      LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1; // std setting, but determine prefilter efficiency
+//      LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+//      LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+//      LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
+//      LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_phiv236_mee40;
+//      isPrefilterCutset=kTRUE;
+//    }
     else {
       cout << " =============================== " << endl;
       cout << " ==== INVALID CONFIGURATION ==== " << endl;
