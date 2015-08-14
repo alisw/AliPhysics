@@ -1230,8 +1230,8 @@ bool AliFemtoMJTrackCut::IsKaonNSigmaRejection(float mom, float nsigmaTPCK, floa
 {
   if (mom > 0.5) {
     //rejection of unwanted contamination
-    if(mom>1 && TOFtime<-400)
-      return false;
+    //if(mom>1 && TOFtime<-400)
+    //return false;
 
     if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigmaRejection)
       return true;
@@ -1247,8 +1247,8 @@ bool AliFemtoMJTrackCut::IsKaonNSigmaRejection(float mom, float nsigmaTPCK, floa
 bool AliFemtoMJTrackCut::IsProtonNSigmaRejection(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
   if (mom > 0.5) {
-    if(mom>1.8 && TOFtime<-300)
-      return false;
+    // if(mom>1.8 && TOFtime<-300)
+    //return false;
 
 
     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigmaRejection)
@@ -1284,8 +1284,8 @@ bool AliFemtoMJTrackCut::IsKaonNSigmaAccept(float mom, float nsigmaTPCK, float n
 {
   if (mom > 0.5) {
     //rejection of unwanted contamination
-    if(mom>1 && TOFtime<-400)
-      return false;
+    //if(mom>1 && TOFtime<-400)
+    //return false;
 
     if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigmaAccept)
       return true;
@@ -1301,8 +1301,8 @@ bool AliFemtoMJTrackCut::IsKaonNSigmaAccept(float mom, float nsigmaTPCK, float n
 bool AliFemtoMJTrackCut::IsProtonNSigmaAccept(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
   if (mom > 0.5) {
-    if(mom>1.8 && TOFtime<-300)
-      return false;
+    // if(mom>1.8 && TOFtime<-300)
+    // return false;
 
 
     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigmaAccept)
