@@ -2050,7 +2050,7 @@ void AliZDCv3::CreateMaterials()
   AliMedium(6, "ZCOPP", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(7, "ZIRON", 7, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(8, "ZIRONN",8, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(9, "ZCOPL", 6, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMedium(9, "ZCOPL", 9, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(10,"ZVOID",10, isvol, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(11,"ZVOIM",11, isvol, ifield, fieldm, tmaxfdv, stemax, deemax, epsil, stmin);
   AliMedium(12,"ZAIR", 12, isvolActive, inofld, nofieldm, tmaxfd, stemax, deemax, epsil, stmin);
