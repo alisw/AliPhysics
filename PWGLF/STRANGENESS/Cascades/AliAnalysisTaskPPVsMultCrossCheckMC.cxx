@@ -366,6 +366,9 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     //Physics Selection
     lEvSel_Triggered = isSelected;
     
+    //Override physics selection requirement if running on pure monte carlo
+    if( lPureMonteCarlo ) lEvSel_Triggered = kTRUE;
+    
     //------------------------------------------------
     // Primary Vertex Requirements Section:
     //  ---> pp: has vertex, |z|<10cm
@@ -461,9 +464,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     Bool_t lIsAcceptedVertexPositionMC = (TMath::Abs(lVertexZMC)<10.0); //true if within desired range
     
     //Merge all conditionals
-    
     Bool_t lDataSelection = ( lEvSel_Triggered && lIsINELgtZEROtracklets && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
-    
     Bool_t lMCSelection   = ( lEvSel_Triggered && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPositionMC );
     
     //------------------------------------------------
