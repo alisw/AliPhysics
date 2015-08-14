@@ -166,42 +166,52 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   //Returns kTRUE if track quality cut object is successfully defined,
   //returns kFALSE if an invalid set of cuts (customQualityCutsID) is chosen or if the
   //object to be configured does not exist.
-  
-  /* NOTES FROM PRODUCTION LHC13b pass3 - AOD filtered with v5-03-Rev-20
-  //(http://svnweb.cern.ch/world/wsvn/AliRoot/tags/v5-03-Rev-20/ANALYSIS/macros/AddTaskESDFilter.C)
 
-  //filter bit 0: Cuts on primary tracks
-  // AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-
-  //filter bit 4: std but looser dca cut
-  // AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-  // esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
-  // esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
-  // esdTrackCutsH->SetDCAToVertex2D(kTRUE);
-
-  //filter bit 5:  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
-
-   //filter bit 10: standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
-   //AliESDtrackCuts* esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
-   */
-
-  if ((!trkQualityCut) || (customQualityCutsID<=0) || (customQualityCutsID>=AliRsnCutSetDaughterParticle::kNcustomQualityCuts)){
+  if ((!trkQualityCut)){
     Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
     return kFALSE;
   }
 
-  if(customQualityCutsID==1){
+  if(customQualityCutsID>=1 && customQualityCutsID<100 && customQualityCutsID!=2){
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
     Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
+
+    if(customQualityCutsID==3){trkQualityCut->SetDCARPtFormula("0.0150+0.0500/pt^1.1");}
+    else if(customQualityCutsID==4){trkQualityCut->SetDCARPtFormula("0.0075+0.0250/pt^1.1");}
+    else if(customQualityCutsID==5){trkQualityCut->SetDCAZmax(3.);}
+    else if(customQualityCutsID==6){trkQualityCut->SetDCAZmax(0.2);}
+    else if(customQualityCutsID==7){trkQualityCut->SetTPCmaxChi2(7.);}
+    else if(customQualityCutsID==8){trkQualityCut->SetTPCmaxChi2(2.5);}
+    else if(customQualityCutsID==9){trkQualityCut->SetMinNCrossedRowsTPC(60, kTRUE);}
+    else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(100, kTRUE);}
+    else if(customQualityCutsID==11){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.7, kTRUE);}
+    else if(customQualityCutsID==12){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9, kTRUE);}
+    else if(customQualityCutsID==13){trkQualityCut->SetITSmaxChi2(50);}
+    else if(customQualityCutsID==14){trkQualityCut->SetITSmaxChi2(4);}
+    else if(customQualityCutsID==15){trkQualityCut->SetMaxChi2TPCConstrainedGlobal(40);}
+    else if(customQualityCutsID==16){trkQualityCut->SetMaxChi2TPCConstrainedGlobal(32);}
+
+    trkQualityCut->Print();
+    return kTRUE;
+  }else if(customQualityCutsID==2 || (customQualityCutsID>=100 && customQualityCutsID<200)){
+    trkQualityCut->SetDefaultsTPCOnly(kTRUE);
+    Printf(Form("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
+
+    if(customQualityCutsID==103){trkQualityCut->SetDCARmax(3.);}
+    else if(customQualityCutsID==104){trkQualityCut->SetDCARmax(1.);}
+    else if(customQualityCutsID==105){trkQualityCut->SetDCAZmax(4.);}
+    else if(customQualityCutsID==106){trkQualityCut->SetDCAZmax(1.);}
+    else if(customQualityCutsID==107){trkQualityCut->SetTPCmaxChi2(7.);}
+    else if(customQualityCutsID==108){trkQualityCut->SetTPCmaxChi2(2.5);}
+    else if(customQualityCutsID==109){trkQualityCut->SetTPCminNClusters(30);}
+    else if(customQualityCutsID==110){trkQualityCut->SetTPCminNClusters(85);}
+
     trkQualityCut->Print();
     return kTRUE;
   }else{
-    trkQualityCut->SetDefaultsTPCOnly(kTRUE);
-    Printf(Form("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
-    trkQualityCut->Print();
-    return kTRUE;
+    Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+    return kFALSE;
   }
-
 
   //for pA 2013
   //trkQualityCut->SetDefaults2011();//with filter bit=10
