@@ -498,200 +498,192 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 
 	  if(ReclustererPart->AliEmcalJetFinder::Filter(jet3, jetContPart, dVtx)){  //reclustering jet3 using the jetfinderobject ReclustererPart                
 
-      ReclustererPart->SetRadius(fSubJetRadius);
-      ReclustererPart->SetJetMinPt(track_pt_min);
-      ReclustererPart->SetJetAlgorithm(0); //  0  for anti-kt     1 for kt
+	    ReclustererPart->SetRadius(fSubJetRadius);
+	    ReclustererPart->SetJetMinPt(track_pt_min);
+	    ReclustererPart->SetJetAlgorithm(0); //  0  for anti-kt     1 for kt
 	    SubJetCounterPart = ReclustererPart->GetNumberOfJets();
 
-      //orderedPart = new Int_t[SubJetCounterPart];
-      orderedPart = JetHard(ReclustererPart);
+	    //orderedPart = new Int_t[SubJetCounterPart];
+	    orderedPart = JetHard(ReclustererPart);
 
-	  }
+	  } else continue;
 	
+	  partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
+	  if(!partonsInfo) return 0;
+	  kWeight = partonsInfo->GetPythiaEventWeight();
+
 	}
 
-  if (!(fJetShapeType == kPythiaDef)) {
-    partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
-    if(!partonsInfo) return 0;
-  } else {
-    partonsInfo = (AliPythiaInfo*) JetCont->GetPythiaInfo();
-    jet2=jet1;
-    if(!partonsInfo) return 0;
-  }
-  if (!(fJetShapeType == kPythiaDef)){
-    kWeight = partonsInfo->GetPythiaEventWeight();
-  }
-
-}
+      }
 
 
-	if(Reclusterer->AliEmcalJetFinder::Filter(jet1, JetCont, dVtx)){  //reclustering mainJets using the jetfinderobject Reclusterer                
+      if(Reclusterer->AliEmcalJetFinder::Filter(jet1, JetCont, dVtx)){  //reclustering mainJets using the jetfinderobject Reclusterer                
 
-	  SubJetCounter = Reclusterer->GetNumberOfJets(); // Number of reclustered SubJets in each original jet                                            
+	SubJetCounter = Reclusterer->GetNumberOfJets(); // Number of reclustered SubJets in each original jet                                            
 
-    //ordered = new Int_t[SubJetCounter];
-    ordered = JetHard(Reclusterer);
+	//ordered = new Int_t[SubJetCounter];
+	ordered = JetHard(Reclusterer);
 
-    for (Int_t i=0; i<SubJetCounter; i++){ //Loops through each SubJet in a reclustered jet 
-      subJet = Reclusterer->GetJet(ordered[i]);
-      cout<<"SubJet: "<<i+1<<"/"<<SubJetCounter<<" | subJetPt/JetPt: "<<subJet->Pt()<<"/"<<jet1->Pt()<<endl;
-    }
+	for (Int_t i=0; i<SubJetCounter; i++){ //Loops through each SubJet in a reclustered jet 
+	  subJet = Reclusterer->GetJet(ordered[i]);
+	  cout<<"SubJet: "<<i+1<<"/"<<SubJetCounter<<" | subJetPt/JetPt: "<<subJet->Pt()<<"/"<<jet1->Pt()<<endl;
+	}
 
-	  tau_den = TauDen(jet1, 0);
-	  if(fJetShapeType==kDetEmbPart){
-	    tau_denPart = TauDen(jet3, 3);
-	    if (tau_denPart <= 0. || 0 == SubJetCounterPart) continue;
-	    fSubstructureVar[5] = jet3->Pt();
+	tau_den = TauDen(jet1, 0);
+	if(fJetShapeType==kDetEmbPart){
+	  tau_denPart = TauDen(jet3, 3);
+	  if (tau_denPart <= 0. || 0 == SubJetCounterPart) continue;
+	  fSubstructureVar[5] = jet3->Pt();
+	}
+
+	if (tau_den <= 0. || 0 == SubJetCounter) continue;
+
+	fSubstructureVar[0] = jet1->Pt();
+
+	if (1 == SubJetCounter) { 
+	  subJet1hardest = Reclusterer->GetJet(ordered[SubJetCounter - 1]);
+	  tau1_num = Tau1Num(jet1,subJet1hardest,0);
+
+	  if (tau1_num == 0. ) continue;
+	  fhTau1->Fill(tau1_num/tau_den);
+	  fSubstructureVar[1] = tau1_num/tau_den;
+	  fSubstructureVar[2] = -1;
+	  fSubstructureVar[3] = -1;
+	  fSubstructureVar[4] = -1;
+	  if (fJetShapeType == kData) {
+	    fSubstructureVar[5] = -2;
+	    fSubstructureVar[6] = -2;
+	    fSubstructureVar[7] = -2;
+	    fSubstructureVar[8] = -2;
+	    fSubstructureVar[9] = -2;
+	    fSubstructureVar[10]= 1;
 	  }
+	}
 
-	  if (tau_den <= 0. || 0 == SubJetCounter) continue;
+	if(fJetShapeType==kDetEmbPart){
+	  if (1 == SubJetCounterPart) { 
+	    subJet1hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 1]);
+	    tau1_numPart = Tau1Num(jet3,subJet1hardestPart,3);
 
-	  fSubstructureVar[0] = jet1->Pt();
-
-	  if (1 == SubJetCounter) { 
-	    subJet1hardest = Reclusterer->GetJet(ordered[SubJetCounter - 1]);
-	    tau1_num = Tau1Num(jet1,subJet1hardest,0);
-
-	    if (tau1_num == 0. ) continue;
-	    fhTau1->Fill(tau1_num/tau_den);
-	    fSubstructureVar[1] = tau1_num/tau_den;
-	    fSubstructureVar[2] = -1;
-	    fSubstructureVar[3] = -1;
-	    fSubstructureVar[4] = -1;
-	    if (fJetShapeType == kData) {
-	      fSubstructureVar[5] = -2;
-	      fSubstructureVar[6] = -2;
-	      fSubstructureVar[7] = -2;
-	      fSubstructureVar[8] = -2;
-	      fSubstructureVar[9] = -2;
-        fSubstructureVar[10]= 1;
-	    }
+	    if (tau1_numPart == 0. ) continue;
+	    fSubstructureVar[6] = tau1_numPart/tau_denPart;
+	    fSubstructureVar[7] = -1;
+	    fSubstructureVar[8] = -1;
+	    fSubstructureVar[9] = -1;
+	    fSubstructureVar[10]= kWeight;
 	  }
-
-	  if(fJetShapeType==kDetEmbPart){
-	    if (1 == SubJetCounterPart) { 
-	      subJet1hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 1]);
-	      tau1_numPart = Tau1Num(jet3,subJet1hardestPart,3);
-
-	      if (tau1_numPart == 0. ) continue;
-	      fSubstructureVar[6] = tau1_numPart/tau_denPart;
-	      fSubstructureVar[7] = -1;
-	      fSubstructureVar[8] = -1;
-	      fSubstructureVar[9] = -1;
-        fSubstructureVar[10]= kWeight;
-	    }
-	  }
+	}
 	
 
-	  if (2 == SubJetCounter) { 
-	    subJet1hardest = Reclusterer->GetJet(ordered[SubJetCounter - 1]);
-	    subJet2hardest = Reclusterer->GetJet(ordered[SubJetCounter - 2]);
+	if (2 == SubJetCounter) { 
+	  subJet1hardest = Reclusterer->GetJet(ordered[SubJetCounter - 1]);
+	  subJet2hardest = Reclusterer->GetJet(ordered[SubJetCounter - 2]);
 
-	    tau1_num = Tau1Num(jet1,subJet1hardest,0);
-	    tau2_num = Tau2Num(jet1,subJet1hardest,subJet2hardest,0);
-	    dR2hardest = R_distance(subJet1hardest,subJet2hardest);
+	  tau1_num = Tau1Num(jet1,subJet1hardest,0);
+	  tau2_num = Tau2Num(jet1,subJet1hardest,subJet2hardest,0);
+	  dR2hardest = R_distance(subJet1hardest,subJet2hardest);
 
-	    if (tau1_num == 0. || tau2_num == 0.) continue;
-	    fhTau1->Fill(tau1_num/tau_den);
-	    fhTau2->Fill(tau2_num/tau_den);
-	    fhTau1vsTau2->Fill(tau1_num/tau_den,tau2_num/tau_den);
-	    fhTau2OverTau1->Fill(tau2_num/tau1_num);
-	    fhTau2vsJetPt->Fill(tau2_num/tau_den,jet1->Pt());
-	    fhTau2OverTau1vsJetPt->Fill(tau2_num/tau1_num,jet1->Pt());
+	  if (tau1_num == 0. || tau2_num == 0.) continue;
+	  fhTau1->Fill(tau1_num/tau_den);
+	  fhTau2->Fill(tau2_num/tau_den);
+	  fhTau1vsTau2->Fill(tau1_num/tau_den,tau2_num/tau_den);
+	  fhTau2OverTau1->Fill(tau2_num/tau1_num);
+	  fhTau2vsJetPt->Fill(tau2_num/tau_den,jet1->Pt());
+	  fhTau2OverTau1vsJetPt->Fill(tau2_num/tau1_num,jet1->Pt());
 
-	    fSubstructureVar[1] = tau1_num/tau_den;
-	    fSubstructureVar[2] = tau2_num/tau_den;
-	    fSubstructureVar[3] = -1;
-	    fSubstructureVar[4] = dR2hardest;
-	    if (fJetShapeType == kData) {
-	      fSubstructureVar[5] = -2;
-	      fSubstructureVar[6] = -2;
-	      fSubstructureVar[7] = -2;
-	      fSubstructureVar[8] = -2;
-	      fSubstructureVar[9] = -2;
-        fSubstructureVar[10]= 1;
-	    }
+	  fSubstructureVar[1] = tau1_num/tau_den;
+	  fSubstructureVar[2] = tau2_num/tau_den;
+	  fSubstructureVar[3] = -1;
+	  fSubstructureVar[4] = dR2hardest;
+	  if (fJetShapeType == kData) {
+	    fSubstructureVar[5] = -2;
+	    fSubstructureVar[6] = -2;
+	    fSubstructureVar[7] = -2;
+	    fSubstructureVar[8] = -2;
+	    fSubstructureVar[9] = -2;
+	    fSubstructureVar[10]= 1;
+	  }
+	}
+
+	if(fJetShapeType==kDetEmbPart){
+	  if (2 == SubJetCounterPart) { 
+	    subJet1hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 1]);
+	    subJet2hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 2]);
+
+	    tau1_numPart = Tau1Num(jet3,subJet1hardestPart,3);
+	    tau2_numPart = Tau2Num(jet3,subJet1hardestPart,subJet2hardestPart,3);
+	    dR2hardestPart = R_distance(subJet1hardestPart,subJet2hardestPart);
+
+	    if (tau1_numPart == 0. || tau2_numPart == 0.) continue;
+	    fSubstructureVar[6] = tau1_numPart/tau_denPart;
+	    fSubstructureVar[7] = tau2_numPart/tau_denPart;
+	    fSubstructureVar[8] = -1;
+	    fSubstructureVar[9] = dR2hardestPart;
+	    fSubstructureVar[10]= kWeight;
 	  }
 
-	  if(fJetShapeType==kDetEmbPart){
-	    if (2 == SubJetCounterPart) { 
-	      subJet1hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 1]);
-	      subJet2hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 2]);
+	}
 
-	      tau1_numPart = Tau1Num(jet3,subJet1hardestPart,3);
-	      tau2_numPart = Tau2Num(jet3,subJet1hardestPart,subJet2hardestPart,3);
-	      dR2hardestPart = R_distance(subJet1hardestPart,subJet2hardestPart);
+	if (SubJetCounter > 2) { 
+	  subJet1hardest = Reclusterer->GetJet(ordered[SubJetCounter - 1]);
+	  subJet2hardest = Reclusterer->GetJet(ordered[SubJetCounter - 2]);
+	  subJet3hardest = Reclusterer->GetJet(ordered[SubJetCounter - 3]);
 
-	      if (tau1_numPart == 0. || tau2_numPart == 0.) continue;
-	      fSubstructureVar[6] = tau1_numPart/tau_denPart;
-	      fSubstructureVar[7] = tau2_numPart/tau_denPart;
-	      fSubstructureVar[8] = -1;
-	      fSubstructureVar[9] = dR2hardestPart;
-        fSubstructureVar[10]= kWeight;
-	    }
+	  tau1_num = Tau1Num(jet1,subJet1hardest,0);
+	  tau2_num = Tau2Num(jet1,subJet1hardest,subJet2hardest,0);
+	  tau3_num = Tau3Num(jet1,subJet1hardest,subJet2hardest,subJet3hardest,0);
+	  dR2hardest = R_distance(subJet1hardest,subJet2hardest);
 
+	  if (tau1_num == 0. || tau2_num == 0. || tau3_num == 0.) continue;
+	  fhTau1->Fill(tau1_num/tau_den);
+	  fhTau2->Fill(tau2_num/tau_den);
+	  fhTau3->Fill(tau3_num/tau_den);
+	  fhTau1vsTau2->Fill(tau1_num/tau_den,tau2_num/tau_den);
+	  fhTau1vsTau3->Fill(tau1_num/tau_den,tau3_num/tau_den);
+	  fhTau2vsTau3->Fill(tau2_num/tau_den,tau3_num/tau_den);
+	  fhTau1vsTau2vsTau3->Fill(tau1_num/tau_den,tau2_num/tau_den,tau3_num/tau_den); 
+	  fhTau2OverTau1->Fill(tau2_num/tau1_num);
+	  fhTau3OverTau2->Fill(tau3_num/tau2_num);
+	  fhTau2vsJetPt->Fill(tau2_num/tau_den,jet1->Pt());
+	  fhTau2OverTau1vsJetPt->Fill(tau2_num/tau1_num,jet1->Pt());
+
+	  fSubstructureVar[1] = tau1_num/tau_den;
+	  fSubstructureVar[2] = tau2_num/tau_den;
+	  fSubstructureVar[3] = tau3_num/tau_den;
+	  fSubstructureVar[4] = dR2hardest;
+	  if (fJetShapeType == kData) {
+	    fSubstructureVar[5] = -2;
+	    fSubstructureVar[6] = -2;
+	    fSubstructureVar[7] = -2;
+	    fSubstructureVar[8] = -2;
+	    fSubstructureVar[9] = -2;
+	    fSubstructureVar[10]= 1;
 	  }
 
-	  if (SubJetCounter > 2) { 
-	    subJet1hardest = Reclusterer->GetJet(ordered[SubJetCounter - 1]);
-	    subJet2hardest = Reclusterer->GetJet(ordered[SubJetCounter - 2]);
-	    subJet3hardest = Reclusterer->GetJet(ordered[SubJetCounter - 3]);
+	}
 
-	    tau1_num = Tau1Num(jet1,subJet1hardest,0);
-	    tau2_num = Tau2Num(jet1,subJet1hardest,subJet2hardest,0);
-	    tau3_num = Tau3Num(jet1,subJet1hardest,subJet2hardest,subJet3hardest,0);
-	    dR2hardest = R_distance(subJet1hardest,subJet2hardest);
+	if(fJetShapeType==kDetEmbPart){
 
-	    if (tau1_num == 0. || tau2_num == 0. || tau3_num == 0.) continue;
-	    fhTau1->Fill(tau1_num/tau_den);
-	    fhTau2->Fill(tau2_num/tau_den);
-	    fhTau3->Fill(tau3_num/tau_den);
-	    fhTau1vsTau2->Fill(tau1_num/tau_den,tau2_num/tau_den);
-	    fhTau1vsTau3->Fill(tau1_num/tau_den,tau3_num/tau_den);
-	    fhTau2vsTau3->Fill(tau2_num/tau_den,tau3_num/tau_den);
-	    fhTau1vsTau2vsTau3->Fill(tau1_num/tau_den,tau2_num/tau_den,tau3_num/tau_den); 
-	    fhTau2OverTau1->Fill(tau2_num/tau1_num);
-	    fhTau3OverTau2->Fill(tau3_num/tau2_num);
-	    fhTau2vsJetPt->Fill(tau2_num/tau_den,jet1->Pt());
-	    fhTau2OverTau1vsJetPt->Fill(tau2_num/tau1_num,jet1->Pt());
+	  if (SubJetCounterPart > 2) { 
+	    subJet1hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 1]);
+	    subJet2hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 2]);
+	    subJet3hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 3]);
 
-	    fSubstructureVar[1] = tau1_num/tau_den;
-	    fSubstructureVar[2] = tau2_num/tau_den;
-	    fSubstructureVar[3] = tau3_num/tau_den;
-	    fSubstructureVar[4] = dR2hardest;
-	    if (fJetShapeType == kData) {
-	      fSubstructureVar[5] = -2;
-	      fSubstructureVar[6] = -2;
-	      fSubstructureVar[7] = -2;
-	      fSubstructureVar[8] = -2;
-	      fSubstructureVar[9] = -2;
-        fSubstructureVar[10]= 1;
-	    }
+	    tau1_numPart = Tau1Num(jet3,subJet1hardestPart,3);
+	    tau2_numPart = Tau2Num(jet3,subJet1hardestPart,subJet2hardestPart,3);
+	    tau3_numPart = Tau3Num(jet3,subJet1hardestPart,subJet2hardestPart,subJet3hardestPart,3);
+	    dR2hardestPart = R_distance(subJet1hardestPart,subJet2hardestPart);
 
+	    if (tau1_numPart == 0. || tau2_numPart == 0. || tau3_numPart == 0.) continue;
+	    fSubstructureVar[6] = tau1_numPart/tau_denPart;
+	    fSubstructureVar[7] = tau2_numPart/tau_denPart;
+	    fSubstructureVar[8] = tau3_numPart/tau_denPart;
+	    fSubstructureVar[9] = dR2hardestPart;
+	    fSubstructureVar[10]= kWeight;
 	  }
+	}
 
-	  if(fJetShapeType==kDetEmbPart){
-
-	    if (SubJetCounterPart > 2) { 
-	      subJet1hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 1]);
-	      subJet2hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 2]);
-	      subJet3hardestPart = ReclustererPart->GetJet(ordered[SubJetCounterPart - 3]);
-
-	      tau1_numPart = Tau1Num(jet3,subJet1hardestPart,3);
-	      tau2_numPart = Tau2Num(jet3,subJet1hardestPart,subJet2hardestPart,3);
-	      tau3_numPart = Tau3Num(jet3,subJet1hardestPart,subJet2hardestPart,subJet3hardestPart,3);
-	      dR2hardestPart = R_distance(subJet1hardestPart,subJet2hardestPart);
-
-	      if (tau1_numPart == 0. || tau2_numPart == 0. || tau3_numPart == 0.) continue;
-	      fSubstructureVar[6] = tau1_numPart/tau_denPart;
-	      fSubstructureVar[7] = tau2_numPart/tau_denPart;
-	      fSubstructureVar[8] = tau3_numPart/tau_denPart;
-	      fSubstructureVar[9] = dR2hardestPart;
-        fSubstructureVar[10]= kWeight;
-	    }
-	  }
-
-	  fSubstructure->Fill();     
+	fSubstructure->Fill();     
       }
     }
   }
@@ -1184,9 +1176,9 @@ Int_t * AliAnalysisTaskEmcalMissingEnergy::JetHard(AliEmcalJetFinder *finder){
   indeces = new Int_t[NumberOfJets];
 
   for(Int_t i=0;i<NumberOfJets;i++){
-  temp = finder->GetJet(i);
-  PtArray[i] = temp->Pt();
-  indeces[i] = i; 
+    temp = finder->GetJet(i);
+    PtArray[i] = temp->Pt();
+    indeces[i] = i; 
   }
 
   for(Int_t i=0; i<NumberOfJets - 1; i++){
