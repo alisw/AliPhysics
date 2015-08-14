@@ -338,7 +338,7 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   fhpTTracksCont = new TH1F(Form("fhpTTracksCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
   fOutput->Add(fhpTTracksCont);
 
-  fhptjetSMinusSingleTrack = new TH1F("fhptjetSMinusSingleTrack", "Subtraction of single track #it{p}_{T}; |#it{p}_{T, jet} - #it{p}_{T, Emb Track}|;Entries", 500,-10.,110.);
+  fhptjetSMinusSingleTrack = new TH1F("fhptjetSMinusSingleTrack", "Subtraction of single track #it{p}_{T}; #it{p}_{T, jet} - #it{p}_{T, Emb Track};Entries", 500,-10.,110.);
   fOutput->Add(fhptjetSMinusSingleTrack);
   
   fhJet1vsJetTag = new TH2F("fhJet1vsJetTag", "Number of jets vs tagged jets; #it{N}_{jet,Tot}; #it{N}_{jet,Tag}", 30, 1., 30., 30, 1., 30.);
@@ -437,11 +437,12 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
   if(jetCont) {
     jetCont->ResetCurrentID();
     while((jet1 = jetCont->GetNextAcceptJet())) {
-       njet1++;
+      njet1++;
       jet2  = NULL;
       jetS  = NULL;
       if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
         continue;
+     
      ntagjet2++;
      //print constituents of different jet containers
      //jet1
@@ -476,7 +477,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       Double_t ptjetS = jetS->Pt();
       Double_t ptUnsubjet1 = jet1->Pt();
       Double_t var = mjetS;
-      Double_t ptjetSMinusEmbTrpt = ptjetS;
+      //Double_t ptjetSMinusEmbTrpt = ptjetS;
+      Double_t ptjetSMinusEmbTrpt = ptUnsubjet1;
       if(fJetMassVarType==kRatMPt) {
       	 if(ptjetS>0. || ptjetS<0.) var = mjetS/ptjetS;
       	 else var = -999.;
@@ -492,7 +494,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 vpe = GetEmbeddedConstituent(jet1);
       	 if(vpe){
       	    Bool_t reject = kFALSE;
-      	    ptjetSMinusEmbTrpt =- vpe->Pt();
+      	    ptjetSMinusEmbTrpt -= vpe->Pt();
+      	    fhptjetSMinusSingleTrack->Fill(ptjetSMinusEmbTrpt);
       	    if(fOverlap){
       	       Int_t Njets = jetContO->GetNAcceptedJets();
       	       fhNJetsSelEv->Fill(Njets);
@@ -591,7 +594,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
       	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
       	 
-      	 fhptjetSMinusSingleTrack->Fill(TMath::Abs(ptjetSMinusEmbTrpt));
+      	 
 
       }
       
@@ -618,7 +621,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
 //________________________________________________________________________
 AliVParticle* AliAnalysisTaskJetShapeConst::GetEmbeddedConstituent(AliEmcalJet *jet) {
 
-  AliParticleContainer *partContEmb = GetParticleContainer(); //the only particle container given is the one with embedded track(s)
+  AliParticleContainer *partContEmb = GetParticleContainer(); //the first particle container given is the one with embedded track(s)
 
   AliVParticle *vpe = 0x0; //embedded particle
   for(Int_t ip = partContEmb->GetNParticles()-1; ip>-1; ip--){
