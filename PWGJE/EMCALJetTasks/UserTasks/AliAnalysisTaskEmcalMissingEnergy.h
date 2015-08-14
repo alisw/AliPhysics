@@ -13,6 +13,8 @@ class AliAnalysisManager;
 class AliJetContainer;
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliEmcalJetFinder.h"
+#include <vector>
 
 
 
@@ -24,7 +26,7 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
     kDetEmb = 3,  //detector embedded jets
-    kDetEmbPart=4,
+    kDetEmbPart = 4,
     kPythiaDef = 5
   };
   enum JetShapeSub {
@@ -75,7 +77,12 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            PTD(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
-  Float_t                            Circularity(AliEmcalJet *jet, Int_t jetContNb); 
+  Float_t                            Circularity(AliEmcalJet *jet, Int_t jetContNb);
+  Float_t                            TauDen(AliEmcalJet *mainJet, Int_t jetContNb);
+  Float_t                            Tau1Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, Int_t jetContNb); 
+  Float_t                            Tau2Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, AliEmcalJet *subJet2hardest, Int_t jetContNb);
+  Float_t                            Tau3Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, AliEmcalJet *subJet2hardest, AliEmcalJet *subJet3hardest, Int_t jetContNb);
+  Int_t *                            JetHard(AliEmcalJetFinder *finder);
   Float_t                            GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            LeSub(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb);
@@ -163,6 +170,6 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalMissingEnergy &operator=(const AliAnalysisTaskEmcalMissingEnergy&); // not implemented
 
   ClassDef(AliAnalysisTaskEmcalMissingEnergy, 4)
-};
+    };
 #endif
 
