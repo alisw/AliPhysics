@@ -234,7 +234,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 	task->SetDoMesonAnalysis(kTRUE);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-    task->SetUseTHnSparse(isUsingTHnSparse);
+    task->SetDoTHnSparse(isUsingTHnSparse);
 	if(enableExtQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
 	//connect containers
