@@ -42,6 +42,7 @@
 #include "TProfile.h"
 #include "TH1I.h"
 #include "TH3F.h"
+#include "TH1F.h"
 #include "TStyle.h"
 #include "TFile.h"
 #include "TF1.h"
@@ -142,9 +143,12 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fCutOnMomConservation(0.00001),
-  fobjSpr(0x0),
-  fhsparsecutvar(0x0),
-  fhPtCutVar(0x0)
+  fObjSpr(0x0),
+  fhSparseCutVar(0x0),
+  fhPtCutVar(0x0),
+  fhBptCutVar(0x0),
+  fListBdecays(0x0),
+  fQAHists(0x0)
 {
   //
   //Default ctor
@@ -209,9 +213,12 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fUseCutsForTMVA(kFALSE),
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fCutOnMomConservation(0.00001),
-  fobjSpr(0x0),
-  fhsparsecutvar(0x0),
-  fhPtCutVar(0x0)
+  fObjSpr(0x0),
+  fhSparseCutVar(0x0),
+  fhPtCutVar(0x0),
+  fhBptCutVar(0x0),
+  fListBdecays(0x0),
+  fQAHists(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -227,7 +234,10 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
   DefineOutput(6,THnSparseF::Class());
-  DefineOutput(7,TH1F::Class());
+  DefineOutput(7,TH3F::Class());
+  DefineOutput(8,TH1F::Class());
+  DefineOutput(9,TList::Class());
+  DefineOutput(10,TList::Class());
 
   fCuts->PrintAll();
 }
@@ -248,9 +258,12 @@ AliCFTaskVertexingHFCutVarFDSub& AliCFTaskVertexingHFCutVarFDSub::operator=(cons
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
     for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
-    fobjSpr=c.fobjSpr;
-    fhsparsecutvar=c.fhsparsecutvar;
+    fObjSpr=c.fObjSpr;
+    fhSparseCutVar=c.fhSparseCutVar;
     fhPtCutVar=c.fhPtCutVar;
+    fhBptCutVar=c.fhBptCutVar;
+    fListBdecays=c.fListBdecays;  // FIXME: TList copy contructor not implemented
+    fQAHists=c.fQAHists;  // FIXME: TList copy contructor not implemented
   }
   return *this;
 }
@@ -313,9 +326,12 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fUseCutsForTMVA(c.fUseCutsForTMVA),
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fCutOnMomConservation(c.fCutOnMomConservation),
-  fobjSpr(c.fobjSpr),
-  fhsparsecutvar(c.fhsparsecutvar),
-  fhPtCutVar(c.fhPtCutVar)
+  fObjSpr(c.fObjSpr),
+  fhSparseCutVar(c.fhSparseCutVar),
+  fhPtCutVar(c.fhPtCutVar),
+  fhBptCutVar(c.fhBptCutVar),
+  fListBdecays(c.fListBdecays), // FIXME: TList copy contructor not implemented
+  fQAHists(c.fQAHists) // FIXME: TList copy contructor not implemented
 {
   //
   // Copy Constructor
@@ -329,22 +345,27 @@ AliCFTaskVertexingHFCutVarFDSub::~AliCFTaskVertexingHFCutVarFDSub()
   //
   //destructor
   //
-  if (fCFManager)           delete fCFManager ;
-  if (fHistEventsProcessed) delete fHistEventsProcessed ;
-  if (fCorrelation)         delete fCorrelation ;
-  if (fListProfiles)        delete fListProfiles;
-  if (fCuts)                delete fCuts;
-  if (fFuncWeight)          delete fFuncWeight;
-  if (fHistoPtWeight)       delete fHistoPtWeight;
-  if (fHistoMeasNch)        delete fHistoMeasNch;
-  if (fHistoMCNch)          delete fHistoMCNch;
-  for(Int_t i=0; i<4; i++) { if(fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i]; }
-  if(fobjSpr) delete fobjSpr;
-  if(fhsparsecutvar) delete fhsparsecutvar;
-  if(fhPtCutVar) delete fhPtCutVar;
+  if (fCFManager)           { delete fCFManager;           fCFManager=0x0;           }
+  if (fHistEventsProcessed) { delete fHistEventsProcessed; fHistEventsProcessed=0x0; }
+  if (fCorrelation)         { delete fCorrelation;         fCorrelation=0x0;         }
+  if (fListProfiles)        { delete fListProfiles;        fListProfiles=0x0;        }
+  if (fCuts)                { delete fCuts;                fCuts=0x0;                }
+  if (fFuncWeight)          { delete fFuncWeight;          fFuncWeight=0x0;          }
+  if (fHistoPtWeight)       { delete fHistoPtWeight;       fHistoPtWeight=0x0;       }
+  if (fHistoMeasNch)        { delete fHistoMeasNch;        fHistoMeasNch=0x0;        }
+  if (fHistoMCNch)          { delete fHistoMCNch;          fHistoMCNch=0x0;          }
+  if (fObjSpr)              { delete fObjSpr;              fObjSpr=0x0;              }
+  if (fhSparseCutVar)       { delete fhSparseCutVar;       fhSparseCutVar=0x0;       }
+  if (fhPtCutVar)           { delete fhPtCutVar;           fhPtCutVar=0x0;           }
+  if (fhBptCutVar)          { delete fhBptCutVar;          fhBptCutVar=0x0;          }
+  if (fListBdecays)         { delete fListBdecays;         fListBdecays=0x0;         }
+  if (fQAHists)             { delete fQAHists;             fQAHists=0x0;             }
+  for(Int_t i=0; i<4; i++) {
+    if(fMultEstimatorAvg[i]) { delete fMultEstimatorAvg[i]; fMultEstimatorAvg[i]=0x0; }
+  }
 }
 
-//_________________________________________________________________________-
+//__________________________________________________________________________
 void AliCFTaskVertexingHFCutVarFDSub::Init()
 {
   //
@@ -844,6 +865,12 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
       continue;
     }
 
+    // Obtain B0 pt spectrum
+    if ((((mcPart->GetPdgCode()%1000)/100==5||(mcPart->GetPdgCode()%1000)/100==-5)) &&
+        (mcPart->Y()<1.)&&(mcPart->Y()>-1.)) {
+      fhBptCutVar->Fill(mcPart->Pt());
+    }
+
     //counting c quarks
     cquarks += cfVtxHF->MCcquarkCounting(mcPart);
 
@@ -918,7 +945,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
         fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
         AliDebug(3,"MC acceptance cut passed\n");
         icountAcc++;
-        if(fhPtCutVar){fobjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
+        if(fhPtCutVar){fObjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
 
         //MC Vertex step
         if (fCuts->IsEventSelected(aodEvent)){
@@ -1165,8 +1192,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
                 fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight*weigPID);
 
                 AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)charmCandidate;
-                fobjSpr->SetFillMC(kTRUE);
-                fobjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray);
+                fObjSpr->SetFillMC(kTRUE);
+                fObjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray, aodEvent);
 
                 icountRecoPID++;
                 AliDebug(3,"Reco PID cuts passed and container filled \n");
@@ -1493,18 +1520,25 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(1,"Events processed (all)");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(2,"Events analyzed (after selection)");
 
-  if(!fobjSpr){
-    fobjSpr=new AliHFsubtractBFDcuts("feedDownCuts","feedDownCuts");
-    fobjSpr->InitHistos();
-    fhsparsecutvar=fobjSpr->GetSparseMC();
-    fhPtCutVar=fobjSpr->GetHistoPtMCgen();
+  if(!fObjSpr){
+    fObjSpr=new AliHFsubtractBFDcuts("feedDownCuts","feedDownCuts");
+    fObjSpr->InitHistos();
+    fhSparseCutVar=fObjSpr->GetSparseMC();
+    fhPtCutVar=fObjSpr->GetHistoPtMCgen();
+    fListBdecays=fObjSpr->GetDecayStrings();
+    fQAHists=fObjSpr->GetQAhists();
   }
 
-  PostData(1,fHistEventsProcessed) ;
-  PostData(2,fCFManager->GetParticleContainer()) ;
-  PostData(3,fCorrelation) ;
-  PostData(6,fhsparsecutvar);
-  PostData(7,fhPtCutVar);
+  fhBptCutVar = new TH1F("hBptCutVar", "B meson #it{p}_{T} spectrum;#it{p}_{T};Counts (a.u.)",201,0.,50.25);
+
+  PostData( 1,fHistEventsProcessed) ;
+  PostData( 2,fCFManager->GetParticleContainer()) ;
+  PostData( 3,fCorrelation) ;
+  PostData( 6,fhSparseCutVar);
+  PostData( 7,fhPtCutVar);
+  PostData( 8,fhBptCutVar);
+  PostData( 9,fListBdecays);
+  PostData(10,fQAHists);
 }
 
 

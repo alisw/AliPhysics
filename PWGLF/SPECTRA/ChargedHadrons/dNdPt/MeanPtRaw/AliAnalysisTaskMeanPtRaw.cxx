@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 
 
+#include <RVersion.h>
 #include "TChain.h"
 #include "TTree.h"
 #include "THnSparse.h"
@@ -70,7 +71,9 @@ void AliAnalysisTaskMeanPtRaw::UserCreateOutputObjects()
   fPtVsMultRaw->GetAxis(2)->SetTitle("cut setting");
   
   fTrackCutName = new TH1I("fTrackCutName","fTrackCutName",10,0,10);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fTrackCutName->SetBit(TH1::kCanRebin);
+#endif
   fTrackCutName->Sumw2();
   
   for(Int_t i = 0; i < fTrackCutNames.size(); i++)

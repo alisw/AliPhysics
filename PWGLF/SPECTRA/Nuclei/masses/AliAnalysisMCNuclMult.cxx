@@ -57,6 +57,7 @@ AliAnalysisMCNuclMult::AliAnalysisMCNuclMult():
   hpileUp(NULL),
   fNtrVsMult(NULL),
   prNtrVsMult(NULL),
+  hmult_tot(NULL),
   hmult(NULL),
   hNtrack(NULL),
   hpdg(NULL)
@@ -85,6 +86,7 @@ AliAnalysisMCNuclMult::AliAnalysisMCNuclMult(const char *name):
   hpileUp(NULL),
   fNtrVsMult(NULL),
   prNtrVsMult(NULL),
+  hmult_tot(NULL),
   hmult(NULL),
   hNtrack(NULL),
   hpdg(NULL)
@@ -106,8 +108,8 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   stdPdg[0] = 11; stdPdg[1] = 13; stdPdg[2] = 211; stdPdg[3] = 321; stdPdg[4] = 2212; stdPdg[5] = 10020; stdPdg[6] = 10030; stdPdg[7] = 20030; stdPdg[8] = 20040;
   
   Char_t nameSpec[18][30];
-  snprintf(nameSpec[0],20,"e_plus"); snprintf(nameSpec[1],20,"mu_plus"); snprintf(nameSpec[2],20,"pi_plus"); snprintf(nameSpec[3],20,"K_plus"); snprintf(nameSpec[4],20,"p"); snprintf(nameSpec[5],20,"d"); snprintf(nameSpec[6],20,"t"); snprintf(nameSpec[7],20,"He3"); snprintf(nameSpec[8],20,"He4");
-  snprintf(nameSpec[9],20,"e_minus"); snprintf(nameSpec[10],20,"mu_minus"); snprintf(nameSpec[11],20,"pi_minus"); snprintf(nameSpec[12],20,"K_minus"); snprintf(nameSpec[13],20,"p_bar"); snprintf(nameSpec[14],20,"d_bar"); snprintf(nameSpec[15],20,"t_bar"); snprintf(nameSpec[16],20,"He3_bar"); snprintf(nameSpec[17],20,"He4_bar");
+  snprintf(nameSpec[0],20,"e^{+}"); snprintf(nameSpec[1],20,"#mu^{+}"); snprintf(nameSpec[2],20,"#pi^{+}"); snprintf(nameSpec[3],20,"K^{+}"); snprintf(nameSpec[4],20,"p"); snprintf(nameSpec[5],20,"d"); snprintf(nameSpec[6],20,"t"); snprintf(nameSpec[7],20,"^{3}He"); snprintf(nameSpec[8],20,"^{4}He");
+  snprintf(nameSpec[9],20,"e^{-}"); snprintf(nameSpec[10],20,"#mu^{-}"); snprintf(nameSpec[11],20,"#pi^{-}"); snprintf(nameSpec[12],20,"K^{-}"); snprintf(nameSpec[13],20,"#bar{p}"); snprintf(nameSpec[14],20,"#bar{d}"); snprintf(nameSpec[15],20,"#bar{t}"); snprintf(nameSpec[16],20,"^{3}#bar{He}"); snprintf(nameSpec[17],20,"^{4}#bar{He}");
   
   //-----Event characterization---------
   
@@ -135,7 +137,11 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   fNtrVsMult = new TH2I("fNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,1000,-100,900);
   prNtrVsMult = new TProfile("prNtrVsMult","N_{tracks} vs. multiplicity (after cuts on event);multiplicity;N_{tracks}",1200,-200,1000,-100,900,"");
 
-  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",1200,-200,1000);
+  hmult_tot = new TH1I("hmult_tot","Multiplicity distribution (after cuts on event)",30000,-100,200);
+  if(iMultEstimator==0) hmult_tot->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
+  else if(iMultEstimator==1) hmult_tot->GetXaxis()->SetTitle("kTrackletsITSTPC");
+
+  hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
   if(iMultEstimator==0) hmult->GetXaxis()->SetTitle("V0M Multiplicity Percentile");
   else if(iMultEstimator==1) hmult->GetXaxis()->SetTitle("kTrackletsITSTPC");
 
@@ -193,16 +199,53 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_%s",nameSpec[iS]);
     snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s;p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
-    else fptRecoVsTrue[iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
+    else fptRecoVsTrue[0][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
   }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_prim_%s",nameSpec[iS]);
+    snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (primaries);p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[1][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
+    else fptRecoVsTrue[1][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_sec_%s",nameSpec[iS]);
+    snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (secondaries);p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fptRecoVsTrue[2][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
+    else fptRecoVsTrue[2][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fptRecoVsTrue,200,"fptRecoVsTrue_done_%s",nameSpec[iS]);
+    snprintf(title_fptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (correction already applied);p_{T}^{reco.} (GeV/c);p_{T}^{reco.} - p_{T}^{true} (GeV/c)",nameSpec[iS]);
+    if(iS==5 || iS==5+9) fptRecoVsTrue[3][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,100,0,5,300,-0.6,0.3);//320,-0.6,0.2
+    else fptRecoVsTrue[3][iS] = new TH2F(name_fptRecoVsTrue,title_fptRecoVsTrue,1,0,5,1,-0.6,0.3);
+  }
+
   Char_t name_prptRecoVsTrue[200];
   Char_t title_prptRecoVsTrue[200];
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_%s",nameSpec[iS]);
     snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s;p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.4,0.2,"");
-    else prptRecoVsTrue[iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.4,0.2,"");
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[0][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
+    else prptRecoVsTrue[0][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_prim_%s",nameSpec[iS]);
+    snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (primaries);p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[1][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
+    else prptRecoVsTrue[1][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_sec_%s",nameSpec[iS]);
+    snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (secondaries);p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) prptRecoVsTrue[2][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
+    else prptRecoVsTrue[2][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
+  }
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_prptRecoVsTrue,200,"prptRecoVsTrue_done_%s",nameSpec[iS]);
+    snprintf(title_prptRecoVsTrue,200,"p_{T}^{reco.} vs p_{T}^{true} of %s (correction already applied);p_{T}^{reco.} (GeV/c);#LT p_{T}^{reco.} - p_{T}^{true} #GT (GeV/c)",nameSpec[iS]);
+    if(iS==5 || iS==5+9) prptRecoVsTrue[3][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,100,0,5,-0.3,0.3,"");
+    else prptRecoVsTrue[3][iS] = new TProfile(name_prptRecoVsTrue,title_prptRecoVsTrue,1,0,5,-0.3,0.3,"");
   }
   
   Char_t name_fDca[18][200];
@@ -307,9 +350,23 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
     else fM2vspt[2][iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,6,1,0,6);
   }
   
-  //htemp = new TH1I("htemp","htemp",2,0,2);
-  //fList->Add(htemp);
+  Char_t name_fpTcorr[200];
+  snprintf(name_fpTcorr,200,"fpTcorr_%s",nameSpec[5]);
+  fpTcorr[0] = new TF1(name_fpTcorr,"[0]-[1]*TMath::Exp(-[2]*x)",0,10);
+  fpTcorr[0]->FixParameter(0,-3.39633e-03);
+  fpTcorr[0]->FixParameter(1,4.38176e-01);
+  fpTcorr[0]->FixParameter(2,3.04490e+00);
+  fpTcorr[0]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
+  fpTcorr[0]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
 
+  snprintf(name_fpTcorr,200,"fpTcorr_%s",nameSpec[5+9]);
+  fpTcorr[1] = new TF1(name_fpTcorr,"[0]-[1]*TMath::Exp(-[2]*x)",0,10);
+  fpTcorr[1]->FixParameter(0,-2.73165e-03);
+  fpTcorr[1]->FixParameter(1,4.66999e-01);
+  fpTcorr[1]->FixParameter(2,3.09068e+00);
+  fpTcorr[1]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
+  fpTcorr[1]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
+  
   //event characterization:
   fList->Add(htriggerMask);
   fList->Add(htriggerMask_noMB);
@@ -319,6 +376,7 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   fList->Add(hzvertex);
   fList->Add(fNtrVsMult);
   fList->Add(prNtrVsMult);
+  fList->Add(hmult_tot);
   fList->Add(hmult);
   fList->Add(hNtrack);
 
@@ -349,10 +407,20 @@ void AliAnalysisMCNuclMult::UserCreateOutputObjects()
   for(Int_t i=0;i<2;i++) fList->Add(fDca[0][1][5+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fDca[0][2][5+9*i]);
   
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[5+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[0][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[0][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[1][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[1][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[1][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[1][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[2][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[2][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[2][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[2][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fptRecoVsTrue[3][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(prptRecoVsTrue[3][5+9*i]);
   
   for(Int_t i=0;i<2;i++) fList->Add(fdEdxVSp[i]);
   for(Int_t i=0;i<9;i++) fList->Add(hDeDxExp[i]);
@@ -555,7 +623,7 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
   
   //--------------------Multiplicity determination (Mid-pseudo-rapidity estimator):
  
-  Float_t mult;
+  Float_t mult=-99;
   if(iMultEstimator==0) {
     //fPPVsMultUtils = new AliPPVsMultUtils();
     mult=fPPVsMultUtils->GetMultiplicityPercentile(fEvent,"V0M");
@@ -566,6 +634,7 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
   fNtrVsMult->Fill(mult,nTracks);
   prNtrVsMult->Fill(mult,nTracks);
   
+  hmult_tot->Fill(mult);  
   if(multiplicityMin!=-999) {
     if(mult<multiplicityMin || mult>multiplicityMax) return;
   }
@@ -714,15 +783,17 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
     //Cut on the DCAxy
     if(TMath::Abs(DCAxy)>1.0) continue;
 
-    FillDca(DCAxy, DCAz, Pdg, t_charge, isPrimary, isSecMat, isSecWeak, t_pt, kTOF);
+    this->FillDca(DCAxy, DCAz, Pdg, t_charge, isPrimary, isSecMat, isSecWeak, t_pt, kTOF);
 
     //Cut on the DCAz
     if(TMath::Abs(DCAz)>1.0) continue;
 
     //------------------------- Track cuts (end) -------------------------
     
-    ForPtCorr(pt, t_pt, Pdg, t_charge);
-
+    this->ForPtCorr(pt, t_pt, Pdg, t_charge, isPrimary);
+    this->PtCorrection(pt, Pdg, t_charge);
+    this->CheckPtCorr(pt, t_pt, Pdg, t_charge);
+    
     //-------------------------- TPC info ---------------------------------
     
     //reconstructed PRIMARY particles:
@@ -841,7 +912,7 @@ void AliAnalysisMCNuclMult::UserExec(Option_t *)
   }//loop on reconstructed TRACKS (end)
 }//end loop on the events
 //_____________________________________________________________________________
-void AliAnalysisMCNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge) { 
+void AliAnalysisMCNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge, Bool_t isPrimary) { 
 
   Int_t kSpec=-1;
   for(Int_t iS=0;iS<9;iS++) {
@@ -856,12 +927,72 @@ void AliAnalysisMCNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Sho
   }
   
   if(t_charge>0) {
-    fptRecoVsTrue[kSpec]->Fill(pt,pt-t_pt);
-    prptRecoVsTrue[kSpec]->Fill(pt,pt-t_pt);
+    fptRecoVsTrue[0][kSpec]->Fill(pt,pt-t_pt);
+    prptRecoVsTrue[0][kSpec]->Fill(pt,pt-t_pt);
+    if(isPrimary) {
+      fptRecoVsTrue[1][kSpec]->Fill(pt,pt-t_pt);
+      prptRecoVsTrue[1][kSpec]->Fill(pt,pt-t_pt);
+    }
+    else {
+      fptRecoVsTrue[2][kSpec]->Fill(pt,pt-t_pt);
+      prptRecoVsTrue[2][kSpec]->Fill(pt,pt-t_pt);
+    }
   }
   else if(t_charge<0) {
-    fptRecoVsTrue[kSpec+9]->Fill(pt,pt-t_pt);
-    prptRecoVsTrue[kSpec+9]->Fill(pt,pt-t_pt);
+    fptRecoVsTrue[0][kSpec+9]->Fill(pt,pt-t_pt);
+    prptRecoVsTrue[0][kSpec+9]->Fill(pt,pt-t_pt);
+    if(isPrimary) {
+      fptRecoVsTrue[1][kSpec+9]->Fill(pt,pt-t_pt);
+      prptRecoVsTrue[1][kSpec+9]->Fill(pt,pt-t_pt);
+    }
+    else {
+      fptRecoVsTrue[2][kSpec+9]->Fill(pt,pt-t_pt);
+      prptRecoVsTrue[2][kSpec+9]->Fill(pt,pt-t_pt);
+    }
+  }
+  
+  return;
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::PtCorrection(Double_t &pt, Int_t Pdg, Short_t t_charge) {
+
+  Int_t kSpec=-1;
+  for(Int_t iS=0;iS<9;iS++) {
+    if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
+    kSpec=iS;
+  }
+  if(kSpec<0) return;
+
+  if(kSpec==5) {
+    if(t_charge>0) {
+      pt=pt-fpTcorr[0]->Eval(pt);
+    }
+    else if(t_charge<0) {
+      pt=pt-fpTcorr[1]->Eval(pt);
+    }
+  }
+  
+  return;
+}
+//_____________________________________________________________________________
+void AliAnalysisMCNuclMult::CheckPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge) {
+
+  Int_t kSpec=-1;
+  for(Int_t iS=0;iS<9;iS++) {
+    if(TMath::Abs(Pdg)!=stdPdg[iS]) continue;
+    kSpec=iS;
+  }
+  if(kSpec<0) return;
+  
+  if(kSpec==5) {
+    if(t_charge>0) {
+      fptRecoVsTrue[3][kSpec]->Fill(pt,pt-t_pt);
+      prptRecoVsTrue[3][kSpec]->Fill(pt,pt-t_pt);
+    }
+    else if(t_charge<0) {
+      fptRecoVsTrue[3][kSpec+9]->Fill(pt,pt-t_pt);
+      prptRecoVsTrue[3][kSpec+9]->Fill(pt,pt-t_pt);
+    }
   }
   
   return;

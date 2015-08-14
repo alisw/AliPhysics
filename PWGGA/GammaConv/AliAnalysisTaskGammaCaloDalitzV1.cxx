@@ -275,6 +275,7 @@ AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(): AliAnalysi
 	fHistoNGoodESDTracks(NULL),
 	fHistoNGammaCandidates(NULL),
 	fHistoNGoodESDTracksVsNGammaCanditates(NULL),
+	fHistoSPDClusterTrackletBackground(NULL),
 	fHistoNV0Tracks(NULL),
 	fProfileEtaShift(NULL),
 	fEventPlaneAngle(-100),
@@ -519,6 +520,7 @@ AliAnalysisTaskGammaCaloDalitzV1::AliAnalysisTaskGammaCaloDalitzV1(const char *n
 	fHistoNGoodESDTracks(NULL),
 	fHistoNGammaCandidates(NULL),
 	fHistoNGoodESDTracksVsNGammaCanditates(NULL),
+	fHistoSPDClusterTrackletBackground(NULL),
 	fHistoNV0Tracks(NULL),
 	fProfileEtaShift(NULL),
 	fEventPlaneAngle(-100),
@@ -676,6 +678,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 	fHistoNGoodESDTracks 				= new TH1I*[fnCuts];
 	fHistoNGammaCandidates 				= new TH1I*[fnCuts];
 	fHistoNGoodESDTracksVsNGammaCanditates 		= new TH2F*[fnCuts];
+	fHistoSPDClusterTrackletBackground = new TH2F*[fnCuts];
 	fHistoNV0Tracks 				= new TH1I*[fnCuts];
 	fProfileEtaShift 				= new TProfile*[fnCuts];
 	fHistoConvGammaPt 				= new TH1F*[fnCuts];
@@ -775,7 +778,9 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 		fHistoNGoodESDTracksVsNGammaCanditates[iCut]->SetXTitle("# TPC tracks");
 		fHistoNGoodESDTracksVsNGammaCanditates[iCut]->SetYTitle("# accepted $#gamma_{calo}");
 		fESDList[iCut]->Add(fHistoNGoodESDTracksVsNGammaCanditates[iCut]);
-    
+
+		fHistoSPDClusterTrackletBackground[iCut] = new TH2F("SPD tracklets vs SPD clusters","SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+		fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
 		
 		if(fIsHeavyIon == 1) fHistoNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
 		else if(fIsHeavyIon == 2) fHistoNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",2500,0,2500);
@@ -1801,6 +1806,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserExec(Option_t *)
 
 		fHistoNEvents[iCut]->Fill(eventQuality); // Should be 0 here
 		fHistoNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
+		fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
 		
 		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
 			else fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
@@ -1912,8 +1918,9 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 	for(Long_t i = 0; i < nclus; i++){
 		
 		AliVCluster* clus = NULL;
-		clus = fInputEvent->GetCaloCluster(i);
-		
+		if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+
 		if ( !clus ) continue;
 		if ( !((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC) ) continue;
 		
@@ -1978,6 +1985,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 			delete PhotonCandidate;
 		}
 		
+		delete clus;
 		delete tmpvec;
 	}
 	

@@ -32,6 +32,7 @@
 #include "AliVMultiplicity.h"
 #include "AliAnalysisUtils.h"
 // root
+#include <RVersion.h>
 #include "TMath.h"
 #include "TFile.h"
 #include "TList.h"
@@ -96,8 +97,10 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
   fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fEventStatistics->SetBit(TH1::kCanRebin);
-
+#endif
+  
   fListOfHistos->Add(fEventStatistics);
 
   if (fStoreTracks)    fTracks      = new TClonesArray("AliCFParticle",2000);

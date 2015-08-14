@@ -454,8 +454,7 @@ void AliTrackletTaskUni::UserExec(Option_t *)
   hstat->Fill(kEvTot0); // RS
   const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
   if (vtxESD->GetNContributors()<1) return;
-  TString vtxTyp = vtxESD->GetTitle();
-  if (vtxTyp.Contains("vertexer: Z")) {
+  if (vtxESD->IsFromVertexerZ()) {
     if (vtxESD->GetDispersion()>0.04) return;
     if (vtxESD->GetZRes()>0.25) return;
   }

@@ -12,6 +12,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "THnSparse.h"
 #include "TCanvas.h"
 #include <TClonesArray.h>
@@ -43,6 +44,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   AliAnalysisTaskEmcalJet("HMEC",kFALSE),
   fTracksName(""),
   fJetsName(""),
+  fCaloClustersName(""),
   fPhimin(-10), 
   fPhimax(10),
   fEtamin(-0.9), 
@@ -63,6 +65,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fHistTrackPt(0),
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
+  fHistClusEtaPhiEn(0), 
+  fHistJHPsi(0),
   fHistJetHEtaPhi(0), 
   fhnMixedEvents(0x0),
   fhnJH(0x0)
@@ -94,6 +98,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   AliAnalysisTaskEmcalJet(name,kTRUE),
   fTracksName(""),
   fJetsName(""),
+  fCaloClustersName(""),
   fPhimin(-10), 
   fPhimax(10),
   fEtamin(-0.9), 
@@ -114,6 +119,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fHistTrackPt(0),
   fHistCentrality(0), 
   fHistJetEtaPhi(0), 
+  fHistClusEtaPhiEn(0),  
+  fHistJHPsi(0),
   fHistJetHEtaPhi(0),
   fhnMixedEvents(0x0),
   fhnJH(0x0)
@@ -150,6 +157,10 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   fHistCentrality = new TH1F("fHistCentrality","centrality",100,0,100);
   fHistJetEtaPhi = new TH2F("fHistJetEtaPhi","Jet eta-phi",900,-1.8,1.8,720,-3.2,3.2);
   fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi","Jet-Hadron deta-dphi",900,-1.8,1.8,720,-1.6,4.8);
+
+  fHistClusEtaPhiEn = new TH3F("fHistClusEtaPhiEn","Clus eta-phi-energy",900,-1.8,1.8,720,-3.2,3.2,20,0,20);
+
+  fHistJHPsi = new TH3F("fHistJHPsi","Jet-Hadron ntr-trpt-dpsi",20,0,100,200,0,20,120,0,180);
 
   TString name;
 
@@ -223,6 +234,8 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   fOutput->Add(fHistCentrality);
   fOutput->Add(fHistJetEtaPhi);
   fOutput->Add(fHistJetHEtaPhi);
+  fOutput->Add(fHistClusEtaPhiEn);
+  fOutput->Add(fHistJHPsi);
 
   PostData(1, fOutput);
 
@@ -230,9 +243,9 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   Int_t trackDepth = fMixingTracks; 
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
  
-  Int_t nZvtxBins  = 5+1+5;
+  Int_t nZvtxBins  = 10;
   // bins for second buffer are shifted by 100 cm
-  Double_t vertexBins[] = { -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, };
+  Double_t vertexBins[] = {-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10};
   Double_t* zvtxbin = vertexBins;
 
 //  Int_t nCentralityBins  = 100;
@@ -264,7 +277,7 @@ void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
   }
   else if (0==fRunType) { //for pp only
-  	fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins_pp, centralityBins_pp, nZvtxBins, zvtxbin);
+    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins_pp, centralityBins_pp, nZvtxBins, zvtxbin);
   }
 
 }
@@ -390,6 +403,24 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     
   TClonesArray *jets = 0;
   TClonesArray *tracks = 0;
+  TClonesArray *clusters = 0;
+
+  clusters = dynamic_cast<TClonesArray*>(list->FindObject( fCaloClustersName ));
+  if (!clusters) {
+    AliError(Form("Pointer to clusters %s == 0", fCaloClustersName.Data() ));
+    return kTRUE;
+  }
+  const Int_t Nclusters = clusters->GetEntries();
+  for (Int_t iclus = 0; iclus < Nclusters; iclus++) {
+    AliVCluster* cluster = static_cast<AliVCluster*>(clusters->At(iclus));
+    if (!cluster) {
+      printf("ERROR: Could not receive cluster %d\n", iclus);
+      continue;
+    }
+    TLorentzVector nPart;
+    cluster->GetMomentum(nPart, fvertex);
+    fHistClusEtaPhiEn->Fill( nPart.Eta(), nPart.Phi(), nPart.E() );
+  }
 
   tracks = dynamic_cast<TClonesArray*>(list->FindObject(fTracks));
   if (!tracks) {
@@ -400,7 +431,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
   jets= dynamic_cast<TClonesArray*>(list->FindObject(fJets));
   if (!jets) {
-    AliError(Form("Pointer to tracks %s == 0", fJets->GetName() ));
+    AliError(Form("Pointer to jets %s == 0", fJets->GetName() ));
     return kTRUE;
   }
   const Int_t Njets = jets->GetEntries();
@@ -445,6 +476,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // see if event is selected
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
+  TVector3 vector_jet, vector_hdr;
+
   for (Int_t ijet = 0; ijet < Njets; ijet++){    
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
     if (!jet) continue; 
@@ -458,6 +491,8 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
     Double_t jetphi = jet->Phi();
     Double_t jetPt = jet->Pt();
     Double_t jeteta=jet->Eta();
+
+    vector_jet.SetXYZ( jet->Px(), jet->Py(), jet->Pz() );
 
     Double_t leadjet=0;
     if (ijet==ijethi) leadjet=1;
@@ -499,7 +534,12 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 	    fHistTrackPt->Fill(track->Pt());
 	  	  
 	    if (track->Pt()<0.15) continue;
-	  
+
+            vector_hdr.SetXYZ( track->Px(), track->Py(), track->Pz() );
+            if ( (jetPt>20.) && (jetPt<60.) ) {
+              fHistJHPsi->Fill(Ntracks, track->Pt(), vector_hdr.Angle(vector_jet) * TMath::RadToDeg() );
+            }
+
 	    Double_t trackphi = track->Phi();
 	    if (trackphi > TMath::Pi())
 	      trackphi = trackphi-2*TMath::Pi();
@@ -534,21 +574,21 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
           if(fDoLessSparseAxes) { // check if we want all dimensions
           	if ( fRunType > 0 ) { //pA and AA
-              Double_t triggerEntries[6] = {fCent,jetPt,trackpt,deta,dphijh,leadjet};
-              fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+                  Double_t triggerEntries[6] = {fCent,jetPt,trackpt,deta,dphijh,leadjet};
+                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           	else if (0==fRunType) {
 		  Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet};
-          		fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           } else { 
           	if ( fRunType > 0 ) { //pA and AA
-	            Double_t triggerEntries[8] = {fCent,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
-              fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+	          Double_t triggerEntries[8] = {fCent,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
+                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           	else if (0==fRunType) {
 		  Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,trackpt,deta,dphijh,leadjet,0.0,dR};
-              fhnJH->Fill(triggerEntries, 1.0/trefficiency);
+                  fhnJH->Fill(triggerEntries, 1.0/trefficiency);
           	}
           }
 	    }
@@ -594,7 +634,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
       pool = fPoolMgr->GetEventPool(fCent, zVtx);
     }
     else if (0==fRunType) {//pp only
-    	Double_t Ntrks = (Double_t)Ntracks*1.0;
+      Double_t Ntrks = (Double_t)Ntracks*1.0;
       pool = fPoolMgr->GetEventPool(Ntrks, zVtx);
     }
     
@@ -652,17 +692,17 @@ if(trigger & fTriggerEventType) {
 		    if(DPhi>3./2.*TMath::Pi()) DPhi-=2.*TMath::Pi();
             if(fDoLessSparseAxes) {  // check if we want all the axis filled
              	if ( fRunType > 0 ) { //pA and AA
-                Double_t triggerEntries[6] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet};
-                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+                  Double_t triggerEntries[6] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet};
+                  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
              	}
              	else if (0 == fRunType) { //pp
 		  Double_t triggerEntries[6] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet};
-             		fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+                  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
              	}
             } else {
             	if ( fRunType > 0 ) { //pA and AA
-		            Double_t triggerEntries[8] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
-                fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
+		  Double_t triggerEntries[8] = {fCent,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};
+                  fhnMixedEvents->Fill(triggerEntries,1./(nMix*mixefficiency));
             	}
             	else if (0==fRunType) {
 		  Double_t triggerEntries[8] = {(Double_t)Ntracks,jetPt,part->Pt(),DEta,DPhi,leadjet,0.0,DR};

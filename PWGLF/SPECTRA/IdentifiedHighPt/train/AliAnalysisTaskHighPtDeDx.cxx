@@ -1,29 +1,7 @@
 /*
-  30/03/2012
-  Update: the bug on V0's was fixed, also an option to save VZERO cells was added
-  For the AOD analysis the filter 32 was replaced by the proper golden: 1024
-  // 1024 1<<10                        
-  trackFilter->AddCuts(esdTrackCutsH2); // add r_aa cuts
+Comments:
 
-  30/05/2012
-  Include neutral particles in MC truth
-  Add number of tpc shared clusters
-
-  10/01/13. 
-  Add a flag to see if the particle comes from material or WD
-  
-  20/02/13
-  Correct the bug on the multiplicity estimator. Before it was filled two times, one for the v0ana and other for the track ana. SPD vertex
-
-  10/04/13
-  Store all events with different vertex status.
-  Now the vertex is from TPC if not from SPD. Similar as in TOF
-
-  16/04/13
-  Add quality check to SPD vertex. Status -2
-
-  23/04/13
-  Store MC truth, |eta_lab|<2.4, also store y
+ 
 
 
 */
@@ -488,8 +466,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       // SPD vertex
       vtxESD = fESD->GetPrimaryVertexSPD();
       /* quality checks on SPD-vertex */
-      TString vertexType = vtxESD->GetTitle();
-      if (vertexType.Contains("vertexer: Z") && (vtxESD->GetDispersion() > 0.04 || vtxESD->GetZRes() > 0.25))  
+      if (vtxESD->IsFromVertexerZ() && (vtxESD->GetDispersion() > 0.04 || vtxESD->GetZRes() > 0.25))  
 	fZvtx  = -1599; //vertex = 0x0; //
       else if (vtxESD->GetNContributors()<1) 
 	fZvtx  = -999; //vertex = 0x0; //
@@ -1806,24 +1783,21 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 
       }
       if(aodTrack->TestFilterBit(768)) {
-	filterFlag +=8; // 272 for 2012 hljunggr, included to get hybrid tracks
-	if(!aodTrack->IsHybridGlobalConstrainedGlobal()) filterFlag+=128; //just to test the selection, remove this line (/Martin)
+	filterFlag +=8; 
+	//	if(!aodTrack->IsHybridGlobalConstrainedGlobal()) filterFlag+=128; //just to test the selection, remove this line (/Martin)
       }
       
       
-      // if(aodTrack->IsOn(AliAODTrack::kTPCrefit)) { //hljunggr: Tuvas flag for tpcrefit
-      // 	// Minimum number of clusters
-      // 	Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
-      //   if (nCrossedRowsTPC >= 70) {
-      // 	  Int_t findable=aodTrack->GetTPCNclsF();
-      // 	  if (findable > 0){ 
-      // 	    if (nCrossedRowsTPC/findable >= 0.8) filterFlag += 16;
-      // 	  }
-      // 	}
-	
-
-
-      // }
+      if(aodTrack->IsOn(AliAODTrack::kTPCrefit)) { //hljunggr: Tuvas flag for tpcrefit
+       	// Minimum number of clusters
+       	Float_t nCrossedRowsTPC = aodTrack->GetTPCClusterInfo(2,1);
+	if (nCrossedRowsTPC >= 70) {
+       	  Int_t findable=aodTrack->GetTPCNclsF();
+      	  if (findable > 0){ 
+      	    if (nCrossedRowsTPC/findable >= 0.8) filterFlag += 16;
+      	  }
+      	}
+      }
       
 
       
@@ -2225,7 +2199,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 
     
     // ################################
-    // #### BEGINNING OF V0 CODE ######
+    // #### BEGINNING OF V0 CODE ###### ESD
     // ################################
 
     
@@ -2511,7 +2485,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
       Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
       Float_t p_ptMC        = 0;
-			Int_t   pdgmotherV0   = 0; 
+      Int_t   pdgmotherV0   = 0; 
       Short_t p_pidCode     = 0; // 0 = real data / no mc track!
       Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
       Int_t   p_pdgMother   = 0;
@@ -2734,7 +2708,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
     
     
     // ################################
-    // #### BEGINNING OF V0 CODE ######
+    // #### BEGINNING OF V0 CODE ###### ESD
     // ################################
 
     
@@ -2999,7 +2973,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
       
       Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
       Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
-			Int_t   pdgmotherV0   = 0; 
+      Int_t   pdgmotherV0   = 0; 
       Float_t p_ptMC        = 0;
       Short_t p_pidCode     = 0; // 0 = real data / no mc track!
       Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
@@ -3243,7 +3217,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
     
     
     // ################################
-    // #### BEGINNING OF V0 CODE ######
+    // #### BEGINNING OF V0 CODE ###### AOD
     // ################################
     // This is the begining of the V0 loop  
     for (Int_t iV0 = 0; iV0 < nv0s; iV0++) {
@@ -3314,18 +3288,20 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       }
 
 
-      // if(pTrack->IsOn(AliAODTrack::kTPCrefit)) { //hljunggr: Tuvas flag for tpcrefit
-      // 	// Minimum number of clusters
-      //   Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
-      //   if (nCrossedRowsTPC >= 70) {
-      // 	  Int_t findable=pTrack->GetTPCNclsF();
-      // 	  if (findable > 0){ 
-      // 	    if (nCrossedRowsTPC/findable >= 0.8) 
-      // 	      filterFlag_p += 16;
-      // 	  }
-      // 	}
-	
-      // }
+
+
+
+      if(pTrack->IsOn(AliAODTrack::kTPCrefit)) { //hljunggr: Tuvas flag for tpcrefit
+      	// Minimum number of clusters
+        Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
+        if (nCrossedRowsTPC >= 70) {
+      	  Int_t findable=pTrack->GetTPCNclsF();
+      	  if (findable > 0){ 
+      	    if (nCrossedRowsTPC/findable >= 0.8) 
+      	      filterFlag_p += 16;
+      	  }
+      	}
+      }
       
 
       
@@ -3351,16 +3327,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       }
       
 
-      // if(nTrack->IsOn(AliAODTrack::kTPCrefit)) { //hljunggr: Tuvas flag for tpcrefit
-      // 	// Minimum number of clusters
-      //   Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
-      //   if (nCrossedRowsTPC >= 70) {
-      // 	  Int_t findable=nTrack->GetTPCNclsF();
-      // 	  if (findable > 0){ 
-      // 	    if (nCrossedRowsTPC/findable >= 0.8) filterFlag_n += 16;
-      // 	  }
-      // 	}
-      // }
+      if(nTrack->IsOn(AliAODTrack::kTPCrefit)) { //hljunggr: Tuvas flag for tpcrefit
+      	// Minimum number of clusters
+        Float_t nCrossedRowsTPC = pTrack->GetTPCClusterInfo(2,1);
+        if (nCrossedRowsTPC >= 70) {
+      	  Int_t findable=nTrack->GetTPCNclsF();
+      	  if (findable > 0){ 
+      	    if (nCrossedRowsTPC/findable >= 0.8) filterFlag_n += 16;
+      	  }
+      	}
+      }
       
       
       Float_t alpha = aodV0->AlphaV0();
@@ -3538,6 +3514,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       
       Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
       Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
+      Int_t   pdgmotherV0   = 0; 
       Float_t p_ptMC        = 0;
       Short_t p_pidCode     = 0; // 0 = real data / no mc track!
       Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
@@ -3548,39 +3525,41 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       Int_t   n_pdgMother   = 0;
       if(fAnalysisMC) {
 	
-	AliAODMCParticle* p_mother = 0;
 	Int_t p_mother_steps = 0;
-	AliAODMCParticle* n_mother = 0;
+	Int_t p_mother_label = 0;     
+	Int_t p_grandmother_label = 0; 
 	Int_t n_mother_steps = 0;
-	
+	Int_t n_mother_label = 0;
+	Int_t n_grandmother_label = 0;
+
 	// positive track
 	const Int_t p_label = TMath::Abs(pTrack->GetLabel());
 	
-	AliAODMCParticle* p_mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(p_label));
+	TParticle* p_mcTrack = fMCStack->Particle(p_label);
 	if (p_mcTrack){
 	  
-	  if(p_mcTrack->IsPhysicalPrimary())
+	  if(fMCStack->IsPhysicalPrimary(p_label))
 	    p_primaryFlag = 1;
-	  
-
-
+	
 	  Int_t p_pdgCode = p_mcTrack->GetPdgCode();
 	  p_pidCode = GetPidCode(p_pdgCode);
-	  
 	  p_ptMC      = p_mcTrack->Pt();
 	  
-	  p_mother = FindPrimaryMotherAODV0(p_mcTrack, p_mother_steps);
-	  if(p_mother)
+	  p_mother_label = p_mcTrack->GetMother(0); 
+	  
+	  if(p_mother_label>0) {
+	    TParticle* p_mother = fMCStack->Particle(p_mother_label);
+	    p_grandmother_label = p_mother->GetMother(0); 
 	    p_pdgMother = p_mother->GetPdgCode();
+	  }
 	}
 	
 	// negative track
 	const Int_t n_label = TMath::Abs(pTrack->GetLabel());
-	
-	AliAODMCParticle* n_mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(n_label));
+	TParticle* n_mcTrack = fMCStack->Particle(n_label); 
 	if (n_mcTrack){
 	  
-	  if(n_mcTrack->IsPhysicalPrimary())
+	  if(fMCStack->IsPhysicalPrimary(n_label))
 	    n_primaryFlag = 1;
 
 	  
@@ -3589,19 +3568,31 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	  
 	  n_ptMC      = n_mcTrack->Pt();
 	  
-	  n_mother = FindPrimaryMotherAODV0(n_mcTrack, n_mother_steps);
-	  if(n_mother)
-	    n_pdgMother = n_mother->GetPdgCode();
-	}
+	  n_mother_label = n_mcTrack->GetMother(0);
+
+	  if(n_mother_label>0) {
+            TParticle* n_mother = fMCStack->Particle(n_mother_label);
+	    n_grandmother_label = n_mother->GetMother(0); 
+            n_pdgMother = n_mother->GetPdgCode();
+          }
+      	}
 	
 	// Check if V0 is primary = first and the same mother of both partciles
-	if(p_mother && n_mother && p_mother == n_mother) {
-	  pdgV0 = p_pdgMother;
-	  if(p_mother_steps == 1 && n_mother_steps == 1) {
+      	if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
+      	  pdgV0 = p_pdgMother;
+	  if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
 	    primaryV0 = 1;
+	  }
+	  //store also PDG of the grandmother 
+	  if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
+	    TParticle* lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
+	    pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
 	  }
 	}
       }
+   
+      
+
       if(fTreeOption) {
 	
 	DeDxV0* v0data = new((*fV0ArrayGlobalPar)[nadded]) DeDxV0();
@@ -3636,6 +3627,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->dcadaughters = aodV0->DcaV0Daughters();
 	v0data->primary = primaryV0;
 	v0data->pdg     = pdgV0;
+	v0data->pdgmother     = pdgmotherV0;
 	
 	//hljunggr 
 	v0data->y = aodV0->Y(pdgV0);
@@ -3894,6 +3886,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
        
        Int_t   primaryV0     = 0; // 0 means that the tracks are not both daughters of a primary particle (1 means they are)
        Int_t   pdgV0         = 0; // 0 means that they don't have same origin for MC (1 means they have the same original mother)
+       Int_t   pdgmotherV0   = 0; 
        Float_t p_ptMC        = 0;
        Short_t p_pidCode     = 0; // 0 = real data / no mc track!
        Short_t p_primaryFlag = 0; // 0 = real data / not primary mc track  
@@ -3904,20 +3897,22 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
        Int_t   n_pdgMother   = 0;
        if(fAnalysisMC) {
 	 
-	 AliAODMCParticle* p_mother = 0;
+	 Int_t p_mother_label = 0;
+	 Int_t p_grandmother_label = 0;
 	 Int_t p_mother_steps = 0;
-	 AliAODMCParticle* n_mother = 0;
+	 Int_t n_mother_label = 0;
+	 Int_t n_grandmother_label = 0;
 	 Int_t n_mother_steps = 0;
-	 
+
+
 	 // positive track
 	 const Int_t p_label = TMath::Abs(pTrack->GetLabel());
-	 
-	 AliAODMCParticle* p_mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(p_label));
+	  
+	 TParticle* p_mcTrack = fMCStack->Particle(p_label);
 	 if (p_mcTrack){
 	   
-	   if(p_mcTrack->IsPhysicalPrimary())
-	     p_primaryFlag = 1;
-
+	  if(fMCStack->IsPhysicalPrimary(p_label))
+	    p_primaryFlag = 1;
 
 	   
 	   Int_t p_pdgCode = p_mcTrack->GetPdgCode();
@@ -3925,39 +3920,58 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	   
 	   p_ptMC      = p_mcTrack->Pt();
 	   
-	   p_mother = FindPrimaryMotherAODV0(p_mcTrack, p_mother_steps);
-	   if(p_mother)
+	   
+	   p_mother_label = p_mcTrack->GetMother(0); 
+	   
+	   if(p_mother_label>0) {
+	     TParticle* p_mother = fMCStack->Particle(p_mother_label);
+	     p_grandmother_label = p_mother->GetMother(0); 
 	     p_pdgMother = p_mother->GetPdgCode();
+	   }
 	 }
+	 
 	 
 	 // negative track
 	 const Int_t n_label = TMath::Abs(pTrack->GetLabel());
 	 
-	 AliAODMCParticle* n_mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(n_label));
+	 TParticle* n_mcTrack = fMCStack->Particle(n_label);	    
+
 	 if (n_mcTrack){
 	   
-	   if(n_mcTrack->IsPhysicalPrimary())
-	     n_primaryFlag = 1;
+	   if(fMCStack->IsPhysicalPrimary(n_label))
+	    n_primaryFlag = 1;
+	   
 	   
 	   Int_t n_pdgCode = n_mcTrack->GetPdgCode();
 	   n_pidCode = GetPidCode(n_pdgCode);
 	   
 	   n_ptMC      = n_mcTrack->Pt();
 	   
-	   n_mother = FindPrimaryMotherAODV0(n_mcTrack, n_mother_steps);
-	   if(n_mother)
+	   n_mother_label = n_mcTrack->GetMother(0); 
+
+	   if(n_mother_label>0) {
+	     TParticle* n_mother = fMCStack->Particle(n_mother_label);
+	       //AliAODMCParticle* n_mother = fMCStack->Particle(n_mother_label);
+	     n_grandmother_label = n_mother->GetMother(0); 
 	     n_pdgMother = n_mother->GetPdgCode();
+	   }
 	 }
 	 
+	 
 	 // Check if V0 is primary = first and the same mother of both partciles
-	 if(p_mother && n_mother && p_mother == n_mother) {
+	 if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
 	   pdgV0 = p_pdgMother;
-         //Primary particle criteria change: consistency in eff num/denom
-	   if(n_mcTrack->IsPhysicalPrimary() ) {
+	   if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
 	     primaryV0 = 1;
+	   }
+	   //store also PDG of the grandmother 
+	   if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
+	     TParticle *lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
+	     pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
 	   }
 	 }
        }
+       
        
        if(fTreeOption) {
 	 
@@ -3992,7 +4006,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	 v0datatpc->dcadaughters = aodV0->DcaV0Daughters();
 	 v0datatpc->primary = primaryV0;
 	 v0datatpc->pdg     = pdgV0;
-	 
+	 v0datatpc->pdgmother     = pdgmotherV0;
+
 	 // positive track
 	 v0datatpc->ptrack.p       = pp;
 	 v0datatpc->ptrack.pt      = ppt;

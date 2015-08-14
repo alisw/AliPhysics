@@ -19,6 +19,7 @@ add_subdirectory(EVCHAR)
 add_subdirectory(EVCHAR/EventPlaneFramework)
 add_subdirectory(MUON)
 add_subdirectory(EMCAL)
+add_subdirectory(Alignment)
 
 #Module
 set (MODULE PWGPP)
@@ -209,15 +210,18 @@ set ( SRCS17
 #file ( GLOB SRCS18 "AD/*.cxx" )
 set ( SRCS18
   AD/AliAnalysisTaskADQA.cxx
+  AD/AliAnalysisTaskADPilot.cxx
   )  
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19 
   BeamGasMonitoring/AliAnalysisMBVeto.cxx
+  BeamGasMonitoring/AliAnalysisBGMonitorQA.cxx
   )  
 
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS20 
   HMTFqa/AliAnalysisMultCorrTaskQA.cxx  
+  HMTFqa/AliAnalysisTaskLeadingPt.cxx  
   )
 
 list ( APPEND SRCS 
@@ -314,7 +318,13 @@ install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
               DESTINATION PWGPP/TRD)
 install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
 install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
-install(FILES AD/AddTaskADQA.C DESTINATION PWGPP/AD)
+install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C 
+	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C 	   
+	      ZDC/macros/MakeTrendZDC.C	         
+	      DESTINATION PWGPP/ZDC/macros)
+install(FILES AD/AddTaskADQA.C 
+	      AD/AddTaskADPilot.C
+	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C 
  	      AD/trending/MakeTrendingADQA.C 
 	      DESTINATION PWGPP/AD/trending)
@@ -329,6 +339,9 @@ install(DIRECTORY EVS DESTINATION PWGPP)
 install(DIRECTORY scripts DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/scripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
 install(DIRECTORY QA/detectorQAscripts DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
+install(DIRECTORY QA/Tracking  DESTINATION PWGPP/QA USE_SOURCE_PERMISSIONS)
+install(DIRECTORY QA/Tracking/ExpertQA DESTINATION PWGPP/QA/Tracking USE_SOURCE_PERMISSIONS)
+install(DIRECTORY benchmark DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTask.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
@@ -353,6 +366,7 @@ install(FILES CalibMacros/CPass1/LoadLibraries.C
 install(FILES CalibMacros/commonMacros/CleanGeom.C
 	      DESTINATION PWGPP/CalibMacros/commonMacros)
 install(FILES BeamGasMonitoring/macros/AddTaskMBVeto.C
+              BeamGasMonitoring/macros/AddTaskBGMonitorQA.C
 	      DESTINATION PWGPP/BeamGasMonitoring/macros)
 
 message(STATUS "PWGPP enabled")

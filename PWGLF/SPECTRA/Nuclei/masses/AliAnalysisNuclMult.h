@@ -38,7 +38,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 
   void SetTrackFilter(AliAnalysisFilter *filter) {fTrackFilter = filter;};
-  void SetMultiplicityRange(Int_t multMin=-999, Int_t multMax=999) {//multMin=-999 -> analysis over all Minimum Bias collisions
+  void SetMultEstimator(Int_t tMultEstimator=1) {iMultEstimator = tMultEstimator;};
+  void SetMultiplicityRange(Float_t multMin=-999, Float_t multMax=999) {//multMin=-999 -> analysis over all Minimum Bias collisions
     multiplicityMin=multMin;
     multiplicityMax=multMax;
   };
@@ -51,16 +52,20 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   AliAODEvent* fAOD;                              //! AOD object
   AliESDEvent* fESD;                              //! ESD object
   AliVEvent* fEvent;                              //! general object
-  AliAnalysisFilter *fTrackFilter;                //track filter object
-  AliPPVsMultUtils *fPPVsMultUtils;               //for multiplicity estimators
+  AliAnalysisFilter *fTrackFilter;                //  track filter object
+  AliPPVsMultUtils *fPPVsMultUtils;               //  for multiplicity estimator
   AliPIDResponse *fPIDResponse;                   //! pointer to PID response
   
-  TList *fList;                                   //! lists for slot
+  TList *fList;                                   //! output container
   
-  Int_t multiplicityMin;
-  Int_t multiplicityMax;
+  Int_t iMultEstimator;                           //  iMultEstimator: 0-> VZERO Amplitude Estimator; 1->Mid-psudorapidity Estimator;
+  Float_t multiplicityMin;                        //  min. mult.
+  Float_t multiplicityMax;                        //  max. mult.
+  
+  Int_t stdFlagPid[9];
 
   TH1I *htriggerMask;                             //! trigger mask
+  TH1I *htriggerMask_noMB;                        //! trigger mask (MB excluded)
   TH1I *hNspdVertex;                              //! num. of spd vertices
   TH1F *hzvertex;                                 //! z-vertex distribution
   TH1I *hpileUp;                                  //! pileup in spd?
@@ -79,9 +84,13 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   TH2F *fM2tof[2];                                //! M2 computed with TOF
   TH2F *fM2vspt[18];                              //! M2 computed with TOF (TPC cut)
 
+  TF1 *fpTcorr[2];                                //! pT corrections for (anti-)deuteron
+  
   void FillDca(Double_t DCAxy, Double_t DCAz, AliVTrack *track);
-
-  ClassDef(AliAnalysisNuclMult, 1);
+  void PtCorrection(Double_t &pt, Int_t FlagPid, Short_t charge);
+  
+  ClassDef(AliAnalysisNuclMult, 3);
+  
 };
 
 #endif

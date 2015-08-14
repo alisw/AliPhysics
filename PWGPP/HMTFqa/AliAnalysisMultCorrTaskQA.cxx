@@ -22,19 +22,6 @@
 //
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-class TTree;
-class TParticle;
-class TVector3;
-
-class AliStack;
-
-class AliESDVertex;
-class AliAODVertex;
-class AliESDv0;
-class AliAODv0;
-
-class AliPPVsMultUtils;
-class AliESDtrackCuts;
 
 #include <Riostream.h>
 #include "TList.h"
@@ -95,33 +82,57 @@ using std::endl;
 ClassImp(AliAnalysisMultCorrTaskQA)
 
 AliAnalysisMultCorrTaskQA::AliAnalysisMultCorrTaskQA()
-    : AliAnalysisTaskSE(), fListHist(0), fPPVsMultUtils(0), fCuts(0), fTrackFilterSKE(0x0),
-//Histos
-fHistEventCounter(0), fHistRefMult08(0), fHistRefMult05(0), fHistV0M(0), fHistV0A(0), fHistV0C(0), fdNdeta(0), fPMult08(0), fdNdeta05(0), fPMult05(0), fcorrRef05Ref08(0), fcorrV0ARef08(0), fcorrV0CRef08(0), fcorrV0MRef08(0), fHistV0Aamp(0), fHistV0Camp(0), fHistV0Mamp(0), fcorrV0AampRef08(0), fcorrV0CampRef08(0), fcorrV0MampRef08(0),
-fcorrRef05Ref08pfx(0),
-fcorrV0ARef08pfx(0),
-fcorrV0CRef08pfx(0),
-fcorrV0AampRef08pfx(0),
-fcorrV0CampRef08pfx(0),
-fcorrV0MampRef08pfx(0),
-fcorrV0MRef08pfx(0),
-fModulesV0(0)
+    : AliAnalysisTaskSE(), 
+    fListHist(0), 
+    fCuts(0),
+    fTrackFilterSKE(0x0),
+    fHistEventCounter(0), 
+    fHistRefMult08(0), 
+    fHistRefMult05(0), 
+    fHistV0M(0), 
+    fHistV0A(0), 
+    fHistV0C(0), 
+    fdNdeta(0), 
+    fcorrRef05Ref08(0), 
+    fcorrV0ARef08(0), 
+    fcorrV0CRef08(0), 
+    fcorrV0MRef08(0), 
+    fHistV0Aamp(0), 
+    fHistV0Camp(0), 
+    fHistV0Mamp(0), 
+    fcorrV0AampRef08(0), 
+    fcorrV0CampRef08(0), 
+    fcorrV0MampRef08(0),
+    fModulesV0(0), 
+    fPPVsMultUtils(0)
 {
 
 }
 
 AliAnalysisMultCorrTaskQA::AliAnalysisMultCorrTaskQA(const char *name)
-    : AliAnalysisTaskSE(name), fListHist(0),fPPVsMultUtils(0), fCuts(0), fTrackFilterSKE(0x0),
-//Histos
-      fHistEventCounter(0), fHistRefMult08(0), fHistRefMult05(0), fHistV0M(0), fHistV0A(0), fHistV0C(0), fdNdeta(0), fPMult08(0), fdNdeta05(0), fPMult05(0), fcorrRef05Ref08(0), fcorrV0ARef08(0), fcorrV0CRef08(0), fcorrV0MRef08(0), fHistV0Aamp(0), fHistV0Camp(0), fHistV0Mamp(0), fcorrV0AampRef08(0), fcorrV0CampRef08(0), fcorrV0MampRef08(0),
-fcorrRef05Ref08pfx(0),
-fcorrV0ARef08pfx(0),
-fcorrV0CRef08pfx(0),
-fcorrV0AampRef08pfx(0),
-fcorrV0CampRef08pfx(0),
-fcorrV0MampRef08pfx(0),
-fcorrV0MRef08pfx(0),
-fModulesV0(0)
+    : AliAnalysisTaskSE(name), 
+    fListHist(0), 
+    fCuts(0), 
+    fTrackFilterSKE(0x0),
+    fHistEventCounter(0), 
+    fHistRefMult08(0), 
+    fHistRefMult05(0), 
+    fHistV0M(0), 
+    fHistV0A(0), 
+    fHistV0C(0), 
+    fdNdeta(0), 
+    fcorrRef05Ref08(0), 
+    fcorrV0ARef08(0), 
+    fcorrV0CRef08(0),
+    fcorrV0MRef08(0), 
+    fHistV0Aamp(0), 
+    fHistV0Camp(0), 
+    fHistV0Mamp(0), 
+    fcorrV0AampRef08(0),
+    fcorrV0CampRef08(0), 
+    fcorrV0MampRef08(0),
+    fModulesV0(0), 
+    fPPVsMultUtils(0)
 {
     DefineOutput(1, TList::Class()); // List of Histograms
 }
@@ -158,10 +169,8 @@ void AliAnalysisMultCorrTaskQA::UserCreateOutputObjects()
     inputHandler->SetNeedField();
 
     // Create histograms
-  OpenFile(1);
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
-    //NBins[12]={0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70,100}
     if(! fHistEventCounter ){
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",7,0,7);
         fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
@@ -210,78 +219,42 @@ void AliAnalysisMultCorrTaskQA::UserCreateOutputObjects()
         fdNdeta= new TH1D( "fdNdeta","dN/d#eta (|#eta| < 0.8);#eta (rads);Count",100,-1,1);
         fListHist->Add(fdNdeta);
     }
-    if(!fdNdeta05){
-        fdNdeta05= new TH1D( "fdNdeta05","dN/d#eta (|#eta| < 0.5);#eta (rads); Count",100,-1,1);
-    }
-    if(!fPMult08){
-        fPMult08= new TH1D( "fPMult08","P(Nch) (|#eta| < 0.8); Nch (|#eta| < 0.8); P(Nch)",200,0,200);
-    }
-    if(!fPMult05){
-        fPMult05= new TH1D( "fPMult05","P(Nch) (|#eta| < 0.5) ; Nch (|#eta| < 0.5); P(Nch)",200,0,200);
-    }
-    
+
     if(!fcorrRef05Ref08){
         fcorrRef05Ref08= new TH2D( "fcorrRef05Ref08"," Multiplicity Correlation (|#eta| < 0.5 and |#eta| < 0.8); Nch (|#eta| < 0.5); Nch (|#eta| < 0.8)",200,0,200,200,0,200);
         fListHist->Add(fcorrRef05Ref08);
     }
-    if(!fcorrRef05Ref08pfx){
-        fcorrRef05Ref08pfx= new TProfile( "fcorrRef05Ref08pfx"," Multiplicity Correlation (|#eta| < 0.5 and |#eta| < 0.8); Nch (|#eta| < 0.5); Nch (|#eta| < 0.8)",200,0,200);
-       // fListHist->Add(fcorrRef05Ref08pfx);
-    }
+
     if(!fcorrV0ARef08){
-        fcorrV0ARef08= new TH2D( "fcorrV0ARef08"," Multiplicity Correlation (V0A percentile and |#eta| < 0.8); V0A Percentile; Nch (|#eta| < 0.8)",100,0,100,200,0,200);
-        fListHist->Add(fcorrV0ARef08);
-    }
-    if(!fcorrV0ARef08pfx){
-        fcorrV0ARef08pfx= new TProfile( "fcorrV0ARef08pfx"," Multiplicity Correlation (V0A percentile and |#eta| < 0.8); V0A Percentile; Nch (|#eta| < 0.8)",100,0,100);
-        //fListHist->Add(fcorrV0ARef08pfx);
+	    fcorrV0ARef08= new TH2D( "fcorrV0ARef08"," Multiplicity Correlation (V0A percentile and |#eta| < 0.8); V0A Percentile; Nch (|#eta| < 0.8)",100,0,100,200,0,200);
+	    fListHist->Add(fcorrV0ARef08);
     }
     if(!fcorrV0CRef08){
-        fcorrV0CRef08= new TH2D( "fcorrV0CRef08"," Multiplicity Correlation (V0C percentile and |#eta| < 0.8); V0C Percentile; Nch (|#eta| < 0.8)",100,0,100,200,0,200);
-        fListHist->Add(fcorrV0CRef08);
-    }
-    if(!fcorrV0CRef08pfx){
-        fcorrV0CRef08pfx= new TProfile( "fcorrV0CRef08pfx"," Multiplicity Correlation (V0C percentile and |#eta| < 0.8); V0C Percentile; Nch (|#eta| < 0.8)",100,0,100);
-        //fListHist->Add(fcorrV0CRef08pfx);
+	    fcorrV0CRef08= new TH2D( "fcorrV0CRef08"," Multiplicity Correlation (V0C percentile and |#eta| < 0.8); V0C Percentile; Nch (|#eta| < 0.8)",100,0,100,200,0,200);
+	    fListHist->Add(fcorrV0CRef08);
     }
     if(!fcorrV0AampRef08){
-        fcorrV0AampRef08= new TH2D( "fcorrV0AampRef08"," Multiplicity Correlation (V0A and |#eta| < 0.8); V0A Amplitud; Nch (|#eta| < 0.8)",700,0,700,200,0,200);
-        fListHist->Add(fcorrV0AampRef08);
-    }
-    if(!fcorrV0AampRef08pfx){
-        fcorrV0AampRef08pfx= new TProfile( "fcorrV0AampRef08pfx"," Multiplicity Correlation (V0A and |#eta| < 0.8); V0A Amplitud; Nch (|#eta| < 0.8)",700,0,700);
-        //fListHist->Add(fcorrV0AampRef08pfx);
+	    fcorrV0AampRef08= new TH2D( "fcorrV0AampRef08"," Multiplicity Correlation (V0A and |#eta| < 0.8); V0A Amplitud; Nch (|#eta| < 0.8)",700,0,700,200,0,200);
+	    fListHist->Add(fcorrV0AampRef08);
     }
     if(!fcorrV0CampRef08){
-        fcorrV0CampRef08= new TH2D( "fcorrV0CampRef08"," Multiplicity Correlation (V0C and |#eta| < 0.8); V0C Amplitud; Nch (|#eta| < 0.8)",700,0,700,200,0,200);
-        fListHist->Add(fcorrV0CampRef08);
-    }
-    if(!fcorrV0CampRef08pfx){
-        fcorrV0CampRef08pfx= new TProfile( "fcorrV0CampRef08pfx"," Multiplicity Correlation (V0C and |#eta| < 0.8); V0C Amplitud; Nch (|#eta| < 0.8)",700,0,700);
-        //fListHist->Add(fcorrV0CampRef08pfx);
+	    fcorrV0CampRef08= new TH2D( "fcorrV0CampRef08"," Multiplicity Correlation (V0C and |#eta| < 0.8); V0C Amplitud; Nch (|#eta| < 0.8)",700,0,700,200,0,200);
+	    fListHist->Add(fcorrV0CampRef08);
     }
     if(!fcorrV0MRef08){
-        fcorrV0MRef08= new TH2D( "fcorrV0MRef08"," Multiplicity Correlation (V0M and |#eta| < 0.8); V0M Percentile; Nch (|#eta| < 0.8)",100,0,100,200,0,200);
-        fListHist->Add(fcorrV0MRef08);
-    }
-    if(!fcorrV0MRef08pfx){
-        fcorrV0MRef08pfx= new TProfile( "fcorrV0MRef08pfx"," Multiplicity Correlation (V0M and |#eta| < 0.8); V0M Percentile; Nch (|#eta| < 0.8)",100,0,100);
-        //fListHist->Add(fcorrV0MRef08pfx);
+	    fcorrV0MRef08= new TH2D( "fcorrV0MRef08"," Multiplicity Correlation (V0M and |#eta| < 0.8); V0M Percentile; Nch (|#eta| < 0.8)",100,0,100,200,0,200);
+	    fListHist->Add(fcorrV0MRef08);
     }
     if(!fcorrV0MampRef08){
-        fcorrV0MampRef08= new TH2D( "fcorrV0MampRef08"," Multiplicity Correlation (V0M and |#eta| < 0.8); V0M Amplitud; Nch (|#eta| < 0.8)",700,0,700,200,0,200);
-        fListHist->Add(fcorrV0MampRef08);
-    }
-    if(!fcorrV0MampRef08pfx){
-        fcorrV0MampRef08pfx= new TProfile( "fcorrV0MampRef08pfx"," Multiplicity Correlation (V0M and |#eta| < 0.8); V0M Amplitud; Nch (|#eta| < 0.8)",700,0,700);
-        //fListHist->Add(fcorrV0MampRef08pfx);
+	    fcorrV0MampRef08= new TH2D( "fcorrV0MampRef08"," Multiplicity Correlation (V0M and |#eta| < 0.8); V0M Amplitud; Nch (|#eta| < 0.8)",700,0,700,200,0,200);
+	    fListHist->Add(fcorrV0MampRef08);
     }
     if(!fModulesV0){
-        fModulesV0= new TH2D( "fModulesV0"," Multiplicity vs cell; V0 Sector; counts ",64,0,64,1000,0,1000);
-        fListHist->Add(fModulesV0);
+	    fModulesV0= new TH2D( "fModulesV0"," Multiplicity vs cell; V0 Sector; counts ",64,0,64,1000,0,1000);
+	    fListHist->Add(fModulesV0);
     }
 
-    //List of Histograms: Normal
+
     PostData(1, fListHist);
 }// end UserCreateOutputObjects
 
@@ -289,165 +262,129 @@ void AliAnalysisMultCorrTaskQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisMultCorrTaskQA::UserExec(Option_t *)
 {
-    // Main loop
-    // Called for each event
-    AliESDEvent *lESDevent = 0x0;
+	// Main loop
+	// Called for each event
+	AliESDEvent *lESDevent = 0x0;
 
-    lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
-    if (!lESDevent) {
-        AliWarning("ERROR: lESDevent not available \n");
-        return;
-    }
-    //------------------------------------------------
-    // Selection Investigation with AliPPVsMultUtils
-    //------------------------------------------------
-    fHistEventCounter->Fill(0.5);
+	lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
+	if (!lESDevent) {
+		AliWarning("ERROR: lESDevent not available \n");
+		return;
+	}
+	//------------------------------------------------
+	// Selection Investigation with AliPPVsMultUtils
+	//------------------------------------------------
+	fHistEventCounter->Fill(0.5);
 
-     if( AliPPVsMultUtils::IsNotPileupSPDInMultBins(lESDevent) == kFALSE){fHistEventCounter->Fill(2.5);}
-     if( AliPPVsMultUtils::IsINELgtZERO( lESDevent ) == kFALSE){fHistEventCounter->Fill(3.5);}
-     if( AliPPVsMultUtils::IsAcceptedVertexPosition( lESDevent ) == kFALSE){fHistEventCounter->Fill(4.5);}
-     if( AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices( lESDevent ) == kFALSE){fHistEventCounter->Fill(5.5);}
-     if( AliPPVsMultUtils::IsMinimumBias( lESDevent ) == kFALSE){fHistEventCounter->Fill(6.5);}
-    
-    
-    if( !AliPPVsMultUtils::IsEventSelected(lESDevent) ) {
-        PostData(1, fListHist);// Event isn't selected, post output data, done here
-        return;
-    }
-    
-    //Printf("event selected");
-    fHistEventCounter->Fill(1.5);
-    //Simple Framework / Getter Test
-    //This should NOT have any underflow: 
-    // ---> all error codes should have been removed by IsEventSelected already 
-    
-    //Reference Multiplicity
-    fHistRefMult08->Fill(AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ) );
-    fHistRefMult05->Fill(AliESDtrackCuts::GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.5) );
-    //V0M Percentile
-    fHistV0M->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0M" ) );
-    //V0A Percentile
-    fHistV0A->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0A" ) );
-    //V0C Percentile
-    fHistV0C->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0C" ) );
-    //Printf("enter in the Loop ESD...");
-    LoopESD(lESDevent);
-    //Printf("Loop ESD finished");
-    AliVVZERO* esdV0 = lESDevent->GetVZEROData();
-    //Printf("getting mult for V0 ...");
-    Float_t multV0A= esdV0->GetMTotV0A();
-    Float_t multV0C= esdV0->GetMTotV0C();
-    Float_t multV0M= multV0A+multV0C;
-    Float_t modulsV0A= esdV0->GetNbPMV0A();
-    Float_t modulsV0C= esdV0->GetNbPMV0C();
-    
-    fHistV0Aamp->Fill( esdV0->GetMTotV0A() );
-    fHistV0Camp->Fill( esdV0->GetMTotV0C() );
-    fHistV0Aamp->Sumw2();
-    fHistV0Camp->Sumw2();
-   
-    fHistV0Mamp->Fill( multV0M );
-    fHistV0Mamp->Sumw2();
-    //Correlations
-    fcorrRef05Ref08->Fill(AliESDtrackCuts::GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.5), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ) );
-    fcorrV0ARef08->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0A" ), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
-    fcorrV0CRef08->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0C" ), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
-    fcorrV0AampRef08->Fill( esdV0->GetMTotV0A(), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
-    fcorrV0CampRef08->Fill( esdV0->GetMTotV0C(), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
-    fcorrV0MampRef08->Fill( esdV0->GetMTotV0A()+esdV0->GetMTotV0C(), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
-    fcorrV0MRef08->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0M" ), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
-    
-    fcorrRef05Ref08->Sumw2();
-    fcorrV0ARef08->Sumw2();
-    fcorrV0CRef08->Sumw2();
-    fcorrV0AampRef08->Sumw2();
-    fcorrV0CampRef08->Sumw2();
-    fcorrV0MampRef08->Sumw2();
-    fcorrV0MRef08->Sumw2();
+	if( AliPPVsMultUtils::IsNotPileupSPDInMultBins(lESDevent) == kFALSE){fHistEventCounter->Fill(2.5);}
+	if( AliPPVsMultUtils::IsINELgtZERO( lESDevent ) == kFALSE){fHistEventCounter->Fill(3.5);}
+	if( AliPPVsMultUtils::IsAcceptedVertexPosition( lESDevent ) == kFALSE){fHistEventCounter->Fill(4.5);}
+	if( AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices( lESDevent ) == kFALSE){fHistEventCounter->Fill(5.5);}
+	if( AliPPVsMultUtils::IsMinimumBias( lESDevent ) == kFALSE){fHistEventCounter->Fill(6.5);}
 
-    fcorrRef05Ref08pfx=fcorrRef05Ref08->ProfileX("fcorrRef05Ref08pfx",0,200,"s");
-    fcorrV0ARef08pfx=fcorrV0ARef08->ProfileX("fcorrV0ARef08pfx",0,100,"s");
-    fcorrV0CRef08pfx=fcorrV0CRef08->ProfileX("fcorrV0CRef08pfx",0,100,"s");
-    fcorrV0AampRef08pfx=fcorrV0AampRef08->ProfileX("fcorrV0AampRef08pfx",0,700,"s");
-    fcorrV0CampRef08pfx=fcorrV0CampRef08->ProfileX("fcorrV0CampRef08pfx",0,700,"s");
-    fcorrV0MampRef08pfx=fcorrV0MampRef08->ProfileX("fcorrV0MampRef08pfx",0,700,"s");
-    fcorrV0MRef08pfx=fcorrV0MRef08->ProfileX("fcorrV0MRef08pfx",0,100,"s");
-    
-    fListHist->Add(fcorrV0MampRef08pfx);
-    fListHist->Add(fcorrV0MampRef08pfx);
-    fListHist->Add(fcorrV0CampRef08pfx);
-    fListHist->Add(fcorrV0AampRef08pfx);
-    fListHist->Add(fcorrV0CRef08pfx);
-    fListHist->Add(fcorrV0ARef08pfx);
-    fListHist->Add(fcorrRef05Ref08pfx);
 
-    
-    for(Int_t ich =0; ich < 64; ich++){
-        fModulesV0->Fill(ich,esdV0->GetMultiplicity(ich));
-    }
-    // Post output data.
-    PostData(1, fListHist);
+	if( !AliPPVsMultUtils::IsEventSelected(lESDevent) ) {
+		PostData(1, fListHist);// Event isn't selected, post output data, done here
+		return;
+	}
+
+
+	fHistEventCounter->Fill(1.5);
+	//This should NOT have any underflow: 
+	// ---> all error codes should have been removed by IsEventSelected already 
+
+	//Reference Multiplicity
+	fHistRefMult08->Fill(AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ) );
+	fHistRefMult05->Fill(AliESDtrackCuts::GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.5) );
+	//V0 Percentiles
+	fHistV0M->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0M" ) );
+	fHistV0A->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0A" ) );
+	fHistV0C->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0C" ) );
+	LoopESD(lESDevent);
+	AliVVZERO* esdV0 = lESDevent->GetVZEROData();
+
+	Float_t multV0A= esdV0->GetMTotV0A();
+	Float_t multV0C= esdV0->GetMTotV0C();
+	Float_t multV0M= multV0A+multV0C;
+	
+        fHistV0Aamp->Fill( esdV0->GetMTotV0A() );
+	fHistV0Camp->Fill( esdV0->GetMTotV0C() );
+
+
+	fHistV0Mamp->Fill( multV0M );
+
+	//Correlations
+	fcorrRef05Ref08->Fill(AliESDtrackCuts::GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.5), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ) );
+	fcorrV0ARef08->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0A" ), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
+	fcorrV0CRef08->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0C" ), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
+	fcorrV0AampRef08->Fill( esdV0->GetMTotV0A(), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
+	fcorrV0CampRef08->Fill( esdV0->GetMTotV0C(), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
+	fcorrV0MampRef08->Fill( esdV0->GetMTotV0A()+esdV0->GetMTotV0C(), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
+	fcorrV0MRef08->Fill( fPPVsMultUtils->GetMultiplicityPercentile( lESDevent, "V0M" ), AliPPVsMultUtils::GetStandardReferenceMultiplicity( lESDevent ));
+
+
+
+	for(Int_t ich =0; ich < 64; ich++){
+		fModulesV0->Fill(ich,esdV0->GetMultiplicity(ich));
+	}
+	// Post 
+	PostData(1, fListHist);
 }
 
 //________________________________________________________________________
 void AliAnalysisMultCorrTaskQA::Terminate(Option_t *)
 {
-    // Draw result to the screen
-    // Called once at the end of the query
+	// Draw result to the screen
+	/*
+	   TList *cRetrievedList = 0x0;
+	   cRetrievedList = (TList*)GetOutputData(1);
+	   if(!cRetrievedList) {
+	   Printf("ERROR - AliAnalysisMultCorrTaskQA : ouput data container list not available\n");
+	   return;
+	   }
 
-    TList *cRetrievedList = 0x0;
-    cRetrievedList = (TList*)GetOutputData(1);
-    if(!cRetrievedList) {
-        Printf("ERROR - AliAnalysisMultCorrTaskQA : ouput data container list not available\n");
-        return;
-    }
+	   fHistEventCounter = dynamic_cast<TH1D*> (  cRetrievedList->FindObject("fHistEventCounter")  );
+	   if (!fHistEventCounter) {
+	   Printf("ERROR - AliAnalysisMultCorrTaskQA : fHistEventCounter not available");
+	   return;
+	   }
 
-    fHistEventCounter = dynamic_cast<TH1D*> (  cRetrievedList->FindObject("fHistEventCounter")  );
-    if (!fHistEventCounter) {
-        Printf("ERROR - AliAnalysisMultCorrTaskQA : fHistEventCounter not available");
-        return;
-    }
+	   TCanvas *canCheck = new TCanvas("AliAnalysisMultCorrTaskQA","Control Histo",10,10,510,510);
+	   canCheck->cd(1)->SetLogy();
 
-    TCanvas *canCheck = new TCanvas("AliAnalysisMultCorrTaskQA","Control Histo",10,10,510,510);
-    canCheck->cd(1)->SetLogy();
-
-    fHistEventCounter->SetMarkerStyle(22);
-    fHistEventCounter->DrawCopy("E");
+	   fHistEventCounter->SetMarkerStyle(22);
+	   fHistEventCounter->DrawCopy("E");*/
 }
 
 //----------------------------------------------
 void AliAnalysisMultCorrTaskQA::LoopESD( AliESDEvent *lESDevent)
 {
 
-    //Printf("Inside Loop ..");
-     Int_t ntracks = lESDevent->GetNumberOfTracks();
-    //Printf("obtaining ntracks=%d",ntracks);
-     if(ntracks==0){
-        //Printf("ntracks==0 ..");
-        return;
-     }
-    Int_t nesdtracks=0;
-    TObjArray* acceptedtracks = new TObjArray();
-    for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-        //Printf("inside track loop");
-        AliESDtrack *track = (AliESDtrack *)lESDevent->GetTrack(iTracks);
-        
-        if (!track) {
-            Error("UserExec", "Could not receive track %d", iTracks);
-            continue;
-        }
-       // Printf("acepting test ...");
-        
-        if(!fCuts->AcceptTrack(track))continue;
-       // Printf("track accepted");
-        
-        nesdtracks++;
-        fdNdeta->Fill(track->Eta());
-        acceptedtracks->Add(track);
-        
-        
-    } //track loop
-    delete acceptedtracks;
+	Int_t ntracks = lESDevent->GetNumberOfTracks();
+	if(ntracks==0){
+		return;
+	}
+	Int_t nesdtracks=0;
+	TObjArray* acceptedtracks = new TObjArray();
+	for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
+		AliESDtrack *track = (AliESDtrack *)lESDevent->GetTrack(iTracks);
+
+		if (!track) {
+			Error("UserExec", "Could not receive track %d", iTracks);
+			continue;
+		}
+
+		if(!fCuts->AcceptTrack(track))continue;
+
+		nesdtracks++;
+		fdNdeta->Fill(track->Eta());
+		acceptedtracks->Add(track);
+
+	} 
+	delete acceptedtracks;
 
 }
 
+
+// - david.dobrigkeit.chinellato@cern.ch
+// --hector.bello.martinez@cern.ch

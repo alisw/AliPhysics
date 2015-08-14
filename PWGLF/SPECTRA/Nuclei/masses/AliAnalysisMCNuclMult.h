@@ -59,15 +59,15 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   AliAODEvent* fAOD;                              //! AOD object
   AliESDEvent* fESD;                              //! ESD object
   AliVEvent* fEvent;                              //! general object
-  AliAnalysisFilter *fTrackFilter;                //track filter object
-  AliPPVsMultUtils *fPPVsMultUtils;               //for multiplicity estimators
+  AliAnalysisFilter *fTrackFilter;                //  track filter object
+  AliPPVsMultUtils *fPPVsMultUtils;               //  for multiplicity estimator
   AliPIDResponse *fPIDResponse;                   //! pointer to PID response
 
-  TList *fList;                                   //! lists for slot
+  TList *fList;                                   //! output container
   
-  Int_t iMultEstimator;                           //! iMultEstimator: 0-> VZERO Amplitude Estimator; 1->Mid-psudorapidity Estimator;
-  Float_t multiplicityMin;                        //! min. mult.
-  Float_t multiplicityMax;                        //! max. mult.
+  Int_t iMultEstimator;                           //  iMultEstimator: 0-> VZERO Amplitude Estimator; 1->Mid-psudorapidity Estimator;
+  Float_t multiplicityMin;                        //  min. mult.
+  Float_t multiplicityMax;                        //  max. mult.
   
   Int_t stdPdg[9];                                //! Pdg code of e,mu,pi,K,p,d,t,He3,He4
 
@@ -78,15 +78,16 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   TH1I *hpileUp;                                  //! pileup in spd?
   TH2I *fNtrVsMult;
   TProfile *prNtrVsMult;
-  TH1I *hmult;                                    //! multiplicity distribution
+  TH1I *hmult_tot;                                //! multiplicity distribution
+  TH1I *hmult;                                    //! selected multiplicity distribution
   TH1I *hNtrack;                                  //! number of tracks distribution
     
-  TH1I *hpdg;
+  TH1I *hpdg;                                     //! pdg label
 
   TH1F *hpt[7][18];                               //! pT efficiencies
   
-  TH2F *fptRecoVsTrue[18];                        //! pT reco vs. true
-  TProfile *prptRecoVsTrue[18];                   //! pT reco vs. true
+  TH2F *fptRecoVsTrue[4][18];                     //! pT reco vs. true
+  TProfile *prptRecoVsTrue[4][18];                //! pT reco vs. true
     
   TH2F *fdEdxVSp[2];                              //! dedx vs pTPC
   TProfile *hDeDxExp[9];                          //! TPC splines
@@ -100,12 +101,14 @@ class AliAnalysisMCNuclMult : public AliAnalysisTaskSE {
   TH2F *fM2tof[2];                                //! m2 computed with TOF
   TH2F *fM2vspt[3][18];                           //! m2 computed with TOF (TPC cut)
 
-  //TH1I *htemp;
+  TF1 *fpTcorr[2];                                //! pT corrections for (anti-)deuteron
 
-  void ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge);
+  void ForPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge, Bool_t isPrimary);
+  void PtCorrection(Double_t &pt, Int_t FlagPid, Short_t charge);
+  void CheckPtCorr(Double_t pt, Double_t t_pt, Int_t Pdg, Short_t t_charge);
   void FillDca(Double_t DCAxy, Double_t DCAz, Int_t Pdg, Short_t t_charge, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak, Double_t t_pt, Bool_t kTOF);
-  
-  ClassDef(AliAnalysisMCNuclMult, 2);
+    
+  ClassDef(AliAnalysisMCNuclMult, 3);
 };
 
 #endif

@@ -1,46 +1,44 @@
-/* Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
-   Author: Prabhat Pujahari & Claude Pruneau, Wayne State
+/* Macro designed for use with the AliAnaTaskMomScan task.
+   Author: Prabhat Pujahari 
    system:           0 -- PbPb                 1 -- pPb
    singlesOnly:      0 -- full correlations    1 -- singles only
    useWeights:       0 -- no                   1 -- yes
    centralityMethod: 4 -- V0M  5 -- TPC  7: V0A for pPb
    chargeSet:        0: ++    1: +-    2: -+    3: --
 */
-/////////////////////////////////////////////////////////////////////////////////
+//-------------------------------------------
 AliAnaTaskMomScan *AddTaskMomScan
 (int    system                  = 0, 
- int    singlesOnly             = 1,
- int    useWeights              = 0, //no weight 
- int    centralityMethod        = 4, // 5 for syst.
- int    chargeSet               = 1,
+ int    singlesOnly             = 0,
+ int    useWeights              = 1, 
+ int    centralityMethod        = 4, 
+ int    chargeSet               = 3,
  double zMin                    = -10.0,
  double zMax                    =  10.0,
- int    trackFilterBit          = 1, //Global
+ int    trackFilterBit          = 1, 
  int    nClusterMin             = 70, 
- double pt1Min                  =  0.2,
- double pt1Max                  =  3.0,
- double pt2Min                  =  3.0,
- double pt2Max                  =  8.0,
  double eta1Min                 = -1.0,
  double eta1Max                 =  1.0,
  double eta2Min                 = -1.0,
  double eta2Max                 =  1.0,
+ double ptMin1                  =  0.2,
+ double ptMax1                  =  3.0,
+ double ptMin2                  =  3.0,
+ double ptMax2                  =  10.0,
  double dcaZMin                 = -3.2,
  double dcaZMax                 =  3.2,
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  3,
  Bool_t trigger                 = kFALSE,
- const char* taskname           = "TrgWeightPM",
- char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/Globaltrk/SysErrWgt/TrkCent_weight.root")
-  
+ const char* taskname           = "TESTMMNew",
+ char *inputHistogramFileName   = "alien:///alice/cern.ch/user/p/prabhat/ptwgt/Ptwgt_mm.root")
 {
   // Set Default Configuration of this analysis
   int    debugLevel             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
   int    sameFilter             = 1;
-
   //----------------------------------------------------  
   //int    nCentrality;
   double minCentrality[10];
@@ -53,8 +51,6 @@ AliAnaTaskMomScan *AddTaskMomScan
 	minCentrality[0] = 0.0;   maxCentrality[0]  = 5.0;
         minCentrality[1] = 30.0;  maxCentrality[1]  = 40.0;
         minCentrality[2] = 60.0;  maxCentrality[2]  = 70.0;
-        minCentrality[3] = 70.0;  maxCentrality[3]  = 80.0;
-       
       }
     else
       {
@@ -81,8 +77,9 @@ AliAnaTaskMomScan *AddTaskMomScan
       return 0;
     }
   //----------------------------------------------
+  
   double dedxMin                =  0.0;
-  double dedxMax                =  500000.0;
+  double dedxMax                =  20000.0;
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
   
@@ -158,56 +155,44 @@ AliAnaTaskMomScan *AddTaskMomScan
       TH3F   * weight_2   = 0;
       if (useWeights)
         {
-        TGrid::Connect("alien:");
-        inputFile = TFile::Open(inputHistogramFileName,"OLD");
-        if (!inputFile)
-          {
-	    //cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
-          return;
-          }
+	  TGrid::Connect("alien:");
+	  inputFile = TFile::Open(inputHistogramFileName,"OLD");
+	  if (!inputFile)
+	    {
+	      return;
+	    }
         TString nameHistoBase = "correction_";
         TString nameHisto;
         nameHistoBase += eventName;
         if (requestedCharge1 == 1)
           {
-          nameHisto = nameHistoBase + "_p";
-          //cout << "Input Histogram named: " << nameHisto << endl;
+          nameHisto = nameHistoBase + "_p1";
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         else
           {
-          nameHisto = nameHistoBase + "_m";
-          //cout << "Input Histogram named: " << nameHisto << endl;
+          nameHisto = nameHistoBase + "_m1";
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         if (!weight_1) 
           {
-	    //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
           return 0;
           }
-        
-        if (!sameFilter)
-          {
-          weight_2 = 0;
-          if (requestedCharge2 == 1)
-            {
-            nameHisto = nameHistoBase + "_p";
-            //cout << "Input Histogram named: " << nameHisto << endl;
+	if (requestedCharge2 == 1)
+	  {
+            nameHisto = nameHistoBase + "_p2";
             weight_2 = (TH3F *) inputFile->Get(nameHisto);
-            }
-          else
-            {
-            nameHisto = nameHistoBase + "_m";
-            //cout << "Input Histogram named: " << nameHisto << endl;
+	  }
+	else
+	  {
+            nameHisto = nameHistoBase + "_m2";
             weight_2 = (TH3F *) inputFile->Get(nameHisto);
-            }
-          if (!weight_2) 
-            {
-	      //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
+	  }
+	if (!weight_2) 
+	  {
             return 0;
-            }
-          }  
-        }
+	  }
+	}
       task = new  AliAnaTaskMomScan(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      ); 
@@ -222,12 +207,12 @@ AliAnaTaskMomScan *AddTaskMomScan
       task->SetVertexXYMax(          1.            ); 
       task->SetCentralityMethod(    centralityMethod);
       task->SetCentrality(          minCentrality[iCentrality], maxCentrality[iCentrality]);
-      task->SetPtMin1(              pt1Min           ); 
-      task->SetPtMax1(              pt1Max           ); 
+      task->SetPtMin1(              ptMin1           ); 
+      task->SetPtMax1(              ptMax1           ); 
       task->SetEtaMin1(             eta1Min          ); 
       task->SetEtaMax1(             eta1Max          ); 
-      task->SetPtMin2(              pt2Min           ); 
-      task->SetPtMax2(              pt2Max           ); 
+      task->SetPtMin2(              ptMin2           ); 
+      task->SetPtMax2(              ptMax2           ); 
       task->SetEtaMin2(             eta2Min          ); 
       task->SetEtaMax2(             eta2Max          ); 
       task->SetDcaZMin(             dcaZMin         ); 

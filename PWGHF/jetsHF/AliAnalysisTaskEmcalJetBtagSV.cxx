@@ -885,8 +885,10 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::UserNotify()
   if (!aodmcHeader) AliError(MSGERROR("MC header branch not found!"));
 
   TString title = aodmcHeader->GetGeneratorName();
-  if (!title.Contains(fPtHardMin) || !title.Contains(fFlavor)) return kFALSE; 
-
+  if ( fSelectPtHard ) {
+     if (!title.Contains(fPtHardMin) || !title.Contains(fFlavor)) return kFALSE; 
+  }
+   
   Float_t xsection    = 0;
   Float_t trials      = 0;
   Int_t   pthardbin   = 0;

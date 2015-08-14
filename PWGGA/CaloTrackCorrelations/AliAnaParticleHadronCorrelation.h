@@ -97,12 +97,6 @@ public:
   
   void         InvMassHisto(AliAODPWG4ParticleCorrelation * trigger, Int_t mcIndex);
   
-  void         CalculateNeutralActivityInCone(AliAODPWG4ParticleCorrelation * particle,
-                                              Float_t & pTLeadClusterInCone, Float_t & pTSumClusterInCone);
-  
-  void         CalculateChargedActivityInCone(AliAODPWG4ParticleCorrelation * particle,
-                                              Float_t & pTLeadTrackInCone, Float_t & pTSumTrackInCone);
-  
   Int_t        GetMCTagHistogramIndex(Int_t tag);
   
   /// For histograms in arrays, index in the array, corresponding to any particle origin.
@@ -155,6 +149,9 @@ public:
   
   void         SwitchOnBackgroundBinsPtInConeHistograms() { fFillBkgBinsHisto = kTRUE  ; }
   void         SwitchOffBackgroundBinsPtInConeHistograms(){ fFillBkgBinsHisto = kFALSE ; }
+  
+  void         SwitchOnBackgroundBinsTaggedDecayPtInConeHistograms() { fFillTaggedDecayHistograms = kTRUE  ; }
+  void         SwitchOffBackgroundBinsTaggedDecayPtInConeHistograms(){ fFillTaggedDecayHistograms = kFALSE ; }
   
   // Background bins
   void         SetNBackgroundBins(Int_t n)           { if(n < 19) fNBkgBin = n ; }

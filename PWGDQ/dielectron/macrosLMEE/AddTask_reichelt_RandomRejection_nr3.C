@@ -17,18 +17,12 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection_nr3(Char_t* outputFileName="LM
   ::Info("AddTask_reichelt_RandomRejection_nr3",Form("configBasePath.Data(): %s\n",configBasePath.Data()));
   
   //Load updated macros from private ALIEN path
-  if (getFromAlien //&&
+  if (getFromAlien && !configsPreloaded //&&
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_LMEEPbPb2011_nr3.C ."))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  
-  TString configFile("Config_reichelt_LMEEPbPb2011_nr3.C");
-  TString configLMEECutLib("LMEECutLib_reichelt.C");
-  
-  TString configFilePath(configBasePath+configFile);
-  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
   
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
@@ -44,11 +38,15 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection_nr3(Char_t* outputFileName="LM
   std::cout << "hasMC = " << hasMC << std::endl;
   
   //load dielectron configuration files
-  if (!configsPreloaded) { // should not be needed but seems to be...
-    if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
-      gROOT->LoadMacro(configLMEECutLibPath.Data());
-    if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data()))
-      gROOT->LoadMacro(configFilePath.Data());
+  if (!configsPreloaded) {
+    TString configFile("Config_reichelt_LMEEPbPb2011_nr3.C");
+    TString configLMEECutLib("LMEECutLib_reichelt.C");
+    TString configFilePath(configBasePath+configFile);
+    TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+    gROOT->LoadMacro(configLMEECutLibPath.Data());
+    gROOT->LoadMacro(configFilePath.Data());
+  } else {
+    std::cout << "using preloaded config files." << std::endl;
   }
   
   LMEECutLib* cutlib = new LMEECutLib();
@@ -65,7 +63,7 @@ AliAnalysisTask *AddTask_reichelt_RandomRejection_nr3(Char_t* outputFileName="LM
   task->SetPtExpr(RndmPtExpr);
   task->SetPtRange(RndmPtMin, RndmPtMax);
   task->SetEtaMax(RndmEtaMax);
-  task->SetNPtEtaPhi(nRndmPt,nRndmEta,nRndmPhi);
+  task->SetNTestpartPerEle(nTestpartPerEle);
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file

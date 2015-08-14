@@ -4,6 +4,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
    const char *outfilename    = "AnalysisOutput.root",
    const char *nJets          = "Jets",
    const char *nTracks        = "PicoTracks",
+   const char *nCaloClusters  = "CaloClustersCorr",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
@@ -52,6 +53,7 @@ AliAnalysisTaskEmcalJetHMEC* AddTaskEmcalJetHMEC(
   AliAnalysisTaskEmcalJetHMEC *correlationtask = new AliAnalysisTaskEmcalJetHMEC(name);
   correlationtask->SetJetsName(nJets);
   correlationtask->SetTracksName(nTracks);
+  correlationtask->SetCaloClustersName(nCaloClusters);
   correlationtask->SetJetPhi(minPhi,maxPhi);
   correlationtask->SetJetEta(minEta,maxEta);
   correlationtask->SetAreaCut(minArea);

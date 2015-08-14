@@ -76,7 +76,16 @@ AliAnalysisTaskSE( name ),
   fHelperPID(0x0),
   fEventCounter(NULL), 
   fPidCont(0x0),
-  
+  fHistCent(0x0),  
+  fHistPt00(0x0),
+  fHistPt10(0x0),
+  fHistPt20(0x0),
+  fHistPt30(0x0),
+  fHistPt01(0x0),
+  fHistPt11(0x0),
+  fHistPt21(0x0),
+  fHistPt31(0x0),
+
   fVxMax(3.), 
   fVyMax(3.), 
   fVzMax(10.), 
@@ -136,8 +145,36 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
     fESDtrackCuts->GetEtaRange(r1,r2);
     Printf(" >>> Eta in TC [%10.4f:%10.4f]",r1,r2);
   }     
+ 
+ const Int_t NptBins = 52;
+  Double_t ptBin[NptBins + 1] = {0.05, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0};
+ 
+ 
+  fHistPt00 = new TH2F("fHistPtChargeMinus","Centrality vs p_{T} : N_{ch};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  fHistPt10 = new TH2F("fHistPtPionMinus","Centrality vs p_{T} : N_{#pi};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  fHistPt20 = new TH2F("fHistPtKaonMinus","Centrality vs p_{T} : N_{k};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  fHistPt30 = new TH2F("fHistPtProtonMinus","Centrality vs p_{T} : N_{p};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  
+  fHistPt01 = new TH2F("fHistPtChargePlus","Centrality vs p_{T} : N_{ch};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  fHistPt11 = new TH2F("fHistPtPionPlus","Centrality vs p_{T} : N_{#pi};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  fHistPt21 = new TH2F("fHistPtKaonPlus","Centrality vs p_{T} : N_{k};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  fHistPt31 = new TH2F("fHistPtProtonPlus","Centrality vs p_{T} : N_{p};#it{Bin};p_{T}", 20,-0.5,19.5,NptBins, ptBin);
+  
+  fThnList->Add(fHistPt00);
+  fThnList->Add(fHistPt10);
+  fThnList->Add(fHistPt20);
+  fThnList->Add(fHistPt30);
 
-  fEventCounter = new TH1D("fEventCounter","EventCounter", 100, 0.5,100.5);
+  fThnList->Add(fHistPt01);
+  fThnList->Add(fHistPt11);
+  fThnList->Add(fHistPt21);
+  fThnList->Add(fHistPt31);
+
+  fHistCent = new TH1F("fHistCentPid","Centrality",20,-0.5,19.5);			 
+  fThnList->Add(fHistCent);
+  
+
+  fEventCounter = new TH1D("fEventCounter","EventCounter", 100, -0.5,99.5);
   fThnList->Add(fEventCounter);
   
    TDirectory *owd = gDirectory;
@@ -146,7 +183,7 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   owd->cd();
 
   fPidCont->Branch("fRunNumber", &fRunNumber,  "fRunNumber/I");
-  fPidCont->Branch("cent",fCentrality,"fCentrality[3]/F");
+  fPidCont->Branch("cent",fCentrality,"fCentrality[6]/F");
   if (fIsTrig) fPidCont->Branch("Trigger",fTrigMask,  "fTrigMask[5]/I");
   fPidCont->Branch("vertex",fVtx,"fVtx[3]/F");
   fPidCont->Branch("fNumberOfTracks", &fNumberOfTracks,"fNumberOfTracks/I");
@@ -241,14 +278,28 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     if (!(fInputEventHandler->IsEventSelected() & AliVEvent::kMB))  return;        
   }
   
+  // AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+  // if (!header) return;
+
   fCentrality[0] = centrality->GetCentralityPercentile("V0M");
   fCentrality[1] = centrality->GetCentralityPercentile("CL1");
   fCentrality[2] = centrality->GetCentralityPercentile("TRK");
-  // fCentrality[3] = centrality->GetCentralityPercentile("FMD");
-  // fCentrality[4] = centrality->GetCentralityPercentile("TKL");
-  // fCentrality[5] = centrality->GetCentralityPercentile("ZNC");
+    
+  fCentrality[3] = event->GetVZEROData()->GetMTotV0A();
+  fCentrality[4] = event->GetVZEROData()->GetMTotV0C();
+  fCentrality[5] = event->GetZDCData()->GetZDCParticipants();
+ 
+  fHistCent->Fill(fCentrality[0]);
+
+  // fCentrality[3] = header->GetCentralityP()->GetCentralityPercentile("V0M");
+  // fCentrality[4] = header->GetCentralityP()->GetCentralityPercentile("V0A");
+  // fCentrality[5] = header->GetCentralityP()->GetCentralityPercentile("V0C");
+  // fCentrality[6] = header->GetCentralityP()->GetCentralityPercentile("FMD");
+  // fCentrality[7] = header->GetCentralityP()->GetCentralityPercentile("V0MvsFMD");
+
   
-  //  Printf("%f %f %f %f", fCentrality[0],fCentrality[1],fCentrality[2],fVtx[2]);
+  //  Printf("%f %f %f  %f %f  %f %f: %f %f", fCentrality[0],fCentrality[1],
+  //	  fCentrality[2], fCentrality[3],fCentrality[4], fCentrality[5],fCentrality[6], fCentrality[7],fVtx[2]);
   
 
   //---------- Initiate MC
@@ -329,7 +380,19 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     else if (a == 2 ) b = 3;
     else              b = 4;    
 
-    //   Printf("%10.5f %10.5f %2d %2d %10.5f",dca[0], dca[1], icharge, b, ndf);
+    Float_t lPt = (Float_t)track->Pt();
+
+    if (icharge < 0) {
+      fHistPt00->Fill(fCentrality[0],lPt); 
+      if (b == 1) fHistPt10->Fill(fCentrality[0],lPt); 
+      else if (b == 2)fHistPt20->Fill(fCentrality[0],lPt); 
+      else if (b == 3)fHistPt30->Fill(fCentrality[0],lPt); 
+    } else if (icharge>0) {
+      fHistPt01->Fill(fCentrality[0],lPt); 
+      if (b == 1) fHistPt11->Fill(fCentrality[0],lPt); 
+      else if (b == 2)fHistPt21->Fill(fCentrality[0],lPt); 
+      else if (b == 3)fHistPt31->Fill(fCentrality[0],lPt); 
+    }
 
     fTrackCnDf[iTracks]   =  ndf;
     fTrackTpcNcl[iTracks] = track->GetTPCClusterInfo(2,1);

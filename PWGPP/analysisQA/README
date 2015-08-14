@@ -5,8 +5,19 @@ Date: 23 Nov 2013
 Last Update: Mon Mar 31 15:47:10 CEST 2014
 Last Update: 27/06/2014 - LF
 --------------------------------------------
-
-
+Please produce "antag" file manually - working on a script to produce it.
+--- explainatoin 
+AA  -> PP/AA
+Data -> DATA/MC
+LHC11h_AOD145_ALL -> dataset name
+AOD145  -> which AOD i.e AODWithESD or AOD or ESD
+06-08-2015 -> Date
+v5-06-19-01-30 -> Analysis tag used in train
+NA  -> Comparision no comparions 
+LHC11h_AOD145_ALL -> Dataset Name
+229_20150603-1547 -> Train ID
+full  -> test(test) int(10%) full(100%) 
+---------------------------------
 README - This readme file
 
 %+++++++++++++++++++++++++++++++++++++++++++

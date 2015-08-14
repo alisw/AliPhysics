@@ -1,9 +1,17 @@
-// $Id$
-//
-// Task to setup emcal related global objects.
-//
-// Author: C.Loizides
-
+/**************************************************************************
+ * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include "AliEmcalSetupTask.h"
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
@@ -20,9 +28,17 @@
 #include "AliOADBContainer.h"
 #include "AliTender.h"
 
+/// \cond CLASSIMP
 ClassImp(AliEmcalSetupTask)
+/// \endcond
 
-//________________________________________________________________________
+/**
+ * Constructor. Setting default values:
+ * -# OCDB:           Local snapshot
+ * -# OCDB objects:   GRP ITS TPC TRD EMCAL
+ * -# OADB:           $ALICE_PHYSICS/OADB/EMCAL
+ * -# Geometry:       $ALICE_PHYSICS/OADB/EMCAL
+ */
 AliEmcalSetupTask::AliEmcalSetupTask() : 
        AliAnalysisTaskSE(),
        fOcdbPath("uselocal"),
@@ -34,10 +50,16 @@ AliEmcalSetupTask::AliEmcalSetupTask() :
        fLocalOcdb(),
        fLocalOcdbStor()
 {
-  // Constructor.
 }
 
-//________________________________________________________________________
+/**
+ * Named constructor. Setting default values:
+ * -# OCDB:           Local snapshot
+ * -# OCDB objects:   GRP ITS TPC TRD EMCAL
+ * -# OADB:           $ALICE_PHYSICS/OADB/EMCAL
+ * -# Geometry:       $ALICE_PHYSICS/OADB/EMCAL
+ * @param name Name of the setup task
+ */
 AliEmcalSetupTask::AliEmcalSetupTask(const char *name) : 
       AliAnalysisTaskSE(name),
       fOcdbPath("uselocal"),
@@ -49,17 +71,20 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
       fLocalOcdb(),
       fLocalOcdbStor()
 {
-  // Constructor.
   fBranchNames = "ESD:AliESDHeader.,AliESDRun.";
 }
 
-//________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalSetupTask::~AliEmcalSetupTask()
 {
-  // Destructor.
 }
 
-//________________________________________________________________________
+/**
+ *
+ * @param option
+ */
 void AliEmcalSetupTask::ConnectInputData(Option_t *option)
 {
   // Connect input data
@@ -111,11 +136,14 @@ void AliEmcalSetupTask::ConnectInputData(Option_t *option)
   tender->SetDefaultCDBStorage(fLocalOcdbStor);
 }
 
-//________________________________________________________________________
+/**
+ * Main loop, called for each event. Executed only for the first event.
+ * In case databases are not initialized, run Setup.
+ * Attention: The task relies cannot handle run changes.
+ * @param
+ */
 void AliEmcalSetupTask::UserExec(Option_t *) 
 {
-  // Main loop, called for each event.
-
   if (fIsInit)
     return;
 
@@ -131,40 +159,42 @@ void AliEmcalSetupTask::UserExec(Option_t *)
   Int_t runno = InputEvent()->GetRunNumber();
   Setup(runno);
 }
-
-//________________________________________________________________________
+/**
+ * Setup databases:
+ * -# Setting up geometry by run number
+ * -# Setting up OCDB on request: If OCDB is local, extract the snapshot file and set the OCDB path to this, otherwise
+ *    initialize the OCDB Manager with the OCDB path provided
+ * -# Setting up EMCAL OABD containers from the path specified.
+ * @param runno Run number obtained from the input event
+ */
 void AliEmcalSetupTask::Setup(Int_t runno) 
 {
   // Setup everything
 
+  if ( runno < 0 )  // Run number 0 can occur for MC
+    return;
+  
+  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstanceFromRunNumber(runno);
+  
+  if (!geom) {
+    AliFatal("Can not create geometry!");
+    return;
+  }
+  
   // Setup AliEMCALGeometry corresponding to year
-  TString geoname("EMCAL_COMPLETE12SMV1");
   Int_t year = 2013;
   if (runno>0 && runno<=139517) {
     year = 2010;
-    geoname = "EMCAL_FIRSTYEARV1";
-  } else if ((runno>139517) && (runno<=170593)) {
+  } else if ((runno > 139517) && (runno <= 170593)) {
     year = 2011;
-    geoname = "EMCAL_COMPLETEV1";
-  } else if ((runno>170593) && (runno<=193766)) {
+  } else if ((runno > 170593) && (runno <= 193766)) {
     year = 2012;
-    geoname = "EMCAL_COMPLETE12SMV1";
-  } else if ((runno>193766) && (runno <= 199161)) {
-    geoname = "EMCAL_COMPLETE12SMV1";
+  } else if ((runno > 193766) && (runno <= 199161)) {
     year = 2013;
-  } else if (runno>199161) { //MV: is this the last run of run 1?
-    geoname = "EMCAL_COMPLETE12SMV1_DCAL_8SM";
+  } else if ( runno > 199161) { //MV: is this the last run of run 1?
     year = 2015;
   }
-  AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(geoname);
-  if (!geom) {
-    AliFatal(Form("Can not create geometry: %s",geoname.Data()));
-    return;
-  }
-
-  if (runno<0)  // Run number 0 can occur for MC
-    return;
-
+  
   // Setup CDB manager
   AliCDBManager *man = 0;
   if (!fNoOCDB) {
@@ -265,7 +295,19 @@ void AliEmcalSetupTask::Setup(Int_t runno)
     if (mobj) {
       for(Int_t mod=0; mod < (geom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
         //AliInfo(Form("Misalignment matrix %d", mod));
-        geom->SetMisalMatrix((TGeoHMatrix*) mobj->At(mod),mod);
+        if(mobj->At(mod))
+        {
+          geom->SetMisalMatrix((TGeoHMatrix*) mobj->At(mod),mod);
+        }
+        else if(gGeoManager)
+        {
+          AliWarning(Form("Set matrix for SM %d from gGeoManager\n",mod));
+          geom->SetMisalMatrix(geom->GetMatrixForSuperModuleFromGeoManager(mod),mod);
+        }
+        else
+        {
+          AliError(Form("Matrix for SM %d is not available\n",mod));
+        }
       } 
     }
   }
@@ -273,11 +315,12 @@ void AliEmcalSetupTask::Setup(Int_t runno)
   fIsInit = kTRUE;
 }
 
-//________________________________________________________________________
+/**
+ * Terminate function, called at the end of the analysis. Cleaning up the local OCDB snapshot (if created).
+ * @param
+ */
 void AliEmcalSetupTask::Terminate(Option_t *) 
 {
-  // Called at the end.
-
   if (fLocalOcdb.Length()>0) {
     TString cmd(Form("rm -rf %s", fLocalOcdb.Data()));
     gSystem->Exec(cmd);

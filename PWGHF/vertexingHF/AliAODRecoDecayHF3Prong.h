@@ -6,10 +6,9 @@
 /* $Id$ */ 
 
 //***********************************************************
-// Class AliAODRecoDecayHF3Prong
-// base class for AOD reconstructed 3-prong heavy-flavour decays
-// (D+->Kpipi, Ds->KKpi ...)
-// Author: E.Bruna bruna@to.infn.it, F.Prino prino@to.infn.it
+/// \class Class AliAODRecoDecayHF3Prong
+/// \brief base class for AOD reconstructed 3-prong heavy-flavour decays (D+->Kpipi, Ds->KKpi ...)
+/// \author Author: E.Bruna bruna@to.infn.it, F.Prino prino@to.infn.it
 //***********************************************************
 
 #include "AliAODRecoDecay.h"
@@ -47,7 +46,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   void SetDist23toPrim(Double_t d) { fDist23toPrim=d; }
 
 
-  // D+->Kpipi
+  /// D+->Kpipi
   Double_t EDplus() const {return E(411);} 
   Double_t YDplus() const {return Y(411);} 
   Double_t CtDplus() const {return Ct(411);} 
@@ -56,7 +55,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t InvMassDplus() const {UInt_t pdg[3]={211,321,211};return InvMass(3,pdg);}
   Bool_t   SelectDplus(const Double_t* cuts) const;
 
-  // Ds+->KKpi
+  /// Ds+->KKpi
   Double_t EDs() const {return E(431);} 
   Double_t YDs() const {return Y(431);} 
   Double_t CtDs() const {return Ct(431);} 
@@ -73,9 +72,9 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t CosPiKPhiRFrame(Int_t option) const;
   Double_t CosPiDsLabFrame(Int_t option) const;
   Bool_t   SelectDs(const Double_t* cuts,Int_t &okDsKKpi,Int_t &okDspiKK, Int_t &okMassPhi, Int_t &okMassK0star) 
-    const; // same variables as D+, for now
+    const; /// same variables as D+, for now
 
-  // Lambdac+->pKpi
+  /// Lambdac+->pKpi
   Double_t ELc() const {return E(4122);} 
   Double_t YLc() const {return Y(4122);} 
   Double_t CtLc() const {return Ct(4122);} 
@@ -88,14 +87,15 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
 
  private:
 
-  Double_t fSigmaVert; // track dispersion around the secondary vertex
-  Double_t fDist12toPrim; //distance prim vert - 2 opposite sign track vertex 
-  Double_t fDist23toPrim; //distance prim vert - 2 opposite sign track vertex
+  Double_t fSigmaVert; /// track dispersion around the secondary vertex
+  Double_t fDist12toPrim; /// distance prim vert - 2 opposite sign track vertex
+  Double_t fDist23toPrim; /// distance prim vert - 2 opposite sign track vertex
 
 
-
-  ClassDef(AliAODRecoDecayHF3Prong,1)  // base class for AOD reconstructed 
-                                       // heavy-flavour 3-prong decays
+  /// \cond CLASSIMP
+  ClassDef(AliAODRecoDecayHF3Prong,1);  /// base class for AOD reconstructed
+                                       /// heavy-flavour 3-prong decays
+  /// \endcond
 };
 
 #endif

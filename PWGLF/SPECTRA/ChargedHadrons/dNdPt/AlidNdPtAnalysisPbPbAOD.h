@@ -50,6 +50,8 @@ class iostream;
 #include "AliESDtrack.h"
 #include "AliEventplane.h"
 
+#include "AliEPSelectionTask.h"
+
 #include "TSystem.h"
 #include "TROOT.h"
 
@@ -69,6 +71,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // Set binning for Histograms (if not set default binning is used)
     void SetBinsMult(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting Mult Bins"); fMultNbins = nbins; fBinsMult = GetArrayClone(nbins,edges); }
+    void SetBinsMultFine(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting Fine Mult Bins"); fMultFineNbins = nbins; fBinsMultFine = GetArrayClone(nbins,edges); }
     void SetBinsPt(Int_t nbins, Double_t* edges) 			{ Printf("[I] Setting pT Bins"); fPtNbins = nbins; fBinsPt = GetArrayClone(nbins,edges); }
     void SetBinsPtCorr(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcorr Bins"); fPtCorrNbins = nbins; fBinsPtCorr = GetArrayClone(nbins,edges); }
     void SetBinsPtCheck(Int_t nbins, Double_t* edges) 		{ Printf("[I] Setting pTcheck Bins"); fPtCheckNbins = nbins; fBinsPtCheck = GetArrayClone(nbins,edges); }
@@ -84,6 +87,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetCutMaxZVertex( Double_t d)					    { fCutMaxZVertex = d; }
     Double_t GetCutMaxZVertex()						        { return fCutMaxZVertex; }
     
+    // set Ncontributors to vertex
+	void SetNContributorsVertex(Int_t i)					{ fVertexMinContributors = i; }
+	Int_t GetNContributorsVertex()							{ return fVertexMinContributors; }
+    
     // set track kinematic cut parameters
     void SetCutPtRange(Double_t ptmin, Double_t ptmax)		{ fCutPtMin = ptmin; fCutPtMax = ptmax; }
     Double_t GetCutPtMin()						            { return fCutPtMin; }
@@ -96,9 +103,15 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void EnableRelativeCuts()								{ Printf("[I] Relative Cuts enabled"); fUseRelativeCuts = kTRUE; }
     Bool_t AreRelativeCutsEnabled()							{ return fUseRelativeCuts; }
     
+    void FillEventPtSpectraHistogram(Bool_t b)				{ fFillEventPtSpectraHistogram = b; }
+    Bool_t GetFillEventPtSpectraHistogram()					{ return fFillEventPtSpectraHistogram; }
+    
     // setter and getter track quality cut parameters
     void SetFilterBit(Int_t b)								{ fFilterBit = b; };
     Int_t GetFilterBit()									{ return fFilterBit; }
+    
+    void SetRequireHybridTracking(Bool_t b)					{ fHybridTracking = b; }
+    Bool_t RequireHybridTracking()							{ return fHybridTracking; }
     
     void SetCutRequireTPCRefit(Bool_t *b) 					{ fCutRequireTPCRefit = b; } 
     Bool_t IsTPCRefitRequired() 							{ return fCutRequireTPCRefit; } 
@@ -179,6 +192,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	void SetCentralityEstimator(char *c) { fCentEstimator = c; }
 	TString GetCentralityEstimator() { return fCentEstimator; }
 	
+	void SetDoMinBiasAnalysis(Bool_t b) { fDoMinBiasAnalysis = b; }
+	Bool_t GetDoMinBiasAnalysis() { return fDoMinBiasAnalysis; }
+	
 	void EnableCrossCheckCorrelationHistos() { fCrossCheckCorrelHisto = kTRUE; }
 	Bool_t AreCrossCheckCorrelationHistosEnabled() { return fCrossCheckCorrelHisto; }
 	
@@ -196,6 +212,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
     THnSparseF 	*fDeltaphiPtEtaPhiCent; //-> DeltaPhi:Pt:Eta:Phi:Cent, was fDeltaphiPtEtaCent
     THnSparseF 	*fPtResptCent; //-> 1/pt:ResolutionPt:Cent
+    TH2F		*fPtEvent; // pT per event, for 200 events
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
@@ -236,7 +253,10 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F		*fEventplaneSubtractedPercentage; // percentage of subtracted tracks
     
     TH2F		*fChargeOverPtRuns; // charge/pT vs run
-
+    
+    TH2F		*fVZEROMultCentrality; // VZERO Multiplicity vs Centrality
+	TH2F		*fVEROMultRefMult; // VZERO Multiplicity vs Reference Multiplicity
+	
 	// cross check for event plane resolution
 	TH2F		*fEPDistCent; // event plane distribution vs centrality
 	TH2F		*fPhiCent;	// particle phi distribution vs centrality
@@ -244,6 +264,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TProfile	*fPsinEPCent; // < sin 2 psi_ep > vs centrality
 	TProfile	*fPcosPhiCent; // < cos 2 phi > vs centrality
 	TProfile	*fPsinPhiCent; // < sin 2 phi > vs centrality
+	TH2F		*fEPContributionDifference; // difference between contribution of track to EP between own calculation and lookup
 
 	// cross check for event plane determination
 	TH2F		*fDeltaPhiCent; // DeltaPhi:Cent - DeltaPhi in the range from -pi to pi
@@ -252,20 +273,44 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	TH1F		*fMCRecTracksMult; // number of reconstructed tracks vs reference multiplcity
 	TH1F		*fMCGenTracksMult; // number of generated tracks vs reference multiplcity
 	
+	
+	
 	THnSparseF	*fCrossCheckFilterBitPhiCent; // FilterBit:Phi:Centrality
 	
 	TH1F		*fTriggerStringsFired; // distribution of fired trigger strings
 	TH1F		*fTriggerStringComplete; // complete fired trigger string
+	
+	// vertex histograms
+	TH1F		*fVertexZ; // global vertex Z distribution
+	TH1F		*fVertexZSPD; // SPD vertex Z distribution
+	TH1F		*fVertexZTPC; // TPC vertex Z distribution
+	TH1F		*fDeltaVertexZGlobalSPD; // difference between global and SPD vertex Z position
+	TH1F		*fDeltaVertexZGlobalTPC; // difference between global and TPC vertex Z position
+	TH1F		*fVertexContributors; // Ncontributors to vertex
+	
+	TH1F		*fVertexZAfterCuts; // global vertex Z distribution after cuts on VertexZ and NContrib
+	TH1F		*fVertexZSPDAfterCuts; // SPD vertex Z distribution after cuts on VertexZ and NContrib
+	TH1F		*fVertexZTPCAfterCuts; // TPC vertex Z distribution after cuts on VertexZ and NContrib
+	TH1F		*fDeltaVertexZGlobalSPDAfterCuts; // difference between global and SPD vertex Z position after cuts on VertexZ and NContrib
+	TH1F		*fDeltaVertexZGlobalTPCAfterCuts; // difference between global and TPC vertex Z position after cuts on VertexZ and NContrib
+	TH1F		*fVertexContributorsAfterCuts; // Ncontributors to vertex after cuts on VertexZ and NContrib
+	TH1F		*fVertexContributorsAfterCutsCent; // Ncontributors to vertex after cuts on VertexZ and NContrib for central triggers
+	TH1F		*fVertexContributorsAfterCutsSemi; // Ncontributors to vertex after cuts on VertexZ and NContrib for semicentral triggers
+	TH1F		*fVertexContributorsAfterCutsMB; // Ncontributors to vertex after cuts on VertexZ and NContrib for MB triggers
 
 	// global variables
     Bool_t fIsMonteCarlo;
+	Int_t fEventNumberForPtSpectra; 
+	Bool_t fFillEventPtSpectraHistogram;
 	
 	TString fEPselector;
 	TString fCentEstimator;
+	Bool_t fDoMinBiasAnalysis;
 	TString fDisabledTriggerString;
     
     // event cut variables
     Double_t fCutMaxZVertex;
+	Int_t	 fVertexMinContributors; // minimum contributors to vertex
     
     // track kinematic cut variables
     Double_t fCutPtMin;
@@ -275,6 +320,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     // track quality cut variables
     Int_t	    fFilterBit;
+	Bool_t		fHybridTracking;
     Bool_t 	    fUseRelativeCuts;
     Bool_t  	fCutRequireTPCRefit;
     Bool_t 	    fCutRequireITSRefit;
@@ -301,6 +347,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	
     //binning for THNsparse
     Int_t       fMultNbins;
+	Int_t       fMultFineNbins;
     Int_t       fPtNbins;
     Int_t       fPtCorrNbins;
     Int_t       fPtCheckNbins;
@@ -312,6 +359,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
 	Int_t       fDeltaphiNbins;
 	Int_t		fRunNumberNbins;
     Double_t*   fBinsMult; //[fMultNbins]
+    Double_t*   fBinsMultFine; //[fMultFineNbins]
     Double_t*   fBinsPt; //[fPtNbins]
     Double_t*   fBinsPtCorr; //[fPtCorrNbins]
     Double_t*   fBinsPtCheck; //[fPtCheckNbins]
@@ -326,7 +374,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,17); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,20); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

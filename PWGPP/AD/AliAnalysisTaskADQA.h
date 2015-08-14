@@ -55,6 +55,8 @@ private:
   TH2F        *fHistTimePerPM_Corr;
   TH2F	      *fHistTimeVsChargeADA_Corr;
   TH2F	      *fHistTimeVsChargeADC_Corr;
+  TH2F	      *fHistTimeVsChargeADA_Cut;
+  TH2F	      *fHistTimeVsChargeADC_Cut;
   TH2F        *fHistWidthPerPM;
   TH2F	      *fHistWidthVsCharge;
   TH1F        *fHistNBBflagsADA;
@@ -71,7 +73,8 @@ private:
   TH2F	      *fHistNBGCoincidencesADAVsADC;
   TH1F	      *fHistChargeNoFlag;
   TH2F	      *fHistTimeNoFlag;
-  TH1F	      *fHistChargeNoTime;
+  TH2F	      *fHistChargeNoTime;
+  TH1F	      *fHistFlagNoTime;	
   TH2F	      *fHistChargePerCoincidence;
   
   TH1F	      *fHistMeanTimeADA;
@@ -98,28 +101,13 @@ private:
   TH2F        *fHistTimePerPM_UnCorr;
   TH2F	      *fHistTimeVsChargeADA_UnCorr;
   TH2F	      *fHistTimeVsChargeADC_UnCorr;
-  TH3F	      *fHistTimeVsChargePerPM_UnCorr;
-  
-  /*Robust time testing*/
-  TH1F	      *fHistMedianTimeADA;
-  TH1F	      *fHistMedianTimeADC;
-  TH1F	      *fHistNTimesMedianADA;
-  TH1F	      *fHistNTimesMedianADC;
-  TH1F	      *fHistRobustTimeADA;
-  TH1F	      *fHistRobustTimeADC;
-  TH1F	      *fHistNTimesRobustADA;
-  TH1F	      *fHistNTimesRobustADC;
-  TH2F	      *fHistMedianIndDiffVsChargeADA;
-  TH2F	      *fHistMedianIndDiffVsChargeADC;
-  
-  
-  
+  TH3F	      *fHistTimeVsChargePerPM_UnCorr;  
   
    
   AliAnalysisTaskADQA(const AliAnalysisTaskADQA&);            // not implemented
   AliAnalysisTaskADQA& operator=(const AliAnalysisTaskADQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskADQA, 2);
+  ClassDef(AliAnalysisTaskADQA, 4);
 };
 
 #endif

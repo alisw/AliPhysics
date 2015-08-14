@@ -10,10 +10,12 @@
 //=========================================================================//
 
 #include "TH1F.h"
+
 #include "TF1.h"
 
 class TList;
 class TTree;
+class TH2F;
 
 class AliESDtrack;
 class AliMCEvent;
@@ -86,6 +88,20 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   TH1D         *fEventCounter;  //
   TTree        *fPidCont;       //!
   
+
+TH1F         *fHistCent;         //
+TH2F         *fHistPt00;         //
+TH2F         *fHistPt10;         //
+TH2F         *fHistPt20;         //
+TH2F         *fHistPt30;         //
+
+TH2F         *fHistPt01;         //
+TH2F         *fHistPt11;         //
+TH2F         *fHistPt21;         //
+TH2F         *fHistPt31;         //
+
+
+
   Double_t   fVxMax;                        // X vertex  Range
   Double_t   fVyMax;                        // Y vertex Range
   Double_t   fVzMax;                        // Z vertex Range
@@ -100,16 +116,16 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Bool_t     fIsAOD;                        // analysis mode: 0 = ESDs  | 1 = AODs
   Bool_t     fDebug;                        // Debug
   Bool_t     fIsQa;                         // Check for QA
-  Bool_t     fIsTrig; //
+  Bool_t     fIsTrig;           //
 
   Int_t   fRunNumber;           //
   Int_t   fNumberOfTracks;      //
   Int_t   fNumberOfTracksM;     //
   Int_t   fNTracks;            // Number of Tracks of Current Events
-  Float_t fCentrality[3];       //
+  Float_t fCentrality[6];       //
   Float_t fVtx[3];              // 
   Int_t   fTrigMask[5];         //
-  Int_t   fPidStat[kTrack]; //
+  Int_t   fPidStat[kTrack];     //
   Float_t fTrackPt[kTrack];     //
   Float_t fTrackEta[kTrack];    //
   Float_t fTrackPhi[kTrack];    //
@@ -122,16 +138,13 @@ class AliEbyEPidTTask: public AliAnalysisTaskSE {
   Float_t fTrackDxy[kTrack];    //
   Float_t fTrackDz[kTrack];     //
   Int_t   fTrackPid[kTrack];    //
-  Int_t   fTrackTpcNcl[kTrack];    //
+  Int_t   fTrackTpcNcl[kTrack];  //
   Int_t   fTrackPidM[kTrack];   //
-
- 
 
   //________________________________
   AliEbyEPidTTask(const AliEbyEPidTTask&);
   AliEbyEPidTTask& operator = (const AliEbyEPidTTask&);
   ClassDef(AliEbyEPidTTask, 1);
-
 };
 
 #endif

@@ -26,7 +26,9 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF4Prong.h"
 
-ClassImp(AliAODRecoDecayHF4Prong)
+/// \cond CLASSIMP
+ClassImp(AliAODRecoDecayHF4Prong);
+/// \endcond
 
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong() :
@@ -36,7 +38,7 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong() :
   fDist4toPrim(0)
 {
   //
-  // Default Constructor
+  /// Default Constructor
   //
 }
 //--------------------------------------------------------------------------
@@ -54,7 +56,7 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(AliAODVertex *vtx2,
   fDist4toPrim(dist4)
 {
   //
-  // Constructor with AliAODVertex for decay vertex
+  /// Constructor with AliAODVertex for decay vertex
   //
   SetDCAs(6,dca);
 }
@@ -72,7 +74,7 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(AliAODVertex *vtx2,
   fDist4toPrim(dist4)
 {
   //
-  // Constructor with AliAODVertex for decay vertex and without prongs momenta
+  /// Constructor with AliAODVertex for decay vertex and without prongs momenta
   //
   SetDCAs(6,dca);
 }
@@ -85,14 +87,14 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(const AliAODRecoDecayHF4Prong &
   fDist4toPrim(source.fDist4toPrim)
 {
   //
-  // Copy constructor
+  /// Copy constructor
   //
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF4Prong &AliAODRecoDecayHF4Prong::operator=(const AliAODRecoDecayHF4Prong &source)
 {
   //
-  // assignment operator
+  /// assignment operator
   //
   if(&source == this) return *this;
 
@@ -108,7 +110,7 @@ AliAODRecoDecayHF4Prong &AliAODRecoDecayHF4Prong::operator=(const AliAODRecoDeca
 //--------------------------------------------------------------------------
 void AliAODRecoDecayHF4Prong::InvMassD0(Double_t mD0[2]) const {
   //
-  // Mass for the two D0 hypotheses
+  /// Mass for the two D0 hypotheses
   //
   UInt_t pdg[4];
   pdg[0]=211; pdg[1]=321; pdg[2]=211; pdg[3]=211;
@@ -121,7 +123,7 @@ void AliAODRecoDecayHF4Prong::InvMassD0(Double_t mD0[2]) const {
 //--------------------------------------------------------------------------
 void AliAODRecoDecayHF4Prong::InvMassD0bar(Double_t mD0bar[2]) const {
   //
-  // Mass for the two D0bar hypotheses
+  /// Mass for the two D0bar hypotheses
   //
   UInt_t pdg[4];
   pdg[0]=321; pdg[1]=211; pdg[2]=211; pdg[3]=211;
@@ -135,21 +137,21 @@ void AliAODRecoDecayHF4Prong::InvMassD0bar(Double_t mD0bar[2]) const {
 
 Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t &okD0bar) const
 {
-  //
-  // This function compares the D0 with a set of cuts:
-  // 
-  // cuts[0] = D0 invariant mass 
-  // cuts[1] = DCA between opposite sign tracks 
-  // cuts[2] = Distance between primary and two tracks vertex fDist12toPrim
-  // cuts[3] = Distance between primary and three tracks vertex fDist3toPrim
-  // cuts[4] = Distance between primary and two tracks vertex fDist4toPrim
-  // cuts[5] = Cosinus of the pointing angle
-  // cuts[6] = Transverse momentum of the D0 candidate
-  // cuts[7] = Mass Pi+Pi- = mass of the rho0
-  // cuts[8] = PID cut (one K in the quadruplet)
-  //
-  // If candidate D0 does not pass the cuts return kFALSE
-  //
+  ///
+  /// This function compares the D0 with a set of cuts:
+  ///
+  /// cuts[0] = D0 invariant mass
+  /// cuts[1] = DCA between opposite sign tracks
+  /// cuts[2] = Distance between primary and two tracks vertex fDist12toPrim
+  /// cuts[3] = Distance between primary and three tracks vertex fDist3toPrim
+  /// cuts[4] = Distance between primary and two tracks vertex fDist4toPrim
+  /// cuts[5] = Cosinus of the pointing angle
+  /// cuts[6] = Transverse momentum of the D0 candidate
+  /// cuts[7] = Mass Pi+Pi- = mass of the rho0
+  /// cuts[8] = PID cut (one K in the quadruplet)
+  ///
+  /// If candidate D0 does not pass the cuts return kFALSE
+  ///
   
   okD0=0; okD0bar=0;
   Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -205,7 +207,7 @@ Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t 
 Bool_t AliAODRecoDecayHF4Prong::CutRhoMass(Double_t massD0[2],Double_t massD0bar[2],Double_t cutMass,Double_t cutRho) const 
 {
   //
-  // Cut on rho->pipi mass for any of the pairs
+  /// Cut on rho->pipi mass for any of the pairs
   //
   Bool_t isGood=kFALSE;
   Int_t nprongs=4;

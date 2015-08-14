@@ -16,6 +16,7 @@
 // Task to create upc tree
 // evgeny.kryshen@cern.ch
 
+#include <RVersion.h>
 #include "AliAnalysisTaskUpcTree.h"
 #include "AliAnalysisTaskSE.h"
 #include "TChain.h"
@@ -135,7 +136,9 @@ void AliAnalysisTaskUpcTree::UserCreateOutputObjects(){
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
   fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fEventStatistics->SetBit(TH1::kCanRebin);
+#endif
   fListOfHistos->Add(fEventStatistics);
 
   fTriggersPerRun = new TH2I("fTriggersPerRun",";;Events",2000,195600,197600,NTRIGGERS,-0.5,NTRIGGERS+0.5);

@@ -36,6 +36,7 @@
 #include "TCutG.h"
 #include "TProfile.h"
 #include "TF2.h"
+#include "THnSparse.h"
 
 
 
@@ -138,11 +139,13 @@ fHistProton_BetavsPTOFafterPIDTPCTOF(0),
 fHistProton_dEdxvsPTPCafterPIDTPCTOF(0),
 fhistPionEtaDistAfter(0),
 fhistKaonEtaDistAfter(0),
-fhistProtonEtaDistAfter(0)
+fhistProtonEtaDistAfter(0),
+fSparseAll(0)
 //fSparseSpecies(0),
 //fvalueSpecies(0)
 {
-    for(int i=0;i<150;i++){
+    for(int i=0;i<4;i++){fvalueAll[i]=0;}
+    for(int i=0;i<180;i++){
         fPurityFunction[i]=NULL;
     }
     //Low momentum nsigma cuts based on Purity>0.7 with TPC info only.
@@ -217,12 +220,14 @@ fHistProton_BetavsPTOFafterPIDTPCTOF(0),
 fHistProton_dEdxvsPTPCafterPIDTPCTOF(0),
 fhistPionEtaDistAfter(0),
 fhistKaonEtaDistAfter(0),
-fhistProtonEtaDistAfter(0)
+fhistProtonEtaDistAfter(0),
+fSparseAll(0)
 //fSparseSpecies(0),
-//fvalueSpecies(0)root
+//fvalueSpecies(0)
 {
+    for(int i=0;i<4;i++){fvalueAll[i]=0;}
     //Default Constructor
-    for(int i=0;i<150;i++){
+    for(int i=0;i<180;i++){
         fPurityFunction[i]=NULL;
     }
     
@@ -236,17 +241,11 @@ AliAnalysisTaskPIDconfig::~AliAnalysisTaskPIDconfig()
     //Destructor
     
     fPurityFunctionsFile->Close();
-    for(int i=0;i<150;i++){
+    for(int i=0;i<180;i++){
         delete fPurityFunction[i];
     }
     
-    
-    //   delete fPID;
-    //  delete fPIDqa;
-    //   delete fTrackCuts;
-    // delete fSparseSpecies;
-    //delete []fvalueSpecies;
-    
+    delete fSparseAll;
     
 }
 //______________________________________________________________________
@@ -286,6 +285,7 @@ void AliAnalysisTaskPIDconfig::UserCreateOutputObjects()
     
     SetupTPCTOFqa();
     SetupEventInfo();
+    
     
     PostData(1,fListQA);
     
@@ -360,7 +360,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
             AliAODTrack* AODtrack =dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
             if (!AODtrack) continue;
             if (!(AODtrack->TestFilterBit(1))) continue;
-            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 5.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.2)) continue;
+            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 6.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.2)) continue;
             multTPC++;
         }//track loop
         
@@ -368,7 +368,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
             AliAODTrack *AODtrack=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
             if (!AODtrack) continue;
             if (!(AODtrack->TestFilterBit(16))) continue;
-            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 5.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70) || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.1)) continue;
+            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 6.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70) || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.1)) continue;
             Double_t b[2] = {-99., -99.};
             Double_t bCov[3] = {-99., -99., -99.};
             AliAODTrack copy(*AODtrack);
@@ -395,14 +395,14 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
             AliAODTrack *AODtrack=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
             if (!AODtrack) continue;
             if (!(AODtrack->TestFilterBit(1))) continue;
-            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 5.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.2)) continue;
+            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 6.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70)  || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.2)) continue;
             multTPC++;
         }
         for(Int_t iTrack = 0; iTrack < nGoodTracks; iTrack++) { // fill global mult
             AliAODTrack *AODtrack=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(iTrack));
             if (!AODtrack) continue;
             if (!(AODtrack->TestFilterBit(16))) continue;
-            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 5.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70) || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.1)) continue;
+            if ((AODtrack->Pt() < .2) || (AODtrack->Pt() > 6.0) || (TMath::Abs(AODtrack->Eta()) > .8) || (AODtrack->GetTPCNcls() < 70) || (AODtrack->GetDetPid()->GetTPCsignal() < 10.0) || (AODtrack->Chi2perNDF() < 0.1)) continue;
             Double_t b[2] = {-99., -99.};
             Double_t bCov[3] = {-99., -99., -99.};
             AliAODTrack copy(*AODtrack);
@@ -502,9 +502,9 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
             
             Bool_t pWithinRange = kFALSE;
             Int_t p_bin = -999;
-            Double_t pBins[50];
-            for(int b=0;b<50;b++){pBins[b] = 0.1*b;}
-            for(int i=0;i<50;i++){
+            Double_t pBins[60];
+            for(int b=0;b<60;b++){pBins[b] = 0.1*b;}
+            for(int i=0;i<60;i++){
                 if(p>pBins[i] && p<(pBins[i]+0.1)){
                     pWithinRange = kTRUE;
                     p_bin = i;
@@ -520,7 +520,7 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                 
                 if(fPIDcuts && pWithinRange){// for pions, kaons and protons only
                     if(ispecie==AliPID::kPion || ispecie==AliPID::kKaon || ispecie==AliPID::kProton){
-                        int index = 50*i+p_bin;
+                        int index = 60*i+p_bin;
                         
                         if(fPurityFunction[index]->Eval(nsigmaTOF,nsigmaTPC)>fPurityLevel){
                             if(TMath::Sqrt(TMath::Power(nsigmaTPC,2)+TMath::Power(nsigmaTOF,2))<3){
@@ -528,6 +528,15 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                                 TH3 *hist1 = (TH3*)fListQAtpctof->At(ispecie);
                                 if (hist1){
                                     hist1->Fill(nsigmaTPC,nsigmaTOF,p);}
+                                
+                                //--------THnsparse---------
+                                fvalueAll[0] = p;
+                                fvalueAll[1] = eta;
+                                fvalueAll[2] = nsigmaTOF;
+                                fvalueAll[3] = nsigmaTPC;
+                                THnSparseD *fSparseAll = (THnSparseD*)fListQAtpctof->At(ispecie+(AliPID::kSPECIESC)*3.0);
+                                fSparseAll->Fill(fvalueAll);
+                                
                             }
                         }
                         if(p_bin>7 && fPurityFunction[index]->Eval(nsigmaTOF,nsigmaTPC)>fPurityLevel){//p_bin>7
@@ -656,6 +665,15 @@ void AliAnalysisTaskPIDconfig::UserExec(Option_t*){
                     if (hTOFnSigmavsP){
                         hTOFnSigmavsP->Fill(track->P(),nsigmaTOF);}
                     
+                    //--------THnsparse---------
+                    fvalueAll[0] = p;
+                    fvalueAll[1] = eta;
+                    fvalueAll[2] = nsigmaTOF;
+                    fvalueAll[3] = nsigmaTPC;
+                    THnSparseD *fSparseAll = (THnSparseD*)fListQAtpctof->At(ispecie+(AliPID::kSPECIESC)*3.0);
+                    fSparseAll->Fill(fvalueAll);
+                    
+                    
                 }
             }
         }//probMis
@@ -684,7 +702,7 @@ void AliAnalysisTaskPIDconfig::CheckCentrality(AliVEvent* event,Double_t centval
 void AliAnalysisTaskPIDconfig::SetPIDPurityFunctions(Float_t PurityLevel)
 {
     fPurityLevel = PurityLevel;
-    fPurityFunctionsFile = TFile::Open(Form("$ALICE_PHYSICS/PWGCF/FLOW/database/PurityFunctions_%i-%icent.root",fCentralityPercentileMin,fCentralityPercentileMax));
+    fPurityFunctionsFile = TFile::Open(Form("alien:///alice/cern.ch/user/n/nmohamma/PurityFunctions_%i-%icent.root",fCentralityPercentileMin,fCentralityPercentileMax));
     
     if((!fPurityFunctionsFile) || (!fPurityFunctionsFile->IsOpen())) {
         printf("The purity functions file does not exist");
@@ -705,9 +723,9 @@ void AliAnalysisTaskPIDconfig::SetPIDPurityFunctions(Float_t PurityLevel)
         }
     }
     
-    for(int i=0;i<150;i++){
-        int ispecie = i/50;
-        int iPbin = i%50;
+    for(int i=0;i<180;i++){
+        int ispecie = i/60;
+        int iPbin = i%60;
         fPurityFunction[i] = (TF2*)Species_functions[ispecie]->FindObject(Form("PurityFunction_%d%d",iPbin,iPbin+1));
         cout<<fPurityFunction[i]->GetName()<<" - Bin: "<<i<<endl;
         if(!fPurityFunction[i]){printf("Purity function does not exist"); return;}
@@ -736,6 +754,22 @@ void AliAnalysisTaskPIDconfig::SetupTPCTOFqa()
         fhistTOFnSigmavsP = new TH2F(Form("NsigmaP_TOF_%s",AliPID::ParticleName(ispecie)),Form("TOF n#sigma %s vs. p ;p [GeV];TOF n#sigma",AliPID::ParticleName(ispecie)),60,0,6,150,-10,20);
         fListQAtpctof->Add(fhistTOFnSigmavsP);
     }
+    
+    Int_t binsv1[4]={60,20,200,200}; //p,eta,tofsig,tpcsig
+    Double_t xminv1[4]={0,-1,-20,-20};
+    Double_t xmaxv1[4]={6,1,20,20};
+    
+    for (Int_t ispecie=0; ispecie<AliPID::kSPECIESC; ++ispecie){
+        fSparseAll = new THnSparseD (Form("fSparse_%s",AliPID::ParticleName(ispecie)),Form("fSparse_%s",AliPID::ParticleName(ispecie)),4,binsv1,xminv1,xmaxv1);
+        fSparseAll->GetAxis(0)->SetTitle("p_{T}");
+        fSparseAll->GetAxis(1)->SetTitle("#eta");
+        fSparseAll->GetAxis(2)->SetTitle("TOFn#sigma");
+        fSparseAll->GetAxis(3)->SetTitle("TPCn#sigma");
+        
+        fListQAtpctof->Add(fSparseAll);
+    }
+    
+    
     
 }
 //______________________________________________________________________________

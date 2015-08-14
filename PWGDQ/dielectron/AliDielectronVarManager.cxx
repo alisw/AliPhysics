@@ -100,6 +100,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"SDD2_signal",            "SDD 2nd layer d#it{E}/d#it{x}",                      "(keV/^{}300#mum)"},
   {"ITS_clusterMap",         "ITS_clusterMap",                                     ""},
   {"ITSLayerFirstCls",       "1st ITS cluster",                                    "(layer)"},
+
+  {"ITS_nSigma_ElectronsRaw","n#sigma_{e}^{ITS} (raw)",                            ""},
   {"ITS_nSigma_Electrons",   "n#sigma_{e}^{ITS}",                                  ""},
   {"ITS_nSigma_Pions",       "n#sigma_{#pi}^{ITS}",                                ""},
   {"ITS_nSigma_Muons",       "n#sigma_{#mu}^{ITS}",                                ""},

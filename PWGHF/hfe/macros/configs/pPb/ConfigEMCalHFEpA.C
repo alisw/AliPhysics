@@ -1,7 +1,4 @@
-///*******************************************************
-///Config Description
-/// April 22, 2015
-///*******************************************************
+
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
@@ -15,7 +12,8 @@ Bool_t isAOD = kFALSE,
 Bool_t isEMCal = kFALSE,
 Bool_t isTrigger = kFALSE,
 Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
-Bool_t isTender = kFALSE
+Bool_t isTender = kFALSE,
+char* period = "b"											
 )
 
 {
@@ -76,9 +74,10 @@ Bool_t isTender = kFALSE
 ///_______________________________________________________________________________________________________________
 	// new cuts for event selection
 	
-	//hfecuts->SetUseCorrelationVertex();
-	//hfecuts->SetSPDVtxResolutionCut();
-	hfecuts->SetpApileupCut();
+		// done inside the task, by hand
+		// hfecuts->SetUseCorrelationVertex();
+		// hfecuts->SetSPDVtxResolutionCut();
+		// hfecuts->SetpApileupCut();
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
@@ -97,15 +96,74 @@ Bool_t isTender = kFALSE
 	if(EMCalThreshould==1 && triggerIndex==2) task->SetEMCalTriggerEG2();
 	
 	if(isEMCal) task->SetUseEMCal();
-		//Bool_t isTrigger = kFALSE;
+		
 	
 	if(isTrigger){
 		task->SetUseTrigger();
 		task->SetUseShowerShapeCut(kTRUE);
-		//task->SetM02Cut(0.0,0.3);
-		task->SetM20Cut(0.0,0.3);
+				
+		if(configIndex==120)task->SetM20Cut(0.0,0.2);
+		else if(configIndex==121)task->SetM20Cut(0.0,0.4);
+		else if(configIndex==122)task->SetM20Cut(0.0,0.6);
+		else if(configIndex==123)task->SetM20Cut(0.0,2);
+		else task->SetM20Cut(0.0,0.3);
+		
+		if(configIndex==124)task->SetM02Cut(0.0,0.2);
+		else if(configIndex==125)task->SetM02Cut(0.0,0.4);
+		else if(configIndex==126)task->SetM02Cut(0.0,0.5);
+		else if(configIndex==127)task->SetM02Cut(0.0,0.6);
+		else task->SetM02Cut(0.0,2);
+			
 		
 	}
+	
+	if(period == "d"){
+		
+			//printf("======================================================================================\n ");
+			//printf("\n\n Running on 13d period!!!  \n\n  TPC Calibration is set !!! \n\n ");
+			//printf("======================================================================================\n ");
+		task->SetTPCCalibration();
+		task->SetTPC_mean_sigma(0.63, 1.17);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
+		
+	}	
+	
+	
+		//Calibration for other periods
+	if(configIndex==200){
+	
+		if(period == "e"){
+			
+				//printf("======================================================================================\n ");
+				//printf("\n\n Running on 13e period!!!  \n\n  TPC Calibration is set !!! \n\n ");
+				//printf("======================================================================================\n ");
+		task->SetTPCCalibration();
+		task->SetTPC_mean_sigma(-0.24, 0.92);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
+			
+		}	
+	
+		if(period == "f"){
+			
+				//printf("======================================================================================\n ");
+				//printf("\n\n Running on 13f period!!!  \n\n  TPC Calibration is set !!! \n\n ");
+				//printf("======================================================================================\n ");
+		task->SetTPCCalibration();
+		task->SetTPC_mean_sigma(-0.27, 0.97);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
+			
+		}
+	 
+	 
+	}//close confiIndex==200
+	
+		//if(period == "d3"){
+		//task->SetUseShowerShapeCut(kTRUE);
+		//printf("Shower Shape on for d3 because is for the trigger data correction!!! Cannot run as trigger because the corrections with weight\n");
+		//}
 	
 	if(isTender) task->SetUseTender();
 		
@@ -117,13 +175,7 @@ Bool_t isTender = kFALSE
 	else if(configIndex==108)  task->SetdcaCut(0.1,0.2);//r,z
 	//else task->SetdcaCut(1,2);//r,z
 	
-	/*	
-	if(configIndex==100){
-		task->SetUseShowerShapeCut(kTRUE);
-		//task->SetM02Cut(0.0,0.3);
-		task->SetM20Cut(0.0,0.3);
-	}
-	*/
+
 	
 	task->SetBackground(kTRUE);
 	
@@ -244,19 +296,104 @@ Bool_t isTender = kFALSE
 	char *cutmodel;
 	cutmodel = "pol0";
 	
-	if(configIndex==70) params[0] = -1.5;
-	else if (configIndex==71) params[0] = -0.5;
-	else if (configIndex==72) params[0] = 0;
-	else if (configIndex==73) params[0] = 0.25;
-	else if (configIndex==74) params[0] = -1.75;
-	else params[0] = -1;
+	if(configIndex==70){ 
+		params[0] = -1.5;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(-1.5);
+		}
+	}
+	else if (configIndex==71){ 
+		params[0] = -0.5;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(-0.5);
+		}
+		
+	}
+	else if (configIndex==72){
+		params[0] = 0;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(0);
+			
+		}
+	}	
+	else if (configIndex==73){ 
+		params[0] = 0.25;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(0.25);
+			
+		}
+	}
+	else if (configIndex==74){ 
+		params[0] = 0.5;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(0.5);
+			
+		}
+	}
+	else{ 
+		params[0] = -1;
+	
+		if(period =="e"||period =="f"){
+				if(configIndex==200){
+					params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+					task->SetTPCcal_cut_min(-1);
+				}
+		}
+		if(period == "d"){
+				params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+				task->SetTPCcal_cut_min(-1);
+			
+		}
+	
+	}
+
+	
+		//=========================================
+	
 	
 	if(configIndex==75)Double_t max=1.5;
 	else if(configIndex==76)Double_t max=2.0;
-	else if(configIndex==77)Double_t max=2.5;
-	else if(configIndex==78)Double_t max=3.5;
-	else if(configIndex==79)Double_t max=4.0;
-	else Double_t max=3.0;
+	else if(configIndex==77){
+		Double_t max=2.5;
+		if(period =="d"){
+			Double_t max=5;//looser cut for hfe package. Real cut inside the task.
+			task->SetTPCcal_cut_max(2.5);
+		}
+	}
+	else if(configIndex==78){
+		Double_t max=3.5;
+		if(period =="d"){
+			Double_t max=6;//looser cut for hfe package. Real cut inside the task.
+			task->SetTPCcal_cut_max(3.5);
+		}
+	}
+	else if(configIndex==79){
+		Double_t max=4.0;
+		if(period =="d"){
+			Double_t max=6;//looser cut for hfe package. Real cut inside the task.
+			task->SetTPCcal_cut_max(4.0);
+		}
+	}
+	else{
+		Double_t max=3.0;
+		if(period =="e"||period =="f"){
+			
+			if(configIndex==200){
+				Double_t max=5;//looser cut for hfe package. Real cut inside the task.
+				task->SetTPCcal_cut_max(3);
+			}
+			
+		}
+		if(period =="d"){
+				Double_t max=5;//looser cut for hfe package. Real cut inside the task.
+				task->SetTPCcal_cut_max(3);
+		}
+	}
 	
 	
 		
@@ -345,12 +482,7 @@ Bool_t isTender = kFALSE
 		task->SetEoverPCut(0.86,1.3);
 	}
 	
-	//shower shape cut for E/p default
-	if(configIndex==119){
-		task->SetUseShowerShapeCut(kTRUE);
-			//task->SetM02Cut(0.0,0.3);
-		task->SetM20Cut(0.0,0.5);
-	}
+
 	
 	
 	

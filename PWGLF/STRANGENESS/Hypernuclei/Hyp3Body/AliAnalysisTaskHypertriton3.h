@@ -57,18 +57,32 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
+  void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
+  void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
+  void SetDCAProtonPrimaryVtx(double dcaprotonpv) {fDCAPPVmin = dcaprotonpv;}
+  void SetDCADeuteronPrimaryVtx(double dcadeuteronpv) {fDCADPVmin = dcadeuteronpv;}
+  
   void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
   void SetDecayLength(double maxdl) {fDecayLength = maxdl;}
-  void SetMaxPtMother(double maxpt) {fPtMother = maxpt;}
+  void SetMinDecayLength(double mindl) {fMinDecayLength = mindl;}
+  void SetRapidity(double rapid) {fRapidity = rapid;}
+  void SetMaxPtMother(double maxpt) {fMaxPtMother = maxpt;}
+  void SetMinPtMother(double minpt) {fMinPtMother = minpt;}
+  
   void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
   void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
   void SetDCAProDecayVtx(double maxpro) {fDCAProSVmax = maxpro;}
   void SetDCADeuDecayVtx(double maxdeu) {fDCADeuSVmax = maxdeu;}
+
   void SetDCADeuteronProton(double maxdp) {fDCAdp = maxdp;}
   void SetDCAPionProton(double maxpip) {fDCApip = maxpip;}
   void SetDCADeuteronPion(double maxdpi) {fDCAdpi = maxdpi;}
+
+  void SetAngleDeuteronProton(double ang_dp) {fAngledp = ang_dp;}
+  
+  void SetCentrPercentileLimits(double lowc, double highc) {fLowCentrality = lowc; fHighCentrality = highc;}
   
   Double_t GetDCAcut(Int_t part, Double_t dca) const;
 
@@ -88,12 +102,19 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Bool_t             fFillTree;                    ///< variables to fill the Tree
   Float_t            fCentrality;                  ///< Centrality class
   Float_t            fCentralityPercentile;        ///< Centrality percentile
+  UShort_t           fTriggerConfig;               ///< select different trigger configuration
+  Bool_t             fSideBand;                    ///< select distributions in the side band region where only background
 
   //Cut variables
   Double_t           fDCAPiPVmin;                  ///< Cut on Min DCA of \f$\pi\f$ from primary vertex
+  Double_t           fDCAPPVmin;                   ///< Cut on Min DCA of p from primary vertex
+  Double_t           fDCADPVmin;                   ///< Cut on Min DCA of d from primary vertex
   Double_t           fCosPointingAngle;            ///< Cut on Cosine of the pointing angle
   Double_t           fDecayLength;                 ///< Cut on Decay length
-  Double_t           fPtMother;                    ///< Cut on mother reconstructed \f$p_{T}\f$
+  Double_t           fMinDecayLength;              ///< Cut on minimum Decay length
+  Double_t           fRapidity;                    ///< Cut on absolute value of mother rapidity y
+  Double_t           fMaxPtMother;                 ///< Cut on max mother reconstructed \f$p_{T}\f$
+  Double_t           fMinPtMother;                 ///< Cut on min mother reconstructed \f$p_{T}\f$
   Double_t           fDCAPiSVxymax;                ///< Cut on \f$\pi DCA_{xy}\f$ from reconstructed secondary vertex
   Double_t           fDCAPiSVzmax;                 ///< Cut on \f$\pi DCA_{z}\f$ from reconstructed secondary vertex
   Double_t           fDCAProSVmax;                 ///< Cut on proton DCA from reconstructed secondary vertex
@@ -101,6 +122,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDCAdp;                       ///< Cut DCA deuteron-proton
   Double_t           fDCApip;                      ///< Cut DCA pion-proton
   Double_t           fDCAdpi;                      ///< Cut DCA deuteron-pion
+  Double_t           fAngledp;
+  Double_t           fLowCentrality;               ///< Cut on lower value of centrality class
+  Double_t           fHighCentrality;              ///< Cut on high value of centrality class
   
   //Output list
   TList              *fOutput;                     ///< Output list
@@ -129,10 +153,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //--> TOF
   TH2F               *fHistTOFsignal;              //!<! TOF \f$\beta\f$ vs \f$p_{TPC}\f$
-  TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
-  TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
-  TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
-  TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
+  //TH2F               *fHistTOFdeusignal;           //!<! TOF PID: deuteron candidates
+  //TH2F               *fHistTOFprosignal;           //!<! TOF PID: proton candidates
+  //TH2F               *fHistTOFantideusignal;       //!<! TOF PID: anti-deuteron candidates
+  //TH2F               *fHistTOFantiprosignal;       //!<! TOF PID: anti-proton candidates
   TH1F               *fHistTOFdeumass;             //!<! TOF mass of deuteron identified with TPC
   TH1F               *fHistTOFpromass;             //!<! TOF mass of proton identified with TPC
 
@@ -140,10 +164,12 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   // Data and MC histograms
   TH1F               *fHistpionTPCcls;             //!<! TPC clusters distribution of candidate \f$\pi\f$
   TH1F               *fHistpTpion;                 //!<! \f$\p^{T}\f$ distribution of candidate \f$\pi\f$
-  TH2F               *fHistCorrDCAdprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
-  TH2F               *fHistCorrDCApprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
-  TH2F               *fHistCorrDCApiprimary;       //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
+  //TH2F               *fHistCorrDCAdprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron-primary vertex 
+  //TH2F               *fHistCorrDCApprimary;        //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton-primary vertex
+  //TH2F               *fHistCorrDCApiprimary;       //!<! Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion-primary vertex
   TH1F               *fHistDCApiprimary;           //!<! DCA pion-primary vertex distribution
+  TH1F               *fHistDCApprimary;            //!<! DCA proton-primary vertex distribution
+  TH1F               *fHistDCAdprimary;            //!<! DCA deuteron-primary vertex distribution
   TH1F               *fHistDCAdeupro;              //!<! DCA deuteron-proton distribution
   TH1F               *fHistDCApiondeu;	           //!<! DCA pion-deuteron distribution
   TH1F               *fHistDCApionpro;             //!<! DCA pion-proton distribution
@@ -160,7 +186,23 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDCAXYpionvtx;           //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAZpionvtx;            //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
   TH1F               *fHistDecayLengthH3L;         //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistLifetime;               //!<! c*tau distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistAngle_deu_pro;          //!<! Angle between deuteron and proton vectors
+  TH1F               *fHistAngle_deu_pion;         //!<! Angle between deuteron and pion vectors
+  TH1F               *fHistAngle_pro_pion;         //!<! Angle between proton and pion vectors
+  TH2F               *fHistAngleCorr_dp_dpi;       //!<! Correlation between angle_dp vs angle_dpi
+  TH2F               *fHistAngleCorr_dp_ppi;       //!<! Correlation between angle_dp vs angle_ppi
+  TH2F               *fHistAngleCorr_ppi_dpi;      //!<! Correlation between angle_ppi vs angle_dpi
+  TH1F               *fHistHyperRapidity;          //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistCosPointingAngle;       //!<! Cosine of pointing angle distribution of candidate mother particle
+  TH2F               *fHistDalitz_dp_dpi;          //!<! Dalitz plot\f$ m^{2}_{d#pi} vs m^{2}_{dp} \f$
+  TH1F               *fHistDecayMomCM_X;           //!<! X momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Y;           //!<! Y momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Z;           //!<! Z momentum component of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XY;          //!<! p_{X} vs p_{Y} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XZ;          //!<! p_{X} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_YZ;          //!<! p_{Y} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM;             //!<! hypertriton momentum in the center-of-mass
   TH1F               *fHistMassHypertriton;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistMassAntiHypertriton;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$
   // MC only histograms

@@ -31,7 +31,8 @@ AliJetContainer::AliJetContainer():
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
-  fJetPtCut(0),
+  fJetPtCut(0.),
+  fJetPtCutMax(999.),
   fJetAreaCut(-1),
   fAreaEmcCut(-1),
   fJetMinEta(-0.9),
@@ -77,7 +78,8 @@ AliJetContainer::AliJetContainer(const char *name):
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
-  fJetPtCut(0),
+  fJetPtCut(0.),
+  fJetPtCutMax(999.),
   fJetAreaCut(-1),
   fAreaEmcCut(-1),
   fJetMinEta(-0.9),
@@ -354,8 +356,8 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
     return kFALSE;
   }
 
-  if (jet->Pt() <= fJetPtCut) {
-    AliDebug(11,Form("Cut rejecting jet: JetPtCut %.1f",fJetPtCut));
+  if ( (jet->Pt() <= fJetPtCut) || (jet->Pt() > fJetPtCutMax) ) {
+    AliDebug(11,Form("Cut rejecting jet: JetPtCut %.1f , JetPtCutMax %.1f",fJetPtCut,fJetPtCutMax));
     fRejectionReason |= kPtCut;
     return kFALSE;
   }
@@ -367,7 +369,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
   if(jetPhi>tpi) jetPhi-=tpi;
    
   // if limits are given in (-pi, pi) range
-  if (fJetMinPhi < 0) jetPhi -= TMath::Pi() * 2;
+  if (fJetMinPhi < -1e-6) jetPhi -= TMath::Pi() * 2;
 
   if (jetEta < fJetMinEta || jetEta > fJetMaxEta || jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi) {
     AliDebug(11,"Cut rejecting jet: Acceptance");
@@ -594,6 +596,7 @@ void AliJetContainer::PrintCuts()
   Printf("PtBiasJetTrack: %f",fPtBiasJetTrack);
   Printf("PtBiasJetClus: %f",fPtBiasJetClus);
   Printf("JetPtCut: %f", fJetPtCut);
+  Printf("JetPtCutMax: %f", fJetPtCutMax);
   Printf("JetAreaCut: %f",fJetAreaCut);
   Printf("AreaEmcCut: %f",fAreaEmcCut);
   Printf("JetMinEta: %f", fJetMinEta);

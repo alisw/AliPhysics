@@ -18,6 +18,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 
 #include <iostream>
 #include "AliPDG.h"
@@ -29,15 +30,16 @@ using namespace std;
 ClassImp(AliAnalysisTaskHMTFMC)
 
 AliAnalysisTaskHMTFMC::AliAnalysisTaskHMTFMC() 
-: AliAnalysisTaskSE(), fHistEta(0), fHistNch(0), fHistNchUnweighted(0),  fHistIev(0), fMyOut(0)
+: AliAnalysisTaskSE(), fHistEta(0), fHistNch(0), fHistNchUnweighted(0), fHistRawMult(0x0), fHistIev(0), fMyOut(0),
+  fPrimaryPDGs(), fMotherPDGs()
 {
 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHMTFMC::AliAnalysisTaskHMTFMC(const char *name) 
-  : AliAnalysisTaskSE(name), fHistEta(0), fHistNch(0), fHistNchUnweighted(0), fHistIev(0), fMyOut(0)
-    
+  : AliAnalysisTaskSE(name), fHistEta(0), fHistNch(0), fHistNchUnweighted(0), fHistRawMult(0x0), fHistIev(0), fMyOut(0),
+  fPrimaryPDGs(), fMotherPDGs()
 {
 
   AliPDG::AddParticlesToPdgDataBase();
@@ -53,34 +55,40 @@ void AliAnalysisTaskHMTFMC::UserCreateOutputObjects()
 
   fMyOut = new TList();
 
-
-  //  fHistEta  = new TH1F("fHistdNdetaMCInel", "MC dN/deta distribution Inel", 200, -10., 10.);
-  fHistEta  = new TH1F("fHistdNdetaMCInel", "MC dN/deta distribution Inel", 100, -2., 2.);
-  fHistEta->GetXaxis()->SetTitle("#eta");
-  fHistEta->GetYaxis()->SetTitle("dN/d#eta");
+  fHistEta  = new TH1F("fHistdNdetaMCInel", "dN/d#eta inel;#eta;dN/d#eta", 100, -2., 2.);
   fHistEta->SetMarkerStyle(kFullCircle);
   fHistEta->Sumw2();
   fMyOut->Add(fHistEta);
 
-  fHistNch = new TH1F ("fHistNch", "Multiplicity distribution, eta < 1.0", 100, -0.5, 99.5);
+  fHistNch = new TH1F ("fHistNch", "Multiplicity distribution, #||{#eta} < 1.0;N;counts", 100, -0.5, 99.5);
   fHistNch->Sumw2();
   fMyOut->Add(fHistNch);
 
-  fHistNchUnweighted = new TH1F ("fHistNchUnweighted", "Multiplicity distribution, eta < 1.0 (unweighted)", 100, -0.5, 99.5);
+  fHistNchUnweighted = new TH1F ("fHistNchUnweighted", "Multiplicity distribution, #||{#eta} < 1.0 (unweighted);N;counts", 100, -0.5, 99.5);
   fHistNchUnweighted->Sumw2();
   fMyOut->Add(fHistNchUnweighted);
 
-  // One needs to use a mergeable object to count events. In this case we use a TH1D (careful: a smaller type, e.g. TH1I could saturate). If you split events in different classes (inel, nsd, INEL>0, ...) you can add more bins here
-  fHistIev = new TH1D("fHistIev","Number of particles at midrapidity", 2, -0.5, 1.5);// Here we count 2 classes of events: all processed events, and the equivalent generate statistics
-  fMyOut->Add(fHistIev);
+  fHistRawMult = new TH1F ("fHistRawMult", "Raw mult for downscaling;N;counts", 100, -0.5, 999.5);
+  fHistRawMult->Sumw2();
+  fMyOut->Add(fHistRawMult);
 
+  // One needs to use a mergeable object to count events. In this case
+  // we use a TH1D (careful: a smaller type, e.g. TH1I could
+  // saturate). If you split events in different classes (inel, nsd,
+  // INEL>0, ...) you can add more bins here
+  //
+  // Here we count 2 classes of events: all processed events, and the
+  // equivalent generate statistics
+  fHistIev = new TH1D("fHistIev", "event statistics;;counts", 2, -0.5, 1.5);
+  fHistIev->GetXaxis()->SetBinLabel(1, "events");
+  fHistIev->GetXaxis()->SetBinLabel(2, "weight");
+  fMyOut->Add(fHistIev);
 
   fMyOut->SetOwner();
   
   // Suppress annoying printout
   AliLog::SetGlobalLogLevel(AliLog::kError);
   PostData(1, fMyOut);
-
 }
 
 //________________________________________________________________________
@@ -95,6 +103,7 @@ void AliAnalysisTaskHMTFMC::UserExec(Option_t *)
   // Here we need some generator-dependent logic, in case we need to extract useful information from the headers.
   AliGenPythiaEventHeader * headPy  = 0;
   AliGenDPMjetEventHeader * headPho = 0;
+  AliGenHepMCEventHeader * headHepMC = 0x0;
   AliGenEventHeader * htmp = mcEvent->GenEventHeader();
   if(!htmp) {
     AliError("Cannot Get MC Header!!");
@@ -104,12 +113,18 @@ void AliAnalysisTaskHMTFMC::UserExec(Option_t *)
     headPy =  (AliGenPythiaEventHeader*) htmp;
   } else if (TString(htmp->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
     headPho = (AliGenDPMjetEventHeader*) htmp;
+  } else if (TString(htmp->IsA()->GetName()) == "AliGenHepMCEventHeader") {
+    headHepMC = (AliGenHepMCEventHeader*) htmp;
   } else {
     AliWarning("Unknown header");
   }
 
   AliHeader* header = mcEvent->Header();
   AliStack* stack = header->Stack();
+
+  // plot multiplicity used for downscaling
+  // fHistRawMult->Fill(htmp->NProduced());
+  fHistRawMult->Fill(stack->GetNtransported());
 
   // In the downscaled productions, every event is given a weight which corresponds to the downscaling factor applied. This is needed to fill natural-looking histos
   Float_t evWeight=htmp->EventWeight();
@@ -163,8 +178,8 @@ void AliAnalysisTaskHMTFMC::UserExec(Option_t *)
   fHistNch->Fill(nchMidEta,evWeight);
   fHistNchUnweighted->Fill(nchMidEta);
 
-  fHistIev->Fill(0);           // Number of processed events
-  fHistIev->Fill(1, evWeight); // Equivalent generated MC statistics (need to account for the downscaling factors)
+  fHistIev->Fill(0);           // number of processed events
+  fHistIev->Fill(1, evWeight); // sum of weights
 
   // Post output data.
   PostData(1, fMyOut);
@@ -207,6 +222,6 @@ void AliAnalysisTaskHMTFMC::Terminate(Option_t *)
   c->cd(2);
   hMotherPDG->Draw();
 
-  std::cout << "Processed " << fHistIev->GetBinContent(0) << " events, equivalent to "<< fHistIev->GetBinContent(1) << " generated events."  << std::endl;
+  std::cout << "Processed " << fHistIev->GetBinContent(1) << " events, equivalent to "<< fHistIev->GetBinContent(2) << " generated events."  << std::endl;
   
 }

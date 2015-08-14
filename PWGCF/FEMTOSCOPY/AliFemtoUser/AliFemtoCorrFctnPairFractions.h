@@ -35,6 +35,8 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
 
+  void SetDoDEtaDPhiMaps(bool dodedp=true);
+
 private:
   TH1F *fPairFractions;
   TH1F *fPairFractionsDen;
@@ -42,6 +44,9 @@ private:
   double fphiL;
   double fphiT;
 
+  bool detadphi;
+  TH2F *fPairFractionsDEtaDPhi[7];
+  TH2F *fPairFractionsDenDEtaDPhi[7];
 
 
 #ifdef __ROOT__

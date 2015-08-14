@@ -6,11 +6,11 @@
 
 /* $Id$ */ 
 
-//*************************************************************************
-// Class AliAnalysisTaskSECompareHF
-// AliAnalysisTaskSE for the comparison of heavy-flavour decay candidates
-// to MC truth (kinematics stored in the AOD)
-// Author: A.Dainese, andrea.dainese@ln.infn.it
+///*************************************************************************
+/// \class Class AliAnalysisTaskSECompareHF
+/// \brief AliAnalysisTaskSE for the comparison of heavy-flavour decay candidates
+/// to MC truth (kinematics stored in the AOD)
+/// \author Author: A.Dainese, andrea.dainese@ln.infn.it
 //*************************************************************************
 
 #include <TROOT.h>
@@ -30,7 +30,7 @@ class AliAnalysisTaskSECompareHF : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSECompareHF();
 
 
-  // Implementation of interface methods
+  /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -42,12 +42,15 @@ class AliAnalysisTaskSECompareHF : public AliAnalysisTaskSE
 
   AliAnalysisTaskSECompareHF(const AliAnalysisTaskSECompareHF &source);
   AliAnalysisTaskSECompareHF& operator=(const AliAnalysisTaskSECompareHF& source); 
-  TList   *fOutput; //! list send on output slot 0
-  TNtuple *fNtupleCmp; //! output ntuple
-  TH1F    *fHistMass;    //! output histogram
-  TH1F    *fHistNEvents;    //! output histogram
+  TList   *fOutput; //!<! list send on output slot 0
+  TNtuple *fNtupleCmp; //!<! output ntuple
+  TH1F    *fHistMass;    //!<! output histogram
+  TH1F    *fHistNEvents;    //!<! output histogram
   
-  ClassDef(AliAnalysisTaskSECompareHF,5); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskSECompareHF,5); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  /// \endcond
+
 };
 
 #endif

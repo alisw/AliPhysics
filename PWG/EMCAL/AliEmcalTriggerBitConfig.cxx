@@ -12,22 +12,17 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/*
- * Trigger bit configuration used in the trigger patch maker and by the trigger patches
- * themselves in order to identify of which type the trigger patch is. Can be adapted to different
- * trigger bit configurations use in different reconstructions
- *
- *   Author: Markus Fasel
- */
-
 #include "AliEmcalTriggerBitConfig.h"
 
+/// \cond CLASSIMP
 ClassImp(AliEmcalTriggerBitConfig)
 ClassImp(AliEmcalTriggerBitConfigOld)
 ClassImp(AliEmcalTriggerBitConfigNew)
+/// \endcond
 
-//________________________________________________________________________
+/**
+ * Dummy constructor for the configuraiton base classes, not to be callled
+ */
 AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig():
     TNamed(),
     fL0Bit(-1),
@@ -37,12 +32,17 @@ AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig():
     fGLowBit(-1),
     fTriggerTypesEnd(-1)
 {
-  /*
-   * Dummy constructor for the configuraiton base classes, not to be callled
-   */
 }
 
-//________________________________________________________________________
+/**
+ * Constructor initialising the configurations. Used by the inheriting classes
+ * @param l0bit Trigger bit for Level0 triggers
+ * @param jhighbit Trigger bit for jet trigger, high threshold
+ * @param jlowbit Trigger bit for jet trigger, low threshold
+ * @param ghighbit Trigger bit for gamma trigger, high threshold
+ * @param glowbit Trigger bit for gamma trigger, low threshold
+ * @param mcoffset Offset for MC
+ */
 AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig(
     Int_t l0bit,
     Int_t jhighbit,
@@ -58,16 +58,13 @@ AliEmcalTriggerBitConfig::AliEmcalTriggerBitConfig(
     fGLowBit(glowbit),
     fTriggerTypesEnd(mcoffset)
 {
-  /*
-   * Constructor initialising the configurations. Used by the inheriting classes
-   */
 }
 
-//________________________________________________________________________
+/**
+ * Initialise from other object
+ * @param ref Reference to initialize this trigger bit configuaration from
+ */
 void AliEmcalTriggerBitConfig::Initialise(const AliEmcalTriggerBitConfig& ref) {
-  /*
-   * Initialise from other object
-   */
   SetName(ref.GetName());
   fL0Bit = ref.GetLevel0Bit();
   fJHighBit = ref.GetJetHighBit();
@@ -77,23 +74,21 @@ void AliEmcalTriggerBitConfig::Initialise(const AliEmcalTriggerBitConfig& ref) {
   fTriggerTypesEnd = ref.GetTriggerTypesEnd();
 }
 
-//________________________________________________________________________
+/**
+ * Constructor, initializing the configuration
+ */
 AliEmcalTriggerBitConfigOld::AliEmcalTriggerBitConfigOld():
     AliEmcalTriggerBitConfig(0,2,2,1,1,3)       // To be checked
 {
-  /*
-   * Settings for the 2-bit configuration
-   */
   SetName("EmcalTriggerBitConfigOld");
 }
 
-//________________________________________________________________________
+/**
+ * Constructor, initializing the configuration
+ */
 AliEmcalTriggerBitConfigNew::AliEmcalTriggerBitConfigNew():
     AliEmcalTriggerBitConfig(0,3,4,1,2,5)       // To be checked
 {
-  /*
-   * Settings for the 4-bit configuration
-   */
   SetName("EmcalTriggerBitConfigNew");
 }
 

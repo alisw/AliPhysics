@@ -79,7 +79,9 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC():
     fhZNAemd(0x0),
     fhPMCZNCemd(0x0), 
     fhPMCZNAemd(0x0),
-    fDebunch(0x0)
+    fDebunch(0x0),
+    fhTDCZNC(0x0),
+    fhTDCZNA(0x0)
 {   
    // Default constructor
 }   
@@ -108,7 +110,9 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const char *name):
     fhZNAemd(0x0),
     fhPMCZNCemd(0x0), 
     fhPMCZNAemd(0x0),
-    fDebunch(0x0) 
+    fDebunch(0x0) ,
+    fhTDCZNC(0x0),
+    fhTDCZNA(0x0)
 {  
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class()); 
@@ -151,7 +155,9 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const AliAnalysisTaskZDC& ana):
   fhZNAemd(ana.fhZNAemd),
   fhPMCZNCemd(ana.fhPMCZNCemd), 
   fhPMCZNAemd(ana.fhPMCZNAemd),
-  fDebunch(ana.fDebunch)
+  fDebunch(ana.fDebunch),
+  fhTDCZNC(ana.fhTDCZNC),
+  fhTDCZNA(ana.fhTDCZNA)
 {
   //
   // Copy Constructor	
@@ -221,8 +227,16 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 10., 6000.);   
   fOutput->Add(fhPMCZNAemd);     
   
-  fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,-30);
+  fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,30);
   fOutput->Add(fDebunch);     
+  
+  fhTDCZNC = new TH1F("fhTDCZNC","TDC_{ZNC}",60,-30.,30.);
+  fhTDCZNC->GetXaxis()->SetTitle("TDC_{ZNC} (ns)");
+  fOutput->Add(fhTDCZNC);      
+  
+  fhTDCZNA = new TH1F("fhTDCZNA","TDC_{ZNA}",60,-30.,30.);
+  fhTDCZNA->GetXaxis()->SetTitle("TDC_{ZNA} (ns)");
+  fOutput->Add(fhTDCZNA);      
     
   PostData(1, fOutput);
 }
@@ -286,8 +300,8 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     fhZPApmc->Fill(towZPA[0]);    
   
     Double_t xyZNC[2]={-99.,-99.}, xyZNA[2]={-99.,-99.};
-    esdZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
-    //esdZDC->GetZNCentroidInpp(xyZNC, xyZNA);
+    //esdZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
+    esdZDC->GetZNCentroidInpp(xyZNC, xyZNA);
     
     fhZNCCentroid->Fill(xyZNC[0], xyZNC[1]); 
     fhZNACentroid->Fill(xyZNA[0], xyZNA[1]); 
@@ -309,10 +323,12 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;
   for(int i=0; i<4; i++){
-    if(esdZDC->GetZDCTDCData(10,i) != 0.){
-      tdcC = esdZDC->GetZDCTDCCorrected(10,i);
-      if(esdZDC->GetZDCTDCData(12,i) != 0.){
-        tdcA = esdZDC->GetZDCTDCCorrected(12,i);
+    if(esdZDC->GetZDCTDCData(16,i) != 0.){
+      tdcC = esdZDC->GetZDCTDCCorrected(16,i);
+      fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(16,i));
+      if(esdZDC->GetZDCTDCData(18,i) != 0.){
+        tdcA = esdZDC->GetZDCTDCCorrected(18,i);
+        fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(18,i));
         tdcSum = tdcC+tdcA;
         tdcDiff = tdcC-tdcA;
       }

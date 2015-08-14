@@ -16,12 +16,10 @@ Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 // _____ for Random Rejection task (AddTask_reichelt_RandomRejection.C)
 //TF1    PtFunc = TF1("MyPtFunc", "exp(-x/3.)", 0.4, 3.5); // not working
 const TString  RndmPtExpr="exp(-x/3.)";
-const Double_t RndmPtMin=0.4;
+const Double_t RndmPtMin=0.4; // pt and eta ranges need to cover at least the kinematic range of final analysis electrons
 const Double_t RndmPtMax=3.5;
-const Double_t RndmEtaMax=0.9;
-const UInt_t nRndmPt=12;
-const UInt_t nRndmEta=5;
-const UInt_t nRndmPhi=8;
+const Double_t RndmEtaMax=0.8;
+const Int_t nTestpartPerEle=100; // number of testparticles used per final analysis electron in an event.
 // _____
 const Bool_t randomizeDau=kFALSE;
 

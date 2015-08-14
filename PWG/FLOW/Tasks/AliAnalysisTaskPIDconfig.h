@@ -22,6 +22,7 @@
 #include "AliCentrality.h"
 #include "TCutG.h"
 #include "TF2.h"
+#include "THnSparse.h"
 
 
 
@@ -88,6 +89,7 @@ private:
     Double_t               fLowPtPIDTPCnsigHigh_Pion[6]; //nsig high cut Pion
     Double_t               fLowPtPIDTPCnsigLow_Kaon[6]; //nsig low cut Kaon
     Double_t               fLowPtPIDTPCnsigHigh_Kaon[6]; //nsig high cut Kaon
+    Double_t               fvalueAll[4];//!All species info
     Bool_t                 fData2011;           // 2011 data
     Bool_t                 fUseCentrality;      // use centrality
     Bool_t                 fCutTPCmultiplicityOutliersAOD;      // do outlier cut
@@ -133,7 +135,8 @@ private:
     TH1F                  *fhistPionEtaDistAfter; //!another hist
     TH1F                  *fhistKaonEtaDistAfter; //!another hist
     TH1F                  *fhistProtonEtaDistAfter; //!another hist
-    TF2                   *fPurityFunction[150];  //purity functions
+    THnSparseD            *fSparseAll;//!All species info
+    TF2                   *fPurityFunction[180];  //purity functions
     
     //qa object initialisation
     void SetupTPCTOFqa();

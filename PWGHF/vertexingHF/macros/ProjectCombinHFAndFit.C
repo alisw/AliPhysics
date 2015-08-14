@@ -61,7 +61,7 @@ Bool_t tryDirectFit=kTRUE;
 Int_t nparback=0;
 Double_t fitrangelow[nPtBins]={1.74,1.74,1.74,1.72,1.72,1.72,1.72,1.72};
 Double_t fitrangeup[nPtBins]={2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0};
-Int_t nDegreeBackPol=4;             // degree of polynomial function describing the background
+Int_t nDegreeBackPol[nPtBins]={4,4,4,2,2,2,2,2};             // degree of polynomial function describing the background
 
 TH1D* hMCReflPtBin;
 TH1D* hMCSigPtBin;
@@ -83,15 +83,23 @@ AliHFMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin){
 
 AliHFMassFitterVAR* ConfigureFitterVAR(TH1D* histo, Int_t iPtBin,Int_t typeback=6,Bool_t saveReflModifPlot=kTRUE){
   
+  TString hname=histo->GetName();
+  Double_t xfmin=fitrangelow[iPtBin];
+  Double_t xfmax=fitrangeup[iPtBin];
+  if(hname.Contains("Rot") || hname.Contains("ME") || hname.Contains("LS")){
+    xfmin=minMass;
+    xfmax=maxMass;
+  }
+  
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
   AliHFMassFitterVAR* fitter;
   if(!correctForRefl){
-    fitter=new AliHFMassFitterVAR(histof,fitrangelow[iPtBin],fitrangeup[iPtBin],1,typeback,0); 
-    if(typeback==6)fitter->SetBackHighPolDegree(nDegreeBackPol);
+    fitter=new AliHFMassFitterVAR(histof,xfmin,xfmax,1,typeback,0); 
+    if(typeback==6)fitter->SetBackHighPolDegree(nDegreeBackPol[iPtBin]);
   }
   else {
-    fitter=new AliHFMassFitterVAR(histof,fitrangelow[iPtBin],fitrangeup[iPtBin],1,typeback,2); 
-    if(typeback==6)fitter->SetBackHighPolDegree(nDegreeBackPol);
+    fitter=new AliHFMassFitterVAR(histof,xfmin,xfmax,1,typeback,2); 
+    if(typeback==6)fitter->SetBackHighPolDegree(nDegreeBackPol[iPtBin]);
 
 
     TCanvas *cTest=new TCanvas("cTest","cTest",800,800);    
@@ -544,6 +552,11 @@ void ProjectCombinHFAndFit(){
   TH1F* hChiSqME=new TH1F("hChiSqME","",nPtBins,binLims);
   TH1F* hChiSqSBfit=new TH1F("hChiSqSBfit","",nPtBins,binLims);
 
+  TH1F* hNdfRot=new TH1F("hNdfRot","",nPtBins,binLims);
+  TH1F* hNdfLS=new TH1F("hNdfLS","",nPtBins,binLims);
+  TH1F* hNdfME=new TH1F("hNdfME","",nPtBins,binLims);
+  TH1F* hNdfSBfit=new TH1F("hNdfSBfit","",nPtBins,binLims);
+
   TH1F* hRawYieldRotBC=new TH1F("hRawYieldRotBC","BC yield (rotational background)",nPtBins,binLims);
   TH1F* hRawYieldLSBC=new TH1F("hRawYieldLSBC","BC yield (like-sign background)",nPtBins,binLims);
   TH1F* hRawYieldMEBC=new TH1F("hRawYieldMEBC","BC yield (mixed-event background)",nPtBins,binLims);
@@ -749,6 +762,8 @@ void ProjectCombinHFAndFit(){
 	hRawYieldSBfit->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
 	hChiSqSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
 	hChiSqSBfit->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hNdfSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMassFunc()->GetNDF());
+	hNdfSBfit->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
 	//	if(!correctForRefl)
 	WriteFitInfo(fitterSB[iPtBin],hMassPtBin);
 	
@@ -790,9 +805,9 @@ void ProjectCombinHFAndFit(){
 	hsubTemp->DrawCopy();
 	hsubTempAllRange->DrawCopy("same");
 	hsubTemp->DrawCopy("same");
-	fpeak->SetParameter(0,funcAll->GetParameter(nDegreeBackPol+1));
-	fpeak->SetParameter(1,funcAll->GetParameter(nDegreeBackPol+2));
-	fpeak->SetParameter(2,funcAll->GetParameter(nDegreeBackPol+3));
+	fpeak->SetParameter(0,funcAll->GetParameter(nDegreeBackPol[iPtBin]+1));
+	fpeak->SetParameter(1,funcAll->GetParameter(nDegreeBackPol[iPtBin]+2));
+	fpeak->SetParameter(2,funcAll->GetParameter(nDegreeBackPol[iPtBin]+3));
 	fpeak->DrawCopy("same");
 
 	Double_t errbc;
@@ -835,6 +850,8 @@ void ProjectCombinHFAndFit(){
       hRawYieldRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError());
       hChiSqRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReducedChiSquare());
       hChiSqRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+      hNdfRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMassFunc()->GetNDF());
+      hNdfRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
       WriteFitInfo(fitterRot[iPtBin],hMassPtBin);
       
@@ -877,6 +894,8 @@ void ProjectCombinHFAndFit(){
       hRawYieldLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError());
       hChiSqLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReducedChiSquare());
       hChiSqLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+      hNdfLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMassFunc()->GetNDF());
+      hNdfLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
 WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
 
@@ -918,8 +937,10 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       hRawYieldME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetRawYieldError());
       hChiSqME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReducedChiSquare());
       hChiSqME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
-     //      if(!correctForRefl)
-WriteFitInfo(fitterME[iPtBin],hMassPtBin);
+      hNdfME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMassFunc()->GetNDF());
+      hNdfME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+      //      if(!correctForRefl)
+      WriteFitInfo(fitterME[iPtBin],hMassPtBin);
 
       Double_t errbc;
       Double_t bc=GetSignalBinCounting(hMassSubME,fitterME[iPtBin]->GetBackgroundRecalcFunc(),errbc,nsigmaBinCounting,fitterME[iPtBin]->GetSigma(),-1.*minMass,-1.*maxMass);
@@ -969,6 +990,7 @@ WriteFitInfo(fitterME[iPtBin],hMassPtBin);
     if(tryDirectFit){
       c5->SaveAs(Form("figures/InvMassSpectra_%s_SB.eps",suffix.Data()));
       c5sub->SaveAs(Form("figures/InvMassSpectra_%s_SBsub.eps",suffix.Data()));
+      c5sub->SaveAs(Form("figures/InvMassSpectra_%s_SBsub.root",suffix.Data()));
     }
 
     if(saveCanvasAsEps>1){
@@ -1230,6 +1252,10 @@ WriteFitInfo(fitterME[iPtBin],hMassPtBin);
   hChiSqLS->Write();
   hChiSqME->Write();
   hChiSqSBfit->Write();
+  hNdfRot->Write();
+  hNdfLS->Write();
+  hNdfME->Write();
+  hNdfSBfit->Write();
   hnEv->Write();
   fout->Close();
 

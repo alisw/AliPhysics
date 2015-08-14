@@ -22,5 +22,6 @@
 #pragma link C++ class AliTriggerAnalysis+;
 #pragma link C++ class AliCollisionNormalization+;
 #pragma link C++ class AliCollisionNormalizationTask+;
+#pragma link C++ class AliMultSelectionTask+;
 
 #endif

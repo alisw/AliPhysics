@@ -8,9 +8,9 @@
 #include <AliMESppColTask.h>
 #endif
 
-void AddMESppColTask(Bool_t mc)
+AliMESppColTask *AddMESppColTask(Bool_t mc)
 {
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager(); 
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMESppColTask *ppCol = new AliMESppColTask("MESppCol");
   mgr->AddTask(ppCol);
   ppCol->SetPostProcess(kFALSE);
@@ -27,10 +27,10 @@ void AddMESppColTask(Bool_t mc)
 	  ci[2] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCeventInfo"));
 	  ci[3] = (AliAnalysisDataContainer*)(AliAnalysisManager::GetAnalysisManager()->GetContainers()->FindObject("MESMCtracks"));
   }
-  Info("AddMESppColTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", 
-							   ci[0]?ci[0]->GetName():"none", 
-							   ci[1]?ci[1]->GetName():"none", 
-							   ci[2]?ci[2]->GetName():"none", 
+  Info("AddMESppColTask", Form("Inputs : [0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"",
+							   ci[0]?ci[0]->GetName():"none",
+							   ci[1]?ci[1]->GetName():"none",
+							   ci[2]?ci[2]->GetName():"none",
 							   ci[3]?ci[3]->GetName():"none"));
 
   // connect containers
@@ -41,5 +41,7 @@ void AddMESppColTask(Bool_t mc)
     mgr->ConnectInput(ppCol, AliMESbaseTask::kMCtracks, ci[3]);    // connect MC tracks container
   }
   mgr->ConnectOutput(ppCol, AliMESbaseTask::kQA, mgr->CreateContainer("ppColQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:MES", mgr->GetCommonFileName())));
+
+  return ppCol;
 }
 

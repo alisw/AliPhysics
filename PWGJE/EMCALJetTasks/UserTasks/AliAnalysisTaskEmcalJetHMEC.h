@@ -7,6 +7,7 @@ class TClonesArray;
 class TList;
 class TH1;
 class TH2;
+class TH3;
 class THnSparse;
 class AliEmcalJet;
 class AliESDEvent;
@@ -31,6 +32,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
 
   virtual void            SetTracksName(const char *n)             {fTracksName=n;}
   virtual void            SetJetsName(const char *jn)              {fJetsName=jn;}
+  virtual void            SetCaloClustersName(const char *cn)      {fCaloClustersName=cn;}
 
   virtual void            SetAreaCut(Double_t a)                   { fAreacut    = a; }
   virtual void            SetTrkBias(Double_t b)                   { fTrkBias    = b; }  //require a track with pt > b in jet
@@ -70,6 +72,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
 
   TString                fTracksName;              // name of tracks collection
   TString                fJetsName;                // name of Jet collection
+  TString                fCaloClustersName;        // name of Calo Cluster collection
   Double_t               fPhimin;                  // phi min of jet
   Double_t               fPhimax;                  // phi max of jet
   Double_t               fEtamin;                  // eta min of jet
@@ -79,7 +82,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   Double_t               fClusBias;
   Double_t               fTrkEta;                  // eta min/max of tracks
   Int_t                  fDoEventMixing;           // flag to do evt mixing
-  Int_t  		         fMixingTracks;		       // size of track buffer for event mixing
+  Int_t  		 fMixingTracks;		       // size of track buffer for event mixing
   Int_t                  fNMIXtracks;              // threshold to use event pool # tracks
   Int_t                  fNMIXevents;              // threshold to use event pool # events
   TObjArray*             CloneAndReduceTrackList(TObjArray* tracks);
@@ -106,6 +109,8 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   TH2                   *fHistTrackEtaPhi[7];//!
   TH2                   *fHistJetHEtaPhi;//!
 
+  TH3                   *fHistClusEtaPhiEn; //!
+
   TH1                   *fHistJetPt[6]; //!
   TH1                   *fHistJetPtBias[6];//!
   TH1                   *fHistLeadJetPt[6];//!
@@ -116,6 +121,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   TH2                   *fHistJetHTT[6][5][3];//!
   THnSparse             *fhnMixedEvents;      //!mixed events matrix
   THnSparse             *fhnJH;      //!Fg events matrix
+  TH3                   *fHistJHPsi; //! Psi angle distribution
 
   Short_t               fRunType; // 0-pp 1-pA 2-AA
 

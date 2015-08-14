@@ -25,6 +25,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   void               SetTracksOutName(const char *name)                   { fTracksOutName     = name; }
   void               SetUseNegativeLabels(Bool_t f)                       { fUseNegativeLabels = f   ; }
   void               SetTrackEfficiency(Double_t eff = 0.95)              { fTrackEfficiency  = new TF1("eff", "[0]", 0, 500); fTrackEfficiency->FixParameter(0,eff); }
+  void               SetKeepInvMassTag(Bool_t f)                          { fKeepInvMassTag = f ; }
   void               SetTrackEfficiency(TF1* eff)                         { fTrackEfficiency  = eff  ; }
 
  protected:
@@ -41,6 +42,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   Bool_t             fDoPropagation;        // if true then propagate all hybrid tracks to EMCal surface
   Bool_t             fAttemptProp;          // if true then attempt to propagate if not done yet
   Bool_t             fAttemptPropMatch;     // if true then attempt to propagate if not done yet but IsEMCAL is true
+  Bool_t             fKeepInvMassTag;     // if true then pass in track container labels for tagging tracks in jets
   Double_t           fDist;                 // distance to surface (440cm default)
   TF1               *fTrackEfficiency;      // track efficiency
   TClonesArray      *fTracksIn;             //!track array in

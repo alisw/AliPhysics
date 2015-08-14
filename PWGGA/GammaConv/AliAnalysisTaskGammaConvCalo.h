@@ -62,6 +62,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
 		void SetUseTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
+		void SetDoTreeConvGammaShowerShape(Bool_t flag){doConvGammaShowerShapeTree = flag;}
 
 		// Setting the cut lists for the conversion photons
 		void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -126,6 +127,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TList 								**fBackList;						// Array of lists with BG THnSparseF
 		TList 								**fMotherList;						// Array of lists with Signal THnSparseF
 		TList 								**fPhotonDCAList;					// Array of lists with photon dca trees
+		TList 								**fGammaERM02;						// Array of lists with conv photon shower shape trees
 		TList 								**fTrueList;						// Array of lists with histograms with MC validated reconstructed properties
 		TList 								**fMCList;							// Array of lists with histograms with pure MC information
 		TList								**fClusterOutputList;     			//!Array of lists of output histograms for cluster photons
@@ -160,13 +162,18 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 											// 4: secondary photon from k0s, 
 											// 5: dalitz
 											// 6: primary gamma
+		TTree 								**tESDGammaERM02;					//! tree with E_gamma vs R_conv vs M02 vs M20
+		Float_t								tESDClusE;							//! energy of conv gamma for tree
+		Float_t								tESDGammaConvR;						//! conv R of conv gamma for tree
+		Float_t								tESDClusterM02;					//! M02 of matched cluster for tree
+		Float_t								tESDClusterM20;					//! M20 of matched cluster for tree
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherMatchedInvMassPt;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherInvMassPtZM;			//! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherBackInvMassPt;		//! array of histogram with BG for mixed event photon pairs, inv Mass, pt
 		THnSparseF 							**fSparseMotherBackInvMassPtZM;		//! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
-		TH2F 								**fHistoMotherInvMassEalpha;		//! array of histograms with alpha cut of 0.1 for inv mass vs pt
+		TH2F 								**fHistoMotherInvMassPtAlpha;		//! array of histograms with alpha cut of 0.1 for inv mass vs pt
 		TH2F 								**fHistoMotherPi0PtY;				//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
 		TH2F 								**fHistoMotherEtaPtY;				//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
 		TH2F 								**fHistoMotherPi0PtAlpha;			//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
@@ -182,8 +189,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F				 				**fHistoPhotonPairPtconv;			//! array of histo for pairs vs. pt of converted photon
 		TH2F				 				**fHistoPhotonPairMixedEventPtconv;	//! array of histo for pairs vs. pt of converted photon
 		// histograms for rec photon clusters
-		TH1F								** fHistoClusGammaPt;				//! array of histos with cluster, pt
-		TH1F								** fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
+		TH1F								**fHistoClusGammaPt;				//! array of histos with cluster, pt
+		TH1F								**fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
 										
 		//histograms for pure MC quantities
 		TH1I 								**fHistoMCHeaders;					//! array of histos for header names
@@ -201,8 +208,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F 								**fHistoMCConvGammaEta;				//! array of histos with converted gamma, Eta
 		TH1F 								**fHistoMCPi0Pt;					//! array of histos with weighted pi0, pT
 		TH1F 								**fHistoMCPi0WOWeightPt;			//! array of histos with unweighted pi0, pT
+		TH1F 								**fHistoMCPi0WOEvtWeightPt;			//! array of histos without event weights pi0, pT
 		TH1F 								**fHistoMCEtaPt;					//! array of histos with weighted eta, pT
 		TH1F 								**fHistoMCEtaWOWeightPt;			//! array of histos with unweighted eta, pT
+		TH1F 								**fHistoMCEtaWOEvtWeightPt;			//! array of histos without evt weight eta, pT
 		TH1F 								**fHistoMCPi0InAccPt;				//! array of histos with weighted pi0 in acceptance, pT
 		TH1F 								**fHistoMCPi0WOWeightInAccPt;		//! array of histos without weight pi0 in acceptance, pT
 		TH1F 								**fHistoMCEtaInAccPt;				//! array of histos with weighted eta in acceptance, pT
@@ -218,6 +227,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F	 							**fHistoMCSecPi0Source;				//! array of histos with secondary pi0, source
 		TH1F 								**fHistoMCSecEtaPt;					//! array of histos with secondary eta, pT
 		TH1F 								**fHistoMCSecEtaSource;				//! array of histos with secondary eta, source
+		TH2F 								**fHistoMCPi0PtJetPt;				//! array of histos with weighted pi0, pT, hardest jet pt
+		TH2F 								**fHistoMCEtaPtJetPt;				//! array of histos with weighted eta, pT, hardest jet pt
 		// MC validated reconstructed quantities mesons
 		TH2F 								**fHistoTruePi0InvMassPt;						//! array of histos with validated pi0, invMass, pt
 		TH2F 								**fHistoTrueEtaInvMassPt;						//! array of histos with validated eta, invMass, pt
@@ -309,7 +320,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F				 				**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueEtaInvMassPt;			//! array of histos with double counted etas, invMass, pT
 		TH2F				 				**fHistoDoubleCountTrueConvGammaRPt;			//! array of histos with double counted photons, R, pT
-		TH1F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
+		TH2F				 				**fHistoDoubleCountTrueClusterGammaPt;			//! array of histos with double counted cluster photons
 		vector<Int_t>						fVectorDoubleCountTruePi0s;						//! vector containing labels of validated pi0
 		vector<Int_t>						fVectorDoubleCountTrueEtas;						//! vector containing labels of validated eta
 		vector<Int_t>						fVectorDoubleCountTrueConvGammas;				//! vector containing labels of validated photons
@@ -332,9 +343,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH1F								**fHistoVertexZ;								//! array of histos with vertex z distribution for selected events
 		TH1F 								**fHistoNGammaCandidates;						//! array of histos with number of gamma candidates per event
 		TH2F 								**fHistoNGoodESDTracksVsNGammaCandidates;		//! array of histos with number of good tracks vs gamma candidates
+		TH2F								**fHistoSPDClusterTrackletBackground;			//! array of histos with SPD tracklets vs SPD clusters for background rejection
 		TH1F 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
-		
+
+		// hists for nonlineartiy calibration
+		TH2F								**fHistoTruePi0NonLinearity;					//! E_truth/E_rec vs E_rec for TruePi0s
+		TH2F								**fHistoTrueEtaNonLinearity;					//! E_truth/E_rec vs E_rec for TrueEtas
+
 		// additional variables
 		Double_t 							fEventPlaneAngle; 					// EventPlaneAngle
 		TRandom3 							fRandom;							// random 
@@ -361,12 +377,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		Bool_t								fDoTHnSparse;						// flag for using THnSparses for background estimation
 		Bool_t								fSetPlotHistsExtQA;					// flag for extended QA hists
 		Double_t							fWeightJetJetMC;					// weight for Jet-Jet MC 
+		Bool_t								doConvGammaShowerShapeTree;			// flag for tree with conv gamma R vs energy vs shower shape
 		
 	private:
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 12);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 16);
 };
 
 #endif

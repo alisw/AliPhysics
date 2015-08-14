@@ -36,6 +36,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   //if(storeNtuple<0 || storeNtuple>2) {AliFatal("Invalid storeNtuple argument - check value");}
   lambdacTask->SetReadMC(readMC);
 	lambdacTask->SetKeepLcNotFromQuark(keepLcNoQuark);
+	lambdacTask->SetCollisionSystem(syst);
   if(MCPid) lambdacTask->SetMCPid();
   if(resPid) lambdacTask->SetResonantPid();
   if(realPid) lambdacTask->SetRealPid();

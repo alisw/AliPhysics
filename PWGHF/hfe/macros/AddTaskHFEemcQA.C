@@ -29,6 +29,20 @@ AliAnalysisTask *AddTaskHFEemcQA(Bool_t UseTender=kTRUE, Bool_t FillElecSparse=k
       sprintf(calib,"woTender");
     }
   
+  // +++ no trigger 
+  AliAnalysisTaskHFEemcQA *hfecalqaAny = new AliAnalysisTaskHFEemcQA("emcqa");
+  mgr->AddTask(hfecalqaAny);
+  hfecalqaAny->SelectCollisionCandidates(AliVEvent::kAny);
+  hfecalqaAny->SetElecIDsparse(FillElecSparse);
+  hfecalqaAny->SetTenderSwitch(UseTender);
+
+  TString containerName = mgr->GetCommonFileName();
+  containerName += ":PWGHF_hfeHFEemcQAAny";
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("HFEemcQAAny_%s",calib), TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
+  mgr->ConnectInput(hfecalqaAny, 0, cinput);
+  mgr->ConnectOutput(hfecalqaAny, 1, coutput1);
+
   // +++ EMCal MB
   AliAnalysisTaskHFEemcQA *hfecalqa = new AliAnalysisTaskHFEemcQA("emcqa");
   mgr->AddTask(hfecalqa);

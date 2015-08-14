@@ -34,6 +34,7 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliMultiplicity.h"
+#include "AliESDAD.h"
 #include "AliESDVZERO.h"
 #include "AliESDZDC.h"
 #include "AliESDFMD.h"
@@ -83,6 +84,9 @@ fFMDHitCut(0.5),
 fHistBitsSPD(0),
 fHistFiredBitsSPD(0),
 fHistSPDClsVsTrk(0),
+fHistAD(0),
+fHistADA(0),
+fHistADC(0),
 fHistV0A(0),
 fHistV0C(0),
 fHistZDC(0),
@@ -108,6 +112,9 @@ AliTriggerAnalysis::~AliTriggerAnalysis(){
   if (fHistBitsSPD)      { delete fHistBitsSPD;      fHistBitsSPD = 0;      }
   if (fHistFiredBitsSPD) { delete fHistFiredBitsSPD; fHistFiredBitsSPD = 0; }
   if (fHistSPDClsVsTrk)  { delete fHistSPDClsVsTrk;  fHistSPDClsVsTrk = 0;  }
+  if (fHistAD)           { delete fHistAD;           fHistAD  = 0;          }
+  if (fHistADA)          { delete fHistADA;          fHistADA = 0;          }
+  if (fHistADC)          { delete fHistADC;          fHistADC = 0;          }
   if (fHistV0A)          { delete fHistV0A;          fHistV0A = 0;          }
   if (fHistV0C)          { delete fHistV0C;          fHistV0C = 0;          }
   if (fHistZDC)          { delete fHistZDC;          fHistZDC = 0;          }
@@ -142,8 +149,11 @@ void AliTriggerAnalysis::EnableHistograms(Bool_t isLowFlux){
   fHistBitsSPD      = new TH2F("fHistBitsSPD", "SPD GFO;number of fired chips (offline);number of fired chips (hardware)", nBins, -1.5, -1.5 + nBins, nBins, -1.5, -1.5+nBins);
   fHistFiredBitsSPD = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
   fHistSPDClsVsTrk  = new TH2F("fHistSPDClsVsTrk", "SPD Clusters vs Tracklets; n tracklets; n clusters", nBinsX, -0.5, xMax, nBinsY, -0.5, yMax);
-  fHistV0A          = new TH1F("fHistV0A", "V0A;leading time (ns);events", 400, -100, 100);
-  fHistV0C          = new TH1F("fHistV0C", "V0C;leading time (ns);events", 400, -100, 100);
+  fHistAD           = new TH2F("fHistAD", "ADC+ADA vs ADC+ADA;ADC-ADA time (ns);ADC+ADA time (ns)", 300, -150, 150, 300, -50, 250);
+  fHistADA          = new TH1F("fHistADA", "ADA;mean time (ns);events", 2000, -100, 100);
+  fHistADC          = new TH1F("fHistADC", "ADC;mean time (ns);events", 2000, -100, 100);
+  fHistV0A          = new TH1F("fHistV0A", "V0A;mean time (ns);events", 400, -100, 100);
+  fHistV0C          = new TH1F("fHistV0C", "V0C;mean time (ns);events", 400, -100, 100);
   fHistZDC          = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
   fHistTDCZDC       = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
   fHistTimeZDC      = new TH2F("fHistTimeZDC", "ZDC;TDC timing C-A;TDC timing C+A", 120,-30,30,120,-600,-540);
@@ -178,6 +188,10 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger){
     case kSPDGFOL0 :       str = "SPD GFO L0 (first layer)";  break;
     case kSPDGFOL1 :       str = "SPD GFO L1 (second layer)"; break;
     case kSPDClsVsTrkBG :  str = "Cluster vs Tracklets";      break;
+    case kADA :            str = "AD A BB";                   break;
+    case kADC :            str = "AD C BB";                   break;
+    case kADABG :          str = "AD A BG";                   break;
+    case kADCBG :          str = "AD C BG";                   break;
     case kV0A :            str = "V0 A BB";                   break;
     case kV0C :            str = "V0 C BB";                   break;
     case kV0OR :           str = "V0 OR BB";                  break;
@@ -292,6 +306,10 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
     case kSPDGFOL0:        return SPDFiredChips(aEsd, !offline, kFALSE, 1);
     case kSPDGFOL1:        return SPDFiredChips(aEsd, !offline, kFALSE, 2);
     case kSPDClsVsTrkBG:   return IsSPDClusterVsTrackletBG(aEsd);
+    case kADA:             return ADTrigger(aEsd, kASide, !offline) == kADBB; 
+    case kADC:             return ADTrigger(aEsd, kCSide, !offline) == kADBB;
+    case kADABG:           return ADTrigger(aEsd, kASide, !offline) == kADBG;
+    case kADCBG:           return ADTrigger(aEsd, kCSide, !offline) == kADBG;
     case kV0A:             return V0Trigger(aEsd, kASide, !offline) == kV0BB; 
     case kV0C:             return V0Trigger(aEsd, kCSide, !offline) == kV0BB;
     case kV0ABG:           return V0Trigger(aEsd, kASide, !offline) == kV0BG;
@@ -353,6 +371,10 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     case kMB3:              decision = SPDGFOTrigger(aEsd, 0) &&  V0Trigger(aEsd, kASide, kFALSE) == kV0BB && V0Trigger(aEsd, kCSide, kFALSE) == kV0BB;  break;
     case kSPDGFO:           decision = SPDGFOTrigger(aEsd, 0); break;
     case kSPDGFOBits:       decision = SPDGFOTrigger(aEsd, 1); break;
+    case kADA:              decision = ADTrigger(aEsd, kASide, kFALSE) == kADBB; break;
+    case kADC:              decision = ADTrigger(aEsd, kCSide, kFALSE) == kADBB; break;
+    case kADABG:            decision = ADTrigger(aEsd, kASide, kFALSE) == kADBG; break;
+    case kADCBG:            decision = ADTrigger(aEsd, kCSide, kFALSE) == kADBG; break;
     case kV0A:              decision = V0Trigger(aEsd, kASide, kFALSE) == kV0BB; break;
     case kV0C:              decision = V0Trigger(aEsd, kCSide, kFALSE) == kV0BB; break;
     case kV0OR:             decision = V0Trigger(aEsd, kASide, kFALSE) == kV0BB || V0Trigger(aEsd, kCSide, kFALSE) == kV0BB; break;
@@ -518,6 +540,39 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
 Int_t AliTriggerAnalysis::SSDClusters(const AliVEvent* event){ 
   return event->GetNumberOfITSClusters(4)+event->GetNumberOfITSClusters(5); 
 }
+
+
+//-------------------------------------------------------------------------------------------------
+AliTriggerAnalysis::ADDecision AliTriggerAnalysis::ADTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists){
+  // See comments on V0Trigger
+  
+  AliESDAD* esdAD = aEsd->GetADData();
+  if (!esdAD) { AliError("AliESDAD not available");  return kADInvalid; }
+  if (side != kASide && side != kCSide) return kADInvalid;
+  
+  AliDebug(2,Form("In ADTrigger: %f %f",esdAD->GetADATime(),esdAD->GetADCTime()));
+
+  if (fillHists) {
+    if (fHistAD) fHistAD->Fill(esdAD->GetADCTime()-esdAD->GetADATime(),esdAD->GetADATime()+esdAD->GetADCTime());
+    if (side == kASide && fHistADA) fHistADA->Fill(esdAD->GetADATime());
+    if (side == kCSide && fHistADC) fHistADC->Fill(esdAD->GetADCTime());
+  }
+  
+  if (online) {
+    UShort_t bits = esdAD->GetTriggerBits();
+    if (side==kASide && (bits & 1<<12)) return kADBB;
+    if (side==kCSide && (bits & 1<<13)) return kADBB;
+    if (side==kASide && (bits & 1<< 3)) return kADBG;
+    if (side==kCSide && (bits & 1<< 5)) return kADBG;
+    return kADEmpty;
+  } else {
+    if      (side == kASide) return (ADDecision) esdAD->GetADADecision();
+    else if (side == kCSide) return (ADDecision) esdAD->GetADCDecision();
+  }
+  
+  return kADEmpty;
+}
+
 
 
 //-------------------------------------------------------------------------------------------------
@@ -1068,7 +1123,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   TObject* obj;
   
   // collections of all histograms
-  const Int_t nHists = 14;
+  const Int_t nHists = 17;
   TList collections[nHists];
   
   Int_t count = 0;
@@ -1076,6 +1131,9 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
     AliTriggerAnalysis* entry = dynamic_cast<AliTriggerAnalysis*> (obj);
     if (entry == 0) continue;
     Int_t n = 0;
+    collections[n++].Add(entry->fHistAD);
+    collections[n++].Add(entry->fHistADA);
+    collections[n++].Add(entry->fHistADC);
     collections[n++].Add(entry->fHistV0A);
     collections[n++].Add(entry->fHistV0C);
     collections[n++].Add(entry->fHistZDC);
@@ -1108,6 +1166,9 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list){
   }
   
   Int_t n = 0;
+  fHistAD->Merge(&collections[n++]);
+  fHistADA->Merge(&collections[n++]);
+  fHistADC->Merge(&collections[n++]);
   fHistV0A->Merge(&collections[n++]);
   fHistV0C->Merge(&collections[n++]);
   fHistZDC->Merge(&collections[n++]);
@@ -1133,6 +1194,8 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd){
   
   fHistBitsSPD->Fill(SPDFiredChips(aEsd, 0), SPDFiredChips(aEsd, 1, kTRUE));
   
+  ADTrigger(aEsd, kASide, kFALSE, kTRUE);
+  ADTrigger(aEsd, kCSide, kFALSE, kTRUE);
   V0Trigger(aEsd, kASide, kFALSE, kTRUE);
   V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
   T0Trigger(aEsd, kFALSE, kTRUE);
@@ -1176,6 +1239,9 @@ void AliTriggerAnalysis::SaveHistograms() const {
   // write histograms to current directory
   if (fHistBitsSPD)      fHistBitsSPD->Write();
   if (fHistFiredBitsSPD) fHistFiredBitsSPD->Write();
+  if (fHistAD )          fHistAD->Write();
+  if (fHistADA)          fHistADA->Write();
+  if (fHistADC)          fHistADC->Write();
   if (fHistV0A)          fHistV0A->Write();
   if (fHistV0C)          fHistV0C->Write();
   if (fHistZDC)          fHistZDC->Write();

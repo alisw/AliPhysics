@@ -197,6 +197,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 		Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
 		Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
 		Double_t GetEtaCut(){return fEtaCut;}
+		void SetDodEdxSigmaCut(Bool_t k=kTRUE)	{fDodEdxSigmaCut=k;}
+    
 			
 	protected:
 		TList 			*fHistograms;							//

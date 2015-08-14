@@ -34,7 +34,9 @@
 #include "AliVVertex.h"
 #include "AliESDVertex.h"
 
-ClassImp(AliAODRecoDecayHF)
+/// \cond CLASSIMP
+ClassImp(AliAODRecoDecayHF);
+/// \endcond
 
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF::AliAODRecoDecayHF() :

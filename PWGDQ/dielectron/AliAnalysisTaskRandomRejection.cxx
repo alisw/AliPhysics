@@ -50,9 +50,7 @@ AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection() :
   fRndmPtMin(0.2),
   fRndmPtMax(10.),
   fRndmEtaMax(0.9),
-  fNRndmPt(8),
-  fNRndmEta(8),
-  fNRndmPhi(8),
+  fNTestpartPerEle(200),
   fTestparticles(0x0)//,
 {
   //
@@ -68,9 +66,7 @@ AliAnalysisTaskRandomRejection::AliAnalysisTaskRandomRejection(const char *name)
   fRndmPtMin(0.2),
   fRndmPtMax(10.),
   fRndmEtaMax(0.9),
-  fNRndmPt(8),
-  fNRndmEta(8),
-  fNRndmPhi(8),
+  fNTestpartPerEle(200),
   fTestparticles(0x0)//,
 {
   //
@@ -107,9 +103,10 @@ AliAnalysisTaskRandomRejection::~AliAnalysisTaskRandomRejection()
   ///
   /// _____ extension compared to AliAnalysisTaskMultiDielectron _____
   if(fPtFunc)          { delete fPtFunc;          fPtFunc=0; }
-  if(fTestparticles)   { delete fTestparticles;   fTestparticles=0; }
-  if(fFinalTracks[1])  { fFinalTracks[1]->Clear(); } // or ->Delete()? ("Remove all objects from the array AND delete all heap based objects.")
-  if(fFinalTracks[0])  { fFinalTracks[0]->Clear(); }
+  //like done in 'AliDielectron::ClearArrays()':
+  fFinalTracks[0].Clear();
+  fFinalTracks[1].Clear(); // or Delete()? ("Remove all objects from the array AND delete all heap based objects.")
+  if(fTestparticles) fTestparticles->Delete();
   /// _____
 }
 
@@ -280,7 +277,7 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
     ///
     /// _____ modification/extension compared to AliAnalysisTaskMultiDielectron _____
     ///
-    //AliInfo(Form(" **************** start of modified code! die #%d ****************", idie));
+    //AliInfo(Form("process idie = %i.", idie));
     
     if (die->GetPairPreFilter().GetCuts()->GetEntries()<1) {
       AliInfo(Form(" die #%d : no pair prefilter found, skip any calculation. (task should be deactivated on a higher level...)", idie));
@@ -288,7 +285,7 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
     }
     
     /// We need the (track) arrays later.
-    die->SetDontClearArrays(kTRUE);
+    die->SetDontClearArrays(kTRUE); // AliDielectron will take care of cleaning the arrays when the next event is executed.
     
     /// Pairing and rejection need to be switched off, otherwise the track arrays are already filtered!
     die->SetNoPairing(kTRUE);
@@ -312,8 +309,8 @@ void AliAnalysisTaskRandomRejection::UserExec(Option_t *)
       fEventStat->Fill((kNbinsEvent)+2*idie); // events w/ prefilter ele
       
       FillFinalTrackArrays(InputEvent(), die);
-      /// Skip further calculation if event does not contain any electron passing the analysis cuts.
-      if ((fFinalTracks[0]->GetEntriesFast()<1) && (fFinalTracks[1]->GetEntriesFast()<1)) {
+      /// Skip further calculation if event does not contain any electron passing the final analysis cuts.
+      if ((fFinalTracks[0].GetEntriesFast()<1) && (fFinalTracks[1].GetEntriesFast()<1)) {
         //printf(" Info: event has prefilter electrons, but no global ones! skip event. \n");
         continue;
       }
@@ -339,16 +336,38 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
   /// Random pairing for prefilter efficiency.
   /// much inspired by void AliDielectron::PairPreFilter(...)
   ///
-  //printf("CalcRandomPairs() \n");
+  //AliInfo("begin.");
   
   UInt_t selectedMask=(1<<die->GetPairPreFilter().GetCuts()->GetEntries())-1;
   AliDielectronPair candidate;
   candidate.SetKFUsage(kFALSE);
   
-  // construct array of testparticles
-  if (!fTestparticles) InitTestparticles();
+  // construct or extend array of testparticles if needed
+  Int_t nFinalAnaElePosi = fFinalTracks[0].GetEntriesFast() + fFinalTracks[1].GetEntriesFast();
+  Int_t nNeededTestPart  = fNTestpartPerEle * nFinalAnaElePosi;
+  InitTestparticles(nNeededTestPart);
+  
   TObjArray* arrTracks1 = fTestparticles;
-  Int_t      ntrack1    = (*arrTracks1).GetEntriesFast();
+  Int_t      ntrack1    = nNeededTestPart; // may be less than the size of fTestparticles!!!
+  
+  /// remove a random final analysis electron from one of the prefilter electron arrays. (it may stay in the final analysis electron array)
+  /// this avoids a slight multiplicity bias, because the total number of electrons is increased by 1 due to the testparticle.
+  TRandom3 rnd;
+  rnd.SetSeed(0);
+  Int_t whichEleToRemove = Int_t(rnd.Rndm()*nFinalAnaElePosi);
+  Int_t fromWhichArray   = (whichEleToRemove<fFinalTracks[0].GetEntriesFast())?0:1; // remove from first array, if it is within the arrays size, otherwise from second array.
+  if (fromWhichArray==1) whichEleToRemove -= fFinalTracks[0].GetEntriesFast(); // this is needed to not go out of bounds if it is in second array.
+  TObject *eleToRemove=fFinalTracks[fromWhichArray].At(whichEleToRemove);
+  TObjArray* arrToReduce = const_cast<TObjArray*>(die->GetTrackArray(fromWhichArray));
+  if (arrToReduce->FindObject(eleToRemove)) {
+    arrToReduce->AddAt(0x0, arrToReduce->IndexOf(eleToRemove)); // remove the track from the array. (don't delete the track object itself, because it's in the input data rootfile!)
+    arrToReduce->Compress(); // compress the array
+  } else {
+    AliWarning(Form("WARNING: Did not find track to delete from array die->GetTrackArray(%i). Not deleting this track... (this should never happen, but rare cases can be ignored. nFinalAnaElePosi=%i, whichEleToRemove=%i, array sizes: %i, %i.)", fromWhichArray, nFinalAnaElePosi, whichEleToRemove, fFinalTracks[0].GetEntriesFast(), fFinalTracks[1].GetEntriesFast()));
+    // return;
+  }
+  // 'eleToRemove' and 'arrToReduce' are just pointers to existing objects, so they don't need to be deleted.
+  
   /// The pairing needs to be done between testparticles and prefilter electrons. Get them from track arrays:
   TObjArray* arrTracks2 = const_cast<TObjArray*>(die->GetTrackArray(0));  //  0: Event1, positive particles
   Int_t      ntrack2    = (*arrTracks2).GetEntriesFast();
@@ -377,9 +396,9 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
     Int_t fPdgLeg2 = -11;  //  0: Event1, positive particles
     switch (iRP) {
       case 1:
-				arrTracks1RP=arrTracks1;
+				arrTracks1RP=arrTracks1; // stays the same
 				arrTracks2RP=arrTracks3;
-				bTracks1RP = bTracks1;
+				bTracks1RP = bTracks1; // stays the same
 				bTracks2RP = bTracks3;
         fPdgLeg2 = 11;  //  1: Event1, negative particles
 				break;
@@ -389,7 +408,13 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
     Int_t ntrack1RP=(*arrTracks1RP).GetEntriesFast();
     Int_t ntrack2RP=(*arrTracks2RP).GetEntriesFast();
     
-    for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
+    if (ntrack1RP<nNeededTestPart) {
+      AliWarning(Form("WARNING: Size of testparticle array is smaller than needed (%i < %i). Using all available testparticles... (this should never happen, it will give less weight to high multiplicity events.)", ntrack1RP, nNeededTestPart));
+      nNeededTestPart = ntrack1RP;
+      //return;
+    }
+    //AliInfo(Form("RP %i: nNeededTestPart = %i", iRP, nNeededTestPart));
+    for (Int_t itrack1=0; itrack1<nNeededTestPart; ++itrack1){
       
       for (Int_t itrack2=0; itrack2<ntrack2RP; ++itrack2){
         
@@ -429,7 +454,7 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
   
   
   //fill track histograms
-  FillHistogramsTestpart(die, arrTracks1, bTracks1);
+  FillHistogramsTestpart(die, arrTracks1, bTracks1, nNeededTestPart);
   FillHistogramsDataEle(die, arrTracks2, bTracks2);
   FillHistogramsDataEle(die, arrTracks3, bTracks3);
   
@@ -438,6 +463,7 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
   delete [] bTracks2;
   delete [] bTracks3;
   
+  //AliInfo("end.");
 }
 
 
@@ -449,15 +475,6 @@ void AliAnalysisTaskRandomRejection::FillHistogramsRandomPairs(AliDielectron* di
   /// The histogram classes "Rand_Pair" and "Rand_RejPair" must be available.
   ///
   //printf("FillHistogramsRandomPairs( wasRejected = %s ) \n", wasRejected?"kTRUE":"kFALSE");
-  
-//  AliVParticle *d1=pair->GetFirstDaughterP();
-//  AliVParticle *d2=pair->GetSecondDaughterP();
-//  if (!d1 || !d2) {
-//    AliFatal(" Error: one daughter is not available! return. \n");
-//    return;
-//  }
-//  Bool_t d1_IsDataEle = ((AliAODTrack*)d1)->GetDetPid()?kTRUE:kFALSE;
-//  Bool_t d2_IsDataEle = ((AliAODTrack*)d2)->GetDetPid()?kTRUE:kFALSE;
   
   AliDielectronHistos *h=die->GetHistoManager();
   if (h) {
@@ -476,7 +493,7 @@ void AliAnalysisTaskRandomRejection::FillHistogramsRandomPairs(AliDielectron* di
 
 
 //_________________________________________________________________________________
-void AliAnalysisTaskRandomRejection::FillHistogramsTestpart(AliDielectron* die, TObjArray* arrTracks1, Bool_t* bTracks1)
+void AliAnalysisTaskRandomRejection::FillHistogramsTestpart(AliDielectron* die, TObjArray* arrTracks1, Bool_t* bTracks1, Int_t nNeededTestPart)
 {
   ///
   /// Fill histograms of testparticles.
@@ -490,12 +507,12 @@ void AliAnalysisTaskRandomRejection::FillHistogramsTestpart(AliDielectron* die, 
       Double_t values[AliDielectronVarManager::kNMaxValues]={0};
       AliDielectronVarManager::SetFillMap(h->GetUsedVars());
       
-      for (Int_t itrack1=0; itrack1<(*arrTracks1).GetEntriesFast(); ++itrack1){
+      for (Int_t itrack1=0; itrack1<nNeededTestPart; ++itrack1){ // loop until 'nNeededTestPart', which is the amount of testparticles used for the current event.
         TObject *track1=(*arrTracks1).UncheckedAt(itrack1);
         AliDielectronVarManager::Fill(static_cast<AliVParticle*>(track1), values);
         
         h->FillClass("Random_Testpart",AliDielectronVarManager::kNMaxValues,values);
-        if (bTracks1[itrack1]) { // was rejected
+        if (bTracks1[itrack1]) { // was rejected // 'bTracks1[]' only has the size 'nNeededTestPart'.
           h->FillClass("Random_RejTestpart",AliDielectronVarManager::kNMaxValues,values);
         }
       }
@@ -509,6 +526,7 @@ void AliAnalysisTaskRandomRejection::FillHistogramsDataEle(AliDielectron* die, T
 {
   ///
   /// Fill histograms of prefilter electron sample, mainly for curiosity and to double-check cuts.
+  /// The histogram classes "Random_DataEle" and "Random_RejDataEle" must be available.
   ///
   AliDielectronHistos *h=die->GetHistoManager();
   if (h) {
@@ -531,23 +549,37 @@ void AliAnalysisTaskRandomRejection::FillHistogramsDataEle(AliDielectron* die, T
 
 
 //_________________________________________________________________________________
-void AliAnalysisTaskRandomRejection::InitTestparticles()
+void AliAnalysisTaskRandomRejection::InitTestparticles(Int_t nNeededTestPart)
 {
   ///
   /// Initialize array of Testparticles for random pairing.
   /// Since they probe the rejection of final analysis electrons, they should cover the corresponding kinematic region.
   /// pt and eta ranges could be extracted from trackcuts, but they may vary between the attached Dielectron objects, so it's a bit tricky.
-  /// Instead, please use SetPtFunc(TF1* func) and SetEtaMax(Double_t val) in your AddTask if the defaults don't fit you.
-  /// The number of testparticles per event is 'fNRndmPt*fNRndmEta*fNRndmPhi'. Modify with SetNPtEtaPhi(UInt_t npt, UInt_t neta, UInt_t nphi).
+  /// Instead, please use SetPtRange(Double_t min, Double_t max), SetPtExpr(const char *expr/*="exp(-x/3.)"*/) and SetEtaMax(Double_t val) 
+  /// in your AddTask if the defaults don't fit you.
+  /// The number of testparticles used per event is proportional to the number of final analysis electrons in this event.
+  /// This accounts for multiplicity-dependent rejection <-> correct weighting of events according to their multiplicity.
+  /// (nNeededTestPart = 'fNTestpartPerEle*[N final analysis electrons]'. May be modified with SetNTestpartPerEle(Int_t ntest).)
   ///
-  //printf("InitTestparticles() \n");
+  //AliInfo("begin.");
   
-  fTestparticles = new TObjArray();
-  fTestparticles->SetOwner(kTRUE);
+  Int_t N_newTestpart;
+  if (!fTestparticles) { // allows to call this function multiple times to increase the amount of testparticles if more are needed.
+    // initially, produce enough testparticles for events with at least 4 final analysis electrons.
+    N_newTestpart = TMath::Max(nNeededTestPart, fNTestpartPerEle*4);
+    fTestparticles = new TObjArray();
+    fTestparticles->SetOwner(kTRUE);
+  } else {
+    if (nNeededTestPart <= fTestparticles->GetEntriesFast()) return;
+    // subsequently, extend the testparticle array if the current event has more analysis electrons than the previous maximum.
+    N_newTestpart = nNeededTestPart - fTestparticles->GetEntriesFast();
+    if (N_newTestpart<1) {
+      AliFatal(Form("need more testparticles, but N_newTestpart<1 (=%i). this should never happen.", N_newTestpart));
+      return;
+    }
+  }
+  AliInfo(Form("creating %i new testparticles. (nNeededTestPart = %i, fTestparticles->GetEntriesFast() = %i)", N_newTestpart, nNeededTestPart, fTestparticles->GetEntriesFast()));
   
-  //  UInt_t fNRndmPt  = 8;
-  //  UInt_t fNRndmEta = 8;
-  //  UInt_t fNRndmPhi = 8;
   //  Double_t ptmin=1.0, ptmax=2.0;
   Double_t pt=-999., eta=-999., phi=-999., theta=-999.;
   TRandom3 rnd;
@@ -557,39 +589,33 @@ void AliAnalysisTaskRandomRejection::InitTestparticles()
   
   if (!fPtFunc) fPtFunc = new TF1("fPtFunc", fPtExpr.Data(), fRndmPtMin, fRndmPtMax);
   if (!fPtFunc) {
-    AliFatal(Form("could not create function for random pt-distribution with expression: \"%s\", range: %f - %f GeV/c. Using default...\n", fPtExpr.Data(), fRndmPtMin, fRndmPtMax));
+    AliFatal(Form("could not create function for random pt-distribution with expression: \"%s\", range: %f - %f GeV/c. Using default...", fPtExpr.Data(), fRndmPtMin, fRndmPtMax));
     fPtFunc = new TF1("fPtFunc", "exp(-x/3.)", 0.2, 10.);
   }
-  AliInfo(Form("function used for random pt-distribution:  %s, %s, %f - %f GeV/c \n", fPtFunc->GetName(), fPtFunc->GetTitle(), fPtFunc->GetXmin(), fPtFunc->GetXmax()));
+  AliInfo(Form("function used for random pt-distribution:  %s, %s, %f - %f GeV/c", fPtFunc->GetName(), fPtFunc->GetTitle(), fPtFunc->GetXmin(), fPtFunc->GetXmax()));
   
-  for (int ipt=0; ipt<fNRndmPt; ++ipt) {
-    //pt = fPtFunc->GetRandom(); // better to sample pt also more often.
-    //    pt = ptmin + (ptmax-ptmin)*(ipt+0.5)/fNRndmPt; //uniform for debugging
+  for (int itest=0; itest<N_newTestpart; ++itest) {
+    pt = fPtFunc->GetRandom();
+    eta = fRndmEtaMax*(rnd.Rndm()*2.-1.);
+    phi = TMath::TwoPi()*rnd.Rndm();
+    //    pt = ptmin + (ptmax-ptmin)*(itest+0.5)/N_newTestpart; //uniform for debugging
     //    do { pt = rnd.Exp(3.); } while (pt<ptmin); //tau~3 reasonable
+    //    eta = fRndmEtaMax*(itest+0.5)/N_newTestpart; //uniform for debugging (only from 0 to fRndmEtaMax!)
+    //    phi = TMath::TwoPi()*(itest+0.5)/N_newTestpart; //uniform for debugging
     
-    for (int ieta=0; ieta<fNRndmEta; ++ieta) {
-      pt = fPtFunc->GetRandom(); // better to sample pt also more often.
-      eta = fRndmEtaMax*(rnd.Rndm()*2.-1.);
-      //eta = fRndmEtaMax*(ieta+0.5)/fNRndmEta; //uniform for debugging (from 0 to fRndmEtaMax)
-      
-      for (int iphi=0; iphi<fNRndmPhi; ++iphi) {
-        phi = TMath::TwoPi()*rnd.Rndm();
-        //phi = TMath::TwoPi()*(iphi+0.5)/fNRndmPhi; //uniform for debugging
-        
-        theta = 2.*TMath::ATan( TMath::Exp(-eta) ); // theta is the intrinsic AODTrack variable
-        
-        AliAODTrack* testpart = new AliAODTrack();
-        testpart->SetPt(pt);        //void SetPt(Double_t pt) { fMomentum[0] = pt; };
-        testpart->SetPhi(phi);      //void SetPhi(Double_t phi) { fMomentum[1] = phi; }
-        testpart->SetTheta(theta);  //void SetTheta(Double_t theta) { fMomentum[2] = theta; }
-        testpart->SetCharge(1);
-        testpart->SetPIDForTracking(AliAODTrack::kElectron);
-        
-        fTestparticles->Add(testpart);
-      }
-    }
+    theta = 2.*TMath::ATan( TMath::Exp(-eta) ); // theta is the intrinsic AODTrack variable
+    
+    AliAODTrack* testpart = new AliAODTrack();
+    testpart->SetPt(pt);        //void SetPt(Double_t pt) { fMomentum[0] = pt; };
+    testpart->SetPhi(phi);      //void SetPhi(Double_t phi) { fMomentum[1] = phi; }
+    testpart->SetTheta(theta);  //void SetTheta(Double_t theta) { fMomentum[2] = theta; }
+    testpart->SetCharge(1);
+    testpart->SetPIDForTracking(AliAODTrack::kElectron);
+    
+    fTestparticles->Add(testpart);
   }
   //printf(" fTestparticles->UncheckedAt(1)->M() = %f \t ->Charge() = %i \n", (static_cast<AliVTrack*>(fTestparticles->UncheckedAt(0)))->M(), (static_cast<AliVTrack*>(fTestparticles->UncheckedAt(0)))->Charge());
+  //AliInfo("end.");
 }
 
 
@@ -601,15 +627,10 @@ void AliAnalysisTaskRandomRejection::FillFinalTrackArrays(AliVEvent * const ev, 
   /// Their presence is needed to determine if random rejection needs to be tested in this event.
   /// (taken from void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr))
   ///
-  //printf("FillFinalTrackArrays() \n");
+  //AliInfo("begin.");
   
-  if (!fFinalTracks[0]) {
-    fFinalTracks[0] = new TObjArray();
-    fFinalTracks[1] = new TObjArray();
-  } else {
-    fFinalTracks[0]->Clear();
-    fFinalTracks[1]->Clear();
-  }
+  fFinalTracks[0].Clear();
+  fFinalTracks[1].Clear();
   
   Int_t ntracks=ev->GetNumberOfTracks();
   
@@ -624,9 +645,10 @@ void AliAnalysisTaskRandomRejection::FillFinalTrackArrays(AliVEvent * const ev, 
     
     //fill selected particle into the corresponding track arrays
     Short_t charge=particle->Charge();
-    if (charge>0)      fFinalTracks[0]->Add(particle);
-    else if (charge<0) fFinalTracks[1]->Add(particle);
+    if (charge>0)      fFinalTracks[0].Add(particle);
+    else if (charge<0) fFinalTracks[1].Add(particle);
   }
+  //AliInfo("end.");
 }
 
 
@@ -636,6 +658,9 @@ void AliAnalysisTaskRandomRejection::FinishTaskOutput()
   //
   // Write debug tree
   //
+  //@TODO: in AliAnalysisTaskMultiDielectron: if event mixing is off, the internal train will not work, or will it?
+  //@TODO: in AliAnalysisTaskRandomRejection: this function may not be needed at all in this task?
+  
   TIter nextDie(&fListDielectron);
   Int_t ic=0;
   AliDielectron *die=0;

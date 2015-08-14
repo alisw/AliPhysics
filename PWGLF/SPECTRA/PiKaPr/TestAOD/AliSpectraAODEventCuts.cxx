@@ -100,6 +100,7 @@ fSplineArrayV0Agen(0),
 fSplineArrayV0Cgen(0),
 fSplineArrayTPCgen(0),
 fQvecMC(0),
+fQtrkbit(128),
 fNch(0),
 fQvecCalibType(0),
 fV0Aeff(0)
@@ -415,7 +416,7 @@ Double_t AliSpectraAODEventCuts::CalculateQVectorTPC(){
     AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iT));
     if(!aodTrack) AliFatal("Not a standard AOD");
     if(fRejectionFractionTPC>0 && g->Rndm()<fRejectionFractionTPC)continue; //to test the resolution vs multiplicity
-    if (!aodTrack->TestFilterBit(128)) continue;  //FIXME track type hard coded -> TPC only constrained to the vertex
+    if (!aodTrack->TestFilterBit(fQtrkbit)) continue;  //FIXME track type hard coded -> TPC only constrained to the vertex
     if ( aodTrack->Eta() < fEtaTPCmin || aodTrack->Eta() > fEtaTPCmax)continue; //default: etaMin=-0.4. etaMax=0.4, Abs to have symmetric selection wrt midrapidity
     if (aodTrack->Pt()<0.2 || aodTrack->Pt()>20.)continue; //FIXME add variable pt cut, pt cut as in https://aliceinfo.cern.ch/Notes/node/71
 

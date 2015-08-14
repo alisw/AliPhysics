@@ -926,6 +926,8 @@ void AliAnalysisTaskDmesonJetCorrelations::FillTHnSparse(TLorentzVector D, Doubl
     TVector3 jvect = jet.Vect();
     z = (dvect * jvect) / (jvect * jvect);
     
+    if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
+    
     deltaPhi = TVector2::Phi_mpi_pi(D.Phi() - jet.Phi());
     deltaEta = D.Eta() - jet.Eta();
     

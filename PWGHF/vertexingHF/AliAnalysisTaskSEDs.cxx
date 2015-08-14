@@ -44,8 +44,9 @@
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSEDs.h"
 
-ClassImp(AliAnalysisTaskSEDs)
-
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSEDs);
+/// \endcond
 
 //________________________________________________________________________
 AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
@@ -70,7 +71,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fCounter(0),
   fAnalysisCuts(0)
 {
-  // Default constructor
+  /// Default constructor
   
   for(Int_t i=0;i<3;i++){
     fHistCentrality[i]=0;
@@ -130,8 +131,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fCounter(0),
   fAnalysisCuts(analysiscuts)
 {
-  // Default constructor
-  // Output slot #1 writes into a TList container
+  /// Default constructor
+  /// Output slot #1 writes into a TList container
   
   for(Int_t i=0;i<3;i++){
     fHistCentrality[i]=0;
@@ -185,7 +186,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
 
 //________________________________________________________________________
 void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Float_t* lim){
-  // define pt bins for analysis
+  /// define pt bins for analysis
   if(n>kMaxPtBins){
     printf("Max. number of Pt bins = %d\n",kMaxPtBins);
     fNPtBins=kMaxPtBins;
@@ -257,7 +258,7 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
 //________________________________________________________________________
 void AliAnalysisTaskSEDs::Init()
 {
-  // Initialization
+  /// Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSEDs::Init() \n");
 
@@ -276,7 +277,7 @@ void AliAnalysisTaskSEDs::Init()
 //________________________________________________________________________
 void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 {
-  // Create the output container
+  /// Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSEDs::UserCreateOutputObjects() \n");
 
@@ -471,8 +472,8 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 {
-  // Ds selection for current event, fill mass histos and selecetion variable histo
-  // separate signal and backgound if fReadMC is activated
+  /// Ds selection for current event, fill mass histos and selecetion variable histo
+  /// separate signal and backgound if fReadMC is activated
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
@@ -882,7 +883,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 
 void AliAnalysisTaskSEDs::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
+  /// Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSEDs: Terminate() \n");
   fOutput = dynamic_cast<TList*> (GetOutputData(1));

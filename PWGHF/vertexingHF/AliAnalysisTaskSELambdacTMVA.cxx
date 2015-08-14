@@ -63,8 +63,9 @@
 #include "AliCFTaskVertexingHF.h"
 #include "AliLog.h" 
 
-ClassImp(AliAnalysisTaskSELambdacTMVA)
-
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSELambdacTMVA);
+/// \endcond
 
 	//________________________________________________________________________
 	AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA():
@@ -110,6 +111,8 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 		fVHF(0),
 		fLcCut(kFALSE),
 		fLcPIDCut(kFALSE),    
+		fKeepLcNotFromQuark(kFALSE),
+		fSyst(2),
 		fNentries(0),
 		fPIDResponse(0),
 		fCounter(0),
@@ -117,7 +120,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA)
 
 {
 	//
-	// Default constructor
+	/// Default constructor
 	//
 
 	for(Int_t i=0;i<12;i++) { 
@@ -220,14 +223,16 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fVHF(0),
 	fLcCut(kFALSE),
 	fLcPIDCut(kFALSE),    
+	fKeepLcNotFromQuark(kFALSE),
+	fSyst(2),
 	fNentries(0),
 	fPIDResponse(0),
 	fCounter(0),
 	fVertUtil(0)
 {
 	//
-	// Default constructor
-	// Output slot #1 writes into a TList container
+	/// Default constructor
+	/// Output slot #1 writes into a TList container
 	//
 	for(Int_t i=0;i<12;i++) { 
 		fhNBkgNI[i]=0x0;
@@ -300,7 +305,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 AliAnalysisTaskSELambdacTMVA::~AliAnalysisTaskSELambdacTMVA()
 {
 	//
-	// Destructor
+	/// Destructor
 	//
 	
 	if (fOutput) {
@@ -353,7 +358,7 @@ AliAnalysisTaskSELambdacTMVA::~AliAnalysisTaskSELambdacTMVA()
 void AliAnalysisTaskSELambdacTMVA::Init()
 {
 	//
-	// Initialization
+	/// Initialization
 	//
 
 	if (fDebug > 1) printf("AnalysisTaskSELambdac::Init() \n");
@@ -370,7 +375,7 @@ void AliAnalysisTaskSELambdacTMVA::Init()
 void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 {
 	//
-	// Create the output container
+	/// Create the output container
 	//
 	
 	if (fDebug > 1) printf("AnalysisTaskSELambdac::UserCreateOutputObjects() \n");
@@ -760,8 +765,8 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 {
 	//
-	// Execute analysis for current event:
-	// heavy flavor candidates association to MC truth
+	/// Execute analysis for current event:
+	/// heavy flavor candidates association to MC truth
 	//
 	AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 	//tmp
@@ -1038,7 +1043,7 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 void AliAnalysisTaskSELambdacTMVA::Terminate(Option_t */*option*/)
 {
 	//
-	// Terminate analysis
+	/// Terminate analysis
 	//
 	
 	if (fDebug > 1) printf("AnalysisTaskSELambdac: Terminate() \n");
@@ -1062,7 +1067,7 @@ void AliAnalysisTaskSELambdacTMVA::Terminate(Option_t */*option*/)
 Int_t AliAnalysisTaskSELambdacTMVA::MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const{
 
 	//
-	// check if the candidate is a Lambdac decaying in pKpi or in the resonant channels
+	/// check if the candidate is a Lambdac decaying in pKpi or in the resonant channels
 	//
 	
 	Int_t lambdacLab[3]={0,0,0};
@@ -1107,9 +1112,9 @@ Int_t AliAnalysisTaskSELambdacTMVA::MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,
 Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC, Bool_t &IsInAcc) const {
 	
 	// 
-	// return value of Lc resonant channel, from AOD MC particle
-	// Also check whether Lc daughters are in acceptance
-	// 0=not Lc, 1=non resonant Lc, 2=via L(1520) + pi, 3=via K* + p, 4=via Delta++ + K  
+	/// return value of Lc resonant channel, from AOD MC particle
+	/// Also check whether Lc daughters are in acceptance
+	/// 0=not Lc, 1=non resonant Lc, 2=via L(1520) + pi, 3=via K* + p, 4=via Delta++ + K
 	//
 
 	Int_t numberOfLambdac=0;
@@ -1271,8 +1276,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 void AliAnalysisTaskSELambdacTMVA::SetIsLcGen(AliAODMCParticle *mcPart, TClonesArray *arrayMC) {
 
 	//
-	//Set fIsLc from AliAODMCParticle
-	//fIsLc 0 = not Lc from quark, 1 = Lc from c, 2 = Lc from b
+	/// Set fIsLc from AliAODMCParticle
+	/// fIsLc 0 = not Lc from quark, 1 = Lc from c, 2 = Lc from b
 	//
 
 	fIsLc=0;
@@ -1302,9 +1307,9 @@ void AliAnalysisTaskSELambdacTMVA::SetIsLcReco(AliAODRecoDecayHF3Prong *part,
 		TClonesArray *arrayMC) {
 
 	//
-	// function that sets fIsLc and fIsLcResonant, from reconstructed 3 prong decay
-	// fIsLc - 0 = not Lc,  1 = Lc from c, 2 = Lc from b
-	// fIsLcResonant - 1= Non Resonant, 2=Lc->L1520+p, 3=Lc->K*+pi, 4=Lc->Delta+K
+	/// function that sets fIsLc and fIsLcResonant, from reconstructed 3 prong decay
+	/// fIsLc - 0 = not Lc,  1 = Lc from c, 2 = Lc from b
+	/// fIsLcResonant - 1= Non Resonant, 2=Lc->L1520+p, 3=Lc->K*+pi, 4=Lc->Delta+K
 	//
 
 	Int_t labDp=-1;
@@ -1336,7 +1341,7 @@ void AliAnalysisTaskSELambdacTMVA::SetIsLcReco(AliAODRecoDecayHF3Prong *part,
 //---------------------------
 
 void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDecayHF3Prong *d, TClonesArray *arrayMC, Int_t selection, Int_t selectionProb) {
-	//fill mass hists
+	/// fill mass hists
 	Int_t IsInjected = -1;
 	if(fReadMC) {
 		AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
@@ -1385,7 +1390,7 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 		}
 	}
 	//Bkg
-	if(!fReadMC || (fIsLc==0 && IsInjected==0)) { //data or non-injected background
+	if(!fReadMC || (fIsLc==0 && (IsInjected==0 || fSyst ==0))) { //data or non-injected background or pp background
 		//MC PID
 		if(fReadMC) fhMCmassLcPt->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
 		//Real PID
@@ -1411,7 +1416,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 																							TClonesArray *arrayMC, Int_t selection)
 {
 	//
-	// Function to fill NTuple with candidate's variables
+	/// Function to fill NTuple with candidate's variables
 	//
 
 	Bool_t IsInjected   = -1;
@@ -1424,7 +1429,7 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	}
 	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
 	if(fIsLc==2) IsLcfromLb=kTRUE;
-	if(fReadMC && IsInjected && !IsLc) return; //dont fill if injected bkg
+	if(fReadMC && IsInjected && !IsLc && fSyst >=1 ) return; //dont fill if injected bkg, pPb or PbPb
 
 	Double_t invMasspKpi=-1.;
 	Double_t invMasspiKp=-1.;
@@ -1552,8 +1557,8 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 void AliAnalysisTaskSELambdacTMVA::FillEffHists(Int_t kStep) {
 	
 	//
-	// Fill histograms (pt, pt vs eta, pt vs y, pt vs phi with 
-	// candidates passing each step of the analysis
+	/// Fill histograms (pt, pt vs eta, pt vs y, pt vs phi with
+	/// candidates passing each step of the analysis
 	//
 
 	//fill according to kStep - hArray[nSteps]
@@ -1639,7 +1644,7 @@ void AliAnalysisTaskSELambdacTMVA::FillEffHists(Int_t kStep) {
 Bool_t AliAnalysisTaskSELambdacTMVA::IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const{
 
 	//
-	// Apply MC PID
+	/// Apply MC PID
 	// 
 
 	Int_t lab[3]={0,0,0},pdgs[3]={0,0,0};
@@ -1660,7 +1665,7 @@ Bool_t AliAnalysisTaskSELambdacTMVA::IspKpiMC(AliAODRecoDecayHF3Prong *d,TClones
 Bool_t AliAnalysisTaskSELambdacTMVA::IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const{
 
 	//
-	// Apply MC PID
+	/// Apply MC PID
 	//
 
 	Int_t lab[3]={0,0,0},pdgs[3]={0,0,0};
