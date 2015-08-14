@@ -1,4 +1,4 @@
-/* Macro designed for use with the AliAnalysisTaskDptDptCorrelations2 task.
+/* Macro designed for use with the AliAnalysisTaskDptDptCorrelations task.
    Author: Prabhat Pujahari & Claude Pruneau, Wayne State
    system:           0 -- PbPb                 1 -- pPb
    singlesOnly:      0 -- full correlations    1 -- singles only
@@ -7,10 +7,10 @@
    chargeSet:        0: ++    1: +-    2: -+    3: --
 */
 /////////////////////////////////////////////////////////////////////////////////
-AliAnalysisTaskDptDptCorrelations2 *AddTaskDptDptCorr_PbPb
+AliAnalysisTaskDptDptCorrelations *AddTaskDptDptCorr_PbPb
 (int    system                  = 0, 
- int    singlesOnly             = 0,
- int    useWeights              = 1, 
+ int    singlesOnly             = 1,
+ int    useWeights              = 0, 
  int    centralityMethod        = 4, 
  int    chargeSet               = 1,
  double zMin                    = -5.0, //vertz sys
@@ -117,7 +117,7 @@ AliAnalysisTaskDptDptCorrelations2 *AddTaskDptDptCorr_PbPb
   int iTask = 0; // task counter
   AliAnalysisDataContainer *taskInputContainer;
   AliAnalysisDataContainer *taskOutputContainer;
-  AliAnalysisTaskDptDptCorrelations2* task;
+  AliAnalysisTaskDptDptCorrelations* task;
   
   for (int iCentrality=0; iCentrality < nCentrality; ++iCentrality)
     {
@@ -206,7 +206,7 @@ AliAnalysisTaskDptDptCorrelations2 *AddTaskDptDptCorr_PbPb
             }
           }  
         }
-      task = new  AliAnalysisTaskDptDptCorrelations2(taskName);
+      task = new  AliAnalysisTaskDptDptCorrelations(taskName);
       //configure my task
       task->SetDebugLevel(          debugLevel      ); 
       task->SetSameFilter(          sameFilter      );
