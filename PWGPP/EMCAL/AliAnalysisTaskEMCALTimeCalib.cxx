@@ -654,13 +654,13 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       fhTimeVsBC->Fill(1.*BunchCrossNumber,hkdtime-timeBCoffset);
       if(isHighGain==kTRUE){
 	if(fhAllAverageBC[nBC]!=0) {//comming from file after the first iteration
-	  offset = fhAllAverageBC[nBC]->GetBinContent(absId+1);//channel absId=0 has histogram bin=1
+	  offset = (Float_t)(fhAllAverageBC[nBC]->GetBinContent(absId+1));//channel absId=0 has histogram bin=1
 	} else if(fReferenceFileName.Length()!=0){//protection against missing reference histogram
 	  AliFatal(Form("Reference histogram for BC%d not properly loaded",nBC));
 	}
       } else {
 	if(fhAllAverageLGBC[nBC]!=0) {//comming from file after the first iteration
-	  offset = fhAllAverageLGBC[nBC]->GetBinContent(absId+1);//channel absId=0 has histogram bin=1
+	  offset = (Float_t)(fhAllAverageLGBC[nBC]->GetBinContent(absId+1));//channel absId=0 has histogram bin=1
 	} else if(fReferenceFileName.Length()!=0){//protection against missing reference histogram
 	  AliFatal(Form("Reference LG histogram for BC%d not properly loaded",nBC));
 	}
