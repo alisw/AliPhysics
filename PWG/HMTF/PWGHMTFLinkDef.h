@@ -5,5 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskHMTFMC+;
+#pragma link C++ class AliAnalysisTaskHMTFMCMultEst+;
 
 #endif
