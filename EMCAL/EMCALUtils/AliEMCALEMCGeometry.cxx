@@ -34,11 +34,11 @@ const Char_t*   AliEMCALEMCGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE12S
 
 AliEMCALEMCGeometry::AliEMCALEMCGeometry() 
   : TNamed(),
-    fGeoName(0),fEMCSMSystem(0x0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
+    fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
     fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
     fShellThickness(0.),fZLength(0.),fDCALInnerEdge(0.),fDCALPhiMin(0),fDCALPhiMax(0),fEMCALPhiMax(0),
     fDCALStandardPhiMax(0),fDCALInnerExtandedEta(0),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
-    fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
+    fEMCSMSystem(0x0),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fPhiSuperModule(0),fNPhiSuperModule(0),
     fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
     fTrd1Angle(0.),f2Trd1Dx2(0.),fPhiGapForSM(0.),fKey110DEG(0),fnSupModInDCAL(0),fPhiBoundariesOfSM(0),
@@ -63,11 +63,11 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
 AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title,
                                          const Text_t* mcname, const Text_t* mctitle ) :
   TNamed(name,title),
-    fGeoName(0),fEMCSMSystem(0x0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
+    fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
     fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
     fShellThickness(0.),fZLength(0.),fDCALInnerEdge(0.),fDCALPhiMin(0),fDCALPhiMax(0),fEMCALPhiMax(0),
     fDCALStandardPhiMax(0),fDCALInnerExtandedEta(0),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
-    fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
+    fEMCSMSystem(0x0),fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fPhiSuperModule(0),fNPhiSuperModule(0),
     fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
     fTrd1Angle(0.),f2Trd1Dx2(0.),fPhiGapForSM(0.),fKey110DEG(0),fnSupModInDCAL(0),fPhiBoundariesOfSM(0),
@@ -95,7 +95,6 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
 AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
   : TNamed(geom),
     fGeoName(geom.fGeoName),
-    fEMCSMSystem(geom.fEMCSMSystem),
     fArrayOpts(geom.fArrayOpts),
     fNAdditionalOpts(geom.fNAdditionalOpts),
     fECPbRadThickness(geom.fECPbRadThickness),
@@ -118,6 +117,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fNPhi(geom.fNPhi),
     fSampling(geom.fSampling),
     fNumberOfSuperModules(geom.fNumberOfSuperModules),
+    fEMCSMSystem(new Int_t[fNumberOfSuperModules]),
     fFrontSteelStrip(geom.fFrontSteelStrip),
     fLateralSteelStrip(geom.fLateralSteelStrip),
     fPassiveScintThick(geom.fPassiveScintThick),
@@ -161,6 +161,8 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fTubsTurnAngle(geom.fTubsTurnAngle)
 {
   //copy ctor
+  for(Int_t i=0;i<fNumberOfSuperModules;i++)
+    fEMCSMSystem[i] = geom.fEMCSMSystem[i];
   fParSM[0]=geom.fParSM[0]; 
   fParSM[1]=geom.fParSM[1]; 
   fParSM[2]=geom.fParSM[2];
@@ -174,7 +176,11 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
 //______________________________________________________________________
 AliEMCALEMCGeometry::~AliEMCALEMCGeometry(void){
     // dtor
- delete fEMCSMSystem;
+  delete[] fEMCSMSystem; // was created with new[], note the brackets
+  // TODO, FIXME Hans, Aug 2015: Shouldn't one add
+  // if(fArrayOpts){fArrayOpts->Delete();delete fArrayOpts;}
+  // End Hans, Aug 2015
+
 }
 
 //______________________________________________________________________
@@ -338,8 +344,11 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
     }
     CheckAdditionalOptions();	
   }
-
-   fEMCSMSystem = new Int_t[fNumberOfSuperModules];
+  if(fEMCSMSystem)delete[] fEMCSMSystem;
+  fEMCSMSystem = new Int_t[fNumberOfSuperModules];
+  for(Int_t i=0;i<fNumberOfSuperModules;i++)
+    fEMCSMSystem[i]=kNotExistent;
+  
    Int_t iSM = 0;
 
  // BASIC EMCAL SM
@@ -552,6 +561,10 @@ void AliEMCALEMCGeometry::CheckAdditionalOptions()
   // EMCAL to run
   // Dec 27,2006
   // adeed allILOSS= and allIHADR= for MIP investigation
+  // TODO, FIXME Hans, Aug 2015: Shouldn't one add
+  // if(fArrayOpts){fArrayOpts->Delete();delete fArrayOpts;}
+  // This function is called twice in the Init()
+  // End Hans, Aug 2015
   fArrayOpts = new TObjArray;
   Int_t nopt = ParseString(fGeoName, *fArrayOpts);
   if(nopt==1) { // no aditional option(s)

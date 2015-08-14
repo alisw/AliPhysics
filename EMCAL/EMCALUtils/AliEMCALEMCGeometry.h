@@ -70,7 +70,7 @@ class AliEMCALShishKebabTrd1Module;
 
 class AliEMCALEMCGeometry : public TNamed {
 public:
-  enum fEMCSMType { kEMCAL_Standard = 0, kEMCAL_Half = 1, kEMCAL_3rd = 2, kDCAL_Standard = 3, kDCAL_Ext= 4 }; // possible SM Type
+  enum fEMCSMType { kNotExistent = -1, kEMCAL_Standard = 0, kEMCAL_Half = 1, kEMCAL_3rd = 2, kDCAL_Standard = 3, kDCAL_Ext= 4 }; // possible SM Type
   AliEMCALEMCGeometry(); // default ctor only for internal usage (singleton)
   AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom);
   // ctor only for internal usage (singleton)
@@ -101,7 +101,8 @@ public:
   //
   
   TString GetGeoName() const {return fGeoName;}
-  Int_t * GetEMCSystem() const {return fEMCSMSystem;}
+  const Int_t *GetEMCSystem() const {return fEMCSMSystem;}
+  Int_t * GetEMCSystem() {return fEMCSMSystem;}
   const Char_t* GetNameOfEMCALEnvelope() const { const Char_t* env = "XEN1"; return env ;}
   Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
   Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
@@ -160,8 +161,8 @@ public:
   Double_t GetPhiCenterOfSM(Int_t nsupmod) const;
   Double_t GetPhiCenterOfSMSec(Int_t nsupmod) const;
   Float_t  GetSuperModulesPar(Int_t ipar) const {return fParSM[ipar];}
-  Int_t    GetSMType(Int_t nSupMod)           const { if( nSupMod > GetNumberOfSuperModules() ) return -1;
-                                                      return fEMCSMSystem[nSupMod]		     ; }
+  Int_t    GetSMType(Int_t nSupMod)  const { if( nSupMod > GetNumberOfSuperModules() ) return kNotExistent;
+                                             return fEMCSMSystem[nSupMod];                                 }
   //
   Bool_t   GetPhiBoundariesOfSM   (Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const;
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
@@ -216,7 +217,6 @@ private:
   // Member data
 
   TString fGeoName;                     //geometry name
-  Int_t   *fEMCSMSystem;		// geometry structure
 
   TObjArray *fArrayOpts;                //! array of geometry options
   const char *fkAdditionalOpts[6];  //! some additional options for the geometry type and name
@@ -248,6 +248,7 @@ private:
 
   // Shish-kebab option - 23-aug-04 by PAI; COMPACT, TWIST, TRD1 and TRD2
   Int_t   fNumberOfSuperModules;         // default is 12 = 6 * 2 
+  Int_t   *fEMCSMSystem;		 //[fNumberOfSuperModules] geometry structure
   Float_t fFrontSteelStrip;              // 13-may-05
   Float_t fLateralSteelStrip;            // 13-may-05
   Float_t fPassiveScintThick;            // 13-may-05
