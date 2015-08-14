@@ -220,6 +220,7 @@ void AliAnalysisTaskEmcalJetTagger::Init(){
    Double_t phiMin1 = cont1->GetJetPhiMin(), phiMax1 = cont1->GetJetPhiMax();
    Double_t phiMin2 = cont2->GetJetPhiMin(), phiMax2 = cont2->GetJetPhiMax();
    Bool_t isZeroTwoPi1 = kFALSE;
+   //check only one side of phi, since the upper bound is not well defined
    if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
    Bool_t isZeroTwoPi2 = kFALSE;
    if(phiMin2 > -1.e-6 && phiMin2 < 1.e-6) isZeroTwoPi2 = kTRUE;
