@@ -27,7 +27,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fMinFractionShared(0),
   fUseSumw2(0),
   fMatchingDone(0),
-  fTypeAcc(0),
+  fTypeAcc(3),
   fMaxDist(0.3),
   fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
