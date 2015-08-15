@@ -21,7 +21,7 @@ AliAnalysisTaskHMTFMCMultEst *AddTaskHMTFMCMultEst() {
     "runconditions",
     TList::Class(),
     AliAnalysisManager::kParamContainer,  // important, apparently...
-    Form("%s:MultEstimators", mgr->GetCommonFileName()))
+    Form("%s:MultEstimators", mgr->GetCommonFileName()));
   AliAnalysisTaskHMTFMCMultEst *multEstTask = new AliAnalysisTaskHMTFMCMultEst("TaskHMTFMCMultEst");
   if (!multEstTask) {
       Error("CreateTasks", "Failed to add task!");
