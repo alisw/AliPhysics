@@ -167,7 +167,8 @@ void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray * digits) const
   // returns histogram of error types
 
   Int_t relId[4], absId=-1;
-  Int_t iDigit = 0;
+  Int_t iDigit = digits->GetEntriesFast(); 
+  // Int_t iDigit = 0;
   while (fRawStream->Next()) {
     for (Int_t iPad=0; iPad<fRawStream->GetNPads(); iPad++) {
       Float_t charge = fRawStream->GetChargeArray()[iPad];

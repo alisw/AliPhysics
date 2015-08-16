@@ -167,7 +167,6 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
 {
   //Makes the job.
   //TClonesArray *digits, *tmpDigLG and raw data fitter should be provided by calling function.
-
   Int_t iDigit=0 ;
   Int_t relId[4], absId=-1, caloFlag=-1;
   
