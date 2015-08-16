@@ -60,7 +60,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kDENtypes = 179,// was 104
   };
 
-  static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
+  static const Int_t fKbinsT   = 6;// Set fKstep as well !!!!
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
   static const Int_t fEDbins   = 4;
   static const Int_t fCentBins = 10;// 0-50%
