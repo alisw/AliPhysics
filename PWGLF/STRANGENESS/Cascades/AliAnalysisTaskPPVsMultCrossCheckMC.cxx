@@ -207,6 +207,11 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     Int_t lNPtBins = 3000; //10MeV/c precision
     Double_t lMaxPt = 30.0;
     
+    //Settings for charged particle counters (integers!)
+    Int_t lNNchBins = 1000;
+    Double_t lLowNchBound  = -0.5;
+    Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
+    
     //Main Output: Histograms
     if(! fHistV0M_DataSelection ) {
         fHistV0M_DataSelection = new TH1F("fHistV0M_DataSelection","",100,0,100);
@@ -219,12 +224,12 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
 
     //Correlation between mid-rapidity and forward
     if(! fHistV0MVsMidRapidityTrue ) {
-        fHistV0MVsMidRapidityTrue = new TH2F("fHistV0MVsMidRapidityTrue","",100,0,100,1000,0,1000);
+        fHistV0MVsMidRapidityTrue = new TH2F("fHistV0MVsMidRapidityTrue","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
         fListHist->Add(fHistV0MVsMidRapidityTrue);
     }
     //Correlation between mid-rapidity and forward
     if(! fHistV0MTrueVsMidRapidityTrue ) {
-        fHistV0MTrueVsMidRapidityTrue = new TH2F("fHistV0MTrueVsMidRapidityTrue","",1000,0,1000,1000,0,1000);
+        fHistV0MTrueVsMidRapidityTrue = new TH2F("fHistV0MTrueVsMidRapidityTrue","",lNNchBins,lLowNchBound,lHighNchBound,lNNchBins,lLowNchBound,lHighNchBound);
         fListHist->Add(fHistV0MTrueVsMidRapidityTrue);
     }
     
@@ -271,19 +276,19 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //2-Dimensional Histograms with True V0M Multiplicity
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MTrue_Generated[ih] ) {
-            fHistPtVsV0MTrue_Generated[ih] = new TH2F(Form("fHistPtVsV0MTrue_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,1000,0,1000);
+            fHistPtVsV0MTrue_Generated[ih] = new TH2F(Form("fHistPtVsV0MTrue_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_Generated[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MTrue_DataSelection[ih] ) {
-            fHistPtVsV0MTrue_DataSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,1000,0,1000);
+            fHistPtVsV0MTrue_DataSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_DataSelection[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MTrue_MCSelection[ih] ) {
-            fHistPtVsV0MTrue_MCSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,1000,0,1000);
+            fHistPtVsV0MTrue_MCSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_MCSelection[ih]);
         }
     }
