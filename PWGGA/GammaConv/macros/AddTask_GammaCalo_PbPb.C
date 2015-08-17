@@ -121,7 +121,12 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 5;
+	if (trainConfig == 4 || trainConfig == 5 || trainConfig == 6 ||
+		trainConfig == 7 || trainConfig == 8 || trainConfig == 9 ||
+		trainConfig == 10 || trainConfig == 11) 
+		numberOfCuts = 1;
 
+	
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *clusterCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
@@ -147,6 +152,22 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
         eventCutArray[ 2] = "52600013"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[ 2] = "0163103100000000"; // 20-60%
         eventCutArray[ 3] = "54800013"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[ 3] = "0163103100000000"; // 40-80%
         eventCutArray[ 4] = "52500013"; clusterCutArray[4] = "1111100050032230000"; mesonCutArray[ 4] = "0163103100000000"; // 20-50%
+	} else if (trainConfig == 4){ // EMCAL clusters	
+		eventCutArray[ 0] = "60100013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 0-5%
+	} else if (trainConfig == 5){ // EMCAL clusters	
+		eventCutArray[ 0] = "61200013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 5-10%
+	} else if (trainConfig == 6){ // EMCAL clusters	
+		eventCutArray[ 0] = "50100013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 0-10%
+	} else if (trainConfig == 7){ // EMCAL clusters	
+		eventCutArray[ 0] = "51200013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 10-20%
+	} else if (trainConfig == 8){ // EMCAL clusters	
+		eventCutArray[ 0] = "52400013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 20-40%
+	} else if (trainConfig == 9){ // EMCAL clusters	
+		eventCutArray[ 0] = "52500013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 20-50%
+	} else if (trainConfig == 10){ // EMCAL clusters	
+		eventCutArray[ 0] = "54600013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 40-60%
+	} else if (trainConfig == 11){ // EMCAL clusters	
+		eventCutArray[ 0] = "56800013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[ 0] = "0163103100000000"; // 60-80%		
 	} else if (trainConfig == 31){ // PHOS clusters
 		eventCutArray[ 0] = "60100013"; clusterCutArray[0] = "2444400040033200000"; mesonCutArray[ 0] = "0163103100000000"; // 0-5%
 		eventCutArray[ 1] = "61200013"; clusterCutArray[1] = "2444400040033200000"; mesonCutArray[ 1] = "0163103100000000"; // 5-10%
