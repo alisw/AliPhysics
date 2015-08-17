@@ -33,6 +33,9 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliTPCcalibDB.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliTPCPreprocessorOffline.h"
+#include "AliTPCcalibTime.h"
 
 #include "TMath.h"
 #include "TObjString.h" 
@@ -40,6 +43,8 @@
 #include <cstdlib>
 #include <cerrno>
 #include <sys/time.h>
+
+class AliTPCcalibTime;
 
 using namespace std;
 
@@ -55,7 +60,8 @@ AliHLTTPCClusterTransformationPrepareComponent::AliHLTTPCClusterTransformationPr
   fMaxInitSec(-1),
   fTmpFastTransformObject(NULL),
   fAsyncProcessor(),
-  fAsyncProcessorQueueDepth(0)
+  fAsyncProcessorQueueDepth(0),
+  fNewCalibObject(NULL)
   {}
 
 AliHLTTPCClusterTransformationPrepareComponent::~AliHLTTPCClusterTransformationPrepareComponent()
@@ -96,25 +102,60 @@ AliHLTComponent* AliHLTTPCClusterTransformationPrepareComponent::Spawn() {
 
 AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::GenerateFastTransformObject()
 {
-	AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
+	AliTPCcalibDB *calib=AliTPCcalibDB::Instance();
 	if(!calib){
 		HLTError("AliTPCcalibDB does not exist");
 		return(NULL);
-    }
+	}
+	
+	if (fNewCalibObject)
+	{
+		AliTPCcalibTime* timeObj = dynamic_cast<AliTPCcalibTime*>(fNewCalibObject->GetData());
+		if (timeObj == NULL)
+		{
+			HLTError("Error obtaining AliTPCcalibTime Object from received calibration object, cannot reinitialize transformation map");
+			delete fNewCalibObject;
+			fNewCalibObject = NULL;
+		}
+		else
+		{
+			AliCDBManager* cdbManager = AliCDBManager::Instance();
+			
+			static AliTPCPreprocessorOffline* preprocessor = new AliTPCPreprocessorOffline;
+			fprintf(stderr, "Running preprocessor on calibration object\n");
+			preprocessor->CalibTimeVdrift(timeObj, GetRunNo(), GetRunNo());
+			preprocessor->CreateDriftCDBentryObject(GetRunNo(), GetRunNo());
+			cdbManager->PromptCacheEntry("TPC/Calib/TimeDrift", preprocessor->GetDriftCDBentry());
+			preprocessor->TakeOwnershipDriftCDBEntry();
+			//TODO: Memory Leaks: We can NOT delete fNewCalibObject. The CDBEntry created by the Preprocessor contains a TObjArray that links to some data in fNewCalibObject.
+			//We have no control over where in AliRoot someone queries that CDBEntry and we do not know when it is no longer needed!
+			fNewCalibObject = NULL;
+		}
+	}
+	else
+	{
+		HLTImportant("No updated calibration data available, creating transformation map with last calibration data available.");
+	}
 
-    calib->SetRun(GetRunNo());
-    calib->UpdateRunInformations(GetRunNo());
-  
-    TStopwatch timer;
-    timer.Start();
-    int err = fgTransform.Init( GetBz(), GetTimeStamp() );
+	calib->SetRun(GetRunNo());
+	calib->UpdateRunInformations(GetRunNo());
+	calib->Update();
 
-    timer.Stop();
-    cout<<"\n\n Creation of fast transformation map: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
+	TStopwatch timer;
+	timer.Start();
+	//Workaround for offline simulation. In offline simulation there is one shared static instance of AliHLTTPCFastTransform, so we have to reset the sector borders every time.
+	if (fMinInitSec != -1 && fMaxInitSec != -1)
+	{
+		fgTransform.SetInitSec(fMinInitSec, fMaxInitSec);
+	}
+	int err = fgTransform.Init( GetBz(), GetTimeStamp() );
+
+	timer.Stop();
+	cout<<"\n\n Creation of fast transformation map: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
    
 	AliHLTTPCFastTransformObject* obj = new AliHLTTPCFastTransformObject;
 	
-    fgTransform.GetFastTransformNonConst().WriteToObject(*obj);
+	fgTransform.GetFastTransformNonConst().WriteToObject(*obj);
 	fgTransform.DeInit();
 	
 	return(obj);
@@ -232,21 +273,49 @@ Int_t AliHLTTPCClusterTransformationPrepareComponent::DoEvent(const AliHLTCompon
 	// -- Only use data event
 	if (IsDataEvent())
 	{
-		int new_calib_data = 0;
-		for ( const TObject *iter = GetFirstInputObject(); iter != NULL; iter = GetNextInputObject() )
+		if (fNewCalibObject == NULL)
 		{
-			new_calib_data++;
-		}
-		
-		if (new_calib_data)
-		{
-			HLTImportant("Received new calibration data (%d objects), regenerating transformation map", new_calib_data);
-			//Workaround for offline simulation. In offline simulation there is one shared static instance of AliHLTTPCFastTransform, so we have to reset the sector borders every time.
-			if (fMinInitSec != -1 && fMaxInitSec != -1)
+			for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeTObject); iter != NULL; iter = GetNextInputObject() )
 			{
-				fgTransform.SetInitSec(fMinInitSec, fMaxInitSec);
+				TObjArray* tmpArray = (TObjArray*) dynamic_cast<const TObjArray*>(iter);
+				AliAnalysisDataContainer* tmpContainer = tmpArray ? NULL : (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>(iter);
+				if (tmpContainer)
+				{
+					RemoveInputObjectFromCleanupList(tmpContainer);
+				}
+				else if (tmpArray)
+				{
+					for (int i = 0;i <= tmpArray->GetLast();i++)
+					{
+						tmpContainer = (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>((*tmpArray)[i]);
+						if (tmpContainer != NULL && strcmp(tmpContainer->GetName(), "calibTime") == 0)
+						{
+							RemoveInputObjectFromCleanupList(tmpArray);
+							tmpArray->Remove(tmpContainer);
+							break;
+						}
+						else
+						{
+							tmpContainer = NULL;
+						}
+					}
+				}
+				
+				if (tmpContainer)
+				{
+					fNewCalibObject = tmpContainer;
+					break;
+				}
+				else
+				{
+					HLTImportant("Transformation Prepare component received object that is no AliAnalysisDataContainer!");
+				}
 			}
-			fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCClusterTransformationPrepareComponent::AsyncGenerateFastTransformObject, NULL);
+			
+			if (fNewCalibObject)
+			{
+				fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCClusterTransformationPrepareComponent::AsyncGenerateFastTransformObject, NULL);
+			}
 		}
 		
 		//If a new transform map is available from an async creation task, we ship the newest one.

@@ -24,6 +24,7 @@
 
 class AliHLTTPCClusterTransformation;
 class AliHLTTPCFastTransformObject;
+class AliAnalysisDataContainer;
 
 /**
  * @class AliHLTTPCClusterTransformationPrepareComponent
@@ -92,6 +93,8 @@ private:
   
   AliHLTAsyncMemberProcessor<AliHLTTPCClusterTransformationPrepareComponent> fAsyncProcessor;
   int fAsyncProcessorQueueDepth;
+  
+  AliAnalysisDataContainer* fNewCalibObject;
 
   ClassDef(AliHLTTPCClusterTransformationPrepareComponent, 0)
 };

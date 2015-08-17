@@ -173,6 +173,9 @@ int AliHLTTPCClusterTransformationMergerComponent::DoEvent(const AliHLTComponent
 			HLTImportant("Cluster tranformation map merged from %d inputs", nInputs);
 		}
 		PushBack(dynamic_cast<TObject*>(returnObj), GetDataType());
+		char tmpType[100];
+		GetDataType().PrintDataType(tmpType, 100);
+		HLTImportant("Merger Component pushing data type %s (Class name %s)", tmpType, returnObj->ClassName());
 		if (!fCumulative) delete returnObj;
 	}
 	mergeList.Delete();
