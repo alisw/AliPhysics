@@ -40,7 +40,6 @@ class AliCFManager;
 class AliRDHFCuts;
 class AliHFsubtractBFDcuts;
 class TH1F;
-class TH3F;
 
 class AliCFTaskVertexingHFCutVarFDSub: public AliAnalysisTaskSE {
 public:
@@ -103,9 +102,13 @@ public:
   Int_t    GetDecayChannel () {return fDecayChannel;}
   void     SetUseWeight(Bool_t useWeight){fUseWeight=useWeight;}
   Bool_t   GetUseWeight() const {return fUseWeight;}
+  void     SetUseMotherPtWeight(Bool_t useMotherPtWeight){fUseMotherPtWeight=useMotherPtWeight;}
+  Bool_t   GetUseMotherPtWeight() const {return fUseMotherPtWeight;}
   Double_t GetWeight(Float_t pt);
   Double_t dNdptFit(Float_t pt, Double_t* par);
   Double_t GetPtWeightFromHistogram(Float_t pt);
+  Double_t GetMotherPtWeightFromHistogram(Float_t motherPt);
+  Double_t GetMotherPtFromRecoDecay(AliAODRecoDecayHF* charmCandidate, TClonesArray* mcArray);
 
   void     SetUseFlatPtWeight(Bool_t useWeight){fUseFlatPtWeight=useWeight; fUseWeight=useWeight;}
   Bool_t   GetUseFlatPtWeight() const {return fUseFlatPtWeight;}
@@ -210,6 +213,7 @@ public:
   void SetPtWeightsFromFONLL7overLHC13e2fix();
   void SetPtWeightsFromFONLL5overLHC10f6a();
   void SetPtWeightsFromFONLL5overLHC13d3();
+  void SetMotherPtWeightsFromFONLL5overLHC13d3();
 
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}
@@ -248,9 +252,10 @@ protected:
   Bool_t fAcceptanceUnf;        ///  flag for unfolding before or after cuts.
   AliRDHFCuts* fCuts;            /// cuts
   Bool_t fUseWeight;             /// flag to decide whether to use pt-weights != 1 when filling the container or not
+  Bool_t fUseMotherPtWeight;     /// flag to decide whether to use pt-weights != 1 when filling the container or not
   Double_t fWeight;              /// weight used to fill the container
   Bool_t fUseFlatPtWeight;       /// flag to decide to use a flat pt shape
-  Bool_t fUseZWeight;           // flag to decide whether to use z-vtx weights != 1 when filling the container or not
+  Bool_t fUseZWeight;           /// flag to decide whether to use z-vtx weights != 1 when filling the container or not
   Bool_t fUseNchWeight;         /// flag to decide whether to use Ncharged weights != 1 when filling the container or not
   Bool_t fUseTrackletsWeight;   /// flag to decide whether to use Ncharged weights != 1 when filling the container or not
   Bool_t fUseMultRatioAsWeight; /// flag to use directly the ratio of the distributions (fHistoMCNch) instead of computing it
@@ -267,6 +272,7 @@ protected:
   Int_t fConfiguration; /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
   TF1* fFuncWeight;     /// user-defined function to be used to calculate weights
   TH1F* fHistoPtWeight; /// user-defined histogram to calculate the Pt weights
+  TH1F* fHistoMotherPtWeight; /// user-defined histogram to calculate the Mother Pt weights
   TH1F* fHistoMeasNch;  /// histogram with measured Nch distribution (pp 7 TeV)
   TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
   UInt_t fResonantDecay;  /// resonant deacy channel to be used if the CF should be run on resonant channels only
@@ -287,14 +293,14 @@ protected:
   Bool_t fUseCascadeTaskForLctoV0bachelor;   /// flag to define which task to use for Lc --> K0S+p
   Float_t fCutOnMomConservation; /// cut on momentum conservation
   AliHFsubtractBFDcuts* fObjSpr; /// object for cut variation study
-  THnSparseF* fhSparseCutVar; ///
-  TH3F* fhPtCutVar;           /// Generator level histogram D0 pt, Nprongs of the decay, Mother pt
+  THnSparseF* fTHnAnalysis;   ///
+  THnSparseF* fTHnGenerator;  /// Generator level histogram D0 pt, Nprongs of the decay, Mother pt
   TH1F* fhBptCutVar;          /// B0 pt spectrum
   TList* fListBdecays;        /// List with B hadron decays (unique entries)
   TList* fQAHists;            /// List with QA histograms used to study the B hardon decays
 
-  /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,7); /// class for HF corrections as a function of many variables
+  /// \cond CLASSIMP
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,8); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 
