@@ -15,20 +15,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/////////////////////////////////////////////////////////////////////////////
-/// \class AliHFsubtractBFDcuts
-///                                                                        //
-///  Class for storing and handling D0 meson candidates properties         //
-///  for estimating the feed-down fraction using several sets of cuts      //
-///     Andrea Rossi <andrea.rossi@cern.ch>                                //
-///     Felix Reidt  <felix.reidt@cern.ch>                                 //
-///                                                                        //
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+/// \class AliHFsubtractBFDcuts                                           //
+///                                                                       //
+///  \brief Class for storing and handling D0 meson candidates properties //
+///  for estimating the feed-down fraction using several sets of cuts     //
+///     \author Andrea Rossi <andrea.rossi@cern.ch>                       //
+///     \author Felix Reidt  <felix.reidt@cern.ch>                        //
+///                                                                       //
+////////////////////////////////////////////////////////////////////////////
 #include <vector>
 
 #include "TNamed.h"
 #include "THnSparse.h"
-#include "TH3F.h"
 
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODMCParticle.h"
@@ -48,18 +47,18 @@ public:
 
   void InitHistos();
 
-  void FillGenStep(AliAODMCParticle *dzeroMC,Double_t pt=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
-  THnSparseF* GetSparseData() const {return fCutsData;}
-  THnSparseF* GetSparseMC()   const {return fCutsMC;}
-  TH3F* GetHistoPtMCgen()     const {return fPtMCGenStep;}
+  void FillGenStep(AliAODMCParticle* dzeroMC,Double_t pt=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
+  THnSparseF* GetSparseData() const {return fTHnData;}
+  THnSparseF* GetSparseMC()   const {return fTHnMC;}
+  THnSparseF* GetSparseMCgen()     const {return fTHnGenStep;}
 
-  void SetHistoPtMCgen(TH3F *h){if(fPtMCGenStep)delete fPtMCGenStep;fPtMCGenStep=(TH3F*)h->Clone();return;}
-  void SetSparseData(THnSparseF *h){if(fCutsData)delete fCutsData;fCutsData=(THnSparseF*)h->Clone();return;}
-  void SetSparseMC(THnSparseF *h){if(fCutsMC)delete fCutsMC;fCutsMC=(THnSparseF*)h->Clone();return;}
+  void SetHistoPtMCgen(THnSparseF* h){if(fTHnGenStep)delete fTHnGenStep;fTHnGenStep=(THnSparseF*)h->Clone();return;}
+  void SetSparseData(THnSparseF* h){if(fTHnData)delete fTHnData;fTHnData=(THnSparseF*)h->Clone();return;}
+  void SetSparseMC(THnSparseF* h){if(fTHnMC)delete fTHnMC;fTHnMC=(THnSparseF*)h->Clone();return;}
 
   void SetFillMC (Bool_t fillMC = kTRUE) {fIsMC = fillMC;}
 
-  void FillSparses(AliAODRecoDecayHF2Prong *dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0, AliAODEvent* aodEvent=0x0);
+  void FillSparses(AliAODRecoDecayHF2Prong* dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0, AliAODEvent* aodEvent=0x0);
   TList* GetDecayStrings() { return fDecayStrList; }
   TList* GetQAhists() { return fQAhists; }
 
@@ -73,15 +72,15 @@ private:
   /// counting the prongs of labCurrMother, labCurrExcl is assumed to be a stable particle
   Bool_t IsStable(Int_t labProng) const;       /// Is that prong a stable particle?
   Bool_t IsInAcceptance(Int_t labProng) const; /// Is that prong within the fiducial acceptance
-  AliAODVertex* RecBvtx(TObjArray *tracks) const; /// Reconstruct a secondary vertex with the supplied tracks
+  AliAODVertex* RecBvtx(TObjArray* tracks) const; /// Reconstruct a secondary vertex with the supplied tracks
   Bool_t CheckBhypothesis(Int_t iAODtrack, Bool_t Bprong); /// Method to check Whether the current D0 candidate and the track originate from a B decay
 
   Bool_t      fIsMC;              /// flag for MC/Data
   Bool_t      fCheckAcceptance;   /// flag for checking whether the decay prongs are within acceptance
   Bool_t      fResolveResonances; /// flag resolve resonances in during the prong determination
-  TH3F*       fPtMCGenStep;       //!<! histo with spectrum at generation level
-  THnSparseF* fCutsData;          //!<! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
-  THnSparseF* fCutsMC;            //!<! THnSparse for cut variables (MC at PID level, w/o mass axis)y
+  THnSparseF* fTHnGenStep;        //!<! histo with spectrum at generation level
+  THnSparseF* fTHnData;           //!<! THnSparse for cut variables (data, with inv mass axis), first axis is always mass
+  THnSparseF* fTHnMC;             //!<! THnSparse for cut variables (MC at PID level, w/o mass axis)y
   TList*      fQAhists;           //!<! List with QA histograms
 
   /// Event specific variables
@@ -92,6 +91,7 @@ private:
   AliAODRecoDecayHF2Prong*  fD0Cand;       /// Pointer to the D0 candidate from reconstruction
   AliNeutralTrackParam*     fD0CandParam;  /// Pointer to an AliNeutralTrackParam of the D0 candidata for DCA calculation
   Int_t                     fLabCand;      /// Label of the candidate D0 (charmed hadron in case of a chained decay)
+  Double_t                  fPtCand;       /// pT of the candidate (from MC track, not following decay chain)
   Int_t                     fLabMother;    /// Label of the mother of the candidate D0 (or charmed hadron)
   UInt_t                    fNprongs;      /// Number of prongs, counting the first charmed hadron as one particle (simulation cuts can lead to loss of prongs!)
   UInt_t                    fNprongsInAcc; /// Number of prongs, counting only the particles within acceptance
@@ -102,7 +102,7 @@ private:
   std::vector<Int_t> fDecayProngs;         /// PDG codes of the daughters separated
   TList*             fDecayStrList;        //!<! List with all decay strings
 
-  /// \cond CLASSIMP     
+  /// \cond CLASSIMP
   ClassDef(AliHFsubtractBFDcuts,8);
   /// \endcond
 };
