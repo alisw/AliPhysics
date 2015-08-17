@@ -4969,16 +4969,16 @@ TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
     printf(" > locating minima < \n");
     Double_t x(0), y(0);
     f1->GetMinimumXY(x, y);
-    f1->GetXaxis()->SetTitle("#epsilon{b}");
-    f1->GetXaxis()->SetTitle("#epsilon_{c}");
+    f1->GetXaxis()->SetTitle("#epsilon{c}");
+    f1->GetXaxis()->SetTitle("#epsilon_{b}");
     f1->GetZaxis()->SetTitle("#chi^{2}");
 
     printf(" ===============================================================================\n");
     printf(" > minimal chi2 f(%.8f, %.8f) = %.8f  (i should be ok ... ) \n", x, y, f1->Eval(x, y));
     cout << "  so the probability of finding data at least as imcompatible with " << gPwrtTo << " as the actually" << endl;
     cout << "  observed data is " << TMath::Prob(f1->Eval(x, y), DOF) << endl; 
-    cout << "  minimization parameters: EPSILON_B " << x << endl;
-    cout << "                           EPSILON_C " << y << endl;
+    cout << "  minimization parameters: EPSILON_B " << y << endl;
+    cout << "                           EPSILON_C " << x << endl;
     printf(" ===============================================================================\n");
 
     // pass the p-value by reference and return the function
