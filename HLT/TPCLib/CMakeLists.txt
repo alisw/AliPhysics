@@ -55,6 +55,7 @@ include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCcalib
                     ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                     ${AliRoot_SOURCE_DIR}/TPC/TPCsim
                    )
