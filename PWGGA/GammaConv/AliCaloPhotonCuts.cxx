@@ -2089,6 +2089,8 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		return;
 	}
 
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+
 	switch(fSwitchNonLinearity){
 
 		// Standard NonLinearity kPi0MCv5 for MC and kSDMv5 for data
@@ -2111,14 +2113,22 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
 		// NonLinearity LHC11a ConvCalo
 		case 21:
-			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04123, 1.045, 0.0967998, 219.381, 63.1604, 1.014);
-			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9807, -3.377, -0.8535);
+			if(isMC>0){
+				if(periodName=="LHC12f1a_WSDD"||periodName=="LHC12i3_WSDD") energy *= FunctionNL_kSDM(energy, 0.988958, -2.28252, -3.06604);
+				else if(periodName=="LHC12f1b_WSDD") energy *= FunctionNL_kSDM(energy, 0.987584, -2.15291, -3.03817);
+			}
+//			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04123, 1.045, 0.0967998, 219.381, 63.1604, 1.014);
+//			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9807, -3.377, -0.8535);
 			break;
 
 		// NonLinearity LHC11a Calo
 		case 22:
-			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
-			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772, -3.256, -0.4449);
+			if(isMC>0){
+				if(periodName=="LHC12f1a_WSDD"||periodName=="LHC12i3_WSDD") energy *= FunctionNL_kSDM(2.0*energy, 0.976044, -3.13689, -0.408723);
+				else if(periodName=="LHC12f1b_WSDD") energy *= FunctionNL_kSDM(2.0*energy, 0.986617, -2.43009, -1.55455);
+			}
+//			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
+//			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772, -3.256, -0.4449);
 			break;
 
 		// NonLinearity LHC13 pPb ConvCalo
