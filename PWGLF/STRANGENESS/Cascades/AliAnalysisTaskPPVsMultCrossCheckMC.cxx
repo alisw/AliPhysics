@@ -94,7 +94,8 @@ ClassImp(AliAnalysisTaskPPVsMultCrossCheckMC)
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC()
 : AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
 fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
-fHistV0M_DataSelection(0), fHistV0M_MCSelection(0),
+fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
+fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
 fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
 {
@@ -118,7 +119,8 @@ fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCS
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC(const char *name)
 : AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
 fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
-fHistV0M_DataSelection(0), fHistV0M_MCSelection(0),
+fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
+fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
 fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
 {
