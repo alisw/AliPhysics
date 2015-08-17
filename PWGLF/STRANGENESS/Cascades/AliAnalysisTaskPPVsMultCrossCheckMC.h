@@ -57,6 +57,9 @@ public:
     
     void SetPureMonteCarlo( Bool_t lSet = kTRUE ) { lPureMonteCarlo = lSet; } 
     void SetCheckVtxZMC   ( Bool_t lSet = kTRUE ) { fCheckVtxZMC = lSet;    }
+    void SetAlternateMCSelection ( Bool_t lSet = kTRUE ) { fAlternateMCSelection = lSet; }
+    
+    Double_t GetV0MAmplitude ( AliESDEvent *lInputEvent ) const;
     
 //---------------------------------------------------------------------------------------
 
@@ -76,14 +79,24 @@ private:
     
     //Will attempt to read ESD or not... 
     Bool_t lPureMonteCarlo;
-    Bool_t fCheckVtxZMC; 
+    Bool_t fCheckVtxZMC;
+    Bool_t fAlternateMCSelection; 
     
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1F *fHistV0M_DataSelection; //!
     TH1F *fHistV0M_MCSelection;   //!
+    TH1F *fHistV0MAmplitude_DataSelection; //!
+    TH1F *fHistV0MAmplitude_MCSelection;   //!
+    TH1F *fHistV0MTrue_DataSelection; //!
+    TH1F *fHistV0MTrue_MCSelection;   //!
     
-    TH2F *fHistV0MVsMidRapidityTrue; //!
-    TH2F *fHistV0MTrueVsMidRapidityTrue; //!
+    TH2F *fHistV0MVsMidRapidityTrue_DataSelection; //!
+    TH2F* fHistV0MAmplitudeVsMidRapidityTrue_DataSelection; //!
+    TH2F *fHistV0MTrueVsMidRapidityTrue_DataSelection; //!
+    
+    TH2F *fHistV0MVsMidRapidityTrue_MCSelection; //!
+    TH2F* fHistV0MAmplitudeVsMidRapidityTrue_MCSelection; //!
+    TH2F *fHistV0MTrueVsMidRapidityTrue_MCSelection; //!
     
     //Desired Spectra: pi/K/p/K0/Lambda/Xi/Omega/Phi/K*
     //Data Selection Spectra
@@ -96,6 +109,11 @@ private:
     TH2F *fHistPtVsV0M_Generated[9]; //! 9 spectra
     TH2F *fHistPtVsV0M_DataSelection[9]; //! 9 spectra
     TH2F *fHistPtVsV0M_MCSelection[9];   //! 9 spectra
+    
+    //2-dimensional with V0M Amplitudes
+    TH2F *fHistPtVsV0MAmplitude_Generated[9]; //! 9 spectra
+    TH2F *fHistPtVsV0MAmplitude_DataSelection[9]; //! 9 spectra
+    TH2F *fHistPtVsV0MAmplitude_MCSelection[9];   //! 9 spectra
     
     //2-dimensional with true generated counts in V0M acceptance
     TH2F *fHistPtVsV0MTrue_Generated[9]; //! 9 spectra

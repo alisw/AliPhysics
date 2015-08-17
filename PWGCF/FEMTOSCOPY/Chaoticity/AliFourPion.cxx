@@ -3235,6 +3235,7 @@ void AliFourPion::UserExec(Option_t *)
 		  GetWeight(pVect1, pVect2, weight12, weight12Err);
 		  GetWeight(pVect1, pVect3, weight13, weight13Err);
 		  GetWeight(pVect2, pVect3, weight23, weight23Err);
+		 
 		  
 		  if(sqrt(fabs(weight12*weight13*weight23)) > 1.0) {// weight should never be larger than 1
 		    if(fMbin==0 && bin1==0) {
@@ -4284,6 +4285,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   qLong = fabs(qLong);
   Float_t wd=0, xd=0, yd=0, zd=0;
   //Float_t qinvtemp=GetQinv(track1, track2);
+  
   //
   Int_t q2bin=0;
   if(fq2Binning || fLowMultBinning) q2bin = fEDbin;
@@ -4396,6 +4398,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     Float_t c1 = nCubicInterpolate(3, (Float_t*) farrP2, coord);
     // kT interpolation
     wgt = c0*(1-wd) + c1*wd;
+    
   }
   ////
   

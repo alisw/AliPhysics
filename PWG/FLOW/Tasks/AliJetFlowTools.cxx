@@ -4977,6 +4977,8 @@ TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
     printf(" > minimal chi2 f(%.8f, %.8f) = %.8f  (i should be ok ... ) \n", x, y, f1->Eval(x, y));
     cout << "  so the probability of finding data at least as imcompatible with " << gPwrtTo << " as the actually" << endl;
     cout << "  observed data is " << TMath::Prob(f1->Eval(x, y), DOF) << endl; 
+    cout << "  minimization parameters: EPSILON_B " << x << endl;
+    cout << "                           EPSILON_C " << y << endl;
     printf(" ===============================================================================\n");
 
     // pass the p-value by reference and return the function

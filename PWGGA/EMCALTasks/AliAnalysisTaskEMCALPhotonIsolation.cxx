@@ -1337,6 +1337,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
               iTracks++;
               continue;
          }
+
+         if((track->Pt())<0.2)
+         {
+             iTracks++;
+             continue;
+         }
       //CHECK IF TRACK IS IN BOUNDARIES
     Double_t phiTrack = track->Phi();
     Double_t etaTrack = track->Eta();
@@ -1457,6 +1463,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
               iTracks++;
               continue;
          }
+
+    if((track->Pt())<0.2)
+         {
+             iTracks++;
+             continue;
+         }
       //CHECK IF TRACK IS IN BOUNDARIES
     Double_t phiTrack = track->Phi();
     Double_t etaTrack = track->Eta();
@@ -1515,6 +1527,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
         iTracks++;
         continue;
     }
+
+        if((track->Pt())<0.2)
+         {
+             iTracks++;
+             continue;
+         }
       //CHECK IF TRACK IS IN BOUNDARIES
       Double_t phiTrack = track->Phi();
       Double_t etaTrack = track->Eta();
@@ -1580,6 +1598,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
         continue;
     }
 
+    if((track->Pt())<0.2)
+         {
+             iTracks++;
+             continue;
+         }
     Double_t phiTrack = track->Phi();
     Double_t etaTrack = track->Eta();
       //redefine phi/c.Eta() from the cluster we passed to the function
@@ -1642,6 +1665,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
         continue;
     }
 
+    if((track->Pt())<0.2)
+         {
+             iTracks++;
+             continue;
+         }
+
     Double_t phiTrack = track->Phi();
     Double_t etaTrack = track->Eta();
     Double_t dist2Clust = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiClus, 2));
@@ -1695,6 +1724,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackFullTPC(TLorentzVector c, Do
         iTracks++;
         continue;
     }
+
+    if((track->Pt())<0.2)
+         {
+             iTracks++;
+             continue;
+         }
 
     Double_t phiTrack = track->Phi();
     Double_t etaTrack = track->Eta();
