@@ -9,13 +9,40 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 
-#include "AliMultiplicityEstimators.h"
+#include "AliMultiplicityEstimator.h"
 
 using namespace std;
 
-ClassImp(MultiplicityEstimatorBase)
+ClassImp(AliMultiplicityEstimator)
 
-Int_t pid_enum_to_pdg(Int_t pid_enum) {
+AliMultiplicityEstimator::AliMultiplicityEstimator()
+  : TNamed(), feta_Nch(0), fNch_pT_pid(0), fNchTuple(0),
+    fuseWeights(kTRUE)
+{
+}
+
+AliMultiplicityEstimator::AliMultiplicityEstimator(const char* name, const char* title,
+							   Float_t feta_min_backwards, Float_t feta_max_backwards,
+							   Float_t feta_min_forwards, Float_t feta_max_forwards)
+  : TNamed(name, title), feta_Nch(0), fNch_pT_pid(0), fNchTuple(0),
+    fuseWeights(kTRUE),
+    feta_min_backwards(feta_min_backwards), feta_max_backwards(feta_max_backwards),
+    feta_min_forwards(feta_min_forwards), feta_max_forwards(feta_max_forwards),
+    fbypass_eta_selection(false), festimator_bins(200)
+{
+}
+
+// Constructor for bypassing the eta selection to get the full range
+AliMultiplicityEstimator::AliMultiplicityEstimator(const char* name, const char* title)
+  : TNamed(name, title), feta_Nch(0), fNch_pT_pid(0), fNchTuple(0),
+    fuseWeights(kTRUE),
+    feta_min_backwards(0), feta_max_backwards(0),
+    feta_min_forwards(0), feta_max_forwards(0),
+    fbypass_eta_selection(true), festimator_bins(200)
+{
+}
+
+Int_t AliMultiplicityEstimator::pid_enum_to_pdg(Int_t pid_enum) {
   if (pid_enum == kPROTON) return 2212;
   else if (pid_enum == kANTIPROTON) return -2212;
   else if (pid_enum == kLAMBDA) return 3122;
@@ -33,20 +60,7 @@ Int_t pid_enum_to_pdg(Int_t pid_enum) {
   else return 99999;
 }
 
-
-MultiplicityEstimatorBase::MultiplicityEstimatorBase()
-  : TNamed(), feta_Nch(0), fNch_pT_pid(0), fEventTuple(0),
-    fuseWeights(kTRUE)
-{
-}
-
-MultiplicityEstimatorBase::MultiplicityEstimatorBase(const char* name, const char* title)
-  : TNamed(name, title), feta_Nch(0), fNch_pT_pid(0), fEventTuple(0),
-    fuseWeights(kTRUE)
-{
-}
-
-void MultiplicityEstimatorBase::RegisterHistograms(TList *outputList){
+void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
   std::cout << "Registering Histogram: " << GetName() << std::endl;
   // Put all histograms of one estimator in their own sub-list
   TList *curr_est = new TList();
@@ -98,7 +112,7 @@ void MultiplicityEstimatorBase::RegisterHistograms(TList *outputList){
 			  sizeof(pt_bin_edges)/sizeof(*pt_bin_edges) - 1, pt_bin_edges,
 			  kNPID, pid_bin_edges);
   fNch_pT_pid->GetXaxis()->SetTitle("Multiplicity");
-  fNch_pT_pid->GetYaxis()->SetTitle("p_{T} [GeV]}");
+  fNch_pT_pid->GetYaxis()->SetTitle("p_{T} [GeV]");
   fNch_pT_pid->GetZaxis()->SetTitle("PID");
   // Name bins with pdg code:
   for (Int_t ipid = 0; ipid < kNPID; ipid++) {
@@ -108,79 +122,20 @@ void MultiplicityEstimatorBase::RegisterHistograms(TList *outputList){
   fNch_pT_pid->SetDirectory(0);
   curr_est->Add(fNch_pT_pid);
 
-
   //////////////////////////////////////////////////////////////////////
   // Objects to be filled on the event loop (ie not in the track loop //
   //////////////////////////////////////////////////////////////////////
-  fEventTuple = new TNtuple("fEventTuple", "N_{ch}^{est}, ev_weight, nMPI", "nch:ev_weight:nmpi");
-  curr_est->Add(fEventTuple);
+  fNchTuple = new TNtuple("fEventTuple", "N_{ch}^{est}", "nch");
+  curr_est->Add(fNchTuple);
 }
 
-void MultiplicityEstimatorBase::ReadEventHeaders(AliMCEvent *event){
-  // Here we need some generator-dependent logic, in case we need to extract useful information from the headers.
-  AliGenPythiaEventHeader * headPy  = 0;
-  AliGenDPMjetEventHeader * headPho = 0;
-  AliGenEventHeader * htmp = event->GenEventHeader();
-  if(!htmp) {
-    //AliError("Cannot Get MC Header!!");
-    return;
-  }
-  if( TString(htmp->IsA()->GetName()) == "AliGenPythiaEventHeader") {
-    headPy =  (AliGenPythiaEventHeader*) htmp;
-    fnMPI = headPy->GetNMPI();
-  } else if (TString(htmp->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
-    headPho = (AliGenDPMjetEventHeader*) htmp;
-  } else {
-    cout << "Unknown header" << endl;
-  }
-  fevent  = event;
-  feventWeight = htmp->EventWeight();
-
-  fheader = event->Header();
-  fstack = fheader->Stack();
-}
-
-////////////////////////////////////////
-// Eta based multiplicity estimators  //
-////////////////////////////////////////
-
-//______________________________________________________________________________________
-EtaBase::EtaBase() : MultiplicityEstimatorBase() {}
-
-EtaBase::EtaBase(const char* name, const char* title,
-		 Float_t feta_min_backwards, Float_t feta_max_backwards,
-		 Float_t feta_min_forwards, Float_t feta_max_forwards)
-  : MultiplicityEstimatorBase(name, title),
-    feta_min_backwards(feta_min_backwards), feta_max_backwards(feta_max_backwards),
-    feta_min_forwards(feta_min_forwards), feta_max_forwards(feta_max_forwards),
-    fbypass_eta_selection(false)
-{
-  festimator_bins = 200;
-}
-
-// Constructor for bypassing the eta selection to get the full range
-EtaBase::EtaBase(const char* name, const char* title)
-  : MultiplicityEstimatorBase(name, title),
-    feta_min_backwards(0), feta_max_backwards(0),
-    feta_min_forwards(0), feta_max_forwards(0),
-    fbypass_eta_selection(true)
-{
-  festimator_bins = 200;
-}
-
-void EtaBase::PreEvent(AliMCEvent *event){
-  // Room for more header logic
-  ReadEventHeaders(event);
-
+void AliMultiplicityEstimator::PreEvent(Float_t ev_weight){
   // Clear counters and chaches for the following event:
   fnch_in_estimator_region = 0;
-  memset(fn_pid_in_event, 0, kNPID*sizeof(*fn_pid_in_event));
+  feventWeight = ev_weight;
 }
 
-/*
-  Count tracks to establish multiplicity in this estimator
-*/
-void EtaBase::ProcessTrackForMultiplicityEstimation(AliMCParticle *track){
+Bool_t AliMultiplicityEstimator::TrackSelection(AliMCParticle* track) {
   if (track->Charge() != 0){
     Double_t eta = track->Eta();
     if(fbypass_eta_selection ||
@@ -189,13 +144,24 @@ void EtaBase::ProcessTrackForMultiplicityEstimation(AliMCParticle *track){
        (eta >= feta_min_forwards &&
 	eta <= feta_max_forwards)))
       {
-	fnch_in_estimator_region++;
+	return true;
       }
+    }
+  return false;
+}
+
+/*
+  Increment counters based on whether the track meets track selection
+  criteria.
+*/
+void AliMultiplicityEstimator::ProcessTrackForMultiplicityEstimation(AliMCParticle *track){
+  if (TrackSelection(track)){
+	fnch_in_estimator_region++;
   }
 }
 
 // loop over tracks again, now that mult is known:
-void EtaBase::ProcessTrackWithKnownMultiplicity(AliMCParticle *track){
+void AliMultiplicityEstimator::ProcessTrackWithKnownMultiplicity(AliMCParticle *track){
   if (track->Charge() != 0){
     // only enforce charged tracks for dN/deta!
     feta_Nch->Fill(track->Eta(), fnch_in_estimator_region, fuseWeights?feventWeight:1);
@@ -217,12 +183,12 @@ void EtaBase::ProcessTrackWithKnownMultiplicity(AliMCParticle *track){
   }
 }
 
-void EtaBase::PostEvent(){
+void AliMultiplicityEstimator::PostEvent(){
   // Fill event counters
-  fEventTuple->Fill(fnch_in_estimator_region, feventWeight, fnMPI);
+  fNchTuple->Fill(fnch_in_estimator_region);
 }
 
-void EtaBase::Terminate(TList* outputlist){
+void AliMultiplicityEstimator::Terminate(TList* outputlist){
   // recover pointers to histograms since they are null on master
   std::cout << "Terminate " << fName << std::endl;
   TList *curr_est = static_cast<TList*>(outputlist->FindObject(GetName()));
