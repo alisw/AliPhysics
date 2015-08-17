@@ -128,7 +128,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		numberOfCuts = 6;
 	if (trainConfig == 31  ) 
 		numberOfCuts = 4;
-	if (trainConfig == 32 	|| trainConfig == 101 || trainConfig == 102 || trainConfig == 201)
+	if (trainConfig == 32 	|| trainConfig == 101 || trainConfig == 102 || trainConfig == 201 || trainConfig == 63)
 		numberOfCuts = 1;
 
 	if (trainConfig == 111 || trainConfig == 114 	|| trainConfig == 117 	|| trainConfig == 120 	|| trainConfig == 121 || 
@@ -238,6 +238,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 0] = "00052113"; clusterCutArray[0] = "1111100050032000000"; mesonCutArray[0] = "0163103100000000"; // EMC7,                                 no M02 cut
 		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100020032220000"; mesonCutArray[1] = "0163103100000000"; // EMC7,                                                 500ns timing
 		eventCutArray[ 2] = "00052113"; clusterCutArray[2] = "1111100040032220000"; mesonCutArray[2] = "0163103100000000"; // EMC7,                                                 100ns timing
+	} else if (trainConfig == 63){  // EMCAL clusters, INT7 trigger
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032220000"; mesonCutArray[0] = "0163103100000000"; // INT7, 400 MeV min energy, NCells >=2, M02 default cut
 
     
     // LHC11a cut studies
