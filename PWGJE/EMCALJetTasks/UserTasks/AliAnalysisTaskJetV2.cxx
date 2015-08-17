@@ -84,7 +84,9 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
         fHistClusterEtaPhiWeighted[i] = 0;
         fHistTriggerQAIn[i] = 0;
         fHistTriggerQAOut[i] = 0;
-        fHistEPCorrelations[i]= 0;
+        fHistEPCorrelations[i] = 0;
+        fHistIntegralCorrelations[i] = 0;
+        fProfIntegralCorrelations[i] = 0;
         fHistPsiTPCLeadingJet[i] = 0;
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
@@ -144,6 +146,8 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type, B
         fHistTriggerQAIn[i] = 0;
         fHistTriggerQAOut[i] = 0;
         fHistEPCorrelations[i] = 0;
+        fHistIntegralCorrelations[i] = 0;
+        fProfIntegralCorrelations[i] = 0;
         fHistPsiTPCLeadingJet[i] = 0;
         fHistPsiVZEROALeadingJet[i] = 0;  
         fHistPsiVZEROCLeadingJet[i] = 0;
@@ -527,6 +531,9 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
             }
             fHistPsiTPCLeadingJet[i] =          BookTH3F("fHistPsiTPCLeadingJet", "p_{t} [GeV/c]", "#Psi_{TPC}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistEPCorrelations[i] =            BookTH2F("fHistEPCorrelations", "EP_V0 average", "EP_V0 #chi", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2.);
+            fHistIntegralCorrelations[i] = BookTH2F("fHistIntegralCorrelations", "square [GeV/c/A]", "circle [GeVc/A]", 100, 0, 100, 100, 0, 100);
+            fProfIntegralCorrelations[i] = new TProfile(Form("fProfIntegralCorrelations_%i", i), Form("fProfIntegralCorrelations_%i", i), 100, 0, 100);
+            fOutputList->Add(fProfIntegralCorrelations[i]);
             fHistPsiVZEROALeadingJet[i] =       BookTH3F("fHistPsiVZEROALeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROA}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistPsiVZEROCLeadingJet[i] =       BookTH3F("fHistPsiVZEROCLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROC}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistPsiVZEROCombLeadingJet[i] =    BookTH3F("fHistPsiVZEROCombLeadingJet", "p_{t} [GeV/c]", "#Psi_{VZEROComb}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
@@ -1485,7 +1492,7 @@ void AliAnalysisTaskJetV2::QCnDiffentialFlowVectors(
                 AliEmcalJet* poi = static_cast<AliEmcalJet*>(pois->At(i));
                 if(PassesCuts(poi)) {    
                     Double_t pt(poi->Pt()-poi->Area()*fLocalRho->GetLocalVal(poi->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-                    if(fUse2DIntegration) pt = poi->Pt()-poi->Area()*fLocalRho->GetPolarVal(poi->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
+                    if(fUse2DIntegration) pt = poi->Pt()-poi->Area()*fLocalRho->GetLocalValInEtaPhi(poi->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
                     if(pt >= ptBins->At(ptBin) && pt < ptBins->At(ptBin+1)) {    
                             repn[ptBin]+=TMath::Cos(((double)n)*poi->Phi());
                             impn[ptBin]+=TMath::Sin(((double)n)*poi->Phi());
@@ -2153,7 +2160,7 @@ void AliAnalysisTaskJetV2::FillWeightedEventPlaneHistograms(Double_t vzero[2][2]
     // leading jet vs event plane bias
     if(fLeadingJet) {
         Double_t rho(fLocalRho->GetLocalVal(fLeadingJet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-        if(fUse2DIntegration) rho = fLocalRho->GetPolarVal(fLeadingJet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()); 
+        if(fUse2DIntegration) rho = fLocalRho->GetLocalValInEtaPhi(fLeadingJet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()); 
         Double_t pt(fLeadingJet->Pt() - fLeadingJet->Area()*rho);
         fHistPsiTPCLeadingJet[fInCentralitySelection]->Fill(pt, tpc[0], fLeadingJet->Phi(), fEventPlaneWeight);
         fHistPsiVZEROALeadingJet[fInCentralitySelection]->Fill(pt, vzero[0][0], fLeadingJet->Phi(), fEventPlaneWeight);
@@ -2174,7 +2181,7 @@ void AliAnalysisTaskJetV2::FillWeightedRhoHistograms()
     // get multiplicity FIXME inefficient
     Int_t iJets(fJets->GetEntriesFast());
     Double_t rho(fLocalRho->GetLocalVal(TMath::Pi(), TMath::Pi(), fLocalRho->GetVal()));
-    if(fUse2DIntegration) rho = fLocalRho->GetPolarVal(TMath::Pi(), TMath::Pi(), fLocalRho->GetVal());
+    if(fUse2DIntegration) rho = fLocalRho->GetLocalValInEtaPhi(TMath::Pi(), TMath::Pi(), fLocalRho->GetVal());
     fHistRho[fInCentralitySelection]->Fill(rho, fEventPlaneWeight);
     fHistRhoVsMult->Fill(fTracks->GetEntries(), rho, fEventPlaneWeight);
     fHistRhoVsCent->Fill(fCent, rho, fEventPlaneWeight);
@@ -2202,11 +2209,15 @@ void AliAnalysisTaskJetV2::FillWeightedDeltaPtHistograms(Double_t psi2) const
        if(pt > 0) {
            if(fFillQAHistograms) fHistRCPhiEta[fInCentralitySelection]->Fill(phi, eta, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistRhoVsRCPt[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
-           else fHistRhoVsRCPt[fInCentralitySelection]->Fill(pt, fLocalRho->GetPolarVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
-
+           else fHistRhoVsRCPt[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
+           if(fFillQAHistograms)  {
+               Double_t temp(fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC);
+               fHistIntegralCorrelations[fInCentralitySelection]->Fill(fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, temp);
+               if(temp > 0) fProfIntegralCorrelations[fInCentralitySelection]->Fill(temp, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC/temp);
+           }
            fHistRCPt[fInCentralitySelection]->Fill(pt, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
-           else fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetPolarVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
+           else fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
            fHistDeltaPtDeltaPhi2Rho0[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetVal(), fEventPlaneWeight);
 
        }
@@ -2215,10 +2226,10 @@ void AliAnalysisTaskJetV2::FillWeightedDeltaPtHistograms(Double_t psi2) const
        if(pt > 0) {
            if(fFillQAHistograms) fHistRCPhiEtaExLJ[fInCentralitySelection]->Fill(phi, eta, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
-           else fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetPolarVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
+           else fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
            fHistRCPtExLJ[fInCentralitySelection]->Fill(pt, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistDeltaPtDeltaPhi2ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
-           else  fHistDeltaPtDeltaPhi2ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetPolarVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
+           else  fHistDeltaPtDeltaPhi2ExLJ[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
            fHistDeltaPtDeltaPhi2ExLJRho0[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetVal(), fEventPlaneWeight);
        }
     } 
@@ -2243,7 +2254,7 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
         if(PassesCuts(jet)) {
             Double_t pt(jet->Pt()), area(jet->Area()), eta(jet->Eta()), phi(jet->Phi());
             Double_t rho(fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
-            if(fUse2DIntegration) rho = fLocalRho->GetPolarVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
+            if(fUse2DIntegration) rho = fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
             fHistJetPtRaw[fInCentralitySelection]->Fill(pt, fEventPlaneWeight);
             fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho, fEventPlaneWeight);
             if(fFillQAHistograms) {
@@ -2801,7 +2812,7 @@ AliEmcalJet* AliAnalysisTaskJetV2::GetLeadingJet(AliLocalRhoParameter* localRho)
             AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
             if(!PassesSimpleCuts(jet)) continue;
             rho = localRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
-            if(fUse2DIntegration) rho = localRho->GetPolarVal(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
+            if(fUse2DIntegration) rho = localRho->GetLocalValInEtaPhi(jet->Phi(), GetJetContainer()->GetJetRadius(), localRho->GetVal());
             if((jet->Pt()-jet->Area()*rho) > pt) {
                leadingJet = jet;
                pt = (leadingJet->Pt()-jet->Area()*rho);
