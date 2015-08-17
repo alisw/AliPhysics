@@ -55,6 +55,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
+  void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
+  void FillMCCascROOTObjects(AliAODMCParticle *mccpart, TClonesArray *mcArray);
   void MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
@@ -105,6 +107,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DefineEleTreeVariables();
   void DefineCascTreeVariables();
   void DefineMCTreeVariables();
+  void DefineMCEleTreeVariables();
+  void DefineMCCascTreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
 
@@ -127,6 +131,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TTree    *fEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
+  TTree    *fMCCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
   Bool_t fReconstructPrimVert;       /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;       /// MB trigger event
   Bool_t fIsSemi;     /// SemiCentral trigger event
@@ -137,6 +143,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Float_t *fCandidateEleVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateCascVariables;   //!<! variables to be written to the tree
   Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
+  Float_t *fCandidateMCCascVariables;   //!<! variables to be written to the tree
   AliAODVertex *fVtx1;            /// primary vertex
   AliESDVertex *fV1;              /// primary vertex
   Float_t  fVtxZ;         /// zVertex
@@ -214,6 +222,10 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoElePtvsCutVarsMCS[23];         //!<! e pt- cut variables (MCS)
   TH2F* fHistoElectronQovPtvsPhi;     //!<! Electron phi distribution
   TH2F* fHistoXiQovPtvsPhi;     //!<! Xi phi distribution
+  THnSparse* fHistoXicMCGen;         //!<! electron in mcArray
+  THnSparse* fHistoXicElectronMCGen;         //!<! electron in mcArray
+  THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
+  THnSparse* fHistoXiMCGen;         //!<! Xi in mcArray (only from charmed baryon)
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<!  evt vs runnumber
@@ -233,7 +245,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; /// array of electron-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,8); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,9); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
