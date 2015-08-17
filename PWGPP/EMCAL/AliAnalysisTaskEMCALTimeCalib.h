@@ -199,8 +199,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
 
-  Double_t       fMinTime ;          ///< minimum cluster time after correction
-  Double_t       fMaxTime ;          ///< maximum cluster time after correction
+  Double_t       fMinTime ;             ///< minimum cluster time after correction
+  Double_t       fMaxTime ;             ///< maximum cluster time after correction
 
 
   // histograms
@@ -217,16 +217,16 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH2F          *fhTimeVsBC;            //!<!cell time vs BC
 
   // histos for storing the time values per cell for further averaging;
-  TH1F		*fhTimeSumSq[kNBCmask]; //!<!  4
-  TH1F		*fhTimeEnt  [kNBCmask]; //!<!  4
-  TH1F		*fhTimeSum  [kNBCmask]; //!<!  4
+  TH1F		*fhTimeSumSq  [kNBCmask]; //!<!  4
+  TH1F		*fhTimeEnt    [kNBCmask]; //!<!  4
+  TH1F		*fhTimeSum    [kNBCmask]; //!<!  4
   TH1F		*fhTimeLGSumSq[kNBCmask]; //!<!  4
   TH1F		*fhTimeLGEnt  [kNBCmask]; //!<!  4
   TH1F		*fhTimeLGSum  [kNBCmask]; //!<!  4
 
   // histos with reference values after the first iteration  
-  TH1D		*fhAllAverageBC     [kNBCmask]; //!<! 4 BCmask High gain
-  TH1D		*fhAllAverageLGBC     [kNBCmask]; //!<! 4 BCmask Low gain
+  TH1D		*fhAllAverageBC   [kNBCmask]; ///< 4 BCmask High gain
+  TH1D		*fhAllAverageLGBC [kNBCmask]; ///< 4 BCmask Low gain
 
   // control histos
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM

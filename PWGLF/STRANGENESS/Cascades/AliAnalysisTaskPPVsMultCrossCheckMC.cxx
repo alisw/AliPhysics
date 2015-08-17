@@ -93,8 +93,10 @@ ClassImp(AliAnalysisTaskPPVsMultCrossCheckMC)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC()
 : AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
-fHistV0MTrueVsMidRapidityTrue(0)
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
+fHistV0M_DataSelection(0), fHistV0M_MCSelection(0),
+fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
+fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
 {
     //Empty constructor (not to be used, always pass name...)
     for(Int_t ih=0; ih<9; ih++){
@@ -104,6 +106,9 @@ fHistV0MTrueVsMidRapidityTrue(0)
         fHistPtVsV0M_Generated[ih] = 0x0;
         fHistPtVsV0M_DataSelection[ih] = 0x0;
         fHistPtVsV0M_MCSelection[ih] = 0x0;
+        fHistPtVsV0MAmplitude_Generated[ih] = 0x0;
+        fHistPtVsV0MAmplitude_DataSelection[ih] = 0x0;
+        fHistPtVsV0MAmplitude_MCSelection[ih] = 0x0;
         fHistPtVsV0MTrue_Generated[ih] = 0x0;
         fHistPtVsV0MTrue_DataSelection[ih] = 0x0;
         fHistPtVsV0MTrue_MCSelection[ih] = 0x0;
@@ -112,8 +117,10 @@ fHistV0MTrueVsMidRapidityTrue(0)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC(const char *name)
 : AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MVsMidRapidityTrue(0),
-fHistV0MTrueVsMidRapidityTrue(0)
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
+fHistV0M_DataSelection(0), fHistV0M_MCSelection(0),
+fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
+fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
 {
     for(Int_t ih=0; ih<9; ih++){
         fHistPt_Generated[ih] = 0x0;
@@ -122,6 +129,9 @@ fHistV0MTrueVsMidRapidityTrue(0)
         fHistPtVsV0M_Generated[ih] = 0x0;
         fHistPtVsV0M_DataSelection[ih] = 0x0;
         fHistPtVsV0M_MCSelection[ih] = 0x0;
+        fHistPtVsV0MAmplitude_Generated[ih] = 0x0;
+        fHistPtVsV0MAmplitude_DataSelection[ih] = 0x0;
+        fHistPtVsV0MAmplitude_MCSelection[ih] = 0x0;
         fHistPtVsV0MTrue_Generated[ih] = 0x0;
         fHistPtVsV0MTrue_DataSelection[ih] = 0x0;
         fHistPtVsV0MTrue_MCSelection[ih] = 0x0;
@@ -203,43 +213,93 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
         "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar"
     };
     
+    //Settings for transverse momentum
+    Int_t lNPtBins = 3000; //10MeV/c precision
+    Double_t lMaxPt = 30.0;
+    
+    //Settings for charged particle counters (integers!)
+    Int_t lNNchBins = 1000;
+    Double_t lLowNchBound  = -0.5;
+    Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
+    
+    //Settings for V0M amplitudes (floating points)
+    Int_t lNAmplitudeBins = 2000;
+    Double_t lUpperAmplitude = 2000; //may require tuning
+    
     //Main Output: Histograms
     if(! fHistV0M_DataSelection ) {
         fHistV0M_DataSelection = new TH1F("fHistV0M_DataSelection","",100,0,100);
-        fListHist->Add(fHistV0M_DataSelection);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0M_DataSelection);
     }
     if(! fHistV0M_MCSelection ) {
         fHistV0M_MCSelection = new TH1F("fHistV0M_MCSelection","",100,0,100);
         fListHist->Add(fHistV0M_MCSelection);
     }
-
-    //Correlation between mid-rapidity and forward
-    if(! fHistV0MVsMidRapidityTrue ) {
-        fHistV0MVsMidRapidityTrue = new TH2F("fHistV0MVsMidRapidityTrue","",100,0,100,1000,0,1000);
-        fListHist->Add(fHistV0MVsMidRapidityTrue);
+    if(! fHistV0MAmplitude_DataSelection ) {
+        fHistV0MAmplitude_DataSelection = new TH1F("fHistV0MAmplitude_DataSelection","",lNAmplitudeBins,0,lUpperAmplitude);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0MAmplitude_DataSelection);
     }
-    //Correlation between mid-rapidity and forward
-    if(! fHistV0MTrueVsMidRapidityTrue ) {
-        fHistV0MTrueVsMidRapidityTrue = new TH2F("fHistV0MTrueVsMidRapidityTrue","",1000,0,1000,1000,0,1000);
-        fListHist->Add(fHistV0MTrueVsMidRapidityTrue);
+    if(! fHistV0MAmplitude_MCSelection ) {
+        fHistV0MAmplitude_MCSelection = new TH1F("fHistV0MAmplitude_MCSelection","",lNAmplitudeBins,0,lUpperAmplitude);
+        fListHist->Add(fHistV0MAmplitude_MCSelection);
+    }
+    if(! fHistV0MTrue_DataSelection ) {
+        fHistV0MTrue_DataSelection = new TH1F("fHistV0MTrue_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0MTrue_DataSelection);
+    }
+    if(! fHistV0MTrue_MCSelection ) {
+        fHistV0MTrue_MCSelection = new TH1F("fHistV0MTrue_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistV0MTrue_MCSelection);
+    }
+
+    //Correlation between mid-rapidity and forward V0M percentile
+    if(! fHistV0MVsMidRapidityTrue_DataSelection ) {
+        fHistV0MVsMidRapidityTrue_DataSelection = new TH2F("fHistV0MVsMidRapidityTrue_DataSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0MVsMidRapidityTrue_DataSelection);
+    }
+    //Correlation between mid-rapidity and forward V0M percentile
+    if(! fHistV0MAmplitudeVsMidRapidityTrue_DataSelection ) {
+        fHistV0MAmplitudeVsMidRapidityTrue_DataSelection = new TH2F("fHistV0MAmplitudeVsMidRapidityTrue_DataSelection","",lNAmplitudeBins,0,lUpperAmplitude,lNNchBins,lLowNchBound,lHighNchBound);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0MAmplitudeVsMidRapidityTrue_DataSelection);
+    }
+    //Correlation between mid-rapidity and forward true multiplicity
+    if(! fHistV0MTrueVsMidRapidityTrue_DataSelection ) {
+        fHistV0MTrueVsMidRapidityTrue_DataSelection = new TH2F("fHistV0MTrueVsMidRapidityTrue_DataSelection","",lNNchBins,lLowNchBound,lHighNchBound,lNNchBins,lLowNchBound,lHighNchBound);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0MTrueVsMidRapidityTrue_DataSelection);
+    }
+    
+    //Correlation between mid-rapidity and forward V0M percentile
+    if(! fHistV0MVsMidRapidityTrue_MCSelection ) {
+        fHistV0MVsMidRapidityTrue_MCSelection = new TH2F("fHistV0MVsMidRapidityTrue_MCSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0MVsMidRapidityTrue_MCSelection);
+    }
+    //Correlation between mid-rapidity and forward V0M percentile
+    if(! fHistV0MAmplitudeVsMidRapidityTrue_MCSelection ) {
+        fHistV0MAmplitudeVsMidRapidityTrue_MCSelection = new TH2F("fHistV0MAmplitudeVsMidRapidityTrue_MCSelection","",lNAmplitudeBins,0,lUpperAmplitude,lNNchBins,lLowNchBound,lHighNchBound);
+        if (!lPureMonteCarlo ) fListHist->Add(fHistV0MAmplitudeVsMidRapidityTrue_MCSelection);
+    }
+    //Correlation between mid-rapidity and forward true multiplicity
+    if(! fHistV0MTrueVsMidRapidityTrue_MCSelection ) {
+        fHistV0MTrueVsMidRapidityTrue_MCSelection = new TH2F("fHistV0MTrueVsMidRapidityTrue_MCSelection","",lNNchBins,lLowNchBound,lHighNchBound,lNNchBins,lLowNchBound,lHighNchBound);
+        fListHist->Add(fHistV0MTrueVsMidRapidityTrue_MCSelection);
     }
     
     //Main Output: Histograms
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPt_Generated[ih] ) {
-            fHistPt_Generated[ih] = new TH1F(Form("fHistPt_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20);
+            fHistPt_Generated[ih] = new TH1F(Form("fHistPt_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt_Generated[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPt_DataSelection[ih] ) {
-            fHistPt_DataSelection[ih] = new TH1F(Form("fHistPt_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20);
-            fListHist->Add(fHistPt_DataSelection[ih]);
+            fHistPt_DataSelection[ih] = new TH1F(Form("fHistPt_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPt_DataSelection[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPt_MCSelection[ih] ) {
-            fHistPt_MCSelection[ih] = new TH1F(Form("fHistPt_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20);
+            fHistPt_MCSelection[ih] = new TH1F(Form("fHistPt_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt);
             fListHist->Add(fHistPt_MCSelection[ih]);
         }
     }
@@ -247,46 +307,62 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //2-Dimensional Histograms
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0M_Generated[ih] ) {
-            fHistPtVsV0M_Generated[ih] = new TH2F(Form("fHistPtVsV0M_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20,100,0,100);
-            fListHist->Add(fHistPtVsV0M_Generated[ih]);
+            fHistPtVsV0M_Generated[ih] = new TH2F(Form("fHistPtVsV0M_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPtVsV0M_Generated[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0M_DataSelection[ih] ) {
-            fHistPtVsV0M_DataSelection[ih] = new TH2F(Form("fHistPtVsV0M_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20,100,0,100);
-            fListHist->Add(fHistPtVsV0M_DataSelection[ih]);
+            fHistPtVsV0M_DataSelection[ih] = new TH2F(Form("fHistPtVsV0M_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPtVsV0M_DataSelection[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0M_MCSelection[ih] ) {
-            fHistPtVsV0M_MCSelection[ih] = new TH2F(Form("fHistPtVsV0M_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20,100,0,100);
-            fListHist->Add(fHistPtVsV0M_MCSelection[ih]);
+            fHistPtVsV0M_MCSelection[ih] = new TH2F(Form("fHistPtVsV0M_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPtVsV0M_MCSelection[ih]);
+        }
+    }
+    
+    //2-Dimensional Histograms with V0M Amplitudes
+    for(Int_t ih=0; ih<9; ih++){
+        if(! fHistPtVsV0MAmplitude_Generated[ih] ) {
+            fHistPtVsV0MAmplitude_Generated[ih] = new TH2F(Form("fHistPtVsV0MAmplitude_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNAmplitudeBins,0,lUpperAmplitude);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPtVsV0MAmplitude_Generated[ih]);
+        }
+    }
+    for(Int_t ih=0; ih<9; ih++){
+        if(! fHistPtVsV0MAmplitude_DataSelection[ih] ) {
+            fHistPtVsV0MAmplitude_DataSelection[ih] = new TH2F(Form("fHistPtVsV0MAmplitude_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNAmplitudeBins,0,lUpperAmplitude);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPtVsV0MAmplitude_DataSelection[ih]);
+        }
+    }
+    for(Int_t ih=0; ih<9; ih++){
+        if(! fHistPtVsV0MAmplitude_MCSelection[ih] ) {
+            fHistPtVsV0MAmplitude_MCSelection[ih] = new TH2F(Form("fHistPtVsV0MAmplitude_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNAmplitudeBins,0,lUpperAmplitude);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPtVsV0MAmplitude_MCSelection[ih]);
         }
     }
     
     //2-Dimensional Histograms with True V0M Multiplicity
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MTrue_Generated[ih] ) {
-            fHistPtVsV0MTrue_Generated[ih] = new TH2F(Form("fHistPtVsV0MTrue_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20,1000,0,1000);
+            fHistPtVsV0MTrue_Generated[ih] = new TH2F(Form("fHistPtVsV0MTrue_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_Generated[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MTrue_DataSelection[ih] ) {
-            fHistPtVsV0MTrue_DataSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20,1000,0,1000);
-            fListHist->Add(fHistPtVsV0MTrue_DataSelection[ih]);
+            fHistPtVsV0MTrue_DataSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
+            if (!lPureMonteCarlo ) fListHist->Add(fHistPtVsV0MTrue_DataSelection[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0MTrue_MCSelection[ih] ) {
-            fHistPtVsV0MTrue_MCSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",200,0,20,1000,0,1000);
+            fHistPtVsV0MTrue_MCSelection[ih] = new TH2F(Form("fHistPtVsV0MTrue_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,lNNchBins,lLowNchBound,lHighNchBound);
             fListHist->Add(fHistPtVsV0MTrue_MCSelection[ih]);
         }
     }
-    
-    //2D Correlation plot between multiplicities
-    
-    
     
     //List of Histograms: Normal
     PostData(1, fListHist);
@@ -366,6 +442,9 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     //Physics Selection
     lEvSel_Triggered = isSelected;
     
+    //Override physics selection requirement if running on pure monte carlo
+    if( lPureMonteCarlo ) lEvSel_Triggered = kTRUE;
+    
     //------------------------------------------------
     // Primary Vertex Requirements Section:
     //  ---> pp: has vertex, |z|<10cm
@@ -433,6 +512,10 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     Float_t fCentrality_V0MUnselected = -100;
     if ( ! lPureMonteCarlo ) fCentrality_V0MUnselected = fPPVsMultUtils -> GetMultiplicityPercentile(lESDevent, "V0M" , kFALSE );
     
+    //Amplitude if not pure
+    Float_t fV0MAmplitude = -1;
+    if ( !lPureMonteCarlo ) fV0MAmplitude = GetV0MAmplitude( lESDevent );
+    
     //------------------------------------------------
     // Get All Conditionals
     //------------------------------------------------
@@ -461,10 +544,13 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     Bool_t lIsAcceptedVertexPositionMC = (TMath::Abs(lVertexZMC)<10.0); //true if within desired range
     
     //Merge all conditionals
-    
     Bool_t lDataSelection = ( lEvSel_Triggered && lIsINELgtZEROtracklets && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
-    
     Bool_t lMCSelection   = ( lEvSel_Triggered && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPositionMC );
+    
+    //Alternate Selection: Factor out only INEL>0 selection (extra cross-check) 
+    if ( fAlternateMCSelection ){
+        lMCSelection   = ( lEvSel_Triggered && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
+    }
     
     //------------------------------------------------
     // Fill Event Counters
@@ -475,12 +561,27 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     if( lDataSelection ) fHistEventCounter -> Fill(1.5);
     if( lMCSelection   ) fHistEventCounter -> Fill(2.5);
     
-    if( lDataSelection ) fHistV0M_DataSelection -> Fill( fCentrality_V0MUnselected );
-    if( lMCSelection   ) fHistV0M_MCSelection   -> Fill( fCentrality_V0MUnselected );
+    if( lDataSelection ) {
+        fHistV0M_DataSelection -> Fill( fCentrality_V0MUnselected );
+        fHistV0MAmplitude_DataSelection -> Fill( fV0MAmplitude );
+        fHistV0MTrue_DataSelection -> Fill( lNchVZEROA+lNchVZEROC );
+    }
+    if( lMCSelection   ){
+        fHistV0M_MCSelection   -> Fill( fCentrality_V0MUnselected );
+        fHistV0MAmplitude_MCSelection -> Fill( fV0MAmplitude );
+        fHistV0MTrue_MCSelection -> Fill( lNchVZEROA+lNchVZEROC );
+    }
 
+    if( lDataSelection ) {
+        fHistV0MVsMidRapidityTrue_DataSelection->Fill( fCentrality_V0MUnselected, lNchEta5 );
+        fHistV0MTrueVsMidRapidityTrue_DataSelection->Fill( lNchVZEROA+lNchVZEROC, lNchEta5 );
+        fHistV0MAmplitudeVsMidRapidityTrue_DataSelection->Fill( fV0MAmplitude, lNchEta5 );
+    }
+    
     if( lMCSelection ) {
-        fHistV0MVsMidRapidityTrue->Fill( fCentrality_V0MUnselected, lNchEta5 );
-        fHistV0MTrueVsMidRapidityTrue->Fill( lNchVZEROA+lNchVZEROC, lNchEta5 );
+        fHistV0MVsMidRapidityTrue_MCSelection->Fill( fCentrality_V0MUnselected, lNchEta5 );
+        fHistV0MTrueVsMidRapidityTrue_MCSelection->Fill( lNchVZEROA+lNchVZEROC, lNchEta5 );
+        fHistV0MAmplitudeVsMidRapidityTrue_MCSelection->Fill( fV0MAmplitude, lNchEta5 );
     }
     
     //------------------------------------------------
@@ -531,16 +632,19 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
                 //Fill Histograms
                 fHistPt_Generated     [ih] -> Fill(lThisPt);
                 fHistPtVsV0M_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                fHistPtVsV0MTrue_Generated[ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
+                fHistPtVsV0MAmplitude_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                fHistPtVsV0MTrue_Generated     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 if( lDataSelection ){
                     fHistPt_DataSelection     [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                    fHistPtVsV0MTrue_DataSelection[ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
+                    fHistPtVsV0MAmplitude_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsV0MTrue_DataSelection     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 }
                 if( lMCSelection   ){
                     fHistPt_MCSelection       [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                    fHistPtVsV0MTrue_MCSelection  [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
+                    fHistPtVsV0MAmplitude_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsV0MTrue_MCSelection       [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 }
             }
         }
@@ -578,7 +682,6 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::Terminate(Option_t *)
 }
 
 //----------------------------------------------------------------------------
-
 Double_t AliAnalysisTaskPPVsMultCrossCheckMC::MyRapidity(Double_t rE, Double_t rPz) const
 {
     // Local calculation for rapidity
@@ -587,4 +690,18 @@ Double_t AliAnalysisTaskPPVsMultCrossCheckMC::MyRapidity(Double_t rE, Double_t r
         ReturnValue =  0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
     }
     return ReturnValue;
+}
+
+//----------------------------------------------------------------------------
+Double_t AliAnalysisTaskPPVsMultCrossCheckMC::GetV0MAmplitude( AliESDEvent *lInputEvent ) const
+{
+    // Get Amplitude from ESD
+    //Get VZERO Information for multiplicity later
+    AliVVZERO* esdV0 = lInputEvent->GetVZEROData();
+    if (!esdV0) {
+        AliError("AliVVZERO not available");
+        return -1;
+    }
+    Double_t lReturnValue = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
+    return lReturnValue;
 }

@@ -4,11 +4,11 @@
 <meta http-equiv="Content-type" content="text/html; charset=us-ascii">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DataTables example - Zero configuration</title>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.6/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.8/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="http://datatables.net/release-datatables/extensions/ColVis/css/dataTables.colVis.css">
 <link rel="stylesheet" type="text/css" href="https://datatables.net/release-datatables/extensions/ColReorder/css/dataTables.colReorder.css">
 <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-<link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/plug-ins/1.10.6/integration/jqueryui/dataTables.jqueryui.css">
+<link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/plug-ins/1.10.8/integration/jqueryui/dataTables.jqueryui.css">
 
 <style type="text/css" class="init">
 tfoot input {
@@ -166,7 +166,7 @@ th.tooltip:hover::after {
 </style>
 
 <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
-<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.6/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.8/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" language="javascript" src="http://datatables.net/release-datatables/extensions/ColVis/js/dataTables.colVis.js"></script>
 <script type="text/javascript" language="javascript" src="http://datatables.net/release-datatables/extensions/ColReorder/js/dataTables.colReorder.js"></script>
 <script type="text/javascript" language="javascript" src="http://tablefilter.free.fr/TableFilter/tablefilter.js"></script>

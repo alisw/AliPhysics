@@ -498,7 +498,7 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     if(fESD->IsTriggerClassFired("CSHM8-S-NOPF-ALLNOTRD")) ftrigger[8] = 1;
     //    if(fESD->IsTriggerClassFired("CSHM8-ACE-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC11h
 
-    if(fESD->IsTriggerClassFired("CTEST52-B-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC15f, run 297884
+    if(fESD->IsTriggerClassFired("CTEST52-A-NOPF-ALLNOTRD")|| fESD->IsTriggerClassFired("CTEST52-B-NOPF-ALLNOTRD")|| fESD->IsTriggerClassFired("CTEST52-C-NOPF-ALLNOTRD")|| fESD->IsTriggerClassFired("CTEST52-E-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC15f, run 297884
 
     // count total event number (blim)
     if(ftrigger[0]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(1);
