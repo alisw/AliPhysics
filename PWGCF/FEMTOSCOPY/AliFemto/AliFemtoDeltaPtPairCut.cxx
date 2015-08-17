@@ -112,12 +112,11 @@ bool AliFemtoDeltaPtPairCut::Pass(const AliFemtoPair* pair)
 {
   bool temp = true;
 
-//Taking care of the Kt cut
   double pT1 = pair->Track1()->Track()->Pt();
-  double pT2 = pair->Track1()->Track()->Pt();
+  double pT2 = pair->Track2()->Track()->Pt();
   double DeltaPt = TMath::Abs(pT1-pT2);
 
-  if (DeltaPt < fDeltaPtMin || DeltaPt > fDeltaPtMax)
+  if (DeltaPt >= fDeltaPtMin && DeltaPt <= fDeltaPtMax)
     temp = false;
 
   return temp;
