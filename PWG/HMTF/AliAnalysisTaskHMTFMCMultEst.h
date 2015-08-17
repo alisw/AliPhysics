@@ -6,7 +6,7 @@ class TH1I;
 class TGraphErrors;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliMultiplicityEstimators.h"
+#include "AliMultiplicityEstimator.h"
 
 class AliAnalysisTaskHMTFMCMultEst : public AliAnalysisTaskSE {
  public:
@@ -17,7 +17,7 @@ class AliAnalysisTaskHMTFMCMultEst : public AliAnalysisTaskSE {
   void AddEstimator(const char* n);
   void InitEstimators();
   void SetRequireINELgt0(Bool_t b){fRequireINELgt0 = b;};
-  MultiplicityEstimatorBase* MakeEstimator(const TString& name);
+  AliMultiplicityEstimator* MakeEstimator(const TString& name);
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
@@ -28,10 +28,9 @@ class AliAnalysisTaskHMTFMCMultEst : public AliAnalysisTaskSE {
   TList *fEstimatorsList;   // List to get the estimators out in terminate
   TString fEstimatorNames;
   Bool_t fRequireINELgt0;
-  TNtuple *fParticleCounter;
-  // MultiplicityEstimatorBase* festi;
+  TNtuple *fEventVariables;
 
-  std::vector<MultiplicityEstimatorBase*> festimators;
+  std::vector<AliMultiplicityEstimator*> festimators;
 
   // Declaring these shuts up warnings from Weffc++
   AliAnalysisTaskHMTFMCMultEst(const AliAnalysisTaskHMTFMCMultEst&); // not implemented
