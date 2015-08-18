@@ -46,6 +46,7 @@ public:
   void CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun,AliCDBStorage* ocdbStorage=0x0);
   AliCDBEntry* CreateDriftCDBentryObject(Int_t ustartRun, Int_t uendRun);
   void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun, AliCDBStorage* storage);
+  void TakeOwnershipDriftCDBEntry();
 
   void GetRunRange(AliTPCcalibTime* const timeDrift);
   void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift, Int_t minEntries);

@@ -348,6 +348,11 @@ void AliTPCPreprocessorOffline::UpdateOCDBDrift( Int_t ustartRun, Int_t uendRun,
   if (status==kFALSE) fCalibrationStatus|=kCalibFailedExport ;
 }
 
+void AliTPCPreprocessorOffline::TakeOwnershipDriftCDBEntry(){
+	fVdriftArray = NULL;
+	fDriftCDBentry = NULL;
+}
+
 //_____________________________________________________________________________
 Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
 {
