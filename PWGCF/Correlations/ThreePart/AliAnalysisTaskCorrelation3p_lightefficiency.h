@@ -53,7 +53,7 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
   void SetNClustersTPC(Int_t NClusters){fMinNClustersTPC=NClusters;}
   enum CollisionType{pp,PbPb,pPb};
   void SetCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::CollisionType type){fCollisionType=type;}
-
+  void SetRemoveSignals(Bool_t rem = kTRUE){fRemoveSignals = rem;}
   //Cuts for clusters and pi0s.
   
  protected:
@@ -70,6 +70,7 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
   void 			InitializeEffHistograms();
   void 			FillHistogram(const char * key,Double_t x);
   void 			FillHistogram(const char * key,Double_t x,Double_t y);
+  void 			FillHistogramGenPar(const char * key,Int_t x,Int_t y,Double_t z);
   void 			FillHistogram(const char * key,Double_t x,Double_t y,Double_t z);
   void 			FillHistogram(const char * key,Double_t x,Double_t y,Double_t z,Double_t a,Double_t b);
   Bool_t 		SelectEvent();
@@ -82,7 +83,12 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
   Bool_t 	    	IsSelectedTrack(AliVParticle * p);
   Bool_t 	    	IsSelectedTrackAOD(AliVParticle* p);
   Bool_t 	    	IsSelectedTrackESD(AliVParticle* p);
-
+  Bool_t 		IsAddedSignal(AliVParticle* p);
+  void 			GeneratorStat(AliVParticle* p);
+  Int_t 		FillGen(Int_t GetGenereratorIndex);
+  const char* 		NameGen(Int_t GetGenereratorIndex);
+  Int_t 		FillPDG(Int_t GetPDG);
+  const char* 		NamePDG(Int_t GetPDG);
 
   //Event characteristics:
   AliCentrality*    fCentrality;   //! centrality object
@@ -91,6 +97,7 @@ class AliAnalysisTaskCorrelation3p_lightefficiency : public AliAnalysisTaskSE {
   CollisionType     fCollisionType;
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
+  Bool_t 	    fRemoveSignals;
   TClonesArray*     fMcArray;
   //Objects that contain needed/used objects for the task:
   TArrayD 	    fMBinEdges; //Contains bin edges in centrality.

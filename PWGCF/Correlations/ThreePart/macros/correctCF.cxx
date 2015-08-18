@@ -1045,6 +1045,7 @@ void CollectHistbs(TH1D* histo, TList * directories, TObjArray* multdirlist){
   //loop over the bins:
   for(int i=0;i<directories->GetEntries();i++){
     int Mbin = 0;
+    if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;
     //find the Multiplicity bin we are in
     for(int j = 1;j<multdirlist->GetEntries();j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
     
@@ -1240,6 +1241,8 @@ void CollectHist(TH1D* histo, TList * directories, TObjArray* multdirlist){
     //loop over all Multiplicity-Vertex bins:
     for(int i=0;i<directories->GetEntries();i++){
       int Mbin = 0;
+      if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;
+
       //find the Multiplicity bin we are in
       for(int j = 1;j<multdirlist->GetEntries();j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
       //test if the relevant histogram exists in this bin:
@@ -1648,6 +1651,7 @@ void CollectHist(TH2D* histo, TList * directories, TObjArray* multdirlist,bool p
     Double_t scalingfactorMETrigger=0.0;Double_t scalingfactorMETriggerbin1=0.0;Double_t scalingfactorMETriggerbin2=0.0;Double_t scalingfactorMETriggerbin3=0.0;Double_t scalingfactorMETriggerbin4=0.0;Double_t scalingfactorMETriggerbin5=0.0;Double_t scalingfactorMETriggerbin6=0.0;Double_t scalingfactorMETriggerbin7=0.0;
     for(int i=0;i<directories->GetEntries();i++){
       int Mbin = 0;
+    if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;      
       //find the Multiplicity bin we are in
       for(int j = 1;j<multdirlist->GetEntries();j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
       //test if the relevant histogram exists in this bin:
@@ -2156,6 +2160,7 @@ void CollectHist(TH3D* histo, TList * directories, TObjArray* multdirlist){
     //loop over all Multiplicity-Vertex bins:
     for(int i=0;i<directories->GetEntries();i++){
       int Mbin = 0;
+      if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;      
       //find the Multiplicity bin we are in
       for(int j = 1;j<=5;j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
       //test if the relevant histogram exists in this bin:
@@ -4890,7 +4895,8 @@ void CountRawNumbers(){
 	TH1D * MENtriggers = dynamic_cast<TH1D*>(SAMEDir->GetDirectory("mixed_event")->Get("number_of_triggers")->Clone("NTriggersME"));
 	MEDphiDetad->Divide(MEDphiDetad);
 	MEDphiDetad->Scale(par->GetVal());
-	MEDphiDetad->Scale(1.0/MENtriggers->Integral());
+	if(MENtriggers->Integral()>0.1) MEDphiDetad->Scale(1.0/MENtriggers->Integral());
+	else MEDphiDetad->Scale(0.0);
 	// 	if(SameNtriggers->Integral()>0.1)SameDphiDphi->Scale(1.0/SameNtriggers->Integral());
 // 	else SameDphiDphi->Scale(0.0);
 	TH2D * METADphiDetad = dynamic_cast<TH2D*>(METADir->GetDirectory("divided")->Get("DPhi_1_DEta_12_SameSide")->Clone("CorMETAPhiEtad"));
