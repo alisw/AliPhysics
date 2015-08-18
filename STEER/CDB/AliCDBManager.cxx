@@ -1988,7 +1988,7 @@ void AliCDBManager::PromptCacheEntry(const char* path, AliCDBEntry* entry)
     TObject* value = pair->Value();
     fEntryCache.Remove(key);
     delete key;
-    delete value;
+    //delete value; //We must not delete this here. Actually, the CDB Manager CANNOT take ownership. If some function has querried that Object, it might still have a pointer to it and we DO NOT know.
   }
   AliDebug(2,Form("Caching entry %s", path));
   fPromptEntryCache.Add(new TObjString(path), entry);
