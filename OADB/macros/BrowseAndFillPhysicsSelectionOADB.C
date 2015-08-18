@@ -67,11 +67,11 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   // DefaultPP
   AliOADBPhysicsSelection * oadbDefaultPP = new AliOADBPhysicsSelection("oadbDefaultPP");
   Int_t triggerCount = 0;
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT7,"+CINT7-[I|B|S]-NOPF-[ALL|CENT]NOTRD","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT7,"+CINT7-[I|B|S]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-AC-NOPF-ALLNOTRD","AC",  triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-E-NOPF-ALLNOTRD","E",    triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-ACE-NOPF-ALLNOTRD","ACE",triggerCount);
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT7 | AliVEvent::kFastOnly,"+CINT7-[I|B|S]-NOPF-FASTNOTRD -CINT7-[I|B|S]-NOPF-[ALL|CENT]NOTRD","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT7 | AliVEvent::kFastOnly,"+CINT7-[I|B|S]-NOPF-FASTNOTRD -CINT7-[I|B|S]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7 | AliVEvent::kFastOnly,"+CINT7-AC-NOPF-FASTNOTRD -CINT7-AC-NOPF-ALLNOTRD","AC",     triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7 | AliVEvent::kFastOnly,"+CINT7-E-NOPF-FASTNOTRD -CINT7-E-NOPF-ALLNOTRD","E",        triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7 | AliVEvent::kFastOnly,"+CINT7-ACE-NOPF-FASTNOTRD -CINT7-ACE-NOPF-ALLNOTRD","ACE",  triggerCount);
@@ -79,20 +79,20 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"(V0A && V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp && !TPCHVdip");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kCINT5,"+CINT5-[I|B]-NOPF-[ALL|CENT]NOTRD","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kCINT5,"+CINT5-[I|B]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-AC-NOPF-[ALL|CENT]NOTRD","AC",triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kCINT5,"+CINT5-E-NOPF-[ALL|CENT]NOTRD","E",triggerCount);
   oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"V0A || V0C");
   oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"(V0A || V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp && !TPCHVdip");
   
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT8,"+CINT8-S-NOPF-ALLNOTRD,CINT8-B-NOPF-CENTNOTRD,CINT8-B-NOPF-ALLNOTRD","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT8,"+CINT8-[B|S]-NOPF-[ALL|CENT][NOTRD|]","B",triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT8,"+CINT8-ACE-NOPF-ALLNOTRD","ACE",triggerCount);
   oadbDefaultPP->SetHardwareTrigger         ( triggerCount,"T0");
   oadbDefaultPP->SetOfflineTrigger          ( triggerCount,"!T0BG && !TPCLaserWarmUp && !TPCHVdip");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-[B|S]-NOPF-ALLNOTRD","B",    triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CINT1-[B|S]-NOPF-[ALL|CENT]NOTRD","B",    triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-AC-NOPF-ALLNOTRD","AC",  triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-E-NOPF-ALLNOTRD","E",    triggerCount);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kMB,"+CINT1-ACE-NOPF-ALLNOTRD","ACE",triggerCount);
