@@ -1177,28 +1177,28 @@ void AliAnalysisTaskJetV2::CalculateEventPlaneCombinedVZERO(Double_t* comb) cons
                     case kNone : {
                         chi2A = fChi2A->At(VZEROcentralityBin);
                         chi2C = fChi2C->At(VZEROcentralityBin);
-                        _chi = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                        _chi = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                         chi2A = fSigma2A->At(VZEROcentralityBin);
                         chi2C = fSigma2C->At(VZEROcentralityBin);
                         chi2A = (chi2A > 0) ? 1./chi2A : 1.;
                         chi2C = (chi2C > 0) ? 1./chi2C : 1.;
-                        _sigma = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                        _sigma = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                         fHistEPCorrelations[fInCentralitySelection]->Fill(.5*TMath::ATan2(qy2a+qy2c,qx2a+qx2c), _chi, _sigma);
                     } break;
                     case kChi : {
-                        _chi = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                        _chi = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                         chi2A = fSigma2A->At(VZEROcentralityBin);
                         chi2C = fSigma2C->At(VZEROcentralityBin);
                         chi2A = (chi2A > 0) ? 1./chi2A : 1.;
                         chi2C = (chi2C > 0) ? 1./chi2C : 1.;
-                        _sigma = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                        _sigma = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                         fHistEPCorrelations[fInCentralitySelection]->Fill(.5*TMath::ATan2(qy2a+qy2c,qx2a+qx2c), _chi, _sigma);
                     } break;
                     case kSigmaSquared : {
-                        _sigma = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                        _sigma = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                         chi2A = fChi2A->At(VZEROcentralityBin);
                         chi2C = fChi2C->At(VZEROcentralityBin);
-                        _chi = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                        _chi = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                         fHistEPCorrelations[fInCentralitySelection]->Fill(.5*TMath::ATan2(qy2a+qy2c,qx2a+qx2c), _chi, _sigma);
                      } break;
                     default : break;
@@ -1422,28 +1422,28 @@ void AliAnalysisTaskJetV2::CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_
             case kNone : {
                 chi2A = fChi2A->At(VZEROcentralityBin);
                 chi2C = fChi2C->At(VZEROcentralityBin);
-                _chi = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                _chi = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                 chi2A = fSigma2A->At(VZEROcentralityBin);
                 chi2C = fSigma2C->At(VZEROcentralityBin);
                 chi2A = (chi2A > 0) ? 1./chi2A : 1.;
                 chi2C = (chi2C > 0) ? 1./chi2C : 1.;
-                _sigma = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                _sigma = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                 fHistEPCorrelations[fInCentralitySelection]->Fill(.5*TMath::ATan2(qy2a+qy2c,qx2a+qx2c), _chi, _sigma);
             } break;
             case kChi : {
-                _chi = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                _chi = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                 chi2A = fSigma2A->At(VZEROcentralityBin);
                 chi2C = fSigma2C->At(VZEROcentralityBin);
                 chi2A = (chi2A > 0) ? 1./chi2A : 1.;
                 chi2C = (chi2C > 0) ? 1./chi2C : 1.;
-                _sigma = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                _sigma = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                 fHistEPCorrelations[fInCentralitySelection]->Fill(.5*TMath::ATan2(qy2a+qy2c,qx2a+qx2c), _chi, _sigma);
             } break;
             case kSigmaSquared : {
-                _sigma = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                _sigma = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                 chi2A = fChi2A->At(VZEROcentralityBin);
                 chi2C = fChi2C->At(VZEROcentralityBin);
-                _chi = .5*TMath::ATan2(chi2A*chi2A*qx2a+chi2C*chi2C*qx2c, chi2A*chi2A*qy2a+chi2C*chi2C*qy2c);
+                _chi = .5*TMath::ATan2(chi2A*chi2A*qy2a+chi2C*chi2C*qy2c, chi2A*chi2A*qx2a+chi2C*chi2C*qx2c);
                 fHistEPCorrelations[fInCentralitySelection]->Fill(.5*TMath::ATan2(qy2a+qy2c,qx2a+qx2c), _chi, _sigma);
              } break;
             default : break;
