@@ -45,6 +45,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC};          // data type
         enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used for event plane
+        enum EPweightType       { kNone, kChi, kSigmaSquared};          // event plane weight type
         enum analysisType       { kCharged, kFull };                    // analysis type
         // constructors, destructor
                                 AliAnalysisTaskJetV2();
@@ -148,7 +149,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetChi2VZEROC(TArrayD* a)                       { fChi2C = a;}
         void                    SetChi3VZEROA(TArrayD* a)                       { fChi3A = a;}
         void                    SetChi3VZEROC(TArrayD* a)                       { fChi3C = a;}
-        void                    SetUseChiWeightForVZERO(Bool_t w)               { fUseChiWeightForVZERO = w; }
+        void                    SetSigma2VZEROA(TArrayD* a)                     { fSigma2A = a;}
+        void                    SetSigma2VZEROC(TArrayD* a)                     { fSigma2C = a;}
+        void                    SetSigma3VZEROA(TArrayD* a)                     { fSigma3A = a;}
+        void                    SetSigma3VZEROC(TArrayD* a)                     { fSigma3C = a;}
+        void                    SetEPWeightForVZERO(EPweightType type)          { fWeightForVZERO = type; }
         // getters 
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
@@ -358,7 +363,10 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistPsiVZEROCTRK;      //! psi 2 from vzero c
         TH2F*                   fHistPsiVZEROTRK;       //! psi 2 from combined vzero
         TH2F*                   fHistPsiTPCTRK;         //! psi 2 from tpc
-        TH2F*                   fHistEPCorrelations[10];        //! ep correlations
+        TH3F*                   fHistEPCorrelations[10];        //! ep correlations
+        TH2F*                   fHistEPCorrAvChi[10];           //! ep corr
+        TH2F*                   fHistEPCorrAvSigma[10];         //! ep corr
+        TH2F*                   fHistEPCorrChiSigma[10];        //! ep corr
         TH2F*                   fHistIntegralCorrelations[10];  //! correlate polar or local integral
         TProfile*               fProfIntegralCorrelations[10];  //! same qa lot
         TH3F*                   fHistPsiTPCLeadingJet[10];      //! correlation tpc EP, LJ pt
@@ -408,7 +416,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TArrayD*                fChi2C;                         // chi vs cent for vzero C ep_2
         TArrayD*                fChi3A;                         // chi vs cent for vzero A ep_3
         TArrayD*                fChi3C;                         // chi vs cent for vzero C ep_3
-        Bool_t                  fUseChiWeightForVZERO;          // use chi weight for vzero
+        TArrayD*                fSigma2A;                       // chi vs cent for vzero A ep_2
+        TArrayD*                fSigma2C;                       // chi vs cent for vzero C ep_2
+        TArrayD*                fSigma3A;                       // chi vs cent for vzero A ep_3
+        TArrayD*                fSigma3C;                       // chi vs cent for vzero C ep_3
+        EPweightType            fWeightForVZERO;                // use chi weight for vzero
         TFile*                  fOADB;                          //! fOADB
 
 
