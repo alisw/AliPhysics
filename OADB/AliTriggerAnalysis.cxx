@@ -757,10 +757,10 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side
       for(Int_t i=0; i<4; i++) tdc[itdc] |= esdZDC->GetZDCTDCData(itdc, i)!=0;
       if(fillHists && tdc[itdc]) fHistTDCZDC->Fill(itdc);
     }
-    zdcNA = tdc[12];
-    zdcNC = tdc[10];
-    zdcPA = tdc[13];
-    zdcPC = tdc[11];
+    zdcNA = tdc[esdZDC->GetZNATDCChannel()];
+    zdcNC = tdc[esdZDC->GetZNCTDCChannel()];
+    zdcPA = tdc[esdZDC->GetZPATDCChannel()];
+    zdcPC = tdc[esdZDC->GetZPCTDCChannel()];
   }
   
   if (side == kASide) return ((useZP && zdcPA) || (useZN && zdcNA)); 
@@ -782,14 +782,18 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
     return znaFired | zncFired;
   }
   else {
+    Int_t detChZNA  = esdZDC->GetZNATDCChannel();
+    Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 29 : 14;
+    
     for(Int_t i=0;i<4;++i) {
-      if (esdZDC->GetZDCTDCData(10,i)==0) continue;
-      Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(10,i)-esdZDC->GetZDCTDCData(14,i)); 
-      Float_t tdcCcorr = esdZDC->GetZDCTDCCorrected(10,i); 
+      if (esdZDC->GetZDCTDCData(detChZNC,i)==0) continue;
+      Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(detChZNC,i)-esdZDC->GetZDCTDCData(detChGate,i)); 
+      Float_t tdcCcorr = esdZDC->GetZDCTDCCorrected(detChZNC,i); 
       for(Int_t j=0;j<4;++j) {
-        if (esdZDC->GetZDCTDCData(12,j)==0) continue;
-        Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(12,j)-esdZDC->GetZDCTDCData(14,j));
-        Float_t tdcAcorr = esdZDC->GetZDCTDCCorrected(12,j);
+        if (esdZDC->GetZDCTDCData(detChZNA,j)==0) continue;
+        Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(detChZNA,j)-esdZDC->GetZDCTDCData(detChGate,j));
+        Float_t tdcAcorr = esdZDC->GetZDCTDCCorrected(detChZNA,j);
         if(fillHists) {
           fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
           fHistTimeCorrZDC->Fill(tdcCcorr-tdcAcorr,tdcCcorr+tdcAcorr);
@@ -820,14 +824,18 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
   Bool_t zncbadhit = kFALSE;
   
   Float_t tdcCcorr=999, tdcAcorr=999;
+  
+  Int_t detChZNA  = zdcData->GetZNATDCChannel();
+  Int_t detChZNC  = zdcData->GetZNCTDCChannel();
+
   for(Int_t i = 0; i < 4; ++i) {
-    if (zdcData->GetZDCTDCData(10,i)==0) continue;
-    tdcCcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(10,i));
+    if (zdcData->GetZDCTDCData(detChZNC,i)==0) continue;
+    tdcCcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(detChZNC,i));
     if(tdcCcorr<fZDCCutZNCTimeCorrMax && tdcCcorr>fZDCCutZNCTimeCorrMin) zncbadhit = kTRUE;
   }
   for(Int_t i = 0; i < 4; ++i) {
-    if (zdcData->GetZDCTDCData(12,i)==0) continue;
-    tdcAcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(12,i));
+    if (zdcData->GetZDCTDCData(detChZNA,i)==0) continue;
+    tdcAcorr = TMath::Abs(zdcData->GetZDCTDCCorrected(detChZNA,i));
     if(tdcAcorr<fZDCCutZNATimeCorrMax && tdcAcorr>fZDCCutZNATimeCorrMin) znabadhit = kTRUE;
   }
   
