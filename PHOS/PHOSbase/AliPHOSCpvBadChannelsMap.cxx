@@ -113,7 +113,7 @@ void AliPHOSCpvBadChannelsMap::BadChannelIds(Int_t *badIds)
   //Array badIds of length GetNumOfBadChannels() should be prepared in advance. 
 
   if(!badIds) return;
-  if(!fBads>0) return;
+  if(fBads <=0 ) return;
 
   AliPHOSGeometry* geom = AliPHOSGeometry::GetInstance();
 
