@@ -465,20 +465,7 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
 
   double deta = eta1 - eta2;
 
-   double px1 = pair->Track1()->Track()->P().x();
-   double py1 = pair->Track1()->Track()->P().y();
-   //double pz1 = pair->Track1()->Track()->P().z();
-
-   double px2 = pair->Track2()->Track()->P().x();
-   double py2 = pair->Track2()->Track()->P().y();
-   //double pz2 = pair->Track2()->Track()->P().z();
-
-   double pt1 = TMath::Hypot(px1, py1);
-   double pt2 = TMath::Hypot(px2, py2);
-//   double ptmin = pt1>pt2 ? pt2 : pt1;
-
-//   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
-//     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
+ 
 
   fDPhiDEtaDenominator->Fill(dphi, deta);
 
@@ -486,6 +473,23 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
 //   fDCosDenominator->Fill(cosphi);
 
   if (fDoPtAnalysis) {
+
+    double px1 = pair->Track1()->Track()->P().x();
+    double py1 = pair->Track1()->Track()->P().y();
+    //double pz1 = pair->Track1()->Track()->P().z();
+    
+    double px2 = pair->Track2()->Track()->P().x();
+    double py2 = pair->Track2()->Track()->P().y();
+    //double pz2 = pair->Track2()->Track()->P().z();
+
+    double pt1 = TMath::Hypot(px1, py1);
+    double pt2 = TMath::Hypot(px2, py2);
+//   double ptmin = pt1>pt2 ? pt2 : pt1;
+    
+//   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
+//     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
+
+
     //   fDPhiPtDenominator->Fill(dphi, ptmin);
     //   fDCosPtDenominator->Fill(cosphi, ptmin);
 
