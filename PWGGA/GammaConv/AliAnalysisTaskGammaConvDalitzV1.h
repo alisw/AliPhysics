@@ -62,7 +62,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		}
 		void SetDoChicAnalysis(Bool_t flag){ fDoChicAnalysis = flag; }
 		void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
+		void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
 		void SetProductionVertextoVGamma(Bool_t flag) { fSetProductionVertextoVGamma = flag; }
+		
 	
 	private:
 		void InitBack();
@@ -70,6 +72,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		void ProcessTruePhotonCandidates(AliAODConversionPhoton*);
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
 		void ProcessTrueChicCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate, AliAODConversionPhoton *TruejpsiCandidate);
+		void RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP);
 		void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 		void ProcessElectronCandidates();
 		void ProcessVirtualGammasCandidates();
@@ -109,7 +112,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TList 									*fCutGammaArray;
 		TList 									*fCutElectronArray;
 		TList	 								*fCutMesonArray;
-		TList	 								**fGammasPool;
+		//TList	 								**fGammasPool;
 		AliConvEventCuts 						*fEventCuts;
 		AliConversionPhotonCuts 				*fConversionCuts;
 		TH1F 									**hESDConvGammaPt;
@@ -259,6 +262,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		vector<Int_t>							fVectorDoubleCountTrueConvGammas;					//! vector containing labels of validated photons
 			
 		TRandom3 								fRandom;
+		Double_t								fEventPlaneAngle;
 		Double_t 								*fUnsmearedPx;
 		Double_t 								*fUnsmearedPy;
 		Double_t 								*fUnsmearedPz;
@@ -281,6 +285,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		Bool_t 									fSetProductionVertextoVGamma;
 		Bool_t 									fIsFromMBHeader;
 		Bool_t 									fIsMC;
+		Bool_t                              					fDoTHnSparse; 
 
 	private:
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
