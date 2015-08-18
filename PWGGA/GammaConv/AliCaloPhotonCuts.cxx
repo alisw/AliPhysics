@@ -2114,7 +2114,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		// NonLinearity LHC12 Calo - only shifting MC
 		case 12:
 			if(isMC>0){
-				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(energy, 0.964403, -3.37338, -0.41446);
+				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(2.0*energy, 0.964403, -3.37338, -0.41446);
 				else if(periodName=="LHC14e2c") energy /= FunctionNL_kSDM(2.0*energy, 0.973446, -1.72988, -2.43399);
 				else periodNameAvailable = kFALSE;
 			}
@@ -2134,7 +2134,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 14:
 			energy *= FunctionNL_kPi0MC(energy, 0.983504, 0.210106, 0.897274, 0.0829064, 152.299, 31.5028, 0.968);
 			if(isMC>0){
-				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(energy, 0.964403, -3.37338, -0.41446);
+				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(2.0*energy, 0.964403, -3.37338, -0.41446);
 				else if(periodName=="LHC14e2c") energy /= FunctionNL_kSDM(2.0*energy, 0.973446, -1.72988, -2.43399);
 				else periodNameAvailable = kFALSE;
 			}
