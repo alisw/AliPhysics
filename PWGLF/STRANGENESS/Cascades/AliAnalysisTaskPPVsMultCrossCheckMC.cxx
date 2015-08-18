@@ -634,18 +634,18 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
                 //Fill Histograms
                 fHistPt_Generated     [ih] -> Fill(lThisPt);
                 fHistPtVsV0M_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                fHistPtVsV0MAmplitude_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                fHistPtVsV0MAmplitude_Generated[ih] -> Fill(lThisPt,fV0MAmplitude);
                 fHistPtVsV0MTrue_Generated     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 if( lDataSelection ){
                     fHistPt_DataSelection     [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                    fHistPtVsV0MAmplitude_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsV0MAmplitude_DataSelection[ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_DataSelection     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 }
                 if( lMCSelection   ){
                     fHistPt_MCSelection       [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                    fHistPtVsV0MAmplitude_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsV0MAmplitude_MCSelection  [ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_MCSelection       [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 }
             }
