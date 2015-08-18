@@ -469,6 +469,10 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
 
   fDPhiDEtaDenominator->Fill(dphi, deta);
 
+  double pt1 = -999;
+  double pt2 = -999;
+
+
   fDPhiDenominator->Fill(dphi);
 //   fDCosDenominator->Fill(cosphi);
 
@@ -485,7 +489,7 @@ void AliFemtoCorrFctnDEtaDPhi::AddMixedPair( AliFemtoPair* pair){
     double pt1 = TMath::Hypot(px1, py1);
     double pt2 = TMath::Hypot(px2, py2);
 //   double ptmin = pt1>pt2 ? pt2 : pt1;
-    
+
 //   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
 //     sqrt((px1*px1 + py1*py1 + pz1*pz1)*(px2*px2 + py2*py2 + pz2*pz2));
 
