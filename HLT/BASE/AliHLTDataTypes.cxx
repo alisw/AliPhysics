@@ -38,6 +38,7 @@
 // An initializer function has been defined in order to work around this issue.
 
 #include "AliHLTDataTypes.h"
+#include <algorithm>
 
 /** multiple output data types */
 const char kAliHLTMultipleDataTypeIDstring[8] = {'M','U','L','T','I','P','L','E'};
@@ -349,3 +350,15 @@ const char kAliHLTDataOriginTRG[kAliHLTComponentDataTypefOriginSize]   = {'T','R
 
 /** AD */
 const char kAliHLTDataOriginAD[kAliHLTComponentDataTypefOriginSize]   = {'A','D',' ',' '};
+
+void AliHLTComponentDataType::PrintDataType(char* buffer, unsigned int bufferLen)
+{
+	if (bufferLen == 1) *buffer = 0;
+	if (bufferLen <= 1) return;
+	memset(buffer, 0, bufferLen);
+	strncpy(buffer, fID, std::min(bufferLen - 1, (unsigned int) kAliHLTComponentDataTypefIDsize));
+	unsigned int curlen = strlen(buffer);
+	if (curlen > bufferLen - 3) return;
+	buffer[curlen] = '-';
+	strncpy(buffer + curlen + 1, fOrigin, std::min(bufferLen - curlen - 2, (unsigned int) kAliHLTComponentDataTypefOriginSize));
+}
