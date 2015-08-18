@@ -557,8 +557,8 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009217302009250404000"; mesonCutArray[3] = "0252101500000000"; // variation BG scheme track mult
 	} else if (trainConfig == 95) {
 		eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009217302008210404000"; mesonCutArray[0] = "0152101500000000"; // variation chi2 30 psi pair 0.1 1D
-		eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200008217302008180404000"; mesonCutArray[1] = "0152101500000000"; // variation chi2 50 psi pair 0.2 2D
-		eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200006217302008860404000"; mesonCutArray[2] = "0152101500000000"; // variation chi2 20 psi pair 0.05 2D
+		eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009217302008180404000"; mesonCutArray[1] = "0152101500000000"; // variation chi2 50 psi pair 0.2 2D
+		eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009217302008860404000"; mesonCutArray[2] = "0152101500000000"; // variation chi2 20 psi pair 0.05 2D
 		eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009217302009250404000"; mesonCutArray[3] = "0252101500000000"; // variation BG scheme track mult
 	} else if (trainConfig == 96) {
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent
