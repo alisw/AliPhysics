@@ -403,6 +403,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistJetEtaRho[10];             //! jet eta versus rho
         // in plane, out of plane jet spectra
         TH2F*                   fHistJetPsi2Pt[10];             //! event plane dependence of jet pt
+        TH3F*                   fHistJetLJPsi2Pt[10];           //! event plane dependence of jet pt and leading track pt
         TH2F*                   fHistJetPsi2PtRho0[10];         //! event plane dependence of jet pt vs rho_0
         // vzero event plane calibration cache for 10h data
         Float_t                 fMeanQ[9][2][2];                //! recentering
