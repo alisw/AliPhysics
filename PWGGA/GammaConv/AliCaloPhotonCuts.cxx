@@ -95,6 +95,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const char *name,const char *title) :
 	BadChannels(NULL),
 	nMaxEMCalModules(12),
 	nMaxPHOSModules(5),
+	V0ReaderName("V0ReaderV1"),
+	periodName(""),
+	currentMC(kNoMC),
 	fClusterType(0),
 	fMinEtaCut(-10),
 	fMaxEtaCut(10),
@@ -210,6 +213,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	BadChannels(NULL),
 	nMaxEMCalModules(ref.nMaxEMCalModules),
 	nMaxPHOSModules(ref.nMaxPHOSModules),
+	V0ReaderName("V0ReaderV1"),
+	periodName(ref.periodName),
+	currentMC(kNoMC),
  	fClusterType(ref.fClusterType),
 	fMinEtaCut(ref.fMinEtaCut),
 	fMaxEtaCut(ref.fMaxEtaCut),
@@ -600,6 +606,15 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
             fHistograms->Add(fHistClusterM20M02AfterQA);
         }
     }
+
+	AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask(V0ReaderName.Data());
+	if( V0Reader == NULL ){
+		AliFatal(Form("No V0Reader called '%s' could be found within AliCaloPhotonCuts::CorrectEMCalNonLinearity",V0ReaderName.Data()));
+		return;
+	}
+
+	periodName = V0Reader->GetPeriodName();
+	currentMC = FindEnumForMCSet(periodName);
 
 	TH1::AddDirectory(kTRUE);
 	return;
@@ -2089,13 +2104,6 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		return;
 	}
 
-	AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
-	if( V0Reader == NULL ){
-		AliFatal("No V0Reader could be found within AliCaloPhotonCuts::CorrectEMCalNonLinearity");
-		return;
-	}
-
-	TString periodName = V0Reader->GetPeriodName();
 	Bool_t periodNameAvailable = kTRUE;
 
 	switch(fSwitchNonLinearity){
@@ -2112,10 +2120,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 11:
 			label_case_11:
 			if(isMC>0){
-				if( periodName=="LHC14e2a" || periodName=="LHC14e2b" )
+				if( currentMC==k14e2a || currentMC==k14e2b )
 					energy /= FunctionNL_kSDM(energy, 0.984918, -3.28311, -2.22327);
 
-				else if( periodName=="LHC14e2c" )
+				else if( currentMC==k14e2c )
 					energy /= FunctionNL_kSDM(energy, 0.985873, -2.64896, -3.53673);
 
 				else periodNameAvailable = kFALSE;
@@ -2126,10 +2134,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 12:
 			label_case_12:
 			if(isMC>0){
-				if( periodName=="LHC14e2a" || periodName=="LHC14e2b" )
+				if( currentMC==k14e2a || currentMC==k14e2b )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.964403, -3.37338, -0.41446);
 
-				else if( periodName=="LHC14e2c" )
+				else if( currentMC==k14e2c )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.973446, -1.72988, -2.43399);
 
 				else periodNameAvailable = kFALSE;
@@ -2166,13 +2174,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 21:
 			label_case_21:
 			if(isMC>0){
-				if( periodName=="LHC12f1a" || periodName=="LHC12i3" || periodName=="LHC15g2" )
+				if( currentMC==k12f1a || currentMC==k12i3 || currentMC==k15g2 )
 					energy /= FunctionNL_kSDM(energy, 0.984889, -3.65456, -1.12744);
 
-				else if(periodName=="LHC12f1b")
+				else if(currentMC==k12f1b)
 					energy /= FunctionNL_kSDM(energy, 0.984384, -3.30287, -1.48516);
 
-				else if( periodName=="LHC15g1a" || periodName=="LHC15a3a" || periodName=="LHC15a3a_plus" )
+				else if( currentMC==k15g1a || currentMC==k15a3a || currentMC==k15a3a_plus )
 					energy /= FunctionNL_kSDM(energy, 0.981892, -5.43438, -1.05468);
 
 				else periodNameAvailable = kFALSE;
@@ -2183,13 +2191,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 22:
 			label_case_22:
 			if(isMC>0){
-				if(	periodName=="LHC12f1a" || periodName=="LHC12i3" || periodName=="LHC15g2" )
+				if(	currentMC==k12f1a || currentMC==k12i3 || currentMC==k15g2 )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.966151, -2.97974, -0.29463);
 
-				else if( periodName=="LHC12f1b" )
+				else if( currentMC==k12f1b )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.988814, 0.335011, -4.30322);
 
-				else if( periodName=="LHC15g1a" || periodName=="LHC15a3a" || periodName=="LHC15a3a_plus" )
+				else if( currentMC==k15g1a || currentMC==k15a3a || currentMC==k15a3a_plus )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.979994, -3.24431, -0.760205);
 
 				else periodNameAvailable = kFALSE;
@@ -2226,7 +2234,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 81:
 			label_case_81:
 			if(isMC>0){
-				if( periodName.Contains("LHC13b2_efix") )
+				if( currentMC==k13b2_efix )
 					energy /= FunctionNL_kSDM(energy, 0.984749, -3.20634, -1.6207);
 
 				else periodNameAvailable = kFALSE;
@@ -2237,7 +2245,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 82:
 			label_case_82:
 			if(isMC>0){
-				if( periodName.Contains("LHC13b2_efix") )
+				if( currentMC==k13b2_efix )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.979474, -1.25861, -2.02586);
 
 				else periodNameAvailable = kFALSE;
@@ -2290,6 +2298,22 @@ Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
 }
 
 //________________________________________________________________________
+AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString nameMC){
+	if(nameMC.CompareTo("LHC14e2a")==0)				return k14e2a;
+	else if(nameMC.CompareTo("LHC14e2b")==0)		return k14e2b;
+	else if(nameMC.CompareTo("LHC14e2c")==0)		return k14e2c;
+	else if(nameMC.CompareTo("LHC12f1a")==0)		return k12f1a;
+	else if(nameMC.CompareTo("LHC12f1b")==0)		return k12f1b;
+	else if(nameMC.CompareTo("LHC12i3")==0)			return k12i3;
+	else if(nameMC.CompareTo("LHC15g1a")==0)		return k15g1a;
+	else if(nameMC.CompareTo("LHC15g2")==0)			return k15g2;
+	else if(nameMC.CompareTo("LHC15a3a")==0)		return k15a3a;
+	else if(nameMC.CompareTo("LHC15a3a_plus")==0)	return k15a3a_plus;
+	else if(nameMC.Contains("LHC13b2_efix"))		return k13b2_efix;
+	else return kNoMC;
+}
+
+//________________________________________________________________________
 TString AliCaloPhotonCuts::GetCutNumber(){
    // returns TString with current cut number
    TString a(kNCuts);
@@ -2298,5 +2322,3 @@ TString AliCaloPhotonCuts::GetCutNumber(){
    }
    return a;
 }
-	
-	
