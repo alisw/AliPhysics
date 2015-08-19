@@ -70,6 +70,7 @@ int AliHLTAsyncProcessor::Deinitialize()
 	fBackend = NULL;
 	fQueueDepth = 0;
 	HLTInfo("Deinitialization of ASYNC Processor done");
+	return(0);
 }
 
 void* AliHLTAsyncProcessor::AsyncThreadStartHelper(void* obj)

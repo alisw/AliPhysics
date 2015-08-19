@@ -28,12 +28,12 @@ public:
 
 	int QueueAsyncMemberTask(T* obj, void* (T::*function)(void*), void* data)
 	{
-		QueueAsyncTask(&QueueAsyncMemberTaskHelper, new AliHLTAsyncMemberProcessorContainer(obj, function, data));
+		return QueueAsyncTask(&QueueAsyncMemberTaskHelper, new AliHLTAsyncMemberProcessorContainer(obj, function, data));
 	}
 
 	void* InitializeAsyncMemberTask(T* obj, void* (T::*function)(void*), void* data)
 	{
-		InitializeAsyncTask(&QueueAsyncMemberTaskHelper, new AliHLTAsyncMemberProcessorContainer(obj, function, data));
+		return InitializeAsyncTask(&QueueAsyncMemberTaskHelper, new AliHLTAsyncMemberProcessorContainer(obj, function, data));
 	}
 
 private:

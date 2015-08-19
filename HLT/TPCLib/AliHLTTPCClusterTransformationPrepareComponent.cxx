@@ -103,7 +103,8 @@ AliHLTComponent* AliHLTTPCClusterTransformationPrepareComponent::Spawn() {
 AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::GenerateFastTransformObject()
 {
 	AliTPCcalibDB *calib=AliTPCcalibDB::Instance();
-	if(!calib){
+	if (!calib)
+	{
 		HLTError("AliTPCcalibDB does not exist");
 		return(NULL);
 	}
@@ -114,23 +115,20 @@ AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::Ge
 		if (timeObj == NULL)
 		{
 			HLTError("Error obtaining AliTPCcalibTime Object from received calibration object, cannot reinitialize transformation map");
-			delete fNewCalibObject;
-			fNewCalibObject = NULL;
 		}
 		else
 		{
 			AliCDBManager* cdbManager = AliCDBManager::Instance();
 			
 			static AliTPCPreprocessorOffline* preprocessor = new AliTPCPreprocessorOffline;
-			fprintf(stderr, "Running preprocessor on calibration object\n");
 			preprocessor->CalibTimeVdrift(timeObj, GetRunNo(), GetRunNo());
 			preprocessor->CreateDriftCDBentryObject(GetRunNo(), GetRunNo());
 			cdbManager->PromptCacheEntry("TPC/Calib/TimeDrift", preprocessor->GetDriftCDBentry());
 			preprocessor->TakeOwnershipDriftCDBEntry();
-			//TODO: Memory Leaks: We can NOT delete fNewCalibObject. The CDBEntry created by the Preprocessor contains a TObjArray that links to some data in fNewCalibObject.
-			//We have no control over where in AliRoot someone queries that CDBEntry and we do not know when it is no longer needed!
-			fNewCalibObject = NULL;
 		}
+		//TODO: Memory Leaks: We can NOT delete fNewCalibObject. The CDBEntry created by the Preprocessor contains a TObjArray that links to some data in fNewCalibObject.
+		//We have no control over where in AliRoot someone queries that CDBEntry and we do not know when it is no longer needed!
+		fNewCalibObject = NULL;
 	}
 	else
 	{
