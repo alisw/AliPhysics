@@ -213,9 +213,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
 	BadChannels(NULL),
 	nMaxEMCalModules(ref.nMaxEMCalModules),
 	nMaxPHOSModules(ref.nMaxPHOSModules),
-	V0ReaderName("V0ReaderV1"),
+	V0ReaderName(ref.V0ReaderName),
 	periodName(ref.periodName),
-	currentMC(kNoMC),
+	currentMC(ref.currentMC),
  	fClusterType(ref.fClusterType),
 	fMinEtaCut(ref.fMinEtaCut),
 	fMaxEtaCut(ref.fMaxEtaCut),
@@ -606,15 +606,6 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
             fHistograms->Add(fHistClusterM20M02AfterQA);
         }
     }
-
-	AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask(V0ReaderName.Data());
-	if( V0Reader == NULL ){
-		AliFatal(Form("No V0Reader called '%s' could be found within AliCaloPhotonCuts::CorrectEMCalNonLinearity",V0ReaderName.Data()));
-		return;
-	}
-
-	periodName = V0Reader->GetPeriodName();
-	currentMC = FindEnumForMCSet(periodName);
 
 	TH1::AddDirectory(kTRUE);
 	return;
@@ -1498,7 +1489,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
 
 	printf("NonLinearity Correction: \n");
-	if (fUseNonLinearity) printf("\t Chose NonLinearity: %i\n", fSwitchNonLinearity );
+	if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i' and MC periodName '%s'\n", fSwitchNonLinearity, periodName.Data());
 	else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 	
 }
@@ -2104,6 +2095,15 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		return;
 	}
 
+	if(isMC>0 && currentMC==kNoMC){
+		AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask(V0ReaderName.Data());
+		if( V0Reader == NULL ){
+			AliFatal(Form("No V0Reader called '%s' could be found within AliCaloPhotonCuts::CorrectEMCalNonLinearity",V0ReaderName.Data()));
+			return;
+		}
+		periodName = V0Reader->GetPeriodName();
+		currentMC = FindEnumForMCSet(periodName);
+	}
 	Bool_t periodNameAvailable = kTRUE;
 
 	switch(fSwitchNonLinearity){
