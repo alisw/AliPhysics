@@ -741,10 +741,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoMotherEtaPtAlpha[iCut] = new TH2F("ESD_MotherEta_Pt_Alpha","ESD_MotherEta_Pt_Alpha",350,0.03,35.,100,0,1);
 				SetLogBinningXTH2(fHistoMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtAlpha[iCut]);
-				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",350,0.03,35.,100,0,TMath::Pi());
+				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",350,0.03,35.,100,0, 0.5);
 				SetLogBinningXTH2(fHistoMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(fHistoMotherPi0PtOpenAngle[iCut]);
-				fHistoMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",350,0.03,35.,100,0,TMath::Pi());
+				fHistoMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",350,0.03,35.,180,0, 1.8);
 				SetLogBinningXTH2(fHistoMotherEtaPtOpenAngle[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtOpenAngle[iCut]);
 			}
@@ -990,17 +990,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 					fHistoMCEtaWOEvtWeightPt[iCut] = new TH1F("MC_Eta_WOEventWeights_Pt","MC_Eta_WOEventWeights_Pt",350,0,35);
 					fMCList[iCut]->Add(fHistoMCEtaWOEvtWeightPt[iCut]);
 					if (fDoMesonQA > 0){
-						fHistoMCPi0PtJetPt[iCut] = new TH2F("MC_Pi0_Pt_JetPt","MC_Pi0_Pt_JetPt",150,0.03,15.,200,0,200);
+						fHistoMCPi0PtJetPt[iCut] = new TH2F("MC_Pi0_Pt_JetPt","MC_Pi0_Pt_JetPt",350,0.03,35.,200,0,200);
 						fHistoMCPi0PtJetPt[iCut]->Sumw2();
 						SetLogBinningXTH2(fHistoMCPi0PtJetPt[iCut]);
 						fMCList[iCut]->Add(fHistoMCPi0PtJetPt[iCut]);
-						fHistoMCEtaPtJetPt[iCut] = new TH2F("MC_Eta_Pt_JetPt","MC_Eta_Pt_JetPt",150,0.03,15.,200,0,200);
+						fHistoMCEtaPtJetPt[iCut] = new TH2F("MC_Eta_Pt_JetPt","MC_Eta_Pt_JetPt",350,0.03,35.,200,0,200);
 						fHistoMCEtaPtJetPt[iCut]->Sumw2();
 						SetLogBinningXTH2(fHistoMCEtaPtJetPt[iCut]);
 						fMCList[iCut]->Add(fHistoMCEtaPtJetPt[iCut]);
 					}
-
-
 				}
 
 				if (fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -1295,10 +1293,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 					SetLogBinningXTH2(fHistoTrueEtaPtAlpha[iCut]);
 					fTrueList[iCut]->Add(fHistoTrueEtaPtAlpha[iCut]);
 					
-					fHistoTruePi0PtOpenAngle[iCut] = new TH2F("ESD_TruePi0_Pt_OpenAngle","ESD_TruePi0_Pt_OpenAngle",350,0.03,35.,200,0,2*TMath::Pi());
+					fHistoTruePi0PtOpenAngle[iCut] = new TH2F("ESD_TruePi0_Pt_OpenAngle","ESD_TruePi0_Pt_OpenAngle",350,0.03,35.,100,0,0.5);
 					SetLogBinningXTH2(fHistoTruePi0PtOpenAngle[iCut]);
 					fTrueList[iCut]->Add(fHistoTruePi0PtOpenAngle[iCut]);
-					fHistoTrueEtaPtOpenAngle[iCut] = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",350,0.03,35.,200,0,2*TMath::Pi());
+					fHistoTrueEtaPtOpenAngle[iCut] = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",350,0.03,35.,180,0,1.8);
 					SetLogBinningXTH2(fHistoTrueEtaPtOpenAngle[iCut]);
 					fTrueList[iCut]->Add(fHistoTrueEtaPtOpenAngle[iCut]);
 					

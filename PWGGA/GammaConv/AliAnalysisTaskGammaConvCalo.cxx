@@ -995,12 +995,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 				fHistoMotherEtaPtAlpha[iCut]->SetYTitle("#alpha_{#eta cand}");
 				SetLogBinningXTH2(fHistoMotherEtaPtAlpha[iCut]);
 				fESDList[iCut]->Add(fHistoMotherEtaPtAlpha[iCut]);
-				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());
+				fHistoMotherPi0PtOpenAngle[iCut] = new TH2F("ESD_MotherPi0_Pt_OpenAngle","ESD_MotherPi0_Pt_OpenAngle",150,0.03,15.,100,0,1);
 				fHistoMotherPi0PtOpenAngle[iCut]->SetXTitle("p_{T, #pi^{0} cand} (GeV/c)");
 				fHistoMotherPi0PtOpenAngle[iCut]->SetYTitle("#theta_{#pi^{0} cand}");
 				SetLogBinningXTH2(fHistoMotherPi0PtOpenAngle[iCut]);
 				fESDList[iCut]->Add(fHistoMotherPi0PtOpenAngle[iCut]);
-				fHistoMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,100,0,TMath::Pi());
+				fHistoMotherEtaPtOpenAngle[iCut] = new TH2F("ESD_MotherEta_Pt_OpenAngle","ESD_MotherEta_Pt_OpenAngle",150,0.03,15.,200,0,TMath::Pi());
 				fHistoMotherEtaPtOpenAngle[iCut]->SetXTitle("p_{T, #eta cand} (GeV/c)");
 				fHistoMotherEtaPtOpenAngle[iCut]->SetYTitle("#theta_{#eta cand}");
 				SetLogBinningXTH2(fHistoMotherEtaPtOpenAngle[iCut]);
@@ -1755,12 +1755,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 					SetLogBinningXTH2(fHistoTrueEtaPtAlpha[iCut]);
 					fTrueList[iCut]->Add(fHistoTrueEtaPtAlpha[iCut]);
 					
-					fHistoTruePi0PtOpenAngle[iCut] = new TH2F("ESD_TruePi0_Pt_OpenAngle","ESD_TruePi0_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());
+					fHistoTruePi0PtOpenAngle[iCut] = new TH2F("ESD_TruePi0_Pt_OpenAngle","ESD_TruePi0_Pt_OpenAngle",150,0.03,15.,100,0,1);
 					fHistoTruePi0PtOpenAngle[iCut]->SetYTitle("#theta_{#pi^{0}}");
 					fHistoTruePi0PtOpenAngle[iCut]->SetXTitle("#pi^{0} p_{T} (GeV/c)");
 					SetLogBinningXTH2(fHistoTruePi0PtOpenAngle[iCut]);
 					fTrueList[iCut]->Add(fHistoTruePi0PtOpenAngle[iCut]);
-					fHistoTrueEtaPtOpenAngle[iCut] = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",150,0.03,15.,200,0,2*TMath::Pi());
+					fHistoTrueEtaPtOpenAngle[iCut] = new TH2F("ESD_TrueEta_Pt_OpenAngle","ESD_TrueEta_Pt_OpenAngle",150,0.03,15.,200,0,TMath::Pi());
 					fHistoTrueEtaPtOpenAngle[iCut]->SetYTitle("#theta_{#eta}");
 					fHistoTrueEtaPtOpenAngle[iCut]->SetXTitle("#eta p_{T} (GeV/c)");
 					SetLogBinningXTH2(fHistoTrueEtaPtOpenAngle[iCut]);
