@@ -2089,7 +2089,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		return;
 	}
 
-	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+	AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
+	if( V0Reader == NULL ){
+		AliFatal("No V0Reader could be found within AliCaloPhotonCuts::CorrectEMCalNonLinearity");
+		return;
+	}
+
+	TString periodName = V0Reader->GetPeriodName();
 	Bool_t periodNameAvailable = kTRUE;
 
 	switch(fSwitchNonLinearity){
@@ -2104,40 +2110,42 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
 		// NonLinearity LHC12 ConvCalo - only shifting MC
 		case 11:
+			label_case_11:
 			if(isMC>0){
-				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(energy, 0.984918, -3.28311, -2.22327);
-				else if(periodName=="LHC14e2c") energy /= FunctionNL_kSDM(energy, 0.985873, -2.64896, -3.53673);
+				if( periodName=="LHC14e2a" || periodName=="LHC14e2b" )
+					energy /= FunctionNL_kSDM(energy, 0.984918, -3.28311, -2.22327);
+
+				else if( periodName=="LHC14e2c" )
+					energy /= FunctionNL_kSDM(energy, 0.985873, -2.64896, -3.53673);
+
 				else periodNameAvailable = kFALSE;
 			}
 			break;
 
 		// NonLinearity LHC12 Calo - only shifting MC
 		case 12:
+			label_case_12:
 			if(isMC>0){
-				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(2.0*energy, 0.964403, -3.37338, -0.41446);
-				else if(periodName=="LHC14e2c") energy /= FunctionNL_kSDM(2.0*energy, 0.973446, -1.72988, -2.43399);
+				if( periodName=="LHC14e2a" || periodName=="LHC14e2b" )
+					energy /= FunctionNL_kSDM(2.0*energy, 0.964403, -3.37338, -0.41446);
+
+				else if( periodName=="LHC14e2c" )
+					energy /= FunctionNL_kSDM(2.0*energy, 0.973446, -1.72988, -2.43399);
+
 				else periodNameAvailable = kFALSE;
 			}
 			break;
 
 		// NonLinearity LHC12 ConvCalo - kTestBeamv2 + shifting MC
 		case 13:
-			energy *= FunctionNL_kPi0MC(energy, 0.983504, 0.210106, 0.897274, 0.0829064, 152.299, 31.5028, 0.968);
-			if(isMC>0){
-				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(energy, 0.984918, -3.28311, -2.22327);
-				else if(periodName=="LHC14e2c") energy /= FunctionNL_kSDM(energy, 0.985873, -2.64896, -3.53673);
-				else periodNameAvailable = kFALSE;
-			}
+			energy *= FunctionNL_kTestBeamv2(energy);
+			goto label_case_11; // goto previous case for shifting MC
 			break;
 
 		// NonLinearity LHC12 Calo - kTestBeamv2 + shifting MC
 		case 14:
-			energy *= FunctionNL_kPi0MC(energy, 0.983504, 0.210106, 0.897274, 0.0829064, 152.299, 31.5028, 0.968);
-			if(isMC>0){
-				if(periodName=="LHC14e2a"||periodName=="LHC14e2b") energy /= FunctionNL_kSDM(2.0*energy, 0.964403, -3.37338, -0.41446);
-				else if(periodName=="LHC14e2c") energy /= FunctionNL_kSDM(2.0*energy, 0.973446, -1.72988, -2.43399);
-				else periodNameAvailable = kFALSE;
-			}
+			energy *= FunctionNL_kTestBeamv2(energy);
+			goto label_case_12; // goto previous case for shifting MC
 			break;
 
 		// NonLinearity LHC12 ConvCalo - kPi0MC + kSDM
@@ -2156,44 +2164,48 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
 		// NonLinearity LHC11a ConvCalo - only shifting MC
 		case 21:
+			label_case_21:
 			if(isMC>0){
-				if(periodName=="LHC12f1a_WSDD"||periodName=="LHC12i3_WSDD") energy /= FunctionNL_kSDM(energy, 0.984889, -3.65456, -1.12744);
-				else if(periodName=="LHC12f1b_WSDD") energy /= FunctionNL_kSDM(energy, 0.984384, -3.30287, -1.48516);
-				else if(periodName=="LHC15g1a") energy /= FunctionNL_kSDM(energy, 0.981892, -5.43438, -1.05468);
+				if( periodName=="LHC12f1a" || periodName=="LHC12i3" || periodName=="LHC15g2" )
+					energy /= FunctionNL_kSDM(energy, 0.984889, -3.65456, -1.12744);
+
+				else if(periodName=="LHC12f1b")
+					energy /= FunctionNL_kSDM(energy, 0.984384, -3.30287, -1.48516);
+
+				else if( periodName=="LHC15g1a" || periodName=="LHC15a3a" || periodName=="LHC15a3a_plus" )
+					energy /= FunctionNL_kSDM(energy, 0.981892, -5.43438, -1.05468);
+
 				else periodNameAvailable = kFALSE;
 			}
 			break;
 
 		// NonLinearity LHC11a Calo - only shifting MC
 		case 22:
+			label_case_22:
 			if(isMC>0){
-				if(periodName=="LHC12f1a_WSDD"||periodName=="LHC12i3_WSDD") energy /= FunctionNL_kSDM(2.0*energy, 0.966151, -2.97974, -0.29463);
-				else if(periodName=="LHC12f1b_WSDD") energy /= FunctionNL_kSDM(2.0*energy, 0.988814, 0.335011, -4.30322);
-				else if(periodName=="LHC15g1a") energy /= FunctionNL_kSDM(2.0*energy, 0.979994, -3.24431, -0.760205);
+				if(	periodName=="LHC12f1a" || periodName=="LHC12i3" || periodName=="LHC15g2" )
+					energy /= FunctionNL_kSDM(2.0*energy, 0.966151, -2.97974, -0.29463);
+
+				else if( periodName=="LHC12f1b" )
+					energy /= FunctionNL_kSDM(2.0*energy, 0.988814, 0.335011, -4.30322);
+
+				else if( periodName=="LHC15g1a" || periodName=="LHC15a3a" || periodName=="LHC15a3a_plus" )
+					energy /= FunctionNL_kSDM(2.0*energy, 0.979994, -3.24431, -0.760205);
+
 				else periodNameAvailable = kFALSE;
 			}
 			break;
 
 		// NonLinearity LHC11a ConvCalo - kTestBeamv2 + shifting MC
 		case 23:
-			energy *= FunctionNL_kPi0MC(energy, 0.983504, 0.210106, 0.897274, 0.0829064, 152.299, 31.5028, 0.968);
-			if(isMC>0){
-				if(periodName=="LHC12f1a_WSDD"||periodName=="LHC12i3_WSDD") energy /= FunctionNL_kSDM(energy, 0.984889, -3.65456, -1.12744);
-				else if(periodName=="LHC12f1b_WSDD") energy /= FunctionNL_kSDM(energy, 0.984384, -3.30287, -1.48516);
-				else if(periodName=="LHC15g1a") energy /= FunctionNL_kSDM(energy, 0.981892, -5.43438, -1.05468);
-				else periodNameAvailable = kFALSE;
-			}
+			energy *= FunctionNL_kTestBeamv2(energy);
+			goto label_case_21; // goto previous case for shifting MC
 			break;
 
 		// NonLinearity LHC11a Calo - kTestBeamv2 + shifting MC
 		case 24:
-			energy *= FunctionNL_kPi0MC(energy, 0.983504, 0.210106, 0.897274, 0.0829064, 152.299, 31.5028, 0.968);
-			if(isMC>0){
-				if(periodName=="LHC12f1a_WSDD"||periodName=="LHC12i3_WSDD") energy /= FunctionNL_kSDM(2.0*energy, 0.966151, -2.97974, -0.29463);
-				else if(periodName=="LHC12f1b_WSDD") energy /= FunctionNL_kSDM(2.0*energy, 0.988814, 0.335011, -4.30322);
-				else if(periodName=="LHC15g1a") energy /= FunctionNL_kSDM(2.0*energy, 0.979994, -3.24431, -0.760205);
-				else periodNameAvailable = kFALSE;
-			}
+			energy *= FunctionNL_kTestBeamv2(energy);
+			goto label_case_22; // goto previous case for shifting MC
 			break;
 
 		// NonLinearity LHC11a ConvCalo - kPi0MC + kSDM
@@ -2212,48 +2224,48 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 
 		// NonLinearity LHC13 pPb ConvCalo  - only shifting MC
 		case 81:
+			label_case_81:
 			if(isMC>0){
-				if(periodName=="LHC13b2") energy /= FunctionNL_kSDM(energy, 0.984749, -3.20634, -1.6207);
+				if( periodName.Contains("LHC13b2_efix") )
+					energy /= FunctionNL_kSDM(energy, 0.984749, -3.20634, -1.6207);
+
 				else periodNameAvailable = kFALSE;
 			}
 			break;
 
 		// NonLinearity LHC13 pPb Calo  - only shifting MC
 		case 82:
+			label_case_82:
 			if(isMC>0){
-				if(periodName=="LHC13b2") energy /= FunctionNL_kSDM(2.0*energy, 0.979474, -1.25861, -2.02586);
+				if( periodName.Contains("LHC13b2_efix") )
+					energy /= FunctionNL_kSDM(2.0*energy, 0.979474, -1.25861, -2.02586);
+
 				else periodNameAvailable = kFALSE;
 			}
 			break;
 
 		// NonLinearity LHC13 pPb ConvCalo  - kTestBeamv2 + shifting MC
 		case 83:
-			energy *= FunctionNL_kPi0MC(energy, 0.983504, 0.210106, 0.897274, 0.0829064, 152.299, 31.5028, 0.968);
-			if(isMC>0){
-				if(periodName=="LHC13b2") energy /= FunctionNL_kSDM(energy, 0.984749, -3.20634, -1.6207);
-				else periodNameAvailable = kFALSE;
-			}
+			energy *= FunctionNL_kTestBeamv2(energy);
+			goto label_case_81; // goto previous case for shifting MC
 			break;
 
 		// NonLinearity LHC13 pPb Calo  - kTestBeamv2 + shifting MC
 		case 84:
-			energy *= FunctionNL_kPi0MC(energy, 0.983504, 0.210106, 0.897274, 0.0829064, 152.299, 31.5028, 0.968);
-			if(isMC>0){
-				if(periodName=="LHC13b2") energy /= FunctionNL_kSDM(2.0*energy, 0.979474, -1.25861, -2.02586);
-				else periodNameAvailable = kFALSE;
-			}
+			energy *= FunctionNL_kTestBeamv2(energy);
+			goto label_case_82; // goto previous case for shifting MC
 			break;
 
 //----------------------------------------------------------------------------------------------------------
 
 		default:
-			AliFatal(Form("NonLinearity Correction not defined: %d",fSwitchNonLinearity));
+			AliFatal(Form("NonLinearity correction not defined for cut: '%d' ! Returning...",fSwitchNonLinearity));
 			return;
 
 	}
 
 	if(!periodNameAvailable){
-		AliFatal(Form("NonLinearity Correction not defined for periodName: '%s'! Correction failed, returning...",periodName.Data()));
+		AliFatal(Form("NonLinearity correction not defined for periodName: '%s'! Please check cut number (%d) as well as function AliCaloPhotonCuts::CorrectEMCalNonLinearity. Correction failed, returning...",periodName.Data(),fSwitchNonLinearity));
 		return;
 	}
 
@@ -2270,6 +2282,11 @@ Float_t AliCaloPhotonCuts::FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, 
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2){
 	return ( p0 + exp( p1 + ( p2 * e ) ) );
+}
+
+//________________________________________________________________________
+Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
+	return 0.968/(0.983504*(1./(1.+0.210106*exp(-e/0.897274))*1./(1.+0.0829064*exp((e-152.299)/31.5028))));
 }
 
 //________________________________________________________________________
