@@ -216,11 +216,11 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     };
     
     //Settings for transverse momentum
-    Int_t lNPtBins = 3000; //10MeV/c precision
-    Double_t lMaxPt = 30.0;
+    Int_t lNPtBins = 300; //50MeV/c precision
+    Double_t lMaxPt = 15.0;
     
     //Settings for charged particle counters (integers!)
-    Int_t lNNchBins = 1000;
+    Int_t lNNchBins = 400;
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
     
