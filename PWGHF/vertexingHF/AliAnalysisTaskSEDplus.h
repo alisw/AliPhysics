@@ -45,6 +45,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetSystem(Int_t system=0){fSystem=system;}
   void SetCutsDistr(Bool_t cutsDistr=kTRUE){fCutsDistr=cutsDistr;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
+  void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;}
   void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
     fNImpParBins=nbins;
     fLowerImpPar=dmin;
@@ -70,6 +71,10 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   void CreateLikeSignHistos();
   void CreateImpactParameterHistos();
+  void CreateMCAcceptanceHistos();
+
+  Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
 
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -120,7 +125,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!<!hist. for LS inv mass (TC)
   TH2F *fCorreld0Kd0pi[3]; //!<!hist. for d0k*d0pi vs. d0k*d0pi (LC)
   TH2F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
-  THnSparseF *fHistMassPtImpParTC[5];//!<! histograms for impact paramter studies
+  THnSparseF *fHistMassPtImpParTC[5];//!<! histograms for impact parameter and cut variation study
+  THnSparseF *fMCAccPrompt; //!<!histo for StepMCAcc for Dplus prompt (pt,y,ptB)
+  THnSparseF *fMCAccBFeed; //!<!histo for StepMCAcc for Dplus FD (pt,y,ptB)
   TH2F *fPtVsMass;    //!<! hist. of pt vs. mass (prod. cuts)
   TH2F *fPtVsMassTC;  //!<! hist. of pt vs. mass (analysis cuts)
   TH3F *fYVsPt;       //!<! hist. of Y vs. Pt vs. Mass(prod. cuts)
@@ -145,6 +152,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fUseBit;      /// flag to use bitmask
   Bool_t fCutsDistr;    /// flag to activate cuts distr histos
   Bool_t fDoImpPar;    /// flag to activate impact paramter histos
+  Bool_t fStepMCAcc;   /// flag to activate histos for StepMCAcc
   Int_t  fNImpParBins;   /// nunber of bins in impact parameter histos
   Float_t fLowerImpPar;  /// lower limit in impact parameter (um)
   Float_t fHigherImpPar; /// higher limit in impact parameter (um)
@@ -153,7 +161,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fSystem;   /// 0=pp,1=PbPb
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,21); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,22); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

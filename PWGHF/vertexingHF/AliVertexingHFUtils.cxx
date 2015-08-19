@@ -665,7 +665,34 @@ Int_t AliVertexingHFUtils::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *
   else return 4;
 
 }
+//____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart){
+  /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt
 
+  Int_t pdgGranma = 0;
+  Int_t mother = 0;
+  mother = mcPart->GetMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma =0;
+  while (mother >0 ){
+    istep++;
+    AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
+    if (mcGranma){
+      pdgGranma = mcGranma->GetPdgCode();
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+	return mcGranma->Pt();
+      }
+      if(abspdgGranma==4) return -999.;
+      if(abspdgGranma==5) return -1.;
+      mother = mcGranma->GetMother();
+    }else{
+      printf("AliVertexingHFUtils::GetBeautyMotherPt: Failed casting the mother particle!");
+      break;
+    }
+  }
+  return -999.;
+}
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckD0Decay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
   /// Checks the D0 decay channel. Returns 1 for the D0->Kpi case, 2 for the D0->Kpipipi case, -1 in other cases
