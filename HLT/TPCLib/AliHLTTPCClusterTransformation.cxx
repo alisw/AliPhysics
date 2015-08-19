@@ -175,6 +175,7 @@ Int_t  AliHLTTPCClusterTransformation::Init( const AliHLTTPCFastTransformObject 
   if( err!=0 ){
     return Error(-10,Form( "AliHLTTPCClusterTransformation::Init: Initialisation of Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   }
+  return(0);
 }
 
 

@@ -258,7 +258,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 		HLTInfo( "received configuration object." );
 		if (fgTransform.Init( *configObj ))
 		{
-			HLTError("Failed on-the-fly-initialization of transformation map");
+			HLTError("Failed on-the-fly-initialization of transformation map. Error: %s", fgTransform.GetLastError());
 			return(-1);
 		}
 		fInitialized = true;
