@@ -71,6 +71,21 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 			kPhotonOut
 		};
 
+		enum MCSet {
+			kNoMC=0,
+			k14e2a,
+			k14e2b,
+			k14e2c,
+			k12f1a,
+			k12f1b,
+			k12i3,
+			k15g1a,
+			k15g2,
+			k15a3a,
+			k15a3a_plus,
+			k13b2_efix
+		};
+
 		//handeling of CutString
 		static const char * fgkCutNames[kNCuts];
 		Bool_t 			SetCutIds(TString cutString); 
@@ -100,6 +115,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
 		//correct NonLinearity
+		void			SetV0ReaderName(TString name)									{V0ReaderName = name; return;}
+		MCSet			FindEnumForMCSet(TString nameMC);
+
 		void			CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
 		Float_t			FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
 		Float_t			FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
@@ -152,6 +170,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TProfile*			BadChannels;				// TProfile with bad channels
 		Int_t				nMaxEMCalModules;			// max number of EMCal Modules
 		Int_t				nMaxPHOSModules;			// max number of PHOS Modules
+
+		//for NonLinearity correction
+		TString				V0ReaderName;				// Name of V0Reader
+		TString				periodName;					// PeriodName of MC
+		MCSet				currentMC;					// enum for current MC set being processed
 		
 		//cuts
 		Int_t		fClusterType;						// which cluster do we have
@@ -267,7 +290,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,7)
+		ClassDef(AliCaloPhotonCuts,8)
 };
 
 #endif
