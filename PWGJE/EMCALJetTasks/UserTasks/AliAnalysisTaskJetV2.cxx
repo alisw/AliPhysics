@@ -116,6 +116,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
         fHistJetPtConstituents[i] = 0;
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
+        fHistJetLJPsi2Pt[i] = 0;
         fHistJetPsi2PtRho0[i] = 0;
    }
    for(Int_t i(0); i < 9; i++) {
@@ -180,6 +181,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type, B
         fHistJetPtConstituents[i] = 0;
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
+        fHistJetLJPsi2Pt[i] = 0;
         fHistJetPsi2PtRho0[i] = 0;
    }
    for(Int_t i(0); i < 9; i++) {
@@ -653,6 +655,8 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, etaMin, etaMax, 100, 0, 300, i);
         // in plane and out of plane spectra
         fHistJetPsi2Pt[i] =            BookTH2F("fHistJetPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
+        fHistJetLJPsi2Pt[i] =          BookTH3F("fHistJetLJPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", "p_{t, leading track}", 40, 0., TMath::Pi(), 350, -100, 250, 200, 0, 50, i);
+
         fHistJetPsi2PtRho0[i] =        BookTH2F("fHistJetPsi2PtRho0", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
         // profiles for all correlator permutations which are necessary to calculate each second and third order event plane resolution
         fProfV2Resolution[i] = new TProfile(Form("fProfV2Resolution_%i", i), Form("fProfV2Resolution_%i", i), 11, -0.5, 10.5);
@@ -2392,6 +2396,7 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
             fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area, fEventPlaneWeight);
             fHistJetPtEta[fInCentralitySelection]->Fill(pt-area*rho, eta, fEventPlaneWeight);
             fHistJetPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho, fEventPlaneWeight);
+            fHistJetLJPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho, jet->MaxTrackPt(), fEventPlaneWeight);
             fHistJetPsi2PtRho0[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*fLocalRho->GetVal(), fEventPlaneWeight);
             fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->GetNumberOfConstituents(), fEventPlaneWeight);
             fHistJetEtaRho[fInCentralitySelection]->Fill(eta, pt/area, fEventPlaneWeight);
