@@ -59,8 +59,17 @@ class AliTRDgtuParam : public TObject {
   Int_t GetYt(Int_t stack, Int_t layer, Int_t zrow) const;
   Int_t GetDeltaY() const { return fgDeltaY; }
   Int_t GetDeltaAlpha() const { return fgDeltaAlpha; }
-  static Int_t GetPtCut()  {return ( (Int_t) fgPtCut * fgShiftLengthNorm); }
-  static Int_t GetShiftLengthNorm()  {return fgShiftLengthNorm; }
+  //conversion rejection stuff
+  static Int_t GetPtCut()  { return ( (Int_t) fgPtCut * fgShiftLengthNorm); }
+  static Int_t GetShiftLengthNorm()  { return fgShiftLengthNorm; }
+  static Int_t GetCorrectionMode() { return fgCorrectionMode; }
+  static Int_t GetLayerInvXpos(Int_t layer) { return fgLayerInvXpos[layer]*1e6; }
+  static Int_t GetLayerXpos(Int_t layer) { return fgLayerXpos[layer]*10; }
+  Int_t GetZpos(Int_t stack, Int_t layer, Int_t binZ);
+  Int_t GetTanOfTiltingAngle(Int_t layer);
+  Double_t CorrectYforAlignmentOCDB(Int_t det, Double_t trklZpos);
+  void GetYAlignmentDataOCDB(Int_t chamber, Double_t *shiftCorrFactor, Double_t *rotationCorrFactor);
+
   Int_t GetZSubchannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const;
   static Int_t GetRefLayer(Int_t refLayerIdx);
 //  Bool_t GetFitParams(TVectorD &rhs, Int_t k); // const
@@ -76,6 +85,7 @@ class AliTRDgtuParam : public TObject {
 
   static void SetPtCut(Float_t dPt) {fgPtCut = dPt; }
   static void SetShiftLengthNorm(Int_t shiftLengthNorm) {fgShiftLengthNorm = shiftLengthNorm; }
+  static void SetCorrectionMode(Int_t corrMode) {fgCorrectionMode = corrMode; }
 
   static void SetUseGTUconst(Bool_t b) { fgUseGTUconst = b; }
   static Bool_t GetUseGTUconst() { return fgUseGTUconst; }
@@ -131,6 +141,9 @@ class AliTRDgtuParam : public TObject {
 
   static       Float_t fgPtCut;     // max deviation from straight line fit 1/pt to sagitta 1/pt
   static       Int_t fgShiftLengthNorm;  // shift normalization factor for integer calculation
+  static       Int_t fgCorrectionMode;  // choose between optimizations for sagitta method
+  static       Float_t fgLayerInvXpos[6]; // inverse of x position for tracklets in different layers
+  static       Float_t fgLayerXpos[6]; // x position for tracklets in different layers
 
   static       Int_t fgRefLayers[3];    // reference layers for track finding
 

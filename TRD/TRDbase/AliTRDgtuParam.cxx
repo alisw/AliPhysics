@@ -65,9 +65,12 @@ const Int_t 	AliTRDgtuParam::fgkBitExcessYProj = 2;
 // pt higher than the one for smallest possible a != 0
 const Int_t    AliTRDgtuParam::fgkPtInfinity      = std::numeric_limits<Int_t>::max();
 
-// ---- pt cut via sagitta method -----
+// ---- conversion rejection via sagitta method -----
       Float_t   AliTRDgtuParam::fgPtCut   = .62;
-      Int_t     AliTRDgtuParam::fgShiftLengthNorm = 1000000;
+      Float_t   AliTRDgtuParam::fgLayerInvXpos[6] = {0.0033335557, 0.00319918101, 0.003075219878, 0.002960506839, 0.002854044181, 0.002754972726};
+      Float_t   AliTRDgtuParam::fgLayerXpos[6]    = {299.98      , 312.58       , 325.18        , 337.78        , 350.38        , 362.98};
+      Int_t     AliTRDgtuParam::fgShiftLengthNorm = 1e6;
+      Int_t     AliTRDgtuParam::fgCorrectionMode = 0;
 
 // ----- geometry constants used in GTU -----
 const Bool_t    AliTRDgtuParam::fgZChannelMap[5][16][6][16] = {
@@ -1525,8 +1528,20 @@ Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
   fc1Inv = -GetShiftLengthNorm()/c1;
 
   Int_t firstHitLayer = 0 ,lastHitLayer = 5;
-  while ((trackletMask & (1 << firstHitLayer)) == 0) firstHitLayer++;
-  while ((trackletMask & (1 << lastHitLayer)) == 0) lastHitLayer--;
+  while ((trackletMask & (1 << firstHitLayer)) == 0) {
+    firstHitLayer++;
+    if (firstHitLayer >= 3) {
+      AliError(Form("Invalid tracklet mask: %i", trackletMask));
+      break;
+    }
+  }
+  while ((trackletMask & (1 << lastHitLayer)) == 0) {
+    lastHitLayer--;
+    if (lastHitLayer < 3) {
+      AliError(Form("Invalid tracklet mask: %i", trackletMask));
+      break;
+    }
+  }  
   Float_t dX = fGeo->Cheight() + fGeo->Cspace(); // distance between two consecutive layers
   fLengthNorm = (Int_t) (-4e3 * dX/ TMath::Power(((lastHitLayer - firstHitLayer) * dX), 3) * GetShiftLengthNorm() * GetBinWidthY());
   //fLengthNorm *= epsCorr;
@@ -1535,9 +1550,9 @@ Bool_t AliTRDgtuParam::GenerateRecoCoefficients(Int_t trackletMask)
 
   for (Int_t layer = 0; layer < GetNLayers(); layer++) {
       if ( (trackletMask & (1 << layer)) == 0) {
-	  a(layer, 0) = 0;
-	  a(layer, 1) = 0;
-	  a(layer, 2) = 0;
+    a(layer, 0) = 0;
+    a(layer, 1) = 0;
+    a(layer, 2) = 0;
       }
       else {
 	  a(layer, 0) = 1;
@@ -1705,6 +1720,113 @@ Bool_t AliTRDgtuParam::GetFitParams(TVectorD& rhs, Int_t k)
 }
 */
 
+Int_t AliTRDgtuParam::GetZpos(Int_t stack, Int_t layer, Int_t binZ)
+{
+
+    if ( (layer<0) || (layer>5) )
+    {
+      AliError(Form("Wrong layer index %i\n", layer));
+      return 9999;
+    }
+    if ( (stack<0) || (stack>4) )
+    {
+      AliError(Form("Wrong stack index %i\n", stack));
+      return 9999;
+    }
+    if ( (binZ<0) || (binZ>15) )  
+    {
+      AliError(Form("Wrong binZ index %i\n", binZ));
+      return 9999;
+    }
+    if ( (stack==2) && (binZ>11) )
+    {
+      AliError(Form("Wrong binZ index %i\n for stack 2", binZ));
+      return 9999;
+    }
+
+    // Stack 0
+    Float_t zPosLookupStack0Lr0[16]={297.25,289.75,282.25,274.75,267.25,259.75,252.25,244.75,237.25,229.75,222.25,214.75,207.25,199.75,192.25,184.75};
+    Float_t zPosLookupStack0Lr1[16]={297.25,289.75,282.25,274.75,267.25,259.75,252.25,244.75,237.25,229.75,222.25,214.75,207.25,199.75,192.25,184.75};
+    Float_t zPosLookupStack0Lr2[16]={311.25,303.5,295.5,287.5,279.5,271.5,263.5,255.5,247.5,239.5,231.5,223.5,215.5,207.5,199.5,191.75};
+    Float_t zPosLookupStack0Lr3[16]={325.25,317.25,308.75,300.25,291.75,283.25,274.75,266.25,257.75,249.25,240.75,232.25,223.75,215.25,206.75,198.75};
+    Float_t zPosLookupStack0Lr4[16]={339.25,331,322,313,304,295,286,277,268,259,250,241,232,223,214,205.75};
+    Float_t zPosLookupStack0Lr5[16]={342.75,334,325,316,307,298,289,280,271,262,253,244,235,226,217,208.25};
+    // Stack 1
+    Float_t zPosLookupStack1Lr0[16]={173.25,165.75,158.25,150.75,143.25,135.75,128.25,120.75,113.25,105.75,98.25,90.75,83.25,75.75,68.25,60.75};
+    Float_t zPosLookupStack1Lr1[16]={173.25,165.75,158.25,150.75,143.25,135.75,128.25,120.75,113.25,105.75,98.25,90.75,83.25,75.75,68.25,60.75};
+    Float_t zPosLookupStack1Lr2[16]={180.25,172.5,164.5,156.5,148.5,140.5,132.5,124.5,116.5,108.5,100.5,92.5,84.5,76.5,68.5,60.75};
+    Float_t zPosLookupStack1Lr3[16]={187.25,179.25,170.75,162.25,153.75,145.25,136.75,128.25,119.75,111.25,102.75,94.25,85.75,77.25,68.75,60.75};
+    Float_t zPosLookupStack1Lr4[16]={194.25,186,177,168,159,150,141,132,123,114,105,96,87,78,69,60.75};
+    Float_t zPosLookupStack1Lr5[16]={195.75,187,178,169,160,151,142,133,124,115,106,97,88,79,70,61.25};
+    // Stack 2
+    Float_t zPosLookupStack2Lr0[12]={49,40.5,31.5,22.5,13.5,4.5,-4.5,-13.5,-22.5,-31.5,-40.5,-49};
+    Float_t zPosLookupStack2Lr1[12]={49,40.5,31.5,22.5,13.5,4.5,-4.5,-13.5,-22.5,-31.5,-40.5,-49};
+    Float_t zPosLookupStack2Lr2[12]={49,40.5,31.5,22.5,13.5,4.5,-4.5,-13.5,-22.5,-31.5,-40.5,-49};
+    Float_t zPosLookupStack2Lr3[12]={49,40.5,31.5,22.5,13.5,4.5,-4.5,-13.5,-22.5,-31.5,-40.5,-49};
+    Float_t zPosLookupStack2Lr4[12]={49,40.5,31.5,22.5,13.5,4.5,-4.5,-13.5,-22.5,-31.5,-40.5,-49};
+    Float_t zPosLookupStack2Lr5[12]={49,40.5,31.5,22.5,13.5,4.5,-4.5,-13.5,-22.5,-31.5,-40.5,-49};
+    // Stack 3
+    Float_t zPosLookupStack3Lr0[16]={-60.75,-68.25,-75.75,-83.25,-90.75,-98.25,-105.75,-113.25,-120.75,-128.25,-135.75,-143.25,-150.75,-158.25,-165.75,-173.25};
+    Float_t zPosLookupStack3Lr1[16]={-60.75,-68.25,-75.75,-83.25,-90.75,-98.25,-105.75,-113.25,-120.75,-128.25,-135.75,-143.25,-150.75,-158.25,-165.75,-173.25};
+    Float_t zPosLookupStack3Lr2[16]={-60.75,-68.5,-76.5,-84.5,-92.5,-100.5,-108.5,-116.5,-124.5,-132.5,-140.5,-148.5,-156.5,-164.5,-172.5,-180.25};
+    Float_t zPosLookupStack3Lr3[16]={-60.75,-68.75,-77.25,-85.75,-94.25,-102.75,-111.25,-119.75,-128.25,-136.75,-145.25,-153.75,-162.25,-170.75,-179.25,-187.25};
+    Float_t zPosLookupStack3Lr4[16]={-60.75,-69,-78,-87,-96,-105,-114,-123,-132,-141,-150,-159,-168,-177,-186,-194.25};
+    Float_t zPosLookupStack3Lr5[16]={-61.25,-70,-79,-88,-97,-106,-115,-124,-133,-142,-151,-160,-169,-178,-187,-195.75};
+    // Stack 4
+    Float_t zPosLookupStack4Lr0[16]={-184.75,-192.25,-199.75,-207.25,-214.75,-222.25,-229.75,-237.25,-244.75,-252.25,-259.75,-267.25,-274.75,-282.25,-289.75,-297.25};
+    Float_t zPosLookupStack4Lr1[16]={-184.75,-192.25,-199.75,-207.25,-214.75,-222.25,-229.75,-237.25,-244.75,-252.25,-259.75,-267.25,-274.75,-282.25,-289.75,-297.25};
+    Float_t zPosLookupStack4Lr2[16]={-191.75,-199.5,-207.5,-215.5,-223.5,-231.5,-239.5,-247.5,-255.5,-263.5,-271.5,-279.5,-287.5,-295.5,-303.5,-311.25};
+    Float_t zPosLookupStack4Lr3[16]={-198.75,-206.75,-215.25,-223.75,-232.25,-240.75,-249.25,-257.75,-266.25,-274.75,-283.25,-291.75,-300.25,-308.75,-317.25,-325.25};
+    Float_t zPosLookupStack4Lr4[16]={-205.75,-214,-223,-232,-241,-250,-259,-268,-277,-286,-295,-304,-313,-322,-331,-339.25};
+    Float_t zPosLookupStack4Lr5[16]={-208.25,-217,-226,-235,-244,-253,-262,-271,-280,-289,-298,-307,-316,-325,-334,-342.75};
+
+    Float_t *zPosLookup[5][6];
+    zPosLookup[0][0]=zPosLookupStack0Lr0;
+    zPosLookup[0][1]=zPosLookupStack0Lr1;
+    zPosLookup[0][2]=zPosLookupStack0Lr2;
+    zPosLookup[0][3]=zPosLookupStack0Lr3;
+    zPosLookup[0][4]=zPosLookupStack0Lr4;
+    zPosLookup[0][5]=zPosLookupStack0Lr5;
+
+    zPosLookup[1][0]=zPosLookupStack1Lr0;
+    zPosLookup[1][1]=zPosLookupStack1Lr1;
+    zPosLookup[1][2]=zPosLookupStack1Lr2;
+    zPosLookup[1][3]=zPosLookupStack1Lr3;
+    zPosLookup[1][4]=zPosLookupStack1Lr4;
+    zPosLookup[1][5]=zPosLookupStack1Lr5;
+
+    zPosLookup[2][0]=zPosLookupStack2Lr0;
+    zPosLookup[2][1]=zPosLookupStack2Lr1;
+    zPosLookup[2][2]=zPosLookupStack2Lr2;
+    zPosLookup[2][3]=zPosLookupStack2Lr3;
+    zPosLookup[2][4]=zPosLookupStack2Lr4;
+    zPosLookup[2][5]=zPosLookupStack2Lr5;
+
+    zPosLookup[3][0]=zPosLookupStack3Lr0;
+    zPosLookup[3][1]=zPosLookupStack3Lr1;
+    zPosLookup[3][2]=zPosLookupStack3Lr2;
+    zPosLookup[3][3]=zPosLookupStack3Lr3;
+    zPosLookup[3][4]=zPosLookupStack3Lr4;
+    zPosLookup[3][5]=zPosLookupStack3Lr5;
+
+    zPosLookup[4][0]=zPosLookupStack4Lr0;
+    zPosLookup[4][1]=zPosLookupStack4Lr1;
+    zPosLookup[4][2]=zPosLookupStack4Lr2;
+    zPosLookup[4][3]=zPosLookupStack4Lr3;
+    zPosLookup[4][4]=zPosLookupStack4Lr4;
+    zPosLookup[4][5]=zPosLookupStack4Lr5;
+
+    return zPosLookup[stack][layer][binZ]*10;
+}
+
+Int_t AliTRDgtuParam::GetTanOfTiltingAngle(Int_t layer)
+{
+  //Float_t erg = TMath::Tan(2*TMath::DegToRad());
+  Float_t erg = 0.034920769;
+  erg *= 1e4;
+  return (layer%2==0)? erg:-1.*erg;
+}
+
 Bool_t AliTRDgtuParam::GetIntersectionPoints(Int_t k, Float_t &x1, Float_t &x2)
 {
   // get the x-coord. of the assumed circle/straight line intersection points
@@ -1780,3 +1902,97 @@ Int_t AliTRDgtuParam::GetPt(Int_t layerMask, Int_t a, Float_t /* b */, Float_t x
     return pt;
   }
 }
+
+Double_t AliTRDgtuParam::CorrectYforAlignmentOCDB(Int_t det, Double_t trklZpos)
+{
+  Double_t shiftCorrFactor=0;
+  Double_t rotationCorrFactor=0;
+
+  GetYAlignmentDataOCDB(det, &shiftCorrFactor, &rotationCorrFactor);
+  return (trklZpos*TMath::Tan(rotationCorrFactor)) - shiftCorrFactor; 
+}
+
+void AliTRDgtuParam::GetYAlignmentDataOCDB(Int_t chamber, Double_t *shiftCorrFactor, Double_t *rotationCorrFactor)
+{
+  const Double_t sm0AlignYShiftCorr[30]={0.950896, 0.879845, 1.09222, 0.973455, 1.07732, 1.09708, 0.800331, 0.810261, 0.957055, 1.01692, 0.995464, 0.911438, 0.749624, 0.862145, 0.929711, 1.00373, 0.970462, 1.07445, 0.869766, 0.99827, 1.03514, 1.16184, 1.10103, 1.13804, 0.850769, 0.970176, 0.957055, 1.00373, 1.05887, 1.11904};
+  const Double_t sm0AlignRotationCorr[30]={0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472, 0.000590472};
+  const Double_t sm1AlignYShiftCorr[30]={1.06036, 1.00293, 1.00074, 1.16708, 1.2733, 1.12067, 0.953733, 0.913071, 0.955806, 0.988405, 1.06255, 0.991189, 0.849538, 0.951239, 0.963683, 0.981054, 1.03524, 0.789439, 0.861432, 0.999114, 0.967925, 1.04253, 1.16334, 1.14535, 0.793966, 0.905693, 0.786929, 0.942292, 1.01108, 1.08596};
+  const Double_t sm1AlignRotationCorr[30]={-0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439, -0.000106439};
+  const Double_t sm2AlignYShiftCorr[30]={1.1102, 1.0764, 1.0426, 1.0088, 0.975, 0.9412, 1.1102, 1.0764, 1.0426, 1.0088, 0.975, 0.9412, 1.1102, 1.0764, 1.0426, 1.0088, 0.975, 0.9412, 1.1102, 1.0764, 1.0426, 1.0088, 0.975, 0.9412, 1.1102, 1.0764, 1.0426, 1.0088, 0.975, 0.9412};
+  const Double_t sm2AlignRotationCorr[30]={6.08449e-17, 6.0845e-17, 6.0959e-17, 6.10827e-17, 6.15405e-17, 6.09767e-17, 6.08287e-17, 6.08287e-17, 6.0964e-17, 6.09122e-17, 6.08748e-17, 6.10829e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.07456e-17, 6.07456e-17, 6.07133e-17, 6.07628e-17, 6.10402e-17, 6.13227e-17, 6.08112e-17, 6.08112e-17, 6.17087e-17, 6.17742e-17, 6.15405e-17, 6.11445e-17};
+  const Double_t sm3AlignYShiftCorr[30]={1.18864, 1.21645, 1.24426, 1.27207, 1.29988, 1.32768, 1.18864, 1.21645, 1.24426, 1.27207, 1.29988, 1.32768, 1.18864, 1.21645, 1.24426, 1.27207, 1.29988, 1.32768, 1.18864, 1.21645, 1.24426, 1.27207, 1.29988, 1.32768, 1.18864, 1.21645, 1.24426, 1.27207, 1.29988, 1.32768};
+  const Double_t sm3AlignRotationCorr[30]={6.13935e-17, 6.13935e-17, 6.17901e-17, 6.1582e-17, 6.15405e-17, 6.13146e-17, 6.17313e-17, 6.17313e-17, 6.17758e-17, 6.18921e-17, 6.20216e-17, 6.14961e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.11756e-17, 6.08427e-17, 6.08431e-17, 6.09689e-17, 6.09122e-17, 6.0969e-17, 6.04721e-17, 6.08659e-17, 6.08659e-17, 6.10143e-17, 6.12837e-17, 6.10952e-17, 6.10829e-17};
+  const Double_t sm4AlignYShiftCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm4AlignRotationCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm5AlignYShiftCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm5AlignRotationCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm6AlignYShiftCorr[30]={0.00720092, -0.0111113, -0.0294235, -0.0477357, -0.0660479, -0.0843601, 0.00720092, -0.0111113, -0.0294235, -0.0477357, -0.0660479, -0.0843601, 0.00720092, -0.0111113, -0.0294235, -0.0477357, -0.0660479, -0.0843601, 0.00720092, -0.0111113, -0.0294235, -0.0477357, -0.0660479, -0.0843601, 0.00720092, -0.0111113, -0.0294235, -0.0477357, -0.0660479, -0.0843601};
+  const Double_t sm6AlignRotationCorr[30]={6.12302e-17, 6.12334e-17, 6.12366e-17, 6.12076e-17, 6.12421e-17, 6.12893e-17, 6.12346e-17, 6.12342e-17, 6.12414e-17, 6.12159e-17, 6.12642e-17, 6.12702e-17, 6.12287e-17, 6.12287e-17, 6.12464e-17, 6.12464e-17, 6.12142e-17, 6.12142e-17, 6.12341e-17, 6.12341e-17, 6.12248e-17, 6.12159e-17, 6.1188e-17, 6.13011e-17, 6.12335e-17, 6.12338e-17, 6.12228e-17, 6.12636e-17, 6.12173e-17, 6.13038e-17};
+  const Double_t sm7AlignYShiftCorr[30]={-0.866054, -0.946888, -0.936051, -1.04962, -0.99742, -1.11695, -0.871263, -0.866588, -0.872928, -0.994759, -0.960582, -1.02686, -0.840704, -0.920968, -0.983293, -0.985986, -1.03693, -0.990354, -0.841495, -0.898174, -0.977235, -0.864823, -0.960582, -1.04184, -0.774481, -0.740641, -0.901039, -0.813138, -0.958083, -0.844561};
+  const Double_t sm7AlignRotationCorr[30]={0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095, 0.00152095};
+  const Double_t sm8AlignYShiftCorr[30]={-1.08741, -1.04946, -1.13455, -1.25708, -1.14229, -1.12472, -1.04684, -1.06298, -1.04691, -1.01174, -1.02042, -1.068, -1.12634, -1.13846, -1.14718, -1.23131, -1.1225, -1.13288, -1.03394, -0.997171, -1.09563, -1.06354, -0.954007, -0.918441, -1.00773, -1.04946, -1.03248, -0.914811, -0.912203, -0.827483};
+  const Double_t sm8AlignRotationCorr[30]={0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878, 0.000844878};
+  const Double_t sm9AlignYShiftCorr[30]={-0.997909, -1.14595, -1.10428, -1.04842, -1.03343, -1.18205, -1.0511, -1.12617, -1.08041, -1.09323, -1.11159, -1.19614, -1.09481, -1.10916, -1.1128, -1.14028, -1.16596, -1.07021, -1.04761, -1.00465, -1.14669, -1.05859, -1.05879, -1.11359, -0.89919, -0.935687, -1.12952, -0.99086, -1.01247, -0.994654};
+  const Double_t sm9AlignRotationCorr[30]={0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181, 0.000224181};
+  const Double_t sm10AlignYShiftCorr[30]={-1.36423, -1.46127, -1.42239, -1.4497, -1.25872, -1.23821, -1.38106, -1.42123, -1.39686, -1.3602, -1.24536, -1.26131, -1.50418, -1.38895, -1.33199, -1.34877, -1.28903, -1.259, -1.41907, -1.30094, -1.3579, -1.21426, -1.21636, -1.06847, -1.44013, -1.21849, -1.32739, -1.20238, -1.21579, -1.06474};
+  const Double_t sm10AlignRotationCorr[30]={0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463, 0.000120463};
+  const Double_t sm11AlignYShiftCorr[30]={-1.31965, -1.54112, -1.47852, -1.64944, -4.4449, -1.80533, -1.35592, -1.4903, -1.54163, -1.5559, -1.58468, -1.74079, -1.51473, -1.53837, -1.6997, -1.7125, -1.81951, -1.92436, -1.45354, -1.39703, -1.63136, -1.53742, -1.61779, -1.71032, -1.338, -1.21635, -1.42423, -1.40279, -1.43874, -1.42863};
+  const Double_t sm11AlignRotationCorr[30]={0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076, 0.000348076};
+  const Double_t sm12AlignYShiftCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm12AlignRotationCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm13AlignYShiftCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm13AlignRotationCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm14AlignYShiftCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm14AlignRotationCorr[30]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const Double_t sm15AlignYShiftCorr[30]={0.0615559, 0.0761089, 0.244263, 0.193727, 0.278576, 0.199347, 0.0354735, -0.007305, 0.087983, 0.0648831, 0.136816, 0.0515244, 0, 0, 0, 0, 0, 0, 0.0602967, 0.0983063, 0.183299, 0.269317, 0.239239, 0.311994, 0.0413288, 0.0937568, 0.164063, 0.263629, 0.220605, 0.314462};
+  const Double_t sm15AlignRotationCorr[30]={-0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, 0, 0, 0, 0, 0, 0, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365, -0.000268365};
+  const Double_t sm16AlignYShiftCorr[30]={0.410348, 0.404458, 0.570151, 0.56562, 0.669698, 0.595227, 0.366881, 0.251549, 0.433893, 0.505892, 0.582798, 0.546805, 0.288368, 0.291832, 0.37178, 0.511245, 0.535215, 0.519403, 0.30927, 0.379342, 0.492418, 0.604519, 0.567487, 0.689209, 0.164414, 0.290361, 0.323621, 0.458511, 0.495891, 0.56392};
+  const Double_t sm16AlignRotationCorr[30]={-0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037, -0.000209037};
+  const Double_t sm17AlignYShiftCorr[30]={0.924637, 0.830734, 0.851936, 0.925559, 1.05194, 0.644287, 0.861304, 0.773108, 0.837512, 0.851351, 0.898791, 0.833368, 0.797453, 0.769815, 0.851936, 0.917353, 0.898791, 0.853596, 0.771743, 0.805229, 0.855267, 0.989788, 0.898791, 0.922218, 0.634823, 0.792299, 0.806066, 1.01563, 0.970954, 0.922218};
+  const Double_t sm17AlignRotationCorr[30]={8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05, 8.41898e-05};
+
+  const Double_t *alignYShiftCorr[18];
+  const Double_t *alignRotationCorr[18];
+  alignYShiftCorr[0] = sm0AlignYShiftCorr;
+  alignRotationCorr[0] = sm0AlignRotationCorr;
+  alignYShiftCorr[1] = sm1AlignYShiftCorr;
+  alignRotationCorr[1] = sm1AlignRotationCorr;
+  alignYShiftCorr[2] = sm2AlignYShiftCorr;
+  alignRotationCorr[2] = sm2AlignRotationCorr;
+  alignYShiftCorr[3] = sm3AlignYShiftCorr;
+  alignRotationCorr[3] = sm3AlignRotationCorr;
+  alignYShiftCorr[4] = sm4AlignYShiftCorr;
+  alignRotationCorr[4] = sm4AlignRotationCorr;
+  alignYShiftCorr[5] = sm5AlignYShiftCorr;
+  alignRotationCorr[5] = sm5AlignRotationCorr;
+  alignYShiftCorr[6] = sm6AlignYShiftCorr;
+  alignRotationCorr[6] = sm6AlignRotationCorr;
+  alignYShiftCorr[7] = sm7AlignYShiftCorr;
+  alignRotationCorr[7] = sm7AlignRotationCorr;
+  alignYShiftCorr[8] = sm8AlignYShiftCorr;
+  alignRotationCorr[8] = sm8AlignRotationCorr;
+  alignYShiftCorr[9] = sm9AlignYShiftCorr;
+  alignRotationCorr[9] = sm9AlignRotationCorr;
+  alignYShiftCorr[10] = sm10AlignYShiftCorr;
+  alignRotationCorr[10] = sm10AlignRotationCorr;
+  alignYShiftCorr[11] = sm11AlignYShiftCorr;
+  alignRotationCorr[11] = sm11AlignRotationCorr;
+  alignYShiftCorr[12] = sm12AlignYShiftCorr;
+  alignRotationCorr[12] = sm12AlignRotationCorr;
+  alignYShiftCorr[13] = sm13AlignYShiftCorr;
+  alignRotationCorr[13] = sm13AlignRotationCorr;
+  alignYShiftCorr[14] = sm14AlignYShiftCorr;
+  alignRotationCorr[14] = sm14AlignRotationCorr;
+  alignYShiftCorr[15] = sm15AlignYShiftCorr;
+  alignRotationCorr[15] = sm15AlignRotationCorr;
+  alignYShiftCorr[16] = sm16AlignYShiftCorr;
+  alignRotationCorr[16] = sm16AlignRotationCorr;
+  alignYShiftCorr[17] = sm17AlignYShiftCorr;
+  alignRotationCorr[17] = sm17AlignRotationCorr;
+
+  Int_t sm=chamber/30;
+  Int_t det=chamber%30;
+  *shiftCorrFactor=alignYShiftCorr[sm][det];
+  *rotationCorrFactor=alignRotationCorr[sm][det];
+}
+
