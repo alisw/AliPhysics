@@ -313,6 +313,7 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   UsePeriod();  
   //Fill Events/run histogram.
   FillHistogram("EventsperRun", fRunFillValue);
+  FillHistogram("NEventsVertex",fRunFillValue,fVertex[2]);
   //To fill with tracks and pions:
   TObjArray allrelevantParticles;
   fNTriggers=0.0;//Reset fNTriggers
@@ -794,6 +795,7 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   TH2D * NTriggersperRun = new TH2D("NTriggersperRun","# triggers per event per Run",fNruns, 0,1,50,-0.5,49.5);
   TH2D * NAssociatedperRun = new TH2D("NAssociatedperRun","# associated per event per Run",fNruns, 0,1,100,-0.5,99.5);
   TH2D * NTracksVertex	   = new TH2D("NTracksVertex","#selected tracks per run and vertex",fNruns,0,1,100,-10.0,10.0);
+  TH2D * NEventsVertex	   = new TH2D("NEventsVertex","Events per run and vertex",fNruns,0,1,100,-10.0,10.0);
   
   for(int i=0; i<fNruns; i++){
     TString lable = Form("%i",fRunNumberList[i]);
@@ -809,6 +811,8 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
     NAssociatedperRun->GetXaxis()->LabelsOption("v");    
     NTracksVertex->GetXaxis()->SetBinLabel(i+1,lable);
     NTracksVertex->GetXaxis()->LabelsOption("v"); 
+    NEventsVertex->GetXaxis()->SetBinLabel(i+1,lable);
+    NEventsVertex->GetXaxis()->LabelsOption("v"); 
   }
   fOutput->Add(eventsperrun);
   fOutput->Add(TracksperRun);
@@ -816,6 +820,7 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   fOutput->Add(NTriggersperRun);
   fOutput->Add(NAssociatedperRun);
   fOutput->Add(NTracksVertex);
+  fOutput->Add(NEventsVertex);
   if(fQA&&fWeights&&fWeightshpt){
     TH3D * histtrackslpt = (TH3D*)(fWeights->Clone("Track_Cent_Vertex_lpT"));
     histtrackslpt->Reset();
