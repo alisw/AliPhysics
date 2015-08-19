@@ -2338,11 +2338,11 @@ void AliAnalysisTaskJetV2::FillWeightedDeltaPtHistograms(Double_t psi2) const
            if(fFillQAHistograms) fHistRCPhiEta[fInCentralitySelection]->Fill(phi, eta, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistRhoVsRCPt[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
            else fHistRhoVsRCPt[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, fEventPlaneWeight);
-           if(fFillQAHistograms)  {
+/*           if(fFillQAHistograms) {
                Double_t temp(fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC);
                fHistIntegralCorrelations[fInCentralitySelection]->Fill(fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC, temp);
                if(temp > 0) fProfIntegralCorrelations[fInCentralitySelection]->Fill(temp, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC/temp);
-           }
+           }*/
            fHistRCPt[fInCentralitySelection]->Fill(pt, fEventPlaneWeight);
            if(!fUse2DIntegration) fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
            else fHistDeltaPtDeltaPhi2[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt - areaRC*fLocalRho->GetLocalValInEtaPhi(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()), fEventPlaneWeight);
