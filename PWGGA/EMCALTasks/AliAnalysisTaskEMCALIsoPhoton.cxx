@@ -160,6 +160,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMaxCellEPhi(0),
   fDetaDphiFromTM(0),
   fEoverPvsE(0),
+  fTrackDEtaDPhiPho(0),
+  fTrackDEtaDPhiPi(0),
   fETrigg(0),
   fM02vsESoftPi0Kid(0),
   fM02vsEHardPi0Kid(0),
@@ -295,6 +297,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMaxCellEPhi(0),
   fDetaDphiFromTM(0),
   fEoverPvsE(0),
+  fTrackDEtaDPhiPho(0),
+  fTrackDEtaDPhiPi(0),
   fETrigg(0),
   fM02vsESoftPi0Kid(0),
   fM02vsEHardPi0Kid(0),
@@ -520,6 +524,14 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fEoverPvsE = new TH2F("fEoverPvsE","E^{clus}/p^{track} vs E^{clus} (80<TPCsignal<100);E^{clus} [GeV];E^{clus}/p^{track} [c^{-1}]",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,100,0,2);
   fEoverPvsE->Sumw2();
   fQAList->Add(fEoverPvsE);
+
+  fTrackDEtaDPhiPho = new TH2F("fTrackDEtaDPhiPho","clusters from MC-truth #pi^{0}#rightarrow #gamma ;#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDEtaDPhiPho->Sumw2();
+  fQAList->Add(fTrackDEtaDPhiPho);
+
+  fTrackDEtaDPhiPi = new TH2F("fTrackDEtaDPhiPi","clusters from MC-truth #pi^{#pm};#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDEtaDPhiPi->Sumw2();
+  fQAList->Add(fTrackDEtaDPhiPi);
 
   fETrigg = new TH1F("fETrigg","TrigPatchInfo->GetPatchE();E [GeV];entries/GeV",100,0,100);
   fETrigg->Sumw2();
@@ -1648,7 +1660,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
   return ptsum;
 }
 //________________________________________________________________________
-bool AliAnalysisTaskEMCALIsoPhoton::IsMcPi0(Int_t label)
+bool AliAnalysisTaskEMCALIsoPhoton::IsMcPDG(Int_t label, Int_t PDG)
 {
   bool foundpi0=false;
   if(!fStack && !fAODMCParticles)
@@ -1663,10 +1675,10 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsMcPi0(Int_t label)
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(label));  
     if(!mcp)
       return false;
-    if(mcp->GetPdgCode()==111)
-      foundpi0=true;
+    if(mcp->GetPdgCode()==TMath::Abs(PDG))
+      return true;
     imother = mcp->GetMother(0);
-    foundpi0 = IsMcPi0(imother);
+    foundpi0 = IsMcPDG(imother,PDG);
   }
   //AOD
   if(fAODMCParticles){
@@ -1676,10 +1688,10 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsMcPi0(Int_t label)
     AliAODMCParticle *mcp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(label));
     if(!mcp)
       return false;
-    if(mcp->GetPdgCode()==111)
-      foundpi0 = true;
+    if(mcp->GetPdgCode()==TMath::Abs(PDG))
+      return true;
     imother = mcp->GetMother();
-    foundpi0 = IsMcPi0(imother);
+    foundpi0 = IsMcPDG(imother,PDG);
   }
   return foundpi0;
 }
@@ -1771,11 +1783,19 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       continue;
     }
     fEmcClusEClusCuts->Fill(c->E(),2);
-    if(TMath::Abs(maxt)>30e-9)
+    if(TMath::Abs(maxt)>30e-9 && !fIsMc)
       continue;
     fEmcClusEClusCuts->Fill(c->E(),3);
     if(c->GetM02()>0.1)
       fEmcClusEClusCuts->Fill(c->E(),4);
+    if(fIsMc){
+      bool ispi0 = IsMcPDG(c->GetLabel(),111);
+      bool ispich = IsMcPDG(c->GetLabel(),211);
+      if(ispi0)
+	fTrackDEtaDPhiPho->Fill(c->GetTrackDz(),c->GetTrackDx());
+      if(ispich)
+	fTrackDEtaDPhiPi->Fill(c->GetTrackDz(),c->GetTrackDx());
+    }
   }
 }
 //________________________________________________________________________
