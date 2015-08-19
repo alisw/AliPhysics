@@ -42,7 +42,6 @@
 #include "AliMCParticle.h"
 #include "TCanvas.h"
 #include <TRandom3.h>
-#include <../../build/cint/cint/include/matrix.h>
 #include <sstream>
 #include <memory>
 ClassImp(AliAnalysisTaskCorrelation3p)
