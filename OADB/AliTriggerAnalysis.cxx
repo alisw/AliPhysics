@@ -784,7 +784,7 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
   else {
     Int_t detChZNA  = esdZDC->GetZNATDCChannel();
     Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
-    Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 29 : 14;
+    Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 20 : 14;
     
     for(Int_t i=0;i<4;++i) {
       if (esdZDC->GetZDCTDCData(detChZNC,i)==0) continue;
