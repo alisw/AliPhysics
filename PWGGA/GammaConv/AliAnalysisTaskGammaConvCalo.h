@@ -335,7 +335,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		map<Int_t,Int_t>					fMapMultipleCountTrueClusterGammas;				//! map containing cluster photon labels that are counted at least twice
 		TH2F								**fHistoTrueClusGammaEM02;						//! array of histos with TruePhotons: cluster E vs M02
 		TH2F								**fHistoTrueClusPi0EM02;						//! array of histos with TruePi0s: cluster E vs M02
-
+		TH2F								**fHistoTruePi0InvMassECalib;					//! array of histogram with pure pi0 signal inv Mass, energy of cluster
+		TH2F								**fHistoTruePi0PureGammaInvMassECalib;			//! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
 		// event histograms
 		TH1F 								**fHistoNEvents;								//! array of histos with event information
 		TH1F 								**fHistoNEventsWOWeight;						//! array of histos with event information without event weights
@@ -383,7 +384,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 16);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 17);
 };
 
 #endif
