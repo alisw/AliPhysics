@@ -58,6 +58,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fEstEventMult(kCentrality),
   fAODpidUtil(NULL),
   fAODheader(NULL),
+  fAnaUtils(NULL),
   fInputFile(""),
   fTree(NULL),
   fAodFile(NULL),
@@ -96,6 +97,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fEstEventMult(aReader.fEstEventMult),
   fAODpidUtil(aReader.fAODpidUtil),
   fAODheader(aReader.fAODheader),
+  fAnaUtils(aReader.fAnaUtils),
   fInputFile(aReader.fInputFile),
   fTree(NULL),
   fAodFile(new TFile(aReader.fAodFile->GetName())),
@@ -156,6 +158,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   //  fPWG2AODTracks = aReader.fPWG2AODTracks;
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
+  fAnaUtils = aReader.fAnaUtils;
   fCentRange[0] = aReader.fCentRange[0];
   fCentRange[1] = aReader.fCentRange[1];
   fUsePreCent = aReader.fUsePreCent;
@@ -299,29 +302,29 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
-    AliAnalysisUtils *anaUtil = new AliAnalysisUtils();
+    fAnaUtils = new AliAnalysisUtils();
     if (fMinVtxContr) {
-      anaUtil->SetMinVtxContr(fMinVtxContr);
+      fAnaUtils->SetMinVtxContr(fMinVtxContr);
     }
-    if (fpA2013 && anaUtil->IsVertexSelected2013pA(fEvent) == kFALSE) {
-      delete anaUtil;
+    if (fpA2013 && fAnaUtils->IsVertexSelected2013pA(fEvent) == kFALSE) {
+      delete fAnaUtils;
       delete tEvent;
       return NULL;  // Vertex rejection for pA analysis.
     }
-    anaUtil->SetUseMVPlpSelection(fMVPlp);
+    fAnaUtils->SetUseMVPlpSelection(fMVPlp);
 
     if (fMinPlpContribMV) {
-      anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
+      fAnaUtils->SetMinPlpContribMV(fMinPlpContribMV);
     }
     if (fMinPlpContribSPD) {
-      anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
+      fAnaUtils->SetMinPlpContribSPD(fMinPlpContribSPD);
     }
-    if (fisPileUp && anaUtil->IsPileUpEvent(fEvent)) {
-      delete anaUtil;
+    if (fisPileUp && fAnaUtils->IsPileUpEvent(fEvent)) {
+      delete fAnaUtils;
       delete tEvent;
       return NULL;  // Pile-up rejection.
     }
-    delete anaUtil;
+    delete fAnaUtils;
   }
 
   // Primary Vertex position
