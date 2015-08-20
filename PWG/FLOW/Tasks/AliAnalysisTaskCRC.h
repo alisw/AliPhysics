@@ -150,8 +150,6 @@ public:
  Bool_t GetCalculateCRC() const {return this->fCalculateCRC;};
  void SetCalculateCRCPt(Bool_t const cCRC) {this->fCalculateCRCPt = cCRC;};
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
- void SetCalculateCME(Bool_t const cCRC) {this->fCalculateCME = cCRC;};
- Bool_t GetCalculateCME() const {return this->fCalculateCME;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -160,8 +158,6 @@ public:
  Bool_t GetRecenterZDC() const {return this->fRecenterZDC;};
  void SetDivSigma(Bool_t const cCRC) {this->fDivSigma = cCRC;};
  Bool_t GetDivSigma() const {return this->fDivSigma;};
- void SetInvertZDC(Bool_t const cCRC) {this->fInvertZDC = cCRC;};
- Bool_t GetInvertZDC() const {return this->fInvertZDC;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -173,10 +169,8 @@ public:
  Int_t GetnCenBin() const {return this->fnCenBin;};
  void SetCenBinWidth(Double_t const n) {this->fCenBinWidth = n;};
  Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
- void SetDataSet(TString const n) {this->fDataSet = n;};
- TString GetDataSet() const {return this->fDataSet;};
- void SetCorrWeight(TString const n) {this->fCorrWeight = n;};
- TString GetCorrWeight() const {return this->fCorrWeight;};
+ void SetRunSet(TString const n) {this->fRunSet = n;};
+ TString GetRunSet() const {return this->fRunSet;};
  
 private:
  AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
@@ -238,20 +232,17 @@ private:
  // Charge-Eta Asymmetry
  Bool_t fCalculateCRC; // calculate CRC quantities
  Bool_t fCalculateCRCPt;
- Bool_t fCalculateCME;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
  Bool_t fDivSigma;
- Bool_t fInvertZDC;
  Bool_t fUseNUAforCRC;
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;
  Double_t fCRCEtaMax;
  Int_t fnCenBin;
  Double_t fCenBinWidth;
- TString fDataSet;
- TString fCorrWeight;
+ TString fRunSet;
  TList *fQVecList;           // list with weights
  
  ClassDef(AliAnalysisTaskCRC, 2);

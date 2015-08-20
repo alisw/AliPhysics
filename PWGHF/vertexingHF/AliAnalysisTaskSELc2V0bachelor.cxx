@@ -74,9 +74,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSELc2V0bachelor);
-/// \endcond
+ClassImp(AliAnalysisTaskSELc2V0bachelor)
 
 //__________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTaskSE(),
@@ -108,7 +106,7 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fSign(2)
 {
   //
-  /// Default ctor
+  // Default ctor
   //
 
   Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
@@ -149,7 +147,7 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fSign(sign)
 {
   //
-  /// Constructor. Initialization of Inputs and Outputs
+  // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSELc2V0bachelor","Calling Constructor");
 
@@ -183,7 +181,7 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
 //___________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelor::~AliAnalysisTaskSELc2V0bachelor() {
   //
-  /// destructor
+  // destructor
   //
   Info("~AliAnalysisTaskSELc2V0bachelor","Calling Destructor");
   
@@ -226,7 +224,7 @@ AliAnalysisTaskSELc2V0bachelor::~AliAnalysisTaskSELc2V0bachelor() {
 //_________________________________________________
 void AliAnalysisTaskSELc2V0bachelor::Init() {
   //
-  /// Initialization
+  // Initialization
   //
 
   fIsEventSelected=kFALSE;
@@ -241,7 +239,7 @@ void AliAnalysisTaskSELc2V0bachelor::Init() {
 //_________________________________________________
 void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
 {
-  /// user exec
+  // user exec
   if (!fInputEvent) {
     AliError("NO EVENT FOUND!");
     return;
@@ -416,7 +414,7 @@ void AliAnalysisTaskSELc2V0bachelor::Terminate(Option_t*)
 }
 //___________________________________________________________________________
 void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() { 
-  /// output
+  // output
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
 
   fOutput = new TList();
@@ -469,7 +467,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 							     AliRDHFCutsLctoV0 *cutsAnal)
 {
 
-  /// make the analysis
+  // make the analysis
 
   Int_t pdgCand = 4122;
   Int_t pdgDgLctoV0bachelor[2]={2212,310}; // always 1st bachelor, 2nd V0
@@ -590,7 +588,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 							 TClonesArray *mcArray)
 {
   //
-  /// Fill histos for Lc -> K0S+proton
+  // Fill histos for Lc -> K0S+proton
   //
 
   TString fillthis="";
@@ -2035,7 +2033,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineK0SHistos()
 //---------------------------
 void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) {
   //
-  /// To fill control histograms
+  // To fill control histograms
   //
 
   TClonesArray *arrayLctopKos=0;
@@ -2162,9 +2160,9 @@ void AliAnalysisTaskSELc2V0bachelor::CheckEventSelection(AliAODEvent *aodEvent) 
 
 //-----------------
 void AliAnalysisTaskSELc2V0bachelor::CheckEventSelectionWithCandidates(AliAODEvent *aodEvent) {
-  ///
-  /// To fill control histograms
-  ///
+  //
+  // To fill control histograms
+  //
 
   Float_t zVertex = fVtx1->GetZ();
   TString titleVtx=fVtx1->GetTitle();
@@ -2236,7 +2234,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
 						Int_t *pdgDgLc2bacV0, Int_t *pdgDgV0,
 						TClonesArray *mcArray) {
   //
-  /// This is now implemented in AliAODRecoCascadeHF
+  // This is now implemented in AliAODRecoCascadeHF
   //
 
   // bachelor
@@ -2314,7 +2312,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMC(AliAODRecoCascadeHF *lc2bacV0,
 //________________________________________________________________
 Int_t AliAnalysisTaskSELc2V0bachelor::SearchLcDaughter(TClonesArray *arrayMC, Int_t iii) {
   //
-  /// This is to check Lc dinasty
+  // This is to check Lc dinasty
   //
 
   Int_t indexToBeReturned=-999;
@@ -2474,7 +2472,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillArmPodDistribution(AliAODRecoDecay *vZe
 							    Bool_t isCandidateSelectedCuts,
 							    Bool_t isBachelorID) {
   //
-  /// This is to fill Armenteros Podolanski plots
+  // This is to fill Armenteros Podolanski plots
   //
 
   Double_t alpha = vZero->Alpha();//AlphaV0();
@@ -2492,7 +2490,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillArmPodDistribution(AliAODRecoDecay *vZe
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0* cutsAnal) {
   //
-  /// This is to check candidates at different levels
+  // This is to check candidates at different levels
   //
 
   Bool_t areCutsUsingPID = cutsAnal->GetIsUsePID();
@@ -2571,7 +2569,7 @@ void AliAnalysisTaskSELc2V0bachelor::CheckCandidatesAtDifferentLevels(AliAODReco
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *mcArray, Int_t isLc) {
   //
-  /// This is to fill tree
+  // This is to fill tree
   //
 
   Double_t mk0sPDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
@@ -2966,7 +2964,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
   //
-  /// This is to define tree variables
+  // This is to define tree variables
   //
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
@@ -3099,7 +3097,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
 //__________________________________________________________________________
 void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
   //
-  /// This is to define general histograms
+  // This is to define general histograms
   //
 
   fCEvents = new TH1F("fCEvents","conter",18,0,18);
@@ -3433,8 +3431,8 @@ Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack
 							Double_t &xVtxLc, Double_t &yVtxLc, Double_t &zVtxLc,
 							Double_t &pxVtxBachelor, Double_t &pyVtxBachelor, Double_t &pzVtxBachelor) {
   //--------------------------------------------------------------------
-  /// This function returns the DCA between the V0 and the track
-  /// This is a copy of AliCascadeVertexer::PropagateToDCA(...) method
+  // This function returns the DCA between the V0 and the track
+  // This is a copy of AliCascadeVertexer::PropagateToDCA(...) method
   //--------------------------------------------------------------------
 
   // Get AliExternalTrackParam out of the AliAODTracks                                                      
@@ -3527,7 +3525,7 @@ Double_t AliAnalysisTaskSELc2V0bachelor::PropagateToDCA(AliAODv0 *v, AliAODTrack
 Double_t AliAnalysisTaskSELc2V0bachelor::GetAlpha(Double_t xyz[3],Double_t pxpypz[3])
 {
   //
-  /// To estimate alpha according to what done in the AliExternalTrackParam::Set(...) method
+  // To estimate alpha according to what done in the AliExternalTrackParam::Set(...) method
   //
 
   Double_t alpha = 0.;
@@ -3566,8 +3564,8 @@ Double_t AliAnalysisTaskSELc2V0bachelor::GetAlpha(Double_t xyz[3],Double_t pxpyp
 Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00, Double_t a01,
 					     Double_t a10, Double_t a11) const {
   //--------------------------------------------------------------------
-  /// This function calculates locally a 2x2 determinant.
-  /// This is a copy of the AliCascadeVertexer::Det(...) method
+  // This function calculates locally a 2x2 determinant.
+  // This is a copy of the AliCascadeVertexer::Det(...) method
   //--------------------------------------------------------------------
   return a00*a11 - a01*a10;
 }
@@ -3577,8 +3575,8 @@ Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00,Double_t a01,Double_t 
 					     Double_t a10,Double_t a11,Double_t a12,
 					     Double_t a20,Double_t a21,Double_t a22) const {
   //--------------------------------------------------------------------
-  /// This function calculates locally a 3x3 determinant
-  /// This is a copy of the AliCascadeVertexer::Det(...) method
+  // This function calculates locally a 3x3 determinant
+  // This is a copy of the AliCascadeVertexer::Det(...) method
   //--------------------------------------------------------------------
   return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
 }
@@ -3588,9 +3586,9 @@ Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candi
 						      TClonesArray *mcArray)
 {
   //
-  /// Check if this candidate is matched to a MC signal  Lc -> p K0S + X
-  /// If no, return -1
-  /// If yes, return label (>=0) of the AliAODMCParticle
+  // Check if this candidate is matched to a MC signal  Lc -> p K0S + X
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
   // 
 
   AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(candidate->Getv0()); // the V0
@@ -3639,11 +3637,11 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
 							    Int_t dgLabels[10],Int_t ndg,
 							    Int_t &ndgCk, Int_t *pdgDg, Int_t &absLabelMother, Int_t &nDauCand) const
 {
-  ///
-  /// Check if this candidate is matched to a MC signal
-  /// If no, return 0
-  /// If yes, return pdgCode of particle
-  ///
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return 0
+  // If yes, return pdgCode of particle
+  // 
 
   Int_t lab=-1,labMother=-1,pdgMother=0;
   AliAODMCParticle *part=0;

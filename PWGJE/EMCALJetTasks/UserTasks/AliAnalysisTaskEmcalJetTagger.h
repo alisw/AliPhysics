@@ -37,15 +37,12 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f; }
 
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2 = b;}
-  
-  void SetTypeAcceptance(Int_t type)                            { fTypeAcc = type; /*see Init()*/}
-  void SetMaxDistance(Double_t dist)                            { fMaxDist = dist; }
-  
+
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
   Bool_t                              FillHistograms();
-  void                                Init();
+
   Double_t GetDeltaPhi(const AliEmcalJet* jet1, const AliEmcalJet* jet2);
   Double_t GetDeltaPhi(Double_t phi1,Double_t phi2);
 
@@ -60,9 +57,7 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
   Bool_t                              fMatchingDone;               // flag to indicate if matching is done or not
-  Int_t                               fTypeAcc;                    // acceptance cut for the jet containers, see method MatchJetsGeo in .cxx for possibilities
-  Double_t                            fMaxDist;                    // distance allowed for two jets to match
-  Bool_t                              fInit;                       // true when the containers are initialized
+
   TH3F            **fh3PtJet1VsDeltaEtaDeltaPhi;  //!pt jet 1 vs deta vs dphi
   TH2F            **fh2PtJet1VsDeltaR;            //!pt jet 1 vs dR
   TH2F            **fh2PtJet2VsFraction;          //!pt jet 1 vs shared fraction

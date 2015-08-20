@@ -40,7 +40,6 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskEffContBF.cxx
   BalanceFunctions/AliBalance.cxx
   BalanceFunctions/AliBalancePsi.cxx
-  BalanceFunctions/AliBalanceEbyE.cxx
   BalanceFunctions/AliBalanceEventMixing.cxx
   BalanceFunctions/AliBalanceTriggered.cxx
   BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx
@@ -84,7 +83,6 @@ set(SRCS
   NetParticle/AliAnalysisNetParticleHelper.cxx
   NetParticle/AliAnalysisTaskNetParticle.cxx
   NetParticle/AliAnalysisNetParticleQA.cxx
-  TempFluctuations/AliAnalysisTempFluc.cxx
   )
 
 # Headers from sources
@@ -127,4 +125,3 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY macros DESTINATION PWGCF/EBYE)
 install(DIRECTORY PIDFluctuation/macros DESTINATION PWGCF/EBYE/PIDFluctuation)
 install(DIRECTORY NetParticle/macros DESTINATION PWGCF/EBYE/NetParticle)
-install(DIRECTORY TempFluctuations/macros DESTINATION PWGCF/EBYE/TempFluctuations)

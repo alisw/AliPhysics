@@ -6,8 +6,8 @@
 /* $Id$ */
 
 //***********************************************************
-/// \class Class AliRDHFCutsXictoPLUSXiPiPifromAODtracks
-/// \brief class for cuts on AOD reconstructed Lc-> pK0s
+// Class AliRDHFCutsXictoPLUSXiPiPifromAODtracks
+// class for cuts on AOD reconstructed Lc-> pK0s
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -82,26 +82,25 @@ class AliRDHFCutsLctopK0sfromAODtracks : public AliRDHFCuts
 	
  private:
 
-  EPIDStrategy fPIDStrategy;        /// PID strategy
-  Double_t fCombinedPIDThreshold;   /// Threshold used in  IsSelectedCombinedPID
-  Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
+  EPIDStrategy fPIDStrategy;        //PID strategy
+  Double_t fCombinedPIDThreshold;   //Threshold used in  IsSelectedCombinedPID 
+  Bool_t   fUseOnTheFlyV0;          //Flag to check if we use on-the-fly v0
   
-  Double_t fProdTrackPtMin;         /// Minimum Track pT used before object creation
-  Double_t fProdTrackEtaRange;      /// eta range used before object creation
-  Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
-  Double_t fProdV0MassTolK0s;       /// K0s mass selection  used before object creation
-  Double_t fProdV0PtMin;            /// Minimum K0s pT used before object creation
-  Double_t fProdV0CosPointingAngleToPrimVtxMin; /// V0 pointing angle used before object creation
-  Double_t fProdV0DcaDaughtersMax;  /// Max DCA between V0 daughters used before object creation
-  Double_t fProdV0DaughterEtaRange; /// V0Daughter eta range used before object creation
-  Double_t fProdV0DaughterPtMin;    /// V0 Daughter pT min used before object creation
-  Double_t fProdV0DaughterTPCClusterMin; /// V0 daughter Minimum TPC cluster pT used before object creation
-  Double_t fProdRoughMassTol;       /// Mass cut for Lc used before object creation
-  Double_t fProdRoughPtMin;         /// pT cut for Lc used before object creation
+  Double_t fProdTrackPtMin;         //Minimum Track pT used before object creation
+  Double_t fProdTrackEtaRange;      //eta range used before object creation
+  Bool_t   fProdUseAODFilterBit;    //Flag for AOD filter Bit used before object creation
+  Double_t fProdV0MassTolK0s;       //K0s mass selection  used before object creation
+  Double_t fProdV0PtMin;            //Minimum K0s pT used before object creation
+  Double_t fProdV0CosPointingAngleToPrimVtxMin;//V0 pointing angle used before object creation
+  Double_t fProdV0DcaDaughtersMax;  //Max DCA between V0 daughters used before object creation
+  Double_t fProdV0DaughterEtaRange; //V0Daughter eta range used before object creation
+  Double_t fProdV0DaughterPtMin;    //V0 Daughter pT min used before object creation
+  Double_t fProdV0DaughterTPCClusterMin;//V0 daughter Minimum TPC cluster pT used before object creation
+  Double_t fProdRoughMassTol;       //Mass cut for Lc used before object creation
+  Double_t fProdRoughPtMin;         //pT cut for Lc used before object creation
   
-  /// \cond CLASSIMP
+
   ClassDef(AliRDHFCutsLctopK0sfromAODtracks,2);
-  /// \endcond
 };
 
 #endif

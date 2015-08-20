@@ -17,11 +17,10 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-/// \class AliCFVertexingHFCascade
-/// \brief Class for HF corrections as a function of many variables and steps
-/// For D* and other cascades
-///
-/// \author Author : A.GRELLI - a.grelli@uu.nl UTRECHT
+// Class for HF corrections as a function of many variables and steps
+// For D* and other cascades
+// 
+// Author : A.GRELLI - a.grelli@uu.nl UTRECHT
 //-----------------------------------------------------------------------
 
 
@@ -93,20 +92,19 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   AliCFVertexingHFCascade(const AliCFVertexingHFCascade& c);
   AliCFVertexingHFCascade& operator= (const AliCFVertexingHFCascade& other);
 
-  Int_t fPDGcascade;   /// pdg code of the cascade
-  Int_t fPDGbachelor;  /// pdg code of the bachelor
-  Int_t fPDGneutrDaugh;        /// pdg code of the V0
-  Int_t fPDGneutrDaughForMC;     /// pdg code of the V0
-  Int_t fPDGneutrDaughPositive;  /// pdg code of the positive daughter of the V0
-  Int_t fPDGneutrDaughNegative;  /// pdg code of the negative daughter of the V0
-  AliAODVertex* fPrimVtx;        /// primaryVertex
-  Bool_t fUseCutsForTMVA;        /// flag to decide whether to use or not the preselection
-                                 /// cuts of the TMVA when filling the CF
-  Float_t fCutOnMomConservation; /// cut on momentum conservation
+  Int_t fPDGcascade;   // pdg code of the cascade
+  Int_t fPDGbachelor;  // pdg code of the bachelor
+  Int_t fPDGneutrDaugh;        // pdg code of the V0
+  Int_t fPDGneutrDaughForMC;        // pdg code of the V0
+  Int_t fPDGneutrDaughPositive;  // pdg code of the positive daughter of the V0
+  Int_t fPDGneutrDaughNegative;  // pdg code of the negative daughter of the V0
+  AliAODVertex* fPrimVtx;        // primaryVertex
+  Bool_t fUseCutsForTMVA;        // flag to decide whether to use or not the preselection
+                                 // cuts of the TMVA when filling the CF
+  Float_t fCutOnMomConservation; // cut on momentum conservation
 
-  /// \cond CLASSIMP    
-  ClassDef(AliCFVertexingHFCascade,4); /// CF class for D* and other cascades
-    /// \endcond
+  ClassDef(AliCFVertexingHFCascade,4); // CF class for D* and other cascades
+  
 };
 
 #endif

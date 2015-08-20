@@ -854,9 +854,7 @@ struct FastSim : public TSelector
       fFile = TFile::Open(FileName(), "RECREATE");
 
     if (fVerbose) Info("SetupOutput", "Making our tree");
-    fTree      = new TTree("T", (fGenerator ?
-				 fGenerator->GetTitle() :
-				 "T"));
+    fTree      = new TTree("T", "T");
     fParticles = new TClonesArray("TParticle");
     fTree->Branch("header", &fShortHead,
 		  "run/i:event:ntgt:nproj:nbin:type:ipx/D:ipy:ipz:b:c:phir");

@@ -8,7 +8,6 @@
 main()
 {
   #run in proper mode depending on the selection
-  source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
   if [[ $# -lt 1 ]]; then
     if [[ ! "${0}" =~ "bash" ]]; then
       echo "uses makeflow:"
@@ -455,13 +454,12 @@ goCPass1()
                "${batchWorkingDirectory}/${configFile}"
                "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                "${batchWorkingDirectory}/OCDB.root"
+               "${trustedQAtrainMacro}"
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1.C" 
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/recCPass1_OuterDet.C" 
                "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/runCalibTrain.C"
-               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
-               "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"	       
-               "${trustedQAtrainMacro}"
+               "${ALICE_ROOT}/ANALYSIS/macros/QAtrain_duo.C"
   )
 
   for file in "${filesCPass1[@]}"; do
@@ -881,10 +879,8 @@ goMergeCPass1()
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/makeOCDB.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/merge.C"
                     "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.sh"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/QAtrain_duo.C"
-                    "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass1/mergeQAgroups.C"
                     "${trustedQAtrainMacro}"
-
+                    "${ALICE_ROOT}/ANALYSIS/macros/QAtrain_duo.C"
   )
   for file in ${filesMergeCPass1[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
@@ -1125,7 +1121,6 @@ goGenerateMakeflow()
               "runCPass0.sh"
               "recCPass0.C"
               "runQA.sh"
-	      "mergeQAgroups.C"
   )
   for file in ${inputFiles[*]}; do
     [[ -f ${file} ]] && copyFiles+=("${file}")
@@ -1294,12 +1289,7 @@ goCreateQAplots()
   outputDir=${3}
   configFile=${4}
   shift 4
-  alilog_info  "START:goCreateQAplots with following parameters"
-  echo "$@"
-  if ! parseConfig ${configFile} "$@"; then 
-     alilog_error "goCreateQAplots Parsing congig error"
-     return 1; 
-  fi
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
   
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -1327,8 +1317,6 @@ goCreateQAplots()
   echo ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
   ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
   cd ${olddir}
-  alilog_info  "END:goCreateQAplots with folloing parameters"
-  echo "$@"
   return 0
 )
 
@@ -2006,7 +1994,7 @@ goSubmitBatch()
       submit ${JOBID1} 1 ${nFiles} 000 "${alirootEnv} ${self}" CPass0 ${targetDirectory} ${localInputList} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} -1 "${extraOpts[@]}"
 
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "${JOBID1wait}" 1 1 000 "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass0.job\*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
+      submit "${JOBID1wait}" 1 1 000 "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass0.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
       LASTJOB=${JOBID1wait}
 
     fi #end running CPass0
@@ -2077,7 +2065,6 @@ goSubmitBatch()
                     "${configPath}/recCPass1_OuterDet.C"
                     "${configPath}/runCalibTrain.C"
                     "${configPath}/QAtrain_duo.C"
-                    "${configPath}/mergeQAgroups.C"
                     "${configPath}/localOCDBaccessConfig.C"
                     "${configPath}/OCDB.root"
       )
@@ -2112,7 +2099,7 @@ goSubmitBatch()
 
       ################################################################################
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "${JOBID4wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass1.job\*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
+      submit "${JOBID4wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass1.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
       LASTJOB=${JOBID4wait}
       ################################################################################
 
@@ -2141,7 +2128,6 @@ goSubmitBatch()
                         "${configPath}/merge.C"
                         "${configPath}/mergeMakeOCDB.sh"
                         "${configPath}/QAtrain_duo.C"
-			"${configPath}/mergeQAgroups.C"
       )
       for file in ${filesMergeCPass1[*]}; do
         [[ -f ${file} ]] && echo "copying ${file}" && cp -f ${file} ${commonOutputPath}
@@ -2169,9 +2155,9 @@ goSubmitBatch()
   #################################################################################
   #################################################################################
   #if [ ${runESDfiltering} -eq 1 ]; then
-  #  submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/filtering.cpass1.run/\*.done" "${#listOfRuns[@]}" ${maxSecondsToWait}
+  #  submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/filtering.cpass1.run*.done" "${#listOfRuns[@]}" ${maxSecondsToWait}
   #else
-    submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/merge.cpass1.run\*.done" ${#listOfRuns[@]} ${maxSecondsToWait}
+    submit "${JOBID5wait}" 1 1 "${LASTJOB}" "${self}" WaitForOutput ${commonOutputPath} "meta/merge.cpass1.run*.done" ${#listOfRuns[@]} ${maxSecondsToWait}
   #fi
   LASTJOB=${JOBID5wait}
 
@@ -2193,18 +2179,6 @@ goSubmitBatch()
 
 goWaitForOutput()
 (
-  #
-  # will be nice to make documentation
-  # Used to fomaly define dependencies of jobs (wait until something finish) 
-  # Based on my experience (MI) with benchmark - we are waiting for particualr files to exist or timeout
-  # In case of infinite waiting time (because of some misbehaving) easiest way to process is to kill job executing this command
-  #      (jobs on batch farm has PID dependency)
-  #
-  
-  # Action:
-  # Input:
-  # Output:
-
   umask 0002
   [[ $# -lt 3 ]] && echo "goWaitForOutput() wrong number of arguments, exiting.." && return 1
   echo Start:goWaitForOutput
@@ -2837,12 +2811,6 @@ paranoidCp()
   #does not copy links to avoid problems
   sourceFiles=("${@}")
   destination="${sourceFiles[@]:(-1)}" #last element
-    if [ $destination == $sourceFiles ] ; then  
-      echo paranoidCp INFO skip
-      echo paranoidCp INFO destination== $destination 
-      echo paranoidCp INFO sourceFiles== $sourceFiles
-      return 1; 
-  fi
   unset sourceFiles[${#sourceFiles[@]}-1] #remove last element (dst)
   for src in "${sourceFiles[@]}"; do
     if [[ -f "${src}" && ! -h  "${src}" ]]; then
@@ -2876,8 +2844,8 @@ paranoidCopyFile()
   for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
 
     echo "...attempt $i of $maxCopyTries"
-    #rm -f "$dst"
-    cp -n -a "$src" "$dst"
+    rm -f "$dst"
+    cp "$src" "$dst"
 
     cmp -s "$src" "$dst"
     if [ $? == 0 ] ; then

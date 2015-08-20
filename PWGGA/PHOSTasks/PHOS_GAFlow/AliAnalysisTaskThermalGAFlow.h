@@ -2,7 +2,7 @@
 #define AliAnalysisTaskThermalGAFlow_h
 
 #include "AliAnalysisTaskSE.h"
-//#include <vector>
+#include <vector>
 class TNtupleD;
 class TList;
 class TH1F;
@@ -17,8 +17,6 @@ class AliAODCaloCluster;
 class AliESDCaloCluster;
 #include <AliAODCaloCluster.h>
 #include <AliESDCaloCluster.h>
-#include <AliCaloPhoton.h>
-#include <AliEventplane.h>
 
 class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
   public:
@@ -28,6 +26,7 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     virtual void UserExec( Option_t *);
     virtual void Terminate( Option_t *);
 
+//
     virtual void SetDebug(Int_t x) {fDebug = x;}
     virtual void SetMinCells(Int_t x) {fMinCells = x;}
     virtual void SetMinE(Double_t x) {fMinE = x;}
@@ -37,28 +36,22 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     virtual void SetMaxCentrality(Double_t x) {fMaxCentrality = x;}
     virtual void SetCoreRadius(Double_t x) {fCoreRadius = x;}
     virtual void SetMinCoreEnergyRatio(Double_t x) {fMinCoreEnergyRatio = x;}
-    virtual void SetMinLambdaDisp(Double_t x) {fMinLambdaDisp = x;}
-    virtual void SetMinCPVStd(Double_t x) {fMinCPVStd = x;}
+
+//
 
   protected:
     Int_t fRunNumber; //Run number of present run
 
-    TList             *fAnalist; //The Analist - stores output data
-    TList             *fAtlas; //The Event List for photon mixing.  Use an atlas to find where you are
-    TObjArray         *fCompass; //Multidimensional Array of Event Lists for mixing.  Use a compass to find where you are going.
-    TObjArray         *fSextant; //Array of Photons in an Event.  Use a Sextant to look at stars.
-    AliCaloPhoton     *fphoton;  //Primary considered photon
-    AliCaloPhoton     *fmixphoton; //A second considered photon used during mixing
-    AliPHOSGeoUtils   *fPHOSgeomU; //Utilities to manipulate the PHOS geometry
-    AliPHOSGeometry   *fPHOSgeom;  //Parameterization of the PHOS geometry
+    TList             *fAnalist;
+    std::vector< std::vector<TObject*> >  fCompass;
+    AliPHOSGeoUtils   *fPHOSgeomU;
+    AliPHOSGeometry   *fPHOSgeom;
     AliVEvent         *fEvent; //Present Event
     AliESDEvent       *fesd; //fEvent, when esd
     AliAODEvent       *faod; //fEvent, when aod
     Double_t          fvertexx[3]; //The position of the event vertex in the global coordinate system
-    Float_t           fcentrality; //Centrality information
-    Double_t          fevPlane; //Event Plane Inforamtion -- not yet implimented!
-    Double_t          fevScaler; //The V0A and V0C difference squared.  Used for QA.
-    TF1               *fNonLinearCorr; //Nonlinear energy correction for core energy correction
+    Float_t           fcentrality;
+    TF1               *fNonLinearCorr;
 
     Int_t fDebug;
     Int_t fMinCells;
@@ -69,8 +62,7 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     Double_t fMaxCentrality;
     Double_t fCoreRadius;
     Double_t fMinCoreEnergyRatio;
-    Double_t fMinLambdaDisp;
-    Double_t fMinCPVStd;
+
 
     void FillHist(const char * key, Double_t x, Double_t y) const;
     void FillHist(const char * key, Double_t x) const;
@@ -81,18 +73,24 @@ class AliAnalysisTaskThermalGAFlow : public AliAnalysisTaskSE {
     void CaptainsLog(Int_t s);
     void ScanClusters();
     void SavePhoton(AliESDCaloCluster* cluster);
-    void SaveEvent();
-    void MesonExclusion();
-    Double_t *InvMass(AliCaloPhoton* y1, AliCaloPhoton* y2, Double_t piarr[2]);
-    TList *ReferenceAtlas(Double_t vertx, Double_t cent, Double_t evplane);
+    void ScanMod(Int_t* x, TLorentzVector p);
     Bool_t ApplyEventCuts();
     Bool_t ApplyClusterCuts(AliESDCaloCluster *cluster);
     Bool_t ApplyClusterCuts(AliAODCaloCluster *cluster);
-    Bool_t ApplyCoreShapeCut(AliESDCaloCluster *cluster);
-    Bool_t ApplyDispMatrixCut(AliESDCaloCluster *cluster);
+    Bool_t ApplyShapeCuts(AliESDCaloCluster *cluster);
     Bool_t ApplyCPCuts(AliESDCaloCluster *cluster);
     Int_t *GetPos(AliESDCaloCluster* cluster, Int_t x[4]);
     Int_t *GetPos(AliAODCaloCluster* cluster, Int_t x[4]);
+
+//    class histcache{
+//      public:
+//        void set_map (const char key, TObject*)
+//        TObject* get_hist (const char) {return ;}
+//      private:
+//        const char hist_name;
+//        TObject* hist_pointer;
+//    } 
+    
 
 //*****************Add Task BS*****************//   
 //We need to declare task to be private to avoid compilation warning

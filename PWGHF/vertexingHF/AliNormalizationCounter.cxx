@@ -40,9 +40,7 @@
 #include <AliPhysicsSelection.h>
 #include <AliMultiplicity.h>
 
-/// \cond CLASSIMP
-ClassImp(AliNormalizationCounter);
-/// \endcond
+ClassImp(AliNormalizationCounter)
 
 //____________________________________________
 AliNormalizationCounter::AliNormalizationCounter(): 

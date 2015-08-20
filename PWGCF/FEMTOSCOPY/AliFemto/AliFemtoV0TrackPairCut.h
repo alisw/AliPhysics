@@ -1,31 +1,51 @@
-///
-/// \file AliFemtoV0TrackPairCut.h
-///
-/// \class AliFemtoV0TrackPairCut
-/// \brief A pair cut used for testing a track and a reconstructed V0 particle
-///
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// AliFemtoShareQualityPairCut - a pair cut which checks for some pair     //
+// qualities that attempt to identify slit/doubly reconstructed tracks     //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+/***************************************************************************
+ *
+ * $Id: AliFemtoShareQualityPairCut.h 24360 2008-03-10 09:48:27Z akisiel $
+ *
+ * Author: Adam Kisiel, Ohio State University, kisiel@mps.ohio-state.edu
+ ***************************************************************************
+ *
+ * Description: part of STAR HBT Framework: AliFemtoMaker package
+ *   a cut to remove "shared" and "split" pairs
+ *
+ ***************************************************************************
+ *
+ *
+ **************************************************************************/
+
 
 #ifndef ALIFEMTOV0TRACKPAIRCUT_H
 #define ALIFEMTOV0TRACKPAIRCUT_H
 
+// do I need these lines ?
+//#ifndef StMaker_H
+//#include "StMaker.h"
+//#endif
+
 #include "AliFemtoPairCut.h"
 
-class AliFemtoV0TrackPairCut : public AliFemtoPairCut {
+class AliFemtoV0TrackPairCut : public AliFemtoPairCut{
 public:
-  enum ParticleType {kLambda = 0, kAntiLambda = 1, kProton = 2, kAntiProton = 3};
+  enum ParticleType {kLambda=0, kAntiLambda=1, kProton=2, kAntiProton=3};
   typedef enum ParticleType AliFemtoParticleType;
   AliFemtoV0TrackPairCut();
-  AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut &cut);
+  AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut& cut);
   virtual ~AliFemtoV0TrackPairCut();
-  AliFemtoV0TrackPairCut &operator=(const AliFemtoV0TrackPairCut &cut);
-
-  virtual bool Pass(const AliFemtoPair *pair);
+  AliFemtoV0TrackPairCut& operator=(const AliFemtoV0TrackPairCut& cut);
+  
+  virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  virtual AliFemtoPairCut *Clone();
+  virtual AliFemtoPairCut* Clone();
   void SetV0Max(Double_t aAliFemtoV0Max);
   Double_t GetAliFemtoV0Max() const;
-  void SetRemoveSameLabel(Bool_t aRemove);
+  void     SetRemoveSameLabel(Bool_t aRemove);
   void SetTPCOnly(Bool_t tpconly);
   void SetShareQualityMax(Double_t aShareQualityMax);
   void SetShareFractionMax(Double_t aShareFractionMax);
@@ -35,58 +55,52 @@ public:
   void SetKstarCut(double kstar, AliFemtoParticleType firstParticle, AliFemtoParticleType secondParticle);
   void SetMinAvgSeparation(int type, double minSep);
 
-protected:
-  long fNPairsPassed;  ///< Number of pairs considered that passed the cut
-  long fNPairsFailed;  ///< Number of pairs considered that failed the cut
+ protected:
+  long fNPairsPassed;          // Number of pairs consideered that passed the cut 
+  long fNPairsFailed;          // Number of pairs consideered that failed the cut
 
-private:
-  Double_t fV0Max;            ///< Maximum allowed pair quality
-  Double_t fShareQualityMax;  ///< Maximum allowed share quality
-  Double_t fShareFractionMax; ///< Maximum allowed share fraction
-  Bool_t fRemoveSameLabel;    ///< If 1 pairs with two tracks with the same label will be removed
-  Bool_t fTrackTPCOnly;       ///< Track ids will be converted to appropriate TPC/Global value 
+ private:
+  Double_t fV0Max;   // Maximum allowed pair quality
+  Double_t fShareQualityMax;
+  Double_t fShareFractionMax;  // Maximum allowed share fraction
+  Bool_t   fRemoveSameLabel;   // If 1 pairs with two tracks with the same label will be removed
+  Bool_t fTrackTPCOnly;
 
-  AliFemtoDataType fDataType; ///< Use ESD / AOD / Kinematics.
-  Double_t fDTPCMin;          ///< Minimum allowed pair nominal separation at the entrance to the TPC
-  Double_t fDTPCExitMin;      ///< Minimum allowed pair nominal separation at the exit of the TPC
-
-  double fKstarCut;                         ///< do we want the K star cut, if yes (>0) then it is the minimum value of k*
-  AliFemtoParticleType fFirstParticleType;  ///< for kstar - first particle type (V0 type)
-  AliFemtoParticleType fSecondParticleType; ///< for kstar - second particle type (primary track)
-  double fMinAvgSepTrackPos;
-  double fMinAvgSepTrackNeg;
+  AliFemtoDataType fDataType; //Use ESD / AOD / Kinematics.
+  Double_t fDTPCMin;          // Minimum allowed pair nominal separation at the entrance to the TPC
+  Double_t fDTPCExitMin;          // Minimum allowed pair nominal separation at the exit of the TPC
+ 
+  double fKstarCut; //do we want the K star cut, if yes (>0) then it is the minimum value of k*
+  AliFemtoParticleType fFirstParticleType;  //for kstar - first particle type (V0 type) 
+  AliFemtoParticleType fSecondParticleType; //for kstar - second particle type (primary track)
+  double   fMinAvgSepTrackPos;
+  double   fMinAvgSepTrackNeg;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoV0TrackPairCut, 0)
 #endif
 };
 
-inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut &c):
+inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut& c) : 
   AliFemtoPairCut(c),
-  fNPairsPassed(c.fNPairsPassed),
-  fNPairsFailed(c.fNPairsFailed),
-  fV0Max(c.fV0Max),
-  fShareQualityMax(c.fShareQualityMax),
-  fShareFractionMax(c.fShareFractionMax),
-  fRemoveSameLabel(c.fRemoveSameLabel),
-  fTrackTPCOnly(c.fTrackTPCOnly),
-  fDataType(c.fDataType),
-  fDTPCMin(c.fDTPCMin),
-  fDTPCExitMin(c.fDTPCExitMin),
-  fKstarCut(c.fKstarCut),
-  fFirstParticleType(c.fFirstParticleType),
-  fSecondParticleType(c.fSecondParticleType),
-  fMinAvgSepTrackPos(c.fMinAvgSepTrackPos),
-  fMinAvgSepTrackNeg(c.fMinAvgSepTrackNeg)
-{
-  /* no-op */
-}
+  fNPairsPassed(0),
+  fNPairsFailed(0),
+  fV0Max(1.0),
+  fShareQualityMax(1.0),
+  fShareFractionMax(1.0),
+  fRemoveSameLabel(0),
+  fTrackTPCOnly(0),
+  fDataType(kAOD),
+  fDTPCMin(0),
+  fDTPCExitMin(0),
+  fKstarCut(0),
+  fFirstParticleType(kLambda), 
+  fSecondParticleType(kProton),
+  fMinAvgSepTrackPos(0),
+  fMinAvgSepTrackNeg(0)
 
-inline AliFemtoPairCut *AliFemtoV0TrackPairCut::Clone()
-{
-  AliFemtoV0TrackPairCut *c = new AliFemtoV0TrackPairCut(*this);
-  return c;
-}
+{ /* no-op */ }
+
+inline AliFemtoPairCut* AliFemtoV0TrackPairCut::Clone() { AliFemtoV0TrackPairCut* c = new AliFemtoV0TrackPairCut(*this); return c;}
 
 #endif
-

@@ -3,14 +3,14 @@
 
 /*  See cxx source for full Copyright notice */
 
-//-----------------------------------------------------------------
-//        AliAnalysisTaskCheckPerformanceCascadePbPb class
-//            This task is for a performance study of cascade identification.
-//            It works with MC info and ESD and AOD tree 
-//            Origin   : A.Maire    Jan2010, antonin.maire@ires.in2p3.fr
-//            Modified : M.Nicassio Feb2011, maria.nicassio@ba.infn.it
-//            Modified : D.Colella  Feb2012, domenico.colella@ba.infn.it
-//-----------------------------------------------------------------
+// //-----------------------------------------------------------------
+// //        AliAnalysisTaskCheckPerformanceCascadePbPb class
+// //            This task is for a performance study of cascade identification.
+// //            It works with MC info and ESD and AOD tree 
+// //            Origin   : A.Maire    Jan2010, antonin.maire@ires.in2p3.fr
+// //            Modified : M.Nicassio Feb2011, maria.nicassio@ba.infn.it
+// //            Modified : D.Colella  Feb2012, domenico.colella@ba.infn.it
+// //-----------------------------------------------------------------
 
 class TList;
 class TH1F;
@@ -83,23 +83,7 @@ class AliAnalysisTaskCheckPerformanceCascadepp276 : public AliAnalysisTaskSE {
         Bool_t          fApplyAccCut;                   // flag to apply acceptance cuts to MC cascades       
         Float_t         fMinPtCutOnDaughterTracks;      // minimum pt cut on daughter tracks
         Float_t         fEtaCutOnDaughterTracks;        // pseudorapidity cut on daughter tracks 
-        //Setters for the V0 and cascade Vertexer Parameters
-        void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
-        void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
-        void SetV0VertexerDCASecondtoPV          (Double_t lParameter){ fV0Sels[2] = lParameter; }
-        void SetV0VertexerDCAV0Daughters         (Double_t lParameter){ fV0Sels[3] = lParameter; }
-        void SetV0VertexerCosinePA               (Double_t lParameter){ fV0Sels[4] = lParameter; }
-        void SetV0VertexerMinRadius              (Double_t lParameter){ fV0Sels[5] = lParameter; }
-        void SetV0VertexerMaxRadius              (Double_t lParameter){ fV0Sels[6] = lParameter; }
-        void SetCascVertexerMaxChisquare         (Double_t lParameter){ fCascSels[0] = lParameter; }
-        void SetCascVertexerMinV0ImpactParameter (Double_t lParameter){ fCascSels[1] = lParameter; }
-        void SetCascVertexerV0MassWindow         (Double_t lParameter){ fCascSels[2] = lParameter; }
-        void SetCascVertexerDCABachToPV          (Double_t lParameter){ fCascSels[3] = lParameter; }
-        void SetCascVertexerDCACascadeDaughters  (Double_t lParameter){ fCascSels[4] = lParameter; }
-        void SetCascVertexerCascadeCosinePA      (Double_t lParameter){ fCascSels[5] = lParameter; }
-        void SetCascVertexerCascadeMinRadius     (Double_t lParameter){ fCascSels[6] = lParameter; }
-         void SetCascVertexerCascadeMaxRadius     (Double_t lParameter){ fCascSels[7] = lParameter; } 
-       
+        
         Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related (if fkRerunV0CascVertexers)
         Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related (if fkRerunV0CascVertexers)
 	

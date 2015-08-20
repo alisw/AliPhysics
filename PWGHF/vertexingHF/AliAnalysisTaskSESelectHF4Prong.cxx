@@ -50,9 +50,8 @@
 #include "AliAODPidHF.h"
 #include "AliRDHFCuts.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSESelectHF4Prong);
-/// \endcond
+ClassImp(AliAnalysisTaskSESelectHF4Prong)
+
 
 //________________________________________________________________________
 AliAnalysisTaskSESelectHF4Prong::AliAnalysisTaskSESelectHF4Prong():

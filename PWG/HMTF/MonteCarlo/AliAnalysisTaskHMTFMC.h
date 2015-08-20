@@ -16,16 +16,15 @@ class AliAnalysisTaskHMTFMC : public AliAnalysisTaskSE {
   AliAnalysisTaskHMTFMC();
   AliAnalysisTaskHMTFMC(const char *name );
   virtual ~AliAnalysisTaskHMTFMC() {}
-
+  
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
  private:
   TH1F  *fHistEta;           //dNdEta
-  TH1F  *fHistNch;           // Multiplicity distribution
-  TH1F  *fHistNchUnweighted; // Multiplicity distribution
-  TH1F  *fHistRawMult;       // Raw multiplicity distribution
+  TH1F  *fHistNch;           // Multiplicity distribution 
+  TH1F  *fHistNchUnweighted; // Multiplicity distribution 
   TH1D  *fHistIev;           // Event counter
   TList *fMyOut;             // Output list
 
@@ -34,7 +33,7 @@ class AliAnalysisTaskHMTFMC : public AliAnalysisTaskSE {
 
   AliAnalysisTaskHMTFMC(const AliAnalysisTaskHMTFMC&); // not implemented
   AliAnalysisTaskHMTFMC& operator=(const AliAnalysisTaskHMTFMC&); // not implemented
-
+  
   ClassDef(AliAnalysisTaskHMTFMC, 1); // example of analysis
 };
 

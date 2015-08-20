@@ -91,8 +91,6 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
   Bool_t SDD_qf = kTRUE;
   Bool_t SPD_qf = kTRUE;
 
-  /*
-    // RS Commenting this to sync with working version from alidaq
   if (detectorBitsQualityFlag != -1){
     TPC_qf = ((detectorBitsQualityFlag & AliDAQ::kTPC_QF) == AliDAQ::kTPC_QF)? kTRUE : kFALSE;
     TOF_qf = ((detectorBitsQualityFlag & AliDAQ::kTOF_QF) == AliDAQ::kTOF_QF)? kTRUE : kFALSE;
@@ -100,8 +98,7 @@ void makeOCDB(Int_t runNumber, TString  targetOCDBstorage="", TString sourceOCDB
     T0_qf  = ((detectorBitsQualityFlag & AliDAQ::kT0_QF)  == AliDAQ::kT0_QF)?  kTRUE : kFALSE;
     SDD_qf = ((detectorBitsQualityFlag & AliDAQ::kSDD_QF) == AliDAQ::kSDD_QF)? kTRUE : kFALSE;
     SPD_qf = ((detectorBitsQualityFlag & AliDAQ::kSPD_QF) == AliDAQ::kSPD_QF)? kTRUE : kFALSE;
-  } 
-  */   
+  }    
 
   Printf("Quality flags: detectorBitsQualityFlag = %d, TPC = %d, TOF = %d, TRD = %d, T0 = %d, SDD = %d, SPD = %d", detectorBitsQualityFlag, (Int_t)TPC_qf, (Int_t)TOF_qf, (Int_t)TRD_qf, (Int_t)T0_qf, (Int_t)SDD_qf, (Int_t)SPD_qf);
 

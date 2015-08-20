@@ -28,7 +28,6 @@
 #include "AliCDBMetaData.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
-#include "AliGRPObject.h"
 #include "AliLog.h"
 
 #include <TTimeStamp.h>
@@ -89,10 +88,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	  fStatus=kInputError;
 	  return;
 	}
-  
-  AliCDBManager *manCheck = AliCDBManager::Instance();
-  manCheck->SetDefaultStorage("raw://");
-  manCheck->SetRun(runNb);
+    
 	
 	TList *list = (TList*)file->Get("MeanVertex");				
 	
@@ -395,38 +391,19 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       delete vertex;
       return;	
     }
-  
-  
-  Bool_t highMultEnvironment = kFALSE;
-  Bool_t highMultppEnvironment = kFALSE;
-  Bool_t lowMultppEnvironment = kFALSE;
-  
-  
-  AliCDBEntry *grpEntry = manCheck->Get("GRP/GRP/Data");
-  if(!grpEntry) {
-    Printf("GRP entry not found!");
-    return;
-  }
-  
-  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(grpEntry->GetObject());
-  if(!grpData) {
-    Printf("GRP Data file not found");
-    return;
-  }
-  
-  TString beamType(grpData->GetBeamType());
-  if(beamType == "A-A") highMultEnvironment = kTRUE;
-  else
-    if((beamType == "p-A")||(beamType == "A-p")) highMultppEnvironment = kTRUE;
-    else lowMultppEnvironment = kTRUE;
-
-    Float_t meanMult = 38.;
-    Float_t p2 = 1.3;
-    Float_t resolVtx = 0.04;
+    
+    
+    Float_t meanMult = 40.;
+    Float_t p2 = 1.4;
+    Float_t resolVtx = 0.05;
     
     Double_t xSigmaMult, ySigmaMult, corrXZ, corrYZ, lumiRegSquaredX, lumiRegSquaredY;
     Double_t covarXZ=0., covarYZ=0.;
-  
+    
+    Bool_t highMultEnvironment = kFALSE;
+    Bool_t highMultppEnvironment = kFALSE;
+    Bool_t lowMultppEnvironment = kFALSE;
+    
     TF1 *sigmaFitX, *sigmaFitY, *corrFit;
     
     //TH1F *histTRKdefMultX=0;
@@ -502,7 +479,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
     
     Float_t nEntriesMultX=0, nEntriesMultY=0.;
 
-    if(highMultEnvironment==kTRUE){
+    if ((histTRKHighMultX) && (histTRKHighMultY)){
     
       projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 150, 300);
       projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 150, 300);
@@ -511,42 +488,42 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
       nEntriesMultY = projYvsMult->GetEffectiveEntries();
       
       if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
-        AliWarning(Form("Setting High Mulitplicity environment"));
-        highMultEnvironment = kTRUE;
+	AliWarning(Form("Setting High Mulitplicity environment"));	
+	highMultEnvironment = kTRUE;
       }
-    }
-    else if (highMultppEnvironment==kTRUE) {
-      
-      projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 10, 30);
-      projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 10, 30);
-      
-      nEntriesMultX = projXvsMult->GetEffectiveEntries();
-      nEntriesMultY = projYvsMult->GetEffectiveEntries();
-      
-      if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
-        AliWarning(Form("Setting high pp Mulitplicity environment or p-A high multiplicity"));
-        highMultppEnvironment=kTRUE;
-      }
-    }
-    else if (lowMultppEnvironment==kTRUE) {
+      else {
+	
+	projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 10, 30);
+	projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 10, 30);
+	
+	nEntriesMultX = projXvsMult->GetEffectiveEntries();
+	nEntriesMultY = projYvsMult->GetEffectiveEntries();
+	
+	if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
+	  AliWarning(Form("Setting high pp Mulitplicity environment or p-A high multiplicity"));
+	  highMultppEnvironment=kTRUE;			
+	}
+	else {
 	  
-      projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 3, 5);
-      projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 3, 5);
-      
-      nEntriesMultX = projXvsMult->GetEffectiveEntries();
-      nEntriesMultY = projYvsMult->GetEffectiveEntries();
-      
-      if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
-        AliWarning(Form("Setting low pp Mulitplicity environment"));
-        lowMultppEnvironment=kTRUE;
+	  projXvsMult = (TH1D*)histTRKvsMultX->ProjectionX("projXHighMultPbPb", 3, 5);
+	  projYvsMult = (TH1D*)histTRKvsMultY->ProjectionX("projYHighMultPbPb", 3, 5);
+	  
+	  nEntriesMultX = projXvsMult->GetEffectiveEntries();
+	  nEntriesMultY = projYvsMult->GetEffectiveEntries();
+	  
+	  if ((nEntriesMultX >100) && (nEntriesMultY>100)) {
+	    AliWarning(Form("Setting low pp Mulitplicity environment"));
+	    lowMultppEnvironment=kTRUE;			
+	  }
+	
+	}
+	
       }
-      
-    }
-  
-
-  if (lowMultppEnvironment==kTRUE) {
     
-    if ((projXvsMult->GetEntries() < 40.) || (projYvsMult->GetEntries() < 40.)){
+	
+      if (lowMultppEnvironment==kTRUE) {
+	
+	if ((projXvsMult->GetEntries() < 40.) || (projYvsMult->GetEntries() < 40.)){
 	  AliWarning(Form("histos for lumi reg calculation not found, default value set"));
 	  xSigmaVtx=0.0120;
 	  ySigmaVtx=0.0120;
@@ -600,104 +577,106 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, AliCD
 	      fStatus=kLumiRegCovMatrixProblem;
 	    }
 	  }
-  }
+	}
 	
-    TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
-    htrkXZ -> Fit("pol1", "M", "", -10., 10.);
-    corrFit = htrkXZ->GetFunction("pol1");
-    corrXZ = corrFit->GetParameter(1);
-    
-    if (TMath::Abs(corrXZ) > 0.01) {
-      AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
-      corrXZ =0.;
-      fStatus=kLumiRegCovMatrixProblem;
-    }
-    else{
-      covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
-    }
-    
-    TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
-    htrkYZ -> Fit("pol1", "M", "", -10., 10.);
-    corrFit = htrkYZ->GetFunction("pol1");
-    corrYZ = corrFit->GetParameter(1);
-    
-    if (TMath::Abs(corrYZ) > 0.01) {
-      AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
-      corrYZ =0.;
-      fStatus=kLumiRegCovMatrixProblem;
-    }
-    else{
-      covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
-    }
-    
-  }
-  
-  if (highMultEnvironment==kTRUE || highMultppEnvironment==kTRUE){
-    
-    projXvsMult -> Fit("gaus", "M", "", -0.4, 0.4);
-    sigmaFitX = projXvsMult -> GetFunction("gaus");
-    xSigmaMult = sigmaFitX->GetParameter(2);
-    
-    if ((xSigmaMult <0) || (xSigmaMult>0.03)){
-      AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
-      xSigmaMult = 0.;
-      xSigmaVtx = 0.0120;
-      fStatus=kLumiRegCovMatrixProblem;
-    }
-    else{
-      xSigmaVtx = xSigmaMult;
-      xSigmaVtx = xSigmaVtx*1.1;
+	TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
+	htrkXZ -> Fit("pol1", "M", "", -10., 10.);
+	corrFit = htrkXZ->GetFunction("pol1");
+	corrXZ = corrFit->GetParameter(1);
+	
+	if (TMath::Abs(corrXZ) > 0.01) {
+	  AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
+	  corrXZ =0.;
+	  fStatus=kLumiRegCovMatrixProblem;
+	}
+	else{
+	  covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
+	  
+	}
+	
+	TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
+	htrkYZ -> Fit("pol1", "M", "", -10., 10.);
+	corrFit = htrkYZ->GetFunction("pol1");
+	corrYZ = corrFit->GetParameter(1);
+	
+	if (TMath::Abs(corrYZ) > 0.01) {
+	  AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
+	  corrYZ =0.;
+	  fStatus=kLumiRegCovMatrixProblem;
+	}
+	else{
+	  covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
+	}
+	
+      }
     }
     
-    projYvsMult -> Fit("gaus", "M", "", -0.2, 0.5);
-    TCanvas *c = new TCanvas("nwC", "nwC");
-    c->cd();
-    projYvsMult->Draw();
-    sigmaFitY = projYvsMult -> GetFunction("gaus");
-    ySigmaMult = sigmaFitY->GetParameter(2);
+     if (highMultEnvironment==kTRUE || highMultppEnvironment==kTRUE){
     
-    if ((ySigmaMult <0) || (ySigmaMult>0.03)){
-      AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
-      ySigmaMult = 0.;
-      ySigmaVtx = 0.0120;
-      fStatus=kLumiRegCovMatrixProblem;
-    }
-    else{
-      ySigmaVtx = ySigmaMult;
-      ySigmaVtx = ySigmaVtx*1.1;
-    }
-    
-    TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
-    htrkXZ -> Fit("pol1", "M", "", -10., 10.);
-    corrFit = htrkXZ->GetFunction("pol1");
-    corrXZ = corrFit->GetParameter(1);
-    
-    if (TMath::Abs(corrXZ) > 0.01) {
-      AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
-      corrXZ =0.;
-      fStatus=kLumiRegCovMatrixProblem;
-    }
-    else{
-      covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
+       projXvsMult -> Fit("gaus", "M", "", -0.4, 0.4);
+       sigmaFitX = projXvsMult -> GetFunction("gaus");
+       xSigmaMult = sigmaFitX->GetParameter(2);
+       
+       if ((xSigmaMult <0) || (xSigmaMult>0.03)){
+	 AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
+	 xSigmaMult = 0.;
+	 xSigmaVtx = 0.0120;
+	 fStatus=kLumiRegCovMatrixProblem;
+       }
+       else{
+	 xSigmaVtx = xSigmaMult;
+	 xSigmaVtx = xSigmaVtx*1.1;
+      }
+       
+       projYvsMult -> Fit("gaus", "M", "", -0.2, 0.5);
+       TCanvas *c = new TCanvas("nwC", "nwC");
+       c->cd();
+       projYvsMult->Draw();
+      sigmaFitY = projYvsMult -> GetFunction("gaus");
+      ySigmaMult = sigmaFitY->GetParameter(2);
       
-    }
-    
-    TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
-    htrkYZ -> Fit("pol1", "M", "", -10., 10.);
-    corrFit = htrkYZ->GetFunction("pol1");
-    corrYZ = corrFit->GetParameter(1);
-    
-    if (TMath::Abs(corrYZ) > 0.01) {
-      AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
-      corrYZ =0.;
-      fStatus=kLumiRegCovMatrixProblem;
-    }
-    else{
-      covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
-    }
-    
-  }
-  
+      if ((ySigmaMult <0) || (ySigmaMult>0.03)){
+	AliWarning(Form("Problems with luminosiy region determination, update of the postion only"));
+	ySigmaMult = 0.;
+	ySigmaVtx = 0.0120;
+	fStatus=kLumiRegCovMatrixProblem;
+      }
+      else{
+	ySigmaVtx = ySigmaMult;
+	ySigmaVtx = ySigmaVtx*1.1;
+      }
+      
+      TProfile *htrkXZ = histTRKVertexXZ ->ProfileY();
+      htrkXZ -> Fit("pol1", "M", "", -10., 10.);
+      corrFit = htrkXZ->GetFunction("pol1");
+      corrXZ = corrFit->GetParameter(1);
+      
+      if (TMath::Abs(corrXZ) > 0.01) {
+	AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
+	corrXZ =0.;
+	fStatus=kLumiRegCovMatrixProblem;
+      }
+      else{
+	covarXZ = corrXZ * zSigmaVtx*zSigmaVtx;
+	    
+      }
+      
+      TProfile *htrkYZ = histTRKVertexYZ ->ProfileY();
+      htrkYZ -> Fit("pol1", "M", "", -10., 10.);
+      corrFit = htrkYZ->GetFunction("pol1");
+      corrYZ = corrFit->GetParameter(1);
+      
+      if (TMath::Abs(corrYZ) > 0.01) {
+	AliWarning(Form("Problems in the correlation fitting, not update the covariance matrix"));
+	corrYZ =0.;
+	fStatus=kLumiRegCovMatrixProblem;
+      }
+      else{
+	covarYZ = corrYZ*zSigmaVtx*zSigmaVtx;
+      }
+      
+     }
+     
      Double_t position[3], covMatrix[6];
      Double_t chi2=1.; 
      Int_t nContr=1;	

@@ -32,9 +32,8 @@
 #include "AliCFContainer.h"
 #include "AliCFTaskVertexingHF.h"
 
-/// \cond CLASSIMP
-ClassImp(AliCFVertexingHF2Prong);
-/// \endcond
+ClassImp(AliCFVertexingHF2Prong)
+
 
 //_________________________________________
   AliCFVertexingHF2Prong::AliCFVertexingHF2Prong(TClonesArray *mcArray, UShort_t originDselection):

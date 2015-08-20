@@ -35,9 +35,8 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSESelectHF.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSESelectHF);
-/// \endcond
+ClassImp(AliAnalysisTaskSESelectHF)
+
 
 //________________________________________________________________________
 AliAnalysisTaskSESelectHF::AliAnalysisTaskSESelectHF():

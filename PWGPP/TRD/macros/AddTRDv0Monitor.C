@@ -1,15 +1,26 @@
-void AddTRDv0Monitor(AliAnalysisDataContainer **ci)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TTree.h>
+// #include <TError.h>
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDv0Info.h>
+// #include <AliTRDv0Monitor.h>
+// #endif
+
+void AddTRDv0Monitor(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Info("AddTRDv0Monitor", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", 
        ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName());
 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if(!mgr) return;
   AliTRDv0Monitor *v0Mon(NULL);;
   mgr->AddTask(v0Mon = new AliTRDv0Monitor((char*)"TRDv0Monitor"));
   v0Mon->SetDebugLevel(0);
   //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
-  v0Mon->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+  v0Mon->SetMCdata(mgr->GetMCtruthEventHandler());
   v0Mon->SetFriends(kTRUE);
   //v0Mon->SetSource(AliTRDpidRefMaker::kV0,AliTRDpidRefMaker::kRec);
   mgr->ConnectInput( v0Mon, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container

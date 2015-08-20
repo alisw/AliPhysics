@@ -761,8 +761,7 @@ EXAMPLE_RECURSIVE      = NO
 # the \image command).
 
 IMAGE_PATH             = ../analysis2/../doc \
-		         ../analysis2/doc \
-			 ../analysis2/../doc/alice-int-2012-040/
+		         ../analysis2/doc
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

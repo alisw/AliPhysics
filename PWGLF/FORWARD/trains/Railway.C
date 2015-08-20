@@ -70,10 +70,6 @@ struct Railway
   {}
   Railway& operator=(const Railway&) { return *this; }
   /** 
-   * @{ 
-   * @name Create a railway 
-   */
-  /** 
    * Create a helper object. 
    *
    * @param verbose Verbosity 
@@ -116,67 +112,6 @@ struct Railway
    * @return Newly allocated helper or null 
    */
   static Railway* Create(const TUrl& url, Int_t verbose=0);
-  /** 
-   * Create an instance of a helper class 
-   */
-  static Railway* CreateObject(const TString& cl, 
-			      const TUrl&    url, 
-			      Int_t verbose=0)
-  {
-    if (verbose < 3) gSystem->RedirectOutput("/dev/null","w");
-    if (cl.Contains("proof", TString::kIgnoreCase) || 
-	cl.Contains("vaf",   TString::kIgnoreCase) || 
-	cl.Contains("lite",  TString::kIgnoreCase) || 
-	cl.Contains("aaf",   TString::kIgnoreCase)) {
-      gSystem->Load("libProof");
-      gSystem->Load("libProofPlayer");
-    }
-    // (Always) recompile and with debug symbols 
-    gROOT->LoadMacro(Form("%s.C++g",cl.Data()));
-    Long_t ptr = gROOT->ProcessLine(Form("new %s(\"%s\", %d);", 
-					 cl.Data(), url.GetUrl(), verbose));
-    if (verbose < 3) gSystem->RedirectOutput(0);
-    if (!ptr) { 
-      Warning("Railway::CreateObject", "Failed to instantize a %s", cl.Data());
-      return 0;
-    }
-    Railway* h = reinterpret_cast<Railway*>(ptr);
-    return h;
-  }
-  /** 
-   * Show help on URL using the interpreter 
-   * 
-   * @param cl Railway class 
-   */
-  static void ShowUrlHelp(const TString& cl)
-  {
-    Railway* h = CreateObject(cl, "", true);
-    if (!h) return;
-
-    std::cout << "   " << h->UrlHelp() << std::endl;
-  }
-  /** 
-   * Show help on URL and options using the interpreter 
-   * 
-   * @param cl Railway class 
-   */
-  static void ShowFullHelp(const TString& cl) 
-  {
-    Railway* h = CreateObject(cl, "", true);
-    if (!h) return;
-    
-    std::cout << h->Desc() << ":\n" 
-	      << "==============\n"
-	      << "  " << h->UrlHelp() << "\n\n"
-	      << "Options: " << std::endl;
-    h->Options().Help(std::cout);
-    std::cout << std::endl;
-  }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Loading stuff 
-   */
   /** 
    * Load a library 
    * 
@@ -266,11 +201,6 @@ struct Railway
     if (!LoadLibrary("OADB"))          return false;
     return true;
   }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Mode of exection 
-   */
   /** 
    * Get the execution mode 
    * 
@@ -287,11 +217,6 @@ struct Railway
    * @return Operation type
    */
   virtual UShort_t Operation() const { return kFull; }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Input/Output
-   */
   /** 
    * Get the input data type 
    *
@@ -350,11 +275,6 @@ struct Railway
 
     return u.GetUrl();
   }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Processing 
-   */
   /** 
    * Set-up done before task setup 
    * 
@@ -375,15 +295,6 @@ struct Railway
    * @return The return value of AliAnalysisManager::StartAnalysis
    */
   virtual Long64_t Run(Long64_t nEvents=-1) = 0;
-  /**
-   * Add a monitor object - only for PROOF 
-   */
-  virtual Bool_t AddMonitor(const TString&) { return true; }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Various help functions
-   */
   /** 
    * Print information to standard output 
    * 
@@ -421,6 +332,65 @@ struct Railway
    */
   virtual void AuxSave(const TString& /*escaped*/, 
 		       Bool_t /*asShellScript*/) {}
+  /** 
+   * Create an instance of a helper class 
+   */
+  static Railway* CreateObject(const TString& cl, 
+			      const TUrl&    url, 
+			      Int_t verbose=0)
+  {
+    if (verbose < 3) gSystem->RedirectOutput("/dev/null","w");
+    if (cl.Contains("proof", TString::kIgnoreCase) || 
+	cl.Contains("lite",  TString::kIgnoreCase) || 
+	cl.Contains("aaf",   TString::kIgnoreCase)) {
+      gSystem->Load("libProof");
+      gSystem->Load("libProofPlayer");
+    }
+    // (Always) recompile and with debug symbols 
+    gROOT->LoadMacro(Form("%s.C++g",cl.Data()));
+    Long_t ptr = gROOT->ProcessLine(Form("new %s(\"%s\", %d);", 
+					 cl.Data(), url.GetUrl(), verbose));
+    if (verbose < 3) gSystem->RedirectOutput(0);
+    if (!ptr) { 
+      Warning("Railway::CreateObject", "Failed to instantize a %s", cl.Data());
+      return 0;
+    }
+    Railway* h = reinterpret_cast<Railway*>(ptr);
+    return h;
+  }
+  /** 
+   * Show help on URL using the interpreter 
+   * 
+   * @param cl Railway class 
+   */
+  static void ShowUrlHelp(const TString& cl)
+  {
+    Railway* h = CreateObject(cl, "", true);
+    if (!h) return;
+
+    std::cout << "   " << h->UrlHelp() << std::endl;
+  }
+  /** 
+   * Show help on URL and options using the interpreter 
+   * 
+   * @param cl Railway class 
+   */
+  static void ShowFullHelp(const TString& cl) 
+  {
+    Railway* h = CreateObject(cl, "", true);
+    if (!h) return;
+    
+    std::cout << h->Desc() << ":\n" 
+	      << "==============\n"
+	      << "  " << h->UrlHelp() << "\n\n"
+	      << "Options: " << std::endl;
+    h->Options().Help(std::cout);
+    std::cout << std::endl;
+  }
+  /**
+   * Add a monitor object - only for PROOF 
+   */
+  virtual Bool_t AddMonitor(const TString&) { return true; }
 protected:
   /** 
    * Constructor 
@@ -445,10 +415,6 @@ protected:
   virtual ~Railway()
   {
   }
-  /** 
-   * @{ 
-   * @name Loading things 
-   */
   /** 
    * Normalize a library name
    * 
@@ -507,11 +473,6 @@ protected:
       gSystem->Exec(Form("ln -s %s .", path.Data()));
     return true;
   }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Input/output 
-   */
   /** 
    * Create a local chain based on URL and options 
    * 
@@ -563,11 +524,6 @@ protected:
     
     return chain;
   }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Helper to figure out what we're doing
-   */
   /** 
    * Deduce the top of job from a string 
    * 
@@ -581,8 +537,7 @@ protected:
     if (str.Contains("aod", TString::kIgnoreCase)) return kAOD;
     if (str.Contains("esd", TString::kIgnoreCase)) return kESD;
     return kUser;
-  }
-  /* @} */
+  }  
   // --- Data members ------------------------------------------------
   TUrl        fUrl;     // The URI
   OptionList  fOptions; 
@@ -621,13 +576,8 @@ Railway::Create(const TUrl& url, Int_t verbose)
     if (host.IsNull()) 
       cl = "LiteRailway";
     else if (host.BeginsWith("alice-caf")) { 
-      // AAF
-      ::Warning("Railway::Create", "CAF has been decommissioned");
+      // AAF 
       cl = opts.Contains("plugin") ? "AAFPluginRailway" : "AAFRailway";
-    }
-    else if (host.BeginsWith("alivaf")) {
-      // VAF
-      cl = "VAFRailway";
     }
     else 
       cl = "ProofRailway";
@@ -643,7 +593,6 @@ Railway::Create(const TUrl& url, Int_t verbose)
       ShowFullHelp("LocalRailway");
       ShowFullHelp("ProofRailway");
       ShowFullHelp("LiteRailway");
-      ShowFullHelp("VAFRailway");
       ShowFullHelp("AAFRailway");
       ShowFullHelp("AAFPluginRailway");
       ShowFullHelp("GridRailway");
@@ -653,7 +602,6 @@ Railway::Create(const TUrl& url, Int_t verbose)
     ShowUrlHelp("LocalRailway");
     ShowUrlHelp("ProofRailway");
     ShowUrlHelp("LiteRailway");
-    ShowUrlHelp("VAFRailway");
     ShowUrlHelp("AAFRailway");
     ShowUrlHelp("AAFPluginRailway");
     ShowUrlHelp("GridRailway");

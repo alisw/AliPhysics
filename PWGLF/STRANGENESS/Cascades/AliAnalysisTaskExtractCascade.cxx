@@ -1090,10 +1090,11 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         vertex = lESDevent->GetPrimaryVertexSPD();
         if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
         else fHasVertex = kTRUE;
+        TString vtxTyp = vertex->GetTitle();
         Double_t cov[6]={0};
         vertex->GetCovarianceMatrix(cov);
         Double_t zRes = TMath::Sqrt(cov[5]);
-        if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
+        if (vtxTyp.Contains("vertexer: Z") && (zRes>0.25)) fHasVertex = kFALSE;
     }
     else fHasVertex = kTRUE;
     

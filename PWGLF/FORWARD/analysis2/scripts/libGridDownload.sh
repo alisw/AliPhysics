@@ -89,14 +89,12 @@ append_to_path()
 
 # --- Get list of files ----------------------------------------------
 # Output is stored in .list
-spath=
 _get_file_list()
 {
     local path=$1
     local search=$2
     local maxf=$3
     if test x$maxf = x ; then maxf=-1 ; fi
-    spath=$path
     
     mess 1 "Getting list of files from AliEn - can take minutes - be patient"
     mess 2 "alien_find ${path} ${search}"
@@ -121,54 +119,6 @@ fix_perm()
     chmod g+rwX $1
     chmod o+rX $1
 }
-# --- Make output file name ------------------------------------------
-#
-# $1: Source file 
-# $2: Top of store
-# $3: run
-# $4: current file number
-# $5: Maximum number of files
-# $6: Multi-file download  
-_format_out_name()
-{
-    local source=$1 ; shift 
-    local store=$1  ; shift 
-    local r=$1      ; shift
-    local cur=$1    ; shift
-    local max=$1    ; shift
-    local multi=$1  ; shift 
-    local o=`echo ${store} | sed 's/\/*$/\//'`
-    local file=`basename $source`
-    mess 10 "Format name from source=$source store=$store r=$r " \
-	 "cur=$cur max=$max multi=$multi" > /dev/stderr 
-    case x$r in
-	x*.*)
-	    rr=`echo $r | sed -e 's/^..0*//' -e 's/...\..*//'`
-	    mm=`echo $r | sed -e 's/.*\(...\)\..*/\1/' -e 's/^0//'`
-	    lm=`echo $r | sed -e 's/.*\.//' -e 's/^0//'`
-	    r=$rr
-	    cur=$mm
-	    max=$lm
-	    # cur=$((${mm}*10000+${lm}))
-	    ;;
-	x)  r=0
-	    ;;
-    esac
-    sub=`printf %09d_%04d_%04d ${r} ${cur} ${max}`
-    tmp=$file 
-    if test $multi -le 0 ; then 
-	case $file in 
-	    *.root)
-		tmp=`basename $file .root`_${sub}.root
-		sub=		
-		;;
-	esac
-    fi
-    o=${o}${sub}/${tmp}
-    mkdir -p `dirname $o`
-    echo $o
-}
-
 # --- Download a single file -----------------------------------------
 #  $1: Source file
 #  $2: Output directory
@@ -176,8 +126,6 @@ _format_out_name()
 #  $4: Current count
 #  $5: Maximum
 #  $6: redirect
-#  $7: noact flag
-#  $8: multi file flag 
 _download_file()
 {
     local source=$1 ; shift 
@@ -187,9 +135,19 @@ _download_file()
     local max=$1    ; shift
     local redir=$1  ; shift
     local noact=$1  ; shift
-    local multi=$1  ; shift 
-
-    local o=`_format_out_name "$source" "$store" "$r" "$cur" "$max" "$multi"`
+    local o=${store}/
+    local file=`basename $source`
+    case $file in 
+	*.root)
+	    mess 3 "Forming output file name: file=$file cur=$cur"
+	    o=${o}`basename $file .root`_`printf %09d_%04d ${r} ${cur}`.root 
+	    ;;
+	*.zip)
+	    local d=`printf %09d_%04d ${r} ${cur}` 
+	    mkdir -p ${o}/${d}
+	    o=${o}/${d}/${file}
+	    ;;
+    esac
     printf "%4d/%4d: %20s -> %20s ..." $cur $max $source $o 
 
     mess 2 -n "$source -> $o ... "
@@ -249,40 +207,29 @@ check_file()
 # $5: noact 
 submit_jobs()
 {
-    echo "submit_jobs out=$1 sta=$2 max=$3 maxf=$4 noact=$5"
     local out=$1 ; shift
     local sta=$1 ; shift 
     local max=$1 ; shift
     local maxf=$1 ; shift
     local noact=$1 ; shift
-    local prx=`echo "$spath" | sed 's,//,/,g'` 
+    local prx=`echo "$path" | sed 's,//,/,g'` 
     local joblist=
     local counter=0
     mess 5 "Submitting $maxjobs jobs from $sta/$maxf" 
     for i in $@ ; do 
 	let cur=$sta+$counter
 
-	local b=`echo $i | sed -e "s,${prx}/*,,"`
+	local b=`echo $i | sed -e "s,${prx}/,,"`
 	local r=
 	case $b in
 	    ESDs/*) r=`echo $b | sed -e 's,.*/\([0-9]*\)...\..*/.*,\1,'` ;;
-	    *)
-		sub=`dirname $b`
-		if test "x$sub" != "x" ; then
-		    case $sub in			
-			*/*) sub=`basename $sub`;;
-			*) ;;
-		    esac
-		    r=`basename $sub | sed -e "s,/.*,," | sed 's/0*//'`
-		fi 
-		;;
+	    *)      r=`echo $b | sed -e "s,/.*,," | sed 's/0*//'`;;
 	esac
 	
 	let counter=$counter+1
 
-	mess 3 "i=$i out=$out r=$r cur=$cur max=$max noact=$noact " \
-	     "(b=$b spath=$spath)"
-	download_file "$i" "$out" "$r" "$cur" "$maxf" "$noact" &
+	mess 3 "i=$i out=$out r=$r cur=$cur max=$max noact=$noact (b=$b path=$path)"
+	download_file $i $out $r $cur $maxf $noact &
 	j=`jobs %% | sed -e 's/^[^0-9]*//' -e 's/[^0-9]*$//'` 
 	joblist="$joblist $j"
     done

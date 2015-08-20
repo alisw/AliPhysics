@@ -18,11 +18,10 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-/// \class AliCFVertexingHF
-/// \brief Class for HF corrections as a function of many variables and step
-/// \author Author : C. Zampolli, CERN
-/// \author D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
-/// Base class for HF Unfolding - agrelli@uu.nl
+// Class for HF corrections as a function of many variables and step 
+// Author : C. Zampolli, CERN
+// D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
+// Base class for HF Unfolding - agrelli@uu.nl
 //-----------------------------------------------------------------------
 
 #include "AliCFContainer.h"
@@ -120,35 +119,34 @@ class AliCFVertexingHF : public TObject {
 
 	protected:
 	
-	TClonesArray      *fmcArray;               /// mcArray candidate
-	AliAODRecoDecayHF *fRecoCandidate;         /// Reconstructed HF candidate
+	TClonesArray      *fmcArray;               //mcArray candidate
+	AliAODRecoDecayHF *fRecoCandidate;         // Reconstructed HF candidate 
 	AliAODMCParticle  *fmcPartCandidate;
 	Int_t fNDaughters;
-	Int_t fNVar;                /// get Number of variables for the container from the channel decay
-	Double_t fzPrimVertex;       /// Reco z primary vertex
-	Double_t fzMCVertex;         /// MC z primary vertex
+	Int_t fNVar;                // get Number of variables for the container from the channel decay
+	Double_t fzPrimVertex;       //Reco z primary vertex	
+	Double_t fzMCVertex;         //MC z primary vertex
 	
-	Bool_t fFillFromGenerated;   ///  flag to indicate whether data container should be filled
-	UShort_t fOriginDselection;      /// flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty
+	Bool_t fFillFromGenerated;   //  flag to indicate whether data container should be filled  
+	UShort_t fOriginDselection;      // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty
 	
-	Bool_t fKeepDfromB;           /// flag for the feed down from b quark decay.
-	Bool_t fKeepDfromBOnly;       /// flag to keep only the charm particles that comes from beauty decays
-	Int_t fmcLabel;              /// results of the MatchToMC()
-	Int_t fProngs;               /// n. of prongs
+	Bool_t fKeepDfromB;           //flag for the feed down from b quark decay. 			
+	Bool_t fKeepDfromBOnly;       // flag to keep only the charm particles that comes from beauty decays
+	Int_t fmcLabel;              // results of the MatchToMC()
+	Int_t fProngs;               // n. of prongs	
 	Int_t* fLabelArray;          //[fProngs]  array of labels
 
-	Float_t fCentValue;         /// centrality value
+	Float_t fCentValue;         // centrality value
 	Float_t* fPtAccCut;         //[fProngs] array of pt cut values for the Acceptance (MC+Rec) steps 
 	Float_t* fEtaAccCut;          //[fProngs] array of eta (absolute value) cut values for the Acceptance (MC+Rec) steps 
-	Int_t fFakeSelection; /// fakes selection: 0 --> all, 1 --> non-fake, 2 --> fake
-	Float_t fFake;              /// variable to indicate whether the D0 was a fake or not: 0 --> fake, 1 --> MC, 2 --> non-fake
-	Bool_t fRejectIfNoQuark;  /// flag to remove events not geenrated with PYTHIA
-	Double_t fMultiplicity;    /// multiplicity of the event
-	Int_t fConfiguration;    /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
+	Int_t fFakeSelection; // fakes selection: 0 --> all, 1 --> non-fake, 2 --> fake
+	Float_t fFake;              // variable to indicate whether the D0 was a fake or not: 0 --> fake, 1 --> MC, 2 --> non-fake
+	Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
+	Double_t fMultiplicity;    // multiplicity of the event
+	Int_t fConfiguration;    // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 
-    /// \cond CLASSIMP    
 	ClassDef(AliCFVertexingHF, 7);
-    /// \endcond
+	
 };
 
 #endif

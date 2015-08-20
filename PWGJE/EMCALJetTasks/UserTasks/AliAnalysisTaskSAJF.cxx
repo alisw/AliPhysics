@@ -478,11 +478,8 @@ Bool_t AliAnalysisTaskSAJF::FillHistograms()
     while (ep < 0) ep += TMath::Pi();
     while (ep >= TMath::Pi()) ep -= TMath::Pi();
 
-    Double_t z = GetParallelFraction(leadPart.Vect(), jet);
-    if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
-
     FillJetHisto(fCent, ep, jet->Eta(), jet->Phi(), jet->Pt(), jet->MCPt(), corrPt, jet->Area(), 
-		 jet->NEF(), z, jet->GetNumberOfConstituents(), ptLeading);
+		 jet->NEF(), GetParallelFraction(leadPart.Vect(), jet), jet->GetNumberOfConstituents(), ptLeading);
 
     if (fTracks) {
       for (Int_t it = 0; it < jet->GetNumberOfTracks(); it++) {

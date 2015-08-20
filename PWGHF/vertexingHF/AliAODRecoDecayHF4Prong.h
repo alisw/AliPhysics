@@ -6,9 +6,10 @@
 /* $Id$ */ 
 
 //***********************************************************
-/// \class Class AliAODRecoDecayHF4Prong
-/// \brief base class for AOD reconstructed 4-prong heavy-flavour decays (D0->Kpipipi, etc...)
-/// \author Authors: G.E.Bruno Giuseppe.Bruno@ba.infn.it, R.Romita Rossella.Romita@ba.infn.it
+// Class AliAODRecoDecayHF4Prong
+// base class for AOD reconstructed 4-prong heavy-flavour decays
+// (D0->Kpipipi, etc...)
+// Authors: G.E.Bruno Giuseppe.Bruno@ba.infn.it, R.Romita Rossella.Romita@ba.infn.it
 //***********************************************************
 
 #include "AliAODRecoDecay.h"
@@ -62,16 +63,14 @@ class AliAODRecoDecayHF4Prong : public AliAODRecoDecayHF {
  private:
 
   //Double_t fSigmaVert; // track dispersion around the secondary vertex
-  Double_t fDist12toPrim; /// distance prim vert - 2 opposite sign track vertex
-  Double_t fDist3toPrim; /// distance prim vert - 3 track vertex
-  Double_t fDist4toPrim; /// distance prim vert - 4 track vertex
+  Double_t fDist12toPrim; //distance prim vert - 2 opposite sign track vertex 
+  Double_t fDist3toPrim; //distance prim vert - 3 track vertex 
+  Double_t fDist4toPrim; //distance prim vert - 4 track vertex 
   //Double_t fDist123toPrim;  //distance 
  
 
-  /// \cond CLASSIMP
-  ClassDef(AliAODRecoDecayHF4Prong,2); /// base class for AOD reconstructed
-                                       /// heavy-flavour 3-prong decays
-  /// \endcond
+  ClassDef(AliAODRecoDecayHF4Prong,2)  // base class for AOD reconstructed 
+                                       // heavy-flavour 3-prong decays
 };
 
 #endif

@@ -1,45 +1,6 @@
-Int_t PlotTimestamp(TCanvas* c1)
-{
-  double rightlegend = 1 - 10./c1->GetWw();
-  //the function plots a timestamp, the used Aliroot version, and the number of runs
-  TString sTimestamp  = gSystem->GetFromPipe("date");
-  TString sAlirootVer;
-  if (gSystem->GetFromPipe("echo $ALICE_VER") == "master"){
-    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_ROOT/../src; git describe; cd $wdir;");
-  }
-  else {
-    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("echo $ALICE_VER");
-  }
-
-  TString sAliphysicsVer;
-  if (gSystem->GetFromPipe("echo $ALIPHYSICS_VER") == "master"){
-    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_PHYSICS/../src; git describe; cd $wdir;");
-  }
-  else {
-    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("echo $ALIPHYSICS_VER");
-  }
-  TLatex* latTime = new TLatex(rightlegend,0.99,sTimestamp.Data());
-  latTime->SetTextSize(0.03);
-  latTime->SetTextAlign(31);
-  latTime->SetNDC();
-  latTime->Draw("same");
-  TLatex* latAliroot = new TLatex(rightlegend,0.95,sAlirootVer.Data());
-  latAliroot->SetTextSize(0.03);
-  latAliroot->SetTextAlign(31);
-  latAliroot->SetNDC();
-  latAliroot->Draw("same");
-  TLatex* latAliphysics = new TLatex(rightlegend,0.91,sAliphysicsVer.Data());
-  latAliphysics->SetTextSize(0.03);
-  latAliphysics->SetTextAlign(31);
-  latAliphysics->SetNDC();
-  latAliphysics->Draw("same");
-return 1;
-}
-
-
 int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   //
-  // Draw control histograms
+  // Draw control histograms 
   // and generate output pictures
   //
 
@@ -56,11 +17,11 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   gSystem->Load("libANALYSIScalib");
   gSystem->Load("libTender");
   gSystem->Load("libPWGPP");
-
+                    
   gROOT->Reset();
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
-  gStyle->SetOptStat(0);
+  gStyle->SetOptStat(0);    
   gStyle->SetTitleSize(0.025);
   TH1::AddDirectory(kFALSE);
 
@@ -112,8 +73,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   // event level
   //
 
-
-
   TH1 *h1D = 0;
   TH2 *h2D = 0;
   TH3 *h3D = 0;
@@ -123,7 +82,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
 
   cout<<"number of events    "<<NEvents<<endl;
 
-  TCanvas *can1 = new TCanvas("can1","TPC event information",1200,800);
+  TCanvas *can1 = new TCanvas("can1","TPC event information",1200,800); 
   can1->Divide(3,2);
 
   can1->cd(1);
@@ -140,7 +99,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h1D = (TH1*)fold->FindObject("h_tpc_event_recvertex_1");
   h1D->GetXaxis()->SetRangeUser(-1.,1.);
   h1D->Draw("histe");
-  PlotTimestamp(can1);
 
   can1->cd(4);
   gPad->SetLogy();
@@ -164,7 +122,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   can1->SaveAs("TPC_event_info.png");
 
 
-  TCanvas *can2 = new TCanvas("can2","#eta , #phi and p_{t}",1200,800);
+  TCanvas *can2 = new TCanvas("can2","#eta , #phi and p_{t}",1200,800); 
 
   can2->Divide(3,2);
 
@@ -227,7 +185,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h1D = h3D->Project3D("y");
   h1D->SetLineColor(kRed);
   h1D->Draw("histesame");
-  PlotTimestamp(can2);
 
   can2->cd(6);
   h3D = (TH3*)fold->FindObject("h_tpc_track_pos_recvertex_5_6_7");
@@ -248,10 +205,10 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
 
   can2->SaveAs("eta_phi_pt.png");
 
-  TCanvas *can3 = new TCanvas("can3","Cluster Occupancy",700,700);
+  TCanvas *can3 = new TCanvas("can3","Cluster Occupancy",700,700); 
   can3->Divide(1,2);
 
-  can3->cd(1);
+  can3->cd(1); 
   TH3 *h3D_1 = (TH3*)fold->FindObject("h_tpc_clust_0_1_2");
   TH3 *h3D_2 = (TH3*) h3D_1->Clone("h3D_2");
   h3D_1->GetZaxis()->SetRangeUser(0,0.99);
@@ -260,13 +217,12 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   if(NEvents > 0)
     h3D_1->Project3D("xy")->Scale(1.0/NEvents);
   can3->Update();
-  PlotTimestamp(can3);
 
-  can3->cd(2);
+  can3->cd(2);  
   h3D_2->GetZaxis()->SetRangeUser(1,2) ;
   h3D_2->Project3D("xy")->Draw("colz");
   h3D_2->Project3D("xy")->SetTitle("Cluster Occupancy C Side");
-  if(NEvents>0)
+  if(NEvents>0) 
     h3D_2->Project3D("xy")->Scale(1.0/NEvents);
 
   can3->SaveAs("cluster_occupancy.png");
@@ -329,8 +285,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr5);
   h2D->Draw("colz");
   arr5->At(1)->Draw("same");
-  PlotTimestamp(can4);
-
 
   can4->cd(6);
   h3D = (TH3*)fold->FindObject("h_tpc_track_pos_recvertex_2_5_6");
@@ -349,7 +303,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TObjArray *arr7 = new TObjArray();
   TObjArray *arr8 = new TObjArray();
 
-  TCanvas *can5 = new TCanvas("can5","DCA In Detail",1200,800);
+  TCanvas *can5 = new TCanvas("can5","DCA In Detail",1200,800); 
   can5->Divide(3,2);
 
   can5->cd(1);
@@ -372,7 +326,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h3D->GetYaxis()->SetRangeUser(-1,1);
   h3D->Project3D("xy")->Draw("colz");
   h3D->Project3D("xy")->SetTitle("DCAR vs #eta of neg. charged tracks");
-  PlotTimestamp(can5);
 
   can5->cd(4);
   h3D = (TH3*)fold->FindObject("h_tpc_track_all_recvertex_4_5_7");
@@ -397,7 +350,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
 
   can5->SaveAs("dca_in_detail.png");
 
-  TCanvas *can51 = new TCanvas("can51","DCAr versus pT",700,800);
+  TCanvas *can51 = new TCanvas("can51","DCAr versus pT",700,800); 
   can51->Divide(2,2);
 
   TObjArray *arr9 = new TObjArray();
@@ -431,7 +384,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   width2->Draw("same");
   width2->SetLineColor(2);
   arr10->At(1)->Draw("same");
-  PlotTimestamp(can51);
 
   can51->cd(3);
   h3D = (TH3*)fold->FindObject("h_tpc_track_neg_recvertex_3_5_7");
@@ -470,7 +422,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TFolder *fold1 = obj1->GetAnalysisFolder();
   if(!fold1) return(0);
 
-  TCanvas *can6 = new TCanvas("can6","TPC dEdX",1200,800);
+  TCanvas *can6 = new TCanvas("can6","TPC dEdX",1200,800); 
   can6->Divide(3,2);
 
   can6->cd(1);
@@ -484,7 +436,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   can6->cd(3);
   gPad->SetLogz();
   fold1->FindObject("h_tpc_dedx_0_6")->Draw("colz");
-  PlotTimestamp(can6);
 
   can6->cd(4);
   gPad->SetLogx();
@@ -496,7 +447,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   can6->cd(5);
   gPad->SetLogz();
   //fold1->FindObject("h_tpc_dedx_mips_a_0_1")->Draw("colz");
-  TH2 *htest = fold1->FindObject("h_tpc_dedx_mips_a_0_1");
+  TH2 *htest = fold1->FindObject("h_tpc_dedx_mips_a_0_1"); 
   htest->GetYaxis()->SetRangeUser(30,60);
   htest->Draw("colz");
   can6->cd(6);
@@ -512,7 +463,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TObjArray *arr9 = new TObjArray();
   TObjArray *arr10 = new TObjArray();
 
-  TCanvas *can7 = new TCanvas("can7","DCA vs #phi",1200,800);
+  TCanvas *can7 = new TCanvas("can7","DCA vs #phi",1200,800); 
   can7->Divide(4,2);
 
   can7->cd(1);
@@ -542,7 +493,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h3D->GetYaxis()->SetRangeUser(0.0,maxeta);
   h3D->Project3D("xz")->Draw("colz");
   h3D->Project3D("xz")->SetTitle("DCAZ vs #phi of neg. charged tracks(A)");
-  PlotTimestamp(can7);
 
   can7->cd(5);
   //h3D = (TH3*)fold->FindObject("h_tpc_track_pos_recvertex_3_5_6");
@@ -573,7 +523,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
 
 
   AliPerformanceMatch *obj2 = (AliPerformanceMatch*)TPC->FindObject("AliPerformanceMatchTPCITS");
-  TFolder *pMatch = obj2->GetAnalysisFolder();
+  TFolder *pMatch = obj2->GetAnalysisFolder(); 
 
   AliPerformanceMatch *obj3 = (AliPerformanceMatch*)TPC->FindObject("AliPerformanceMatchITSTPC");
   TFolder *pPull = obj3->GetAnalysisFolder();
@@ -589,7 +539,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TH2 *h2D = 0;
   TH2 *h2D1 = 0;
 
-  TCanvas *can8 = new TCanvas("can8","TPC-ITS Matching Efficiency",800,800);
+  TCanvas *can8 = new TCanvas("can8","TPC-ITS Matching Efficiency",800,800); 
   can8->Divide(2,2);
 
   can8->cd(1);
@@ -615,7 +565,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h1D3->SetLineColor(2);
   h1D3->SetTitle("TPC-ITS Matching Efficiency (C)");
   h1D3->Draw("e0");
-  PlotTimestamp(can8);
 
   can8->cd(3);
   h2D = (TH2*)(pMatch->FindObject("h_tpc_match_trackingeff_all_1_3"));
@@ -644,7 +593,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   can8->SaveAs("TPC-ITS.png");
   //  TH2 *h2D = 0;
 
-  TCanvas *can9 = new TCanvas("can9","Pulls of TPC Tracks vs 1/pT",1200,800);
+  TCanvas *can9 = new TCanvas("can9","Pulls of TPC Tracks vs 1/pT",1200,800); 
   can9->Divide(3,2);
 
   TObjArray *arr1 = new TObjArray();
@@ -682,13 +631,10 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr5);
   h2D->Draw("colz");
   arr5->At(1)->Draw("same");
-
-  can9->cd(6);
-  PlotTimestamp(can9);
-
+  
   can9->SaveAs("pull-pt.png");
 
-  TCanvas *can10 = new TCanvas("can10","Pulls of TPC Tracks vs Eta",1200,800);
+  TCanvas *can10 = new TCanvas("can10","Pulls of TPC Tracks vs Eta",1200,800); 
   can10->Divide(3,2);
 
   TObjArray *arr6 = new TObjArray();
@@ -726,13 +672,10 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr10);
   h2D->Draw("colz");
   arr10->At(1)->Draw("same");
-
-  can10->cd(6);
-  PlotTimestamp(can10);
-
+  
   can10->SaveAs("pull-eta.png");
 
-  TCanvas *can11 = new TCanvas("can11","Pulls of TPC Tracks vs Phi",1200,800);
+  TCanvas *can11 = new TCanvas("can11","Pulls of TPC Tracks vs Phi",1200,800); 
   can11->Divide(3,2);
 
   TObjArray *arr11 = new TObjArray();
@@ -770,20 +713,17 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr15);
   h2D->Draw("colz");
   arr15->At(1)->Draw("same");
-
-  can11->cd(6);
-  PlotTimestamp(can11);
-
+  
   can11->SaveAs("pull-phi.png");
 
   AliPerformanceMatch *obj4 = (AliPerformanceMatch*)TPC->FindObject("AliPerformanceMatchTPCConstrain");
   TFolder *pConstrain = obj4->GetAnalysisFolder();
 
-  TCanvas *can12 = new TCanvas("can12","#delta_{sin#phi}/#sigma_{sin#phi}",800,800);
+  TCanvas *can12 = new TCanvas("can12","#delta_{sin#phi}/#sigma_{sin#phi}",800,800); 
   can12->Divide(2,2);
 
   h3D = (TH3*)pConstrain->FindObject("h_tpc_constrain_tpc_0_2_3");
-  TH3 *h31 = h3D->Clone("h31");
+  TH3 *h31 = h3D->Clone("h31");  
 
   can12->cd(1);
   h3D->GetZaxis()->SetRangeUser(0,maxeta);
@@ -793,7 +733,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->SetTitle("A Side");
   h2D->SetYTitle("(sin#phi_{TPC} - sin#phi_{Global})/#sigma");
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr11);
-  arr11->At(1)->Draw("same");
+  arr11->At(1)->Draw("same");  
   TH1 *width1 = (TH1*)arr11->At(2);
   width1->Draw("same");
   width1->SetLineColor(2);
@@ -812,11 +752,10 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->SetTitle("C Side");
   h2D->SetYTitle("(sin#phi_{TPC} - sin#phi_{Global})/#sigma");
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr12);
-  arr12->At(1)->Draw("same");
+  arr12->At(1)->Draw("same");  
   TH1 *width2 = (TH1*)arr12->At(2);
   width2->Draw("same");
   width2->SetLineColor(2);
-  PlotTimestamp(can1);
 
   /*  h31->Project3D("xy")->Draw("colz");
       h31->Project3D("xy")->SetTitle("C Side");
@@ -827,13 +766,13 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   can12->cd(3);
   h3D = (TH3*)pConstrain->FindObject("h_tpc_constrain_tpc_0_1_3");
   h3D->GetZaxis()->SetRangeUser(0,maxeta);
-  TH3 *h32 = h3D->Clone("h32");
+  TH3 *h32 = h3D->Clone("h32");  
   h2D = (TH2*)h3D->Project3D("xy");
   h2D->Draw("colz");
   h2D->SetTitle("A Side");
   h2D->SetYTitle("(sin#phi_{TPC} - sin#phi_{Global})/#sigma");
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr13);
-  arr13->At(1)->Draw("same");
+  arr13->At(1)->Draw("same");  
   TH1 *width3 = (TH1*)arr13->At(2);
   width3->Draw("same");
   width3->SetLineColor(2);
@@ -851,7 +790,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->SetTitle("C Side");
   h2D->SetYTitle("(sin#phi_{TPC} - sin#phi_{Global})/#sigma");
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr14);
-  arr14->At(1)->Draw("same");
+  arr14->At(1)->Draw("same");  
   TH1 *width4 = (TH1*)arr14->At(2);
   width4->Draw("same");
   width4->SetLineColor(2);
@@ -887,7 +826,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
      can13->cd(4);
      h_mean_pullPt_vs_Pt->Draw();
 
-     can13->SaveAs("res_pT_1overpT.png");
+     can13->SaveAs("res_pT_1overpT.png");	
 
      AliPerformanceEff *objPerfEff = (AliPerformanceEff*) TPC->FindObject("AliPerformanceEff");
      if (objPerfEff == NULL) {printf("Error getting AliPerformanceEff\n");}
@@ -1010,7 +949,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   pt_all_findable_neg ->Draw("same");
   pt_all_findable_pos ->Draw("same");
 
-  can14->SaveAs("eff_all+all_findable.png");
+  can14->SaveAs("eff_all+all_findable.png");	
 
   TCanvas *can15 = new TCanvas("can15","Efficiency Pi K P",1000,1000);
   can15->Divide(3, 3);
@@ -1051,7 +990,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   pt_P_neg            ->Draw("same");
   pt_P_pos            ->Draw("same");
 
-  can15->SaveAs("eff_Pi_K_P.png");
+  can15->SaveAs("eff_Pi_K_P.png");	
 
   //get more histos from THnSparse...
   THnSparseF* EffHisto = (THnSparseF*) objPerfEff->GetEffHisto();
@@ -1122,19 +1061,19 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   can16->cd(9);
   h_charge_sel->Draw();
   can16->cd(1);
-  eta_Pi_findable->Draw();
-  eta_Pi_findable_neg->Draw("same");
-  eta_Pi_findable_pos->Draw("same");
+  eta_Pi_findable->Draw(); 
+  eta_Pi_findable_neg->Draw("same"); 
+  eta_Pi_findable_pos->Draw("same"); 
   can16->cd(2);
-  phi_Pi_findable->Draw();
-  phi_Pi_findable_neg->Draw("same");
-  phi_Pi_findable_pos->Draw("same");
+  phi_Pi_findable->Draw(); 
+  phi_Pi_findable_neg->Draw("same"); 
+  phi_Pi_findable_pos->Draw("same"); 
   can16->cd(3);
-  pt_Pi_findable->Draw();
-  pt_Pi_findable_neg->Draw("same");
-  pt_Pi_findable_pos->Draw("same");
+  pt_Pi_findable->Draw(); 
+  pt_Pi_findable_neg->Draw("same"); 
+  pt_Pi_findable_pos->Draw("same"); 
 
-  can16->SaveAs("eff_Pi_K_P_findable.png");
+  can16->SaveAs("eff_Pi_K_P_findable.png");	
   */
 
     ofstream fout("runqa_exist");

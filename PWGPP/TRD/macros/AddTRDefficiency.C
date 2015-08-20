@@ -1,9 +1,21 @@
-void AddTRDefficiency(AliAnalysisDataContainer **ci, Int_t effmc, Int_t mult)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TError.h>
+// 
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// #include <AliLog.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDefficiency.h>
+// #include <AliTRDefficiencyMC.h>
+// #include <AliTRDmultiplicity.h>
+// #endif
+
+void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Info("AddTRDefficiency",  "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName()) ;
-
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if(!mgr) return;
 
   //AliLog::SetClassDebugLevel("AliTRDefficiency", 5);
   AliAnalysisDataContainer *evInfoContainer = ci[3];
@@ -25,7 +37,7 @@ void AddTRDefficiency(AliAnalysisDataContainer **ci, Int_t effmc, Int_t mult)
   }
 
   // TRD combined tracking efficiency
-  if(mgr->GetMCtruthEventHandler() && effmc)) {
+  if(mgr->GetMCtruthEventHandler() && TESTBIT(map, AliTRDpwgppHelper::kEfficiencyMC)) {
     mgr->AddTask(eff = new AliTRDefficiencyMC((char*)"TRDefficiencyMC"));
     eff->SetDebugLevel(0);
     //AliLog::SetClassDebugLevel("AliTRDefficiencyMC", 5);  
@@ -38,7 +50,7 @@ void AddTRDefficiency(AliAnalysisDataContainer **ci, Int_t effmc, Int_t mult)
   }
 
   // TRD single track selection
-  if(!mult) return;
+  if(!(TESTBIT(map, AliTRDpwgppHelper::kMultiplicity))) return;
 
   mgr->AddTask(eff = new AliTRDmultiplicity((char*)"TRDmultiplicity"));
   eff->SetDebugLevel(0);

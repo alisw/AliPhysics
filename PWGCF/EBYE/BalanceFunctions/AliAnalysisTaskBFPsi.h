@@ -12,7 +12,6 @@ class TF1;
 class TH3D;
 class TParticle;
 
-class AliBalanceEbyE;
 class AliBalancePsi;
 class AliESDtrackCuts;
 class AliEventPoolManager;
@@ -62,10 +61,6 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   }
   void SetMixingWithEventPlane(Bool_t bMixingWithEventPlane = kTRUE) { fRunMixingEventPlane = bMixingWithEventPlane; }
   void SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
-  void SetEbyEObject(AliBalanceEbyE *const analysisEbyE){
-    fRunEbyE = kTRUE;
-    fBalanceEbyE = analysisEbyE;
-  }
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
     fESDtrackCuts = trackCuts;}
   void SetVertexDiamond(Double_t vx, Double_t vy, Double_t vz) {
@@ -222,14 +217,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   TClonesArray* fArrayMC; //! AOD object  //+++++++++++++++++++++
   AliBalancePsi *fBalance; //BF object
-  AliBalanceEbyE *fBalanceEbyE; //BF object (EbyE)
   Bool_t fRunShuffling;//run shuffling or not
   AliBalancePsi *fShuffledBalance; //BF object (shuffled)
   Bool_t fRunMixing;//run mixing or not
   Bool_t fRunMixingEventPlane;//run mixing with Event Plane
-  Bool_t fRunEbyE;//run balance function on an event-by-event basis
   Int_t  fMixingTracks;
-  AliBalancePsi *fMixedBalance; //BF object (mixed)
+  AliBalancePsi *fMixedBalance; //TriggeredBF object (mixed)
   AliEventPoolManager*     fPoolMgr;         //! event pool manager
 
   TList *fList; //fList object

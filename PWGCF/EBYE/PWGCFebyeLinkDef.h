@@ -6,7 +6,6 @@
 
 #pragma link C++ class AliBalance+;
 #pragma link C++ class AliBalancePsi+;
-#pragma link C++ class AliBalanceEbyE+;
 #pragma link C++ class AliBalanceEventMixing+;
 #pragma link C++ class AliBalanceTriggered+;
 #pragma link C++ class AliBFBasicParticle+;
@@ -64,7 +63,5 @@
 #pragma link C++ class AliAnalysisNetParticleEffCont+;
 #pragma link C++ class AliAnalysisNetParticleHelper+;
 #pragma link C++ class AliAnalysisTaskNetParticle+;
-
-#pragma link C++ class AliAnalysisTempFluc+;
 
 #endif

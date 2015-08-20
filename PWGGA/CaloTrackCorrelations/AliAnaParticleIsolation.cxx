@@ -56,7 +56,6 @@ fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
 fFillTMHisto(0),                  fFillSSHisto(1),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
-fFillOverlapHistograms(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
 fDecayBits(),                     fDecayTagsM02Cut(0),
 fFillNLMHistograms(0),
@@ -71,8 +70,7 @@ fConeSizes(),                     fPtThresholds(),
 fPtFractions(),                   fSumPtThresholds(),
 fMomentum(),                      fMomIso(),
 fMomDaugh1(),                     fMomDaugh2(),
-fTrackVector(),                   fProdVertex(),
-fCluster(0),                      fClustersArr(0),
+fTrackVector(),
 // Histograms
 fhEIso(0),                        fhPtIso(0),
 fhPtCentralityIso(0),             fhPtEventPlaneIso(0),
@@ -186,9 +184,7 @@ fhENoIsoPileUp(),                 fhPtNoIsoPileUp(),
 fhTimeENoCut(0),                  fhTimeESPD(0),                  fhTimeESPDMulti(0),
 fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
-fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
-fhMCConversionVertex(),           fhMCConversionLambda0Rcut()
-
+fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0)
 {
   InitParameters();
   
@@ -262,18 +258,8 @@ fhMCConversionVertex(),           fhMCConversionLambda0Rcut()
     fhPtIsoMC    [imc]    = 0;
     fhPhiIsoMC   [imc]    = 0;
     fhEtaIsoMC   [imc]    = 0;
-    
-    for(Int_t i = 0; i < 2 ; i++)
-    {
-      fhPtLambda0MC                [imc][i] = 0;
-      fhPtLambda0MCConv            [imc][i] = 0;      
-      fhPtLambda0MCWith1Overlap    [imc][i] = 0;
-      fhPtLambda0MCConvWith1Overlap[imc][i] = 0;      
-      fhPtLambda0MCWithNOverlap    [imc][i] = 0;
-      fhPtLambda0MCConvWithNOverlap[imc][i] = 0;
-      fhPtNOverlap                 [imc][i] = 0;
-      fhPtNOverlapConv             [imc][i] = 0;      
-    }
+    fhPtLambda0MC[imc][0] = 0;
+    fhPtLambda0MC[imc][1] = 0;
   }
   
   for(Int_t i = 0; i < 2 ; i++)
@@ -288,10 +274,6 @@ fhMCConversionVertex(),           fhMCConversionLambda0Rcut()
     fhELambda0LocMax1[i] = 0 ;              fhELambda1LocMax1[i] = 0 ;
     fhELambda0LocMax2[i] = 0 ;              fhELambda1LocMax2[i] = 0 ;
     fhELambda0LocMaxN[i] = 0 ;              fhELambda1LocMaxN[i] = 0 ;
-    
-    fhMCConversionVertex[i] = 0 ;
-    for(Int_t iR = 0; iR < 6; iR++) fhMCConversionLambda0Rcut[iR][i] = 0;            
-
   }
   
   // Acceptance
@@ -963,9 +945,6 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   
   fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
   fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight());
-  
-  aodParticle->SetNeutralLeadPtInCone(coneptLeadCluster);
-  aodParticle->SetNeutralPtSumInCone(coneptsumCluster);
 }
 
 //______________________________________________________________________________________________________
@@ -1104,9 +1083,6 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
 
   fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
   fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight());
-  
-  aodParticle->SetChargedLeadPtInCone(coneptLeadTrack);
-  aodParticle->SetChargedPtSumInCone(coneptsumTrack);
 }
 
 //_____________________________________________________________________________
@@ -1229,21 +1205,7 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   Float_t phi    = pCandidate->Phi();
   if(phi<0) phi+= TMath::TwoPi();
   
-  // Recover original cluster if requested
-  //
-  if(fFillOverlapHistograms || fFillTMHisto)
-  {
-    Int_t iclus = -1;
-    if     (GetCalorimeter() == kEMCAL) fClustersArr = GetEMCALClusters();
-    else if(GetCalorimeter() == kPHOS ) fClustersArr = GetPHOSClusters();
-    
-    if(!fClustersArr) return;
-    
-    fCluster = FindCluster(fClustersArr,clusterID,iclus);
-  }
-
   // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
-  //
   if(fFillTaggedDecayHistograms)
   {
     Int_t decayTag = pCandidate->DecayTag();
@@ -1512,120 +1474,17 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     
     if(IsDataMC())
     {
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-        {
-          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MC[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-        }
-        
-        fhPtLambda0MC[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
-        {
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtLambda0MCConv[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
-          
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-          {
-            if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConv[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-            else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConv[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          }
-          
-          fhPtLambda0MCConv[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-        } // Conversion
-
+      if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+        fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
       
-      Int_t noverlaps = 0;
-      if(fFillOverlapHistograms)
+      if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
       {
-        const UInt_t nlabels = fCluster->GetNLabels();
-        Int_t overpdg[nlabels];
-        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(fCluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg);
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtNOverlap[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight());
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-        {
-          if     ( mcIndex == kmcPi0Decay ) fhPtNOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtNOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
-        }
-        
-        fhPtNOverlap[mcIndex][isolated]->Fill(pt, noverlaps, GetEventWeight());
-
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
-        {
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtNOverlapConv[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight());
-          
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-          {
-            if     ( mcIndex == kmcPi0Decay ) fhPtNOverlapConv[kmcPi0DecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
-            else if( mcIndex == kmcEtaDecay ) fhPtNOverlapConv[kmcEtaDecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
-          }
-          
-          fhPtNOverlapConv[mcIndex][isolated]->Fill(pt, noverlaps, GetEventWeight());
-        } // Conversion
+        if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+        else if( mcIndex == kmcEtaDecay ) fhPtLambda0MC[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
       }
       
-      if ( noverlaps == 1 )
-      {
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtLambda0MCWith1Overlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-        {
-          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCWith1Overlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCWith1Overlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-        }
-        
-        fhPtLambda0MCWith1Overlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
-        {
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtLambda0MCConvWith1Overlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
-          
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-          {
-            if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConvWith1Overlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-            else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConvWith1Overlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          }
-          
-          fhPtLambda0MCConvWith1Overlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-        } // Conversion
-      } // At least 1 overlap
-      else if (noverlaps > 1 ) // More than 1 overlap
-      {
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtLambda0MCWithNOverlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-        {
-          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCWithNOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCWithNOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-        }
-        
-        fhPtLambda0MCWithNOverlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-        
-        if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
-        {
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtLambda0MCConvWithNOverlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
-          
-          if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
-          {
-            if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConvWithNOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-            else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConvWithNOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          }
-          
-          fhPtLambda0MCConvWithNOverlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-        } // Conversion
-      } // more than 1 overlap
-    } // MC
+      fhPtLambda0MC[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+    }
     
     if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
        GetModuleNumber(pCandidate) >= GetFirstSMCoveredByTRD()  )
@@ -1659,13 +1518,22 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   // Track matching dependent histograms
   if(fFillTMHisto)
   {
-    Float_t dZ  = fCluster->GetTrackDz();
-    Float_t dR  = fCluster->GetTrackDx();
+    Int_t iclus = -1;
+    TObjArray* clusters = 0x0;
+    if     (GetCalorimeter() == kEMCAL) clusters = GetEMCALClusters();
+    else if(GetCalorimeter() == kPHOS ) clusters = GetPHOSClusters();
     
-    if(fCluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
+    if(!clusters) return;
+    
+    AliVCluster *cluster = FindCluster(clusters,clusterID,iclus);
+    
+    Float_t dZ  = cluster->GetTrackDz();
+    Float_t dR  = cluster->GetTrackDx();
+    
+    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn())
     {
       dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(fCluster->GetID(),dZ,dR);
+      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
     }
     
     //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
@@ -1680,15 +1548,16 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
     
     if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
     {
-      AliVTrack *track = GetCaloUtils()->GetMatchedTrack(fCluster, GetReader()->GetInputEvent());
+      
+      AliVTrack *track = GetCaloUtils()->GetMatchedTrack(cluster, GetReader()->GetInputEvent());
       
       if(track)
       {
         Float_t dEdx = track->GetTPCsignal();
-        fhdEdx[isolated]->Fill(fCluster->E(), dEdx, GetEventWeight());
+        fhdEdx[isolated]->Fill(cluster->E(), dEdx, GetEventWeight());
         
-        Float_t eOverp = fCluster->E()/track->P();
-        fhEOverP[isolated]->Fill(fCluster->E(),  eOverp, GetEventWeight());
+        Float_t eOverp = cluster->E()/track->P();
+        fhEOverP[isolated]->Fill(cluster->E(),  eOverp, GetEventWeight());
       }
       //else
       //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
@@ -2981,6 +2850,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhConeSumPtCellTrackTrigEtaPhi->SetXTitle("#eta_{trigger}");
         fhConeSumPtCellTrackTrigEtaPhi->SetYTitle("#phi_{trigger} (rad)");
         outputContainer->Add(fhConeSumPtCellTrackTrigEtaPhi) ;
+        
       }
       
       if(fFillUEBandSubtractHistograms)
@@ -3149,8 +3019,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }
     }
     
-    TString region[] = {"ITS","TPC","TRD","TOF","Top EMCal","In EMCal"}; // conversion regions
-
     for(Int_t iso = 0; iso < 2; iso++)
     {
       if(fFillTMHisto)
@@ -3251,60 +3119,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             fhPtLambda0MC[imc][iso]->SetYTitle("#lambda_{0}^{2}");
             fhPtLambda0MC[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MC[imc][iso]) ;
-
-            fhPtLambda0MCConv[imc][iso]  = new TH2F(Form("hPtLambda0%s_MC%sConv",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
-                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhPtLambda0MCConv[imc][iso]->SetYTitle("#lambda_{0}^{2}");
-            fhPtLambda0MCConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-            outputContainer->Add( fhPtLambda0MCConv[imc][iso]) ;
-            
-            if(fFillOverlapHistograms)
-            {
-              fhPtLambda0MCWith1Overlap[imc][iso]  = new TH2F(Form("hPtLambda0%s_MC%s_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                  Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, 1 overlap",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
-                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCWith1Overlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
-              fhPtLambda0MCWith1Overlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-              outputContainer->Add( fhPtLambda0MCWith1Overlap[imc][iso]) ;
-              
-              fhPtLambda0MCConvWith1Overlap[imc][iso]  = new TH2F(Form("hPtLambda0%s_MC%sConv_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                      Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion, 1 overlap",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
-                                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCConvWith1Overlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
-              fhPtLambda0MCConvWith1Overlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-              outputContainer->Add( fhPtLambda0MCConvWith1Overlap[imc][iso]) ;
-
-              fhPtLambda0MCWithNOverlap[imc][iso]  = new TH2F(Form("hPtLambda0%s_MC%s_NOverlap",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                              Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, 1 overlap",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
-                                                              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCWithNOverlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
-              fhPtLambda0MCWithNOverlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-              outputContainer->Add( fhPtLambda0MCWithNOverlap[imc][iso]) ;
-              
-              fhPtLambda0MCConvWithNOverlap[imc][iso]  = new TH2F(Form("hPtLambda0%s_MC%sConv_NOverlap",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                                  Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion, 1 overlap",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
-                                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-              fhPtLambda0MCConvWithNOverlap[imc][iso]->SetYTitle("#lambda_{0}^{2}");
-              fhPtLambda0MCConvWithNOverlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-              outputContainer->Add( fhPtLambda0MCConvWithNOverlap[imc][iso]) ;
-              
-              
-              fhPtNOverlap[imc][iso]  = new TH2F(Form("hPtNOverlaps%s_MC%s_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                              Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, 1 overlap",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
-                                                              nptbins,ptmin,ptmax,10,0,10);
-              fhPtNOverlap[imc][iso]->SetYTitle("#it{N} overlaps");
-              fhPtNOverlap[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-              outputContainer->Add( fhPtNOverlap[imc][iso]) ;
-              
-              fhPtNOverlapConv[imc][iso]  = new TH2F(Form("hPtNOverlaps%s_MC%sConv_1Overlap",isoName[iso].Data(),mcPartName[imc].Data()),
-                                                                  Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion, 1 overlap",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
-                                                                  nptbins,ptmin,ptmax,10,0,10);
-              fhPtNOverlapConv[imc][iso]->SetYTitle("#it{N} overlaps");
-              fhPtNOverlapConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
-              outputContainer->Add( fhPtNOverlapConv[imc][iso]) ;
-            }
-          
           }
         }
         
@@ -3385,29 +3199,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           outputContainer->Add(fhELambda1LocMaxN[iso]) ;
         } // NLM
       } // SS histo
-      
-      if(IsDataMC())
-      {
-        fhMCConversionVertex[iso] = new TH2F(Form("hMCPhotonConversionVertex%s",isoName[iso].Data()),
-                                             Form("%s, cluster from converted photon, #it{p}_{T} vs vertex distance, %s",isoTitle[iso].Data(),parTitle.Data()),
-                                             nptbins,ptmin,ptmax,500,0,500);
-        fhMCConversionVertex[iso]->SetYTitle("#it{R} (cm)");
-        fhMCConversionVertex[iso]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        outputContainer->Add(fhMCConversionVertex[iso]) ;
-        
-        if(fFillSSHisto)
-        {
-          for(Int_t iR = 0; iR < 6; iR++)
-          {
-            fhMCConversionLambda0Rcut[iR][iso] = new TH2F(Form("hMCPhotonConversionLambda0%s_R%d",isoName[iso].Data(),iR),
-                                                          Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, conversion in %s",isoTitle[iso].Data(),region[iR].Data()),
-                                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
-            fhMCConversionLambda0Rcut[iR][iso]->SetYTitle("#lambda_{0}^{2}");
-            fhMCConversionLambda0Rcut[iR][iso]->SetXTitle("#it{p}_{T} (GeV)");
-            outputContainer->Add(fhMCConversionLambda0Rcut[iR][iso]) ;
-          }
-        }
-      }
     } // control histograms for isolated and non isolated objects
     
     
@@ -4440,47 +4231,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t energy     = aod->E();
     Float_t phi        = aod->Phi();
     Float_t eta        = aod->Eta();
-    Float_t m02        = aod->GetM02();
     
     AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
-    
-    // Conversion radius
-    if( IsDataMC()                                                                 &&        
-        GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
-        GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)     &&
-       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)        &&
-       !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)        
-      )
-    {
-      Int_t pdg  = 0, status  = 0, momLabel  = -1;
-      Int_t pdgD = 0, statusD = 0, daugLabel = -1;
-      Bool_t ok = kFALSE, okD = kFALSE;
-      
-      //fPrimaryMom = 
-      GetMCAnalysisUtils()->GetMother(aod->GetLabel(),GetReader(), pdg, status, ok, momLabel);     
-      //fMomentum = 
-      GetMCAnalysisUtils()->GetDaughter(0,momLabel,GetReader(),pdgD, statusD, okD, daugLabel, fProdVertex);
-      
-      if(okD)
-      {
-        Float_t prodR = TMath::Sqrt(fProdVertex.X()*fProdVertex.X()+fProdVertex.Y()*fProdVertex.Y());
-        
-        //printf("Iso %d, Conversion: mom pdg %d (stat %d), 1st daugher %d (stat %d), mom label %d, org label %d, daugh label %d, prodR %f\n", isolated, pdg,status, pdgD, statusD, 
-        //       momLabel, aod->GetLabel(),daugLabel,prodR);
-        
-        fhMCConversionVertex[isolated]->Fill(pt,prodR,GetEventWeight());
-        
-        if(fFillSSHisto)
-        {
-          if      ( prodR < 75.  ) fhMCConversionLambda0Rcut[0][isolated]->Fill(pt,m02,GetEventWeight());
-          if      ( prodR < 275. ) fhMCConversionLambda0Rcut[1][isolated]->Fill(pt,m02,GetEventWeight());
-          else if ( prodR < 375. ) fhMCConversionLambda0Rcut[2][isolated]->Fill(pt,m02,GetEventWeight());
-          else if ( prodR < 400. ) fhMCConversionLambda0Rcut[3][isolated]->Fill(pt,m02,GetEventWeight());
-          else if ( prodR < 430. ) fhMCConversionLambda0Rcut[4][isolated]->Fill(pt,m02,GetEventWeight());
-          else                     fhMCConversionLambda0Rcut[5][isolated]->Fill(pt,m02,GetEventWeight());
-        }
-      }
-    }
     
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone or in UE band
@@ -4531,7 +4283,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     //  printf("Histograms analysis : cluster pt = %f, etaBandTrack = %f, etaBandCluster = %f, isolation = %d\n",aod->Pt(),etaBandptsumTrackNorm,etaBandptsumClusterNorm,aod->IsIsolated());
     
-        
     //---------------------------------------------------------------
     // Fill Shower shape and track matching histograms
     //---------------------------------------------------------------
@@ -4644,11 +4395,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhENoIsoPileUp[6] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[6]->Fill(pt, GetEventWeight()) ; }
       }
     } // non iso
-    
-    
-    
-    
-    
   }// aod loop
 }
 
@@ -4708,7 +4454,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     if( !mcparticles ) return;
     nprim = mcparticles->GetEntriesFast();
   }
-
+  
   for(Int_t i=0 ; i < nprim; i++)
   {
     if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
@@ -4734,6 +4480,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       //Photon kinematics
       primStack->Momentum(fMomentum);
+      
     }
     else
     {
@@ -4817,9 +4564,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
      // printf("OK pi0 %d, ndaugh %d\n",okpi0,ndaugh);
       Int_t d1Pdg = 0, d1Status = 0; Bool_t ok1 = kFALSE;
       Int_t d2Pdg = 0, d2Status = 0; Bool_t ok2 = kFALSE;
-
-      if ( ndaugh > 0 ) fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label,fProdVertex);
-      if ( ndaugh > 1 ) fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label,fProdVertex);
+     
+      if ( ndaugh > 0 ) fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,i,GetReader(),d1Pdg, d1Status,ok1, pi0d1Label);
+      if ( ndaugh > 1 ) fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,i,GetReader(),d2Pdg, d2Status,ok2, pi0d2Label);
       
       //printf("pi0 daug %d: a) %d, b) %d\n", ndaugh,pi0d1Label,pi0d2Label);
       //if ( ndaugh !=2 ) printf("PDG: %d, %d\n",d1Pdg,d2Pdg);
@@ -5004,9 +4751,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           if(ndaugh==2)
           {
             Int_t d1Pdg = 0, d1Status = 0;
-            fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,pi0label,GetReader(),d1Pdg, d1Status,ok1, d1Label,fProdVertex);
+            fMomDaugh1 = GetMCAnalysisUtils()->GetDaughter(0,pi0label,GetReader(),d1Pdg, d1Status,ok1, d1Label);
             Int_t d2Pdg = 0, d2Status = 0;
-            fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,pi0label,GetReader(),d2Pdg, d2Status,ok2, d2Label,fProdVertex);
+            fMomDaugh2 = GetMCAnalysisUtils()->GetDaughter(1,pi0label,GetReader(),d2Pdg, d2Status,ok2, d2Label);
             if(d2Pdg != d1Pdg && d1Pdg!=22) okpi0 = kFALSE;
             
             // Check the momentum and location of second daughter

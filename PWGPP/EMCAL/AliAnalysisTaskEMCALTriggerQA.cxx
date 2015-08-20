@@ -150,8 +150,6 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
         
       } // loop
     } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
-    
-    delete contBC;
   }  // Remove bad
   
   fOADBSet = kTRUE;

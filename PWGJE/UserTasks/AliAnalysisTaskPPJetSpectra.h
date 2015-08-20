@@ -127,10 +127,6 @@ class AliAnalysisTaskPPJetSpectra : public AliAnalysisTaskSE
     Bool_t 		kDoUEanalysis;
     Int_t               fRejectPileUp;
 
-    // dummies for assignment op and copy ctr
-    AliAnalysisTaskPPJetSpectra(const AliAnalysisTaskPPJetSpectra&);
-    AliAnalysisTaskPPJetSpectra &operator=(const AliAnalysisTaskPPJetSpectra&);
-
     ClassDef(AliAnalysisTaskPPJetSpectra, 2);
 };
 

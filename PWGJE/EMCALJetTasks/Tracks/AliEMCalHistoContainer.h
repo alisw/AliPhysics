@@ -157,7 +157,7 @@ class AliEMCalHistoContainer : public TNamed {
 public:
   AliEMCalHistoContainer();
   AliEMCalHistoContainer(const char *name);
-  virtual ~AliEMCalHistoContainer();
+  ~AliEMCalHistoContainer();
   void ReleaseOwner() { fIsOwner = kFALSE; };
 
   void CreateHistoGroup(const char *groupname, const char *parent = "/") throw(HistoContainerContentException);

@@ -43,10 +43,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliRDHFCutsLctoV0);
-/// \endcond
-
+ClassImp(AliRDHFCutsLctoV0)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsLctoV0::AliRDHFCutsLctoV0(const char* name, Short_t /*v0channel*/) :

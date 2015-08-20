@@ -4,10 +4,10 @@
  * See cxx source for full Copyright notice                               */
 
 //***********************************************************
-/// \class Class AliRDHFCutsDStartoKpipi
-/// \brief class for cuts on AOD reconstructed DStar->Kpipi
-/// \author Author: A.Grelli, alessandro.grelli@uu.nl
-/// PID method implemented by   Y.Wang, yifei@physi.uni-heidelberg.de
+// Class AliRDHFCutsDStartoKpipi
+// class for cuts on AOD reconstructed DStar->Kpipi
+// Author: A.Grelli, alessandro.grelli@uu.nl
+// PID method implemented by   Y.Wang, yifei@physi.uni-heidelberg.de
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -66,14 +66,12 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
 
  protected:
 
-  AliESDtrackCuts *fTrackCutsSoftPi; /// cuts for soft pion (AOD converted to ESD on the flight!)
-  Float_t fMaxPtPid; /// maximum Dstar Pt for using PID
-  Float_t fTPCflag;   ///
-  Double_t fCircRadius; /// Radius for circular PID nsigma cut
+  AliESDtrackCuts *fTrackCutsSoftPi; // cuts for soft pion (AOD converted to ESD on the flight!)
+  Float_t fMaxPtPid; // maximum Dstar Pt for using PID
+  Float_t fTPCflag;   // 
+  Double_t fCircRadius; // Radius for circular PID nsigma cut
 
-  /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsDStartoKpipi,7);  /// class for cuts on AOD reconstructed D0->Kpipi
-  /// \endcond
+  ClassDef(AliRDHFCutsDStartoKpipi,7);  // class for cuts on AOD reconstructed D0->Kpipi
 };
 
 #endif

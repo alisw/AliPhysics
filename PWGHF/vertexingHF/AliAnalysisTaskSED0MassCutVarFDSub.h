@@ -5,13 +5,13 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////////
-/// \class Class AliAnalysisTaskSED0MassCutVarFDSub                       //
-///                                                                       //
-/// \brief AliAnalysisTaskSE for the analysis of D0 candidates using the  //
-/// cut-variation feed-down subtraction method                            //
-///                                                                       //
-/// \author Andrea Rossi <Andrea.Rossi@cern.ch>                           //
-/// \author Felix Reidt  <Felix.Reidt@cern.ch>                            //
+// Class AliAnalysisTaskSED0MassCutVarFDSub                               //
+//                                                                        //
+// AliAnalysisTaskSE for the analysis of D0 candidates using the          //
+// cut-variation feed-down subtraction method                             //
+//                                                                        //
+// Andrea Rossi <Andrea.Rossi@cern.ch>                                    //
+// Felix Reidt  <Felix.Reidt@cern.ch>                                     //
 ////////////////////////////////////////////////////////////////////////////
 
 #include "THnSparse.h"
@@ -34,7 +34,7 @@ class AliAnalysisTaskSED0MassCutVarFDSub : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSED0MassCutVarFDSub();
 
 
-  /// Implementation of interface methods
+  // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -87,43 +87,41 @@ class AliAnalysisTaskSED0MassCutVarFDSub : public AliAnalysisTaskSE
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Float_t GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const ;
 
-  TList    *fOutputMass;          //!<! list send on output slot 1
-  TList    *fOutputMassPt;        //!<! list send on output slot 6
-  TList    *fOutputMassY;        //!<! list send on output slot 9
-  TList    *fDistr;               //!<! list send on output slot 2
-  TH1F     *fNentries;            //!<! histogram with number of events on output slot 3
+  TList    *fOutputMass;          //! list send on output slot 1
+  TList    *fOutputMassPt;        //! list send on output slot 6
+  TList    *fOutputMassY;        //! list send on output slot 9
+  TList    *fDistr;               //! list send on output slot 2
+  TH1F     *fNentries;            //! histogram with number of events on output slot 3
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts - sent to output slot 4
-  THnSparseF *fHistMassPtImpParTC[5];   //!<! histograms for impact paramter studies
-  Int_t     fArray;               ///  can be D0 or Like Sign candidates
-  Bool_t    fReadMC;              ///  flag for MC array: kTRUE = read it, kFALSE = do not read it
-  Bool_t    fCutOnDistr;          ///  flag to decide if apply cut also on distributions: 0 no cuts, 1 looser cuts, 2 tighter cuts
-  Bool_t    fUsePid4Distr;        ///  flag to use the particle identification to fill the signal histograms of distributions. It has effect only with fReadMC=kFALSE
-  AliNormalizationCounter *fCounter;//!<!AliNormalizationCounter on output slot 5
-  Int_t     fNPtBins;             ///  number of pt bins
-  Double_t  fLsNormalization;     ///  normalization
-  Int_t     fFillOnlyD0D0bar;     /// flag to fill mass histogram with D0/D0bar only (0 = fill with both, 1 = fill with D0 only, 2 = fill with D0bar only)
-  TObjArray fDaughterTracks;      /// keeps the daughter tracks
-  Int_t     fIsSelectedCandidate; /// selection outcome
-  Bool_t    fFillVarHists;        /// flag to enable filling variable histos
-  Int_t     fSys;                 /// fSys=0 -> p-p; fSys=1 ->PbPb (in this case fFillVarHists=kFALSE by default: set it to kTRUE *after* if needed)
-  Bool_t    fIsRejectSDDClusters; /// flag to reject events with SDD clusters
-  Bool_t    fFillPtHist;          /// flag to fill Pt and Impact Parameter Histograms
-  Bool_t    fFillYHist;          /// flag to fill Y Histograms
-  Bool_t    fFillImpParHist;      /// flag to fill Pt and Impact Parameter Histograms
-  Bool_t    fUseSelectionBit;     /// flag to check or not the selection bit
+  THnSparseF *fHistMassPtImpParTC[5];   //! histograms for impact paramter studies
+  Int_t     fArray;               //  can be D0 or Like Sign candidates
+  Bool_t    fReadMC;              //  flag for MC array: kTRUE = read it, kFALSE = do not read it
+  Bool_t    fCutOnDistr;          //  flag to decide if apply cut also on distributions: 0 no cuts, 1 looser cuts, 2 tighter cuts
+  Bool_t    fUsePid4Distr;        //  flag to use the particle identification to fill the signal histograms of distributions. It has effect only with fReadMC=kFALSE
+  AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 5
+  Int_t     fNPtBins;             //  number of pt bins
+  Double_t  fLsNormalization;     //  normalization
+  Int_t     fFillOnlyD0D0bar;     // flag to fill mass histogram with D0/D0bar only (0 = fill with both, 1 = fill with D0 only, 2 = fill with D0bar only)
+  TObjArray fDaughterTracks;      // keeps the daughter tracks
+  Int_t     fIsSelectedCandidate; // selection outcome
+  Bool_t    fFillVarHists;        // flag to enable filling variable histos
+  Int_t     fSys;                 // fSys=0 -> p-p; fSys=1 ->PbPb (in this case fFillVarHists=kFALSE by default: set it to kTRUE *after* if needed)
+  Bool_t    fIsRejectSDDClusters; // flag to reject events with SDD clusters
+  Bool_t    fFillPtHist;          // flag to fill Pt and Impact Parameter Histograms
+  Bool_t    fFillYHist;          // flag to fill Y Histograms
+  Bool_t    fFillImpParHist;      // flag to fill Pt and Impact Parameter Histograms
+  Bool_t    fUseSelectionBit;     // flag to check or not the selection bit
 
-  Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
-  TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 7
-  Double_t *fCandidateVariables;      //!<!  variables to be written to the tree
-  Bool_t	fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
-  Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
-  TList	   *fDetSignal;		//!<!Detector signal histograms (on output slot 8)
-  AliHFsubtractBFDcuts *fobjSpr; /// object for cut variation study
-  THnSparseF *fhsparsecutvar; /// sparse for feed down study
+  Bool_t    fWriteVariableTree;       // flag to decide whether to write the candidate variables on a tree variables
+  TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 7
+  Double_t *fCandidateVariables;      //!  variables to be written to the tree
+  Bool_t	fPIDCheck;			// flag to decide whether to fill "PID = x" bins in fNentrie
+  Bool_t    fDrawDetSignal;		// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
+  TList	   *fDetSignal;		//!Detector signal histograms (on output slot 8)
+  AliHFsubtractBFDcuts *fobjSpr; // object for cut variation study
+  THnSparseF *fhsparsecutvar; // sparse for feed down study
 
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0MassCutVarFDSub,20); /// AliAnalysisTaskSE for D0->Kpi
-  /// \endcond
+  ClassDef(AliAnalysisTaskSED0MassCutVarFDSub,20); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif

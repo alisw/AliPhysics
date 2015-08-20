@@ -175,26 +175,26 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     if(kSignalCheck==1) {hbins[0]=500; hbins[1]=2000;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-    else if(kSignalCheck==2) {hbins[0]=200; hbins[1]=1000;}//{hbins[0]=100; hbins[1]=500;} toram
-    fdEdxVSp[iB][0] = new TH2F("fdEdxVSp_pos","dE/dx vs p (positive charge); p/|z| (GeV/c); dE/dx_{TPC} (a.u.)",hbins[0],0,5,hbins[1],0,2000);
-    fdEdxVSp[iB][1] = new TH2F("fdEdxVSp_neg","dE/dx vs p (negative charge); p/|z| (GeV/c); dE/dx_{TPC} (a.u.)",hbins[0],0,5,hbins[1],0,2000);
+    else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=500;} toram
+    fdEdxVSp[iB][0] = new TH2F("fdEdxVSp_pos","dE/dx vs p (positive charge); p/|z| (GeV/c); dE/dx_{TPC} (a.u.)",hbins[0],0,5,hbins[1],0,1000);
+    fdEdxVSp[iB][1] = new TH2F("fdEdxVSp_neg","dE/dx vs p (negative charge); p/|z| (GeV/c); dE/dx_{TPC} (a.u.)",hbins[0],0,5,hbins[1],0,1000);
 
     Char_t name_hDeDxExp[nPart][200];
     Char_t title_hDeDxExp[nPart][200];
     for(Int_t i=0;i<nPart;i++) {
       snprintf(name_hDeDxExp[i],200,"hDeDxExp_%s",namePart[i]);
       snprintf(title_hDeDxExp[i],200,"Expected dE/dx of %s in the TPC;p/|z| (GeV/c);dE/dx_{TPC} (a.u.)",namePart[i]);
-      hDeDxExp[iB][i] = new TProfile(name_hDeDxExp[i],title_hDeDxExp[i],200,0,5,0,2000,"");//,500,0,5,0,1000,""); toram
+      hDeDxExp[iB][i] = new TProfile(name_hDeDxExp[i],title_hDeDxExp[i],1,0,5,0,1,"");//,500,0,5,0,1000,""); toram
     }
 
     Char_t name_fNsigmaTpc[nSpec][200];
     Char_t title_fNsigmaTpc[nSpec][200];
-    if(kSignalCheck==1) {hbins[0]=100; hbins[1]=100;}//{hbins[0]=100; hbins[1]=100;} toram
-    else {hbins[0]=100; hbins[1]=200;}//temp!
+    if(kSignalCheck==1) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=100;} toram
+    else {hbins[0]=100; hbins[1]=100;}//temp!
     for(Int_t i=0;i<nSpec;i++) {
       snprintf(name_fNsigmaTpc[i],200,"NsigmaTpc_%s",name[i]);
       snprintf(title_fNsigmaTpc[i],200,"NsigmaTpc_%s;p_{TPC}/|z| (GeV/c);n_{#sigma_{TPC}}^{%s}",name[i],name[i]);
-      fNsigmaTpc[iB][i] = new TH2F(name_fNsigmaTpc[i],title_fNsigmaTpc[i],hbins[0],0,5,hbins[1],-10,10);
+      fNsigmaTpc[iB][i] = new TH2F(name_fNsigmaTpc[i],title_fNsigmaTpc[i],hbins[0],0,5,hbins[1],-5,5);
     }
     
     if(kSignalCheck>0) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=100;} toram
@@ -209,67 +209,68 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
 
     if(kSignalCheck==1) {hbins[0]=1000; hbins[1]=1300;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-    else if(kSignalCheck==2) {hbins[0]=200; hbins[1]=260;}//{hbins[0]=100; hbins[1]=260;}
-    fBetaTofVSp[iB][0] = new TH2F("fBetaTofVSp_pos","#beta_{TOF} vs p/|z| (positive charge);p(GeV/c);#beta_{TOF}",hbins[0],0,10,hbins[1],0.4,1.05);
-    fBetaTofVSp[iB][1] = new TH2F("fBetaTofVSp_neg","#beta_{TOF} vs p/|z| (negative charge);p(GeV/c);#beta_{TOF}",hbins[0],0,10,hbins[1],0.4,1.05);
+    else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=100; hbins[1]=260;}
+    fBetaTofVSp[iB][0] = new TH2F("fBetaTofVSp_pos","#beta_{TOF} vs p/|z| (positive charge);p(GeV/c);#beta_{TOF}",hbins[0],0,5,hbins[1],0.4,1.05);
+    fBetaTofVSp[iB][1] = new TH2F("fBetaTofVSp_neg","#beta_{TOF} vs p/|z| (negative charge);p(GeV/c);#beta_{TOF}",hbins[0],0,5,hbins[1],0.4,1.05);
     
     Char_t name_hBetaExp[nPart][200];
     Char_t title_hBetaExp[nPart][200];
     for(Int_t i=0;i<nPart;i++) {
       snprintf(name_hBetaExp[i],200,"hBetaTofVsP_Exp_%s",namePart[i]);
       snprintf(title_hBetaExp[i],200,"Expected #beta_{TOF} vs p/|z| of %s;p/|z| (GeV/c); #beta_{TOF}",namePart[i]);
-      hBetaExp[iB][i] = new TProfile(name_hBetaExp[i],title_hBetaExp[i],200,0,10,0.4,1.05,"");//,400,0,5,0.4,1.05,""); toram
+      hBetaExp[iB][i] = new TProfile(name_hBetaExp[i],title_hBetaExp[i],1,0,5,0.4,1.05,"");//,400,0,5,0.4,1.05,""); toram
     }
     
     Char_t name_fNsigmaTof[nPart][200];
     Char_t title_fNsigmaTof[nPart][200];    
     if(kSignalCheck==1) {hbins[0]=100; hbins[1]=100;}
-    else {hbins[0]=100; hbins[1]=200;}
+    else {hbins[0]=1; hbins[1]=1;}
     for(Int_t i=0;i<nPart;i++) {
       snprintf(name_fNsigmaTof[i],200,"NsigmaTof_%s",namePart[i]);
       snprintf(title_fNsigmaTof[i],200,"NsigmaTof_%s;p_{T}/|z| (GeV/c);n_{#sigma_{TOF}}^{%s}",namePart[i],namePart[i]);
-      fNsigmaTof[iB][i] = new TH2F(name_fNsigmaTof[i],title_fNsigmaTof[i],hbins[0],0,5,hbins[1],-10,10);
+      fNsigmaTof[iB][i] = new TH2F(name_fNsigmaTof[i],title_fNsigmaTof[i],hbins[0],0,5,hbins[1],-5,5);
     }
 
     if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-    else if(kSignalCheck==2) {hbins[0]=800; hbins[1]=200;}// {hbins[0]=1000; hbins[1]=100;} toram
-    fM2vsP_NoTpcCut[iB][0][0] = new TH2F("fM2vsP_NoTpcCut_pos","(m/z)^{2}_{TOF} vs p/|z| (positive charge);(m/z)^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,10);
-    fM2vsP_NoTpcCut[iB][0][1] = new TH2F("fM2vsP_NoTpcCut_neg","(m/z)^{2}_{TOF} vs p/|z| (negative charge);(m/z)^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,10);
+    else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}// {hbins[0]=1000; hbins[1]=100;} toram
+    fM2vsP_NoTpcCut[iB][0][0] = new TH2F("fM2vsP_NoTpcCut_pos","m^{2}/z^{2}_{TOF} vs p/|z| (positive charge);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
+    fM2vsP_NoTpcCut[iB][0][1] = new TH2F("fM2vsP_NoTpcCut_neg","m^{2}/z^{2}_{TOF} vs p/|z| (negative charge);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",hbins[0],0,10,hbins[1],0,5);
 
     Char_t name_fM2vsP[1][18][300]; 
     Char_t title_fM2vsP[1][18][300]; 
 
-    if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
-    else {hbins[0]=1; hbins[1]=1;}
     for(Int_t i=0;i<nSpec;i++) {
       snprintf(name_fM2vsP[0][i],300,"fM2vsPc_%s",name[i]);
-      snprintf(title_fM2vsP[0][i],300,"(m/z)^{2}_{TOF} vs p/|z| of %s with a NsigmaTpcCut (pReco->pTrue for nuclei (if kMomVtxCorr==1));(m/z)^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",name[i]);
-      if(i==0 || i==0+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],100,0.0,0.2,100,0,5);
-      if(i==1 || i==1+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],100,0.0,0.2,100,0,5);
-      if(i==2 || i==2+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],200,0.0,0.4,100,0,5);
-      if(i==3 || i==3+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],100,0.1,0.5,100,0,5);
-      if(i==4 || i==4+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],100,0.5,1.5,100,0,5);
-      if(i==5 || i==5+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],200,2.5,5,100,0,5);
-      if(i==6 || i==6+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],100,7,9,100,0,5);
-      if(i==7 || i==7+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],100,1,3,100,0,5);
-      if(i==8 || i==8+9) fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],100,2.5,5,100,0,5);
+      snprintf(title_fM2vsP[0][i],300,"m^{2}/z^{2}_{TOF} vs p/|z| of %s with a NsigmaTpcCut (pReco->pTrue for nuclei);m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4});p/|z| (GeV/c)",name[i]);
+      
+      if(kSignalCheck==1) {hbins[0]=8000; hbins[1]=100;}
+      else {hbins[0]=1; hbins[1]=1;}
+      fM2vsP[iB][0][i] = new TH2F(name_fM2vsP[0][i],title_fM2vsP[0][i],hbins[0],0,10,hbins[1],0,5);
     }
     
     if(kSignalCheck==1) {hbins[0]=4000; hbins[1]=1000;}
     else if(kSignalCheck==0) {hbins[0]=1; hbins[1]=1;}
-    else if(kSignalCheck==2) {hbins[0]=4000; hbins[1]=1000;}//{hbins[0]=1000 oppure 500; hbins[1]=100;} toram
-    fM2vsZ[iB][0] = new TH2F("fM2vsZ_0","(m/z)^{2}_{TOF} vs z_{TPC} over all p/z (dEdx>80, DCAxy<0.1cm, DCAz<0.1cm);z_{TPC};(m/z)^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
-    fM2vsZ[iB][1] = new TH2F("fM2vsZ_1","(m/z)^{2}_{TOF} vs z_{TPC} over all p/z (dEdx>80, DCAxy<0.1cm, DCAz<3.2cm);z_{TPC};(m/z)^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
-        
+    else if(kSignalCheck==2) {hbins[0]=1; hbins[1]=1;}//{hbins[0]=1000 oppure 500; hbins[1]=100;} toram
+    fM2vsZ[iB][0] = new TH2F("fM2vsZ","m^{2}/z^{2}_{TOF} vs z_{TPC} Integrated p_{T};z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][1] = new TH2F("fM2vsZ_0.5pT1.0","m^{2}/z^{2}_{TOF} vs z_{TPC} 0.5<pT<1.0;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][2] = new TH2F("fM2vsZ_1.0pT1.5","m^{2}/z^{2}_{TOF} vs z_{TPC} 1.0<pT<1.5;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][3] = new TH2F("fM2vsZ_1.5pT2.0","m^{2}/z^{2}_{TOF} vs z_{TPC} 1.5<pT<2.0;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][4] = new TH2F("fM2vsZ_2.0pT2.5","m^{2}/z^{2}_{TOF} vs z_{TPC} 2.0<pT<2.5;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][5] = new TH2F("fM2vsZ_2.5pT3.0","m^{2}/z^{2}_{TOF} vs z_{TPC} 2.5<pT<3.0;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][6] = new TH2F("fM2vsZ_3.0pT3.5","m^{2}/z^{2}_{TOF} vs z_{TPC} 3.0<pT<3.5;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][7] = new TH2F("fM2vsZ_3.5pT4.0","m^{2}/z^{2}_{TOF} vs z_{TPC} 3.5<pT<4.0;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][8] = new TH2F("fM2vsZ_4.0pT4.5","m^{2}/z^{2}_{TOF} vs z_{TPC} 4.0<pT<4.5;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+    fM2vsZ[iB][9] = new TH2F("fM2vsZ_4.5pT5.0","m^{2}/z^{2}_{TOF} vs z_{TPC} 2.0<pT<2.5;z_{TPC};m^{2}/z^{2}_{TOF} (GeV^{2}/c^{4})",hbins[0],-4,4,hbins[1],0,10);
+  
     Char_t name_h2DCAap[18][200];
     Char_t title_h2DCAap[18][200];
     
     for(Int_t iS=0;iS<nSpec;iS++) {
       snprintf(name_h2DCAap[iS],200,"h2DCAap_%s",name[iS]);
       snprintf(title_h2DCAap[iS],200,"h2DCA_%s in for p/z<1.5GeV;DCA_{xy} (cm);DCA_{z} (cm)",name[iS]);
-      if(iS==5 || iS==7 || iS==5+9 || iS==7+9) h2DCAap[iB][iS] = new TH2F(name_h2DCAap[iS],title_h2DCAap[iS],1750,-3.5,3.5,1750,-3.5,3.5);//1750,-3.5,3.5,1750,-3.5,3.5
-      else h2DCAap[iB][iS] = new TH2F(name_h2DCAap[iS],title_h2DCAap[iS],1750,-3.5,3.5,1750,-3.5,3.5);//1750,-3.5,3.5,1750,-3.5,3.5
+      if(iS==5 || iS==7 || iS==5+9 || iS==7+9) h2DCAap[iB][iS] = new TH2F(name_h2DCAap[iS],title_h2DCAap[iS],1,-3.5,3.5,1,-3.5,3.5);//1750,-3.5,3.5,1750,-3.5,3.5
+      else h2DCAap[iB][iS] = new TH2F(name_h2DCAap[iS],title_h2DCAap[iS],1,-3.5,3.5,1,-3.5,3.5);//1750,-3.5,3.5,1750,-3.5,3.5
     }
         
     Char_t name_hDCAxy[18][nbin][200];
@@ -384,8 +385,8 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
     //fList[iB]->Add(fEtaPhi[iB]);
     fList[iB]->Add(hNTpcCluster[iB]);
     fList[iB]->Add(hNTrdSlices[iB]);
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fdEdxVSp[iB][i]);
-    for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hDeDxExp[iB][i]);
+    //for(Int_t i=0;i<2;i++) fList[iB]->Add(fdEdxVSp[iB][i]);
+    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hDeDxExp[iB][i]);
     for(Int_t i=0;i<nSpec;i++) fList[iB]->Add(fNsigmaTpc[iB][i]);
     for(Int_t i=0;i<nPart;i++) {
       if(kSignalCheck!=1) 
@@ -393,14 +394,14 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       //fList[iB]->Add(fNsigmaTpc_kTOF[iB][i]);
       //fList[iB]->Add(fNsigmaTpc_kTOF[iB][i+nPart]);
     }
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fBetaTofVSp[iB][i]);
-    for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hBetaExp[iB][i]);
-    for(Int_t i=0;i<nPart;i++) fList[iB]->Add(fNsigmaTof[iB][i]);
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fM2vsP_NoTpcCut[iB][0][i]);
+    //for(Int_t i=0;i<2;i++) fList[iB]->Add(fBetaTofVSp[iB][i]);
+    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(hBetaExp[iB][i]);
+    //for(Int_t i=0;i<nPart;i++) fList[iB]->Add(fNsigmaTof[iB][i]);
+    //for(Int_t i=0;i<2;i++) fList[iB]->Add(fM2vsP_NoTpcCut[iB][0][i]);
     for(Int_t i=0;i<nPart;i++) {
-      //if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
-      fList[iB]->Add(fM2vsP[iB][0][i]);
-      fList[iB]->Add(fM2vsP[iB][0][i+nPart]);
+      if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
+      //fList[iB]->Add(fM2vsP[iB][0][i]);
+      //fList[iB]->Add(fM2vsP[iB][0][i+nPart]);
     }
   
     for(Int_t i=0;i<2;i++){
@@ -434,7 +435,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       }
       }
     */
-    for(Int_t i=0;i<2;i++) fList[iB]->Add(fM2vsZ[iB][i]);
+    //for(Int_t i=0;i<10;i++) fList[iB]->Add(fM2vsZ[iB][i]);
     for(Int_t i=0;i<nPart;i++){
       if(kSignalCheck!=1) 
 	if(i<3 || i==6 || i==8) continue;//e,mu,pi,t,he4 excluded
@@ -599,7 +600,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
       //Correction of the momentum to the vertex for (anti)nuclei
       Double_t pC[9];
       for(Int_t iS=0;iS<9;iS++)	pC[iS]=p;
-      if(kPvtxCorr) this->MomVertexCorrection(p,pC,eta,FlagPid);
+      this->MomVertexCorrection(p,pC,eta,FlagPid);
       
       this->FillDCAdist(DCAxy,DCAz,charge,FlagPid,stdFlagPid,pC);
       
@@ -774,13 +775,14 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	Double_t Z=999.9;
 	if(Z2>0) Z=TMath::Sqrt(Z2);
 	
-	if(dedx>80) {
-	  if(TMath::Abs(DCAz)<0.1) {
-	    fM2vsZ[iBconf][0]->Fill(charge*Z,M2);
+	fM2vsZ[iBconf][0]->Fill(charge*TMath::Sqrt(Z2),M2);
+	for(Int_t i=1;i<10;i++) {
+	  if(pt>binCutPt[i-1] && pt<binCutPt[i]){
+	    fM2vsZ[iBconf][i]->Fill(charge*Z,M2);
+	    break;
 	  }
-	  fM2vsZ[iBconf][1]->Fill(charge*Z,M2);
-	}//end dedx>80 requirement
-
+	}
+	
       }//end kTOF available
     }//end track loop
   }//end loop on the events

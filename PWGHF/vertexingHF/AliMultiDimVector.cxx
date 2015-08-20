@@ -36,10 +36,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliMultiDimVector);
-/// \endcond
-
+ClassImp(AliMultiDimVector)
 //___________________________________________________________________________
 AliMultiDimVector::AliMultiDimVector():TNamed("AliMultiDimVector","default"),
 fNVariables(0),

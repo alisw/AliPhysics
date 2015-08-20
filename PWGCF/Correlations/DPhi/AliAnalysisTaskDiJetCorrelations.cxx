@@ -353,10 +353,11 @@ void  AliAnalysisTaskDiJetCorrelations::UserExec(Option_t *)
   
   const AliAODVertex* vtxSPD = aod->GetPrimaryVertexSPD();
   if(vtxSPD->GetNContributors()<=0) return;
+  TString vtxTyp = vtxSPD->GetTitle();
   Double_t cov[6] = {0};
   vtxSPD->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if(vtxSPD->IsFromVertexerZ() && (zRes > 0.25)) return;
+  if(vtxTyp.Contains("vertexer:Z") && (zRes > 0.25)) return;
   if(TMath::Abs(vtxSPD->GetZ() - vtxPrm->GetZ()) > 0.5) return;
   fHistNEvents->Fill(4);
    

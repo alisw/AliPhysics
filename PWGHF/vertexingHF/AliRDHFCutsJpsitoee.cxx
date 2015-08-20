@@ -33,10 +33,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliRDHFCutsJpsitoee);
-/// \endcond
-
+ClassImp(AliRDHFCutsJpsitoee)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsJpsitoee::AliRDHFCutsJpsitoee(const char* name) : 

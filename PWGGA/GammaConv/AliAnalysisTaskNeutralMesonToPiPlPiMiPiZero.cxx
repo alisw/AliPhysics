@@ -147,7 +147,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fProfileEtaShift(NULL),
-	fHistoSPDClusterTrackletBackground(NULL),
 	fRandom(0),
 	fnCuts(0),
 	fiCut(0),
@@ -255,7 +254,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
 	fHistoNEvents(NULL),
 	fHistoNGoodESDTracks(NULL),
 	fProfileEtaShift(NULL),
-	fHistoSPDClusterTrackletBackground(NULL),
 	fRandom(0),
 	fnCuts(0),
 	fiCut(0),
@@ -410,7 +408,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 	fHistoNEvents			= new TH1I*[fnCuts];
 	fHistoNGoodESDTracks	= new TH1I*[fnCuts];
 	fProfileEtaShift		= new TProfile*[fnCuts];
-	fHistoSPDClusterTrackletBackground = new TH2F*[fnCuts];
 	if (fNeutralPionMode < 2){
 		fHistoConvGammaPt		= new TH1F*[fnCuts];
 		fHistoConvGammaEta		= new TH1F*[fnCuts];
@@ -485,8 +482,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 
 		fProfileEtaShift[iCut] = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
 		fESDList[iCut]->Add(fProfileEtaShift[iCut]);
-		fHistoSPDClusterTrackletBackground[iCut] = new TH2F("SPD tracklets vs SPD clusters","SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
-		fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
 		if (fNeutralPionMode < 2){
 			fHistoConvGammaPt[iCut] = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt",250,0,25);
 			fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
@@ -854,7 +849,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 
 		fHistoNEvents[iCut]->Fill(eventQuality);
 		fHistoNGoodESDTracks[iCut]->Fill(fNumberOfESDTracks);
-		fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
 
 		if(fMCEvent){ // Process MC Particle
 			fMCStack = fMCEvent->Stack();			
@@ -954,9 +948,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
 	for(Long_t i = 0; i < nclus; i++){
 		
 		AliVCluster* clus = NULL;
-		if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
-		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
-
+		clus = fInputEvent->GetCaloCluster(i);		
 		if (!clus) continue;
 		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)) continue;
 		// TLorentzvector with cluster
@@ -1005,7 +997,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
 // 			}	
 		}
 		
-		delete clus;
 		delete tmpvec;
 	}
 	

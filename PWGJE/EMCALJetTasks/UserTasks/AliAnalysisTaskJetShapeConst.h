@@ -39,10 +39,8 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   void SetJetContainerBase(Int_t c)                             { fContainerBase     = c   ; }
   void SetJetContainerSub(Int_t c)                              { fContainerSub      = c   ; }
   void SetJetContainerNoEmb(Int_t c)                            { fContainerNoEmb    = c   ; }
-  void SetJetContainerOverlap(Int_t c)                          { fContainerOverlap  = c   ; }
   void SetMinFractionShared(Double_t f)                         { fMinFractionShared = f   ; }
   void SetSingleTrackEmbedding(Bool_t b, Int_t min = 99999, Int_t max = 999999) { fSingleTrackEmb = b; fMinLabelEmb = min; fMaxLabelEmb = max; }
-  void SetRemoveOverlapTrackJet(Bool_t b, Double_t r)                       { fOverlap = b; fRadius = r; if(!fSingleTrackEmb) Printf("No effect, since fSingleTrackEmb is false");  }
   void SetJetMassVarType(JetMassVarType t)                      { fJetMassVarType    = t   ; }
   void SetResponseReference(ResponseReference r)                { fResponseReference = r   ; }
   void SetUseSumw2(Bool_t b)                                    { fUseSumw2          = b   ; }
@@ -59,15 +57,12 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   Int_t                               fContainerBase;              // jets to be analyzed
   Int_t                               fContainerSub;               // subtracted jets to be analyzed
   Int_t                               fContainerNoEmb;             // subtracted jets from Pb-Pb only events
-  Int_t                               fContainerOverlap;           // jets (jetO) with a pT cut selection to reject overlapping embedded single track (used only in single track embedding) 
   Double_t                            fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   Bool_t                              fSingleTrackEmb;             // single track embedding
   Bool_t                              fCreateTree;                 // create output tree
   JetMassVarType                      fJetMassVarType;             // observable to use
   ResponseReference                   fResponseReference;          // true axis of response matrix
   Bool_t                              fUseSumw2;                   // activate sumw2 for output histograms
-  Bool_t                              fOverlap;                    // activate the check on overlap between single particle embedded and jetO (jet with a pT of at least 5 Gev/c)
-  Double_t                               fRadius;                     // Radius that define overlap
 
   TTree           *fTreeJetBkg;                                    //!tree with jet and bkg variables
   TLorentzVector  *fJet1Vec;                                       // jet1(AA) vector  
@@ -93,19 +88,11 @@ class AliAnalysisTaskJetShapeConst : public AliAnalysisTaskEmcalJet {
   THnSparse     **fhnMassResponse;                                 //! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
   THnSparse     **fhnDeltaMass;                                    //! deltaM vs deltapT
   THnSparse      *fhnDeltaMassAndBkgInfo;                          //! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
-  TH1F 	        *fhNJetsSelEv;                                      //! number of selected signal jets per event
-  TH2F          *fhRjetTrvspTj;                                     //! distance in R between each jetO and embedded single track (those below fRadius are rejected)
-  TH2F          *fhJetEtaPhi;                                       //! eta-phi distribution of the selected signal jets
-  TH1F 	        *fhpTTracksJet1;
-  TH1F 	        *fhpTTracksJetO;
-  TH1F 	        *fhpTTracksCont;
-  TH1F 	        *fhptjetSMinusSingleTrack;                         //! pT distribution of jets subtracting the pT of the embedded track
-  TH2F          *fhJet1vsJetTag;                                   //! N jet vs N jet tagged
-  
+
   AliAnalysisTaskJetShapeConst(const AliAnalysisTaskJetShapeConst&);            // not implemented
   AliAnalysisTaskJetShapeConst &operator=(const AliAnalysisTaskJetShapeConst&); // not implemented
 
-  ClassDef(AliAnalysisTaskJetShapeConst, 12)
+  ClassDef(AliAnalysisTaskJetShapeConst, 9)
 };
 #endif
 

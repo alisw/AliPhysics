@@ -1,65 +1,48 @@
-/**************************************************************************
- * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+// $Id$
+//
+// Emcal particle trigger class, which can contain either
+//
+// Author: J.Kral
+
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
-ClassImp(AliEmcalTriggerSetupInfo)
-/// \endcond
-
-/**
- * Default constructor
- */
+//_________________________________________________________________________________________________
 AliEmcalTriggerSetupInfo::AliEmcalTriggerSetupInfo() :
   TNamed(),
   fThresholds(),
   fThresholdsSimple()
 {
+  // Default constructor.
   for( int i = 0; i < 4; i++ )
     fThresholds[i] = -1;
   for( int i = 0; i < 4; i++ )
     fThresholdsSimple[i] = -1;
 }
 
-/**
- * Copy constructor
- * @param p Reference for the copy
- */
+  
+//_________________________________________________________________________________________________
 AliEmcalTriggerSetupInfo::AliEmcalTriggerSetupInfo(const AliEmcalTriggerSetupInfo &p) :
   TNamed(p)
 {
+  // Copy constructor.
   for( int i = 0; i < 4; i++ )
     fThresholds[i] = p.fThresholds[i];
   for( int i = 0; i < 4; i++ )
     fThresholdsSimple[i] = p.fThresholdsSimple[i];
 }
 
-/**
- * Destructor
- */
+//_________________________________________________________________________________________________
 AliEmcalTriggerSetupInfo::~AliEmcalTriggerSetupInfo()
 {
+  // Destructor.
 }
 
-/**
- * Assignment operator
- * @param p Reference for the assignment
- * @return This object after assignment
- */
+//_________________________________________________________________________________________________
 AliEmcalTriggerSetupInfo &AliEmcalTriggerSetupInfo::operator=(const AliEmcalTriggerSetupInfo &p)
 {
+  // Assignment operator.
+
   if (this != &p) {
     for( int i = 0; i < 4; i++ )
       fThresholds[i] = p.fThresholds[i];
@@ -70,10 +53,9 @@ AliEmcalTriggerSetupInfo &AliEmcalTriggerSetupInfo::operator=(const AliEmcalTrig
   return *this;
 }
 
-/**
- * Cleaning function, set all thresholds to 0
- */
+//_________________________________________________________________________________________________
 void AliEmcalTriggerSetupInfo::Clean(){
+  // cleaner
   for( int i = 0; i < 4; i++ )
     fThresholds[i] = -1;
   for( int i = 0; i < 4; i++ )

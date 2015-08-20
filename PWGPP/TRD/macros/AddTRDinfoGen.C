@@ -1,8 +1,24 @@
-void AddTRDinfoGen(AliAnalysisDataContainer **co)
-{
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if(!mgr) return;
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TError.h>
+// #include <TSystem.h>
+// #include <TObjArray.h>
+// 
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDv0Info.h>
+// #include <AliTRDchmbInfo.h>
+// #include <AliTRDtriggerInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDeventCuts.h>
+// #include <AliTRDinfoGen.h>
+// #include <AliTRDpwgppHelper.h>
+// #endif
 
+void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
+{
   Bool_t mc = (Bool_t)mgr->GetMCtruthEventHandler();
   //AliLog::SetClassDebugLevel("AliTRDinfoGen", 2);
   AliTRDinfoGen *info(NULL);

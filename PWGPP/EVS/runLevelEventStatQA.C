@@ -50,8 +50,7 @@ TString bitNames[NBITS] = {
 //Int_t runLevelEventStatQA(TString qafilename="/data/alice/2012/LHC12h/000189694/pass1/QA_merge_archive.zip#event_stat.root", Int_t run=189694, TString ocdbStorage = "local:///data/alice/OCDB"){
 //Int_t runLevelEventStatQA(TString qafilename="/data/alice/sim/2014/LHC14j5/138192/QA_merge_archive.zip#event_stat.root", Int_t run=138192, TString ocdbStorage = "local:///data/alice/OCDB"){
 //  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10d/000124360/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=124360, TString ocdbStorage = "local:///alice/data/OCDB"){
-//  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10f/000133007/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=133007, TString ocdbStorage = "raw://"){
-  Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=225106, TString ocdbStorage = "raw://"){
+  Int_t runLevelEventStatQA(TString qafilename="/alice/data/2010/LHC10f/000133007/pass4/QA_merge_archive.zip#event_stat.root", Int_t run=133007, TString ocdbStorage = "raw://"){
   printf("runLevelEventStatQA %s %i\n",qafilename.Data(),run);
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -137,13 +136,9 @@ TString bitNames[NBITS] = {
   else if (run>=221835 && run<=223669) { refSigma= 52.5; refEff = 0.32; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino
   else if (run>=221670 && run<=223983) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
   else if (run>=223984 && run<=223984) { refSigma= 79.0; refEff = 0.74; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino and MC
-  else if (run>=223985 && run<=226110) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
   else if (run>=226111 && run<=226115) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=226116 && run<=228909) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
-  else if (run>=228910 && run<=229376) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=229386 && run<=229398) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
-  else if (run>=229409 && run<=229410) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=229416               ) { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
+  else if (run>=226116)                { refSigma= 79.0; refEff = 0.49; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  
   
   Double_t par[5] = {0};
   TString det;
@@ -159,7 +154,7 @@ TString bitNames[NBITS] = {
   Double_t refInteractionRate = (run_duration>1e-10) ? (refMu>1.e-10 ? refMu/(1-TMath::Exp(-refMu)):1)*refl0b/run_duration : 0;
   interactionRate = refInteractionRate/refEff; // INEL interaction rate 
   mu              = refMu/refEff;              // INEL mu value
-  if (refSigma>1.e-10) lumi_seen = run_duration*interactionRate/refSigma/1000; //[ub-1]
+  if (refSigma>1.e-10) lumi_seen = interactionRate/refSigma/1000; //[ub-1]
 
   
   classes = GetClasses(run,ocdbStorage,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a);
@@ -211,8 +206,6 @@ TString bitNames[NBITS] = {
     fout->Close();
     return 1; 
   }
-  
-  fout->cd();
   
   for (Int_t j=1;j<=h->GetNbinsY();j++){
     TString label = h->GetYaxis()->GetBinLabel(j);
@@ -287,9 +280,6 @@ TString bitNames[NBITS] = {
 
     // Fill run QA histograms
     const char* bitName = bitNames[ibit].Data();
-    TH2F* hAD           = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistAD"          ,label.Data()));
-    TH1F* hADA          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistADA"         ,label.Data()));
-    TH1F* hADC          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistADC"         ,label.Data()));
     TH1F* hV0A          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistV0A"         ,label.Data()));
     TH1F* hV0C          = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistV0C"         ,label.Data()));
     TH1F* hFiredBitsSPD = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistFiredBitsSPD",label.Data()));
@@ -297,124 +287,84 @@ TString bitNames[NBITS] = {
     TH1F* hTDCZDC       = (TH1F*) fin->Get(Form("trigger_histograms_%s/fHistTDCZDC"      ,label.Data()));
     TH2F* hTimeZDC      = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistTimeZDC"     ,label.Data()));
     TH2F* hTimeCorrZDC  = (TH2F*) fin->Get(Form("trigger_histograms_%s/fHistTimeCorrZDC" ,label.Data()));
+    if (!hV0A)          { printf("QA histogram not found\n"); return 1; }
+    if (!hV0C)          { printf("QA histogram not found\n"); return 1; }
+    if (!hFiredBitsSPD) { printf("QA histogram not found\n"); return 1; }
+    if (!hBitsSPD)      { printf("QA histogram not found\n"); return 1; }
+    if (!hTDCZDC)       { printf("QA histogram not found\n"); return 1; }
+    if (!hTimeZDC)      { printf("QA histogram not found\n"); return 1; }
+    if (!hTimeCorrZDC)  { printf("QA histogram not found\n"); return 1; }
 
-    if (hAD) {
-      TCanvas* cAD = new TCanvas(Form("cAD_%s",bitName),Form("cAD_%s",bitName),800,800);
-      gPad->SetLogz();
-      gPad->SetMargin(0.12,0.12,0.10,0.06);
-      hAD->SetTitle(Form("%s: AD timing;AD timing C-A;AD timing C+A",bitName));
-      hAD->GetXaxis()->SetTitleOffset(1.3);
-      hAD->GetYaxis()->SetTitleOffset(1.6);
-      hAD->Draw("colz");
-      gPad->Print(Form("%s_AD.pdf",bitName));
-      hAD->Write(Form("%s_AD",bitName));
-    } else printf("QA histogram not found\n"); 
-    
-    if (hADA) {
-      TCanvas* cADA = new TCanvas(Form("cADA_%s",bitName),Form("cADA_%s",bitName),1000,800);
-      gPad->SetLogy();
-      hADA->SetTitle(Form("%s: ADA",bitName));
-      hADA->SetLineWidth(2);
-      hADA->SetLineColor(kBlue);
-      hADA->Draw();
-      gPad->Print(Form("%s_ADA.pdf",bitName));
-      hADA->Write(Form("%s_ADA",bitName));
-    } else printf("QA histogram not found\n"); 
+    TCanvas* cV0A = new TCanvas(Form("cV0A_%s",bitName),Form("cV0A_%s",bitName),1000,800);
+    gPad->SetLogy();
+    hV0A->SetTitle(Form("%s: V0A",bitName));
+    hV0A->SetLineWidth(2);
+    hV0A->SetLineColor(kBlue);
+    hV0A->Draw();
+    gPad->Print(Form("%s_V0A.pdf",bitName));
+    hV0A->Write(Form("%s_V0A",bitName));
 
-    if (hADC) {
-      TCanvas* cADC = new TCanvas(Form("cADC_%s",bitName),Form("cADC_%s",bitName),1000,800);
-      gPad->SetLogy();
-      hADC->SetTitle(Form("%s: ADC",bitName));
-      hADC->SetLineWidth(2);
-      hADC->SetLineColor(kBlue);
-      hADC->Draw();
-      gPad->Print(Form("%s_ADC.pdf",bitName));
-      hADC->Write(Form("%s_ADC",bitName));
-    } else printf("QA histogram not found\n"); 
+    TCanvas* cV0C = new TCanvas(Form("cV0C_%s",bitName),Form("cV0C_%s",bitName),1000,800);
+    gPad->SetLogy();
+    hV0C->SetTitle(Form("%s: V0C",bitName));
+    hV0C->SetLineWidth(2);
+    hV0C->SetLineColor(kBlue);
+    hV0C->Draw();
+    gPad->Print(Form("%s_V0C.pdf",bitName));
+    hV0C->Write(Form("%s_V0C",bitName));
 
-    if (hV0A) {
-      TCanvas* cV0A = new TCanvas(Form("cV0A_%s",bitName),Form("cV0A_%s",bitName),1000,800);
-      gPad->SetLogy();
-      hV0A->SetTitle(Form("%s: V0A",bitName));
-      hV0A->SetLineWidth(2);
-      hV0A->SetLineColor(kBlue);
-      hV0A->Draw();
-      gPad->Print(Form("%s_V0A.pdf",bitName));
-      hV0A->Write(Form("%s_V0A",bitName));
-    } else printf("QA histogram not found\n"); 
-    
-    if (hV0C) {
-      TCanvas* cV0C = new TCanvas(Form("cV0C_%s",bitName),Form("cV0C_%s",bitName),1000,800);
-      gPad->SetLogy();
-      hV0C->SetTitle(Form("%s: V0C",bitName));
-      hV0C->SetLineWidth(2);
-      hV0C->SetLineColor(kBlue);
-      hV0C->Draw();
-      gPad->Print(Form("%s_V0C.pdf",bitName));
-      hV0C->Write(Form("%s_V0C",bitName));
-    } else printf("QA histogram not found\n"); 
+    TCanvas* cFiredBitsSPD = new TCanvas(Form("cFiredBitsSPD_%s",bitName),Form("cFiredBitsSPD_%s",bitName),1800,500);
+    gPad->SetLogy();
+    gPad->SetMargin(0.05,0.01,0.12,0.06);
+    hFiredBitsSPD->SetTitle(Form("%s: hardware FO",bitName));
+    hFiredBitsSPD->SetTitleFont(43);
+    hFiredBitsSPD->SetTitleSize(25);
+    hFiredBitsSPD->GetYaxis()->SetTitleFont(43);
+    hFiredBitsSPD->GetXaxis()->SetLabelFont(43);
+    hFiredBitsSPD->GetYaxis()->SetLabelFont(43);
+    hFiredBitsSPD->GetYaxis()->SetTitleSize(25);
+    hFiredBitsSPD->GetXaxis()->SetLabelSize(25);
+    hFiredBitsSPD->GetYaxis()->SetLabelSize(25);
+    hFiredBitsSPD->GetYaxis()->SetTickLength(0.01);
+    hFiredBitsSPD->GetYaxis()->SetTitleOffset(0.5);
+    hFiredBitsSPD->GetYaxis()->SetDecimals(1);
+    hFiredBitsSPD->SetLineWidth(2);
+    hFiredBitsSPD->SetLineColor(kBlue);
+    hFiredBitsSPD->Draw();
+    gPad->Print(Form("%s_FiredBitsSPD.pdf",bitName));
+    hFiredBitsSPD->Write(Form("%s_FiredBitsSPD",bitName));
 
-    if (hFiredBitsSPD) {
-      TCanvas* cFiredBitsSPD = new TCanvas(Form("cFiredBitsSPD_%s",bitName),Form("cFiredBitsSPD_%s",bitName),1800,500);
-      gPad->SetLogy();
-      gPad->SetMargin(0.05,0.01,0.12,0.06);
-      hFiredBitsSPD->SetTitle(Form("%s: hardware FO",bitName));
-      hFiredBitsSPD->SetTitleFont(43);
-      hFiredBitsSPD->SetTitleSize(25);
-      hFiredBitsSPD->GetYaxis()->SetTitleFont(43);
-      hFiredBitsSPD->GetXaxis()->SetLabelFont(43);
-      hFiredBitsSPD->GetYaxis()->SetLabelFont(43);
-      hFiredBitsSPD->GetYaxis()->SetTitleSize(25);
-      hFiredBitsSPD->GetXaxis()->SetLabelSize(25);
-      hFiredBitsSPD->GetYaxis()->SetLabelSize(25);
-      hFiredBitsSPD->GetYaxis()->SetTickLength(0.01);
-      hFiredBitsSPD->GetYaxis()->SetTitleOffset(0.5);
-      hFiredBitsSPD->GetYaxis()->SetDecimals(1);
-      hFiredBitsSPD->SetLineWidth(2);
-      hFiredBitsSPD->SetLineColor(kBlue);
-      hFiredBitsSPD->Draw();
-      gPad->Print(Form("%s_FiredBitsSPD.pdf",bitName));
-      hFiredBitsSPD->Write(Form("%s_FiredBitsSPD",bitName));
-    } else printf("QA histogram not found\n"); 
+    TCanvas* cBitsSPD = new TCanvas(Form("cBitsSPD_%s",bitName),Form("cBitsSPD_%s",bitName),800,800);
+    gPad->SetLogz();
+    gPad->SetMargin(0.12,0.12,0.10,0.06);
+    hBitsSPD->SetTitle(Form("%s: hardware FO vs offline FO",bitName));
+    hBitsSPD->GetXaxis()->SetTitleOffset(1.3);
+    hBitsSPD->GetYaxis()->SetTitleOffset(1.6);
+    hBitsSPD->Draw("colz");
+    gPad->Print(Form("%s_BitsSPD.pdf",bitName));
+    hBitsSPD->Write(Form("%s_BitsSPD",bitName));
 
-    if (hBitsSPD) {
-      TCanvas* cBitsSPD = new TCanvas(Form("cBitsSPD_%s",bitName),Form("cBitsSPD_%s",bitName),800,800);
-      gPad->SetLogz();
-      gPad->SetMargin(0.12,0.12,0.10,0.06);
-      hBitsSPD->SetTitle(Form("%s: hardware FO vs offline FO",bitName));
-      hBitsSPD->GetXaxis()->SetTitleOffset(1.3);
-      hBitsSPD->GetYaxis()->SetTitleOffset(1.6);
-      hBitsSPD->Draw("colz");
-      gPad->Print(Form("%s_BitsSPD.pdf",bitName));
-      hBitsSPD->Write(Form("%s_BitsSPD",bitName));
-    } else printf("QA histogram not found\n"); 
-    
-    if (hTimeZDC) {
-      TCanvas* cTimeZDC = new TCanvas(Form("cTimeZDC_%s",bitName),Form("cTimeZDC_%s",bitName),800,800);
-      gPad->SetLogz();
-      gPad->SetMargin(0.12,0.12,0.10,0.06);
-      hTimeZDC->SetTitle(Form("%s: ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
-      hTimeZDC->GetXaxis()->SetTitleOffset(1.3);
-      hTimeZDC->GetYaxis()->SetTitleOffset(1.6);
-      hTimeZDC->Draw("colz");
-      gPad->Print(Form("%s_TimeZDC.pdf",bitName));
-      hTimeZDC->Write(Form("%s_TimeZDC",bitName));
-    } else printf("QA histogram not found\n"); 
+    TCanvas* cTimeZDC = new TCanvas(Form("cTimeZDC_%s",bitName),Form("cTimeZDC_%s",bitName),800,800);
+    gPad->SetLogz();
+    gPad->SetMargin(0.12,0.12,0.10,0.06);
+    hTimeZDC->SetTitle(Form("%s: ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
+    hTimeZDC->GetXaxis()->SetTitleOffset(1.3);
+    hTimeZDC->GetYaxis()->SetTitleOffset(1.6);
+    hTimeZDC->Draw("colz");
+    gPad->Print(Form("%s_TimeZDC.pdf",bitName));
+    hTimeZDC->Write(Form("%s_TimeZDC",bitName));
 
-    if (hTimeCorrZDC) {
-      TCanvas* cTimeCorrZDC = new TCanvas(Form("cTimeCorrZDC_%s",bitName),Form("cTimeCorrZDC_%s",bitName),800,800);
-      gPad->SetLogz();
-      gPad->SetMargin(0.12,0.12,0.10,0.06);
-      hTimeCorrZDC->SetTitle(Form("%s: corrected ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
-      hTimeCorrZDC->GetXaxis()->SetTitleOffset(1.3);
-      hTimeCorrZDC->GetYaxis()->SetTitleOffset(1.6);
-      hTimeCorrZDC->Draw("colz");
-      gPad->Print(Form("%s_TimeCorrZDC.pdf",bitName));
-      hTimeCorrZDC->Write(Form("%s_TimeCorrZDC",bitName));
-    } else printf("QA histogram not found\n"); 
-
+    TCanvas* cTimeCorrZDC = new TCanvas(Form("cTimeCorrZDC_%s",bitName),Form("cTimeCorrZDC_%s",bitName),800,800);
+    gPad->SetLogz();
+    gPad->SetMargin(0.12,0.12,0.10,0.06);
+    hTimeCorrZDC->SetTitle(Form("%s: corrected ZDC timing;TDC timing C-A;TDC timing C+A",bitName));
+    hTimeCorrZDC->GetXaxis()->SetTitleOffset(1.3);
+    hTimeCorrZDC->GetYaxis()->SetTitleOffset(1.6);
+    hTimeCorrZDC->Draw("colz");
+    gPad->Print(Form("%s_TimeCorrZDC.pdf",bitName));
+    hTimeCorrZDC->Write(Form("%s_TimeCorrZDC",bitName));
   }
-  
+  fout->cd();
   t->Fill();
   t->Write();
   fout->Close();

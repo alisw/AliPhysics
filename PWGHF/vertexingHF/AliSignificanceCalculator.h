@@ -6,13 +6,13 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////
-///                                                                      //
-/// \class Class to calculate the statistical significance from          //
-/// \brief AliMultiVeector objects for signal and background             //
-/// \author Origin: Francesco Prino (prino@to.infn.it)                   //
-///                                                                      //
-//////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+//                                                               //
+// Class to calculate the statistical significance from          //
+// AliMultiVeector objects for signal and background             //
+// Origin: Francesco Prino (prino@to.infn.it)                    //
+//                                                               //
+///////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
 
@@ -78,18 +78,17 @@ class AliSignificanceCalculator : public TObject{
   AliSignificanceCalculator(const AliSignificanceCalculator& c);
   AliSignificanceCalculator& operator=(const AliSignificanceCalculator& c);
 
-  AliMultiDimVector* fSignal;              /// signal matrix
-  AliMultiDimVector* fErrSquareSignal;     /// matrix with err^2 for signal
-  AliMultiDimVector* fBackground;          /// background matrix
-  AliMultiDimVector* fErrSquareBackground; /// matrix with err^2 for background
-  AliMultiDimVector* fSignificance;        /// significance matrix
-  AliMultiDimVector* fErrSignificance;     /// matrix with error on significance
-  Float_t fNormSig;                        /// signal normalization
-  Float_t fNormBkg;                        /// background normalization
+  AliMultiDimVector* fSignal;              // signal matrix
+  AliMultiDimVector* fErrSquareSignal;     // matrix with err^2 for signal
+  AliMultiDimVector* fBackground;          // background matrix
+  AliMultiDimVector* fErrSquareBackground; // matrix with err^2 for background
+  AliMultiDimVector* fSignificance;        // significance matrix
+  AliMultiDimVector* fErrSignificance;     // matrix with error on significance
+  Float_t fNormSig;                        // signal normalization
+  Float_t fNormBkg;                        // background normalization
 
-  /// \cond CLASSIMP    
-  ClassDef(AliSignificanceCalculator,0); /// class to compute and maximise significance
-  /// \endcond
+  ClassDef(AliSignificanceCalculator,0); // class to compute and maximise significance
+
 };
 
 #endif

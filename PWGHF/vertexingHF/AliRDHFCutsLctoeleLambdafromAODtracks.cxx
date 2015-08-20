@@ -44,9 +44,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliRDHFCutsLctoeleLambdafromAODtracks);
-/// \endcond
+ClassImp(AliRDHFCutsLctoeleLambdafromAODtracks)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(const char* name) :
@@ -88,8 +86,6 @@ AliRDHFCuts(name),
 	fExcludenSigmaProtonTPC(3.),
 	fExcludenSigmaKaonTPC(3.),
 	fSigmaElectronTPCMin(-9999.),
-	fSigmaElectronTPCPtDepPar0(-9999.),
-	fSigmaElectronTPCPtDepPar1(-9999.),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
 	fSigmaElectronTOFMax(9999.)
@@ -159,8 +155,6 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
 	fExcludenSigmaProtonTPC(source.fExcludenSigmaProtonTPC),
 	fExcludenSigmaKaonTPC(source.fExcludenSigmaKaonTPC),
 	fSigmaElectronTPCMin(source.fSigmaElectronTPCMin),
-	fSigmaElectronTPCPtDepPar0(source.fSigmaElectronTPCPtDepPar0),
-	fSigmaElectronTPCPtDepPar1(source.fSigmaElectronTPCPtDepPar1),
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
 	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax)
@@ -217,8 +211,6 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
 	fExcludenSigmaProtonTPC = source.fExcludenSigmaProtonTPC;
 	fExcludenSigmaKaonTPC = source.fExcludenSigmaKaonTPC;
 	fSigmaElectronTPCMin = source.fSigmaElectronTPCMin;
-	fSigmaElectronTPCPtDepPar0 = source.fSigmaElectronTPCPtDepPar0;
-	fSigmaElectronTPCPtDepPar1 = source.fSigmaElectronTPCPtDepPar1;
 	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
@@ -436,38 +428,12 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleTrkCuts(AliAODTrack *trk, Al
 					case kNSigmaCustomizedCuts:
 						return IsSelectedCustomizedeID(trk);
 						break;
-					case kNSigmaCustomizedPtDepCuts:
-						return IsSelectedCustomizedPtDepeID(trk);
-						break;
 					case kCombinedCuts:
 						return IsSelectedCombinedeID(trk);
 						break;
 			}
 
     }
-
-  return kTRUE;
-}
-//________________________________________________________________________
-Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleTrkCutsNoPID(AliAODTrack *trk, AliAODVertex *primVert)
-{
-  //
-  // Single Track Cut to be applied before object creation
-  //
-
-  if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
-  if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
-  if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
-	Double_t pos[3]; primVert->GetXYZ(pos);
-	Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
-	const AliESDVertex vESD(pos,cov,100.,100);
-	if(fTrackCuts&&!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
-
-	if(trk->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
-	if(trk->GetTPCNclsF()>0){
-		Float_t tpcratio = (Float_t)trk->GetTPCncls()/(Float_t)trk->GetTPCNclsF();
-		if(tpcratio<fProdTrackTPCNclsRatioMin) return kFALSE;
-	}
 
   return kTRUE;
 }
@@ -543,24 +509,6 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedeID(AliAODTrac
 	return kTRUE;
 }
 //________________________________________________________________________
-Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedPtDepeID(AliAODTrack *trk)
-{
-  //
-  // electron ID first shot
-  //
-
-	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
-	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
-
-	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
-	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
-
-	if(nSigmaTPCele<fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*trk->Pt()) return kFALSE;
-	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
-
-	return kTRUE;
-}
-//________________________________________________________________________
 Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCombinedeID(AliAODTrack *trk)
 {
   //
@@ -579,8 +527,6 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 
   Bool_t onFlyV0 = v0->GetOnFlyStatus(); // on-the-flight V0s
   if ( onFlyV0 && !fUseOnTheFlyV0 ) return kFALSE;
-	if(!v0) return kFALSE;
-	if(!(v0->GetSecondaryVtx())) return kFALSE;
 
   AliAODTrack *cptrack =  (AliAODTrack*)(v0->GetDaughter(0));
   AliAODTrack *cntrack =  (AliAODTrack*)(v0->GetDaughter(1));

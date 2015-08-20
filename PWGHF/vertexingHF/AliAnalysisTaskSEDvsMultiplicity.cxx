@@ -49,10 +49,8 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAODVZERO.h"
 #include "AliESDUtils.h"
+ClassImp(AliAnalysisTaskSEDvsMultiplicity)
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEDvsMultiplicity);
-/// \endcond
 
 //________________________________________________________________________
 AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity():
@@ -145,7 +143,7 @@ AliAnalysisTaskSE(),
   fMCPrimariesEstimator(kEta10),
   fDoVZER0ParamVertexCorr(1)
 {
-   /// Default constructor
+   // Default constructor
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
   for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 }
@@ -242,7 +240,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
   fDoVZER0ParamVertexCorr(1)
 {
   // 
-  /// Standard constructor
+  // Standard constructor
   //
  
   for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
@@ -268,7 +266,7 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
 AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
 {
   //
-  /// Destructor
+  // Destructor
   //
   delete fOutput;
   delete fHistNEvents;
@@ -291,7 +289,7 @@ AliAnalysisTaskSEDvsMultiplicity::~AliAnalysisTaskSEDvsMultiplicity()
 
 //_________________________________________________________________
 void  AliAnalysisTaskSEDvsMultiplicity::SetMassLimits(Double_t lowlimit, Double_t uplimit){
-  /// set invariant mass limits
+  // set invariant mass limits
   if(uplimit>lowlimit){
     fLowmasslimit = lowlimit;
     fUpmasslimit = uplimit;
@@ -301,14 +299,14 @@ void  AliAnalysisTaskSEDvsMultiplicity::SetMassLimits(Double_t lowlimit, Double_
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEDvsMultiplicity::SetMassLimits(Int_t pdg, Double_t range){
-  /// set invariant mass limits
+  // set invariant mass limits
   Double_t mass=TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg))->Mass();
   SetMassLimits(mass-range,mass+range);
 }
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::Init(){
   //
-  /// Initialization
+  // Initialization
   //
   printf("AnalysisTaskSEDvsMultiplicity_0::Init() \n");
 
@@ -367,7 +365,7 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
 {
-  /// Create the output container
+  // Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects() \n");
 
@@ -603,8 +601,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 {
-  /// Execute analysis for current event:
-  /// heavy flavor candidates association to MC truth
+  // Execute analysis for current event:
+  // heavy flavor candidates association to MC truth
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   
@@ -1185,8 +1183,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::CreateImpactParameterHistos(){
-  /// Histos for impact paramter study
-  /// mass . pt , impact parameter , decay length , multiplicity
+  // Histos for impact paramter study
+  // mass . pt , impact parameter , decay length , multiplicity
 
   Int_t nbins[5]={fNMassBins,200,fNImpParBins,50,100};
   Double_t xmin[5]={fLowmasslimit,0.,fLowerImpPar,0.,0.};
@@ -1215,7 +1213,7 @@ void AliAnalysisTaskSEDvsMultiplicity::CreateImpactParameterHistos(){
 //________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::Terminate(Option_t */*option*/)
 {
-  /// Terminate analysis
+  // Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSEDvsMultiplicity: Terminate() \n");
 
@@ -1237,7 +1235,7 @@ void AliAnalysisTaskSEDvsMultiplicity::Terminate(Option_t */*option*/)
 //_________________________________________________________________________________________________
 Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
   //
-  /// checking whether the mother of the particles come from a charm or a bottom quark
+  // checking whether the mother of the particles come from a charm or a bottom quark
   //
 	
   Int_t pdgGranma = 0;
@@ -1272,10 +1270,10 @@ Int_t AliAnalysisTaskSEDvsMultiplicity::CheckOrigin(TClonesArray* arrayMC, AliAO
 
 //____________________________________________________________________________
 TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEvent* event){
-  /// Get Estimator Histogram from period event->GetRunNumber();
-  ///
-  /// If you select SPD tracklets in |eta|<1 you should use type == 1
-  ///
+  // Get Estimator Histogram from period event->GetRunNumber();
+  //
+  // If you select SPD tracklets in |eta|<1 you should use type == 1
+  //
 
   Int_t runNo  = event->GetRunNumber();
   Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
@@ -1299,7 +1297,7 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
 
 //__________________________________________________________________________________________________
 void AliAnalysisTaskSEDvsMultiplicity::CreateMeasuredNchHisto(){
-  /// creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)
+  // creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)
   //
   // for Nch  > 70 the points were obtainedwith a double NBD distribution
   // TF1 *fit1 = new TF1("fit1","[0]*(TMath::Gamma(x+[1])/(TMath::Gamma(x+1)*TMath::Gamma([1])))*(TMath::Power(([2]/[1]),x))*(TMath::Power((1+([2]/[1])),-x-[1]))"); fit1->SetParameter(0,1.);// normalization constant
@@ -1336,7 +1334,7 @@ void AliAnalysisTaskSEDvsMultiplicity::CreateMeasuredNchHisto(){
 void AliAnalysisTaskSEDvsMultiplicity::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Int_t countMult,Double_t nchWeight) 
 {
   //
-  /// Function to fill the true MC signal
+  // Function to fill the true MC signal
   //
   
   if(labD>=0){

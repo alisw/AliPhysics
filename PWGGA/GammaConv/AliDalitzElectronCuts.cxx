@@ -65,8 +65,7 @@ const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = 
 "PtCut",
 "DCAcut",
 "MassCut",
-"Weights",
-"VPhotonMCPSmearing"
+"kWeights"
 };
 
 //________________________________________________________________________

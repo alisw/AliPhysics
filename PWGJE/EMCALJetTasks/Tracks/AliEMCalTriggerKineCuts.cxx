@@ -12,19 +12,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/*
+ * Basic kinematic cuts for single track selection
+ *
+ *   Author: Markus Fasel
+ */
 #include <TMath.h>
 #include "AliEMCalTriggerKineCuts.h"
 #include "AliVParticle.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts)
-/// \endcond
-
 namespace EMCalTriggerPtAnalysis {
 
-/**
- * Default constructor
- */
+//______________________________________________________________________________
 AliEMCalTriggerKineCuts::AliEMCalTriggerKineCuts():
   TObject(),
   fPtCut(0.1, 1000.),
@@ -33,13 +32,11 @@ AliEMCalTriggerKineCuts::AliEMCalTriggerKineCuts():
 {
 }
 
-/**
- * Kinematic track selection
- *
- * @param track The track to select
- * @return True if the track was selected, false otherwise
- */
+//______________________________________________________________________________
 bool AliEMCalTriggerKineCuts::IsSelected(const AliVParticle* const track) const {
+  /*
+   * Kinematic track selection
+   */
   if(!fPtCut.IsInRange(TMath::Abs(track->Pt()))) return false;
   if(!fEtaCut.IsInRange(track->Eta())) return false;
   if(!fPhiCut.IsInRange(track->Phi())) return false;

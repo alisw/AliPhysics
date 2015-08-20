@@ -31,9 +31,7 @@
 #include "TVector3.h"
 #include "TLorentzVector.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAODRecoDecayHF3Prong);
-/// \endcond
+ClassImp(AliAODRecoDecayHF3Prong)
 
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF3Prong::AliAODRecoDecayHF3Prong() :
@@ -43,7 +41,7 @@ AliAODRecoDecayHF3Prong::AliAODRecoDecayHF3Prong() :
   fDist23toPrim(0)
 {
   //
-  /// Default Constructor
+  // Default Constructor
   //
 }
 //--------------------------------------------------------------------------
@@ -58,7 +56,7 @@ AliAODRecoDecayHF3Prong::AliAODRecoDecayHF3Prong(AliAODVertex *vtx2,
   fDist23toPrim(dist23)
 {
   //
-  /// Constructor with AliAODVertex for decay vertex
+  // Constructor with AliAODVertex for decay vertex
   //
   SetDCAs(3,dca);
 }
@@ -73,7 +71,7 @@ AliAODRecoDecayHF3Prong::AliAODRecoDecayHF3Prong(AliAODVertex *vtx2,
   fDist23toPrim(dist23)
 {
   //
-  /// Constructor with AliAODVertex for decay vertex and without prongs momenta
+  // Constructor with AliAODVertex for decay vertex and without prongs momenta
   //
   SetDCAs(3,dca);
 }
@@ -85,14 +83,14 @@ AliAODRecoDecayHF3Prong::AliAODRecoDecayHF3Prong(const AliAODRecoDecayHF3Prong &
   fDist23toPrim(source.fDist23toPrim)
 {
   //
-  /// Copy constructor
+  // Copy constructor
   //
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecayHF3Prong &AliAODRecoDecayHF3Prong::operator=(const AliAODRecoDecayHF3Prong &source)
 {
   //
-  /// assignment operator
+  // assignment operator
   //
   if(&source == this) return *this;
 
@@ -107,24 +105,24 @@ AliAODRecoDecayHF3Prong &AliAODRecoDecayHF3Prong::operator=(const AliAODRecoDeca
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecayHF3Prong::SelectDplus(const Double_t *cuts)
   const {
-///
-/// This function compares the Dplus with a set of cuts:
-///
-/// cuts[0] = inv. mass half width [GeV]
-/// cuts[1] = pTK [GeV/c]
-/// cuts[2] = pTPi [GeV/c]
-/// cuts[3] = d0K [cm]   lower limit!
-/// cuts[4] = d0Pi [cm]  lower limit!
-/// cuts[5] = dist12 (cm)
-/// cuts[6] = sigmavert (cm)
-/// cuts[7] = dist prim-sec (cm)
-/// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
-/// cuts[9] = cosThetaPoint
-/// cuts[10] = Sum d0^2 (cm^2)
-/// cuts[11] = dca cut (cm)
-///
-/// If candidate Dplus does not pass the cuts return kFALSE
-///
+//
+// This function compares the Dplus with a set of cuts:
+//
+// cuts[0] = inv. mass half width [GeV]   
+// cuts[1] = pTK [GeV/c]
+// cuts[2] = pTPi [GeV/c]
+// cuts[3] = d0K [cm]   lower limit!
+// cuts[4] = d0Pi [cm]  lower limit!
+// cuts[5] = dist12 (cm)
+// cuts[6] = sigmavert (cm)
+// cuts[7] = dist prim-sec (cm)
+// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
+// cuts[9] = cosThetaPoint
+// cuts[10] = Sum d0^2 (cm^2)
+// cuts[11] = dca cut (cm)
+//
+// If candidate Dplus does not pass the cuts return kFALSE
+//
 
   Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
   Double_t mDplus=InvMassDplus();
@@ -155,27 +153,27 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDplus(const Double_t *cuts)
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,Int_t &okDspiKK, Int_t &okMassPhi, Int_t &okMassK0star)
   const {
-///
-/// This function compares the Ds with a set of cuts
-/// (same variables as D+, for now)
-///
-/// cuts[0] = inv. mass half width [GeV]
-/// cuts[1] = pTK [GeV/c]
-/// cuts[2] = pTPi [GeV/c]
-/// cuts[3] = d0K [cm]   lower limit!
-/// cuts[4] = d0Pi [cm]  lower limit!
-/// cuts[5] = dist12 (cm)
-/// cuts[6] = sigmavert (cm)
-/// cuts[7] = dist prim-sec (cm)
-/// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
-/// cuts[9] = cosThetaPoint
-/// cuts[10] = Sum d0^2 (cm^2)
-/// cuts[11] = dca cut (cm)
-/// cuts[12] = max. inv. mass difference(Mphi-MKK) [GeV]
-/// cuts[13] = max. inv. mass difference(MK0*-MKpi) [GeV]
-///
-/// If candidate Ds does not pass the cuts return kFALSE
-///
+//
+// This function compares the Ds with a set of cuts 
+// (same variables as D+, for now)
+//
+// cuts[0] = inv. mass half width [GeV]   
+// cuts[1] = pTK [GeV/c]
+// cuts[2] = pTPi [GeV/c]
+// cuts[3] = d0K [cm]   lower limit!
+// cuts[4] = d0Pi [cm]  lower limit!
+// cuts[5] = dist12 (cm)
+// cuts[6] = sigmavert (cm)
+// cuts[7] = dist prim-sec (cm)
+// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
+// cuts[9] = cosThetaPoint
+// cuts[10] = Sum d0^2 (cm^2)
+// cuts[11] = dca cut (cm)
+// cuts[12] = max. inv. mass difference(Mphi-MKK) [GeV] 
+// cuts[13] = max. inv. mass difference(MK0*-MKpi) [GeV] 
+//
+// If candidate Ds does not pass the cuts return kFALSE
+//
   Double_t mDsKKpi,mDspiKK;
   okDsKKpi=1; okDspiKK=1;
   okMassPhi=0; okMassK0star=0;
@@ -237,25 +235,25 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,In
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecayHF3Prong::SelectLc(const Double_t *cuts,Int_t &okLcpKpi,Int_t &okLcpiKp)
   const {
-///
-/// This function compares the Lc with a set of cuts
-/// (same variables as D+, for now)
-///
-/// cuts[0] = inv. mass half width [GeV]
-/// cuts[1] = pTP [GeV/c]
-/// cuts[2] = pTPi and pTK [GeV/c]
-/// cuts[3] = d0P [cm]   lower limit!
-/// cuts[4] = d0Pi and d0K [cm]  lower limit!
-/// cuts[5] = dist12 (cm)
-/// cuts[6] = sigmavert (cm)
-/// cuts[7] = dist prim-sec (cm)
-/// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
-/// cuts[9] = cosThetaPoint
-/// cuts[10] = Sum d0^2 (cm^2)
-/// cuts[11] = dca cut (cm)
-///
-/// If candidate Lc does not pass the cuts return kFALSE
-///
+//
+// This function compares the Lc with a set of cuts 
+// (same variables as D+, for now)
+//
+// cuts[0] = inv. mass half width [GeV]   
+// cuts[1] = pTP [GeV/c]
+// cuts[2] = pTPi and pTK [GeV/c]
+// cuts[3] = d0P [cm]   lower limit!
+// cuts[4] = d0Pi and d0K [cm]  lower limit!
+// cuts[5] = dist12 (cm)
+// cuts[6] = sigmavert (cm)
+// cuts[7] = dist prim-sec (cm)
+// cuts[8] = pM=Max{pT1,pT2,pT3} (GeV/c)
+// cuts[9] = cosThetaPoint
+// cuts[10] = Sum d0^2 (cm^2)
+// cuts[11] = dca cut (cm)
+//
+// If candidate Lc does not pass the cuts return kFALSE
+//
   Double_t mLcpKpi,mLcpiKp;
   okLcpKpi=1; okLcpiKp=1;
 
@@ -297,7 +295,7 @@ Bool_t AliAODRecoDecayHF3Prong::SelectLc(const Double_t *cuts,Int_t &okLcpKpi,In
 //----------------------------------------------------------------------
 Double_t AliAODRecoDecayHF3Prong::CosPiKPhiRFrame(Int_t option)
 const {
-  /// computes cosine of angle between pi and K in the phi rest frame
+  // computes cosine of angle between pi and K in the phi rest frame
 
  Int_t indexPi;
  Int_t indexK1;
@@ -345,7 +343,7 @@ const {
 //----------------------------------------------------------------------
 Double_t AliAODRecoDecayHF3Prong::CosPiDsLabFrame(Int_t option)
 const {
-  /// computes cosine of angle between pi and Ds in the Ds rest frame
+  // computes cosine of angle between pi and Ds in the Ds rest frame
 
  Int_t indexPi;
 
@@ -380,7 +378,7 @@ const {
 
 //----------------------------------------------------------------------
 Double_t AliAODRecoDecayHF3Prong::ComputeSigmaVert(const AliAODEvent* aod) const{
-  /// computes track dispersion around secondary vertex starting from tracks
+  // computes track dispersion around secondary vertex starting from tracks
 
   AliVertexerTracks vertexer(aod->GetMagneticField());
   Double_t pos[3],cov[6];

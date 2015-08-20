@@ -390,7 +390,7 @@ protected:
       dpmjet->SetPtRange(0,1000.);
       tit.Append(" (Phojet)");
     }
-    dpmjet->SetTitle(tit);
+    // dpmjet->SetTitle(tit);
     return dpmjet;
   }
   /** 
@@ -535,7 +535,6 @@ protected:
     gen->SetTau(9.74);
     gen->SetModel("Lhyquid3D");
     gen->SetLhyquidSet("LHC500C2030");
-    gen->SetTitle("Therminator");
     return gen;
 
   }

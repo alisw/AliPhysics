@@ -41,7 +41,6 @@
 #include "AliPIDCombined.h"        
 
 #include "AliAnalysisTaskBFPsi.h"
-#include "AliBalanceEbyE.h"
 #include "AliBalancePsi.h"
 #include "AliAnalysisTaskTriggeredBF.h"
 
@@ -60,12 +59,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fDebugLevel(kFALSE),
   fArrayMC(0),
   fBalance(0),
-  fBalanceEbyE(0),
   fRunShuffling(kFALSE),
   fShuffledBalance(0),
   fRunMixing(kFALSE),
   fRunMixingEventPlane(kFALSE),
-  fRunEbyE(kFALSE),
   fMixingTracks(50000),
   fMixedBalance(0),
   fPoolMgr(0),
@@ -271,12 +268,6 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
       fMixedBalance->SetEventClass(fEventClass);
     }
   }
-  if(fRunEbyE){
-    if(!fBalanceEbyE) {
-      fBalanceEbyE = new AliBalanceEbyE();
-      fBalanceEbyE->SetAnalysisLevel("AOD");
-    }
-  }
 
   //QA list
   fList = new TList();
@@ -431,14 +422,6 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
       fMixedBalance->SetCustomBinning(fCustomBinning);
       fMixedBalance->InitHistograms();
     }
-  }
-
-  if(fRunEbyE) {
-    if(!fBalanceEbyE->GetHistBF()) {
-      AliInfo("Histograms (EbyE) not yet initialized! --> Will be done now");
-      fBalanceEbyE->InitHistograms();
-    }
-    fList->Add(fBalanceEbyE->GetHistBF());
   }
 
   // QA histograms for different cuts
@@ -832,12 +815,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   if(fRunShuffling && tracksShuffled != NULL) {
     fShuffledBalance->CalculateBalance(gReactionPlane,tracksShuffled,NULL,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
   }
-
-  // calculate balance function on an event-by-event basis
-  if(fRunEbyE){
-    fBalanceEbyE->CalculateBalance(gReactionPlane,tracksMain,NULL,bSign,lMultiplicityVar,eventMain->GetPrimaryVertex()->GetZ());
-  }      
-}
+}      
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){

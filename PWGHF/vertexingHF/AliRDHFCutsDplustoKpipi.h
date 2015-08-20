@@ -7,12 +7,11 @@
 
 
 /////////////////////////////////////////////////////////////
-///
-/// \class AliRDHFCutsDplustoKpipi
-/// \brief Class for cuts on AOD reconstructed D+->Kpipi
-///
-/// \author Author: R. Bala bala@to.infn.it
-/// \author        G. Ortona ortona@to.infn.it
+//
+// Class for cuts on AOD reconstructed D+->Kpipi
+//
+// Author: R. Bala bala@to.infn.it
+//         G. Ortona ortona@to.infn.it
 /////////////////////////////////////////////////////////////
 
 
@@ -75,16 +74,14 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
  protected:
 
  private:
-  Int_t fUseStrongPid; /// use strong pid 0 no,1 only for K,2 pi 3 both
-  Float_t fMaxPtStrongPid;/// Maximum pt of candidate to apply strong Pid
-  Float_t fMaxPStrongPidK;/// Maximum P of track to apply strong Pid on K
-  Float_t fMaxPStrongPidpi;/// Maximum P of track to apply strong Pid on pi
-  Bool_t fUseImpParProdCorrCut; /// switch for d0K*d0pi1 vs. d0K*d0pi2 cut
+  Int_t fUseStrongPid; //use strong pid 0 no,1 only for K,2 pi 3 both
+  Float_t fMaxPtStrongPid;//Maximum pt of candidate to apply strong Pid
+  Float_t fMaxPStrongPidK;//Maximum P of track to apply strong Pid on K
+  Float_t fMaxPStrongPidpi;//Maximum P of track to apply strong Pid on pi
+  Bool_t fUseImpParProdCorrCut; //switch for d0K*d0pi1 vs. d0K*d0pi2 cut
 
-  /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsDplustoKpipi,6);  /// class for cuts on AOD reconstructed
-                                   /// D+->Kpipi
-  /// \endcond
+  ClassDef(AliRDHFCutsDplustoKpipi,6);  // class for cuts on AOD reconstructed 
+                                   // D+->Kpipi
 };
 
 #endif

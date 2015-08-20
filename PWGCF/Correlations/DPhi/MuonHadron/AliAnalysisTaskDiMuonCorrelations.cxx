@@ -303,10 +303,11 @@ void AliAnalysisTaskDiMuonCorrelations::UserExec(Option_t *) {
   const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
   if (spdVtx->GetNContributors()<=0) return;
   fHistEvStat->Fill(cutIndex++);
+  TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
+  if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
   fHistEvStat->Fill(cutIndex++);
 
   Double_t zvtx = spdVtx->GetZ();

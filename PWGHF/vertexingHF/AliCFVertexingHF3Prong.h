@@ -7,15 +7,14 @@
 /* $Id$ */
 
 ///////////////////////////////////////////////////////////////////
-/// \class AliCFVertexingHF3Prong
-///                                                               //
-/// \brief Class to compute variables for correction framework    //
-/// for 3-body decays of D mesons (D+, Ds, Lc)                    //
-/// in bins of cut variables                                      //
-/// Origin:       Francesco Prino (prino@to.infn.it)              //
-///               Renu Bala       (bala@to.infn.it)               //
-///                                                               //
-////////////////////////////////////////////////////////////////////
+//                                                               //
+// Class to compute variables for correction framework           //  
+// for 3-body decays of D mesons (D+, Ds, Lc)                    //
+// in bins of cut variables                                      //
+// Origin:       Francesco Prino (prino@to.infn.it)              //
+//               Renu Bala       (bala@to.infn.it)               //
+//                                                               //
+///////////////////////////////////////////////////////////////////
 
 #include "AliCFVertexingHF.h"
 #include "AliAODRecoDecayHF.h"
@@ -61,13 +60,12 @@ class AliCFVertexingHF3Prong : public AliCFVertexingHF{
   AliCFVertexingHF3Prong(const AliCFVertexingHF3Prong& c);
   AliCFVertexingHF3Prong& operator= (const AliCFVertexingHF3Prong& other);
   
-  Int_t fDecay;   /// decay mode id
-  Int_t fGenDsOption;  /// option for selection Ds (see enum)
-  UInt_t fResonantDecay; /// resonant decay for which to run the CF
+  Int_t fDecay;   // decay mode id
+  Int_t fGenDsOption;  // option for selection Ds (see enum)
+  UInt_t fResonantDecay; // resonant decay for which to run the CF
 
-  /// \cond CLASSIMP    
   ClassDef(AliCFVertexingHF3Prong, 3);
-    /// \endcond
+  
 };
 
 #endif

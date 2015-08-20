@@ -46,7 +46,6 @@ set(SRCS
   AliFemtoEventReaderESD.cxx
   AliFemtoEventReaderESDChain.cxx
   AliFemtoEventReaderESDChainKine.cxx
-  AliFemtoEventReaderESDChainKineKK.cxx
   AliFemtoModelHiddenInfo.cxx
   AliFemtoModelGlobalHiddenInfo.cxx
   AliFemtoModelGausLCMSFreezeOutGenerator.cxx
@@ -70,7 +69,6 @@ set(SRCS
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
   AliAnalysisTaskFemto.cxx
-  AliAnalysisTaskFemtoMJ.cxx
   AliTwoTrackRes.cxx
   AliFemtoMCTrackCut.cxx
   AliFemtoEventReaderKinematicsChain.cxx
@@ -83,9 +81,6 @@ set(SRCS
   AliFemtoV0SharedDaughterCut.cxx
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
-  AliFemtoCorrFctnDPhiStarDEta.cxx
-  AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
-  AliFemtoDeltaPtPairCut.cxx	
   )
 
 # Headers from sources
@@ -135,7 +130,6 @@ set(HDRS ${HDRS}
   AliFemtoEventWriterCollection.h
   AliFemtoMCTrackCut.h
   AliFemtoEventReaderKinematicsChain.h
-  AliFemtoCorrFctnDPhiStarKStarMergedFraction.h
   )
 
 set ( FSRCS

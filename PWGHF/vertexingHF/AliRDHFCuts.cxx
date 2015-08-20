@@ -50,10 +50,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliRDHFCuts);
-/// \endcond
-
+ClassImp(AliRDHFCuts)
 
 //--------------------------------------------------------------------------
 AliRDHFCuts::AliRDHFCuts(const Char_t* name, const Char_t* title) : 

@@ -91,9 +91,6 @@ ClassImp(AliFemtoMJTrackCut)
   fNsigmaTPCTOF(kFALSE),
   fNsigmaTPConly(kFALSE),
   fNsigma(3.),
-  fNsigma2(3.),
-  fNsigmaRejection(3.),
-  fNsigmaAccept(2.),
     fminTPCclsF(0),
     fminTPCncls(0),
     fminITScls(0),
@@ -140,9 +137,6 @@ ClassImp(AliFemtoMJTrackCut)
   fNsigmaTPCTOF=kFALSE;
   fNsigmaTPConly=kFALSE;
   fNsigma=3.;
-  fNsigma2=3.;
-  fNsigmaRejection=3.;
-  fNsigmaAccept=2.;
 }
 //------------------------------
 AliFemtoMJTrackCut::~AliFemtoMJTrackCut(){
@@ -517,18 +511,6 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	      isProtonNsigma = (IsProtonNSigma(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP()));
 	      if(isProtonNsigma) imost=18;
 	    }
-	  }
-	  else if (fMostProbable == 19) { //cut on Nsigma in pT not p, EXCLUSIVE PID with different REJECTION, pion
-	    if ((IsPionNSigmaAccept(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi(), track->TOFpionTime()) && !IsKaonNSigmaRejection(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK(), track->TOFkaonTime()) && !IsProtonNSigmaRejection(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP(), track->TOFprotonTime())))
-	      imost = 19;
-	  }
-	  else if (fMostProbable == 20) { //cut on Nsigma in pT not p, EXCLUSIVE PID with different REJECTION, kaon
-	    if (!IsPionNSigmaRejection(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi(), track->TOFpionTime()) && IsKaonNSigmaAccept(track->Pt(),track->NSigmaTPCK(), track->NSigmaTOFK(), track->TOFkaonTime()) && !IsProtonNSigmaRejection(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP(), track->TOFprotonTime()))
-	      imost = 20;
-	  }
-	  else if (fMostProbable == 21) { //cut on Nsigma in pT not p, EXCLUSIVE PID with different REJECTION, proton
-	    if (!IsPionNSigmaRejection(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi(), track->TOFpionTime()) && !IsKaonNSigmaRejection(track->Pt(), !track->NSigmaTPCK(), track->NSigmaTOFK(), track->TOFkaonTime()) && IsProtonNSigmaAccept(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP(), track->TOFprotonTime()))
-	      imost = 21;
 	  }
 	}
 
@@ -1078,13 +1060,8 @@ bool AliFemtoMJTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaT
   if (fNsigmaTPCTOF) {
     if (mom > 0.5) {
       //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if(mom < 2.0) {
-	if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma)
-	  return true;
-      }
-      else
-	if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma2)
-	  return true;	
+      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma)
+	return true;
     }
     else {
       if (TMath::Abs(nsigmaTPCK) < fNsigma)
@@ -1125,13 +1102,8 @@ bool AliFemtoMJTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigma
   if (fNsigmaTPCTOF) {
     if (mom > 0.5) {
       //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if(mom < 2.0) {
-	if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma)
-	  return true;
-      }
-      else
-	if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma2)
-	  return true;	
+      if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma)
+	return true;
     }
     else {
       if (TMath::Abs(nsigmaTPCPi) < fNsigma)
@@ -1167,13 +1139,8 @@ bool AliFemtoMJTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigm
   if (fNsigmaTPCTOF) {
     if (mom > 0.5) {
 //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if(mom < 2.0) {
-	if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma)
-	  return true;
-      }
-      else
-	if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma2)
-	  return true;	
+        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma)
+            return true;
 	}
     else {
         if (TMath::Abs(nsigmaTPCP) < fNsigma)
@@ -1203,129 +1170,6 @@ bool AliFemtoMJTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigm
 }
 
 
-
-
-
-
-
-
-//rejection methods
-bool AliFemtoMJTrackCut::IsPionNSigmaRejection(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
-{
-
-    if (mom > 0.5) {
-        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigmaRejection)
-            return true;
-        }
-    else {
-        if (TMath::Abs(nsigmaTPCPi) < fNsigmaRejection)
-            return true;
-    }
-
-  return false;
-}
-
-
-bool AliFemtoMJTrackCut::IsKaonNSigmaRejection(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
-{
-  if (mom > 0.5) {
-    //rejection of unwanted contamination
-    //if(mom>1 && TOFtime<-400)
-    //return false;
-
-    if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigmaRejection)
-      return true;
-  }
-  else {
-    if (TMath::Abs(nsigmaTPCK) < fNsigmaRejection)
-      return true;
-  }
-
-  return false;
-}
-
-bool AliFemtoMJTrackCut::IsProtonNSigmaRejection(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
-{
-  if (mom > 0.5) {
-    // if(mom>1.8 && TOFtime<-300)
-    //return false;
-
-
-    if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigmaRejection)
-      return true;
-  }
-  else {
-    if (TMath::Abs(nsigmaTPCP) < fNsigmaRejection)
-      return true;
-  }
-
-
-  return false;
-}
-
-
-bool AliFemtoMJTrackCut::IsPionNSigmaAccept(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
-{
-
-    if (mom > 0.5) {
-        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigmaAccept)
-            return true;
-        }
-    else {
-        if (TMath::Abs(nsigmaTPCPi) < fNsigmaAccept)
-            return true;
-    }
-
-  return false;
-}
-
-
-bool AliFemtoMJTrackCut::IsKaonNSigmaAccept(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
-{
-  if (mom > 0.5) {
-    //rejection of unwanted contamination
-    //if(mom>1 && TOFtime<-400)
-    //return false;
-
-    if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigmaAccept)
-      return true;
-  }
-  else {
-    if (TMath::Abs(nsigmaTPCK) < fNsigmaAccept)
-      return true;
-  }
-
-  return false;
-}
-
-bool AliFemtoMJTrackCut::IsProtonNSigmaAccept(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
-{
-  if (mom > 0.5) {
-    // if(mom>1.8 && TOFtime<-300)
-    // return false;
-
-
-    if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigmaAccept)
-      return true;
-  }
-  else {
-    if (TMath::Abs(nsigmaTPCP) < fNsigmaAccept)
-      return true;
-  }
-
-
-  return false;
-}
-
-
-
-
-
-
-
-
-
-
 void AliFemtoMJTrackCut::SetPIDMethod(ReadPIDMethodType newMethod)
 {
   fPIDMethod = newMethod;
@@ -1345,26 +1189,8 @@ void AliFemtoMJTrackCut::SetNsigmaTPConly(Bool_t nsigma)
 void AliFemtoMJTrackCut::SetNsigma(Double_t nsigma)
 {
   fNsigma = nsigma;
-  fNsigma2 = nsigma;
-  fNsigmaAccept = nsigma;
-  fNsigmaRejection = nsigma;
 }
 
-void AliFemtoMJTrackCut::SetNsigma2(Double_t nsigma)
-{
-   fNsigma2 = nsigma;
-   fNsigmaRejection = nsigma;
-}
-
-void AliFemtoMJTrackCut::SetNsigmaRejection(Double_t nsigma)
-{
-  fNsigmaRejection = nsigma;
-}
-
-void AliFemtoMJTrackCut::SetNsigmaAccept(Double_t nsigma)
-{
-  fNsigmaAccept = nsigma;
-}
 
 void AliFemtoMJTrackCut::SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req)
 {

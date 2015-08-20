@@ -69,23 +69,7 @@ class AliAnalysisTaskCheckCascadepp276 : public AliAnalysisTaskSE {
   void SetVertexRangeMin             (Float_t vtxrangemin               = 0.0    ) { fVtxRangeMin                 = vtxrangemin;                }
   void SetMinptCutOnDaughterTracks   (Float_t minptdaughtrks            = 0.0    ) { fMinPtCutOnDaughterTracks    = minptdaughtrks;             }
   void SetEtaCutOnDaughterTracks     (Float_t etadaughtrks              = 0.8    ) { fEtaCutOnDaughterTracks      = etadaughtrks;               }
-  //Setters for the V0 and cascade Vertexer Parameters
-  void SetV0VertexerMaxChisquare           (Double_t lParameter){ fV0Sels[0] = lParameter; }
-  void SetV0VertexerDCAFirstToPV           (Double_t lParameter){ fV0Sels[1] = lParameter; }
-  void SetV0VertexerDCASecondtoPV          (Double_t lParameter){ fV0Sels[2] = lParameter; }
-  void SetV0VertexerDCAV0Daughters         (Double_t lParameter){ fV0Sels[3] = lParameter; }
-  void SetV0VertexerCosinePA               (Double_t lParameter){ fV0Sels[4] = lParameter; }
-  void SetV0VertexerMinRadius              (Double_t lParameter){ fV0Sels[5] = lParameter; }
-  void SetV0VertexerMaxRadius              (Double_t lParameter){ fV0Sels[6] = lParameter; }
-  void SetCascVertexerMaxChisquare         (Double_t lParameter){ fCascSels[0] = lParameter; }
-  void SetCascVertexerMinV0ImpactParameter (Double_t lParameter){ fCascSels[1] = lParameter; }
-  void SetCascVertexerV0MassWindow         (Double_t lParameter){ fCascSels[2] = lParameter; }
-  void SetCascVertexerDCABachToPV          (Double_t lParameter){ fCascSels[3] = lParameter; }
-  void SetCascVertexerDCACascadeDaughters  (Double_t lParameter){ fCascSels[4] = lParameter; }
-  void SetCascVertexerCascadeCosinePA      (Double_t lParameter){ fCascSels[5] = lParameter; }
-  void SetCascVertexerCascadeMinRadius     (Double_t lParameter){ fCascSels[6] = lParameter; }
-  void SetCascVertexerCascadeMaxRadius     (Double_t lParameter){ fCascSels[7] = lParameter; }
-    
+
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
         // your data member object is created on the worker nodes and streaming is not needed.

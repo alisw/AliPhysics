@@ -237,7 +237,7 @@ class AliThreeParticleCorrelator : public TNamed {
     /// Fill correlation objects of different properties 
     //Propagate the event properties to all workers and initiate monte carlo if applicable
     for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
-//       (*o)->InitiateMc() ;
+      (*o)->InitiateMc() ;
       if((*o)->SetMultVZ(fMultiplicity,fVz)<0) return -EINVAL;
     }
     

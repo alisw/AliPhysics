@@ -369,7 +369,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet)
   if(jetPhi>tpi) jetPhi-=tpi;
    
   // if limits are given in (-pi, pi) range
-  if (fJetMinPhi < -1e-6) jetPhi -= TMath::Pi() * 2;
+  if (fJetMinPhi < 0) jetPhi -= TMath::Pi() * 2;
 
   if (jetEta < fJetMinEta || jetEta > fJetMaxEta || jetPhi < fJetMinPhi || jetPhi > fJetMaxPhi) {
     AliDebug(11,"Cut rejecting jet: Acceptance");

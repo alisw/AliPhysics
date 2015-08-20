@@ -1,6 +1,5 @@
-///
-/// EMCal Tender configuration macro
-///
+// $Id$
+
 AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t distBC         = kTRUE,   //distance to bad channel
   Bool_t recalibClus    = kTRUE,   //recalibrate cluster energy
@@ -23,8 +22,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Float_t timeMax       = 900e-9,  //maximum time of physical signal in a cell/digit (s)
   Float_t timeCut       = 900e-9,  //maximum time difference between the digits inside EMC cluster (s)
   const char *pass      = 0,       //string defining pass (use none if figured out from path)
-  Bool_t  remapMcAod    = kFALSE,  //switch on the remaping for the MC labels in AOD productions,
-  TString cdbStorage    = "raw://" // "local://"
+  Bool_t  remapMcAod    = kFALSE   //switch on the remaping for the MC labels in AOD productions
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -60,7 +58,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
       alitender = new  AliTender("AliTender");
     
     alitender->AddSupply(EMCALSupply);
-    alitender->SetDefaultCDBStorage(cdbStorage); 
+    alitender->SetDefaultCDBStorage("raw://"); 
     
     ana = alitender;
     

@@ -1426,10 +1426,11 @@ Bool_t AliAnalysisTaskSEPicoV0Maker::IsEventNotAcpt()
         if (pVtxESD->GetNContributors()<1) fHasVertex = kFALSE;
         else fHasVertex = kTRUE;
 
+        TString vtxTyp = pVtxESD->GetTitle();
         Double_t cov[6] = { 0., 0., 0., 0., 0., 0. };
         pVtxESD->GetCovarianceMatrix(cov);
         Double_t zRes = TMath::Sqrt(cov[5]);
-        if (pVtxESD->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
+        if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
       } else fHasVertex = kTRUE;
 
       if (!fHasVertex) return (fEventAcptMask==0);

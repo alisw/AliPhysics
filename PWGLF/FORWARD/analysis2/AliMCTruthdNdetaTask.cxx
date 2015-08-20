@@ -131,13 +131,13 @@ AliMCTruthdNdetaTask::Finalize()
 Bool_t
 AliMCTruthdNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* 
 						  forward, 
-						  UInt_t triggerMask,
+						  Int_t triggerMask,
 						  Bool_t isZero,
 						  Double_t vzMin, 
 						  Double_t vzMax, 
 						  const TH2D* primary,
 						  const TH2D*,
-						  UInt_t filter)
+						  Int_t filter)
 { 
   // Check the centrality class unless this is the 'all' bin 
   if (!primary) return false;

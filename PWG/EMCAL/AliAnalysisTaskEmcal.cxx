@@ -365,7 +365,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   }
   
   fHistEventRejection = new TH1F("fHistEventRejection","Reasons to reject event",20,0,20);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
   fHistEventRejection->SetBit(TH1::kCanRebin);
 #endif
   fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");

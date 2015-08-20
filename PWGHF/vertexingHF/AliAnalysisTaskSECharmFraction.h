@@ -4,13 +4,13 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-///*************************************************************************
-/// \class Class AliAnalysisTaskSECharmFraction
-/// \brief AliAnalysisTask for the extraction of the fraction of prompt charm
-/// using the charm hadron impact parameter to the primary vertex
-///
-///
-/// \author Author: Andrea Rossi andrea.rossi@pd.infn.it
+//*************************************************************************
+// Class AliAnalysisTaskSECharmFraction
+// AliAnalysisTask for the extraction of the fraction of prompt charm
+// using the charm hadron impact parameter to the primary vertex
+//
+//
+// Author: Andrea Rossi andrea.rossi@pd.infn.it
 //*************************************************************************
 
 class TH1F;
@@ -36,7 +36,7 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
 
   virtual ~AliAnalysisTaskSECharmFraction(); 
 
-  /// Implementation of interface methods
+  // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -113,72 +113,69 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   Bool_t FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue,Int_t isD0D0barMC);
   void FillHistoMCproperties(TClonesArray *arrayMC);
 
-  AliRDHFCutsD0toKpi *fCutsLoose;        /// Loose cuts object
-  AliRDHFCutsD0toKpi *fCutsTight;        /// Vertexer heavy flavour
-  Int_t fFastAnalysis;                   /// Level of analysis speed: default is 1, switch it to 2 to fill the THnSparse
-  Bool_t  fReadMC;                          /// Flag To switch on/off access to MC
-  Bool_t fcheckD0Bit;                       /// Flag to check the D0 bit flag
-  Bool_t  fsplitMassD0D0bar;                /// Flag to use two shistos for D0 and D0bar invariant masses
-  Bool_t  fLikeSign;                        /// Flag to analyse Like Sign array
-  Bool_t  fusePID;                          /// Flag to use PID
-  Double_t    fmD0PDG;                      ///  MC D0 mass
-  Int_t        fnbins;                      /// Number of pt bins
-  Float_t *fptbins;                         //[fnbins] ptbins
-  Int_t fNtrMaxforVtx;                      /// N Max acceptable tracks used for vertex (0,1,2)
-  Double_t fptAll;                          //!<! Sum of pt of the reco tracks
-  Double_t fptAllSq;                        //!<! Sum of the square of the pt of the reco tracks
-  Double_t fptMax[3];                       //!<! Three largest track pt in the event
-  Double_t fAcceptanceCuts[3];              /// array with acceptance cuts
-  Double_t fsignalInvMassCut;               /// invariant mass cut to define signal region
-  Double_t flargeInvMassCut;                /// invariant mass cut to accept all inv mass window
-  Double_t fsidebandInvMassCut;             /// invariant mass cut to define side band region lower limit
-  Double_t fsidebandInvMassWindow;          /// invariant mass cut to define side band region width
-  Bool_t fUseMC;                            /// flag to use or not MC info
-  Bool_t fCleanCandOwnVtx;                  /// flag to switch on/off cleaning of the candidate own vtx
-  TH1F *fNentries;                          //!<! histo for #AOD analysed, container 1
-  TH1F *fSignalType;                        //!<! histo for the type of MC signal , container 2
-  TH1F *fSignalTypeLsCuts;                  //!<! histo for the type of MC signal with loose cuts , container 3
-  TH1F *fSignalTypeTghCuts;                //!<! histo for the type of MC signal with tight cuts, container 4
-  AliNormalizationCounter *fCounter;       //!<! counter for the normalization
-  TList *flistMCproperties;                //!<! TLists for MC properties of D0 w.r.t. B mesons and c quarks cntainer 5
-  TList *flistNoCutsSignal;                //!<! TList for signal (D prompt) with nocuts, container 6
-  TList *flistNoCutsBack;                  //!<! TList for background with nocuts, container 7
-  TList *flistNoCutsFromB;                 //!<! TList for D from B or D from Dstar from Bwith nocuts, container 8
-  TList *flistNoCutsFromDstar;             //!<! TList for D from Dstar with nocuts, container 9
-  TList *flistNoCutsOther;                 //!<! TList for others with nocuts, container 10
-  TList *flistLsCutsSignal;                //!<! TList for signal (D prompt) with loose cuts, container 11
-  TList *flistLsCutsBack;                  //!<! TList for background with loose cuts, container 12
-  TList *flistLsCutsFromB;                 //!<! TList for D from B or D from Dstar from B with loose cuts, container 13
-  TList *flistLsCutsFromDstar;             //!<! TList for D from Dstar with loose cuts, container 14
-  TList *flistLsCutsOther;                 //!<! TList for others with loose cuts, container 15
-  TList *flistTghCutsSignal;               //!<! TList for signal (D prompt) with tight cuts, container 16
-  TList *flistTghCutsBack;                 //!<! TList for backgrnd with tight cuts, container 17
-  TList *flistTghCutsFromB;                //!<! TList for D from B or D from Dstar from Bwith tight cuts, container 18
-  TList *flistTghCutsFromDstar;            //!<! TList for D from Dstar Dstar with tight cuts, container 19
-  TList *flistTghCutsOther;                //!<! TList for others with tight cuts, container 20
-  AliVertexingHFUtils *fVertUtil;          /// vertexing HF Util
-  Bool_t fselectForUpgrade;                /// switch to reject candidates from HIJING and not Pythia for upgrade studies
-  Bool_t fskipEventSelection;               /// switch to skip event selection (for upgrade studies)
-  Double_t fZvtxUpgr;                       /// cut value on max zvtx used ONLY if fskipEventSelection is kTRUE
-  TF1 *fWeightPt;                           /// function with pt weights used only for MC histos for reflections and signal mass shape
-  /*  Bool_t       fD0usecuts;            /// Switch on the use of the cuts             TO BE IMPLEMENTED
-      Bool_t       fcheckMC;              ///  Switch on MC check: minimum check is same mother  TO BE IMPLEMENTED
-      Bool_t       fcheckMCD0;           ///  check the mother is a D0                  TO BE IMPLEMENTED
-      Bool_t       fcheckMC2prongs;         ///  check the decay is in two prongs       TO BE IMPLEMENTED
-      Bool_t       fcheckMCprompt;       ///  check the D0 comes from a c quark         TO BE IMPLEMENTED
-      Bool_t       fcheckMCfromB;        ///  check the D0 comes from a b quark         TO BE IMPLEMENTED
-      Bool_t       fSkipD0star;           /// skip if D0 comes from a D*                TO BE IMPLEMENTED
-      Bool_t  fStudyd0fromBTrue;         /// Flag for analyze true impact par of D0 from B       TO BE IMPLEMENTED
-      Bool_t  fStudyPureBackground;      /// Flag to study the background (reverse the selection on the signal)     TO BE IMPLEMENTED
-      Double_t  fSideBands;                ///Side bands selection (see cxx)            TO BE IMPLEMENTED
+  AliRDHFCutsD0toKpi *fCutsLoose;        // Loose cuts object
+  AliRDHFCutsD0toKpi *fCutsTight;      // Vertexer heavy flavour
+  Int_t fFastAnalysis;                  // Level of analysis speed: default is 1, switch it to 2 to fill the THnSparse
+  Bool_t  fReadMC;                          // Flag To switch on/off access to MC 
+  Bool_t fcheckD0Bit;                       // Flag to check the D0 bit flag
+  Bool_t  fsplitMassD0D0bar;                // Flag to use two shistos for D0 and D0bar invariant masses
+  Bool_t  fLikeSign;                        // Flag to analyse Like Sign array
+  Bool_t  fusePID;                          // Flag to use PID
+  Double_t    fmD0PDG;                      //  MC D0 mass
+  Int_t        fnbins;                      // Number of pt bins
+  Float_t *fptbins;                        //[fnbins] ptbins 
+  Int_t fNtrMaxforVtx;                      // N Max acceptable tracks used for vertex (0,1,2)
+  Double_t fptAll;                          //!Sum of pt of the reco tracks
+  Double_t fptAllSq;                        //!Sum of the square of the pt of the reco tracks
+  Double_t fptMax[3];                       //!Three largest track pt in the event
+  Double_t fAcceptanceCuts[3];                // array with acceptance cuts
+  Double_t fsignalInvMassCut;               // invariant mass cut to define signal region
+  Double_t flargeInvMassCut;                // invariant mass cut to accept all inv mass window
+  Double_t fsidebandInvMassCut;             // invariant mass cut to define side band region lower limit
+  Double_t fsidebandInvMassWindow;          // invariant mass cut to define side band region width
+  Bool_t fUseMC;                            // flag to use or not MC info
+  Bool_t fCleanCandOwnVtx;                  // flag to switch on/off cleaning of the candidate own vtx
+  TH1F *fNentries;                          //!histo for #AOD analysed, container 1
+  TH1F *fSignalType;                        //!histo for the type of MC signal , container 2
+  TH1F *fSignalTypeLsCuts;                 //!histo for the type of MC signal with loose cuts , container 3
+  TH1F *fSignalTypeTghCuts;                //!histo for the type of MC signal with tight cuts, container 4
+  AliNormalizationCounter *fCounter;        //!counter for the normalization 
+  TList *flistMCproperties;               //!TLists for MC properties of D0 w.r.t. B mesons and c quarks cntainer 5
+  TList *flistNoCutsSignal;               //!TList for signal (D prompt) with nocuts, container 6
+  TList *flistNoCutsBack;               //!TList for background with nocuts, container 7
+  TList *flistNoCutsFromB;               //!TList for D from B or D from Dstar from Bwith nocuts, container 8
+  TList *flistNoCutsFromDstar;               //!TList for D from Dstar with nocuts, container 9
+  TList *flistNoCutsOther;               //!TList for others with nocuts, container 10
+  TList *flistLsCutsSignal;               //!TList for signal (D prompt) with loose cuts, container 11
+  TList *flistLsCutsBack;               //!TList for background with loose cuts, container 12
+  TList *flistLsCutsFromB;               //!TList for D from B or D from Dstar from B with loose cuts, container 13
+  TList *flistLsCutsFromDstar;               //!TList for D from Dstar with loose cuts, container 14
+  TList *flistLsCutsOther;               //!TList for others with loose cuts, container 15
+  TList *flistTghCutsSignal;               //!TList for signal (D prompt) with tight cuts, container 16
+  TList *flistTghCutsBack;               //!TList for backgrnd with tight cuts, container 17
+  TList *flistTghCutsFromB;               //!TList for D from B or D from Dstar from Bwith tight cuts, container 18
+  TList *flistTghCutsFromDstar;               //!TList for D from Dstar Dstar with tight cuts, container 19
+  TList *flistTghCutsOther;               //!TList for others with tight cuts, container 20
+  AliVertexingHFUtils *fVertUtil;         // vertexing HF Util
+  Bool_t fselectForUpgrade;               // switch to reject candidates from HIJING and not Pythia for upgrade studies
+  Bool_t fskipEventSelection;               // switch to skip event selection (for upgrade studies)
+  Double_t fZvtxUpgr;                       // cut value on max zvtx used ONLY if fskipEventSelection is kTRUE
+  TF1 *fWeightPt;                           // function with pt weights used only for MC histos for reflections and signal mass shape
+  /*  Bool_t       fD0usecuts;            // Switch on the use of the cuts             TO BE IMPLEMENTED 
+      Bool_t       fcheckMC;              //  Switch on MC check: minimum check is same mother  TO BE IMPLEMENTED
+      Bool_t       fcheckMCD0;           //  check the mother is a D0                  TO BE IMPLEMENTED
+      Bool_t       fcheckMC2prongs;         //  check the decay is in two prongs       TO BE IMPLEMENTED  
+      Bool_t       fcheckMCprompt;       //  check the D0 comes from a c quark         TO BE IMPLEMENTED
+      Bool_t       fcheckMCfromB;        //  check the D0 comes from a b quark         TO BE IMPLEMENTED
+      Bool_t       fSkipD0star;           // skip if D0 comes from a D*                TO BE IMPLEMENTED
+      Bool_t  fStudyd0fromBTrue;         // Flag for analyze true impact par of D0 from B       TO BE IMPLEMENTED 
+      Bool_t  fStudyPureBackground;      // Flag to study the background (reverse the selection on the signal)     TO BE IMPLEMENTED 
+      Double_t  fSideBands;                //Side bands selection (see cxx)            TO BE IMPLEMENTED
   */ 
   AliAnalysisTaskSECharmFraction(const AliAnalysisTaskSECharmFraction&); // not implemented
   AliAnalysisTaskSECharmFraction& operator=(const AliAnalysisTaskSECharmFraction&); // not implemented
   
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSECharmFraction,5); /// analysis task for prompt charm fraction
-  /// \endcond
-
+  ClassDef(AliAnalysisTaskSECharmFraction,5); // analysis task for prompt charm fraction
 };
 
 #endif

@@ -186,12 +186,10 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1F 									**hMCPi0DalitzElectronPt;
 		TH1F 									**hMCPi0DalitzPositronPt;
 		TH1F 									**hMCPi0Pt;
-		TH1F									**hMCPi0WOWeightPt;
 		TH1F 									**hMCPi0GGPt;
 		TH1F 									**hMCEtaPt;
 		TH1F 									**hMCEtaGGPt;
 		TH1F 									**hMCPi0InAccPt;
-		TH1F 									**hMCPi0WOWeightInAccPt;
 		TH1F									**hMCPi0InAccOpeningAngleGammaElectron;
 		TH1F 									**hMCEtaInAccPt;
 		TH1F 									**hMCChiCPt;
@@ -212,10 +210,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDTrueMotherChiCInvMassPt;
 		TH2F 									**hESDTrueMotherChiCDiffInvMassPt;
 		TH2F 									**hESDTrueMotherInvMassPt;
-		TH2F									**hESDTrueMotherW0WeightsInvMassPt;
 		TH2F 									**hESDTrueMotherDalitzInvMassPt;
 		TH2F 									**hESDTrueMotherPi0GGInvMassPt;
-		TH2F									**hESDTrueMotherPi0GGW0WeightsInvMassPt;
 		TH2F 									**hESDTruePrimaryMotherPi0GGInvMassPt;
 		TH2F 									**hESDTrueSecondaryMotherPi0GGInvMassPt;
 		TH2F 									**hESDTruePrimaryMotherInvMassMCPt;
@@ -248,7 +244,6 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH1I 									**hNGoodESDTracks;
 		TH2F 									**hNGoodESDTracksVsNGoodGammas;
 		TH2F 									**hNGoodESDTracksVsNGoodVGammas;
-		TH2F									**fHistoSPDClusterTrackletBackground;				//! array of histos with SPD tracklets vs SPD clusters for background rejection
 		TH1I  									**hNV0Tracks;
 		TProfile 								**hEtaShift;
 		TH2F									**fHistoDoubleCountTruePi0InvMassPt;			//! array of histos with double counted pi0s, invMass, pT
@@ -286,7 +281,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 		AliAnalysisTaskGammaConvDalitzV1& operator=( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskGammaConvDalitzV1, 6 );
+		ClassDef( AliAnalysisTaskGammaConvDalitzV1, 5 );
 };
 
 #endif // ALIANALYSISTASKGAMMACONVDALITZV1_H

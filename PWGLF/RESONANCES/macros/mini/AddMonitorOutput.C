@@ -48,7 +48,7 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="NoSIGN"
   axisTPCcrossedRows->SetBins(0.0, 160.0, 1.0);
   //TPC crossed rows / findable clusters
   AliRsnValueDaughter *axisTPCcrossedRows2Fcls = new AliRsnValueDaughter("TPCcrossedRows2Fcls", AliRsnValueDaughter::kNTPCcrossedRowsFclusters);
-  axisTPCcrossedRows2Fcls->SetBins(0.0, 1.01, 0.01);
+  axisTPCcrossedRows2Fcls->SetBins(0.0, 1.0, 0.1);
   //ITS chi2
   AliRsnValueDaughter *axisITSchi2 = new AliRsnValueDaughter("ITSchi2", AliRsnValueDaughter::kITSchi2);
   axisITSchi2->SetBins(0.0, 12.0, 0.1);

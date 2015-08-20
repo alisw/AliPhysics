@@ -39,7 +39,6 @@ public:
 
   virtual void Finish();
   void SetDoFullAnalysis(Bool_t do2d);
-  void SetCalculatePairPurity(Bool_t dopp);
   double CalculateCorrectionWeight(double pT1, double pT2);
   double CalculateCorrectionWeight(double pT1);
   double CalculateCorrectionWeight(double pT1, double pT2, double eta1, double eta2, double phi1, double phi2, double zvert1, double zvert2);
@@ -47,8 +46,7 @@ public:
   void LoadCorrectionTabFromROOTFile(const char *file, ParticleType partType1, ParticleType partType2, bool doPtCorr, bool doEtaCorr, bool doPhiCorr, bool doZVertCorr);
   //  void LoadCorrectionTabFromFile(const char *pTtab, const char *corrTab); // Not implemented
   void SetCorrectionTab(ParticleType partType);
-  double GetPurity(double pT1, int n=1); //n == 1 - first particle, n == 2 - second particle
-
+  
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
@@ -63,7 +61,6 @@ private:
   TH1D *fDCosDenominator;            // Denominator of colinearity correlation
 
   Bool_t   fDoFullAnalysis;               // set to 1 to do 2D Pt analysis
-  Bool_t   fCalculatePairPurity;          // set to 1 to calculate pair purity
 
   TH1D *fPhi;
   TH1D *fEta;
@@ -71,9 +68,6 @@ private:
 
   TH2D *fYtYtNumerator;
   TH2D *fYtYtDenominator; 
-
-  TH2F *fPairPurity;
-  TH2F *fDPhiDEtaNumeratorNoCorr;
 
   bool fIfCorrection;
   THnSparseF *fPtCorrectionsNum;
@@ -107,9 +101,6 @@ private:
   TH3F *fh3Reco2;
   TH1D *fhCont1;
   TH1D *fhCont2;
-
-  TH1F *fSinglePurity1;
-  TH1F *fSinglePurity2;
 
   bool fCorr1D;
 

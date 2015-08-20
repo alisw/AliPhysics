@@ -1450,7 +1450,7 @@ TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
                                                const AliCaloTrackReader* reader,
                                                Int_t & pdg, Int_t & status, 
-                                               Bool_t & ok, Int_t & daughlabel, TVector3 & prodVertex)
+                                               Bool_t & ok, Int_t & daughlabel)
 {
   fDaughMom.SetPxPyPzE(0,0,0,0);
   
@@ -1480,7 +1480,6 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
       daughP->Momentum(fDaughMom);
       pdg    = daughP->GetPdgCode();
       status = daughP->GetStatusCode();
-      prodVertex.SetXYZ(daughP->Vx(),daughP->Vy(),daughP->Vz());
     }
     else
     {
@@ -1515,7 +1514,6 @@ TLorentzVector AliMCAnalysisUtils::GetDaughter(Int_t idaugh, Int_t label,
       fDaughMom.SetPxPyPzE(daughP->Px(),daughP->Py(),daughP->Pz(),daughP->E());
       pdg    = daughP->GetPdgCode();
       status = daughP->GetStatus();
-      prodVertex.SetXYZ(daughP->Xv(),daughP->Yv(),daughP->Zv());
     }
     else
     {

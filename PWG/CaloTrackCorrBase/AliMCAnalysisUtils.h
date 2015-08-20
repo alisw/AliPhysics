@@ -61,7 +61,7 @@ class AliMCAnalysisUtils : public TObject {
   //--------------------------------------
   
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliCaloTrackReader* reader, 
-			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) ;
+			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
   
   Int_t   CheckOrigin(Int_t label, const AliCaloTrackReader * reader, Int_t calorimeter) ;
   
@@ -89,7 +89,7 @@ class AliMCAnalysisUtils : public TObject {
 
   Int_t          GetNDaughters(Int_t label,const AliCaloTrackReader* reader, Bool_t & ok);
   TLorentzVector GetDaughter  (Int_t daughter, Int_t label,const AliCaloTrackReader* reader,
-                               Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daugLabel, TVector3 & prodVertex);
+                               Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & daugLabel);
 
   Int_t          GetNOverlaps(const Int_t * label, UInt_t nlabels,
                               Int_t mctag, Int_t mesonLabel,

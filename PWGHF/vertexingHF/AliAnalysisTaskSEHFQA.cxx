@@ -75,10 +75,7 @@
 using std::cout;
 using std::endl;
 
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEHFQA);
-/// \endcond
+ClassImp(AliAnalysisTaskSEHFQA)
 
 //____________________________________________________________________________
 
@@ -101,7 +98,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
   fOnOff(),
   fFillDistrTrackEffChecks(kFALSE)
 {
-  /// default constructor
+  //default constructor
   fOnOff[0]=kTRUE;
   fOnOff[1]=kTRUE;
   fOnOff[2]=kTRUE;
@@ -130,7 +127,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fOnOff(),
   fFillDistrTrackEffChecks(kFALSE)
 {
-  /// constructor
+  //constructor
 
   //SetCutObject(cuts);
   fCuts=cuts;
@@ -186,7 +183,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
 //___________________________________________________________________________
 AliAnalysisTaskSEHFQA::~AliAnalysisTaskSEHFQA()
 {
-  /// destructor
+  //destructor
 
   delete fOutputEntries;
 
@@ -209,7 +206,7 @@ AliAnalysisTaskSEHFQA::~AliAnalysisTaskSEHFQA()
 //___________________________________________________________________________
 void AliAnalysisTaskSEHFQA::Init(){
 
-  /// initialization
+  //initialization
   if(fDebug > 1) printf("AnalysisTaskSEHFQA::Init() \n");
   AliRDHFCuts *copycut = 0x0;
 
@@ -272,7 +269,7 @@ void AliAnalysisTaskSEHFQA::Init(){
 void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 {
 
-  /// create the output container
+  //create the output container
   if(fDebug > 1) printf("AnalysisTaskSEHFQA::UserCreateOutputObjects() \n");
 
   //count events
@@ -1150,7 +1147,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 //___________________________________________________________________________
 void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 {
-  /// Execute analysis for current event
+  // Execute analysis for current event
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(fDebug>2) printf("Analysing decay %d\n",fDecayChannel);
@@ -2460,7 +2457,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 //____________________________________________________________________________
 void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
-  /// fills the flow observables
+  //fills the flow observables
   Double_t cc;
   cc = fCuts->GetCentrality(aod);
   ((TH2F*) fOutputFlowObs->FindObject("hFlowEvents"))->Fill(0., cc);
@@ -2547,7 +2544,7 @@ void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
 
 //____________________________________________________________________________
 void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
-  /// terminate analysis
+  //terminate analysis
 
  fOutputEntries = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutputEntries && fOnOff[1]) {

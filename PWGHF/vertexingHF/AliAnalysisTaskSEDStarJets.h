@@ -16,8 +16,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-/// \class AliAnalysisTaskSEDStarJets
-/// \author Author : A. Grelli, UTRECHT
+// Author : A. Grelli, UTRECHT
 //-----------------------------------------------------------------------
 
 
@@ -46,18 +45,18 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE
   virtual void     Init();
   virtual void     LocalInit() {Init();}
 
-  /// side band background eval
+  //side band background eval
   void     SideBandBackground(Double_t finvM, Double_t finvMDStar,  Double_t dStarMomBkg, Double_t fejet, Double_t ejet);
   
-  /// inizializations
+  // inizializations
   Bool_t   DefineHistoFroAnalysis();  
-  /// MC FF
+  //MC FF
   double   FillMCFF(AliAODMCParticle* mcPart, TClonesArray* mcArray, Int_t mcLabel);
-  /// correction for UA1 cone algorithm
+  // correction for UA1 cone algorithm
   void     SetChargeFractionCorrection(Int_t chargeFrCorr) {fchargeFrCorr =  chargeFrCorr;}
   Int_t    GetChargeFractionCorrection() const {return fchargeFrCorr;}
 
-  /// set MC usage
+  // set MC usage
   void    SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t  GetMC() const {return fUseMCInfo;}
   
@@ -66,40 +65,38 @@ class AliAnalysisTaskSEDStarJets : public AliAnalysisTaskSE
   AliAnalysisTaskSEDStarJets(const AliAnalysisTaskSEDStarJets &source);
   AliAnalysisTaskSEDStarJets& operator=(const AliAnalysisTaskSEDStarJets& source); 
 
-  Int_t  fEvents;                ///  n. of events
-  Int_t  fchargeFrCorr;          ///  Charge fraction correction UA1 algorithm
-  Bool_t fUseMCInfo;             ///  Use MC info
-  Bool_t fRequireNormalization;  ///  normalization
+  Int_t  fEvents;                //  n. of events
+  Int_t  fchargeFrCorr;          //  Charge fraction correction UA1 algorithm
+  Bool_t fUseMCInfo;             //  Use MC info
+  Bool_t fRequireNormalization;  //  normalization 
   
-  TList *fOutput;                  //!<! user output
-  AliRDHFCutsDStartoKpipi *fCuts;  /// Cuts
+  TList *fOutput;                  //! user output
+  AliRDHFCutsDStartoKpipi *fCuts;  // Cuts 
 
-  /// define the histograms
+  // define the histograms 
 
-  TH1F *ftrigger;        //!<!
-  TH1F *fPtPion;         //!<!
-  TH1F *fInvMass;        //!<!
-  TH1F *fRECOPtDStar;    //!<!
-  TH1F *fRECOPtBkg;      //!<!
-  TH1F *fDStar;          //!<!
-  TH1F *fDiff;           //!<!
-  TH1F *fDiffSideBand;   //!<!
-  TH1F *fDStarMass;      //!<!
-  TH1F *fPhi;            //!<!
-  TH1F *fPhiBkg;         //!<!
-  TH1F *fTrueDiff;       //!<!
-  TH1F *fResZ;           //!<!
-  TH1F *fResZBkg;        //!<!  
-  TH1F *fEjet;           //!<!
-  TH1F *fPhijet;         //!<!
-  TH1F *fEtaJet;         //!<!
-  TH1F *theMCFF;         //!<!
-  TH1F *fDphiD0Dstar;    //!<!
-  TH1F *fPtJet;          //!<!
+  TH1F *ftrigger;        //!
+  TH1F *fPtPion;         //!
+  TH1F *fInvMass;        //!
+  TH1F *fRECOPtDStar;    //!
+  TH1F *fRECOPtBkg;      //!
+  TH1F *fDStar;          //!
+  TH1F *fDiff;           //!
+  TH1F *fDiffSideBand;   //!
+  TH1F *fDStarMass;      //!
+  TH1F *fPhi;            //!
+  TH1F *fPhiBkg;         //!
+  TH1F *fTrueDiff;       //!
+  TH1F *fResZ;           //!
+  TH1F *fResZBkg;        //!  
+  TH1F *fEjet;           //!
+  TH1F *fPhijet;         //!
+  TH1F *fEtaJet;         //!
+  TH1F *theMCFF;         //!
+  TH1F *fDphiD0Dstar;    //!
+  TH1F *fPtJet;          //!
 
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDStarJets,3); /// class for charm-jet correlations
-  /// \endcond    
+  ClassDef(AliAnalysisTaskSEDStarJets,3); // class for charm-jet correlations
 };
 
 #endif

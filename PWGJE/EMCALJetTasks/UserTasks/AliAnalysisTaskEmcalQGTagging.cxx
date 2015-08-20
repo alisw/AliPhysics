@@ -381,12 +381,12 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
-      if ((((fJetShapeType == kData) || (fJetShapeType == kDetEmb) || (fJetShapeType==kDetEmbPart)) && (fJetShapeSub == kConstSub))|| (fJetShapeType==kPythiaDef))
+      if ((((fJetShapeType == kData) || (fJetShapeType == kDetEmb)) && (fJetShapeSub == kConstSub))|| (fJetShapeType==kPythiaDef))
         ptSubtracted = jet1->Pt();
       
       else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
       
-      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef) || (fJetShapeType==kDetEmbPart))
+      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef))
         if (ptSubtracted < fPtThreshold) continue;
      
      

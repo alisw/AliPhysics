@@ -744,7 +744,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
 	fMass[fItrk] = mass;
 	fTime[fItrk] = time;
 	fLength[fItrk] = length;
-	fSigmaQP[fItrk] = cov1[14];
+	fSigmaQP[fItrk] = cov1[15];
 
 	if (fMCtrue){ //associated
 	  

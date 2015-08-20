@@ -297,7 +297,8 @@ void AliAnalysisMuMuGlobal::FillHistosForMCEvent(const char* eventSelection,
       MCHisto(eventSelection,triggerClassName,centrality,"RecSPDZvertexVsMCZvertex")->Fill(Zvertex,vertexFromSPD->GetZ());
       MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexVsMCZvertex")->Fill(Zvertex,1);
 
-      if ( !vertexFromSPD->IsFromVertexerZ() )
+      TString vtxTyp = vertexFromSPD->GetTitle();
+      if ( !vtxTyp.Contains("vertexer: Z") )
       {
         MCHisto(eventSelection,triggerClassName,centrality,"NofEvWSPDZvertexAndNoVtexerZVsMCZvertex")->Fill(Zvertex,1);
 

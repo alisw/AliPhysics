@@ -1,14 +1,29 @@
-void AddTRDcheckPID(AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co, Int_t refMaker)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TTree.h>
+// #include <TError.h>
+// 
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDcheckPID.h>
+// #include <AliTRDpidRefMaker.h>
+// #include <AliTRDpidRefMakerNN.h>
+// #include <AliTRDpidRefMakerLQ.h>
+// #endif
+
+void AddTRDcheckPID(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co)
 {
   Info("AddTRDcheckPID", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName());
 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if(!mgr) return;
   AliTRDcheckPID *pid(NULL);
   mgr->AddTask(pid = new AliTRDcheckPID((char*)"TRDcheckPID"));
   //AliLog::SetClassDebugLevel("AliTRDcheckPID", 5);  
   pid->SetDebugLevel(0);
-  pid->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+  pid->SetMCdata(mgr->GetMCtruthEventHandler());
 
   // define PID exchange container
   co[0] = mgr->CreateContainer("InfoPID", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
@@ -20,7 +35,7 @@ void AddTRDcheckPID(AliAnalysisDataContainer **ci, AliAnalysisDataContainer **co
   mgr->ConnectOutput(pid, 1, mgr->CreateContainer(pid->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
   mgr->ConnectOutput(pid, 2, co[0]);
 
-  if(refMaker){
+  if(TESTBIT(map, AliTRDpwgppHelper::kPIDRefMaker)){
 
     //AliLog::SetClassDebugLevel("AliTRDpidRefMaker", 3);
     //AliLog::SetClassDebugLevel("AliTRDpidRefMakerNN", 3);

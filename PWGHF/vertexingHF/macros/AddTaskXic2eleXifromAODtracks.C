@@ -87,7 +87,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 
   // ----- output data -----
-  AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(Form("Xichist%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // general histos
+  AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(Form("chist%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // general histos
   mgr->ConnectOutput(task,1,coutput1);
   AliAnalysisDataContainer *coutputLc2 = mgr->CreateContainer(Form("Xic2eleXiCuts%1d",nTour),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // cuts
   mgr->ConnectOutput(task,2,coutputLc2);
@@ -97,18 +97,12 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 
   AliAnalysisDataContainer *coutputLc4 = mgr->CreateContainer(Form("eleXivariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,4,coutputLc4);
-  AliAnalysisDataContainer *coutputLc5 = mgr->CreateContainer(Form("eleXi_elevariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  AliAnalysisDataContainer *coutputLc5 = mgr->CreateContainer(Form("elevariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,5,coutputLc5);
-  AliAnalysisDataContainer *coutputLc6 = mgr->CreateContainer(Form("eleXi_cascvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  AliAnalysisDataContainer *coutputLc6 = mgr->CreateContainer(Form("cascvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,6,coutputLc6);
-  AliAnalysisDataContainer *coutputLc7 = mgr->CreateContainer(Form("eleXi_mcvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  AliAnalysisDataContainer *coutputLc7 = mgr->CreateContainer(Form("mcvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,7,coutputLc7);
-  AliAnalysisDataContainer *coutputLc8 = mgr->CreateContainer(Form("eleXiCounter%1d",nTour),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
-  mgr->ConnectOutput(task,8,coutputLc8);
-  AliAnalysisDataContainer *coutputLc9 = mgr->CreateContainer(Form("eleXi_mcelevariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
-  mgr->ConnectOutput(task,9,coutputLc9);
-  AliAnalysisDataContainer *coutputLc10 = mgr->CreateContainer(Form("eleXi_mccascvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
-  mgr->ConnectOutput(task,10,coutputLc10);
 
   return task;
 

@@ -72,7 +72,7 @@ AliEMCalHistoContainer::~AliEMCalHistoContainer(){
  * always the top list. List name structure accouding to unix paths (i.e. top list /, hirarchies separated by /).
  *
  * \param groupname Name of the new group
- * \param parent (default "/") Name of the parent group
+ * \param parent (@default "/") Name of the parent group
  * \throw HistoContainerContentException
  */
 void AliEMCalHistoContainer::CreateHistoGroup(const char *groupname, const char *parent) throw(HistoContainerContentException) {

@@ -90,7 +90,7 @@ TChain* MakeChainLST(const char* filename = NULL);
 TChain* MakeChainXML(const char* filename = NULL);
 Bool_t UseMC(Char_t *opt);
 Bool_t UseFriends(Char_t *opt);
-void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t nev=1234567890, Long64_t first = 0, const Char_t *macroDir=0)
+void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TMemStat *mem = NULL;
   if(MEM){ 
@@ -152,7 +152,8 @@ void run(Char_t *optList="ALL", Int_t run=0, const Char_t *files=NULL, Long64_t 
     Warning("run.C", "OCDB connection via AliTRDinfoGen.");
     AliTRDpwgppHelper::SetRunYear(-run);
   }
-  if(!AliTRDpwgppHelper::AddTrainPerformanceTRD(optList, macroDir?macroDir:"$ALICE_PHYSICS/PWGPP/TRD/macros")) {
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/macros/AddTrainPerformanceTRD.C");
+  if(!AliTRDpwgppHelper::AddTrainPerformanceTRD(optList)) {
     Error("run.C", "Error loading TRD train.");
     return;
   }

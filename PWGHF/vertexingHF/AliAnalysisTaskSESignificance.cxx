@@ -62,9 +62,8 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSESignificance);
-/// \endcond
+ClassImp(AliAnalysisTaskSESignificance)
+
 
 //________________________________________________________________________
 AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance():

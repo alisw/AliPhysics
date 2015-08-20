@@ -61,7 +61,6 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::PbPb)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
-  , fRemoveSignals(kFALSE)
   , fMcArray(NULL)
   , fMBinEdges(TArrayD())  
   , fZBinEdges(TArrayD())  
@@ -102,7 +101,6 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::PbPb)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
-  , fRemoveSignals(kFALSE)
   , fMcArray(NULL)
   , fMBinEdges(TArrayD())  
   , fZBinEdges(TArrayD())  
@@ -228,12 +226,6 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
     FillHistogram("trackUnselectedPhi",t->Phi());
     FillHistogram("trackUnselectedTheta",t->Theta());
     if (!IsSelected(t)) continue;
-    if(fRemoveSignals){
-
-      if(IsAddedSignal(t)){ 	FillHistogram("ptrejected",t->Pt()); continue;}
-      else{			FillHistogram("ptaccepted",t->Pt());}
-    }
-
     allrelevantParticles->Add(t);
     if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){
       FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());
@@ -249,17 +241,14 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
     FillHistogram("trackTheta",t->Theta());
   }
   
-
+  
   if(fMcArray){
     int nofMCParticles = fMcArray->GetEntriesFast();
     for (int i=0;i<nofMCParticles;i++){
       AliVParticle* t =  (AliVParticle *) fMcArray->At(i);
       if (!t) continue;
-//       if(dynamic_cast<AliAODMCParticle*>(t)->GetGeneratorIndex()==1&&dynamic_cast<AliAODMCParticle*>(t)->GetMother()==-1)cout <<" In MCarray loop"<< i <<endl;
-      GeneratorStat(t);
       if( t->Charge()!=0){//check if they are physical primary particles
 	if (!IsSelected(t)) continue;
-// 	if (IsAddedSignal(t)) continue;
 	if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){FillHistogram("hnTracksinBinsMC",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
 	if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb){FillHistogram("hnTracksinBinsMC",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
 	
@@ -270,47 +259,6 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
   return nofTracks;
 }
 
-Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsAddedSignal(AliVParticle* p){
-  if(fMcArray){
-    AliAODMCParticle* p_mc = dynamic_cast<AliAODMCParticle*>(p);
-
-    if(!p_mc){
-//       if(p->GetLabel()<=-1) return kFALSE;//no mc particle corresponding to the reconstruced track.
-      p_mc = dynamic_cast<AliAODMCParticle*>(fMcArray->At(abs(p->GetLabel())));
-    }
-//     p_mc->Print();
-    if(p_mc->GetMother()==-1){//in the case where p_mc has no mother, check the origin
-      if(p_mc->GetGeneratorIndex()==1) return kTRUE;
-    }
-    while(p_mc->GetMother()>-1){//if the particle has a mother, follow the mother to the origin, and check the generator
-//       p_mc->Print();
-//     if(p_mc->GetMother()<0){p_mc->Print(); cout << p_mc->GetMother()<<endl;}
-
-     AliAODMCParticle* p_mc_mother = dynamic_cast<AliAODMCParticle*>(fMcArray->At(p_mc->GetMother()));
-//      p_mc_mother->Print();
-     if(p_mc_mother->GetMother()==-1){
-//        p_mc_mother->Print();
-//        cout << p_mc_mother->GetGeneratorIndex()<<endl;
-//        if(p_mc_mother->GetGeneratorIndex()==0){
-// 	 //is from hijing
-// 	 cout << "Hijing:"<<endl;
-// 	 p_mc_mother->Print();
-// 	 return kFALSE;
-//        }
-       if(p_mc_mother->GetGeneratorIndex()!=0){
-	 //is from added signal
-// 	 cout << "Added signal:"<<endl;
-// 	 p_mc_mother->Print();
-	 return kTRUE;
-       }
-       else return kFALSE;//
-     }
-     else p_mc = p_mc_mother;
-    }
-    return kFALSE;
-  } 
-  return kTRUE;
-}
 
 
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelected(AliVParticle* p)
@@ -330,6 +278,8 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrack(AliVParticl
   if (etatrigger<=-fAcceptancecut || etatrigger>=fAcceptancecut) return kFALSE;
   return kTRUE;
 }
+
+
 
 Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackAOD(AliVParticle* t)
 {
@@ -367,143 +317,6 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackESD(AliVPart
 {
   if(t)return kFALSE;//ESD is currently not supported
   else return kFALSE;
-}
-
-void AliAnalysisTaskCorrelation3p_lightefficiency::GeneratorStat(AliVParticle* p)
-{
-  //Code to fill the generator stats histogram for all particles that have no mother
-  AliAODMCParticle* mcpart = dynamic_cast<AliAODMCParticle*>(p);
-  if(mcpart){
-    if(mcpart->GetMother()==-1){
-      FillHistogramGenPar("genparticle",FillPDG(mcpart->GetPdgCode()),FillGen(mcpart->GetGeneratorIndex()),mcpart->Pt());
-    }
-  }
-}
-
-Int_t AliAnalysisTaskCorrelation3p_lightefficiency::FillGen(Int_t GetGeneratorIndex)
-{
-//   cout << GetGeneratorIndex <<endl;
-  switch(GetGeneratorIndex){
-    case 0 : return 1;//"Generator 1 (Hijing?)"
-    case 1 : return 2;//"Generator 2 (Pythia/embedded?)"
-  }
-  return 3;
-}
-
-const char* AliAnalysisTaskCorrelation3p_lightefficiency::NameGen(Int_t BinGenIndex)
-{
-  switch(BinGenIndex){
-    case 1 : return "Generator 1 (Hijing?)";
-    case 2 : return "Generator 2 (Pythia/embedded?)";
-    case 3 : return "other generators (GEANT and co?)";
-  }
-  return "";
-}
-
-
-
-Int_t AliAnalysisTaskCorrelation3p_lightefficiency::FillPDG(Int_t GetPDG)
-{
-  Int_t abspdg = TMath::Abs(GetPDG);
-  if(abspdg<=9){//quarks
-    if(abspdg<=3) return 1;//up, down or strange quark
-    if(abspdg==4) return 2;//charm quark
-    if(abspdg==5) return 3;//bottom quark
-    if(abspdg==6) return 4;//top quark
-    if(abspdg>6&&abspdg<9) return 99;//other particles
-    if(abspdg==9) return 5;//gluon
-  }
-  if(abspdg>9&&abspdg<11) return 99;//other particles
-  if(abspdg>=11&&abspdg<19){//leptons
-    if(abspdg==11||abspdg==13||abspdg==15) return 6;//electrons, muons and tauons
-    if(abspdg>15||abspdg==12||abspdg==14) return 99;//other particles
-  }
-  if(abspdg>=19&&abspdg<21) return 99;//other particles
-  if(abspdg>=21&&abspdg<38){//Gauge particles
-    if(abspdg == 21) return 5;//gluon
-    if(abspdg == 22||abspdg==23||abspdg==25)return 7;//neutral gauge boson
-    if(abspdg==24)return 8;//W boson
-    if(abspdg>25) return 99;//any other boson
-  }
-  if(abspdg>=38&&abspdg<111) return 99; //any other particle
-  if(abspdg>=111&&abspdg<411){//light mesons, I = 1/0, strange mesons
-    if(abspdg==111) return 9;//pi0
-    if(abspdg==211) return 10;//pi+-
-    if(abspdg==113||abspdg==213) return 11;//rho mesons
-    if(abspdg==115||abspdg==215||abspdg==117||abspdg==217||abspdg==119||abspdg==219)return 12;//a/b/rho3 mesons
-    if(abspdg==221||abspdg==331)return 13;//eta meson
-    if(abspdg==223||abspdg==333||abspdg==225||abspdg==335||abspdg==227||abspdg==337||abspdg==229)return 14;//eta meson
-    if(abspdg==130||abspdg==310||abspdg==311||abspdg==313||abspdg==315||abspdg==317||abspdg==319)return 15;//neutral kaon
-    if(abspdg==321||abspdg==323||abspdg==325||abspdg==327||abspdg==329)return 16;//charged kaon
-    return 99;//if none other is chosen, return other particle
-  }
- if(abspdg>=411&&abspdg<511){//charmed mesons
-   if(abspdg==411||abspdg==413||abspdg==415||abspdg==431||abspdg==433||abspdg==435)return 18;//charged D meson
-   if(abspdg==421||abspdg==423||abspdg==425)return 17;//neutral D meson
-   if(abspdg==443)return 21;//J/Psi
-   if(abspdg==441||abspdg==445)return 22;//other ccbar mesons.
-   return 99;//if none other is chosen, return other particle
- }
- if(abspdg>=511&&abspdg<1114){//bottom mesons, other particles up to proton.
-   if(abspdg==511||abspdg==513||abspdg==515||abspdg==531||abspdg==533||abspdg==535)return 19;//neutral B meson
-   if(abspdg==521||abspdg==523||abspdg==525||abspdg==541||abspdg==543||abspdg==545)return 20;//charged B meson
-   if(abspdg==553)return 23;//Ypsilon
-   if(abspdg==551||abspdg==555||abspdg==557)return 22;//other bbbar mesons.
-   return 99;//if none other is chosen, return other particle
- }
- if(abspdg>=1114&&abspdg<3122){//light baryons
-   if(abspdg==1114||abspdg==2114||abspdg==2214||abspdg==2224)return 27;//Delta baryons
-   if(abspdg==2212)return 25;//proton
-   if(abspdg==2112)return 26;//neutron
-   return 99;//if none other is chosen, return other particle
- }
- if(abspdg>=3122&&abspdg<3335){
-   return 28;//strange baryon
- }
- if(abspdg>=3335&&abspdg<4112)return 99;
- if(abspdg>=4122&&abspdg<4444)return 29;//charmed baryon
- if(abspdg>=4444&&abspdg<5122)return 99;
- if(abspdg>=5122&&abspdg<5554)return 30;//bottom baryon
- 
-}
-
-const char* AliAnalysisTaskCorrelation3p_lightefficiency::NamePDG(Int_t BinPDG)
-{
-  //switch the bin number to the name:
-  switch(BinPDG){
-    case 1 : return "u/d/s";//up , down or strange quark
-    case 2 : return "c";//charm quark
-    case 3 : return "b";//bottom quark
-    case 4 : return "t";//top quark
-    case 5 : return "g";//gluon
-    case 6 : return "e/mu/tau";//electrons, muons and tauons
-    case 7 : return "G0";//neutral gauge boson
-    case 8 : return "W";//W boson
-    case 9 : return "pi0";//pi0
-    case 10 : return "pi+-";//pi+-
-    case 11 : return "rho";//rho mesons
-    case 12 : return "a/b/rho3";//b/a/rho3 mesons
-    case 13 : return "eta";//eta meson
-    case 14 : return "omega/phi/f";//omega, phi or f mesons
-    case 15 : return "K0";//neutral kaon
-    case 16 : return "K+-";//charged kaon
-    case 17 : return "D0";//neutral D meson
-    case 18 : return "D+-";//charged D meson
-    case 19 : return "B0";//neutral B meson
-    case 20 : return "B+-";//charged B meson
-    case 21 : return "J/Psi";//J/Psi
-    case 22 : return "other ccbar";//Other ccbar mesons
-    case 23 : return "Ypsilon";//Ypsilon meson
-    case 24 : return "other bbbar";//other bbbar mesons.
-    case 25 : return "p";//proton
-    case 26 : return "n";//neutron
-    case 27 : return "Delta";//delta baryon
-    case 28 : return "Strange baryons";//strange baryons
-    case 29 : return "Charmed baryons";//charmed baryons
-    case 30 : return "Bottom baryons";//bottom baryons
-    case 99 : return "other particles";//other
-  }
-  return "";
 }
 
 void AliAnalysisTaskCorrelation3p_lightefficiency::GetMCArray()
@@ -610,7 +423,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
   fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
   fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 4000));
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
-  fOutput->Add(new TH1D("trackPt"   , "trackPt"   , 100,  0, 20));
+  fOutput->Add(new TH1D("trackPt"   , "trackPt"   , 1000,  0, 20));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackUnselectedTheta", "trackTheta",  180, 0, TMath::Pi()));
@@ -622,20 +435,6 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
   fOutput->Add(new TH2D("centVsNofTracks", "centVsNofTracks", 100, 0, 100, 100, 0, 2000));
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, 100, 100, -10, 10));
   if(fCollisionType==pp)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, fMaxNumberOfTracksInPPConsidered, 100, -10, 10));
-  if(fRemoveSignals){ 
-    fOutput->Add(new TH1D("ptrejected","pt distribution of primary particles that are added signals.",100,  0, 20));
-    fOutput->Add(new TH1D("ptaccepted","pt distribution of particles that are not added signals.",100,  0, 20));
-    TH3D* genparticlehist = new TH3D("genparticle","Particle types vs generator type vs pT",99,0,1,3,0,1,100,  0, 20);
-    for(int i = 1;i<=99;i++){
-      TString label = NamePDG(i);
-      genparticlehist->GetXaxis()->SetBinLabel(i,label);
-    }
-    for(int i = 1;i<=3;i++){
-      TString label = NameGen(i);
-      genparticlehist->GetYaxis()->SetBinLabel(i,label);
-    }
-    fOutput->Add(genparticlehist);
-  }
 }
 
 void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeEffHistograms()
@@ -666,7 +465,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeEffHistograms()
     }
   }
 
-  Int_t nphi = 1;//36;//72;
+  Int_t nphi = 36;//72;
   Double_t phimin = 0.0;
   Double_t phimax = 2.0*TMath::Pi();
   Int_t nEta = 63;//126;
@@ -706,7 +505,6 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::SetMixingScheme(Int_t MaxNEve
   fMaxMult = fMBinEdges.At(fMBinEdges.GetSize()-1);
 }
 
-
 void AliAnalysisTaskCorrelation3p_lightefficiency::FillHistogram(const char* key, Double_t x)
 {
   TH1 * hist = dynamic_cast<TH1*>(fOutput->FindObject(key)) ;
@@ -738,14 +536,5 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::FillHistogram(const char* key
     Double_t s[5] = {x,y,z,a,b};
     hist->Fill(s) ;
   }
-  else AliError(Form("can not find histogram (of instance THNf) <%s> ",key)) ;
-}
-
-void AliAnalysisTaskCorrelation3p_lightefficiency::FillHistogramGenPar(const char* key, Int_t x, Int_t y,Double_t z)
-{
-  TH3 * hist = dynamic_cast<TH3*>(fOutput->FindObject(key)) ;
-  if(hist){
-    hist->Fill(hist->GetXaxis()->GetBinCenter(x),hist->GetYaxis()->GetBinCenter(y),z) ;}
   else AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
 }
-

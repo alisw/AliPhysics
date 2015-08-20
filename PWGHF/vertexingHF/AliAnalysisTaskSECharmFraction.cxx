@@ -61,9 +61,7 @@ class TChain;
 class AliAnalysisTaskSE;
 
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSECharmFraction);
-/// \endcond
+ClassImp(AliAnalysisTaskSECharmFraction)
  
 //________________________________________________________________________
 AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction() 
@@ -117,7 +115,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
   fZvtxUpgr(10.),
   fWeightPt(0x0)
 {
-  ///Default constructor
+  //Default constructor
 }
 //________________________________________________________________________
   AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name) 
@@ -171,11 +169,11 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction()
       fZvtxUpgr(10.),
       fWeightPt(0x0)
   {
-    /// Constructor
+    // Constructor
     
-    /// Define input and output slots here
-    /// Input slot #0 works with a TChain
-    /// Output slot #0 writes into a TH1 container
+    // Define input and output slots here
+    // Input slot #0 works with a TChain
+    // Output slot #0 writes into a TH1 container
 
   //Standard pt bin
   fnbins=SetStandardCuts();// THIS TO SET NBINS AND BINNING
@@ -248,7 +246,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
     fZvtxUpgr(10.),
     fWeightPt(0x0)
 {
-  /// Constructor
+  // Constructor
   if(fCutsTight){
     delete fCutsTight;fCutsTight=NULL;
   }
@@ -294,7 +292,7 @@ AliAnalysisTaskSECharmFraction::AliAnalysisTaskSECharmFraction(const char *name,
 
 //________________________________________________________________________
 AliAnalysisTaskSECharmFraction::~AliAnalysisTaskSECharmFraction()
-{ ///Destructor
+{ //Destructor 
   
   if (fCutsTight) {   
     delete fCutsTight;
@@ -425,7 +423,7 @@ AliAnalysisTaskSECharmFraction::~AliAnalysisTaskSECharmFraction()
 //________________________________________________________________________
 void AliAnalysisTaskSECharmFraction::Init()
 {
-  /// Initialization
+  // Initialization
   
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::Init() \n");
   fmD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -474,8 +472,8 @@ void AliAnalysisTaskSECharmFraction::Init()
 //________________________________________________________________________
 void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 {
-  /// Create histograms
-  /// Called once
+  // Create histograms
+  // Called once
   
   // ################ NAMING SCHEME ###################################
   //            LISTS NAMING SCHEME
@@ -5456,8 +5454,8 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 {
-  /// Execute analysis for current event:
-  /// heavy flavor candidates association to MC truth
+  // Execute analysis for current event:
+  // heavy flavor candidates association to MC truth
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if (!aod) {
@@ -6156,7 +6154,7 @@ void AliAnalysisTaskSECharmFraction::UserExec(Option_t */*option*/)
 //_________________________________________
 Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(){
   //
-  /// creating cuts for D0 -> Kpi
+  // creating cuts for D0 -> Kpi
   //
 
   if(fCutsTight){
@@ -6201,7 +6199,7 @@ Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(){
 
 //__________________________________________________________
 void AliAnalysisTaskSECharmFraction::CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar){
-  /// Check wheter the candidate inv. mass is compatible with signal or sideband inv. mass selection
+  //Check wheter the candidate inv. mass is compatible with signal or sideband inv. mass selection
       
   d->InvMassD0(invMassD0,invMassD0bar);
   //CHECK if ISPEAK 
@@ -6223,8 +6221,8 @@ void AliAnalysisTaskSECharmFraction::CheckInvMassD0(AliAODRecoDecayHF2Prong *d,D
 
 //__________________________________________________________________
 AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx,Int_t &isD0D0bar){
-  /// THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS.
-  //   IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)
+  //THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS. 
+  //  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)  
   //
   // THE FOLLOWING SCHEME IS ADOPTED: signaltype is set to
   //  1:signal (D0 prompt); 2: signal D0 from Dstar; 3: D0 fromB 4: D0 from Dstar fromB
@@ -6322,7 +6320,7 @@ AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalType(const Al
 //_________________________________________________________________________________________________
 Int_t AliAnalysisTaskSECharmFraction::CheckOrigin(const TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const {		
   //
-  /// checking whether the mother of the particles come from a charm or a bottom quark
+  // checking whether the mother of the particles come from a charm or a bottom quark
   //
 	
   Int_t pdgGranma = 0;
@@ -6356,8 +6354,8 @@ Int_t AliAnalysisTaskSECharmFraction::CheckOrigin(const TClonesArray* arrayMC, c
 
 //__________________________________________________
 AliAODRecoDecayHF* AliAnalysisTaskSECharmFraction::GetD0toKPiSignalTypeObsolete(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx){// OBSOLETE METHOD!!!!!
-  /// THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS.
-  ///  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)  
+  //THIS METHOD CHECK THE TYPE OF SIGNAL/BACKGROUND THE CANDIDATE IS. 
+  //  IF (!AND ONLY IF) THE TWO DAUGHTERS COME FROM A COMMONE MOTHER A FAKE TRUE SECONDARY VERTEX IS CONSTRUCTED (aodDMC)  
   //
   // THE FOLLOWING SCHEME IS ADOPTED: signaltype is set to
   //  1:signal (D0 prompt); 2: signal D0 from Dstar; 3: D0 fromB 4: D0 from Dstar fromB

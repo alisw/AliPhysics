@@ -56,7 +56,6 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   fUseLeadingPt(1),
   fUseAllT1(1),
   fUseBackgroundSameOneSide(0),
-  fUseSmallerPtAssoc(0),
   fEfficiencyCorrection(0),
   fMergeCount(0)
 {
@@ -113,7 +112,6 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c) 
   fUseLeadingPt(1),
   fUseAllT1(1),
   fUseBackgroundSameOneSide(0),
-  fUseSmallerPtAssoc(0),
   fEfficiencyCorrection(0),
   fMergeCount(0)
 {
@@ -396,10 +394,6 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       if(part==part3)
 	continue;
 
-      //use only pT,assoc which is samller than the trigger pT
-      if(fUseSmallerPtAssoc && part3_pt>=part_pt)
-	continue;
-
       Double_t dphi_near = part_phi-part3->Phi(); 
       if(dphi_near>1.5*TMath::Pi()) dphi_near -= TMath::TwoPi();
       else if(dphi_near<-0.5*TMath::Pi()) dphi_near += TMath::TwoPi();
@@ -474,10 +468,6 @@ void AliTwoPlusOneContainer::FillCorrelations(Double_t centrality, Float_t zVtx,
       for(int l=0; l<ind_found; l++){
 	//do not add the trigger 2 particle
 	if(found_particle[l]==part3)
-	  continue;
-
-	//use only pT,assoc which is samller than the trigger pT
-	if(fUseSmallerPtAssoc && part3_pt>=found_particle[l]->Pt())
 	  continue;
 
 	Double_t dphi_away = found_particle[l]->Phi()-part3->Phi();

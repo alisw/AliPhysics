@@ -30,15 +30,15 @@ class AliAnalysisTriggerScalers : public TObject
 {
 public:
   
-  AliAnalysisTriggerScalers(const std::vector<int>& runs, const char* source="");
-  AliAnalysisTriggerScalers(const std::set<int>& runs, const char* source="");
-  AliAnalysisTriggerScalers(Int_t runNumber, const char* source="");
-  AliAnalysisTriggerScalers(const char* runlist, const char* source="");
+  AliAnalysisTriggerScalers(const std::vector<int>& runs, const char* source="raw://");
+  AliAnalysisTriggerScalers(const std::set<int>& runs, const char* source="raw://");
+  AliAnalysisTriggerScalers(Int_t runNumber, const char* source="raw://");
+  AliAnalysisTriggerScalers(const char* runlist, const char* source="raw://");
   
   virtual ~AliAnalysisTriggerScalers();
   
+  void CrossSectionUnit(const char* unit="ub") { fCrossSectionUnit=unit; fCrossSectionUnit.ToUpper(); }
   TString CrossSectionUnit() const { return fCrossSectionUnit; }
-  void SetCrossSectionUnit(const char* unit="nb");
   
   void DrawFills(Double_t ymin, Double_t ymax, Int_t color=5);
   void DrawFill(Int_t run1, Int_t run2, double ymin, double ymax, const char* label,Int_t color=5);
@@ -79,9 +79,11 @@ public:
   TGraph* IntegratedLuminosityGraph(Int_t runNumber, const char* triggerClassName, const char* triggerClassNameForPACEstimate="");
   
   void IntegratedLuminosity(const char* triggerList="",
+                            const char* lumiTrigger="C0TVX-B-NOPF-ALLNOTRD",
+                            Double_t lumiCrossSection=39,
                             const char* csvOutputFile="",
-                            const char sep='\t'
-                            );
+                            const char sep='\t',
+                            const char* csUnit="nb");
 
   TGraph* MakeGraph(const std::vector<int>& vx, const std::vector<int>& vex,
                     const std::vector<double>& vy, const std::vector<double>& vey);
@@ -90,7 +92,7 @@ public:
 
   Int_t NumberOfInteractingBunches(const AliLHCData& lhc, Int_t runNumber, Bool_t mainSat=kFALSE) const;
 
-  TGraph* PlotTrigger(const char* triggerClassName, const char* what, bool draw=kTRUE);
+  TGraph* PlotTrigger(const char* triggerClassName, const char* what);
   
   TGraph* PlotTriggerEvolution(const char* triggerClassName,
                                const char* what,
@@ -118,8 +120,6 @@ public:
   void ShouldCorrectForPileUp(Bool_t flag) { fShouldCorrectForPileUp = flag; }
   Bool_t ShouldCorrectForPileUp() const { return fShouldCorrectForPileUp; }
 
-  TString GetOCDBPath() { return fOCDBPath; }
-  
   /// static methods -----
   
   static void ReadIntegers(const char* filename, std::vector<int>& integers, Bool_t resetVector=kTRUE);
@@ -136,9 +136,6 @@ private:
                                                 UInt_t refb,
                      UInt_t timelapse) const;
 
-  Double_t Millibarn2CrossSectionUnit() const;
-
-  void SetOCDBPath(const char* path);
   
 private:
   std::vector<int> fRunList; // input run list

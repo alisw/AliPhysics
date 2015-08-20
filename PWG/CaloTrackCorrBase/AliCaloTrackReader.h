@@ -566,14 +566,6 @@ public:
 
   virtual Double_t      GetBField()                  const { return fInputEvent->GetMagneticField()  ; }
   
-  /// Shift phi angle in case of negative value 360 degrees. Example TLorenzVector::Phi defined in -pi to pi
-  Float_t               GetPhi  (Float_t phi)        const { if ( phi < 0 ) phi += TMath::TwoPi() ; return phi ; }
-  
-  Float_t               DegToRad(Float_t deg)        const { deg *= TMath::DegToRad(); return deg ; }
-  
-  Float_t               RadToDeg(Float_t rad)        const { rad *= TMath::RadToDeg(); return rad ; }
-
-  
   //------------------------------------------------
   // MC analysis specific methods
   //-------------------------------------------------

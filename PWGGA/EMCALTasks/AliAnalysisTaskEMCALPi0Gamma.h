@@ -335,7 +335,7 @@ protected:
   TH2                   *fHPionInvMassesMix1;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesMix2;     //!histos for invariant mass plots
   // quick histo for J/Psi
-  //TH2                   *fHJPInvMasses;            //!histo for inv mass in JPsi region
+  TH2                   *fHJPInvMasses;            //!histo for inv mass in JPsi region
   // primary pions
   TH2                   *fHPrimPionInvMasses;       //!histos for invariant mass plots
   TH2                   *fHPrimPionInvMassesAsym;       //!histos for invariant mass plots
@@ -390,9 +390,9 @@ protected:
   TH2                   *fHECluEMC;    //!histo for MC energy vs. cluster energy
   TH2                   *fHECluEMCAddPi0;    //!histo for MC energy vs. cluster energy
   TH2                   *fHECluEMCAddEta;    //!histo for MC energy vs. cluster energy
-//  TH2                   *fHRecTrue;   //!histo for MC/Clu energy vs. cluster energy
-//  TH2                   *fHRecTrueAddPi0;   //!histo for MC/Clu energy vs. cluster energy
-//  TH2                   *fHRecTrueAddEta;   //!histo for MC/Clu energy vs. cluster energy
+  TH2                   *fHRecTrue;   //!histo for MC/Clu energy vs. cluster energy
+  TH2                   *fHRecTrueAddPi0;   //!histo for MC/Clu energy vs. cluster energy
+  TH2                   *fHRecTrueAddEta;   //!histo for MC/Clu energy vs. cluster energy
   TH2                   *fHECluEMCnofull;    //!histo for MC energy vs. cluster energy
   TH2                   *fHECluEMCnofullAdd;    //!histo for MC energy vs. cluster energy
   TH2                   *fHECluEMCelectron;  //!histo for MC energy vs. cluster energy for electrons
@@ -404,9 +404,9 @@ protected:
   
   
   // more histograms
-//  TH1		    		  *fHMixRotation;        //! histo to show how much the mixed events were rotated in phi
-//  TH1             *fHCorrection;         //! histo to show the correction factor
-//  TH2             *fHPionSm;             //! histo to see the change of the pair mass due to the correction
+  TH1		    		  *fHMixRotation;        //! histo to show how much the mixed events were rotated in phi
+  TH1             *fHCorrection;         //! histo to show the correction factor
+  TH2             *fHPionSm;             //! histo to see the change of the pair mass due to the correction
   
   // store start and end of pythia particles, added signals, ...
   Int_t ipymin; // first pythia particle index
@@ -433,7 +433,7 @@ private:
   AliAnalysisTaskEMCALPi0Gamma(const AliAnalysisTaskEMCALPi0Gamma&);            // not implemented
   AliAnalysisTaskEMCALPi0Gamma &operator=(const AliAnalysisTaskEMCALPi0Gamma&); // not implemented
   
-  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 14) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0Gamma, 13) // Analysis task for neutral pions in Pb+Pb
 };
 
 

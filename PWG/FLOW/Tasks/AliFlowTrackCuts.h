@@ -476,18 +476,18 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
   Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
  
+  Int_t         fRun;                   // run number
  
     
   //TPC TOF nsigma Purity based cut functions
   TFile                 *fPurityFunctionsFile;       //! purity functions file
   TDirectory            *fPurityFunctionsList;     //! purity functions list
     
-  TF2                   *fPurityFunction[180]; //TF2 purity functions
+  TF2                   *fPurityFunction[150]; //TF2 purity functions
   
-  Int_t  fMaxITSclusterShared;          // fMaxITSclusterShared 
-  Double_t  fMaxITSChi2;                // fMaxITSChi2
+  Int_t  fMaxITSclusterShared;
+  Double_t  fMaxITSChi2;
   
-  Int_t         fRun;                   // run number
     
     
 

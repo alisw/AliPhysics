@@ -17,7 +17,6 @@
 # include <TGrid.h>
 # include <AliAnalysisManager.h>
 # include <AliAnalysisAlien.h>
-# include <sstream>
 #else
 class TUrl;
 class AliAnalysisAlien;
@@ -99,7 +98,6 @@ struct GridRailway : public PluginRailway
     fOptions.Add("pattern","GLOB",   "File/directory name pattern", "");
     fOptions.Add("concat", "Concatenate all runs");
     fOptions.Add("exclude", "GLOB","Comma separated list of merge excludes","");
-    fOptions.Add("files",   "FILE", "file containing list of files", "");
   }
   GridRailway(const GridRailway& o)
     : PluginRailway(o), fRuns()
@@ -314,9 +312,6 @@ struct GridRailway : public PluginRailway
     fHandler->SetRunPrefix(fOptions.Has("mc") ? "%d" : "%09d");
     Int_t nRun = RegisterRuns();
 
-    // --- Possibly add files from input file ------------------------
-    AddFiles();
-    
     // --- Do not test copying ---------------------------------------
     fHandler->SetCheckCopy(false);
     
@@ -504,70 +499,6 @@ struct GridRailway : public PluginRailway
     
     return true;
   };
-  void ScanFiles()
-  {
-    // Check if runs where registered, and if so that the first run
-    // registered isn't 0
-    if (fRuns.GetEntries() > 0 && 
-	fRuns.At(0)->GetUniqueID() != 0) return;
-
-    TString path    = fUrl.GetFile();
-    TString pattern = fOptions.Get("pattern");
-
-    if (path.IsNull() || pattern.IsNull()) {
-      Warning("ScanFiles", "No search path (%s) or pattern (%s) specified",
-	      path.Data(), pattern.Data());
-      return;
-    }
-
-    TString cmd = Form("alien_find %s %s", path.Data(), pattern.Data());
-    TString ret = gSystem->GetFromPipe(cmd);
-    if (ret.IsNull()) {
-      Warning("ScanFiles", "Command %s failed", cmd.Data());
-      return;
-    }
-
-    std::stringstream str(ret.Data());
-    AddFiles(str);
-    
-  }
-  void AddFiles()
-  {
-    TString files = fOptions.Get("files");
-    // Info("AddFiles", "Getting list of files from '%s'", files.Data());
-    if (files.IsNull()) {
-      ScanFiles();
-      return;
-    }
-    
-    std::ifstream in(files.Data());
-    if (!in) {
-      Warning("", "Failed to open the file %s", files.Data());
-      in.open(Form("../%s", files.Data()));
-      if (!in) {
-	Warning("", "Failed to open the file ../%s - giving up", files.Data());
-	return;
-      }
-    }
-    AddFiles(in);
-    in.close();
-  }
-  void AddFiles(std::istream& in)
-  {
-    do {
-      TString l;
-      l.ReadLine(in);
-      
-      TString tmp = l.Strip(TString::kBoth, ' ');
-      if (!tmp.EndsWith(".root")) {
-	// Info("AddFiles", "'%s' is not a ROOT file!", l.Data());
-	continue;
-      }
-      // Info("AddFiles", "Adding %s to list of inputs", tmp.Data());
-      fHandler->AddDataFile(tmp);
-    } while (!in.eof());
-  }
-  
   /** 
    * Start the analysis 
    * 

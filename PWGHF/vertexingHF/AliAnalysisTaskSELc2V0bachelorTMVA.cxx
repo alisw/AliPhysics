@@ -72,9 +72,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSELc2V0bachelorTMVA);
-/// \endcond
+ClassImp(AliAnalysisTaskSELc2V0bachelorTMVA)
 
 //__________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA():  
@@ -196,7 +194,7 @@ AliAnalysisTaskSE(),
   fTriggerMask(0)
 {
   //
-  /// Default ctor
+  // Default ctor
   //
 }
 //___________________________________________________________________________
@@ -320,7 +318,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fTriggerMask(0)
 {
   //
-  /// Constructor. Initialization of Inputs and Outputs
+  // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSELc2V0bachelorTMVA","Calling Constructor");
 
@@ -336,7 +334,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
 //___________________________________________________________________________
 AliAnalysisTaskSELc2V0bachelorTMVA::~AliAnalysisTaskSELc2V0bachelorTMVA() {
   //
-  /// destructor
+  // destructor
   //
   Info("~AliAnalysisTaskSELc2V0bachelorTMVA","Calling Destructor");
   
@@ -392,7 +390,7 @@ AliAnalysisTaskSELc2V0bachelorTMVA::~AliAnalysisTaskSELc2V0bachelorTMVA() {
 //_________________________________________________
 void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
   //
-  /// Initialization
+  // Initialization
   //
 
   fIsEventSelected=kFALSE;
@@ -412,9 +410,9 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
 {    
-  /// The Terminate() function is the last function to be called during
-  /// a query. It always runs on the client, it can be used to present
-  /// the results graphically or save the results to file.
+  // The Terminate() function is the last function to be called during
+  // a query. It always runs on the client, it can be used to present
+  // the results graphically or save the results to file.
   
   AliInfo("Terminate");
   AliAnalysisTaskSE::Terminate();
@@ -456,7 +454,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Terminate(Option_t*)
 
 //___________________________________________________________________________
 void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() { 
-  /// output
+  // output
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
   
   //slot #1  
@@ -856,7 +854,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
 //_________________________________________________
 void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 {
-  /// user exec
+  // user exec
   if (!fInputEvent) {
     AliError("NO EVENT FOUND!");
     return;
@@ -968,7 +966,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserExec(Option_t *)
 //-------------------------------------------------------------------------------
 void AliAnalysisTaskSELc2V0bachelorTMVA::FillMCHisto(TClonesArray *mcArray){
 
-  /// method to fill MC histo: how many Lc --> K0S + p are there at MC level
+  // method to fill MC histo: how many Lc --> K0S + p are there at MC level
   for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
     if (!mcPart){
@@ -1078,7 +1076,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 								 Int_t &nSelectedAnal,
 								 AliRDHFCutsLctoV0 *cutsAnal, TClonesArray *array3Prong,
 								 AliAODMCHeader* aodheader){
-  /// Lc prong needed to MatchToMC method
+  //Lc prong needed to MatchToMC method
 
   Int_t pdgCand = 4122;
   Int_t pdgDgLctoV0bachelor[2]={2212, 310};
@@ -1294,7 +1292,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
 							     AliRDHFCutsLctoV0 *cutsAnal,
 							     TClonesArray *mcArray, Int_t iLctopK0s){
   //
-  /// Fill histos for Lc -> K0S+proton
+  // Fill histos for Lc -> K0S+proton
   //
 
   /*
@@ -1732,8 +1730,8 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 							  Double_t* distances, Double_t* armPolKF) {
 
   //
-  /// method to perform KF vertexing
-  /// elements: [0] = mass, [1] = DecayLength, [2] = lifeTime
+  // method to perform KF vertexing 
+  // elements: [0] = mass, [1] = DecayLength, [2] = lifeTime
   //
  
   Int_t codeKFV0 = -1, codeKFLc = -1;
@@ -2361,8 +2359,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::EBachelor AliAnalysisTaskSELc2V0bachelorTMVA
   
   //Printf("In CheckBachelor");
 
-  /// function to check if the bachelor is a p, if it is a p but not from Lc
-  /// to be filled for background candidates
+  // function to check if the bachelor is a p, if it is a p but not from Lc
+  // to be filled for background candidates
 
   Int_t label = bachelor->GetLabel();
   if (label == -1) {
@@ -2415,8 +2413,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::EK0S AliAnalysisTaskSELc2V0bachelorTMVA::Che
 										       //AliAODTrack* v0part,
 										       TClonesArray *mcArray ){
   
-  /// function to check if the K0Spart is a p, if it is a p but not from Lc
-  /// to be filled for background candidates
+  // function to check if the K0Spart is a p, if it is a p but not from Lc
+  // to be filled for background candidates
 
   //Printf(" CheckK0S");
 
@@ -2489,7 +2487,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindV0Label(AliAODRecoDecay* v0part, T
 
   //Printf(" FindV0Label");
 
-  /// finding the label of teh V0; inspired from AliAODRecoDecay::MatchToMC
+  // finding the label of teh V0; inspired from AliAODRecoDecay::MatchToMC
 
   Int_t labMother[2]={-1, -1};
   AliAODMCParticle *part=0;
@@ -2536,7 +2534,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindV0Label(AliAODRecoDecay* v0part, T
 Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindLcLabel(AliAODRecoCascadeHF* cascade, TClonesArray *mcArray) const
 {
 
-  /// finding the label of teh V0; inspired from AliAODRecoDecay::MatchToMC
+  // finding the label of teh V0; inspired from AliAODRecoDecay::MatchToMC
 
   //Printf(" FindLcLabel");
 

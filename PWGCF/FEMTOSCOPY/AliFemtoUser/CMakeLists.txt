@@ -59,7 +59,6 @@ set(SRCS
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
-  AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
@@ -83,10 +82,6 @@ set(SRCS
   AliFemtoPairCutAntiGammaAlpha.cxx
   AliFemtoCorrFctnGammaMonitorAlpha.cxx
   AliFemtoCorrFctn3DPRF.cxx
-  AliFemtoPairCutRadialDistanceAsymmetric.cxx
-  AliFemtoPairCutMergedFraction.cxx
-  AliFemtoCorrFctnDEtaDPhiSimple.cxx
-  AliFemtoCorrFctnDYDPhiSimple.cxx	
   )
 
 # Headers from sources
@@ -104,7 +99,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Dependecies
 set(LIBDEPS ANALYSISalice PWGCFfemtoscopy)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
- 
+
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 

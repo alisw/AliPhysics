@@ -12,8 +12,6 @@ class AliHFEcuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
-class AliAODMCHeader;
-class AliAODMCParticle; // sample
 
 #include "AliAnalysisTaskSE.h"
 
@@ -61,11 +59,7 @@ private:
     
     TClonesArray  *fTracks_tender;
     TClonesArray  *fCaloClusters_tender;
- 
-    AliAODMCParticle 	*fMCparticle;
-    TClonesArray 	*fMCarray;
-   
-
+    
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fVtxZ;//!Vertex z
@@ -97,9 +91,6 @@ private:
     TH2F        *fEMCTPCnsig;//! EMC trk nsig
     TH2F        *fEMCTPCNpts;//!EMC Npoints used for dedx
     TH1F        *fClsEAftMatch;//!EMC Cluster energy after track matching
-    TH2F        *fClsEtaPhiAftMatch;//!EMC Cluster eta phi distribution after track matching
-    TH2F        *fClsEtaPhiAftMatchEMCin;//!EMC Cluster eta phi distribution after track matching inside EMC phi acceptance
-    TH2F        *fClsEtaPhiAftMatchEMCout;//!EMC Cluster eta phi distribution after track matching outside EMC phi acceptance
     TH2F        *fHistdEdxEop;//!E/p vs dedx
     TH2F        *fHistNsigEop;//!E/p vs dedx
     TH2F        *fHistEop;//!pt vs E/p

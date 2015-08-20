@@ -118,7 +118,7 @@ fTrack(0),fCuts(0) {}
    Float_t          fPtCutTOFMatching;           // TOF Matching
    Int_t 	     fAODtrack; // 0 ESD track connected , 1 AOD track conected , else nothing
    Bool_t 	    fHashitinSPD1; // Check if SPD1 has a hit 	
-   Bool_t          fusedadditionalcuts;          //If set to true the TPCrefit, ITSrefit, SPDany and Ncluster cut is not checked 	
+   Bool_t          fusedadditionalcuts;          //If set to true the TPCrefit, ITSrefit, SPDany and Ncluster cut is check 	
    Float_t          fPtCutTOFMatchingPion; // TOF Matching cut for pions
    Float_t          fPtCutTOFMatchingKaon; // TOF Matching cut for kaons
    Float_t          fPtCutTOFMatchingProton;  	// TOF Matching cut for protons	

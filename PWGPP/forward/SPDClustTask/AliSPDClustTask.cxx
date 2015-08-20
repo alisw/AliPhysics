@@ -263,7 +263,8 @@ void AliSPDClustTask::UserExec(Option_t *)
   //
   // ------------------RS: Put here additional event selection if needed ------->>
   // at the moment, I am just selecting on vertex
-  if (vtxESD->IsFromVertexerZ()) {
+  TString vtxTyp = vtxESD->GetTitle();
+  if (vtxTyp.Contains("vertexer: Z")) {
     if (vtxESD->GetDispersion()>0.04) return;
     if (vtxESD->GetZRes()>0.25) return;
   }

@@ -4,10 +4,10 @@
  * See cxx source for full Copyright notice                               */
 
 //***********************************************************
-/// \class Class AliRDHFCutsD0toKpipipi
-/// \brief class for cuts on AOD reconstructed D0->Kpipipi
-/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
-///	\author   F.Colamaria, fabio.colamaria@ba.infn.it
+// Class AliRDHFCutsD0toKpipipi
+// class for cuts on AOD reconstructed D0->Kpipipi
+// Author: A.Dainese, andrea.dainese@pd.infn.it
+//	   F.Colamaria, fabio.colamaria@ba.infn.it
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -46,9 +46,8 @@ class AliRDHFCutsD0toKpipipi : public AliRDHFCuts
 
  protected:
 
-  /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsD0toKpipipi,1);  /// class for cuts on AOD reconstructed D0->Kpipipi
-  /// \endcond
+
+  ClassDef(AliRDHFCutsD0toKpipipi,1);  // class for cuts on AOD reconstructed D0->Kpipipi
 };
 
 #endif

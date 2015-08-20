@@ -2521,8 +2521,8 @@ Bool_t AliConversionPhotonCuts::SetQtMaxCut(Int_t QtMaxCut)
 		fDo2DQt=kFALSE;
 		break;
 	case 2:
-		fQtMax=0.06;
-		fDo2DQt=kTRUE;
+		fQtMax=0.07;
+		fDo2DQt=kFALSE;
 		break;
 	case 3:
 		fQtMax=0.05;

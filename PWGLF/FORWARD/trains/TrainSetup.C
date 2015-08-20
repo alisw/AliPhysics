@@ -75,20 +75,19 @@ struct TrainSetup
       fOptions(),
       fRailway(0)
   {
-    fOptions.Add("help",   "Show help",                                  false);
-    fOptions.Add("date",   "YYYY-MM-DD HH:MM", "Set date",               "now");
-    fOptions.Add("ps",     "MODE",             "Physics selection mode", "");
-    fOptions.Add("verbose","LEVEL",            "Set verbosity level",    0);
-    fOptions.Add("url",    "URL",              "Job location & input URL","");
-    fOptions.Add("overwrite","Allow overwrite",                          false);
-    fOptions.Add("events", "N",             "Number of events to analyse",-1);
-    fOptions.Add("type",   "ESD|AOD|USER",     "Input data stype",       "");
-    fOptions.Add("setup",  "Only do the setup",                          false);
-    fOptions.Add("branches","Load only requested branches",              false);
-    fOptions.Add("version","Print version and exit",                     false);
-    fOptions.Add("tender", "WHICH",            "Specify tender supplies","");
-    fOptions.Add("ocdb",   "(TENDER_SNAPSHOT)","Enable OCDB",            "");
-    fOptions.Add("friends","(AOD_FRIENDS)","Enable friends (list of files)","");
+    fOptions.Add("help", "Show help", false);
+    fOptions.Add("date", "YYYY-MM-DD HH:MM", "Set date", "now");
+    fOptions.Add("ps", "MODE", "Physics selection mode", "");
+    fOptions.Add("verbose", "LEVEL", "Set verbosity level", 0);
+    fOptions.Add("url", "URL", "Job location & input URL", "");
+    fOptions.Add("overwrite", "Allow overwrite", false);
+    fOptions.Add("events", "N", "Number of events to analyse", -1);
+    fOptions.Add("type", "ESD|AOD|USER", "Input data stype", "");
+    fOptions.Add("setup", "Only do the setup", false);
+    fOptions.Add("branches", "Load only requested branches", false);
+    fOptions.Add("version", "Print version and exit", false);
+    fOptions.Add("tender","WHICH","Specify tender supplies", "");
+    fOptions.Add("ocdb","WHICH","Specify OCDB for tenders", "");
     fDatimeString = "";
     fEscapedName  = EscapeName(fName, fDatimeString);
   }
@@ -212,16 +211,8 @@ struct TrainSetup
 			     "$ALICE_PHYSICS/OADB/macros",
 			     cwd.Data(), gROOT->GetMacroPath()));
 
-    // --- Tender/OCDB -----------------------------------------------
-    if (type == Railway::kESD) {
-      TString supplies = fOptions.Get("tender");
-      if (!supplies.IsNull()) {
-	AddTender(supplies);
-      }
-      else if (fOptions.AsBool("ocdb")) {
-	AddOCDBConnect();
-      }
-    }
+    // --- Tender ----------------------------------------------------
+    if (type == Railway::kESD) AddTender();
     
     // --- Physics selction - only for ESD ---------------------------
     if (type == Railway::kESD) CreatePhysicsSelection(mc, mgr);
@@ -411,7 +402,6 @@ struct TrainSetup
       Railway::ShowUrlHelp("LocalRailway");
       Railway::ShowUrlHelp("ProofRailway");
       Railway::ShowUrlHelp("LiteRailway");
-      Railway::ShowUrlHelp("VAFRailway");
       Railway::ShowUrlHelp("AAFRailway");
       Railway::ShowUrlHelp("AAFPluginRailway");
       Railway::ShowUrlHelp("GridRailway");
@@ -524,29 +514,12 @@ protected:
    */
   virtual AliVEventHandler* CreateInputHandler(UShort_t type)
   {
-    AliVEventHandler* ret = 0;
     switch (type) {
-    case Railway::kESD:  {
-      AliESDInputHandler* input = new AliESDInputHandler();
-      input->SetReadFriends(fOptions.AsBool("friends"));
-      ret = input;
-    }
-      break;
-    case Railway::kAOD:  {
-      AliAODInputHandler* input = new AliAODInputHandler();
-      TString    fr  = fOptions.Get("friends");
-      TObjArray* afr = fr.Tokenize(",+:");
-      TObject*   ofr = 0;
-      TIter      nfr(afr);
-      while (ofr = nfr()) input->AddFriend(const_cast<char*>(ofr->GetName()));
-      afr->Delete();
-      ret = input;
-    }
-      break;
+    case Railway::kESD:  return new AliESDInputHandler(); 
+    case Railway::kAOD:  return new AliAODInputHandler(); 
     case Railway::kUser: return 0;
     }
-    // Info("CreateInput", "Returning input handler %p", ret);
-    return ret;
+    return 0;
   }
   /** 
    * Create MC input handler 
@@ -729,6 +702,7 @@ protected:
    * Create centrality selection, and add to manager
    * 
    * @param mc Whether this is for MC 
+   * @param mgr Manager
    */
   virtual void CreateCentralitySelection(Bool_t mc)
   {
@@ -844,20 +818,6 @@ protected:
    * @{ 
    * @name Tender 
    */
-  virtual void AddOCDBConnect()
-  {
-    fRailway->LoadLibrary("PWGPP");
-    Long_t ret = gROOT->ProcessLine("new AliTaskCDBconnect(\"cdb\")");
-    if (!ret) {
-      Fatal("AddOCDBConnect", "Failed to add OCDB connection task");
-      return;
-    }
-    AliAnalysisTask* task = reinterpret_cast<AliAnalysisTask*>(ret);
-    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-    
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  }  
   /** 
    * Enumeration of tenders 
    */
@@ -932,13 +892,15 @@ protected:
 	 n.Data(), cls.Data(), ret);
     return ptr;
   }
+  
   /** 
    * Add tender to train.  
    * 
    */
-  virtual void AddTender(const TString& sup)
+  virtual void AddTender()
   {
-    TString supplies = sup;
+    TString supplies = fOptions.Get("tender");
+    if (supplies.IsNull()) return;
 
     UShort_t which = 0;
     supplies.ToUpper();
@@ -955,6 +917,7 @@ protected:
 
     AddTender(which);
   }
+    
   /** 
    * Add a tender with supplies specified in argument 
    *
@@ -1095,6 +1058,7 @@ protected:
    * @param task    Task 
    * @param what    What to set 
    * @param opt     Option name 
+   * @param defval  Default value if option not given
    */
   void FromOption(AliAnalysisTaskSE* task,
 		  const char* what,
