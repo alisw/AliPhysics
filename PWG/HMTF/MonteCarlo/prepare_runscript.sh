@@ -2,7 +2,7 @@
 
 # Author: Jochen Klein <Jochen.Klein@cern.ch>
 
-declare -g RUNSCRIPT=$1
+eval RUNSCRIPT=$1
 FILESTOCOPY="${FILESTOCOPY} ${RUNSCRIPT}"
 
 cat <<EOF > ${RUNSCRIPT}
