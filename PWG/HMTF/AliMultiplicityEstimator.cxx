@@ -8,6 +8,7 @@
 #include "AliHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
+#include "AliLog.h"
 
 #include "AliMultiplicityEstimator.h"
 
@@ -24,21 +25,21 @@ AliMultiplicityEstimator::AliMultiplicityEstimator()
 AliMultiplicityEstimator::AliMultiplicityEstimator(const char* name, const char* title,
 							   Float_t feta_min_backwards, Float_t feta_max_backwards,
 							   Float_t feta_min_forwards, Float_t feta_max_forwards)
-  : TNamed(name, title), feta_Nch(0), fNch_pT_pid(0), fNchTuple(0),
-    fuseWeights(kTRUE),
+  : TNamed(name, title), feta_Nch(0), fNch_pT_pid(0), fNchTuple(0), fNch_vs_Q2(0),
+    fuseWeights(kTRUE), fReferenceEstimator(0), fcorr_thisNch_vs_refNch(0), fNch_vs_nMPI(0),
     feta_min_backwards(feta_min_backwards), feta_max_backwards(feta_max_backwards),
     feta_min_forwards(feta_min_forwards), feta_max_forwards(feta_max_forwards),
-    fbypass_eta_selection(false), festimator_bins(200)
+    fbypass_eta_selection(false)
 {
 }
 
 // Constructor for bypassing the eta selection to get the full range
 AliMultiplicityEstimator::AliMultiplicityEstimator(const char* name, const char* title)
-  : TNamed(name, title), feta_Nch(0), fNch_pT_pid(0), fNchTuple(0),
-    fuseWeights(kTRUE),
+  : TNamed(name, title), feta_Nch(0), fNch_pT_pid(0), fNchTuple(0), fNch_vs_Q2(0),
+    fuseWeights(kTRUE), fReferenceEstimator(0), fcorr_thisNch_vs_refNch(0), fNch_vs_nMPI(0),
     feta_min_backwards(0), feta_max_backwards(0),
     feta_min_forwards(0), feta_max_forwards(0),
-    fbypass_eta_selection(true), festimator_bins(200)
+    fbypass_eta_selection(true)
 {
 }
 
@@ -61,7 +62,8 @@ Int_t AliMultiplicityEstimator::pid_enum_to_pdg(Int_t pid_enum) {
 }
 
 void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
-  std::cout << "Registering Histogram: " << GetName() << std::endl;
+  Info("AliMultiplicityEstimator::RegisterHistograms", "%s", GetName());
+
   // Put all histograms of one estimator in their own sub-list
   TList *curr_est = new TList();
   curr_est->SetName(GetName());
@@ -70,25 +72,16 @@ void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
   /////////////////////////////////////////////
   // Histograms to be filled in a track loop //
   /////////////////////////////////////////////
-  TString postfix = fuseWeights?"":"_unweighted";
-  feta_Nch = new TH2F("feta_Nch" + postfix ,
-		     "N_{ch} vs. #eta, " + GetTitlePostfix(),
-		     200, -10.0, 10.0,
-		     festimator_bins, 0, festimator_bins);
-  feta_Nch->GetXaxis()->SetTitle("#eta");
-  feta_Nch->GetYaxis()->SetTitle("N_{ch} in " + GetTitlePostfix());
-  feta_Nch->GetZaxis()->SetTitle("N_{ch} per #eta bin");
-  feta_Nch->SetMarkerStyle(kFullCircle);
-  feta_Nch->Sumw2();
-  feta_Nch->SetDirectory(0);
-  curr_est->Add(feta_Nch);
 
-  // 3D: Mult, pT, PID
-  Float_t mult_bin_edges[festimator_bins + 1];
-  for (Int_t idx = 0; idx < festimator_bins+1; idx++){
-    mult_bin_edges[idx] = idx;
-  }
-  Float_t pt_bin_edges[] =
+  const Int_t nch_max   = 250;
+  const Int_t nch_bins  = 250;
+  const Float_t eta_max = 10;
+  const Int_t eta_bins  = 200;
+  const Float_t q2_max  = 150;
+  const Int_t   q2_bins = 750;
+  const Int_t nMPI_max  = 50;
+  const Int_t nMPI_bins = 50;
+  const Float_t pt_bin_edges[] =
     {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8, 0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.,  // 0.1 * 20
      2.2,2.4,2.6,2.8,3.0,                                                                // 0.2 * 5
      3.3,3.6,3.9,4.2,                                                                    // 0.3 * 4
@@ -100,6 +93,25 @@ void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
      13.5,15,
      17,20
     };
+    
+  TString postfix = fuseWeights?"":"_unweighted";
+  feta_Nch = new TH2F("feta_Nch" + postfix ,
+		     "N_{ch} vs. #eta, " + GetTitlePostfix(),
+		     eta_bins, -eta_max, eta_max,
+		     nch_bins, 0, nch_max);
+  feta_Nch->GetXaxis()->SetTitle("#eta");
+  feta_Nch->GetYaxis()->SetTitle("N_{ch} in " + GetTitlePostfix());
+  feta_Nch->GetZaxis()->SetTitle("N_{ch} per #eta bin");
+  feta_Nch->SetMarkerStyle(kFullCircle);
+  feta_Nch->Sumw2();
+  feta_Nch->SetDirectory(0);
+  curr_est->Add(feta_Nch);
+
+  // 3D: Mult, pT, PID
+  Float_t mult_bin_edges[nch_bins + 1];
+  for (Int_t idx = 0; idx < nch_bins+1; idx++){
+    mult_bin_edges[idx] = idx;
+  }
 
   Float_t pid_bin_edges[kNPID + 1];
   for (Int_t idx = 0; idx < kNPID +1; idx++) {
@@ -108,11 +120,11 @@ void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
 
   fNch_pT_pid = new TH3F("fNch_pT_pid" + postfix,
 			  Form("Event class vs. p_{T} vs. pid, %s", GetTitlePostfix().Data()),
-			  festimator_bins, mult_bin_edges,
+			  nch_bins, mult_bin_edges,
 			  sizeof(pt_bin_edges)/sizeof(*pt_bin_edges) - 1, pt_bin_edges,
 			  kNPID, pid_bin_edges);
   fNch_pT_pid->GetXaxis()->SetTitle("Multiplicity");
-  fNch_pT_pid->GetYaxis()->SetTitle("p_{T} [GeV]");
+  fNch_pT_pid->GetYaxis()->SetTitle("p_{T} (GeV)");
   fNch_pT_pid->GetZaxis()->SetTitle("PID");
   // Name bins with pdg code:
   for (Int_t ipid = 0; ipid < kNPID; ipid++) {
@@ -127,6 +139,34 @@ void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
   //////////////////////////////////////////////////////////////////////
   fNchTuple = new TNtuple("fEventTuple", "N_{ch}^{est}", "nch");
   curr_est->Add(fNchTuple);
+  if (!fReferenceEstimator) {
+    AliFatal("No Reference estimator defined");
+  }
+
+  fcorr_thisNch_vs_refNch = new TH2F("fcorr_thisNch_vs_refNch",
+			       Form("corr_hist_%s_vs_%s", fReferenceEstimator->GetName(), this->GetName()),
+			       nch_bins, 0, nch_max,
+			       nch_bins, 0, nch_max);
+  fcorr_thisNch_vs_refNch->GetXaxis()->SetTitle(Form("N_{ch}^{%s}", this->GetName()));
+  fcorr_thisNch_vs_refNch->GetYaxis()->SetTitle(Form("N_{ch}^{%s}", fReferenceEstimator->GetName()));
+  fcorr_thisNch_vs_refNch->SetDirectory(0);
+  curr_est->Add(fcorr_thisNch_vs_refNch);
+
+  fNch_vs_nMPI = new TH2F("fNch_vs_nMPI", "fNch_vs_nMPI",
+			  nch_bins, 0, nch_max,
+			  nMPI_bins, 0, nMPI_max);
+  fNch_vs_nMPI->GetXaxis()->SetTitle(Form("N_{ch}^{%s}", this->GetName()));
+  fNch_vs_nMPI->GetYaxis()->SetTitle("<N_{MPI}>");
+  fNch_vs_nMPI->SetDirectory(0);
+  curr_est->Add(fNch_vs_nMPI);
+
+  fNch_vs_Q2 = new TH2F("fNch_vs_Q2", "fNch_vs_nMPI",
+			nch_bins, 0, nch_max,
+			q2_bins, 0, q2_max);
+  fNch_vs_Q2->GetXaxis()->SetTitle(Form("N_{ch}^{%s}", this->GetName()));
+  fNch_vs_Q2->GetYaxis()->SetTitle("Q^{2}");
+  fNch_vs_Q2->SetDirectory(0);
+  curr_est->Add(fNch_vs_Q2);
 }
 
 void AliMultiplicityEstimator::PreEvent(Float_t ev_weight){
@@ -183,9 +223,14 @@ void AliMultiplicityEstimator::ProcessTrackWithKnownMultiplicity(AliMCParticle *
   }
 }
 
-void AliMultiplicityEstimator::PostEvent(){
+void AliMultiplicityEstimator::PostEvent(Int_t nMPI, Float_t q2, Bool_t fillNtuple){
   // Fill event counters
-  fNchTuple->Fill(fnch_in_estimator_region);
+  fcorr_thisNch_vs_refNch->Fill(this->GetNch(), fReferenceEstimator->GetNch(), fuseWeights?feventWeight:1);
+  fNch_vs_nMPI->Fill(this->GetNch(), nMPI, fuseWeights?feventWeight:1);
+  fNch_vs_Q2->Fill(this->GetNch(), q2, fuseWeights?feventWeight:1);
+  if (fillNtuple) {
+    fNchTuple->Fill(fnch_in_estimator_region);
+  };
 }
 
 void AliMultiplicityEstimator::Terminate(TList* outputlist){
