@@ -10,8 +10,7 @@
  * \author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  * \date Dec 12, 2014
  */
-#if !defined (__CINT__) || defined (__CLING__) || defined (__MAKECINT__) || defined (__ROOTCLING__)
-// CLING requires header files for the JIT-compiler
+#if !(defined (__CINT__) || defined (__CLING__)) || defined (__MAKECINT__) || defined (__ROOTCLING__)
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliEMCalPtTaskVTrackSelection.h"
@@ -102,8 +101,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
     const char *ntrackcuts = "standard",
     const char *components = "particles:clusters:tracks:mcjets:recjets:triggers:patchevent",
     const char * triggersetup = "pPb2013",
-    bool useOfflinePatches = kFALSE,
-    const char *options = ""
+    bool useOfflinePatches = kFALSE
 )
 {
   //AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
@@ -195,11 +193,7 @@ AliAnalysisTask* AddTaskPtEMCalTriggerV1(
 
   double jetpt[4] = {40., 60., 80., 100.};
   EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup *defaultselect = new EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup("defaultselect");
-  EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection *eventselect = EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection();
-  TString optstring(options);
-  if(optstring.Contains("oldpileup")) eventselect->SetOldPileupSelection();
-  if(optstring.Contains("oldvertex")) eventselect->SetOldVertexSelection();
-  defaultselect->SetEventSelection(eventselect);
+  defaultselect->SetEventSelection(new EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection());
   EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts *kineCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts();
   kineCuts->SetPtRange(2., 100.);
   defaultselect->SetKineCuts(kineCuts);
@@ -463,11 +457,11 @@ void CreateTriggerClassespp2012(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTr
     jetINT7->AddTriggerStringPattern("EJE", kTRUE);
     jetINT7->AddTriggerStringPattern("CEMC7", kTRUE);
     jetINT8->AddTriggerStringPattern("EJE", kTRUE);
-    jetINT8->AddTriggerStringPattern("CEMC8", kTRUE);
+    jetINT8->AddTriggerStringPattern("CEMC7", kTRUE);
     gammaINT7->AddTriggerStringPattern("EGA", kTRUE);
     gammaINT7->AddTriggerStringPattern("CEMC7", kTRUE);
     gammaINT8->AddTriggerStringPattern("EGA", kTRUE);
-    gammaINT8->AddTriggerStringPattern("CEMC8", kTRUE);
+    gammaINT8->AddTriggerStringPattern("CEMC7", kTRUE);
   } else {
     jetINT7->AddTriggerPatchType(EMCalTriggerPtAnalysis::kTAEMCJHigh);
     jetINT7->AddTriggerBit(AliVEvent::kINT7);

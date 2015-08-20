@@ -35,10 +35,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliRDHFCutsD0toKpipipi);
-/// \endcond
-
+ClassImp(AliRDHFCutsD0toKpipipi)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpipipi::AliRDHFCutsD0toKpipipi(const char* name) : 

@@ -749,22 +749,12 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   subtractedhisto[5]->SetMaximum(3.7);
 
   if(pthad.Contains("0.3")){
-    if(pthad.Contains("1.0")){
-      subtractedhisto[1]->SetMinimum(-0.9);
-      subtractedhisto[2]->SetMinimum(-0.9);
-      subtractedhisto[4]->SetMinimum(-0.9);
-      subtractedhisto[5]->SetMinimum(-0.9);
-      subtractedhisto[4]->SetMaximum(3);
-      subtractedhisto[5]->SetMaximum(4);///QUI
-    }
-    else { // >0.3 case
-      subtractedhisto[1]->SetMinimum(-0.9);
-      subtractedhisto[2]->SetMinimum(-0.9);
-      subtractedhisto[4]->SetMinimum(-0.9);
-      subtractedhisto[5]->SetMinimum(-0.9);
-      subtractedhisto[4]->SetMaximum(5);
-      subtractedhisto[5]->SetMaximum(5);///QUI
-    }
+    subtractedhisto[1]->SetMinimum(-0.9);
+    subtractedhisto[2]->SetMinimum(-0.9);
+    subtractedhisto[4]->SetMinimum(-0.9);
+    subtractedhisto[5]->SetMinimum(-0.9);
+    subtractedhisto[4]->SetMaximum(3);
+    subtractedhisto[5]->SetMaximum(4);///QUI
   }
   else if(pthad.Contains("1.0")){
     subtractedhisto[4]->SetMinimum(-0.5);
@@ -825,10 +815,7 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   // TPaveText *fitvaluesmid2 = new TPaveText(0.18,0.79,0.84,0.843,"NDC");
   fitvaluesmid2->SetTextSize(0.03);
   fitvaluesmid2->AddText("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}");
-  if(pthad.Contains("0.3")){
-    if(pthad.Contains("1.0"))fitvaluesmid2->AddText("0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
-    else fitvaluesmid2->AddText("#it{p}_{T}^{assoc} >0.3 GeV/#it{c}, |#Delta#eta| < 1.0 ");
-  }
+  if(pthad.Contains("0.3"))  fitvaluesmid2->AddText("0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
   else if(pthad.Contains("1.0"))  fitvaluesmid2->AddText("#it{p}_{T}^{assoc} >1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
 
 
@@ -843,8 +830,7 @@ void DoComparison_ppVspPbTEST(TString pthad="0.3_1.0"){
   fitvalueshigh2->AddText("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |#it{y}^{D}|<0.5");
   //  fitvalueshigh2->AddText(Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > %s GeV/#it{c}, |#Delta#eta| < 1.0 ",pthad.Data()));
   if(pthad.Contains("0.3"))  {
-    if(pthad.Contains("1.0"))fitvalueshigh2->AddText("0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
-    else fitvalueshigh2->AddText("#it{p}_{T}^{assoc} >0.3 GeV/#it{c}, |#Delta#eta| < 1.0 ");
+    fitvalueshigh2->AddText("0.3 < #it{p}_{T}^{assoc} <1 GeV/#it{c}, |#Delta#eta| < 1.0 ");
   }
   else if(pthad.Contains("1.0"))  {
     fitvalueshigh2->AddText("#it{p}_{T}^{assoc} >1 GeV/#it{c}, |#Delta#eta| < 1.0 ");

@@ -11,23 +11,10 @@
 #       Usage: bash $inputFile $object_name $dump_type [XML/MI] $outfile
 # diffObject
 #       Usage: bash $inputFile1 $inputFile2 $object_name $dump_type [XML/MI] $outfile
+# Example usage:  see example functions below
 
-
-
-
-# 1.) Dump software version including git verson:
-#     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMapInfo > software.list)
-#
-# 2.) Dump ocdb table what was used in the reconstruction:
-#     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable AliESDs_Barrel.root "esd" OCDBrec.list )
-#     (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;   ocdbMakeTable galice.root MC OCDBsim.list)
-#
-# 3.) Dump the content of the OCDB entry in human readable format as an XML:
-#      (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh;  dumpObject  $ALICE_ROOT/OCDB/TPC/Calib/PadNoise/Run0_999999999_v1_s0.root  "object" "XML"  TPC_Calib_PadNoise_Run0_999999999_v1_s0 ); 
-#
-# 4.) Dump a summary of the OCDB entry in human readable format as provided by object Print: 
-#     TO BE IMPLEMENTED   
-
+#  ocdbMakeTable AliESDs.root "ESD" OCDBRec.log
+# (source $ALICE_PHYSICS/PWGPP/CalibMacros/AliOCDBtoolkit.sh; ocdbMapInfo )
 
 # Origin marian.ivanov@cern.ch,  j.wagner@cern.ch
  

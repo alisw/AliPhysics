@@ -39,9 +39,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSEBkgLikeSignD0.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEBkgLikeSignD0);
-/// \endcond
+ClassImp(AliAnalysisTaskSEBkgLikeSignD0)
 
 //________________________________________________________________________
 AliAnalysisTaskSEBkgLikeSignD0::AliAnalysisTaskSEBkgLikeSignD0():
@@ -66,7 +64,7 @@ fTotNegPairs(0),
 fLsNormalization(1.)
 {
   //
-  /// Default constructor
+  // Default constructor
   //
 }
 
@@ -93,7 +91,7 @@ fTotNegPairs(0),
 fLsNormalization(1.)
 {
   //
-  /// Standard constructor
+  // Standard constructor
   //
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -105,7 +103,7 @@ fLsNormalization(1.)
 //________________________________________________________________________
 AliAnalysisTaskSEBkgLikeSignD0::~AliAnalysisTaskSEBkgLikeSignD0()
 {
-  /// Destructor
+  // Destructor
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
@@ -125,7 +123,7 @@ AliAnalysisTaskSEBkgLikeSignD0::~AliAnalysisTaskSEBkgLikeSignD0()
 //________________________________________________________________________
 void AliAnalysisTaskSEBkgLikeSignD0::Init()
 {
-  /// Initialization
+  // Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSEBkgLikeSignD0::Init() \n");
 
@@ -141,7 +139,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::Init()
 //________________________________________________________________________
 void AliAnalysisTaskSEBkgLikeSignD0::UserCreateOutputObjects()
 {
-  /// Create the output container
+  // Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSEBkgLikeSignD0::UserCreateOutputObjects() \n");
 
@@ -217,8 +215,8 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
 {
-  /// Execute analysis for current event:
-  /// heavy flavor candidates association to MC truth
+  // Execute analysis for current event:
+  // heavy flavor candidates association to MC truth
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
@@ -359,7 +357,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliAnalysisTaskSEBkgLikeSignD0::Terminate(Option_t */*option*/)
 {
-  /// Terminate analysis
+  // Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSEBkgLikeSignD0: Terminate() \n");
 

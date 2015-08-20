@@ -136,7 +136,7 @@ private:
     TH1F                  *fhistKaonEtaDistAfter; //!another hist
     TH1F                  *fhistProtonEtaDistAfter; //!another hist
     THnSparseD            *fSparseAll;//!All species info
-    TF2                   *fPurityFunction[180];  //purity functions
+    TF2                   *fPurityFunction[150];  //purity functions
     
     //qa object initialisation
     void SetupTPCTOFqa();

@@ -1,4 +1,4 @@
- /*************************************************************************
+/*************************************************************************
  *                                                                       *
  *                                                                       *
  *      Task for Jet Chemistry Analysis in PWG-JE Jet Task Force Train   *
@@ -2532,6 +2532,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
     fh1nEmbeddedJets->Fill(nEmbeddedJets);
     
+    Float_t maxDist = 0.3;
+
     iEmbeddedMatchIndex.Set(nEmbeddedJets); 
     fEmbeddedPtFraction.Set(nEmbeddedJets); 
     
@@ -2542,7 +2544,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets, 
 					      fJetsRecCuts, nRecJetsCuts, 
 					      iEmbeddedMatchIndex, fEmbeddedPtFraction,
-					      fDebug, fCutDeltaREmbedded);
+					      fDebug, maxDist);
     
   }
 
@@ -2805,7 +2807,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   //##########################################
  //------------------------------------------
-  for(Int_t it=0; it<fListK0s->GetSize(); ++it){ //loop over all K0s candidates in PbPb event
+ for(Int_t it=0; it<fListK0s->GetSize(); ++it){ 
         
     AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0s->At(it));
     if(!v0) continue;
@@ -2868,45 +2870,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       }
 
       //if jet is selected, then check whether V0 is part of the jet cone:
-      if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;}//is v0 of PbPb event part of the (selected) jet cone?
+      if(IsParticleInCone(jet, v0, dRadiusExcludeCone) == kTRUE) {bIsInCone = kTRUE;}
       
       jettracklist->Clear();
     }
     
-
-    if(fUseExtraTracks == 0){//standard PbPb analysis
-      if((bIsInCone==kFALSE)&&(nRemainingJets > 0)){//K0s is not part of any selected jet in event, but its a jet event
-	Double_t vK0sOC[3] = {invMK0s,trackPt,fEta};
-	fhnK0sOC->Fill(vK0sOC);      
-      }
+    if((bIsInCone==kFALSE)&&(nRemainingJets > 0)){//K0s is not part of any selected jet in event, but its a jet event
+      Double_t vK0sOC[3] = {invMK0s,trackPt,fEta};
+      fhnK0sOC->Fill(vK0sOC);      
     }
-    
-    
-    if(fUseExtraTracks == 1){//extra tracks (embedded+signal) for Embedding study
-      
-      if(!jetConeK0Emblist)continue;
-      
-      Bool_t isEmbinCone;
-
-      for(Int_t it=0; it<jetConeK0Emblist->GetSize(); ++it){ // loop for K0s in embedded jet cone, reject them from OCs
-	
-	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
-	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeK0Emblist->At(it));
-	if(!v0emb) continue;
-	
-	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
-		
-	}
-
-	if((isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//K0s is not part of any selected jet in event, but its a jet event
-	  Double_t vK0sOC[3] = {invMK0s,trackPt,fEta};
-	  fhnK0sOC->Fill(vK0sOC);  
-
-      }
-    }
-    
-
     
     //end of outside cone K0s
    
@@ -3027,40 +2999,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       jettracklist->Clear();  
     }  //end jet loop  
     
-
-    if(fUseExtraTracks == 0){//standard tracks
-      
-      if((bIsInCone == kFALSE)&&(nRemainingJets > 0)){//success! Lambda doesn't belong to any selected jet in event
-	Double_t vLaOC[3] = {invMLa, trackPt,fEta};
-	fhnLaOC->Fill(vLaOC); 
-      }
-    } 
-
-  
-    if(fUseExtraTracks == 1){//extra tracks (embedded+signal) for Embedding study
-      
-      if(!jetConeLaEmblist)continue;
-
-      Bool_t isEmbinCone;
-
-      for(Int_t it=0; it<jetConeLaEmblist->GetSize(); ++it){ // loop for La in embedded jet cone, reject them from OCs
-	
-	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
-	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeLaEmblist->At(it));
-	if(!v0emb) continue;
-	
-	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
-		
-	}
-
-	if((isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//La is not part of any selected jet in event, but its a jet event
-	  Double_t vLaOC[3] = {invMLa,trackPt,fEta};
-	  fhnLaOC->Fill(vLaOC);  
-
-      }
+    if((bIsInCone == kFALSE)&&(nRemainingJets > 0)){//success! Lambda doesn't belong to any selected jet in event
+      Double_t vLaOC[3] = {invMLa, trackPt,fEta};
+      fhnLaOC->Fill(vLaOC); 
     }
-
+    
     // Double_t jetPt = fFFIMJetPtMin; // assign pro forma jet energy
     // Double_t fRap = v0->Y(3122);
     
@@ -3191,44 +3134,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       jettracklist->Clear();
     }
  
-
-    if(fUseExtraTracks == 0){//standard PbPb analysis
-      if((bIsInCone == kFALSE)&&(nRemainingJets > 0)){//success!
-	Double_t vALaOC[3] = {invMALa, trackPt,fEta};
-	fhnALaOC->Fill(vALaOC); 
-      }
+    if((bIsInCone == kFALSE)&&(nRemainingJets > 0)){//success!
+      Double_t vALaOC[3] = {invMALa, trackPt,fEta};
+      fhnALaOC->Fill(vALaOC); 
     }
     
-
-    if(fUseExtraTracks == 1){//extra tracks (embedded+signal) for Embedding study
-      
-      if(!jetConeALaEmblist)continue;
-      
-      Bool_t isEmbinCone;
-      
-      for(Int_t it=0; it<jetConeALaEmblist->GetSize(); ++it){ // loop for ALa in embedded jet cone, reject them from OCs
-	
-	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
-	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeALaEmblist->At(it));
-	if(!v0emb) continue;
-	
-	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
-		
-	}
-
-	if((isEmbinCone==kFALSE)&&(nRemainingJets > 0)){//ALa is not part of any selected jet in event, but its a jet event
-	  Double_t vALaOC[3] = {invMALa,trackPt,fEta};
-	  fhnALaOC->Fill(vALaOC);  
-
-      }
-    }
-
-
-
-
-
-
     //Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
     //Double_t jetPt = fFFIMJetPtMin; // assign pro forma jet energy
     //      Double_t fRap = v0->Y(-3122);
@@ -3364,37 +3274,36 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   for(Int_t ij=0; ij<nRecJetsCuts; ++ij){                               // ij is an index running over the list of the reconstructed jets after most of the cuts, but not yet the leading track bias, all jets in event are looped
     
     AliAODJet* jet = (AliAODJet*) (fJetsRecCuts->At(ij));
-    
+
     Double_t jetPt  = jet->Pt();
     Double_t jetEta = jet->Eta();
     Double_t jetPhi = jet->Phi();
     
     //if(ij==0){ // loop over leading jets for ij = 0, for ij>= 0 look into all jets
-    
+
     if(ij>=0){//all jets in event
-      
+
       jettracklist->Clear();
       Double_t sumPt      = 0.;
       Bool_t isBadJet     = kFALSE;
       Int_t njetTracks    = 0;
-      
+
       if(GetFFRadius()<=0){
  	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
       } else {
  	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of charged hybrid tracks in cone around jet axis with cone Radius (= 0.4 standard), application of leading track cut
       }
-      
+
       //not applied at the moment:
-      if((GetFFMinNTracks()>0) && (jettracklist->GetSize() <= GetFFMinNTracks())) isBadJet = kTRUE; // reject jets with less tracks than fFFMinNTracks
-      
+      if(GetFFMinNTracks()>0 && jettracklist->GetSize() <= GetFFMinNTracks()) isBadJet = kTRUE; // reject jets with less tracks than fFFMinNTracks
+
       //APPLICATION OF REMAINING JET CUTS (leading track pt bias etc..) + NJ events
-      
       if(isBadJet) {
-	
+
 	nSelJets = nSelJets-1;//remove one jet from nSelJets (was initialized with nRecJetsCuts)
-	
+
 	if(nSelJets == 0){//case that event doesn't contain no selected jets at all and there are no jets remaining to be looped over
-	  
+
 	  fh1NJ->Fill(1.);//for normalisation by number of NJ events
      	  
 	  for(Int_t it=0; it<fListK0s->GetSize(); ++it){ // loop all K0s 
@@ -3485,17 +3394,19 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       //###################PYTHIA JET EMBEDDING#####################################################################################################
      
       if(!(fUseExtraTracks == 0)){//only for Embedding study used
+      
+	if(fUseExtraTracks == -1){//only for extraonly particles used
+	  TClonesArray *st = 0x0;//access MC stack to get MC truth information for V0 pT
+	  TList* listmc = fAOD->GetList();
+	  if (!listmc)continue;
+	  st = (TClonesArray*)listmc->FindObject(AliAODMCParticle::StdBranchName()); //get MCAOD branch in data
+	  if (!st)continue;
     
-	TClonesArray *st = 0x0;//access MC stack to get MC truth information for V0 pT
-	TList* listmc = fAOD->GetList();
-	if (!listmc)continue;
-	st = (TClonesArray*)listmc->FindObject(AliAODMCParticle::StdBranchName()); //get MCAOD branch in data
-	if (!st)continue;
+
+	  AliAODMCHeader *header=(AliAODMCHeader*)listmc->FindObject(AliAODMCHeader::StdBranchName());
+	  if(!header)continue;
+	}
 	
-	
-	AliAODMCHeader *header=(AliAODMCHeader*)listmc->FindObject(AliAODMCHeader::StdBranchName());
-	if(!header)continue;
-		
       	//std::cout<<"fCutFractionPtEmbedded: "<<fCutFractionPtEmbedded<<" fCutDeltaREmbedded: "<<fCutDeltaREmbedded<<std::endl;	
 
 	Double_t ptFractionEmbedded = 0; 
@@ -3534,8 +3445,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
 	    fh1DeltaREmbedded->Fill(deltaREmbedded);
 
-	    //if((fDebug>10) && ptFractionEmbedded > 0.5)){
-	      if(ptFractionEmbedded > 0.){// for testing purposes
+	    if((fDebug>10) && (ptFractionEmbedded > 0.5)){
+	      //if(ptFractionEmbedded > 0.5){// for testing purposes
 
 	      //cout<<" embeddedJet pt "<<embeddedJet->Pt()<<" fracPtEmbedded "<<ptFractionEmbedded<<" nConst "<<embeddedJet->GetRefTracks()->GetEntriesFast() <<endl;
 	      for(Int_t i=0; i<embeddedJet->GetRefTracks()->GetEntriesFast(); i++){
@@ -3676,6 +3587,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	    Int_t nnum;
 	    Int_t pnum;
+	    TList *listmc = fAOD->GetList();
 
 	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
 	    if(daughtercheck == kFALSE)continue; 
@@ -3706,9 +3618,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  }
 	  
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
-
-	    std::cout<<"MCPt :"<<MCPt<<std::endl;
-
 	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s,MCPt,fEta};
 	    
 	    
@@ -3820,7 +3729,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Int_t nnum;
 	    Int_t pnum;
-	    //	    TList *listmc = fAOD->GetList();
+	    TList *listmc = fAOD->GetList();
 
 	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
 	    if(daughtercheck == kFALSE)continue; 
@@ -3957,7 +3866,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Int_t nnum;
 	    Int_t pnum;
-	    //TList *listmc = fAOD->GetList();
+	    TList *listmc = fAOD->GetList();
 
 	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
 	    if(daughtercheck == kFALSE)continue; 

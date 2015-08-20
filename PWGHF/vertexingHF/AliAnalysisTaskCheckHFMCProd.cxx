@@ -50,10 +50,7 @@
 //          
 //*************************************************************************
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskCheckHFMCProd);
-/// \endcond
-
+ClassImp(AliAnalysisTaskCheckHFMCProd)
 //______________________________________________________________________________
 AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() : AliAnalysisTaskSE("HFMCChecks"), 
   fOutput(0),
@@ -131,7 +128,7 @@ AliAnalysisTaskCheckHFMCProd::~AliAnalysisTaskCheckHFMCProd(){
    
 //___________________________________________________________________________
 void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
-  /// create output histos
+  // create output histos
 
   fOutput = new TList();
   fOutput->SetOwner();
@@ -658,7 +655,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 //______________________________________________________________________________
 void AliAnalysisTaskCheckHFMCProd::Terminate(Option_t */*option*/)
 {
-  /// Terminate analysis
+  // Terminate analysis
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {     
     printf("ERROR: fOutput not available\n");

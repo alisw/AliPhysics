@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <cfloat>
 #include <map>
 #include <vector>
 
@@ -21,7 +20,6 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TObjArray.h>
-#include <TRandom.h>
 #include <TString.h>
 #include <TTree.h>
 
@@ -75,7 +73,6 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator():
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
-  fKeepFractionEvents(1.),
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fTriggerSetup("4classes"),
@@ -102,7 +99,6 @@ AliReducedHighPtEventCreator::AliReducedHighPtEventCreator(const char* name):
   fMaxPt(1000),
   fMinEta(-1000),
   fMaxEta(1000),
-  fKeepFractionEvents(1.),
   fApplyCentralitySelection(kFALSE),
   fCentralityMethod("V0A"),
   fTriggerSetup("4classes"),
@@ -315,8 +311,7 @@ void AliReducedHighPtEventCreator::AddVirtualTrackSelection(
 }
 
 /**
- * Apply standard event selection. Includes also downscaling if requested.
- * Note: Downscaling always applied after full event selection
+ * Apply standard event selection
  * \param event The event to check
  * \return True if the event was selected, false otherwise
  */
@@ -334,11 +329,6 @@ Bool_t AliReducedHighPtEventCreator::SelectEvent(AliVEvent* event) const {
   if(event->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return kFALSE;
   AliAnalysisUtils eventSelUtil;
   if(!eventSelUtil.IsVertexSelected2013pA(event)) return kFALSE;
-  if(fKeepFractionEvents < (1. - FLT_EPSILON)){
-    // Apply downscaling
-    Float_t choice = gRandom->Uniform(0., 1.);
-    if(choice > fKeepFractionEvents) return kFALSE;     // event rejected by downscaling
-  }
   return kTRUE;
 }
 

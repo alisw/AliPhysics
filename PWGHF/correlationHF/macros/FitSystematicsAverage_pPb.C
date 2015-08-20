@@ -31,18 +31,11 @@
 */
 
 
-TString inputpath = "";
+TString inputpath = "/Users/sandrobjelogrlic/Desktop/FinalPlots/";
 Bool_t useReflectedPlots = kTRUE;
 TString outputpath="";
 TString strAverage;
-Bool_t v2systOn=kFALSE;
-Double_t v2D=0.,v2had=0.;
-void SetV2values(Bool_t usev2=kTRUE,Double_t v2Dmes=0.1,Double_t v2hadrons=0.1, Bool_t plotseparate=kFALSE){
-  v2systOn=usev2;
-  plotv2Separated=plotseparate;
-  v2D=v2Dmes;
-  v2had=v2hadrons;
-}
+
 void SetInputPath(TString str){
   inputpath=str;
 }
@@ -71,11 +64,8 @@ void Systematics_pPb_lowpthad(Bool_t useReflected){
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
     systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
-    if(v2systOn){
-      systfitter->Setv2ForSystematics(v2had, v2D); // Set v2 values for the systematics (v2had, v2 D)
-      systfitter->SetPlotV2SystSeparately(plotv2Separated); // set true if you want the v2 box to be plotted separately
-    }
-
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
  //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
@@ -174,10 +164,8 @@ void Systematics_pPb_highpthad(Bool_t useReflected){
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
     systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
-    if(v2systOn){
-      systfitter->Setv2ForSystematics(v2had, v2D); // Set v2 values for the systematics (v2had, v2 D)
-      systfitter->SetPlotV2SystSeparately(plotv2Separated); // set true if you want the v2 box to be plotted separately
-    }
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
@@ -282,10 +270,8 @@ void Systematics_pPb_integratedpthad(Bool_t useReflected){
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
     systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
-    if(v2systOn){
-      systfitter->Setv2ForSystematics(v2had, v2D); // Set v2 values for the systematics (v2had, v2 D)
-      systfitter->SetPlotV2SystSeparately(plotv2Separated); // set true if you want the v2 box to be plotted separately
-    }
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
@@ -399,8 +385,8 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
     systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
-    //    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
-    systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kTRUE); // set true if you want the v2 box to be plotted separately
 
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
@@ -412,16 +398,16 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     if(useReflected){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
-    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
     //systfitter->CheckBaselineRanges();
     //return;
@@ -431,28 +417,19 @@ void SystematicsMC_pPb_highpthad(Bool_t useReflected,TString strTemplRootName){
     Bool_t ishistoadded;
     // add histograms to fit (different pt bins of the
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
-
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
-
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
-
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
         
     
     Bool_t setupfitter = systfitter->SetUpSystematicsFitter(); // set up the fitter (initializes variables)
@@ -513,8 +490,8 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
     systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
-    //    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
-    systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kTRUE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
@@ -525,16 +502,16 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     if(useReflected){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //  systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
-    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
     //systfitter->CheckBaselineRanges();
     //return;
@@ -544,26 +521,19 @@ void SystematicsMC_pPb_lowpthad(Bool_t useReflected,TString strTemplRootName){
     Bool_t ishistoadded;
     // add histograms to fit (different pt bins of the
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
-
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
         
     
     Bool_t setupfitter = systfitter->SetUpSystematicsFitter(); // set up the fitter (initializes variables)
@@ -624,8 +594,8 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     systfitter->SetUseCorrelatedSystematicsForWidths(kFALSE); //Delta phi independent systematics for the final systematics, ktrue will use them also for the widths, kfalse not (in my opinion, we should use kfalse)
     systfitter->SetCombineSystematicsMode(AliHFCorrFitSystematics::kRMS); // set method to compute the systematics due to the fixing of the baseline
     systfitter->SetIspPb(kTRUE); // kTrue for pPb, kFALSE for pp
-    //    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
-    systfitter->SetPlotV2SystSeparately(kFALSE); // set true if you want the v2 box to be plotted separately
+    systfitter->Setv2ForSystematics(0.1, 0.1); // Set v2 values for the systematics (v2had, v2 D)
+    systfitter->SetPlotV2SystSeparately(kTRUE); // set true if you want the v2 box to be plotted separately
     //   systfitter->SetFitRange(-0.5*TMath::Pi(),1.5*TMath::Pi()); // set the fit range
     
     if(useReflected) systfitter->SetFitRange(0,TMath::Pi()); // set the fit range
@@ -636,16 +606,16 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     if(useReflected){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
-    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
     //systfitter->CheckBaselineRanges();
     //return;
@@ -655,25 +625,19 @@ void SystematicsMC_pPb_integrpthad(Bool_t useReflected,TString strTemplRootName)
     Bool_t ishistoadded;
     // add histograms to fit (different pt bins of the
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    if(!ishistoadded){
-      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
-    }
-    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+    if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    
         
     
     Bool_t setupfitter = systfitter->SetUpSystematicsFitter(); // set up the fitter (initializes variables)

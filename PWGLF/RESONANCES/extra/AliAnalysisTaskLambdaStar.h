@@ -47,10 +47,8 @@ class AliAnalysisTaskLambdaStar : public AliAnalysisTaskSE {
   void  SetNSigma(Double_t nsigma){fNSigma = nsigma;}
   void  SetNMix(Int_t nmix){fNMix = nmix;}
   void  SetStrongCut(Bool_t nstrong){fStrong = nstrong;}
-  void  SetCentPatch(Int_t centp) {fCentPerPatch = centp ;}
-  void SetClusterTPC(Int_t clusterTPC){fClusterTPC = clusterTPC;}
-  void SetDCAxy(Float_t dcaxy){fDCAxy = dcaxy;}
-  void SetFilterBit(Int_t filterbitbit){fFilterBit = filterbitbit;}
+  void  SetCentPatch(Int_t centp)  
+  {fCentPerPatch = centp ;}
   
  private:
 
@@ -101,9 +99,6 @@ class AliAnalysisTaskLambdaStar : public AliAnalysisTaskSE {
   Int_t  fCentPerPatch;
   Bool_t  fStrong;
   ULong64_t fTriggerMask; // trigger mask
-  Int_t fClusterTPC;
-  Float_t fDCAxy;
-  Int_t fFilterBit;
 
   ResoBuffer     *fResoBuffer;           //! Event mixing: event collection
   AliAODEvent     *fAOD;                   //! AOD event

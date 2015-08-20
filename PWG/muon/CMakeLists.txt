@@ -83,7 +83,6 @@ set(SRCS
   AliAnalysisMuMuMinv.cxx
   AliAnalysisMuMuNch.cxx
   AliAnalysisTaskNorm.cxx
-  AliAnalysisCountTriggers.cxx
   )
 
 # Headers from sources

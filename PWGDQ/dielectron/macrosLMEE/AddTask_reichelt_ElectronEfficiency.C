@@ -34,7 +34,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
     gROOT->LoadMacro(configFilePath.Data());
   } else {
     std::cout << "config not found: " << configFilePath.Data() << std::endl;
-    return 0; // if return is not called, the job will fail instead of running without this task... (good for local tests, bad for train)
+    return 0; // if return is not called, the job will fail instead of running wihout this task... (good for local tests, bad for train)
   }
   TString configLMEECutLib("LMEECutLib_reichelt.C");
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
@@ -93,11 +93,6 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(Char_t* outputFileName="rei
   else                task->SetWriteTree(writeTree);
   task->SetSupportedCutInstance(supportedCutInstance);
   task->CreateHistoGen();
-  
-  // Post PID correction
-  SetupITSSigmaEleCorrection(task);
-  SetupTPCSigmaEleCorrection(task);
-  
   
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliAnalysisFilter *trackCuts = SetupTrackCutsAndSettings(i, bESDANA); // main function in config file

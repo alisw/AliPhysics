@@ -75,15 +75,9 @@ Bool_t IsRunNum ( TString stringToken )
 
 
 //_____________________________________________________________________________
-void SetRunAxisRange ( TH1* histo, TString runAxis = "X" )
+void SetRunAxisRange ( TAxis* axis )
 {
   /// Set axis range
-  runAxis.ToUpper();
-  TAxis* axis = histo->GetXaxis();
-  if ( runAxis == "Y" ) axis = histo->GetYaxis();
-  else if ( runAxis == "Z" ) axis = histo->GetZaxis();
-  histo->LabelsOption("v",runAxis.Data());
-  axis->SetLabelSize(0.02);
   for ( Int_t ibin=1; ibin<=axis->GetNbins(); ibin++ ) {
     TString binLabel = axis->GetBinLabel(ibin);
     if ( ! binLabel.IsNull()) continue;
@@ -531,7 +525,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
   for ( Int_t ihisto=0; ihisto<effVsRunList.GetEntries(); ihisto++ ) {
     TH1* histo = static_cast<TH1*>(effVsRunList.At(ihisto));
     if ( ! histo ) continue;
-    SetRunAxisRange(histo);
+    SetRunAxisRange(histo->GetXaxis());
     outList.Add(histo);
     //histo->GetXaxis()->SetLabelSize(0.03);
   }
@@ -680,7 +674,7 @@ void MaskTrending ( TObjArray runNumArray, TString defaultStorage, TList& outCan
   for ( Int_t imask=0; imask<maskedList.GetEntries(); imask++ ) {
     TH2* histo = static_cast<TH2*>(maskedList.At(imask));
     histo->Divide(static_cast<TH2*>(auxList.At(imask)));
-    SetRunAxisRange(histo);
+    SetRunAxisRange(histo->GetXaxis());
     outList.Add(histo);
     
     canName = Form("%sCan", histo->GetName());
@@ -811,7 +805,7 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
           if ( itype == 1 && iScaler != kL0B ) continue;
           
           //from Scalers
-          TGraph* graph = triggerScaler.PlotTrigger(currTrigName.Data(),sScaler[iScaler].Data(),kFALSE);
+          TGraph* graph = triggerScaler.PlotTrigger(currTrigName.Data(),sScaler[iScaler].Data());
         
           sHistName = Form("%s_%s",currTrigName.Data(),sScaler[iScaler].Data());
           sHistNameFull = Form("Scalers_%s",sHistName.Data());
@@ -819,8 +813,6 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
           TH1* hist = (TH1*) hFromScalers.FindObject(sHistNameFull);
           if ( ! hist ) {
             hist = new TH1D(sHistNameFull,sHistName,nRuns,1.,1.+(Double_t)nRuns);
-            hist->LabelsOption("v");
-            hist->GetXaxis()->SetLabelSize(0.02);
             hist->SetDirectory(0);
             hist->SetMinimum(1);
             hist->SetMaximum(maxScaler[0]);

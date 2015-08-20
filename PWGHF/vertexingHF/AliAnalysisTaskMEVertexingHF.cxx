@@ -40,10 +40,7 @@
 #include "AliAnalysisManager.h"
 #include "AliMultiEventInputHandler.h"
 
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskMEVertexingHF);
-/// \endcond
+ClassImp(AliAnalysisTaskMEVertexingHF)
 
 //________________________________________________________________________
 AliAnalysisTaskMEVertexingHF::AliAnalysisTaskMEVertexingHF(const char *name) : 
@@ -60,14 +57,14 @@ fCascadesTClArr(0),
 fLikeSign2ProngTClArr(0),
 fLikeSign3ProngTClArr(0)
 {
-  /// Constructor
+  // Constructor
 }
 //________________________________________________________________________
 void AliAnalysisTaskMEVertexingHF::Init()
 {
- /// Initialization
- /// Instanciates vHF and loads its parameters
- /// Some parameters are changed
+ // Initialization
+ // Instanciates vHF and loads its parameters
+ // Some parameters are changed
  
   if(gROOT->LoadMacro("ConfigVertexingHF.C")) {
     printf("AnalysisTaskMEVertexingHF::Init() \n Using $ALICE_PHYSICS/PWG3/vertexingHF/ConfigVertexingHF.C\n");
@@ -93,7 +90,7 @@ void AliAnalysisTaskMEVertexingHF::Init()
 //________________________________________________________________________
 void AliAnalysisTaskMEVertexingHF::UserCreateOutputObjects()
 {  
-/// Create the output container
+// Create the output container
 
 
   if (!AODEvent()) {
@@ -159,9 +156,9 @@ void AliAnalysisTaskMEVertexingHF::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskMEVertexingHF::UserExec(Option_t *) 
 {
-  /// Execute analysis for current event:
-  /// first build the mixed event, compute the new primary vtx
-  /// then heavy flavor vertexing
+  // Execute analysis for current event:
+  // first build the mixed event, compute the new primary vtx 
+  // then heavy flavor vertexing 
 
   Int_t nev = fInputHandler->GetBufferSize();
   fMixedEvent = new AliMixedEvent();
@@ -232,5 +229,5 @@ void AliAnalysisTaskMEVertexingHF::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskMEVertexingHF::Terminate(Option_t *) 
 {
-  /// Terminate analysis
+  // Terminate analysis
 }

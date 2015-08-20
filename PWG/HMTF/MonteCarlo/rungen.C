@@ -182,10 +182,9 @@ void fastGen(Tune_t tune  , Float_t energy, Int_t nev , const Int_t nMultClasses
     //  Finish event
     header->SetNprimary(stack->GetNprimary());
 
-    // Set weight of event
-    // (taking into account what might already come from the generator!)
+    //Set weight of event
     AliGenEventHeader* eventheader = (AliGenEventHeader*) header->GenEventHeader();
-    eventheader->SetEventWeight(evScaling * eventheader->EventWeight());
+    eventheader->SetEventWeight(evScaling);
 //    eventheader->SetNtransported(stack->GetNtransported());      
     header->SetNtrack(stack->GetNtrack());  
     //      I/O

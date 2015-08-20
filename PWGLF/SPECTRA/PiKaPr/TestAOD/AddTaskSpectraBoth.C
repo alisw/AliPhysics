@@ -18,9 +18,9 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
 					     UInt_t minNclsTPC=70,
 					     Int_t nrebin=0,
 					     TString centestimator="V0M",
-					     Int_t pidmethod=3,
-					     TString taskname="")
- {
+					     Int_t pidmethod=2, 	 					
+					     Float_t tpcshift=0.0,
+					     Float_t tofshift=0.0){
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 
@@ -37,8 +37,8 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
       return NULL;
     }   
   
-  //TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  //if(type.Contains("ESD"))
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+ // if(type.Contains("ESD"))
    // {
     //  ::Error("AddTaskITSsaTracks", "This task requires to run on AOD");
     //  return NULL;
@@ -46,13 +46,11 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
   
   using namespace AliSpectraNameSpaceBoth;
   
-  TString opt=Form("Cent%.3fto%.3f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%dEst_%s_Pid_%d_Y%.1fto%.1f",CentCutMin,CentCutMax,QvecCutMin,QvecCutMax,EtaMin,EtaMax,Nsigmapid,trkbit,centestimator.Data(),pidmethod,ymin,ymax);
-  if(taskname.Length()>0)
-	opt=taskname;	
-
-	
+  TString opt=Form("Est_%s_Pid_%d_Y%.1fto%.1f", centestimator.Data(),pidmethod,ymin,ymax);	
   AliSpectraBothPID *pid = new AliSpectraBothPID(); 
   pid->SetNSigmaCut(Nsigmapid);
+  pid->SetShiftTPC(tpcshift);
+  pid->SetShiftTOF(tofshift);
   if(pidmethod==0)
 	pid->SetPIDtype(AliSpectraBothPID::kNSigmaTPC);
   else if (pidmethod==1)
@@ -82,7 +80,16 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
   if(mc==1)evcuts->SetIsMC(kTRUE);
   evcuts->PrintCuts();
   
-  AliAnalysisTaskSpectraBoth *task = new AliAnalysisTaskSpectraBoth(Form("TaskBothSpectra%s",opt.Data()));
+  AliAnalysisTaskSpectraBoth *task = new AliAnalysisTaskSpectraBoth(Form("TaskBothSpectraCent%.3fto%.3f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",	
+  								       CentCutMin,
+  								       CentCutMax,
+  								       QvecCutMin,
+  								       QvecCutMax,
+  								       EtaMin,
+  								       EtaMax,
+  								       Nsigmapid,
+  								       trkbit,
+								       opt.Data()));
   task->SetPID(pid);  
   task->SetEventCuts(evcuts);
   task->SetTrackCuts(trcuts);
@@ -92,9 +99,9 @@ AliAnalysisTaskSpectraBoth* AddTaskSpectraBoth(Bool_t mc=kFALSE,
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   
   TString typeofdata=mc?"MC":"Data";
-  outputFileName += Form(":OutputBothSpectraTask_%s_%s",typeofdata.Data(),opt.Data());
+  outputFileName += Form(":OutputBothSpectraTask_%s_Cent%.3fto%.3f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType(),opt.Data());
   
-  TString tmpstring= Form("OutputBothSpectraTask_%s_%s",typeofdata.Data(),opt.Data());
+  TString tmpstring= Form("OutputBothSpectraTask_%s_Cent%.3fto%.3f_QVec%.1fto%.1f_Eta%.1fto%.1f_%.1fSigmaPID_TrBit%d%s",typeofdata.Data(),evcuts->GetCentralityMin(),evcuts->GetCentralityMax(),evcuts->GetQVectorCutMin(), evcuts->GetQVectorCutMax(),trcuts->GetEtaMin(),trcuts->GetEtaMax(),pid->GetNSigmaCut(),trcuts->GetTrackType(),opt.Data());
   
   cout<<"outputFileName:  "<<outputFileName<<endl;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();      

@@ -1304,6 +1304,7 @@ struct TupleSelector : public TSelector
    * 
    * @param maxEvents Maximum number of events 
    * @param title     Optional title 
+   * @param maxFiles  Maximum number of files to put in chain 
    * 
    * @return true on sucess 
    */

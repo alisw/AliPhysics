@@ -55,8 +55,6 @@ private:
   TH2F        *fHistTimePerPM_Corr;
   TH2F	      *fHistTimeVsChargeADA_Corr;
   TH2F	      *fHistTimeVsChargeADC_Corr;
-  TH2F	      *fHistTimeVsChargeADA_Cut;
-  TH2F	      *fHistTimeVsChargeADC_Cut;
   TH2F        *fHistWidthPerPM;
   TH2F	      *fHistWidthVsCharge;
   TH1F        *fHistNBBflagsADA;
@@ -73,8 +71,7 @@ private:
   TH2F	      *fHistNBGCoincidencesADAVsADC;
   TH1F	      *fHistChargeNoFlag;
   TH2F	      *fHistTimeNoFlag;
-  TH2F	      *fHistChargeNoTime;
-  TH1F	      *fHistFlagNoTime;	
+  TH1F	      *fHistChargeNoTime;
   TH2F	      *fHistChargePerCoincidence;
   
   TH1F	      *fHistMeanTimeADA;
@@ -107,7 +104,7 @@ private:
   AliAnalysisTaskADQA(const AliAnalysisTaskADQA&);            // not implemented
   AliAnalysisTaskADQA& operator=(const AliAnalysisTaskADQA&); // not implemented
   
-  ClassDef(AliAnalysisTaskADQA, 4);
+  ClassDef(AliAnalysisTaskADQA, 3);
 };
 
 #endif

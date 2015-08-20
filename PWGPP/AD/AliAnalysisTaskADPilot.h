@@ -57,8 +57,6 @@ private:
   TH2F        *fHistTimePerPM_Corr;
   TH2F	      *fHistTimeVsChargeADA_Corr;
   TH2F	      *fHistTimeVsChargeADC_Corr;
-  TH2F	      *fHistTimeVsChargeADA_Cut;
-  TH2F	      *fHistTimeVsChargeADC_Cut;
   TH2F        *fHistWidthPerPM;
   TH2F	      *fHistWidthVsCharge;
   TH1F        *fHistNBBflagsADA;
@@ -75,8 +73,7 @@ private:
   TH2F	      *fHistNBGCoincidencesADAVsADC;
   TH1F	      *fHistChargeNoFlag;
   TH2F	      *fHistTimeNoFlag;
-  TH2F	      *fHistChargeNoTime;
-  TH1F	      *fHistFlagNoTime;
+  TH1F	      *fHistChargeNoTime;
   TH2F	      *fHistChargePerCoincidence;
   
   TH1F	      *fHistMeanTimeADA;
@@ -84,8 +81,7 @@ private:
   TH1F	      *fHistMeanTimeDifference;
   TH2F	      *fHistMeanTimeCorrelation;
   TH2F	      *fHistMeanTimeSumDiff;
-  TH2F	      *fHistDecisionBasic;
-  TH2F	      *fHistDecisionRobust;
+  TH2F	      *fHistDecision;
   
   TH1F	      *fHistTriggerMasked;
   TH1F	      *fHistTriggerUnMasked;
@@ -117,12 +113,6 @@ private:
   TH1F	      *fHistNTimesRobustADC;
   TH2F	      *fHistMedianIndDiffVsChargeADA;
   TH2F	      *fHistMedianIndDiffVsChargeADC;
-  TH2F	      *fHistTimePairSumDiffADA_NoCut;
-  TH2F	      *fHistTimePairSumDiffADC_NoCut;
-  TH2F	      *fHistTimePairSumDiffADA_Cut;
-  TH2F	      *fHistTimePairSumDiffADC_Cut;
-  TH2F	      *fHistTimeVsChargeADA_Ex;
-  TH2F	      *fHistTimeVsChargeADC_Ex;
   
   Int_t        fRun;
   Int_t        fOldRun;

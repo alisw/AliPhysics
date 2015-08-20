@@ -6,9 +6,9 @@
 /* $Id$ */
 
 //***********************************************************
-/// \class Class AliRDHFCuts
-/// \brief base class for cuts on AOD reconstructed heavy-flavour decays
-/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
+// Class AliRDHFCuts
+// base class for cuts on AOD reconstructed heavy-flavour decays
+// Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
 #include <TString.h>
@@ -115,7 +115,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     fUseOnlyOneTrigger=kTRUE;
   }
   //
-  ///  Setters (helpers) for pp 2012 data
+  //  Setters (helpers) for pp 2012 data
   void SetUseInt1TriggerPP2012(){
     fTriggerMask=AliVEvent::kMB;
     fTriggerClass[0]="CINT1";
@@ -206,7 +206,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetKinkRejection(Bool_t flag=kTRUE) {fKinkReject=flag; return;}
   void SetUseTrackSelectionWithFilterBits(Bool_t flag=kTRUE){ 
     fUseTrackSelectionWithFilterBits=flag; return;}
-  void SetUseCentrality(Int_t flag=1);    /// see enum below
+  void SetUseCentrality(Int_t flag=1);    // see enum below
   void SetPidHF(AliAODPidHF* pidObj) {
     if(fPidHF) delete fPidHF;
     fPidHF=new AliAODPidHF(*pidObj);
@@ -216,7 +216,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMaxPtCandidate(Double_t ptCand=1000.) {fMaxPtCand=ptCand; return;}
   void SetMaxRapidityCandidate(Double_t ycand) {fMaxRapidityCand=ycand; return;}
   void SetOptPileup(Int_t opt=0){
-    /// see enum below
+    // see enum below
     fOptPileup=opt;
   }
   void SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
@@ -345,7 +345,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetKeepSignalMC() {fKeepSignalMC=kTRUE; return;}
 
-  /// Flag and pt-maximum to check if the candidate daughters fulfill the kFirst criteria
+  // Flag and pt-maximum to check if the candidate daughters fulfill the kFirst criteria
   void SetSelectCandTrackSPDFirst( Bool_t flag, Double_t ptmax )
   { fIsCandTrackSPDFirst=flag; fMaxPtCandTrackSPDFirst=ptmax; }
   Bool_t IsSelectCandTrackSPDFirst() const { return fIsCandTrackSPDFirst; }
@@ -363,73 +363,71 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsSignalMC(AliAODRecoDecay *d,AliAODEvent *aod,Int_t pdg) const;
   Bool_t RecomputePrimaryVertex(AliAODEvent* event) const;
 
-  /// cuts on the event
-  Int_t fMinVtxType; /// 0: not cut; 1: SPDZ; 2: SPD3D; 3: Tracks
-  Int_t fMinVtxContr;   /// minimum vertex contributors
-  Float_t fMaxVtxRedChi2; /// maximum chi2/ndf
-  Float_t fMaxVtxZ; /// maximum |z| of primary vertex
-  Int_t fMinSPDMultiplicity; /// SPD multiplicity
-  ULong64_t fTriggerMask; /// trigger mask
-  Bool_t fUseOnlyOneTrigger; /// flag to select one trigger only
-  TString  fTriggerClass[2]; /// trigger class
-  /// quality cuts on the daughter tracks
-  AliESDtrackCuts *fTrackCuts; /// tracks for daughter tracks (AOD converted to ESD on the flight!)
-  /// cuts on the candidate
-  Int_t fnPtBins;  /// number of pt bins for cuts
-  Int_t fnPtBinLimits; /// "number of limits", that is fnPtBins+1
+  // cuts on the event
+  Int_t fMinVtxType; // 0: not cut; 1: SPDZ; 2: SPD3D; 3: Tracks
+  Int_t fMinVtxContr;   // minimum vertex contributors
+  Float_t fMaxVtxRedChi2; // maximum chi2/ndf
+  Float_t fMaxVtxZ; // maximum |z| of primary vertex
+  Int_t fMinSPDMultiplicity; // SPD multiplicity
+  ULong64_t fTriggerMask; // trigger mask
+  Bool_t fUseOnlyOneTrigger; // flag to select one trigger only
+  TString  fTriggerClass[2]; // trigger class
+  // quality cuts on the daughter tracks
+  AliESDtrackCuts *fTrackCuts; // tracks for daughter tracks (AOD converted to ESD on the flight!)
+  // cuts on the candidate
+  Int_t fnPtBins;  // number of pt bins for cuts
+  Int_t fnPtBinLimits; // "number of limits", that is fnPtBins+1
   Float_t* fPtBinLimits; //[fnPtBinLimits]  pt bins
-  Int_t fnVars;    /// number of cut vars for candidates
+  Int_t fnVars;    // number of cut vars for candidates
   TString *fVarNames; //[fnVars] names of the variables
-  Int_t fnVarsForOpt;    /// number of cut vars to be optimized for candidates
+  Int_t fnVarsForOpt;    // number of cut vars to be optimized for candidates
   Bool_t *fVarsForOpt; //[fnVars] kTRUE for vars to be used in optimization
-  Int_t fGlobalIndex; /// fnVars*fnPtBins
+  Int_t fGlobalIndex; // fnVars*fnPtBins
   Float_t *fCutsRD; //[fGlobalIndex] the cuts values
   Bool_t  *fIsUpperCut; //[fnVars] use > or < to select
-  Bool_t fUsePID; /// enable PID usage (off by default)
-  Bool_t fUseAOD049; /// enable AOD049 centrality cleanup
-  AliAODPidHF *fPidHF; /// PID for heavy flavours manager
-  Int_t fWhyRejection; /// used to code the step at which candidate was rejected
+  Bool_t fUsePID; // enable PID usage (off by default)
+  Bool_t fUseAOD049; // enable AOD049 centrality cleanup
+  AliAODPidHF *fPidHF; // PID for heavy flavours manager
+  Int_t fWhyRejection; // used to code the step at which candidate was rejected
   UInt_t fEvRejectionBits; //bit map storing the full info about event rejection
-  Bool_t fRemoveDaughtersFromPrimary; /// flag to switch on the removal of duaghters from the primary vertex computation
-  Bool_t fUseMCVertex; /// use MC primary vertex 
-  Bool_t fUsePhysicsSelection; /// use Physics selection criteria
-  Int_t  fOptPileup;      /// option for pielup selection
-  Int_t  fMinContrPileup; /// min. n. of tracklets in pileup vertex
-  Float_t fMinDzPileup;   /// min deltaz between main and pileup vertices
-  Int_t   fUseCentrality; /// off =0 (default)
-                          /// 1 = V0 
-                          /// 2 = Tracks
-                          /// 3 = Tracklets
-                          /// 4 = SPD clusters outer 
-  Float_t fMinCentrality; /// minimum centrality for selected events
-  Float_t fMaxCentrality; /// maximum centrality for selected events
-  Bool_t  fFixRefs;       /// fix the daughter track references 
-  Int_t  fIsSelectedCuts; /// outcome of cuts selection
-  Int_t  fIsSelectedPID;  /// outcome of PID selection
-  Double_t fMinPtCand; /// minimum pt of the candidate
-  Double_t fMaxPtCand; /// minimum pt of the candidate
-  Double_t fMaxRapidityCand; /// max rapidity of candidate (if !=-999 overrides IsInFiducialAcceptance)
-  Bool_t  fKeepSignalMC; /// IsSelected returns always kTRUE for MC signal
-  Bool_t fIsCandTrackSPDFirst; /// flag to select the track kFirst criteria for pt < ptlimit
-  Double_t fMaxPtCandTrackSPDFirst; /// maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
-  Bool_t fApplySPDDeadPbPb2011;  /// flag to apply SPD dead module map of PbPb2011
-  Bool_t fApplySPDMisalignedPP2012; /// flag to apply cut on tracks crossing SPD misaligned modules for PP2012 data
-  Double_t fMaxDiffTRKV0Centr;   /// Max. difference between TRK and V0 centrality (remove TPC pileup for PbPb 2011)
-  Bool_t fRemoveTrackletOutliers; /// flag to apply cut on tracklets vs. centrality for 2011 data
-  Int_t fCutOnzVertexSPD; /// cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
-  Bool_t fKinkReject; /// flag to reject kink daughters
-  Bool_t fUseTrackSelectionWithFilterBits; /// flag to enable/disable the check on filter bits
-  Bool_t fUseCentrFlatteningInMC; /// flag for enabling/diabling centrality flattening in MC
-  TH1F *fHistCentrDistr;   /// histogram with reference centrality distribution for centrality distribution flattening
-  Float_t fCutRatioClsOverCrossRowsTPC; /// min. value ratio NTPCClusters/NTPCCrossedRows, cut if !=0
-  Float_t fCutRatioSignalNOverCrossRowsTPC;   /// min. value ratio TPCPointsUsedForPID/NTPCCrossedRows, cut if !=0 
-  TString fCutMinCrossedRowsTPCPtDep; /// pT-dep cut in TPC minimum n crossed rows
-  TFormula *f1CutMinNCrossedRowsTPCPtDep; /// pT-dep cut in TPC minimum n crossed rows
+  Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
+  Bool_t fUseMCVertex; // use MC primary vertex 
+  Bool_t fUsePhysicsSelection; // use Physics selection criteria
+  Int_t  fOptPileup;      // option for pielup selection
+  Int_t  fMinContrPileup; // min. n. of tracklets in pileup vertex
+  Float_t fMinDzPileup;   // min deltaz between main and pileup vertices
+  Int_t   fUseCentrality; // off =0 (default)
+                          // 1 = V0 
+                          // 2 = Tracks
+                          // 3 = Tracklets
+                          // 4 = SPD clusters outer 
+  Float_t fMinCentrality; // minimum centrality for selected events
+  Float_t fMaxCentrality; // maximum centrality for selected events
+  Bool_t  fFixRefs;       // fix the daughter track references 
+  Int_t  fIsSelectedCuts; // outcome of cuts selection
+  Int_t  fIsSelectedPID;  // outcome of PID selection
+  Double_t fMinPtCand; // minimum pt of the candidate
+  Double_t fMaxPtCand; // minimum pt of the candidate
+  Double_t fMaxRapidityCand; // max rapidity of candidate (if !=-999 overrides IsInFiducialAcceptance)
+  Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
+  Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
+  Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
+  Bool_t fApplySPDDeadPbPb2011;  // flag to apply SPD dead module map of PbPb2011
+  Bool_t fApplySPDMisalignedPP2012; // flag to apply cut on tracks crossing SPD misaligned modules for PP2012 data
+  Double_t fMaxDiffTRKV0Centr;   // Max. difference between TRK and V0 centrality (remove TPC pileup for PbPb 2011)
+  Bool_t fRemoveTrackletOutliers; // flag to apply cut on tracklets vs. centrality for 2011 data
+  Int_t fCutOnzVertexSPD; // cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
+  Bool_t fKinkReject; // flag to reject kink daughters
+  Bool_t fUseTrackSelectionWithFilterBits; // flag to enable/disable the check on filter bits
+  Bool_t fUseCentrFlatteningInMC; // flag for enabling/diabling centrality flattening in MC
+  TH1F *fHistCentrDistr;   // histogram with reference centrality distribution for centrality distribution flattening
+  Float_t fCutRatioClsOverCrossRowsTPC; // min. value ratio NTPCClusters/NTPCCrossedRows, cut if !=0
+  Float_t fCutRatioSignalNOverCrossRowsTPC;   // min. value ratio TPCPointsUsedForPID/NTPCCrossedRows, cut if !=0 
+  TString fCutMinCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
+  TFormula *f1CutMinNCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
  
 
-  /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,36);  /// base class for cuts on AOD reconstructed heavy-flavour decays
-  /// \endcond
+  ClassDef(AliRDHFCuts,36);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

@@ -64,9 +64,7 @@
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskSEDStarSpectra.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEDStarSpectra);
-/// \endcond
+ClassImp(AliAnalysisTaskSEDStarSpectra)
 
 //__________________________________________________________________________
 AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():  
@@ -93,7 +91,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   fDoDStarVsY(kFALSE)
 {
   //
-  /// Default ctor
+  // Default ctor
   //
   for(Int_t i=0;i<5;i++) fHistMassPtImpParTCDs[i]=0;
 }
@@ -122,7 +120,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
   fDoDStarVsY(kFALSE)
 {
   //
-  /// Constructor. Initialization of Inputs and Outputs
+  // Constructor. Initialization of Inputs and Outputs
   //
   Info("AliAnalysisTaskSEDStarSpectra","Calling Constructor");
 
@@ -139,7 +137,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name,
 //___________________________________________________________________________
 AliAnalysisTaskSEDStarSpectra::~AliAnalysisTaskSEDStarSpectra() {
   //
-  /// destructor
+  // destructor
   //
   Info("~AliAnalysisTaskSEDStarSpectra","Calling Destructor");
   
@@ -156,7 +154,7 @@ AliAnalysisTaskSEDStarSpectra::~AliAnalysisTaskSEDStarSpectra() {
 //_________________________________________________
 void AliAnalysisTaskSEDStarSpectra::Init(){
   //
-  /// Initialization
+  // Initialization
   //
 
   if(fDebug > 1) printf("AnalysisTaskSEDStarSpectra::Init() \n");
@@ -170,7 +168,7 @@ void AliAnalysisTaskSEDStarSpectra::Init(){
 //_________________________________________________
 void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 {
-  /// user exec
+  // user exec
   if (!fInputEvent) {
     Error("UserExec","NO EVENT FOUND!");
     return;
@@ -484,9 +482,9 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskSEDStarSpectra::Terminate(Option_t*)
 {    
-  /// The Terminate() function is the last function to be called during
-  /// a query. It always runs on the client, it can be used to present
-  /// the results graphically or save the results to file.
+  // The Terminate() function is the last function to be called during
+  // a query. It always runs on the client, it can be used to present
+  // the results graphically or save the results to file.
   
   //Info("Terminate","");
   AliAnalysisTaskSE::Terminate();
@@ -517,7 +515,7 @@ void AliAnalysisTaskSEDStarSpectra::Terminate(Option_t*)
 }
 //___________________________________________________________________________
 void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() { 
- /// output
+ // output
   Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
   
   //slot #1  
@@ -551,7 +549,7 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
 }
 //___________________________________ hiostograms _______________________________________
 void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
-  /// Create histograms
+  // Create histograms
 
   fCEvents = new TH1F("fCEvents","conter",11,0,11);
   fCEvents->SetStats(kTRUE);
@@ -860,7 +858,7 @@ void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
 //________________________________________________________________________
 void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts,Int_t isSel, TList *listout){
   //
-  /// Fill histos for D* spectrum
+  // Fill histos for D* spectrum
   //
   
   if(!isSel) return;
@@ -963,9 +961,9 @@ void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_
 //______________________________ side band background for D*___________________________________
 void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part,  AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout){
 
-  ///  D* side band background method. Two side bands, in M(Kpi) are taken at ~6 sigmas
-  /// (expected detector resolution) on the left and right frm the D0 mass. Each band
-  ///  has a width of ~5 sigmas. Two band needed  for opening angle considerations
+  //  D* side band background method. Two side bands, in M(Kpi) are taken at ~6 sigmas 
+  // (expected detector resolution) on the left and right frm the D0 mass. Each band
+  //  has a width of ~5 sigmas. Two band needed  for opening angle considerations   
 
   if(!isSel) return;
 
@@ -990,7 +988,7 @@ void AliAnalysisTaskSEDStarSpectra::SideBandBackground(AliAODRecoCascadeHF *part
 //________________________________________________________________________________________________________________
 void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,  AliRDHFCutsDStartoKpipi *cuts, TList *listout){
   //
-  /// assign the wrong charge to the soft pion to create background
+  // assign the wrong charge to the soft pion to create background
   //
   Int_t ptbin=cuts->PtBin(part->Pt());
   
@@ -1088,7 +1086,7 @@ Int_t AliAnalysisTaskSEDStarSpectra::CheckOrigin(TClonesArray* arrayMC, const Al
 }
 //-------------------------------------------------------------------------------------
 Float_t AliAnalysisTaskSEDStarSpectra::GetTrueImpactParameterD0(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const {
-  /// true impact parameter calculation
+  // true impact parameter calculation
 
   Double_t vtxTrue[3];
   mcHeader->GetVertex(vtxTrue);
@@ -1130,7 +1128,7 @@ Float_t AliAnalysisTaskSEDStarSpectra::GetTrueImpactParameterD0(const AliAODMCHe
 }
 //______________________________________________________-
 void AliAnalysisTaskSEDStarSpectra::CreateImpactParameterHistos(){
-  /// Histos for impact paramter study
+  // Histos for impact paramter study
 
   Int_t nbins[3]={400,200,fNImpParBins};
   Double_t xmin[3]={1.75,0.,fLowerImpPar};

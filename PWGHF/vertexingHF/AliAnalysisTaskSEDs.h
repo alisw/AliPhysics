@@ -6,12 +6,12 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////
-///                                                                      //
-/// \class Analysis task to produce Ds candidates mass spectra           //
-/// \author Origin: F.Prino, Torino, prino@to.infn.it                    //
-///                                                                      //
-//////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
+//                                                               //
+// Analysis task to produce Ds candidates mass spectra           //
+// Origin: F.Prino, Torino, prino@to.infn.it                     //
+//                                                               //
+///////////////////////////////////////////////////////////////////
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -44,7 +44,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
-  /// Implementation of interface methods
+  // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -62,57 +62,55 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source); 
 
-  TList*  fOutput;                    //!<! list send on output slot 0
-  TH1F*   fHistNEvents;               //!<! hist. for No. of events  
-  TH1F*   fChanHist[4];               //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
-  TH1F*   fMassHist[4*kMaxPtBins];    //!<! hist. of mass spectra (sig,bkg,tot)
-  TH1F*   fMassHistPhi[4*kMaxPtBins];    //!<! hist. of mass spectra via phi (sig,bkg,tot)
-  TH1F*   fMassHistK0st[4*kMaxPtBins];    //!<! hist. of mass spectra via K0* (sig,bkg,tot)
-  TH1F*   fMassHistKK[kMaxPtBins];    //!<! hist. of mass spectra of KK
-  TH1F*   fMassHistKpi[kMaxPtBins];    //!<! hist. of mass spectra of Kpi
-  TH1F*   fCosPHist[4*kMaxPtBins];    //!<! hist. of cos pointing angle (sig,bkg,tot)
-  TH1F*   fDLenHist[4*kMaxPtBins];    //!<! hist. of decay length (sig,bkg,tot)
-  TH1F*   fSumd02Hist[4*kMaxPtBins];  //!<! hist. for sum d02 (Prod Cuts)
-  TH1F*   fSigVertHist[4*kMaxPtBins]; //!<! hist. for sigVert (Prod Cuts)
-  TH1F*   fPtMaxHist[4*kMaxPtBins];   //!<! hist. for Pt Max (Prod Cuts)
-  TH1F*   fPtCandHist[4*kMaxPtBins];  //!<! hist. for Pt Max (Prod Cuts)
-  TH1F*   fDCAHist[4*kMaxPtBins];     //!<! hist. for DCA (Prod Cuts)
-  TH1F*   fPtProng0Hist[4*kMaxPtBins]; //!<! hist. for Pt Max (Prod Cuts)
-  TH1F*   fPtProng1Hist[4*kMaxPtBins]; //!<! hist. for DCA (Prod Cuts)
-  TH1F*   fPtProng2Hist[4*kMaxPtBins]; //!<! hist. for DCA (Prod Cuts)
-  TH2F*   fDalitz[4*kMaxPtBins];      //!<! dalitz plot (sig,bkg,tot)
-  TH2F*   fDalitzPhi[4*kMaxPtBins];   //!<! dalitz plot via phi (sig,bkg,tot)
-  TH2F*   fDalitzK0st[4*kMaxPtBins];   //!<! dalitz plot via K0* (sig,bkg,tot)
-  TH2F *fPtVsMass;    //!<! hist. of pt vs. mass (prod. cuts)
-  TH2F *fPtVsMassPhi;    //!<! hist. of pt vs. mass (phi selection)
-  TH2F *fPtVsMassK0st;   //!<! hist. of pt vs. mass (K0* selection)
-  TH2F *fYVsPt;       //!<! hist. of Y vs. Pt (prod. cuts)
-  TH2F *fYVsPtSig;    //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
-  TH1F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
-  TH2F *fHistCentralityMult[3];//!<!hist. for cent distr vs mult (all,sel ev, )
-  TNtuple *fNtupleDs; //!<! output ntuple
-  Int_t fFillNtuple;                 /// 0 not to fill ntuple
-                                     /// 1 for filling ntuple for events through Phi
-                                     /// 2 for filling ntuple for events through K0Star
-                                     /// 3 for filling all
+  TList*  fOutput;                    //! list send on output slot 0
+  TH1F*   fHistNEvents;               //! hist. for No. of events  
+  TH1F*   fChanHist[4];               //! hist. with KKpi and piKK candidates (sig,bkg,tot)
+  TH1F*   fMassHist[4*kMaxPtBins];    //! hist. of mass spectra (sig,bkg,tot)
+  TH1F*   fMassHistPhi[4*kMaxPtBins];    //! hist. of mass spectra via phi (sig,bkg,tot)
+  TH1F*   fMassHistK0st[4*kMaxPtBins];    //! hist. of mass spectra via K0* (sig,bkg,tot)
+  TH1F*   fMassHistKK[kMaxPtBins];    //! hist. of mass spectra of KK
+  TH1F*   fMassHistKpi[kMaxPtBins];    //! hist. of mass spectra of Kpi
+  TH1F*   fCosPHist[4*kMaxPtBins];    //! hist. of cos pointing angle (sig,bkg,tot)
+  TH1F*   fDLenHist[4*kMaxPtBins];    //! hist. of decay length (sig,bkg,tot)
+  TH1F*   fSumd02Hist[4*kMaxPtBins];  //! hist. for sum d02 (Prod Cuts)
+  TH1F*   fSigVertHist[4*kMaxPtBins]; //! hist. for sigVert (Prod Cuts)
+  TH1F*   fPtMaxHist[4*kMaxPtBins];   //! hist. for Pt Max (Prod Cuts)
+  TH1F*   fPtCandHist[4*kMaxPtBins];  //! hist. for Pt Max (Prod Cuts)
+  TH1F*   fDCAHist[4*kMaxPtBins];     //! hist. for DCA (Prod Cuts)
+  TH1F*   fPtProng0Hist[4*kMaxPtBins]; //! hist. for Pt Max (Prod Cuts)
+  TH1F*   fPtProng1Hist[4*kMaxPtBins]; //! hist. for DCA (Prod Cuts)
+  TH1F*   fPtProng2Hist[4*kMaxPtBins]; //! hist. for DCA (Prod Cuts)
+  TH2F*   fDalitz[4*kMaxPtBins];      //! dalitz plot (sig,bkg,tot)
+  TH2F*   fDalitzPhi[4*kMaxPtBins];   //! dalitz plot via phi (sig,bkg,tot)
+  TH2F*   fDalitzK0st[4*kMaxPtBins];   //! dalitz plot via K0* (sig,bkg,tot)
+  TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
+  TH2F *fPtVsMassPhi;    //! hist. of pt vs. mass (phi selection)
+  TH2F *fPtVsMassK0st;   //! hist. of pt vs. mass (K0* selection)
+  TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
+  TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH1F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
+  TH2F *fHistCentralityMult[3];//!hist. for cent distr vs mult (all,sel ev, )
+  TNtuple *fNtupleDs; //! output ntuple
+  Int_t fFillNtuple;                 // 0 not to fill ntuple
+                                     // 1 for filling ntuple for events through Phi
+                                     // 2 for filling ntuple for events through K0Star
+                                     // 3 for filling all 
                                     
                                      
-  Bool_t  fReadMC;                    ///  flag for access to MC
-  Bool_t  fWriteOnlySignal;           ///  flag to control ntuple writing in MC
-  Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
-  Bool_t  fUseSelectionBit;           /// flag for useage of HasSelectionBit
-  UChar_t fNPtBins;                   /// number of Pt bins
+  Bool_t  fReadMC;                    //  flag for access to MC
+  Bool_t  fWriteOnlySignal;           //  flag to control ntuple writing in MC
+  Bool_t  fDoCutVarHistos;            //  flag to create and fill histos with distributions of cut variables
+  Bool_t  fUseSelectionBit;           // flag for useage of HasSelectionBit
+  UChar_t fNPtBins;                   // number of Pt bins
   TList *fListCuts; //list of cuts
-  Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
-  Double_t fMassRange;                /// range for mass histogram
-  Double_t fMassBinSize;              /// bin size for inv. mass histo
+  Float_t fPtLimits[kMaxPtBins+1];    //  limits for pt bins
+  Double_t fMassRange;                // range for mass histogram 
+  Double_t fMassBinSize;              // bin size for inv. mass histo
 
-  AliNormalizationCounter *fCounter;//!<!Counter for normalization
-  AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
+  AliNormalizationCounter *fCounter;//!Counter for normalization
+  AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,14);    ///  AliAnalysisTaskSE for Ds mass spectra
-  /// \endcond
+  ClassDef(AliAnalysisTaskSEDs,14);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif

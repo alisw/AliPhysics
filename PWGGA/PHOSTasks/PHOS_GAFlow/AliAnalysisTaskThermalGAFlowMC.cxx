@@ -60,7 +60,7 @@ AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects(); //Do setup and add norm
   Clus_PrimeERatio->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Clus_PrimeERatio);
 
-  TH1F *Clus_PtGamma = new TH1F("Clus_PtGamma", "Pt of the MC Gammas", 150, 0.5 , 20.5);
+  TH1F *Clus_PtGamma = new TH1F("Clus_PtGamma", "Pt of the MC Gammas", 150, 0.5 , 6.5);
   Clus_PtGamma->GetXaxis()->SetTitle("Pt");
   Clus_PtGamma->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Clus_PtGamma);
@@ -114,7 +114,7 @@ TLorentzVector p;
 if(fesd){
 for(Int_t icluster = 0; icluster < fesd->GetNumberOfCaloClusters(); icluster++) {
   AliESDCaloCluster *cluster = fesd->GetCaloCluster(icluster);
-  if(ApplyClusterCuts(cluster)){
+  if(ApplyClusterCuts(cluster) && ApplyCPCuts(cluster) && ApplyShapeCuts(cluster)){
   if(IsPhotonShower(cluster)){
     cluster->GetMomentum(p, fvertexx);
     FillHist("Clus_PtGamma", sqrt((p.Px()*p.Px()+p.Py()*p.Py())));

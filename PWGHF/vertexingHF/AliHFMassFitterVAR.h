@@ -6,12 +6,11 @@
 /* $Id$ */ 
 
 /////////////////////////////////////////////////////////////
-///
-/// \class AliHFMassFitterVAR
-/// \brief AliHFMassFitterVAR for the fit of invariant mass distribution
-/// of charmed mesons
-///
-/// \author Author: C.Bianchin, chiara.bianchin@pd.infn.it
+//
+// AliHFMassFitterVAR for the fit of invariant mass distribution
+// of charmed mesons
+//
+// Author: C.Bianchin, chiara.bianchin@pd.infn.it
 /////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
@@ -35,7 +34,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   AliHFMassFitterVAR(const AliHFMassFitterVAR &mfit);
   AliHFMassFitterVAR& operator=(const AliHFMassFitterVAR &mfit);
 
-  /// setters
+  //setters
 /*   void     SetHisto(const TH1F *histoToFit); */
 /*   void     SetRangeFit(Double_t minvalue, Double_t maxvalue){fminMass=minvalue; fmaxMass=maxvalue; CheckRangeFit();} */
 /*   void     SetMinRangeFit(Double_t minvalue){fminMass=minvalue;printf("CheckRangeFit after SetMaxRangeFit is also set\n");} */
@@ -86,14 +85,14 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 /*   void     DrawFit(Double_t nsigma=3) const; */
 /*   void     Reset(); */
   
-  void     IntS(Float_t *valuewitherror) const;    /// integral of signal given my the fit with error
-  Double_t IntTot() const {return fhistoInvMass->Integral("width");}  /// return total integral of the histogram
-  void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; /// signal in nsigma with error
-  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; /// signal in (min, max) with error
-  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; /// backgournd in nsigma with error
-  void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; /// backgournd in (min, max) with error
-  void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const; /// significance in nsigma with error
-  void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const; /// significance in (min, max) with error
+  void     IntS(Float_t *valuewitherror) const;    // integral of signal given my the fit with error
+  Double_t IntTot() const {return fhistoInvMass->Integral("width");}  // return total integral of the histogram
+  void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const; // signal in nsigma with error
+  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const; // signal in (min, max) with error
+  void     Background(Double_t nOfSigma,Double_t &background,Double_t &errbackground) const; // backgournd in nsigma with error
+  void     Background(Double_t min,Double_t max,Double_t &background,Double_t &errbackground) const; // backgournd in (min, max) with error
+  void     Significance(Double_t nOfSigma,Double_t &significance,Double_t &errsignificance) const; // significance in nsigma with error
+  void     Significance(Double_t min,Double_t max,Double_t &significance,Double_t &errsignificance) const; // significance in (min, max) with error
   Double_t GetReflOverSignal(Double_t &err)const;
   TH1F*    SetTemplateReflections(const TH1 *h,TString option="templ",Double_t minRange=1.72,Double_t maxRange=2.05);
   void     SetFixReflOverS(Double_t val,Bool_t fixpar=kTRUE){fReflInit=val;
@@ -141,28 +140,28 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   Bool_t   SideBandsBounds();
   Bool_t   CheckRangeFit();
   void     AddFunctionsToHisto();
-  Int_t fNparSignal;           /// number of signal parameters
-  Int_t fNparBack;           /// number of bkg parameters
-  Int_t fNparRefl;          /// number of reflection parameters
-  TH1F *fhTemplRefl;        /// template of reflection contribution
-  TString *fSignParNames;   /// signal parameter names
-  TString *fBackParNames;   /// back parameter names
-  TString *fReflParNames;   /// refl parameter names
-  Bool_t fSmoothRefl;      /// smoothing refl template
-  Double_t fReflInit;       /// initial value of Refl/Signal
-  Bool_t *fFixParSign;  /// fix signal parameter from ext value
-  Bool_t *fFixParBack;  /// fix signal parameter from ext value
-  Bool_t *fFixParRefl;  /// fix signal parameter from ext value
-  Bool_t *fFixParSignExternalValue;  /// fix signal parameter from ext value
-  Bool_t *fFixParBackExternalValue;  /// fix signal parameter from ext value
-  Bool_t *fFixParReflExternalValue;  /// fix signal parameter from ext value
-  Double_t *fparSignFixExt; /// external values to fix signal parameters
-  Double_t *fparBackFixExt; /// external values to fix back parameters
-  Double_t *fparReflFixExt; /// external values to fix refl parameters
-  Double_t fRawYieldHelp;   /// internal variable used when fitting with reflections
-  Int_t fpolbackdegreeTay; /// degree of polynomial expansion for back fit (option 6 for back)
-  Int_t   fpolbackdegreeTayHelp; /// help variable
-  Double_t fMassParticle;       /// pdg value of particle mass
+  Int_t fNparSignal;           // number of signal parameters
+  Int_t fNparBack;           // number of bkg parameters
+  Int_t fNparRefl;          // number of reflection parameters
+  TH1F *fhTemplRefl;        // template of reflection contribution
+  TString *fSignParNames;   // signal parameter names
+  TString *fBackParNames;   // back parameter names
+  TString *fReflParNames;   // refl parameter names
+  Bool_t fSmoothRefl;      // smoothing refl template
+  Double_t fReflInit;       // initial value of Refl/Signal
+  Bool_t *fFixParSign;  // fix signal parameter from ext value
+  Bool_t *fFixParBack;  // fix signal parameter from ext value
+  Bool_t *fFixParRefl;  // fix signal parameter from ext value
+  Bool_t *fFixParSignExternalValue;  // fix signal parameter from ext value
+  Bool_t *fFixParBackExternalValue;  // fix signal parameter from ext value
+  Bool_t *fFixParReflExternalValue;  // fix signal parameter from ext value
+  Double_t *fparSignFixExt; // external values to fix signal parameters
+  Double_t *fparBackFixExt; //external values to fix back parameters
+  Double_t *fparReflFixExt; //external values to fix refl parameters
+  Double_t fRawYieldHelp;   // internal variable used when fitting with reflections
+  Int_t fpolbackdegreeTay; // degree of polynomial expansion for back fit (option 6 for back)
+  Int_t   fpolbackdegreeTayHelp; // help variable
+  Double_t fMassParticle;       // pdg value of particle mass
 /*   TH1F*     fhistoInvMass;     // histogram to fit */
 /*   Double_t  fminMass;          // lower mass limit */
 /*   Double_t  fmaxMass;          // upper mass limit */
@@ -190,9 +189,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 /*   Int_t     fcounter;          // internal counter */
 /*   TList*    fContourGraph;     // TList of TGraph containing contour plots */
 
-  /// \cond CLASSIMP
-  ClassDef(AliHFMassFitterVAR,2); /// class for invariant mass fit
-  /// \endcond
+  ClassDef(AliHFMassFitterVAR,2); // class for invariant mass fit
 };
 
 #endif

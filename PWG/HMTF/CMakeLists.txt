@@ -25,8 +25,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskHMTFMCMultEst.cxx
-  AliMultiplicityEstimator.cxx
   MonteCarlo/AliAnalysisTaskHMTFMC.cxx
   )
 
@@ -66,30 +64,5 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
-## Installing the macros
-install (FILES
-  macros/AddTaskHMTFMCMultEst.C
-  DESTINATION PWG/HMTF/macros)
-
-set (INPUT_FILES
-  MonteCarlo/template.jdl
-  MonteCarlo/DIPSYpp_HepMC.in
-  MonteCarlo/LoadLibs.C
-  MonteCarlo/rungen.C
-  MonteCarlo/runTask.C
-  )
-
-install (FILES
-  ${INPUT_FILES}
-  MonteCarlo/parse_opts.sh
-  MonteCarlo/prepare_runscript.sh
-  DESTINATION PWG/HMTF/MonteCarlo)
-
-# Install executable scripts
-install (FILES
-  MonteCarlo/gen_dipsy.sh
-  MonteCarlo/runmc
-  MonteCarlo/run.sh
-  MonteCarlo/validation.sh
-  DESTINATION PWG/HMTF/MonteCarlo
-  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+# Installing the macros
+install (DIRECTORY MonteCarlo DESTINATION PWG/HMTF)

@@ -69,12 +69,10 @@ enum {
 };
 
 //_____________________________________________________________________________
-void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE, Bool_t usePhysicsSelection = kTRUE, UInt_t mask = (trackQA|trigQA), UInt_t force = (trackQA|trigQA) )
+void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE, Bool_t usePhysicsSelection = kTRUE, UInt_t mask = (trackQA|trigQA) )
 {
   //
-  // Run terminate on QA output
-  // Terminate is skipped if it was already run during the production
-  // Unless the "force" option is specified
+  // Load common libraries
   //
 
   LoadLibs();
@@ -91,13 +89,13 @@ void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE,
   mgr->SetInputEventHandler(esdH);
 
   TString trigOutName = "trigChEff_ANY_Apt_allTrig.root";
-  if ( ( force & trigQA ) == 0 ) {
+//  if ( ( force & trigQA ) == 0 ) {
     if ( gSystem->AccessPathName(trigOutName) == 0 ) {
       printf("Terminate already done for trigger. Skip\n");
       mask &= ~trigQA;
     }
-  }
-  if ( ( force & trackQA ) == 0 ) {
+//  }
+//  if ( ( force & trackQA ) == 0 ) {
     TFile* file = TFile::Open(outfilename.Data());
     TKey* key = file->FindKeyAny("general2");
     if ( key ) {
@@ -105,7 +103,7 @@ void terminateQA ( TString outfilename = "QAresults.root", Bool_t isMC = kFALSE,
       mask &= ~trackQA;
     }
     delete file;
-  }
+//  }
 
 #ifndef COMPILEMACRO
 
@@ -361,7 +359,6 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool
 
   TString inFilename = GetBaseName(qaFile);
 
-  UInt_t forceTerminate = 0;
   if ( inFilename.Contains("barrel") ) {
     TString outerInFilename(qaFile);
     outerInFilename.ReplaceAll("barrel","outer");
@@ -376,12 +373,11 @@ void MakeTrend ( const char* qaFile, Int_t runNumber, Bool_t isMC = kFALSE, Bool
         printf("Merged files: %s => %s\n",fileList.Data(),inFilename.Data());
         CheckMergedOverlap(fileList);
         gSystem->Exec(Form("rm %s",fileList.Data())); // Remove QAresults_barrel and outer
-        forceTerminate = (trackQA|trigQA); // Re-do terminate when merging barrel and outer
       }
     }
   }
 
-  terminateQA(inFilename,isMC,usePhysicsSelection,mask,forceTerminate);
+  terminateQA(inFilename,isMC,usePhysicsSelection,mask);
 
   TList parList;
   parList.SetOwner();

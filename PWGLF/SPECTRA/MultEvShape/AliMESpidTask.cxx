@@ -2,9 +2,6 @@
 #include <TTreeStream.h>
 #include <AliLog.h>
 
-#include <AliESDEvent.h>
-#include <AliESDtrack.h>
-
 #include "AliMESpidTask.h"
 #include "AliMESeventInfo.h"
 #include "AliMEStrackInfo.h"
@@ -158,16 +155,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
   hMultEst->Fill(vec_hMultEst);
 
 
-  // used ONLY for systematic studies (see line 377)
-  AliESDEvent* fESD = NULL;
-  if(DebugLevel()>0){
-	  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-	  if (!fESD) {
-		  AliError("ESD event not available");
-		  return;
-	  }
-  }
-
   // ESD track loop
   AliMEStrackInfo *t(NULL), *tMC(NULL);
   for(Int_t it(0); it<fTracks->GetEntries(); it++){
@@ -184,7 +171,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
 
 	Double_t vec_hAllESD[12];    	// vector used to fill hAllESD
-	Double_t vec_hPIDQA[8];			//  vector used to fill hPIDQA
+	Double_t vec_hPIDQA[8];	//  vector used to fill hPIDQA
 
 	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(1);
 	enum axis_hAllESD {l_comb08, l_V0M, l_comb0408, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
@@ -378,7 +365,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	*/
 
 // 	if( HasMCdata() ){ // run only on MC
-	if(DebugLevel()>0){ // used ONLY for systematic studies
+    if(DebugLevel()>0){
         Double_t vec_ESDtree[2];
         vec_ESDtree[0] = t->Eta();
 		vec_ESDtree[1] = t->Phi();
@@ -387,33 +374,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		// 		vec_ESDtree[4] = t->Charge();
 		// 		vec_ESDtree[5] = tMC->Charge();
 
-		// get the ESD track
-		if(!fESD) continue;
-		AliESDtrack* track = fESD->GetTrack(it);
-		if (!track) {
-			Printf("ERROR: Could not receive track %d", it);
-			continue;
-		}
-
-		// very ugly hack allowing for the offline use of esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-		// get the Chi2TPCConstrainedGlobal here and put it in the tree (copied from AliESDtrackCuts::AcceptTrack)
-		enum VertexType { kVertexTracks = 0x1, kVertexSPD = 0x2, kVertexTPC = 0x4 };
-		Int_t fCutMaxChi2TPCConstrainedVsGlobalVertexType;
-		fCutMaxChi2TPCConstrainedVsGlobalVertexType = kVertexTracks | kVertexSPD;
-
-		const AliESDVertex* vertex = 0;
-		if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTracks)
-			vertex = fESD->GetPrimaryVertexTracks();
-
-		if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexSPD)
-			vertex = fESD->GetPrimaryVertexSPD();
-
-		if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTPC)
-			vertex = fESD->GetPrimaryVertexTPC();
-
-		Double_t chi2TPCConstrainedVsGlobal = -1.0;
-		if (vertex->GetStatus())
-			chi2TPCConstrainedVsGlobal = track->GetChi2TPCConstrainedVsGlobal(vertex);
+        Double_t vec_syst[1];
+        vec_syst[0] = t->GetNclustersTPC();
 
         // fill debug
         (*AliMESbaseTask::DebugStream()) << "pidTrk"
@@ -433,11 +395,11 @@ void AliMESpidTask::UserExec(Option_t *opt)
         <<"eta=" << vec_ESDtree[0]
         <<"phi=" << vec_ESDtree[1]
         // ----
+        <<"NclustersTPC=" << vec_syst[0]
         // 			<< "dEta=" << dEta
         // 			<< "dPhi=" << dPhi
-        <<"track.=" << track
-//         <<"event.=" << fESD
-		<< "chi2TPCConstrainedVsGlobal=" << chi2TPCConstrainedVsGlobal
+        // 		<<"t.=" << t
+        // 		<<"tMC.=" << tMC
         << "\n";
     }
 // 	}

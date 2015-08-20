@@ -6,12 +6,12 @@
 
 /* $Id$ */ 
 
-///*************************************************************************
-/// \class Class AliAnalysisTaskSEBkgLikeSignD0
-/// \brief AliAnalysisTaskSE for reading both reconstructed D0 -> Kpi candidates
-/// and like sign pairs and for drawing corresponding distributions
-/// \author Author: C.Di Giglio, carmelo.digiglio@ba.infn.it
-///*************************************************************************
+//*************************************************************************
+// Class AliAnalysisTaskSEBkgLikeSignD0
+// AliAnalysisTaskSE for reading both reconstructed D0 -> Kpi candidates
+// and like sign pairs and for drawing corresponding distributions
+// Author: C.Di Giglio, carmelo.digiglio@ba.infn.it
+//*************************************************************************
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -31,7 +31,7 @@ class AliAnalysisTaskSEBkgLikeSignD0 : public AliAnalysisTaskSE
   virtual ~AliAnalysisTaskSEBkgLikeSignD0();
 
 
-  /// Implementation of interface methods
+  // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -43,28 +43,26 @@ class AliAnalysisTaskSEBkgLikeSignD0 : public AliAnalysisTaskSE
   AliAnalysisTaskSEBkgLikeSignD0(const AliAnalysisTaskSEBkgLikeSignD0 &source);
   AliAnalysisTaskSEBkgLikeSignD0& operator=(const AliAnalysisTaskSEBkgLikeSignD0& source); 
 
-  TList   *fOutput;                //!<! list send on output slot 0
-  TH1F    *fHistMassD0;            //!<! output histograms
-  TH1F    *fHistMassLS;            //!<!
-  TH1F    *fHistCtsD0;             //!<! Cosine of decay angle
-  TH1F    *fHistCtsLS;             //!<!
-  TH1F    *fHistCtsLSpos;          //!<!
-  TH1F    *fHistCtsLSneg;          //!<!
-  TH1F    *fHistCPtaD0;            //!<! Cosine of pointing angle
-  TH1F    *fHistCPtaLS;            //!<!
-  TH1F    *fHistd0d0D0;            //!<! Product of impact parameters
-  TH1F    *fHistd0d0LS;            //!<!
-  TH1F    *fHistDCAD0;             //!<! Distance of closest approach
-  TH1F    *fHistDCALS;             //!<! like-sign
-  AliAnalysisVertexingHF *fVHF;    /// Vertexer heavy flavour (used to pass the cuts)
-  TH1F *fNentries;                 //!<! histogram with number of events
-  Int_t fTotPosPairs;              ///
-  Int_t fTotNegPairs;              /// normalization
-  Double_t fLsNormalization;       ///
+  TList   *fOutput;                //! list send on output slot 0
+  TH1F    *fHistMassD0;            //! output histograms
+  TH1F    *fHistMassLS;            //!
+  TH1F    *fHistCtsD0;             //! Cosine of decay angle
+  TH1F    *fHistCtsLS;             //!
+  TH1F    *fHistCtsLSpos;          //!
+  TH1F    *fHistCtsLSneg;          //!
+  TH1F    *fHistCPtaD0;            //! Cosine of pointing angle
+  TH1F    *fHistCPtaLS;            //!
+  TH1F    *fHistd0d0D0;            //! Product of impact parameters
+  TH1F    *fHistd0d0LS;            //!
+  TH1F    *fHistDCAD0;             //! Distance of closest approach
+  TH1F    *fHistDCALS;             //! like-sign
+  AliAnalysisVertexingHF *fVHF;    // Vertexer heavy flavour (used to pass the cuts)
+  TH1F *fNentries;                 //! histogram with number of events
+  Int_t fTotPosPairs;              //
+  Int_t fTotNegPairs;              // normalization
+  Double_t fLsNormalization;       //
  
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEBkgLikeSignD0,1); /// comparison of unlike-sign and like-sign background for D0->Kpi
-  /// \endcond
+  ClassDef(AliAnalysisTaskSEBkgLikeSignD0,1); // comparison of unlike-sign and like-sign background for D0->Kpi
 };
 
 #endif

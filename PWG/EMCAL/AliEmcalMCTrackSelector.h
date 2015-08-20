@@ -25,12 +25,14 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   void SetRejectNK(Bool_t r = kTRUE)                    { fRejectNK         = r    ; }
   void SetOnlyHIJING(Bool_t s)                          { fOnlyHIJING       = s    ; }
   void SetParticlesOutName(const char *name)            { fParticlesOutName = name ; }
+  void SetSpecialPDG(Int_t pdg)                         { fSpecialPDG       = pdg  ; }
   
  protected:
   void                      ConvertMCParticles();    // for ESD analysis
   void                      CopyMCParticles();       // for AOD analysis
 
-  virtual Bool_t            AcceptParticle(AliAODMCParticle* part) const;
+  Bool_t                    CheckSpecialPDGDaughter(AliAODMCParticle* part, Int_t nprim);
+  Bool_t                    CheckSpecialPDGDaughter(Int_t iPart);
   
   TString                   fParticlesOutName;     // name of output particle array
   Bool_t                    fOnlyPhysPrim;         // true = only physical primary particles
@@ -38,6 +40,7 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   Bool_t                    fChargedMC;            // true = only charged particles
   Bool_t                    fOnlyHIJING;           // true = only HIJING particles
   Double_t                  fEtaMax;               // maximum eta to accept particles
+  Int_t                     fSpecialPDG;           // include particles with this PDG code even if they are not primary particles (and exclude their daughters)
   TString                   fParticlesMapName;     //!name of the particle map
   Bool_t                    fInit;                 //!true = task initialized
   TClonesArray             *fParticlesIn;          //!particle array in (AOD)
@@ -52,6 +55,6 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   AliEmcalMCTrackSelector(const AliEmcalMCTrackSelector&);            // not implemented
   AliEmcalMCTrackSelector &operator=(const AliEmcalMCTrackSelector&); // not implemented
 
-  ClassDef(AliEmcalMCTrackSelector, 5); // Task to select particle in MC events
+  ClassDef(AliEmcalMCTrackSelector, 4); // Task to select particle in MC events
 };
 #endif

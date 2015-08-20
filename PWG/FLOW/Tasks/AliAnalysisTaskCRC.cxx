@@ -52,7 +52,7 @@ fQC(NULL),
 fListHistos(NULL),
 fBookOnlyBasicCCH(kTRUE),
 fFillMultipleControlHistograms(kFALSE),
-fHarmonic(1),
+fHarmonic(0),
 fApplyCorrectionForNUA(kFALSE),
 fApplyCorrectionForNUAVsM(kFALSE),
 fPropagateErrorAlsoFromNIT(kFALSE),
@@ -90,18 +90,16 @@ fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
-fCalculateCME(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
-fnCenBin(10),
+fnCenBin(7),
 fCenBinWidth(10.),
 fQVecList(NULL),
-fDataSet(""),
-fCorrWeight("TPCuVZuZDCu")
+fRunSet("2010")
 {
  // constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC(const char *name, Bool_t useParticleWeights)");
@@ -154,7 +152,7 @@ fQC(NULL),
 fListHistos(NULL),
 fBookOnlyBasicCCH(kFALSE),
 fFillMultipleControlHistograms(kFALSE),
-fHarmonic(1),
+fHarmonic(0),
 fApplyCorrectionForNUA(kFALSE),
 fApplyCorrectionForNUAVsM(kFALSE),
 fPropagateErrorAlsoFromNIT(kFALSE),
@@ -192,21 +190,15 @@ fUseBootstrapVsM(kFALSE),
 fnSubsamples(10),
 fCalculateCRC(kTRUE),
 fCalculateCRCPt(kFALSE),
-fCalculateCME(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
 fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
-fInvertZDC(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
-fnCenBin(10),
-fCenBinWidth(10.),
-fQVecList(NULL),
-fDataSet(""),
-fCorrWeight("TPCuVZuZDCu")
+fQVecList(NULL)
 {
  // Dummy constructor
  AliDebug(2,"AliAnalysisTaskCRC::AliAnalysisTaskCRC()");
@@ -247,7 +239,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  AliDebug(2,"AliAnalysisTaskCRC::UserCreateOutputObjects()");
  
  // Analyser:
- fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth);
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
  
  // Common:
  fQC->SetBookOnlyBasicCCH(fBookOnlyBasicCCH);
@@ -268,25 +260,15 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow);
  fQC->SetForgetAboutCovariances(fForgetAboutCovariances);
  fQC->SetExactNoRPs(fExactNoRPs);
- if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
- if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
  fQC->SetCalculateCRC(fCalculateCRC);
  fQC->SetCalculateCRCPt(fCalculateCRCPt);
- fQC->SetCalculateCME(fCalculateCME);
  fQC->SetUseVZERO(fUseVZERO);
  fQC->SetUseZDC(fUseZDC);
  fQC->SetRecenterZDC(fRecenterZDC);
  fQC->SetDivSigma(fDivSigma);
- fQC->SetInvertZDC(fInvertZDC);
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);
- if(fCorrWeight.Contains("TPCu")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kUnit);
- else if(fCorrWeight.Contains("TPCm")) fQC->SetCorrWeightTPC(AliFlowAnalysisCRC::kMultiplicity);
- if(fCorrWeight.Contains("VZu"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kUnit);
- else if(fCorrWeight.Contains("VZm"))  fQC->SetCorrWeightVZ(AliFlowAnalysisCRC::kMultiplicity);
- if(fCorrWeight.Contains("ZDCu")) fQC->SetCorrWeightZDC(AliFlowAnalysisCRC::kUnit);
- else if(fCorrWeight.Contains("ZDCm")) fQC->SetCorrWeightZDC(AliFlowAnalysisCRC::kMultiplicity);
  // Multiparticle correlations vs multiplicity:
  fQC->SetnBinsMult(fnBinsMult);
  fQC->SetMinMult(fMinMult);
@@ -381,10 +363,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
  //accessing the merged output list:
  fListHistos = (TList*)GetOutputData(1);
  
- fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth);
- if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
- if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
- fQC->SetRunList();
+ fQC = new AliFlowAnalysisCRC("AliFlowAnalysisCRC",fnCenBin,fCenBinWidth,fRunSet);
  
  if(fListHistos) {
   fQC->GetOutputHistograms(fListHistos);

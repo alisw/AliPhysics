@@ -26,8 +26,6 @@
 #include "AliPID.h"
 #include "AliRDHFCutsXictoeleXifromAODtracks.h"
 
-/// \class AliAnalysisTaskSEXic2eleXifromAODtracks
-
 class THnSparse;
 class TH1F;
 class TClonesArray;
@@ -35,7 +33,6 @@ class AliAODRecoCascadeHF;
 class AliESDVertex;
 class AliAODMCParticle;
 class AliEventPoolManager;
-class AliNormalizationCounter;
 
 class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE 
 {
@@ -44,7 +41,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   AliAnalysisTaskSEXic2eleXifromAODtracks(const Char_t* name, AliRDHFCutsXictoeleXifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE);
   virtual ~AliAnalysisTaskSEXic2eleXifromAODtracks();
 
-  /// Implementation of interface methods
+  // Implementation of interface methods  
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -55,15 +52,13 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
   void FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
-  void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
-  void FillMCCascROOTObjects(AliAODMCParticle *mccpart, TClonesArray *mcArray);
   void MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   void SelectCascade( const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray);
   void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags, TClonesArray *mcArray);
 
-  /// set MC usage
+  // set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
   void SetUseCentralityV0M(Bool_t centon) {fUseCentralityV0M = centon;}
@@ -81,7 +76,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	Int_t MatchToMCCascade(AliAODcascade *theCascade, Int_t pdgabscasc, Int_t *pdgDgcasc, Int_t *pdgDgv0, TClonesArray *mcArray) const;
 
 
-  /// mixing
+  //mixing
   void SetEventMixingWithPools(){fDoEventMixing=1;}
   void SetEventMixingOff(){fDoEventMixing=0;}
 	void SetNumberOfEventsForMixing(Int_t events){fNumberOfEventsForMixing=events;}
@@ -107,146 +102,112 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DefineEleTreeVariables();
   void DefineCascTreeVariables();
   void DefineMCTreeVariables();
-  void DefineMCEleTreeVariables();
-  void DefineMCCascTreeVariables();
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
 
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
 
-  Bool_t fUseMCInfo;                 /// Use MC info
-  TList *fOutput;                    //!<! User output slot 1 // general histos
-  TList *fOutputAll;                 //!<! User Output slot 3  //analysis histograms 
-  TList *fListCuts;                  //!<! User output slot 2 // Cuts 
-  TH1F *fCEvents;                    //!<! Histogram to check selected events
-  TH1F *fHTrigger;                   //!<! Histogram to check Trigger
-  TH1F *fHCentrality;                //!<! Histogram to check Centrality
+  Bool_t fUseMCInfo;                 // Use MC info
+  TList *fOutput;                    //! User output slot 1 // general histos
+  TList *fOutputAll;                 //! User Output slot 3  //analysis histograms 
+  TList *fListCuts;                  //! User output slot 2 // Cuts 
+  TH1F *fCEvents;                    //! Histogram to check selected events
+  TH1F *fHTrigger;                   //! Histogram to check Trigger
+  TH1F *fHCentrality;                //! Histogram to check Centrality
   AliRDHFCutsXictoeleXifromAODtracks *fAnalCuts;// Cuts - sent to output slot 2
-  Bool_t fIsEventSelected;          /// flag for event selected
-  Bool_t    fWriteVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
-  TTree    *fVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
-  Bool_t    fWriteEachVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
-  Bool_t    fWriteMCVariableTree;     /// flag to decide whether to write the candidate variables on a tree variables
-  TTree    *fEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
-  TTree    *fCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
-  TTree    *fMCVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
-  TTree    *fMCEleVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
-  TTree    *fMCCascVariablesTree;         //!<! tree of the candidate variables after track selection on output slot 4
-  Bool_t fReconstructPrimVert;       /// Reconstruct primary vertex excluding candidate tracks
-  Bool_t fIsMB;       /// MB trigger event
-  Bool_t fIsSemi;     /// SemiCentral trigger event
-  Bool_t fIsCent;     /// Central trigger event
-  Bool_t fIsINT7;     /// INT7 trigger event
-  Bool_t fIsEMC7;     /// EMC7 trigger event
-  Float_t *fCandidateVariables;   //!<! variables to be written to the tree
-  Float_t *fCandidateEleVariables;   //!<! variables to be written to the tree
-  Float_t *fCandidateCascVariables;   //!<! variables to be written to the tree
-  Float_t *fCandidateMCVariables;   //!<! variables to be written to the tree
-  Float_t *fCandidateMCEleVariables;   //!<! variables to be written to the tree
-  Float_t *fCandidateMCCascVariables;   //!<! variables to be written to the tree
-  AliAODVertex *fVtx1;            /// primary vertex
-  AliESDVertex *fV1;              /// primary vertex
-  Float_t  fVtxZ;         /// zVertex
-  Double_t fBzkG;                 /// magnetic field value [kG]
-  Float_t  fCentrality;           /// Centrality
-  Int_t  fRunNumber;           /// Run Number
-  Float_t  fTriggerCheck;         /// Stores trigger information
-  Bool_t  fUseCentralityV0M;         /// Stores trigger information
-  Int_t  fEvNumberCounter;         /// EvNumber counter
+  Bool_t fIsEventSelected;          // flag for event selected
+  Bool_t    fWriteVariableTree;     // flag to decide whether to write the candidate variables on a tree variables
+  TTree    *fVariablesTree;         //! tree of the candidate variables after track selection on output slot 4
+  Bool_t    fWriteEachVariableTree;     // flag to decide whether to write the candidate variables on a tree variables
+  Bool_t    fWriteMCVariableTree;     // flag to decide whether to write the candidate variables on a tree variables
+  TTree    *fEleVariablesTree;         //! tree of the candidate variables after track selection on output slot 4
+  TTree    *fCascVariablesTree;         //! tree of the candidate variables after track selection on output slot 4
+  TTree    *fMCVariablesTree;         //! tree of the candidate variables after track selection on output slot 4
+  Bool_t fReconstructPrimVert;       //Reconstruct primary vertex excluding candidate tracks
+  Bool_t fIsMB;       //MB trigger event
+  Bool_t fIsSemi;     //SemiCentral trigger event
+  Bool_t fIsCent;     //Central trigger event
+  Bool_t fIsINT7;     //INT7 trigger event
+  Bool_t fIsEMC7;     //EMC7 trigger event
+  Float_t *fCandidateVariables;   //! variables to be written to the tree
+  Float_t *fCandidateEleVariables;   //! variables to be written to the tree
+  Float_t *fCandidateCascVariables;   //! variables to be written to the tree
+  Float_t *fCandidateMCVariables;   //! variables to be written to the tree
+  AliAODVertex *fVtx1;            // primary vertex
+  AliESDVertex *fV1;              // primary vertex
+  Float_t  fVtxZ;         // zVertex
+  Double_t fBzkG;                 // magnetic field value [kG]
+  Float_t  fCentrality;           //Centrality
+  Float_t  fTriggerCheck;         //Stores trigger information
+  Bool_t  fUseCentralityV0M;         //Stores trigger information
+  Int_t  fEvNumberCounter;         //EvNumber counter
 
   //--------------------- My histograms ------------------
-  THnSparse* fHistoEleXiMass;         //!<! e-Xi mass spectra
-  THnSparse* fHistoEleXiMassRS;         //!<! e-Xi mass spectra (right-sign)
-  THnSparse* fHistoEleXiMassWS;         //!<! e-Xi mass spectra (wrong-sign)
-  THnSparse* fHistoEleXiMassRSMix;         //!<! e-Xi mass spectra (right-sign)
-  THnSparse* fHistoEleXiMassWSMix;         //!<! e-Xi mass spectra (wrong-sign)
-  THnSparse* fHistoEleXiMassvsElePtRS;         //!<! e-Xi mass spectra (right-sign)
-  THnSparse* fHistoEleXiMassvsElePtWS;         //!<! e-Xi mass spectra (wrong-sign)
-  THnSparse* fHistoEleXiMassvsElePtRSMix;         //!<! e-Xi mass-ept spectra (right-sign)
-  THnSparse* fHistoEleXiMassvsElePtWSMix;         //!<! e-Xi mass-ept spectra (wrong-sign)
-  TH2F* fHistoElePtRS;         //!<! e spectra (right-sign)
-  TH2F* fHistoElePtWS;         //!<! e spectra (wrong-sign)
-  TH2F* fHistoElePtRSMix;         //!<! e spectra (right-sign, mix)
-  TH2F* fHistoElePtWSMix;         //!<! e spectra (wrong-sign, mix)
-  THnSparse* fHistoEleXiMassMCS;         //!<! e-Xi mass spectra (Efficiency numerator)
-  THnSparse* fHistoEleXiMassMCGen;         //!<! e-Xi mass spectra (Efficiency denominator)
-  THnSparse* fHistoEleXiMassvsElePtMCS;         //!<! e-Xi mass-ept spectra (Efficiency numerator)
-  THnSparse* fHistoEleXiMassvsElePtMCGen;         //!<! e-Xi mass-ept spectra (Efficiency denominator)
-  TH2F* fHistoElePtMCS;         //!<! e spectra (Efficiency numerator)
-  TH2F* fHistoElePtMCGen;         //!<! e spectra (Efficiency denominator)
+  THnSparse* fHistoEleXiMass;         //e-Xi mass spectra
+  THnSparse* fHistoEleXiMassRS;         //e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWS;         //e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMix;         //e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMix;         //e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassvsElePtRS;         //e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassvsElePtWS;         //e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassvsElePtRSMix;         //e-Xi mass-ept spectra (right-sign)
+  THnSparse* fHistoEleXiMassvsElePtWSMix;         //e-Xi mass-ept spectra (wrong-sign)
+  TH2F* fHistoElePtRS;         //e spectra (right-sign)
+  TH2F* fHistoElePtWS;         //e spectra (wrong-sign)
+  TH2F* fHistoElePtRSMix;         //e spectra (right-sign, mix)
+  TH2F* fHistoElePtWSMix;         //e spectra (wrong-sign, mix)
+  THnSparse* fHistoEleXiMassMCS;         //e-Xi mass spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassMCGen;         //e-Xi mass spectra (Efficiency denominator)
+  THnSparse* fHistoEleXiMassvsElePtMCS;         //e-Xi mass-ept spectra (Efficiency numerator)
+  THnSparse* fHistoEleXiMassvsElePtMCGen;         //e-Xi mass-ept spectra (Efficiency denominator)
+  TH2F* fHistoElePtMCS;         //e spectra (Efficiency numerator)
+  TH2F* fHistoElePtMCGen;         //e spectra (Efficiency denominator)
 
-  THnSparse* fHistoElePtvsEtaRS;         //!<! e spectra (right-sign)
-  THnSparse* fHistoElePtvsEtaWS;         //!<! e spectra (wrong-sign)
-  THnSparse* fHistoElePtvsEtaRSMix;         //!<! e spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsEtaWSMix;         //!<! e spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsEtaMCS;         //!<! e spectra efficiency numerator
-  THnSparse* fHistoElePtvsEtaMCGen;         //!<! e spectra efficiency denominator
+  THnSparse* fHistoElePtvsEtaRS;         //e spectra (right-sign)
+  THnSparse* fHistoElePtvsEtaWS;         //e spectra (wrong-sign)
+  THnSparse* fHistoElePtvsEtaRSMix;         //e spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsEtaWSMix;         //e spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsEtaMCS;         //e spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsEtaMCGen;         //e spectra (wrong-sign) efficiency denominator
 
-  THnSparse* fHistoElePtvsXiPtRS;         //!<! e-Xi spectra (right-sign)
-  THnSparse* fHistoElePtvsXiPtWS;         //!<! e-Xi spectra (wrong-sign)
-  THnSparse* fHistoElePtvsXiPtRSMix;         //!<! e-Xi spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsXiPtWSMix;         //!<! e-Xi spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsXiPtMCS;         //!<! e-Xi spectra efficiency numerator
-  THnSparse* fHistoElePtvsXiPtvsXicPtMCS;         //!<! e-Xi spectra efficiency numerator
-  THnSparse* fHistoElePtvsXiPtMCGen;         //!<! e-Xi spectra efficiency denominator
-  THnSparse* fHistoElePtvsXiPtvsXicPtMCGen;         //!<! e-Xi spectra efficiency numerator
-  THnSparse* fHistoElePtvsXiPtMCXicGen;         //!<! e-Xi spectra efficiency denominator
+  THnSparse* fHistoElePtvsXiPtRS;         //e-Xi spectra (right-sign)
+  THnSparse* fHistoElePtvsXiPtWS;         //e-Xi spectra (wrong-sign)
+  THnSparse* fHistoElePtvsXiPtRSMix;         //e-Xi spectra (right-sign, mix)
+  THnSparse* fHistoElePtvsXiPtWSMix;         //e-Xi spectra (wrong-sign, mix)
+  THnSparse* fHistoElePtvsXiPtMCS;         //e-Xi spectra (right-sign) efficiency numerator
+  THnSparse* fHistoElePtvsXiPtMCGen;         //e-Xi spectra (wrong-sign) efficiency denominator
 
-  THnSparse* fHistoElePtvsd0RS;         //!<! e pt-d0 spectra (right-sign)
-  THnSparse* fHistoElePtvsd0WS;         //!<! e pt-d0 spectra (wrong-sign)
-  THnSparse* fHistoElePtvsd0RSMix;         //!<! e pt-d0 spectra (right-sign, mix)
-  THnSparse* fHistoElePtvsd0WSMix;         //!<! e pt-d0 spectra (wrong-sign, mix)
-  THnSparse* fHistoElePtvsd0MCS;         //!<! e pt-d0 spectra (right-sign) 
-  THnSparse* fHistoElePtvsd0PromptMCS;         //!<! e pt-d0 spectra (right-sign) 
-  THnSparse* fHistoElePtvsd0BFeeddownMCS;         //!<! e pt-d0 spectra (right-sign) 
-
-  TH1F* fHistoBachPt;      //!<! Bachelor pT histogram
-  TH1F* fHistoBachPtMCS;      //!<! Bachelor pT histogram (efficiency numerator)
-  TH1F* fHistoBachPtMCGen;      //!<! Bachelor pT histogram (efficiency denominator)
-  TH1F* fHistod0Bach;      //!<! Bachelor d0 histogram
-  TH2F* fHistoXiMassvsPt;     //!<! Xi mass vs pt histogram
-  TH2F* fHistoXiMassvsPtMCS;     //!<! Xi mass vs pt histogram
-  TH2F* fHistoXiMassvsPtMCGen;     //!<! Xi mass vs pt histogram
-  TH2F* fHistoOmegaMassvsPt;     //!<! Omega mass vs pt histogram
-  TH2F* fHistoElectronTPCPID;     //!<! TPC electron PID
-  TH2F* fHistoElectronTOFPID;     //!<! TOF electron PID
-  TH2F* fHistoElectronTPCSelPID;     //!<! TPC electron PID after selection
-  TH2F* fHistoElectronTOFSelPID;     //!<! TOF electron PID after selection
-  TH2F* fHistoElectronTPCPIDSelTOF;     //!<! TPC electron PID after TOF 3 sigma cut
-  TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //!<! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
-  TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //!<! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
-  TH2F* fHistoElectronTPCPIDSelTOFEtaDep[8];     //!<! TPC electron PID after TOF 3 sigma cut Eta dep
-  THnSparse* fHistoElePtvsCutVarsRS[23];         //!<! e pt- cut variables (Right-sign)
-  THnSparse* fHistoElePtvsCutVarsWS[23];         //!<! e pt- cut variables (Wrong-sign)
-  THnSparse* fHistoElePtvsCutVarsMCS[23];         //!<! e pt- cut variables (MCS)
-  TH2F* fHistoElectronQovPtvsPhi;     //!<! Electron phi distribution
-  TH2F* fHistoXiQovPtvsPhi;     //!<! Xi phi distribution
-  THnSparse* fHistoXicMCGen;         //!<! electron in mcArray
-  THnSparse* fHistoXicElectronMCGen;         //!<! electron in mcArray
-  THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
-  THnSparse* fHistoXiMCGen;         //!<! Xi in mcArray (only from charmed baryon)
-
-  AliNormalizationCounter *fCounter;//!<! Counter for normalization
-	TH1F *fHistonEvtvsRunNumber;//!<!  evt vs runnumber
-	TH1F *fHistonElevsRunNumber;//!<!  nele vs runnumber
-	TH1F *fHistonXivsRunNumber;//!<!  nxi vs runnumber
+  TH1F* fHistoBachPt;      //! Bachelor pT histogram
+  TH1F* fHistoBachPtMCS;      //! Bachelor pT histogram (efficiency numerator)
+  TH1F* fHistoBachPtMCGen;      //! Bachelor pT histogram (efficiency denominator)
+  TH1F* fHistod0Bach;      //! Bachelor d0 histogram
+  TH2F* fHistoXiMassvsPt;     //! Xi mass vs pt histogram
+  TH2F* fHistoXiMassvsPtMCS;     //! Xi mass vs pt histogram
+  TH2F* fHistoXiMassvsPtMCGen;     //! Xi mass vs pt histogram
+  TH2F* fHistoOmegaMassvsPt;     //! Omega mass vs pt histogram
+  TH2F* fHistoElectronTPCPID;     //! TPC electron PID
+  TH2F* fHistoElectronTOFPID;     //! TOF electron PID
+  TH2F* fHistoElectronTPCSelPID;     //! TPC electron PID after selection
+  TH2F* fHistoElectronTOFSelPID;     //! TOF electron PID after selection
+  TH2F* fHistoElectronTPCPIDSelTOF;     //! TPC electron PID after TOF 3 sigma cut
+  TH2F* fHistoElectronTPCPIDSelTOFSmallEta;     //! TPC electron PID after TOF 3 sigma cut (|eta|<0.6)
+  TH2F* fHistoElectronTPCPIDSelTOFLargeEta;     //! TPC electron PID after TOF 3 sigma cut (0.8>|eta|>0.6)
 
   //Mixing
-  Int_t fDoEventMixing; /// flag for event mixing
-  Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
-	Int_t fNzVtxBins;								/// number of z vrtx bins
+  Int_t fDoEventMixing; // flag for event mixing
+  Int_t  fNumberOfEventsForMixing; // maximum number of events to be used in event mixing
+	Int_t fNzVtxBins;								// number of z vrtx bins
 	Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
-	Int_t fNCentBins;								/// number of centrality bins
+	Int_t fNCentBins;								// number of centrality bins
 	Double_t fCentBins[100];						// [fNCentBinsDim]
-  Int_t  fNOfPools; /// number of pools
-  TTree** fEventBuffer;   //!<! structure for event mixing
-	TObjString *fEventInfo; /// unique event id for mixed event check
-  TObjArray* fElectronTracks; /// array of electron-compatible tracks
+  Int_t  fNOfPools; // number of pools
+  TTree** fEventBuffer;   //! structure for event mixing
+	TObjString *fEventInfo; //unique event id for mixed event check
+  TObjArray* fElectronTracks; // array of electron-compatible tracks
 
-  /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,9); /// class for Xic->e Xi
-  /// \endcond
+
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,2); // class for Xic->e Xi
 };
 #endif
 

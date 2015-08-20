@@ -26,7 +26,6 @@
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TGeoGlobalMagField.h>
-#include <TGeoManager.h>
 #include <TInterpreter.h>
 #include <TObjArray.h>
 #include <TROOT.h>
@@ -475,7 +474,6 @@ void AliEMCALTenderSupply::ProcessEvent()
   }
   
   // Initialising parameters once per run number
-  
   if (RunChanged()) 
   { 
     fRun = event->GetRunNumber();
@@ -523,8 +521,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     }
 
     // init recalibration factors
-    if (needRecalib) 
-    {
+    if (needRecalib) {
       if(fUseAutomaticRecalib)
       {
         Int_t fInitRecalib = InitRecalib();
@@ -837,24 +834,13 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   if (fDebugLevel>0) 
     AliInfo("Initialising misalignment matrix");  
   
-  if (fLoadGeomMatrices) 
-  {
+  if (fLoadGeomMatrices) {
     for(Int_t mod=0; mod < fEMCALGeo->GetNumberOfSuperModules(); ++mod)
     {
-      if (fEMCALMatrix[mod])
-      {
-        if (fDebugLevel > 2) fEMCALMatrix[mod]->Print();
-        
+      if (fEMCALMatrix[mod]){
+        if (fDebugLevel > 2) 
+          fEMCALMatrix[mod]->Print();
         fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod);  
-      }
-      else if(gGeoManager)
-      {
-        AliWarning(Form("Set matrix for SM %d from gGeoManager\n",mod));
-        fEMCALGeo->SetMisalMatrix(fEMCALGeo->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
-      }
-      else
-      {
-        AliError(Form("EMCal geometry matrix for SM %d is not available!",mod));
       }
     }
     fGeomMatrixSet = kTRUE;
@@ -901,8 +887,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
     }
   }
 
-  if (!mobj) 
-  {
+  if (!mobj) {
     AliFatal("Geometry matrix array not found");
     return kFALSE;
   }
@@ -910,17 +895,8 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
   {
     fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
-    
-    if ( fEMCALMatrix[mod] )
-    {
-      if (fDebugLevel > 2) fEMCALMatrix[mod]->Print();
-
-      fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod);       
-    }
-    else
-    {
-      AliWarning(Form("EMCal geometry matrix for SM %d is not available!",mod));
-    }
+    fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
+    fEMCALMatrix[mod]->Print();
   }
   
   return kTRUE;
@@ -981,7 +957,6 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   if (!arrayBC)
   {
     AliError(Form("No external hot channel set for run number: %d", runBC));
-    delete contBC;
     return 2; 
   }
 
@@ -1001,9 +976,6 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelStatusMap(i,h);
   }
-  
-  delete contBC;
-  
   return 1;  
 }
 
@@ -1062,7 +1034,6 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (!recal)
   {
     AliError(Form("No Objects for run: %d",runRC));
-    delete contRF;
     return 2;
   } 
 
@@ -1070,7 +1041,6 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (!recalpass)
   {
     AliError(Form("No Objects for run: %d - %s",runRC,fFilepass.Data()));
-    delete contRF;
     return 2;
   }
 
@@ -1078,7 +1048,6 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   if (!recalib)
   {
     AliError(Form("No Recalib histos found for  %d - %s",runRC,fFilepass.Data())); 
-    delete contRF;
     return 2;
   }
 
@@ -1099,9 +1068,6 @@ Int_t AliEMCALTenderSupply::InitRecalib()
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
   }
-  
-  delete contRF;
-  
   return 1;
 }
 
@@ -1157,7 +1123,6 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
   }
   
   TH1S *rundeprecal=(TH1S*)contRF->GetObject(runRC);
-    
   if (!rundeprecal)
   {
     AliWarning(Form("No TemperatureCorrCalib Objects for run: %d",runRC));
@@ -1181,21 +1146,10 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
     rundeprecal = (TH1S*) contRF->GetObjectByIndex(closest);  
   } 
   
-  Int_t nSM = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
-  Int_t nbins = rundeprecal->GetNbinsX();
-  
-  // Avoid use of Run1 param for Run2
-  if(nSM > 12 && nbins < 12288)
-  {
-    AliError(Form("Total SM is %d but T corrections available for %d channels, skip Init of T recalibration factors",nSM,nbins));
-    
-    delete contRF;
-    
-    return 2;
-  }
-  
   if (fDebugLevel>0) rundeprecal->Print();
-
+  
+  Int_t nSM = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
+  
   for (Int_t ism=0; ism<nSM; ++ism) 
   {        
     for (Int_t icol=0; icol<48; ++icol) 
@@ -1211,8 +1165,6 @@ Int_t AliEMCALTenderSupply::InitRunDepRecalib()
       } // columns
     } // rows 
   } // SM loop
-  
-  delete contRF;
   
   return 1;
 }
@@ -1272,7 +1224,6 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
   if (!arrayBC)
   {
     AliError(Form("No external time calibration set for run number: %d", runBC));
-    delete contBC;
     return 2; 
   }
   
@@ -1283,7 +1234,6 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
   if (!arrayBCpass)
   {
     AliError(Form("No external time calibration set for: %d -%s", runBC,pass.Data()));
-    delete contBC;
     return 2; 
   }
 
@@ -1305,9 +1255,6 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
   }
-  
-  delete contBC;
-  
   return 1;  
 }
 

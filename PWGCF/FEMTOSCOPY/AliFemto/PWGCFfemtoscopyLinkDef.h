@@ -46,7 +46,6 @@
 #pragma link C++ class AliFemtoEventReaderESD+;
 #pragma link C++ class AliFemtoEventReaderESDChain+;
 #pragma link C++ class AliFemtoEventReaderESDChainKine+;
-#pragma link C++ class AliFemtoEventReaderESDChainKineKK+;
 #pragma link C++ class AliFemtoModelManager+;
 #pragma link C++ class AliFemtoModelWeightGenerator+;
 #pragma link C++ class AliFemtoModelWeightGeneratorBasic+;
@@ -65,7 +64,6 @@
 #pragma link C++ class AliFemtoEventReaderAODChain+;
 #pragma link C++ class AliFemtoAODTrackCut+;
 #pragma link C++ class AliAnalysisTaskFemto+;
-#pragma link C++ class AliAnalysisTaskFemtoMJ+;
 #pragma link C++ class AliTwoTrackRes+;
 #pragma link C++ class AliFemtoMCTrackCut+;
 #pragma link C++ class AliFemtoEventReaderKinematicsChain+;
@@ -76,7 +74,4 @@
 #pragma link C++ class AliFemtoV0TrackPairCut+;
 #pragma link C++ class AliFemtoCutMonitorCollections+;
 #pragma link C++ class AliFemtoV0SharedDaughterCut+;
-#pragma link C++ class AliFemtoCorrFctnDPhiStarDEta+;
-#pragma link C++ class AliFemtoCorrFctnDPhiStarKStarMergedFraction+;
-#pragma link C++ class AliFemtoDeltaPtPairCut+;
 #endif

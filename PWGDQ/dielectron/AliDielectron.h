@@ -144,11 +144,6 @@ public:
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  /// @TODO: implement smart way to use generic functions for all detectors.
-  void SetCentroidCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  void SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  void SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
-  void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SaveDebugTree();
   Bool_t DoEventProcess() const { return fEventProcess; }
@@ -159,11 +154,8 @@ private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
-  TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
-  TH1 *fPostPIDWdthCorr;    // post pid correction object for electron sigma widths in TPC
-  TH1 *fPostPIDCntrdCorrITS;// post pid correction object for electron sigma centroids in ITS
-  TH1 *fPostPIDWdthCorrITS; // post pid correction object for electron sigma widths in ITS
-                            /// @TODO: smart way to store corrections, potentially for all detectors.
+  TH1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
+  TH1 *fPostPIDWdthCorr;    // post pid correction object for widths
   TObject *fLegEffMap;      // single electron efficiency map
   TObject *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
@@ -251,7 +243,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,14);
+  ClassDef(AliDielectron,13);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

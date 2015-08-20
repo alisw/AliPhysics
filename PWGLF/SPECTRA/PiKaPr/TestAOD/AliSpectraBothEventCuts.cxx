@@ -51,7 +51,6 @@ AliSpectraBothEventCuts::AliSpectraBothEventCuts(const char *name) : TNamed(name
 fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0), fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0),fMaxChi2perNDFforVertex(0),
 fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.8),fUseAliPPVsMultUtils(false),
 fNMCProcessType(0),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),
-fDotheBGRejection(kTRUE),fDothePileUpRejection(kTRUE),
 fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0)
 ,fHistoEP(0),fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),
 fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
@@ -194,16 +193,7 @@ Bool_t AliSpectraBothEventCuts::IsSelected(AliVEvent * aod,AliSpectraBothTrackCu
 		return IsPhysSel;
 	  if(fAnalysisUtils&&(!fDotheeventcutsinmultselection)) // we check for pile-up
 	  {	
-		if(fDothePileUpRejection)
-		{
-		 	IsPhysSel = (!fAnalysisUtils->IsPileUpEvent(fAOD));
-
-		}
-		if(fDotheBGRejection)
-		{
-			IsPhysSel = (!fAnalysisUtils->IsSPDClusterVsTrackletBG(fAOD));
-
-		}
+		 IsPhysSel = (!fAnalysisUtils->IsPileUpEvent(fAOD));
 	}
  	 if(!IsPhysSel)
 		return IsPhysSel;

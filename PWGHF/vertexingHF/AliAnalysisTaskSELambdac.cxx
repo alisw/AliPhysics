@@ -56,11 +56,8 @@
 #include "AliPID.h"
 #include "AliNormalizationCounter.h"
 #include "AliVertexingHFUtils.h"
+ClassImp(AliAnalysisTaskSELambdac)
 
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSELambdac);
-/// \endcond
 
 //________________________________________________________________________
 AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac():

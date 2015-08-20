@@ -7,31 +7,31 @@ class AliFlowEventSimpleCuts;
 
 
 void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
-                        Int_t uptoWhichHarmonics = 2, // 2 --> v2 only, 3 --> v2 and v3, and so on
-                        Float_t PurityLevel=0.8,
-                        Float_t etamin=-0.8,
-                        Float_t etamax=0.8,
-                        Float_t EtaGap=0.2,
-                        TString fileNameBase="AnalysisResults",
-                        TString uniqueStr="Pion_02",
-                        TString Qvector ="Qa",
-                        Int_t AODfilterBit = 1,
-                        Int_t charge=0,
-                        Int_t MinTPCdedx = 10,
-                        Int_t ncentralitymin = 0,
-                        Int_t ncentralitymax = 50,
-                        Int_t maxITSCls = 7,
-                        Int_t maxChi2ITSCls = 37,
-                        Bool_t isPID = kTRUE,
-                        Bool_t isVZERO = kFALSE, // use vzero sp method
-                        Bool_t isData = kTRUE,
-                        Bool_t is2011 = kTRUE,
-                        Bool_t isAOD = kTRUE,
-                        Bool_t UsePurityPIDmethod = kFALSE,
-                        Bool_t useAfterBurner=kTRUE,
-                        Bool_t isCheck=kFALSE, //Purity PID pt differential vn extent
-                        AliPID::EParticleType particleType=AliPID::kPion,
-                        AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
+                      Int_t uptoWhichHarmonics = 2, // 2 --> v2 only, 3 --> v2 and v3, and so on
+                      Float_t PurityLevel=0.8,
+                      Float_t etamin=-0.8,
+                      Float_t etamax=0.8,
+                      Float_t EtaGap=0.2,
+                      TString fileNameBase="AnalysisResults",
+                      TString uniqueStr="Pion_02",
+                      TString Qvector ="Qa",
+                      Int_t AODfilterBit = 1,
+                      Int_t charge=0,
+                      Int_t MinTPCdedx = 10,
+                      Int_t ncentralitymin = 0,
+                      Int_t ncentralitymax = 50,
+                      Int_t maxITSCls = 7,
+                      Int_t maxChi2ITSCls = 37,
+                      Bool_t isPID = kTRUE,
+                      Bool_t isVZERO = kFALSE, // use vzero sp method
+                      Bool_t isData = kTRUE,
+                      Bool_t is2011 = kTRUE,
+                      Bool_t isAOD = kTRUE,
+                      Bool_t UsePurityPIDmethod = kFALSE,
+                      Bool_t useAfterBurner=kTRUE,
+                      Bool_t isCheck=kFALSE, //Purity PID pt differential vn extent
+                      AliPID::EParticleType particleType=AliPID::kPion,
+                      AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
     
     
     TF1 *gV2Param = 0x0;
@@ -43,7 +43,7 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t v3=0.0;
     Double_t v4=0.0;
     Int_t numberOfTrackClones=0; //non-flow
-    
+
     // Define a range of the detector to exclude
     Bool_t ExcludeRegion = kFALSE;
     Double_t excludeEtaMin = -0.;
@@ -58,11 +58,13 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t maxB = etamax;//
     
     
-    int centrMin[16] = {0,1,2,3,4,5,6,7,8,9,10,20,30,40,60,70};
-    int centrMax[16] = {1,2,3,4,5,6,7,8,9,10,20,30,40,50,70,80};
+    int centrMin[8] = {0,0,10,20,30,40,60,60};
+    int centrMax[8] = {1,10,20,30,40,50,70,80};
     
-    for(int i=0;i<16;i++){
-        if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
+    for(int i=0;i<8;i++){
+        if(ncentralitymin == 0) const int ncentrminlim = 0;
+        if(ncentralitymin == 60) const int ncentrminlim = 6;
+        if(ncentralitymin == centrMin[i] && ncentralitymin != 0 && ncentralitymin != 60) const int ncentrminlim = i;
         if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
     }
     
@@ -101,9 +103,9 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
             cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
         }
         cutsEvent[icentr]->SetQA(doQA);
-        
+
         if(isData){
-            // RP TRACK CUTS:
+        // RP TRACK CUTS:
             if(!isVZERO){
                 cutsRP[icentr] = new AliFlowTrackCuts(Form("RP_%d",icentr));
                 cutsRP[icentr]->SetPtRange(0.2,5.);
@@ -117,11 +119,11 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
                 cutsRP[icentr]->SetMinimalTPCdedx(MinTPCdedx);
                 cutsRP[icentr]->SetAODfilterBit(AODfilterBit);
             }
-            
+        
             if(isVZERO) { // use vzero sub analysis
                 if(!is2011) cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
                 if(is2011)  cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011(); // select vzero tracks
-                
+            
                 if(!cutsRP[icentr]) {
                     cout << " Fatal error: no RP cuts found! " << endl;
                     return 0x0;
@@ -161,7 +163,7 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
             SP_POI[icentr]->SetMinNClustersTPC(70);
             SP_POI[icentr]->SetMinChi2PerClusterTPC(0.1);
             SP_POI[icentr]->SetMaxChi2PerClusterTPC(4.0);
-            
+        
             //SP_POI->SetRequireITSRefit(kTRUE);
             //SP_POI->SetRequireTPCRefit(kTRUE);
             //SP_POI->SetMinNClustersITS(2);
@@ -186,7 +188,7 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
                     SP_POI[icentr]->SetTPCTOFNsigmaPIDPurityFunctions(PurityLevel);
                 }
             }
-            
+
         }
         if(!isData){
             SP_POI[icentr]->SetParamType(poitype);
@@ -200,7 +202,7 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
         }
         
         if(charge != 0) SP_POI[icentr]->SetCharge(charge);
-        
+
         if(isCheck){
             SP_POI[icentr]->SetEtaRange( etamin, etamax );
             printf(" > NOTE: Using full TPC as POI selection u < \n");
@@ -318,7 +320,7 @@ void AddTaskPIDFlowSPMC(Int_t triggerSelectionString=AliVEvent::kMB,
         if (ExcludeRegion) {
             taskFE[icentr]->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax);
         }
-        
+
         if(isData) taskFE[icentr]->SelectCollisionCandidates(triggerSelectionString);
         
         //  if(taskFE[icentr]->SetVZEROSubEvents(EP3sub)) cout << " --> Setting up VZERO subevents method ... " << endl;

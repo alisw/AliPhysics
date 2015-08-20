@@ -6,11 +6,11 @@
 
 /* $Id$ */ 
 
-///***********************************************************
-/// \class Class AliAODHFUtil
-/// \brief class for enabling access to data not available for the moment in AODs
-/// Author: Carlos Perez
-///***********************************************************
+//***********************************************************
+// Class AliAODHFUtil
+// class for enabling access to data not available for the moment in AODs
+// Author: Carlos Perez
+//***********************************************************
 #include "TNamed.h"
 
 class AliAODHFUtil : public TNamed {
@@ -30,11 +30,9 @@ class AliAODHFUtil : public TNamed {
 
  AliAODHFUtil& operator=(const AliAODHFUtil& pAssign);
 
- Float_t fVZERO[64]; ///< VZERO signals
+ Float_t fVZERO[64]; // VZERO signals
 
- /// \cond CLASSIMP
- ClassDef(AliAODHFUtil,1); // class to keep event info need in HF analysis
- /// \endcond
+ ClassDef(AliAODHFUtil,1) // class to keep event info need in HF analysis
 
 };
 

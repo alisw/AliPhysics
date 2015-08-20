@@ -29,10 +29,7 @@
 #include "TMath.h"
 #include "AliLog.h"
 
-/// \cond CLASSIMP
-ClassImp(AliSignificanceCalculator);
-/// \endcond
-
+ClassImp(AliSignificanceCalculator)
 //___________________________________________________________________________
 AliSignificanceCalculator::AliSignificanceCalculator():
 fSignal(0),

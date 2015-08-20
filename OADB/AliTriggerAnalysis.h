@@ -32,10 +32,8 @@ public:
     kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE,
     kEmcalL0,kEmcalL1GammaHigh, kEmcalL1GammaLow, kEmcalL1JetHigh, kEmcalL1JetLow,
     kIncompleteEvent,
-    kADA, kADC, kADABG, kADCBG,
     kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
   enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
-  enum ADDecision { kADInvalid = -1, kADEmpty = 0, kADBB, kADBG, kADFake };
   enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
   enum T0Decision { kT0Invalid = -1, kT0Empty = 0, kT0BB, kT0DecBG, kT0DecPileup };
   static const char* GetTriggerName(Trigger trigger);
@@ -52,7 +50,6 @@ public:
   Bool_t IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigger trigger);
   
   // some "raw" trigger functions
-  ADDecision ADTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
   V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
   T0Decision T0Trigger(const AliESDEvent* aEsd, Bool_t online, Bool_t fillHists = kFALSE);
   Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin) { return SPDFiredChips(aEsd, origin) >= fSPDGFOThreshold; }
@@ -166,9 +163,6 @@ protected:
   TH2F* fHistBitsSPD;        // offline trigger bits (calculated from clusters) vs hardware trigger bits
   TH1F* fHistFiredBitsSPD;   // fired hardware bits
   TH2F* fHistSPDClsVsTrk;    // histogram of clusters vs tracklet BG cut
-  TH2F* fHistAD;             // AD timing (sum vs difference)
-  TH1F* fHistADA;            // ADA timing
-  TH1F* fHistADC;            // ADC timing
   TH1F* fHistV0A;            // histograms that histogram the criterion the cut is applied on: bb triggers
   TH1F* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
   TH1F* fHistZDC;            //histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
@@ -187,7 +181,7 @@ protected:
   
   Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
   
-  ClassDef(AliTriggerAnalysis, 24)
+  ClassDef(AliTriggerAnalysis, 23)
   
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);

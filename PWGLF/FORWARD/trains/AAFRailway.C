@@ -150,12 +150,12 @@ struct AAFRailway : public ProofRailway
    */
   virtual const Char_t* UrlHelp() const 
   {
-    return "proof://alice-caf*/<dataset>?[&<options>][#<treename>]";
+    return "proof://<host>/<dataset>?[&<options>][#<treename>]";
   }
   /** 
    * @return short description
    */
-  virtual const char* Desc() const { return "AAF (deprecated)"; }
+  virtual const char* Desc() const { return "AAF"; }
 };
 #endif
 //

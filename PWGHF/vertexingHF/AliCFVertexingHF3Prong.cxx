@@ -36,9 +36,7 @@
 #include "AliCFContainer.h"
 #include "AliCFTaskVertexingHF.h"
 
-/// \cond CLASSIMP
-ClassImp(AliCFVertexingHF3Prong);
-/// \endcond
+ClassImp(AliCFVertexingHF3Prong)
 
 //_________________________________________
 AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(Int_t decay, UInt_t resonantDecay):

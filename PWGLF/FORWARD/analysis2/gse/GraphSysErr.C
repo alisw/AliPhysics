@@ -186,8 +186,7 @@ public:
     kCurve  = 6, // 40  - Filled smoothed area 
     kHat    = 7, // []0 - Hats 
     kBar    = 8, // ||0 - A bar 
-    kNone   = 9, // XP  - No errors
-    kLine   = 10 // XC
+    kNone   = 9  // XP  - No errors
   };
   /** 
    * @{ 
@@ -210,10 +209,6 @@ public:
       fSumLine(1,1,1),
       fSumTitle(),
       fSumOption(0),
-      fCommonSumFill(0,0),
-      fCommonSumLine(1,1,1),
-      fCommonSumTitle(),
-      fCommonSumOption(0),
       fDataOption(0), 
       fXTitle(""),
       fYTitle(""),
@@ -240,12 +235,8 @@ public:
       fCounter(0),
       fSumFill(0,0),
       fSumLine(1,1,1),
-      fSumTitle("Uncorr.Errors"),
+      fSumTitle("Errors"),
       fSumOption(0),
-      fCommonSumFill(0,0),
-      fCommonSumLine(1,1,1),
-      fCommonSumTitle("Corr.Errors."),
-      fCommonSumOption(0),
       fDataOption(0), 
       fXTitle(""),
       fYTitle(""),
@@ -280,10 +271,6 @@ public:
       fSumLine(1,1,1),
       fSumTitle("Errors"),
       fSumOption(0),
-      fCommonSumFill(0,0),
-      fCommonSumLine(1,1,1),
-      fCommonSumTitle("Corr.Errors."),
-      fCommonSumOption(0),
       fDataOption(0), 
       fXTitle(""),
       fYTitle(""),
@@ -316,10 +303,6 @@ public:
       fSumLine(other.fSumLine),
       fSumTitle(other.fSumTitle),
       fSumOption(other.fSumOption),
-      fCommonSumFill(other.fCommonSumFill),
-      fCommonSumLine(other.fCommonSumLine),
-      fCommonSumTitle(other.fCommonSumTitle),
-      fCommonSumOption(other.fCommonSumOption),
       fDataOption(other.fDataOption), 
       fXTitle(other.fXTitle),
       fYTitle(other.fYTitle),
@@ -345,8 +328,10 @@ public:
     while ((p2p = static_cast<HolderP2P*>(nextP()))) 
       fPoint2Point.Add(new HolderP2P(*p2p));    
 
-    CopyKeys(&other, "ar");
-    // Print("all");
+    if (other.fMap)
+      fMap = static_cast<TList*>(other.fMap->Clone());
+    if (other.fQualifiers)
+      fQualifiers = static_cast<TList*>(other.fQualifiers->Clone());
   }
   /**
    * DTOR
@@ -390,13 +375,6 @@ public:
     other.fSumFill.Copy(fSumFill);
     other.fSumLine.Copy(fSumLine);
     fSumTitle     = other.fSumTitle;
-    fSumOption    = other.fSumOption;
-    
-    other.fCommonSumFill.Copy(fCommonSumFill);
-    other.fCommonSumLine.Copy(fCommonSumLine);
-    fCommonSumTitle     = other.fCommonSumTitle;
-    fCommonSumOption    = other.fCommonSumOption;
-    
     fXTitle       = other.fXTitle;
     fYTitle       = other.fYTitle;
     fStatRelative = other.fStatRelative;
@@ -443,82 +421,44 @@ public:
    * 
    * @param option not used
    */
-  virtual void Print(Option_t* option="R") const
+  virtual void Print(Option_t* option="R") const //*MENU*
   {
     gROOT->IndentLevel();
     std::cout << GetName() << ": " << GetTitle() << std::endl;
-
-    TString opt(option);    
+    TString opt(option);
     opt.ToUpper();
-    if (opt.IsNull()) return;
-
-    Bool_t all  = opt.Contains("ALL");
-    Bool_t keys = all || opt.Contains("KEY");
-    Bool_t qual = all || opt.Contains("QUAL");
-    Bool_t sys  = all || opt.Contains("SYS");
-    Bool_t cmn  = sys || opt.Contains("COMMON");
-    Bool_t p2p  = sys || opt.Contains("P2P");
-    
+    if (!opt.Contains("R")) return;
     gROOT->IncreaseDirLevel();
-    if (fMap && keys) {
+
+    if (fMap) {
       gROOT->IndentLevel();
       std::cout << "Key/value pairs: " << std::endl;
       gROOT->IncreaseDirLevel();
-      TIter nextKV(fMap);
-      TObject* kv = 0;
-      while ((kv = nextKV())) {
-	gROOT->IndentLevel();
-	std::cout << '"' << kv->GetName() << '"' << "\t"
-		  << '"' << kv->GetTitle() << '"' << "\n";
-      }
-      // fMap->Print(option);
+      fMap->ls(option);
       gROOT->DecreaseDirLevel();
     }
-    if (fQualifiers && qual) {
+    if (fQualifiers) {
       gROOT->IndentLevel();
       std::cout << "Qualifier pairs: " << std::endl;
       gROOT->IncreaseDirLevel();
-      TIter nextQ(fQualifiers);
-      TObject* q = 0;
-      while ((q = nextQ())) {
-	gROOT->IndentLevel();
-	std::cout << '"' << q->GetName() << '"' << "\t"
-		  << '"' << q->GetTitle() << '"' << "\n";
-      }
-      // fQualifiers->ls(option);
+      fQualifiers->ls(option);
       gROOT->DecreaseDirLevel();
     }
 
-    if (cmn) {
-      gROOT->IndentLevel();
-      std::cout << "Commons: " << std::endl;
-      gROOT->IncreaseDirLevel();
-      TIter nextC(&fCommon);
-      TObject* c = 0;
-      while ((c = nextC())) {
-	gROOT->IndentLevel();
-	c->Print(option);
-      }
-      // fCommon.Print(option);
-      gROOT->DecreaseDirLevel();
-    }
-
-    if (p2p) {
-      gROOT->IndentLevel();
-      std::cout <<  "Point-to-point: " << std::endl;
-      gROOT->IncreaseDirLevel();
-      TIter nextP(&fPoint2Point);
-      TObject* p = 0;
-      while ((p = nextP())) {
-	gROOT->IndentLevel();
-	p->Print(option);
-      }
-      // fPoint2Point.Print(option);
-      gROOT->DecreaseDirLevel();
-    }
-    
+    gROOT->IndentLevel();
+    std::cout << "Commons: " << std::endl;
+    gROOT->IncreaseDirLevel();
+    fCommon.ls(option);
     gROOT->DecreaseDirLevel();
-  } //*MENU*
+
+    gROOT->IndentLevel();
+    std::cout <<  "Point-to-point: " << std::endl;
+    gROOT->IncreaseDirLevel();
+    fPoint2Point.ls(option);
+    gROOT->DecreaseDirLevel();
+
+    gROOT->DecreaseDirLevel();
+  }
   /** 
    * Say that this should be shown as a folder
    * 
@@ -654,7 +594,7 @@ public:
       fDrawn->GetHistogram()->SetXTitle(fXTitle);
       fDrawn->GetHistogram()->SetYTitle(fYTitle);
     }
-  }  //*MENU*
+  }
   /** 
    * Fit a function to the data.  Which errors are considered depends
    * on the options given in drawOption i.e., 
@@ -774,453 +714,6 @@ public:
   }
   /* @} */
   /** 
-   * @{ 
-   * @name Various operations 
-   */
-  /** 
-   * Average one or more graphs. 
-   *
-   * The resulting graph is the weighted mean of the input graphs.
-   * Common systematic errors common to all input graphs can be
-   * specified before hand.  
-   *
-   * All other errors are taken in to account and are propagated to
-   * point-to-point errors.
-   * 
-   * @param others 
-   */
-  void Average(const TCollection* others)
-  {
-    Int_t        id = DeclarePoint2Point("Sys.Err.", false, kBox);
-    TList        tmp; tmp.SetOwner();
-    TIter        oNext(others);
-    GraphSysErr* other = 0;
-    Double_t     xMin = +1e9;
-    Double_t     xMax = -1e9;
-    while ((other = static_cast<GraphSysErr*>(oNext()))) {
-      GraphSysErr*  cpy = new GraphSysErr(*other);
-      TIter         cNext(&fCommon);
-      HolderCommon* cmn = 0;
-      while ((cmn = static_cast<HolderCommon*>(cNext()))) {
-	Int_t oId = cpy->FindId(cmn->GetTitle());
-	if (oId <= 0) {
-	  // oId = cpy->FindId(Form("%s ()", cmn->GetTitle()));
-	  //  if (oId <= 0) {
-	  // oId = cpy->FindId(Form(" %s", cmn->GetTitle()));
-	  // if (oId <= 0) {
-	  Error("Average", "Common error %s not found in %s",
-		cmn->GetTitle(), cpy->GetName());
-	  cpy->Print("all");
-	  delete cpy;
-	  cpy = 0;
-	  break;
-	  // }
-	  // }
-	} // oId <= 0
-	// Zero this error here 
-	HolderCommon* oCmn = cpy->FindCommon(oId);
-	if (cmn->fEyl <= 0 && cmn->fEyh <= 0) {
-	  // Copy the error over 
-	  cmn->fEyl = oCmn->fEyl;
-	  cmn->fEyh = oCmn->fEyh;
-	}
-	oCmn->Set(0,0);
-      }  // while cmn
-      if (cpy) tmp.Add(cpy);
-    }
-    if (tmp.GetEntries() < 2) {
-      Error("Average", "Nothing to average");
-      return;
-    }
-    TIter next(&tmp);
-    GraphSysErr* g = 0;
-    Bool_t first = true;
-    while ((g = static_cast<GraphSysErr*>(next()))) {
-      // Info("Average", "Resetting unique on %s", g->GetTitle());
-      g->SetUniqueID(0);
-      if (first) CopyKeys(g, "ar");
-      first = false;
-      // Find least/largest X
-      Int_t oN = g->GetN();
-      xMin = TMath::Min(xMin, g->GetX(0)-2*g->GetErrorXLeft(0));
-      xMax = TMath::Max(xMax, g->GetX(oN-1)+2*g->GetErrorXRight(oN-1));
-    }
-    Double_t x    = xMin;
-    Double_t oldX = xMin;
-    Int_t    cnt  = 0;
-    TArrayD  xa(100); // Assume no more than 100 points
-    TArrayD  exla(100);
-    TArrayD  exha(100);
-    do {
-      // Find the next X to evaluate at
-      next.Reset();
-      Double_t nextX = xMax;
-      Double_t texl  = 0;
-      Double_t texh  = 0;
-      while ((g = static_cast<GraphSysErr*>(next()))) {
-	for (Int_t i = g->GetUniqueID(); i < g->GetN(); i++) {
-	  if (g->GetX(i) <= x) {
-	    // Info("Average", "- x_i=%f < x=%f", g->GetX(i), x);
-	    continue;
-	  }
-	  if (g->GetX(i) < nextX) {
-	    // Info("Average", "Set x to %f (was %f)", g->GetX(i), nextX);
-	    nextX = g->GetX(i);
-	    texl  = TMath::Max(texl, g->GetErrorXLeft(i));
-	    texh  = TMath::Max(texh, g->GetErrorXRight(i));
-	  }
-	  else {
-	    // g->SetUniqueID(i);
-	    // Info("Average", "No more here at x=%f", g->GetX(i));
-	    break;
-	  }
-	}
-      }
-      if (nextX >= xMax) {
-	// Info("Average", "Next x is too large %f>%f", nextX, xMax);
-	break;
-      }
-
-      // Info("Average", "Set next x to %f +/- (%f,%f)", nextX, texl, texh);
-      xa[cnt]     = nextX;
-      exla[cnt]   = texl;
-      exha[cnt]   = texh;
-      Double_t dx = texh*2;//(nextX-oldX);
-      oldX        = x;
-      x           = nextX+dx/4;
-      cnt++;
-    } while (cnt < xa.GetSize());
-
-    for (Int_t i = 0; i < cnt; i++) {
-      Double_t xi   = xa[i];
-      Double_t texl = exla[i];
-      Double_t texh = exha[i];
-      Double_t nexl = TMath::Abs(xi - (i     == 0   ? xa[i+1] : xa[i-1]))/2;
-      Double_t nexh = TMath::Abs(xi - (i + 1 == cnt ? xa[i-1] : xa[i+1]))/2;
-      Double_t exl  = TMath::Min(texl, nexl);
-      Double_t exh  = TMath::Min(texh, nexh);
-      // Info("Average", "@ %3d x=%f, exl=min(%f,%f)=%f exh=min(%f,%f)=%f",
-      //      i, xi, texl, nexl, exl, texh, nexh, exh);
-
-      
-      // Now loop again - this time calculating our data point
-      Double_t sum = 0;
-      Double_t sumW = 0;
-      Double_t sumV = 0;
-      next.Reset();
-      while ((g = static_cast<GraphSysErr*>(next()))) {
-	Double_t y, eyl, eyh;
-	if (!g->FindYandError(xi, true, true, true, false, y, eyl, eyh))
-	  continue;
-	Double_t s  = 2*eyl*eyh/(eyh+eyl);
-	Double_t sp = (eyh-eyl)/(eyh+eyh);
-	Double_t w  = .5 * TMath::Power(s+y*sp, 3) / s;
-	sum  += y*w;
-	sumW += w;
-	sumV += w*w*s*s;
-      }
-      Double_t newY = sum / sumW;
-      Double_t newV = sumV / sumW / sumW;
-      SetPoint(i, xi, newY);
-      SetPointError(i, exl, exh);
-      SetSysError(id, i, 0, TMath::Sqrt(newV));
-    }
-  }
-  /** 
-   * Take the ratio of 2 graphs.  
-   * 
-   * @param num    Numerator 
-   * @param denom  Denominator 
-   * 
-   * @return Newly allocated graph 
-   */
-  static GraphSysErr* Ratio(const GraphSysErr* num,
-			    const GraphSysErr* denom)
-  {
-    Double_t sqRes = -1;
-    return Ratio(num, denom, sqRes);
-  }
-  static Bool_t NextPoint(Int_t i,
-			  const GraphSysErr* num,
-			  const GraphSysErr* denom,
-			  Double_t& x,
-			  Double_t& dY,
-			  Double_t& dEyl,
-			  Double_t& dEyh,
-			  Double_t& nY,
-			  Double_t& nEyl,
-			  Double_t& nEyh)
-  {
-    x  = num->GetX(i);
-    if (!denom->FindYandError(x, false, true, true, false, dY, dEyl, dEyh))
-      return false; 
-    if (TMath::Abs(dY) < 1e-9)
-      return false;
-    
-    nY   = num->GetYandError(i,false,true,true,false,nEyl, nEyh);
-    return true;
-  }
-  
-  /** 
-   * Take the ratio of 2 graphs.  
-   * 
-   * @param num    Numerator 
-   * @param denom  Denominator 
-   * 
-   * @return Newly allocated graph 
-   */
-  static GraphSysErr* Ratio(const GraphSysErr* num,
-			    const GraphSysErr* denom,
-			    Double_t&          sqRes)
-  {
-    GraphSysErr* ret = new GraphSysErr(1);
-    ret->CopyKeys(num, "ar");
-    Double_t dSum  = 0;
-    Double_t nSum  = 0;
-    Double_t dWsum = 0;
-    Double_t nWsum = 0;
-    if (sqRes >= 0) {
-      sqRes = 0;
-      for (Int_t i = 0; i < num->GetN(); i++) {
-	Double_t x    = 0;
-	Double_t dY   = 0;
-	Double_t dEyl = 0;
-	Double_t dEyh = 0;
-	Double_t nEyl = 0;
-	Double_t nEyh = 0;
-	Double_t nY   = 0;
-	if (!NextPoint(i, num, denom, x, dY, dEyl, dEyh, nY, nEyl, nEyh))
-	  continue;
-	dSum  += dY;
-	nSum  += nY;
-	dWsum += TMath::Power(TMath::Max(dEyl,dEyh),2);
-	nWsum += TMath::Power(TMath::Max(nEyl,nEyh),2);
-      }
-      if (dSum <= 0 && nSum <= 0) {
-	::Warning("Ratio", "Empty graphs");
-	return 0;
-      }
-    }
-
-    Double_t dRsum = 0;
-    Double_t nRsum = 0;
-    Double_t dfMax = 0;
-    Int_t id = ret->DeclarePoint2Point("Errors", false, GraphSysErr::kBox);
-    Int_t cnt = 0;
-    for (Int_t i = 0; i < num->GetN(); i++) {
-      Double_t x    = 0;
-      Double_t dY   = 0;
-      Double_t dEyl = 0;
-      Double_t dEyh = 0;
-      Double_t nEyl = 0;
-      Double_t nEyh = 0;
-      Double_t nY   = 0;
-      if (!NextPoint(i, num, denom, x, dY, dEyl, dEyh, nY, nEyl, nEyh))
-	continue;
-
-      Double_t eyl = TMath::Max(nEyl, dEyl);
-      Double_t eyh = TMath::Max(nEyh, dEyh);
-      if (nSum > 0 && dSum > 0) {
-	Double_t dE2   = TMath::Power(TMath::Max(dEyl,dEyh), 2);
-	Double_t nE2   = TMath::Power(TMath::Max(nEyl,nEyh), 2);	
-	Double_t sigma =  nSum * nSum * dE2 + dSum * dSum * nE2;
-	Double_t delta =  dSum * nY - nSum * dY;
-	// From TH1::Chi2Test
-	// sqRes          += delta * delta / sigma;
-	// Treating MC as thruth 
-	sqRes += TMath::Power((dY-nY),2)/dE2;
-
-	// KolmogorowvTest
-	dRsum += dY / dSum;
-	nRsum += nY / nSum;
-	dfMax =  TMath::Max(dfMax, TMath::Abs(dRsum-nRsum));
-      }
-      eyl          /= dY;
-      eyh          /= dY;
-      ret->SetPoint(cnt, x, nY/dY);
-      ret->SetPointError(cnt, num->GetErrorXLeft(i), num->GetErrorXRight(i));
-      ret->SetStatError(cnt, 0);
-      ret->SetSysError(id, cnt, eyl, eyh);
-      cnt++;
-    }
-    if (cnt <= 0) {
-      delete ret;
-      ret = 0;
-      return 0;
-    }
-#if 1
-    // chi^2/nu 
-    sqRes /= cnt;
-#else 
-    // K-F test
-    Double_t dEsum = dSum * dSum / dWsum;
-    Double_t nEsum = nSum * nSum / nWsum;
-    Double_t z     = dfMax*TMath::Sqrt(dEsum*nEsum/(dEsum+nEsum));
-
-    sqRes = TMath::KolmogorovProb(z);
-#endif 
-
-    ret->CopyAttr(num);
-    // ret->SetMarkerColor(num->GetMarkerColor());
-    // ret->SetMarkerStyle(num->GetMarkerStyle());
-    // ret->SetMarkerSize(num->GetMarkerSize());
-    // ret->SetLineColor(num->GetLineColor());
-    // ret->SetLineStyle(num->GetLineStyle());
-    // ret->SetLineWidth(num->GetLineWidth());
-    // ret->SetFillColor(num->GetFillColor());
-    // ret->SetFillStyle(num->GetFillStyle());
-    // ret->SetSumTitle(num->GetSumTitle());
-    // ret->fSumOption = num->fSumOption;
-    // ret->SetSumLineStyle(num->GetSumLineStyle());
-    // ret->SetSumLineColor(num->GetSumLineColor());
-    // ret->SetSumLineWidth(num->GetSumLineWidth());
-    // ret->SetSumFillStyle(num->GetSumFillStyle());
-    // ret->SetSumFillColor(num->GetSumFillColor());
-    // ret->SetCommonSumTitle(num->GetCommonSumTitle());
-    // ret->fCommonSumOption = num->fCommonSumOption;
-    // ret->SetCommonSumLineStyle(num->GetCommonSumLineStyle());
-    // ret->SetCommonSumLineColor(num->GetCommonSumLineColor());
-    // ret->SetCommonSumLineWidth(num->GetCommonSumLineWidth());
-    // ret->SetCommonSumFillStyle(num->GetCommonSumFillStyle());
-    // ret->SetCommonSumFillColor(num->GetCommonSumFillColor());
-    // ret->SetXTitle(num->GetXTitle());
-    // ret->SetYTitle(num->GetYTitle());
-    return ret;
-  }
-  /** 
-   * Swap two points 
-   * 
-   * @param i        Index 
-   * @param j        Index 
-   * @param reflect  if true, multiply X values with -1
-   */
-  void SwapPoints(Int_t i, Int_t j, Bool_t reflect=false)
-  {
-    if (i == j && !reflect) return;
-    SwapPoints(fData, i, j, reflect);
-    TIter next(&fPoint2Point);
-    HolderP2P* p2p = 0;
-    while ((p2p = static_cast<HolderP2P*>(next()))) {
-      SwapPoints(p2p->fGraph, i, j, reflect);
-    }
-  }
-  /** 
-   * Make a copy of the graph, and reflect around x0
-   * 
-   * @param x0 Where to reflect around 
-   * 
-   * @return Newly allocated graph 
-   */
-  GraphSysErr* Reflect(Double_t x0=0) const
-  {
-    GraphSysErr* cpy = new GraphSysErr(*this);
-    for (Int_t i = 0; i < GetN()/2; i++) {
-      cpy->SwapPoints(i, GetN()-i-1, true);
-    }
-    return cpy;
-  }
-  Bool_t Symmetrize(GraphSysErr* other)
-  {
-    GraphSysErr*  cpy = new GraphSysErr(*other);
-    Int_t         id  = DeclarePoint2Point("Sys.Err.", false, kBox);
-    HolderCommon* cmn = 0;
-    TIter         cNext(&fCommon);
-    while ((cmn = static_cast<HolderCommon*>(cNext()))) {
-      Int_t oId = cpy->FindId(cmn->GetTitle());
-      if (oId <= 0) {
-	Error("Symmetrice", "Common error %s not found in %s",
-	      cmn->GetTitle(), cpy->GetName());
-	cpy->Print("all");
-	delete cpy;
-	cpy = 0;
-	break;
-	// }
-	// }
-      } // oId <= 0
-	// Zero this error here 
-      HolderCommon* oCmn = cpy->FindCommon(oId);
-      if (cmn->fEyl <= 0 && cmn->fEyh <= 0) {
-	// Copy the error over 
-	cmn->fEyl = oCmn->fEyl;
-	cmn->fEyh = oCmn->fEyh;
-      }
-      oCmn->Set(0,0);
-    }  // while cmn
-    if (!cpy) return false;
-
-    Int_t   cnt = 0;
-    Int_t   n   = other->GetN();
-    TArrayI used(n);
-    used.Reset(-1);
-    for (Int_t i = 0; i < n; i++) {
-      if (used[i] >= 0 && used[i] != i) {
-	Int_t j = used[i];
-	// Info("Symmetrice", "Copy %d to %d instead of %d", j, cnt, i);
-	SetPoint(cnt, -GetX(j), GetY(j));
-	SetPointError(cnt, GetErrorXRight(j), GetErrorXLeft(j));
-	SetStatError(cnt, 0, 0);
-	SetSysError(id, cnt, 0, GetSysErrorY(id, j));
-	// Info("Symmetrice", "%f -> %f +/- %f",
-	//      -GetX(j), GetY(j), GetSysErrorY(id,j));
-	cnt++;
-	continue;
-      }
-      used[i] = i;
-      Double_t eyl1, eyh1;
-      Double_t exl1 = cpy->GetErrorXLeft(i);
-      Double_t exh1 = cpy->GetErrorXRight(i); 
-      Double_t y1   = cpy->GetYandError(i,true,true,true,false,eyl1,eyh1);
-      Double_t x1   = cpy->GetX(i);
-      Double_t y2, eyl2, eyh2;
-      Int_t    i1, i2;
-      Int_t    j  = cpy->FindPoint(-x1, i1, i2);
-      if (j < -1) {
-	// IF there's no mirror point, the just set to current 
-	// Info("Symmetrice", "No mirror of %f using %d for %d", x1, i, cnt);
-	SetPoint(cnt, x1, y1);
-	SetPointError(cnt, exl1, exh1);
-	SetStatError(cnt, 0, 0);
-	SetSysError(id, cnt, 0, 0, eyl1, eyh1);
-	cnt++;
-	continue;
-      }
-      if (j >= 0) {
-	// If we have exact mirror, then use that point and mark as
-	// used
-	// Info("Symmetrice", "Got exact mirror of %f(%d) at %d", x1, i, j);
-	y2 = cpy->GetYandError(j,true,true,true,false,eyl2,eyh2);
-	// We should copy values when we get to j
-	used[j] = cnt;
-      }
-      else {
-	// Otherwise we use interpolation between two points 
-	// Info("Symmetrice", "Interpolate mirror of %f(%d) between %d-%d",
-	//      x1, i, i1, i2);
-	cpy->FindYandError(-x1,true,true,true,false,y2,eyl2,eyh2);
-      }
-      // Now calculate weighted mean and variance
-      Double_t s1   = 2 * eyl1 * eyh1 / (eyh1 + eyl1);
-      Double_t sp1  = (eyh1 - eyl1) / (eyh1 + eyl1);
-      Double_t w1   = .5 * TMath::Power(s1+y1*sp1, 3) / s1;
-      Double_t s2   = 2 * eyl2 * eyh2 / (eyh2 + eyl2);
-      Double_t sp2  = (eyh2 - eyl2) / (eyh2 + eyl2);
-      Double_t w2   = .5 * TMath::Power(s2+y2*sp2, 3) / s2;
-      Double_t sumW = (w1+w2);
-      Double_t newY = (y1*w1+y2*w2) / sumW;
-      Double_t newV = TMath::Sqrt((w1*w1*s1*s1+w2*w2*s2*s2) / sumW / sumW);
-
-      // Info("Symmmetrice", "%f (%f +/- %f) + (%f +/- %f) -> %f +/- %f",
-      //      x1, y1, w1, y2, w2, newY, newV);
-      SetPoint(cnt, x1, newY);
-      SetPointError(cnt, exl1, exh1);
-      SetStatError(cnt, 0, 0);
-      SetSysError(id, cnt, 0, newV);
-      cnt++;
-    }
-    return true;
-  }
-  /* @} */
-  /** 
    * @{
    * @name Import/export 
    */
@@ -1273,13 +766,6 @@ public:
 	<< "  g->SetSumLineWidth(" << fSumLine.GetLineWidth() << ");\n"      
 	<< "  g->SetSumFillStyle(" << fSumFill.GetFillStyle() << ");\n"
 	<< "  g->SetSumFillColor(" << fSumFill.GetFillColor() << ");\n"
-	<< "  g->SetCommonSumOption("    << fCommonSumOption << ");\n"
-	<< "  g->SetCommonSumTitle(\""   << fCommonSumTitle << "\");\n"
-	<< "  g->SetCommonSumLineStyle(" <<fCommonSumLine.GetLineStyle()<<");\n"
-	<< "  g->SetCommonSumLineColor(" <<fCommonSumLine.GetLineColor()<<");\n"
-	<< "  g->SetCommonSumLineWidth(" <<fCommonSumLine.GetLineWidth()<<");\n"
-	<< "  g->SetCommonSumFillStyle(" <<fCommonSumFill.GetFillStyle()<<");\n"
-	<< "  g->SetCommonSumFillColor(" <<fCommonSumFill.GetFillColor()<<");\n"
 	<< "  // Stat options\n"
 	<< "  g->SetStatRelative(" << fStatRelative << ");\n";
     TIter nextC(&fCommon);
@@ -1429,7 +915,7 @@ public:
     }
     out << "*dataend:\n" 
 	<< "# End of dataset\n" << std::endl;
-  } //*MENU*
+  }
   /** 
    * Export a set of data sets to a single table.  All graphs must
    * have the same format.  The title of each graph is written as the
@@ -1733,8 +1219,7 @@ public:
     }
     TList* ret = new TList;
     ret->SetOwner();
-    GraphSysErr* g     = 0;
-    GraphSysErr* first = 0;
+    GraphSysErr* g = 0;
     Int_t id = 0;
     do {
       Int_t    sub  = 1;
@@ -1746,8 +1231,6 @@ public:
 	if (kVerbose & kImport)
 	  ::Info("Import", "Imported %d of %d", sub, nIdx);
 	g->SetName(Form("ds_%d_%d", id, sub-1));
-	if (!first) first = g;
-	else        g->CopyKeys(first);
 	ret->Add(g);
 	sub++;
       } while(sub < nIdx);
@@ -1837,8 +1320,7 @@ public:
 	  Bool_t   rel = false;
 	  if (ImportError(Token(tokens, 0), el, eh, rel)) { 
 	    if (rel) { el /= 100.; eh /= 100.; }
-	    TString& tnam = Token(tokens, 1);
-	    TString  nam  = tnam.Strip(TString::kBoth, ' ');
+	    TString& nam = Token(tokens, 1);
 	    if (!ret) ret = new GraphSysErr("imported", "");
 	    Int_t id = ret->DefineCommon(nam, rel, el, eh, kRect);
 	    ret->SetSysLineColor(id, (isty % 6) + 2);
@@ -2125,19 +1607,6 @@ public:
     fPoint2Point.AddLast(h);
     return id;
   }
-  void RemoveSysError(Int_t id)
-  {
-    HolderCommon* h = FindCommon(id);
-    if (h) {
-      fCommon.Remove(h);
-      return;
-    }
-    HolderP2P* p = FindP2P(id);
-    if (p) {
-      fPoint2Point.Remove(p);
-      return;
-    }
-  }
   /** 
    * Find the ID of an error with the given title 
    * 
@@ -2163,7 +1632,7 @@ public:
     // fPoint2Point.ls();
     return 0;
   }
-  Int_t GetNSys() const { return fCounter; }
+
   /* @} */
 
   //__________________________________________________________________
@@ -2214,11 +1683,6 @@ public:
    * the y values.
    */
   void SetStatRelative(Bool_t rel) { fStatRelative = rel; }
-  /**
-   * Check if statistical errors are relative 
-   *
-   * @return true if statistical errors are defined as relative 
-   */
   Bool_t IsStatRelative() const { return fStatRelative; }
   /** 
    * Set the statistical error on the ith data point
@@ -2360,8 +1824,7 @@ public:
    * 
    * @return statistical error at point
    */
-  Double_t GetStatErrorUp(Int_t point) const
-  { 
+  Double_t GetStatErrorUp(Int_t point) const { 
     return fData->GetErrorYhigh(point); 
   }
   /** 
@@ -2369,15 +1832,7 @@ public:
    * 
    * @return statistical error at point
    */
-  Double_t GetStatErrorDown(Int_t point) const
-  {
-    return fData->GetErrorYlow(point);
-  }
-  Bool_t IsCommon(Int_t id) const
-  {
-    HolderCommon* c = FindCommon(id);
-    return c != 0;
-  }
+  Double_t GetStatErrorDown(Int_t point)const{return fData->GetErrorYlow(point);}
   /** 
    * Check if an error is relative 
    * 
@@ -2483,181 +1938,6 @@ public:
     return h->GetTitle();
   }
   /** 
-   * Get fill style of systematic uncertainty 
-   * 
-   * @param id Identifier 
-   * 
-   * @return style, or 0
-   */
-  Style_t GetSysFillStyle(Int_t id) const
-  {
-    Holder* h = Find(id);
-    if (!h) return 0;
-    return h->GetFillStyle();    
-  }
-  /** 
-   * Get line style of systematic uncertainty 
-   * 
-   * @param id Identifier 
-   * 
-   * @return style, or 0
-   */
-  Style_t GetSysLineStyle(Int_t id) const
-  {
-    Holder* h = Find(id);
-    if (!h) return 0;
-    return h->GetLineStyle();    
-  }
-  /** 
-   * Get fill color of systematic uncertainty 
-   * 
-   * @param id Identifier 
-   * 
-   * @return color, or 0
-   */
-  Color_t GetSysFillColor(Int_t id) const
-  {
-    Holder* h = Find(id);
-    if (!h) return 0;
-    return h->GetFillColor();    
-  }
-  /** 
-   * Get line color of systematic uncertainty 
-   * 
-   * @param id Identifier 
-   * 
-   * @return color, or 0
-   */
-  Color_t GetSysLineColor(Int_t id) const
-  {
-    Holder* h = Find(id);
-    if (!h) return 0;
-    return h->GetLineColor();    
-  }
-  /** 
-   * Get line width of systematic uncertainty 
-   * 
-   * @param id Identifier 
-   * 
-   * @return width, or 0
-   */
-  Width_t GetSysLineWidth(Int_t id) const
-  {
-    Holder* h = Find(id);
-    if (!h) return 0;
-    return h->GetLineWidth();    
-  }
-  /** 
-   * Get title of summed systematic error 
-   * 
-   * @return Name 
-   */
-  const char* GetSumTitle() const
-  {
-    return fSumTitle.Data();
-  }
-  /** 
-   * Get fill style of sum systematic uncertainty 
-   * 
-   * @return style, or 0
-   */
-  Style_t GetSumFillStyle() const
-  {
-    return fSumFill.GetFillStyle();
-  }
-  /** 
-   * Get line style of sum systematic uncertainty 
-   * 
-   * @return style, or 0
-   */
-  Style_t GetSumLineStyle() const
-  {
-    return fSumLine.GetLineStyle();
-  }
-  /** 
-   * Get fill color of sum systematic uncertainty 
-   * 
-   * @param id Identifier 
-   * 
-   * @return color, or 0
-   */
-  Color_t GetSumFillColor() const
-  {
-    return fSumFill.GetFillColor();
-  }
-  /** 
-   * Get line color of sum systematic uncertainty 
-   * 
-   * @return color, or 0
-   */
-  Color_t GetSumLineColor() const
-  {
-    return fSumLine.GetLineColor();
-  }
-  /** 
-   * Get line width of sum systematic uncertainty 
-   * 
-   * @return width, or 0
-   */
-  Width_t GetSumLineWidth() const
-  {
-    return fSumLine.GetLineWidth();
-  }
-  /** 
-   * Get title of summed systematic error 
-   * 
-   * @return Name 
-   */
-  const char* GetCommonSumTitle() const
-  {
-    return fCommonSumTitle.Data();
-  }
-  /** 
-   * Get fill style of sum systematic uncertainty 
-   * 
-   * @return style, or 0
-   */
-  Style_t GetCommonSumFillStyle() const
-  {
-    return fCommonSumFill.GetFillStyle();
-  }
-  /** 
-   * Get line style of sum systematic uncertainty 
-   * 
-   * @return style, or 0
-   */
-  Style_t GetCommonSumLineStyle() const
-  {
-    return fCommonSumLine.GetLineStyle();
-  }
-  /** 
-   * Get fill color of sum systematic uncertainty 
-   * 
-   * @return color, or 0
-   */
-  Color_t GetCommonSumFillColor() const
-  {
-    return fCommonSumFill.GetFillColor();
-  }
-  /** 
-   * Get line color of sum systematic uncertainty 
-   * 
-   * @return color, or 0
-   */
-  Color_t GetCommonSumLineColor() const
-  {
-    return fCommonSumLine.GetLineColor();
-  }
-  /** 
-   * Get line width of sum systematic uncertainty 
-   * 
-   * @return width, or 0
-   */
-  Width_t GetCommonSumLineWidth() const
-  {
-    return fCommonSumLine.GetLineWidth();
-  }
-  /** 
    * Get the common systematic error 
    *
    * @return Common systematic error 
@@ -2693,31 +1973,6 @@ public:
    * @return Y-axis name
    */
   const char* GetYTitle() const { return fYTitle.Data(); }
-  /** 
-   * Get minimum and maximum 
-   * 
-   * @param option 
-   * @param min 
-   * @param max 
-   */
-  void GetMinMax(Option_t* option, Double_t& min, Double_t& max)
-  {
-    TString  opt(option); opt.ToUpper();
-    Bool_t   cmn     = opt.Contains("COMMON");
-    Bool_t   stat    = opt.Contains("STAT");
-    Bool_t   quad    = opt.Contains("QUAD");
-    quad             = !opt.Contains("DIRECT");
-
-    min = +1e9;
-    max = -1e9;
-    for (Int_t i = 0; i < GetN(); i++) {
-      Double_t eyl = 0;
-      Double_t eyh = 0;
-      Double_t y   = GetYandError(i, cmn, stat, quad, false, eyl, eyh);
-      min          = TMath::Min(y-eyl, min);
-      max          = TMath::Max(y+eyh, max);
-    }      
-  }
   /* @} */
 
   //__________________________________________________________________
@@ -2858,48 +2113,6 @@ public:
    * @param style Fill style  
    */
   void SetSumFillStyle(Style_t style){ fSumFill.SetFillStyle(style); }//*MENU*
-  /** 
-   * Set the draw option for summed errors
-   * 
-   * @param opt Draw option 
-   */
-  void SetCommonSumOption(EDrawOption_t opt) { fCommonSumOption = opt; } //*MENU*
-  /** 
-   * Set the title uses for summed errors
-   * 
-   * @param title Title
-   */
-  void SetCommonSumTitle(const char* title) { fCommonSumTitle = title; } //*MENU*
-  /** 
-   * Set the line color of the sumtematice error identified by ID
-   * 
-   * @param color Line Color 
-   */
-  void SetCommonSumLineColor(Color_t color) { fCommonSumLine.SetLineColor(color); } //*MENU*
-  /** 
-   * Set the line style of the sumtematice error identified by ID
-   * 
-   * @param style Line style 
-   */
-  void SetCommonSumLineStyle(Style_t style){ fCommonSumLine.SetLineStyle(style); } //*MENU*
-  /** 
-   * Set the line width of the sumtematice error identified by ID
-   * 
-   * @param width Line width in pixels
-   */
-  void SetCommonSumLineWidth(Width_t width){ fCommonSumLine.SetLineWidth(width); }//*MENU*
-  /** 
-   * Set the fill color of the sumtematice error identified by ID
-   * 
-   * @param color Fill color 
-   */
-  void SetCommonSumFillColor(Color_t color){ fCommonSumFill.SetFillColor(color); }//*MENU*
-  /** 
-   * Set the fill style of the sumtematice error identified by ID
-   * 
-   * @param style Fill style  
-   */
-  void SetCommonSumFillStyle(Style_t style){ fCommonSumFill.SetFillStyle(style); }//*MENU*
   /* @} */
   /**
    * @{
@@ -2976,9 +2189,9 @@ public:
       t = Token(l, 0); TString lab = t.Strip(TString::kBoth);
       t = Token(l, 1); TString acc = t.Strip(TString::kBoth);
       t = Token(l, 2); TString exp = t.Strip(TString::kBoth);
-      SetKey("laboratory",  lab.Data(), replace);
-      SetKey("accelerator", acc.Data(), replace);
-      SetKey("detector",    exp.Data(), replace);
+      fMap->Add(new TNamed("laboratory",  lab.Data()));
+      fMap->Add(new TNamed("accelerator", acc.Data()));
+      fMap->Add(new TNamed("detector",    exp.Data()));
       l->Delete();
     }
     if (k.EqualTo("comment", TString::kIgnoreCase)) { 
@@ -2993,7 +2206,7 @@ public:
       if (replace) {
 	TObjLink* cur   = fMap->FirstLink();
 	TObjLink* last  = fMap->LastLink();
-	while (cur) { //  != last) {
+	while (cur != last) {
 	  if (!k.EqualTo(cur->GetObject()->GetName())) {
 	    cur = cur->fNext;
 	    continue;
@@ -3020,98 +2233,6 @@ public:
     if (!o) return 0;
     return o->GetTitle();
   }
-  /** 
-   * Copy key/value and qualifiers from one graph to this graph. 
-   * 
-   * @param g       Graph to copy from 
-   * @param option  Options specifying what to copy 
-   *
-   * - a  Copy all key/values and qualifiers
-   * - f  Copy file key/values 
-   * - h  Copy data set header key/values
-   * - q  Copy data set qualifiers 
-   * - r  Replace existing values 
-   *
-   */
-  void CopyKeys(const GraphSysErr* g, Option_t* option="fr")
-  {
-    if (!g) return;
-    
-    TString opt(option);
-    opt.ToLower();
-
-    Bool_t all    = opt.Contains("a");
-    Bool_t file   = opt.Contains("f");
-    Bool_t header = opt.Contains("h");
-    Bool_t qual   = opt.Contains("q");
-    Bool_t repl   = opt.Contains("r");
-    
-    // With the "all" option we just do a plain copy 
-    TList*   map = g->fMap;
-    TIter    nextKV(map);
-    TObject* kv = 0;
-    while ((kv = nextKV())) {
-      if (!all) {
-	TString key = kv->GetName();
-	if (file && !(key.EqualTo("reference")  ||
-		      key.EqualTo("laboratory") ||
-		      key.EqualTo("accelerator")||
-		      key.EqualTo("detector") 	||
-		      key.EqualTo("abstract") 	||
-		      key.EqualTo("author") 	||
-		      key.EqualTo("doi") 	||
-		      key.EqualTo("inspireId") 	||
-		      key.EqualTo("cdsId") 	||
-		      key.EqualTo("durhamId") 	||
-		      key.EqualTo("title") 	||
-		      key.EqualTo("status"))) continue;
-	if (header && !(key.EqualTo("location") ||
-			key.EqualTo("reackey")	||
-			key.EqualTo("obskey")   ||
-			key.EqualTo("dscomment"))) continue;	
-      }
-      SetKey(kv->GetName(), kv->GetTitle(), repl);
-    }
-
-    if (!all && !qual) return;
-    TList*   quals = g->fQualifiers;
-    TIter    nextQ(quals);
-    TObject* qv = 0;
-    while ((qv = nextQ())) {
-      AddQualifier(qv->GetName(), qv->GetTitle());
-    }
-  }
-  void CopyAttr(const GraphSysErr* f)
-  {
-    SetMarkerColor(f->GetMarkerColor());
-    SetMarkerStyle(f->GetMarkerStyle());
-    SetMarkerSize(f->GetMarkerSize());
-    SetLineColor(f->GetLineColor());
-    SetLineStyle(f->GetLineStyle());
-    SetLineWidth(f->GetLineWidth());
-    SetFillColor(f->GetFillColor());
-    SetFillStyle(f->GetFillStyle());
-    SetSumTitle(f->GetSumTitle());
-    fSumOption = f->fSumOption;
-    SetSumLineStyle(f->GetSumLineStyle());
-    SetSumLineColor(f->GetSumLineColor());
-    SetSumLineWidth(f->GetSumLineWidth());
-    SetSumFillStyle(f->GetSumFillStyle());
-    SetSumFillColor(f->GetSumFillColor());
-    SetCommonSumTitle(f->GetCommonSumTitle());
-    fCommonSumOption = f->fCommonSumOption;
-    SetCommonSumLineStyle(f->GetCommonSumLineStyle());
-    SetCommonSumLineColor(f->GetCommonSumLineColor());
-    SetCommonSumLineWidth(f->GetCommonSumLineWidth());
-    SetCommonSumFillStyle(f->GetCommonSumFillStyle());
-    SetCommonSumFillColor(f->GetCommonSumFillColor());
-    SetXTitle(f->GetXTitle());
-    SetYTitle(f->GetYTitle());
-  }
-
-    
-    
-    
   /* @} */
   //__________________________________________________________________
   /** 
@@ -3175,51 +2296,6 @@ public:
     return o->GetTitle();
   }
   /* @} */
-  /** 
-   * Find Y value and errors corresponding X 
-   * 
-   * @param x      X value
-   * @param cmn    Include common errors
-   * @param stat   Include statistical error 
-   * @param quad   Add errors in quadrature
-   * @param nosqrt No not take square root of errors 
-   * @param y      On return, the y value 
-   * @param eyl    On return low error on y
-   * @param eyh    On return high error on y
-   * 
-   * @return false in case the point is out side the range 
-   */
-  Bool_t FindYandError(Double_t    x,
-		       Bool_t      cmn,
-		       Bool_t      stat,
-		       Bool_t      quad,
-		       Bool_t      nosqrt,
-		       Double_t&   y,
-		       Double_t&   eyl,
-		       Double_t&   eyh) const
-  {
-    Int_t i1, i2;
-    Int_t ret = FindPoint(x, i1, i2);
-    if (ret < -1)
-      // No valid point found 
-      return false;
-    if (ret >= 0) {
-      y = GetYandError(ret, cmn, stat, quad, nosqrt, eyl, eyh);
-      return true;
-    }
-    Double_t eyl1, eyl2, eyh1, eyh2;
-    Double_t x1 = fData->GetX()[i1];
-    Double_t x2 = fData->GetX()[i2];
-    Double_t y1 = GetYandError(i1, cmn, stat, quad, nosqrt, eyl1, eyh1);
-    Double_t y2 = GetYandError(i2, cmn, stat, quad, nosqrt, eyl2, eyh2);
-    // Linear interpolation
-    Double_t dx = (x2-x1);
-    Double_t ax = (x-x1)/dx;
-    y   = y1   + ax * (y2 - y1);
-    eyl = eyl1 + ax * (eyl2 - eyl1);
-    eyh = eyh1 + ax * (eyh2 - eyh1);
-    return true;
-  }
 
 
   //__________________________________________________________________
@@ -3310,7 +2386,7 @@ public:
      * 
      * @return Newly allocated graph 
      */
-    virtual Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) const = 0;
+    virtual Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) = 0;
     /** 
      * Sum errors at point. Point i of g is updated
      * 
@@ -3321,7 +2397,7 @@ public:
      * @param opt          Option
      */
     virtual void SumError(Graph* g, Int_t i, Bool_t ignoreErr, 
-			  Bool_t quad, UInt_t opt) const = 0;
+			  Bool_t quad, UInt_t opt) = 0;
     /** 
      * @return Get the Option
      */
@@ -3349,84 +2425,111 @@ public:
       Print(option);
     }
   protected:
-    UShort_t XMode(Int_t opt=-1) const
-    {
-      UShort_t xMode  = 0;
-      if (opt < 0) opt = fOption;
-      switch (opt) {
-      case kNormal: case kNoTick: case kFill: case kCurve: xMode = 0; break;
-      case kArrow:  case kHat:    case kBar:               xMode = 1; break;
-      case kNone:                                          xMode = 0; break;
-      case kRect:   case kBox:                             xMode = 3; break;
-      }
-      return xMode;
-    }
     /** 
-     * Do add errors 
+     * Add errors together at point
      * 
-     * @param xMode     X-mode
-     * @param curExl    Currently summed/stacked X low error
-     * @param curExh    Currently summed/stacked X high error
-     * @param curEyl    Currently summed/stacked Y low error 
-     * @param curEyh 	Currently summed/stacked Y high error
-     * @param ignoreErr If true, ignore errors on currently stack errors
-     * @param quad      If true, add in quadrature 
-     * @param sqOld     If false, assume current errors are squared already 
-     * @param exl       Input: this sources X low error, Output: new value
-     * @param exh       Input: this sources X high error, Output: new value
-     * @param eyl       Input: this sources Y low error, Output: new value 
-     * @param eyh 	Input: this sources Y high error, Output: new value
+     * @param i            Point
+     * @param g            Current errors
+     * @param quad         If true, add in quadrature
+     * @param ignoreErr    If true, ignore errors on g
+     * @param sqOld        If true and quad true, square old
+     * @param exl          On return, the left-hand X errors
+     * @param exh          On return, the right-hand X errors
+     * @param eyl          On return, the downward Y errors
+     * @param eyh          On return, the upward Y errors 
      */
-    void DoAdd(UShort_t  xMode,
-	       Double_t  curExl,
-	       Double_t  curExh,
-	       Double_t  curEyl,
-	       Double_t  curEyh,
-	       Bool_t    ignoreErr,
+    void DoAdd(Int_t     i, 
+	       Graph*    g, 
 	       Bool_t    quad, 
+	       Bool_t    ignoreErr,
 	       Bool_t    sqOld,
 	       Double_t& exl, 
 	       Double_t& exh, 
 	       Double_t& eyl, 
-	       Double_t& eyh) const
+	       Double_t& eyh) 
     {
+      if (kVerbose & kDraw) 
+	printf("%-20s Point %3d -> %f/%f/%f/%f",GetTitle(),i,exl,exh,eyl,eyh);
       // Double_t oexl = exl;
       // Double_t oexh = exh;
       if (quad) { 
-	eyl    *= eyl;
-	eyh    *= eyh;
-	if (sqOld) {
-	  curEyl *= curEyl;
-	  curEyh *= curEyh;
-	}
-      }
-	
-      if (!ignoreErr) {
-	if (kVerbose & kDraw)
-	  Info("", "old: +%f/-%f this: +%f/-%f -> +%f/-%f",
-	       curEyl, curEyh, eyl, eyh, eyl + curEyl, eyh + curEyh);
-	exl  = TMath::Max(exl, curExl);
-	exh  = TMath::Max(exh, curExh);
-	eyl  += curEyl;
-	eyh  += curEyh;
+	eyl  *= eyl;
+	eyh  *= eyh;
+	if (kVerbose & kDraw) printf(" (%f/%f)",eyl,eyh);
       }
 
-      switch (xMode) {
-      case 0: break;                // kNormal, kNoTick, kFill, kCurve, kNone
-      case 1: exl = exh = 0; break; // kArrow, kHat, kBar
-      case 2:                       // kRect, kBox
+      if (ignoreErr) {
+	switch (fOption) {
+	case kNormal:
+	case kNoTick:
+	case kFill:
+	case kCurve:
+	  break;
+	case kArrow: // In these cases, do no add errors along X
+	case kHat:
+	case kBar:
+	  exl = 0;
+	  exh = 0;
+	  // if (oexl <= 0) exl = 0;
+	  // if (oexh <= 0) exh = 0;
+	case kNone:
+	  break;
+	case kRect:// In these cases, make sure we have errors along X
+	case kBox:
+	  if (exl <= 0) exl = gStyle->GetErrorX()/2;
+	  if (exh <= 0) exh = gStyle->GetErrorX()/2;
+	}
+	if (kVerbose & kDraw) Printf("= %f/%f/%f/%f (%d)",exl,exh,eyl,eyh,quad);
+	return;
+      }
+	
+      Double_t e2xl = g->GetErrorXlow(i);
+      Double_t e2xh = g->GetErrorXhigh(i);
+      Double_t e2yl = g->GetErrorYlow(i);
+      Double_t e2yh = g->GetErrorYhigh(i);
+      if (kVerbose & kDraw) printf("+ %f/%f/%f/%f", e2xl,e2xh,e2yl,e2yh);
+      if (quad && sqOld) {
+	e2yl *= e2yl;
+	e2yh *= e2yh;
+	if (kVerbose & kDraw) printf(" (%f/%f)",e2yl,e2yh);
+      }
+
+	
+      exl  = TMath::Max(exl, e2xl);
+      exh  = TMath::Max(exh, e2xh);
+      eyl  += e2yl;
+      eyh  += e2yh;
+
+      switch (fOption) {
+      case kNormal:
+      case kNoTick:
+      case kFill:
+      case kCurve:
+	break;
+      case kArrow: // In these cases, do no add errors along X
+      case kHat:
+      case kBar:
+	exl = 0;
+	exh = 0;
+	// if (oexl <= 0) exl = 0;
+	// if (oexh <= 0) exh = 0;
+      case kNone:
+	break;
+      case kRect:// In these cases, make sure we have errors along X
+      case kBox:
 	if (exl <= 0) exl = gStyle->GetErrorX()/2;
 	if (exh <= 0) exh = gStyle->GetErrorX()/2;
-	break;
       }
+
+      if (kVerbose & kDraw) 
+	Printf("= %f/%f/%f/%f (%d,%d)",exl,exh,eyl,eyh,quad,sqOld);
     }
-    
     /** 
      * Set attributes
      * 
      * @param g on graph
      */
-    void SetAttributes(Graph* g) const
+    void SetAttributes(Graph* g) 
     {
       if (!g) return;
       this->TAttLine::Copy(*g);
@@ -3439,7 +2542,7 @@ public:
     Bool_t  fRelative;
     /** Options */
     UInt_t fOption;
-    ClassDef(Holder,3);
+    ClassDef(Holder,1);
   };
   //__________________________________________________________________
   /** 
@@ -3637,73 +2740,37 @@ public:
      * Add errors together at point
      * 
      * @param i            Point
-     * @param xMode        X-mode 
+     * @param g            Current errors
      * @param quad         If true, add in quadrature
      * @param ignoreErr    If true, ignore errors on g
      * @param sqOld        If true and quad true, square old
-     * @param exl          Input current, Output: the left-hand X errors
-     * @param exh          Input current, Output: the right-hand X errors
-     * @param eyl          Input current, Output: the downward Y errors
-     * @param eyh          Input current, Output: the upward Y errors 
+     * @param exl          On return, the left-hand X errors
+     * @param exh          On return, the right-hand X errors
+     * @param eyl          On return, the downward Y errors
+     * @param eyh          On return, the upward Y errors 
      */
-    void AddError(Int_t     i,
-		  UShort_t  xMode,
-		  Bool_t    ignoreErr,
+    void AddError(Int_t     i, 
+		  Graph*    g, 
 		  Bool_t    quad, 
+		  Bool_t    ignoreErr,
 		  Bool_t    sqOld,
 		  Double_t& exl, 
 		  Double_t& exh, 
 		  Double_t& eyl, 
-		  Double_t& eyh) const
+		  Double_t& eyh) 
     {
-      Double_t exlO = fGraph->GetErrorXlow(i);
-      Double_t exhO = fGraph->GetErrorXhigh(i);
-      Double_t eylO = fGraph->GetErrorYlow(i);
-      Double_t eyhO = fGraph->GetErrorYhigh(i);
-      Double_t oyl  = eylO;
-      Double_t oyh  = eyhO;
-      if (exl <= 0) exlO = exl;
-      if (exh <= 0) exhO = exh;
+      exl           = fGraph->GetErrorXlow(i);
+      exh           = fGraph->GetErrorXhigh(i);
+      eyl           = fGraph->GetErrorYlow(i);
+      eyh           = fGraph->GetErrorYhigh(i);
+      if (exl <= 0) {
+	exl = g->GetErrorXlow(i);
+      }
+      if (exh <= 0) {
+	exh = g->GetErrorXhigh(i);
+      }
 
-      DoAdd(xMode,
-	    exl, exh, eyl, eyh,
-	    ignoreErr, quad, sqOld,
-	    exlO, exhO, eylO, eyhO);
-      if (kVerbose & kDraw)
-	Info(GetTitle(), "quad: %s this: +%f/-%f, old: +%f/-%f -> +%f/-%f",
-	     (quad ? "true" : "false"), oyl, oyh, eyl, eyh, eylO, eyhO);
-
-      exl = exlO;
-      exh = exhO;
-      eyl = eylO;
-      eyh = eyhO;
-    }
-    /** 
-     * Stack up point errors 
-     * 
-     * @param i         Point number 
-     * @param xMode     X-Mode
-     * @param ignoreErr If true, ignore current errors
-     * @param quad      If true, add in quadrature 
-     * @param exl       Input: current  Output: New value 
-     * @param exh       Input: current  Output: New value 
-     * @param eyl       Input: current  Output: New value 
-     * @param eyh       Input: current  Output: New value 
-     */
-    void StackPointError(Int_t     i,
-			 UShort_t  xMode,
-			 Bool_t    ignoreErr, 
-			 Bool_t    quad,
-			 Double_t& exl,
-			 Double_t& exh, 
-			 Double_t& eyl,
-			 Double_t& eyh) const
-    {
-      Double_t oldEyl = eyl;
-      Double_t oldEyh = eyh;
-      AddError(i, xMode, ignoreErr, quad, true, exl, exh, eyl, eyh);
-      if (kVerbose & kDraw)
-	Info(GetTitle(), "old= +%f/-%f -> +%f/-%f", oldEyl, oldEyh, eyl, eyh);
+      DoAdd(i, g, quad, ignoreErr, sqOld, exl, exh, eyl, eyh);
     }
     /** 
      * Create new graph with stacked errors
@@ -3714,18 +2781,14 @@ public:
      * 
      * @return Newly allocated graph 
      */
-    Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) const
+    Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) 
     {
       Graph* ga = new Graph(g->GetN());
       for (Int_t i = 0; i < g->GetN(); i++) { 
 	Double_t x    = g->GetX()[i];	  
 	Double_t y    = g->GetY()[i];
-	Double_t exl  = g->GetErrorXlow(i);
-	Double_t exh  = g->GetErrorXhigh(i);
-	Double_t eyl  = g->GetErrorYlow(i);
-	Double_t eyh  = g->GetErrorYhigh(i);
-	StackPointError(i, XMode(), ignoreErr, quad, exl, exh, eyl, eyh);
-	// AddError(i, g, quad, ignoreErr, true, exl, exh, eyl, eyh);
+	Double_t exl, exh, eyl, eyh;
+	AddError(i, g, quad, ignoreErr, true, exl, exh, eyl, eyh);
 	ga->SetPoint(i, x, y);
 	ga->SetPointError(i, exl,exh,eyl,eyh);
       }
@@ -3733,26 +2796,6 @@ public:
       ga->SetTitle(GetTitle());
       ga->SetName(Form("stack_%08x", GetUniqueID()));
       return ga;
-    }
-    /** 
-     * Sum up point errors 
-     * 
-     * @param i         Point number 
-     * @param xMode     X-Mode
-     * @param ignoreErr If true, ignore current errors
-     * @param quad      If true, add in quadrature 
-     * @param exl       Input: current  Output: New value (possibly square)
-     * @param exh       Input: current  Output: New value (possibly square) 
-     * @param eyl       Input: current  Output: New value (possibly square) 
-     * @param eyh       Input: current  Output: New value (possibly square) 
-     */
-    void SumPointError(Int_t i, UShort_t xMode, Bool_t ignoreErr, Bool_t quad, 
-		       Double_t& exl,
-		       Double_t& exh,
-		       Double_t& eyl,
-		       Double_t& eyh) const
-    {
-      AddError(i, xMode, ignoreErr, quad, false, exl, exh, eyl, eyh);
     }
     /** 
      * Sum errors at point. Point i of g is updated
@@ -3763,15 +2806,14 @@ public:
      * @param quad         Add in quadrature
      * @param opt          Option
      */
-    void SumError(Graph* g, Int_t i, Bool_t ignoreErr,
-		  Bool_t quad, UInt_t opt) const
+    void SumError(Graph* g, Int_t i, Bool_t ignoreErr, Bool_t quad, UInt_t opt) 
     {
-      Double_t exl = (g ? g->GetErrorXlow(i)  : 0);
-      Double_t exh = (g ? g->GetErrorXhigh(i) : 0);
-      Double_t eyl = (g ? g->GetErrorYlow(i)  : 0);
-      Double_t eyh = (g ? g->GetErrorYhigh(i) : 0);
-      SumPointError(i, XMode(opt), ignoreErr, quad, exl, exh, eyl, eyh);
+      Double_t exl, exh, eyl, eyh;
+      UInt_t save = fOption;
+      fOption     = opt;
+      AddError(i, g, quad, false, ignoreErr, exl, exh, eyl, eyh);
       g->SetPointError(i, exl,exh,eyl,eyh);
+      fOption = save;
     }
     /* @} */
     void SavePrimitive(std::ostream& out, Option_t* option="")
@@ -3789,10 +2831,9 @@ public:
 	    << "  }\n";
     }
     /** Our data */
-    // Graph* fGraph;
-    TGraphAsymmErrors* fGraph;
+    Graph* fGraph;
 
-    ClassDef(HolderP2P,3);
+    ClassDef(HolderP2P,1);
   };
   //__________________________________________________________________
   /**
@@ -3879,7 +2920,7 @@ public:
      * 
      * @return The down error 
      */ 
-    Double_t GetYDown(Double_t y=0) const 
+   Double_t GetYDown(Double_t y=0) const 
     {
       return (fRelative ? y : 1) * fEyl;
     }
@@ -3903,8 +2944,8 @@ public:
     /** 
      * Add errors together at point
      * 
-     * @param y            Point value
-     * @param xMode        X-mode
+     * @param i            Point
+     * @param g            Current errors
      * @param quad         If true, add in quadrature
      * @param ignoreErr    If true, ignore errors on g
      * @param sqOld        If true and quad true, square old
@@ -3914,50 +2955,43 @@ public:
      * @param eyl          On return, the downward Y errors
      * @param eyh          On return, the upward Y errors 
      */
-    void AddError(Double_t  y,
-		  UShort_t  xMode,
-		  Bool_t    ignoreErr,
+    void AddError(Int_t     i, 
+		  Graph*    g, 
 		  Bool_t    quad, 
+		  Bool_t    ignoreErr,
 		  Bool_t    sqOld,
+		  Double_t  y,
 		  Double_t& exl, 
 		  Double_t& exh, 
 		  Double_t& eyl, 
-		  Double_t& eyh) const
+		  Double_t& eyh) 
     {
       //exl         = (i   == 0        ? 0 :(g->GetX()[i]  -g->GetX()[i-1])/2);
       //exh         = (i+1 >= g->GetN()? 0 :(g->GetX()[i+1]-g->GetX()[i])/2);
-      Double_t exlO = exl;
-      Double_t exhO = exh;
-      Double_t eylO = GetYDown(y);
-      Double_t eyhO = GetYUp(y);
-      if (exlO <= 0) exlO = gStyle->GetErrorX()/2;
-      if (exhO <= 0) exhO = gStyle->GetErrorX()/2;
+      exl = (g ? g->GetErrorXlow(i) : 0);
+      exh = (g ? g->GetErrorXhigh(i) : 0);
+      if (exl <= 0) exl = gStyle->GetErrorX()/2;
+      if (exh <= 0) exh = gStyle->GetErrorX()/2;
 
-      DoAdd(xMode, exl, exh, eyl, eyh,
-	    ignoreErr, quad, sqOld,
-	    exlO, exhO, eylO, eyhO);
-      exl = exlO;
-      exh = exhO;
-      eyl = eylO;
-      eyh = eyhO;
+      eyl           = GetYDown(y);
+      eyh           = GetYUp(y);
+
+      DoAdd(i, g, quad, ignoreErr, sqOld, exl, exh, eyl, eyh);
     }
     /** 
      * Make a graph for showing next to data 
      * 
-     * @param g     PRevious errors
+     * @param p     PRevious errors
      * @param quad  If true, add in quadrature 
      * @param x     Middle X coordinate 
      * @param y     Middle Y coordinate 
      * 
      * @return Newly allocated graph
      */
-    Graph* BarError(Graph* g, Bool_t quad, Double_t x, Double_t y) const
+    Graph* BarError(Graph* p, Bool_t quad, Double_t x, Double_t y)
     {
-      Double_t exl = (g ? g->GetErrorXlow(0)  : 0);
-      Double_t exh = (g ? g->GetErrorXhigh(0) : 0);
-      Double_t eyl = (g ? g->GetErrorYlow(0)  : 0);
-      Double_t eyh = (g ? g->GetErrorYhigh(0) : 0);
-      AddError(y, XMode(), false, quad, quad, exl, exh, eyl, eyh);
+      Double_t exl, exh, eyl, eyh;
+      AddError(0, p, quad, !p, quad, y, exl, exh, eyl, eyh);
 
       Graph* r = new Graph(1);
       r->SetPoint(0, x, y);
@@ -3970,30 +3004,6 @@ public:
       return r;
     }
     /** 
-     * Stack up point errors 
-     * 
-     * @param y         Point value
-     * @param xMode     X-Mode
-     * @param ignoreErr If true, ignore current errors
-     * @param quad      If true, add in quadrature 
-     * @param exl       Input: current  Output: New value 
-     * @param exh       Input: current  Output: New value 
-     * @param eyl       Input: current  Output: New value 
-     * @param eyh       Input: current  Output: New value 
-     */
-    void StackPointError(Double_t  y,
-			 UShort_t  xMode,
-			 Bool_t    ignoreErr, 
-			 Bool_t    quad,
-			 Double_t& exl,
-			 Double_t& exh, 
-			 Double_t& eyl,
-			 Double_t& eyh) const
-    {
-      AddError(y, xMode, ignoreErr, quad, true, exl, exh, eyl, eyh);
-    }
-    
-    /** 
      * Create new graph with stacked errors
      *  
      * @param g          Previous errors
@@ -4002,17 +3012,14 @@ public:
      * 
      * @return Newly allocated graph 
      */
-    Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) const
+    Graph* StackError(Graph* g, Bool_t ignoreErr, Bool_t quad) 
     {
       Graph* ga = new Graph(g->GetN());
       for (Int_t i = 0; i < g->GetN(); i++) { 
 	Double_t x    = g->GetX()[i];
 	Double_t y    = g->GetY()[i];	
-	Double_t exl  = g->GetErrorXlow(i);
-	Double_t exh  = g->GetErrorXhigh(i);
-	Double_t eyl  = g->GetErrorYlow(i);
-	Double_t eyh  = g->GetErrorYhigh(i);
-	StackPointError(y, XMode(), ignoreErr, quad, exl, exh, eyl, eyh);
+	Double_t exl, exh, eyl, eyh;
+	AddError(i, g, quad, ignoreErr, true, y, exl, exh, eyl, eyh);
 	ga->SetPoint(i, x, y);
 	ga->SetPointError(i, exl,exh,eyl,eyh);
       }
@@ -4020,26 +3027,6 @@ public:
       ga->SetTitle(GetTitle());
       ga->SetName(Form("stack_%08x", GetUniqueID()));
       return ga;
-    }
-    /** 
-     * Sum up point errors 
-     * 
-     * @param y         Point value 
-     * @param xMode     X-Mode
-     * @param ignoreErr If true, ignore current errors
-     * @param quad      If true, add in quadrature 
-     * @param exl       Input: current  Output: New value (possibly square)
-     * @param exh       Input: current  Output: New value (possibly square) 
-     * @param eyl       Input: current  Output: New value (possibly square) 
-     * @param eyh       Input: current  Output: New value (possibly square) 
-     */
-    void SumPointError(Double_t y, UShort_t xMode, Bool_t ignoreErr,Bool_t quad,
-		       Double_t& exl,
-		       Double_t& exh,
-		       Double_t& eyl,
-		       Double_t& eyh) const
-    {
-      AddError(y, xMode, ignoreErr, quad, false, exl, exh, eyl, eyh);
     }
     /** 
      * Sum errors at point. Point i of g is updated
@@ -4051,15 +3038,15 @@ public:
      * @param opt          Option
      */
     void SumError(Graph* g, Int_t i, Bool_t ignoreErr, Bool_t quad,
-		  UInt_t opt) const
+		  UInt_t opt) 
     {
-      Double_t y   = (g ? g->GetY()[i]        : 0);
-      Double_t exl = (g ? g->GetErrorXlow(i)  : 0);
-      Double_t exh = (g ? g->GetErrorXhigh(i) : 0);
-      Double_t eyl = (g ? g->GetErrorYlow(i)  : 0);
-      Double_t eyh = (g ? g->GetErrorYhigh(i) : 0);
-      SumPointError(y, XMode(opt), ignoreErr, quad, exl, exl, eyl, eyh);
+      Double_t exl, exh, eyl, eyh;
+      UInt_t save = fOption;
+      fOption     = opt;
+      AddError(i, g, quad, ignoreErr, false, g->GetY()[i], exl, exh, eyl, eyh);
+      // Printf("Point %3d -> %f/%f/%f/%f", i, exl,exh,eyl,eyh);
       g->SetPointError(i, exl,exh,eyl,eyh);
+      fOption = save;
     }
     /* @} */
     void SavePrimitive(std::ostream& out, Option_t* option="")
@@ -4082,31 +3069,9 @@ public:
     /** Up errors */
     Double_t fEyh;
 
-    ClassDef(HolderCommon,3);
+    ClassDef(HolderCommon,1);
   };
 protected:
-  static void SwapPoints(Graph* g, Int_t i, Int_t j, Bool_t reflect)
-  {
-    Double_t s        = (reflect ? -1 : 1);
-    Double_t tmpX     = g->GetX()[i];
-    Double_t tmpY     = g->GetY()[i];
-    Double_t tmpExl   = g->GetErrorXlow(i);
-    Double_t tmpExh   = g->GetErrorXhigh(i);
-    Double_t tmpEyl   = g->GetErrorYlow(i);
-    Double_t tmpEyh   = g->GetErrorYhigh(i);
-    if (reflect) {
-      // Swap low and high X error when reflecting 
-      Double_t tmp = tmpExl;
-      tmpExl       = tmpExh;
-      tmpExh       = tmp;
-    }
-    g->SetPoint(i, s*g->GetX()[j], g->GetY()[j]);
-    g->SetPointError(i,
-		     g->GetErrorXlow(j), g->GetErrorXhigh(j),
-		     g->GetErrorYlow(j), g->GetErrorYhigh(j));
-    g->SetPoint(j, s*tmpX, tmpY);
-    g->SetPointError(j, tmpExl, tmpExh, tmpEyl, tmpEyh);
-  }
   /** 
    * @{ 
    * @name Helpers for importing/exporting
@@ -4130,7 +3095,6 @@ protected:
     val = "";
     TObjArray* tokens = value.Tokenize(":");
     Int_t      iVal   = TMath::Min(Int_t(idx),tokens->GetEntriesFast()-1);
-    if (iVal < 0) return val;
     TString    tmp    = tokens->At(iVal)->GetName();
     val               = tmp.Strip(TString::kBoth, ' ');
     // tokens->ls();
@@ -4576,7 +3540,6 @@ protected:
     case kHat:    ret = "[]0";	break; // Hats 
     case kBar:    ret = "||0";	break; // A bar 
     case kNone:   ret = "XP";	break; // No errors
-    case kLine:   ret = "CX";   break; 
     }
     return ret.Data();
   }
@@ -4591,108 +3554,6 @@ protected:
     fData->SetName(Form("%s_data", fName.Data()));
     fData->SetTitle(GetTitle());
   }
-  Int_t FindPoint(Double_t x, Int_t& i1, Int_t& i2) const
-  {
-    i1 = -1;
-    i2 = -1;
-    if (x < GetX(0) || x > GetX(GetN()-1)) {
-      // If we're out side the coverage, set return to -1
-      i1 = i2 = -1;
-      return -2;
-    }
-    const Double_t tol = 1e-9;
-    for (Int_t i=0; i < GetN(); i++) {
-      if (TMath::Abs(GetX(i)-x) < tol) {
-	// Found matching point
-	i2 = i1 = i;
-	break;
-      }
-      if (x > GetX(i)) {
-	// X still larger
-	i1 = i;
-      }
-      else {
-	// X is lower
-	i2 = i;
-	break;
-      }
-    }
-    if (i1 == i2)
-      // If equal, return the point 
-      return i1;
-    if (TMath::Abs((GetX(i1)+GetErrorXRight(i1)) -
-		   (GetX(i2)-GetErrorXLeft(i2))) > 10*tol) {
-      // If the two found points are not adjecent, we are in a hole
-      // and we indicate that.
-      i1 = i2 = -1;
-      return -2;
-    }
-    if (i2 > 0) 
-      // Otherwise return negative value to indicate we should look at
-      // two points.
-      return -1;
-    // Return negative two to indicate nothing was found
-    return -2;
-	
-  }
-  /** 
-   * Get the point value and low and high errors
-   * 
-   * @param i         Point number 
-   * @param cmn       Consider commons
-   * @param stat      Consider statistics 
-   * @param quad      Add in quadrature 
-   * @param nosqrt    Do not take square root in case quad=true
-   * @param eyl       Output: Low error
-   * @param eyh       Output: high error
-   * 
-   * @return 
-   */
-  Double_t GetYandError(Int_t     i,
-			Bool_t    cmn,
-			Bool_t    stat,
-			Bool_t    quad,
-			Bool_t    nosqrt,
-			Double_t& eyl,
-			Double_t& eyh) const
-  {
-    // --- Find location for common errors ---------------------------
-    Int_t n = fData->GetN();
-    if (i >= n) {
-      eyl = -1;
-      eyh = -1;
-      return 0;
-    }
-    Double_t y   = fData->GetY()[i];
-    eyl = (stat ? GetStatErrorDown(i) : 0);
-    eyh = (stat ? GetStatErrorUp(i)   : 0);
-    Double_t exl = GetErrorXLeft(i);
-    Double_t exh = GetErrorXRight(i);
-
-    // Otherwise, we are adding all selected errors togethter 
-    // Graph* g = static_cast<Graph*>(fData->Clone("error"));
-    // g->SetTitle(fSumTitle);
-    Int_t xMode = -1;
-    if (cmn) { 
-      TIter nextC(&fCommon);
-      HolderCommon* hc = 0;
-      while ((hc = static_cast<HolderCommon*>(nextC()))) {
-	if (xMode < 0) xMode = hc->XMode(fSumOption);
-	hc->SumPointError(y, xMode, false, quad, exl, exh, eyl, eyh);
-      }
-    }
-    TIter nextP(&fPoint2Point);
-    HolderP2P* hp = 0;
-    while ((hp = static_cast<HolderP2P*>(nextP()))) {
-      if (xMode < 0) xMode = hp->XMode(fSumOption);	
-      hp->SumPointError(i, xMode, false, quad, exl, exh, eyl, eyh);
-    }
-    if (quad && !nosqrt) {
-      eyl = TMath::Sqrt(eyl);
-      eyh = TMath::Sqrt(eyh);
-    }
-    return y;
-  }
   /** 
    * Make our stack 
    *
@@ -4702,47 +3563,29 @@ protected:
    */
   TMultiGraph* MakeMulti(Option_t* option)
   {
-    if (!fData) {
-      Warning("MakeMulti", "No data defined");
-      return 0;
-    }
 
     // --- Process options -------------------------------------------
     TString opt(option);
     opt.ToUpper();
 
-    Bool_t   cmn      = opt.Contains("COMMON");
-    Bool_t   combine  = opt.Contains("COMBINED");
-    Bool_t   stat     = opt.Contains("STAT");
-    Bool_t   quad     = opt.Contains("QUAD");
-    combine           = !opt.Contains("STACK");
-    quad              = !opt.Contains("DIRECT");
-    Bool_t   split    = opt.Contains("SPLIT");
-    Int_t    xpos     = (opt.Contains("WEST") ? -1 : 1);
-    Int_t    ypos     = (opt.Contains("MIN") ? -1 : 
-			 opt.Contains("MAX") ?  1 : 0);
-
-    // --- Some general information ----------------------------------
-    Int_t    n       = fData->GetN();
-    Double_t dx       = TMath::Max(gStyle->GetErrorX(),0.0001F);
-    if (n <= 0) {
-      Warning("MakeMulti", "Nothing to do (n=%d)", n);
-      return 0;
-    }
+    Bool_t   cmn     = opt.Contains("COMMON");
+    Bool_t   combine = opt.Contains("COMBINED");
+    Bool_t   stat    = opt.Contains("STAT");
+    Bool_t   quad    = opt.Contains("QUAD");
+    combine          = !opt.Contains("STACK");
+    quad             = !opt.Contains("DIRECT");
+    Bool_t   split   = opt.Contains("SPLIT");
+    Int_t    xpos    = (opt.Contains("WEST") ? -1 : 1);
+    Int_t    ypos    = (opt.Contains("MIN") ? -1 : 
+			opt.Contains("MAX") ?  1 : 0);
 
     // --- Find location for common errors ---------------------------
-    Double_t xBase    = 0;
-    if (opt.Contains("XBASE=")) {
-      Int_t   idx = opt.Index("XBASE=")+6;
-      TString tmp = opt(idx,opt.Length()-idx);
-      xBase       = tmp.Atof();
-    }
-    else {
-      xBase   = ((xpos < 0 ? 
-		  fData->GetX()[0]   - fData->GetEXlow()[0]: 
-		  fData->GetX()[n-1] + fData->GetEXhigh()[n-1])
-		 + xpos * 1.2 * dx);
-    }
+    Int_t    n       = fData->GetN();
+    Double_t dx      = TMath::Max(gStyle->GetErrorX(),0.0001F);
+    Double_t xBase   = ((xpos < 0 ? 
+			 fData->GetX()[0]   - fData->GetEXlow()[0]: 
+			 fData->GetX()[n-1] + fData->GetEXhigh()[n-1])
+			+ xpos * 1.2 * dx);
     Double_t yBase   = fData->GetY()[0];
     for (Int_t i = 0; i < n; i++) { 
       Double_t y = fData->GetY()[i];
@@ -4829,62 +3672,37 @@ protected:
     if (!cmn) {
       TIter nextC(&fCommon);
       HolderCommon* hc = 0;
-      if (!combine) {
-	prev = 0;
-	while ((hc = static_cast<HolderCommon*>(nextC()))) {
-	  Graph* g = hc->BarError(prev, quad && !split, xBase, yBase);
-	  if (!g) {
-	    Warning("MakeMulti", "Got no graph for common error %s", 
-		    hc->GetTitle());
-	    continue;
-	  }
-	    
-	  if (quad && !split) SqrtGraph(g);
-	    
-	  if (split) xBase += xpos * 1.2 * dx;
-	  if (!prev)
-	    drawn.AddLast(g, FormatOption(hc->GetDOption()));
-	  else {
-	    // Here, we use the underling linked list of the list so
-	    // that we can add an object before another including the
-	    // possible options 
-	    TObjLink* f = drawn.FirstLink();
-	    TObjLink* p = 0;
-	    while (f && f->GetObject()) { 
-	      if (f->GetObject() == prev) {
-		if (p) new TObjOptLink(g, p, FormatOption(hc->GetDOption()));
-		else   new TObjOptLink(g, FormatOption(hc->GetDOption()));
-		break;
+      prev = 0;
+      while ((hc = static_cast<HolderCommon*>(nextC()))) {
+	Graph* g = hc->BarError(prev, quad && !split, xBase, yBase);
+	if (!g) {
+	  Warning("MakeMulti", "Got no graph for common error %s", 
+		  hc->GetTitle());
+	  continue;
+	}
+
+	if (quad && !split) SqrtGraph(g);
+
+	if (split) xBase += xpos * 1.2 * dx;
+	if (!prev)
+	  drawn.AddLast(g, FormatOption(hc->GetDOption()));
+	else {
+	  // Here, we use the underling linked list of the list so
+	  // that we can add an object before another including the
+	  // possible options 
+	  TObjLink* f = drawn.FirstLink();
+	  TObjLink* p = 0;
+	  while (f && f->GetObject()) { 
+	    if (f->GetObject() == prev) {
+	      if (p) new TObjOptLink(g, p, FormatOption(hc->GetDOption()));
+	      else   new TObjOptLink(g, FormatOption(hc->GetDOption()));
+	      break;
 	      }
-	      p = f;
-	      f = f->Next();
-	    }
+	    p = f;
+	    f = f->Next();
 	  }
-	  prev = (split ? 0 : g);
-	} // while (hc)
-      } // !combine
-      else {
-	if (fCommon.GetEntries() > 0) {
-	  Graph* g = new Graph(1);
-	  g->SetPoint(0, xBase, yBase);
-	  Double_t exl = 0;
-	  Double_t exh = 0;
-	  Double_t eyl = 0;
-	  Double_t eyh = 0;
-	  while ((hc = static_cast<HolderCommon*>(nextC()))) {
-	    hc->SumPointError(yBase, hc->XMode(fCommonSumOption),
-			      false, quad, exl, exh, eyl, eyh);
-	  }
-	  g->SetPointError(0, exl, exh, eyl, eyh);
-	  fCommonSumLine.Copy(*g);
-	  fCommonSumFill.Copy(*g);
-	  g->SetMarkerStyle(0);
-	  g->SetMarkerSize(0);
-	  g->SetMarkerColor(0);
-	  
-	  if (quad) SqrtGraph(g);
-	  drawn.AddLast(g, FormatOption(fCommonSumOption));
-	} // while hc
+	}
+	prev = (split ? 0 : g);
       }
     }
     // --- Copy attributes to data copy ------------------------------
@@ -4981,8 +3799,7 @@ protected:
   /** List of common errors */
   TList fCommon;
   /** Our data points */
-  // Graph* fData;
-  TGraphAsymmErrors* fData;
+  Graph* fData;
   /** The drawn graphs */
   TMultiGraph* fDrawn;
   /** Counter */
@@ -4995,14 +3812,6 @@ protected:
   TString fSumTitle;
   // Drawin option for sums 
   UInt_t  fSumOption;
-  /** Attributes of summed errors */
-  TAttFill fCommonSumFill;
-  /** Attributes of summed errors */
-  TAttLine fCommonSumLine;
-  /** Title on summed errors */
-  TString fCommonSumTitle; 
-  // Drawin option for sums 
-  UInt_t  fCommonSumOption;
   // Drawing options for data
   UInt_t  fDataOption;
   /** X title  */
@@ -5015,7 +3824,7 @@ protected:
   TList* fQualifiers;
   /** Whether statistical errors are relative */
   Bool_t fStatRelative;
-  ClassDef(GraphSysErr,4);
+  ClassDef(GraphSysErr,1);
 };
 /** 
  * @example TestImport.C

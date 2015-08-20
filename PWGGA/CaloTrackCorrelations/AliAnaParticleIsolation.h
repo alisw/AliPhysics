@@ -166,10 +166,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnPrimariesPi0DecayStudy()      { fMakePrimaryPi0DecayStudy = kTRUE ; }
   void         SwitchOffPrimariesPi0DecayStudy()     { fMakePrimaryPi0DecayStudy = kFALSE; }
   
-  void         SwitchOnOverlapHistograms()           { fFillOverlapHistograms = kTRUE ; }
-  void         SwitchOffOverlapHistograms()          { fFillOverlapHistograms = kFALSE; }
-
-  
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
                      kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
@@ -195,7 +191,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
-  Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
@@ -232,11 +227,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fMomDaugh1;                          //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomDaugh2;                          //!<! Temporary vector, avoid creation per event.
   TVector3       fTrackVector;                        //!<! Temporary vector, avoid creation per event.
-  TVector3       fProdVertex;                         //!<! Temporary vector, avoid creation per event.
- 
-  AliVCluster*   fCluster;                            //!<! Temporary vcluster, avoid creation per event.
-  TObjArray  *   fClustersArr;                        //!<! Temporary ClustersArray, avoid creation per event.
-
+  
   //Histograms  
   
   TH1F *   fhEIso ;                                    //!<! Number of isolated particles vs energy.
@@ -435,18 +426,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F *   fhPtDecayMC  [2][AliNeutralMesonSelection::fgkMaxNDecayBits][fgkNmcTypes] ; //!<! Number of (not) isolated Pi0 decay particles (invariant mass tag) for a mcTypes particle.
   
-  TH2F *   fhPtLambda0MC    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously).
-  TH2F *   fhPtLambda0MCConv[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously).
-
-  TH2F *   fhPtLambda0MCWith1Overlap    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously). At least one overlap from other particles.
-  TH2F *   fhPtLambda0MCConvWith1Overlap[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). At least one overlap from other particles.
-
-  TH2F *   fhPtLambda0MCWithNOverlap    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously). More tha one overlap from other particles.
-  TH2F *   fhPtLambda0MCConvWithNOverlap[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). More tha one overlap from other particles.
-  
-  TH2F *   fhPtNOverlap    [fgkNmcTypes][2];                        //!<! Number of overlaps of (non) isolated candidates originated by mcTypes (do not apply SS cut previously). More tha one overlap from other particles.
-  TH2F *   fhPtNOverlapConv[fgkNmcTypes][2];                        //!<! Number of overlaps of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). More tha one overlap from other particles.
-  
+  TH2F *   fhPtLambda0MC   [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously).
+ 
   // Multiple cut analysis
   TH2F *   fhSumPtLeadingPt[5] ;                       //!<! Sum Pt in the cone.
   TH2F *   fhPtLeadingPt[5] ;                          //!<! Particle Pt in the cone.
@@ -459,7 +440,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhEtaPhiPtThresIso[5][5] ;                  //!<! eta vs phi of isolated particles with pt threshold.
   TH2F *   fhEtaPhiPtThresDecayIso[5][5] ;             //!<! eta vs phi of isolated particles with pt threshold, only for decay bit fDecayBits[0].
-  TH1F *   fhPtPtThresDecayIso[5][5] ;                 //!<! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold, only for decay bit fDecayBits[0].
+  TH1F *   fhPtPtThresDecayIso[5][5] ;                 //!<! Number of isolated Pi0 decay particles (invariant mass tag) with pt threshold,, only for decay bit fDecayBits[0].
   
   TH2F *   fhEtaPhiPtFracIso[5][5] ;                   //!<! eta vs phi of isolated particles with pt frac.
   TH2F *   fhEtaPhiPtFracDecayIso[5][5] ;              //!<! eta vs phi of isolated particles with pt frac, only for decay bit fDecayBits[0].
@@ -584,9 +565,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTimePileUpMainVertexZDistance;            //!<! Time of cluster vs difference of z main vertex and pile-up vertex.
   TH2F *   fhTimePileUpMainVertexZDiamond;             //!<! Time of cluster vs difference of z diamond and pile-up vertex.
   
-  TH2F *   fhMCConversionVertex[2];                    //!<! Conversion distance for photon clusters that have at least a contributor from the conversion. Iso and not iso
-  TH2F *   fhMCConversionLambda0Rcut[6][2];            //!<! Shower shape of photon conversions, depending on conversion vertex.
-  
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
     
@@ -594,7 +572,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,35) ;
+  ClassDef(AliAnaParticleIsolation,34) ;
   /// \endcond
 
 } ;

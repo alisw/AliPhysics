@@ -18,9 +18,9 @@
 #include <TPaveStats.h>
 #endif
 
-enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi};
+enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi};
 enum EFidY{kFixedY,kPtDepY};
-enum EPtShape{kFlat,kFONLL7TeV,kPythia7TeV,kFONLL5TeV};
+enum EPtShape{kFlat,kFONLL7TeV,kPythia7TeV};
 
 // Configuration
 Int_t fDDecay=kD0Kpi;
@@ -36,7 +36,6 @@ Int_t totTrials=1000000;
 
 Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc);
 Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y);
-Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nProtons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc, Int_t &nProtonsInAcc);
 
 void ComputeAcceptance(){
   // main function
@@ -58,39 +57,28 @@ void ComputeAcceptance(){
 
   Int_t pdgCode=0;
   Int_t nPionDau=-1;
-  Int_t nProtonDau=-1;
   Int_t nKaonDau=-1;
   TString outFileName="Acceptance_Toy_";
   if(fDDecay==kD0Kpi){
     pdgCode=421;
     nPionDau=1;
     nKaonDau=1;
-    nProtonDau=0;
     outFileName.Append("D0Kpi_");
   }else if(fDDecay==kDplusKpipi){
     pdgCode=411;
     nPionDau=2;
     nKaonDau=1;
-    nProtonDau=0;
     outFileName.Append("DplusKpipi_");
   }else if(fDDecay==kDstarD0pi){
     pdgCode=413;
     nPionDau=2;
     nKaonDau=1;
-    nProtonDau=0;
     outFileName.Append("DStarD0pi_");
   }else if(fDDecay==kDsKKpi){
     pdgCode=431;
     nPionDau=1;
     nKaonDau=2;
-    nProtonDau=0;
     outFileName.Append("DsKKpi_");
-  }else if(fDDecay==kLcpKpi){
-    pdgCode=4122;
-    nPionDau=1;
-    nKaonDau=1;
-    nProtonDau=1;
-    outFileName.Append("LcpKpi_");
   }else{
     printf("ERROR: Wrong decay selected\n");
     return;
@@ -118,10 +106,6 @@ void ComputeAcceptance(){
     funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
     funcPt->SetParameters(0.322643,2.96275,2.30301,2.5);
     outFileName.Append("FONLL7ptshape.root");
-  }else if(fPtShape==kFONLL5TeV){
-    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
-    funcPt->SetParameters(0.302879,2.9750,3.68139,1.68855);
-    outFileName.Append("FONLL5ptshape.root");
   }else if(fPtShape==kPythia7TeV){
     funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
     funcPt->SetParameters(0.322643,1.94635,1.40463,2.5);
@@ -152,27 +136,25 @@ void ComputeAcceptance(){
     Int_t nDaughters=dmes->GetNDaughters();
     if(fDDecay==kD0Kpi && nDaughters!=2) return;
     Int_t nPionsInAcc=0;
-    Int_t nProtonsInAcc=0;
     Int_t nKaonsInAcc=0;
     Int_t nPions=0;
-    Int_t nProtons=0;
     Int_t nKaons=0;
-    Bool_t isOk=CountPKpi(array,nentries,nPions,nKaons,nProtons,nPionsInAcc,nKaonsInAcc,nProtonsInAcc);
+    Bool_t isOk=CountKpi(array,nentries,nPions,nKaons,nPionsInAcc,nKaonsInAcc);
 
     if(isOk){
-      if(nPions==nPionDau && nKaons==nKaonDau && nProtons==nProtonDau){
+      if(nPions==nPionDau && nKaons==nKaonDau){
 	hPtVsYGen->Fill(ptD,yD);
 	if(TMath::Abs(yD)<0.5){
 	  hPtVsYGenLimAcc->Fill(ptD,yD);
 	}
 	if(IsInFiducialAcceptance(ptD,yD)){	  
-	  if(nPionsInAcc==nPionDau && nKaonsInAcc==nKaonDau && nProtonsInAcc==nProtonDau){ 
+	  if(nPionsInAcc==nPionDau && nKaonsInAcc==nKaonDau){ 
 	    hPtVsYGenAcc->Fill(ptD,yD);
 	  }
 	}
       }
+      delete vec;
     }
-    delete vec;
   }
 
   TH1D* hPtGenAcc=(TH1D*)hPtVsYGenAcc->ProjectionX("hPtGenAcc"); 
@@ -276,56 +258,6 @@ Bool_t CountKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaon
     if(TMath::Abs(etadau)<fEtaMaxDau && ptdau>fPtMinDau){
       if(pdgdau==211) nPionsInAcc++;
       if(pdgdau==321) nKaonsInAcc++;
-    }
-  }
-  if(fDebugLevel>0) printf("\n");
-  if(TMath::Abs(sumPx-dmes->Px())>0.001 ||
-     TMath::Abs(sumPy-dmes->Py())>0.001 ||
-     TMath::Abs(sumPz-dmes->Pz())>0.001){
-    printf("Momentum conservation violation\n");
-    return kFALSE;
-  }
-  return kTRUE;
-}
-
-
-//___________________________________________________
-Bool_t CountPKpi(TClonesArray *array, Int_t nentries, Int_t &nPions, Int_t &nKaons, Int_t &nProtons, Int_t &nPionsInAcc, Int_t &nKaonsInAcc, Int_t &nProtonsInAcc){
-  // count K and pi in Acc
-
-  TParticle* dmes=(TParticle*)array->At(0);
-  Double_t sumPx=0;
-  Double_t sumPy=0;
-  Double_t sumPz=0;
-  
-  for(int j=0; j<nentries; j++){
-    TParticle * o = (TParticle*)array->At(j);
-    Int_t pdgdau=TMath::Abs(o->GetPdgCode());
-    if(fDebugLevel>0) printf("%d ",pdgdau);
-    Float_t ptdau=TMath::Sqrt(o->Px()*o->Px()+o->Py()*o->Py());      
-    Float_t etadau=o->Eta();
-    if(pdgdau==211){ 
-      nPions++;
-      sumPx+=o->Px();
-      sumPy+=o->Py();
-      sumPz+=o->Pz();
-    }
-    if(pdgdau==321){ 
-      nKaons++;
-      sumPx+=o->Px();
-      sumPy+=o->Py();
-      sumPz+=o->Pz();
-    }
-    if(pdgdau==2212){ 
-      nProtons++;
-      sumPx+=o->Px();
-      sumPy+=o->Py();
-      sumPz+=o->Pz();
-    }
-    if(TMath::Abs(etadau)<fEtaMaxDau && ptdau>fPtMinDau){
-      if(pdgdau==211) nPionsInAcc++;
-      if(pdgdau==321) nKaonsInAcc++;
-      if(pdgdau==2212) nProtonsInAcc++;
     }
   }
   if(fDebugLevel>0) printf("\n");

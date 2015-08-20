@@ -724,10 +724,11 @@ Bool_t AliAnalysisTrackingUncertainties::IsVertexAccepted(AliESDEvent * esd, Flo
       vertexOkay = kTRUE;
     }
     //
+    TString vtxTyp = vertex->GetTitle();
     Double_t cov[6]={0};
     vertex->GetCovarianceMatrix(cov);
     Double_t zRes = TMath::Sqrt(cov[5]);
-    if (vertex->IsFromVertexerZ() && (zRes>0.25)) vertexOkay = kFALSE;
+    if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) vertexOkay = kFALSE;
   }
   else {
     vertexOkay = kTRUE;

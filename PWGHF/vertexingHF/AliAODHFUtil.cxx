@@ -23,15 +23,14 @@
 //***********************************************************
 #include "AliAODHFUtil.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAODHFUtil);
-/// \endcond
+
+ClassImp(AliAODHFUtil)
 
 //------------------------------
 AliAODHFUtil::AliAODHFUtil():
   TNamed()
 {
- /// default ctor
+ // default ctor
  for(int i=0; i!=64; ++i)
    fVZERO[i] = 0.0;
 }
@@ -40,32 +39,32 @@ AliAODHFUtil::AliAODHFUtil():
 AliAODHFUtil::AliAODHFUtil(const char* pName):
   TNamed(pName, "")
 {
-  /// standard ctor
+  // standard ctor
  for(int i=0; i!=64; ++i)
    fVZERO[i] = 0.0;
 } 
 //----------------------
 AliAODHFUtil::~AliAODHFUtil()
 {
- /// default dtor
+ // default dtor
 }
 //------------------------
 AliAODHFUtil::AliAODHFUtil(const AliAODHFUtil& pCopy) :
   TNamed(pCopy)
 {
- /// copy ctor
+ // copy ctor
    for(int i=0; i!=64; ++i)
      fVZERO[i] = pCopy.fVZERO[i];
 }
 //----------------------
 void AliAODHFUtil::SetVZERO(Float_t *pVzero) {
-  /// set VZERO channel
+  // set VZERO channel
    for(int i=0; i!=64; ++i)
      fVZERO[i] = pVzero[i];
 }
 //---------------------------
 Float_t AliAODHFUtil::GetVZEROChannel(Int_t pCh) const {
-  /// get VZERO channel
+  // get VZERO channel
   return fVZERO[pCh];
 }
 

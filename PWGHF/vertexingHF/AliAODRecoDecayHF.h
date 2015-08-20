@@ -5,11 +5,11 @@
 
 /* $Id$ */ 
 
-///***********************************************************
-/// \class Class AliAODRecoDecayHF
-/// \brief base class for AOD reconstructed heavy-flavour decays
-/// \author Author: A.Dainese, andrea.dainese@lnl.infn.it
-///***********************************************************
+//***********************************************************
+// Class AliAODRecoDecayHF
+// base class for AOD reconstructed heavy-flavour decays
+// Author: A.Dainese, andrea.dainese@lnl.infn.it
+//***********************************************************
 
 #include <TRef.h>
 #include <TList.h>
@@ -39,7 +39,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   AliAODRecoDecayHF& operator=(const AliAODRecoDecayHF& source); 
    
 
-  /// primary vertex
+  // primary vertex
   void SetPrimaryVtxRef(TObject *vtx) { fEventPrimaryVtx = vtx; }
   AliAODVertex* GetPrimaryVtxRef() const { return (AliAODVertex*)(fEventPrimaryVtx.GetObject()); }
   void SetOwnPrimaryVtx(const AliAODVertex *vtx) { UnsetOwnPrimaryVtx(); fOwnPrimaryVtx = new AliAODVertex(*vtx);}
@@ -54,7 +54,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   void          RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent *aod);
 
 
-  /// kinematics & topology
+  // kinematics & topology
   Double_t DecayLength2() const 
     { return AliAODRecoDecay::DecayLength2(GetPrimaryVtx());}
   Double_t DecayLength() const 
@@ -84,7 +84,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   Double_t QlProngFlightLine(Int_t ip) const 
     { return AliAODRecoDecay::QlProngFlightLine(ip,GetPrimaryVtx());}
 
-  /// prongs
+  // prongs
   Double_t Getd0errProng(Int_t ip) const {return fd0err[ip];}
   void     Setd0errProngs(Int_t nprongs,Double_t *d0);
   Double_t Normalizedd0Prong(Int_t ip) const 
@@ -94,48 +94,44 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   UShort_t GetProngID(Int_t ip) const 
     {if(fProngID) {return fProngID[ip];} else {return 9999;}}
 
-  /// ITS clustermap for daughters
+  // ITS clustermap for daughters
   Bool_t DaughterHasPointOnITSLayer(Int_t dg,Int_t l) const;
 
-  /// check if it is like-sign
+  // check if it is like-sign
   Bool_t IsLikeSign() const;
 
-  /// list of cuts
+  // list of cuts
   void SetListOfCutsRef(TObject *obj) {fListOfCuts=obj;}
   TList *GetListOfCuts() const {return (TList*)(fListOfCuts.GetObject());}
   AliRDHFCuts *GetCuts(const char* name) const;
 
-  /// vertexing KF:
+  // vertexing KF:
   AliKFParticle *ApplyVertexingKF(Int_t *iprongs,Int_t nprongs,Int_t *pdgs,
 				 Bool_t topoCostraint,Double_t bzkG,
 				 Double_t *mass) const;
   
-  /// misalign
+  // misalign
   void Misalign(TString misal="null");
 
-  /// selection map
+  // selection map
   void    SetSelectionBit(Int_t i) {SETBIT(fSelectionMap,i); return;}
   Bool_t  HasSelectionBit(Int_t i) const {return TESTBIT(fSelectionMap,i);}
   ULong_t GetSelectionMap() const {return fSelectionMap;}
 
   Int_t   NumberOfFakeDaughters() const;
 
-  Bool_t  HasBadDaughters() const; /// TPC+ITS tracks not passing the StandardCuts2010 with loose DCA
+  Bool_t  HasBadDaughters() const; // TPC+ITS tracks not passing the StandardCuts2010 with loose DCA
 
  protected:
 
-  AliAODVertex *fOwnPrimaryVtx; /// primary vertex for this candidate
-  TRef          fEventPrimaryVtx; /// ref to primary vertex of the event
-  TRef          fListOfCuts;  /// ref to the list of analysis cuts
-  /// error on prongs rphi impact param [cm]
+  AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
+  TRef          fEventPrimaryVtx; // ref to primary vertex of the event
+  TRef          fListOfCuts;  // ref to the list of analysis cuts
   Double_t     *fd0err;  //[fNProngs] error on prongs rphi impact param [cm]
-  /// track ID of daughters
   UShort_t     *fProngID;  //[fNProngs] track ID of daughters
-  ULong_t       fSelectionMap; /// used to store outcome of selection in AliAnalysisVertexingHF
+  ULong_t       fSelectionMap; // used to store outcome of selection in AliAnalysisVertexingHF
 
-  /// \cond CLASSIMP
-  ClassDef(AliAODRecoDecayHF,5);  /// base class for AOD reconstructed heavy-flavour decays
-  /// \endcond
+  ClassDef(AliAODRecoDecayHF,5)  // base class for AOD reconstructed heavy-flavour decays
 };
 
 inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id) 
@@ -153,7 +149,7 @@ inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id)
 
 inline Bool_t AliAODRecoDecayHF::IsLikeSign() const
 {
-  /// check if it is like-sign
+  // check if it is like-sign
 
   Int_t ndg=GetNDaughters();
   if(!ndg) {
@@ -171,7 +167,7 @@ inline Bool_t AliAODRecoDecayHF::IsLikeSign() const
 
 inline AliRDHFCuts *AliAODRecoDecayHF::GetCuts(const char* name) const
 { 
-  /// returns the analysis cuts
+  // returns the analysis cuts
 
   TList *list = GetListOfCuts();
   if(!list) return 0;
@@ -182,7 +178,7 @@ inline AliRDHFCuts *AliAODRecoDecayHF::GetCuts(const char* name) const
 
 inline Bool_t AliAODRecoDecayHF::DaughterHasPointOnITSLayer(Int_t dg,Int_t l) const
 {
-  /// ITS clustermap for daughters
+  // ITS clustermap for daughters
 
   if(l<0 || l>5) {
     printf("ERROR: layer has to be in the range 0-5\n");
@@ -196,7 +192,7 @@ inline Bool_t AliAODRecoDecayHF::DaughterHasPointOnITSLayer(Int_t dg,Int_t l) co
 
 inline Int_t AliAODRecoDecayHF::NumberOfFakeDaughters() const 
 {
-  /// Count number of daughters with negative label
+  // Count number of daughters with negative label
 
   Int_t nfakes=0;
   for(Int_t i=0; i<GetNDaughters(); i++) {
@@ -234,7 +230,7 @@ inline void AliAODRecoDecayHF::Setd0errProngs(Int_t nprongs,Double_t *d0err)
 
 inline Bool_t AliAODRecoDecayHF::HasBadDaughters() const {
 
-  /// checks if at least one of ITS+TPC daughters didn't pass the StandardCuts2010 with loose DCA (ie doesn't have the BIT(4) set)
+  // checks if at least one of ITS+TPC daughters didn't pass the StandardCuts2010 with loose DCA (ie doesn't have the BIT(4) set)
 
   for(Int_t iDau=0; iDau<GetNDaughters(); iDau++){
     if (GetDaughter(iDau)==NULL) continue;

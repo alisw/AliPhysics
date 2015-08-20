@@ -96,9 +96,6 @@ private:
    void EstimateBgRhoMedian(TList *listJet, TList* listPart, Double_t &rhoMedian, Int_t mode);//median method to estimate bg
    void EstimateBgCone(TList *listJet, TList* listPart, Double_t &rhoPerpCone);//perp cone method to estimate bg
    void ReadTClonesArray(TString bname, TList *list); //init jets lists
-
-   void FillDeltaPt(TList *jetList, TList *trkList, Double_t rhoMedian, Double_t rhoCones);
-
    //private member objects
    AliESDEvent *fESD;    //! ESD object
    AliAODEvent *fAODIn;  //! AOD event for AOD input tracks
@@ -187,8 +184,6 @@ private:
    TH1D *fhDeltaPhiMultTriggersInclHigh; // Delta phi between trigger and assoc incl trigg
    TH1D *fhInclTrigCounter; // count the total number of inclusive triggers
 
-   TH1D *fhDeltaPtConeBg;  // delta pt of bg fluctuations with rho based on cone bg
-   TH1D *fhDeltaPtMedianBg;// delta pt of bg fluctuations whith rho based on bg median
    //THnSparse *fHJetPtRaw;      //bg unsubtr. vs bg subtr. pT spectrum of jets vs jet area
    //THnSparse *fHLeadingJetPtRaw; //bg unsubtr. vs bg. subtr. leading jet pT vs area 
    //THnSparse *fHDphiVsJetPtAll;   //Dphitrigger-jet  versus jet pt for all jets given pTtrigg  
@@ -261,6 +256,7 @@ private:
    TH1D *fhDeltaRMultTriggersGenLevelHigh;  // corresp. genereator level TT track combined with generator level Assoc tracks 20-50 
    TH1D *fhDeltaPhiMultTriggersGenLevelHigh;// corresp. genereator level TT track combined with generator level Assoc tracks 20-50
 
+
    Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real+kine data false
    Bool_t fIsKine;       //flag analysis on kine data with true and on the real+MC data false
    Bool_t fIsFullMC;   //flag analysis on MC data with true and on the real+kine data false
@@ -299,7 +295,7 @@ private:
 
    Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
  
-   ClassDef(AliAnalysisTaskJetCorePP, 18);  //has to end with number larger than 0
+   ClassDef(AliAnalysisTaskJetCorePP, 17);  //has to end with number larger than 0
 };
 
 #endif

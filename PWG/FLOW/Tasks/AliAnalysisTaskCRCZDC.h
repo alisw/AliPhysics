@@ -26,27 +26,23 @@ class TRandom3;
 class AliAnalysisTaskSE;
 class TString;
 class AliESDpid;
-class AliGenEventHeader;
-class AliGenPythiaEventHeader;
-class AliGenHijingEventHeader;
-class AliFlowTrack;
 
 class TROOT;
 class TSystem;
+class TList;
 class TFile;
 class TH1F;
 class TH2F;
-class TProfile;
 
 class AliAnalysisTaskCRCZDC : public AliAnalysisTaskSE {
  
 public:
  
  enum kAnalysisInput{kESD=1, kAOD=2};
+ 
  AliAnalysisTaskCRCZDC();
- AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, TString DataSet="2010", UInt_t seed=666, Bool_t bCandidates=kFALSE);
+ AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, UInt_t seed=666, Bool_t bCandidates=kFALSE);
  virtual ~AliAnalysisTaskCRCZDC();
- virtual void InitializeRunArrays();
  
  // Implementation of interface methods
  virtual void UserCreateOutputObjects();
@@ -131,7 +127,6 @@ public:
  void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
   fCentrUpLim=centrup;}
  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
- void SetDataSet(TString DataSet) {fDataSet = DataSet;}
  
 private:
  AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -153,13 +148,7 @@ private:
  Double_t      fMinB;              // Minimum of eta range for subevent B
  Double_t      fMaxB;              // Maximum of eta range for subevent B
  
- // mc event handlers
- AliGenEventHeader*        fGenHeader;       //!
- AliGenPythiaEventHeader*  fPythiaGenHeader; //!
- AliGenHijingEventHeader*  fHijingGenHeader; //!
- AliFlowTrack*             fFlowTrack;       //!
- 
- Bool_t fQAon;                     // flag to set the filling of the QA hostograms
+ Bool_t fQAon;                       // flag to set the filling of the QA hostograms
  Bool_t fLoadCandidates;           // true if reciving candidates collection
  
  // setters for common constants
@@ -276,14 +265,6 @@ private:
  TH1F *fhZNApmcLR;		//! ZNA PMC low res. chain
  TH1F *fhZPCpmcLR;		//! ZPC  PMC low res. chain
  TH1F *fhZPApmcLR;		//! ZPA PMC low res. chain
- 
- const static Int_t fCRCMaxnRun = 211;
- const static Int_t fCRCnTow = 8;
- Int_t fCRCnRun;
- TString fDataSet;
- Int_t fRunList[fCRCMaxnRun];                   //! Run list
- TProfile *fhnTowerGain[fCRCMaxnRun][fCRCnTow]; //! towers gain
- TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
  
  ClassDef(AliAnalysisTaskCRCZDC,3);
  

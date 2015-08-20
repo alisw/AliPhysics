@@ -105,7 +105,7 @@ bool AliEMCalPtTaskTrackSelectionESD::IsTrackAccepted(AliVTrack* const trk) {
 
   bool result = true;
   for(TIter cutIter = TIter(fListOfCuts).Begin(); cutIter != TIter::End(); ++cutIter){
-    if(!((static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt))) result = false;
+    if(!(static_cast<AliVCuts *>(*cutIter))->IsSelected(esdt)) result = false;
   }
   return result;
 }

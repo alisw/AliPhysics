@@ -24,15 +24,15 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 	TString analysiscutB;
 
 	if(dataset == 1){
-		analysiscutEvent = "10000003";
+		analysiscutEvent = "1000000";
 		analysiscut= "060000084000001500000000";
 		analysiscutB="160000084000001500000000";
 	} else if (dataset == 2){
-		analysiscutEvent = "80000003";
+		analysiscutEvent = "8000000";
 		analysiscut= "060000084000001500000000";
 		analysiscutB="160000084000001500000000";
 	} else{
-		analysiscutEvent = "00000003";
+		analysiscutEvent = "0000000";
 		analysiscut ="060000084001001500000000";
 		analysiscutB="160000084001001500000000";
 	}

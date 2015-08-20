@@ -60,10 +60,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   dplusTask->SetUseBit(kTRUE);
   dplusTask->SetCutsDistr(cutsDistr);
   dplusTask->SetSystem(system);
-  if (doSparse)
-    dplusTask->SetDoImpactParameterHistos(kTRUE);
-  if(doSparse && readMC)
-    dplusTask->SetDoMCAcceptanceHistos(kTRUE);
+  if (doSparse) dplusTask->SetDoImpactParameterHistos(kTRUE);
   if(etaRange==1) dplusTask->SetUseOnlyPositiveEta();
   if(etaRange==-1) dplusTask->SetUseOnlyNegativeEta();
 

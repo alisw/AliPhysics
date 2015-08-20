@@ -92,10 +92,6 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
         TH1F *fHistMassXiPlus;                          // Gives the invariant mass distr. for the Xi plus without PID info on daughter tracks
         TH1F *fHistMassOmegaMinus;                      // Gives the invariant mass distr. for the Omega minus without PID info on daughter tracks
         TH1F *fHistMassOmegaPlus;                       // Gives the invariant mass distr. for the Omega plus without PID info on daughter tracks
-        TH1F *fHistCascadeMultiplicityXiMinus;          // Gives the distribution of the number of Xi minus per event
-        TH1F *fHistCascadeMultiplicityXiPlus;           // Gives the distribution of the number of Xi plus per event
-        TH1F *fHistCascadeMultiplicityOmegaMinus;       // Gives the distribution of the number of Omega minus per event
-        TH1F *fHistCascadeMultiplicityOmegaPlus;        // Gives the distribution of the number of Omega plus per event  
 	AliCFContainer  *fCFContCascadeCuts;            // Container meant to store all the relevant distributions corresponding to the cut variables
         AliCFContainer  *fCFContCascadeMCgen;           // Container meant to store general variables for MC generated particles 
 	
@@ -103,7 +99,7 @@ class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
   AliAnalysisTaskQAMultistrange(const AliAnalysisTaskQAMultistrange&);            // not implemented
   AliAnalysisTaskQAMultistrange& operator=(const AliAnalysisTaskQAMultistrange&); // not implemented
   
-  ClassDef(AliAnalysisTaskQAMultistrange, 8);
+  ClassDef(AliAnalysisTaskQAMultistrange, 7);
 };
 
 #endif

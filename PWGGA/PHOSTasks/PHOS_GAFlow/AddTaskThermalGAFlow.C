@@ -11,8 +11,6 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
    const Double_t fMaxCentrality = 100,
    const Double_t fCoreRadius = 3.5,
    const Double_t fMinCoreEnergyRatio = 0.4,
-   const Double_t fMinLambdaDisp = 0.3,
-   const Double_t fMinCPVStd = 2.5,
 //End Default Cuts
 
    const char *tag            = ""
@@ -38,7 +36,7 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
-  TString name(Form("ash_%s", tag));
+  TString name(Form("ThermalGA_%s", tag));
   AliAnalysisTaskThermalGAFlow *PHOSGAtask = new AliAnalysisTaskThermalGAFlow(name);
 
   PHOSGAtask->SetDebug(fDebug);
@@ -50,8 +48,6 @@ AliAnalysisTaskThermalGAFlow* AddTaskThermalGAFlow(
   PHOSGAtask->SetMaxCentrality(fMaxCentrality);
   PHOSGAtask->SetCoreRadius(fCoreRadius);
   PHOSGAtask->SetMinCoreEnergyRatio(fMinCoreEnergyRatio);
-  PHOSGAtask->SetMinLambdaDisp(fMinLambdaDisp);
-  PHOSGAtask->SetMinCPVStd(fMinCPVStd);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

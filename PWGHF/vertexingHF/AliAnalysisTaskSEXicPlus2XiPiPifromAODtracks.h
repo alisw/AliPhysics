@@ -26,8 +26,6 @@
 #include "AliPID.h"
 #include "AliRDHFCutsXicPlustoXiPiPifromAODtracks.h"
 
-/// \class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks
-
 class THnSparse;
 class TH1F;
 class TH2F;
@@ -45,7 +43,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE);
   virtual ~AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
 
-  /// Implementation of interface methods
+  // Implementation of interface methods  
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -56,7 +54,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   
-  /// set MC usage
+  // set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
   
@@ -80,66 +78,64 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliAODVertex* CallReconstructSecondaryVertex(AliAODTrack *trk1, AliAODTrack *trk2,Double_t &disp);
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t &dispersion,Bool_t useTRefArray=kTRUE);
   
-  Bool_t fUseMCInfo;          /// Use MC info
-  TList *fOutput;             //!<! User output slot 1 // general histos
-  TList *fOutputAll;          //!<! User output slot 3 // Analysis histos
-  TList *fListCuts;           //!<! User output slot 2 // Cuts 
-  TH1F *fCEvents;             /// Histogram to check selected events
-  TH1F *fHTrigger;            /// Histograms to check trigger
-  TH1F *fHCentrality;         /// histogram to check centrality
-  AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      /// Cuts - sent to output slot 2
-  Bool_t fIsEventSelected;           /// flag for event selected
-  Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
-  TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
-  Bool_t fReconstructPrimVert;            /// Reconstruct primary vertex excluding candidate tracks
-  Bool_t fIsMB;            /// Is MB event
-  Bool_t fIsSemi;          /// is semi-central trigger event
-  Bool_t fIsCent;          /// is central trigger event
-  Bool_t fIsINT7;          /// is int7 trigger event
-  Bool_t fIsEMC7;          /// is emc7 trigger event
-  Float_t *fCandidateVariables;     //!<! variables to be written to the tree
-  AliAODVertex *fVtx1;              /// primary vertex
-  AliESDVertex *fV1;                /// primary vertex
-  Double_t fBzkG;                   /// magnetic field value [kG]
-  Float_t  fCentrality;             /// centrality
-  Float_t  fTriggerCheck;           /// Trigger information
+  Bool_t fUseMCInfo;          // Use MC info
+  TList *fOutput;             //! User output slot 1 // general histos
+  TList *fOutputAll;          //! User output slot 3 // Analysis histos
+  TList *fListCuts;           //! User output slot 2 // Cuts 
+  TH1F *fCEvents;             // Histogram to check selected events
+  TH1F *fHTrigger;            //Histograms to check trigger
+  TH1F *fHCentrality;         //histogram to check centrality
+  AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      // Cuts - sent to output slot 2
+  Bool_t fIsEventSelected;           // flag for event selected
+  Bool_t    fWriteVariableTree;       // flag to decide whether to write the candidate variables on a tree variables
+  TTree    *fVariablesTree;           //! tree of the candidate variables after track selection on output slot 4
+  Bool_t fReconstructPrimVert;            //Reconstruct primary vertex excluding candidate tracks
+  Bool_t fIsMB;            //Is MB event
+  Bool_t fIsSemi;          //is semi-central trigger event
+  Bool_t fIsCent;          //is central trigger event
+  Bool_t fIsINT7;          // is int7 trigger event
+  Bool_t fIsEMC7;          //is emc7 trigger event
+  Float_t *fCandidateVariables;     //! variables to be written to the tree
+  AliAODVertex *fVtx1;              // primary vertex
+  AliESDVertex *fV1;                // primary vertex
+  Double_t fBzkG;                   // magnetic field value [kG]
+  Float_t  fCentrality;             //centrality
+  Float_t  fTriggerCheck;           // Trigger information
   
   //--------------------- My histograms ------------------
-  THnSparse*  fHistoXicMass;        //!<! xic mass spectra
+  THnSparse*  fHistoXicMass;        //! xic mass spectra
   
-  TH1F*  fHistoDcaPi1Pi2;                    //!<!  DCA between pions
-  TH1F*  fHistoDcaPiCasc;                    //!<! DCA between pi and cascade
-  TH1F*  fHistoLikeDecayLength;              //!<! Decay length
-  TH1F*  fHistoLikeDecayLengthXY;            //!<! Decay length in XY
-  TH1F*  fHistoXicCosPAXY;                   //!<! Xic cosine pointing angle
+  TH1F*  fHistoDcaPi1Pi2;                    //!  DCA between pions
+  TH1F*  fHistoDcaPiCasc;                    //! DCA between pi and cascade
+  TH1F*  fHistoLikeDecayLength;              //! Decay length
+  TH1F*  fHistoLikeDecayLengthXY;            //! Decay length in XY
+  TH1F*  fHistoXicCosPAXY;                   //! Xic cosine pointing angle
   
-  TH1F*  fHistoXiMass;                       //!<! mass of xi
-  TH1F*  fHistoCascDcaXiDaughters;           //!<! DCA of xi daughgers
-  TH1F*  fHistoCascDcaV0Daughters;           //!<! DCA of v0 daughters
-  TH1F*  fHistoCascDcaV0ToPrimVertex;        //!<! DCA of v0 to primary vertex 
-  TH1F*  fHistoCascDcaPosToPrimVertex;       //!<! DCA of positive track to primary vertex 
-  TH1F*  fHistoCascDcaNegToPrimVertex;       //!<! DCA of negative track to primary vertex 
-  TH1F*  fHistoCascDcaBachToPrimVertex;      //!<! DCA of bachelor track to primary vertex 
-  TH1F*  fHistoCascCosPAXiPrim;              //!<! Cosine pointing angle of Xi to primary vertex
-  TH1F*  fHistoXiPt;                         //!<! Xi pt
+  TH1F*  fHistoXiMass;                       //! mass of xi
+  TH1F*  fHistoCascDcaXiDaughters;           //! DCA of xi daughgers
+  TH1F*  fHistoCascDcaV0Daughters;           //! DCA of v0 daughters
+  TH1F*  fHistoCascDcaV0ToPrimVertex;        //! DCA of v0 to primary vertex 
+  TH1F*  fHistoCascDcaPosToPrimVertex;       //! DCA of positive track to primary vertex 
+  TH1F*  fHistoCascDcaNegToPrimVertex;       //! DCA of negative track to primary vertex 
+  TH1F*  fHistoCascDcaBachToPrimVertex;      //! DCA of bachelor track to primary vertex 
+  TH1F*  fHistoCascCosPAXiPrim;              //! Cosine pointing angle of Xi to primary vertex
+  TH1F*  fHistoXiPt;                         //! Xi pt
   
-  TH1F*  fHistoPiPt;                         //!<! Pion pT
-  TH1F*  fHistoPid0;                         //!<! pion d0
-  TH1F*  fHistonSigmaTPCpi;                  //!<! nSigma of TPC pion
-  TH1F*  fHistonSigmaTOFpi;                  //!<! nSigma of TOF pion
-  TH1F*  fHistoProbPion;                     //!<! Probability to be pion
+  TH1F*  fHistoPiPt;                         //! Pion pT
+  TH1F*  fHistoPid0;                         //! pion d0
+  TH1F*  fHistonSigmaTPCpi;                  //! nSigma of TPC pion
+  TH1F*  fHistonSigmaTOFpi;                  //! nSigma of TOF pion
+  TH1F*  fHistoProbPion;                     //! Probability to be pion
 
-  TH2F*  fHistoXiMassvsPtRef;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef2;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef3;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef4;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef5;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef6;                    //!<! Reference Xi mass spectra 
-  TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra 
-
-  /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,5); /// class for Xic->Xipipi
-  /// \endcond
+  TH2F*  fHistoXiMassvsPtRef;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef2;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef3;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef4;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef5;                    //! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef6;                    //! Reference Xi mass spectra 
+  TH1F*  fHistoPiPtRef;                      //! Reference pi spectra 
+  
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,5); // class for Xic->Xipipi
 };
 #endif
 

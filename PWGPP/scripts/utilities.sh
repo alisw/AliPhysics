@@ -14,7 +14,7 @@ PWGPP_runMap="
 2012 171590 193766
 2013 194308 199146
 2014 202369 206695
-2015 208505 999999
+2015 999999 999999
 2016 999999 999999
 "
 
@@ -704,14 +704,6 @@ paranoidCp()
   #does not copy links to avoid problems
   sourceFiles=("${@}")
   destination="${sourceFiles[@]:(-1)}" #last element
-   #check if we are not trying to copy to the same structure
-  if [ $destination == $sourceFiles ] ; then  
-      echo paranoidCp INFO skip
-      echo paranoidCp INFO destination== $destination 
-      echo paranoidCp INFO sourceFiles== $sourceFiles
-      return 1; 
-  fi
-
   unset sourceFiles[${#sourceFiles[@]}-1] #remove last element (dst)
   #[[ ! -f "${destination}" ]] 
   for src in "${sourceFiles[@]}"; do

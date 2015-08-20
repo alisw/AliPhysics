@@ -156,9 +156,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNOriginHistograms;                      ///<  Fill only NOriginHistograms of the 14 defined types
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
-  TLorentzVector fMomentum;                         //!<! Cluster momentum, temporary container
-  TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum, temporary container
-  TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
+  TLorentzVector fMomentum;                         //!<! Cluster momentum
+  TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum
   
   //
   // Histograms
@@ -347,9 +346,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtClusterSM;                             //!<! Cluster E distribution per SM, before any selection, after reader
   TH2F * fhPtPhotonSM ;                             //!<! photon-like cluster E distribution per SM
   
-  TH2F * fhMCConversionVertex;                      //!<! Conversion distance for photon clusters that have at least a contributor from the conversion.
-  TH2F * fhMCConversionLambda0Rcut[6];              //!<! Shower shape of photon conversions, depending on conversion vertex.
-
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
     

@@ -4,7 +4,6 @@ System:       p-Pb and Pb-Pb
 Authors:      P.Pujahari & C. Pruneau
               Wayne State University 
 Dated:        March 15, 2013
-Code verII: Vertex Z for Systematics (check binning)
 */
 //================================
 #include "TChain.h"
@@ -83,8 +82,8 @@ _useWeights    ( 0),
 _sameFilter    ( false),
 _rejectPileup  ( 1), 
 _rejectPairConversion ( 0), 
-_vertexZMin           ( -5), //10 
-_vertexZMax           (  5), 
+_vertexZMin           ( -10), 
+_vertexZMax           (  10), 
 _vertexXYMin          ( -10),
 _vertexXYMax          (  10),
 _centralityMethod     (  4),
@@ -143,7 +142,7 @@ _nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
 _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
 _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
 _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
-_nBins_vertexZ(40),   _min_vertexZ(-5), _max_vertexZ(5),        _width_vertexZ(0.25),
+_nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ(0.5),
 
 _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
 _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
@@ -368,8 +367,8 @@ _useWeights    ( 0),
 _sameFilter    ( false),
 _rejectPileup  ( 1), 
 _rejectPairConversion ( 0), 
-_vertexZMin           ( -5.), 
-_vertexZMax           (  5.), 
+_vertexZMin           ( -10.), 
+_vertexZMax           (  10.), 
 _vertexXYMin          ( -10.),
 _vertexXYMax          (  10.),
 _centralityMethod     (  4),
@@ -428,7 +427,7 @@ _nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
 _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
 _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
 _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
-_nBins_vertexZ(40),   _min_vertexZ(-5), _max_vertexZ(5),        _width_vertexZ(0.25),
+_nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ(0.5),
 
 _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
 _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
@@ -661,7 +660,7 @@ void AliAnalysisTaskDptDptCorrelations::UserCreateOutputObjects()
   
   _min_vertexZ       = _vertexZMin;  
   _max_vertexZ       = _vertexZMax;  
-  _width_vertexZ     = 0.25; //for systematic error check
+  _width_vertexZ     = 0.5;
   _nBins_vertexZ     = int(0.5+ (_max_vertexZ - _min_vertexZ)/_width_vertexZ); 
   _nBins_pt_1        = int(0.5+ (_max_pt_1 -_min_pt_1 )/_width_pt_1); 
   _nBins_eta_1       = int(0.5+ (_max_eta_1-_min_eta_1)/_width_eta_1);  
@@ -890,13 +889,13 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "m4"; _m4      = createHisto1D(name,name,_nBins_M4, _min_M4, _max_M4, _title_m4, _title_counts);
   name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
   name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
-  name = "zV"; _vertexZ = createHisto1D(name,name,50, -5.1, 5.1, "z-Vertex (cm)", _title_counts);
+  name = "zV"; _vertexZ = createHisto1D(name,name,100, -10, 10, "z-Vertex (cm)", _title_counts);
   
 
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
   name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-  name = "DCAz";    _dcaz     = createHisto1F(name,name, 100, -3.5, 3.5, "dcaZ","counts");
-  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, 0.0, 2.5, "dcaXY","counts");
+  name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
+  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
 
   // name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
@@ -953,6 +952,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
 
 void  AliAnalysisTaskDptDptCorrelations::finalizeHistograms()
 {
+  
   AliInfo("AliAnalysisTaskDptDptCorrelations::finalizeHistograms() starting");
   AliInfo(Form("CorrelationAnalyzers::finalizeHistograms()   _eventCount : %d",int(_eventCount)));
   if (_singlesOnly)
@@ -1112,15 +1112,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	{
 	  return;
 	}
-      /* //Only when use VO as centrality estimatator
-
-       if ( centrality < _centralityMin ||  
-	    centrality > _centralityMax )
-	{
-	  return;
-	  }*/
-       
-       
+      
       _eventAccounting->Fill(2);// count all events with right centrality
   
       // filter on z and xy vertex
@@ -1216,7 +1208,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if(charge == 0) continue;
 	  // Kinematics cuts used                                                                                        
 	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
-	  if( eta < -1.0 || eta > 1.0) continue;
+	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
 	  
 	  Double_t pos[3];
 	  newAodTrack->GetXYZ(pos);
@@ -1232,16 +1224,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	      DCAXY    >  _dcaXYMax ) continue; 
 	  	  	  
 	  //==== QA ===========================
-	  //_dcaz->Fill(DCAZ);
-	  //_dcaxy->Fill(DCAXY);
+	  _dcaz->Fill(DCAZ);
+	  _dcaxy->Fill(DCAXY);
 	  //_etadis->Fill(eta);
 	  //_phidis->Fill(phi);
 	  //===================================
 	  //*************************************************
 	  	  
 	  //Particle 1
-	  if (_requestedCharge_1 == charge && eta > _min_eta_1 && eta < _max_eta_1 &&
-	      dedx >=  _dedxMin && dedx < _dedxMax)
+	  if (_requestedCharge_1 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
 	    {
 	      iPhi   = int( phi/_width_phi_1);
 	      
@@ -1311,8 +1302,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 		}
 	    }
 	  
-	  if (!_sameFilter && _requestedCharge_2 == charge && eta > _min_eta_2 && 
-	      eta < _max_eta_2 && dedx >=  _dedxMin && dedx < _dedxMax)
+	  if (!_sameFilter && _requestedCharge_2 == charge && 
+	      dedx >=  _dedxMin && dedx < _dedxMax)
 	       
 	    {
 	      

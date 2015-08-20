@@ -41,10 +41,7 @@
 #include "AliCounterCollection.h"
 #include "AliAnalysisTaskSEMonitNorm.h"
 
-
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEMonitNorm);
-/// \endcond
+ClassImp(AliAnalysisTaskSEMonitNorm)
 
 //________________________________________________________________________
 AliAnalysisTaskSEMonitNorm::AliAnalysisTaskSEMonitNorm(const char *name): 

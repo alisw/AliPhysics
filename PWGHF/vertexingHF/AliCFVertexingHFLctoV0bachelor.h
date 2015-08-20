@@ -18,13 +18,12 @@
 
 /* $Id$ */ 
 
-///-----------------------------------------------------------------------
-/// \class AliCFVertexingHFLctoV0bachelor
-/// Class for HF corrections as a function of many variables and steps
-/// \brief For Lc->V0 bachelor
-///
-/// \author Author : A. De Caro
-///-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+// Class for HF corrections as a function of many variables and steps
+// For Lc->V0 bachelor
+// 
+// Author : A. De Caro
+//-----------------------------------------------------------------------
 
 
 #include "AliCFVertexingHF.h"
@@ -74,11 +73,9 @@ class AliCFVertexingHFLctoV0bachelor : public AliCFVertexingHF{
   AliCFVertexingHFLctoV0bachelor(const AliCFVertexingHFLctoV0bachelor& c);
   AliCFVertexingHFLctoV0bachelor& operator= (const AliCFVertexingHFLctoV0bachelor& other);
   
-  Int_t fGenLcOption;  /// option for selection Lc (see enum)
+  Int_t fGenLcOption;  // option for selection Lc (see enum)
 
-  /// \cond CLASSIMP      
-  ClassDef(AliCFVertexingHFLctoV0bachelor, 1); /// CF class for Lc->V0+bachelor and other cascades
-  /// \endcond
+  ClassDef(AliCFVertexingHFLctoV0bachelor, 1); // CF class for Lc->V0+bachelor and other cascades
   
 };
 

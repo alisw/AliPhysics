@@ -52,10 +52,8 @@ set(SRCS_analysis2
   analysis2/AliBaseMCTrackDensity.cxx
   analysis2/AliMCTruthdNdetaTask.cxx
   analysis2/AliDisplacedVertexSelection.cxx
-  analysis2/AliDisplacedVertexSelectionAD.cxx
   analysis2/AliPoissonCalculator.cxx
   analysis2/AliMCAuxHandler.cxx
-  analysis2/AliTestAD.cxx
   # Forward Aux
   analysis2/AliForwardUtil.cxx
   analysis2/AliFMDMultCuts.cxx
@@ -206,6 +204,14 @@ install(TARGETS runTrain
 # --------------------------------------------------------------------
 # Extra targets 
 #
+add_custom_command( OUTPUT doc/alice-int-2012-040.pdf 
+                    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
+		    COMMAND pdflatex alice-int-2012-040
+		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/doc
+		    COMMAND mv alice-int-2012-040.pdf ${CMAKE_CURRENT_BINARY_DIR}/doc/
+		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/alice-int-2012-040
+		    MAIN_DEPENDENCY doc/alice-int-2012-040/alice-int-2012-040.tex)
 
 add_custom_command( OUTPUT doc/html/index.html 
 		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/doc
@@ -213,6 +219,7 @@ add_custom_command( OUTPUT doc/html/index.html
 		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
 		    DEPENDS ${SRCS} ${HDRS})
 
+add_custom_target( PWGLFforward-doc DEPENDS doc/alice-int-2012-040.pdf )
 add_custom_target( PWGLFforward-doxy DEPENDS doc/html/index.html )
 
 # --------------------------------------------------------------------

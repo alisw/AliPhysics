@@ -78,7 +78,7 @@ public:
   /**
    * Destructor
    */
-  virtual ~AliEMCalTriggerBinningDimension() {}
+  ~AliEMCalTriggerBinningDimension() {}
 
   /**
    * Set the bin limits of the dimension from a C-array

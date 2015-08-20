@@ -28,19 +28,10 @@ void cacheOCDB(Int_t run, Int_t year)
     if(!grpManager.SetMagField()) AliError("Problem with magnetic field setup"); 
   }
 
-  const Int_t nobj(14);
-  const Char_t *tobj[nobj] = {"ChamberExB", 
-                              "ChamberT0", 
-                              "ChamberVdrift", 
-                              "ChamberStatus", 
+  const Int_t nobj(5);
+  const Char_t *tobj[nobj] = {"ChamberStatus", 
                               "ChamberGainFactor", 
                               "LocalGainFactor", 
-                              "LocalVdrift", 
-                              "LocalT0", 
-                              "PRFWidth", 
-                              "TrkAttach", 
-                              "PIDLQ1D", 
-                              "PHQ", 
                               "DCS",
                               "RecoParam"};
   for(Int_t iobj(0); iobj<nobj; iobj++){

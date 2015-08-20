@@ -58,7 +58,8 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fClusterMomentum(),                        fSubClusterMom1(),                         fSubClusterMom2(),
   fSubClusterMomSum(),                       fSubClusterMomBoost(),
   fPrimaryMom(),                             fGrandMotherMom(),
-  fMCDaughMom1(),                            fMCDaughMom2(),                            fProdVertex(),                            
+  fMCDaughMom1(),                            fMCDaughMom2(),
+  fProdVertex(),
   // Histograms
   fhMassAsyCutNLocMax1(0),                   fhMassAsyCutNLocMax2(0),                   fhMassAsyCutNLocMaxN(0),
   fhM02AsyCutNLocMax1(0),                    fhM02AsyCutNLocMax2(0),                    fhM02AsyCutNLocMaxN(0),
@@ -838,9 +839,9 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   // Get daughter photon kinematics
   Int_t pdg0 = -22222, status0   = -1; Int_t label0 = -1;
-  fMCDaughMom1 = GetMCAnalysisUtils()->GetDaughter(0,label,GetReader(),pdg0,status0,ok,label0,fProdVertex);
+  fMCDaughMom1 = GetMCAnalysisUtils()->GetDaughter(0,label,GetReader(),pdg0,status0,ok,label0);
   Int_t pdg1 = -22222, status1   = -1; Int_t label1 = -1;
-  fMCDaughMom2 = GetMCAnalysisUtils()->GetDaughter(1,label,GetReader(),pdg1,status1,ok,label1,fProdVertex);
+  fMCDaughMom2 = GetMCAnalysisUtils()->GetDaughter(1,label,GetReader(),pdg1,status1,ok,label1);
 
   if(pdg1!=22 || pdg0 != 22)
   {

@@ -20,7 +20,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  Bool_t		bIsMC		= kFALSE
                                                                  )
 {
-
+  
   printf("Preparing neutral cluster analysis\n");
   /*  // #### Detect the demanded trigger with its readable name
    TString triggerName(Form("Trigger_%i", trigger));
@@ -45,8 +45,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     ::Error("AddTaskEMCALPhotonIsolation", "No analysis manager to connect to.");
     return NULL;
   }
-
-
+  
+  
     //   //------------------------------- Tracks used for analysis -------------------------------------------
   const Double_t edist = 440;
   TString period(periodstr);
@@ -55,15 +55,15 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   Bool_t doAODTrackProp=kTRUE;
     //   // tracks to be used in analysis
   if(dType == "ESD") {
-
+    
     TString trackCutsAna(Form("Hybrid_%s", period.Data()));
       //   gROOT->LoadMacro("./AddTaskEmcalEsdTrackFilter.C");
     AliEmcalEsdTrackFilterTask *esdfilterAna =new AliEmcalEsdTrackFilterTask("AliEmcalEsdTrackFilterTaskAna");
-
+    
       //-------------------------------------------------------
       // Init the task and do settings
       //-------------------------------------------------------
-
+    
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
     /* hybrid track cuts*/
     AliESDtrackCuts *cutsp2 = CreateTrackCutsPWGJE(10001008);       //1000 adds SPD any requirement
@@ -73,41 +73,41 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
       //   hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     esdfilterAna->SetHybridTrackCuts(hybsp);
     esdfilterAna->SetIncludeNoITS(kFALSE);
-
+    
     esdfilterAna->SetTracksName(inputTracksAna.Data());
-
+    
     cout<<"track cuts for analysis " << trackCutsAna.Data()<<endl;
     esdfilterAna->SetDoPropagation(kTRUE);
     esdfilterAna->SetDist(edist);
     esdfilterAna->SelectCollisionCandidates(pSel);
     esdfilterAna->SetTrackEfficiency(trackeff);
-
+    
     manager->AddTask(esdfilterAna);
     AliAnalysisDataContainer *cinput1 = manager->GetCommonInputContainer();
     manager->ConnectInput(esdfilterAna, 0, cinput1);
-
+    
       ///    delete DataSet;
       //  delete CutsType;
   }
   else if (dType=="AOD"){
     TString trackCutsAna(Form("Hybrid_%s", period.Data()));
-
+    
     AliEmcalAodTrackFilterTask *aodfilterAna = new AliEmcalAodTrackFilterTask("AliEmcalAodTrackFilterTask");
     aodfilterAna->SetTracksOutName(inputTracksAna.Data());
     aodfilterAna->SetTracksInName("tracks");
     aodfilterAna->SetMC(bIsMC);
-
+    
     Bool_t includeNoITS  = kFALSE;
     Bool_t doProp        = kFALSE; //force propagation of all tracks to EMCal
     Bool_t doAttemptProp = kTRUE;  //only propagate the tracks which were not propagated during AOD filtering
-
+    
     TString strTrackCuts(trackCutsAna);
     strTrackCuts.ToLower();
-
-
+    
+    
     TString runPeriod(period.Data());
     runPeriod.ToLower();
-
+    
     if(strTrackCuts.Contains("hybrid")){
       if (runPeriod == "lhc10d" || runPeriod == "lhc10e" || runPeriod == "lhc10h" ||
           runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
@@ -141,7 +141,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
           ::Warning("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data());
       }
     }
-
+    
     aodfilterAna->SetIncludeNoITS(includeNoITS);
     aodfilterAna->SetAttemptProp(doAttemptProp);
     if (doAODTrackProp) {
@@ -151,25 +151,25 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     aodfilterAna->SetDoPropagation(kTRUE);
     aodfilterAna->SelectCollisionCandidates(pSel);
     aodfilterAna->SetTrackEfficiency(trackeff);
-
+    
     manager->AddTask(aodfilterAna);
-
+    
       // Create containers for input/output
     AliAnalysisDataContainer *cinput1 = manager->GetCommonInputContainer();
     manager->ConnectInput(aodfilterAna, 0,  cinput1 );
   }
   TString emctracksAna = Form("EmcalTracks_%s",inputTracksAna.Data());
-
+  
   printf("Creating container names for cluster analysis\n");
   TString myContName("");
   if(bIsMC)
     myContName = Form("Analysis_Neutrals_MC");
   else
     myContName = Form("Analysis_Neutrals");
-
+  
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
-
+  
     // #### Task preferences
   task->SetOutputFormat(iOutput);
   task->SetLCAnalysis(kFALSE);
@@ -183,26 +183,25 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetUEMethod(1);
   task->SetUSEofTPC(kFALSE);
   task->SetMC(bIsMC);
-
-
+  
+  
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
-  if (clusterCont) clusterCont->SetParticlePtCut(0.3);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
-
+  
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
     // #### Add analysis task
   manager->AddTask(task);
-
-
+  
+  
   AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralCluster",AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);
-
+  
     //if(isEMCalTrain)
     //    RequestMemory(task,200*1024);
-
-
+  
+  
   return task;
 }

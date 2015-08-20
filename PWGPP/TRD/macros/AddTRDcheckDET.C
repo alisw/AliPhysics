@@ -1,16 +1,27 @@
-void AddTRDcheckDET(AliAnalysisDataContainer **ci, Int_t cal)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TError.h>
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDcheckDET.h>
+// #include <AliTRDcalibration.h>
+// #endif
+
+void AddTRDcheckDET(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
   Info("AddTRDcheckDET", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName());
   AliAnalysisDataContainer *evInfoContainer = ci[3];
 
   //AliLog::SetClassDebugLevel("AliTRDcheckDET", 5);
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if(!mgr) return;
   AliTRDcheckDET *task(NULL);
   mgr->AddTask(task = new AliTRDcheckDET((char*)"TRDcheckDET"));
   task->UseClustersOutsideChamber();
   task->SetDebugLevel(0);
-  task->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+  task->SetMCdata(mgr->GetMCtruthEventHandler());
   
   // Create containers for input/output
   Int_t trackStatus = 0; // barrel tracks
@@ -25,7 +36,7 @@ void AddTRDcheckDET(AliAnalysisDataContainer **ci, Int_t cal)
   
 
   // CALIBRATION
-  if(!cal) return;
+  if(!(TESTBIT(map, AliTRDpwgppHelper::kCalibration))) return;
   AliTRDcalibration *ctask(NULL);
   mgr->AddTask(ctask = new AliTRDcalibration((char*)"calibration"));
   ctask->SetHisto2d(kTRUE);

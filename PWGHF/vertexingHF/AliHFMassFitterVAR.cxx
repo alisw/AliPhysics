@@ -51,9 +51,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliHFMassFitterVAR);
-/// \endcond
+ClassImp(AliHFMassFitterVAR)
 
  //************** constructors
 AliHFMassFitterVAR::AliHFMassFitterVAR() : 

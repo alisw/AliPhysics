@@ -12,71 +12,49 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/*
+ * Basic event selection component: Selects events according to the pA cut and a vertex-z cut
+ * For more sophisticated event selection the method IsEventSelected has to be overwritten
+ *
+ *   Author: Markus Fasel
+ */
 #include "AliEMCalTriggerEventSelection.h"
 #include "AliEMCalTriggerEventData.h"
 #include <TString.h>
 #include "AliAnalysisUtils.h"
 #include "AliVEvent.h"
 
-/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection)
-/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-/**
- * Main Constructor
- */
+//______________________________________________________________________________
 AliEMCalTriggerEventSelection::AliEMCalTriggerEventSelection():
   TObject(),
-  fOldPileupSelection(kFALSE),
-  fOldVertexSelection(kFALSE),
   fVertexCut(-10., 10.)
 {
+  /*
+   * Main Constructor
+   */
 
 }
 
-/**
- * Apply basic event selection
- *
- * Can be overwritten by inheriting classes
- *
- * @param ev Combined event container
- * @return event selection decision (true if event is selected)
- */
+//______________________________________________________________________________
 bool AliEMCalTriggerEventSelection::IsEventSelected(const AliEMCalTriggerEventData* const ev) const {
+  /*
+   * Apply basic event selection
+   *
+   * Can be overwritten by inheriting classes
+   *
+   * @param ev: Combined event container
+   * @return: event selection decision (true if event is selected)
+   */
   AliAnalysisUtils evutils;
   AliVEvent *recEvent = ev->GetRecEvent();
-  if(!fOldVertexSelection && !evutils.IsVertexSelected2013pA(recEvent)) return kFALSE;
-  if(fOldVertexSelection && !FalseVertexSelectionPA2013(recEvent)) return kFALSE;
-  if(!fOldPileupSelection && evutils.IsPileUpEvent(recEvent)) return kFALSE;
-  if(fOldPileupSelection && recEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return kFALSE;
+  if(!evutils.IsVertexSelected2013pA(recEvent)) return kFALSE;
+  if(evutils.IsPileUpEvent(recEvent)) return kFALSE;
   if(!fVertexCut.IsInRange(recEvent->GetPrimaryVertex()->GetZ())) return kFALSE;
   return true;
-}
-
-/**
- * Do vertex selection in the old buggy way
- * @param ev Event to check
- * @return True if the vertex is selected, false otherwise
- */
-bool AliEMCalTriggerEventSelection::FalseVertexSelectionPA2013(const AliVEvent *const ev) const{
-  const AliVVertex *trkVtx = ev->GetPrimaryVertex();
-  if(!trkVtx || trkVtx->GetNContributors() < 1) return kFALSE;
-  if (!TString(trkVtx->GetTitle()).Contains("VertexerTracks")) return kFALSE;
-
-  Float_t zvtx = trkVtx->GetZ();
-  const AliVVertex* spdVtx = ev->GetPrimaryVertexSPD();
-
-  if (spdVtx->GetNContributors()< 1) return kFALSE;
-  Double_t cov[6]={0};
-  spdVtx->GetCovarianceMatrix(cov);
-  Double_t zRes = TMath::Sqrt(cov[5]);
-  if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return kFALSE; // doing this incorrectly on purpose
-  if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return kFALSE;
-
-  if (TMath::Abs(zvtx) > 10) return kFALSE;
-  return kTRUE;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

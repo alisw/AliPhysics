@@ -198,8 +198,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH1I 							**fHistoNEvents;							// histo for event counting
 		TH1I 							**fHistoNGoodESDTracks;						// histo number of reconstructed primary tracks
 		TProfile 						**fProfileEtaShift;							// profile for eta shift bookkeeping
-		TH2F							**fHistoSPDClusterTrackletBackground;		//! array of histos with SPD tracklets vs SPD clusters for background rejection
-
 			
 		TRandom3 						fRandom;									// random number
 		Int_t 							fnCuts;										// number of cuts to be run in parallel
@@ -217,7 +215,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 4 );
+		ClassDef( AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 3 );
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

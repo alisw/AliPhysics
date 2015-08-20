@@ -135,13 +135,6 @@ protected:
    */
   AliForwardCreateResponseMatrices& 
   operator=(const AliForwardCreateResponseMatrices&);
-  /** 
-   * Check the event
-   * 
-   * @param fwd Forwarddata 
-   * 
-   * @return true on success
-   */
   Bool_t CheckEvent(const AliAODForwardMult& fwd);
 
   TList  fBins;    // List of eta bins

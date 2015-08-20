@@ -512,6 +512,7 @@ protected:
    * 
    * @param event    Our event 
    * @param forward  Our FMD event 
+   * @param bin      On return, the centrality bin 
    *  
    * @return The centrality percentage 
    */
@@ -707,13 +708,13 @@ protected:
      * @return true if the event was selected
      */
     virtual Bool_t ProcessEvent(const AliAODForwardMult* forward, 
-				UInt_t                   triggerMask,
+				Int_t                    triggerMask,
 				Bool_t                   isZero,
 				Double_t                 vzMin, 
 				Double_t                 vzMax, 
 				const TH2D*              data, 
 				const TH2D*              mc,
-				UInt_t                   filter);
+				Int_t                    filter);
     /** 
      * Calculate the Event-Level normalization. 
      * 
@@ -946,11 +947,12 @@ protected:
     /** 
      * Check the trigger, vertex, and centrality
      * 
-     * @param forward      Event input 
+     * @param forward Event input 
      * @param triggerMask  The used trigger mask 
      * @param vzMin        Least @f$ v_z@f$
      * @param vzMax        Largest @f$ v_z@f$
-     * @param filter       Mask of trigger bits to filter out
+     * @param checkPileup  If true, faile on pile-up
+     * @param filter      Mask of trigger bits to filter out
      * 
      * @return true if the event is to be used 
      */

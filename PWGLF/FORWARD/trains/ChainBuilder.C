@@ -181,7 +181,6 @@ struct ChainBuilder
    * @param verbose      If true, be verbose
    * @param checkFiles   If true, check that files can be opened
    * @param removeFiles  If true, remove bad files 
-   * @param trackRefs    If true, look for track references too 
    * 
    * @return Pointer to newly allocated TChain or null
    */
@@ -221,7 +220,6 @@ struct ChainBuilder
    * @param verbose      If true, be verbose
    * @param checkFiles   If true, check that files can be opened
    * @param removeFiles  If true, remove bad files 
-   * @param trackRefs    If true, look for track references too 
    * 
    * @return Pointer to newly allocated TChain or null
    */

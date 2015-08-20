@@ -85,10 +85,6 @@
 #include "AliPIDResponse.h"
 #include "AliHFsubtractBFDcuts.h"
 
-/// \cond CLASSIMP
-ClassImp(AliCFTaskVertexingHFCutVarFDSub);
-/// \endcond
-
 //__________________________________________________________________________
 AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   AliAnalysisTaskSE(),
@@ -131,7 +127,6 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fConfiguration(kCheetah), // by default, setting the fast configuration
   fFuncWeight(0x0),
   fHistoPtWeight(0x0),
-  fHistoMotherPtWeight(0x0),
   fHistoMeasNch(0x0),
   fHistoMCNch(0x0),
   fResonantDecay(0),
@@ -149,8 +144,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub() :
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fCutOnMomConservation(0.00001),
   fObjSpr(0x0),
-  fTHnAnalysis(0x0),
-  fTHnGenerator(0x0),
+  fhSparseCutVar(0x0),
+  fhPtCutVar(0x0),
   fhBptCutVar(0x0),
   fListBdecays(0x0),
   fQAHists(0x0)
@@ -202,7 +197,6 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fConfiguration(kCheetah),  // by default, setting the fast configuration
   fFuncWeight(func),
   fHistoPtWeight(0x0),
-  fHistoMotherPtWeight(0x0),
   fHistoMeasNch(0x0),
   fHistoMCNch(0x0),
   fResonantDecay(0),
@@ -220,8 +214,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const Char_t* n
   fUseCascadeTaskForLctoV0bachelor(kFALSE),
   fCutOnMomConservation(0.00001),
   fObjSpr(0x0),
-  fTHnAnalysis(0x0),
-  fTHnGenerator(0x0),
+  fhSparseCutVar(0x0),
+  fhPtCutVar(0x0),
   fhBptCutVar(0x0),
   fListBdecays(0x0),
   fQAHists(0x0)
@@ -261,13 +255,12 @@ AliCFTaskVertexingHFCutVarFDSub& AliCFTaskVertexingHFCutVarFDSub::operator=(cons
     fCuts = c.fCuts;
     fFuncWeight = c.fFuncWeight;
     fHistoPtWeight = c.fHistoPtWeight;
-    fHistoMotherPtWeight = c.fHistoMotherPtWeight;
     fHistoMeasNch = c.fHistoMeasNch;
     fHistoMCNch = c.fHistoMCNch;
     for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=c.fMultEstimatorAvg[i];
     fObjSpr=c.fObjSpr;
-    fTHnAnalysis=c.fTHnAnalysis;
-    fTHnGenerator=c.fTHnGenerator;
+    fhSparseCutVar=c.fhSparseCutVar;
+    fhPtCutVar=c.fhPtCutVar;
     fhBptCutVar=c.fhBptCutVar;
     fListBdecays=c.fListBdecays;  // FIXME: TList copy contructor not implemented
     fQAHists=c.fQAHists;  // FIXME: TList copy contructor not implemented
@@ -317,7 +310,6 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fConfiguration(c.fConfiguration),
   fFuncWeight(c.fFuncWeight),
   fHistoPtWeight(c.fHistoPtWeight),
-  fHistoMotherPtWeight(c.fHistoMotherPtWeight),
   fHistoMeasNch(c.fHistoMeasNch),
   fHistoMCNch(c.fHistoMCNch),
   fResonantDecay(c.fResonantDecay),
@@ -335,8 +327,8 @@ AliCFTaskVertexingHFCutVarFDSub::AliCFTaskVertexingHFCutVarFDSub(const AliCFTask
   fUseCascadeTaskForLctoV0bachelor(c.fUseCascadeTaskForLctoV0bachelor),
   fCutOnMomConservation(c.fCutOnMomConservation),
   fObjSpr(c.fObjSpr),
-  fTHnAnalysis(c.fTHnAnalysis),
-  fTHnGenerator(c.fTHnGenerator),
+  fhSparseCutVar(c.fhSparseCutVar),
+  fhPtCutVar(c.fhPtCutVar),
   fhBptCutVar(c.fhBptCutVar),
   fListBdecays(c.fListBdecays), // FIXME: TList copy contructor not implemented
   fQAHists(c.fQAHists) // FIXME: TList copy contructor not implemented
@@ -360,12 +352,11 @@ AliCFTaskVertexingHFCutVarFDSub::~AliCFTaskVertexingHFCutVarFDSub()
   if (fCuts)                { delete fCuts;                fCuts=0x0;                }
   if (fFuncWeight)          { delete fFuncWeight;          fFuncWeight=0x0;          }
   if (fHistoPtWeight)       { delete fHistoPtWeight;       fHistoPtWeight=0x0;       }
-  if (fHistoMotherPtWeight) { delete fHistoMotherPtWeight; fHistoMotherPtWeight=0x0; }
   if (fHistoMeasNch)        { delete fHistoMeasNch;        fHistoMeasNch=0x0;        }
   if (fHistoMCNch)          { delete fHistoMCNch;          fHistoMCNch=0x0;          }
   if (fObjSpr)              { delete fObjSpr;              fObjSpr=0x0;              }
-  if (fTHnAnalysis)         { delete fTHnAnalysis;         fTHnAnalysis=0x0;         }
-  if (fTHnGenerator)        { delete fTHnGenerator;        fTHnGenerator=0x0;        }
+  if (fhSparseCutVar)       { delete fhSparseCutVar;       fhSparseCutVar=0x0;       }
+  if (fhPtCutVar)           { delete fhPtCutVar;           fhPtCutVar=0x0;           }
   if (fhBptCutVar)          { delete fhBptCutVar;          fhBptCutVar=0x0;          }
   if (fListBdecays)         { delete fListBdecays;         fListBdecays=0x0;         }
   if (fQAHists)             { delete fQAHists;             fQAHists=0x0;             }
@@ -536,12 +527,11 @@ void AliCFTaskVertexingHFCutVarFDSub::Init()
     }
   }
 
-  /// Save also the weight functions or histograms
-  if(fFuncWeight)          fListProfiles->Add(fFuncWeight);
-  if(fHistoPtWeight)       fListProfiles->Add(fHistoPtWeight);
-  if(fHistoMotherPtWeight) fListProfiles->Add(fHistoMotherPtWeight);
-  if(fHistoMeasNch)        fListProfiles->Add(fHistoMeasNch);
-  if(fHistoMCNch)          fListProfiles->Add(fHistoMCNch);
+  // Save also the weight functions or histograms
+  if(fFuncWeight) fListProfiles->Add(fFuncWeight);
+  if(fHistoPtWeight) fListProfiles->Add(fHistoPtWeight);
+  if(fHistoMeasNch) fListProfiles->Add(fHistoMeasNch);
+  if(fHistoMCNch) fListProfiles->Add(fHistoMCNch);
 
   PostData(5,fListProfiles);
 
@@ -955,7 +945,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
         fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
         AliDebug(3,"MC acceptance cut passed\n");
         icountAcc++;
-        if(fTHnGenerator){fObjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
+        if(fhPtCutVar){fObjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
 
         //MC Vertex step
         if (fCuts->IsEventSelected(aodEvent)){
@@ -1029,17 +1019,6 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
     }
     default:
       break;
-    }
-
-    Double_t motherPtWeight=1.;
-    if (fOriginDselection>0 && fUseMotherPtWeight) {
-      if (fHistoMotherPtWeight) { /// using an histogram as weight function
-        AliDebug(2,"Using Histogram as mother pt weight function");
-        Double_t motherPt = GetMotherPtFromRecoDecay(charmCandidate,mcArray);
-        motherPtWeight = GetMotherPtWeightFromHistogram(motherPt);
-        AliDebug(2,Form("mother pt = %f, weight = %f", motherPt, fWeight));
-      }
-      else AliDebug(2, "Couldn't find mother pt dependend weights");
     }
 
     Bool_t unsetvtx=kFALSE;
@@ -1544,8 +1523,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
   if(!fObjSpr){
     fObjSpr=new AliHFsubtractBFDcuts("feedDownCuts","feedDownCuts");
     fObjSpr->InitHistos();
-    fTHnAnalysis=fObjSpr->GetSparseMC();
-    fTHnGenerator=fObjSpr->GetSparseMCgen();
+    fhSparseCutVar=fObjSpr->GetSparseMC();
+    fhPtCutVar=fObjSpr->GetHistoPtMCgen();
     fListBdecays=fObjSpr->GetDecayStrings();
     fQAHists=fObjSpr->GetQAhists();
   }
@@ -1555,8 +1534,8 @@ void AliCFTaskVertexingHFCutVarFDSub::UserCreateOutputObjects()
   PostData( 1,fHistEventsProcessed) ;
   PostData( 2,fCFManager->GetParticleContainer()) ;
   PostData( 3,fCorrelation) ;
-  PostData( 6,fTHnAnalysis);
-  PostData( 7,fTHnGenerator);
+  PostData( 6,fhSparseCutVar);
+  PostData( 7,fhPtCutVar);
   PostData( 8,fhBptCutVar);
   PostData( 9,fListBdecays);
   PostData(10,fQAHists);
@@ -1617,21 +1596,6 @@ void AliCFTaskVertexingHFCutVarFDSub::SetPtWeightsFromFONLL5overLHC13d3(){
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
   fFuncWeight->SetParameters(2.94999e+00,3.47032e+00,2.81278e+00,2.5,1.93370e-02,3.86865e+00,-1.54113e-01,8.86944e-02,2.56267e-02);
   fUseWeight=kTRUE;
-}
-
-//_________________________________________________________________________
-void AliCFTaskVertexingHFCutVarFDSub::SetMotherPtWeightsFromFONLL5overLHC13d3(){
-  /// weight function from the ratio of the LHC13d3 MC
-  /// and FONLL calculations for pp data
-  if(fHistoMotherPtWeight) delete fHistoMotherPtWeight;
-
-  Double_t weights[] = { 0.958796, 0.94262, 1.00746, 1.00264, 1.0103, 1.00033, 0.970773, 0.925759, 0.873651, 0.827537, 0.793838, 0.770711, 0.753224, 0.740698, 0.729354, 0.720129, 0.71487, 0.711469, 0.706371, 0.704551, 0.705003, 0.702572, 0.704875, 0.706797, 0.70574, 0.710273, 0.714451, 0.716691, 0.720462, 0.719736, 0.722672, 0.724752, 0.731169, 0.734225, 0.741758, 0.749343, 0.741116, 0.747457, 0.746682, 0.754226, 0.763797, 0.765175, 0.762687, 0.772638, 0.767542, 0.779808, 0.782834, 0.781626 };
-  Int_t nBins=48;
-  Double_t xMin=0.;
-  Double_t xMax=24.;
-  fHistoMotherPtWeight = new TH1F("hMotherPtWeight",";Mother #it{p}_T;Weight",nBins,xMin,xMax);
-  for (Int_t ix=1;ix<nBins+1;++ix) fHistoMotherPtWeight->SetBinContent(ix, weights[ix]);
-  fUseMotherPtWeight=kTRUE;
 }
 
 //_________________________________________________________________________
@@ -1752,54 +1716,6 @@ Double_t AliCFTaskVertexingHFCutVarFDSub::GetPtWeightFromHistogram(Float_t pt)
 
   return weight;
 }
-
-//_________________________________________________________________________
-Double_t AliCFTaskVertexingHFCutVarFDSub::GetMotherPtWeightFromHistogram(Float_t motherPt)
-{
-  //
-  /// Using an histogram as weight function
-  ///  weight = 0 in the range outside the function
-  //
-  Double_t weight = 0.0;
-  Int_t histoNbins = fHistoMotherPtWeight->GetNbinsX();
-  Int_t histobin = fHistoMotherPtWeight->FindBin(motherPt);
-  if( (histobin>0) && (histobin<=histoNbins) ) {
-    weight = fHistoMotherPtWeight->GetBinContent(histobin);
-  }
-
-  return weight;
-}
-
-//_________________________________________________________________________
-Double_t AliCFTaskVertexingHFCutVarFDSub::GetMotherPtFromRecoDecay(AliAODRecoDecayHF* charmCandidate, TClonesArray* mcArray)
-{
-  //
-  /// Get mother (B hadron) pt from charm candidate
-  //
-  Double_t motherPt = -1.;
-  Int_t labDau0=((AliAODTrack*)charmCandidate->GetDaughter(0))->GetLabel();
-  if (labDau0<0) labDau0*=-1;
-  AliAODMCParticle* firstDau=(AliAODMCParticle*)mcArray->UncheckedAt(labDau0);
-  Int_t labMother=firstDau->GetMother();
-  if (labMother<0) labMother*=-1;
-  AliAODMCParticle* mother=(AliAODMCParticle*)mcArray->UncheckedAt(labMother);
-  Int_t pdgMother=mother->GetPdgCode();
-  while ((pdgMother%1000)/100==4 || (pdgMother%10000)/1000==4) {
-    /// follow chained decay up to a B hadron
-    labMother=mother->GetMother();
-    if (labMother<0) labMother*=-1;
-    mother=(AliAODMCParticle*)mcArray->UncheckedAt(labMother);
-    pdgMother=mother->GetPdgCode();
-  }
-  if ((pdgMother%1000)/100!=5 && (pdgMother%10000)/1000!=5) {
-    AliDebug(3, "Found strange decay, expected the mother to be a beauty hadron!");
-  }
-  else {
-    motherPt=mother->Pt();
-  }
-  return motherPt;
-}
-
 
 //__________________________________________________________________________________________________
 Double_t AliCFTaskVertexingHFCutVarFDSub::GetZWeight(Float_t z, Int_t runnumber){

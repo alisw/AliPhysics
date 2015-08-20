@@ -1,10 +1,24 @@
-void AddTRDresolution(AliAnalysisDataContainer **ci, Int_t clErr, Int_t align)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TTree.h>
+// #include <TError.h>
+// 
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// #include <AliTRDgeometry.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDpwgppHelper.h>
+// #include <AliTRDresolution.h>
+// #include <AliTRDclusterResolution.h>
+// #include <AliTRDalignmentTask.h>
+// #endif
+
+void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci)
 {
   Info("AddTRDresolution", "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\" [5]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName(), ci[5]->GetName());
   AliAnalysisDataContainer *evInfoContainer = ci[3];
-
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if(!mgr) return;
 
   //AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
   //AliLog::SetClassDebugLevel("AliTRDresolution", 2);
@@ -13,7 +27,7 @@ void AddTRDresolution(AliAnalysisDataContainer **ci, Int_t clErr, Int_t align)
   for(Int_t itq=0; itq<3; itq++){
     if(itq==1) continue;
     mgr->AddTask(res = new AliTRDresolution(Form("TRDresolution%s", suffix[itq])));
-    res->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+    res->SetMCdata(mgr->GetMCtruthEventHandler());
     res->SetPostProcess(kFALSE);
     res->SetDebugLevel(0);
     res->SetPtThreshold(0.2);
@@ -34,7 +48,7 @@ void AddTRDresolution(AliAnalysisDataContainer **ci, Int_t clErr, Int_t align)
     mgr->ConnectOutput(res, AliTRDresolution::kClToMC, co);
     
     // Cluster Error Parameterization
-    if(clErr){
+    if(TESTBIT(map, AliTRDpwgppHelper::kClErrParam)){
       TObjArray *coa = mgr->GetContainers();
       AliTRDclusterResolution *taskCl(NULL);
       AliLog::SetClassDebugLevel("AliTRDclusterResolution", 2);
@@ -60,7 +74,7 @@ void AddTRDresolution(AliAnalysisDataContainer **ci, Int_t clErr, Int_t align)
   }
 
   // TRD alignment
-  if(align){
+  if(TESTBIT(map, AliTRDpwgppHelper::kAlignment)){
     AliTRDalignmentTask *taskAlign(NULL);
     mgr->AddTask(taskAlign = new AliTRDalignmentTask((char*)"TRDalignment"));
     taskAlign->SetDebugLevel(0);

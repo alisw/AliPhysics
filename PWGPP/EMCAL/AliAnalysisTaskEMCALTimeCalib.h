@@ -20,16 +20,6 @@
 ///
 /// 2015.06.03 Extended to DCal, added setters and getters
 /// 2015.06.11 Added AODs and lego train
-/// 2015.06.29 Geometry removed from Nofify to UserCreateOutputObjects
-///            Added second step of calibration with time cut
-/// 2015.07.08 Added geometry check in Notify and set once, 
-///            added T0 time from TOF histos
-///            added reference file protection
-/// 2015.07.14 corrected geometry pointer in terminate
-///            added reference histograms for low gain
-///            modified loading of reference file
-///            modified default parameters in AddTask
-/// 2015.07.17 additional selection criteria for clusters with low gain cell 
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
@@ -58,6 +48,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   enum { kNSM = 20, kNBCmask = 4 };
 
    AliAnalysisTaskEMCALTimeCalib() : AliAnalysisTaskSE(),
+    fEvent(0),
     fRunNumber(-1),
     fTOFmaker(0),
     fOutputList(0),
@@ -69,8 +60,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMaxNcells(0),
     fMinLambda0(0),
     fMaxLambda0(0),
-    fMinLambda0LG(0),
-    fMaxLambda0LG(0),
     fMaxRtrack(0),
     fMinCellEnergy(0),
     fReferenceFileName(),
@@ -78,8 +67,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fMinTime(0),
     fMaxTime(0),
     fhcalcEvtTime(0),
-    fhEvtTimeHeader(0),
-    fhEvtTimeDiff(0),
     fhEventType(0),
     fhTOFT0vsEventNumber(0),
     fhTcellvsTOFT0(0),
@@ -95,7 +82,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
     fhTimeLGEnt(),
     fhTimeLGSum(),
     fhAllAverageBC(),
-    fhAllAverageLGBC(),
     fhTimeDsup(),
     fhTimeDsupBC(),
     fhRawTimeVsIdBC(),
@@ -111,7 +97,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib(const char *name);
   virtual ~AliAnalysisTaskEMCALTimeCalib() { ; }
   
-  //  virtual void   LocalInit();
+  virtual void   LocalInit();
   virtual Bool_t Notify();
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -124,8 +110,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Int_t    GetMaxNcells()         { return fMaxNcells         ; }
   Double_t GetMinLambda0()        { return fMinLambda0        ; }
   Double_t GetMaxLambda0()        { return fMaxLambda0        ; }
-  Double_t GetMinLambda0LG()      { return fMinLambda0LG      ; }
-  Double_t GetMaxLambda0LG()      { return fMaxLambda0LG      ; }
   Double_t GetMaxRtrack()         { return fMaxRtrack         ; }
   Double_t GetMinCellEnergy()     { return fMinCellEnergy     ; }
   TString  GetReferenceFileName() { return fReferenceFileName ; }
@@ -139,8 +123,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   void SetMaxNcells        (Int_t    v) { fMaxNcells        = v ; }   
   void SetMinLambda0       (Double_t v) { fMinLambda0       = v ; }	   
   void SetMaxLambda0       (Double_t v) { fMaxLambda0       = v ; }	   
-  void SetMinLambda0LG     (Double_t v) { fMinLambda0LG     = v ; }	   
-  void SetMaxLambda0LG     (Double_t v) { fMaxLambda0LG     = v ; }	   
   void SetMaxRtrack        (Double_t v) { fMaxRtrack        = v ; }	   
   void SetMinCellEnergy    (Double_t v) { fMinCellEnergy    = v ; }	   
   void SetReferenceFileName(TString  v) { fReferenceFileName= v ; }
@@ -154,8 +136,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
 
   void SetDefaultCuts();
-  void LoadReferenceHistos();
-  static void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root",Bool_t isFinal=kFALSE);
+  void ProduceCalibConsts(TString inputFile="time186319testWOL0.root",TString outputFile="Reference.root");
 
  private:
   
@@ -163,11 +144,19 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   Bool_t SetEMCalGeometry();
   Bool_t AcceptCluster(AliVCluster* clus);
   Bool_t CheckCellRCU(Int_t nSupMod,Int_t icol,Int_t irow);
-  Bool_t IsLowGainCellInCluster(AliVCluster* clus);
 
   // data members
+
+  /// pointer to ESD or AOD object
+  AliVEvent   *fEvent ;       //->
+ 
   Int_t          fRunNumber ; //!<! run number
   
+  // Use the RemakePID method in the task::UserExec                  //
+  // Double_t* calcolot0;                                            //
+  // calcolot0=fTOFmaker->RemakePID(fEvent);                           //
+  // calcolot0[0] = calculated event time                            //
+
   /// pointer to get T0 from TOF
   AliTOFT0maker *fTOFmaker;   //->
   
@@ -175,7 +164,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TList         *fOutputList; //->
   
   /// pointer to EMCal geometry
-  AliEMCALGeometry *fgeom;              ///< EMCAL geometry
+  AliEMCALGeometry *fgeom;    //->
   TString        fGeometryName ;        ///< geometry name
    
   // setable variables for cuts
@@ -188,8 +177,6 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   
   Double_t       fMinLambda0 ;          ///< minimum cluster lambda0
   Double_t       fMaxLambda0 ;          ///< maximum cluster lambda0
-  Double_t       fMinLambda0LG ;        ///< minimum cluster lambda0 Low Gain
-  Double_t       fMaxLambda0LG ;        ///< maximum cluster lambda0 Low Gain
   
   Double_t       fMaxRtrack ;           ///< maximum cluster track distance
   
@@ -199,15 +186,13 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
 
   Bool_t         fPileupFromSPD ;       ///< flag to set PileupFromSPD
 
-  Double_t       fMinTime ;             ///< minimum cluster time after correction
-  Double_t       fMaxTime ;             ///< maximum cluster time after correction
+  Double_t       fMinTime ;          ///< minimum cluster time after correction
+  Double_t       fMaxTime ;          ///< maximum cluster time after correction
 
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]
-  TH1F          *fhEvtTimeHeader;       //!<! spectrum time from header
-  TH1F          *fhEvtTimeDiff;         //!<! spectrum time difference
-  TH1F          *fhEventType;           //!<! event type
+  TH1F          *fhEventType;           //!<! spectrum calcolot0[0]
   TH1F          *fhTOFT0vsEventNumber;  //!<! TOF T0 evolution as a function of time 
   TH2F          *fhTcellvsTOFT0;        //!<! time of cell vs TOF T0 time
   TH2F          *fhTcellvsTOFT0HD;      //!<! time of cell vs TOF T0 time for higher energy threshold
@@ -217,18 +202,15 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH2F          *fhTimeVsBC;            //!<!cell time vs BC
 
   // histos for storing the time values per cell for further averaging;
-  TH1F		*fhTimeSumSq  [kNBCmask]; //!<!  4
-  TH1F		*fhTimeEnt    [kNBCmask]; //!<!  4
-  TH1F		*fhTimeSum    [kNBCmask]; //!<!  4
+  TH1F		*fhTimeSumSq[kNBCmask]; //!<!  4
+  TH1F		*fhTimeEnt  [kNBCmask]; //!<!  4
+  TH1F		*fhTimeSum  [kNBCmask]; //!<!  4
   TH1F		*fhTimeLGSumSq[kNBCmask]; //!<!  4
   TH1F		*fhTimeLGEnt  [kNBCmask]; //!<!  4
   TH1F		*fhTimeLGSum  [kNBCmask]; //!<!  4
 
-  // histos with reference values after the first iteration  
-  TH1D		*fhAllAverageBC   [kNBCmask]; ///< 4 BCmask High gain
-  TH1D		*fhAllAverageLGBC [kNBCmask]; ///< 4 BCmask Low gain
-
   // control histos
+  TH1D		*fhAllAverageBC     [kNBCmask]; //!<! 4 BCmask
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM
   TH2F		*fhTimeDsupBC[kNSM][kNBCmask];  //!<! 20 x 4
 
@@ -249,7 +231,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   AliAnalysisTaskEMCALTimeCalib& operator=(const AliAnalysisTaskEMCALTimeCalib&); 
   
 /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALTimeCalib, 2) ;
+  ClassDef(AliAnalysisTaskEMCALTimeCalib, 1) ;
 /// \endcond
 };
 

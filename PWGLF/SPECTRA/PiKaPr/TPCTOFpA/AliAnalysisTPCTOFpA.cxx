@@ -459,7 +459,8 @@ void AliAnalysisTPCTOFpA::UserExec(Option_t *)
       isVertexOk = kFALSE;
     }
     else {
-      if (vertex->IsFromVertexerZ() && (vertex->GetDispersion() > 0.04 || vertex->GetZRes() > 0.25))  isVertexOk = kFALSE; //vertex = 0x0; //
+      TString vertexType = vertex->GetTitle();
+      if (vertexType.Contains("vertexer: Z") && (vertex->GetDispersion() > 0.04 || vertex->GetZRes() > 0.25))  isVertexOk = kFALSE; //vertex = 0x0; //
       if (vertex->GetNContributors()<1)  isVertexOk = kFALSE; //vertex = 0x0; //
     }
   }  

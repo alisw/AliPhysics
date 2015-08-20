@@ -6,9 +6,9 @@
 /* $Id$ */ 
 
 //***********************************************************
-/// \class Class AliRDHFCutsD0toKpi
-/// \brief class for cuts on AOD reconstructed D0->Kpi
-/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
+// Class AliRDHFCutsD0toKpi
+// class for cuts on AOD reconstructed D0->Kpi
+// Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -109,30 +109,28 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   
   Int_t IsSelectedKF(AliAODRecoDecayHF2Prong* d,AliAODEvent* aod) const;
 
-  Bool_t fUseSpecialCuts;  /// flag to switch on/off special cuts
-  Bool_t fLowPt;           /// flag to switch on/off different pid for low pt D0
-  Bool_t fDefaultPID;      /// flag to switch on/off the default pid
+  Bool_t fUseSpecialCuts;  // flag to switch on/off special cuts
+  Bool_t fLowPt;           // flag to switch on/off different pid for low pt D0
+  Bool_t fDefaultPID;      // flag to switch on/off the default pid
   
-  Bool_t fUseKF;           /// flag to switch on/off D0 selection via KF 
-  Double_t fPtLowPID;      /// transverse momentum below which the strong PID is applied
-  Double_t fPtMaxSpecialCuts; /// transverse momentum below which the special cuts are applied
+  Bool_t fUseKF;           // flag to switch on/off D0 selection via KF 
+  Double_t fPtLowPID;      // transverse momentum below which the strong PID is applied
+  Double_t fPtMaxSpecialCuts; // transverse momentum below which the special cuts are applied
   
-                              ///  if set to zero, used for all pt
-  Double_t  fmaxPtrackForPID; /// max momentum for applying PID
+                              //  if set to zero, used for all pt
+  Double_t  fmaxPtrackForPID; // max momentum for applying PID
 
-  Bool_t fCombPID;		/// switch for Bayesian
-  Int_t fnSpecies;   /// number of species (used only for array declaration)
+  Bool_t fCombPID;		//switch for Bayesian
+  Int_t fnSpecies;   //number of species (used only for array declaration)
   Double_t* fWeightsPositive; //[fnSpecies] Bayesian weights for positive track
   Double_t* fWeightsNegative; //[fnSpecies] Bayesian weights for negative track
 
   Double_t fProbThreshold; //Probability threshold for kaon to be accepted in Bayesian method (only applied if fBayesianCondition==kThreshold)
   
-  Int_t fBayesianStrategy;    /// Switch for which Bayesian PID strategy to use
-  Int_t fBayesianCondition;   /// Switch for conition applied to kaons
+  Int_t fBayesianStrategy;    // Switch for which Bayesian PID strategy to use
+  Int_t fBayesianCondition;   //Switch for conition applied to kaons
 
-  /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsD0toKpi,11);  /// class for cuts on AOD reconstructed D0->Kpi
-  /// \endcond
+  ClassDef(AliRDHFCutsD0toKpi,11);  // class for cuts on AOD reconstructed D0->Kpi
 };
 
 #endif

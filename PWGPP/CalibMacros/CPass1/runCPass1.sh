@@ -19,14 +19,6 @@
 # $1 = raw input filename
 runNum=`echo $1 | cut -d "/" -f 6 | sed 's/^0*//'`
 
-# Exporting variable to define that we are in CPass1 to be used in reconstruction
-export CPass='1'
-
-export PRODUCTION_METADATA="$ALIEN_JDL_LPMMETADATA"
-
-# Set memory limits to a value lower than the hard site limits to at least get the logs of failing jobs
-ulimit -S -v 3500000
-
 if [ $# -eq 1 ]; then
     # alien Setup
     nEvents=99999999
@@ -126,7 +118,7 @@ if [ "$2" == "OCDB" ]; then
     exit 0
 fi
 
-for COMMON_FILE in wn.xml localOCDBaccessConfig.C AddTaskTPCCalib.C AddTaskTRDCalib.C OCDB.root QAtrain_duo.C mergeQAgroups.C; do
+for COMMON_FILE in wn.xml localOCDBaccessConfig.C AddTaskTPCCalib.C AddTaskTRDCalib.C OCDB.root QAtrain_duo.C; do
     if [ -f $COMMON_FILE ]; then
         ln -s ../$COMMON_FILE Barrel/$COMMON_FILE
         ln -s ../$COMMON_FILE OuterDet/$COMMON_FILE
@@ -147,8 +139,8 @@ cd Barrel
 
 echo "* Running AliRoot to reconstruct barrel of $CHUNKNAME"
 
-echo executing aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")"
-time aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" &> ../rec.log
+echo executing aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerOptions\")"
+time aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerOptions\")" &> ../rec.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
@@ -179,34 +171,16 @@ if [ -f QAtrain_duo.C ]; then
 #    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")"
 #    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")" &> ../qa_barrel.log
 
-    for grp in 0 1 2 3 4 
-    do
-	export QAGROUP=$grp
-	echo running QA for tasks group $QAGROUP
-	echo executing aliroot -b -q -x "QAtrain_duo.C(\"_barrel_grp$grp\",$runNum,0,0,\"$ocdbPath\")"
-	time aliroot -b -q -x "QAtrain_duo.C(\"_barrel_grp$grp\",$runNum,0,0,\"$ocdbPath\")" &> ../qa_barrel_grp$grp.log
-#
-	exitcode=$?
-	echo "Exit code: $exitcode"
-	if [ $exitcode -ne 0 ]; then
-            echo "QAtrain_duo.C / barrel group $grp exited with code $exitcode" > ../validation_error.message
-        # put the partial results in the main folder so they are registered, for QA debugging purposes
-            mv AliESDs.root ../AliESDs_Barrel.root
-            mv AliESDfriends.root ../AliESDfriends_Barrel.root
-            exit 100
-	fi
-#
-    done
-#
-    if [ -f mergeQAgroups.C ]; then
-	lstQAbarrel="lstQAbarrel.txt"
-	ls QAresults_barrel_grp*.root > $lstQAbarrel
-	echo executing aliroot -b -q -x "mergeQAgroups.C(\"$lstQAbarrel\",\"QAresults_barrel.root\")"
-	time aliroot -b -q -x "mergeQAgroups.C(\"$lstQAbarrel\",\"QAresults_barrel.root\")"  &> ../mergeQA_barrel.log
-    else
-	echo "no mergeQAgroups.C macro in current directory, cannot merge..."
+    echo executing aliroot -b -q -x "QAtrain_duo.C(\"_barrel\",$runNum,\"wn.xml\",0,\"${ocdbPath}\")"
+    time aliroot -b -q -x "QAtrain_duo.C(\"_barrel\",$runNum,\"wn.xml\",0,\"${ocdbPath}\")" &> ../qa_barrel.log
+
+    exitcode=$?
+    echo "Exit code: $exitcode"
+
+    if [ $exitcode -ne 0 ]; then
+        echo "QAtrain_duo.C / barrel exited with code $exitcode" > ../validation_error.message
+        exit 100
     fi
- #  
 
     for file in *.stat; do
         mv $file ../$file.qa_barrel
@@ -216,7 +190,7 @@ fi
 mv AliESDs.root ../AliESDs_Barrel.root
 mv AliESDfriends.root ../AliESDfriends_Barrel.root
 
-for file in AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel_grp*.root AODtpITS.root Run*.Event*_*.ESD.tag.root TOFcalibTree.root T0AnalysisTree.root; do
+for file in AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root Run*.Event*_*.ESD.tag.root; do
     if [ -f "$file" ]; then
         mv "$file" ../
     fi
@@ -228,8 +202,8 @@ cd ../OuterDet
 
 echo "* Running AliRoot to reconstruct outer of $CHUNKNAME"
 
-echo executing aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")"
-time aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")" &> ../rec_Outer.log
+echo executing aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\")"
+time aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\")" &> ../rec_Outer.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
@@ -246,29 +220,16 @@ if [ -f QAtrain_duo.C ]; then
 #    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")"
 #    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")" &> ../qa_outer.log
 
-    for grp in 0 4 
-    do
-	export QAGROUP=$grp
-	echo running QA for tasks group $QAGROUP
-	echo executing aliroot -b -q -x "QAtrain_duo.C(\"_outer_grp$grp\",$runNum,0,0,\"$ocdbPath\")"
-	time aliroot -b -q -x "QAtrain_duo.C(\"_outer_grp$grp\",$runNum,0,0,\"$ocdbPath\")" &> ../qa_outer_grp$grp.log
-#
-	exitcode=$?
-	echo "Exit code: $exitcode"
-	if [ $exitcode -ne 0 ]; then
-            echo "QAtrain_duo.C  / outer group $grp exited with code $exitcode" > ../validation_error.message
-        # put the partial results in the main folder so they are registered, for QA debugging purposes
-            mv AliESDs.root ../AliESDs_Outer.root
-            mv AliESDfriends.root ../AliESDfriends_Outer.root
-            exit 101
-	fi
-    done
-#
-    lstQAouter="lstQAouter.txt"
-    ls QAresults_outer_grp*.root > $lstQAouter
-    echo executing aliroot -b -q -x "mergeQAgroups.C(\"$lstQAouter\",\"QAresults_outer.root\")"
-    time aliroot -b -q -x "mergeQAgroups.C(\"$lstQAouter\",\"QAresults_outer.root\")"  &> ../mergeQA_outer.log
- #   
+    echo executing aliroot -b -q -x "QAtrain_duo.C(\"_outer\",$runNum,\"wn.xml\",0,\"${ocdbPath}\")"
+    time aliroot -b -q -x "QAtrain_duo.C(\"_outer\",$runNum,\"wn.xml\",0,\"${ocdbPath}\")" &> ../qa_outer.log
+
+    exitcode=$?
+    echo "Exit code: $exitcode"
+
+    if [ $exitcode -ne 0 ]; then
+        echo "QAtrain_duo.C  / outer exited with code $exitcode" > ../validation_error.message
+        exit 101
+    fi
 
     for file in *.stat ; do
         mv $file ../$file.qa_outer
@@ -278,19 +239,10 @@ fi
 mv AliESDs.root ../AliESDs_Outer.root
 mv AliESDfriends.root ../AliESDfriends_Outer.root
 
-for file in QAresults_outer.root EventStat_temp_outer_grp*.root; do
+for file in QAresults_outer.root EventStat_temp_outer.root; do
     if [ -f "$file" ]; then
         mv "$file" ../
     fi
 done
-
-################################## Final cleanup ###################################
-
-cd ..
-
-mv EventStat_temp_barrel_grp0.root EventStat_temp_barrel.root
-mv EventStat_temp_outer_grp0.root EventStat_temp_outer.root
-
-rm EventStat_temp_*_grp*.root
 
 exit 0

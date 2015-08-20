@@ -22,18 +22,15 @@
 
 #include "Riostream.h" //needed as include
 #include "TChain.h"
-#include "TList.h"
 #include "TTree.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
-#include "TProfile.h"
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TFile.h>
 #include <TString.h>
 #include <TCanvas.h>
-#include <TParticle.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -54,11 +51,10 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliHeader.h"
-#include "AliVParticle.h"
-#include "AliStack.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliPhysicsSelectionTask.h"
 #include "AliPhysicsSelection.h"
 #include "AliBackgroundSelection.h"
@@ -71,7 +67,6 @@
 
 // Interface to Event generators to get Reaction Plane Angle
 #include "AliGenCocktailEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenGeVSimEventHeader.h"
 #include "AliGenEposEventHeader.h"
@@ -88,17 +83,18 @@
 
 ClassImp(AliAnalysisTaskCRCZDC)
 
+
 //________________________________________________________________________
 AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC():
-AliAnalysisTaskSE(""),
+AliAnalysisTaskSE(),
 fAnalysisType("AUTOMATIC"),
-fRPType(""),
+fRPType("Global"),
 fCFManager1(NULL),
 fCFManager2(NULL),
 fCutsEvent(NULL),
 fCutsRP(NULL),
 fCutsPOI(NULL),
-fCutContainer(new TList()),
+fCutContainer(NULL),
 fQAList(NULL),
 fMinMult(0),
 fMaxMult(10000000),
@@ -106,10 +102,6 @@ fMinA(-1.0),
 fMaxA(-0.01),
 fMinB(0.01),
 fMaxB(1.0),
-fGenHeader(NULL),
-fPythiaGenHeader(NULL),
-fHijingGenHeader(NULL),
-fFlowTrack(NULL),
 fQAon(kFALSE),
 fLoadCandidates(kFALSE),
 fNbinsMult(10000),
@@ -150,9 +142,9 @@ fMyTRandom3(NULL),
 fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
-fCentrLowLim(0.),
-fCentrUpLim(100.),
-fCentrEstimator("V0M"),
+fCentrLowLim(0),
+fCentrUpLim(0),
+fCentrEstimator(0),
 fOutput(0x0),
 fhZNCvsZNA(0x0),
 fhZPCvsZPA(0x0),
@@ -186,10 +178,9 @@ fhZPApmcvscentr(0x0),
 fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
-fhZPApmcLR(0x0),
-fCRCnRun(0),
-fDataSet("2010")
+fhZPApmcLR(0x0)
 {
+ // Default constructor
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
   fhZNAPM[i] = 0x0;
@@ -212,16 +203,10 @@ fDataSet("2010")
   fhZPAPMQiPMC[i] = 0x0;
   fhPMCvsPMQ[i] = 0x0;
  }
- for(Int_t r=0; r<fCRCMaxnRun; r++) {
-  fRunList[r] = 0;
- }
- this->InitializeRunArrays();
- fMyTRandom3 = new TRandom3(1);
- gRandom->SetSeed(fMyTRandom3->Integer(65539));
 }
 
 //________________________________________________________________________
-AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, TString DataSet, UInt_t iseed, Bool_t bCandidates):
+AliAnalysisTaskCRCZDC::AliAnalysisTaskCRCZDC(const char *name, TString RPtype, Bool_t on, UInt_t iseed, Bool_t bCandidates):
 AliAnalysisTaskSE(name),
 fAnalysisType("AUTOMATIC"),
 fRPType(RPtype),
@@ -314,13 +299,7 @@ fhZPApmcvscentr(0x0),
 fhZNCpmcLR(0x0),
 fhZNApmcLR(0x0),
 fhZPCpmcLR(0x0),
-fhZPApmcLR(0x0),
-fDataSet(DataSet),
-fCRCnRun(0),
-fGenHeader(NULL),
-fPythiaGenHeader(NULL),
-fHijingGenHeader(NULL),
-fFlowTrack(NULL)
+fhZPApmcLR(0x0)
 {
  
  for(int i=0; i<5; i++){
@@ -345,14 +324,9 @@ fFlowTrack(NULL)
   fhZPAPMQiPMC[i] = 0x0;
   fhPMCvsPMQ[i] = 0x0;
  }
- for(Int_t r=0; r<fCRCMaxnRun; r++) {
-  fRunList[r] = 0;
- }
- this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(iseed);
  gRandom->SetSeed(fMyTRandom3->Integer(65539));
  
- DefineInput(0, TChain::Class());
  // Define output slots here
  // Define here the flow event output
  DefineOutput(1, AliFlowEventSimple::Class());
@@ -369,22 +343,10 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  }
  delete fMyTRandom3;
  delete fFlowEvent;
- delete fFlowTrack;
  delete fCutsEvent;
- if (fQAList) delete fQAList;
+ delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
  
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskCRCZDC::InitializeRunArrays()
-{
- for(Int_t r=0;r<fCRCMaxnRun;r++) {
-  fCRCQVecListRun[r] = NULL;
-  for(Int_t i=0;i<fCRCnTow;i++) {
-   fhnTowerGain[r][i] = NULL;
-  }
- }
 }
 
 //________________________________________________________________________
@@ -392,9 +354,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 {
  // Create the output containers
  
- if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "AUTOMATIC"))
+ if (!(fAnalysisType == "AOD" || fAnalysisType == "ESD" || fAnalysisType == "ESDMCkineESD"  || fAnalysisType == "ESDMCkineMC" || fAnalysisType == "MC" || fAnalysisType == "AUTOMATIC"))
  {
-  AliError("WRONG ANALYSIS TYPE! only MCkine, AOD and AUTOMATIC are allowed.");
+  AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD, MC and AUTOMATIC are allowed.");
   exit(1);
  }
  
@@ -422,23 +384,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  cc->SetHistWeightvsPhiMin(fHistWeightvsPhiMin);
  
  fFlowEvent = new AliFlowEvent(10000);
- fFlowTrack = new AliFlowTrack();
  
  //printf("  AliAnalysisTaskCRCZDC::UserCreateOutputObjects()\n\n");
- fOutput = new TList();
- fOutput->SetOwner(kTRUE);
+ fOutput = new TList;
+ fOutput->SetOwner();
  //fOutput->SetName("output");
  
- if (fQAon) {
-  fQAList = new TList();
-  fQAList->SetOwner(kTRUE);
-  fQAList->SetName("AliFlowEventCuts QA");
-  if (fCutsEvent->GetQA()) fQAList->Add(fCutsEvent->GetQA()); //0
-  if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());       //1
-  if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());      //2
-  fOutput->Add(fQAList);
- }
-
  for(int i=0; i<5; i++){
   char hname[20];
   sprintf(hname,"hZNCPM%d",i);
@@ -612,37 +563,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  fhZPApmcLR = new TH1F("hZPApmcLR","ZPA PMC lr", 100, 0., 10.);
  fOutput->Add(fhZPApmcLR);
  
- //********************************************************************
- 
- Int_t dRun10h[] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
- 
- Int_t dRun11h[] = {167902, 167903, 167915, 167920, 167985, 167987, 167988, 168066, 168068, 168069, 168076, 168104, 168105, 168107, 168108, 168115, 168212, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168461, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168984, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169143, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 169965, 170027, 170036,170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593};
- 
- if(fDataSet.EqualTo("2010")) {fCRCnRun=92;}
- if(fDataSet.EqualTo("2011")) {fCRCnRun=119;}
- if(fDataSet.EqualTo("MCkine")) {fCRCnRun=1;}
- 
- Int_t d=0;
- for(Int_t r=0; r<fCRCnRun; r++) {
-  if(fDataSet.EqualTo("2010"))   fRunList[d] = dRun10h[r];
-  if(fDataSet.EqualTo("2011"))   fRunList[d] = dRun11h[r];
-  if(fDataSet.EqualTo("MCkine")) fRunList[d] = 1;
-  d++;
- }
-
- for(Int_t r=0;r<fCRCnRun;r++) {
-  fCRCQVecListRun[r] = new TList();
-  fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
-  fCRCQVecListRun[r]->SetOwner(kTRUE);
-  fOutput->Add(fCRCQVecListRun[r]);
-  for(Int_t i=0;i<fCRCnTow;i++) {
-   fhnTowerGain[r][i] = new TProfile(Form("fhnTowerGain[%d][%d]",fRunList[r],i),
-                                     Form("fhnTowerGain[%d][%d]",fRunList[r],i),20,0.,100.,"s");
-   fhnTowerGain[r][i]->Sumw2();
-   fCRCQVecListRun[r]->Add(fhnTowerGain[r][i]);
-  }
- }
- 
  PostData(2, fOutput);
 }
 
@@ -650,22 +570,39 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 {
  // Execute analysis for current event:
- AliMCEvent*  McEvent = MCEvent();
- AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
-// AliMultiplicity* myTracklets = NULL;
-// AliESDPmdTrack* pmdtracks = NULL;
-// int availableINslot=1;
  
- if (!(fCutsRP&&fCutsPOI&&fCutsEvent)) {
+ if(!InputEvent()){
+  printf("ERROR: InputEvent not available");
+  return;
+ }
+ 
+ AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
+ if(!aod){
+  printf("AODs not available");
+  return;
+ }
+ 
+ // Main loop
+ // Called for each event
+ //delete fFlowEvent;
+ AliMCEvent*  mcEvent = MCEvent();                              // from TaskSE
+ AliMultiplicity* myTracklets = NULL;
+ AliESDPmdTrack* pmdtracks = NULL;//pmd
+ 
+ int availableINslot=1;
+ 
+ if (!(fCutsRP&&fCutsPOI&&fCutsEvent))
+ {
   AliError("cuts not set");
   return;
  }
  
  //DEFAULT - automatically takes care of everything
- if (fAnalysisType == "AUTOMATIC") {
-  
+ if (fAnalysisType == "AUTOMATIC")
+ {
   //check event cuts
-  if (InputEvent() && !fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
+  if (InputEvent() && !fCutsEvent->IsSelected(InputEvent(),MCEvent()))
+   return;
   
   //first attach all possible information to the cuts
   fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
@@ -673,82 +610,61 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   //then make the event
   fFlowEvent->Fill( fCutsRP, fCutsPOI );
+  //fFlowEvent = new AliFlowEvent( fCutsRP, fCutsPOI );
   
-  fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
-  fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),McEvent));
-  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
-  
+  //    if (myESD)
+  fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),mcEvent));
+  fFlowEvent->SetCentrality(fCutsEvent->GetCentrality(InputEvent(),mcEvent));
+  if (mcEvent && mcEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(mcEvent);
  }
  
- if(fAnalysisType ==  "MCkine") {
-  
-  fFlowEvent->ClearFast();
-  
-  AliInputEventHandler* McHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if(!McHandler) {
-   AliError("ERROR: Could not retrieve MCtruthEventHandler");
-   return;
-  }
-  McEvent = McHandler->MCEvent();
-  if(!McEvent) {
-   AliError("ERROR: Could not retrieve MC event");
-   return;
-  }
-  
-  Int_t nTracks = McEvent->GetNumberOfTracks();
-//  Int_t nPrimTr = McEvent->GetNumberOfPrimaries();
-  
-  //loop over tracks
-  for (Int_t itrkN=0; itrkN<nTracks; itrkN++) {
-   //get input particle
-   AliMCParticle* pParticle = dynamic_cast<AliMCParticle*>(McEvent->GetTrack(itrkN));
-   if (!pParticle) continue;
-   
-   //check if track passes the cuts
-   if (McEvent->IsPhysicalPrimary(itrkN) && pParticle->Charge()!=0) {
-    fFlowTrack->Set(pParticle);
-    fFlowTrack->SetSource(AliFlowTrack::kFromMC);
-    fFlowTrack->SetForRPSelection(kTRUE);
-    fFlowEvent->IncrementNumberOfPOIs(0);
-    fFlowTrack->SetForPOISelection(kTRUE);
-    fFlowEvent->IncrementNumberOfPOIs(1);
-    fFlowEvent->InsertTrack(fFlowTrack);
+ //inject candidates
+ if(fLoadCandidates) {
+  TObjArray* candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
+  //if(candidates->GetEntriesFast())
+  //  printf("I received %d candidates\n",candidates->GetEntriesFast());
+  if (candidates)
+  {
+   for(int iCand=0; iCand!=candidates->GetEntriesFast(); ++iCand ) {
+    AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(candidates->At(iCand));
+    if (!cand) continue;
+    //printf(" - Checking at candidate %d with %d daughters: mass %f\n",iCand,cand->GetNDaughters(),cand->Mass());
+    for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
+     //printf("    - Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau) );
+     for(int iRPs=0; iRPs!=fFlowEvent->NumberOfTracks(); ++iRPs ) {
+      AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(fFlowEvent->GetTrack( iRPs ));
+      if (!iRP) continue;
+      if( !iRP->InRPSelection() )
+       continue;
+      if( cand->GetIDDaughter(iDau) == iRP->GetID() ) {
+       //printf(" was in RP set");
+       //cand->SetDaughter( iDau, iRP );
+       //temporarily untagging all daugters
+       iRP->SetForRPSelection(kFALSE);
+	      fFlowEvent->SetNumberOfRPs( fFlowEvent->GetNumberOfRPs() -1 );
+      }
+     }
+     //printf("\n");
+    }
+    cand->SetForPOISelection(kTRUE);
+    fFlowEvent->InsertTrack( ((AliFlowTrack*) cand) );
    }
-  }// for all tracks
-  
-  // if monte carlo event get reaction plane from monte carlo (depends on generator)
-  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
-  // set reference multiplicity
-  fFlowEvent->SetReferenceMultiplicity(McEvent->GetNumberOfTracks());
-  // tag subevents
-  fFlowEvent->TagSubeventsInEta(fMinA,fMaxA,fMinB,fMaxB);
-  // set centrality from impact parameter
-  Double_t ImpPar=0., CenPer=0.;
-  fGenHeader = McEvent->GenEventHeader();
-  if(fGenHeader){
-   fPythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(fGenHeader);
-   if(fPythiaGenHeader) ImpPar = fPythiaGenHeader->GetImpactParameter();
-   fHijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(fGenHeader);
-   if(fHijingGenHeader) ImpPar = fHijingGenHeader->ImpactParameter();
-   if(ImpPar) CenPer = 0.3859796743103508*pow(ImpPar,2.);
-   if(CenPer>0. && CenPer<100.) fFlowEvent->SetCentrality(CenPer);
-   else return;
-   fFlowEvent->SetRun(1);
   }
-  
- } // end of if(fAnalysisType ==  "MCkine")
+ }
  
  if (!fFlowEvent) return; //shuts up coverity
  
  //check final event cuts
  Int_t mult = fFlowEvent->NumberOfTracks();
  //  AliInfo(Form("FlowEvent has %i tracks",mult));
- if (mult<fMinMult || mult>fMaxMult) {
+ if (mult<fMinMult || mult>fMaxMult)
+ {
   AliWarning("FlowEvent cut on multiplicity"); return;
  }
  
  //define dead zone
  fFlowEvent->DefineDeadZone(fExcludedEtaMin, fExcludedEtaMax, fExcludedPhiMin, fExcludedPhiMax );
+ 
  
  //////////////////////////////////////////////////////////////////////////////
  ///////////////////////////AFTERBURNER
@@ -777,12 +693,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  
  //fListHistos->Print();
  //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");
- 
-//  printf("event : ntr %d, cen %f **********************************************************************************************************\n",fFlowEvent->NumberOfTracks(),fFlowEvent->GetCentrality());
+ //PostData(1,fFlowEvent);
  
  //********************************************************************************************************************************
  
- if(fAnalysisType == "MCkine") return;
+ // Select PHYSICS events (type=7, for data)
+ //if(!fIsMCInput && aod->GetEventType()!=7) return;
  
  // PHYSICS SELECTION
  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
@@ -874,23 +790,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
   fFlowEvent->SetZDC2Qsub(xyZNC,zncEnergy,xyZNA,znaEnergy);
   
-  Int_t RunBin=-1, bin=0, RunNum=fFlowEvent->GetRun();
-  for(Int_t c=0;c<fCRCnRun;c++) {
-   if(fRunList[c]==RunNum) RunBin=bin;
-   else bin++;
-  }
-  if(fDataSet.EqualTo("MCkine")) RunBin=0;
-  if(RunBin!=-1) {
-   for(Int_t i=0; i<4; i++){
-    if(towZNC[i+1]>0.) {
-     fhnTowerGain[RunBin][i]->Fill(centrperc,TMath::Power(towZNC[i+1], 0.395));
-    }
-    if(towZNA[i+1]>0.) {
-     fhnTowerGain[RunBin][i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], 0.395));
-    }
-   }
-  }
-  
   // ******************************************************************************
   
   Float_t tdcSum = aodZDC->GetZDCTimeSum();
@@ -961,7 +860,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  } // PHYSICS SELECTION
  
  PostData(1, fFlowEvent);
-
+ 
  PostData(2, fOutput);
  
 }

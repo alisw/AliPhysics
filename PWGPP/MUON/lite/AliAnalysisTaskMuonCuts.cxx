@@ -630,8 +630,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
 
   Float_t fracOfHeight = 0.35;
   Float_t rightMargin = 0.03;
-  Int_t cutColors[13] = {kBlack, kRed, kBlue, kGreen, kCyan, kMagenta, kOrange, kViolet, kSpring, kGray, kPink, kAzure, kYellow};
-  Int_t cutStyles[13] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33};
+  Int_t cutColors[14] = {kBlack, kRed, kBlue, kGreen, kCyan, kMagenta, kOrange, kViolet, kSpring, kGray, kSpring, kAzure, kPink, kYellow};
   TArrayI orderCuts;
   Int_t checkHistos[2] = {kSigmaVsPt, kSigmaVsEta};
   Bool_t useCustomSigma = furtherOpt.Contains("CUSTOMSIGMA");
@@ -700,7 +699,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
           TH1* projectHisto = histo->ProjectionX(currName.Data(), currBin, currBin);
           projectHisto->SetLineColor(cutColors[isigma]);
           projectHisto->SetMarkerColor(cutColors[isigma]);
-          projectHisto->SetMarkerStyle(cutStyles[isigma]);
+          projectHisto->SetMarkerStyle(20+isigma);
           projectHisto->SetStats(kFALSE);
           projectHisto->SetTitle("");
           can->cd(1);

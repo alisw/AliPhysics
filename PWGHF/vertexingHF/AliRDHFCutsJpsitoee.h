@@ -6,9 +6,9 @@
 /* $Id$ */ 
 
 //***********************************************************
-/// \class Class AliRDHFCutsJpsitoee
-/// \brief class for cuts on AOD reconstructed J/psi->ee (from B)
-/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
+// Class AliRDHFCutsJpsitoee
+// class for cuts on AOD reconstructed J/psi->ee (from B)
+// Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -36,9 +36,7 @@ class AliRDHFCutsJpsitoee : public AliRDHFCuts
  protected:
 
 
-  /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsJpsitoee,1);  /// class for cuts on AOD reconstructed J/psi->ee
-  /// \endcond
+  ClassDef(AliRDHFCutsJpsitoee,1);  // class for cuts on AOD reconstructed J/psi->ee
 };
 
 #endif

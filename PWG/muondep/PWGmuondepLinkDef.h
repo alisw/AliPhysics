@@ -8,7 +8,6 @@
 #pragma link C++ class AliAnalysisTaskPileup+;
 #pragma link C++ class AliAnalysisTaskMuonCDBConnect+;
 #pragma link C++ class AliAnalysisTaskMuonRefit+;
-#pragma link C++ class AliAnalysisTaskMuonRefitVtx+;
 
 #pragma link C++ class AliAnalysisMuMu+;
 #pragma link C++ class AliAnalysisMuMuConfig+;

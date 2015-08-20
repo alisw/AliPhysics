@@ -7,9 +7,9 @@
 /* $Id$ */
 
 //***********************************************************
-//// \class Class AliAODPidHF
-//// \brief class for PID with AliAODRecoDecayHF
-//// \author Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de,  J. van der Maarel j.vandermaarel@cern.ch
+//// Class AliAODPidHF
+//// class for PID with AliAODRecoDecayHF
+//// Authors: D. Caffarri caffarri@pd.infn.it, A.Dainese andrea.dainese@pd.infn.it, S. Dash dash@to.infn.it, F. Prino prino@to.infn.it, R. Romita r.romita@gsi.de, Y. Wang yifei@pi0.physi.uni-heidelberg.de,  J. van der Maarel j.vandermaarel@cern.ch
 ////***********************************************************
 
 #include <TString.h>
@@ -180,10 +180,10 @@ public:
   
   Bool_t TPCRawAsym(AliAODTrack* track,Int_t specie) const;
   Int_t MatchTPCTOF(AliAODTrack *track,Int_t specie);
-  ///PID nSigma strategy closer to the Bayesian approach with Max. prob.
+  //PID nSigma strategy closer to the Bayesian approach with Max. prob.
   Int_t MatchTPCTOFMin(AliAODTrack *track, Int_t specie);
   
-  Int_t MakeRawPid(AliAODTrack *track,Int_t specie); ///general method to perform PID using raw signals
+  Int_t MakeRawPid(AliAODTrack *track,Int_t specie); //general method to perform PID using raw signals
   
   Bool_t IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK);
   
@@ -191,7 +191,7 @@ public:
   
   void GetTPCBetheBlochParams(Double_t alephParameters[5]) const;
   void SetBetheBloch();
-  /// method for AliPIDCombined object
+  // method for AliPIDCombined object
   void SetSelectedSpecies(Int_t ispecies = AliPID::kSPECIES){GetPidCombined()->SetSelectedSpecies(ispecies);};
   void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
   void DrawPrior(AliPID::EParticleType type);
@@ -206,7 +206,7 @@ public:
   
   void PrintAll() const;
 
-  ///Assymetric PID using histograms
+  //Assymetric PID using histograms
   void SetIdBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TH1F *min, TH1F *max);
   void SetIdBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TF1 *min, TF1 *max);
   void SetCompBand(AliPID::EParticleType specie, AliPIDResponse::EDetector detector, TH1F *min, TH1F *max);
@@ -219,7 +219,7 @@ public:
   TF1 *GetCompBandMin(AliPID::EParticleType specie, AliPIDResponse::EDetector detector) { return fCompBandMin[((int) specie)][((int) detector)]; }
   TF1 *GetCompBandMax(AliPID::EParticleType specie, AliPIDResponse::EDetector detector) { return fCompBandMax[((int) specie)][((int) detector)]; }
 
-  ///Some suggested asymmetric PID
+  //Some suggested asymmetric PID
   void SetShiftedAsymmetricPID();
   void SetIdAsymmetricPID();
   void SetIdCompAsymmetricPID();
@@ -231,68 +231,62 @@ private:
 
   AliAODPidHF& operator=(const AliAODPidHF& pid);
 
-  Int_t fnNSigma; /// number of sigmas
-  /// sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
+  Int_t fnNSigma; // number of sigmas
   Double_t *fnSigma; // [fnNSigma], sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
-  Double_t fTOFSigma; /// TOF precision
-  Double_t fCutTOFmismatch; /// Cut of TOF mismatch probability
-  UInt_t fMinNClustersTPCPID;       /// Minimum TPC PID clusters cut
-  Int_t fnPriors; /// number of priors
-  /// set of priors
+  Double_t fTOFSigma; // TOF precision
+  Double_t fCutTOFmismatch; // Cut of TOF mismatch probability
+  UInt_t fMinNClustersTPCPID;       // Minimum TPC PID clusters cut
+  Int_t fnPriors; //number of priors
   Double_t *fPriors; // [fnPriors], set of priors
-  Int_t fnPLimit; /// number of Plimit
-  /// limit of p intervals for asimmetric PID: fPLimit<p[0], fPLimit[0]<p<fPLimit[1], p>fPLimit[1]
+  Int_t fnPLimit; //number of Plimit
   Double_t *fPLimit; // [fnPLimit], limit of p intervals for asimmetric PID: fPLimit<p[0], fPLimit[0]<p<fPLimit[1], p>fPLimit[1]
-  Bool_t fAsym; /// asimmetric PID required
-  Bool_t fTPC; /// switch to include or exclude TPC
-  Bool_t fTOF; /// switch to include or exclude TOF
-  Bool_t fITS; /// switch to include or exclude ITS
-  Bool_t fTRD; /// switch to include or exclude TRD
-  Int_t fMatch; /// switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
-  Bool_t fForceTOFforKaons; /// force TOF for kaons in mode fMatch==5
-  Bool_t fCompat; /// compatibility region : useful only if fMatch=1
-  Double_t fPCompatTOF; ///  compatibility p limit for TOF
-  Bool_t fUseAsymTOF; /// flag for using asymmetrig nSigmaCut in TOF for fMatch==1
-  Double_t fLownSigmaTOF;  /// lower nsigma TOF (for fUseAsymTOF)
-  Double_t fUpnSigmaTOF;  /// upper nsigma TOF (for fUseAsymTOF)
-  Double_t fLownSigmaCompatTOF;  /// lower nsigma TOF (for fUseAsymTOF)
-  Double_t fUpnSigmaCompatTOF;  /// upper nsigma TOF (for fUseAsymTOF)
-  Int_t fnNSigmaCompat; /// number of sigmas
-  /// 0: n sigma for TPC compatibility band, 1: for TOF
+  Bool_t fAsym; // asimmetric PID required
+  Bool_t fTPC; //switch to include or exclude TPC
+  Bool_t fTOF; // switch to include or exclude TOF
+  Bool_t fITS; //switch to include or exclude ITS
+  Bool_t fTRD; // switch to include or exclude TRD
+  Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
+  Bool_t fForceTOFforKaons; // force TOF for kaons in mode fMatch==5
+  Bool_t fCompat; // compatibility region : useful only if fMatch=1
+  Double_t fPCompatTOF; //  compatibility p limit for TOF
+  Bool_t fUseAsymTOF; // flag for using asymmetrig nSigmaCut in TOF for fMatch==1
+  Double_t fLownSigmaTOF;  // lower nsigma TOF (for fUseAsymTOF)
+  Double_t fUpnSigmaTOF;  // upper nsigma TOF (for fUseAsymTOF)
+  Double_t fLownSigmaCompatTOF;  // lower nsigma TOF (for fUseAsymTOF)
+  Double_t fUpnSigmaCompatTOF;  // upper nsigma TOF (for fUseAsymTOF)
+  Int_t fnNSigmaCompat; // number of sigmas
   Double_t *fnSigmaCompat; //[fnNSigmaCompat]  0: n sigma for TPC compatibility band, 1: for TOF
-  Double_t fMaxnSigmaCombined[3];  /// nSigma cut for pi,K,p (TPC^2+TOF^2)
-  Double_t fMinnSigmaTPC[3]; /// min. of nSigma range for pi,K,p in TPC (match==5)
-  Double_t fMaxnSigmaTPC[3]; /// max. of nSigma range for pi,K,p in TPC (match==5)
-  Double_t fMinnSigmaTOF[3]; /// min. of nSigma range for pi,K,p in TOF (match==5)
-  Double_t fMaxnSigmaTOF[3]; /// max. of nSigma range for pi,K,p in TOF (match==5)
-  Bool_t fMC; /// MC(kTRUE) or real data (kFALSE, default option)
-  Bool_t fOnePad; ///  real data with one pad clusters
-  Bool_t fMCLowEn2011; ///  MC for low energy MC
-  Bool_t fppLowEn2011; ///  Data for low energy pp 2011
-  Bool_t fPbPb; ///  real data PbPb
-  Bool_t fTOFdecide; ///  real data PbPb
-  Bool_t fOldPid; ///  old PID method implemented
-  Double_t fPtThresholdTPC; ///  pT threshold to use TPC PID
-  Double_t fMaxTrackMomForCombinedPID; /// momentum threshold to use PID
-  AliPIDResponse *fPidResponse; //!<! pid response
-  AliPIDCombined* fPidCombined; //!<! combined PID object
+  Double_t fMaxnSigmaCombined[3];  // nSigma cut for pi,K,p (TPC^2+TOF^2)
+  Double_t fMinnSigmaTPC[3]; //min. of nSigma range for pi,K,p in TPC (match==5)
+  Double_t fMaxnSigmaTPC[3]; //max. of nSigma range for pi,K,p in TPC (match==5)
+  Double_t fMinnSigmaTOF[3]; //min. of nSigma range for pi,K,p in TOF (match==5)
+  Double_t fMaxnSigmaTOF[3]; //max. of nSigma range for pi,K,p in TOF (match==5)
+  Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
+  Bool_t fOnePad; //  real data with one pad clusters
+  Bool_t fMCLowEn2011; //  MC for low energy MC
+  Bool_t fppLowEn2011; //  Data for low energy pp 2011
+  Bool_t fPbPb; //  real data PbPb
+  Bool_t fTOFdecide; //  real data PbPb
+  Bool_t fOldPid; //  old PID method implemented
+  Double_t fPtThresholdTPC; //  pT threshold to use TPC PID
+  Double_t fMaxTrackMomForCombinedPID; // momentum threshold to use PID
+  AliPIDResponse *fPidResponse; //! pid response
+  AliPIDCombined* fPidCombined; //! combined PID object
   
-  AliTPCPIDResponse* fTPCResponse; //!<! TPC response
+  AliTPCPIDResponse* fTPCResponse; //! TPC response
   
-  TH1F* fPriorsH[AliPID::kSPECIES]; /// priors histos
-  ECombDetectors fCombDetectors; /// detectors to be involved for combined PID
-  Bool_t fUseCombined; /// detectors to be involved for combined PID
-  Bool_t fDefaultPriors; /// use default priors for combined PID
+  TH1F* fPriorsH[AliPID::kSPECIES]; // priors histos
+  ECombDetectors fCombDetectors; // detectors to be involved for combined PID
+  Bool_t fUseCombined; // detectors to be involved for combined PID
+  Bool_t fDefaultPriors; // use default priors for combined PID
 
-  /// Storage of identification/compatibility band for different species and detectors:
+  //Storage of identification/compatibility band for different species and detectors:
   TF1 *fIdBandMin[AliPID::kSPECIES][4];
   TF1 *fIdBandMax[AliPID::kSPECIES][4];
   TF1 *fCompBandMin[AliPID::kSPECIES][4];
   TF1 *fCompBandMax[AliPID::kSPECIES][4];
 
-  /// \cond CLASSIMP
-  ClassDef(AliAODPidHF,24); /// AliAODPid for heavy flavor PID
-  /// \endcond
+  ClassDef(AliAODPidHF,24) // AliAODPid for heavy flavor PID
 
 };
 

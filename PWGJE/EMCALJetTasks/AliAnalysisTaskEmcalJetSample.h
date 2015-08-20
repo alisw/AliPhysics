@@ -38,7 +38,6 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistJetsCorrPtArea;      //!Jet pt - bkg vs. area
   TH3                        *fHistPtDEtaDPhiTrackClus; //!track pt, delta eta, delta phi to matched cluster
   TH3                        *fHistPtDEtaDPhiClusTrack; //!cluster pt, delta eta, delta phi to matched track
-  TH1                       **fHistNTracks;             //! number of tracks per event
 
   TH1                        *fHistClustDx; //!
   TH1                        *fHistClustDz; //!
@@ -51,6 +50,6 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetSample(const AliAnalysisTaskEmcalJetSample&);            // not implemented
   AliAnalysisTaskEmcalJetSample &operator=(const AliAnalysisTaskEmcalJetSample&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetSample, 5) // jet sample analysis task
+  ClassDef(AliAnalysisTaskEmcalJetSample, 4) // jet sample analysis task
 };
 #endif

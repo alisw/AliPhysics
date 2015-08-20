@@ -19,12 +19,12 @@
 /* $Id$ */ 
 
 //*************************************************************************
-/// \class Class AliNormalizationCounter
-/// \brief Class to store the informations relevant for the normalization in the
-/// barrel for each run
-/// \author Authors: G. Ortona, ortona@to.infn.it
-/// \author D. Caffarri, davide.caffarri@pd.to.infn.it
-/// with many thanks to P. Pillot
+// Class AliNormalizationCounter
+// Class to store the informations relevant for the normalization in the 
+// barrel for each run
+// Authors: G. Ortona, ortona@to.infn.it
+// D. Caffarri, davide.caffarri@pd.to.infn.it
+// with many thanks to P. Pillot
 /////////////////////////////////////////////////////////////
 
 #include <TROOT.h>
@@ -79,17 +79,16 @@ class AliNormalizationCounter : public TNamed
   AliNormalizationCounter(const AliNormalizationCounter &source);
   AliNormalizationCounter& operator=(const AliNormalizationCounter& source);
   Int_t Multiplicity(AliVEvent* event);
-  AliCounterCollection fCounters; /// internal counter
-  Bool_t fESD; /// flag for ESD vs AOD
-  Bool_t fMultiplicity; /// flag for multiplicity
+  AliCounterCollection fCounters; //internal counter
+  Bool_t fESD; //flag for ESD vs AOD
+  Bool_t fMultiplicity; //flag for multiplicity
   Float_t fMultiplicityEtaRange;
-  TH2F *fHistTrackFilterEvMult; /// hist to store no of filter candidates vs no of tracks in the event
-  TH2F *fHistTrackAnaEvMult;/// hist to store no of analysis candidates vs no of tracks in the event
-  TH2F *fHistTrackFilterSpdMult; /// hist to store no of filter candidates vs  SPD multiplicity
-  TH2F *fHistTrackAnaSpdMult;/// hist to store no of analysis candidates vs SPD multiplicity 
+  TH2F *fHistTrackFilterEvMult; //hist to store no of filter candidates vs no of tracks in the event 
+  TH2F *fHistTrackAnaEvMult;//hist to store no of analysis candidates vs no of tracks in the event 
+  TH2F *fHistTrackFilterSpdMult; //hist to store no of filter candidates vs  SPD multiplicity 
+  TH2F *fHistTrackAnaSpdMult;//hist to store no of analysis candidates vs SPD multiplicity 
 
-  /// \cond CLASSIMP    
   ClassDef(AliNormalizationCounter,6);
-  /// \endcond
+
 };
 #endif

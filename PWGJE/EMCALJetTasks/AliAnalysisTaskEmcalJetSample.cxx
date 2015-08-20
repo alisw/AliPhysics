@@ -31,7 +31,6 @@ ClassImp(AliAnalysisTaskEmcalJetSample)
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSample", kTRUE),
   fHistTracksPt(0),
-  fHistNTracks(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
   fHistJetsPhiEta(0),
@@ -50,7 +49,6 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
   // Default constructor.
 
   fHistTracksPt       = new TH1*[fNcentBins];
-  fHistNTracks        = new TH1*[fNcentBins];
   fHistClustersPt     = new TH1*[fNcentBins];
   fHistLeadingJetPt   = new TH1*[fNcentBins];
   fHistJetsPhiEta     = new TH2*[fNcentBins];
@@ -60,7 +58,6 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fHistTracksPt[i] = 0;
-    fHistNTracks[i] = 0;
     fHistClustersPt[i] = 0;
     fHistLeadingJetPt[i] = 0;
     fHistJetsPhiEta[i] = 0;
@@ -76,7 +73,6 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fHistTracksPt(0),
-  fHistNTracks(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
   fHistJetsPhiEta(0),
@@ -94,7 +90,6 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) :
   // Standard constructor.
 
   fHistTracksPt       = new TH1*[fNcentBins];
-  fHistNTracks        = new TH1*[fNcentBins];
   fHistClustersPt     = new TH1*[fNcentBins];
   fHistLeadingJetPt   = new TH1*[fNcentBins];
   fHistJetsPhiEta     = new TH2*[fNcentBins];
@@ -104,7 +99,6 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) :
 
   for (Int_t i = 0; i < fNcentBins; i++) {
     fHistTracksPt[i] = 0;
-    fHistNTracks[i] = 0;
     fHistClustersPt[i] = 0;
     fHistLeadingJetPt[i] = 0;
     fHistJetsPhiEta[i] = 0;
@@ -150,11 +144,6 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       fHistTracksPt[i]->GetXaxis()->SetTitle("p_{T,track} (GeV/c)");
       fHistTracksPt[i]->GetYaxis()->SetTitle("counts");
       fOutput->Add(fHistTracksPt[i]);
-      
-      histname = "fHistNTracks_";
-      histname += i;
-      fHistNTracks[i] = new TH1F(histname.Data(), histname.Data(), 200, 0., 199.);
-      fOutput->Add(fHistNTracks[i]);
     }
 
     if (fClusterCollArray.GetEntriesFast()>0) {
@@ -230,13 +219,10 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
   // Fill histograms.
 
   if (fTracksCont) {
-     fHistNTracks[fCentBin]->Fill(fTracksCont->GetNAcceptedParticles());
-     fTracksCont->ResetCurrentID();
-    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0));
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
     while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt()); 
       track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
-      
     }
   }
 

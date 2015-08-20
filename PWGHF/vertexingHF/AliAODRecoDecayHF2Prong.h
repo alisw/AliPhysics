@@ -6,10 +6,11 @@
 /* $Id$ */ 
 
 //***********************************************************
-/// \class Class AliAODRecoDecayHF2Prong
-/// \brief base class for AOD reconstructed 2-prong heavy-flavour decays (D0->Kpi, J/psi->ee, ...)
-/// Author: A.Dainese, andrea.dainese@lnl.infn.it
-///         G.E.Bruno, giuseppe.bruno@ba.infn.it
+// Class AliAODRecoDecayHF2Prong
+// base class for AOD reconstructed 2-prong heavy-flavour decays
+// (D0->Kpi, J/psi->ee, ...)
+// Author: A.Dainese, andrea.dainese@lnl.infn.it
+//         G.E.Bruno, giuseppe.bruno@ba.infn.it 
 //***********************************************************
 
 #include "AliAODRecoDecay.h"
@@ -40,8 +41,8 @@ class AliAODRecoDecayHF2Prong : public AliAODRecoDecayHF {
   Double_t CtD0(Double_t point[3]) const {return AliAODRecoDecay::Ct(421,point);}
   Double_t CtD0(AliAODVertex *vtx1) const {return AliAODRecoDecay::Ct(421,vtx1);}
 
-  Double_t CosThetaStarD0() const {return CosThetaStar(1,421,211,321);} /// angle of K
-  Double_t CosThetaStarD0bar() const {return CosThetaStar(0,421,321,211);} /// angle of K
+  Double_t CosThetaStarD0() const {return CosThetaStar(1,421,211,321);} // angle of K
+  Double_t CosThetaStarD0bar() const {return CosThetaStar(0,421,321,211);} // angle of K
   void CosThetaStarD0(Double_t &ctsD0,Double_t &ctsD0bar) const 
     {ctsD0=CosThetaStarD0();ctsD0bar=CosThetaStarD0bar();return;}
 
@@ -60,7 +61,7 @@ class AliAODRecoDecayHF2Prong : public AliAODRecoDecayHF {
   Double_t CtJPSI(Double_t point[3]) const {return AliAODRecoDecay::Ct(443,point);}
   Double_t CtJPSI(AliAODVertex *vtx1) const {return AliAODRecoDecay::Ct(443,vtx1);}
 
-  Double_t CosThetaStarJPSI() const {return CosThetaStar(1,443,11,11);} /// angle of e-
+  Double_t CosThetaStarJPSI() const {return CosThetaStar(1,443,11,11);} // angle of e-
 
   Double_t InvMassJPSIee() const {UInt_t pdg[2]={11,11};return InvMass(2,pdg);}
 
@@ -69,10 +70,8 @@ class AliAODRecoDecayHF2Prong : public AliAODRecoDecayHF {
 
  private:
 
-  /// \cond CLASSIMP
-  ClassDef(AliAODRecoDecayHF2Prong,1);  /// base class for AOD reconstructed
-                                       /// heavy-flavour 2-prong decays
-  /// \endcond
+  ClassDef(AliAODRecoDecayHF2Prong,1)  // base class for AOD reconstructed 
+                                       // heavy-flavour 2-prong decays
 };
 
 #endif

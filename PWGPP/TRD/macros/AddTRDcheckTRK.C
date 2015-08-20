@@ -1,9 +1,20 @@
-void AddTRDcheckTRK(AliAnalysisDataContainer **ci)
-{
-  Info("AddTRDcheckTRK",  "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName());
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #include <TTree.h>
+// #include <TError.h>
+// #include <AliLog.h>
+// #include <AliAnalysisManager.h>
+// #include <AliAnalysisDataContainer.h>
+// #include <AliTRDtrackerV1.h>
+// #include <AliTRDtransform.h>
+// 
+// #include <AliTRDtrackInfo.h>
+// #include <AliTRDeventInfo.h>
+// #include <AliTRDcheckTRK.h>
+// #endif
 
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if(!mgr) return;
+void AddTRDcheckTRK(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
+{
+  Info("AddTRDcheckTRK",  "[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName());
 
   //AliLog::SetClassDebugLevel("AliTRDcheckTRK", 3);
   // global settings for tracking
@@ -37,13 +48,12 @@ void AddTRDcheckTRK(AliAnalysisDataContainer **ci)
   AliTRDcheckTRK *trk(NULL);;
   mgr->AddTask(trk = new AliTRDcheckTRK((char*)"TRDcheckTRK"));
   trk->SetDebugLevel(0);
-  trk->SetMCdata((Bool_t)mgr->GetMCtruthEventHandler());
+  trk->SetMCdata(mgr->GetMCtruthEventHandler());
   trk->SetFriends(kTRUE);
   mgr->ConnectInput( trk, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
   mgr->ConnectInput( trk, 1, ci[0]);                          // connect barrel tracks container
   mgr->ConnectInput( trk, 2, ci[1]);                          // connect event info container
-  mgr->ConnectInput( trk, 3, ci[2]);                          // connect onl.tracklets container
-  mgr->ConnectInput( trk, 4, ci[3]);                          // connect clusters container
+  mgr->ConnectInput( trk, 3, ci[2]);                          // connect clusters container
 
   mgr->ConnectOutput(trk, 1, mgr->CreateContainer(trk->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
 }

@@ -41,9 +41,8 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAnalysisTaskCombinHF.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskCombinHF);
-/// \endcond
+ClassImp(AliAnalysisTaskCombinHF)
+
 
 //________________________________________________________________________
 AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
@@ -132,7 +131,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fKaonTracks(0x0),
   fPionTracks(0x0)
 {
-  /// default constructor
+  // default constructor
 }
 
 //________________________________________________________________________
@@ -222,7 +221,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fKaonTracks(0x0),
   fPionTracks(0x0)
 {
-  /// standard constructor
+  // standard constructor
 
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
@@ -232,7 +231,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
 AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
 {
   //
-  /// Destructor
+  // Destructor
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
@@ -290,7 +289,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::ConfigureZVertPools(Int_t nPools, Double_t*  zVertLimits)
 {
-  /// sets the pools for event mizing in zvertex
+  // sets the pools for event mizing in zvertex
   if(fzVertPoolLims) delete [] fzVertPoolLims;
   fNzVertPools=nPools;
   fNzVertPoolsLimSize=nPools+1;
@@ -312,7 +311,7 @@ void AliAnalysisTaskCombinHF::ConfigureMultiplicityPools(Int_t nPools, Double_t*
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
 {
-  /// Create the output container
+  // Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskCombinHF::UserCreateOutputObjects() \n");
   
@@ -530,7 +529,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
 
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
-  /// Build the 3-track combinatorics (+-+ and -+-) for D+->Kpipi decays
+  //Build the 3-track combinatorics (+-+ and -+-) for D+->Kpipi decays
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -814,7 +813,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge){
-  /// Fill histos for LS candidates
+  // Fill histos for LS candidates
   
   tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
   Double_t pt = tmpRD->Pt();
@@ -831,7 +830,7 @@ void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSel){
-  /// Fill histos with generated quantities
+  // Fill histos with generated quantities
   Int_t totPart=arrayMC->GetEntriesFast();
   Int_t thePDG=411;
   Int_t nProng=3;
@@ -889,7 +888,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSe
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels){
-  /// Fill histos for candidates with proper charge sign
+  // Fill histos for candidates with proper charge sign
   
   Bool_t accept=kFALSE;
   
@@ -993,7 +992,7 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 }
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau){
-  /// Fill histos for candidates in MixedEvents
+  // Fill histos for candidates in MixedEvents
     
   tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
   Double_t pt = tmpRD->Pt();
@@ -1010,7 +1009,7 @@ void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 }
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge){
-  /// Fill histos for candidates in MixedEvents
+  // Fill histos for candidates in MixedEvents
     
   tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
   Double_t pt = tmpRD->Pt();
@@ -1028,7 +1027,7 @@ void AliAnalysisTaskCombinHF::FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRec
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
-  /// track selection cuts
+  // track selection cuts
   
   if(track->Charge()==0) return kFALSE;
   if(track->GetID()<0&&!fKeepNegID)return kFALSE;
@@ -1039,7 +1038,7 @@ Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::IsKaon(AliAODTrack* track){
-  /// kaon selection cuts
+  // kaon selection cuts
   
   if(!fPidHF) return kTRUE;
   Int_t isKaon=fPidHF->MakeRawPid(track,AliPID::kKaon);
@@ -1080,7 +1079,7 @@ Bool_t AliAnalysisTaskCombinHF::IsKaon(AliAODTrack* track){
 }
 //_______________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::IsPion(AliAODTrack* track){
-  /// pion selection cuts
+  // pion selection cuts
   
   if(!fPidHF) return kTRUE;
   Int_t isPion=fPidHF->MakeRawPid(track,AliPID::kPion);
@@ -1123,7 +1122,7 @@ Bool_t AliAnalysisTaskCombinHF::IsPion(AliAODTrack* track){
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::SelectAODTrack(AliAODTrack *track, AliESDtrackCuts *cuts){
-  /// AOD track selection
+  // AOD track selection
   
   if(!cuts) return kTRUE;
   
@@ -1139,7 +1138,7 @@ Bool_t AliAnalysisTaskCombinHF::SelectAODTrack(AliAODTrack *track, AliESDtrackCu
 
 //_________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::CheckAcceptance(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau){
-  /// check if the decay products are in the good eta and pt range
+  // check if the decay products are in the good eta and pt range
   for (Int_t iProng = 0; iProng<nProng; iProng++){
     AliAODMCParticle* mcPartDaughter=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDau[iProng]));
     if(!mcPartDaughter) return kFALSE;
@@ -1151,7 +1150,7 @@ Bool_t AliAnalysisTaskCombinHF::CheckAcceptance(TClonesArray* arrayMC,Int_t nPro
 }
 //_________________________________________________________________
 Int_t AliAnalysisTaskCombinHF::GetPoolIndex(Double_t zvert, Double_t mult){
-  /// check in which of the pools the current event falls
+  // check in which of the pools the current event falls
   if(!fzVertPoolLims || !fMultPoolLims) return 0;
   Int_t theBinZ=TMath::BinarySearch(fNzVertPoolsLimSize,fzVertPoolLims,zvert);
   if(theBinZ<0 || theBinZ>=fNzVertPoolsLimSize) return -1;
@@ -1161,7 +1160,7 @@ Int_t AliAnalysisTaskCombinHF::GetPoolIndex(Double_t zvert, Double_t mult){
 }
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::ResetPool(Int_t poolIndex){
-  /// delete the contets of the pool
+  // delete the contets of the pool
   if(poolIndex<0 || poolIndex>=fNOfPools) return;
   delete fEventBuffer[poolIndex];
   fEventBuffer[poolIndex]=new TTree(Form("EventBuffer_%d",poolIndex), "Temporary buffer for event mixing");
@@ -1174,14 +1173,14 @@ void AliAnalysisTaskCombinHF::ResetPool(Int_t poolIndex){
 }
 //_________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2){
-  /// check mixing
+  // check mixing
   if(TMath::Abs(zv2-zv1)>fMaxzVertDistForMix) return kFALSE;
   if(TMath::Abs(mult2-mult1)>fMaxMultDiffForMix) return kFALSE;
   return kTRUE;
 }
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::DoMixingWithCuts(){
-  /// perform mixed event analysis
+  // perform mixed event analysis
 
   if(fDoEventMixing==0) return;
   Int_t nEvents=fEventBuffer[0]->GetEntries();
@@ -1277,7 +1276,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithCuts(){
 }
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
-  /// perform mixed event analysis
+  // perform mixed event analysis
 
   if(fDoEventMixing==0) return;
   if(poolIndex<0 || poolIndex>fNzVertPools*fNMultPools) return;
@@ -1400,7 +1399,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::FinishTaskOutput()
 {
-  /// perform mixed event analysis
+  // perform mixed event analysis
   if(fDoEventMixing==0) return;
   printf("AliAnalysisTaskCombinHF: FinishTaskOutput\n");
 
@@ -1415,7 +1414,7 @@ void AliAnalysisTaskCombinHF::FinishTaskOutput()
 }
 //_________________________________________________________________
 Double_t AliAnalysisTaskCombinHF::ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack* tr2) const{
-  /// inv mass of KK
+  // inv mass of KK
   Double_t massK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
   Double_t p1=tr1->P();
   Double_t p2=tr2->P();
@@ -1431,7 +1430,7 @@ Double_t AliAnalysisTaskCombinHF::ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack
 //_________________________________________________________________
 void AliAnalysisTaskCombinHF::Terminate(Option_t */*option*/)
 {
-  /// Terminate analysis
+  // Terminate analysis
   //
   if(fDebug > 1) printf("AliAnalysisTaskCombinHF: Terminate() \n");
   fOutput = dynamic_cast<TList*> (GetOutputData(1));

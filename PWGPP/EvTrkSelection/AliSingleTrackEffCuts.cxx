@@ -349,9 +349,8 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleInKineAcceptance(TObject *obj)
 
   // Cut on y
   Double_t energy = particle->E();
-  Double_t pz2e = energy>0 ? particle->Pz()/energy : 1.0;
-  Double_t particleY = (TMath::Abs(pz2e)<(1-1.e-12)) ? 0.5*TMath::Log( (1+pz2e)/(1-pz2e) ) : 1e6;
- 
+  Double_t pz = particle->Pz();
+  Double_t particleY = (TMath::Abs(energy-pz)>1e-10) ?  0.5*TMath::Log( (energy+pz)/(energy-pz) ) : 1e6;
   if(particleY<fYMin || particleY>fYMax) isSelected = kFALSE;
 
   // Cut on pt

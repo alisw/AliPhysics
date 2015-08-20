@@ -12,8 +12,7 @@ AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(const char *n
 								   Bool_t doTrackQAEvent =kTRUE,
 								   Bool_t doTrackQAJet =kTRUE,
 								   Bool_t doBackgroundFluctuations =kTRUE,
-                                   Bool_t doCorrectPt =kTRUE,
-                                   Bool_t IspPb=kFALSE)
+								   Bool_t doCorrectPt =kTRUE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -81,8 +80,8 @@ AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(const char *n
     jetTask->SetDoTrackQAConstituent(doTrackQAJet);
     jetTask->SetDoBackgroundFluctuations(doBackgroundFluctuations);
     jetTask->SetUseCorrectedPt(doCorrectPt);
-    if(!IspPb) DefineCutsTaskpp(jetTask,-1.,100.,kFALSE);
-    else  DefineCutsTaskpPb(jetTask,0,100,kFALSE);
+
+    
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------
@@ -99,50 +98,4 @@ AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(const char *n
     mgr->ConnectOutput (jetTask, 1, coutput1 );
   
     return jetTask;
-}
-
-Bool_t DefineCutsTaskpp(AliAnalysisTaskEmcalJetBJetTaggingIP *task, Float_t minC, Float_t maxC, Bool_t corrections_mode){
-    
-    // define cuts for task
-    AliRDHFJetsCuts *cuts=task->GetJetCutsHF();
-    // jets
-    cuts->SetJetRadius(0.4); // this cut does nothing
-    cuts->SetMaxEtaJet(0.5);//0.9-R
-    cuts->SetMinPtJet(5.);
-    cuts->SetMaxPtJet(100.);
-    // Set centrality
-    cuts->SetMinCentrality(minC);
-    cuts->SetMaxCentrality(maxC);
-    cuts->SetUsePhysicsSelection(kFALSE);
-    if (corrections_mode) cuts->SetTriggerMask(AliVEvent::kAny);
-    else {cuts->SetOptPileup(1);
-        cuts->ConfigurePileupCuts(5,0.8);
-        cuts->SetTriggerClass("MB");
-        cuts->SetTriggerMask(AliVEvent::kMB);
-    } // pPb minbias only
-    return kTRUE;
-}
-
-Bool_t DefineCutsTaskpPb(AliAnalysisTaskEmcalJetBJetTaggingIP *task, Float_t minC, Float_t maxC, Bool_t corrections_mode)
-{
-    
-    // define cuts for task
-    AliRDHFJetsCuts *cuts=task->GetJetCutsHF();
-    // jets
-    cuts->SetJetRadius(0.4); // this cut does nothing
-    cuts->SetMaxEtaJet(0.5);//0.9-R
-    cuts->SetMinPtJet(5.);
-    cuts->SetMaxPtJet(100.);
-    // Set centrality
-    cuts->SetMinCentrality(minC);
-    cuts->SetMaxCentrality(maxC);
-    cuts->SetUsePhysicsSelection(kFALSE);
-    if (corrections_mode) cuts->SetTriggerMask(AliVEvent::kAny);
-    else {cuts->SetOptPileup(1);
-        cuts->ConfigurePileupCuts(5,0.8);
-        // cuts->SetUsePhysicsSelection(kFALSE);
-        cuts->SetTriggerClass("CINT7");
-        cuts->SetTriggerMask(AliVEvent::kINT7);
-    } // pPb minbias only
-    return kTRUE;
 }

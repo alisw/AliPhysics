@@ -132,7 +132,7 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
   double oraMin        = -100, oraMax        = 100;   // OR A  
   double orcMin        = -100, orcMax        = 100;   // OR C
   double amplMin       =0,    amplMax    =3   ;     // amplitude in each PMT
-  double timeMin     =  2900,   timeMax =3300       ;     // amplitude in each PMT
+  double timeMin       ,   timeMax       ;     // amplitude in each PMT
   //-----> add ranges of your new trending plot
 
 
@@ -269,8 +269,8 @@ drawPerformanceT0QATrends(const char* inFile = "trending.root", const char* runT
     //    if(max < yDelay[irun]) max = yDelay[irun];
     //  }
     
-    //  timeMin = min - 2; 
-    //   timeMax = max + 2; 
+    timeMin = min - 2; 
+    timeMax = max + 2; 
 
     gr->SetMarkerStyle(20);
     gr->SetMarkerSize(1.0);

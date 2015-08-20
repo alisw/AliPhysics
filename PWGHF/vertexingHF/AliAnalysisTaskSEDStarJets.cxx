@@ -42,9 +42,7 @@
 #include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEDStarJets);
-/// \endcond
+ClassImp(AliAnalysisTaskSEDStarJets)
 
 //__________________________________________________________________________
 AliAnalysisTaskSEDStarJets::AliAnalysisTaskSEDStarJets() :
@@ -77,7 +75,7 @@ AliAnalysisTaskSEDStarJets::AliAnalysisTaskSEDStarJets() :
   fPtJet(0)           
 {
   //
-  /// Default ctor
+  // Default ctor
   //
 }
 //___________________________________________________________________________
@@ -111,7 +109,7 @@ AliAnalysisTaskSEDStarJets::AliAnalysisTaskSEDStarJets(const Char_t* name, AliRD
   fPtJet(0)               
 {
   //
-  /// Constructor. Initialization of Inputs and Outputs
+  // Constructor. Initialization of Inputs and Outputs
   //
   fCuts=cuts;
   Info("AliAnalysisTaskSEDStarJets","Calling Constructor");
@@ -122,7 +120,7 @@ AliAnalysisTaskSEDStarJets::AliAnalysisTaskSEDStarJets(const Char_t* name, AliRD
 //___________________________________________________________________________
 AliAnalysisTaskSEDStarJets::~AliAnalysisTaskSEDStarJets() {
   //
-  /// destructor
+  // destructor
   //
 
   Info("~AliAnalysisTaskSEDStarJets","Calling Destructor");  
@@ -161,7 +159,7 @@ AliAnalysisTaskSEDStarJets::~AliAnalysisTaskSEDStarJets() {
 //___________________________________________________________
 void AliAnalysisTaskSEDStarJets::Init(){
   //
-  /// Initialization
+  // Initialization
   //
   if(fDebug > 1) printf("AnalysisTaskSEDStarJets::Init() \n");
   AliRDHFCutsDStartoKpipi* copyfCuts=new AliRDHFCutsDStartoKpipi(*fCuts);
@@ -174,7 +172,7 @@ void AliAnalysisTaskSEDStarJets::Init(){
 //_________________________________________________
 void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 {
-  /// user exec
+  // user exec
   if (!fInputEvent) {
     Error("UserExec","NO EVENT FOUND!");
     return;
@@ -372,9 +370,9 @@ PostData(1,fOutput);
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskSEDStarJets::Terminate(Option_t*)
 {    
-  /// The Terminate() function is the last function to be called during
-  /// a query. It always runs on the client, it can be used to present
-  /// the results graphically or save the results to file.
+  // The Terminate() function is the last function to be called during
+  // a query. It always runs on the client, it can be used to present
+  // the results graphically or save the results to file.
   
   Info("Terminate"," terminate");
   AliAnalysisTaskSE::Terminate();
@@ -410,7 +408,7 @@ void AliAnalysisTaskSEDStarJets::Terminate(Option_t*)
 //___________________________________________________________________________
 
 void AliAnalysisTaskSEDStarJets::UserCreateOutputObjects() { 
- /// output
+ // output 
   Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
   
   //slot #1  
@@ -426,7 +424,7 @@ void AliAnalysisTaskSEDStarJets::UserCreateOutputObjects() {
 
 Bool_t  AliAnalysisTaskSEDStarJets::DefineHistoFroAnalysis(){
   
-  /// Invariant mass related histograms
+  // Invariant mass related histograms
   fInvMass = new TH1F("invMass","Kpi invariant mass distribution",1500,.5,3.5);
   fInvMass->SetStats(kTRUE);
   fInvMass->GetXaxis()->SetTitle("GeV/c");
@@ -522,9 +520,9 @@ Bool_t  AliAnalysisTaskSEDStarJets::DefineHistoFroAnalysis(){
 
 void AliAnalysisTaskSEDStarJets::SideBandBackground(Double_t invM, Double_t invMDStar, Double_t dStarMomBkg, Double_t EGjet, Double_t dPhi){
 
-  ///  D* side band background method. Two side bands, in M(Kpi) are taken at ~6 sigmas
-  /// (expected detector resolution) on the left and right frm the D0 mass. Each band
-  ///  has a width of ~5 sigmas. Two band needed  for opening angle considerations
+  //  D* side band background method. Two side bands, in M(Kpi) are taken at ~6 sigmas 
+  // (expected detector resolution) on the left and right frm the D0 mass. Each band
+  //  has a width of ~5 sigmas. Two band needed  for opening angle considerations   
   
   if((invM>=1.7 && invM<=1.8) || (invM>=1.92 && invM<=2.19)){    
     fDiffSideBand->Fill(invMDStar-invM); // M(Kpipi)-M(Kpi) side band background    
@@ -541,10 +539,10 @@ void AliAnalysisTaskSEDStarJets::SideBandBackground(Double_t invM, Double_t invM
 
 //_____________________________________________________________________________________________-
 double AliAnalysisTaskSEDStarJets::FillMCFF(AliAODMCParticle* mcPart, TClonesArray* mcArray, Int_t mcLabel){
-  ///
-  /// GS from MC
-  /// UA1 jet algorithm reproduced in MC
-  ///
+  //
+  // GS from MC
+  // UA1 jet algorithm reproduced in MC
+  //
   Double_t zMC2 =-999;
   
   Double_t leading =0;

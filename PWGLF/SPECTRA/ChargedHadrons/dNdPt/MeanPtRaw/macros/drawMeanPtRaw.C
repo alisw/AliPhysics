@@ -42,7 +42,6 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
   TString sAdditionalInfo(cInformation);
   TObjArray *oAddInfo = sAdditionalInfo.Tokenize(";");
   
-  TObjString *osPlot = 0x0;
   std::vector<Bool_t> bDrawEntry;
   std::vector<Double_t> dVecPtMin;
   std::vector<Double_t> dVecPtMax;
@@ -67,14 +66,7 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
 	  
 	  bDrawEntry.at(iEntry) = kFALSE;
 	  nPtCuts++;
-	}
-	if(osAdd->GetString().Contains("plot"))
-	{
-	  TObjArray *oPlot = osAdd->GetString().Tokenize("=");
-          osPlot = (TObjString*)oPlot->At(1);
-	  bDrawEntry.at(iEntry) = kFALSE;
-	  //Printf("%s" ,osPlot->GetString().Data());
-	}	  
+	}	
   }
   
   std::vector<std::vector<TProfile> > pVecMpt;
@@ -82,7 +74,7 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
   Int_t nCutSettings = hsMpt->GetAxis(2)->GetNbins();
   
   for(Int_t iCutSetting = 0; iCutSetting < nCutSettings; iCutSetting++) {
-	hsMpt->GetAxis(2)->SetRange(iCutSetting+1, iCutSetting+1); // +1 to overcome underflow bin
+	hsMpt->GetAxis(2)->SetRange(iCutSetting, iCutSetting);
 	std::vector<TProfile> pVecTemp;
 	for(Int_t iPtCut = 0; iPtCut < nPtCuts; iPtCut++) {
 	  hsMpt->GetAxis(1)->SetRangeUser(dVecPtMin.at(iPtCut), dVecPtMax.at(iPtCut));
@@ -96,13 +88,12 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
   }
   
   
-  Int_t maxBin = 160;
-  Double_t maxPt = 6;
+  Int_t maxBin = -1;
+  Double_t maxPt = -1;
   for(Int_t iCutSetting = 0; iCutSetting < nCutSettings; iCutSetting++) {
 	if(GetMaxBin(pVecMpt.at(iCutSetting)) > maxBin)  { maxBin = GetMaxBin(pVecMpt.at(iCutSetting)); }
 	if(GetMaxPt(pVecMpt.at(iCutSetting)) > maxPt)  { maxPt = GetMaxPt(pVecMpt.at(iCutSetting)); }
   }
-  
   
   TH1F hDummy("hDummy",";n_{acc} (raw);#LT #it{p}_{T} #GT (raw) (GeV/c)",3500,-0.5,3499.5);
   hDummy.GetXaxis()->SetRangeUser(0, maxBin);
@@ -163,7 +154,7 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
   } // end iCutSetting
   
   
-  c1.SaveAs(Form("meanpt_vs_mult_raw_%s.gif", osPlot->GetString().Data()));
+  c1.SaveAs("meanpt_vs_mult_raw.gif");
 }
 
 Int_t GetMaxBin(std::vector<TProfile> &vec)

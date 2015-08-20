@@ -90,8 +90,6 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 					cout << "setting phi modulation = " << isphi << endl; };
   void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut; 
 					cout << "setting z vertex cut = " << fzvtxCut << endl;};
-  void SetSCptdep( Bool_t isSCptdep){ IsSCptdep = isSCptdep;
-					cout << "setting : SCpt dep = " << isSCptdep << endl;};
 //  void SetMinTPCNcl( int nTPC ){ fminTPCNcl = nTPC ;
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
 
@@ -115,7 +113,6 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   Bool_t IsExcludeWeakDecay;
   Bool_t IsCentFlat;
   Bool_t IsPhiModule;
-  Bool_t IsSCptdep;
   TClonesArray * fInputList;  // tracklist 
   TH1D *h_ratio; 
   AliJFFlucAnalysis *fFFlucAna; // analysis code

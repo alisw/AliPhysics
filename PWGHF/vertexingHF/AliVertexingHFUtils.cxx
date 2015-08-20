@@ -41,10 +41,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-/// \cond CLASSIMP
-ClassImp(AliVertexingHFUtils);
-/// \endcond
-
+ClassImp(AliVertexingHFUtils)
 
 //______________________________________________________________________
 AliVertexingHFUtils::AliVertexingHFUtils():TObject(),
@@ -53,7 +50,7 @@ AliVertexingHFUtils::AliVertexingHFUtils():TObject(),
   fMinEtaForTracklets(-1.),
   fMaxEtaForTracklets(1.)
 {
-  /// Default contructor
+  // Default contructor
 }
 
 
@@ -65,13 +62,13 @@ AliVertexingHFUtils::AliVertexingHFUtils(Int_t k):
   fMinEtaForTracklets(-1.),
   fMaxEtaForTracklets(1.)
 {
-  /// Standard constructor
+  // Standard constructor
 }
 
 
 //______________________________________________________________________
 void AliVertexingHFUtils::ComputeSignificance(Double_t signal, Double_t  errsignal, Double_t  background, Double_t  errbackground, Double_t &significance,Double_t &errsignificance){
-  /// calculate significance from S, B and errors
+  // calculate significance from S, B and errors
 
 
   Double_t errSigSq=errsignal*errsignal;
@@ -89,7 +86,7 @@ void AliVertexingHFUtils::ComputeSignificance(Double_t signal, Double_t  errsign
 }
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::Pol(Double_t x, Int_t k){
-  /// compute chi from polynomial approximation
+  // compute chi from polynomial approximation
   Double_t c[5];
   if(k==1){ 
     c[0]=0.626657; c[1]=0.; c[2]=-0.09694; c[3]=0.02754; c[4]=-0.002283;
@@ -109,7 +106,7 @@ Double_t AliVertexingHFUtils:: ResolK1(Double_t x){
 
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::FindChi(Double_t res,  Int_t k){
-  /// compute chi variable (=v2*sqrt(N)) from external values
+  // compute chi variable (=v2*sqrt(N)) from external values
 
   Double_t x1=0;
   Double_t x2=15;
@@ -152,7 +149,7 @@ Double_t AliVertexingHFUtils::FindChi(Double_t res,  Int_t k){
 
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::GetFullEvResol(Double_t resSub, Int_t k){
-  /// computes event plane resolution starting from sub event resolution
+  // computes event plane resolution starting from sub event resolution
   Double_t chisub=FindChi(resSub,k);
   Double_t chifull=chisub*TMath::Sqrt(2);
   if(k==1) return ResolK1(chifull);
@@ -165,14 +162,14 @@ Double_t AliVertexingHFUtils::GetFullEvResol(Double_t resSub, Int_t k){
 
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::GetFullEvResol(const TH1F* hSubEvCorr, Int_t k){
-  /// computes event plane resolution starting from sub event correlation histogram
+  // computes event plane resolution starting from sub event correlation histogram
   if(!hSubEvCorr) return 1.;
   Double_t resSub=GetSubEvResol(hSubEvCorr);
   return GetFullEvResol(resSub,k);
 }
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k){
-  /// computes low limit event plane resolution starting from sub event correlation histogram
+  // computes low limit event plane resolution starting from sub event correlation histogram
   if(!hSubEvCorr) return 1.;
   Double_t resSub=GetSubEvResolLowLim(hSubEvCorr);
   printf("%f\n",resSub);
@@ -180,7 +177,7 @@ Double_t AliVertexingHFUtils::GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t
 }
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k){
-  /// computes high limit event plane resolution starting from sub event correlation histogram
+  // computes high limit event plane resolution starting from sub event correlation histogram
   if(!hSubEvCorr) return 1.;
   Double_t resSub=GetSubEvResolHighLim(hSubEvCorr);
   printf("%f\n",resSub);
@@ -188,7 +185,7 @@ Double_t AliVertexingHFUtils::GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_
 }
 //______________________________________________________________________
 Int_t AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AliAODEvent* ev, Double_t mineta, Double_t maxeta){
-  /// counts tracklets in given eta range
+  // counts tracklets in given eta range
   AliAODTracklets* tracklets=ev->GetTracklets();
   Int_t nTr=tracklets->GetNumberOfTracklets();
   Int_t count=0;
@@ -201,7 +198,7 @@ Int_t AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AliAODEvent* ev, Doubl
 }
 //______________________________________________________________________
 Int_t AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta){
-  /// counts generated particles in fgiven eta range
+  // counts generated particles in fgiven eta range
 
   Int_t nChargedMC=0;
   for(Int_t i=0;i<arrayMC->GetEntriesFast();i++){
@@ -214,7 +211,7 @@ Int_t AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(TClonesArray* arra
 }
 //______________________________________________________________________
 Int_t AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta){
-  /// counts generated primary particles in given eta range
+  // counts generated primary particles in given eta range
 
   Int_t nChargedMC=0;
   for(Int_t i=0;i<arrayMC->GetEntriesFast();i++){
@@ -229,7 +226,7 @@ Int_t AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(TClonesArray* arrayMC
 }
 //______________________________________________________________________
 Int_t AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray* arrayMC, Double_t mineta, Double_t maxeta){
-  /// counts generated primary particles in given eta range
+  // counts generated primary particles in given eta range
 
   Int_t nChargedMC=0;
   for(Int_t i=0;i<arrayMC->GetEntriesFast();i++){
@@ -247,8 +244,8 @@ Int_t AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray*
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(AliAODEvent* ev){
   //
-  /// Method to get VZERO-A equalized multiplicty as done in AliCentralitySelectionTask
-  ///  getting the equalized VZERO factors from the tender or AOD
+  // Method to get VZERO-A equalized multiplicty as done in AliCentralitySelectionTask
+  //  getting the equalized VZERO factors from the tender or AOD
   // http://git.cern.ch/pubweb/AliRoot.git/blob/HEAD:/ANALYSIS/AliCentralitySelectionTask.cxx#l1345
 
   Double_t multV0AEq=0;
@@ -261,9 +258,9 @@ Double_t AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(AliAODEvent* ev){
 
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(AliAODEvent* ev){
-  /// Method to get VZERO-C equalized multiplicty as done in AliCentralitySelectionTask
-  ///  getting the equalized VZERO factors from the tender or AOD
-  /// http://git.cern.ch/pubweb/AliRoot.git/blob/HEAD:/ANALYSIS/AliCentralitySelectionTask.cxx#l1345
+  // Method to get VZERO-C equalized multiplicty as done in AliCentralitySelectionTask
+  //  getting the equalized VZERO factors from the tender or AOD
+  // http://git.cern.ch/pubweb/AliRoot.git/blob/HEAD:/ANALYSIS/AliCentralitySelectionTask.cxx#l1345
 
   Double_t multV0CEq=0;
   for(Int_t iCh = 0; iCh < 32; ++iCh) {
@@ -276,7 +273,7 @@ Double_t AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(AliAODEvent* ev){
 //______________________________________________________________________
 void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t ptmin,Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig,Float_t sigmaRangeForBkg, Float_t minMass, Float_t maxMass, Int_t rebin){
 
-  /// Compute <pt> from 2D histogram M vs pt
+  // Compute <pt> from 2D histogram M vs pt
 
   //Make 2D histos in the desired pt range
   Int_t start=hMassD->FindBin(ptmin);
@@ -352,14 +349,14 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
 }
 //____________________________________________________________________________
 Bool_t AliVertexingHFUtils::CheckT0TriggerFired(AliAODEvent* aodEv){
-  /// check if T0VTX trigger was fired, based on a workaround suggested by Alla
+  // check if T0VTX trigger was fired, based on a workaround suggested by Alla
   const Double32_t *mean = aodEv->GetT0TOF();
   if(mean && mean[0]<9999.) return kTRUE;
   else return kFALSE;
 }
 //____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetTrueImpactParameterDzero(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD) {
-  /// true impact parameter calculation for Dzero
+  // true impact parameter calculation for Dzero
 
   if(!partD || !arrayMC || !mcHeader) return 99999.;
   Int_t code=partD->GetPdgCode();
@@ -402,7 +399,7 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDzero(AliAODMCHeader *mcHead
 }
 //____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetTrueImpactParameterDplus(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD) {
-  /// true impact parameter calculation for Dplus
+  // true impact parameter calculation for Dplus
 
   if(!partD || !arrayMC || !mcHeader) return 99999.;
   Int_t code=partD->GetPdgCode();
@@ -513,7 +510,7 @@ Double_t AliVertexingHFUtils::GetCorrectedNtracklets(TProfile* estimatorAvg, Dou
 }
 //______________________________________________________________________
 TString AliVertexingHFUtils::GetGenerator(Int_t label, AliAODMCHeader* header){
-  /// get the name of the generator that produced a given particle
+  // get the name of the generator that produced a given particle
 
   Int_t nsumpart=0;
   TList *lh=header->GetCocktailHeaders();
@@ -531,7 +528,7 @@ TString AliVertexingHFUtils::GetGenerator(Int_t label, AliAODMCHeader* header){
 //_____________________________________________________________________
 void AliVertexingHFUtils::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen){
 
-  /// method to check if a track comes from a given generator
+  // method to check if a track comes from a given generator
 
   Int_t lab=TMath::Abs(track->GetLabel());
   nameGen=GetGenerator(lab,header);
@@ -562,7 +559,7 @@ void AliVertexingHFUtils::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHe
 }
 //----------------------------------------------------------------------
 Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC){
-  /// method to check if a track comes from the signal event or from the underlying Hijing event
+  // method to check if a track comes from the signal event or from the underlying Hijing event
   TString nameGen;
   GetTrackPrimaryGenerator(track,header,arrayMC,nameGen);
   
@@ -572,7 +569,7 @@ Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *h
 }
 //____________________________________________________________________________
 Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC){
-  /// method to check if a D meson candidate comes from the signal event or from the underlying Hijing event
+  // method to check if a D meson candidate comes from the signal event or from the underlying Hijing event
 
   Int_t nprongs=cand->GetNProngs();
   for(Int_t i=0;i<nprongs;i++){
@@ -583,7 +580,7 @@ Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODM
 }
 //____________________________________________________________________________
 Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC){
-  /// method to check if a cascade candidate comes from the signal event or from the underlying Hijing event
+  // method to check if a cascade candidate comes from the signal event or from the underlying Hijing event
 
   AliAODTrack* bach = cand->GetBachelor();
   if(IsTrackInjected(bach, header, arrayMC)) {
@@ -603,7 +600,7 @@ Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascad
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckOrigin(AliStack* stack, TParticle *mcPart, Bool_t searchUpToQuark){
-  /// checking whether the mother of the particles come from a charm or a bottom quark
+  // checking whether the mother of the particles come from a charm or a bottom quark
 
   Int_t pdgGranma = 0;
   Int_t mother = 0;
@@ -635,7 +632,7 @@ Int_t AliVertexingHFUtils::CheckOrigin(AliStack* stack, TParticle *mcPart, Bool_
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark){
-  /// checking whether the mother of the particles come from a charm or a bottom quark
+  // checking whether the mother of the particles come from a charm or a bottom quark
 
   Int_t pdgGranma = 0;
   Int_t mother = 0;
@@ -665,37 +662,10 @@ Int_t AliVertexingHFUtils::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *
   else return 4;
 
 }
-//____________________________________________________________________________
-Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart){
-  /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt
 
-  Int_t pdgGranma = 0;
-  Int_t mother = 0;
-  mother = mcPart->GetMother();
-  Int_t istep = 0;
-  Int_t abspdgGranma =0;
-  while (mother >0 ){
-    istep++;
-    AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
-    if (mcGranma){
-      pdgGranma = mcGranma->GetPdgCode();
-      abspdgGranma = TMath::Abs(pdgGranma);
-      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
-	return mcGranma->Pt();
-      }
-      if(abspdgGranma==4) return -999.;
-      if(abspdgGranma==5) return -1.;
-      mother = mcGranma->GetMother();
-    }else{
-      printf("AliVertexingHFUtils::GetBeautyMotherPt: Failed casting the mother particle!");
-      break;
-    }
-  }
-  return -999.;
-}
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckD0Decay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the D0 decay channel. Returns 1 for the D0->Kpi case, 2 for the D0->Kpipipi case, -1 in other cases
+  // Checks the D0 decay channel. Returns 1 for the D0->Kpi case, 2 for the D0->Kpipipi case, -1 in other cases
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -805,7 +775,7 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliStack* stack, Int_t label, Int_t* arr
 
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
- /// Checks the D0 decay channel. Returns 1 for the D0->Kpi case, 2 for the D0->Kpipipi case, -1 in other cases
+ // Checks the D0 decay channel. Returns 1 for the D0->Kpi case, 2 for the D0->Kpipipi case, -1 in other cases
 
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=421) return -1;
@@ -912,7 +882,7 @@ Int_t AliVertexingHFUtils::CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle 
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDplusDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+  // Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -999,7 +969,7 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(AliStack* stack, Int_t label, Int_t* 
 
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
-  /// Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
+  // Checks the Dplus decay channel. Returns 1 for the non-resonant case, 2 for the resonant case, -1 in other cases
 
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=411) return -1;
@@ -1083,7 +1053,7 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(TClonesArray* arrayMC, AliAODMCPartic
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
+  // Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -1172,7 +1142,7 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliStack* stack, Int_t label, Int
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Dplus->V0+pion decay channel. Returns 1 if success, -1 otherwise
+  // Checks the Dplus->V0+pion decay channel. Returns 1 if success, -1 otherwise
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -1250,7 +1220,7 @@ Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliStack* stack, Int_t label, In
  
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDsDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
+  // Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -1339,7 +1309,7 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliStack* stack, Int_t label, Int_t* arr
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Ds->K0s+S decay channel. Returns 1 in case of success, otherwise -1
+  // Checks the Ds->K0s+S decay channel. Returns 1 in case of success, otherwise -1
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -1426,7 +1396,7 @@ Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliStack* stack, Int_t label, Int_t*
  
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
-  /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
+  // Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
 
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=431) return -1;
@@ -1513,7 +1483,7 @@ Int_t AliVertexingHFUtils::CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle 
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDstarDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Dstar decay channel. Returns 1 for D*->D0pi->Kpipi, -1 in other cases
+  // Checks the Dstar decay channel. Returns 1 for D*->D0pi->Kpipi, -1 in other cases
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -1588,7 +1558,7 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(AliStack* stack, Int_t label, Int_t* 
 
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDstarDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
-  /// Checks the Dstar decay channel. Returns 1 for D*->D0pi->Kpipi, -1 in other cases
+  // Checks the Dstar decay channel. Returns 1 for D*->D0pi->Kpipi, -1 in other cases
 
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=413) return -1;
@@ -1661,7 +1631,7 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(TClonesArray* arrayMC, AliAODMCPartic
 
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Lc->pKpi decay channel. Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
+  // Checks the Lc->pKpi decay channel. Returns 1 for non-resonant decays and 2, 3 or 4 for resonant ones, -1 in other cases
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -1766,7 +1736,7 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliStack* stack, Int_t label, Int_t*
  
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Lc->V0+bachelor decay channel. Returns 1 for pK0s, 2 for piLambda, 3 for pK0l -1 in other cases
+  // Checks the Lc->V0+bachelor decay channel. Returns 1 for pK0s, 2 for piLambda, 3 for pK0l -1 in other cases
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);
@@ -1861,7 +1831,7 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliStack* stack, Int_t label, 
  
 //__________________________________xic______________________________________
 Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Xic decay channel. Returns 1 for Xic->Xipipi, -1 in other cases
+  // Checks the Xic decay channel. Returns 1 for Xic->Xipipi, -1 in other cases
 
   if(label<0) return -1;
   TParticle* mcPart = stack->Particle(label);

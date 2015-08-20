@@ -44,9 +44,8 @@
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSEVertexingHF);
-/// \endcond
+ClassImp(AliAnalysisTaskSEVertexingHF)
+
 
 //________________________________________________________________________
 AliAnalysisTaskSEVertexingHF::AliAnalysisTaskSEVertexingHF():

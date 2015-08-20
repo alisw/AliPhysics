@@ -1392,7 +1392,8 @@ AliFMDEventInspector::CheckpA2012Vertex(const AliESDEvent& esd,
   if (!vertex) return kNoSPDVtx;
   if (vertex->GetNContributors() <= nMinContrib) return kFewContrib;
   
-  if (vertex->IsFromVertexerZ()) return kNotVtxZ;
+  TString vtxTyp = vertex->GetTitle();
+  if (vtxTyp.Contains("vertexer: Z")) return kNotVtxZ;
 
   if (vertex->GetDispersion() >= 0.04 || vertex->GetZRes()>=0.25) 
     return kUncertain;
@@ -1422,7 +1423,7 @@ AliFMDEventInspector::CheckpA2013Vertex(const AliESDEvent& esd,
   if (spdVtx->GetNContributors() <= nMinContrib) return kFewContrib;
   
   // TString vtxTyp = spdVtx->GetTitle();
-  // if (spdVtx->IsFromVertexerZ()) {
+  // if (vtxTyp.Contains("vertexer:Z")) {
   if (spdVtx->IsFromVertexerZ() && spdVtx->GetZRes()>0.25) return kUncertain;
 
   Bool_t correlateVtx = true;

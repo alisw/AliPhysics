@@ -97,8 +97,6 @@ set(SRCS
     Tracks/AliReducedHighPtEvent.cxx
     Tracks/AliReducedHighPtEventCreator.cxx
     Tracks/AliAnalysisTaskTrackDCA.cxx
-    Tracks/AliAnalysisTaskChargedParticlesRef.cxx
-    Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
@@ -120,7 +118,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetMassResponse.cxx
     UserTasks/AliAnalysisTaskEmcalJetMassStructure.cxx
     UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
-    UserTasks/AliAnalysisTaskEmcalJetSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
     UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
@@ -128,16 +125,13 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetv2QA.cxx
     UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
-    UserTasks/AliAnalysisTaskEmcalMissingEnergy.cxx
     UserTasks/AliAnalysisTaskSubJetFraction.cxx
-    UserTasks/AliAnalysisTaskEmcalTmpSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
     UserTasks/AliAnalysisTaskJetMatching.cxx
-    UserTasks/AliAnalysisTaskJetsEvshape.cxx
     UserTasks/AliAnalysisTaskJetShapeConst.cxx
     UserTasks/AliAnalysisTaskJetShapeDeriv.cxx
     UserTasks/AliAnalysisTaskJetShapeGR.cxx

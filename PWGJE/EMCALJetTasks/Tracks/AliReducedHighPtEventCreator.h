@@ -158,22 +158,7 @@ public:
   void SetTriggerSetup(const char *triggersetup){
     fTriggerSetup = triggersetup;
   }
-  /**
-   * Set event selection filter bits
-   * @param selection Event selection filter bits
-   */
   void SetBasicEventSelection(UInt_t selection) { fEventSelectionBits = selection; }
-
-  /**
-   * Keep only a given fraction of events. Events will be selected randomly
-   * after full event cuts.
-   * @param frac Fraction of events to keep.
-   */
-  void SetFractionOfEventsToKeep(Double_t frac){
-    if(frac < 0) fKeepFractionEvents = 0.;
-    else if(frac > 1) fKeepFractionEvents = 1.;
-    else fKeepFractionEvents = frac;
-  }
 
 protected:
   Bool_t SelectEvent(AliVEvent *event) const;
@@ -195,7 +180,6 @@ protected:
   Double_t                  fMaxPt;                       ///< Max. track \f$ p_{t} \f$
   Double_t                  fMinEta;                      ///< Min. track \f$ \eta \f$
   Double_t                  fMaxEta;                      ///< Max. track \f$ \eta \f$
-  Float_t                   fKeepFractionEvents;          ///< Keep fraction of events (used for downscaling)
   Bool_t                    fApplyCentralitySelection;    ///< Switch for doing centrality selection
   TString                   fCentralityMethod;            ///< Method to obtain the event centrality
   TString                   fTriggerSetup;                ///< Trigger setup

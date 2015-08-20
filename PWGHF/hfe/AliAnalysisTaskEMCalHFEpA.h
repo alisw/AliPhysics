@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 07, 2015.								      //
+	//		version: July 1st, 2015.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -118,10 +118,8 @@ public:
 	void SetUseShowerShapeCut(Bool_t UseShowerShapeCut=kFALSE) { fUseShowerShapeCut=UseShowerShapeCut;};
 	
 	//TPC calibration for 13d period
-	void SetTPCCalibration() {fCalibrateTPC=kTRUE;};
+	void SetTPCCalibration(Bool_t CalibrateTPCnsigma = kFALSE) { fCalibrateTPC=CalibrateTPCnsigma;};
 	void SetTPC_mean_sigma(Double_t CalibrateTPC_mean,Double_t CalibrateTPC_sigma ) { fCalibrateTPC_mean = CalibrateTPC_mean; fCalibrateTPC_sigma = CalibrateTPC_sigma; };
-	void SetTPCcal_cut_min(Double_t TPCmin) { fTPCcal_CutMin = TPCmin; };
-	void SetTPCcal_cut_max(Double_t TPCmax ) {fTPCcal_CutMax = TPCmax; };
 
 
 	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};
@@ -271,23 +269,14 @@ private:
 	TH2F				*fTOF03;
 	TH1F				*fpid;	
 	TH2F				*fEoverP_pt_true_electrons;
-	TH2F				*fEoverP_pt_true_electrons_weight;
-	TH2F				*fEoverP_pt_true_HFE;
-	TH2F				*fEoverP_pt_not_HFE;
-	
 	TH2F				*fEoverP_ntracks_matched;
 	TH2F				*fEoverP_ncells;
 	
 	TH2F				*fEmc_Ereco_gamma0;
 	TH2F				*fEmc_Ereco_gamma_ratio0;
+
 	TH2F				*fEmc_Ereco_ele0;
 	TH2F				*fEmc_Ereco_ele_ratio0;
-	
-	TH2F				*fEmc_Ereco_gamma_all;
-	TH2F				*fEmc_Ereco_gamma_ratio_all;
-	TH2F				*fEmc_Ereco_ele_all;
-	TH2F				*fEmc_Ereco_ele_ratio_all;
-	
 	
 	TH2F				*fEmc_Ereco_gamma;
 	TH2F				*fEmc_Ereco_gamma_ratio;
@@ -425,8 +414,6 @@ private:
 	Double_t			fMassCut;
 	Double_t			fEtaCutMin;
 	Double_t			fEtaCutMax;
-	Double_t			fTPCcal_CutMin;
-	Double_t			fTPCcal_CutMax;
 	Double_t			fdPhiCut;
 	Double_t			fdEtaCut;
 	Double_t			fEoverPCutMin;

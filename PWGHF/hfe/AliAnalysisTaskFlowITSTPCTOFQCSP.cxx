@@ -666,9 +666,9 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         fTPCvsITS->Fill(fTPCnSigma,fITSnSigma);
         fTPCvsTOF->Fill(fTPCnSigma,fTOFnSigma);
         
-       // if( pt >= 0.3){
-        if(fTOFnSigma < fminTOFnSigma || fTOFnSigma > fmaxTOFnSigma) continue;
-       // }//cuts on nsigma tof full pt range
+        if( pt >= 0.3){
+            if(fTOFnSigma < fminTOFnSigma || fTOFnSigma > fmaxTOFnSigma) continue;
+        }//cuts on nsigma tof full pt range
         
         fITSnsigmaAftTOF->Fill(track->P(),fITSnSigma);
         fTPCnsigmaAftTOF->Fill(track->P(),fTPCnSigma);
@@ -689,10 +689,10 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
             if(fITSnSigma < fminITSnsigmaHighpT || fITSnSigma > fmaxITSnsigmaHighpT)continue;
         }//cuts on nsigma its high pt
         fTPCnsigmaAftITSTOF->Fill(track->P(),fTPCnSigma);
-        if(pt < 1.5){
+        if(pt >= 0.25 && pt < 1.5){
             if(fTPCnSigma < fminTPCnsigmaLowpT || fTPCnSigma > fmaxTPCnsigmaLowpT) continue;
         }//cuts on nsigma tpc lowpt
-        if(pt >= 1.5){
+        if( pt >= 1.5){
             if(fTPCnSigma < fminTPCnsigmaHighpT || fTPCnSigma > fmaxTPCnsigmaHighpT) continue;
         }//cuts on nsigma tpc high pt
         fTPCnsigmaAft->Fill(track->P(),fTPCnSigma);
@@ -1297,11 +1297,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     
     
     fOutputList->Add(fHistEPDistrWeight);
-    
+
     fCentralityAll = new TH1F("fCentralityAll", "Centrality Pass All", 101, -1, 100);
     fOutputList->Add(fCentralityAll);
     
-    
+
     
     PostData(1,fOutputList);
     // create and post flowevent
@@ -1384,7 +1384,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::CheckCentrality(AliAODEvent* event, Bool_
     if (!fkCentralityMethod) AliFatal("No centrality method set! FATAL ERROR!");
     fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethod);
     fCentralityAll->Fill(fCentrality);
-    
+
     //   cout << "--------------Centrality evaluated-------------------------"<<endl;
     if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax))
     {

@@ -2927,13 +2927,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       Float_t   tof2 = photon2->GetTime();
       Int_t nMaxima2 = photon2->GetNLM();
       
-      //
-      // Skip pairs of EMCal and DCal clusters
-      Double_t angleOp = fMomentum1.Angle(fMomentum2.Vect());
-      
-      if(angleOp > DegToRad(100.)) continue; 
-      
-      //
       // Select clusters with good time window difference
       Double_t t12diff = tof1-tof2;
         
@@ -3041,7 +3034,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         Double_t radius   = GetIsolationCut()->Radius(fMomentum1.Eta(),fMomentum1.Phi(),fMomentum2.Eta(),fMomentum2.Phi());
         
         if(radius < fR) fhMassPtIsoRCut->Fill(ptpair, mass, GetEventWeight());
-                    
+          
+//        Double_t angleOp  = fMomentum1.Angle(fMomentum2.Vect());
+//          
 //        printf("pT pair (%f, %f), opening angle %f, radius %f; fR %1.1f, MinPt1 %2.2f\n",fMomentum1.Pt(),fMomentum2.Pt(),angleOp,radius,fR,fIsoCandMinPt);
       }
       

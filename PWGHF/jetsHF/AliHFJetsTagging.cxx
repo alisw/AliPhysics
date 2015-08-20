@@ -86,10 +86,11 @@ Bool_t AliHFJetsTagging::IsEventSelectedTrackCounting(const AliAODEvent*event){
   const AliVVertex* spdVtx =     dynamic_cast<const AliVVertex*>(event->GetPrimaryVertexSPD()) ;
   TString vtxTtl = trkVtx->GetTitle();
   if (!vtxTtl.Contains("VertexerTracks"))  return kFALSE;
+  TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (spdVtx->IsFromVertexerZ() && (zRes>0.25) )return kFALSE;
+  if ((vtxTyp.Contains("vertexer: Z") && (zRes>0.25)))return kFALSE;
   if ((TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5))return kFALSE;  
   if(trkVtx->GetNContributors()<2) return kFALSE;
   if(spdVtx->GetNContributors()<1) return kFALSE;
@@ -237,41 +238,36 @@ Bool_t AliHFJetsTagging::GetSignedRPhiImpactParameter(const AliVEvent*event, con
 
   if(!event|| !track ||!jet) return kFALSE;
   AliVVertex * vertex	= (AliVVertex *)event->GetPrimaryVertex();
-  AliVVertex * vertexreco =NULL;
   if(!vertex) return kFALSE;
   if(vertex->GetNContributors()< 100) {
     //Recalculate  primary vertex without "track", if number of contributers to the prim. vertex is less than 100
-
-	AliVertexerTracks *vertexer = new AliVertexerTracks(event->GetMagneticField());
-    vertexer->SetITSMode();
-    vertexer->SetMinClusters(4);
+    
+    AliVertexerTracks 	vertexer(event->GetMagneticField());
+    vertexer.SetITSMode();
+    vertexer.SetMinClusters(4);
     skipped[0] 		= (Int_t)track->GetID();
-    vertexer->SetSkipTracks(1,skipped);
-    vertexer->SetConstraintOn();
+    vertexer.SetSkipTracks(1,skipped);	
+    vertexer.SetConstraintOn();
     event->GetDiamondCovXY(diamondcovxy);
     Double_t bpos[3]=	{event->GetDiamondX(), event->GetDiamondY(),0.};
     Double_t bcov[6]=	{diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
     AliESDVertex *diamond = new AliESDVertex(bpos,bcov,1.,1);
-    vertexer->SetVtxStart((AliESDVertex*)diamond);
+    vertexer.SetVtxStart((AliESDVertex*)diamond);
     delete diamond;
     diamond=0x0;
-    vertexreco = (AliVVertex*)vertexer->FindPrimaryVertex(event);
-    delete vertexer; vertexer =NULL;
-    if(vertexreco) vertex = vertexreco;
+    vertex = (AliVVertex*)vertexer.FindPrimaryVertex(event);
   }
   //Propagate to primary vertex
    AliExternalTrackParam betp;
    betp.CopyFromVTrack((AliVTrack*)track);
-    if(!(betp.PropagateToDCA(vertex,event->GetMagneticField(),kBeampiperadius, posAtDCA, covar))){
-    if(vertexreco) {delete vertexreco; vertexreco =NULL;}
+    if(!(betp.PropagateToDCA(vertex,event->GetMagneticField(),kBeampiperadius, posAtDCA, covar)))
       return kFALSE;
-    }
     vertex->GetXYZ(pV);
     betp.GetXYZ(pTrack);
-
+    
     Double_t imparvector[3]={pTrack[0] - pV[0],pTrack[1] - pV[1],pTrack[2] - pV[2]};
     absIP = sqrt(imparvector[0]*imparvector[0]+ imparvector[1]*imparvector[1] + imparvector[2]*imparvector[2]);
-
+    
     scalarP = (imparvector[0]*jet->Px()+imparvector[1]*jet->Py()+imparvector[2]*jet->Pz())/(absIP*jet->P());
     scalarP>=0 ? signedimpactparameter =  fabs(posAtDCA[0]): signedimpactparameter =  -1*fabs(posAtDCA[0]);
     d[0] = posAtDCA[0];
@@ -279,7 +275,7 @@ Bool_t AliHFJetsTagging::GetSignedRPhiImpactParameter(const AliVEvent*event, con
     cov[0] = covar[0];
     cov[1] = covar[1];
     cov[2] = covar[2];
-    if(vertexreco) {delete vertexreco; vertexreco =NULL;}
+
     return kTRUE;
 }
 

@@ -87,17 +87,13 @@ public:
   static TGraph *GetCorrGraphdEdx()  { return fgdEdxRunCorr; }
 
   static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
-  static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
   static void SetCentroidCorrFunction(TH1 *fun) { fgFunCntrdCorr=fun; }
   static void SetWidthCorrFunction(TH1 *fun) { fgFunWdthCorr=fun; }
-  static void SetCentroidCorrFunctionITS(TH1 *fun) { fgFunCntrdCorrITS=fun; }
-  static void SetWidthCorrFunctionITS(TH1 *fun) { fgFunWdthCorrITS=fun; }
+  static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
 
   static Double_t GetEtaCorr(const AliVTrack *track);
   static Double_t GetCntrdCorr(const AliVTrack *track) { return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); }
   static Double_t GetWdthCorr(const AliVTrack *track)  { return (fgFunWdthCorr  ? GetPIDCorr(track,fgFunWdthCorr)  : 1.0); }
-  static Double_t GetCntrdCorrITS(const AliVTrack *track) { return (fgFunCntrdCorrITS ? GetPIDCorr(track,fgFunCntrdCorrITS) : 0.0); }
-  static Double_t GetWdthCorrITS(const AliVTrack *track)  { return (fgFunWdthCorrITS  ? GetPIDCorr(track,fgFunWdthCorrITS)  : 1.0); }
 
 private:
   enum {kNmaxPID=30};
@@ -128,10 +124,8 @@ private:
   static Double_t fgCorrdEdx;     //!dEdx correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
-  static TH1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid) in TPC
-  static TH1    *fgFunWdthCorr;   //function for correction of electron sigma (width) in TPC
-  static TH1    *fgFunCntrdCorrITS;  //function for correction of electron sigma (centroid) in ITS
-  static TH1    *fgFunWdthCorrITS;   //function for correction of electron sigma (width) in ITS
+  static TH1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
+  static TH1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
   static Double_t GetPIDCorr(const AliVTrack *track, TH1 *hist);
@@ -147,7 +141,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,8)         // Dielectron PID
+  ClassDef(AliDielectronPID,7)         // Dielectron PID
 };
 
 #endif

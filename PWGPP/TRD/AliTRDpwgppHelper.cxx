@@ -53,6 +53,15 @@
 #include "AliTRDv0Monitor.h"
 #include "AliTRDpwgppHelper.h"
 
+#include "macros/AddTRDcheckESD.C"
+#include "macros/AddTRDcheckDET.C"
+#include "macros/AddTRDcheckPID.C"
+#include "macros/AddTRDcheckTRK.C"
+#include "macros/AddTRDinfoGen.C"
+#include "macros/AddTRDresolution.C"
+#include "macros/AddTRDefficiency.C"
+#include "macros/AddTRDv0Monitor.C"
+
 Int_t AliTRDpwgppHelper::fgYear = 0;
 const Char_t * AliTRDpwgppHelper::fgkTRDtaskClassName[AliTRDpwgppHelper::kNTRDTASKS] = {
   "AliTRDcheckESD"
@@ -101,20 +110,22 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
   // TRD data containers
   AliAnalysisDataContainer *ci[kNOutSlots];
   AliAnalysisDataContainer *ce[6];
-  Char_t macro[100], pars[100]; Int_t npars(0);
+
   Info("AddTrainPerformanceTRD", "Add Macros taken from %s", addMacroPath);
   Info("AddTrainPerformanceTRD", "TRD wagons \"%s\"", trd);
   Int_t bitmap = ParseOptions(trd);
   for(Int_t it=0; it<kNTRDQATASKS; it++){
+    if(gROOT->LoadMacro(Form("%s/Add%s.C", addMacroPath, TString(TaskClassName(it))(3,20).Data()))) {
+      Error("AddTrainPerformanceTRD()", "Error loading %s task.", TaskClassName(it));
+      return kFALSE;
+    } 
     if(!DoTask(it, bitmap)) continue;
-    snprintf(macro, 100, "%s/Add%s.C", addMacroPath, TString(TaskClassName(it))(3,20).Data());
-    npars=0;
+
     switch(it){
     case kCheckESD:
-      break;
+      AddTRDcheckESD(mgr); break;
     case kInfoGen:
-      snprintf(pars, 100, "(AliAnalysisDataContainer**)%p", (void*)ci); npars=1; 
-      break;
+      AddTRDinfoGen(mgr, 0, NULL, ci); break;
     case kCheckDET:
       // map slots
       ce[0]=ci[kTracksBarrel];
@@ -123,7 +134,7 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
       ce[3]=ci[kEventInfo];
       ce[4]=ci[kTracklets];
       ce[5]=ci[kClusters];
-      snprintf(pars, 100, "(AliAnalysisDataContainer**)%p, %d", (void*)ce, TESTBIT(bitmap, AliTRDpwgppHelper::kCalibration)); npars=2; 
+      AddTRDcheckDET(mgr, bitmap, ce);
       break;
     case kEfficiency:
       // map slots
@@ -133,7 +144,7 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
       ce[3]=ci[kEventInfo];
       ce[4]=ci[kTracklets];
       ce[5]=ci[kClusters];
-      snprintf(pars, 100, "(AliAnalysisDataContainer**)%p, %d, %d", (void*)ce, TESTBIT(bitmap, AliTRDpwgppHelper::kEfficiencyMC), TESTBIT(bitmap, AliTRDpwgppHelper::kMultiplicity)); npars=3; 
+      AddTRDefficiency(mgr, bitmap, ce);
       break;
     case kResolution:
       // map slots
@@ -143,7 +154,7 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
       ce[3]=ci[kEventInfo];
       ce[4]=ci[kTracklets];
       ce[5]=ci[kClusters];
-      snprintf(pars, 100, "(AliAnalysisDataContainer**)%p, %d, %d", (void*)ce, TESTBIT(bitmap, AliTRDpwgppHelper::kClErrParam), TESTBIT(bitmap, AliTRDpwgppHelper::kAlignment)); npars=3; 
+      AddTRDresolution(mgr, bitmap, ce); 
       break;
     case kCheckPID:
       // map slots
@@ -151,7 +162,7 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
       ce[1]=ci[kEventInfo];
       ce[2]=ci[kTracklets];
       ce[3]=ci[kV0List];
-      snprintf(pars, 100, "(AliAnalysisDataContainer**)%p, (AliAnalysisDataContainer**)%p, %d", (void*)ce, (void*)&ce[4], TESTBIT(bitmap, AliTRDpwgppHelper::kPIDRefMaker)); npars=3; 
+      AddTRDcheckPID(mgr, bitmap, ce, &ce[4]);
       break;
     case kCheckTRK:
       // map slots
@@ -159,24 +170,17 @@ Bool_t AliTRDpwgppHelper::AddTrainPerformanceTRD(const Char_t *trd, const Char_t
       ce[1]=ci[kEventInfo];
       ce[2]=ci[kTracklets];
       ce[3]=ci[kClusters];
-      snprintf(pars, 100, "(AliAnalysisDataContainer**)%p", (void*)ce); npars=1; 
+      AddTRDcheckTRK(mgr, 0, ce);
       break;
     case kV0Monitor:
       // slots already mapped by checkPID
       ce[2] = ce[3];
       ce[3] = ce[4];
-      snprintf(pars, 100, "(AliAnalysisDataContainer**)%p", (void*)ce); npars=1; 
+      AddTRDv0Monitor(mgr, 0, ce);
       break;
     default:
-      Warning("AddTrainPerformanceTRD()", "No performance task registered at slot %d.", it);
-      npars=-1;
+      Warning("AddTrainPerformanceTRD()", "No performance task registered at slot %d.", it); 
     }
-    if(npars>0){
-      if(gROOT->Macro(Form("%s(%s)", macro, pars))!=0) return kFALSE;
-    } else if(npars==0){
-      if(gROOT->Macro(macro)!=0) return kFALSE;
-    } else continue;     
- 
   }
   return kTRUE;
 }

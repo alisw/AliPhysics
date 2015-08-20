@@ -750,7 +750,7 @@ void AliAnalysisTaskdNdEtaRuben::UserExec(Option_t *)
     }
     */
     
-    if ( !vtxESD->IsFromVertexerZ() || (vtxESD->GetDispersion()<0.02)) {
+    if ( !vtxTyp.Contains("vertexer: Z") || (vtxESD->GetDispersion()<0.02)) {
       fVtxOK = kTRUE;
       fESDVtx[0] = vtxESD_->GetX(); // R+HACK
       fESDVtx[1] = vtxESD_->GetY(); // R+HACK

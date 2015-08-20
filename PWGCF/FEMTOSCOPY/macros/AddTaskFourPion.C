@@ -17,7 +17,7 @@ AliFourPion *AddTaskFourPion(
     return NULL;
   }
  
-  cout<<"Start creating the FourPion task"<<endl;
+
   //____________________________________________//
   // Create task
   AliFourPion *FourPionTask = new AliFourPion("FourPionTask");
@@ -27,6 +27,7 @@ AliFourPion *AddTaskFourPion(
   FourPionTask->SetCollisionType(0);
   FourPionTask->SetGenerateSignal(kFALSE);
   FourPionTask->SetTabulatePairs(TabulatePairs);
+  FourPionTask->SetInterpolationType(kFALSE);
   FourPionTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
   FourPionTask->SetRMax(11);
   FourPionTask->SetfcSq(0.7);
@@ -50,18 +51,17 @@ AliFourPion *AddTaskFourPion(
 
   mgr->AddTask(FourPionTask);
 
-  cout<<"Finished creating the FourPion task"<<endl;
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCF.outputFourPionAnalysis.root";
   AliAnalysisDataContainer *coutFourPion = mgr->CreateContainer("FourPionOutput", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(FourPionTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(FourPionTask, 1, coutFourPion);
- 
   
+
   TFile *inputFileWeight = 0;
   TFile *inputFileMomRes = 0;
   TFile *inputFileFSI = 0;
@@ -69,7 +69,6 @@ AliFourPion *AddTaskFourPion(
   TFile *inputFileEA = 0;
  
   if(!TabulatePairs){
-    cout<<"Start AddTask WeightFile read"<<endl;
     inputFileWeight = TFile::Open(StWeightName,"OLD");
     if (!inputFileWeight){
       cout << "Requested file:" << inputFileWeight << " was not opened. ABORT." << endl;
@@ -102,10 +101,8 @@ AliFourPion *AddTaskFourPion(
       }
     }
     FourPionTask->SetWeightArrays( kTRUE, weightHisto, weightHisto2 );
-    cout<<"End AddTask WeightFile read"<<endl;
     //
     //
-    cout<<"Start AddTask EA File read"<<endl;
     inputFileEA = TFile::Open(StEAName,"OLD");
     if (!inputFileEA){
       cout << "Requested file:" << inputFileEA << " was not opened. ABORT." << endl;
@@ -123,12 +120,11 @@ AliFourPion *AddTaskFourPion(
     ppEA[1] = (TH3D*)inputFileEA->Get("ppEA_C3");
     //
     FourPionTask->Setc3FitEAs( kTRUE, PbPbEA, pPbEA, ppEA );
-    cout<<"End AddTask WeightFile read"<<endl;
     ////////////////////////////////////////////////////
   }// TabulatePairs check
   
   if(!MCcase && !TabulatePairs){
-    cout<<"Start AddTask MomRes File read"<<endl;
+    
     inputFileMomRes = TFile::Open(StMomResName,"OLD");
     if (!inputFileMomRes){
       cout << "Requested file:" << inputFileMomRes << " was not opened. ABORT." << endl;
@@ -141,11 +137,9 @@ AliFourPion *AddTaskFourPion(
     momResHisto2DSC = (TH2D*)inputFileMomRes->Get("MRC_C2_SC");
     momResHisto2DMC = (TH2D*)inputFileMomRes->Get("MRC_C2_MC");
     FourPionTask->SetMomResCorrections( kTRUE, momResHisto2DSC, momResHisto2DMC );
-    cout<<"End AddTask WeightFile read"<<endl;
     ////////////////////////////////////////////////////
 
     // Muon corrections
-    cout<<"Start AddTask MuonCorr File read"<<endl;
     inputFileMuon = TFile::Open(StMuonName,"OLD");
     if (!inputFileMuon){
       cout << "Requested file:" << inputFileMuon << " was not opened. ABORT." << endl;
@@ -154,13 +148,12 @@ AliFourPion *AddTaskFourPion(
     TH2D *muonHisto2D = 0;
     muonHisto2D = (TH2D*)inputFileMuon->Get("WeightmuonCorrection");
     FourPionTask->SetMuonCorrections( kTRUE, muonHisto2D);
-    cout<<"End AddTask MuonCorr File read"<<endl;
+
   }// MCcase and TabulatePairs check
   
 
   ////////////////////////////////////////////////////
   // FSI File
-  cout<<"Start AddTask FSI File read"<<endl;
   inputFileFSI = TFile::Open(StKName,"OLD");
   if (!inputFileFSI){
     cout << "Requested file:" << inputFileFSI << " was not opened. ABORT." << endl;
@@ -181,7 +174,6 @@ AliFourPion *AddTaskFourPion(
   }
   //
   FourPionTask->SetFSICorrelations( kTRUE, FSIss, FSIos );
-  cout<<"End AddTask FSI File read"<<endl;
   ////////////////////////////////////////////////////
   
   

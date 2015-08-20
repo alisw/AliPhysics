@@ -57,9 +57,6 @@
 
 #include "AliAnalysisHFjetTagHFE.h"
 
-using std::cout;
-using std::endl;
-
 ClassImp(AliAnalysisHFjetTagHFE)
 
 //________________________________________________________________________

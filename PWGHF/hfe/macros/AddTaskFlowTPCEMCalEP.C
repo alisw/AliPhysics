@@ -1,17 +1,4 @@
-AliAnalysisTask *AddTaskFlowTPCEMCalEP( 
- Double_t fP2_lowPtEta0010 = 1., Double_t fP3_lowPtEta0010 = 1., Double_t fP4_lowPtEta0010 = 1., 
- Double_t fP2_highPtEta0010 = 1., Double_t fP3_highPtEta0010 = 1., Double_t fP4_highPtEta0010 = 1., 
- Double_t fP2_lowPtPi00010 = 1., Double_t fP3_lowPtPi00010 = 1., Double_t fP4_lowPtPi00010 = 1., 
- Double_t fP2_highPtPi00010 = 1., Double_t fP3_highPtPi00010 = 1., Double_t fP4_highPtPi00010 = 1., 
- Double_t fP2_lowPtEta1020 = 1., Double_t fP3_lowPtEta1020 = 1., Double_t fP4_lowPtEta1020 = 1., 
- Double_t fP2_highPtEta1020 = 1., Double_t fP3_highPtEta1020 = 1., Double_t fP4_highPtEta1020 = 1., 
- Double_t fP2_lowPtPi01020 = 1., Double_t fP3_lowPtPi01020 = 1., Double_t fP4_lowPtPi01020 = 1., 
- Double_t fP2_highPtPi01020 = 1., Double_t fP3_highPtPi01020 = 1., Double_t fP4_highPtPi01020 = 1., 
- Double_t fP2_lowPtEta2040 = 1., Double_t fP3_lowPtEta2040 = 1., Double_t fP4_lowPtEta2040 = 1., 
- Double_t fP2_highPtEta2040 = 1., Double_t fP3_highPtEta2040 = 1., Double_t fP4_highPtEta2040 = 1., 
- Double_t fP2_lowPtPi02040 = 1., Double_t fP3_lowPtPi02040 = 1., Double_t fP4_lowPtPi02040 = 1., 
- Double_t fP2_highPtPi02040 = 1., Double_t fP3_highPtPi02040 = 1., Double_t fP4_highPtPi02040 = 1.,
- TString ID="ContName")
+AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut, TString ID="ContName")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -63,9 +50,9 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
   //analysis task 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
 
-  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,fP2_lowPtEta0010,fP3_lowPtEta0010,fP4_lowPtEta0010,fP2_highPtEta0010,fP3_highPtEta0010,fP4_highPtEta0010,fP2_lowPtPi00010,fP3_lowPtPi00010,fP4_lowPtPi00010,fP2_highPtPi00010,fP3_highPtPi00010,fP4_highPtPi00010,fP2_lowPtEta1020,fP3_lowPtEta1020,fP4_lowPtEta1020,fP2_highPtEta1020,fP3_highPtEta1020,fP4_highPtEta1020,fP2_lowPtPi01020,fP3_lowPtPi01020,fP4_lowPtPi01020,fP2_highPtPi01020,fP3_highPtPi01020,fP4_highPtPi01020,fP2_lowPtEta2040,fP3_lowPtEta2040,fP4_lowPtEta2040,fP2_highPtEta2040,fP3_highPtEta2040,fP4_highPtEta2040,fP2_lowPtPi02040,fP3_lowPtPi02040,fP4_lowPtPi02040,fP2_highPtPi02040,fP3_highPtPi02040,fP4_highPtPi02040);
-  AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,fP2_lowPtEta0010,fP3_lowPtEta0010,fP4_lowPtEta0010,fP2_highPtEta0010,fP3_highPtEta0010,fP4_highPtEta0010,fP2_lowPtPi00010,fP3_lowPtPi00010,fP4_lowPtPi00010,fP2_highPtPi00010,fP3_highPtPi00010,fP4_highPtPi00010,fP2_lowPtEta1020,fP3_lowPtEta1020,fP4_lowPtEta1020,fP2_highPtEta1020,fP3_highPtEta1020,fP4_highPtEta1020,fP2_lowPtPi01020,fP3_lowPtPi01020,fP4_lowPtPi01020,fP2_highPtPi01020,fP3_highPtPi01020,fP4_highPtPi01020,fP2_lowPtEta2040,fP3_lowPtEta2040,fP4_lowPtEta2040,fP2_highPtEta2040,fP3_highPtEta2040,fP4_highPtEta2040,fP2_lowPtPi02040,fP3_lowPtPi02040,fP4_lowPtPi02040,fP2_highPtPi02040,fP3_highPtPi02040,fP4_highPtPi02040);
-  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,fP2_lowPtEta0010,fP3_lowPtEta0010,fP4_lowPtEta0010,fP2_highPtEta0010,fP3_highPtEta0010,fP4_highPtEta0010,fP2_lowPtPi00010,fP3_lowPtPi00010,fP4_lowPtPi00010,fP2_highPtPi00010,fP3_highPtPi00010,fP4_highPtPi00010,fP2_lowPtEta1020,fP3_lowPtEta1020,fP4_lowPtEta1020,fP2_highPtEta1020,fP3_highPtEta1020,fP4_highPtEta1020,fP2_lowPtPi01020,fP3_lowPtPi01020,fP4_lowPtPi01020,fP2_highPtPi01020,fP3_highPtPi01020,fP4_highPtPi01020,fP2_lowPtEta2040,fP3_lowPtEta2040,fP4_lowPtEta2040,fP2_highPtEta2040,fP3_highPtEta2040,fP4_highPtEta2040,fP2_lowPtPi02040,fP3_lowPtPi02040,fP4_lowPtPi02040,fP2_highPtPi02040,fP3_highPtPi02040,fP4_highPtPi02040);
+  AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
+  AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
+  AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
  
   mgr->AddTask(taskcorrMB);
   mgr->AddTask(taskMB);
@@ -119,7 +106,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(
   
   if(MCthere){
     
-    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,fP2_lowPtEta0010,fP3_lowPtEta0010,fP4_lowPtEta0010,fP2_highPtEta0010,fP3_highPtEta0010,fP4_highPtEta0010,fP2_lowPtPi00010,fP3_lowPtPi00010,fP4_lowPtPi00010,fP2_highPtPi00010,fP3_highPtPi00010,fP4_highPtPi00010,fP2_lowPtEta1020,fP3_lowPtEta1020,fP4_lowPtEta1020,fP2_highPtEta1020,fP3_highPtEta1020,fP4_highPtEta1020,fP2_lowPtPi01020,fP3_lowPtPi01020,fP4_lowPtPi01020,fP2_highPtPi01020,fP3_highPtPi01020,fP4_highPtPi01020,fP2_lowPtEta2040,fP3_lowPtEta2040,fP4_lowPtEta2040,fP2_highPtEta2040,fP3_highPtEta2040,fP4_highPtEta2040,fP2_lowPtPi02040,fP3_lowPtPi02040,fP4_lowPtPi02040,fP2_highPtPi02040,fP3_highPtPi02040,fP4_highPtPi02040);
+    AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut);
     mgr->AddTask(taskMC);
     
     taskMC->SelectCollisionCandidates(AliVEvent::kMB);

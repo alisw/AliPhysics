@@ -165,7 +165,6 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		TH1I 							**fHistoNEvents;							//
 		TH1I 							**fHistoNGoodESDTracks;						//
 		TProfile 						**fProfileEtaShift;							//
-		TH2F							**fHistoSPDClusterTrackletBackground;		//! array of histos with SPD tracklets vs SPD clusters for background rejection
 			
 		TRandom3 						fRandom;
 		Int_t 							fnCuts;
@@ -182,7 +181,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 
-		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 4 );
+		ClassDef( AliAnalysisTaskEtaToPiPlPiMiGamma, 3 );
 };
 
 #endif // ALIANALYSISTASKETATOPIPLPIMIGAMMA_H

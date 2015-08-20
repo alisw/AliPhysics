@@ -128,7 +128,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   AliFemtoEvent *hbtEvent = 0;
   string tFriendFileName;
 
-  //cout << "AliFemtoEventReaderKinematlaicsChain::Starting to read event: "<<fCurEvent<<endl;
+  cout << "AliFemtoEventReaderKinematlaicsChain::Starting to read event: "<<fCurEvent<<endl;
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
@@ -241,11 +241,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       //muon
       else if(pdgcode==13 || pdgcode==-13)
         kinepid[1]=1000;
-      else {
-	delete trackCopy; 
+      else
 	continue;
-      }
-
       trackCopy->SetPidProbElectron(kinepid[0]);
       trackCopy->SetPidProbMuon(kinepid[1]);
       trackCopy->SetPidProbPion(kinepid[2]);
@@ -302,8 +299,6 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
 	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	//cout<<"Track added: "<<i<<endl;
-
-	
 		
     }
   
@@ -348,7 +343,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
     }
 
 
-  //cout<<"Number of tracks: "<<realnofTracks<<endl;
+  cout<<"Number of tracks: "<<realnofTracks<<endl;
 
   return hbtEvent; 
 }

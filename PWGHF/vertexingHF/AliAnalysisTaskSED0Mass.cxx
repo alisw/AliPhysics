@@ -57,9 +57,8 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskSED0Mass);
-/// \endcond
+ClassImp(AliAnalysisTaskSED0Mass)
+
 
 //________________________________________________________________________
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
@@ -94,7 +93,7 @@ AliAnalysisTaskSE(),
   fDrawDetSignal(kFALSE),
   fDetSignal(0)
 {
-  /// Default constructor
+  // Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
 
 }
@@ -132,7 +131,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fDrawDetSignal(kFALSE),
   fDetSignal(0)
 {
-  /// Default constructor
+  // Default constructor
 
   fNPtBins=cuts->GetNPtBins();
     
@@ -207,7 +206,7 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
 //________________________________________________________________________
 void AliAnalysisTaskSED0Mass::Init()
 {
-  /// Initialization
+  // Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::Init() \n");
 
@@ -226,7 +225,7 @@ void AliAnalysisTaskSED0Mass::Init()
 void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 {
 
-  /// Create the output container
+  // Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::UserCreateOutputObjects() \n");
 
@@ -977,8 +976,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 {
-  /// Execute analysis for current event:
-  /// heavy flavor candidates association to MC truth
+  // Execute analysis for current event:
+  // heavy flavor candidates association to MC truth
   //cout<<"I'm in UserExec"<<endl;
 
 
@@ -1190,7 +1189,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 void AliAnalysisTaskSED0Mass::DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal)
 {
   //
-  /// Function called in UserExec for drawing detector signal histograms:
+  // Function called in UserExec for drawing detector signal histograms:
   //
   fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(0), 0);
   fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(1), 1);
@@ -1227,7 +1226,7 @@ void AliAnalysisTaskSED0Mass::DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList
 //____________________________________________________________________________
 void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout){
   //
-  /// function used in UserExec to fill variable histograms:
+  // function used in UserExec to fill variable histograms:
   //
 
 
@@ -1972,7 +1971,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 //____________________________________________________________________________
 void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi* cuts, TList *listout){
   //
-  /// function used in UserExec to fill mass histograms:
+  // function used in UserExec to fill mass histograms:
   //
 
 
@@ -2299,7 +2298,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
 //__________________________________________________________________________
 AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev){
-  /// Calculate the primary vertex w/o the daughter tracks of the candidate
+  //Calculate the primary vertex w/o the daughter tracks of the candidate
   
   Int_t skipped[2];
   Int_t nTrksToSkip=2;
@@ -2350,7 +2349,7 @@ AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev){
 //________________________________________________________________________
 void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 {
-  /// Terminate analysis
+  // Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSED0Mass: Terminate() \n");
 
@@ -2480,7 +2479,7 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
 
 //________________________________________________________________________
 void AliAnalysisTaskSED0Mass::CreateImpactParameterHistos(){
-  /// Histos for impact paramter study
+  // Histos for impact paramter study
 
   Int_t nmassbins=200; 
   Double_t fLowmasslimit=1.5648, fUpmasslimit=2.1648;
@@ -2514,7 +2513,7 @@ void AliAnalysisTaskSED0Mass::CreateImpactParameterHistos(){
 
 //_________________________________________________________________________________________________
 Float_t AliAnalysisTaskSED0Mass::GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const {
-  /// true impact parameter calculation
+  // true impact parameter calculation
 
   printf(" AliAnalysisTaskSED0MassV1::GetTrueImpactParameter() \n");
 
@@ -2558,7 +2557,7 @@ Float_t AliAnalysisTaskSED0Mass::GetTrueImpactParameter(AliAODMCHeader *mcHeader
 //_________________________________________________________________________________________________
 Int_t AliAnalysisTaskSED0Mass::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
   //
-  /// checking whether the mother of the particles come from a charm or a bottom quark
+  // checking whether the mother of the particles come from a charm or a bottom quark
   //
   printf(" AliAnalysisTaskSED0MassV1::CheckOrigin() \n");
 	

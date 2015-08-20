@@ -358,13 +358,16 @@ void AliVAnalysisMuon::Terminate(Option_t *)
   
   if ( ! fMergeableCollection ) return;
   AliInfo(Form("Mergeable collection size %g MB", fMergeableCollection->EstimateSize()/1024.0/1024.0));
-  if ( furtherOpt.Contains("VERBOSE") ) {
-    printf("Terminate options:\n");
-    TString optNames[4] = {"PhySel","TrigClass","Centrality","FurtherOpt"};
-    for ( Int_t iopt=0; iopt<4; iopt++ ) {
-      printf("%s: %s\n",optNames[iopt].Data(),fTerminateOptions->At(iopt)?fTerminateOptions->At(iopt)->GetName():"");
+  if ( fTerminateOptions->At(3) ) {
+    TString sopt = fTerminateOptions->At(3)->GetName();
+    if ( sopt.Contains("verbose") ) {
+      printf("Terminate options:\n");
+      TString optNames[4] = {"PhySel","TrigClass","Centrality","FurtherOpt"};
+      for ( Int_t iopt=0; iopt<4; iopt++ ) {
+        printf("%s: %s\n",optNames[iopt].Data(),fTerminateOptions->At(iopt)?fTerminateOptions->At(iopt)->GetName():"");
+      }
+      fMergeableCollection->Print("*");
     }
-    fMergeableCollection->Print("*");
   }
   SetCentralityClassesFromOutput();
 }

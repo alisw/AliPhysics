@@ -78,10 +78,11 @@ Bool_t AliAnalysisUtils::IsVertexSelected2013pA(AliVEvent *event)
     dynamic_cast<const AliVVertex*>(esd->GetPrimaryVertexSPD()) ;
   if (spdVtx->GetNContributors()<=fMinVtxContr) return accept;
 
+  TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return accept;
+  if (vtxTyp.Contains("vertexer: Z") && (zRes>0.25)) return accept;
   if (fCutOnZVertexSPD && TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return accept;
 
   if (TMath::Abs(zvtx) > fMaxVtxZ) return accept;

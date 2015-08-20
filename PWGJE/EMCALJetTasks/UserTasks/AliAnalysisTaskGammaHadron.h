@@ -14,6 +14,7 @@ class AliVVZERO;
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
  public:
 	AliAnalysisTaskGammaHadron();
+	AliAnalysisTaskGammaHadron(const char *name);
   virtual ~AliAnalysisTaskGammaHadron();
 
   void                        UserCreateOutputObjects();
@@ -30,11 +31,13 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
 
  protected:
 
+  void                        AllocateHistogramArrays()                                     ;
   void                        ExecOnce()        											  ;
   Bool_t                      RetrieveEventObjects()                                        ;
   Bool_t                      FillHistograms()                                              ;
 
   Int_t                       DoCellLoop(Float_t &sum)                                      ;
+  Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
   Int_t                       DoClusterLoop(Float_t &sum, AliVCluster* &leading)            ;
   Int_t                       DoTrackLoop(Float_t &sum, AliVParticle* &leading)             ;
 
@@ -57,20 +60,16 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
 
   // ELIANE
   TH1  						*fHistNoClus_pt;           //! No of calorimeter Clusters as a function of p_T
-  TH1  						*fHistNoClus_pt_tr;        //! No of calorimeter trigger Clusters as a function of p_T
   TH1					    *fHistNoClus_ptH;          //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_ptH_tr;       //! No of calorimeter trigger Clusters as a function of p_T with a hadron in the second hemisphere
   TH1					    *fHistNoClus_ptLeadH;      //! No of calorimeter Clusters as a function of p_T with a leading hadron in the second hemisphere
   TH1					    *fHistNoClus_Leadpt;       //! No of leading calorimeter Clusters as a function of p_T
   TH1					    *fHistNoClus_LeadptH;      //! No of leading calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
   TH1					    *fHistNoClus_LeadptLeadH;  //! No of leading calorimeter Clusters as a function of p_T with a leading hadron in the second hemisphere
 
-  TH1					    *fHistNoClus_xEH;          //! No of calorimeter Clusters as a function of x_E with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_LeadxEH;      //! No of calorimeter Clusters as a function of x_E with a leading hadron in the second hemisphere
-  TH1					    *fHistNoClus_xELeadH;      //! No of leading calorimeter Clusters as a function of x_E with a hadron in the second hemisphere
-  TH1					    *fHistNoClus_LeadxELeadH;  //! No of leading calorimeter Clusters as a function of x_E with a leading hadron in the second hemisphere
-  TH1					   **fHistpt_assHadron;        //! pt distributions of the associated hadron in a certain p_t bin of the gamma
-  TH1					   **fHistpt_assHadron_tr;     //! pt distributions of the associated hadron in a certain p_t bin of the gamma that triggered the event
+  TH1					    *fHistNoClus_xEH;          //!
+  TH1					    *fHistNoClus_LeadxEH;      //!
+  TH1					    *fHistNoClus_xELeadH;      //!
+  TH1					    *fHistNoClus_LeadxELeadH;  //!
   //
   //
 
@@ -78,6 +77,6 @@ class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 3) // Quality task for Emcal analysis
+  ClassDef(AliAnalysisTaskGammaHadron, 2) // Quality task for Emcal analysis
 };
 #endif

@@ -1,20 +1,5 @@
 AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
    const char *outfilename    = "AnalysisOutput.root",
-
-//Default Cuts
-   const Int_t fDebug = 0,
-   const Int_t fMinCells = 3,
-   const Double_t fMinE = 0.3,
-   const Double_t fMinTrackDr = 0.3,
-   const Double_t fMaxVertexx = 10,
-   const Double_t fMinCentrality = -1,
-   const Double_t fMaxCentrality = 100,
-   const Double_t fCoreRadius = 3.5,
-   const Double_t fMinCoreEnergyRatio = 0.4,
-   const Double_t fMaxLambdaDisp = 0.3,
-   const Double_t fMinCPVStd = 2.5,
-//End Default Cuts
-
    const char *tag            = ""
 )
 {   
@@ -37,19 +22,6 @@ AliAnalysisTaskThermalGAFlowMC* AddTaskThermalGAFlowMC(
   //-------------------------------------------------------
   TString name(Form("ThermalGA_%s", tag));
   AliAnalysisTaskThermalGAFlowMC *PHOSGAtask = new AliAnalysisTaskThermalGAFlowMC(name);
-
-  PHOSGAtask->SetDebug(fDebug);
-  PHOSGAtask->SetMinCells(fMinCells);
-  PHOSGAtask->SetMinE(fMinE);
-  PHOSGAtask->SetMinTrackDr(fMinTrackDr);
-  PHOSGAtask->SetMaxVertexx(fMaxVertexx);
-  PHOSGAtask->SetMinCentrality(fMinCentrality);
-  PHOSGAtask->SetMaxCentrality(fMaxCentrality);
-  PHOSGAtask->SetCoreRadius(fCoreRadius);
-  PHOSGAtask->SetMinCoreEnergyRatio(fMinCoreEnergyRatio);
-  PHOSGAtask->SetMaxLambdaDisp(fMaxLambdaDisp);
-  PHOSGAtask->SetMin_CPVStd(fMinCPVStd);
-
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

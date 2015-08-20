@@ -187,7 +187,7 @@ fHPionInvMassesAdd2(0x0),
 fHPionInvMassesMix(0x0),
 fHPionInvMassesMix1(0x0),
 fHPionInvMassesMix2(0x0),
-//fHJPInvMasses(0x0),
+fHJPInvMasses(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
 fHPionEtaPhiConv(0x0),
@@ -223,7 +223,7 @@ fHEtaTruthPtInAdd(),
 fHEtaTruthPtAccAdd(),
 fHEtaTruthPtConvAccAdd(),
 fHNMothers(0x0),
-//fHMixRotation(),
+fHMixRotation(),
 ipymin(0),
 ipymax(0),
 ipi0min(0),
@@ -243,9 +243,9 @@ ietamax(0),
   fHECluEMC(0x0),
   fHECluEMCAddPi0(0x0),
   fHECluEMCAddEta(0x0),
-//  fHRecTrue(),
-//  fHRecTrueAddPi0(),
-//  fHRecTrueAddEta(),
+  fHRecTrue(),
+  fHRecTrueAddPi0(),
+  fHRecTrueAddEta(),
   fHECluEMCnofull(),
   fHECluEMCnofullAdd(),
   fHECluEMCelectron(),
@@ -253,8 +253,8 @@ ietamax(0),
   fHECluEMCkaon(),
   fHECluEMCother(),
   fHECluEMCpi0single(),
-//  fHCorrection(),
-//  fHPionSm(),
+  fHCorrection(),
+  fHPionSm(),
   evt(),
   thisEvent(),
   fHWgt(0)
@@ -385,7 +385,7 @@ fHPionInvMassesAdd2(0x0),
 fHPionInvMassesMix(0x0),
 fHPionInvMassesMix1(0x0),
 fHPionInvMassesMix2(0x0),
-//fHJPInvMasses(0x0),
+fHJPInvMasses(0x0),
 fHPrimPionInvMasses(0x0),
 fHPrimPionInvMassesAsym(0x0),
 fHPionEtaPhiConv(0x0),
@@ -421,7 +421,7 @@ fHEtaTruthPtInAdd(),
 fHEtaTruthPtAccAdd(),
 fHEtaTruthPtConvAccAdd(),
 fHNMothers(0x0),
-//fHMixRotation(),
+fHMixRotation(),
 ipymin(0),
 ipymax(0),
 ipi0min(0),
@@ -441,9 +441,9 @@ ietamax(0),
   fHECluEMC(0x0),
   fHECluEMCAddPi0(0x0),
   fHECluEMCAddEta(0x0),
-//  fHRecTrue(),
-//  fHRecTrueAddPi0(),
-//  fHRecTrueAddEta(),
+  fHRecTrue(),
+  fHRecTrueAddPi0(),
+  fHRecTrueAddEta(),
   fHECluEMCnofull(),
   fHECluEMCnofullAdd(),
   fHECluEMCelectron(),
@@ -451,8 +451,8 @@ ietamax(0),
   fHECluEMCkaon(),
   fHECluEMCother(),
   fHECluEMCpi0single(),
-//  fHCorrection(),
-//  fHPionSm(),
+  fHCorrection(),
+  fHPionSm(),
   evt(),
   thisEvent(),
   fHPionInvMassesGamAdd1(0x0),
@@ -704,8 +704,8 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fOutput->Add(fHMatchEp);
   }
   
-  const Int_t nbins = 120;
-  const Int_t ptmax = 30;
+  const Int_t nbins = 160;
+  const Int_t ptmax = 40;
   
   // d_r of pairs
   fHdr = new TH1F("hdr","",2000,0,2);
@@ -715,8 +715,8 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
   // histograms for pion candidates
   if (!fTrainMode) {
     
-    const Int_t massbins = 170;
-    const Double_t massmax = 0.85;
+    const Int_t massbins = 200;
+    const Double_t massmax = 1.0;
 
     fHPionEtaPhi = new TH2F("hPionEtaPhi","",100,-0.8,0.8,50*nsm,phimin,phimax);
     fHPionEtaPhi->SetXTitle("#eta_{#gamma#gamma}");
@@ -941,10 +941,10 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fOutput->Add(fHPionInvMassesMix2);
 
     // is there a JPsi?
-//    fHJPInvMasses = new TH2F("hJPInvMass","hJPInvMass",200,2.,4.,20,0,20);
-//    fHJPInvMasses->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
-//    fHJPInvMasses->SetYTitle("p_{T} [GeV/c]");
-//    fOutput->Add(fHJPInvMasses);
+    fHJPInvMasses = new TH2F("hJPInvMass","hJPInvMass",200,2.,4.,20,0,20);
+    fHJPInvMasses->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
+    fHJPInvMasses->SetYTitle("p_{T} [GeV/c]");
+    fOutput->Add(fHJPInvMasses);
     
     // distribution of particle weights
     fHWgt = new TH1F("hWgt","hWgt",100,0,10);
@@ -1130,20 +1130,20 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     fHECluEMCAddEta->SetYTitle("E_{Clu}");
     fOutput->Add(fHECluEMCAddEta);
 
-//    fHRecTrue = new TH2F("hRecTrue","truth energy/cluster energy vs. cluster energy",200,0,10,200,0,10);
-//    fHRecTrue->SetXTitle("E_{clu}");
-//    fHRecTrue->SetYTitle("E_{tru}/E_{clu}");
-//    fOutput->Add(fHRecTrue);
-//    
-//    fHRecTrueAddPi0 = new TH2F("hRecTrueAddPi0","truth energy/cluster energy vs. cluster energy for added pi0 MC",200,0,10,200,0,10);
-//    fHRecTrueAddPi0->SetXTitle("E_{clu}");
-//    fHRecTrueAddPi0->SetYTitle("E_{tru}/E_{clu}");
-//    fOutput->Add(fHRecTrueAddPi0);
-//
-//    fHRecTrueAddEta = new TH2F("hRecTrueAddEta","truth energy/cluster energy vs. cluster energy for added eta MC",200,0,10,200,0,10);
-//    fHRecTrueAddEta->SetXTitle("E_{clu}");
-//    fHRecTrueAddEta->SetYTitle("E_{tru}/E_{clu}");
-//    fOutput->Add(fHRecTrueAddEta);
+    fHRecTrue = new TH2F("hRecTrue","truth energy/cluster energy vs. cluster energy",200,0,10,200,0,10);
+    fHRecTrue->SetXTitle("E_{clu}");
+    fHRecTrue->SetYTitle("E_{tru}/E_{clu}");
+    fOutput->Add(fHRecTrue);
+    
+    fHRecTrueAddPi0 = new TH2F("hRecTrueAddPi0","truth energy/cluster energy vs. cluster energy for added pi0 MC",200,0,10,200,0,10);
+    fHRecTrueAddPi0->SetXTitle("E_{clu}");
+    fHRecTrueAddPi0->SetYTitle("E_{tru}/E_{clu}");
+    fOutput->Add(fHRecTrueAddPi0);
+
+    fHRecTrueAddEta = new TH2F("hRecTrueAddEta","truth energy/cluster energy vs. cluster energy for added eta MC",200,0,10,200,0,10);
+    fHRecTrueAddEta->SetXTitle("E_{clu}");
+    fHRecTrueAddEta->SetYTitle("E_{tru}/E_{clu}");
+    fOutput->Add(fHRecTrueAddEta);
     
     // also for clusters with more than one contribution
     //    fHMCpartfracnofull = new TH2F("hMCpartfracnofull","fraction of most energy MC particle vs. fraction of this particle to all",100,0,2,100,0.8,1.2);
@@ -1193,20 +1193,20 @@ void AliAnalysisTaskEMCALPi0Gamma::UserCreateOutputObjects()
     
   }
   
-//	if(fRotateMixed){
-//		// more histograms
-//		fHMixRotation = new TH1F("hMixRotation","rotation angle of mixed events",100,-6.28,6.28);
-//		fHMixRotation->SetXTitle("phi");
-//		fOutput->Add(fHMixRotation);
-//	}
-//  fHCorrection = new TH1F("hCorrection","correction factor for single photon",100,0,2);
-//  fHCorrection->SetXTitle("correction factor");
-//  fOutput->Add(fHCorrection);
-
-//  fHPionSm = new TH2F("hPionSm","mass shift due to energy scale",200,0,0.5,200,0,0.5);
-//  fHPionSm->SetXTitle("original m_inv");
-//  fHPionSm->SetYTitle("changed m_inv");
-//  fOutput->Add(fHPionSm);
+	if(fRotateMixed){
+		// more histograms
+		fHMixRotation = new TH1F("hMixRotation","rotation angle of mixed events",100,-6.28,6.28);
+		fHMixRotation->SetXTitle("phi");
+		fOutput->Add(fHMixRotation);
+	}
+  fHCorrection = new TH1F("hCorrection","correction factor for single photon",100,0,2);
+  fHCorrection->SetXTitle("correction factor");
+  fOutput->Add(fHCorrection);
+  
+  fHPionSm = new TH2F("hPionSm","mass shift due to energy scale",200,0,0.5,200,0,0.5);
+  fHPionSm->SetXTitle("original m_inv");
+  fHPionSm->SetYTitle("changed m_inv");
+  fOutput->Add(fHPionSm);
 }
 
 //________________________________________________________________________
@@ -2130,7 +2130,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
             // lets fill histograms
             fHMCpartfrac->Fill(mce/cle,efrac);
             fHECluEMC->Fill(mce,cle);
-//            fHRecTrue->Fill(cle,mce/cle);
+            fHRecTrue->Fill(cle,mce/cle);
           }
           // if photon
           else if(mcP->PdgCode() == 22 && efrac<0.99){
@@ -2179,7 +2179,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           if(mcP->PdgCode() == 22 && efrac>0.5){
             // lets fill histograms
             fHECluEMCAddPi0->Fill(mce,cle);
-            //fHRecTrueAddPi0->Fill(cle,mce/cle);
+            fHRecTrueAddPi0->Fill(cle,mce/cle);
           }
         }
         if(bAddEta){
@@ -2187,7 +2187,7 @@ Double_t AliAnalysisTaskEMCALPi0Gamma::FillClusHists(Float_t& max_phi, Float_t& 
           if(mcP->PdgCode() == 22 && efrac>0.5){
             // lets fill histograms
             fHECluEMCAddEta->Fill(mce,cle);
-            //fHRecTrueAddEta->Fill(cle,mce/cle);
+            fHRecTrueAddEta->Fill(cle,mce/cle);
           }
         }
         if(bAddPi0 || bAddEta){
@@ -3370,8 +3370,8 @@ void AliAnalysisTaskEMCALPi0Gamma::FillMixHists(const Int_t MulClass, const Int_
         Int_t nclusold = OldEvent.nHits;
         Double_t phirot = OldEvent.TrigPhi;
         Double_t thetarot = OldEvent.TrigTheta;
-//				if(fRotateMixed && PtClass > 0)
-//          fHMixRotation->Fill(phi0-phirot);
+				if(fRotateMixed && PtClass > 0)
+          fHMixRotation->Fill(phi0-phirot);
         for (Int_t j = 0; j<nclusold; ++j) {
           clusterVec2 = OldEvent.hit[j].thishit;
           hitclass2 = OldEvent.hit[j].hittype;

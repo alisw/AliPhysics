@@ -401,7 +401,8 @@ void AliTrackletTaskMultipp::UserExec(Option_t *)
   const AliMultiplicity* multESD = esd->GetMultiplicity();
   //
   if (vtxESD->GetNContributors()<1) return;
-  if (vtxESD->IsFromVertexerZ()) {
+  TString vtxTyp = vtxESD->GetTitle();
+  if (vtxTyp.Contains("vertexer: Z")) {
     if (vtxESD->GetDispersion()>0.04) return;
     if (vtxESD->GetZRes()>0.25) return;
   }

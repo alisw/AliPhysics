@@ -44,9 +44,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
-ClassImp(AliRDHFCutsOmegactoeleOmegafromAODtracks);
-/// \endcond
+ClassImp(AliRDHFCutsOmegactoeleOmegafromAODtracks)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsOmegactoeleOmegafromAODtracks::AliRDHFCutsOmegactoeleOmegafromAODtracks(const char* name) :
@@ -531,8 +529,6 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
   //
 	
   if(!casc) return kFALSE;
-	if(!(casc->GetSecondaryVtx())) return kFALSE;
-	if(!(casc->GetDecayVertexXi())) return kFALSE;
 
   AliAODTrack *ptrack = (AliAODTrack*) (casc->GetDaughter(0));
   AliAODTrack *ntrack = (AliAODTrack*) (casc->GetDaughter(1));

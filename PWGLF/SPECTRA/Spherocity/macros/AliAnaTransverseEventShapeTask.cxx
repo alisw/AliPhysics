@@ -346,7 +346,8 @@ void AliAnaTransverseEventShapeTask::UserExec(Option_t *)
       // SPD vertex
       vtxESD = fESD->GetPrimaryVertexSPD();
       /* quality checks on SPD-vertex */
-      if (vtxESD->IsFromVertexerZ() && (vtxESD->GetDispersion() > 0.04 || vtxESD->GetZRes() > 0.25))  
+      TString vertexType = vtxESD->GetTitle();
+      if (vertexType.Contains("vertexer: Z") && (vtxESD->GetDispersion() > 0.04 || vtxESD->GetZRes() > 0.25))  
 	fZvtx  = -1599; //vertex = 0x0; //
       else if (vtxESD->GetNContributors()<1) 
 	fZvtx  = -999; //vertex = 0x0; //
