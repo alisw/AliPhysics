@@ -82,6 +82,7 @@ Bool_t IsPi0PhysicalPrimary(Int_t index, AliStack *stack)
 
 AliAnalysisTaskHMTFMCMultEst::AliAnalysisTaskHMTFMCMultEst()
   : AliAnalysisTaskSE(), fMyOut(0), fEstimatorsList(0), fEstimatorNames(0),
+    fReferenceEstimatorName(0), fReferenceEstimator(0),
     festimators(0), fRequireINELgt0(0), fRunconditions(0), fEventVariables(0)
 {
 }
@@ -89,6 +90,7 @@ AliAnalysisTaskHMTFMCMultEst::AliAnalysisTaskHMTFMCMultEst()
 //________________________________________________________________________
 AliAnalysisTaskHMTFMCMultEst::AliAnalysisTaskHMTFMCMultEst(const char *name)
   : AliAnalysisTaskSE(name), fMyOut(0), fEstimatorsList(0), fEstimatorNames(0),
+    fReferenceEstimatorName(0), fReferenceEstimator(0),
     festimators(0), fRequireINELgt0(0), fRunconditions(0), fEventVariables(0)
 {
   cout << "init"  << "\n";
@@ -100,6 +102,12 @@ void AliAnalysisTaskHMTFMCMultEst::AddEstimator(const char* n)
 {
   if (!fEstimatorNames.IsNull()) fEstimatorNames.Append(",");
   fEstimatorNames.Append(n);
+}
+
+void AliAnalysisTaskHMTFMCMultEst::SetReferenceEstimator(const char *n) {
+  if (!fReferenceEstimatorName.IsNull())
+    cout <<  "AliAnalysisTaskHMTFMCMultEst::SetReferenceEstimator: Reference estimator was previously set!" << endl;
+  fReferenceEstimatorName = n;
 }
 
 void AliAnalysisTaskHMTFMCMultEst::InitEstimators()
@@ -152,20 +160,37 @@ void AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects()
   fMyOut->SetOwner();
 
   InitEstimators();
-
-  TIter next(fEstimatorsList);
   AliMultiplicityEstimator* e = 0;
+  TIter next(fEstimatorsList);
+  // Find the reference estimator
   while ((e = static_cast<AliMultiplicityEstimator*>(next()))) {
+    if (TString(e->GetName()) == fReferenceEstimatorName)
+      {
+	fReferenceEstimator = e;
+	Info("AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects",
+	     "Ref estimator set to %s",
+	     fReferenceEstimator->GetName());
+      }
+  }
+  if (!fReferenceEstimator) {
+    AliFatal("No Reference estimator was defined"); 
+  }
+  // Now we can set the ref estimator and register the histograms
+  next = TIter(fEstimatorsList);
+  while ((e = static_cast<AliMultiplicityEstimator*>(next()))) {
+    e->SetReferenceEstimator(fReferenceEstimator);
     e->RegisterHistograms(fMyOut);
     // putting estimators into a vector for easier looping in UserExec.
     // it is only available on the slaves
     festimators.push_back(e);
   }
-
+  
+  // Output not associated with one single estimator:
   fEventVariables = new TNtuple("fEventVariables",
 				"Estimator independent variables",
 				"ev_weight:nmpi");
   fMyOut->Add(fEventVariables);
+
   // Suppress annoying printout
   AliLog::SetGlobalLogLevel(AliLog::kError);
 
@@ -177,6 +202,7 @@ void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
 {
   // Event level variables:
   Float_t nMPI = 0;
+  Float_t q2   = 0;
   Float_t eventWeight = 0;
 
   // Load event and header
@@ -195,6 +221,7 @@ void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
   }
   if( TString(htmp->IsA()->GetName()) == "AliGenPythiaEventHeader") {
     headPy =  (AliGenPythiaEventHeader*) htmp;
+    q2   = headPy->GetPtHard();
     nMPI = headPy->GetNMPI();
   } else if (TString(htmp->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
     headPho = (AliGenDPMjetEventHeader*) htmp;
@@ -248,11 +275,13 @@ void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
 
     // Increment eventcounters etc.
     for (iter =festimators.begin(), end = festimators.end(); iter != end; ++iter) { //estimator loop
-      (*iter)->PostEvent();
+      (*iter)->PostEvent(nMPI, q2, fFillNtuple);
     }//estimator loop
 
-    const Float_t variables[2] = {eventWeight, nMPI};
-    fEventVariables->Fill(variables);
+    if (fFillNtuple) {
+      const Float_t variables[2] = {eventWeight, nMPI};
+      fEventVariables->Fill(variables);
+    }
   }
   // Post output data.
   PostData(1, fMyOut);
