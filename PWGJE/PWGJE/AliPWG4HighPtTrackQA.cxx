@@ -74,6 +74,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
+  fInit(0),
   fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
@@ -180,6 +181,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
+  fInit(0),
   fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
@@ -923,14 +925,23 @@ Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const
   return 0;
 
 }
-
+//________________________________________________________________________
+void AliPWG4HighPtTrackQA::Init()
+{  
+   if(!fInit && fDataType==kESD) {
+      Printf("Init magnetic field ---------");
+      fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+      fESD->InitMagneticField();
+      fInit = kTRUE;
+   }
+}
 //________________________________________________________________________
 void AliPWG4HighPtTrackQA::UserExec(Option_t *)
 {  
   // Main loop
   // Called for each event
   AliDebug(2,Form(">> AliPWG4HighPtTrackQA::UserExec \n"));
-  
+  Init();
   fEvent = InputEvent();
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
 
