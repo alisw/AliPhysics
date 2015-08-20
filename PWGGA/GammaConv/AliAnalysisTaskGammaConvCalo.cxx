@@ -267,6 +267,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	fMapMultipleCountTrueClusterGammas(),
 	fHistoTrueClusGammaEM02(NULL),
 	fHistoTrueClusPi0EM02(NULL),
+	fHistoTruePi0InvMassECalib(NULL),
+	fHistoTruePi0PureGammaInvMassECalib(NULL),
 	fHistoNEvents(NULL),
 	fHistoNEventsWOWeight(NULL),
 	fHistoNGoodESDTracks(NULL),
@@ -515,6 +517,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	fMapMultipleCountTrueClusterGammas(),
 	fHistoTrueClusGammaEM02(NULL),
 	fHistoTrueClusPi0EM02(NULL),
+	fHistoTruePi0InvMassECalib(NULL),
+	fHistoTruePi0PureGammaInvMassECalib(NULL),
 	fHistoNEvents(NULL),
 	fHistoNEventsWOWeight(NULL),
 	fHistoNGoodESDTracks(NULL),
@@ -1075,6 +1079,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
 		fHistoTruePi0NonLinearity			= new TH2F*[fnCuts];
 		fHistoTrueEtaNonLinearity			= new TH2F*[fnCuts];
+		fHistoTruePi0InvMassECalib			= new TH2F*[fnCuts];
+		fHistoTruePi0PureGammaInvMassECalib	= new TH2F*[fnCuts];
 
 		if (fDoClusterQA > 0){
 			fHistoTrueClusUnConvGammaPt 		= new TH1F*[fnCuts];
@@ -1432,6 +1438,16 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			fHistoTrueEtaNonLinearity[iCut] = new TH2F("TrueEta: E_truth / E_rec Vs E_rec","TrueEta: E_truth / E_rec Vs E_rec",700,0,35,200,0,2);
 			fClusterOutputList[iCut]->Add(fHistoTrueEtaNonLinearity[iCut]);
 
+			fHistoTruePi0InvMassECalib[iCut] = new TH2F("True_Pi0_InvMass_E_Calib","True_Pi0_InvMass_E_Calib",800,0,0.8,300,0,30);
+			fHistoTruePi0InvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+			fHistoTruePi0InvMassECalib[iCut]->SetYTitle("E_{cluster} (GeV)");
+			fESDList[iCut]->Add(fHistoTruePi0InvMassECalib[iCut]);
+			fHistoTruePi0PureGammaInvMassECalib[iCut] = new TH2F("True_Pi0PureGamma_InvMass_E_Calib","True_Pi0PureGamma_InvMass_E_Calib",800,0,0.8,300,0,30);
+			fHistoTruePi0PureGammaInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+			fHistoTruePi0PureGammaInvMassECalib[iCut]->SetYTitle("E_{cluster} (GeV)");
+			fESDList[iCut]->Add(fHistoTruePi0PureGammaInvMassECalib[iCut]);
+			
+			
 			if (fDoClusterQA > 0){
 				fHistoTrueClusUnConvGammaPt[iCut] = new TH1F("TrueClusUnConvGamma_Pt","TrueClusUnConvGamma_Pt",300,0,30);
 				fClusterOutputList[iCut]->Add(fHistoTrueClusUnConvGammaPt[iCut]);
@@ -3251,7 +3267,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 		
 		if(isTruePi0 || isTrueEta){// True Pion or Eta
 			if (!matched){
-				if (isTruePi0)fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
+				if (isTruePi0){
+					fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
+					fHistoTruePi0InvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC);
+					if (TrueGammaCandidate1->IsLargestComponentPhoton()) fHistoTruePi0PureGammaInvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC);
+				}	
 				if (isTrueEta)fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
 			}else{
 				if (isTruePi0)fHistoTruePi0MatchedInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
@@ -3499,7 +3519,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 	
 	if(isTruePi0 || isTrueEta){// True Pion or Eta
 		if (!matched){
-			if (isTruePi0)fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
+			if (isTruePi0){
+				fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
+				fHistoTruePi0InvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC);
+				if (TrueGammaCandidate1->IsLargestComponentPhoton()) fHistoTruePi0PureGammaInvMassECalib[fiCut]->Fill(Pi0Candidate->M(),TrueGammaCandidate1->E(),fWeightJetJetMC);
+			}
 			if (isTrueEta)fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
 		}else{
 			if (isTruePi0)fHistoTruePi0MatchedInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);

@@ -258,6 +258,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		vector<Int_t>						fVectorDoubleCountTrueClusterGammas;			//! vector containing labels of validated cluster photons
 		TH1F								**fHistoMultipleCountTrueClusterGamma;			//! array of histos how often TrueClusterGammas are counted
 		map<Int_t,Int_t>					fMapMultipleCountTrueClusterGammas;				//! map containing cluster photon labels that are counted at least twice
+		TH2F								**fHistoTruePi0InvMassPtAlpha;					//! array of histogram with pure pi0 signal inv Mass, energy of cluster
+		TH2F								**fHistoTruePi0PureGammaInvMassPtAlpha;			//! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
 
 		// event histograms
 		TH1F 								**fHistoNEvents;								//! array of histos with event information

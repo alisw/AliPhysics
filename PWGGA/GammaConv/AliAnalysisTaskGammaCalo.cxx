@@ -221,6 +221,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
 	fVectorDoubleCountTrueEtas(0),
 	fVectorDoubleCountTrueClusterGammas(0),
 	fMapMultipleCountTrueClusterGammas(),
+	fHistoTruePi0InvMassPtAlpha(NULL),
+	fHistoTruePi0PureGammaInvMassPtAlpha(NULL),	
 	fHistoNEvents(NULL),
 	fHistoNEventsWOWeight(NULL),
 	fHistoNGoodESDTracks(NULL),
@@ -420,6 +422,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 	fVectorDoubleCountTrueEtas(0),
 	fVectorDoubleCountTrueClusterGammas(0),
 	fMapMultipleCountTrueClusterGammas(),
+	fHistoTruePi0InvMassPtAlpha(NULL),
+	fHistoTruePi0PureGammaInvMassPtAlpha(NULL),
 	fHistoNEvents(NULL),
 	fHistoNEventsWOWeight(NULL),
 	fHistoNGoodESDTracks(NULL),
@@ -854,6 +858,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 			fHistoTrueSecondaryPi0FromK0sInvMassPt 	= new TH2F*[fnCuts];
 			fHistoTrueSecondaryPi0FromEtaInvMassPt 	= new TH2F*[fnCuts];
 			fHistoTrueSecondaryPi0FromLambdaInvMassPt = new TH2F*[fnCuts];
+			fHistoTruePi0InvMassPtAlpha 				= new TH2F*[fnCuts];
+			fHistoTruePi0PureGammaInvMassPtAlpha 		= new TH2F*[fnCuts];
+
 			if (fDoMesonQA > 0 && fDoMesonQA < 3 ){
 				fHistoMCPi0PtY 								= new TH2F*[fnCuts];
 				fHistoMCEtaPtY 								= new TH2F*[fnCuts];
@@ -1202,6 +1209,15 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
 				fHistoTrueSecondaryPi0InvMassPt[iCut]->Sumw2();
 				fTrueList[iCut]->Add(fHistoTrueSecondaryPi0InvMassPt[iCut]);
 
+				fHistoTruePi0InvMassPtAlpha[iCut] = new TH2F("ESD_TruePi0_InvMass_vs_Pt_Alpha","ESD_TruePi0_InvMass_vs_Pt_Alpha",800,0,0.8,350,0,35);
+				fHistoTruePi0InvMassPtAlpha[iCut]->Sumw2();
+				fESDList[iCut]->Add(fHistoTruePi0InvMassPtAlpha[iCut]);
+				fHistoTruePi0PureGammaInvMassPtAlpha[iCut] = new TH2F("ESD_TruePi0PureGamma_InvMass_vs_Pt_Alpha","ESD_TruePi0PureGamma_InvMass_vs_Pt_Alpha",800,0,0.8,350,0,35);
+				fHistoTruePi0PureGammaInvMassPtAlpha[iCut]->Sumw2();
+				fESDList[iCut]->Add(fHistoTruePi0PureGammaInvMassPtAlpha[iCut]);
+
+				
+				
 				fHistoTrueSecondaryPi0FromK0sInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryPi0FromK0s_InvMass_Pt","ESD_TrueSecondaryPi0FromK0s_InvMass_Pt",800,0,0.8,350,0,35);
 				fHistoTrueSecondaryPi0FromK0sInvMassPt[iCut]->Sumw2();
 				fTrueList[iCut]->Add(fHistoTrueSecondaryPi0FromK0sInvMassPt[iCut]);
@@ -2469,6 +2485,11 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
 			fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC);
 			fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate0->E(),gammaMC0->Energy()/TrueGammaCandidate0->E());
 			fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E(),gammaMC1->Energy()/TrueGammaCandidate1->E());
+			if (abs(Pi0Candidate->GetAlpha())< 0.1){
+				fHistoTruePi0InvMassPtAlpha[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC);
+				if (TrueGammaCandidate1->IsLargestComponentPhoton() && TrueGammaCandidate0->IsLargestComponentPhoton())
+					fHistoTruePi0PureGammaInvMassPtAlpha[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC);
+			}	
 		}	
 		if (isTrueEta){
 			fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC);
@@ -2791,6 +2812,11 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
 			fHistoTruePi0InvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
 			fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate0->E(),gammaMC0->E()/TrueGammaCandidate0->E());
 			fHistoTruePi0NonLinearity[fiCut]->Fill(TrueGammaCandidate1->E(),gammaMC1->E()/TrueGammaCandidate1->E());
+			if (abs(Pi0Candidate->GetAlpha())< 0.1){
+				fHistoTruePi0InvMassPtAlpha[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC);
+				if (TrueGammaCandidate1->IsLargestComponentPhoton() && TrueGammaCandidate0->IsLargestComponentPhoton())
+					fHistoTruePi0PureGammaInvMassPtAlpha[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),  fWeightJetJetMC);
+			}				
 		}
 		if(isTrueEta){
 			fHistoTrueEtaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), fWeightJetJetMC);
