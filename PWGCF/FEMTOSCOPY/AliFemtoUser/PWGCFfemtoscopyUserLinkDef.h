@@ -65,3 +65,4 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceAsymmetric+;
 #pragma link C++ class AliFemtoPairCutMergedFraction+;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimple+;
+#pragma link C++ class AliFemtoCorrFctnDYDPhiSimple+;
