@@ -1,6 +1,6 @@
 /*
-  Last update: 
-  17 aug 2015: use common output file name 
+  Last update (new version): 
+  20 aug 2015: clean up
 
 */
 
@@ -16,7 +16,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   if (!mgr) {
     Error("AddTaskHighPtDeDx", "No analysis manager to connect to.");
     return NULL;
-  }  
+  }   
   
   // Check the analysis type using the event handlers connected to the
   // analysis manager The availability of MC handler can also be
@@ -144,13 +144,12 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   // the manager as below
   //=======================================================================
   
-  //before 17 aug 2015:
-  //Char_t outFileName[256]={0};
-  //sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc,maxc);
-  //cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
+   Char_t outFileName[256]={0};
+  sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc,maxc);
+  cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
   
-  TString outFileName = Form("%s",AliAnalysisManager::GetCommonFileName());
-  AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(output, TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
+  // TString outFileName = Form("%s",AliAnalysisManager::GetCommonFileName());
+  // AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(output, TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
   
   mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskHighPtDeDx, 1, cout_hist);
@@ -270,10 +269,4 @@ if(typerun==3){//pp analysis
     
     
     
-  }
-
-
-
-  
-  
-}
+ }
