@@ -104,6 +104,7 @@ protected:
   double         fCentRange[2];     ///< Centrality pre-selection range
   AliAODpidUtil *fAODpidUtil;
   AliAODHeader *fAODheader;
+  AliAnalysisUtils *fAnaUtils;
 
 
 private:
