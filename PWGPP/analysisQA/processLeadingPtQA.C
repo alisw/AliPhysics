@@ -29,10 +29,11 @@ void format( TH1F *h, int color , int marker)
 	h->SetMarkerStyle(marker);
 	h->SetXTitle("#it{p}_{T} (GeV/#it{c}) ");
 	h->SetYTitle("#frac{1}{N_{ev}2#pi#it{p}_{T}} #frac{dN^{2}}{d#it{p}_{T}d#eta}");
-	h->GetXaxis()->SetRangeUser(0.5,20);
+	h->GetXaxis()->SetRangeUser(0.15,10);
 
 	h->GetYaxis()->SetLabelSize(.045);
 	h->GetXaxis()->SetLabelSize(.045);
+
 
 	h->GetYaxis()->SetTitleSize(.065);
 	h->GetXaxis()->SetTitleSize(.075);
@@ -44,6 +45,26 @@ void format( TH1F *h, int color , int marker)
 
 }
 
+void formatCorrelations(TH2F *h)
+{
+	h->GetZaxis()->SetRangeUser(0.0,0.0012);
+	h->SetXTitle("tracklets");
+	h->SetYTitle("SPD clusters");
+	h->SetZTitle("#frac{Entries}{N_{ev}}");
+
+	h->GetYaxis()->SetLabelSize(.045);
+	h->GetXaxis()->SetLabelSize(.045);
+	h->GetZaxis()->SetLabelSize(.045);
+
+	h->GetYaxis()->SetTitleSize(.065);
+	h->GetXaxis()->SetTitleSize(.075);
+	h->GetZaxis()->SetTitleSize(.045);
+
+	h->GetYaxis()->SetTitleOffset(1);
+	h->GetXaxis()->SetTitleOffset(1);
+	h->GetZaxis()->SetTitleOffset(1.5);
+}
+
 const float small = 0.00001;
 const double margin = 0.195;
 const double left = margin, right = margin;
@@ -51,7 +72,7 @@ const double left = margin, right = margin;
 
 
 void processLeadingPtQA(const char *filePath = "AnalysisResults.root",
-				TString suffix="jpg",
+				TString suffix="eps",
 				const char *outfile="LeadingPt_output.root")
 {
 	const char *dirName = "outputLeadingPt";
@@ -190,6 +211,13 @@ void processLeadingPtQA(const char *filePath = "AnalysisResults.root",
 	}
 
 
+	TH2F *trackVsClusters = 0,*trackVsClusters_SPD = 0,*trackVsClusters_MV = 0,*trackVsClusters_SPDMV = 0;
+	
+	trackVsClusters = (TH2F*) list->FindObject("ftrackVsClusters");
+	trackVsClusters_SPD = (TH2F*) list->FindObject("ftrackVsClusters_SPD");
+	trackVsClusters_MV = (TH2F*) list->FindObject("ftrackVsClusters_MV");
+	trackVsClusters_SPDMV = (TH2F*) list->FindObject("ftrackVsClusters_SPDMV");
+
 // normalizaciones
 
 	for ( int i = 0 ; i < 7 ; i++ )
@@ -235,6 +263,11 @@ void processLeadingPtQA(const char *filePath = "AnalysisResults.root",
 		ptLAll_SPDMV[i]->Scale(1.0/ptLAll_SPDMV[i]->GetEntries());
 		
 	}
+
+	trackVsClusters->Scale(1./trackVsClusters->GetEntries());
+	trackVsClusters_SPD->Scale(1./trackVsClusters_SPD->GetEntries());
+	trackVsClusters_MV->Scale(1./trackVsClusters_MV->GetEntries());
+	trackVsClusters_SPDMV->Scale(1./trackVsClusters_SPDMV->GetEntries());
 
 // ratios
 
@@ -290,6 +323,10 @@ void processLeadingPtQA(const char *filePath = "AnalysisResults.root",
 	setError(ratiosleading[2],ptLAll_MV[6]   ,ptLAll[6]);
 	setError(ratiosleading[3],ptLAll_SPDMV[6],ptLAll[6]);
 
+	formatCorrelations(trackVsClusters);
+	formatCorrelations(trackVsClusters_SPD);
+	formatCorrelations(trackVsClusters_MV);
+	formatCorrelations(trackVsClusters_SPDMV);
 
 // Leyendas
 
@@ -308,7 +345,7 @@ void processLeadingPtQA(const char *filePath = "AnalysisResults.root",
 	cspectra->cd(1);
 	cspectra->cd(1)->SetLogy();
 	cspectra->cd(1)->SetGrid();
-	cspectra->cd(1)->SetLogx();
+	//cspectra->cd(1)->SetLogx();
 	gPad->SetLeftMargin(margin);
 	gPad->SetRightMargin(margin);
 	gPad->SetBottomMargin(small);
@@ -322,7 +359,7 @@ void processLeadingPtQA(const char *filePath = "AnalysisResults.root",
 
 	cspectra->cd(2);
 	cspectra->cd(2)->SetGrid();
-	cspectra->cd(2)->SetLogx();
+	//cspectra->cd(2)->SetLogx();
 	gPad->SetTopMargin(small);
 	gPad->SetLeftMargin(margin);
 	gPad->SetRightMargin(margin);
@@ -349,5 +386,75 @@ void processLeadingPtQA(const char *filePath = "AnalysisResults.root",
 		ratiosleading[i]->Write();
 
 	fout->Close();
+
+	TCanvas *ccorrelations = new TCanvas("ccorrelations","tracklets vs SPD closters",1300,700);
+	ccorrelations->Divide(2,2,small,small);
+
+	ccorrelations->cd(1);
+	gPad->SetTopMargin(margin);
+	gPad->SetLeftMargin(margin);
+	gPad->SetRightMargin(margin);
+	gPad->SetBottomMargin(margin);	
+	ccorrelations->cd(1)->SetGrid();
+	trackVsClusters->Draw("colz");
+
+	TPaveText *label1 = new TPaveText(80,600,175,695);
+	label1->AddText("w/o pileup rejection");
+	label1->SetFillColor(0);
+	label1->Draw();
+
+	ccorrelations->cd(2);
+	gPad->SetTopMargin(margin);
+	gPad->SetLeftMargin(margin);
+	gPad->SetRightMargin(margin);
+	gPad->SetBottomMargin(margin);
+	ccorrelations->cd(2)->SetGrid();	
+	trackVsClusters_SPD->Draw("colz");
+
+	TPaveText *label2 = new TPaveText(80,600,175,695);
+	label2->AddText("SPD pileup rejection");
+	label2->SetFillColor(0);
+	label2->Draw();
+
+	ccorrelations->cd(3);
+	gPad->SetTopMargin(margin);
+	gPad->SetLeftMargin(margin);
+	gPad->SetRightMargin(margin);
+	gPad->SetBottomMargin(margin);	
+	ccorrelations->cd(3)->SetGrid();
+	trackVsClusters_MV->Draw("colz");
+
+	TPaveText *label3 = new TPaveText(80,600,175,695);
+	label3->AddText("MV pileup rejection");
+	label3->SetFillColor(0);
+	label3->Draw();
+
+	ccorrelations->cd(4);
+	gPad->SetTopMargin(margin);
+	gPad->SetLeftMargin(margin);
+	gPad->SetRightMargin(margin);
+	gPad->SetBottomMargin(margin);	
+	ccorrelations->cd(4)->SetGrid();
+	trackVsClusters_SPDMV->Draw("colz");
+
+	TPaveText *label4 = new TPaveText(80,600,175,695);
+	label4->AddText("SPD+MV pileup rejection");
+	label4->SetFillColor(0);
+	label4->Draw();
+
+	ccorrelations->SaveAs(Form("%s/SPDClustersVsTracklets.%s",dirName,suffix.Data()));
+
+	TFile *fout = TFile::Open(Form("%s/%s",dirName,outfile),"UPDATE");
+	
+	ptLAll[6]->Write();
+	ptLAll_SPD[6]->Write();
+	ptLAll_MV[6]->Write();
+	ptLAll_SPDMV[6]->Write();
+	trackVsClusters->Write();
+	trackVsClusters_SPD->Write();
+	trackVsClusters_MV->Write();
+	trackVsClusters_SPDMV->Write();
+	
+	
 
 }

@@ -196,6 +196,7 @@ void AliEbyEPidTTask::UserCreateOutputObjects() {
   fPidCont->Branch("fTrackPid",fTrackPid,"fTrackPid[fNumberOfTracks]/I");
   fPidCont->Branch("fTrackTpcNcl",fTrackTpcNcl,"fTrackTpcNcl[fNumberOfTracks]/I");
   fPidCont->Branch("fTrackCnDf",fTrackCnDf,"fTrackCnDf[fNumberOfTracks]/F");
+  fPidCont->Branch("fTrackBit",fTrackBit,"fTrackBit[fNumberOfTracks]/I");
   
   if (fHelperPID) {
     fThnList->Add(new TList);
@@ -334,6 +335,9 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
     AliVTrack *track = static_cast<AliVTrack*>(event->GetTrack(idxTrack)); 
     if(!AcceptTrackL(track)) continue;
     
+   
+      
+    Int_t bit = -1;
     Float_t dca[2], cov[3], ndf; // 
      if (track->InheritsFrom("AliESDtrack")) {
       (dynamic_cast<AliESDtrack*>(track))->GetImpactParameters(dca, cov);
@@ -363,7 +367,15 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
        //     Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
        //     Printf("%10.5f %10.5f %10.5f %10.5f %10.5f %10.5f", 
        //     dca[0], dca[1], DCAXY,  DCAZ, clone->DCA(), clone->ZAtDCA());
+       // bit = (Int_t)clone->GetFilterMap();   
        
+       // if (clone->IsTPCOnly() && clone->IsHybridTPCConstrainedGlobal()) bit = 2;
+       // else if (clone->IsHybridTPCConstrainedGlobal()) bit = 3;
+       // else if (clone->IsTPCOnly()) bit = 1;
+       // else 
+
+	 bit = (Int_t)clone->GetFilterMap();    
+
        delete clone;  
      }
      
@@ -393,6 +405,10 @@ void AliEbyEPidTTask::UserExec( Option_t * ){
       else if (b == 2)fHistPt21->Fill(fCentrality[0],lPt); 
       else if (b == 3)fHistPt31->Fill(fCentrality[0],lPt); 
     }
+
+    //    cout << bit <<endl;
+
+    fTrackBit[iTracks] = bit;
 
     fTrackCnDf[iTracks]   =  ndf;
     fTrackTpcNcl[iTracks] = track->GetTPCClusterInfo(2,1);
