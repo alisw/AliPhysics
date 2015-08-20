@@ -1600,7 +1600,7 @@ Bool_t  kTender        = kFALSE;
 Bool_t  kMix           = kFALSE;
 Int_t   kRunNumber     = -1;
 
-AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(const TString  data          = "",
+AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaHadronCorrelation(const TString  data          = "",
                                                           const TString  calorimeter   = "EMCAL",
                                                           const Bool_t   simulation    = kFALSE,
                                                           const Bool_t   eventsel      = kFALSE,
