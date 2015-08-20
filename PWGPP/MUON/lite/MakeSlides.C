@@ -273,33 +273,60 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   TString runList = GetRunList(trackerQA);
   TObjArray* runListArr = runList.Tokenize(",");
 
-  BeginFrame("Run summary",outFile);
-  outFile << " \\begin{columns}[onlytextwidth,T]" << endl;
-  outFile << "  \\footnotesize" << endl;
-  outFile << "  \\column{0.5\\textwidth}" << endl;
-  outFile << "  \\centering" << endl;
-  outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
-  outFile << "   \\hline" << endl;
-  if ( runListArr->GetEntries() == 0 ) {
-    outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
-  }
-  else {
-    for ( Int_t irun=0; irun<runListArr->GetEntries(); irun++ ) {
-      outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun))->GetString().Atoi() << "}{}" << endl;
+  TString romanNum[10] = {"I","II","III","IV","V","VI","VII","VIII","IX","X"};
+
+  Int_t nRuns = runListArr->GetEntries();
+  Int_t nRunsPerPage = 40;
+  Int_t nRunsPerColumn = nRunsPerPage/2;
+
+  Int_t nPages = nRuns/nRunsPerPage;
+  if ( nRuns%nRunsPerPage > 0 ) nPages++;
+
+  Int_t irun = 0;
+
+  for ( Int_t ipage=0; ipage<nPages; ipage++ ) {
+    TString title = "Run summary";
+    if ( nPages > 1 ) title += Form(" (%s)",romanNum[ipage].Data());
+    BeginFrame(title,outFile);
+    outFile << " \\begin{columns}[onlytextwidth,T]" << endl;
+    outFile << "  \\footnotesize" << endl;
+    outFile << "  \\column{0.5\\textwidth}" << endl;
+    outFile << "  \\centering" << endl;
+    outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
+    outFile << "   \\hline" << endl;
+    if ( nRuns == 0 ) {
+      outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
     }
+    else {
+      while ( irun<nRuns ) {
+        outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun++))->GetString().Atoi() << "}{}" << endl;
+        if ( irun%nRunsPerColumn == 0 ) break;
+      }
+    }
+
+    outFile << "   \\hline" << endl;
+    outFile << "  \\end{tabular}" << endl;
+    outFile << endl;
+    outFile << "  \\column{0.5\\textwidth}" << endl;
+    outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
+    Bool_t hasRuns = ( irun < nRuns );
+    if ( hasRuns ) outFile << "   \\hline" << endl;
+    while ( irun<nRuns ) {
+      outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun++))->GetString().Atoi() << "}{}" << endl;
+      if ( irun%nRunsPerColumn == 0 ) break;
+    }
+    if ( hasRuns ) outFile << "   \\hline" << endl;
+    if ( ipage == nPages -1 ) {
+      outFile << "   \\hline" << endl;
+      outFile << "   \\colorLegend" << endl;
+      outFile << "   \\hline" << endl;
+    }
+    outFile << "  \\end{tabular}" << endl;
+    outFile << " \\end{columns}" << endl;
+    EndFrame(outFile);
   }
+
   delete runListArr;
-  outFile << "   \\hline" << endl;
-  outFile << "  \\end{tabular}" << endl;
-  outFile << endl;
-  outFile << "  \\column{0.5\\textwidth}" << endl;
-  outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
-  outFile << "   \\hline" << endl;
-  outFile << "   \\colorLegend" << endl;
-  outFile << "   \\hline" << endl;
-  outFile << "  \\end{tabular}" << endl;
-  outFile << " \\end{columns}" << endl;
-  EndFrame(outFile);
 }
 
 //_________________________________
