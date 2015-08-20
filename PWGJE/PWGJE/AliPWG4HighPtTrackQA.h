@@ -51,6 +51,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   virtual ~AliPWG4HighPtTrackQA() {;}
  
   //  virtual void   ConnectInputData(Option_t *);
+  virtual void   Init();
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
@@ -121,7 +122,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   Bool_t   fIsPbPb;               // kTRUE if PbPb
   Int_t fCentClass;               // Select only events from predefined centrality class
-  
+  Bool_t   fInit;                 // true after initialization (relevant for ESD analysis)
 
   /*
     QA variables stored in TArrayF *fVariables
