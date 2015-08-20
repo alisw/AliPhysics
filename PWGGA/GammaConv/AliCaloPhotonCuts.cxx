@@ -1489,7 +1489,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
 
 	printf("NonLinearity Correction: \n");
-	if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i' and MC periodName '%s'\n", fSwitchNonLinearity, periodName.Data());
+	if (fUseNonLinearity) printf("\t Chose NonLinearity cut '%i'\n", fSwitchNonLinearity);
 	else printf("\t No NonLinearity Correction on AnalysisTask level has been chosen\n");
 	
 }
@@ -2294,7 +2294,7 @@ Float_t AliCaloPhotonCuts::FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Fl
 
 //________________________________________________________________________
 Float_t AliCaloPhotonCuts::FunctionNL_kTestBeamv2(Float_t e){
-	return 0.968/(0.983504*(1./(1.+0.210106*exp(-e/0.897274))*1./(1.+0.0829064*exp((e-152.299)/31.5028))));
+	return ( 0.968 / ( 0.983504 *( 1. / ( 1. + 0.210106 * exp( -e / 0.897274 ) ) * 1. / ( 1. + 0.0829064 * exp( ( e - 152.299 ) / 31.5028 ) ) ) ) );
 }
 
 //________________________________________________________________________
