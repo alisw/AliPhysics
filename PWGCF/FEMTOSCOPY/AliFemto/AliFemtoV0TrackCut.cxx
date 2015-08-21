@@ -9,7 +9,7 @@ ClassImp(AliFemtoV0TrackCut)
 
 
 AliFemtoV0TrackCut::AliFemtoV0TrackCut() :
-fInvMassLambdaMin(0),fInvMassLambdaMax(99),fMinDcaDaughterPosToVert(0),fMinDcaDaughterNegToVert(0),fMaxDcaV0Daughters(99),fMaxDcaV0(99), fMaxCosPointingAngle(0), fParticleType(99), fEta(0.8), fPtMin(0), fPtMax(100), fOnFlyStatus(kFALSE), fMaxEtaDaughters(100), fTPCNclsDaughters(0), fNdofDaughters(10), fStatusDaughters(0), fPtMinPosDaughter(0), fPtMaxPosDaughter(99), fPtMinNegDaughter(0), fPtMaxNegDaughter(99),fMinAvgSepDaughters(0)
+fInvMassLambdaMin(0),fInvMassLambdaMax(99),fInvMassK0sMin(0),fInvMassK0sMax(99),fMinDcaDaughterPosToVert(0),fMinDcaDaughterNegToVert(0),fMaxDcaV0Daughters(99),fMaxDcaV0(99), fMaxCosPointingAngle(0), fParticleType(99), fEta(0.8), fPtMin(0), fPtMax(100), fOnFlyStatus(kFALSE), fMaxEtaDaughters(100), fTPCNclsDaughters(0), fNdofDaughters(10), fStatusDaughters(0), fPtMinPosDaughter(0), fPtMaxPosDaughter(99), fPtMinNegDaughter(0), fPtMaxNegDaughter(99),fMinAvgSepDaughters(0)
 {
   // Default constructor
  }
@@ -50,6 +50,14 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     }
     else if (fParticleType == kAntiLambdaMC) {
       if(!(aV0->MassLambda()>fInvMassLambdaMin &&aV0->MassLambda()<fInvMassLambdaMax) || !(aV0->NegNSigmaTPCP()==0))
+	return false; 
+      else
+	{
+	  return true;   
+	}
+    }
+    else if (fParticleType == kK0sMC) {
+      if(!(aV0->MassK0Short()>fInvMassK0sMin &&aV0->MassK0Short()<fInvMassK0sMax) || !(aV0->NegNSigmaTPCP()==0))
 	return false; 
       else
 	{
@@ -116,7 +124,19 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
 	  if(aV0->MassAntiLambda()<fInvMassLambdaMin || aV0->MassAntiLambda()>fInvMassLambdaMax)
 	    return false;
 	}
+  }//Looking for K0s = pip + pim
+  else if (fParticleType == 2) {
+    if (IsPionNSigma(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) //proton
+      if (IsPionNSigma(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) //pion
+	{
+	  pid_check=true;
+	  //invariant mass K0s
+	  if(aV0->MassK0Short()<fInvMassK0sMin || aV0->MassK0Short()>fInvMassK0sMax)
+	    return false;
+	}
   }
+
+
   if(!pid_check) return false;
   
   
@@ -232,6 +252,13 @@ void AliFemtoV0TrackCut::SetInvariantMassLambda(double min, double max)
 {
   fInvMassLambdaMin = min;
   fInvMassLambdaMax = max;
+
+}
+
+void AliFemtoV0TrackCut::SetInvariantMassK0s(double min, double max)
+{
+  fInvMassK0sMin = min;
+  fInvMassK0sMax = max;
 
 }
 
