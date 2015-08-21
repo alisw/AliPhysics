@@ -191,7 +191,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	if(runmultdep)	  {runmults[0]=1; runmults[1]=1; runmults[2]=1;	  }
 	int multbins[numOfMultBins+1] = {2, 20, 50,150,2,150};
 	
-	int runch[numOfChTypes] = {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed", "V0PLlowPt","V0PALlowPt","V0APLlowPt","V0APALlowPt","V0LLlowPt","V0LALlowPt","V0ALALlowPt", "V0PLhighPt","V0PALhighPt","V0APLhighPt","V0APALhighPt","V0LLhighPt","V0LALhighPt","V0ALALhighPt", "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0LAL","V0ALAL" };
 	
 	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
@@ -734,6 +734,30 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					  }
 		
 
+					cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhiCorrections(Form("cdedp%stpcM%i", chrgs[ichg], imult),29, 29);
+					cdedpetaphi[aniter]->SetDoFullAnalysis(kFALSE);
+					if(ichg==0 || ichg==1 || ichg==2){
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton/*,1,1,1,0*/);
+					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kProton, AliFemtoCorrFctnDEtaDPhiCorrections::kProton,1,1,1,1);
+					  anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+					}
+					else if(ichg==3 || ichg==4 || ichg==5){
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon/*,1,1,1,0*/);
+					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kKaon, AliFemtoCorrFctnDEtaDPhiCorrections::kKaon,1,1,1,1);	
+					 anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+					}
+					else if(ichg==6 || ichg==7 || ichg==8){
+					  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion/*,1,1,1,0*/);
+					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kPion, AliFemtoCorrFctnDEtaDPhiCorrections::kPion,1,1,1,1);	
+					  anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+					}
+
+					//else
+					//  cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile1D(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll/*,1,1,1,0*/);
+					//cdedpetaphi[aniter]->LoadCorrectionTabFromROOTFile(Form("%s",fileName), AliFemtoCorrFctnDEtaDPhiCorrections::kAll, AliFemtoCorrFctnDEtaDPhiCorrections::kAll,1,1,1,1);
+					
+
+					
 		
 					Manager->AddAnalysis(anetaphitpc[aniter]);
 				}
