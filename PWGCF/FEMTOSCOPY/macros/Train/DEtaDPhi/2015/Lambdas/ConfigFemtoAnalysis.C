@@ -722,12 +722,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					    cdydpyphinocorr[aniter] = new AliFemtoCorrFctnDYDPhiSimple(Form("cdydpnocorr%stpcM%i", chrgs[ichg], imult),29, 29, PionMass,PionMass);
 					    anetaphitpc[aniter]->AddCorrFctn(cdydpyphinocorr[aniter]);
 					  }
-					if((ichg>=13 && ichg<=16) || (ichg>=20 && ichg<=23))
+					if((ichg>=13 && ichg<=16) || (ichg>=20 && ichg<=23) || (ichg>=27 && ichg<=30))
 					  {
 					    cdydpyphinocorr[aniter] = new AliFemtoCorrFctnDYDPhiSimple(Form("cdydpnocorr%stpcM%i", chrgs[ichg], imult),29, 29, LambdaMass,ProtonMass);
 					    anetaphitpc[aniter]->AddCorrFctn(cdydpyphinocorr[aniter]);
 					  }
-					if((ichg>=17 && ichg<=19) || (ichg>=24 && ichg<=26))
+					if((ichg>=17 && ichg<=19) || (ichg>=24 && ichg<=26) || (ichg>=31 && ichg<=33))
 					  {
 					    cdydpyphinocorr[aniter] = new AliFemtoCorrFctnDYDPhiSimple(Form("cdydpnocorr%stpcM%i", chrgs[ichg], imult),29, 29, LambdaMass,LambdaMass);
 					    anetaphitpc[aniter]->AddCorrFctn(cdydpyphinocorr[aniter]);
