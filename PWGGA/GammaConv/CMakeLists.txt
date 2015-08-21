@@ -50,6 +50,7 @@ set(SRCS
     AliAnalysisTaskPi0v2.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
+    AliAnalysisTaskGammaPureMC.cxx
     AliAODConversionMother.cxx
     AliAODConversionParticle.cxx
     AliAODConversionPhoton.cxx
