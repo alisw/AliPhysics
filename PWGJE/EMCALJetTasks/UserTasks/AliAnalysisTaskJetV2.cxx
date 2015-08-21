@@ -543,9 +543,9 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
             }
             fHistPsiTPCLeadingJet[i] =          BookTH3F("fHistPsiTPCLeadingJet", "p_{t} [GeV/c]", "#Psi_{TPC}", "#varphi_{jet}", 70, 0, 210, 50, -1.*TMath::Pi()/2., TMath::Pi()/2., 50, phiMin, phiMax, i);
             fHistEPCorrelations[i] =            BookTH3F("fHistEPCorrelations", "EP_V0 average", "EP_V0 #chi", "EP_V0 #sigma", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2.);
-            fHistEPCorrAvChi[i] =            BookTH2F("fHistEPCorrAvChi", "EP_V0 average", "EP_V0 #chi", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2.);
-            fHistEPCorrAvSigma[i] =            BookTH2F("fHistEPCorrAvSigma", "EP_V0 average", "EP_V0 #sigma", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2.);
-            fHistEPCorrChiSigma[i] =            BookTH2F("fHistEPCorrChiSigma", "EP_V0 #chi", "EP_V0 #sigma", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2.);
+            fHistEPCorrAvChi[i] =            BookTH2F("fHistEPCorrAvChi", "EP_V0 average", "EP_V0 #chi", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2., i);
+            fHistEPCorrAvSigma[i] =            BookTH2F("fHistEPCorrAvSigma", "EP_V0 average", "EP_V0 #sigma", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2., i);
+            fHistEPCorrChiSigma[i] =            BookTH2F("fHistEPCorrChiSigma", "EP_V0 #chi", "EP_V0 #sigma", 50, -TMath::Pi()/2., TMath::Pi()/2., 50, -TMath::Pi()/2., TMath::Pi()/2., i);
             fHistIntegralCorrelations[i] = BookTH2F("fHistIntegralCorrelations", "square [GeV/c/A]", "circle [GeVc/A]", 100, 0, 100, 100, 0, 100);
             fProfIntegralCorrelations[i] = new TProfile(Form("fProfIntegralCorrelations_%i", i), Form("fProfIntegralCorrelations_%i", i), 100, 0, 100);
             fProfIntegralCorrelations[i]->GetXaxis()->SetTitle("RC energy, #eta #varphi scale");

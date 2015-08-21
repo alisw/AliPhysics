@@ -1310,7 +1310,9 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (fCutDCAToVertexZ && TMath::Abs(track->ZAtDCA())>GetMaxDCAToVertexZ()) pass=kFALSE;
 
   Double_t dedx = track->GetTPCsignal();
-  if (dedx < fMinimalTPCdedx) pass=kFALSE;
+  if(fCutMinimalTPCdedx) {
+    if (dedx < fMinimalTPCdedx) pass=kFALSE;
+  }
   Double_t time[9];
   track->GetIntegratedTimes(time);
   if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
