@@ -130,7 +130,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		numberOfCuts = 3;
 	if (trainConfig == 31 	|| trainConfig == 4 	|| trainConfig == 5		|| trainConfig == 6 	|| trainConfig == 7	 	||
 		trainConfig == 10 	|| trainConfig == 53  	|| trainConfig == 56 	|| trainConfig == 59 	|| trainConfig == 62 	||
-		trainConfig == 64 	|| trainConfig == 102  	|| trainConfig == 110 ) 
+		trainConfig == 64 	|| trainConfig == 102  	|| trainConfig == 110	|| trainConfig == 8)
 		numberOfCuts = 4;
 	if (trainConfig == 2 	|| trainConfig == 3		|| trainConfig == 103	|| trainConfig == 104)
 		numberOfCuts = 5;
@@ -182,7 +182,11 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032230000"; mesonCutArray[1] = "0163103100000030"; // min open angle - 0.01 
 		eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111121050032230000"; mesonCutArray[2] = "0163103100000040"; // min open angle - 0.0152 
 		eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050032230000"; mesonCutArray[3] = "0163103100000060"; // min open angle - 0.0404 
-
+	} else if (trainConfig == 8 ){ // EMCAL clusters 2.76 TeV additional NonLinearity variations
+		eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111123050032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kTestBeamv2 + ConvCalo
+		eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111124050032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + Calo
+		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111125050032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a kSDM ConvCalo
+		eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111126050032230000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity LHC11a kSDM Calo
 		// LHC13g	
 	} else if (trainConfig == 10){  // EMCAL clusters, EMCEGA triggers
 		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111100050032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG1,

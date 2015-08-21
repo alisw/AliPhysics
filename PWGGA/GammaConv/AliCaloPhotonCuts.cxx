@@ -2184,6 +2184,8 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 					energy /= FunctionNL_kSDM(energy, 0.981892, -5.43438, -1.05468);
 
 				else periodNameAvailable = kFALSE;
+
+				energy /= 0.995;
 			}
 			break;
 
@@ -2201,6 +2203,8 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 					energy /= FunctionNL_kSDM(2.0*energy, 0.979994, -3.24431, -0.760205);
 
 				else periodNameAvailable = kFALSE;
+
+				energy /= 0.995;
 			}
 			break;
 

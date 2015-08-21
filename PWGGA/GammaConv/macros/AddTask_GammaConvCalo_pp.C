@@ -140,7 +140,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		trainConfig == 53 ||  	trainConfig == 54 ||  	trainConfig == 61 ||  	trainConfig == 63 || 	trainConfig == 65 || 
 		trainConfig == 67 ||  	trainConfig == 68 || 	trainConfig == 75 || 	trainConfig == 77 || 	trainConfig == 79 || 
 		trainConfig == 80 ||  	trainConfig == 81 || 	trainConfig == 88 || 	trainConfig == 90 || 	trainConfig == 92 || 
-		trainConfig == 93 ||  	trainConfig == 94 || 	trainConfig == 97 || 
+		trainConfig == 93 ||  	trainConfig == 94 || 	trainConfig == 97 ||	trainConfig == 30 ||
 		trainConfig == 108 || 	
 		trainConfig == 111 || 	trainConfig == 117 || 	trainConfig == 118 || 	trainConfig == 119||	trainConfig == 23) {
 		numberOfCuts = 4;		
@@ -333,6 +333,11 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	} else if (trainConfig == 29){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
 		eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121053032230000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
 		eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121053032230000"; mesonCutArray[1] = "0163103100000010"; // 400 MeV cluster min energy
+	}else if (trainConfig == 30){  //LHC11a additional NonLinearity variations
+		eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111123053032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity kTestBeamv2 + ConvCalo
+		eventCutArray[ 1] = "00003113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111124053032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kTestBeamv2 + Calo
+		eventCutArray[ 2] = "00003113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111125053032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo kSDM
+		eventCutArray[ 3] = "00003113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111126053032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo kSDM
 
 	// LHC13g	
 	} else if (trainConfig == 40){  // LHC13g without non linearity
