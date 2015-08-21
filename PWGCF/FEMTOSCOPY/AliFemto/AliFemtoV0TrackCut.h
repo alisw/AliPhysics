@@ -16,7 +16,7 @@
 class AliFemtoV0TrackCut : public AliFemtoParticleCut 
 {
   public:
-  enum V0Type {kLambda = 0, kAntiLambda=1, kAll=99, kLambdaMC=101, kAntiLambdaMC=102};
+  enum V0Type {kLambda = 0, kAntiLambda=1, kK0s=2, kAll=99, kLambdaMC=101, kAntiLambdaMC=102, kK0sMC=3};
   typedef enum V0Type AliFemtoV0Type;
 
 
@@ -30,6 +30,7 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
   virtual AliFemtoParticleType Type(){return hbtV0;}
   
   void SetInvariantMassLambda(double,double);
+  void SetInvariantMassK0s(double,double);
   void SetMinDaughtersToPrimVertex(double,double);
   void SetMaxDcaV0Daughters(double);
   void SetMaxDcaV0(double);
@@ -58,6 +59,8 @@ class AliFemtoV0TrackCut : public AliFemtoParticleCut
 
   double            fInvMassLambdaMin;   //invariant mass lambda min
   double            fInvMassLambdaMax;   //invariant mass lambda max
+  double            fInvMassK0sMin;   //invariant mass lambda min
+  double            fInvMassK0sMax;   //invariant mass lambda max
   double            fMinDcaDaughterPosToVert; //DCA of positive daughter to primary vertex
   double            fMinDcaDaughterNegToVert; //DCA of negative daughter to primary vertex
   double            fMaxDcaV0Daughters;     //Max DCA of v0 daughters at Decay vertex
