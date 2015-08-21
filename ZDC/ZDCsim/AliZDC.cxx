@@ -172,8 +172,8 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   static Float_t trackTime=0., trackEta=0., primKinEn=0., xImpact=0., yImpact=0., sFlag=0.;
   static Int_t   pcPDGcode=0, motPDGcode=0;
 
-  AliZDCHit *newquad, *curprimquad;
-  newquad = new AliZDCHit(fIshunt, track, vol, hits);
+  AliZDCHit *curprimquad;
+  AliZDCHit newquad(fIshunt, track, vol, hits);
   TClonesArray &lhits = *fHits;
   
   if(fNhits==0){
@@ -182,20 +182,20 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       Int_t imo = p->GetFirstMother();
       //
       if(track != imo){
-        newquad->SetSFlag(1.);  // SECONDARY particle entering the ZDC
+        newquad.SetSFlag(1.);  // SECONDARY particle entering the ZDC
       }
       else if(track == imo){
-        newquad->SetSFlag(0.);  // PRIMARY particle entering the ZDC
+        newquad.SetSFlag(0.);  // PRIMARY particle entering the ZDC
       }
       //  
-      sFlag 	 = newquad->GetSFlag();
-      primKinEn  = newquad->GetPrimKinEn();
-      xImpact 	 = newquad->GetXImpact();
-      yImpact 	 = newquad->GetYImpact();
-      pcPDGcode	 = newquad->GetPDGCode();
-      motPDGcode = newquad->GetMotherPDGCode();
-      trackTime  = newquad->GetTrackTOF();
-      trackEta   = newquad->GetTrackEta();
+      sFlag 	 = newquad.GetSFlag();
+      primKinEn  = newquad.GetPrimKinEn();
+      xImpact 	 = newquad.GetXImpact();
+      yImpact 	 = newquad.GetYImpact();
+      pcPDGcode	 = newquad.GetPDGCode();
+      motPDGcode = newquad.GetMotherPDGCode();
+      trackTime  = newquad.GetTrackTOF();
+      trackEta   = newquad.GetTrackEta();
       //
       //newquad->Print("");
    }
@@ -206,46 +206,44 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       //
       Float_t sFlag = -1;
       if(track != imo){
-        newquad->SetSFlag(1.);  // SECONDARY particle entering the ZDC
+        newquad.SetSFlag(1.);  // SECONDARY particle entering the ZDC
       }
       else if(track == imo){
-        newquad->SetSFlag(0.);  // PRIMARY particle entering the ZDC
+        newquad.SetSFlag(0.);  // PRIMARY particle entering the ZDC
       }
       //
-      newquad->SetPrimKinEn(primKinEn);
-      newquad->SetXImpact(xImpact);
-      newquad->SetYImpact(yImpact);
-      newquad->SetPDGCode(pcPDGcode);
-      newquad->SetMotherPDGCode(motPDGcode);
-      newquad->SetTrackTOF(trackTime);
-      newquad->SetTrackEta(trackEta);
+      newquad.SetPrimKinEn(primKinEn);
+      newquad.SetXImpact(xImpact);
+      newquad.SetYImpact(yImpact);
+      newquad.SetPDGCode(pcPDGcode);
+      newquad.SetMotherPDGCode(motPDGcode);
+      newquad.SetTrackTOF(trackTime);
+      newquad.SetTrackEta(trackEta);
    }
   
   Int_t j;
   for(j=0; j<fNhits; j++){
     // If hits are equal (same track, same volume), sum them.
      curprimquad = (AliZDCHit*) lhits[j];
-     if(*curprimquad == *newquad){
-        *curprimquad = *curprimquad+*newquad;
+     if(*curprimquad == newquad){
+        *curprimquad = *curprimquad+newquad;
         // Ch. debug
         //printf("\n\t Summing hits **************** \n");
         //curprimquad->Print("");
 	//
-	delete newquad;
 	return;
      } 
   }
   //printf( "PDG from hits[10] = %f\n", hits[10]);
 
     //Otherwise create a new hit
-    new(lhits[fNhits]) AliZDCHit(*newquad);
+    new(lhits[fNhits]) AliZDCHit(newquad);
     // Ch. debug
     //printf("\n\t New ZDC hit added! fNhits = %d\n", fNhits);
     //newquad->Print("");
     //
     fNhits++;
     
-    delete newquad;
 }
 
 //____________________________________________________________________________
