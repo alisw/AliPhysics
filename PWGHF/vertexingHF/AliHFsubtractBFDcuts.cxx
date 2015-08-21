@@ -157,20 +157,20 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnData->GetAxis(7)->SetTitle("Decay length");
 
   // pt, normLXY, cosPointXY, #prongs, mother pt, normL, cosPoint, LXY, L
-  Int_t dimAxesMC[9]={24 , 30,100   ,20 ,24 ,30 ,100   ,100  ,100  };
+  Int_t dimAxesMC[9]={24 ,30 ,100   ,20 ,24 ,30 ,100   ,100  ,100  };
   Double_t  minMC[9]={ 0., 0.,  0.96, 0., 0., 0.,  0.99,  0. ,  0. };
   Double_t  maxMC[9]={24.,30.,  1.  ,20.,24.,30.,  1.  ,  1.0,  1.0};
   fTHnMC=new THnSparseF("fCutsMCFD","fCutsMCFD",9,dimAxesMC,minMC,maxMC);
   fTHnMC->GetAxis(0)->SetName("pt");
   fTHnMC->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
-  fTHnMC->GetAxis(1)->SetName("nProngs");
-  fTHnMC->GetAxis(1)->SetTitle("Number of Decay Prongs");
-  fTHnMC->GetAxis(2)->SetName("Mother_pt");
-  fTHnMC->GetAxis(2)->SetTitle("Mother #it{p}_{T} (GeV/#it{c})");
-  fTHnMC->GetAxis(3)->SetName("NormDecLengthXY");
-  fTHnMC->GetAxis(3)->SetTitle("Normalized XY decay length");
-  fTHnMC->GetAxis(4)->SetName("CosPointXY");
-  fTHnMC->GetAxis(4)->SetTitle("Cos#theta_{point}^{XY}");
+  fTHnMC->GetAxis(1)->SetName("NormDecLengthXY");
+  fTHnMC->GetAxis(1)->SetTitle("Normalized XY decay length");
+  fTHnMC->GetAxis(2)->SetName("CosPointXY");
+  fTHnMC->GetAxis(2)->SetTitle("Cos#theta_{point}^{XY}");
+  fTHnMC->GetAxis(3)->SetName("nProngs");
+  fTHnMC->GetAxis(3)->SetTitle("Number of Decay Prongs");
+  fTHnMC->GetAxis(4)->SetName("Mother_pt");
+  fTHnMC->GetAxis(4)->SetTitle("Mother #it{p}_{T} (GeV/#it{c})");
   fTHnMC->GetAxis(5)->SetName("NormDecLength");
   fTHnMC->GetAxis(5)->SetTitle("Normalized decay length");
   fTHnMC->GetAxis(6)->SetName("CosPoint");
@@ -182,7 +182,7 @@ void AliHFsubtractBFDcuts::InitHistos(){
 
   Int_t dimAxesGen[3]={24 ,20 ,24 };
   Double_t  minGen[3]={ 0., 0., 0.};
-  Double_t  maxGen[3]={24.,30.,24.};
+  Double_t  maxGen[3]={24.,20.,24.};
   fTHnGenStep=new THnSparseF("fPtMCGenStep","fPtMCGenStep",3,dimAxesGen,minGen,maxGen);
   fTHnGenStep->GetAxis(0)->SetName("pt");
   fTHnGenStep->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
