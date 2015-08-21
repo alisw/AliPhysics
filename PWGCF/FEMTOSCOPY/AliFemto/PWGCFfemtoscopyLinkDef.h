@@ -79,4 +79,5 @@
 #pragma link C++ class AliFemtoCorrFctnDPhiStarDEta+;
 #pragma link C++ class AliFemtoCorrFctnDPhiStarKStarMergedFraction+;
 #pragma link C++ class AliFemtoDeltaPtPairCut+;
+#pragma link C++ class AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction+;
 #endif
