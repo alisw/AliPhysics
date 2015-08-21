@@ -301,7 +301,7 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   //Get the runnumber and find which bin and fill value this corresponds to.
   fRun = pEvent->GetRunNumber();
   TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
-  if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinUpEdge(RunBin)-0.5*runnumberaxis->GetBinLowEdge(RunBin);}   
+  if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
   GetCentralityAndVertex();
 
   if(!SelectEvent()) return;//events are rejected.
