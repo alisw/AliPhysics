@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTask_tbroeker_RandomRejection(Bool_t getFromAlien=kFALSE,
                                                   Bool_t configsPreloaded=kFALSE,
                                                   TString cFileName = "Config_tbroeker_lowmasspPb.C", 
-                                                  Char_t* outputFileName="LMEEoutput.root"
+                                                  Char_t* outputFileName="LMEE.root"
                                                  )
 {
 
