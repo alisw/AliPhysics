@@ -1,6 +1,7 @@
 /*
   Last update (new version): 
   20 aug 2015: clean up
+  22 aug 2015: match pre defined output
 
 */
 
@@ -10,7 +11,7 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   // Creates a pid task and adds it to the analysis manager
   
   // Get the pointer to the existing analysis manager via the static
-  //access method
+  //access methodh
   //=========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -144,13 +145,16 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   // the manager as below
   //=======================================================================
   
-   Char_t outFileName[256]={0};
-  sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc,maxc);
-  cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
+  //before 22 aug 2015
+  // Char_t outFileName[256]={0};
+  // sprintf(outFileName,"%s_Tree_%1.0f_%1.0f.root",taskname,minc,maxc);
+  // cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
   
-  // TString outFileName = Form("%s",AliAnalysisManager::GetCommonFileName());
-  // AliAnalysisDataContainer *cout_hist = mgr->CreateContainer(output, TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
-  
+  //suggestion by Ramona:  
+  TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
+  AliAnalysisDataContainer *cout_hist = mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+ 
+
   mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskHighPtDeDx, 1, cout_hist);
     
