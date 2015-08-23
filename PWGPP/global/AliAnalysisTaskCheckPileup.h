@@ -29,7 +29,7 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
 
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag) {fReadMC=flag;}
-  void           SetFillNtuple(Bool_t flag) {fFillNtuple=flag;}
+  void           SetFillTree(Bool_t flag) {fFillTree=flag;}
   
   AliCounterCollection* GetCounter(){return fCounterPerRun;}
 
@@ -45,7 +45,7 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
 
  protected:
   Bool_t fReadMC;           // flag to read Monte Carlo information
-  Bool_t fFillNtuple;      // flag to switch off ntuple
+  Bool_t fFillTree;      // flag to switch off ntuple
 
   TList* fOutputPrimV;        //! 1st list of output histos
   TList* fOutputSPDPil;      //! 2nd list of output histos
@@ -93,7 +93,11 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
 
   AliCounterCollection* fCounterPerRun; // counters
 
-  TNtuple* fTrackNtuple; // track counters
+  TTree* fTrackTree;    // track counters
+  UInt_t fTimeStamp;    // tree variables
+  UInt_t fNTracksTPC;    // tree variables
+  UInt_t fNTracksTPCITS; // tree variables
+  UInt_t fNTracklets;    // tree variables
 
   Int_t fSPDContributorsCut;  // cut on cotrtributors to SPD pileup vertex
   Double_t fSPDZDiffCut;      // cut on z diff of SPD pileup vertex
@@ -111,7 +115,7 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   AliAnalysisTaskCheckPileup(const AliAnalysisTaskCheckPileup&); // not implemented
   AliAnalysisTaskCheckPileup& operator=(const AliAnalysisTaskCheckPileup&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPileup,2); // primary vertex analysis
+  ClassDef(AliAnalysisTaskCheckPileup,3); // primary vertex analysis
 };
 
 #endif
