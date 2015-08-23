@@ -59,6 +59,15 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	TString cutnumberEvent  = "80000103";
 	TString cutnumberPhoton = "06000008000100007500000000";   //Online  V0 finder                         
 	TString ElecCuts        = "90105400000002000000";            //Electron Cuts
+
+        if( trainConfig == 40 ){
+   
+             ElecCuts        = "90105400000002005000";
+ 
+        } else if ( trainConfig == 41 ) {
+	     ElecCuts        = "90105400000002006000";	
+        }        
+
 				 
 	Bool_t doEtaShift = kFALSE;
 	
@@ -365,7 +374,19 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009310300007200004000"; ElecCutarray[1] = "90405400233202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
 		eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009320300007200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
 		eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300001200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	
-	}
+	} else if ( trainConfig == 40 ){
+                eventCutArray[0] = "80000113"; photonCutArray[0] = "00200009360300007200004000"; ElecCutarray[0] = "90415400233202623710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   
+                eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009310300007200004000"; ElecCutarray[1] = "90405400233202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   
+                eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009320300007200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   
+                eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300001200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection		
+         
+        } else if ( trainConfig == 41 ){
+                eventCutArray[0] = "80000113"; photonCutArray[0] = "00200009360300007200004000"; ElecCutarray[0] = "90415400233202623710"; MesonCutarray[0] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   
+                eventCutArray[1] = "80000113"; photonCutArray[1] = "00200009310300007200004000"; ElecCutarray[1] = "90405400233202623710"; MesonCutarray[1] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   
+                eventCutArray[2] = "80000113"; photonCutArray[2] = "00200009320300007200004000"; ElecCutarray[2] = "90405400233202623710"; MesonCutarray[2] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   
+                eventCutArray[3] = "80000113"; photonCutArray[3] = "00200009360300001200004000"; ElecCutarray[3] = "90405400233202623710"; MesonCutarray[3] = "0103103500900000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection
+       }
+
 		
 	TList *EventCutList = new TList();
 	TList *ConvCutList  = new TList();
@@ -391,7 +412,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 
 		analysisEventCuts[i] = new AliConvEventCuts();
 		if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=36 ) || trainConfig == 38 
-		     || trainConfig == 39 ){
+		     || trainConfig == 39 || trainConfig == 40 || trainConfig == 41 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
