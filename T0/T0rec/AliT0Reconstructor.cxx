@@ -440,9 +440,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	      }
 	    timeLED[in+12] = allData[in+68+1][0] ;
 	    timeLED[in] = allData[in+12+1][0] ;
-	    printf(" readed i %i cfdC %i cfdA %i ledC %i ledA%i \n",
-			      in, timeCFD[in],timeCFD[in+12],timeLED[in], 
-			      timeLED[in+12]);   
+	    //	    printf(" readed i %i cfdC %i cfdA %i ledC %i ledA%i \n",
+	    //		      in, timeCFD[in],timeCFD[in+12],timeLED[in], 
+	    //		      timeLED[in+12]);   
 	    
 	  }
 	
@@ -463,10 +463,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		    chargeQT1[in]>0)		
 		  {
 		    chargeQT0[in]=allData[2*in+25][0];
-		    //		    AliDebug(25, Form(" readed Raw %i %i %i",
-		    //		      in, chargeQT0[in],chargeQT1[in]));
-		    printf(" readed Raw %i %i %i\n",
-				      in, chargeQT0[in],chargeQT1[in]);
+		    AliDebug(25, Form(" readed Raw %i %i %i",
+		    		      in, chargeQT0[in],chargeQT1[in]));
 		    break;
 		  }
 	      }
@@ -488,10 +486,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 		    chargeQT1[in]>0) 
 		  {
 		    chargeQT0[in]=allData[2*in+57][0];
-		    //		    AliDebug(25, Form(" readed Raw %i %i %i",
-		    //		    in, chargeQT0[in],chargeQT1[in]));
-		    printf(" readed Raw %i %i %i\n",
-				in, chargeQT0[in],chargeQT1[in]);
+		    AliDebug(25, Form(" readed Raw %i %i %i",
+				      in, chargeQT0[in],chargeQT1[in]));
 		    break;
 	  }
 	      }
@@ -519,8 +515,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   Double_t qtMip = 0;
 	   TGraph * qtGraph = (TGraph*)fQTC.At(ipmt);
 	   if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]) - pedestal[ipmt];
-	   //	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
-	   printf("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]);
+	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
+	   //printf("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]);
 	   if( equalize  ==0 ) 
 	     frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
 	   else 
@@ -610,12 +606,18 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       // Set triggers
       Bool_t tr[5];
       Int_t trchan[5] = {50,51,52,55,56};
-
       for (Int_t i=0; i<5; i++) tr[i] = false; 
+      Int_t triggername[3] = {meanTVDC, meanOrA, meanOrC}; //20ns around 0
       for (Int_t itr=0; itr<5; itr++) {
- 	for (Int_t iHit=0; iHit<1; iHit++) 
+ 	for (Int_t iHit=0; iHit<5; iHit++) 
 	  {
 	    Int_t trr=trchan[itr];
+	    if(itr<3 ) { 
+	      if( (allData[trr][iHit] - triggername[itr]) > -800 &&
+		  (allData[trr][iHit] - triggername[itr]) < 800)  tr[itr]=true;
+	      break;
+	    }
+	    else 
 	    if( allData[trr][iHit] > 0)  tr[itr]=true;
 	    AliDebug(5,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
 	  }	  
