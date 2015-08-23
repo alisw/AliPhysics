@@ -176,20 +176,20 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
     Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
 
-    if(customQualityCutsID==3){trkQualityCut->SetDCARPtFormula("0.0150+0.0500/pt^1.1");}
-    else if(customQualityCutsID==4){trkQualityCut->SetDCARPtFormula("0.0075+0.0250/pt^1.1");}
-    else if(customQualityCutsID==5){trkQualityCut->SetDCAZmax(3.);}
-    else if(customQualityCutsID==6){trkQualityCut->SetDCAZmax(0.2);}
-    else if(customQualityCutsID==7){trkQualityCut->SetTPCmaxChi2(7.);}
-    else if(customQualityCutsID==8){trkQualityCut->SetTPCmaxChi2(2.5);}
-    else if(customQualityCutsID==9){trkQualityCut->SetMinNCrossedRowsTPC(60, kTRUE);}
-    else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(100, kTRUE);}
-    else if(customQualityCutsID==11){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.7, kTRUE);}
-    else if(customQualityCutsID==12){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9, kTRUE);}
-    else if(customQualityCutsID==13){trkQualityCut->SetITSmaxChi2(50);}
-    else if(customQualityCutsID==14){trkQualityCut->SetITSmaxChi2(4);}
-    else if(customQualityCutsID==15){trkQualityCut->SetMaxChi2TPCConstrainedGlobal(40);}
-    else if(customQualityCutsID==16){trkQualityCut->SetMaxChi2TPCConstrainedGlobal(32);}
+    if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+    else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0075+0.0250/pt^1.1");}
+    else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(3.);}
+    else if(customQualityCutsID==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
+    else if(customQualityCutsID==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(7.);}
+    else if(customQualityCutsID==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.5);}
+    else if(customQualityCutsID==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
+    else if(customQualityCutsID==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
+    else if(customQualityCutsID==11){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
+    else if(customQualityCutsID==12){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.99);}
+    else if(customQualityCutsID==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(50);}
+    else if(customQualityCutsID==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4);}
+    else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(40);}
+    else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(32);}
 
     trkQualityCut->Print();
     return kTRUE;
@@ -197,14 +197,14 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     trkQualityCut->SetDefaultsTPCOnly(kTRUE);
     Printf(Form("::::: SetCustomQualityCut:: using TPC-only track quality cuts"));
 
-    if(customQualityCutsID==103){trkQualityCut->SetDCARmax(3.);}
-    else if(customQualityCutsID==104){trkQualityCut->SetDCARmax(1.);}
-    else if(customQualityCutsID==105){trkQualityCut->SetDCAZmax(4.);}
-    else if(customQualityCutsID==106){trkQualityCut->SetDCAZmax(1.);}
-    else if(customQualityCutsID==107){trkQualityCut->SetTPCmaxChi2(7.);}
-    else if(customQualityCutsID==108){trkQualityCut->SetTPCmaxChi2(2.5);}
-    else if(customQualityCutsID==109){trkQualityCut->SetTPCminNClusters(30);}
-    else if(customQualityCutsID==110){trkQualityCut->SetTPCminNClusters(85);}
+    if(customQualityCutsID==103){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(3.);}
+    else if(customQualityCutsID==104){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXY(1.);}
+    else if(customQualityCutsID==105){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(4.);}
+    else if(customQualityCutsID==106){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+    else if(customQualityCutsID==107){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(7.);}
+    else if(customQualityCutsID==108){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.5);}
+    else if(customQualityCutsID==109){trkQualityCut->GetESDtrackCuts()->SetMinNClustersTPC(30);}
+    else if(customQualityCutsID==110){trkQualityCut->GetESDtrackCuts()->SetMinNClustersTPC(85);}
 
     trkQualityCut->Print();
     return kTRUE;
