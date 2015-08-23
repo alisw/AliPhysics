@@ -1,7 +1,7 @@
 AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
 						Int_t nContribSPD=3,
 						Double_t zDiffSPD=0.8,
-						Bool_t doNtuple=kTRUE,
+						Bool_t doTree=kTRUE,
 						Int_t nContribMV=5,
 						Double_t zDiffMV=15.,
 						Double_t chi2MV=5.,
@@ -41,7 +41,7 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
   printf("CREATE PILEUP TASK\n");
 
   AliAnalysisTaskCheckPileup *taskpil = new AliAnalysisTaskCheckPileup();
-  taskpil->SetFillNtuple(doNtuple);
+  taskpil->SetFillTree(doTree);
   taskpil->SetCutOnContribToSPDPileupVert(nContribSPD);
   taskpil->SetCutOnSPDZDiff(zDiffSPD);
   taskpil->ConfigureMultiTrackVertexPileup(nContribMV,zDiffMV,chi2MV,flagBCMV);
@@ -71,7 +71,7 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
 							    outputFileName);
 
   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(Form("cNtuple%s",suffix.Data()),
-							    TNtuple::Class(),
+							    TTree::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName);
 
