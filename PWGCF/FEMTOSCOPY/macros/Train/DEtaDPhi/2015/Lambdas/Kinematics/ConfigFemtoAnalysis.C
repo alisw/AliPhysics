@@ -130,7 +130,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "all", "plus", "minus", "mixed",  "V0PL","V0PAL","V0APL","V0APAL","V0LL","V0ALAL","V0LAL" };
 	
 	//int runktdep = 1;
-    double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
+	double ktrng[numOfkTbins+1] = {0.0, 0, 0, 0, 0, 0};
 	double ktrngAll[numOfkTbins+1] = {0.0, 1.0, 2.0, 3.0, 4.0, 100.0};
 	double ktrngPion[numOfkTbins+1] = {0.0, 0.8, 1.2, 1.4, 2.5, 100.0};
 	double ktrngKaon[numOfkTbins+1] = {0.0, 1.5, 2.5, 3.5, 100.0, 0};
@@ -286,13 +286,15 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
                                           }
 					if(ichg >= 13 && ichg <=16){
 					  dtc1etaphitpc[aniter]->SetPt(0.5,maxPt); //lambda
+					  dtc1etaphitpc[aniter]->SetCharge(0.0);
 					  if(ichg == 14 || ichg ==16) dtc1etaphitpc[aniter]->SetPDG(-3122);
 					  else dtc1etaphitpc[aniter]->SetPDG(3122);
-					  dtc1etaphitpc[aniter]->SetCharge(0.0);
 					  
 					  dtc2etaphitpc[aniter]->SetPt(0.5,maxPt);//proton
 					  dtc2etaphitpc[aniter]->SetPDG(2212);
 					  if(ichg == 15 || ichg ==16) dtc2etaphitpc[aniter]->SetCharge(-1.0);
+					  else dtc2etaphitpc[aniter]->SetCharge(1.0);
+					  
 					}
 					if (ichg == 17 ||ichg == 18 ||ichg == 19)//lambdas
                                           {
