@@ -126,7 +126,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		numberOfCuts = 1;
 	if (trainConfig == 111 	|| trainConfig == 114 	|| trainConfig == 117 	|| trainConfig == 120 	|| trainConfig == 121 	|| 
 		trainConfig == 72 	|| trainConfig == 122 	|| trainConfig == 123 	|| trainConfig == 124 	|| trainConfig == 75  	|| 
-		trainConfig == 78 	|| trainConfig == 81 )
+		trainConfig == 78 	|| trainConfig == 81	|| trainConfig == 109)
 		numberOfCuts = 3;
 	if (trainConfig == 31 	|| trainConfig == 4 	|| trainConfig == 5		|| trainConfig == 6 	|| trainConfig == 7	 	||
 		trainConfig == 10 	|| trainConfig == 53  	|| trainConfig == 56 	|| trainConfig == 59 	|| trainConfig == 62 	||
@@ -337,6 +337,10 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1113111060032230000"; mesonCutArray[3] = "0163103100000050"; //only modules with TRD infront
 		eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111211060032230000"; mesonCutArray[4] = "0163103100000050"; //no modules with TRD infront
 
+	} else if (trainConfig == 109){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity none
+		eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111113063032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 ConvCalo
+		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111114063032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 Calo
 	} else if (trainConfig == 110){ // EMCAL clusters pp 8 TeV, Different NonLinearities
 		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101063032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
 		eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC12 ConvCalo

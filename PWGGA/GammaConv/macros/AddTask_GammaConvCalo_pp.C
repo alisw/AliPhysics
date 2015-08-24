@@ -128,7 +128,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	if (trainConfig == 101 || 	trainConfig == 131 || 	trainConfig == 120 || 	trainConfig == 121||
-		trainConfig == 122 || 	trainConfig == 123) {
+		trainConfig == 122 || 	trainConfig == 123 ||	trainConfig == 129) {
 		numberOfCuts = 1;
 	}
 	if (trainConfig == 113 || 	trainConfig == 114 || 	trainConfig == 115 || 	trainConfig == 116) {
@@ -141,7 +141,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		trainConfig == 67 ||  	trainConfig == 68 || 	trainConfig == 75 || 	trainConfig == 77 || 	trainConfig == 79 || 
 		trainConfig == 80 ||  	trainConfig == 81 || 	trainConfig == 88 || 	trainConfig == 90 || 	trainConfig == 92 || 
 		trainConfig == 93 ||  	trainConfig == 94 || 	trainConfig == 97 ||	trainConfig == 30 ||
-		trainConfig == 108 || 	
+		trainConfig == 108 || 	trainConfig == 126 ||	trainConfig == 128 ||
 		trainConfig == 111 || 	trainConfig == 117 || 	trainConfig == 118 || 	trainConfig == 119||	trainConfig == 23) {
 		numberOfCuts = 4;		
 	}
@@ -154,7 +154,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		trainConfig == 82 ||	trainConfig == 83 ||	trainConfig == 85 ||	trainConfig == 86 ||	trainConfig == 87 ||	
 		trainConfig == 91 ||
 		trainConfig == 102 ||	trainConfig == 103 || 	trainConfig == 105 || 	trainConfig == 106 ||	trainConfig == 110 ||
-		trainConfig == 107) {
+		trainConfig == 107 ||	trainConfig == 127) {
 		numberOfCuts = 5;	
 	}
 	if (trainConfig == 4  || 	trainConfig == 17 || 	trainConfig == 44 || 	trainConfig == 57 || 	 trainConfig == 71 ||
@@ -762,6 +762,28 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	} else if (trainConfig == 123){ // EMCAL clusters EMCEJE for extQA
 		eventCutArray[ 0] = "00091113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000010"; //
 
+
+
+
+	} else if (trainConfig == 126){ // PCM variations pi dEdx
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009317300008250400000"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000010"; // dEdx pi: 0: 0.4-3.5, -10: 3.5 ->
+		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327300008250400000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000010"; // dEdx pi: 1: 0.4-3.5, -10: 3.5 ->
+		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009325000008250400000"; clusterCutArray[2] = "1111111063032230000"; mesonCutArray[2] = "0163103100000010"; // dEdx pi: 1: 0.3 ->
+		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009320000008250400000"; clusterCutArray[3] = "1111111063032230000"; mesonCutArray[3] = "0163103100000010"; // dEdx pi: 1: 0.5 ->
+	} else if (trainConfig == 127){ // PCM variations pi dEdx
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327600008250400000"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000010"; // dEdx pi: 1: 0.4-2, -10: 2. ->
+		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327400008250400000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000010"; // dEdx pi: 1: 0.4-3, -10: 3. ->
+		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009315600008250400000"; clusterCutArray[2] = "1111111063032230000"; mesonCutArray[2] = "0163103100000010"; // dEdx pi: 0: 0.3-2, -10: 2. ->
+		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009367400008250400000"; clusterCutArray[3] = "1111111063032230000"; mesonCutArray[3] = "0163103100000010"; // dEdx pi: 2: 0.4-3, 0.5: 3. ->
+		eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009347400008250400000"; clusterCutArray[4] = "1111111063032230000"; mesonCutArray[4] = "0163103100000010"; // dEdx pi: 3: 0.4-3, 1: 3. ->
+	} else if (trainConfig == 128){ // PCM variations to close V0s
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111111063032230000"; mesonCutArray[0] = "0163103100000010"; // dEdx pi: 1: 0.4-2, -10: 2. ->
+		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250401000"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000010"; // dEdx pi: 1: 0.4-3, -10: 3. ->
+		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327000008250402000"; clusterCutArray[2] = "1111111063032230000"; mesonCutArray[2] = "0163103100000010"; // dEdx pi: 0: 0.3-2, -10: 2. ->
+		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250403000"; clusterCutArray[3] = "1111111063032230000"; mesonCutArray[3] = "0163103100000010"; // dEdx pi: 2: 0.4-3, 0.5: 3. ->
+	} else if (trainConfig == 129){ // EMCAL clusters No NonLinearity
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity none
+
 	// ************************************* PHOS cuts ****************************************************
 	// LHC12
 	} else if (trainConfig == 131){ // PHOS clusters 8 TeV LHC12
@@ -909,7 +931,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
 	task->SetUseTHnSparse(isUsingTHnSparse);
-	if(trainConfig==29) task->SetDoTreeConvGammaShowerShape(kTRUE);
+	//if(trainConfig==29) task->SetDoTreeConvGammaShowerShape(kTRUE);
 	if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
 	//connect containers
