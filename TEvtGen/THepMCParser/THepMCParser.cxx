@@ -579,7 +579,7 @@ string THepMCParser::ParseGenEvent2TCloneArray(HepMC::GenEvent * genEvent, TClon
      }
    }
 
-   Printf("Particles in event: %d, added: %d, entries: %d/%d", nParticlesInHepMC, arrayID, array->GetEntries(), array->GetEntriesFast());
+   // Printf("Particles in event: %d, added: %d, entries: %d/%d", nParticlesInHepMC, arrayID, array->GetEntries(), array->GetEntriesFast());
    std::cout << errMsgStream.str() << std::endl;
    
    return "";

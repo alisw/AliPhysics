@@ -2,6 +2,7 @@
 #include <TDatabasePDG.h>
 #include <TParticle.h>
 
+#include "AliLog.h"
 #include "AliGenReaderHepMC.h"
 #include "AliRun.h"
 #include "AliStack.h"
@@ -40,10 +41,10 @@ void AliGenReaderHepMC::Init()
 {
    // check if file exists, using FILE to avoid (the otherwise faster) POSIX dependencies
    if (FILE *file = fopen(fFileName,"r"))  {
-      printf("File %s opened \n", fFileName);
+      AliInfo(Form("File %s opened", fFileName));
       fclose(file);
    } else {
-      printf("Couldn't open input file: %s \n", fFileName);
+      AliError(Form("Couldn't open input file: %s", fFileName));
    }
    // Initialisation
    fEventsHandle = new HepMC::IO_GenEvent(fFileName, std::ios::in);
@@ -90,10 +91,10 @@ Int_t AliGenReaderHepMC::NextEvent()
       HepMC::WeightContainer weights = fGenEvent->weights();
       if (!weights.empty())
         fGenEventHeader->SetEventWeight(weights.front());
-      printf("Parsed event %d with %d particles, weight = %e.\n", fGenEvent->event_number(), fGenEvent->particles_size(), fGenEventHeader->EventWeight());
+      AliDebug(1, Form("Parsed event %d with %d particles, weight = %e", fGenEvent->event_number(), fGenEvent->particles_size(), fGenEventHeader->EventWeight()));
       return fGenEvent->particles_size();
    }
-   printf("No more events in the file.\n");
+   AliError("No more events in the file.");
    return 0;
 }
 
