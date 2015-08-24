@@ -21,6 +21,10 @@ class AliEMCalHistoContainer;
  */
 class AliAnalysisTaskChargedParticlesRef : public AliAnalysisTaskSE {
 public:
+  enum BeamDirection_t{
+    kpPb = 1,
+    kPbp = -1
+  };
   AliAnalysisTaskChargedParticlesRef();
   AliAnalysisTaskChargedParticlesRef(const char *name);
   virtual ~AliAnalysisTaskChargedParticlesRef();
@@ -28,6 +32,9 @@ public:
   void UserCreateOutputObjects();
   void UserExec(Option_t *);
   void Terminate(Option_t *) {}
+
+  void SetRapidityShift(Double_t yshift) { fYshift = yshift; }
+  void SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
 
 protected:
   void CreateOldPtBinning(TArrayD &binning) const;
@@ -39,6 +46,9 @@ protected:
   AliESDtrackCuts                 *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
   AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
+
+  Double_t                        fYshift;                    ///< Rapidity shift
+  Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
 
 private:
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);
