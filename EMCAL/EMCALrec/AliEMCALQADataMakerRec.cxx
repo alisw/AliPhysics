@@ -258,18 +258,29 @@ void AliEMCALQADataMakerRec::GetCalibRefFromOCDB()
   }
  
   if(fCalibRefHistoPro && fLEDMonRefHistoPro){
-    
-    // Defining histograms binning, each 2D histogram covers all SMs
-    Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
-    Int_t nbinsZ = 2*AliEMCALTriggerMappingV2::fSTURegionNEta;
-    Int_t nbinsPhi = 2*AliEMCALTriggerMappingV2::fSTURegionNPhi;
-    
+  
+      // Defining histograms binning, each 2D histogram covers all SMs
+  Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  Int_t runNumber = man->GetRun();
+  Int_t nbinsZ, nbinsPhi;
+  if (!(fGeom-> GetEMCGeometry()->GetGeoName().Contains("DCAL"))){
+    nbinsZ = AliEMCALGeoParams::fgkEMCALCols;
+    nbinsPhi = AliEMCALGeoParams::fgkEMCALRows;
+  }
+  else{
+    nbinsZ = AliEMCALTriggerMappingV2::fSTURegionNEta;
+    nbinsPhi = AliEMCALTriggerMappingV2::fSTURegionNPhi;
+  } 
     if(!fCalibRefHistoH2F)
       fCalibRefHistoH2F =  new TH2F("hCalibRefHisto", "hCalibRefHisto", nbinsZ, -0.5, nbinsZ - 0.5, nbinsPhi, -0.5, nbinsPhi -0.5);
     ConvertProfile2H(fCalibRefHistoPro,fCalibRefHistoH2F) ; 
   } else {
     AliFatal(Form("No reference object with name %s or %s found", sName1.Data(), sName2.Data())) ; 
   }
+
+ 
 }
 //____________________________________________________________________________ 
 ///
@@ -365,8 +376,8 @@ void AliEMCALQADataMakerRec::InitRaws()
   Int_t nbinsZ = 2*AliEMCALTriggerMappingV2::fSTURegionNEta;
   Int_t nbinsPhi = 2*AliEMCALTriggerMappingV2::fSTURegionNPhi;
 	
-  Int_t nTRUCols = nbinsZ; // total TRU columns for 2D TRU histos
-  Int_t nTRURows = nbinsPhi; // total TRU rows for 2D TRU histos
+  Int_t nTRUCols = nbinsZ/2; // total TRU columns for 2D TRU histos
+  Int_t nTRURows = nbinsPhi/2; // total TRU rows for 2D TRU histos
    // counter info: number of channels per event (bins are SM index)
   TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod;SM Id;# of towers",
 			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ;
@@ -735,18 +746,25 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  }
 	  else { // TRU L0 Id Data
 	    // which TRU the channel belongs to?
-	    Int_t iTRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
-
+	    //Int_t iTRUId = in.GetModule()*3 + (iRCU*in.GetBranch() + iRCU);
+	    
+	    Int_t iHWaddress = in.GetHWAddress();
+	    Int_t iTRUId = fGeom->GetTRUIndexFromOnlineHwAdd(iHWaddress,iRCU,iSM);\
 	    for (Int_t i = 0; i< bunchLength; i++) {
 	      for( Int_t j = 0; j < nTRUL0ChannelBits; j++ ){
 		// check if the bit j is 1
 		if( (sig[i] & ( 1 << j )) > 0 ){
-		  Int_t iTRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
-		  if(iTRUIdInSM < n2x2PerTRU) {
-		    Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
-		    // Fill the histograms
+		  //Int_t iTRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
+		  Int_t iTRUAbsId = 0; 
+		  Int_t found =  fGeom->GetAbsFastORIndexFromTRU(iTRUId, in.GetColumn(), iTRUAbsId);
+		  if(found==kTRUE){
 		    Int_t globTRUCol, globTRURow;
-		    GetTruChannelPosition(globTRURow, globTRUCol, iSM, iDDL, iBranch, iTRUIdInSM );
+		    fGeom->GetPositionInEMCALFromAbsFastORIndex(iTRUAbsId, globTRUCol, globTRURow);
+		  //  		    if(iTRUIdInSM < n2x2PerTRU) {
+		    //Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
+		    // Fill the histograms
+		    //Int_t globTRUCol, globTRURow;
+		    //GetTruChannelPosition(globTRURow, globTRUCol, iSM, iDDL, iBranch, iTRUIdInSM );
 		    
 		    FillRawsData(kNL0TRU, globTRUCol, globTRURow);
 		    FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, startBin);
@@ -791,14 +809,22 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
  	  // TRU
 	  else if ( in.IsTRUData() && in.GetColumn()<AliEMCALGeoParams::fgkEMCAL2x2PerTRU) {
 	    // for TRU data, the mapping class holds the TRU Int_ternal 2x2 number (0..95) in the Column var..
-	    Int_t iTRU = (iRCU*in.GetBranch() + iRCU); // TRU0 is from RCU0, TRU1 from RCU1, TRU2 is from branch B on RCU1
-	    Int_t iTRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU 
-	      + in.GetColumn();
-	    nTotalSMTRU[iSM]++; 
-	    if ( (amp > fMinSignalTRU) && (amp < fMaxSignalTRU) ) { 
-	      FillRawsData(kSigTRU,iTRU2x2Id, amp);
-	      // FillRawsData(kTimeTRU,iTRU2x2Id, time);
-	    }
+	   // Int_t iTRU = (iRCU*in.GetBranch() + iRCU); // TRU0 is from RCU0, TRU1 from RCU1, TRU2 is from branch B on RCU1
+	    //Int_t iTRU2x2Id = iSM*n2x2PerSM + iTRU*AliEMCALGeoParams::fgkEMCAL2x2PerTRU + in.GetColumn();
+	     Int_t iHWaddress = in.GetHWAddress();
+	     Int_t iTRU = fGeom->GetTRUIndexFromOnlineHwAdd(iHWaddress,iRCU,iSM); 
+	     nTotalSMTRU[iSM]++; 
+	     Int_t iTRU2x2Id; 
+	     Bool_t gotAbsFastORId=fGeom->GetAbsFastORIndexFromTRU(iTRU, in.GetColumn(), iTRU2x2Id);
+	     if(!gotAbsFastORId) 
+	     	 continue;
+	     else{
+	          nTotalSMTRU[iSM]++; 
+	    	  if ( (amp > fMinSignalTRU) && (amp < fMaxSignalTRU) ) { 
+	      	  FillRawsData(kSigTRU,iTRU2x2Id, amp);
+	      	// FillRawsData(kTimeTRU,iTRU2x2Id, time);
+	    	 }
+	     }
 	    // if (nPed > 0) {
 	      // for (Int_t i=0; i<nPed; i++) {
 		// FillRawsData(kPedTRU,iTRU2x2Id, pedSamples[i]);
@@ -1075,59 +1101,22 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
   Int_t nbinsProf = p->GetNbinsX();
   
   //  loop through the TProfile p and fill the TH2F histo 
-  Int_t row = 0;
-  Int_t col = 0;
   Double_t binContent = 0;
   Int_t towerNum = 0; //  global tower Id
   //   i = 0; //  tower Id within SuperModule
-  Int_t iSM = 0; //  SuperModule index 
-  Int_t iSMSide = 0; //  0=A, 1=C side
-  Int_t iSMSector = 0; //  2 SM's per sector
-  
+    
   //  indices for 2D plots
   Int_t col2d = 0;
   Int_t row2d = 0;
-  Int_t nTRU=0, nADC=0, nEtaTRU=0, nPhiTRU=0, nEtaSM=0, nPhiSM=0;
-  
+   
   for (Int_t ibin = 1; ibin <= nbinsProf; ibin++) {
     towerNum = (Int_t) p->GetBinCenter(ibin);
     binContent = p->GetBinContent(ibin);
-    // TO BE CHANGED
-    //  figure out what the tower indices are: col, row within a SuperModule
-    // iSM = towerNum/(AliEMCALTriggerMappingV2::fSTURegionNEta * AliEMCALTriggerMappingV2::fSTURegionNPhi);
-    AliEMCALTriggerMappingV2 *getter= new AliEMCALTriggerMappingV2();
-    Bool_t gotInfo = getter->GetInfoFromAbsFastORIndex(towerNum, nTRU, nADC, nEtaTRU, nPhiTRU, iSM, nEtaSM, nPhiSM);
-     if(!gotInfo)
-    	continue;
-    else{
-    getter->Delete();
-    // decode columns and rows but taking care of the different kind of SMs
-      // DecodeTowerNum(towerNum, &SM, &col, &row);
-    col = (towerNum/AliEMCALGeoParams::fgkEMCALRows) % (AliEMCALGeoParams::fgkEMCALCols);
-    row = towerNum % (AliEMCALGeoParams::fgkEMCALRows);
-    }  
-    // DecodeTowerNum(towerNum, &SM, &col, &row);
-    //  then we calculate what the global 2D coord are, based on which SM 
-    //  we are in
-    iSMSector = iSM / 2;
-    iSMSide = iSM % 2;
-    
-    if (iSMSide == 1) { //  C side, shown to the right
-      col2d = col + AliEMCALGeoParams::fgkEMCALCols;
-    }
-    else { //  A side, shown to the left 
-      col2d = col; 
-    }
-    
-    row2d = row + iSMSector * AliEMCALGeoParams::fgkEMCALRows;
-    
-    if((col2d<64 && col2d>31) && (row2d>63 && row2d<100))
-    {// shift it properly in order to account for PHOS hole in DCAL
-    	col2d += 32;
-    }
-    
-    histo->SetBinContent(col2d+1, row2d+1, binContent);
-  }
+    Bool_t foundInfo = fGeom->GetPositionInEMCALFromAbsFastORIndex(towerNum,col2d,row2d);
+    if(foundInfo)
+    	histo->SetBinContent(col2d+1, row2d+1, binContent);
+    else 
+	continue;
 } 
 //____________________________________________________________________________ 
 /// from local to global indices
@@ -1140,7 +1129,7 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
 /// \param column = number of module column inside the TRU
 ///
 /// \return 
-void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globColumn, Int_t module, Int_t ddl, Int_t branch, Int_t column ) const
+/*void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globColumn, Int_t module, Int_t ddl, Int_t branch, Int_t column ) const
 { // I THINK THIS WHOLE METHOD SHOULD BE CHANGED BUT NEED THE TRU SCHEME! 
   Int_t mrow;
   Int_t mcol;
@@ -1182,7 +1171,7 @@ void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globC
   globColumn = mcol + tcol;
   return;
 
-}
+}*/
 // ____________________________________________________________________________ 
 /// Creates the RAWSTU histograms
 /// 
@@ -1223,7 +1212,7 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 
       // V0 signal in STU
       Int_t iV0Sig = inSTU->GetV0A()+inSTU->GetV0C();
-      
+      Int_t detector;
       // FastOR amplitude receive from TRU
       for (Int_t i = 0; i < AliEMCALTriggerMappingV2::fNTotalTRU; i++)
 	{
@@ -1248,49 +1237,52 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 			
       // L1 Gamma patches
       Int_t iTRUSTU, x, y;
-      for (Int_t i = 0; i < inSTU->GetNL1GammaPatch(0); i++)
-	{
-	  if (inSTU->GetL1GammaPatch(i, 0, iTRUSTU, x, y)) // col (0..7), row (0..11)
-	    {
-	      Int_t iTRU;
-	      iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU,0);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
+      for(detector=0; detector<2;detector++){ // 0 EMCAL , 1 DCAL
+      	for(Int_t i = 0; i < inSTU->GetNL1GammaPatch(detector); i++)
+	   {
+	     if (inSTU->GetL1GammaPatch(i, detector, iTRUSTU, x, y)) // col (0..7), row (0..11)
+	      {
+	        Int_t iTRU;
+	        iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU,detector);// CHANGE WITH TRIGGERMAPPINGV2 METHOD
+	        if(!(fGeom->GetPositionInEMCALFromAbsFastORIndex( iTRU, etaG, phiG ))) continue;
+	      	else{
+      		      // Position of patch L1G (bottom-left FastOR of the patch)
+	      	      etaG = etaG - sizeL1gsubr * sizeL1gpatch + 1;
+	      	      FillRawsData(kGL1, etaG, phiG);
+	      	      
 	      // New position in CALORIMETER!
-	      // if (iTRU<30)
+	        // if (iTRU<30)
 	      	// Int_t phiG = 11 - y, etaG = x + 8 * int(iTRU/2); // position with new EMCAL TRU configuration !!check iTRU/2.. 
-	      // else if ((iTRU>29 && iTRU<32) || (iTRU>43))
+	        // else if ((iTRU>29 && iTRU<32) || (iTRU>43))
 	      	// Int_t etaG = 23 - x, phiG = y + 4 * int(iTRU/2); // position in EMCAL 1/3 SMs !!check iTRU/2
-	      // else
+	        // else
 	      	// Int_t phiG = 11 - y, etaG = x + 8 * int(iTRU/2); // position in DCAL SMs !!!!Still have to check this!!!
-	      Int_t etaG = 23-x, phiG = y + 4 * int(iTRU/2); // position in EMCal
-	      if (iTRU%2) etaG += 24; // C-side// / NEED THE NEW TRU NUMBERING SCHEME !!!!!
-					
-	      etaG = etaG - sizeL1gsubr * sizeL1gpatch + 1;
-				
-	      // Position of patch L1G (bottom-left FastOR of the patch)
-	      FillRawsData(kGL1, etaG, phiG);
-					
+	        // Int_t etaG = 23-x, phiG = y + 4 * int(iTRU/2); // position in EMCal
+	        // if (iTRU%2) etaG += 24; // C-side// / NEED THE NEW TRU NUMBERING SCHEME !!!!!		
+	        // etaG = etaG - sizeL1gsubr * sizeL1gpatch + 1;
+						
 	      // loop to sum amplitude of FOR in the gamma patch
-	      Int_t iL1GPatchAmp = 0;
-	      for (Int_t L1Gx = 0; L1Gx < sizeL1gpatch; L1Gx ++)
-		{
-		  for (Int_t L1Gy = 0; L1Gy < sizeL1gpatch; L1Gy ++)
-		    {
-		      if (etaG+L1Gx < AliEMCALTriggerMappingV2::fSTURegionNEta && phiG+L1Gy < AliEMCALTriggerMappingV2::fSTURegionNPhi) 
-		      	  iL1GPatchAmp += iEMCALtrig[etaG+L1Gx][phiG+L1Gy];
+	              Int_t iL1GPatchAmp = 0;
+	              for(Int_t L1Gx = 0; L1Gx < sizeL1gpatch; L1Gx ++)
+		         {
+		          for(Int_t L1Gy = 0; L1Gy < sizeL1gpatch; L1Gy ++)
+		             {
+		              if (etaG+L1Gx < AliEMCALTriggerMappingV2::fSTURegionNEta && phiG+L1Gy < AliEMCALTriggerMappingV2::fSTURegionNPhi) 
+		      	           iL1GPatchAmp += iEMCALtrig[etaG+L1Gx][phiG+L1Gy];
 		      // cout << iEMCALtrig[etaG+L1Gx][phiG+L1Gy] << endl;
-		    }
-		}
-	      
-	      // if (iL1GPatchAmp > 500) cout << "L1G amp =" << iL1GPatchAmp << endl;
-	      FillRawsData(kGL1V0, iV0Sig, iL1GPatchAmp);
-	      
+		             }
+		         }
+	      	      // if (iL1GPatchAmp > 500) cout << "L1G amp =" << iL1GPatchAmp << endl;
+	      	      FillRawsData(kGL1V0, iV0Sig, iL1GPatchAmp);
+	      	    }
+	    	}
 	    }
-	}
-		
+       }		
       // L1 Jet patches
-      for (Int_t i = 0; i < inSTU->GetNL1JetPatch(0); i++)
+      for(detector=0; detector<2;detector++){ // 0 EMCAL , 1 DCAL
+      for (Int_t i = 0; i < inSTU->GetNL1JetPatch(detector); i++)
 	{
-	  if (inSTU->GetL1JetPatch(i, 0, x, y)) // / col (0,15), row (0,11)
+	  if(inSTU->GetL1JetPatch(i, detector, x, y)) // / col (0,15), row (0,11)
 	    {
 	      
 	      Int_t etaJ = sizeL1jsubr * (11-y-sizeL1jpatch + 1); // CHECK THIS FOR JETS
@@ -1312,10 +1304,11 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 		
 	      // cout << "L1J amp =" << iL1JPatchAmp << endl;
 	      FillRawsData(kJL1V0, iV0Sig, iL1JPatchAmp);
-	    }
-	}
-    }
-		
+	   }//end-if
+	}//end patches loop
+     }//end detector loop
+  }//end inSTU->ReadPayload()
+ 		
   // Fill FOR amplitude histo
   for (Int_t i = 0; i < AliEMCALTriggerMappingV2::fSTURegionNEta; i++)
     {

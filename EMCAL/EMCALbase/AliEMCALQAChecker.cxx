@@ -197,8 +197,10 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       }
     }
   }
-  //46(NTRUs)*96(NModulesInTRU)*NTowersPerModule(4)
-  Double_t nTot = AliEMCALTriggerMappingV2::fNTotalTRU*AliEMCALTriggerMappingV2::fNModulesInTRU*4; 
+ //cols*rows (in module units) * 4 (each module is 2x2 towers)
+  Double_t nTot = AliEMCALTriggerMappingV2::fSTURegionNEta*AliEMCALTriggerMappingV2::fSTURegionNPhi*4;
+  //subtracting towers from 6 TRUs (missing in DCAL) * 96 (modules in TRU) * 4 (each module is 2x2 towers) 
+  nTot -= 6*AliEMCALTriggerMappingV2::fNModulesInTRU*4;
   TList *lstF = 0;
   Int_t calibSpecieId = (Int_t)TMath::Log2( AliRecoParam::kCalib );
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
@@ -329,7 +331,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	    //  check TRUs
 	    for(Int_t ix = 1; ix <=  2; ix++) {
 	      for(Int_t iy = 1; iy <= AliEMCALTriggerMappingV2::fNTotalTRU/2; iy++) {
-		if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) {// NEED TO CHECK THIS DEFINITION  
+		if(binContentTRU[ix-1][iy-1]/dL1GEntries >  ThreshG / ( 1 + ThreshG )) { 
 		  badL1GTRU[ix-1][iy-1] += 1;
 		  nBadL1GTRU += 1;
 		}
