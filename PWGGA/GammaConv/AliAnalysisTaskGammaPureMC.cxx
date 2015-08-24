@@ -358,7 +358,7 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
 	const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
 	Double_t mcProdVtxZ 	= primVtxMC->GetZ();	
 
-	if (abs(mcProdVtxZ) < 10 ){
+	if (TMath::Abs(mcProdVtxZ) < 10 ){
 		fHistNEvents->Fill(0);
 	} else {
 		fHistNEvents->Fill(1);
@@ -422,7 +422,8 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 	// Loop over all primary MC particle	
 	for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
 		// fill primary histograms
-		TParticle* particle 			= (TParticle *)fMCStack->Particle(i);
+		TParticle* particle 			= NULL;
+		particle 			= (TParticle *)fMCStack->Particle(i);
 		if (!particle) continue;
 		Bool_t hasMother 				= kFALSE;
 // 		cout << i << "\t"<< particle->GetMother(0) << endl;
@@ -432,17 +433,17 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 		if (motherParticle) hasMother 	= kTRUE;
 		else hasMother 	= kFALSE;
 		
-		if (abs(particle->Y()) > 0.800) continue;
+		if (TMath::Abs(particle->Y()) > 0.800) continue;
 		switch(particle->GetPdgCode()){
 			case 111:
 				fHistPtYPi0->Fill(particle->Pt(), particle->Y());
 				if (hasMother){
-					if (abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
-						abs(motherParticle->GetPdgCode()) == 130 ||	// K0l
-						abs(motherParticle->GetPdgCode()) == 321	// K+/-
+					if (TMath::Abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
+						TMath::Abs(motherParticle->GetPdgCode()) == 130 ||	// K0l
+						TMath::Abs(motherParticle->GetPdgCode()) == 321	// K+/-
 					   )
 					   fHistPtYPi0FromK->Fill(particle->Pt(), particle->Y());
-					if (abs(motherParticle->GetPdgCode()) == 3122   // Lambda
+					if (TMath::Abs(motherParticle->GetPdgCode()) == 3122   // Lambda
 					   ) 
 						fHistPtYPi0FromLambda->Fill(particle->Pt(), particle->Y());
 					if (motherParticle->GetPdgCode() == 221)  // eta
@@ -461,9 +462,9 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 			case 211:
 				fHistPtYPiPl->Fill(particle->Pt(), particle->Y());
 				if (hasMother){
-					if (abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
-						abs(motherParticle->GetPdgCode()) == 130 ||	// K0l
-						abs(motherParticle->GetPdgCode()) == 321	// K+/-
+					if (TMath::Abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
+						TMath::Abs(motherParticle->GetPdgCode()) == 130 ||	// K0l
+						TMath::Abs(motherParticle->GetPdgCode()) == 321	// K+/-
 					   )
 					   fHistPtYPiPlFromK->Fill(particle->Pt(), particle->Y());
 				}	
@@ -471,9 +472,9 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 			case -211:
 				fHistPtYPiMi->Fill(particle->Pt(), particle->Y());
 				if (hasMother){
-					if (abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
-						abs(motherParticle->GetPdgCode()) == 130 ||	// K0l
-						abs(motherParticle->GetPdgCode()) == 321	// K+/-
+					if (TMath::Abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
+						TMath::Abs(motherParticle->GetPdgCode()) == 130 ||	// K0l
+						TMath::Abs(motherParticle->GetPdgCode()) == 321	// K+/-
 					   )
 					   fHistPtYPiMiFromK->Fill(particle->Pt(), particle->Y());
 				}					
@@ -482,15 +483,15 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 		
 		// from here on, we are only intested in particles considered primaries in ALICE
 		if (particle->GetPdgCode()==111 || particle->GetPdgCode()==221 && hasMother){
-			if (abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
-				abs(motherParticle->GetPdgCode()) == 130	||	// K0l
-				abs(motherParticle->GetPdgCode()) == 321	||	// K+/-
-				abs(motherParticle->GetPdgCode()) == 3122 || 	// Lambdas
-				abs(motherParticle->GetPdgCode()) == 3212 || 	// Sigma0
-				abs(motherParticle->GetPdgCode()) == 3222 || 	// Sigmas
-				abs(motherParticle->GetPdgCode()) == 3112 || 	// Sigmas
-				abs(motherParticle->GetPdgCode()) == 3322 || 	// Cascades
-				abs(motherParticle->GetPdgCode()) == 3312  	// Cascades
+			if (TMath::Abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
+				TMath::Abs(motherParticle->GetPdgCode()) == 130	||	// K0l
+				TMath::Abs(motherParticle->GetPdgCode()) == 321	||	// K+/-
+				TMath::Abs(motherParticle->GetPdgCode()) == 3122 || 	// Lambdas
+				TMath::Abs(motherParticle->GetPdgCode()) == 3212 || 	// Sigma0
+				TMath::Abs(motherParticle->GetPdgCode()) == 3222 || 	// Sigmas
+				TMath::Abs(motherParticle->GetPdgCode()) == 3112 || 	// Sigmas
+				TMath::Abs(motherParticle->GetPdgCode()) == 3322 || 	// Cascades
+				TMath::Abs(motherParticle->GetPdgCode()) == 3312  	// Cascades
 			   )
 			   continue;
 		}
@@ -519,15 +520,15 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 				fHistPtYPi0GG->Fill(particle->Pt(), particle->Y());
 				if (acceptanceGamma[0] > 0 && acceptanceGamma[1] > 0 ){
 					fHistPtYPi0GGPCMAcc->Fill(particle->Pt(), particle->Y());
-					fHistPtAlphaPi0GGPCMAcc->Fill(particle->Pt(), abs(alpha));
+					fHistPtAlphaPi0GGPCMAcc->Fill(particle->Pt(), TMath::Abs(alpha));
 				}	
 				if (acceptanceGamma[0] == 2 && acceptanceGamma[1] == 2 ){
 					fHistPtYPi0GGEMCAcc->Fill(particle->Pt(), particle->Y());
-					fHistPtAlphaPi0GGEMCAcc->Fill(particle->Pt(), abs(alpha));
+					fHistPtAlphaPi0GGEMCAcc->Fill(particle->Pt(), TMath::Abs(alpha));
 				}	
 				if (acceptanceGamma[0] == 3 && acceptanceGamma[1] == 3 ){
 					fHistPtYPi0GGPHOAcc->Fill(particle->Pt(), particle->Y());
-					fHistPtAlphaPi0GGPHOAcc->Fill(particle->Pt(), abs(alpha));
+					fHistPtAlphaPi0GGPHOAcc->Fill(particle->Pt(), TMath::Abs(alpha));
 				}	
 				if ( (acceptanceGamma[0] > 0 && acceptanceGamma[1] == 2) || 
 					 (acceptanceGamma[1] > 0 && acceptanceGamma[0] == 2)
@@ -548,15 +549,15 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 				fHistPtYEtaGG->Fill(particle->Pt(), particle->Y());
 				if (acceptanceGamma[0] > 0 && acceptanceGamma[1] > 0 ){
 					fHistPtYEtaGGPCMAcc->Fill(particle->Pt(), particle->Y());
-					fHistPtAlphaEtaGGPCMAcc->Fill(particle->Pt(), abs(alpha));
+					fHistPtAlphaEtaGGPCMAcc->Fill(particle->Pt(), TMath::Abs(alpha));
 				}	
 				if (acceptanceGamma[0] == 2 && acceptanceGamma[1] == 2 ){
 					fHistPtYEtaGGEMCAcc->Fill(particle->Pt(), particle->Y());
-					fHistPtAlphaEtaGGEMCAcc->Fill(particle->Pt(), abs(alpha));
+					fHistPtAlphaEtaGGEMCAcc->Fill(particle->Pt(), TMath::Abs(alpha));
 				}	
 				if (acceptanceGamma[0] == 3 && acceptanceGamma[1] == 3 ){
 					fHistPtYEtaGGPHOAcc->Fill(particle->Pt(), particle->Y());
-					fHistPtAlphaEtaGGPHOAcc->Fill(particle->Pt(), abs(alpha));
+					fHistPtAlphaEtaGGPHOAcc->Fill(particle->Pt(), TMath::Abs(alpha));
 				}	
 				if ( (acceptanceGamma[0] > 0 && acceptanceGamma[1] == 2) || 
 					 (acceptanceGamma[1] > 0 && acceptanceGamma[0] == 2)
@@ -601,7 +602,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 //________________________________________________________________________
 void AliAnalysisTaskGammaPureMC::IsInPCMAcceptance(TParticle* part, Int_t& acceptance){
 	Double_t boundaryEta = 0.900001;
-	if (part->Pt() > 0.050 && abs(part->Eta()) < boundaryEta)
+	if (part->Pt() > 0.050 && TMath::Abs(part->Eta()) < boundaryEta)
 		acceptance = 1;
 
 	return;	
