@@ -52,7 +52,7 @@ public:
   enum RAWHISTOS {kSDDRawModPattern,kSDDRawLadModLay3,kSDDRawLadModLay4,
 		  kSDDRawModPatternNorm,
 		  kSDDRawLadModLay3Norm,kSDDRawLadModLay4Norm,
-		  kSDDRawRelOccLay3,kSDDRawRelOccLay4,
+		  kSDDNofDigits,kSDDNofDigitsVsMod,
 		  kActiveModLay3,kActiveModLay4,kSDDRawDataCheck,
 		  kSDDOnlineDDLPattern,kSDDDataSize,kChargeMapFirstMod};
 
@@ -105,8 +105,8 @@ private:
   AliITSDDLModuleMapSDD  *fDDLModuleMap;       // SDD Detector configuration for the decoding
   TObjArray *fCalibration;                     //Array of Calibration Object
   TObjArray *fHistoCalibration;                //Array of the Calibration histograms for the normalization
-
-  ClassDef(AliITSQASDDDataMakerRec,13)         // description 
+  Int_t fPulserRun;                            // pulser run number (to identify calibration)
+  ClassDef(AliITSQASDDDataMakerRec,14)         // description 
 
 };
 
