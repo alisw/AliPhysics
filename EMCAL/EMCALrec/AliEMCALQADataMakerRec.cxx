@@ -1117,6 +1117,7 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
     	histo->SetBinContent(col2d+1, row2d+1, binContent);
     else 
 	continue;
+    }
 } 
 //____________________________________________________________________________ 
 /// from local to global indices
@@ -1236,7 +1237,7 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	}
 			
       // L1 Gamma patches
-      Int_t iTRUSTU, x, y;
+      Int_t iTRUSTU, x, y,etaG,phiG;
       for(detector=0; detector<2;detector++){ // 0 EMCAL , 1 DCAL
       	for(Int_t i = 0; i < inSTU->GetNL1GammaPatch(detector); i++)
 	   {
