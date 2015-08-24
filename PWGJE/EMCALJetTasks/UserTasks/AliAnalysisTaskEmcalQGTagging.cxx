@@ -276,7 +276,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
  
       if (!(fJetShapeType == kData)) {
         AliPythiaInfo *partonsInfo = 0x0;
-        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) || (fJetShapeType == kDetEmbPart) ){
+        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) || (fJetShapeType == kDetEmbPart) ||(fJetShapeType == kDetEmbPartPythia)){
           AliJetContainer *jetContTrue = GetJetContainer(1);
           AliJetContainer *jetContUS = GetJetContainer(2);
        
@@ -300,7 +300,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
             continue;
           }
           
-          if(fJetShapeType==kDetEmbPart){
+          if((fJetShapeType==kDetEmbPart) || (fJetShapeType==kDetEmbPartPythia)){
             AliJetContainer *jetContPart=GetJetContainer(3);
             jet3=jet2->ClosestJet();
            
@@ -317,10 +317,10 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
           if(fJetShapeSub==kConstSub) fraction = jetContUS->GetFractionSharedPt(jetUS);
           //if (fraction > 0.1) cout<<"***** hey a jet matched with fraction"<<fraction<<"  "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
-          
+	 
           if(fraction<fMinFractionShared) continue;
           //InputEvent()->Print();
-          if (!(fJetShapeType == kPythiaDef)) {
+          if ((fJetShapeType != kPythiaDef)||(fJetShapeType!=kDetEmbPartPythia)) {
             partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
             if(!partonsInfo) return 0;
           }
@@ -331,7 +331,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(!partonsInfo) return 0;
         }
         
-        if (!(fJetShapeType == kPythiaDef)){
+        if ((fJetShapeType != kPythiaDef) || (fJetShapeType!=kDetEmbPartPythia)){
           Double_t jp1=RelativePhi(jet2->Phi(),partonsInfo->GetPartonPhi6());
           Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
           kWeight=partonsInfo->GetPythiaEventWeight();
@@ -381,12 +381,12 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
-      if ((((fJetShapeType == kData) || (fJetShapeType == kDetEmb) || (fJetShapeType==kDetEmbPart)) && (fJetShapeSub == kConstSub))|| (fJetShapeType==kPythiaDef))
+      if ((((fJetShapeType == kData) || (fJetShapeType == kDetEmb) || (fJetShapeType==kDetEmbPart)||(fJetShapeType==kDetEmbPartPythia)) && (fJetShapeSub == kConstSub))|| (fJetShapeType==kPythiaDef))
         ptSubtracted = jet1->Pt();
       
       else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
       
-      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef) || (fJetShapeType==kDetEmbPart))
+      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef) || (fJetShapeType==kDetEmbPart) || (fJetShapeType==kDetEmbPartPythia))
         if (ptSubtracted < fPtThreshold) continue;
      
      
@@ -416,7 +416,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
-       if (fJetShapeType == kDetEmbPart) {
+      if ((fJetShapeType == kDetEmbPart) || (fJetShapeType==kDetEmbPartPythia)) {
 	 if(fJetShapeSub==kConstSub) kMatched = 3;
          if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
