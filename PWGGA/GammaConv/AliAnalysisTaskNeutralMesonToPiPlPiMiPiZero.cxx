@@ -958,7 +958,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
 		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
 
 		if (!clus) continue;
-		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)) continue;
+		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)){ delete clus; continue;}
 		// TLorentzvector with cluster
 		TLorentzVector clusterVector;
 		clus->GetMomentum(clusterVector,vertex);
@@ -968,7 +968,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessCaloPhotonCandidates()
 		
 		// convert to AODConversionPhoton
 		AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
-		if(!PhotonCandidate) continue;
+		if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
 		
 		// Flag Photon as CaloPhoton
 		PhotonCandidate->SetIsCaloPhoton();
