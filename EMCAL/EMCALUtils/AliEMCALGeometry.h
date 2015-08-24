@@ -404,7 +404,9 @@ public:
   Int_t  GetNTotalTRU() const { 
     return fTriggerMapping->GetNTRU(); 
   }
-
+  Int_t GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t ddl, Int_t sm)const{
+    return fTriggerMapping->GetTRUIndexFromOnlineHwAdd(hwAdd, ddl, sm);
+  }
   
 protected:
 
