@@ -806,7 +806,7 @@ if(nbTracksEvent==0) return kFALSE;
     //fOutClusters->Delete();
 
 
-Int_t index;
+Int_t index=0;
 
 
     //Double_t ETleadingclust = 0., M02leadingcluster = 0., lambda0cluster = 0., phileadingclust = 0., etaleadingclust = 0., ptmc = 0.,mcptsum = 0.;
@@ -885,8 +885,10 @@ Int_t index;
        // clusters->ResetCurrentID();
 
    //    AliError("fonctionne bien");
-        AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(0));
-        index=0;
+    //       AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(0));
+   AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(0));
+
+          index=0;
    //    AliError("fonctionne bien");
 
     while(emccluster){
@@ -895,7 +897,7 @@ Int_t index;
       AliVCluster *coi = emccluster->GetCluster();
       if(!coi) {
        index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
         continue;
       }
         //
@@ -916,7 +918,7 @@ Int_t index;
       if(!fIsMC){
         if(coiTOF<-30 || coiTOF>30){
           index++;
-          emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
+          emccluster=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
           continue;
         }
       }
@@ -924,7 +926,7 @@ Int_t index;
       fPtaftTime->Fill(vecCOI.Pt());
       if(ClustTrackMatching(emccluster)){
         index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
         continue;
       }
      fPtaftTM->Fill(vecCOI.Pt());
@@ -932,7 +934,7 @@ Int_t index;
 
       if(!CheckBoundaries(vecCOI)){
         index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
         continue;
       }
 
@@ -940,7 +942,7 @@ Int_t index;
 
       if(vecCOI.Et()<5.){
            index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
           continue;
 
       }
@@ -948,10 +950,10 @@ Int_t index;
 fTestIndexE->Fill(vecCOI.Pt(),index);
 
         //AliInfo("Passed the CheckBoundaries conditions");
-// AliError(Form("passe fill general histograms"));
+
      FillGeneralHistograms(coi,vecCOI, index);
       index++;
-      emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
+      emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
 
     }
 
