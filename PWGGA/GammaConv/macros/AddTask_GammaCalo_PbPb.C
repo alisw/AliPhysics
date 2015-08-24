@@ -1,5 +1,5 @@
 void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change different set of cuts
-									Int_t	 	isMC   						= 0, 							// run MC 
+									Int_t	 	isMC   						= 0,								// run MC
 									Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
 									Int_t 		enableQAClusterTask 		= 0, 								// enable additional QA task
 									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
@@ -8,7 +8,8 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 									TString 	periodName 					= "LHC13d2",  						// name of the period for added signals and weighting
                                     Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
-									Int_t 		enableExtQA			 		= 0									// enable QA(3), disabled (0)
+									Int_t 		enableExtQA			 		= 0,								// enable QA(3), disabled (0)
+									TString		periodName					= ""
 								) {
 
 	// ================= Load Librariers =================================
@@ -65,7 +66,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodName.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodName);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
