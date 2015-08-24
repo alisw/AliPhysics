@@ -9,7 +9,8 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t 		trainConfig 				= 1,  								// cha
 									Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 									Int_t 		enableExtMatchAndQA 		= 0,								// enable matching histograms (1) and extended QA (2), only QA(3), all disabled (0)
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
-									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+									TString		periodName					= ""
 								) {
 
 	// ================= Load Librariers =================================
@@ -67,7 +68,7 @@ void AddTask_GammaConvCalo_PbPb(   	Int_t 		trainConfig 				= 1,  								// cha
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodName.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodName);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
