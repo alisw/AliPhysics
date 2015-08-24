@@ -98,6 +98,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		void 							RelabelAODs(Bool_t relabel=kTRUE)					{fRelabelAODs=relabel;}
 		Bool_t 							AreAODsRelabeled()									{return fRelabelAODs;}
 		void 							RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
+		void 							SetPeriodName(TString name)							{fPeriodName = name;}
 		TString 						GetPeriodName()										{return fPeriodName;}
 		Int_t 							GetNumberOfPrimaryTracks()							{return fNumberOfPrimaryTracks;}
 		void 							SetUseMassToZero (Bool_t b)							{
