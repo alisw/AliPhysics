@@ -2886,13 +2886,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(!jetConeK0Emblist)continue;
       
-      Bool_t isEmbinCone;
+      Bool_t isEmbinCone=kFALSE;
 
-      for(Int_t it=0; it<jetConeK0Emblist->GetSize(); ++it){ // loop for K0s in embedded jet cone, reject them from OCs
+      for(Int_t in=0; in<jetConeK0Emblist->GetSize(); ++in){ // loop for K0s in embedded jet cone, reject them from OCs
 	
 	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
 	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeK0Emblist->At(it));
+	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeK0Emblist->At(in));
 	if(!v0emb) continue;
 	
 	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
@@ -3041,13 +3041,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(!jetConeLaEmblist)continue;
 
-      Bool_t isEmbinCone;
+      Bool_t isEmbinCone=kFALSE;
 
-      for(Int_t it=0; it<jetConeLaEmblist->GetSize(); ++it){ // loop for La in embedded jet cone, reject them from OCs
+      for(Int_t in=0; in<jetConeLaEmblist->GetSize(); ++in){ // loop for La in embedded jet cone, reject them from OCs
 	
 	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
 	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeLaEmblist->At(it));
+	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeLaEmblist->At(in));
 	if(!v0emb) continue;
 	
 	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
@@ -3204,13 +3204,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(!jetConeALaEmblist)continue;
       
-      Bool_t isEmbinCone;
+      Bool_t isEmbinCone=kFALSE;
       
-      for(Int_t it=0; it<jetConeALaEmblist->GetSize(); ++it){ // loop for ALa in embedded jet cone, reject them from OCs
+      for(Int_t in=0; in<jetConeALaEmblist->GetSize(); ++in){ // loop for ALa in embedded jet cone, reject them from OCs
 	
 	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
 	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeALaEmblist->At(it));
+	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeALaEmblist->At(in));
 	if(!v0emb) continue;
 	
 	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
@@ -3534,8 +3534,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
 	    fh1DeltaREmbedded->Fill(deltaREmbedded);
 
-	    //if((fDebug>10) && ptFractionEmbedded > 0.5)){
-	      if(ptFractionEmbedded > 0.){// for testing purposes
+	    if((fDebug>10) && (ptFractionEmbedded > 0.5)){
+	    //if(ptFractionEmbedded > 0.){// for testing purposes
 
 	      //cout<<" embeddedJet pt "<<embeddedJet->Pt()<<" fracPtEmbedded "<<ptFractionEmbedded<<" nConst "<<embeddedJet->GetRefTracks()->GetEntriesFast() <<endl;
 	      for(Int_t i=0; i<embeddedJet->GetRefTracks()->GetEntriesFast(); i++){
@@ -3707,9 +3707,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 
-	    std::cout<<"MCPt :"<<MCPt<<std::endl;
+	    // std::cout<<"MCPt :"<<MCPt<<std::endl;
 
-	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s,MCPt,fEta};
+	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s, trackPt, fEta};
 	    
 	    
 	    fhnK0sEmbCone->Fill(vK0sEmbCone);
@@ -3851,7 +3851,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 	   
-    	    Double_t vLaEmbCone[4] = {jetPt, invMLa,MCPt,fEta};
+    	    Double_t vLaEmbCone[4] = {jetPt, invMLa, trackPt, fEta};
 	    fhnLaEmbCone->Fill(vLaEmbCone);
 	    
 	  }
@@ -3981,14 +3981,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	  if(fUseExtraTracks == 1){//only for extra particles used
 	    
-	    Double_t vALaEmbCone[4] = {jetPt, invMALa,trackPt,fEta};
+	    Double_t vALaEmbCone[4] = {jetPt, invMALa, trackPt, fEta};
 	    fhnALaEmbCone->Fill(vALaEmbCone);
 	    
 	  }
 	  
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 	    	    
-	    Double_t vALaEmbCone[4] = {jetPt, invMALa,MCPt,fEta};
+	    Double_t vALaEmbCone[4] = {jetPt, invMALa, trackPt, fEta};//should be MC generated pT?
 	    fhnALaEmbCone->Fill(vALaEmbCone);
 	    	    
 	  }
