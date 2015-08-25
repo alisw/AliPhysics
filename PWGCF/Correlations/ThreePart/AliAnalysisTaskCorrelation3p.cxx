@@ -310,9 +310,12 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   //initialize the period dependent cuts.
 
   UsePeriod();  
-  //Fill Events/run histogram.
-  FillHistogram("EventsperRun", fRunFillValue);
-  FillHistogram("NEventsVertex",fRunFillValue,fVertex[2]);
+  if(fQA){
+    //Fill Events/run histogram.
+    FillHistogram("EventsperRun", fRunFillValue);
+    FillHistogram("NEventsVertex",fRunFillValue,fVertex[2]);
+    FillHistogram("NEventsCent",fRunFillValue,fCentralityPercentile);
+  }
   //To fill with tracks and pions:
   TObjArray allrelevantParticles;
   fNTriggers=0.0;//Reset fNTriggers
@@ -325,9 +328,10 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   
   FillHistogram("Ntriggers",fNTriggers);
   FillHistogram("NAssociated",fNAssociated);
-  FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
-  FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);
-  
+  if(fQA){
+    FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
+    FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);
+  }
   if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
   //if fQA the correlations are not build.
   if(!fQA){
@@ -377,7 +381,9 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 	Weight = fWeightshpt->GetBinContent(MultBin,VZbin,etabin)*fpTfunction->Eval(t->Pt());
       }
     }
-    FillHistogram("TracksperRun",fRunFillValue);
+    if(fQA){
+      FillHistogram("TracksperRun",fRunFillValue);
+    }
     FillHistogram("trackUnselectedPt",t->Pt(),Weight);
     FillHistogram("trackUnselectedPhi",t->Phi(),Weight);
     FillHistogram("trackUnselectedTheta",t->Theta(),Weight);
@@ -391,9 +397,11 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 //       FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());
 //       if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
 //     }
-    
-    FillHistogram("selectedTracksperRun",fRunFillValue);
-    FillHistogram("NTracksVertex",fRunFillValue,fVertex[2]);
+    if(fQA){
+      FillHistogram("selectedTracksperRun",fRunFillValue);
+      FillHistogram("NTracksVertex",fRunFillValue,fVertex[2]);
+      FillHistogram("NTracksCent",fRunFillValue,fCentralityPercentile);
+    }
     FillHistogram("trackPt",t->Pt(),Weight);
     if(fQA&&fWeights&&fWeightshpt){
       if(t->Pt()<4.0){
@@ -402,7 +410,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
       else{
 	FillHistogram("Track_Cent_Vertex_eta",fCentralityPercentile,fVertex[2],t->Eta());
       }
-      }
+    }
     if(dynamic_cast<AliAODTrack*>(t)){
       if(dynamic_cast<AliAODTrack*>(t)->IsGlobalConstrained())FillHistogram("trackPtconstrained",t->Pt(),Weight);
       if(!dynamic_cast<AliAODTrack*>(t)->IsGlobalConstrained())FillHistogram("trackPtnotconstrained",t->Pt(),Weight);
@@ -787,39 +795,49 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, 100, 100, -10, 10));
   if(fCollisionType==pp)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, fMaxNumberOfTracksInPPConsidered, 100, -10, 10));
 
-  //QA per run histograms:
-  TH1D * eventsperrun = new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
-  TH1D * TracksperRun = new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);
-  TH1D * selectedTracksperRun = new TH1D("selectedTracksperRun", "# selected tracks per Run", fNruns, 0,1);
-  TH2D * NTriggersperRun = new TH2D("NTriggersperRun","# triggers per event per Run",fNruns, 0,1,50,-0.5,49.5);
-  TH2D * NAssociatedperRun = new TH2D("NAssociatedperRun","# associated per event per Run",fNruns, 0,1,100,-0.5,99.5);
-  TH2D * NTracksVertex	   = new TH2D("NTracksVertex","#selected tracks per run and vertex",fNruns,0,1,100,-10.0,10.0);
-  TH2D * NEventsVertex	   = new TH2D("NEventsVertex","Events per run and vertex",fNruns,0,1,100,-10.0,10.0);
-  
-  for(int i=0; i<fNruns; i++){
-    TString lable = Form("%i",fRunNumberList[i]);
-    eventsperrun->GetXaxis()->SetBinLabel(i+1, lable);
-    eventsperrun->GetXaxis()->LabelsOption("v");
-    TracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
-    TracksperRun->GetXaxis()->LabelsOption("v");
-    selectedTracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
-    selectedTracksperRun->GetXaxis()->LabelsOption("v");
-    NTriggersperRun->GetXaxis()->SetBinLabel(i+1,lable);
-    NTriggersperRun->GetXaxis()->LabelsOption("v");
-    NAssociatedperRun->GetXaxis()->SetBinLabel(i+1,lable);
-    NAssociatedperRun->GetXaxis()->LabelsOption("v");    
-    NTracksVertex->GetXaxis()->SetBinLabel(i+1,lable);
-    NTracksVertex->GetXaxis()->LabelsOption("v"); 
-    NEventsVertex->GetXaxis()->SetBinLabel(i+1,lable);
-    NEventsVertex->GetXaxis()->LabelsOption("v"); 
+  if(fQA){
+    //QA per run histograms:
+    TH1D * eventsperrun 	= new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
+    TH1D * TracksperRun 	= new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);
+    TH1D * selectedTracksperRun = new TH1D("selectedTracksperRun", "# selected tracks per Run", fNruns, 0,1);
+    TH2D * NTriggersperRun 	= new TH2D("NTriggersperRun","# triggers per event per Run",fNruns, 0,1,50,-0.5,49.5);
+    TH2D * NAssociatedperRun 	= new TH2D("NAssociatedperRun","# associated per event per Run",fNruns, 0,1,100,-0.5,99.5);
+    TH2D * NTracksVertex	= new TH2D("NTracksVertex","#selected tracks per run and vertex",fNruns,0,1,100,-10.0,10.0);
+    TH2D * NEventsVertex	= new TH2D("NEventsVertex","Events per run and vertex",fNruns,0,1,100,-10.0,10.0);
+    TH2D * NTracksCent	   	= new TH2D("NTracksCent","#selected tracks per run and vertex",fNruns,0,1,100,0.0,100.0);
+    TH2D * NEventsCent	   	= new TH2D("NEventsCent","Events per run and vertex",fNruns,0,1,100,0.0,100.0);
+    
+    for(int i=0; i<fNruns; i++){
+      TString lable = Form("%i",fRunNumberList[i]);
+      eventsperrun->GetXaxis()->SetBinLabel(i+1, lable);
+      eventsperrun->GetXaxis()->LabelsOption("v");
+      TracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
+      TracksperRun->GetXaxis()->LabelsOption("v");
+      selectedTracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
+      selectedTracksperRun->GetXaxis()->LabelsOption("v");
+      NTriggersperRun->GetXaxis()->SetBinLabel(i+1,lable);
+      NTriggersperRun->GetXaxis()->LabelsOption("v");
+      NAssociatedperRun->GetXaxis()->SetBinLabel(i+1,lable);
+      NAssociatedperRun->GetXaxis()->LabelsOption("v");    
+      NTracksVertex->GetXaxis()->SetBinLabel(i+1,lable);
+      NTracksVertex->GetXaxis()->LabelsOption("v"); 
+      NEventsVertex->GetXaxis()->SetBinLabel(i+1,lable);
+      NEventsVertex->GetXaxis()->LabelsOption("v"); 
+      NTracksCent->GetXaxis()->SetBinLabel(i+1,lable);
+      NTracksCent->GetXaxis()->LabelsOption("v"); 
+      NEventsCent->GetXaxis()->SetBinLabel(i+1,lable);
+      NEventsCent->GetXaxis()->LabelsOption("v"); 
+    }
+    fOutput->Add(eventsperrun);
+    fOutput->Add(TracksperRun);
+    fOutput->Add(selectedTracksperRun);
+    fOutput->Add(NTriggersperRun);
+    fOutput->Add(NAssociatedperRun);
+    fOutput->Add(NTracksVertex);
+    fOutput->Add(NEventsVertex);
+    fOutput->Add(NTracksCent);
+    fOutput->Add(NEventsCent);
   }
-  fOutput->Add(eventsperrun);
-  fOutput->Add(TracksperRun);
-  fOutput->Add(selectedTracksperRun);
-  fOutput->Add(NTriggersperRun);
-  fOutput->Add(NAssociatedperRun);
-  fOutput->Add(NTracksVertex);
-  fOutput->Add(NEventsVertex);
   if(fQA&&fWeights&&fWeightshpt){
     TH3D * histtrackslpt = (TH3D*)(fWeights->Clone("Track_Cent_Vertex_lpT"));
     histtrackslpt->Reset();

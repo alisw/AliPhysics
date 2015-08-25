@@ -48,7 +48,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   //Setters for controlling the Task through an AddTaskMacro:
   void SetOption(const char* opt) { fOption = opt; }
   //General setters:
-  enum Period {P10b,P10c,P10d,P10e,P10h,P11a,P11h, Nperiods = P10h};
+  enum Period {P10b,P10c,P10d,P10e,P10h,P11a,P11h, Nperiods = P11h};
   void SetPeriod(Period period){fperiod = period;}
   enum Trigger { pi0, tracks , pi0MC, tracksMC};
   void SetTrigger(Trigger trigger){ftrigger = trigger;}

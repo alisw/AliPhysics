@@ -59,6 +59,7 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fVertexobj(NULL)
   , fVertex()
   , fCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::PbPb)
+  , fperiod(AliAnalysisTaskCorrelation3p_lightefficiency::P11h)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fRemoveSignals(kFALSE)
@@ -70,6 +71,10 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fCentralityEstimator("V0M")
   , fCentralityPercentile(0)
   , fMultiplicity(0)
+  , fRunNumberList(NULL)
+  , fNruns(fNRunsP11h)
+  , fRun(0)
+  , fRunFillValue(0.0)
   , fMaxVz(10.0)
   , fMaxMult(0)
   , fMaxNumberOfTracksInPPConsidered(200)
@@ -100,6 +105,7 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fVertexobj(NULL)
   , fVertex()
   , fCollisionType(AliAnalysisTaskCorrelation3p_lightefficiency::PbPb)
+  , fperiod(AliAnalysisTaskCorrelation3p_lightefficiency::P11h)
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fRemoveSignals(kFALSE)
@@ -111,6 +117,10 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fCentralityEstimator("V0M")
   , fCentralityPercentile(0)
   , fMultiplicity(0)
+  , fRunNumberList(NULL)
+  , fNruns(fNRunsP11h)
+  , fRun(0)
+  , fRunFillValue(0.0)
   , fMaxVz(10.0)
   , fMaxMult(0)
   , fMaxNumberOfTracksInPPConsidered(200)
@@ -186,17 +196,25 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::UserExec(Option_t* /*option*/
   //Find out if it is AOD or ESD.  
   fisESD=pEvent->IsA()==AliESDEvent::Class();
   fisAOD=pEvent->IsA()==AliAODEvent::Class();
+  fRun = pEvent->GetRunNumber();
+  TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
+  if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
+  
   //Get the runnumber and find which bin and fill value this corresponds to.
   GetCentralityAndVertex();
   if(!SelectEvent()) return;//events are rejected.
 
   if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp) FillHistogram("centVsZVertex",fMultiplicity,fVertex[2]);//only fill with selected events.
   if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb) FillHistogram("centVsZVertex",fCentralityPercentile,fVertex[2]);
+  FillHistogram("EventsperRun", fRunFillValue);
+  FillHistogram("NEventsVertex",fRunFillValue,fVertex[2]);
+  FillHistogram("NEventsCent",fRunFillValue,fCentralityPercentile);
   //To fill with tracks and pions:
   TObjArray allrelevantParticles;
   //Fill all the tracks
   FillHistogram("centVsNofTracks",fCentralityPercentile, GetTracks(&allrelevantParticles, pEvent));
-  
+  FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
+  FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);  
   if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
   //If VZERO data, fill the Multiplicity histograms.
   PostData(1, fOutput);  
@@ -224,6 +242,7 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
   for (int i=0; i<nofTracks; i++) {
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
+    FillHistogram("TracksperRun",fRunFillValue);
     FillHistogram("trackUnselectedPt",t->Pt());
     FillHistogram("trackUnselectedPhi",t->Phi());
     FillHistogram("trackUnselectedTheta",t->Theta());
@@ -240,6 +259,11 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
       if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
     }
     if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::PbPb){
+      FillHistogram("selectedTracksperRun",fRunFillValue);
+      FillHistogram("NTracksVertexEta",fRunFillValue,fVertex[2],t->Eta());
+      FillHistogram("NTracksCent",fRunFillValue,fCentralityPercentile);      
+      FillHistogram("NTracksPhi",fRunFillValue,t->Phi());
+      FillHistogram("NTrackspT",fRunFillValue,t->Pt());
       FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());
       if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
     }
@@ -609,7 +633,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
   fOutput->Add(new TH3D("Eventbeforeselection","Vertex vs Multiplicity vs Centrality before event selection.", 50,-15,15,50,0,4000,50,0,100));
   fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
   fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 4000));
-  fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
+  fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackPt"   , "trackPt"   , 100,  0, 20));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
@@ -636,6 +660,66 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
     }
     fOutput->Add(genparticlehist);
   }
+
+   //Initialize array for run numbers.
+  Int_t runnumbersP10b[fNRunsP10b] = {117222, 117220, 117116, 117112, 117109, 117099, 117092, 117063, 117060, 117059, 117053, 117052, 117050, 117048, 116787, 116645, 116643, 116574, 116571, 116562, 116432, 116431, 116429,116403, 116402, 116372, 116360, 116358, 116288, 116102, 116081, 116079, 115521, 115414, 115406, 115401, 115399, 115393, 115369,115345, 115335, 115328,  115327, 115322, 115318, 115312, 115310,  115193, 115186, 115056, 114931, 114930, 114924, 114920, 114918, 114798, 114786};
+  Int_t runnumbersP10c[fNRunsP10c] = {121040, 121039, 120829, 120825, 120824, 120823, 120822, 120821, 120820, 120758, 120750, 120741, 120671, 120617, 120616, 120505, 120504, 120503, 120244,120079, 120076, 120073, 120072, 120069, 120067, 119862, 119859, 119856, 119853, 119849, 119846, 119845, 119844, 119842, 119841, 119163, 119161, 119159, 118561, 118560, 118558, 118556, 118518, 118512, 118507, 118506};
+  Int_t runnumbersP10d[fNRunsP10d] = {126432, 126425, 126424, 126422, 126409, 126408, 126407, 126406, 126405, 126404, 126403, 126359, 126352, 126351, 126350, 126285, 126284, 126283, 126168,126167, 126160, 126158, 126097, 126090, 126088, 126082, 126081, 126078, 126073, 126008, 126007, 126004, 125855, 125851, 125850, 125849, 125848, 125847, 125844, 125843,  125842, 125633, 125632, 125630, 125628, 125296, 125295, 125186, 125156, 125140, 125139, 125134, 125133, 125101, 125100, 125097, 125085, 125083, 125023, 124751, 122375, 122374};
+  Int_t runnumbersP10e[fNRunsP10e] = {130850, 130848, 130847, 130844, 130842, 130840, 130834, 130804, 130803, 130802, 130799, 130798, 130795, 130793, 130704, 130696, 130628, 130623, 130621, 130620, 130609, 130608, 130601, 130526, 130524, 130520, 130519, 130517, 130481, 130480, 130479, 130375, 130360, 130358, 130356, 130354, 130343, 130342, 130178, 130172, 130168, 130158, 130157, 130151, 130149, 129983, 129966, 129962, 129961, 129960, 129959, 129744, 129742, 129738, 129736, 129735, 129734, 129729, 129726, 129725, 129723, 129666, 129659, 129653, 129652, 129651, 129650, 129647, 129641, 129639, 129599, 129587, 129586, 129540, 129536, 129528, 129527, 129525, 129524, 129523, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129042, 128913, 128855, 128853, 128850, 128843, 128836, 128835, 128834, 128833, 128824, 128823, 128820, 128819, 128778, 128777, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128596, 128594, 128592, 128590, 128582, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128452, 128366}; 
+  Int_t runnumbersP10h[fNRunsP10h] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161, 137135};
+  Int_t runnumbersP11a[fNRunsP11a] = {146860, 146859, 146858, 146856, 146824, 146817, 146807, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746, 146402, 146369,146292, 146287, 146282, 146277, 146273, 146272, 146223, 146220, 146208, 146158, 146156, 146153, 146152, 146148, 146147, 146141, 146099, 146079, 146072, 146071, 146027, 146026, 146025, 146024, 146023, 145674, 145455, 145385, 145384, 145383, 145379, 145355, 145354, 145353, 145314, 145300, 145292, 145290, 145289, 145288};
+  Int_t runnumbersP11h[fNRunsP11h] = {170593, 170572, 170388, 170387, 170315, 170313, 170312, 170311, 170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170207, 170204, 170203, 170193, 170163, 170159, 170155, 170091, 170089, 170088, 170085, 170084, 170083, 170081, 170040, 170027, 169965, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835, 169591, 169590, 169588, 169587, 169586, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169419, 169418, 169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169099, 169094, 169091, 169045, 169044, 169040, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915};
+
+  if(fperiod==AliAnalysisTaskCorrelation3p_lightefficiency::P11h){
+    fNruns=fNRunsP11h;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP11h[i];
+  }
+  if(fperiod==AliAnalysisTaskCorrelation3p_lightefficiency::P10h){
+    fNruns=fNRunsP10h;
+    fRunNumberList = new Int_t[fNruns];
+    for(int i = 0; i<fNruns; i++) fRunNumberList[i] = runnumbersP10h[i];
+  }
+  //QA per run histograms:
+  TH1D * eventsperrun 		= new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
+  TH1D * TracksperRun 		= new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);
+  TH1D * selectedTracksperRun 	= new TH1D("selectedTracksperRun", "# selected tracks per Run", fNruns, 0,1);
+  TH3D * NTracksVertexeta	= new TH3D("NTracksVertexEta","#selected tracks per run and vertex in eta bins",fNruns,0,1,100,-10.0,10.0,100,-3.0,3.0);
+  TH2D * NEventsVertex		= new TH2D("NEventsVertex","Events per run and vertex",fNruns,0,1,100,-10.0,10.0);
+  TH2D * NTracksCent		= new TH2D("NTracksCent","#selected tracks per run and vertex",fNruns,0,1,100,0.0,100.0);
+  TH2D * NEventsCent		= new TH2D("NEventsCent","Events per run and vertex",fNruns,0,1,100,0.0,100.0);
+  TH2D * NTracksPhi		= new TH2D("NTracksPhi","#selected tracks per run and phi", fNruns,0,1,180,0.,2*TMath::Pi());
+  TH2D * NTracksPt 		= new TH2D("NTrackspT","#selected tracks per run and pT", fNruns, 0,1,100,0,20);
+  for(int i=0; i<fNruns; i++){
+    TString lable = Form("%i",fRunNumberList[i]);
+    eventsperrun->GetXaxis()->SetBinLabel(i+1, lable);
+    eventsperrun->GetXaxis()->LabelsOption("v");
+    TracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
+    TracksperRun->GetXaxis()->LabelsOption("v");
+    selectedTracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
+    selectedTracksperRun->GetXaxis()->LabelsOption("v");
+    NTracksVertexeta->GetXaxis()->SetBinLabel(i+1,lable);
+    NTracksVertexeta->GetXaxis()->LabelsOption("v"); 
+    NEventsVertex->GetXaxis()->SetBinLabel(i+1,lable);
+    NEventsVertex->GetXaxis()->LabelsOption("v"); 
+    NTracksCent->GetXaxis()->SetBinLabel(i+1,lable);
+    NTracksCent->GetXaxis()->LabelsOption("v"); 
+    NEventsCent->GetXaxis()->SetBinLabel(i+1,lable);
+    NEventsCent->GetXaxis()->LabelsOption("v"); 
+    NTracksPhi->GetXaxis()->SetBinLabel(i+1,lable);
+    NTracksPhi->GetXaxis()->LabelsOption("v"); 
+    NTracksPt->GetXaxis()->SetBinLabel(i+1,lable);
+    NTracksPt->GetXaxis()->LabelsOption("v"); 
+  }
+  fOutput->Add(eventsperrun);
+  fOutput->Add(TracksperRun);
+  fOutput->Add(selectedTracksperRun);
+  fOutput->Add(NTracksVertexeta);
+  fOutput->Add(NEventsVertex);
+  fOutput->Add(NTracksCent);
+  fOutput->Add(NEventsCent);
+  fOutput->Add(NTracksPhi);
+  fOutput->Add(NTracksPt);
 }
 
 void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeEffHistograms()
