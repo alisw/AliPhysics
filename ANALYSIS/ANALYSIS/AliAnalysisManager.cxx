@@ -2776,8 +2776,8 @@ const char* AliAnalysisManager::GetOADBPath()
 
    if (gSystem->Getenv("OADB_PATH"))
       oadbPath = gSystem->Getenv("OADB_PATH");
-   else if (gSystem->Getenv("ALICE_ROOT"))
-      oadbPath.Form("%s/OADB", gSystem->Getenv("ALICE_ROOT"));
+   else if (gSystem->Getenv("ALICE_PHYSICS"))
+      oadbPath.Form("%s/OADB", gSystem->Getenv("ALICE_PHYSICS"));
    else
       ::Fatal("AliAnalysisManager::GetOADBPath", "Cannot figure out AODB path. Define ALICE_PHYSICS or OADB_PATH!");
       
