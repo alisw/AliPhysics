@@ -1799,11 +1799,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaHadronCorrelation(const TString
         task->SelectCollisionCandidates(mask);
     }
     
-    AliAnaCaloTrackCorrMaker* maker = task->GetAnalysisMaker();
-    AliAnaParticleHadronCorrelation* corrIso0 = (AliAnaParticleHadronCorrelation*)maker->GetListOfAnalysisContainers().At(6);
-    AliAnaParticleHadronCorrelation* corrIso1 = (AliAnaParticleHadronCorrelation*)maker->GetListOfAnalysisContainers().At(7);
-    corrIso0->SwitchOnBackgroundBinsPtInConeHistograms();
-    corrIso1->SwitchOnBackgroundBinsPtInConeHistograms();
+//    AliAnaCaloTrackCorrMaker* maker = task->GetAnalysisMaker();
+//    AliAnaParticleHadronCorrelation* corrIso0 = (AliAnaParticleHadronCorrelation*)maker->GetListOfAnalysisContainers().At(6);
+//    AliAnaParticleHadronCorrelation* corrIso1 = (AliAnaParticleHadronCorrelation*)maker->GetListOfAnalysisContainers().At(7);
+//    corrIso0->SwitchOnBackgroundBinsPtInConeHistograms();
+//    corrIso1->SwitchOnBackgroundBinsPtInConeHistograms();
     
     return task;
 }
@@ -2256,7 +2256,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
     //PHOS
     caloPID->SetPHOSDispersionCut(2.5);
     caloPID->SetPHOSRCut(2.);
-    if(kInputData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
+    if(kInputDataType=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
     
     // Input / output delta AOD settings
     
