@@ -730,6 +730,13 @@ goMergeCPass0()
   if [[ ! -f ${calibrationFilesToMerge} ]]; then
     echo "/bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root > ${calibrationFilesToMerge}"
     /bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root 2>/dev/null > ${calibrationFilesToMerge}
+
+    #sometimes the filesystem refuses, then fall back on parsing the metafiles
+    if [[ $(wc -l ${calibrationFilesToMerge} | awk '{print $1}') == 0 ]]; then
+      echo "ls did not work, parsing the meta files"
+      echo "goPrintValues calibfile ${calibrationFilesToMerge} ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done"
+      goPrintValues calibfile ${calibrationFilesToMerge} ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done
+    fi
   fi
   
   echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy"
@@ -917,15 +924,36 @@ goMergeCPass1()
   if [[ ! -f ${filteredFilesToMerge} ]]; then
     echo "/bin/ls -1 ${outputDir}/*/FilterEvents_Trees.root > ${filteredFilesToMerge}"
     /bin/ls -1 ${outputDir}/*/FilterEvents_Trees.root 2>/dev/null > ${filteredFilesToMerge}
+
+    #sometimes the filesystem refuses, then fall back on parsing the metafiles
+    if [[ $(wc -l ${filteredFilesToMerge} | awk '{print $1}') == 0 ]]; then
+      echo "ls did not work, parsing the meta files"
+      echo "goPrintValues filteredTree ${filteredFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done"
+      goPrintValues filteredTree ${filteredFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done
+    fi
   fi
   if [[ ! -f ${calibrationFilesToMerge} ]]; then
     echo "/bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root > ${calibrationFilesToMerge}"
     /bin/ls -1 ${outputDir}/*/AliESDfriends_v1.root 2>/dev/null > ${calibrationFilesToMerge}
+
+    #sometimes the filesystem refuses, then fall back on parsing the metafiles
+    if [[ $(wc -l ${calibrationFilesToMerge} | awk '{print $1}') == 0 ]]; then
+      echo "ls did not work, parsing the meta files"
+      echo "goPrintValues calibfile ${calibrationFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done"
+      goPrintValues calibfile ${calibrationFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done
+    fi
   fi
   if [[ ! -f ${qaFilesToMerge} ]]; then
     #find the files, but only store the directories (QAtrain_duo.C requires this)
     echo "/bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}"
     /bin/ls -1 ${outputDir}/*/QAresults*.root | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}
+
+    #sometimes the filesystem refuses, then fall back on parsing the metafiles
+    if [[ $(wc -l ${qaFilesToMerge} | awk '{print $1}') == 0 ]]; then
+      echo "ls did not work, parsing the meta files"
+      echo "goPrintValues qafile ${qaFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done"
+      goPrintValues qafile ${qaFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done
+    fi
   fi
 
   echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB defaultOCDB=${ocdbStorage} fileAccessMethod=nocopy"
