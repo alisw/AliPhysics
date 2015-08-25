@@ -128,7 +128,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(0.6); 
       jetContTrue->SetPythiaInfoName("PythiaInfo");
-    }
+          }
     
     if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub){
       jetContUS=task->AddJetContainer(njetsUS,strType,R);
@@ -141,7 +141,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
     }
   }
 
-    if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmbPart){
+  if ((jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmbPart)||(jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmbPartPythia)){
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
       jetContBase->SetRhoName(nrhoBase);
