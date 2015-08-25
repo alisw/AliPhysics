@@ -2175,17 +2175,15 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 			label_case_21:
 			if(isMC>0){
 				if( currentMC==k12f1a || currentMC==k12i3 || currentMC==k15g2 )
-					energy /= FunctionNL_kSDM(energy, 0.984889, -3.65456, -1.12744);
+					energy /= FunctionNL_kSDM(energy, 0.984889*0.995*0.9970, -3.65456, -1.12744);
 
 				else if(currentMC==k12f1b)
-					energy /= FunctionNL_kSDM(energy, 0.984384, -3.30287, -1.48516);
+					energy /= FunctionNL_kSDM(energy, 0.984384*0.995*0.9970, -3.30287, -1.48516);
 
 				else if( currentMC==k15g1a || currentMC==k15a3a || currentMC==k15a3a_plus )
-					energy /= FunctionNL_kSDM(energy, 0.981892, -5.43438, -1.05468);
+					energy /= FunctionNL_kSDM(energy, 0.981892*0.995*0.9970, -5.43438, -1.05468);
 
 				else periodNameAvailable = kFALSE;
-
-				energy /= 0.995;
 			}
 			break;
 
@@ -2194,17 +2192,15 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 			label_case_22:
 			if(isMC>0){
 				if(	currentMC==k12f1a || currentMC==k12i3 || currentMC==k15g2 )
-					energy /= FunctionNL_kSDM(2.0*energy, 0.966151, -2.97974, -0.29463);
+					energy /= FunctionNL_kSDM(2.0*energy, 0.966151*0.995*0.9981, -2.97974, -0.29463);
 
 				else if( currentMC==k12f1b )
-					energy /= FunctionNL_kSDM(2.0*energy, 0.988814, 0.335011, -4.30322);
+					energy /= FunctionNL_kSDM(2.0*energy, 0.988814*0.995*0.9981, 0.335011, -4.30322);
 
 				else if( currentMC==k15g1a || currentMC==k15a3a || currentMC==k15a3a_plus )
-					energy /= FunctionNL_kSDM(2.0*energy, 0.979994, -3.24431, -0.760205);
+					energy /= FunctionNL_kSDM(2.0*energy, 0.979994*0.995*0.9981, -3.24431, -0.760205);
 
 				else periodNameAvailable = kFALSE;
-
-				energy /= 0.995;
 			}
 			break;
 
@@ -2223,13 +2219,13 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		// NonLinearity LHC11a ConvCalo - kPi0MC + kSDM
 		case 25:
 			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.04123, 1.045, 0.0967998, 219.381, 63.1604, 1.014);
-			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9807, -3.377, -0.8535);
+			if(isMC == 0) energy *= FunctionNL_kSDM(energy, 0.9807*0.995*0.9970, -3.377, -0.8535);
 			break;
 
 		// NonLinearity LHC11a Calo - kPi0MC + kSDM
 		case 26:
 			energy *= FunctionNL_kPi0MC(energy, 1.0, 0.06115, 0.9535, 0.0967998, 219.381, 63.1604, 1.013);
-			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772, -3.256, -0.4449);
+			if(isMC == 0) energy *= FunctionNL_kSDM(2.0*energy, 0.9772*0.995*0.9981, -3.256, -0.4449);
 			break;
 
 //----------------------------------------------------------------------------------------------------------
