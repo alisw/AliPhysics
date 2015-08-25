@@ -755,22 +755,23 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		// check if the bit j is 1
 		if( (sig[i] & ( 1 << j )) > 0 ){
 		  //Int_t iTRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
-		  Int_t iTRUAbsId = 0; 
-		  Int_t found =  fGeom->GetAbsFastORIndexFromTRU(iTRUId, in.GetColumn(), iTRUAbsId);
+		  Int_t iTRUAbsId[4] = {0};        // TRUidx, 4x4L0FastORidx, 4 2x2FastOR idxs, L0PatchSize to be adjusted for
+		  Int_t found =  fGeom->GetFastORIndexFromL0Index(iTRUId, in.GetChannel(), iTRUAbsId, 4 );
 		  if(found==kTRUE){
 		    Int_t globTRUCol, globTRURow;
-		    fGeom->GetPositionInEMCALFromAbsFastORIndex(iTRUAbsId, globTRUCol, globTRURow);
-		  //  		    if(iTRUIdInSM < n2x2PerTRU) {
+		    for(Int_t k=0 ; k<4;k++){
+		    	fGeom->GetPositionInEMCALFromAbsFastORIndex(iTRUAbsId[k], globTRUCol, globTRURow);
+		  //  		    if(iTRUIdInSM < n2x2PerTRU) 
 		    //Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
 		    // Fill the histograms
 		    //Int_t globTRUCol, globTRURow;
 		    //GetTruChannelPosition(globTRURow, globTRUCol, iSM, iDDL, iBranch, iTRUIdInSM );
 		    
-		    FillRawsData(kNL0TRU, globTRUCol, globTRURow);
-		    FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, startBin);
-		    triggers[iTRUAbsId][startBin] = 1;
-		    
-		    if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;
+		    	FillRawsData(kNL0TRU, globTRUCol, globTRURow);
+		    	FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, startBin);
+		    	triggers[iTRUAbsId[k]][startBin] = 1;
+		    }
+		    if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;  
 		  }
 		}
 	      }
