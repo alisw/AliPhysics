@@ -951,8 +951,8 @@ goMergeCPass1()
     #sometimes the filesystem refuses, then fall back on parsing the metafiles
     if [[ $(wc -l ${qaFilesToMerge} | awk '{print $1}') == 0 ]]; then
       echo "ls did not work, parsing the meta files"
-      echo "goPrintValues qafile ${qaFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done"
-      goPrintValues qafile ${qaFilesToMerge} ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done
+      echo "goPrintValues qafile - ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done | while read x; do echo "'${x%/*}'"; done | sort | uniq > ${qaFilesToMerge}"
+      goPrintValues qafile - ${commonOutputPath}/meta/cpass1.job*.run${runNumber}.done | while read x; do echo ${x%/*}; done | sort | uniq > ${qaFilesToMerge}
     fi
   fi
 
