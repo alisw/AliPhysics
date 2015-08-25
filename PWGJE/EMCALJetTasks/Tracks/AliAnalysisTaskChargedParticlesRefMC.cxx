@@ -114,6 +114,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos = new AliEMCalHistoContainer("Ref");
   fHistos->CreateTH1("hNtrials", "Number of trials", 1, 0.5, 1.5);
   fHistos->CreateTProfile("hCrossSection", "PYTHIA cross section", 1, 0.5, 1.5);
+  fHistos->CreateTH1("hNtrialsNoSelect", "Number of trials (without event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hNtrialsEvent", "Number of trials (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTProfile("hCrossSectionEvent", "PYTHIA cross section (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
@@ -152,6 +153,10 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
 
 void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select event
   if(!fMCEvent) return;
+  AliGenPythiaEventHeader *pyheader = GetPythiaHeader();
+  if(pyheader){
+    fHistos->FillTH1("hNtrialsNoSelect",1,pyheader->Trials());
+  }
   TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   if(!fTriggerPatches) return;
 
@@ -217,7 +222,6 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   }
 
   // Fill PYTHIA histograms from event header
-  AliGenPythiaEventHeader *pyheader = GetPythiaHeader();
   if(pyheader){
    fHistos->FillTH1("hNtrialsEvent", 1., pyheader->Trials());
    fHistos->FillProfile("hCrossSectionEvent", 1., pyheader->GetXsection());
