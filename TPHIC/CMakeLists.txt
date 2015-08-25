@@ -23,7 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE}
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/EVGEN
-                    ${AliRoot_SOURCE_DIR}/LHAPDF
+                    ${AliRoot_SOURCE_DIR}/LHAPDF/base
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/AliPythia6
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                    )

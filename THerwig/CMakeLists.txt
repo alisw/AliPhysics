@@ -24,7 +24,7 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE}
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/EVGEN
                     ${AliRoot_SOURCE_DIR}/HERWIG
-                    ${AliRoot_SOURCE_DIR}/LHAPDF
+                    ${AliRoot_SOURCE_DIR}/LHAPDF/base
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )

@@ -13,6 +13,8 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
+# base subdirectory
+add_subdirectory(base)
 # liblhapdf.so
 add_subdirectory(lhapdf5.5.1)
 # liblhapdf-5.9.1

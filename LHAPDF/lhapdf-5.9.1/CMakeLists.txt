@@ -17,7 +17,8 @@
 set(MODULE lhapdf_5_9_1)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf-5.9.1
+include_directories(${AliRoot_SOURCE_DIR}/LHAPDF/base
+		    ${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf-5.9.1
                     ${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf-5.9.1/include
                     ${AliRoot_SOURCE_DIR}/LHAPDF/lhapdf-5.9.1/src
                    )
@@ -28,14 +29,12 @@ include_directories(${ROOT_INCLUDE_DIR}
 
 # Sources in alphabetical order
 set(SRCS
-    ${AliRoot_SOURCE_DIR}/LHAPDF/AliStructFuncType.cxx 
     src/version.cxx  
     src/getdatapath.cxx
    )
 
 # Headers
 set(HDRS
-    ${AliRoot_SOURCE_DIR}/LHAPDF/AliStructFuncType.h
    )
 
 # C sources
@@ -114,16 +113,16 @@ set(FSRCS
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
-get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "lhapdfLinkDef.h" "${HDRS}" "${incdirs}")
+#get_directory_property(incdirs INCLUDE_DIRECTORIES)
+#generate_dictionary("${MODULE}" "lhapdfLinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS Core)
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/lhapdfLinkDef.h")
+set(LIBDEPS Core lhapdfbase)
+#generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/lhapdfLinkDef.h")
 
 # Add a library to the project using the specified source files
-add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx ${CSRCS} ${FSRCS})
+add_library(${MODULE} SHARED ${SRCS} ${CSRCS} ${FSRCS})
 
 # Definitions
 add_definitions(-DDEFAULTPREFIXPATH="NONE"  -DDEFAULTLHAPATH="${AliRoot_SOURCE_DIR}/LHAPDF/PDFsets" -DCTEQ)
