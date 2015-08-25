@@ -77,6 +77,8 @@ public:
     void                     SetMC (Bool_t MC)                                               { fIsMC = MC;}
     void                     SetUSEofTPC (Bool_t TPC)                                        { fTPC4Iso = TPC;}
     void                     SetLCAnalysis (Bool_t LC)                                       { fisLCAnalysis = LC;}
+    void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut)                       { fIsNLMCut = isNLMCut;
+                                                                                               fNLMCut = NLMCut;}
 
 protected:
 
@@ -92,7 +94,11 @@ protected:
     void                     PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones);   //PIsoCone via Tracks UE via Orthogonal Cones in Phi
     void                     PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);      //PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
 //    Bool_t                   ClustTrackMatching(AliVCluster *cluster);
+
     Bool_t                   ClustTrackMatching(AliEmcalParticle *emccluster);
+    Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
+    Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
+    Bool_t                   AreNeighbours(Int_t abscell1, Int_t abscell2) const;
     Bool_t                   CheckBoundaries(TLorentzVector vecCOI);
     void                     FillInvMassHistograms(Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index);
    // void                     FillNCOutput(AliVCluster *COI, TLorentzVector vecCOI, Int_t index);
@@ -110,6 +116,7 @@ protected:
 
   AliAODEvent *fAOD;       //!
   AliVEvent *fVevent;      //! AliVEvent
+
   //    TObjArray                   fParticleCollArray;              // Neutral Clusters collection array
   TClonesArray               *fNCluster;                       // Neutral clusters
   TClonesArray               *fAODMCParticles; //!
@@ -212,6 +219,8 @@ protected:
     Int_t       fMCDimensions;
     Int_t       fMCQAdim;                        //!
     Bool_t      fisLCAnalysis;                   // Flag to pass from Leading Clusters Analysis to a NC One
+    Bool_t      fIsNLMCut;                       // NLM cut available
+    Int_t       fNLMCut;                         // number of NLM cut
     Int_t       fTest1;
     Int_t       fTest2;
 

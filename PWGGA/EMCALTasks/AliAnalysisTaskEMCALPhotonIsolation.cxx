@@ -138,6 +138,8 @@ fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
 fisLCAnalysis(0),
+fIsNLMCut(kFALSE),
+fNLMCut(0),
 fTest1(0),
 fTest2(0),
 fEClustersT(0),
@@ -264,6 +266,8 @@ fNDimensions(0),
 fMCDimensions(0),
 fMCQAdim(0),
 fisLCAnalysis(0),
+fIsNLMCut(kFALSE),
+fNLMCut(0),
 fTest1(0),
 fTest2(0),
 fEClustersT(0),
@@ -884,15 +888,15 @@ Int_t index=0;
       //since there are more than 1 Cluster per Event
        // clusters->ResetCurrentID();
 
-   //    AliError("fonctionne bien");
+
     //       AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(0));
    AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(0));
 
           index=0;
-   //    AliError("fonctionne bien");
+
 
     while(emccluster){
-      //    AliError(Form("Analyse des clusters"));
+
 
       AliVCluster *coi = emccluster->GetCluster();
       if(!coi) {
@@ -906,7 +910,31 @@ Int_t index=0;
       Double_t coiTOF = coi->GetTOF()*1e9;
    //   Double_t coiM02 = coi->GetM02();
 
-        FillQAHistograms(coi,vecCOI);
+     FillQAHistograms(coi,vecCOI);
+
+ AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
+ if(fCaloCells)
+ {
+
+   Int_t NLM = GetNLM(coi,fCaloCells);
+
+    AliDebug(1,Form("NLM = %d",NLM));
+
+    // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
+    if(fIsNLMCut && fNLMCut>0)
+    {
+        if(NLM > fNLMCut)
+        {
+          index++;
+          emccluster=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+          continue;
+        }
+    }
+ }
+else
+    {
+        AliDebug(1,Form("Can't retrieve EMCAL cells"));
+    }
         //AliInfo(Form("Cluster number: %d; \t Cluster ToF: %lf ;\tCluster M02:%lf\n",index,coiTOF,coiM02));
 
     //    if(vecCOI.E()<0.3){ // normally already done
@@ -949,7 +977,6 @@ Int_t index=0;
 
 fTestIndexE->Fill(vecCOI.Pt(),index);
 
-        //AliInfo("Passed the CheckBoundaries conditions");
 
      FillGeneralHistograms(coi,vecCOI, index);
       index++;
@@ -1072,7 +1099,182 @@ Double_t dphi = 999;
 return kFALSE;
 }
 
+Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster *coi, AliVCaloCells* cells){
+// find the number of local maxima of a cluster adapted from AliCalorimeterUtils
 
+const Int_t   nc = coi->GetNCells();
+
+  Int_t   absIdList[nc];
+  Float_t maxEList[nc];
+
+   Int_t nMax = GetNLM(coi, cells, absIdList, maxEList);
+
+   return nMax;
+}
+
+Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList) {
+// find the cluster number of local maxima adapted from AliCalorimeterUtils
+
+
+
+  Int_t iDigitN = 0 ;
+  Int_t iDigit  = 0 ;
+  Int_t absId1 = -1 ;
+  Int_t absId2 = -1 ;
+  const Int_t nCells = coi->GetNCells();
+
+ Float_t eCluster = coi->E();
+ Float_t fLocalMaxCutE = 0.1;
+ Float_t fLocMaxCutEDiff = 0.05;
+
+  Float_t emax  = 0;
+  Int_t   idmax =-1;
+  for(iDigit = 0; iDigit < nCells ; iDigit++)
+  {
+    absIdList[iDigit] = coi->GetCellsAbsId()[iDigit]  ;
+    Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+
+    if( en > emax )
+    {
+      emax  = en ;
+      idmax = absIdList[iDigit] ;
+    }
+    //Int_t icol = -1, irow = -1, iRCU = -1;
+    //Int_t sm = GetModuleNumberCellIndexes(absIdList[iDigit], calorimeter, icol, irow, iRCU) ;
+    //printf("\t cell %d, id %d, sm %d, col %d, row %d, e %f\n", iDigit, absIdList[iDigit], sm, icol, irow, en );
+  }
+
+  for(iDigit = 0 ; iDigit < nCells; iDigit++)
+  {
+    if( absIdList[iDigit] >= 0 )
+    {
+      absId1 = coi->GetCellsAbsId()[iDigit];
+
+      Float_t en1 = cells->GetCellAmplitude(absId1);
+
+
+      //printf("%d : absIDi %d, E %f\n",iDigit, absId1,en1);
+
+      for(iDigitN = 0; iDigitN < nCells; iDigitN++)
+      {
+        absId2 = coi->GetCellsAbsId()[iDigitN] ;
+
+        if(absId2==-1 || absId2==absId1) continue;
+
+        //printf("\t %d : absIDj %d\n",iDigitN, absId2);
+
+        Float_t en2 = cells->GetCellAmplitude(absId2);
+
+        //printf("\t %d : absIDj %d, E %f\n",iDigitN, absId2,en2);
+
+        if ( AreNeighbours(absId1, absId2) )
+        {
+          // printf("\t \t Neighbours \n");
+          if ( en1 > en2 )
+          {
+            absIdList[iDigitN] = -1 ;
+            //printf("\t \t indexN %d not local max\n",iDigitN);
+            // but may be digit too is not local max ?
+            if(en1 < en2 + fLocMaxCutEDiff) {
+              //printf("\t \t index %d not local max cause locMaxCutEDiff\n",iDigit);
+              absIdList[iDigit] = -1 ;
+            }
+          }
+          else
+          {
+            absIdList[iDigit] = -1 ;
+            //printf("\t \t index %d not local max\n",iDigitN);
+            // but may be digitN too is not local max ?
+            if(en1 > en2 - fLocMaxCutEDiff)
+            {
+              absIdList[iDigitN] = -1 ;
+              //printf("\t \t indexN %d not local max cause locMaxCutEDiff\n",iDigit);
+            }
+          }
+        } // if Are neighbours
+        //else printf("\t \t NOT Neighbours \n");
+      } // while digitN
+    } // slot not empty
+  } // while digit
+
+  iDigitN = 0 ;
+  for(iDigit = 0; iDigit < nCells; iDigit++)
+  {
+    if( absIdList[iDigit] >= 0 )
+    {
+      absIdList[iDigitN] = absIdList[iDigit] ;
+
+      Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
+
+
+      if(en < fLocalMaxCutE) continue; // Maxima only with seed energy at least
+
+      maxEList[iDigitN] = en ;
+
+      //printf("Local max %d, id %d, en %f\n", iDigit,absIdList[iDigitN],en);
+      iDigitN++ ;
+    }
+  }
+
+  if ( iDigitN == 0 )
+  {
+    AliDebug(1,Form("No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f",
+                    idmax,emax,coi->E()));
+    iDigitN      = 1     ;
+    maxEList[0]  = emax  ;
+    absIdList[0] = idmax ;
+  }
+
+
+  AliDebug(1,Form("In coi E %2.2f (wth non lin. %2.2f), M02 %2.2f, M20 %2.2f, N maxima %d",
+                  coi->E(),eCluster, coi->GetM02(),coi->GetM20(), iDigitN));
+
+//  if(fDebug > 1) for(Int_t imax = 0; imax < iDigitN; imax++)
+//  {
+//    printf(" \t i %d, absId %d, Ecell %f\n",imax,absIdList[imax],maxEList[imax]);
+//  }
+
+  return iDigitN ;
+}
+
+Bool_t AliAnalysisTaskEMCALPhotonIsolation::AreNeighbours(Int_t absId1, Int_t absId2 ) const
+{
+    // check if two cells are neighbour (adapted from AliCalorimeterUtils)
+
+  Bool_t areNeighbours = kFALSE ;
+
+
+  Int_t iSupMod1 = -1, iTower1 = -1, iIphi1 = -1, iIeta1 = -1, iphi1 = -1, ieta1 = -1;
+  Int_t iSupMod2 = -1, iTower2 = -1, iIphi2 = -1, iIeta2 = -1, iphi2 = -1, ieta2 = -1;
+
+  Int_t phidiff =  0, etadiff =  0;
+
+//first cell
+fGeom->GetCellIndex(absId1,iSupMod1,iTower1,iIphi1,iIeta1);
+fGeom->GetCellPhiEtaIndexInSModule(iSupMod1,iTower1,iIphi1, iIeta1,iphi1,ieta1);
+
+// second cell
+fGeom->GetCellIndex(absId2,iSupMod2,iTower2,iIphi2,iIeta2);
+fGeom->GetCellPhiEtaIndexInSModule(iSupMod2,iTower2,iIphi2, iIeta2,iphi2,ieta2);
+
+
+  if(iSupMod1!=iSupMod2)
+  {
+    // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
+    // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
+    if(iSupMod1%2) ieta1+=AliEMCALGeoParams::fgkEMCALCols;
+    else           ieta2+=AliEMCALGeoParams::fgkEMCALCols;
+  }
+
+  phidiff = TMath::Abs( iphi1 - iphi2 ) ;
+  etadiff = TMath::Abs( ieta1 - ieta2 ) ;
+
+  //if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff > 0))
+  if ((etadiff + phidiff == 1 ))
+    areNeighbours = kTRUE ;
+
+  return areNeighbours;
+}
 
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::EtIsoCellPhiBand(TLorentzVector c, Double_t &etIso, Double_t &phiBandcells){
