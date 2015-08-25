@@ -143,6 +143,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetMaxNoRandomCones(Int_t m)                    {fMaxCones = m; }
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
+        void                    SetExcludeJetsWithTrackPt(Float_t n)            {fExcludeJetsWithTrackPt = n; }
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
         void                    SetChi2VZEROA(TArrayD* a)                       { fChi2A = a;}
@@ -208,7 +209,10 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection
         /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { return AcceptTrack(track, 0); }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { return AcceptJet(jet, 0); }
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { 
+            if(jet->MaxTrackPt() > fExcludeJetsWithTrackPt) return kFALSE;
+            return AcceptJet(jet, 0); 
+        }
         /* inline */    Bool_t PassesCuts(AliVCluster* clus) const      { return AcceptCluster(clus, 0); }
         /* inline */    Bool_t PassesSimpleCuts(AliEmcalJet* jet)       {
             Float_t minPhi(GetJetContainer()->GetJetPhiMin()), maxPhi(GetJetContainer()->GetJetPhiMax());
@@ -327,6 +331,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
         Int_t                   fMaxCones;              // max number of random cones
         Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
+        Float_t                 fExcludeJetsWithTrackPt;// exclude jets with a track with pt higher than this
         Bool_t                  fRebinSwapHistoOnTheFly;       // rebin swap histo on the fly
         Float_t                 fPercentageOfFits;      // save this percentage of fits
         // transient object pointers
