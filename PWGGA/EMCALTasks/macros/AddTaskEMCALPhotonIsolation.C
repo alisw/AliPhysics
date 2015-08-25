@@ -10,14 +10,23 @@
   ///////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
-                                                                 const char*    periodstr          = "LHC11c",
-                                                                 const char *ntracks            = "EmcalTracks",
-                                                                 const char *nclusters          = "EmcalClusters",
-                                                                 const UInt_t   pSel               = AliVEvent::kEMC7,
-                                                                 TString         dType           ="ESD",
-                                                                 Bool_t		bHisto		= kTRUE,
-                                                                 Int_t		iOutput		= 0,
-                                                                 Bool_t		bIsMC		= kFALSE
+                                                                 const char*            periodstr          = "LHC11c",
+                                                                 const char*            ntracks            = "EmcalTracks",
+                                                                 const char*            nclusters          = "EmcalClusters",
+                                                                 const UInt_t           pSel               = AliVEvent::kEMC7,
+                                                                 const TString          dType              = "ESD",
+                                                                 const Bool_t		    bHisto		       = kTRUE,
+                                                                 const Int_t	      	iOutput		       = 0,
+                                                                 const Bool_t	        bIsMC	           = kFALSE,
+                                                                 const Bool_t           bMCNormalization   = kFALSE,
+                                                                 const Bool_t           bNLMCut            = kFALSE,
+                                                                 const Int_t            NLMCut             = 0,
+                                                                 const Double_t         minPtCutCluster    = 0.3,
+                                                                 const Double_t         EtIso              = 2.,
+                                                                 const Int_t            iIsoMethod         = 1,
+                                                                 const Int_t            iEtIsoMethod       = 0,
+                                                                 const Int_t            iUEMethod          = 1,
+                                                                 const Bool_t           bUseofTPC          = kFALSE
                                                                  )
 {
 
@@ -174,20 +183,25 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetOutputFormat(iOutput);
   task->SetLCAnalysis(kFALSE);
   task->SetIsoConeRadius(0.4);
-  task->SetEtIsoThreshold(2.);
+  task->SetEtIsoThreshold(2.); // after should be replace by EtIso
   task->SetCTMdeltaEta(0.02);
   task->SetCTMdeltaPhi(0.03);
   task->SetQA(kTRUE);
-  task->SetIsoMethod(1);
-  task->SetEtIsoMethod(0);
-  task->SetUEMethod(1);
-  task->SetUSEofTPC(kFALSE);
+  task->SetIsoMethod(iIsoMethod);
+  task->SetEtIsoMethod(iEtIsoMethod);
+  task->SetUEMethod(iUEMethod);
+  task->SetUSEofTPC(bUseofTPC);
   task->SetMC(bIsMC);
+  if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
+
+  task->SetNLMCut(bNLMCut,NLMCut);
+
+
 
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
-  if (clusterCont) clusterCont->SetParticlePtCut(0.3);
+  if (clusterCont) clusterCont->SetParticlePtCut(minPtCutCluster);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
