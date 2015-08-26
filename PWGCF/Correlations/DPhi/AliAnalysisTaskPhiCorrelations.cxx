@@ -339,6 +339,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
+  fListOfHistos->Add(new TH2F("mixedDist2", ";centrality;events;events", 101, 0, 101, 100, -0.5, 99.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
   if (fCentralityMethod == "V0A_MANUAL")
   {
@@ -746,8 +747,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (fFillMixed)
   {
     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
-    if (fFillOnlyStep0)
+    if (fFillOnlyStep0) {
       ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool->GetCurrentNEvents());
+    }
     if (pool->IsReady())
       for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
@@ -934,6 +937,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
 	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
 	((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
+	((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool2->GetCurrentNEvents());
 	if (pool2->IsReady())
 	{
 	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
@@ -1390,14 +1394,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
      
     if (pool->IsReady()) 
     {
-      
       Int_t nMix = pool->GetCurrentNEvents();
 //       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
       
       ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+      ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3, nMix);
       ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-      if (pool->IsReady())
-	((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, nMix);
     
       // Fill mixed-event histos here  
       for (Int_t jMix=0; jMix<nMix; jMix++) 
