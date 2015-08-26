@@ -754,25 +754,29 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	      for( Int_t j = 0; j < nTRUL0ChannelBits; j++ ){
 		// check if the bit j is 1
 		if( (sig[i] & ( 1 << j )) > 0 ){
-		  //Int_t iTRUIdInSM = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
-		  Int_t iTRUAbsId[4] = {0};        // TRUidx, 4x4L0FastORidx, 4 2x2FastOR idxs, L0PatchSize to be adjusted for
-		  Int_t found =  fGeom->GetFastORIndexFromL0Index(iTRUId, in.GetChannel(), iTRUAbsId, 4 );
-		  if(found==kTRUE){
-		    Int_t globTRUCol, globTRURow;
-		    for(Int_t k=0 ; k<4;k++){
-		    	fGeom->GetPositionInEMCALFromAbsFastORIndex(iTRUAbsId[k], globTRUCol, globTRURow);
+		Int_t iFastORinTRU = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
+		  //printf("Fast or index in TRU: %d \n",iFastORinTRU);
+		  if(iFastOrinTRU<n2x2perTRU){
+		    Int_t AbsFastORId=-1;
+		    Int_t found =  fGeom->GetAbsFastORIndexFromTRU(iTRUId, iFastORinTRU, AbsFastORId);
+		    if(found==kTRUE){
+		       Int_t globTRUCol, globTRURow;
+		       fGeom->GetPositionInEMCALFromAbsFastORIndex(AbsFastORId, globTRUCol, globTRURow);
+		    //for(Int_t k=0 ; k<4;k++){
+		    	//fGeom->GetPositionInEMCALFromAbsFastORIndex(iTRUAbsId[k], globTRUCol, globTRURow);
 		  //  		    if(iTRUIdInSM < n2x2PerTRU) 
 		    //Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
 		    // Fill the histograms
 		    //Int_t globTRUCol, globTRURow;
 		    //GetTruChannelPosition(globTRURow, globTRUCol, iSM, iDDL, iBranch, iTRUIdInSM );
-		    
-		    	FillRawsData(kNL0TRU, globTRUCol, globTRURow);
+		        //printf("filled L0 histos at col = %d \t row = %d\n", globTRUCol,globTRURow);
+		       	FillRawsData(kNL0TRU, globTRUCol, globTRURow);
 		    	FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, startBin);
-		    	triggers[iTRUAbsId[k]][startBin] = 1;
-		    }
-		    if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;  
-		  }
+		    	triggers[AbsFastORId][startBin] = 1;
+		    //}
+		        if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;  
+		     }
+		  } 
 		}
 	      }
 	      startBin--;
