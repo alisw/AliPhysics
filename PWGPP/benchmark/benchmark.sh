@@ -2062,7 +2062,7 @@ goWaitForOutput()
   echo "command to be executed: /bin/ls -1 ${searchPath}/${fileName}"
   [[ -z "${maxSecondsToWait}" ]] && maxSecondsToWait=$(( 3600*12 ))
   while true; do
-    n=$(/bin/ls -1 ${searchPath}/${fileName} 2>/dev/null | wc -l)
+    n=$(/bin/ls -1 ${searchPath/\\/}/${fileName/\\/} 2>/dev/null | wc -l)
     [[ ${n} -gt 0 ]] && echo "found ${n} X ${fileName}"
     [[ ${n} -ge ${numberOfFiles} ]] && break
     [[ ${SECONDS} -gt ${maxSecondsToWait} ]] && echo "timeout of ${maxSecondsToWait}s!" && break
