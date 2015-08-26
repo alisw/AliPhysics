@@ -42,27 +42,38 @@ AliGenerator* CreatePythia8Gen(	Float_t e_cms,
 
 	AliGenPythiaPlus* gener = new AliGenPythiaPlus(AliPythia8::Instance());
 
+	std::cout << "*****************************************************************" << std::endl;
+	std::cout << "Process: "<< kProcess << "\t Color reconnection: "<< kCR << "\t Tune: " << tune << "\t kFactor: "<< kF <<  std::endl;
+	if (kProcess == 1){
+		std::cout << "pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
+	}	
+	std::cout << "*****************************************************************" << std::endl;
 	// set process (MB)
-	if(kProcess==0) gener->SetProcess(kPyMbDefault);
+	if(kProcess==0) 
+		gener->SetProcess(kPyMbDefault);
 	
 	
-	if(kProcess==1) {gener->SetProcess(kPyJets);
-	if(ptHardMin>0.)
-	AliPythia8::Instance()->SetPtHardRange(ptHardMin,ptHardMax);
+	if(kProcess==1) {
+		gener->SetProcess(kPyJets);
+		std::cout << "went into jet loop" << endl;
+		if(ptHardMin > 0.){ 
+			std::cout << "Setting pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
+			gener->SetPtHard(ptHardMin,ptHardMax);
+		}
 	} 
 
 	//Centre of mass energy 
 	gener->SetEnergyCMS(e_cms); // in GeV
 
 	// Event list
-	gener->SetEventListRange(-1, 2);
+	gener->SetEventListRange(-1, -1);
 
 	// color reconnection
 	(AliPythia8::Instance())->ReadString(Form("Tune:pp = %i", tune));//CR
 
 	//random seed based on time
-	AliPythia8::Instance()->ReadString("Random:setSeed = on");
-	AliPythia8::Instance()->ReadString("Random:seed = 0");
+	(AliPythia8::Instance())->ReadString("Random:setSeed = on");
+	(AliPythia8::Instance())->ReadString("Random:seed = 0");
 
 	if(kCR)             
 		(AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on");
@@ -70,8 +81,8 @@ AliGenerator* CreatePythia8Gen(	Float_t e_cms,
 		(AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = off");
 	
 	
-	AliPythia8::Instance()->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
-	AliPythia8::Instance()->ReadString("111: mayDecay = false ! pi0 stable");
+	(AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
+	(AliPythia8::Instance())->ReadString("111: mayDecay = false ! pi0 stable");
 	
 	return gener;
 }

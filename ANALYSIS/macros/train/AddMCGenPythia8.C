@@ -34,7 +34,7 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms, Bool_t kCR, Int_t kF,Int_t kProces
  
   if(kProcess==1) {gener->SetProcess(kPyJets);
    if(ptHardMin>0.)
-   AliPythia8::Instance()->SetPtHardRange(ptHardMin,ptHardMax);
+    gener->SetPtHard(ptHardMin,ptHardMax);
   } 
 
   //Centre of mass energy 
