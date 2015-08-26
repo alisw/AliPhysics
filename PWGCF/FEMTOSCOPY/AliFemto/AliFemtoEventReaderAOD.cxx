@@ -442,9 +442,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
       // Fill the hidden information with the simulated data
       Int_t track_label = aodtrack->GetLabel();
-      AliAODMCParticle *tPart = (track_label > -1)
-                                ? (AliAODMCParticle *)mcP->At(track_label)
-                                : NULL;
+      const AliAODMCParticle *tPart = (track_label > -1)
+                                    ? (AliAODMCParticle *)mcP->At(track_label)
+                                    : NULL;
       AliFemtoModelGlobalHiddenInfo *tInfo = new AliFemtoModelGlobalHiddenInfo();
       double fpx = 0.0, fpy = 0.0, fpz = 0.0, fpt = 0.0;
       if (!tPart) {
@@ -532,10 +532,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         //    }
         //       else
         tInfo->SetTrueMomentum(tPart->Px(), tPart->Py(), tPart->Pz());
-        Double_t mass2 = (tPart->E() * tPart->E() -
-                          tPart->Px() * tPart->Px() -
-                          tPart->Py() * tPart->Py() -
-                          tPart->Pz() * tPart->Pz());
+        Double_t mass2 = (tPart->E() * tPart->E()
+                          - tPart->Px() * tPart->Px()
+                          - tPart->Py() * tPart->Py()
+                          - tPart->Pz() * tPart->Pz());
         if (mass2 > 0.0)
           tInfo->SetMass(TMath::Sqrt(mass2));
         else
@@ -1403,7 +1403,7 @@ void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrac
       // Indicate we want the next radius
       iR += 1;
     }
-    if (iR >= 8) {
+    if (iR >= 9) {
       // TPC edge reached
       return;
     }
