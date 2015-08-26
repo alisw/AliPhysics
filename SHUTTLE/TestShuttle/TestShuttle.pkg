@@ -6,6 +6,6 @@ AliTestShuttle.h
 
 SRCS = $(HDRS:.h=.cxx)
 
-DHDR= LinkDef.h
+DHDR= TestShuttleLinkDef.h
 
 EINCLUDE=
