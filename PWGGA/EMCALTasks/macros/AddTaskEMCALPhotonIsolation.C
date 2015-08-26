@@ -10,23 +10,27 @@
   ///////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
-                                                                 const char*            periodstr          = "LHC11c",
-                                                                 const char*            ntracks            = "EmcalTracks",
-                                                                 const char*            nclusters          = "EmcalClusters",
-                                                                 const UInt_t           pSel               = AliVEvent::kEMC7,
-                                                                 const TString          dType              = "ESD",
-                                                                 const Bool_t		    bHisto		       = kTRUE,
-                                                                 const Int_t	      	iOutput		       = 0,
-                                                                 const Bool_t	        bIsMC	           = kFALSE,
-                                                                 const Bool_t           bMCNormalization   = kFALSE,
-                                                                 const Bool_t           bNLMCut            = kFALSE,
-                                                                 const Int_t            NLMCut             = 0,
-                                                                 const Double_t         minPtCutCluster    = 0.3,
-                                                                 const Double_t         EtIso              = 2.,
-                                                                 const Int_t            iIsoMethod         = 1,
-                                                                 const Int_t            iEtIsoMethod       = 0,
-                                                                 const Int_t            iUEMethod          = 1,
-                                                                 const Bool_t           bUseofTPC          = kFALSE
+                                                                 const char*            periodstr                 = "LHC11c",
+                                                                 const char*            ntracks                   = "EmcalTracks",
+                                                                 const char*            nclusters                 = "EmcalClusters",
+                                                                 const UInt_t           pSel                      = AliVEvent::kEMC7,
+                                                                 const TString          dType                     = "ESD",
+                                                                 const Bool_t		    bHisto		              = kTRUE,
+                                                                 const Int_t	      	iOutput		              = 0,
+                                                                 const Bool_t	        bIsMC	                  = kFALSE,
+                                                                 const Bool_t           bMCNormalization          = kFALSE,
+                                                                 const Bool_t           bNLMCut                   = kFALSE,
+                                                                 const Int_t            NLMCut                    = 0,
+                                                                 const Double_t         minPtCutCluster           = 0.3,
+                                                                 const Double_t         EtIso                     = 2.,
+                                                                 const Int_t            iIsoMethod                = 1,
+                                                                 const Int_t            iEtIsoMethod              = 0,
+                                                                 const Int_t            iUEMethod                 = 1,
+                                                                 const Bool_t           bUseofTPC                 = kFALSE,
+                                                                 const Double_t         TMdeta                    = 0.02,
+                                                                 const Double_t         TMdphi                    = 0.03,
+                                                                 const Bool_t           bTMClusterRejection       = kTRUE,
+                                                                 const Bool_t           bTMClusterRejectionInCone = kTRUE
                                                                  )
 {
 
@@ -184,8 +188,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetLCAnalysis(kFALSE);
   task->SetIsoConeRadius(0.4);
   task->SetEtIsoThreshold(2.); // after should be replace by EtIso
-  task->SetCTMdeltaEta(0.02);
-  task->SetCTMdeltaPhi(0.03);
+  task->SetCTMdeltaEta(0.02); // after should be replaced by TMdeta
+  task->SetCTMdeltaPhi(0.03); // after should be replaced by TMdphi
   task->SetQA(kTRUE);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
