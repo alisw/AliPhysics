@@ -28,6 +28,7 @@
 #include "AliInputEventHandler.h"
 #include "AliVVertex.h"
 
+#include "AliEmcalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliAnalysisTaskChargedParticlesRef.h"
 
@@ -45,6 +46,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fTrackCuts(NULL),
     fAnalysisUtil(NULL),
     fHistos(NULL),
+    fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1)
 {
@@ -59,6 +61,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fTrackCuts(NULL),
     fAnalysisUtil(NULL),
     fHistos(NULL),
+    fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1)
 {
@@ -188,7 +191,12 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
  */
 void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   // Select event
-  TString triggerstring = fInputEvent->GetFiredTriggerClasses();
+  TString triggerstring = "";
+  if(fTriggerStringFromPatches){
+    triggerstring = GetFiredTriggerClassesFromPatches(dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers")));
+  } else {
+    triggerstring = fInputEvent->GetFiredTriggerClasses();
+  }
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
       isEJ1 = triggerstring.Contains("EJ1"),
       isEJ2 = triggerstring.Contains("EJ2"),
@@ -453,6 +461,42 @@ Bool_t AliAnalysisTaskChargedParticlesRef::TrackSelectionAOD(AliAODTrack* track)
   if(!track->TestFilterBit(AliAODTrack::kTrkGlobal)) return false;
   if(track->GetTPCNCrossedRows() < 120) return false;
   return true;
+}
+
+/**
+ * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
+ * @param triggerpatches Trigger patches found by the trigger maker
+ * @return String with EMCAL trigger decision
+ */
+TString AliAnalysisTaskChargedParticlesRef::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
+  TString triggerstring = "";
+  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
+  double  minADC_EJ1 = 260.,
+          minADC_EJ2 = 127.,
+          minADC_EG1 = 140.,
+          minADC_EG2 = 89.;
+  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
+    AliEmcalTriggerPatchInfo *patch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    if(!patch->IsOfflineSimple()) continue;
+    if(patch->IsJetHighSimple() && patch->GetADCOfflineAmp() > minADC_EJ1) nEJ1++;
+    if(patch->IsJetLowSimple() && patch->GetADCOfflineAmp() > minADC_EJ2) nEJ2++;
+    if(patch->IsGammaHighSimple() && patch->GetADCOfflineAmp() > minADC_EG1) nEG1++;
+    if(patch->IsGammaLowSimple() && patch->GetADCOfflineAmp() > minADC_EG2) nEG2++;
+  }
+  if(nEJ1) triggerstring += "EJ1";
+  if(nEJ2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "EJ2";
+  }
+  if(nEG1){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "EG1";
+  }
+  if(nEG2){
+    if(triggerstring.Length()) triggerstring += ",";
+    triggerstring += "EG2";
+  }
+  return triggerstring;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
