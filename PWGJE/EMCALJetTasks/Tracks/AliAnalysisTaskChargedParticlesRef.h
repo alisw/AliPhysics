@@ -40,6 +40,9 @@ protected:
   void CreateOldPtBinning(TArrayD &binning) const;
   void CreateNewPtBinning(TArrayD &binning) const;
 
+  void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal);
+
+
   Bool_t TrackSelectionESD(AliESDtrack *track);
   Bool_t TrackSelectionAOD(AliAODTrack *track);
 
