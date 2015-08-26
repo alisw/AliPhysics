@@ -6,6 +6,7 @@
 #include "AliAnalysisTaskSE.h"
 
 class TArrayD;
+class TString;
 class AliAnalysisUtils;
 class AliAODTrack;
 class AliESDtrackCuts;
@@ -35,13 +36,14 @@ public:
 
   void SetRapidityShift(Double_t yshift) { fYshift = yshift; }
   void SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
+  void UseTriggerPatches(Bool_t doUse) { fTriggerStringFromPatches = doUse; }
 
 protected:
   void CreateOldPtBinning(TArrayD &binning) const;
   void CreateNewPtBinning(TArrayD &binning) const;
 
   void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal);
-
+  TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
 
   Bool_t TrackSelectionESD(AliESDtrack *track);
   Bool_t TrackSelectionAOD(AliAODTrack *track);
@@ -50,6 +52,7 @@ protected:
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
   AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
 
+  Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
 
