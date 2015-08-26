@@ -113,21 +113,21 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
     fHistos->CreateTH1(Form("hPtEMCALEtaCentNewBinning%s", trg->Data()), Form("Charged particle in EMCAL pt distribution central eta new binning trigger %s", trg->Data()), newbinning);
     for(int ipt = 0; ipt < 5; ipt++){
       fHistos->CreateTH1(
-          Form("hEtaLabDistAllPt1%s", trg->Data()),
+          Form("hEtaLabDistAllPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (lab) distribution without etacut for tracks with Pt above 1 GeV/c trigger %s", trg->Data()),
           100,
           -1.,
           1.
           );
       fHistos->CreateTH1(
-          Form("hEtaLabDistCutPt1%s", trg->Data()),
+          Form("hEtaLabDistCutPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (lab) distribution with etacut for tracks with Pt above 1 GeV/c trigger %s", trg->Data()),
           100,
           -1.,
           1.
           );
       fHistos->CreateTH1(
-          Form("hEtaCentDistAllPt1%s", trg->Data()),
+          Form("hEtaCentDistAllPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (cent) distribution without etacut for tracks with Pt above 1 GeV/c trigger %s",
               trg->Data()),
               160,
@@ -135,7 +135,7 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
               1.3
               );
       fHistos->CreateTH1(
-          Form("hEtaCentDistCutPt1%s", trg->Data()),
+          Form("hEtaCentDistCutPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (cent) distribution with etacut for tracks with Pt above 1 GeV/c trigger %s", trg->Data()),
           160,
           -1.3,
