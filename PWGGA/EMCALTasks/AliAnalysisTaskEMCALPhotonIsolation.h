@@ -79,6 +79,8 @@ public:
     void                     SetLCAnalysis (Bool_t LC)                                       { fisLCAnalysis = LC;}
     void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut)                       { fIsNLMCut = isNLMCut;
                                                                                                fNLMCut = NLMCut;}
+    void                     SetTMClusterRejection (Bool_t tm)                               { fTMClusterRejected = tm;}
+    void                     SetTMClusterRejectioninCone (Bool_t tm)                         { fTMClusterInConeRejected = tm;}
 
 protected:
 
@@ -221,6 +223,8 @@ protected:
     Bool_t      fisLCAnalysis;                   // Flag to pass from Leading Clusters Analysis to a NC One
     Bool_t      fIsNLMCut;                       // NLM cut available
     Int_t       fNLMCut;                         // number of NLM cut
+    Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
+    Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
     Int_t       fTest1;
     Int_t       fTest2;
 
@@ -257,7 +261,7 @@ private:
    AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
 
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 1);    //EMCAL Neutrals base analysis task
+   ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 2);    //EMCAL Neutrals base analysis task
       /// \endcond
 };
 #endif

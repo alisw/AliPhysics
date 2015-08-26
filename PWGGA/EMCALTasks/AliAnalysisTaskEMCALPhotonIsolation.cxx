@@ -140,6 +140,8 @@ fMCQAdim(0),
 fisLCAnalysis(0),
 fIsNLMCut(kFALSE),
 fNLMCut(0),
+fTMClusterRejected(kTRUE),
+fTMClusterInConeRejected(kTRUE),
 fTest1(0),
 fTest2(0),
 fEClustersT(0),
@@ -268,6 +270,8 @@ fMCQAdim(0),
 fisLCAnalysis(0),
 fIsNLMCut(kFALSE),
 fNLMCut(0),
+fTMClusterRejected(kTRUE),
+fTMClusterInConeRejected(kTRUE),
 fTest1(0),
 fTest2(0),
 fEClustersT(0),
@@ -952,12 +956,16 @@ else
       }
 
       fPtaftTime->Fill(vecCOI.Pt());
+
+      if(fTMClusterRejected)
+      {
       if(ClustTrackMatching(emccluster)){
         index++;
         emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
         continue;
       }
      fPtaftTM->Fill(vecCOI.Pt());
+      }
 
 
       if(!CheckBoundaries(vecCOI)){
@@ -1099,6 +1107,7 @@ Double_t dphi = 999;
 return kFALSE;
 }
 
+//_____________________________________________________________________________________________
 Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster *coi, AliVCaloCells* cells){
 // find the number of local maxima of a cluster adapted from AliCalorimeterUtils
 
@@ -1112,6 +1121,7 @@ const Int_t   nc = coi->GetNCells();
    return nMax;
 }
 
+//_____________________________________________________________________________________________________________________________
 Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList) {
 // find the cluster number of local maxima adapted from AliCalorimeterUtils
 
@@ -1237,6 +1247,7 @@ Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCell
   return iDigitN ;
 }
 
+//__________________________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPhotonIsolation::AreNeighbours(Int_t absId1, Int_t absId2 ) const
 {
     // check if two cells are neighbour (adapted from AliCalorimeterUtils)
@@ -1500,10 +1511,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
         }
 	}
 
+if(fTMClusterInConeRejected)
+{
         if(ClustTrackMatching(clust)){
           clust=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(localIndex));
           continue;
         }
+}
 
         //redefine phi/c.Eta() from the cluster we passed to the function
 
@@ -1615,10 +1629,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
         }
 	}
 
+	if(fTMClusterInConeRejected)
+    {
        if(ClustTrackMatching(clust)){
           clust=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
           continue;
        }
+    }
         //redefine phi/c.Eta() from the cluster we passed to the function
 
         // define the radius between the leading cluster and the considered cluster
