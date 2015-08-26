@@ -170,6 +170,7 @@ fAssociatedFromDetector(0),
 fMCUseUncheckedCentrality(kFALSE),
 fCheckCertainSpecies(-1),
 fRemoveWeakDecaysInMC(kFALSE),
+fFillYieldRapidity(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -352,8 +353,23 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH2F("checkSpecies", ";eta;pt;particles", 20, -1, 1, 40, 0, 10));
   
   if (fCentralityMethod == "ZNAC")
-  {
     fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
+
+  Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
+  Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
+  
+  if (fFillYieldRapidity) {
+    const Int_t nPtBins = 400;
+    Double_t ptBins[nPtBins+1];
+    for (int i=0; i<=nPtBins; i++)
+      ptBins[i] = 20.0 / nPtBins * i;
+    
+    const Int_t nyBins = 20;
+    Double_t yBins[nyBins+1];
+    for (int i=0; i<=nyBins; i++)
+      yBins[i] = -1.0 + 2.0 / nyBins * i;
+
+    fListOfHistos->Add(new TH3F("yieldsRapidity", ";centrality;pT;y", nCentralityBins, centralityBins, nPtBins, ptBins, nyBins, yBins));
   }
 
   PostData(0,fListOfHistos);
@@ -364,9 +380,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // event mixing
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemention of AliEventPoolManager
    
-  Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
-  Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
-  
   const Int_t kNZvtxBins  = 10+(1+10)*4;
   // bins for further buffers are shifted by 100 cm
   Double_t vertexBins[kNZvtxBins+1] = { -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
@@ -474,6 +487,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
+  settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
@@ -679,6 +693,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // triggers
   TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
   CleanUp(tmpList, mc, skipParticlesAbove);
+  if (fFillYieldRapidity) {
+    for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+      AliVParticle* particle = dynamic_cast<AliVParticle*> (tmpList->UncheckedAt(i));
+      if (!particle)
+	continue;
+      ((TH3F*) fListOfHistos->FindObject("yieldsRapidity"))->Fill(centrality, particle->Pt(), particle->Y());
+    }
+  }
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
   
