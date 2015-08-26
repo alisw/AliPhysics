@@ -2539,13 +2539,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     fEmbeddedPtFraction.Reset(0);
 
     //matching that selects reconstructed jets from embedded+data events by matching to PYTHIA true jets, that have been embedded
-    AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets, 
-					      fJetsRecCuts, nRecJetsCuts, 
-					      iEmbeddedMatchIndex, fEmbeddedPtFraction,
-					      fDebug, fCutDeltaREmbedded);
-    
+    if(fUseExtraTracks ==  1){
+      AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets, 
+						fJetsRecCuts, nRecJetsCuts, 
+						iEmbeddedMatchIndex, fEmbeddedPtFraction,
+						fDebug, fCutDeltaREmbedded);
+    }
   }
-
+  
   //____ fetch background clusters ___________________________________________________
   if(fBranchRecBckgClusters.Length() != 0){
 
@@ -3557,6 +3558,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  }
 	}
 	
+
+	if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets
 
 	  
 	if(ptFractionEmbedded>=fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
