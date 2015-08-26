@@ -820,7 +820,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 						
 					TCanvas *cDCA=new TCanvas(Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),Form("cDCA%d%s%s%sbin%d",index,sample[isample].Data(),Particle[ipart].Data(),Sign[icharge].Data(),ibin_data),1700,1500);
 					cDCA->SetMargin(0.1,0.02,0.1,0.02);
-					TLegend* Leg1 = new TLegend(0.6,0.6,0.85,0.85,"","NDC");
+					TLegend* Leg1 = new TLegend(0.7,0.7,0.88,0.88,"","NDC");
 					Leg1->SetFillStyle(kFALSE);
 					Leg1->SetLineColor(kWhite);
 					Leg1->SetBorderSize(0);
@@ -872,7 +872,7 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 					Int_t binCutRange[]={hToFit->GetXaxis()->FindBin(CutRange[0]),hToFit->GetXaxis()->FindBin(CutRange[1]),hmc1->GetXaxis()->FindBin(CutRange[0]),hmc1->GetXaxis()->FindBin(CutRange[1])};			
 
 					
-					if(hmc3->GetNbinsX()>300)
+					if(hmc3->GetNbinsX()>100||hToFit->GetNbinsX()>100)
 					{
 					
 						corrforrebinning[0]=hToFit->Integral(binCutRange[0],binCutRange[1]);
@@ -1114,9 +1114,12 @@ void DCACorrectionMarek(AliSpectraBothHistoManager* hman_data, AliSpectraBothHis
 
 						hToFit->SetMinimum(0.0001);
 						hToFit->GetXaxis()->SetTitle("DCA_{xy} (cm)");
-						hToFit->GetYaxis()->SetTitle("N_{counts}/N_{counts}(-3cm;3cm)");
+						hToFit->GetYaxis()->SetTitle("1/N_{counts}(-3cm;3cm) dN/ddca_{xy} (cm)^{-1}");
 						hToFit->GetYaxis()->SetTitleOffset(1.3);
 						hToFit->Scale(1.0,"width");
+						hToFit->SetMarkerStyle(20);
+						hToFit->SetMarkerColor(kBlack);
+						hToFit->SetMarkerSize(1.5);
 						hToFit->DrawClone("E1x0");
 						Leg1->AddEntry(hToFit,"data","p");
 						result->SetTitle("Fit result");
@@ -1922,7 +1925,7 @@ TH1F* ReBinDCAHisto(TH1* h)
 	TString name=h->GetName();
 	name+="Rebin";
 	Int_t kDCABins=88;
-	Double_t binsDCADummy[]={-3.0,-2.8,-2.6,-2.4,-2.2,-2.0,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.75,-0.7,-0.65,-0.6,-0.55,-0.5,-0.45,-0.4,-0.35,-0.3,-0.25,-0.2,-0.18,-0.16,-0.14,-0.12,-0.1,-0.09,-0.08,-0.07,-0.06,-0.05,-0.04,-0.03,-0.02,-0.01,0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.7,2.8,3.0};
+	Double_t binsDCADummy[]={-3.0,-2.8,-2.6,-2.4,-2.2,-2.0,-1.9,-1.8,-1.7,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.75,-0.7,-0.65,-0.6,-0.55,-0.5,-0.45,-0.4,-0.35,-0.3,-0.25,-0.2,-0.18,-0.16,-0.14,-0.12,-0.1,-0.09,-0.08,-0.07,-0.06,-0.05,-0.04,-0.03,-0.02,-0.01,0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0};
 	
 	TH1F* hout=new TH1F(name.Data(),";;dcaxy[cm];",kDCABins,binsDCADummy);
 	Int_t j=1;
@@ -1942,6 +1945,13 @@ TH1F* ReBinDCAHisto(TH1* h)
 			sum=0.0;	
 		}
 	}
+	hout->SetMarkerStyle(h->GetMarkerStyle());
+	hout->SetMarkerSize(h->GetMarkerSize());
+	hout->SetMarkerColor(h->GetMarkerColor());
+	hout->SetLineStyle(h->GetLineStyle());
+        //hout->SetLineSize(h->GetLineSize());
+        hout->SetLineColor(h->GetLineColor());
+
 	delete h;
 	hout->Sumw2();
 	return hout;
