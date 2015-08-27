@@ -2424,28 +2424,40 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       centPercent = dynamic_cast<AliAODHeader*>(fAOD->GetHeader())->GetCentrality();
       cl = 1;
-      //std::cout<<"centPercent: "<<centPercent<<std::endl;
-      
+     
       fh1EvtAllCent->Fill(centPercent);
-      /*    
-      if(centPercent>10) cl = 2; //standard PWG-JE binning
-      if(centPercent>30) cl = 3;
-      if(centPercent>50) cl = 4;
-      */
-    
-  
-      if(centPercent < 0) cl = -1;
-      if(centPercent >= 0)  cl = 1;
-      if(centPercent > 10) cl = 2; //standard PWG-JE binning
-      if(centPercent > 30) cl = 3;
-      if(centPercent > 50) cl = 4;
-      if(centPercent > 80) cl = 5; //takes centralities higher than my upper edge of 80%, not to be used
       
+      //fEventClass set externally
+      if(fEventClass >= 11){//to analyse also 5% central events (PWG-LF choice)
+
+   	if(centPercent < 0) cl = -1;
+	if(centPercent >= 0) cl = 11;//exception for analysis of 5% event centrality (PWG-LF choice)
+	if(centPercent > 5)  cl = 12; 
+	if(centPercent > 10) cl = 13;
+	if(centPercent > 20) cl = 14;
+	if(centPercent > 40) cl = 15; 
+	if(centPercent > 60) cl = 16;
+	if(centPercent > 80) cl = 17;
+	if(centPercent > 90) cl = 18;
+
+      }
+      
+      if(fEventClass < 11){//standard centrality estimator used in PWGJE analyses
+	
+	if(centPercent < 0) cl = -1;
+	if(centPercent >= 0) cl = 1;
+	if(centPercent > 10) cl = 2; 
+	if(centPercent > 30) cl = 3;
+	if(centPercent > 50) cl = 4;
+	if(centPercent > 80) cl = 5; //takes centralities higher than my upper edge of 80%, not to be used
+	
+      }
     }
+
     else {
 
       cl = AliAnalysisHelperJetTasks::EventClass();
-
+      
       if(fESD) centPercent = fESD->GetCentrality()->GetCentralityPercentile("V0M"); //ESD JetServices Task has the centrality binning 0-10,10-30,30-50,50-80
       fh1EvtAllCent->Fill(centPercent);
     }
