@@ -253,9 +253,10 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddRealPair( AliFemtoPair* pai
       double afsi0b = 0.07510020733*chg1*fMagSign*irad/pt1;
       double afsi1b = 0.07510020733*chg2*fMagSign*irad/pt2;
       Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+      dphistar = TVector2::Phi_mpi_pi(dphistar);
 
       // Calculate distance between two points in track:
-      double distance = 2 * TMath::Sin(dphistar * 0.5) * irad;
+      double distance = 2 * TMath::Sin(TMath::Abs(dphistar) * 0.5) * irad;
 
       // Check if pair parameters meet the requirements:
       if(distance < fDistanceMax) {
@@ -336,10 +337,11 @@ void AliFemtoCorrFctnDPhiStarKStarMergedFraction::AddMixedPair( AliFemtoPair* pa
       // Calculate dPhiStar:
       double afsi0b = 0.07510020733*chg1*fMagSign*irad/pt1;
       double afsi1b = 0.07510020733*chg2*fMagSign*irad/pt2;
-      Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+      Double_t dphistar = phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+      dphistar = TVector2::Phi_mpi_pi(dphistar);
 
       // Calculate distance between two points in track:
-      double distance = 2 * TMath::Sin(dphistar * 0.5) * irad;
+      double distance = 2 * TMath::Sin(TMath::Abs(dphistar) * 0.5) * irad;
 
       // Check if pair parameters meet the requirements:
       if(distance < fDistanceMax) {
