@@ -292,30 +292,30 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
 
     // fill histograms allEta
     if(isMinBias){
-      FillTrackHistos("MB", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("MB", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
       // check for exclusive classes
       if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillTrackHistos("MBexcl", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+        FillTrackHistos("MBexcl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
       }
     }
     if(isEJ1){
-      FillTrackHistos("EJ1", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EJ1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
     }
     if(isEJ2){
-      FillTrackHistos("EJ2", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EJ2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
       // check for exclusive classes
       if(!isEJ1){
-        FillTrackHistos("EJ2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+        FillTrackHistos("EJ2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
       }
     }
     if(isEG1){
-      FillTrackHistos("EG1", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EG1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
     }
     if(isEG2){
-      FillTrackHistos("EG2", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EG2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
       // check for exclusive classes
       if(!isEG1){
-        FillTrackHistos("EG2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, checktrack->Phi(), etacent, TMath::Abs(etacent) < 0.3, isEMCAL);
+        FillTrackHistos("EG2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
       }
     }
   }
