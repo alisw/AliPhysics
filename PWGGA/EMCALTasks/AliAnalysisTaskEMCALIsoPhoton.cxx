@@ -1778,6 +1778,14 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       fEmcClusETM2->Fill(c->E());
       fDetaDphiFromTM->Fill(c->GetTrackDz(),c->GetTrackDx());
     }
+    if(fIsMc){
+      bool ispi0 = IsMcPDG(c->GetLabel(),111);
+      bool ispich = IsMcPDG(c->GetLabel(),211);
+      if(ispi0)
+	fTrackDEtaDPhiPho->Fill(c->GetTrackDz(),c->GetTrackDx());
+      if(ispich)
+	fTrackDEtaDPhiPi->Fill(c->GetTrackDz(),c->GetTrackDx());
+    }
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
       fEmcClusETM1->Fill(c->E());
       continue;
@@ -1788,14 +1796,6 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     fEmcClusEClusCuts->Fill(c->E(),3);
     if(c->GetM02()>0.1)
       fEmcClusEClusCuts->Fill(c->E(),4);
-    if(fIsMc){
-      bool ispi0 = IsMcPDG(c->GetLabel(),111);
-      bool ispich = IsMcPDG(c->GetLabel(),211);
-      if(ispi0)
-	fTrackDEtaDPhiPho->Fill(c->GetTrackDz(),c->GetTrackDx());
-      if(ispich)
-	fTrackDEtaDPhiPi->Fill(c->GetTrackDz(),c->GetTrackDx());
-    }
   }
 }
 //________________________________________________________________________
