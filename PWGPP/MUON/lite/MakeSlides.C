@@ -336,6 +336,7 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\mode<presentation>" << endl;
   outFile << "\\usepackage[T1]{fontenc}" << endl;
   outFile << "\\usepackage{lmodern}" << endl;
+  outFile << "\\usepackage{textcomp}" << endl;
   outFile << "\\usepackage{amsmath}" << endl;
   outFile << "\\usepackage{color,graphicx}" << endl;
   outFile << "\\usepackage{colortbl}" << endl;
@@ -392,6 +393,8 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\newcommand{\\pt}{\\ensuremath{p_{\\mathrm{T}}}}" << endl;
   outFile << "\\newcommand{\\dd}{\\text{d}}" << endl;
   outFile << "\\newcommand{\\raa}{\\ensuremath{R_{AA}}}" << endl;
+  outFile << "\\newcommand{\\un}[1]{\\protect\\detokenize{#1}}" << endl;
+  outFile << endl;
 }
 
 //_________________________________
