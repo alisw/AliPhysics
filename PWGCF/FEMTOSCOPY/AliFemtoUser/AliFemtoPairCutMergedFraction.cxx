@@ -20,14 +20,14 @@ ClassImp(AliFemtoPairCutRadialDistanceAsymmetric)
 
 //__________________
 AliFemtoPairCutMergedFraction::AliFemtoPairCutMergedFraction(Double_t aDistanceMax, Double_t aMergedFractionLimit, Double_t aDEtaMax, Double_t aRadiusMin, Double_t aRadiusMax) :
-AliFemtoPairCut(),
+AliFemtoPairCutAntiGamma(),
   fDistanceMax(0.03),
   fMergedFractionLimit(0.01),
   fDEtaMax(0.01),
   fRadiusMin(0.8),
   fRadiusMax(2.5),
   fMagSign(1),
-  fDataType(kESD)
+  fMergedFractionDataType(kESD)
 {
   fDistanceMax = aDistanceMax;
   fMergedFractionLimit = aMergedFractionLimit;
@@ -38,14 +38,14 @@ AliFemtoPairCut(),
 
 //__________________
 AliFemtoPairCutMergedFraction::AliFemtoPairCutMergedFraction(const AliFemtoPairCutMergedFraction& cPairCut) :
-  AliFemtoPairCut(),
+  AliFemtoPairCutAntiGamma(cPairCut),
   fDistanceMax(0.03),
   fMergedFractionLimit(0.01),
   fDEtaMax(0.01),
   fRadiusMin(0.8),
   fRadiusMax(2.5),
   fMagSign(1),
-  fDataType(kESD)
+  fMergedFractionDataType(kESD)
 {
   fDistanceMax = cPairCut.fDistanceMax;
   fMergedFractionLimit = cPairCut.fMergedFractionLimit;
@@ -53,7 +53,7 @@ AliFemtoPairCutMergedFraction::AliFemtoPairCutMergedFraction(const AliFemtoPairC
   fRadiusMin = cPairCut.fRadiusMin;
   fRadiusMax = cPairCut.fRadiusMax;
   fMagSign = cPairCut.fMagSign;
-  fDataType = cPairCut.fDataType;
+  fMergedFractionDataType = cPairCut.fMergedFractionDataType;
 }
 
 //__________________
@@ -69,7 +69,7 @@ AliFemtoPairCutMergedFraction& AliFemtoPairCutMergedFraction::operator=(const Al
     fRadiusMin = cPairCut.fRadiusMin;
     fRadiusMax = cPairCut.fRadiusMax;
     fMagSign = cPairCut.fMagSign;
-    fDataType = cPairCut.fDataType;
+    fMergedFractionDataType = cPairCut.fMergedFractionDataType;
   }
   return *this;
 }
@@ -77,7 +77,7 @@ AliFemtoPairCutMergedFraction& AliFemtoPairCutMergedFraction::operator=(const Al
 //__________________
 bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
   
-  if(fDataType == kKine)
+  if(fMergedFractionDataType == kKine)
     return true;
   
   // Prepare variables:
@@ -150,7 +150,7 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
 
     // Calculate distance:
     //double distance = TMath::Sqrt(rad * rad * (2 - 2 * TMath::Cos(dphistar)));
-    double distance = 2 * TMath::Sin(dphistar * 0.5) * rad;
+    double distance = 2 * TMath::Sin(TMath::Abs(dphistar) * 0.5) * rad;
 
     // Check if pair parameters meet the requirements:
     if(distance < fDistanceMax) {
@@ -170,6 +170,14 @@ bool AliFemtoPairCutMergedFraction::Pass(const AliFemtoPair* pair) {
   }
   else {
     pairpass = kTRUE;
+  }
+
+  // Check the antigamma cut:
+  if (pairpass) {
+    pairpass = AliFemtoPairCutAntiGamma::Pass(pair);
+  }
+  else {
+    fNPairsFailed++;
   }
   
   return pairpass;
@@ -232,6 +240,6 @@ void AliFemtoPairCutMergedFraction::SetRadiusMax(double radmax) {
 }
 
 //__________________
-void AliFemtoPairCutMergedFraction::SetDataType(AliFemtoDataType datatype) {
-  fDataType = datatype;
+void AliFemtoPairCutMergedFraction::SetMergedFractionDataType(AliFemtoDataType datatype) {
+  fMergedFractionDataType = datatype;
 }
