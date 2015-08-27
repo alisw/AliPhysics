@@ -205,7 +205,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
 
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliParticleContainer *clusterCont = task->AddParticleContainer(nclusters);
-  if (clusterCont) clusterCont->SetParticlePtCut(minPtCutCluster);
+ // if (clusterCont) clusterCont->SetParticlePtCut(minPtCutCluster);
     //  AliParticleContainer *hybTrackCont = task->AddParticleContainer(nhybtracks);
 
   printf("Task for neutral cluster analysis created and configured, pass it to AnalysisManager\n");
@@ -213,7 +213,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   manager->AddTask(task);
 
 
-  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralCluster",AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:NeutralClusters",AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *cinput  = manager->GetCommonInputContainer();
   manager->ConnectInput(task, 0, cinput);
   manager->ConnectOutput(task, 1, contHistos);

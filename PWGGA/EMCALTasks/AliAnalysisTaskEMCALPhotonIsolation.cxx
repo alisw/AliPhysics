@@ -894,7 +894,7 @@ Int_t index=0;
 
 
     //       AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(0));
-   AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(0));
+   AliEmcalParticle *emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(0));
 
           index=0;
 
@@ -905,7 +905,7 @@ Int_t index=0;
       AliVCluster *coi = emccluster->GetCluster();
       if(!coi) {
        index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
         continue;
       }
         //
@@ -930,7 +930,7 @@ Int_t index=0;
         if(NLM > fNLMCut)
         {
           index++;
-          emccluster=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+          emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
           continue;
         }
     }
@@ -950,7 +950,7 @@ else
       if(!fIsMC){
         if(coiTOF<-30 || coiTOF>30){
           index++;
-          emccluster=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+          emccluster=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
           continue;
         }
       }
@@ -961,7 +961,7 @@ else
       {
       if(ClustTrackMatching(emccluster)){
         index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
         continue;
       }
      fPtaftTM->Fill(vecCOI.Pt());
@@ -970,7 +970,7 @@ else
 
       if(!CheckBoundaries(vecCOI)){
         index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
         continue;
       }
 
@@ -978,7 +978,7 @@ else
 
       if(vecCOI.Et()<5.){
            index++;
-        emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+        emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
           continue;
 
       }
@@ -988,7 +988,7 @@ fTestIndexE->Fill(vecCOI.Pt(),index);
 
      FillGeneralHistograms(coi,vecCOI, index);
       index++;
-      emccluster = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(index));
+      emccluster = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(index));
 
     }
 
@@ -1478,13 +1478,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
   AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
   clusters->ResetCurrentID();
   Int_t localIndex=0;
-  AliEmcalParticle *clust = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(localIndex));
+  AliEmcalParticle *clust = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
 
   while(clust){ //check the position of other clusters in respect to the leading cluster
 
     if(localIndex==index){
       localIndex++;
-      clust = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(localIndex));
+      clust = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
       continue;
     }
     else{
@@ -1492,7 +1492,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 
       AliVCluster *cluster= clust->GetCluster();
       if(!cluster){
-        clust = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(localIndex));
+        clust = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
         continue;
       }
 
@@ -1506,7 +1506,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       if(!fIsMC)
 	{
         if(clustTOF<-30 || clustTOF>30){
-          clust=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(localIndex));
+          clust=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
           continue;
         }
 	}
@@ -1514,11 +1514,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 if(fTMClusterInConeRejected)
 {
         if(ClustTrackMatching(clust)){
-          clust=static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(localIndex));
+          clust=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
           continue;
         }
 }
 
+        if(nClust.E()<0.3){
+          clust=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
+          continue;
+        }
         //redefine phi/c.Eta() from the cluster we passed to the function
 
       Double_t  radius = TMath::Sqrt(TMath::Power(phiClust- c.Phi(),2)+TMath::Power(etaClust-c.Eta(),2)); // define the radius between the leading cluster and the considered cluster
@@ -1533,7 +1537,7 @@ if(fTMClusterInConeRejected)
       else // if the cluster is in the isolation cone, add the cluster pT
         sumEnergyConeClus += nClust.Et();
 
-      clust = static_cast<AliEmcalParticle*>(clusters->GetNextAcceptParticle(localIndex));
+      clust = static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
     }
   }
 
@@ -1636,6 +1640,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
           continue;
        }
     }
+
+            if(nClust.E()<0.3){
+          clust=static_cast<AliEmcalParticle*>(clusters->GetAcceptParticle(localIndex));
+          continue;
+        }
         //redefine phi/c.Eta() from the cluster we passed to the function
 
         // define the radius between the leading cluster and the considered cluster
