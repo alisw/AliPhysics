@@ -390,12 +390,15 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 				TObjString *dpString = (TObjString*)ffailedDPs->At(iDP);
 				if (dpString){
 					TString name = dpString->String();
-					if (name != "L3_BSF4_H3" && name != "L3_BSF17_H1" && name != "L3_BSF17_H2" && name != "L3_BSF17_H3" && name != "L3_BSF17_Temperature" ){
+					if (iDP >= fgkDCSDPHallTopShift && iDP < fgkDCSDPHallTopShift+fgknDCSDPHallProbes) continue; // skipping Hall Probes, since they are not processed anymore
+					/* //now we skip the Hall Probes completely, so this is useless
+					   if (name != "L3_BSF4_H3" && name != "L3_BSF17_H1" && name != "L3_BSF17_H2" && name != "L3_BSF17_H3" && name != "L3_BSF17_Temperature" ){
 						Log(Form("******** %s ******** not present, but foreseen --> causing an ERROR",name.Data()));
 					}
 					else {
 						Log(Form(" %s is not present, but was not generating any error since it is not ready in DCS - check the other DPs in this list!",name.Data()));
 					}
+					*/
 				}
 			}
 			error |= 8;
