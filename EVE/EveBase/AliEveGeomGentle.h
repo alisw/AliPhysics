@@ -23,6 +23,7 @@ public:
     TEveGeoShape* GetGeomGentleRhoz();
     TEveGeoShape* GetGeomGentleTRD();
     TEveGeoShape* GetGeomGentleEMCAL();
+    TEveGeoShape* GetGeomGentleZDC();
     TEveGeoShape* GetGeomGentleMUON(bool updateScene = kTRUE);
 
 private:

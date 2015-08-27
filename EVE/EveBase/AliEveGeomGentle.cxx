@@ -257,6 +257,35 @@ TEveGeoShape* AliEveGeomGentle::GetGeomGentleEMCAL()
     return gsre;
 }
 
+TEveGeoShape* AliEveGeomGentle::GetGeomGentleZDC()
+{
+    TFile f1("$ALICE_ROOT/EVE/alice-data/gentle_geom_zdca.root");
+    TFile f2("$ALICE_ROOT/EVE/alice-data/gentle_geom_zdcc.root");
+    TEveGeoShapeExtract* gse1 = (TEveGeoShapeExtract*) f1.Get("Gentle ZDCA");
+    TEveGeoShapeExtract* gse2 = (TEveGeoShapeExtract*) f2.Get("Gentle ZDCC");
+    TEveGeoShape* gsre1 = TEveGeoShape::ImportShapeExtract(gse1);
+    TEveGeoShape* gsre2 = TEveGeoShape::ImportShapeExtract(gse2);
+    gEve->AddGlobalElement(gsre1);
+    gEve->AddGlobalElement(gsre2);
+    f1.Close();
+    f2.Close();
+    
+    // Fix visibility, color and transparency
+    gsre1->SetRnrSelf(kTRUE);
+    gsre1->SetMainColor(fSettings.GetValue("EMCAL.color", 953));
+    gsre1->SetMainTransparency(70);
+    
+    gsre2->SetRnrSelf(kTRUE);
+    gsre2->SetMainColor(fSettings.GetValue("EMCAL.color", 953));
+    gsre2->SetMainTransparency(70);
+    
+    TEveGeoShape *zdc = new TEveGeoShape("ZDC");
+    zdc->AddElement(gsre1);
+    zdc->AddElement(gsre2);
+    
+    return zdc;
+}
+
 TEveGeoShape* AliEveGeomGentle::GetGeomGentleMUON(bool updateScene)
 {
     TFile f("$ALICE_ROOT/EVE/alice-data/gentle_geo_muon.root");

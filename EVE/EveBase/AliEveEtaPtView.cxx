@@ -29,9 +29,44 @@ AliEveEtaPtView::AliEveEtaPtView() :
     }
     fInstance = this;
 
-    f3DView = gEve->SpawnNewViewer("3D Eta-Pt View", "");
-    f3DView->AddScene(gEve->GetGlobalScene());
+//    f3DView = gEve->SpawnNewViewer("3D Eta-Pt View", "");
+//    f3DView->AddScene(gEve->GetGlobalScene());
+//    f3DView->AddScene(gEve->GetEventScene());
+    
+    f3DGeomScene = new TEveScene("3D Eta-pt scene");
+    fRPhiGeomScene = new TEveScene("RPhi Eta-pt scene");
+    fRhoZGeomScene = new TEveScene("PhoZ Eta-pt scene");
+    
+    TEveWindowSlot *slot = 0;
+    TEveWindowPack *pack = 0;
+    
+    slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    pack = slot->MakePack(); // slot is destroyed here
+    pack->SetElementName("Eta-pt view");
+    pack->SetHorizontal();
+    pack->SetShowTitleBar(kFALSE);
+    
+    pack->NewSlotWithWeight(2)->MakeCurrent(); // new slot is created from pack
+    f3DView = gEve->SpawnNewViewer("3D Eta-pt View", "");
+    f3DView->AddScene(f3DGeomScene);
     f3DView->AddScene(gEve->GetEventScene());
+    
+    pack = pack->NewSlot()->MakePack(); // new slot created from pack, then slot is destroyed and new pack returned
+    pack->SetShowTitleBar(kFALSE);
+    pack->NewSlot()->MakeCurrent(); // new slot from pack
+    fRPhiView = gEve->SpawnNewViewer("RPhi Eta-pt View", "");
+    fRPhiView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    fRPhiView->AddScene(fRPhiGeomScene);
+//    fRPhiView->AddScene(fRPhiEventScene);
+    
+    fPack = pack;
+    
+    pack->NewSlot()->MakeCurrent(); // new slot from pack
+    fRhoZView = gEve->SpawnNewViewer("RhoZ Eta-pt View", "");
+    fRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoZOY);
+    fRhoZView->AddScene(fRhoZGeomScene);
+//    fRhoZView->AddScene(fRhoZEventScene);
+
 }
 
 AliEveEtaPtView::~AliEveEtaPtView()
@@ -88,13 +123,38 @@ void AliEveEtaPtView::InitGeom()
     t5.SetPos(x, y, z+400);
 
     
-    gEve->AddElement(eveTube);
-    gEve->AddElement(eveTube2);
-    gEve->AddElement(eveTube3);
-    gEve->AddElement(eveTube4);
-    gEve->AddElement(eveTube5);
+    f3DGeomScene->AddElement(eveTube);
+    f3DGeomScene->AddElement(eveTube2);
+    f3DGeomScene->AddElement(eveTube3);
+    f3DGeomScene->AddElement(eveTube4);
+    f3DGeomScene->AddElement(eveTube5);
+
+    ImportShapeToRPhi(eveTube);
+    ImportShapeToRPhi(eveTube2);
+    ImportShapeToRPhi(eveTube3);
+    ImportShapeToRPhi(eveTube4);
+    ImportShapeToRPhi(eveTube5);
     
+    ImportShapeToRhoZ(eveTube);
+    ImportShapeToRhoZ(eveTube2);
+    ImportShapeToRhoZ(eveTube3);
+    ImportShapeToRhoZ(eveTube4);
+    ImportShapeToRhoZ(eveTube5);
+    
+    f3DView->GetGLViewer()->UpdateScene();
     gEve->Redraw3D(kTRUE);
     
+}
+
+void AliEveEtaPtView::ImportShapeToRhoZ(TEveGeoShape *shape)
+{
+    fRhoZGeomScene->AddElement(shape);
+    fRhoZView->GetGLViewer()->UpdateScene();
+}
+
+void AliEveEtaPtView::ImportShapeToRPhi(TEveGeoShape *shape)
+{
+    fRPhiGeomScene->AddElement(shape);
+    fRPhiView->GetGLViewer()->UpdateScene();
 }
 

@@ -126,8 +126,8 @@ AliEveInit::AliEveInit(const TString& path ,AliEveEventManager::EDataSource defa
     
     mv->InitGeomGentleTrd(geomGentle->GetGeomGentleTRD());
     mv->InitGeomGentleEmcal(geomGentle->GetGeomGentleEMCAL());
+//    mv->InitGeomGentleZdc(geomGentle->GetGeomGentleZDC());
     mv->InitGeomGentleMuon(geomGentle->GetGeomGentleMUON(true), kFALSE, kTRUE, kFALSE);
-
     mv->SetDepth(0);
     
 //    AliEveEtaPtView *epview = new AliEveEtaPtView();

@@ -37,8 +37,17 @@ public:
     TEveViewer* Get3DView()   { return f3DView; }
 private:
     TEveViewer *f3DView;
+    TEveViewer *fRPhiView;
+    TEveViewer *fRhoZView;
     TEveWindowPack *fPack;
     TEveGeoShape *fGeom;
+    
+    void ImportShapeToRhoZ(TEveGeoShape *shape);
+    void ImportShapeToRPhi(TEveGeoShape *shape);
+    
+    TEveScene *f3DGeomScene;
+    TEveScene *fRPhiGeomScene;
+    TEveScene *fRhoZGeomScene;
     
     static AliEveEtaPtView* fInstance;
     

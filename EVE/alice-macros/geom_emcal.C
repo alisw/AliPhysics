@@ -27,7 +27,7 @@ void geom_emcal()
         Warning("geom_emcal()", "Node XEN1_1 not found.");
         return;
     }
-    
+
     TEveGeoTopNode* emcal_re = new TEveGeoTopNode(gGeoManager, node);
     emcal_re->SetVisLevel(1);
     emcal_re->SetMainTransparency(70);
