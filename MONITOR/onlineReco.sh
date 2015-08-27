@@ -11,6 +11,8 @@ ulimit -c 100000000000000
 #----------------------------------------------------------------------
 # check that no other instances of online reconstruction are running at the same time!
 
+
+
 PIDFILE=$BASE_DIR/current.pid
 if [ -f $PIDFILE ]
 then
