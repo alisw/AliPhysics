@@ -29,7 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   AliFemtoK0EventCollection.cxx
   AliFemtoK0Analysis.cxx
-  PLamAnalysis/AliAnalysisTaskProtonLambda.cxx
+  PLamAnalysis/AliAnalysisTaskProtonLambda2d.cxx
   )
 
 # Headers from sources
