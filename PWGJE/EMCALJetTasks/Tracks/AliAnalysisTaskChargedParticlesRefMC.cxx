@@ -334,7 +334,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     // Select only particles within ALICE acceptance
     if(TMath::Abs(checktrack->Eta()) > 0.8) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    isEMCAL = (truepart->Phi() > 1.5 && truepart->Phi() < 3.1) ? kTRUE : kFALSE;
+    isEMCAL = (checktrack->Phi() > 1.5 && checktrack->Phi() < 3.1) ? kTRUE : kFALSE;
 
     // Distinguish track selection for ESD and AOD tracks
     AliESDtrack *esdtrack(NULL);

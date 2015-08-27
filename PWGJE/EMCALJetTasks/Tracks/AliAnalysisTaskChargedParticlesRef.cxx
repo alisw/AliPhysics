@@ -271,7 +271,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
     if(!checktrack) continue;
     if(TMath::Abs(checktrack->Eta()) > 0.8) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    isEMCAL = checktrack->Eta() > 1.5 && checktrack->Eta() < 3.1;
+    isEMCAL = (checktrack->Phi() > 1.5 && checktrack->Phi() < 3.1) ? kTRUE : kFALSE;
 
     // Calculate eta in cms frame according
     // EPJC74 (2014) 3054:
