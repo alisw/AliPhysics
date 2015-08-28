@@ -11,6 +11,7 @@ ifneq ($(ALICE_ROOT),)
 endif
 
 CXXFLAGS     += $(ALICEINC) -g
+LDFLAGS      += `root-config --ldflags --libs` -L$(ALICE_ROOT)/lib -lACORDEbase -lADbase -lSTEER -lCDB -lSTEERbase -lESD
 SRCS         += dict.cxx
 OBJS          = $(SRCS:.cxx=.o)
 
