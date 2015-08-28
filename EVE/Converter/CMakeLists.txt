@@ -16,7 +16,6 @@
 set(MODULE Converter)
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/EVE/${MODULE}
-                    ${AliRoot_SOURCE_DIR}/EVE/aliconvertertest
                    )
 
 # Additional include folders in alphabetical order
