@@ -12,7 +12,7 @@
     @brief  Data type declaration for the HLT module.
 */
 
-#include <string.h>
+#include <string>
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -76,8 +76,9 @@
  *  18       Added AD detector in AliHLTEventDDLV2
  *  19       Added AD Component Data Types
  *  20       Add data type for ZMQ components and for internal custom triggers
+ *  21       Add AliHLTDataTopic struct for ZMQ communication (as header).
  */
-#define ALIHLT_DATA_TYPES_VERSION 20
+#define ALIHLT_DATA_TYPES_VERSION 21
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -772,6 +773,58 @@ extern "C" {
 
     AliHLTComponentDataType GetDataType() const {return fDataType;}
     AliHLTUInt32_t GetSpecification() const {return fSpecification;}
+  };
+
+  //this struct is meant to be used as a universal data block descriptor ("topic" + specification)
+  //for ZMQ communication
+  struct AliHLTDataTopic
+  {
+    char fTopic[kAliHLTComponentDataTypeTopicSize]; /// Data type identifier + source id as char array.
+    AliHLTUInt32_t fSpecification;                  /// data specification of the data block
+   
+    //ctor
+    AliHLTDataTopic()
+      : fTopic()
+      , fSpecification(0)
+    {
+    }
+
+    //copy ctor
+    AliHLTDataTopic(const AliHLTComponentBlockData& blockData)
+      : fTopic()
+      , fSpecification(blockData.fSpecification)
+    {
+      memcpy( fTopic, blockData.fDataType.fID, kAliHLTComponentDataTypefIDsize );
+      memcpy( fTopic+kAliHLTComponentDataTypefIDsize, blockData.fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
+    }
+
+    //partial (no fSpecification) copy from AliHLTComponentDataType
+    AliHLTDataTopic& operator=( const AliHLTComponentDataType& dataType )
+    {
+      memcpy( fTopic, dataType.fID, kAliHLTComponentDataTypefIDsize );
+      memcpy( fTopic+kAliHLTComponentDataTypefIDsize, dataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
+      return *this;
+    }
+
+    //assignment from a AliHLTComponentBlockData
+    AliHLTDataTopic& operator=( const AliHLTComponentBlockData& blockData )
+    {
+      memcpy( fTopic, blockData.fDataType.fID, kAliHLTComponentDataTypefIDsize );
+      memcpy( fTopic+kAliHLTComponentDataTypefIDsize, blockData.fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
+      fSpecification = blockData.fSpecification;
+      return *this;
+    }
+
+    std::string Description()
+    {
+      std::string description(fTopic, kAliHLTComponentDataTypeTopicSize);
+      description+=" spec:";
+      char numstr[21];
+      snprintf(numstr, 21, "%x", fSpecification);
+      description+=numstr;
+      return description;
+    }
+
   };
 
   /**
