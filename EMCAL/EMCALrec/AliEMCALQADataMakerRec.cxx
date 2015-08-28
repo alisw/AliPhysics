@@ -756,7 +756,7 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		if( (sig[i] & ( 1 << j )) > 0 ){
 		Int_t iFastORinTRU = (in.GetColumn() - n2x2PerTRU)*nTRUL0ChannelBits+j;
 		  //printf("Fast or index in TRU: %d \n",iFastORinTRU);
-		  if(iFastOrinTRU<n2x2perTRU){
+		  if(iFastORinTRU<n2x2PerTRU){
 		    Int_t AbsFastORId=-1;
 		    Int_t found =  fGeom->GetAbsFastORIndexFromTRU(iTRUId, iFastORinTRU, AbsFastORId);
 		    if(found==kTRUE){
