@@ -99,6 +99,7 @@ set(SRCS
     Tracks/AliAnalysisTaskTrackDCA.cxx
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
+    UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx

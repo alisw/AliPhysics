@@ -37,7 +37,8 @@
 #pragma link C++ class AliRhoParameter+;
 #pragma link C++ class AliPythiaInfo+;
 
-// user tasks
+// user task
+#pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
 #pragma link C++ class AliAnalysisTaskDcalDijetPerf+;
