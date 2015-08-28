@@ -563,14 +563,14 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 					 (acceptanceGamma[1] > 0 && acceptanceGamma[0] == 2)
 				){
 					fHistPtYEtaGGPCMEMCAcc->Fill(particle->Pt(), particle->Y());
-					if (acceptanceGamma[0]!=1) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
+					if (acceptanceGamma[1]!=2) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
 					fHistPtAlphaEtaGGPCMEMCAcc->Fill(particle->Pt(), alpha);
 				}	
 				if ( (acceptanceGamma[0] > 0 && acceptanceGamma[1] == 3) || 
 					 (acceptanceGamma[1] > 0 && acceptanceGamma[0] == 3)
 				){
 					fHistPtYEtaGGPCMPHOAcc->Fill(particle->Pt(), particle->Y());
-					if (acceptanceGamma[0]!=1) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
+					if (acceptanceGamma[1]!=3) alpha = (energyGamma[1]-energyGamma[0])/(energyGamma[0]+energyGamma[1]);
 					fHistPtAlphaEtaGGPCMPHOAcc->Fill(particle->Pt(), alpha);
 				}	
 			}	
