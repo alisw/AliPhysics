@@ -9,7 +9,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
                                     Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
 									Int_t 		enableExtQA			 		= 0,								// enable QA(3), disabled (0)
-									TString		periodName					= ""
+									TString		periodNameV0Reader					= ""
 								) {
 
 	// ================= Load Librariers =================================
@@ -66,7 +66,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		if (periodName.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodName);
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
