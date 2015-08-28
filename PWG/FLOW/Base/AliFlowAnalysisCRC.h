@@ -177,7 +177,8 @@ public:
  virtual void CalculateCRCPtCorr();
  virtual void CalculateCRCQVec();
  virtual void CalculateVZvsZDC();
- virtual void CalculateCME();
+ virtual void CalculateCMETPC();
+ virtual void CalculateCMEZDC();
  // 2h.) Various
  virtual void FillVarious();
  
@@ -225,7 +226,8 @@ public:
  virtual void FinalizeCRCVZERO();
  virtual void FinalizeCRCZDC();
  virtual void FinalizeCRCPtCorr();
- virtual void FinalizeCME();
+ virtual void FinalizeCMETPC();
+ virtual void FinalizeCMEZDC();
  // 3h.) Various:
  virtual void FinalizeVarious();
  
@@ -793,21 +795,35 @@ public:
  // CME:
  void SetCMEList(TList* const TL) {this->fCMEList = TL;};
  void SetCMERbRList(TList* const TL) {this->fCMERbRList = TL;};
+ void SetCMETPCList(TList* const TL) {this->fCMETPCList = TL;};
+ void SetCMEZDCList(TList* const TL) {this->fCMEZDCList = TL;};
  void SetCMERunsList(TList* const TL, Int_t r) {this->fCMERunsList[r] = TL;};
- // EbE Corr:
- void SetCMECorPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMECorPro[r][eg][h] = TP;};
- TProfile* GetCMECorPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMECorPro[r][eg][h];};
- void SetCMECovPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMECovPro[r][eg][h] = TP;};
- TProfile* GetCMECovPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMECovPro[r][eg][h];};
- void SetCMENUAPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMENUAPro[r][eg][h] = TP;};
- TProfile* GetCMENUAPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMENUAPro[r][eg][h];};
- // 12.b) Final histo:
- void SetCMECorHist(TH1D* const TH, Int_t const eg, Int_t const h) {this->fCMECorHist[eg][h] = TH;};
- TH1D* GetCMECorHist(Int_t const eg, Int_t const h) const {return this->fCMECorHist[eg][h];};
- void SetCMECovHist(TH2D* const TH, Int_t const eg, Int_t const h) {this->fCMECovHist[eg][h] = TH;};
- TH2D* GetCMECovHist(Int_t const eg, Int_t const h) const {return this->fCMECovHist[eg][h];};
- void SetCMEDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEDistHist[eg][h][k] = TH;};
- TH1D* GetCMEDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEDistHist[eg][h][k];};
+ // CME TPC only:
+ void SetCMETPCCorPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMETPCCorPro[r][eg][h] = TP;};
+ TProfile* GetCMETPCCorPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMETPCCorPro[r][eg][h];};
+ void SetCMETPCCovPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMETPCCovPro[r][eg][h] = TP;};
+ TProfile* GetCMETPCCovPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMETPCCovPro[r][eg][h];};
+ void SetCMETPCNUAPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMETPCNUAPro[r][eg][h] = TP;};
+ TProfile* GetCMETPCNUAPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMETPCNUAPro[r][eg][h];};
+ void SetCMETPCCorHist(TH1D* const TH, Int_t const eg, Int_t const h) {this->fCMETPCCorHist[eg][h] = TH;};
+ TH1D* GetCMETPCCorHist(Int_t const eg, Int_t const h) const {return this->fCMETPCCorHist[eg][h];};
+ void SetCMETPCCovHist(TH2D* const TH, Int_t const eg, Int_t const h) {this->fCMETPCCovHist[eg][h] = TH;};
+ TH2D* GetCMETPCCovHist(Int_t const eg, Int_t const h) const {return this->fCMETPCCovHist[eg][h];};
+ void SetCMETPCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMETPCDistHist[eg][h][k] = TH;};
+ TH1D* GetCMETPCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMETPCDistHist[eg][h][k];};
+ // CME TPC-ZDCs:
+ void SetCMEZDCCorPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMEZDCCorPro[r][eg][h] = TP;};
+ TProfile* GetCMEZDCCorPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMEZDCCorPro[r][eg][h];};
+ void SetCMEZDCCovPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMEZDCCovPro[r][eg][h] = TP;};
+ TProfile* GetCMEZDCCovPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMEZDCCovPro[r][eg][h];};
+ void SetCMEZDCNUAPro(TProfile* const TP, Int_t const r, Int_t const eg, Int_t const h) {this->fCMEZDCNUAPro[r][eg][h] = TP;};
+ TProfile* GetCMEZDCNUAPro(Int_t const r, Int_t const eg, Int_t const h) const {return this->fCMEZDCNUAPro[r][eg][h];};
+ void SetCMEZDCCorHist(TH1D* const TH, Int_t const eg, Int_t const h) {this->fCMEZDCCorHist[eg][h] = TH;};
+ TH1D* GetCMEZDCCorHist(Int_t const eg, Int_t const h) const {return this->fCMEZDCCorHist[eg][h];};
+ void SetCMEZDCCovHist(TH2D* const TH, Int_t const eg, Int_t const h) {this->fCMEZDCCovHist[eg][h] = TH;};
+ TH2D* GetCMEZDCCovHist(Int_t const eg, Int_t const h) const {return this->fCMEZDCCovHist[eg][h];};
+ void SetCMEZDCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEZDCDistHist[eg][h][k] = TH;};
+ TH1D* GetCMEZDCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEZDCDistHist[eg][h][k];};
 
  // 15.) Various
  void SetVariousList(TList* const Various) {this->fVariousList = Various;};
@@ -1170,9 +1186,9 @@ private:
  
  TList *fCRCIntRbRList; //! CRC list of histograms RbR
  TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs
- TH1D *fCRCQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
- TH1D *fCRCMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ TH1D *fCRCQRe[2][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCQIm[2][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCRCMult[2][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
  TProfile *fCRCCorrPro[fCRCMaxnRun][2][fCRCnEtaGap][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TH1D *fCRCSumWeigHist[fCRCMaxnRun][2][fCRCnEtaGap][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
  TProfile *fCRCNUATermsPro[fCRCMaxnRun][4][fCRCnEtaGap][fCRCMaxnCen]; //! NUA terms profile
@@ -1226,15 +1242,13 @@ private:
  // CRCVZERO
  TList *fCRCVZList; //! VZERO CRC List
  const static Int_t fCRCVZnCR = 13;
- const static Int_t fCRCVZnEtaBin = 7;
+ const static Int_t fCRCVZnEtaBin = 5;
  TList *fCRCVZRbRList; //! CRC list of histograms RbR
- TList *fCRCVZRunsList[fCRCMaxnRun]; //! list of runs
- TMatrixD *fCRCQVZRe; //! fReQ[m][k] = sum_{i=1}^{M} w_{i}^{k} cos(m*phi_{i})
- TMatrixD *fCRCQVZIm; //! fImQ[m][k] = sum_{i=1}^{M} w_{i}^{k} sin(m*phi_{i})
- TMatrixD *fCRCVZMult; //! fSM[p][k] = (sum_{i=1}^{M} w_{i}^{k})^{p+1}
+ AliFlowVector* fVZFlowVect[2][fCRCnHar]; //!
+ TList *fCRCVZRunsList[fCRCMaxnRun];  //! list of runs
  TProfile *fCRCVZCorrPro[fCRCMaxnRun][2][fCRCVZnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCRCVZCorrProd2p2pHist[fCRCMaxnRun][2][fCRCVZnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
- TProfile *fCRCVZNUAPro[fCRCMaxnRun][2][fCRCVZnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+ TProfile *fCRCVZNUAPro[fCRCMaxnRun][4][fCRCVZnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TH1D *fCRCVZCorrProdTempHist[2][fCRCVZnEtaBin][fCRCMaxnCen]; //! temporary correlation products for covariances, [CRCBin][eg]
  TH1D *fCRCVZCorrHist[2][fCRCVZnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
  TH1D *fCRCVZCFunHist[fCRCVZnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
@@ -1278,18 +1292,31 @@ private:
  THnSparse *fCRCPtEbEQVec; //!
  
  // CME
- TList *fCMEList; //! CME List
- const static Int_t fCMEnCR = 20;
- const static Int_t fCMEnEtaBin = 1;
- const static Int_t fCMEnDist = 4;
- TList *fCMERbRList; //! CRC list of histograms RbR
+ const static Int_t fCMETPCnCR = 20;
+ const static Int_t fCMEnEtaBin = 2;
+ const static Int_t fCMETPCnDist = 4;
+ const static Int_t fCMEZDCnCR = 20;
+ const static Int_t fCMEZDCnDist = 4;
+ TList *fCMEList;    //! CME List
+ TList *fCMERbRList; //! CME list of histograms RbR
+ TList *fCMETPCList; //! CME list of histograms TPC only
+ TList *fCMEZDCList; //! CME list of histograms TPC-ZDCs
  TList *fCMERunsList[fCRCMaxnRun]; //! list of runs
- TProfile *fCMECorPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
- TProfile *fCMECovPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
- TProfile *fCMENUAPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
- TH1D *fCMECorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
- TH2D *fCMECovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
- TH1D *fCMEDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMEnDist]; //! <<2'>>, [CRCBin][eg]
+ TH1D *fCMEQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+ TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+ TH1D *fCMETPCCorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
+ TH2D *fCMETPCCovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
+ TH1D *fCMETPCDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMETPCnDist]; //! <<2'>>, [CRCBin][eg]
+ TH1D *fCMEZDCCorHist[fCMEnEtaBin][fCRCMaxnCen]; //! <<2'>>, [CRCBin][eg]
+ TH2D *fCMEZDCCovHist[fCMEnEtaBin][fCRCMaxnCen]; //! correlation function histo, [CRCBin][eg]
+ TH1D *fCMEZDCDistHist[fCMEnEtaBin][fCRCMaxnCen][fCMEZDCnDist]; //! <<2'>>, [CRCBin][eg]
+ TProfile *fCMETPCCorPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+ TProfile *fCMETPCCovPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
+ TProfile *fCMETPCNUAPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+ TProfile *fCMEZDCCorPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
+ TProfile *fCMEZDCCovPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
+ TProfile *fCMEZDCNUAPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
 
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
