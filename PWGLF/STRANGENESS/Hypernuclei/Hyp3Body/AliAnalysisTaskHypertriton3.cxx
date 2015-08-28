@@ -80,6 +80,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fPrimaryVertex(0x0),
   fPIDResponse(0x0),
   fVertexer(0x0),
+  fVtx1(0x0),
+  fVtx2(0x0),
   fTrkArray(0x0),
   fMC(kFALSE),
   fFillTree(kFALSE),
@@ -93,6 +95,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fCosPointingAngle(0.998),
   fMaxDecayLength(15.),
   fMinDecayLength(0.),
+  fMinNormalizedDecL(0.),
   fMinLifeTime(0.),
   fRapidity(0.5),
   fMaxPtMother(10.),
@@ -156,6 +159,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistDCAXYpionvtx(0x0),
   fHistDCAZpionvtx(0x0),
   fHistDecayLengthH3L(0x0),
+  fHistNormalizedDecayL(0x0),
   fHistLifetime(0x0),
   fHistAngle_deu_pro(0x0),
   fHistAngle_deu_pion(0x0),
@@ -287,6 +291,8 @@ AliAnalysisTaskHypertriton3::~AliAnalysisTaskHypertriton3(){
     if(fPrimaryVertex) delete fPrimaryVertex;
     if(fVertexer) delete fVertexer;
     if(fTrkArray) delete fTrkArray;
+    if(fVtx1) delete fVtx1;
+    if(fVtx2) delete fVtx2;
 
 
 } // end of Destructor
@@ -305,6 +311,39 @@ Double_t AliAnalysisTaskHypertriton3::GetDCAcut(Int_t part, Double_t dca)const{
   return -1;
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskHypertriton3::SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs)const{
+
+  Double_t pos[3], cov[6], chi2perNDF;
+
+  //Conversion of the primary vertex
+  ESDvtxp->GetXYZ(pos);
+  ESDvtxp->GetCovMatrix(cov);
+  chi2perNDF = ESDvtxp->GetChi2toNDF();
+
+  fVtx1->SetPosition(pos[0], pos[1], pos[2]);
+  fVtx1->SetCovMatrix(cov);
+  fVtx1->SetChi2perNDF(chi2perNDF);
+  fVtx1->SetID(ESDvtxp->GetID());
+  fVtx1->SetType(AliAODVertex::kPrimary);
+
+  
+  pos[0] = 0.; pos[1] = 0.; pos[2] = 0.;
+  cov[0] = 0.; cov[1] = 0.; cov[2] = 0.; cov[3] = 0.; cov[4] = 0.; cov[5] = 0.;
+  chi2perNDF = 0.;
+  
+  //Conversion of the secondary vertex
+  ESDvtxs->GetXYZ(pos);
+  ESDvtxs->GetCovMatrix(cov);
+  chi2perNDF = ESDvtxs->GetChi2toNDF();
+
+  fVtx2->SetPosition(pos[0], pos[1], pos[2]);
+  fVtx2->SetCovMatrix(cov);
+  fVtx2->SetChi2perNDF(chi2perNDF);
+  fVtx2->SetID(ESDvtxs->GetID());
+  fVtx2->SetType(AliAODVertex::kUndef);
+  
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
@@ -316,6 +355,8 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
 
   fVertexer = new AliVertexerTracks();
   fTrkArray = new TObjArray(3);
+  fVtx1 = new AliAODVertex();
+  fVtx2 = new AliAODVertex();
     
   fOutput = new TList();
   fOutput->SetOwner();
@@ -422,6 +463,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistDCAXYpionvtx = new TH1F("fHistDCAXYpionvtx","DCA candidate #pi^{-}-decay vertex - xy coordinate; DCA_{xy} (cm); entries",200,-5.,5.);
   fHistDCAZpionvtx = new TH1F("fHistDCAZpionvtx","DCA candidate #pi^{-}-decay vertex - z coordinate; DCA_{z} (cm); entries",200,-10.,10.);
   fHistDecayLengthH3L = new TH1F("fHistDecayLengthH3L","decay length ^{3}H_{#Lambda}; decay length (cm); entries",400,0.,400.);
+  fHistNormalizedDecayL = new TH1F("fHistNormalizedDecayL","normalized decay length; decL/#sigma_{dL}; entries",400,0.,100.);
   fHistLifetime = new TH1F("fHistLifetime","ct ^{3}H_{#Lambda}; ct(cm); entries",400,0.,400.);
   
   fHistAngle_deu_pro = new TH1F("fHistAngle_deu_pro","Angle between d and p; #alpha_{d_p} (rad); entries/(0.03 rad)",100,0.,TMath::Pi());
@@ -544,6 +586,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistDCAXYpionvtx);
   fOutput->Add(fHistDCAZpionvtx);
   fOutput->Add(fHistDecayLengthH3L);
+  fOutput->Add(fHistNormalizedDecayL);
   fOutput->Add(fHistLifetime);
   fOutput->Add(fHistAngle_deu_pro);
   fOutput->Add(fHistAngle_deu_pion);
@@ -705,7 +748,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Double_t dcad[2] = {0.,0.}; // dca between the candidate d,p,pi
   Double_t dcap[2] = {0.,0.}; // and the candidate decay vertex
   Double_t dcapi[2] = {0.,0.}; // dcad[0]= transverse plane coordinate; dcad[1]= z coordinate
-  Double_t decayLengthH3L, pTmom, rapidity, pointingAngleH, ctau= 0.;
+  Double_t decayLengthH3L, normalizedDecayL, pTmom, rapidity, pointingAngleH, ctau= 0.;
   Double_t lD, lP, lPi = 0;
   Double_t decVt[3] = {0.,0.,0.};
   Bool_t brotherHood = kFALSE;
@@ -1135,6 +1178,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fVertexer->SetVtxStart(fPrimaryVertex);
 	decayVtx = (AliESDVertex*)fVertexer->VertexForSelectedESDTracks(fTrkArray);
 
+	SetConvertedAODVertices(fPrimaryVertex,decayVtx);
+	
 	fHistZDecayVtx->Fill(decayVtx->GetZ());
 	fHistXDecayVtx->Fill(decayVtx->GetX());
 	fHistYDecayVtx->Fill(decayVtx->GetY());
@@ -1147,8 +1192,10 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	dlh[2]=fESDevent->GetPrimaryVertex()->GetZ() - decayVtx->GetZ();
 
 	decayLengthH3L = TMath::Sqrt((dlh[0]*dlh[0]) + (dlh[1]*dlh[1]) + (dlh[2]*dlh[2]));
+	normalizedDecayL = fVtx2->DistanceToVertex(fVtx1)/fVtx2->ErrorDistanceToVertex(fVtx1);
 	
 	fHistDecayLengthH3L->Fill(decayLengthH3L);
+	fHistNormalizedDecayL->Fill(normalizedDecayL);
 	
 	trackD->PropagateToDCA(decayVtx, bz, 10,dcad);
 	fHistDCAXYdeuvtx->Fill(dcad[0]);
@@ -1170,6 +1217,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) continue;
 	if(TMath::Abs(dcapi[0]) > fDCAPiSVxymax) continue;
 	if(TMath::Abs(dcapi[1]) > fDCAPiSVzmax) continue;
+
+	if(normalizedDecayL < fMinNormalizedDecL) continue;
 	
 	posD.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),deuteronMass);
 	
