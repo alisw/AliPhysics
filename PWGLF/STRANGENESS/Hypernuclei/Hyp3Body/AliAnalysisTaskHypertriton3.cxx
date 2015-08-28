@@ -93,7 +93,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fCosPointingAngle(0.998),
   fDecayLength(15.),
   fMinDecayLength(0.),
-  fRapidity(1.),
+  fRapidity(0.5),
   fMaxPtMother(10.),
   fMinPtMother(0.),
   fDCAPiSVxymax(0.6),
