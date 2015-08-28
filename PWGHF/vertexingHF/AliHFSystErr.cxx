@@ -1270,6 +1270,7 @@ void AliHFSystErr::InitDstoKKpi2011PbPb07half() {
   // D+s->Kpipi syst errors. Responsible: G.M. Innocenti
   //  2011 PbPb sample, 0-7.5% CC
   //
+  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions for 0-7.5 CC");
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
@@ -1325,9 +1326,10 @@ void AliHFSystErr::InitDstoKKpi2011PbPb010() {
   //  2011 PbPb sample, 0-10% CC
   //
 
+  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions for 0-10 CC");
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
-  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.047); // TAA and pp norm
+  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.048); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
@@ -1339,8 +1341,7 @@ void AliHFSystErr::InitDstoKKpi2011PbPb010() {
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
-  for(Int_t i=1;i<=6;i++) fRawYield->SetBinContent(i,0.15); // 15% 
-  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.10); // 10% 
+  for(Int_t i=1;i<=12;i++) fRawYield->SetBinContent(i,0.08); // 8%
 
 
   // Cuts efficiency (from cuts variation + phi mass selection cuts)
@@ -1349,7 +1350,7 @@ void AliHFSystErr::InitDstoKKpi2011PbPb010() {
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.10); // 10%
+  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.07); // 10%
 
    // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
@@ -1367,9 +1368,10 @@ void AliHFSystErr::InitDstoKKpi2011PbPb2050() {
   //  2011 PbPb sample, 20-50% CC
   //
 
+  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions for 20-50 CC");
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",12,0,12);
-  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.05); // TAA and pp norm
+  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.051); // TAA and pp norm
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",12,0,12);
@@ -1381,7 +1383,7 @@ void AliHFSystErr::InitDstoKKpi2011PbPb2050() {
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
-  for(Int_t i=1;i<=12;i++) fRawYield->SetBinContent(i,.15); //15%  
+  for(Int_t i=1;i<=12;i++) fRawYield->SetBinContent(i,0.08); //8%
 
 
   // Cuts efficiency (from cuts variation + phi selection cuts)
@@ -1390,7 +1392,7 @@ void AliHFSystErr::InitDstoKKpi2011PbPb2050() {
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
-  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.10); // 10%
+  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.07); // 7%
 
    // MC dN/dpt 
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
