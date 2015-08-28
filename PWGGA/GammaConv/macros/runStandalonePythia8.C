@@ -53,7 +53,7 @@ void runStandalonePythia8(Long64_t nEvents = 10000)
 	((AliGenPythiaPlus*)gener)->SetEventListRange(-1, -1);
 	(AliPythia8::Instance())->ReadString("Tune:pp = 5");
 	((AliGenPythiaPlus*)gener)->SetProcess(kPyJets);
-	((AliGenPythiaPlus*)gener)->SetPtHard(5.,7.);
+	((AliGenPythiaPlus*)gener)->SetPtHard(21.,28.);
 
 	mcInputHandler->SetGenerator(gener);
 	mcInputHandler->SetSeedMode(2);
