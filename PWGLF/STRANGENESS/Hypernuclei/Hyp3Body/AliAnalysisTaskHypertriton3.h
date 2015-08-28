@@ -81,6 +81,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDCADeuteronPion(double maxdpi) {fDCAdpi = maxdpi;}
 
   void SetAngleDeuteronProton(double ang_dp) {fAngledp = ang_dp;}
+  void SetMaxPMotherCM(double maxp_cm){fMaxPMotherCM = maxp_cm;}
   
   void SetCentrPercentileLimits(double lowc, double highc) {fLowCentrality = lowc; fHighCentrality = highc;}
   
@@ -122,7 +123,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDCAdp;                       ///< Cut DCA deuteron-proton
   Double_t           fDCApip;                      ///< Cut DCA pion-proton
   Double_t           fDCAdpi;                      ///< Cut DCA deuteron-pion
-  Double_t           fAngledp;
+  Double_t           fAngledp;                     ///< Cut on the angle between deuteron - proton
+  Double_t           fMaxPMotherCM;                ///< Cut on max mother momentum in the CM
   Double_t           fLowCentrality;               ///< Cut on lower value of centrality class
   Double_t           fHighCentrality;              ///< Cut on high value of centrality class
   
