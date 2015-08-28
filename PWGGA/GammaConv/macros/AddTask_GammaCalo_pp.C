@@ -11,29 +11,8 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 							Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 							Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
 							Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
-							TString		periodName					= ""
+							TString		periodNameV0Reader			= ""
 ) {
-
-	// ================= Load Librariers =================================
-	gSystem->Load("libCore");  
-	gSystem->Load("libTree");
-	gSystem->Load("libGeom");
-	gSystem->Load("libVMC");
-	gSystem->Load("libPhysics");
-	gSystem->Load("libMinuit");
-	gSystem->Load("libSTEERBase");
-	gSystem->Load("libESD");
-	gSystem->Load("libAOD");
-	gSystem->Load("libANALYSIS");
-	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libCDB");
-	gSystem->Load("libSTEER");
-	gSystem->Load("libSTEERBase");
-	gSystem->Load("libTender");
-	gSystem->Load("libTenderSupplies");
-	gSystem->Load("libPWGflowBase");
-	gSystem->Load("libPWGflowTasks");
-	gSystem->Load("libPWGGAGammaConv");
 	
 	Int_t isHeavyIon = 0;
 	
@@ -71,7 +50,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		if (periodName.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodName);
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
