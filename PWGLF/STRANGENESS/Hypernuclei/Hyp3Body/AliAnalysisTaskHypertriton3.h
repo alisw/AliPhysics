@@ -65,8 +65,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDCADeuteronPrimaryVtx(double dcadeuteronpv) {fDCADPVmin = dcadeuteronpv;}
   
   void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
-  void SetDecayLength(double maxdl) {fDecayLength = maxdl;}
+  void SetMaxDecayLength(double maxdl) {fMaxDecayLength = maxdl;}
   void SetMinDecayLength(double mindl) {fMinDecayLength = mindl;}
+  void SetMinLifeTime(double min_ctau) {fMinLifeTime = min_ctau;}
   void SetRapidity(double rapid) {fRapidity = rapid;}
   void SetMaxPtMother(double maxpt) {fMaxPtMother = maxpt;}
   void SetMinPtMother(double minpt) {fMinPtMother = minpt;}
@@ -111,8 +112,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDCAPPVmin;                   ///< Cut on Min DCA of p from primary vertex
   Double_t           fDCADPVmin;                   ///< Cut on Min DCA of d from primary vertex
   Double_t           fCosPointingAngle;            ///< Cut on Cosine of the pointing angle
-  Double_t           fDecayLength;                 ///< Cut on Decay length
+  Double_t           fMaxDecayLength;                 ///< Cut on Decay length
   Double_t           fMinDecayLength;              ///< Cut on minimum Decay length
+  Double_t           fMinLifeTime;                 ///< Cut on minimum c*\f$\tau\f$
   Double_t           fRapidity;                    ///< Cut on absolute value of mother rapidity y
   Double_t           fMaxPtMother;                 ///< Cut on max mother reconstructed \f$p_{T}\f$
   Double_t           fMinPtMother;                 ///< Cut on min mother reconstructed \f$p_{T}\f$

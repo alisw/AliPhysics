@@ -91,8 +91,9 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fDCAPPVmin(0.),
   fDCADPVmin(0.),
   fCosPointingAngle(0.998),
-  fDecayLength(15.),
+  fMaxDecayLength(15.),
   fMinDecayLength(0.),
+  fMinLifeTime(0.),
   fRapidity(0.5),
   fMaxPtMother(10.),
   fMinPtMother(2.),
@@ -1164,7 +1165,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 	delete decayVtx;
 	
-	if(decayLengthH3L > fDecayLength || decayLengthH3L < fMinDecayLength) continue;
+	if(decayLengthH3L > fMaxDecayLength || decayLengthH3L < fMinDecayLength) continue;
 	if(TMath::Sqrt((dcad[0]*dcad[0])+(dcad[1]*dcad[1])) > fDCADeuSVmax) continue;
 	if(TMath::Sqrt((dcap[0]*dcap[0])+(dcap[1]*dcap[1])) > fDCAProSVmax) continue;
 	if(TMath::Abs(dcapi[0]) > fDCAPiSVxymax) continue;
@@ -1187,7 +1188,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(fSideBand == kTRUE && (Hypertriton.M() < 3.08 || Hypertriton.M() > 3.18)) continue;
 	ctau = (Hypertriton.M()*decayLengthH3L)/pTotHyper;
 	fHistLifetime->Fill(ctau);
-	
+
+	if(ctau < fMinLifeTime) continue;
 	
 	rapidity = Hypertriton.Rapidity();
 	fHistHyperRapidity->Fill(rapidity);
