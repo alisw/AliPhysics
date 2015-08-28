@@ -67,7 +67,7 @@ AliExternalFormatConverter::AliExternalFormatConverter(const TString dirPath)
     char *argv = "aaaaaaaaaa";
     int a = 0;
     app = new TRint("App", &a, &argv,0 , 0, kTRUE);
-    TEveManager::Create(kTRUE);
+    TEveManager::Create(false);
     LoadFiles(dirPath);
 }
 
@@ -245,7 +245,7 @@ void AliExternalFormatConverter::PopulateEvent(AliMinimalisticEvent &event) cons
     PopulateEventWithV0Tracks(event, usedTracks, specialID);
     PopulateEventWithKinkTracks(event, usedTracks);
     PopulateEventWithStandardTracks(event, usedTracks);
-    app->Run();
+//    app->Run();
 }
 
 void AliExternalFormatConverter::PopulateEventWithStandardTracks(
@@ -366,8 +366,10 @@ void AliExternalFormatConverter::WriteToFile(const char *path, TString fileStrin
 {
     ofstream outfile;
     outfile.open(path, std::ios::binary | std::ios::out);
-    if (!outfile)
+    if (!outfile){
+        cout<<"\n\nCouldn't create output file!\n\n"<<endl;
         return;
+    }
     outfile << fileString << std::endl;
     outfile.close();
 }
@@ -439,7 +441,6 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticTrack(
             evetrack->AddPathMark(pm);
         }
     }
-    pTrackPropagator->GetNPoints();
     tEveTrackList->SetChildClass(evetrack->Class());
     tEveTrackList->AddElement(evetrack);
 
@@ -450,15 +451,10 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticTrack(
 
     std::cout << "Track charge: " << track->Charge() << std::endl;
     std::cout << "Track PID: " << track->GetPID() << std::endl;
-    for(int i=0;i<100;i++)
-    {
-        TEveVector4D point = pTrackPropagator->GetPoint(i);
-
-        if( fabs(point[0]) > 0.00000001 && fabs(point[0]) < 100000 &&
-            fabs(point[1]) > 0.00000001 && fabs(point[1]) < 100000 &&
-            fabs(point[2]) > 0.00000001 && fabs(point[2]) < 100000){
-            minimalisticTrack.AddPolyPoint((pTrackPropagator->GetPoint(i)));
-        }
+    
+    vector<TEveVector4D> point = pTrackPropagator->GetPoints();
+    for(int i=0;i<point.size();i++){
+        minimalisticTrack.AddPolyPoint(point[i]);
     }
 
     return minimalisticTrack;
