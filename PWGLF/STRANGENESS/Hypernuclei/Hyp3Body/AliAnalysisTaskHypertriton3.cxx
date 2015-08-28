@@ -95,7 +95,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fMinDecayLength(0.),
   fRapidity(0.5),
   fMaxPtMother(10.),
-  fMinPtMother(0.),
+  fMinPtMother(2.),
   fDCAPiSVxymax(0.6),
   fDCAPiSVzmax(0.8),
   fDCAProSVmax(0.7),
@@ -104,6 +104,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fDCApip(0.5),
   fDCAdpi(0.5),
   fAngledp(TMath::Pi()),
+  fMaxPMotherCM(999.),
   fLowCentrality(0.),
   fHighCentrality(80.),
   fOutput(0x0),
@@ -1180,13 +1181,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	pTotHyper = TMath::Sqrt((Hypertriton.Px()*Hypertriton.Px())+(Hypertriton.Py()*Hypertriton.Py())+(Hypertriton.Pz()*Hypertriton.Pz()));
 	if(pTmom < fMinPtMother || pTmom > fMaxPtMother) continue;
 
-	if(pTmom < 2.) printf ("*********pt lower than 2 GeV/c*********\n");
 	
 	Hypertriton=posD+posP+negPi;
 	
 	if(fSideBand == kTRUE && (Hypertriton.M() < 3.08 || Hypertriton.M() > 3.18)) continue;
 	ctau = (Hypertriton.M()*decayLengthH3L)/pTotHyper;
 	fHistLifetime->Fill(ctau);
+	
 	
 	rapidity = Hypertriton.Rapidity();
 	fHistHyperRapidity->Fill(rapidity);
@@ -1208,45 +1209,46 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	p1.SetXYZ(trackP->Px(),trackP->Py(),trackP->Pz());
 	pi1.SetXYZ(trackNPi->Px(),trackNPi->Py(),trackNPi->Pz());
 	
-	if(charge_d>0 && charge_p>0 && charge_pi<0){ //Hypertriton
-	  //Angular correlation
-	  
-	  fHistAngle_deu_pro->Fill(d1.Angle(p1));
-	  fHistAngle_deu_pion->Fill(d1.Angle(pi1));
-	  fHistAngle_pro_pion->Fill(p1.Angle(pi1));
-
-	  fHistAngleCorr_dp_dpi->Fill(d1.Angle(p1),d1.Angle(pi1));
-	  fHistAngleCorr_dp_ppi->Fill(d1.Angle(p1),p1.Angle(pi1));
-	  fHistAngleCorr_ppi_dpi->Fill(p1.Angle(pi1),d1.Angle(pi1));
+       
+	//Angular correlation
+	
+	fHistAngle_deu_pro->Fill(d1.Angle(p1));
+	fHistAngle_deu_pion->Fill(d1.Angle(pi1));
+	fHistAngle_pro_pion->Fill(p1.Angle(pi1));
+	
+	fHistAngleCorr_dp_dpi->Fill(d1.Angle(p1),d1.Angle(pi1));
+	fHistAngleCorr_dp_ppi->Fill(d1.Angle(p1),p1.Angle(pi1));
+	fHistAngleCorr_ppi_dpi->Fill(p1.Angle(pi1),d1.Angle(pi1));
   
 	
 	
-	  //Momentum in the CM: Boost LAB-->CM
-	  
-	  betaHyper.SetX(-Hypertriton.Px()/TMath::Sqrt((pTotHyper*pTotHyper)+(hypertritonMass*hypertritonMass)));
-	  betaHyper.SetY(-Hypertriton.Py()/TMath::Sqrt((pTotHyper*pTotHyper)+(hypertritonMass*hypertritonMass)));
-	  betaHyper.SetZ(-Hypertriton.Pz()/TMath::Sqrt((pTotHyper*pTotHyper)+(hypertritonMass*hypertritonMass)));
-	  TLorentzRotation beta_3hl(betaHyper);
-	  posDCM = beta_3hl*posD;
-	  posPCM = beta_3hl*posP;
-	  negPiCM = beta_3hl*negPi;
-	  
-	  //Alternative way to boost in CM
-	  //posDCM.Clear();
-	  //posDCM.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),deuteronMass);
-	  //posDCM.Boost(betaHyper);
-	  
-	  HypertritonCM = posDCM + posPCM + negPiCM;
-	  
-	  pTotHyperCM = TMath::Sqrt((HypertritonCM.Px()*HypertritonCM.Px())+(HypertritonCM.Py()*HypertritonCM.Py())+(HypertritonCM.Pz()*HypertritonCM.Pz()));
-	  fHistDecayMomCM_X->Fill(HypertritonCM.Px());
-	  fHistDecayMomCM_Y->Fill(HypertritonCM.Py());
-	  fHistDecayMomCM_Z->Fill(HypertritonCM.Pz());
-	  fHistDecayMomCM_XY->Fill(HypertritonCM.Px(),HypertritonCM.Py());
-	  fHistDecayMomCM_XZ->Fill(HypertritonCM.Px(),HypertritonCM.Pz());
-	  fHistDecayMomCM_YZ->Fill(HypertritonCM.Py(),HypertritonCM.Pz());
-	  fHistDecayMomCM->Fill(pTotHyperCM);
-	}
+	//Momentum in the CM: Boost LAB-->CM
+	
+	betaHyper.SetX(-Hypertriton.Px()/TMath::Sqrt((pTotHyper*pTotHyper)+(hypertritonMass*hypertritonMass)));
+	betaHyper.SetY(-Hypertriton.Py()/TMath::Sqrt((pTotHyper*pTotHyper)+(hypertritonMass*hypertritonMass)));
+	betaHyper.SetZ(-Hypertriton.Pz()/TMath::Sqrt((pTotHyper*pTotHyper)+(hypertritonMass*hypertritonMass)));
+	TLorentzRotation beta_3hl(betaHyper);
+	posDCM = beta_3hl*posD;
+	posPCM = beta_3hl*posP;
+	negPiCM = beta_3hl*negPi;
+	
+	//Alternative way to boost in CM
+	//posDCM.Clear();
+	//posDCM.SetXYZM(trackD->Px(),trackD->Py(),trackD->Pz(),deuteronMass);
+	//posDCM.Boost(betaHyper);
+	
+	HypertritonCM = posDCM + posPCM + negPiCM;
+	
+	pTotHyperCM = TMath::Sqrt((HypertritonCM.Px()*HypertritonCM.Px())+(HypertritonCM.Py()*HypertritonCM.Py())+(HypertritonCM.Pz()*HypertritonCM.Pz()));
+	fHistDecayMomCM_X->Fill(HypertritonCM.Px());
+	fHistDecayMomCM_Y->Fill(HypertritonCM.Py());
+	fHistDecayMomCM_Z->Fill(HypertritonCM.Pz());
+	fHistDecayMomCM_XY->Fill(HypertritonCM.Px(),HypertritonCM.Py());
+	fHistDecayMomCM_XZ->Fill(HypertritonCM.Px(),HypertritonCM.Pz());
+	fHistDecayMomCM_YZ->Fill(HypertritonCM.Py(),HypertritonCM.Pz());
+	fHistDecayMomCM->Fill(pTotHyperCM);
+
+	if(pTotHyperCM > fMaxPMotherCM) continue;
 
 	if(d1.Angle(p1) > fAngledp) continue;
 	
