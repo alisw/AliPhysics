@@ -157,6 +157,7 @@
 #pragma link C++ struct AliHLTRunDesc+;
 #pragma link C++ struct AliHLTComponentStatistics+;
 #pragma link C++ struct AliHLTComponentTableEntry;
+#pragma link C++ struct AliHLTDataTopic+;
 
 #pragma link C++ function operator==( const AliHLTComponentDataType&, const AliHLTComponentDataType&);
 #pragma link C++ function operator!=( const AliHLTComponentDataType&, const AliHLTComponentDataType&);
