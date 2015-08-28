@@ -183,8 +183,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
   void* block = NULL;
 
   int blockTopicSize=-1;
-  char blockTopic[kAliHLTComponentDataTypeTopicSize];
-  memset(blockTopic, 0, kAliHLTComponentDataTypeTopicSize);
+  AliHLTDataTopic blockTopic;
   
   int rc = -1;
   int64_t more=0;
@@ -196,7 +195,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     block = outputBuffer + outputBufferSize;
     
 
-    blockTopicSize = zmq_recv (fZMQin, blockTopic, kAliHLTComponentDataTypeTopicSize, ZMQ_DONTWAIT);
+    blockTopicSize = zmq_recv (fZMQin, &blockTopic, sizeof(blockTopic), ZMQ_DONTWAIT);
     if (blockTopicSize<0 && errno==EAGAIN) break; //nothing on the socket
     zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     if (more) {
@@ -206,20 +205,16 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
       zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     }
 
-    char printable[kAliHLTComponentDataTypeTopicSize+1]; printable[kAliHLTComponentDataTypeTopicSize]=0;
-    memcpy(printable, blockTopic, kAliHLTComponentDataTypeTopicSize);
-    //HLTMessage(Form("topic: %s, topic size: %i, block %p, blockSize %i",printable, blockTopicSize, block, blockSize));
-
     if (blockTopicSize <= 0) continue; //empty header, dont push back
 
-    HLTMessage(Form("pushing back %s, %i bytes", printable, blockSize));
+    HLTMessage(Form("pushing back %s, %i bytes", blockTopic.Description().c_str(), blockSize));
     
     AliHLTComponentBlockData blockHeader; FillBlockData(blockHeader);
     blockHeader.fPtr      = outputBuffer;
     blockHeader.fOffset   = outputBufferSize;
     blockHeader.fSize     = blockSize;
-    blockHeader.fDataType = blockTopic;
-    blockHeader.fSpecification = 0;
+    blockHeader.fDataType = blockTopic.fTopic;
+    blockHeader.fSpecification = blockTopic.fSpecification;
     
     outputBlocks.push_back(blockHeader);
   } while (more==1);

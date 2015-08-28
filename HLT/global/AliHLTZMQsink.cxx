@@ -243,13 +243,12 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
          iSelectedBlock++) 
     {
       inputBlock = &blocks[selectedBlockIdx[iSelectedBlock]];
-      char blockTopic[kAliHLTComponentDataTypeTopicSize];
-      DataType2Topic(inputBlock->fDataType, blockTopic);
+      AliHLTDataTopic blockTopic = *inputBlock;
 
       //send:
       //  first part : AliHLTComponentDataType in string format
       //  second part: Payload
-      rc = zmq_send(fZMQout, &blockTopic, kAliHLTComponentDataTypeTopicSize, ZMQ_SNDMORE);
+      rc = zmq_send(fZMQout, &blockTopic, sizeof(blockTopic), ZMQ_SNDMORE);
       HLTMessage(Form("send topic rc %i errno %s",rc,(rc<0)?strerror(errno):0));
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (iSelectedBlock == (selectedBlockIdx.size()-1))?0:ZMQ_SNDMORE);
       HLTMessage(Form("send data rc %i errno %s",rc,(rc<0)?strerror(errno):0));
