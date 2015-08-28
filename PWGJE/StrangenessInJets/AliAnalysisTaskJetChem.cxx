@@ -315,12 +315,15 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fhnK0sIncl(0)
    ,fhnK0sCone(0)
    ,fhnK0sEmbCone(0)
+   ,fhnK0sEmbConeRef(0)
    ,fhnLaIncl(0)
    ,fhnLaCone(0)
    ,fhnLaEmbCone(0)
+   ,fhnLaEmbConeRef(0)
    ,fhnALaIncl(0)
    ,fhnALaCone(0)
    ,fhnALaEmbCone(0)
+   ,fhnALaEmbConeRef(0)
    ,fhnK0sPC(0)
    ,fhnK0sEmbPC(0)
    ,fhnLaPC(0)
@@ -603,12 +606,15 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fhnK0sIncl(0)
   ,fhnK0sCone(0)
   ,fhnK0sEmbCone(0)
+  ,fhnK0sEmbConeRef(0)
   ,fhnLaIncl(0)
   ,fhnLaCone(0)
   ,fhnLaEmbCone(0)
+  ,fhnLaEmbConeRef(0)
   ,fhnALaIncl(0)
   ,fhnALaCone(0)
   ,fhnALaEmbCone(0)
+  ,fhnALaEmbConeRef(0)
   ,fhnK0sPC(0)
   ,fhnK0sEmbPC(0)
   ,fhnLaPC(0)
@@ -894,12 +900,15 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fhnK0sIncl(copy.fhnK0sIncl)
   ,fhnK0sCone(copy.fhnK0sCone)
   ,fhnK0sEmbCone(copy.fhnK0sEmbCone)
+  ,fhnK0sEmbConeRef(copy.fhnK0sEmbConeRef)
   ,fhnLaIncl(copy.fhnLaIncl)
   ,fhnLaCone(copy.fhnLaCone)
   ,fhnLaEmbCone(copy.fhnLaEmbCone)
+  ,fhnLaEmbConeRef(copy.fhnLaEmbConeRef)
   ,fhnALaIncl(copy.fhnALaIncl)
   ,fhnALaCone(copy.fhnALaCone)
   ,fhnALaEmbCone(copy.fhnALaEmbCone)
+  ,fhnALaEmbConeRef(copy.fhnALaEmbConeRef)
   ,fhnK0sPC(copy.fhnK0sPC)
   ,fhnK0sEmbPC(copy.fhnK0sEmbPC)
   ,fhnLaPC(copy.fhnLaPC)
@@ -1176,12 +1185,15 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fhnK0sIncl                      = o.fhnK0sIncl; 
     fhnK0sCone                      = o.fhnK0sCone;
     fhnK0sEmbCone                   = o.fhnK0sEmbCone;
+    fhnK0sEmbConeRef                = o.fhnK0sEmbConeRef;
     fhnLaIncl                       = o.fhnLaIncl;
     fhnLaCone                       = o.fhnLaCone;
     fhnLaEmbCone                    = o.fhnLaEmbCone;
+    fhnLaEmbConeRef                 = o.fhnLaEmbConeRef;
     fhnALaIncl                      = o.fhnALaIncl;
     fhnALaCone                      = o.fhnALaCone; 
     fhnALaEmbCone                   = o.fhnALaEmbCone;  
+    fhnALaEmbConeRef                = o.fhnALaEmbConeRef;
     fhnK0sPC                        = o.fhnK0sPC;
     fhnK0sEmbPC                     = o.fhnK0sEmbPC;
     fhnLaPC                         = o.fhnLaPC;
@@ -1958,6 +1970,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   Double_t xmaxK0sEmbCone[4] = {100.,0.7, 12., 1.};
   fhnK0sEmbCone                    = new THnSparseF("fhnK0sEmbCone","emb jet pT; K0s inv. mass; particle pT; particle #eta",4,binsK0sEmbCone,xminK0sEmbCone,xmaxK0sEmbCone);
 
+
+  Int_t binsK0sEmbConeRef[4] = {19, 200, 120, 200};
+  Double_t xminK0sEmbConeRef[4] = {5.,0.3, 0., -1.};
+  Double_t xmaxK0sEmbConeRef[4] = {100.,0.7, 12., 1.};
+  fhnK0sEmbConeRef             = new THnSparseF("fhnK0sEmbConeRef","emb jet pT; K0s inv. mass, emb. flag; particle pT; particle #eta",4,binsK0sEmbConeRef,xminK0sEmbConeRef,xmaxK0sEmbConeRef);
+
+
   Int_t binsLaIncl[3] = {200, 120, 200};
   Double_t xminLaIncl[3] = {1.05, 0., -1.};
   Double_t xmaxLaIncl[3] = {1.25, 12., 1.};
@@ -1971,7 +1990,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   Int_t binsLaEmbCone[4] = {19, 200, 120, 200};
   Double_t xminLaEmbCone[4] = {5.,1.05, 0., -1.};
   Double_t xmaxLaEmbCone[4] = {100.,1.25, 12., 1.};
-  fhnLaEmbCone                  = new THnSparseF("fhnLaEmbCCone"," emb jet pT; La inv. mass; particle pT; particle #eta",4,binsLaEmbCone,xminLaEmbCone,xmaxLaEmbCone);
+  fhnLaEmbCone                  = new THnSparseF("fhnLaEmbCone"," emb jet pT; La inv. mass; particle pT; particle #eta",4,binsLaEmbCone,xminLaEmbCone,xmaxLaEmbCone);
+
+
+  Int_t binsLaEmbConeRef[4] = {19, 200, 120, 200};
+  Double_t xminLaEmbConeRef[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxLaEmbConeRef[4] = {100.,1.25, 12., 1.};
+  fhnLaEmbConeRef                  = new THnSparseF("fhnLaEmbConeRef"," emb jet pT; La inv. mass, emb. flags; particle pT; particle #eta",4,binsLaEmbConeRef,xminLaEmbConeRef,xmaxLaEmbConeRef);
 
   Int_t binsALaIncl[3] = {200, 120, 200};
   Double_t xminALaIncl[3] = {1.05, 0., -1.};
@@ -1987,6 +2012,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   Double_t xminALaEmbCone[4] = {5.,1.05, 0., -1.};
   Double_t xmaxALaEmbCone[4] = {100.,1.25, 12., 1.};
   fhnALaEmbCone                 = new THnSparseF("fhnALaEmbCone","emb jet pT; ALa inv. mass; particle pT; particle #eta",4,binsALaEmbCone,xminALaEmbCone,xmaxALaEmbCone);
+
+  Int_t binsALaEmbConeRef[4] = {19, 200, 120, 200};
+  Double_t xminALaEmbConeRef[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxALaEmbConeRef[4] = {100.,1.25, 12., 1.};
+  fhnALaEmbConeRef                 = new THnSparseF("fhnALaEmbConeRef","emb jet pT; ALa inv. mass, emb. flags; particle pT; particle #eta",4,binsALaEmbConeRef,xminALaEmbConeRef,xmaxALaEmbConeRef);
 
   fh1MCMultiplicityPrimary      = new TH1F("fh1MCMultiplicityPrimary", "MC Primary Particles;NPrimary;Count", 201, -0.5, 200.5);
   fh1MCMultiplicityTracks       = new TH1F("h1MCMultiplicityTracks", "MC Tracks;Ntracks;Count", 201, -0.5, 200.5);
@@ -2174,12 +2204,15 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fhnK0sIncl);
     fCommonHistList->Add(fhnK0sCone);
     fCommonHistList->Add(fhnK0sEmbCone);
+    fCommonHistList->Add(fhnK0sEmbConeRef);
     fCommonHistList->Add(fhnLaIncl);
     fCommonHistList->Add(fhnLaCone);
     fCommonHistList->Add(fhnLaEmbCone);
+    fCommonHistList->Add(fhnLaEmbConeRef);
     fCommonHistList->Add(fhnALaIncl);
     fCommonHistList->Add(fhnALaCone);
     fCommonHistList->Add(fhnALaEmbCone);
+    fCommonHistList->Add(fhnALaEmbConeRef);
     fCommonHistList->Add(fhnK0sPC);
     fCommonHistList->Add(fhnK0sEmbPC);
     fCommonHistList->Add(fhnLaPC);
@@ -3706,8 +3739,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    mclabelcheck = MCLabelCheck(v0, kK0, trackNeg, trackPos, listmc, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
 	    if(mclabelcheck == kFALSE)continue;
 	  }
-	  
-	  
+	  //=======
+	  //for embedding signal calculation and extraonly particle referenz
 	  if(incrementJetPt==kTRUE){
 	    fh1IMK0EmbCone->Fill(jetPt);
 	  }//normalisation by number of selected jets
@@ -3720,6 +3753,38 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    fhnK0sEmbCone->Fill(vK0sEmbCone);
 	  }
 	  
+	  //=========
+	  //for particle referenz via embedding flags and using the extra particles
+	  if(fUseExtraTracks == 1){
+	    	    
+	    Int_t nnum;
+	    Int_t pnum;
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue;
+	    	    
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part embedding flag:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+
+	    Bool_t isEmbeddedNeg = (Bool_t) (trackNeg->GetFlags() & AliESDtrack::kEmbedded);//check whether daughter particles are stemming from embedded PYTHIA events
+            Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
+
+	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
+	          
+	      Double_t vK0sEmbConeRef[4] = {jetPt,invMK0s,trackPt,fEta};
+	      
+	      fhnK0sEmbConeRef->Fill(vK0sEmbConeRef);
+	    }	    
+	  }
+
+	  //==========
+
+
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 
 	    // std::cout<<"MCPt :"<<MCPt<<std::endl;
@@ -3851,19 +3916,59 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    mclabelcheck = MCLabelCheck(v0, kLambda, trackNeg, trackPos, listmc, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
 	    if(mclabelcheck == kFALSE)continue;
 	  }
-	  
+
+
+	  //=======
+	  //for embedding signal calculation and extraonly particle referenz
+	  if(incrementJetPt==kTRUE){
+	    fh1IMLaEmbCone->Fill(jetPt);
+	  }//normalisation by number of selected jets
 	  
 
-	  if(incrementJetPt==kTRUE){
-	    fh1IMLaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
-	  
 	  if(fUseExtraTracks == 1){//only for extra particles used
-	    
 	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
-	    fhnLaEmbCone->Fill(vLaEmbCone);
 	    
+	    
+	    fhnLaEmbCone->Fill(vLaEmbCone);
 	  }
-	  
+	  	
+	  //=========
+	  //for particle referenz via embedding flags and using the extra particles
+	  if(fUseExtraTracks == 1){
+	    	    
+	    Int_t nnum;
+	    Int_t pnum;
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue;
+	    	    
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part embedding flag:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+
+	    Bool_t isEmbeddedNeg = (Bool_t) (trackNeg->GetFlags() & AliESDtrack::kEmbedded);//check whether daughter particles are stemming from embedded PYTHIA events
+            Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
+
+	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
+	          
+	      Double_t vLaEmbConeRef[4] = {jetPt,invMLa,trackPt,fEta};
+	      
+	      fhnLaEmbConeRef->Fill(vLaEmbConeRef);
+	    }	    
+	  }
+
+	  //==========
+
+
+
+
+
+
+
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 	   
     	    Double_t vLaEmbCone[4] = {jetPt, invMLa, trackPt, fEta};
@@ -3989,18 +4094,72 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    if(mclabelcheck == kFALSE)continue;
 	  }
 	  
-	  
+	  //=======
+	  //for embedding signal calculation and extraonly particle referenz
+
 	  if(incrementJetPt==kTRUE){
-	    fh1IMALaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
+	    fh1IMALaEmbCone->Fill(jetPt);
+	  }//normalisation by number of selected jets
 	  
 
 	  if(fUseExtraTracks == 1){//only for extra particles used
+	    Double_t vALaEmbCone[4] = {jetPt, invMALa,trackPt,fEta};
 	    
-	    Double_t vALaEmbCone[4] = {jetPt, invMALa, trackPt, fEta};
+	    
 	    fhnALaEmbCone->Fill(vALaEmbCone);
-	    
 	  }
 	  
+	  //=========
+	  //for particle referenz via embedding flags and using the extra particles
+	  if(fUseExtraTracks == 1){
+	    	    
+	    Int_t nnum;
+	    Int_t pnum;
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue;
+	    	    
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part embedding flag:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+
+	    Bool_t isEmbeddedNeg = (Bool_t) (trackNeg->GetFlags() & AliESDtrack::kEmbedded);//check whether daughter particles are stemming from embedded PYTHIA events
+            Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
+
+	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
+	      
+	    
+	      Double_t vALaEmbConeRef[4] = {jetPt,invMALa,trackPt,fEta};
+	      
+	      fhnALaEmbConeRef->Fill(vALaEmbConeRef);
+	    }	    
+	  }
+
+	  //==========
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 	    	    
 	    Double_t vALaEmbCone[4] = {jetPt, invMALa, trackPt, fEta};//should be MC generated pT?
