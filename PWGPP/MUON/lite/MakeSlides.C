@@ -456,7 +456,23 @@ void StartAppendix ( ofstream &outFile )
 }
 
 //_________________________________
-void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.pdf", TString triggerQA = "QA_muon_trigger.pdf", TString  texFilename = "muonQA.tex" )
+void WriteRunList ( TString trackerQA, TString outFilename = "runListQA.txt" )
+{
+  TString runList = GetRunList(trackerQA);
+  TObjArray* runListArr = runList.Tokenize(",");
+
+  ofstream outFile(outFilename);
+  for ( Int_t irun=0; irun<runListArr->GetEntries(); irun++ ) {
+    outFile << static_cast<TObjString*>(runListArr->At(irun))->GetString().Atoi() << endl;
+  }
+  outFile.close();
+  delete runListArr;
+
+  PdfToTxt(trackerQA,kTRUE);
+}
+
+//_________________________________
+void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.pdf", TString triggerQA = "QA_muon_trigger.pdf", TString  texFilename = "muonQA.tex", TString outRunList = "" )
 {
   if ( gSystem->AccessPathName(texFilename.Data()) == 0 ) {
     printf("Output file %s already exists\nPlease remove it!\n", texFilename.Data());
@@ -514,6 +530,8 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
   EndSlides(outFile);
 
   delete trigList;
+
+  if ( ! outRunList.IsNull() ) WriteRunList(trackerQA, outRunList);
 
   // Clean converted txt files
   TString filenames[2] = {trackerQA, triggerQA};
