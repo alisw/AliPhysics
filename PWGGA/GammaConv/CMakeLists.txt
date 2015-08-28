@@ -40,6 +40,7 @@ set(SRCS
     AliAnalysisTaskdPhi.cxx
     AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
     AliAnalysisTaskGammaCalo.cxx
+    AliAnalysisTaskGammaCaloMerged.cxx    
     AliAnalysisTaskGammaConvCalo.cxx
     AliAnalysisTaskGammaConvDalitzV1.cxx
     AliAnalysisTaskGammaConvFlow.cxx
