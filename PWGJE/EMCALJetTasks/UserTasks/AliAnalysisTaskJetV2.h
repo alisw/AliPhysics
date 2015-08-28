@@ -165,6 +165,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+        AliVParticle*           GetLeadingTrack(AliEmcalJet* jet);
         static TH1F*            GetEventPlaneWeights(TH1F* hist, Int_t c);
         static void             PrintTriggerSummary(UInt_t trigger);
         static void             DoSimpleSimulation(Int_t nEvents = 100000, Float_t v2 = 0.02, Float_t v3 = 0.04, Float_t v4 = 0.03);
@@ -409,6 +410,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         // in plane, out of plane jet spectra
         TH2F*                   fHistJetPsi2Pt[10];             //! event plane dependence of jet pt
         TH3F*                   fHistJetLJPsi2Pt[10];           //! event plane dependence of jet pt and leading track pt
+        TH3F*                   fHistJetLJPsi2PtRatio[10];      //! ratio of leading track v2 to jet v2
         TH2F*                   fHistJetPsi2PtRho0[10];         //! event plane dependence of jet pt vs rho_0
         // vzero event plane calibration cache for 10h data
         Float_t                 fMeanQ[9][2][2];                //! recentering

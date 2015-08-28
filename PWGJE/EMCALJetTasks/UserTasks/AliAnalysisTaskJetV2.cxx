@@ -117,6 +117,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2() : AliAnalysisTaskEmcalJet("AliAnaly
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
         fHistJetLJPsi2Pt[i] = 0;
+        fHistJetLJPsi2PtRatio[i] = 0;
         fHistJetPsi2PtRho0[i] = 0;
    }
    for(Int_t i(0); i < 9; i++) {
@@ -182,6 +183,7 @@ AliAnalysisTaskJetV2::AliAnalysisTaskJetV2(const char* name, runModeType type, B
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
         fHistJetLJPsi2Pt[i] = 0;
+        fHistJetLJPsi2PtRatio[i] = 0;
         fHistJetPsi2PtRho0[i] = 0;
    }
    for(Int_t i(0); i < 9; i++) {
@@ -655,7 +657,8 @@ void AliAnalysisTaskJetV2::UserCreateOutputObjects()
         fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, etaMin, etaMax, 100, 0, 300, i);
         // in plane and out of plane spectra
         fHistJetPsi2Pt[i] =            BookTH2F("fHistJetPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
-        fHistJetLJPsi2Pt[i] =          BookTH3F("fHistJetLJPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", "p_{t, leading track}", 40, 0., TMath::Pi(), 350, -100, 250, 200, 0, 50, i);
+        fHistJetLJPsi2Pt[i] =          BookTH3F("fHistJetLJPsi2Pt", Form("#phi_{part} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", "p_{t, leading track}", 40, 0., TMath::Pi(), 350, -100, 250, 200, 0, 50, i);
+        fHistJetLJPsi2PtRatio[i] =     BookTH3F("fHistJetLJPsi2PtRatio", Form("#phi_{part} - #Psi_{2, %s}", detector.Data()), Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 40, 0., TMath::Pi(), 350, -100, 250, i);
 
         fHistJetPsi2PtRho0[i] =        BookTH2F("fHistJetPsi2PtRho0", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
         // profiles for all correlator permutations which are necessary to calculate each second and third order event plane resolution
@@ -2396,7 +2399,11 @@ void AliAnalysisTaskJetV2::FillWeightedJetHistograms(Double_t psi2)
             fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area, fEventPlaneWeight);
             fHistJetPtEta[fInCentralitySelection]->Fill(pt-area*rho, eta, fEventPlaneWeight);
             fHistJetPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho, fEventPlaneWeight);
-            fHistJetLJPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho, jet->MaxTrackPt(), fEventPlaneWeight);
+            AliVParticle* lp(GetLeadingTrack(jet));
+            if(lp) {
+                fHistJetLJPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(lp->Phi()-psi2, 2.), pt-area*rho, lp->Pt(), fEventPlaneWeight);
+                fHistJetLJPsi2PtRatio[fInCentralitySelection]->Fill(PhaseShift(lp->Phi()-psi2, 2.), PhaseShift(phi-psi2, 2.), pt-area*rho, fEventPlaneWeight);
+            }
             fHistJetPsi2PtRho0[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*fLocalRho->GetVal(), fEventPlaneWeight);
             fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->GetNumberOfConstituents(), fEventPlaneWeight);
             fHistJetEtaRho[fInCentralitySelection]->Fill(eta, pt/area, fEventPlaneWeight);
@@ -2946,9 +2953,27 @@ AliEmcalJet* AliAnalysisTaskJetV2::GetLeadingJet(AliLocalRhoParameter* localRho)
             }
         }
         return leadingJet;
-
     }
     return 0x0;
+}
+//_____________________________________________________________________________
+AliVParticle* AliAnalysisTaskJetV2::GetLeadingTrack(AliEmcalJet* jet) {
+    #ifdef ALIANALYSISTASKJETV2_DEBUG_FLAG_1
+        printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    #endif
+
+    // find and return the leading constituent of the jet
+    Double_t maxPt(-1.);
+    Int_t iTracks(jet->GetNumberOfTracks());
+    AliVParticle* leadingTrack(0x0);
+    for(Int_t i(0); i < iTracks; i++) {
+        AliVParticle* vp(static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray())));
+        if(vp && (vp->Pt() > maxPt)) {
+            maxPt = vp->Pt();
+            leadingTrack = vp;
+        }
+    }
+    return leadingTrack;
 }
 //_____________________________________________________________________________
 TH1F* AliAnalysisTaskJetV2::GetEventPlaneWeights(TH1F* hist, Int_t c)
