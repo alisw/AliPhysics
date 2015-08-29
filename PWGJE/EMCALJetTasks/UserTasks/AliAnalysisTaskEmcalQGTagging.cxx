@@ -320,7 +320,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 	 
           if(fraction<fMinFractionShared) continue;
           //InputEvent()->Print();
-          if ((fJetShapeType != kPythiaDef)||(fJetShapeType!=kDetEmbPartPythia)) {
+          if ((fJetShapeType != kPythiaDef) && (fJetShapeType!=kDetEmbPartPythia)) {
             partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
             if(!partonsInfo) return 0;
           }
