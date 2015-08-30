@@ -331,7 +331,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(!partonsInfo) return 0;
         }
         
-        if ((fJetShapeType != kPythiaDef) || (fJetShapeType!=kDetEmbPartPythia)){
+        if ((fJetShapeType != kPythiaDef) && (fJetShapeType!=kDetEmbPartPythia)){
           Double_t jp1=RelativePhi(jet2->Phi(),partonsInfo->GetPartonPhi6());
           Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
           kWeight=partonsInfo->GetPythiaEventWeight();
