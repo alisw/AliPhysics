@@ -314,6 +314,12 @@ private:
 	TH2F				**fEoverP_tpc_pt_trigger;
 	TH1F				**fTPC_pt;
 	TH2F				**fTPC_p;
+	
+	TH2F				*fTPC_momentum;
+	TH2F				*fTPC_eta;
+	TH2F				*fTPC_momentum1;
+	TH2F				*fTPC_eta1;
+	
 	TH1F				**fTPCnsigma_pt;
 	TH2F				**fTPCnsigma_p;
 	
@@ -415,6 +421,7 @@ private:
 	TH2F				*ftpc_p_EoverPcut;
 	TH2F				*fnsigma_p_EoverPcut;
 	TH2F				*fEoverP_pt_pions2;
+	TH2F				*fEoverP_pt_pions3;
 	
 	TH2F				*fEoverP_pt_pions2_highE0;
 	TH2F				*fEoverP_pt_pions2_highE1;

@@ -244,6 +244,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fEoverP_tpc_pt_trigger(0)
 ,fTPC_pt(0)
 ,fTPC_p(0)
+
+,fTPC_momentum(0)
+,fTPC_eta(0)
+,fTPC_momentum1(0)
+,fTPC_eta1(0)
+
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
 ,fTPCnsigma_p_TPC(0)
@@ -342,6 +348,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fnsigma_p_EoverPcut(0)
 
 ,fEoverP_pt_pions2(0)
+,fEoverP_pt_pions3(0)
 ,fEoverP_pt_pions2_highE0(0)
 ,fEoverP_pt_pions2_highE1(0)
 
@@ -620,6 +627,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fEoverP_tpc_pt_trigger(0)
 ,fTPC_pt(0)
 ,fTPC_p(0)
+,fTPC_momentum(0)
+,fTPC_eta(0)
+,fTPC_momentum1(0)
+,fTPC_eta1(0)
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
 ,fTPCnsigma_p_TPC(0)
@@ -717,6 +728,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
 ,fEoverP_pt_pions2(0)
+,fEoverP_pt_pions3(0)
 ,fEoverP_pt_pions2_highE0(0)
 ,fEoverP_pt_pions2_highE1(0)
 ,fNcells_pt(0)
@@ -1282,6 +1294,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fECluster_highpT0);
 	fOutputList->Add(fECluster_highpT1);
 
+	fTPC_momentum = new TH2F("fTPC_momentum",";p (GeV/c);TPC dE/dx (a. u.)",1000,0,30,1000,-20,200);
+	fTPC_eta = new TH2F("fTPC_eta",";eta (GeV/c);TPC dE/dx (a. u.)",4000,-2,2,1000,-20,200);
+	fOutputList->Add(fTPC_momentum);
+	fOutputList->Add(fTPC_eta);
+	fTPC_momentum1 = new TH2F("fTPC_momentum1",";p (GeV/c);TPC dE/dx (a. u.)",1000,0,30,1000,-20,200);
+	fTPC_eta1 = new TH2F("fTPC_eta1",";eta (GeV/c);TPC dE/dx (a. u.)",4000,-2,2,1000,-20,200);
+	fOutputList->Add(fTPC_momentum1);
+	fOutputList->Add(fTPC_eta1);
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
@@ -1597,6 +1617,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fnsigma_p_EoverPcut= new TH2F("fnsigma_p_EoverPcut","fnsigma_p_EoverPcut",1000,0,30,500,-15,15);
 	
 	fEoverP_pt_pions2= new TH2F("fEoverP_pt_pions2","fEoverP_pt_pions2",1000,0,30,2000,0,2);
+	fEoverP_pt_pions3= new TH2F("fEoverP_pt_pions3","fEoverP_pt_pions3",1000,0,30,2000,0,2);
 	
 	fEoverP_pt_pions2_highE1= new TH2F("fEoverP_pt_pions2_highE0","fEoverP_pt_pions2",1000,0,30,2000,0,2);
 	fEoverP_pt_pions2_highE0= new TH2F("fEoverP_pt_pions2_highE1","fEoverP_pt_pions2",1000,0,30,2000,0,2);
@@ -1614,6 +1635,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fnsigma_p_EoverPcut);
 	
 	fOutputList->Add(fEoverP_pt_pions2);
+	fOutputList->Add(fEoverP_pt_pions3);
+	
 	fOutputList->Add(fEoverP_pt_pions2_highE0);
 	fOutputList->Add(fEoverP_pt_pions2_highE1);
 	
@@ -2769,6 +2792,12 @@ if(!fIspp){
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
 		
+		
+		fTPC_momentum->Fill(fP,fTPCsignal);
+		fTPC_eta->Fill(track->Eta(),fTPCsignal);
+		
+		
+		
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 			fTPCnsigma_pt_2D0->Fill(fPt,fTPCnSigma);
 		}
@@ -2816,6 +2845,8 @@ if(!fIspp){
 		
 		fTPC_p[0]->Fill(fPt,fTPCsignal);
 		fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
+		
+	
 		
 		
 		Float_t TPCNcls = track->GetTPCNcls();
@@ -3132,6 +3163,9 @@ if(!fIspp){
 			}//close ESD
 		}//close IsMC
 		
+		fTPC_momentum1->Fill(fP,fTPCsignal);
+		fTPC_eta1->Fill(track->Eta(),fTPCsignal);
+		
 			//Calibrated TPCsignal after tracks selection
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 			fTPCnsigma_pt_2D3->Fill(fPt,fTPCnSigma);
@@ -3277,6 +3311,11 @@ if(!fIspp){
 							
 							if(fClus->E()>8.0)fEoverP_pt_pions2_highE1->Fill(fPt, EoverP);
 							if(fClus->E()>12.0)fEoverP_pt_pions2_highE0->Fill(fPt, EoverP);
+							
+						}
+						if(fTPCnSigma < -4.0){
+							fEoverP_pt_pions3->Fill(fPt, EoverP);
+							
 							
 						}
 						
