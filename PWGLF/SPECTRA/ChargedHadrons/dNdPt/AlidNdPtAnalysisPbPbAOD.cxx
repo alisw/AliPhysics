@@ -1120,6 +1120,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   // protection for bias on pt spectra if all triggers selected
   if( (bIsEventSelectedCentral)  && (dCentrality > 10) ) return;
   //   if( (bIsEventSelectedSemi) && ((dCentrality < 20) || (dCentrality > 50))) return;
+  if( (bIsEventSelectedSemi) &&  (dCentrality > 50) ) return;
   
   fEventStatistics->Fill("after centrality selection",1);
   
@@ -1267,7 +1268,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dTotMultVZERO = -1.;
   for(Int_t iVZERObin = 0; iVZERObin < 64; iVZERObin++)
   {
-	dTotMultVZERO += eventAOD->GetVZEROEqMultiplicity(iVZERObin);
+// 	dTotMultVZERO += eventAOD->GetVZEROEqMultiplicity(iVZERObin);
+	dTotMultVZERO += eventAOD->GetVZEROData()->GetMultiplicity(iVZERObin);
   }
   fVZEROMultCentrality->Fill(dTotMultVZERO, dCentrality);
 
