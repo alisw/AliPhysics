@@ -88,6 +88,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
    fnDegreeRotationPMForBG(0),
    fNumberOfBGEvents(0),
    fOpeningAngle(0.005),
+   fEnableMinOpeningAngleCut(kTRUE),
    fDoToCloseV0sCut(kFALSE),
    fminV0Dist(200.),
    fDoSharedElecCut(kFALSE),
@@ -154,6 +155,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
    fnDegreeRotationPMForBG(ref.fnDegreeRotationPMForBG),
    fNumberOfBGEvents(ref. fNumberOfBGEvents),
    fOpeningAngle(ref.fOpeningAngle),
+   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
    fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
    fminV0Dist(ref.fminV0Dist),
    fDoSharedElecCut(ref.fDoSharedElecCut),
@@ -653,7 +655,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
 	// Opening Angle Cut
 	//fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
-	if( pi0->GetOpeningAngle() < fOpeningAngle){
+	if( fEnableMinOpeningAngleCut && pi0->GetOpeningAngle() < fOpeningAngle){
 // 		if (!IsSignal) cout << pi0->GetOpeningAngle() << "<" << fOpeningAngle << endl; 
 		if(hist)hist->Fill(cutIndex);
 		return kFALSE;
@@ -917,7 +919,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
 	
 	printf("Meson cuts \n");
 	printf("\t |y| < %3.2f \n", fRapidityCutMeson);
-	printf("\t theta_{open} < %3.4f\n", fOpeningAngle);
+	if (fEnableMinOpeningAngleCut) printf("\t theta_{open} < %3.4f\n", fOpeningAngle);
 	if (!fAlphaPtDepCut) printf("\t %3.2f < alpha < %3.2f\n", fAlphaMinCutMeson, fAlphaCutMeson);
 	else printf("\t alpha pT-dep cut active\n");
 	if (fDCAGammaGammaCutOn)printf("\t dca_{gamma,gamma} > %3.2f\n", fDCAGammaGammaCut);
