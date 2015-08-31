@@ -115,7 +115,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		void SetOpeningAngleCut(Float_t OpeningAngle){fOpeningAngle = OpeningAngle;} 
 		Bool_t SetMinOpanMesonCut(Int_t minOpanMesonCut);
 		Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
-
+		void SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
+		
 		// Request Flags
 		Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
 		Bool_t UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
@@ -147,6 +148,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Int_t 		fnDegreeRotationPMForBG; 	//
 		Int_t 		fNumberOfBGEvents; 			//
 		Float_t 	fOpeningAngle; 				// min opening angle for meson
+		Bool_t 		fEnableMinOpeningAngleCut; 	// flag to enable min opening angle cut
 		Bool_t 		fDoToCloseV0sCut; 			//
 		Double_t 	fminV0Dist; 				//
 		Bool_t 		fDoSharedElecCut; 			//
@@ -187,7 +189,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliConversionMesonCuts,9)
+		ClassDef(AliConversionMesonCuts,10)
 };
 
 
