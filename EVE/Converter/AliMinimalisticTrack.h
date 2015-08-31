@@ -11,6 +11,7 @@
 
 #include <TObject.h>
 
+
 class AliMinimalisticTrack : public TObject {
 
 public:
@@ -39,6 +40,7 @@ public:
 
     void AddPolyPoint(Double_t x, Double_t y, Double_t z);
     void AddPolyPoint(Double_t xyz[3]);
+    static const Int_t fgkImaginaryParent = -1;
 private:
 
     void AddStartCoordinates(Double_t xyz[3]);

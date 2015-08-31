@@ -25,6 +25,15 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TString.h>
+#include <TBufferJSON.h>
+#include <TBufferXML.h>
+#include <TEveTrack.h>
+#include <TEveTrackPropagator.h>
+#include <TEveManager.h>
+#include <TInterpreter.h>
+#include <TRint.h>
+#include <TEvePathMark.h>
+#include <TEveVector.h>
 
 #include <AliESDEvent.h>
 
@@ -97,14 +106,26 @@ private:
 
     void LoadESDFile(const TFile *ESDFile);
 
+    void AddPolylinesToMinimalisticTrack(Int_t trackID, AliMinimalisticTrack &minimalisticTrack) const;
+    void AddPolyLinesToKinkTrack(Int_t kinkID, AliMinimalisticTrack &mTrack, AliMinimalisticTrack &dTrack) const;
+    void AddPolyLinesToV0Track(
+            Int_t v0ID, AliMinimalisticTrack &negativeTrack, AliMinimalisticTrack &positiveTrack) const;
+   void AddPolylinesToCascade(
+           Int_t cascadeID,
+           AliMinimalisticTrack &negativeTrack,
+           AliMinimalisticTrack &positiveTrack,
+           AliMinimalisticTrack &bachelorTrack
+   ) const;
+    void CheckEvent() const;
+
+    void InsertPolyPoints(AliMinimalisticTrack &Track, std::vector<TEveVector4D> &Points) const;
     //void CalculateMagneticField();
     //Double_t fEventMagneticField;
     TFile* fESDFile;
     TTree* fESDTree;
     AliESDEvent* fESDEvent;
     AliESDfriend* fESDFriend;
-
-    void CheckEvent() const;
+    TRint *fApp;
 };
 
 

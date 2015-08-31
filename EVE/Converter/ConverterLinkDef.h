@@ -13,5 +13,6 @@
 #pragma link C++ class AliMinimalisticEvent+;
 #pragma link C++ class AliMinimalisticCluster+;
 #pragma link C++ class AliMinimalisticTrack+;
+//#pragma link C++ class AliExternalFormatConverter
 
 #endif //ALIROOT_CONVERTERLINKDEF_H
