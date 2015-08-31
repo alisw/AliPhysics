@@ -67,6 +67,11 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fYshift(0.465),
         fEtaSign(1)
 {
+  // Restrict analysis to the EMCAL acceptance
+  fEtaLabCut[0] = -0.6;
+  fEtaLabCut[1] = 0.6;
+  fEtaCmsCut[0] = -0.13;
+  fEtaCmsCut[1] = 0.13;
 }
 
 /**
@@ -85,6 +90,11 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fYshift(0.465),
         fEtaSign(1)
 {
+  // Restrict analysis to the EMCAL acceptance
+  fEtaLabCut[0] = -0.6;
+  fEtaLabCut[1] = 0.6;
+  fEtaCmsCut[0] = -0.13;
+  fEtaCmsCut[1] = 0.13;
   DefineOutput(1, TList::Class());
 }
 
@@ -118,7 +128,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTH1("hNtrialsEvent", "Number of trials (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTProfile("hCrossSectionEvent", "PYTHIA cross section (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
-  TString triggers[9] = {"True", "MB", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl"};
+  TString triggers[15] = {"True", "MB", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
@@ -247,6 +257,13 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1);
     fHistos->FillTH1("hVertexAfterEJ1", vtx->GetZ());
+    if(isEG1 || isEG2){
+      fHistos->FillTH1("hEventCountE1combined", 1);
+      fHistos->FillTH1("hVertexAfterE1combined", vtx->GetZ());
+    } else {
+      fHistos->FillTH1("hEventCountE1Jonly", 1);
+      fHistos->FillTH1("hVertexAfterE1Jonly", vtx->GetZ());
+    }
   }
   if(isEJ2){
     fHistos->FillTH1("hEventCountEJ2", 1);
@@ -256,10 +273,21 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
       fHistos->FillTH1("hEventCountEJ2excl", 1);
       fHistos->FillTH1("hVertexAfterEJ2excl", vtx->GetZ());
     }
+    if(isEG1 || isEG2){
+      fHistos->FillTH1("hEventCountE2combined", 1);
+      fHistos->FillTH1("hVertexAfterE2combined", vtx->GetZ());
+    } else {
+      fHistos->FillTH1("hEventCountE2Jonly", 1);
+      fHistos->FillTH1("hVertexAfterE2Jonly", vtx->GetZ());
+    }
   }
   if(isEG1){
     fHistos->FillTH1("hEventCountEG1", 1);
     fHistos->FillTH1("hVertexAfterEG1", vtx->GetZ());
+    if(!(isEJ1 || isEJ2)){
+      fHistos->FillTH1("hEventCountE1Gonly", 1);
+      fHistos->FillTH1("hVertexAfterE1Gonly", vtx->GetZ());
+    }
   }
   if(isEG2){
     fHistos->FillTH1("hEventCountEG2", 1);
@@ -268,6 +296,10 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     if(!isEG1){
       fHistos->FillTH1("hEventCountEG2excl", 1);
       fHistos->FillTH1("hVertexAfterEG2excl", vtx->GetZ());
+    }
+    if(!(isEJ1 || isEJ2)){
+      fHistos->FillTH1("hEventCountE2Gonly", 1);
+      fHistos->FillTH1("hVertexAfterE2Gonly", vtx->GetZ());
     }
   }
 
@@ -293,7 +325,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     truepart = fMCEvent->GetTrack(ipart);
 
     // Select only particles within ALICE acceptance
-    if(TMath::Abs(truepart->Eta()) > 0.8) continue;
+    if((truepart->Eta() < fEtaLabCut[0]) || (truepart->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(truepart->Pt()) < 0.1) continue;
     if(!truepart->Charge()) continue;
 
@@ -307,8 +339,10 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     Double_t etacent = -1. * truepart->Eta() - TMath::Abs(fYshift);
     etacent *= fEtaSign;
 
+    Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
+
     // Particle selected
-    FillTrackHistos("True", truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+    FillTrackHistos("True", truepart->Pt(), truepart->Eta() * fEtaSign, etacent, truepart->Phi(), etacentcut, isEMCAL);
   }
 
   // Loop over tracks, fill select particles
@@ -332,7 +366,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     if(!IsPhysicalPrimary(assocMC, fMCEvent)) continue;
 
     // Select only particles within ALICE acceptance
-    if(TMath::Abs(checktrack->Eta()) > 0.8) continue;
+    if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
     isEMCAL = (checktrack->Phi() > 1.5 && checktrack->Phi() < 3.1) ? kTRUE : kFALSE;
 
@@ -356,32 +390,50 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     Double_t etacent = -1. * checktrack->Eta() - TMath::Abs(fYshift);
     etacent *= fEtaSign;
 
+    Bool_t etacentcut = etacent > fEtaCmsCut[0] && etacent < fEtaCmsCut[1];
+
     // Go through the trigger classes and fill histograms
     if(isMinBias){
-      FillTrackHistos("MB", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("MB", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       // Check for exclusive classes
       if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillTrackHistos("MBexcl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+        FillTrackHistos("MBexcl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
     }
     if(isEJ1){
-      FillTrackHistos("EJ1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EJ1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      if(isEG1 || isEG2) {
+        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      } else {
+        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      }
     }
     if(isEJ2){
-      FillTrackHistos("EJ2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EJ2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       // check for exclusive classes
       if(!isEJ1){
-        FillTrackHistos("EJ2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+        FillTrackHistos("EJ2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      }
+      if(isEG1 || isEG2) {
+        FillTrackHistos("E2combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      } else {
+        FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
     }
     if(isEG1){
-      FillTrackHistos("EG1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EG1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      if(!(isEJ1 || isEJ2)){
+        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      }
     }
     if(isEG2){
-      FillTrackHistos("EG2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+      FillTrackHistos("EG2", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       // check for exclusive classes
       if(!isEG1){
-        FillTrackHistos("EG2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), TMath::Abs(etacent) < 0.3, isEMCAL);
+        FillTrackHistos("EG2excl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      }
+      if(!(isEJ1 || isEJ2)){
+        FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
     }
   }

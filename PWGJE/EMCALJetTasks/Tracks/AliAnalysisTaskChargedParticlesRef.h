@@ -19,6 +19,11 @@ class AliEMCalHistoContainer;
 /**
  * \class AliAnalysisTaskChargedParticlesRef
  * \brief Unit test class for charged particle distributions
+ *
+ * As generator of reference distributions this task is written as "must work",
+ * meaning as simple as possible and as independent as possible. Using only
+ * well-tested components. Objects responsible for further problems, i.e. the
+ * usage of THnSparse due to memory problems in several places, are forbidden.
  */
 class AliAnalysisTaskChargedParticlesRef : public AliAnalysisTaskSE {
 public:
@@ -38,6 +43,10 @@ public:
   void SetBeamDirection(BeamDirection_t beamdir) { fEtaSign = static_cast<Double_t>(beamdir); }
   void UseTriggerPatches(Bool_t doUse) { fTriggerStringFromPatches = doUse; }
 
+  void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
+  void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
+
+
 protected:
   void CreateOldPtBinning(TArrayD &binning) const;
   void CreateNewPtBinning(TArrayD &binning) const;
@@ -55,6 +64,9 @@ protected:
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
+
+  Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
+  Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
 
 private:
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);
