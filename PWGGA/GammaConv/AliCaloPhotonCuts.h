@@ -138,7 +138,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		void 			SetExtendedMatchAndQA(Int_t extendedMatchAndQA)					{fExtendedMatchAndQA = extendedMatchAndQA; return;}
 		void			SetExtendedQA(Int_t extendedQA)									{if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
 		void			FillHistogramsExtendedQA(AliVEvent *event);
-
+		void			SetIsMergedClusterCut(Bool_t merged)							{fIsMergedClusterCut = merged; return;}
+		Bool_t			GetIsMergedClusterCut()											{return fIsMergedClusterCut;}
+		
 		// Cut functions
 		Bool_t 			AcceptanceCuts(AliVCluster* cluster, AliVEvent *event);
 		Bool_t 			ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Int_t isMC);
@@ -150,7 +152,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t 			GetModuleNumberAndCellPosition(Int_t absCellId, Int_t & icol, Int_t & irow);
 		void 			SplitEnergy(Int_t absCellId1, Int_t absCellId2, AliVCluster* cluster, AliVEvent* event, 
 									Int_t isMC, AliAODCaloCluster* cluster1, AliAODCaloCluster* cluster2);
-
+		Int_t 			FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
+		Int_t 			FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
+		
 		// Set Individual Cuts
 		Bool_t 			SetClusterTypeCut(Int_t);
 		Bool_t 			SetMinEtaCut(Int_t);
@@ -172,6 +176,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t			SetNonLinearity1(Int_t);
 		Bool_t			SetNonLinearity2(Int_t);
 		
+		
+		Float_t 		FunctionM02(Float_t E, Float_t a, Float_t b, Float_t c, Float_t d, Float_t e);
+		Float_t 		CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy);
+		Float_t 		CalculateMinM02 (Int_t minM02, Float_t clusEnergy);
+
+			
 	protected:
 		TList			*fHistograms;
 		TList			*fHistExtQA;
@@ -217,7 +227,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 		fUseNCells;							// flag for switching on minimum N Cells cut
 		Double_t 	fMaxM02;							// maximum M02
 		Double_t 	fMinM02;							// minimum M02
-		Bool_t 		fUseM02;							// flag for switching on M02 cut
+		Int_t 		fUseM02;							// flag for switching on M02 cut
+		Int_t 		fMaxM02CutNr;						// maximum M02 CutNr
+		Int_t 		fMinM02CutNr;						// minimum M02 CutNr
 		Double_t 	fMaxM20;							// maximum M20
 		Double_t 	fMinM20;							// minimum M20
 		Bool_t 		fUseM20;							// flag for switching on M20 cut
@@ -230,6 +242,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t		fNonLinearity2;						// selection of nonlinearity correction, part2
 		Int_t		fSwitchNonLinearity;				// selection (combined) of NonLinearity
 		Bool_t		fUseNonLinearity;					// flag for switching NonLinearity correction
+		Bool_t		fIsMergedClusterCut;				// flag for MergedCluster analysis
 		
 		// CutString
 		TObjString* fCutString; 							// cut number used for analysis
