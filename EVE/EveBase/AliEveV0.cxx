@@ -34,7 +34,8 @@ AliEveV0::AliEveV0() :
   fRecDecayP(),
   fNegTrack(0),
   fPosTrack(0),
-  fRnrStyle(0),
+  fRnrStyleNeg(0),
+  fRnrStylePos(0),
   fPointingLine(0),
   fESDIndex(-1),
   fOnFlyStatus(kFALSE),
@@ -54,17 +55,18 @@ AliEveV0::AliEveV0() :
 
 //______________________________________________________________________________
 AliEveV0::AliEveV0(TEveRecTrack* tNeg, TEveRecTrack* tPos,
-		   TEveRecV0* v0, TEveTrackPropagator* rs) :
+		   TEveRecV0* v0, TEveTrackPropagator* rsNeg, TEveTrackPropagator* rsPos) :
   TEvePointSet(),
 
   fRecBirthV(v0->fV0Birth),
   fRecDecayV(v0->fVCa),
   fRecDecayP(v0->fPNeg + v0->fPPos),
 
-  fNegTrack(new AliEveTrack(tNeg, rs)),
-  fPosTrack(new AliEveTrack(tPos, rs)),
+  fNegTrack(new AliEveTrack(tNeg, rsNeg)),
+  fPosTrack(new AliEveTrack(tPos, rsPos)),
 
-  fRnrStyle(rs),
+  fRnrStyleNeg(rsNeg),
+  fRnrStylePos(rsPos),
   fPointingLine(new TEveLine("Pointing line")),
   fESDIndex(-1),
   fOnFlyStatus(kFALSE),
@@ -176,7 +178,8 @@ ClassImp(AliEveV0List)
 AliEveV0List::AliEveV0List() :
   TEveElementList(),
   fTitle(),
-  fRnrStyle(0),
+  fRnrStyleNeg(0),
+  fRnrStylePos(0),
   fRnrDaughters(kTRUE),
   fRnrV0vtx(kTRUE),
   fRnrV0path(kTRUE),
@@ -201,10 +204,11 @@ AliEveV0List::AliEveV0List() :
 }
 
 //______________________________________________________________________________
-AliEveV0List::AliEveV0List(TEveTrackPropagator* rs) :
+AliEveV0List::AliEveV0List(TEveTrackPropagator* rsNeg,TEveTrackPropagator* rsPos) :
   TEveElementList(),
   fTitle(),
-  fRnrStyle(rs),
+  fRnrStyleNeg(rsNeg),
+  fRnrStylePos(rsPos),
   fRnrDaughters(kTRUE),
   fRnrV0vtx(kTRUE),
   fRnrV0path(kTRUE),
@@ -231,10 +235,11 @@ AliEveV0List::AliEveV0List(TEveTrackPropagator* rs) :
 }
 
 //______________________________________________________________________________
-AliEveV0List::AliEveV0List(const Text_t* name, TEveTrackPropagator* rs) :
+AliEveV0List::AliEveV0List(const Text_t* name, TEveTrackPropagator* rsNeg,TEveTrackPropagator* rsPos) :
   TEveElementList(),
   fTitle(),
-  fRnrStyle(rs),
+  fRnrStyleNeg(rsNeg),
+  fRnrStylePos(rsPos),
   fRnrDaughters(kTRUE),
   fRnrV0vtx(kTRUE),
   fRnrV0path(kTRUE),
@@ -266,7 +271,8 @@ void AliEveV0List::Init()
 {
   // Initialize members needed for drawing operations.
 
-  if (fRnrStyle== 0) fRnrStyle = new TEveTrackPropagator;
+  if (fRnrStyleNeg== 0) fRnrStyleNeg = new TEveTrackPropagator;
+  if (fRnrStylePos== 0) fRnrStylePos = new TEveTrackPropagator;
 }
 
 /******************************************************************************/
