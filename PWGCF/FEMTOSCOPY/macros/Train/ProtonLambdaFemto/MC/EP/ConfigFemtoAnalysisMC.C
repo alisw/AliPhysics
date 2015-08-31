@@ -12,7 +12,6 @@
 #include "AliFemtoEventReaderESDChain.h"
 #include "AliFemtoEventReaderESDChainKine.h"
 #include "AliFemtoEventReaderAODChain.h"
-//#include "AliFemtoEventReaderAODMCTruthChain.h"
 #include "AliFemtoSimpleAnalysis.h"
 #include "AliFemtoBasicEventCut.h"
 #include "AliFemtoESDTrackCut.h"
@@ -64,10 +63,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double LambdaMass = 1.115683;
 
   double psi = TMath::Pi()/2.;
-  double psid = TMath::Pi()/3.;
+  double psid = TMath::Pi()/6.;
 
-  int runepvzero[4] = {1, 1, 1, 1};
-  double epvzerobins[4] = {-psi, -psi+psid, -psi+2*psid, -psi+3*psid};
+  int runepvzero[7] = {1, 1, 1, 1, 1, 1, 1};
+  double epvzerobins[7] = {-psi, -psi+psid, -psi+2*psid, -psi+3*psid, -psi+4*psid, -psi+5*psid, -psi+6*psid};
 
   // Switches for QA analyses
   int runmults[10] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
@@ -81,10 +80,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int numOfMultBins = 10;
   int numOfChTypes = 10;
   int numOfkTBins = 2;
-  int numOfEPvzero = 4;
+  int numOfEPvzero = 7;
 
   bool performSharedDaughterCut = true;
-  bool enablePairMonitors = true;
+  bool enablePairMonitors = false;
 
   int runshlcms = 0;
 
@@ -182,18 +181,17 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      mecetaphitpc[aniter]->SetEventMult(0,100000);
 	      mecetaphitpc[aniter]->SetVertZPos(-8,8);
 
-	      if (iepvzero == 3)
-                mecetaphitpc[aniter]->SetEPVZERO(epvzerobins[0],epvzerobins[3]);
+	      if (iepvzero == (numOfEPvzero-1))
+                mecetaphitpc[aniter]->SetEPVZERO(epvzerobins[0],epvzerobins[numOfEPvzero-1]);
               else
                 mecetaphitpc[aniter]->SetEPVZERO(epvzerobins[iepvzero],epvzerobins[iepvzero+1]);
-
 	      
-	      // cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%i", chrgs[ichg], imult));
-	      // cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%i", chrgs[ichg], imult));
-	      // mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
+	      cutPassEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutPass%stpcM%iPsi%d", chrgs[ichg], imult, iepvzero));
+	      cutFailEvMetaphitpc[aniter] = new AliFemtoCutMonitorEventMult(Form("cutFail%stpcM%iPsi%d", chrgs[ichg], imult, iepvzero));
+	      mecetaphitpc[aniter]->AddCutMonitor(cutPassEvMetaphitpc[aniter], cutFailEvMetaphitpc[aniter]);
 	      
-	      // cutPassEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%i", chrgs[ichg], imult));
-	      // cutFailEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%i", chrgs[ichg], imult));
+	      // cutPassEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutPass%stpcM%iPsi%d", chrgs[ichg], imult, iepvzero));
+	      // cutFailEvVetaphitpc[aniter] = new AliFemtoCutMonitorEventVertex(Form("cutFail%stpcM%iPsi%d", chrgs[ichg], imult, iepvzero));
 	      // mecetaphitpc[aniter]->AddCutMonitor(cutPassEvVetaphitpc[aniter], cutFailEvVetaphitpc[aniter]);
 	  
 	      //cutPassColletaphitpc[aniter] = new AliFemtoCutMonitorCollections(Form("cutPass%stpcM%i", chrgs[ichg], imult));
@@ -279,14 +277,14 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc4etaphitpc[aniter]->SetNsigma(3.0);
 	      dtc4etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 	      
-	      // //V0 monitor
-	      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
-	      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
-	      dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1V0[aniter], cutFail1V0[aniter]);
+	      // // //V0 monitor
+	      // cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
+	      // cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
+	      // dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1V0[aniter], cutFail1V0[aniter]);
 	  
-	      cutPass2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass2%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
-	      cutFail2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail2%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
-	      dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2V0[aniter], cutFail2V0[aniter]);
+	      // cutPass2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass2%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
+	      // cutFail2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail2%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero));
+	      // dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2V0[aniter], cutFail2V0[aniter]);
 
 	      // cutPass1V0Origin[aniter] = new AliFemtoCutMonitorV0OriginDependent(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
 	      // cutFail1V0Origin[aniter] = new AliFemtoCutMonitorV0OriginDependent(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
@@ -372,13 +370,13 @@ AliFemtoManager* ConfigFemtoAnalysis() {
          
 	      avgsepcorr[aniter] = new AliFemtoAvgSepCorrFctn(Form("Avgsep%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),5000,0,500);
 
-	      pairOriginPass[aniter] = new AliFemtoPairOriginMonitor(Form("Pass%stpcM%i", chrgs[ichg], imult));
-	      pairOriginFail[aniter] = new AliFemtoPairOriginMonitor(Form("Fail%stpcM%i", chrgs[ichg], imult));
+	      // pairOriginPass[aniter] = new AliFemtoPairOriginMonitor(Form("Pass%stpcM%i", chrgs[ichg], imult));
+	      // pairOriginFail[aniter] = new AliFemtoPairOriginMonitor(Form("Fail%stpcM%i", chrgs[ichg], imult));
 
-	      sqp1cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //lambda systems
-	      sqp2cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //lambda-proton systems
-	      sqp3cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //(anti-)lambda-(anti-)proton mixed systems
-	      sqp4cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //antilambda-antiprotons
+	      // sqp1cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //lambda systems
+	      // sqp2cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //lambda-proton systems
+	      // sqp3cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //(anti-)lambda-(anti-)proton mixed systems
+	      // sqp4cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //antilambda-antiprotons
 
 	      anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 	      anetaphitpc[aniter]->SetEnablePairMonitors(enablePairMonitors);
