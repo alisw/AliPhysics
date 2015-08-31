@@ -25,6 +25,7 @@
 //-----------------------------------------------------------------
 
 #include <TLorentzVector.h>
+#include "AliLog.h"
 #include "AliESDCaloCluster.h"
 
 ClassImp(AliESDCaloCluster)
@@ -278,7 +279,10 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) const 
   
   Double_t r = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]   ) ; 
   
-  p.SetPxPyPzE( fEnergy*pos[0]/r,  fEnergy*pos[1]/r,  fEnergy*pos[2]/r,  fEnergy) ;   
+  if ( r > 0 ) 
+    p.SetPxPyPzE( fEnergy*pos[0]/r, fEnergy*pos[1]/r, fEnergy*pos[2]/r, fEnergy) ; 
+  else
+    AliInfo("Null cluster radius, momentum calculation not possible");
 }
 
 //_______________________________________________________________________
