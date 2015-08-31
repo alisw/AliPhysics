@@ -223,14 +223,14 @@ AliAnalysisTaskCorrelation3p::~AliAnalysisTaskCorrelation3p()
 void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
 {
   // create result objects and add to output list
-    MakeRunNumbers();//Needs to be done once in the beginning
-    TH1::SetDefaultSumw2(kTRUE);//want the collection of weights on all histograms.
-    TString collisiontype;
-    if(fCollisionType==pp) collisiontype.Append("pp");
-    if(fCollisionType==PbPb) collisiontype.Append("PbPb");
-    fOutput = new THashList;
-    fOutput->SetOwner();
-    if(!fQA){
+  MakeRunNumbers();//Needs to be done once in the beginning
+  TH1::SetDefaultSumw2(kTRUE);//want the collection of weights on all histograms.
+  TString collisiontype;
+  if(fCollisionType==pp) collisiontype.Append("pp");
+  if(fCollisionType==PbPb) collisiontype.Append("PbPb");
+  fOutput = new THashList;
+  fOutput->SetOwner();
+  if(!fQA){
     //Create the appropriate ThreeParticleCorrelators and add the used one to be fCorrelator.
     AliThreeParticleCorrelator<AliCorrelation3p>* correlator=new AliThreeParticleCorrelator<AliCorrelation3p>;
     fCorrelator=correlator;
@@ -250,7 +250,6 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     AliEventPoolManager* poolMgr = new AliEventPoolManager(MaxNofEvents, MinNofTracks, nofMBins, (Double_t*)MBinsTemp, nofZBins, (Double_t*)ZBinsTemp);
     poolMgr->SetTargetValues(MinNofTracks,0.1,1.0);
     correlator->InitEventMixing(poolMgr);
-    
     
     //initialize track worker and add to the output if appropriate
     TString tracksname;
@@ -274,7 +273,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights,1);
     if(fWeightshpt)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeightshpt,2);
     if(fpTfunction)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fpTfunction,3);
-  }
+}
   else{
     InitializeQAhistograms();
   }
@@ -300,10 +299,11 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   fisAOD=pEvent->IsA()==AliAODEvent::Class();
   //Get the runnumber and find which bin and fill value this corresponds to.
   fRun = pEvent->GetRunNumber();
-  TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
-  if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
+  if(fQA){
+    TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
+    if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinCenter(RunBin);}   
+  }
   GetCentralityAndVertex();
-
   if(!SelectEvent()) return;//events are rejected.
   if(fCollisionType==AliAnalysisTaskCorrelation3p::pp) FillHistogram("centVsZVertex",fMultiplicity,fVertex[2]);//only fill with selected events.
   if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb) FillHistogram("centVsZVertex",fCentralityPercentile,fVertex[2]);
@@ -377,8 +377,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 	Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
       }
       else{
-	Int_t etabin  = fWeightshpt->GetZaxis()->FindBin(t->Eta());
-	Weight = fWeightshpt->GetBinContent(MultBin,VZbin,etabin)*fpTfunction->Eval(t->Pt());
+	Weight = fWeightshpt->GetBinContent(MultBin,VZbin)*fpTfunction->Eval(t->Pt());
       }
     }
     if(fQA){
@@ -408,7 +407,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 	FillHistogram("Track_Cent_Vertex_lpT",fCentralityPercentile,fVertex[2],t->Pt());
       }
       else{
-	FillHistogram("Track_Cent_Vertex_eta",fCentralityPercentile,fVertex[2],t->Eta());
+	FillHistogram("Track_Cent_Vertex_eta",fCentralityPercentile,fVertex[2]);
       }
     }
     if(dynamic_cast<AliAODTrack*>(t)){
@@ -843,9 +842,9 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
     histtrackslpt->Reset();
     histtrackslpt->SetTitle("Tracks in Centrality vs Vertex vs pT");
     fOutput->Add(histtrackslpt);
-    TH3D * histtrackshpt = (TH3D*)(fWeightshpt->Clone("Track_Cent_Vertex_eta"));
+    TH2D * histtrackshpt = (TH2D*)(fWeightshpt->Clone("Track_Cent_Vertex_eta"));
     histtrackshpt->Reset();    
-    histtrackshpt->SetTitle("Tracks in Centrality vs Vertex vs eta");
+    histtrackshpt->SetTitle("Tracks in Centrality vs Vertex");
     fOutput->Add(histtrackshpt);    
   }
 //   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
