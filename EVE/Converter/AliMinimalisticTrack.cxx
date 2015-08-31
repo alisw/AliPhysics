@@ -6,21 +6,17 @@
 
 ClassImp(AliMinimalisticTrack)
 
+const TString AliMinimalisticTrack::fgkTrackTypes = {
+    "standard", "kink_mother", "kink_daughter", "V0_negative_daughter", "V0_positive_daughter", "V0_mother",
+    "cascade_primary_mother", "cascade_primary_daughter", "cascade_secondary_mother",
+    "cascade_negative_daughter", "cascade_positive_daughter"
+};
+
 AliMinimalisticTrack::AliMinimalisticTrack(
-        Int_t charge,
-        Double_t energy,
-        Int_t ID,
-        Int_t PID,
-        Double_t mass,
-        Double_t signedPT,
-        Double_t startXYZ[],
-        Double_t endXYZ[],
-        Double_t pxpypz[],
-        Int_t parentID,
-        Double_t phi,
-        Double_t theta,
-        Double_t helixCurvature
-) :
+        Int_t charge, Double_t energy, Int_t ID, Int_t PID, Double_t mass, Double_t signedPT,
+        Double_t startXYZ[], Double_t endXYZ[], Double_t pxpypz[], Int_t parentID, Double_t phi,
+        Double_t theta, Double_t helixCurvature, Int_t type)
+        :
         fCharge(charge),
         fE(energy),
         fParentID(parentID),
@@ -36,6 +32,7 @@ AliMinimalisticTrack::AliMinimalisticTrack(
     AddStartCoordinates(startXYZ);
     AddEndCoordinates(endXYZ);
     SetUniqueID(ID);
+    fType = fgkImaginaryParent[type];
 }
 
 UInt_t AliMinimalisticTrack::GetID()

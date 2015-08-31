@@ -21,8 +21,8 @@
 
 
 const TString AliExternalFormatConverter::fgkDetector[23] = {
-        "Invalid Layer", "First Layer", "SPD1", "SPD2", "SDD1", "SDD2", "SSD1", "SSD2", "TPC1", "TPC2",
-        "TRD1", "TRD2", "TRD3", "TRD4", "TRD5", "TRD6", "TOF", "PHOS1", "PHOS2", "HMPID", "MUON", "EMCAL", "LastLayer"
+    "Invalid Layer", "First Layer", "SPD1", "SPD2", "SDD1", "SDD2", "SSD1", "SSD2", "TPC1", "TPC2",
+    "TRD1", "TRD2", "TRD3", "TRD4", "TRD5", "TRD6", "TOF", "PHOS1", "PHOS2", "HMPID", "MUON", "EMCAL", "LastLayer"
 };
 
 AliExternalFormatConverter::AliExternalFormatConverter()
@@ -246,8 +246,10 @@ void AliExternalFormatConverter::PopulateEventWithV0Tracks(
             continue;
         Int_t v0ParentID = specialID++;
 
-        AliMinimalisticTrack negative = GenerateMinimalisticTrack(negativeID, v0ParentID);
-        AliMinimalisticTrack positive = GenerateMinimalisticTrack(positiveID, v0ParentID);
+        AliMinimalisticTrack negative =
+                GenerateMinimalisticTrack(negativeID, v0ParentID, AliMinimalisticTrack::kV0NegativeDaughter);
+        AliMinimalisticTrack positive =
+                GenerateMinimalisticTrack(positiveID, v0ParentID, AliMinimalisticTrack::kV0PositiveDaughter);
         if (fESDFriend){
             AliMinimalisticCluster motherCluster = GenerateMinimalisticCluster(negativeID);
             AliMinimalisticCluster daughterCluster = GenerateMinimalisticCluster(positiveID);
@@ -257,7 +259,7 @@ void AliExternalFormatConverter::PopulateEventWithV0Tracks(
         AddPolyLinesToV0Track(v0Entry, negative, positive);
         Double_t startCOORDS[] = {.0, .0, .0};
         AliMinimalisticTrack V0Parenttrack = GenerateMinimalisticV0ParentTrack(
-                v0, negativeID, positiveID, v0ParentID, startCOORDS
+                v0, negativeID, positiveID, v0ParentID, startCOORDS, AliMinimalisticTrack::kV0Mother
         );
         event.AddTrack(V0Parenttrack);
         event.AddTrack(positive);
@@ -286,14 +288,16 @@ void AliExternalFormatConverter::PopulateEventWithCascadeTracks(
 
         Int_t v0ParentID = specialID++;
         Int_t cascadeParentID = specialID++;
-        AliMinimalisticTrack negative = GenerateMinimalisticTrack(negativeID, v0ParentID);
-        AliMinimalisticTrack positive = GenerateMinimalisticTrack(positiveID, v0ParentID);
-        AliMinimalisticTrack bachelor = GenerateMinimalisticTrack(bachelorID, cascadeParentID);
+        AliMinimalisticTrack negative =
+                GenerateMinimalisticTrack(negativeID, v0ParentID, AliMinimalisticTrack::kCascadeNegativeDaughter);
+        AliMinimalisticTrack positive =
+                GenerateMinimalisticTrack(positiveID, v0ParentID, AliMinimalisticTrack::kCascadePositiveDaughter);
+        AliMinimalisticTrack bachelor =
+                GenerateMinimalisticTrack(bachelorID, cascadeParentID, AliMinimalisticTrack::kCascadePrimaryDaughter);
         AddPolylinesToCascade(cascadeEntry, negative, positive, bachelor);
         event.AddTrack(negative);
         event.AddTrack(positive);
         event.AddTrack(bachelor);
-
         if (fESDFriend){
             AliMinimalisticCluster motherCluster = GenerateMinimalisticCluster(negativeID);
             AliMinimalisticCluster daughterCluster = GenerateMinimalisticCluster(positiveID);
@@ -304,7 +308,13 @@ void AliExternalFormatConverter::PopulateEventWithCascadeTracks(
         }
         Double_t v0StartCoords[3]; cascade->XvYvZv(v0StartCoords);
         AliMinimalisticTrack V0Parenttrack = GenerateMinimalisticV0ParentTrack(
-                (AliESDv0*)cascade, negativeID, positiveID, v0ParentID, v0StartCoords, cascadeParentID);
+                (AliESDv0*)cascade,
+                negativeID,
+                positiveID,
+                v0ParentID,
+                v0StartCoords,
+                AliMinimalisticTrack::kCascadeSecondaryMother,
+                cascadeParentID);
         event.AddTrack(V0Parenttrack);
 
         AliMinimalisticTrack cascadeParentTrack = GenerateMinimalisticCascadeParenTrack(
@@ -329,10 +339,10 @@ void AliExternalFormatConverter::PopulateEventWithKinkTracks(
         if (usedTracks.find(motherID) != usedTracks.end() || usedTracks.find(daughterID) != usedTracks.end())
             continue;
 
-        AliMinimalisticTrack daughter = GenerateMinimalisticTrack(daughterID, motherID);
+        AliMinimalisticTrack daughter =
+                GenerateMinimalisticTrack(daughterID, motherID, AliMinimalisticTrack::kKinkDaughter);
         AliMinimalisticTrack mother = GenerateMinimalisticTrack(
-                motherID,
-                AliMinimalisticTrack::fgkImaginaryParent
+                motherID, AliMinimalisticTrack::fgkImaginaryParent, AliMinimalisticTrack::kKinkMother
         );
         if (fESDFriend){
             AliMinimalisticCluster motherCluster = GenerateMinimalisticCluster(motherID);
@@ -352,7 +362,7 @@ void AliExternalFormatConverter::AddContentToEvent(
         AliMinimalisticEvent &event, Int_t trackID, Int_t parentID, Int_t childID
 ) const
 {
-    AliMinimalisticTrack track = GenerateMinimalisticTrack(trackID, parentID);
+    AliMinimalisticTrack track = GenerateMinimalisticTrack(trackID, parentID, AliMinimalisticTrack::kStandard);
     if (childID!=AliMinimalisticTrack::fgkImaginaryParent)
         track.AddChild(childID);
     if (fESDFriend){
@@ -384,8 +394,7 @@ AliMinimalisticCluster AliExternalFormatConverter::GenerateMinimalisticCluster(I
 }
 
 AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticTrack(
-        Int_t trackNumber, Int_t parentID
-) const
+        Int_t trackNumber, Int_t parentID, Int_t trackType) const
 {
     AliESDtrack *track = fESDEvent->GetTrack(trackNumber);
 
@@ -406,9 +415,9 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticTrack(
     track->GetPxPyPz(pxpypz);
 
     AliMinimalisticTrack minimalisticTrack = AliMinimalisticTrack(
-            charge, energy, trackNumber, PID, mass, signedPT, startXYZ, endXYZ, pxpypz, parentID, phi, theta,
-            helixCurvature
-    );
+            charge, energy, trackNumber, PID, mass, signedPT,
+            startXYZ, endXYZ, pxpypz, parentID, phi, theta,
+            helixCurvature, trackType);
 
     return minimalisticTrack;
 }
@@ -448,13 +457,11 @@ void AliExternalFormatConverter::AddPolylinesToMinimalisticTrack(
     tEveTrackList->MakeTracks();
 
     std::vector<TEveVector4D> pointsVec = pTrackPropagator->GetPoints();
-    for(std::vector<TEveVector4D>::iterator iter = pointsVec.begin(); iter != pointsVec.end(); ++iter){
-        minimalisticTrack.AddPolyPoint(*iter);
-    }
+    InsertPolyPoints(minimalisticTrack, pointsVec);
 }
 
 AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticV0ParentTrack(
-        AliESDv0 *V0, Int_t negativeChild, Int_t positiveChild, Int_t myID, Double_t startXYZ[3], Int_t parentID
+        AliESDv0 *V0, Int_t negativeChild, Int_t positiveChild, Int_t myID, Double_t startXYZ[3], Int_t type, Int_t parentID
 ) const
 {
     Int_t charge = V0->Charge();
@@ -468,9 +475,8 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticV0ParentTra
     Double_t phi = V0->Phi();
     Double_t theta = V0->Theta();
     Double_t helixCurvature = 0.0;
-    AliMinimalisticTrack parent(
-            charge, energy, myID, PID, mass, signedPt, startXYZ, endXYZ, PxPyPz, parentID, phi, theta, helixCurvature
-    );
+    AliMinimalisticTrack parent(charge, energy, myID, PID, mass, signedPt, startXYZ, endXYZ, PxPyPz, parentID, phi,
+                                theta, helixCurvature, type);
     parent.AddChild(negativeChild);
     parent.AddChild(positiveChild);
     parent.AddPolyPoint(startXYZ);
@@ -497,7 +503,8 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticCascadePare
     Int_t parentID = AliMinimalisticTrack::fgkImaginaryParent;
 
     AliMinimalisticTrack cascdeParent(
-            charge, energy, myID, PID, mass, signedPt, startXYZ, endXYZ, PxPyPz, parentID, phi, theta, helixCurvature
+            charge, energy, myID, PID, mass, signedPt, startXYZ, endXYZ, PxPyPz, parentID,
+            phi, theta, helixCurvature, AliMinimalisticTrack::kCascadePrimaryMother
     );
     cascdeParent.AddChild(v0ChildID);
     cascdeParent.AddChild(singleChildID);
@@ -705,7 +712,7 @@ void AliExternalFormatConverter::AddPolylinesToCascade(
     myCascade->SetDaughterDCA(cascade->GetDcaXiDaughters());
     myCascade->SetLambdaP( pNeg[0]+pPos[0], pNeg[1]+pPos[1], pNeg[2]+pPos[2] );
     myCascade->SetBachP( pBac[0], pBac[1], pBac[2]);
-    
+
     gEve->AddElement(myCascade, cont);
     cont->MakeCascades();
 
@@ -724,4 +731,10 @@ void AliExternalFormatConverter::InsertPolyPoints(
     for(std::vector<TEveVector4D>::iterator iter = Points.begin(); iter != Points.end(); ++iter){
         Track.AddPolyPoint(*iter);
     }
+}
+
+// TODO ADD MUON POLYLINES
+void AliExternalFormatConverter::AddPolylinesToMuonTracks() const
+{
+
 }

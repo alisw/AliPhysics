@@ -92,9 +92,9 @@ private:
     void AddContentToEvent(
             AliMinimalisticEvent &event, Int_t negative, Int_t parentID=-1, Int_t childID=-1) const;
 
-    AliMinimalisticTrack GenerateMinimalisticTrack(Int_t trackNumber, Int_t parentID=-1) const;
+    AliMinimalisticTrack GenerateMinimalisticTrack(Int_t trackNumber, Int_t parentID, Int_t trackType) const;
     AliMinimalisticTrack GenerateMinimalisticV0ParentTrack(
-        AliESDv0 *V0, Int_t nChild, Int_t pChild, Int_t myID, Double_t startXYZ[3], Int_t parentID=-1
+        AliESDv0 *V0, Int_t nChild, Int_t pChild, Int_t myID, Double_t startXYZ[3], Int_t type, Int_t parentID=-1
     ) const;
     AliMinimalisticTrack GenerateMinimalisticCascadeParenTrack(
             AliESDcascade *cascade, Int_t v0ChildID, Int_t singleChildID, Int_t myID) const;
@@ -116,6 +116,9 @@ private:
            AliMinimalisticTrack &positiveTrack,
            AliMinimalisticTrack &bachelorTrack
    ) const;
+
+    // TODO ADD PolyLines for muontracks
+    void AddPolylinesToMuonTracks() const;
     void CheckEvent() const;
 
     void InsertPolyPoints(AliMinimalisticTrack &Track, std::vector<TEveVector4D> &Points) const;
