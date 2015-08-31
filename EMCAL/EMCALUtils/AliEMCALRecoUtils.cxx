@@ -1351,14 +1351,15 @@ void AliEMCALRecoUtils::RecalculateClusterPosition(const AliEMCALGeometry *geom,
   else    AliDebug(2,"Algorithm to recalculate position not selected, do nothing.");
 }  
 
+///
+/// For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
+/// The algorithm is a copy of what is done in AliEMCALRecPoint.
+///
 //_____________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, 
                                                                   AliVCaloCells* cells, 
                                                                   AliVCluster* clu)
-{
-  // For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
-  // The algorithm is a copy of what is done in AliEMCALRecPoint
-  
+{  
   Double_t eCell       = 0.;
   Float_t  fraction    = 1.;
   Float_t  recalFactor = 1.;
@@ -1367,7 +1368,7 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
   Int_t    iTower  = -1, iIphi  = -1, iIeta  = -1;
   Int_t    iSupModMax = -1, iSM=-1, iphi   = -1, ieta   = -1;
   Float_t  weight = 0.,  totalWeight=0.;
-  Float_t  newPos[3] = {0,0,0};
+  Float_t  newPos[3] = {-1.,-1.,-1.};
   Double_t pLocal[3], pGlobal[3];
   Bool_t shared = kFALSE;
 
@@ -1432,13 +1433,15 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerGlobal(const AliEMCAL
   clu->SetPosition(newPos);
 }  
 
+///
+/// For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
+/// The algorithm works with the tower indeces, averages the indeces and from them it calculates the global position.
+///
 //____________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALGeometry *geom, 
                                                                  AliVCaloCells* cells, 
                                                                  AliVCluster* clu)
 {
-  // For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
-  // The algorithm works with the tower indeces, averages the indeces and from them it calculates the global position
   
   Double_t eCell       = 1.;
   Float_t  fraction    = 1.;
@@ -1494,7 +1497,7 @@ void AliEMCALRecoUtils::RecalculateClusterPositionFromTowerIndex(const AliEMCALG
     //printf("Max cell? cell %d, amplitude org %f, fraction %f, recalibration %f, amplitude new %f \n",cellAbsId, cells->GetCellAmplitude(cellAbsId), fraction, recalFactor, eCell) ;
   }// cell loop
     
-  Float_t xyzNew[]={0.,0.,0.};
+  Float_t xyzNew[]={-1.,-1.,-1.};
   if (areInSameSM == kTRUE) {
     //printf("In Same SM\n");
     weightedCol = weightedCol/totalWeight;
