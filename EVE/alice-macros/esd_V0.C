@@ -34,7 +34,7 @@ void esd_v0_init_rectrack(TEveRecTrack& rt, const AliExternalTrackParam* tp)
   rt.fBeta = 1; // ep/TMath::Sqrt(ep*ep + mc*mc);
 }
 
-AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
+AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyleNeg,TEveTrackPropagator* rnrStylePos, AliESDVertex* primVtx,
 		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
 {
   TEveRecTrack  rcPos;
@@ -68,7 +68,7 @@ AliEveV0* esd_make_v0(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
   esd_v0_init_rectrack(rcPos, v0->GetParamP());
   rcPos.fIndex = v0->GetPindex();
 
-  AliEveV0* myV0 = new AliEveV0(&rcNeg, &rcPos, &rcV0, rnrStyle);
+  AliEveV0* myV0 = new AliEveV0(&rcNeg, &rcPos, &rcV0, rnrStyleNeg,rnrStylePos);
   myV0->SetElementName(Form("ESDv0 %d", i));
   myV0->SetElementTitle(Form("OnFly: %d\nDCA %f",
                              v0->GetOnFlyStatus(),
@@ -142,8 +142,10 @@ AliEveV0List* esd_V0(Bool_t onFly=kFALSE)
 
   AliEveV0List* cont = new AliEveV0List("ESD v0");
   cont->SetMainColor(3); // green
-  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
+  TEveTrackPropagator* rnrStyleNeg = cont->GetPropagatorNeg();
+  TEveTrackPropagator* rnrStylePos = cont->GetPropagatorPos();
+  rnrStyleNeg->SetMagField( 0.1*esd->GetMagneticField() );
+  rnrStylePos->SetMagField( 0.1*esd->GetMagneticField() );
 
   gEve->AddElement(cont);
 
@@ -159,7 +161,7 @@ AliEveV0List* esd_V0(Bool_t onFly=kFALSE)
     AliESDtrack* negTr = esd->GetTrack(negInd);
     AliESDtrack* posTr = esd->GetTrack(posInd);
 
-    AliEveV0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
+    AliEveV0* myV0 = esd_make_v0(rnrStyleNeg,rnrStylePos, primVertex, negTr,posTr, v0, n);
     if (myV0)
     {
       gEve->AddElement(myV0, cont);

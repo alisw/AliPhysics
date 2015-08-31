@@ -31,7 +31,7 @@ void esd_cascade_init_rectrack(TEveRecTrack& rt, const AliExternalTrackParam* tp
   rt.fBeta = 1; // ep/TMath::Sqrt(ep*ep + mc*mc);
 }
 
-AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* primVtx,
+AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyleBac,TEveTrackPropagator* rnrStyleNeg,TEveTrackPropagator* rnrStylePos, AliESDVertex* primVtx,
 				AliESDtrack* bac, AliESDcascade* cascade, Int_t i)
 {
   TEveRecTrack   rcPos;
@@ -106,7 +106,7 @@ AliEveCascade* esd_make_cascade(TEveTrackPropagator* rnrStyle, AliESDVertex* pri
 	 BacMom.fZ, 
 	 BacMom.Mag());
 */
-  AliEveCascade* myCascade = new AliEveCascade(&rcBac, &rcNeg, &rcPos, &rcV0, &rcCascade, rnrStyle);
+  AliEveCascade* myCascade = new AliEveCascade(&rcBac, &rcNeg, &rcPos, &rcV0, &rcCascade, rnrStyleBac, rnrStyleNeg, rnrStylePos);
   myCascade->SetElementName(Form("ESDcascade %d", i));
   
   /*
@@ -148,8 +148,12 @@ AliEveCascadeList* esd_cascade()
 
   AliEveCascadeList* cont = new AliEveCascadeList("ESD cascade");
   cont->SetMainColor(kBlue+2);
-  TEveTrackPropagator* rnrStyle = cont->GetPropagator();
-  rnrStyle->SetMagField( 0.1*esd->GetMagneticField() );
+  TEveTrackPropagator* rnrStyleBac = cont->GetPropagatorBac();
+  TEveTrackPropagator* rnrStyleNeg = cont->GetPropagatorNeg();
+  TEveTrackPropagator* rnrStylePos = cont->GetPropagatorPos();
+  rnrStyleBac->SetMagField( 0.1*esd->GetMagneticField() );
+  rnrStyleNeg->SetMagField( 0.1*esd->GetMagneticField() );
+  rnrStylePos->SetMagField( 0.1*esd->GetMagneticField() );
 
   gEve->AddElement(cont);
 
@@ -161,7 +165,7 @@ AliEveCascadeList* esd_cascade()
     Int_t bacInd = cascade->GetBindex();
     AliESDtrack* bacTr = esd->GetTrack(bacInd);
 
-    AliEveCascade* myCascade = esd_make_cascade(rnrStyle, primVertex, bacTr, cascade, n);
+    AliEveCascade* myCascade = esd_make_cascade(rnrStyleBac,rnrStyleNeg,rnrStylePos, primVertex, bacTr, cascade, n);
     if (myCascade)
     {
       gEve->AddElement(myCascade, cont);

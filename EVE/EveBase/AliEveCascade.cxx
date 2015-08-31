@@ -40,7 +40,9 @@ AliEveCascade::AliEveCascade() :
   fBacTrack(0),
   fNegTrack(0),
   fPosTrack(0),
-  fRnrStyle(0),
+  fRnrStyleBac(0),
+  fRnrStyleNeg(0),
+  fRnrStylePos(0),
   fPointingCurve(0),
   fV0Path(0),
   fESDIndex(-1),
@@ -57,19 +59,21 @@ AliEveCascade::AliEveCascade() :
 }
 
 //______________________________________________________________________________
-AliEveCascade::AliEveCascade(TEveRecTrack* tBac, TEveRecTrack* tNeg, TEveRecTrack* tPos, TEveRecV0* v0, TEveRecCascade* cascade, TEveTrackPropagator* rs) :
+AliEveCascade::AliEveCascade(TEveRecTrack* tBac, TEveRecTrack* tNeg, TEveRecTrack* tPos, TEveRecV0* v0, TEveRecCascade* cascade, TEveTrackPropagator* rsBac, TEveTrackPropagator* rsNeg, TEveTrackPropagator* rsPos) :
   TEvePointSet(),
 
   fRecBirthV(cascade->fCascadeBirth),
   fRecDecayV(cascade->fCascadeVCa),
   fRecDecayP(cascade->fPBac + v0->fPNeg + v0->fPPos),
   fRecDecayV0(v0->fVCa),
-  fBacTrack(new AliEveTrack(tBac, rs)),
-  fNegTrack(new AliEveTrack(tNeg, rs)),
-  fPosTrack(new AliEveTrack(tPos, rs)),
+  fBacTrack(new AliEveTrack(tBac, rsBac)),
+  fNegTrack(new AliEveTrack(tNeg, rsNeg)),
+  fPosTrack(new AliEveTrack(tPos, rsPos)),
   
 
-  fRnrStyle(rs),
+  fRnrStyleBac(rsBac),
+  fRnrStyleNeg(rsNeg),
+  fRnrStylePos(rsPos),
   fPointingCurve(new TEveLine("Pointing Curve")),
   fV0Path(new TEveLine("V0 Path")),
   fESDIndex(-1),
@@ -198,7 +202,9 @@ ClassImp(AliEveCascadeList)
 AliEveCascadeList::AliEveCascadeList() :
   TEveElementList(),
   fTitle(),
-  fRnrStyle(0),
+  fRnrStyleBac(0),
+  fRnrStyleNeg(0),
+  fRnrStylePos(0),
   fRnrDaughters(kTRUE),
   fRnrCascadevtx(kTRUE),
   fRnrCascadepath(kTRUE),
@@ -219,10 +225,12 @@ AliEveCascadeList::AliEveCascadeList() :
 }
 
 //______________________________________________________________________________
-AliEveCascadeList::AliEveCascadeList(TEveTrackPropagator* rs) :
+AliEveCascadeList::AliEveCascadeList(TEveTrackPropagator* rsBac,TEveTrackPropagator* rsNeg,TEveTrackPropagator* rsPos) :
   TEveElementList(),
   fTitle(),
-  fRnrStyle(rs),
+  fRnrStyleBac(rsBac),
+  fRnrStyleNeg(rsNeg),
+  fRnrStylePos(rsPos),
   fRnrDaughters(kTRUE),
   fRnrCascadevtx(kTRUE),
   fRnrCascadepath(kTRUE),
@@ -245,10 +253,12 @@ AliEveCascadeList::AliEveCascadeList(TEveTrackPropagator* rs) :
 }
 
 //______________________________________________________________________________
-AliEveCascadeList::AliEveCascadeList(const Text_t* name, TEveTrackPropagator* rs) :
+AliEveCascadeList::AliEveCascadeList(const Text_t* name, TEveTrackPropagator* rsBac, TEveTrackPropagator* rsNeg, TEveTrackPropagator* rsPos) :
   TEveElementList(),
   fTitle(),
-  fRnrStyle(rs),
+  fRnrStyleBac(rsBac),
+  fRnrStyleNeg(rsNeg),
+  fRnrStylePos(rsPos),
   fRnrDaughters(kTRUE),
   fRnrCascadevtx(kTRUE),
   fRnrCascadepath(kTRUE),
@@ -276,7 +286,9 @@ void AliEveCascadeList::Init()
 {
   // Initialize members needed for drawing operations.
 
-  if (fRnrStyle== 0) fRnrStyle = new TEveTrackPropagator;
+  if (fRnrStyleBac== 0) fRnrStyleBac = new TEveTrackPropagator;
+  if (fRnrStyleNeg== 0) fRnrStyleNeg = new TEveTrackPropagator;
+  if (fRnrStylePos== 0) fRnrStylePos = new TEveTrackPropagator;
 }
 
 /******************************************************************************/

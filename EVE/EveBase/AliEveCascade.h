@@ -51,7 +51,9 @@ public:
 		TEveRecTrack*        tPos, 
 		TEveRecV0*           v0, 
 		TEveRecCascade*      cascade, 
-		TEveTrackPropagator* rs);
+		TEveTrackPropagator* rsBac,
+        TEveTrackPropagator* rsNeg,
+        TEveTrackPropagator* rsPos);
   virtual ~AliEveCascade();
 
   void MakeCascade();
@@ -63,7 +65,9 @@ public:
     fV0Path->SetLineColor(fMarkerColor);
   }
 
-  void 		SetRnrStyle( TEveTrackPropagator* const rs) { fRnrStyle = rs; }
+  void 		SetRnrStyleBac( TEveTrackPropagator* const rs) { fRnrStyleBac = rs; }
+  void 		SetRnrStyleNeg( TEveTrackPropagator* const rs) { fRnrStyleNeg = rs; }
+  void 		SetRnrStylePos( TEveTrackPropagator* const rs) { fRnrStylePos = rs; }
 
   Float_t 	GetDaughterDCA() const { return fDaughterDCA; }
   void 		SetDaughterDCA(Float_t dca) { fDaughterDCA = dca; }
@@ -96,7 +100,9 @@ public:
   virtual const Text_t* GetName()  const   { return Form("ESDcascade_%i",fESDIndex); }
   virtual const Text_t* GetTitle() const   { return Form("ESDcascade_%i",fESDIndex); }
 
-  TEveTrackPropagator* GetPropagator() const  { return fRnrStyle; }
+  TEveTrackPropagator* GetPropagatorBac() const  { return fRnrStyleBac; }
+  TEveTrackPropagator* GetPropagatorNeg() const  { return fRnrStyleNeg; }
+  TEveTrackPropagator* GetPropagatorPos() const  { return fRnrStylePos; }
 
   AliEveTrack* 	GetBacTrack()      const { return fBacTrack; }
   AliEveTrack* 	GetNegTrack()      const { return fNegTrack; }
@@ -117,7 +123,9 @@ protected:
   AliEveTrack 		*fNegTrack;	 //! Eve track for the neg V0 dghter, within the cascade
   AliEveTrack 		*fPosTrack;	 //! Eve track for the pos V0 dghter, within the cascade
 
-  TEveTrackPropagator 	*fRnrStyle;	 //! track propagator
+  TEveTrackPropagator 	*fRnrStyleBac;	 //! track propagator for bachelor track
+  TEveTrackPropagator 	*fRnrStyleNeg;	 //! track propagator for negative track
+  TEveTrackPropagator 	*fRnrStylePos;	 //! track propagator for positive track
 
   TEveLine         	*fPointingCurve; //! Curve meant model the Xi trajectory
   TEveLine         	*fV0Path;	 //! Line meant to model the V0 path of the cascade
@@ -146,8 +154,8 @@ class AliEveCascadeList : public TEveElementList
 
 public:
   AliEveCascadeList();
-  AliEveCascadeList(TEveTrackPropagator* rs);
-  AliEveCascadeList(const Text_t* name, TEveTrackPropagator* rs=0);
+  AliEveCascadeList(TEveTrackPropagator* rsBac,TEveTrackPropagator* rsNeg,TEveTrackPropagator* rsPos);
+  AliEveCascadeList(const Text_t* name, TEveTrackPropagator* rsBac=0, TEveTrackPropagator* rsNeg=0, TEveTrackPropagator* rsPos=0);
   virtual ~AliEveCascadeList() {}
 
   virtual const Text_t* GetTitle() const { return fTitle; }
@@ -156,8 +164,12 @@ public:
 
   virtual Bool_t CanEditMainColor() const { return kTRUE; }
 
-  void  SetRnrStyle(TEveTrackPropagator* const rst ) { fRnrStyle = rst; }
-  TEveTrackPropagator* GetPropagator()   const       { return fRnrStyle; }
+  void  SetRnrStyleBac(TEveTrackPropagator* const rst ) { fRnrStyleBac = rst; }
+  void  SetRnrStyleNeg(TEveTrackPropagator* const rst ) { fRnrStyleNeg = rst; }
+  void  SetRnrStylePos(TEveTrackPropagator* const rst ) { fRnrStylePos = rst; }
+  TEveTrackPropagator* GetPropagatorBac()   const       { return fRnrStyleBac; }
+  TEveTrackPropagator* GetPropagatorNeg()   const       { return fRnrStyleNeg; }
+  TEveTrackPropagator* GetPropagatorPos()   const       { return fRnrStylePos; }
 
   Bool_t GetRnrCascadevtx()     const { return fRnrCascadevtx; }
   Bool_t GetRnrCascadepath()    const { return fRnrCascadepath; }
@@ -177,7 +189,9 @@ public:
 protected:
   TString              fTitle;			// title
 
-  TEveTrackPropagator *fRnrStyle;		//! Rnr Style
+  TEveTrackPropagator *fRnrStyleBac;		//! Rnr Style of bachelor track
+  TEveTrackPropagator *fRnrStyleNeg;		//! Rnr Style of negative track
+  TEveTrackPropagator *fRnrStylePos;		//! Rnr Style of positive track
 
   Bool_t               fRnrDaughters;		// Render state for the cascade daughters
   Bool_t               fRnrCascadevtx;		// Render state for the cascade decay point
