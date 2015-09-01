@@ -124,6 +124,7 @@ public:
   void SetTOFPionTimeBac(double x);
   void SetTOFKaonTimeBac(double x);
 
+  void SetChargeXi(int x);
 
 
 
@@ -146,7 +147,7 @@ public:
   float BacNSigmaTOFPi() const;
   float BacNSigmaTOFP() const;
 
-
+  int ChargeXi() const;
 
 
 protected: 
@@ -325,6 +326,7 @@ inline void AliFemtoXi::SetTOFProtonTimeBac(double x) {fTOFProtonTimeBac = x;}
 inline void AliFemtoXi::SetTOFPionTimeBac(double x) {fTOFPionTimeBac = x;}
 inline void AliFemtoXi::SetTOFKaonTimeBac(double x) {fTOFKaonTimeBac = x;}
 
+inline void AliFemtoXi::SetChargeXi(int x) {fCharge = x;}
 
 inline double AliFemtoXi::CosPointingAngleXi() const {return fCosPointingAngleXi;}
 inline double AliFemtoXi::EtaXi() const {return fEtaXi;}
@@ -345,6 +347,7 @@ inline float AliFemtoXi::BacNSigmaTOFK() const {return fBacNSigmaTOFK;}
 inline float AliFemtoXi::BacNSigmaTOFPi() const {return fBacNSigmaTOFPi;}
 inline float AliFemtoXi::BacNSigmaTOFP() const {return fBacNSigmaTOFP;}
 
+inline int AliFemtoXi::ChargeXi() const {return fCharge;}
  
 
 #endif
