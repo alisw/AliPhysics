@@ -524,15 +524,11 @@ EOF
   return 0
 }
 
-encSpaces() 
-{ 
-  echo "${1// /±@@±}" 
-}
-
-decSpaces() 
-{ 
-  echo "${1//±@@±/ }" 
-}
+#these functions encode strings to and from a space-less form
+#use when spaces are not well handled (e.g. in arguments to 
+#commands in makeflow files, etc.
+encSpaces()(echo "${1// /@@@@}")
+decSpaces()(echo "${1//@@@@/ }")
 
 get_realpath() 
 {
@@ -746,13 +742,15 @@ paranoidCopyFile()
   for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
 
     echo "...attempt $i of $maxCopyTries"
-    rm -f "$dst"
-    cp "$src" "$dst"
+    #rm -f "$dst"
+    cp -a -n "$src" "$dst"
 
     cmp -s "$src" "$dst"
     if [ $? == 0 ] ; then
       ok=1
       break
+    else
+      rm "${dst}"
     fi
 
   done
