@@ -570,6 +570,8 @@ public:
   UInt_t GetDAQDetectorPattern() const {return fDAQDetectorPattern;}
   UInt_t GetDAQAttributes() const {return fDAQAttributes;}
 
+  Bool_t IsIncompleteDAQ();
+
   virtual AliVEvent::EDataLayoutType GetDataLayoutType() const;
 
 protected:

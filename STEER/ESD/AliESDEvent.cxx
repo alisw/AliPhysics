@@ -38,6 +38,7 @@
 #include <TROOT.h>
 #include <TInterpreter.h>
 
+#include "event.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESDVZERO.h"
@@ -2472,3 +2473,11 @@ AliESDfriend* AliESDEvent::FindFriend() const
 
 AliVEvent::EDataLayoutType AliESDEvent::GetDataLayoutType() const {return AliVEvent::kESD;}
 
+//______________________________________________________________________________
+Bool_t AliESDEvent::IsIncompleteDAQ() 
+{
+  // check if DAQ has set the incomplete event attributes
+  return (fDAQAttributes&ATTR_2_B(ATTR_INCOMPLETE_EVENT))!=0 
+    ||   (fDAQAttributes&ATTR_2_B(ATTR_FLUSHED_EVENT))!=0;
+    
+}
