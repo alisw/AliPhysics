@@ -750,7 +750,7 @@ paranoidCopyFile()
       ok=1
       break
     else
-      rm "${dst}"
+      rm -f "${dst}"
     fi
 
   done
