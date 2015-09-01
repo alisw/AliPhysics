@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef(TString clustercontname){
+EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef(){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -6,7 +6,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRef(T
   mgr->AddTask(task);
 
   TString outfile(mgr->GetCommonFileName());
-  outfile += ":ClusterQA";
+  outfile += ":PatchQA";
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer("PatchResults", TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
