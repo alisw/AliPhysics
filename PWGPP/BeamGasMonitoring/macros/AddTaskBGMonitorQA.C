@@ -31,12 +31,15 @@ AliAnalysisBGMonitorQA *AddTaskBGMonitorQA(Bool_t UseTree = kFALSE)
   AliAnalysisDataContainer *cinput = mgr->CreateContainer("cchain1",TChain::Class(), AliAnalysisManager::kInputContainer);
   mgr->ConnectInput(taskMBVeto, 0, mgr->GetCommonInputContainer());
   
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cOutputH", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName()));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cOutputH_MB", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName()));
   mgr->ConnectOutput(taskMBVeto, 1, coutput1);
-  
+
+    AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cOutputH_HM", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName()));
+    mgr->ConnectOutput(taskMBVeto, 2, coutput2);
+    
     if(UseTree==kTRUE){
         AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("cOutputT", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:BeamGasMon", mgr->GetCommonFileName()));
-        mgr->ConnectOutput(taskMBVeto, 2, coutput2);
+        mgr->ConnectOutput(taskMBVeto, 3, coutput3);
     }
     
   return taskMBVeto;
