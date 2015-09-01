@@ -111,11 +111,6 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
   // Fill reference distribution for the primary vertex before any z-cut
-  if(isMinBias) fHistos->FillTH1("hVertexBeforeMB", vtx->GetZ());
-  if(isEJ1) fHistos->FillTH1("hVertexBeforeEJ1", vtx->GetZ());
-  if(isEJ2) fHistos->FillTH1("hVertexBeforeEJ2", vtx->GetZ());
-  if(isEG1) fHistos->FillTH1("hVertexBeforeEG1", vtx->GetZ());
-  if(isEG2) fHistos->FillTH1("hVertexBeforeEG2", vtx->GetZ());
   if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
   if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   // Apply vertex z cut
@@ -124,53 +119,41 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
     fHistos->FillTH1("hEventCountMB", 1);
-    fHistos->FillTH1("hVertexAfterMB", vtx->GetZ());
     // Check for exclusive classes
     if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
       fHistos->FillTH1("hEventCountMBexcl", 1);
-      fHistos->FillTH1("hVertexAfterMBexcl", vtx->GetZ());
     }
   }
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1);
-    fHistos->FillTH1("hVertexAfterEJ1", vtx->GetZ());
     if(isEG1 || isEG2){
       fHistos->FillTH1("hEventCountE1combined", 1);
-      fHistos->FillTH1("hVertexAfterE1combined", vtx->GetZ());
     } else {
       fHistos->FillTH1("hEventCountE1Jonly", 1);
-      fHistos->FillTH1("hVertexAfterE1Jonly", vtx->GetZ());
     }
 
   }
   if(isEJ2){
     fHistos->FillTH1("hEventCountEJ2", 1);
-    fHistos->FillTH1("hVertexAfterEJ2", vtx->GetZ());
     // Check for exclusive classes
     if(!isEJ1){
       fHistos->FillTH1("hEventCountEJ2excl", 1);
-      fHistos->FillTH1("hVertexAfterEJ2excl", vtx->GetZ());
     }
     if(isEG1 || isEG2){
       fHistos->FillTH1("hEventCountE2combined", 1);
-      fHistos->FillTH1("hVertexAfterE2combined", vtx->GetZ());
     } else {
       fHistos->FillTH1("hEventCountE2Jonly", 1);
-      fHistos->FillTH1("hVertexAfterE2Jonly", vtx->GetZ());
     }
 
   }
   if(isEG1){
     fHistos->FillTH1("hEventCountEG1", 1);
-    fHistos->FillTH1("hVertexAfterEG1", vtx->GetZ());
   }
   if(isEG2){
     fHistos->FillTH1("hEventCountEG2", 1);
-    fHistos->FillTH1("hVertexAfterEG2", vtx->GetZ());
     // Check for exclusive classes
     if(!isEG1){
       fHistos->FillTH1("hEventCountEG2excl", 1);
-      fHistos->FillTH1("hVertexAfterEG2excl", vtx->GetZ());
     }
   }
 
