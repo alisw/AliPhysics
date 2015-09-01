@@ -5,10 +5,48 @@
 # this script runs the CPass0/CPass1 train
 # produced OCDB updates are local
 
+#some defaults
+#autoOCDB=0
+defaultOCDB="raw://"
+#runNumber=167123
+#makeflowPath="/hera/alice/aux/cctools/bin"
+#makeflowOptions="-T wq -N alice -d all -C ali-copilot.cern.ch:9097"
+#makeflowOptions="-T wq -N alice -C ali-copilot.cern.ch:9097"
+makeflowOptions=""
+#batchCommand="/usr/bin/qsub"
+batchFlags=""
+baseOutputDirectory="$PWD/output"
+#alirootEnv="/cvmfs/alice.cern.ch/bin/alienv setenv AliRoot/v5-04-34-AN -c"
+#alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
+#trustedQAtrainMacro='/hera/alice/mkrzewic/gsisvn/Calibration/QAtrain_duo.C'
+reconstructInTemporaryDir=0
+recoTriggerOptions="\"\""
+percentProcessedFilesToContinue=100
+maxSecondsToWait=$(( 3600*24 ))
+nEvents=-1
+nMaxChunks=0
+postSetUpActionCPass0=""
+postSetUpActionCPass1=""
+runCPass0reco=1
+runCPass0MergeMakeOCDB=1
+runCPass1reco=1
+runCPass1MergeMakeOCDB=1
+runESDfiltering=1
+filteringFactorHighPt=1e2
+filteringFactorV0s=1e1
+MAILTO=""
+#pretend=1
+#dontRedirectStdOutToLog=1
+logToFinalDestination=1
+ALIROOT_FORCE_COREDUMP=1
+pretendDelay=0
+copyInputData=0
+
 main()
 {
   #run in proper mode depending on the selection
   source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
+  source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh
   if [[ $# -lt 1 ]]; then
     if [[ ! "${0}" =~ "bash" ]]; then
       echo "uses makeflow:"
@@ -79,7 +117,7 @@ goCPass0()
   export runNumber=${6}
   jobindex=${7}
   shift 7
-  if ! parseConfig ${configFile} "$@"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goCPass0
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -318,7 +356,7 @@ goCPass1()
   jobindex=${7}
   shift 7
   extraOpts=("$@")
-  if ! parseConfig ${configFile} "$@"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goCPass1
 
   #record the working directory provided by the batch system
@@ -637,7 +675,7 @@ goMergeCPass0()
   export runNumber=${4}
   calibrationFilesToMerge=${5}  #can be a non-existent file, will then be produced on the fly
   shift 5
-  if ! parseConfig ${configFile} "$@"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goMergeCPass0
 
   #record the working directory provided by the batch system
@@ -808,7 +846,7 @@ goMergeCPass1()
   qaFilesToMerge=${6}
   filteredFilesToMerge=${7}
   shift 7
-  if ! parseConfig ${configFile} "$@"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goMergeCPass1
 
   #record the working directory provided by the batch system
@@ -1036,7 +1074,7 @@ goMerge()
   outputFile=${2}  
   configFile=${3-"benchmark.config"}
   shift 3
-  if ! parseConfig ${configFile} "$@"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -1058,7 +1096,7 @@ goSubmitMakeflow()
   configFile=${3}
   shift 3
   extraOpts=("$@")
-  if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "${extraOpts[@]}"; then return 1; fi
  
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -1126,7 +1164,7 @@ goGenerateMakeflow()
   done
   extraOpts+=("encodedSpaces=1")
 
-  if ! parseConfig ${configFile} "${extraOpts[@]}" &>/dev/null; then return 1; fi
+  if ! parseConfig configFile=${configFile} "${extraOpts[@]}" &>/dev/null; then return 1; fi
  
   #extra safety
   if [[ -z ${commonOutputPath} ]]; then
@@ -1324,7 +1362,7 @@ goCreateQAplots()
   shift 4
   alilog_info  "START:goCreateQAplots with following parameters"
   echo "$@"
-  if ! parseConfig ${configFile} "$@"; then 
+  if ! parseConfig configFile=${configFile} "$@"; then 
      alilog_error "goCreateQAplots Parsing congig error"
      return 1; 
   fi
@@ -1387,229 +1425,6 @@ alirootInfo()
   git diff ${currentBranch}
   popd
   return 0
-)
-
-hostInfo()
-{
-# Hello world -  Print AliRoot/Root/Alien system info
-#
-    echo --------------------------------------
-        echo 
-        echo HOSTINFO
-        echo 
-        echo HOSTINFO HOSTNAME"      "$HOSTNAME
-        echo HOSTINFO DATE"          "`date`
-        echo HOSTINFO gccpath"       "`which gcc` 
-        echo HOSTINFO gcc version"   "`gcc --version | grep gcc`
-        echo --------------------------------------    
-
-#
-# ROOT info
-#
-        echo --------------------------------------
-        echo
-        echo ROOTINFO
-        echo 
-        echo ROOTINFO ROOT"           "`which root`
-        echo ROOTINFO VERSION"        "`root-config --version`
-        echo 
-        echo --------------------------------------
-
-
-#
-# ALIROOT info
-#
-        echo --------------------------------------
-        echo
-        echo ALIROOTINFO
-        echo 
-        echo "ALICE_ROOT=$ALICE_ROOT"
-        echo "which aliroot: "$(which aliroot)
-        echo "git describe:"
-        echo "  "$(git -C $ALICE_ROOT/../src/ describe)
-        echo 
-        echo --------------------------------------
-
-#
-# ALIPHYSICS info
-#
-        echo --------------------------------------
-        echo
-        echo "ALIPHYSICSINFO"
-        echo 
-        echo "ALICE_PHYSICS=$ALICE_PHYSICS"
-        echo "git describe:"
-        echo "  "$(git -C $ALICE_PHYSICS/../src/ describe)
-        echo 
-        echo --------------------------------------
-
-#
-# Alien info
-#
-#echo --------------------------------------
-#echo
-#echo ALIENINFO
-#for a in `alien --printenv`; do echo ALIENINFO $a; done 
-#echo
-#echo --------------------------------------
-
-#
-# Local Info
-#
-        echo PWD `pwd`
-        echo Dir 
-        ls -al
-        echo
-        echo
-        echo
-  
-  return 0
-}
-
-setYear()
-(
-  #set the year
-  #  ${1} - year to be set
-  #  ${2} - where to set the year
-  year1=$(guessYear ${1})
-  year2=$(guessYear ${2})
-  local path=${2}
-  [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
-  echo ${path}
-  return 0
-)
-
-guessPeriod()
-(
-  #guess the period from the path, pick the rightmost one
-  local IFS="/"
-  declare -a path=( ${1} )
-  local dirDepth=${#path[*]}
-  for ((x=${dirDepth}-1;x>=0;x--)); do
-    local field=${path[${x}]}
-    [[ ${field} =~ ^LHC[0-9][0-9][a-z]$ ]] && period=${field} && break
-  done
-  echo ${period}
-  return 0
-)
-
-guessYear()
-(
-  #guess the year from the path, pick the rightmost one
-  local IFS="/"
-  declare -a path=( ${1} )
-  local dirDepth=${#path[*]}
-  for ((x=${dirDepth}-1;x>=0;x--)); do
-    local field=${path[${x}]}
-    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field} && break
-  done
-  echo ${year}
-  return 0
-)
-
-guessRunNumber()
-(
-  #guess the run number from the path, pick the rightmost one
-  if guessRunData "${1}"; then
-    echo ${runNumber}
-    return 0
-  fi
-  return 1
-)
-
-validateLog()
-(
-  log=${1}
-  errorConditions=(
-                    'There was a crash'
-                    'floating'
-                    'error while loading shared libraries'
-                    'std::bad_alloc'
-                    's_err_syswatch_'
-                    'Thread [0-9]* (Thread'
-                    'AliFatal'
-                    'core dumped'
-                    '\.C.*error:.*\.h: No such file'
-                    'line.*Aborted'
-  )
-
-  warningConditions=(
-                     'This is serious !'
-                     'rocVoltage out of range:'
-  )
-  
-  local logstatus=0
-  local errorSummary=""
-  local warningSummary=""
-
-  for ((i=0; i<${#errorConditions[@]};i++)); do
-    local tmp=$(grep -m1 -e "${errorConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp+=" : "
-    errorSummary+=${tmp}
-  done
-
-  for ((i=0; i<${#warningConditions[@]};i++)); do
-    local tmp=$(grep -m1 -e "${warningConditions[${i}]}" ${log})
-    [[ -n ${tmp} ]] && tmp+=" : "
-    warningSummary+=${tmp}
-  done
-
-  if [[ -n ${errorSummary} ]]; then 
-    echo "${errorSummary}"
-    return 1
-  fi
-  
-  if [[ -n ${warningSummary} ]]; then
-    echo "${warningSummary}"
-    return 2
-  fi
-
-  return 0
-)
-
-summarizeLogs()
-(
-  #print a summary of logs
-  logFiles=(
-            "*.log"
-            "stdout"
-            "stderr"
-  )
-
-  #put dir information in the output
-  echo "dir $PWD"
-
-  #check logs
-  local logstatus=0
-  for log in ${logFiles[*]}; do
-    finallog=${PWD%/}/${log}
-    [[ ! -f ${log} ]] && continue
-    errorSummary=$(validateLog ${log})
-    validationStatus=$?
-    if [[ ${validationStatus} -eq 0 ]]; then 
-      #in pretend mode randomly report an error in rec.log some cases
-      if [[ -n ${pretend} && "${log}" == "rec.log" ]]; then
-        #[[ $(( ${RANDOM}%2 )) -ge 1 ]] && echo "${finallog} BAD random error" || echo "${finallog} OK"
-        echo "${finallog} OK"
-      else
-        echo "${finallog} OK"
-      fi
-    elif [[ ${validationStatus} -eq 1 ]]; then
-      echo "${finallog} BAD ${errorSummary}"
-      logstatus=1
-    elif [[ ${validationStatus} -eq 2 ]]; then
-      echo "${finallog} OK MWAH ${errorSummary}"
-    fi
-  done
-  
-  #report core files
-  while read x; do
-    echo ${x}
-    chmod 644 ${x}
-    gdb --batch --quiet -ex "bt" -ex "quit" aliroot ${x} > stacktrace_${x//\//_}.log
-  done < <(/bin/ls ${PWD}/*/core 2>/dev/null; /bin/ls ${PWD}/core 2>/dev/null)
-  
-  return ${logstatus}
 )
 
 spitOutLocalOCDBaccessConfig()
@@ -1692,7 +1507,7 @@ goMakeFilteredTrees()
   configFile=${11-"benchmark.config"}
   esdFileName=${12-"AliESDs_Barrel.root"}
   shift 12
-  if ! parseConfig ${configFile} "$@"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -1819,7 +1634,7 @@ goSubmitBatch()
   #if which greadlink; then configFile=$(greadlink -f ${configFile}); fi
   shift 3
   extraOpts=("$@")
-  if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "${extraOpts[@]}"; then return 1; fi
   
   #batch systems/makeflow sometimes handle spaces in arguments poorly, so encode them
   for (( i=0;i<${#extraOpts[@]};i++ )); do 
@@ -2258,22 +2073,6 @@ goWaitForOutput()
   return 0
 )
 
-mergeSysLogs()
-(
-  outputFile=${1}
-  shift
-  inputFiles="$@"
-  i=0
-  if ! ls -1 ${inputFiles} &>/dev/null; then echo "the files dont exist!: ${inputFiles}"; return 1; fi
-  while read x; do 
-    runNumber=$(guessRunNumber ${x})
-    [[ -z ${runNumber} ]] && echo "run number cannot be guessed for ${x}" && continue
-    awk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' ${x}
-    (( i++ ))
-  done < <(ls -1 ${inputFiles}) > ${outputFile}
-  return 0
-)
-
 goMakeMergedSummaryTree()
 (
   # create list of calibration entries
@@ -2353,36 +2152,6 @@ EOF
   return $?
 )
 
-stackTraceTree()
-(
-  if [[ $# -lt 1 ]]; then
-    echo 'make stacktrace processing  in case of standard root crash log'
-    echo 'input is a (list of) text files with the stack trace (either gdb aoutput'
-    echo 'produced with e.g. gdb --batch --quiet -ex "bt" -ex "quit" aliroot core,'
-    echo 'or the root crash log), output is a TTree formatted table.'
-    echo 'example usage:'
-    echo 'benchmark.sh stackTraceTree /foo/*/rec.log'
-    echo 'benchmark.sh stackTraceTree $(cat file.list)'
-    echo 'benchmark.sh stackTraceTree `cat file.list`'
-    return 0
-  fi
-  gawk '
-       BEGIN { 
-               print "frame/I:method/C:line/C:cpass/I:aliroot/I:file/C";
-               RS="#[0-9]*";
-               aliroot=0;
-               read=1;
-             } 
-      /There was a crash/ {read=1;}
-      /The lines below might hint at the cause of the crash/ {read=0;}
-      read==1 { 
-               if ($3 ~ /Ali*/) aliroot=1; else aliroot=0;
-               gsub("#","",RT); 
-               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot" "FILENAME
-             }
-      ' "$@" 2>/dev/null
-)
-
 goMakeSummary()
 (
   #all the final stuff goes in here for ease of use:
@@ -2399,7 +2168,7 @@ goMakeSummary()
   configFile=${1}
   shift 1
   extraOpts=("$@")
-  if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
+  if ! parseConfig configFile=${configFile} "${extraOpts[@]}"; then return 1; fi
   
   #if which greadlink; then configFile=$(greadlink -f ${configFile}); fi
   
@@ -2703,88 +2472,6 @@ goMakeSummaryTree()
   return 0
 )
 
-parseConfig()
-{
-  echo Start: parseConfig
-  configFile=${1}
-  shift
-  args=("$@")
-
-
-  #some defaults
-  #autoOCDB=0
-  defaultOCDB="raw://"
-  #runNumber=167123
-  #makeflowPath="/hera/alice/aux/cctools/bin"
-  #makeflowOptions="-T wq -N alice -d all -C ali-copilot.cern.ch:9097"
-  #makeflowOptions="-T wq -N alice -C ali-copilot.cern.ch:9097"
-  makeflowOptions=""
-  #batchCommand="/usr/bin/qsub"
-  batchFlags=""
-  baseOutputDirectory="$PWD/output"
-  #alirootEnv="/cvmfs/alice.cern.ch/bin/alienv setenv AliRoot/v5-04-34-AN -c"
-  #alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
-  #trustedQAtrainMacro='/hera/alice/mkrzewic/gsisvn/Calibration/QAtrain_duo.C'
-  reconstructInTemporaryDir=0
-  recoTriggerOptions="\"\""
-  percentProcessedFilesToContinue=100
-  maxSecondsToWait=$(( 3600*24 ))
-  nEvents=-1
-  nMaxChunks=0
-  postSetUpActionCPass0=""
-  postSetUpActionCPass1=""
-  runCPass0reco=1
-  runCPass0MergeMakeOCDB=1
-  runCPass1reco=1
-  runCPass1MergeMakeOCDB=1
-  runESDfiltering=1
-  filteringFactorHighPt=1e2
-  filteringFactorV0s=1e1
-  MAILTO=""
-  #pretend=1
-  #dontRedirectStdOutToLog=1
-  logToFinalDestination=1
-  ALIROOT_FORCE_COREDUMP=1
-  pretendDelay=0
-  copyInputData=0
-
-  #first, source the config file
-  if [ -f ${configFile} ]; then
-    source ${configFile}
-  else
-    echo "config file ${configFile} not found!"
-    return 1
-  fi
-
-  unset encodedSpaces
-  for opt in "${args[@]}"; do
-    [[ "${opt}" =~ encodedSpaces=.* ]] && encodedSpaces=1 && echo "encodedSpaces!" && break
-  done
-
-  #then, parse the options as they override the options from file
-  for opt in "${args[@]}"; do
-    [[ -z ${opt} ]] && continue
-    [[ -n ${encodedSpaces} ]] && opt="$(decSpaces ${opt})"
-    [[ "${opt}" =~ ^[[:space:]]*$ ]] && continue
-    if [[ ! "${opt}" =~ .*=.* ]]; then
-      echo "badly formatted option \"${opt}\" should be: option=value, stopping..."
-      return 1
-    fi
-    local var="${opt%%=*}"
-    local value="${opt#*=}"
-    echo "${var}=${value}"
-    export ${var}="${value}"
-  done
-
-  #do some checking
-  [[ -z ${alirootEnv} ]] && echo "alirootEnv not defined!" && return 1
-
-  #export the aliroot function if defined to override normal behaviour
-  [[ $(type -t aliroot) =~ "function" ]] && export -f aliroot && echo "exporting aliroot() function..."
-  echo End: parseConfig
-  return 0
-}
-
 aliroot()
 {
   args=("$@")
@@ -2802,213 +2489,5 @@ aliroot()
   fi
   return 0
 }
-
-copyFileToLocal()
-(
-  #copies a single file to a local destination: the file may either come from
-  #a local filesystem or from a remote location (whose protocol must be
-  #supported)
-  #copy is "robust" and it is repeated some times in case of failure before
-  #giving up (1 is returned in that case)
-  src="$1"
-  dst="$2"
-  ok=0
-  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
-
-  proto="${src%%://*}"
-
-  echo "copy file to local dest started: $src -> $dst"
-
-  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
-
-    echo "...attempt $i of $maxCopyTries"
-    rm -f "$dst"
-
-    if [[ "$proto" == "$src" ]]; then
-      cp "$src" "$dst"
-    else
-      case "$proto" in
-        root)
-          xrdcp -f "$src" "$dst"
-        ;;
-        http)
-          curl -L "$src" -O "$dst"
-        ;;
-        *)
-          echo "protocol not supported: $proto"
-          return 2
-        ;;
-      esac
-    fi
-
-    if [ $? == 0 ] ; then
-      ok=1
-      break
-    fi
-
-  done
-
-  if [[ "$ok" == 1 ]] ; then
-    echo "copy file to local dest OK after $i attempt(s): $src -> $dst"
-    return 0
-  fi
-
-  echo "copy file to local dest FAILED after $maxCopyTries attempt(s): $src -> $dst"
-  return 1
-)
-
-paranoidCp()
-(
-  #recursively copy files and directories
-  #to avoid using find and the like as they kill
-  #the performance on some cluster file systems
-  #does not copy links to avoid problems
-  sourceFiles=("${@}")
-  destination="${sourceFiles[@]:(-1)}" #last element
-    if [ $destination == $sourceFiles ] ; then  
-      echo paranoidCp INFO skip
-      echo paranoidCp INFO destination== $destination 
-      echo paranoidCp INFO sourceFiles== $sourceFiles
-      return 1; 
-  fi
-  unset sourceFiles[${#sourceFiles[@]}-1] #remove last element (dst)
-  for src in "${sourceFiles[@]}"; do
-    if [[ -f "${src}" && ! -h  "${src}" ]]; then
-      paranoidCopyFile "${src}" "${destination}"
-    elif [[ -d "${src}" && ! -h "${src}" ]]; then
-      src="${src%/}"
-      dst="${destination}/${src##*/}"
-      mkdir -p "${dst}"
-      paranoidCp "${src}"/* "${dst}"
-    fi
-  done
-)
-
-paranoidCopyFile()
-(
-  #copy a single file to a target in an existing dir
-  #repeat a few times if copy fails
-  #returns 1 on failure, 0 on success
-  src=$(get_realpath "${1}")
-  dst=$(get_realpath "${2}")
-  #some sanity check
-  [[ -z "${src}" ]] && return 1
-  [[ -z "${dst}" ]] && return 1
-  #check if we are not trying to copy to the same file
-  [[ "${src}" == "${dst}" ]] && echo "$dst==$src, not copying" && return 0
-  ok=0
-  [[ -d "${dst}" ]] && dst="${dst}/${src##*/}"
-  [[ -z "${maxCopyTries}" ]] && maxCopyTries=10
-
-  echo "paranoid copy started: $src -> $dst"
-  for (( i=1 ; i<=maxCopyTries ; i++ )) ; do
-
-    echo "...attempt $i of $maxCopyTries"
-    #rm -f "$dst"
-    cp -n -a "$src" "$dst"
-
-    cmp -s "$src" "$dst"
-    if [ $? == 0 ] ; then
-      ok=1
-      break
-    fi
-
-  done
-
-  if [[ "$ok" == 1 ]] ; then
-    echo "paranoid copy OK after $i attempt(s): $src -> $dst"
-    return 0
-  fi
-
-  echo "paranoid copy FAILED after $maxCopyTries attempt(s): $src -> $dst"
-  return 1
-)
-
-get_realpath() 
-{
-  if [[ $# -lt 1 ]]; then
-    echo "print the full path of a file, like \"readlink -f\" on linux"
-    echo "Usage:"
-    echo "  get_realpath <someFile>"
-    return 0
-  fi
-  if [[ -f "$1" ]]
-  then
-    # file *must* exist
-    if cd "$(echo "${1%/*}")" &>/dev/null
-    then
-      # file *may* not be local
-      # exception is ./file.ext
-      # try 'cd .; cd -;' *works!*
-      local tmppwd="$PWD"
-      cd - &>/dev/null
-    else
-      # file *must* be local
-      local tmppwd="$PWD"
-    fi
-  elif [[ -d "$1" ]]
-  then
-   ( cd "$1" &>/dev/null; echo "$PWD" )
-    return 0
-  else
-    # file *cannot* exist
-    return 1 # failure
-  fi
-  # reassemble realpath
-  echo "$tmppwd"/"${1##*/}"
-  return 0 # success
-}
-
-guessRunData()
-{
-  #guess the period from the path, pick the rightmost one
-  period=""
-  runNumber=""
-  year=""
-  pass=""
-  legoTrainRunNumber=""
-  dataType=""
-
-  local shortRunNumber=""
-  local IFS="/"
-  declare -a path=( $1 )
-  local dirDepth=$(( ${#path[*]}-1 ))
-  i=0
-  #for ((x=${dirDepth};x>=0;x--)); do
-  for ((x=0;x<=${dirDepth};x++)); do
-
-    [[ $((x-1)) -ge 0 ]] && local fieldPrev=${path[$((x-1))]}
-    local field=${path[${x}]}
-    local fieldNext=${path[$((x+1))]}
-
-    [[ ${field} =~ ^[0-9]*$ && ${fieldNext} =~ (.*\.zip$|.*\.root$) ]] && legoTrainRunNumber=${field}
-    [[ -n ${legoTrainRunNumber} && -z ${pass} ]] && pass=${fieldPrev}
-    [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ ]] && period=${field%_*}
-    [[ ${field} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000}
-    [[ ${field} =~ ^[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && shortRunNumber=${field}
-    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
-    [[ ${field} =~ ^(^sim$|^data$) ]] && dataType=${field}
-    (( i++ ))
-  done
-  [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
-  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
-  
-  #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
-  if [[ -z ${runNumber}} ]];
-  then
-    #error condition
-    return 1
-  else
-    #ALL OK
-    return 0
-  fi
-  return 0
-}
-
-#these functions encode strings to and from a space-less form
-#use when spaces are not well handled (e.g. in arguments to 
-#commands in makeflow files, etc.
-encSpaces()(echo "${1// /@@@@}")
-decSpaces()(echo "${1//@@@@/ }")
 
 main "$@"
