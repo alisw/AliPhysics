@@ -22,6 +22,7 @@
 //#include "AliPWG2AODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliFemtoV0.h"
+#include "AliFemtoXi.h"
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
 #include "AliAnalysisUtils.h"
@@ -74,7 +75,7 @@ public:
     fMinPlpContribSPD = minPlpContribSPD;
   }
   void SetDCAglobalTrack(Bool_t dcagt);
-
+ 
   bool RejectEventCentFlat(float MagField, float CentPercent);
   void SetCentralityFlattening(Bool_t flat);
 
@@ -86,6 +87,7 @@ protected:
       //            AliPWG2AODTrack *tPWG2AODTrack
                                             );
   virtual AliFemtoV0 *CopyAODtoFemtoV0(AliAODv0 *tAODv0);
+  virtual AliFemtoXi *CopyAODtoFemtoXi(AliAODcascade *tAODxi);
   virtual void CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack);
 
   int            fNumberofEvent;    ///< number of Events in AOD file
