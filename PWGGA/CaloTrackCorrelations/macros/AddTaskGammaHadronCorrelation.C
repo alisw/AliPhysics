@@ -672,7 +672,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   
   ana->SetCalorimeter(calorimeter);
   
-  ana->SetFirstSMCoveredByTRD(-1);
+  ana->SetFirstSMCoveredByTRD(6);
   
   ana->SwitchOnFillShowerShapeHistograms();  // Filled before photon shower shape selection
   
@@ -765,7 +765,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   if(analysis==AliAnaPi0EbE::kSSCalo)       opt = "SS";
   
   ana->SwitchOffAllNLMHistoFill();
-  ana->SetFirstSMCoveredByTRD(-1);
+  ana->SetFirstSMCoveredByTRD(6);
   ana->SwitchOffSelectedClusterHistoFill();
   
   ana->SwitchOffFillWeightHistograms();
@@ -967,7 +967,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   ana->SetNBackgroundBins(11);
   //ana->SetBackgroundLimits(0,0); ana->SetBackgroundLimits(1,0.2); ana->SetBackgroundLimits(2,3); ana->SetBackgroundLimits(3,0.4);
   
-  ana->SetFirstSMCoveredByTRD(-1);
+  ana->SetFirstSMCoveredByTRD(6);
   
   if(!tm)  ana->SwitchOnTMHistoFill();
   else      ana->SwitchOffTMHistoFill();
