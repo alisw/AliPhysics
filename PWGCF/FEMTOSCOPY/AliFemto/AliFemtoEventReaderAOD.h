@@ -54,6 +54,7 @@ public:
   void SetFilterMask(int ibit);
   void SetReadMC(unsigned char a);
   void SetReadV0(unsigned char a);
+  void SetReadCascade(unsigned char a);
   void SetCentralityPreSelection(double min, double max);
   void SetNoCentrality(bool anocent);
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
@@ -101,6 +102,7 @@ protected:
 
   unsigned char  fReadMC;           ///< Attempt to read the MC information from the AOD
   unsigned char  fReadV0;           ///< Read V0 information from the AOD and put it into V0Collection
+  unsigned char  fReadCascade;      ///< Read Cascade information from the AOD and put it into V0Collection
   unsigned char  fUsePreCent;       ///< Use centrality pre-selection to speed up analysis
   EstEventMult   fEstEventMult;     ///< Type of the event multiplicity estimator
   double         fCentRange[2];     ///< Centrality pre-selection range

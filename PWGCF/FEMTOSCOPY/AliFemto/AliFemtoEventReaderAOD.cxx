@@ -54,6 +54,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   //  fPWG2AODTracks(0x0),
   fReadMC(0),
   fReadV0(0),
+  fReadCascade(0),
   fUsePreCent(0),
   fEstEventMult(kCentrality),
   fAODpidUtil(NULL),
@@ -93,6 +94,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   //  fPWG2AODTracks(0x0),
   fReadMC(aReader.fReadMC),
   fReadV0(aReader.fReadV0),
+  fReadCascade(aReader.fReadCascade),
   fUsePreCent(aReader.fUsePreCent),
   fEstEventMult(aReader.fEstEventMult),
   fAODpidUtil(aReader.fAODpidUtil),
@@ -703,6 +705,58 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       count_pass++;
     }
   }
+
+
+  if (fReadCascade) {
+    int count_pass = 0;
+    for (Int_t i = 0; i < fEvent->GetNumberOfCascades(); i++) {
+      AliAODcascade *aodxi = fEvent->GetCascade(i);
+      if (!aodxi) continue;
+      //if (aodxi->GetNDaughters() > 2) continue;
+      //if (aodxi->GetNProngs() > 2) continue;
+      //if (aodxi->GetCharge() != 0) continue;
+      if (aodxi->ChargeProng(0) == aodxi->ChargeProng(1)) continue;
+      if (aodxi->CosPointingAngle(fV1) < 0.998) continue;
+      if (aodxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.999) continue;
+
+      AliAODTrack *daughterTrackPos = (AliAODTrack *)aodxi->GetDaughter(0); //getting positive daughter track
+      AliAODTrack *daughterTrackNeg = (AliAODTrack *)aodxi->GetDaughter(1); //getting negative daughter track
+      if (!daughterTrackPos) continue; //daughter tracks must exist
+      if (!daughterTrackNeg) continue;
+      if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue; //and have different charge
+
+      AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
+      //MC corresponding information from V0
+      /*if (mcP) {
+        daughterTrackPos->SetAODEvent(fEvent);
+        daughterTrackNeg->SetAODEvent(fEvent);
+        if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0) {
+          AliAODMCParticle *mcParticlePos = (AliAODMCParticle *)mcP->At(daughterTrackPos->GetLabel());
+          AliAODMCParticle *mcParticleNeg = (AliAODMCParticle *)mcP->At(daughterTrackNeg->GetLabel());
+          if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
+            int motherOfPosID = mcParticlePos->GetMother();
+            int motherOfNegID = mcParticleNeg->GetMother();
+            // Both daughter tracks refer to the same mother, we can continue
+            if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) {
+              AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+              AliAODMCParticle *xi = (AliAODMCParticle *)mcP->At(motherOfPosID); //our Xi particle
+
+              tInfo->SetPDGPid(xi->GetPdgCode());
+              int xiMotherId = xi->GetMother();
+              if (xiMotherId > -1) { //V0 particle has a mother
+                AliAODMCParticle *motherOfV0 = (AliAODMCParticle *)mcP->At(v0MotherId);
+                tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
+              }
+              trackCopyV0->SetHiddenInfo(tInfo);
+            }
+          }
+        }
+      }*/
+      tEvent->XiCollection()->push_back(trackCopyXi);
+      count_pass++;
+    }
+  }
+  
 
   return tEvent;
 }
@@ -1421,6 +1475,11 @@ void AliFemtoEventReaderAOD::SetReadMC(unsigned char a)
 void AliFemtoEventReaderAOD::SetReadV0(unsigned char a)
 {
   fReadV0 = a;
+}
+
+void AliFemtoEventReaderAOD::SetReadCascade(unsigned char a)
+{
+  fReadCascade = a;
 }
 
 void AliFemtoEventReaderAOD::SetUseMultiplicity(EstEventMult aType)
