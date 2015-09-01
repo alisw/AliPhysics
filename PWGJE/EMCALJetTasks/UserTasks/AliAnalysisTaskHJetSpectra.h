@@ -7,6 +7,7 @@ class TH1F;
 class TH2F;
 class TH2D;
 class TH1D;
+class TArrayD;
 class THnSparse;
 class TProfile;
 class TList;
@@ -18,181 +19,224 @@ class AliVParticle;
 class AliLog;
 class AliAnalysisUtils;
 class TRandom3;
+class AliJetContainer;
+class AliParticleContainer;
+class AliClusterContainer;
 
+#include <vector>
+#include "AliAnalysisTaskEmcalJet.h"
+
+using std::vector;
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
 // Author Filip Krizek   (17.May. 2014)
 
-class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
+class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    public:
+
+  enum MyContainer {
+     kContainerOne = 0, //analyze real data 
+     kContainerTwo = 1  //analyze monte carlo
+  };
+
+  enum MyDataType {
+    kReal   = 0,  // reconstructed real data 
+    kPythia = 1,  // pythia simulation 
+    kHijing = 2   // hijing simulation
+  };
+
+  enum MyAnalType {
+    kRec    = 0,  // reconstructed real data 
+    kEff    = 1,  // MC true+recontructed 
+    kEmb    = 2,  // embedding pythia jet
+    kEmbSingl = 3,// embedding single track
+    kKine   = 4   // kine 
+  };
+
+  enum MyRho {
+    kConeRho=0, 
+    kCMSRho=1, 
+    kZeroRho=2,   //WITHOUT UE SUBTRACTION 
+    kRho=3
+  };
+
+  enum MySystem {  //collision system
+    kpp    = 0,  
+    kpPb   = 1,  
+    kPbPb  = 2   
+  };
+
    // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
    AliAnalysisTaskHJetSpectra();
-   AliAnalysisTaskHJetSpectra(const char *name, const char* trackArrayName, const char* jetArrayName, const char* backgroundJetArrayName);
+   AliAnalysisTaskHJetSpectra(const char *name);
    virtual ~AliAnalysisTaskHJetSpectra();
-   virtual void     UserCreateOutputObjects();
-   virtual void     UserExec(Option_t *option);
-   virtual Bool_t   UserNotify();
-   virtual void     Terminate(Option_t *);
+   void     UserCreateOutputObjects();
+   void     Terminate(Option_t *);
 
+   
   // ######### SETTERS/GETTERS
-  void        SetAnalyzePythia(Bool_t val) { if(val) fAnalyzePythia = kTRUE;}
-  void        SetAnalyzeMC(Int_t val); 
-  void        SetUseDefaultVertexCut (Bool_t val) {fUseDefaultVertexCut = val;} 
-  void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;} 
-  void        SetNumberOfCentralityBins(Int_t val) {fNumberOfCentralityBins = val;} 
-  void        SetSignalJetMinArea(Double_t minArea) {fMinJetArea = minArea;}
-  void        SetRandConeRadius(Double_t radius) {fRandConeRadius = radius;}
-  void        SetSignalJetRadius(Double_t radius) {fSignalJetRadius = radius;}
-  void        SetBackgroundJetRadius(Double_t radius) {fBackgroundJetRadius = radius;}
-  void        SetMinPtOfJetsToBeRemovedInBg(Double_t minPt) {fBackgroundJetPtMin = minPt;}
-  void        SetCentralityType(const char* type) {fCentralityType = type;} 
-  void        SetExternalRhoTaskName(const char* name) {fRhoTaskName = name;}
-  void        SetAcceptanceWindows(Double_t trackEta, Double_t signalJetRadius, Double_t bgrdJetRadius){
-                 fTrackEtaWindow = trackEta; 
-                 fSignalJetRadius = signalJetRadius; 
-                 fBackgroundJetRadius = bgrdJetRadius; 
-                 fSignalJetEtaWindow = fTrackEtaWindow-fSignalJetRadius; 
-                 fBackgroundJetEtaWindow = fTrackEtaWindow-fBackgroundJetRadius;} 
+  void        SetAnalysisType(Int_t sys, Int_t typeOfData, Int_t typeOfAnal){
+                 fTypeOfData = typeOfData;
+                 fTypeOfAnal = typeOfAnal;
+                 fCollisionSystem = sys;
+              }
 
-  void SetTT(Double_t ttlow, Double_t tthigh){ fTTlow = ttlow; fTThigh = tthigh; }
+  void        SetUseDefaultVertexCut (Bool_t val) {fUseDefaultVertexCut = val;}  
+  void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;} 
+  void        SetSignalJetMinArea(Double_t minArea) {fMinJetArea = minArea;} 
+
+  void        SetPerpConeRadius(Double_t radius) {
+                 fPerpConeRadius        = radius;
+                 fPerpConeRadiusSquared = fPerpConeRadius*fPerpConeRadius;
+              }
+
+  void        SetSignalJetRadius(Double_t radius) {
+                 fSignalJetRadius        = radius;
+                 fSignalJetRadiusSquared = fSignalJetRadius*fSignalJetRadius;
+                 fSignalJetEtaWindow     = fTrackEtaWindow-fSignalJetRadius; 
+              }
+
+  void        SetAcceptanceWindows(Double_t trackEta, Double_t signalJetRadius){ 
+                 fTrackEtaWindow  = trackEta; 
+                 fSignalJetRadius = signalJetRadius; 
+                 fSignalJetEtaWindow = fTrackEtaWindow-fSignalJetRadius; 
+                 fSignalJetRadiusSquared = fSignalJetRadius*fSignalJetRadius;
+              } 
+
+  void        SetCentralityType(const char* type, Float_t cl=0., Float_t cm=100.){
+                  fCentralityType = type;    
+                  fCentPercMin    = (Double_t) cl;    
+                  fCentPercMax    = (Double_t) cm;    
+              } 
+
+  void        SetVertexCut(Double_t vz){ fZVertexCut = vz; }   
+  void        SetMinTrackPt(Double_t mpt){ fMinTrackPt = mpt;}
+
+  void        SetExternalRhoTaskName(const char* name) {fRhoTaskName = name;}
+  void        SetExternalRhoTaskNameMC(const char* name) {fRhoTaskNameMC = name;}
+
+  void SetTT(Double_t ttlow, Double_t tthigh){ fTTlow = ttlow; fTThigh = tthigh; } 
   void SetTTType(Int_t tttype){ fTTtype = tttype;} 
   void SetDphi(Double_t dphi){ fDphiCut = TMath::Pi() - dphi;} 
   void SetDoubleBinPrecision(Bool_t db){ fUseDoubleBinPrecision = db;} 
-  //void SetMC(Bool_t mc){ fIsMC = mc; };
+
+
   void SetNofRandomCones(Int_t nrc){ fNofRandomCones = nrc;}
+  void SetMinFractionShared(Double_t f)  { fMinFractionShared = f; }
+
+  Bool_t   RetrieveEventObjects();
+  Bool_t   Run();
+  Bool_t   FillHistograms();
 
  private:
 
   // ######### MAIN CALCULATION FUNCTIONS
-  void    GetDeltaPt(Double_t rho1, Double_t &dpt1, 
-                     Double_t rho2, Double_t &dpt2, 
-                     Double_t rho3, Double_t &dpt3, 
-                     Double_t &rcPhi, Double_t &rcEta,
+  void    GetDeltaPt(Int_t nrho,  TArrayD &rho, Double_t *dpt, 
+                     Double_t ttPhi, Double_t ttEta,
                      Double_t leadingJetExclusionProbability = 0); 
                      
 
 
-  Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius); 
-  Double_t    GetPtHard();
-  Double_t    GetImpactParameter();
-  Double_t    GetSimPrimaryVertex();
-//FK//  Double_t    GetPythiaTrials();
+  Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius, Int_t icont); 
+  Double_t    GetPtHard();             
+  Double_t    GetImpactParameter();   
+  Double_t    GetSimPrimaryVertex(); 
 
-  void        GetPerpendicularCone(Double_t vecPhi, Double_t vecTheta, Double_t& conePt);
 
   // ######### CHECK FUNCTIONS
-  Bool_t      IsTrackInAcceptance(AliVParticle* track); 
-  Bool_t      IsEventInAcceptance(AliVEvent* event); 
-  Bool_t      IsBackgroundJetInAcceptance(AliEmcalJet* jet); 
+  Bool_t      IsTrackInAcceptance(AliVParticle* track, Int_t icont=0);  
+  Bool_t      IsEventInAcceptance(AliVEvent* event);     
+  Bool_t      IsMCEventInAcceptance(AliVEvent* event);   
   Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet); 
   
 
    Double_t RelativePhi(Double_t mphi,Double_t vphi); 
-   Double_t EstimateBgRhoMedian(); 
-   Double_t EstimateBgCone();  
-   Double_t GetExternalRho(); 
+   Double_t EstimateBgCone(Int_t icont);  
 
-   Bool_t DistantCones(Double_t phi1, Double_t eta1, Double_t r1, Double_t phi2, Double_t eta2, Double_t r2);
+
+  Double_t GetNcoll(Double_t centr);  //gen Ncoll for given centrality
+  Double_t GetDeltaR(Double_t phi1, Double_t phi2, Double_t eta1, Double_t eta2);
+  Double_t GetFractionSharedPt(AliEmcalJet *jRec, AliJetContainer *jconRec, AliEmcalJet *jGen, AliJetContainer *jconGen);
 
   // ######### STANDARD FUNCTIONS
-  void      Calculate(AliVEvent* event);   
-  void      ExecOnce();                    
+  void      ExecOnceLocal();                    
 
-  TList*              fOutputList;            //! Output list
   // ########## USAGE TRIGGERS 
-  Bool_t              fAnalyzePythia;         // trigger if pythia properties should be processed
-  Bool_t              fAnalyzeHijing;         // trigger if pythia properties should be processed
-  Bool_t              fIsKinematics;          // trigger if data is kinematics only (for naming reasons)
+  Int_t               fCollisionSystem;      // collision system MySystem
+  Int_t               fTypeOfData;           //kind of input data   MyDataType
+  Int_t               fTypeOfAnal;           //kind of analysis MyAnalType
+
   Bool_t              fUseDefaultVertexCut;   // trigger if automatic vertex cut from helper class should be done 
   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
   
 
   // ########## SOURCE INFORMATION
-  TClonesArray*       fJetArray;              //! object containing the jets   
-  TClonesArray*       fTrackArray;            //! object containing the tracks 
-  TClonesArray*       fBackgroundJetArray;    //! object containing background jets
-  TString*            fJetArrayName;          // name of object containing the jets
-  TString*            fTrackArrayName;        // name of object containing the tracks 
-  TString*            fBackgroundJetArrayName;// name of object containing event wise bckgrds
   TString             fRhoTaskName;           // name of rho CMS bg task for this analysis
+  TString             fRhoTaskNameMC;         // MC name of rho CMS bg task for this analysis
   // ########## JET/DIJET/RC PROPERTIES
-  Double_t            fRandConeRadius;        // Radius for the random cones
-  Double_t            fRandConeRadiusSquared; // Radius for the random cones squared
+  Double_t            fPerpConeRadius;        //gc Radius for the random cones
+  Double_t            fPerpConeRadiusSquared; //gc Radius for the random cones squared
   Double_t            fSignalJetRadius;       // Radius for the signal jets
-  Double_t            fBackgroundJetRadius;   // Radius for the jets to be removed from bg 
-  Double_t            fBackgroundJetPtMin;    // Minimum pt of jets which are ignored during bg calculation
+  Double_t            fSignalJetRadiusSquared;       // Radius for the signal jets
   // ########## CUTS 
   Double_t            fSignalJetEtaWindow;    // +- window in eta for signal jets 
-  Double_t            fBackgroundJetEtaWindow;// +- window in eta for background jets 
-  Double_t            fTrackEtaWindow;        // +- window in eta for tracks  
-  Double_t            fMinTrackPt;            // Min track pt to be accepted  
+  Double_t            fTrackEtaWindow;        //gc +- window in eta for tracks  
+  Double_t            fMinTrackPt;            //gc Min track pt to be accepted  
   Double_t            fMinJetArea;            // Min jet area to be accepted
-  Int_t               fNumberOfCentralityBins;// Number of centrality bins used for histograms
-  TString             fCentralityType;        // Used centrality estimate (V0A, V0C, V0M, ...) 
+  TString             fCentralityType;        //gc Used centrality estimate (V0A, V0C, V0M, ...) 
+  Double_t            fCentPercMin;           //centrality range lower cut    
+  Double_t            fCentPercMax;           //centrality range upper cut
+  Double_t            fMinFractionShared;     //Minimal fraction shared by embedded and rec jet
 
   // ########## EVENT PROPERTIES
-  Double_t            fCrossSection;          //! value is filled, if pythia header is accessible 
-  Double_t            fTrials;                //! value is filled, if pythia header is accessible 
+  Double_t            fCrossSection;          //! gc value is filled, if pythia header is accessible 
+  Double_t            fTrials;                //! gc value is filled, if pythia header is accessible 
   Double_t            fImpParam;              //! impact parameter from hijing
 
   // ########## GENERAL ////VARS
   TRandom3*           fRandom;                //! A random number
-  AliAnalysisUtils*   fHelperClass;           //! Vertex selection helper
-  Bool_t              fInitialized;           //! trigger if tracks/jets are loaded  initiates calling   ExecOnce 
+  AliAnalysisUtils*   fHelperClass;           //! gc Vertex selection helper
+  Bool_t              fInitializedLocal;           //! gc trigger if tracks/jets are loaded  initiates calling   ExecOnce 
 
 
-  Double_t            fTTlow;  //trigger particles TT bin lower boundary
-  Double_t            fTThigh; //trigger particles TT bin upper boundary
+  Double_t            fTTlow;  //gc trigger particles TT bin lower boundary
+  Double_t            fTThigh; //gc trigger particles TT bin upper boundary
   Int_t               fTTtype; //trigger particle type 0=single inclusive, 2 = inclusive  
   Double_t            fDphiCut; //minimal azimuthal angle between trigger and assoc jet 
   Bool_t              fUseDoubleBinPrecision; //use double bin precision
 
-   TH1I               *fHistEvtSelection;     //!  event statistics
-   TH2F               *fh2Ntriggers;  //! trigger counter
-   THnSparse         *fHJetSpec;//!  TT associated spectrum of jets
-   THnSparse         *fHJetSpecSubUeMedian;//! TT associated spectrum of jets, jetPT corredted for UE cell median
-   THnSparse         *fHJetSpecSubUeCone;//! TT associated spectrum of jets, jetPT corredted for UE perp cone
-   THnSparse         *fHJetSpecSubUeCMS; //! TT associated spectrum of jets, jetPT corredted for UE CMS
+   TH1I               *fHistEvtSelection;     //! gc event statistics
+   TH1D               *fh1Ntriggers;  //! trigger counter
+   TH1D               *fh1NtriggersGen;  //! trigger counter
+   THnSparse          *fHJetSpec[kRho];//!  TT associated spectrum of jets
+   THnSparse          *fHJetSpecGen[kRho];//!TT associated spectrum of jets
 
-   TH2F    *fhRhoCellMedian; //! X=rho from cell median Y=centrality
-   TH2F    *fhRhoCone; //! X=rho from perp cone, Y=centrality
-   TH2F    *fhRhoCMS;  //! X=rho from CMS, Y=centrality
-   TH2F    *fhRhoCellMedianIncl; //! X=rho from cell median Y=centrality
-   TH2F    *fhRhoConeIncl; //! X=rho from perp cone, Y=centrality
-   TH2F    *fhRhoCMSIncl;  //! X=rho from CMS, Y=centrality
+   TH1F    *fhRhoTT[kRho-1]; //! gc X=rho from perp cone, Y=centrality
+   TH1F    *fhRhoIncl[kRho-1]; //! gc X=rho from perp cone, Y=centrality
  
-   TH1F    *fARhoCellMedian;//! jet area times rho from cell median
-   TH1F    *fARhoCone; //! jet area times rho from perp cone
-   TH1F    *fARhoCMS;//! jet area times rho from CMS
+   TH1F    *fARhoTT[kRho-1]; //! jet area times rho from perp cone
+   TH1F    *fARhoTTGen[kRho-1]; //! #### jet area times rho from perp cone
 
-   TH2D    *fhDeltaPtMedian; //! delta pT from RndCone using rho from cell median high pT particle in event 
-   TH2D    *fhDeltaPtCone; //! delta pT from RndCone using rho from perp cone high pT particle in event
-   TH2D    *fhDeltaPtCMS; //! delta pT from RndCone using rho CMS high pT particle in event
-   TH2D    *fhDeltaPtMedianIncl; //! delta pT from RndCone using rho from cell median inclusive event
-   TH2D    *fhDeltaPtConeIncl; //! delta pT from RndCone using rho from perp cone inclusive event
-   TH2D    *fhDeltaPtCMSIncl; //! delta pT from RndCone using rho CMS inclusive event
-
-   TH2D    *fhDeltaPtMedianNearSide; //!  delta pt fluctuations from near side w.r.t. trigger
-   TH2D    *fhDeltaPtMedianAwaySide;//! delta pt from away side
-   TH2D    *fhDeltaPtCMSNearSide;//! delta pt fluctuations from near side w.r.t. trigger
-   TH2D    *fhDeltaPtCMSAwaySide;//! delta pt from away side
-
-   TH2D    *fhDeltaPtMedianExclTrigCone;//! delta pt exclude a cone around trigger
-   TH2D    *fhDeltaPtCMSExclTrigCone;//!  delta pt exclude a cone around trigger
-
-   TH2D    *fhDeltaPtMedianExclAwayJet;//! delta pt exclude a cone around leading jet on away side 
-   TH2D    *fhDeltaPtCMSExclAwayJet;//!  delta pt exclude a cone around leading jet on away side
+   TH1D    *fhDeltaPt[kRho-1]; //!  delta pT 
+   TH1D    *fhDeltaPtEmb[kRho-1]; //! embedded delta pT 
+   TH2D    *fhDeltaPtEmb2D[kRho-1]; //! embedded delta pT versus pT of the embedded jet 
+   TH1D    *fhDeltaPtIncl[kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
 
 
-   TH2F     *fhJetPhi;   //! jet phi vs jet pT
-   TH2F     *fhTrackPhi; //! track phi vs track pT
+   TH2F     *fhJetPhi;   //! gc jet phi vs jet pT
+   TH2F     *fhJetPhiGen;   //! gc jet phi vs jet pT
+   TH2F     *fhTrackPhi; //! gc track phi vs track pT
    TH2F     *fhJetEta;   //! jet eta vs jet pT 
+   TH2F     *fhJetEtaGen;   //! jet eta vs jet pT 
    TH2F     *fhTrackEta; //! track eta vs track pT
-   TH2F     *fhTrackCentVsPt; //!  X=centrality; Y= track pT
-   TH1F     *fhVertexZ;  //! vertexZ inclusive
-   TH1F     *fhVertexZAccept; //! vertexZ accepted after vtx cut
-   TH2F     *fhDphiTriggerJetMinBias; //! Delta phi versus jet pT
-   TH2F     *fhDphiTriggerJetCent20; //! Delta phi versus jet pT
+   TH1F     *fhTrackPt; //! gc X=centrality; Y= track pT
+   TH1F     *fhTrackPtGen; //!   gc X=centrality; Y= track pT
+   TH1F     *fhVertexZ;  //! gc vertexZ inclusive
+   TH1F     *fhVertexZAccept; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexZMC;  //! gc vertexZ inclusive in MC
+   TH1F     *fhVertexZAcceptMC; //! gc vertexZ accepted after vtx cut in MC
+   TH2F     *fhDphiTriggerJet[kRho]; //! gc Delta phi versus jet pT
+   TH2F     *fhDphiTriggerJetGen[kRho]; //! gc Delta phi versus jet pT
    TH1F     *fhDphiTriggerJetAccept; //!Dphi of accepted jets after dphi cut
 
    TH1F     *fhCentrality;     //! centrality 
@@ -201,35 +245,36 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
    TH1F     *fhCentralityV0C;  //! centrality from V0C
    TH1F     *fhCentralityZNA;  //! centrality from ZNA
 
-   Int_t    fNofRndTrials;     //! number of random trials for cell area estimate
-   Double_t fJetFreeAreaFrac;  //! minimal fraction of cell area to be accepted to cell median
-   Int_t    fnEta;    //! the number of cells in eta direction
-   Int_t    fnPhi;    //! the number of cell in phi direction 
-   Double_t fEtaSize;  //! size of cell in eta
-   Double_t fPhiSize;  //! size of cell in phi
-   Double_t fCellArea; //! cell area  
 
-   TProfile*     fh1Xsec;   //! pythia cross section and trials
-   TH1F*         fh1Trials; //! trials are added
+   TProfile*     fh1Xsec;   //! gc pythia cross section and trials
+   TH1F*         fh1Trials; //! gc trials are added
    TH1F*         fh1PtHard;  //! Pt har of the event...      
    TH1D*         fhImpactParameter; //! impact parameter distribution hijing
    TH1D*         fhImpactParameterTT; //! impact parameter distribution hijing versus TT
 
-   Int_t  fNofRandomCones; // the number of random cones per event
-   
-   Double_t fRConesR;      // small random cone of radius R=0.1 
-   Double_t fRConesRSquared;      // small random cone of radius R=0.1 
-   Int_t    fnRCones;      // the number of small random cones R=0.1 
-   Double_t fRConePhi[50]; //! phi of small R=0.1 random cone 
-   Double_t fRConeEta[50]; //! eta of small R=0.1 random cone 
- 
+   TH1D*  fhJetPtGen[kRho];
+   TH2D*  fhJetPtGenVsJetPtRec[kRho];
+   TH2D*  fhJetPtResolutionVsPtGen[kRho];
+   TH2D*  fhPtTrkTruePrimRec; // pt spectrum of true reconstructed primary tracks    
+   TH2D*  fhPtTrkTruePrimGen; // pt spectrum of true generated primary track    
+   TH2D*  fhPtTrkSecOrFakeRec; // pt spectrum of reconstructed fake or secondary tracks    
 
-   //Bool_t fIsMC;   
+ 
+   TArrayD  fRhoRec;   // labels of particles on reconstructed track level
+   TArrayD  fRhoMC;   // labels of particles on reconstructed track level
+
+
+   Int_t  fNofRandomCones; // the number of random cones per event
+ 
+   Double_t fZVertexCut; //! vertex cut in z 
+
+   std::vector<int> fTrigTracksGen; //list of trigger particle indices true MC
+   std::vector<int> fTrigTracks; //list pf trigger particle indices
 
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 3); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 4); // Charged jet analysis for pA
 
 };
 #endif
