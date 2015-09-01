@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliAnalysisTaskDptDptCorrelations+;
 #pragma link C++ class AliAnalysisTaskDptDptQA+;
+#pragma link C++ class AlianalysisTaskDptPIDpPb+;
 #pragma link C++ class AliDptDptInMC+;
 #pragma link C++ class AliAnalysisTaskpxpx+;
 #pragma link C++ class AliAnalysisTaskpxpy+;

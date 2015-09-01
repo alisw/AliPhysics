@@ -34,6 +34,7 @@ set(SRCS
     AliAnalysisTaskDiHadron.cxx
     AliAnalysisTaskDiJetCorrelations.cxx
     AliAnalysisTaskDptDptCorrelations.cxx
+    AlianalysisTaskDptPIDpPb.cxx    
     AliAnalysisTaskDptDptQA.cxx
     AlianalysisTaskDptPID.cxx
     AliAnalysisTaskLeadingTrackUE.cxx
