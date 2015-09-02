@@ -210,6 +210,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Bool_t 		VertexZCut(AliVEvent *fInputEvent);
 		Bool_t		IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight);
 		Float_t 	GetPtHard(AliVEvent *MCEvent);
+		void		GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSection, Float_t &NTrials);
 		Float_t 	GetMaxPtJet() 											{ return fMaxPtJetMC									; }
 		Bool_t 		MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC );
 		Bool_t 		IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC);
