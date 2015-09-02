@@ -2415,7 +2415,10 @@ Float_t AliCaloPhotonCuts::CalculateMinM02 (Int_t minM02, Float_t clusEnergy){
 		case 0: 
 			return 0.;
 		case 1:
-			return FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. );
+			if (FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. ) < 0.3)
+				return FunctionM02(clusEnergy, 2.135, -0.245, 0., 0., 0. );
+			else 
+				return 0.3;
 		default:	
 			AliError(Form("Min M02 for merged cluster Cut not defined %d",minM02));
 			return -1;

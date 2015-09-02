@@ -100,6 +100,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		void 							RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
 		void 							SetPeriodName(TString name)							{fPeriodName = name;}
 		TString 						GetPeriodName()										{return fPeriodName;}
+		Int_t 							GetPtHardFromFile()									{return fPtHardBin;}
 		Int_t 							GetNumberOfPrimaryTracks()							{return fNumberOfPrimaryTracks;}
 		void 							SetUseMassToZero (Bool_t b)							{
 			if(b){
@@ -177,6 +178,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		Bool_t 				fEventIsSelected;
 		Int_t 				fNumberOfPrimaryTracks;	 	// Number of Primary Tracks in AOD or ESD
 		TString 			fPeriodName;
+		Int_t 				fPtHardBin;					// ptHard bin from file
 		Bool_t				fUseMassToZero;				// switch on setting the mass to 0 for AODConversionPhotons
 		Bool_t				fProduceV0findingEffi;		// enable histograms for V0finding efficiency
 		TList				*fHistograms;				// list of histograms for V0 finding efficiency
@@ -202,7 +204,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
 		AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-	ClassDef(AliV0ReaderV1, 8)
+	ClassDef(AliV0ReaderV1, 9)
 
 };
 
