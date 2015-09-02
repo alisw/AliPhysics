@@ -402,11 +402,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 
-    if (fFilterBit && !aodtrack->TestFilterBit(fFilterBit)) {
-      continue;
-    }
-
-    if (fFilterMask && !aodtrack->TestFilterBit(fFilterMask)) {
+    if ((fFilterBit && !aodtrack->TestFilterBit(fFilterBit)) ||
+        (fFilterMask && !aodtrack->TestFilterBit(fFilterMask))) {
       continue;
     }
 
