@@ -195,7 +195,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		TH2F								**fHistoSPDClusterTrackletBackground;			//! array of histos with SPD tracklets vs SPD clusters for background rejection
 		TH1F 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
-				
+		TProfile							**fProfileJetJetXSection;						//! array of profiles with xsection for jetjet
+		TH1F								**fHistoJetJetNTrials;							//! array of histos with ntrials for jetjet
+
 		// additional variables
 		TRandom3 							fRandom;							// random 
 		Int_t 								fnCuts;								// number of cuts to be analysed in parallel
@@ -213,7 +215,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCaloMerged, 1);
+		ClassDef(AliAnalysisTaskGammaCaloMerged, 2);
 };
 
 #endif

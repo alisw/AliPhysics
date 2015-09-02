@@ -271,7 +271,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH2F								**fHistoSPDClusterTrackletBackground;			//! array of histos with SPD tracklets vs SPD clusters for background rejection
 		TH1F 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
-		
+		TProfile							**fProfileJetJetXSection;						//! array of profiles with xsection for jetjet
+		TH1F								**fHistoJetJetNTrials;							//! array of histos with ntrials for jetjet
+
 		// tree for identified particle properties
 		TTree 								**tTrueInvMassROpenABPtFlag;					//! array of trees with 
 		Float_t 							fInvMass;										//! InvMass, 
@@ -305,7 +307,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 13);
+		ClassDef(AliAnalysisTaskGammaCalo, 14);
 };
 
 #endif
