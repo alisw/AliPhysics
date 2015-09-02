@@ -38,6 +38,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		virtual void UserCreateOutputObjects();
 		virtual Bool_t Notify();
 		virtual void Terminate(const Option_t *);
+		
+		void SetLogBinningXTH2(TH2* histoRebin);
 			
 		void SetMoveParticleAccordingToVertex(Bool_t flag){fMoveParticleAccordingToVertex = flag;}
 			
@@ -171,6 +173,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		THnSparseF 								**sESDMotherInvMassPtZM;
 		TH2F 									**hESDMotherBackInvMassPt;
 		THnSparseF 								**sESDMotherBackInvMassPtZM;
+		TH2F									**hESDMotherPi0PtY;
+		TH2F									**hESDMotherPi0PtAlpha;
+		TH2F									**hESDMotherPi0PtOpenAngle;
 		TH1F 									**hMCAllGammaPt;
 		TH1F									**hMCAllGammaPi0Pt;
 		TH1F 									**hMCConvGammaPt;
@@ -219,6 +224,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDTrueMotherDalitzInvMassPt;
 		TH2F 									**hESDTrueMotherPi0GGInvMassPt;
 		TH2F									**hESDTrueMotherPi0GGW0WeightsInvMassPt;
+		TH2F									**hESDTruePi0PtY;
+		TH2F									**hESDTruePi0PtAlpha;
+		TH2F									**hESDTruePi0PtOpenAngle;
 		TH2F 									**hESDTruePrimaryMotherPi0GGInvMassPt;
 		TH2F 									**hESDTrueSecondaryMotherPi0GGInvMassPt;
 		TH2F 									**hESDTruePrimaryMotherInvMassMCPt;
