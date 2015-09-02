@@ -241,7 +241,9 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       //muon
       else if(pdgcode==13 || pdgcode==-13)
         kinepid[1]=1000;
-      else if(pdgcode==3122 || pdgcode==-3122 || abs(pdgcode)==310 )
+      else if(pdgcode==3122 || pdgcode==-3122 || abs(pdgcode)==310 ) //Lambda, AntiLambda, K0
+	{; }
+      else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
 	{; }
       else {
 	delete trackCopy; 
