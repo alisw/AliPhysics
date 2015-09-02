@@ -368,7 +368,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   // Convert header information
 
   AliCodeTimerAuto("",0);
-  
+  AODEvent()->SetDAQAttributes(esd.GetDAQAttributes());
   AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
   if(!header) AliFatal("Not a standard AOD");
   
