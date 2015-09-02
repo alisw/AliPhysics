@@ -162,6 +162,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fEoverPvsE(0),
   fTrackDEtaDPhiPho(0),
   fTrackDEtaDPhiPi(0),
+  fTrackDEtaDPhiPPho(0),
   fTrackDzDxIM(0),
   fTrackDzDxPhoSS(0),
   fTrackDzDxIM_bg(0),
@@ -303,6 +304,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fEoverPvsE(0),
   fTrackDEtaDPhiPho(0),
   fTrackDEtaDPhiPi(0),
+  fTrackDEtaDPhiPPho(0),
   fTrackDzDxIM(0),
   fTrackDzDxPhoSS(0),
   fTrackDzDxIM_bg(0),
@@ -540,6 +542,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fTrackDEtaDPhiPi = new TH2F("fTrackDEtaDPhiPi","clusters from MC-truth #pi^{#pm};#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
   fTrackDEtaDPhiPi->Sumw2();
   fQAList->Add(fTrackDEtaDPhiPi);
+
+  fTrackDEtaDPhiPPho = new TH2F("fTrackDEtaDPhiPPho","clusters from MC-truth prompt-#gamma ;#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDEtaDPhiPPho->Sumw2();
+  fQAList->Add(fTrackDEtaDPhiPPho);
 
   fTrackDzDxIM = new TH2F("fTrackDzDxIM","cluster in #pi^{0} invariant mass range (inclusive energy);#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
   fTrackDzDxIM->Sumw2();
@@ -1689,6 +1695,9 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsMcPDG(Int_t label, Int_t PDG)
   bool foundpi0=false;
   if(!fStack && !fAODMCParticles)
     return false;
+  bool prompho = false;
+  if(PDG==22 && fMcIdFamily.Contains(Form("%d",label)))
+    prompho = true;
   int imother=label+1;
   int nmcp=0;
   //ESD
@@ -1699,6 +1708,8 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsMcPDG(Int_t label, Int_t PDG)
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(label));  
     if(!mcp)
       return false;
+    if((mcp->GetPdgCode()==22) && prompho)
+      return prompho;
     if(mcp->GetPdgCode()==TMath::Abs(PDG))
       return true;
     imother = mcp->GetMother(0);
@@ -1712,6 +1723,8 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsMcPDG(Int_t label, Int_t PDG)
     AliAODMCParticle *mcp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(label));
     if(!mcp)
       return false;
+    if((mcp->GetPdgCode()==22) && prompho)
+      return prompho;
     if(mcp->GetPdgCode()==TMath::Abs(PDG))
       return true;
     imother = mcp->GetMother();
@@ -1813,10 +1826,13 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     if(fIsMc){
       bool ispi0 = IsMcPDG(c->GetLabel(),111);
       bool ispich = IsMcPDG(c->GetLabel(),211);
+      bool isprompho = IsMcPDG(c->GetLabel(),22);
       if(ispi0)
 	fTrackDEtaDPhiPho->Fill(c->GetTrackDz(),c->GetTrackDx());
       if(ispich)
 	fTrackDEtaDPhiPi->Fill(c->GetTrackDz(),c->GetTrackDx());
+      if(isprompho)
+	fTrackDEtaDPhiPPho->Fill(c->GetTrackDz(),c->GetTrackDx());
     }
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
       fEmcClusETM1->Fill(c->E());
