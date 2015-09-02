@@ -165,8 +165,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TTree 								**tESDGammaERM02;					//! tree with E_gamma vs R_conv vs M02 vs M20
 		Float_t								tESDClusE;							//! energy of conv gamma for tree
 		Float_t								tESDGammaConvR;						//! conv R of conv gamma for tree
-		Float_t								tESDClusterM02;					//! M02 of matched cluster for tree
-		Float_t								tESDClusterM20;					//! M20 of matched cluster for tree
+		Float_t								tESDClusterM02;						//! M02 of matched cluster for tree
+		Float_t								tESDClusterM20;						//! M20 of matched cluster for tree
+		Float_t								tESDClusterEta;						//! Eta of matched cluster for tree
+		Float_t								tESDClusterPhi;						//! Phi of matched cluster for tree
+		Float_t								tESDClusterNCells;					//! NCells of matched cluster for tree
+		Float_t								tESDClusterMaxECell;			//! MaxEnergyCell of matched cluster for tree
+		Float_t								tESDClusterNLM;						//! NLM of matched cluster for tree
+
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherMatchedInvMassPt;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -386,7 +392,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 18);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 19);
 };
 
 #endif

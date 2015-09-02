@@ -107,6 +107,11 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
 	tESDGammaConvR(0),
 	tESDClusterM02(0),
 	tESDClusterM20(0),
+	tESDClusterEta(0),
+	tESDClusterPhi(0),
+	tESDClusterNCells(0),
+	tESDClusterMaxECell(0),
+	tESDClusterNLM(0),
 	fHistoMotherInvMassPt(NULL),
 	fHistoMotherMatchedInvMassPt(NULL),
 	fSparseMotherInvMassPtZM(NULL),
@@ -359,6 +364,11 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
 	tESDGammaConvR(0),
 	tESDClusterM02(0),
 	tESDClusterM20(0),
+	tESDClusterEta(0),
+	tESDClusterPhi(0),
+	tESDClusterNCells(0),
+	tESDClusterMaxECell(0),
+	tESDClusterNLM(0),
 	fHistoMotherInvMassPt(NULL),
 	fHistoMotherMatchedInvMassPt(NULL),
 	fSparseMotherInvMassPtZM(NULL),
@@ -928,6 +938,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 			tESDGammaERM02[iCut]->Branch("ConvR",&tESDGammaConvR,"tESDGammaConvR/F");
 			tESDGammaERM02[iCut]->Branch("M02",&tESDClusterM02,"tESDClusterM02/F");
 			tESDGammaERM02[iCut]->Branch("M20",&tESDClusterM20,"tESDClusterM20/F");
+			tESDGammaERM02[iCut]->Branch("Eta",&tESDClusterEta,"tESDClusterEta/F");
+			tESDGammaERM02[iCut]->Branch("Phi",&tESDClusterPhi,"tESDClusterPhi/F");
+			tESDGammaERM02[iCut]->Branch("NCells",&tESDClusterNCells,"tESDClusterNCells/F");
+			tESDGammaERM02[iCut]->Branch("MaxECell",&tESDClusterMaxECell,"tESDClusterMaxECell/F");
+			tESDGammaERM02[iCut]->Branch("NLM",&tESDClusterNLM,"tESDClusterNLM/F");
 			fGammaERM02[iCut]->Add(tESDGammaERM02[iCut]);
 		}
 
@@ -3147,11 +3162,19 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 				if (gamma1->GetIsCaloPhoton()){
 					AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
 					matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent );
-					if(matched && doConvGammaShowerShapeTree){
+					if(doConvGammaShowerShapeTree && matched){
+						Float_t clusPos[3]={0,0,0};
+						cluster->GetPosition(clusPos);
+						TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
 						tESDClusE = cluster->E();
 						tESDGammaConvR = gamma0->GetConversionRadius();
 						tESDClusterM02 = cluster->GetM02();
 						tESDClusterM20 = cluster->GetM20();
+						tESDClusterEta = clusterVector.Eta();
+						tESDClusterPhi = clusterVector.Phi();
+						tESDClusterNCells = cluster->GetNCells();
+						tESDClusterMaxECell = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(cluster, fInputEvent);
+						tESDClusterNLM = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetNumberOfLocalMaxima(cluster, fInputEvent);
 						tESDGammaERM02[fiCut]->Fill();
 					}
 				}	
