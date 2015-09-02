@@ -160,6 +160,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
 	fHistoSPDClusterTrackletBackground(NULL),
 	fHistoNV0Tracks(NULL),
 	fProfileEtaShift(NULL),
+	fProfileJetJetXSection(NULL),
+	fHistoJetJetNTrials(NULL),
 	fRandom(0),
 	fnCuts(0),
 	fiCut(0),
@@ -276,6 +278,8 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
 	fHistoSPDClusterTrackletBackground(NULL),
 	fHistoNV0Tracks(NULL),
 	fProfileEtaShift(NULL),
+	fProfileJetJetXSection(NULL),
+	fHistoJetJetNTrials(NULL),
 	fRandom(0),
 	fnCuts(0),
 	fiCut(0),
@@ -320,6 +324,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 	fHistoNEvents = new TH1F*[fnCuts];
 	if(fIsMC == 2){
 		fHistoNEventsWOWeight = new TH1F*[fnCuts];
+		fProfileJetJetXSection = new TProfile*[fnCuts];
+		fHistoJetJetNTrials = new TH1F*[fnCuts];
 	}
 	
 	fHistoNGoodESDTracks = new TH1F*[fnCuts];
@@ -402,7 +408,13 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
 			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
 			fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
-			fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);		
+			fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
+
+			fProfileJetJetXSection[iCut] = new TProfile("XSection","XSection",1,-0.5,0.5);
+			fESDList[iCut]->Add(fProfileJetJetXSection[iCut]);
+			fHistoJetJetNTrials[iCut] = new TH1F("NTrials","#sum{NTrials}",1,0,1);
+			fHistoJetJetNTrials[iCut]->GetXaxis()->SetBinLabel(1,"#sum{NTrials}");
+			fESDList[iCut]->Add(fHistoJetJetNTrials[iCut]);
 		}	
 
 		if(fIsHeavyIon == 1) fHistoNGoodESDTracks[iCut] = new TH1F("GoodESDTracks","GoodESDTracks",4000,0,4000);
@@ -907,13 +919,13 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 			continue;
 		}
 
-		Bool_t triggered = 1;
+		Bool_t triggered = kTRUE;
 		if(eventNotAccepted){
 		// cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
 			fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
 			if (eventNotAccepted==3 && fIsMC>0){
-				triggered = 0;
+				triggered = kFALSE;
 			} else {	
 				continue;
 			}	
@@ -926,11 +938,17 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 
 			continue;
 		}
-		if (triggered == 1) {
+		if (triggered == kTRUE) {
 			fHistoNEvents[iCut]->Fill(	eventQuality, 
 										fWeightJetJetMC); // Should be 0 here
-			if (fIsMC==2) 
+			if (fIsMC==2){
 				fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
+				Float_t xsection = -1.; Float_t ntrials = -1.;
+				((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials);
+				if((xsection==-1.) || (ntrials==-1.)) AliFatal("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials");
+				fProfileJetJetXSection[iCut]->Fill(0.,xsection);
+				fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
+			}
 
 			fHistoNGoodESDTracks[iCut]->Fill(	fV0Reader->GetNumberOfPrimaryTracks(), 
 												fWeightJetJetMC);
@@ -975,7 +993,7 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 		if(fIsMC> 0)
 			ProcessMCParticles();
 		
-		if (triggered==0) continue;
+		if (triggered==kFALSE) continue;
 		
 		// it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
 		ProcessClusters();  					// process calo clusters
