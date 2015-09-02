@@ -118,7 +118,7 @@ private:
    ) const;
 
     // TODO ADD PolyLines for muontracks
-    void AddPolylinesToMuonTracks() const;
+    std::string AddPolylinesToMuonTracks(int trackNumber,AliMinimalisticTrack &minimalisticMuonTrack) const;
     void CheckEvent() const;
 
     void InsertPolyPoints(AliMinimalisticTrack &Track, std::vector<TEveVector4D> &Points) const;

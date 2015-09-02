@@ -61,7 +61,7 @@ private:
     std::vector<Double_t> fPolyZ;
 
 
-ClassDef(AliMinimalisticTrack, 1)AliMinimalisticTrack
+    ClassDef(AliMinimalisticTrack, 1);
 };
 
 
