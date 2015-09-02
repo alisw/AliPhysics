@@ -276,7 +276,7 @@ Int_t  AliEMCALTriggerMappingV2::GetTRUIndexFromOnlineHwAdd(Int_t hwAdd, Int_t d
   
   UShort_t iBranch = ( hwAdd >> 11 ) & 0x1;  // 0/1
   
-  Int_t iTRU = ( (ddl << 1) | iBranch ); // 0..2
+  Int_t iTRU = ( (ddl << 1) | iBranch ) - 1; // 0..2
   
   iTRU = (sm%2) ? 2-iTRU : iTRU;
     
