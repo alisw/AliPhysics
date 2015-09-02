@@ -34,6 +34,7 @@ AliFemtoV0::AliFemtoV0():
   fKeyNeg(0),   fKeyPos(0),
   fNominalTpcEntrancePointPos(0,0,0),fNominalTpcExitPointPos(0,0,0),
   fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
+  fNominalTpcPointPosShifted(0,0,0),fNominalTpcPointNegShifted(0,0,0),
   fTPCMomentumPos(0), fTPCMomentumNeg(0),
   fTOFProtonTimePos(0), fTOFPionTimePos(0), fTOFKaonTimePos(0),
   fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
@@ -97,6 +98,8 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fNominalTpcExitPointPos(v.fNominalTpcExitPointPos),
   fNominalTpcEntrancePointNeg(v.fNominalTpcEntrancePointNeg),
   fNominalTpcExitPointNeg(v.fNominalTpcExitPointNeg),
+  fNominalTpcPointPosShifted(v.fNominalTpcPointPosShifted),
+  fNominalTpcPointNegShifted(v.fNominalTpcPointNegShifted),
   fTPCMomentumPos(v.fTPCMomentumPos), fTPCMomentumNeg(v.fTPCMomentumNeg),
   fTOFProtonTimePos(v.fTOFProtonTimePos), fTOFPionTimePos(v.fTOFPionTimePos), fTOFKaonTimePos(v.fTOFKaonTimePos),
   fTOFProtonTimeNeg(v.fTOFProtonTimeNeg), fTOFPionTimeNeg(v.fTOFPionTimeNeg), fTOFKaonTimeNeg(v.fTOFKaonTimeNeg),
@@ -200,6 +203,8 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
   fNominalTpcExitPointPos = aV0.fNominalTpcExitPointPos;
   fNominalTpcEntrancePointNeg = aV0.fNominalTpcEntrancePointNeg;
   fNominalTpcExitPointNeg = aV0.fNominalTpcExitPointNeg;
+  fNominalTpcPointPosShifted = aV0.fNominalTpcPointPosShifted;
+  fNominalTpcPointNegShifted = aV0.fNominalTpcPointNegShifted;
 
   fTPCMomentumPos = aV0.fTPCMomentumPos;
   fTPCMomentumNeg = aV0.fTPCMomentumNeg;

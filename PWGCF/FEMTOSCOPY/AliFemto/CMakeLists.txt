@@ -84,6 +84,7 @@ set(SRCS
   AliFemtoSphericityEventCut.cxx
   AliFemtoSpherocityEventCut.cxx
   AliFemtoCorrFctnDPhiStarDEta.cxx
+  AliFemtoCorrFctnDPhiStarDEtaStar.cxx
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.cxx
   AliFemtoDeltaPtPairCut.cxx	
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.cxx

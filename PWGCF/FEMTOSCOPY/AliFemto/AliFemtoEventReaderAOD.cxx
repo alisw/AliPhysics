@@ -73,6 +73,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMinPlpContribSPD(0),
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE),
+  fShiftPosition(0.),
   fPrimaryVertexCorrectionTPCPoints(kFALSE)
 {
   // default constructor
@@ -113,6 +114,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
   fDCAglobalTrack(aReader.fDCAglobalTrack),
   fFlatCent(aReader.fFlatCent),
+  fShiftPosition(aReader.fShiftPosition),
   fPrimaryVertexCorrectionTPCPoints(aReader.fPrimaryVertexCorrectionTPCPoints)
 {
   // copy constructor
@@ -174,6 +176,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
   fFlatCent = aReader.fFlatCent;
+  fShiftPosition = aReader.fShiftPosition;
   fPrimaryVertexCorrectionTPCPoints = aReader.fPrimaryVertexCorrectionTPCPoints;
 
   return *this;
@@ -851,11 +854,19 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   tFemtoTrack->SetNominalTPCEntrancePoint(tpcEntrance);
   tFemtoTrack->SetNominalTPCPoints(tpcPositions);
   tFemtoTrack->SetNominalTPCExitPoint(tpcExit);
+
+  if (fShiftPosition > 0.) {
+    Float_t posShifted[3];
+    SetShiftedPositions(tAodTrack, bfield, posShifted, fShiftPosition);
+    tFemtoTrack->SetNominalTPCPointShifted(posShifted);
+  }
+
   for (int i = 0; i < 9; i++) {
     delete [] tpcPositions[i];
   }
   delete [] tpcPositions;
 
+  
   int indexes[3];
   for (int ik = 0; ik < 3; ik++) {
     indexes[ik] = 0;
@@ -1061,6 +1072,23 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
 
     tFemtoV0->SetNominalTpcPointPos(vecTpcPos);
     tFemtoV0->SetNominalTpcPointNeg(vecTpcNeg);
+
+    if (fShiftPosition > 0.) {
+      Float_t posShiftedPos[3];
+      Float_t posShiftedNeg[3];
+      SetShiftedPositions(trackpos, bfield, posShiftedPos, fShiftPosition);
+      SetShiftedPositions(trackneg, bfield, posShiftedNeg, fShiftPosition);
+      AliFemtoThreeVector tmpVecPos;
+      AliFemtoThreeVector tmpVecNeg;
+      tmpVecPos.SetX(posShiftedPos[0]);
+      tmpVecPos.SetY(posShiftedPos[1]);
+      tmpVecPos.SetZ(posShiftedPos[2]);
+      tmpVecNeg.SetX(posShiftedNeg[0]);
+      tmpVecNeg.SetY(posShiftedNeg[1]);
+      tmpVecNeg.SetZ(posShiftedNeg[2]);
+      tFemtoV0->SetNominalTpcPointPosShifted(tmpVecPos);
+      tFemtoV0->SetNominalTpcPointNegShifted(tmpVecNeg);
+    }
 
     tFemtoV0->SetTPCMomentumPos(trackpos->GetTPCmomentum());
     tFemtoV0->SetTPCMomentumNeg(trackneg->GetTPCmomentum());
@@ -1775,6 +1803,76 @@ void AliFemtoEventReaderAOD::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrac
   }
 }
 
+//________________________________________________________________________
+void AliFemtoEventReaderAOD::SetShiftedPositions(const AliAODTrack *track
+						 ,const Float_t bfield
+						 ,Float_t posShifted[3]
+						 ,const Double_t radius) {
+  // Sets the spatial position of the track at the radius R=1.25m in the shifted coordinate system, code adapted from Hans Beck analysis
+ 
+  // Initialize the array to something indicating there was no propagation
+  posShifted[0]=-9999.; // THIS IS THE DATA MEMBER OF YOUR FEMTOTRACK
+  posShifted[1]=-9999.;
+  posShifted[2]=-9999.;
+   // Make a copy of the track to not change parameters of the track
+  AliExternalTrackParam etp;
+  etp.CopyFromVTrack(track);
+ 
+  // The global position of the the track
+  Double_t xyz[3]={-9999.,-9999.,-9999.};  
+ 
+  // The radius in cm we want to propagate to, squared
+  const Float_t RSquaredWanted(radius*radius*1e4);
+  
+  // Propagation is done in local x of the track
+  for (Float_t x = 58.;x<247.;x+=1.){
+    // Starts at 83 / Sqrt(2) and goes outwards. 85/Sqrt(2) is the smallest local x
+    // for global radius 85 cm. x = 245 is the outer radial limit of the TPC when
+    // the track is straight, i.e. has inifinite pt and doesn't get bent. 
+    // If the track's momentum is smaller than infinite, it will develop a y-component,
+    // which adds to the global radius
+ 
+    // Stop if the propagation was not succesful. This can happen for low pt tracks
+    // that don't reach outer radii
+    if(!etp.PropagateTo(x,bfield))break;
+    etp.GetXYZ(xyz); // GetXYZ returns global coordinates
+ 
+    // Calculate the shifted radius we are at, squared. 
+    // Compare squared radii for faster code
+    Float_t shiftedRadiusSquared = (xyz[0]-fV1[0])*(xyz[0]-fV1[0])
+                                 + (xyz[1]-fV1[1])*(xyz[1]-fV1[1]);
+ 
+    // Roughly reached the radius we want
+    if(shiftedRadiusSquared > RSquaredWanted){
+ 
+      // Bigger loop has bad precision, we're nearly one centimeter too far, 
+      // go back in small steps.
+      while (shiftedRadiusSquared>RSquaredWanted){
+	// Propagate a mm inwards
+	x-=.1;
+	if(!etp.PropagateTo(x,bfield)){
+	  // Propagation failed but we're already with a
+	  // cm precision at R=1.25m so we only break the 
+	  // inner loop
+	  break;
+	}
+	// Get the global position
+	etp.GetXYZ(xyz);
+	// Calculate shifted radius, squared
+	shiftedRadiusSquared = (xyz[0]-fV1[0])*(xyz[0]-fV1[0])
+	                     + (xyz[1]-fV1[1])*(xyz[1]-fV1[1]);
+      }
+      // We reached R=1.25m with a precission of a cm to a mm,
+      // set the spatial position
+      posShifted[0]=xyz[0]-fV1[0];
+      posShifted[1]=xyz[1]-fV1[1];
+      posShifted[2]=xyz[2]-fV1[2];
+      // Done
+      return;
+    } // End of if roughly reached radius
+  } // End of coarse propagation loop
+}
+
 void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {
   fpA2013 = pa2013;
@@ -1819,6 +1917,10 @@ void AliFemtoEventReaderAOD::SetCentralityFlattening(Bool_t dcagt)
   fFlatCent = dcagt;
 }
 
+void AliFemtoEventReaderAOD::SetShiftPosition(Double_t dcagt)
+{
+  fShiftPosition = dcagt;
+}
 
 void AliFemtoEventReaderAOD::SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints)
 {
