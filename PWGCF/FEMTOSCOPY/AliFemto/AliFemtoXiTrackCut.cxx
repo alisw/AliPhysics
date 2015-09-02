@@ -8,7 +8,7 @@ ClassImp(AliFemtoXiTrackCut)
 
 
 
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(0), fMinPtXi(0), fMaxPtXi(0), fMaxEtaBac(0), fMinPtBac(0), fMaxPtBac(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0), fMaxDcaXi(0), fMaxDcaXiBac(0), fMinDcaXiDaughters(0), fMaxCosPointingAngleXi(0), fMaxDecayLengthXi(0), fInvMassXiMin(0), fInvMassXiMax(0)
+AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(0), fMinPtXi(0), fMaxPtXi(0), fChargeXi(0), fMaxEtaBac(0), fMinPtBac(0), fMaxPtBac(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0), fMaxDcaXi(0), fMaxDcaXiBac(0), fMinDcaXiDaughters(0), fMaxCosPointingAngleXi(0), fMaxDecayLengthXi(0), fInvMassXiMin(0), fInvMassXiMax(0)
 {
   // Default constructor
  }
@@ -24,11 +24,11 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   // false if it doesn't meet at least one of the criteria
   
   
-  if(!AliFemtoV0TrackCut::Pass(aXi))
-    return false;
-  
   Float_t pt = aXi->PtXi();
   Float_t eta = aXi->EtaXi();
+  
+  if(aXi->ChargeXi()==0)
+    return false;
 
   //kinematic cuts
   if(TMath::Abs(eta) > fMaxEtaXi) return false;  //put in kinematic cuts by hand
@@ -84,7 +84,7 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 
   bool pid_check=false;
   // Looking for Xi
-  if (fParticleTypeXi == 0 || fParticleTypeXi == 1) {
+  if (fParticleTypeXi == kXiMinus || fParticleTypeXi == kXiPlus) {
     if (IsPionNSigmaBac(aXi->PtBac(), aXi->BacNSigmaTPCPi(), aXi->BacNSigmaTOFPi())) //pion
 	{
 	  pid_check=true;
@@ -94,6 +94,10 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 	}
 
   }
+
+  if(!AliFemtoV0TrackCut::Pass(aXi))
+    return false;
+  
   
   return true;
     
@@ -136,6 +140,10 @@ void AliFemtoXiTrackCut::SetEtaXi(double x){
 void AliFemtoXiTrackCut::SetPtXi(double min, double max){
   fMinPtXi = min;
   fMaxPtXi = max;
+}
+
+void AliFemtoXiTrackCut::SetChargeXi(int x){
+  fChargeXi = x;
 }
 
 void AliFemtoXiTrackCut::SetEtaBac(double x){

@@ -33,6 +33,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
 
   void SetEtaXi(double x);
   void SetPtXi(double min, double max);
+  void SetChargeXi(int x);
   void SetEtaBac(double x);
   void SetPtBac(double min, double max);
   void SetTPCnclsBac(int x);
@@ -51,6 +52,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   double fMaxEtaXi;
   double fMinPtXi;
   double fMaxPtXi;
+  int fChargeXi;
   
   double fMaxEtaBac;
   double fMinPtBac;
