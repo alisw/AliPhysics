@@ -2308,16 +2308,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   
+  if((fDebug > 1)&&(!inputHandler)){std::cout<<"AliAnalysisTaskJetChem::AliInputEventHandler does not exist!! "<<std::endl;}
 
   //for AliPIDResponse:
-  //AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  //AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
   if (!fPIDResponse){if(fDebug > 1) Printf("AliAnalysisTaskJetChem::UserExec(): fPIDResponse does not exist!"); return;}
 
-  //std::cout<<"inputHandler->IsEventSelected(): "<<inputHandler->IsEventSelected()<<std::endl;
-  //std::cout<<"fEvtSelectionMask: "<<fEvtSelectionMask<<std::endl;
+  if(fDebug > 1){std::cout<<"inputHandler->IsEventSelected(): "<<inputHandler->IsEventSelected()<<std::endl;}
+  if(fDebug > 1){std::cout<<"fEvtSelectionMask: "<<fEvtSelectionMask<<std::endl;}
   
   if(!(inputHandler->IsEventSelected() & fEvtSelectionMask)){
     //std::cout<<"########event rejected!!############"<<std::endl;
@@ -2805,7 +2804,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   for(Int_t in=0; in<fTracksRecCuts->GetEntries(); ++in){//loop over all charged tracks in event
     
     AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksRecCuts->At(in)); //inputlist is fListK0s, all reconstructed K0s in event
-    if(!track){std::cout<<"AliAnalysisTaskJetChem(): In random cones, charged track not found!!!"<<std::endl; continue;}
+    if(!track){std::cout<<"AliAnalysisTaskJetChem(): In outside cones, charged track not found!!!"<<std::endl; continue;}
     
     Double_t trackPt = track->Pt();
     Double_t trackEta = track->Eta();
