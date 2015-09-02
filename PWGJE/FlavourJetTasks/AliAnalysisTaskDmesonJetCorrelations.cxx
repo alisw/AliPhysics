@@ -415,8 +415,6 @@ void AliAnalysisTaskDmesonJetCorrelations::DoDmesonLoop()
   TList matchedJets;
   matchedJets.SetOwner(kFALSE);
 
-  AliJetContainer* jets = GetJetContainer(0);
-
   Int_t ftag = AliEmcalJet::kD0;
   if (fCandidateType == kDstartoKpipi) ftag = AliEmcalJet::kDStar;
 
@@ -784,7 +782,7 @@ void AliAnalysisTaskDmesonJetCorrelations::AllocateTHnSparse()
 
   if (fShowDeltaInvMass) {
     title[dim] = "#it{M}_{D*} - #it{M}_{D_{0}} (GeV/#it{c}^{2})";
-    nbins[dim] = fNBinsMass;
+    nbins[dim] = fNBinsMass*3;
     CalculateMassLimits(0.08, 413, fNBinsMass, min[dim], max[dim]);
 
     // subtract mass of D0
