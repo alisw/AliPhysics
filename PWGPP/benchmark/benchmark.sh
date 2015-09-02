@@ -119,6 +119,7 @@ goCPass0()
   shift 7
   if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goCPass0
+  alilog_info  "[BEGIN] goCPass0() with following parameters $*"
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
@@ -128,6 +129,7 @@ goCPass0()
     [[ -n "${SGE_TASK_ID}" ]] && jobindex=${SGE_TASK_ID}
     if [[ -z ${jobindex} ]]; then 
       echo "no jobindex!"
+       alilog_error "goCPass0() No job index [Paremeters] $*"
       return 1
     fi
   fi
@@ -340,6 +342,7 @@ goCPass0()
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
   echo End: goCPass0
+  alilog_info  "[END] goCPass0() with following parameters $*"
   return 0
 )
 
@@ -358,7 +361,7 @@ goCPass1()
   extraOpts=("$@")
   if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goCPass1
-
+  alilog_info  "[BEGIN] goCPass0() with following parameters $*"
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
@@ -658,6 +661,7 @@ goCPass1()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+   alilog_info  "[END] goCPass1() with following parameters $*"
   echo End: goCPass1
   return 0
 )
@@ -677,7 +681,7 @@ goMergeCPass0()
   shift 5
   if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goMergeCPass0
-
+  alilog_info  "[BEGIN] goMergeCPass0() with following parameters $*"
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
@@ -829,6 +833,7 @@ goMergeCPass0()
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
   echo End: goMergeCPass0
+  alilog_info  "[END] goMergeCPass0() with following parameters $*"
   return 0
 )
 
@@ -848,7 +853,7 @@ goMergeCPass1()
   shift 7
   if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   echo Start: goMergeCPass1
-
+  alilog_info  "[BEGIN] goMergeCPass1() with following parameters $*"
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
@@ -1063,6 +1068,7 @@ goMergeCPass1()
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
+  alilog_info  "[END] goMergeCPass1() with following parameters $*"
   echo End: goMergeCPass1
   return 0
 )
@@ -1074,6 +1080,7 @@ goMerge()
   outputFile=${2}  
   configFile=${3-"benchmark.config"}
   shift 3
+  alilog_info  "[BEGIN] goMerge() with following parameters $*"
   if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   
   #record the working directory provided by the batch system
@@ -1085,6 +1092,7 @@ goMerge()
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
   rm -f ${outputFile}
   aliroot -b -q "${ALICE_PHYSICS}/PWGPP/CalibMacros/CPass0/merge.C(\"${inputList}\",\"\",kFALSE,\"${outputFile}\")" > merge_${inputList}.log
+  alilog_info  "[END] goMerge() with following parameters $*"
   return 0
 )
 
@@ -1360,10 +1368,10 @@ goCreateQAplots()
   outputDir=${3}
   configFile=${4}
   shift 4
-  alilog_info  "START:goCreateQAplots with following parameters"
+  alilog_info  "[BEGIN] goCreateQAplots() with following parameters $*"
   echo "$@"
   if ! parseConfig configFile=${configFile} "$@"; then 
-     alilog_error "goCreateQAplots Parsing congig error"
+     alilog_error "goCreateQAplots() Parsing config error [Paremeters] $*"
      return 1; 
   fi
   
@@ -1393,7 +1401,7 @@ goCreateQAplots()
   echo ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
   ./runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage="${defaultOCDB}"
   cd ${olddir}
-  alilog_info  "END:goCreateQAplots with folloing parameters"
+  alilog_info  "[END] goCreateQAplots() with folloing parameters: $*"
   echo "$@"
   return 0
 )
@@ -1506,6 +1514,7 @@ goMakeFilteredTrees()
   offsetEvent=${10-"0"}
   configFile=${11-"benchmark.config"}
   esdFileName=${12-"AliESDs_Barrel.root"}
+  alilog_info  "[BEGIN] goMakeFilteredTrees() with following parameters $*"
   shift 12
   if ! parseConfig configFile=${configFile} "$@"; then return 1; fi
   
@@ -1560,7 +1569,7 @@ EOF
  
   cp "$doneFileTmp" "$doneFile" || rm -f "$doneFileTmp" "$doneFile"
   [[ -n ${removeTMPdoneFile} ]] && rm -f ${doneFileTmp}
-
+  alilog_info  "[END] goMakeFilteredTrees() with following parameters $*"
   return 0
 )
 
@@ -2088,7 +2097,7 @@ goMakeMergedSummaryTree()
   #       summary_pass0.tree
   #       summary_pass1.tree
   #    
-
+    alilog_info  "[BEGIN] goMakeMergedSummaryTree() with following parameters $*"
   [[ ! -f cpass0.dcsTree.list ]] && echo "no cpass0.dcsTree.list" && return 1
   [[ ! -f cpass1.dcsTree.list ]] && echo "no cpass1.dcsTree.list" && return 1
   [[ ! -f trending.root ]] && echo "no trending.root" && return 1
@@ -2149,6 +2158,7 @@ goMakeMergedSummaryTree()
 EOF
 
   aliroot -b -q "mergeTree.C" > mergeTrees.log
+  alilog_info  "[END] goMakeMergedSummaryTree() with following parameters $*"
   return $?
 )
 
@@ -2164,7 +2174,7 @@ goMakeSummary()
   log="summary.log"
   jsonLog="summary.json"
   productionID="qa"
-
+  alilog_info  "[BEGIN] goMakeSummary() with following parameters $*"
   configFile=${1}
   shift 1
   extraOpts=("$@")
@@ -2366,12 +2376,13 @@ done
   paranoidCp *.root ${commonOutputPath}
   paranoidCp *.log ${commonOutputPath}
   paranoidCp fileCopy.log ${commonOutputPath}
-
+  alilog_info  "[END] goMakeSummary() with following parameters $*"
   return 0
 )
 
 goMakeSummaryTree()
 (
+    alilog_info  "[BEGIN] goMakeSummaryTree() with following parameters $*" 
   if [[ $# -lt 1 ]] ; then
     return
   fi
@@ -2468,7 +2479,7 @@ goMakeSummaryTree()
     fi
     echo >> ${outfile}
   done
-
+  alilog_info  "[END] goMakeSummaryTree() with following parameters $*" 
   return 0
 )
 
