@@ -32,7 +32,7 @@ set(SRCS
         AliMinimalisticCluster.cxx
         AliMinimalisticEvent.cxx
         AliMinimalisticTrack.cxx
-)
+        AliConverterPolylinesEngine.cxx AliConverterPolylinesEngine.h)
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 

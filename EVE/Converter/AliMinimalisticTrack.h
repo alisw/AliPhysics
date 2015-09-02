@@ -19,9 +19,10 @@ public:
     AliMinimalisticTrack() : TObject()
     {  }
 
-    AliMinimalisticTrack(Int_t charge, Double_t energy, Int_t ID, Int_t PID, Double_t mass, Double_t signedPT,
-                             Double_t startXYZ[], Double_t endXYZ[], Double_t pxpypz[], Int_t parentID, Double_t phi,
-                             Double_t theta, Double_t helixCurvature, Int_t type);
+    AliMinimalisticTrack(
+            Int_t charge, Double_t energy, Int_t ID, Int_t PID, Double_t mass, Double_t signedPT,
+            Double_t startXYZ[], Double_t endXYZ[], Double_t pxpypz[], Int_t parentID, Double_t phi,
+            Double_t theta, Double_t helixCurvature, Int_t type);
 
     void AddChild(Int_t childID);
     const std::vector<Int_t> &GetChildrenIDs() const;
@@ -33,10 +34,11 @@ public:
     enum {
         kStandard, kKinkMother, kKinkDaughter, kV0NegativeDaughter, kV0PositiveDaughter, kV0Mother,
         kCascadePrimaryMother, kCascadePrimaryDaughter, kCascadeSecondaryMother,
-        kCascadeNegativeDaughter, kCascadePositiveDaughter
+        kCascadeNegativeDaughter, kCascadePositiveDaughter, kMuonMatched, kMuonNotMatched, kMuonGhost
     };
+    void SetTrackType(Int_t type);
 private:
-    static const TString fgkTrackTypes[11];
+    static const TString fgkTrackTypes[14];
 
     void AddStartCoordinates(Double_t xyz[3]);
     void AddEndCoordinates(Double_t xyz[3]);

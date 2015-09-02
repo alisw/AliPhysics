@@ -117,8 +117,7 @@ private:
            AliMinimalisticTrack &bachelorTrack
    ) const;
 
-    // TODO ADD PolyLines for muontracks
-    std::string AddPolylinesToMuonTracks(int trackNumber,AliMinimalisticTrack &minimalisticMuonTrack) const;
+    void AddPolylinesToMuonTracks(Int_t trackNumber, AliMinimalisticTrack &minimalisticMuonTrack) const;
     void CheckEvent() const;
 
     void InsertPolyPoints(AliMinimalisticTrack &Track, std::vector<TEveVector4D> &Points) const;
