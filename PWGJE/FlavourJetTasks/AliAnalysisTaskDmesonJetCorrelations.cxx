@@ -279,36 +279,40 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::FillHistograms()
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDmesonJetCorrelations::ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong)
+Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i)
 {
   if (fParticleLevel) {
     AliAODMCParticle* part = static_cast<AliAODMCParticle*>(HFcand);
-    ExtractParticleLevelHFAttributes(part, Dvector, invMassD, softPionPtD, invMass2prong);
+    return ExtractParticleLevelHFAttributes(part, Dvector, invMassD, softPionPtD, invMass2prong, i);
   }
   else {
     AliAODRecoDecayHF2Prong* Dcand = static_cast<AliAODRecoDecayHF2Prong*>(HFcand);
-    ExtractRecoDecayAttributes(Dcand, Dvector, invMassD, softPionPtD, invMass2prong);
+    return ExtractRecoDecayAttributes(Dcand, Dvector, invMassD, softPionPtD, invMass2prong, i);
   }
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDmesonJetCorrelations::ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& /*softPionPtD*/, Double_t& /*invMass2prong*/)
+Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& /*softPionPtD*/, Double_t& /*invMass2prong*/, UInt_t i)
 {
+  if (i > 0) return kFALSE;
   Dvector.SetPtEtaPhiM(part->Pt(), part->Eta(), part->Phi(), part->M());
   invMassD = part->M();
+  return kTRUE;
 }
 
 //_______________________________________________________________________________
-void AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong)
+Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i)
 {
   if (fCandidateType == kD0toKpi) {
     AliDebug(2,"Checking if D0 meson is selected");
     Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
     if (isSelected == 1) {  // selected as a D0
+      if (i > 0) return kFALSE;
       AliDebug(2,"Selected as D0");
       invMassD = Dcand->InvMassD0();
     }
     else if (isSelected == 2) { // selected as a D0bar
+      if (i > 0) return kFALSE;
       AliDebug(2,"Selected as D0bar");
       invMassD = Dcand->InvMassD0bar();
     }
@@ -323,17 +327,21 @@ void AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODReco
       AliDebug(2,Form("D0 inv mass = %.3f, D0bar inv mass = %.3f, PDG mass = %.3f", massD0, massD0bar, pdgMass));
         
       // Select D0 or D0bar depending on which one gives a mass closest to the PDG value
-      if (TMath::Abs(massD0 - pdgMass) < TMath::Abs(massD0bar - pdgMass)) {
+      if (i == 0) {
         AliDebug(2, "Mass closer to D0");
         invMassD = massD0;
       }
-      else {
+      else if (i == 1) {
         AliDebug(2, "Mass closer to D0bar");
         invMassD = massD0bar;
+      }
+      else {
+        return kFALSE;
       }
     }
   }
   else if (fCandidateType == kDstartoKpipi) {
+    if (i > 0) return kFALSE;
     AliAODRecoCascadeHF* DstarCand = static_cast<AliAODRecoCascadeHF*>(Dcand);
     invMassD = DstarCand->InvMassDstarKpipi();
     softPionPtD = DstarCand->GetBachelor()->Pt();
@@ -341,6 +349,7 @@ void AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODReco
   }
 
   Dvector.SetPtEtaPhiM(Dcand->Pt(), Dcand->Eta(), Dcand->Phi(), invMassD);
+  return kTRUE;
 }
 
 //_______________________________________________________________________________
@@ -457,8 +466,6 @@ void AliAnalysisTaskDmesonJetCorrelations::FillHistograms(AliVParticle* HFcand, 
   Double_t invMassD = 0;
   Double_t softPionPtD = 0;
   Double_t invMass2prong = 0;
- 
-  ExtractHFcandAttributes(HFcand, Dvector, invMassD, softPionPtD, invMass2prong);
 
   TLorentzVector jetVector;
   Double_t leadPtJet = 0;
@@ -497,8 +504,13 @@ void AliAnalysisTaskDmesonJetCorrelations::FillHistograms(AliVParticle* HFcand, 
     }
   }
 
-  AliDebug(2,"Filling THnSparse");
-  FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel, daughterDist);
+  if (ExtractHFcandAttributes(HFcand, Dvector, invMassD, softPionPtD, invMass2prong, 0)) {
+    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel, daughterDist);
+  }
+
+  if (ExtractHFcandAttributes(HFcand, Dvector, invMassD, softPionPtD, invMass2prong, 1)) {
+    FillTHnSparse(Dvector, softPionPtD, invMass2prong, jetVector, leadPtJet, areaJet, constJet, matchingStatus, matchingLevel, daughterDist);
+  }
 }
 
 //_______________________________________________________________________________
