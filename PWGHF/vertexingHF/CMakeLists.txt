@@ -30,42 +30,42 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAODHFUtil.cxx 
-  AliAODRecoDecayHF.cxx 
-  AliAODRecoDecayHF2Prong.cxx 
-  AliAODRecoDecayHF3Prong.cxx 
-  AliAODRecoDecayHF4Prong.cxx 
-  AliAODRecoCascadeHF.cxx 
+  AliAODHFUtil.cxx
+  AliAODRecoDecayHF.cxx
+  AliAODRecoDecayHF2Prong.cxx
+  AliAODRecoDecayHF3Prong.cxx
+  AliAODRecoDecayHF4Prong.cxx
+  AliAODRecoCascadeHF.cxx
   AliAODRecoCascadeHF3Prong.cxx
-  AliAODPidHF.cxx 
-  AliRDHFCuts.cxx 
-  AliVertexingHFUtils.cxx 
-  AliHFSystErr.cxx 
-  AliRDHFCutsD0toKpi.cxx 
-  AliRDHFCutsJpsitoee.cxx 
-  AliRDHFCutsDplustoKpipi.cxx 
-  AliRDHFCutsDstoKKpi.cxx 
-  AliRDHFCutsLctopKpi.cxx 
-  AliRDHFCutsLctoV0.cxx 
-  AliRDHFCutsD0toKpipipi.cxx 
-  AliRDHFCutsDStartoKpipi.cxx 
+  AliAODPidHF.cxx
+  AliRDHFCuts.cxx
+  AliVertexingHFUtils.cxx
+  AliHFSystErr.cxx
+  AliRDHFCutsD0toKpi.cxx
+  AliRDHFCutsJpsitoee.cxx
+  AliRDHFCutsDplustoKpipi.cxx
+  AliRDHFCutsDstoKKpi.cxx
+  AliRDHFCutsLctopKpi.cxx
+  AliRDHFCutsLctoV0.cxx
+  AliRDHFCutsD0toKpipipi.cxx
+  AliRDHFCutsDStartoKpipi.cxx
   AliRDHFCutsLctoeleLambdafromAODtracks.cxx
   AliRDHFCutsLctopK0sfromAODtracks.cxx
   AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
-  AliAnalysisVertexingHF.cxx 
-  AliAnalysisTaskSEVertexingHF.cxx 
-  AliAnalysisTaskMEVertexingHF.cxx 
-  AliAnalysisTaskSESelectHF.cxx 
-  AliAnalysisTaskSECompareHF.cxx 
-  AliAnalysisTaskSEDplus.cxx 
-  AliAnalysisTaskSEDs.cxx 
-  AliAnalysisTaskSELambdac.cxx 
-  AliAnalysisTaskSED0Mass.cxx 
+  AliAnalysisVertexingHF.cxx
+  AliAnalysisTaskSEVertexingHF.cxx
+  AliAnalysisTaskMEVertexingHF.cxx
+  AliAnalysisTaskSESelectHF.cxx
+  AliAnalysisTaskSECompareHF.cxx
+  AliAnalysisTaskSEDplus.cxx
+  AliAnalysisTaskSEDs.cxx
+  AliAnalysisTaskSELambdac.cxx
+  AliAnalysisTaskSED0Mass.cxx
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
-  AliAnalysisTaskSECharmFraction.cxx 
-  AliAnalysisTaskSELc2V0bachelor.cxx 
+  AliAnalysisTaskSECharmFraction.cxx
+  AliAnalysisTaskSELc2V0bachelor.cxx
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
   AliAnalysisTaskSELc2eleLambdafromAODtracks.cxx
@@ -73,32 +73,40 @@ set(SRCS
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks.cxx
   AliAnalysisTaskSEXic2eleXifromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
-  AliCFVertexingHF.cxx 
-  AliCFVertexingHF2Prong.cxx 
-  AliCFVertexingHF3Prong.cxx 
-  AliCFVertexingHFCascade.cxx 
+  AliCFVertexingHF.cxx
+  AliCFVertexingHF2Prong.cxx
+  AliCFVertexingHF3Prong.cxx
+  AliCFVertexingHFCascade.cxx
   AliCFVertexingHFLctoV0bachelor.cxx
-  AliCFTaskVertexingHF.cxx 
+  AliCFTaskVertexingHF.cxx
   AliCFTaskVertexingHFCutVarFDSub.cxx
-  AliCFTaskForDStarAnalysis.cxx 
-  AliAnalysisTaskSEDStarJets.cxx 
-  AliAnalysisTaskSEDStarSpectra.cxx 
-  AliAnalysisTaskSESignificance.cxx 
-  AliAnalysisTaskSEHFQA.cxx 
-  AliMultiDimVector.cxx 
-  AliSignificanceCalculator.cxx 
-  AliHFMassFitter.cxx 
-  AliHFPtSpectrum.cxx 
+  AliCFTaskForDStarAnalysis.cxx
+  AliAnalysisTaskSEDStarJets.cxx
+  AliAnalysisTaskSEDStarSpectra.cxx
+  AliAnalysisTaskSESignificance.cxx
+  AliAnalysisTaskSEHFQA.cxx
+  AliMultiDimVector.cxx
+  AliSignificanceCalculator.cxx
+  AliHFMassFitter.cxx
+  AliHFPtSpectrum.cxx
   AliHFsubtractBFDcuts.cxx
-  AliNormalizationCounter.cxx 
-  AliAnalysisTaskSEMonitNorm.cxx 
-  AliAnalysisTaskSEBkgLikeSignD0.cxx 
-  AliAnalysisTaskSEImproveITS.cxx 
-  AliAnalysisTaskCombinHF.cxx 
+  AliNormalizationCounter.cxx
+  AliAnalysisTaskSEMonitNorm.cxx
+  AliAnalysisTaskSEBkgLikeSignD0.cxx
+  AliAnalysisTaskSEImproveITS.cxx
+  AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
   charmFlow/AliAnalysisTaskSEHFv2.cxx
   charmFlow/AliHFAfterBurner.cxx
   charmFlow/AliAnalysisTaskFlowD2H.cxx
+  cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
+  cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
+  cutVarFDsub/AliHFCutVarFDsubAxis.cxx
+  cutVarFDsub/AliHFCutVarFDsubCut.cxx
+  cutVarFDsub/AliHFCutVarFDsubCutSet.cxx
+  cutVarFDsub/AliHFCutVarFDsubEfficiency.cxx
+  cutVarFDsub/AliHFCutVarFDsubMassFitter.cxx
+  cutVarFDsub/AliHFCutVarFDsubMinimiser.cxx
   upgrade/AliAnalysisTaskSELambdacUp.cxx
   upgrade/AliAnalysisTaskCountLcEta.cxx
   AliAnalysisTaskSELc2V0bachelorTMVA.cxx
@@ -138,7 +146,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
@@ -150,7 +158,7 @@ install(FILES
 	    AddGoodRuns.C
             ConfigVertexingHF.C
             ConfigVertexingHF_highmult.C
-        DESTINATION 
+        DESTINATION
             PWGHF/vertexingHF/)
 
 install(DIRECTORY
