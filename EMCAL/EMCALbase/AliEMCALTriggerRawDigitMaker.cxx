@@ -153,7 +153,7 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 				Int_t time = startBin--;
 				Int_t amp  = sig[iS];
 				
-				if (amp) timeSamples[nSamples++] = ((time << 12) & 0xFF000) | (amp & 0xFFF);
+				if (amp) timeSamples[nSamples++] = ((time << 16) & 0xFF0000) | (amp & 0xFFFF);
 				
 				if (AliDebugLevel())
 				{
