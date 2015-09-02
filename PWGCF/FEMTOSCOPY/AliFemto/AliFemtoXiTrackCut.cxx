@@ -160,12 +160,12 @@ void AliFemtoXiTrackCut::SetTPCnclsBac(int x){
   fTPCNclsBac = x; 
 }
 
-void AliFemtoXiTrackCut::SetNdofDaughters(double x){
+void AliFemtoXiTrackCut::SetNdofBac(double x){
   fNdofBac = x;
 }
 
 
-void AliFemtoXiTrackCut::SetStatusDaughters(unsigned long x) {
+void AliFemtoXiTrackCut::SetStatusBac(unsigned long x) {
   fStatusBac = x;
 }
 
