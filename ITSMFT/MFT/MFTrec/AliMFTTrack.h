@@ -39,7 +39,11 @@ class AliMFTTrack : public TObject {
  
   /// return pointer to track found by Track Finder (includes clusters)
   AliMFTCATrack* GetCATrack() const {return fCATrack;}
+<<<<<<< HEAD
   void SetCATrack(  AliMFTCATrack* track) {};
+=======
+  void SetCATrack(  AliMFTCATrack* track){};
+>>>>>>> Add temporary a simple empty content {} to the definition of the function.
 
   protected:
   
