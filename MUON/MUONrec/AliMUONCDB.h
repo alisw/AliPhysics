@@ -26,6 +26,7 @@ class AliMUONGlobalCrateConfig;
 class AliMUONRejectList;
 class AliMUONRecoParam;
 class TH1;
+class AliMergeableCollection;
 
 namespace AliMUONCDB
 {
@@ -50,6 +51,8 @@ namespace AliMUONCDB
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file);
   Int_t MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues);
   Int_t MakeOccupancyMapStore(AliMUONVStore& occupancyMap, Bool_t defaultValues);
+  Int_t MakeBusPatchEvolution(AliMergeableCollection& bpevo, int timeResolution=60);
+
   AliMUONRejectList* MakeRejectListStore(Bool_t defaultValues);
   
   Int_t MakeLocalTriggerMaskStore(AliMUONVStore& ltm);  
@@ -96,6 +99,7 @@ namespace AliMUONCDB
   void WriteOccupancyMap(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteRejectList(Bool_t defaultValues, Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteConfig(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
+  void WriteBPEVO(Int_t startRun, Int_t endRun=AliCDBRunRange::Infinity());
 
   void WriteLocalTriggerMasks(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());
   void WriteRegionalTriggerConfig(Int_t startRun=0, Int_t endRun=AliCDBRunRange::Infinity());

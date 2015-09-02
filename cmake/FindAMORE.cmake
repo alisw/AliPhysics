@@ -45,7 +45,8 @@ if(AMORE_CONFIG)
     message(STATUS "AMORE version ${AMORE_VERSION} found.")
 
     # Checking AMORE static libraries
-    execute_process(COMMAND ${AMORE_CONFIG} --ldflags-da-static OUTPUT_VARIABLE AMORE_STATICLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+     execute_process(COMMAND ${AMORE_CONFIG} --root-build-dir=${ROOTSYS}/../build --ldflags-da-static OUTPUT_VARIABLE AMORE_STATICLIBS ERROR_VARIABLE error OUTPUT_STRIP_TRAILING_WHITESPACE )
+    
     if(error)
         message(FATAL_ERROR "Error retrieving AMORE static libraries : ${error}")
     endif(error)

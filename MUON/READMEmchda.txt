@@ -5,17 +5,18 @@
 \page README_mchda MUON Tracking DA
  
 The detector algorithms are implemented for the Muon Tracking in the AliRoot framework.
-We currently have 3 DAs for MCH :
+We currently have 4 DAs for MCH :
 
-- MUONTRKPEDda.cxx for PEDESTAL runs, running at the end of data taking on each LDC.
-- MUONTRKGAINda.cxx for CALIBRATION runs, running at the end of data taking on each LDC.
-- MUONTRKOCCda.cxx for PHYSICS runs, running during data taking on each LDC.
+- MCHPEDda.cxx for PEDESTAL runs, running at the end of data taking on each LDC (seing only the LDC part of each event, but all events)
+- MCHGAINda.cxx for CALIBRATION runs, running at the end of data taking on each LDC (seing only the LDC part of each event, but all events)
+- MCHOCCda.cxx for PHYSICS runs, running during data taking on a monitoring machine (seing full events, but only a sample of the full stat)
+- MCHBPEVOda.cxx for PHYSICS runs, running during data taking on a monitoring machine (seing full events, but only a sample of the full stat)
 
 \section da_s1 The Muon Tracking Calibration
 
-The Muon tracking chambers needs three types of calibration in order to work properly 
-(to be more precise pedestals are required, gains are needed to get the best charge measurement possible, and the occupancy
- is needed in order not to spend all the reconstruction time in hot-spots). 
+The Muon tracking chambers needs three types of calibration in order to work properly. Actually  
+to be more precise pedestals are absolutely required, gains are needed to get the best charge measurement possible,  the occupancy
+ is needed in order not to spend all the reconstruction time in hot-spots, and the bus patch evolution is needed to get an idea on long term stability.
 
 \subsection da_ss1 Pedestals
 
@@ -58,15 +59,25 @@ Then the SHUTTLE process the ASCII files and store the result on the OCDB (KEYWO
 
 \subsection da_ss3 Occupancy
 
-For PHYSICS (or STANDALONE) runs, the MUONTRKOCCda, which is a monitoring DA, keep track of how many times
+For PHYSICS (or STANDALONE) runs, the MCHOCCda, which is a monitoring DA, keep track of how many times
  each channel has been hit during the run. The output is an ASCII file containing the needed information to 
  compute the occupancy values. This file is written to the DAQ FXS so the SHUTTLE can transfer it to the OCDB.
+
+\subsection da_ss4 Bus Patch Evolution
+
+For PHYSICS (or STANDALONE) runs, the MCHBPEVOda, which is a monitoring DA, keep track of how many times
+ each bus patch has been hit during the run. The output is a Root file containing the time evolution of the bus patch
+  hit count, together with the time evolution of the number of events (used later on to compute the bus patch occupancy evolution).
+  This file (mchbpevo.conf) is written to the DAQ FXS so the SHUTTLE can transfer it to the OCDB (MUON/Calib/BPEVO).
+
+The MCHBPEVOda is using a configuration file (from the DAQ detector database), @see mchbpevo.conf, and the AliMUONBusPatchEvolution class.
+ Output of the DA (either direct one, or the corresponding OCDB object) can be inspected with the help of the MUONBusPatchEvolution.C macro.
 
 \section da_s2 Using the DA Online
 
 \subsection da_ss1 Pedestals
 
-The syntax is: MUONTRKPEDda.exe "raw data file"
+The syntax is: MCHPEDda.exe "raw data file"
 
 Two input files located in the DAQ Detector database (DetDB) are needed:
 
@@ -76,11 +87,11 @@ Two input files located in the DAQ Detector database (DetDB) are needed:
   
 - config_ldc-MTRK-S3-0 : configuration file name corresponding to MuonTracker Station 3 if (for example) DA is running on ldc-MTRK-S3-0
 
-- DA validation: see Header of MUONTRKPEDda.cxx for reference run, and corresponding input mutrkpedvalues and configuration files are located in path=/afs/cern.ch/user/j/jcharvet/public/DA_validation
+- DA validation: see Header of MCHPEDda.cxx for reference run, and corresponding input mutrkpedvalues and configuration files are located in path=/afs/cern.ch/user/j/jcharvet/public/DA_validation
 
 \subsection da_ss2 Electonics gain
 
-The syntax is: MUONTRKGAINda.exe "raw data file"
+The syntax is: MCHGAINda.exe "raw data file"
 
 Two input files located in the DAQ Detector database (DetDB) are needed:
 
@@ -109,7 +120,7 @@ Default values are listed below
 
  - config_ldc-MTRK-S3-0 : configuration file name corresponding to MuonTracker station 3 if (for example) DA is running on ldc-MTRK-S3-0 
 
-- DA validation: Header of MUONTRKGAINda.cxx shows the list of the 11 reference runs, and corresponding input mutrkcalibvalues and configuration files are located in path=/afs/cern.ch/user/j/jcharvet/public/DA_validation
+- DA validation: Header of MCHGAINda.cxx shows the list of the 11 reference runs, and corresponding input mutrkcalibvalues and configuration files are located in path=/afs/cern.ch/user/j/jcharvet/public/DA_validation
 
 \section da_s3 Using the DA Offline
  
@@ -123,20 +134,20 @@ Note that PED and GAIN DAs work with ROOT input files as well.
 You have a line command help. To have it just type :
 
 \verbatim
-> MUONTRKPEDda.exe -h
+> MCHPEDda.exe -h
 
-******************* ./MUONTRKPEDda.exe usage **********************
-Online (called from ECS) : ./MUONTRKPEDda.exe <raw data file> (no inline options)
+******************* ./MCHPEDda.exe usage **********************
+Online (called from ECS) : ./MCHPEDda.exe <raw data file> (no inline options)
 
-./MUONTRKPEDda.exe can be used locally only with options (without DiMuon configuration file)
-./MUONTRKPEDda.exe -options, the available options are :
+./MCHPEDda.exe can be used locally only with options (without DiMuon configuration file)
+./MCHPEDda.exe -options, the available options are :
 -h help                    (this screen)
 
  Input
 -f <raw data file>         (default = )
 
  Output
--a <Flat ASCII file>       (default = MUONTRKPEDda.ped)
+-a <Flat ASCII file>       (default = MCHPEDda.ped)
 
  Options
 -m <max date events>       (default = 1000000)

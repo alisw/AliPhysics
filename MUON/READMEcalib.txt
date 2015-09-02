@@ -27,6 +27,7 @@ Please have a closer look before using (especially the ones writing to the CDB..
 <tr><td>MUON/Calib/HV</td><td>MCH</td><td>PHYSICS</td><td>N/A</td><td>N/A</td><td>Once per physics run</td><td>Depends on the number of trips, 10-20 KB normally</td></tr>
 <tr><td>MUON/Calib/Neighbours</td><td>MCH</td><td>N/A</td><td>N/A</td><td>N/A</td><td>As MappingData</td><td>10 MB</td></tr>
 <tr><td>MUON/Calib/OccupancyMap</td><td>MCH</td><td>PHYSICS</td><td>OCCUPANCY</td><td>MON</td><td>Once per physics run</td><td>Depends on the number of bad manus, normally 100-200 KB</td></tr>
+<tr><td>MUON/Calib/OccupancyMap</td><td>MCH</td><td>PHYSICS</td><td>OCCUPANCY</td><td>MON</td><td>Once per physics run</td><td>Depends on the number of run duration and the time resolution used</td></tr>
 <tr><td>MUON/Calib/Pedestals</td><td>MCH</td><td>PEDESTAL</td><td>PEDESTALS</td><td>LDC</td><td>Once per pedestal run</td><td>7 MB</td></tr>
 <tr><td>MUON/Calib/RejectList</td><td>MCH</td><td>N/A</td><td>N/A</td><td>N/A</td><td>Few per year</td><td>Depends on the number of bad elements</td></tr>
 

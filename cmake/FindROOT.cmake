@@ -322,7 +322,9 @@ if(ROOTSYS)
             find_package(OpenSSL)
         
             if(OPENSSL_FOUND)
-                file(GLOB _extraroot "${ROOTSYS}/montercarlo/vmc/src/*.o" "${ROOTSYS}/tree/treeplayer/src/*.o" "${ROOTSYS}/io/xmlparser/src/*.o" "${ROOTSYS}/math/minuit2/src/*.o")
+
+file(GLOB _extraroot "${ROOTSYS}/../build/montercarlo/vmc/src/*.o" "${ROOTSYS}/../build/tree/treeplayer/src/*.o" "${ROOTSYS}/../build/io/xmlparser/src/*.o" "${ROOTSYS}/../build/math/minuit2/src/*.o")
+
                 add_library(RootExtra STATIC ${_extraroot})
                 set_target_properties(RootExtra PROPERTIES COMPILE_FLAGS "${LIBXML2_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR}")
                 set_target_properties(RootExtra PROPERTIES LINKER_LANGUAGE CXX)

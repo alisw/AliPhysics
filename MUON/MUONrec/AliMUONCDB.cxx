@@ -78,10 +78,12 @@
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliMpBusPatch.h"
+#include "AliMergeableCollection.h"
 
 #include <Riostream.h>
 #include <TArrayI.h>
 #include <TClass.h>
+#include "TF1.h"
 #include <TFile.h>
 #include <TH1F.h>
 #include <TList.h>
@@ -489,6 +491,57 @@ AliMUONCDB::Plot(const AliMUONVStore& store, const char* name, Int_t nbins)
   delete[] nPerStation;
   
   return h;
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONCDB::MakeBusPatchEvolution(AliMergeableCollection& hc, int timeResolution)
+{
+	/// Make a fake bus patch evolution mergeable collection, where
+	/// the (mean) occupancy is the bus patch id
+
+	 if (!AliMUONCDB::CheckMapping()) return 0;
+
+	 TDatime origin;
+
+	 double xmin = 0;
+	 double xmax = xmin + 3600;
+
+	 int nbins = TMath::Nint((xmax-xmin)/timeResolution);
+
+	TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+	AliMpBusPatch* bp;
+
+	Int_t total(0);
+
+	TF1 f1("f1","pol0",xmin,xmax);
+
+	while ((bp = static_cast<AliMpBusPatch*>(next())))
+	{
+		++total;
+		TH1* h = new TH1F(Form("BP%04d",bp->GetId()),Form("Number of hits in %d s bins",timeResolution),nbins,xmin,xmax);
+		f1.SetParameter(0,bp->GetId());
+		h->FillRandom("f1",10000);
+		h->GetXaxis()->SetTimeDisplay(1);
+		h->GetXaxis()->SetTimeFormat("%d/%m/%y %H:%M");
+		h->GetXaxis()->SetTimeOffset(origin.Convert());
+		hc.Adopt(Form("/BUSPATCH/HITS/%ds",timeResolution),h);
+	}
+
+	// number of events needed for normalization
+
+	TH1* h = new TH1F(Form("Nevents%ds",timeResolution),Form("Number of events %d s bins",timeResolution),nbins,xmin,xmax);
+
+	f1.SetParameter(0,4200);
+
+	h->FillRandom("f1",10000);
+
+	h->GetXaxis()->SetTimeDisplay(1);
+	h->GetXaxis()->SetTimeFormat("%d/%m/%y %H:%M");
+	h->GetXaxis()->SetTimeOffset(origin.Convert());
+
+	hc.Adopt("",h);
+
+	return (total == 888);
 }
 
 //_____________________________________________________________________________
@@ -1439,6 +1492,20 @@ AliMUONCDB::WriteConfig(Int_t startRun, Int_t endRun)
 
 //_____________________________________________________________________________
 void
+AliMUONCDB::WriteBPEVO(Int_t startRun, Int_t endRun)
+{
+  /// Write a fake bus patch evolution to OCDB
+
+  AliMergeableCollection bpevo("BPEVO");
+
+  if (MakeBusPatchEvolution(bpevo,60))
+  {
+	  WriteToCDB("MUON/Calib/BPEVO",&bpevo,startRun,endRun,kTRUE);
+  }
+ }
+
+//_____________________________________________________________________________
+void
 AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
 {
   /// Writes all Tracker related calibration to CDB
@@ -1450,6 +1517,7 @@ AliMUONCDB::WriteTracker(Bool_t defaultValues, Int_t startRun, Int_t endRun)
   WriteOccupancyMap(defaultValues,startRun,endRun);
   WriteRejectList(defaultValues,startRun,endRun);
   WriteConfig(startRun,endRun);
+  WriteBPEVO(startRun,endRun);
 }
 
 //_____________________________________________________________________________

@@ -52,6 +52,7 @@ set(SRCS
     AliMUONTriggerScalers.cxx
     AliMUONVCalibParam.cxx
     AliMUONVTrackerData.cxx
+    AliMUONBusPatchEvolution.cxx
    )
 
 # Headers from sources

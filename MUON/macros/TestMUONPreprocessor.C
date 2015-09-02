@@ -44,7 +44,7 @@
 /// </pre>
 ///
 /// The input data has to be created first by other processes (or is created
-/// here by CreateDCSAliasMap() for tracker HV).
+/// here by CreateDCSAliasMap() for tracker and trigger HV).
 ///
 /// To play with it, you'll have to set/modify several lines, to
 /// - a) select input files, using shuttle->AddInputFile()
@@ -68,6 +68,8 @@
 ///    GMS.root
 /// OCCUPANCY/
 ///    mch.occupancy
+/// BPEVO/
+///    mchbpevo.root
 /// PEDESTALS/
 ///    LDC0.ped
 ///    LDC1.ped
@@ -163,7 +165,7 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   TString rt(runType);
   rt.ToUpper();
   
-  if ( rt.Contains("PHYSICS") )
+  if ( rt.Contains("PHYSICS") || rt.Contains("CALIBRATION") )
   {
     // Create DCS aliases
     TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB, runNumber);
@@ -208,6 +210,8 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC3",Form("%s/GAINS/LDC3.gain",sourceDirectory));
 
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","OCCUPANCY","MON",Form("%s/OCCUPANCY/mch.occupancy",sourceDirectory));
+
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","BPEVO","MON",Form("%s/BPEVO/mchbpevo.root",sourceDirectory));
 
   // and GMS file
   shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS",Form("%s/GMS/GMS.root",sourceDirectory));

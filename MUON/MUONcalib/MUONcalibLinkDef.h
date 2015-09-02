@@ -24,7 +24,6 @@
 #pragma link C++ class AliMUONTriggerCrateConfig+;
 #pragma link C++ class AliMUONGlobalCrateConfig+;
 #pragma link C++ class AliMUONTriggerDisplay+;
-
 #pragma link C++ class AliMUON2DStoreValidator+;
 #pragma link C++ class AliMUONTriggerIO+;
 #pragma link C++ class AliMUONTrackerIO+;
@@ -36,6 +35,7 @@
 #pragma link C++ class AliMUONErrorCounter+;
 #pragma link C++ class AliMUONRejectList+;
 #pragma link C++ class AliMUONTriggerScalers+;
+#pragma link C++ class AliMUONBusPatchEvolution+;
 
 #endif
 

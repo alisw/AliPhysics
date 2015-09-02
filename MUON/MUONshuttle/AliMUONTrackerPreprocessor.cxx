@@ -22,8 +22,8 @@
 #include "AliMUONGMSSubprocessor.h"
 #include "AliMUONGainSubprocessor.h"
 #include "AliMUONOccupancySubprocessor.h"
-
 #include "AliLog.h"
+#include "AliMUONBusPatchEvolutionSubprocessor.h"
 #include "AliShuttleInterface.h"
 #include "Riostream.h"
 #include "TObjArray.h"
@@ -50,7 +50,8 @@ fPedestalSubprocessor(new AliMUONPedestalSubprocessor(this)),
 fGMSSubprocessor(new AliMUONGMSSubprocessor(this)),    
 fHVSubprocessor(new AliMUONHVSubprocessor(this,kTRUE)),
 fGainSubprocessor(new AliMUONGainSubprocessor(this)),
-fOccupancySubprocessor(new AliMUONOccupancySubprocessor(this))
+fOccupancySubprocessor(new AliMUONOccupancySubprocessor(this)),
+fBusPatchEvolutionSubprocessor(new AliMUONBusPatchEvolutionSubprocessor(this))
 {
   /// ctor. 
     
@@ -70,6 +71,7 @@ AliMUONTrackerPreprocessor::~AliMUONTrackerPreprocessor()
   delete fHVSubprocessor;
   delete fGainSubprocessor;
   delete fOccupancySubprocessor;
+  delete fBusPatchEvolutionSubprocessor;
 }
 
 //_____________________________________________________________________________
@@ -103,14 +105,18 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   else if ( runType == "PHYSICS" )
   {
     Bool_t useDCS(kTRUE);
+
     Add(fHVSubprocessor,useDCS); // to be called only for physics runs
     Add(fOccupancySubprocessor);
+    Add(fBusPatchEvolutionSubprocessor);
+
     Log("INFO-Will run HV subprocessor");
     if ( fHVSubprocessor->IncludeHVCurrent() )
     {
       Log("INFO-HV subprocessor will store HV currents in addition to the voltages");
     }
     Log("INFO-Will run Occupancy subprocessor");
+    Log("INFO-Will run Bus Patch Evolution subprocessor");
   }
   else
   {

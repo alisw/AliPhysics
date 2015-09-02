@@ -44,6 +44,7 @@ set(SRCS
     AliMUONTriggerPreprocessor.cxx
     AliMUONTriggerSubprocessor.cxx
     AliMUONVSubprocessor.cxx
+    AliMUONBusPatchEvolutionSubprocessor.cxx
    )
 
 # Headers from sources
