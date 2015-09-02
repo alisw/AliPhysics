@@ -152,8 +152,8 @@ fTriggerSelectCharge(0),
 fAssociatedSelectCharge(0),
 fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
-fCutConversions(kFALSE),
-fCutResonances(kFALSE),
+fCutConversionsV(-1),
+fCutResonancesV(-1),
 fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
@@ -297,8 +297,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetEtaOrdering(fEtaOrdering);
   fHistosMixed->SetEtaOrdering(fEtaOrdering);
 
-  fHistos->SetPairCuts(fCutConversions, fCutResonances);
-  fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
+  fHistos->SetPairCuts(fCutConversionsV, fCutResonancesV);
+  fHistosMixed->SetPairCuts(fCutConversionsV, fCutResonancesV);
   
   fHistos->SetRejectResonanceDaughters(fRejectResonanceDaughters);
   fHistosMixed->SetRejectResonanceDaughters(fRejectResonanceDaughters);
@@ -468,8 +468,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fAssociatedSelectCharge", &fAssociatedSelectCharge,"fAssociatedSelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
-  settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
-  settingsTree->Branch("fCutResonances", &fCutResonances,"CutResonances/O");
+  settingsTree->Branch("fCutConversionsV", &fCutConversionsV,"CutConversionsV/D");
+  settingsTree->Branch("fCutResonancesV", &fCutResonancesV,"CutResonancesV/D");
   settingsTree->Branch("fRejectResonanceDaughters", &fRejectResonanceDaughters,"RejectResonanceDaughters/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
