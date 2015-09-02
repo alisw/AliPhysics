@@ -231,6 +231,10 @@ public:
   virtual Int_t GetPrimaryVertexSPD( AliESDVertex & ) const {return 0;}
   virtual Int_t GetPrimaryVertexTracks( AliESDVertex & ) const {return 0;}
 
+  // event status
+  virtual Bool_t IsIncompleteDAQ() {return kFALSE;}
+
+
   virtual void ConnectTracks() {}
   virtual EDataLayoutType GetDataLayoutType() const = 0;
   const char* Whoami();

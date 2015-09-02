@@ -32,6 +32,7 @@
 #include "AliAODTrack.h"
 #include "AliAODDimuon.h"
 #include "AliAODTrdTrack.h"
+#include "event.h"
 
 ClassImp(AliAODEvent)
 
@@ -1108,6 +1109,15 @@ void AliAODEvent::ConnectTracks() {
   TIter next(fTracks);
   while ((track=(AliAODTrack*)next())) track->SetAODEvent(this);
   fTracksConnected = kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliAODEvent::IsIncompleteDAQ() 
+{
+  // check if DAQ has set the incomplete event attributes
+  return (fDAQAttributes&ATTR_2_B(ATTR_INCOMPLETE_EVENT))!=0 
+    ||   (fDAQAttributes&ATTR_2_B(ATTR_FLUSHED_EVENT))!=0;
+    
 }
 
 AliVEvent::EDataLayoutType AliAODEvent::GetDataLayoutType() const {return AliVEvent::kAOD;}

@@ -105,6 +105,11 @@ class AliAODEvent : public AliVEvent {
 
   virtual  Bool_t InitMagneticField() const {return fHeader ? fHeader->InitMagneticField() : kFALSE;}
 
+  void   SetDAQAttributes(UInt_t attributes) {fDAQAttributes = attributes;}
+  UInt_t GetDAQAttributes() const {return fDAQAttributes;}
+  Bool_t IsIncompleteDAQ();
+
+
   // setters and getters for header information
   void     SetRunNumber(Int_t n) {if (fHeader) fHeader->SetRunNumber(n);}
   void     SetPeriodNumber(UInt_t n){if (fHeader) fHeader->SetPeriodNumber(n);}
@@ -333,6 +338,7 @@ class AliAODEvent : public AliVEvent {
 
   TList   *fAODObjects; //  list of AODObjects
   TFolder *fAODFolder;  //  folder structure of branches
+  UInt_t   fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
   Bool_t   fConnected;  //! flag if leaves are alreday connected 
   Bool_t   fTracksConnected;      //! flag if tracks have already pointer to event set
   // standard content
@@ -364,7 +370,7 @@ class AliAODEvent : public AliVEvent {
   
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent,92);
+  ClassDef(AliAODEvent,93);
 };
 
 #endif
