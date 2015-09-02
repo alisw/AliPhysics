@@ -553,7 +553,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fTrackDzDxIM_bg->Sumw2();
   fQAList->Add(fTrackDzDxIM_bg);
 
-  fTrackDzDxPhoSS_bg =  new TH2F("fTrackDzDxPhoSS","cluster in side bands of merged #pi^{0} #lambda_{0}^{2} (inclusive energy);#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDzDxPhoSS_bg =  new TH2F("fTrackDzDxPhoSS_bg","cluster in side bands of merged #pi^{0} #lambda_{0}^{2} (inclusive energy);#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
   fTrackDzDxPhoSS_bg->Sumw2();
   fQAList->Add(fTrackDzDxPhoSS_bg);
 
