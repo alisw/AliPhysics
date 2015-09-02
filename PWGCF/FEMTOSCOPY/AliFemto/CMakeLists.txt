@@ -88,6 +88,7 @@ set(SRCS
   AliFemtoDeltaPtPairCut.cxx	
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.cxx
   AliFemtoXiTrackCut.cxx
+  AliFemtoXiPairCut.cxx
   )
 
 # Headers from sources
