@@ -46,7 +46,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FillMcHists();
   void                   FillQA();
   void                   FillInvMass(); //inv mass for all neutral clusters
-  Float_t                GetClusSource(const AliVCluster *cluster);
+  Float_t                GetClusSource(const AliVCluster *cluster); //returns the pt of the prompt-photon; if doesn't descend from pro-pho returns -0.1
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
@@ -216,6 +216,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
   TH2F        *fTrackDEtaDPhiPho; //!dEta-dPhi of TM for inclusive true pi0 photons (MC only)
   TH2F        *fTrackDEtaDPhiPi;  //!dEta-dPhi of TM for inclusive true pions (MC only)
+  TH2F        *fTrackDEtaDPhiPPho;//!dEta-dPhi of TM for inclusive true prompt photons (MC only)
   TH2F        *fTrackDzDxIM;      //!dEta-dPhi of TM for pi0 photons via invariant mass method
   TH2F        *fTrackDzDxPhoSS;   //!dEta-dPhi of TM for pi0 photons via shower shape (merged)
   TH2F        *fTrackDzDxIM_bg;   //!BG for dEta-dPhi of TM for pi0 photons via invariant mass method (side bands)
