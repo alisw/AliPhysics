@@ -37,8 +37,8 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   void SetEtaBac(double x);
   void SetPtBac(double min, double max);
   void SetTPCnclsBac(int x);
-  void SetNdofDaughters(double x);
-  void SetStatusDaughters(unsigned long x);
+  void SetNdofBac(double x);
+  void SetStatusBac(unsigned long x);
   void SetInvariantMassXi(double min, double max);
   void SetMaxDcaXi(double x);
   void SetMaxDcaXiBac(double x);
