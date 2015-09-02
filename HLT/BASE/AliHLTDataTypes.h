@@ -792,6 +792,15 @@ extern "C" {
     }
 
     //copy ctor
+    AliHLTDataTopic(const AliHLTComponentDataType& dataType)
+      : fTopic()
+      , fSpecification(0)
+    {
+      memcpy( fTopic, dataType.fID, kAliHLTComponentDataTypefIDsize );
+      memcpy( fTopic+kAliHLTComponentDataTypefIDsize, dataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
+    }
+
+    //copy ctor
     AliHLTDataTopic(const AliHLTComponentBlockData& blockData)
       : fTopic()
       , fSpecification(blockData.fSpecification)
