@@ -143,6 +143,8 @@ public:
   AliFemtoThreeVector NominalTpcEntrancePointNeg() const;
   AliFemtoThreeVector NominalTpcPointNeg(int i);
   AliFemtoThreeVector NominalTpcExitPointNeg() const;
+  AliFemtoThreeVector NominalTpcPointPosShifted() const;
+  AliFemtoThreeVector NominalTpcPointNegShifted() const;
 
   void UpdateV0(); // Fills derived info
   void SetdecayLengthV0(const float x);
@@ -248,6 +250,9 @@ public:
   void SetNominalTpcEntrancePointNeg(AliFemtoThreeVector x);
   void SetNominalTpcPointNeg(AliFemtoThreeVector *x);
   void SetNominalTpcExitPointNeg(AliFemtoThreeVector x);
+
+  void SetNominalTpcPointPosShifted(AliFemtoThreeVector x);
+  void SetNominalTpcPointNegShifted(AliFemtoThreeVector x);
 
   void SetTPCMomentumPos(double x);
   void SetTPCMomentumNeg(double x);
@@ -392,6 +397,9 @@ protected:
   AliFemtoThreeVector fNominalTpcPointsNeg[9];
   AliFemtoThreeVector fNominalTpcExitPointNeg;     ///< Nominal positive daughter track exit point from TPC
 
+  AliFemtoThreeVector fNominalTpcPointPosShifted;     ///< Nominal positive daughter track at given point from TPC
+  AliFemtoThreeVector fNominalTpcPointNegShifted;     ///< Nominal negative daughter track at given point from TPC
+
   double fTPCMomentumPos;
   double fTPCMomentumNeg;
 
@@ -515,6 +523,8 @@ inline AliFemtoThreeVector AliFemtoV0::NominalTpcEntrancePointPos() const {retur
 inline AliFemtoThreeVector AliFemtoV0::NominalTpcExitPointPos() const {return fNominalTpcExitPointPos;}
 inline AliFemtoThreeVector AliFemtoV0::NominalTpcEntrancePointNeg() const  {return fNominalTpcEntrancePointNeg;}
 inline AliFemtoThreeVector AliFemtoV0::NominalTpcExitPointNeg() const  {return fNominalTpcExitPointNeg;}
+inline AliFemtoThreeVector AliFemtoV0::NominalTpcPointPosShifted() const  {return fNominalTpcPointPosShifted;}
+inline AliFemtoThreeVector AliFemtoV0::NominalTpcPointNegShifted() const  {return fNominalTpcPointNegShifted;}
 
 inline void AliFemtoV0::SetdecayLengthV0(const float x){ fDecayLengthV0= x;}
 inline void AliFemtoV0::SetdecayVertexV0X(const float x){ fDecayVertexV0.SetX(x);}
@@ -613,6 +623,8 @@ inline void AliFemtoV0::SetNominalTpcExitPointPos(AliFemtoThreeVector x) {fNomin
 inline void AliFemtoV0::SetNominalTpcEntrancePointNeg(AliFemtoThreeVector x) {fNominalTpcEntrancePointNeg=x;}
 inline void AliFemtoV0::SetNominalTpcPointNeg(AliFemtoThreeVector *x) {for(int i=0;i<9;i++) fNominalTpcPointsNeg[i]=x[i];}
 inline void AliFemtoV0::SetNominalTpcExitPointNeg(AliFemtoThreeVector x) {fNominalTpcExitPointNeg=x;}
+inline void AliFemtoV0::SetNominalTpcPointPosShifted(AliFemtoThreeVector x) {fNominalTpcPointPosShifted=x;}
+inline void AliFemtoV0::SetNominalTpcPointNegShifted(AliFemtoThreeVector x) {fNominalTpcPointNegShifted=x;}
 
 inline void AliFemtoV0::SetTPCMomentumPos(double x) {fTPCMomentumPos = x;}
 inline void AliFemtoV0::SetTPCMomentumNeg(double x) {fTPCMomentumNeg = x;}

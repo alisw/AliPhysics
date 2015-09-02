@@ -76,11 +76,13 @@ public:
     fMinPlpContribSPD = minPlpContribSPD;
   }
   void SetDCAglobalTrack(Bool_t dcagt);
- 
+
   bool RejectEventCentFlat(float MagField, float CentPercent);
   void SetCentralityFlattening(Bool_t flat);
+  void SetShiftPosition(Double_t rad);
 
   void SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints);
+  void SetShiftedPositions(const AliAODTrack *track ,const Float_t bfield, Float_t posShifted[3], const Double_t radius=1.25);
 
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
@@ -127,11 +129,9 @@ private:
   Int_t fMinPlpContribMV;  ///< no of contributors for multivertex pile-up rejection
   Int_t fMinPlpContribSPD; ///< no of contributors for SPD pile-up rejection
   Bool_t fDCAglobalTrack;  ///< to get DCA from global tracks instead of TPC-only
-
-  bool fFlatCent;
-
-  bool fPrimaryVertexCorrectionTPCPoints; ///< Boolean determining if the reader should shift all TPC points to be relative to event vertex
-
+  Bool_t fFlatCent;        ///< Boolean determining if the user should flatten the centrality
+  Bool_t fPrimaryVertexCorrectionTPCPoints; ///< Boolean determining if the reader should shift all TPC points to be relative to event vertex
+  Double_t fShiftPosition; ///< radius at which the spatial position of the track in the shifted coordinate system is calculated
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderAOD, 12)
