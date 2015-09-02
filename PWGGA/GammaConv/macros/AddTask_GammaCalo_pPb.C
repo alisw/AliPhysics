@@ -12,7 +12,7 @@ void AddTask_GammaCalo_pPb(
 							Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 							Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
 							Float_t		maxFacPtHard				= 3,									// maximum factor between hardest jet and ptHard generated
-							TString		periodName					= "" 
+							TString		periodNameV0Reader			= ""
 						   ) {
 
 	// ================= Load Librariers =================================
@@ -72,7 +72,7 @@ void AddTask_GammaCalo_pPb(
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		if (periodName.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodName);
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
 
