@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
+		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
   )
@@ -89,9 +90,6 @@ set(SRCS
   Nuclei/deuteronpA/AliAnalysisDeuteronpA.cxx
   XtAnalysis/AliXtAnalysis.cxx
   XtAnalysis/AliJXtHistos.cxx
-  XtAnalysis/AliJBaseTrack.cxx
-  XtAnalysis/AliJBaseCard.cxx
-  XtAnalysis/AliJCard.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
   IdentifiedHighPt/train/DebugClassesMultESA2013.cxx
   MultEvShape/AliMESeventInfo.cxx
@@ -117,11 +115,6 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-# Extra headers
-list(APPEND HDRS
- XtAnalysis/AliJConst.h
-)
-
 # Extra files to include in the PARfile
 set(PAR_EXTRAFILES
   PiKaPr/TestAOD/HistogramNamesBoth.cxx
@@ -142,7 +135,7 @@ add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGTools PWGUDbase EventMixing)
+set(LIBDEPS ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
