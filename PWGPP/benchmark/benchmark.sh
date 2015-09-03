@@ -45,8 +45,8 @@ copyInputData=0
 main()
 {
   #run in proper mode depending on the selection
-  source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
-  source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh
+  source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh false
+  source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh false
   if [[ $# -lt 1 ]]; then
     if [[ ! "${0}" =~ "bash" ]]; then
       echo "uses makeflow:"
