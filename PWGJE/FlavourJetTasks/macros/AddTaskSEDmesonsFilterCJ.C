@@ -87,18 +87,21 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   TString nameContainer2 = "Dcandidates";
   TString nameContainer3 = "DSBcandidates";
   TString nameContainer4 = "DcandidatesAndTracks";
+  TString nameContainer5 = "DSBcandidatesAndTracks";
 
   nameContainer0 += candname;
   nameContainer1 += candname;
   nameContainer2 += candname;
   nameContainer3 += candname;
   nameContainer4 += candname;
+  nameContainer5 += candname;
   
   nameContainer0 += suffix;
   nameContainer1 += suffix;
   nameContainer2 += suffix;
   nameContainer3 += suffix;
   nameContainer4 += suffix;
+  nameContainer5 += suffix;
 
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
@@ -110,6 +113,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(nameContainer2, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(nameContainer3, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(nameContainer4, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(nameContainer5, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
   
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
@@ -117,6 +121,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   mgr->ConnectOutput(task,3,coutput3);
   mgr->ConnectOutput(task,4,coutput4);
   mgr->ConnectOutput(task,5,coutput5);
+  mgr->ConnectOutput(task,6,coutput6);
 
   ::Info("AddTaskSEDmesonsFilterCJ", "Input and Output connected to the manager");
   return task;

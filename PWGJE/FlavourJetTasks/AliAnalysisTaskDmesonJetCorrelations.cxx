@@ -131,7 +131,6 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   // Constructor.
   
   DefineInput(1, TClonesArray::Class());
-  DefineInput(2, TClonesArray::Class());
   DefineOutput(2, AliRDHFCuts::Class()); // my cuts
 
   if (fCandidateType == kDstartoKpipi) {
