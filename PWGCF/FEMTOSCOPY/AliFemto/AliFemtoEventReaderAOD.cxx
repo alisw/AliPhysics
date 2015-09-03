@@ -1199,6 +1199,11 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetmomBacX(tAODxi->MomBachX());
   tFemtoXi->SetmomBacY(tAODxi->MomBachY());
   tFemtoXi->SetmomBacZ(tAODxi->MomBachZ());
+  tFemtoXi->SetmomXiX(tAODxi->MomXiX());
+  tFemtoXi->SetmomXiY(tAODxi->MomXiY());
+  tFemtoXi->SetmomXiZ(tAODxi->MomXiZ());
+  AliFemtoThreeVector momxi(tAODxi->MomXiX(), tAODxi->MomXiY(), tAODxi->MomXiZ());
+  tFemtoXi->SetmomXi(momxi);
   //v0
   tFemtoXi->SetmomPosX(tAODxi->MomPosX());
   tFemtoXi->SetmomPosY(tAODxi->MomPosY());
