@@ -12,34 +12,40 @@
 #include <TObject.h>
 #include <TString.h>
 
+#include <ConversionConstants.h>
+
 
 class AliMinimalisticTrack : public TObject {
-
 public:
     AliMinimalisticTrack() : TObject()
     {  }
 
     AliMinimalisticTrack(
-            Int_t charge, Double_t energy, Int_t ID, Int_t PID, Double_t mass, Double_t signedPT,
-            Double_t startXYZ[], Double_t endXYZ[], Double_t pxpypz[], Int_t parentID, Double_t phi,
-            Double_t theta, Double_t helixCurvature, Int_t type);
+            Int_t charge,
+            Double_t energy,
+            Int_t ID,
+            Int_t PID,
+            Double_t mass,
+            Double_t signedPT,
+            Double_t startXYZ[],
+            Double_t endXYZ[],
+            Double_t pxpypz[],
+            Int_t parentID,
+            Double_t phi,
+            Double_t theta,
+            Double_t helixCurvature,
+            Int_t type
+    );
 
     void AddChild(Int_t childID);
-    const std::vector<Int_t> &GetChildrenIDs() const;
     UInt_t GetID();
 
     void AddPolyPoint(Double_t x, Double_t y, Double_t z);
     void AddPolyPoint(Double_t xyz[3]);
     static const Int_t fgkNoParent = -1;
-    enum {
-        kStandard, kKinkMother, kKinkDaughter, kV0NegativeDaughter, kV0PositiveDaughter, kV0Mother,
-        kCascadePrimaryMother, kCascadePrimaryDaughter, kCascadeSecondaryMother,
-        kCascadeNegativeDaughter, kCascadePositiveDaughter, kMuonMatched, kMuonNotMatched, kMuonGhost
-    };
-    void SetTrackType(Int_t type);
+    static const Int_t fgkNoChild = -1;
+    void SetTrackType(TrackType type);
 private:
-    static const TString fgkTrackTypes[14];
-
     void AddStartCoordinates(Double_t xyz[3]);
     void AddEndCoordinates(Double_t xyz[3]);
     void AddMomentum(Double_t pxpypz[3]);
@@ -61,7 +67,6 @@ private:
     std::vector<Double_t> fPolyX;
     std::vector<Double_t> fPolyY;
     std::vector<Double_t> fPolyZ;
-
 
     ClassDef(AliMinimalisticTrack, 1);
 };

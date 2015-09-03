@@ -7,10 +7,6 @@
 #include <TGeoManager.h>
 #include <TEveTrackPropagator.h>
 #include <TGeoGlobalMagField.h>
-#include <TFile.h>
-#include <TTree.h>
-#include <TBufferJSON.h>
-#include <TBufferXML.h>
 #include <TEveTrack.h>
 #include <TEveManager.h>
 #include <TInterpreter.h>
@@ -36,6 +32,7 @@
 #include <AliMagF.h>
 #include <AliEveMagField.h>
 #include <AliEveV0.h>
+
 
 void AliConverterPolylinesEngine::InitializeEngine(AliESDEvent *event)
 {
@@ -145,11 +142,13 @@ void AliConverterPolylinesEngine::AddPolylinesToMuonTracks(
 
     if (emt->ContainTrackerData()) // in tracker
     {
-        if(emt->GetMatchTrigger() > 0){ // matched
+        if(emt->GetMatchTrigger() > 0) { // matched
             trkProp->SetMaxZ(-AliMUONConstants::DefaultChamberZ(13)+10.);
+            minimalisticMuonTrack.SetTrackType(kMuonMatched);
         }
-        else{ // not matched
+        else { // not matched
             trkProp->SetMaxZ(-AliMUONConstants::MuonFilterZBeg());
+            minimalisticMuonTrack.SetTrackType(kMuonNotMatched);
         }
         recTrack.fStatus = emt->GetMatchTrigger();
         recTrack.fSign = emt->Charge();
@@ -204,6 +203,7 @@ void AliConverterPolylinesEngine::AddPolylinesToMuonTracks(
         // produce eve track
         track = new AliEveTrack(&recTrack,trkProp);
         track->SetSourceObject(emt);
+        minimalisticMuonTrack.SetTrackType(kMuonGhost);
     }
     track->SetAttLineAttMarker(trackList);
     trackList->AddElement(track);
@@ -213,8 +213,6 @@ void AliConverterPolylinesEngine::AddPolylinesToMuonTracks(
 
     std::vector<TEveVector4D > muonPoints = trkProp->GetPoints();
     InsertPolyPoints(minimalisticMuonTrack, muonPoints);
-
-
 }
 
 void AliConverterPolylinesEngine::AddPolylinesToMinimalisticTrack(
@@ -363,8 +361,6 @@ void AliConverterPolylinesEngine::AddPolylinesToCascade(
         AliMinimalisticTrack &bachelorTrack
 ) const
 {
-    AliESDVertex* primVtx = (AliESDVertex*) fESDEvent->GetPrimaryVertex(); // usunac
-
     AliEveCascadeList* cont = new AliEveCascadeList("ESD cascade");
     TEveTrackPropagator* rnrStyleBac = cont->GetPropagatorBac();
     TEveTrackPropagator* rnrStyleNeg = cont->GetPropagatorNeg();

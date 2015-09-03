@@ -7,8 +7,10 @@
 
 #include <TRint.h>
 
+#include <ConversionConstants.h>
 #include <AliMinimalisticEvent.h>
 #include <AliMinimalisticTrack.h>
+
 #include <AliESDEvent.h>
 #include <TEveVector.h>
 
@@ -47,6 +49,8 @@ public:
     ) const;
     void InitializeEngine(AliESDEvent *event);
 private:
+    AliConverterPolylinesEngine(const AliConverterPolylinesEngine&) {};
+    AliConverterPolylinesEngine& operator=(const AliConverterPolylinesEngine&) {};
     TRint *fApp;
     AliESDEvent *fESDEvent;
 };

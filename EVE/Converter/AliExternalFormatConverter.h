@@ -40,6 +40,7 @@
 #include <AliMinimalisticEvent.h>
 #include <AliMinimalisticCluster.h>
 #include <AliMinimalisticTrack.h>
+#include <ConversionConstants.h>
 #include "AliConverterPolylinesEngine.h"
 
 
@@ -62,7 +63,6 @@ public:
     TString GenerateJSON(AliESDEvent *event);
     TString GenerateXML(Int_t eventEntry);
     TString GenerateXML(AliESDEvent *event);
-    const static TString fgkDetector[23];
 
 private:
     AliExternalFormatConverter(const AliExternalFormatConverter&) {/*Converter cannot be copied*/};
@@ -87,14 +87,26 @@ private:
     void PopulateEventWithMuonTracks(AliMinimalisticEvent &event, Int_t &specialID) const;
 
     void AddContentToEvent(
-            AliMinimalisticEvent &event, Int_t negative, Int_t parentID=-1, Int_t childID=-1) const;
-
-    AliMinimalisticTrack GenerateMinimalisticTrack(Int_t trackNumber, Int_t parentID, Int_t trackType) const;
+            AliMinimalisticEvent &event,
+            Int_t negative,
+            Int_t parentID=AliMinimalisticTrack::fgkNoParent,
+            Int_t childID=AliMinimalisticTrack::fgkNoChild
+    ) const;
+    AliMinimalisticTrack GenerateMinimalisticTrack(
+            Int_t trackNumber, Int_t parentID, TrackType trackType
+    ) const;
     AliMinimalisticTrack GenerateMinimalisticV0ParentTrack(
-        AliESDv0 *V0, Int_t nChild, Int_t pChild, Int_t myID, Double_t startXYZ[3], Int_t type, Int_t parentID=-1
+        AliESDv0 *V0,
+        Int_t nChild,
+        Int_t pChild,
+        Int_t myID,
+        Double_t startXYZ[3],
+        Int_t type,
+        Int_t parentID=AliMinimalisticTrack::fgkNoParent
     ) const;
     AliMinimalisticTrack GenerateMinimalisticCascadeParenTrack(
-            AliESDcascade *cascade, Int_t v0ChildID, Int_t singleChildID, Int_t myID) const;
+            AliESDcascade *cascade, Int_t v0ChildID, Int_t singleChildID, Int_t myID
+    ) const;
 
     AliMinimalisticCluster GenerateMinimalisticCluster(Int_t trackID) const;
     void ExtractTrackPointArrays(AliMinimalisticCluster &cluster, Int_t trackNumber) const;

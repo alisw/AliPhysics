@@ -6,12 +6,6 @@
 
 ClassImp(AliMinimalisticTrack)
 
-const TString AliMinimalisticTrack::fgkTrackTypes[14] = {
-    "standard", "kink_mother", "kink_daughter", "V0_negative_daughter", "V0_positive_daughter", "V0_mother",
-    "cascade_primary_mother", "cascade_primary_daughter", "cascade_secondary_mother",
-    "cascade_negative_daughter", "cascade_positive_daughter", "muon_matched", "muon_not_matched", "muon_ghost"
-};
-
 AliMinimalisticTrack::AliMinimalisticTrack(
         Int_t charge, Double_t energy, Int_t ID, Int_t PID, Double_t mass, Double_t signedPT,
         Double_t startXYZ[], Double_t endXYZ[], Double_t pxpypz[], Int_t parentID, Double_t phi,
@@ -43,11 +37,6 @@ UInt_t AliMinimalisticTrack::GetID()
 void AliMinimalisticTrack::AddChild(Int_t childID)
 {
     fChildrenIDs.push_back(childID);
-}
-
-const std::vector<Int_t>& AliMinimalisticTrack::GetChildrenIDs() const
-{
-    return fChildrenIDs;
 }
 
 void AliMinimalisticTrack::AddMomentum(Double_t pxpypz[3])
@@ -82,7 +71,7 @@ void AliMinimalisticTrack::AddPolyPoint(Double_t *xyz)
     fPolyZ.push_back(xyz[2]);
 }
 
-void AliMinimalisticTrack::SetTrackType(Int_t type)
+void AliMinimalisticTrack::SetTrackType(TrackType type)
 {
     fType = fgkTrackTypes[type];
 }

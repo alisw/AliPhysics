@@ -24,11 +24,6 @@
 #include <AliMUONGeometryTransformer.h>
 
 
-const TString AliExternalFormatConverter::fgkDetector[23] = {
-    "Invalid Layer", "First Layer", "SPD1", "SPD2", "SDD1", "SDD2", "SSD1", "SSD2", "TPC1", "TPC2",
-    "TRD1", "TRD2", "TRD3", "TRD4", "TRD5", "TRD6", "TOF", "PHOS1", "PHOS2", "HMPID", "MUON", "EMCAL", "LastLayer"
-};
-
 AliExternalFormatConverter::AliExternalFormatConverter()
 : fESDFile(nullptr), fESDFriend(nullptr), fESDEvent(nullptr), fESDTree(nullptr), fPolylineEngine()
 { }
@@ -246,11 +241,10 @@ void AliExternalFormatConverter::PopulateEventWithV0Tracks(
         if (usedTracks.find(positiveID) != usedTracks.end() || usedTracks.find(negativeID) != usedTracks.end())
             continue;
         Int_t v0ParentID = specialID++;
-        
         AliMinimalisticTrack negative =
-        GenerateMinimalisticTrack(negativeID, v0ParentID, AliMinimalisticTrack::kV0NegativeDaughter);
+        GenerateMinimalisticTrack(negativeID, v0ParentID, kV0NegativeDaughter);
         AliMinimalisticTrack positive =
-        GenerateMinimalisticTrack(positiveID, v0ParentID, AliMinimalisticTrack::kV0PositiveDaughter);
+        GenerateMinimalisticTrack(positiveID, v0ParentID, kV0PositiveDaughter);
         if (fESDFriend){
             AliMinimalisticCluster motherCluster = GenerateMinimalisticCluster(negativeID);
             AliMinimalisticCluster daughterCluster = GenerateMinimalisticCluster(positiveID);
@@ -260,7 +254,7 @@ void AliExternalFormatConverter::PopulateEventWithV0Tracks(
         fPolylineEngine.AddPolyLinesToV0Track(v0Entry, negative, positive);
         Double_t startCOORDS[] = {.0, .0, .0};
         AliMinimalisticTrack V0Parenttrack = GenerateMinimalisticV0ParentTrack(
-                v0, negativeID, positiveID, v0ParentID, startCOORDS, AliMinimalisticTrack::kV0Mother
+                v0, negativeID, positiveID, v0ParentID, startCOORDS, kV0Mother
         );
         event.AddTrack(V0Parenttrack);
         event.AddTrack(positive);
@@ -290,11 +284,11 @@ void AliExternalFormatConverter::PopulateEventWithCascadeTracks(
         Int_t v0ParentID = specialID++;
         Int_t cascadeParentID = specialID++;
         AliMinimalisticTrack negative =
-        GenerateMinimalisticTrack(negativeID, v0ParentID, AliMinimalisticTrack::kCascadeNegativeDaughter);
+        GenerateMinimalisticTrack(negativeID, v0ParentID, kCascadeNegativeDaughter);
         AliMinimalisticTrack positive =
-        GenerateMinimalisticTrack(positiveID, v0ParentID, AliMinimalisticTrack::kCascadePositiveDaughter);
+        GenerateMinimalisticTrack(positiveID, v0ParentID, kCascadePositiveDaughter);
         AliMinimalisticTrack bachelor =
-        GenerateMinimalisticTrack(bachelorID, cascadeParentID, AliMinimalisticTrack::kCascadePrimaryDaughter);
+        GenerateMinimalisticTrack(bachelorID, cascadeParentID, kCascadePrimaryDaughter);
         fPolylineEngine.AddPolylinesToCascade(cascadeEntry, negative, positive, bachelor);
         event.AddTrack(negative);
         event.AddTrack(positive);
@@ -315,13 +309,14 @@ void AliExternalFormatConverter::PopulateEventWithCascadeTracks(
                         positiveID,
                         v0ParentID,
                         v0StartCoords,
-                        AliMinimalisticTrack::kCascadeSecondaryMother,
+                        kCascadeSecondaryMother,
                         cascadeParentID
                 );
         event.AddTrack(V0Parenttrack);
         
         AliMinimalisticTrack cascadeParentTrack = GenerateMinimalisticCascadeParenTrack(
-                cascade, v0ParentID, bachelorID, cascadeParentID);
+                cascade, v0ParentID, bachelorID, cascadeParentID
+        );
         
         event.AddTrack(cascadeParentTrack);
         
@@ -342,10 +337,11 @@ void AliExternalFormatConverter::PopulateEventWithKinkTracks(
         if (usedTracks.find(motherID) != usedTracks.end() || usedTracks.find(daughterID) != usedTracks.end())
             continue;
         
-        AliMinimalisticTrack daughter =
-        GenerateMinimalisticTrack(daughterID, motherID, AliMinimalisticTrack::kKinkDaughter);
+        AliMinimalisticTrack daughter = GenerateMinimalisticTrack(
+                daughterID, motherID, kKinkDaughter
+        );
         AliMinimalisticTrack mother = GenerateMinimalisticTrack(
-                motherID, AliMinimalisticTrack::fgkNoParent, AliMinimalisticTrack::kKinkMother
+                motherID, AliMinimalisticTrack::fgkNoParent, kKinkMother
         );
         if (fESDFriend){
             AliMinimalisticCluster motherCluster = GenerateMinimalisticCluster(motherID);
@@ -365,8 +361,8 @@ void AliExternalFormatConverter::AddContentToEvent(
         AliMinimalisticEvent &event, Int_t trackID, Int_t parentID, Int_t childID
 ) const
 {
-    AliMinimalisticTrack track = GenerateMinimalisticTrack(trackID, parentID, AliMinimalisticTrack::kStandard);
-    if (childID!=AliMinimalisticTrack::fgkNoParent)
+    AliMinimalisticTrack track = GenerateMinimalisticTrack(trackID, parentID, kStandard);
+    if (childID != AliMinimalisticTrack::fgkNoChild)
         track.AddChild(childID);
     if (fESDFriend){
         AliMinimalisticCluster cluster = GenerateMinimalisticCluster(trackID);
@@ -397,7 +393,7 @@ AliMinimalisticCluster AliExternalFormatConverter::GenerateMinimalisticCluster(I
 }
 
 AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticTrack(
-        Int_t trackNumber, Int_t parentID, Int_t trackType) const
+        Int_t trackNumber, Int_t parentID, TrackType trackType) const
 {
     AliESDtrack *track = fESDEvent->GetTrack(trackNumber);
     
@@ -426,9 +422,9 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticTrack(
     return minimalisticTrack;
 }
 
-
 AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticCascadeParenTrack(
-                                                                                       AliESDcascade *cascade, Int_t v0ChildID, Int_t singleChildID, Int_t myID) const
+     AliESDcascade *cascade, Int_t v0ChildID, Int_t singleChildID, Int_t myID
+) const
 {
     Int_t charge = cascade->Charge();
     Double_t v0q = ((AliESDv0*)cascade)->ChangeMassHypothesis();
@@ -447,7 +443,7 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticCascadePare
 
     AliMinimalisticTrack cascdeParent(
         charge, energy, myID, PID, mass, signedPt, startXYZ, endXYZ, PxPyPz, parentID,
-        phi, theta, helixCurvature, AliMinimalisticTrack::kCascadePrimaryMother
+        phi, theta, helixCurvature, kCascadePrimaryMother
     );
     cascdeParent.AddChild(v0ChildID);
     cascdeParent.AddChild(singleChildID);

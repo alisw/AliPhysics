@@ -32,10 +32,12 @@ set(SRCS
         AliMinimalisticCluster.cxx
         AliMinimalisticEvent.cxx
         AliMinimalisticTrack.cxx
-        AliConverterPolylinesEngine.cxx AliConverterPolylinesEngine.h)
+        AliConverterPolylinesEngine.cxx
+        )
 
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+set(HDRS "${HDRS}" ConversionConstants.h)
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)
