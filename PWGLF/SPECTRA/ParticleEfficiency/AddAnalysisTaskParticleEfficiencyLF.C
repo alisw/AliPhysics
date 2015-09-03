@@ -1,5 +1,5 @@
-AliAnalysisTaskParticleEfficiency *
-AddAnalysisTaskParticleEfficiency(const Char_t *partName)
+AliAnalysisTaskParticleEfficiencyLF *
+AddAnalysisTaskParticleEfficiencyLF(const Char_t *partName)
 {
 
   /* check analysis manager */
@@ -43,7 +43,7 @@ AddAnalysisTaskParticleEfficiency(const Char_t *partName)
   }
 
     /*  create task and connect input/output */
-  AliAnalysisTaskParticleEfficiency *task = new AliAnalysisTaskParticleEfficiency(partName);
+  AliAnalysisTaskParticleEfficiencyLF *task = new AliAnalysisTaskParticleEfficiencyLF(partName);
   mgr->ConnectInput(task, 0, inputc);
   mgr->ConnectOutput(task, 1, outputc1);
 

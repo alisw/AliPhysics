@@ -1,4 +1,4 @@
-SteerAnalysisTaskParticleEfficiency(const Char_t *inputfilename, Int_t maxFiles = kMaxInt, Int_t maxEv = kMaxInt)
+SteerAnalysisTaskParticleEfficiencyLF(const Char_t *inputfilename, Int_t maxFiles = kMaxInt, Int_t maxEv = kMaxInt)
 {
 
   /* include path for ACLic */
@@ -8,7 +8,7 @@ SteerAnalysisTaskParticleEfficiency(const Char_t *inputfilename, Int_t maxFiles 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   /* build analysis task class */
-  gROOT->LoadMacro("AliAnalysisTaskParticleEfficiency.cxx+g");
+  gROOT->LoadMacro("AliAnalysisTaskParticleEfficiencyLF.cxx+g");
 
   /* setup input chain */
   TString str = inputfilename;
