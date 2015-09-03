@@ -17,7 +17,14 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Int_t               ttType                  = 0,        // 0= single inclusive hadron trigger, else inclusive hadron trigger
   Double_t            dphi                    = 0.6, // |Delta phi_jet, trigger|< pi-0.6
   Bool_t              binning                 = 0,    //binning of jet histograms 0=2GeV width  1=1GeV width
-  Double_t            acut                    = 0.6   //cut on relative jet area 
+  Double_t            acut                    = 0.6,   //cut on relative jet area
+  Int_t               recombscheme            = 5,    //recombination scheme  5=BIpt_scheme  0=E_scheme 
+  Int_t               nExclJetsBg             = 2,   //number of leading jets to be excluded from bg
+  Int_t               pytuneEmb               = 2,    // pythia tune used for embedding
+  Double_t            ptHardMinEmb            = 50., //    pt hard min in embedding
+  Double_t            ptHardMaxEmb            = 1000.,//  pt hard max in embedding
+  Double_t            ecmsGeVEmb              = 5020.,//  E cms  in embedding    
+  Float_t             ptWeightEmb             = 0.    //weighting power of the embedded spectrum 
 ){
 
    //typeOfData   
@@ -108,9 +115,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbeddingFromGen.C");
       AliJetEmbeddingFromGenTask* embTask = AddTaskJetEmbeddingFromGen(
           0, //use Pythia as default
-         50., //ptHardMin          //  ???  WHAT RANGE OF PTHARD to EMBEDD 
-         1000.,//ptHardMax
-         5020.,//Double_t        ecms 
+         ptHardMinEmb, //ptHardMin          //  ???  WHAT RANGE OF PTHARD to EMBEDD 
+         ptHardMaxEmb,//ptHardMax
+         ecmsGeVEmb,//Double_t        ecms 
          kGenPartices.Data(),//tracksName
          "JetEmbeddingFromGenTask",//taskName
          0.15, //const Double_t  minPt 
@@ -122,8 +129,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          0, //const Bool_t    copyArray    before modelling ??? kTRUE 
          1, //   const Bool_t    drawQA         = kTRUE,
         "PythiaInfo", //  const char     *pythiaInfoName = ,
-         1, //Float_t            ptWeight        = //????
-         2, //   Int_t               kTune            =2,
+         ptWeightEmb, //Float_t            ptWeight        = //????
+         pytuneEmb, //   Int_t               kTune            =2,
          1 //    Int_t               kColorReco     =1,
          //   Float_t            kQuench        =4.4e6,
          //   Int_t               kAnglePyquen = 2
@@ -178,12 +185,12 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
 
    if(typeOfAnal != kKine){ 
-      jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKT,jetRadius,  kCHARGEDJETS,0.150,0.300); //FK
+      jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKT,jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme); //FK
 
       //EXTERN CMS RHO TASK for real tracks
       myRhoName = "ExternalRhoTask";
-      jetFinderRho   = AddTaskEmcalJet(recoTracks.Data(),"", kANTIKT, 0.4, kCHARGEDJETS,0.150,0.300,0.005,1,"JetAKT"); // anti-kt
-      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKT,     0.4, kCHARGEDJETS,0.150,0.300,0.005,1,"JetKT",0.,0,0); // kt
+      jetFinderRho   = AddTaskEmcalJet(recoTracks.Data(),"", kANTIKT, 0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetAKT"); // anti-kt
+      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKT,     0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKT",0.,0,0); // kt
       jetFinderRhoKT->SetMinJetPt(0);
 
       AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), 
@@ -193,11 +200,11 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
                                                         myRhoName.Data(), 
                                                                0.4,  //jet radius
                                                              "TPC",  //cut type
-                                                              0.01,  //jet area cut
+                                                              0.01,  //minimum jet area cut
                                                                0.0,  //jet pt cut ????????
                                                                  0,  //enareacut 
                                                                  0,  //sfunc
-                                                                 2,  //excl Jets  //FK// How many jets to exclude ????????
+                                                       nExclJetsBg,  //excl Jets  //FK// How many jets to exclude ????????
                                                             kFALSE,   //no histo
                                                    myRhoName.Data(),  //task name
                                                              kTRUE); //claculate rho CMS
@@ -212,12 +219,12 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
  
    if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl || typeOfAnal == kKine ){ //EFFICIENCY OR EMBEDDING ?????????? KINE 
       //clusterizer for MC true particles
-      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,1,"JetMC"); //FK
+      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetMC"); //FK
 
    // #### DEFINE EXTERN CMS RHO TASK for real tracks
       myRhoNameMC = "ExternalRhoTaskMC";
-      jetFinderRhoMC   = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, 0.4, kCHARGEDJETS,0.150,0.300,0.005,1,"JetAKTMC"); // anti-kt
-      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKT,     0.4, kCHARGEDJETS,0.150,0.300,0.005,1,"JetKTMC",0.,0,0); // kt
+      jetFinderRhoMC   = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, 0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetAKTMC"); // anti-kt
+      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKT,     0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKTMC",0.,0,0); // kt
       jetFinderRhoKTMC->SetMinJetPt(0);
 
       //gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
@@ -232,7 +239,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
                                     0.0,  //jet pt cut ????????
                                      0,  //enareacut 
                                      0,  //sfunc
-                                     2,  //excl Jets  //FK// ????????
+                           nExclJetsBg,  //excl Jets  //FK// ????????
                                 kFALSE,   //no histo
                                    myRhoNameMC.Data(),  //task name
                                 kTRUE); //claculate rho CMS
