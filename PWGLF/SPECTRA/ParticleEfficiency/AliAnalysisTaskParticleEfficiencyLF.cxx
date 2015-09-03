@@ -1,4 +1,4 @@
-#include "AliAnalysisTaskParticleEfficiency.h"
+#include "AliAnalysisTaskParticleEfficiencyLF.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -15,11 +15,11 @@
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
 
-ClassImp(AliAnalysisTaskParticleEfficiency)
+ClassImp(AliAnalysisTaskParticleEfficiencyLF)
 
 //_______________________________________________________
 
-AliAnalysisTaskParticleEfficiency::AliAnalysisTaskParticleEfficiency(const Char_t *partName) :
+AliAnalysisTaskParticleEfficiencyLF::AliAnalysisTaskParticleEfficiencyLF(const Char_t *partName) :
   AliAnalysisTaskSE(partName),
   fParticlePdgCode(0),
   fTrackCuts(NULL)
@@ -46,7 +46,7 @@ AliAnalysisTaskParticleEfficiency::AliAnalysisTaskParticleEfficiency(const Char_
 
 //_______________________________________________________
 
-AliAnalysisTaskParticleEfficiency::~AliAnalysisTaskParticleEfficiency()
+AliAnalysisTaskParticleEfficiencyLF::~AliAnalysisTaskParticleEfficiencyLF()
 {
 
   /* 
@@ -58,7 +58,7 @@ AliAnalysisTaskParticleEfficiency::~AliAnalysisTaskParticleEfficiency()
 //_______________________________________________________
 
 void
-AliAnalysisTaskParticleEfficiency::UserCreateOutputObjects()
+AliAnalysisTaskParticleEfficiencyLF::UserCreateOutputObjects()
 {
 
   /* 
@@ -90,7 +90,7 @@ AliAnalysisTaskParticleEfficiency::UserCreateOutputObjects()
 //_______________________________________________________
 
 void
-AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
+AliAnalysisTaskParticleEfficiencyLF::UserExec(Option_t *)
 {
 
   /* 

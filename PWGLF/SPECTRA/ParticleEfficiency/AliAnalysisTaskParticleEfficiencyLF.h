@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKPARTICLEEFFICIENCY
-#define ALIANALYSISTASKPARTICLEEFFICIENCY
+#ifndef ALIANALYSISTASKPARTICLEEFFICIENCYLF
+#define ALIANALYSISTASKPARTICLEEFFICIENCYLF
 
 #include "AliAnalysisTaskSE.h"
 
@@ -8,22 +8,22 @@ class TList;
 class TH1F;
 class TH2F;
 
-class AliAnalysisTaskParticleEfficiency :
+class AliAnalysisTaskParticleEfficiencyLF :
 public AliAnalysisTaskSE
 {
 
  public:
 
-  AliAnalysisTaskParticleEfficiency(const Char_t *partName); // default constructor
-  ~AliAnalysisTaskParticleEfficiency(); // default destructor
+  AliAnalysisTaskParticleEfficiencyLF(const Char_t *partName); // default constructor
+  ~AliAnalysisTaskParticleEfficiencyLF(); // default destructor
 
   void UserCreateOutputObjects(); // user create output objects
   void UserExec(Option_t *option); // user exec
   
  protected:
 
-  AliAnalysisTaskParticleEfficiency(const AliAnalysisTaskParticleEfficiency &); // copy constructor
-  AliAnalysisTaskParticleEfficiency &operator=(const AliAnalysisTaskParticleEfficiency &); // operator=
+  AliAnalysisTaskParticleEfficiencyLF(const AliAnalysisTaskParticleEfficiencyLF &); // copy constructor
+  AliAnalysisTaskParticleEfficiencyLF &operator=(const AliAnalysisTaskParticleEfficiencyLF &); // operator=
 
   Int_t fParticlePdgCode; // particle PDG code
   AliESDtrackCuts *fTrackCuts; // ESD track cuts
@@ -35,8 +35,8 @@ public AliAnalysisTaskSE
   TH2F *fHistoGeneratedDaughter[2]; // histo generated daughter
   TH2F *fHistoReconstructedDaughter[2]; // histo reconstructed daughter
 
-  ClassDef(AliAnalysisTaskParticleEfficiency, 1);
+  ClassDef(AliAnalysisTaskParticleEfficiencyLF, 1);
 
 };
 
-#endif /* ALIANALYSISTASKPARTICLEEFFICIENCY */
+#endif /* ALIANALYSISTASKPARTICLEEFFICIENCYLF */
