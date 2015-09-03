@@ -196,13 +196,13 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Extra executable
-add_executable(runTrain
-  trains/trainMain.cxx
-  )
-target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint)
-install(TARGETS runTrain 
-  RUNTIME DESTINATION bin)
-
+if(ROOT_HASALIEN AND AliRoot_HASALIEN)
+  add_executable(runTrain
+                 trains/trainMain.cxx)
+  target_link_libraries(runTrain ANALYSIS ANALYSISalice OADB Core Rint)
+  install(TARGETS runTrain
+          RUNTIME DESTINATION bin)
+endif(ROOT_HASALIEN AND AliRoot_HASALIEN)
 # --------------------------------------------------------------------
 # Extra targets 
 #

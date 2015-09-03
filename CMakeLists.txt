@@ -96,18 +96,18 @@ else()
           message(FATAL_ERROR "ROOT was not built with xml2 support. Please reinstall or rebuild ROOT with xml2 support")
       endif(NOT ROOT_HASXML)
 
-      # ROOT must be built with AliEn support
+      # Issue a warning if ROOT does not have AliEn support (this is wrong in most cases)
       if(NOT ROOT_HASALIEN)
-          message(FATAL_ERROR "ROOT has been built without AliEn support! AliPhysics requires both ROOT and AliRoot Core to have AliEn support.")
+          message(WARNING "ROOT has been built without AliEn support: some features might be unavailable!")
       endif(NOT ROOT_HASALIEN)
 
   else()
       message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
   endif(ROOTSYS)
 
-  # AliRoot Core must have AliEn support
+  # Issue a warning if AliRoot Core does not have AliEn support (this is wrong in most cases)
   if(NOT AliRoot_HASALIEN)
-      message(FATAL_ERROR "AliRoot Core has been built without with AliEn support! AliPhysics requires both ROOT and AliRoot Core to have AliEn support.")
+      message(WARNING "AliRoot Core has been built without with AliEn support: some features might be unavailable!")
   endif()
 
   # ROOT dictionaries and maps
