@@ -499,9 +499,14 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 
   // Markus: For the moment reject jet patches with a row larger than 44 to overcome
   // an issue with patches containing inactive TRUs
-  if((type == kTMEMCalJet && IsEJE( tBits )) && (globRow > fGeom->GetNTotalTRU() - 16)) {
-    AliDebug(1, Form("Jet patch in inactive area: row[%d]", globRow));
-    return NULL;
+  // (last 2 supermodules inactive but still included in the reconstruction)
+  Int_t runno = InputEvent()->GetRunNumber();
+  if(runno < 176000 && runno <= 197692){
+    // Valid only for 2012 geometry
+    if((type == kTMEMCalJet && IsEJE( tBits )) && (globRow > 44)) { // Hard coded number in order to be insensitive to changes in the geometry
+      AliDebug(1, Form("Jet patch in inactive area: row[%d]", globRow));
+      return NULL;
+    }
   }
 
   if(fRejectOffAcceptancePatches){
