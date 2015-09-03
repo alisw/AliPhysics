@@ -30,7 +30,7 @@ public:
 
     void AddPolyPoint(Double_t x, Double_t y, Double_t z);
     void AddPolyPoint(Double_t xyz[3]);
-    static const Int_t fgkImaginaryParent = -1;
+    static const Int_t fgkNoParent = -1;
     enum {
         kStandard, kKinkMother, kKinkDaughter, kV0NegativeDaughter, kV0PositiveDaughter, kV0Mother,
         kCascadePrimaryMother, kCascadePrimaryDaughter, kCascadeSecondaryMother,

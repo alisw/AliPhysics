@@ -40,8 +40,7 @@
 #include <AliMinimalisticEvent.h>
 #include <AliMinimalisticCluster.h>
 #include <AliMinimalisticTrack.h>
-
-
+#include "AliConverterPolylinesEngine.h"
 
 
 class AliExternalFormatConverter {
@@ -78,16 +77,14 @@ private:
     void LoadEvent(Int_t entry);
     void LoadEvent(AliESDEvent *event);
 
-
     void PopulateEvent(AliMinimalisticEvent &event) const;
-
     void PopulateEventWithStandardTracks(AliMinimalisticEvent &event, std::set<Int_t> &usedTracks) const;
     void PopulateEventWithKinkTracks(AliMinimalisticEvent &event, std::set<Int_t> &kinkTracks) const;
     void PopulateEventWithV0Tracks(
             AliMinimalisticEvent &event, std::set<Int_t> &usedTracks, Int_t &specialID) const;
     void PopulateEventWithCascadeTracks(
             AliMinimalisticEvent &event, std::set<Int_t> &usedTracks, Int_t &specialID) const;
-    void PopulateEventWithMuonTracks(AliMinimalisticEvent &event) const;
+    void PopulateEventWithMuonTracks(AliMinimalisticEvent &event, Int_t &specialID) const;
 
     void AddContentToEvent(
             AliMinimalisticEvent &event, Int_t negative, Int_t parentID=-1, Int_t childID=-1) const;
@@ -103,31 +100,14 @@ private:
     void ExtractTrackPointArrays(AliMinimalisticCluster &cluster, Int_t trackNumber) const;
 
     void LoadEvent();
-
     void LoadESDFile(const TFile *ESDFile);
-
-    void AddPolylinesToMinimalisticTrack(Int_t trackID, AliMinimalisticTrack &minimalisticTrack) const;
-    void AddPolyLinesToKinkTrack(Int_t kinkID, AliMinimalisticTrack &mTrack, AliMinimalisticTrack &dTrack) const;
-    void AddPolyLinesToV0Track(
-            Int_t v0ID, AliMinimalisticTrack &negativeTrack, AliMinimalisticTrack &positiveTrack) const;
-   void AddPolylinesToCascade(
-           Int_t cascadeID,
-           AliMinimalisticTrack &negativeTrack,
-           AliMinimalisticTrack &positiveTrack,
-           AliMinimalisticTrack &bachelorTrack
-   ) const;
-
-    void AddPolylinesToMuonTracks(Int_t trackNumber, AliMinimalisticTrack &minimalisticMuonTrack) const;
     void CheckEvent() const;
 
-    void InsertPolyPoints(AliMinimalisticTrack &Track, std::vector<TEveVector4D> &Points) const;
-    //void CalculateMagneticField();
-    //Double_t fEventMagneticField;
     TFile* fESDFile;
     TTree* fESDTree;
     AliESDEvent* fESDEvent;
     AliESDfriend* fESDFriend;
-    TRint *fApp;
+    AliConverterPolylinesEngine fPolylineEngine;
 };
 
 
