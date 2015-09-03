@@ -582,6 +582,16 @@ void AliAnalysisTaskNucleiYield::SetDCABins(Int_t nbins, Float_t min, Float_t ma
   fDCABins[nbins] = max;
 }
 
+/// This functions sets the \f$\mathrm{DCA}_{xy}\f$ bins used in the analysis
+///
+/// \param nbins Number of \f$\mathrm{DCA}_{xy}\f$ bins
+/// \param bins Array with nbins + 1 elements contanining the edges of the bins
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetDCABins(Int_t nbins, Float_t *bins) {
+  fDCABins.Set(nbins + 1, bins);
+}
+
 /// This functions sets the \f$p_{\mathrm{T}}\f$ bins used in the analysis
 ///
 /// \param nbins Number of \f$p_{\mathrm{T}}\f$ bins
