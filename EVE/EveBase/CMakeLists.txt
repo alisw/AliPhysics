@@ -45,6 +45,7 @@ include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
                     ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                     ${AliRoot_SOURCE_DIR}/TPC/TPCsim
+                    ${ZEROMQ_INCLUDE_DIR}
                    )
 
 # Sources in alphabetical order
@@ -133,9 +134,9 @@ endif(ZEROMQ_FOUND)
 # Add a library to the project using the specified source files
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 target_link_libraries(${MODULE} ${LIBDEPS})
-if(ZEROMQ_FOUND)
-        target_link_libraries(${MODULE} ${ZEROMQ_LIBRARIES})
-endif(ZEROMQ_FOUND)
+#if(ZEROMQ_FOUND)
+#        target_link_libraries(${MODULE} ${ZEROMQ_LIBRARIES})
+#endif(ZEROMQ_FOUND)
 
 #target_link_libraries(${MODULE} STEERBase STEER ESD CDB AOD RAWDatabase RAWDatarec ANALYSIS ANALYSISalice ITSbase ITSrec TPCbase TPCrec TPCsim EG Eve Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint)
 
