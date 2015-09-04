@@ -8,12 +8,9 @@
 #include "TFile.h"
 #include "TDatabasePDG.h"
 
-#include "AliNormalizationCounter.h"
-
 #include "AliHFCutVarFDsubAxis.h"
 #include "AliHFCutVarFDsubCut.h"
 #include "AliHFCutVarFDsubCutSet.h"
-
 
 /// \cond CLASSIMP
 ClassImp(AliHFCutVarFDsubAnalysisManagerDplus);
@@ -39,12 +36,12 @@ AliHFCutVarFDsubAnalysisManagerDplus::~AliHFCutVarFDsubAnalysisManagerDplus() {
 
 //_________________________________________________________________________________________________
 Int_t AliHFCutVarFDsubAnalysisManagerDplus::GetTHnSparses(const TString strFileData,
-							  const TString strFileMC,
-							  const TString strDirData,
-							  const TString strDirMC,
-							  const TString strListData,
-							  const TString strListMC,
-							  Bool_t MConly) {
+                                                          const TString strFileMC,
+                                                          const TString strDirData,
+                                                          const TString strDirMC,
+                                                          const TString strListData,
+                                                          const TString strListMC,
+                                                          Bool_t MConly) {
   /// Retrieve the input data
   //------------------------------------------------------------------------------------------------
   //MC THnSparses
@@ -115,8 +112,8 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   AliHFCutVarFDsubCutSet *cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.007,4,0,0,0);
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.05,0.1));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,9));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.04,0.1));//dlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,7,10));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -131,8 +128,8 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   AliHFCutVarFDsubCutSet *cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.007,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
   cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,9,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,9,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -147,7 +144,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
   cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.04,0.14));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,10));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,10));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -162,8 +159,8 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.009,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
   cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.05,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.05,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -193,8 +190,8 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.009,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
   cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.05,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,7,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.05,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -209,7 +206,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
   cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.04,0.14));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,10));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,12));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -223,9 +220,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   //cut set 3 - FD enhanced
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.0011,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,5,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -240,7 +237,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
   cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.04,0.16));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,10));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,12));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -254,9 +251,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   //cut set 3 - FD enhanced
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.014,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,5,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -271,7 +268,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,6.,7.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
   cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.04,0.16));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,10));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,12));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -285,9 +282,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   //cut set 3 - FD enhanced
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.012,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,6.,7.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,5,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -302,7 +299,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,7.,8.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
   cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.04,0.16));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,10));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,12));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -316,9 +313,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   //cut set 3 - FD enhanced
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.011,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,7.,8.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,5,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -333,7 +330,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
   cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.04,0.16));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,10));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,12));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -347,9 +344,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   //cut set 3 - FD enhanced
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.011,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,5,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.15,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,22,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
 
   fCuts->Add((TObject*)ptBin);
@@ -364,7 +361,7 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   cutset1->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
   cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
   cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,12));//normdlxy
+  cutset1->AddCut(new AliHFCutVarFDsubCut(3,5,14));//normdlxy
   ptBin->Add((TObject*)cutset1);
 
   //cut set 2 - mixed
@@ -378,9 +375,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   //cut set 3 - FD enhanced
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.016,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,24,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.14,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,24,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
   fCuts->Add((TObject*)ptBin);
 
@@ -408,9 +405,9 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts() {
   //cut set 3 - FD enhanced
   cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.014,4,0,0,0);
   cutset3->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,18,30));//normdlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.12,1.1));//dlxy
+  cutset3->AddCut(new AliHFCutVarFDsubCut(3,18,31));//normdlxy
   ptBin->Add((TObject*)cutset3);
   fCuts->Add((TObject*)ptBin);
 
@@ -444,6 +441,99 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(Int_t version) {
 
 
 //_________________________________________________________________________________________________
+TH1F* AliHFCutVarFDsubAnalysisManagerDplus::CalculateCrossSection(TString AccFilePath,
+                                                                  TString GenLimAccHistoName,
+                                                                  TString GenAccHistoName,
+                                                                  TString system,
+                                                                  TString PromptOrFD) {
+
+  if(!fCorrYieldPrompt || !fCorrYieldFD) {
+    cerr << "Minimisation needed before calculate cross section" << endl;
+    return 0x0;
+  }
+  else if(AccFilePath=="") {
+    cerr << "The Acceptance Factor needed to calculate the cross section" << endl;
+    return 0x0;
+  }
+  else {
+    TFile *AccFile = TFile::Open(AccFilePath.Data(),"READ");
+    if (!AccFile) {
+      cerr << "File " << AccFilePath << " not found!" << endl;
+      return 0x0;
+    }
+    else {
+      TH1F* hPtGenLimAcc = (TH1F*)AccFile->Get(GenLimAccHistoName.Data());
+      TH1F* hPtGenAcc = (TH1F*)AccFile->Get(GenAccHistoName.Data());
+      hPtGenAcc->SetDirectory(0);
+      hPtGenLimAcc->SetDirectory(0);
+      AccFile->Close();
+
+      TAxis* PtAxis = (TAxis*)fCorrYieldPrompt->GetXaxis();
+      TArrayD* PtBinsArray = (TArrayD*)PtAxis->GetXbins();
+      Double_t* PtLims = (Double_t*)PtBinsArray->GetArray();
+      Int_t nPtBins = PtBinsArray->GetSize()-1;
+
+      TH1F* hPtGenLimAccReb = (TH1F*)hPtGenLimAcc->Rebin(nPtBins, "hPtGenLimAccReb", PtLims);
+      TH1F* hPtGenAccReb = (TH1F*)hPtGenAcc->Rebin(nPtBins, "hPtGenAccReb", PtLims);
+      hPtGenLimAccReb->Sumw2();
+      hPtGenAccReb->Sumw2();
+
+      TH1F* hPtAcc = new TH1F("hPtAcc","",nPtBins,PtLims);
+      hPtAcc->Divide(hPtGenAccReb,hPtGenLimAccReb,1.,1.,"B");
+
+      TH1F* hCrossSec = new TH1F(Form("hCrossSec%s",PromptOrFD.Data()),"",nPtBins,PtLims);
+
+      Double_t BR=0.0913;
+      Double_t ErrBR=0.0019;
+      Double_t Sigma=0;
+      Double_t ErrSigma=0;
+
+      if(system=="pPb") {
+        Sigma = 2.09;//barn
+        ErrSigma = Sigma*3.5/100;
+      }
+      else if(system=="pp"){
+        Sigma = 0.062;//barn
+        ErrSigma = Sigma*3.5/100;
+      }
+      else {
+        cerr << "only pPb and pp are implemented" << endl;
+        return 0x0;
+      }
+
+      for(Int_t iBin=0; iBin<nPtBins; iBin++) {
+
+        Double_t CrossSec;
+        Double_t CrossSecError;
+
+        if(PromptOrFD=="Prompt") {
+          //cross section in mubarn
+          CrossSec = fCorrYieldPrompt->GetBinContent(iBin+1)*Sigma*1000000./(2*(PtLims[iBin+1]-PtLims[iBin])*fNevents*BR);
+          CrossSecError = TMath::Sqrt((fCorrYieldPrompt->GetBinError(iBin+1)/fCorrYieldPrompt->GetBinContent(iBin+1))*(fCorrYieldPrompt->GetBinError(iBin+1)/fCorrYieldPrompt->GetBinContent(iBin+1))+(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1))*(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1))+(ErrBR/BR)*(ErrBR/BR)+(ErrSigma/Sigma)*(ErrSigma/Sigma))*CrossSec;
+        }
+        else {
+          CrossSec = fCorrYieldFD->GetBinContent(iBin+1)*Sigma*1000000./(2*(PtLims[iBin+1]-PtLims[iBin])*fNevents*BR);
+          CrossSecError = TMath::Sqrt((fCorrYieldFD->GetBinError(iBin+1)/fCorrYieldFD->GetBinContent(iBin+1))*(fCorrYieldFD->GetBinError(iBin+1)/fCorrYieldFD->GetBinContent(iBin+1))+(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1))*(hPtAcc->GetBinError(iBin+1)/hPtAcc->GetBinContent(iBin+1))+(ErrBR/BR)*(ErrBR/BR)+(ErrSigma/Sigma)*(ErrSigma/Sigma))*CrossSec;
+        }
+
+        hCrossSec->SetBinContent(iBin+1,CrossSec);
+        hCrossSec->SetBinError(iBin+1,CrossSecError);
+      }
+
+      hCrossSec->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+      hCrossSec->GetYaxis()->SetTitle("#frac{d#sigma}{d#it{p}_{T}} (#mub c/GeV)");
+      hCrossSec->GetYaxis()->SetTitleOffset(1.1);
+
+      delete hPtAcc;
+      hPtAcc = 0x0;
+
+      return hCrossSec;
+    }
+  }
+}
+
+
+//_________________________________________________________________________________________________
 AliHFCutVarFDsubAnalysisManagerDplus::AliHFCutVarFDsubAnalysisManagerDplus(const AliHFCutVarFDsubAnalysisManagerDplus& am)
   : AliHFCutVarFDsubAnalysisManager(am)
   , fNevents(am.fNevents)
@@ -452,20 +542,4 @@ AliHFCutVarFDsubAnalysisManagerDplus::AliHFCutVarFDsubAnalysisManagerDplus(const
 
   // TODO: do proper deep copies
   Printf("Do not use this copy constructor!");
-}
-
-
-AliHFCutVarFDsubAnalysisManagerDplus AliHFCutVarFDsubAnalysisManagerDplus::operator=(const AliHFCutVarFDsubAnalysisManagerDplus& am)
-{
-  /// Assignment operator
-
-  // TODO: do proper deep copies
-  Printf("Do not use this assignment operator!");
-
-  AliHFCutVarFDsubAnalysisManager::operator=(am);
-
-  if (this != &am) {
-    fNevents = am.fNevents;
-  }
-  return *this;
 }

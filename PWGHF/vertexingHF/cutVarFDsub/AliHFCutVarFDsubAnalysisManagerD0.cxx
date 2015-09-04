@@ -189,19 +189,3 @@ AliHFCutVarFDsubAnalysisManagerD0::AliHFCutVarFDsubAnalysisManagerD0(const AliHF
   // TODO: do proper deep copies
   Printf("Do not use this copy constructor!");
 }
-
-
-AliHFCutVarFDsubAnalysisManagerD0 AliHFCutVarFDsubAnalysisManagerD0::operator=(const AliHFCutVarFDsubAnalysisManagerD0& am)
-{
-  /// Assignment operator
-
-  // TODO: do proper deep copies
-  Printf("Do not use this assignment operator!");
-
-  AliHFCutVarFDsubAnalysisManager::operator=(am);
-
-  if (this != &am) {
-    fNevents = am.fNevents;
-  }
-  return *this;
-}
