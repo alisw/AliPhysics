@@ -501,7 +501,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   // an issue with patches containing inactive TRUs
   // (last 2 supermodules inactive but still included in the reconstruction)
   Int_t runno = InputEvent()->GetRunNumber();
-  if(runno < 176000 && runno <= 197692){
+  if(runno > 176000 && runno <= 197692){
     // Valid only for 2012 geometry
     if((type == kTMEMCalJet && IsEJE( tBits )) && (globRow > 44)) { // Hard coded number in order to be insensitive to changes in the geometry
       AliDebug(1, Form("Jet patch in inactive area: row[%d]", globRow));
