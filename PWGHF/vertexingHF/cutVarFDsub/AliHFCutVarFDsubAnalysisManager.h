@@ -51,7 +51,7 @@ public:
   void DrawDistributions(TString strOutputFolder); ///Draw the distributions of the cut variables
   void GetEfficiencies(); /// Obtain the efficiences from the MC THnSparses
   void DrawEfficiencies(TString strOutputFolder, TString prefix="eff", UInt_t xAxis=0);
-  void GetRawYields(); /// Obtain the invariant mass distributions
+  void GetRawYields(Bool_t drawFit=kFALSE, TString strOutputFolder=""); /// Obtain the invariant mass distributions
   void GetXaxisInformation(); /// Obtain the x-axis information
   Bool_t Minimise(UInt_t method=0, UInt_t nIterations=10, Bool_t useWeights=kTRUE,
                   Double_t relSysteEffErr=0., Int_t nSim=1000); /// Obtain the corrected yields

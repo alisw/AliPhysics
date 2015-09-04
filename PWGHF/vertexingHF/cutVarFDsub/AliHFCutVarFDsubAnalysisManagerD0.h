@@ -16,8 +16,7 @@ protected:
 
   Double_t fNevents; // Event count for normalisation
 
-  AliHFCutVarFDsubAnalysisManagerD0(const AliHFCutVarFDsubAnalysisManagerD0& analysisManagerD0); /// Copy constructor
-  AliHFCutVarFDsubAnalysisManagerD0 operator=(const AliHFCutVarFDsubAnalysisManagerD0& analysisManagerD0); // Assignment operator
+  AliHFCutVarFDsubAnalysisManagerD0(const AliHFCutVarFDsubAnalysisManagerD0& am); /// Copy constructor
 
 public:
   AliHFCutVarFDsubAnalysisManagerD0(); /// Default constructor

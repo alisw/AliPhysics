@@ -101,6 +101,7 @@ set(SRCS
   charmFlow/AliAnalysisTaskFlowD2H.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
+  cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx
   cutVarFDsub/AliHFCutVarFDsubAxis.cxx
   cutVarFDsub/AliHFCutVarFDsubCut.cxx
   cutVarFDsub/AliHFCutVarFDsubCutSet.cxx
