@@ -158,7 +158,6 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDDalitzPositronAfterTPCdEdxVsEta;
 		TH2F 									**hESDDalitzElectronAfterTPCdEdxVsPhi;
 		TH2F 									**hESDDalitzPositronAfterTPCdEdxVsPhi;
-		TH1F 									**hESDMotherPhi;
 		TH2F 									**hESDEposEnegPsiPairDPhi;
 		TH2F 									**hESDEposEnegInvMassPt;
 		TH2F 									**hESDEposEnegAfterMassCutInvMassPi0Pt;
