@@ -25,6 +25,8 @@ include_directories(${AliRoot_SOURCE_DIR}/EVE/EveBase
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/ESD
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONrec
+                    ${AliRoot_SOURCE_DIR}/MUON/MUONcore
                    )
 
 set(SRCS
@@ -45,7 +47,7 @@ set(MODULE_LINK_FLAGS)
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${MODULE_COMPILE_FLAGS}")
 
-set(LIBDEPS STEERBase STEER ESD CDB Converter EG EveDet EveBase Ged Gpad Graf Graf3d Gui Minuit Net RGL Rint)
+set(LIBDEPS STEERBase STEER ESD CDB EG EveDet EveBase MUONrec MUONcore Ged Gpad Graf Graf3d Gui Net RGL Rint)
 
 if(DATE_FOUND)
     set(MODULE_COMPILE_FLAGS "${DATE_CFLAGS}")

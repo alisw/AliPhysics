@@ -12,7 +12,7 @@
 #pragma link C++ class AliMinimalisticEvent+;
 #pragma link C++ class AliMinimalisticCluster+;
 #pragma link C++ class AliMinimalisticTrack+;
-//#pragma link C++ class AliExternalFormatConverter+;
-//#pragma link C++ class AliConverterPolylinesEngine+;
+#pragma link C++ class AliExternalFormatConverter+;
+#pragma link C++ class AliConverterPolylinesEngine+;
 
 #endif //ALIROOT_CONVERTERLINKDEF_H

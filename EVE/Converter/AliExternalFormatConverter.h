@@ -27,21 +27,14 @@
 #include <TString.h>
 #include <TBufferJSON.h>
 #include <TBufferXML.h>
-#include <TEveTrack.h>
-#include <TEveTrackPropagator.h>
-#include <TEveManager.h>
-#include <TInterpreter.h>
-#include <TRint.h>
-#include <TEvePathMark.h>
-#include <TEveVector.h>
 
 #include <AliESDEvent.h>
 
+#include <AliConverterPolylinesEngine.h>
 #include <AliMinimalisticEvent.h>
 #include <AliMinimalisticCluster.h>
 #include <AliMinimalisticTrack.h>
 #include <ConversionConstants.h>
-#include "AliConverterPolylinesEngine.h"
 
 
 class AliExternalFormatConverter {

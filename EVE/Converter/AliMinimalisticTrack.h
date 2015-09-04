@@ -9,13 +9,14 @@
 
 #include <iostream>
 
-#include <TObject.h>
 #include <TString.h>
+#include <TObject.h>
 
 #include <ConversionConstants.h>
 
 
 class AliMinimalisticTrack : public TObject {
+ClassDef(AliMinimalisticTrack, 1);
 public:
     AliMinimalisticTrack() : TObject()
     {  }
@@ -38,13 +39,12 @@ public:
     );
 
     void AddChild(Int_t childID);
-    UInt_t GetID();
-
     void AddPolyPoint(Double_t x, Double_t y, Double_t z);
     void AddPolyPoint(Double_t xyz[3]);
+    void SetTrackType(TrackType type);
+
     static const Int_t fgkNoParent = -1;
     static const Int_t fgkNoChild = -1;
-    void SetTrackType(TrackType type);
 private:
     void AddStartCoordinates(Double_t xyz[3]);
     void AddEndCoordinates(Double_t xyz[3]);
@@ -67,8 +67,6 @@ private:
     std::vector<Double_t> fPolyX;
     std::vector<Double_t> fPolyY;
     std::vector<Double_t> fPolyZ;
-
-    ClassDef(AliMinimalisticTrack, 1);
 };
 
 

@@ -12,8 +12,8 @@
 
 #include <TObject.h>
 
-#include <AliMinimalisticTrack.h>
 #include <AliMinimalisticCluster.h>
+#include <AliMinimalisticTrack.h>
 
 
 class AliMinimalisticEvent: public TObject  {
@@ -21,9 +21,7 @@ ClassDef(AliMinimalisticEvent, 1);
 public:
     void AddTrack(const AliMinimalisticTrack& track);
     void AddCluster(const AliMinimalisticCluster& cluster);
-    AliMinimalisticEvent(
-            Double_t energy, Int_t multiplicity, const std::string &collidingSystem, time_t timeStamp
-    );
+    AliMinimalisticEvent(Double_t energy, Int_t multiplicity, TString collidingSystem, time_t timeStamp);
 private:
     Int_t fEventID;
     Double_t fEnergy;

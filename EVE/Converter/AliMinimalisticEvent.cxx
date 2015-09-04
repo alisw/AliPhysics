@@ -20,7 +20,7 @@ void AliMinimalisticEvent::AddCluster(const AliMinimalisticCluster &cluster)
 AliMinimalisticEvent::AliMinimalisticEvent(
         Double_t energy,
         Int_t multiplicity,
-        const std::string &collidingSystem,
+        TString collidingSystem,
         time_t timeStamp
 ) : TObject(),
     fEnergy(energy),

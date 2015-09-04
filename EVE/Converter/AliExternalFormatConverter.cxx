@@ -19,8 +19,6 @@
 #include <AliEveV0.h>
 #include <AliEveCascade.h>
 
-#include <AliMUONESDInterface.h>
-
 #include <AliMUONGeometryTransformer.h>
 
 
