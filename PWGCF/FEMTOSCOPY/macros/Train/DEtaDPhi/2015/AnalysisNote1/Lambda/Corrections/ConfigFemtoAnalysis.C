@@ -444,15 +444,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					
 					
-					// //V0 monitor
-					cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
-					cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
-					dtc4etaphitpc[aniter]->AddCutMonitor(cutPass1V0[aniter], cutFail1V0[aniter]);
-	  
-					cutPass2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass2%stpcM%i", chrgs[ichg], imult));
-					cutFail2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail2%stpcM%i", chrgs[ichg], imult));
-					dtc5etaphitpc[aniter]->AddCutMonitor(cutPass2V0[aniter], cutFail2V0[aniter]);
-
 
 					//****** DCA ******
 
@@ -499,6 +490,22 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 					if(ifMonitors)//ichg>8)
 					  {
+
+					    if(0){
+					      // //V0 monitors (memory leak problems?)
+					      cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", chrgs[ichg], imult));
+					      cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", chrgs[ichg], imult));
+					      dtc4etaphitpc[aniter]->AddCutMonitor(cutPass1V0[aniter], cutFail1V0[aniter]);
+	  
+					      cutPass2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass2%stpcM%i", chrgs[ichg], imult));
+					      cutFail2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail2%stpcM%i", chrgs[ichg], imult));
+					      dtc5etaphitpc[aniter]->AddCutMonitor(cutPass2V0[aniter], cutFail2V0[aniter]);
+
+					      anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
+					      anetaphitpc[aniter]->SetEnablePairMonitors(enablePairMonitors);
+				
+					    }
+
 					    //FULL
 					    if(ichg<2 || ichg==3||ichg==4 || ichg==6|| ichg==7||ichg==9||ichg==10||ichg==11){ 
 					    //if(ichg==0 || ichg==3 || ichg==6 || ichg==10){ 
@@ -609,9 +616,6 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					//sqp3cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //(anti-)lambda-(anti-)proton mixed systems
 					//sqp4cetaphitpc[aniter]->AddCutMonitor(pairOriginPass[aniter], pairOriginFail[aniter]); //antilambda-antiprotons
 
-					anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
-					anetaphitpc[aniter]->SetEnablePairMonitors(enablePairMonitors);
-				
 
 					//***** Setting cuts ***********
 					// setting event cut
