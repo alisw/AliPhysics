@@ -65,7 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double psi = TMath::Pi()/2.;
   double psid = TMath::Pi()/6.;
 
-  int runepvzero[7] = {1, 1, 1, 1, 1, 1, 1};
+  int runepvzero[7] = {0, 0, 0, 0, 0, 0, 1};
   double epvzerobins[7] = {-psi, -psi+psid, -psi+2*psid, -psi+3*psid, -psi+4*psid, -psi+5*psid, -psi+6*psid};
 
   // Switches for QA analyses
