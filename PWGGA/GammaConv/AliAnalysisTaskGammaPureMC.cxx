@@ -433,7 +433,16 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 		if (motherParticle) hasMother 	= kTRUE;
 		else hasMother 	= kFALSE;
 		
-		if (TMath::Abs(particle->Y()) > 0.800) continue;
+		if (!abs(particle->Energy()-particle->Pz())>0.) continue;
+		Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
+
+		if (yPre == 0.) continue;
+// 		cout << i << "\t"<< yPre << endl;
+		Double_t y = 0.5*TMath::Log(yPre);
+		
+// 		cout << i << "\t"<< particle->Pz() << "\t" << particle->Energy()<< "\t" << particle->Energy()-particle->Pz() << endl;
+		
+		if (y > 0.800) continue;
 		switch(particle->GetPdgCode()){
 			case 111:
 				fHistPtYPi0->Fill(particle->Pt(), particle->Y());

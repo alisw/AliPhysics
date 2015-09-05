@@ -344,8 +344,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121063031230000"; mesonCutArray[0] = "0163103100000010"; //n cells >= 1
 		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121063033230000"; mesonCutArray[1] = "0163103100000010"; //n cells >= 3
 		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032200000"; mesonCutArray[2] = "0163103100000010"; //no max M02 cut
-		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1113121063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
-		eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111221063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
+		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1112121063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
+		eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111321063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
 	} else if (trainConfig == 44){ // EMCAL track matching variations 
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121061032230000"; mesonCutArray[0] = "0163103100000010"; //
 		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121062032230000"; mesonCutArray[1] = "0163103100000010"; //
@@ -417,8 +417,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 0] = "00052113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121063031230000"; mesonCutArray[0] = "0163103100000010"; //n cells >= 1
 		eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121063033230000"; mesonCutArray[1] = "0163103100000010"; //n cells >= 3
 		eventCutArray[ 2] = "00052113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032200000"; mesonCutArray[2] = "0163103100000010"; //no max M02 cut
-		eventCutArray[ 3] = "00052113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1113121063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
-		eventCutArray[ 4] = "00052113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111221063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
+		eventCutArray[ 3] = "00052113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1112121063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
+		eventCutArray[ 4] = "00052113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111321063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
 	} else if (trainConfig == 57){ // EMCAL track matching variations 
 		eventCutArray[ 0] = "00052113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121061032230000"; mesonCutArray[0] = "0163103100000010"; //
 		eventCutArray[ 1] = "00052113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121062032230000"; mesonCutArray[1] = "0163103100000010"; //
@@ -491,7 +491,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 1] = "00085113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121063033230000"; mesonCutArray[1] = "0163103100000010"; //n cells >= 3
 		eventCutArray[ 2] = "00085113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032200000"; mesonCutArray[2] = "0163103100000010"; //no max M02 cut
 		eventCutArray[ 3] = "00085113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1113121063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
-		eventCutArray[ 4] = "00085113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111221063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
+		eventCutArray[ 4] = "00085113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111321063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
 	} else if (trainConfig == 71){ // EMCAL track matching variations 
 		eventCutArray[ 0] = "00085113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121061032230000"; mesonCutArray[0] = "0163103100000010"; //
 		eventCutArray[ 1] = "00085113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121062032230000"; mesonCutArray[1] = "0163103100000010"; //
@@ -563,8 +563,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 0] = "00083113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121063031230000"; mesonCutArray[0] = "0163103100000010"; //n cells >= 1
 		eventCutArray[ 1] = "00083113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121063033230000"; mesonCutArray[1] = "0163103100000010"; //n cells >= 3
 		eventCutArray[ 2] = "00083113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032200000"; mesonCutArray[2] = "0163103100000010"; //no max M02 cut
-		eventCutArray[ 3] = "00083113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1113121063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
-		eventCutArray[ 4] = "00083113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111221063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
+		eventCutArray[ 3] = "00083113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1112121063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
+		eventCutArray[ 4] = "00083113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111321063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
 	} else if (trainConfig == 84){ // EMCAL track matching variations 
 		eventCutArray[ 0] = "00083113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121061032230000"; mesonCutArray[0] = "0163103100000010"; //
 		eventCutArray[ 1] = "00083113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121062032230000"; mesonCutArray[1] = "0163103100000010"; //
@@ -653,8 +653,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111111063031230000"; mesonCutArray[0] = "0163103100000010"; //n cells >= 1
 		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111111063033230000"; mesonCutArray[1] = "0163103100000010"; //n cells >= 3
 		eventCutArray[ 2] = "00000113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111111063032200000"; mesonCutArray[2] = "0163103100000010"; //no max M02 cut
-		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1113111063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
-		eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111211063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
+		eventCutArray[ 3] = "00000113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1112111063032230000"; mesonCutArray[3] = "0163103100000010"; //only modules with TRD infront
+		eventCutArray[ 4] = "00000113"; photonCutArray[ 4] = "00200009327000008250400000"; clusterCutArray[4] = "1111311063032230000"; mesonCutArray[4] = "0163103100000010"; //no modules with TRD infront
 	} else if (trainConfig == 104){ // EMCAL track matching variations
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111111061032230000"; mesonCutArray[0] = "0163103100000010"; // track matching variations
 		eventCutArray[ 1] = "00000113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111111062032230000"; mesonCutArray[1] = "0163103100000010"; //
