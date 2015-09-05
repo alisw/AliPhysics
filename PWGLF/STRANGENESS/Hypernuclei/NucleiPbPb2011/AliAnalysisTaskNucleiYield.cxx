@@ -706,9 +706,12 @@ Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
     else return gRandom->Rndm() > fFlatteningProbs[int(cent)];
   } else {
     // This flattening is required since a strange peak in VOM distribution is observed in MC
-    if (fFixForLHC14a6 && cent < 1.e-4f) {
-      // return (cent < 1) && gRandom->Rndm() > 0.35;
-      return true;
+    if (fFixForLHC14a6) {
+      if (cent < 1.5e-3f) {
+        return true;
+      } else if (cent < 0.05 && gRandom->Rndm() < 0.5) {
+        return true;
+      }
     }
   }
   return false;
