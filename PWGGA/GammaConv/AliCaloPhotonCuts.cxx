@@ -2677,7 +2677,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 				else if(fCurrentMC==k12f1b)
 					energy /= FunctionNL_kSDM(energy, 0.984384*0.995*0.9970, -3.30287, -1.48516);
 
-				else if( fCurrentMC==k15g1a || fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus )
+				else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b ||fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b )
 					energy /= FunctionNL_kSDM(energy, 0.981892*0.995*0.9970, -5.43438, -1.05468);
 
 				else fPeriodNameAvailable = kFALSE;
@@ -2694,7 +2694,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 				else if( fCurrentMC==k12f1b )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.988814*0.995*0.9981, 0.335011, -4.30322);
 
-				else if( fCurrentMC==k15g1a || fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus )
+				else if( fCurrentMC==k15g1a || fCurrentMC==k15g1b ||fCurrentMC==k15a3a || fCurrentMC==k15a3a_plus || fCurrentMC==k15a3b )
 					energy /= FunctionNL_kSDM(2.0*energy, 0.979994*0.995*0.9981, -3.24431, -0.760205);
 
 				else fPeriodNameAvailable = kFALSE;
@@ -2809,9 +2809,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString nameMC){
 	else if(nameMC.CompareTo("LHC12f1b")==0)		return k12f1b;
 	else if(nameMC.CompareTo("LHC12i3")==0)			return k12i3;
 	else if(nameMC.CompareTo("LHC15g1a")==0)		return k15g1a;
+	else if(nameMC.CompareTo("LHC15g1b")==0)		return k15g1b;
 	else if(nameMC.CompareTo("LHC15g2")==0)			return k15g2;
 	else if(nameMC.CompareTo("LHC15a3a")==0)		return k15a3a;
 	else if(nameMC.CompareTo("LHC15a3a_plus")==0)	return k15a3a_plus;
+	else if(nameMC.CompareTo("LHC15a3b")==0)		return k15a3b;
 	else if(nameMC.Contains("LHC13b2_efix"))		return k13b2_efix;
 	else return kNoMC;
 }
