@@ -58,6 +58,8 @@ public:
     void SetPureMonteCarlo( Bool_t lSet = kTRUE ) { lPureMonteCarlo = lSet; } 
     void SetCheckVtxZMC   ( Bool_t lSet = kTRUE ) { fCheckVtxZMC = lSet;    }
     void SetAlternateMCSelection ( Bool_t lSet = kTRUE ) { fAlternateMCSelection = lSet; }
+    void SetSkipPS ( Bool_t lSet = kTRUE ) { fSkipPS = lSet; } 
+    void SetUseRecoVtxZ ( Bool_t lSet = kTRUE ) { fUseRecoVtxZ = lSet; }
     
     Double_t GetV0MAmplitude ( AliESDEvent *lInputEvent ) const;
     
@@ -80,7 +82,9 @@ private:
     //Will attempt to read ESD or not... 
     Bool_t lPureMonteCarlo;
     Bool_t fCheckVtxZMC;
-    Bool_t fAlternateMCSelection; 
+    Bool_t fAlternateMCSelection;
+    Bool_t fSkipPS;
+    Bool_t fUseRecoVtxZ;
     
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1F *fHistV0M_DataSelection; //!
