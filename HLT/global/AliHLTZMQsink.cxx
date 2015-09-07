@@ -36,7 +36,7 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fZMQpollIn(kFALSE)
   , fPushbackDelayPeriod(-1)
   , fIncludePrivateBlocks(kFALSE)
-  , fZMQneverBlock(kFALSE)
+  , fZMQneverBlock(kTRUE)
 {
   //ctor
 }
