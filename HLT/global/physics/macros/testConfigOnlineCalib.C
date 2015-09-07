@@ -12,8 +12,8 @@ void testConfigOnlineCalib()
 
 		AliHLTConfiguration eventTrigger("myCustomTrigger", "Zero", "TPC-DP", "");
 
-		AliHLTConfiguration zmqsink("myZMQsink", "ZMQsink", "myCalibrationMerger", "-ZMQconnectMode bind -ZMQsocketMode PUB -ZMQendpoint tcp://*:60201");
-		AliHLTConfiguration zmqsource("myZMQsource", "ZMQsource", "myCustomTrigger", "-ZMQconnectMode connect -ZMQsocketMode SUB -ZMQendpoint tcp://localhost:60201");
+		AliHLTConfiguration zmqsink("myZMQsink", "ZMQsink", "myCalibrationMerger", "-ZMQsocketMode PUB -ZMQendpoint @tcp://*:60201");
+		AliHLTConfiguration zmqsource("myZMQsource", "ZMQsource", "myCustomTrigger", "-ZMQsocketMode SUB -ZMQendpoint >tcp://localhost:60201");
 
 		AliHLTConfiguration mapPrepare1("myMapPrepare1", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 0 -MaxSector 35");
 		AliHLTConfiguration mapPrepare2("myMapPrepare2", "TPCClusterTransformationPrepare", "myZMQsource", "-QueueDepth 0 -MinSector 36 -MaxSector 71");
