@@ -233,12 +233,13 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   outFile << "\\begin{itemize}" << endl;
   outFile << " \\item Runs selected for MUON on ALICE logbook:" << endl;
   outFile << " \\begin{itemize}" << endl;
-  outFile << "  \\item Period: " << period.Data() << endl;
   outFile << "  \\item Run Type: PHYSICS" << endl;
-  outFile << "  \\item Beam: STABLE" << endl;
-  outFile << "  \\item At least [ MUON\\_TRG \\& MUON\\_TRK \\& SPD ] as Readout" << endl;
-  outFile << "  \\item Quality: globaly GOOD and NOT BAD for readout Detectors" << endl;
   outFile << "  \\item Duration: at least 10 min" << endl;
+  outFile << "  \\item GDC mStream Recording:	Yes" << endl;
+  outFile << "  \\item Period: " << period.Data() << endl;
+  outFile << "  \\item Detectors: At least [ MUON\\_TRG \\& MUON\\_TRK \\& SPD ] as Readout" << endl;
+  outFile << "  \\item Quality: globaly GOOD and NOT BAD for readout Detectors" << endl;
+  outFile << "  \\item Beam Mode: STABLE" << endl;
   outFile << " \\end{itemize}" << endl;
   outFile << "\\end{itemize}" << endl;
   outFile << endl;
@@ -380,8 +381,10 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\newcommand{\\warningColor}{orange!50!white}" << endl;
   outFile << "\\newcommand{\\pendingColor}{yellow!50!white}" << endl;
   outFile << "\\newcommand{\\newColor}{blue!20!white}" << endl;
+  outFile << "\\newcommand{\\notInLogColor}{black!20!white}" << endl;
   outFile << "\\newcommand{\\colorLegend}{" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\newColor}{~~} = newly analyzed}\\\\" << endl;
+  outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\notInLogColor}{~~} = non-selected from e-logbook}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\pendingColor}{~~} = pending statement}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\warningColor}{~~} = possible problem}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\errorColor}{~~} = problem spotted}\\\\}" << endl;
