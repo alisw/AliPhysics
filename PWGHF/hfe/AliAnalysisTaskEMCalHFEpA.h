@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 21, 2015.								      //
+	//		version: September 05, 2015.							      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -321,7 +321,12 @@ private:
 	TH2F				*fTPC_eta1;
 	
 	TH1F				**fTPCnsigma_pt;
-	TH2F				**fTPCnsigma_p;
+	TH2F				**fTPCnsigma_p;	
+	
+	TH2F				**fTPCnsigma_p_eta1;
+	TH2F				**fTPCnsigma_p_eta2;
+	TH2F				**fTPCnsigma_p_eta3;
+	TH2F				**fTPCnsigma_p_eta4;
 	
 	TH2F				*fTPCnsigma_p_TPC;
 	TH2F				*fTPCnsigma_p_TPC_on_EMCal_acc;
@@ -338,6 +343,12 @@ private:
 	TH2F				*fShowerShapeCut;
 	TH2F				*fShowerShapeM02_EoverP;
 	TH2F				*fShowerShapeM20_EoverP;
+	
+	TH2F				*fShowerShapeM02_EoverP_Ecut12_MC;
+	TH2F				*fShowerShapeM20_EoverP_Ecut12_MC;
+	TH2F				*fShowerShapeM02_EoverP_Ecut8_MC;
+	TH2F				*fShowerShapeM20_EoverP_Ecut8_MC;
+	
 	TH2F				*fShowerShape_ha;
 	TH2F				*fShowerShape_ele;
 	TH2F				*fTPCnsigma_eta;
