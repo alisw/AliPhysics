@@ -92,6 +92,8 @@ set(SRCS
   AliFemtoXiPairCut.cxx
   AliFemtoXiTrackPairCut.cxx
   AliFemtoXiV0PairCut.cxx
+  AliFemtoBetaTPairCut.cxx
+  AliFemtoCutMonitorPairBetaT.cxx
   )
 
 # Headers from sources
@@ -143,6 +145,8 @@ set(HDRS ${HDRS}
   AliFemtoEventReaderKinematicsChain.h
   AliFemtoCorrFctnDPhiStarKStarMergedFraction.h
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h
+  AliFemtoBetaTPairCut.h
+  AliFemtoCutMonitorPairBetaT.h
   )
 
 set ( FSRCS

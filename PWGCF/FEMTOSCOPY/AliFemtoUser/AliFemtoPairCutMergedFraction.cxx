@@ -15,7 +15,7 @@
 #include <cstdio>
 
 #ifdef __ROOT__
-ClassImp(AliFemtoPairCutRadialDistanceAsymmetric)
+ClassImp(AliFemtoPairCutMergedFraction)
 #endif
 
 //__________________
