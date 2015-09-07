@@ -42,6 +42,7 @@ AliHLTZMQsource::AliHLTZMQsource()
   , fZMQconnectMode("connect")
   , fZMQendpoint("tcp://localhost:60201")
   , fMessageFilter("")
+  , fZMQrequestTimeout(1000)
 {
 }
 
@@ -184,8 +185,40 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
 
   int blockTopicSize=-1;
   AliHLTDataTopic blockTopic;
-  
   int rc = -1;
+ 
+  //in case we do requests: request first and poll for replies
+  //if no reply arrives after a timeout period, reset the connection
+  if (fZMQsocketType==ZMQ_REQ)
+  {
+    //send request (header + an empty body for good measure)
+    zmq_send(fZMQin, fMessageFilter.Data(), fMessageFilter.Length(), ZMQ_SNDMORE);
+    zmq_send(fZMQin, 0, 0, 0);
+    //wait for reply
+    zmq_pollitem_t sockets[] = { {fZMQin, 0, ZMQ_POLLIN, 0} };
+    rc = zmq_poll( sockets, 1, fZMQrequestTimeout );
+    if (rc==-1) 
+    {
+      //interrupted, stop processing
+      return 0;
+    }
+    if (! (sockets[0].revents & ZMQ_POLLIN))
+    {
+      //if we got no reply reset the connection, probably source died
+      int lingerValue = 0;
+      rc = zmq_setsockopt(fZMQin, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
+      rc = zmq_close(fZMQin);
+      fZMQin = zmq_socket(fZMQcontext, fZMQsocketType); 
+      if (fZMQconnectMode.EqualTo("connect")) 
+        rc = zmq_connect(fZMQin,fZMQendpoint.Data());
+      else 
+        rc = zmq_bind(fZMQin,fZMQendpoint.Data());
+      
+      //just return normally
+      return 0;
+    }
+  }
+
   int64_t more=0;
   size_t moreSize=sizeof(more);
   do //multipart, get all parts
@@ -218,7 +251,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     
     outputBlocks.push_back(blockHeader);
   } while (more==1);
-
+  
   edd=NULL;
   return retCode;
 }
@@ -233,6 +266,7 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
   {
     if (value.EqualTo("SUB"))  fZMQsocketType=ZMQ_SUB;
     if (value.EqualTo("PULL")) fZMQsocketType=ZMQ_PULL;
+    if (value.EqualTo("REQ"))  fZMQsocketType=ZMQ_REQ;
   }
  
   if (option.EqualTo("ZMQconnectMode"))
@@ -253,6 +287,11 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
   if (option.EqualTo("MessageFilter"))
   {
     fMessageFilter = value;
+  }
+
+  if (option.EqualTo("ZMQrequestTimeout"))
+  {
+    fZMQrequestTimeout = value.Atoi();
   }
 
   return 1; 
