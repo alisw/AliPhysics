@@ -673,7 +673,8 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
     }
 
 
-    Float_t tpcsignal=trackESD->GetTPCsignal();
+//     Float_t tpcsignal=trackESD->GetTPCsignal();
+    Float_t tpcsignal=fPIDResponse->GetTPCResponse().GetTrackdEdx(trackESD);
     Int_t tofbit=-1;
     Int_t iTOFpid=0;
     Int_t ikTIME=0;
@@ -900,7 +901,8 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
       
       if (closestNeighbourIndex >= 0 && closestNeighbourIndex < nTotTracks) {
         AliESDtrack *track_nb= esdEvent->GetTrack(closestNeighbourIndex);
-        fTree_dEdx_nb = track_nb->GetTPCsignal();
+//         fTree_dEdx_nb = track_nb->GetTPCsignal();
+        fTree_dEdx_nb = fPIDResponse->GetTPCResponse().GetTrackdEdx(track_nb);
         fTree_p_TPC_nb = track_nb->GetInnerParam()->GetP();
         fTree_BtimesChargeOverPt_nb = TMath::Abs(magField) * track_nb->GetSigned1Pt();
         fTree_tanTheta_nb = track_nb->GetInnerParam()->GetTgl();
@@ -946,7 +948,8 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
       if (track_vs) {
         const AliExternalTrackParam *paramIn_vs = track_vs->GetInnerParam();
         if (paramIn_vs) {
-          fTree_dEdx_vs = track_vs->GetTPCsignal();
+//           fTree_dEdx_vs = track_vs->GetTPCsignal();
+          fTree_dEdx_vs = fPIDResponse->GetTPCResponse().GetTrackdEdx(track_vs);
           fTree_p_TPC_vs = paramIn_vs->GetP();
           fTree_BtimesChargeOverPt_vs = TMath::Abs(magField) * track_vs->GetSigned1Pt();
           fTree_tanTheta_vs = paramIn_vs->GetTgl();
@@ -3992,6 +3995,7 @@ Bool_t AliTPCcalibResidualPID::TPCCutMIGeo(const AliVTrack* track, const AliVEve
 
   if (streamer) {
     Double_t dedx = track->GetTPCsignal();
+//     Double_t dedx = fPIDResponse->GetTPCResponse().GetTrackdEdx(track);
 
     (*streamer)<<"tree"<<
       "param.="<< par<<
