@@ -8,6 +8,8 @@
 class AliAnalysisUtils;
 
 class TArrayD;
+class TClonesArray;
+class TList;
 class TString;
 
 namespace EMCalTriggerPtAnalysis {
@@ -30,8 +32,10 @@ public:
 protected:
 
   void CreateEnergyBinning(TArrayD& binning) const;
-  void FillClusterHistograms(TString triggerclass, double energy, double eta, double phi);
+  void FillClusterHistograms(TString triggerclass, double energy, double eta, double phi, TList *triggerpatches);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
+  void FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundpatches) const;
+  Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
 
   AliAnalysisUtils                    *fAnalysisUtil;
   AliEMCalHistoContainer              *fHistos;
