@@ -56,6 +56,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   void SetProdTrackTPCNclsRatioMin(Double_t a){fProdTrackTPCNclsRatioMin=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdMassTolLambda(Double_t a){fProdMassTolLambda=a;}
+  void SetProdMassTolXiRough(Double_t a){fProdMassTolXiRough=a;}
   void SetProdMassTolXi(Double_t a){fProdMassTolXi=a;}
   void SetProdMassRejOmega(Double_t a){fProdMassRejOmega=a;}
   void SetProdRfidMinV0(Double_t a){fProdRfidMinV0=a;}
@@ -81,6 +82,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t GetProdTrackTPCNclsRatioMin(){return fProdTrackTPCNclsRatioMin;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Double_t GetProdMassTolLambda(){return fProdMassTolLambda;}
+  Double_t GetProdMassTolXiRough(){return fProdMassTolXiRough;}
   Double_t GetProdMassTolXi(){return fProdMassTolXi;}
   Double_t GetProdMassRejOmega(){return fProdMassRejOmega;}
   Double_t GetProdRfidMinV0(){return fProdRfidMinV0;}
@@ -117,6 +119,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	void GetSigmaElectronTPCRange(Double_t &a,Double_t &b){a=fSigmaElectronTPCMin;b=fSigmaElectronTPCMax;}
 	void GetSigmaElectronTOFRange(Double_t &a,Double_t &b){a=fSigmaElectronTOFMin;b=fSigmaElectronTOFMax;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;}
+	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b,Double_t &c){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;c=fSigmaElectronTPCPtDepPar2;}
 
 	void SetExcludePionTPC(Bool_t a){fExcludePionTPC=a;}
 	void SetExcludeProtonTPC(Bool_t a){fExcludeProtonTPC=a;}
@@ -127,6 +130,12 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	void SetSigmaElectronTPCRange(Double_t a,Double_t b){fSigmaElectronTPCMin=a;fSigmaElectronTPCMax=b;}
 	void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
+	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b,Double_t c){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;fSigmaElectronTPCPtDepPar2=c;}
+
+	Bool_t IsPeakRegion(AliAODcascade *c);
+	Bool_t IsPeakRegion(TLorentzVector *c);
+	Bool_t IsSideBand(AliAODcascade *c);
+	Bool_t IsSideBand(TLorentzVector *c);
 
  protected:
 	
@@ -143,6 +152,7 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
   Double_t fProdTrackTPCNclsRatioMin;      /// Min. Number of TPC PID cluster
   Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
   Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
+  Double_t fProdMassTolXiRough;          /// Tolerance of Xi mass from PDG value (including sideband)
   Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
   Double_t fProdMassRejOmega;          /// Rejection range of Omega mass from PDG value
   Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
@@ -175,12 +185,13 @@ class AliRDHFCutsXictoeleXifromAODtracks : public AliRDHFCuts
 	Double_t fSigmaElectronTPCMin; /// nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTPCPtDepPar0; /// nSigma electron lower limit (par0)
 	Double_t fSigmaElectronTPCPtDepPar1; /// nSigma electron lower limit (par1)
+	Double_t fSigmaElectronTPCPtDepPar2; /// nSigma electron lower limit (par2)
 	Double_t fSigmaElectronTPCMax; /// nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTOFMin; /// nSigma to exclude for Kaon band
 	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
   
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,3);
+  ClassDef(AliRDHFCutsXictoeleXifromAODtracks,4);
   /// \endcond
 };
 
