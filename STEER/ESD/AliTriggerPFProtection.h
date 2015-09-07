@@ -33,6 +33,7 @@ public:
                           AliTriggerPFProtection();
                           AliTriggerPFProtection( TString & name);
                           AliTriggerPFProtection( TString & name,TString & inta, TString & intb, TString & interaction );
+                          AliTriggerPFProtection( TString & name,TString & inter, TString & bcm,UInt_t PBefore,UInt_t PAfter,UInt_t NBefore,UInt_t NAfter,UInt_t OBefore,UInt_t OAfter);
 			  AliTriggerPFProtection(TString& name, UInt_t* pfdef);  
                virtual   ~AliTriggerPFProtection() {}
 
@@ -63,20 +64,33 @@ public:
                
 private:
                 TString     fINTa;                // Logical function of INT1 and INT2;
+			                          // ver>7: bcmask
                 TString     fINTb;                // Logical function of INT1 and INT2;
+		                                  // ver>7: interaction
                 TString     fINT;                 // Logical function of INT1 and INT2;
-                 UInt_t     fNa1;                 // Max number of INTa for the event of type INT 
+		                                  //ver>7: not used
+                 UInt_t     fNa1;                 // Max number of INTa for the event of type INT
+			 			  // ver>7: NintAfter
                  UInt_t     fNa2;                 // max number of INTa for the event of type NOT INT
+		                                  // ver>7:OffsetAfter
                  UInt_t     fTa;                  // mprotection interval for INTa 
+		 				  // ver>7: PeriodAfter
                  UInt_t     fNb1;                 // mmax number of INTb   for  the event of type INT 
+		 				  // ver>7: NintBefore
                  UInt_t     fNb2;                 // mmax number of INTb for the event of  type NOT INT
+		                                  // ver>7:OffsetBefore
                  UInt_t     fTb;                  // mprotection interval for INTb
+		                                  // ver>7: PeriodBefore  
 		 UInt_t     fPFdef[12];            // 12 words=3 levels * 4; pfcommon,pfblocka,pfblockb,pflut
+		 // LML0 PF protection
+		 UInt_t fInter;                     // 1=INT1, 2=INT2
+		 UInt_t fBCmask;                    // 12 bit BCmask applied to interaction
+		 UInt_t fVersion;                   // 7=12 hexa words, 8= human interface
 
 		AliTriggerPFProtection(const AliTriggerPFProtection & inp );
 		AliTriggerPFProtection& operator = (const AliTriggerPFProtection& inp);
 
-   ClassDef( AliTriggerPFProtection, 2 )  // Define a Trigger Past Future Protection 
+   ClassDef( AliTriggerPFProtection, 3 )  // Define a Trigger Past Future Protection 
 };
 
 
