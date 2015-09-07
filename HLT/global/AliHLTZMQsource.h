@@ -63,6 +63,7 @@ class AliHLTZMQsource : public AliHLTComponent  {
     TString fZMQendpoint;    //e.g. "@tcp://*:60100" ">tcp://ecs0:60100"
     TString fMessageFilter;   //ZMQ subscription
     ULong_t fZMQrequestTimeout;  //timeout in ms
+    Bool_t fZMQneverBlock;    //dont block on receive
 
     ClassDef(AliHLTZMQsource, 0)
 };

@@ -43,6 +43,7 @@ AliHLTZMQsource::AliHLTZMQsource()
   , fZMQendpoint(">tcp://localhost:60201")
   , fMessageFilter("")
   , fZMQrequestTimeout(1000)
+  , fZMQneverBlock(kTRUE)
 {
 }
 
@@ -217,11 +218,11 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     block = outputBuffer + outputBufferSize;
     
 
-    blockTopicSize = zmq_recv (fZMQin, &blockTopic, sizeof(blockTopic), ZMQ_DONTWAIT);
+    blockTopicSize = zmq_recv (fZMQin, &blockTopic, sizeof(blockTopic), (fZMQneverBlock)?ZMQ_DONTWAIT:0);
     if (blockTopicSize<0 && errno==EAGAIN) break; //nothing on the socket
     zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     if (more) {
-      blockSize = zmq_recv(fZMQin, block, outputBufferCapacity, ZMQ_DONTWAIT);
+      blockSize = zmq_recv(fZMQin, block, outputBufferCapacity, (fZMQneverBlock)?ZMQ_DONTWAIT:0);
       if (blockSize < 0 && errno == EAGAIN) break; //nothing on the socket
       if (blockSize > outputBufferCapacity) {retCode = ENOSPC; break;}//no space for message
       zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
@@ -271,6 +272,14 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
   if (option.EqualTo("ZMQrequestTimeout"))
   {
     fZMQrequestTimeout = value.Atoi();
+  }
+
+  if (option.EqualTo("ZMQneverBlock"))
+  {
+    if (value.EqualTo("0") || value.EqualTo("no") || value.Contains("false",TString::kIgnoreCase))
+      fZMQneverBlock = kFALSE;
+    else if (value.EqualTo("1") || value.EqualTo("yes") || value.Contains("true",TString::kIgnoreCase) )
+      fZMQneverBlock = kTRUE;
   }
 
   return 1; 
