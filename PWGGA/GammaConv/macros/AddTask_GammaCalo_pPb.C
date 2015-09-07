@@ -123,9 +123,12 @@ void AddTask_GammaCalo_pPb(
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
-	// change to 2 cuts per cutselection
+	// change to 1 cuts per cutselection
 	if (trainConfig == 7 	|| trainConfig == 8 	|| trainConfig == 32 	|| trainConfig == 33 )
 		numberOfCuts = 1;
+	// change to 3 cuts per cutselection
+	if (trainConfig == 14)
+		numberOfCuts = 3;
 	// change to 4 cuts per cutselection
 	if (trainConfig == 9 	|| trainConfig == 10	|| trainConfig == 11	|| trainConfig == 12 	|| trainConfig == 13 )
 		numberOfCuts = 4;
@@ -195,7 +198,11 @@ void AddTask_GammaCalo_pPb(
         eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100050032230000"; mesonCutArray[1] = "0163103100000050"; // kEMC7 // EMCAL clusters
         eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111100050032230000"; mesonCutArray[2] = "0163103100000050"; // kEMCEG1 based on INT7 // EMCAL clusters
         eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111100050032230000"; mesonCutArray[3] = "0163103100000050"; // kEMCEG2 based on INT7 // EMCAL clusters
-		
+	} else 	if(trainConfig == 14){ // variation opening angle
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050022230000"; mesonCutArray[0] = "0163103100000050"; // standard
+		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050022230000"; mesonCutArray[1] = "0163103100000060"; // 2 EMCal cell diagonals
+		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050022230000"; mesonCutArray[2] = "0163103100000040"; // 0.75 EMCal cell diagonals
+
 	//************************************************ PHOS clusters *************************************************
 	} else if (trainConfig == 31) {	// min energy = 0.3 GeV/c
 		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "2444400040033200000"; mesonCutArray[0] = "0163103100000050"; //standart cut, kINT7 // PHOS clusters
