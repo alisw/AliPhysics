@@ -107,6 +107,7 @@ if(ZEROMQ_FOUND)
       ${SRCS}
       AliHLTZMQsink.cxx
       AliHLTZMQsource.cxx
+      AliZMQhelpers.cxx
      )
 endif(ZEROMQ_FOUND)
 
