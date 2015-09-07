@@ -61,6 +61,7 @@ private:
   Int_t fPushbackDelayPeriod;   //how often do we send?
   Int_t fLastPushbackDelayTime; //last push back time
   Bool_t fIncludePrivateBlocks; //include private blocks?
+  Bool_t fZMQneverBlock;        //never block, even with a PUSH sock.
   
   ClassDef(AliHLTZMQsink, 1)
 };

@@ -36,6 +36,7 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fZMQpollIn(kFALSE)
   , fPushbackDelayPeriod(-1)
   , fIncludePrivateBlocks(kFALSE)
+  , fZMQneverBlock(kFALSE)
 {
   //ctor
 }
@@ -250,7 +251,10 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       //  second part: Payload
       rc = zmq_send(fZMQout, &blockTopic, sizeof(blockTopic), ZMQ_SNDMORE);
       HLTMessage(Form("send topic rc %i errno %s",rc,(rc<0)?strerror(errno):0));
-      rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, (iSelectedBlock == (selectedBlockIdx.size()-1))?0:ZMQ_SNDMORE);
+      int flags = 0;
+      if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
+      if (iSelectedBlock == (selectedBlockIdx.size()-1)) flags = ZMQ_SNDMORE;
+      rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, flags);
       HLTMessage(Form("send data rc %i errno %s",rc,(rc<0)?strerror(errno):0));
     }
     
@@ -314,6 +318,14 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
   if (option.EqualTo("IncludePrivateBlocks"))
   {
     fIncludePrivateBlocks=kTRUE;
+  }
+
+  if (option.EqualTo("ZMQneverBlock"))
+  {
+    if (value.EqualTo("0") || value.EqualTo("no") || value.Contains("false",TString::kIgnoreCase))
+      fZMQneverBlock = kFALSE;
+    else if (value.EqualTo("1") || value.EqualTo("yes") || value.Contains("true",TString::kIgnoreCase) )
+      fZMQneverBlock = kTRUE;
   }
 
   return 1; 
