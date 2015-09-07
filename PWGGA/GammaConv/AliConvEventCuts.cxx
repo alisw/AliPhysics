@@ -1832,6 +1832,15 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSecti
 	AliAODMCHeader *cHeaderAOD 			= 0x0;
 	Bool_t headerFound 					= kFALSE;
 
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
+		periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
+		periodName.CompareTo("LHC13b4_fix") != 0 && periodName.CompareTo("LHC13b4_plus") != 0 ){
+		NTrials = -1;
+		XSection = -1;
+		return;
+	}
+
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		if(dynamic_cast<AliMCEvent*>(MCEvent)){
 			cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());

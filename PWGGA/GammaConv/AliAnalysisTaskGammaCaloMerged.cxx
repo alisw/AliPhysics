@@ -908,14 +908,20 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 		
 		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon, isRunningEMCALrelAna);
 		
+		if(fIsMC==2){
+			Float_t xsection = -1.; Float_t ntrials = -1.;
+			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials);
+			if((xsection==-1.) || (ntrials==-1.)) AliFatal("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials");
+			fProfileJetJetXSection[iCut]->Fill(0.,xsection);
+			fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
+		}
+
 		fWeightJetJetMC = 1;
 		// 		cout << fMCEvent << endl;
 		Bool_t isMCJet = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC );
 		if (!isMCJet){
-			fHistoNEvents[iCut]->Fill(10,
-									  fWeightJetJetMC);
-			if (fIsMC==2) 
-				fHistoNEventsWOWeight[iCut]->Fill(10);
+			fHistoNEvents[iCut]->Fill(10,fWeightJetJetMC);
+			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(10);
 			continue;
 		}
 
@@ -939,16 +945,8 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 			continue;
 		}
 		if (triggered == kTRUE) {
-			fHistoNEvents[iCut]->Fill(	eventQuality, 
-										fWeightJetJetMC); // Should be 0 here
-			if (fIsMC==2){
-				fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
-				Float_t xsection = -1.; Float_t ntrials = -1.;
-				((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials);
-				if((xsection==-1.) || (ntrials==-1.)) AliFatal("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials");
-				fProfileJetJetXSection[iCut]->Fill(0.,xsection);
-				fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
-			}
+			fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC); // Should be 0 here
+			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
 
 			fHistoNGoodESDTracks[iCut]->Fill(	fV0Reader->GetNumberOfPrimaryTracks(), 
 												fWeightJetJetMC);
@@ -990,8 +988,7 @@ void AliAnalysisTaskGammaCaloMerged::UserExec(Option_t *)
 				}
 			}
 		}
-		if(fIsMC> 0)
-			ProcessMCParticles();
+		if(fIsMC>0) ProcessMCParticles();
 		
 		if (triggered==kFALSE) continue;
 		

@@ -1513,6 +1513,14 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 		
 		Int_t eventNotAccepted = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon, isRunningEMCALrelAna);
 		
+		if(fIsMC==2){
+			Float_t xsection = -1.; Float_t ntrials = -1.;
+			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials);
+			if((xsection==-1.) || (ntrials==-1.)) AliFatal("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials");
+			fProfileJetJetXSection[iCut]->Fill(0.,xsection);
+			fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
+		}
+
 		fWeightJetJetMC = 1;
 		// 		cout << fMCEvent << endl;
 		Bool_t isMCJet = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC );
@@ -1537,15 +1545,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 		if(eventQuality != 0){// Event Not Accepted
 			//cout << "event rejected due to: " <<eventQuality << endl;
 			fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
-			if (fIsMC==2){
-				fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
-				Float_t xsection = -1.; Float_t ntrials = -1.;
-				((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials);
-				if((xsection==-1.) || (ntrials==-1.)) AliFatal("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials");
-				fProfileJetJetXSection[iCut]->Fill(0.,xsection);
-				fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
-			}
-
+			if (fIsMC==2) fHistoNEventsWOWeight[iCut]->Fill(eventQuality); // Should be 0 here
 			continue;
 		}
 		if (triggered == kTRUE) {
