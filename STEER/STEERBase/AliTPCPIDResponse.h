@@ -61,6 +61,11 @@ public:
     kdEdxInvalid=3     //invalid
   };
 
+  enum ETPCdEdxType {
+    kdEdxTrack=0,
+    kdEdxInfo=1
+  };
+
   void SetSigma(Float_t res0, Float_t resN2);
   void SetBetheBlochParameters(Double_t kp1,
                                Double_t kp2,
@@ -220,6 +225,18 @@ public:
   Double_t EvaldEdxSpline(Double_t bg,Int_t entry);
   static   Double_t SEvaldEdx(Double_t bg,Int_t entry){ return (fgInstance!=0)? fgInstance->EvaldEdxSpline(bg,entry):0;};
 
+  //=== dEdx type functions =====================================================
+  void SetdEdxType(ETPCdEdxType dEdxType, Int_t dEdxChargeType=0, Int_t dEdxWeightType=0, Double_t dEdxIROCweight=1., Double_t dEdxOROCmedWeight=1., Double_t dEdxOROClongWeight=1.) {
+    fdEdxType=dEdxType; fdEdxChargeType=dEdxChargeType; fdEdxWeightType=dEdxWeightType; fIROCweight=dEdxIROCweight; fOROCmedWeight=dEdxOROCmedWeight; fOROClongWeight=dEdxOROClongWeight; }
+  ETPCdEdxType      GetdEdxType()        const { return fdEdxType;       }
+  Int_t             GetdEdxChargeType()  const { return fdEdxChargeType; }
+  Int_t             GetdEdxWeightType()  const { return fdEdxWeightType; }
+  Double_t          GetIROCweight()      const { return fIROCweight;     }
+  Double_t          GetOROCmedWeight()   const { return fOROCmedWeight;  }
+  Double_t          GetOROClongWeight()  const { return fOROClongWeight; }
+
+  Double_t GetTrackdEdx(const AliVTrack* track) const;
+
 protected:
   Double_t GetExpectedSignal(const AliVTrack* track,
                              AliPID::EParticleType species,
@@ -267,7 +284,7 @@ private:
   static const char* fgkGainScenarioName[fgkNumberOfGainScenarios+1];
 
   TH2D* fhEtaCorr; //! Map for TPC eta correction
-  TH2D* fhEtaSigmaPar1; //! Map for parameter 1 of the dEdx sigma parametrisation
+  TH2D* fhEtaSigmaPar1; //! Map for parameter 1 of the IROCdEdx sigma parametrisation
   
   Double_t fSigmaPar0; // Parameter 0 of the dEdx sigma parametrisation
   
@@ -275,6 +292,14 @@ private:
   TF1* fCorrFuncMultiplicity; //! Function to correct for the multiplicity dependence of the TPC dEdx
   TF1* fCorrFuncMultiplicityTanTheta; //! Function to correct the additional tanTheta dependence of the multiplicity dependence of the TPC dEdx
   TF1* fCorrFuncSigmaMultiplicity; //! Function to correct for the multiplicity dependence of the TPC dEdx resolution
+
+  // dEdx type information
+  ETPCdEdxType     fdEdxType;         // source for dEdx information to use
+  Int_t            fdEdxChargeType;   // charge type to use for dEdx calculation from AliTPCdEdxInfo
+  Int_t            fdEdxWeightType;   // tracklet weighting type to use for dEdx calculation from AliTPCdEdxInfo
+  Double_t         fIROCweight;       // IROC weight to use for dEdx calculation from AliTPCdEdxInfo
+  Double_t         fOROCmedWeight;    // OROC medium pad size weight to use for dEdx calculation from AliTPCdEdxInfo
+  Double_t         fOROClongWeight;   // OROC long pad size weight to use for dEdx calculation from AliTPCdEdxInfo
 
   //
   //
