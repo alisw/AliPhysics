@@ -10,7 +10,8 @@ void AddTask_GammaCaloMerged_pp( 	Int_t 		trainConfig 				= 1,  								// chang
 									Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 									Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
 									Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
-									TString		periodNameV0Reader			= ""
+									TString		periodNameV0Reader			= "",								// period Name for respective period selected in V0Reader
+									Int_t 		selectedMeson				=1 
 ) {
 	
 	Int_t isHeavyIon = 0;
@@ -274,6 +275,7 @@ void AddTask_GammaCaloMerged_pp( 	Int_t 		trainConfig 				= 1,  								// chang
 		analysisMesonCuts[i]->SetFillCutHistograms("");
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 	}
+	task->SetSelectedMesonID(selectedMeson);
 	task->SetEventCutList(numberOfCuts,EventCutList);
 	task->SetCaloCutList(numberOfCuts,ClusterCutList);
 	task->SetCaloMergedCutList(numberOfCuts,ClusterMergedCutList);

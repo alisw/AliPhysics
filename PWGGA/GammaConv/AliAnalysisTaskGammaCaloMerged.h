@@ -40,6 +40,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		
 		// MC functions
 		void SetIsMC(Int_t isMC){fIsMC=isMC;}
+		void SetSelectedMesonID(Int_t anaMeson){fSelectedMesonID=anaMeson;}
+		
 		void ProcessMCParticles();
 		void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Float_t m02, AliAODConversionPhoton *TrueSubClusterCandidate1,
 															      AliAODConversionPhoton *TrueSubClusterCandidate2);
@@ -74,6 +76,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 			fMesonCutArray = CutArray;
 		}
 		
+		Int_t GetSelectedMesonID(){return fSelectedMesonID;}
+		
 		// Additional functions for convenience
 		void SetLogBinningXTH2(TH2* histoRebin);
 
@@ -103,12 +107,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
-		TH2F 								**fHistoMotherPi0PtY;				//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
-		TH2F 								**fHistoMotherEtaPtY;				//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
-		TH2F 								**fHistoMotherPi0PtAlpha;			//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
-		TH2F 								**fHistoMotherEtaPtAlpha;			//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
-		TH2F 								**fHistoMotherPi0PtOpenAngle;		//! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
-		TH2F 								**fHistoMotherEtaPtOpenAngle;		//! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
+		TH2F 								**fHistoMotherPtY;				//! array of histograms with signal +BG pt, Y
+		TH2F 								**fHistoMotherPtAlpha;			//! array of histograms with signal +BG  pt, alpha
+		TH2F 								**fHistoMotherPtOpenAngle;		//! array of histograms with signal +BG  pt, openAngle
 
 		// histograms for rec photon clusters
 		TH1F								** fHistoClusGammaPt;				//! array of histos with cluster, pt
@@ -150,6 +151,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		TH2F								** fHistoTrueClusPartConvEtaPtvsM02;			//! 
 		TH2F								** fHistoTrueClusBGPtvsM02;						//! 
 		TH2F								** fHistoTrueClusGammaPtvsM02;					//! 
+		TH2F								** fHistoTrueClusElectronPtvsM02;					//! 
 		TH2F								** fHistoTrueClusMergedInvMassvsPt;					//! 
 		TH2F								** fHistoTrueClusPi0InvMassvsPt;					//! 
 		TH2F								** fHistoTrueClusPrimPi0InvMassvsPt;				//! 
@@ -167,6 +169,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		TH2F								** fHistoTrueClusPartConvEtaInvMassvsPt;			//! 
 		TH2F								** fHistoTrueClusBGInvMassvsPt;						//! 
 		TH2F								** fHistoTrueClusGammaInvMassvsPt;					//! 
+		TH2F								** fHistoTrueClusElectronInvMassvsPt;					//! 
 		TH2F								** fHistoTrueClusBGPtvsSource;						//!
 		
 		
@@ -210,12 +213,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		Int_t 								fIsMC;								// flag for MC information
 		Bool_t								fSetPlotHistsExtQA;					// flag for extended QA hists
 		Double_t 							fWeightJetJetMC;					// weight for Jet-Jet MC
-
+		Int_t								fSelectedMesonID;					// switch for meson analysis
+		
 	private:
 		AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCaloMerged, 2);
+		ClassDef(AliAnalysisTaskGammaCaloMerged, 3);
 };
 
 #endif
