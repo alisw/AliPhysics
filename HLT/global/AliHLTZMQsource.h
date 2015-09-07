@@ -60,8 +60,7 @@ class AliHLTZMQsource : public AliHLTComponent  {
     void* fZMQcontext;       //!ZMQ context pointer
     void* fZMQin;           //!the output socket
     int fZMQsocketType;      //ZMQ_REP,ZMQ_PUB,ZMQ_PUSH
-    TString fZMQconnectMode; //"connect" or "bind"
-    TString fZMQendpoint;    //e.g. "tcp://*:60100" "tcp://ecs0:60100"
+    TString fZMQendpoint;    //e.g. "@tcp://*:60100" ">tcp://ecs0:60100"
     TString fMessageFilter;   //ZMQ subscription
     ULong_t fZMQrequestTimeout;  //timeout in ms
 

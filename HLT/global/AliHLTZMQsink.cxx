@@ -20,6 +20,7 @@
 #include <TObject.h>
 #include <TPRegexp.h>
 #include "zmq.h"
+#include "AliZMQhelpers.h"
 
 using namespace std;
 
@@ -31,8 +32,7 @@ AliHLTZMQsink::AliHLTZMQsink() :
   , fZMQcontext(NULL)
   , fZMQout(NULL)
   , fZMQsocketType(ZMQ_PUB)
-  , fZMQconnectMode("bind")
-  , fZMQendpoint("tcp://*:60201")
+  , fZMQendpoint("@tcp://*:60201")
   , fZMQpollIn(kFALSE)
   , fPushbackDelayPeriod(-1)
   , fIncludePrivateBlocks(kFALSE)
@@ -94,6 +94,7 @@ AliHLTComponent* AliHLTZMQsink::Spawn()
 Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
 {
   // see header file for class documentation
+  Int_t retCode=0;
 
   //process arguments
   ProcessOptionString(GetComponentArgs());
@@ -125,19 +126,12 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%s",sndtimeo, rc, (rc<0)?strerror(errno):0));
 
   //connect or bind, after setting socket options
-  if (fZMQconnectMode.EqualTo("connect")) 
-  {
-    HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
-    rc = zmq_connect(fZMQout,fZMQendpoint.Data());
-    HLTMessage(Form("connect rc %i errno %s",rc,(rc<0)?strerror(errno):0));
-  }
-  else 
-  {
-    HLTMessage(Form("ZMQ bind to %s",fZMQendpoint.Data()));
-    rc = zmq_bind(fZMQout,fZMQendpoint.Data());
-    HLTMessage(Form("bind rc=%i errno=%s",rc,(rc<0)?strerror(errno):0));
-  }
-  return 0;
+  HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
+  rc = alizmq_attach(fZMQout,fZMQendpoint.Data());
+  if (rc==-1) retCode=-1;
+  HLTMessage(Form("connect rc %i errno %s",rc,(rc<0)?strerror(errno):0));
+  
+  return retCode;
 }
 
 //______________________________________________________________________________
@@ -292,16 +286,6 @@ int AliHLTZMQsink::ProcessOption(TString option, TString value)
     
     //always poll when REPlying
     fZMQpollIn=(fZMQsocketType==ZMQ_REP)?kTRUE:kFALSE;
-  }
- 
-  if (option.EqualTo("ZMQconnectMode"))
-  {
-    if (! (
-          value.EqualTo("connect") ||
-          value.EqualTo("bind")
-          )
-       ) {return 1;}
-    fZMQconnectMode = value;
   }
  
   if (option.EqualTo("ZMQendpoint"))

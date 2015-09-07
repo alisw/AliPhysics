@@ -26,6 +26,7 @@
 #include "AliLog.h"
 #include <TPRegexp.h>
 #include "zmq.h"
+#include "AliZMQhelpers.h"
 
 using namespace std;
 
@@ -39,8 +40,7 @@ AliHLTZMQsource::AliHLTZMQsource()
   , fZMQcontext(NULL)
   , fZMQin(NULL)
   , fZMQsocketType(ZMQ_PUB)
-  , fZMQconnectMode("connect")
-  , fZMQendpoint("tcp://localhost:60201")
+  , fZMQendpoint(">tcp://localhost:60201")
   , fMessageFilter("")
   , fZMQrequestTimeout(1000)
 {
@@ -138,18 +138,10 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i",sndtimeo, rc, errno));
 
   //connect or bind, after setting socket options
-  if (fZMQconnectMode.EqualTo("connect")) 
-  {
-    HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
-    rc = zmq_connect(fZMQin,fZMQendpoint.Data());
-    HLTMessage(Form("connect rc %i errno %i",rc,errno));
-  }
-  else 
-  {
-    HLTMessage(Form("ZMQ bind to %s",fZMQendpoint.Data()));
-    rc = zmq_bind(fZMQin,fZMQendpoint.Data());
-    HLTMessage(Form("bind rc %i errno %i",rc,errno));
-  }
+  HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
+  rc = alizmq_attach(fZMQin,fZMQendpoint.Data());
+  if (rc==-1) retCode=-1;
+  HLTMessage(Form("  connect rc %i errno %i",rc,errno));
 
   return retCode;
 }
@@ -209,10 +201,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
       rc = zmq_setsockopt(fZMQin, ZMQ_LINGER, &lingerValue, sizeof(lingerValue));
       rc = zmq_close(fZMQin);
       fZMQin = zmq_socket(fZMQcontext, fZMQsocketType); 
-      if (fZMQconnectMode.EqualTo("connect")) 
-        rc = zmq_connect(fZMQin,fZMQendpoint.Data());
-      else 
-        rc = zmq_bind(fZMQin,fZMQendpoint.Data());
+      rc = alizmq_attach(fZMQin,fZMQendpoint.Data());
       
       //just return normally
       return 0;
@@ -267,16 +256,6 @@ int AliHLTZMQsource::ProcessOption(TString option, TString value)
     if (value.EqualTo("SUB"))  fZMQsocketType=ZMQ_SUB;
     if (value.EqualTo("PULL")) fZMQsocketType=ZMQ_PULL;
     if (value.EqualTo("REQ"))  fZMQsocketType=ZMQ_REQ;
-  }
- 
-  if (option.EqualTo("ZMQconnectMode"))
-  {
-    if (! (
-          value.EqualTo("connect") ||
-          value.EqualTo("bind")
-          )
-       ) {return 1;}
-    fZMQconnectMode = value;
   }
  
   if (option.EqualTo("ZMQendpoint"))
