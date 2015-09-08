@@ -694,7 +694,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 	cutIndex++;
 
 	// Mass cut
-	if (fIsMergedClusterCut){
+	if (fIsMergedClusterCut && fEnableMassCut){
 		Double_t massMin = fFMinMassCut->Eval(pi0->E());
 		Double_t massMax = fFMaxMassCut->Eval(pi0->E());
 		if (pi0->M() > massMax || pi0->M() < massMin ){
