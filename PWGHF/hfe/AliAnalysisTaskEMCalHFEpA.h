@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 07, 2015.								      //
+	//		version: September 05, 2015.							      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -305,13 +305,28 @@ private:
 	TH2F				*fEoverP_pt_true_electrons0;
 	TH2F				*fEoverP_pt_true_hadrons0;
 	TH2F				**fEoverP_pt;
+	
+	TH2F				*fEoverP_pt_highE0;
+	TH2F				*fEoverP_pt_highE1;
+	
 	TH2F				**fEoverP_tpc;
 	TH2F				**fEoverP_tpc_p_trigger;
 	TH2F				**fEoverP_tpc_pt_trigger;
 	TH1F				**fTPC_pt;
 	TH2F				**fTPC_p;
+	
+	TH2F				*fTPC_momentum;
+	TH2F				*fTPC_eta;
+	TH2F				*fTPC_momentum1;
+	TH2F				*fTPC_eta1;
+	
 	TH1F				**fTPCnsigma_pt;
-	TH2F				**fTPCnsigma_p;
+	TH2F				**fTPCnsigma_p;	
+	
+	TH2F				**fTPCnsigma_p_eta1;
+	TH2F				**fTPCnsigma_p_eta2;
+	TH2F				**fTPCnsigma_p_eta3;
+	TH2F				**fTPCnsigma_p_eta4;
 	
 	TH2F				*fTPCnsigma_p_TPC;
 	TH2F				*fTPCnsigma_p_TPC_on_EMCal_acc;
@@ -328,12 +343,22 @@ private:
 	TH2F				*fShowerShapeCut;
 	TH2F				*fShowerShapeM02_EoverP;
 	TH2F				*fShowerShapeM20_EoverP;
+	
+	TH2F				*fShowerShapeM02_EoverP_Ecut12_MC;
+	TH2F				*fShowerShapeM20_EoverP_Ecut12_MC;
+	TH2F				*fShowerShapeM02_EoverP_Ecut8_MC;
+	TH2F				*fShowerShapeM20_EoverP_Ecut8_MC;
+	
 	TH2F				*fShowerShape_ha;
 	TH2F				*fShowerShape_ele;
 	TH2F				*fTPCnsigma_eta;
 	TH2F				*fTPCnsigma_phi;
 	TH1F				**fECluster;
 	TH1F				*fECluster_pure;
+	
+	TH1F				*fECluster_highpT0;
+	TH1F				*fECluster_highpT1;
+	
 	TH1F				*fECluster_not_exotic;
 	TH1F				*fECluster_not_exotic1;
 	TH1F				*fECluster_not_exotic2;
@@ -344,6 +369,22 @@ private:
 	TH2F				*fNcells_energy;
 	TH2F				*fNcells_energy_elec_selected;
 	TH2F				*fNcells_energy_not_exotic;
+	
+	
+	TH2F				*fNcells_Energy_highE0;
+	TH2F				*fEtaPhi_highE0;
+	TH1F				*fEta_highE0;
+	TH1F				*fPhi_highE0;
+	TH1F				*fR_highE0;
+	TH1F				*fNCluster_highE0;
+	
+	TH2F				*fNcells_Energy_highE1;
+	TH2F				*fEtaPhi_highE1;
+	TH1F				*fEta_highE1;
+	TH1F				*fPhi_highE1;
+	TH1F				*fR_highE1;
+	TH1F				*fNCluster_highE1;
+	
 	TH2F				**fEtaPhi;
 	TH2F				*fEtaPhi_large_EoverP;
 	TH2F				*fEtaPhi_small_EoverP;
@@ -391,6 +432,11 @@ private:
 	TH2F				*ftpc_p_EoverPcut;
 	TH2F				*fnsigma_p_EoverPcut;
 	TH2F				*fEoverP_pt_pions2;
+	TH2F				*fEoverP_pt_pions3;
+	
+	TH2F				*fEoverP_pt_pions2_highE0;
+	TH2F				*fEoverP_pt_pions2_highE1;
+	
 	TH2F				*fNcells_pt;
 	TH2F				*fEoverP_pt_hadrons;
 		//Electron-Hadron Correlation Histograms

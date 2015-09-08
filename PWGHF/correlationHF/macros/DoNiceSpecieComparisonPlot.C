@@ -89,6 +89,8 @@ void RestylePlot(TPad * pad, Int_t pos){
 
   pad->SetTickx();
   pad->SetTicky();
+  pad->SetMargin(0.18,0.00,0.10,0.05);
+  pad->SetFillStyle(0);
 
   Double_t maxY[3] = {0.,0.,0.};
 
@@ -97,7 +99,7 @@ void RestylePlot(TPad * pad, Int_t pos){
     TString strName=obj->ClassName();
 
     printf("Primitive %d is: %s\n",jl,strName.Data());
-    if(strName.Contains("TFrame")) continue;
+    if(strName.Contains("TFrame")) {      TFrame *tf=(TFrame*)obj; tf->SetX1(0.2); continue;}
 
     if(strName.Contains("TLatex")) {
       TLatex *tl=(TLatex*)obj;
@@ -117,47 +119,53 @@ void RestylePlot(TPad * pad, Int_t pos){
       }
 
       if(str.Contains("TeV")) {
-	if(str.Contains("pp")) syst=0;  //needed to set correctly the y range later
-	tl->SetX(tl->GetX()+0.01); 
-	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.04); 
-	tl->SetTextSize(0.035);
+	if(str.Contains("pp")) {
+	  syst=0;  //needed to set correctly the y range later
+	  tl->SetTitle("#bf{ALICE, pp, #sqrt{#it{s}} = 7 TeV}");
+        } else tl->SetTitle("#bf{ALICE, p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV}");
+	tl->SetX(tl->GetX()+0.04); 
+	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.08); 
+	tl->SetTextSize(0.045);
       }
 
       if(str.Contains("GeV")) {
-	tl->SetX(tl->GetX()+0.01);
-	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.04); 
+	tl->SetX(tl->GetX()+0.04);
+	/*if(pos!=0)*/ tl->SetY(tl->GetY()+0.065); 
 	str.ReplaceAll("GeV/c","GeV/#it{c}");
 	tl->SetTitle(str.Data());
-	tl->SetTextSize(0.035);
+	tl->SetTextSize(0.045);
       }
 
       if(str.Contains("assoc")) {
 	tl->SetX(tl->GetX());
-	/*if(pos!=0)*/ tl->SetY(tl->GetY()-0.05); 
+	/*if(pos!=0)*/ tl->SetY(tl->GetY()-0.065); 
 	str.ReplaceAll("GeV/c","GeV/#it{c}");
 	tl->SetTitle(str.Data());
-	tl->SetTextSize(0.035);
+	tl->SetTextSize(0.045);
       }
 
       if(str.Contains("scale uncertainty") && tl->GetTextColor()==kRed) {
-	tl->SetX(0.53);
-	tl->SetY(0.68);
+	tl->SetX(0.5);
+	tl->SetY(0.67);
 	str.ReplaceAll("#cbar",",");
 	tl->SetTitle(str.Data());
+	tl->SetTextSize(0.042);
       }
 
       if(str.Contains("scale uncertainty") && tl->GetTextColor()==kAzure-2) {
-	tl->SetX(0.53);
-	tl->SetY(0.62); 
+	tl->SetX(0.5);
+	tl->SetY(0.595); 
 	str.ReplaceAll("#cbar",","); 
 	tl->SetTitle(str.Data());
+	tl->SetTextSize(0.042);
       }
 
       if(str.Contains("scale uncertainty") && tl->GetTextColor()==kGreen+3) {
-	tl->SetX(0.53);
-	tl->SetY(0.56); 
+	tl->SetX(0.5);
+	tl->SetY(0.52); 
 	str.ReplaceAll("#cbar",","); 
 	tl->SetTitle(str.Data());
+	tl->SetTextSize(0.042);
       }
 
     } //end of TLatex 'if'
@@ -167,17 +175,29 @@ void RestylePlot(TPad * pad, Int_t pos){
       if(hist->GetMarkerColor()==kRed) {
 	maxY[0] = hist->GetBinContent(hist->GetMaximumBin());
 	hist->SetMarkerSize(hist->GetMarkerSize()+0.15);
-	hist->GetXaxis()->SetTitle("#Delta#varphi(D,h) (rad)");
+	hist->GetXaxis()->SetTitle("#Delta#varphi (rad)");
+	hist->GetXaxis()->SetTitleSize(0.05);
+	hist->GetXaxis()->SetTitleOffset(1.00);
+	hist->GetXaxis()->SetLabelSize(0.04);
+	hist->GetYaxis()->SetTitleSize(0.05);
+	hist->GetYaxis()->SetTitleOffset(1.14);
+	hist->GetYaxis()->SetLabelSize(0.04);
+	hist->SetLineColor(kRed);	
+	hist->SetLineWidth(1);		
 	nextMeson=1;
       }
       if(hist->GetMarkerColor()==kAzure-2) {
 	maxY[1] = hist->GetBinContent(hist->GetMaximumBin());
 	hist->SetMarkerSize(hist->GetMarkerSize()+0.4);	
+	hist->SetLineColor(kAzure-2);
+	hist->SetLineWidth(1);		
 	nextMeson=2;
       }
       if(hist->GetMarkerColor()==kGreen+3) {
 	maxY[2] = hist->GetBinContent(hist->GetMaximumBin());
 	hist->SetMarkerSize(hist->GetMarkerSize()+0.3);	
+	hist->SetLineColor(kGreen+3);
+	hist->SetLineWidth(1);			
 	nextMeson=3;
       }
 
@@ -187,14 +207,17 @@ void RestylePlot(TPad * pad, Int_t pos){
       TGraphAsymmErrors *errBox = (TGraphAsymmErrors*)lc->At(jl);  
       if(nextMeson==1) {
 	errBox->SetLineColor(kRed);
+	errBox->SetLineWidth(1);
 	nextMeson=0;
       }
       if(nextMeson==2) {
 	errBox->SetLineColor(kAzure-2);
+	errBox->SetLineWidth(1);
 	nextMeson=0;
       }
       if(nextMeson==3) {
 	errBox->SetLineColor(kGreen+3);
+	errBox->SetLineWidth(1);
 	nextMeson=0;
       }
 
@@ -204,13 +227,12 @@ void RestylePlot(TPad * pad, Int_t pos){
   } //end of cycle on primitives
 
   pad->cd();
-      if(pos==0){
-
+   /*   if(pos==0){
 	TLatex *tlAlice=new TLatex(0.68,0.78,Form("#bf{ALICE}"));
 	tlAlice->SetNDC();
 	tlAlice->Draw();
 	tlAlice->SetTextSize(0.042);
-      }
+      }  */
 /*
       if(syst==0) {
 	  TLatex *tly=new TLatex(0.19,0.74,Form("#bf{|#Delta#eta|<1.0}, #bf{|#it{y}^{D}|<0.5}"));
@@ -242,8 +264,10 @@ void SaveCanvas(TCanvas * c, TString directory){
   c->SaveAs(Form("%s/%s.root",directory.Data(),nameoutput.Data()));
   c->SaveAs(Form("%s/%s.png",directory.Data(),nameoutput.Data()));
   c->SaveAs(Form("%s/%s.eps",directory.Data(),nameoutput.Data()));
+  c->SaveAs(Form("%s/%s.pdf",directory.Data(),nameoutput.Data()));
   
 }
+
 
 
 

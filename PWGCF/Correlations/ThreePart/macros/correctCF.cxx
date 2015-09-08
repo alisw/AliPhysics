@@ -1045,7 +1045,7 @@ void CollectHistbs(TH1D* histo, TList * directories, TObjArray* multdirlist){
   //loop over the bins:
   for(int i=0;i<directories->GetEntries();i++){
     int Mbin = 0;
-    if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;
+//     if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;
     //find the Multiplicity bin we are in
     for(int j = 1;j<multdirlist->GetEntries();j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
     
@@ -1241,7 +1241,7 @@ void CollectHist(TH1D* histo, TList * directories, TObjArray* multdirlist){
     //loop over all Multiplicity-Vertex bins:
     for(int i=0;i<directories->GetEntries();i++){
       int Mbin = 0;
-      if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;
+//       if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;
 
       //find the Multiplicity bin we are in
       for(int j = 1;j<multdirlist->GetEntries();j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
@@ -1651,7 +1651,7 @@ void CollectHist(TH2D* histo, TList * directories, TObjArray* multdirlist,bool p
     Double_t scalingfactorMETrigger=0.0;Double_t scalingfactorMETriggerbin1=0.0;Double_t scalingfactorMETriggerbin2=0.0;Double_t scalingfactorMETriggerbin3=0.0;Double_t scalingfactorMETriggerbin4=0.0;Double_t scalingfactorMETriggerbin5=0.0;Double_t scalingfactorMETriggerbin6=0.0;Double_t scalingfactorMETriggerbin7=0.0;
     for(int i=0;i<directories->GetEntries();i++){
       int Mbin = 0;
-    if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;      
+//     if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;      
       //find the Multiplicity bin we are in
       for(int j = 1;j<multdirlist->GetEntries();j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
       //test if the relevant histogram exists in this bin:
@@ -2160,7 +2160,7 @@ void CollectHist(TH3D* histo, TList * directories, TObjArray* multdirlist){
     //loop over all Multiplicity-Vertex bins:
     for(int i=0;i<directories->GetEntries();i++){
       int Mbin = 0;
-      if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;      
+//       if((TString(directories->At(i)->GetName()).Contains("Z(-10.00)"))&&(TString(directories->At(i)->GetName()).Contains("Z(5.00)")))continue;      
       //find the Multiplicity bin we are in
       for(int j = 1;j<=5;j++)if(dynamic_cast<BinDirs*>(multdirlist->At(j))->CompareTo(TString(directories->At(i)->GetName()).Tokenize("Z")->At(0)->GetName()))Mbin = j;
       //test if the relevant histogram exists in this bin:

@@ -241,6 +241,10 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       //muon
       else if(pdgcode==13 || pdgcode==-13)
         kinepid[1]=1000;
+      else if(pdgcode==3122 || pdgcode==-3122 || abs(pdgcode)==310 ) //Lambda, AntiLambda, K0
+	{; }
+      else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
+	{; }
       else {
 	delete trackCopy; 
 	continue;
@@ -266,7 +270,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       rxyz[2]=kinetrack->Vz();
 
       AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-      tInfo->SetPDGPid(kinetrack->GetPdgCode());
+      tInfo->SetPDGPid(pdgcode);
       tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
       tInfo->SetMass(kinetrack->GetMass());
       tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
@@ -298,7 +302,6 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
 	//label
 	trackCopy->SetLabel(i);
-
 
 	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	//cout<<"Track added: "<<i<<endl;

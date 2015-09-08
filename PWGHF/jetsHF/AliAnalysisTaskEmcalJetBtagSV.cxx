@@ -94,6 +94,7 @@ fhJetVtxData(0),
 fhQaVtx(0),
 fEvent(0x0),
 fCorrMode(kTRUE),
+fDoBkgRej(kTRUE),
 fRecoJetsBranch(),
 fMcJetsBranch(),
 fSelectPtHard(kFALSE),
@@ -137,6 +138,7 @@ fhJetVtxData(0),
 fhQaVtx(0),
 fEvent(0x0),
 fCorrMode(kTRUE),
+fDoBkgRej(kTRUE),
 fRecoJetsBranch(),
 fMcJetsBranch(),
 fSelectPtHard(kFALSE),
@@ -476,6 +478,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
       
   AliEmcalJet *jetMC;
   for (Int_t jetcand = 0; jetcand < nMCJets; jetcand++) {
+    
     jetMC = (AliEmcalJet *)fMcJetArray->UncheckedAt(jetcand);
     if ( !jetMC ) continue;
 
@@ -484,8 +487,6 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
       AliDebug(AliLog::kDebug,Form(MSGDEBUG("JetMC not selected: pT=%f, eta=%f!"), jetMC->Pt(),jetMC->Eta()));
       continue;
     }
-    
-    TClonesArray *fTrackArray = dynamic_cast<TClonesArray *> (fEvent->FindListObject("MCParticlesSelected"));
     
     // Get jet flavour from 2 methods
     Double_t partonnatMC[2] = {-1, -1};
@@ -553,24 +554,22 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
       continue;
     }
     
-    TClonesArray *fTrackArrayMc = dynamic_cast<TClonesArray *> (fEvent->FindListObject("MCParticlesSelected"));
-    TClonesArray *fTrackArrayRec = dynamic_cast<TClonesArray *> (fEvent->FindListObject("PicoTracks"));
+    TClonesArray *fTrackArray= dynamic_cast<TClonesArray *> (fEvent->FindListObject("PicoTracks"));
         
     // Get jet flavour from 3 methods
     Double_t partonnat[2] = {-1, -1};
     Double_t ptpart[2] = {-1, -1};
     GetFlavour2Methods(jet, partonnat, ptpart, fTaggingRadius);
+    //
+    // Run vertex tagging
+    nvtx = fTagger->FindVertices(jet, fGTIp, fGTIn, fTrackArray, aod, v1, magzkG, fbJetArray, arrDispersion);
     
     Double_t ptJet = jet->Pt();
     Double_t areaJet;
     areaJet = jet->Area();
     ptJet -= areaJet * rho;
     
-    
     step = AliHFJetsContainer::kCFStepReco;
-    // // Run vertex tagging
-    nvtx = fTagger->FindVertices(jet, fGTIp, fGTIn, fTrackArrayRec, aod, v1, magzkG, fbJetArray, arrDispersion);
-   
     if ( fDoQAVtx ) {
       fhQaVtx->FillStepQaVtx(step, multMC, jet, fbJetArray, arrDispersion, nvtx, vtx1, arrayMC, partonnat, ptJet);
     }
@@ -885,10 +884,8 @@ Bool_t AliAnalysisTaskEmcalJetBtagSV::UserNotify()
   if (!aodmcHeader) AliError(MSGERROR("MC header branch not found!"));
 
   TString title = aodmcHeader->GetGeneratorName();
-  if ( fSelectPtHard ) {
-     if (!title.Contains(fPtHardMin) || !title.Contains(fFlavor)) return kFALSE; 
-  }
-   
+  if (!title.Contains(fPtHardMin) || !title.Contains(fFlavor)) return kFALSE; 
+
   Float_t xsection    = 0;
   Float_t trials      = 0;
   Int_t   pthardbin   = 0;

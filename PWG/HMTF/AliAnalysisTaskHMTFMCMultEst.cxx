@@ -149,6 +149,14 @@ AliAnalysisTaskHMTFMCMultEst::MakeEstimator(const TString& name)
   if (name.BeginsWith("V0M"))
     return new AliMultiplicityEstimator("V0M", "-3.7 #leq #eta #leq -1.7 || 2.8 #leq #eta #leq 5.1",
 					    -3.7, -1.7, 2.8, 5.1);
+  if (name.BeginsWith("ZDC")){
+    AliMultiplicityEstimator* zdc = new AliMultiplicityEstimator("ZDC", "|#eta| #geq 8.7",
+								 -8.7, 0.0, 0.0, 8.7);
+    zdc->SetMeasuresCharged(kFALSE);
+    zdc->SetNegateEstimatorRegion(kTRUE);
+    return zdc;
+  }
+
 
   return 0;
 }

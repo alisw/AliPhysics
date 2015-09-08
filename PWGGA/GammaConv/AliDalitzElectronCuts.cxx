@@ -47,7 +47,7 @@ ClassImp(AliDalitzElectronCuts)
 
 
 const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = {
-"GoodId",
+"MaxChi2TPCConstrainedGlobal",
 "ededxSigmaITSCut",
 "ededxSigmaTPCCut",
 "pidedxSigmaTPCCut",
@@ -60,8 +60,8 @@ const char* AliDalitzElectronCuts::fgkCutNames[AliDalitzElectronCuts::kNCuts] = 
 "EtaCut",
 "PsiPair",
 "RejectSharedElecGamma",
-"BackgroundScheme",
-"NumberOfRotations",
+"MaxChi2PerClusterTPC",
+"MaxChi2PerClusterITS",
 "PtCut",
 "DCAcut",
 "MassCut",
@@ -112,9 +112,6 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fUseCrossedRows(kFALSE),
     fUseTOFpid(kFALSE),
     fRequireTOF(kFALSE),
-    fUseTrackMultiplicityForBG(kFALSE),
-    fBKGMethod(0),
-    fnumberOfRotationEventsForBG(0),
     fDoMassCut(kFALSE),
     fDoMassMinCut(kFALSE),
     fMassCutLowPt(999.),
@@ -845,13 +842,7 @@ Bool_t AliDalitzElectronCuts::InitializeCutsFromCutString(const TString analysis
       ASSIGNARRAY(ii);
   }
 
-  // TestFlag
-  if(fCuts[0] !=9){
-    AliError("Analysis Cut Selection does not start with 9");
-	PrintCuts();
-    return kFALSE;
-  }
-
+ 
   // Set Individual Cuts
   for(Int_t ii=0;ii<kNCuts;ii++){
       if(!SetCut(cutIds(ii),fCuts[ii]))return kFALSE;
@@ -868,15 +859,14 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
   //cout << "Updating cut  " << fgkCutNames[cutID] << " (" << cutID << ") to " << value << endl;
 
   switch (cutID) {
-  case kgoodId:
-	fCuts[kgoodId] = value;
-	if(value != 9) {
-	  cout << "Error:: First value of cut string is wrong, aborting!!" << endl;
-	  return kFALSE;
-	} else {
+ 
+    case kMaxChi2TPCConstrainedGlobal:
+	if( SetMaxChi2TPCConstrainedGlobal( value ) ){
+	  fCuts[kMaxChi2TPCConstrainedGlobal] = value;
+	  UpdateCutString(cutID, value);
 	  return kTRUE;
-	}
-
+	} else return kFALSE;
+	
   case kededxSigmaITSCut:
 	if( SetITSdEdxCutElectronLine(value)) { //NOTE SetITSdEdxCutElectronLine: To be implemented 
 	  fCuts[kededxSigmaITSCut] = value;
@@ -974,16 +964,16 @@ Bool_t AliDalitzElectronCuts::SetCut(cutIds cutID, const Int_t value) {
           return kTRUE;
 		} else return kFALSE;
 		
-  case kBackgroundScheme:
-		if( SetBackgroundScheme(value)) {
-			fCuts[kBackgroundScheme] = value;
+  case kMaxChi2PerClusterTPC:
+		if( SetMaxChi2PerClusterTPC(value)) {
+			fCuts[kMaxChi2PerClusterTPC] = value;
 			UpdateCutString(cutID, value);
 			return kTRUE;
 		} else return kFALSE;
 
-  case kNumberOfRotations:
-		if( SetNumberOfRotations(value)) {
-			fCuts[kNumberOfRotations] = value;
+  case kMaxChi2PerClusterITS:
+		if( SetMaxChi2PerClusterITS(value)) {
+			fCuts[kMaxChi2PerClusterITS] = value;
 			UpdateCutString(cutID, value);
 			return kTRUE;
 		} else return kFALSE;
@@ -1030,7 +1020,35 @@ void AliDalitzElectronCuts::PrintCuts() {
   }
 
 }
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetMaxChi2TPCConstrainedGlobal(Int_t maxChi2)
+{
+    if( !fesdTrackCuts ) {
 
+	       cout<<"Warning: AliESDtrackCut is not initialized "<<endl;
+	       return kFALSE;
+    }    
+    
+    switch( maxChi2 ){
+      
+      case 0: fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1e10);
+	       break;
+      case 1: fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);
+	       break;
+      case 2: fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
+	       break;
+      case 3: fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);
+	       break;
+      case 4: fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(100.);
+	       break;
+		
+      default:  cout<<"Warning: maxChi2 is not defined"<<maxChi2<<endl;
+		return kFALSE;
+		  
+    }
+  
+    return kTRUE;
+}
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetITSdEdxCutElectronLine(Int_t ededxSigmaCut)
 {   // Set Cut
@@ -1455,31 +1473,35 @@ Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
   
 	switch(dcaCut){
 	  
-	case 0: 
-	        //Open cuts//
+	case 0: //Open cuts//
 		fesdTrackCuts->SetMaxDCAToVertexZ(1000);
 		fesdTrackCuts->SetMaxDCAToVertexXY(1000);
-		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 		break;
-	       
 	case 1: 
-		fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
-		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-		
+		fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); //Standard 2010
+		fesdTrackCuts->SetMaxDCAToVertexZ(2);
 		break;
 	case 2: fesdTrackCuts->SetMaxDCAToVertexZ(2);
 		fesdTrackCuts->SetMaxDCAToVertexXY(1);
-		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 		break; 
-		
-	case 3: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+	case 3: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //Standard 2011
+	        fesdTrackCuts->SetMaxDCAToVertexZ(2);
 		break;
-		
 	case 4: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0525+0.175/pt^1.1");
-		fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+		fesdTrackCuts->SetMaxDCAToVertexZ(2);
 		break;
-		
+        case 5: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+		fesdTrackCuts->SetMaxDCAToVertexZ(1);
+                break;
+        case 6: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+	        fesdTrackCuts->SetMaxDCAToVertexZ(5);
+                break;
+	case 7: fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //Standard 2011
+	        fesdTrackCuts->SetMaxDCAToVertexZ(1);
+		break;
+	case 8:	fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1"); //Standard 2011
+	        fesdTrackCuts->SetMaxDCAToVertexZ(5);
+		break;
 	default:
 		cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
 		return kFALSE;
@@ -1752,78 +1774,62 @@ Bool_t AliDalitzElectronCuts::SetRejectSharedElecGamma(Int_t RCut) {
   return kTRUE;
 }
 ///__________________________________________________________________________
-Bool_t AliDalitzElectronCuts::SetBackgroundScheme(Int_t BackgroundScheme){
+Bool_t AliDalitzElectronCuts::SetMaxChi2PerClusterTPC(Int_t maxChi2){
+  
+  if( !fesdTrackCuts ) {
+
+	       cout<<"Warning: AliESDtrackCuts is not initialized "<<endl;
+	       return kFALSE;
+  }    
+    
 
     // Set Cut
-    switch(BackgroundScheme){
+    switch(maxChi2){
 
-    case 0: //Rotation
-            fBKGMethod = 0;
-            fUseTrackMultiplicityForBG = kFALSE;
-        break;
-    case 1: // mixed event with V0 multiplicity
-            fBKGMethod  = 1;
-            fUseTrackMultiplicityForBG = kFALSE;
-        break;
-    case 2: // mixed event with track multiplicity
-            fUseTrackMultiplicityForBG = kTRUE;
-            fBKGMethod  = 1;
-        break;
-    case 3: //Rotation
-           fUseTrackMultiplicityForBG = kFALSE;
-            fBKGMethod  = 2;
-        break;
-    case 4: //Rotation
-            fUseTrackMultiplicityForBG = kTRUE;
-            fBKGMethod  = 2;
-        break;
-    case 5: fUseTrackMultiplicityForBG = kTRUE;
-            fBKGMethod  = 3;
-        break;
-
+    case 0:   fesdTrackCuts->SetMaxChi2PerClusterTPC(1e10);
+	      break;
+    case 1:   fesdTrackCuts->SetMaxChi2PerClusterTPC(3.);
+	      break;
+    case 2:   fesdTrackCuts->SetMaxChi2PerClusterTPC(4.);
+	      break;
+    case 3:   fesdTrackCuts->SetMaxChi2PerClusterTPC(5.);
+	      break;
     default:
-        cout<<"Warning: BackgroundScheme not defined "<<BackgroundScheme<<endl;
+        cout<<"Warning: SetMaxChi2PerClusterTPC not defined "<<maxChi2<<endl;
         return kFALSE;
     }
     return kTRUE;
 }
 
 ///________________________________________________________________________
-Bool_t AliDalitzElectronCuts::SetNumberOfRotations(Int_t NumberOfRotations)
+Bool_t AliDalitzElectronCuts::SetMaxChi2PerClusterITS(Int_t maxChi2)
 {   // Set Cut
-    switch(NumberOfRotations){
+
+    if( !fesdTrackCuts ) {
+
+	       cout<<"Warning: AliESDtrackCuts is not initialized "<<endl;
+	       return kFALSE;
+    }    
+
+    switch(maxChi2){
     case 0:
-        fnumberOfRotationEventsForBG = 5;
+        fesdTrackCuts->SetMaxChi2PerClusterITS(1e10);
         break;
     case 1:
-        fnumberOfRotationEventsForBG = 10;
+        fesdTrackCuts->SetMaxChi2PerClusterITS(25.);
         break;
     case 2:
-        fnumberOfRotationEventsForBG = 15;
+         fesdTrackCuts->SetMaxChi2PerClusterITS(36.);
         break;
     case 3:
-        fnumberOfRotationEventsForBG = 20;
-        break;
-    case 4:
-        fnumberOfRotationEventsForBG = 2;
-        break;
-    case 5:
-        fnumberOfRotationEventsForBG = 50;
-        break;
-    case 6:
-        fnumberOfRotationEventsForBG = 80;
-        break;
-    case 7:
-        fnumberOfRotationEventsForBG = 100;
+        fesdTrackCuts->SetMaxChi2PerClusterITS(49.);
         break;
     default:
-        cout<<"Warning: NumberOfRotations not defined "<<NumberOfRotations<<endl;
+        cout<<"Warning: SetMaxChi2PerClusterITS not defined "<<maxChi2<<endl;
         return kFALSE;
     }
     return kTRUE;
 }
-
-
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetDoWeights(Int_t opc)

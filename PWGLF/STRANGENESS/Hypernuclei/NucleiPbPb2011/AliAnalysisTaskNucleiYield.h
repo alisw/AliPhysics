@@ -70,6 +70,7 @@ public:
 
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
+  void SetDCABins (Int_t nbins, Float_t* bins);
   void SetPtBins (Int_t nbins, Float_t *bins);
   void SetCustomTPCpid (Float_t *par, Float_t sigma);
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);

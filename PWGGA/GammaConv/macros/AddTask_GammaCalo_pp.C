@@ -10,29 +10,9 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 							Int_t 		enableExtQA					= 0,								// enable QA(3), disabled (0)
 							Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 							Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
-							Float_t		maxFacPtHard				= 3.									// maximum factor between hardest jet and ptHard generated
+							Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
+							TString		periodNameV0Reader			= ""
 ) {
-
-	// ================= Load Librariers =================================
-	gSystem->Load("libCore");  
-	gSystem->Load("libTree");
-	gSystem->Load("libGeom");
-	gSystem->Load("libVMC");
-	gSystem->Load("libPhysics");
-	gSystem->Load("libMinuit");
-	gSystem->Load("libSTEERBase");
-	gSystem->Load("libESD");
-	gSystem->Load("libAOD");
-	gSystem->Load("libANALYSIS");
-	gSystem->Load("libANALYSISalice");  
-	gSystem->Load("libCDB");
-	gSystem->Load("libSTEER");
-	gSystem->Load("libSTEERBase");
-	gSystem->Load("libTender");
-	gSystem->Load("libTenderSupplies");
-	gSystem->Load("libPWGflowBase");
-	gSystem->Load("libPWGflowTasks");
-	gSystem->Load("libPWGGAGammaConv");
 	
 	Int_t isHeavyIon = 0;
 	
@@ -70,7 +50,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -126,11 +106,11 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		numberOfCuts = 1;
 	if (trainConfig == 111 	|| trainConfig == 114 	|| trainConfig == 117 	|| trainConfig == 120 	|| trainConfig == 121 	|| 
 		trainConfig == 72 	|| trainConfig == 122 	|| trainConfig == 123 	|| trainConfig == 124 	|| trainConfig == 75  	|| 
-		trainConfig == 78 	|| trainConfig == 81 )
+		trainConfig == 78 	|| trainConfig == 81	|| trainConfig == 109)
 		numberOfCuts = 3;
 	if (trainConfig == 31 	|| trainConfig == 4 	|| trainConfig == 5		|| trainConfig == 6 	|| trainConfig == 7	 	||
 		trainConfig == 10 	|| trainConfig == 53  	|| trainConfig == 56 	|| trainConfig == 59 	|| trainConfig == 62 	||
-		trainConfig == 64 	|| trainConfig == 102  	|| trainConfig == 110 ) 
+		trainConfig == 64 	|| trainConfig == 102  	|| trainConfig == 110	|| trainConfig == 8)
 		numberOfCuts = 4;
 	if (trainConfig == 2 	|| trainConfig == 3		|| trainConfig == 103	|| trainConfig == 104)
 		numberOfCuts = 5;
@@ -182,7 +162,11 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032230000"; mesonCutArray[1] = "0163103100000030"; // min open angle - 0.01 
 		eventCutArray[ 2] = "00051113"; clusterCutArray[2] = "1111121050032230000"; mesonCutArray[2] = "0163103100000040"; // min open angle - 0.0152 
 		eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050032230000"; mesonCutArray[3] = "0163103100000060"; // min open angle - 0.0404 
-
+	} else if (trainConfig == 8 ){ // EMCAL clusters 2.76 TeV additional NonLinearity variations
+		eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111123050032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kTestBeamv2 + ConvCalo
+		eventCutArray[ 1] = "00003113"; clusterCutArray[1] = "1111124050032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + Calo
+		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111125050032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity LHC11a kSDM ConvCalo
+		eventCutArray[ 3] = "00003113"; clusterCutArray[3] = "1111126050032230000"; mesonCutArray[3] = "0163103100000050"; // NonLinearity LHC11a kSDM Calo
 		// LHC13g	
 	} else if (trainConfig == 10){  // EMCAL clusters, EMCEGA triggers
 		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111100050032220000"; mesonCutArray[0] = "0163103100000050"; // EMCEG1,
@@ -333,6 +317,10 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		eventCutArray[ 3] = "00000113"; clusterCutArray[3] = "1113111060032230000"; mesonCutArray[3] = "0163103100000050"; //only modules with TRD infront
 		eventCutArray[ 4] = "00000113"; clusterCutArray[4] = "1111211060032230000"; mesonCutArray[4] = "0163103100000050"; //no modules with TRD infront
 
+	} else if (trainConfig == 109){ // EMCAL clusters pp 8 TeV, Different NonLinearities
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100063032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity none
+		eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111113063032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 ConvCalo
+		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111114063032230000"; mesonCutArray[2] = "0163103100000050"; // NonLinearity kTestBeamv2 + LHC12 Calo
 	} else if (trainConfig == 110){ // EMCAL clusters pp 8 TeV, Different NonLinearities
 		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111101063032230000"; mesonCutArray[0] = "0163103100000050"; // NonLinearity kSDMv5
 		eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111111063032230000"; mesonCutArray[1] = "0163103100000050"; // NonLinearity LHC12 ConvCalo

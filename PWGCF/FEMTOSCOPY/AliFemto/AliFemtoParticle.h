@@ -47,6 +47,7 @@ public:
 
   AliFemtoTrack* Track() const;
   AliFemtoV0*    V0() const;
+  AliFemtoXi*    Xi() const;
   AliFemtoKink*  Kink() const;
 
   /*   const AliFemtoThreeVector& NominalTpcExitPoint() const;     // position track exits TPC assuming start at (0,0,0) */
@@ -160,6 +161,12 @@ inline AliFemtoV0 *AliFemtoParticle::V0() const
 {
   return fV0;
 }
+
+inline AliFemtoXi *AliFemtoParticle::Xi() const
+{
+  return fXi;
+}
+
 inline int AliFemtoParticle::NegTrackId() const
 {
   return fV0->IdNeg();

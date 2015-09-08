@@ -31,7 +31,10 @@ ClassImp(AliAnalysisTaskFemto)
 // extern AliFemtoManager *ConfigFemtoAnalysis();
 
 //________________________________________________________________________
-AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose):
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
+                                           TString aConfigMacro,
+                                           TString aConfigParams,
+                                           Bool_t aVerbose):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),
@@ -55,7 +58,9 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro, T
 
 }
 //________________________________________________________________________
-AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name, TString aConfigMacro = "ConfigFemtoAnalysis.C", Bool_t aVerbose):
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
+                                           TString aConfigMacro = "ConfigFemtoAnalysis.C",
+                                           Bool_t aVerbose):
   AliAnalysisTaskSE(name), //AliAnalysisTask(name,""),
   fESD(NULL),
   fESDpid(NULL),

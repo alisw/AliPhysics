@@ -147,6 +147,7 @@ public:
   const AliFemtoThreeVector& NominalTpcExitPoint() const;
   const AliFemtoThreeVector& NominalTpcPoint(int i) const;
   const AliFemtoThreeVector& NominalTpcEntrancePoint() const;
+  const AliFemtoThreeVector& NominalTpcPointShifted() const;
 
   void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCEntrancePoint(double *aXTPC);
@@ -155,6 +156,10 @@ public:
 
   void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCExitPoint(double *aXTPC);
+
+  void SetNominalTPCPointShifted(const AliFemtoThreeVector& aXTPC);
+  void SetNominalTPCPointShifted(double *aXTPC);
+
   void SetSigmaToVertex(const float& Sigma);
   float SigmaToVertex() const;
 
@@ -257,6 +262,7 @@ public:
   AliFemtoThreeVector fNominalTpcEntrancePoint; ///< Nominal track entrance point into TPC
   AliFemtoThreeVector fNominalTpcPoints[9];     ///< Nominal track points in TCP
   AliFemtoThreeVector fNominalTpcExitPoint;     ///< Nominal track exit point from TPC
+  AliFemtoThreeVector fNominalTpcPointShifted;     ///< Nominal track at given point from TPC
 
   int   fKinkIndexes[3];    ///< Kink Index list
   bool  fHasPointOnITS[6];  ///< if track has hit on the ITS layer (6 layers: 2 x 3 (SPD, SSD, SDD))

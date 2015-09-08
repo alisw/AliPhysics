@@ -3,12 +3,15 @@
 # Script to setup and run fast MC simulations locally or on the Grid
 #
 # Author: Jochen Klein <Jochen.Klein@cern.ch>
+#
+# for EPOS LHC: Christoph Rauchegger <christoph.rauchegger@cern.ch>
 
 HELP="
 Prepare Monte-Carlo simulation for local or grid execution.
 Supported generators and tunes:
  - ThePEG (DIPSY)
- - HepMC input files (kHepMC)
+ - HepMC input files (kHepMC) - default
+ - EPOS LHC via crmc (EPOSLHC)
 "
 
 # default settings
@@ -75,6 +78,11 @@ par_u() {
     setvar ALIEN_USERNAME
 }
 
+par_f() {
+    help "set HepMC file name and absolute path"
+    setvar HEPMCFILE
+}
+
 # actual start
 SHOWHELP=no
 ERROR=0
@@ -117,6 +125,20 @@ if [[ "${LOCAL_PREPARE}" = "yes" || "${GRID_PREPARE}" = "yes" ]]; then
 	addtorun "setupThePEG -r \${THEPEG_BASEDIR}/lib/ThePEG/ThePEGDefaults.rpo -I \${THEPEG_BASEDIR}/share/Ariadne thepeg.in"
 	addtorun "runThePEG DIPSYpp.run -N 2147483647 --tics &"
 	addtorun "root -b -q ./LoadLibs.C\(${LIBSOPTIONS}\) rungen.C+'(kHepMC,${ENERGY},${NEV},\"${THRESHOLD}\",\"${SCALING}\",\"${HEPMCFILE}\")'  > gen.log 2>&1"
+	addtorun "kill \$!"
+	addtorun "rm ${HEPMCFILE}; ls -lthr"
+    elif [ ${TUNE} = "EPOSLHC" ]; then
+	cp ${SCRIPTDIR}/crmc_template.param crmc.param
+	FILESTOCOPY="${FILESTOCOPY} crmc.param"
+
+	# use EPOS LHC-specific downscaling factors to flatten multiplicity
+#	THRESHOLD="50,100,150,200,250,300,350,400,450,500,550,600,650,700,750"
+#	SCALING="2153,1612,1574,904,696,528,402,288,189,107,56,25,9,3,1"
+
+	addtorun 'sed -i -e s#__CRMC_BASEDIR__#"$CRMC_BASEDIR"# crmc.param'
+	addtorun "mkfifo ${HEPMCFILE}; ls -lthr"
+	addtorun "$CRMC_BASEDIR/bin/crmc -o hepmc -p$((ENERGY/2)) -P-$((ENERGY/2)) -n${NEV} -m0 -f ${HEPMCFILE} &"
+	addtorun "root -b -q ./LoadLibs.C\(${LIBSOPTIONS}\) rungen.C+'(kHepMC,${ENERGY},${NEV},\"${THRESHOLD}\",\"${SCALING}\",\"${HEPMCFILE}\")' > gen.log 2>&1"
 	addtorun "kill \$!"
 	addtorun "rm ${HEPMCFILE}; ls -lthr"
     else

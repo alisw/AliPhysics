@@ -42,11 +42,14 @@ class AliMultiplicityEstimator : public TNamed {
     kANTIXI,
     kOMEGAMINUS,
     kOMEGAPLUS,
+    kALLCHARGED,
     kNPID
   };
 
   Int_t pid_enum_to_pdg(Int_t pid_enum);
   void SetReferenceEstimator(const AliMultiplicityEstimator* e){fReferenceEstimator = e;}
+  void SetMeasuresCharged(Bool_t b){fMeasuresCharged = b;}
+  void SetNegateEstimatorRegion(Bool_t b){fnegate_estimator_region = b;}
   void RegisterHistograms(TList* outputList);
   Int_t GetNch() const {return fnch_in_estimator_region;}
   //get the ending of the name common to all histograms from this estimator:
@@ -71,7 +74,9 @@ class AliMultiplicityEstimator : public TNamed {
   Int_t fnch_in_estimator_region;   // counter for charged particles in current event
   Float_t feta_min_forwards, feta_max_forwards;  // range in eta for mult. estimation (positive values)
   Float_t feta_min_backwards, feta_max_backwards;  // range in eta for mult. estimation (positive values)
+  Bool_t fnegate_estimator_region; // negate the given region; ie. count particle outside of the region
   Bool_t fbypass_eta_selection;  // bypass the eta selection (used to get full eta range)
+  Bool_t fMeasuresCharged;       // Do we accept charged or neutral particles in this acceptance?
 
   TH2F  *feta_Nch;          // dNdEta distributions; multiplicity is on the y-axis
   TH3F  *fNch_pT_pid;  // multiplicity class; pT; pid

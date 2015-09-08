@@ -25,7 +25,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
     kData   = 2,  // raw data 
     kDetEmb = 3,  //detector embedded jets
     kDetEmbPart=4,
-    kPythiaDef = 5
+    kPythiaDef = 5,
+    kDetEmbPartPythia=6
   };
   enum JetShapeSub {
     kNoSub = 0, 

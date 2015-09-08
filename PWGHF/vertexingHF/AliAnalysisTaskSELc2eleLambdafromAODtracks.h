@@ -51,7 +51,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, TClonesArray *mcArray, Bool_t mixing);
+  void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, TClonesArray *mcArray);
+  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Int_t charge);
   void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
   void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
@@ -75,7 +76,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
-  AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert, Bool_t mixing);
+  AliAODRecoCascadeHF* MakeCascadeHF(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODv0 *casc, AliAODTrack *trk, AliAODEvent *aod);
 	Int_t MatchToMC(AliAODRecoCascadeHF *elobj, TClonesArray *mcArray, Int_t *pdgele_array, Int_t *pdgv0_array, Int_t *labelele_array, Int_t *labelv0_array,  Int_t &ngen_ele, Int_t &ngen_v0);
 
@@ -92,7 +93,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 		fNCentBins = Ncentbins;
 		for(int ix = 0;ix<fNCentBins+1;ix++){fCentBins[ix] = CentBins[ix];}
 	}
-  void DoEventMixingWithPools(Int_t index,AliAODEvent *aodEvent, Bool_t *seleFlags);
+  void DoEventMixingWithPools(Int_t index);
   void ResetPool(Int_t poolIndex);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
 
@@ -160,10 +161,26 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaMassWS;         //!<! e-Lambda mass spectra wrong sign
   THnSparse* fHistoEleLambdaMassRSMix;         //!<! e-Lambda mass spectra right sign (mixed event)
   THnSparse* fHistoEleLambdaMassWSMix;         //!<! e-Lambda mass spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassRSSide;         //!<! e-Lambda mass spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassWSSide;         //!<! e-Lambda mass spectra wrong sign (mixed event)
   THnSparse* fHistoEleLambdaMassvsElePtRS;         //!<! e-Lambda mass vs elept spectra right sign
   THnSparse* fHistoEleLambdaMassvsElePtWS;         //!<! e-Lambda mass vs elept spectra wrong sign
   THnSparse* fHistoEleLambdaMassvsElePtRSMix;         //!<! e-Lambda mass vs elept spectra right sign (mixed event)
   THnSparse* fHistoEleLambdaMassvsElePtWSMix;         //!<! e-Lambda mass vs elept spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtRSSide;         //!<! e-Lambda mass vs elept spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtWSSide;         //!<! e-Lambda mass vs elept spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtRS1;         //!<! e-Lambda mass vs elept spectra right sign
+  THnSparse* fHistoEleLambdaMassvsElePtWS1;         //!<! e-Lambda mass vs elept spectra wrong sign
+  THnSparse* fHistoEleLambdaMassvsElePtRSMix1;         //!<! e-Lambda mass vs elept spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtWSMix1;         //!<! e-Lambda mass vs elept spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtRSSide1;         //!<! e-Lambda mass vs elept spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtWSSide1;         //!<! e-Lambda mass vs elept spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtRS2;         //!<! e-Lambda mass vs elept spectra right sign
+  THnSparse* fHistoEleLambdaMassvsElePtWS2;         //!<! e-Lambda mass vs elept spectra wrong sign
+  THnSparse* fHistoEleLambdaMassvsElePtRSMix2;         //!<! e-Lambda mass vs elept spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtWSMix2;         //!<! e-Lambda mass vs elept spectra wrong sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtRSSide2;         //!<! e-Lambda mass vs elept spectra right sign (mixed event)
+  THnSparse* fHistoEleLambdaMassvsElePtWSSide2;         //!<! e-Lambda mass vs elept spectra wrong sign (mixed event)
   TH2F* fHistoElePtRS;         //!<! e spectra right sign
   TH2F* fHistoElePtWS;         //!<! e spectra wrong sign
   TH2F* fHistoElePtRSMix;         //!<! e spectra right sign (mixed event)
@@ -174,6 +191,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaMassMCGen;         //!<! EFficiency calculation denominator
   THnSparse* fHistoEleLambdaMassvsElePtMCS;         //!<! EFficiency calculation numerator
   THnSparse* fHistoEleLambdaMassvsElePtMCGen;         //!<! EFficiency calculation denominator
+  THnSparse* fHistoEleLambdaMassvsElePtMCS1;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtMCGen1;         //!<! EFficiency calculation denominator
+  THnSparse* fHistoEleLambdaMassvsElePtMCS2;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtMCGen2;         //!<! EFficiency calculation denominator
   TH2F* fHistoElePtMCS;         //!<! EFficiency calculation numerator
   TH2F* fHistoElePtMCGen;         //!<! EFficiency calculation denominator
 
@@ -207,6 +228,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaMassFeeddownXic0MCGen;         //!<! EFficiency calculation numerator
   THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCS;         //!<! EFficiency calculation numerator
   THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCGen;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCS1;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCS2;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2;         //!<! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXic0MCS;         //!<! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXic0MCGen;         //!<! EFficiency calculation numerator
   THnSparse* fHistoElePtvsEtaFeeddownXic0MCS;         //!<! e spectra efficiency numerator
@@ -219,6 +244,10 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaMassFeeddownXicPlusMCGen;         //!<! EFficiency calculation numerator
   THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS;         //!<! EFficiency calculation numerator
   THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2;         //!<! EFficiency calculation numerator
+  THnSparse* fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2;         //!<! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXicPlusMCS;         //!<! EFficiency calculation numerator
   TH2F* fHistoElePtFeeddownXicPlusMCGen;         //!<! EFficiency calculation numerator
   THnSparse* fHistoElePtvsEtaFeeddownXicPlusMCS;         //!<! e spectra efficiency numerator
@@ -249,11 +278,23 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoElectronQovPtvsPhi;     //!<! Electron phi distribution
   TH2F* fHistoLambdaQovPtvsPhi;     //!<! Lambda phi distribution
   THnSparse* fHistoLcMCGen;         //!<! Lc in mcArray
+  THnSparse* fHistoLcMCGen1;         //!<! Lc in mcArray
+  THnSparse* fHistoLcMCGen2;         //!<! Lc in mcArray
   THnSparse* fHistoFeedDownXic0MCGen;     //!<! Xic0 in mcArray
+  THnSparse* fHistoFeedDownXic0MCGen1;     //!<! Xic0 in mcArray
+  THnSparse* fHistoFeedDownXic0MCGen2;     //!<! Xic0 in mcArray
   THnSparse* fHistoFeedDownXicPlusMCGen;     //!<! XicPlus in mcArray
+  THnSparse* fHistoFeedDownXicPlusMCGen1;     //!<! XicPlus in mcArray
+  THnSparse* fHistoFeedDownXicPlusMCGen2;     //!<! XicPlus in mcArray
   THnSparse* fHistoLcElectronMCGen;         //!<! Lc in mcArray
+  THnSparse* fHistoLcElectronMCGen1;         //!<! Lc in mcArray
+  THnSparse* fHistoLcElectronMCGen2;         //!<! Lc in mcArray
   THnSparse* fHistoElectronFeedDownXic0MCGen;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXic0MCGen1;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXic0MCGen2;     //!<! Xic0 in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCGen;     //!<! XicPlus in mcArray
+  THnSparse* fHistoElectronFeedDownXicPlusMCGen1;     //!<! XicPlus in mcArray
+  THnSparse* fHistoElectronFeedDownXicPlusMCGen2;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoLambdaMCGen;         //!<! Lambda in mcArray (only from charmed baryon)
 
@@ -271,11 +312,13 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	Double_t fCentBins[100];						// [fNCentBinsDim]
   Int_t  fNOfPools; /// number of pools
   TTree** fEventBuffer;   //!<! structure for event mixing
-	TObjString *fEventInfo; //unique event id for mixed event check
-  TObjArray* fElectronTracks; // array of electron-compatible tracks
+	TObjString *fEventInfo; ///unique event id for mixed event check
+  TObjArray* fElectronTracks; /// array of electron-compatible tracks
+  TObjArray* fV0Tracks1; /// array of lambda-compatible tracks
+  TObjArray* fV0Tracks2; /// array of antilambda-compatible tracks
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,9); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,10); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

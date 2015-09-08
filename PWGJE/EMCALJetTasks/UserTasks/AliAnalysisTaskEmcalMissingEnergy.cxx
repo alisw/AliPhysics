@@ -200,7 +200,7 @@ void AliAnalysisTaskEmcalMissingEnergy::UserCreateOutputObjects()
   fSubstructure = new TTree("fSubstructure","fSubstructure");
   fHadronTrigger = new TTree("fHadronTrigger","fHadronTrigger");
 
-  const Int_t nVarS = 5 * 2 + 1;  
+  const Int_t nVarS = 6 * 3 + 1;  
   const Int_t nVarH = 5; 
   
   fSubstructureVar = new Float_t [nVarS];
@@ -214,12 +214,20 @@ void AliAnalysisTaskEmcalMissingEnergy::UserCreateOutputObjects()
   fSubstructureVarNames[2] = "Tau2";
   fSubstructureVarNames[3] = "Tau3";
   fSubstructureVarNames[4] = "DeltaR2hardest";
-  fSubstructureVarNames[5] = "JetPtMatch";
-  fSubstructureVarNames[6] = "Tau1Match";
-  fSubstructureVarNames[7] = "Tau2Match";
-  fSubstructureVarNames[8] = "Tau3Match";
-  fSubstructureVarNames[9] = "DeltaR2hardestMatch";
-  fSubstructureVarNames[10]= "weightPythia";
+  fSubstructureVarNames[5] = "DeltaPhi2hardest";
+  fSubstructureVarNames[6] = "JetPtMatch";
+  fSubstructureVarNames[7] = "Tau1Match";
+  fSubstructureVarNames[8] = "Tau2Match";
+  fSubstructureVarNames[9] = "Tau3Match";
+  fSubstructureVarNames[10] = "DeltaR2hardestMatch";
+  fSubstructureVarNames[11] = "DeltaPhi2hardestMatch";
+  fSubstructureVarNames[12] = "JetPtDet";
+  fSubstructureVarNames[13] = "Tau1Det";
+  fSubstructureVarNames[14] = "Tau2Det";
+  fSubstructureVarNames[15] = "Tau3Det";
+  fSubstructureVarNames[16] = "DeltaR2hardestDet";
+  fSubstructureVarNames[17] = "DeltaPhi2hardestDet";
+  fSubstructureVarNames[18] = "weightPythia";
 
   fHadronTriggerVarNames[0] = "TriggerPt";
   fHadronTriggerVarNames[1] = "JetPt";
@@ -245,7 +253,7 @@ void AliAnalysisTaskEmcalMissingEnergy::UserCreateOutputObjects()
   fhJetPt= new TH1F("fhJetPt", "fhJetPt;Jet p_{T} (GeV)", 100, 0, 100);
   fOutput->Add(fhJetPt);
 
-  fhJetPhi= new TH1F("fhJetPhi", "fhJetPhi;Jet #phi", 100, -TMath::Pi(), TMath::Pi());
+  fhJetPhi= new TH1F("fhJetPhi", "fhJetPhi;Jet #phi", 100, 0, 2*TMath::Pi());
   fOutput->Add(fhJetPhi);
 
   fhTrackPt= new TH1F("fhTrackPt", "fhTrackPt;Track p_{T} (GeV)", 100, 0, 100);
@@ -268,7 +276,6 @@ void AliAnalysisTaskEmcalMissingEnergy::UserCreateOutputObjects()
 
   fhdPhiTrigVSjetPt= new TH2F("fhdPhiTrigVSjetPt", "fhdPhiTrigVSjetPt;#Delta#phi (Trig-Jet);Jet p_{T} (GeV)", 100, TMath::Pi() - 0.6, TMath::Pi(),  100, 0, 100);
   fOutput->Add(fhdPhiTrigVSjetPt);
-
 
   fhdPhiPartVSjetPt= new TH2F("fhdPhiPartVSjetPt", "fhdPhiPartVSjetPt;#Delta#phi (Part-Jet);Jet p_{T} (GeV)", 100, -0.5*TMath::Pi(), 1.5*TMath::Pi(),  100, 0, 100);
   fOutput->Add(fhdPhiPartVSjetPt);
@@ -427,7 +434,7 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
 
   ////////////////////////////////////////// start jet substructure
 
-  Float_t *shape, *shapePart;
+  Float_t *shape, *shapePart, *shapeDet;
   AliEmcalJet *jet1 = NULL; 
 
   if(JetCont){
@@ -493,52 +500,55 @@ Bool_t AliAnalysisTaskEmcalMissingEnergy::FillHistograms()
       }
 
       shape = N_subjettiness(jet1,0);
-      if (shape[5]<5.) continue; // check that the tau computation was correct, no errors
-      for (Int_t i=0; i<5; i++) {
+      if (shape[6]<5.) continue; // check that the tau computation was correct, no errors
+      for (Int_t i=0; i<6; i++) {
         fSubstructureVar[i] = shape[i];
       }
 
       if (fJetShapeType == kData) {
-        for (Int_t i=5; i<10; i++) {
+        for (Int_t i=6; i<18; i++) {
           fSubstructureVar[i] = -2;
         }
-        if (fSubstructureVar[1]>=0. && fSubstructureVar[2]<0. && fSubstructureVar[3]<0.) {
-          fhTau1->Fill(fSubstructureVar[1]);
-        }
-        else if (fSubstructureVar[1]>=0. && fSubstructureVar[2]>0. && fSubstructureVar[3]<0.) {
-          fhTau1->Fill(fSubstructureVar[1]);
-          fhTau2->Fill(fSubstructureVar[2]);
-          fhTau1vsTau2->Fill(fSubstructureVar[1],fSubstructureVar[2]);
-          fhTau2OverTau1->Fill(fSubstructureVar[2]/fSubstructureVar[1]);
-          fhTau2vsJetPt->Fill(fSubstructureVar[2],jet1->Pt());
-          fhTau2OverTau1vsJetPt->Fill(fSubstructureVar[2]/fSubstructureVar[1],jet1->Pt());
-        }
-        else if (fSubstructureVar[1]>=0. && fSubstructureVar[2]>0. && fSubstructureVar[3]>0.) {
-          fhTau1->Fill(fSubstructureVar[1]);
-          fhTau2->Fill(fSubstructureVar[2]);
-          fhTau3->Fill(fSubstructureVar[3]);
-          fhTau1vsTau2->Fill(fSubstructureVar[1],fSubstructureVar[2]);
-          fhTau1vsTau3->Fill(fSubstructureVar[1],fSubstructureVar[3]);
-          fhTau2vsTau3->Fill(fSubstructureVar[2],fSubstructureVar[3]);
-          fhTau1vsTau2vsTau3->Fill(fSubstructureVar[1],fSubstructureVar[2],fSubstructureVar[3]); 
-          fhTau2OverTau1->Fill(fSubstructureVar[2]/fSubstructureVar[1]);
-          fhTau3OverTau2->Fill(fSubstructureVar[3]/fSubstructureVar[2]);
-          fhTau2vsJetPt->Fill(fSubstructureVar[2],jet1->Pt());
-          fhTau2OverTau1vsJetPt->Fill(fSubstructureVar[2]/fSubstructureVar[1],jet1->Pt());
+
+        fSubstructureVar[18]= 1;
+      }
+    	else if(fJetShapeType==kDetEmbPart){
+        shapePart = N_subjettiness(jet3,3);  // particle level
+        shapeDet = N_subjettiness(jet2,2);  // detector level
+        if (shapePart[6]<5. || shapeDet[6]<5.) continue; // check that the tau computation was correct, no errors
+        for (Int_t i=0; i<6; i++) {
+          fSubstructureVar[i+6] = shapePart[i];
+          fSubstructureVar[i+12] = shapeDet[i];
         }
 
-        fSubstructureVar[10]= 1;
+        fSubstructureVar[18]= kWeight;
       }
 
-    	if(fJetShapeType==kDetEmbPart){
-        shapePart = new Float_t[6];
-        shapePart = N_subjettiness(jet3,3);
-        if (shapePart[5]<5.) continue; // check that the tau computation was correct, no errors
-        for (Int_t i=5; i<10; i++) {
-          fSubstructureVar[i] = shape[i];
-        }
-        fSubstructureVar[10]= kWeight;
+      if (shape[1]>=0. && shape[2]<0. && shape[3]<0.) {
+        fhTau1->Fill(shape[1]);
       }
+      else if (shape[1]>=0. && shape[2]>0. && shape[3]<0.) {
+        fhTau1->Fill(shape[1]);
+        fhTau2->Fill(shape[2]);
+        fhTau1vsTau2->Fill(shape[1],shape[2]);
+        fhTau2OverTau1->Fill(shape[2]/shape[1]);
+        fhTau2vsJetPt->Fill(shape[2],shape[0]);
+        fhTau2OverTau1vsJetPt->Fill(shape[2]/shape[1],shape[0]);
+      }
+      else if (shape[1]>=0. && shape[2]>0. && shape[3]>0.) {
+        fhTau1->Fill(shape[1]);
+        fhTau2->Fill(shape[2]);
+        fhTau3->Fill(shape[3]);
+        fhTau1vsTau2->Fill(shape[1],shape[2]);
+        fhTau1vsTau3->Fill(shape[1],shape[3]);
+        fhTau2vsTau3->Fill(shape[2],shape[3]);
+        fhTau1vsTau2vsTau3->Fill(shape[1],shape[2],shape[3]); 
+        fhTau2OverTau1->Fill(shape[2]/shape[1]);
+        fhTau3OverTau2->Fill(shape[3]/shape[2]);
+        fhTau2vsJetPt->Fill(shape[2],shape[0]);
+        fhTau2OverTau1vsJetPt->Fill(shape[2]/shape[1],shape[0]);
+      }
+      
     	fSubstructure->Fill();     
     }
   }
@@ -1084,6 +1094,30 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::Tau1Num(AliEmcalJet *mainJet, AliEmca
 }
 
 //__________________________________________________________________________________
+Float_t AliAnalysisTaskEmcalMissingEnergy::Tau1Num_full(AliEmcalJet *mainJet, AliEmcalJetFinder *finder, Int_t jetContNb = 0){
+
+  Int_t NumberOfSubjets = finder->GetNumberOfJets();
+  Float_t dR1, tau1_num_min = 10;
+  AliJetContainer *jetCont = GetJetContainer(jetContNb);
+  AliPicoTrack *mainJetParticle = 0x0;
+  AliEmcalJet *subJet = NULL;
+  if (!mainJet->GetNumberOfTracks()) return 0.; 
+
+  for (Int_t n=0; n<NumberOfSubjets; n++) {
+    Float_t tau1_num = 0.;
+    subJet = finder->GetJet(n);
+    for (Int_t i = 0; i < mainJet->GetNumberOfTracks(); i++) { // tau1 computation
+      mainJetParticle =  static_cast<AliPicoTrack*>(mainJet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+      dR1 = R_distance(subJet,mainJetParticle);
+      tau1_num += mainJetParticle->Pt() * dR1;
+    }
+    if (tau1_num < tau1_num_min) tau1_num_min = tau1_num;
+  }
+  return tau1_num_min;
+}
+
+
+//__________________________________________________________________________________
 Float_t AliAnalysisTaskEmcalMissingEnergy::Tau2Num(AliEmcalJet *mainJet, AliEmcalJet *subJet1hardest, AliEmcalJet *subJet2hardest, Int_t jetContNb = 0){
 
   Float_t dR1, dR2, dRmin;
@@ -1123,14 +1157,14 @@ Float_t AliAnalysisTaskEmcalMissingEnergy::Tau3Num(AliEmcalJet *mainJet, AliEmca
 
 //__________________________________________________________________________________
 Float_t* AliAnalysisTaskEmcalMissingEnergy::N_subjettiness(AliEmcalJet *mainJet, Int_t jetContNb = 0){
-  Float_t *shape; // jetPt, tau1, tau2, tau3, deltaR2hardest, control [if (control<-10) continue;]
-  shape = new Float_t[6];
+  Float_t *shape; // jetPt, tau1, tau2, tau3, deltaR2hardest, deltaPhi2hardest, control [if (control<5) continue;]
+  shape = new Float_t[7];
   AliJetContainer * jetCont = GetJetContainer(jetContNb);
   if (!mainJet->GetNumberOfTracks()) return 0; 
   AliEmcalJetFinder *Reclusterer = new AliEmcalJetFinder("SubJetFinder"); 
   Int_t *ordered;
   Int_t SubJetCounter;
-  Float_t tau1_num = 0., tau2_num = 0., tau3_num = 0., tau_den = 0., dR2hardest = 0.;
+  Float_t tau1_num = 0., tau2_num = 0., tau3_num = 0., tau_den = 0., dR2hardest = 0., dPhi2hardest = 0.;
 
   AliEmcalJet *subJet = NULL, *subJet1hardest = NULL, *subJet2hardest = NULL, *subJet3hardest = NULL;
 
@@ -1159,22 +1193,25 @@ Float_t* AliAnalysisTaskEmcalMissingEnergy::N_subjettiness(AliEmcalJet *mainJet,
     tau1_num = Tau1Num(mainJet,subJet1hardest,jetContNb);
 
     if (1 == SubJetCounter) {
-      if (tau1_num == 0. ) continue;
+      if (tau1_num == 0.) continue;
       shape[1] = tau1_num/tau_den;
       shape[2] = -1;
       shape[3] = -1;
       shape[4] = -1;
+      shape[5] = -1;
     } 
     else if (2 == SubJetCounter) { 
       subJet2hardest = Reclusterer->GetJet(ordered[SubJetCounter - 2]);
       if (NULL == subJet2hardest) continue;
       tau2_num = Tau2Num(mainJet,subJet1hardest,subJet2hardest,jetContNb);
       dR2hardest = R_distance(subJet1hardest,subJet2hardest);
+      dPhi2hardest = TMath::Abs(RelativePhi(subJet1hardest->Phi(),subJet2hardest->Phi()));
       if (tau1_num == 0. || tau2_num == 0.) continue;
       shape[1] = tau1_num/tau_den;
       shape[2] = tau2_num/tau_den;
       shape[3] = -1;
       shape[4] = dR2hardest;
+      shape[5] = dPhi2hardest;
     } 
     else if (SubJetCounter > 2) {
       subJet2hardest = Reclusterer->GetJet(ordered[SubJetCounter - 2]);
@@ -1184,19 +1221,21 @@ Float_t* AliAnalysisTaskEmcalMissingEnergy::N_subjettiness(AliEmcalJet *mainJet,
       tau2_num = Tau2Num(mainJet,subJet1hardest,subJet2hardest,jetContNb);
       tau3_num = Tau3Num(mainJet,subJet1hardest,subJet2hardest,subJet3hardest,jetContNb);
       dR2hardest = R_distance(subJet1hardest,subJet2hardest);
+      dPhi2hardest = TMath::Abs(RelativePhi(subJet1hardest->Phi(),subJet2hardest->Phi()));
       if (tau1_num == 0. || tau2_num == 0. || tau3_num == 0.) continue;
       shape[1] = tau1_num/tau_den;
       shape[2] = tau2_num/tau_den;
       shape[3] = tau3_num/tau_den;
       shape[4] = dR2hardest;
+      shape[5] = dPhi2hardest;
     }
 
-    shape[5] = 10.;
+    shape[6] = 10.;
     return shape;
 
   } while(0);
 
-  shape[5] = -10.;
+  shape[6] = -10.;
   return shape;
 }
 

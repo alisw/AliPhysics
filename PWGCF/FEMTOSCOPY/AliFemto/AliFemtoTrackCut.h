@@ -1,7 +1,8 @@
-////////////////////////////////////////////////////////////////////////////////
-/// AliFemtoTrackCut - the pure virtual base class for the track cut         ///
-/// All track cuts must inherit from this one                                ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \class AliFemtoTrackCut
+/// \brief The pure virtual base class for track cuts. All track cuts must
+///        inherit from this one
+///
 
 #ifndef AliFemtoTrackCut_hh
 #define AliFemtoTrackCut_hh
@@ -33,5 +34,5 @@ inline AliFemtoTrackCut::AliFemtoTrackCut(const AliFemtoTrackCut& c) : AliFemtoP
   cout << " AliFemtoTrackCut::AliFemtoTrackCut(const AliFemtoTrackCut& c) : AliFemtoParticleCut(c) " << endl;
 #endif
 }
-inline AliFemtoTrackCut& AliFemtoTrackCut::operator=(const AliFemtoTrackCut& c) { if (this != &c) { AliFemtoParticleCut::operator=(c); } return *this; } 
+inline AliFemtoTrackCut& AliFemtoTrackCut::operator=(const AliFemtoTrackCut& c) { if (this != &c) { AliFemtoParticleCut::operator=(c); } return *this; }
 #endif

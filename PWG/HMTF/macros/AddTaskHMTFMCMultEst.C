@@ -4,7 +4,7 @@
 #include "AliAnalysisTaskHMTFMCMultEst.h"
 #endif
 
-AliAnalysisTaskHMTFMCMultEst *AddTaskHMTFMCMultEst() {
+AliAnalysisTaskHMTFMCMultEst *AddTaskHMTFMCMultEst(Bool_t RequireINELgt0, Bool_t FillNtuple) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskHMTFMCMultEst", "No analysis manager to connect to.");
@@ -36,12 +36,13 @@ AliAnalysisTaskHMTFMCMultEst *AddTaskHMTFMCMultEst() {
   multEstTask->AddEstimator("V0A");
   multEstTask->AddEstimator("V0C");
   multEstTask->AddEstimator("V0M");
+  multEstTask->AddEstimator("ZDC");
 
   multEstTask->SetReferenceEstimator("EtaLt05");
 
   // Other options
-  multEstTask->SetRequireINELgt0(kFALSE);
-  multEstTask->SetFillNtuple(kFALSE);
+  multEstTask->SetRequireINELgt0(RequireINELgt0);
+  multEstTask->SetFillNtuple(FillNtuple);
 
   mgr->AddTask(multEstTask);
   AliAnalysisDataContainer *inputContainer = mgr->GetCommonInputContainer();

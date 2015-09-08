@@ -48,6 +48,8 @@ public:
   //If you want to override automatic choise of bad maps and calibration
   void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
   void ForceUsingCalibration(const char * filename="alien:///alice/cern.ch/user/p/prsnko/Recalibrations/LHC10b_pass1.root") ;
+  void SetAddCellNoise(Double_t rms=0.008){fAddNoiseMC=kTRUE; fNoiseMC=rms;} //Add some noise to MC data 
+
   void   InitTender();
 
 protected:
@@ -78,7 +80,9 @@ private:
   Int_t fRecoPass ;                          // Reconstruction pass
   Bool_t fUsePrivateBadMap ;
   Bool_t fUsePrivateCalib ;
-  
+  Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations
+  Double_t fNoiseMC  ;                       //RMS of cell-by-cell noise (in GeV)
+
   AliPHOSCalibData *fPHOSCalibData;          // PHOS calibration object
   AliAnalysisTaskSE     *fTask;              // analysis task
 

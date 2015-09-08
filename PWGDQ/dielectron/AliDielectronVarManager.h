@@ -283,6 +283,19 @@ public:
     kOneOverPairEff,         // 1 / pair efficiency (correction factor)
     kOneOverPairEffSq,        // 1 / pair efficiency squared (correction factor)
     kRndmPair,               // radomly created number (used to apply special signal reduction cuts)
+    kRndm=kRndmPair,
+    kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane 
+    kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
+    kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
+    // pair dinstance of closest approach (dca) variables
+    kPairDCAsigXY,             // dca in xy-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2) 
+    kPairDCAsigZ,              // dca in z-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2) 
+    kPairDCAabsXY,             // dca in xy-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)  
+    kPairDCAabsZ,              // dca in z-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)
+    kPairLinDCAsigXY,          // dca in xy-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2) 
+    kPairLinDCAsigZ,           // dca in z-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
+    kPairLinDCAabsXY,          // dca in xy-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
+    kPairLinDCAabsZ,           // dca in z-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
     kPairs,                  // number of Ev1PM pair candidates after all cuts
     kPairMax,                 //
   // Event specific variables
@@ -469,7 +482,7 @@ public:
   static AliPIDResponse* GetPIDResponse() { return fgPIDResponse; }
   static void SetEvent(AliVEvent * const ev);
   static void SetEventData(const Double_t data[AliDielectronVarManager::kNMaxValues]);
-  static Bool_t GetDCA(const AliAODTrack *track, Double_t d0z0[2]);
+  static Bool_t GetDCA(const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0=0);
   static void SetTPCEventPlane(AliEventplane *const evplane);
   static void GetVzeroRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
   static void GetZDCRP(const AliVEvent* event, Double_t qvec[][2]);
@@ -592,7 +605,9 @@ inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *partic
   values[AliDielectronVarManager::kCharge]    = particle->Charge();
   
   values[AliDielectronVarManager::kPdgCode]   = particle->PdgCode();
-    
+
+  values[AliDielectronVarManager::kRndm]      = gRandom->Rndm();
+
 //   if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
   for (Int_t i=AliDielectronVarManager::kPairMax; i<AliDielectronVarManager::kNMaxValues; ++i)
     values[i]=fgData[i];
@@ -1393,7 +1408,102 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kImpactParXY]   = d0z0[0];
   values[AliDielectronVarManager::kImpactParZ]    = d0z0[1];
 
- 
+
+  //calculate pair dca in sigma and cm
+  values[AliDielectronVarManager::kPairDCAsigXY]     = -999.;
+  values[AliDielectronVarManager::kPairDCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kPairDCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kPairDCAabsZ]      = -999.;
+  values[AliDielectronVarManager::kPairLinDCAsigXY]  = -999.;
+  values[AliDielectronVarManager::kPairLinDCAsigZ]   = -999.;
+  values[AliDielectronVarManager::kPairLinDCAabsXY]  = -999.;
+  values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAresXY]     = -999.;
+  // check if calculation is requested
+  if(Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
+     Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ)) {
+    
+    // get track references from pair
+    AliVParticle* d1 = pair-> GetFirstDaughterP();
+    AliVParticle* d2 = pair->GetSecondDaughterP();
+    
+    if (d1 && d2) {
+      // check for ESD or AOD
+      Bool_t isESD = (d1->IsA() == AliESDtrack::Class());
+      //printf("isESD = %i,   d1->IsA() = %i,   d2->IsA() = %i \n", isESD, d1->IsA(), d2->IsA());
+      
+      if (d1->IsA() == d2->IsA()) { // Don't mix AOD with ESD. Needed because AliAnalysisTaskRandomRejection always creates AliAODTracks (should be fixed).
+        
+        ////// first daughter
+        Double_t dca1[2]       = {-999.,-999.};      // xy,z absolute values
+        Double_t dcaSig1[2]    = {-999.,-999.};      // xy,z sigma values
+        Double_t dcaRes1[3]    = {-999.,-999.,-999.};// Covariance matrix
+        //Float_t dcaTPC1[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
+        //Float_t dcaSigTPC1[2] = {-999.,-999.};      // xy,z TPC-only sigma values
+        //Float_t dcaResTPC1[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
+        ////// second daughter
+        Double_t dca2[2]       = {-999.,-999.};      // xy,z absolute values
+        Double_t dcaSig2[2]    = {-999.,-999.};      // xy,z sigma values
+        Double_t dcaRes2[3]    = {-999.,-999.,-999.};// Covariance matrix
+        //Float_t dcaTPC2[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
+        //Float_t dcaSigTPC2[2] = {-999.,-999.};      // xy,z TPC-only sigma values
+        //Float_t dcaResTPC2[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
+        
+        if (isESD) {
+          // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
+          Float_t dca_tmp[2] = {-999.,-999.};
+          Float_t res_tmp[3] = {-999.,-999.,-999.};
+          static_cast<AliESDtrack*>(d1)->GetImpactParameters(dca_tmp, res_tmp);
+          dca1[0]   =dca_tmp[0]; dca1[1]   =dca_tmp[1];
+          dcaRes1[0]=res_tmp[0]; dcaRes1[1]=res_tmp[1]; dcaRes1[2]=res_tmp[2];
+          //static_cast<AliESDtrack*>(d1)->GetImpactParametersTPC(dcaTPC1, dcaResTPC1);
+          
+          dca_tmp[0]=-999.; dca_tmp[1]=-999.;
+          res_tmp[0]=-999.; res_tmp[1]=-999.; res_tmp[2]=-999.;
+          static_cast<AliESDtrack*>(d2)->GetImpactParameters(dca_tmp, res_tmp);
+          dca2[0]   =dca_tmp[0]; dca2[1]   =dca_tmp[1];
+          dcaRes2[0]=res_tmp[0]; dcaRes2[1]=res_tmp[1]; dcaRes2[2]=res_tmp[2];
+          //static_cast<AliESDtrack*>(d2)->GetImpactParametersTPC(dcaTPC2, dcaResTPC2);
+        }
+        else { // AOD
+          GetDCA(static_cast<AliAODTrack*>(d1), dca1, dcaRes1);
+          GetDCA(static_cast<AliAODTrack*>(d2), dca2, dcaRes2);
+        }
+        
+        // compute normalized DCAs
+        // neglect the mixed term 'dcaResX[1]'
+        if(dcaRes1[0]>0.) dcaSig1[0] = dca1[0]/TMath::Sqrt(dcaRes1[0]);
+        if(dcaRes1[2]>0.) dcaSig1[1] = dca1[1]/TMath::Sqrt(dcaRes1[2]);
+        //if(dcaResTPC1[0]>0.) dcaSigTPC1[0] = dcaTPC1[0]/TMath::Sqrt(dcaResTPC1[0]);
+        //if(dcaResTPC1[2]>0.) dcaSigTPC1[1] = dcaTPC1[1]/TMath::Sqrt(dcaResTPC1[2]);
+        if(dcaRes2[0]>0.) dcaSig2[0] = dca2[0]/TMath::Sqrt(dcaRes2[0]);
+        if(dcaRes2[2]>0.) dcaSig2[1] = dca2[1]/TMath::Sqrt(dcaRes2[2]);
+        //if(dcaResTPC2[0]>0.) dcaSigTPC2[0] = dcaTPC2[0]/TMath::Sqrt(dcaResTPC2[0]);
+        //if(dcaResTPC2[2]>0.) dcaSigTPC2[1] = dcaTPC2[1]/TMath::Sqrt(dcaResTPC2[2]);
+        
+        // set first daughter variables for cross-checks
+        values[AliDielectronVarManager::kLeg1DCAabsXY]   = dca1[0];
+        values[AliDielectronVarManager::kLeg1DCAsigXY]   = dcaSig1[0];
+        values[AliDielectronVarManager::kLeg1DCAresXY]   = dcaRes1[0];
+        
+        // set pair dca values
+        // quadratic summation
+        values[AliDielectronVarManager::kPairDCAabsXY]       = TMath::Sqrt( (dca1[0]*dca1[0] + dca2[0]*dca2[0]) / 2 );
+        values[AliDielectronVarManager::kPairDCAabsZ]        = TMath::Sqrt( (dca1[1]*dca1[1] + dca2[1]*dca2[1]) / 2 );
+        values[AliDielectronVarManager::kPairDCAsigXY]       = TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
+        values[AliDielectronVarManager::kPairDCAsigZ]        = TMath::Sqrt( (dcaSig1[1]*dcaSig1[1] + dcaSig2[1]*dcaSig2[1]) / 2 );
+        // linear summation
+        values[AliDielectronVarManager::kPairLinDCAabsXY]    = (TMath::Abs(dca1[0]) + TMath::Abs(dca2[0])) / 2;
+        values[AliDielectronVarManager::kPairLinDCAabsZ]     = (TMath::Abs(dca1[1]) + TMath::Abs(dca2[1])) / 2;
+        values[AliDielectronVarManager::kPairLinDCAsigXY]    = (TMath::Abs(dcaSig1[0]) + TMath::Abs(dcaSig2[0])) / 2;
+        values[AliDielectronVarManager::kPairLinDCAsigZ]     = (TMath::Abs(dcaSig1[1]) + TMath::Abs(dcaSig2[1])) / 2;
+      }
+    }
+  }
+  
+  
   if (!(pair->GetKFUsage())) {
 	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs
 	//use the INDIVIDUAL KF particles as source, which should be a copy of the corresponding properties
@@ -2581,29 +2691,30 @@ inline void AliDielectronVarManager::SetEventData(const Double_t data[AliDielect
 }
 
 
-inline Bool_t AliDielectronVarManager::GetDCA(const AliAODTrack *track, Double_t d0z0[2])
+//______________________________________________________________________________                                                                                                                                                                                     
+inline Bool_t AliDielectronVarManager::GetDCA(const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0)
 {
   if(track->TestBit(AliAODTrack::kIsDCA)){
     d0z0[0]=track->DCA();
     d0z0[1]=track->ZAtDCA();
+    // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
     return kTRUE;
   }
   
   Bool_t ok=kFALSE;
   if(fgEvent) {
-    Double_t covd0z0[3];
+    //Double_t covd0z0[3];
     //AliAODTrack copy(*track);
     AliExternalTrackParam etp; etp.CopyFromVTrack(track);
-
+    
     Float_t xstart = etp.GetX();
     if(xstart>3.) {
-    d0z0[0]=-999.;
-    d0z0[1]=-999.;
-    //printf("This method can be used only for propagation inside the beam pipe \n");
-    return kFALSE;
+      d0z0[0]=-999.;
+      d0z0[1]=-999.;
+      //printf("This method can be used only for propagation inside the beam pipe \n");
+      return kFALSE;
     }
-
-
+    
     AliAODVertex *vtx =(AliAODVertex*)(fgEvent->GetPrimaryVertex());
     Double_t fBzkG = fgEvent->GetMagneticField(); // z componenent of field in kG
     ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);

@@ -42,6 +42,9 @@ public TObject
   void SetTimeZeroT0(Int_t i, Float_t value) {fTimeZeroT0[i] = value;}; // setter
   void SetMCTimeZero(Float_t value) {fMCTimeZero = value;}; // setter
   void SetV0Mmultiplicity(Float_t multi) { fV0Mmultiplicity = multi;}; // setter
+  void SetPPVsMultFlags(Bool_t IsNotPileUpFromSPDInMultBins, Bool_t IsINELgtZERO, Bool_t IsAcceptedVertexPosition,Bool_t HasNoInconsistentSPDandTrackVertices,Bool_t IsMinimumBias);
+
+
 
   void Reset(); // reset
   Bool_t CheckLimits(Float_t value, Float_t *params, Float_t nSigma = 3.) const; // check limits
@@ -106,6 +109,14 @@ public TObject
   Float_t fTimeZeroT0[3]; // time-zero T0
   /*** MC info ***/
   Float_t fMCTimeZero; // MC time-zero
+  //Some flags from PPVsMultUtils class
+  Bool_t fIsNotPileUpFromSPDInMultBins;
+  Bool_t fIsINELgtZERO;
+  Bool_t fIsAcceptedVertexPosition;
+  Bool_t fHasNoInconsistentSPDandTrackVertices;
+  Bool_t fIsMinimumBias;
+  
+
 
   /*** tools ***/
   static AliTOFPIDResponse fgTOFResponse; // TOF PID response
@@ -130,7 +141,7 @@ public TObject
   static Double_t fgTimeZeroTOFCentCorrParams[3];
   static TF1 *fgTimeZeroTOFCentCorrFunc;
 
-  ClassDef(AliAnalysisPIDEvent, 2);
+  ClassDef(AliAnalysisPIDEvent, 3);
 };
 
 #endif /* ALIANALYSISPIDEVENT_H */

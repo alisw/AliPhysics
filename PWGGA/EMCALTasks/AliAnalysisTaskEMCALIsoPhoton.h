@@ -46,7 +46,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FillMcHists();
   void                   FillQA();
   void                   FillInvMass(); //inv mass for all neutral clusters
-  Float_t                GetClusSource(const AliVCluster *cluster);
+  Float_t                GetClusSource(const AliVCluster *cluster); //returns the pt of the prompt-photon; if doesn't descend from pro-pho returns -0.1
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
@@ -60,6 +60,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
 						Int_t *absIdList,     Float_t *maxEList);
   Bool_t                 AreNeighbours(Short_t absId1, Short_t absId2);
   void                   GetEDistInClusCells(const AliVCluster *cluster, Short_t idmax);
+  Bool_t                 IsPi0M02(Double_t M02, Double_t Et);
   AliVCaloCells          *GetVCaloCells();
   //setters
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
@@ -213,8 +214,13 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
   TH2F        *fDetaDphiFromTM;   //!dphi vs deta of track->GetEMCALcluster() clusters
   TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
-  TH2F        *fTrackDEtaDPhiPho; //!dEta-dPhi of TM for inclusive photons (except bremss)
-  TH2F        *fTrackDEtaDPhiPi;  //!dEta-dPhi of TM for inclusive pions
+  TH2F        *fTrackDEtaDPhiPho; //!dEta-dPhi of TM for inclusive true pi0 photons (MC only)
+  TH2F        *fTrackDEtaDPhiPi;  //!dEta-dPhi of TM for inclusive true pions (MC only)
+  TH2F        *fTrackDEtaDPhiPPho;//!dEta-dPhi of TM for inclusive true prompt photons (MC only)
+  TH2F        *fTrackDzDxIM;      //!dEta-dPhi of TM for pi0 photons via invariant mass method
+  TH2F        *fTrackDzDxPhoSS;   //!dEta-dPhi of TM for pi0 photons via shower shape (merged)
+  TH2F        *fTrackDzDxIM_bg;   //!BG for dEta-dPhi of TM for pi0 photons via invariant mass method (side bands)
+  TH2F        *fTrackDzDxPhoSS_bg;//!BG for dEta-dPhi of TM for pi0 photons via shower shape (merged side bands)
   //trigger histos
   TH1F        *fETrigg;           //!energy returned by trigger patch info
   //shower shape studies

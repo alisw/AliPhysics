@@ -85,6 +85,7 @@ AliAnalysisTaskLeadingPt::AliAnalysisTaskLeadingPt():
 	fPileUpRej(kFALSE),
 	fPileUpRejMV(kFALSE),
 	fAliAnalysisUtils(0),
+	fnContributors(5),
 	fVtxCut(10.0),  
 	fEtaCut(0.9),  
 	fTriggeredEventMB(-999),
@@ -158,6 +159,7 @@ AliAnalysisTaskLeadingPt::AliAnalysisTaskLeadingPt(const char *name):
 	fPileUpRej(kFALSE),
 	fPileUpRejMV(kFALSE),
 	fAliAnalysisUtils(0),
+	fnContributors(5),
 	fVtxCut(10.0),  
 	fEtaCut(0.9),  
 	fTriggeredEventMB(-999),
@@ -1149,7 +1151,7 @@ ULong64_t AliAnalysisTaskLeadingPt::GetEventIdAsLong(AliVHeader* header) const
 
 void AliAnalysisTaskLeadingPt::SetPileUpMvSettings(AliAnalysisUtils* fAliAnalysisUtils)
 {
-	fAliAnalysisUtils->SetMinPlpContribMV(5);
+	fAliAnalysisUtils->SetMinPlpContribMV(fnContributors);
 	fAliAnalysisUtils->SetMaxPlpChi2MV(5.0);
 	fAliAnalysisUtils->SetMinWDistMV(15.0);
 	fAliAnalysisUtils->SetCheckPlpFromDifferentBCMV(kFALSE);

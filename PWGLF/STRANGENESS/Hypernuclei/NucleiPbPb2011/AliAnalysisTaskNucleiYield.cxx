@@ -582,6 +582,16 @@ void AliAnalysisTaskNucleiYield::SetDCABins(Int_t nbins, Float_t min, Float_t ma
   fDCABins[nbins] = max;
 }
 
+/// This functions sets the \f$\mathrm{DCA}_{xy}\f$ bins used in the analysis
+///
+/// \param nbins Number of \f$\mathrm{DCA}_{xy}\f$ bins
+/// \param bins Array with nbins + 1 elements contanining the edges of the bins
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetDCABins(Int_t nbins, Float_t *bins) {
+  fDCABins.Set(nbins + 1, bins);
+}
+
 /// This functions sets the \f$p_{\mathrm{T}}\f$ bins used in the analysis
 ///
 /// \param nbins Number of \f$p_{\mathrm{T}}\f$ bins
@@ -696,9 +706,12 @@ Bool_t AliAnalysisTaskNucleiYield::Flatten(float cent) {
     else return gRandom->Rndm() > fFlatteningProbs[int(cent)];
   } else {
     // This flattening is required since a strange peak in VOM distribution is observed in MC
-    if (fFixForLHC14a6 && cent < 1.e-4f) {
-      // return (cent < 1) && gRandom->Rndm() > 0.35;
-      return true;
+    if (fFixForLHC14a6) {
+      if (cent < 1.5e-3f) {
+        return true;
+      } else if (cent < 0.05 && gRandom->Rndm() < 0.5) {
+        return true;
+      }
     }
   }
   return false;

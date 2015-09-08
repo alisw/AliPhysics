@@ -62,6 +62,7 @@ AliFemtoTrack::AliFemtoTrack():
   fShared(159),
   fNominalTpcEntrancePoint(0,0,0),
   fNominalTpcExitPoint(0,0,0),
+  fNominalTpcPointShifted(0,0,0),
   fXatDCA(0.0),
   fYatDCA(0.0),
   fZatDCA(0.0),
@@ -141,6 +142,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fShared(t.fShared),
   fNominalTpcEntrancePoint(t.fNominalTpcEntrancePoint),
   fNominalTpcExitPoint(t.fNominalTpcExitPoint),
+  fNominalTpcPointShifted(t.fNominalTpcPointShifted),
   fXatDCA(t.fXatDCA),
   fYatDCA(t.fYatDCA),
   fZatDCA(t.fZatDCA),
@@ -224,6 +226,7 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fShared=aTrack.fShared;
   fNominalTpcEntrancePoint=aTrack.fNominalTpcEntrancePoint;
   fNominalTpcExitPoint=aTrack.fNominalTpcExitPoint;
+  fNominalTpcPointShifted=aTrack.fNominalTpcPointShifted;
 
   fMass = aTrack.fMass;
   fPDGPid = aTrack.fPDGPid;
@@ -466,6 +469,11 @@ const AliFemtoThreeVector& AliFemtoTrack::NominalTpcExitPoint() const
   return fNominalTpcExitPoint;
 }
 
+const AliFemtoThreeVector& AliFemtoTrack::NominalTpcPointShifted() const
+{
+  return fNominalTpcPointShifted;
+}
+
 const AliFemtoThreeVector& AliFemtoTrack::NominalTpcPoint(int i) const
 {
   if(i<0)
@@ -515,6 +523,17 @@ void AliFemtoTrack::SetNominalTPCExitPoint(double *aXTPC)
   fNominalTpcExitPoint.SetZ(aXTPC[2]);
 }
 
+void AliFemtoTrack::SetNominalTPCPointShifted(const AliFemtoThreeVector& aXTPC)
+{
+  fNominalTpcPointShifted = aXTPC;
+}
+
+void AliFemtoTrack::SetNominalTPCPointShifted(double *aXTPC)
+{
+  fNominalTpcPointShifted.SetX(aXTPC[0]);
+  fNominalTpcPointShifted.SetY(aXTPC[1]);
+  fNominalTpcPointShifted.SetZ(aXTPC[2]);
+}
 
 
 
