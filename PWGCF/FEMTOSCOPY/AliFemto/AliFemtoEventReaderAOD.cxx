@@ -701,7 +701,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
           }
         }
       }
-      tEvent->V0Collection()->push_back(trackCopyV0);
+      tEvent->V0Collection()->push_back(trackCopyV0); 
       count_pass++;
     }
   }
@@ -716,8 +716,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       //if (aodxi->GetNProngs() > 2) continue;
       //if (aodxi->GetCharge() != 0) continue;
       if (aodxi->ChargeProng(0) == aodxi->ChargeProng(1)) continue;
-      if (aodxi->CosPointingAngle(fV1) < 0.998) continue;
-      if (aodxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.999) continue;
+      if (aodxi->CosPointingAngle(fV1) < 0.9) continue;
+      if (aodxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.98) continue;
 
       AliAODTrack *daughterTrackPos = (AliAODTrack *)aodxi->GetDaughter(0); //getting positive daughter track
       AliAODTrack *daughterTrackNeg = (AliAODTrack *)aodxi->GetDaughter(1); //getting negative daughter track
