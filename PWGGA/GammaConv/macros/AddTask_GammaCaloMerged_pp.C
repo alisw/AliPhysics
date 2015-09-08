@@ -120,59 +120,59 @@ void AddTask_GammaCaloMerged_pp( 	Int_t 		trainConfig 				= 1,  								// chang
 	// ************************************* EMCAL cuts ****************************************************
 	// LHC11a
 	if (trainConfig == 1){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-		eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163103100000000"; // MB NLM 1
-		eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163103100000000"; // EMC1 NLM 2
-		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163103100000000"; // MB NLM 2
-		eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163103100000000"; // EMC1 NLM 2
+		eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163101100000000"; // MB NLM 1
+		eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163101100000000"; // EMC1 NLM 2
+		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
+		eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
 	} else if (trainConfig == 2){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-		eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110001"; mesonCutArray[0] = "0163103100000000"; // MB NLM 1
-		eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032200000"; clusterMergedCutArray[1] = "1111121050022110001"; mesonCutArray[1] = "0163103100000000"; // EMC1 NLM 2
-		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050032200000"; clusterMergedCutArray[2] = "1111121050022110002"; mesonCutArray[2] = "0163103100000000"; // MB NLM 2
-		eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050032200000"; clusterMergedCutArray[3] = "1111121050022110002"; mesonCutArray[3] = "0163103100000000"; // EMC1 NLM 2
+		eventCutArray[ 0] = "00003113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110001"; mesonCutArray[0] = "0163101100000000"; // MB NLM 1
+		eventCutArray[ 1] = "00051113"; clusterCutArray[1] = "1111121050032200000"; clusterMergedCutArray[1] = "1111121050022110001"; mesonCutArray[1] = "0163101100000000"; // EMC1 NLM 2
+		eventCutArray[ 2] = "00003113"; clusterCutArray[2] = "1111121050032200000"; clusterMergedCutArray[2] = "1111121050022110002"; mesonCutArray[2] = "0163102200000000"; // MB NLM 2
+		eventCutArray[ 3] = "00051113"; clusterCutArray[3] = "1111121050032200000"; clusterMergedCutArray[3] = "1111121050022110002"; mesonCutArray[3] = "0163102200000000"; // EMC1 NLM 2
 
 	// LHC13g
 	} else if (trainConfig == 10){  // EMCAL clusters, EMCEGA triggers
-		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163103100000000"; // INT7
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163101100000000"; // INT7
+		eventCutArray[ 1] = "00000113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163102200000000"; // INT7
 	} else if (trainConfig == 11){  // EMCAL clusters, EMCEGA trigger, 1 NLM
-		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163103100000000"; // INT7
-		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110001"; mesonCutArray[2] = "0163103100000000"; // INT7
-		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110001"; mesonCutArray[3] = "0163103100000000"; // INT7
+		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163101100000000"; // INT7
+		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163101100000000"; // INT7
+		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110001"; mesonCutArray[2] = "0163101100000000"; // INT7
+		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110001"; mesonCutArray[3] = "0163101100000000"; // INT7
 	} else if (trainConfig == 12){  // EMCAL clusters, EMCEGA trigger, 2 NLM
-		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110002"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163103100000000"; // INT7
-		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163103100000000"; // INT7
-		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163103100000000"; // INT7
+		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
+		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163102200000000"; // INT7
+		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163102200000000"; // INT7
+		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163102200000000"; // INT7
 	} else if (trainConfig == 13){  // EMCAL clusters, EMCEGA trigger, 1 NLM
-		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110001"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121050032200000"; clusterMergedCutArray[1] = "1111121050022110001"; mesonCutArray[1] = "0163103100000000"; // INT7
-		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121050032200000"; clusterMergedCutArray[2] = "1111121050022110001"; mesonCutArray[2] = "0163103100000000"; // INT7
-		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121050032200000"; clusterMergedCutArray[3] = "1111121050022110001"; mesonCutArray[3] = "0163103100000000"; // INT7
+		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110001"; mesonCutArray[0] = "0163101100000000"; // INT7
+		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121050032200000"; clusterMergedCutArray[1] = "1111121050022110001"; mesonCutArray[1] = "0163101100000000"; // INT7
+		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121050032200000"; clusterMergedCutArray[2] = "1111121050022110001"; mesonCutArray[2] = "0163101100000000"; // INT7
+		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121050032200000"; clusterMergedCutArray[3] = "1111121050022110001"; mesonCutArray[3] = "0163101100000000"; // INT7
 	} else if (trainConfig == 14){  // EMCAL clusters, EMCEGA trigger, 2 NLM
-		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110002"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121050032200000"; clusterMergedCutArray[1] = "1111121050022110002"; mesonCutArray[1] = "0163103100000000"; // INT7
-		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121050032200000"; clusterMergedCutArray[2] = "1111121050022110002"; mesonCutArray[2] = "0163103100000000"; // INT7
-		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121050032200000"; clusterMergedCutArray[3] = "1111121050022110002"; mesonCutArray[3] = "0163103100000000"; // INT7
+		eventCutArray[ 0] = "00083113"; clusterCutArray[0] = "1111121050032200000"; clusterMergedCutArray[0] = "1111121050022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
+		eventCutArray[ 1] = "00085113"; clusterCutArray[1] = "1111121050032200000"; clusterMergedCutArray[1] = "1111121050022110002"; mesonCutArray[1] = "0163102200000000"; // INT7
+		eventCutArray[ 2] = "00000113"; clusterCutArray[2] = "1111121050032200000"; clusterMergedCutArray[2] = "1111121050022110002"; mesonCutArray[2] = "0163102200000000"; // INT7
+		eventCutArray[ 3] = "00052113"; clusterCutArray[3] = "1111121050032200000"; clusterMergedCutArray[3] = "1111121050022110002"; mesonCutArray[3] = "0163102200000000"; // INT7
 
 	// LHC12
     // default with three cuts
 	} else if (trainConfig == 111){  // EMCAL clusters, different triggers no NonLinearity
-		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032200000"; clusterMergedCutArray[0] = "1111100060022110001"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100060032200000"; clusterMergedCutArray[1] = "1111100060022110001"; mesonCutArray[1] = "0163103100000000"; // EMC7
-		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100060032200000"; clusterMergedCutArray[2] = "1111100060022110001"; mesonCutArray[2] = "0163103100000000"; // EMCEG1,
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032200000"; clusterMergedCutArray[0] = "1111100060022110001"; mesonCutArray[0] = "0163101100000000"; // INT7
+		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100060032200000"; clusterMergedCutArray[1] = "1111100060022110001"; mesonCutArray[1] = "0163101100000000"; // EMC7
+		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100060032200000"; clusterMergedCutArray[2] = "1111100060022110001"; mesonCutArray[2] = "0163101100000000"; // EMCEG1,
 	} else if (trainConfig == 112){  // EMCAL clusters, different triggers no NonLinearity
-		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032200000"; clusterMergedCutArray[0] = "1111100060022110002"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100060032200000"; clusterMergedCutArray[1] = "1111100060022110002"; mesonCutArray[1] = "0163103100000000"; // EMC7
-		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100060032200000"; clusterMergedCutArray[2] = "1111100060022110002"; mesonCutArray[2] = "0163103100000000"; // EMCEG1,
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111100060032200000"; clusterMergedCutArray[0] = "1111100060022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
+		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111100060032200000"; clusterMergedCutArray[1] = "1111100060022110002"; mesonCutArray[1] = "0163102200000000"; // EMC7
+		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111100060032200000"; clusterMergedCutArray[2] = "1111100060022110002"; mesonCutArray[2] = "0163102200000000"; // EMCEG1,
 	} else if (trainConfig == 113){  // EMCAL clusters, different triggers with NonLinearity
-		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032200000"; clusterMergedCutArray[0] = "1111111060022110001"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060032200000"; clusterMergedCutArray[1] = "1111111060022110001"; mesonCutArray[1] = "0163103100000000"; // EMC7
-		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111060032200000"; clusterMergedCutArray[2] = "1111111060022110001"; mesonCutArray[2] = "0163103100000000"; // EMCEG1,
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032200000"; clusterMergedCutArray[0] = "1111111060022110001"; mesonCutArray[0] = "0163101100000000"; // INT7
+		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060032200000"; clusterMergedCutArray[1] = "1111111060022110001"; mesonCutArray[1] = "0163101100000000"; // EMC7
+		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111060032200000"; clusterMergedCutArray[2] = "1111111060022110001"; mesonCutArray[2] = "0163101100000000"; // EMCEG1,
 	} else if (trainConfig == 114){  // EMCAL clusters, different triggers with NonLinearity
-		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032200000"; clusterMergedCutArray[0] = "1111111060022110002"; mesonCutArray[0] = "0163103100000000"; // INT7
-		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060032200000"; clusterMergedCutArray[1] = "1111111060022110002"; mesonCutArray[1] = "0163103100000000"; // EMC7
-		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111060032200000"; clusterMergedCutArray[2] = "1111111060022110002"; mesonCutArray[2] = "0163103100000000"; // EMCEG1,
+		eventCutArray[ 0] = "00000113"; clusterCutArray[0] = "1111111060032200000"; clusterMergedCutArray[0] = "1111111060022110002"; mesonCutArray[0] = "0163102200000000"; // INT7
+		eventCutArray[ 1] = "00052113"; clusterCutArray[1] = "1111111060032200000"; clusterMergedCutArray[1] = "1111111060022110002"; mesonCutArray[1] = "0163102200000000"; // EMC7
+		eventCutArray[ 2] = "00081113"; clusterCutArray[2] = "1111111060032200000"; clusterMergedCutArray[2] = "1111111060022110002"; mesonCutArray[2] = "0163102200000000"; // EMCEG1,
     
     // all the cut variations
 	} else {
@@ -270,6 +270,7 @@ void AddTask_GammaCaloMerged_pp( 	Int_t 		trainConfig 				= 1,  								// chang
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
 		analysisMesonCuts[i]->SetEnableOpeningAngleCut(kFALSE);
+		analysisMesonCuts[i]->SetIsMergedClusterCut(kTRUE);
 		analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
 		MesonCutList->Add(analysisMesonCuts[i]);
 		analysisMesonCuts[i]->SetFillCutHistograms("");
