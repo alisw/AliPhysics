@@ -6,9 +6,10 @@
 ///
 ///
 ///
-/// \author Fabrizio Grosa <fabrizio.grosa@to.infn.it>
+/// \author Fabrizio Grosa <fabrizio.grosa@to.infn.it>, INFN Torino
 /// \date Sep 1, 2015
 #include "TH1F.h"
+#include "TList.h"
 
 #include "AliHFCutVarFDsubAnalysisManager.h"
 
@@ -18,6 +19,7 @@ protected:
   Double_t fNevents; // Event count for normalisation
 
   AliHFCutVarFDsubAnalysisManagerDplus(const AliHFCutVarFDsubAnalysisManagerDplus& analysisManagerDplus); /// Copy constructor
+  AliHFCutVarFDsubAnalysisManagerDplus operator=(const AliHFCutVarFDsubAnalysisManagerDplus& analysisManagerDplus); // Assignment operator
 
   TH1F* CalculateCrossSection(const TString AccFilePath,
                               const TString GenLimAccHistoName,
@@ -28,16 +30,16 @@ protected:
 public:
   AliHFCutVarFDsubAnalysisManagerDplus(); /// Default constructor
   ~AliHFCutVarFDsubAnalysisManagerDplus(); /// Destructor
-
-  Int_t GetTHnSparses(const TString strFileData,
-                      const TString strFileMC,
-                      const TString strDirData,
+  
+  Int_t GetTHnSparses(const TString strFileMC,
+                      const TString strFileData,
                       const TString strDirMC,
-                      const TString strListData,
+                      const TString strDirData,
                       const TString strListMC,
+                      const TString strListData,
                       Bool_t MConly);
-
-  void GetCuts(); /// get the list of cuts
+  
+  void GetCuts(Int_t version=0, Int_t Rebin=1, Int_t fsig=0, Int_t fback=0); /// get the list of cuts
   void GetAxes(Int_t version=0); /// get the axes of the THnSparses
 
   TH1F* GetCrossSecPrompt(const TString AccFilePath, const TString GenLimAccHistoName,const TString GenAccHistoName,const TString system) {
@@ -46,6 +48,11 @@ public:
   TH1F* GetCrossSecFD(const TString AccFilePath,const TString GenLimAccHistoName,const TString GenAccHistoName,const TString system) {
     return CalculateCrossSection(AccFilePath,GenLimAccHistoName,GenAccHistoName,system,"FD"); } /// get the FD cross section
 
+  TH1F* GetYieldsPrompt() const {return fCorrYieldPrompt;}
+  TH1F* GetYieldsFD() const {return fCorrYieldFD;}
+  TList* GetPromptFraction() const {return fFprompt;}
+  TList* GetPromptFractionRaw() const {return fFpromptRaw;}
+  
   /// \cond CLASSDEF
   ClassDef(AliHFCutVarFDsubAnalysisManagerDplus, 1);
   /// \endcond
