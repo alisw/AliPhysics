@@ -1,4 +1,4 @@
-/************************************************************************* 
+/************************************************************************ 
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. * 
  *                                                                        * 
  * Author: The ALICE Off-line Project.                                    * 
@@ -77,7 +77,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
     fRMS                (kTRUE),
     fSymmRMS            (0),
-    fConstantUE         (kFALSE),
+    fConstantUE         (kTRUE),
     fRho0               (kFALSE),
     fBootstrap          (kFALSE),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
@@ -145,7 +145,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fDptOut             (0x0),
     fFullResponseIn     (0x0),
     fFullResponseOut    (0x0),
-    fPivot              (50.),
+    fPivot              (55.),
     fSubdueError        (kTRUE),
     fUnfoldedSpectrumIn (0x0),
     fUnfoldedSpectrumOut(0x0) { // class constructor
@@ -1628,7 +1628,7 @@ void AliJetFlowTools::Style(Bool_t legacy)
         gStyle->SetPadColor(10);
         gStyle->SetPadTickX(1);
         gStyle->SetPadTickY(1);
-        gStyle->SetPadBottomMargin(0.15);
+        gStyle->SetPadBottomMargin(0.17);
         gStyle->SetPadLeftMargin(0.15);
         gStyle->SetHistLineWidth(1);
         gStyle->SetHistLineColor(kRed);
@@ -1735,7 +1735,7 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2);
-    h->SetMarkerSize(1);
+    h->SetMarkerSize(1.5);
     if(legacy) {
         h->SetTitle("");
         h->GetYaxis()->SetLabelSize(0.05);
@@ -1779,7 +1779,7 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
        }
        case kRatio : {
             h->SetMarkerStyle(8);
-            h->SetMarkerSize(1);
+            h->SetMarkerSize(1.5);
        } break;
        case kDeltaPhi : {
             h->GetYaxis()->SetTitle("[counts]");
@@ -1800,7 +1800,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2);
-    h->SetMarkerSize(1);
+    h->SetMarkerSize(1.5);
     h->SetTitle("");
     h->SetFillColor(kCyan);
     if(legacy) {
@@ -1840,7 +1840,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
             h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} {EP, |#Delta#eta|>0.9 } ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
             h->SetMarkerStyle(8);
-            h->SetMarkerSize(1);
+            h->SetMarkerSize(1.5);
        } break;
        default : break;
     }
@@ -1990,7 +1990,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
             //
             TF1* lin = new TF1("lin", "[0]", rangeLow, rangeUp);
             relativeErrorVariationInUp->Fit(lin, "L", "", rangeLow, rangeUp);
-            if(!gMinuit->fISW[1] == 3) printf(" fit is NOT ok ! " );
+            if(gMinuit->fISW[1] != 3) printf(" fit is NOT ok ! " );
             for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
                 relativeErrorVariationInUp->SetBinContent(i+1, lin->GetParameter(0));
             }
@@ -3366,7 +3366,7 @@ void AliJetFlowTools::DoIntermediateSystematicsOnV2(
     if(fConstantUE) {
         Int_t ctr(0);
         Double_t av(0), avct(0);
-        for(Int_t k(2); k < 8; k++) {
+        for(Int_t k(3); k < 8; k++) {
             av+=relativeErrorInUp->GetBinError(k+1);
             avct+=relativeErrorInUp->GetBinContent(k+1);
             ctr++;
@@ -4905,7 +4905,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
         for(Int_t i(gOffsetStart); i < counts; i++) {
 
             // quadratic sum of statistical and uncorrelated systematic error
-            Double_t e = gStat->At(i);;
+            Double_t e = gStat->At(i);
 
             // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
             // also the numerator of equation 3 of phenix paper
@@ -4927,7 +4927,7 @@ Double_t AliJetFlowTools::PhenixChi2nd(const Double_t *xx )
         for(Int_t i(gOffsetStart); i < counts; i++) {
 
             // quadratic sum of statistical and uncorrelated systematic error
-            Double_t e = gStat->At(i);;
+            Double_t e = TMath::Sqrt(gStat->At(i)*gStat->At(i) + gPwrtToStatArray->At(i)*gPwrtToStatArray->At(i));
 
             // sum of v2 plus epsilon times correlated error minus hypothesis (gPwrtTo)
             // also the numerator of equation 3 of phenix paper
@@ -4964,19 +4964,21 @@ TF2* AliJetFlowTools::ReturnFunctionnd(Double_t &p)
     printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
 #endif
     // return the fitting function, pass the p-value w.r.t. 0 by reference
-    const Int_t DOF(4);
+    const Int_t DOF(7-2);       // dof is n-2
     TF2 *f1 = new TF2("ndhist", AliJetFlowTools::ConstructFunctionnd, -100, 100, -100, 100, 0);
     printf(" > locating minima < \n");
     Double_t x(0), y(0);
     f1->GetMinimumXY(x, y);
-    f1->GetXaxis()->SetTitle("#epsilon{b}");
-    f1->GetXaxis()->SetTitle("#epsilon_{c}");
+    f1->GetXaxis()->SetTitle("#epsilon{c}");
+    f1->GetXaxis()->SetTitle("#epsilon_{b}");
     f1->GetZaxis()->SetTitle("#chi^{2}");
 
     printf(" ===============================================================================\n");
     printf(" > minimal chi2 f(%.8f, %.8f) = %.8f  (i should be ok ... ) \n", x, y, f1->Eval(x, y));
     cout << "  so the probability of finding data at least as imcompatible with " << gPwrtTo << " as the actually" << endl;
     cout << "  observed data is " << TMath::Prob(f1->Eval(x, y), DOF) << endl; 
+    cout << "  minimization parameters: EPSILON_B " << y << endl;
+    cout << "                           EPSILON_C " << x << endl;
     printf(" ===============================================================================\n");
 
     // pass the p-value by reference and return the function

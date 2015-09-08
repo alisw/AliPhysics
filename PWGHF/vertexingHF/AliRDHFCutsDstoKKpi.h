@@ -6,9 +6,9 @@
 /* $Id$ */ 
 
 //***********************************************************
-// Class AliRDHFCutsDstoKKpi
-// class for cuts on AOD reconstructed Ds->KKpi
-// Author: A.Dainese, andrea.dainese@pd.infn.it
+/// \class Class AliRDHFCutsDstoKKpi
+/// \brief class for cuts on AOD reconstructed Ds->KKpi
+/// \author Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -89,17 +89,19 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
 
  protected:
  
-  Bool_t fCutOnResonances;  // switch for the cuts on phi and K0* inv. mass
-  Int_t fPidOption;         // pid option
-  Float_t fMaxPtStrongPid; // Maximum pt of candidate to apply strong Pid p dependent
-  Float_t fMaxPStrongPidK; // Maximum P of track to apply strong Pid on K
-  Float_t fMaxPStrongPidpi; // Maximum P of track to apply strong Pid on pi
-  Double_t fDistToMaxProb; // Difference between max probability
-  Double_t fBayesThreshold;// Threshold for Bayesian PID probability
-  Double_t fWeightKKpi; // weight for KKpi for kBayesianWeights
-  Double_t fWeightpiKK; // weight for piKK for kBayesianWeights
+  Bool_t fCutOnResonances;  /// switch for the cuts on phi and K0* inv. mass
+  Int_t fPidOption;         /// pid option
+  Float_t fMaxPtStrongPid; /// Maximum pt of candidate to apply strong Pid p dependent
+  Float_t fMaxPStrongPidK; /// Maximum P of track to apply strong Pid on K
+  Float_t fMaxPStrongPidpi; /// Maximum P of track to apply strong Pid on pi
+  Double_t fDistToMaxProb; /// Difference between max probability
+  Double_t fBayesThreshold;/// Threshold for Bayesian PID probability
+  Double_t fWeightKKpi; /// weight for KKpi for kBayesianWeights
+  Double_t fWeightpiKK; /// weight for piKK for kBayesianWeights
 
-  ClassDef(AliRDHFCutsDstoKKpi,4);  // class for cuts on AOD reconstructed Ds->KKpi
+  /// \cond CLASSIMP     
+  ClassDef(AliRDHFCutsDstoKKpi,4);  /// class for cuts on AOD reconstructed Ds->KKpi
+  /// \endcond
 };
 
 #endif

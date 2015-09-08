@@ -55,8 +55,8 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
 	//=========  Set Cutnumber for V0Reader ================================
 					   //06000078400100001500000000
 	TString cutnumberPhoton 	= "06000078400100007500000000";
-	TString cutnumberEvent 		= "8000000";
-	TString cutnumberElectron     	= "90005400000002000000";            //Electron Cuts
+	TString cutnumberEvent 		= "80000003";
+	TString cutnumberElectron   = "90005400000002000000";            //Electron Cuts
 	
 	
 	
@@ -116,45 +116,31 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
 	
     //================================================
     //========= Add Electron Selector ================
-
-
     if( !(AliDalitzElectronSelector*)mgr->GetTask("ElectronSelector") ){
 
-    AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
+		AliDalitzElectronSelector *fElectronSelector = new AliDalitzElectronSelector("ElectronSelector");
 
-   // Set AnalysisCut Number
+		// Set AnalysisCut Number
+		AliDalitzElectronCuts *fElecCuts=0;
+		if( cutnumberElectron!=""){
+			fElecCuts= new AliDalitzElectronCuts(cutnumberElectron.Data(),cutnumberElectron.Data());
 
-    AliDalitzElectronCuts *fElecCuts=0;
+			if(fElecCuts->InitializeCutsFromCutString(cutnumberElectron.Data())){
+				fElectronSelector->SetDalitzElectronCuts(fElecCuts);
+				fElecCuts->SetFillCutHistograms("",kTRUE);
+			}
+		}
 
-   
+		fElectronSelector->Init();
+		mgr->AddTask(fElectronSelector);
+		
+		AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
 
-    if( cutnumberElectron!=""){
+		//connect input V0Reader
 
-       fElecCuts= new AliDalitzElectronCuts(cutnumberElectron.Data(),cutnumberElectron.Data());
-
-            if(fElecCuts->InitializeCutsFromCutString(cutnumberElectron.Data())){
-
-                fElectronSelector->SetDalitzElectronCuts(fElecCuts);
-
-                fElecCuts->SetFillCutHistograms("",kTRUE);
-
-            }
-
-    }
-
-    fElectronSelector->Init();
-    mgr->AddTask(fElectronSelector);
-    
-    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-
-    //connect input V0Reader
-
-    mgr->ConnectInput (fElectronSelector,0,cinput1);
+		mgr->ConnectInput (fElectronSelector,0,cinput1);
 
     }
-	
-	
-
 	
 	//================================================
 	//========= Add task to the ANALYSIS manager =====
@@ -178,59 +164,33 @@ void AddTask_GammaCaloDalitzV1_pPb(  Int_t trainConfig = 1,  //change different 
 	TString *mesonCutArray   	= new TString[numberOfCuts];
 	
 
-	// cluster cuts
-	// 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
-	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
-	
 	//************************************************ EMCAL clusters **********************************************************
 	if ( trainConfig == 1){ // min energy = 0.3 GeV/c
-        
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000043022030000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8005201"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10000043022030000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
-	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "10000043022030000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[3] = "8005201"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "10000043022030000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "0263103100000000"; //standard cut, kEMC7
-	      
-	
+	    eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "1111100043022030000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "80052013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "1111100043022030000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
+	    eventCutArray[2] = "80000013"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "1111100043022030000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[3] = "80052013"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "1111100043022030000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "0263103100000000"; //standard cut, kEMC7
 	} else if ( trainConfig == 2 ){
-	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8006201"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "20000048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kPHI7
-	    eventCutArray[2] = "8000001"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "20000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[3] = "8006201"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "20000048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "0263103100000000"; //standard cut, kPHI7
-	  
-	  
+	    eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "2000000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "80062013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "2000000048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kPHI7
+	    eventCutArray[2] = "80000013"; photonCutArray[2] = "00200009327002008250400000"; clusterCutArray[2] = "2000000048033200000"; electronCutArray[2] = "90475400233102623110"; mesonCutArray[2] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[3] = "80062013"; photonCutArray[3] = "00200009327002008250400000"; clusterCutArray[3] = "2000000048033200000"; electronCutArray[3] = "90475400233102623110"; mesonCutArray[3] = "0263103100000000"; //standard cut, kPHI7
 	} else if ( trainConfig == 3){ // min energy = 0.3 GeV/c																	
-							       							  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10000053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "13300053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
-	     
-	
+	    eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "1111100053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "1331100053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
 	} else if ( trainConfig == 4){
-	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kPHI7
-	   
-	  
+	    eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "2000000048033200000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "2444400048033200000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kPHI7
 	} else if ( trainConfig == 5 ){
-	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "10021053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7 with TRD
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "10013053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kINT7 No TRD
-	      
-	  
+	    eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "1002100053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7 with TRD
+	    eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "1001300053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kINT7 No TRD
 	} else if ( trainConfig == 6 ) {
-	  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "20000048033300000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "24444048033300000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kINT7
-	 
-	  
+	    eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "2000000048033300000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "2444400048033300000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kINT7
 	} else if ( trainConfig == 7 ){ // min energy = 0.3 GeV/c																	
-							       							  
-	    eventCutArray[0] = "8000001"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "12200053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
-	    eventCutArray[1] = "8000001"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "13300053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
-	     
-	
+	    eventCutArray[0] = "80000013"; photonCutArray[0] = "00200009327002008250400000"; clusterCutArray[0] = "1221100053032230000"; electronCutArray[0] = "90475400233102623710"; mesonCutArray[0] = "0263103100000000"; //standart cut, kINT7
+	    eventCutArray[1] = "80000013"; photonCutArray[1] = "00200009327002008250400000"; clusterCutArray[1] = "1331100053032230000"; electronCutArray[1] = "90475400233102623710"; mesonCutArray[1] = "0263103100000000"; //standard cut, kEMC7
 	} else {
-	  
 		Error(Form("GammaConvDalitzCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}

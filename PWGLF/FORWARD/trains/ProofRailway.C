@@ -554,6 +554,29 @@ struct ProofRailway : public Railway
    */
   virtual const char* ModeString() const { return "proof"; }
   /** 
+   * Connect to PROOF(,-Lite,-on-Demand) cluster 
+   * 
+   * @param url Connection URL
+   * @param opt Possible options 
+   * 
+   * @return true on success 
+   */
+  virtual Bool_t Connect(const TUrl& url, const TString& opts)
+  {
+    Info("ProofRailway::Connect", "Connecting to %s with %soptions %s", 
+	 url.GetUrl(), 
+	 opts.IsNull() ? "no " : "", 
+	 opts.Data());
+    TProof::Open(url.GetUrl(), opts);
+    // TProof::Open(connect.GetHost(), opts);
+    if (!gProof) { 
+      Error("ProofRailway::Connect", "Failed to open Proof connection %s", 
+	    url.GetUrl());
+      return false;
+    }
+    return true;
+  }
+  /** 
    * Set-up done before task set-ups 
    * 
    * @return true on success 
@@ -615,21 +638,7 @@ struct ProofRailway : public Railway
     if (fOptions.Has("workers")) 
       opts.Append(Form("workers=%s", fOptions.Get("workers").Data()));
       
-    Info("ProofRailway::PreSetup", "Connecting to %s with %soptions %s", 
-	 connect.GetUrl(), 
-	 opts.IsNull() ? "no " : "", 
-	 opts.Data());
-    TString proto(connect.GetProtocol());
-    if (proto.BeginsWith("lite") && fOptions.Has("workers")) 
-      TProof::Open(opts);
-    else 
-      TProof::Open(connect.GetUrl(), opts);
-    // TProof::Open(connect.GetHost(), opts);
-    if (!gProof) { 
-      Error("ProofRailway::PreSetup", "Failed to open Proof connection %s", 
-	    connect.GetUrl());
-      return false;
-    }
+    if (!Connect(connect, opts)) return false;
     
     // --- Check if we need to clear packages ------------------------
     if (fOptions.Has("clear")) {
@@ -654,6 +663,65 @@ struct ProofRailway : public Railway
     }
     return true;
   }
+  virtual Bool_t EnableSpecial(const TString& parName,
+			       const TString& prefix)
+  {
+    if (prefix.IsNull()) {
+      Warning("EnableSpecial", "No prefix specified");
+      return false;
+    }
+    const char* prf = prefix.Data();
+    if (parName.IsNull()) {
+      Warning("EnableSpecial", "No par name specified for %s", prf);
+      return false;
+    }
+    // List of parameters for PAR x
+    TList* params = new TList;
+    params->SetOwner(true);
+    
+    // Extra libraries 
+    TString tmp(fExtraLibs.Strip(TString::kBoth,':'));
+    params->Add(new TNamed(Form("%s_EXTRA_LIBS", prf), tmp.Data()));
+
+    // Check for mode 
+    if (fOptions.Has("mode"))
+      params->Add(new TNamed(Form("%s_MODE", prf),
+			     fOptions.Get("mode").Data()));
+    else
+      params->Add(new TNamed(Form("%s_MODE", prf), "default"));
+
+    // Check for AliEn 
+    if (fOptions.Has("alien"))
+      params->Add(new TNamed(Form("%s_ENABLE_ALIEN", prf), "1"));
+
+    // Try to enable the package - do we need to load first? 
+    Int_t ret = gProof->EnablePackage(parName.Data(), params, true);
+    if (ret < 0) {
+      Error("ProofRailway::EnableSpecial", "Failed to enable %s PAR %s", 
+	    prf, parName.Data());
+      return false;
+    }
+    return true;
+  }
+      
+  /** 
+   * Enable the special AliROOT package on the cluster 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t EnableAliROOT()
+  {
+    return EnableSpecial(AliROOTParName(), "ALIROOT");
+  }
+  /** 
+   * Enable the special AliROOT package on the cluster 
+   * 
+   * @return true on success
+   */
+  virtual Bool_t EnableAliPhysics()
+  {
+    return EnableSpecial(AliPhysicsParName(), "ALIPHYSICS");
+  }    
   /** 
    * Set-up done after the task set-ups 
    *
@@ -679,35 +747,8 @@ struct ProofRailway : public Railway
 
     // --- If we are not using PARs for Base, enable special PAR -----
     if (!fBasePars) {
-      TString tmp(fExtraLibs.Strip(TString::kBoth,':'));
-      TList* params = new TList;
-      params->SetOwner(true);
-      params->Add(new TNamed("ALIROOT_EXTRA_LIBS", tmp.Data()));
-      if (fOptions.Has("mode"))
-	params->Add(new TNamed("ALIROOT_MODE", fOptions.Get("mode").Data()));
-      else
-	params->Add(new TNamed("ALIROOT_MODE", "default"));
-      Int_t ret = gProof->EnablePackage(AliROOTParName(), params, true);
-      if (ret < 0) {
-	Error("ProofRailway::EnableAliROOT", "Failed to enable AliROOT PAR %s", 
-	      AliROOTParName());
-	return false;
-      }
-
-      params = new TList;
-      params->SetOwner(true);
-      params->Add(new TNamed("ALIPHYSICS_EXTRA_LIBS", tmp.Data()));
-      if (fOptions.Has("mode"))
-	params->Add(new TNamed("ALIPHYSICS_MODE", fOptions.Get("mode").Data()));
-      else
-	params->Add(new TNamed("ALIPHYSICS_MODE", "default"));
-      ret = gProof->EnablePackage(AliPhysicsParName(), params, true);
-      if (ret < 0) {
-	Error("ProofRailway::EnableAliPhysics",
-	      "Failed to enable AliPhysics PAR %s", 
-	      AliPhysicsParName());
-	return false;
-      }
+      if (!EnableAliROOT()) return false;
+      if (!EnableAliPhysics()) return false;
     }
 
     // --- Make PAR file of Aux Files --------------------------------
@@ -751,6 +792,15 @@ struct ProofRailway : public Railway
     return true;
   }
   /** 
+   * Get the data-set name 
+   * 
+   * @param dsname On return, must contain the data set name 
+   */
+  virtual void GetDataSet(TString& dsname)
+  {
+    dsname = fUrl.GetFile();
+  }
+  /** 
    * Start the analysis 
    * 
    * @param nEvents Number of events to analyse 
@@ -768,7 +818,8 @@ struct ProofRailway : public Railway
 			TProofDebug::kInput|
 			TProofDebug::kGlobal|*/
 			TProofDebug::kPackage);
-    TString dsName(fUrl.GetFile());
+    TString dsName;
+    GetDataSet(dsName);
     // if (fUrl.GetAnchor() && fUrl.GetAnchor()[0] != '\0') 
     //   dsName.Append(Form("#%s", fUrl.GetAnchor()));
     // Info("Run", "Output objects registered with PROOF:");

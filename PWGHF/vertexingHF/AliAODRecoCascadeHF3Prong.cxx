@@ -32,16 +32,18 @@
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF3Prong.h"
 
-ClassImp(AliAODRecoCascadeHF3Prong)
+/// \cond CLASSIMP
+ClassImp(AliAODRecoCascadeHF3Prong);
+/// \endcond
 
 //-----------------------------------------------------------------------------
 
 AliAODRecoCascadeHF3Prong::AliAODRecoCascadeHF3Prong() :
 AliAODRecoDecayHF3Prong()
 {
-  //
-  // Default Constructor
-  //
+  ///
+  /// Default Constructor
+  ///
 }
 
 //-----------------------------------------------------------------------------
@@ -52,26 +54,26 @@ AliAODRecoCascadeHF3Prong::AliAODRecoCascadeHF3Prong(AliAODVertex *vtx2, Short_t
 						     Double_t dist12,Double_t dist23):
   AliAODRecoDecayHF3Prong(vtx2, px, py, pz, d0, d0err, dca,sigvert,dist12,dist23,charge)
 {
-  //
-  //  Constructor with AliAODVertex for decay vertex
-  //
+  ///
+  ///  Constructor with AliAODVertex for decay vertex
+  ///
 }
 
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF3Prong::AliAODRecoCascadeHF3Prong(const AliAODRecoCascadeHF3Prong &source) :
   AliAODRecoDecayHF3Prong(source)
 {
-  //
-  // Copy constructor
-  //
+  ///
+  /// Copy constructor
+  ///
 }
 
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF3Prong &AliAODRecoCascadeHF3Prong::operator=(const AliAODRecoCascadeHF3Prong &source)
 {
-  //
-  // assignment operator
-  //
+  ///
+  /// assignment operator
+  ///
   if(&source == this) return *this;
 
   AliAODRecoDecayHF3Prong::operator=(source);
@@ -82,18 +84,18 @@ AliAODRecoCascadeHF3Prong &AliAODRecoCascadeHF3Prong::operator=(const AliAODReco
 //-----------------------------------------------------------------------------
 AliAODRecoCascadeHF3Prong::~AliAODRecoCascadeHF3Prong()
 {
-  //
-  // Default Destructor
-  //
+  ///
+  /// Default Destructor
+  ///
 }
 
 
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDcaXiDaughters() const
 {
-  //
-  // DCA between Xi daughters
-  //
+  ///
+  /// DCA between Xi daughters
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -105,9 +107,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDcaXiDaughters() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDcaV0Daughters() const
 {
-  //
-  // DCA between Cascade-V0 daughters
-  //
+  ///
+  /// DCA between Cascade-V0 daughters
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -119,9 +121,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDcaV0Daughters() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDecayLength() const
 {
-  //
-  // Decay length of Xi
-  //
+  ///
+  /// Decay length of Xi
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
 
@@ -137,9 +139,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDecayLength() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDecayLengthV0() const
 {
-  //
-  // Decay length of V0 from Xi
-  //
+  ///
+  /// Decay length of V0 from Xi
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -150,9 +152,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDecayLengthV0() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascCosPointingAngle() const 
 {
-  //
-  // Xi pointing angle to primary vertex
-  //
+  ///
+  /// Xi pointing angle to primary vertex
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -166,9 +168,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascCosPointingAngle() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascCosPointingAngleV0() const 
 {
-  //
-  // Cos pointing angle of V0 to Xi decay vertex
-  //
+  ///
+  /// Cos pointing angle of V0 to Xi decay vertex
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -179,9 +181,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascCosPointingAngleV0() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDcaV0ToPrimVertex() const
 {
-  //
-  // DCA to primary vertex of Cascade-V0 
-  //
+  ///
+  /// DCA to primary vertex of Cascade-V0
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -192,9 +194,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDcaV0ToPrimVertex() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDcaPosToPrimVertex() const
 {
-  //
-  // DCA to primary vertex of Cascade-positive track
-  //
+  ///
+  /// DCA to primary vertex of Cascade-positive track
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -205,9 +207,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDcaPosToPrimVertex() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDcaNegToPrimVertex() const
 {
-  //
-  // DCA to primary vertex of Cascade-negative track
-  //
+  ///
+  /// DCA to primary vertex of Cascade-negative track
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -218,9 +220,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDcaNegToPrimVertex() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascDcaBachToPrimVertex() const
 {
-  //
-  // DCA to primary vertex of Cascade-Bachelor track
-  //
+  ///
+  /// DCA to primary vertex of Cascade-Bachelor track
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -231,9 +233,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascDcaBachToPrimVertex() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascMassXi() const
 {
-  //
-  // Xi mass
-  //
+  ///
+  /// Xi mass
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -244,9 +246,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascMassXi() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascMassLambda() const
 {
-  //
-  // Lambda mass of cascade-v0
-  //
+  ///
+  /// Lambda mass of cascade-v0
+  ///
 
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -257,9 +259,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascMassLambda() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::CascMassAntiLambda() const
 {
-  //
-  // Anti-Lambda mass of cascade-v0
-  //
+  ///
+  /// Anti-Lambda mass of cascade-v0
+  ///
 	
   AliAODcascade *casc = (AliAODcascade*)GetCascade();
   if (!casc) 
@@ -270,9 +272,9 @@ Double_t AliAODRecoCascadeHF3Prong::CascMassAntiLambda() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::XicCosPointingAngle() const
 {
-  //
-  // Xic pointing angle to primary vertex
-  //
+  ///
+  /// Xic pointing angle to primary vertex
+  ///
 
   AliAODVertex *vtxPrimary = GetPrimaryVtx();
   AliAODVertex *vtxSecondary = GetSecondaryVtx();
@@ -293,9 +295,9 @@ Double_t AliAODRecoCascadeHF3Prong::XicCosPointingAngle() const
 //________________________________________________________________________
 Double_t AliAODRecoCascadeHF3Prong::BachelorsCosPointingAngle() const
 {
-  //
-  // Bachelor pointing angle to primary vertex
-  //
+  ///
+  /// Bachelor pointing angle to primary vertex
+  ///
 
   AliAODVertex *vtxPrimary = GetPrimaryVtx();
   AliAODVertex *vtxSecondary = GetSecondaryVtx();
@@ -318,11 +320,11 @@ Int_t AliAODRecoCascadeHF3Prong::MatchToMC(Int_t pdgabs,Int_t pdgabscasc,
                                      Int_t *pdgDg,Int_t *pdgDgcasc,Int_t *pdgDgv0
 				     ,TClonesArray *mcArray) const
 {
-  //
-  // Check if this candidate is matched to a MC signal
-  // If no, return -1
-  // If yes, return label (>=0) of the AliAODMCParticle
-  // 
+  ///
+  /// Check if this candidate is matched to a MC signal
+  /// If no, return -1
+  /// If yes, return label (>=0) of the AliAODMCParticle
+  ///
 
   Int_t ndg=GetNDaughters();
   if(ndg==0) {
@@ -422,12 +424,12 @@ Int_t AliAODRecoCascadeHF3Prong::MatchToMCXicPlus(Int_t pdgabs,TClonesArray *mcA
 				 Int_t dgLabels[10],Int_t ndg,
 				 Int_t ndgCk, const Int_t *pdgDg) const
 {
-  //
-  // Check if this candidate is matched to a MC signal
-  // If no, return -1
-  // If yes, return label (>=0) of the AliAODMCParticle
-  // 
-	//
+  ///
+  /// Check if this candidate is matched to a MC signal
+  /// If no, return -1
+  /// If yes, return label (>=0) of the AliAODMCParticle
+  ///
+  ///
 
   Int_t labMom[10]={0,0,0,0,0,0,0,0,0,0};
   Int_t i,j,lab,labMother,pdgMother,pdgPart;

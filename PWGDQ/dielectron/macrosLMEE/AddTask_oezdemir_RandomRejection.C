@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_oezdemir_RandomRejection(Bool_t getFromAlien=kFALSE, Bool_t configsPreloaded=kTRUE, TString cFileName = "Configpp2010Oezdemir.C"){
+AliAnalysisTask *AddTask_oezdemir_RandomRejection(Bool_t getFromAlien=kFALSE, Bool_t configsPreloaded=kFALSE, TString cFileName = "Configpp2010Oezdemir.C"){
 
 
   //get the current analysis manager
@@ -61,7 +61,7 @@ AliAnalysisTask *AddTask_oezdemir_RandomRejection(Bool_t getFromAlien=kFALSE, Bo
     mgr->CreateContainer("oezdemir_RandomRejection_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "LMEEoutput_output");
+                         "LMEEoutput.root");
   
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer("oezdemir_RandomRejection_out",

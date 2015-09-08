@@ -64,6 +64,7 @@ const char* AliConvEventCuts::fgkCutNames[AliConvEventCuts::kNCuts] = {
    "SelectSpecialSubTriggerClass",	//4
    "RemovePileUp",					//5
    "RejectExtraSignals",			//6
+   "VertexCut",						//7
 };
 
 
@@ -76,6 +77,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fIsHeavyIon(0),
 	fDetectorCentrality(0),
 	fModCentralityClass(0),
+	fEnableVertexCut(kTRUE),
 	fMaxVertexZ(10),
 	fCentralityMin(0),
 	fCentralityMax(0),
@@ -112,10 +114,11 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fHistoEventCuts(NULL),
 	hCentrality(NULL),
 	hCentralityNotFlat(NULL),
-	hCentralityVsNumberOfPrimaryTracks(NULL),
+	//hCentralityVsNumberOfPrimaryTracks(NULL),
 	hVertexZ(NULL),
 	hTriggerClass(NULL),
 	hTriggerClassSelected(NULL),
+	hTriggerClassesCorrelated(NULL),
 	hReweightMCHistPi0(NULL),
 	hReweightMCHistEta(NULL),
 	hReweightMCHistK0s(NULL),
@@ -128,6 +131,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fSpecialTriggerName(""),
 	fSpecialSubTriggerName(""),
 	fNSpecialSubTriggerOptions(0),
+	hSPDClusterTrackletBackground(NULL),
 	fV0ReaderName(""),
 	fCaloTriggers(NULL),
 	fTriggerPatchInfo(NULL),
@@ -138,8 +142,10 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fTriggersEMCALSelected(-1),
 	fEMCALTrigInitialized(kFALSE),
 	fSecProdBoundary(1.0),
-	fBinJetJetMC(0),
-	fMimicTrigger(kFALSE)
+	fMaxPtJetMC(0),
+	fMaxFacPtHard(2.5),
+	fMimicTrigger(kFALSE),
+	fRejectTriggerOverlap(kFALSE)
 {
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
    fCutString=new TObjString((GetCutNumber()).Data());
@@ -160,6 +166,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fIsHeavyIon(ref.fIsHeavyIon),
 	fDetectorCentrality(ref.fDetectorCentrality),
 	fModCentralityClass(ref.fModCentralityClass),
+	fEnableVertexCut(ref.fEnableVertexCut),
 	fMaxVertexZ(ref.fMaxVertexZ),
 	fCentralityMin(ref.fCentralityMin),
 	fCentralityMax(ref.fCentralityMax),
@@ -196,10 +203,11 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fHistoEventCuts(NULL),
 	hCentrality(ref.hCentrality),
 	hCentralityNotFlat(ref.hCentralityNotFlat),
-	hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
+	//hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
 	hVertexZ(ref.hVertexZ),
 	hTriggerClass(NULL),
 	hTriggerClassSelected(NULL),
+	hTriggerClassesCorrelated(NULL),
 	hReweightMCHistPi0(ref.hReweightMCHistPi0),
 	hReweightMCHistEta(ref.hReweightMCHistEta),
 	hReweightMCHistK0s(ref.hReweightMCHistK0s),
@@ -212,6 +220,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fSpecialTriggerName(ref.fSpecialTriggerName),
 	fSpecialSubTriggerName(ref.fSpecialSubTriggerName),
 	fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
+	hSPDClusterTrackletBackground(NULL),
 	fV0ReaderName(ref.fV0ReaderName),
    	fCaloTriggers(NULL),
 	fTriggerPatchInfo(NULL),
@@ -222,8 +231,10 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fTriggersEMCALSelected(ref.fTriggersEMCALSelected),
 	fEMCALTrigInitialized(kFALSE),
 	fSecProdBoundary(ref.fSecProdBoundary),
-	fBinJetJetMC(ref.fBinJetJetMC),
-	fMimicTrigger(kFALSE)
+	fMaxPtJetMC(ref.fMaxPtJetMC),
+	fMaxFacPtHard(ref.fMaxFacPtHard),
+	fMimicTrigger(kFALSE),
+	fRejectTriggerOverlap(kFALSE)
 {
    // Copy Constructor
    for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -267,235 +278,273 @@ AliConvEventCuts::~AliConvEventCuts() {
 //________________________________________________________________________
 void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
-   // Initialize Cut Histograms for QA (only initialized and filled if function is called)
-   TH1::AddDirectory(kFALSE);
+	// Initialize Cut Histograms for QA (only initialized and filled if function is called)
+	TH1::AddDirectory(kFALSE);
 
-   if(fHistograms != NULL){
-      delete fHistograms;
-      fHistograms=NULL;
-   }
-   if(fHistograms==NULL){
-      fHistograms=new TList();
-      fHistograms->SetOwner(kTRUE);
-      if(name=="")fHistograms->SetName(Form("ConvEventCuts_%s",GetCutNumber().Data()));
-      else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
-   }
+	if(fHistograms != NULL){
+		delete fHistograms;
+		fHistograms=NULL;
+	}
+	if(fHistograms==NULL){
+		fHistograms=new TList();
+		fHistograms->SetOwner(kTRUE);
+		if(name=="")fHistograms->SetName(Form("ConvEventCuts_%s",GetCutNumber().Data()));
+		else fHistograms->SetName(Form("%s_%s",name.Data(),GetCutNumber().Data()));
+	}
 
-   if (hReweightMCHistPi0){
-      hReweightMCHistPi0->SetName("MCInputForWeightingPi0");
-      fHistograms->Add(hReweightMCHistPi0);
-   }
-   if (hReweightMCHistEta){
-      hReweightMCHistEta->SetName("MCInputForWeightingEta");
-      fHistograms->Add(hReweightMCHistEta);
-   }
-   if (hReweightMCHistK0s){
-      hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
-      fHistograms->Add(hReweightMCHistK0s);
-   }
+	if (hReweightMCHistPi0){
+		hReweightMCHistPi0->SetName("MCInputForWeightingPi0");
+		fHistograms->Add(hReweightMCHistPi0);
+	}
+	if (hReweightMCHistEta){
+		hReweightMCHistEta->SetName("MCInputForWeightingEta");
+		fHistograms->Add(hReweightMCHistEta);
+	}
+	if (hReweightMCHistK0s){
+		hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
+		fHistograms->Add(hReweightMCHistK0s);
+	}
 
-   hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
-   fHistograms->Add(hCentrality);
-      
-   hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
-   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
-   
-   hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
-   fHistograms->Add(hVertexZ);
-   
-   // Event Cuts and Info
-   if(preCut){
-      fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
-      fHistoEventCuts->GetXaxis()->SetBinLabel(1,"in");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(2,"OfflineTrigger");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(3,"nvtxcontr");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(4,"VertexZ");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(5,"pileup");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(6,"centrsel");
-      fHistoEventCuts->GetXaxis()->SetBinLabel(7,"out");
-      fHistograms->Add(fHistoEventCuts);
+	hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+	fHistograms->Add(hSPDClusterTrackletBackground);
 
-      hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
-      fHistograms->Add(hVertexZ);
+	hCentrality=new TH1F(Form("Centrality %s",GetCutNumber().Data()),"Centrality",400,0,100);
+	fHistograms->Add(hCentrality);
+		
+	//hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
+	//fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
 
-      hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
-      hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
-      hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
-      hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
-      hTriggerClass->GetXaxis()->SetBinLabel( 4,"kHighMult");
-      hTriggerClass->GetXaxis()->SetBinLabel( 5,"kEMC1");
-      hTriggerClass->GetXaxis()->SetBinLabel( 6,"kCINT5");
-      hTriggerClass->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
-      hTriggerClass->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
-      hTriggerClass->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
-      hTriggerClass->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
-      hTriggerClass->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
-      hTriggerClass->GetXaxis()->SetBinLabel(12,"kMUS7");
-      hTriggerClass->GetXaxis()->SetBinLabel(13,"kPHI1");
-      hTriggerClass->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
-      hTriggerClass->GetXaxis()->SetBinLabel(15,"kEMCEJE");
-      hTriggerClass->GetXaxis()->SetBinLabel(16,"kEMCEGA");
-      hTriggerClass->GetXaxis()->SetBinLabel(17,"kCentral");
-      hTriggerClass->GetXaxis()->SetBinLabel(18,"kSemiCentral");
-      hTriggerClass->GetXaxis()->SetBinLabel(19,"kDG5");
-      hTriggerClass->GetXaxis()->SetBinLabel(20,"kZED");
-      hTriggerClass->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
-      hTriggerClass->GetXaxis()->SetBinLabel(22,"kINT8");
-      hTriggerClass->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
-      hTriggerClass->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
-      hTriggerClass->GetXaxis()->SetBinLabel(28,"kUserDefined");
-      hTriggerClass->GetXaxis()->SetBinLabel(29,"kTRD");
-      hTriggerClass->GetXaxis()->SetBinLabel(30,"kFastOnly");
-      hTriggerClass->GetXaxis()->SetBinLabel(31,"kAnyINT");
-      hTriggerClass->GetXaxis()->SetBinLabel(32,"kAny");
-      hTriggerClass->GetXaxis()->SetBinLabel(33,"V0AND");
-      hTriggerClass->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
-      hTriggerClass->GetXaxis()->SetBinLabel(35,"failed Physics Selection");
-	  hTriggerClass->GetXaxis()->SetBinLabel(36,"mimickedTrigger");
-      fHistograms->Add(hTriggerClass);
-   }
-   if(!preCut){
-      hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",35,-0.5,34.5);
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 1,"kMB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 2,"kINT7");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 3,"kMUON");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 4,"kHighMult");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 5,"kEMC1");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 6,"kCINT5");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(12,"kMUS7");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(13,"kPHI1");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(15,"kEMCEJE");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(16,"kEMCEGA");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(17,"kCentral");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(18,"kSemiCentral");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(19,"kDG5");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(20,"kZED");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(22,"kINT8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(28,"kUserDefined");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(29,"kTRD");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(30,"kFastOnly");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(31,"kAnyINT");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(32,"kAny");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
-      hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
-	  fHistograms->Add(hTriggerClassSelected);
-      
-   }
-   TH1::AddDirectory(kTRUE);
+	hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
+	fHistograms->Add(hVertexZ);
+
+	// Event Cuts and Info
+	if(preCut){
+		fHistoEventCuts=new TH1F(Form("ESD_EventCuts %s",GetCutNumber().Data()),"Event Cuts",7,-0.5,6.5);
+		fHistoEventCuts->GetXaxis()->SetBinLabel(1,"in");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(2,"OfflineTrigger");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(3,"nvtxcontr");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(4,"VertexZ");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(5,"pileup");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(6,"centrsel");
+		fHistoEventCuts->GetXaxis()->SetBinLabel(7,"out");
+		fHistograms->Add(fHistoEventCuts);
+
+		hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
+		hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
+		hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
+		hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
+		hTriggerClass->GetXaxis()->SetBinLabel( 4,"kHighMult");
+		hTriggerClass->GetXaxis()->SetBinLabel( 5,"kEMC1");
+		hTriggerClass->GetXaxis()->SetBinLabel( 6,"kCINT5");
+		hTriggerClass->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
+		hTriggerClass->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
+		hTriggerClass->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
+		hTriggerClass->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
+		hTriggerClass->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
+		hTriggerClass->GetXaxis()->SetBinLabel(12,"kMUS7");
+		hTriggerClass->GetXaxis()->SetBinLabel(13,"kPHI1");
+		hTriggerClass->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
+		hTriggerClass->GetXaxis()->SetBinLabel(15,"kEMCEJE");
+		hTriggerClass->GetXaxis()->SetBinLabel(16,"kEMCEGA");
+		hTriggerClass->GetXaxis()->SetBinLabel(17,"kCentral");
+		hTriggerClass->GetXaxis()->SetBinLabel(18,"kSemiCentral");
+		hTriggerClass->GetXaxis()->SetBinLabel(19,"kDG5");
+		hTriggerClass->GetXaxis()->SetBinLabel(20,"kZED");
+		hTriggerClass->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
+		hTriggerClass->GetXaxis()->SetBinLabel(22,"kINT8");
+		hTriggerClass->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
+		hTriggerClass->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
+		hTriggerClass->GetXaxis()->SetBinLabel(28,"kUserDefined");
+		hTriggerClass->GetXaxis()->SetBinLabel(29,"kTRD");
+		hTriggerClass->GetXaxis()->SetBinLabel(30,"kFastOnly");
+		hTriggerClass->GetXaxis()->SetBinLabel(31,"kAnyINT");
+		hTriggerClass->GetXaxis()->SetBinLabel(32,"kAny");
+		hTriggerClass->GetXaxis()->SetBinLabel(33,"V0AND");
+		hTriggerClass->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
+		hTriggerClass->GetXaxis()->SetBinLabel(35,"failed Physics Selection");
+		hTriggerClass->GetXaxis()->SetBinLabel(36,"mimickedTrigger");
+		fHistograms->Add(hTriggerClass);
+	}
+	if(!preCut){
+		hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",35,-0.5,34.5);
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 1,"kMB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 2,"kINT7");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 3,"kMUON");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 4,"kHighMult");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 5,"kEMC1");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 6,"kCINT5");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 7,"kCMUS5/kMUSPB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 8,"kMUSH7/kMUSHPB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel( 9,"kMUL7/kMuonLikePB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(10,"kMUU7/kMuonUnlikePB");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(11,"kEMC7/kEMC8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(12,"kMUS7");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(13,"kPHI1");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(14,"kPHI7/kPHI8/kPHOSPb");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(15,"kEMCEJE");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(16,"kEMCEGA");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(17,"kCentral");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(18,"kSemiCentral");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(19,"kDG5");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(20,"kZED");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(21,"kSPI7/kSPI");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(22,"kINT8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(23,"kMuonSingleLowPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(24,"kMuonSingleHighPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(25,"kMuonLikeLowPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(26,"kMuonUnlikeLowPt8");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(27,"kMuonUnlikeLowPt0");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(28,"kUserDefined");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(29,"kTRD");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(30,"kFastOnly");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(31,"kAnyINT");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(32,"kAny");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
+		hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
+		fHistograms->Add(hTriggerClassSelected);
+		
+		if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){
+			hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",10,-0.5,9.5);
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 3,"kEMC1");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel(	4,"kEMC7");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 5,"kEMCEJE");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 6,"kEMCEJ1");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 7,"kEMCEJ2");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 8,"kEMCEGA");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 9,"kEMCEG1");
+			hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 10,"kEMCEG2");
+			fHistograms->Add(hTriggerClassesCorrelated);
+		}
+		
+	}
+	TH1::AddDirectory(kTRUE);
 }
 
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent){
-   // Process Event Selection
+	// Process Event Selection
 
-   Int_t cutindex=0;
-   if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-   cutindex++;
+	Int_t cutindex=0;
+	if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+	cutindex++;
 
-   // Check for MC event
-   Bool_t isMC = kFALSE;
-   if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
-      // Check if MC event is correctly loaded
-      AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-      if (!mcHandler){
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      if (!mcHandler->InitOk() ){
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      if (!mcHandler->TreeK() ){
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      if (!mcHandler->TreeTR() ) {
-         fEventQuality = 2;
-         return kFALSE;
-      }
-      isMC = kTRUE;
-   }
+	// Check for MC event
+	Bool_t isMC = kFALSE;
+	if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
+		// Check if MC event is correctly loaded
+		AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+		if (!mcHandler){
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		if (!mcHandler->InitOk() ){
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		if (!mcHandler->TreeK() ){
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		if (!mcHandler->TreeTR() ) {
+			fEventQuality = 2;
+			return kFALSE;
+		}
+		isMC = kTRUE;
+	}
 
-   
-   
-   // Event Trigger
-//    cout << "before event trigger" << endl;
-   if(!IsTriggerSelected(fInputEvent, isMC )){
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 3;
-      return kFALSE;
-   }
-   cutindex++;
+	
+	
+	// Event Trigger
+	//    cout << "before event trigger" << endl;
+	if(!IsTriggerSelected(fInputEvent, isMC )){
+		if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+		fEventQuality = 3;
+		return kFALSE;
+	}
+	cutindex++;
 
-   if(fInputEvent->IsA()==AliESDEvent::Class()){
-      AliTriggerAnalysis fTriggerAnalysis;// = new AliTriggerAnalysis;
-      fHasV0AND = fTriggerAnalysis.IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0AND);
-      if(fHasV0AND&&hTriggerClass)hTriggerClass->Fill(32);
-   }
-//   cout << "event number " << ((AliESDEvent*)fInputEvent)->GetEventNumberInFile() << " entered"<< endl;
+	if(fInputEvent->IsA()==AliESDEvent::Class()){
+		AliTriggerAnalysis fTriggerAnalysis;// = new AliTriggerAnalysis;
+		fHasV0AND = fTriggerAnalysis.IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0AND);
+		if(fHasV0AND&&hTriggerClass)hTriggerClass->Fill(32);
+	}
+	//   cout << "event number " << ((AliESDEvent*)fInputEvent)->GetEventNumberInFile() << " entered"<< endl;
 
 
-   // Number of Contributors Cut
-   if(GetNumberOfContributorsVtx(fInputEvent)<=0) {
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 5;
-      return kFALSE;
-   }
-   cutindex++;
+	// Number of Contributors Cut
+	if (fEnableVertexCut){
+		if(GetNumberOfContributorsVtx(fInputEvent)<=0) {
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 5;
+			return kFALSE;
+		}
+	}	
+	cutindex++;
 
-   // Z Vertex Position Cut
-   if(!VertexZCut(fInputEvent)){
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 4;
-      return kFALSE;
-   }
-   cutindex++;
+	// Z Vertex Position Cut
+	if (fEnableVertexCut){
+		if(!VertexZCut(fInputEvent)){
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 4;
+			return kFALSE;
+		}	
+	}
+	cutindex++;
 
-   // Pile Up Rejection
+	// Pile Up Rejection
+	if (fIsHeavyIon == 2){
+		if(fUtils->IsFirstEventInChunk(fInputEvent)){
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 6;
+			return kFALSE;
+		}
+		if(fRemovePileUp){
+			if(fUtils->IsPileUpEvent(fInputEvent) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent) ){
+				if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+				fEventQuality = 6;
+				return kFALSE;
+			}
+		}
+	}else if(fRemovePileUp){
+		if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
+			if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+			fEventQuality = 6;
+			return kFALSE;
+		}
+	}
+	cutindex++;
 
-   if(fRemovePileUp){
-      if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
-         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-         fEventQuality = 6;
-         return kFALSE;
-      }
-   }
-   cutindex++;
+	// Centrality Selection
+	if(!IsCentralitySelected(fInputEvent,fMCEvent)){
+		if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+		fEventQuality = 1;
+		return kFALSE;
+	}
+	cutindex++;
 
-   // Centrality Selection
-   if(!IsCentralitySelected(fInputEvent,fMCEvent)){
-      if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      fEventQuality = 1;
-      return kFALSE;
-   }
-   cutindex++;
+	// Fill Event Histograms
+	if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+	if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
+	if(hVertexZ)hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
+	//   if(hCentralityVsNumberOfPrimaryTracks)
+	//      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
+	//                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+	//                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
 
-   // Fill Event Histograms
-   if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-   if(hCentrality)hCentrality->Fill(GetCentrality(fInputEvent));
-   if(hVertexZ)hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
-   if(hCentralityVsNumberOfPrimaryTracks)
-      hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(fInputEvent),
-                                               ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-                                                ->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
-   fEventQuality = 0;
-   return kTRUE;
+	// SPD clusters vs tracklets to check for pileup/background
+	Int_t nClustersLayer0 = fInputEvent->GetNumberOfITSClusters(0);
+	Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
+	Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
+	if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+
+	fEventQuality = 0;
+	return kTRUE;
 }
 
 ///________________________________________________________________________
@@ -686,6 +735,13 @@ Bool_t AliConvEventCuts::SetCut(cutIds cutID, const Int_t value) {
 			UpdateCutString();
 			return kTRUE;
 		} else return kFALSE;		
+	case kVertex:
+		if( SetVertexCut(value)) {
+			fCuts[kVertex] = value;
+			UpdateCutString();
+			return kTRUE;
+		} else return kFALSE;		
+
 	case kNCuts:
 		AliError("Cut id out of range");
 		return kFALSE;
@@ -725,8 +781,10 @@ void AliConvEventCuts::PrintCutsWithValues() {
 			} else if(fSpecialSubTrigger == 1){
 				printf("\t only events where SDD was present will be analysed and triggered by VOAND\n");
 			}    
+			if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps");
 		} else if (fSpecialTrigger > 1){ 
 			printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
+			if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
 		}
 	} else if (fIsHeavyIon == 1){ 
 		printf("Running in PbPb mode \n");
@@ -753,7 +811,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
 		} else if (fSpecialTrigger > 1){
 			printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
 			printf("\n\t        SpecialTrigger is:  %s\n", fSpecialTriggerName.Data());
-			printf("\t        SpecialSubTrigger is: %s\n\n", fSpecialSubTriggerName.Data());
+			printf("\t        SpecialSubTrigger is: %s\n", fSpecialSubTriggerName.Data());
+			if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
 		}
 	} else if (fIsHeavyIon == 2){
 		printf("Running in pPb mode \n");
@@ -769,12 +828,17 @@ void AliConvEventCuts::PrintCutsWithValues() {
 			printf("\t only events triggered by kINT7 will be analysed \n");
 		} else if (fSpecialTrigger > 1){ 
 			printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
+			if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
 		}
 	}
+	if (fEnableVertexCut) printf("\t Vertex cut with |Z_{vtx}| <%2.2f \n",fMaxVertexZ);
+		else printf("\t No vertex cut \n");
+		
 	printf("MC event cuts: \n");
 	if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
 		else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
 		else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
+	printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);	
 }
 
 ///________________________________________________________________________
@@ -939,7 +1003,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			break;	
 		case 3: //V0OR with SDD requested (will only work with LHC11a dataset)
 			fSpecialSubTrigger=1; 
-			cout << "V0OR with SDD requested" << endl;	    
+// 			cout << "V0OR with SDD requested" << endl;	    
 			break;
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
@@ -985,55 +1049,55 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CVHN";
-			cout << "kCentralOpen" << endl;
+// 			cout << "kCentralOpen" << endl;
 			break;
 		case 2: // kCentral - T00 +- 10 cm
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CCENT";
-			cout << "kCentralVertex" << endl;
+// 			cout << "kCentralVertex" << endl;
 			break;
 		case 3: // kCentral - both
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CVHN|CCENT|CSEMI|CVLN";
-			cout << "kCentral both" << endl;
+// 			cout << "kCentral both" << endl;
 			break;
 		case 4: // kSemiCentral - no vertex restriction
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CVLN";
-			cout << "kSemiCentralOpen" << endl;
+// 			cout << "kSemiCentralOpen" << endl;
 			break;
 		case 5: // kSemiCentral - T00 +- 10 cm
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CSEMI";
-			cout << "kSemiCentralVertex" << endl;
+// 			cout << "kSemiCentralVertex" << endl;
 			break;
 		case 6: // kSemiCentral - both
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CSEMI%CVLN";
-			cout << "kSemiCentral both" << endl;
+// 			cout << "kSemiCentral both" << endl;
 			break;
 		case 7: // kMB
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPBI1_|CPBI1-";
-			cout << "kMB 1" << endl;
+// 			cout << "kMB 1" << endl;
 			break;			
 		case 8: // kMB
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPBI2_|CPBI2-";
-			cout << "kMB 2" << endl;
+// 			cout << "kMB 2" << endl;
 			break;			
 		case 9: // kMB
 			fSpecialSubTrigger=1; 
 			fNSpecialSubTriggerOptions=1;
 			fSpecialSubTriggerName="CPBI2_@CPBI2-@CPBI2_@CPBI2-";
-			cout << "kMB both" << endl;
+// 			cout << "kMB both" << endl;
 			break;	
 		default:
 			AliError("Warning: Special Subtrigger Class Not known");
@@ -1344,6 +1408,42 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
 	return kTRUE;
 }
 
+///________________________________________________________________________
+Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
+
+	switch(vertexCut){
+	case 0: // no Vertex required // NOT fully working yet
+		fEnableVertexCut 	= kFALSE;	 
+		fMaxVertexZ 		= 1000;
+		break; 
+	case 1: // vertex within +-15 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 15;
+		break; 
+	case 2: // vertex within +-12.5 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 12.5;
+		break; 
+	case 3: // vertex within +-10 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 10.0;
+		break; 
+	case 4: // vertex within +-7.5 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 7.5;
+		break; 
+	case 5: // vertex within +-5 cm
+		fEnableVertexCut 	= kTRUE;	 
+		fMaxVertexZ 		= 5.;
+		break; 
+	default:
+		AliError(Form("Vertex Cut not defined %d",vertexCut));
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+
 //-------------------------------------------------------------
 Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 {   // Get Event Centrality
@@ -1513,9 +1613,7 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
 		if (abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
 	}						
 	if (fIsHeavyIon == 2){
-		if(fUtils->IsFirstEventInChunk(event)) return kFALSE;
 		if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
-		if(fUtils->IsPileUpEvent(event)) return kFALSE;
 	}
 
 	return kTRUE;
@@ -1575,10 +1673,15 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	Bool_t headerFound 					= kFALSE;
 	AliStack *fMCStack 					= 0x0;
 	TClonesArray *fMCStackAOD 			= 0x0;
-	weight = 1;
-	
+	weight 								= -1;
+	fMaxPtJetMC 						= 0;
 	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
-	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC12a15a") != 0) return kTRUE;
+	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
+		periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
+		periodName.CompareTo("LHC13b4_fix") != 0 && periodName.CompareTo("LHC13b4_plus") != 0 ){
+		weight = 1;
+		return kTRUE;
+	}
 
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		if(dynamic_cast<AliMCEvent*>(MCEvent)){
@@ -1616,31 +1719,43 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					dynamic_cast<AliGenPythiaEventHeader*>(gh)->TriggerJet(ijet, tmpjet);
 					jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
 					//Compare jet pT and pt Hard
-					if(jet->Pt() > 3 * ptHard){
+					if(jet->Pt() > fMaxFacPtHard * ptHard){
 						eventAccepted= kFALSE;
 					}	
-					if (periodName.CompareTo("LHC15a3b") == 0 ){
-						Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
-															21,	28, 36, 45, 57, 
-															70, 85, 1000};
-						Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
-															1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
-															1.933238e-05, 1.562895e-05};
-						Int_t bin = 0;
-						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-						if (bin < 12) weight = weightsBins[bin];
-					}
-					if (periodName.CompareTo("LHC15a3a") == 0 ){
-						Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
-															84,		117, 	152,	191, 	1000};
-						Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
-															6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
-						Int_t bin = 0;
-						while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-						if (bin < 9) weight = weightsBins[bin];
-					}
-				}
-				return eventAccepted;
+					if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
+				}	
+				if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
+					Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
+														21,	28, 36, 45, 57, 
+														70, 85, 1000};
+					Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
+														1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
+														1.933238e-05, 1.562895e-05};
+					Int_t bin = 0;
+					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+					if (bin < 12) weight = weightsBins[bin];
+				} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
+					Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
+														84,		117, 	152,	191, 	1000};
+					Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+														6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
+					Int_t bin = 0;
+					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+					if (bin < 9) weight = weightsBins[bin];
+				} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
+					Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
+														84,		117, 	152,	191,  	234,
+														1000};
+					Double_t weightsBins[10] 		= {	2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
+														5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
+					Int_t bin = 0;
+					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+					if (bin < 10) weight = weightsBins[bin];
+				} else {
+					weight = 1;
+				}	
+				if (weight == -1) return kFALSE;
+				else return eventAccepted;
 			} 	
 		}		
 	} else {		
@@ -1656,31 +1771,44 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 				dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->TriggerJet(ijet, tmpjet);
 				jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
 				//Compare jet pT and pt Hard
-				if(jet->Pt() > 3 * ptHard){
+				if(jet->Pt() > fMaxFacPtHard * ptHard){
 					eventAccepted= kFALSE;
 				}	
-				if (periodName.CompareTo("LHC15a3b") == 0 ){
-					Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
-														21,	28, 36, 45, 57, 
-														70, 85, 1000};
-					Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
-														1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
-														1.933238e-05, 1.562895e-05};
-					Int_t bin = 0;
-					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-					if (bin < 12) weight = weightsBins[bin];
-				}
-				if (periodName.CompareTo("LHC15a3a") == 0 ){
-					Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
-														84,		117, 	152,	191, 	1000};
-					Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
-														6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
-					Int_t bin = 0;
-					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-					if (bin < 9) weight = weightsBins[bin];
-				}
-			}
-			return eventAccepted;
+				if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
+			}	
+			if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
+				Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
+													21,	28, 36, 45, 57, 
+													70, 85, 1000};
+				Double_t weightsBins[12] 		= {	7.858393e-03, 4.718691e-03, 4.077575e-03, 2.814527e-03, 1.669625e-03,
+													1.007535e-03, 4.536554e-04, 2.111041e-04, 1.094840e-04, 4.404973e-05,
+													1.933238e-05, 1.562895e-05};
+				Int_t bin = 0;
+				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+				if (bin < 12) weight = weightsBins[bin];
+			} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
+				Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
+													84,		117, 	152,	191, 	1000};
+				Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+													6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
+				Int_t bin = 0;
+				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+				if (bin < 9) weight = weightsBins[bin];
+			} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
+				Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
+													84,		117, 	152,	191,  	234,
+													1000};
+				Double_t weightsBins[10] 		= {	2.24185e-6 , 2.48463e-7, 2.23171e-8, 2.43667e-9, 3.29934e-10,
+													5.34592e-11, 1.00937e-11, 2.6493e-12, 8.53912e-13, 5.43077e-13};
+				Int_t bin = 0;
+				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+				if (bin < 10) weight = weightsBins[bin];
+			} else {
+				weight = 1;
+			}	
+			
+			if (weight == -1) return kFALSE;
+			else return eventAccepted;
 		} else {
 			return kFALSE;
 		}	
@@ -1688,6 +1816,63 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	
 	return kFALSE;
 }
+
+///________________________________________________________________________
+// Analysing Jet-Jet MC's 
+///________________________________________________________________________
+Float_t AliConvEventCuts::GetPtHard(AliVEvent *MCEvent){
+	AliGenCocktailEventHeader *cHeader 	= 0x0;
+	AliAODMCHeader *cHeaderAOD 			= 0x0;
+	Bool_t headerFound 					= kFALSE;
+	AliStack *fMCStack 					= 0x0;
+	TClonesArray *fMCStackAOD 			= 0x0;
+	
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();	
+	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
+		periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
+		periodName.CompareTo("LHC13b4_fix") != 0 && periodName.CompareTo("LHC13b4_plus") != 0 ) return -1;
+
+	if(MCEvent->IsA()==AliMCEvent::Class()){
+		if(dynamic_cast<AliMCEvent*>(MCEvent)){
+			cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+			if(cHeader) headerFound 	= kTRUE;
+			fMCStack 					= dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+		}	
+	}
+	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
+		cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+		fMCStackAOD 					= dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		if(cHeaderAOD) headerFound 		= kTRUE;
+	}
+	
+	if(headerFound){
+		TList *genHeaders 				= 0x0;
+		if(cHeader) genHeaders 			= cHeader->GetHeaders();
+		if(cHeaderAOD){
+			genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+			if(genHeaders->GetEntries()==1){
+				return -1;
+			}
+		}
+		AliGenEventHeader* gh 			= 0;
+		for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+			gh 						= (AliGenEventHeader*)genHeaders->At(i);
+			TString GeneratorName 	= gh->GetName();
+			if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
+				return dynamic_cast<AliGenPythiaEventHeader*>(gh)->GetPtHard();
+			} 	
+		}		
+	} else {		
+		AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
+		TString eventHeaderName 		= eventHeader->ClassName();
+		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+			return dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+		}	
+	}	
+	
+	return -1;
+}
+
 
 ///________________________________________________________________________
 Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
@@ -1707,13 +1892,21 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 									197469, 197692 	 			  // LHC13g
 	};
 	
-	Double_t thresholdEMCalL0[34] = {2.11, 3.43, 1.71, 2.05,   // LHC11a
-									 3.43, 1.94,				  // LHC11a		
-									 3.39, 4.01, 5.25, 5.5, 	  // LHC11b, LHC11c, LHC11d
+	Double_t thresholdEMCalL0[34] = {2.11, 3.43, 1.71, 2.05,   // LHC11a 7 TeV
+									 3.43, 				  // LHC11a	2.76TeV
+									 1.94, 3.39, 4.01, 5.25, 5.5, 	  // LHC11b, LHC11c, LHC11d
 									 2.05, 5.50, 2.05, 5.50, 2.05, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71,
 									 2.01, 1.75, 1.52, 2.01, 1.52, 2.01,      
-									 3.02,
+									 3.2,
 									 2.01 
+	};
+	Double_t spreadEMCalL0[34] = 	{0., 0., 0, 0,   // LHC11a 7TeV
+									 0.7, 				  // LHC11a 2.76TeV		
+									 0., 0., 0., 0., 0., 	  // LHC11b, LHC11c, LHC11d
+									 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+									 0., 0., 0., 0., 0., 0.,      
+									 0.1,
+									 0.1 
 	};
 
 	Int_t runRangesEMCalL1[4] = {   179796, 					  // LHC12c-i
@@ -1721,14 +1914,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 									197469, 197692 	 			  // LHC13g
 	};
 	
-	Double_t thresholdEMCalL1[3] = { 8.398, 6, 4.91};
+	Double_t thresholdEMCalL1[3] = { 8.398, 11.5, 6.};
+	Double_t spreadEMCalL1[3] = { 0., 0.5, 0.4};
 	
 	Int_t runRangesEMCalL1G2[3] = { 195180,						  // LHC13b-f	
 									197469, 197692 	 			  // LHC13g
 	};
 	
-	Double_t thresholdEMCalL1G2[2] = { 4, 3.23};
-
+	Double_t thresholdEMCalL1G2[2] = { 7.2, 3.9};
+	Double_t spreadEMCalL1G2[2] = { 0.3, 0.2};
+	
 	Int_t runnumber = fInputEvent->GetRunNumber();	
 	
 	if (fSpecialTrigger == 5 ){
@@ -1740,6 +1935,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 		}
 		if (binRun==34) return kFALSE;
 		Double_t threshold = thresholdEMCalL0[binRun];
+		
+		if (spreadEMCalL0[binRun] != 0.){
+			TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+			triggerSmearing->SetParameter(0, 1/(spreadEMCalL0[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+			triggerSmearing->SetParameter(1, thresholdEMCalL0[binRun]);
+			triggerSmearing->SetParameter(2, spreadEMCalL0[binRun]);
+			threshold = triggerSmearing->GetRandom();
+			delete triggerSmearing;
+		}	
+		
 // 		cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
 		
 		Int_t nclus = 0;
@@ -1774,6 +1979,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 			}	
 			if (binRun==3) return kFALSE;
 			Double_t threshold = thresholdEMCalL1[binRun];
+
+			if (spreadEMCalL1[binRun] != 0.){
+				TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+				triggerSmearing->SetParameter(0, 1/(spreadEMCalL1[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+				triggerSmearing->SetParameter(1, thresholdEMCalL1[binRun]);
+				triggerSmearing->SetParameter(2, spreadEMCalL1[binRun]);
+				threshold = triggerSmearing->GetRandom();
+				delete triggerSmearing;
+			}	
+			
 // 			cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
 			
 			Int_t nclus = 0;
@@ -1803,6 +2018,14 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 			}	
 			if (binRun==2) return kFALSE;
 			Double_t threshold = thresholdEMCalL1G2[binRun];
+			if (spreadEMCalL1G2[binRun] != 0.){
+				TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
+				triggerSmearing->SetParameter(0, 1/(spreadEMCalL1G2[binRun]*TMath::Sqrt(TMath::Pi()*2)));
+				triggerSmearing->SetParameter(1, thresholdEMCalL1G2[binRun]);
+				triggerSmearing->SetParameter(2, spreadEMCalL1G2[binRun]);
+				threshold = triggerSmearing->GetRandom();
+				delete triggerSmearing;
+			}				
 // 			cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
 			
 			Int_t nclus = 0;
@@ -1855,7 +2078,14 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 			else {
 				if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
 				else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-				else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC12f") == 0  || periodName.CompareTo("LHC12g") == 0  || periodName.CompareTo("LHC12h") == 0  || periodName.CompareTo("LHC12i") == 0  ||periodName.CompareTo("LHC13g") == 0 ) {
+				else if (	periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || 
+							periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || 
+							periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || 
+							periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || 
+							periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC12f") == 0  || 
+							periodName.CompareTo("LHC12g") == 0  || periodName.CompareTo("LHC12h") == 0  || 
+							periodName.CompareTo("LHC12i") == 0  ||periodName.CompareTo("LHC13g") == 0 ) {
+					// fixing default trigger to kINT7 as no data with kMB was taken!!!
 					fOfflineTriggerMask = AliVEvent::kINT7;      
 	// 				cout << "will take kINT7 as trigger mask" << endl; 
 				}	
@@ -1880,6 +2110,85 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 // 				}
 				if (fSpecialSubTrigger>0 && !isMC){
 					if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 0;
+					if (fRejectTriggerOverlap){						
+						// trigger rejection EMC1,7,8
+						if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC7") == 0){
+							if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+						} else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC1") == 0){
+							if (fInputHandler->IsEventSelected() & AliVEvent::kMB) isSelected = 0;
+						} else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC8") == 0){
+							if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+						}
+						// trigger rejection EGA
+						if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EGA") == 0){
+							if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+							if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+						} else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EGA") == 0){
+							if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+							if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+						}
+						// trigger rejection EG1 & EG2
+						if (periodName.CompareTo("LHC13g") == 0){
+							// EG1 is the trigger with the highest threshold
+							if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
+// 								cout << firedTrigClass.Data() << endl;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+// 								cout << "INT7? " << isSelected << endl;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+// 								cout << "CEM7? " << isSelected << endl;
+								if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+// 								cout << "7EG2? " << isSelected << endl;
+							} else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+								if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+							} else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
+// 								cout << firedTrigClass.Data() << endl;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+// 								cout << "INT7? " << isSelected << endl;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+// 								cout << "CEM7? " << isSelected << endl;
+							} else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+							}	
+						} else {
+							// EG2 is the trigger with the highest threshold
+							if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+								if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
+							} else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+								if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
+							} else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+							} else 	if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+							}
+						}
+					}
+					if (isSelected != 0 ){
+// 						cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
+						if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
+							if (hTriggerClassesCorrelated){
+								if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
+								if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassesCorrelated->Fill(1);
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassesCorrelated->Fill(2);
+								if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassesCorrelated->Fill(3);
+								if (firedTrigClass.Contains("7EJE") || firedTrigClass.Contains("8EJE")) hTriggerClassesCorrelated->Fill(4);
+								if (firedTrigClass.Contains("7EJ1") || firedTrigClass.Contains("8EJ1")) hTriggerClassesCorrelated->Fill(5);
+								if (firedTrigClass.Contains("7EJ2") || firedTrigClass.Contains("8EJ2")) hTriggerClassesCorrelated->Fill(6);
+								if (firedTrigClass.Contains("7EGA") || firedTrigClass.Contains("8EGA")) hTriggerClassesCorrelated->Fill(7);
+								if (firedTrigClass.Contains("7EG1") || firedTrigClass.Contains("8EG1")) hTriggerClassesCorrelated->Fill(8);
+								if (firedTrigClass.Contains("7EG2") || firedTrigClass.Contains("8EG2")) hTriggerClassesCorrelated->Fill(9);
+							}
+						}
+					}
+					
 				} else if (isMC){
 					if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
 // 						isSelected = 0;
@@ -2322,7 +2631,12 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 		return 1; // Check Centrality --> Not Accepted => eventQuality = 1
 		
 	if(isHeavyIon == 0 && GetIsFromPileup()){
-		if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.)){
+		if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) || fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+			return 6; // Check Pileup --> Not Accepted => eventQuality = 6
+		}
+	}
+	if(isHeavyIon == 2 && GetIsFromPileup()){
+		if(fUtils->IsPileUpEvent(InputEvent) || fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
 			return 6; // Check Pileup --> Not Accepted => eventQuality = 6
 		}
 	}
@@ -2387,10 +2701,15 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	if(hCentrality)hCentrality->Fill(GetCentrality(InputEvent));
 
 	if(hVertexZ)hVertexZ->Fill(InputEvent->GetPrimaryVertex()->GetZ());
-	if(hCentralityVsNumberOfPrimaryTracks)
-		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
-												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
-												->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());     
+//	if(hCentralityVsNumberOfPrimaryTracks)
+//		hCentralityVsNumberOfPrimaryTracks->Fill(GetCentrality(InputEvent),
+//												((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()
+//												->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks());
+
+	Int_t nClustersLayer0 = InputEvent->GetNumberOfITSClusters(0);
+	Int_t nClustersLayer1 = InputEvent->GetNumberOfITSClusters(1);
+	Int_t nTracklets      = InputEvent->GetMultiplicity()->GetNumberOfTracklets();
+	if(hSPDClusterTrackletBackground) hSPDClusterTrackletBackground->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
 	return 0;
 }

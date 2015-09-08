@@ -148,16 +148,16 @@ protected:
      * @param vzMax       Maximum IP z coordinate
      * @param data        Data histogram 
      * @param mc          MC histogram
-     * @param checkPileup If true, check for pile-up (global flag)
+     * @param filter      If true, check for pile-up (global flag)
      */
     virtual Bool_t ProcessEvent(const AliAODForwardMult* forward, 
-				Int_t                    triggerMask,
+				UInt_t                   triggerMask,
 				Bool_t                   isZero,
 				Double_t                 vzMin, 
 				Double_t                 vzMax, 
 				const TH2D*              data, 
 				const TH2D*              mc,
-				Int_t                    filter);
+				UInt_t                   filter);
     /** 
      * End of processing 
      * 

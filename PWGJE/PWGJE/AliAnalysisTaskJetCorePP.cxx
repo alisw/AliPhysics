@@ -149,6 +149,8 @@ fhDeltaPhiMultTriggersHigh(0x0),
 fhDeltaPhiMultTriggersInclLow(0x0),
 fhDeltaPhiMultTriggersInclHigh(0x0),
 fhInclTrigCounter(0x0),
+fhDeltaPtConeBg(0x0),
+fhDeltaPtMedianBg(0x0),
 //fHJetPtRaw(0x0),
 //fHLeadingJetPtRaw(0x0), 
 //fHDphiVsJetPtAll(0x0), 
@@ -323,6 +325,8 @@ fhDeltaPhiMultTriggersHigh(0x0),
 fhDeltaPhiMultTriggersInclLow(0x0),
 fhDeltaPhiMultTriggersInclHigh(0x0),
 fhInclTrigCounter(0x0),
+fhDeltaPtConeBg(0x0),
+fhDeltaPtMedianBg(0x0),
 //fHJetPtRaw(0x0),
 //fHLeadingJetPtRaw(0x0), 
 //fHDphiVsJetPtAll(0x0), 
@@ -503,6 +507,8 @@ fhDeltaPhiMultTriggersHigh(a.fhDeltaPhiMultTriggersHigh),
 fhDeltaPhiMultTriggersInclLow(a.fhDeltaPhiMultTriggersInclLow),
 fhDeltaPhiMultTriggersInclHigh(a.fhDeltaPhiMultTriggersInclHigh),
 fhInclTrigCounter(a.fhInclTrigCounter),
+fhDeltaPtConeBg(a.fhDeltaPtConeBg),
+fhDeltaPtMedianBg(a.fhDeltaPtMedianBg),
 //fHJetPtRaw(a.fHJetPtRaw),
 //fHLeadingJetPtRaw(a.fHLeadingJetPtRaw),
 //fHDphiVsJetPtAll(a.fHDphiVsJetPtAll),
@@ -862,6 +868,9 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fhDeltaPhiMultTriggersInclHigh = (TH1D*) fhDeltaPhiMultTriggersLow->Clone("fhDeltaPhiMultTriggersInclHigh");
    fhInclTrigCounter = new TH1D("fhInclTrigCounter","fhInclTrigCounter",1,0,1);
 
+   fhDeltaPtConeBg   = new TH1D("fhDeltaPtConeBg","fhDeltaPtConeBg",2000,-20,80);
+   fhDeltaPtMedianBg = new TH1D("fhDeltaPtMedianBg","fhDeltaPtMedianBg",2000,-20,80);
+
    if(!fIsKine){
       fOutputList->Add(fhJetPhi);
       fOutputList->Add(fhTriggerPhi);
@@ -891,6 +900,10 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fOutputList->Add(fhDeltaPhiMultTriggersInclHigh);
       fOutputList->Add(fhInclTrigCounter);
    }
+   fOutputList->Add(fhDeltaPtConeBg);   
+   fOutputList->Add(fhDeltaPtMedianBg); 
+
+
    // raw spectra of INCLUSIVE jets  
    //Centrality, pTjet, A
    /*const Int_t dimRaw   = 3;
@@ -1408,6 +1421,9 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
 
       //Estimate rho from cell median minus jets
       EstimateBgRhoMedian(fListJetsBg, &particleList, rhoFromCellMedian,0); //real data
+
+      //Delta Pt
+      FillDeltaPt(fListJets, &particleList, rhoFromCellMedian, rhoCone);
    }
    //==============  analyze generator level MC  ================ 
    TList particleListGen; //list of tracks in MC
@@ -2647,7 +2663,10 @@ void AliAnalysisTaskJetCorePP::EstimateBgCone(TList *listJet, TList* listPart,  
          phiLeading = signaljet->Phi();
          etaLeading = signaljet->Eta();
       }
-   }   
+   }  
+   if( TMath::Abs(etaLeading) >  fTrackEtaCut - fBgConeR){
+      etaLeading  =  (etaLeading > 0) ? (fTrackEtaCut - fBgConeR) :  (-fTrackEtaCut + fBgConeR);
+   }
   
    Double_t phileftcone  = phiLeading + TMath::Pi()/2; 
    Double_t phirightcone = phiLeading - TMath::Pi()/2; 
@@ -2717,4 +2736,69 @@ void AliAnalysisTaskJetCorePP::ReadTClonesArray(TString bname, TList *list){
    }
 
    return;
+}
+
+//__________________________________________________________________
+void AliAnalysisTaskJetCorePP::FillDeltaPt(TList *jetList, TList *trkList, Double_t rhoMedian, Double_t rhoCones){
+   //Estimate magnitude of background fluctuations in givent event
+
+   if(!jetList) return;
+   Int_t njet  = jetList->GetEntries();
+   Double_t pTleading  = 0.0;
+   Double_t phiLeading = 1000.;
+   Double_t etaLeading = 1000.;
+   Double_t pTSubleading  = 0.0;
+   Double_t phiSubLeading = 1000.;
+   Double_t etaSubLeading = 1000.;
+   
+   for(Int_t jsig=0; jsig < njet; jsig++){ 
+      AliAODJet* signaljet = (AliAODJet*)(jetList->At(jsig));
+      if(!signaljet) continue;
+      if((signaljet->Eta()<fJetEtaMin) && (fJetEtaMax<signaljet->Eta())) continue; //acceptance cut
+      if(signaljet->Pt() >= pTleading){ // find leading + subleading jet
+
+         pTSubleading  = pTleading;
+         phiSubLeading = phiLeading;
+         etaSubLeading = etaLeading;
+
+         pTleading  = signaljet->Pt();
+         phiLeading = signaljet->Phi();
+         etaLeading = signaljet->Eta();
+      }else if(signaljet->Pt() >= pTSubleading){
+         pTSubleading  = signaljet->Pt();
+         phiSubLeading = signaljet->Phi();
+         etaSubLeading = signaljet->Eta();
+      }
+   }  
+
+   //Generate random cone far away from leading jet+subleading jet, at least 2*R
+   Double_t rndphi = TMath::Pi() *  fRandom->Uniform(-1,1); 
+   Double_t rndeta = fRandom->Uniform(fJetEtaMin,fJetEtaMax);
+   Int_t iter = 0; 
+   
+   while( (sqrt( pow(RelativePhi(rndphi, phiLeading),2)   + pow(etaLeading -rndeta,2)) <  2*fJetParamR) ||
+          (sqrt( pow(RelativePhi(rndphi, phiSubLeading),2)+ pow(etaSubLeading -rndeta,2)) <  2*fJetParamR)){
+      rndphi = TMath::Pi() *  fRandom->Uniform(-1,1); 
+      rndeta = fRandom->Uniform(fJetEtaMin,fJetEtaMax); 
+      iter++;
+
+      if(iter>1e6) break;
+   }
+
+   //Sum pT of particles in radom cone
+   Double_t sumPt = 0., dp, de;
+   Int_t ntrk = trkList->GetEntries();
+   for(Int_t itrk=0; itrk < ntrk; itrk++){ 
+      AliVParticle *track = (AliVParticle*) trkList->At(itrk);
+      if(!track){
+         continue;
+      }
+      
+      dp = RelativePhi( rndphi, track->Phi());
+      de = rndeta - track->Eta();
+      if( sqrt(dp*dp + de*de)< fJetParamR ) sumPt += track->Pt();
+   }
+
+   fhDeltaPtConeBg->Fill(sumPt - TMath::Pi()*fJetParamR * fJetParamR * rhoCones); 
+   fhDeltaPtMedianBg->Fill(sumPt - TMath::Pi()*fJetParamR * fJetParamR * rhoMedian);
 }

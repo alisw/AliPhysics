@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// 
+//
 // A much longer description of track info
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,6 @@ AliMEStrackInfo::AliMEStrackInfo()
   ,fY(0.)
   ,fdEdx(0.)
   ,fBeta(0.)
-  ,fNclustersTPC(-1)
   ,fPID()
   ,fFilterParam(NULL)
 {
@@ -60,7 +59,6 @@ AliMEStrackInfo::AliMEStrackInfo(const AliMEStrackInfo &t)
 ,fY(t.fY)
 ,fdEdx(t.fdEdx)
 ,fBeta(t.fBeta)
-,fNclustersTPC(t.fNclustersTPC)
 ,fPID()
 ,fFilterParam(NULL)
 {
@@ -71,11 +69,11 @@ AliMEStrackInfo::AliMEStrackInfo(const AliMEStrackInfo &t)
 	fPID.fTOFmisProb = t.fPID.fTOFmisProb;
 	memcpy(fPID.fProb, t.fPID.fProb, kNdet*AliPID::kSPECIES*sizeof(Double_t));
 	memcpy(fPID.fRaw, t.fPID.fRaw, kNdet*sizeof(Double_t));
-	
+
 	if(t.fFilterParam){
 		fFilterParam = new AliMESfilterParam();
-		fFilterParam->fNcl = t.fFilterParam->fNcl; 
-		fFilterParam->fChi2Cl = t.fFilterParam->fChi2Cl; 
+		fFilterParam->fNcl = t.fFilterParam->fNcl;
+		fFilterParam->fChi2Cl = t.fFilterParam->fChi2Cl;
 	}
 	memcpy(fDCA, t.fDCA, 3*sizeof(Double_t));
 }
@@ -97,12 +95,11 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
   ,fY(0.)
   ,fdEdx(t->GetTPCsignal())
   ,fBeta(-1.)
-  ,fNclustersTPC(t->GetTPCclusters(0))
   ,fPID()
   ,fFilterParam(NULL)
 {
   //
-  // Constructor from reconstructed track 
+  // Constructor from reconstructed track
   // to be checked and further implemented
   //
   if(fTOFbc==AliVTrack::kTOFBCNA) fTOFbc=0; // reset TOF bc
@@ -167,21 +164,20 @@ AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliStack *mc)
   ,fFilterId(0)
   ,fDetStat(0)
   ,fPt((t->Charge()>0?1:-1)*t->Pt())
-  ,fP(t->P()) 
+  ,fP(t->P())
   ,fPz(t->Pz())
   ,fEta(t->Eta())
   ,fPhi(t->Phi())
   ,fY(t->Y())
   ,fdEdx(-1.)
   ,fBeta(-1.)
-  ,fNclustersTPC(-1)
   ,fPID()
   ,fFilterParam(NULL)
 {
   //
-  // Constructor from reconstructed track 
+  // Constructor from reconstructed track
   // to be checked and further implemented
-  
+
   memset(fPosition, 0, 3*sizeof(Double_t));
   memset(fDCA, 0, 2*sizeof(Double_t));
 
@@ -205,7 +201,7 @@ AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliStack *mc)
   }
 
 //   AliInfo(Form("MC charge: %i\n", TMath::Sign(1,(t->Charge()))));
-}  
+}
 
 //______________________________________________________________
 AliMEStrackInfo::~AliMEStrackInfo()

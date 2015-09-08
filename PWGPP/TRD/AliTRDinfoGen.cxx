@@ -474,6 +474,13 @@ void AliTRDinfoGen::UserExec(Option_t *){
   AliDebug(2, "+++++++++++++++++++++++++++++++++++++++");
   AliDebug(2, Form("Analyse Ev[%d]", fESDev->GetEventNumberInFile()));
 
+  // event selection based on vertex cuts and trigger
+  if(UseLocalEvSelection() && !fEventCut->IsSelected(fESDev, IsCollision())){
+    AliDebug(2, "Event not selected");
+    return;
+  }
+
+
   // set reco param valid for this event
   TH1 *h = (TH1I*)fContainer->At(kEvType);
   if(!fRecos){
@@ -507,11 +514,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
   for(Int_t iet(evTriggers->GetEntriesFast()); iet--;) ti->Add((*evTriggers)[iet]->GetName());
   evTriggers->Delete(); delete evTriggers;
 
-  // event selection based on vertex cuts and trigger
-  if(UseLocalEvSelection() && !fEventCut->IsSelected(fESDev, IsCollision())){
-    AliDebug(2, "Event failed selection on vertex and trigger");
-    return;
-  }
 
   if(!fESDfriend){
     AliError("Failed retrieving ESD friend event");

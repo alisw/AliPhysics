@@ -565,7 +565,15 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
         
         fEMCALGeo->SetMisalMatrix(fMatrix[mod],mod) ;  
       }
-            
+      else if(gGeoManager)
+      {
+        AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+        fEMCALGeo->SetMisalMatrix(fEMCALGeo->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+      }
+      else
+      {
+        AliError(Form("Alignment atrix for SM %d is not available",mod));
+      }
     }//SM loop
   }//Load matrices
   else if(!gGeoManager)
@@ -668,6 +676,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitTemperatureCorrections()
     } // SM loop
   }
   else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
+  
+  delete contRFTD; 
 }
 
 

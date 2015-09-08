@@ -19,6 +19,12 @@
 # $1 = raw input filename
 runNum=`echo $1 | cut -d "/" -f 6 | sed 's/^0*//'`
 
+# Exporting variable to define that we are in CPass0 to be used in reconstruction
+export CPass='0'
+
+# Set memory limits to a value lower than the hard site limits to at least get the logs of failing jobs
+ulimit -S -v 3500000
+
 if [ $# -lt 3 ]; then
     # alien Setup
     nEvents=99999999
@@ -88,16 +94,17 @@ echo "* ocdbPath: $ocdbPath"
 echo "* triggerAlias: $triggerAlias"
 echo ""
 
-echo executing aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerAlias\")"
-time aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerAlias\")" &> rec.log
+echo executing aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")"
+time aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")" &> rec.log
 
 exitcode=$?
 
 echo "*! Exit code of recCPass0.C: $exitcode"
 
 if [ $exitcode -ne 0 ]; then
-    exit $exitcode
-fi 
+    echo "recCPass0.C exited with code $exitcode" > validation_error.message
+    exit 10
+fi
 
 mv syswatch.log syswatch_rec.log
 

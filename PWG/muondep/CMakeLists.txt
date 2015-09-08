@@ -30,6 +30,7 @@ set(SRCS
   AliAnalysisTaskPileup.cxx
   AliAnalysisTaskMuonCDBConnect.cxx
   AliAnalysisTaskMuonRefit.cxx
+  AliAnalysisTaskMuonRefitVtx.cxx
   AliAnalysisTriggerScalers.cxx
   AliAnalysisMuMu.cxx
   AliAnalysisMuMuConfig.cxx

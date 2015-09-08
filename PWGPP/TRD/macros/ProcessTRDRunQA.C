@@ -176,6 +176,16 @@ void ProcessTRDRunQA(TString qaFile, Int_t runNumber, TString dataType,
   (*treeStreamer)<< "trending"
                  << "beamIntensityA=" << beamIntensityA
                  << "beamIntensityC=" << beamIntensityC;
+                 
+  // Get the magnetic field polarity
+  Double_t Bfield=-2.;
+  AliGRPManager grpManager;
+  if(grpManager.ReadGRPEntry() && grpManager.SetMagField()){
+    AliMagF *f=TGeoGlobalMagField::Instance()->GetField();
+    Bfield=f->Factor();
+  }                  
+  (*treeStreamer)<< "trending"
+                 << "Bfield=" << Bfield;
 		 
   (*treeStreamer)<< "trending"
                  << "\n";

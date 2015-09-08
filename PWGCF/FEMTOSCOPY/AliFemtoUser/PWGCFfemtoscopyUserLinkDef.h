@@ -38,6 +38,7 @@
 #pragma link C++ class AliFemtoCorrFctnTPCNcls;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiCorrections;
+#pragma link C++ class AliFemtoCorrFctnDYDPhi;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDGV0;
 #pragma link C++ class AliFemtoCutMonitorParticleEtCorr;
@@ -61,3 +62,7 @@
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
 #pragma link C++ class AliFemtoCorrFctnGammaMonitorAlpha+;
 #pragma link C++ class AliFemtoCorrFctn3DPRF+;
+#pragma link C++ class AliFemtoPairCutRadialDistanceAsymmetric+;
+#pragma link C++ class AliFemtoPairCutMergedFraction+;
+#pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimple+;
+#pragma link C++ class AliFemtoCorrFctnDYDPhiSimple+;

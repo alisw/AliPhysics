@@ -52,8 +52,10 @@
 //             Adapted to pPb 5.02 TeV analysis: D. Colella, domenico.colella@ba.infn.it
 //               Aug-Sep 2014
 //               - Added the parameter fCollidingSystem, to distingish between pp and pPb procedures
+//               Aug 2015
+//               - Clarify the usage of SDD selection after the introduction of fCollifingSystem
 //
-//
+//             
 //
 //-----------------------------------------------------------------
 
@@ -120,12 +122,12 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276()
     fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
     fkSDDSelectionOn            (kTRUE),
+    fwithSDD                    (kTRUE),
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
     fkQualityCutTPCrefit        (kTRUE),
     fkQualityCutnTPCcls         (kTRUE),
     fkQualityCutPileup          (kTRUE),
-    fwithSDD                    (kTRUE),
     fMinnTPCcls                 (0),
     fkExtraSelections           (0),
     fVtxRange                   (0),
@@ -216,12 +218,12 @@ AliAnalysisTaskCheckCascadepp276::AliAnalysisTaskCheckCascadepp276(const char *n
     fPIDResponse                (0),
     fkRerunV0CascVertexers      (0),
     fkSDDSelectionOn            (kTRUE),
+    fwithSDD                    (kTRUE),
     fkQualityCutZprimVtxPos     (kTRUE),
     fkQualityCutNoTPConlyPrimVtx(kTRUE),
     fkQualityCutTPCrefit        (kTRUE),
     fkQualityCutnTPCcls         (kTRUE),
     fkQualityCutPileup          (kTRUE),
-    fwithSDD                    (kTRUE),
     fMinnTPCcls                 (0),
     fkExtraSelections           (0),
     fVtxRange                   (0),
@@ -501,7 +503,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
 	fListHistCascade->Add(fHistPVx);
  }
  if(! fHistPVy ){
-        fHistPVy = new TH1F("fHistPVy", "Best PV position in y; y (cm); Events", 2000, -0.5, 0.5);
+        fHistPVy = new TH1F("fHistPVy", "Best PV position in y; y (cm); Events", 4000, -1.0, 1.0);
         fListHistCascade->Add(fHistPVy);
  }
  if(! fHistPVz ){
@@ -513,7 +515,7 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
         fListHistCascade->Add(fHistPVxAnalysis);
  }
  if(! fHistPVyAnalysis ){
-        fHistPVyAnalysis = new TH1F("fHistPVyAnalysis", "Best PV position in y (after events selections); y (cm); Events", 2000, -0.5, 0.5);
+        fHistPVyAnalysis = new TH1F("fHistPVyAnalysis", "Best PV position in y (after events selections); y (cm); Events", 4000, -1.0, 1.0);
         fListHistCascade->Add(fHistPVyAnalysis);
  }
  if(! fHistPVzAnalysis ){
@@ -724,6 +726,11 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
      f2dHistDcaV0ToPrimVertexXivsInvMass = new TH2F("f2dHistDcaV0ToPrimVertexXivsInvMass", "DCA of V0 to Prim. Vertex, in cascade; DCA (cm); Number of Cascades", 200, 0., 1., 400, 1.2, 2.0);
      fListHistCascade->Add(f2dHistDcaV0ToPrimVertexXivsInvMass);
  }
+ // - Usefull string
+ const Char_t *sddstatus = "";
+ if      (fCollidingSystem == "pp" && fkSDDSelectionOn == kTRUE  && fwithSDD == kTRUE)  sddstatus = "_wSDDon";
+ else if (fCollidingSystem == "pp" && fkSDDSelectionOn == kTRUE  && fwithSDD == kFALSE) sddstatus = "_wSDDoff";
+ else if (fCollidingSystem == "pp" && fkSDDSelectionOn == kFALSE && fwithSDD == kFALSE) sddstatus = "_woSDD";
  // - CFContainer PID study Xi minus
  if(!fCFContCascadePIDXiMinus)  {
    const Int_t  lNbSteps      =  7 ;
@@ -733,22 +740,9 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[0] = 100;
    lNbBinsPerVar[1] = 800;
    lNbBinsPerVar[2] = 22;
-   if (fCollidingSystem == "pp" && fkSDDSelectionOn) {
-        if (fwithSDD) fCFContCascadePIDXiMinus = new AliCFContainer(Form("fCFContCascadePIDXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDon",
-                                                                    fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                    "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
-        else if (!fwithSDD) fCFContCascadePIDXiMinus = new AliCFContainer(Form("fCFContCascadePIDXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDoff",
-                                                                    fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                    "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar ); 
-   } else if (fCollidingSystem == "pp" && !fkSDDSelectionOn) {
-        fCFContCascadePIDXiMinus = new AliCFContainer(Form("fCFContCascadePIDXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_woSDD",
-                                                      fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                      "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   } else if (fCollidingSystem == "pPb") {
-        fCFContCascadePIDXiMinus = new AliCFContainer(Form("fCFContCascadePIDXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",
-                                                      fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                      "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   }
+   fCFContCascadePIDXiMinus = new AliCFContainer(Form("fCFContCascadePIDXiMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 "Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDXiMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
    fCFContCascadePIDXiMinus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
@@ -765,7 +759,6 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadePIDXiMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
    fCFContCascadePIDXiMinus->SetVarTitle(1, "M( #Lambda , #pi^{-} ) (GeV/c^{2})");
    fCFContCascadePIDXiMinus->SetVarTitle(2, "Y_{#Xi}");
-   fListHistCascade->Add(fCFContCascadePIDXiMinus);
  }
  // - CFContainer PID study Xi plus
  if (!fCFContCascadePIDXiPlus) {
@@ -776,22 +769,9 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[0] = 100;
    lNbBinsPerVar[1] = 800;
    lNbBinsPerVar[2] = 22;
-   if (fCollidingSystem == "pp" && fkSDDSelectionOn) {
-        if (fwithSDD) fCFContCascadePIDXiPlus = new AliCFContainer(Form("fCFContCascadePIDXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDon",
-                                                                   fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                   "Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar);
-        else if (!fwithSDD) fCFContCascadePIDXiPlus = new AliCFContainer(Form("fCFContCascadePIDXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDoff",
-                                                                         fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                         "Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar);
-   } else if (fCollidingSystem == "pp" && !fkSDDSelectionOn) { 
-        fCFContCascadePIDXiPlus = new AliCFContainer(Form("fCFContCascadePIDXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_woSDD",
-                                                     fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                     "Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar);
-   } else if (fCollidingSystem == "pPb") {
-        fCFContCascadePIDXiPlus = new AliCFContainer(Form("fCFContCascadePIDXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",
-                                                     fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                     "Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar);
-   }
+   fCFContCascadePIDXiPlus = new AliCFContainer(Form("fCFContCascadePIDXiPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 "Pt_{cascade} Vs M_{#bar{#Xi}^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDXiPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
    fCFContCascadePIDXiPlus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
@@ -808,7 +788,6 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadePIDXiPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
    fCFContCascadePIDXiPlus->SetVarTitle(1, "M( #Lambda , #pi^{+} ) (GeV/c^{2})");
    fCFContCascadePIDXiPlus->SetVarTitle(2, "Y_{#Xi}");
-   fListHistCascade->Add(fCFContCascadePIDXiPlus);
  }
  // - CFContainer PID study Omega minus
  if(!fCFContCascadePIDOmegaMinus)  {
@@ -819,22 +798,9 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[0] = 100;
    lNbBinsPerVar[1] = 1000;
    lNbBinsPerVar[2] = 22;
-   if (fCollidingSystem == "pp" && fkSDDSelectionOn) {
-        if (fwithSDD) fCFContCascadePIDOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDon",
-                                                                       fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                       "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-        else if (!fwithSDD) fCFContCascadePIDOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDoff",
-                                                                             fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                             "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   } else if (!fkSDDSelectionOn) {
-        fCFContCascadePIDOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_woSDD",
-                                                         fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                         "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   } else if (fCollidingSystem == "pPb") {
-        fCFContCascadePIDOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",
-                                                         fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                         "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   }
+   fCFContCascadePIDOmegaMinus = new AliCFContainer(Form("fCFContCascadePIDOmegaMinus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 "Pt_{cascade} Vs M_{#Omega^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDOmegaMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
    fCFContCascadePIDOmegaMinus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
@@ -851,7 +817,6 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadePIDOmegaMinus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
    fCFContCascadePIDOmegaMinus->SetVarTitle(1, "M( #Lambda , K^{-} ) (GeV/c^{2})");
    fCFContCascadePIDOmegaMinus->SetVarTitle(2, "Y_{#Omega}");
-   fListHistCascade->Add(fCFContCascadePIDOmegaMinus);
  }
  // - CFContainer PID study Omega plus
  if(!fCFContCascadePIDOmegaPlus)  {
@@ -862,22 +827,9 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[0] = 100;
    lNbBinsPerVar[1] = 1000;
    lNbBinsPerVar[2] = 22; 
-   if (fCollidingSystem == "pp" && fkSDDSelectionOn) {
-        if (fwithSDD) fCFContCascadePIDOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDon",
-                                                                      fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                      "Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-        else if (!fwithSDD) fCFContCascadePIDOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDoff",
-                                                                            fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                            "Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   } else if (fCollidingSystem == "pp" && !fkSDDSelectionOn) {
-        fCFContCascadePIDOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_woSDD",
-                                                        fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                        "Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   } else if (fCollidingSystem == "pPb") {
-        fCFContCascadePIDOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",
-                                                        fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                        "Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
-   }
+   fCFContCascadePIDOmegaPlus = new AliCFContainer(Form("fCFContCascadePIDOmegaPlus_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                                 fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                                 "Pt_{cascade} Vs M_{#bar{#Omega}^{-} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
      //Setting the bin limits 
    fCFContCascadePIDOmegaPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
    fCFContCascadePIDOmegaPlus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
@@ -894,7 +846,6 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadePIDOmegaPlus->SetVarTitle(0, "Pt_{cascade} (GeV/c)");
    fCFContCascadePIDOmegaPlus->SetVarTitle(1, "M( #Lambda , K^{+} ) (GeV/c^{2})");
    fCFContCascadePIDOmegaPlus->SetVarTitle(2, "Y_{#Omega}");  
-   fListHistCascade->Add(fCFContCascadePIDOmegaPlus);
  }
  // - CFContainer: towards the optimisation of topological selections
  if(! fCFContCascadeCuts) {
@@ -923,22 +874,9 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    lNbBinsPerVar[16] = 112;    //Proper lenght of cascade       
    lNbBinsPerVar[17] = 112;    //Proper lenght of V0
    lNbBinsPerVar[18] = 112;    //Distance V0-Xi in transverse plane
-   if (fCollidingSystem == "pp" && fkSDDSelectionOn) {
-        if (fwithSDD) fCFContCascadeCuts = new AliCFContainer(Form("fCFContCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDon",
-                                                              fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                              "Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar);
-        else if (!fwithSDD) fCFContCascadeCuts = new AliCFContainer(Form("fCFContCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_wSDDoff",
-                                                                    fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                                    "Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar);
-   } else if (fCollidingSystem == "pp" && !fkSDDSelectionOn) {
-        fCFContCascadeCuts = new AliCFContainer(Form("fCFContCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f_woSDD",
-                                                fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                "Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar);
-   } else if (fCollidingSystem == "pPb") {
-        fCFContCascadeCuts = new AliCFContainer(Form("fCFContCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f",
-                                                fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks),
-                                                "Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar);
-   }
+   fCFContCascadeCuts = new AliCFContainer(Form("fCFContCascadeCuts_minnTPCcls%i_vtxlim%.1f-%.1f_minptdghtrk%.1f_etacutdghtrk%.1f%s",
+                                           fMinnTPCcls,fVtxRange,fVtxRangeMin,fMinPtCutOnDaughterTracks,fEtaCutOnDaughterTracks,sddstatus),
+                                           "Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar);
      //Setting the bin limits 
      //0 -  DcaXiDaughters
    //Double_t *lBinLim0  = new Double_t[ lNbBinsPerVar[0] + 1 ];
@@ -1036,7 +974,6 @@ void AliAnalysisTaskCheckCascadepp276::UserCreateOutputObjects() {
    fCFContCascadeCuts->SetVarTitle(16, "mL/p (cascade) (cm)");
    fCFContCascadeCuts->SetVarTitle(17, "mL/p (V0) (cm)");
    fCFContCascadeCuts->SetVarTitle(18, "Distance V0-Cascade in transverse plane (cm)");
-   fListHistCascade->Add(fCFContCascadeCuts);
  }
 
  PostData(1, fListHistCascade);
@@ -1127,10 +1064,9 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
   Int_t nTrackMultiplicityAfterSDDSel = 0;
   // - Selection for ESD and AOD
   if (fAnalysisType == "ESD") {
-     if (fkSDDSelectionOn && fCollidingSystem == "pp") {
-        TString trcl = lESDevent->GetFiredTriggerClasses();
-        //cout<<"Fired Trigger Classes: "<<trcl<<endl;
-        if (fwithSDD){
+      TString trcl = lESDevent->GetFiredTriggerClasses();
+      //cout<<"Fired Trigger Classes: "<<trcl<<endl;
+      if (fCollidingSystem == "pp" && fkSDDSelectionOn && fwithSDD) {
           if(!(trcl.Contains("ALLNOTRD"))) {
                cout<<"We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)..."<<endl;
                PostData(1, fListHistCascade);
@@ -1141,7 +1077,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                PostData(6, fCFContCascadeCuts);
                return;
           }
-        } else if (!fwithSDD){
+      } else if (fCollidingSystem == "pp" && fkSDDSelectionOn && !fwithSDD) {
           if((trcl.Contains("ALLNOTRD"))) {
                cout<<"We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)..."<<endl;
                PostData(1, fListHistCascade);
@@ -1152,15 +1088,13 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                PostData(6, fCFContCascadeCuts);
                return;
           }
-        }
-     }
-     // - Take the number of cascades and tracks after the SDD selection
-     ncascadesAfterSDDSel = lESDevent->GetNumberOfCascades();
-     nTrackMultiplicityAfterSDDSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
+      }
+      // - Take the number of cascades and tracks after the SDD selection
+      ncascadesAfterSDDSel = lESDevent->GetNumberOfCascades();
+      nTrackMultiplicityAfterSDDSel = fESDtrackCuts->GetReferenceMultiplicity(lESDevent,AliESDtrackCuts::kTrackletsITSTPC,0.5);
   } else if (fAnalysisType == "AOD") {
-     if (fkSDDSelectionOn && fCollidingSystem == "pp") {
-        TString trcl = lAODevent->GetFiredTriggerClasses();
-        if (fwithSDD){
+      TString trcl = lAODevent->GetFiredTriggerClasses();
+      if (fCollidingSystem == "pp" && fkSDDSelectionOn && fwithSDD) {
            if(!(trcl.Contains("ALLNOTRD"))) {
                 PostData(1, fListHistCascade);
                 PostData(2, fCFContCascadePIDXiMinus);
@@ -1171,7 +1105,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                 cout<<"We are selecting events with SDD turn ON. This event has the SDD turn OFF. =>  RETURN!! (Exclude it)..."<<endl;
                 return;
            }
-        } else if (!fwithSDD) {
+      } else if (fCollidingSystem == "pp" && fkSDDSelectionOn && !fwithSDD) {
            if((trcl.Contains("ALLNOTRD"))) {
                 PostData(1, fListHistCascade);
                 PostData(2, fCFContCascadePIDXiMinus);
@@ -1182,11 +1116,10 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
                 cout<<"We are selecting events with SDD turn OFF. This event has the SDD turn ON. =>  RETURN!! (Exclude it)..."<<endl;
                 return;
            }
-        }
-     }
-     // - Take the number of cascades and tracks after the SDD selection
-     ncascadesAfterSDDSel = lAODevent->GetNumberOfCascades();
-     nTrackMultiplicityAfterSDDSel = -100; //FIXME: I can't find the equivalent method for the AOD
+      }
+      // - Take the number of cascades and tracks after the SDD selection
+      ncascadesAfterSDDSel = lAODevent->GetNumberOfCascades();
+      nTrackMultiplicityAfterSDDSel = -100; //FIXME: I can't find the equivalent method for the AOD
   }
   // - Fill the plots
   fHistCascadeMultiplicityAfterSDDSel->Fill(ncascadesAfterSDDSel);
@@ -1232,7 +1165,7 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
       PostData(4, fCFContCascadePIDOmegaMinus);
       PostData(5, fCFContCascadePIDOmegaPlus);
       PostData(6, fCFContCascadeCuts);
-      cout<<"We are selecting the events that past tha Physics Selection. This event does not pass the Physics Selection. =>  RETURN!! (Exclude it)..."<<endl;
+      cout<<"We are selecting the events that past the Physics Selection. This event does not pass the Physics Selection. =>  RETURN!! (Exclude it)..."<<endl;
       return;
   }
   if (fAnalysisType == "ESD") {
@@ -1324,11 +1257,10 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
               vertex = lESDevent->GetPrimaryVertexSPD();
               if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
               else                                fHasVertex = kTRUE;
-              TString vtxTyp = vertex->GetTitle();
               Double_t cov[6]={0};
               vertex->GetCovarianceMatrix(cov);
               Double_t zRes = TMath::Sqrt(cov[5]);
-              if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
+              if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
           } else fHasVertex = kTRUE;
           if (fHasVertex == kFALSE) {
               AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
@@ -1360,11 +1292,10 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
               vertex = lAODevent->GetPrimaryVertexSPD();
               if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
               else                                fHasVertex = kTRUE;
-              TString vtxTyp = vertex->GetTitle();
               Double_t cov[6]={0};
               vertex->GetCovarianceMatrix(cov);
               Double_t zRes = TMath::Sqrt(cov[5]);
-              if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
+              if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
           } else fHasVertex = kTRUE;
           if (fHasVertex == kFALSE) {
               AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
@@ -1699,9 +1630,9 @@ void AliAnalysisTaskCheckCascadepp276::UserExec(Option_t *) {
           }
           if (fkQualityCutnTPCcls) {
                 // - Poor quality related to TPC clusters
-                if (lPosTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Pos. track has less than 80 TPC clusters ... continue!"); continue; }
-                if (lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
-                if (lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
+                if (lPosTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Pos. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                if (lNegTPCClusters  < fMinnTPCcls) { AliWarning(Form("Pb / V0 Neg. track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
+                if (lBachTPCClusters < fMinnTPCcls) { AliWarning(Form("Pb / Bach.   track has less than %i TPC clusters ... continue!",fMinnTPCcls)); continue; }
           }
 
           //-----------------------------------
@@ -2307,102 +2238,6 @@ Int_t AliAnalysisTaskCheckCascadepp276::DoESDTrackWithTPCrefitMultiplicity(const
 //________________________________________________________________________
 void AliAnalysisTaskCheckCascadepp276::Terminate(Option_t *) 
 {
-  // Draw result to the screen
-  // Called once at the end of the query
-
-/*  TList *cRetrievedList = 0x0;
-         cRetrievedList = (TList*)GetOutputData(1);
-	if(!cRetrievedList){
-		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: ouput data container list not available\n"); return;
-	}
-  fHistTrackMultiplicity = dynamic_cast<TH1F*> (   cRetrievedList->FindObject("fHistTrackMultiplicity") );
-  if (!fHistTrackMultiplicity) {
-		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistTrackMultiplicity not available\n"); return;
-	}
-  fHistMassXiMinus    = dynamic_cast<TH1F*> ( cRetrievedList->FindObject("fHistMassXiMinus") );	
-	if (!fHistMassXiMinus) {
-		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistMassXiMinus not available\n"); return;
-	}
-  fHistMassXiPlus     = dynamic_cast<TH1F*> ( cRetrievedList->FindObject("fHistMassXiPlus") );
-	if (!fHistMassXiPlus) {
-		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistMassXiPlus not available\n"); return;
-	}	
-  fHistMassOmegaMinus = dynamic_cast<TH1F*> ( cRetrievedList->FindObject("fHistMassOmegaMinus") );
-	if (!fHistMassOmegaMinus) {
-		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistMassOmegaMinus not available\n"); return;
-	}
-  fHistMassOmegaPlus  = dynamic_cast<TH1F*> ( cRetrievedList->FindObject("fHistMassOmegaPlus") );	
-	if (!fHistMassOmegaPlus) {
-		AliWarning("ERROR - AliAnalysisTaskCheckCascadepp276: fHistMassOmegaPlus not available\n"); return;
-	}
-  
-  TCanvas *canCheckCascade = new TCanvas("AliAnalysisTaskCheckCascadep276","CheckCascade overview",10,10,1010,660);
-  canCheckCascade->Divide(2,2);
-  
-  canCheckCascade->cd(1);
-  canCheckCascade->cd(1)->SetLogy();
-  fHistTrackMultiplicity->SetMarkerStyle(kFullStar);  
-  fHistTrackMultiplicity->GetXaxis()->SetLabelFont(42);
-  fHistTrackMultiplicity->GetYaxis()->SetLabelFont(42);
-  fHistTrackMultiplicity->SetTitleFont(42, "xy");
-  fHistTrackMultiplicity->GetXaxis()->SetTitleOffset(1.1);
-  fHistTrackMultiplicity->DrawCopy("H");
-  
-  canCheckCascade->cd(2);  
-  fHistMassXiMinus ->SetMarkerStyle(kFullCircle);
-  fHistMassXiMinus ->SetMarkerSize(0.5);
-  fHistMassXiMinus ->GetXaxis()->SetLabelFont(42);
-  fHistMassXiMinus ->GetYaxis()->SetLabelFont(42);
-  fHistMassXiMinus ->SetTitleFont(42, "xy");
-  fHistMassXiMinus ->GetXaxis()->SetTitleOffset(1.1);
-  fHistMassXiMinus ->GetYaxis()->SetTitleOffset(1.3);
-  //fHistMassXiMinus->Rebin(2);
-  fHistMassXiMinus ->GetXaxis()->SetRangeUser(1.24, 1.42);
-  fHistMassXiMinus ->DrawCopy("E");
-  
-  fHistMassXiPlus ->SetMarkerStyle(kOpenCircle);
-  fHistMassXiPlus ->SetMarkerColor(kRed+2);
-  fHistMassXiPlus ->SetLineColor(kRed+2);
-  fHistMassXiPlus ->SetMarkerSize(0.5);
-  //fHistMassXiPlus ->Rebin(2);
-  fHistMassXiPlus ->DrawCopy("ESAME");
   
   
-  TLegend *legendXi =new TLegend(0.67,0.34,0.97,0.54);
- 		legendXi->SetTextFont(42);
- 		legendXi->SetTextSize(0.05);
- 		legendXi->SetFillColor(kWhite);
- 		legendXi->AddEntry( fHistMassXiMinus,"#Xi^{-} candidates","lp");
- 		legendXi->AddEntry( fHistMassXiPlus,"#Xi^{+} candidates","lp");
- 		legendXi->Draw();
-  
-  
-  canCheckCascade->cd(3);  
-  fHistMassOmegaPlus ->SetMarkerStyle(kOpenCircle);
-  fHistMassOmegaPlus ->SetMarkerColor(kRed+2);
-  fHistMassOmegaPlus ->SetLineColor(kRed+2);
-  fHistMassOmegaPlus ->SetMarkerSize(0.5);
-  fHistMassOmegaPlus ->GetXaxis()->SetLabelFont(42);
-  fHistMassOmegaPlus ->GetYaxis()->SetLabelFont(42);
-  fHistMassOmegaPlus ->SetTitleFont(42, "xy");
-  fHistMassOmegaPlus ->GetXaxis()->SetTitleOffset(1.1);
-  fHistMassOmegaPlus ->GetYaxis()->SetTitleOffset(1.25);
-  //fHistMassOmegaPlus ->Rebin(2);
-  fHistMassOmegaPlus ->GetXaxis()->SetRangeUser(1.6, 1.84);
-  fHistMassOmegaPlus ->DrawCopy("E");
-  
-  fHistMassOmegaMinus->SetMarkerStyle(kFullCircle);
-  fHistMassOmegaMinus->SetMarkerSize(0.5);
-  //fHistMassOmegaMinus->Rebin(2);
-  fHistMassOmegaMinus->DrawCopy("ESAME");
-
-  
-   TLegend *legendOmega = new TLegend(0.67,0.34,0.97,0.54);
- 		legendOmega->SetTextFont(42);
- 		legendOmega->SetTextSize(0.05);
- 		legendOmega->SetFillColor(kWhite);
- 		legendOmega->AddEntry( fHistMassOmegaMinus,"#Omega^{-} candidates","lp");
- 		legendOmega->AddEntry( fHistMassOmegaPlus,"#Omega^{+} candidates","lp");
- 		legendOmega->Draw();
-     */
 }

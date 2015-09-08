@@ -949,7 +949,8 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
   TLorentzVector leadPart;
   jets->GetLeadingHadronMomentum(leadPart, jet);
   Double_t zleading = GetParallelFraction(leadPart.Vect(), jet);
-  
+  if (zleading == 1 || (zleading > 1 && zleading - 1 < 1e-3)) zleading = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
+      
   Double_t corrpt = jet->Pt() - jets->GetRhoVal() * jet->Area();
   Double_t zflavour = 0;
   Double_t ptflavour = 0;
@@ -957,6 +958,8 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
   if (hftrack) {
     zflavour = GetParallelFraction(hftrack, jet);
     ptflavour = hftrack->Pt();
+
+    if (zflavour == 1 || (zflavour > 1 && zflavour - 1 < 1e-3)) zflavour = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
   
   if (fHistoType==1) {
@@ -1046,7 +1049,8 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
   TLorentzVector leadPart1;
   jets1->GetLeadingHadronMomentum(leadPart1, jet1);
   Double_t zleading1 = GetParallelFraction(leadPart1.Vect(), jet1);
-  
+  if (zleading1 == 1 || (zleading1 > 1 && zleading1 - 1 < 1e-3)) zleading1 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
+
   Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
   Double_t zflavour1 = 0;
   Double_t ptflavour1 = 0;
@@ -1054,13 +1058,16 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
   if (hftrack1) {
     zflavour1 = GetParallelFraction(hftrack1, jet1);
     ptflavour1 = hftrack1->Pt();
+
+    if (zflavour1 == 1 || (zflavour1 > 1 && zflavour1 - 1 < 1e-3)) zflavour1 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
   
 
   TLorentzVector leadPart2;
   jets2->GetLeadingHadronMomentum(leadPart2, jet2);
   Double_t zleading2 = GetParallelFraction(leadPart2.Vect(), jet2);
-  
+  if (zleading2 == 1 || (zleading2 > 1 && zleading2 - 1 < 1e-3)) zleading2 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
+      
   Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
   Double_t zflavour2 = 0;
   Double_t ptflavour2 = 0;
@@ -1068,6 +1075,8 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
   if (hftrack2) {
     zflavour2 = GetParallelFraction(hftrack2, jet2);
     ptflavour2 = hftrack2->Pt();
+
+    if (zflavour2 == 1 || (zflavour2 > 1 && zflavour2 - 1 < 1e-3)) zflavour2 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
   
   if (fHistoType==1) {

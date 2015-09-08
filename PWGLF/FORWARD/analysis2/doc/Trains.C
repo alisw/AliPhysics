@@ -415,7 +415,58 @@
     This can allow for fast development and testing of analysis tasks
     without having to wait for official tasks and builds of all of
     AliROOT
+
+    @subsection train_setup_tender Enabling Tender Supplies 
+
+    If you want to run an ESD analysis with a set of tender supplies,
+    all you have to do is to pass the option
+    <tt>-&nbsp;-tender=</tt><i>list</i> to @b runTrain.  Here,
+    <i>list</i> is a list of tender supply names:
+
+    - VZERO
+    - TPC
+    - PTFix
+    - T0
+    - TOF
+    - TRD 
+    - VTX 
+    - EMCAL 
+    - PID 
+
+    If you need to specify a non-standard OCDB location, you can do so
+    using the option <tt>--ocdb=</tt><i>location</i> where
+    <i>location</i> can be an OCDB snapshot or a valid OCDB url.
+
+    @subsection train_setup_ocdb Enable OCDB access 
+
+    If you pass the option <tt>-&nbsp;-ocdb</tt> possibly with an
+    argument, then an instance of the class <tt>AliTaskConnectCDB</tt>
+    will be added to the train.  This task automatically connects to
+    OCDB for the run being analysed.
+
+    @subsection train_setup_ps Specifying the kind of Physics Selection 
+
+    The option <tt>-&nbsp;-ps=</tt><i>option</i> defines how to set-up
+    the physics selection. Here <i>option</i> can be
     
+    - @c none In this case the physics selection is completely disabled. 
+
+    - <tt>custom[=</tt><i>Script</i><tt>]</tt> A custom physics
+      selection is read from the script <i>Script</i>. If no
+      <i>Script</i> is specified, then
+      <i>Script</i>=<tt>CustomPS.C</tt> is assumed.  The script must
+      define a function with the same name and that function must
+      accept a single pointer to an @c AliPhysicsSelection object.
+
+    - @c bare In this case a physics selection is installed on the
+       input handler. but there's no accompanying task.
+
+    - @c all Disable filtering on background triggers 
+
+    @subsection train_setup_friends Reading Friends 
+
+    To enable friends in the analysis, pass the option <tt>-&nbsp;-friends</tt>
+
     @section train_setup_impl Implementation details
     
     @subsection train_setup_imp_helper Helpers 

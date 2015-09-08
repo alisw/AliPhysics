@@ -42,6 +42,7 @@ public:
    void      SetDCARmin(Double_t value)                {fDCARmin = value; fDCARptFormulaMin = ""; fDCARminfixed = kTRUE;}
    void      SetDCAZPtFormula(const char *formula)     {fDCAZptFormula = formula; fDCAZfixed = kFALSE;}
    void      SetDCAZmax(Double_t value)                {fDCAZmax = value; fDCAZptFormula = ""; fDCAZfixed = kTRUE;}
+   void      SetDCA2D(Double_t value)                  {fDCA2D = value;}
 
    void      SetSPDminNClusters(Int_t value)           {fSPDminNClusters = value;}
    void      SetITSminNClusters(Int_t value)           {fITSminNClusters = value;}
@@ -62,6 +63,7 @@ public:
    void      SetDefaults2010(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
    void      SetDefaults2011(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
    void      SetDefaultsHighPt2011(Bool_t useTPCCrossedRows = kTRUE, Bool_t useDefaultKinematicCuts=kTRUE);
+   void      SetDefaultsTPCOnly(Bool_t useDefaultKinematicCuts=kTRUE);
    void      SetESDtrackCuts(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;}
    AliESDtrackCuts  *GetESDtrackCuts() {return fESDtrackCuts;}
    Double_t   GetPtRange(Bool_t max) {return fPt[max];}
@@ -92,6 +94,7 @@ protected:
    Bool_t     fDCAZfixed;              // flag to switch between fixed and pt-dependent DCA cut
    TString    fDCAZptFormula;          // expression to compute longitudinal DCA sigma w.r. to pt
    Double_t   fDCAZmax;                // maximum value for longitudinal DCA
+   Bool_t     fDCA2D;                  // use 2D DCA to vertex
 
    Int_t      fSPDminNClusters;        // minimum number of required clusters in SPD
    Int_t      fITSminNClusters;        // minimum number of required clusters in ITS

@@ -25,11 +25,45 @@
 #include "THn.h"
 #include "TArrayD.h"
 #include <TMatrixTBase.h>
+#include "TParameter.h"
 
 
 using namespace std;
 
-
+THnF * SumCent(Double_t Mincent , Double_t Maxcent, THnF* source, const char * name){
+  THnF * output = (THnF*)source->Clone(name);
+  output->Reset();
+  for(int mult = 0; mult<=source->GetAxis(0)->GetNbins();mult++){
+    double lowedge = source->GetAxis(0)->GetBinLowEdge(mult);
+    double upedge = source->GetAxis(0)->GetBinUpEdge(mult);
+    double multval = source->GetAxis(0)->GetBinCenter(mult);
+    if(lowedge>=Mincent){
+      if(upedge<=Maxcent){
+      for(int vz = 0; vz<=source->GetAxis(1)->GetNbins();vz++){
+	double vzval = source->GetAxis(1)->GetBinCenter(vz);
+	for(int eta = 0;eta<=source->GetAxis(3)->GetNbins();eta++){
+	  //find the corresponding bin:
+	  double etaval = source->GetAxis(3)->GetBinCenter(eta);
+	  for(int pT = 0;pT<=source->GetAxis(4)->GetNbins();pT++){
+	    //find the corresponding bin:
+	    double pTval = source->GetAxis(4)->GetBinCenter(pT);
+	    for(int phi = 0;phi<=source->GetAxis(2)->GetNbins();phi++){
+	    //find the corresponding bin:
+	    double phival = source->GetAxis(2)->GetBinCenter(phi);
+	    int bin[5] = {mult,vz,phi,eta,pT};
+	      Double_t value[5] = {multval,vzval,phival,etaval,pTval};
+	      for(int i=1;i<=source->GetBinContent(bin);i++){
+		output->Fill(value);
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return output;
+}
 
 THnF * Rebin(Int_t Nmult,const Double_t * MultAxis,Int_t nvz, const Double_t * VZAxis,Int_t nphi, Double_t phimin, Double_t phimax,Int_t neta, Double_t etamin,Double_t etamax,Int_t npt, const Double_t * pTAxis,THnF * input, const char* name){
   //Function that takes a THnF, and rebins it to the given axes.
@@ -604,7 +638,21 @@ void MakeEffHistspp(){
   multptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   multptEffRecPP->Write();
   
+  TH2D * etaptRec = hnTracksInBins->Projection(4,3);
+  etaptRec->Sumw2();
+  etaptRec->Write("eta_pT_All_Reconstructed");
+  TH2D * etaptMC = hnTracksInBinsMC->Projection(4,3);
+  etaptMC->Sumw2();
+  etaptMC->Write("eta_pT_All_Produced");    
   
+  TH2D * etaptEffRec = dynamic_cast<TH2D*>(etaptRec->Clone("Efficiency_eta_pT_Rec"));
+  etaptEffRec->Divide(etaptMC);
+  etaptEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  etaptEffRec->Write();
+  TH2D * etaptEffRecPP = dynamic_cast<TH2D*>(multptRecPP->Clone("Efficiency_mult_pT_Rec_pp"));
+  etaptEffRecPP->Divide(etaptMC);
+  etaptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  etaptEffRecPP->Write();
   
   //make more meaningful axes:
   //mult: keep for now, unsure how it actually should look.
@@ -787,20 +835,40 @@ void MakeEffHistspp(){
 // //   delete multEffRec;delete multEffRecPP;
 }
 
-void MakeEffHistsPbPb(){
+void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   //open the input file:
-  TFile * infile = TFile::Open("AnalysisResults.root","READ");
-  THnF * hnTracksInBins;
-  THnF * hnTracksInBinsRecPP;
-  THnF * hnTracksInBinsMC;
+  TString filename = TString(file);
+  TFile * infile = TFile::Open(filename.Data(),"READ");
+  THnF * hnTracksInBinstmp;  THnF * hnTracksInBins;
+  THnF * hnTracksInBinsRecPPtmp;THnF * hnTracksInBinsRecPP;
+  THnF * hnTracksInBinsMCtmp;  THnF * hnTracksInBinsMC;
+  TParameter<double> *nevents = new TParameter<double>("NEvents",0.0);
+  nevents->SetVal(0.0);
   TList * dir = dynamic_cast<TList*>(infile->GetDirectory("ThreePartTrackEfficienciesPbPb_0_16")->Get("ThreePartTrackEfficienciesPbPb_0_16_0_0Coutput1"));
   for(int i=0;i<dir->GetEntries();i++){
-    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBins")==0)     hnTracksInBins = dynamic_cast<THnF*>(dir->At(i));
-    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsRecPP")==0)hnTracksInBinsRecPP = dynamic_cast<THnF*>(dir->At(i));
-    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsMC")==0)   hnTracksInBinsMC = dynamic_cast<THnF*>(dir->At(i));
+    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBins")==0)     hnTracksInBinstmp = dynamic_cast<THnF*>(dir->At(i));
+    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsRecPP")==0)hnTracksInBinsRecPPtmp = dynamic_cast<THnF*>(dir->At(i));
+    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsMC")==0)   hnTracksInBinsMCtmp = dynamic_cast<THnF*>(dir->At(i));
+    if(TString(dir->At(i)->GetName()).CompareTo("Eventafterselection")==0) nevents->SetVal(dynamic_cast<TH3D*>(dir->At(i))->Integral());
+  }
+  if(filename.Contains("LHC12a17g")){
+    hnTracksInBins = SumCent(0.0,10.0,hnTracksInBinstmp,"hnTracksReconstruced");
+    hnTracksInBinsRecPP = SumCent(0.0,10.0,hnTracksInBinsRecPPtmp,"hnTracksReconstruced_PP");
+    hnTracksInBinsMC = SumCent(0.0,10.0,hnTracksInBinsMCtmp,"hnTracksProduced");
+  }
+  if(filename.Contains("LHC12a17h")){
+    hnTracksInBins = SumCent(10.0,50.0,hnTracksInBinstmp,"hnTracksReconstruced");
+    hnTracksInBinsRecPP = SumCent(10.0,50.0,hnTracksInBinsRecPPtmp,"hnTracksReconstruced_PP");
+    hnTracksInBinsMC = SumCent(10.0,50.0,hnTracksInBinsMCtmp,"hnTracksProduced");
+  }
+  if(filename.Contains("LHC12a17i")){
+    hnTracksInBins = SumCent(50.0,100.0,hnTracksInBinstmp,"hnTracksReconstruced");
+    hnTracksInBinsRecPP = SumCent(50.0,100.0,hnTracksInBinsRecPPtmp,"hnTracksReconstruced_PP");
+    hnTracksInBinsMC = SumCent(50.0,100.0,hnTracksInBinsMCtmp,"hnTracksProduced");
   }
   //Axis: 0 - Centrality or multiplicity, 1 - Vertex , 2 - phi , 3 - eta , 4 - pT
-  TFile* outfile = TFile::Open("eff.root","RECREATE");
+  TFile* outfile = TFile::Open(filename.ReplaceAll("AnalysisResults.root","eff.root"),"RECREATE");
+  
   TAxis * multaxis = hnTracksInBins->GetAxis(0);
   multaxis->SetTitle("Centrality [%]");
   hnTracksInBinsRecPP->GetAxis(0)->SetTitle("Centrality [%]");
@@ -822,6 +890,9 @@ void MakeEffHistsPbPb(){
   hnTracksInBinsRecPP->GetAxis(4)->SetTitle("pT [GeV/c]");
   hnTracksInBinsMC->GetAxis(4)->SetTitle("pT [GeV/c]");
   outfile->cd();
+  hnTracksInBins->Write();
+  hnTracksInBinsMC->Write();
+  nevents->Write();  
   Errors(hnTracksInBins,"Errorsraw")->Write();
   Errors(hnTracksInBinsMC,"ErrorsMC")->Write();
 //   MakeFoldersFill2dSlices(outfile,hnTracksInBins,hnTracksInBinsMC);
@@ -1091,6 +1162,19 @@ void MakeEffHistsPbPb(){
   phiptEffRecPP->Write();
   
   
+  TH2D * etaptRec = hnTracksInBins->Projection(4,3);
+  etaptRec->Sumw2();
+  etaptRec->Write("eta_pT_All_Reconstructed");
+  TH2D * etaptMC = hnTracksInBinsMC->Projection(4,3);
+  etaptMC->Sumw2();
+  etaptMC->Write("eta_pT_All_Produced");    
+  
+  TH2D * etaptEffRec = dynamic_cast<TH2D*>(etaptRec->Clone("Efficiency_eta_pT_Rec"));
+  etaptEffRec->Divide(etaptMC);
+  etaptEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  etaptEffRec->Write();
+
+  
   //make more meaningful axes:
   //mult: keep for now, unsure how it actually should look.
   Double_t multaxisArray[8] = {0.0,5.0,10.0,15.0,20.0,30.0,40.0,95.0};
@@ -1112,7 +1196,7 @@ void MakeEffHistsPbPb(){
   histMC->Write();
   histMC->Divide(histrec);
   histMC->Write("Eff3d");
-  TFile* outfile2 = TFile::Open("LHC10hWeight.root","RECREATE");
+  TFile* outfile2 = TFile::Open(filename.ReplaceAll("eff.root","LHC10hWeight.root"),"RECREATE");
   outfile2->cd();
   histMC->Write("hnWeight");
   outfile->cd();
@@ -1322,7 +1406,7 @@ void MakeEffHistsPbPb(){
   
   infile->Close();
   
-  
+  delete hnTracksInBins; delete hnTracksInBinsRecPP; delete hnTracksInBinsMC;
 // //   delete multEffRec;delete multEffRecPP;
 //   
 }

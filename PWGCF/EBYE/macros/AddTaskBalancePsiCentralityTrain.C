@@ -48,8 +48,9 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
 						       Double_t sigmaElectronRejection=3,
 						       Bool_t electronExclusiveRejection=kFALSE,
 						       TString correctionFileName = "",
-						       Int_t nCentralityArrayBinsForCorrection,
-						       Double_t *gCentralityArrayForCorrections) {
+						       Int_t nCentralityArrayBinsForCorrection = -1,
+						       Double_t *gCentralityArrayForCorrections = 0x0,
+						       Bool_t gRunEbyE = kFALSE) {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -83,6 +84,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   AliBalancePsi *bf  = 0;  // Balance Function object
   AliBalancePsi *bfs = 0;  // shuffled Balance function object
   AliBalancePsi *bfm = 0;  // mixing Balance function object
+  AliBalanceEbyE *bfebye = 0;  // EbyE Balance function object
 
   //maximum Delta eta range
   Double_t deltaEtaMax=TMath::Abs(etaMax-etaMin);
@@ -96,6 +98,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     bf  = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
     if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
     if(gRunMixing)    bfm = GetBalanceFunctionObject("AOD",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunEbyE)      bfebye = GetBalanceFunctionEbyEObject(bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,deltaEtaMax);
   }
   else if (analysisType=="MC"){
     bf  = GetBalanceFunctionObject("MC",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
@@ -164,6 +167,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
       taskBF->SetMixingWithEventPlane(gRunMixingWithEventPlane);
     }
   }
+  if(gRunEbyE) taskBF->SetEbyEObject(bfebye);
 
   if(analysisType == "ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);

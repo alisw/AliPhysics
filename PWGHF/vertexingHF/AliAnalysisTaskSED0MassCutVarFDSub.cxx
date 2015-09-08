@@ -14,13 +14,13 @@
  **************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////
-// Class AliAnalysisTaskSED0MassCutVarFDSub                               //
-//                                                                        //
-// AliAnalysisTaskSE for the analysis of D0 candidates using the          //
-// cut-variation feed-down subtraction method                             //
-//                                                                        //
-// Andrea Rossi <Andrea.Rossi@cern.ch>                                    //
-// Felix Reidt  <Felix.Reidt@cern.ch>                                     //
+/// Class AliAnalysisTaskSED0MassCutVarFDSub                              //
+///                                                                       //
+/// AliAnalysisTaskSE for the analysis of D0 candidates using the         //
+/// cut-variation feed-down subtraction method                            //
+///                                                                       //
+/// Andrea Rossi <Andrea.Rossi@cern.ch>                                   //
+/// Felix Reidt  <Felix.Reidt@cern.ch>                                    //
 ////////////////////////////////////////////////////////////////////////////
 #include "AliAnalysisTaskSED0MassCutVarFDSub.h"
 
@@ -55,8 +55,9 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliAnalysisTaskSED0MassCutVarFDSub)
-
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSED0MassCutVarFDSub);
+/// \endcond
 
 //________________________________________________________________________
 AliAnalysisTaskSED0MassCutVarFDSub::AliAnalysisTaskSED0MassCutVarFDSub():
@@ -93,7 +94,7 @@ AliAnalysisTaskSE(),
   fobjSpr(0x0),
   fhsparsecutvar(0x0)
 {
-  // Default constructor
+  /// Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
 
 }
@@ -133,7 +134,7 @@ AliAnalysisTaskSED0MassCutVarFDSub::AliAnalysisTaskSED0MassCutVarFDSub(const cha
   fobjSpr(0x0),
   fhsparsecutvar(0x0)
 {
-  // Default constructor
+  /// Default constructor
 
   fNPtBins=cuts->GetNPtBins();
 
@@ -212,7 +213,7 @@ AliAnalysisTaskSED0MassCutVarFDSub::~AliAnalysisTaskSED0MassCutVarFDSub()
 //________________________________________________________________________
 void AliAnalysisTaskSED0MassCutVarFDSub::Init()
 {
-  // Initialization
+  /// Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::Init() \n");
 
@@ -231,7 +232,7 @@ void AliAnalysisTaskSED0MassCutVarFDSub::Init()
 void AliAnalysisTaskSED0MassCutVarFDSub::UserCreateOutputObjects()
 {
 
-  // Create the output container
+  /// Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::UserCreateOutputObjects() \n");
 
@@ -995,8 +996,8 @@ void AliAnalysisTaskSED0MassCutVarFDSub::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSED0MassCutVarFDSub::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event:
-  // heavy flavor candidates association to MC truth
+  /// Execute analysis for current event:
+  /// heavy flavor candidates association to MC truth
   //cout<<"I'm in UserExec"<<endl;
 
 
@@ -1207,7 +1208,7 @@ void AliAnalysisTaskSED0MassCutVarFDSub::UserExec(Option_t */*option*/)
 void AliAnalysisTaskSED0MassCutVarFDSub::DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList *ListDetSignal)
 {
   //
-  // Function called in UserExec for drawing detector signal histograms:
+  /// Function called in UserExec for drawing detector signal histograms:
   //
   fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(0), 0);
   fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(1), 1);
@@ -1244,7 +1245,7 @@ void AliAnalysisTaskSED0MassCutVarFDSub::DrawDetSignal(AliAODRecoDecayHF2Prong *
 //____________________________________________________________________________
 void AliAnalysisTaskSED0MassCutVarFDSub::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout){
   //
-  // function used in UserExec to fill variable histograms:
+  /// function used in UserExec to fill variable histograms:
   //
 
 
@@ -1989,7 +1990,7 @@ void AliAnalysisTaskSED0MassCutVarFDSub::FillVarHists(AliAODEvent* aod,AliAODRec
 //____________________________________________________________________________
 void AliAnalysisTaskSED0MassCutVarFDSub::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi* cuts, TList *listout){
   //
-  // function used in UserExec to fill mass histograms:
+  /// function used in UserExec to fill mass histograms:
   //
 
 
@@ -2317,7 +2318,7 @@ void AliAnalysisTaskSED0MassCutVarFDSub::FillMassHists(AliAODRecoDecayHF2Prong *
 
 //__________________________________________________________________________
 AliAODVertex* AliAnalysisTaskSED0MassCutVarFDSub::GetPrimaryVtxSkipped(AliAODEvent *aodev){
-  //Calculate the primary vertex w/o the daughter tracks of the candidate
+  /// Calculate the primary vertex w/o the daughter tracks of the candidate
 
   Int_t skipped[2];
   Int_t nTrksToSkip=2;
@@ -2368,7 +2369,7 @@ AliAODVertex* AliAnalysisTaskSED0MassCutVarFDSub::GetPrimaryVtxSkipped(AliAODEve
 //________________________________________________________________________
 void AliAnalysisTaskSED0MassCutVarFDSub::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
+  /// Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSED0Mass: Terminate() \n");
 
@@ -2498,7 +2499,7 @@ void AliAnalysisTaskSED0MassCutVarFDSub::Terminate(Option_t */*option*/)
 
 //________________________________________________________________________
 void AliAnalysisTaskSED0MassCutVarFDSub::CreateImpactParameterHistos(){
-  // Histos for impact paramter study
+  /// Histos for impact paramter study
 
   Int_t nmassbins=200;
   Double_t fLowmasslimit=1.5648, fUpmasslimit=2.1648;
@@ -2532,7 +2533,7 @@ void AliAnalysisTaskSED0MassCutVarFDSub::CreateImpactParameterHistos(){
 
 //_________________________________________________________________________________________________
 Float_t AliAnalysisTaskSED0MassCutVarFDSub::GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const {
-  // true impact parameter calculation
+  /// true impact parameter calculation
 
   printf(" AliAnalysisTaskSED0MassCutVarFDSubV1::GetTrueImpactParameter() \n");
 
@@ -2576,7 +2577,7 @@ Float_t AliAnalysisTaskSED0MassCutVarFDSub::GetTrueImpactParameter(AliAODMCHeade
 //_________________________________________________________________________________________________
 Int_t AliAnalysisTaskSED0MassCutVarFDSub::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {
   //
-  // checking whether the mother of the particles come from a charm or a bottom quark
+  /// checking whether the mother of the particles come from a charm or a bottom quark
   //
   printf(" AliAnalysisTaskSED0MassCutVarFDSubV1::CheckOrigin() \n");
 

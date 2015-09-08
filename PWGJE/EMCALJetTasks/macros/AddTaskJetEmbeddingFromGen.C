@@ -93,7 +93,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   jetEmb->SetPhiRange(minPhi, maxPhi);
   jetEmb->SetPtRange(minPt, maxPt);
   jetEmb->SetCopyArray(copyArray);
-  jetEmb->SetGenType(genType)
+  jetEmb->SetGeometryName("EMCAL_COMPLETE12SMV1");
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

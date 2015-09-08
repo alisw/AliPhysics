@@ -344,11 +344,10 @@ void AliAnalysisTaskMuonHadronCorrelations::UserExec(Option_t *) {
   Double_t zvtx = trkVtx->GetZ();
   const AliAODVertex* spdVtx = fAOD->GetPrimaryVertexSPD();
   if (spdVtx->GetNContributors()<=0) return;
-  TString vtxTyp = spdVtx->GetTitle();
   Double_t cov[6]={0};
   spdVtx->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+  if (spdVtx->IsFromVertexerZ() && (zRes>0.25)) return;
   if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
   fHistEvStat->Fill(cutIndex++);
 

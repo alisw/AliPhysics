@@ -6,11 +6,11 @@
 /* $Id$ */ 
 
 //-------------------------------------------------------------------------
-//                      Class AliAnalysisVertexingHF
-//            Reconstruction of heavy-flavour decay candidates
-//      
-//  Origin: E.Bruna, G.E.Bruno, A.Dainese, F.Prino, R.Romita, X.M.Zhang
-//  Contact: andrea.dainese@pd.infn.it
+/// \class                     Class AliAnalysisVertexingHF
+/// \brief           Reconstruction of heavy-flavour decay candidates
+///
+/// \author Origin: E.Bruna, G.E.Bruno, A.Dainese, F.Prino, R.Romita, X.M.Zhang
+/// \author Contact: andrea.dainese@pd.infn.it
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
@@ -112,14 +112,14 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetRmTrksFromPrimVtx() 
     {fRmTrksFromPrimVtx=kTRUE; fRecoPrimVtxSkippingTrks=kFALSE; }
   void SetTrackFilter(AliAnalysisFilter* trackF) {
-    // switch off the TOF selection that cannot be applied with AODTracks 
+    /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
     fTrackFilter = trackF; 
   }
   void SetTrackFilter2prongPbCentral(Float_t maxPercentile, AliAnalysisFilter* trackF) {
-    // switch off the TOF selection that cannot be applied with AODTracks 
+    /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
@@ -127,7 +127,7 @@ class AliAnalysisVertexingHF : public TNamed {
     fMaxCentPercentileForTightCuts=maxPercentile;
   }
   void SetTrackFilter3prongPbCentral(Float_t maxPercentile, AliAnalysisFilter* trackF) {
-    // switch off the TOF selection that cannot be applied with AODTracks 
+    /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
@@ -135,7 +135,7 @@ class AliAnalysisVertexingHF : public TNamed {
     fMaxCentPercentileForTightCuts=maxPercentile;
   }
   void SetTrackFilterSoftPi(AliAnalysisFilter* trackF) { 
-    // switch off the TOF selection that cannot be applied with AODTracks 
+    /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
@@ -228,89 +228,90 @@ class AliAnalysisVertexingHF : public TNamed {
   //
   enum { kBitDispl = 0, kBitSoftPi = 1, kBit3Prong = 2, kBitPionCompat = 3, kBitKaonCompat = 4, kBitProtonCompat = 5};
 
-  Bool_t fInputAOD; // input from AOD (kTRUE) or ESD (kFALSE) 
-  Int_t fAODMapSize; // size of fAODMap 
+  Bool_t fInputAOD; /// input from AOD (kTRUE) or ESD (kFALSE)
+  Int_t fAODMapSize; /// size of fAODMap
+  /// map between index and ID for AOD tracks
   Int_t *fAODMap; //[fAODMapSize] map between index and ID for AOD tracks
 
-  AliVertexerTracks* fVertexerTracks; // vertexer, to compute secondary vertices
-  Double_t fBzkG; // z componenent of field in kG
+  AliVertexerTracks* fVertexerTracks; /// vertexer, to compute secondary vertices
+  Double_t fBzkG; /// z componenent of field in kG
 
-  Bool_t fSecVtxWithKF; // if kTRUE use KF vertexer, else AliVertexerTracks
+  Bool_t fSecVtxWithKF; /// if kTRUE use KF vertexer, else AliVertexerTracks
 
-  Bool_t fRecoPrimVtxSkippingTrks; // flag for primary vertex reco on the fly
-                                   // for each candidate, w/o its daughters
-  Bool_t fRmTrksFromPrimVtx; // flag for fast removal of daughters from 
-                             // the primary vertex
+  Bool_t fRecoPrimVtxSkippingTrks; /// flag for primary vertex reco on the fly
+                                   /// for each candidate, w/o its daughters
+  Bool_t fRmTrksFromPrimVtx; /// flag for fast removal of daughters from
+                             /// the primary vertex
 
-  AliESDVertex *fV1; // primary vertex
+  AliESDVertex *fV1; /// primary vertex
 
-  // flag to enable candidates production
-  Bool_t fD0toKpi;   // D0->Kpi 
-  Bool_t fJPSItoEle; // Jpsi->ee
-  Bool_t f3Prong;    // D+,Ds,Lc
-  Bool_t f4Prong;    // D0->Kpipipi
-  Bool_t fDstar;     // D*->D0pi
-  Bool_t fCascades;  // cascades, Lc --> v0+track
-  Bool_t fLikeSign;  // Like-sign pairs
-  Bool_t fLikeSign3prong;  // Like-sign triplets
-  Bool_t fMixEvent; // event mixing
+  /// flag to enable candidates production
+  Bool_t fD0toKpi;   /// D0->Kpi
+  Bool_t fJPSItoEle; /// Jpsi->ee
+  Bool_t f3Prong;    /// D+,Ds,Lc
+  Bool_t f4Prong;    /// D0->Kpipipi
+  Bool_t fDstar;     /// D*->D0pi
+  Bool_t fCascades;  /// cascades, Lc --> v0+track
+  Bool_t fLikeSign;  /// Like-sign pairs
+  Bool_t fLikeSign3prong;  /// Like-sign triplets
+  Bool_t fMixEvent; /// event mixing
 
-  AliPIDResponse* fPidResponse; // PID response
-  Bool_t fUseKaonPIDfor3Prong;  // Kaon PID usage for 3 prongs
-  Int_t  fUsePIDforLc;          // PID for Lambdac: 0=no, 1=proton, 2=p and pi
-  Bool_t fUsePIDforLc2V0;       // PID for Lambdac 2 V0: 0=no, 1=proton,
-  Bool_t fUseKaonPIDforDs;      // Kaon PID usage for Ds
-  Bool_t fUseTPCPID;            // switch use/not use TPC PID
-  Bool_t fUseTOFPID;            // switch use/not use TOF PID
-  Bool_t fUseTPCPIDOnlyIfNoTOF; // use TPC PID only for tracks that without TOF
-  Double_t fMaxMomForTPCPid;    // upper momentum limit to apply TPC PID
-  Double_t fnSigmaTPCPionLow;   //Low cut value on n. of sigmas for pi TPC PID
-  Double_t fnSigmaTPCPionHi;    //High cut value on n. of sigmas for pi TPC PID
-  Double_t fnSigmaTOFPionLow;   //Low cut value on n. of sigmas for pi TOF PID
-  Double_t fnSigmaTOFPionHi;    //High cut value on n. of sigmas for pi TOF PID
-  Double_t fnSigmaTPCKaonLow;   //Low cut value on n. of sigmas for K TPC PID
-  Double_t fnSigmaTPCKaonHi;    //High cut value on n. of sigmas for K TPC PID
-  Double_t fnSigmaTOFKaonLow;   //Low cut value on n. of sigmas for K TOF PID
-  Double_t fnSigmaTOFKaonHi;    //High cut value on n. of sigmas for K TOF PID
-  Double_t fnSigmaTPCProtonLow; //Low cut value on n. of sigmas for p TPC PID
-  Double_t fnSigmaTPCProtonHi;  //High cut value on n. of sigmas for p TPC PID
-  Double_t fnSigmaTOFProtonLow; //Low cut value on n. of sigmas for p TOF PID
-  Double_t fnSigmaTOFProtonHi;  //High cut value on n. of sigmas for p TOF PID
+  AliPIDResponse* fPidResponse; /// PID response
+  Bool_t fUseKaonPIDfor3Prong;  /// Kaon PID usage for 3 prongs
+  Int_t  fUsePIDforLc;          /// PID for Lambdac: 0=no, 1=proton, 2=p and pi
+  Bool_t fUsePIDforLc2V0;       /// PID for Lambdac 2 V0: 0=no, 1=proton,
+  Bool_t fUseKaonPIDforDs;      /// Kaon PID usage for Ds
+  Bool_t fUseTPCPID;            /// switch use/not use TPC PID
+  Bool_t fUseTOFPID;            /// switch use/not use TOF PID
+  Bool_t fUseTPCPIDOnlyIfNoTOF; /// use TPC PID only for tracks that without TOF
+  Double_t fMaxMomForTPCPid;    /// upper momentum limit to apply TPC PID
+  Double_t fnSigmaTPCPionLow;   /// Low cut value on n. of sigmas for pi TPC PID
+  Double_t fnSigmaTPCPionHi;    /// High cut value on n. of sigmas for pi TPC PID
+  Double_t fnSigmaTOFPionLow;   /// Low cut value on n. of sigmas for pi TOF PID
+  Double_t fnSigmaTOFPionHi;    /// High cut value on n. of sigmas for pi TOF PID
+  Double_t fnSigmaTPCKaonLow;   /// Low cut value on n. of sigmas for K TPC PID
+  Double_t fnSigmaTPCKaonHi;    /// High cut value on n. of sigmas for K TPC PID
+  Double_t fnSigmaTOFKaonLow;   /// Low cut value on n. of sigmas for K TOF PID
+  Double_t fnSigmaTOFKaonHi;    /// High cut value on n. of sigmas for K TOF PID
+  Double_t fnSigmaTPCProtonLow; /// Low cut value on n. of sigmas for p TPC PID
+  Double_t fnSigmaTPCProtonHi;  /// High cut value on n. of sigmas for p TPC PID
+  Double_t fnSigmaTOFProtonLow; /// Low cut value on n. of sigmas for p TOF PID
+  Double_t fnSigmaTOFProtonHi;  /// High cut value on n. of sigmas for p TOF PID
 
-  Float_t fMaxCentPercentileForTightCuts; //max. centrality percentile for using tight cuts
+  Float_t fMaxCentPercentileForTightCuts; /// max. centrality percentile for using tight cuts
 
   // single-track cuts
-  AliAnalysisFilter *fTrackFilter; //  Track Filter for displaced vertices
-  AliAnalysisFilter *fTrackFilter2prongCentral; //  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 2 prong (D0->Kpi)
-  AliAnalysisFilter *fTrackFilter3prongCentral; //  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 3 prong (D+, Ds, Lc)
-  AliAnalysisFilter *fTrackFilterSoftPi; //  Track Filter for D* soft pion
+  AliAnalysisFilter *fTrackFilter; ///  Track Filter for displaced vertices
+  AliAnalysisFilter *fTrackFilter2prongCentral; ///  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 2 prong (D0->Kpi)
+  AliAnalysisFilter *fTrackFilter3prongCentral; ///  Track Filter for displaced vertices in PbPb central events (tighter cuts) for 3 prong (D+, Ds, Lc)
+  AliAnalysisFilter *fTrackFilterSoftPi; ///  Track Filter for D* soft pion
   // candidates cuts
-  AliRDHFCutsD0toKpi *fCutsD0toKpi; // D0->Kpi cuts
-  AliRDHFCutsJpsitoee *fCutsJpsitoee; // J/psi->ee cuts
-  AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi; // D+->Kpipi cuts
-  AliRDHFCutsDstoKKpi *fCutsDstoKKpi; // Ds->KKpi cuts
-  AliRDHFCutsLctopKpi *fCutsLctopKpi; // Lc->pKpi cuts
-  AliRDHFCutsLctoV0 *fCutsLctoV0; // Lc --> v0 + bachelor cuts
-  AliRDHFCutsD0toKpipipi *fCutsD0toKpipipi; // D0->Kpipipi cuts
-  AliRDHFCutsDStartoKpipi *fCutsDStartoKpipi; // Dstar->D0pi cuts
+  AliRDHFCutsD0toKpi *fCutsD0toKpi; /// D0->Kpi cuts
+  AliRDHFCutsJpsitoee *fCutsJpsitoee; /// J/psi->ee cuts
+  AliRDHFCutsDplustoKpipi *fCutsDplustoKpipi; /// D+->Kpipi cuts
+  AliRDHFCutsDstoKKpi *fCutsDstoKKpi; /// Ds->KKpi cuts
+  AliRDHFCutsLctopKpi *fCutsLctopKpi; /// Lc->pKpi cuts
+  AliRDHFCutsLctoV0 *fCutsLctoV0; /// Lc --> v0 + bachelor cuts
+  AliRDHFCutsD0toKpipipi *fCutsD0toKpipipi; /// D0->Kpipipi cuts
+  AliRDHFCutsDStartoKpipi *fCutsDStartoKpipi; /// Dstar->D0pi cuts
 
-  TList *fListOfCuts;    // pointer to list of cuts for output file
-  Bool_t fFindVertexForDstar; // reconstruct a secondary vertex or assume it's from the primary vertex
-  Bool_t fFindVertexForCascades;  // reconstruct a secondary vertex or assume it's from the primary vertex
-  Int_t  fV0TypeForCascadeVertex;  // Select which V0 type we want to use for the cascas
-  Bool_t fMassCutBeforeVertexing; // to go faster in PbPb
+  TList *fListOfCuts;    /// pointer to list of cuts for output file
+  Bool_t fFindVertexForDstar; /// reconstruct a secondary vertex or assume it's from the primary vertex
+  Bool_t fFindVertexForCascades;  /// reconstruct a secondary vertex or assume it's from the primary vertex
+  Int_t  fV0TypeForCascadeVertex;  /// Select which V0 type we want to use for the cascas
+  Bool_t fMassCutBeforeVertexing; /// to go faster in PbPb
   // dummies for invariant mass calculation
-  AliAODRecoDecay *fMassCalc2; // for 2 prong
-  AliAODRecoDecay *fMassCalc3; // for 3 prong
-  AliAODRecoDecay *fMassCalc4; // for 4 prong
-  Bool_t fOKInvMassD0; // pair fullfilling D0 inv mass selection
-  Bool_t fOKInvMassJpsi; // pair fullfilling Jpsi inv mass selection
-  Bool_t fOKInvMassDplus; // triplet fullfilling D+ inv mass selection
-  Bool_t fOKInvMassDs; // triplet fullfilling Ds inv mass selection
-  Bool_t fOKInvMassLc; // triplet fullfilling Lc inv mass selection
-  Bool_t fOKInvMassDstar; // combination fullfilling D* inv mass selection
-  Bool_t fOKInvMassD0to4p; // 4tracks fullfilling D0 inv mass selection
-  Bool_t fOKInvMassLctoV0; // triplet fullfilling Lc inv mass selection
+  AliAODRecoDecay *fMassCalc2; /// for 2 prong
+  AliAODRecoDecay *fMassCalc3; /// for 3 prong
+  AliAODRecoDecay *fMassCalc4; /// for 4 prong
+  Bool_t fOKInvMassD0; /// pair fullfilling D0 inv mass selection
+  Bool_t fOKInvMassJpsi; /// pair fullfilling Jpsi inv mass selection
+  Bool_t fOKInvMassDplus; /// triplet fullfilling D+ inv mass selection
+  Bool_t fOKInvMassDs; /// triplet fullfilling Ds inv mass selection
+  Bool_t fOKInvMassLc; /// triplet fullfilling Lc inv mass selection
+  Bool_t fOKInvMassDstar; /// combination fullfilling D* inv mass selection
+  Bool_t fOKInvMassD0to4p; /// 4tracks fullfilling D0 inv mass selection
+  Bool_t fOKInvMassLctoV0; /// triplet fullfilling Lc inv mass selection
 
   Int_t fnTrksTotal;
   Int_t fnSeleTrksTotal;
@@ -385,8 +386,9 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAODv0* TransformESDv0toAODv0(AliESDv0 *esdv0, 
 				  TObjArray *twoTrackArrayV0);
 
-  //
-  ClassDef(AliAnalysisVertexingHF,24);  // Reconstruction of HF decay candidates
+  /// \cond CLASSIMP 
+  ClassDef(AliAnalysisVertexingHF,24);  /// Reconstruction of HF decay candidates
+  /// \endcond
 };
 
 

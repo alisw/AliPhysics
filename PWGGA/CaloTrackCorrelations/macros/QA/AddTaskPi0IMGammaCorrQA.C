@@ -25,6 +25,9 @@
 /// \param suffix : A string with the type of trigger (default: MB, EMC).
 /// \param qaan: execute the detector QA analysis.
 /// \param hadronan: execute the track QA and cluster-track correlation analysis.
+/// \param calibrate: if OADB was updated with calibration parameters not used in reconstruction, apply them here.
+/// \param minTime: minimum time cut, leave it open by default even if calibration available, ns
+/// \param maxTime: maximum time cut, leave it open by default even if calibration available, ns
 /// \param minCen : An int to select the minimum centrality, -1 means no selection.
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection.
 /// \param debugLevel : An int to define the debug level of all the tasks.
@@ -35,6 +38,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
                                                              const TString  suffix        = "default",
                                                              const Bool_t   qaan          = kFALSE,
                                                              const Bool_t   hadronan      = kFALSE,
+                                                             const Bool_t   calibrate     = kTRUE,
+                                                             const Int_t    minTime       = -1000,
+                                                             const Int_t    maxTime       =  1000,
                                                              const Int_t    minCen        = -1,
                                                              const Int_t    maxCen        = -1,
                                                              const Int_t    debugLevel    = -1,
@@ -82,8 +88,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
 
   // General frame setting and configuration
-  maker->SetReader   ( ConfigureReader   (inputDataType,collision,minCen,maxCen,simulation,year,debugLevel) );
-  maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,simulation,year,debugLevel) );
+  maker->SetReader   ( ConfigureReader   (inputDataType,collision,calibrate,minTime,maxTime,minCen,maxCen,simulation,year,debugLevel) );
+  maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,simulation,calibrate,year,debugLevel) );
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
@@ -147,7 +153,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
 ///
 /// Configure the class handling the events and cluster/tracks filtering.
 ///
-AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, 
+AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision, Bool_t calibrate,
+                                     Int_t   minTime,       Int_t maxTime,
                                      Int_t   minCen,        Int_t maxCen,
                                      Bool_t  simulation,    Int_t year,        Int_t debugLevel)
 {
@@ -189,14 +196,15 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
   reader->SetCTSPtMin(0.2);
   reader->SetCTSPtMax(1000);
 
-  // Time cut off
-  reader->SwitchOffUseTrackTimeCut();
+  // Time cut 
   reader->SwitchOffUseParametrizedTimeCut();
-  reader->SwitchOffUseEMCALTimeCut() ;
-  reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
+  reader->SwitchOnUseEMCALTimeCut() ;
+  reader->SetEMCALTimeCut(minTime,maxTime);
+  
+  reader->SwitchOffUseTrackTimeCut();
   reader->SetTrackTimeCut(-1e10,1e10);
 
-  reader->SwitchOnFiducialCut();
+  reader->SwitchOffFiducialCut();
   
   // Tracks
   reader->SwitchOffCTS();
@@ -237,7 +245,9 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
   // Calorimeter
   
   reader->SetEMCALClusterListName("");
-  reader->SwitchOffClusterRecalculation();
+  
+  if(calibrate && !simulation) reader->SwitchOnClusterRecalculation();
+  else                         reader->SwitchOffClusterRecalculation();
   
   reader->SwitchOnEMCALCells();
   reader->SwitchOnEMCAL();
@@ -252,9 +262,9 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
   reader->SwitchOnEventTriggerAtSE();
   
   reader->SetZvertexCut(10.);
-  reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
-  reader->SwitchOffPileUpEventRejection();  // remove pileup
-  reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
+  reader->SwitchOnPrimaryVertexSelection();  // and besides primary vertex
+  reader->SwitchOffPileUpEventRejection();   // remove pileup
+  reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
   
   if(collision=="PbPb")
   {
@@ -270,7 +280,8 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType, TString collision,
 ///
 /// Configure the class handling the calorimeter clusters specific methods
 ///
-AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, Int_t year, Int_t debugLevel)
+AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, Bool_t calibrate,
+                                        Int_t year, Int_t debugLevel)
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(debugLevel);
@@ -297,17 +308,34 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   cu->SwitchOffRecalibration(); // Check the reader if it is taken into account during filtering
   cu->SwitchOffRunDepCorrection();
 
+  cu->SwitchOnCorrectClusterLinearity();
+
+  Bool_t bExotic  = kTRUE;
+  Bool_t bNonLin  = kTRUE;
+  Bool_t bBadMap  = kTRUE;
+  
+  Bool_t bEnCalib = kFALSE;
+  Bool_t bTiCalib = kFALSE;
+  
+  if(calibrate && !simulation)
+  {
+    cu->SwitchOnRecalibration(); // Check the reader if it is taken into account during filtering
+    cu->SwitchOffRunDepCorrection();    
+    cu->SwitchOnRecalculateClusterPosition() ;
+
+    bEnCalib = kTRUE;
+    bTiCalib = kTRUE;
+  }
+  
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(recou,
                           simulation,
-                          kTRUE,//kExotic,
-                          kTRUE,//kNonLinearity,
-                          kFALSE,//kCalibE,
-                          kTRUE,//kBadMap,
-                          kFALSE);//kCalibT
+                          bExotic,
+                          bNonLin,
+                          bEnCalib,
+                          bBadMap,
+                          bTiCalib);
   recou->SetExoticCellDiffTimeCut(50.);
-
-  cu->SwitchOnCorrectClusterLinearity();
 
   if(calorimeter=="PHOS")
   {
@@ -315,7 +343,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, 
   }
   else
   {
-    if      (year == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+    if      (year == 2010) cu->SetNumberOfSuperModulesUsed(4); // EMCAL first year
     else if (year <  2014) cu->SetNumberOfSuperModulesUsed(10);
     else                   cu->SetNumberOfSuperModulesUsed(20);
   }

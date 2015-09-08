@@ -19,10 +19,11 @@
 /* $Id$ */ 
 
 //-----------------------------------------------------------------------
-// Class for HF corrections as a function of many variables and step 
-// Author : C. Zampolli, CERN
-// D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
-// Base class for HF Unfolding - agrelli@uu.nl
+/// \class AliCFVertexingHF2Prong
+/// \brief Class for HF corrections as a function of many variables and step
+/// \author Author : C. Zampolli, CERN
+/// \author D. Caffarri, Univ & INFN Padova caffarri@pd.infn.it
+/// Base class for HF Unfolding - agrelli@uu.nl
 //-----------------------------------------------------------------------
 
 
@@ -57,8 +58,9 @@ class AliCFVertexingHF2Prong : public AliCFVertexingHF{
 	AliCFVertexingHF2Prong(const AliCFVertexingHF2Prong& c);
 	AliCFVertexingHF2Prong& operator= (const AliCFVertexingHF2Prong& other);
 	
-	ClassDef(AliCFVertexingHF2Prong, 1);
-  
+    /// \cond CLASSIMP
+    ClassDef(AliCFVertexingHF2Prong, 1);
+    /// \endcond
 };
 
 #endif

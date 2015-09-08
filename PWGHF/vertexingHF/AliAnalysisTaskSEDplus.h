@@ -7,13 +7,13 @@
 /* $Id$ */ 
 
 //*************************************************************************
-// Class AliAnalysisTaskSEDplus
-// AliAnalysisTaskSE for the D+ candidates Invariant Mass Histogram and 
-//comparison of heavy-flavour decay candidates
-// to MC truth (kinematics stored in the AOD)
-// Renu Bala, bala@to.infn.it
-// F. Prino, prino@to.infn.it
-// G. Ortona, ortona@to.infn.it
+/// \class Class AliAnalysisTaskSEDplus
+/// \brief AliAnalysisTaskSE for the D+ candidates Invariant Mass Histogram and
+/// comparison of heavy-flavour decay candidates
+/// to MC truth (kinematics stored in the AOD)
+/// \author Renu Bala, bala@to.infn.it
+/// \author F. Prino, prino@to.infn.it
+/// \author G. Ortona, ortona@to.infn.it
 //*************************************************************************
 
 #include <TROOT.h>
@@ -45,6 +45,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetSystem(Int_t system=0){fSystem=system;}
   void SetCutsDistr(Bool_t cutsDistr=kTRUE){fCutsDistr=cutsDistr;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
+  void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;}
   void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
     fNImpParBins=nbins;
     fLowerImpPar=dmin;
@@ -70,8 +71,12 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   void CreateLikeSignHistos();
   void CreateImpactParameterHistos();
+  void CreateMCAcceptanceHistos();
 
-  // Implementation of interface methods
+  Bool_t CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+  void FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+
+  /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
@@ -91,68 +96,73 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
 
   enum {kMaxPtBins=20};
 
-  TList   *fOutput; //! list send on output slot 0
-  TH1F *fHistNEvents; //!hist. for No. of events
-  TH1F *fMassHist[3*kMaxPtBins]; //!hist. for inv mass (LC)
-  TH1F *fCosPHist[3*kMaxPtBins]; //!hist. for PointingAngle (LC)
-  TH1F *fDLenHist[3*kMaxPtBins]; //!hist. for Dec Length (LC)
-  TH1F *fSumd02Hist[3*kMaxPtBins]; //!hist. for sum d02 (LC)
-  TH1F *fSigVertHist[3*kMaxPtBins]; //!hist. for sigVert (LC)
-  TH1F *fPtMaxHist[3*kMaxPtBins]; //!hist. for Pt Max (LC)
-  TH1F *fPtKHist[3*kMaxPtBins]; //!hist. for PtK (LC)
-  TH1F *fPtpi1Hist[3*kMaxPtBins]; //!hist. for PtPi1 (LC)
-  TH1F *fPtpi2Hist[3*kMaxPtBins]; //!hist. for PtPi2 (LC)
-  TH1F *fDCAHist[3*kMaxPtBins]; //!hist. for DCA (LC)
-  TH1F *fDLxy[3*kMaxPtBins]; //!hist. for DLxy (LC)
-  TH1F *fDLxyTC[3*kMaxPtBins]; //!hist. for DLxy (TC)
-  TH1F *fCosxy[3*kMaxPtBins]; //!hist. for Cosxy (LC)
-  TH1F *fCosxyTC[3*kMaxPtBins]; //!hist. for Cosxy (TC)
-  TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
-  TH1F *fMassHistTCPlus[3*kMaxPtBins]; //!hist. for D+ inv mass (TC)
-  TH1F *fMassHistTCMinus[3*kMaxPtBins]; //!hist. for D- inv mass (TC)
-  TH1F *fMassHistLS[5*kMaxPtBins];//!hist. for LS inv mass (LC)
-  TH1F *fCosPHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 1 (LC)
-  TH1F *fDLenHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 2 (LC)
-  TH1F *fSumd02HistLS[3*kMaxPtBins];//!hist. for LS cuts variable 3 (LC)
-  TH1F *fSigVertHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 4 (LC)
-  TH1F *fPtMaxHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 5 (LC)
-  TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
-  TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
-  TH2F *fCorreld0Kd0pi[3]; //!hist. for d0k*d0pi vs. d0k*d0pi (LC)
-  TH2F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
-  THnSparseF *fHistMassPtImpParTC[5];//! histograms for impact paramter studies
-  TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
-  TH2F *fPtVsMassTC;  //! hist. of pt vs. mass (analysis cuts)
-  TH3F *fYVsPt;       //! hist. of Y vs. Pt vs. Mass(prod. cuts)
-  TH3F *fYVsPtTC;     //! hist. of Y vs. Pt vs. Mass (analysis cuts)
-  TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
-  TH2F *fYVsPtSigTC;    //! hist. of Y vs. Pt (MC, only sig, analysis cuts)
-  TH2F *fPhiEtaCand;      //! hist. with eta/phi distribution of candidates
-  TH2F *fPhiEtaCandSigReg;//! hist. eta/phi of candidates in D+ mass region
-  TH1F *fSPDMult;    //! hist. of spd mult
-  TNtuple *fNtupleDplus; //! output ntuple
-  Float_t fUpmasslimit;  //upper inv mass limit for histos
-  Float_t fLowmasslimit; //lower inv mass limit for histos
-  Int_t fNPtBins; //Number of Pt Bins
-  Float_t fBinWidth;//width of one bin in output histos
-  TList *fListCuts; //list of cuts
-  AliRDHFCutsDplustoKpipi *fRDCutsAnalysis; //Cuts for Analysis
-  AliNormalizationCounter *fCounter;//!Counter for normalization
-  Double_t fArrayBinLimits[kMaxPtBins+1]; //limits for the Pt bins
-  Bool_t fFillNtuple;   // flag for filling ntuple
-  Bool_t fReadMC;    //flag for access to MC
-  Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
-  Bool_t fUseBit;      // flag to use bitmask
-  Bool_t fCutsDistr;    // flag to activate cuts distr histos
-  Bool_t fDoImpPar;    // flag to activate impact paramter histos
-  Int_t  fNImpParBins;   // nunber of bins in impact parameter histos
-  Float_t fLowerImpPar;  // lower limit in impact parameter (um)
-  Float_t fHigherImpPar; // higher limit in impact parameter (um)
-  Int_t  fDoLS;        // flag to do LS analysis
-  Int_t fEtaSelection; // eta region to accept D+ 0=all, -1 = negative, 1 = positive 
-  Int_t fSystem;   //0=pp,1=PbPb
+  TList   *fOutput; //!<! list send on output slot 0
+  TH1F *fHistNEvents; //!<!hist. for No. of events
+  TH1F *fMassHist[3*kMaxPtBins]; //!<!hist. for inv mass (LC)
+  TH1F *fCosPHist[3*kMaxPtBins]; //!<!hist. for PointingAngle (LC)
+  TH1F *fDLenHist[3*kMaxPtBins]; //!<!hist. for Dec Length (LC)
+  TH1F *fSumd02Hist[3*kMaxPtBins]; //!<!hist. for sum d02 (LC)
+  TH1F *fSigVertHist[3*kMaxPtBins]; //!<!hist. for sigVert (LC)
+  TH1F *fPtMaxHist[3*kMaxPtBins]; //!<!hist. for Pt Max (LC)
+  TH1F *fPtKHist[3*kMaxPtBins]; //!<!hist. for PtK (LC)
+  TH1F *fPtpi1Hist[3*kMaxPtBins]; //!<!hist. for PtPi1 (LC)
+  TH1F *fPtpi2Hist[3*kMaxPtBins]; //!<!hist. for PtPi2 (LC)
+  TH1F *fDCAHist[3*kMaxPtBins]; //!<!hist. for DCA (LC)
+  TH1F *fDLxy[3*kMaxPtBins]; //!<!hist. for DLxy (LC)
+  TH1F *fDLxyTC[3*kMaxPtBins]; //!<!hist. for DLxy (TC)
+  TH1F *fCosxy[3*kMaxPtBins]; //!<!hist. for Cosxy (LC)
+  TH1F *fCosxyTC[3*kMaxPtBins]; //!<!hist. for Cosxy (TC)
+  TH1F *fMassHistTC[3*kMaxPtBins]; //!<!hist. for inv mass (TC)
+  TH1F *fMassHistTCPlus[3*kMaxPtBins]; //!<!hist. for D+ inv mass (TC)
+  TH1F *fMassHistTCMinus[3*kMaxPtBins]; //!<!hist. for D- inv mass (TC)
+  TH1F *fMassHistLS[5*kMaxPtBins];//!<!hist. for LS inv mass (LC)
+  TH1F *fCosPHistLS[3*kMaxPtBins];//!<!hist. for LS cuts variable 1 (LC)
+  TH1F *fDLenHistLS[3*kMaxPtBins];//!<!hist. for LS cuts variable 2 (LC)
+  TH1F *fSumd02HistLS[3*kMaxPtBins];//!<!hist. for LS cuts variable 3 (LC)
+  TH1F *fSigVertHistLS[3*kMaxPtBins];//!<!hist. for LS cuts variable 4 (LC)
+  TH1F *fPtMaxHistLS[3*kMaxPtBins];//!<!hist. for LS cuts variable 5 (LC)
+  TH1F *fDCAHistLS[3*kMaxPtBins];//!<!hist. for LS cuts variable 6 (LC)
+  TH1F *fMassHistLSTC[5*kMaxPtBins];//!<!hist. for LS inv mass (TC)
+  TH2F *fCorreld0Kd0pi[3]; //!<!hist. for d0k*d0pi vs. d0k*d0pi (LC)
+  TH2F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
+  THnSparseF *fHistMassPtImpParTC[5];//!<! histograms for impact parameter and cut variation study
+  THnSparseF *fMCAccPrompt; //!<!histo for StepMCAcc for Dplus prompt (pt,y,ptB)
+  THnSparseF *fMCAccBFeed; //!<!histo for StepMCAcc for Dplus FD (pt,y,ptB)
+  TH2F *fPtVsMass;    //!<! hist. of pt vs. mass (prod. cuts)
+  TH2F *fPtVsMassTC;  //!<! hist. of pt vs. mass (analysis cuts)
+  TH3F *fYVsPt;       //!<! hist. of Y vs. Pt vs. Mass(prod. cuts)
+  TH3F *fYVsPtTC;     //!<! hist. of Y vs. Pt vs. Mass (analysis cuts)
+  TH2F *fYVsPtSig;    //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F *fYVsPtSigTC;    //!<! hist. of Y vs. Pt (MC, only sig, analysis cuts)
+  TH2F *fPhiEtaCand;      //!<! hist. with eta/phi distribution of candidates
+  TH2F *fPhiEtaCandSigReg;//!<! hist. eta/phi of candidates in D+ mass region
+  TH1F *fSPDMult;    //!<! hist. of spd mult
+  TNtuple *fNtupleDplus; //!<! output ntuple
+  Float_t fUpmasslimit;  /// upper inv mass limit for histos
+  Float_t fLowmasslimit; /// lower inv mass limit for histos
+  Int_t fNPtBins; /// Number of Pt Bins
+  Float_t fBinWidth;/// width of one bin in output histos
+  TList *fListCuts; /// list of cuts
+  AliRDHFCutsDplustoKpipi *fRDCutsAnalysis; /// Cuts for Analysis
+  AliNormalizationCounter *fCounter;//!<!Counter for normalization
+  Double_t fArrayBinLimits[kMaxPtBins+1]; /// limits for the Pt bins
+  Bool_t fFillNtuple;   /// flag for filling ntuple
+  Bool_t fReadMC;    /// flag for access to MC
+  Bool_t fUseStrangeness;/// flag to enhance strangeness in MC to fit to data
+  Bool_t fUseBit;      /// flag to use bitmask
+  Bool_t fCutsDistr;    /// flag to activate cuts distr histos
+  Bool_t fDoImpPar;    /// flag to activate impact paramter histos
+  Bool_t fStepMCAcc;   /// flag to activate histos for StepMCAcc
+  Int_t  fNImpParBins;   /// nunber of bins in impact parameter histos
+  Float_t fLowerImpPar;  /// lower limit in impact parameter (um)
+  Float_t fHigherImpPar; /// higher limit in impact parameter (um)
+  Int_t  fDoLS;        /// flag to do LS analysis
+  Int_t fEtaSelection; /// eta region to accept D+ 0=all, -1 = negative, 1 = positive
+  Int_t fSystem;   /// 0=pp,1=PbPb
   
-  ClassDef(AliAnalysisTaskSEDplus,21); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskSEDplus,22); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  /// \endcond
 };
 
 #endif

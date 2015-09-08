@@ -21,5 +21,6 @@
 #pragma link C++ class AliAnalysisTaskSEPicoV0MakerMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetFlavourTagExample+;
 #pragma link C++ class AliAnalysisTaskDmesonJetCorrelations+;
+#pragma link C++ class AliMCHFParticleSelector+;
 
 #endif

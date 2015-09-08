@@ -27,7 +27,7 @@
 #include <TClonesArray.h>
 #include <TROOT.h>
 
-//#include "AliOADBContainer.h"
+#include "AliOADBContainer.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
@@ -39,8 +39,8 @@
 #include "AliAODv0.h"
 #include "AliAODcascade.h"
 
-//#include "AliCFContainer.h"
-//#include "AliCentrality.h"
+#include "AliCFContainer.h"
+#include "AliCentrality.h"
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"

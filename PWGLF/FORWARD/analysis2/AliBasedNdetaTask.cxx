@@ -1432,13 +1432,13 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
 //____________________________________________________________________
 Bool_t
 AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
-					       Int_t       triggerMask,
+					       UInt_t      triggerMask,
 					       Bool_t      isZero,
 					       Double_t    vzMin, 
 					       Double_t    vzMax,
 					       const TH2D* data, 
 					       const TH2D* mc,
-					       Int_t       filter)
+					       UInt_t      filter)
 {
   // 
   // Process an event

@@ -21,7 +21,12 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/ConfigCalibTrain.C");
   gSystem->SetIncludePath("-I$ALICE_PHYSICS/include -I$ALICE_ROOT/include"); 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C++");
+
+  if (gSystem->Exec("cp $ALICE_PHYSICS/PWGPP/CalibMacros/commonMacros/CleanGeom.C ./") ||
+      gROOT->LoadMacro("CleanGeom.C++")) { // comple local copy only
+    printf("Failed to load/compile CleanGeom, exit\n");
+    return;
+  }
 
   // detector tasks
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C");

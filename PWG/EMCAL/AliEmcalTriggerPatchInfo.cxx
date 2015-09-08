@@ -1,18 +1,25 @@
-//
-// Emcal trigger patch information class
-// Can contain three types of information, distinguished by the various bits in the bit field:
-//  1) online trigger information (no extra bits set)
-//  2) offline recalculated trigger patches (bit 25, kSimpleOfflineTriggerBit set)
-//  3) highest patch energy, also for events that did not fire the trigger (bits 22, 23 kRecalc... (using both online and offline info, use bit 25 to distinguish)
-//
-// Author: J.Kral
-
+/**************************************************************************
+ * Copyright(c) 1998-2013, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
 #include "TArrayI.h"
 
-//_________________________________________________________________________________________________
+/**
+ * Default constructor
+ */
 AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo() :
   TObject(),
   fCenterGeo(),
@@ -25,13 +32,15 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo() :
   fOffSet(0),            // To be set explictly by the trigger maker in order to avoid hard coding
   fTriggerBitConfig()
 {
-  // Default constructor.
   fEdgeCell[0] = -1;
   fEdgeCell[1] = -1;
 }
 
-  
-//_________________________________________________________________________________________________
+/**
+ * Copy constructor
+ *
+ * @param p Reference for the copy
+ */
 AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo(const AliEmcalTriggerPatchInfo &p) :
   TObject(p),
   fCenterGeo(p.fCenterGeo),
@@ -44,22 +53,26 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo(const AliEmcalTriggerPatchInf
   fOffSet(p.fOffSet),
   fTriggerBitConfig(p.fTriggerBitConfig)
 {
-  // Copy constructor.
+  // .
   fEdgeCell[0] = p.fEdgeCell[0];
   fEdgeCell[1] = p.fEdgeCell[1];
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Destructor
+ */
 AliEmcalTriggerPatchInfo::~AliEmcalTriggerPatchInfo()
 {
-  // Destructor.
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Assignment operator
+ *
+ * @param p Reference for assignment
+ * @return This object after assignment
+ */
 AliEmcalTriggerPatchInfo &AliEmcalTriggerPatchInfo::operator=(const AliEmcalTriggerPatchInfo &p)
 {
-  // Assignment operator.
-
   if (this != &p) {
     fCenterGeo = p.fCenterGeo;
     fCenterMass = p.fCenterMass;
@@ -75,10 +88,13 @@ AliEmcalTriggerPatchInfo &AliEmcalTriggerPatchInfo::operator=(const AliEmcalTrig
   return *this;
 }
 
-//_________________________________________________________________________________________________
+/**
+ * Return cell indices of the given patch in the cell array
+ * @param geom EMCAL Geometry used in the run where the trigger patch was created from
+ * @param cells Output array of cell indices corresponding to the given trigger patch
+ */
 void AliEmcalTriggerPatchInfo::GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells ){
 
-	// return cell indices of the given patch in hte cell array
 	Int_t globCol, globRow, i, j, k, absId, cellAbsId[4];;
 
 	cells->Set( 1024 );
@@ -110,7 +126,12 @@ void AliEmcalTriggerPatchInfo::GetCellIndices( AliEMCALGeometry *geom, TArrayI *
 }
 
 
-//_________________________________________________________________________________________________
+/**
+ * Define Lorentz vector of the given trigger patch
+ * @param lv Lorentz vector to be defined
+ * @param v Patch vector position
+ * @param e Patch energy
+ */
 void AliEmcalTriggerPatchInfo::SetLorentzVector( TLorentzVector &lv, TVector3 &v, Double_t e ){
   // sets the vector
   Double_t r = TMath::Sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2] ) ; 

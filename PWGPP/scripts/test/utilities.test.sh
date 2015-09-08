@@ -6,6 +6,7 @@
 
 # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_guessRunData)
 # ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_OCDBYear)
+# ( source $ALICE_PHYSICS/../src/PWGPP/scripts/test/utilities.test.sh; test_paranoidCopy )
 
 source $ALICE_PHYSICS/../src/PWGPP/scripts/alilog4bash.sh
 source $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh
@@ -66,4 +67,24 @@ test_OCDBYear(){
     newocdbStorage=$(setYear ${newYear} ${newocdbStorage})    
     [[  "${ocdbStorage}"  =   "${newocdbStorage}" ]] && alilog_success      "testOCDBYear: Pass"
     [[  "${ocdbStorage}"  !=   "${newocdbStorage}" ]] && alilog_error      "testOCDBYear: FAILED $ocdbStorage => $newocdbStorage"
+}
+
+
+test_paranoidCopy(){
+    #
+    # 1.) test the bug deleting of directoris
+    #
+    wdir=`pwd`;
+    mkdir -p $wdir/testdirParanoidCopySource
+    mkdir -p $wdir/testdirParanoidCopyDest
+    echo test1 > $wdir/testdirParanoidCopySource/test1.txt
+    echo test2 > $wdir/testdirParanoidCopySource/test2.txt
+    #
+    paranoidCp $wdir/testdirParanoidCopySource $wdir/testdirParanoidCopyDest > /dev/null
+    paranoidCp $wdir/testdirParanoidCopySource $wdir/testdirParanoidCopySource > /dev/null
+    #
+    resultDiff=`diff -r  testdirParanoidCopySource testdirParanoidCopyDest/testdirParanoidCopySource`
+    hrlen=${#resultDiff}
+    [ $hrlen = 0 ]   && alilog_success     "test_paranoidCopy"	
+    [ $hrlen != 0 ] && alilog_error      "test_paranoidCopy"	
 }

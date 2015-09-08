@@ -1,11 +1,12 @@
 /*
 Comments: (new version)
-* 20 aug 2015: trichert changed mc primary method
-* 20 aug 2015: trichert changed vtx cut
+* 19 aug 2015: trichert changed mc primary method
+* 19 aug 2015: trichert changed vtx cut
+* 20 aug 2015: trichert primary flags in AOD MC
+* 8 sep 2015: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash)
 
 TODO: 
-1. implement primary flags MC
-2. flags on injected 
+* flags on injected 
 
 */
 
@@ -30,7 +31,7 @@ TODO:
 #include <AliESDtrackCuts.h>
 #include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
-
+ 
 #include <AliMCEventHandler.h>
 #include <AliMCEvent.h>
 #include <AliStack.h>
@@ -1825,7 +1826,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       
       Double_t b[2], cov[3];
       if (!(aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov)))
-	filterFlag = 32; // propagation failed!!!!!;
+      	filterFlag = 32; // propagation failed!!!!!;
       Float_t dcaxy   = b[0];
       Float_t dcaz    = b[1];
       
@@ -1835,11 +1836,11 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 
 
       // As I understand this routine recalculates the momentum so it should be called first!
-      //Double_t b[2], cov[3];
-  
+      // Double_t b[2], cov[3];
       
-      //if(!aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
-      //	filterFlag = 32; // propagation failed!!!!!
+      
+      // if(!aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
+      // 	filterFlag = 32; // propagation failed!!!!!
       
       if(TMath::Abs(aodTrack->Eta()) > fEtaCut)
 	continue;
@@ -2036,7 +2037,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
       //Double_t bCov[3] = {-99., -99., -99.};
       //aodTrack->PropagateToDCA(aod->GetPrimaryVertex(), aod->GetMagneticField(), 100., b, bCov);
       if (!(aodTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov)))
-	filterFlag = 32; // propagation failed!!!!!;
+      	filterFlag = 32; // propagation failed!!!!!;
       Float_t dcaxy   = b[0];
       Float_t dcaz    = b[1];
 
@@ -2044,11 +2045,11 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 
 
       // As I understand this routine recalculates the momentum so it should be called first!
-      //Double_t b[2], cov[3];
+      // Double_t b[2], cov[3];
   
       
-      //if(!aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
-      //	filterFlag = 32; // propagation failed!!!!!
+      // if(!aodTrack->PropagateToDCA(vertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
+      // 	filterFlag = 32; // propagation failed!!!!!
       
       if(TMath::Abs(aodTrack->Eta()) > fEtaCut) continue;
         
@@ -2528,9 +2529,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  if(fMCStack->IsPhysicalPrimary(p_label))
 	    p_primaryFlag = 1;
 	  
-	  
-	  //10/01/13. Add a flag to see if it is from material or WD
-
 	  if(fMCStack->IsSecondaryFromWeakDecay(p_label))
 	    p_primaryFlag = 2;
 
@@ -3384,16 +3382,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
       
       // Extract track information
       
-      Double_t b[2], cov[3];
-      if(!pTrack->PropagateToDCA(myBestPrimaryVertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
-	filterFlag_p += 32; // propagation failed!!!!!
+      //      Double_t b[2], cov[3];
+      // if(!pTrack->PropagateToDCA(myBestPrimaryVertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
+      // 	filterFlag_p += 32; // propagation failed!!!!!
       
-      Float_t pdcaxy   = b[0];
-      Float_t pdcaz    = b[1];
-      if(!nTrack->PropagateToDCA(myBestPrimaryVertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
-	filterFlag_n += 32; // propagation failed!!!!!
-      Float_t ndcaxy   = b[0];
-      Float_t ndcaz    = b[1];
+      // Float_t pdcaxy   = b[0];
+      // Float_t pdcaz    = b[1];
+      // if(!nTrack->PropagateToDCA(myBestPrimaryVertex, AODevent->GetMagneticField(), kVeryBig, b, cov))
+      // 	filterFlag_n += 32; // propagation failed!!!!!
+      // Float_t ndcaxy   = b[0];
+      // Float_t ndcaz    = b[1];
       
       Short_t pcharge  = pTrack->Charge();
       Float_t ppt      = pTrack->Pt();
@@ -3563,7 +3561,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	  if(p_mcTrack->IsPhysicalPrimary())
 	    p_primaryFlag = 1;
 	
-
 	  Int_t p_pdgCode = p_mcTrack->GetPdgCode();
 	  p_pidCode = GetPidCode(p_pdgCode);	  
 	  p_ptMC      = p_mcTrack->Pt();
@@ -3583,8 +3580,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	  
 	  if(n_mcTrack->IsPhysicalPrimary())
 	    n_primaryFlag = 1;
-	
-
+	  
 	  Int_t n_pdgCode = n_mcTrack->GetPdgCode();
 	  n_pidCode = GetPidCode(n_pdgCode);	  
 	  n_ptMC      = n_mcTrack->Pt();
@@ -3647,7 +3643,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	v0data->pdgmother     = pdgmotherV0;
 	
 	//hljunggr 
-	v0data->y = aodV0->Y(pdgV0);
+	//	v0data->y = aodV0->Y(pdgV0);
 	
 	// positive track
 	v0data->ptrack.p       = pp;
@@ -3672,8 +3668,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	//v0data->ptrack.exptoftimeka = pfexptimeka;
 	//v0data->ptrack.exptoftimepr = pfexptimepr;
 	
-	v0data->ptrack.dcaxy   = pdcaxy;
-	v0data->ptrack.dcaz    = pdcaz;
+	// v0data->ptrack.dcaxy   = pdcaxy;
+	// v0data->ptrack.dcaz    = pdcaz;
 	v0data->ptrack.pid     = p_pidCode;
 	v0data->ptrack.primary = p_primaryFlag;
 	v0data->ptrack.pttrue  = p_ptMC;
@@ -3707,8 +3703,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	  v0data->ntrack.exptoftimeka = nfexptimeka;
 	  v0data->ntrack.exptoftimepr = nfexptimepr;
 	*/
-	v0data->ntrack.dcaxy   = ndcaxy;
-	v0data->ntrack.dcaz    = ndcaz;
+	// v0data->ntrack.dcaxy   = ndcaxy;
+	// v0data->ntrack.dcaz    = ndcaz;
 	v0data->ntrack.pid     = n_pidCode;
 	v0data->ntrack.primary = n_primaryFlag;
 	v0data->ntrack.pttrue  = n_ptMC;
@@ -3844,16 +3840,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
        
        // Extract track information
        
-       Double_t b[2], cov[3];
-       if(!pTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
-	 filterFlag_p += 32; // propagation failed!!!!!
+       // Double_t b[2], cov[3];
+       // if(!pTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
+       // 	 filterFlag_p += 32; // propagation failed!!!!!
        
-       Float_t pdcaxy   = b[0];
-       Float_t pdcaz    = b[1];
-       if(!nTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
-	 filterFlag_n += 32; // propagation failed!!!!!
-       Float_t ndcaxy   = b[0];
-       Float_t ndcaz    = b[1];
+       // Float_t pdcaxy   = b[0];
+       // Float_t pdcaz    = b[1];
+       // if(!nTrack->PropagateToDCA(vertexSPD, AODevent->GetMagneticField(), kVeryBig, b, cov))
+       // 	 filterFlag_n += 32; // propagation failed!!!!!
+       // Float_t ndcaxy   = b[0];
+       // Float_t ndcaz    = b[1];
        
        Short_t pcharge  = pTrack->Charge();
        Float_t ppt      = pTrack->Pt();
@@ -3935,7 +3931,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	  if(p_mcTrack->IsPhysicalPrimary())
 	    p_primaryFlag = 1;
 	
-
 	  Int_t p_pdgCode = p_mcTrack->GetPdgCode();
 	  p_pidCode = GetPidCode(p_pdgCode);	  
 	  p_ptMC      = p_mcTrack->Pt();
@@ -3956,7 +3951,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	  if(n_mcTrack->IsPhysicalPrimary())
 	    n_primaryFlag = 1;
 	
-
 	  Int_t n_pdgCode = n_mcTrack->GetPdgCode();
 	  n_pidCode = GetPidCode(n_pdgCode);	  
 	  n_ptMC      = n_mcTrack->Pt();
@@ -4038,8 +4032,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	//v0datatpc->ptrack.exptoftimeka = 0;
 	//v0datatpc->ptrack.exptoftimepr = 0;
 	
-	v0datatpc->ptrack.dcaxy   = pdcaxy;
-	v0datatpc->ptrack.dcaz    = pdcaz;
+	// v0datatpc->ptrack.dcaxy   = pdcaxy;
+	// v0datatpc->ptrack.dcaz    = pdcaz;
 	v0datatpc->ptrack.pid     = p_pidCode;
 	v0datatpc->ptrack.primary = p_primaryFlag;
 	v0datatpc->ptrack.pttrue  = p_ptMC;
@@ -4070,8 +4064,8 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	   v0datatpc->ntrack.exptoftimeka = 0;
 	   v0datatpc->ntrack.exptoftimepr = 0;
 	 */
-	 v0datatpc->ntrack.dcaxy   = ndcaxy;
-	 v0datatpc->ntrack.dcaz    = ndcaz;
+	 // v0datatpc->ntrack.dcaxy   = ndcaxy;
+	 // v0datatpc->ntrack.dcaz    = ndcaz;
 	 v0datatpc->ntrack.pid     = n_pidCode;
 	 v0datatpc->ntrack.primary = n_primaryFlag;
 	 v0datatpc->ntrack.pttrue  = n_ptMC;

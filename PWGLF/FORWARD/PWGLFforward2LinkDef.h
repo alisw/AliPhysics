@@ -87,8 +87,11 @@
 #pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
 #endif
 #pragma link C++ class AliDisplacedVertexSelection+;
+#pragma link C++ class AliDisplacedVertexSelectionAD+;
 #pragma link C++ class AliPoissonCalculator+;
 #pragma link C++ class AliMCAuxHandler+;
+#pragma link C++ class AliTestAD+;
+
 
 // Forward AUX (Cuts, etc.)
 #pragma link C++ class AliFMDMultCuts+;

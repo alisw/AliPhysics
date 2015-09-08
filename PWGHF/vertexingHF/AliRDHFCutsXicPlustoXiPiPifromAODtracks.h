@@ -6,8 +6,8 @@
 /* $Id$ */
 
 //***********************************************************
-// Class AliRDHFCutsXictoPLUSXiPiPifromAODtracks
-// class for cuts on AOD reconstructed Xic-> pi Xi pi
+/// \class Class AliRDHFCutsXictoPLUSXiPiPifromAODtracks
+/// \brief class for cuts on AOD reconstructed Xic-> pi Xi pi
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -111,38 +111,39 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
 	
  private:
 
-  EPIDStrategy fPIDStrategy;        //PID Strategy
-  Double_t fCombinedPIDThreshold;   //PID threshold used in IsSelectedCombinedPID
-  Bool_t fUseCascadePID;            //Use PID for cascade or not
-  AliAODPidHF *fPidObjCascPi;         //PID object for cascade-pion
-  AliAODPidHF *fPidObjCascPr;         //PID object for cascade-proton
+  EPIDStrategy fPIDStrategy;        /// PID Strategy
+  Double_t fCombinedPIDThreshold;   /// PID threshold used in IsSelectedCombinedPID
+  Bool_t fUseCascadePID;            /// Use PID for cascade or not
+  AliAODPidHF *fPidObjCascPi;         /// PID object for cascade-pion
+  AliAODPidHF *fPidObjCascPr;         /// PID object for cascade-proton
 
-  Double_t fProdTrackPtMin;         //Minimum Bachelor pT 
-  Double_t fProdTrackEtaRange;      //Bachelor Eta range
-  Bool_t   fProdUseAODFilterBit;    //Use AODfilterBit or not
-  Double_t fProdMassTolLambda;      //Tolerance of Lambda mass from PDG value
-  Double_t fProdMassTolXi;          //Tolerance of Xi mass from PDG value
-  Double_t fProdMassRejOmega;          //Rejection range of Omega mass from PDG value
-  Double_t fProdRfidMinV0;          //Minimum Decay vertex of V0
-  Double_t fProdRfidMaxV0;          //Max Decay vertex of V0
-  Double_t fProdRfidMinXi;          //Minimum Decay vertex of Xi
-  Double_t fProdRfidMaxXi;          //Max Decay vertex of Xi
-  Double_t fProdCascProperDecayLengthMax;        //mL/p of cascade
-  Double_t fProdDcaXiDaughtersMax;  //Max Dca between Xi daughters
-  Double_t fProdDcaV0DaughtersMax;  //Max Dca between V0 daughters
-  Double_t fProdDcaBachToPrimVertexMin;  //Min Dca between Bachelor and PV 
-  Double_t fProdDcaV0ToPrimVertexMin;  //Min Dca between v0 and PV 
-  Double_t fProdDcaV0PrToPrimVertexMin;  //Min Dca between v0-proton and PV 
-  Double_t fProdDcaV0PiToPrimVertexMin;  //Min Dca between v0-pion and PV 
-  Double_t fProdXiCosineOfPoiningAngleMin;  //Min Xi cos pointing angle  to PV
-  Double_t fProdV0CosineOfPoiningAngleXiMin;  //Min V0 cos pointing angle  to Xi vertex
-  Double_t fProdCascNTPCClustersMin;         //Minimum number of TPC clusters
-  Double_t fProdLikeSignDcaMax;     //Maximum DCA of pions
-  Double_t fProdRoughMassTol;       //Tolerance of Xic mass from PDG value 
-  Double_t fProdRoughPtMin;         //Minimum pT of Xic
+  Double_t fProdTrackPtMin;         /// Minimum Bachelor pT
+  Double_t fProdTrackEtaRange;      /// Bachelor Eta range
+  Bool_t   fProdUseAODFilterBit;    /// Use AODfilterBit or not
+  Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
+  Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
+  Double_t fProdMassRejOmega;          /// Rejection range of Omega mass from PDG value
+  Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
+  Double_t fProdRfidMaxV0;          /// Max Decay vertex of V0
+  Double_t fProdRfidMinXi;          /// Minimum Decay vertex of Xi
+  Double_t fProdRfidMaxXi;          /// Max Decay vertex of Xi
+  Double_t fProdCascProperDecayLengthMax;        /// mL/p of cascade
+  Double_t fProdDcaXiDaughtersMax;  /// Max Dca between Xi daughters
+  Double_t fProdDcaV0DaughtersMax;  /// Max Dca between V0 daughters
+  Double_t fProdDcaBachToPrimVertexMin;  /// Min Dca between Bachelor and PV
+  Double_t fProdDcaV0ToPrimVertexMin;  /// Min Dca between v0 and PV
+  Double_t fProdDcaV0PrToPrimVertexMin;  /// Min Dca between v0-proton and PV
+  Double_t fProdDcaV0PiToPrimVertexMin;  /// Min Dca between v0-pion and PV
+  Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV
+  Double_t fProdV0CosineOfPoiningAngleXiMin;  // /Min V0 cos pointing angle  to Xi vertex
+  Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters
+  Double_t fProdLikeSignDcaMax;     /// Maximum DCA of pions
+  Double_t fProdRoughMassTol;       /// Tolerance of Xic mass from PDG value
+  Double_t fProdRoughPtMin;         /// Minimum pT of Xic
 
-
+  /// \cond CLASSIMP
   ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,4); 
+  /// \endcond
 };
 
 #endif

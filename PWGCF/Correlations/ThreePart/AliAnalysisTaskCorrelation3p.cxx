@@ -70,6 +70,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
+  , fQA(kFALSE)
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -138,6 +139,7 @@ AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p(const char *name, con
   , fisESD(kFALSE)
   , fisAOD(kFALSE)
   , fgenerate(kFALSE)
+  , fQA(kFALSE)  
   , fWeights(NULL)
   , fWeightshpt(NULL)
   , fpTfunction(NULL)
@@ -228,7 +230,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     if(fCollisionType==PbPb) collisiontype.Append("PbPb");
     fOutput = new THashList;
     fOutput->SetOwner();
-//   if(!fefficiencies){
+    if(!fQA){
     //Create the appropriate ThreeParticleCorrelators and add the used one to be fCorrelator.
     AliThreeParticleCorrelator<AliCorrelation3p>* correlator=new AliThreeParticleCorrelator<AliCorrelation3p>;
     fCorrelator=correlator;
@@ -268,16 +270,16 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
   //   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
     fOutput->Add(workertracktrigger);
-//   }
-//   else{
-//     InitializeQAhistograms();
-//     InitializeEffHistograms();
-//   }
-  // all tasks must post data once for all outputs
+    
     if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights,1);
     if(fWeightshpt)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeightshpt,2);
     if(fpTfunction)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fpTfunction,3);
-    
+  }
+  else{
+    InitializeQAhistograms();
+  }
+  // all tasks must post data once for all outputs
+
   PostData(1, fOutput);
 }
 
@@ -298,9 +300,8 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   fisAOD=pEvent->IsA()==AliAODEvent::Class();
   //Get the runnumber and find which bin and fill value this corresponds to.
   fRun = pEvent->GetRunNumber();
-/*  TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
-  if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinUpEdge(RunBin)-0.5*runnumberaxis->GetBinLowEdge(RunBin);} */  
-
+  TAxis* runnumberaxis= dynamic_cast<TH1D*>(fOutput->FindObject("EventsperRun"))->GetXaxis();
+  if (runnumberaxis){double RunBin = runnumberaxis->FindBin(Form("%i",fRun));fRunFillValue = runnumberaxis->GetBinUpEdge(RunBin)-0.5*runnumberaxis->GetBinLowEdge(RunBin);}   
   GetCentralityAndVertex();
 
   if(!SelectEvent()) return;//events are rejected.
@@ -310,7 +311,8 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
 
   UsePeriod();  
   //Fill Events/run histogram.
-//   FillHistogram("EventsperRun", fRunFillValue);
+  FillHistogram("EventsperRun", fRunFillValue);
+  FillHistogram("NEventsVertex",fRunFillValue,fVertex[2]);
   //To fill with tracks and pions:
   TObjArray allrelevantParticles;
   fNTriggers=0.0;//Reset fNTriggers
@@ -323,19 +325,18 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
   
   FillHistogram("Ntriggers",fNTriggers);
   FillHistogram("NAssociated",fNAssociated);
-//   FillHistogram("NTriggersperRun",fNTriggers,fRunFillValue);
-//   FillHistogram("NAssociatedperRun",fNAssociated,fRunFillValue);
+  FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
+  FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);
+  
   if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
-  //If VZERO data, fill the Multiplicity histograms.
-//   AliVVZERO* pVZERO=pEvent->GetVZEROData();
-//   if (pVZERO) {FillHistogram("vzeroMult",pVZERO->GetMTotV0A()+pVZERO->GetMTotV0C());}
-//   if(!fefficiencies){
+  //if fQA the correlations are not build.
+  if(!fQA){
     if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fCentralityPercentile);}
     if(fCollisionType==AliAnalysisTaskCorrelation3p::pp){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fMultiplicity);}
     //Do the actual correlations.
     if(!((fNTriggers+fNAssociated)==0))fCorrelator->Execute(NULL, &allrelevantParticles);//correlate for events that contain at least one trigger or associated.
     //Post the output
-//   }
+  }
   PostData(1, fOutput);
 }
 
@@ -356,8 +357,8 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 {
   Int_t nofTracks = 0;
   Int_t MultBin; Int_t VZbin;
-  if(fWeights){
-    MultBin = fWeights->GetXaxis()->FindBin(fMultiplicity);
+  if(fWeights&&false){
+    MultBin = fWeights->GetXaxis()->FindBin(fCentralityPercentile);
     VZbin   = fWeights->GetYaxis()->FindBin(fVertex[2]);
   }
   nofTracks=pEvent->GetNumberOfTracks();
@@ -366,17 +367,17 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     Double_t Weight = 1.0;
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
-    if(fWeights){
+    if(fWeights&&false){
       if(t->Pt()<4.0){
 	Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
 	Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
       }
       else{
-	Int_t etabin  = fWeights->GetZaxis()->FindBin(t->Eta());
+	Int_t etabin  = fWeightshpt->GetZaxis()->FindBin(t->Eta());
 	Weight = fWeightshpt->GetBinContent(MultBin,VZbin,etabin)*fpTfunction->Eval(t->Pt());
       }
     }
-//     FillHistogram("TracksperRun",fRunFillValue);
+    FillHistogram("TracksperRun",fRunFillValue);
     FillHistogram("trackUnselectedPt",t->Pt(),Weight);
     FillHistogram("trackUnselectedPhi",t->Phi(),Weight);
     FillHistogram("trackUnselectedTheta",t->Theta(),Weight);
@@ -391,8 +392,17 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
 //       if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
 //     }
     
-//     FillHistogram("selectedTracksperRun",fRunFillValue);
+    FillHistogram("selectedTracksperRun",fRunFillValue);
+    FillHistogram("NTracksVertex",fRunFillValue,fVertex[2]);
     FillHistogram("trackPt",t->Pt(),Weight);
+    if(fQA&&fWeights&&fWeightshpt){
+      if(t->Pt()<4.0){
+	FillHistogram("Track_Cent_Vertex_lpT",fCentralityPercentile,fVertex[2],t->Pt());
+      }
+      else{
+	FillHistogram("Track_Cent_Vertex_eta",fCentralityPercentile,fVertex[2],t->Eta());
+      }
+      }
     if(dynamic_cast<AliAODTrack*>(t)){
       if(dynamic_cast<AliAODTrack*>(t)->IsGlobalConstrained())FillHistogram("trackPtconstrained",t->Pt(),Weight);
       if(!dynamic_cast<AliAODTrack*>(t)->IsGlobalConstrained())FillHistogram("trackPtnotconstrained",t->Pt(),Weight);
@@ -777,60 +787,78 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, 100, 100, -10, 10));
   if(fCollisionType==pp)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, fMaxNumberOfTracksInPPConsidered, 100, -10, 10));
 
-//   //QA per run histograms:
-//   TH1D * eventsperrun = new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
-//   TH1D * TracksperRun = new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);
-//   TH1D * selectedTracksperRun = new TH1D("selectedTracksperRun", "# selected tracks per Run", fNruns, 0,1);
-//   TH2D * NTriggersperRun = new TH2D("NTriggersperRun","# triggers per event per Run",fNruns, 0,1,50,-0.5,49.5);
-//   TH2D * NAssociatedperRun = new TH2D("NAssociatedperRun","# associated per event per Run",fNruns, 0,1,100,-0.5,99.5);
-//   for(int i=0; i<fNruns; i++){
-//     TString lable = Form("%i",fRunNumberList[i]);
-//     eventsperrun->GetXaxis()->SetBinLabel(i+1, lable);
-//     eventsperrun->GetXaxis()->LabelsOption("v");
-//     TracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//     TracksperRun->GetXaxis()->LabelsOption("v");
-//     selectedTracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//     selectedTracksperRun->GetXaxis()->LabelsOption("v");
-//     NTriggersperRun->GetXaxis()->SetBinLabel(i+1,lable);
-//     NTriggersperRun->GetXaxis()->LabelsOption("v");
-//     NAssociatedperRun->GetXaxis()->SetBinLabel(i+1,lable);
-//     NAssociatedperRun->GetXaxis()->LabelsOption("v");    
-//    }
-//   fOutput->Add(eventsperrun);
-//   fOutput->Add(TracksperRun);
-//   fOutput->Add(selectedTracksperRun);
-//   fOutput->Add(NTriggersperRun);
-//   fOutput->Add(NAssociatedperRun);
+  //QA per run histograms:
+  TH1D * eventsperrun = new TH1D("EventsperRun", "# Events per Run", fNruns, 0, 1);
+  TH1D * TracksperRun = new TH1D("TracksperRun", "# tracks per Run", fNruns, 0,1);
+  TH1D * selectedTracksperRun = new TH1D("selectedTracksperRun", "# selected tracks per Run", fNruns, 0,1);
+  TH2D * NTriggersperRun = new TH2D("NTriggersperRun","# triggers per event per Run",fNruns, 0,1,50,-0.5,49.5);
+  TH2D * NAssociatedperRun = new TH2D("NAssociatedperRun","# associated per event per Run",fNruns, 0,1,100,-0.5,99.5);
+  TH2D * NTracksVertex	   = new TH2D("NTracksVertex","#selected tracks per run and vertex",fNruns,0,1,100,-10.0,10.0);
+  TH2D * NEventsVertex	   = new TH2D("NEventsVertex","Events per run and vertex",fNruns,0,1,100,-10.0,10.0);
   
-  if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
-    TH1D * PhosClustersperRun = new TH1D("PhosClustersperRun", "# clusters in Phos per Run", fNruns, 0, 1);
-    TH1D * PhosPionsperRun = new TH1D("PhosPionsperRun", "# Pi0s in Phos per Run.", fNruns, 0, 1);
-    TH1D * PhosSelectedPionsperRun = new TH1D("PhosSelectedPionsperRun", "# selected Pi0 triggers in Phos per Run.", fNruns, 0, 1);
-    TH1D * EmcalClustersperRun = new TH1D("EmcalClustersperRun", "# clusters in Emcal per Run.", fNruns, 0,1);
-    TH1D * EmcalPionsperRun = new TH1D("EmcalPionsperRun", "# Pi0s in Emcal per Run.", fNruns, 0,1);
-    TH1D * EmcalSelectedPionsperRun = new TH1D("EmcalSelectedPionsperRun", "# selected Pi0 triggers in Emcal per Run.", fNruns, 0,1);
-    for(int i=0; i<fNruns; i++){
-      TString lable = Form("%i",fRunNumberList[i]);
-
-      PhosClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
-      PhosClustersperRun->GetXaxis()->LabelsOption("v");
-      PhosPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-      PhosPionsperRun->GetXaxis()->LabelsOption("v");
-      PhosSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-      PhosSelectedPionsperRun->GetXaxis()->LabelsOption("v");
-      EmcalClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
-      EmcalClustersperRun->GetXaxis()->LabelsOption("v");
-      EmcalPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-      EmcalPionsperRun->GetXaxis()->LabelsOption("v");
-      EmcalSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-      EmcalSelectedPionsperRun->GetXaxis()->LabelsOption("v");
-      }
-    fOutput->Add(PhosClustersperRun);
-    fOutput->Add(PhosPionsperRun);
-    fOutput->Add(PhosSelectedPionsperRun);
-    fOutput->Add(EmcalClustersperRun);
-    fOutput->Add(EmcalPionsperRun);
-    fOutput->Add(EmcalSelectedPionsperRun);}
+  for(int i=0; i<fNruns; i++){
+    TString lable = Form("%i",fRunNumberList[i]);
+    eventsperrun->GetXaxis()->SetBinLabel(i+1, lable);
+    eventsperrun->GetXaxis()->LabelsOption("v");
+    TracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
+    TracksperRun->GetXaxis()->LabelsOption("v");
+    selectedTracksperRun->GetXaxis()->SetBinLabel(i+1, lable);
+    selectedTracksperRun->GetXaxis()->LabelsOption("v");
+    NTriggersperRun->GetXaxis()->SetBinLabel(i+1,lable);
+    NTriggersperRun->GetXaxis()->LabelsOption("v");
+    NAssociatedperRun->GetXaxis()->SetBinLabel(i+1,lable);
+    NAssociatedperRun->GetXaxis()->LabelsOption("v");    
+    NTracksVertex->GetXaxis()->SetBinLabel(i+1,lable);
+    NTracksVertex->GetXaxis()->LabelsOption("v"); 
+    NEventsVertex->GetXaxis()->SetBinLabel(i+1,lable);
+    NEventsVertex->GetXaxis()->LabelsOption("v"); 
+  }
+  fOutput->Add(eventsperrun);
+  fOutput->Add(TracksperRun);
+  fOutput->Add(selectedTracksperRun);
+  fOutput->Add(NTriggersperRun);
+  fOutput->Add(NAssociatedperRun);
+  fOutput->Add(NTracksVertex);
+  fOutput->Add(NEventsVertex);
+  if(fQA&&fWeights&&fWeightshpt){
+    TH3D * histtrackslpt = (TH3D*)(fWeights->Clone("Track_Cent_Vertex_lpT"));
+    histtrackslpt->Reset();
+    histtrackslpt->SetTitle("Tracks in Centrality vs Vertex vs pT");
+    fOutput->Add(histtrackslpt);
+    TH3D * histtrackshpt = (TH3D*)(fWeightshpt->Clone("Track_Cent_Vertex_eta"));
+    histtrackshpt->Reset();    
+    histtrackshpt->SetTitle("Tracks in Centrality vs Vertex vs eta");
+    fOutput->Add(histtrackshpt);    
+  }
+//   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
+//     TH1D * PhosClustersperRun = new TH1D("PhosClustersperRun", "# clusters in Phos per Run", fNruns, 0, 1);
+//     TH1D * PhosPionsperRun = new TH1D("PhosPionsperRun", "# Pi0s in Phos per Run.", fNruns, 0, 1);
+//     TH1D * PhosSelectedPionsperRun = new TH1D("PhosSelectedPionsperRun", "# selected Pi0 triggers in Phos per Run.", fNruns, 0, 1);
+//     TH1D * EmcalClustersperRun = new TH1D("EmcalClustersperRun", "# clusters in Emcal per Run.", fNruns, 0,1);
+//     TH1D * EmcalPionsperRun = new TH1D("EmcalPionsperRun", "# Pi0s in Emcal per Run.", fNruns, 0,1);
+//     TH1D * EmcalSelectedPionsperRun = new TH1D("EmcalSelectedPionsperRun", "# selected Pi0 triggers in Emcal per Run.", fNruns, 0,1);
+//     for(int i=0; i<fNruns; i++){
+//       TString lable = Form("%i",fRunNumberList[i]);
+// 
+//       PhosClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
+//       PhosClustersperRun->GetXaxis()->LabelsOption("v");
+//       PhosPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
+//       PhosPionsperRun->GetXaxis()->LabelsOption("v");
+//       PhosSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
+//       PhosSelectedPionsperRun->GetXaxis()->LabelsOption("v");
+//       EmcalClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
+//       EmcalClustersperRun->GetXaxis()->LabelsOption("v");
+//       EmcalPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
+//       EmcalPionsperRun->GetXaxis()->LabelsOption("v");
+//       EmcalSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
+//       EmcalSelectedPionsperRun->GetXaxis()->LabelsOption("v");
+//       }
+//     fOutput->Add(PhosClustersperRun);
+//     fOutput->Add(PhosPionsperRun);
+//     fOutput->Add(PhosSelectedPionsperRun);
+//     fOutput->Add(EmcalClustersperRun);
+//     fOutput->Add(EmcalPionsperRun);
+//     fOutput->Add(EmcalSelectedPionsperRun);}
 }
 
 void AliAnalysisTaskCorrelation3p::InitializeEffHistograms()

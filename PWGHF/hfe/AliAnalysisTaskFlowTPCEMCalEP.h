@@ -55,12 +55,60 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
 
   void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
   AliHFEpid *GetPID() const { return fPID; }
-  void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};  
-  void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
-  void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma);
   void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight); 
+
+  void SetP2_lowPtEta0010 (Double_t P2_lowPtEta0010){fP2_lowPtEta0010 = P2_lowPtEta0010;};
+  void SetP3_lowPtEta0010 (Double_t P3_lowPtEta0010){fP3_lowPtEta0010 = P3_lowPtEta0010;};
+  void SetP4_lowPtEta0010 (Double_t P4_lowPtEta0010){fP4_lowPtEta0010 = P4_lowPtEta0010;};
+
+  void SetP2_highPtEta0010 (Double_t P2_highPtEta0010){fP2_highPtEta0010 = P2_highPtEta0010;};
+  void SetP3_highPtEta0010 (Double_t P3_highPtEta0010){fP3_highPtEta0010 = P3_highPtEta0010;};
+  void SetP4_highPtEta0010 (Double_t P4_highPtEta0010){fP4_highPtEta0010 = P4_highPtEta0010;};
+
+  void SetP2_lowPtPi00010 (Double_t P2_lowPtPi00010){fP2_lowPtPi00010 = P2_lowPtPi00010;};
+  void SetP3_lowPtPi00010 (Double_t P3_lowPtPi00010){fP3_lowPtPi00010 = P3_lowPtPi00010;};
+  void SetP4_lowPtPi00010 (Double_t P4_lowPtPi00010){fP4_lowPtPi00010 = P4_lowPtPi00010;};
+
+  void SetP2_highPtPi00010 (Double_t P2_highPtPi00010){fP2_highPtPi00010 = P2_highPtPi00010;};
+  void SetP3_highPtPi00010 (Double_t P3_highPtPi00010){fP3_highPtPi00010 = P3_highPtPi00010;};
+  void SetP4_highPtPi00010 (Double_t P4_highPtPi00010){fP4_highPtPi00010 = P4_highPtPi00010;};
+
+  void SetP2_lowPtEta1020 (Double_t P2_lowPtEta1020){fP2_lowPtEta1020 = P2_lowPtEta1020;};
+  void SetP3_lowPtEta1020 (Double_t P3_lowPtEta1020){fP3_lowPtEta1020 = P3_lowPtEta1020;};
+  void SetP4_lowPtEta1020 (Double_t P4_lowPtEta1020){fP4_lowPtEta1020 = P4_lowPtEta1020;};
+
+  void SetP2_highPtEta1020 (Double_t P2_highPtEta1020){fP2_highPtEta1020 = P2_highPtEta1020;};
+  void SetP3_highPtEta1020 (Double_t P3_highPtEta1020){fP3_highPtEta1020 = P3_highPtEta1020;};
+  void SetP4_highPtEta1020 (Double_t P4_highPtEta1020){fP4_highPtEta1020 = P4_highPtEta1020;};
+
+  void SetP2_lowPtPi01020 (Double_t P2_lowPtPi01020){fP2_lowPtPi01020 = P2_lowPtPi01020;};
+  void SetP3_lowPtPi01020 (Double_t P3_lowPtPi01020){fP3_lowPtPi01020 = P3_lowPtPi01020;};
+  void SetP4_lowPtPi01020 (Double_t P4_lowPtPi01020){fP4_lowPtPi01020 = P4_lowPtPi01020;};
+
+  void SetP2_highPtPi01020 (Double_t P2_highPtPi01020){fP2_highPtPi01020 = P2_highPtPi01020;};
+  void SetP3_highPtPi01020 (Double_t P3_highPtPi01020){fP3_highPtPi01020 = P3_highPtPi01020;};
+  void SetP4_highPtPi01020 (Double_t P4_highPtPi01020){fP4_highPtPi01020 = P4_highPtPi01020;};
+
+  void SetP2_lowPtEta2040 (Double_t P2_lowPtEta2040){fP2_lowPtEta2040 = P2_lowPtEta2040;};
+  void SetP3_lowPtEta2040 (Double_t P3_lowPtEta2040){fP3_lowPtEta2040 = P3_lowPtEta2040;};
+  void SetP4_lowPtEta2040 (Double_t P4_lowPtEta2040){fP4_lowPtEta2040 = P4_lowPtEta2040;};
+
+  void SetP2_highPtEta2040 (Double_t P2_highPtEta2040){fP2_highPtEta2040 = P2_highPtEta2040;};
+  void SetP3_highPtEta2040 (Double_t P3_highPtEta2040){fP3_highPtEta2040 = P3_highPtEta2040;};
+  void SetP4_highPtEta2040 (Double_t P4_highPtEta2040){fP4_highPtEta2040 = P4_highPtEta2040;};
+
+  void SetP2_lowPtPi02040 (Double_t P2_lowPtPi02040){fP2_lowPtPi02040 = P2_lowPtPi02040;};
+  void SetP3_lowPtPi02040 (Double_t P3_lowPtPi02040){fP3_lowPtPi02040 = P3_lowPtPi02040;};
+  void SetP4_lowPtPi02040 (Double_t P4_lowPtPi02040){fP4_lowPtPi02040 = P4_lowPtPi02040;};
+
+  void SetP2_highPtPi02040 (Double_t P2_highPtPi02040){fP2_highPtPi02040 = P2_highPtPi02040;};
+  void SetP3_highPtPi02040 (Double_t P3_highPtPi02040){fP3_highPtPi02040 = P3_highPtPi02040;};
+  void SetP4_highPtPi02040 (Double_t P4_highPtPi02040){fP4_highPtPi02040 = P4_highPtPi02040;};
+
+  
+  
   void InitParameters();
 
   
@@ -74,6 +122,7 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Double_t GetCentWeight(Int_t centbin);
   Double_t GetEPweight(Int_t bin);
   Bool_t   RejectEvent(Double_t cent, Int_t centbin);
+  Bool_t   RejectEventPlane(Double_t EP, Int_t EPbin);
   Bool_t   IsFromHFdecay(TParticle *particle);
   Bool_t   IsFromLMdecay(TParticle *particle);
   Bool_t   IsPrimary(TParticle *particle);
@@ -86,6 +135,54 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   Int_t 		fAssTPCnCut;		// TPC number of clusters for associated electron
   Bool_t 		fAssITSrefitCut;	// ITS refir for associated electron
 
+  Double_t fP2_lowPtEta0010; 
+  Double_t fP3_lowPtEta0010; 
+  Double_t fP4_lowPtEta0010; 
+
+  Double_t fP2_highPtEta0010; 
+  Double_t fP3_highPtEta0010; 
+  Double_t fP4_highPtEta0010; 
+
+  Double_t fP2_lowPtPi00010; 
+  Double_t fP3_lowPtPi00010; 
+  Double_t fP4_lowPtPi00010; 
+
+  Double_t fP2_highPtPi00010; 
+  Double_t fP3_highPtPi00010; 
+  Double_t fP4_highPtPi00010; 
+
+  Double_t fP2_lowPtEta1020; 
+  Double_t fP3_lowPtEta1020; 
+  Double_t fP4_lowPtEta1020; 
+
+  Double_t fP2_highPtEta1020; 
+  Double_t fP3_highPtEta1020; 
+  Double_t fP4_highPtEta1020; 
+
+  Double_t fP2_lowPtPi01020; 
+  Double_t fP3_lowPtPi01020; 
+  Double_t fP4_lowPtPi01020; 
+
+  Double_t fP2_highPtPi01020; 
+  Double_t fP3_highPtPi01020; 
+  Double_t fP4_highPtPi01020; 
+
+  Double_t fP2_lowPtEta2040; 
+  Double_t fP3_lowPtEta2040; 
+  Double_t fP4_lowPtEta2040; 
+
+  Double_t fP2_highPtEta2040; 
+  Double_t fP3_highPtEta2040; 
+  Double_t fP4_highPtEta2040; 
+
+  Double_t fP2_lowPtPi02040; 
+  Double_t fP3_lowPtPi02040; 
+  Double_t fP4_lowPtPi02040; 
+
+  Double_t fP2_highPtPi02040; 
+  Double_t fP3_highPtPi02040; 
+  Double_t fP4_highPtPi02040; 
+  
   AliESDEvent        	*fESD;	            	 //! ESD object
   AliAODEvent           *fAOD;                  //! AOD object
   AliVEvent             *fVevent;               //! VEvent

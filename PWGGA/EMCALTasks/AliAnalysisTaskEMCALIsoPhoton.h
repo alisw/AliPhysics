@@ -50,7 +50,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
-  bool                   IsMcPi0(Int_t mclabel);
+  bool                   IsMcPDG(Int_t mclabel, Int_t PDG);
   void                   LoopOnCells();
   bool                   IsExotic(AliVCluster *c);
   void                   CheckTriggerPatch();
@@ -213,6 +213,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
   TH2F        *fDetaDphiFromTM;   //!dphi vs deta of track->GetEMCALcluster() clusters
   TH2F        *fEoverPvsE;        //!E/p for tracks with 80<TPCsignal<100 vs cluster E (check material)
+  TH2F        *fTrackDEtaDPhiPho; //!dEta-dPhi of TM for inclusive photons (except bremss)
+  TH2F        *fTrackDEtaDPhiPi;  //!dEta-dPhi of TM for inclusive pions
   //trigger histos
   TH1F        *fETrigg;           //!energy returned by trigger patch info
   //shower shape studies

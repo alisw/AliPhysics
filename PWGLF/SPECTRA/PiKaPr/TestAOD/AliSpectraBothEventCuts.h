@@ -42,7 +42,9 @@ enum {kDoNotCheckforSDD=0,kwithSDD,kwithoutSDD};
 
   // Constructors
  AliSpectraBothEventCuts() : TNamed(), fAOD(0),fAODEvent(AliSpectraBothTrackCuts::kAODobject),fTrackBits(0), fIsMC(0), fCentEstimator(""), fUseCentPatchAOD049(0),fUseSDDPatchforLHC11a(kDoNotCheckforSDD),fTriggerSettings(AliVEvent::kMB),fTrackCuts(0),
-fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0),fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),fNMCProcessType(-1),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
+fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), fQVectorCutMax(0), fVertexCutMin(0),fVertexCutMax(0), fMultiplicityCutMin(0), fMultiplicityCutMax(0), fMaxChi2perNDFforVertex(0),fMinRun(0),fMaxRun(0),fetarangeofmultiplicitycut(0.0),fUseAliPPVsMultUtils(false),fNMCProcessType(-1),fEventMCProcessType(0),fEventMCProcessTypeIncluded(0),fchecktypeofveretxbytitle(kTRUE),fvertexselection(-1),fDotheeventcutsinmultselection(kFALSE),
+fDotheBGRejection(kTRUE),fDothePileUpRejection(kTRUE),
+fHistoCuts(0),fHistoVtxBefSel(0),fHistoVtxAftSel(0),fHistoEtaBefSel(0),fHistoEtaAftSel(0),fHistoNChAftSel(0),fHistoQVector(0),fHistoEP(0), fHistoVtxAftSelwithoutZvertexCut(0),fHistoVtxalltriggerEventswithMCz(0),fHistoVtxAftSelwithoutZvertexCutusingMCz(0),fHistoRunNumbers(0),fHistoCentrality(0),fHistoMultiplicty(0),fAnalysisUtils(0),fAliPPVsMultUtils(0)
 {
 
 }
@@ -91,6 +93,8 @@ fIsSelected(0), fCentralityCutMin(0), fCentralityCutMax(0), fQVectorCutMin(0), f
   void SetCheckTypeofVeretx(Bool_t flag) {fchecktypeofveretxbytitle=flag;}
  void SetVertexSelection(Int_t flag){fvertexselection=flag;}  
 void SetDotheeventcutsinmultselection(Bool_t flag) {fDotheeventcutsinmultselection=flag;}
+void SetDotheBGRejection(Bool_t flag) {fDotheBGRejection=flag;}
+void SetDothePileUpRejection(Bool_t flag) {fDothePileUpRejection=flag;}
 
   UInt_t GetTrackType()  const    { return fTrackBits;}
   TH1I * GetHistoCuts()         {  return fHistoCuts; }
@@ -179,7 +183,9 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   Bool_t 	  fEventMCProcessTypeIncluded; // if false those process are excluded if true they are included  
   Bool_t          fchecktypeofveretxbytitle; // if 1 type of veretx check using the title
   Int_t  	   fvertexselection; // -1= no check 0=not track not SPD 1= only track 2=only spd 3= track + SPD
-  Bool_t 	   fDotheeventcutsinmultselection; // if true it assume that pile-up/veretx/inel cut are done during the centrality multiplicty selection by AliPPVsMultUtils or loader task 			 
+  Bool_t 	   fDotheeventcutsinmultselection; // if true it assume that pile-up/veretx/inel cut are done during the centrality multiplicty selection by AliPPVsMultUtils or loader task 
+  Bool_t 	   fDotheBGRejection;              // if 1 and the fDotheeventcutsinmultselection 0 BG is reject using AnalysisUtils
+  Bool_t 	   fDothePileUpRejection;        // if 1 the  fDotheeventcutsinmultselection 0  PileUp is reject using AnalysisUtils 	 	  					 
   TH1I            *fHistoCuts;        // Cuts statistics
   TH1F            *fHistoVtxBefSel;        // Vtx distr before event selection 	
   TH1F            *fHistoVtxAftSel;        // Vtx distr after event selection
@@ -203,7 +209,7 @@ Bool_t GetUseAliPPVsMultUtils() const {return fUseAliPPVsMultUtils;}
   AliSpectraBothEventCuts& operator=(const AliSpectraBothEventCuts&);
   
   
-  ClassDef(AliSpectraBothEventCuts, 15);
+  ClassDef(AliSpectraBothEventCuts, 16);
   
 };
 #endif

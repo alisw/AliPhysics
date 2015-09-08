@@ -112,7 +112,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   //TPC and TOF conbined
   TH2F *fM2vsP_NoTpcCut[nBconf][1][2];            //! M2 vs. P
   TH2F *fM2vsP[nBconf][1][18];                    //! M2 vs. P with NsigmaTpcCut for each particle species
-  TH2F *fM2vsZ[nBconf][10];                       //! M2 vs. Z in various pT bins
+  TH2F *fM2vsZ[nBconf][2];                        //! M2 vs. Z
 
   //DCA distributions
   TH1D *hDCAxy[nBconf][18][nbin];                 //! DCAxy distribution with NsigmaTpcCut for each particle species, in p bins
@@ -152,7 +152,7 @@ class AliAnalysisNucleiMass : public AliAnalysisTaskSE {
   void SetPvtxCorrections();
   void SetPmeanCorrections();
 
-  ClassDef(AliAnalysisNucleiMass, 3);
+  ClassDef(AliAnalysisNucleiMass, 4);
 };
 
 #endif

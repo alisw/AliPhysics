@@ -282,7 +282,7 @@ public:
   /** 
    * Get the @f$\varphi@f$ acceptance. User must manage return 
    * 
-   * @return The @f$\var@f$ acceptance. 
+   * @return The @f$\varphi@f$ acceptance. 
    */
   TH1* GetPhiAcceptance() const;
   /** 
@@ -298,7 +298,7 @@ public:
    * resst by this function, thus allowing to accumulate in the passed
    * histogram.
    * 
-   * @param h On return, the @f$\var@f$ acceptance. 
+   * @param h On return, the @f$\varphi@f$ acceptance. 
    */
   void FillPhiAcceptance(TH1& h) const;
   /* @} */
@@ -745,12 +745,13 @@ public:
 		    Double_t cMin=0,    Double_t cMax=100, 
 		    TH1*     hist=0,
 		    TH1*     status=0,
-		    UInt_t   pileUpMask=kDefaultFilter) const;
+		    UInt_t   filterMask=kDefaultFilter) const;
   /** 
    * Fill the trigger histogram previously made with MakeTriggerHistogram
    * 
-   * @param triggerMask 
-   * @param hist 
+   * @param triggerMask  Mask 
+   * @param trg Triggers
+   * @param hist Histogram to fill
    */
   static void FillTriggerHistogram(UInt_t triggerMask, UInt_t trg, TH1* hist);
   /** 
