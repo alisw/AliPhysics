@@ -1,5 +1,7 @@
 #ifndef ALIDIELECTRONVARMANAGER_H
 #define ALIDIELECTRONVARMANAGER_H
+
+
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -1421,6 +1423,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAresXY]     = -999.;
+
   // check if calculation is requested
   if(Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ)) {
@@ -1432,10 +1435,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     if (d1 && d2) {
       // check for ESD or AOD
       Bool_t isESD = (d1->IsA() == AliESDtrack::Class());
-      //printf("isESD = %i,   d1->IsA() = %i,   d2->IsA() = %i \n", isESD, d1->IsA(), d2->IsA());
-      
+
       if (d1->IsA() == d2->IsA()) { // Don't mix AOD with ESD. Needed because AliAnalysisTaskRandomRejection always creates AliAODTracks (should be fixed).
-        
+
         ////// first daughter
         Double_t dca1[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig1[2]    = {-999.,-999.};      // xy,z sigma values
@@ -1443,6 +1445,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         //Float_t dcaTPC1[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
         //Float_t dcaSigTPC1[2] = {-999.,-999.};      // xy,z TPC-only sigma values
         //Float_t dcaResTPC1[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
+
         ////// second daughter
         Double_t dca2[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig2[2]    = {-999.,-999.};      // xy,z sigma values
@@ -1459,7 +1462,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
           dca1[0]   =dca_tmp[0]; dca1[1]   =dca_tmp[1];
           dcaRes1[0]=res_tmp[0]; dcaRes1[1]=res_tmp[1]; dcaRes1[2]=res_tmp[2];
           //static_cast<AliESDtrack*>(d1)->GetImpactParametersTPC(dcaTPC1, dcaResTPC1);
-          
+
           dca_tmp[0]=-999.; dca_tmp[1]=-999.;
           res_tmp[0]=-999.; res_tmp[1]=-999.; res_tmp[2]=-999.;
           static_cast<AliESDtrack*>(d2)->GetImpactParameters(dca_tmp, res_tmp);
@@ -1471,7 +1474,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
           GetDCA(static_cast<AliAODTrack*>(d1), dca1, dcaRes1);
           GetDCA(static_cast<AliAODTrack*>(d2), dca2, dcaRes2);
         }
-        
+
         // compute normalized DCAs
         // neglect the mixed term 'dcaResX[1]'
         if(dcaRes1[0]>0.) dcaSig1[0] = dca1[0]/TMath::Sqrt(dcaRes1[0]);
@@ -1502,8 +1505,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
       }
     }
   }
-  
-  
+
+
   if (!(pair->GetKFUsage())) {
 	//if KF Pairing is not enabled, overwrite values that can be easily derived from legs
 	//use the INDIVIDUAL KF particles as source, which should be a copy of the corresponding properties
@@ -2703,22 +2706,18 @@ inline Bool_t AliDielectronVarManager::GetDCA(const AliAODTrack *track, Double_t
   
   Bool_t ok=kFALSE;
   if(fgEvent) {
-    //Double_t covd0z0[3];
-    //AliAODTrack copy(*track);
     AliExternalTrackParam etp; etp.CopyFromVTrack(track);
-    
+
     Float_t xstart = etp.GetX();
     if(xstart>3.) {
       d0z0[0]=-999.;
       d0z0[1]=-999.;
-      //printf("This method can be used only for propagation inside the beam pipe \n");
       return kFALSE;
     }
-    
+
     AliAODVertex *vtx =(AliAODVertex*)(fgEvent->GetPrimaryVertex());
     Double_t fBzkG = fgEvent->GetMagneticField(); // z componenent of field in kG
     ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
-    //ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
   }
   if(!ok){
     d0z0[0]=-999.;
