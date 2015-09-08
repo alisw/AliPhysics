@@ -267,8 +267,7 @@ bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
   if (doHistogram) {
     Double_t Weight = 1.0;
     if(fWeightshpT&&fhighpt){
-      Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
-      Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(ptrigger->Pt());
+      Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt());
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),ptrigger->Pt(),Weight);
     HistFill(GetNumberHist(kHistPhi,fMBin,fVzBin),ptrigger->Phi(),Weight);
@@ -299,8 +298,7 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
 	Weight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
       }
       else {
-	Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(p->Eta());
-	Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(p->Pt());
+	Weight = fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p->Pt());
       }
     }
     HistFill(GetNumberHist(kHistpT,fMBin,fVzBin),p->Pt(),Weight);
@@ -362,12 +360,10 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
   }//Track duplicate, reject.
   if(fWeights&&fWeightshpT&&fhighpt){
     //t:
-    Int_t indexetat = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
-    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexetat)*fhighpt->Eval(ptrigger->Pt()); 
+    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt()); 
     //a1:
     if(p1->Pt()>4.0){
-      Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(p1->Eta());
-      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(p1->Pt());      
+      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p1->Pt());      
     }
     else{
       Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
@@ -375,8 +371,7 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
     }
     //a2
     if(p2->Pt()>4.0){
-      Int_t indexeta2 = fWeightshpT->GetZaxis()->FindBin(p2->Eta());
-      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta2)*fhighpt->Eval(p2->Pt());      
+      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p2->Pt());      
     }
     else{
       Int_t indexpT2 = fWeights->GetZaxis()->FindBin(p2->Pt());
@@ -405,12 +400,10 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
   Double_t DeltaEta  = ptrigger->Eta() - p1->Eta();
   if(fWeights&&fWeightshpT&&fhighpt){
     //t:
-    Int_t indexetat = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
-    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexetat)*fhighpt->Eval(ptrigger->Pt());    
+    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt());    
     //a1:
     if(p1->Pt()>4.0){
-      Int_t indexeta1 = fWeightshpT->GetZaxis()->FindBin(p1->Eta());
-      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexeta1)*fhighpt->Eval(p1->Pt());      
+      fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p1->Pt());      
     }
     else{
       Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p1->Pt());
@@ -427,8 +420,7 @@ int AliCorrelation3p::FillTrigger(const AliVParticle* ptrigger)
   Double_t fillweight = 1.0;
   if(fWeights&&fWeightshpT&&fhighpt){
     //t:
-    Int_t indexetat = fWeightshpT->GetZaxis()->FindBin(ptrigger->Eta());
-    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexetat)*fhighpt->Eval(ptrigger->Pt());    
+    fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt());    
   }
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
   return 1;

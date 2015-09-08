@@ -135,10 +135,11 @@ class AliMuonEventCuts : public AliAnalysisCuts
   UInt_t fEventL0Inputs; //!< L0 trigger inputs in the event
   UInt_t fEventL1Inputs; //!< L1 trigger inputs in the event
   UInt_t fEventL2Inputs; //!< L2 trigger inputs in the event
+  UInt_t fEventPS; //!< Physics selection for the event
   TObjArray* fSelectedTrigClassesInEvent; //!< list of selected trigger classes in current event
   enum {kComboSimple, kComboFormula, kComboAND, kComboOR}; //!< Trigger combination types
   
-  ClassDef(AliMuonEventCuts, 8); // Class for muon event filters
+  ClassDef(AliMuonEventCuts, 9); // Class for muon event filters
 };
 
 #endif

@@ -553,7 +553,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
     canName = Form("trigEffCh%i", 11+ich);
     can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
     can->SetGridy();
-    leg = new TLegend(0.6, 0.2, 0.9, 0.4);
+    leg = new TLegend(0.7, 0.8, 0.96, 0.92);
     leg->SetBorderSize(1);
     //can->Divide(2,2);
     TString drawOpt = "e";
@@ -563,7 +563,7 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
       if ( ! histo ) continue;
       TH1* chEff = histo->ProjectionX(Form("effEvolutionCh%i",11+ich), ich+1, ich+1);
       chEff->SetTitle(Form("%s for chamber %i", histo->GetTitle(), 11+ich));
-      chEff->GetYaxis()->SetRangeUser(0.9,1.);
+      chEff->GetYaxis()->SetRangeUser(0.9,1.02);
       chEff->SetStats(kFALSE);
       chEff->GetYaxis()->SetTitle("Trigger chamber efficiency");
       TH1* copyEff = chEff->DrawCopy(drawOpt.Data());

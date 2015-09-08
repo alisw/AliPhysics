@@ -1354,7 +1354,7 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
 	return 1;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::SetMultiplicityMethod(Int_t multiplicityMethod)
 {
 	// Set Cut
@@ -1368,7 +1368,7 @@ Bool_t AliConvEventCuts::SetMultiplicityMethod(Int_t multiplicityMethod)
 	return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
 {// Set Cut
 	switch(removePileUp){
@@ -1385,7 +1385,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
 	return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
 
 	switch(extraSignal){
@@ -1408,7 +1408,7 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
 	return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 
 	switch(vertexCut){
@@ -1591,7 +1591,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEv
 	return kFALSE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
 	// Cut on z position of primary vertex
 	Double_t fVertexZ=event->GetPrimaryVertex()->GetZ();
@@ -1619,7 +1619,7 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
 	return kTRUE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 	// returns number of contributors to the vertex
 
@@ -1664,9 +1664,9 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 	return 0;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 // Analysing Jet-Jet MC's 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& weight){
 	AliGenCocktailEventHeader *cHeader 	= 0x0;
 	AliAODMCHeader *cHeaderAOD 			= 0x0;
@@ -1735,13 +1735,19 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 					if (bin < 12) weight = weightsBins[bin];
 				} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
-					Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
-														84,		117, 	152,	191, 	1000};
-					Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
-														6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
+					Double_t ptHardBinRanges[20] 	= {	5, 		11, 	21, 	36, 	57, 
+														84,		117, 	152,	191, 	1000000, 
+														5, 		7, 		9, 		12,		16, 
+														21,		28,		36,		45,		57 };
+					Double_t weightsBins[19] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+														6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
+														2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
+														3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};      
 					Int_t bin = 0;
+					Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+					if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-					if (bin < 9) weight = weightsBins[bin];
+					if (bin < 19) weight = weightsBins[bin];
 				} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
 					Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
 														84,		117, 	152,	191,  	234,
@@ -1817,9 +1823,77 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 	return kFALSE;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
+// Analysing Jet-Jet MC's
+//________________________________________________________________________
+void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSection, Float_t &NTrials){
+
+	AliGenCocktailEventHeader *cHeader 	= 0x0;
+	AliAODMCHeader *cHeaderAOD 			= 0x0;
+	Bool_t headerFound 					= kFALSE;
+
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
+	if (periodName.CompareTo("LHC15a3b") != 0 && periodName.CompareTo("LHC15a3a") != 0 && periodName.CompareTo("LHC15a3a_plus") != 0 &&
+		periodName.CompareTo("LHC15g1a") != 0 && periodName.CompareTo("LHC15g1b") != 0 && periodName.CompareTo("LHC12a15a") != 0 &&
+		periodName.CompareTo("LHC13b4_fix") != 0 && periodName.CompareTo("LHC13b4_plus") != 0 ){
+		NTrials = -1;
+		XSection = -1;
+		return;
+	}
+
+	if(MCEvent->IsA()==AliMCEvent::Class()){
+		if(dynamic_cast<AliMCEvent*>(MCEvent)){
+			cHeader 					= dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+			if(cHeader) headerFound 	= kTRUE;
+		}
+	}
+	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
+		cHeaderAOD 						= dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+		if(cHeaderAOD) headerFound 		= kTRUE;
+	}
+
+	if(headerFound){
+		TList *genHeaders 				= 0x0;
+		if(cHeader) genHeaders 			= cHeader->GetHeaders();
+		if(cHeaderAOD){
+			genHeaders 					= cHeaderAOD->GetCocktailHeaders();
+			if(genHeaders->GetEntries()==1){
+				NTrials = -1;
+				XSection = -1;
+				return;
+			}
+		}
+		AliGenEventHeader* gh 			= 0;
+		for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+			gh 						= (AliGenEventHeader*)genHeaders->At(i);
+			TString GeneratorName 	= gh->GetName();
+			if (GeneratorName.CompareTo("AliGenPythiaEventHeader") == 0){
+				AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(gh);
+				NTrials = gPythia->Trials();
+				XSection = gPythia->GetXsection();
+				return;
+			}
+		}
+	} else {
+		AliGenEventHeader * eventHeader = dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader();
+		TString eventHeaderName 		= eventHeader->ClassName();
+		if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
+			AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
+			NTrials = gPythia->Trials();
+			XSection = gPythia->GetXsection();
+			return;
+		}
+	}
+
+	NTrials = -1;
+	XSection = -1;
+	return;
+}
+
+
+//________________________________________________________________________
 // Analysing Jet-Jet MC's 
-///________________________________________________________________________
+//________________________________________________________________________
 Float_t AliConvEventCuts::GetPtHard(AliVEvent *MCEvent){
 	AliGenCocktailEventHeader *cHeader 	= 0x0;
 	AliAODMCHeader *cHeaderAOD 			= 0x0;
@@ -1874,7 +1948,7 @@ Float_t AliConvEventCuts::GetPtHard(AliVEvent *MCEvent){
 }
 
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 	// abort if mimicing not enabled
 
@@ -2058,7 +2132,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
 }
 
 
-///________________________________________________________________________
+//________________________________________________________________________
 Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 {
 
@@ -2343,7 +2417,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
 
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 TString AliConvEventCuts::GetCutNumber(){
    // returns TString with current cut number
    TString a(kNCuts);
@@ -2353,7 +2427,7 @@ TString AliConvEventCuts::GetCutNumber(){
    return a;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent){
 
 	TString periodName 					= ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();

@@ -130,6 +130,7 @@ TH2F         *fHistPt31;         //
   Float_t fTrackEta[kTrack];    //
   Float_t fTrackPhi[kTrack];    //
   Float_t fTrackCnDf[kTrack];    //
+  Int_t fTrackBit[kTrack];    //
   Int_t   fTrackLabel[kTrack]; //
   Int_t   fTrackLabelM[kTrack]; //
   Float_t fTrackPtM[kTrack];    //

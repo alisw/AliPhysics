@@ -1,7 +1,6 @@
 AliAnalysisTaskLambdaStar *AddTaskLambda
 (
       UInt_t Triggermask = AliVEvent::kCentral,
-      Int_t FilterBit= 032,
       Bool_t Cirpid = kFALSE,
       Int_t Centmin = 0,
       Int_t Centmax =10,
@@ -11,6 +10,7 @@ AliAnalysisTaskLambdaStar *AddTaskLambda
       Int_t Centp = 510,
       Int_t ClusterTPC = 70,
       Float_t DCAxy = 0.1,
+      Int_t FilterBit= 32,
       TString  Dirsuffixname = ""
 )
  {
@@ -42,7 +42,6 @@ AliAnalysisTaskLambdaStar *AddTaskLambda
   task->SetClusterTPC(ClusterTPC);
   task->SetDCAxy(DCAxy);
   task->SetFilterBit(FilterBit);
-  
 
   mgr->AddTask(task);
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();

@@ -78,7 +78,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fMinBCDistance(0.),
   fCentrality(0.),
   fCentBin(0), 
-  fIsMB(0),
+  fIsMB(kTRUE),
   fIsMC(0),
   fIsFastMC(0)
 {
@@ -145,7 +145,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fMinBCDistance(0.),  
   fCentrality(0.),
   fCentBin(0),
-  fIsMB(0),
+  fIsMB(kTRUE),
   fIsMC(0),
   fIsFastMC(0)
 {
@@ -713,7 +713,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
     }
     
-    if(fIsMB || (!fIsMB && p->IsTrig()) ){
+    if(fIsMB || ((!fIsMB) && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
       FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
       if(fidArea>1){
@@ -728,7 +728,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
        //Check trigger efficiency
        FillHistogram(Form("hMCMinBiasPhot%d",mod),clu->E()) ;
        //CheckTrigBadMap
-       if(fPHOSTrigUtils->TestBadMap(mod, cellX,cellZ))
+       if((!fIsMB) && fPHOSTrigUtils->TestBadMap(mod, cellX,cellZ))
          FillHistogram(Form("hMCMinBiasPhotMap%d",mod),clu->E()) ;
        
        if(p->IsTrig())

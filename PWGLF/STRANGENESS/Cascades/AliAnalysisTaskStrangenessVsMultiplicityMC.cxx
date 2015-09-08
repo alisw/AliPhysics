@@ -1497,25 +1497,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
             if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
 
             if( lThisPDG ==   310 && TMath::Abs(lThisRap) < 0.5 ) {
-                fHistPtVsCentV0M_GenK0Short       -> Fill (lThisPt, fCentrality_V0MUnselected);
+                fHistPtVsCentV0MUnselected_GenK0Short       -> Fill (lThisPt, fCentrality_V0MUnselected);
             }
             if( lThisPDG ==  3122 && TMath::Abs(lThisRap) < 0.5 ) {
-                fHistPtVsCentV0M_GenLambda       -> Fill (lThisPt, fCentrality_V0MUnselected);
+                fHistPtVsCentV0MUnselected_GenLambda       -> Fill (lThisPt, fCentrality_V0MUnselected);
             }
             if( lThisPDG == -3122 && TMath::Abs(lThisRap) < 0.5 ) {
-                fHistPtVsCentV0M_GenAntiLambda       -> Fill (lThisPt, fCentrality_V0MUnselected);
+                fHistPtVsCentV0MUnselected_GenAntiLambda       -> Fill (lThisPt, fCentrality_V0MUnselected);
             }
             if( lThisPDG ==  3312 && TMath::Abs(lThisRap) < 0.5 ) {
-                fHistPtVsCentV0M_GenXiMinus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+                fHistPtVsCentV0MUnselected_GenXiMinus       -> Fill (lThisPt, fCentrality_V0MUnselected);
             }
             if( lThisPDG == -3312 && TMath::Abs(lThisRap) < 0.5 ) {
-                fHistPtVsCentV0M_GenXiPlus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+                fHistPtVsCentV0MUnselected_GenXiPlus       -> Fill (lThisPt, fCentrality_V0MUnselected);
             }
             if( lThisPDG ==  3334 && TMath::Abs(lThisRap) < 0.5 ) {
-                fHistPtVsCentV0M_GenOmegaMinus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+                fHistPtVsCentV0MUnselected_GenOmegaMinus       -> Fill (lThisPt, fCentrality_V0MUnselected);
             }
             if( lThisPDG == -3334 && TMath::Abs(lThisRap) < 0.5 ) {
-                fHistPtVsCentV0M_GenOmegaPlus       -> Fill (lThisPt, fCentrality_V0MUnselected);
+                fHistPtVsCentV0MUnselected_GenOmegaPlus       -> Fill (lThisPt, fCentrality_V0MUnselected);
             }
         }
     }//End of loop on tracks

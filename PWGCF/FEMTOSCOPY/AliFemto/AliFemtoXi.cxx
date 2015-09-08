@@ -24,7 +24,12 @@ AliFemtoXi::AliFemtoXi():
   fMassXi(0), fMassOmega(0), fRapXi(0), fRapOmega(0),
   fCTauXi(0), fCTauOmega(0),
   fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
-  fKeyBac(0)
+  fKeyBac(0), fCosPointingAngleXi(0), fPhiXi(0),
+  fEtaXi(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0),
+  fEtaBac(0), fIdBac(0), fBacNSigmaTPCK(-999),fBacNSigmaTPCPi(-999),
+  fBacNSigmaTPCP(-999), fBacNSigmaTOFK(-999), fBacNSigmaTOFPi(-999),
+  fBacNSigmaTOFP(-999), fTPCMomentumBac(0), fTOFProtonTimeBac(0), fTOFPionTimeBac(0),
+  fTOFKaonTimeBac(0)
 {
   fTopologyMapBachelor[0] = 0;
   fTopologyMapBachelor[1] = 0;
@@ -59,42 +64,5 @@ void AliFemtoXi::UpdateXi(){
    fCTauOmega = kMOMEGAMINUS*(fDecayLengthXi) / ::sqrt( ::pow((double)fMomXi.Mag(),2.) );
 }
 // -----------------------------------------------------------------------
-#ifdef __ROOT__
-#ifndef __NO_STAR_DEPENDENCE_ALLOWED__
-#include "StStrangeMuDstMaker/StXiMuDst.h"
-AliFemtoXi::AliFemtoXi( StXiMuDst& xiFromMuDst)  : AliFemtoV0(xiFromMuDst) { // from strangess micro dst structure
-  UpdateV0(); // the v0 stuff
 
-
-  fCharge = xiFromMuDst.charge();
-  fDecayLengthXi = xiFromMuDst.decayLengthXi(); // 12/07/2001 Gael
-  fDecayVertexXi.setX(xiFromMuDst.decayVertexXiX());
-  fDecayVertexXi.setY(xiFromMuDst.decayVertexXiY());
-  fDecayVertexXi.setZ(xiFromMuDst.decayVertexXiZ());
-  fDcaXiDaughters = xiFromMuDst.dcaXiDaughters();
-  fDcaBachelorToPrimVertex = xiFromMuDst.dcaBachelorToPrimVertex();
-  fDcaXiToPrimVertex = xiFromMuDst.dcaXiToPrimVertex();
-  fMomBachelor.setX(xiFromMuDst.momBachelorX());
-  fMomBachelor.setY(xiFromMuDst.momBachelorY());
-  fMomBachelor.setZ(xiFromMuDst.momBachelorZ());
-  
-  fKeyBachelor = xiFromMuDst.keyBachelor();
-  fTopologyMapBachelor[0] = xiFromMuDst.topologyMapBachelor().data(1);
-  fTopologyMapBachelor[1] = xiFromMuDst.topologyMapBachelor().data(2);
-  fTpcHitsBac = xiFromMuDst.topologyMapBachelor().numberOfHits(kTpcId); // 12/07/2001 Gael
-
-  fChi2Xi = xiFromMuDst.chi2Xi();//nulle
-  fClXi = xiFromMuDst.clXi();//nulle
-  fChi2Bachelor = xiFromMuDst.chi2Bachelor();
-  fClBachelor = xiFromMuDst.clBachelor();
-  
-  fDedxBachelor = xiFromMuDst.dedxBachelor();
-  fNufDedxBachelor = xiFromMuDst.nufDedxBachelor();
-
-  UpdateXi(); // the xi stuff
-  
-}
-
-#endif // __NO_STAR_DEPENDENCE_ALLOWED__
-#endif // __ROOT__
 

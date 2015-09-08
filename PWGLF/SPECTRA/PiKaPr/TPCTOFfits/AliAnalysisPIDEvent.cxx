@@ -57,7 +57,12 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent() :
   fTimeZeroTOF(),
   fTimeZeroTOFSigma(),
   fTimeZeroT0(),
-  fMCTimeZero(0.)
+  fMCTimeZero(0.),
+  fIsNotPileUpFromSPDInMultBins(kTRUE),
+  fIsINELgtZERO(kTRUE),
+  fIsAcceptedVertexPosition(kTRUE),
+  fHasNoInconsistentSPDandTrackVertices(kTRUE),
+  fIsMinimumBias(kTRUE)
 {
   /*
    * default constructor
@@ -95,7 +100,12 @@ AliAnalysisPIDEvent::AliAnalysisPIDEvent(const AliAnalysisPIDEvent &source) :
   fTimeZeroTOF(),
   fTimeZeroTOFSigma(),
   fTimeZeroT0(),
-  fMCTimeZero(source.fMCTimeZero)
+  fMCTimeZero(source.fMCTimeZero),
+  fIsNotPileUpFromSPDInMultBins(source.fIsNotPileUpFromSPDInMultBins),
+  fIsINELgtZERO(source.fIsINELgtZERO),
+  fIsAcceptedVertexPosition(source.fIsAcceptedVertexPosition),
+  fHasNoInconsistentSPDandTrackVertices(source.fHasNoInconsistentSPDandTrackVertices),
+  fIsMinimumBias(source.fIsMinimumBias)
 {
   /*
    * copy constructor
@@ -138,7 +148,11 @@ AliAnalysisPIDEvent::operator=(const AliAnalysisPIDEvent &source)
   for (Int_t i = 0; i < 3; i++) 
     fTimeZeroT0[i] = source.fTimeZeroT0[i];
   fMCTimeZero = source.fMCTimeZero;
-
+  fIsNotPileUpFromSPDInMultBins=source.fIsNotPileUpFromSPDInMultBins;
+  fIsINELgtZERO=source.fIsINELgtZERO;
+  fIsAcceptedVertexPosition=source.fIsAcceptedVertexPosition;
+  fHasNoInconsistentSPDandTrackVertices=source.fHasNoInconsistentSPDandTrackVertices;
+  fIsMinimumBias=source.fIsMinimumBias;
   return *this;
 }
 
@@ -492,3 +506,14 @@ AliAnalysisPIDEvent::GetTimeZeroSafeSigma(Float_t momentum) const
 
 //___________________________________________________________
 
+void
+AliAnalysisPIDEvent::SetPPVsMultFlags(Bool_t IsNotPileUpFromSPDInMultBins, Bool_t IsINELgtZERO, Bool_t IsAcceptedVertexPosition,Bool_t HasNoInconsistentSPDandTrackVertices,Bool_t IsMinimumBias) {
+  /*
+    Setting up some flags from AliPPVsMultUtils
+  */
+  fIsNotPileUpFromSPDInMultBins = IsNotPileUpFromSPDInMultBins;
+  fIsINELgtZERO = IsINELgtZERO;
+  fIsAcceptedVertexPosition = IsAcceptedVertexPosition;
+  fHasNoInconsistentSPDandTrackVertices = HasNoInconsistentSPDandTrackVertices;
+  fIsMinimumBias = IsMinimumBias;
+};

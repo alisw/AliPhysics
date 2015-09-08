@@ -173,6 +173,12 @@ fi
 
 mv syswatch.log ../syswatch_calib.log
 
+
+echo "*  Running filtering task for barrel *"
+echo AliESDs.root > esd.list
+aliroot -l -b -q "${ALICE_PHYSICS}/PWGPP/macros/runFilteringTask.C(\"esd.list\",10000,1000,\"${ocdbPath}\")" &> filtering.log
+
+
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (barrel) ..."
 

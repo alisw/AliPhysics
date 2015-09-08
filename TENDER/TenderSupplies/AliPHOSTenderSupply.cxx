@@ -25,6 +25,7 @@
 #include "TROOT.h"
 #include "TH2.h"
 #include "TFile.h"
+#include "TRandom.h"
 
 #include <AliLog.h>
 #include <AliVEvent.h>
@@ -56,6 +57,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
+  ,fAddNoiseMC(0)
+  ,fNoiseMC(0.001)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
@@ -77,6 +80,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fRecoPass(-1)  //to be defined
   ,fUsePrivateBadMap(0)
   ,fUsePrivateCalib(0)
+  ,fAddNoiseMC(0)
+  ,fNoiseMC(0.001)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
@@ -320,6 +325,20 @@ void AliPHOSTenderSupply::ProcessEvent()
            //almost identical pecies of code. Please apply changes to both!!!
     Int_t multClust=esd->GetNumberOfCaloClusters();
     AliESDCaloCells * cells = esd->GetPHOSCells() ;
+    
+    //Make copy of phos Energy and add noise
+    if(fIsMC && fAddNoiseMC){
+      Short_t ncell= cells->GetNumberOfCells() ;
+      Short_t cellNumber;
+      Double_t amplitude=0., time=0., efrac=0.;
+      Int_t mclabel;
+      for(Short_t pos=0; pos<ncell; pos++){
+	 cells->GetCell(pos, cellNumber, amplitude, time, mclabel, efrac) ;
+	 amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+	 Bool_t isHG=cells->GetHighGain(pos) ;
+         cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
+      }      
+    }
  
     for (Int_t i=0; i<multClust; i++) {
       AliESDCaloCluster *clu = esd->GetCaloCluster(i);    
@@ -393,10 +412,24 @@ void AliPHOSTenderSupply::ProcessEvent()
       Double_t ecross = EvalEcross(&cluPHOS);  
       clu->SetMCEnergyFraction(ecross) ;
     }
+    
   }
   else{//AOD
     Int_t multClust=aod->GetNumberOfCaloClusters();
     AliAODCaloCells * cells = aod->GetPHOSCells() ;
+    //Add noise
+    if(fIsMC && fAddNoiseMC){
+      Short_t ncell= cells->GetNumberOfCells() ;
+      Short_t cellNumber;
+      Double_t amplitude=0., time=0., efrac=0.;
+      Int_t mclabel;
+      for(Short_t pos=0; pos<ncell; pos++){
+	 cells->GetCell(pos, cellNumber, amplitude, time, mclabel, efrac) ;
+	 amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+	 Bool_t isHG=cells->GetHighGain(pos) ;
+         cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
+      }      
+    }
   
     for (Int_t i=0; i<multClust; i++) {
       AliAODCaloCluster *clu = aod->GetCaloCluster(i);    
@@ -474,6 +507,7 @@ void AliPHOSTenderSupply::ProcessEvent()
       Double_t ecross = EvalEcross(&cluPHOS);  
       clu->SetMCEnergyFraction(ecross) ;      
     }
+    
   }
 
 }

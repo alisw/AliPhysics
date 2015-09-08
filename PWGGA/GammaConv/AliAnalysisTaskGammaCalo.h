@@ -258,6 +258,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		vector<Int_t>						fVectorDoubleCountTrueClusterGammas;			//! vector containing labels of validated cluster photons
 		TH1F								**fHistoMultipleCountTrueClusterGamma;			//! array of histos how often TrueClusterGammas are counted
 		map<Int_t,Int_t>					fMapMultipleCountTrueClusterGammas;				//! map containing cluster photon labels that are counted at least twice
+		TH2F								**fHistoTruePi0InvMassPtAlpha;					//! array of histogram with pure pi0 signal inv Mass, energy of cluster
+		TH2F								**fHistoTruePi0PureGammaInvMassPtAlpha;			//! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
 
 		// event histograms
 		TH1F 								**fHistoNEvents;								//! array of histos with event information
@@ -269,7 +271,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		TH2F								**fHistoSPDClusterTrackletBackground;			//! array of histos with SPD tracklets vs SPD clusters for background rejection
 		TH1F 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
-		
+		TProfile							**fProfileJetJetXSection;						//! array of profiles with xsection for jetjet
+		TH1F								**fHistoJetJetNTrials;							//! array of histos with ntrials for jetjet
+
 		// tree for identified particle properties
 		TTree 								**tTrueInvMassROpenABPtFlag;					//! array of trees with 
 		Float_t 							fInvMass;										//! InvMass, 
@@ -303,7 +307,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCalo, 13);
+		ClassDef(AliAnalysisTaskGammaCalo, 14);
 };
 
 #endif

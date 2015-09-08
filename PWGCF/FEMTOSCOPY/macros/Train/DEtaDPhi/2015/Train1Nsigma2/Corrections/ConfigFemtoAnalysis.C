@@ -162,6 +162,16 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2014/DEtaDPhi/Trains/Corrections/Train7Light/4Dmap_FB768_MCDCA_DoubleCounting.root");
 	else if(fileNo==16)
 	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/1Dmap_FB96_MCOnly_ExclusivePIDNsigmaHalf2.root");
+	else if(fileNo==17)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/AnalysisNote/1Dmap_FB96_MCOnlyLHC10f6a_Exclusive2Rej3.root");
+	else if(fileNo==18)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/AnalysisNote/1Dmap_FB768_MCOnlyLHC10f6a_Exclusive2Rej3.root");
+	else if(fileNo==19)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/AnalysisNote/1Dmap_FB128_MCOnlyLHC10f6a_Exclusive2Rej3.root");
+	else if(fileNo==20)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/AnalysisNote/1Dmap_FB96_MCOnlyLHC10f6a_Exclusive2.root");
+	else if(fileNo==21)
+	  strcpy(fileName,"alien:///alice/cern.ch/user/m/majanik/2015/DEtaDPhi/Trains/Corrections/CorrectionFiles/AnalysisNote/1Dmap_FB96_MCOnlyLHC10f6a_NoDouble2.root");
 
 	cout<<"Filename: "<<Form("%s",fileName)<<endl;
 

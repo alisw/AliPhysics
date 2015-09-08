@@ -79,7 +79,8 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            Circularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            TauDen(AliEmcalJet *mainJet, Int_t jetContNb);
-  Float_t                            Tau1Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, Int_t jetContNb); 
+  Float_t                            Tau1Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, Int_t jetContNb);
+  Float_t                            Tau1Num_full(AliEmcalJet *mainJet, AliEmcalJetFinder *finder, Int_t jetContNb);
   Float_t                            Tau2Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, AliEmcalJet *subJet2hardest, Int_t jetContNb);
   Float_t                            Tau3Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, AliEmcalJet *subJet2hardest, AliEmcalJet *subJet3hardest, Int_t jetContNb);
   Int_t *                            JetHard(AliEmcalJetFinder *finder);

@@ -605,6 +605,7 @@ void AliAnalysisTaskRandomRejection::InitTestparticles(Int_t nNeededTestPart)
     
     theta = 2.*TMath::ATan( TMath::Exp(-eta) ); // theta is the intrinsic AODTrack variable
     
+    /// @TODO: create AODTrack or ESDtrack in consistence with the analysed data type!
     AliAODTrack* testpart = new AliAODTrack();
     testpart->SetPt(pt);        //void SetPt(Double_t pt) { fMomentum[0] = pt; };
     testpart->SetPhi(phi);      //void SetPhi(Double_t phi) { fMomentum[1] = phi; }

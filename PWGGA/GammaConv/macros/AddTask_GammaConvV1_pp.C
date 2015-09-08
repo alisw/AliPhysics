@@ -115,7 +115,7 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 4;
 	if ( trainConfig == 70) numberOfCuts = 2;
-	
+
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
@@ -487,7 +487,12 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 		eventCutArray[ 0] = "00000123"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta analysis
 		eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009227302008250404000"; mesonCutArray[1] = "0152101500000000"; //variation alpha 0.85
 		eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009227302008250404000"; mesonCutArray[2] = "0152109500000000"; //variation alpha
-		eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000000"; //double counting		
+		eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152101500000000"; //double counting	
+    } else if (trainConfig == 75) { //pp 8TeV cuts
+		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; //New standard cut for eta/pi0 analysis
+		eventCutArray[ 1] = "00005211"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; // trigger kEMC7
+		eventCutArray[ 2] = "00006211"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; // trigger kPHI7
+		eventCutArray[ 3] = "00008111"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; // trigger kEMCEGA + CINT7
 		//---------systematic studies July 2015--------------------------//
 	} else if (trainConfig == 80) {
 		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009227302008250404000"; mesonCutArray[0] = "0152101500000000"; //New standard cut for eta: alpha pT dependent

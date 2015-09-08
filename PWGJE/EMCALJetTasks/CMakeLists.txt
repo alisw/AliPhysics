@@ -99,6 +99,9 @@ set(SRCS
     Tracks/AliAnalysisTaskTrackDCA.cxx
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
+    UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
+    Tracks/AliAnalysisTaskEmcalClustersRef.cxx
+    Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
@@ -173,6 +176,7 @@ if(FASTJET_FOUND)
         Tracks/AliReducedJetParticle.cxx
         Tracks/AliReducedJetConstituent.cxx
         Tracks/AliReducedMatchedTrack.cxx
+        Tracks/AliAnalysisTaskTracksInJet.cxx
        )
 
     include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper

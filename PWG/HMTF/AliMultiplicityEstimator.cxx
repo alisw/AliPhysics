@@ -29,7 +29,8 @@ AliMultiplicityEstimator::AliMultiplicityEstimator(const char* name, const char*
     fuseWeights(kTRUE), fReferenceEstimator(0), fcorr_thisNch_vs_refNch(0), fNch_vs_nMPI(0),
     feta_min_backwards(feta_min_backwards), feta_max_backwards(feta_max_backwards),
     feta_min_forwards(feta_min_forwards), feta_max_forwards(feta_max_forwards),
-    fbypass_eta_selection(false)
+    fnegate_estimator_region(false),
+    fbypass_eta_selection(false), fMeasuresCharged(true)
 {
 }
 
@@ -39,7 +40,8 @@ AliMultiplicityEstimator::AliMultiplicityEstimator(const char* name, const char*
     fuseWeights(kTRUE), fReferenceEstimator(0), fcorr_thisNch_vs_refNch(0), fNch_vs_nMPI(0),
     feta_min_backwards(0), feta_max_backwards(0),
     feta_min_forwards(0), feta_max_forwards(0),
-    fbypass_eta_selection(true)
+    fnegate_estimator_region(false),
+    fbypass_eta_selection(true), fMeasuresCharged(true)
 {
 }
 
@@ -77,8 +79,8 @@ void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
   const Int_t nch_bins  = 250;
   const Float_t eta_max = 10;
   const Int_t eta_bins  = 200;
-  const Float_t q2_max  = 150;
-  const Int_t   q2_bins = 750;
+  const Float_t q2_max  = 200;
+  const Int_t   q2_bins = 1000;
   const Int_t nMPI_max  = 50;
   const Int_t nMPI_bins = 50;
   const Float_t pt_bin_edges[] =
@@ -160,10 +162,10 @@ void AliMultiplicityEstimator::RegisterHistograms(TList *outputList){
   fNch_vs_nMPI->SetDirectory(0);
   curr_est->Add(fNch_vs_nMPI);
 
-  fNch_vs_Q2 = new TH2F("fNch_vs_Q2", "fNch_vs_nMPI",
+  fNch_vs_Q2 = new TH2F("fNch_vs_Q2", "fNch_vs_Q2",
 			nch_bins, 0, nch_max,
 			q2_bins, 0, q2_max);
-  fNch_vs_Q2->GetXaxis()->SetTitle(Form("N_{ch}^{%s}", this->GetName()));
+  fNch_vs_Q2->GetXaxis()->SetTitle(Form("N_{neut}^{%s}", this->GetName()));
   fNch_vs_Q2->GetYaxis()->SetTitle("Q^{2}");
   fNch_vs_Q2->SetDirectory(0);
   curr_est->Add(fNch_vs_Q2);
@@ -176,14 +178,24 @@ void AliMultiplicityEstimator::PreEvent(Float_t ev_weight){
 }
 
 Bool_t AliMultiplicityEstimator::TrackSelection(AliMCParticle* track) {
-  if (track->Charge() != 0){
-    Double_t eta = track->Eta();
-    if(fbypass_eta_selection ||
-       ((eta >= feta_min_backwards &&
-       eta <= feta_max_backwards) ||
-       (eta >= feta_min_forwards &&
-	eta <= feta_max_forwards)))
-      {
+  Double_t eta = track->Eta();
+  if(// should we just bypass the eta selection (used for "total")
+     fbypass_eta_selection ||
+     // If the region is not negated (count particle in that region)
+     (!fnegate_estimator_region && ((eta >= feta_min_backwards &&
+				    eta <= feta_max_backwards) ||
+				    (eta >= feta_min_forwards &&
+				     eta <= feta_max_forwards))) ||
+     // If the region is negated the particle must not be in the region
+     (fnegate_estimator_region && !((eta >= feta_min_backwards &&
+				     eta <= feta_max_backwards) ||
+				    (eta >= feta_min_forwards &&
+				     eta <= feta_max_forwards))))
+    {
+      if (track->Charge() != 0 && this->fMeasuresCharged){
+	return true;
+      }
+      else if (track->Charge() == 0 && (!this->fMeasuresCharged)){
 	return true;
       }
     }
@@ -219,6 +231,13 @@ void AliMultiplicityEstimator::ProcessTrackWithKnownMultiplicity(AliMCParticle *
 			   fuseWeights?feventWeight:1);
 	break;
       }
+    }
+    // Fill the "allcharged" bin of the 3d histogram. Note that this is still restricted to the y<.5 region
+    if (track->Charge() != 0) {
+	fNch_pT_pid->Fill(fnch_in_estimator_region,
+			   track->Pt(),
+			   this->kALLCHARGED,
+			   fuseWeights?feventWeight:1);
     }
   }
 }

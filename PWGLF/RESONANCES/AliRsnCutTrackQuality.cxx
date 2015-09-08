@@ -506,37 +506,87 @@ void AliRsnCutTrackQuality::Print(const Option_t *) const
 //
 // Print information on this cut
 //
-
    AliInfo(Form("Cut name                : %s", GetName()));
    AliInfo(Form("Required flags (off, on): %lx %lx", fFlagsOn, fFlagsOff));
-   AliInfo(Form("Ranges in eta, pt       : %.2f - %.2f, %.2f - %.2f", fEta[0], fEta[1], fPt[0], fPt[1]));
-   AliInfo(Form("Kink daughters are      : %s", (fRejectKinkDaughters ? "rejected" : "accepted")));
-   AliInfo(Form("TPC requirements (clusters)       : min. cluster = %i, max chi2 = %f", fTPCminNClusters, fTPCmaxChi2));
-   AliInfo(Form("TPC requirements (crossed rows)   : min. crossed rows = %f, min. crossed rows/findable clusters = %f", fTPCminNCrossedRows, fTPCminCrossedRowsOverFindableCls));
-   AliInfo(Form("TPC requirements (track length)   : min. track length in active volume TPC = %f", fCutMinLengthActiveVolumeTPC));
 
-   AliInfo(Form("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f", fITSminNClusters, fSPDminNClusters, fITSmaxChi2));
+   if(!fESDtrackCuts){
+      AliInfo(Form("Ranges in eta, pt       : %.2f - %.2f, %.2f - %.2f", fEta[0], fEta[1], fPt[0], fPt[1]));
+      AliInfo(Form("Kink daughters are      : %s", (fRejectKinkDaughters ? "rejected" : "accepted")));
+      AliInfo(Form("TPC requirements (clusters)       : min. cluster = %i, max chi2 = %f", fTPCminNClusters, fTPCmaxChi2));
+      AliInfo(Form("TPC requirements (crossed rows)   : min. crossed rows = %f, min. crossed rows/findable clusters = %f", fTPCminNCrossedRows, fTPCminCrossedRowsOverFindableCls));
+      AliInfo(Form("TPC requirements (track length)   : min. track length in active volume TPC = %f", fCutMinLengthActiveVolumeTPC));
 
-   if (fDCARmaxfixed) {
-      AliInfo(Form("Max DCA r cut               : fixed to %f cm", fDCARmax));
-   } else {
-      AliInfo(Form("Max DCA r cut formula       : %s", fDCARptFormula.Data()));
-   }
+      AliInfo(Form("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f", fITSminNClusters, fSPDminNClusters, fITSmaxChi2));
+
+      if (fDCARmaxfixed) {
+	 AliInfo(Form("Max DCA r cut               : fixed to %f cm", fDCARmax));
+      } else {
+	 AliInfo(Form("Max DCA r cut formula       : %s", fDCARptFormula.Data()));
+      }
    
-   if (fDCARminfixed) {
-      AliInfo(Form("Min DCA r cut               : fixed to %f cm", fDCARmin));
-   } else {
-      AliInfo(Form("Min DCA r cut formula       : %s", fDCARptFormulaMin.Data()));
-   }
+      if (fDCARminfixed) {
+         AliInfo(Form("Min DCA r cut               : fixed to %f cm", fDCARmin));
+      } else {
+         AliInfo(Form("Min DCA r cut formula       : %s", fDCARptFormulaMin.Data()));
+      }
 
-   if (fDCAZfixed) {
-      AliInfo(Form("DCA z cut               : fixed to %f cm", fDCAZmax));
-   } else {
-      AliInfo(Form("DCA z cut formula       : %s", fDCAZptFormula.Data()));
+      if (fDCAZfixed) {
+	 AliInfo(Form("DCA z cut               : fixed to %f cm", fDCAZmax));
+      } else {
+	 AliInfo(Form("DCA z cut formula       : %s", fDCAZptFormula.Data()));
+      }
+
+   }else{
+      Float_t eta1,eta2,pt1,pt2;
+      fESDtrackCuts->GetEtaRange(eta1,eta2);
+      fESDtrackCuts->GetPtRange(pt1,pt2);
+      AliInfo(Form("Ranges in eta, pt       : %.2f - %.2f, %.2f - %.2f", eta1, eta2, pt1, pt2));
+      AliInfo(Form("Kink daughters are      : %s", (!(fESDtrackCuts->GetAcceptKinkDaughters()) ? "rejected" : "accepted")));
+      AliInfo(Form("TPC requirements (clusters)       : min. cluster = %i, max chi2 = %f", fESDtrackCuts->GetMinNClusterTPC(), fESDtrackCuts->GetMaxChi2PerClusterTPC()));
+      AliInfo(Form("TPC requirements (crossed rows)   : min. crossed rows = %f, min. crossed rows/findable clusters = %f", fESDtrackCuts->GetMinNCrossedRowsTPC(), fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()));
+      AliInfo(Form("TPC requirements (track length)   : min. track length in active volume TPC = %f", fESDtrackCuts->GetMinLengthActiveVolumeTPC()));
+
+      Int_t i=fESDtrackCuts->GetClusterRequirementITS(AliESDtrackCuts::kSPD);
+      Int_t n=-1;
+      char s[500];
+      if(i==AliESDtrackCuts::kOff) n=0;
+      else if(i==AliESDtrackCuts::kAny) n=1;
+      else if(i==AliESDtrackCuts::kBoth) n=2;
+      else if(i==AliESDtrackCuts::kNone) sprintf(s,"no clusters");
+      else if(i==AliESDtrackCuts::kFirst) sprintf(s,"cluster in first layer");
+      else if(i==AliESDtrackCuts::kOnlyFirst) sprintf(s,"cluster only in first layer");
+      else if(i==AliESDtrackCuts::kSecond) sprintf(s,"cluster in second layer");
+      else if(i==AliESDtrackCuts::kOnlySecond) sprintf(s,"cluster only in second layer");
+      if(n>-1) AliInfo(Form("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f", fESDtrackCuts->GetMinNClustersITS(), n, fESDtrackCuts->GetMaxChi2PerClusterITS()));
+      else AliInfo(Form("ITS requirements        : min. cluster = %d (all), SPD: %s, max chi2 = %f", fESDtrackCuts->GetMinNClustersITS(), s, fESDtrackCuts->GetMaxChi2PerClusterITS()));
+
+      sprintf(s,"%s",fESDtrackCuts->GetMaxDCAToVertexXYPtDep());
+      if (!strcmp(s,"")) {
+         AliInfo(Form("Max DCA r cut               : fixed to %f cm", fESDtrackCuts->GetMaxDCAToVertexXY()));
+      } else {
+         AliInfo(Form("Max DCA r cut formula       : %s", s));
+      }
+   
+      sprintf(s,"%s",fESDtrackCuts->GetMinDCAToVertexXYPtDep());
+      if (!strcmp(s,"")) {
+         AliInfo(Form("Min DCA r cut               : fixed to %f cm", fESDtrackCuts->GetMinDCAToVertexXY()));
+      } else {
+         AliInfo(Form("Min DCA r cut formula       : %s", s));
+      }
+
+      sprintf(s,"%s",fESDtrackCuts->GetMaxDCAToVertexZPtDep());
+      if (!strcmp(s,"")) {
+	 AliInfo(Form("DCA z cut               : fixed to %f cm", fESDtrackCuts->GetMaxDCAToVertexZ()));
+      } else {
+         AliInfo(Form("DCA z cut formula       : %s", s));
+      }
+
    }
 
    AliInfo(Form("fAODTestFilterBit       : filter bit %i",fAODTestFilterBit));
    AliInfo(Form("fCheckOnlyFilterBit     : %i",((int) fCheckOnlyFilterBit)));
+
+   return;
 }
 //__________________________________________________________________________________________________
 void AliRsnCutTrackQuality::SetDefaults2010(Bool_t useTPCCrossedRows, Bool_t useDefaultKinematicCuts)

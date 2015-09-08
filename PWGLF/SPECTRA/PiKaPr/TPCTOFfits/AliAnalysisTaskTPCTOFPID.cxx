@@ -268,10 +268,11 @@ AliAnalysisTaskTPCTOFPID::InitEvent()
     vertex = fESDEvent->GetPrimaryVertexSPD();
     if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
     else fHasVertex = kTRUE;
+    TString vtxTyp = vertex->GetTitle();
     Double_t cov[6]={0};
     vertex->GetCovarianceMatrix(cov);
     Double_t zRes = TMath::Sqrt(cov[5]);
-    if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
+    if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
   }
   else fHasVertex = kTRUE;
 
@@ -346,8 +347,16 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   if (!InitRun()) return;
   /* init event */
   if (!InitEvent()) return;
-  if(!(fMultiUtils->IsEventSelected(fESDEvent))) return;
+  
+  
   Float_t V0MPercentile = fMultiUtils->GetMultiplicityPercentile(fESDEvent, "V0M");
+  Bool_t IsNotPileUpFromSPDInMultBins=fMultiUtils->IsNotPileupSPDInMultBins(fESDEvent);
+  Bool_t IsINELgtZERO = fMultiUtils->IsINELgtZERO(fESDEvent);
+  Bool_t IsAcceptedVertexPosition=fMultiUtils->IsAcceptedVertexPosition(fESDEvent);
+  Bool_t HasNoInconsistentSPDandTrackVertices=fMultiUtils->HasNoInconsistentSPDandTrackVertices(fESDEvent);
+  Bool_t IsMinimumBias=fMultiUtils->IsMinimumBias(fESDEvent);
+
+
 
   /*** MC PRIMARY PARTICLES ***/
 
@@ -395,6 +404,8 @@ AliAnalysisTaskTPCTOFPID::UserExec(Option_t *option)
   fAnalysisEvent->SetHasVertex(fHasVertex);
   fAnalysisEvent->SetVertexZ(fVertexZ);
   fAnalysisEvent->SetMCTimeZero(fMCTimeZero);
+  fAnalysisEvent->SetPPVsMultFlags(IsNotPileUpFromSPDInMultBins,IsINELgtZERO,IsAcceptedVertexPosition,HasNoInconsistentSPDandTrackVertices,IsMinimumBias);
+				
   /* update TOF event info */
   for (Int_t i = 0; i < 10; i++) {
     fAnalysisEvent->SetTimeZeroTOF(i, fESDpid->GetTOFResponse().GetT0bin(i));

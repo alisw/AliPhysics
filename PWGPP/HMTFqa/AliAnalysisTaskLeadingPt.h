@@ -60,6 +60,7 @@ class AliAnalysisTaskLeadingPt : public AliAnalysisTaskSE {
   virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;} 
   virtual void  SetPileUpRejMV(Bool_t isrej) {fPileUpRejMV = isrej;} 
   virtual void  SetPileUpMvSettings(AliAnalysisUtils* fAliAnalysisUtils);
+  virtual void  SetNcontributors(Int_t nContributors){fnContributors = nContributors;}
 
 
  private:
@@ -80,6 +81,7 @@ class AliAnalysisTaskLeadingPt : public AliAnalysisTaskSE {
   Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
   Bool_t        fPileUpRejMV;
   AliAnalysisUtils* fAliAnalysisUtils;
+  Int_t fnContributors;
 
 
 

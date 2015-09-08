@@ -152,8 +152,8 @@ fTriggerSelectCharge(0),
 fAssociatedSelectCharge(0),
 fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
-fCutConversions(kFALSE),
-fCutResonances(kFALSE),
+fCutConversionsV(-1),
+fCutResonancesV(-1),
 fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
@@ -170,6 +170,7 @@ fAssociatedFromDetector(0),
 fMCUseUncheckedCentrality(kFALSE),
 fCheckCertainSpecies(-1),
 fRemoveWeakDecaysInMC(kFALSE),
+fFillYieldRapidity(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -296,8 +297,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetEtaOrdering(fEtaOrdering);
   fHistosMixed->SetEtaOrdering(fEtaOrdering);
 
-  fHistos->SetPairCuts(fCutConversions, fCutResonances);
-  fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
+  fHistos->SetPairCuts(fCutConversionsV, fCutResonancesV);
+  fHistosMixed->SetPairCuts(fCutConversionsV, fCutResonancesV);
   
   fHistos->SetRejectResonanceDaughters(fRejectResonanceDaughters);
   fHistosMixed->SetRejectResonanceDaughters(fRejectResonanceDaughters);
@@ -338,6 +339,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
+  fListOfHistos->Add(new TH2F("mixedDist2", ";centrality;events;events", 101, 0, 101, 100, -0.5, 99.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
   if (fCentralityMethod == "V0A_MANUAL")
   {
@@ -352,8 +354,23 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH2F("checkSpecies", ";eta;pt;particles", 20, -1, 1, 40, 0, 10));
   
   if (fCentralityMethod == "ZNAC")
-  {
     fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
+
+  Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
+  Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
+  
+  if (fFillYieldRapidity) {
+    const Int_t nPtBins = 400;
+    Double_t ptBins[nPtBins+1];
+    for (int i=0; i<=nPtBins; i++)
+      ptBins[i] = 20.0 / nPtBins * i;
+    
+    const Int_t nyBins = 20;
+    Double_t yBins[nyBins+1];
+    for (int i=0; i<=nyBins; i++)
+      yBins[i] = -1.0 + 2.0 / nyBins * i;
+
+    fListOfHistos->Add(new TH3F("yieldsRapidity", ";centrality;pT;y", nCentralityBins, centralityBins, nPtBins, ptBins, nyBins, yBins));
   }
 
   PostData(0,fListOfHistos);
@@ -364,9 +381,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // event mixing
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemention of AliEventPoolManager
    
-  Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
-  Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
-  
   const Int_t kNZvtxBins  = 10+(1+10)*4;
   // bins for further buffers are shifted by 100 cm
   Double_t vertexBins[kNZvtxBins+1] = { -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
@@ -454,8 +468,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fAssociatedSelectCharge", &fAssociatedSelectCharge,"fAssociatedSelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
-  settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
-  settingsTree->Branch("fCutResonances", &fCutResonances,"CutResonances/O");
+  settingsTree->Branch("fCutConversionsV", &fCutConversionsV,"CutConversionsV/D");
+  settingsTree->Branch("fCutResonancesV", &fCutResonancesV,"CutResonancesV/D");
   settingsTree->Branch("fRejectResonanceDaughters", &fRejectResonanceDaughters,"RejectResonanceDaughters/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
@@ -474,6 +488,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
+  settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
@@ -679,6 +694,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // triggers
   TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
   CleanUp(tmpList, mc, skipParticlesAbove);
+  if (fFillYieldRapidity) {
+    for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+      AliVParticle* particle = dynamic_cast<AliVParticle*> (tmpList->UncheckedAt(i));
+      if (!particle)
+	continue;
+      ((TH3F*) fListOfHistos->FindObject("yieldsRapidity"))->Fill(centrality, particle->Pt(), particle->Y());
+    }
+  }
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
   
@@ -724,8 +747,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (fFillMixed)
   {
     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
-    if (fFillOnlyStep0)
+    if (fFillOnlyStep0) {
       ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool->GetCurrentNEvents());
+    }
     if (pool->IsReady())
       for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
@@ -912,6 +937,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
 	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
 	((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
+	((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool2->GetCurrentNEvents());
 	if (pool2->IsReady())
 	{
 	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
@@ -1368,14 +1394,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
      
     if (pool->IsReady()) 
     {
-      
       Int_t nMix = pool->GetCurrentNEvents();
 //       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
       
       ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+      ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3, nMix);
       ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-      if (pool->IsReady())
-	((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, nMix);
     
       // Fill mixed-event histos here  
       for (Int_t jMix=0; jMix<nMix; jMix++) 

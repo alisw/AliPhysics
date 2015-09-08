@@ -3,10 +3,11 @@ AliAnalysisTask* AddTaskLeadingPt(
 		Float_t ptleadingCut = 0.5,
 		Int_t typerun =0, // 0 for pp and 1 for Pb-Pb or pPb
 		TString  type ="ESD",
-		//UInt_t kTriggerInt = AliVEvent::kMB, //for pPb kINT7, for pp or PbPb kMB
-		UInt_t kTriggerInt = AliVEvent::kINT7, //LHC11c
+		UInt_t kTriggerInt = AliVEvent::kMB, //for pPb kINT7, for pp or PbPb kMB
+		//UInt_t kTriggerInt = AliVEvent::kINT7, //LHC11c
 		Bool_t ispileuprej = kTRUE,
-		Bool_t ispileuprejMV = kTRUE
+		Bool_t ispileuprejMV = kTRUE,
+		Int_t nContributors = 5
 		)
 {
 	// Creates a pid task and adds it to the analysis manager
@@ -50,6 +51,7 @@ AliAnalysisTask* AddTaskLeadingPt(
 	taskLeadingPt->SetTrigger(kTriggerInt);
 	taskLeadingPt->SetPileUpRej(ispileuprej);
 	taskLeadingPt->SetPileUpRejMV(ispileuprejMV);
+	taskLeadingPt->SetNcontributors(nContributors);
 	//Set Filters
 	taskLeadingPt->SetTrackFilterGolden(trackFilterGolden);
 	taskLeadingPt->SetTrackFilterTPC(trackFilterTPC);

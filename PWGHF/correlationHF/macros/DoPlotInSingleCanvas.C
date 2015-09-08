@@ -70,23 +70,25 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	hDraw=(TH1D*)obj->Clone("hDraw");
 	hDraw->Reset(0);
 
-	hDraw->SetXTitle("#Delta#varphi(D,h) (rad)");
-	hDraw->GetXaxis()->SetTitleFont(42);
-	hDraw->GetXaxis()->SetLabelFont(42);
-	hDraw->GetXaxis()->SetTitleOffset(1.1);
-	hDraw->GetXaxis()->SetTitleSize(0.042);
+	hDraw->SetXTitle("#Delta#varphi (rad)");
+	hDraw->GetXaxis()->SetTitleFont(43);
+	hDraw->GetXaxis()->SetLabelSize(18);
+	hDraw->GetXaxis()->SetLabelFont(43);
+	hDraw->GetXaxis()->SetTitleOffset(2.5);
+	hDraw->GetXaxis()->SetTitleSize(25);
 
- 	if(particle=="Dstar")hDraw->SetYTitle("#frac{1}{#it{N}_{D^{*+}}}#frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
-	hDraw->GetYaxis()->SetLabelFont(42);
-	hDraw->GetYaxis()->SetTitleFont(42);
-	hDraw->GetYaxis()->SetTitleOffset(1.5);
-	hDraw->GetYaxis()->SetTitleSize(0.042);	
+	if(particle.Contains("Average")) hDraw->SetYTitle("#frac{1}{N_{D}}#frac{dN^{assoc}}{d#Delta#varphi} (rad^{-1})");
+	hDraw->GetYaxis()->SetLabelFont(43);
+	hDraw->GetYaxis()->SetLabelSize(18);
+	hDraw->GetYaxis()->SetTitleFont(43);
+	hDraw->GetYaxis()->SetTitleOffset(3.6);
+	hDraw->GetYaxis()->SetTitleSize(25);	
       }
     }
     
     Int_t CanvasSizeX, CanvasSizeY;
     if(system=="pp")CanvasSizeX =1030, CanvasSizeY = 1000;
-    else if(system=="pPb")CanvasSizeX =1260, CanvasSizeY = 800;
+    else if(system=="pPb")CanvasSizeX =1200, CanvasSizeY = 800;
     else cout << "Check System input !! " <<endl;
     coutput=new TCanvas("coutput","coutput",CanvasSizeX,CanvasSizeY);
     if(system=="pp")coutput->Divide(3,3);
@@ -110,39 +112,50 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
       TPad *pd=(TPad*)coutput->cd(k+1);
       pd->SetTickx();
       pd->SetTicky();
-      //pd->SetMargin(0,0,0,0);
       pd->SetLeftMargin(Canvas[k]->GetLeftMargin());
-      //pd->SetRightMargin(Canvas[k]->GetRightMargin()+0.08);
-      
+      pd->SetFillStyle(0);
+    
       TH1D *hDrL=(TH1D*)hDraw->DrawCopy();
+      if(k>=3) {
+	hDrL->SetYTitle("");
+	hDrL->GetYaxis()->SetLabelSize(0);
+      }
+      if(k%3!=2) {
+	hDrL->SetXTitle("");
+	hDrL->GetXaxis()->SetLabelSize(0);
+      }
 
       if(particle.Contains("Average") && k==0){
-	TLatex *tlTitle=new TLatex(0.2,0.25,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
+	TLatex *tlTitle=new TLatex(0.28,0.22,Form("#bf{Average D^{0}, D^{+}, D^{*+}}"));
 	tlTitle->SetNDC();
 	tlTitle->Draw();
-	tlTitle->SetTextSize(0.05);
+	tlTitle->SetTextFont(63);
+	tlTitle->SetTextSize(22);
+	if(system=="pPb") {tlTitle->SetX(0.3); tlTitle->SetY(0.19);}
 
 	if(system=="pp") {
-	  TLatex *tly=new TLatex(0.37,0.66,Form("#bf{|#Delta#eta|<1.0}, #bf{|#it{y}^{D}|<0.5}"));
+	  TLatex *tly=new TLatex(0.45,0.65,Form("#bf{|#Delta#eta|<1.0}, #bf{|#it{y}^{D}|<0.5}"));
 	  tly->SetNDC();
 	  tly->Draw();
-	  tly->SetTextSize(0.045);
+	  tly->SetTextFont(63);
+	  tly->SetTextSize(19);
 
-    	  TLatex *tlAlice=new TLatex(0.69,0.27,Form("#bf{ALICE}"));
+    	/*  TLatex *tlAlice=new TLatex(0.69,0.27,Form("#bf{ALICE}"));
 	  tlAlice->SetNDC();
 	  tlAlice->Draw();
-	  tlAlice->SetTextSize(0.06);
+	  tlAlice->SetTextSize(0.75);*/
 	}
 	else if(system=="pPb"){
-	  TLatex *tly=new TLatex(0.30,0.66,Form("#bf{|#Delta#eta|<1.0}, #bf{-0.96<#it{y}^{D}_{cms}<0.04}"));
+	  TLatex *tly=new TLatex(0.37,0.675,Form("#bf{|#Delta#eta|<1.0}, #bf{-0.96<#it{y}^{D}_{cms}<0.04}"));
 	  tly->SetNDC();
 	  tly->Draw();
-	  tly->SetTextSize(0.045);
+	  tly->SetTextFont(63);
+	  tly->SetTextSize(19);
 
-    	  TLatex *tlAlice=new TLatex(0.66,0.33,Form("#bf{ALICE}"));
+    	/*  TLatex *tlAlice=new TLatex(0.66,0.33,Form("#bf{ALICE}"));
 	  tlAlice->SetNDC();
 	  tlAlice->Draw();
-	  tlAlice->SetTextSize(0.06);
+	  tlAlice->SetTextSize(0.75);*/
 	}
       }
       
@@ -158,8 +171,8 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	
 	if(strName.Contains("TH1")){
 	  TH1D *hcur=(TH1D*)obj;
-	  if(system=="pp")hcur->SetMarkerSize(0.7);
-	  else if(system=="pPb")hcur->SetMarkerSize(0.9);
+	  if(system=="pp")hcur->SetMarkerSize(0.6);
+	  else if(system=="pPb")hcur->SetMarkerSize(0.6);
 	  else Printf("Check your system name");
 	  
 	  if(particle=="Dzero")hcur->SetMarkerStyle(20);
@@ -172,9 +185,9 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	  else if(particle=="Dstar")hcur->SetMarkerColor(kAzure-2);
 	  else Printf("Check your particle name");
         
-      hcur->SetLineWidth(2);
+          hcur->SetLineWidth(1.5);
 	  Double_t val=hcur->GetMaximum();
-	  hDrL->SetMaximum(val);
+	  hDrL->SetMaximum(val-0.1);
 	}
 	
 
@@ -193,6 +206,7 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	      }
 	      tl->SetX(tl->GetX()+0.010);
 	      tl->SetY(tl->GetY()-0.015);
+	      tl->SetTextFont(63);
 	      if(system=="pp")tl->SetTextSize(0.0360);
 	      else if(system=="pPb")tl->SetTextSize(0.0360);
 	      else Printf("Check your system name");
@@ -203,16 +217,14 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
             if(str.Contains("{p}_{T}^{D}")){
 	      tl->SetX(tl->GetX()+0.005);
 	      if(system=="pp"){
-		tl->SetTextSize(0.045);
-		tl->SetY(tl->GetY()-0.066);
-		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
+		if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.85);}
 	      }
 	      else if(system=="pPb"){
-		tl->SetTextSize(0.045);
-		if(particle=="Dstar")tl->SetY(tl->GetY()+0.016);
-		else if(particle=="Dplus") tl->SetY(tl->GetY()+0.030);
-		else if(particle=="Dzero") tl->SetY(tl->GetY()+0.030);
-		else if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
+		if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.855);}
 		else Printf("Check your particle name");
 		
 	      }
@@ -227,16 +239,18 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	        if(str.Contains("1")) tl->SetTitle("#it{p}_{T}^{assoc}>1 GeV/#it{c}");
 	      }*/
 	      if(system=="pp"){
-		tl->SetTextSize(0.045);
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
 		tl->SetY(tl->GetY()-0.066);
-		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
+		if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.75);}
 	      }
 	      else if(system=="pPb"){
-		tl->SetTextSize(0.045);
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
 		if(particle=="Dstar")tl->SetY(tl->GetY()+0.016);
 		else if(particle=="Dplus") tl->SetY(tl->GetY()+0.030);
 		else if(particle=="Dzero") tl->SetY(tl->GetY()+0.030);
-		else if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
+		else if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.77);}
 		else Printf("Check your particle name");
 		
 	      }
@@ -249,12 +263,14 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	      if(system=="pp"){
 		tl->SetX(tl->GetX()+0.005);
 		tl->SetY(tl->GetY()-0.11); 
-		tl->SetTextSize(0.045);
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
 		if(particle.Contains("Average")) tl->SetTitle(""); //{tl->SetX(0.2); tl->SetY(0.74);}
 	      }
 	      else if(system=="pPb"){
 		tl->SetX(tl->GetX()+0.005);
-		tl->SetTextSize(0.045);
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
 		if(particle=="Dstar")tl->SetY(tl->GetY()-0.018);
 		else if(particle=="Dplus") tl->SetY(tl->GetY()-0.018);
 		else if(particle=="Dzero") tl->SetY(tl->GetY()-0.018);
@@ -271,51 +287,37 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 		if(particle=="Dstar") tl->SetY(tl->GetY()-0.06);
 		else if(particle=="Dplus")  tl->SetY(tl->GetY()-0.04);
 		else if(particle=="Dzero")  tl->SetY(tl->GetY()-0.04);
-		else if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.57);}
-                tl->SetTextSize(0.055);
+		else if(particle.Contains("Average"))  {tl->SetX(0.35); tl->SetY(0.53);}
+	  	tl->SetTextFont(63);
+                tl->SetTextSize(22);
 	      }
               
 	      else if(system=="pPb"){
 		tl->SetX(tl->GetX()+0.25);
 		tl->SetY(tl->GetY()+0.04);
-		tl->SetTextSize(0.055);
-		if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.57);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(22);
+		if(particle.Contains("Average"))  {tl->SetX(0.35); tl->SetY(0.575);}
 	      }
 	      else Printf("Check your particle name");              
             }
-            
-	    
-	    if(str.Contains("ALICE Preliminary")){
-	      if(system=="pp"){
-		tl->SetX(tl->GetX()-0.28);
-		tl->SetY(tl->GetY()-0.467);
-		tl->SetTextSize(0.058);
-	      }
-	      else if(system=="pPb"){
-		tl->SetX(tl->GetX()-0.26);
-		tl->SetY(tl->GetY()-0.37);
-		tl->SetTextSize(0.052);
-	      }
-	      else Printf("Check your particle name");
-	      
-            }
-          
-          
+         
           if(str.Contains("TeV")){
               TString strTitle=tl->GetTitle();
 
               if(system=="pp"){
               tl->SetX(tl->GetX()+0.010);
               tl->SetY(tl->GetY()-0.029);
-	          tl->SetTextSize(0.05);
+	      tl->SetTextFont(63);
+	      tl->SetTextSize(20);
                   
               Printf("%s Line Written here is <--- ",strTitle.Data());
-              strTitle.ReplaceAll("pp,","pp, ");
-              strTitle.ReplaceAll("L_{int}","#it{L}_{int} ");
+              strTitle.ReplaceAll("pp,","ALICE, pp,");
+              strTitle.ReplaceAll(", L_{int} = 5 nb^{-1}","");
               if(particle=="Dstar")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s} ");
               else if(particle=="Dzero")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s} ");
               else if(particle=="Dstar")  strTitle.ReplaceAll("=5.02 TeV"," = 5.02 TeV");
-              else if(particle.Contains("Average"))  {tl->SetX(0.2); tl->SetY(0.18);}
+              else if(particle.Contains("Average"))  {tl->SetX(0.28); tl->SetY(0.12);}
 
               //else if(particle=="Dzero")  strTitle.ReplaceAll("#sqrt{s","#it{s} ");
 
@@ -326,14 +328,15 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
               else if(system=="pPb"){
 		tl->SetX(tl->GetX()+0.03);
 		tl->SetY(tl->GetY()-0.62);
-		tl->SetTextSize(0.042);
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(20);
         	Printf("%s Line Written here is <--",strTitle.Data());
-       	 	strTitle.ReplaceAll("L_{int}"," #it{L}_{int}");
-        	strTitle.ReplaceAll("p-Pb,","p-Pb,  ");
+       	 	strTitle.ReplaceAll(", L_{int} = 50 #mub^{-1}","");
+        	strTitle.ReplaceAll("p-Pb,","ALICE, p-Pb,");
         	if(particle=="Dstar")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s}");
         	else if(particle=="Dzero")  strTitle.ReplaceAll("#sqrt{s","#sqrt{#it{s}");
        		else if(particle=="Dstar")  strTitle.ReplaceAll("=7 TeV"," = 7 TeV");
-              	else if(particle.Contains("Average"))  {tl->SetX(0.2); tl->SetY(0.18);}
+              	else if(particle.Contains("Average"))  {tl->SetX(0.3); tl->SetY(0.11);}
 
         tl->SetTitle(strTitle.Data());
     };
@@ -375,16 +378,20 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	        if(str5.Contains("1")) tl->SetTitle("#it{p}_{T}^{assoc}>1 GeV/#it{c}");
 	      }*/
 	      if(system=="pp") {
-		tl->SetX(tl->GetX()+0.03);
-		tl->SetY(tl->GetY()+0.020);
-		tl->SetTextSize(0.045);
-		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
+		if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.71);}
+                if(k>=3) tl->SetX(tl->GetX()-0.16);
+                if(k%3==1) tl->SetY(tl->GetY()+0.05);
+                if(k%3==2) tl->SetY(tl->GetY()+0.08);
 	      }
 	      else if(system=="pPb") {
-		tl->SetX(tl->GetX()+0.03);
-		tl->SetY(tl->GetY()+0.050);
-		tl->SetTextSize(0.045);
-		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.74);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
+		if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.71);}
+                if(k>=3) tl->SetX(tl->GetX()-0.2);
+                if(k%3==1) tl->SetY(tl->GetY()+0.05);
+                if(k%3==2) tl->SetY(tl->GetY()+0.08);
 	      }
 	      
 	    }
@@ -392,16 +399,20 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	    TString str6=tl->GetTitle();
 	    if(str6.Contains("scale uncertainty")){
 	      if(system=="pp") {
-		tl->SetX(tl->GetX()+0.16);
-		tl->SetY(tl->GetY()-0.02);
-		tl->SetTextSize(0.055);
-		if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.66);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(22);
+		if(particle.Contains("Average"))  {tl->SetX(0.35); tl->SetY(0.58);}
+                if(k>=3) tl->SetX(tl->GetX()-0.16);
+                if(k%3==1) tl->SetY(tl->GetY()+0.05);
+                if(k%3==2) tl->SetY(tl->GetY()+0.08);
 	      }
 	      else if(system=="pPb") {
-                tl->SetX(tl->GetX()+0.23);
-                tl->SetY(tl->GetY()+0.06);
-                tl->SetTextSize(0.055);
-		if(particle.Contains("Average"))  {tl->SetX(0.26); tl->SetY(0.66);}
+	  	tl->SetTextFont(63);
+                tl->SetTextSize(22);
+		if(particle.Contains("Average"))  {tl->SetX(0.35); tl->SetY(0.58);}
+                if(k>=3) {tl->SetX(tl->GetX()-0.18); tl->SetY(tl->GetY()+0.015);}
+                if(k%3==1) tl->SetY(tl->GetY()+0.05);
+                if(k%3==2) tl->SetY(tl->GetY()+0.08);
 	      }
 	      
 	    }
@@ -410,16 +421,20 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	    if(str7.Contains("{p}_{T}^{D}")){
 	      
 	      if(system=="pp") {
-		tl->SetX(tl->GetX()+0.03);
-		tl->SetY(tl->GetY()+0.020);
-		tl->SetTextSize(0.045);
-		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
+		if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.81);}
+                if(k>=3) tl->SetX(tl->GetX()-0.16);
+                if(k%3==1) tl->SetY(tl->GetY()+0.05);
+                if(k%3==2) tl->SetY(tl->GetY()+0.08);
 	      }
 	      else if(system=="pPb") {
-		tl->SetX(tl->GetX()+0.03);
-		tl->SetY(tl->GetY()+0.050);
-		tl->SetTextSize(0.045);
-		if(particle.Contains("Average")) {tl->SetX(0.37); tl->SetY(0.82);}
+	  	tl->SetTextFont(63);
+		tl->SetTextSize(19);
+		if(particle.Contains("Average")) {tl->SetX(0.45); tl->SetY(0.81);}
+                if(k>=3) tl->SetX(tl->GetX()-0.2);
+                if(k%3==1) tl->SetY(tl->GetY()+0.05);
+                if(k%3==2) tl->SetY(tl->GetY()+0.08);
 	      }
 	      
 	    }
@@ -434,8 +449,8 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 	  TGraphAsymmErrors *gr=(TGraphAsymmErrors*)obj;
 	  //   gr->SetMarkerStyle();
 	  //   gr->SetMarkerColor(0);
-	  if(system=="pp")gr->SetMarkerSize(0.7);
-	  else if(system=="pPb")gr->SetMarkerSize(0.9);
+	  if(system=="pp")gr->SetMarkerSize(0.6);
+	  else if(system=="pPb")gr->SetMarkerSize(0.6);
 	  
 	  if(particle == "Dzero")gr->SetLineColor(kRed);
 	  else if(particle == "Dplus")gr->SetLineColor(kGreen+3);
@@ -443,7 +458,7 @@ void DoPlotInSingleCanvas(TString particle ="Dstar",TString system = "pp"){
 
       //gr->SetMarkerStyle(25);
 
-	  gr->SetLineWidth(2);
+	  gr->SetLineWidth(1.5);
 	  gr->Draw("E2");
 	  
 	  TGraphAsymmErrors *gr2=(TGraphAsymmErrors*)gr->Clone("grHelp");
@@ -562,6 +577,7 @@ void SaveCanvas(TCanvas * c, TString directory, TString name){
     plotsout += name;
     c->SaveAs(Form("%s/%s.root",outputDir.Data(),plotsout.Data()));
     c->SaveAs(Form("%s/%s.png",outputDir.Data(),plotsout.Data()));
+    c->SaveAs(Form("%s/%s.pdf",outputDir.Data(),plotsout.Data()));
     c->SaveAs(Form("%s/%s.eps",outputDir.Data(),plotsout.Data()));
 
 }

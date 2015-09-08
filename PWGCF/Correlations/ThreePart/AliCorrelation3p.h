@@ -16,6 +16,7 @@
 #include "THn.h"
 #include "TParameter.h"
 #include "TF1.h"
+#include "TH2D.h"
 #include "TH3D.h"
 class TH1;
 class TH1F;
@@ -71,7 +72,7 @@ class AliCorrelation3p : public TNamed {
   void SetAcceptanceCut(float AccCut){fAcceptanceCut = AccCut;}
   void SetWeight(TObject*weight,int type){
     if(type == 1)fWeights = dynamic_cast<TH3D*>(weight);
-    if(type == 2)fWeightshpT = dynamic_cast<TH3D*>(weight);
+    if(type == 2)fWeightshpT = dynamic_cast<TH2D*>(weight);
     if(type == 3)fhighpt = dynamic_cast<TF1*>(weight);
     
     
@@ -144,7 +145,7 @@ class AliCorrelation3p : public TNamed {
   float fhPhiEtaDeltaPhi12Cut2; // phi vs. eta plots: cut on phi between associated particles 
   float fAcceptanceCut;
   TH3D * fWeights;//!
-  TH3D * fWeightshpT;//!
+  TH2D * fWeightshpT;//!
   TF1  * fhighpt;//!
 
   Int_t fMultWeightIndex;//
@@ -160,6 +161,6 @@ class AliCorrelation3p : public TNamed {
   TriggerType fTriggerType;
 
   //Class definition.
-  ClassDef(AliCorrelation3p, 3)
+  ClassDef(AliCorrelation3p, 4)
 };
 #endif

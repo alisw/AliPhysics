@@ -93,7 +93,7 @@ ClassImp(AliAnalysisTaskPPVsMultCrossCheckMC)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC()
 : AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE), fSkipPS(kFALSE), fUseRecoVtxZ(kFALSE),
 fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
 fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
@@ -118,7 +118,7 @@ fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCS
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC(const char *name)
 : AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE), fSkipPS(kFALSE), fUseRecoVtxZ(kFALSE),
 fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
 fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
@@ -544,14 +544,16 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     // (already exists, called "fEvSel_INELgtZEROStackPrimaries")
     //Beta: Vertex position
     Bool_t lIsAcceptedVertexPositionMC = (TMath::Abs(lVertexZMC)<10.0); //true if within desired range
+
+    if( fUseRecoVtxZ ) lIsAcceptedVertexPositionMC = lIsAcceptedVertexPosition; //override!
     
     //Merge all conditionals
     Bool_t lDataSelection = ( lEvSel_Triggered && lIsINELgtZEROtracklets && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
-    Bool_t lMCSelection   = ( lEvSel_Triggered && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPositionMC );
+    Bool_t lMCSelection   = ( ( fSkipPS ||lEvSel_Triggered ) && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPositionMC );
     
     //Alternate Selection: Factor out only INEL>0 selection (extra cross-check) 
     if ( fAlternateMCSelection ){
-        lMCSelection   = ( lEvSel_Triggered && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
+        lMCSelection   = ( ( fSkipPS ||lEvSel_Triggered ) && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
     }
     
     //------------------------------------------------

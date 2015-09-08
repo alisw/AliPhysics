@@ -19,7 +19,7 @@ declare -ai ptAssocMax=(10 990 990)
 declare -a ptAssocMinStr=("0.3" "0.3" "1.0") 
 declare -a ptAssocMaxStr=("1.0" "99.0" "99.0") 
 
-declare -ai plotheightpp=(6 8 3)
+declare -ai plotheightpp=(5 8 3)
 declare -ai plotheightpPb=(10 14 5)
 declare -i heightPlot=${plotheightpp[$ptAssoc]}
 declare -ai maxrange=(10 15)

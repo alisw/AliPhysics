@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 12, 2015.								      //
+	//		version: September 05, 2015.							      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -237,13 +237,27 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fEoverP_pt_true_electrons0(0)
 ,fEoverP_pt_true_hadrons0(0)
 ,fEoverP_pt(0)
+,fEoverP_pt_highE0(0)
+,fEoverP_pt_highE1(0)
 ,fEoverP_tpc(0)
 ,fEoverP_tpc_p_trigger(0)
 ,fEoverP_tpc_pt_trigger(0)
 ,fTPC_pt(0)
 ,fTPC_p(0)
+
+,fTPC_momentum(0)
+,fTPC_eta(0)
+,fTPC_momentum1(0)
+,fTPC_eta1(0)
+
 ,fTPCnsigma_pt(0)
 ,fTPCnsigma_p(0)
+
+,fTPCnsigma_p_eta1(0)
+,fTPCnsigma_p_eta2(0)
+,fTPCnsigma_p_eta3(0)
+,fTPCnsigma_p_eta4(0)
+
 ,fTPCnsigma_p_TPC(0)
 ,fTPCnsigma_p_TPC_on_EMCal_acc(0)
 ,fTPCnsigma_p_TPC_EoverP_cut(0)
@@ -257,16 +271,38 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
 ,fShowerShapeM20_EoverP(0)
+
+,fShowerShapeM02_EoverP_Ecut12_MC(0)
+,fShowerShapeM20_EoverP_Ecut12_MC(0)
+,fShowerShapeM02_EoverP_Ecut8_MC(0)
+,fShowerShapeM20_EoverP_Ecut8_MC(0)
+
 ,fShowerShape_ha(0)
 ,fShowerShape_ele(0)
 ,fTPCnsigma_eta(0)
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+,fECluster_highpT0(0)
+,fECluster_highpT1(0)
 ,fECluster_not_exotic(0)
 ,fECluster_not_exotic1(0)
 ,fECluster_not_exotic2(0)
 ,fECluster_exotic(0)
+
+,fNcells_Energy_highE0(0)
+,fEtaPhi_highE0(0)
+,fEta_highE0(0)
+,fPhi_highE0(0)
+,fR_highE0(0)
+,fNCluster_highE0(0)
+,fNcells_Energy_highE1(0)
+,fEtaPhi_highE1(0)
+,fEta_highE1(0)
+,fPhi_highE1(0)
+,fR_highE1(0)
+,fNCluster_highE1(0)
+
 ,fNCluster_pure(0)
 ,fNCluster_pure_aod(0)
 ,fNCluster_ECluster(0)
@@ -322,7 +358,12 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fEoverP_pt_pions(0)
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
+
 ,fEoverP_pt_pions2(0)
+,fEoverP_pt_pions3(0)
+,fEoverP_pt_pions2_highE0(0)
+,fEoverP_pt_pions2_highE1(0)
+
 ,fNcells_pt(0)
 ,fEoverP_pt_hadrons(0)
 ,fCEtaPhi_Inc(0)
@@ -591,13 +632,25 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 
 ,fEoverP_pt_true_hadrons0(0)
 ,fEoverP_pt(0)
+,fEoverP_pt_highE0(0)
+,fEoverP_pt_highE1(0)
 ,fEoverP_tpc(0)
 ,fEoverP_tpc_p_trigger(0)
 ,fEoverP_tpc_pt_trigger(0)
 ,fTPC_pt(0)
 ,fTPC_p(0)
+,fTPC_momentum(0)
+,fTPC_eta(0)
+,fTPC_momentum1(0)
+,fTPC_eta1(0)
 ,fTPCnsigma_pt(0)
+
 ,fTPCnsigma_p(0)
+,fTPCnsigma_p_eta1(0)
+,fTPCnsigma_p_eta2(0)
+,fTPCnsigma_p_eta3(0)
+,fTPCnsigma_p_eta4(0)
+
 ,fTPCnsigma_p_TPC(0)
 ,fTPCnsigma_p_TPC_on_EMCal_acc(0)
 ,fTPCnsigma_p_TPC_EoverP_cut(0)
@@ -611,16 +664,38 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fShowerShapeCut(0)
 ,fShowerShapeM02_EoverP(0)
 ,fShowerShapeM20_EoverP(0)
+
+,fShowerShapeM02_EoverP_Ecut12_MC(0)
+,fShowerShapeM20_EoverP_Ecut12_MC(0)
+,fShowerShapeM02_EoverP_Ecut8_MC(0)
+,fShowerShapeM20_EoverP_Ecut8_MC(0)
+
 ,fShowerShape_ha(0)
 ,fShowerShape_ele(0)
 ,fTPCnsigma_eta(0)
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+,fECluster_highpT0(0)
+,fECluster_highpT1(0)
 ,fECluster_not_exotic(0)
 ,fECluster_not_exotic1(0)
 ,fECluster_not_exotic2(0)
 ,fECluster_exotic(0)
+
+,fNcells_Energy_highE0(0)
+,fEtaPhi_highE0(0)
+,fEta_highE0(0)
+,fPhi_highE0(0)
+,fR_highE0(0)
+,fNCluster_highE0(0)
+,fNcells_Energy_highE1(0)
+,fEtaPhi_highE1(0)
+,fEta_highE1(0)
+,fPhi_highE1(0)
+,fR_highE1(0)
+,fNCluster_highE1(0)
+
 ,fNCluster_pure(0)
 ,fNCluster_pure_aod(0)
 ,fNCluster_ECluster(0)
@@ -677,6 +752,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,ftpc_p_EoverPcut(0)
 ,fnsigma_p_EoverPcut(0)
 ,fEoverP_pt_pions2(0)
+,fEoverP_pt_pions3(0)
+,fEoverP_pt_pions2_highE0(0)
+,fEoverP_pt_pions2_highE1(0)
 ,fNcells_pt(0)
 ,fEoverP_pt_hadrons(0)
 ,fCEtaPhi_Inc(0)
@@ -984,6 +1062,10 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fNcells_energy_elec_selected= new TH2F("fNcells_energy_elec_selected", "clusters for electrons on TPC;Number of cells;Energy of Cluster",100,0,100, 2000, 0, 100);
 	fNcells_energy_not_exotic= new TH2F("fNcells_energy_not_exotic", "not exotic cluster;Number of cells;Energy of Cluster ",100,0,100, 2000, 0, 100);
 	
+	
+	fNcells_Energy_highE0= new TH2F("fNcells_Energy_highE0", "High Energy;Energy of Cluster;Number of cells",2000,0,100, 100, 0, 100);
+	fNcells_Energy_highE1= new TH2F("fNcells_Energy_highE1", "High Energy;Energy of Cluster;Number of cells",2000,0,100, 100, 0, 100);
+	
 	if(fUseEMCal){
 		
 		if(!fIsAOD){
@@ -991,14 +1073,23 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 			fTime2 = new TH2D("fTime2","Cells Cluster Time;  p_{T} (GeV/c); Time (s)",300,0,30,1000,1e-8,1e-5);
 		}
 		
-		ftimingEle = new TH2D("ftimingEle","Cluster Time;  p_{T} (GeV/c); Time (s)",300,0,30,1000,1e-8,1e-5);
-		ftimingEle2 = new TH2D("ftimingEle2","Cluster Time;  p_{T} (GeV/c); Time (s)",300,0,30,1000,1e-8,1e-5);
+		ftimingEle = new TH2D("ftimingEle","Cluster Time;  p_{T} (GeV/c); Time (ns)",300,0,30,2000,-100,100);
+		ftimingEle2 = new TH2D("ftimingEle2","Cluster Time;  p_{T} (GeV/c); Time (ns)",300,0,30,2000,-100,100);
 		
 		fShowerShape_ha = new TH2F("fShowerShape_ha","Shower Shape hadrons;M02;M20",500,0,1.8,500,0,1.8);
 		fShowerShape_ele = new TH2F("fShowerShape_ele","Shower Shape electrons;M02;M20",500,0,1.8,500,0,1.8);
 		
 		fShowerShapeM02_EoverP = new TH2F("fShowerShapeM02_EoverP","Shower Shape;M02;E/p",500,0,1.8,500,0,1.8);
 		fShowerShapeM20_EoverP = new TH2F("fShowerShapeM20_EoverP","Shower Shape;M20;E/p",500,0,1.8,500,0,1.8);
+		
+		if(fIsMC){
+			fShowerShapeM02_EoverP_Ecut12_MC = new TH2F("fShowerShapeM02_EoverP_Ecut12_MC","Shower Shape E >12 GeV;M02;E/p",500,0,1.8,500,0,1.8);
+			fShowerShapeM20_EoverP_Ecut12_MC = new TH2F("fShowerShapeM20_EoverP_Ecut12_MC","Shower Shape E >12 GeV;M20;E/p",500,0,1.8,500,0,1.8);
+
+			fShowerShapeM02_EoverP_Ecut8_MC = new TH2F("fShowerShapeM02_EoverP_Ecut8_MC","Shower Shape E >8 GeV;M02;E/p",500,0,1.8,500,0,1.8);
+			fShowerShapeM20_EoverP_Ecut8_MC = new TH2F("fShowerShapeM20_EoverP_Ecut8_MC","Shower Shape E >8 GeV;M20;E/p",500,0,1.8,500,0,1.8);
+		}
+
 		
 	}
 	
@@ -1079,6 +1170,12 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fNcells_energy);
 	fOutputList->Add(fNcells_energy_elec_selected);
 	fOutputList->Add(fNcells_energy_not_exotic);
+	
+	fOutputList->Add(fNcells_Energy_highE0);
+	fOutputList->Add(fNcells_Energy_highE1);
+
+	
+
 
 	
 	if(fUseEMCal){
@@ -1097,6 +1194,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 		fOutputList->Add(fShowerShapeM02_EoverP);
 		fOutputList->Add(fShowerShapeM20_EoverP);
+		
+		if(fIsMC){
+			fOutputList->Add(fShowerShapeM02_EoverP_Ecut12_MC);
+			fOutputList->Add(fShowerShapeM20_EoverP_Ecut12_MC);
+			
+			fOutputList->Add(fShowerShapeM02_EoverP_Ecut8_MC);
+			fOutputList->Add(fShowerShapeM20_EoverP_Ecut8_MC);
+		}
 		
 		
 		
@@ -1123,6 +1228,11 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fEoverP_pt = new TH2F *[3];
 	fTPC_p = new TH2F *[3];
 	fTPCnsigma_p = new TH2F *[3];
+	
+	fTPCnsigma_p_eta1 = new TH2F *[3];
+	fTPCnsigma_p_eta2 = new TH2F *[3];
+	fTPCnsigma_p_eta3 = new TH2F *[3];
+	fTPCnsigma_p_eta4 = new TH2F *[3];
 	
 	fECluster= new TH1F *[3];
 	fEtaPhi= new TH2F *[3];
@@ -1220,6 +1330,24 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fEtaPhi_large_EoverP);
 	fOutputList->Add(fEtaPhi_small_EoverP);
 	
+	fEoverP_pt_highE0 = new TH2F("fEoverP_pt_highE0",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+	fEoverP_pt_highE1 = new TH2F("fEoverP_pt_highE1",";p_{t} (GeV/c);E / p ",1000,0,30,2000,0,2);
+	fOutputList->Add(fEoverP_pt_highE0);
+	fOutputList->Add(fEoverP_pt_highE1);
+	
+	fECluster_highpT0= new TH1F("fECluster_highpT0", ";ECluster",2000, 0,100);
+	fECluster_highpT1= new TH1F("fECluster_highpT1", ";ECluster",2000, 0,100);
+	fOutputList->Add(fECluster_highpT0);
+	fOutputList->Add(fECluster_highpT1);
+
+	fTPC_momentum = new TH2F("fTPC_momentum",";p (GeV/c);TPC dE/dx (a. u.)",1000,0,30,1000,-20,200);
+	fTPC_eta = new TH2F("fTPC_eta",";eta (GeV/c);TPC dE/dx (a. u.)",4000,-2,2,1000,-20,200);
+	fOutputList->Add(fTPC_momentum);
+	fOutputList->Add(fTPC_eta);
+	fTPC_momentum1 = new TH2F("fTPC_momentum1",";p (GeV/c);TPC dE/dx (a. u.)",1000,0,30,1000,-20,200);
+	fTPC_eta1 = new TH2F("fTPC_eta1",";eta (GeV/c);TPC dE/dx (a. u.)",4000,-2,2,1000,-20,200);
+	fOutputList->Add(fTPC_momentum1);
+	fOutputList->Add(fTPC_eta1);
 	
 	for(Int_t i = 0; i < 3; i++)
 	{
@@ -1227,9 +1355,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fTPC_p[i] = new TH2F(Form("fTPC_p%d",i),";pt (GeV/c);TPC dE/dx (a. u.)",1000,0.3,15,1000,-20,200);
 		fTPCnsigma_p[i] = new TH2F(Form("fTPCnsigma_p%d",i),";p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
 		
+		fTPCnsigma_p_eta1[i] = new TH2F(Form("fTPCnsigma_p_eta1%d",i),"-0.6 < #eta < -0.3;p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
+		fTPCnsigma_p_eta2[i] = new TH2F(Form("fTPCnsigma_p_eta2%d",i),"-0.3 < #eta < 0;p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
+		fTPCnsigma_p_eta3[i] = new TH2F(Form("fTPCnsigma_p_eta3%d",i),"0 < #eta < 0.3;p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
+		fTPCnsigma_p_eta4[i] = new TH2F(Form("fTPCnsigma_p_eta4%d",i),"0.3 < #eta < 0.6;p (GeV/c);TPC Electron N#sigma",1000,0.3,15,1000,-15,10);
+		
 		
 		fECluster[i]= new TH1F(Form("fECluster%d",i), ";ECluster",2000, 0,100);
-		fEtaPhi[i]= new TH2F(Form("fEtaPhi%d",i),"#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
+		fEtaPhi[i]= new TH2F(Form("fEtaPhi%d",i),"#eta x #phi Clusters;#phi;#eta",500,0.,5,200,-1.,1.);
 		fVtxZ[i]= new  TH1F(Form("fVtxZ%d",i),"VtxZ",1000, -50,50);
 		fEtad[i]= new  TH1F(Form("fEtad%d",i),"Eta distribution",200, -1.2,1.2);
 		fNTracks[i]= new  TH1F(Form("fNTracks%d",i),"NTracks",1000, 0,5000);
@@ -1244,9 +1377,14 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fTPCNcls_EoverP[i]= new TH2F(Form("fTPCNcls_EoverP%d",i),"TPCNcls_EoverP",1000,0,200,200,0,2);	
 			
 		
-			fOutputList->Add(fEoverP_pt[i]);
+		fOutputList->Add(fEoverP_pt[i]);
 		fOutputList->Add(fTPC_p[i]);
 		fOutputList->Add(fTPCnsigma_p[i]);
+		
+		fOutputList->Add(fTPCnsigma_p_eta1[i]);
+		fOutputList->Add(fTPCnsigma_p_eta2[i]);
+		fOutputList->Add(fTPCnsigma_p_eta3[i]);
+		fOutputList->Add(fTPCnsigma_p_eta4[i]);
 		
 		
 		fOutputList->Add(fECluster[i]);
@@ -1263,8 +1401,33 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fTPCNcls_EoverP[i]);
 	}
 	
+	fEtaPhi_highE0= new TH2F("fEtaPhi_highE0","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
+	fEtaPhi_highE1= new TH2F("fEtaPhi_highE1","#eta x #phi Clusters;#phi;#eta",200,0.,5,50,-1.,1.);
+	
+	fEta_highE0=new TH1F("fEta_highE0", ";#eta; counts",100, -0.1,0.1);
+	fPhi_highE0=new TH1F("fPhi_highE0", ";#phi; counts", 100, -0.1,0.1);
+	fR_highE0=new TH1F("fR_highE0", ";R; counts", 100, -0.1,0.1);
+	
+	fEta_highE1=new TH1F("fEta_highE1", ";#eta; counts",100, -0.1,0.1);
+	fPhi_highE1=new TH1F("fPhi_highE1", ";#phi; counts", 100, -0.1,0.1);
+	fR_highE1=new TH1F("fR_highE1", ";R; counts", 100, -0.1,0.1);
+	
+	fNCluster_highE0= new TH1F("fNCluster_highE0","fNClusters0 in high E",200, 0,100);
+	fNCluster_highE1= new TH1F("fNCluster_highE1","fNClusters1 in high E",200, 0,100);
 		
-
+	fOutputList->Add(fEtaPhi_highE0);
+	fOutputList->Add(fEtaPhi_highE1);
+	
+	fOutputList->Add(fEta_highE0);
+	fOutputList->Add(fEta_highE1);
+	fOutputList->Add(fPhi_highE0);
+	fOutputList->Add(fPhi_highE1);
+	fOutputList->Add(fR_highE0);
+	fOutputList->Add(fR_highE1);
+	fOutputList->Add(fNCluster_highE0);
+	fOutputList->Add(fNCluster_highE1);
+	
+	
 	
 	fTrack_Multi= new  TH1F("fTrack_Multi","fTrack_Multi",1000, 0,1000);
 	
@@ -1510,6 +1673,11 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fnsigma_p_EoverPcut= new TH2F("fnsigma_p_EoverPcut","fnsigma_p_EoverPcut",1000,0,30,500,-15,15);
 	
 	fEoverP_pt_pions2= new TH2F("fEoverP_pt_pions2","fEoverP_pt_pions2",1000,0,30,2000,0,2);
+	fEoverP_pt_pions3= new TH2F("fEoverP_pt_pions3","fEoverP_pt_pions3",1000,0,30,2000,0,2);
+	
+	fEoverP_pt_pions2_highE1= new TH2F("fEoverP_pt_pions2_highE0","fEoverP_pt_pions2",1000,0,30,2000,0,2);
+	fEoverP_pt_pions2_highE0= new TH2F("fEoverP_pt_pions2_highE1","fEoverP_pt_pions2",1000,0,30,2000,0,2);
+	
 	fEoverP_pt_hadrons= new TH2F("fEoverP_pt_hadrons","fEoverP_pt_hadrons",1000,0,30,2000,0,2);
 	
 	
@@ -1523,6 +1691,11 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fnsigma_p_EoverPcut);
 	
 	fOutputList->Add(fEoverP_pt_pions2);
+	fOutputList->Add(fEoverP_pt_pions3);
+	
+	fOutputList->Add(fEoverP_pt_pions2_highE0);
+	fOutputList->Add(fEoverP_pt_pions2_highE1);
+	
 	fOutputList->Add(fEoverP_pt_hadrons);
 	
 	fOutputList->Add(fVtxZ_new1);
@@ -2440,7 +2613,7 @@ if(!fIspp){
 	//if ( clus->E() < minE ) continue ;
 	
 		
-	
+	/*
 	if(fIsAOD){
 		
 			//AliAODHeader * aodh = fAOD->GetHeader();
@@ -2470,13 +2643,13 @@ if(!fIspp){
 				if(clust->E()>1000) fNevent->Fill(23);
 				
 				//exotic
-				/*
+				
 				exotic   = fEMCALRecoUtils->IsExoticCluster(clust, (AliVCaloCells*)fAOD->GetEMCALCells(), bc);
 				if(exotic == kFALSE){ 
 					fECluster_not_exotic->Fill(clust->E());
 					fNcells_energy_not_exotic->Fill(clust->GetNCells(),clust->E());
 				}
-				*/
+				
 				
 				//approximation to remove exotics
 				if(clust->GetNCells()<5 && clust->E()>15.0){
@@ -2492,30 +2665,11 @@ if(!fIspp){
 				
 			
 			}
-			/*
-			//______________________________________________________________________
-			//Trying to remove events with bad cells and find patches
-			//First, I will try to count them
-			//______________________________________________________________________
-
-			if(clust && clust->IsEMCAL())
-			{
-				Bool_t badchannel = ContainsBadChannel("EMCAL", clust->GetCellsAbsId(),clust->GetNCells() );
-				printf("Contém bad channel? %d ", badchannel);
-				if(badchannel)fNevent2->Fill(0); 
-				
-				//trying to find patches
-				TArrayI patches_found=GetTriggerPatches(IsEventEMCALL0, IsEventEMCALL1);
-				printf("N patches %d, first %d, last %d\n",patches_found.GetSize(),  patches_found.At(0), patches_found.At(patches_found.GetSize()-1));
-
-			}
 			
-			//end of bad cells
-			//______________________________________________________________________
-			*/
 			
 		}
 	}
+*/
 
 	
 	
@@ -2534,6 +2688,22 @@ if(!fIspp){
 	///_____________________________________________________________________
 	///Track loop
 	Int_t NTracks=0;
+	AliVCluster *clust = 0x0;
+	
+	if(!fUseTender){
+		if(fIsAOD){
+			fNCluster_pure_aod->Fill(ClsNo);
+			for (Int_t i=0; i< ClsNo; i++ ){
+				clust = (AliVCluster*) fAOD->GetCaloCluster(i);
+						
+				if(clust && clust->IsEMCAL())
+				{
+					fECluster_pure->Fill(clust->E());
+				}
+			}
+		}
+	}
+	
 	
     if(!fUseTender) NTracks=fVevent->GetNumberOfTracks();
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2545,8 +2715,32 @@ if(!fIspp){
 		ClsNo = fCaloClusters_tender->GetEntries();
 		
 		
+		//For cluster information from tender
+		for (Int_t i=0; i< ClsNo; i++ ){
+			TClonesArray  *fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+			clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(i));
+			if (!clust) {
+					//printf("ERROR: Could not receive cluster matched calibrated from track %d\n", iTracks);
+				continue;
+			}
+			if(clust && clust->IsEMCAL())
+			{
+				fECluster_pure->Fill(clust->E());
+			}
+			
+		}
 	}
 	
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	
+	
+	
+	
+	
+	///_____________________________________________________________________
+	///Track loop
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -2654,6 +2848,12 @@ if(!fIspp){
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
 		
+		
+		fTPC_momentum->Fill(fP,fTPCsignal);
+		fTPC_eta->Fill(track->Eta(),fTPCsignal);
+		
+		
+		
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 			fTPCnsigma_pt_2D0->Fill(fPt,fTPCnSigma);
 		}
@@ -2701,6 +2901,21 @@ if(!fIspp){
 		
 		fTPC_p[0]->Fill(fPt,fTPCsignal);
 		fTPCnsigma_p[0]->Fill(fP,fTPCnSigma);
+		
+		
+		if(track->Eta()>-0.6 && track->Eta()<-0.3){
+			fTPCnsigma_p_eta1[0]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>-0.3 && track->Eta()<0){
+			fTPCnsigma_p_eta2[0]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>0 && track->Eta()<0.3){
+			fTPCnsigma_p_eta3[0]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>0.3 && track->Eta()<0.6){
+			fTPCnsigma_p_eta4[0]->Fill(fP,fTPCnSigma);
+		}
+
 		
 		
 		Float_t TPCNcls = track->GetTPCNcls();
@@ -3017,10 +3232,28 @@ if(!fIspp){
 			}//close ESD
 		}//close IsMC
 		
+		fTPC_momentum1->Fill(fP,fTPCsignal);
+		fTPC_eta1->Fill(track->Eta(),fTPCsignal);
+		
 			//Calibrated TPCsignal after tracks selection
 		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 			fTPCnsigma_pt_2D3->Fill(fPt,fTPCnSigma);
 		}
+		
+		
+		if(track->Eta()>-0.6 && track->Eta()<-0.3){
+			fTPCnsigma_p_eta1[1]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>-0.3 && track->Eta()<0){
+			fTPCnsigma_p_eta2[1]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>0 && track->Eta()<0.3){
+			fTPCnsigma_p_eta3[1]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>0.3 && track->Eta()<0.6){
+			fTPCnsigma_p_eta4[1]->Fill(fP,fTPCnSigma);
+		}
+		
 		
 		fTPC_p[1]->Fill(fPt,fTPCsignal);
 		fTPCnsigma_p[1]->Fill(fP,fTPCnSigma);
@@ -3159,6 +3392,14 @@ if(!fIspp){
 						
 						if(fTPCnSigma < -3.5){
 							fEoverP_pt_pions2->Fill(fPt, EoverP);
+							
+							if(fClus->E()>8.0)fEoverP_pt_pions2_highE1->Fill(fPt, EoverP);
+							if(fClus->E()>12.0)fEoverP_pt_pions2_highE0->Fill(fPt, EoverP);
+							
+						}
+						if(fTPCnSigma < -4.0){
+							fEoverP_pt_pions3->Fill(fPt, EoverP);
+							
 							
 						}
 						
@@ -3412,6 +3653,19 @@ if(!fIspp){
 			fTPCnsigma_pt_2D5->Fill(fPt,fTPCnSigma);
 		}
 		
+		if(track->Eta()>-0.6 && track->Eta()<-0.3){
+			fTPCnsigma_p_eta1[2]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>-0.3 && track->Eta()<0){
+			fTPCnsigma_p_eta2[2]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>0 && track->Eta()<0.3){
+			fTPCnsigma_p_eta3[2]->Fill(fP,fTPCnSigma);
+		}
+		if(track->Eta()>0.3 && track->Eta()<0.6){
+			fTPCnsigma_p_eta4[2]->Fill(fP,fTPCnSigma);
+		}
+		
 		
 ////////////////////////////////////////////////////////////////////
 ///TPC efficiency calculations 
@@ -3611,7 +3865,7 @@ if(!fIspp){
 									
 				if(fUseEMCal){
 					double emctof = fClus->GetTOF();
-					ftimingEle->Fill(fPt,emctof);
+					ftimingEle->Fill(fPt,1e9*emctof);
 				}
 					//________________________________________________________________________		
 				
@@ -3677,6 +3931,11 @@ if(!fIspp){
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
 								fShowerShapeCut->Fill(M02,M20);
+								
+								if(fClus->E()> 8.0)fEoverP_pt_highE1->Fill(fPt,(fClus->E() / fP));
+								if(fClus->E()> 12.0)fEoverP_pt_highE0->Fill(fPt,(fClus->E() / fP));
+								
+								
 								//in order to check if there are exotic cluster in this selected cluster (27 may 2014)
 								//fNcells_energy_elec_selected->Fill(ncells,Energy);
 								
@@ -3841,6 +4100,20 @@ if(!fIspp){
 
 
 							}
+							if(fIsMC){
+								if(fClus->E()>=12.00){
+									fShowerShapeM02_EoverP_Ecut12_MC->Fill(M02,EoverP);
+									fShowerShapeM20_EoverP_Ecut12_MC->Fill(M20,EoverP);
+								
+								}
+								if(fClus->E()>=8.00){
+									fShowerShapeM02_EoverP_Ecut8_MC->Fill(M02,EoverP);
+									fShowerShapeM20_EoverP_Ecut8_MC->Fill(M20,EoverP);
+									
+								}
+								
+								
+							}
 								
 						}
 						
@@ -3951,6 +4224,11 @@ if(!fIspp){
 							fECluster[2]->Fill(Energy);
 							fTPCNcls_pid[3]->Fill(TPCNcls, TPCNcls_pid);
 						
+							if(track->Pt()>=12)fECluster_highpT0->Fill(Energy);
+						    if(track->Pt()>=8)fECluster_highpT1->Fill(Energy);
+
+													
+						
 						
 						if(fUseEMCal)
 						{
@@ -3958,6 +4236,32 @@ if(!fIspp){
 								fPtElec_Inc->Fill(fPt);
 								//eta phi distribution for data
 								fEtaPhi_data->Fill(track->Phi(),track->Eta());
+								
+								
+								//studies to see how is the clusters in trigger and MB for a given selected cluster after all cuts
+								//for the 7 GeV threshold
+								if(fClus->E() >= 8.0 && fClus->E() <= 16.0){
+									fNcells_Energy_highE1->Fill(Energy, ncells);
+									fEtaPhi_highE1->Fill(cphi,ceta);
+									fEta_highE1->Fill(Dz);
+									fPhi_highE1->Fill(Dx);
+									fR_highE1->Fill(R);
+									fNCluster_highE1->Fill(ClsNo);
+								}
+								
+									//for the 11 GeV threshold
+								if(fClus->E() >= 12.0 && fClus->E() <= 20.0){
+									fNcells_Energy_highE0->Fill(Energy, ncells);
+									fEtaPhi_highE0->Fill(cphi,ceta);
+									fEta_highE0->Fill(Dz);
+									fPhi_highE0->Fill(Dx);
+									fR_highE0->Fill(R);
+									fNCluster_highE0->Fill(ClsNo);
+								}
+								
+								
+								
+								
 							}
 							
 							//Eta cut for background
@@ -3981,7 +4285,7 @@ if(!fIspp){
 							}
 							
 							double emctof2 = fClus->GetTOF();
-							ftimingEle2->Fill(fPt,emctof2);
+							ftimingEle2->Fill(fPt,1e9*emctof2);
 							//Correlation Analysis
 							if(fCorrelationFlag) 
 							{
@@ -5093,13 +5397,26 @@ void AliAnalysisTaskEMCalHFEpA::ElectronHadronCorrelation(AliVTrack *track, Int_
 				
 				if(fNonHFE->IsULS()) fCEtaPhi_ULS[i]->Fill(fDphi,fDeta);
 				if(fNonHFE->IsLS()) fCEtaPhi_LS[i]->Fill(fDphi,fDeta);
-				if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
-				if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
+					//if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
+					//new September 05, 2015:
+				 if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP[i]->Fill(fDphi,fDeta);
+				
+					//if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
+					//new September 05, 2015:
+				if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP[i]->Fill(fDphi,fDeta);
 				
 				if(fNonHFE->IsULS()) fCEtaPhi_ULS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
 				if(fNonHFE->IsLS()) fCEtaPhi_LS_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
-				if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
-				if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
+				
+					//if(fNonHFE->IsULS() && !fUlsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
+					//new September 05, 2015:
+				if(fNonHFE->IsULS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_ULS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNULS());
+				
+					//if(fNonHFE->IsLS() && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
+					//new September 05, 2015:
+				if(fNonHFE->IsLS() && !fUlsIsPartner && !fLsIsPartner) fCEtaPhi_LS_NoP_Weight[i]->Fill(fDphi,fDeta,fNonHFE->GetNLS());
+
+				
 		    }
 		}
 	}

@@ -27,6 +27,7 @@
 #include <TObjArray.h>
 #include <TH1F.h>
 #include <TH2F.h>  
+#include <TTree.h>  
 #include <TGraphAsymmErrors.h>
 #include <TFile.h>
 
@@ -56,6 +57,7 @@ ClassImp(AliAnalysisTaskCheckPileup)
 AliAnalysisTaskCheckPileup::AliAnalysisTaskCheckPileup() : 
 AliAnalysisTaskSE("PileupTask"), 
   fReadMC(kFALSE),
+  fFillTree(kFALSE),
   fOutputPrimV(0), 
   fOutputSPDPil(0), 
   fOutputMVPil(0), 
@@ -65,6 +67,8 @@ AliAnalysisTaskSE("PileupTask"),
   fHistoXVertTRK(0x0),
   fHistoYVertTRK(0x0),
   fHistoZVertTRK(0x0),
+  fHistoTPCTracksVsTracklets(0x0),
+  fHistoGloTracksVsTracklets(0x0),
   fHistoNOfPileupVertSPD(0x0),
   fHistoNtracklPilSPD(0x0),
   fHistoNtracklNoPilSPD(0x0),
@@ -94,6 +98,11 @@ AliAnalysisTaskSE("PileupTask"),
   fHistoZDiffTaggingPilMV(0x0),
   fHistoZDiffTaggingPilZDiamcutMV(0x0),
   fCounterPerRun(0x0),
+  fTrackTree(0x0),
+  fTimeStamp(0),
+  fNTracksTPC(0),
+  fNTracksTPCITS(0),
+  fNTracklets(0),
   fSPDContributorsCut(3),
   fSPDZDiffCut(0.8),
   fMVContributorsCut(5),
@@ -113,6 +122,7 @@ AliAnalysisTaskSE("PileupTask"),
   DefineOutput(2, TList::Class());  //My private output
   DefineOutput(3, TList::Class());  //My private output
   DefineOutput(4, AliCounterCollection::Class());  //My private output
+  DefineOutput(5, TTree::Class());  //My private output
 }
 //________________________________________________________________________
 AliAnalysisTaskCheckPileup::~AliAnalysisTaskCheckPileup()
@@ -128,6 +138,8 @@ AliAnalysisTaskCheckPileup::~AliAnalysisTaskCheckPileup()
     delete fHistoXVertTRK;
     delete fHistoYVertTRK;
     delete fHistoZVertTRK;
+    delete fHistoTPCTracksVsTracklets;
+    delete fHistoGloTracksVsTracklets;
   }
   if(fOutputSPDPil && !fOutputSPDPil->IsOwner()){
     delete fHistoNOfPileupVertSPD;
@@ -165,6 +177,7 @@ AliAnalysisTaskCheckPileup::~AliAnalysisTaskCheckPileup()
   delete fOutputSPDPil;
   delete fOutputMVPil;
   delete fCounterPerRun;
+  delete fTrackTree;
 }
 
 
@@ -200,6 +213,12 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fOutputPrimV->Add(fHistoYVertTRK);
   fHistoZVertTRK = new TH1F("hZVertTRK","TRK vertex: z coordinate",300,-15.,15.);
   fOutputPrimV->Add(fHistoZVertTRK);
+
+  // Global histos
+  fHistoTPCTracksVsTracklets = new TH2F("hTPCTracksVsTracklets","TPC Tracks-Tracklet correlation ; N_{tracklets} ; N_{TPCtracks}",201,-0.5,200.5,201,-0.5,200.5);
+  fOutputPrimV->Add(fHistoTPCTracksVsTracklets);
+  fHistoGloTracksVsTracklets = new TH2F("hGloTracksVsTracklets","ITS+TPC Tracks-Tracklet correlation ; N_{tracklets} ; N_{GlobalTracks}",201,-0.5,200.5,201,-0.5,200.5);
+  fOutputPrimV->Add(fHistoGloTracksVsTracklets);
 
   // SPD vertex pileup histos
   fHistoNOfPileupVertSPD = new TH1F("hNOfPileupVertSPD","",11,-0.5,10.5);
@@ -280,10 +299,17 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fCounterPerRun->AddRubric("Run", 1000000);
   fCounterPerRun->Init();
 
+  fTrackTree = new TTree("trackTree","Buffer of tracks vs. time");
+  fTrackTree->Branch("timeStamp",&fTimeStamp,"timeStamp/i");
+  fTrackTree->Branch("nTracksTPC",&fNTracksTPC,"nTracksTPC/i");
+  fTrackTree->Branch("nTracksTPCITS",&fNTracksTPCITS,"nTracksTPCITS/i");
+  fTrackTree->Branch("nTracklets",&fNTracklets,"nTracklets/i");
+
   PostData(1, fOutputPrimV);
   PostData(2, fOutputSPDPil);
   PostData(3, fOutputMVPil);
   PostData(4, fCounterPerRun);
+  PostData(5, fTrackTree);
 
   return;
 }
@@ -333,17 +359,33 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
   }
 
   const AliMultiplicity *alimult = esd->GetMultiplicity();
-  Int_t ntrklets=0,ncl1=0;
+  Int_t ncl1=0;
+  fNTracklets=0;
   if(alimult) {
-    ntrklets = alimult->GetNumberOfTracklets();
-
+    fNTracklets = alimult->GetNumberOfTracklets();
     for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++){
-      if(alimult->GetDeltaPhi(l)<-9998.) ntrklets--;
+      if(alimult->GetDeltaPhi(l)<-9998.) fNTracklets--;
     }
     ncl1 = alimult->GetNumberOfITSClusters(1);
   }
-  
-  
+
+  fNTracksTPC=0;
+  fNTracksTPCITS=0;
+  for(Int_t it=0; it<esd->GetNumberOfTracks(); it++){
+    AliESDtrack *track = esd->GetTrack(it);
+    Int_t status=track->GetStatus();
+    if(!(status & AliESDtrack::kTPCin)) continue;
+    if(track->GetKinkIndex(0)>0) continue;
+    if(track->GetTPCclusters(0)<50) continue;
+    fNTracksTPC++;
+    if(!(status & AliESDtrack::kITSrefit)) continue;
+    fNTracksTPCITS++;
+  }
+  fHistoTPCTracksVsTracklets->Fill(fNTracklets,fNTracksTPC);
+  fHistoGloTracksVsTracklets->Fill(fNTracklets,fNTracksTPCITS);
+  fTimeStamp=esd->GetTimeStamp();
+  fTrackTree->Fill();
+
   Bool_t isPileUpfromSPD=esd->IsPileupFromSPD(fSPDContributorsCut,fSPDZDiffCut);
   Int_t nPileupSPD=0;
   if(isPileUpfromSPD){    
@@ -374,11 +416,11 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
 	}
       }
     }
-    fHistoNtracklPilSPD->Fill(ntrklets);
+    fHistoNtracklPilSPD->Fill(fNTracklets);
     fHistoNCL1PilSPD->Fill(ncl1);
     fHistoContribPrimVertPilSPD->Fill(contribspd);
   }else{
-    fHistoNtracklNoPilSPD->Fill(ntrklets);
+    fHistoNtracklNoPilSPD->Fill(fNTracklets);
     fHistoNCL1NoPilSPD->Fill(ncl1);
     fHistoContribPrimVertNoPilSPD->Fill(contribspd);
   }
@@ -427,11 +469,11 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
 	}
       }
     }
-    fHistoNtracklPilMV->Fill(ntrklets);
+    fHistoNtracklPilMV->Fill(fNTracklets);
     fHistoNCL1PilMV->Fill(ncl1);
     fHistoContribPrimVertPilMV->Fill(contribtrk);
   }else{
-    fHistoNtracklNoPilMV->Fill(ntrklets);
+    fHistoNtracklNoPilMV->Fill(fNTracklets);
     fHistoNCL1NoPilMV->Fill(ncl1);
     fHistoContribPrimVertNoPilMV->Fill(contribtrk);
   }
@@ -443,6 +485,7 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
   PostData(2, fOutputSPDPil);
   PostData(3, fOutputMVPil);
   PostData(4, fCounterPerRun);
+  if(fFillTree) PostData(5, fTrackTree);
 
   return;
 }      

@@ -1938,20 +1938,17 @@ THnBase* AliUEHist::GetTrackEfficiencyND(CFStep step1, CFStep step2)
   Int_t dimensions[] = { 0, 1, 3, 4 };
   THnBase* generated = sourceContainer->GetGrid(step1)->GetGrid()->ProjectionND(4, dimensions);
   THnBase* measured = sourceContainer->GetGrid(step2)->GetGrid()->ProjectionND(4, dimensions);
-  THnBase* division = sourceContainer->GetGrid(step1)->GetGrid()->ProjectionND(4, dimensions);
-  division->Reset();
   
 //   Printf("%d %d %f %f", step1, step2, generated->GetEntries(), measured->GetEntries());
   
   ResetBinLimits(sourceContainer->GetGrid(step1));
   ResetBinLimits(sourceContainer->GetGrid(step2));
 
-  division->Divide(measured, generated, 1, 1, "B");
+  measured->Divide(measured, generated, 1, 1, "B");
   
   delete generated;
-  delete measured;
   
-  return division;
+  return measured;
 }
 
 //____________________________________________________________________

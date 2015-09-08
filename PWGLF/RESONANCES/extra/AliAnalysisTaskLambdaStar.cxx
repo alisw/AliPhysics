@@ -243,8 +243,8 @@ void AliAnalysisTaskLambdaStar::UserCreateOutputObjects()
   // Shared clusters
   fPriHistShare = new TH1F ("h1PriShare","Shared clusters, primaries;#shared clusters;counts", 160,0,160);
   // dEdx analysis
-  fPriHistTPCsignalPos = new TH2F ("h2TPCsignalPos","TPC signal for positives;p_{tot};dEdx",400,0,4,1000,0,400);
-  fPriHistTPCsignalNeg = new TH2F ("h2TPCsignalNeg","TPC signal for negatives;p_{tot};dEdx",400,0.0,4.0,1000,0.0,400.0);
+  fPriHistTPCsignalPos = new TH2F ("h2TPCsignalPos","TPC signal for positives;p_{tot};dEdx",100,0.0,10.0,1000,0.0,500);
+  fPriHistTPCsignalNeg = new TH2F ("h2TPCsignalNeg","TPC signal for negatives;p_{tot};dEdx",100,0.0,10.0,1000,0.0,500);
  //  Common for all protons - DCA xy distribution to determine primaries, secondaries from weak decay and secondaries from material
   fPriHistDCAxyYPtPro = new TH3F ("h3DCAxyYPtPro","DCAxy vs (y,pt) protons",100,-3.,3.,30,-1.5,1.5,100,0.,30);
   fPriHistDCAxyYPtAPro = new TH3F ("h3DCAxyYPtAPro","DCAxy vs (y,pt) anti-protons",100,-3.,3.,30,-1.5,1.5,100,0.,30);
@@ -267,6 +267,11 @@ void AliAnalysisTaskLambdaStar::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskLambdaStar::UserExec(Option_t *) 
 {
+    
+    
+
+    
+    
   // Main loop
   // Called for each event and Fill a control histogram
   fHistGoodEvent->Fill(0.0);
@@ -289,23 +294,18 @@ void AliAnalysisTaskLambdaStar::UserExec(Option_t *)
   }
 
   // Fill a control histogram
-  fHistGoodEvent->Fill(2.0);  
- 
+  fHistGoodEvent->Fill(2.0);
  
  if (!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected())) return;
  
   // Analyze only events using multiplicity in V0 detector (standard)
   Float_t centralityPercentile = centrality->GetCentralityPercentileUnchecked("V0M");
   if(!centrality->GetCentralityPercentileUnchecked("V0M"))
-    {
-    return ;
-    }
+    {return ;}
 
   fHistGoodEvent->Fill(3.0);  
 
-   if ( centralityPercentile <= fCentMin || centralityPercentile > fCentMax){
-  return;
-  }
+   if ( centralityPercentile <= fCentMin || centralityPercentile > fCentMax){return;}
 
    /*if ( centralityPercentile >= 5 && centralityPercentile <= 20){  
      ApplyCentralityPatchPbPb2011(centrality);  }*/
@@ -350,7 +350,9 @@ void AliAnalysisTaskLambdaStar::UserExec(Option_t *)
   // Reset the reference array to the global tracks..
   ResetGlobalTrackReference();
 
-  //  AliAODTrack *track=NULL;
+
+    
+    //  AliAODTrack *track=NULL;
   
   for (Int_t iTrack=0;iTrack<fAOD->GetNumberOfTracks();iTrack++){
     
@@ -369,7 +371,6 @@ void AliAnalysisTaskLambdaStar::UserExec(Option_t *)
       continue;
     if(!AcceptTrack(track))
       continue;
-    cout<<"Filterbit ="<<fFilterBit<<endl;
     // Reject tracks with shared clusters
     if(!GoodTPCFitMapSharedMap(track))
       continue;

@@ -4,7 +4,6 @@ System:       p-Pb and Pb-Pb
 Authors:      P.Pujahari & C. Pruneau
               Wayne State University 
 Dated:        March 15, 2013
-Code verII: Vertex Z for Systematics (check binning)
 */
 //================================
 #include "TChain.h"
@@ -83,8 +82,8 @@ _useWeights    ( 0),
 _sameFilter    ( false),
 _rejectPileup  ( 1), 
 _rejectPairConversion ( 0), 
-_vertexZMin           ( -5), //10 
-_vertexZMax           (  5), 
+_vertexZMin           ( -10), //10 
+_vertexZMax           (  10), 
 _vertexXYMin          ( -10),
 _vertexXYMax          (  10),
 _centralityMethod     (  4),
@@ -143,7 +142,7 @@ _nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
 _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
 _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
 _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
-_nBins_vertexZ(40),   _min_vertexZ(-5), _max_vertexZ(5),        _width_vertexZ(0.25),
+_nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ(0.5),
 
 _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
 _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
@@ -368,8 +367,8 @@ _useWeights    ( 0),
 _sameFilter    ( false),
 _rejectPileup  ( 1), 
 _rejectPairConversion ( 0), 
-_vertexZMin           ( -5.), 
-_vertexZMax           (  5.), 
+_vertexZMin           ( -10.), 
+_vertexZMax           (  10.), 
 _vertexXYMin          ( -10.),
 _vertexXYMax          (  10.),
 _centralityMethod     (  4),
@@ -428,7 +427,7 @@ _nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
 _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
 _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
 _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
-_nBins_vertexZ(40),   _min_vertexZ(-5), _max_vertexZ(5),        _width_vertexZ(0.25),
+_nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ(0.5),
 
 _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
 _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
@@ -661,7 +660,7 @@ void AliAnalysisTaskDptDptCorrelations::UserCreateOutputObjects()
   
   _min_vertexZ       = _vertexZMin;  
   _max_vertexZ       = _vertexZMax;  
-  _width_vertexZ     = 0.25; //for systematic error check
+  _width_vertexZ     = 0.5; 
   _nBins_vertexZ     = int(0.5+ (_max_vertexZ - _min_vertexZ)/_width_vertexZ); 
   _nBins_pt_1        = int(0.5+ (_max_pt_1 -_min_pt_1 )/_width_pt_1); 
   _nBins_eta_1       = int(0.5+ (_max_eta_1-_min_eta_1)/_width_eta_1);  
@@ -1230,7 +1229,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
 	      DCAXY    >  _dcaXYMax ) continue; 
-	  	  	  
+	  
 	  //==== QA ===========================
 	  //_dcaz->Fill(DCAZ);
 	  //_dcaxy->Fill(DCAXY);

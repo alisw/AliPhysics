@@ -8,8 +8,8 @@ if [ ${BASH_VERSINFO} -lt 4 ]; then
   exit 1
 fi
 
-#include $ALICE_PHYSICS/PWGPP/scripts/utilities.sh
-if ! source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh; then
+#include $ALICE_PHYSICS/PWGPP/scripts/utilities.sh (with dummy argument to execute)
+if ! source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh false; then
   [[ -z "${ALICE_PHYSICS}" ]] && echo "\$ALICE_PHYSICS not defined!"
   echo "could not source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh exiting..."
   exit 1
@@ -67,7 +67,6 @@ main()
   fi
 
   if ! parseConfig "$@"; then
-    ${0}
     return 1
   fi
 

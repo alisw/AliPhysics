@@ -58,4 +58,7 @@
 //PHOS_Correlations
 #pragma link C++ class AliPHOSCorrelations+;
 
+//PHOSCalib
+#pragma link C++ class AliAnalysisTaskEmeanCalib+;
+
 #endif

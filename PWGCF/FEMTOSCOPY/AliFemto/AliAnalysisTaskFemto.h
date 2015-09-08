@@ -1,4 +1,6 @@
 ///
+/// \file AliAnalysisTaskFemto.h
+///
 /// \class AliAnalysisTaskFemto
 /// \brief An AliAnalysisTaskSE class for handling and running AliFemtoAnalysis objects
 ///
@@ -54,7 +56,7 @@
 
 class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
 public:
-  AliAnalysisTaskFemto() : AliAnalysisTaskSE(), fESD(0), fESDpid(0), fAOD(0), fAODpidUtil(0), fAODheader(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0), fVerbose(kTRUE) {}
+  AliAnalysisTaskFemto();
   AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose=kFALSE);
   AliAnalysisTaskFemto(TString name, TString aConfigMacro, Bool_t aVerbose=kFALSE);
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
@@ -62,11 +64,11 @@ public:
 
   AliAnalysisTaskFemto& operator=(const AliAnalysisTaskFemto& aFemtoTask);
 
-  virtual void   ConnectInputData(Option_t *);
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
-  virtual void   Terminate(Option_t *);
-  virtual void   FinishTaskOutput();
+  virtual void ConnectInputData(Option_t *);
+  virtual void CreateOutputObjects();
+  virtual void Exec(Option_t *option);
+  virtual void Terminate(Option_t *);
+  virtual void FinishTaskOutput();
 
   void SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader);
   void SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader);
@@ -77,24 +79,44 @@ public:
   void SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinematicsChainESD *aReader);
 
 private:
-  AliESDEvent          *fESD;          //!< ESD object
-  AliESDpid            *fESDpid;       //!< ESDpid object
-  AliAODEvent          *fAOD;          //!< AOD object
-  AliAODpidUtil        *fAODpidUtil;   ///< AliAODpidUtil object
-  AliAODHeader         *fAODheader;    ///< AliAODHeader object (to get reference multiplicity in pp)
+  AliESDEvent          *fESD;          //!<! ESD object
+  AliESDpid            *fESDpid;       //!<! ESDpid object
+  AliAODEvent          *fAOD;          //!<! AOD object
+  AliAODpidUtil        *fAODpidUtil;   ///<  AliAODpidUtil object
+  AliAODHeader         *fAODheader;    ///<  AliAODHeader object (to get reference multiplicity in pp)
 
-  AliStack             *fStack;        //!< Stack from Kinematics
+  AliStack             *fStack;        //!<! Stack from Kinematics
   TList                *fOutputList;   ///<  AliFemto results list
-  AliFemtoEventReader  *fReader;       //!< Reference to the reader
-  AliFemtoManager      *fManager;      //!< AliFemto top-level manager
+  AliFemtoEventReader  *fReader;       //!<! Reference to the reader
+  AliFemtoManager      *fManager;      //!<! AliFemto top-level manager
   Int_t                fAnalysisType;  ///<  Mark ESD of AOD analysis
   TString              fConfigMacro;   ///<  Config macro location
   TString              fConfigParams;  ///<  Config macro parameters
   Bool_t               fVerbose;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskFemto, 3); // example of analysis
+  ClassDef(AliAnalysisTaskFemto, 3);
   /// \endcond
 };
+
+inline
+AliAnalysisTaskFemto::AliAnalysisTaskFemto():
+  AliAnalysisTaskSE(),
+  fESD(NULL),
+  fESDpid(NULL),
+  fAOD(NULL),
+  fAODpidUtil(NULL),
+  fAODheader(NULL),
+  fStack(NULL),
+  fOutputList(NULL),
+  fReader(NULL),
+  fManager(NULL),
+  fAnalysisType(0),
+  fConfigMacro(),
+  fConfigParams(),
+  fVerbose(kTRUE)
+{
+  /* no-op */
+}
 
 #endif

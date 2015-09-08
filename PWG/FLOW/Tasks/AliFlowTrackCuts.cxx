@@ -1310,7 +1310,9 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (fCutDCAToVertexZ && TMath::Abs(track->ZAtDCA())>GetMaxDCAToVertexZ()) pass=kFALSE;
 
   Double_t dedx = track->GetTPCsignal();
-  if (dedx < fMinimalTPCdedx) pass=kFALSE;
+  if(fCutMinimalTPCdedx) {
+    if (dedx < fMinimalTPCdedx) pass=kFALSE;
+  }
   Double_t time[9];
   track->GetIntegratedTimes(time);
   if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
@@ -1327,8 +1329,19 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     QAbefore( 5)->Fill(track->Pt(),track->DCA());
     QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
     if (pass) QAafter( 1)->Fill(momTPC,dedx);
-    if (pass) QAafter( 5)->Fill(track->Pt(),track->DCA());
-    if (pass) QAafter( 6)->Fill(track->Pt(),track->ZAtDCA());
+    if (pass && fUseAODFilterBit && (fAODFilterBit == 1 || fAODFilterBit == 32)) {
+        // re-evaluate the dca as it seems to not be natively present
+        AliAODTrack copy(*track);       // stack copy
+        Double_t b[2] = {-99. -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
+        QAafter( 5)->Fill(track->Pt(),b[0]);
+        QAafter( 6)->Fill(track->Pt(),b[1]);
+        }
+    } else {
+      if (pass) QAafter( 5)->Fill(track->Pt(),track->DCA());
+      if (pass) QAafter( 6)->Fill(track->Pt(),track->ZAtDCA());
+    }
     QAbefore( 8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     if (pass) QAafter(  8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     QAbefore( 9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
