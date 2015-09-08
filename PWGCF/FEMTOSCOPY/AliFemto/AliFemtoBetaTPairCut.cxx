@@ -90,10 +90,11 @@ bool AliFemtoBetaTPairCut::Pass(const AliFemtoPair* pair) {
 
   bool pairpass = true;
 
-  // Prepare variables:
+  // Calculate transverse momentum of the pair:
   double pt1 = pair->Track1()->Track()->Pt();
   double pt2 = pair->Track2()->Track()->Pt();
-  double pTpair = pt1 + pt2;
+  double pTpair = TMath::Sqrt(pt1*pt1 + pt2*pt2);
+  // Calculate energy of the pair:
   double px1 = pair->Track1()->Track()->P().x();
   double px2 = pair->Track2()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
@@ -105,14 +106,15 @@ bool AliFemtoBetaTPairCut::Pass(const AliFemtoPair* pair) {
   double pzpair = pz1 + pz2;
   double p1 = TMath::Sqrt(px1*px1 + py1*py1 + pz1*pz1);
   double p2 = TMath::Sqrt(px2*px2 + py2*py2 + pz2*pz2);
-  double ppair = TMath::Sqrt(pxpair*pxpair + pypair*pypair + pzpair*pzpair);
   double m1 = pair->Track1()->Track()->GetMass();
   double m2 = pair->Track2()->Track()->GetMass();
   double e1 = TMath::Sqrt(p1*p1 + m1*m1);
   double e2 = TMath::Sqrt(p2*p2 + m2*m2);
   double epair = e1 + e2;
+  // Calculate transverse mass of the pair:
   double mTpair = TMath::Sqrt(epair*epair - pzpair*pzpair);
-  double betaT = TMath::Abs(pTpair) / mTpair;
+  // Calculate betaT:
+  double betaT = pTpair / mTpair;
 
   // Check if betaT is in range:
   if(betaT < fBetaTMin)
