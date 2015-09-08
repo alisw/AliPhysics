@@ -110,9 +110,14 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
   // Combined means: gamma and ANY jet class, jet and ANY gamma class
   // Jonly means: No gamma class fired at the same time
   // Gonly means: No jet class fired at the same time
-  TString triggers[14] = {"MB", "EJ1", "EJ2", "EG1", "EG2", "EG2excl", "EJ2excl", "MBexcl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
+  TString triggers[17] = {
+      "MB", "EMC7",
+      "EJ1", "EJ2", "EG1", "EG2",
+      "EMC7excl", "EG1excl", "EG2excl", "EJ1excl", "EJ2excl",
+      "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"
+  };
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
-  for(TString *trg = triggers; trg < triggers+14; trg++){
+  for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hVertexBefore%s", trg->Data()), Form("Vertex distribution before z-cut for trigger class %s", trg->Data()), 500, -50, 50);
     fHistos->CreateTH1(Form("hVertexAfter%s", trg->Data()), Form("Vertex distribution after z-cut for trigger class %s", trg->Data()), 100, -10, 10);
@@ -214,80 +219,74 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
       isEJ1 = triggerstring.Contains("EJ1"),
       isEJ2 = triggerstring.Contains("EJ2"),
       isEG1 = triggerstring.Contains("EG1"),
-      isEG2 = triggerstring.Contains("EG2");
-  if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
+      isEG2 = triggerstring.Contains("EG2"),
+      isEMC7 = triggerstring.Contains("EMC7");
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
-  // Fill reference distribution for the primary vertex before any z-cut
-  if(isMinBias) fHistos->FillTH1("hVertexBeforeMB", vtx->GetZ());
-  if(isEJ1) fHistos->FillTH1("hVertexBeforeEJ1", vtx->GetZ());
-  if(isEJ2) fHistos->FillTH1("hVertexBeforeEJ2", vtx->GetZ());
-  if(isEG1) fHistos->FillTH1("hVertexBeforeEG1", vtx->GetZ());
-  if(isEG2) fHistos->FillTH1("hVertexBeforeEG2", vtx->GetZ());
-  if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
-  if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
+  bool isSelected  = kTRUE;
+  if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) isSelected = kFALSE;       // Apply new vertex cut
+  if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) isSelected = kFALSE;       // Apply new vertex cut
   // Apply vertex z cut
-  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
+  if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) isSelected = kFALSE;
 
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
-    fHistos->FillTH1("hEventCountMB", 1);
-    fHistos->FillTH1("hVertexAfterMB", vtx->GetZ());
-    // Check for exclusive classes
-    if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountMBexcl", 1);
-      fHistos->FillTH1("hVertexAfterMBexcl", vtx->GetZ());
-    }
+    FillEventCounterHists("MB", vtx->GetZ(), isSelected);
   }
-  if(isEJ1){
-    fHistos->FillTH1("hEventCountEJ1", 1);
-    fHistos->FillTH1("hVertexAfterEJ1", vtx->GetZ());
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE1combined", 1);
-      fHistos->FillTH1("hVertexAfterE1combined", vtx->GetZ());
-    } else {
-      fHistos->FillTH1("hEventCountE1Jonly", 1);
-      fHistos->FillTH1("hVertexAfterE1Jonly", vtx->GetZ());
+  if(isEMC7){
+    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected);
+    if(!isMinBias){
+      FillEventCounterHists("EMC7excl", vtx->GetZ(), isSelected);
     }
   }
   if(isEJ2){
-    fHistos->FillTH1("hEventCountEJ2", 1);
-    fHistos->FillTH1("hVertexAfterEJ2", vtx->GetZ());
+    FillEventCounterHists("EJ2", vtx->GetZ(), isSelected);
     // Check for exclusive classes
-    if(!isEJ1){
-      fHistos->FillTH1("hEventCountEJ2excl", 1);
-      fHistos->FillTH1("hVertexAfterEJ2excl", vtx->GetZ());
+    if(!isMinBias){
+      FillEventCounterHists("EJ2excl", vtx->GetZ(), isSelected);
     }
     if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE2combined", 1);
-      fHistos->FillTH1("hVertexAfterE2combined", vtx->GetZ());
+      FillEventCounterHists("E2combined", vtx->GetZ(), isSelected);
     } else {
-      fHistos->FillTH1("hEventCountE2Jonly", 1);
-      fHistos->FillTH1("hVertexAfterE2Jonly", vtx->GetZ());
+      FillEventCounterHists("E2Jonly", vtx->GetZ(), isSelected);
     }
   }
-  if(isEG1){
-    fHistos->FillTH1("hEventCountEG1", 1);
-    fHistos->FillTH1("hVertexAfterEG1", vtx->GetZ());
-    if(!(isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountE1Gonly", 1);
-      fHistos->FillTH1("hVertexAfterE1Gonly", vtx->GetZ());
+  if(isEJ1){
+    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected);
+    // Check for exclusive classes
+    if(!(isMinBias || isEJ2)){
+      FillEventCounterHists("EJ1excl", vtx->GetZ(), isSelected);
+    }
+    if(isEG1 || isEG2){
+      FillEventCounterHists("E1combined", vtx->GetZ(), isSelected);
+    } else {
+      FillEventCounterHists("E1Jonly", vtx->GetZ(), isSelected);
     }
   }
   if(isEG2){
-    fHistos->FillTH1("hEventCountEG2", 1);
-    fHistos->FillTH1("hVertexAfterEG2", vtx->GetZ());
+    FillEventCounterHists("EG2", vtx->GetZ(), isSelected);
     // Check for exclusive classes
-    if(!isEG1){
-      fHistos->FillTH1("hEventCountEG2excl", 1);
-      fHistos->FillTH1("hVertexAfterEG2excl", vtx->GetZ());
+    if(!isMinBias){
+      FillEventCounterHists("EG2excl", vtx->GetZ(), isSelected);
     }
     if(!(isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountE2Gonly", 1);
-      fHistos->FillTH1("hVertexAfterE2Gonly", vtx->GetZ());
+      FillEventCounterHists("E2Gonly", vtx->GetZ(), isSelected);
     }
   }
+  if(isEG1){
+    FillEventCounterHists("EG1", vtx->GetZ(), isSelected);
+    // Check for exclusive classes
+    if(!(isMinBias || isEG2 )){
+      FillEventCounterHists("EG1excl", vtx->GetZ(), isSelected);
+    }
+    if(!(isEJ1 || isEJ2)){
+      FillEventCounterHists("E1Gonly", vtx->GetZ(), isSelected);
+    }
+  }
+
+  if(!isSelected) return;
 
   // Loop over tracks, fill select particles
   // Histograms
@@ -330,23 +329,17 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
     // fill histograms allEta
     if(isMinBias){
       FillTrackHistos("MB", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
-      // check for exclusive classes
-      if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillTrackHistos("MBexcl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
-      }
     }
-    if(isEJ1){
-      FillTrackHistos("EJ1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
-      if(isEG1 || isEG2) {
-        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
-      } else {
-        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+    if(isEMC7){
+      FillTrackHistos("EMC7", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      if(!isMinBias){
+        FillTrackHistos("EMC7excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
     }
     if(isEJ2){
       FillTrackHistos("EJ2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       // check for exclusive classes
-      if(!isEJ1){
+      if(!isMinBias){
         FillTrackHistos("EJ2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
       if(isEG1 || isEG2){
@@ -355,24 +348,60 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
         FillTrackHistos("E2Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
     }
-    if(isEG1){
-      FillTrackHistos("EG1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
-      if(!(isEJ1 || isEJ2)){
-        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+    if(isEJ1){
+      FillTrackHistos("EJ1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      // check for exclusive classes
+      if(!(isMinBias || isEJ2)){
+        FillTrackHistos("EJ1excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      }
+      if(isEG1 || isEG2) {
+        FillTrackHistos("E1combined", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      } else {
+        FillTrackHistos("E1Jonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
     }
     if(isEG2){
       FillTrackHistos("EG2", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       // check for exclusive classes
-      if(!isEG1){
+      if(!isMinBias){
         FillTrackHistos("EG2excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
       if(!(isEJ2 || isEJ1)){
         FillTrackHistos("E2Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
       }
     }
+    if(isEG1){
+      FillTrackHistos("EG1", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      if(!(isMinBias || isEG2)){
+        FillTrackHistos("EG1excl", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      }
+      if(!(isEJ1 || isEJ2)){
+        FillTrackHistos("E1Gonly", checktrack->Pt(), checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL);
+      }
+    }
   }
   PostData(1, fHistos->GetListOfHistograms());
+}
+
+/**
+ * Fill event counter histogram for a given trigger class
+ * @param triggerclass Trigger class firing the trigger
+ * @param vtxz z-position of the primary vertex
+ * @param isSelected Check whether track is selected
+ */
+void AliAnalysisTaskChargedParticlesRef::FillEventCounterHists(
+    const char *triggerclass,
+    double vtxz,
+    bool isSelected
+)
+{
+  // Fill reference distribution for the primary vertex before any z-cut
+  fHistos->FillTH1(Form("hVertexBefore%s", triggerclass), vtxz);
+  if(isSelected){
+    // Fill Event counter and reference vertex distributions after event selection
+    fHistos->FillTH1(Form("hEventCount%s", triggerclass), 1);
+    fHistos->FillTH1(Form("hVertexAfter%s", triggerclass), vtxz);
+  }
 }
 
 /**

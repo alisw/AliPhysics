@@ -77,9 +77,14 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
   TArrayD energybinning;
   CreateEnergyBinning(energybinning);
   fHistos = new AliEMCalHistoContainer("Ref");
-  TString triggers[14] = {"MB", "EJ1", "EJ2", "EG1", "EG2", "EG2excl", "EJ2excl", "MBexcl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
+  TString triggers[17] = {
+      "MB", "EMC7"
+      "EJ1", "EJ2", "EG1", "EG2",
+      "EMC7excl","EG1excl", "EG2excl", "EJ1excl", "EJ2excl",
+      "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"
+  };
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
-  for(TString *trg = triggers; trg < triggers+14; trg++){
+  for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hClusterEnergy%s", trg->Data()), Form("Cluster energy for trigger class %s", trg->Data()), energybinning);
     fHistos->CreateTH1(Form("hClusterEnergyFired%s", trg->Data()), Form("Cluster energy for trigger class %s, firing the trigger", trg->Data()), energybinning);
@@ -108,8 +113,9 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
       isEJ1 = triggerstring.Contains("EJ1"),
       isEJ2 = triggerstring.Contains("EJ2"),
       isEG1 = triggerstring.Contains("EG1"),
-      isEG2 = triggerstring.Contains("EG2");
-  if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
+      isEG2 = triggerstring.Contains("EG2"),
+      isEMC7 = triggerstring.Contains("EMC7");
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
@@ -122,24 +128,17 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   // Fill Event counter and reference vertex distributions for the different trigger classes
   if(isMinBias){
     fHistos->FillTH1("hEventCountMB", 1);
-    // Check for exclusive classes
-    if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-      fHistos->FillTH1("hEventCountMBexcl", 1);
-    }
   }
-  if(isEJ1){
-    fHistos->FillTH1("hEventCountEJ1", 1);
-    if(isEG1 || isEG2){
-      fHistos->FillTH1("hEventCountE1combined", 1);
-    } else {
-      fHistos->FillTH1("hEventCountE1Jonly", 1);
+  if(isEMC7){
+    fHistos->FillTH1("hEventCountEMC7", 1);
+    if(!isMinBias){
+      fHistos->FillTH1("hEventCountEMC7excl", 1);
     }
-
   }
   if(isEJ2){
     fHistos->FillTH1("hEventCountEJ2", 1);
     // Check for exclusive classes
-    if(!isEJ1){
+    if(!(isMinBias)){
       fHistos->FillTH1("hEventCountEJ2excl", 1);
     }
     if(isEG1 || isEG2){
@@ -149,14 +148,36 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
     }
 
   }
-  if(isEG1){
-    fHistos->FillTH1("hEventCountEG1", 1);
+  if(isEJ1){
+    fHistos->FillTH1("hEventCountEJ1", 1);
+    // Check for exclusive classes
+    if(!(isMinBias || isEJ2)){
+      fHistos->FillTH1("hEventCountEJ1excl", 1);
+    }
+    if(isEG1 || isEG2){
+      fHistos->FillTH1("hEventCountE1combined", 1);
+    } else {
+      fHistos->FillTH1("hEventCountE1Jonly", 1);
+    }
   }
   if(isEG2){
     fHistos->FillTH1("hEventCountEG2", 1);
     // Check for exclusive classes
-    if(!isEG1){
+    if(!(isMinBias)){
       fHistos->FillTH1("hEventCountEG2excl", 1);
+    }
+    if(!(isEJ1 || isEJ2)){
+      fHistos->FillTH1("hEventCountE2Gonly", 1);
+    }
+  }
+  if(isEG1){
+    fHistos->FillTH1("hEventCountEG1", 1);
+    // Check for exclusive classes
+    if(!(isMinBias || isEG2)){
+      fHistos->FillTH1("hEventCountEG1excl", 1);
+    }
+    if(!(isEJ1 || isEJ2)){
+      fHistos->FillTH1("hEventCountE1Gonly", 1);
     }
   }
 
@@ -183,19 +204,11 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
     // fill histograms allEta
     if(isMinBias){
       FillClusterHistograms("MB", energy, eta, phi, NULL);
-      // check for exclusive classes
-      if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillClusterHistograms("MBexcl", energy, eta, phi, NULL);
-      }
     }
-    if(isEJ1){
-      TList ej1patches;
-      FindPatchesForTrigger("EJ1", triggerpatches, ej1patches);
-      FillClusterHistograms("EJ1", energy, eta, phi, &ej1patches);
-      if(isEG1 || isEG2) {
-        FillClusterHistograms("E1combined", energy, eta, phi, &ej1patches);
-      } else {
-        FillClusterHistograms("E1Jonly", energy, eta, phi, &ej1patches);
+    if(isEMC7){
+      FillClusterHistograms("EMC7", energy, eta, phi, NULL);
+      if(!isMinBias){
+        FillClusterHistograms("EMC7excl", energy, eta, phi, NULL);
       }
     }
     if(isEJ2){
@@ -203,7 +216,7 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
       FindPatchesForTrigger("EJ2", triggerpatches, ej2patches);
       FillClusterHistograms("EJ2", energy, eta, phi, &ej2patches);
       // check for exclusive classes
-      if(!isEJ1){
+      if(!isMinBias){
         FillClusterHistograms("EJ2excl", energy, eta, phi, &ej2patches);
       }
       if(isEG1 || isEG2){
@@ -212,12 +225,18 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
         FillClusterHistograms("E2Jonly", energy, eta, phi, &ej2patches);
       }
     }
-    if(isEG1){
-      TList eg1patches;
-      FindPatchesForTrigger("EG1", triggerpatches, eg1patches);
-      FillClusterHistograms("EG1", energy, eta, phi, &eg1patches);
-      if(!(isEJ1 || isEJ2)){
-        FillClusterHistograms("E1Gonly", energy, eta, phi, &eg1patches);
+    if(isEJ1){
+      TList ej1patches;
+      FindPatchesForTrigger("EJ1", triggerpatches, ej1patches);
+      FillClusterHistograms("EJ1", energy, eta, phi, &ej1patches);
+      // check for exclusive classes
+      if(!(isMinBias || isEJ2)){
+        FillClusterHistograms("EJ1excl", energy, eta, phi, &ej1patches);
+      }
+      if(isEG1 || isEG2) {
+        FillClusterHistograms("E1combined", energy, eta, phi, &ej1patches);
+      } else {
+        FillClusterHistograms("E1Jonly", energy, eta, phi, &ej1patches);
       }
     }
     if(isEG2){
@@ -225,14 +244,23 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
       FindPatchesForTrigger("EG2", triggerpatches, eg2patches);
       FillClusterHistograms("EG2", energy, eta, phi, &eg2patches);
       // check for exclusive classes
-      if(!isEG1){
+      if(!isMinBias){
         FillClusterHistograms("EG2excl", energy, eta, phi, &eg2patches);
       }
       if(!(isEJ2 || isEJ1)){
         FillClusterHistograms("E2Gonly", energy, eta, phi, &eg2patches);
       }
     }
-
+    if(isEG1){
+      TList eg1patches;
+      FindPatchesForTrigger("EG1", triggerpatches, eg1patches);
+      FillClusterHistograms("EG1", energy, eta, phi, &eg1patches);
+      if(!(isEG2 || isMinBias))
+        FillClusterHistograms("EG1excl", energy, eta, phi, &eg1patches);
+      if(!(isEJ1 || isEJ2)){
+        FillClusterHistograms("E1Gonly", energy, eta, phi, &eg1patches);
+      }
+    }
   }
   PostData(1, fHistos->GetListOfHistograms());
 }
