@@ -1,25 +1,9 @@
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-// AliFemtoShareQualityPairCut - a pair cut which checks for some pair     //
-// qualities that attempt to identify slit/doubly reconstructed tracks     //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
-/***************************************************************************
- *
- * $Id: AliFemtoShareQualityPairCut.cxx 50722 2011-07-21 15:18:38Z akisiel $
- *
- * Author: Adam Kisiel, Ohio State, kisiel@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a cut to remove "shared" and "split" pairs
- *
- ***************************************************************************
- *
- *
- **************************************************************************/
+///
+/// \file AliFemtoV0PairCut.cxx
+///
 
 #include "AliFemtoV0PairCut.h"
+
 #include <string>
 #include <cstdio>
 
@@ -42,198 +26,141 @@ AliFemtoV0PairCut::AliFemtoV0PairCut():
   fMinAvgSepNegPos(0),
   fMinAvgSepNegNeg(0)
 {
-  // Default constructor
-  // Nothing to do
+  /* no-op */
 }
 //__________________
-AliFemtoV0PairCut::~AliFemtoV0PairCut(){
+AliFemtoV0PairCut::~AliFemtoV0PairCut()
+{
   /* no-op */
 }
 
-AliFemtoV0PairCut& AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut& cut) 
+AliFemtoV0PairCut &AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut &cut)
 {
-  if (this != &cut) {
-   
-    AliFemtoPairCut::operator=(cut);
-    fNPairsPassed = 0;
-    fNPairsFailed =0;
-    fV0Max = 1.0;
-    fShareFractionMax = 1.0;
-    fRemoveSameLabel = 0;
-    fDataType = kAOD;
-    fDTPCMin = 0;
-    fDTPCExitMin = 0;
-    fMinAvgSepPosPos = 0;
-    fMinAvgSepPosNeg = 0;
-    fMinAvgSepNegPos = 0;
-    fMinAvgSepNegNeg = 0;
+  if (this == &cut) {
+    return *this;
   }
+
+  AliFemtoPairCut::operator=(cut);
+  fNPairsPassed = cut.fNPairsPassed;
+  fNPairsFailed = cut.fNPairsFailed;
+  fV0Max = cut.fV0Max;
+  fShareFractionMax = cut.fShareFractionMax;
+  fRemoveSameLabel = cut.fRemoveSameLabel;
+  fDataType = cut.fDataType;
+  fDTPCMin = cut.fDTPCMin;
+  fDTPCExitMin = cut.fDTPCExitMin;
+  fMinAvgSepPosPos = cut.fMinAvgSepPosPos;
+  fMinAvgSepPosNeg = cut.fMinAvgSepPosNeg;
+  fMinAvgSepNegPos = cut.fMinAvgSepNegPos;
+  fMinAvgSepNegNeg = cut.fMinAvgSepNegNeg;
 
   return *this;
 }
 
 
 //__________________
-bool AliFemtoV0PairCut::Pass(const AliFemtoPair* pair){
-  // Check for pairs that are possibly shared/double reconstruction
+bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
+{
+  const AliFemtoV0 *V0_1 = pair->Track1()->V0(),
+                   *V0_2 = pair->Track2()->V0();
 
-  bool temp = true;
 
-  /*cout<<"pair->Track1(): "<<pair->Track1()<<endl;
-  cout<<"pair->Track2(): "<<pair->Track2()<<endl;
-  cout<<"pair->Track1()->V0(): "<<pair->Track1()->V0()<<endl;
-  cout<<"pair->Track2()->V0(): "<<pair->Track2()->V0()<<endl;
-  cout<<"pair->Track1()->V0()->IdNeg(): "<<pair->Track1()->V0()->IdNeg()<<endl;
-  cout<<"pair->Track2()->V0()->IdNeg(): "<<pair->Track2()->V0()->IdNeg()<<endl;
-  cout<<"pair->Track1()->V0()->IdPos(): "<<pair->Track1()->V0()->IdPos()<<endl;
-  cout<<"pair->Track2()->V0()->IdPos(): "<<pair->Track2()->V0()->IdPos()<<endl;*/
+  // Assert pair is of two V0 particles
+  if (V0_1 == NULL || V0_2 == NULL) {
+    return false;
+  }
 
-  bool tempTPCEntrancePos = true;
-  bool tempTPCEntranceNeg = true;
-  bool tempTPCExitPos = true;
-  bool tempTPCExitNeg = true;
-  if(fDataType==kESD || fDataType==kAOD)
-    {
-      double distx = pair->Track1()->V0()->NominalTpcEntrancePointPos().x() - pair->Track2()->V0()->NominalTpcEntrancePointPos().x();
-      double disty = pair->Track1()->V0()->NominalTpcEntrancePointPos().y() - pair->Track2()->V0()->NominalTpcEntrancePointPos().y();
-      double distz = pair->Track1()->V0()->NominalTpcEntrancePointPos().z() - pair->Track2()->V0()->NominalTpcEntrancePointPos().z();
-      double distPos = sqrt(distx*distx + disty*disty + distz*distz);
+  // Assert that both particles do not share daughters
+  if (V0_1->IdNeg() == V0_2->IdNeg() || V0_1->IdPos() == V0_2->IdPos()) {
+    return false;
+  }
 
-      distx = pair->Track1()->V0()->NominalTpcEntrancePointNeg().x() - pair->Track2()->V0()->NominalTpcEntrancePointNeg().x();
-      disty = pair->Track1()->V0()->NominalTpcEntrancePointNeg().y() - pair->Track2()->V0()->NominalTpcEntrancePointNeg().y();
-      distz = pair->Track1()->V0()->NominalTpcEntrancePointNeg().z() - pair->Track2()->V0()->NominalTpcEntrancePointNeg().z();
-      double distNeg = sqrt(distx*distx + disty*disty + distz*distz);
+  // Test separation between track daughters' entrance and exit points
+  if (fDataType == kESD || fDataType == kAOD) {
+    const AliFemtoThreeVector diffPosEntrance = V0_1->NominalTpcEntrancePointPos() - V0_2->NominalTpcEntrancePointPos(),
+                                  diffPosExit = V0_1->NominalTpcExitPointPos() - V0_2->NominalTpcExitPointPos(),
 
-      double distExitX = pair->Track1()->V0()->NominalTpcExitPointPos().x() - pair->Track2()->V0()->NominalTpcExitPointPos().x();
-      double distExitY = pair->Track1()->V0()->NominalTpcExitPointPos().y() - pair->Track2()->V0()->NominalTpcExitPointPos().y();
-      double distExitZ = pair->Track1()->V0()->NominalTpcExitPointPos().z() - pair->Track2()->V0()->NominalTpcExitPointPos().z();
-      double distExitPos = sqrt(distExitX*distExitX + distExitY*distExitY + distExitZ*distExitZ);
+                              diffNegEntrance = V0_1->NominalTpcEntrancePointNeg() - V0_2->NominalTpcEntrancePointNeg(),
+                                  diffNegExit = V0_1->NominalTpcExitPointNeg() - V0_2->NominalTpcExitPointNeg();
 
-      distExitX = pair->Track1()->V0()->NominalTpcExitPointNeg().x() - pair->Track2()->V0()->NominalTpcExitPointNeg().x();
-      distExitY = pair->Track1()->V0()->NominalTpcExitPointNeg().y() - pair->Track2()->V0()->NominalTpcExitPointNeg().y();
-      distExitZ = pair->Track1()->V0()->NominalTpcExitPointNeg().z() - pair->Track2()->V0()->NominalTpcExitPointNeg().z();
-      double distExitNeg = sqrt(distExitX*distExitX + distExitY*distExitY + distExitZ*distExitZ);
-
-      tempTPCEntrancePos = distPos > fDTPCMin;
-      tempTPCEntranceNeg = distNeg > fDTPCMin;
-
-      tempTPCExitPos = distExitPos > fDTPCExitMin;
-      tempTPCExitNeg = distExitNeg > fDTPCExitMin;
-    }
- 
-
-  if(!(pair->Track1()->V0() && pair->Track2()->V0()))
-    {
+    if (diffPosEntrance.Mag() < fDTPCMin ||
+        diffNegEntrance.Mag() < fDTPCMin ||
+        diffPosExit.Mag() < fDTPCExitMin ||
+        diffNegExit.Mag() < fDTPCExitMin) {
       return false;
     }
-  if(pair->Track1()->V0()->IdNeg()==pair->Track2()->V0()->IdNeg() || pair->Track1()->V0()->IdPos()==pair->Track2()->V0()->IdPos())
-    {
+  }
 
-      return false;
-    }
+  // Find average separations between tracks
 
-  if(!tempTPCEntrancePos || !tempTPCEntranceNeg || !tempTPCExitPos || !tempTPCExitNeg) return false;  
+  // Remove const qualifier so we can use the non-const NominalTpcPoint functions (an oversight in AliFemtoV0 definition)
+  AliFemtoV0 *V1 = const_cast<AliFemtoV0*>(V0_1),
+             *V2 = const_cast<AliFemtoV0*>(V0_2);
 
-  double avgSep=0;
-  AliFemtoThreeVector first, second, tmp;
-  for(int i=0; i<8 ;i++)
-    {
-      tmp = pair->Track1()->V0()->NominalTpcPointPos(i);
-      //cout<<"X pos: "<<tmp.x()<<endl;
-      first.SetX((double)(tmp.x()));
-      first.SetY((double)tmp.y());
-      first.SetZ((double)tmp.z());
-      
-      tmp = pair->Track2()->V0()->NominalTpcPointPos(i);
-      second.SetX((double)tmp.x());
-      second.SetY((double)tmp.y());
-      second.SetZ((double)tmp.z()); 
+  double avgSep = 0.0;
 
-      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
-    }
+  for (int i = 0; i < 8; i++) {
+    AliFemtoThreeVector delta = V1->NominalTpcPointPos(i) - V2->NominalTpcPointPos(i);
+    avgSep += delta.Mag();
+  }
+  avgSep /= 8.0;
+
+  if (avgSep < fMinAvgSepPosPos) {
+    return false;
+  }
+
+  avgSep = 0.0;
+
+  for (int i = 0; i < 8; i++) {
+    AliFemtoThreeVector delta = V1->NominalTpcPointPos(i) - V2->NominalTpcPointNeg(i);
+    avgSep += delta.Mag();
+  }
+  avgSep /= 8.0;
+  if (avgSep < fMinAvgSepPosNeg) {
+    return false;
+  }
+
+  avgSep = 0.0;
+
+  for (int i = 0; i < 8 ; i++) {
+    AliFemtoThreeVector delta = V1->NominalTpcPointNeg(i) - V2->NominalTpcPointPos(i);
+    avgSep += delta.Mag();
+  }
+  avgSep /= 8.0;
+  if (avgSep < fMinAvgSepNegPos) {
+    return false;
+  }
+
+  avgSep = 0.0;
+
+  for (int i = 0; i < 8 ; i++) {
+    AliFemtoThreeVector delta = V1->NominalTpcPointNeg(i) - V2->NominalTpcPointNeg(i);
+    avgSep += delta.Mag();
+  }
   avgSep /= 8;
+  if (avgSep < fMinAvgSepNegNeg) {
+    return false;
+  }
 
-  if(avgSep<fMinAvgSepPosPos) return false;
-
-  avgSep = 0;
-      
-
-  for(int i=0; i<8 ;i++)
-    {
-      tmp = pair->Track1()->V0()->NominalTpcPointPos(i);
-      first.SetX((double)(tmp.x()));
-      first.SetY((double)tmp.y());
-      first.SetZ((double)tmp.z());
-      
-      tmp = pair->Track2()->V0()->NominalTpcPointNeg(i);
-      //cout<<"X neg: "<<tmp.x()<<endl;
-      second.SetX((double)tmp.x());
-      second.SetY((double)tmp.y());
-      second.SetZ((double)tmp.z()); 
-
-      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
-    }
-  avgSep /= 8;
-  if(avgSep<fMinAvgSepPosNeg) return false;
-
-  avgSep = 0;
-
-  for(int i=0; i<8 ;i++)
-    {
-      tmp = pair->Track1()->V0()->NominalTpcPointNeg(i);
-      first.SetX((double)(tmp.x()));
-      first.SetY((double)tmp.y());
-      first.SetZ((double)tmp.z());
-      
-      tmp = pair->Track2()->V0()->NominalTpcPointPos(i);
-      second.SetX((double)tmp.x());
-      second.SetY((double)tmp.y());
-      second.SetZ((double)tmp.z()); 
-
-      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
-    }
-  avgSep /= 8;
-  if(avgSep<fMinAvgSepNegPos) return false;
-      
-  avgSep = 0;
- 
-  for(int i=0; i<8 ;i++)
-    {
-      tmp = pair->Track1()->V0()->NominalTpcPointNeg(i);
-      first.SetX((double)(tmp.x()));
-      first.SetY((double)tmp.y());
-      first.SetZ((double)tmp.z());
-      
-      tmp = pair->Track2()->V0()->NominalTpcPointNeg(i);
-      second.SetX((double)tmp.x());
-      second.SetY((double)tmp.y());
-      second.SetZ((double)tmp.z()); 
-
-      avgSep += TMath::Sqrt(((double)first.x()-(double)second.x())*((double)first.x()-(double)second.x())+((double)first.y()-(double)second.y())*((double)first.y()-second.y())+((double)first.z()-(double)second.z())*((double)first.z()-(double)second.z()));
-    }
-  avgSep /= 8;
-  if(avgSep<fMinAvgSepNegNeg) return false;
-
-  avgSep = 0;
-
-
-  return temp;
+  return true;
 }
 //__________________
-AliFemtoString AliFemtoV0PairCut::Report(){
-  // Prepare the report from the execution
-  string stemp = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";  char ctemp[100];
-  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;}
+AliFemtoString AliFemtoV0PairCut::Report()
+{
+  TString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
+  report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
+
+  return AliFemtoString(report);
+}
 //__________________
 
-void AliFemtoV0PairCut::SetV0Max(Double_t aV0Max) {
+void AliFemtoV0PairCut::SetV0Max(Double_t aV0Max)
+{
   fV0Max = aV0Max;
 }
 
-Double_t AliFemtoV0PairCut::GetAliFemtoV0Max() const {
+Double_t AliFemtoV0PairCut::GetAliFemtoV0Max() const
+{
   return fV0Max;
 }
 
@@ -242,15 +169,30 @@ TList *AliFemtoV0PairCut::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoV0PairCut.sharequalitymax=%f", fV0Max);
-  snprintf(buf, 200, "AliFemtoV0PairCut.sharefractionmax=%f", fShareFractionMax);
-  tListSetttings->AddLast(new TObjString(buf));
+
+  // The TString format patterns (F is float, I is integer, L is long)
+  const char ptrnF[] = "AliFemtoV0PairCut.%s=%f",
+             ptrnI[] = "AliFemtoV0PairCut.%s=%d",
+             ptrnL[] = "AliFemtoV0PairCut.%s=%ld";
+
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "V0max", fV0Max)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "sharefractionmax", fShareFractionMax)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "TPCmin", fDTPCMin)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "TPCexitmin", fDTPCExitMin)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnI, "datatype", fDataType)));
+
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepPosPos", fMinAvgSepPosPos)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepPosNeg", fMinAvgSepPosNeg)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepNegPos", fMinAvgSepNegPos)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnF, "minAvgSepNegNeg", fMinAvgSepNegNeg)));
+
+  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
+  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
 
   return tListSetttings;
 }
 
-void     AliFemtoV0PairCut::SetRemoveSameLabel(Bool_t aRemove)
+void AliFemtoV0PairCut::SetRemoveSameLabel(Bool_t aRemove)
 {
   fRemoveSameLabel = aRemove;
 }
@@ -272,12 +214,13 @@ void AliFemtoV0PairCut::SetTPCExitSepMinimum(double dtpc)
 
 void AliFemtoV0PairCut::SetMinAvgSeparation(int type, double minSep)
 {
-  if(type == 0) //Pos-Pos
+  if (type == 0) //Pos-Pos
     fMinAvgSepPosPos = minSep;
-  else if(type == 1) //Pos-Neg
+  else if (type == 1) //Pos-Neg
     fMinAvgSepPosNeg = minSep;
-  else if(type == 2) //Neg-Pos
+  else if (type == 2) //Neg-Pos
     fMinAvgSepNegPos = minSep;
-  else if(type == 3) //Neg-Neg
+  else if (type == 3) //Neg-Neg
     fMinAvgSepNegNeg = minSep;
 }
+

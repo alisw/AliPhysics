@@ -42,6 +42,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetShapeDeriv", kTRUE),
   fContainerBase(0),
   fContainerNoEmb(1),
+  fContainerOverlap(2),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
@@ -49,6 +50,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fResponseReference(kDet),
   fUseSumw2(0),
   fPartialExclusion(0),
+  fOverlap(0),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -68,6 +70,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
+  fh2MSubPtSubAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
   fh3MSubPtTrueLeadPt(0x0),
   fh3MTruePtTrueLeadPt(0x0),
@@ -83,12 +86,19 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   fh2PtTrueSubFacV2(0x0),
   fh2PtRawSubFacV2(0x0),
   fh2PtCorrSubFacV2(0x0),
-  fh2NConstSubFacV2(0x0)
+  fh2NConstSubFacV2(0x0),
+  fhRjetTrvspTj(0x0),
+  fhNJetsSelEv(0x0),
+  fhJetEtaPhi(0x0),
+  fhpTTracksJet1(0x0),
+  fhpTTracksJetO(0x0),
+  fhpTTracksCont(0x0)
 {
   // Default constructor.
 
   fh2MSubMatch             = new TH2F*[fNcentBins];
   fh2MSubPtRawAll          = new TH2F*[fNcentBins];
+  fh2MSubPtSubAll          = new TH2F*[fNcentBins];
   fh3MSubPtRawDRMatch      = new TH3F*[fNcentBins];
   fh3MSubPtTrueLeadPt      = new TH3F*[fNcentBins];
   fh3MTruePtTrueLeadPt     = new TH3F*[fNcentBins];
@@ -108,6 +118,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv() :
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh2MSubMatch[i]             = 0;
     fh2MSubPtRawAll[i]          = 0;
+    fh2MSubPtSubAll[i]          = 0;
     fh3MSubPtRawDRMatch[i]      = 0;
     fh3MSubPtTrueLeadPt[i]      = 0;
     fh3MTruePtTrueLeadPt[i]     = 0;
@@ -134,6 +145,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),  
   fContainerBase(0),
   fContainerNoEmb(1),
+  fContainerOverlap(2),
   fMinFractionShared(0),
   fSingleTrackEmb(kFALSE),
   fCreateTree(kFALSE),
@@ -141,6 +153,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fResponseReference(kDet),
   fUseSumw2(0),
   fPartialExclusion(0),
+  fOverlap(0),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -160,6 +173,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fSmallSyst(0),
   fh2MSubMatch(0x0),
   fh2MSubPtRawAll(0x0),
+  fh2MSubPtSubAll(0x0),
   fh3MSubPtRawDRMatch(0x0),
   fh3MSubPtTrueLeadPt(0x0),
   fh3MTruePtTrueLeadPt(0x0),
@@ -175,12 +189,19 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   fh2PtTrueSubFacV2(0x0),
   fh2PtRawSubFacV2(0x0),
   fh2PtCorrSubFacV2(0x0),
-  fh2NConstSubFacV2(0x0)
+  fh2NConstSubFacV2(0x0),
+  fhRjetTrvspTj(0x0),
+  fhNJetsSelEv(0x0),
+  fhJetEtaPhi(0x0),
+  fhpTTracksJet1(0x0),
+  fhpTTracksJetO(0x0),
+  fhpTTracksCont(0x0)
 {
   // Standard constructor.
 
   fh2MSubMatch             = new TH2F*[fNcentBins];
   fh2MSubPtRawAll          = new TH2F*[fNcentBins];
+  fh2MSubPtSubAll          = new TH2F*[fNcentBins];
   fh3MSubPtRawDRMatch      = new TH3F*[fNcentBins];
   fh3MSubPtTrueLeadPt      = new TH3F*[fNcentBins];
   fh3MTruePtTrueLeadPt     = new TH3F*[fNcentBins];
@@ -200,6 +221,7 @@ AliAnalysisTaskJetShapeDeriv::AliAnalysisTaskJetShapeDeriv(const char *name) :
   for (Int_t i = 0; i < fNcentBins; i++) {
    fh2MSubMatch[i]             = 0;
     fh2MSubPtRawAll[i]          = 0;
+    fh2MSubPtSubAll[i]          = 0;
     fh3MSubPtRawDRMatch[i]      = 0;
     fh3MSubPtTrueLeadPt[i]      = 0;
     fh3MTruePtTrueLeadPt[i]     = 0;
@@ -321,9 +343,14 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
     fOutput->Add(fh2MSubMatch[i]);
 
     histName = Form("fh2MSubPtRawAll_%d",i);
-    histTitle = Form("fh2MSubPtRawAll_%d;%s;#it{p}_{T}",i,varName.Data());
+    histTitle = Form("fh2MSubPtRawAll_%d;%s;#it{p}_{T, unsub}",i,varName.Data());
     fh2MSubPtRawAll[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
     fOutput->Add(fh2MSubPtRawAll[i]);
+    
+    histName = Form("fh2MSubPtSubAll_%d",i);
+    histTitle = Form("fh2MSubPtSubAll_%d;%s;#it{p}_{T, sub}",i,varName.Data());
+    fh2MSubPtSubAll[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsM,minM,maxM,nBinsPt,minPt,maxPt);
+    fOutput->Add(fh2MSubPtSubAll[i]);
 
     histName = Form("fh3MSubPtRawDRMatch_%d",i);
     histTitle = Form("fh3MSubPtRawDRMatch_%d;%s;#it{p}_{T}",i,varName.Data());
@@ -411,7 +438,25 @@ void AliAnalysisTaskJetShapeDeriv::UserCreateOutputObjects()
   fhnDeltaMassAndBkgInfo = new THnSparseF(histName.Data(),histTitle.Data(),nBinsSparse2,nBins2,xmin2,xmax2);
   fOutput->Add(fhnDeltaMassAndBkgInfo);
 
+  if(fOverlap){
+     fhRjetTrvspTj = new TH2F("fhRjetTrvspTj", ";R(jet, track);p_{T,jet}", 100, 0., 10., nBinsPt, minPt, maxPt);
+     fOutput->Add(fhRjetTrvspTj);
+     
+     fhNJetsSelEv = new TH1F("fhNJetsSelEv", "N of jets selected; #it{N}_{jets}/ev;Entries", 20., 0.,19);
+     fOutput->Add(fhNJetsSelEv);
+     
+     fhJetEtaPhi = new TH2F("fhJetEtaPhi", "#eta - #varphi distribution of selected jets; #eta; #varphi", 24., -0.6, 0.6, 50, 0., 2*TMath::Pi());
+     fOutput->Add(fhJetEtaPhi);
+     
+     fhpTTracksJetO = new TH1F("hTrackpTO", "Track pT (signal jet); p_{T}", 500,0.,50.);
+     fOutput->Add(fhpTTracksJetO);
 
+  }
+  fhpTTracksJet1 = new TH1F("hTrackpT1", "Track pT ; p_{T}", 500,0.,50.);
+  fOutput->Add(fhpTTracksJet1);
+  fhpTTracksCont = new TH1F(Form("fhpTTrackCont"), "Track pT (container) ; p_{T}", 500,0.,50.);
+  fOutput->Add(fhpTTracksCont);
+  
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -464,6 +509,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
   AliEmcalJet *jet1  = NULL; //AA jet
   AliEmcalJet *jet2  = NULL; //Embedded Pythia jet
   AliEmcalJet *jetR  = NULL; //true jet for response matrix
+  AliEmcalJet *jetO  = NULL; //hard-ish jet to avoid overlap of single track with
   AliVParticle *vpe  = NULL; //embedded particle
 
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
@@ -471,6 +517,23 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
      Printf("Jet Container %d not found, return", fContainerBase);
      return kFALSE;
   }
+  //Printf("FillHistograms::Jet container %p", jetCont);
+  AliJetContainer *jetContO = GetJetContainer(fContainerOverlap);
+
+  if(fOverlap && !jetContO){
+     Printf("Jet Container %d not found, return", fContainerOverlap);
+     return kFALSE;
+  }
+  AliParticleContainer *trackCont = GetParticleContainer(0);
+  //if(trackCont) Printf("Ci sono");
+  
+  
+  for(Int_t i=0; i<trackCont->GetNParticles(); i++){
+     AliVParticle *vp= static_cast<AliVParticle*>(trackCont->GetAcceptParticle(i));
+     if(!vp) continue;
+     fhpTTracksCont->Fill(vp->Pt());
+  }
+  
   //rho
   AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(jetCont->GetRhoName()));
   fRho = 0;
@@ -485,7 +548,7 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
      AliError(Form("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data()));
       
   } else fRhoM = rhomParam->GetVal();
-  
+    
   //Get leading jet in Pb-Pb event without embedded objects
   AliJetContainer *jetContNoEmb = GetJetContainer(fContainerNoEmb);
   AliEmcalJet *jetL = NULL;
@@ -496,7 +559,15 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     jet2 = NULL;
     if(jet1->GetTagStatus()<1 || !jet1->GetTaggedJet())
       continue;
+    //print constituents of different jet containers
+    //jet1
     
+    for(Int_t i=0; i<jet1->GetNumberOfTracks(); i++) {
+       AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+       //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+       //Int_t lab = TMath::Abs(vp->GetLabel());
+       if(vp) fhpTTracksJet1 -> Fill(vp->Pt());
+    }
     Double_t mjet1 = jet1->GetSecondOrderSubtracted();
     Double_t mUnsubjet1 = jet1->M();
     Double_t ptjet1 = jet1->Pt()-fRho*jet1->Area();
@@ -508,7 +579,8 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
     }
 
     //Fill histograms for all AA jets
-    fh2MSubPtRawAll[fCentBin]->Fill(var,ptjet1);
+    fh2MSubPtRawAll[fCentBin]->Fill(var,ptUnsubjet1);
+    fh2MSubPtSubAll[fCentBin]->Fill(var,ptjet1);
     fh2PtRawSubFacV1[fCentBin]->Fill(jet1->Pt(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
     fh2PtCorrSubFacV1[fCentBin]->Fill(jet1->Pt()-fRho*jet1->Area(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
     fh2NConstSubFacV1[fCentBin]->Fill(jet1->GetNumberOfTracks(),-1.*(fRho+fRhoM)*jet1->GetFirstDerivative());
@@ -536,7 +608,31 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
        	     
        	     if(rnd.Rndm()<=prob) reject = kTRUE; //reject cone
        	  }
-          if(!reject){	  
+       	  if(fOverlap){
+       	     Int_t Njets = jetContO->GetNAcceptedJets();
+       	     fhNJetsSelEv->Fill(Njets);
+       	     jetContO->ResetCurrentID();
+       	     while(jetO = jetContO->GetNextAcceptJet()){
+       	     	  //print constituents of different jet containers
+       	     	  //jetO
+       	     	  //Printf("N particle %d",jetO->GetNumberOfTracks());
+       	     	  for(Int_t i=0; i<jetO->GetNumberOfTracks(); i++) {
+       	     	     AliVParticle* vp = static_cast<AliVParticle*>(jetO->TrackAt(i, jetContO->GetParticleContainer()->GetArray()));
+       	     	     //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+       	     	     //Int_t lab = TMath::Abs(vp->GetLabel());
+       	     	     if(vp) fhpTTracksJetO -> Fill(vp->Pt());
+       	     	  }
+
+       	     	Double_t deltaR = jetO->DeltaR(vpe);
+       	     	fhRjetTrvspTj->Fill(deltaR, jetO->Pt());
+       	     	fhJetEtaPhi->Fill(jetO->Eta(), jetO->Phi());
+       	     	if( deltaR < fRadius) {
+       	     	   reject = kTRUE;
+       	     	   break;
+       	     	}
+       	     }
+       	  }
+          if(!reject){
              fJet2Vec->SetPxPyPzE(vpe->Px(),vpe->Py(),vpe->Pz(),vpe->E());
              fMatch = 1;
        	  }
@@ -592,14 +688,15 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       Double_t varsp[5] = {var,var2,ptjet1,ptJetR,jet1->MaxTrackPt()};//MRec,MTrue,PtRec,PtTrue,PtLeadRec
       fhnMassResponse[fCentBin]->Fill(varsp);
       
-      varsp[0] = var-var2;
-      varsp[1] = ptjet1-ptJetR;
-      varsp[2] = var;
-      varsp[3] = var2;
-      varsp[4] = ptjet1;
-      varsp[5] = ptJetR;
+      Double_t varsp1[6];
+      varsp1[0] = var-var2;
+      varsp1[1] = ptjet1-ptJetR;
+      varsp1[2] = var;
+      varsp1[3] = var2;
+      varsp1[4] = ptjet1;
+      varsp1[5] = ptJetR;
 
-      fhnDeltaMass[fCentBin]->Fill(varsp);
+      fhnDeltaMass[fCentBin]->Fill(varsp1);
       
       //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
       Double_t varsp2[8] = {var-var2, ptjet1-ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
@@ -626,20 +723,23 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
 AliVParticle* AliAnalysisTaskJetShapeDeriv::GetEmbeddedConstituent(AliEmcalJet *jet) {
 
   AliJetContainer *jetCont = GetJetContainer(fContainerBase);
+  //Printf("JEt container %p", jetCont);
   AliVParticle *vp = 0x0;
   AliVParticle *vpe = 0x0; //embedded particle
   Int_t nc = 0;
   for(Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
     vp = static_cast<AliVParticle*>(jet->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
     //    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
+    //Printf("vp %p", vp);
+    if(!vp) continue;
     Int_t lab = TMath::Abs(vp->GetLabel());
     if (lab < fMinLabelEmb || lab > fMaxLabelEmb)
       continue;
-
     if(!vpe) vpe = vp;
     else if(vp->Pt()>vpe->Pt()) vpe = vp;
     nc++;
   }
+
   AliDebug(11,Form("Found %d embedded particles",nc));
   return vpe;
 }

@@ -94,8 +94,15 @@ Double_t binsPhi[] = {
 
   Int_t nBinPhi = sizeof(binsPhi)/sizeof(Double_t);
   task->SetBinsDeltaphi(nBinPhi, binsPhi);
+  
+//   Double_t binsZv[] = {-30.,-10.,-7.5, -5., -2.5 ,0.,2.5, 5., 7.5, 10.,30.};
+  Double_t binsZv[] = {-30.,-10.,-8., -6., -4., -2., 0., 2., 4., 6., 8., 10., 30.};
+  Int_t nBinsZv = sizeof(binsZv)/sizeof(Double_t);
+  task->SetBinsZv(nBinsZv, binsZv);
     
   task->SetFilterBit(iFilterBit);
+//   task->SetRequireHybridTracking();
+//   task->SetNContributorsVertex(1);
   
   ::Info("AddTask_dNdPt_PbPbAOD",Form("CrossedRowCut set to %.0f", task->GetCutMinNCrossedRowsTPC()));
   ::Info("AddTask_dNdPt_PbPbAOD",Form("FilterBit set to %d", task->GetFilterBit()));

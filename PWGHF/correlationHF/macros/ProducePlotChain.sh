@@ -29,33 +29,32 @@ declare baseStartingDir="$PWD"
 #declare macrosDir="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015March13/Macros"
 export HFCJlocalCodeDir="$PWD"
 # "/Users/administrator/soft/alisoft/aliphysics/master/src/PWGHF/correlationHF/macros"
-declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Templates_pp"
-declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Templates_pPb"
+declare templateDirPP="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/MCTemplates/Templates_pp_12May15"
+declare templateDirPPb="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MCTemplates/Templates_pPb_12May15"
 declare -a templateDirSystemSuffix=( "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" )
 ### the following is needed for hte comparison to MC (as well as MC fitting)
-declare Nmccase=3
-declare -a templRootName=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" )
+declare Nmccase=4
+declare -a templRootName=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC")
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
-declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dzero_pp"
-declare dirpPbDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dzero_pPb"
+declare dirppDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pp"
+declare dirpPbDzeroNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dzero/pPb"
 declare -a dirDzeroNotFDsubt=( "$dirppDzeroNotFDsubt" "$dirpPbDzeroNotFDsubt" )
 declare -a fpromptfileDzero=( "HFPtSpectrum_pp.root" "HFPtSpectrum_DrawFpromptVsRaaElossHypoCombined.root" )
 declare -a filerootDzero=( "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" )
 
-declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dstar_pp"
-declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dstar_pPb"
+declare dirppDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pp"
+declare dirpPbDstarNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dstar/pPb"
 declare -a dirDstarNotFDsubt=( "$dirppDstarNotFDsubt" "$dirpPbDstarNotFDsubt" )
 declare -a fpromptfileDstar=( "outputkfcB6_23mb.root" "fPromptWithBeautyRpA.root" )
 declare -a filerootDstar=( "FinalDphiCorrelationsCanvas_" "FinalDphiCorrelationsCanvas_" )
 
-declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dplus_pp"
-declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May21testFabioInputs/Dplus_pPb"
+declare dirppDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pp"
+declare dirpPbDplusNotFDsubt="/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015May19UseScriptPWGHF/MesonInputs/Dplus/pPb"
 declare -a dirDplusNotFDsubt=( "$dirppDplusNotFDsubt" "$dirpPbDplusNotFDsubt" )
-declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_kpp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
+declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_pp7.root" "DrawFpromptVsRaaElossHypoCombined.root" )
 declare -a filerootDplus=( "1D_pp_DplusHCorr_" "1D_pPb_DplusHCorr_" )
-
 
 ###### THE FOLLOWING DIRECTORIES WILL BE USED ONLY IN CASE THE FD IS NOT DONE WITH THIS SCRIPT FOR A GIVEN MESON
 #####  THAT IS, IF useScriptFDpaths and doFeedDownMes are both set to 0 for that meson
@@ -81,7 +80,7 @@ declare -a dirpPbInput=( "$dirpPbDzero" "$dirpPbDplus" "$dirpPbDstar" )
 declare rebin=-1  
 declare reflect=1   #0 : do not reflect, 1 reflect
 declare averageOpt=0  #0 = weighted, 1=arithmetic
-
+declare -a includev2=( 0 0 ) 
 ###############################################################################
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
 ############  IN CASE SOME WERE ALREADY DONE WITH THIS VERY SAME SCRIPT #######
@@ -94,7 +93,10 @@ declare doAverage=1
 declare doNicePlot=1
 declare doCompareMesons=1
 declare dofit=1
+declare doFitResultComparisonPPpPb=1
 declare dofitMC=1
+declare doFitResultComparisonPPtoMC=1
+declare doFitResultComparisonPPbtoMC=1
 declare doCompareWithMC=1
 declare doComparepppPb=1
 
@@ -160,6 +162,8 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/FitPlots.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/SubtractFD.C .
     cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoNiceSpecieComparisonPlot.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/CompareFitResults.C .
+    cp ${ALICE_PHYSICS}/../src/PWGHF/correlationHF/macros/DoNiceFitPlots.C .
 fi
 
 #############  CREATE BASIC DIRECTORY TREE #############
@@ -403,8 +407,9 @@ EOF
 fi
 
 ######## NOW FIT DISTRIBUTIONS ############
+
 if [ ${dofitMC} = 1 ]; then
-    mkdir -p ${templateDir[${collsyst}]}/FitResults
+    mkdir -p ${templateDir[${collsyst}]}/FitResults/
     while [ ${collsyst} -le ${lastcollsyst} ]; do
 	cd ${templateDir[${collsyst}]}/FitResults/
 	for (( mccase=0; mccase<${Nmccase}; mccase++ ))
@@ -417,13 +422,64 @@ fi
 collsyst=${firstcollsyst}
 
 if [ ${dofit} = 1 ]; then
-    cd ${baseDir}/AllPlots/Averages/FitResults    
+    cd ${baseDir}/AllPlots/Averages/FitResults/    
     while [ ${collsyst} -le ${lastcollsyst} ]; do
-	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/
+	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]}
 	collsyst=${collsyst}+1
     done
 fi
 collsyst=${firstcollsyst}
+
+if [ ${dofit} = 1 ]; then
+  cd ${baseDir}/AllPlots/Averages/FitResults
+  mkdir NiceStylePlots
+  cd NiceStylePlots
+  root -b <<EOF &> NiceStylePlots.log
+  .L ${HFCJlocalCodeDir}/DoNiceFitPlots.C
+  SetInputDirectory("${baseDir}/AllPlots/Averages/FitResults")
+  DoNiceFitPlots()
+  .q
+EOF
+fi
+
+if [ ${doFitResultComparisonPPpPb} = 1 ];then
+    mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb
+    cd ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoPPb
+    root -b <<EOF &> CompareFitResultsPPtoPPb.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
+CompareFitResultsPPtoPPb()
+EOF
+fi
+
+if [ ${doFitResultComparisonPPtoMC} = 1 ];then
+    collsyst=0
+    mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoMC
+    cd ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPtoMC
+    root -b <<EOF &> CompareFitResultsPPtoMC.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPP("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCpp("${templateDir[${collsyst}]}/FitResults/")
+CompareFitResultsPPDataToMC()
+EOF
+collsyst=${firstcollsyst}
+fi
+
+if [ ${doFitResultComparisonPPbtoMC} = 1 ];then
+    collsyst=1
+    mkdir -p ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPbtoMC
+    cd ${baseDir}/AllPlots/Averages/FitResults/ComparisonPPbtoMC
+    root -b <<EOF &> CompareFitResultsPPbtoMC.log
+.L ${HFCJlocalCodeDir}/CompareFitResults.C
+SetDirectoryFitResultPPb("${baseDir}/AllPlots/Averages/FitResults/")
+SetDirectoryFitResultsMCpPb("${templateDir[${collsyst}]}/FitResults/")
+IncludePowheg(kFALSE)
+CompareFitResultsPPbDataToMC()
+EOF
+collsyst=${firstcollsyst}
+fi
+
 
 ######## NOW COMPARE DATA AND MC ################# 
 if [ $doCompareWithMC = 1 ]; then

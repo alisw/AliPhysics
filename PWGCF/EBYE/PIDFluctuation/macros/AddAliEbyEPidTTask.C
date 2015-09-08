@@ -72,7 +72,7 @@ AliEbyEPidTTask *AddAliEbyEPidTTask(Bool_t isModeAOD    = 0,
   if (IsKMbOnly) task->SetIsKMb();
   if (!isModeAOD) {
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/EBYE/PIDFluctuation/macros/configureNetChargeTrackCut.C"); 
-    AliESDtrackCuts *cuts = configureNetChargeTrackCut(taskname,cuttype,10001006, gEta, 2.4,3.2); 
+    AliESDtrackCuts *cuts = configureNetChargeTrackCut(taskname,cuttype,10001006, gEta, dcaxy,dcaz); 
     task->SetAnalysisCutObject(cuts);
   }
   

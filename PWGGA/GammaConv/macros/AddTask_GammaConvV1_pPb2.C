@@ -6,7 +6,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 								Bool_t 		doWeightingPart 				= kFALSE,  							// enable Weighting
 								TString 	generatorName 				= "DPMJET",							// generator Name	
 								TString 	cutnumberAODBranch 			= "800000006008400000001500000",	// cutnumber for AOD branch
-								Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								Bool_t		enablePlotVsCentrality		= kFALSE
                            ) {
  
 	// ================= Load Librariers =================================
@@ -50,7 +51,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	
 	//=========  Set Cutnumber for V0Reader ================================
 	TString cutnumberPhoton = "06000008400100001500000000";
-	TString cutnumberEvent = "8000000";
+	TString cutnumberEvent = "80000103";
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -87,6 +88,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 				fV0ReaderV1->SetConversionCuts(fCuts);
 				fCuts->SetFillCutHistograms("",kTRUE);
 			}
+			if(trainConfig==15 ||trainConfig==16 ||trainConfig==17  ||trainConfig==18  ){
+			  fCuts->SetDodEdxSigmaCut(kFALSE);
+			}
 		}
 		if(inputHandler->IsA()==AliAODInputHandler::Class()){
 		// AOD mode
@@ -121,33 +125,41 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	TString stringShift = "";
 	
 	if(trainConfig == 1){
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00200009317200003290000000"; mesonCutArray[ 0] = "0162103500900000"; 
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009317200003290000000"; mesonCutArray[ 0] = "0162103500900000"; 
 	} else if (trainConfig == 2) {
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";
 	} else if (trainConfig == 3) {   
-		eventCutArray[ 0] = "8020011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";      
+		eventCutArray[ 0] = "80200113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";      
 	} else if (trainConfig == 4) {   
-		eventCutArray[ 0] = "8240011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
+		eventCutArray[ 0] = "82400113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
 	} else if (trainConfig == 5) {   
-		eventCutArray[ 0] = "8460011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
+		eventCutArray[ 0] = "84600113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
 	} else if (trainConfig == 6) {   
-		eventCutArray[ 0] = "8680011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";      
+		eventCutArray[ 0] = "86800113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";      
 	} else if (trainConfig == 7) {   
-		eventCutArray[ 0] = "8600011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
+		eventCutArray[ 0] = "86000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";         
 	} else if (trainConfig == 8) {   
-	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00900009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 7.5cm   
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00900009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 7.5cm   
 	} else if (trainConfig == 9) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00500009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 10cm     
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00500009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 10cm     
 	} else if (trainConfig == 10) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00800009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 12.5cm    
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00800009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 12.5cm    
 	} else if (trainConfig == 11) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00600009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 20cm    
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00600009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 20cm    
 	} else if (trainConfig == 12) {   
-		eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00700009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 35cm    
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00700009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //RCut 35cm    
 	} else if (trainConfig == 13) {   
-	        eventCutArray[ 0] = "8000011"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //standard, opening angle =0.0   
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";    //standard, opening angle =0.0   
 	} else if (trainConfig == 14) {   
-		eventCutArray[ 0] = "8000012"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";   //standard, opening angle =0.0  
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";   //standard, opening angle =0.0  
+	} else if (trainConfig == 15) {   
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500900000";   //standard, nodEdx, alpha 1 MB
+	} else if (trainConfig == 16) {   
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500900000";   //standard, nodEdx, alpha 1 AddSignal Pi0
+	} else if (trainConfig == 17) {   
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 MB Eta 
+	} else if (trainConfig == 18) {   
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 AddSignal Eta
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -189,7 +201,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if ( trainConfig == 13){
+		if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -200,7 +212,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 				}
 			}
 		}   
-		if ( trainConfig == 14){
+		if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18){
 			if (doWeighting){
 				analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
 																			 "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -220,6 +232,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
 		analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
+		if (trainConfig == 15 || trainConfig==16 || trainConfig==17  || trainConfig==18) {
+		        analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
+		}
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 		
@@ -243,7 +258,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	if (trainConfig ==13 || trainConfig ==14){
 	        task->SetDoTHnSparse(0);
 	}
-	
+	task->SetDoPlotVsCentrality(enablePlotVsCentrality);
+
 	//connect containers
 	AliAnalysisDataContainer *coutput =
 		mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),

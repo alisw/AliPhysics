@@ -116,11 +116,13 @@ TString gTrendNames[kNtrends] = {
 };
 
 
+Int_t run=0, nRuns(0);
+Double_t B; TObjArray *field(NULL);
 // prototypes
-Int_t nRuns(0);
 void DefineHistograms(TList* outList, Int_t nRuns);
 void FillHistograms(Int_t irun, TList* hList, Double_t* values, Bool_t* branchFound);
 void DrawAllHistograms(TList* hList);
+void DrawField(Float_t ymin, Float_t ymax);
 void SetDrawStyle(TObject* obj, TString drawOption="E1",
 	          Int_t markerStyle=24, Int_t markerColor=4, Double_t markerSize=2.0,
 	          Int_t lineStyle=1, Int_t lineColor=4, Double_t lineWidth=2.0);
@@ -143,9 +145,9 @@ void DrawTrendingTRDQA(TString trendingFilename="trending.root") {
     return;
   }
     
-  Int_t run=0;
   tree->SetBranchAddress("run",&run);
-  
+  tree->SetBranchAddress("Bfield",&B);
+
   // Array which will hold the information from the tree
   // Note that its size is kNtrends+1. The extra element is reserved for the run number and 
   // is always located at the back of the array (element at index kNtrends)
@@ -166,13 +168,24 @@ void DrawTrendingTRDQA(TString trendingFilename="trending.root") {
   histList.SetOwner(kTRUE);
   DefineHistograms(&histList, nRuns);
   
+  // define field polarity mapping
+  field = new TObjArray(nRuns); field->SetOwner();
+  Color_t color;
   // loop over all entries in the tree (one entry per run)
   for(Int_t i=0; i<nRuns; ++i) {
     tree->GetEntry(i);
     trends[kNtrends] = run;
     FillHistograms(i, &histList, trends, branchFound);
+    b = new TBox(i, -1, i+1, 1);
+    b->SetFillStyle(3004);
+    if(B<-0.5) color=kBlue-9;
+    else if(B<0.5) color=kBlack;
+    else color=kRed-9;
+    b->SetFillColor(color);
+    b->SetLineColor(color);
+    field->AddAt(b, i);
   }  // end loop over runs
-  
+
   // Draw trending histograms
   // Here the canvases with one drawn histogram each are saved as PNG files.
   // The names of the PNG files use the name of the histogram
@@ -182,6 +195,7 @@ void DrawTrendingTRDQA(TString trendingFilename="trending.root") {
   TFile* save=new TFile("PeriodTRDQAtrends.hist.root", "RECREATE");
   histList.Write();
   save->Close();
+  field->Delete(); delete field;
 }
 
 
@@ -202,6 +216,7 @@ void DrawAllHistograms(TList* l) {
     // some exceptions
     if(TString(o->GetName()).Contains("BeamIntensity")) c->SetLogy();
     TH1 *h((TH1*)o);
+    if(nRuns>40) h->GetXaxis()->LabelsOption("v");
     h->Draw("PE1");
     c->Print(Form("%s.png", TString(o->GetName()).Remove(0,1).Data()));
     delete c;
@@ -209,197 +224,169 @@ void DrawAllHistograms(TList* l) {
 
   // TRD resolution combined trending plots
   TLegend *leg = new TLegend(.17, .85, .96, .9);
-  leg->SetFillColor(kWhite); leg->SetNColumns(6);
-  Bool_t first(kTRUE);
+  leg->SetFillColor(kWhite); leg->SetFillStyle(1001); leg->SetNColumns(6);
   Float_t xw(600.+nRuns*10.);
   c=new TCanvas("canvas_res", "Resolution", xw, 600.);
   c->SetLeftMargin(0.1); c->SetBottomMargin(0.15); c->SetTopMargin(0.08); c->SetRightMargin(0.03);
   TH1* h=(TH1*)l->FindObject("hTRDresolution_ClS");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(250, 550);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(250, 550);
   for(Int_t ily=0; ily<6; ily++) {
     TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_ClS%d", ily));
     if(!g) continue;
     h->SetStats(kFALSE);
-    g->Draw("pl");
-    leg->AddEntry(g, g->GetTitle(), "pl");
-    if(first){ 
-      ay = h->GetYaxis();
-      ay->CenterTitle();ay->SetTitleOffset(1.2);
-      ay->SetRangeUser(250, 550);
-      if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-    }
-    first=kFALSE;
+    g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
   }
   leg->Draw();
   c->Print("cl-tracklet_resolution.png");
 
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   const Char_t *sufPt[] = {"", "l", "h"};
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInY");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(-1.5, 1.5); 
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(-1.5, 1.5);
   for(Int_t ich=0; ich<2; ich++) {
     for(Int_t ipt=0; ipt<3; ipt++) {
       TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInY%c%s", ich?'p':'n', sufPt[ipt]));
       if(!g) continue;
-      g->Draw("pl");
-      leg->AddEntry(g, g->GetTitle(), "pl");
-      if(first){ 
-        ay = h->GetYaxis();
-        ay->CenterTitle();ay->SetTitleOffset(1.2);
-        ay->SetRangeUser(-1.5, 1.5);
-        if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-      }
-      first=kFALSE;
+      g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
     }
   }
   leg->Draw();
   c->Print("TPC-TRD_matching_yshift.png");
 
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInYS");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(1, 3);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p");  DrawField(1, 3);
   for(Int_t ich=0; ich<2; ich++) {
     for(Int_t ipt=0; ipt<3; ipt++) {
       TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInYS%c%s", ich?'p':'n', sufPt[ipt]));
       if(!g) continue;
-      g->Draw("pl"); 
-      leg->AddEntry(g, g->GetTitle(), "pl");
-      if(first){ 
-        ay = h->GetYaxis();
-        ay->CenterTitle();ay->SetTitleOffset(1.2);
-        ay->SetRangeUser(1, 3);
-        if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-      }
-      first=kFALSE;
+      g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
     }
   }
   leg->Draw();
   c->Print("TPC-TRD_matching_yresolution.png");
 
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInPh");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(-0.8, 0.8);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(-0.8, 0.8);
   for(Int_t ich=0; ich<2; ich++) {
     for(Int_t ipt=0; ipt<3; ipt++) {
       TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInPh%c%s", ich?'p':'n', sufPt[ipt]));
       if(!g) continue;
-      g->Draw("pl"); 
-      leg->AddEntry(g, g->GetTitle(), "pl");
-      if(first){ 
-        ay = h->GetYaxis();
-        ay->CenterTitle();ay->SetTitleOffset(1.2);
-        ay->SetRangeUser(-0.8, 0.8);
-        if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-      }
-      first=kFALSE;
+      g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
     }
   }
   leg->Draw();
   c->Print("TPC-TRD_matching_angshift.png");
 
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInPhS");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(0.3, 1.8);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(0.3, 1.8);
   for(Int_t ich=0; ich<2; ich++) {
     for(Int_t ipt=0; ipt<3; ipt++) {
       TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInPhS%c%s", ich?'p':'n', sufPt[ipt]));
       if(!g) continue;
-      g->Draw("pl"); 
-      leg->AddEntry(g, g->GetTitle(), "pl");
-      if(first){ 
-        ay = h->GetYaxis();
-        ay->CenterTitle();ay->SetTitleOffset(1.2);
-        ay->SetRangeUser(0.3, 1.8);
-        if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-      }
-      first=kFALSE;
+      g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
     }
   }
   leg->Draw();
   c->Print("TPC-TRD_matching_angresolution.png");
   
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInPt");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(0.63, 0.67);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(0.63, 0.67);
   for(Int_t ich=0; ich<2; ich++) {
     TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInPt%c", ich?'p':'n'));
     if(!g) continue;
-    g->Draw("pl"); 
-    leg->AddEntry(g, g->GetTitle(), "pl");
-    if(first){ 
-      ay = h->GetYaxis();
-      ay->CenterTitle();ay->SetTitleOffset(1.2);
-      ay->SetRangeUser(0.63, 0.67);
-      if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-    }
-    first=kFALSE;
+    g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
   }
   leg->Draw();
   c->Print("TPC-TRD_meanPt.png");
   
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkInQ");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(-10, 10);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(-10, 10);
   for(Int_t ich=0; ich<2; ich++) {
     TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkInQ%c", ich?'p':'n'));
     if(!g) continue;
-    g->Draw("pl"); 
-    leg->AddEntry(g, g->GetTitle(), "pl");
-    if(first){ 
-      ay = h->GetYaxis();
-      ay->CenterTitle();ay->SetTitleOffset(1.2);
-      ay->SetRangeUser(-10, 10);
-      if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-    }
-    first=kFALSE;
+    g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
   }
   leg->Draw();
   c->Print("TRD_meanQ.png");
   
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkltY");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  h->SetTitle("TRD tracklet r-#phi shift");
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(-500, 500);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(-500, 500);
   for(Int_t ily=1; ily<6; ily++) {
     TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkltY%d", ily));
     if(!g) continue;
-    g->Draw("pl"); 
-    leg->AddEntry(g, g->GetTitle(), "pl");
-    if(first){ 
-      h->SetTitle("TRD tracklet r-#phi shift");
-      ay = h->GetYaxis();
-      ay->CenterTitle();ay->SetTitleOffset(1.2);
-      ay->SetRangeUser(-500, 500);
-      if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-    }
-    first=kFALSE;
+    g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
   }
   leg->Draw();
   c->Print("track-tracklet_shift.png");
 
   // -------- 
-  c->Clear(); leg->Clear(); first=kTRUE;
+  c->Clear(); leg->Clear();
   TH1* h=(TH1*)l->FindObject("hTRDresolution_TrkltYS");
-  h->SetStats(kFALSE); h->Draw("p");
+  h->SetStats(kFALSE); 
+  h->SetTitle("TRD tracklet r-#phi resolution");
+  ay = h->GetYaxis();
+  ay->CenterTitle();ay->SetTitleOffset(1.2);
+  ay->SetRangeUser(1.2, 1.8);
+  if(nRuns>40) h->GetXaxis()->LabelsOption("v");
+  h->Draw("p"); DrawField(1.2, 1.8);
   for(Int_t ily=1; ily<6; ily++) {
     TGraph* g=(TGraph*)l->FindObject(Form("gTRDresolution_TrkltYS%d", ily));
     if(!g) continue;
-    g->Draw("pl"); 
-    leg->AddEntry(g, g->GetTitle(), "pl");
-    if(first){ 
-      h->SetTitle("TRD tracklet r-#phi resolution");
-      ay = h->GetYaxis();
-      ay->CenterTitle();ay->SetTitleOffset(1.2);
-      ay->SetRangeUser(1.2, 1.8);
-      if(nRuns>40) h->GetXaxis()->LabelsOption("v");
-    }
-    first=kFALSE;
+    g->Draw("pl"); leg->AddEntry(g, g->GetTitle(), "pl");
   }
   leg->Draw();
   c->Print("track-tracklet_resolution.png");
@@ -809,6 +796,17 @@ void DefineHistograms(TList* outList, Int_t nRuns) {
   }
 }
 
+
+//________________________________________________________________________
+void DrawField(Float_t ymin, Float_t ymax)
+{
+  if(!field) return;
+  TBox *b(NULL);
+  for(Int_t i(0); i<field->GetEntries(); i++){
+    b=(TBox*)field->At(i);
+    b->DrawBox(i, ymin, i+1, ymax);
+  }
+}
 
 //________________________________________________________________________
 void SetDrawStyle(TObject* obj, 

@@ -1,7 +1,7 @@
 
 // Di-Jet angular correlations class
 // Author: Greeshma Koyithatta Meethaleveedu and Ragahva Varma
-//THnSparse binning changed to accommodate wider pT range at a time.
+//Change from previous version: Changed the multiplicity binning to fo low to high multiplicity comparison!
 
 #include "TChain.h"
 #include "TTree.h"
@@ -1073,7 +1073,7 @@ if(ftwoplus1){
         nBinsCentorMult = 12; fMinCentorMult = 0.0, fMaxCentorMult = 100.0;}
     
     if(!fSetSystemValue){
-        nBinsCentorMult = 3; fMinCentorMult = 0.0;  fMaxCentorMult = 250.0;}
+        nBinsCentorMult = 2; fMinCentorMult = 0.0;  fMaxCentorMult = 250.0;}
     
     
     if(ftwoplus1){
@@ -1083,7 +1083,7 @@ if(ftwoplus1){
   //_____________________________________________Trigger-1
   const Int_t pTbinTrigger1 = Int_t(fTrigger1pTHighThr - fTrigger1pTLowThr)/2;
   const Int_t pTbinTrigger2 = Int_t(fTrigger2pTHighThr - fTrigger2pTLowThr);
-  Int_t   fBinsTrg1[4]   = {nBinsCentorMult,       5,        pTbinTrigger1, pTbinTrigger2};
+  Int_t   fBinsTrg1[4]   = {nBinsCentorMult,       10,        pTbinTrigger1, pTbinTrigger2};
   Double_t fMinTrg1[4]   = {fMinCentorMult,   -10.0,    fTrigger1pTLowThr, fTrigger2pTLowThr};
   Double_t fMaxTrg1[4]   = {fMaxCentorMult,  10.0,   fTrigger1pTHighThr, fTrigger2pTHighThr};
   THnTrig1CentZvtxpT = new THnSparseD(nameThnTrg1CentZvtxpT.Data(),"Cent-Zvtx-pTtr1",4, fBinsTrg1, fMinTrg1, fMaxTrg1);
@@ -1102,7 +1102,7 @@ if(ftwoplus1){
     
   //Catgry2: Correlations Plots for SE and ME (T1, T2)
  //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t    fBins12[7] = {nBinsCentorMult,     5,   18,               36, pTbinTrigger1, pTbinTrigger2, 10};
+  Int_t    fBins12[7] = {nBinsCentorMult,     10,   18,               36, pTbinTrigger1, pTbinTrigger2, 10};
   Double_t  fMin12[7] = {fMinCentorMult,   -10.0, -1.8, -0.5*TMath::Pi(), fTrigger1pTLowThr, fTrigger2pTLowThr, 0.5};
   Double_t  fMax12[7] = {fMaxCentorMult,  10.0,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, 10};
   THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-T1-T2-Trk",7, fBins12, fMin12, fMax12);
@@ -1117,14 +1117,14 @@ if(ftwoplus1){
  //1plus1 correlation
  //----------------------------
   const Int_t pTbinTrigger1plus1 = Int_t(fTrigger1pTHighThr - fTrigger2pTLowThr);
-  Int_t   fBinsTrg1plus1[3]   = {nBinsCentorMult,       5,   pTbinTrigger1plus1};
+  Int_t   fBinsTrg1plus1[3]   = {nBinsCentorMult,       10,   pTbinTrigger1plus1};
   Double_t fMinTrg1plus1[3]   = {fMinCentorMult,   -10.0,   fTrigger2pTLowThr};
   Double_t fMaxTrg1plus1[3]   = {fMaxCentorMult,  10.0,   fTrigger1pTHighThr};
   THnCentZvtxpTT1plus1 = new THnSparseD(nameThnCentZvtxpTT1plus1.Data(),"Cent-Zvtx-pTtr1",3, fBinsTrg1plus1, fMinTrg1plus1, fMaxTrg1plus1);
   
    
   //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t   fBins121plus1[6] = {nBinsCentorMult,     5,   18,                36,  pTbinTrigger1plus1,  10};
+  Int_t   fBins121plus1[6] = {nBinsCentorMult,     10,   18,                36,  pTbinTrigger1plus1,  10};
   Double_t  fMin121plus1[6] = {fMinCentorMult,   -10., -1.8, -0.5*TMath::Pi(), fTrigger2pTLowThr,  0.5};
   Double_t  fMax121plus1[6] = {fMaxCentorMult,  10.,  1.8,  1.5*TMath::Pi(), fTrigger1pTHighThr, 10};
   THnCentZvtxDEtaDPhipTTpTA1plus1   = new THnSparseD(nameThnCentZvtxDEtaDPhipTTpTA1plus1.Data(),"Cent-zVtx-DEta1-DPhi1-pTT-pTA",6, fBins121plus1, fMin121plus1, fMax121plus1);
@@ -1162,8 +1162,8 @@ if(ftwoplus1){
         
         if(fuseVarCentBins){
             
-            const Int_t nvarBinsCent = 3;
-            Double_t varBinsCent[nvarBinsCent+1] = {0., 20., 50., 250.};
+            const Int_t nvarBinsCent = 2;
+            Double_t varBinsCent[nvarBinsCent+1] = {0., 35., 250.};
             if(ftwoplus1){
                 THnTrig1CentZvtxDEtaDPhi->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
                 THnTrig2CentZvtxDEtaDPhi->GetAxis(0)->Set(nvarBinsCent, varBinsCent);

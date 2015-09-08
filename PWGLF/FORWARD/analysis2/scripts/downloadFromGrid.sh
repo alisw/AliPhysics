@@ -13,17 +13,20 @@ usage()
 Usage: $0 [OPTIONS] -d [DIRECTORY] -p [PATTERN]
 
 Options:
+	-d,--directory  DIRECTORY  Directory to seach [$dir]
+	-f,--friends               Also download friends 
 	-h,--help		   This help 
-	-v,--verbose		   Increase verbosity [$verb]
+	-j,--jobid      JOBID      Download from a particular job
+	-l,--log-file              Log file output [$redir]
 	-m,--max-files  NUMBER     Max number of files to get [$maxf]
 	-M,--max-jobs   NUMBER     Max number of consequtive jobs [$maxjobs]
-	-t,--top        DIRECTORY  Output directory [$top]
-	-l,--log-file              Log file output [$redir]
-	-d,--directory  DIRECTORY  Directory to seach [$dir]
+	-n,--no-action             Do a dry run
 	-p,--pattern    FILENAME   File name pattern [$file]
-
+	-t,--top        DIRECTORY  Output directory [$top]
+	-v,--verbose		   Increase verbosity [$verb]
 EOF
 }
+
 
 # --- Source library -------------------------------------------------
 . $ALICE_PHYSICS_SOURCE/PWGLF/FORWARD/analysis2/scripts/libGridDownload.sh
@@ -59,8 +62,10 @@ download_files()
 	    # $2: Sarting off-set
 	    # $3: Maximum jobs
 	    # $4: Maximum number of files
-	    # $5: noact 
-	    submit_jobs $out $start $maxjobs $max $noact $list 
+	    # $5: noact
+	    mess 2 "Submit_jobs out=$out start=$start maxjobs=$maxjobs " \
+		 "max=$max noact=$noact list=$list" 
+	    submit_jobs "$out" "$start" "$maxjobs" "$max" "$noact" $list 
 	    list=
 	    queued=0 
 	fi
@@ -87,8 +92,19 @@ download_file()
     #  $5: Maximum
     #  $6: redirect
     #  $7: noact
-    # echo "_download_file src=$1 out=$2 number=$3 current=$4 max=$5 redir=$redir noact=$6" 
-    _download_file "$1" "$2" "$3" "$4" "$5" "$redir" $6 
+    #  $8: multi 
+    mess 2 "_download_file src=$1 out=$2 number=$3 current=$4 " \
+	 "max=$5 redir=$redir noact=$6 friends=$friends" 
+    _download_file "$1" "$2" "$3" "$4" "$5" "$redir" "$6" "$friends"
+    if test $friends -gt 0 ; then
+	case "x$1" in
+	    x*AliESDs*) tmp=`echo $1 | sed 's/AliESDs/AliESDfriends/'` ;;
+	    x*) tmp= ;;
+	esac
+	if test "X$tmp" != "X" ; then
+	    _download_file "$tmp" "$2" "$3" "$4" "$5" "$redir" "$6" "$friends"
+	fi
+    fi
 }
 
 
@@ -99,6 +115,7 @@ maxf=-1
 top=.
 dir=
 pattern=
+friends=0
 while test $# -gt 0 ; do 
     case $1 in 
 	-h|--help)       usage            ; exit 0 ;; 
@@ -111,6 +128,7 @@ while test $# -gt 0 ; do
 	-d|--directory)  dir=$2           ; shift ;;
 	-n|--no-action)  noact=1          ;;
 	-p|--pattern)    pattern=$2       ; shift ;;
+	-f|--friends)    friends=1        ;;
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift

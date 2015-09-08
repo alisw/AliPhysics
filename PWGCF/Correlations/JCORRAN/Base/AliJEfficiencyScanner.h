@@ -108,37 +108,37 @@ class AliJEfficiencyScanner : public TNamed  {
   TH2D *fh2DChargedPtRec[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts];  //! [centr][cut] well reconstructed MC track filled with MC
   TH2D *fh2DChargedPtAll[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts];  //! [centr][cut] all reconstructed tracks filled with reconstructed pT 
 
-  TH2D* fhVertexZMC;
-  TH2D* fhVertexZTrigg;
-  TH2D* fhVertexZTriggVtx;
+  TH2D* fhVertexZMC; //! 
+  TH2D* fhVertexZTrigg; //! 
+  TH2D* fhVertexZTriggVtx; //! 
 
-  TH1D* fhVZRawMC;
-  TH1D* fhVZRecMC;
-  TH1D* fhVZRecAccMC;
+  TH1D* fhVZRawMC; //! 
+  TH1D* fhVZRecMC; //! 
+  TH1D* fhVZRecAccMC; //! 
 
-  TH1D * fhChargedPtMCTrigg[kNVtxBin][kNCentBin];
-  TH1D * fhChargedPtMCTriggVtx[kNVtxBin][kNCentBin];
-  TH1D * fhChargedPtMCRecoCentVtx[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts][kNPrimaryStatus][kNTrackType];
-  TH2D * fh2VtxCent;
+  TH1D * fhChargedPtMCTrigg[kNVtxBin][kNCentBin]; //! 
+  TH1D * fhChargedPtMCTriggVtx[kNVtxBin][kNCentBin]; //! 
+  TH1D * fhChargedPtMCRecoCentVtx[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts][kNPrimaryStatus][kNTrackType]; //! 
+  TH2D * fh2VtxCent; //! 
 
-  TH2D * fh2MultGenRawPrimary[AliJTrackCut::kJNTrackCuts];
-  TH2D * fh2MultGenRawAll[AliJTrackCut::kJNTrackCuts];
+  TH2D * fh2MultGenRawPrimary[AliJTrackCut::kJNTrackCuts]; //! 
+  TH2D * fh2MultGenRawAll[AliJTrackCut::kJNTrackCuts]; //! 
 
-  TH1D * fhDCA2VertexXY[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts];
-  TH1D * fhDCA2VertexZ[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts];
+  TH1D * fhDCA2VertexXY[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts]; //! 
+  TH1D * fhDCA2VertexZ[kNVtxBin][kNCentBin][AliJTrackCut::kJNTrackCuts]; //! 
 
-  TH1D * fhL0Input;
-  TH1D * fhTriggerAlice;
-  TH1D * fhZVtxMCAll;
-  TH1D * fhZVtxMCTrigg;
-  TH1D * fhZVtxMCTriggVtx;
-  TH1D * fhZVtxRecAll;
-  TH1D * fhZVtxRecTrigg;
-  TH1D * fhZVtxRecTriggVtx;
+  TH1D * fhL0Input; //! 
+  TH1D * fhTriggerAlice; //! 
+  TH1D * fhZVtxMCAll; //! 
+  TH1D * fhZVtxMCTrigg; //! 
+  TH1D * fhZVtxMCTriggVtx; //! 
+  TH1D * fhZVtxRecAll; //! 
+  TH1D * fhZVtxRecTrigg; //! 
+  TH1D * fhZVtxRecTriggVtx; //! 
 
-  TF1 * fVtxReFunc;
-  TF1 * fVtxMCFunc;
-  TF1 * fVtxRatioFunc;
+  TF1 * fVtxReFunc; //! 
+  TF1 * fVtxMCFunc; //! 
+  TF1 * fVtxRatioFunc; //! 
   double fVtxRatioMax;
 
   ClassDef(AliJEfficiencyScanner, 1); 

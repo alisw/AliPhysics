@@ -44,8 +44,9 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskSECompareHF.h"
 
-ClassImp(AliAnalysisTaskSECompareHF)
-
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskSECompareHF);
+/// \endcond
 
 //________________________________________________________________________
 AliAnalysisTaskSECompareHF::AliAnalysisTaskSECompareHF():
@@ -55,7 +56,7 @@ fNtupleCmp(0),
 fHistMass(0),
 fHistNEvents(0)
 {
-  // Default constructor
+  /// Default constructor
 
   // NO DefineOutput() HERE (ONLY IN STANDARD CONSTRUCTOR)
 }
@@ -68,7 +69,7 @@ fNtupleCmp(0),
 fHistMass(0),
 fHistNEvents(0)
 {
-  // Standard constructor
+  /// Standard constructor
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -79,7 +80,7 @@ fHistNEvents(0)
 //________________________________________________________________________
 AliAnalysisTaskSECompareHF::~AliAnalysisTaskSECompareHF()
 {
-  // Destructor
+  /// Destructor
   if (fOutput) {
     delete fOutput;
     fOutput = 0;
@@ -89,7 +90,7 @@ AliAnalysisTaskSECompareHF::~AliAnalysisTaskSECompareHF()
 //________________________________________________________________________
 void AliAnalysisTaskSECompareHF::Init()
 {
-  // Initialization
+  /// Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSECompareHF::Init() \n");
   
@@ -99,7 +100,7 @@ void AliAnalysisTaskSECompareHF::Init()
 //________________________________________________________________________
 void AliAnalysisTaskSECompareHF::UserCreateOutputObjects()
 {
-  // Create the output container
+  /// Create the output container
   //
   if(fDebug > 1) printf("AnalysisTaskSECompareHF::UserCreateOutputObjects() \n");
 
@@ -126,8 +127,8 @@ void AliAnalysisTaskSECompareHF::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 {
-  // Execute analysis for current event:
-  // heavy flavor candidates association to MC truth
+  /// Execute analysis for current event:
+  /// heavy flavor candidates association to MC truth
 
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -353,7 +354,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliAnalysisTaskSECompareHF::Terminate(Option_t */*option*/)
 {
-  // Terminate analysis
+  /// Terminate analysis
   //
   if(fDebug > 1) printf("AnalysisTaskSECompareHF: Terminate() \n");
 

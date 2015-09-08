@@ -14,6 +14,7 @@
 #include "AliAODTrack.h"
 #include "AliStack.h"
 #include "AliAnalysisCuts.h"
+#include "TProfile2D.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include "AliAnalysisUtils.h"
@@ -45,6 +46,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 			kEtaMax,
 			kPhiMin,
 			kPhiMax,
+			kNonLinearity1,
+			kNonLinearity2,
 			kDistanceToBadChannel,
 			kTiming,
 			kTrackMatching,
@@ -66,6 +69,21 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 			kAcceptance,
 			kClusterQuality,
 			kPhotonOut
+		};
+
+		enum MCSet {
+			kNoMC=0,
+			k14e2a,
+			k14e2b,
+			k14e2c,
+			k12f1a,
+			k12f1b,
+			k12i3,
+			k15g1a,
+			k15g2,
+			k15a3a,
+			k15a3a_plus,
+			k13b2_efix
 		};
 
 		//handeling of CutString
@@ -96,6 +114,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
 		Bool_t 			ClusterIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
 			
+		//correct NonLinearity
+		void			SetV0ReaderName(TString name)									{V0ReaderName = name; return;}
+		MCSet			FindEnumForMCSet(TString nameMC);
+
+		void			CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
+		Float_t			FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
+		Float_t			FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+		Float_t			FunctionNL_kTestBeamv2(Float_t e);
+
 		void 			InitCutHistograms(TString name="");
 		void 			SetFillCutHistograms(TString name="")							{if(!fHistograms){InitCutHistograms(name);} return;}
 		TList*			GetCutHistograms()												{return fHistograms;}
@@ -130,6 +157,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Bool_t 			SetMinM20(Int_t);
 		Bool_t 			SetDispersion(Int_t);
 		Bool_t 			SetNLM(Int_t);
+		Bool_t			SetNonLinearity1(Int_t);
+		Bool_t			SetNonLinearity2(Int_t);
 		
 	protected:
 		TList			*fHistograms;
@@ -137,8 +166,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 		AliEMCALGeometry	*geomEMCAL;					// pointer to EMCAL geometry
 		AliPHOSGeometry		*geomPHOS;					// pointer to PHOS geometry
+		TObjArray*			EMCALBadChannelsMap;		// pointer to EMCAL bad channel map
+		TProfile*			BadChannels;				// TProfile with bad channels
 		Int_t				nMaxEMCalModules;			// max number of EMCal Modules
 		Int_t				nMaxPHOSModules;			// max number of PHOS Modules
+
+		//for NonLinearity correction
+		TString				V0ReaderName;				// Name of V0Reader
+		TString				periodName;					// PeriodName of MC
+		MCSet				currentMC;					// enum for current MC set being processed
 		
 		//cuts
 		Int_t		fClusterType;						// which cluster do we have
@@ -175,6 +211,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t 		fMinNLM;							// minimum number of local maxima in cluster
 		Int_t 		fMaxNLM;							// maximum number of local maxima in cluster
 		Bool_t 		fUseNLM;							// flag for switching on NLM cut
+		Int_t		fNonLinearity1;						// selection of nonlinearity correction, part1
+		Int_t		fNonLinearity2;						// selection of nonlinearity correction, part2
+		Int_t		fSwitchNonLinearity;				// selection (combined) of NonLinearity
+		Bool_t		fUseNonLinearity;					// flag for switching NonLinearity correction
 		
 		// CutString
 		TObjString* fCutString; 							// cut number used for analysis
@@ -194,6 +234,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 // 		TH2F* 		fHistExoticCellBeforeQA;				// Exotic cell: 1-Ecross/E cell vs Ecluster before acceptance cuts
 // 		TH2F* 		fHistExoticCellAfterQA;					// Exotic cell: 1-Ecross/E cell vs Ecluster after cluster quality cuts
 // 		TH1F* 		fHistNMatchedTracks;					// number of matched tracks
+		TH1F* 		fHistEnergyOfClusterBeforeNL;			// enery per cluster before NonLinearity correction
+		TH1F* 		fHistEnergyOfClusterAfterNL;			// enery per cluster after NonLinearity correction
 		TH1F* 		fHistEnergyOfClusterBeforeQA;			// enery per cluster before acceptance cuts
 		TH1F* 		fHistEnergyOfClusterAfterQA;			// enery per cluster after cluster quality cuts
 		TH1F* 		fHistNCellsBeforeQA;					// number of cells per cluster before acceptance cuts
@@ -248,7 +290,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,5)
+		ClassDef(AliCaloPhotonCuts,8)
 };
 
 #endif

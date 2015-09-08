@@ -103,6 +103,8 @@ AliDielectron::AliDielectron() :
   fQAmonitor(0x0),
   fPostPIDCntrdCorr(0x0),
   fPostPIDWdthCorr(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
   fEventFilter("EventFilter"),
@@ -156,6 +158,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fQAmonitor(0x0),
   fPostPIDCntrdCorr(0x0),
   fPostPIDWdthCorr(0x0),
+  fPostPIDCntrdCorrITS(0x0),
+  fPostPIDWdthCorrITS(0x0),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
   fEventFilter("EventFilter"),
@@ -210,6 +214,8 @@ AliDielectron::~AliDielectron()
   if (fQAmonitor) delete fQAmonitor;
   if (fPostPIDCntrdCorr) delete fPostPIDCntrdCorr;
   if (fPostPIDWdthCorr) delete fPostPIDWdthCorr;
+  if (fPostPIDCntrdCorrITS) delete fPostPIDCntrdCorrITS;
+  if (fPostPIDWdthCorrITS) delete fPostPIDWdthCorrITS;
   if (fLegEffMap) delete fLegEffMap;
   if (fPairEffMap) delete fPairEffMap;
   if (fHistos) delete fHistos;
@@ -328,8 +334,10 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   // set pid correction function to var manager
-  if(fPostPIDCntrdCorr) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
-  if(fPostPIDWdthCorr)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
+  if(fPostPIDCntrdCorr)     AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+  if(fPostPIDWdthCorr)      AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
+  if(fPostPIDCntrdCorrITS)  AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
+  if(fPostPIDWdthCorrITS)   AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
 
   // set event
   AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -1558,6 +1566,103 @@ void AliDielectron::SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary, UIn
     fUsedVars->SetBitNumber(varz, kTRUE);
   }
 }
+
+/// @TODO: implement smart way to use generic functions for all detectors.
+//______________________________________________
+void AliDielectron::SetCentroidCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d",varx,vary,varz);
+  fPostPIDCntrdCorrITS = (TH1*)fun->GetHistogram()->Clone(key.Data());
+  if(fPostPIDCntrdCorrITS)  {
+    fPostPIDCntrdCorrITS->GetListOfFunctions()->AddAt(fun,0);
+    // check for corrections and add their variables to the fill map
+    printf("POST ITS PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorrITS->GetDimension()) {
+      case 3: printf(" %s, ",fPostPIDCntrdCorrITS->GetZaxis()->GetName());
+      case 2: printf(" %s, ",fPostPIDCntrdCorrITS->GetYaxis()->GetName());
+      case 1: printf(" %s ",fPostPIDCntrdCorrITS->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+//______________________________________________
+void AliDielectron::SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d",varx,vary,varz);
+  fPostPIDCntrdCorrITS = (TH1*)fun->Clone(key.Data());
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDCntrdCorrITS)  {
+    printf("POST ITS PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorrITS->GetDimension()) {
+      case 3: printf(" %s, ",fPostPIDCntrdCorrITS->GetZaxis()->GetName());
+      case 2: printf(" %s, ",fPostPIDCntrdCorrITS->GetYaxis()->GetName());
+      case 1: printf(" %s ",fPostPIDCntrdCorrITS->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+//______________________________________________
+void AliDielectron::SetWidthCorrFunctionITS(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("wdth%d%d%d",varx,vary,varz);
+  fPostPIDWdthCorrITS = (TH1*)fun->GetHistogram()->Clone(key.Data());
+  if(fPostPIDWdthCorrITS)  {
+    fPostPIDWdthCorrITS->GetListOfFunctions()->AddAt(fun,0);
+    // check for corrections and add their variables to the fill map
+    printf("POST ITS PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorrITS->GetDimension()) {
+      case 3: printf(" %s, ",fPostPIDWdthCorrITS->GetZaxis()->GetName());
+      case 2: printf(" %s, ",fPostPIDWdthCorrITS->GetYaxis()->GetName());
+      case 1: printf(" %s ",fPostPIDWdthCorrITS->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+//______________________________________________
+void AliDielectron::SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("wdth%d%d%d",varx,vary,varz);
+  fPostPIDWdthCorrITS = (TH1*)fun->Clone(key.Data());
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDWdthCorrITS)  {
+    printf("POST ITS PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorrITS->GetDimension()) {
+      case 3: printf(" %s, ",fPostPIDWdthCorrITS->GetZaxis()->GetName());
+      case 2: printf(" %s, ",fPostPIDWdthCorrITS->GetYaxis()->GetName());
+      case 1: printf(" %s ",fPostPIDWdthCorrITS->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+
 
 //______________________________________________
 TObject* AliDielectron::InitEffMap(TString filename)

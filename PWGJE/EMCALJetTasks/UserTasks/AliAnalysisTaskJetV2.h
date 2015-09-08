@@ -45,6 +45,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC};          // data type
         enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb, kFixedEP};  // detector that was used for event plane
+        enum EPweightType       { kNone, kChi, kSigmaSquared};          // event plane weight type
         enum analysisType       { kCharged, kFull };                    // analysis type
         // constructors, destructor
                                 AliAnalysisTaskJetV2();
@@ -92,7 +93,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             }
            return chi2;
         }
-        /* inline */ Double_t KolmogorovTest(TH1F& histo, TF1* func) const {
+        /* inline */ Double_t KolmogorovTest(/*TH1F& histo, TF1* func*/) const {
             // return the probability from a Kolmogorov test
             return .5;
             /* this test is disabeled as it eats a lot of resources but kept as a dummty to 
@@ -137,6 +138,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
             fUsePtWeight = w; 
             if(!fUsePtWeight) fUsePtWeightErrorPropagation = kFALSE; }
         void                    SetUsePtWeightErrorPropagation(Bool_t w)        {fUsePtWeightErrorPropagation = w; }
+        void                    SetUse2DIntegration(Bool_t k)                   {fUse2DIntegration= k;}
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
         void                    SetMaxNoRandomCones(Int_t m)                    {fMaxCones = m; }
@@ -147,7 +149,11 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         void                    SetChi2VZEROC(TArrayD* a)                       { fChi2C = a;}
         void                    SetChi3VZEROA(TArrayD* a)                       { fChi3A = a;}
         void                    SetChi3VZEROC(TArrayD* a)                       { fChi3C = a;}
-        void                    SetUseChiWeightForVZERO(Bool_t w)               { fUseChiWeightForVZERO = w; }
+        void                    SetSigma2VZEROA(TArrayD* a)                     { fSigma2A = a;}
+        void                    SetSigma2VZEROC(TArrayD* a)                     { fSigma2C = a;}
+        void                    SetSigma3VZEROA(TArrayD* a)                     { fSigma3A = a;}
+        void                    SetSigma3VZEROC(TArrayD* a)                     { fSigma3C = a;}
+        void                    SetEPWeightForVZERO(EPweightType type)          { fWeightForVZERO = type; }
         // getters 
         TString                 GetJetsName() const                             {return GetJetContainer()->GetArrayName(); }
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
@@ -160,6 +166,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
         static TH1F*            GetEventPlaneWeights(TH1F* hist, Int_t c);
         static void             PrintTriggerSummary(UInt_t trigger);
+        static void             DoSimpleSimulation(Int_t nEvents = 100000, Float_t v2 = 0.02, Float_t v3 = 0.04, Float_t v4 = 0.03);
         void                    ExecMe()                                        {ExecOnce();}
         AliAnalysisTaskJetV2*   ReturnMe()                                      {return this;}
         // local cuts
@@ -227,7 +234,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         virtual void            Terminate(Option_t* option);
         // interface methods for the output file
         void                    SetOutputList(TList* l) {fOutputList = l;}
-        TH1F*                   GetResolutionFromOuptutFile(detectorType detector, Int_t h = 2, TArrayD* c = 0x0);
+        TH1F*                   GetResolutionFromOutputFile(detectorType detector, Int_t h = 2, TArrayD* c = 0x0);
         TH1F*                   CorrectForResolutionDiff(TH1F* v, detectorType detector, TArrayD* cen, Int_t c, Int_t h = 2);
         TH1F*                   CorrectForResolutionInt(TH1F* v, detectorType detector, TArrayD* cen, Int_t h = 2);
         TH1F*                   GetDifferentialQC(TProfile* refCumulants, TProfile* diffCumlants, TArrayD* ptBins, Int_t h);
@@ -267,6 +274,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         qcRecovery              fQCRecovery;            // recovery type for e-by-e qc method
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
         Bool_t                  fUsePtWeightErrorPropagation;   // recalculate the bin errors in case of pt weighting 
+        Bool_t                  fUse2DIntegration;      // integrate jet background over eta, phi
         detectorType            fDetectorType;          // type of detector used for modulation fit
         analysisType            fAnalysisType;          // analysis type (full or charged jets)
         TString                 fFitModulationOptions;  // fit options for modulation fit
@@ -355,6 +363,12 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistPsiVZEROCTRK;      //! psi 2 from vzero c
         TH2F*                   fHistPsiVZEROTRK;       //! psi 2 from combined vzero
         TH2F*                   fHistPsiTPCTRK;         //! psi 2 from tpc
+        TH3F*                   fHistEPCorrelations[10];        //! ep correlations
+        TH2F*                   fHistEPCorrAvChi[10];           //! ep corr
+        TH2F*                   fHistEPCorrAvSigma[10];         //! ep corr
+        TH2F*                   fHistEPCorrChiSigma[10];        //! ep corr
+        TH2F*                   fHistIntegralCorrelations[10];  //! correlate polar or local integral
+        TProfile*               fProfIntegralCorrelations[10];  //! same qa lot
         TH3F*                   fHistPsiTPCLeadingJet[10];      //! correlation tpc EP, LJ pt
         TH3F*                   fHistPsiVZEROALeadingJet[10];   //! correlation vzeroa EP, LJ pt
         TH3F*                   fHistPsiVZEROCLeadingJet[10];   //! correlation vzeroc EP, LJ pt
@@ -389,6 +403,7 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistJetEtaRho[10];             //! jet eta versus rho
         // in plane, out of plane jet spectra
         TH2F*                   fHistJetPsi2Pt[10];             //! event plane dependence of jet pt
+        TH3F*                   fHistJetLJPsi2Pt[10];           //! event plane dependence of jet pt and leading track pt
         TH2F*                   fHistJetPsi2PtRho0[10];         //! event plane dependence of jet pt vs rho_0
         // vzero event plane calibration cache for 10h data
         Float_t                 fMeanQ[9][2][2];                //! recentering
@@ -402,14 +417,18 @@ class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
         TArrayD*                fChi2C;                         // chi vs cent for vzero C ep_2
         TArrayD*                fChi3A;                         // chi vs cent for vzero A ep_3
         TArrayD*                fChi3C;                         // chi vs cent for vzero C ep_3
-        Bool_t                  fUseChiWeightForVZERO;          // use chi weight for vzero
+        TArrayD*                fSigma2A;                       // chi vs cent for vzero A ep_2
+        TArrayD*                fSigma2C;                       // chi vs cent for vzero C ep_2
+        TArrayD*                fSigma3A;                       // chi vs cent for vzero A ep_3
+        TArrayD*                fSigma3C;                       // chi vs cent for vzero C ep_3
+        EPweightType            fWeightForVZERO;                // use chi weight for vzero
         TFile*                  fOADB;                          //! fOADB
 
 
         AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
         AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetV2, 5);
+        ClassDef(AliAnalysisTaskJetV2, 6);
 };
 
 #endif

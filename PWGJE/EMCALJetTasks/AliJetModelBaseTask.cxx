@@ -93,7 +93,7 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
 //________________________________________________________________________
 AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) : 
   AliAnalysisTaskSE(name),
-  fGeomName(""),
+  fGeomName("EMCAL_COMPLETE12SMV1"),
   fTracksName("PicoTracks"),
   fOutTracksName("PicoTracksEmbedded"),
   fCaloName("CaloClustersCorr"),

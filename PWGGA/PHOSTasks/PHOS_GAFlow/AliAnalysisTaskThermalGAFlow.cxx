@@ -12,7 +12,7 @@
 #include "TF1.h"
 
 #include <iostream>
-#include <vector>
+//#include <vector>
 
 #include "TNtupleD.h"
 #include "AliESDVZERO.h"
@@ -21,6 +21,8 @@
 #include "TString.h"
 #include "AliLog.h"
 
+#include "AliCaloPhoton.h"
+#include "AliEventplane.h"
 #include "AliPHOSGeoUtils.h"
 #include "AliPHOSGeometry.h"
 
@@ -35,7 +37,11 @@ AliAnalysisTaskThermalGAFlow::AliAnalysisTaskThermalGAFlow( const char *name) :
  AliAnalysisTaskSE(name),
  fRunNumber(-1),
  fAnalist(0),
- fCompass(0),
+ fAtlas(0),
+ fCompass(0x0),
+ fSextant(0x0),
+ fphoton(0x0),
+ fmixphoton(0x0),
  fPHOSgeomU(0x0),
  fPHOSgeom(0),
  fEvent(0x0),
@@ -43,6 +49,8 @@ AliAnalysisTaskThermalGAFlow::AliAnalysisTaskThermalGAFlow( const char *name) :
  faod(0x0),
  fvertexx(),
  fcentrality(0),
+ fevPlane(0),
+ fevScaler(0),
  fNonLinearCorr(0x0),
 
 //Task Arguments
@@ -56,11 +64,13 @@ AliAnalysisTaskThermalGAFlow::AliAnalysisTaskThermalGAFlow( const char *name) :
  fMinCentrality(-1),
  fMaxCentrality(100),
  fCoreRadius(3.5),
- fMinCoreEnergyRatio(0.4)
+ fMinCoreEnergyRatio(0.4),
+ fMinLambdaDisp(0.3),
+ fMinCPVStd(0)
 // END CUTS! //
 
 {
-  AliInfo("*** CONSTRUCTOR ***");
+  AliInfo("*** CONSTRUCTOR_TRUTH ***");
   DefineOutput(1, TList::Class());
 }
 
@@ -78,6 +88,10 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
 
   fAnalist = new TList();
   fAnalist->SetOwner();
+
+  Int_t CompassBinning = 10*10*10; //Vertex Binning * Centrality Binning * ev Plane Binning
+  fCompass = new TObjArray(CompassBinning);
+  fCompass->SetOwner();
 
   TH2I *Cell_N0Clus_MB = new TH2I("Cell_N0Clus_MB", "Clusters per Cell M0 (MB)", 64,0,64,56,0,56);
   Cell_N0Clus_MB->GetXaxis()->SetTitle("Row");
@@ -110,25 +124,47 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Cell_N2Clus->GetYaxis()->SetTitle("Col");
   fAnalist->Add(Cell_N2Clus);
 
-  TH1F *Clus_Trackdr = new TH1F("Clus_Trackdr", "2d extrapolation to nearest track", 15000, -1, 1500);
+  TH1F *Clus_Trackdr = new TH1F("Clus_Trackdr", "2d extrapolation to nearest track", 1010, -1, 100);
   Clus_Trackdr->GetXaxis()->SetTitle("dr (cm)");
   Clus_Trackdr->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Clus_Trackdr);
+
+  TH1F *Clus_TrackMatchStd = new TH1F("Clus_TrackMatchStd", "Track Match Std", 100, -5, 5);
+  Clus_TrackMatchStd->GetXaxis()->SetTitle("TrackMatchStd");
+  Clus_TrackMatchStd->GetYaxis()->SetTitle("dN/do");
+  fAnalist->Add(Clus_TrackMatchStd);
 
   TH1F *Clus_TOF = new TH1F("Clus_TOF", "Time of Flight", 2000, -0.00001, 0.00001);
   Clus_TOF->GetXaxis()->SetTitle("TOF (s)");
   Clus_TOF->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Clus_TOF);
 
-  TH1F *Clus_Pt_MB = new TH1F("Clus_Pt_MB", "Single Photon Pt Spectrum (MB)", 150, 0.5, 6.5);
+  Int_t Nbins = 150; //("Clus_Pt", "Single Photon Pt Spectrum", 150, 0.5, 20.5); and exp scaling
+  Float_t Ptbins[151];
+  Double_t a = TMath::Power(10, 1);
+  for(Int_t ibin = 0; ibin < 151; ibin++){
+  Ptbins[ibin] = 0.5 - (20/(a - 1)) + ((20/(a - 1)) * TMath::Power(10, ibin/150.));
+  }
+
+  TH1F *Clus_Pt_MB = new TH1F("Clus_Pt_MB", "Single Photon Pt Spectrum (MB)", Nbins, Ptbins);
   Clus_Pt_MB->GetXaxis()->SetTitle("Pt (GeV/c)");
   Clus_Pt_MB->GetYaxis()->SetTitle("dN/dPt");
   fAnalist->Add(Clus_Pt_MB);
 
-  TH1F *Clus_Pt = new TH1F("Clus_Pt", "Single Photon Pt Spectrum", 150, 0.5, 6.5);
+  TH1F *Clus_Pt = new TH1F("Clus_Pt", "Single Photon Pt Spectrum", Nbins, Ptbins);
   Clus_Pt->GetXaxis()->SetTitle("Pt (GeV/c)");
   Clus_Pt->GetYaxis()->SetTitle("dN/dPt");
   fAnalist->Add(Clus_Pt);
+
+  TH1F *Clus_BCDistance = new TH1F("Clus_BCDistance", "Distance between maximum and nearest bad channel", 1000, 0, 100);
+  Clus_BCDistance->GetXaxis()->SetTitle("Distance");
+  Clus_BCDistance->GetYaxis()->SetTitle("dN/dD");
+  fAnalist->Add(Clus_BCDistance);
+
+  TH1F *Clus_DispLambda = new TH1F("Clus_DispLambda", "Dispersion Matrix Eigenvalue", 200, 0, 20);
+  Clus_DispLambda->GetXaxis()->SetTitle("Dispersion Matrix Eigenvalue");
+  Clus_DispLambda->GetYaxis()->SetTitle("dN/dD");
+  fAnalist->Add(Clus_DispLambda);
 
   TH1F *Event_NClus_MB = new TH1F("Event_NClus_MB", "N Clusters per Event (MB)", 200, 0, 200);
   Event_NClus_MB->GetXaxis()->SetTitle("N Clusters");
@@ -149,6 +185,16 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Event_Cent->GetXaxis()->SetTitle("Centrality");
   Event_Cent->GetYaxis()->SetTitle("Counts");
   fAnalist->Add(Event_Cent);
+
+  TH1F *Event_EP = new TH1F("Event_EP", "Event Plane Angle of rotation", 100, 0, TMath::Pi());
+  Event_EP->GetXaxis()->SetTitle("Event Plane Psi");
+  Event_EP->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Event_EP);
+
+  TH1F *Event_EPSP = new TH1F("Event_EPSP", "Event Plane Scaler Product", 100, 0, 1);
+  Event_EPSP->GetXaxis()->SetTitle("|cos(Psi_V0A - Psi_V0C)|");
+  Event_EPSP->GetYaxis()->SetTitle("Counts");
+  fAnalist->Add(Event_EPSP);
 
   TH2F *Event_N0ClusVsCent = new TH2F("Event_N0ClusVsCent","NClus vs Cent", 51, -2, 100, 200, 0, 200);
   Event_N0ClusVsCent->GetXaxis()->SetTitle("Cent");
@@ -190,29 +236,56 @@ void AliAnalysisTaskThermalGAFlow::UserCreateOutputObjects() {
   Cluster_AvgShape->GetYaxis()->SetTitle("Cell Energy (before nonlinear corr)");
   fAnalist->Add(Cluster_AvgShape);
 
+  TH1I *Stat_Efficiency = new TH1I("Stat_Efficiency", "Efficiency of each cut number", 20, 0, 20);
+  Stat_Efficiency->GetXaxis()->SetTitle("Counts");
+  Stat_Efficiency->GetYaxis()->SetTitle("Cut Number");
+  fAnalist->Add(Stat_Efficiency);
+
+  TH2F *Meson_RawM = new TH2F("Meson_RawM", "Raw Diphoton Mass", 280,0,.7,500,0,25);
+  Meson_RawM->GetXaxis()->SetTitle("M (GeV/c^2)");
+  Meson_RawM->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
+  fAnalist->Add(Meson_RawM);
+
+  TH2F *Meson_XM = new TH2F("Meson_XM", "Mixed Event Diphoton Mass", 280,0,.7,500,0,25);
+  Meson_XM->GetXaxis()->SetTitle("M (GeV/c^2)");
+  Meson_XM->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
+  fAnalist->Add(Meson_XM);
+
+  TH2F *Meson_M = new TH2F("Meson_M", "Subtracted Diphoton Mass", 280,0,.7,500,0,25);
+  Meson_M->GetXaxis()->SetTitle("M (GeV/c^2)");
+  Meson_M->GetYaxis()->SetTitle("Pt (Px&Py in Lorentz Vector)");
+  fAnalist->Add(Meson_M);
+
   PostData(1, fAnalist);
 }
 
 //______________________________Main Loop, Called for each Event_____________//
 
 void AliAnalysisTaskThermalGAFlow::UserExec( Option_t *){
+CaptainsLog(0);
 
 //Step 0: Configure the environment - take out your toys
 ConfigureEvent();
 if(fRunNumber != fEvent->GetRunNumber()){fRunNumber = fEvent->GetRunNumber(); InitializeGeometry();}
 ScanBasicEventParameters();
-CaptainsLog(0);
+CaptainsLog(1);
 
 //Step 1: Internal Triggering and QA - set up your toys
 if(!ApplyEventCuts()){PostData(1,fAnalist);}
 else {
 ScanClusters();
-CaptainsLog(1);
-
-//Step 2: Extract Inclusive Photon Spectrum
-
+SaveEvent();
 CaptainsLog(2);
 
+//Step 2: Extract the diphoton mass - play with your toys
+//printf("fSextant = %p\n", fSextant);
+MesonExclusion();
+CaptainsLog(3);
+
+//Step 3: Compute thermal photon spectrum - have fun and be happy
+
+//Step 4: Compute thermal photon flow - put away your toys when you're done with them 
+fSextant = 0x0;
 PostData(1,fAnalist);
 }
 }
@@ -262,15 +335,78 @@ fPHOSgeomU->SetMisalMatrix(fesd->GetPHOSMatrix(2),2);
 
 //____________________________Extract the basic perameters for the event______//
 void AliAnalysisTaskThermalGAFlow::ScanBasicEventParameters(){ 
-  const AliVVertex *primaryVertex = fEvent->GetPrimaryVertex();
-  if(primaryVertex){primaryVertex->GetXYZ(fvertexx);}
-  else {printf("No primary vertex. Setting it to Zero Vector."); fvertexx[0] = 0; fvertexx[1] = 0; fvertexx[2] = 0;}
-  if(fEvent->GetCentrality()){fcentrality = fesd->GetCentrality()->GetCentralityPercentile("V0M");}
-  else {printf("No V0C centrality found.  Setting it to -2."); fcentrality = -2;} 
+const AliVVertex *primaryVertex = fEvent->GetPrimaryVertex();
+if(primaryVertex){primaryVertex->GetXYZ(fvertexx);}
+else {printf("No primary vertex. Setting it to Zero Vector."); fvertexx[0] = 0; fvertexx[1] = 0; fvertexx[2] = 0;}
+if(fEvent->GetCentrality()){fcentrality = fesd->GetCentrality()->GetCentralityPercentile("V0M");}
+else {printf("No V0C centrality found.  Setting it to -2."); fcentrality = -2;} 
+
+//Now, get the Reaction plane.  3 methods to do this:  V0A, V0C, and TPC.  V0A and V0C look for a fourier transform in the zero degree calorimeter on the A and C side, respectively.  TPC looks for the fourier transform in the TPC.  Studies show (see https://indico.cern.ch/event/405255/) that the TPC method is not as reliable as V0A and V0C, which are both about equally accurate.  So we take the average of V0C and V0A for the best results.
+
+Double_t RP;
+Double_t RPscaler;
+
+AliEventplane *eventplane = fEvent->GetEventplane();
+if(!eventplane){AliError("Event Plane isn't reconstructed.  Setting to zero. \n"); fevPlane = 0; return;}
+Double_t V0A_RP = eventplane->GetEventplane("V0A", fEvent);
+Double_t V0C_RP = eventplane->GetEventplane("V0C", fEvent);
+
+if(fDebug > 3 && (V0A_RP > TMath::Pi() || V0A_RP < 0)){AliInfo(Form("It seems the V0A (%f) is outside of the valid range [0,pi].  Correcting.", V0A_RP));}
+if(fDebug > 3 && (V0C_RP > TMath::Pi() || V0C_RP < 0)){AliInfo(Form("It seems the V0C (%f) is outside of the valid range [0,pi].  Correcting.", V0C_RP));}
+
+while(V0A_RP < 0){V0A_RP = V0A_RP + TMath::Pi();}
+while(V0C_RP < 0){V0C_RP = V0C_RP + TMath::Pi();}
+while(V0A_RP > TMath::Pi()){V0A_RP = V0A_RP - TMath::Pi();}
+while(V0C_RP > TMath::Pi()){V0C_RP = V0C_RP - TMath::Pi();}
+
+RP = (V0A_RP + V0C_RP)/2;;
+RPscaler = TMath::Abs(TMath::Cos((V0A_RP - V0C_RP)));
+
+fevPlane = RP;
+fevScaler = RPscaler;
+
+//printf("EP: %f \n", fevPlane);
+}
+
+//___________________________Apply Event Cuts________________________________________//
+Bool_t AliAnalysisTaskThermalGAFlow::ApplyEventCuts(){
+if(fDebug == 1){printf("Vert: %f ;; Cent: %f \n", fvertexx[2], fcentrality);}
+
+if(!(TMath::Abs(fvertexx[2]) < fMaxVertexx)){return 0;}
+if(!((fcentrality > fMinCentrality) && (fcentrality < fMaxCentrality))){return 0;}
+if(!(fesd->GetNumberOfCaloClusters() > 2)){return 0;}
+if(!(fevScaler > 0)){return 0;}
+
+//Temporary Mod 1 Corruption Cut
+AliESDCaloCells* PHOSCells = fesd->GetPHOSCells();
+Int_t x[4] = {2, 0, 0, 0}; //mod, (PbW04 = 0 or CPV = -1), row, col
+Int_t absID = 0;
+Int_t CorruptFlag = 1;
+for(Int_t row = 0; row<=64; row++){
+for(Int_t col = 0; col<=28; col++){
+  x[2] = row;
+  x[3] = col;
+  if(fPHOSgeomU->RelToAbsNumbering(x, absID)){
+    if(PHOSCells->GetCellAmplitude(absID) != 0){CorruptFlag = 0;}
+  }
+}}
+
+//if(CorruptFlag){return 0;}  //Go ahead and disable corruption cut.  It should be fixed by now?
+//End Corruption Cut
+
+FillHist("Event_Vertexx", fvertexx[2]);
+FillHist("Event_Cent",fcentrality);
+FillHist("Event_EP", fevPlane);
+FillHist("Event_EPSP", fevScaler); 
+
+return 1;
+
 }
 
 //___________________________Extract useful information from the clusters______________//
 void AliAnalysisTaskThermalGAFlow::ScanClusters(){
+
+//printf("Scanning photons...\n");
 
 Int_t nPHOSClusters = 0;
 Int_t nGoodClusters = 0;
@@ -296,146 +432,115 @@ for(Int_t icluster = 0; icluster < fesd->GetNumberOfCaloClusters(); icluster++) 
     if(x[0] == 2){FillHist("Cell_N2Clus_MB", x[2], x[3]); nClus2 = nClus2+1;}
 
     FillHist("Clus_Pt_MB", sqrt((p.Px()*p.Px()+p.Py()*p.Py())));
+    FillHist("Clus_BCDistance", cluster->GetDistanceToBadChannel());
   }
 
- FillHist("Event_N0ClusVsCent", fcentrality, nClus0);
- FillHist("Event_N1ClusVsCent", fcentrality, nClus1);
- FillHist("Event_N2ClusVsCent", fcentrality, nClus2);
- FillHist("Event_NClusVsCent", fcentrality, nClus0+nClus1+nClus2);
+  FillHist("Event_N0ClusVsCent", fcentrality, nClus0);
+  FillHist("Event_N1ClusVsCent", fcentrality, nClus1);
+  FillHist("Event_N2ClusVsCent", fcentrality, nClus2);
+  FillHist("Event_NClusVsCent", fcentrality, nClus0+nClus1+nClus2);
 
   if(ApplyClusterCuts(cluster)){
-    if(ApplyCPCuts(cluster)){
-      if(ApplyShapeCuts(cluster)){
-
     nGoodClusters = nGoodClusters+1;
     if(x[0] == 0){FillHist("Cell_N0Clus", x[2], x[3]);}
     if(x[0] == 1){FillHist("Cell_N1Clus", x[2], x[3]);}
     if(x[0] == 2){FillHist("Cell_N2Clus", x[2], x[3]);}
     FillHist("Clus_Pt", sqrt((p.Px()*p.Px()+p.Py()*p.Py())));
     FillHist("Clus_TOF", cluster->GetTOF());
+
+//    printf("Photon Passed.\n");
 
     SavePhoton(cluster);
-  }}}
+  }
 
 }}
-if(faod){
-for(Int_t icluster = 0; icluster < faod->GetNumberOfCaloClusters(); icluster++) {
-  AliAODCaloCluster *cluster = faod->GetCaloCluster(icluster);
-  GetPos(cluster, x);
-  cluster->GetMomentum(p, fvertexx);
-  if(cluster->IsPHOS()){
-    nPHOSClusters = nPHOSClusters+1;
-    if(x[0] == 0){FillHist("Cell_N0Clus_MB", x[2], x[3]);}
-    if(x[0] == 1){FillHist("Cell_N1Clus_MB", x[2], x[3]);}
-    if(x[0] == 2){FillHist("Cell_N2Clus_MB", x[2], x[3]);}
-    FillHist("Clus_Pt_MB", sqrt((p.Px()*p.Px()+p.Py()*p.Py())));
-  }
-  if(ApplyClusterCuts(cluster)){
-    nGoodClusters = nGoodClusters+1;
-    if(x[0] == 0){FillHist("Cell_N0Clus", x[2], x[3]);}
-    if(x[0] == 1){FillHist("Cell_N1Clus", x[2], x[3]);}
-    if(x[0] == 2){FillHist("Cell_N2Clus", x[2], x[3]);}
-    FillHist("Clus_Pt", sqrt((p.Px()*p.Px()+p.Py()*p.Py())));
-    FillHist("Clus_TOF", cluster->GetTOF());
-  }
-}}
-
-FillHist("Event_NClus_MB", nPHOSClusters);
-FillHist("Event_NClus", nGoodClusters);
-
-}
-
-//___________________________Fill Module Specific Data______________________________//
-void AliAnalysisTaskThermalGAFlow::ScanMod(Int_t* x, TLorentzVector p){
-if(x[0] == 0){
- FillHist("Cell_N0Clus_MB", x[2], x[3]);
-// FillHist("Event_N0ClusVsCent", fcentrality, fesd->GetNumberOfCaloClusters());
-}
-if(x[0] == 1){
- FillHist("Cell_N1Clus_MB", x[2], x[3]);
-// FillHist("Event_N1ClusVsCent", fcentrality, fesd->GetNumberOfCaloClusters());
-}
-if(x[0] == 2){
- FillHist("Cell_N2Clus_MB", x[2], x[3]);
-// FillHist("Event_N2ClusVsCent", fcentrality, fesd->GetNumberOfCaloClusters());
-}
-
-}
-
-//___________________________Apply Event Cuts________________________________________//
-Bool_t AliAnalysisTaskThermalGAFlow::ApplyEventCuts(){
-if(fDebug == 1){printf("Vert: %f ;; Cent: %f \n", fvertexx[2], fcentrality);}
-
-if(!(TMath::Abs(fvertexx[2]) < fMaxVertexx)){return 0;}
-if(!((fcentrality > fMinCentrality) && (fcentrality < fMaxCentrality))){return 0;}
-if(!(fesd->GetNumberOfCaloClusters() > 3)){return 0;}
-
-//Temporary Mod 1 Corruption Cut
-AliESDCaloCells* PHOSCells = fesd->GetPHOSCells();
-Int_t x[4] = {2, 0, 0, 0}; //mod, (PbW04 = 0 or CPV = -1), row, col
-Int_t absID = 0;
-Int_t CorruptFlag = 1;
-for(Int_t row = 0; row<=64; row++){
-for(Int_t col = 0; col<=28; col++){
-  x[2] = row;
-  x[3] = col;
-  if(fPHOSgeomU->RelToAbsNumbering(x, absID)){
-    if(PHOSCells->GetCellAmplitude(absID) != 0){CorruptFlag = 0;}
-  }
-}}
-if(CorruptFlag){return 0;}
-//End Corruption Cut
-
-FillHist("Event_Vertexx", fvertexx[2]);
-FillHist("Event_Cent",fcentrality) ;
-
-return 1;
-
 }
 
 //___________________________Apply Cluster Cuts______________________________________//
 Bool_t AliAnalysisTaskThermalGAFlow::ApplyClusterCuts(AliESDCaloCluster *cluster){
+//Basic QA Cuts - mainly targetting bad channcels.
 if(!(cluster->IsPHOS())){return 0;}
+  FillHist("Stat_Efficiency", 0);
 if(!(cluster->GetNCells() >= fMinCells)){return 0;}
+  FillHist("Stat_Efficiency", 1);
 if(!(cluster->E() >= fMinE)){return 0;}
-if(!(cluster->GetTOF() > -0.0000002 && cluster->GetTOF() < 0.0000002)){return 0;}
+  FillHist("Stat_Efficiency", 2);
+if(!(cluster->GetTOF() > -0.0000001 && cluster->GetTOF() < 0.0000001)){return 0;}
+  FillHist("Stat_Efficiency", 3);
+if(!(cluster->GetDistanceToBadChannel() > 4.4)){return 0;}
+  FillHist("Stat_Efficiency", 4);
+//CPV
+if(!(ApplyCPCuts(cluster))){return 0;}
+  FillHist("Stat_Efficiency", 5);
+//Shape
+if(!(ApplyCoreShapeCut(cluster))){return 0;}
+  FillHist("Stat_Efficiency", 6);
+if(!(ApplyDispMatrixCut(cluster))){return 0;}
+  FillHist("Stat_Efficiency", 7);
 return 1;
 }
 
-Bool_t AliAnalysisTaskThermalGAFlow::ApplyClusterCuts(AliAODCaloCluster *cluster){
-if(!(cluster->IsPHOS())){return 0;}
-if(!(cluster->GetNCells() >= fMinCells)){return 0;}
-if(!(cluster->E() >= fMinE)){return 0;}
-return 1;
-}
-
-//___________________________Apply Charged Particle Cuts____________________________//
+//___________________________Apply Charged Particle Veto____________________________//
 Bool_t AliAnalysisTaskThermalGAFlow::ApplyCPCuts(AliESDCaloCluster *cluster){
+
+//Double_t dx = cluster->GetTrackDx();
+//Double_t dz = cluster->GetTrackDz();
+//  Double_t trackDr = sqrt(dx*dx + dz*dz);
+
+Double_t trackDr = cluster->GetEmcCpvDistance();
+
+FillHist("Clus_Trackdr", trackDr);
+//if(!(trackDr > fMinTrackDr)){return 0;}
+
+//TRY TO ADD PHOS_PbPb METHOD.
+  //Parameterization of LHC10h period -- June 10 2015 PHOS meeting Yuri Kharlov said is same as 11h
+  //_true if neutral_
+
+TArrayI * itracks = cluster->GetTracksMatched() ;
+
+if(!(itracks->GetSize() > 0)){return 1;} 
+Int_t iTr = itracks->At(0);
+if(!(iTr >= 0 && iTr < fEvent->GetNumberOfTracks())){return 0;}
+//if(!(iTr >= 0 && iTr < fEvent->GetNumberOfTracks())){printf("iTr: %i, ntracks: %i\n", iTr, fEvent->GetNumberOfTracks()); return 0;}
 
 Double_t dx = cluster->GetTrackDx();
 Double_t dz = cluster->GetTrackDz();
+AliVParticle* track = fEvent->GetTrack(iTr);
+Double_t pt = track->Pt();
+Int_t charge = track->Charge();
 
-//  if(dx != 0){printf("Not Zero\n");}
-//  printf("%f\n", dx);
-//AliESDtrack* matchtrack = fesd->GetTrack(cluster->GetTracksMatched()->At(1));
-//Int_t tracknum = -7;
-//TArrayI* trackarr = cluster->GetTracksMatched();
-//Int_t* arr = trackarr->GetArray();
-//if(arr){printf("I got the array, it's %i\n", arr[0]);}
-//tracknum = (cluster->GetTracksMatched())->At(0);
-//printf("Tracknum: %d\n", tracknum);
-//if(matchtrack){printf("Got a track, at least.\n");}
+//What comes next is a byzentine series of computation that I don't understand.  The PWGGA seems to think that this extracts the std deviation of the CPV.  ...We'll see.
+Double_t meanX=0;
+Double_t meanZ=0;
+Double_t mf = 0;
+Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
+Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60);
+mf = fesd->GetMagneticField(); //Positive for ++ and negative for --
 
-
-  Double_t trackDr = sqrt(dx*dx + dz*dz);
-//  printf("trackDr: %f ; trackDx: %f . \n", trackDr, cluster->GetTrackDx());
-  FillHist("Clus_Trackdr", trackDr);
-  if(!(trackDr > fMinTrackDr)){return 0;}
-  return 1;
+if(mf<0){ //field --
+  meanZ = -0.468318 ;
+  if(charge>0){meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01));}
+  else{meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01));}
+}
+else{ //Field ++
+  meanZ= -0.468318;
+  if(charge>0){meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01));}
+  else{meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01));}
 }
 
-//___________________________Apply Cluster Shape Cuts______________________________//
-Bool_t AliAnalysisTaskThermalGAFlow::ApplyShapeCuts(AliESDCaloCluster *cluster){
+Double_t rz=(dz-meanZ)/sz ;
+Double_t rx=(dx-meanX)/sx ;
+Double_t r = TMath::Sqrt(rx*rx+rz*rz); //I understand this to be the number of std of projected track trajectory is from the center of the cluster.
+
+FillHist("Clus_TrackMatchStd", r);
+
+if(r > fMinCPVStd){return 0;}
+return 1;
+}
+
+//___________________________Apply Core Shape Cut______________________________//
+Bool_t AliAnalysisTaskThermalGAFlow::ApplyCoreShapeCut(AliESDCaloCluster *cluster){
+//Core Energy Ratio Cut will to check for multiple maxima.
 Int_t nCells = cluster->GetNCells();
 Int_t realID[4];
 Float_t x, z, xc, zc;
@@ -480,14 +585,170 @@ FillHist("Cluster_EnergyVsNCells", nCells, cluster->E());
 FillHist("Cluster_CoreEVsNCells", nCells, coreE);
 FillHist("Cluster_CoreERatioVsNCells", nCells, coreE/cluster->E());
 
-if(coreE / cluster->E() > fMinCoreEnergyRatio){return true;}
-else {return false;}
+if(!(coreE / cluster->E() > fMinCoreEnergyRatio)){return 0;}
+return 1;
+}
+
+//__________________________Apply Dispersion Matrix Cut___________________________//
+Bool_t AliAnalysisTaskThermalGAFlow::ApplyDispMatrixCut(AliESDCaloCluster *cluster){
+//Dispersion matrix eigenvalue will check ellipsidity (is that a word?)
+Double_t dispLambda = cluster->GetM02();
+
+FillHist("Clus_DispLambda", dispLambda);
+
+if(!(dispLambda > fMinLambdaDisp)){return 0;}
+return 1;
 }
 
 //___________________________Save Photon Candidate_________________________________//
 void AliAnalysisTaskThermalGAFlow::SavePhoton(AliESDCaloCluster* cluster){
-if(cluster){/*printf("I got a photon!\n");*/}
+
+//printf("Saving A Photon...\n");
+
+if(fSextant == 0x0){fSextant = new TObjArray(1); fSextant->SetOwner();}
+
+Float_t cellGlobalPosArr[3];
+TLorentzVector p;
+
+cluster->GetPosition(cellGlobalPosArr);
+cluster->GetMomentum(p, fvertexx);
+
+AliCaloPhoton* photon = new AliCaloPhoton(p.Px(), p.Py(), p.Pz(), p.E());
+photon->SetEMCx(cellGlobalPosArr[0]);
+photon->SetEMCy(cellGlobalPosArr[1]);
+photon->SetEMCz(cellGlobalPosArr[2]);
+
+if(photon == 0x0){printf("The photon is null. That shouldn't happen."); return;}
+fSextant->AddLast(photon);
+
+//printf("Photon Saved! \n");
+
+/*
+Need to save:
+EVENT LEVEL - 
+1) Centrality Information
+2) Vertexx information
+3) Event Plane Information
+PHOTON LEVEL - Classic Array
+4) Position information
+5) Momentum information
+6) From decay? (MC only)
+
+They do it this way:  They make a hierarchy of arrays and lists going like:
+TObjArray* fCaloPhotonsPHOSLists (multidimensional array of event types - each dimension is Cent, vert, and ep info - each element is a TList* arrayList - This level is hidden behind a method - GetCaloPhotonsPHOSList())
+
+TList* arrayList (List of events - each element is an event)
+
+TObjArray* mixPHOS (Array of photons - each element is a photon)
+
+AliCaloPhoton* ph (Custom made object storing everything you could want to know (and then some) about the photon.  Documentation in $ALICE_PHYSICS/inst/include/AliCaloPhoton.h.  I think this much data is unnessiary - they have already cut on these things (and so have I).  They only use it to make post cut histograms for QA so far as I can tell.  Consider creating my own object or using this and simply not filling all the information or simply using my own standard (cpp) array of doubles.
+*/
 }
+
+//____________________________Save the event for mixing_____________________________//
+void AliAnalysisTaskThermalGAFlow::SaveEvent(){
+
+//printf("Saving Event...\n");
+
+fAtlas = ReferenceAtlas(fvertexx[2], fcentrality, fevPlane);
+
+if(fSextant == 0x0){return;} //If there's no valid photons... don't bother saving.
+
+fAtlas->AddLast(fSextant);
+
+//printf("Event Saved! \n");
+}
+
+//____________________________Create Mixed Events___________________________________//
+void AliAnalysisTaskThermalGAFlow::MesonExclusion(){
+//Note:  Can only be done after Event and constituent photons have been saved... obviously.
+//printf("Check\n");
+if(fSextant == 0x0){return;}
+//printf("Me!!\n");
+
+AliCaloPhoton *y1, *y2;
+Double_t piarr[2];
+TList* atlas = ReferenceAtlas(fvertexx[2], fcentrality, fevPlane);
+
+for(Int_t i1 = 0; i1 < fSextant->GetEntriesFast(); i1++){
+ y1 = static_cast<AliCaloPhoton*> (fSextant->At(i1));
+ for(Int_t i2 = i1+1; i2 < fSextant->GetEntriesFast(); i2++){
+  y2 = static_cast<AliCaloPhoton*> (fSextant->At(i2));
+  InvMass(y1, y2, piarr);
+//  printf("y1: %p, y2: %p, piarr[1]: %f, piarr[2]: %f \n", y1, y2, piarr[1], piarr[2]);
+  FillHist("Meson_RawM", piarr[1], piarr[2]);
+ }
+ for(TObjLink* XLink = atlas->FirstLink(); XLink != atlas->LastLink(); XLink = XLink->Next()){
+  //Don't match to the last link.  That's the Sextant.
+  TObjArray *XEvent = static_cast<TObjArray*> (XLink->GetObject());
+  for(Int_t ix2 = 0; ix2 < XEvent->GetEntriesFast(); ix2++){ 
+   y2 = static_cast<AliCaloPhoton*> (XEvent->At(ix2));
+   InvMass(y1, y2, piarr);
+   FillHist("Meson_XM", piarr[1], piarr[2]);
+  }
+ }
+}
+
+}
+
+//____________________________Get the Event List you need___________________________//
+TList* AliAnalysisTaskThermalGAFlow::ReferenceAtlas(Double_t vertx, Double_t cent, Double_t evplane){
+TList* atlas;
+Int_t index;
+Int_t vertxbins = 10;
+Int_t centbins = 10;
+Int_t evplanebins = 10;
+
+Int_t vertx_index = std::floor( ((vertx / (2*fMaxVertexx)) + 0.5) * vertxbins );
+Int_t cent_index = std::floor( (((cent - fMinCentrality) / (fMaxCentrality - fMinCentrality)) * centbins) );
+Int_t evplane_index = std::floor( (evplane/TMath::Pi()) * evplanebins );
+
+//printf("vx: %f\n", vertx);
+//printf("vx_i: %i |  c_i: %i |  ev_i: %i \n", vertx_index, cent_index, evplane_index);
+
+if(vertx_index == vertxbins){vertx_index = vertx_index - 1;}
+if(cent_index == centbins){cent_index = cent_index - 1;}
+if(evplane_index == evplanebins){evplane_index = evplane_index - 1;}
+
+index = vertx_index + cent_index*vertxbins + evplane_index*vertxbins*centbins;
+
+//printf("index: %i\n", index);
+
+atlas = static_cast<TList*> (fCompass->At(index));
+
+//printf("Compass at: %p | cast to: %p | atlas: %p \n", fCompass, fCompass->At(index), atlas);
+
+if(atlas){return atlas;}
+else {
+if(fDebug > 1){AliError("The Altas Reference failed. Creating new Atlas....");}
+atlas = new TList();
+atlas->SetOwner();
+fCompass->AddAt(atlas, index);
+return atlas;}
+}
+
+//____________________________Compute Invariant Mass________________________________//
+Double_t *AliAnalysisTaskThermalGAFlow::InvMass(AliCaloPhoton* y1, AliCaloPhoton* y2, Double_t piarr[2]){
+const TLorentzVector *p1 = y1->GetMomV2();
+const TLorentzVector *p2 = y2->GetMomV2();
+TLorentzVector ppi = *p1 + *p2;
+
+Double_t Mpi = sqrt(ppi.E()*ppi.E()-ppi.Px()*ppi.Px()-ppi.Py()*ppi.Py()-ppi.Pz()*ppi.Pz());
+Double_t Ptshared = sqrt((ppi.Px()*ppi.Px()+ppi.Py()*ppi.Py()));
+piarr[1] = Mpi;
+piarr[2] = Ptshared;
+
+return piarr;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//                                                                                  //
+//                                                                                  //
+//                                Helper Functions                                  //
+//                                                                                  //
+//                                                                                  //
+//////////////////////////////////////////////////////////////////////////////////////
 
 //___________________________Get the Position of the center of the cluster_________//
 Int_t *AliAnalysisTaskThermalGAFlow::GetPos(AliESDCaloCluster* cluster, Int_t x[4]){
@@ -513,20 +774,14 @@ Int_t *AliAnalysisTaskThermalGAFlow::GetPos(AliAODCaloCluster* cluster, Int_t x[
   return x;
 }
 
-
-
-//////////////////////////////////////////////////////////////////////////////////////
-//                                                                                  //
-//                                                                                  //
-//                                Helper Functions                                  //
-//                                                                                  //
-//                                                                                  //
-//////////////////////////////////////////////////////////////////////////////////////
-
-
 //____________________________Keep a record of events so the user knows what's going on_____//
 void AliAnalysisTaskThermalGAFlow::CaptainsLog(Int_t s){
-if(fDebug == 1){printf("Step %d Completed.\n", s);}
+if(fDebug > 0){
+if(s == 0){AliInfo(Form("Beginning New Event. Standby."));}
+if(s == 3){AliInfo(Form("...Finished Event.\n"));}
+if(s != 0 && s != 3){AliInfo(Form("Step %i Completed.", s));}
+}
+
 }
 
 //______________________________Method to Fill Histo as Seg Fualt workaround_________//

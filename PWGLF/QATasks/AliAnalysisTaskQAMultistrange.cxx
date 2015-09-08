@@ -94,6 +94,7 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange()
     fListHistMultistrangeQA(0),
     fHistEventSel(0),
     fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+    fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
     fCFContCascadeCuts(0),
     fCFContCascadeMCgen(0)
 
@@ -127,6 +128,7 @@ AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name)
     fListHistMultistrangeQA(0),
     fHistEventSel(0),
     fHistMassXiMinus(0), fHistMassXiPlus(0), fHistMassOmegaMinus(0), fHistMassOmegaPlus(0),
+    fHistCascadeMultiplicityXiMinus(0), fHistCascadeMultiplicityXiPlus(0), fHistCascadeMultiplicityOmegaMinus(0), fHistCascadeMultiplicityOmegaPlus(0),
     fCFContCascadeCuts(0),
     fCFContCascadeMCgen(0) 
 
@@ -206,6 +208,22 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects() {
   if(! fHistMassOmegaPlus) {
      fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus", "#Omega^{+} candidates;M(#bar{#Lambda}^{0},K^{+}) (GeV/c^{2}); Counts", 120, 1.62, 1.74); 
      fListHistMultistrangeQA->Add(fHistMassOmegaPlus);                                                                                                    
+  }
+  if(! fHistCascadeMultiplicityXiMinus) {
+     fHistCascadeMultiplicityXiMinus = new TH1F("fHistCascadeMultiplicityXiMinus","Xi Minus per event;Nbr of Xi Minus/Evt;Events", 20, 0, 20);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiMinus);
+  } 
+  if(! fHistCascadeMultiplicityXiPlus) {
+     fHistCascadeMultiplicityXiPlus = new TH1F("fHistCascadeMultiplicityXiPlus","Xi Plus per event;Nbr of Xi Plus/Evt;Events", 20, 0, 20);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiPlus);
+  }
+  if(! fHistCascadeMultiplicityOmegaMinus) {
+     fHistCascadeMultiplicityOmegaMinus = new TH1F("fHistCascadeMultiplicityOmegaMinus","Omega Minus per event;Nbr of Omega Minus/Evt;Events", 20, 0, 20);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaMinus);
+  }
+  if(! fHistCascadeMultiplicityOmegaPlus) {
+     fHistCascadeMultiplicityOmegaPlus = new TH1F("fHistCascadeMultiplicityOmegaPlus","Omega Plus per event;Nbr of Omega Plus/Evt;Events", 20, 0, 20);
+     fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaPlus);
   }
 
 
@@ -566,11 +584,10 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
               vertex = lESDevent->GetPrimaryVertexSPD();
               if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
               else fHasVertex = kTRUE;
-              TString vtxTyp = vertex->GetTitle();
               Double_t cov[6]={0};
               vertex->GetCovarianceMatrix(cov);
               Double_t zRes = TMath::Sqrt(cov[5]);
-              if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
+              if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
           }
           else fHasVertex = kTRUE;
           if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!
@@ -588,11 +605,10 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
               vertex = lAODevent->GetPrimaryVertexSPD();
               if (vertex->GetNContributors() < 1) fHasVertex = kFALSE;
               else fHasVertex = kTRUE;
-              TString vtxTyp = vertex->GetTitle();
               Double_t cov[6]={0};
               vertex->GetCovarianceMatrix(cov);
               Double_t zRes = TMath::Sqrt(cov[5]);
-              if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) fHasVertex = kFALSE;
+              if (vertex->IsFromVertexerZ() && (zRes>0.25)) fHasVertex = kFALSE;
           }   
           else fHasVertex = kTRUE;
           if (fHasVertex == kFALSE) { //Is First event in chunk rejection: Still present!
@@ -647,7 +663,6 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
                                   }
       }
   }
-
   fHistEventSel->Fill(5.5);
 
   ////////////////////////////               
@@ -661,7 +676,11 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
       Int_t lNbMCPrimary = 0;
       if      (fAnalysisType == "ESD") lNbMCPrimary = lMCstack->GetNprimary();    //lMCstack->GetNprimary(); or lMCstack->GetNtrack();
       else if (fAnalysisType == "AOD") lNbMCPrimary = arrayMC->GetEntries();
- 
+      Int_t ngenximinus    = 0;
+      Int_t ngenxiplus     = 0;
+      Int_t ngenomegaminus = 0;
+      Int_t ngenomegaplus  = 0;
+
       for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary; iCurrentLabelStack++) {
 
            Double_t partP      = 0.;
@@ -723,12 +742,16 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
            lContainerCutVarsMC[4]  = partTheta;
            lContainerCutVarsMC[5]  = partPhi;
            lContainerCutVarsMC[6]  = lcentrality;
-           if (PDGcode == 3312)  fCFContCascadeMCgen->Fill(lContainerCutVarsMC,0); // for Xi-
-           if (PDGcode == -3312) fCFContCascadeMCgen->Fill(lContainerCutVarsMC,1); // for Xi+
-           if (PDGcode == 3334)  fCFContCascadeMCgen->Fill(lContainerCutVarsMC,2); // for Omega-
-           if (PDGcode == -3334) fCFContCascadeMCgen->Fill(lContainerCutVarsMC,3); // for Omega+ 
-
+           if (PDGcode == 3312)  {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,0); ngenximinus++;} // for Xi-
+           if (PDGcode == -3312) {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,1); ngenxiplus++;} // for Xi+
+           if (PDGcode == 3334)  {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,2); ngenomegaminus++;} // for Omega-
+           if (PDGcode == -3334) {fCFContCascadeMCgen->Fill(lContainerCutVarsMC,3); ngenomegaplus++;} // for Omega+   
       }
+      fHistCascadeMultiplicityXiMinus->Fill(ngenximinus);
+      fHistCascadeMultiplicityXiPlus->Fill(ngenxiplus);
+      fHistCascadeMultiplicityOmegaMinus->Fill(ngenomegaminus);
+      fHistCascadeMultiplicityOmegaPlus->Fill(ngenomegaplus);
+
   }        
 
 

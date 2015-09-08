@@ -53,7 +53,7 @@ AliAnalysisTask *AddTask_oezdemir_pp2010(Bool_t getFromAlien=kFALSE,TString cFil
     mgr->CreateContainer("oezdemir_pp2010_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "LMEEoutput_output");
+                         "LMEEoutput.root");
   
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer("oezdemir_pp2010_out",

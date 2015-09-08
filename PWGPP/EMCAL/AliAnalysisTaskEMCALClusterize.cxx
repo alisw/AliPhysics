@@ -249,6 +249,8 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
           
         } // loop
     } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
+    
+    delete contBC;
   }  // Remove bad
   
   // Energy Recalibration
@@ -294,6 +296,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       } else AliInfo("Do NOT recalibrate EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate EMCAL, no params for run");  // run number array ok
         
+    delete contRF;
   } // Recalibration on
   
   // Energy Recalibration, apply on top of previous calibration factors
@@ -350,6 +353,8 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
         } // rows 
       } // SM loop
     } else AliInfo("Do NOT recalibrate EMCAL with T variations, no params TH1");
+    
+    delete contRFTD;
   } // Run by Run T calibration
   
   // Time Recalibration
@@ -392,6 +397,7 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
       } else AliInfo("Do NOT recalibrate time EMCAL, no params for pass"); // array pass ok
     } else AliInfo("Do NOT recalibrate time EMCAL, no params for run");  // run number array ok
     
+    delete contTRF;
   } // Time recalibration on    
   
   // Parameters already set once, so do not it again
@@ -1225,6 +1231,15 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
           fGeomMatrix[mod]->Print();
         
         fGeom->SetMisalMatrix(fGeomMatrix[mod],mod) ;  
+      }
+      else if(gGeoManager)
+      {
+        AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+        fGeom->SetMisalMatrix(fGeom->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+      }
+      else
+      {
+        AliError(Form("Alignment atrix for SM %d is not available",mod));
       }
       
       fGeomMatrixSet=kTRUE;

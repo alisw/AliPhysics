@@ -6,6 +6,7 @@
 
 #pragma link C++ class AliAnalysisHelperJetTasks+;
 #pragma link C++ class AliFigure+;
+#pragma link C++ class AliCanvas+;
 #pragma link C++ class AliHelperPID+;
 #pragma link C++ class AliLatexTable+;
 #pragma link C++ class AliNamedArrayI+;
@@ -22,5 +23,5 @@
 #pragma link C++ class AliJSONDouble+;
 #pragma link C++ class AliJSONBool+;
 #pragma link C++ class AliJSONString+;
-
+#pragma link C++ class AliAnalysisTaskDummy+;
 #endif

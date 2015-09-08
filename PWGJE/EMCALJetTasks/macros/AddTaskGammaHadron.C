@@ -53,7 +53,14 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   name += "_";
   name += cutType;
 
-  AliAnalysisTaskGammaHadron* qaTask = new AliAnalysisTaskGammaHadron(name);
+
+  //The next XX lines are implemented to get the reader and
+  //AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
+
+
+
+//  AliAnalysisTaskGammaHadron* qaTask = new AliAnalysisTaskGammaHadron(name);
+  AliAnalysisTaskGammaHadron* qaTask = new AliAnalysisTaskGammaHadron();
   qaTask->SetCaloCellsName(ncells);
   qaTask->SetRhoName(nrho,-1);
   qaTask->SetVzRange(-10,10);

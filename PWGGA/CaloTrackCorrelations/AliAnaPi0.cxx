@@ -53,7 +53,7 @@ ClassImp(AliAnaPi0) ;
 AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
 fEventsList(0x0),
 fNModules(22),
-fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(7.),
+fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(0.),
 fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),
 fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0),
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),
@@ -156,10 +156,11 @@ void AliAnaPi0::InitParameters()
   
   AddToHistogramsName("AnaPi0_");
   
-  fUseAngleCut = kFALSE;
   fUseAngleEDepCut = kFALSE;
+  
+  fUseAngleCut = kTRUE;
   fAngleCut    = 0.;
-  fAngleMaxCut = TMath::Pi();
+  fAngleMaxCut = DegToRad(100.);  // 100 degrees cut, avoid EMCal/DCal combinations
   
   fMultiCutAna = kFALSE;
   
@@ -2067,10 +2068,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   // If less than photon 2 entries in the list, skip this event
   if ( nPhot < 2 )
   {
-    AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentrality()));
+    AliDebug(1,Form("nPhotons %d, cent bin %d continue to next event",nPhot, GetEventCentralityBin()));
     
-    if(GetNCentrBin() > 1)
-        fhCentralityNoPair->Fill(GetEventCentrality() * GetNCentrBin() / GetReader()->GetCentralityOpt(), GetEventWeight());
+    if ( GetNCentrBin() > 1 && IsHighMultiplicityAnalysisOn() )
+        fhCentralityNoPair->Fill(GetEventCentralityBin(), GetEventWeight());
     
     return ;
   }
@@ -2088,7 +2089,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   //Int_t curVzBin        = GetEventVzBin();
   //Int_t curRPBin        = GetEventRPBin();
   Int_t eventbin        = GetEventMixBin();
-  
+    
   if(eventbin > GetNCentrBin()*GetNZvertBin()*GetNRPBin())
   {
     AliWarning(Form("Mix Bin not expected: cen bin %d, z bin %d, rp bin %d, total bin %d, Event Centrality %d, z vertex %2.3f, Reaction Plane %2.3f",
@@ -2257,13 +2258,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
       if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
       {
-        AliDebug(2,Form("Real pair angle %f not in E %f window",angle, (fPhotonMom1+fPhotonMom2).E()));
+        AliDebug(2,Form("Real pair angle %f (deg) not in E %f window",RadToDeg(angle), (fPhotonMom1+fPhotonMom2).E()));
         continue;
       }
       
       if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
       {
-        AliDebug(2,Form("Real pair cut %f < angle %f < cut %f",fAngleCut, angle, fAngleMaxCut));
+        AliDebug(2,Form("Real pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut), RadToDeg(angle), RadToDeg(fAngleMaxCut)));
         continue;
       }
       
@@ -2489,7 +2490,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         module1 = GetModuleNumber(p1);
         
         //---------------------------------
-        // First loop on photons/clusters
+        // Second loop on other mixed event photons/clusters
         //---------------------------------
         for(Int_t i2=0; i2<nPhot2; i2++)
         {
@@ -2505,13 +2506,13 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           Double_t angle   = fPhotonMom1.Angle(fPhotonMom2.Vect());
           if(fUseAngleEDepCut && !GetNeutralMesonSelection()->IsAngleInWindow((fPhotonMom1+fPhotonMom2).E(),angle+0.05))
           {
-            AliDebug(2,Form("Mix pair angle %f not in E %f window",angle, (fPhotonMom1+fPhotonMom2).E()));
+            AliDebug(2,Form("Mix pair angle %f (deg) not in E %f window",RadToDeg(angle), (fPhotonMom1+fPhotonMom2).E()));
             continue;
           }
           
           if(fUseAngleCut && (angle < fAngleCut || angle > fAngleMaxCut))
           {
-            AliDebug(2,Form("Mix pair angle %f < cut %f",angle,fAngleCut));
+            AliDebug(2,Form("Mix pair cut %f < angle %f < cut %f (deg)",RadToDeg(fAngleCut),RadToDeg(angle),RadToDeg(fAngleMaxCut)));
             continue;
           }
           

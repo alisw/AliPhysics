@@ -213,6 +213,9 @@ void AliDielectronEvent::SetAOD(Int_t sizeP, Int_t sizeN)
   //
   // use AOD as input
   //
+
+  //overwrite with fixed sizes
+  sizeP=sizeN=1000;
   fArrTrackP.SetClass("AliAODTrack",sizeP);
   fArrTrackN.SetClass("AliAODTrack",sizeN);
   fIsAOD=kTRUE;
@@ -224,6 +227,9 @@ void AliDielectronEvent::SetESD(Int_t sizeP, Int_t sizeN)
   //
   // use ESD as input
   //
+
+  //overwrite with fixed sizes
+  sizeP=sizeN=1000;
   fArrTrackP.SetClass("AliESDtrack",sizeP);
   fArrTrackN.SetClass("AliESDtrack",sizeN);
   fIsAOD=kFALSE;

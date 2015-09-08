@@ -1,20 +1,11 @@
-// #if ! defined (__CINT__) || defined (__MAKECINT__)
-// #include "AliLog.h"
-// #include "AliAnalysisManager.h"
-// #include "AliAnalysisDataContainer.h"
-// #include "AliAnalysisCuts.h"
-// #include "AliESDtrackCuts.h"
-// 
-// #include "AliTRDcheckESD.h"
-// #endif
-
 AliESDtrackCuts* SetupESDcuts();
 void AddCFContainers(AliTRDcheckESD* checkESD);
 
-void AddTRDcheckESD(AliAnalysisManager *mgr)
+void AddTRDcheckESD()
 {
   //AliLog::SetClassDebugLevel("AliTRDcheckESD", 5);
-  //  AliInfo("aaaaaa6666666666");
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr) return;
   AliTRDcheckESD *checkESD = new AliTRDcheckESD((char*)"TRDcheckESD");
   checkESD->SetRefTrackFilter(SetupESDcuts());
   mgr->AddTask(checkESD);

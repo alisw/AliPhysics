@@ -6,8 +6,8 @@
 /* $Id$ */
 
 //***********************************************************
-// Class AliRDHFCutsLctoV0
-// class for cuts on AOD reconstructed Lc-> V0 + bachelor
+/// \class Class AliRDHFCutsLctoV0
+/// \brief class for cuts on AOD reconstructed Lc-> V0 + bachelor
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -89,15 +89,17 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
  private:
 
   Int_t fPidSelectionFlag;
-  AliESDtrackCuts *fV0daughtersCuts; // cuts for v0 daughters (AOD converted to ESD on the flight!)
-  Float_t     fV0Type; // V0 type -- should be defined as in AliRDHFCuts.h
-  Float_t fHighPtCut;  // high pT cut separation for proton identification
-  Float_t fLowPtCut;   // low pT cut separation for proton identification
-  Int_t   fExcludedCut; // cut to be excluded (-1=none)
+  AliESDtrackCuts *fV0daughtersCuts; /// cuts for v0 daughters (AOD converted to ESD on the flight!)
+  Float_t     fV0Type; /// V0 type -- should be defined as in AliRDHFCuts.h
+  Float_t fHighPtCut;  /// high pT cut separation for proton identification
+  Float_t fLowPtCut;   /// low pT cut separation for proton identification
+  Int_t   fExcludedCut; /// cut to be excluded (-1=none)
 
   //UShort_t fV0channel;
 
-  ClassDef(AliRDHFCutsLctoV0,6);  // class for cuts on AOD reconstructed Lc->V0+bachelor
+  /// \cond CLASSIMP    
+  ClassDef(AliRDHFCutsLctoV0,6);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
+  /// \endcond
 };
 
 #endif

@@ -54,13 +54,13 @@ class AliFourPion : public AliAnalysisTaskSE {
     kMultLimitpp = 300,
     kMultBinspp = 10,
     kMCarrayLimit = 150000,// 110000
-    kQbinsWeights = 40,
+    kQbinsWeights = 40,// 40 or 25
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
     kDENtypes = 179,// was 104
   };
 
-  static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
+  static const Int_t fKbinsT   = 6;// Set fKstep as well !!!!
   static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
   static const Int_t fEDbins   = 4;
   static const Int_t fCentBins = 10;// 0-50%
@@ -81,7 +81,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   //
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
-  void SetInterpolationType(Bool_t linearInterp) {fLinearInterpolation = linearInterp;}
+  void SetInterpolationType(Short_t InterpType) {fInterpolationType = InterpType;}
   void SetCollisionType(Short_t ct) {fCollisionType = ct;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
@@ -278,7 +278,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGenerateSignal;
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
-  Bool_t fLinearInterpolation;
+  Short_t fInterpolationType;
   Bool_t fMixedChargeCut;
   Int_t fRMax;
   Float_t fRstartMC;

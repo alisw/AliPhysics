@@ -56,6 +56,7 @@ private:
   TF1 *          fThresholdFuction;//!  
   AliVEvent     *fEvent;//! 
   AliVVertex	*fVertex;//!
+  AliVVertex	*fVertexRecalculated;//!
   AliEmcalJet	*fJet;//!
 
   AliParticleContainer * fParticles ; //! Particle container containing AliVTracks

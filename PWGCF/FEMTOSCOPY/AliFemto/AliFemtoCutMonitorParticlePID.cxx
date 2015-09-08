@@ -168,6 +168,7 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
   float tMom = aTrack->P().Mag();
+  if(fIfUsePt) tMom = aTrack->Pt();
   float tdEdx = aTrack->TPCsignal();
   float tTOF = 0.0;
   //  short tchg = aTrack->Charge();

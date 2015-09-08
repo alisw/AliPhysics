@@ -78,8 +78,10 @@ void Systematics_pp_lowpthad(Bool_t useReflected){
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.5*TMath::Pi());
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.5*TMath::Pi(),0.625*TMath::Pi());
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.375*TMath::Pi(),0.625*TMath::Pi());
-   // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
-   // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
+    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
+    //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);
+    // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kLowestPoint,kFALSE);
+    // systfitter->AddSystematicMode(AliHFCorrFitSystematics::k2PointsAtPiHalf,kFALSE);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMinVar,kFALSE);
     systfitter->AddSystematicMode(AliHFCorrFitSystematics::kMaxVar,kFALSE);
     //systfitter->AddSystematicMode(AliHFCorrFitSystematics::kBinCount,kFALSE);
@@ -368,7 +370,10 @@ void SystematicsMC_pp_highpthad(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
-    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else if(strTemplRootName.Contains("POWHEG")){
+      mcCase="POWHEG";
+      strTemplRootName.Remove(0,2);
+    }
     else {
       Printf("MC case not foreseen");
       return;
@@ -398,16 +403,18 @@ void SystematicsMC_pp_highpthad(Bool_t useReflected,TString strTemplRootName){
     if(useReflected){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2);
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
     //systfitter->CheckBaselineRanges();
     //return;
@@ -417,16 +424,25 @@ void SystematicsMC_pp_highpthad(Bool_t useReflected,TString strTemplRootName){
     Bool_t ishistoadded;
     // add histograms to fit (different pt bins of the
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+    if(!ishistoadded){
+       ishistoadded =systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
     
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){
+      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
-    
+    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
+    if(!ishistoadded){
+      ishistoadded =systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall1.0to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
     
@@ -472,7 +488,10 @@ void SystematicsMC_pp_lowpthad(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
-    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else if(strTemplRootName.Contains("POWHEG")){
+      mcCase="POWHEG";
+      strTemplRootName.Remove(0,2);
+    }
     else {
       Printf("MC case not foreseen");
       return;
@@ -502,16 +521,16 @@ void SystematicsMC_pp_lowpthad(Bool_t useReflected,TString strTemplRootName){
     if(useReflected){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
     //systfitter->CheckBaselineRanges();
     //return;
@@ -521,18 +540,28 @@ void SystematicsMC_pp_lowpthad(Bool_t useReflected,TString strTemplRootName){
     Bool_t ishistoadded;
     // add histograms to fit (different pt bins of the
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+    if(!ishistoadded){
+      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+
     
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){
+      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
-    
+    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+    if(!ishistoadded){
+      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to1.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
+    systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
     
         
     
@@ -576,7 +605,10 @@ void SystematicsMC_pp_integrpthad(Bool_t useReflected,TString strTemplRootName){
     else if(strTemplRootName.Contains("Perugia2011"))mcCase="Perugia2011";
     else if(strTemplRootName.Contains("Perugia0"))mcCase="Perugia0";
     else if(strTemplRootName.Contains("Herwig"))mcCase="Herwig";
-    else if(strTemplRootName.Contains("POWHEG"))mcCase="POWHEG";
+    else if(strTemplRootName.Contains("POWHEG")){
+      mcCase="POWHEG";
+      strTemplRootName.Remove(0,2);
+    }
     else {
       Printf("MC case not foreseen");
       return;
@@ -606,16 +638,16 @@ void SystematicsMC_pp_integrpthad(Bool_t useReflected,TString strTemplRootName){
     if(useReflected){
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),1); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      // systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),1,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
     else {
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kTRUE,0.25*TMath::Pi(),0.5*TMath::Pi(),2); 
       systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),4); 
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
-      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kFree,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),0);  
+      //      systfitter->AddSystematicMode(AliHFCorrFitSystematics::kNLowest,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi(),2,AliHFCorrFitter::kConstThreeGausPeriodicity);  
     }
-    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
+    //    systfitter->AddSystematicMode(AliHFCorrFitSystematics::kTransverse,kFALSE,0.25*TMath::Pi(),0.5*TMath::Pi());
     
     //systfitter->CheckBaselineRanges();
     //return;
@@ -625,19 +657,28 @@ void SystematicsMC_pp_integrpthad(Bool_t useReflected,TString strTemplRootName){
     Bool_t ishistoadded;
     // add histograms to fit (different pt bins of the
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+    if(!ishistoadded){
+      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s3To5_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
-    
+    systfitter->SetDptLowEdge(3); systfitter->SetDptUpEdge(5); // set the pt range for the related histo
+
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+    if(!ishistoadded){
+      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s5To8_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
-    
+    systfitter->SetDptLowEdge(5); systfitter->SetDptUpEdge(8); // set the pt range for the related histo
+
 
     ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"","hCorrDeltaPhi","","");
-    systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+    if(!ishistoadded){
+      ishistoadded = systfitter->AddHistoToFit(Form("%s/%s8To16_ptAssall0.3to99.0_DeltaEta10.root",path.Data(),strTemplRootName.Data()),"cDeltaPhi","hCorrDeltaPhi","","");
+    }
     if(!ishistoadded){cout << "cannot add histogram, exiting... " << endl; return;}
-    
+    systfitter->SetDptLowEdge(8); systfitter->SetDptUpEdge(16); // set the pt range for the related histo
+
         
     
     Bool_t setupfitter = systfitter->SetUpSystematicsFitter(); // set up the fitter (initializes variables)

@@ -1,6 +1,6 @@
-void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "0000000",
+void AddTask_Material(	TString 	V0ReaderEventCutNumber 		= "00000003",
 						TString 	V0ReaderPhotonCutNumber 	= "060000084001001500000000",
-						TString 	TaskEventCutnumber 			= "0000000",
+						TString 	TaskEventCutnumber 			= "00000003",
 						TString 	TaskPhotonCutnumber 		= "090000092663743800000000",
 						Bool_t 		isMC 						= kFALSE, 
 						Int_t 		IsHeavyIon 					= 0, 

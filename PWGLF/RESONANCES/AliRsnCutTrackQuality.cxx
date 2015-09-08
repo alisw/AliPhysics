@@ -44,6 +44,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fDCAZfixed(kTRUE),
    fDCAZptFormula(""),
    fDCAZmax(1E20),
+   fDCA2D(kFALSE),
    fSPDminNClusters(0),
    fITSminNClusters(0),
    fITSmaxChi2(1E20),
@@ -83,6 +84,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fDCAZfixed(copy.fDCAZfixed),
    fDCAZptFormula(copy.fDCAZptFormula),
    fDCAZmax(copy.fDCAZmax),
+   fDCA2D(copy.fDCA2D),
    fSPDminNClusters(copy.fSPDminNClusters),
    fITSminNClusters(copy.fITSminNClusters),
    fITSmaxChi2(copy.fITSmaxChi2),
@@ -131,6 +133,7 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fDCAZfixed = copy.fDCAZfixed;
    fDCAZptFormula = copy.fDCAZptFormula;
    fDCAZmax = copy.fDCAZmax;
+   fDCA2D = copy.fDCA2D;
    fSPDminNClusters = copy.fSPDminNClusters;
    fITSminNClusters = copy.fITSminNClusters;
    fITSmaxChi2 = copy.fITSmaxChi2;
@@ -172,6 +175,7 @@ void AliRsnCutTrackQuality::DisableAll()
    fDCAZfixed = kTRUE;
    fDCAZptFormula = "";
    fDCAZmax = 1E20;
+   fDCA2D = kFALSE;
    fSPDminNClusters = 0;
    fITSminNClusters = 0;
    fITSmaxChi2 = 1E20;
@@ -304,8 +308,10 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
    else
       cuts.SetMaxDCAToVertexZPtDep(fDCAZptFormula.Data());
 
-   // these options are always disabled in current version
-   cuts.SetDCAToVertex2D(kFALSE);
+   // 2D DCA
+   cuts.SetDCAToVertex2D(fDCA2D);
+
+   // theis option is always disabled in current version
    cuts.SetRequireSigmaToVertex(kFALSE);
 
    // TPC related cuts for TPC+ITS tracks
@@ -477,6 +483,8 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       return kFALSE;
    }
 
+   //NOTE: 2D DCA cut not implemented for AODs
+
    // step #6: check eta/pt range
    if (track->Eta() < fEta[0] || track->Eta() > fEta[1]) {
       AliDebug(AliLog::kDebug + 2, "Outside ETA acceptance");
@@ -578,6 +586,21 @@ void AliRsnCutTrackQuality::SetDefaults2011(Bool_t useTPCCrossedRows, Bool_t use
     SetEtaRange(-0.8, 0.8);
   } 
   SetAODTestFilterBit(5);
+  return;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnCutTrackQuality::SetDefaultsTPCOnly(Bool_t useDefaultKinematicCuts)
+{
+//
+// Default std cuts TPC-only
+//
+  fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  if (useDefaultKinematicCuts) {
+    SetPtRange(0.15, 1E+20);
+    SetEtaRange(-0.8, 0.8);
+  } 
+  SetAODTestFilterBit(-1);
   return;
 }
 //__________________________________________________________________________________________________

@@ -1,7 +1,4 @@
-///*******************************************************
-///Config Description
-/// April 22, 2015
-///*******************************************************
+
 
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
@@ -16,7 +13,7 @@ Bool_t isEMCal = kFALSE,
 Bool_t isTrigger = kFALSE,
 Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
 Bool_t isTender = kFALSE,
-char * period = "b"											
+char* period = "b"											
 )
 
 {
@@ -78,9 +75,9 @@ char * period = "b"
 	// new cuts for event selection
 	
 		// done inside the task, by hand
-		//	hfecuts->SetUseCorrelationVertex();
-		//	hfecuts->SetSPDVtxResolutionCut();
-		//hfecuts->SetpApileupCut();
+		// hfecuts->SetUseCorrelationVertex();
+		// hfecuts->SetSPDVtxResolutionCut();
+		// hfecuts->SetpApileupCut();
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
@@ -119,12 +116,54 @@ char * period = "b"
 			
 		
 	}
+	
 	if(period == "d"){
-		if(configIndex==200){
-			task->SetTPCCalibration(kTRUE);
-			task->SetTPC_mean_sigma(0.6, 1.1);
+		
+			//printf("======================================================================================\n ");
+			//printf("\n\n Running on 13d period!!!  \n\n  TPC Calibration is set !!! \n\n ");
+			//printf("======================================================================================\n ");
+		task->SetTPCCalibration();
+		task->SetTPC_mean_sigma(0.63, 1.17);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
+		
+	}	
+	
+	
+		//Calibration for other periods
+	if(configIndex==200){
+	
+		if(period == "e"){
+			
+				//printf("======================================================================================\n ");
+				//printf("\n\n Running on 13e period!!!  \n\n  TPC Calibration is set !!! \n\n ");
+				//printf("======================================================================================\n ");
+		task->SetTPCCalibration();
+		task->SetTPC_mean_sigma(-0.24, 0.92);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
+			
+		}	
+	
+		if(period == "f"){
+			
+				//printf("======================================================================================\n ");
+				//printf("\n\n Running on 13f period!!!  \n\n  TPC Calibration is set !!! \n\n ");
+				//printf("======================================================================================\n ");
+		task->SetTPCCalibration();
+		task->SetTPC_mean_sigma(-0.27, 0.97);
+		task->SetTPCcal_cut_min(-1);
+		task->SetTPCcal_cut_max(3);
+			
 		}
-	}
+	 
+	 
+	}//close confiIndex==200
+	
+		//if(period == "d3"){
+		//task->SetUseShowerShapeCut(kTRUE);
+		//printf("Shower Shape on for d3 because is for the trigger data correction!!! Cannot run as trigger because the corrections with weight\n");
+		//}
 	
 	if(isTender) task->SetUseTender();
 		
@@ -257,21 +296,104 @@ char * period = "b"
 	char *cutmodel;
 	cutmodel = "pol0";
 	
-	if(configIndex==70) params[0] = -1.5;
-	else if (configIndex==71) params[0] = -0.5;
-	else if (configIndex==72) params[0] = 0;
-	else if (configIndex==73) params[0] = 0.25;
-	else if (configIndex==74) params[0] = -1.75;
-	else params[0] = -1;
-	if(period == "d")params[0] = -0.5;
+	if(configIndex==70){ 
+		params[0] = -1.5;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(-1.5);
+		}
+	}
+	else if (configIndex==71){ 
+		params[0] = -0.5;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(-0.5);
+		}
+		
+	}
+	else if (configIndex==72){
+		params[0] = 0;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(0);
+			
+		}
+	}	
+	else if (configIndex==73){ 
+		params[0] = 0.25;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(0.25);
+			
+		}
+	}
+	else if (configIndex==74){ 
+		params[0] = 0.5;
+		if(period == "d"){
+			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(0.5);
+			
+		}
+	}
+	else{ 
+		params[0] = -1;
+	
+		if(period =="e"||period =="f"){
+				if(configIndex==200){
+					params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+					task->SetTPCcal_cut_min(-1);
+				}
+		}
+		if(period == "d"){
+				params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
+				task->SetTPCcal_cut_min(-1);
+			
+		}
+	
+	}
+
+	
+		//=========================================
+	
 	
 	if(configIndex==75)Double_t max=1.5;
 	else if(configIndex==76)Double_t max=2.0;
-	else if(configIndex==77)Double_t max=2.5;
-	else if(configIndex==78)Double_t max=3.5;
-	else if(configIndex==79)Double_t max=4.0;
-	else Double_t max=3.0;
-	if(period == "d")Double_t max=3.9;
+	else if(configIndex==77){
+		Double_t max=2.5;
+		if(period =="d"){
+			Double_t max=5;//looser cut for hfe package. Real cut inside the task.
+			task->SetTPCcal_cut_max(2.5);
+		}
+	}
+	else if(configIndex==78){
+		Double_t max=3.5;
+		if(period =="d"){
+			Double_t max=6;//looser cut for hfe package. Real cut inside the task.
+			task->SetTPCcal_cut_max(3.5);
+		}
+	}
+	else if(configIndex==79){
+		Double_t max=4.0;
+		if(period =="d"){
+			Double_t max=6;//looser cut for hfe package. Real cut inside the task.
+			task->SetTPCcal_cut_max(4.0);
+		}
+	}
+	else{
+		Double_t max=3.0;
+		if(period =="e"||period =="f"){
+			
+			if(configIndex==200){
+				Double_t max=5;//looser cut for hfe package. Real cut inside the task.
+				task->SetTPCcal_cut_max(3);
+			}
+			
+		}
+		if(period =="d"){
+				Double_t max=5;//looser cut for hfe package. Real cut inside the task.
+				task->SetTPCcal_cut_max(3);
+		}
+	}
 	
 	
 		

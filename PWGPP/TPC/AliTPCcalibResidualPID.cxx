@@ -272,7 +272,8 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
   Int_t bins[kNdim] =    {    4,    250,    200,    200,          8,    20,        50,   20,   100};
   Double_t xmin[kNdim] = {  0.5,     30,   -10.,   -10.,       -1.5,   -1.,       60.,   0.,   0.1};
   Double_t xmax[kNdim] = {  4.5,   500.,    10.,    10.,        6.5,    1.,      160.,  100,   4};
-  fThnspTpc= new THnSparseF("tpcsignals", "TPC signal;v0id;tpc signal;tpcsigele;tpcsigpion;tofbit;eta;tpcclus;centr;p (GeV/c)", kNdim, bins, xmin, xmax);
+  fThnspTpc= new THnSparseF("tpcsignals", "TPC signal;v0id;tpc signal;tpcsigele;tpcsigpion;tofbit;eta;tpcclus;centr;p (GeV/c);", kNdim, bins, xmin, xmax);
+  SetAxisNamesFromTitle(fThnspTpc);
   BinLogAxis(fThnspTpc, 8);
 
   //
@@ -285,14 +286,19 @@ void AliTPCcalibResidualPID::UserCreateOutputObjects()
   Int_t    binsHistQA[7] = {135, 1980,    4,    5, 40, 10,   40};
   Double_t xminHistQA[7] = {0.1,   20, -0.5, -0.5, -10, -5,   0.};
   Double_t xmaxHistQA[7] = {50., 2000,  3.5,  4.5,  10,  5, 20000};
-  fHistPidQA = new THnSparseF("fHistPidQA","PID QA",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQA = new THnSparseF("fHistPidQA","PID QA;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
+  SetAxisNamesFromTitle(fHistPidQA);
   BinLogAxis(fHistPidQA, 0);
 
   //
-  fHistPidQAshort  = new THnSparseF("fHistPidQAshort" ,"PID QA -- short pads",7,binsHistQA,xminHistQA,xmaxHistQA);
-  fHistPidQAmedium = new THnSparseF("fHistPidQAmedium","PID QA -- med pads",7,binsHistQA,xminHistQA,xmaxHistQA);
-  fHistPidQAlong   = new THnSparseF("fHistPidQAlong"  ,"PID QA -- long pads",7,binsHistQA,xminHistQA,xmaxHistQA);
-  fHistPidQAoroc   = new THnSparseF("fHistPidQAoroc"  ,"PID QA -- oroc",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQAshort  = new THnSparseF("fHistPidQAshort" ,"PID QA -- short pads;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQAmedium = new THnSparseF("fHistPidQAmedium","PID QA -- med pads;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQAlong   = new THnSparseF("fHistPidQAlong"  ,"PID QA -- long pads;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
+  fHistPidQAoroc   = new THnSparseF("fHistPidQAoroc"  ,"PID QA -- oroc;p (GeV/c);tpc signal;particle ID;assumed particle;nSigmaTPC;nSigmaTOF;centrality;",7,binsHistQA,xminHistQA,xmaxHistQA);
+  SetAxisNamesFromTitle(fHistPidQAshort);
+  SetAxisNamesFromTitle(fHistPidQAmedium);
+  SetAxisNamesFromTitle(fHistPidQAlong);
+  SetAxisNamesFromTitle(fHistPidQAoroc);
   BinLogAxis(fHistPidQAshort, 0);
   BinLogAxis(fHistPidQAmedium, 0);
   BinLogAxis(fHistPidQAlong, 0);
@@ -3696,11 +3702,10 @@ Bool_t AliTPCcalibResidualPID::GetVertexIsOk(AliVEvent* event) const
     if (spdVtx->GetNContributors() <= 0)
       return kFALSE;
       
-    TString vtxTyp = spdVtx->GetTitle();
     Double_t cov[6] = {0};
     spdVtx->GetCovarianceMatrix(cov);
     Double_t zRes = TMath::Sqrt(cov[5]);
-    if (vtxTyp.Contains("vertexer:Z") && (zRes > 0.25))
+    if (spdVtx->IsFromVertexerZ() && (zRes > 0.25))
       return kFALSE;
       
     if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ()) > 0.5)
@@ -4007,4 +4012,13 @@ Bool_t AliTPCcalibResidualPID::TPCCutMIGeo(const AliVTrack* track, const AliVEve
   delete par;
   
   return kout;
+}
+
+//________________________________________________________________________
+void AliTPCcalibResidualPID::SetAxisNamesFromTitle(const THnSparseF *h)
+{
+  // set the histogram axis names from the axis titles
+  for (Int_t i=0; i<h->GetNdimensions(); ++i) {
+    h->GetAxis(i)->SetName(h->GetAxis(i)->GetTitle());
+  }
 }

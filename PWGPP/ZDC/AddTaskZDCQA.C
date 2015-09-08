@@ -20,8 +20,8 @@ AliAnalysisTaskSE* AddTaskZDCQA()
   
    // Configure analysis
    //===========================================================================
-   //AliAnalysisTaskZDC* task = new AliAnalysisTaskZDC("AliAnaZDCQA");
-   AliAnalysisTaskZDCpA* task = new AliAnalysisTaskZDCpA("AliAnaZDCQA");
+   AliAnalysisTaskZDC* task = new AliAnalysisTaskZDC("AliAnaZDCQA");
+   //AliAnalysisTaskZDCpA* task = new AliAnalysisTaskZDCpA("AliAnaZDCQA");
    mgr->AddTask(task);
   
    AliAnalysisDataContainer *cout  = mgr->CreateContainer("QAZDCHists",TList::Class(),

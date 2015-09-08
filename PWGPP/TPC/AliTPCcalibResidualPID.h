@@ -152,6 +152,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
   
   void  BinLogAxis(const THnSparseF *h, Int_t axisNumber);
+  void  SetAxisNamesFromTitle(const THnSparseF *h);
 
   static void FitSlicesY(TH2 *hist, Double_t heightFractionForRange, Int_t cutThreshold, TString fitOption, TObjArray *arr);
 

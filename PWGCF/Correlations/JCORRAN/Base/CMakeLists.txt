@@ -59,6 +59,8 @@ set(SRCS
   AliJCard.cxx
   AliJFFlucTask.cxx
   AliJFFlucAnalysis.cxx
+  AliJXtTask.cxx
+  AliJXtAnalysis.cxx
   )
 
 # Headers from sources

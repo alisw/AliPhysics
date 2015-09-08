@@ -1,4 +1,5 @@
-AliAnalysisTask * AddTaskCRC(Double_t centrMin,
+AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
+                             Double_t centrMin,
                              Double_t centrMax,
                              Int_t nCenBin,
                              Double_t CenBinWidth,
@@ -8,8 +9,9 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
                              Double_t etaMax=0.8,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
-                             TString TPCMultOut="2010",
+                             TString sDataSet="2010",
                              TString EvTrigger="MB",
+                             Bool_t bCalculateCME=kFALSE,
                              Bool_t bCalculateCRCPt=kFALSE,
                              Bool_t bUseCRCRecentering=kFALSE,
                              TString QVecWeightsFileName,
@@ -19,11 +21,18 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
                              Bool_t bUseVZEROCalib=kFALSE,
                              Bool_t bUseZDC=kFALSE,
                              Bool_t bRecenterZDC=kFALSE,
+                             TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bDivSigma=kTRUE,
                              Bool_t bZDCMCCen=kTRUE,
+                             Bool_t bInvertZDC=kFALSE,
                              Bool_t bEventCutsQA=kFALSE,
                              Bool_t bTrackCutsQA=kFALSE,
                              TString Label="",
+                             TString sCentrEstimator="V0",
+                             Double_t dVertexRange=10.,
+                             Double_t dDCAxy=2.4,
+                             Double_t dDCAz=3.2,
+                             Double_t dMinClusTPC=70,
                              const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -58,14 +67,6 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
   return NULL;
  }
  
- // set the analysis type automatically
- TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
- if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
- // or manually, if specified
- if(analysisTypeUser != ""){
-  analysisType = analysisTypeUser;
- }
- 
  // define CRC suffix
  TString CRCsuffix = ":CRC";
  
@@ -98,15 +99,17 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  taskFEname += suffix;
  // create instance of the class
  Bool_t bCutsQA = (Bool_t)(bEventCutsQA || bTrackCutsQA);
- if(!bUseZDC) {
-  AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent(taskFEname, "", bCutsQA);
-//  taskFE->SetAnalysisType(analysisType);
- } else {
-  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
-  taskFE->SetCentralityRange(centrMin,centrMax);
-  taskFE->SetCentralityEstimator("V0M");
-  taskFE->SetUseMCCen(bZDCMCCen);
- }
+ AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
+ taskFE->SetCentralityRange(centrMin,centrMax);
+ taskFE->SetCentralityEstimator("V0M");
+ taskFE->SetUseMCCen(bZDCMCCen);
+ taskFE->SetDataSet(sDataSet);
+ taskFE->SetQAOn(bCutsQA);
+ // set the analysis type
+ TString analysisType = "AUTOMATIC";
+ if (analysisTypeUser != "") analysisType = analysisTypeUser;
+ if (analysisTypeUser == "AOD" || analysisTypeUser == "ESD") analysisType = "AUTOMATIC";
+ taskFE->SetAnalysisType(analysisType);
  // add the task to the manager
  mgr->AddTask(taskFE);
  // set the trigger selection
@@ -120,24 +123,35 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
  // configure some event cuts, starting with centrality
- if(analysisType == "MC") {
-  cutsEvent->SetImpactParameterRange(centrMin,centrMax);
+ if(analysisTypeUser == "MCkine") {
+  cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetQA(kFALSE);
  }
- else if (analysisType == "AOD") {
+ else if (analysisTypeUser == "AOD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   // method used for centrality determination
-  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
+  if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+  if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+  AliFlowTrackCuts* RefMultCuts = new AliFlowTrackCuts("RefMultCuts");
+  RefMultCuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
+  RefMultCuts->SetAODfilterBit(AODfilterBit);
+  RefMultCuts->SetMinimalTPCdedx(-999999999);
+  RefMultCuts->SetMaxDCAToVertexXY(dDCAxy);
+  RefMultCuts->SetMaxDCAToVertexZ(dDCAz);
+  RefMultCuts->SetMinNClustersTPC(dMinClusTPC);
+  RefMultCuts->SetPtRange(ptMin,ptMax);
+  RefMultCuts->SetEtaRange(etaMin,etaMax);
+  cutsEvent->SetRefMultCuts(RefMultCuts);
+  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kTPConly);
   // vertex-z cut
-  cutsEvent->SetPrimaryVertexZrange(-10.,10.);
+  cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
   // enable the qa plots
   cutsEvent->SetQA(bEventCutsQA);
   // explicit multiplicity outlier cut
   cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-  if (TPCMultOut == "2011")
+  if (sDataSet == "2011")
    cutsEvent->SetLHC11h(kTRUE);
-  else if (TPCMultOut == "2010")
+  else if (sDataSet == "2010")
    cutsEvent->SetLHC10h(kTRUE);
  }
  
@@ -146,13 +160,17 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("RP cuts");
  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("POI cuts");
  
- if (analysisType == "MC") {
+ if (analysisTypeUser == "MCkine") {
   // Track cuts for RPs
   cutsRP->SetParamType(AliFlowTrackCuts::kMC);
   cutsRP->SetCutMC(kTRUE);
   cutsRP->SetPtRange(ptMin,ptMax);
   cutsRP->SetEtaRange(etaMin,etaMax);
   cutsRP->SetQA(bTrackCutsQA);
+  if(bUseVZERO) {
+   cutsRP->SetEtaRange(-10.,+10.);
+   cutsRP->SetEtaGap(-1.,1.);
+  }
   // Track cuts for POIs
   cutsPOI->SetParamType(AliFlowTrackCuts::kMC);
   cutsPOI->SetCutMC(kTRUE);
@@ -160,12 +178,12 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bTrackCutsQA);
  }
- else if (analysisType == "AOD") {
+ if (analysisTypeUser == "AOD") {
   // Track cuts for RPs
   if(bUseVZERO) {
-   if (TPCMultOut == "2011")
+   if (sDataSet == "2011")
     cutsRP->SetParamType(AliFlowTrackCuts::kDeltaVZERO);
-   else if (TPCMultOut == "2010")
+   else if (sDataSet == "2010")
     cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
    cutsRP->SetEtaRange(-10.,+10.);
    cutsRP->SetEtaGap(-1.,1.);
@@ -187,6 +205,9 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsPOI->SetAODfilterBit(AODfilterBit);
   cutsPOI->SetMinimalTPCdedx(-999999999);
+  cutsPOI->SetMaxDCAToVertexXY(dDCAxy);
+  cutsPOI->SetMaxDCAToVertexZ(dDCAz);
+  cutsPOI->SetMinNClustersTPC(dMinClusTPC);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bTrackCutsQA);
@@ -194,8 +215,9 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  
  taskFE->SetCutsRP(cutsRP);
  taskFE->SetCutsPOI(cutsPOI);
- 
  taskFE->SetSubeventEtaRange(-10.,-1.,1.,10.);
+ if (analysisTypeUser == "MCkine")
+  taskFE->SetSubeventEtaRange(-3.7,-1.7,2.8,5.1);
  
  // get the default name of the output file ("AnalysisResults.root")
  TString file = "AnalysisResults.root";
@@ -240,7 +262,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  // set number of centrality bins
  taskQC->SetnCenBin(nCenBin);
  taskQC->SetCenBinWidth(CenBinWidth);
- taskQC->SetRunSet(TPCMultOut);
+ taskQC->SetDataSet(sDataSet);
  // set thei triggers
  if (EvTrigger == "Cen")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -249,7 +271,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  else if (EvTrigger == "Any")
   taskQC->SelectCollisionCandidates(AliVEvent::kAny);
  // and set the correct harmonic n
- taskQC->SetHarmonic(1);
+ taskQC->SetHarmonic(nHarmonic);
  // set standard flow settings
  taskQC->SetCalculateDiffFlow(kFALSE);
  taskQC->SetCalculateDiffFlowVsEta(kFALSE);
@@ -261,6 +283,7 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  taskQC->SetStoreVarious(kTRUE);
  taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRCPt(bCalculateCRCPt);
+ taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(bUseZDC);
  taskQC->SetRecenterZDC(bRecenterZDC);
@@ -268,6 +291,8 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  taskQC->SetCRCEtaRange(-0.8,0.8);
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
  taskQC->SetDivSigma(bDivSigma);
+ taskQC->SetInvertZDC(bInvertZDC);
+ taskQC->SetCorrWeight(sCorrWeight);
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
   if(!QVecWeightsFile) {
@@ -322,3 +347,4 @@ AliAnalysisTask * AddTaskCRC(Double_t centrMin,
  
  return taskQC;
 }
+

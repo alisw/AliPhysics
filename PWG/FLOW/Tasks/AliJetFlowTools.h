@@ -36,7 +36,7 @@ class AliUnfolding;
 #include "TH1D.h"
 #include "TMath.h"
 // define the following variable to build with debug flags
-///#define ALIJETFLOWTOOLS_DEBUG_FLAG
+// #define ALIJETFLOWTOOLS_DEBUG_FLAG
 
 //_____________________________________________________________________________
 class AliJetFlowTools {
@@ -80,6 +80,7 @@ class AliJetFlowTools {
             gPwrtToArray = a;   // set the array
             gPwrtTo = -9999;    // tells instance to not use this value
         }
+        void            SetPwrtToStatArray(TArrayD* a)  {gPwrtToStatArray       = a;}
         void            SetPivot(Float_t p)             {fPivot                 = p;}
         void            SetConstantUE(Bool_t ue)        {fConstantUE            = ue;}
         void            SetSubdueError(Bool_t b)        {fSubdueError           = b;}
@@ -586,6 +587,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         static Float_t          gReductionFactorCorr;   // multiply corr uncertainty by this factor
         static Float_t          gPwrtTo;                // p-value will be evaluated wrt y = gPwrtTo
         static TArrayD*         gPwrtToArray;           // p-value will be evaluated wrt y = gPwrtToArray[i]
+        static TArrayD*         gPwrtToStatArray;       // stat uncertainty of previous array
 
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
@@ -593,15 +595,16 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
 
 };
 // initialize the static members
-TArrayD* AliJetFlowTools::gV2           = new TArrayD(8);       // DO NOT TOUCH - these arrays are filled by the
-TArrayD* AliJetFlowTools::gStat         = new TArrayD(8);       // 'GetSignificance' function and
-TArrayD* AliJetFlowTools::gShape        = new TArrayD(8);       // then used in the chi2 minimization routine
-TArrayD* AliJetFlowTools::gCorr         = new TArrayD(8);       // to calculate the significance of the results
+TArrayD* AliJetFlowTools::gV2           = new TArrayD(7);       // DO NOT TOUCH - these arrays are filled by the
+TArrayD* AliJetFlowTools::gStat         = new TArrayD(7);       // 'GetSignificance' function and
+TArrayD* AliJetFlowTools::gShape        = new TArrayD(7);       // then used in the chi2 minimization routine
+TArrayD* AliJetFlowTools::gCorr         = new TArrayD(7);       // to calculate the significance of the results
 Int_t    AliJetFlowTools::gOffsetStart  =  0;           // start chi2 fit from this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Int_t    AliJetFlowTools::gOffsetStop   = 0;           // stop chi2 fit at this bin w.r.t. the binning supplied in the 'GetCorr/GetShape' functions
 Float_t  AliJetFlowTools::gReductionFactor      = 1.;   // multiply shape uncertainty by this factor
 Float_t  AliJetFlowTools::gReductionFactorCorr  = 1.;   // multiply corr uncertainty by this factor
 Float_t  AliJetFlowTools::gPwrtTo               = 0.;   // p-value will be evaluated wrt y = gPwrtTo
-TArrayD* AliJetFlowTools::gPwrtToArray          = new TArrayD(8);// array of values w.r.t. p value is evaluated
+TArrayD* AliJetFlowTools::gPwrtToArray          = new TArrayD(7);// array of values w.r.t. p value is evaluated
+TArrayD* AliJetFlowTools::gPwrtToStatArray      = new TArrayD(7);// array of stat errors on values w.r.t. p values is evaluated
 #endif
 //_____________________________________________________________________________

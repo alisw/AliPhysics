@@ -31,10 +31,10 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp(TString outputFileName = "AnalysisResul
 
   //AOD Usage currently tested with Input handler
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-    ::Info("AddTaskLMEEPbPb2011", "no dedicated AOD configuration");
+    ::Info("AddTask_miweber_LMEE_pp", "no dedicated AOD configuration");
   }
   else if (mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
-    ::Info("AddTaskLMEEPbPb2011AOD","switching on ESD specific code");
+    ::Info("AddTask_miweber_LMEE_pp","switching on ESD specific code");
     bESDANA=kTRUE;
   }
   

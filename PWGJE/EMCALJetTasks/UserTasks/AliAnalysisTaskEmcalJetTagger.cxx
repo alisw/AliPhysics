@@ -27,6 +27,9 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fMinFractionShared(0),
   fUseSumw2(0),
   fMatchingDone(0),
+  fTypeAcc(3),
+  fMaxDist(0.3),
+  fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
   fh2PtJet2VsFraction(0),
@@ -70,6 +73,9 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fMinFractionShared(0),
   fUseSumw2(0),
   fMatchingDone(0),
+  fTypeAcc(3),
+  fMaxDist(0.3),
+  fInit(kFALSE),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
   fh2PtJet2VsFraction(0),
@@ -101,6 +107,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   }
 
   SetMakeGeneralHistograms(kTRUE);
+  
 }
 
 //________________________________________________________________________
@@ -199,13 +206,46 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
+//________________________________________________________________________
 
+void AliAnalysisTaskEmcalJetTagger::Init(){
+   
+   if(fInit) return;
+   
+   AliJetContainer *cont1 = GetJetContainer(fContainerBase);
+   AliJetContainer *cont2 = GetJetContainer(fContainerTag);
+   if(!cont1 || !cont2) AliError("Missing jet container");
+   
+   // when full azimuth, don't do anything
+   Double_t phiMin1 = cont1->GetJetPhiMin(), phiMax1 = cont1->GetJetPhiMax();
+   Double_t phiMin2 = cont2->GetJetPhiMin(), phiMax2 = cont2->GetJetPhiMax();
+   Bool_t isZeroTwoPi1 = kFALSE;
+   //check only one side of phi, since the upper bound is not well defined
+   if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
+   Bool_t isZeroTwoPi2 = kFALSE;
+   if(phiMin2 > -1.e-6 && phiMin2 < 1.e-6) isZeroTwoPi2 = kTRUE;
+   
+   if(fTypeAcc==1)
+      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+   else if(fTypeAcc==2) {
+      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+      if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
+   } 
+   else if(fTypeAcc==3) {
+      cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-0.1,cont1->GetJetEtaMax()+0.1);
+      if(!isZeroTwoPi1) cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-0.1,cont1->GetJetPhiMax()+0.1);
+      cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+      if(!isZeroTwoPi2) cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
+   }
+   fInit = kTRUE;
+   return;
+}
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
 
-  MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,3);
+  MatchJetsGeo(fContainerBase,fContainerTag,fDebug,fMaxDist,fTypeAcc);
 
   return kTRUE;
 }
@@ -300,7 +340,7 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 
   if(c1<0) c1 = fContainerBase;
   if(c2<0) c2 = fContainerTag;
-
+  Init();
   const Int_t nJets1 = GetNJets(c1);
   const Int_t nJets2 = GetNJets(c2);
 
@@ -326,20 +366,22 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
   }
   iFlag.Reset(0);
 
-  AliJetContainer *cont1 = GetJetContainer(c1);
-  AliJetContainer *cont2 = GetJetContainer(c2);
-  if(type==1)
-    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-  else if(type==2) {
-    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-    cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
-  } 
-  else if(type==3) {
-    cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-0.1,cont1->GetJetEtaMax()+0.1);
-    cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-0.1,cont1->GetJetPhiMax()+0.1);
-    cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
-    cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
-  }
+  //AliJetContainer *cont1 = GetJetContainer(c1);
+  //AliJetContainer *cont2 = GetJetContainer(c2);
+  //Printf("eta cont 1 %f - %f", cont1->GetJetEtaMin(), cont1->GetJetEtaMax());
+  //Printf("phi cont 1 %f - %f", cont1->GetJetPhiMin(), cont1->GetJetPhiMax());
+  //if(type==1)
+  //  cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+  //else if(type==2) {
+  //  cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+  //  cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
+  //} 
+  //else if(type==3) {
+  //  cont1->SetJetEtaLimits(cont1->GetJetEtaMin()-0.1,cont1->GetJetEtaMax()+0.1);
+  //  cont1->SetJetPhiLimits(cont1->GetJetPhiMin()-0.1,cont1->GetJetPhiMax()+0.1);
+  //  cont2->SetJetEtaLimits(cont2->GetJetEtaMin()-0.1,cont2->GetJetEtaMax()+0.1);
+  //  cont2->SetJetPhiLimits(cont2->GetJetPhiMin()-0.1,cont2->GetJetPhiMax()+0.1);
+  //}
 
   // find the closest distance to the full jet
   for(int i = 0;i<nJets1;i++){

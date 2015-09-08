@@ -97,7 +97,7 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
   fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,5,1)
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,0)
   fEventStatistics->SetBit(TH1::kCanRebin);
 #endif
   
