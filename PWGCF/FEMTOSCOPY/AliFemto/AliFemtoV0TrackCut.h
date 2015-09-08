@@ -41,6 +41,7 @@ public:
   void SetMinDaughtersToPrimVertex(double,double);
   void SetMaxDcaV0Daughters(double);
   void SetMaxDcaV0(double);
+  void SetMinDcaV0(double);
   void SetMaxCosPointingAngle(double);
   void SetMinCosPointingAngle(double);
   void SetMaxV0DecayLength(double);
@@ -73,6 +74,7 @@ public:
   double fMinDcaDaughterNegToVert; ///< DCA of negative daughter to primary vertex
   double fMaxDcaV0Daughters;       ///< Max DCA of v0 daughters at Decay vertex
   double fMaxDcaV0;
+  double fMinDcaV0;
   double fMaxDecayLength;
 
   double fMaxCosPointingAngle;    //obsolete

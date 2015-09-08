@@ -16,6 +16,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fMinDcaDaughterNegToVert(0.0),
   fMaxDcaV0Daughters(99.0),
   fMaxDcaV0(99.0),
+  fMinDcaV0(0.0),
   fMaxCosPointingAngle(0.0),
   fMinCosPointingAngle(0.0),
   fParticleType(99.0),
@@ -102,7 +103,7 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
     return false;
 
   //DCA V0 to prim vertex
-  if (TMath::Abs(aV0->DcaV0ToPrimVertex()) > fMaxDcaV0)
+  if (TMath::Abs(aV0->DcaV0ToPrimVertex()) > fMaxDcaV0 || TMath::Abs(aV0->DcaV0ToPrimVertex()) < fMinDcaV0)
     return false;
 
   //becomes obsolete - wrong name of the data memeber and the corresnponding methods (by default is set to fMaxCosPointingAngle = 0.0)
@@ -198,16 +199,22 @@ void AliFemtoV0TrackCut::SetMinDaughtersToPrimVertex(double minPos, double minNe
 void AliFemtoV0TrackCut::SetMaxDcaV0Daughters(double max)
 {
   fMaxDcaV0Daughters = max;
-};
+}
+
 void AliFemtoV0TrackCut::SetMaxV0DecayLength(double max)
 {
   fMaxDecayLength = max;
-};
+}
 
 void AliFemtoV0TrackCut::SetMaxDcaV0(double max)
 {
   fMaxDcaV0 = max;
-};
+}
+
+void AliFemtoV0TrackCut::SetMinDcaV0(double min)
+{
+  fMinDcaV0 = min;
+}
 
 void AliFemtoV0TrackCut::SetMaxCosPointingAngle(double max) //obsolete
 {
