@@ -70,7 +70,6 @@ fUseTree(kFALSE)
 //________________________________________________________________________
 void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
 {
-    
     TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
     if (!tree) {
         Printf("ERROR: Could not read chain from input slot 0");
