@@ -17,6 +17,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fMaxDcaV0Daughters(99.0),
   fMaxDcaV0(99.0),
   fMaxCosPointingAngle(0.0),
+  fMinCosPointingAngle(0.0),
   fParticleType(99.0),
   fEta(0.8),
   fPtMin(0.0),
@@ -104,8 +105,14 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if (TMath::Abs(aV0->DcaV0ToPrimVertex()) > fMaxDcaV0)
     return false;
 
+  //becomes obsolete - wrong name of the data memeber and the corresnponding methods (by default is set to fMaxCosPointingAngle = 0.0)
   //cos pointing angle
   if (aV0->CosPointingAngle() < fMaxCosPointingAngle)
+    return false;
+
+  //this is the correct name of the data member and the corresponding methods (we are accepting cos(pointing angle bigger than certain minimum)
+  //cos pointing angle
+  if (aV0->CosPointingAngle() < fMinCosPointingAngle)
     return false;
 
   //decay length
@@ -202,9 +209,14 @@ void AliFemtoV0TrackCut::SetMaxDcaV0(double max)
   fMaxDcaV0 = max;
 };
 
-void AliFemtoV0TrackCut::SetMaxCosPointingAngle(double max)
+void AliFemtoV0TrackCut::SetMaxCosPointingAngle(double max) //obsolete
 {
   fMaxCosPointingAngle = max;
+}
+
+void AliFemtoV0TrackCut::SetMinCosPointingAngle(double min) //correct
+{
+  fMinCosPointingAngle = min;
 }
 
 void AliFemtoV0TrackCut::SetParticleType(short x)
