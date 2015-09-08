@@ -14,6 +14,7 @@
 class AliFemtoEvent;
 class AliFemtoTrack;
 class AliFemtoV0;
+class AliFemtoXi;
 class AliFemtoKink;
 class AliFemtoPair; // Gael 12/04/02
 
@@ -37,6 +38,7 @@ public:
   virtual void Fill(const AliFemtoEvent* aEvent);
   virtual void Fill(const AliFemtoTrack* aTrack);
   virtual void Fill(const AliFemtoV0* aV0);
+  virtual void Fill(const AliFemtoXi* aXi);
   virtual void Fill(const AliFemtoKink* aKink);
   virtual void Fill(const AliFemtoPair* aPair);
   virtual void Fill(const AliFemtoParticleCollection* aCollection);

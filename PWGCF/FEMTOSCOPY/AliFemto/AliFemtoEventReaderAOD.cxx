@@ -1178,6 +1178,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   AliFemtoXi *tFemtoXi = new AliFemtoXi();
 
   //xi
+  tFemtoXi->SetmassXi(tAODxi->MassXi());
   tFemtoXi->SetdecayLengthXi(tAODxi->DecayLengthXi(fV1[0],fV1[1],fV1[2]));
   tFemtoXi->SetdecayVertexXiX(tAODxi->DecayVertexXiX());
   tFemtoXi->SetdecayVertexXiY(tAODxi->DecayVertexXiY());

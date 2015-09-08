@@ -30,6 +30,12 @@ void AliFemtoCutMonitor::Fill(const AliFemtoV0* /* aV0 */ ) {
   cout << " *** no user defined Fill(const AliFemtoV0Track*), take from base class" << endl;
 #endif
 }
+void AliFemtoCutMonitor::Fill(const AliFemtoXi* /* aXi */ ) { 
+  // cut Xi
+#ifdef STHBTDEBUG
+  cout << " *** no user defined Fill(const AliFemtoV0Track*), take from base class" << endl;
+#endif
+}
 void AliFemtoCutMonitor::Fill(const AliFemtoKink* /* aKink */) { 
   // cut Kink
 #ifdef STHBTDEBUG

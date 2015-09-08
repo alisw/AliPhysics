@@ -8,7 +8,7 @@ ClassImp(AliFemtoXiTrackCut)
 
 
 
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(0), fMinPtXi(0), fMaxPtXi(0), fChargeXi(0), fMaxEtaBac(0), fMinPtBac(0), fMaxPtBac(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(0)
+AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(100), fMinPtXi(0), fMaxPtXi(100), fChargeXi(1.0), fMaxEtaBac(100), fMinPtBac(0), fMaxPtBac(100), fTPCNclsBac(0), fNdofBac(100), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(1000)
 {
   // Default constructor
  }
@@ -22,8 +22,13 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
   // test the particle and return 
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-  
-  
+
+   //invariant mass Xi
+  if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
+     {
+       return false;
+     }
+   
   Float_t pt = aXi->PtXi();
   Float_t eta = aXi->EtaXi();
   
@@ -72,14 +77,16 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     
     //cos pointing angle
     if(aXi->CosPointingAngleXi()<fMinCosPointingAngleXi)
-      return false;
+      return false; 
     
     //decay length
     if(aXi->DecayLengthXi()>fMaxDecayLengthXi)
       return false;
-
+    
+ 
   if(fParticleTypeXi == kAll)
     return true;
+
 
 
   bool pid_check=false;
@@ -88,13 +95,12 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
     if (IsPionNSigmaBac(aXi->PtBac(), aXi->BacNSigmaTPCPi(), aXi->BacNSigmaTOFPi())) //pion
 	{
 	  pid_check=true;
-	  //invariant mass Xi
-	  if(aXi->MassXi()<fInvMassXiMin || aXi->MassXi()>fInvMassXiMax)
-	    return false;
 	}
 
   }
 
+  if (!pid_check) return false;
+  
   if(!AliFemtoV0TrackCut::Pass(aXi))
     return false;
   
