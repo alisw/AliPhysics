@@ -143,7 +143,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction *dphistarkstarampftpc[size];
   //AliFemtoKTPairCut             *ktpcuts[size*numOfkTbins];
   AliFemtoBetaTPairCut          *ktpcuts[size*numOfkTbins];
-  AliFemtoCutMonitorPairBetaT   *betatcutmonitor[size*numOfkTbins];
+  AliFemtoCutMonitorPairBetaT   *cutpassbetatcutmonitor[size*numOfkTbins];
+  AliFemtoCutMonitorPairBetaT   *cutfailbetatcutmonitor[size*numOfkTbins];
   //AliFemtoPairCutMergedFraction *ktpcuts[size*numOfkTbins];
   AliFemtoCorrFctnDirectYlm     *cylmkttpc[size*numOfkTbins];
   AliFemtoQinvCorrFctn          *cqinvkttpc[size*numOfkTbins];
@@ -361,7 +362,13 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	    //sqpcetaphitpcRD[aniter]->SetEtaDifferenceMinimum(0.02);
 	    //sqpcetaphitpcRD[aniter]->SetPhiStarDifferenceMinimum(0.045);
 	  }
-
+	  
+	  // Study the betaT distribution:
+	  cutpassbetatcutmonitor[aniter] = new AliFemtoCutMonitorPairBetaT(Form("cutPass%stpcM%i", chrgs[ichg], imult), 100, 0.0, 1.0);
+	  cutfailbetatcutmonitor[aniter] = new AliFemtoCutMonitorPairBetaT(Form("cutFail%stpcM%i", chrgs[ichg], imult), 100, 0.0, 1.0);
+	  sqpcetaphitpc[aniter]->AddCutMonitor(cutpassbetatcutmonitor[aniter], cutfailbetatcutmonitor[aniter]);
+	  
+	  anetaphitpc[aniter]->SetEnablePairMonitors(true);
 	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetSecondParticleCut(dtc2etaphitpc[aniter]);
@@ -421,7 +428,6 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	      ktm = aniter*numOfkTbins + ikt;
 	      //ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 	      ktpcuts[ktm] = new AliFemtoBetaTPairCut(ktrng[ikt], ktrng[ikt + 1]);
-	      betatcutmonitor[ktm] = new AliFemtoCutMonitorPairBetaT(Form("betat%d", ikt), 100, ktrng[ikt], ktrng[ikt + 1]);
 	      
   	      cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%iD%lfF%lfbetat%d", chrgs[ichg], imult, distance, fraction1, ikt),3,nbinssh, 0.0,shqmax, runshlcms);
   	      cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
