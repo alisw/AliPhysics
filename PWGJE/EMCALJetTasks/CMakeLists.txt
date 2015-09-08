@@ -176,6 +176,7 @@ if(FASTJET_FOUND)
         Tracks/AliReducedJetParticle.cxx
         Tracks/AliReducedJetConstituent.cxx
         Tracks/AliReducedMatchedTrack.cxx
+        Tracks/AliAnalysisTaskTracksInJet.cxx
        )
 
     include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
