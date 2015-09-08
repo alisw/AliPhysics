@@ -101,7 +101,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Bool_t SetRCut(Int_t RCut);
 		Bool_t SetMesonKind(Int_t mesonKind);
 		Bool_t SetSelectionWindowCut(Int_t selectionCut);
+		Bool_t SetSelectionWindowMergedCut(Int_t selectionCut);
 		Bool_t SetAlphaMesonCut(Int_t alphaMesonCut);
+		Bool_t SetAlphaMesonMergedCut(Int_t alphaMesonCut);
 		Bool_t SetRapidityMesonCut(Int_t RapidityMesonCut);
 		Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
 		Bool_t SetNDegreesForRotationMethod(Int_t DegreesForRotationMethod);
@@ -116,6 +118,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Bool_t SetMinOpanMesonCut(Int_t minOpanMesonCut);
 		Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
 		void SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
+		void			SetIsMergedClusterCut(Bool_t merged)							{fIsMergedClusterCut = merged; return;}
+		Bool_t			GetIsMergedClusterCut()											{return fIsMergedClusterCut;}
+
 		
 		// Request Flags
 		Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
@@ -135,9 +140,13 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		TList		*fHistograms;
 		//cuts
 		Int_t 		fMesonKind;
-		Double_t 	fMaxR; 						//r cut  
-		Double_t 	fSelectionLow; 				//lower meson inv mass window for further selection
-		Double_t 	fSelectionHigh; 			//higher meson inv mass window for further selection
+		Bool_t 		fIsMergedClusterCut;		//
+		Double_t 	fMaxR; 						// r cut  
+		Bool_t		fEnableMassCut;				// flag to enable mass cut
+		Double_t 	fSelectionLow; 				// lower meson inv mass window for further selection
+		Double_t 	fSelectionHigh; 			// higher meson inv mass window for further selection
+		TF1*		fFMinMassCut;				//
+		TF1*		fFMaxMassCut;				//
 		Double_t 	fAlphaMinCutMeson; 			// min value for meson alpha cut
 		Double_t 	fAlphaCutMeson; 			// max value for meson alpha cut
 		Double_t 	fRapidityCutMeson; 			// max value for meson rapidity
@@ -189,7 +198,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliConversionMesonCuts,10)
+		ClassDef(AliConversionMesonCuts,11)
 };
 
 
