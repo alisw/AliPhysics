@@ -3,7 +3,7 @@ Comments: (new version)
 * 19 aug 2015: trichert changed mc primary method
 * 19 aug 2015: trichert changed vtx cut
 * 20 aug 2015: trichert primary flags in AOD MC
-* 8 sep 2015: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash)
+* 8 sep 2015: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash), new
 
 TODO: 
 * flags on injected 
@@ -27,7 +27,7 @@ TODO:
 #include <AliESDEvent.h>
 #include <AliESDVertex.h>
 #include <AliLog.h>
-#include <AliExternalTrackParam.h>
+#include <AliExternalTrackParam.h> 
 #include <AliESDtrackCuts.h>
 #include <AliESDVZERO.h>
 #include <AliAODVZERO.h>
