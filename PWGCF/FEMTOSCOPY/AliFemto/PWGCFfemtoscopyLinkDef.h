@@ -87,4 +87,5 @@
 #pragma link C++ class AliFemtoXiV0PairCut+;
 #pragma link C++ class AliFemtoBetaTPairCut+;
 #pragma link C++ class AliFemtoCutMonitorPairBetaT+;
+#pragma link C++ class AliFemtoCutMonitorXi+;
 #endif

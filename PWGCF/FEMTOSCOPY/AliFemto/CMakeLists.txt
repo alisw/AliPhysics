@@ -94,6 +94,7 @@ set(SRCS
   AliFemtoXiV0PairCut.cxx
   AliFemtoBetaTPairCut.cxx
   AliFemtoCutMonitorPairBetaT.cxx
+  AliFemtoCutMonitorXi.cxx
   )
 
 # Headers from sources
