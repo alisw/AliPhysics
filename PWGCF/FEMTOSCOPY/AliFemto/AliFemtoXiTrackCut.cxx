@@ -8,7 +8,7 @@ ClassImp(AliFemtoXiTrackCut)
 
 
 
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(0), fMinPtXi(0), fMaxPtXi(0), fChargeXi(0), fMaxEtaBac(0), fMinPtBac(0), fMaxPtBac(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(0), fInvMassXiMin(0), fInvMassXiMax(0)
+AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(0), fMinPtXi(0), fMaxPtXi(0), fChargeXi(0), fMaxEtaBac(0), fMinPtBac(0), fMaxPtBac(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(100.0), fInvMassXiMin(0), fInvMassXiMax(0)
 {
   // Default constructor
  }
@@ -59,23 +59,23 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 
 
     //DCA Xi to prim vertex
-    if(TMath::Abs(aXi->DcaXiToPrimVertex())>fMaxDcaXi) //not used by Maria
+    if(TMath::Abs(aXi->DcaXiToPrimVertex())>fMaxDcaXi)
       return false;
 
     //DCA Xi bachelor to prim vertex
-    if(TMath::Abs(aXi->DcaBacToPrimVertex())<fMinDcaXiBac) //0.03
+    if(TMath::Abs(aXi->DcaBacToPrimVertex())<fMinDcaXiBac)
       return false;
 
     //DCA Xi daughters
-    if(TMath::Abs(aXi->DcaXiDaughters())>fMaxDcaXiDaughters) //0.3
+    if(TMath::Abs(aXi->DcaXiDaughters())>fMaxDcaXiDaughters)
       return false;
     
     //cos pointing angle
-    if(aXi->CosPointingAngleXi()<fMinCosPointingAngleXi) //0.999
+    if(aXi->CosPointingAngleXi()<fMinCosPointingAngleXi)
       return false;
     
     //decay length
-    if(aXi->DecayLengthXi()>fMaxDecayLengthXi) //not used by Maria
+    if(aXi->DecayLengthXi()>fMaxDecayLengthXi)
       return false;
 
   if(fParticleTypeXi == kAll)
@@ -144,6 +144,10 @@ void AliFemtoXiTrackCut::SetPtXi(double min, double max){
 
 void AliFemtoXiTrackCut::SetChargeXi(int x){
   fChargeXi = x;
+}
+
+void AliFemtoXiTrackCut::SetMaxDecayLengthXi(double x){
+  fMaxDecayLengthXi = x;
 }
 
 void AliFemtoXiTrackCut::SetEtaBac(double x){
