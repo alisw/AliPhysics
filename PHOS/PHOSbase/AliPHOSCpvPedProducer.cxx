@@ -34,6 +34,7 @@ AliPHOSCpvPedProducer::AliPHOSCpvPedProducer(Int_t sigcut):
     fPedSigMap [iDDL]=0;
     f1DPedMean [iDDL]=0;
     f1DPedSigma[iDDL]=0;
+    fPermanentBadMap[iDDL]=0x0;
     for(Int_t iX=0; iX<AliPHOSCpvParam::kPadPcX; iX++)
       for(Int_t iY=1; iY<AliPHOSCpvParam::kPadPcY; iY++)
 	fPadAdc[iDDL][iX][iY]=0;
@@ -52,6 +53,7 @@ AliPHOSCpvPedProducer::~AliPHOSCpvPedProducer()
     delete fPedSigMap [iDDL];
     delete f1DPedMean [iDDL];
     delete f1DPedSigma[iDDL];
+    delete fPermanentBadMap[iDDL];
     for(Int_t iX=0; iX<AliPHOSCpvParam::kPadPcX; iX++)
       for(Int_t iY=1; iY<AliPHOSCpvParam::kPadPcY; iY++)
 	delete fPadAdc[iDDL][iX][iY];
@@ -59,6 +61,16 @@ AliPHOSCpvPedProducer::~AliPHOSCpvPedProducer()
 
   //delete fhErrors;
 }  //destructor
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliPHOSCpvPedProducer::SetPermanentBadMap(TH2* badMap, int iDDL = 0)
+{
+  if(badMap!=0x0){
+    if(iDDL>=0&&iDDL<2*AliPHOSCpvParam::kNDDL){
+      fPermanentBadMap[iDDL] = (TH2I*)badMap->Clone();
+    }
+    else cout<<"DDL number "<<iDDL<<" is not valid"<<endl;
+  }
+}
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliPHOSCpvPedProducer::SetTurbo(Bool_t turbo)
 {
@@ -130,10 +142,26 @@ Bool_t AliPHOSCpvPedProducer::CalcPedestal(Int_t iDDL)
     for(Int_t iX=0; iX<AliPHOSCpvParam::kPadPcX; iX++) {
       for(Int_t iY=0; iY<AliPHOSCpvParam::kPadPcY; iY++) {
 	//cout<<"Ped["<<iX<<"]["<<iY<<"] = " << fPadAdc[iDDL][iX][iY]->GetMean()<<endl;
+	if(fPermanentBadMap[iDDL]!=0x0){
+	  if(fPermanentBadMap[iDDL]->GetBinContent(iX+1,iY+1)>0){//bad channel
+	    fPedMeanMap[iDDL] -> Fill(iX, iY, fMaxThr);
+	    fPedSigMap [iDDL] -> Fill(iX, iY, 0);
+	    f1DPedMean [iDDL] -> Fill(fMaxThr);
+	    f1DPedSigma[iDDL] -> Fill(0);
+	  }
+	  else{
+	    fPedMeanMap[iDDL] -> Fill(iX, iY, fPadAdc[iDDL][iX][iY]->GetMean());
+	    fPedSigMap [iDDL] -> Fill(iX, iY, fPadAdc[iDDL][iX][iY]->GetRMS ());
+	    f1DPedMean [iDDL] -> Fill(fPadAdc[iDDL][iX][iY]->GetMean());
+	    f1DPedSigma[iDDL] -> Fill(fPadAdc[iDDL][iX][iY]->GetRMS ());
+	  }
+	}
+	else{
 	fPedMeanMap[iDDL] -> Fill(iX, iY, fPadAdc[iDDL][iX][iY]->GetMean());
 	fPedSigMap [iDDL] -> Fill(iX, iY, fPadAdc[iDDL][iX][iY]->GetRMS ());
 	f1DPedMean [iDDL] -> Fill(fPadAdc[iDDL][iX][iY]->GetMean());
 	f1DPedSigma[iDDL] -> Fill(fPadAdc[iDDL][iX][iY]->GetRMS ());
+	}
       }
 
     }
@@ -214,8 +242,20 @@ void AliPHOSCpvPedProducer::WritePedFiles(Int_t iDDL) const
       Int_t g3 = AliPHOSCpvParam::Y23G(iY);
       for(Int_t iX=iXmin; iX<=iXmax; iX++) {
 	Int_t pad = AliPHOSCpvParam::XY2Pad(iX,iY);
-	ped[g3][pad] = (Int_t) fPadAdc[iDDL][iX][iY]->GetMean();
-	sig[g3][pad] = (Int_t) fPadAdc[iDDL][iX][iY]->GetRMS ();
+	if(fPermanentBadMap[iDDL]!=0x0 ){
+	  if(fPermanentBadMap[iDDL]->GetBinContent(iX+1,iY+1)>0){
+	    ped[g3][pad] = fMaxThr;
+	    sig[g3][pad] = 0;
+	  }
+	  else{
+	    ped[g3][pad] = (Int_t) fPadAdc[iDDL][iX][iY]->GetMean();
+	    sig[g3][pad] = (Int_t) fPadAdc[iDDL][iX][iY]->GetRMS ();
+	  }
+	}
+	  else{
+	    ped[g3][pad] = (Int_t) fPadAdc[iDDL][iX][iY]->GetMean();
+	    sig[g3][pad] = (Int_t) fPadAdc[iDDL][iX][iY]->GetRMS ();
+	  }
 	//cout<< "ped is " << fPadAdc[iDDL][iX][iY]->GetMean()<<endl;
       }
     }

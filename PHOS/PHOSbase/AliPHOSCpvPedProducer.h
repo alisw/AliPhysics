@@ -24,6 +24,7 @@ class AliPHOSCpvPedProducer: public TObject {
 public:
   AliPHOSCpvPedProducer(Int_t sigcut = 3);
   virtual ~AliPHOSCpvPedProducer();
+  void SetPermanentBadMap(TH2* badMap, int iDDL);
   void   SetSigCut(Int_t sigcut = 3) {fSigCut = sigcut;} //set n. of pedestal distribution sigmas used to create zero suppresion table
   Bool_t LoadNewEvent(AliRawReader *& rawReader); // returns true, if ok
   void   SetTurbo(Bool_t turbo);                  // if turbo==true then do read without error checking
@@ -58,6 +59,7 @@ protected:
   TH1F       *f1DPedMean [2*AliPHOSCpvParam::kNDDL]; //1D mean pedestal map to export to AMORE
   TH1F       *f1DPedSigma[2*AliPHOSCpvParam::kNDDL]; //1D pedestal sigma map to export to AMORE
   TH1I       *fhErrors;                        //histogram of errors from AliPHOSCpvRawDigiProducer
+  TH2I       *fPermanentBadMap[2*AliPHOSCpvParam::kNDDL];
   AliPHOSCpvRawStream         * fRawStream;       //! Raw data stream
 private:
   ClassDef(AliPHOSCpvPedProducer,1);                                                  //Cpv calibration and pedestal class

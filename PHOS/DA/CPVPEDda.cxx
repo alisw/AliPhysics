@@ -70,6 +70,21 @@ int main( int argc, char **argv )
 
   /* report progress */
   daqDA_progressReport(0);
+  
+  AliPHOSCpvPedProducer * pedProducer = new AliPHOSCpvPedProducer(sigcut);
+  
+  status=daqDA_DB_getFile("CpvPermanentBadMap.root","CpvPermanentBadMap.root");
+  if(status!=0) {
+    printf("cannot retrieve file %s from DAQ DB. \n", "CpvPermanentBadMap.root");
+  }
+  else{
+    TFile *fPBM = TFile::Open("CpvPermanentBadMap.root","r");
+    for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
+      if(iDDL!=4) continue; // only one module with DDL=4 by now
+      TH2* badMap=(TH2*)fPBM->Get(Form("fBadMap%d",iDDL));
+      if(badMap) pedProducer->SetPermanentBadMap(badMap,iDDL);
+    }
+  }
 
   status=monitorSetDataSource( argv[1] );
   if (status!=0) {
@@ -96,7 +111,7 @@ int main( int argc, char **argv )
   Int_t iPhysEvnt=0;
   Int_t iTotEvnt =0;
 
-  AliPHOSCpvPedProducer * pedProducer = new AliPHOSCpvPedProducer(sigcut);
+  
 
   // Reader
   AliRawReader * reader;

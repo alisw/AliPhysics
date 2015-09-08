@@ -120,6 +120,33 @@ int main( int argc, char **argv )
   
   /* retrieve bad map from DAQ DB to see if we have some statistics saved form previous runs */
   statusBadMap=daqDA_DB_getFile("CpvBadMap.root", "CpvBadMap.root");
+  
+  //digiProducer
+  AliPHOSCpvRawDigiProducer* digiProducer = new AliPHOSCpvRawDigiProducer();
+  digiProducer->SetTurbo(turbo);
+  digiProducer->LoadPedFiles();
+  digiProducer->SetCpvMinAmp(minAmpl);
+
+  TH2I *hBadChMap[2*AliPHOSCpvParam::kNDDL];
+  for(int i=0;i<2*AliPHOSCpvParam::kNDDL;i++)
+    hBadChMap[i]=0x0;
+
+  /* retrieve permanent bad map from DAQ DB */
+  status=daqDA_DB_getFile("CpvPermanentBadMap.root","CpvPermanentBadMap.root");
+  if(status!=0) {
+    printf("cannot retrieve file %s from DAQ DB. \n", "CpvPermanentBadMap.root");
+  }
+  else{
+    TFile *fPBM = TFile::Open("CpvPermanentBadMap.root","r");
+    for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
+      if(iDDL!=4) continue; // only one module with DDL=4 by now
+      TH2I* badMap=(TH2I*)fPBM->Get(Form("fBadMap%d",iDDL));
+      if(badMap){
+	digiProducer->SetPermanentBadMap(badMap,iDDL);
+	hBadChMap[iDDL]=(TH2I*)badMap->Clone();
+      }
+    }
+  }
 
   /* connecting to raw data */
   status=monitorSetDataSource( argv[1] );
@@ -150,11 +177,6 @@ int main( int argc, char **argv )
   // Reader
   AliRawReader * reader;
 
-  //digiProducer
-  AliPHOSCpvRawDigiProducer* digiProducer = new AliPHOSCpvRawDigiProducer();
-  digiProducer->SetTurbo(turbo);
-  digiProducer->LoadPedFiles();
-  digiProducer->SetCpvMinAmp(minAmpl);
 
   //digits
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
@@ -164,11 +186,9 @@ int main( int argc, char **argv )
 
   //maps of digits and bad channels
   TH2F* hMapOfDig[2*AliPHOSCpvParam::kNDDL]; 
-  TH2I *hBadChMap[2*AliPHOSCpvParam::kNDDL];
   
   for (int i = 0;i<2*AliPHOSCpvParam::kNDDL;i++){
     hMapOfDig[i]= 0x0;
-    hBadChMap[i]= 0x0;
   }
 
   //any previously gained statistics?
@@ -185,6 +205,7 @@ int main( int argc, char **argv )
       hMapOfDig[iDDL] = new TH2F(Form("hMapOfDig%d",iDDL),Form("Map of digits with subtructed pedestals, DDL = %d",iDDL),
 				 AliPHOSCpvParam::kPadPcX,0,AliPHOSCpvParam::kPadPcX,
 				 AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);
+    if(!hBadChMap[iDDL])
       hBadChMap[iDDL] = new TH2I(Form("hBadMap%d",iDDL),Form("Bad Channels Map, DDL= %d",iDDL),
 				 AliPHOSCpvParam::kPadPcX,0,AliPHOSCpvParam::kPadPcX,
 				 AliPHOSCpvParam::kPadPcY,0,AliPHOSCpvParam::kPadPcY);

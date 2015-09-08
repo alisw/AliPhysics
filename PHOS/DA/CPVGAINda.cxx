@@ -63,7 +63,7 @@ int main( int argc, char **argv )
   Int_t status,statusBadCh=0,statusCalibrSupply=0,print;
   Int_t sigcut=3;
   Int_t minAmpl = 10;//minimal amplitude for consideration, to be read from DAQ DB
-  Int_t minOccupancy = 100;//min occupancy for publishing in OCDB, to be read from DAQ DB
+  Int_t minOccupancy = 1000;//min occupancy for publishing in OCDB, to be read from DAQ DB
   Bool_t turbo = kTRUE;
 
   if (argc!=2) {
@@ -79,7 +79,7 @@ int main( int argc, char **argv )
 
   /* retrieve configuration file from DAQ DB */
   status=daqDA_DB_getFile("PHOSCPVGAINda.cfg", "PHOSCPVGAINda.cfg");
-  if(!status) {
+  if(status==0) {
     char buf[500]; 
     FILE * fConf = fopen("PHOSCPVGAINda.cfg","r");
     while(fgets(buf, 500, fConf)){
@@ -110,6 +110,29 @@ int main( int argc, char **argv )
   /* retrieve previously collected histograms from DAQ DB */
   statusCalibrSupply=daqDA_DB_getFile("CpvCalibrSupply.root", "CpvCalibrSupply.root");
   if(statusCalibrSupply!=0) printf("Cannot retrieve file CpvCalibrSupply.root from DAQ DB! No previously collected histograms found!");
+  
+  //digiProducer
+  AliPHOSCpvRawDigiProducer* digiProducer = new AliPHOSCpvRawDigiProducer();
+  digiProducer->SetTurbo(turbo);
+  digiProducer->LoadPedFiles();
+  digiProducer->SetCpvMinAmp(minAmpl);
+
+   /* retrieve permanent bad map from DAQ DB */
+  status=daqDA_DB_getFile("CpvPermanentBadMap.root","CpvPermanentBadMap.root");
+  if(status!=0) {
+    printf("cannot retrieve file %s from DAQ DB. \n", "CpvPermanentBadMap.root");
+  }
+  else{
+    TFile *fPBM = TFile::Open("CpvPermanentBadMap.root","r");
+    for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
+      if(iDDL!=4) continue; // only one module with DDL=4 by now
+      TH2I* badMap=(TH2I*)fPBM->Get(Form("fBadMap%d",iDDL));
+      if(badMap){
+	digiProducer->SetPermanentBadMap(badMap,iDDL);
+      }
+    }
+  }
+
 
   /* connecting to raw data */
   status=monitorSetDataSource( argv[1] );
@@ -140,11 +163,6 @@ int main( int argc, char **argv )
   // Reader
   AliRawReader * reader;
 
-  //digiProducer
-  AliPHOSCpvRawDigiProducer* digiProducer = new AliPHOSCpvRawDigiProducer();
-  digiProducer->SetTurbo(turbo);
-  digiProducer->LoadPedFiles();
-  digiProducer->SetCpvMinAmp(minAmpl);
 
   //digits
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);

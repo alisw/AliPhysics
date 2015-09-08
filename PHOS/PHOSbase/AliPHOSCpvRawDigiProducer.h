@@ -10,6 +10,7 @@
 
 #include "TObject.h"
 #include "TH1I.h"
+#include "TH2I.h"
 
 #include "AliAltroMapping.h"
 #include "AliRawReaderDate.h"
@@ -27,7 +28,7 @@ public:
   AliPHOSCpvRawDigiProducer(AliRawReader * rawReader); // creates an AliPHOSCpvRawStream(rawReader) object to read data
  
   virtual ~AliPHOSCpvRawDigiProducer(); 
-
+  void SetPermanentBadMap(TH2I* badMap,int iDDL);
   Bool_t LoadPedFiles(); //returns true if ok. Must be called when you process a phys run
                          //If ped files are loaded, then MakeDigits returns digits with 
                          //substruct pedestals from ADCs
@@ -50,6 +51,7 @@ private:
   AliPHOSCpvRawStream * fRawStream; //! Raw data stream 
 
   TH1I * fhErrors;         // ! histogram of errors
+  TH2I* fPermanentBadMap[2*AliPHOSCpvParam::kNDDL];
 
   Int_t ** fPed[2][2*AliPHOSCpvParam::kNDDL]; // pedestals    ped[0][iddl][x][y] = pedestal; ped[1][iddl][x][y] = N*sigma (N was used while creating ped files)
   Bool_t fPedFilesRLoaded;

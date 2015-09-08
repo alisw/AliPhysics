@@ -43,6 +43,7 @@ AliPHOSCpvRawDigiProducer::AliPHOSCpvRawDigiProducer():
   CreateErrHist();
   // create a 2d array to store the pedestals                                        
   for (Int_t iDDL=0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++){
+    fPermanentBadMap[iDDL]=0x0;
     fPed[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     fPed[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) {
@@ -69,6 +70,7 @@ AliPHOSCpvRawDigiProducer::AliPHOSCpvRawDigiProducer(AliRawReader * rawReader):
   CreateErrHist();
   // create a 2d array to store the pedestals                                               
   for (Int_t iDDL=0;iDDL<2*AliPHOSCpvParam::kNDDL;iDDL++) {
+    fPermanentBadMap[iDDL]=0x0;
     fPed[0][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     fPed[1][iDDL] = new Int_t *[AliPHOSCpvParam::kPadPcX];
     for(Int_t ix=0; ix<AliPHOSCpvParam::kPadPcX; ix++) {
@@ -90,6 +92,16 @@ AliPHOSCpvRawDigiProducer::~AliPHOSCpvRawDigiProducer()
     delete [] fPed[0][iDDL];
     delete [] fPed[1][iDDL];
   }
+}
+//--------------------------------------------------------------------------------------
+void AliPHOSCpvRawDigiProducer::SetPermanentBadMap(TH2I* badMap,int iDDL=0){
+  if(badMap!=0x0){
+    if(iDDL>=0&&iDDL<2*AliPHOSCpvParam::kNDDL){
+      fPermanentBadMap[iDDL] = (TH2I*)badMap->Clone();
+    }
+    else cout<<"DDL number "<<iDDL<<" is not valid"<<endl;
+  }
+
 }
 //--------------------------------------------------------------------------------------
 Bool_t AliPHOSCpvRawDigiProducer::LoadPedFiles() {
@@ -176,6 +188,9 @@ void AliPHOSCpvRawDigiProducer::MakeDigits(TClonesArray * digits) const
       Int_t ix       = AliPHOSCpvParam::A2X(aPad);
       Int_t iy       = AliPHOSCpvParam::A2Y(aPad);
       Int_t iddl     = AliPHOSCpvParam::A2DDL(aPad);
+      
+      if(fPermanentBadMap[iddl])
+	if(fPermanentBadMap[iddl]->GetBinContent(ix+1,iy+1)>0) continue;//bad channels exclusion
 
       relId[0] = AliPHOSCpvParam::DDL2Mod(iddl) ; // counts from 1 to 5
       relId[1] = -1;      // -1=CPV
