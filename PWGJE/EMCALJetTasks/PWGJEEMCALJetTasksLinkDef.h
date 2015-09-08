@@ -157,6 +157,7 @@
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
 #pragma link C++ class AliAnalysisTaskHJetSpectra+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
 #pragma link C++ class HighPtTracks::AliReducedJetEvent+;
 #pragma link C++ class HighPtTracks::AliReducedJetInfo+;
