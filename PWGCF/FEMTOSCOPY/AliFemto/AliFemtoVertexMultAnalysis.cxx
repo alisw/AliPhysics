@@ -59,6 +59,7 @@
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoTrackCut.h"
 #include "AliFemtoV0Cut.h"
+#include "AliFemtoXiCut.h"
 #include "AliFemtoKinkCut.h"
 #include "AliFemtoPicoEventCollectionVector.h"
 #include "AliFemtoPicoEventCollectionVectorHideAway.h"

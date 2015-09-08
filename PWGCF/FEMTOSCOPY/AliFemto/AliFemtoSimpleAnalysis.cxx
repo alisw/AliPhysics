@@ -92,9 +92,9 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
 
 
-  case hbtXi:          // cut is cutting on V0s
+  case hbtXi:          // cut is cutting on Xis
     {
-      AliFemtoXiCut* pCut = (AliFemtoXiCut*) partCut;
+      AliFemtoV0Cut* pCut = (AliFemtoV0Cut*) partCut;
       AliFemtoXi* pParticle;
       AliFemtoXiIterator pIter;
 

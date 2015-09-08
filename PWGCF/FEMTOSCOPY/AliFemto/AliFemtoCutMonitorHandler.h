@@ -11,6 +11,7 @@
 #include "AliFemtoEvent.h"
 #include "AliFemtoTrack.h"
 #include "AliFemtoV0.h"
+#include "AliFemtoXi.h"
 #include "AliFemtoKink.h"
 #include "AliFemtoPair.h" //Gael 12/04/02
 #include "AliFemtoParticleCollection.h" // Gael 19/06/02
@@ -36,7 +37,8 @@ class AliFemtoCutMonitorHandler{
   void AddCutMonitorFail(AliFemtoCutMonitor* cutMoni); 
   void FillCutMonitor(const AliFemtoEvent* event, bool pass); 
   void FillCutMonitor(const AliFemtoTrack* track, bool pass); 
-  void FillCutMonitor(const AliFemtoV0* v0, bool pass); 
+  void FillCutMonitor(const AliFemtoV0* v0, bool pass);
+  void FillCutMonitor(const AliFemtoXi* xi, bool pass); 
   void FillCutMonitor(const AliFemtoKink* kink, bool pass);
   void FillCutMonitor(const AliFemtoPair* pair, bool pass);//Gael 11/04/02
   void FillCutMonitor(const AliFemtoParticleCollection* partColl);// Gael 19/06/02

@@ -128,6 +128,24 @@ void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoV0* v0, bool pass) 
   }
 }
 // ---------------------------------------------------------------------------
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoXi* xi, bool pass) { 
+  // fill V0 cut monitors
+  if (fCollectionsEmpty) return;
+  AliFemtoCutMonitorIterator iter;
+  AliFemtoCutMonitor* tCM;
+  if ( pass) {
+    for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
+      tCM = *iter;
+      tCM->Fill(xi);
+    }
+  } else {
+    for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
+      tCM = *iter;
+      tCM->Fill(xi);
+    }
+  }
+}
+// ---------------------------------------------------------------------------
 void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoKink* kink, bool pass) { 
   // fill kink cut monitors
   if (fCollectionsEmpty) return;
