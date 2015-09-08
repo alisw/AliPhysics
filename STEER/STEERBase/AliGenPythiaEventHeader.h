@@ -26,8 +26,8 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     void     AddUQJet(Float_t px, Float_t py, Float_t pz, Float_t e);
     Int_t    NTriggerJets() const {return fNJets;}
     Int_t    NUQTriggerJets() const {return fNUQJets;}
-    void     TriggerJet(Int_t i, Float_t p[4]);
-    void     UQJet(Int_t i, Float_t p[4]);
+    void     TriggerJet(Int_t i, Float_t p[4]) const;
+    void     UQJet(Int_t i, Float_t p[4]) const;
     Double_t GetXJet() const {return fXJet;}
     Double_t GetYJet() const {return fYJet;}
     Double_t GetInMediumLength() const  {return fInMediumLength;}

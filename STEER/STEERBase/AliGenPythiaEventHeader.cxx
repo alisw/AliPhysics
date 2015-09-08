@@ -112,7 +112,7 @@ void AliGenPythiaEventHeader::GetZQuench(Double_t z[4]) const
     for (Int_t i = 0; i < 4; i++) z[i] = fZquench[i];
 }
 
-void AliGenPythiaEventHeader::TriggerJet(Int_t i, Float_t p[4])
+void AliGenPythiaEventHeader::TriggerJet(Int_t i, Float_t p[4]) const
 {
 //
 // Give back jet #i
@@ -127,7 +127,7 @@ void AliGenPythiaEventHeader::TriggerJet(Int_t i, Float_t p[4])
     }
 }
 
-void AliGenPythiaEventHeader::UQJet(Int_t i, Float_t p[4])
+void AliGenPythiaEventHeader::UQJet(Int_t i, Float_t p[4]) const
 {
 //
 // Give back jet #i
