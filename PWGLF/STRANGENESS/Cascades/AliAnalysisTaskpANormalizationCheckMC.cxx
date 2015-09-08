@@ -382,7 +382,7 @@ void AliAnalysisTaskpANormalizationCheckMC::UserExec(Option_t *)
     Bool_t lDataSelection = ( lbIsPS && lbHasPV && lbVtxZ && lbFstCk && lbCent );
     
     //NSD-generated Conditionals
-    Bool_t lMCSelection   = ( lbIsPS && lbFstCk && lbCent );
+    Bool_t lMCSelection   = ( lbIsPS && lbFstCk && lbMCVtxZ && lbCent );
     
     //------------------------------------------------
     // Fill Event Counters
