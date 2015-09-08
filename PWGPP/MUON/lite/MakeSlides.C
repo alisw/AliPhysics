@@ -209,15 +209,16 @@ Bool_t MakeTriggerSlide ( TString filename, ofstream &outFile )
 }
 
 //_________________________________
-Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile )
+Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile, Bool_t outliers = kFALSE )
 {
-  BeginFrame("Trigger chamber efficiencies per RPC",outFile);
+  TString baseName = outliers ? "eff.-<eff.> for outliers" : "efficiency";
+  BeginFrame(Form("Trigger chamber %s per RPC",baseName.Data()),outFile);
   outFile << " \\begin{columns}[onlytextwidth]" << endl;
   outFile << "  \\column{\\textwidth}" << endl;
   outFile << "  \\centering" << endl;
   for ( Int_t ich=0; ich<4; ich++ ) {
     if ( ich%2 == 0 ) outFile << endl;
-    Int_t ipage = GetPage(Form("Trigger chamber efficiency vs run for chamber %i&RPC",11+ich),filename);
+    Int_t ipage = GetPage(Form("Trigger chamber %s vs run for chamber %i&RPC",baseName.Data(),11+ich),filename);
     outFile << "  \\includegraphics[width=0.37\\textwidth,page=" << ipage << "]{" << filename.Data() << "}" << endl;
   }
   outFile << " \\end{columns}" << endl;
@@ -520,6 +521,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
   MakeSingleFigureSlide("averaged normalized",trackerQA,"Tracking quality",outFile);
 
   MakeTriggerRPCslide(triggerQA,outFile);
+  MakeTriggerRPCslide(triggerQA,outFile,kTRUE);
   MakeSingleFigureSlide("Trigger Lpt cut per run",trackerQA,"Trigger \\pt\\ cut",outFile);
 
   BeginFrame("Hardware issues",outFile);
