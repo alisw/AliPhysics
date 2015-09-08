@@ -10,11 +10,11 @@ AliAnalysisBGMonitorQA *AddTaskBGMonitorQA(Bool_t UseTree = kFALSE)
     return NULL;
   }   
 
-    // Input handlers
-    AliESDInputHandler* esdH = new AliESDInputHandler();
-    
-    esdH->SetReadFriends(kTRUE);
-    mgr->SetInputEventHandler(esdH);
+    //// Input handlers
+    //AliESDInputHandler* esdH = new AliESDInputHandler();
+    //
+    //esdH->SetReadFriends(kTRUE);
+    //mgr->SetInputEventHandler(esdH);
 
     
     

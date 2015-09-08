@@ -9,15 +9,11 @@
 #include "TArrayI.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliESD.h"
-#include "AliESDEvent.h"
-#include "AliESDfriend.h"
 #include "AliVEvent.h"
-#include "AliESDInputHandler.h"
+#include "AliVfriendEvent.h"
+#include "AliVEventHandler.h"
 #include "AliAnalysisBGMonitorQA.h"
 #include "AliLog.h"
-#include "AliAnalysisFilter.h"
-#include "AliESDtrackCuts.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliTriggerAnalysis.h"
@@ -52,8 +48,8 @@ Bool_t IsItBGSPDClusterVsTracklet(AliVEvent *event); // add function info and in
 //________________________________________________________________________
 AliAnalysisBGMonitorQA::AliAnalysisBGMonitorQA(const char *name) :
 AliAnalysisTaskSE(name),
-fESD(0x0),
-fESDfriend(0x0),
+fEvent(0x0),
+fEventfriend(0x0),
 fTreeTrack(0),
 fList(0),
 fList2(0), //add new List for both result 2015.08.20. (blim)
@@ -79,22 +75,23 @@ void AliAnalysisBGMonitorQA::ConnectInputData(Option_t *)
     if (!tree) {
         Printf("ERROR: Could not read chain from input slot 0");
     } else {
-        
-        AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-        
+        AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+
         if (esdH) {
-	  fESD = (AliESDEvent*)esdH->GetEvent();
-            if(fESD) {
-                fESDfriend = (AliESDfriend*)fESD->FindListObject("AliESDfriend");
-                if (!fESDfriend){
-                    AliError("No friend found");
-                }
+          fEvent = esdH->GetEvent();
+          if(fEvent) {
+            fEventfriend = fEvent->FindFriend();
+            if (!fEventfriend){
+              AliError("No friend found");
             }
+          }
         } else {
             Printf("ERROR: Could not get ESDInputHandler");
         }
-        
     }
+  } else {
+    Printf("ERROR: Could not get InputHandler");
+  }
 }
 
 //________________________________________________________________________
@@ -405,46 +402,32 @@ void AliAnalysisBGMonitorQA::CreateOutputObjects()
 }
 
 //________________________________________________________________________
+Bool_t AliAnalysisBGMonitorQA::ResetOutputData()
+{
+  //reset the output histograms, start over after sending output for merging
+  return kTRUE;
+}
+
+//________________________________________________________________________
 void AliAnalysisBGMonitorQA::Exec(Option_t *)
 {
     // Called for each event
     
-    if (!fESD) {
-        Printf("ERROR: fESD not available");
+    if (!fEvent) {
+        Printf("ERROR: fEvent not available");
         return;
     }
-    
+
     Int_t iEv= 0;
-    iEv = fESD->GetEventNumberInFile();
-    runNumber = fESD->GetRunNumber();
-    UInt_t timeGDC=fESD->GetTimeStamp();
+    iEv = fEvent->GetEventNumberInFile();
+    runNumber = fEvent->GetRunNumber();
+    UInt_t timeGDC=fEvent->GetTimeStamp();
     ftime=timeGDC;
-    Int_t timeStampBX = fESD->GetBunchCrossNumber();
+    Int_t timeStampBX = fEvent->GetBunchCrossNumber();
     fbx=timeStampBX;
     ntr = 10;
     nbunch = 21;
     ofstream ftxt;
-    
-    static AliTriggerAnalysis * triggerAnalysis = new AliTriggerAnalysis();
-    
-    V0A = 0;
-    V0C = 0;
-    V0ABG = 0;
-    V0CBG = 0;
-    bgID = 0;
-    
-    // additional value initialize (blim)
-    bgID2=0;
-    
-    VBA = 0;
-    VBC = 0;
-    VGA = 0;
-    VTX = 0;
-   fastORHW = 0;
-   SPD1 = 0;
-   SPD2 = 0;
-   SPDHw1 = 0;
-   SPDHw2 = 0;
     
     for (Int_t i=0; i<3; i++) {
         for (Int_t j=0; j<3; j++) {
@@ -457,39 +440,53 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     }
     // initialize 2015.08.17.(blim)
  
-    fastORHW = triggerAnalysis->EvaluateTrigger(fESD, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
-    SPD1 = triggerAnalysis->SPDFiredChips(fESD,0,kFALSE,1);  //SPD Fired Chips in layer 1 (from cluster)
-    SPD2 = triggerAnalysis->SPDFiredChips(fESD,0,kFALSE,2);  //SPD Fired Chips in layer 2 (from cluster)
-    SPDHw1 = triggerAnalysis->SPDFiredChips(fESD,1,kFALSE,1);  //SPD Fired Chips in layer 1 (from hardware bit)
-    SPDHw2 = triggerAnalysis->SPDFiredChips(fESD,1,kFALSE,2);  //SPD Fired Chips in layer 2 (from hardware bit)
-    t0PileUp = triggerAnalysis->EvaluateTrigger(fESD, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup)); //T0 pile-up
+    //static AliTriggerAnalysis * triggerAnalysis = new AliTriggerAnalysis();
+    //fastORHW = 0;
+    //SPD1 = 0;
+    //SPD2 = 0;
+    //SPDHw1 = 0;
+    //SPDHw2 = 0;
+    //fastORHW = triggerAnalysis->EvaluateTrigger(fEvent, AliTriggerAnalysis::kSPDGFO); // SPD number of chips from trigger bits (!)
+    //SPD1 = triggerAnalysis->SPDFiredChips(fEvent,0,kFALSE,1);  //SPD Fired Chips in layer 1 (from cluster)
+    //SPD2 = triggerAnalysis->SPDFiredChips(fEvent,0,kFALSE,2);  //SPD Fired Chips in layer 2 (from cluster)
+    //SPDHw1 = triggerAnalysis->SPDFiredChips(fEvent,1,kFALSE,1);  //SPD Fired Chips in layer 1 (from hardware bit)
+    //SPDHw2 = triggerAnalysis->SPDFiredChips(fEvent,1,kFALSE,2);  //SPD Fired Chips in layer 2 (from hardware bit)
+    //t0PileUp = triggerAnalysis->EvaluateTrigger(fEvent, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup)); //T0 pile-up
     
-    AliVVZERO *vzero = fESD->GetVZEROData();
+    V0A = 0;
+    V0C = 0;
+    V0ABG = 0;
+    V0CBG = 0;
+    
+    AliESDVZERO esdVZERO; AliVVZERO *vzero = &esdVZERO;
+    fEvent->GetVZEROData(esdVZERO);
+
     V0A   = (vzero->GetV0ADecision()==AliVVZERO::kV0BB);
     V0ABG = (vzero->GetV0ADecision()==AliVVZERO::kV0BG);
     V0C   = (vzero->GetV0CDecision()==AliVVZERO::kV0BB);
     V0CBG = (vzero->GetV0CDecision()==AliVVZERO::kV0BG);
     
-    AliAnalysisUtils *utils = new AliAnalysisUtils();
-    bgID = utils->IsSPDClusterVsTrackletBG(fESD);
-    
-    // modified slope cut. the function is in below of this source(blim)
-    bgID2 = IsItBGSPDClusterVsTracklet(fESD);
-    
-    spdPileUp = utils->IsPileUpSPD(fESD);
-    spdPileUpOutOfBunch = utils->IsOutOfBunchPileUp(fESD);
-    
-    
     //CTP inputs
-    VTX = fESD->GetHeader()->IsTriggerInputFired("0TVX");
-    VGA = fESD->GetHeader()->IsTriggerInputFired("0VGA");
-    VGC = fESD->GetHeader()->IsTriggerInputFired("0VGC");
-    VBA = fESD->GetHeader()->IsTriggerInputFired("0VBA");
-    VBC = fESD->GetHeader()->IsTriggerInputFired("0VBC");
-    triMask = fESD->GetHeader()->GetTriggerMask();
+    VBA = 0;
+    VBC = 0;
+    VGA = 0;
+    VGC = 0;
+    VTX = 0;
+    
+    if (fEvent->GetHeader())
+    {
+      VTX = fEvent->GetHeader()->IsTriggerInputFired("0TVX");
+      VGA = fEvent->GetHeader()->IsTriggerInputFired("0VGA");
+      VGC = fEvent->GetHeader()->IsTriggerInputFired("0VGC");
+      VBA = fEvent->GetHeader()->IsTriggerInputFired("0VBA");
+      VBC = fEvent->GetHeader()->IsTriggerInputFired("0VBC");
+      //triMask = fEvent->GetHeader()->GetTriggerMask();
+    }
     
     //--- vertex
-    const AliESDVertex *vertSPD=fESD->GetPrimaryVertexSPD();
+    AliESDVertex spdVertex; AliESDVertex *vertSPD = &spdVertex;
+    fEvent->GetPrimaryVertexSPD(spdVertex);
+
     if(vertSPD->GetNContributors()>0){
         fvertZ=vertSPD->GetZ();
         fvertX=vertSPD->GetX();
@@ -501,7 +498,9 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
         fvertY=-99999;
     }
     
-    const AliESDVertex *vertTPC=fESD->GetPrimaryVertexTracks();
+    AliESDVertex tpcvertex; AliESDVertex *vertTPC = &tpcvertex;
+    fEvent->GetPrimaryVertexTracks(tpcvertex);
+
     if(vertTPC->GetNContributors()>0){
         fvertTPCZ=vertTPC->GetZ();
         fvertTPCX=vertTPC->GetX();
@@ -513,21 +512,39 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
         fvertTPCY=-99999;
     }
     
-    //--- SPD cluster and tracklets
-    const AliMultiplicity* mult = fESD->GetMultiplicity();
+    // additional value initialize (blim)
+    bgID = 0;
+    bgID2 = 0;
+    spdPileUp = 0;
+    spdPileUpOutOfBunch = 0;
     
     fSpdC1 = 0;
     fSpdC2 = 0;
-    //for(Int_t ilayer = 0; ilayer < 2; ilayer++){
-    //  fSpdC += mult->GetNumberOfITSClusters(ilayer);
-    //}
-    fSpdC1 = mult->GetNumberOfITSClusters(0);
-    fSpdC2 = mult->GetNumberOfITSClusters(1);
-    
-    fSpdT = mult->GetNumberOfTracklets();
+    //--- SPD cluster and tracklets
+    const AliVMultiplicity* mult = fEvent->GetMultiplicity();
+    if (mult)
+    {
+      //for(Int_t ilayer = 0; ilayer < 2; ilayer++){
+      //  fSpdC += mult->GetNumberOfITSClusters(ilayer);
+      //}
+      fSpdC1 = mult->GetNumberOfITSClusters(0);
+      fSpdC2 = mult->GetNumberOfITSClusters(1);
+
+      fSpdT = mult->GetNumberOfTracklets();
+      
+      //this we can only do if we have AliMultiplicity (not available online)
+      AliAnalysisUtils utils;
+      bgID = utils.IsSPDClusterVsTrackletBG(fEvent);
+
+      // modified slope cut. the function is in below of this source(blim)
+      bgID2 = IsItBGSPDClusterVsTracklet(fEvent);
+
+      spdPileUp = utils.IsPileUpSPD(fEvent);
+      spdPileUpOutOfBunch = utils.IsOutOfBunchPileUp(fEvent);
+    }
     
     //--- V0 data
-    //AliESDVZERO* vzero = fESD->GetVZEROData();
+    //AliESDVZERO* vzero = fEvent->GetVZEROData();
     fv0a = vzero->GetV0ATime();  //V0A time
     fv0c = vzero->GetV0CTime();  //V0C time
     fMulta = vzero->GetMTotV0A();  //V0A multiplicity
@@ -537,9 +554,12 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
     
     
     //-- AD data
-    AliESDAD* adzero = fESD->GetADData();
-    fad0a = adzero->GetADATime();
-    fad0c = adzero->GetADCTime();
+    AliVAD* adzero = fEvent->GetADData();
+    if (adzero)
+    {
+      fad0a = adzero->GetADATime();
+      fad0c = adzero->GetADCTime();
+    }
     
     
     
@@ -580,38 +600,35 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
 
     
     
-    AliESDVZEROfriend *esdV0friend = fESDfriend->GetVZEROfriend();
-    if(esdV0friend) {
-        for(Int_t j = 0; j < 20; j++){
-            //V0 --- infor
-            for (Int_t i = 32; i < 64; ++i) {
-                //BBFlagA[j] |= esdV0friend->GetBBFlag(i,j);
-                //BGFlagA[j] |= esdV0friend->GetBGFlag(i,j);
-                if(esdV0friend->GetBBFlag(i,j)) BBFlagA[j]++;
-                if(esdV0friend->GetBGFlag(i,j)) BGFlagA[j]++;
-            }
-            for (Int_t i = 0; i < 32; ++i) {
-                //BBFlagC[j] |= esdV0friend->GetBBFlag(i,j);
-                //BGFlagC[j] |= esdV0friend->GetBGFlag(i,j);
-                if(esdV0friend->GetBBFlag(i,j)) BBFlagC[j]++;
-                if(esdV0friend->GetBGFlag(i,j)) BGFlagC[j]++;
-            }
-            //AD --- infor
-            for (Int_t i = 8; i < 16; ++i) {
-                if(esdV0friend->GetBBFlag(i,j)) ADBBFlagA[j]++;
-                if(esdV0friend->GetBGFlag(i,j)) ADBGFlagA[j]++;
-            }
-            for (Int_t i = 0; i < 8; ++i) {
-                if(esdV0friend->GetBBFlag(i,j)) ADBBFlagC[j]++;
-                if(esdV0friend->GetBGFlag(i,j)) ADBGFlagC[j]++;
-            }
-            
-            
-            
-        }
-    } else {
-        Printf("No esdV0friend available");
-        return;
+    AliESDVZEROfriend vzeroFriend; AliESDVZEROfriend* esdV0friend = &vzeroFriend;
+    if (!fEventfriend->GetESDVZEROfriend(vzeroFriend))
+    {
+      //
+    }
+
+    for(Int_t j = 0; j < 20; j++){
+      //V0 --- infor
+      for (Int_t i = 32; i < 64; ++i) {
+        //BBFlagA[j] |= esdV0friend->GetBBFlag(i,j);
+        //BGFlagA[j] |= esdV0friend->GetBGFlag(i,j);
+        if(esdV0friend->GetBBFlag(i,j)) BBFlagA[j]++;
+        if(esdV0friend->GetBGFlag(i,j)) BGFlagA[j]++;
+      }
+      for (Int_t i = 0; i < 32; ++i) {
+        //BBFlagC[j] |= esdV0friend->GetBBFlag(i,j);
+        //BGFlagC[j] |= esdV0friend->GetBGFlag(i,j);
+        if(esdV0friend->GetBBFlag(i,j)) BBFlagC[j]++;
+        if(esdV0friend->GetBGFlag(i,j)) BGFlagC[j]++;
+      }
+      //AD --- infor
+      for (Int_t i = 8; i < 16; ++i) {
+        if(esdV0friend->GetBBFlag(i,j)) ADBBFlagA[j]++;
+        if(esdV0friend->GetBGFlag(i,j)) ADBGFlagA[j]++;
+      }
+      for (Int_t i = 0; i < 8; ++i) {
+        if(esdV0friend->GetBBFlag(i,j)) ADBBFlagC[j]++;
+        if(esdV0friend->GetBGFlag(i,j)) ADBGFlagC[j]++;
+      }
     }
 
 /*
@@ -628,28 +645,28 @@ void AliAnalysisBGMonitorQA::Exec(Option_t *)
 */
     
     
-      ntracks = fESD->GetNumberOfTracks(); // number of tracks (no quality cuts)
+      ntracks = fEvent->GetNumberOfTracks(); // number of tracks (no quality cuts)
     
     //--- Trigger classes --//
     memset(ftrigger, 0, sizeof(Float_t)*ntr);
     
     //Minimum Bias
-    if(fESD->IsTriggerClassFired("CINT7-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CINT7-S-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CINT1-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CINT1-S-NOPF-ALLNOTRD")) ftrigger[0] = 1;
-    if(fESD->IsTriggerClassFired("CINT7-AC-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CINT7-ACE-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CINT1-AC-NOPF-ALLNOTRD")) ftrigger[1] = 1;
-    if(fESD->IsTriggerClassFired("C0VGA-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("C0VGA-AC-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("C0VGA-ABCE-NOPF-ALLNOTRD")) ftrigger[2] = 1;
-    if(fESD->IsTriggerClassFired("C0VGC-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("C0VGC-AC-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("C0VGC-ABCE-NOPF-ALLNOTRD")) ftrigger[3] = 1;
-    if(fESD->IsTriggerClassFired("CVGO-ABCE-NOPF-ALLNOTRD")) ftrigger[4] = 1;
+    if(fEvent->IsTriggerClassFired("CINT7-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CINT7-S-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CINT1-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CINT1-S-NOPF-ALLNOTRD")) ftrigger[0] = 1;
+    if(fEvent->IsTriggerClassFired("CINT7-AC-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CINT7-ACE-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CINT1-AC-NOPF-ALLNOTRD")) ftrigger[1] = 1;
+    if(fEvent->IsTriggerClassFired("C0VGA-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("C0VGA-AC-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("C0VGA-ABCE-NOPF-ALLNOTRD")) ftrigger[2] = 1;
+    if(fEvent->IsTriggerClassFired("C0VGC-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("C0VGC-AC-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("C0VGC-ABCE-NOPF-ALLNOTRD")) ftrigger[3] = 1;
+    if(fEvent->IsTriggerClassFired("CVGO-ABCE-NOPF-ALLNOTRD")) ftrigger[4] = 1;
     //Zero Bias
-    if(fESD->IsTriggerClassFired("CBEAMB-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CTRUE-S-NOPF-ALLNOTRD")) ftrigger[5] = 1;
+    if(fEvent->IsTriggerClassFired("CBEAMB-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CTRUE-S-NOPF-ALLNOTRD")) ftrigger[5] = 1;
     //T0 triggers
-    if(fESD->IsTriggerClassFired("CINT8-S-NOPF-ALLNOTRD")) ftrigger[6] = 1;
+    if(fEvent->IsTriggerClassFired("CINT8-S-NOPF-ALLNOTRD")) ftrigger[6] = 1;
     //Power trigger
-    if(fESD->IsTriggerClassFired("CSPI7-B-NOPF-ALLNOTRD") || fESD->IsTriggerClassFired("CSPI7-S-NOPF-ALLNOTRD")) ftrigger[7] = 1;
+    if(fEvent->IsTriggerClassFired("CSPI7-B-NOPF-ALLNOTRD") || fEvent->IsTriggerClassFired("CSPI7-S-NOPF-ALLNOTRD")) ftrigger[7] = 1;
     //High-multiplicity triggers
-    if(fESD->IsTriggerClassFired("CSHM8-S-NOPF-ALLNOTRD")) ftrigger[8] = 1;
-    //    if(fESD->IsTriggerClassFired("CSHM8-ACE-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC11h
+    if(fEvent->IsTriggerClassFired("CSHM8-S-NOPF-ALLNOTRD")) ftrigger[8] = 1;
+    //    if(fEvent->IsTriggerClassFired("CSHM8-ACE-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC11h
 
-    if(fESD->IsTriggerClassFired("CTEST52-B-NOPF-ALLNOTRD")|| fESD->IsTriggerClassFired("CTEST52-B-NOPF-ALLNOTRD")|| fESD->IsTriggerClassFired("CTEST52-C-NOPF-ALLNOTRD")|| fESD->IsTriggerClassFired("CTEST52-E-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC15f, run 297884
+    if(fEvent->IsTriggerClassFired("CTEST52-B-NOPF-ALLNOTRD")|| fEvent->IsTriggerClassFired("CTEST52-B-NOPF-ALLNOTRD")|| fEvent->IsTriggerClassFired("CTEST52-C-NOPF-ALLNOTRD")|| fEvent->IsTriggerClassFired("CTEST52-E-NOPF-ALLNOTRD")) ftrigger[9] = 1; // for LHC15f, run 297884
 
     // count total event number (blim)
     if(ftrigger[0]==1)((TH1F*)fList->FindObject("hNumEvents"))->Fill(1);
