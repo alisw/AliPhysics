@@ -602,13 +602,13 @@ void AliGenParam::GenerateN(Int_t ntimes)
       Rndm(random,2);
 
 // --- For Exodus --------------------------------//
-Double_t awidth = particle->Width();
-if(awidth>0){
- TF1 *rbw = new TF1("rbw","pow([1],2)*pow([0],2)/(pow(x*x-[0]*[0],2)+pow(x*x*[1]/[0],2))",am-5*awidth,am+5*awidth);
- rbw->SetParameter(0,am);
- rbw->SetParameter(1,awidth);
- am = rbw->GetRandom();
-}
+      Double_t awidth = particle->Width();
+      if(awidth>0){
+	TF1 rbw("rbw","pow([1],2)*pow([0],2)/(pow(x*x-[0]*[0],2)+pow(x*x*[1]/[0],2))",am-5*awidth,am+5*awidth);
+	rbw.SetParameter(0,am);
+	rbw.SetParameter(1,awidth);
+	am = rbw.GetRandom();
+      }
 // -----------------------------------------------//
 
       //
