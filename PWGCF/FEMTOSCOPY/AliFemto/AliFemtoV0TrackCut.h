@@ -42,6 +42,7 @@ public:
   void SetMaxDcaV0Daughters(double);
   void SetMaxDcaV0(double);
   void SetMaxCosPointingAngle(double);
+  void SetMinCosPointingAngle(double);
   void SetMaxV0DecayLength(double);
   void SetParticleType(short);
   void SetEta(double);
@@ -74,7 +75,8 @@ public:
   double fMaxDcaV0;
   double fMaxDecayLength;
 
-  double fMaxCosPointingAngle;
+  double fMaxCosPointingAngle;    //obsolete
+  double fMinCosPointingAngle;    //correct
   short fParticleType;             ///< 0-lambda
   double fEta;
   double fPtMin;

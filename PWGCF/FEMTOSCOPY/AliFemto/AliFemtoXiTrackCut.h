@@ -41,9 +41,9 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   void SetStatusBac(unsigned long x);
   void SetInvariantMassXi(double min, double max);
   void SetMaxDcaXi(double x);
-  void SetMaxDcaXiBac(double x);
-  void SetMinDcaXiDaughters(double x);
-  void SetMaxCosPointingAngleXi(double max);
+  void SetMinDcaXiBac(double x);
+  void SetMaxDcaXiDaughters(double x);
+  void SetMinCosPointingAngleXi(double max);
   void SetParticleTypeXi(short x);
  
   
@@ -61,9 +61,9 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
   double fNdofBac;
   unsigned long fStatusBac;
   double fMaxDcaXi;
-  double fMaxDcaXiBac;
-  double fMinDcaXiDaughters;
-  double fMaxCosPointingAngleXi;
+  double fMinDcaXiBac;
+  double fMaxDcaXiDaughters;
+  double fMinCosPointingAngleXi;
   double fMaxDecayLengthXi;
   double fInvMassXiMin;
   double fInvMassXiMax;

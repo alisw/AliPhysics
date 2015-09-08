@@ -8,7 +8,7 @@ ClassImp(AliFemtoXiTrackCut)
 
 
 
-AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(0), fMinPtXi(0), fMaxPtXi(0), fChargeXi(0), fMaxEtaBac(0), fMinPtBac(0), fMaxPtBac(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0), fMaxDcaXi(0), fMaxDcaXiBac(0), fMinDcaXiDaughters(0), fMaxCosPointingAngleXi(0), fMaxDecayLengthXi(0), fInvMassXiMin(0), fInvMassXiMax(0)
+AliFemtoXiTrackCut::AliFemtoXiTrackCut() : AliFemtoV0TrackCut(), fMaxEtaXi(0), fMinPtXi(0), fMaxPtXi(0), fChargeXi(0), fMaxEtaBac(0), fMinPtBac(0), fMaxPtBac(0), fTPCNclsBac(0), fNdofBac(0), fStatusBac(0), fMaxDcaXi(0), fMinDcaXiBac(0), fMaxDcaXiDaughters(0), fMinCosPointingAngleXi(0), fMaxDecayLengthXi(0), fInvMassXiMin(0), fInvMassXiMax(0)
 {
   // Default constructor
  }
@@ -59,19 +59,19 @@ bool AliFemtoXiTrackCut::Pass(const AliFemtoXi* aXi)
 
 
     //DCA Xi to prim vertex
-    if(TMath::Abs(aXi->DcaXiToPrimVertex())<fMaxDcaXi) //not used by Maria
+    if(TMath::Abs(aXi->DcaXiToPrimVertex())>fMaxDcaXi) //not used by Maria
       return false;
 
     //DCA Xi bachelor to prim vertex
-    if(TMath::Abs(aXi->DcaBacToPrimVertex())<fMaxDcaXiBac) //0.03
+    if(TMath::Abs(aXi->DcaBacToPrimVertex())<fMinDcaXiBac) //0.03
       return false;
 
     //DCA Xi daughters
-    if(TMath::Abs(aXi->DcaXiDaughters())>fMinDcaXiDaughters) //0.3
+    if(TMath::Abs(aXi->DcaXiDaughters())>fMaxDcaXiDaughters) //0.3
       return false;
     
     //cos pointing angle
-    if(aXi->CosPointingAngleXi()<fMaxCosPointingAngleXi) //0.999
+    if(aXi->CosPointingAngleXi()<fMinCosPointingAngleXi) //0.999
       return false;
     
     //decay length
@@ -181,19 +181,19 @@ void AliFemtoXiTrackCut::SetMaxDcaXi(double x)
   fMaxDcaXi = x;
 }
 
-void AliFemtoXiTrackCut::SetMaxDcaXiBac(double x)
+void AliFemtoXiTrackCut::SetMinDcaXiBac(double x)
 {
-  fMaxDcaXiBac = x;
+  fMinDcaXiBac = x;
 }
 
-void AliFemtoXiTrackCut::SetMinDcaXiDaughters(double x)
+void AliFemtoXiTrackCut::SetMaxDcaXiDaughters(double x)
 {
-  fMinDcaXiDaughters = x;
+  fMaxDcaXiDaughters = x;
 }
 
-void AliFemtoXiTrackCut::SetMaxCosPointingAngleXi(double max)
+void AliFemtoXiTrackCut::SetMinCosPointingAngleXi(double max)
 {
-  fMaxCosPointingAngleXi = max;
+  fMinCosPointingAngleXi = max;
 }
 
 void AliFemtoXiTrackCut::SetParticleTypeXi(short x)
