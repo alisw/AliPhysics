@@ -21,6 +21,7 @@
 #include "TArrayI.h"
 #include "TMap.h"
 #include "TGridResult.h"
+#include "TF1.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -399,6 +400,27 @@ Bool_t IsOCDBChanged ( Int_t currRun, Int_t previousRun, TList* fileList )
 }
 
 //_____________________________________________________________________________
+TH2* GetOutliers ( TH2* histo, Double_t nSigmas = 3. )
+{
+  TH2* outHisto = static_cast<TH2*>(histo->Clone());
+  outHisto->SetName(Form("%s_outlier",histo->GetName()));
+  outHisto->Reset();
+  for ( Int_t ybin=1; ybin<=histo->GetYaxis()->GetNbins(); ybin++ ) {
+    TH1* auxHisto = histo->ProjectionX("projectionOutlier",ybin,ybin);
+    auxHisto->Fit("pol0","Q0");
+    Double_t mean = auxHisto->GetFunction("pol0")->GetParameter(0);
+    for ( Int_t xbin=1; xbin<=auxHisto->GetXaxis()->GetNbins(); xbin++ ) {
+      Double_t err = auxHisto->GetBinError(xbin);
+      if ( err == 0. ) continue;
+      if ( TMath::Abs(auxHisto->GetBinContent(xbin)-mean)/err < nSigmas ) continue;
+      outHisto->SetBinContent(xbin,ybin,auxHisto->GetBinContent(xbin)-mean);
+    }
+    delete auxHisto;
+  }
+  return outHisto;
+}
+
+//_____________________________________________________________________________
 void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outCanList, TList& outList)
 {
   /// Get the efficiency vs. run number
@@ -595,6 +617,29 @@ void TrigEffTrending(TObjArray runNumArray, TObjArray fileNameArray, TList& outC
       outCanList.Add(can);
     } // loop on chambers
   } // loop on detection element type
+
+
+  // Find outliers in RPC efficiency
+  for ( Int_t ich=0; ich<kNch; ich++ ) {
+    Int_t icount = AliMUONTriggerEfficiencyCells::kBothPlanesEff; // Just plot the efficiency for both
+    Int_t iel = 1;
+      //      for ( Int_t icount=0; icount<AliMUONTriggerEfficiencyCells::kNcounts-1; icount++ ) {
+    canName = Form("trigEff%sCh%i_outliers", elementName[iel].Data(), 11+ich);
+    can = new TCanvas(canName.Data(), canName.Data(), 200, 10, 600, 600);
+    can->SetRightMargin(0.14);
+    TH2* histo = static_cast<TH2*>(effVsRunList.At(GetEffIndex(iel, icount,ich)));
+    if ( ! histo ) continue;
+    TH2* outHisto = GetOutliers(histo);
+    TString histoTitle = histo->GetTitle();
+    histoTitle.ReplaceAll("efficiency","eff.-<eff.> for outliers");
+    outHisto->SetTitle(histoTitle.Data());
+    outList.Add(outHisto);
+    outHisto->SetMinimum(-0.08);
+    outHisto->SetMaximum(0.08);
+    outHisto->DrawCopy("COLZ");
+    //      } // loop on counts
+    outCanList.Add(can);
+  } // loop on chambers
 }
 
 //_____________________________________________________________________________
