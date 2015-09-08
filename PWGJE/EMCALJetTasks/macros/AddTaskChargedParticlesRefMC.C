@@ -3,6 +3,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC("chargedParticleMCQA");
+  task->SetOutlierCut(1.2);
   mgr->AddTask(task);
 
   TString outfile(mgr->GetCommonFileName());
