@@ -287,10 +287,17 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
 {
   ///check if event passes cuts
   const AliVVertex* pvtx=event->GetPrimaryVertex();
-  Double_t pvtxx = pvtx->GetX();
-  Double_t pvtxy = pvtx->GetY();
-  Double_t pvtxz = pvtx->GetZ();
-  Int_t ncontrib = pvtx->GetNContributors();
+    Double_t pvtxx = 0.;
+    Double_t pvtxy = 0.;
+    Double_t pvtxz = 0.;
+    Int_t ncontrib = 0;
+    
+    if(pvtx){
+        pvtxx = pvtx->GetX();
+        pvtxy = pvtx->GetY();
+        pvtxz = pvtx->GetZ();
+        ncontrib = pvtx->GetNContributors();
+    }
   Bool_t pass=kTRUE;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
