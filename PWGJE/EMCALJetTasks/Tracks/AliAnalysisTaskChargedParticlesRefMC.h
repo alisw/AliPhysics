@@ -49,6 +49,7 @@ public:
 
   void                        SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void                        SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
+  void                        SetOutlierCut(double fracpthard = 1.2) { fFracPtHard = fracpthard; }
 
 protected:
   void                        CreateOldPtBinning(TArrayD &binning) const;
@@ -62,6 +63,7 @@ protected:
   Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard) const;
   AliGenPythiaEventHeader    *GetPythiaHeader() const;
   Bool_t                      IsPhysicalPrimary(const AliVParticle *const part, AliMCEvent *const mcevent);
+  Bool_t                      IsOutlier(AliGenPythiaEventHeader * const header) const;
 
 
   AliESDtrackCuts                 *fTrackCuts;                ///< Standard track selection
@@ -78,6 +80,7 @@ protected:
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1
   Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
+  Double_t                        fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
 
 private:
   AliAnalysisTaskChargedParticlesRefMC(const AliAnalysisTaskChargedParticlesRefMC &);

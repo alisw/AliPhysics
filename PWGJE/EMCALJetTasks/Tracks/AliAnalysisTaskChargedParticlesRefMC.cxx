@@ -65,7 +65,8 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fNTrials(0),
         fXsection(0),
         fYshift(0.465),
-        fEtaSign(1)
+        fEtaSign(1),
+        fFracPtHard(-1)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -88,7 +89,8 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fNTrials(0),
         fXsection(0),
         fYshift(0.465),
-        fEtaSign(1)
+        fEtaSign(1),
+        fFracPtHard(-1)
 {
   // Restrict analysis to the EMCAL acceptance
   fEtaLabCut[0] = -0.6;
@@ -216,6 +218,11 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   AliGenPythiaEventHeader *pyheader = GetPythiaHeader();
   if(pyheader){
     fHistos->FillTH1("hNtrialsNoSelect",1,pyheader->Trials());
+  }
+  if(fFracPtHard > 0){
+    // Apply outlier cut in case of a positive fraction of pthard
+    if(IsOutlier(pyheader))
+      return;
   }
   TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   if(!fTriggerPatches) return;
@@ -775,6 +782,27 @@ Bool_t AliAnalysisTaskChargedParticlesRefMC::IsPhysicalPrimary(const AliVParticl
     physprim = mcevent->IsPhysicalPrimary(part->GetLabel());
   }
   return physprim;
+}
+
+/**
+ * Find outlier jets compared to the pt hard
+ * @param header PYTHIA header with trigger jets and pt hard
+ * @return True if event has at least one outlier, false otherwise
+ */
+Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOutlier(AliGenPythiaEventHeader * const header) const {
+  Bool_t hasOutlier = kFALSE;
+  Float_t pbuf[4];
+  TLorentzVector jetvec;
+  for(int ijet = 0; ijet < header->NTriggerJets(); ijet++){
+    memset(pbuf, 0, sizeof(Float_t) * 4);
+    header->TriggerJet(ijet, pbuf);
+    jetvec.SetPxPyPzE(pbuf[0], pbuf[1], pbuf[2], pbuf[3]);
+    if(TMath::Abs(jetvec.Pt()) >= this->fFracPtHard * header->GetPtHard()){
+      hasOutlier = true;
+      break;
+    }
+  }
+  return hasOutlier;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
