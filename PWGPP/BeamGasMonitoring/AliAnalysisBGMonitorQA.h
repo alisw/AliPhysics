@@ -21,6 +21,7 @@ class AliAnalysisBGMonitorQA : public AliAnalysisTaskSE {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  Bool_t ResetOutputData();
 
     
   virtual void SelectGoodEventWithV0Variation(Int_t bunchrange, Int_t v0variation ,Int_t flagvariation, Int_t ii); // add function to select good event with 3 types of variation  2015.08.12. (blim)
@@ -29,8 +30,8 @@ class AliAnalysisBGMonitorQA : public AliAnalysisTaskSE {
  // virtual void   Terminate(Option_t *);
     
  private: 
-  AliESDEvent *fESD;        //! ESD event
-  AliESDfriend* fESDfriend; //! ESDfriend   
+  AliVEvent *fEvent;        //! ESD event
+  AliVfriendEvent* fEventfriend; //! ESDfriend   
   TTree *fTreeTrack;        //! tree
   TList *fList;             //! list
   TList *fList2;             //! list for additional data 2015.08.20 (blim)
