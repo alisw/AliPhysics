@@ -50,7 +50,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_pp_woCutLib(Int_t cutDefinition = 1, TStri
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 
   //Add event filter
-  //task->SetEventFilter( GetEventCuts() );
+  task->SetEventFilter( GetEventCuts() );
 
   // Add the task to the manager
   mgr->AddTask(task);
