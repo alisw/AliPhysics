@@ -25,12 +25,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-	//**********************************************************************************************
-	//**********************************************************************************************
-		AliInputEventHandler *inputEventHandler=mgr->GetInputEventHandler();
-		inputEventHandler->SetInactiveBranches("AliESDFMD"); // Disable FMD branch, see ALIROOT-6222
-	//**********************************************************************************************
-	//**********************************************************************************************
+
 	Bool_t isMCForOtherSettings = 0;
 	if (isMC > 0) isMCForOtherSettings = 1;
 	//========= Add PID Reponse to ANALYSIS manager ====
