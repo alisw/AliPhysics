@@ -16,6 +16,6 @@
 
 #include <Riostream.h>
 
-int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddlDir);
+int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, const char *ddlDir);
 
 #endif
