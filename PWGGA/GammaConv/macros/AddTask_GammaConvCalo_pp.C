@@ -12,7 +12,8 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 								    Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 									Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
 									Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
-									TString		periodNameV0Reader			= ""
+									TString		periodNameV0Reader			= "",
+									Bool_t		doTreeConvGammaShape		= kFALSE
 							) {
 	
 	Int_t isHeavyIon = 0;
@@ -304,10 +305,6 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111100053032230000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
 		eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111100053032230000"; mesonCutArray[1] = "0163103100000010"; // 400 MeV cluster min energy
 
-	// LHC11a for Gustavo with SetDoTreeConvGammaShowerShape
-	} else if (trainConfig == 29){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
-		eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121053032230000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
-		eventCutArray[ 1] = "00051113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121053032230000"; mesonCutArray[1] = "0163103100000010"; // 400 MeV cluster min energy
 	}else if (trainConfig == 30){  //LHC11a additional NonLinearity variations
 		eventCutArray[ 0] = "00003113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111123053032230000"; mesonCutArray[0] = "0163103100000010"; // NonLinearity kTestBeamv2 + ConvCalo
 		eventCutArray[ 1] = "00003113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111124053032230000"; mesonCutArray[1] = "0163103100000010"; // NonLinearity kTestBeamv2 + Calo
@@ -909,7 +906,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
 	task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
 	task->SetUseTHnSparse(isUsingTHnSparse);
-	//if(trainConfig==29) task->SetDoTreeConvGammaShowerShape(kTRUE);
+	if(doTreeConvGammaShape) task->SetDoTreeConvGammaShowerShape(kTRUE);
 	if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
 	//connect containers
