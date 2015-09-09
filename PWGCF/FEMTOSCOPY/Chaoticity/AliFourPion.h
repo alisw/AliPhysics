@@ -115,7 +115,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void Setq2CutHigh(Float_t q2h) {fq2CutHigh = q2h;}
   void SetQinvMin(Float_t qim) {fQLowerCut = qim;}
   //
-  
+  Short_t GetCollisionType() {return fCollisionType;}
   
  private:
 
