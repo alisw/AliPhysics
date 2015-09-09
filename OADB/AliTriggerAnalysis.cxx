@@ -757,14 +757,10 @@ Bool_t AliTriggerAnalysis::ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side
       for(Int_t i=0; i<4; i++) tdc[itdc] |= esdZDC->GetZDCTDCData(itdc, i)!=0;
       if(fillHists && tdc[itdc]) fHistTDCZDC->Fill(itdc);
     }
-    zdcNA = tdc[12];
-    zdcNC = tdc[10];
-    zdcPA = tdc[13];
-    zdcPC = tdc[11];
-//    zdcNA = tdc[esdZDC->GetZNATDCChannel()];
-//    zdcNC = tdc[esdZDC->GetZNCTDCChannel()];
-//    zdcPA = tdc[esdZDC->GetZPATDCChannel()];
-//    zdcPC = tdc[esdZDC->GetZPCTDCChannel()];
+    zdcNA = tdc[esdZDC->GetZNATDCChannel()];
+    zdcNC = tdc[esdZDC->GetZNCTDCChannel()];
+    zdcPA = tdc[esdZDC->GetZPATDCChannel()];
+    zdcPC = tdc[esdZDC->GetZPCTDCChannel()];
   }
   
   if (side == kASide) return ((useZP && zdcPA) || (useZN && zdcNA)); 
@@ -785,9 +781,9 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
     return znaFired | zncFired;
   }
   else {
-    Int_t detChZNA  = 12; // esdZDC->GetZNATDCChannel();
-    Int_t detChZNC  = 10; //esdZDC->GetZNCTDCChannel();
-    Int_t detChGate = 14; //esdZDC->IsZDCTDCcablingSet() ? 20 : 14;
+    Int_t detChZNA  = esdZDC->GetZNATDCChannel();
+    Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    Int_t detChGate = esdZDC->IsZDCTDCcablingSet() ? 20 : 14;
     
     for(Int_t i=0;i<4;++i) {
       if (esdZDC->GetZDCTDCData(detChZNC,i)==0) continue;
@@ -828,8 +824,8 @@ Bool_t AliTriggerAnalysis::ZDCTimeBGTrigger(const AliESDEvent *aEsd, AliceSide s
   
   Float_t tdcCcorr=999, tdcAcorr=999;
   
-  Int_t detChZNA  = 12; //zdcData->GetZNATDCChannel();
-  Int_t detChZNC  = 10; //zdcData->GetZNCTDCChannel();
+  Int_t detChZNA  = zdcData->GetZNATDCChannel();
+  Int_t detChZNC  = zdcData->GetZNCTDCChannel();
 
   for(Int_t i = 0; i < 4; ++i) {
     if (zdcData->GetZDCTDCData(detChZNC,i)==0) continue;
