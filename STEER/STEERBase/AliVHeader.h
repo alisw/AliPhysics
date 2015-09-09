@@ -28,6 +28,7 @@ class AliVHeader : public TNamed {
   virtual UChar_t   GetTriggerCluster()     const = 0;
   virtual UInt_t    GetEventType()          const = 0;
   virtual TList*    GetCocktailHeaders()    {return 0;}
+  Long64_t GetEventIdAsLong() const;
   /*
   virtual void SetBunchCrossNumber(UShort_t nBx)   = 0;
   virtual void SetOrbitNumber(UInt_t nOr)          = 0;

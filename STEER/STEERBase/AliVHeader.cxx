@@ -41,3 +41,10 @@ AliVHeader& AliVHeader::operator=(const AliVHeader& hdr)
   }
   return *this;
 }
+
+//____________________________________________
+Long64_t AliVHeader::GetEventIdAsLong() const 
+{
+  // get global bunch corssing ID - as in  AliRawReader::GetEventIdAsLong 
+  return (((Long64_t)GetPeriodNumber()<<36)|((Long64_t)GetOrbitNumber()<<12)|GetBunchCrossNumber());
+}  
