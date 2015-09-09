@@ -120,6 +120,12 @@
     newObj->ScaleDown(1);\
   }"
 
+#pragma read sourceClass="AliHLTHuffmanNode" version="[1-]" targetClass="AliHLTHuffmanNode"\
+  source="" target=""\
+  code="{\
+    newObj->fWeightDouble = newObj->fWeight;\
+  }"
+
 #pragma link C++ class AliHLTTriggerMenuSymbol+;
 #pragma link C++ class AliHLTRunStatistics+;
 #pragma link C++ class AliHLTSpacePointContainer+;

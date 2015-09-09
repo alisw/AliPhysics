@@ -29,6 +29,17 @@
  * format for the huffman table. Leave nodes don't need persistent pointers
  * to childs, tree nodes don't need persistent binary code values.
  *
+ * 2015-09-09 It turned out a while ago that float precission for the weight
+ * can lead to a non-optimal huffman table if a large sample is used and float
+ * precision is not enough to represent small differences in large occurrences
+ * of values. Precision has been changed to double internally. The new double
+ * precision weight member is however defined transient and the float
+ * precision is kept for storage in order to avoid increase of the (already
+ * big) huffman table. The float precision is approached by scaling weights of
+ * all nodes by the exponent of the least non-zero weight. This is not
+ * entirely accurate but given the informative character of the weight member
+ * after the generation of the huffman codes, this is accepted.
+ *
  * @ingroup alihlt_base
  */
 class AliHLTHuffmanNode: public TObject {
@@ -47,20 +58,28 @@ public:
 		fValue = v;
 	}
 	/// add weight to node
-	void AddWeight(Float_t w) {
-		fWeight += w;
+	void AddWeight(Double_t w) {
+		fWeightDouble += w;
+		fWeight = static_cast<float>(fWeightDouble);
 	}
 	/// set weight of node
-	void SetWeight(Float_t w) {
-		fWeight = w;
+	void SetWeight(Double_t w) {
+		fWeightDouble = w;
+		fWeight = static_cast<float>(fWeightDouble);
 	}
 	/// return symbol value of node
 	AliHLTInt64_t GetValue() const {
 		return fValue;
 	}
 	/// return weight of node
-	Float_t GetWeight() const {
-		return fWeight;
+	Double_t GetWeight() const {
+		return fWeightDouble;
+	}
+	/// scale weight of node
+	void ScaleWeight(Double_t scale) {
+	        // see note above on the two weight members
+	        if (scale > 0.) fWeightDouble /= scale;
+		fWeight = static_cast<Float_t>(fWeightDouble);
 	}
 
         /// assign huffman code to this node and its children
@@ -100,8 +119,10 @@ public:
 private:
 	AliHLTInt64_t fValue;        // value
 	Float_t fWeight;             // weight
+        // see note above on the two weight members
+	Double_t fWeightDouble;      //! double precision weight
 
-ClassDef(AliHLTHuffmanNode, 1)
+ClassDef(AliHLTHuffmanNode, 2)
 };
 
 /**
@@ -159,7 +180,7 @@ private:
 	AliHLTHuffmanNode* fLeft;    // left neighbor
 	AliHLTHuffmanNode* fRight;   // right neighbor
 
-ClassDef(AliHLTHuffmanTreeNode, 1)
+ClassDef(AliHLTHuffmanTreeNode, 2)
 };
 
 /**
@@ -213,7 +234,7 @@ private:
 	AliHLTHuffmanNode* fLeft;    //! left neighbor
 	AliHLTHuffmanNode* fRight;   //! right neighbor
 
-ClassDef(AliHLTHuffmanLeaveNode, 1)
+ClassDef(AliHLTHuffmanLeaveNode, 2)
 };
 
 /**

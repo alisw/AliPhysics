@@ -415,9 +415,40 @@ Bool_t AliHLTHuffman::GenerateHuffmanTree() {
 	std::multiset<AliHLTHuffmanNode*, AliHLTHuffmanNode::less> nodeCollection;
 	//	std::copy(fNodes.begin(), fNodes.end(),
 	//			std::inserter(freq_coll, freq_coll.begin()));
+	Double_t totalWeight = 0.;
+	Double_t leastWeight = -1.;
 	for (std::vector<AliHLTHuffmanLeaveNode>::iterator i = fNodes.begin(); i
 			!= fNodes.end(); ++i) {
 		nodeCollection.insert(&(*i));
+		Double_t nodeWeight = i->GetWeight();
+		totalWeight += nodeWeight;
+		if (nodeWeight > 0. &&
+		    (leastWeight < 0. || leastWeight > nodeWeight))
+		  leastWeight = nodeWeight;
+	}
+	Double_t scaleexp = 0.;
+	if (leastWeight > 0.) {
+	  scaleexp = std::floor(std::log10(leastWeight));
+	}
+	// float has 23 bit fraction, to be accurate for the occurence counting
+	// number has to fit into that fraction (exponent 0)
+	if (totalWeight > (0x1 << 23)) {
+	  if (scaleexp > 0.) {
+	    HLTInfo("scaling weights by exponent %f, total weight %f", scaleexp, totalWeight);
+	    for (std::vector<AliHLTHuffmanLeaveNode>::iterator i = fNodes.begin();
+		 i != fNodes.end(); ++i) {
+	      i->ScaleWeight(std::pow(10., scaleexp));
+	    }
+	  } else {
+	    // we can not scale, through a warning
+	    HLTWarning("single float precision does not sufficiently represent "
+		       "small differences at total weight > 2^23 (~ 8.3e6), "
+		       "total weight %f; huffman table will be generated correctly "
+		       "however the weigth of nodes stored in the object has a "
+		       "small inaccuracy",
+		       totalWeight
+		       );
+	  }
 	}
 	while (nodeCollection.size() > 1) {
 		// insert new node into structure, combining the two with lowest probability
@@ -447,11 +478,11 @@ void AliHLTHuffman::Print(Option_t* option) const {
 	if (!bPrintShort)
 	  std::cout << std::endl << "Huffman codes:" << std::endl;
 	for (AliHLTUInt64_t i = 0; i <= fMaxValue; i++) {
+	  Double_t nodeWeight = fNodes[i].GetWeight();
 	  if (!bPrintShort) fNodes[i].Print();
-		totalWeight += fNodes[i].GetWeight();
-		uncompressedSize += fNodes[i].GetWeight() * fMaxBits;
-		compressedSize += fNodes[i].GetWeight()
-				* fNodes[i].GetBinaryCodeLength();
+	  totalWeight += nodeWeight;
+	  uncompressedSize += nodeWeight * fMaxBits;
+	  compressedSize += nodeWeight * fNodes[i].GetBinaryCodeLength();
 	}
 	if (uncompressedSize > 0) {
 		std::cout << "compression ratio: " << compressedSize
@@ -460,6 +491,8 @@ void AliHLTHuffman::Print(Option_t* option) const {
 				<< std::endl;
 		std::cout << "<bits> compressed:   " << compressedSize / totalWeight
 				<< std::endl;
+	} else {
+	  std::cout << "   no weights available" << std::endl;
 	}
 }
 
