@@ -630,6 +630,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 	return;
 }
 
+//________________________________________________________________________
 void AliCaloPhotonCuts::InitializeRecUtils (AliVEvent *event){
 
 	if (fClusterType == 1){
@@ -650,9 +651,28 @@ void AliCaloPhotonCuts::InitializeRecUtils (AliVEvent *event){
 			fEMCALBadChannelsMap = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
 		}
 		if (fEMCALRecUtils) fEMCALRecUtilsInitialized = kTRUE;
+
+
+		Int_t nMaxCellsEMCAL = fNMaxEMCalModules*48*24;
+		Int_t imod = -1; Int_t iTower = -1, iIphi = -1, iIeta = -1;
+		Int_t icol = -1; Int_t irow = -1;
+
+		fGeomEMCAL = AliEMCALGeometry::GetInstance();
+		if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
+
+		for(Int_t iCell=0; iCell<nMaxCellsEMCAL; iCell++){
+			fGeomEMCAL->GetCellIndex(iCell,imod,iTower,iIphi,iIeta);
+
+			if (fEMCALBadChannelsMap->GetEntries() <= imod) continue;
+			fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi,iIeta,irow,icol);
+
+			Int_t iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(imod))->GetBinContent(icol,irow);
+			if(iBadCell > 0) fBadChannels->Fill(iCell,1);
+			else fBadChannels->Fill(iCell,0);
+		}
 	}
 	return;
-}	
+}
 
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack){
@@ -1012,17 +1032,14 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 			// BadCellMap implementation for PHOS missing
 		}
 
-		if (iBadCell > 0) {
-			fBadChannels->Fill(cellNumber,1);
-		}else{
-			fBadChannels->Fill(cellNumber,0);
-			if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
-			if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
-			if(cellAmplitude > 0.05) EnergyOfMod[nMod]+=cellAmplitude;
+		if(iBadCell > 0) continue;
+
+		if(cellAmplitude > 0.1) nCellsBigger100MeV[nMod]++;
+		if(cellAmplitude > 1.5) nCellsBigger1500MeV[nMod]++;
+		if(cellAmplitude > 0.05) EnergyOfMod[nMod]+=cellAmplitude;
 			
-			if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05)) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
-			if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
-		}
+		if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05)) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+		if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
 	}
 
 	for(Int_t iModule=0; iModule<nModules; iModule++){
