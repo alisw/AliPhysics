@@ -86,6 +86,7 @@ AliFourPion *AddTaskFourPion(
     TH3F *weightHisto2[ktbins][cbins];
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
+	if(FourPionTask->GetCollisionType()!=0 && j>0) continue;
 	for(Int_t q2bin=0; q2bin<2; q2bin++){
 	  TString name = "Weight_Kt_";
 	  name += i;
