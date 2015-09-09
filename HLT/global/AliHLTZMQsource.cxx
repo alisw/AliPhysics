@@ -217,11 +217,12 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     outputBufferSize += blockSize;
     block = outputBuffer + outputBufferSize;
     
-
+    //get (fill) the block topic
     blockTopicSize = zmq_recv (fZMQin, &blockTopic, sizeof(blockTopic), (fZMQneverBlock)?ZMQ_DONTWAIT:0);
     if (blockTopicSize<0 && errno==EAGAIN) break; //nothing on the socket
     zmq_getsockopt(fZMQin, ZMQ_RCVMORE, &more, &moreSize);
     if (more) {
+      //get (fill) the block data
       blockSize = zmq_recv(fZMQin, block, outputBufferCapacity, (fZMQneverBlock)?ZMQ_DONTWAIT:0);
       if (blockSize < 0 && errno == EAGAIN) break; //nothing on the socket
       if (blockSize > outputBufferCapacity) {retCode = ENOSPC; break;}//no space for message
@@ -232,6 +233,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
 
     HLTMessage(Form("pushing back %s, %i bytes", blockTopic.Description().c_str(), blockSize));
     
+    //prepare the component block data descriptor
     AliHLTComponentBlockData blockHeader; FillBlockData(blockHeader);
     blockHeader.fPtr      = outputBuffer;
     blockHeader.fOffset   = outputBufferSize;
@@ -239,6 +241,7 @@ int AliHLTZMQsource::DoProcessing( const AliHLTComponentEventData& evtData,
     blockHeader.fDataType = blockTopic.fTopic;
     blockHeader.fSpecification = blockTopic.fSpecification;
     
+    //register the block in the output buffer list
     outputBlocks.push_back(blockHeader);
   } while (more==1);
   
