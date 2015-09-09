@@ -67,7 +67,7 @@ AliESDZDC::AliESDZDC() :
       fZDCTDCCorrected[i][y]=0.;
     }
   }
-  for(int it=0; it<6; it++) fZDCTDCChannels[it]=-1;
+  for(int it=0; it<7; it++) fZDCTDCChannels[it]=-1;
 }
 
 //______________________________________________________________________________
@@ -116,7 +116,7 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
        fZDCTDCCorrected[i][y] = zdc.fZDCTDCCorrected[i][y];
     }
   }
-  for(int it=0; it<6; it++) fZDCTDCChannels[it]=zdc.fZDCTDCChannels[it];
+  for(int it=0; it<7; it++) fZDCTDCChannels[it]=zdc.fZDCTDCChannels[it];
 }
 
 //______________________________________________________________________________
@@ -170,7 +170,7 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
   fZEM1TDChit = zdc.fZEM1TDChit;
   fZEM2TDChit = zdc.fZEM2TDChit;
   
-  for(int it=0; it<6; it++) fZDCTDCChannels[it]=zdc.fZDCTDCChannels[it];
+  for(int it=0; it<7; it++) fZDCTDCChannels[it]=zdc.fZDCTDCChannels[it];
  
   return *this;
 }
@@ -230,7 +230,7 @@ void AliESDZDC::Reset()
   fZEM1TDChit = kFALSE;
   fZEM2TDChit = kFALSE;
 
-  for(int it=0; it<6; it++) fZDCTDCChannels[it]=-1;
+  for(int it=0; it<7; it++) fZDCTDCChannels[it]=-1;
 
 }
 
@@ -250,8 +250,8 @@ void AliESDZDC::Print(const Option_t *) const
   for(Int_t i=0; i<32; i++) if(fVMEScaler[i]!=0) printf("\t %d \n",fVMEScaler[i]);
   printf("\n");*/
   //
-  if(AliESDZDC::kTDCcablingSet) printf(" ### TDC channels: ZNA %d  ZPA %d  ZEM1 %d  ZEM2 %d  ZNC %d  ZPC%d\n\n",
-  fZDCTDCChannels[0],fZDCTDCChannels[1],fZDCTDCChannels[2],fZDCTDCChannels[3],fZDCTDCChannels[4],fZDCTDCChannels[5]);
+  if(TestBit(AliESDZDC::kTDCcablingSet)) printf(" ### TDC channels: ZNA %d  ZPA %d  ZEM1 %d  ZEM2 %d  ZNC %d  ZPC%d  L0 %d\n\n",
+  fZDCTDCChannels[0],fZDCTDCChannels[1],fZDCTDCChannels[2],fZDCTDCChannels[3],fZDCTDCChannels[4],fZDCTDCChannels[5],fZDCTDCChannels[6]);
   /*for(Int_t i=0; i<32; i++){
     for(Int_t j=0; j<4; j++)
       if(TMath::Abs(fZDCTDCCorrected[i][j])>1e-4) printf("\t %1.0f \n",fZDCTDCCorrected[i][j]);
@@ -372,17 +372,17 @@ Float_t AliESDZDC::GetZNTDCSum(Int_t ihit) const
       return 1000.; // only up to 4 hits are stored && return sum only for calibrated TDCs
     }
     else{
-      if(!(AliESDZDC::kTDCcablingSet)){ // RUN1: data cabled ch. hardwired in the code
+      if(!(TestBit(AliESDZDC::kTDCcablingSet))){ // RUN1: data cabled ch. hardwired in the code
          if((fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
 	 else return 999.;
       }
       else{ // RUN2: everything done from mapping
-         if(fZDCTDCChannels[4]<0 ||  fZDCTDCChannels[0]<0){// RUN2 data but without signal code!!! 
+         if(fZDCTDCChannels[4]<0 ||  fZDCTDCChannels[2]<0){// RUN2 data but without signal code!!! 
            if((fZDCTDCData[16][ihit]!=0) && (fZDCTDCData[18][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[16][ihit]+fZDCTDCCorrected[18][ihit]);
            else return 998.;
 	 }
 	 else{
-	   if((fZDCTDCData[fZDCTDCChannels[4]][ihit]!=0) && (fZDCTDCData[fZDCTDCChannels[0]][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[fZDCTDCChannels[4]][ihit]+fZDCTDCCorrected[fZDCTDCChannels[0]][ihit]);
+	   if((fZDCTDCData[fZDCTDCChannels[4]][ihit]!=0) && (fZDCTDCData[fZDCTDCChannels[2]][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[fZDCTDCChannels[4]][ihit]+fZDCTDCCorrected[fZDCTDCChannels[2]][ihit]);
            else return 997.;
 	 }
       }
@@ -396,17 +396,17 @@ Float_t AliESDZDC::GetZNTDCDiff(Int_t ihit) const
       return 1000.; // only up to 4 hits are stored && return sum only for calibrated TDCs
     }
     else{
-      if(!(AliESDZDC::kTDCcablingSet)){ // RUN1: data cabled ch. hardwired in the code
-         if((fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
+      if(!(TestBit(AliESDZDC::kTDCcablingSet))){ // RUN1: data cabled ch. hardwired in the code
+         if((fZDCTDCData[10][ihit]!=0) && (fZDCTDCData[12][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[10][ihit]-fZDCTDCCorrected[12][ihit]);
 	 else return 999.;
       }
       else{ // RUN2: everything done from mapping
-         if(fZDCTDCChannels[4]<0 ||  fZDCTDCChannels[0]<0){// RUN2 data but without signal code!!! 
-           if((fZDCTDCData[16][ihit]!=0) && (fZDCTDCData[18][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[18][ihit]-fZDCTDCCorrected[16][ihit]);
+         if(fZDCTDCChannels[4]<0 ||  fZDCTDCChannels[2]<0){// RUN2 data but without signal code!!! 
+           if((fZDCTDCData[16][ihit]!=0) && (fZDCTDCData[18][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[16][ihit]-fZDCTDCCorrected[18][ihit]);
            else return 998.;
 	 }
 	 else{
-	   if((fZDCTDCData[fZDCTDCChannels[4]][ihit]!=0) && (fZDCTDCData[fZDCTDCChannels[0]][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[fZDCTDCChannels[0]][ihit]-fZDCTDCCorrected[fZDCTDCChannels[4]][ihit]);
+	   if((fZDCTDCData[fZDCTDCChannels[4]][ihit]!=0) && (fZDCTDCData[fZDCTDCChannels[2]][ihit]!=0)) return (Float_t) (fZDCTDCCorrected[fZDCTDCChannels[2]][ihit]-fZDCTDCCorrected[fZDCTDCChannels[4]][ihit]);
            else return 997.;
 	 }
       }

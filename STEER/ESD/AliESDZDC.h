@@ -80,13 +80,13 @@ public:
     else return 999.;
   }
   
-  Int_t GetZNATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[4]; else return 12;}
-  Int_t GetZPATDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[5]; else return 13;}
-  Int_t GetZEM1TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[0]; else return 8;}
-  Int_t GetZEM2TDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[1]; else return 9;}
-  Int_t GetZNCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[2]; else return 10;}
-  Int_t GetZPCTDCChannel() {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[3]; else return 11;}
-  Int_t GetL0TDCChannel()  {if(AliESDZDC::kTDCcablingSet) return fZDCTDCChannels[6]; else return 15;}
+  Int_t GetZNATDCChannel() {if(TestBit(AliESDZDC::kTDCcablingSet)) return fZDCTDCChannels[4]; else return 12;}
+  Int_t GetZPATDCChannel() {if(TestBit(AliESDZDC::kTDCcablingSet)) return fZDCTDCChannels[5]; else return 13;}
+  Int_t GetZEM1TDCChannel() {if(TestBit(AliESDZDC::kTDCcablingSet)) return fZDCTDCChannels[0]; else return 8;}
+  Int_t GetZEM2TDCChannel() {if(TestBit(AliESDZDC::kTDCcablingSet)) return fZDCTDCChannels[1]; else return 9;}
+  Int_t GetZNCTDCChannel() {if(TestBit(AliESDZDC::kTDCcablingSet)) return fZDCTDCChannels[2]; else return 10;}
+  Int_t GetZPCTDCChannel() {if(TestBit(AliESDZDC::kTDCcablingSet)) return fZDCTDCChannels[3]; else return 11;}
+  Int_t GetL0TDCChannel()  {if(TestBit(AliESDZDC::kTDCcablingSet)) return fZDCTDCChannels[6]; else return 15;}
 
   Float_t GetZNTDCSum(Int_t ihit) const;
   Float_t GetZNTDCDiff(Int_t ihit) const;
@@ -94,7 +94,7 @@ public:
   virtual Float_t GetZDCTimeSum()  const {return GetZNTDCSum(0);}
   virtual Float_t GetZDCTimeDiff() const {return GetZNTDCDiff(0);}
   
-  Bool_t  IsZDCTDCcablingSet() const {if(AliESDZDC::kTDCcablingSet) return kTRUE; 
+  Bool_t  IsZDCTDCcablingSet() const {if(TestBit(AliESDZDC::kTDCcablingSet)) return kTRUE; 
   				      else return kFALSE;}
   
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
