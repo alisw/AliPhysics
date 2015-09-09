@@ -37,6 +37,7 @@ class AliESDv0;
 class AliESDVertex;
 class AliESDVZERO;
 class AliVTrack;
+class AliVAD;
 
 class AliVEvent : public TObject {
 
@@ -207,6 +208,8 @@ public:
   virtual Float_t        GetVZEROEqMultiplicity(Int_t /* i */) const {return -1;}
   virtual void           SetVZEROEqFactors(Float_t /* factors */[64]) const {return;}
   virtual AliVZDC   *GetZDCData() const = 0;
+
+  virtual AliVAD *GetADData() const { return NULL;}  
 
   virtual Int_t GetNumberOfTrdTracks() const { return 0; }
   virtual AliVTrdTrack* GetTrdTrack(Int_t /* iTrack */) const { return 0x0; }

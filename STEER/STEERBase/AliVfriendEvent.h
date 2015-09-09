@@ -5,6 +5,7 @@
 #include "TObject.h"
 #include "AliVMisc.h"
 class AliVfriendTrack;
+class AliVVZEROfriend;
 
 //_____________________________________________________________________________
 class AliVfriendEvent: public TObject {
@@ -22,7 +23,7 @@ public:
   virtual const AliVfriendTrack *GetTrack(Int_t /*i*/) const = 0;
   virtual Int_t GetEntriesInTracks() const = 0;
 
-  // AliESDVZEROfriend *GetVZEROfriend();
+  AliVVZEROfriend* GetVZEROfriend() {return NULL;}
   // AliESDTZEROfriend *GetTZEROfriend();
 
   virtual void Ls() const = 0;

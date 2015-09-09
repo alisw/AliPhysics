@@ -10,9 +10,9 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TObject.h>
+#include "AliVVZEROfriend.h"
 
-class AliESDVZEROfriend: public TObject {
+class AliESDVZEROfriend: public AliVVZEROfriend {
   public :
     AliESDVZEROfriend();
     virtual ~AliESDVZEROfriend();
