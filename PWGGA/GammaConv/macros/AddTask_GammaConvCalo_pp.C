@@ -547,7 +547,7 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 		eventCutArray[ 2] = "00085113"; photonCutArray[ 2] = "00200009327000008250400000"; clusterCutArray[2] = "1111121063032230000"; mesonCutArray[2] = "0163103100000010"; // NonLinearity LHC11a ConvCalo
 		eventCutArray[ 3] = "00085113"; photonCutArray[ 3] = "00200009327000008250400000"; clusterCutArray[3] = "1111122063032230000"; mesonCutArray[3] = "0163103100000010"; // NonLinearity LHC11a Calo
 
-	// LHC13g variations EG2 cut	
+	// LHC13g variations EG1 cut
 	} else if (trainConfig == 82){ //EMCAL minEnergy variation
 		eventCutArray[ 0] = "00083113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "1111121063012230000"; mesonCutArray[0] = "0163103100000010"; //0.2 GeV/c
 		eventCutArray[ 1] = "00083113"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "1111121063022230000"; mesonCutArray[1] = "0163103100000010"; //0.3 GeV/c
