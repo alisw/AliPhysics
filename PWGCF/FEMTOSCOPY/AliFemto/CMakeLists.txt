@@ -95,6 +95,7 @@ set(SRCS
   AliFemtoBetaTPairCut.cxx
   AliFemtoCutMonitorPairBetaT.cxx
   AliFemtoCutMonitorXi.cxx
+  AliFemtoEventReaderAODKinematicsChain.cxx
   )
 
 # Headers from sources
