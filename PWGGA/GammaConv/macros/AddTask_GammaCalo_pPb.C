@@ -119,13 +119,13 @@ void AddTask_GammaCalo_pPb(
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 2;
 	// change to 1 cuts per cutselection
-	if (trainConfig == 7 	|| trainConfig == 8 	|| trainConfig == 32 	|| trainConfig == 33 )
+	if (trainConfig == 7 	|| trainConfig == 8 	|| trainConfig == 32 	|| trainConfig == 33 || trainConfig == 44)
 		numberOfCuts = 1;
 	// change to 3 cuts per cutselection
-	if (trainConfig == 14)
+	if (trainConfig == 14 || trainConfig == 42)
 		numberOfCuts = 3;
 	// change to 4 cuts per cutselection
-	if (trainConfig == 9 	|| trainConfig == 10	|| trainConfig == 11	|| trainConfig == 12 	|| trainConfig == 13 )
+	if (trainConfig == 9 	|| trainConfig == 10	|| trainConfig == 11	|| trainConfig == 12 	|| trainConfig == 13 || trainConfig == 40 || trainConfig == 41 || trainConfig == 43)
 		numberOfCuts = 4;
 	// change to 5 cuts per cutselection
 	if (trainConfig == 5 	|| trainConfig == 6 )
@@ -174,7 +174,7 @@ void AddTask_GammaCalo_pPb(
         eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
         eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111182050032230000"; mesonCutArray[3] = "0163103100000050"; // calo
 	} else if (trainConfig == 10){ // non linearity variations EMC7
-        eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
+        	eventCutArray[ 0] = "80052013"; clusterCutArray[0] = "1111100050032230000"; mesonCutArray[0] = "0163103100000050"; // non nonlinearity
 		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111101050032230000"; mesonCutArray[1] = "0163103100000050"; // kSDM
 		eventCutArray[ 2] = "80052013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163103100000050"; // conv calo
 		eventCutArray[ 3] = "80052013"; clusterCutArray[3] = "1111182050032230000"; mesonCutArray[3] = "0163103100000050"; // calo
@@ -197,6 +197,30 @@ void AddTask_GammaCalo_pPb(
 		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050022230000"; mesonCutArray[0] = "0163103100000050"; // standard
 		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050022230000"; mesonCutArray[1] = "0163103100000060"; // 2 EMCal cell diagonals
 		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050022230000"; mesonCutArray[2] = "0163103100000040"; // 0.75 EMCal cell diagonals
+
+	// SYSTEMATIC STUDY NEUTRAl MESON MEASUREMENTS MIKE SAS 10-09-2015
+	} else 	if(trainConfig == 40){ // default cutstring and first set of variations nonlinearity
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
+		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111182050032230000"; mesonCutArray[1] = "0163403100000050"; // calo nonlinearity variation
+		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111183050032230000"; mesonCutArray[2] = "0163403100000050"; // calo nonlinearity variation
+		eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111184050032230000"; mesonCutArray[3] = "0163403100000050"; // calo nonlinearity variation
+	} else 	if(trainConfig == 41){ // second set of variations CLUSTER ====>> SETTING TENDER: M_seed=100MeV
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050012230000"; mesonCutArray[0] = "0163403100000050"; // min energy cluster variation 1	200 MeV
+		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050022230000"; mesonCutArray[1] = "0163403100000050"; // min energy cluster variation 2	300 MeV
+		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050042230000"; mesonCutArray[2] = "0163403100000050"; // min energy cluster variation 3	500 MeV
+		eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111181050052230000"; mesonCutArray[3] = "0163403100000050"; // min energy cluster variation 4	600 MeV
+	} else 	if(trainConfig == 42){ // third set of variations CLUSTER
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032030000"; mesonCutArray[0] = "0163403100000050"; // min/max M02	0<M<0.5
+		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050032200000"; mesonCutArray[1] = "0163403100000050"; // min/max M02	0.1<M<100
+		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050031230000"; mesonCutArray[2] = "0163403100000050"; // min number of cells variation 1	1 cell
+	} else 	if(trainConfig == 43){ // third set of variations MESON
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation	y<0.6
+		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation	y<0.8	
+		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163406100000050"; // alpha meson variation 1 	0<alpha<0.8
+		eventCutArray[ 3] = "80000013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163405100000050"; // alpha meson variation 2	0<alpha<0.75
+	} else 	if(trainConfig == 44){ // default cutstring for different tender settings
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // default
+
 
 	//************************************************ PHOS clusters *************************************************
 	} else if (trainConfig == 31) {	// min energy = 0.3 GeV/c
