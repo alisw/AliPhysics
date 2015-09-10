@@ -86,6 +86,7 @@ set(SRCS
   AliFemtoPairCutRadialDistanceAsymmetric.cxx
   AliFemtoPairCutMergedFraction.cxx
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
+  AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx	
   )
 

@@ -48,7 +48,12 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   fAnalysisType(0),
   fConfigMacro(aConfigMacro),
   fConfigParams(aConfigParams),
-  fVerbose(aVerbose)
+  fVerbose(aVerbose),
+  f1DcorrectionsPions(NULL),
+  f1DcorrectionsKaons(NULL),
+  f1DcorrectionsProtons(NULL),
+  f1DcorrectionsAll(NULL),
+  f1DcorrectionsLambdas(NULL)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -74,7 +79,12 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   fAnalysisType(0),
   fConfigMacro(aConfigMacro),
   fConfigParams(""),
-  fVerbose(aVerbose)
+  fVerbose(aVerbose),
+  f1DcorrectionsPions(NULL),
+  f1DcorrectionsKaons(NULL),
+  f1DcorrectionsProtons(NULL),
+  f1DcorrectionsAll(NULL),
+  f1DcorrectionsLambdas(NULL)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -98,7 +108,12 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   fAnalysisType(aFemtoTask.fAnalysisType),
   fConfigMacro(aFemtoTask.fConfigMacro),
   fConfigParams(aFemtoTask.fConfigParams),
-  fVerbose(aFemtoTask.fVerbose)
+  fVerbose(aFemtoTask.fVerbose),
+  f1DcorrectionsPions(aFemtoTask.f1DcorrectionsPions),
+  f1DcorrectionsKaons(aFemtoTask.f1DcorrectionsKaons),
+  f1DcorrectionsProtons(aFemtoTask.f1DcorrectionsProtons),
+  f1DcorrectionsAll(aFemtoTask.f1DcorrectionsAll),
+  f1DcorrectionsLambdas(aFemtoTask.f1DcorrectionsLambdas)
 {
   // copy constructor
 }
@@ -124,6 +139,12 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   fConfigMacro = aFemtoTask.fConfigMacro;
   fConfigParams = aFemtoTask.fConfigParams;
   fVerbose = aFemtoTask.fVerbose;
+
+  f1DcorrectionsPions = aFemtoTask.f1DcorrectionsPions;
+  f1DcorrectionsKaons = aFemtoTask.f1DcorrectionsKaons;
+  f1DcorrectionsProtons = aFemtoTask.f1DcorrectionsProtons;
+  f1DcorrectionsAll = aFemtoTask.f1DcorrectionsAll;
+  f1DcorrectionsLambdas = aFemtoTask.f1DcorrectionsLambdas;
 
   return *this;
 }
@@ -250,7 +271,26 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
       if (fVerbose)
         cout << "AliAnalysisTaskFemto::AodpidUtil:" << fAODpidUtil << endl;
       femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
-
+      if(f1DcorrectionsPions) {
+	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections pions"<<f1DcorrectionsPions;
+	femtoReaderAOD->Set1DCorrectionsPions(f1DcorrectionsPions);
+      }
+      if(f1DcorrectionsKaons) {
+	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections kaons"<<f1DcorrectionsKaons;
+	femtoReaderAOD->Set1DCorrectionsKaons(f1DcorrectionsKaons);
+      }
+      if(f1DcorrectionsProtons) {
+	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections protons"<<f1DcorrectionsProtons;
+	femtoReaderAOD->Set1DCorrectionsProtons(f1DcorrectionsProtons);
+      }
+      if(f1DcorrectionsAll) {
+	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections all"<<f1DcorrectionsAll;
+	femtoReaderAOD->Set1DCorrectionsAll(f1DcorrectionsAll);
+      }
+      if(f1DcorrectionsLambdas) {
+	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas"<<f1DcorrectionsLambdas;
+	femtoReaderAOD->Set1DCorrectionsLambdas(f1DcorrectionsLambdas);
+      }
       fAODheader = dynamic_cast<AliAODHeader *>(fAOD->GetHeader());
       if (!fAODheader) AliFatal("Not a standard AOD");
       femtoReaderAOD->SetAODheader(fAODheader);
@@ -566,4 +606,31 @@ void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
       AliWarning("Specified AliFemto event reader does *not* inherit from an "
                  "approved AliFemtoEventReader subclass. Will not run femto analysis.\n");\
   }
+}
+void AliAnalysisTaskFemto::Set1DCorrectionsPions(TH1D *h1)
+{
+  if (fVerbose)
+    printf("Reading corrections\n");
+  f1DcorrectionsPions = h1;
+}
+
+void AliAnalysisTaskFemto::Set1DCorrectionsKaons(TH1D *h1)
+{
+  f1DcorrectionsKaons = h1;
+}
+
+
+void AliAnalysisTaskFemto::Set1DCorrectionsProtons(TH1D *h1)
+{
+  f1DcorrectionsProtons = h1;
+}
+
+void AliAnalysisTaskFemto::Set1DCorrectionsAll(TH1D *h1)
+{
+  f1DcorrectionsAll = h1;
+}
+
+void AliAnalysisTaskFemto::Set1DCorrectionsLambdas(TH1D *h1)
+{
+  f1DcorrectionsLambdas = h1;
 }
