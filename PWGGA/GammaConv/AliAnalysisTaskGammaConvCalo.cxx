@@ -2945,7 +2945,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 							
 						} else if(particle->GetPdgCode() == 221){
 							fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Eta with gamma in acc
-							fHistoMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt()*fWeightJetJetMC); // MC Eta with gamma in acc wo weight
+							fHistoMCEtaWOWeightInAccPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // MC Eta with gamma in acc wo weight
 						}
 					}	
 				}
