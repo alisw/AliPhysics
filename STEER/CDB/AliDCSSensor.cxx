@@ -117,8 +117,9 @@ void AliDCSSensor::Draw(Option_t* option) {
   }
   canvas->cd();
   TGraph * graph = MakeGraph(100);  // memory leak - we can not modify the content - const method
-  graph->Draw(option);              // 
-  //
+  if (graph){
+    graph->Draw(option);              // 
+  }
 }
 
 
