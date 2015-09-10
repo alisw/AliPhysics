@@ -47,6 +47,7 @@
 #include "AliFemtoEventReaderStandard.h"
 #include "AliFemtoEventReaderKinematicsChain.h"
 #include "AliFemtoEventReaderKinematicsChainESD.h"
+#include "AliFemtoEventReaderAODKinematicsChain.h"
 #include "AliFemtoManager.h"
 
 #include "AliESDpid.h"
@@ -77,6 +78,7 @@ public:
   void SetFemtoManager(AliFemtoManager *aManager);
   void SetFemtoReaderKinematics(AliFemtoEventReaderKinematicsChain *aReader);
   void SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinematicsChainESD *aReader);
+  void SetFemtoReaderAODKinematics(AliFemtoEventReaderAODKinematicsChain *aReader);
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);

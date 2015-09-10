@@ -298,6 +298,44 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
     }
   }
 
+ 
+  AliFemtoEventReaderAODKinematicsChain *femtoReaderAODKine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader);
+  if (dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+
+    if (!aodH) {
+      TObject *handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+      if (fVerbose)
+        AliInfo("Has output handler ");
+      if (handler && handler->InheritsFrom("AliAODHandler")) {
+        if (fVerbose)
+          AliInfo("Selected AOD analysis");
+
+        fAOD = ((AliAODHandler *)handler)->GetAOD();
+        fAnalysisType = 2;
+      } else {
+        if (fVerbose)
+          AliWarning("Selected AOD reader but no AOD handler found");
+      }
+    } else {
+      if (fVerbose)
+        AliInfo("Selected AOD analysis");
+      fAnalysisType = 2;
+
+      fAOD = aodH->GetEvent();
+
+      fAODpidUtil = aodH->GetAODpidUtil(); //correct way
+      if (fVerbose)
+        cout << "AliAnalysisTaskFemto::AodpidUtil:" << fAODpidUtil << endl;
+      femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
+    
+      fAODheader = dynamic_cast<AliAODHeader *>(fAOD->GetHeader());
+      if (!fAODheader) AliFatal("Not a standard AOD");
+      femtoReaderAOD->SetAODheader(fAODheader);
+
+    }
+  }
+
   if ((!fAOD) && (!fESD)) {
     if (fVerbose)
       AliWarning("Wrong analysis type: Only ESD and AOD types are allowed!");
@@ -562,6 +600,12 @@ void AliAnalysisTaskFemto::SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinema
     printf("Selecting Femto reader for Kinematics (Monte Carlo) information + ESD\n");
   fReader = aReader;
 }
+void AliAnalysisTaskFemto::SetFemtoReaderAODKinematics(AliFemtoEventReaderAODKinematicsChain *aReader)
+{
+  if (fVerbose)
+    printf("Selecting Femto reader for AOD kinematics (Monte Carlo) information (from AOD)\n");
+  fReader = aReader;
+}
 //________________________________________________________________________
 void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
 {
@@ -600,7 +644,11 @@ void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
   }
   else if (dynamic_cast<AliFemtoEventReaderKinematicsChainESD*>(eventReader) != NULL) {
     SetFemtoReaderKinematicsESD((AliFemtoEventReaderKinematicsChainESD *) eventReader);
+  }  
+  else if (dynamic_cast<AliFemtoEventReaderAODKinematicsChain*>(eventReader) != NULL) {
+    SetFemtoReaderAODKinematics((AliFemtoEventReaderAODKinematicsChain *) eventReader);
   }
+
   else {
     if (fVerbose)
       AliWarning("Specified AliFemto event reader does *not* inherit from an "
