@@ -45,7 +45,7 @@ class AliAnalysisTaskSE;
 
 class AliAnalysisTaskDiJetCorrelationsAllb2b : public AliAnalysisTaskSE
 {
-
+    
 public:
     
     AliAnalysisTaskDiJetCorrelationsAllb2b();
@@ -71,25 +71,28 @@ public:
     virtual void    SetVarCentBin(Bool_t varCbin=kTRUE){fuseVarCentBins= varCbin;}
     virtual void    SetVarPtBin(Bool_t varPtbin=kTRUE){fuseVarPtBins= varPtbin;}
     
-            void    SetCorr2plus1or1plus1(Bool_t twoplus1){ftwoplus1 = twoplus1;}
-            //void    SetEffCorrection(TH3F *hEff){fThnEff = hEff;}
-            void    SetAlphaAngle(Double_t alpha){fAlpha = alpha;}
-            void    SetBkgSE(Bool_t BkgSE){fBkgSE = BkgSE;}
-            void    SetEfficiencyWeightMap(THnF* hEff){fThnEff = hEff;}
+    void    SetCorr2plus1or1plus1(Bool_t twoplus1){ftwoplus1 = twoplus1;}
+    //void    SetEffCorrection(TH3F *hEff){fThnEff = hEff;}
+    void    SetAlphaAngle(Double_t alpha){fAlpha = alpha;}
+    void    SetBkgSE(Bool_t BkgSE){fBkgSE = BkgSE;}
+    void    SetEfficiencyWeightMap(THnF* hEff){fThnEff = hEff;}
+    void    SetResonanceCut(Bool_t resCut){fCutResonances = resCut;}
+    void    SetConversionCut(Bool_t conversionCut){fCutConversions = conversionCut;}
+    void    SetTwoTrackEfficiencyCut(Bool_t TTRcut){ftwoTrackEfficiencyCut = TTRcut;}
     
-   
+    
     
 private:
     AliAnalysisTaskDiJetCorrelationsAllb2b(const AliAnalysisTaskDiJetCorrelationsAllb2b &source);
     AliAnalysisTaskDiJetCorrelationsAllb2b& operator=(const AliAnalysisTaskDiJetCorrelationsAllb2b& source);
     
-   
+    
     void DefineHistoNames();
     //Double_t GetTrackbyTrackEffValue(AliAODTrack* track, Double_t CentrOrMult, TH3F *h);
-
+    
     Bool_t ConversionResonanceCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, TH2F*fControlConvResT, TH1F* fHistTCorrTrack);
     Bool_t TwoTrackEfficiencyCut(Double_t refmaxpT, Double_t phiMaxpT, Double_t etaMaxpT, Double_t Charge, AliAODTrack* AodTracks, Float_t bSigntmp);
- 
+    
     TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
     
     Double_t GetTrackWeight(Double_t eta, Double_t pt, Double_t CentrOrMult, Double_t zVertex);
@@ -111,7 +114,7 @@ private:
     }
     
     //______________________________|  Mass Squared
-    Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2){        
+    Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2){
         //calculate inv ass squared
         Float_t tantheta1 = 1e10;
         if (eta1 < -1e-10 || eta1 > 1e-10){
@@ -135,7 +138,7 @@ private:
     Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2){
         
         // calculate inv mass squared approximately
-        Float_t tantheta1 = 1e10;        
+        Float_t tantheta1 = 1e10;
         if (eta1 < -1e-10 || eta1 > 1e-10){
             Float_t expTmp = 1.0-eta1+eta1*eta1/2-eta1*eta1*eta1/6+eta1*eta1*eta1*eta1/24;
             tantheta1 = 2.0 * expTmp / ( 1.0 - expTmp*expTmp);
@@ -164,7 +167,7 @@ private:
             cosDeltaPhi = -(deltaPhi - TMath::Pi()/2) + 1.0/6 * TMath::Power((deltaPhi - TMath::Pi()/2), 3);
         else
             cosDeltaPhi = -1.0 + 1.0/2.0*(deltaPhi - TMath::Pi())*(deltaPhi - TMath::Pi()) - 1.0/24.0 * TMath::Power(deltaPhi - TMath::Pi(), 4);
-                
+        
         Float_t mass2 = m0_1 * m0_1 + m0_2 * m0_2 + 2 * ( TMath::Sqrt(e1squ * e2squ) - ( pt1 * pt2 * ( cosDeltaPhi + 1.0 / tantheta1 / tantheta2 ) ) );
         //   Printf(Form("%f %f %f %f %f %f %f %f %f", pt1, eta1, phi1, pt2, eta2, phi2, m0_1, m0_2, mass2));
         return mass2;
@@ -195,7 +198,7 @@ private:
         return kTRUE;
     }
     
-   //______________________________| Mixed Event Pool
+    //______________________________| Mixed Event Pool
     Bool_t DefineMixedEventPoolpp(){
         Int_t  NofCentBins  = 2;
         Double_t MBins[]={0,35,250.};
@@ -219,7 +222,7 @@ private:
         return kTRUE;
     }
     
-  
+    
     //______________________________| All Used Ojects
     Bool_t    ftwoplus1;
     Bool_t    fSetSystemValue;
@@ -246,14 +249,14 @@ private:
     Bool_t    fuseVarPtBins;
     Double_t  fAlpha;
     Bool_t    fBkgSE;
-  
+    
     TH1F     *fHistNEvents;
     TH1F     *fHistCent;
     TH1F     *fHistT1CorrTrack;
     TH1F     *fHistT2CorrTrack;
     TList    *fOutputQA;   //!QA Output list
     TList    *fOutputCorr;//!corr Output list
-   
+    
     THnF *fThnEff;// eff histogram
     //TH3F     *fThnEff_clone; //!
     
@@ -263,7 +266,7 @@ private:
     Int_t  fMEMaxPoolEvent;
     Int_t  fMEMinTracks;
     Int_t  fMEMinEventToMix;
-
+    
     TH1F *fHistQA[9];//! QA histos
     TH1F *fHistTrigDPhi;//!dphi between T1 and T2
     TH2F *fControlConvResT1;//!control res histo T1
@@ -279,7 +282,7 @@ private:
     
     
     
-
+    
     ClassDef(AliAnalysisTaskDiJetCorrelationsAllb2b, 1); // example of analysis
 };
 
