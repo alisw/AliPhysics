@@ -18,20 +18,23 @@
 //-------------------------------------------------------------------------
 
 /*
-  See: 
+  Related task: https://alice.its.cern.ch/jira/browse/ATO-193
+
+  Algorithm secription - see: 
   Kernel_smoother: Local polynomial regression   
   http://en.wikipedia.org/w/index.php?title=Kernel_smoother&oldid=627785784
+  
 
   Formally, the local polynomial regression is computed by solving a weighted least square problem.
   Weights are provided as a width of the gausian kernel. 
   Local fit parameters are computed on the grid defined by axis set defiend by THn.
-  For example use please check unit test:
+  For example use please check UnitTest:
   .L $ALICE_ROOT/../src/STAT/test/AliNDLocalRegressionTest.C+
   //
   Init:
-
   AliNDLocalRegression *pfitNDIdeal=0; 
   pfitNDIdeal->SetHistogram((THn*)(hN->Clone()));
+  pfitNDIdeal->SetCuts(3,0.8,1);                  // outlier rejection setting see /AliNDLocalRegressionTest.C:UnitTestGaussNoisePlusOutliers() for motivation
   pfitNDIdeal->MakeFit(treeIn, "val:err", "xyz0:xyz1","Entry$%2==1", "0.05:0.05","2:2",0.001);
 
   Usage: 
@@ -46,11 +49,11 @@
 
 
   To do:
-     0.) Current imlementation/interface differnt thanTMVA interface -> use more common?
-     1.) Compare TMVA classes for local regression 
-     2.) Statistical error of the local interpolation ignores Gaussian kernel weights 
-         errors are overestimated
- 
+     1.) Statistical error of the local interpolation ignores Gaussian kernel weights 
+         errors are overestimated - find a proper mathematical formula to estimate statistical error of estimator
+     2.) Implent regularization for smoothing  - requesting approximate smoothnes in values and derivative
+     
+
   author: marian.ivanov@cern.ch
 */
 
