@@ -80,6 +80,8 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fOnlySingleMatches(kFALSE),
   fCheckTrackColl(kTRUE),
   fParticleLevel(kFALSE),
+  fUseExchangeContainer(kTRUE),
+  fAliEmcalParticleMode(kFALSE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
@@ -92,7 +94,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
 }
 
 //_______________________________________________________________________________
-AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const char* name, AliRDHFCuts* cuts, ECandidateType cand) :
+AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const char* name, AliRDHFCuts* cuts, ECandidateType cand, Bool_t useExchCont) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fCuts(cuts),
   fCandidateType(cand),
@@ -121,6 +123,8 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fOnlySingleMatches(kFALSE),
   fCheckTrackColl(kTRUE),
   fParticleLevel(kFALSE),
+  fUseExchangeContainer(useExchCont),
+  fAliEmcalParticleMode(kFALSE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
@@ -130,7 +134,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
 {
   // Constructor.
   
-  DefineInput(1, TClonesArray::Class());
+  if (fUseExchangeContainer) DefineInput(1, TClonesArray::Class());
   DefineOutput(2, AliRDHFCuts::Class()); // my cuts
 
   if (fCandidateType == kDstartoKpipi) {
@@ -237,6 +241,8 @@ void AliAnalysisTaskDmesonJetCorrelations::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskDmesonJetCorrelations::IsEventSelected()
 {
   // Return true if the event is selected.
+
+  if (!fAodEvent) return kTRUE;
   
   Bool_t iseventselected = kFALSE;
 
@@ -416,8 +422,15 @@ void AliAnalysisTaskDmesonJetCorrelations::DoJetLoop()
 void AliAnalysisTaskDmesonJetCorrelations::DoDmesonLoop()
 {
   // Run the loop over the D meson candidates.
-  
+
   const Int_t nDcand = fCandidateArray->GetEntriesFast();
+
+  Int_t pdgCode = 421;
+  TString recoDecayClassName("AliAODRecoDecayHF2Prong");
+  if (fCandidateType == kDstartoKpipi) {
+    pdgCode = 413;
+    recoDecayClassName = "AliAODRecoCascadeHF";
+  }
 
   TArrayD matchingLevel(5);
   TList matchedJets;
@@ -429,8 +442,28 @@ void AliAnalysisTaskDmesonJetCorrelations::DoDmesonLoop()
   AliDebug(2,"Starting D meson candidate loop");
   for (Int_t icand = 0; icand < nDcand; icand++) {
     AliDebug(2,Form("D meson candidate %d", icand));
-    AliVParticle* HFcand = static_cast<AliVParticle*>(fCandidateArray->At(icand));
+    AliVParticle* vpart = static_cast<AliVParticle*>(fCandidateArray->At(icand));
+    if (!vpart) continue;
+
+    AliVParticle* HFcand = 0;
+    if (fAliEmcalParticleMode) {
+      AliEmcalParticle* emcpart = static_cast<AliEmcalParticle*>(vpart);
+      HFcand = emcpart->GetTrack();
+    }
+    else {
+      HFcand = vpart;
+    }
     if (!HFcand) continue;
+
+    if (!fUseExchangeContainer) {
+      if (fParticleLevel) {
+        AliAODMCParticle* part = static_cast<AliAODMCParticle*>(HFcand);
+        if (TMath::Abs(part->PdgCode()) != pdgCode) continue;
+      }
+      else {
+        if (!HFcand->InheritsFrom(recoDecayClassName)) continue;
+      }
+    }
 
     // Look for D-jet correlation
     Int_t n = FindMatchedJet(fMatchingType, HFcand, matchingLevel, matchedJets);
@@ -670,36 +703,44 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
 
   if (fInhibitTask) return;
 
-  if (!fCuts) {
-    AliError(Form("%s: Cuts not provided. Task will not run.", GetName())); 
-    fInhibitTask = kTRUE;
-    return;
-  }
-
-  // Load the event
-  fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
-
-  if (!fAodEvent) {
-    if (AODEvent() && IsStandardAOD()) {
-      
-      // In case there is an AOD handler writing a standard AOD, use the AOD 
-      // event in memory rather than the input (ESD) event.    
-      fAodEvent = dynamic_cast<AliAODEvent*>(AODEvent());
+  if (!fParticleLevel) {
+    if (!fCuts) {
+      AliError(Form("%s: Cuts not provided. Task will not run.", GetName()));
+      fInhibitTask = kTRUE;
+      return;
     }
-      
+
+    // Load the event
+    fAodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+
+    if (!fAodEvent) {
+      if (AODEvent() && IsStandardAOD()) {
+
+        // In case there is an AOD handler writing a standard AOD, use the AOD
+        // event in memory rather than the input (ESD) event.
+        fAodEvent = dynamic_cast<AliAODEvent*>(AODEvent());
+      }
+
+    }
+
+    if (!fAodEvent) {
+      AliError(Form("This task need an AOD event! Task '%s' will be disabled!", GetName()));
+      fInhibitTask = kTRUE;
+      return;
+    }
   }
-  
-  if (!fAodEvent) {
-    AliError(Form("This task need an AOD event! Task '%s' will be disabled!", GetName()));
+
+  if (fAliEmcalParticleMode && fUseExchangeContainer) {
+    AliError(Form("%s: AliEmcalParticle mode is incompatible with using the exchange container.", GetName()));
     fInhibitTask = kTRUE;
     return;
   }
-  
-  fCandidateArray = dynamic_cast<TClonesArray*>(GetInputData(1));
-  if (fCandidateArray) {
-    TString objname(fCandidateArray->GetClass()->GetName());
-    TClass cls(objname);
-    TString className;
+
+  TString className;
+  if (fAliEmcalParticleMode) {
+    className = "AliEmcalParticle";
+  }
+  else {
     if (fParticleLevel) {
       className = "AliAODMCParticle";
     }
@@ -711,27 +752,47 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
         className = "AliAODRecoCascadeHF";
       }
       else {
-        AliError(Form("%s: Candidate type %d not recognized!", 
-                      GetName(), (Int_t)fCandidateType)); 
+        AliError(Form("%s: Candidate type %d not recognized!",
+                      GetName(), (Int_t)fCandidateType));
         fCandidateArray = 0;
         fInhibitTask = kTRUE;
         return;
       }
     }
+  }
+
+  AliAnalysisTaskEmcalJet::ExecOnce();
+
+  if (fUseExchangeContainer) {
+    fCandidateArray = dynamic_cast<TClonesArray*>(GetInputData(1));
+  }
+  else {
+    AliParticleContainer* partCont = GetParticleContainer(0);
+    if (!partCont) {
+      AliError(Form("%s: Unable to find the candidate array in input slot 1.", GetName()));
+      fInhibitTask = kTRUE;
+      return;
+    }
+    fCandidateArray = partCont->GetArray();
+  }
+
+  if (fCandidateArray) {
+    TString objname(fCandidateArray->GetClass()->GetName());
+    TClass cls(objname);
+
     if (!cls.InheritsFrom(className)) {
-      AliError(Form("%s: Objects of type %s in %s are not inherited from %s! Task will not run.", 
-                    GetName(), cls.GetName(), fCandidateArray->GetName(), className.Data())); 
+      AliError(Form("%s: Objects of type %s in %s are not inherited from %s! Task will not run.",
+                    GetName(), cls.GetName(), fCandidateArray->GetName(), className.Data()));
       fCandidateArray = 0;
       fInhibitTask = kTRUE;
       return;
     }
   }
   else {
-    AliError(Form("%s: Unable to find the candidate array in input slot 1.", GetName()));
+    AliError(Form("%s: Unable to find the candidate array.", GetName()));
+    fInhibitTask = kTRUE;
     return;
   }
-  
-  AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
 //_______________________________________________________________________________

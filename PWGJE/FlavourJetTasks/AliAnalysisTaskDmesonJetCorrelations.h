@@ -42,7 +42,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   enum EMatchingStatus { kSingleMatch = 0, kMultipleMatches = 1, kJetNotAccepted = 2, kNotMatched = 3 };
    
   AliAnalysisTaskDmesonJetCorrelations();
-  AliAnalysisTaskDmesonJetCorrelations(const char* name, AliRDHFCuts* cuts, ECandidateType cand);
+  AliAnalysisTaskDmesonJetCorrelations(const char* name, AliRDHFCuts* cuts, ECandidateType cand, Bool_t useExchCont=kFALSE);
   virtual ~AliAnalysisTaskDmesonJetCorrelations();
 
   void SetShowPositionD(Bool_t b = kTRUE)       { fShowPositionD       = b   ; }
@@ -68,6 +68,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetCheckTrackColl(Bool_t b)              { fCheckTrackColl      = b   ; }
   void SetNBinsMass(Int_t n)                    { fNBinsMass           = n   ; }
   void SetParticleLevel(Bool_t s)               { fParticleLevel       = s   ; }
+  void SetAliEmcalParticleMode(Bool_t m)        { fAliEmcalParticleMode= m   ; }
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
 
@@ -128,6 +129,8 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t           fOnlySingleMatches     ; //  Only unambiguosly matched jets are plotted
   Bool_t           fCheckTrackColl        ; //  if true, makes histograms with tracks found in D meson candidates, that are NOT found in the track collection used for jet finding
   Bool_t           fParticleLevel         ; //  set particle level analysis
+  Bool_t           fUseExchangeContainer  ; //  use exchange container for the D candidate list
+  Bool_t           fAliEmcalParticleMode  ; //  use AliEmcalParticle objects in fCandidateArray
 
   AliAODEvent     *fAodEvent                  ; //! AOD event
   TClonesArray    *fCandidateArray            ; //! D meson candidate array
