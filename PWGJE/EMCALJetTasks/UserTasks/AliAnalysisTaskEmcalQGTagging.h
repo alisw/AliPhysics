@@ -58,6 +58,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
+  void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
@@ -102,6 +103,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
+  Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
+
   
   TH2F                                *fh2ResponseUW;
   TH2F                                *fh2ResponseW;
@@ -114,7 +117,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhpTjetpT; //control p[lot fo the recoil analysis
   TH1F                                *fhPt;
   TH1F                                *fhPhi;
-  
+  TH2F                                *fNbOfConstvspT;
 
   TTree           *fTreeObservableTagging;  //Tree with tagging variables subtracted MC or true MC or raw 
 
@@ -122,7 +125,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalQGTagging(const AliAnalysisTaskEmcalQGTagging&);            // not implemented
   AliAnalysisTaskEmcalQGTagging &operator=(const AliAnalysisTaskEmcalQGTagging&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalQGTagging, 4)
+  ClassDef(AliAnalysisTaskEmcalQGTagging, 5)
 };
 #endif
 

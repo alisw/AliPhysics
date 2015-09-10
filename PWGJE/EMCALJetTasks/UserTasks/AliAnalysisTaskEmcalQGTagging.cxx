@@ -67,6 +67,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
+  fOneConstSelectOn(kFALSE),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
   fPhiJetCorr6(0x0), 
@@ -78,6 +79,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
 {
@@ -104,6 +106,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
+  fOneConstSelectOn(kFALSE),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
   fPhiJetCorr6(0x0), 
@@ -115,6 +118,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
   
 {
@@ -200,6 +204,9 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fOutput->Add(fhPt);
   fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
   fOutput->Add(fhPhi);
+  
+  fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
+  fOutput->Add(fNbOfConstvspT);
   
   fOutput->Add(fTreeObservableTagging);
   TH1::AddDirectory(oldStatus);
@@ -389,9 +396,11 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef) || (fJetShapeType==kDetEmbPart) || (fJetShapeType==kDetEmbPartPythia))
         if (ptSubtracted < fPtThreshold) continue;
      
-     
-      if ((fCentSelectOn==kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
+     if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jet1,0), ptSubtracted);
       
+      if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
+
+    
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
       //fShapesVar[3] = GetJetMass(jet1,0);
