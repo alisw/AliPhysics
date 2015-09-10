@@ -77,12 +77,10 @@ public:
   }
 
   const AliFlatESDFriendTrack  *GetFirstTrackEntry() const { 
-    if( fTracksPointer<0 ) return NULL;
     return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + fTracksPointer );
   }
  
   AliFlatESDFriendTrack  *GetFirstTrackEntryNonConst(){ 
-    if( fTracksPointer<0 ) return NULL;
     return reinterpret_cast<AliFlatESDFriendTrack*>( fContent + fTracksPointer );
   }
  
