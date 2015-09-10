@@ -1136,8 +1136,8 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   }
   
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliEPSelectionTask *eptask = 0x0;
-  eptask = dynamic_cast<AliEPSelectionTask *>(man->GetTask("EventplaneSelection"));
+//   AliEPSelectionTask *eptask = 0x0;
+//   eptask = dynamic_cast<AliEPSelectionTask *>(man->GetTask("EventplaneSelection"));
   
   if( (GetEventplaneSelector().CompareTo("Q") == 0) && !epQvector )
   {
@@ -1331,26 +1331,26 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dX = epQvector->X();
 	  dY = epQvector->Y();
 	  
-	  if(eptask)
-	  {
-		Double_t rms[2] ={1.,1.};
-		eptask->Recenter(1, rms);
-		
-		Double_t dContribX = (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
-		Double_t dContribY = (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
-		// 		dX -= (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
-		//         dY -= (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
-		dX -= dContribX;
-		dY -= dContribY;
-		iSubtractedTracks++;
-		if(track->GetID()>0) 
-		{
-		  if( (dContribX != 0) && (dContribY != 0) ) {
-			fEPContributionDifference->Fill( (dContribX-ep->GetQContributionX(track))/dContribX, (dContribY-ep->GetQContributionY(track))/dContribY);
-		  }
-		}
-	  }
-	  else if( (dX>-1000) && (dY>-1000) && (track->GetID()>0) ) // only subtract, if not default and track Id > 0 to avoid crash
+// 	  if(eptask)
+// 	  {
+// 		Double_t rms[2] ={1.,1.};
+// 		eptask->Recenter(1, rms);
+// 		
+// 		Double_t dContribX = (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+// 		Double_t dContribY = (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+// 		// 		dX -= (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
+// 		//         dY -= (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
+// 		dX -= dContribX;
+// 		dY -= dContribY;
+// 		iSubtractedTracks++;
+// 		if(track->GetID()>0) 
+// 		{
+// 		  if( (dContribX != 0) && (dContribY != 0) ) {
+// 			fEPContributionDifference->Fill( (dContribX-ep->GetQContributionX(track))/dContribX, (dContribY-ep->GetQContributionY(track))/dContribY);
+// 		  }
+// 		}
+// 	  }
+	  if( (dX>-1000) && (dY>-1000) && (track->GetID()>0) ) // only subtract, if not default and track Id > 0 to avoid crash
 	  {
 		dX -= ep->GetQContributionX(track);
 		dY -= ep->GetQContributionY(track);
