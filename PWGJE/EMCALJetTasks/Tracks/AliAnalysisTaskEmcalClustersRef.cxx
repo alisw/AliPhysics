@@ -78,7 +78,7 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
   CreateEnergyBinning(energybinning);
   fHistos = new AliEMCalHistoContainer("Ref");
   TString triggers[17] = {
-      "MB", "EMC7"
+      "MB", "EMC7",
       "EJ1", "EJ2", "EG1", "EG2",
       "EMC7excl","EG1excl", "EG2excl", "EJ1excl", "EJ2excl",
       "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"
