@@ -91,18 +91,16 @@ bool AliFemtoBetaTPairCut::Pass(const AliFemtoPair* pair) {
   bool pairpass = true;
 
   // Calculate transverse momentum of the pair:
-  double pt1 = pair->Track1()->Track()->Pt();
-  double pt2 = pair->Track2()->Track()->Pt();
-  double pTpair = TMath::Sqrt(pt1*pt1 + pt2*pt2);
-  // Calculate energy of the pair:
   double px1 = pair->Track1()->Track()->P().x();
   double px2 = pair->Track2()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
   double py2 = pair->Track2()->Track()->P().y();
-  double pz1 = pair->Track1()->Track()->P().z();
-  double pz2 = pair->Track2()->Track()->P().z();
   double pxpair = px1 + px2;
   double pypair = py1 + py2;
+  double pTpair = TMath::Sqrt(pxpair*pxpair + pypair*pypair);
+  // Calculate energy of the pair:
+  double pz1 = pair->Track1()->Track()->P().z();
+  double pz2 = pair->Track2()->Track()->P().z();
   double pzpair = pz1 + pz2;
   double p1 = TMath::Sqrt(px1*px1 + py1*py1 + pz1*pz1);
   double p2 = TMath::Sqrt(px2*px2 + py2*py2 + pz2*pz2);
