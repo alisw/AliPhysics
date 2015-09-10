@@ -83,6 +83,11 @@ public:
 
   void SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints);
   void SetShiftedPositions(const AliAODTrack *track ,const Float_t bfield, Float_t posShifted[3], const Double_t radius=1.25);
+  void Set1DCorrectionsPions(TH1D *h1);
+  void Set1DCorrectionsKaons(TH1D *h1);
+  void Set1DCorrectionsProtons(TH1D *h1);
+  void Set1DCorrectionsAll(TH1D *h1);
+  void Set1DCorrectionsLambdas(TH1D *h1);
 
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
@@ -132,6 +137,11 @@ private:
   Bool_t fFlatCent;        ///< Boolean determining if the user should flatten the centrality
   Bool_t fPrimaryVertexCorrectionTPCPoints; ///< Boolean determining if the reader should shift all TPC points to be relative to event vertex
   Double_t fShiftPosition; ///< radius at which the spatial position of the track in the shifted coordinate system is calculated
+  TH1D *f1DcorrectionsPions;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsKaons;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsProtons;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderAOD, 12)

@@ -77,6 +77,11 @@ public:
   void SetFemtoManager(AliFemtoManager *aManager);
   void SetFemtoReaderKinematics(AliFemtoEventReaderKinematicsChain *aReader);
   void SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinematicsChainESD *aReader);
+  void Set1DCorrectionsPions(TH1D *h1);
+  void Set1DCorrectionsKaons(TH1D *h1);
+  void Set1DCorrectionsProtons(TH1D *h1);
+  void Set1DCorrectionsAll(TH1D *h1);
+  void Set1DCorrectionsLambdas(TH1D *h1);
 
 private:
   AliESDEvent          *fESD;          //!<! ESD object
@@ -93,6 +98,11 @@ private:
   TString              fConfigMacro;   ///<  Config macro location
   TString              fConfigParams;  ///<  Config macro parameters
   Bool_t               fVerbose;
+  TH1D                 *f1DcorrectionsPions; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsKaons; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsProtons; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsAll; //file with corrections, pT dependant
+  TH1D                 *f1DcorrectionsLambdas; //file with corrections, pT dependant
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskFemto, 3);
@@ -114,7 +124,12 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   fAnalysisType(0),
   fConfigMacro(),
   fConfigParams(),
-  fVerbose(kTRUE)
+  fVerbose(kTRUE),
+  f1DcorrectionsPions(NULL),
+  f1DcorrectionsKaons(NULL),
+  f1DcorrectionsProtons(NULL),
+  f1DcorrectionsAll(NULL),
+  f1DcorrectionsLambdas(NULL)
 {
   /* no-op */
 }

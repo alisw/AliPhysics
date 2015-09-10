@@ -39,6 +39,7 @@ AliFemtoV0::AliFemtoV0():
   fTOFProtonTimePos(0), fTOFPionTimePos(0), fTOFKaonTimePos(0),
   fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
   fImpactDprimPos(-999), fImpactDweakPos(-999), fImpactDmatPos(-999), fImpactDprimNeg(-999), fImpactDweakNeg(-999), fImpactDmatNeg(-999),
+  fCorrLam(0.0),
   fHiddenInfo(NULL)
 {
   // Default empty constructor
@@ -106,6 +107,7 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fImpactDprimPos(v.fImpactDprimPos), fImpactDweakPos(v.fImpactDweakPos),
   fImpactDmatPos(v.fImpactDmatPos), fImpactDprimNeg(v.fImpactDprimNeg),
   fImpactDweakNeg(v.fImpactDweakNeg), fImpactDmatNeg(v.fImpactDmatNeg),
+  fCorrLam(v.fCorrLam),
   fHiddenInfo( v.fHiddenInfo ? v.fHiddenInfo->Clone() : NULL)  /***/
 {
   // copy constructor
@@ -223,6 +225,8 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
   fImpactDprimNeg = aV0.fImpactDprimNeg;
   fImpactDweakNeg = aV0.fImpactDweakNeg;
   fImpactDmatNeg = aV0.fImpactDmatNeg;
+
+  fCorrLam =  aV0.fCorrLam;
 
   if (fHiddenInfo) delete fHiddenInfo;
   fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->Clone() : NULL;// GR 11 DEC 02
@@ -362,6 +366,9 @@ void AliFemtoV0::SetHelixPos(const AliFmPhysicalHelixD& h){fHelixPos = h;}// Gae
 const AliFmPhysicalHelixD& AliFemtoV0::HelixPos() const {return fHelixPos;}// Gael 12 Sept 02
 void AliFemtoV0::SetHelixNeg(const AliFmPhysicalHelixD& h){fHelixNeg = h;}// Gael 12 Sept 02
 const AliFmPhysicalHelixD& AliFemtoV0::HelixNeg() const {return fHelixNeg;}// Gael 12 Sept 02
+
+void AliFemtoV0::SetCorrectionLambdas(const double& x){fCorrLam=x;}
+float AliFemtoV0::CorrectionLambda() const {return fCorrLam;}
 
 void AliFemtoV0::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
 bool AliFemtoV0::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }

@@ -129,7 +129,8 @@ public:
   float NegNSigmaTOFPi() const;
   float NegNSigmaTOFP() const;
 
-
+  float CorrectionLambda() const;
+  void SetCorrectionLambdas(const double& x);
 
   bool OnFlyStatusV0() const;
 
@@ -417,6 +418,8 @@ protected:
   float fImpactDprimNeg;  // impact parameter in xy plane
   float fImpactDweakNeg;  // impact parameter in xy plane
   float fImpactDmatNeg;   // impact parameter in xy plane
+
+  float fCorrLam;    //corrections for lambda particles
 
   /* Th stuff */
   // Fab private : add mutable

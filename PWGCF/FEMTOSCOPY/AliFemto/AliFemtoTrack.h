@@ -80,6 +80,11 @@ public:
   double YatDCA() const;
   double ZatDCA() const;
 
+  float CorrectionPion() const;
+  float CorrectionKaon() const;
+  float CorrectionProton() const;
+  float CorrectionAll() const;
+
   const TBits& TPCclusters() const;
   const TBits& TPCsharing()  const;
 
@@ -167,6 +172,10 @@ public:
   void SetYatDCA(const double& x);
   void SetZatDCA(const double& x);
 
+  void SetCorrectionPion(const double& x);
+  void SetCorrectionKaon(const double& x);
+  void SetCorrectionProton(const double& x);
+  void SetCorrectionAll(const double& x);
 
   void SetTrueMomentum(AliFemtoThreeVector *aMom);
   void SetTrueMomentum(const AliFemtoThreeVector& aMom);
@@ -281,6 +290,12 @@ public:
 
   double fVertex[3];
 
+  //Corrections related information
+  float fCorrPi;     //corrections for pion hypothesis
+  float fCorrK;      //corrections for kaon hypothesis
+  float fCorrP;      //corrections for proton hypothesis
+  float fCorrAll;    //corrections for particles without PID
+
 };
 
 //inline const float* AliFemtoTrack::NSigma() const
@@ -290,5 +305,9 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
+
+
+
+
 
 #endif

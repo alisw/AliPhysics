@@ -74,7 +74,12 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE),
   fShiftPosition(0.),
-  fPrimaryVertexCorrectionTPCPoints(kFALSE)
+  fPrimaryVertexCorrectionTPCPoints(kFALSE),
+  f1DcorrectionsPions(0),
+  f1DcorrectionsKaons(0),
+  f1DcorrectionsProtons(0),
+  f1DcorrectionsAll(0),
+  f1DcorrectionsLambdas(0)
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -115,7 +120,13 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fDCAglobalTrack(aReader.fDCAglobalTrack),
   fFlatCent(aReader.fFlatCent),
   fShiftPosition(aReader.fShiftPosition),
-  fPrimaryVertexCorrectionTPCPoints(aReader.fPrimaryVertexCorrectionTPCPoints)
+  fPrimaryVertexCorrectionTPCPoints(aReader.fPrimaryVertexCorrectionTPCPoints),
+  f1DcorrectionsPions(aReader.f1DcorrectionsPions),
+  f1DcorrectionsKaons(aReader.f1DcorrectionsKaons),
+  f1DcorrectionsProtons(aReader.f1DcorrectionsProtons),
+  f1DcorrectionsAll(aReader.f1DcorrectionsAll),
+  f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas)
+
 {
   // copy constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -178,6 +189,11 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fFlatCent = aReader.fFlatCent;
   fShiftPosition = aReader.fShiftPosition;
   fPrimaryVertexCorrectionTPCPoints = aReader.fPrimaryVertexCorrectionTPCPoints;
+  f1DcorrectionsPions = aReader.f1DcorrectionsPions;
+  f1DcorrectionsKaons = aReader.f1DcorrectionsKaons;
+  f1DcorrectionsProtons = aReader.f1DcorrectionsProtons;
+  f1DcorrectionsAll = aReader.f1DcorrectionsAll;
+  f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
 
   return *this;
 }
@@ -878,6 +894,28 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
     tFemtoTrack->SetITSHitOnLayer(ii, tAodTrack->HasPointOnITSLayer(ii));
   }
 
+  //Corrections
+  if(f1DcorrectionsPions){
+    tFemtoTrack->SetCorrectionPion(f1DcorrectionsPions->GetBinContent(f1DcorrectionsPions->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionPion(1.0);
+
+  if(f1DcorrectionsKaons){
+    tFemtoTrack->SetCorrectionKaon(f1DcorrectionsKaons->GetBinContent(f1DcorrectionsKaons->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionKaon(1.0);
+
+  if(f1DcorrectionsProtons){
+    tFemtoTrack->SetCorrectionProton(f1DcorrectionsProtons->GetBinContent(f1DcorrectionsProtons->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionProton(1.0);
+
+  if(f1DcorrectionsAll){
+    tFemtoTrack->SetCorrectionAll(f1DcorrectionsAll->GetBinContent(f1DcorrectionsAll->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionAll(1.0);
+
+
   return tFemtoTrack;
 }
 
@@ -936,6 +974,14 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
 
   //tFemtoV0->SetptV0(::sqrt(tAODv0->Pt2V0())); //!
   tFemtoV0->SetptV0(tAODv0->Pt());
+
+  if(f1DcorrectionsLambdas){
+    tFemtoV0->SetCorrectionLambdas(f1DcorrectionsLambdas->GetBinContent(f1DcorrectionsLambdas->FindFixBin(tAODv0->Pt())));
+  }
+  else {
+    tFemtoV0->SetCorrectionLambdas(1.0);
+  }
+
   tFemtoV0->SetptotV0(::sqrt(tAODv0->Ptot2V0()));
   //tFemtoV0->SetptPos(::sqrt(tAODv0->MomPosX()*tAODv0->MomPosX()+tAODv0->MomPosY()*tAODv0->MomPosY()));
   //tFemtoV0->SetptotPos(::sqrt(tAODv0->Ptot2Pos()));
@@ -1931,4 +1977,29 @@ void AliFemtoEventReaderAOD::SetShiftPosition(Double_t dcagt)
 void AliFemtoEventReaderAOD::SetPrimaryVertexCorrectionTPCPoints(bool correctTpcPoints)
 {
   fPrimaryVertexCorrectionTPCPoints = correctTpcPoints;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsPions(TH1D *h1)
+{
+  f1DcorrectionsPions = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsKaons(TH1D *h1)
+{
+  f1DcorrectionsKaons = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsProtons(TH1D *h1)
+{
+  f1DcorrectionsProtons = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsAll(TH1D *h1)
+{
+  f1DcorrectionsAll = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsLambdas(TH1D *h1)
+{
+  f1DcorrectionsLambdas = h1;
 }
