@@ -146,7 +146,7 @@ _nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ
 
 _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
 _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
-_nBins_eta_1(0),      _min_eta_1(0),  _max_eta_1(0),           _width_eta_1(0.1),
+_nBins_eta_1(0),      _min_eta_1(0),  _max_eta_1(0),              _width_eta_1(0.1), //0.1 instead
 
 _nBins_etaPhi_1(0), 
 _nBins_etaPhiPt_1(0),
@@ -895,7 +895,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
   name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 100, -3.5, 3.5, "dcaZ","counts");
-  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, 0.0, 2.5, "dcaXY","counts");
+  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, -3.0, 3.0, "dcaXY","counts");
 
   // name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
@@ -1014,8 +1014,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   int    iVertex, iVertexP1, iVertexP2;
   int    iZEtaPhiPt;
   float  massElecSq = 1.94797849000000016e-02;
-  //double b[2];
-  //double bCov[3];
+  double b[2];
+  double bCov[3];
   const  AliAODVertex*	vertex;
   int    nClus;
   bool   bitOK;
@@ -1069,6 +1069,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float vertexY  = -999;
   float vertexZ  = -999;
   //float vertexXY = -999;
+  float dcaZ     = -999;
+  float dcaXY    = -999;
   float centrality = -999;
   
   if(fAODEvent)
@@ -1151,39 +1153,15 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	}
       _eventAccounting->Fill(3);// count all calls to this function with a valid pointer
       //====================== 
-      
-      //*********************************************************
-       TExMap *trackMap = new TExMap();//Mapping matrix----                                            
-
-      //1st loop track for Global tracks                                                                                
-      for(Int_t i = 0; i < _nTracks; i++)
-	{
-	  AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
-	  if(!aodTrack) {
-	    AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
-	    continue;
-	  }
-	  Int_t gID = aodTrack->GetID();
-	  if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                       
-	  }
-           
-      AliAODTrack* newAodTrack;
-      
-      //Track Loop starts here
       for (int iTrack=0; iTrack< _nTracks; iTrack++)
 	{
 	  AliAODTrack* t = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(iTrack));
-	  if (!t) {
-	    AliError(Form("Could not receive track %d", iTrack));
+	  if(!t) {
+	    AliError(Form("ERROR: Could not retrieve AODtrack %d",iTrack));
 	    continue;
 	  }
-	  
 	  bitOK  = t->TestFilterBit(_trackFilterBit);
 	  if (!bitOK) continue; //128bit or 272bit
-	  
-	  Int_t gID = t->GetID();
-	  newAodTrack = gID >= 0 ?t : dynamic_cast<AliAODTrack*>(fAODEvent->GetTrack(trackMap->GetValue(-1-gID)));
-	  if(!newAodTrack) AliFatal("Not a standard AOD?");
  
 	  q      = t->Charge();
 	  charge = int(q);
@@ -1194,53 +1172,62 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  pz     = t->Pz();
 	  eta    = t->Eta();
 	  dedx   = t->GetTPCsignal();
-	  nClus  = t->GetTPCNcls();	  
+	  nClus  = t->GetTPCNcls();
 	  
+	  if(charge == 0) continue;	  
+	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
+	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;	  
 	  if ( nClus<_nClusterMin ) continue;
 	  	  
 	  //for Global tracks
-	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
-	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
-	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
-	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
-	  
+	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kElectron));
+	  //check only for given momentum
+	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kPion));
+	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kKaon));
+	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kProton));
 	  //nsigma cut to reject electron 
-	  
 	  if(nsigmaelectron  < fNSigmaCut
 	     && nsigmapion   > fNSigmaCut
 	     && nsigmakaon   > fNSigmaCut
 	     && nsigmaproton > fNSigmaCut ) continue;
 	  
+	  /*Double_t pos[3];
+          t->GetXYZ(pos);
 
-	  if(charge == 0) continue;
-	  // Kinematics cuts used                                                                                        
-	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
-	  if( eta < -1.0 || eta > 1.0) continue;
+          Double_t DCAX = pos[0] - vertexX;
+          Double_t DCAY = pos[1] - vertexY;
+          Double_t DCAZ = pos[2] - vertexZ;
+
+          Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+
+          if (DCAZ     <  _dcaZMin ||
+              DCAZ     >  _dcaZMax ||
+              DCAXY    >  _dcaXYMax ) continue;*/	  
+
+
+	  if (t->PropagateToDCA(vertex, _field, 100., b, bCov))
+	    {
+	      dcaXY = b[0];
+	      dcaZ  = b[1];
+	    }
+	  else
+	    {
+	      dcaXY = -999999;
+	      dcaZ  = -999999;
+	      }
 	  
-	  Double_t pos[3];
-	  newAodTrack->GetXYZ(pos);
-
-	  Double_t DCAX = pos[0] - vertexX;
-	  Double_t DCAY = pos[1] - vertexY;
-	  Double_t DCAZ = pos[2] - vertexZ;
-	  	
-	  Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
- 	  
-	  if (DCAZ     <  _dcaZMin || 
-	      DCAZ     >  _dcaZMax ||
-	      DCAXY    >  _dcaXYMax ) continue; 
+	  if (abs(dcaXY) > _dcaXYMax || abs(dcaZ) > _dcaZMax) continue;
 	  
 	  //==== QA ===========================
-	  //_dcaz->Fill(DCAZ);
-	  //_dcaxy->Fill(DCAXY);
-	  //_etadis->Fill(eta);
-	  //_phidis->Fill(phi);
+	  _dcaz->Fill(dcaZ);
+	  _dcaxy->Fill(dcaXY);
+	  // _etadis->Fill(eta);
+	  _phidis->Fill(phi);
 	  //===================================
 	  //*************************************************
 	  	  
 	  //Particle 1
-	  if (_requestedCharge_1 == charge && eta > _min_eta_1 && eta < _max_eta_1 &&
-	      dedx >=  _dedxMin && dedx < _dedxMax)
+	  if (_requestedCharge_1 == charge && dedx >= _dedxMin && dedx < _dedxMax)
 	    {
 	      iPhi   = int( phi/_width_phi_1);
 	      
@@ -1310,13 +1297,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 		}
 	    }
 	  
-	  if (!_sameFilter && _requestedCharge_2 == charge && eta > _min_eta_2 && 
-	      eta < _max_eta_2 && dedx >=  _dedxMin && dedx < _dedxMax)
-	       
+	  if (!_sameFilter && _requestedCharge_2 == charge && dedx >=  _dedxMin && dedx < _dedxMax)
 	    {
-	      
 	      iPhi   = int( phi/_width_phi_2);
-	      
 	      if (iPhi<0 || iPhi>=_nBins_phi_2 ) 
 		{
 		  AliWarning("AliAnalysisTaskDptDptCorrelations::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
