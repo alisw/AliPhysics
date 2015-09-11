@@ -1,35 +1,22 @@
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-// AliFemtoKTPairCut - a pair cut which selects pairs based on their       //
-// transverse momentum kT                                                  //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
-/***************************************************************************
- *
- * $Id: AliFemtoDeltaPtPairCut.h,v 1.1.2.1 2007/10/19 13:28:14 akisiel Exp $
- *
- * Author: Adam Kisiel, Ohio State University, kisiel@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a cut to remove "shared" and "split" pairs
- *
- ***************************************************************************
- *
- *
- **************************************************************************/
+///
+/// \file AliFemtoDeltaPtPairCut.h
+/// \author Adam Kisiel, Ohio State University, kisiel@mps.ohio-state.edu
+/// \date Oct 18, 2007
+///
+/// \class AliFemtoDeltaPtPairCut
+/// \brief A pair cut which passes pairs solely on the difference of the
+///        magnitude of their transverse momentum (pT)
+///
+/// The goal of this class is to remove "shared" and "split" pairs
+///
 
 #ifndef ALIFEMTODELTAPTPAIRCUT_H
 #define ALIFEMTODELTAPTPAIRCUT_H
 
-// do I need these lines ?
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
-
 #include "AliFemtoPairCut.h"
+#include <TList.h>
 
-class AliFemtoDeltaPtPairCut : public AliFemtoPairCut{
+class AliFemtoDeltaPtPairCut : public AliFemtoPairCut {
 public:
   AliFemtoDeltaPtPairCut();
   AliFemtoDeltaPtPairCut(double lo, double hi);
@@ -43,16 +30,22 @@ public:
   void SetDeltaPtRange(double ktmin, double ktmax);
   virtual bool Pass(const AliFemtoPair* pair);
 
- protected:
-  Double_t fDeltaPtMin;          // Minimum allowed pair transverse momentum
-  Double_t fDeltaPtMax;          // Maximum allowed pair transverse momentum 
+protected:
+  Double_t fDeltaPtMin; ///< Minimum allowed pair transverse momentum
+  Double_t fDeltaPtMax; ///< Maximum allowed pair transverse momentum
 
 
 #ifdef __ROOT__
-  ClassDef(AliFemtoDeltaPtPairCut, 0)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoDeltaPtPairCut, 0);
+  /// \endcond
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoDeltaPtPairCut::Clone() { AliFemtoDeltaPtPairCut* c = new AliFemtoDeltaPtPairCut(*this); return c;}
+inline AliFemtoPairCut* AliFemtoDeltaPtPairCut::Clone()
+{
+  AliFemtoDeltaPtPairCut* c = new AliFemtoDeltaPtPairCut(*this);
+  return c;
+}
 
 #endif
