@@ -86,7 +86,6 @@ AliFourPion *AddTaskFourPion(
     TH3F *weightHisto2[ktbins][cbins];
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
-	if(FourPionTask->GetCollisionType()!=0 && j>0) continue;
 	for(Int_t q2bin=0; q2bin<2; q2bin++){
 	  TString name = "Weight_Kt_";
 	  name += i;
@@ -95,9 +94,11 @@ AliFourPion *AddTaskFourPion(
 	  name += "_ED_";
 	  name += q2bin;
 	  if(q2bin==0) {
-	    weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    if(FourPionTask->GetCollisionType()!=0 && j>0) weightHisto[i][j] = (TH3F*)weightHisto[i][0]->Clone();
+	    else weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
 	  }else{
-	    weightHisto2[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    if(FourPionTask->GetCollisionType()!=0 && j>0) weightHisto2[i][j] = (TH3F*)weightHisto2[i][0]->Clone();
+	    else weightHisto2[i][j] = (TH3F*)inputFileWeight->Get(name);
 	  }
 	}
       }
