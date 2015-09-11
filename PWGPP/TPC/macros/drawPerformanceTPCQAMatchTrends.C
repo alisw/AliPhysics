@@ -127,6 +127,7 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
 
   //
   tree = (TTree*)_file0->Get("tpcQA");
+  if (!tree) tree = (TTree*)_file0->Get("trending");
   //TTree *tree = ch->GetTree();
   if(!tree) return;
   int const entries_tree = tree->GetEntries();
