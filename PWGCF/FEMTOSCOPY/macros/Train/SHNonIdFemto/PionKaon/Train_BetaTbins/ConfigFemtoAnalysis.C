@@ -62,7 +62,7 @@
 AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runcentrality7, int runcentrality8, int runcentrality9, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int fieldsign, double distance, double fraction1, double fraction2, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int turnOnMonitors) {
 
 
-  double PionMass = 0.13956995;
+  double PionMass = 0.13957018;//0.13956995;
   double KaonMass = 0.493677;
   double ProtonMass = 0.938272013;
 
@@ -378,8 +378,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  }
 	  
 	  // Study the betaT distribution:
-	  cutpassbetatcutmonitor[aniter] = new AliFemtoCutMonitorPairBetaT(Form("cutPass%stpcM%i", chrgs[ichg], imult), 100, 0.0, 1.0);
-	  cutfailbetatcutmonitor[aniter] = new AliFemtoCutMonitorPairBetaT(Form("cutFail%stpcM%i", chrgs[ichg], imult), 100, 0.0, 1.0);
+	  cutpassbetatcutmonitor[aniter] = new AliFemtoCutMonitorPairBetaT(Form("cutPass%stpcM%i", chrgs[ichg], imult), 100, 0.0, 1.0, PionMass, KaonMass);
+	  cutfailbetatcutmonitor[aniter] = new AliFemtoCutMonitorPairBetaT(Form("cutFail%stpcM%i", chrgs[ichg], imult), 100, 0.0, 1.0, PionMass, KaonMass);
 	  sqpcetaphitpc[aniter]->AddCutMonitor(cutpassbetatcutmonitor[aniter], cutfailbetatcutmonitor[aniter]);
 	  
 	  anetaphitpc[aniter]->SetEnablePairMonitors(true);
@@ -441,7 +441,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	    for (int ikt=0; ikt<numOfkTbins + 1; ikt++) {
 	      ktm = aniter*numOfkTbins + ikt;
 	      //ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
-	      ktpcuts[ktm] = new AliFemtoBetaTPairCut(ktrng[ikt], ktrng[ikt + 1]);
+	      ktpcuts[ktm] = new AliFemtoBetaTPairCut(ktrng[ikt], ktrng[ikt + 1], PionMass, KaonMass);
 	      
   	      cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%iD%lfF%lfbetat%d", chrgs[ichg], imult, distance, fraction1, ikt),3,nbinssh, 0.0,shqmax, runshlcms);
   	      cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);

@@ -24,7 +24,7 @@ class AliFemtoCutMonitorPairBetaT : public AliFemtoCutMonitor {
   
  public:
   AliFemtoCutMonitorPairBetaT();
-  AliFemtoCutMonitorPairBetaT(const char *aName, const int aBinsBetaT, double aMinBetaT, double aMaxBetaT);
+  AliFemtoCutMonitorPairBetaT(const char *aName, const int aBinsBetaT, double aMinBetaT, double aMaxBetaT, double aMassPart1, double aMassParrt2);
   AliFemtoCutMonitorPairBetaT(const AliFemtoCutMonitorPairBetaT& c);
   virtual ~AliFemtoCutMonitorPairBetaT();
 
@@ -42,11 +42,13 @@ class AliFemtoCutMonitorPairBetaT : public AliFemtoCutMonitor {
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection) { AliFemtoCutMonitor::Fill(aEvent, aCollection); }
   virtual void Fill(const AliFemtoParticleCollection* aCollection1, const AliFemtoParticleCollection* aCollection2) { AliFemtoCutMonitor::Fill(aCollection1, aCollection2); }
 
-private:
+ private:
   TH1D *fHistBetaT;      // BetaT plot
   int fBinsBetaT;        // Number of bins in betaT plot
   double fMinBetaT;      // Minimum betaT
   double fMaxBetaT;      // Maximum betaT
+  double fMassPart1;     // Mass of the first particle in pair [GeV]
+  double fMassPart2;     // Mass of the second particle in pair [GeV]
 };
 
 #endif
