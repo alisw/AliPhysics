@@ -3063,6 +3063,76 @@ Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t r, Double_t k
   return phi1-phi0;
 }
 
+Double_t AliTPCCorrection::GetCorrectionSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType)
+{
+  /// calculate the correction at given position - check the geffCorr
+  ///
+  /// corrType return values
+  /// 0 - delta R
+  /// 1 - delta RPhi
+  /// 2 - delta Z
+  /// 3 - delta RPHI
+
+  if (!fgVisualCorrection) return 0;
+  AliTPCCorrection *corr = (AliTPCCorrection*)fgVisualCorrection->At(corrType);
+  if (!corr) return 0;
+
+  Double_t phi=sector*TMath::Pi()/9.;
+  Double_t gx = r*TMath::Cos(phi);
+  Double_t gy = r*TMath::Sin(phi);
+  Double_t gz = r*kZ;
+  Int_t nsector=(gz>=0) ? 0:18;
+  //
+  //
+  //
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  corr->CorrectPoint(distPoint, nsector);
+  Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
+  Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
+  Double_t phi0=TMath::ATan2(gy,gx);
+  Double_t phi1=TMath::ATan2(distPoint[1],distPoint[0]);
+  if (axisType==0) return r1-r0;
+  if (axisType==1) return (phi1-phi0)*r0;
+  if (axisType==2) return distPoint[2]-gz;
+  if (axisType==3) return (TMath::Cos(phi)*(distPoint[0]-gx)+ TMath::Cos(phi)*(distPoint[1]-gy));
+  return phi1-phi0;
+}
+
+Double_t AliTPCCorrection::GetDistortionSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType)
+{
+  /// calculate the correction at given position - check the geffCorr
+  ///
+  /// corrType return values
+  /// 0 - delta R
+  /// 1 - delta RPhi
+  /// 2 - delta Z
+  /// 3 - delta RPHI
+
+  if (!fgVisualCorrection) return 0;
+  AliTPCCorrection *corr = (AliTPCCorrection*)fgVisualCorrection->At(corrType);
+  if (!corr) return 0;
+
+  Double_t phi=sector*TMath::Pi()/9.;
+  Double_t gx = r*TMath::Cos(phi);
+  Double_t gy = r*TMath::Sin(phi);
+  Double_t gz = r*kZ;
+  Int_t nsector=(gz>=0) ? 0:18;
+  //
+  //
+  //
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  corr->DistortPoint(distPoint, nsector);
+  Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
+  Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
+  Double_t phi0=TMath::ATan2(gy,gx);
+  Double_t phi1=TMath::ATan2(distPoint[1],distPoint[0]);
+  if (axisType==0) return r1-r0;
+  if (axisType==1) return (phi1-phi0)*r0;
+  if (axisType==2) return distPoint[2]-gz;
+  if (axisType==3) return (TMath::Cos(phi)*(distPoint[0]-gx)+ TMath::Cos(phi)*(distPoint[1]-gy));
+  return phi1-phi0;
+}
+
 Double_t AliTPCCorrection::GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType){
   /// return correction at given x,y,z
 

@@ -101,6 +101,10 @@ public:
   static Double_t GetDistXYZDz(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0,Double_t delta=5);
   static Double_t GetDistXYZIntegrateZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType, Int_t corrType=0, Double_t delta=5);
 
+  //new sector correction functions
+  static Double_t GetCorrectionSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType=0);
+  static Double_t GetDistortionSector(Double_t sector, Double_t r, Double_t kZ, Int_t axisType, Int_t corrType=0);
+
 
 protected:
   TH2F* CreateTH2F(const char *name,const char *title,
@@ -109,7 +113,7 @@ protected:
 		   Int_t nbinsy,Double_t ylow,Double_t yup);
 
   static const Double_t fgkTPCZ0;       ///< nominal gating grid position
-  static const Double_t fgkIFCRadius;   ///< Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)
+  static const Double_t fgkIFCRadius;   ///< Mean Radius of the Inner Field Cage ( 82.43 min,  83.70 max) (cm)/hera/alice/wiechula/calib/guiTrees
   static const Double_t fgkOFCRadius;   ///< Mean Radius of the Outer Field Cage (252.55 min, 256.45 max) (cm)
   static const Double_t fgkZOffSet;     ///< Offset from CE: calculate all distortions closer to CE as if at this point
   static const Double_t fgkCathodeV;    ///< Cathode Voltage (volts)
