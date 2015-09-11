@@ -51,14 +51,14 @@ TObjArray GetClasses(Int_t run, TString ocdbStorage, TString &partition, TString
       if (!scaler1) { printf("Null pointer to scalers for class\n"); return TObjArray(); }
       if (!scaler2) { printf("Null pointer to scalers for class\n"); return TObjArray(); }
       
-      LMB[classId-1] += dif(scaler2->GetLMCB(),scaler1->GetLMCB());
-      LMA[classId-1] += dif(scaler2->GetLMCA(),scaler1->GetLMCA());
-      L0B[classId-1] += dif(scaler2->GetLOCB(),scaler1->GetLOCB());
-      L0A[classId-1] += dif(scaler2->GetLOCA(),scaler1->GetLOCA());
-      L1B[classId-1] += dif(scaler2->GetL1CB(),scaler1->GetL1CB());
-      L1A[classId-1] += dif(scaler2->GetL1CA(),scaler1->GetL1CA());
-      L2B[classId-1] += dif(scaler2->GetL2CB(),scaler1->GetL2CB());
-      L2A[classId-1] += dif(scaler2->GetL2CA(),scaler1->GetL2CA());
+      LMB[i] += dif(scaler2->GetLMCB(),scaler1->GetLMCB());
+      LMA[i] += dif(scaler2->GetLMCA(),scaler1->GetLMCA());
+      L0B[i] += dif(scaler2->GetLOCB(),scaler1->GetLOCB());
+      L0A[i] += dif(scaler2->GetLOCA(),scaler1->GetLOCA());
+      L1B[i] += dif(scaler2->GetL1CB(),scaler1->GetL1CB());
+      L1A[i] += dif(scaler2->GetL1CA(),scaler1->GetL1CA());
+      L2B[i] += dif(scaler2->GetL2CB(),scaler1->GetL2CB());
+      L2A[i] += dif(scaler2->GetL2CA(),scaler1->GetL2CA());
     }
   }
   UInt_t t1 = scalers->GetScalersRecord(0         )->GetTimeStamp()->GetSeconds();
@@ -68,14 +68,19 @@ TObjArray GetClasses(Int_t run, TString ocdbStorage, TString &partition, TString
 }
 
 
-Int_t triggerInfo(Int_t run, TString ocdbStorage, TString &lhcState, Int_t &fill, Int_t &nBCsPerOrbit){
+Int_t triggerInfo(Int_t run, TString ocdbStorage, TString &lhcPeriod, TString &lhcState, 
+    Int_t &fill, Int_t &nBCsPerOrbit, Int_t &timeStart, Int_t &timeEnd){
+  
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage(ocdbStorage.Data());
   man->SetRun(run);
 
   AliGRPObject* grp = (AliGRPObject*) man->Get("GRP/GRP/Data")->GetObject();
   if (!grp) { printf("No GRP/GRP/Data object for run %i\n",run); return 1; }
-  lhcState = grp->GetLHCState();
+  lhcState  = grp->GetLHCState();
+  lhcPeriod = grp->GetLHCPeriod();
+  timeStart = grp->GetTimeStart();
+  timeEnd   = grp->GetTimeEnd();
   
   if (run==189694) return 1; // No GRP/GRP/LHCData for this run
   
