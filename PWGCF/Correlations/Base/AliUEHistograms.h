@@ -71,6 +71,7 @@ class AliUEHistograms : public TNamed
   Long64_t GetRunNumber() { return fRunNumber; }
   Int_t GetMergeCount() { return fMergeCount; }
   TH3F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistancePt[i]; }
+  TH2F* GetControlConvResoncances() { return fControlConvResoncances; }
   Bool_t GetWeightPerEvent() { return fWeightPerEvent; }
   
   void Correct(AliUEHistograms* corrections);
