@@ -739,7 +739,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	  
-	  if (mass < 0.1)
+	  if (mass < fCutConversionsV * 5)
 	  {
 	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	    
@@ -757,7 +757,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  
 	  const Float_t kK0smass = 0.4976;
 	  
-	  if (TMath::Abs(mass - kK0smass*kK0smass) < 0.1)
+	  if (TMath::Abs(mass - kK0smass*kK0smass) < fCutResonancesV * 5)
 	  {
 	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	    
@@ -776,7 +776,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  
 	  const Float_t kLambdaMass = 1.115;
 
-	  if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < 0.1)
+	  if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fCutResonancesV * 5)
 	  {
 	    mass1 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 
@@ -785,7 +785,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    if (mass1 > (kLambdaMass-fCutResonancesV)*(kLambdaMass-fCutResonancesV) && mass1 < (kLambdaMass+fCutResonancesV)*(kLambdaMass+fCutResonancesV))
 	      continue;
 	  }
-	  if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < 0.1)
+	  if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fCutResonancesV * 5)
 	  {
 	    mass2 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
 

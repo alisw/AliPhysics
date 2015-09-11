@@ -115,7 +115,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
     void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
     void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
-    void   SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
+    void   SetPairCuts(Float_t conversions = 0.004, Float_t resonances = 0.005) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
     void   SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
     void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
     void   SetFillpT(Bool_t flag) { fFillpT = flag; }
