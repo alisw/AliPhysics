@@ -21,8 +21,29 @@
 #include "TStyle.h"
 #include "TMinuit.h"
 
+#define BohrR 1963.6885 // Bohr Radius for pions
+#define FmToGeV 0.19733 // conversion to fm
+#define PI 3.1415926
+#define masspiC 0.1395702 // pi+ mass (GeV/c^2)
+
 using namespace std;
 
+void SetFSICorrelations();
+void SetMomResCorrections();
+double Gamov(int, double);
+float FSICorrelation(float);
+void SetMuonCorrections();
+
+TH1D *fFSIss[12];
+TH2D *fMomResC2SC;
+TH2D *fWeightmuonCorrection;
+
+int fFSIindex=0;
+short CollisionType=1;// 0(PbPb), 1(pPb), 2(pp)
+bool FSIandMRandMuonCorrect=1;
+double TwoFrac=0.7;
+const int NumEDbins=2;
+bool EDBinning=kFALSE;
 
 void MakeWeightFile()
 {
@@ -30,28 +51,46 @@ void MakeWeightFile()
   gStyle->SetOptStat(0);
   gStyle->SetOptDate(0);
   gStyle->SetOptFit(1);
+  
+  SetFSICorrelations();
+  SetMomResCorrections();
+  SetMuonCorrections();
 
-  const int NumEDbins=2;
-  bool EDBinning=kTRUE;
   //
-  //TFile *InputFile = new TFile("Results/RawWeightFile_11h.root","READ");
-  //TFile *InputFile = new TFile("Results/PDC_11h_pT_0p2to1p0_FullRunWrongWeightsNoPadRowTTCandMCTTC_RawWeightFile.root","READ");
-  //TFile *InputFile = new TFile("Results/RawWeightFile_11h_0p02eta0p045phi_0p03eta0p067phi.root","READ");
-  TFile *InputFile = new TFile("Results/RawWeightFile_11h_q2Binning_LowPtMultBinning.root","READ");
-  //TFile *InputFile = new TFile("Results/RawWeightFile_11h_81EMbins.root","READ");
+  TFile *InputFile;
+  if(CollisionType==0){
+    //TFile *InputFile = new TFile("Results/RawWeightFile_11h.root","READ");
+    //TFile *InputFile = new TFile("Results/PDC_11h_pT_0p2to1p0_FullRunWrongWeightsNoPadRowTTCandMCTTC_RawWeightFile.root","READ");
+    //TFile *InputFile = new TFile("Results/RawWeightFile_11h_0p02eta0p045phi_0p03eta0p067phi.root","READ");
+    InputFile = new TFile("Results/RawWeightFile_11h_6kT.root","READ");
+    //TFile *InputFile = new TFile("Results/RawWeightFile_11h_q2Binning_LowPtMultBinning.root","READ");
+    //TFile *InputFile = new TFile("Results/PDC_11h_Norm0p06to0p08_RawWeightFileLowpTBinningWithHighpTConstraint.root","READ");
+    //TFile *InputFile = new TFile("Results/RawWeightFile_11h_8MeVbins.root","READ");
+    //TFile *InputFile = new TFile("Results/RawWeightFile_11h_81EMbins.root","READ");
+  }else if(CollisionType==1){
+    InputFile = new TFile("Results/RawWeightFile_13bc_6kT.root","READ");
+  }else{
+    InputFile = new TFile("Results/RawWeightFile_10bcde_6kT.root","READ");
+  }
+
+  double NormL=0.135;// 0.06 or 0.135
+  double NormH=0.2;// 0.08 or 0.2
+  if(CollisionType!=0){
+    NormL=0.3;
+    NormH=0.35;
+  }
   
 
   TDirectoryFile *tdir = (TDirectoryFile*)InputFile->Get("PWGCF.outputFourPionAnalysis.root");
-  TList *MyList=(TList*)tdir->Get("FourPionOutput_2");
+  TList *MyList=(TList*)tdir->Get("FourPionOutput_1");
   //TList *MyList=(TList*)InputFile->Get("MyList");
   InputFile->Close();
   
   TH1D *Events = (TH1D*)MyList->FindObject("fEvents2");
   cout<<Events->GetBinContent(1)<<endl;
   
- 
-
-  const int KtBins=4;//4
+  
+  const int KtBins=6;//4
   const int KyBins=1;
   const int MBins=10;
   const int MBLimit=10;// 0-10. 1 for GenSignal, 10 for the rest!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -59,10 +98,37 @@ void MakeWeightFile()
   TFile *OutFile = new TFile("WeightFile_temp.root","RECREATE");
   TH3F *WeightHistos[KtBins][MBins][NumEDbins];
 
+  TH3D *QinvMean = (TH3D*)MyList->FindObject("TwoParticle_Charge1_0_Charge2_0_M_0_ED_0_Term_1_osl_b1_QW");
+  TH3D *QinvMeanDen = (TH3D*)MyList->FindObject("TwoParticle_Charge1_0_Charge2_0_M_0_ED_0_Term_1_osl_b1");
+  QinvMean->Divide(QinvMeanDen);
+
  
   for(int ktB=1; ktB<=KtBins; ktB++){
     cout<<"kT Bin "<<ktB<<endl;
     for(int MB=1; MB<=MBins; MB++){
+      if(CollisionType!=0 && MB>1) continue;
+      //
+      if(CollisionType==0){
+	if(MB==1) fFSIindex = 0;//0-5%
+	else if(MB==2) fFSIindex = 1;//5-10%
+	else if(MB<=3) fFSIindex = 2;//10-20%
+	else if(MB<=6) fFSIindex = 3;//20-30%
+	else if(MB<=8) fFSIindex = 4;//30-40%
+	else fFSIindex = 5;//40-50%
+      }else if(CollisionType==1){
+	fFSIindex=9;
+      }else fFSIindex==11;
+      //
+      Int_t rBinForTPNMomRes = 10;
+      if(CollisionType==0){
+	if(MB==1) {rBinForTPNMomRes=10;}// 10 fm with EW (fRMax should be 11 for normal running)
+	else if(MB==2) {rBinForTPNMomRes=9;}
+	else if(MB<=4) {rBinForTPNMomRes=8;}
+	else if(MB<=6) {rBinForTPNMomRes=7;}
+	else {rBinForTPNMomRes=6;}
+      }else rBinForTPNMomRes=2;
+      //
+      
       for(int q2B=1; q2B<=NumEDbins; q2B++){
 	TString *InNameNum = new TString("TPN_num_Kt_");
 	*InNameNum += ktB-1;
@@ -85,15 +151,15 @@ void MakeWeightFile()
 	TH3D *tempNum = (TH3D*)MyList->FindObject(InNameNum->Data());
 	TH3D *tempDen = (TH3D*)MyList->FindObject(InNameDen->Data());
 	//
-	int NormBinStartOut = tempNum->GetXaxis()->FindBin(0.06);// 0.135.  0.06 as a systematic
-	int NormBinStartSideLong = tempNum->GetXaxis()->FindBin(0.06);// 0.135.  0.06 as a systematic
-	int NormBinEnd = tempNum->GetXaxis()->FindBin(0.08);// 0.2.  0.08 as a systematic
+	int NormBinStartOut = tempNum->GetXaxis()->FindBin(NormL);
+	int NormBinStartSideLong = tempNum->GetXaxis()->FindBin(NormL);
+	int NormBinEnd = tempNum->GetXaxis()->FindBin(NormH);
 	double Norm = tempNum->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd);
 	if(tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd) > 0){
 	  Norm /= tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd);
 	}else Norm=0;
 	cout<<"Normalization = "<<Norm<<endl;
-	cout<<tempNum->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd)<<"  "<<tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd)<<endl;
+	//cout<<tempNum->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd)<<"  "<<tempDen->Integral(NormBinStartOut,NormBinEnd, NormBinStartSideLong,NormBinEnd, NormBinStartSideLong,NormBinEnd)<<endl;
 	//
 	TString *OutNameWeight = new TString("Weight_Kt_");
 	*OutNameWeight += ktB-1;
@@ -111,6 +177,8 @@ void MakeWeightFile()
 	WeightHistos[ktB-1][MB-1][q2B-1]->GetXaxis()->SetTitleOffset(1.8);
 	WeightHistos[ktB-1][MB-1][q2B-1]->GetYaxis()->SetTitleOffset(1.8);
 	WeightHistos[ktB-1][MB-1][q2B-1]->GetZaxis()->SetTitleOffset(1.8);
+	
+		
 	double LowQcount=0, HighQcount=0;
 	for(int outB=1; outB<=Nbins; outB++){
 	  for(int sideB=1; sideB<=Nbins; sideB++){
@@ -119,11 +187,26 @@ void MakeWeightFile()
 	      double weight=1, weight_e=0;
 	      if(tempDen->GetBinContent(outB,sideB,longB) > 0 && tempNum->GetBinContent(outB,sideB,longB) > 0) {
 		//if(outB==sideB && outB==longB) cout<<outB<<"  "<<tempNum->GetBinContent(outB,sideB,longB)<<"  "<<tempDen->GetBinContent(outB,sideB,longB)<<endl;
+		
 		weight = double(tempNum->GetBinContent(outB,sideB,longB))/double(tempDen->GetBinContent(outB,sideB,longB)) / Norm;
+		if(FSIandMRandMuonCorrect){
+		  float qinv = QinvMean->GetBinContent(outB,sideB,longB);
+		  //if(qinv<0.2) cout<<qinv<<"  "<<sqrt(pow(tempNum->GetXaxis()->GetBinCenter(outB),2)+pow(tempNum->GetYaxis()->GetBinCenter(sideB),2)+pow(tempNum->GetZaxis()->GetBinCenter(longB),2))<<endl;
+		  int momBin = fMomResC2SC->GetYaxis()->FindBin(qinv);
+		  double FSICorr = FSICorrelation(qinv);
+		  double MomResCorr = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin);
+		  double MuonCorr = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin);
+		  weight = weight*MomResCorr - TwoFrac*FSICorr - (1-TwoFrac);
+		  weight /= FSICorr*TwoFrac;
+		  weight *= MuonCorr;
+		  weight += 1;
+		}
 		weight_e = pow(sqrt(double(tempNum->GetBinContent(outB,sideB,longB)))/double(tempDen->GetBinContent(outB,sideB,longB)) / Norm,2);
 		weight_e += pow(sqrt(double(tempDen->GetBinContent(outB,sideB,longB)))*double(tempNum->GetBinContent(outB,sideB,longB))/pow(double(tempDen->GetBinContent(outB,sideB,longB)),2) / Norm,2);
 		weight_e = sqrt(weight_e);
+		
 		//if(weight < 0.8 && weight > 0.1) cout<<outB<<"  "<<sideB<<"  "<<longB<<"  "<<tempNum->GetBinContent(outB,sideB,longB)<<"  "<<tempDen->GetBinContent(outB,sideB,longB)<<endl;
+		
 		double qo = tempNum->GetXaxis()->GetBinCenter(outB);
 		double qs = tempNum->GetYaxis()->GetBinCenter(sideB);
 		double ql = tempNum->GetZaxis()->GetBinCenter(longB);
@@ -135,7 +218,7 @@ void MakeWeightFile()
 		WeightHistos[ktB-1][MB-1][q2B-1]->SetBinContent(outB,sideB,longB, 0);
 		WeightHistos[ktB-1][MB-1][q2B-1]->SetBinError(outB,sideB,longB, 0);
 	      }else {
-		WeightHistos[ktB-1][MB-1][q2B-1]->SetBinContent(outB,sideB,longB, weight-1.0);// difference from unity
+		WeightHistos[ktB-1][MB-1][q2B-1]->SetBinContent(outB,sideB,longB, weight-1);// difference from unity
 		WeightHistos[ktB-1][MB-1][q2B-1]->SetBinError(outB,sideB,longB, weight_e);
 	      }
 	      
@@ -143,7 +226,7 @@ void MakeWeightFile()
 	    }
 	  }
 	}
-	cout<<"PairCount   "<<LowQcount<<"  "<<HighQcount<<endl;
+	//cout<<"PairCount   "<<LowQcount<<"  "<<HighQcount<<endl;
 	WeightHistos[ktB-1][MB-1][q2B-1]->Write();
 	
       }// q2B
@@ -152,14 +235,24 @@ void MakeWeightFile()
 
  
 
-  int BOI1=2;
-  int BOI2=2;
-  TH3D *histoOI = WeightHistos[0][0][0]->Clone();
+  int BOI1=3;
+  int BOI2=3;
+  //
+  int KTBOI=1;
+  //
+  TH3D *histoOI = WeightHistos[KTBOI][0][0]->Clone();
   histoOI->SetDirectory(0);
-  //OutFile->Close();
-  
-  TH1D *pro = WeightHistos[0][0][0]->ProjectionX("pro",BOI1,BOI1,BOI2,BOI2);
+    
+  TH1D *pro = WeightHistos[KTBOI][0][0]->ProjectionX("pro",BOI1,BOI1,BOI2,BOI2);
   pro->Draw();
+
+  TH1D *pro2 = WeightHistos[KTBOI][0][0]->ProjectionY("pro2",BOI1,BOI1,BOI2,BOI2);
+  pro2->SetLineColor(2);
+  pro2->Draw("same");
+
+  TH1D *pro3 = WeightHistos[KTBOI][0][0]->ProjectionZ("pro3",BOI1,BOI1,BOI2,BOI2);
+  pro3->SetLineColor(4);
+  pro3->Draw("same");
 
   //for(int bin=1; bin<=40; bin++) cout<<pro->GetBinContent(bin)<<", ";
   //cout<<endl;
@@ -220,4 +313,87 @@ void MakeWeightFile()
   proXY->Write();
   */
 
+}
+//________________________________________________________________________
+void SetFSICorrelations(){
+  // read in 2-particle and 3-particle FSI correlations = K2 & K3
+  // 2-particle input histo from file is binned in qinv.  3-particle in qinv of each pair
+  TFile *fsifile = new TFile("KFile.root","READ");
+  if(!fsifile->IsOpen()) {
+    cout<<"No FSI file found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+  }else {cout<<"Good FSI File Found!"<<endl;}
+  
+  TH1D *temphistoSS[12];
+  TH1D *temphistoOS[12];
+  for(Int_t MB=0; MB<12; MB++) {
+    TString *nameK2SS = new TString("K2ss_");
+    *nameK2SS += MB;
+    temphistoSS[MB] = (TH1D*)fsifile->Get(nameK2SS->Data());
+    //
+    fFSIss[MB] = (TH1D*)temphistoSS[MB]->Clone();
+    fFSIss[MB]->SetDirectory(0);
+  }
+  //
+  
+  fsifile->Close();
+  
+}
+//________________________________________________________________________
+void SetMomResCorrections(){
+ 
+  TFile *momResFile;
+  if(CollisionType==0) momResFile = new TFile("MomResFile_FourPion.root","READ");
+  else momResFile = new TFile("MomResFile_ppAndpPb.root","READ");
+  if(!momResFile->IsOpen()) {
+    cout<<"No momentum resolution file found"<<endl;
+    AliFatal("No momentum resolution file found.  Kill process.");
+  }else {cout<<"Good Momentum Resolution File Found!"<<endl;}
+  
+  TH2D *temp2DSC2 = (TH2D*)momResFile->Get("MRC_C2_SC");
+  fMomResC2SC = (TH2D*)temp2DSC2->Clone();
+  fMomResC2SC->SetDirectory(0);
+  //
+  momResFile->Close();
+  
+}
+//________________________________________________________________________
+void SetMuonCorrections(){
+  
+  TFile *MuonFile;
+  if(CollisionType==0) MuonFile = new TFile("MuonCorrection_FourPion.root","READ");
+  else MuonFile = new TFile("MuonCorrection_ppAndpPb.root","READ");
+  if(!MuonFile->IsOpen()) {
+    cout<<"No Muon file found"<<endl;
+    AliFatal("No Muon file found.  Kill process.");
+  }else {cout<<"Good Muon File Found!"<<endl;}
+  
+  fWeightmuonCorrection = (TH2D*)MuonFile->Get("WeightmuonCorrection");
+  fWeightmuonCorrection->SetDirectory(0);
+  //
+  MuonFile->Close();
+  
+}
+//________________________________________________________________________
+double Gamov(int chargeProduct, double qinv){
+  
+  double arg = chargeProduct*2.*PI/(BohrR*qinv/2.);
+  
+  return arg/(exp(arg)-1);
+}
+//________________________________________________________________________
+float FSICorrelation(float qinv){
+  // returns 2-particle Coulomb correlations = K2
+  Int_t qbinL = fFSIss[fFSIindex]->GetXaxis()->FindBin(qinv-fFSIss[fFSIindex]->GetXaxis()->GetBinWidth(1)/2.);
+  Int_t qbinH = qbinL+1;
+  if(qbinL <= 0) return 1.0;
+  if(qbinH > fFSIss[fFSIindex]->GetNbinsX()) {
+    Float_t ScaleFac = (fFSIss[fFSIindex]->GetBinContent(fFSIss[fFSIindex]->GetNbinsX()-1) - 1);
+    ScaleFac /= (Gamov(1, fFSIss[fFSIindex]->GetXaxis()->GetBinCenter(fFSIss[fFSIindex]->GetNbinsX()-1)) - 1);
+    return ( (Gamov(1, qinv)-1)*ScaleFac + 1);
+  }else{
+    Float_t slope=0;
+    slope = fFSIss[fFSIindex]->GetBinContent(qbinL) - fFSIss[fFSIindex]->GetBinContent(qbinH);
+    slope /= fFSIss[fFSIindex]->GetXaxis()->GetBinCenter(qbinL) - fFSIss[fFSIindex]->GetXaxis()->GetBinCenter(qbinH);
+    return (slope*(qinv - fFSIss[fFSIindex]->GetXaxis()->GetBinCenter(qbinL)) + fFSIss[fFSIindex]->GetBinContent(qbinL));
+  }
 }

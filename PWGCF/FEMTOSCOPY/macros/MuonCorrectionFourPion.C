@@ -45,7 +45,7 @@ void MuonCorrectionFourPion(){
   
   bool UNITYweights=0;
 
-  bool PbPbcase=1;
+  bool PbPbcase=0;
 
   int COI_23=0;// 0=Same-charge, 1=Mixed-charge
   int COI_4=0;// 0=Same-charge, 1=(---+), 2=(--++)
@@ -59,12 +59,13 @@ void MuonCorrectionFourPion(){
   if(!PbPbcase) FourParticleRebin=6;
 
   TFile *_file0;
+  //TFile *_file0= new TFile("MyOutput.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_noTTC.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_TTCweights.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_pTSpectrumWeight.root","READ");
-  TFile *_file0= new TFile("Results/PDC_12a17a_10MeVcut.root","READ");
-  //if(PbPbcase) _file0= new TFile("Results/PDC_12a17a_Qweights.root","READ");
-  //else _file0= new TFile("Results/PDC_13b2_p1234.root","READ");
+  //TFile *_file0= new TFile("Results/PDC_12a17a_10MeVcut.root","READ");
+  if(PbPbcase) _file0= new TFile("Results/PDC_12a17a_Qweights.root","READ");
+  else _file0= new TFile("Results/PDC_13b2_p1234.root","READ");
 
 
   TList *MyList=(TList*)_file0->Get("MyList");
@@ -159,6 +160,9 @@ void MuonCorrectionFourPion(){
 	MuonSmeared2[ch][term-1]=(TH2D*)MyList->FindObject(MS2->Data());
 	MuonIdeal2[ch][term-1]=(TH2D*)MyList->FindObject(MI2->Data());
 	PionPionK2[ch][term-1]=(TH2D*)MyList->FindObject(K2->Data());
+	//MuonSmeared2[ch][term-1]->RebinY(2);
+	//MuonIdeal2[ch][term-1]->RebinY(2);
+	//PionPionK2[ch][term-1]->RebinY(2);
       }
       MuonSmeared2[ch][0]->Divide(MuonSmeared2[ch][1]);
       MuonIdeal2[ch][0]->Divide(MuonIdeal2[ch][1]);
@@ -358,7 +362,13 @@ void MuonCorrectionFourPion(){
 	  if(ch==0){
 	    double valueW = MuonIdeal2[ch][0]->GetBinContent(Rb, bin)/PionPionK2[ch][0]->GetBinContent(Rb, bin) - 1.0;
 	    double denW = ((GoodPairFraction*MuonIdeal2[ch][0]->GetBinContent(Rb, bin) + (1-GoodPairFraction)*MuonSmeared2[ch][0]->GetBinContent(Rb, bin))/PionPionK2[ch][0]->GetBinContent(Rb, bin)) - 1.0;
-	    if(denW != 0 && !emptybin2) WeightmuonCorrection->SetBinContent(Rb, bin,valueW/denW);
+	    //if( valueW/denW > 10) cout<<bin<<"  "<<MuonIdeal2[ch][0]->GetBinContent(Rb, bin)<<"  "<<PionPionK2[ch][0]->GetBinContent(Rb, bin)<<"  "<<MuonSmeared2[ch][0]->GetBinContent(Rb, bin)<<"  "<<valueW<<"  "<<denW<<endl;
+	    if(denW != 0 && !emptybin2) {
+	      double weight = valueW/denW;
+	      if(weight > 1.1) weight = 1.0;
+	      if(weight <0) weight = 0;
+	      WeightmuonCorrection->SetBinContent(Rb, bin, weight);
+	    }	    
 	    WeightmuonCorrection->SetBinError(Rb, bin, 0.);
 	    //
 	    if(PbPbcase && WeightmuonCorrection->GetYaxis()->GetBinCenter(bin) > 0.08) C2muonCorrection[ch]->SetBinContent(Rb, bin, 1.);
