@@ -266,7 +266,7 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
 }
 
 void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(TString triggerclass, double energy, double eta, double phi, TList *triggerpatches){
-  Bool_t hasTriggerPatch = CorrelateToTrigger(eta, phi, triggerpatches);
+  Bool_t hasTriggerPatch = triggerpatches  ? CorrelateToTrigger(eta, phi, triggerpatches) : kFALSE;
   fHistos->FillTH1(Form("hClusterEnergy%s", triggerclass.Data()), energy);
   if(hasTriggerPatch){
     fHistos->FillTH1(Form("hClusterEnergyFired%s", triggerclass.Data()), energy);
