@@ -1,280 +1,251 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoCutMonitorHandler: a handler for cut monitors                 //
-// You add cut monitors to the collection which are stored in two        //
-// separate collections - one which stores characteristics of the        //
-// entities (tracks, particles, pairs, events) that pass the respective  //
-// cuts and the other for the ones that fail the cut.                    //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCutMonitorHandler.cxx
+///
 
 #include <TList.h>
 #include "AliFemtoCutMonitorHandler.h"
 #include "AliFemtoTypes.h"
 
+#include <iterator>
+
 #ifdef __ROOT__
-ClassImp(AliFemtoCutMonitorHandler)
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCutMonitorHandler)
+  /// \endcond
 #endif
+
 // ---------------------------------------------------------------------------
 AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler():
-  fCollectionsEmpty(kFALSE), fPassColl(NULL), fFailColl(NULL)
+  fCollectionsEmpty(kTRUE),
+  fPassColl(NULL),
+  fFailColl(NULL)
 {
   // Default constructor
-  //cout << " *** AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler() " << endl;
   fPassColl = new AliFemtoCutMonitorCollection();
   fFailColl = new AliFemtoCutMonitorCollection();
 }
 // ---------------------------------------------------------------------------
 AliFemtoCutMonitorHandler::AliFemtoCutMonitorHandler(const AliFemtoCutMonitorHandler& aHan):
-  fCollectionsEmpty(aHan.fCollectionsEmpty), fPassColl(NULL), fFailColl(NULL)
+  fCollectionsEmpty(aHan.fCollectionsEmpty),
+  fPassColl(NULL),
+  fFailColl(NULL)
 {
   // Copy constructor
-  fPassColl = new AliFemtoCutMonitorCollection();
-  AliFemtoCutMonitorIterator iter;
-  for (iter=aHan.fPassColl->begin(); iter!=aHan.fPassColl->end(); iter++){
-    fPassColl->push_back(*iter);
-  }
-  fFailColl = new AliFemtoCutMonitorCollection();
-  for (iter=aHan.fFailColl->begin(); iter!=aHan.fFailColl->end(); iter++){
-    fFailColl->push_back(*iter);
-  }
+  fPassColl = new AliFemtoCutMonitorCollection(aHan.fPassColl->begin(), aHan.fPassColl->end());
+  fFailColl = new AliFemtoCutMonitorCollection(aHan.fFailColl->begin(), aHan.fFailColl->end());
 }
 
 // ---------------------------------------------------------------------------
-AliFemtoCutMonitorHandler::~AliFemtoCutMonitorHandler() { 
+AliFemtoCutMonitorHandler::~AliFemtoCutMonitorHandler()
+{
   // Default destructor
   delete fPassColl;
   delete fFailColl;
-}   
+}
 //__________________________
 AliFemtoCutMonitorHandler& AliFemtoCutMonitorHandler::operator=(const AliFemtoCutMonitorHandler& aHan)
 {
   // assignment operator
-  if (this == &aHan)
+  if (this == &aHan) {
     return *this;
+  }
 
-  AliFemtoCutMonitorIterator iter;
   if (fPassColl) {
     fPassColl->clear();
-    delete fPassColl;
+    fPassColl->insert(fPassColl->begin(), aHan.fPassColl->begin(), aHan.fPassColl->end());
+  } else {
+    fPassColl = new AliFemtoCutMonitorCollection(aHan.fPassColl->begin(), aHan.fPassColl->end());
   }
+
   if (fFailColl) {
     fFailColl->clear();
-    delete fFailColl;
+    fFailColl->insert(fFailColl->begin(), aHan.fFailColl->begin(), aHan.fFailColl->end());
+  } else {
+    fFailColl = new AliFemtoCutMonitorCollection(aHan.fFailColl->begin(), aHan.fFailColl->end());
   }
-  fPassColl = new AliFemtoCutMonitorCollection();
-  for (iter=aHan.fPassColl->begin(); iter!=aHan.fPassColl->end(); iter++){
-    fPassColl->push_back(*iter);
-  }
-  fFailColl = new AliFemtoCutMonitorCollection();
-  for (iter=aHan.fFailColl->begin(); iter!=aHan.fFailColl->end(); iter++){
-    fFailColl->push_back(*iter);
-  }
+
   return *this;
 }
 
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, bool pass) { 
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, bool pass)
+{
   // fill event cut monitors
   if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorCollection *output = pass ? fPassColl : fFailColl;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  if ( pass) {
-    for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(event);
-    }
-  } else {
-    for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(event);
-    }
+  for (iter = output->begin(); iter != output->end(); ++iter) {
+    (*iter)->Fill(event);
   }
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoTrack* track, bool pass) { 
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoTrack* track, bool pass)
+{
   // Fill track cut monitors
   if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorCollection *output = pass ? fPassColl : fFailColl;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  if ( pass) {
-    for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(track);
-    }
-  } else {
-    for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(track);
-    }
+  for (iter = output->begin(); iter != output->end(); ++iter) {
+    (*iter)->Fill(track);
   }
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoV0* v0, bool pass) { 
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoV0* v0, bool pass)
+{
   // fill V0 cut monitors
   if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorCollection *output = pass ? fPassColl : fFailColl;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  if ( pass) {
-    for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(v0);
-    }
-  } else {
-    for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(v0);
-    }
+  for (iter = output->begin(); iter != output->end(); ++iter) {
+    (*iter)->Fill(v0);
   }
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoXi* xi, bool pass) { 
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoXi* xi, bool pass)
+{
   // fill V0 cut monitors
   if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorCollection *output = pass ? fPassColl : fFailColl;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  if ( pass) {
-    for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(xi);
-    }
-  } else {
-    for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(xi);
-    }
+  for (iter = output->begin(); iter != output->end(); ++iter) {
+    (*iter)->Fill(xi);
   }
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoKink* kink, bool pass) { 
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoKink* kink, bool pass)
+{
   // fill kink cut monitors
   if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorCollection *output = pass ? fPassColl : fFailColl;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  if ( pass) {
-    for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(kink);
-    }
-  } else {
-    for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(kink);
-    }
+  for (iter = output->begin(); iter != output->end(); ++iter) {
+    (*iter)->Fill(kink);
   }
 }
 // ---------------------------------Gael/12/04/02-----------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoPair* pair, bool pass) { 
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoPair* pair, bool pass)
+{
   // fill pair cut monitors
   if (fCollectionsEmpty) return;
+
+  AliFemtoCutMonitorCollection *output = pass ? fPassColl : fFailColl;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  if ( pass) {
-    for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(pair);
-    }
-  } else {
-    for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-      tCM = *iter;
-      tCM->Fill(pair);
-    }
+  for (iter = output->begin(); iter != output->end(); ++iter) {
+    (*iter)->Fill(pair);
   }
 }
 // ---------------------------------Gael/19/06/02-----------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoParticleCollection* partColl) {
-  // fill particle collection cut monitor 
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoParticleCollection* partColl)
+{
+  // fill particle collection cut monitor
   if (fCollectionsEmpty) return;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  
-  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-    tCM = *iter;
-    tCM->Fill(partColl);
+  for (iter = fPassColl->begin(); iter != fPassColl->end(); ++iter) {
+    (*iter)->Fill(partColl);
   }
 }
 // ------------------------------------Gael/19/06/02-------------------------
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event,const AliFemtoParticleCollection* partColl) {
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event,
+                                               const AliFemtoParticleCollection* partColl)
+{
   // Fill event particle collection
-  //cout<<"In AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, AliFemtoPicoEvent* picoEvent)"<<endl;
   if (fCollectionsEmpty) return;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  
-  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-    tCM = *iter;
-    tCM->Fill(event,partColl);
+  for (iter = fPassColl->begin(); iter != fPassColl->end(); ++iter){
+    (*iter)->Fill(event, partColl);
   }
 }
 
-void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoParticleCollection* partColl1, const AliFemtoParticleCollection* partColl2) {
+void AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoParticleCollection* partColl1,
+                                               const AliFemtoParticleCollection* partColl2)
+{
   // Fill event particle collection
-  //cout<<"***In AliFemtoCutMonitorHandler::FillCutMonitor(const AliFemtoEvent* event, AliFemtoPicoEvent* picoEvent)"<<endl;
   if (fCollectionsEmpty) return;
+
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
-  
-  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-    tCM = *iter;
-    tCM->Fill(partColl1,partColl2);
+  for (iter = fPassColl->begin(); iter != fPassColl->end(); ++iter) {
+    (*iter)->Fill(partColl1, partColl2);
   }
 }
 
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::Finish() { 
+void AliFemtoCutMonitorHandler::Finish()
+{
   // Perform finish operations on cut monitors
   AliFemtoCutMonitorIterator iter;
-  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
+  for (iter = fPassColl->begin(); iter != fPassColl->end(); ++iter) {
     (*iter)->Finish();
   }
-  for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
+  for (iter = fFailColl->begin(); iter != fFailColl->end(); ++iter) {
     (*iter)->Finish();
   }
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::AddCutMonitor(AliFemtoCutMonitor* cutMoni1, AliFemtoCutMonitor* cutMoni2) { 
+void AliFemtoCutMonitorHandler::AddCutMonitor(AliFemtoCutMonitor* cutMoni1,
+                                              AliFemtoCutMonitor* cutMoni2)
+{
   // Add cut monitors to collections
   fPassColl->push_back(cutMoni1);
   fFailColl->push_back(cutMoni2);
-  fCollectionsEmpty=false;
+  fCollectionsEmpty = false;
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::AddCutMonitor(AliFemtoCutMonitor* cutMoni) { 
+void AliFemtoCutMonitorHandler::AddCutMonitor(AliFemtoCutMonitor* cutMoni)
+{
   // make a copy of the cut monitor
-  cout << " make a copy of the cutmonitor and push both into the collections " << endl;
-  cout << " not yet implemented" << endl;
+  cout << " make a copy of the cutmonitor and push both into the collections\n"
+          " not yet implemented" << endl;
   fPassColl->push_back(cutMoni);
   cout << " only pass collection pushed" << endl;
-  fCollectionsEmpty=false;
+  fCollectionsEmpty = false;
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::AddCutMonitorPass(AliFemtoCutMonitor* cutMoni) { 
+void AliFemtoCutMonitorHandler::AddCutMonitorPass(AliFemtoCutMonitor* cutMoni)
+{
   // add monitors to pass
   fPassColl->push_back(cutMoni);
-  fCollectionsEmpty=false;
+  fCollectionsEmpty = false;
 }
 // ---------------------------------------------------------------------------
-void AliFemtoCutMonitorHandler::AddCutMonitorFail(AliFemtoCutMonitor* cutMoni) { 
+void AliFemtoCutMonitorHandler::AddCutMonitorFail(AliFemtoCutMonitor* cutMoni)
+{
   // add monitors to fail
   fFailColl->push_back(cutMoni);
-  fCollectionsEmpty=false;
+  fCollectionsEmpty = false;
 }
 // ---------------------------------------------------------------------------
-AliFemtoCutMonitor* AliFemtoCutMonitorHandler::PassMonitor(int n) { 
+AliFemtoCutMonitor* AliFemtoCutMonitorHandler::PassMonitor(int n)
+{
   // return pass monitor number n
+  if (static_cast<int>(fPassColl->size()) <= n) {
+    return NULL;
+  }
   AliFemtoCutMonitorIterator iter = fPassColl->begin();
-  if ( (int)fPassColl->size() <= n ) return NULL;
-  for ( int i=0; i<n; i++)
-    iter++;
+  std::advance(iter, n);
   return *iter;
 }
 // ---------------------------------------------------------------------------
-AliFemtoCutMonitor* AliFemtoCutMonitorHandler::FailMonitor(int n) { 
+AliFemtoCutMonitor* AliFemtoCutMonitorHandler::FailMonitor(int n)
+{
   // return fail monitor number n
+  if (static_cast<int>(fFailColl->size()) <= n) {
+    return NULL;
+  }
   AliFemtoCutMonitorIterator iter = fFailColl->begin();
-  if ( (int)fFailColl->size() <= n ) return NULL;
-  for ( int i=0; i<n; i++)
-    iter++;
+  std::advance(iter, n);
   return *iter;
 }
 //_____________________________________________________________________________
@@ -282,67 +253,57 @@ TList *AliFemtoCutMonitorHandler::GetOutputList()
 {
   TList *tOutputList = new TList();
 
-  for (unsigned int ipass=0; ipass<fPassColl->size(); ipass++) {
+  for (unsigned int ipass = 0; ipass < fPassColl->size(); ipass++) {
     TList *tLp = PassMonitor(ipass)->GetOutputList();
 
     TIter nextLp(tLp);
     while (TObject *obj = nextLp()) {
       tOutputList->Add(obj);
     }
-    
+
     delete tLp;
   }
 
-  for (unsigned int ipass=0; ipass<fFailColl->size(); ipass++) {
+  for (unsigned int ipass = 0; ipass < fFailColl->size(); ipass++) {
     TList *tLf = FailMonitor(ipass)->GetOutputList();
 
     TIter nextLf(tLf);
     while (TObject *obj = nextLf()) {
       tOutputList->Add(obj);
     }
-    
+
     delete tLf;
   }
 
   return tOutputList;
 }
 //_____________________________________________________________________________
-void AliFemtoCutMonitorHandler::EventBegin(const AliFemtoEvent* aEvent) 
-{ 
+void AliFemtoCutMonitorHandler::EventBegin(const AliFemtoEvent* aEvent)
+{
   if (fCollectionsEmpty) return;
 
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
 
-  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-    tCM = *iter;
-    tCM->EventBegin(aEvent);
+  for (iter = fPassColl->begin(); iter != fPassColl->end(); ++iter) {
+    (*iter)->EventBegin(aEvent);
   }
-  
-  for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-    tCM = *iter;
-    tCM->EventBegin(aEvent);
+
+  for (iter = fFailColl->begin(); iter != fFailColl->end(); ++iter) {
+    (*iter)->EventBegin(aEvent);
   }
 }
 //_____________________________________________________________________________
-void AliFemtoCutMonitorHandler::EventEnd(const AliFemtoEvent* aEvent) 
-{ 
+void AliFemtoCutMonitorHandler::EventEnd(const AliFemtoEvent* aEvent)
+{
   if (fCollectionsEmpty) return;
 
   AliFemtoCutMonitorIterator iter;
-  AliFemtoCutMonitor* tCM;
 
-  for (iter=fPassColl->begin(); iter!=fPassColl->end(); iter++){
-    tCM = *iter;
-    tCM->EventEnd(aEvent);
+  for (iter = fPassColl->begin(); iter != fPassColl->end(); ++iter) {
+    (*iter)->EventEnd(aEvent);
   }
-  
-  for (iter=fFailColl->begin(); iter!=fFailColl->end(); iter++){
-    tCM = *iter;
-    tCM->EventEnd(aEvent);
+
+  for (iter = fFailColl->begin(); iter != fFailColl->end(); ++iter) {
+    (*iter)->EventEnd(aEvent);
   }
 }
-
-
- 
- 
