@@ -1067,8 +1067,12 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
       {
 	// get mixed event normalization at (0,0)
       
-	mixedNorm = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01), mixedNormError);
-	Int_t nBinsMixedNorm = (tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+	// NOTE if variable bin size is used around (0,0) to reduce two-track effect to limited bins, the normalization gets a bit tricky here (finite bin correction and normalization are made only for fixed size bins).
+	// The normalization factor has to determined in a bin as large as the normal bin size, as a proxy the bin with index (1, 1) is used
+	Float_t binWidthPhi = tracksMixed->GetXaxis()->GetBinWidth(1);
+	
+	mixedNorm = tracksMixed->IntegralAndError(tracksMixed->GetXaxis()->FindBin(-binWidthPhi + 1e-4), tracksMixed->GetXaxis()->FindBin(binWidthPhi - 1e-4), tracksMixed->GetYaxis()->FindBin(-binWidthEta + 1e-4), tracksMixed->GetYaxis()->FindBin(binWidthEta - 1e-4), mixedNormError);
+	Int_t nBinsMixedNorm = 4; // NOTE this is fixed on purpose, even if binning is made finer around (0,0), this corresponds to the equivalent of four "large" bins around (0,0)
 	mixedNorm /= nBinsMixedNorm;
 	mixedNormError /= nBinsMixedNorm;
 
