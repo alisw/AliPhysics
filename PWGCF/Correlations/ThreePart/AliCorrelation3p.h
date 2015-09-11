@@ -77,6 +77,7 @@ class AliCorrelation3p : public TNamed {
     
     
   }
+  TH1 * GetHistogram(Int_t khist, Int_t Mbin, Int_t ZBin, const char* histname){return PrepareHist(GetNumberHist(khist,Mbin,ZBin),histname,"","","");}
   enum {
     kHistpT,  // TH1F
     kHistPhi, // TH1F
