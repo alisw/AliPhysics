@@ -324,14 +324,9 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
 
       fAOD = aodH->GetEvent();
 
-      fAODpidUtil = aodH->GetAODpidUtil(); //correct way
-      if (fVerbose)
-        cout << "AliAnalysisTaskFemto::AodpidUtil:" << fAODpidUtil << endl;
-      femtoReaderAOD->SetAODpidUtil(fAODpidUtil);
-    
       fAODheader = dynamic_cast<AliAODHeader *>(fAOD->GetHeader());
       if (!fAODheader) AliFatal("Not a standard AOD");
-      femtoReaderAOD->SetAODheader(fAODheader);
+      femtoReaderAODKine->SetAODheader(fAODheader);
 
     }
   }
@@ -535,6 +530,14 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
           // Process the event
           fstd->SetAODSource(fAOD);
           fstd->SetInputType(AliFemtoEventReaderStandard::kAOD);
+          fManager->ProcessEvent();
+        }
+
+	AliFemtoEventReaderAODKinematicsChain *faodkine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader);
+
+        if (faodkine) {
+          // Process the event
+          faodkine->SetAODSource(fAOD);
           fManager->ProcessEvent();
         }
       }

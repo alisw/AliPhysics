@@ -22,14 +22,13 @@
 #include "AliFemtoEvent.h"
 
 #include "TParticle.h"
-#include "AliStack.h"
 #include "TParticlePDG.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelGlobalHiddenInfo.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliAODMCParticle.h"
-
+#include "AliAODMCHeader.h"
 #include "AliVertexerTracks.h"
 
 ClassImp(AliFemtoEventReaderAODKinematicsChain)
@@ -46,7 +45,6 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain():
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
-  fStack(0x0),
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0)
@@ -62,7 +60,6 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(con
   fNumberofEvent(0),
   fCurEvent(0),
   fCurFile(0),
-  fStack(0x0),
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0)
@@ -72,7 +69,6 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(con
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
-  fStack = aReader.fStack;
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
 }
@@ -94,7 +90,6 @@ AliFemtoEventReaderAODKinematicsChain& AliFemtoEventReaderAODKinematicsChain::op
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
-  fStack = aReader.fStack;
   fGenHeader = aReader.fGenHeader;
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
@@ -120,6 +115,7 @@ bool AliFemtoEventReaderAODKinematicsChain::GetConstrained() const
   // Check whether we read constrained or not constrained momentum
   return fConstrained;
 }
+
 //__________________
 AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
 {
@@ -161,7 +157,6 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
 
   //starting to reading tracks
   int nofTracks=0;  //number of all tracks in MC event
-  nofTracks=fStack->GetNtrack(); 
   int realnofTracks=0;//number of track which we use in analysis
 
 
@@ -169,142 +164,152 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
   int tV0direction = 0;
 
  //**** getting MC array ******
-  TClonesArray  *arrayMC;
-  arrayMC = dynamic_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-  cout<<"Number of particles: "<<arrayMC->GetEntries();
+  AliAODMCHeader *mcH = NULL;
+  TClonesArray *arrayMC = NULL;
 
-  /*
-  for (int i=0;i<nofTracks;i++)
-    {
-      //take only primaries
-      if(!fStack->IsPhysicalPrimary(i)) {continue;}
-	  	  
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
-	
-      	  //getting next track
-      TParticle *kinetrack= fStack->Particle(i);
+  mcH = (AliAODMCHeader *) fEvent->FindListObject(AliAODMCHeader::StdBranchName());
+  if (!mcH) {
+    cout << "AOD MC information requested, but no header found!" << endl;
+  }
 
+  arrayMC = (TClonesArray *) fEvent->FindListObject(AliAODMCParticle::StdBranchName());
+  if (!arrayMC) {
+    cout << "AOD MC information requested, but no particle array found!" << endl;
+  }
+  
+  // loop over MC stack 
+  for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
 
+    AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
+    if (!MCtrk) continue;
 
-
-      //setting multiplicity
-        realnofTracks++;//real number of tracks (only primary particles)
-
-      //setting normalized multiplicity
-      
-	if(kinetrack->GetPDG()->Charge()/3!=0)
-	  if (kinetrack->Pt() > 0.15 && kinetrack->Pt() < 20) 
-	    if (kinetrack->Eta() < 0.8)
-	      tNormMult++;
-	  
-	//counting particles that go into direction of VZERO detector
-	if(kinetrack->Eta() > 2.8 && kinetrack->Eta() < 5.1) //VZERO-A
-	  tV0direction++;
-	if(kinetrack->Eta() > -3.7 && kinetrack->Eta() < -1.7)//VZERO-C
-	  tV0direction++;	
+    AliFemtoTrack* trackCopy = new AliFemtoTrack();	
  
-	  //charge
-      trackCopy->SetCharge((short)(fStack->Particle(i)->GetPDG()->Charge()/3));
+    if(MCtrk->Charge()==0) trackCopy->SetCharge(0);
+    else if(MCtrk->Charge()<0) trackCopy->SetCharge(-1);
+    else if(MCtrk->Charge()>0) trackCopy->SetCharge(1);
 
 
-      //in aliroot we have AliPID 
-      //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
-      //we use only 5 first
-      double kinepid[5];
-      for(int pid_iter=0;pid_iter<5;pid_iter++)
-	  kinepid[pid_iter]=0;
+    //Momentum
+    double pxyz[3];
+    pxyz[0]=MCtrk->Px();
+    pxyz[1]=MCtrk->Py();
+    pxyz[2]=MCtrk->Pz();
+    AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+    if (v.Mag() < 0.0001) {
+      //cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
+      delete trackCopy;
+      continue;
+    }
+    trackCopy->SetP(v);//setting momentum
+    trackCopy->SetPt(MCtrk->Pt());
+    const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+    const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
 
-      int pdgcode = kinetrack->GetPdgCode();
-      //proton
-      if(pdgcode==2212 || pdgcode==-2212)
-        kinepid[4]=1000;
-      //kaon
-      else if(pdgcode==321 || pdgcode==-321 )
-        kinepid[3]=1000;
-      //pion
-      else if( pdgcode==211 || pdgcode==-211)
-        kinepid[2]=1000;
-      //electron
-      else if(pdgcode==11 || pdgcode==-11)
-        kinepid[0]=1000;
-      //muon
-      else if(pdgcode==13 || pdgcode==-13)
-        kinepid[1]=1000;
-      else if(pdgcode==3122 || pdgcode==-3122 || abs(pdgcode)==310 ) //Lambda, AntiLambda, K0
-	{; }
-      else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
-	{; }
-      else {
-	delete trackCopy; 
-	continue;
-      }
-
-      trackCopy->SetPidProbElectron(kinepid[0]);
-      trackCopy->SetPidProbMuon(kinepid[1]);
-      trackCopy->SetPidProbPion(kinepid[2]);
-      trackCopy->SetPidProbKaon(kinepid[3]);
-      trackCopy->SetPidProbProton(kinepid[4]);
-					
-					
-	//Momentum
-      double pxyz[3];
-      double rxyz[3];
+    //label
+    trackCopy->SetLabel(ipart);
      
-      pxyz[0]=kinetrack->Px();
-      pxyz[1]=kinetrack->Py();
-      pxyz[2]=kinetrack->Pz();
-      
-      rxyz[0]=kinetrack->Vx();
-      rxyz[1]=kinetrack->Vy();
-      rxyz[2]=kinetrack->Vz();
+    //in aliroot we have AliPID 
+    //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
+    //we use only 5 first
+    double kinepid[5];
+    for(int pid_iter=0;pid_iter<5;pid_iter++)
+      kinepid[pid_iter]=0;
+    Int_t pdgcode = TMath::Abs(MCtrk->GetPdgCode()); 
+    //proton
+    if(pdgcode==2212 || pdgcode==-2212)
+      kinepid[4]=1000;
+    //kaon
+    else if(pdgcode==321 || pdgcode==-321 )
+      kinepid[3]=1000;
+    //pion
+    else if( pdgcode==211 || pdgcode==-211)
+      kinepid[2]=1000;
+    //electron
+    else if(pdgcode==11 || pdgcode==-11)
+      kinepid[0]=1000;
+    //muon
+    else if(pdgcode==13 || pdgcode==-13)
+      kinepid[1]=1000;
+    else if(pdgcode==3122 || pdgcode==-3122 || abs(pdgcode)==310 ) //Lambda, AntiLambda, K0
+      {; }
+    else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
+      {; }
+    else {
+      delete trackCopy; 
+      continue;
+    }
+    trackCopy->SetPidProbElectron(kinepid[0]);
+    trackCopy->SetPidProbMuon(kinepid[1]);
+    trackCopy->SetPidProbPion(kinepid[2]);
+    trackCopy->SetPidProbKaon(kinepid[3]);
+    trackCopy->SetPidProbProton(kinepid[4]);
+    AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+    tInfo->SetPDGPid(pdgcode);
+    trackCopy->SetHiddenInfo(tInfo);
 
-      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-      tInfo->SetPDGPid(pdgcode);
-      tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
-      tInfo->SetMass(kinetrack->GetMass());
-      tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
-      trackCopy->SetHiddenInfo(tInfo);
+    //setting multiplicity
+    realnofTracks++;//real number of tracks (only primary particles)
 
-      trackCopy->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
-      trackCopy->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
-
-
-	if (fRotateToEventPlane) {
-	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
-	  double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
-	  
-	  pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
-	  pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
-	}
-
-	AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
-	if (v.Mag() < 0.0001) {
-	  //cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
-	  delete trackCopy;
-	  continue;
-	}
-
-	trackCopy->SetP(v);//setting momentum
-	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
-	const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
-	const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
-
-	//label
-	trackCopy->SetLabel(i);
-
-	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
-	//cout<<"Track added: "<<i<<endl;
-
+    hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
+    //cout<<"Track added: "<<ipart<<endl;
+  }
+  //*******************************
+  /*
+    for (int i=0;i<nofTracks;i++)
+    {
+    //take only primaries
+    if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	  	  
+    AliFemtoTrack* trackCopy = new AliFemtoTrack();	
 	
-		
+    //getting next track
+    TParticle *kinetrack= fStack->Particle(i);
+
+    //charge
+    trackCopy->SetCharge((short)(fStack->Particle(i)->GetPDG()->Charge()/3));
+
+					
+    //Momentum
+    double rxyz[3];
+     
+    rxyz[0]=kinetrack->Vx();
+    rxyz[1]=kinetrack->Vy();
+    rxyz[2]=kinetrack->Vz();
+
+    AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+    tInfo->SetPDGPid(pdgcode);
+    tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+    tInfo->SetMass(kinetrack->GetMass());
+    tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+    trackCopy->SetHiddenInfo(tInfo);
+
+    trackCopy->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+    trackCopy->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+
+    if (fRotateToEventPlane) {
+    double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
+    double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
+	  
+    pxyz[0] = tRad*TMath::Cos(tPhi - tReactionPlane);
+    pxyz[1] = tRad*TMath::Sin(tPhi - tReactionPlane);
+    }
+
+    AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
+    if (v.Mag() < 0.0001) {
+    //cout << "Found 0 momentum ???? "  << pxyz[0] << " " << pxyz[1] << " " << pxyz[2] << endl;
+    delete trackCopy;
+    continue;
+    }
+    const AliFmThreeVectorD kP(pxyz[0],pxyz[1],pxyz[2]);
+    const AliFmThreeVectorD kOrigin(fV1[0],fV1[1],fV1[2]);
+	
     }
   */
   
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
-  if (fEstEventMult == kGlobalCount) 
-    hbtEvent->SetNormalizedMult(tNormMult);
-  else if(fEstEventMult == kVZERO)
-    hbtEvent->SetNormalizedMult(tV0direction);
+  hbtEvent->SetNormalizedMult(realnofTracks);
+  //  cout<<", tracks in the event saved: "<<realnofTracks<<endl;
   fCurEvent++;	
 
 
@@ -346,13 +351,7 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
   return hbtEvent; 
 }
 
-//___________________
-void AliFemtoEventReaderAODKinematicsChain::SetStackSource(AliStack *aStack)
-{
-  // The chain loads the stack for us
-  // You must provide the address where it can be found
-  fStack = aStack;
-}
+
 //___________________
 void AliFemtoEventReaderAODKinematicsChain::SetGenEventHeader(AliGenEventHeader *aGenHeader)
 {
@@ -432,7 +431,7 @@ Float_t AliFemtoEventReaderAODKinematicsChain::GetSigmaToVertex(double *impact, 
 
   TParticle *trackpos;
   TParticle *trackneg;
-
+  /*
   //daughters
   if(fStack->Particle(tv0->GetDaughter(0))->GetPDG()->Charge()>=0) //first positive, second negative
     {
@@ -448,7 +447,7 @@ Float_t AliFemtoEventReaderAODKinematicsChain::GetSigmaToVertex(double *impact, 
       tFemtoV0->SetidPos(tv0->GetDaughter(1));
       tFemtoV0->SetidNeg(tv0->GetDaughter(0));
     }
-
+  
   tFemtoV0->SetEtaPos(trackpos->Eta());
   tFemtoV0->SetEtaNeg(trackneg->Eta());
   
@@ -527,7 +526,7 @@ Float_t AliFemtoEventReaderAODKinematicsChain::GetSigmaToVertex(double *impact, 
       tFemtoV0->SetNegNSigmaTPCPi(1000);
       tFemtoV0->SetNegNSigmaTPCP(1000);
     }
-
+  */
   
 }
 
@@ -536,4 +535,9 @@ void AliFemtoEventReaderAODKinematicsChain::SetAODSource(AliAODEvent *aAOD)
   // The chain loads the AOD for us
   // You must provide the address where it can be found
   fEvent = aAOD;
+}
+
+void AliFemtoEventReaderAODKinematicsChain::SetAODheader(AliAODHeader *aAODheader)
+{
+  fAODheader = aAODheader;
 }
