@@ -895,7 +895,7 @@ void  AlianalysisTaskDptPID::createHistograms()
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
   name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
   name = "DCAz";    _dcaz     = createHisto1F(name,name, 100, -3.5, 3.5, "dcaZ","counts");
-  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, 0.0, 2.5, "dcaXY","counts");
+  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, -2.5, 2.5, "dcaXY","counts");
 
   // name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
   //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
@@ -1199,13 +1199,13 @@ void  AlianalysisTaskDptPID::UserExec(Option_t */*option*/)
 	  	
 	  Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
  	  
-	  if (DCAZ     <  _dcaZMin || 
-	      DCAZ     >  _dcaZMax ||
-	      DCAXY    >  _dcaXYMax ) continue; 
+	  //if (DCAZ     <  _dcaZMin || 
+	  //  DCAZ     >  _dcaZMax ||
+	  //  DCAXY    >  _dcaXYMax ) continue; 
 	  
 	  //==== QA ===========================
 	  _dcaz->Fill(DCAZ);
-	  //_dcaxy->Fill(DCAXY);
+	  _dcaxy->Fill(DCAXY);
 	  //_etadis->Fill(eta);
 	  _phidis->Fill(phi);
 	  //===================================
