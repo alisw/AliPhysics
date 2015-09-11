@@ -10,7 +10,7 @@ AliAnalysisTaskSEVertexingHF *AddTaskVertexingHFFilter(TString configPWG3d2h="$A
   }   
 
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
   //  TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("%s/ConfigVertexingHF.C", train_name.Data()));
   TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("ConfigVertexingHF.C"));
   AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
