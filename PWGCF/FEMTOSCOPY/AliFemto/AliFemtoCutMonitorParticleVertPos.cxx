@@ -1,9 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCutMonitorParticleVertPos - the cut monitor for particles to study    //
-// the difference between reconstructed and true momentum                     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCutMonitorParticleVertPos.cxx
+///
+
 #include "AliFemtoCutMonitorParticleVertPos.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelGlobalHiddenInfo.h"
@@ -71,19 +69,12 @@ AliFemtoCutMonitorParticleVertPos::AliFemtoCutMonitorParticleVertPos(const AliFe
   fEmPointT(0)
 {
   // copy constructor
-  if (fVertPos) delete fVertPos;
   fVertPos = new TH2D(*aCut.fVertPos);
-  if (fEtaZ) delete fEtaZ;
   fEtaZ = new TH2D(*aCut.fEtaZ);
-  if (fRadPos) delete fRadPos;
   fRadPos = new TH1D(*aCut.fRadPos);
-  if (fEmPointX) delete fEmPointX;
   fEmPointX = new TH1D(*aCut.fEmPointX);
-  if (fEmPointY) delete fEmPointY;
   fEmPointY = new TH1D(*aCut.fEmPointY);
-  if (fEmPointZ) delete fEmPointZ;
   fEmPointZ = new TH1D(*aCut.fEmPointZ);
-  if (fEmPointT) delete fEmPointT;
   fEmPointT = new TH1D(*aCut.fEmPointT);
 }
 
@@ -102,7 +93,7 @@ AliFemtoCutMonitorParticleVertPos::~AliFemtoCutMonitorParticleVertPos()
 AliFemtoCutMonitorParticleVertPos& AliFemtoCutMonitorParticleVertPos::operator=(const AliFemtoCutMonitorParticleVertPos& aCut)
 {
   // assignment operator
-  if (this == &aCut) 
+  if (this == &aCut)
     return *this;
 
   if (fVertPos) delete fVertPos;
@@ -119,15 +110,16 @@ AliFemtoCutMonitorParticleVertPos& AliFemtoCutMonitorParticleVertPos::operator=(
   fEmPointZ = new TH1D(*aCut.fEmPointZ);
   if (fEmPointT) delete fEmPointT;
   fEmPointT = new TH1D(*aCut.fEmPointT);
-  
+
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorParticleVertPos::Report(){ 
+AliFemtoString AliFemtoCutMonitorParticleVertPos::Report()
+{
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorParticleVertPos report"; 
+  string stemp = "*** AliFemtoCutMonitorParticleVertPos report";
   AliFemtoString returnThis = stemp;
-  return returnThis; 
+  return returnThis;
 }
 
 void AliFemtoCutMonitorParticleVertPos::Fill(const AliFemtoTrack* aTrack)
@@ -141,7 +133,7 @@ void AliFemtoCutMonitorParticleVertPos::Fill(const AliFemtoTrack* aTrack)
     fEtaZ->Fill(hinfo->GetGlobalEmissionPoint()->z(), tEta);
     fRadPos->Fill(hinfo->GetGlobalEmissionPoint()->Perp());
   }
-  
+
   AliFemtoModelHiddenInfo *hminfo = dynamic_cast<AliFemtoModelHiddenInfo *>(aTrack->GetHiddenInfo());
   if (hminfo) {
     fEmPointX->Fill(hminfo->GetEmissionPoint()->x());

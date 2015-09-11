@@ -13,12 +13,12 @@ class TH1F;
 class TH1D;
 class TH2D;
 class TList;
+
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoCutMonitor.h"
 
-class AliFemtoCutMonitorV0 : public AliFemtoCutMonitor{
-
+class AliFemtoCutMonitorV0 : public AliFemtoCutMonitor {
 public:
   AliFemtoCutMonitorV0();
   AliFemtoCutMonitorV0(const char *aName);
@@ -31,6 +31,7 @@ public:
   virtual void Fill(const AliFemtoEvent* aEvent) {AliFemtoCutMonitor::Fill(aEvent);}
   virtual void Fill(const AliFemtoTrack* aTrack){AliFemtoCutMonitor::Fill(aTrack);}
   virtual void Fill(const AliFemtoV0* aV0);
+  virtual void Fill(const AliFemtoXi* aXi) {AliFemtoCutMonitor::Fill(aXi);}
   virtual void Fill(const AliFemtoKink* aKink) {AliFemtoCutMonitor::Fill(aKink);}
   virtual void Fill(const AliFemtoPair* aPair) {AliFemtoCutMonitor::Fill(aPair);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aCollection);}
@@ -42,11 +43,11 @@ public:
   virtual TList *GetOutputList();
 
 private:
-  TH1F *fLambdaMass;     ///< Mass assuming lambda hypothesis
-  TH1F *fAntiLambdaMass; ///< Mass assuming antilambda hypothesis
-  TH1F *fK0ShortMass;    ///< Mass assuming k-short hypothesis
-  TH1F *fDcaDaughters;   ///< DCA of v0 daughters at Decay vertex
-  TH1F *fDcaV0ToPrimVertex;///< DCA of v0 to primary vertex
+  TH1F *fLambdaMass;          ///< Mass assuming lambda hypothesis
+  TH1F *fAntiLambdaMass;      ///< Mass assuming antilambda hypothesis
+  TH1F *fK0ShortMass;         ///< Mass assuming k-short hypothesis
+  TH1F *fDcaDaughters;        ///< DCA of v0 daughters at Decay vertex
+  TH1F *fDcaV0ToPrimVertex;   ///< DCA of v0 to primary vertex
   TH1F *fDcaPosToPrimVertex;
   TH1F *fDcaNegToPrimVertex;
   TH1F *fCosPointingAngle;
@@ -66,8 +67,8 @@ private:
   TH1D *fnsigmaPosAL;
   TH1D *fnsigmaNegAL;
 
-  TH1D *fParticleOrigin; ///< particle origin from MC
-  TH1D *fParticleId;     ///< true particle identification from MC
+  TH1D *fParticleOrigin;      ///< particle origin from MC
+  TH1D *fParticleId;          ///< true particle identification from MC
 };
 
 #endif
