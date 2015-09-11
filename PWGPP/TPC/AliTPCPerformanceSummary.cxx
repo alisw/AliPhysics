@@ -70,7 +70,7 @@ Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 Bool_t  AliTPCPerformanceSummary::GetStatInfo(TH1 * histo, TVectorF &statInfo, Int_t axis){
   //
   // fill basic statistical information
-  //
+  // 
   if (!histo){
     return kFALSE;
   }
@@ -1705,8 +1705,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
     // 
     
     (*pcstream)<<"trending"<<
-      "fitMIP.="<<&fitMIP<<
-      "fitElectron.="<<&fitEle<<
+      "fitMIP.="<<&fitMIP<<        // MIP position fit parameters, errors and chi2 
+      "fitElectron.="<<&fitEle<<   // electorn peak  fit parameters, errors and chi2 
       //
       "MIPattachSlopeC="<<attachSlopeC<<
       "MIPattachSlopeA="<<attachSlopeA<<
