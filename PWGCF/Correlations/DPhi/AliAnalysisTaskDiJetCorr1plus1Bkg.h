@@ -101,6 +101,9 @@ class AliAnalysisTaskDiJetCorr1plus1Bkg : public AliAnalysisTaskSE {
   virtual void   SetFilterBit(Int_t filterbit){fBit=filterbit;}//
   virtual void   SetTriggerpTValue(Double_t pTmin1, Double_t pTmax1){fTriggerpTLowThr = pTmin1, fTriggerpTHighThr = pTmax1;}
           void   SetEfficiencyWeightMap(THnF* hEff){fThnEff = hEff;}
+          void    SetResonanceCut(Bool_t resCut){fCutResonances = resCut;}
+          void    SetConversionCut(Bool_t conversionCut){fCutConversions = conversionCut;}
+          void    SetTwoTrackEfficiencyCut(Bool_t TTRcut){twoTrackEfficiencyCut = TTRcut;}
   
  private:
   inline Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);

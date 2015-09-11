@@ -1,16 +1,20 @@
 // $Id: AddTaskDiJetCorr1plus1Bkg.C
 
 AliAnalysisTaskDiJetCorr1plus1Bkg *AddTaskDiJetCorr1plus1Bkg(TString suffixName = " ",
-                                           TString fileTrackeff = "",
-                                           Bool_t ppOrPbPb = kTRUE,
-                                           Int_t bit = 272,
-                                           Double_t pTrgmin = 12.0,
-                                           Double_t pTrgmax = 16.0
-)
+                                                             TString fileTrackeff = "",
+                                                             Bool_t ppOrPbPb = kTRUE,
+                                                             Int_t bit = 272,
+                                                             Double_t pTrgmin = 12.0,
+                                                             Double_t pTrgmax = 16.0,
+                                                             Bool_t resCut = kFALSE,
+                                                             Bool_t conversionCut = kFALSE,
+                                                             Bool_t TTRcut = kFALSE
+                                                             
+                                                             )
 {
-  
-  
-  AliAnalysisTaskDiJetCorr1plus1Bkg *dijetcorr = new AliAnalysisTaskDiJetCorr1plus1Bkg("DiJetCorr");
+    
+    
+    AliAnalysisTaskDiJetCorr1plus1Bkg *dijetcorr = new AliAnalysisTaskDiJetCorr1plus1Bkg("DiJetCorr");
     
     dijetcorr->SelectCollisionCandidates(AliVEvent::kCentral|AliVEvent::kSemiCentral|AliVEvent::kMB);
     
@@ -48,8 +52,11 @@ AliAnalysisTaskDiJetCorr1plus1Bkg *AddTaskDiJetCorr1plus1Bkg(TString suffixName 
     dijetcorr->SetMixingTracks(50000);
     dijetcorr->SetFilterBit(bit);
     dijetcorr->SetTriggerpTValue(pTrgmin, pTrgmax); //GeV/c
+    dijetcorr->SetResonanceCut(resCut);
+    dijetcorr->SetConversionCut(conversionCut);
+    dijetcorr->SetTwoTrackEfficiencyCut(TTRcut);
     
-   
+    
     
     
     // Create containers for input/output
@@ -83,8 +90,8 @@ AliAnalysisTaskDiJetCorr1plus1Bkg *AddTaskDiJetCorr1plus1Bkg(TString suffixName 
     mgr->ConnectInput(dijetcorr,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(dijetcorr,1,coutputDiJetCorr);
     
-  return dijetcorr;
-  
+    return dijetcorr;
+    
 }
 
 
