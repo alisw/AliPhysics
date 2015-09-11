@@ -104,11 +104,13 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
 void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   TString triggerstring = "";
   TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+
   if(fTriggerStringFromPatches){
     triggerstring = GetFiredTriggerClassesFromPatches(triggerpatches);
   } else {
     triggerstring = fInputEvent->GetFiredTriggerClasses();
   }
+
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
       isEJ1 = triggerstring.Contains("EJ1"),
       isEJ2 = triggerstring.Contains("EJ2"),
@@ -348,6 +350,7 @@ void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass
           minADC_EJ2 = 127.,
           minADC_EG1 = 140.,
           minADC_EG2 = 89.;
+  if(!triggerpatches) return;
   Bool_t isEG1 = (triggerclass == "EG1"),
       isEG2 = (triggerclass == "EG2"),
       isEJ1 = (triggerclass == "EJ1"),
@@ -382,6 +385,7 @@ void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass
  */
 TString AliAnalysisTaskEmcalClustersRef::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
   TString triggerstring = "";
+  if(!triggerpatches) return triggerstring;
   Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
   double  minADC_EJ1 = 260.,
           minADC_EJ2 = 127.,

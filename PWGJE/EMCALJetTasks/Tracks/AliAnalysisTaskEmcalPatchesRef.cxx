@@ -95,10 +95,6 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
  */
 void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   TClonesArray *patches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-  if(!patches){
-    AliError("Trigger patch container not available");
-    return;
-  }
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
     triggerstring = GetFiredTriggerClassesFromPatches(patches);
@@ -159,6 +155,11 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     if(!isEG1){
       fHistos->FillTH1("hEventCountEG2excl", 1);
     }
+  }
+
+  if(!patches){
+    AliError("Trigger patch container not available");
+    return;
   }
 
   Double_t vertexpos[3];
@@ -295,6 +296,7 @@ void AliAnalysisTaskEmcalPatchesRef::CreateEnergyBinning(TArrayD& binning) const
  */
 TString AliAnalysisTaskEmcalPatchesRef::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
   TString triggerstring = "";
+  if(!triggerpatches) return triggerstring;
   Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
   double  minADC_EJ1 = 260.,
           minADC_EJ2 = 127.,
