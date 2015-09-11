@@ -21,7 +21,7 @@ class TList;
 #include "AliFemtoCutMonitor.h"
 
 class AliFemtoCutMonitorPairBetaT : public AliFemtoCutMonitor {
-  
+
  public:
   AliFemtoCutMonitorPairBetaT();
   AliFemtoCutMonitorPairBetaT(const char *aName, const int aBinsBetaT, double aMinBetaT, double aMaxBetaT, double aMassPart1, double aMassParrt2);
@@ -36,6 +36,7 @@ class AliFemtoCutMonitorPairBetaT : public AliFemtoCutMonitor {
   virtual void Fill(const AliFemtoEvent* aEvent) { AliFemtoCutMonitor::Fill(aEvent); }
   virtual void Fill(const AliFemtoTrack* aTrack) { AliFemtoCutMonitor::Fill(aTrack); }
   virtual void Fill(const AliFemtoV0* aV0) { AliFemtoCutMonitor::Fill(aV0); }
+  virtual void Fill(const AliFemtoXi* aXi) {AliFemtoCutMonitor::Fill(aXi);}
   virtual void Fill(const AliFemtoKink* aKink) { AliFemtoCutMonitor::Fill(aKink); }
   virtual void Fill(const AliFemtoPair* aPair);
   virtual void Fill(const AliFemtoParticleCollection* aCollection) { AliFemtoCutMonitor::Fill(aCollection); }
