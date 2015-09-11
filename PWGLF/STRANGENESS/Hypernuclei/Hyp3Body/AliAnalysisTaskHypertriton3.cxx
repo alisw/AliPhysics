@@ -46,6 +46,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskHypertriton3.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAODVertex.h"
 #include "AliCentrality.h"
 #include "AliESD.h"
 #include "AliESDEvent.h"
@@ -96,6 +97,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fMaxDecayLength(15.),
   fMinDecayLength(0.),
   fMinNormalizedDecL(0.),
+  fMaxLifeTime(9999.),
   fMinLifeTime(0.),
   fRapidity(0.5),
   fMaxPtMother(10.),
@@ -1238,7 +1240,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	ctau = (Hypertriton.M()*decayLengthH3L)/pTotHyper;
 	fHistLifetime->Fill(ctau);
 
-	if(ctau < fMinLifeTime) continue;
+	if(ctau < fMinLifeTime || ctau > fMaxLifeTime) continue;
 	
 	rapidity = Hypertriton.Rapidity();
 	fHistHyperRapidity->Fill(rapidity);
