@@ -89,7 +89,8 @@ TString bitNames[NBITS] = {
   Double_t alias_lumi_recorded[NBITS]      = {0};
   Double_t alias_lumi_reconstructed[NBITS] = {0};
   Double_t alias_lumi_accepted[NBITS]      = {0};
-
+  Int_t timeStart = 0;
+  Int_t timeEnd = 0;
   TString refClass="";
   Double_t refSigma=-1;
   Double_t refEff = 1.;
@@ -138,28 +139,29 @@ TString bitNames[NBITS] = {
   else if (run>=195344 && run<=197388) { refSigma=1590.; refEff = 0.76; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pPb_5.02: arxiv:1405.1849
   else if (run>=197470 && run<=197692) { refSigma=  18.; refEff = 0.39; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // pp_2.76: 18mb=47.7mb*0.39=sigma(VBAND)*R(0TVX/VBAND) (Martino,2012-03-12,RunCond)
   else if (run>=221835 && run<=223669) { refSigma= 52.5; refEff = 0.32; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino
-  else if (run>=221670 && run<=223983) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
-  else if (run>=223984 && run<=223984) { refSigma= 75.0; refEff = 0.66; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino and MC
-  else if (run>=223985 && run<=226110) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
-  else if (run>=226111 && run<=226115) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=226116 && run<=228909) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
-  else if (run>=228910 && run<=229376) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=229386 && run<=229398) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
-  else if (run>=229409 && run<=229410) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
-  else if (run>=229416 && run<=229893) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
-  else if (run>=229894 && run<=229899) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
-  else if (run>=229942 && run<=231321) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
-  else if (run>=232914 && run<=233858) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
-  else if (run>=233910 && run<=234050) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
-  else if (run>=234051               ) { refSigma= 75.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
+  else if (run>=221670 && run<=223983) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  else if (run>=223984 && run<=223984) { refSigma= 50.0; refEff = 0.66; refClass = "CADAND-B-NOPF-ALLNOTRD"; } // estimates from Martino and MC
+  else if (run>=223985 && run<=226110) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  else if (run>=226111 && run<=226115) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=226116 && run<=228909) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  else if (run>=228910 && run<=229376) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=229386 && run<=229398) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
+  else if (run>=229409 && run<=229410) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // estimates from Martino and MC
+  else if (run>=229416 && run<=229893) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
+  else if (run>=229894 && run<=229899) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  else if (run>=229942 && run<=231321) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-MUON";      } // estimates from Martino and MC
+  else if (run>=232914 && run<=233858) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
+  else if (run>=233910 && run<=234050) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-ALLNOTRD";  } // estimates from Martino and MC
+  else if (run>=234051               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENT";      } // estimates from Martino and MC
 
   Double_t orbitRate = 11245.;
   TString partition;
   TString lhcState;
+  TString lhcPeriod;
   TString activeDetectorsString;
   //Int_t run, TString ocdbStorage, TString &partition, TString &activeDetectorsString, Double_t& run_duration, 
   classes = GetClasses(run,ocdbStorage,partition,activeDetectorsString,run_duration,class_lMb,class_lMa,class_l0b,class_l0a,class_l1b,class_l1a,class_l2b,class_l2a);
-  Int_t status = triggerInfo(run,ocdbStorage,lhcState,fill,nBCsPerOrbit);
+  Int_t status = triggerInfo(run,ocdbStorage,lhcPeriod,lhcState,fill,nBCsPerOrbit,timeStart,timeEnd);
   activeDetectors.SetString(activeDetectorsString.Data());
   if (status>0) return 2;
   printf("%s %s\n",lhcState.Data(),partition.Data());
@@ -167,13 +169,13 @@ TString bitNames[NBITS] = {
   if (!partition.Contains("PHYSICS_1")) return 1;
 
   AliTriggerClass* refClassObject = (AliTriggerClass*) classes.FindObject(refClass);
-  Int_t refId = refClassObject->GetIndex()-1;
+  Int_t refId = classes.IndexOf(refClassObject);
   printf("refId=%i\n",refId);
   TString refCluster = refClassObject->GetCluster()->GetName();
   refCounts = (activeDetectorsString.Contains("TRD") && (refCluster.EqualTo("CENT") || refCluster.EqualTo("ALL") || refCluster.EqualTo("FAST"))) ? class_lMb[refId] : class_l0b[refId];
   if (refClass.Contains("1B-ABCE-")){
-    AliTriggerClass* emptyClass = (AliTriggerClass*) classes.FindObject("CBEAMB-ABCE-NOPF-ALL");
-    Int_t emptyL0B = class_l0b[emptyClass->GetIndex()-1];
+    Int_t emptyClassId = classes.IndexOf(classes.FindObject("CBEAMB-ABCE-NOPF-ALL"));
+    Int_t emptyL0B = class_l0b[emptyClassId];
     if (nBCsPerOrbit<0 && emptyL0B>0) nBCsPerOrbit = Double_t(emptyL0B)/orbitRate/run_duration;
   } else {
     nBCsPerOrbit= refClassObject->GetBCMask()->GetNUnmaskedBCs();
@@ -208,6 +210,8 @@ TString bitNames[NBITS] = {
   t->Branch("refCounts",&refCounts);
   t->Branch("lumi_seen",&lumi_seen);
   t->Branch("classes",&classes);
+  t->Branch("class_lMb",&class_lMb,Form("class_lMb[%i]/l",NMAXCLASSES));
+  t->Branch("class_lMa",&class_lMa,Form("class_lMa[%i]/l",NMAXCLASSES));
   t->Branch("class_l0b",&class_l0b,Form("class_l0b[%i]/l",NMAXCLASSES));
   t->Branch("class_l0a",&class_l0a,Form("class_l0a[%i]/l",NMAXCLASSES));
   t->Branch("class_l1b",&class_l1b,Form("class_l1b[%i]/l",NMAXCLASSES));
@@ -225,6 +229,8 @@ TString bitNames[NBITS] = {
   t->Branch("alias_lumi_reconstructed",&alias_lumi_reconstructed,Form("alias_lumi_reconstructed[%i]/D",NBITS));
   t->Branch("alias_lumi_accepted",&alias_lumi_accepted,Form("alias_lumi_accepted[%i]/D",NBITS));
   t->Branch("activeDetectors",&activeDetectors);
+  t->Branch("timeStart",&timeStart);
+  t->Branch("timeEnd",&timeEnd);
   
   TFile* fin = new TFile(qafilename);
   TH2D* h = fin ? (TH2D*) fin->Get("fHistStatistics") : 0;
