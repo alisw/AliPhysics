@@ -165,21 +165,21 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   fInputEvent->GetPrimaryVertex()->GetXYZ(vertexpos);
 
   Double_t energy, eta, phi;
-  TString patchname;
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEmcalTriggerPatchInfo *patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
 
-    if(patch->IsJetHighSimple()){
-      patchname = "EJ1";
-    } else if(patch->IsJetLowSimple()){
-      patchname = "EJ2";
-    } else if(patch->IsGammaHighSimple()){
-      patchname = "EG1";
-    } else if(patch->IsGammaLowSimple()){
-      patchname = "EG2";
-    } else {
-      // Undefined patch type
+    std::vector<TString> patchnames;
+    if(patch->IsJetHighSimple())
+      patchnames.push_back("EJ1");
+    if(patch->IsJetLowSimple())
+      patchnames.push_back("EJ2");
+    if(patch->IsGammaHighSimple())
+      patchnames.push_back("EG1");
+    if(patch->IsGammaLowSimple())
+      patchnames.push_back("EG2");
+    if(!patchnames.size()){
+      // Undefined patch type - ignore
       continue;
     }
 
@@ -189,47 +189,49 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     phi = patch->GetPhiGeo();
 
     // fill histograms allEta
-    if(isMinBias){
-      FillPatchHistograms("MB", patchname, energy, eta, phi);
-      // check for exclusive classes
-      if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-        FillPatchHistograms("MBexcl", patchname, energy, eta, phi);
+    for(std::vector<TString>::iterator nameit = patchnames.begin(); nameit != patchnames.end(); ++nameit){
+      if(isMinBias){
+        FillPatchHistograms("MB", *nameit, energy, eta, phi);
+        // check for exclusive classes
+        if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
+          FillPatchHistograms("MBexcl", *nameit, energy, eta, phi);
+        }
       }
-    }
-    if(isEJ1){
-      FillPatchHistograms("EJ1", patchname, energy, eta, phi);
-      if(isEG1 || isEG2) {
-        FillPatchHistograms("E1combined", patchname, energy, eta, phi);
-      } else {
-        FillPatchHistograms("E1Jonly", patchname, energy, eta, phi);
+      if(isEJ1){
+        FillPatchHistograms("EJ1", *nameit, energy, eta, phi);
+        if(isEG1 || isEG2) {
+          FillPatchHistograms("E1combined", *nameit, energy, eta, phi);
+        } else {
+          FillPatchHistograms("E1Jonly", *nameit, energy, eta, phi);
+        }
       }
-    }
-    if(isEJ2){
-      FillPatchHistograms("EJ2", patchname, energy, eta, phi);
-      // check for exclusive classes
-      if(!isEJ1){
-        FillPatchHistograms("EJ2excl", patchname, energy, eta, phi);
+      if(isEJ2){
+        FillPatchHistograms("EJ2", *nameit, energy, eta, phi);
+        // check for exclusive classes
+        if(!isEJ1){
+          FillPatchHistograms("EJ2excl", *nameit, energy, eta, phi);
+        }
+        if(isEG1 || isEG2){
+          FillPatchHistograms("E2combined", *nameit, energy, eta, phi);
+        } else {
+          FillPatchHistograms("E2Jonly", *nameit, energy, eta, phi);
+        }
       }
-      if(isEG1 || isEG2){
-        FillPatchHistograms("E2combined", patchname, energy, eta, phi);
-      } else {
-        FillPatchHistograms("E2Jonly", patchname, energy, eta, phi);
+      if(isEG1){
+        FillPatchHistograms("EG1", *nameit, energy, eta, phi);
+        if(!(isEJ1 || isEJ2)){
+          FillPatchHistograms("E1Gonly", *nameit, energy, eta, phi);
+        }
       }
-    }
-    if(isEG1){
-      FillPatchHistograms("EG1", patchname, energy, eta, phi);
-      if(!(isEJ1 || isEJ2)){
-        FillPatchHistograms("E1Gonly", patchname, energy, eta, phi);
-      }
-    }
-    if(isEG2){
-      FillPatchHistograms("EG2", patchname, energy, eta, phi);
-      // check for exclusive classes
-      if(!isEG1){
-        FillPatchHistograms("EG2excl", patchname, energy, eta, phi);
-      }
-      if(!(isEJ2 || isEJ1)){
-        FillPatchHistograms("E2Gonly", patchname, energy, eta, phi);
+      if(isEG2){
+        FillPatchHistograms("EG2", *nameit, energy, eta, phi);
+        // check for exclusive classes
+        if(!isEG1){
+          FillPatchHistograms("EG2excl", *nameit, energy, eta, phi);
+        }
+        if(!(isEJ2 || isEJ1)){
+          FillPatchHistograms("E2Gonly", *nameit, energy, eta, phi);
+        }
       }
     }
   }
