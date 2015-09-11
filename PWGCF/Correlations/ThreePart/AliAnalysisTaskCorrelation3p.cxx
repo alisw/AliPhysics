@@ -248,7 +248,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     for(int i=0; i<=nofZBins; ++i) ZBinsTemp[i] = fZBinEdges.At(i);
     //Create the AliEventPoolManager 
     AliEventPoolManager* poolMgr = new AliEventPoolManager(MaxNofEvents, MinNofTracks, nofMBins, (Double_t*)MBinsTemp, nofZBins, (Double_t*)ZBinsTemp);
-    poolMgr->SetTargetValues(MinNofTracks,0.1,1.0);
+    poolMgr->SetTargetValues(MinNofTracks,1.0E-4,1.0);
     correlator->InitEventMixing(poolMgr);
     
     //initialize track worker and add to the output if appropriate
@@ -317,14 +317,19 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
     FillHistogram("NEventsCent",fRunFillValue,fCentralityPercentile);
   }
   //To fill with tracks and pions:
-  TObjArray allrelevantParticles;
+  TObjArray* allrelevantParticles = NULL;
+  
+  if(!fQA){
+    allrelevantParticles = new TObjArray();
+    allrelevantParticles->SetOwner();//In order for it to work in the event pool.
+  }
   fNTriggers=0.0;//Reset fNTriggers
   fNAssociated=0.0;//Reset fNAssociated
   //Fill all the tracks
-   GetTracks(&allrelevantParticles, pEvent);
+   GetTracks(allrelevantParticles, pEvent);
 //   FillHistogram("centVsNofTracks",fCentralityPercentile,);
   //Fill all the pi0 candidates if appropriate
-  if (ftrigger == AliAnalysisTaskCorrelation3p::pi0) GetPi0s(&allrelevantParticles, pEvent);
+  if (ftrigger == AliAnalysisTaskCorrelation3p::pi0) GetPi0s(allrelevantParticles, pEvent);
   
   FillHistogram("Ntriggers",fNTriggers);
   FillHistogram("NAssociated",fNAssociated);
@@ -338,7 +343,8 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
     if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fCentralityPercentile);}
     if(fCollisionType==AliAnalysisTaskCorrelation3p::pp){dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetEventVzM(fVertex[2],fMultiplicity);}
     //Do the actual correlations.
-    if(!((fNTriggers+fNAssociated)==0))fCorrelator->Execute(NULL, &allrelevantParticles);//correlate for events that contain at least one trigger or associated.
+    if(!((fNTriggers+fNAssociated)==0))fCorrelator->Execute(NULL, allrelevantParticles);//correlate for events that contain at least one trigger or associated.
+    else delete allrelevantParticles;
     //Post the output
   }
   PostData(1, fOutput);
@@ -387,15 +393,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     FillHistogram("trackUnselectedPhi",t->Phi(),Weight);
     FillHistogram("trackUnselectedTheta",t->Theta(),Weight);
     if (!IsSelected(t)) continue;
-    allrelevantParticles->Add(t);
-//     if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::pp){
-//       FillHistogram("hnTracksinBins",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());
-//       if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
-//     }
-//     if(fefficiencies&&fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){
-//       FillHistogram("hnTracksinBins",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());
-//       if(fMcArray&&t->GetLabel()>=0){if(dynamic_cast<AliAODMCParticle*>(fMcArray->At(t->GetLabel()))->IsPhysicalPrimary())FillHistogram("hnTracksinBinsRecPP",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
-//     }
+    if(allrelevantParticles) allrelevantParticles->Add(new AliFilteredTrack(*t));
     if(fQA){
       FillHistogram("selectedTracksperRun",fRunFillValue);
       FillHistogram("NTracksVertex",fRunFillValue,fVertex[2]);
@@ -430,21 +428,6 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
       FillHistogram("trackAssociatedTheta",t->Theta(),Weight);
     }
   }
-  
-  
-//   if(fMcArray&&fefficiencies){
-//     int nofMCParticles = fMcArray->GetEntriesFast();
-//     for (int i=0;i<nofMCParticles;i++){
-//       AliVParticle* t =  (AliVParticle *) fMcArray->At(i);
-//       if (!t) continue;
-//       if( t->Charge()!=0){//check if they are physical primary particles
-// 	if (!IsSelected(t)) continue;
-// 	if(fCollisionType==AliAnalysisTaskCorrelation3p::pp){FillHistogram("hnTracksinBinsMC",fMultiplicity,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
-// 	if(fCollisionType==AliAnalysisTaskCorrelation3p::PbPb){FillHistogram("hnTracksinBinsMC",fCentralityPercentile,fVertex[2],t->Phi(),t->Eta(),t->Pt());}
-// 	
-//       }
-//     }
-//   }
 
   return nofTracks;
 }
@@ -507,7 +490,7 @@ void AliAnalysisTaskCorrelation3p::GetPi0s(TObjArray* allrelevantParticles, AliV
 	
 	if (! IsSelected(pi0loc)) continue;
 	fNTriggers+=1;
-	allrelevantParticles->Add(pi0loc);
+	if(allrelevantParticles) allrelevantParticles->Add(pi0loc);
 	if(IsSelectedTrigger(pi0loc))FillHistogram("pi0TriggerPt",pi0loc->Pt());
 
 	if (clu1->IsPHOS()) {
