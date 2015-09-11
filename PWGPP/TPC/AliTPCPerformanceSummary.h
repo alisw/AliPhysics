@@ -15,6 +15,8 @@ class AliPerformanceTPC;
 class AliPerformanceDEdx;
 class AliPerformanceDCA;
 class AliPerformanceMatch;
+class TVectorF; 
+class TF1; 
 
 class AliTPCPerformanceSummary
 {
