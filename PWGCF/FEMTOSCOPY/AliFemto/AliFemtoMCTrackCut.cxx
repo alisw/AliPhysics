@@ -32,7 +32,7 @@ AliFemtoMCTrackCut::AliFemtoMCTrackCut() :
   fCharge = 0;  // takes both charges 0
   fPt[0]=0.0;              fPt[1] = 100.0;//100
   fPDGcode = 0;
-  fRapidity[0]=-2;       fRapidity[1]=2;//-2 2
+  fRapidity[0]=-100;       fRapidity[1]=100;//-2 2
   fEta[0]=-2;       fEta[1]=2;//-2 2
   fLabel=false;
 }
@@ -43,7 +43,6 @@ AliFemtoMCTrackCut::~AliFemtoMCTrackCut(){
 //------------------------------
 bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
 {
-
   if (fLabel)
     {
       if(track->Label()<0)
@@ -52,7 +51,6 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
 	  return false;
 	}    
     }
-
   if (fCharge!=0)
     {               
       if (fCharge==10)	
@@ -68,7 +66,6 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
 	  return false;
 	}
     }
-
   if (fPDGcode!=0)
     {
      
@@ -119,7 +116,6 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
 	 }
 	 
      }
-
   float tEnergy = ::sqrt(track->P().Mag2()+fMass*fMass);
   //cout<<"MCTrackCut: tEnergy: "<<tEnergy<<endl;
   //cout<<"MCTrackCut: track->P().z(): "<<track->P().z()<<endl;
@@ -139,7 +135,6 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
     }
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
   float tEta = track->P().PseudoRapidity();
-
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
     {
       fNTracksFailed++;
