@@ -15,7 +15,7 @@ class AliPerformanceTPC;
 class AliPerformanceDEdx;
 class AliPerformanceDCA;
 class AliPerformanceMatch;
-class TVectorF; 
+#include "TVectorF.h"
 class TF1; 
 
 class AliTPCPerformanceSummary
