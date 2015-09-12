@@ -37,6 +37,11 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
     kInclusive = 0,
     kRecoil = 1
   };
+  
+  enum DerivSubtrOrder {
+    kSecondOrder = 0,
+    kFirstOrder = 1
+  };
 
   AliAnalysisTaskEmcalQGTagging();
   AliAnalysisTaskEmcalQGTagging(const char *name);
@@ -64,6 +69,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
   void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
   void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
+  void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -104,6 +110,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
+  Int_t                               fDerivSubtrOrder;
 
   
   TH2F                                *fh2ResponseUW;
