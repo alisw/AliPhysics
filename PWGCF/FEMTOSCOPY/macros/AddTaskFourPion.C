@@ -1,13 +1,14 @@
 AliFourPion *AddTaskFourPion(
-			         Bool_t MCcase=kFALSE,
-			         Bool_t TabulatePairs=kFALSE,
-				 Int_t CentBinLowLimit=0, 
-				 Int_t CentBinHighLimit=1,
-				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
-				 TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
-				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
-				 TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root",
-				 TString StEAName="alien:///alice/cern.ch/user/d/dgangadh/c3EAfile.root"
+			     Short_t CollisionType=0,
+			     Bool_t MCcase=kFALSE,
+			     Bool_t TabulatePairs=kFALSE,
+			     Int_t CentBinLowLimit=0, 
+			     Int_t CentBinHighLimit=1,
+			     TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
+			     TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
+			     TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
+			     TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root",
+			     TString StEAName="alien:///alice/cern.ch/user/d/dgangadh/c3EAfile.root"
 			     ) {
   
   //===========================================================================
@@ -24,7 +25,7 @@ AliFourPion *AddTaskFourPion(
   if(!FourPionTask) return NULL;
   FourPionTask->SetLEGOCase(kTRUE);
   FourPionTask->SetMCdecision(MCcase);
-  FourPionTask->SetCollisionType(0);
+  FourPionTask->SetCollisionType(CollisionType);
   FourPionTask->SetGenerateSignal(kFALSE);
   FourPionTask->SetTabulatePairs(TabulatePairs);
   FourPionTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
