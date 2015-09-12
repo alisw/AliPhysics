@@ -194,6 +194,15 @@ void AliAnalysisTaskpANormalizationCheckMC::UserCreateOutputObjects()
         fHistV0A_MCSelection = new TH1F("fHistV0A_MCSelection","",100,0,100);
         fListHist->Add(fHistV0A_MCSelection);
     }
+    if(! fHistV0AVsNch_DataSelection ) {
+        fHistV0AVsNch_DataSelection = new TH2F("fHistV0AVsNch_DataSelection","",100,0,100,200,-0.5,199.5);
+        fListHist->Add(fHistV0AVsNch_DataSelection);
+    }
+    if(! fHistV0AVsNch_MCSelection ) {
+        fHistV0AVsNch_MCSelection = new TH2F("fHistV0AVsNch_MCSelection","",100,0,100,200,-0.5,199.5);
+        fListHist->Add(fHistV0AVsNch_MCSelection);
+    }
+    
     
     //Main Output: Histograms
     for(Int_t ih=0; ih<9; ih++){
@@ -384,6 +393,35 @@ void AliAnalysisTaskpANormalizationCheckMC::UserExec(Option_t *)
     //NSD-generated Conditionals
     Bool_t lMCSelection   = ( lbIsPS && lbFstCk && lbMCVtxZ && lbCent );
     
+    Long_t lNchEta5   = 0;
+    Long_t lNchEta8   = 0;
+    Long_t lNchEta10  = 0;
+    Long_t lNchVZEROA = 0;
+    Long_t lNchVZEROC = 0;
+    Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
+    
+    //----- Loop on Stack ----------------------------------------------------------------
+    for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
+    {   // This is the begining of the loop on tracks
+        TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
+        if(!particleOne) continue;
+        if(!particleOne->GetPDG()) continue;
+        Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+        if(TMath::Abs(lThisCharge)<0.001) continue;
+        if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+        
+        //Double_t gpt = particleOne -> Pt();
+        Double_t geta = particleOne -> Eta();
+        
+        if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
+        if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
+        if( TMath::Abs(geta) < 1.0 ) lNchEta10++;
+        if( TMath::Abs(geta) < 1.0 ) lEvSel_INELgtZEROStackPrimaries = kTRUE;
+        if( 2.8 < geta && geta < 5.1 ) lNchVZEROA++;
+        if(-3.7 < geta && geta <-1.7 ) lNchVZEROC++;
+    }//End of loop on tracks
+    //----- End Loop on Stack ------------------------------------------------------------
+    
     //------------------------------------------------
     // Fill Event Counters
     //------------------------------------------------
@@ -395,9 +433,11 @@ void AliAnalysisTaskpANormalizationCheckMC::UserExec(Option_t *)
     
     if( lDataSelection ) {
         fHistV0A_DataSelection -> Fill( fCentrality_V0A );
+        fHistV0AVsNch_DataSelection -> Fill( fCentrality_V0A, lNchEta5 );
     }
     if( lMCSelection   ){
         fHistV0A_MCSelection   -> Fill( fCentrality_V0A );
+        fHistV0AVsNch_MCSelection   -> Fill( fCentrality_V0A, lNchEta5 );
     }
     
     //------------------------------------------------
