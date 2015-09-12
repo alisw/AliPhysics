@@ -47,7 +47,8 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain():
   fCurFile(0),
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
-  fRotateToEventPlane(0)
+  fRotateToEventPlane(0),
+  fReadOnlyPrimaries(true)
 {
   //constructor with 0 parameters , look at default settings 
 }
@@ -62,7 +63,8 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(con
   fCurFile(0),
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
-  fRotateToEventPlane(0)
+  fRotateToEventPlane(0),
+  fReadOnlyPrimaries(true)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -71,6 +73,7 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(con
   fCurFile = aReader.fCurFile;
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
+  fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
 }
 //__________________
 AliFemtoEventReaderAODKinematicsChain::~AliFemtoEventReaderAODKinematicsChain()
@@ -93,6 +96,7 @@ AliFemtoEventReaderAODKinematicsChain& AliFemtoEventReaderAODKinematicsChain::op
   fGenHeader = aReader.fGenHeader;
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
+  fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
   return *this;
 }
 //__________________
@@ -114,6 +118,11 @@ bool AliFemtoEventReaderAODKinematicsChain::GetConstrained() const
 {
   // Check whether we read constrained or not constrained momentum
   return fConstrained;
+}
+
+void AliFemtoEventReaderAODKinematicsChain::ReadOnlyPrimaries(bool primaries)
+{
+  fReadOnlyPrimaries = primaries;
 }
 
 //__________________
@@ -182,6 +191,11 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
 
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
     if (!MCtrk) continue;
+
+    if(fReadOnlyPrimaries)
+      {
+	if(!(MCtrk->IsPhysicalPrimary())) continue;
+      }
 
     AliFemtoTrack* trackCopy = new AliFemtoTrack();	
  
