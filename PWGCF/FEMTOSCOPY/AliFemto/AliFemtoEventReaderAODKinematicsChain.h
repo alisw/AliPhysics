@@ -50,6 +50,8 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   void SetAODSource(AliAODEvent *aAOD);
   void SetAODheader(AliAODHeader *aAODheader);
 
+  void ReadOnlyPrimaries(bool primaries);
+
  protected:
   AliAODHeader *fAODheader;
  private:
@@ -62,6 +64,8 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   AliGenEventHeader *fGenHeader; // Link to the generator event header
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   short          fRotateToEventPlane; // Rotate the event so that event plane is at x=0
+
+  bool           fReadOnlyPrimaries; // read only primaries
 
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
