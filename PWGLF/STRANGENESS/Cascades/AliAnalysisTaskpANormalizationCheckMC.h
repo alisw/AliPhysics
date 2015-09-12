@@ -74,6 +74,9 @@ private:
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1F *fHistV0A_DataSelection; //!
     TH1F *fHistV0A_MCSelection;   //!
+
+    TH2F *fHistV0AVsNch_DataSelection; //!
+    TH2F *fHistV0AVsNch_MCSelection;   //!
     
     //Desired Spectra: pi/K/p/K0/Lambda/Xi/Omega/Phi/K*
     //Data Selection Spectra
