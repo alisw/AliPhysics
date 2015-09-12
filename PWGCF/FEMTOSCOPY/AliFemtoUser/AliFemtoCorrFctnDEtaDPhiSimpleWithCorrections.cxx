@@ -141,29 +141,26 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
 
   float weight = 1;
 
-  //**tracks********
   if(pair->Track1()->Track()){
     if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();  
     else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();  
     else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();  
     else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();  
-   }
+  }
+  if(pair->Track1()->V0()){
+    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();  
+  }
 
   if(pair->Track2()->Track()){
     if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();  
     else if(part2==kKaon) weight *= pair->Track2()->Track()->CorrectionKaon();  
     else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();  
     else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();  
-   }
-
-  //***v0s**********
-  if(pair->Track1()->V0()){
-    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();  
   }
   if(pair->Track2()->V0()){
     if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();  
   }
-
+ 
 
   fDPhiDEtaNumerator->Fill(dphi, deta, weight);
 
@@ -190,13 +187,15 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
 
   float weight = 1;
 
-  //**tracks********
   if(pair->Track1()->Track()){
     if(part1==kPion) weight = pair->Track1()->Track()->CorrectionPion();  
     else if(part1==kKaon) weight = pair->Track1()->Track()->CorrectionKaon();  
     else if(part1==kProton) weight = pair->Track1()->Track()->CorrectionProton();  
     else if(part1==kAll) weight = pair->Track1()->Track()->CorrectionAll();  
    }
+  if(pair->Track1()->V0()){
+    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();  
+  }
 
   if(pair->Track2()->Track()){
     if(part2==kPion) weight *= pair->Track2()->Track()->CorrectionPion();  
@@ -204,14 +203,11 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
     else if(part2==kProton) weight *= pair->Track2()->Track()->CorrectionProton();  
     else if(part2==kAll) weight *= pair->Track2()->Track()->CorrectionAll();  
    }
-
-  //***v0s**********
-  if(pair->Track1()->V0()){
-    if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();  
-  }
   if(pair->Track2()->V0()){
     if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();  
   }
+
+
 
 
 
