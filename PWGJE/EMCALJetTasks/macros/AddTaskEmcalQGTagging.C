@@ -18,7 +18,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType,
 						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub,
 						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection,
-                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0. ) {
+                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskEmcalQGTagging::DerivSubtrOrder derivSubtrOrder = 0 ) {
  
 
   
@@ -48,6 +48,8 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   task->SetJetShapeType(jetShapeType);
   task->SetJetShapeSub(jetShapeSub);
   task->SetJetSelection(jetSelection);
+  task->SetDerivativeSubtractionOrder(derivSubtrOrder);
+  
   if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   TString thename(njetsBase);
