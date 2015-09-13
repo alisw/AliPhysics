@@ -770,37 +770,39 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
     p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;   
     
-    FillHistogram(Form("hPhotM%d_All",mod),p->Pt()) ;
-    if(fidArea>1){
-     FillHistogram(Form("hPhotM%dA2_All",mod),p->Pt()) ;
-      if(fidArea>2){
-        FillHistogram(Form("hPhotM%dA3_All",mod),p->Pt()) ;
-      }
-    }
-    if(p->IsDispOK()){
-      FillHistogram(Form("hPhotM%d_Disp",mod),p->Pt()) ;
+    if(fIsMB || (!fIsMB && p->IsTrig())){ 
+      FillHistogram(Form("hPhotM%d_All",mod),p->Pt()) ;
       if(fidArea>1){
-       FillHistogram(Form("hPhotM%dA2_Disp",mod),p->Pt()) ;
+       FillHistogram(Form("hPhotM%dA2_All",mod),p->Pt()) ;
         if(fidArea>2){
-          FillHistogram(Form("hPhotM%dA3_Disp",mod),p->Pt()) ;
+          FillHistogram(Form("hPhotM%dA3_All",mod),p->Pt()) ;
         }
       }
-      if(p->IsCPVOK()){
-        FillHistogram(Form("hPhotM%d_Both",mod),p->Pt()) ;
+      if(p->IsDispOK()){
+        FillHistogram(Form("hPhotM%d_Disp",mod),p->Pt()) ;
         if(fidArea>1){
-         FillHistogram(Form("hPhotM%dA2_Both",mod),p->Pt()) ;
+         FillHistogram(Form("hPhotM%dA2_Disp",mod),p->Pt()) ;
           if(fidArea>2){
-            FillHistogram(Form("hPhotM%dA3_Both",mod),p->Pt()) ;
+            FillHistogram(Form("hPhotM%dA3_Disp",mod),p->Pt()) ;
           }
         }
-      }
-    } 
-    if(p->IsCPVOK()){
-      FillHistogram(Form("hPhotM%d_CPV",mod),p->Pt()) ;
-      if(fidArea>1){
-       FillHistogram(Form("hPhotM%dA2_CPV",mod),p->Pt()) ;
-        if(fidArea>2){
-          FillHistogram(Form("hPhotM%dA3_CPV",mod),p->Pt()) ;
+        if(p->IsCPVOK()){
+          FillHistogram(Form("hPhotM%d_Both",mod),p->Pt()) ;
+          if(fidArea>1){
+            FillHistogram(Form("hPhotM%dA2_Both",mod),p->Pt()) ;
+            if(fidArea>2){
+              FillHistogram(Form("hPhotM%dA3_Both",mod),p->Pt()) ;
+            }
+          }
+        }
+      } 
+      if(p->IsCPVOK()){
+        FillHistogram(Form("hPhotM%d_CPV",mod),p->Pt()) ;
+        if(fidArea>1){
+         FillHistogram(Form("hPhotM%dA2_CPV",mod),p->Pt()) ;
+          if(fidArea>2){
+            FillHistogram(Form("hPhotM%dA3_CPV",mod),p->Pt()) ;
+          }
         }
       }
     }
