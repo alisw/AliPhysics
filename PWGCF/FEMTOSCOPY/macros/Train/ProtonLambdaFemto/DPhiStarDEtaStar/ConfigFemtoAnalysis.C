@@ -72,7 +72,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   // Switches for QA analyses
   int runmults[10] = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
   int multbins[11] = {0.001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
-  int runch[10] = {1, 0, 0, 1, 1, 1, 0, 0, 1, 0};
+  int runch[10] = {0, 0, 0, 0, 1, 1, 0, 0, 1, 0};
   const char *chrgs[10] = { "V0LL", "V0ALAL", "V0LAL", "V0PL", "V0APL", "V0PAL", "V0APAL","PP","PAP","APAP" };
 
   int runktdep = 0;
@@ -423,8 +423,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		}
 	      else if(ichg == 4) //V0APL
 		{
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,0); //0 - track-pos, 1 - track-neg
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1,11);
+		  // sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,0); //0 - track-pos, 1 - track-neg
+		  // sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1,11);
 		  anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 		  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 		  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
@@ -435,8 +435,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      else if(ichg == 5) //V0PAL
 		{
 		  anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,11); //0 - track-pos, 1 - track-neg
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1,0);
+		  // sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0,11); //0 - track-pos, 1 - track-neg
+		  // sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1,0);
 		  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 		  anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
 		  anetaphitpc[aniter]->SetSecondParticleCut(dtc3etaphitpc[aniter]);
@@ -477,7 +477,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		  avgsepcorr[aniter]->SetPairType(AliFemtoAvgSepCorrFctn::kTracks);
 		}
 
-	      // anetaphitpc[aniter]->AddCorrFctn(avgsepcorr[aniter]);
+	      anetaphitpc[aniter]->AddCorrFctn(avgsepcorr[aniter]);
 
 	      //cylmetaphitpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),3,nbinssh,0.0,shqmax,runshlcms);
 	      //anetaphitpc[aniter]->AddCorrFctn(cylmetaphitpc[aniter]);
@@ -502,10 +502,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      // cqinvtitpc[aniter] = new AliFemtoTPCInnerCorrFctn(Form("cqinvti%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax);
 	      // anetaphitpc[aniter]->AddCorrFctn(cqinvtitpc[aniter]);
 
-	      // if(ichg==3 || ichg==4 || ichg==5 || ichg==6 || ichg==8) { //PL, APL, PAL, APAL, PAP
-	      // 	cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero), nbinssh, 0.0,shqmax);
-	      // 	anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
-	      // }
+	      if(ichg==4 || ichg==5 || ichg==8) { //PL, APL, PAL, APAL, PAP
+	      	cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero), nbinssh, 0.0,shqmax);
+	      	anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
+	      }
 	      // else {
 	      // 	cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%iPsi%i", chrgs[ichg], imult, iepvzero),nbinssh,0.0,shqmax);
 	      // 	anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
