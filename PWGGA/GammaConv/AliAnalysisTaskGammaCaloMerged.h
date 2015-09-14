@@ -36,7 +36,6 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
 		// base functions for selecting photon and meson candidates in reconstructed data
 		void ProcessClusters();
-		void CalculatePi0Candidate(AliAODConversionPhoton* photon1, AliAODConversionPhoton* photon2);
 		
 		// MC functions
 		void SetIsMC(Int_t isMC){fIsMC=isMC;}
@@ -115,7 +114,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		TH1F								** fHistoClusGammaPt;				//! array of histos with cluster, pt
 		TH1F								** fHistoClusOverlapHeadersGammaPt;	//! array of histos with cluster, pt overlapping with other headers
 		TH2F								** fHistoClusMergedPtvsM02;			//! array of histos with cluster merged, pt vs M02
-
+		TH2F								** fHistoClusMergedPtvsM02Accepted; //! array of histos with cluster merged accepted mesons, pt vs M02
 		//histograms for pure MC quantities
 		TH1I 								**fHistoMCHeaders;					//! array of histos for header names
 		TH1F 								**fHistoMCPi0Pt;					//! array of histos with weighted pi0, pT
@@ -219,7 +218,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaCaloMerged, 3);
+		ClassDef(AliAnalysisTaskGammaCaloMerged, 4);
 };
 
 #endif

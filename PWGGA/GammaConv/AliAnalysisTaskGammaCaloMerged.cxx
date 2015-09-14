@@ -87,6 +87,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
 	fHistoClusGammaPt(NULL),
 	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoClusMergedPtvsM02(NULL),
+	fHistoClusMergedPtvsM02Accepted(NULL),
 	fHistoMCHeaders(NULL),
 	fHistoMCPi0Pt(NULL),
 	fHistoMCPi0WOWeightPt(NULL),
@@ -205,6 +206,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
 	fHistoClusGammaPt(NULL),
 	fHistoClusOverlapHeadersGammaPt(NULL),
 	fHistoClusMergedPtvsM02(NULL),
+	fHistoClusMergedPtvsM02Accepted(NULL),
 	fHistoMCHeaders(NULL),
 	fHistoMCPi0Pt(NULL),
 	fHistoMCPi0WOWeightPt(NULL),
@@ -362,6 +364,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 	fHistoClusGammaPt = new TH1F*[fnCuts];
 	fHistoClusOverlapHeadersGammaPt = new TH1F*[fnCuts];
 	fHistoClusMergedPtvsM02  =  new TH2F*[fnCuts];
+	fHistoClusMergedPtvsM02Accepted  =  new TH2F*[fnCuts];
 	
 	
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -480,11 +483,14 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 		fESDList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
 		fHistoClusMergedPtvsM02[iCut]  = new TH2F("ClusMerged_Pt_M02","ClusMerged_Pt_M02",500,0,50,500,0,5);
 		fESDList[iCut]->Add(fHistoClusMergedPtvsM02[iCut]);
+		fHistoClusMergedPtvsM02Accepted[iCut]  = new TH2F("ClusMerged_Pt_M02_AcceptedMeson","ClusMerged_Pt_M02_AcceptedMeson",500,0,50,500,0,5);
+		fESDList[iCut]->Add(fHistoClusMergedPtvsM02Accepted[iCut]);
 
 		if (fIsMC == 2){
 			fHistoClusGammaPt[iCut]->Sumw2();
 			fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
 			fHistoClusMergedPtvsM02[iCut]->Sumw2();
+			fHistoClusMergedPtvsM02Accepted[iCut]->Sumw2();
 		}
 		
 	
@@ -1216,12 +1222,10 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 			((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SplitEnergy(absCellIdList[0], absCellIdList[1],
 																		clus, fInputEvent, fIsMC, clusSub1, clusSub2);
 		}
-			// 			cout << clusSub1->E() << "\t" <<clusSub2->E() << endl; 
-			
 		fHistoClusMergedPtvsM02[fiCut]->Fill( PhotonCandidate->Pt(),
 													clus->GetM02(),
 													fWeightJetJetMC);	
-			
+						
 		// TLorentzvector with sub cluster 1
 		TLorentzVector clusterVector1;
 		clusSub1->GetMomentum(clusterVector1,vertex);
@@ -1276,12 +1280,25 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 			}
 		}
 		
-		CalculatePi0Candidate( PhotonCandidate1, PhotonCandidate2);
+		AliAODConversionMother *pi0cand = new AliAODConversionMother(PhotonCandidate1,PhotonCandidate2);
+						
+		if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+			fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
+			fHistoClusMergedPtvsM02Accepted[fiCut]->Fill( PhotonCandidate->Pt(), clus->GetM02(), fWeightJetJetMC);	
+
+			if (fDoMesonQA > 0 ){
+				fHistoMotherPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
+				fHistoMotherPtAlpha[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->GetAlpha()), fWeightJetJetMC);
+				fHistoMotherPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(), fWeightJetJetMC);
+			}
+		}
+		
 		
 		if(fIsMC> 0 && PhotonCandidate && PhotonCandidate1 && PhotonCandidate2){
 			ProcessTrueClusterCandidates(PhotonCandidate, clus->GetM02(), PhotonCandidate1, PhotonCandidate2);
 		}
-					
+
+		delete pi0cand;			
 		delete clusSub1;
 		delete tmpvec1;
 		delete PhotonCandidate1;
@@ -1292,8 +1309,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 		delete clus;
 		delete tmpvec;
 		delete PhotonCandidate;
-		
-
 	}
 	
 }
@@ -1552,24 +1567,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
 
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskGammaCaloMerged::CalculatePi0Candidate(AliAODConversionPhoton* photon1, AliAODConversionPhoton* photon2){
-	
-	AliAODConversionMother *pi0cand = new AliAODConversionMother(photon1,photon2);
-					
-	if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-		fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), fWeightJetJetMC);
-		
-		if (fDoMesonQA > 0 ){
-			fHistoMotherPtY[fiCut]->Fill(pi0cand->Pt(),pi0cand->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), fWeightJetJetMC);
-			fHistoMotherPtAlpha[fiCut]->Fill(pi0cand->Pt(),abs(pi0cand->GetAlpha()), fWeightJetJetMC);
-			fHistoMotherPtOpenAngle[fiCut]->Fill(pi0cand->Pt(),pi0cand->GetOpeningAngle(), fWeightJetJetMC);
-		}
-	}
-	
-	delete pi0cand;
-	pi0cand=0x0;
-}
 
 
 
