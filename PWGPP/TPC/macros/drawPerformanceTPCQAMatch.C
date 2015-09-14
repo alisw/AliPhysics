@@ -8,7 +8,7 @@ Int_t PlotTimestamp(TCanvas* c1)
     sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_ROOT/../src; git describe; cd $wdir;");
   }
   else {
-    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("echo $ALICE_VER");
+    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("echo $ALIROOT_VERSION");
   }
 
   TString sAliphysicsVer;
@@ -16,7 +16,7 @@ Int_t PlotTimestamp(TCanvas* c1)
     sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_PHYSICS/../src; git describe; cd $wdir;");
   }
   else {
-    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("echo $ALIPHYSICS_VER");
+    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("echo $ALIPHYSICS_VERSION");
   }
   TLatex* latTime = new TLatex(rightlegend,0.99,sTimestamp.Data());
   latTime->SetTextSize(0.03);
@@ -603,6 +603,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h1D = h2D->ProjectionY();
   h1D1 = h2D1->ProjectionY();
   h1D1->Divide(h1D);
+  h1D1->GetYaxis()->SetRangeUser(0,1.05);
   h1D1->SetTitle("TPC-ITS Matching Efficiency (A)");
   h1D1->Draw("e0");
 
@@ -613,6 +614,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h1D3 = h2D3->ProjectionY();
   h1D3->Divide(h1D2);
   h1D3->SetLineColor(2);
+  h1D3->GetYaxis()->SetRangeUser(0,1.05);
   h1D3->SetTitle("TPC-ITS Matching Efficiency (C)");
   h1D3->Draw("e0");
   PlotTimestamp(can8);

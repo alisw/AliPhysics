@@ -639,7 +639,6 @@ drawPerformanceTPCQAMatchTrends(const char* inFile = "trending.root", const char
   c1->SaveAs("pullPhiConstrain_vs_run.png");
   c1->Clear();
 
-
   /****** 1/Pt  ******/
   //  TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"deltaPt:run","");
   TGraphErrors *gr0 = (TGraphErrors*) TStatToolkit::MakeGraphSparse(tree,"deltaPt:run:deltaPt_Err","",1,1,1);
@@ -1171,7 +1170,7 @@ Int_t PlotTimestamp(const int nruns=0, const int nentries=0, TCanvas* c1)
     sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_ROOT/../src; git describe; cd $wdir;");
   }
   else {
-    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("echo $ALICE_VER");
+    sAlirootVer = "AliRoot: " + gSystem->GetFromPipe("echo $ALIROOT_VERSION");
   }
 
   TString sAliphysicsVer;
@@ -1179,7 +1178,7 @@ Int_t PlotTimestamp(const int nruns=0, const int nentries=0, TCanvas* c1)
     sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("wdir=`pwd`; cd $ALICE_PHYSICS/../src; git describe; cd $wdir;");
   }
   else {
-    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("echo $ALIPHYSICS_VER");
+    sAliphysicsVer = "AliPhysics: " + gSystem->GetFromPipe("echo $ALIPHYSICS_VERSION");
   }
   TLatex* latTime = new TLatex(rightlegend,0.13,sTimestamp.Data());
   latTime->SetTextSize(0.03);
