@@ -23,6 +23,7 @@
 #include "AliHLTHuffman.h"
 
 #include <iostream>
+#include <iomanip>
 #include <set>
 #include <bitset>
 #include <algorithm>
@@ -94,15 +95,24 @@ void AliHLTHuffmanNode::AssignCode(bool bReverse) {
 
 void AliHLTHuffmanNode::Print(Option_t* /*option*/) const {
         /// print info
-	std::cout << "value=" << GetValue() << ", weight=" << GetWeight() << ", length="
-			<< GetBinaryCodeLength() << ", code=" << GetBinaryCode().to_string()
-			<< std::endl;
+        std::streamsize precbackup = std::cout.precision();
+        std::streamsize widthbackup = std::cout.width();
+        std::ios::fmtflags flagsbackup = std::cout.flags();
+        std::cout.precision(6);
+        std::cout << " value="  << std::setw(6) << std::left << GetValue()
+                  << " weight=" << std::setw(12) << std::scientific << GetWeight()
+                  << " length=" << std::setw(3) << GetBinaryCodeLength()
+                  << " code=" << GetBinaryCode().to_string()
+                  << std::endl;
 	if (GetLeftChild()) {
 		GetLeftChild()->Print();
 	}
 	if (GetRightChild()) {
 		GetRightChild()->Print();
 	}
+        std::cout.precision(precbackup);
+        std::cout.width(widthbackup);
+        std::cout.flags(flagsbackup);
 }
 
 ClassImp(AliHLTHuffmanNode)
