@@ -233,10 +233,10 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
 
   TString triggerstring = GetFiredTriggerClasses(fTriggerPatches);
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
-      isEJ1 = triggerstring.Contains("EJ1"),
-      isEJ2 = triggerstring.Contains("EJ2"),
-      isEG1 = triggerstring.Contains("EG1"),
-      isEG2 = triggerstring.Contains("EG2");
+      isEJ1 = AliVEvent::kEMCEJE && triggerstring.Contains("EJ1"),
+      isEJ2 = AliVEvent::kEMCEJE && triggerstring.Contains("EJ2"),
+      isEG1 = AliVEvent::kEMCEGA && triggerstring.Contains("EG1"),
+      isEG2 = AliVEvent::kEMCEGA && triggerstring.Contains("EG2");
   if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event

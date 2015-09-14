@@ -112,11 +112,11 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   }
 
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
-      isEJ1 = triggerstring.Contains("EJ1"),
-      isEJ2 = triggerstring.Contains("EJ2"),
-      isEG1 = triggerstring.Contains("EG1"),
-      isEG2 = triggerstring.Contains("EG2"),
-      isEMC7 = triggerstring.Contains("EMC7");
+      isEJ1 = AliVEvent::kEMCEJE && triggerstring.Contains("EJ1"),
+      isEJ2 = AliVEvent::kEMCEJE && triggerstring.Contains("EJ2"),
+      isEG1 = AliVEvent::kEMCEGA && triggerstring.Contains("EG1"),
+      isEG2 = AliVEvent::kEMCEGA && triggerstring.Contains("EG2"),
+      isEMC7 = AliVEvent::kEMC7 && triggerstring.Contains("CEMC7");
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
