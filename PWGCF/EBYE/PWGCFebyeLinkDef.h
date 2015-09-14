@@ -45,6 +45,7 @@
 #pragma link C++ class AliEbyEParticleRatioFluctuationTask+;
 #pragma link C++ class AliEbyEPidTaskFastGen+;
 #pragma link C++ class AliEbyEPidTTask+;
+#pragma link C++ class AliEbyEPidTTaskExPid+;
 #pragma link C++ class AliEbyEPidTTaskMC+;
 #pragma link C++ class AliEbyEPidRatioBase+;
 #pragma link C++ class AliEbyEPidRatioDCA+;
