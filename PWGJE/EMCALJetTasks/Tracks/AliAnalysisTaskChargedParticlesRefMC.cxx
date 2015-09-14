@@ -130,6 +130,8 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTH1("hNtrialsEvent", "Number of trials (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTProfile("hCrossSectionEvent", "PYTHIA cross section (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
+  fHistos->CreateTH1("hTriggerJetPtNoCut", "pt of trigger jets wihtout cuts", 1000, 0., 500);
+  fHistos->CreateTH1("hTriggerJetPtNoWithCut", "pt of trigger jets after cuts", 1000, 0., 500);
   TString triggers[15] = {"True", "MB", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
@@ -217,12 +219,14 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   if(!fMCEvent) return;
   AliGenPythiaEventHeader *pyheader = GetPythiaHeader();
   if(pyheader){
+    FillTriggerJetHistograms("hTriggerJetPtNoCut", pyheader);
     fHistos->FillTH1("hNtrialsNoSelect",1,pyheader->Trials());
-  }
-  if(fFracPtHard > 0){
-    // Apply outlier cut in case of a positive fraction of pthard
-    if(IsOutlier(pyheader))
-      return;
+    if(fFracPtHard > 0){
+      // Apply outlier cut in case of a positive fraction of pthard
+      if(IsOutlier(pyheader))
+        return;
+    }
+    FillTriggerJetHistograms("hTriggerJetPtNoWithCut", pyheader);
   }
   TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   if(!fTriggerPatches) return;
@@ -505,6 +509,22 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
         }
       }
     }
+  }
+}
+
+/**
+ * Fill histogram with pt of all triggering jets
+ * @param histname Name of the histogram to fill
+ * @param header PYTHIA event header with jet information
+ */
+void AliAnalysisTaskChargedParticlesRefMC::FillTriggerJetHistograms(const char *histname, AliGenPythiaEventHeader *const header){
+  Float_t pbuf[4];
+  TLorentzVector jetvec;
+  for(int ijet = 0; ijet < header->NTriggerJets(); ijet++){
+    memset(pbuf, 0, sizeof(Float_t) * 4);
+    header->TriggerJet(ijet, pbuf);
+    jetvec.SetPxPyPzE(pbuf[0], pbuf[1], pbuf[2], pbuf[3]);
+    fHistos->FillTH1(histname, TMath::Abs(jetvec.Pt()));
   }
 }
 
