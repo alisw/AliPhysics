@@ -121,6 +121,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		void			SetIsMergedClusterCut(Bool_t merged)							{fIsMergedClusterCut = merged; return;}
 		Bool_t			GetIsMergedClusterCut()											{return fIsMergedClusterCut;}
 
+		Float_t FunctionMinMassCut(Float_t e);
+		Float_t FunctionMaxMassCut(Float_t e);
 		
 		// Request Flags
 		Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
@@ -145,8 +147,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Bool_t		fEnableMassCut;				// flag to enable mass cut
 		Double_t 	fSelectionLow; 				// lower meson inv mass window for further selection
 		Double_t 	fSelectionHigh; 			// higher meson inv mass window for further selection
-		TF1*		fFMinMassCut;				//
-		TF1*		fFMaxMassCut;				//
+		Int_t 		fSelectionWindowCut; 		// selection window for merged ana in mass
 		Double_t 	fAlphaMinCutMeson; 			// min value for meson alpha cut
 		Double_t 	fAlphaCutMeson; 			// max value for meson alpha cut
 		Double_t 	fRapidityCutMeson; 			// max value for meson rapidity
@@ -187,18 +188,20 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		
 		// Histograms
 		TObjString*	fCutString; 				// cut number used for analysis
-		TH1F*		hMesonCuts;					// bookkeeping for meson cuts
-		TH1F* 		hMesonBGCuts; 				// bookkeeping for meson bg cuts
-		TH1F* 		hDCAGammaGammaMesonBefore;	//
-		TH1F* 		hDCAZMesonPrimVtxBefore;	//
-		TH1F* 		hDCARMesonPrimVtxBefore;	//
-		TH1F* 		hDCAGammaGammaMesonAfter;	//
-		TH2F* 		hDCAZMesonPrimVtxAfter;		//
-		TH1F* 		hDCARMesonPrimVtxAfter;		//
+		TH1F*		fHistoMesonCuts;			// bookkeeping for meson cuts
+		TH1F* 		fHistoMesonBGCuts; 				// bookkeeping for meson bg cuts
+		TH1F* 		fHistoDCAGGMesonBefore;	//
+		TH1F* 		fHistoDCAZMesonPrimVtxBefore;	//
+		TH1F* 		fHistoDCARMesonPrimVtxBefore;	//
+		TH1F* 		fHistoDCAGGMesonAfter;	//
+		TH2F* 		fHistoDCAZMesonPrimVtxAfter;		//
+		TH1F* 		fHistoDCARMesonPrimVtxAfter;		//
+		TH1F* 		fHistoInvMassBefore;		//
+		TH1F* 		fHistoInvMassAfter;		//
 
 	private:
 
-		ClassDef(AliConversionMesonCuts,11)
+		ClassDef(AliConversionMesonCuts,12)
 };
 
 
