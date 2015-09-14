@@ -66,6 +66,7 @@ set(SRCS
   PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
   PIDFluctuation/task/AliEbyEPidTaskFastGen.cxx
   PIDFluctuation/task/AliEbyEPidTTask.cxx
+  PIDFluctuation/task/AliEbyEPidTTaskExPid.cxx
   PIDFluctuation/task/AliEbyEPidTTaskMC.cxx
   PIDFluctuation/task/AliEbyEPidRatioBase.cxx
   PIDFluctuation/task/AliEbyEPidRatioDCA.cxx
