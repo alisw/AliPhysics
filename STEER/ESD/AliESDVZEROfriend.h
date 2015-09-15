@@ -98,13 +98,6 @@ class AliESDVZEROfriend: public AliVVZEROfriend {
     void              SetTriggerInputsMask(UShort_t mask)
       { fTriggerMask = mask; }
 
-    enum EESDVZEROfriendParams {
-      kNChannels = 64, // number of electronic channels in V0 (FEE numbering)
-      kNEvOfInt  = 21, // number of events of interest
-      kNScalers  = 16, // number of scalers
-      kNBunches  = 10  // number of bunches used in Minimum Bias information 
-    };
-
   private:
 
     ULong64_t     fBBScalers[kNChannels];        // 'Beam-Beam' scalers for all channels
