@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+import subprocess, yaml, logging, re
+from argparse import ArgumentParser
+from logging import debug,error
+
+DEFAULT_PRE=""
+DEFAULT_POST="mv syswatch.log %(lower_name)swatch.log"
+
+
+def format(s, **kwds):
+  return s % kwds
+
+def execute(command, printer=debug):
+  popen = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+  lines_iterator = iter(popen.stdout.readline, "")
+  for line in lines_iterator:
+    debug(line.strip("\n"))  # yield line
+  output = popen.communicate()[0]
+  debug(output)
+  exitCode = popen.returncode
+  return exitCode
+
+if __name__ == "__main__":
+  parser = ArgumentParser()
+  parser.add_argument("--debug", "-d", dest="debug", action="store_true", default=False)
+  parser.add_argument("--variants", default=[])
+  parser.add_argument("--dry-run", "-n", dest="dryRun", action="store_true", default=False)
+  parser.add_argument("--cfg", "-c", dest="cfg", default="test/test.cfg")
+  parser.add_argument("testNames", nargs="*", default=[])
+  args = parser.parse_args()
+  
+  if args.variants:
+    args.variants = args.variants.split(",")
+
+  TEST_SPECS = yaml.safe_load(file(args.cfg).read())
+  testNames = args.testNames or TEST_SPECS.keys()
+  runnable = []
+
+  logger = logging.getLogger()
+  logger_handler = logging.StreamHandler()
+  logger.addHandler(logger_handler)
+
+  if args.debug:
+    logger.setLevel(logging.DEBUG)
+    logger_handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+  else:
+    logger.setLevel(logging.INFO)
+
+  runnable = [(n, TEST_SPECS[n]) for n in testNames]
+  for (testName, test) in runnable:
+    test["name"] = testName
+    test.setdefault("cwd", "test/%s" % testName)
+    test.setdefault("artifacts", "*.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log")
+    for step in test["steps"]:
+      step["test_name"] = testName
+      step.setdefault("lower_name", step["name"].lower())
+      step.setdefault("cfg", step["lower_name"] + ".C")
+      step.setdefault("out", step["lower_name"] + ".log")
+      step.setdefault("cwd", test["cwd"])
+      step.setdefault("prefix", "")
+      step.setdefault("variants", {"default": {}})
+      step.setdefault("driver", "aliroot -b -q %(cfg)s 2>&1 | tee %(out)s")
+      for (name, variant) in step["variants"].items():
+        suffix = name == "default" and ".log" or "_%s.log" % name
+        variant.setdefault("out", step["lower_name"] + suffix)
+        
+      variants = [(k, v) for k in step for v in step["variants"].values()]
+      for(key, variant) in variants:
+        variant.setdefault(key, step[key])
+        
+  currentCwd = ""
+  for (n, test) in runnable:
+    script = "# Running Test %s\n" % n
+    script += format("cd %(cwd)s\n"
+                    "rm -rf %(artifacts)s\n",
+                    **test)
+    currentCwd = test["cwd"]
+    for step in test["steps"]:
+      script += "# Step: %s\n" % step["name"]
+      if currentCwd != step["cwd"]:
+        currentCwd = step["cwd"]
+        script += "cd %s\n" % currentCwd
+      for (variantName, variant) in step["variants"].items():
+        variant["step_name"] = step["name"]
+        if args.variants and not variantName in args.variants:
+          continue
+        script += "# Variant %s\n" % variantName
+        script += variant.get("pre", DEFAULT_PRE) % variant + "\n"
+        script += format(variant["prefix"], **variant)
+        script += format(variant["driver"],  **variant) + "\n"
+        script += variant.get("post", DEFAULT_POST) % variant +"\n"
+    test["script"] = script
+
+  for (n, test) in runnable:
+    logger_handler.setFormatter(logging.Formatter('%%(levelname)s: %s: %%(message)s' % (test["name"])))
+    if args.dryRun:
+      print test["script"]
+    else:
+      execute(test["script"])
+
+  if args.dryRun:
+    print "# --dry-run specified. Not actually running."
