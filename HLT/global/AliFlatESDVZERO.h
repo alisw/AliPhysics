@@ -6,7 +6,7 @@
  * Primary Authors : Sergey Gorbunov, Jochen Thaeder, Chiara Zampolli     */
 
 /**
- * Flat structure representing a ESD vertex 
+ * Flat structure representing a ESD VZERO 
  */
 
 #include "Rtypes.h"
