@@ -929,7 +929,7 @@ void AliFourPion::ParInit()
   }else {// pPb & pp
     fMultLimit=kMultLimitpp; 
     fMbins=1; 
-    fQcut=0.6;
+    fQcut=0.5;
     fRstartMC = 1.0;
     fQbinsQinv3D = 60;
     fQupperBoundQinv3D = 0.6;
@@ -3222,13 +3222,16 @@ void AliFourPion::UserExec(Option_t *)
 		  GetWeight(pVect1, pVect2, weight12, weight12Err);
 		  GetWeight(pVect1, pVect3, weight13, weight13Err);
 		  GetWeight(pVect2, pVect3, weight23, weight23Err);
-		 
+		  // new way with all corrections applied before interpolating
+		  weight12CC[2] = weight12;
+		  weight13CC[2] = weight13;
+		  weight23CC[2] = weight23;
 		  
 		  if(sqrt(fabs(weight12*weight13*weight23)) > 1.0) {// weight should never be larger than 1
-		    if(fMbin==0 && bin1==0) {
+		    if(fMbin==0 && bin1==0 && EDindex3==0) {
 		      ((TH1D*)fOutputList->FindObject("fTPNRejects3pion1"))->Fill(q3, sqrt(fabs(weight12*weight13*weight23)));
 		    }
-		  }else{
+		  }//else{
 		    
 		    /*Float_t MuonCorr12=1.0, MuonCorr13=1.0, MuonCorr23=1.0;
 		    if(!fGenerateSignal && !fMCcase) {
@@ -3268,14 +3271,10 @@ void AliFourPion::UserExec(Option_t *)
 		    weight23CC[2] /= FSICorr23*ffcSq;
 		    weight23CC[2] *= MuonCorr23;*/
 		    //
-		    // new way with all corrections applied before interpolating
-		    weight12CC[2] = weight12;
-		    weight13CC[2] = weight13;
-		    weight23CC[2] = weight23;
-
+		  
 
 		    if(weight12CC[2] < 0 || weight13CC[2] < 0 || weight23CC[2] < 0) {// C2^QS can never be less than unity
-		      if(fMbin==0 && bin1==0) {
+		      if(fMbin==0 && bin1==0 && EDindex3==0) {
 			((TH1D*)fOutputList->FindObject("fTPNRejects3pion2"))->Fill(q3, sqrt(fabs(weight12CC[2]*weight13CC[2]*weight23CC[2])));
 		      }
 		      if(weight12CC[2] < 0) weight12CC[2]=0;
@@ -3292,7 +3291,7 @@ void AliFourPion::UserExec(Option_t *)
 		    }else{
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fBuildNeg->Fill(4, q3, 1);
 		    }
-		   
+		  
 		    //
 		    // Full Weight reconstruction
 		    
@@ -3338,7 +3337,7 @@ void AliFourPion::UserExec(Option_t *)
 		    //weightTotalErr += pow(weight12CC_e,2) + pow(weight13CC_e,2) + pow(weight23CC_e,2);
 		    //Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[EDindex3].ThreePT[4].fBuildErr->Fill(4, q3, weightTotalErr);
 		    
-		  }// 1st r3 den check
+		    //}// 1st r3 den check
 		  
 		}// C3 Building section end
 		
@@ -4311,6 +4310,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     }
     zd = (qLong-fQmean[fQlIndexL])/(fQmean[fQlIndexH]-fQmean[fQlIndexL]);
   }
+  
   //
   if(fInterpolationType==0){// Linear Interpolation of osl
     // w interpolation (kt)
