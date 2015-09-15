@@ -139,6 +139,10 @@ const AliHLTComponentDataType kAliHLTDataTypeFlatESDVertex = AliHLTComponentData
 const char kAliHLTESDContentDataTypeIDstring[8] = kAliHLTESDContentDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDContent = AliHLTComponentDataTypeInitializer(kAliHLTESDContentDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** ESD friend content specification */
+const char kAliHLTESDFriendContentDataTypeIDstring[8] = kAliHLTESDFriendContentDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeESDFriendContent = AliHLTComponentDataTypeInitializer(kAliHLTESDFriendContentDataTypeIDstring, kAliHLTDataOriginAny);
+
 /** ESD tree data specification */
 const char kAliHLTESDTreeDataTypeIDstring[8] = kAliHLTESDTreeDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDTree = AliHLTComponentDataTypeInitializer(kAliHLTESDTreeDataTypeIDstring, kAliHLTDataOriginAny);

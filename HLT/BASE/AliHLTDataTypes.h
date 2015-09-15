@@ -433,6 +433,12 @@ const int kAliHLTComponentDataTypeTopicSize =
  */
 # define kAliHLTESDContentDataTypeID   {'E','S','D','_','C','O','N','T'}
 
+/** ESD 
+ * data blocks designated for the ESD
+ * @ingroup alihlt_component_datatypes
+ */
+# define kAliHLTESDFriendContentDataTypeID   {'F','R','N','D','C','O','N','T'}
+
 /** ESD tree data block
  * TTree with an AliESD object of varying origin
  * @ingroup alihlt_component_datatypes
@@ -1258,6 +1264,11 @@ extern "C" {
    * @ingroup alihlt_component_datatypes
    */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDContent;
+
+  /** ESD friend content data specification, origin is 'any' 
+   * @ingroup alihlt_component_datatypes
+   */
+  extern const AliHLTComponentDataType kAliHLTDataTypeESDFriendContent;
 
   /** ESD Tree data specification, origin is 'any' 
    * @ingroup alihlt_component_datatypes

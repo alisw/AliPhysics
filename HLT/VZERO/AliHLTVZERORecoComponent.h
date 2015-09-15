@@ -136,6 +136,7 @@ public:
 
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
 
   /** interface function, see @ref AliHLTComponent for description */
   void GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier );

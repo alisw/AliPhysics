@@ -38,6 +38,8 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTVZERORecoComponent.h"
 
+#include "AliESDVZEROfriend.h"
+
 using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -93,9 +95,19 @@ void AliHLTVZERORecoComponent::GetInputDataTypes( vector<AliHLTComponentDataType
 }
 
 // #################################################################################
-AliHLTComponentDataType AliHLTVZERORecoComponent::GetOutputDataType() {
+AliHLTComponentDataType AliHLTVZERORecoComponent::GetOutputDataType() 
+{
   // see header file for class documentation
-  return kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO;
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTVZERORecoComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{ 
+  // see header file for class documentation
+  tgtList.clear();
+  tgtList.push_back( kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
+  tgtList.push_back( kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO);
+  return tgtList.size();
 }
 
 // #################################################################################
@@ -346,7 +358,8 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
     fVZEROReconstructor->FillESD(digitsTree, NULL, NULL);
 
     AliESDVZERO *esdVZERO = fVZEROReconstructor->GetESDVZERO();
-    
+    AliESDVZEROfriend *esdVZEROfriend = fVZEROReconstructor->GetESDVZEROfriend();
+   
     // Send info every 10 s
     const TDatime time;    
     static UInt_t lastTime=0;
@@ -355,8 +368,9 @@ Int_t AliHLTVZERORecoComponent::DoEvent(const AliHLTComponentEventData& /*evtDat
       HLTInfo("VZERO Multiplicity A %f - C %f", esdVZERO->GetMTotV0A(), esdVZERO->GetMTotV0A() );
     }
 
-    // -- Send AliESDVZERO
+    // -- Send AliESDVZERO & friend object
     PushBack(esdVZERO, kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO,0);
+    PushBack( esdVZEROfriend, kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO,0);
   }
   
   // -- Clean up

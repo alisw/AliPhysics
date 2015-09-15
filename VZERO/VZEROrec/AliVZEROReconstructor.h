@@ -61,6 +61,8 @@ public:
 
   AliESDVZERO*    GetESDVZERO() { return fESDVZERO; }
 
+  AliESDVZEROfriend*    GetESDVZEROfriend() { return fESDVZEROfriend; }
+  
 protected:
   AliESDVZERO*        fESDVZERO;       // ESD output object  
   AliESDEvent*             fESD;       // ESD object
