@@ -131,10 +131,10 @@ int AliHLTZMQsource::DoInit( int argc, const char** argv )
   int highWaterMarkRecv = 20;
   rc = zmq_setsockopt(fZMQin, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(highWaterMarkRecv));
   HLTMessage(Form("setopt ZMQ_RCVHWM=%i rc=%i errno=%i",highWaterMarkRecv, rc, errno));
-  int rcvtimeo = 1000;
+  int rcvtimeo = 0;
   rc = zmq_setsockopt(fZMQin, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(rcvtimeo));
   HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%i",rcvtimeo, rc, errno));
-  int sndtimeo = 1000;
+  int sndtimeo = 0;
   rc = zmq_setsockopt(fZMQin, ZMQ_SNDTIMEO, &sndtimeo, sizeof(sndtimeo));
   HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%i",sndtimeo, rc, errno));
 

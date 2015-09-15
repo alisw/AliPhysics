@@ -118,10 +118,10 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   int highWaterMarkRecv = 100;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(int));
   HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i errno=%s",highWaterMarkRecv, rc, (rc<0)?strerror(errno):0));
-  int rcvtimeo = 1000;
+  int rcvtimeo = 0;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(int));
   HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%s",rcvtimeo, rc, (rc<0)?strerror(errno):0));
-  int sndtimeo = 1000;
+  int sndtimeo = 0;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDTIMEO, &sndtimeo, sizeof(int));
   HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%s",sndtimeo, rc, (rc<0)?strerror(errno):0));
 
