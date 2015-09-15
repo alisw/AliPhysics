@@ -1,18 +1,16 @@
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// AliFemtoBetaTPairCut - a pair cut which selects paris based on their     //
-// betaT value                                                              //
-//                                                                          //
-// Authors: Przemyslaw Karczmarczyk przemyslaw.karczmarczyk@cern.ch         //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoBetaTPairCut.cxx
+///
+
 #include "AliFemtoBetaTPairCut.h"
 #include <string>
 #include <cstdio>
 #include <TMath.h>
 
 #ifdef __ROOT__
+/// \cond CLASSIMP
 ClassImp(AliFemtoBetaTPairCut)
+/// \endcond
 #endif
 
 //__________________
@@ -22,43 +20,39 @@ AliFemtoBetaTPairCut::AliFemtoBetaTPairCut():
   fBetaTMax(1.0e6),
   fMassPart1(0.13957018),
   fMassPart2(0.13957018)
-{
-  fBetaTMin = 0;
-  fBetaTMax = 1.0e6;
+{ /* no-op */
 }
 
 //__________________
-AliFemtoBetaTPairCut::AliFemtoBetaTPairCut(double minbetat, double maxbetat, double masspart1, double masspart2) :
+AliFemtoBetaTPairCut::AliFemtoBetaTPairCut(double minbetat, double maxbetat, double masspart1, double masspart2):
   AliFemtoPairCut(),
   fBetaTMin(minbetat),
   fBetaTMax(maxbetat),
   fMassPart1(masspart1),
   fMassPart2(masspart2)
-{
+{ /* no-op */
 }
 
 //__________________
-AliFemtoBetaTPairCut::AliFemtoBetaTPairCut(const AliFemtoBetaTPairCut& c) : 
+AliFemtoBetaTPairCut::AliFemtoBetaTPairCut(const AliFemtoBetaTPairCut& c):
   AliFemtoPairCut(c),
-  fBetaTMin(0.0),
-  fBetaTMax(1.0e6),
-  fMassPart1(0.13957018),
-  fMassPart2(0.13957018)
-{ 
-  fBetaTMin = c.fBetaTMin;
-  fBetaTMax = c.fBetaTMax;
-  fMassPart1 = c.fMassPart1;
-  fMassPart2 = c.fMassPart2;
+  fBetaTMin(c.fBetaTMin),
+  fBetaTMax(c.fBetaTMax),
+  fMassPart1(c.fMassPart1),
+  fMassPart2(c.fMassPart2)
+{ /* no-op */
 }
 
 //__________________
-AliFemtoBetaTPairCut::~AliFemtoBetaTPairCut() {
-  /* no-op */
+AliFemtoBetaTPairCut::~AliFemtoBetaTPairCut()
+{ /* no-op */
 }
 
 //__________________
-AliFemtoBetaTPairCut& AliFemtoBetaTPairCut::operator=(const AliFemtoBetaTPairCut& c) {
+AliFemtoBetaTPairCut& AliFemtoBetaTPairCut::operator=(const AliFemtoBetaTPairCut& c)
+{
   if (this != &c) {
+    AliFemtoPairCut::operator=(c);
     fBetaTMin = c.fBetaTMin;
     fBetaTMax = c.fBetaTMax;
     fMassPart1 = c.fMassPart1;
@@ -68,42 +62,47 @@ AliFemtoBetaTPairCut& AliFemtoBetaTPairCut::operator=(const AliFemtoBetaTPairCut
 }
 
 //__________________
-AliFemtoString AliFemtoBetaTPairCut::Report() {
+AliFemtoString AliFemtoBetaTPairCut::Report()
+{
   // Prepare a report from the execution
-  string stemp = "AliFemtoBetaT Pair Cut \n";  char ctemp[100];
-  snprintf(ctemp , 100, "Accept pair with betaT in range %f , %f",fBetaTMin,fBetaTMax);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  TString report("AliFemtoBetaT Pair Cut \n");
+
+  report += TString::Format("Accept pair with betaT in range %f , %f", fBetaTMin, fBetaTMax);
+
+  return AliFemtoString(report);
 }
 
 //__________________
 TList *AliFemtoBetaTPairCut::ListSettings() {
   // return a list of settings in a writable form
   TList *tListSetttings =  new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoBetaTPairCut.betatmax=%f", fBetaTMax);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoBetaTPairCut.betatmin=%f", fBetaTMin);
-  tListSetttings->AddLast(new TObjString(buf));
+
+  tListSetttings->Add(new TObjString(
+    TString::Format("AliFemtoBetaTPairCut.betatmax=%f", fBetaTMax)));
+
+  tListSetttings->Add(new TObjString(
+    TString::Format("AliFemtoBetaTPairCut.betatmin=%f", fBetaTMin)));
 
   return tListSetttings;
 }
 
 //__________________
-void AliFemtoBetaTPairCut::SetBetaTRange(double minbetat, double maxbetat) {
+void AliFemtoBetaTPairCut::SetBetaTRange(double minbetat, double maxbetat)
+{
   fBetaTMin = minbetat;
   fBetaTMax = maxbetat;
 }
 
 //__________________
-void AliFemtoBetaTPairCut::SetParticleMasses(double masspart1, double masspart2) {
+void AliFemtoBetaTPairCut::SetParticleMasses(double masspart1, double masspart2)
+{
   fMassPart1 = masspart1;
   fMassPart2 = masspart2;
 }
 
 //______________________________________________________
-bool AliFemtoBetaTPairCut::Pass(const AliFemtoPair* pair) {
+bool AliFemtoBetaTPairCut::Pass(const AliFemtoPair* pair)
+{
 
   bool pairpass = true;
 
