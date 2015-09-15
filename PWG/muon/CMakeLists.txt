@@ -67,7 +67,7 @@ set(SRCS
   AliAnalysisTaskSingleMu.cxx 
   AliAnalysisTaskSingleMuESD.cxx 
   AliAODEventInfo.cxx 
-  AliAODMuonReplicator.cxx 
+  AliAODMuonReplicator.cxx
   AliCFMuonResTask1.cxx 
   AliCFMuonResUpsilon.cxx 
   AliCFMuonSingleTask1.cxx 
@@ -81,7 +81,8 @@ set(SRCS
   AliMuonInfoStoreRD.cxx 
   AliMuonPairCuts.cxx 
   AliMuonsHFHeader.cxx 
-  AliMuonTrackCuts.cxx 
+  AliMuonTrackCuts.cxx
+  AliMuonTriggerCombo.cxx
   AliOADBMuonTrackCutsParam.cxx
   AliUtilityMuonAncestor.cxx
   AliVAnalysisMuon.cxx 
