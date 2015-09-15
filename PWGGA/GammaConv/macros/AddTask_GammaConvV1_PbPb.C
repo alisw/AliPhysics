@@ -131,10 +131,10 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	task->SetIsHeavyIon(isHeavyIon);
 	task->SetIsMC(isMC);
 	// Cut Numbers to use in Analysis
-	if (trainConfig == 176 || trainConfig == 177 || trainConfig == 178 || trainConfig == 179 || trainConfig == 180 || trainConfig == 181) Int_t numberOfCuts = 7;
-	else if (trainConfig == 198) Int_t numberOfCuts = 3; 
-	else if (trainConfig == 199) Int_t numberOfCuts = 2;
-	else Int_t numberOfCuts = 5; 
+	Int_t numberOfCuts;
+	if (trainConfig == 176 || trainConfig == 177 || trainConfig == 178 || trainConfig == 179 || trainConfig == 180 || trainConfig == 181) numberOfCuts = 7;
+	else if (trainConfig == 198 || trainConfig == 199) numberOfCuts = 1; 
+	else numberOfCuts = 5; 
 
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
@@ -1344,17 +1344,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 4] = "52500023"; photonCutArray[ 4] = "00216609000002008250400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
 	} else if ( trainConfig == 198){ // trainConfig for V0 finding efficiency - central classes
 		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0152503500000000"; // 0-10%
-		eventCutArray[ 1] = "60100013"; photonCutArray[ 1] = "00000070000000000500004000"; mesonCutArray[ 1] = "0152503500000000"; // 0-5%
-		eventCutArray[ 2] = "61200013"; photonCutArray[ 2] = "00000070000000000500004000"; mesonCutArray[ 2] = "0152503500000000"; // 5-10%
 	} else if ( trainConfig == 199){ // trainConfig for V0 finding efficiency - semicentral classes
 		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0152503500000000"; // 20-40%
-		eventCutArray[ 1] = "52400013"; photonCutArray[ 1] = "00000070000000000500004000"; mesonCutArray[ 1] = "0152503500000000"; // 20-50%
-	} else if ( trainConfig == 200){ //  trainConfig for V0 finding efficiency 
-		eventCutArray[ 0] = "60100013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0152503500000000"; // 0-5%
-		eventCutArray[ 1] = "61200013"; photonCutArray[ 1] = "00000070000000000500004000"; mesonCutArray[ 1] = "0152503500000000"; // 5-10%
-		eventCutArray[ 2] = "50100013"; photonCutArray[ 2] = "00000070000000000500004000"; mesonCutArray[ 2] = "0152503500000000"; // 0-10%
-		eventCutArray[ 3] = "52400013"; photonCutArray[ 3] = "00000070000000000500004000"; mesonCutArray[ 3] = "0152503500000000"; // 20-50%
-		eventCutArray[ 4] = "52500013"; photonCutArray[ 4] = "00000070000000000500004000"; mesonCutArray[ 4] = "0152503500000000"; // 20-40%	
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -1604,14 +1595,12 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
+		if(trainConfig == 198 || trainConfig == 199){
+			analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
+		}
 		ConvCutList->Add(analysisCuts[i]);
 		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 		
-		if(trainConfig == 198 || trainConfig == 199 || trainConfig == 200){
-
-			if (i == 2) analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
-			if (i == 4) analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
-		}
 
 
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
