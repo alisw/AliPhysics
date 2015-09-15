@@ -478,7 +478,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Bool_t rejectEvent = kFALSE;
   Int_t centBin = fCent->FindBin(cent);
   Double_t centWeight = 1.;
-//   centWeight =GetCentWeight(centBin);
+  centWeight =GetCentWeight(centBin);
  
 //   rejectEvent = RejectEvent(cent,centBin);
 //   if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEvent) return;
@@ -1435,8 +1435,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliESDt
   fAssTrackCuts->SetRequireITSRefit(fAssITSrefitCut);
   fAssTrackCuts->SetEtaRange(-0.9,0.9);
   fAssTrackCuts->SetRequireSigmaToVertex(kTRUE);
-  fAssTrackCuts->SetMaxChi2PerClusterTPC(4);
+  fAssTrackCuts->SetMaxChi2PerClusterTPC(3.5);
   fAssTrackCuts->SetMinNClustersTPC(fAssTPCnCut);
+  fAssTrackCuts->SetMinNClustersITS(2);
   fAssTrackCuts->SetMaxDCAToVertexZ(3.2);
   fAssTrackCuts->SetMaxDCAToVertexXY(2.4);
   fAssTrackCuts->SetDCAToVertex2D(kTRUE);

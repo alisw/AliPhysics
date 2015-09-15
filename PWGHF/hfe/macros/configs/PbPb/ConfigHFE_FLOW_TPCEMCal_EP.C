@@ -22,6 +22,7 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC,
   hfecuts->CreateStandardCuts();
   hfecuts->SetMinNClustersTPC(100);
   hfecuts->SetMinRatioTPCclusters(0.6);
+  hfecuts->SetMaxChi2perClusterTPC(3.5);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
   hfecuts->SetMinNClustersITS(3);
   hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
@@ -29,7 +30,7 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC,
   hfecuts->SetVertexRange(10.);
   hfecuts->SetTOFPIDStep(kFALSE);
   hfecuts->SetPtRange(1.5, 50);
-  hfecuts->SetMaxImpactParam(1,2);
+  hfecuts->SetMaxImpactParam(2.4,3.2); // radial, z
   
   AliAnalysisTaskFlowTPCEMCalEP *task = new AliAnalysisTaskFlowTPCEMCalEP("HFE v2");
   printf("task ------------------------ %p\n ", task);
