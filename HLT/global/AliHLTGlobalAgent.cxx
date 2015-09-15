@@ -192,12 +192,14 @@ int AliHLTGlobalAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandler
 #ifdef NOCOMPRESS  
   pHandler->CreateConfiguration("GLOBAL-flat-esd-converter", "GlobalFlatEsdConverter", esdInputs.Data(), "-object-compression=0");
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "-object-compression=0");
+  pHandler->CreateConfiguration("GLOBAL-esd-converter-friends", "GlobalEsdConverter", esdInputs.Data(), "-object-compression=0 -make-friends");
 #endif
 	
 	
 #ifndef NOCOMPRESS  
   pHandler->CreateConfiguration("GLOBAL-flat-esd-converter", "GlobalFlatEsdConverter", esdInputs.Data(), "");
   pHandler->CreateConfiguration("GLOBAL-esd-converter", "GlobalEsdConverter", esdInputs.Data(), "");
+  pHandler->CreateConfiguration("GLOBAL-esd-converter-friends", "GlobalEsdConverter", esdInputs.Data(), "-make-friends");
 #endif
   pHandler->CreateConfiguration("GLOBAL-flat-esd-test", "GlobalFlatEsdTest", "GLOBAL-esd-converter GLOBAL-flat-esd-converter", "");
   pHandler->CreateConfiguration("esd-to-flat-conversion", "GlobalEsdToFlatConverter", "GLOBAL-esd-converter", "");
