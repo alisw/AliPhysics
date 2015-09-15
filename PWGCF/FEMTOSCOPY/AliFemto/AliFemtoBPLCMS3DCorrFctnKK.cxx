@@ -1,29 +1,25 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoBPLCMS3DCorrFctn: a class to calculate 3D correlation         //
-// for pairs of identical particles.                                     //
-// It also stored the weighted qinv per bin histogram for the coulomb    //
-// correction.                                                           //
-// In analysis the function should be first created in a macro, then     //
-// added to the analysis, and at the end of the macro the procedure to   //
-// write out histograms should be called.     
-//ML March 2015 I deleted dividing in each event !!! for histo qinv       //
-//          as it was done before                                        //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoBPLCMS3DCorrFctnKK.cxx
+///
 
 #include "AliFemtoBPLCMS3DCorrFctnKK.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoAnalysisReactionPlane.h"
-//#include "AliFemtoHisto.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
+/// \cond CLASSIMP
 ClassImp(AliFemtoBPLCMS3DCorrFctnKK)
+/// \endcond
 #endif
 
 //____________________________
-AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(char* title, const int& nbins, const float& QLo, const float& QHi)
-  :
+AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(
+  char* title,
+  const int& nbins,
+  const float& QLo,
+  const float& QHi
+):
   AliFemtoCorrFctn(),
 //   fIDNumHisto(0),
 //   fIDDenHisto(0),
@@ -33,50 +29,47 @@ AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(char* title, const int& n
 //   fSMRatHisto(0),
 //   fCorrectionHisto(0),
 //   fCorrCFHisto(0),
-  fNumerator(0),
-  fDenominator(0),
-  fRatio(0),
-  fQinvHisto(0),
-  fLambda(0),
-  fRout2(0),
-  fRside2(0),
-  fRlong2(0),
-  fQinvNormLo(0),
-  fQinvNormHi(0),
+  fNumerator(NULL),
+  fDenominator(NULL),
+  fRatio(NULL),
+  fQinvHisto(NULL),
+  fLambda(0.6),
+  fRout2(6.0 * 6.0),
+  fRside2(6.0 * 6.0),
+  fRlong2(7.0 * 7.0),
+  fQinvNormLo((QHi - QLo) * 0.8),
+  fQinvNormHi((QHi - QLo) * 0.8),
   fNumRealsNorm(0),
   fNumMixedNorm(0),
   fUseRPSelection(0)
 {
-  // Basic constructor
-  // set some stuff...
-  fQinvNormLo = (QHi-QLo)*0.8;
-  fQinvNormHi = (QHi-QLo)*0.8;
-  fNumRealsNorm = 0;
-  fNumMixedNorm = 0;
+  /// Basic constructor
+  /// set some stuff...
+
   //  fCorrection = 0;  // pointer to Coulomb Correction object
 
   //  fSmearPair = 0; // no resolution correction unless user sets SmearPair
 
   // set up numerator
   char tTitNum[101] = "Num";
-  strncat(tTitNum,title, 100);
-  fNumerator = new TH3D(tTitNum,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  strncat(tTitNum, title, 100);
+  fNumerator = new TH3D(tTitNum, title, nbins, -QHi, QHi, nbins, -QHi, QHi, nbins, -QHi, QHi);
   // set up denominator
   char tTitDen[101] = "Den";
-  strncat(tTitDen,title, 100);
-  fDenominator = new TH3D(tTitDen,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  strncat(tTitDen, title, 100);
+  fDenominator = new TH3D(tTitDen, title, nbins, -QHi, QHi, nbins, -QHi, QHi, nbins, -QHi, QHi);
   // set up uncorrected denominator
   char tTitDenUncoul[101] = "DenNoCoul";
-  strncat(tTitDenUncoul,title, 100);
+  strncat(tTitDenUncoul, title, 100);
   //  fUncorrectedDenominator = new TH3D(tTitDenUncoul,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up ratio
   char tTitRat[101] = "Rat";
-  strncat(tTitRat,title, 100);
-  fRatio = new TH3D(tTitRat,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  strncat(tTitRat, title, 100);
+  fRatio = new TH3D(tTitRat, title, nbins, -QHi, QHi, nbins, -QHi, QHi, nbins, -QHi, QHi);
   // set up ave qInv
   char tTitQinv[101] = "Qinv";
-  strncat(tTitQinv,title, 100);
-  fQinvHisto = new TH3D(tTitQinv,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  strncat(tTitQinv, title, 100);
+  fQinvHisto = new TH3D(tTitQinv, title, nbins, -QHi, QHi, nbins, -QHi, QHi, nbins, -QHi, QHi);
 
   // to enable error bar calculation...
   fNumerator->Sumw2();
@@ -120,7 +113,7 @@ AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(char* title, const int& n
 //   // here comes the correction factor (which is just ratio of ideal ratio to smeared ratio)
 //   char tTitCorrection[101] = "CorrectionFactor";
 //   strncat(tTitCorrection,title, 100);
-//   fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);  
+//   fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   fCorrectionHisto->Sumw2();
 //   // here comes the fully corrected correlation function
 //   char tTitCorrCF[101] = "CorrectedCF";
@@ -128,15 +121,9 @@ AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(char* title, const int& n
 //   fCorrCFHisto = new TH3D(tTitCorrCF,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   fCorrCFHisto->Sumw2();
 
-  // user can (and should) override these defaults...
-  fLambda = 0.6;
-  fRout2 = 6.0*6.0;
-  fRside2 = 6.0*6.0;
-  fRlong2 = 7.0*7.0;
-
 }
 
-AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(const AliFemtoBPLCMS3DCorrFctnKK& aCorrFctn) :
+AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(const AliFemtoBPLCMS3DCorrFctnKK& aCorrFctn):
   AliFemtoCorrFctn(aCorrFctn),
 //   fIDNumHisto(0),
 //   fIDDenHisto(0),
@@ -146,46 +133,40 @@ AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(const AliFemtoBPLCMS3DCor
 //   fSMRatHisto(0),
 //   fCorrectionHisto(0),
 //   fCorrCFHisto(0),
-  fNumerator(0),
-  fDenominator(0),
-  fRatio(0),
-  fQinvHisto(0),
-  fLambda(0),
-  fRout2(0),
-  fRside2(0),
-  fRlong2(0),
-  fQinvNormLo(0),
-  fQinvNormHi(0),
-  fNumRealsNorm(0),
-  fNumMixedNorm(0),
-  fUseRPSelection(0)
+  fNumerator(NULL),
+  fDenominator(NULL),
+  fRatio(NULL),
+  fQinvHisto(NULL),
+  fLambda(aCorrFctn.fLambda),
+  fRout2(aCorrFctn.fRout2),
+  fRside2(aCorrFctn.fRside2),
+  fRlong2(aCorrFctn.fRlong2),
+  fQinvNormLo(aCorrFctn.fQinvNormLo),
+  fQinvNormHi(aCorrFctn.fQinvNormHi),
+  fNumRealsNorm(aCorrFctn.fNumRealsNorm),
+  fNumMixedNorm(aCorrFctn.fNumMixedNorm),
+  fUseRPSelection(aCorrFctn.fUseRPSelection)
 {
-  // Copy constructor
-//   fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
-//   fIDDenHisto = new TH3D(*aCorrFctn.fIDDenHisto);
-//   fIDRatHisto = new TH3D(*aCorrFctn.fIDRatHisto);
-//   fSMNumHisto = new TH3D(*aCorrFctn.fSMNumHisto);
-//   fSMDenHisto = new TH3D(*aCorrFctn.fSMDenHisto);
-//   fSMRatHisto = new TH3D(*aCorrFctn.fSMRatHisto);
-//   fCorrectionHisto = new TH3D(*aCorrFctn.fCorrectionHisto);
-//   fCorrCFHisto = new TH3D(*aCorrFctn.fCorrCFHisto);
+/// Copy constructor
+///   fIDNumHisto = new TH3D(*aCorrFctn.fIDNumHisto);
+///   fIDDenHisto = new TH3D(*aCorrFctn.fIDDenHisto);
+///   fIDRatHisto = new TH3D(*aCorrFctn.fIDRatHisto);
+///   fSMNumHisto = new TH3D(*aCorrFctn.fSMNumHisto);
+///   fSMDenHisto = new TH3D(*aCorrFctn.fSMDenHisto);
+///   fSMRatHisto = new TH3D(*aCorrFctn.fSMRatHisto);
+///   fCorrectionHisto = new TH3D(*aCorrFctn.fCorrectionHisto);
+///   fCorrCFHisto = new TH3D(*aCorrFctn.fCorrCFHisto);
+
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
   fRatio = new TH3D(*aCorrFctn.fRatio);
   fQinvHisto = new TH3D(*aCorrFctn.fQinvHisto);
-  fLambda = aCorrFctn.fLambda;
-  fRout2 = aCorrFctn.fRout2;
-  fRside2 = aCorrFctn.fRside2;
-  fRlong2 = aCorrFctn.fRlong2;
-  fQinvNormLo = aCorrFctn.fQinvNormLo;
-  fQinvNormHi = aCorrFctn.fQinvNormHi;
-  fNumRealsNorm = aCorrFctn.fNumRealsNorm;
-  fNumMixedNorm = aCorrFctn.fNumMixedNorm;
-  fUseRPSelection = aCorrFctn.fUseRPSelection;
 }
 //____________________________
-AliFemtoBPLCMS3DCorrFctnKK::~AliFemtoBPLCMS3DCorrFctnKK(){
-  // Destructor
+AliFemtoBPLCMS3DCorrFctnKK::~AliFemtoBPLCMS3DCorrFctnKK()
+{
+  /// Destructor
+
   delete fNumerator;
   delete fDenominator;
   delete fRatio;
@@ -202,7 +183,8 @@ AliFemtoBPLCMS3DCorrFctnKK::~AliFemtoBPLCMS3DCorrFctnKK(){
 //_________________________
 AliFemtoBPLCMS3DCorrFctnKK& AliFemtoBPLCMS3DCorrFctnKK::operator=(const AliFemtoBPLCMS3DCorrFctnKK& aCorrFctn)
 {
-  // assignment operator
+  /// assignment operator
+
   if (this == &aCorrFctn)
     return *this;
 //   if (fIDNumHisto) delete fIDNumHisto;
@@ -245,8 +227,10 @@ AliFemtoBPLCMS3DCorrFctnKK& AliFemtoBPLCMS3DCorrFctnKK::operator=(const AliFemto
 }
 
 //_________________________
-void AliFemtoBPLCMS3DCorrFctnKK::WriteOutHistos(){
-  // Write out all histograms to file
+void AliFemtoBPLCMS3DCorrFctnKK::WriteOutHistos()
+{
+  /// Write out all histograms to file
+
   fNumerator->Write();
   fDenominator->Write();
   //  fUncorrectedDenominator->Write();
@@ -271,34 +255,37 @@ void AliFemtoBPLCMS3DCorrFctnKK::WriteOutHistos(){
 //______________________________
 TList* AliFemtoBPLCMS3DCorrFctnKK::GetOutputList()
 {
-  // Prepare the list of objects to be written to the output
+  /// Prepare the list of objects to be written to the output
+
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fNumerator); 
-  tOutputList->Add(fDenominator);  
-  tOutputList->Add(fQinvHisto);  
+  tOutputList->Add(fNumerator);
+  tOutputList->Add(fDenominator);
+  tOutputList->Add(fQinvHisto);
 
   return tOutputList;
 }
 
 //_________________________
-void AliFemtoBPLCMS3DCorrFctnKK::Finish(){
-  // here is where we should normalize, fit, etc...
-  double tNumFact,tDenFact;
-  if ((fNumRealsNorm !=0) && (fNumMixedNorm !=0)){
+void AliFemtoBPLCMS3DCorrFctnKK::Finish()
+{
+  /// here is where we should normalize, fit, etc...
+
+  double tNumFact, tDenFact;
+  if ((fNumRealsNorm != 0) && (fNumMixedNorm != 0)) {
     tNumFact = double(fNumRealsNorm);
     tDenFact = double(fNumMixedNorm);
   }
   // can happen that the fNumRealsNorm and fNumMixedNorm = 0 if you do non-standard
   //   things like making a new CorrFctn and just setting the Numerator and Denominator
-  //   from OTHER CorrFctns which you read in (like when doing parallel processing) 
+  //   from OTHER CorrFctns which you read in (like when doing parallel processing)
   //ml else{
-    //ml    cout << "Warning! - no normalization constants defined - I do the best I can..." << endl;
-    //ml    int nbins = fNumerator->GetNbinsX();
-    //ml   int half_way = nbins/2;
-    //ml   tNumFact = fNumerator->Integral(half_way,nbins,half_way,nbins,half_way,nbins);
-    //ml  tDenFact = fDenominator->Integral(half_way,nbins,half_way,nbins,half_way,nbins);
-    //ml    }
+  //ml    cout << "Warning! - no normalization constants defined - I do the best I can..." << endl;
+  //ml    int nbins = fNumerator->GetNbinsX();
+  //ml   int half_way = nbins/2;
+  //ml   tNumFact = fNumerator->Integral(half_way,nbins,half_way,nbins,half_way,nbins);
+  //ml  tDenFact = fDenominator->Integral(half_way,nbins,half_way,nbins,half_way,nbins);
+  //ml    }
 
   ////ml  fRatio->Divide(fNumerator,fDenominator,tDenFact,tNumFact);
   //  fQinvHisto->Divide(fUncorrectedDenominator);
@@ -317,22 +304,18 @@ void AliFemtoBPLCMS3DCorrFctnKK::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoBPLCMS3DCorrFctnKK::Report(){
-  // Construct the report
-  string stemp = "LCMS Frame Bertsch-Pratt 3D Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in ratio:\t%E\n",fRatio->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Normalization region in Qinv was:\t%E\t%E\n",fQinvNormLo,fQinvNormHi);
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of pairs in Normalization region was:\n");
-  stemp += ctemp;
-  snprintf(ctemp , 100, "In numerator:\t%lu\t In denominator:\t%lu\n",fNumRealsNorm,fNumMixedNorm);
-  stemp += ctemp;
+AliFemtoString AliFemtoBPLCMS3DCorrFctnKK::Report()
+{
+  /// Construct the report
+  TString report("LCMS Frame Bertsch-Pratt 3D Correlation Function Report:\n");
+
+  report += TString::Format("Number of entries in numerator:\t%E\n", fNumerator->GetEntries())
+            + TString::Format("Number of entries in denominator:\t%E\n", fDenominator->GetEntries())
+            + TString::Format("Number of entries in ratio:\t%E\n", fRatio->GetEntries())
+            + TString::Format("Normalization region in Qinv was:\t%E\t%E\n", fQinvNormLo, fQinvNormHi)
+            + TString::Format("Number of pairs in Normalization region was:\n")
+            + TString::Format("In numerator:\t%lu\t In denominator:\t%lu\n", fNumRealsNorm, fNumMixedNorm);
+
   /*  if (fCorrection)
       {
       float radius = fCorrection->GetRadius();
@@ -345,75 +328,68 @@ AliFemtoString AliFemtoBPLCMS3DCorrFctnKK::Report(){
       stemp += ctemp;
   */
 
-  if (fPairCut){
-    snprintf(ctemp , 100, "Here is the PairCut specific to this CorrFctn\n");
-    stemp += ctemp;
-    stemp += fPairCut->Report();
-  }
-  else{
-    snprintf(ctemp , 100, "No PairCut specific to this CorrFctn\n");
-    stemp += ctemp;
+  if (fPairCut) {
+    report += "Here is the PairCut specific to this CorrFctn\n";
+    report += fPairCut->Report();
+  } else {
+    report += "No PairCut specific to this CorrFctn\n";
   }
 
-  //  
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  return AliFemtoString(report);
 }
 //____________________________
-void AliFemtoBPLCMS3DCorrFctnKK::AddRealPair( AliFemtoPair* pair){
-  // perform operations on real pairs
-  if (fPairCut){
+void AliFemtoBPLCMS3DCorrFctnKK::AddRealPair( AliFemtoPair* pair)
+{
+  /// perform operations on real pairs
+
+  if (fPairCut) {
     if (fUseRPSelection) {
       AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
-	cout << "RP aware cut requested, but not connected to the CF" << endl;
-	if (!(fPairCut->Pass(pair))) return;
+      if (!ktc) {
+        cout << "RP aware cut requested, but not connected to the CF" << endl;
+        if (!(fPairCut->Pass(pair))) return;
+      } else {
+        AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+        if (!arp) {
+          cout << "RP aware cut requested, but not connected to the CF" << endl;
+          if (!(fPairCut->Pass(pair))) return;
+        } else if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
       }
-      else {
-	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
-	if (!arp) {
-	  cout << "RP aware cut requested, but not connected to the CF" << endl;
-	  if (!(fPairCut->Pass(pair))) return;
-	}
-	else if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
-      }
-    }
-    else
-      if (!(fPairCut->Pass(pair))) return;
+    } else if (!(fPairCut->Pass(pair))) return;
   }
 
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
-  if ((tQinv < fQinvNormHi) && (tQinv > fQinvNormLo)) fNumRealsNorm++;
-  double qOut = (pair->QOutCMS());
-  double qSide = (pair->QSideCMS());
-  double qLong = (pair->QLongCMS());
+  if ((tQinv < fQinvNormHi) && (tQinv > fQinvNormLo)) {
+    fNumRealsNorm++;
+  }
+  const double qOut = (pair->QOutCMS()),
+               qSide = (pair->QSideCMS()),
+               qLong = (pair->QLongCMS());
 
-  fNumerator->Fill(qOut,qSide,qLong);
+  fNumerator->Fill(qOut, qSide, qLong);
 }
 //____________________________
-void AliFemtoBPLCMS3DCorrFctnKK::AddMixedPair( AliFemtoPair* pair){
-  // perform operations on mixed pairs
-//   if (fPairCut){
-//     if (!(fPairCut->Pass(pair))) return;
-//   }
-  if (fPairCut){
+void AliFemtoBPLCMS3DCorrFctnKK::AddMixedPair( AliFemtoPair* pair)
+{
+/// perform operations on mixed pairs
+///   if (fPairCut){
+///     if (!(fPairCut->Pass(pair))) return;
+///   }
+
+  if (fPairCut) {
     if (fUseRPSelection) {
       AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
-	cout << "RP aware cut requested, but not connected to the CF" << endl;
-	if (!(fPairCut->Pass(pair))) return;
+      if (!ktc) {
+        cout << "RP aware cut requested, but not connected to the CF" << endl;
+        if (!(fPairCut->Pass(pair))) return;
+      } else {
+        AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+        if (!arp) {
+          cout << "RP aware cut requested, but not connected to the CF" << endl;
+          if (!(fPairCut->Pass(pair))) return;
+        } else if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
       }
-      else {
-	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
-	if (!arp) {
-	  cout << "RP aware cut requested, but not connected to the CF" << endl;
-	  if (!(fPairCut->Pass(pair))) return;
-	}
-	else if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
-      }
-    }
-    else
-      if (!(fPairCut->Pass(pair))) return;
+    } else if (!(fPairCut->Pass(pair))) return;
   }
 
   //  double CoulombWeight = (fCorrection ? fCorrection->CoulombCorrect(pair) : 1.0);
@@ -425,14 +401,14 @@ void AliFemtoBPLCMS3DCorrFctnKK::AddMixedPair( AliFemtoPair* pair){
   double qSide = (pair->QSideCMS());
   double qLong = (pair->QLongCMS());
 
-  fDenominator->Fill(qOut,qSide,qLong,tCoulombWeight);
+  fDenominator->Fill(qOut, qSide, qLong, tCoulombWeight);
   //  fUncorrectedDenominator->Fill(qOut,qSide,qLong,1.0);
-  fQinvHisto->Fill(qOut,qSide,qLong,tQinv);
+  fQinvHisto->Fill(qOut, qSide, qLong, tQinv);
 
   /*
   // now for the momentum resolution stuff...
   if (fSmearPair){
-      double CorrWeight =  1.0 + 
+      double CorrWeight =  1.0 +
       fLambda*exp((-qOut*qOut*fRout2 -qSide*qSide*fRside2 -qLong*qLong*fRlong2)/0.038936366329);
     CorrWeight *= CoulombWeight;  // impt.
 
@@ -446,9 +422,9 @@ void AliFemtoBPLCMS3DCorrFctnKK::AddMixedPair( AliFemtoPair* pair){
 
     fSMNumHisto->Fill(qOut_prime,qSide_prime,qLong_prime,CorrWeight);
 
-    double SmearedCoulombWeight = ( fCorrection ? 
-				    fCorrection->CoulombCorrect(&(fSmearPair->SmearedPair())) : 
-				    1.0);
+    double SmearedCoulombWeight = ( fCorrection ?
+            fCorrection->CoulombCorrect(&(fSmearPair->SmearedPair())) :
+            1.0);
 
     fSMDenHisto->Fill(qOut_prime,qSide_prime,qLong_prime,SmearedCoulombWeight);
   }
