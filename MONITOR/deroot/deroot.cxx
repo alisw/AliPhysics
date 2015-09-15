@@ -102,11 +102,11 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
    ++gdcCounter;
    
    totalSize += gdcSize;
-   cout << Form("\r    \r %10ld events written (%9.2f MB)",gdcCounter,totalSize/1024.0/1024.0);
+   std::cout << Form("\r    \r %10ld events written (%9.2f MB)",gdcCounter,totalSize/1024.0/1024.0);
    
    if (nEntries>0)
    {
-     cout << Form(" [ %4.1f %% ]",100.0*gdcCounter/nEntries);
+     std::cout << Form(" [ %4.1f %% ]",100.0*gdcCounter/nEntries);
    }
    
     size_t written = fwrite(dateEvent, gdcSize, 1, dateFile);
@@ -116,8 +116,8 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
 
  // Cleanup resources
  
- cout << "\r     \r";
- cout.flush();
+ std::cout << "\r     \r";
+ std::cout.flush();
  fclose(dateFile);
  delete [] dateEvent;
  delete rawReader;
