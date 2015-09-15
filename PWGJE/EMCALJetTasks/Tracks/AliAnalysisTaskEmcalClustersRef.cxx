@@ -12,8 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <vector>
+#include <bitset>
+#include <iostream>
 #include <map>
+#include <sstream>
+#include <vector>
 
 #include <TArrayD.h>
 #include <TClonesArray.h>
@@ -112,12 +115,15 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   }
 
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
+  std::stringstream triggerdebug;
+  triggerdebug << "Offline bits: " << std::bitset<sizeof(UInt_t) * 8>(selectionstatus);
+  AliDebug(2, triggerdebug.str().c_str());
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEJ1 = (selectionstatus  & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
-      isEJ2 = (selectionstatus  & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
-      isEG1 = (selectionstatus  & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-      isEG2 = (selectionstatus  & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
-      isEMC7 = (selectionstatus  & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
+      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
+      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
+      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
+      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
