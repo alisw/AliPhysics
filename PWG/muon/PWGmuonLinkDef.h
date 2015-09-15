@@ -35,6 +35,7 @@
 #pragma link C++ class AliAnalysisTaskMuonCollisionMultiplicity+;
 #pragma link C++ class AliCFMuonResUpsilon+;
 #pragma link C++ class AliMuonEventCuts+;
+#pragma link C++ class AliMuonTriggerCombo+;
 #pragma link C++ class AliMuonTrackCuts+;
 #pragma link C++ class AliMuonPairCuts+;
 #pragma link C++ class AliVAnalysisMuon+;
