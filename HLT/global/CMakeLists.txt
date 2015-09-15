@@ -99,6 +99,7 @@ set(SRCS
     physics/AliHLTTPCCalibManagerComponent.cxx
     physics/AliHLTESDAnaManagerComponent.cxx
     physics/AliHLTAnalysisManager.cxx
+    physics/AliHLTAnalysisManagerComponent.cxx
     physics/AliHLTTPCCalibProcessor.cxx
    )
 

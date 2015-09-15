@@ -46,6 +46,7 @@
 #pragma link C++ class AliHLTTPCCalibManagerComponent+;
 #pragma link C++ class AliHLTESDAnaManagerComponent+;
 #pragma link C++ class AliHLTAnalysisManager+;
+#pragma link C++ class AliHLTAnalysisManagerComponent+;
 #pragma link C++ class AliHLTTPCCalibProcessor+;
 #ifdef ZMQ
 #pragma link C++ class AliHLTZMQsink+;
