@@ -1,12 +1,13 @@
 /*
-Comments: (new version)
+Comments:
 * 19 aug 2015: trichert changed mc primary method
 * 19 aug 2015: trichert changed vtx cut
-* 20 aug 2015: trichert primary flags in AOD MC
-* 8 sep 2015: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash), new
-
-TODO: 
-* flags on injected 
+* 08 sep 2015: removed rapidity v0data->y = aodV0->Y(pdgV0); from AOD MC (made it crash), new
+* 15 sep 2015: fixed bug: p_track->n_track
+* 15 sep 2015: flags on injected MC particles: 
+  - MC track: pidCodeMC>10 = injected
+  - track: pidCode>10 = injected
+  - p_track and n_track: n/p_pidCode>10 = injected
 
 */
 
@@ -19,7 +20,7 @@ TODO:
 #include <TH1.h>
 #include <TParticle.h>
 #include <TFile.h>
-
+ 
 // AliRoot includes
 #include <AliAnalysisManager.h>
 #include <AliAnalysisFilter.h>
@@ -939,8 +940,15 @@ void AliAnalysisTaskHighPtDeDx::ProcessMCTruthAOD()
     Short_t pidCodeMC = 0;
     pidCodeMC = GetPidCode(pdgCode);
    
-
- 
+    
+    TString genname;
+    Bool_t yesno=fMC->GetCocktailGenerator(iTracks, genname);
+    //    if(!yesno) Printf("no cocktail header list was found for this event");
+    if(yesno) {
+      if(!genname.Contains("Hijing")) 
+	pidCodeMC +=10;
+    }
+  
  
     // Here we want to add some of the MC histograms!
         
@@ -1921,6 +1929,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 
 
       }
+  
       //	Float_t tpcchi = aodTrack->Chi2perNDF();
       
       // Double_t p_con[3] = {0, 0, 0};
@@ -1945,14 +1954,23 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	  if(mcTrack->IsPhysicalPrimary())
 	    primaryFlag = 1;
 	  
-
 	  Int_t pdgCode = mcTrack->GetPdgCode();
 	  pidCode = GetPidCode(pdgCode);
 	  
+	  TString genname;
+	  Bool_t yesno=fMC->GetCocktailGenerator(label, genname);
+	  //    if(!yesno) Printf("no cocktail header list was found for this event");
+	  if(yesno) {
+	    if(!genname.Contains("Hijing")) 
+	      pidCode +=10;
+	  }
+
+
 	  ptMC      = mcTrack->Pt();
 	  
 	  AliAODMCParticle* mother = FindPrimaryMotherAOD(mcTrack);
 	  pdgMother = mother->GetPdgCode();	    
+
 	}
       }
     
@@ -2115,6 +2133,14 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent, Anal
 	  Int_t pdgCode = mcTrack->GetPdgCode();
 	  pidCode = GetPidCode(pdgCode);
 	  
+	  TString genname;
+	  Bool_t yesno=fMC->GetCocktailGenerator(label, genname);
+	  //    if(!yesno) Printf("no cocktail header list was found for this event");
+	  if(yesno) {
+	    if(!genname.Contains("Hijing")) 
+	      pidCode +=10;
+	  }
+
 	  ptMC      = mcTrack->Pt();
 	  
 	  AliAODMCParticle* mother = FindPrimaryMotherAOD(mcTrack);
@@ -2521,6 +2547,12 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	Int_t n_grandmother_label = 0;
 	//	Int_t n_mother_steps = 0;
 	
+	//_____________15sep2015__________
+	// Int_t lblMotherPosV0Dghter = 0;
+        // Int_t lblMotherNegV0Dghter = 0;
+	// Short_t injectedFlag = 1; 
+	//________________________________
+	
 	// positive track
 	const Int_t p_label = TMath::Abs(pTrack->GetLabel());
 	TParticle* p_mcTrack = fMCStack->Particle(p_label);	    
@@ -2537,7 +2569,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 
 	  Int_t p_pdgCode = p_mcTrack->GetPdgCode();
 	  p_pidCode = GetPidCode(p_pdgCode);
-	  
 	  p_ptMC      = p_mcTrack->Pt();
 	  
 	  //p_mother_label = FindPrimaryMotherLabelV0(fMCStack, p_label, 
@@ -2545,6 +2576,18 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 		//Replace with simple mother check
 	  p_mother_label = p_mcTrack->GetMother(0); 
 	  
+	  //____________15sep2015____________
+	  // lblMotherPosV0Dghter = p_mcTrack->GetFirstMother();
+	  // TParticle* pThisV0 = lMCstack->Particle(lblMotherPosV0Dghter);
+	  // if(!fMC->IsFromBGEvent(lblMotherPosV0Dghter)){ //fMC, fMCStack, fMCArray?
+	  //   if (!(pThisV0->GetFirstMother()<0))
+	  //     {
+	  // 	injectedFlag = 0;
+	  //     }
+	  // }
+	  //________________________________
+
+
 	  if(p_mother_label>0) {
 	    TParticle* p_mother = fMCStack->Particle(p_mother_label);
 			p_grandmother_label = p_mother->GetMother(0); 
@@ -2560,8 +2603,6 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	  if(fMCStack->IsPhysicalPrimary(n_label))
 	    n_primaryFlag = 1;
 	  
-	  //10/01/13. Add a flag to see if it is from material or WD
-
 	  if(fMCStack->IsSecondaryFromWeakDecay(n_label))
 	    n_primaryFlag = 2;
 
@@ -2588,17 +2629,17 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother_label>0 && n_mother_label>0 && p_mother_label == n_mother_label) {
 	  pdgV0 = p_pdgMother;
-      if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
-        primaryV0 = 1;
+	  if( fMCStack->IsPhysicalPrimary( p_mother_label ) ) {
+	    primaryV0 = 1;
 	  }
-		//store also PDG of the grandmother 
-		if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
-			TParticle *lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
-			pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
-		}
+	  //store also PDG of the grandmother 
+	  if ( n_grandmother_label > 0 && p_grandmother_label > 0 && n_grandmother_label==p_grandmother_label){ 
+	    TParticle *lGrandMotherPart = fMCStack -> Particle (p_grandmother_label) ; 
+	    pdgmotherV0 = lGrandMotherPart->GetPdgCode(); 
+	  }
 	}
       }
-
+      
  
     
       if(fTreeOption) {
@@ -3573,7 +3614,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	}
 
 	// negative track
-	const Int_t n_label = TMath::Abs(pTrack->GetLabel());
+	const Int_t n_label = TMath::Abs(nTrack->GetLabel());
 	
 	AliAODMCParticle* n_mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(n_label));
 	if (n_mcTrack){
@@ -3597,6 +3638,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother && n_mother && p_mother == n_mother) {
 
+	  TString genname;
+	  Bool_t yesno=fMC->GetCocktailGenerator(p_mother_label, genname);
+	  //    if(!yesno) Printf("no cocktail header list was found for this event");
+	  if(yesno) {
+	    if(!genname.Contains("Hijing")) {
+	      p_pidCode +=10;
+	      n_pidCode +=10;
+	    }
+	  }
+	  
 	  pdgV0 = p_pdgMother;
 	  if(p_mother->IsPhysicalPrimary()){
 	    primaryV0 = 1;
@@ -3943,7 +3994,7 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	}
 
 	// negative track
-	const Int_t n_label = TMath::Abs(pTrack->GetLabel());
+	const Int_t n_label = TMath::Abs(nTrack->GetLabel());
 	
 	AliAODMCParticle* n_mcTrack = dynamic_cast<AliAODMCParticle*>(fMCArray->At(n_label));
 	if (n_mcTrack){
@@ -3966,6 +4017,16 @@ void AliAnalysisTaskHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent, Analys
 	// Check if V0 is primary = first and the same mother of both partciles
 	if(p_mother && n_mother && p_mother == n_mother) {
 
+	  TString genname;
+	  Bool_t yesno=fMC->GetCocktailGenerator(p_mother_label, genname);
+	  //    if(!yesno) Printf("no cocktail header list was found for this event");
+	  if(yesno) {
+	    if(!genname.Contains("Hijing")) {
+	      p_pidCode +=10;
+	      n_pidCode +=10;
+	    }
+	  }
+	  
 	  pdgV0 = p_pdgMother;
 	  if(p_mother->IsPhysicalPrimary()){
 	    primaryV0 = 1;
