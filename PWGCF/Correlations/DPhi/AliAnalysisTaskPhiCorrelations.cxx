@@ -171,6 +171,7 @@ fMCUseUncheckedCentrality(kFALSE),
 fCheckCertainSpecies(-1),
 fRemoveWeakDecaysInMC(kFALSE),
 fFillYieldRapidity(kFALSE),
+fFillCorrelationsRapidity(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -489,6 +490,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
   settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
+  settingsTree->Branch("fFillCorrelationsRapidity", &fFillYieldRapidity,"fFillCorrelationsRapidity/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
@@ -1443,7 +1445,11 @@ TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tr
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->UncheckedAt(i);
-    AliDPhiBasicParticle* copy = new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+    AliDPhiBasicParticle* copy = 0;
+    if (fFillCorrelationsRapidity)
+      copy = new AliDPhiBasicParticle(particle->Y(), particle->Phi(), particle->Pt(), particle->Charge());
+    else
+      copy = new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
     copy->SetUniqueID(particle->GetUniqueID());
     tracksClone->Add(copy);
   }

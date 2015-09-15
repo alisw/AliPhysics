@@ -134,6 +134,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetCheckCertainSpecies(Int_t species) { fCheckCertainSpecies = species; }
     void   SetRemoveWeakDecaysInMC(Bool_t flag) { fRemoveWeakDecaysInMC = flag; }
     void   SetFillYieldRapidity(Bool_t flag) { fFillYieldRapidity = flag; }
+    void   SetFillCorrelationsRapidity(Bool_t flag) { fFillCorrelationsRapidity = flag; }
     
     AliHelperPID* GetHelperPID() { return fHelperPID; }
     void   SetHelperPID(AliHelperPID* pid){ fHelperPID = pid; }
@@ -257,10 +258,11 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t fCheckCertainSpecies;    // make eta,pt distribution of MC particles with the label of fCheckCertainSpecies, by default switched off (value: -1)
     Bool_t fRemoveWeakDecaysInMC;  // remove weak decays which have been included by mistake as primaries in the stack (bug in AMPT)
     Bool_t fFillYieldRapidity;     // fill a control histogram centrality vs pT vs y
+    Bool_t fFillCorrelationsRapidity; // fills correlation histograms with rapidity instead of pseudorapidity (default: kFALSE)
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 51); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 52); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
