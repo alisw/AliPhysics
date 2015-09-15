@@ -21,12 +21,13 @@
 
 #include <AliMUONGeometryTransformer.h>
 
-
+/// Default constructor for the converter
 AliExternalFormatConverter::AliExternalFormatConverter()
 : fESDFile(nullptr), fESDFriend(nullptr), fESDEvent(nullptr), fESDTree(nullptr), fPolylineEngine()
 { }
 
-
+/// Constructor with the path to the directory containig ESD and ESDfriend files. Both of them are loaded.
+/// The converter is ready to operate.
 AliExternalFormatConverter::AliExternalFormatConverter(const TString dirPath)
 : fESDFile(nullptr), fESDFriend(nullptr), fESDEvent(nullptr), fESDTree(nullptr), fPolylineEngine()
 {
@@ -48,11 +49,9 @@ AliExternalFormatConverter::~AliExternalFormatConverter()
         delete fESDFile;
     if (fESDEvent)
         delete fESDEvent;
-    //if (fApp)
-    // delete fApp;
 }
 
-/// Loads files from given paths. friendPath is not obligatory
+/// Loads files from given path - ESD and ESDfriend
 void AliExternalFormatConverter::LoadFiles(const TString dirPath)
 {
     TString filePath = dirPath + "/AliESDs.root";
@@ -67,6 +66,8 @@ void AliExternalFormatConverter::LoadFiles(const TString dirPath)
     //        delete fESDFriend; // If friendPath is not given, but fESDFriend has already been allocated.
     
 }
+
+/// Loads files from TFile pointers to ESD and ESDfriend
 void AliExternalFormatConverter::LoadFiles(TFile *ESDFile, TFile *friendFile)
 {
     LoadESDFile(ESDFile);
@@ -94,6 +95,26 @@ void AliExternalFormatConverter::LoadESDFile(const Char_t *filePath)
     LoadEvent();
 }
 
+/// Writes all events from previoslu loaded file. It will generate multiple output files one for each event in the file.
+/// The naming conventions is to add "_#" where # is the number at the end of the file name.
+void AliExternalFormatConverter::SerializeAllEvents(TString path)
+{
+    for (Int_t eventNumber = 0; eventNumber < fESDTree->GetEntries(); eventNumber++){
+        ofstream outfile;
+        outfile.open(path + "_" + eventNumber, std::ios::binary | std::ios::out);
+        if (!outfile){
+            std::cerr<<"\n\nCouldn't create output file!\n\n"<<std::endl;
+            continue;
+        }
+        std::cout << "EVent: " << eventNumber << "\r" << std::flush;
+        outfile << GenerateJSON(eventNumber) << std::endl;
+        outfile.close();
+    }
+
+}
+
+/// Loads event from previosly loaded file. fPolyLineEngine is initilized here. Should be called before trying
+/// to extract and serialize data.
 void AliExternalFormatConverter::LoadEvent()
 {
     if (fESDEvent)
@@ -119,29 +140,39 @@ void AliExternalFormatConverter::LoadESDFriends(const Char_t *friendPath)
     }
 }
 
+/// Extracts and converts event data to JSON. Event is identified by its number - argument 'entry'.
+/// The result of the conversion is written to the file pointed by given path.
 void AliExternalFormatConverter::WriteJSONToFile(const Char_t *path, Int_t entry)
 {
     TString json = GenerateJSON(entry);
     WriteToFile(path, json);
 }
 
+/// Extracts and converts event data to JSON. Pointer to the event must be passed as an argument..
+/// The result of the conversion is written to the file pointed by given path.
 void AliExternalFormatConverter::WriteJSONToFile(const Char_t *path, AliESDEvent *event)
 {
     TString json = GenerateJSON(event);
     WriteToFile(path, json);
 }
 
+/// Extracts and converts event data to XML. Event is identified by its number - argument 'entry'.
+/// The result of the conversion is written to the file pointed by given path.
 void AliExternalFormatConverter::WriteXMLToFile(const Char_t *path, Int_t entry)
 {
     TString xml = GenerateXML(entry);
     WriteToFile(path, xml);
 }
 
+/// Extracts and converts event data to XML. Pointer to the event must be passed as an argument.
+/// The result of the conversion is written to the file pointed by given path.
 void AliExternalFormatConverter::WriteXMLToFile(const Char_t *path, AliESDEvent *event)
 {
     TString xml = GenerateXML(event);
     WriteToFile(path, xml);
 }
+
+/// Generates JSON (as a TString) from event. Event is identified by id - 'entry' argument.
 TString AliExternalFormatConverter::GenerateJSON(Int_t entry)
 {
     LoadEvent(entry);
@@ -149,12 +180,15 @@ TString AliExternalFormatConverter::GenerateJSON(Int_t entry)
     return TBufferJSON::ConvertToJSON(&event);
 }
 
+/// Generates XML (as a TString) from event. Event is identified by id - 'entry' argument.
 TString AliExternalFormatConverter::GenerateXML(Int_t entry)
 {
     LoadEvent(entry);
     AliMinimalisticEvent event = GenerateMinimalisticEvent();
     return TBufferXML::ConvertToXML(&event);
 }
+
+/// Generates JSON (as a TString) from event. Pointer to the event must be passed as an argument/
 TString AliExternalFormatConverter::GenerateJSON(AliESDEvent *event)
 {
     LoadEvent(event);
@@ -162,6 +196,7 @@ TString AliExternalFormatConverter::GenerateJSON(AliESDEvent *event)
     return TBufferJSON::ConvertToJSON(&minimalisticEvent);
 }
 
+/// Generates XML (as a TString) from event. Pointer to the event must be passed as an argument/
 TString AliExternalFormatConverter::GenerateXML(AliESDEvent *event)
 {
     LoadEvent(event);
@@ -170,7 +205,8 @@ TString AliExternalFormatConverter::GenerateXML(AliESDEvent *event)
 }
 
 ///This method 'guts' given TObject (from loaded file) and returns compact
-/// AliMinimalisticEvent that contains only necessary fields
+/// AliMinimalisticEvent that contains only necessary data.
+/// Created minimalistic event is fully populated. All computation and extraction is triggered.
 AliMinimalisticEvent AliExternalFormatConverter::GenerateMinimalisticEvent()
 {
     const char *beamType = fESDEvent->GetBeamType();
@@ -182,18 +218,20 @@ AliMinimalisticEvent AliExternalFormatConverter::GenerateMinimalisticEvent()
     return event;
 }
 
+/// Set the internal private value 'fESDEvent' to point to the event identified by the 'entry'.
 void AliExternalFormatConverter::LoadEvent(Int_t entry)
 {
     fESDTree->GetEntry(entry);
     CheckEvent();
 }
-
+/// Set the internal private value 'fESDEvent' to point passed AliESDEvent*
 void AliExternalFormatConverter::LoadEvent(AliESDEvent *event)
 {
     fESDEvent = event;
     CheckEvent();
 }
 
+/// Checks if pointer to the current event is not dangling. If it is execution quits.
 void AliExternalFormatConverter::CheckEvent() const
 {
     if (!fESDEvent){
@@ -202,11 +240,15 @@ void AliExternalFormatConverter::CheckEvent() const
     }
 }
 
+
+/// Populates minimalistic event to which reference is passed as an argument.
+/// At this moment tracks are separated. And specialized algorithms for different types are called
+/// Those are: Cascades, V0, Kinks, Muons and standard tracks.
 void AliExternalFormatConverter::PopulateEvent(AliMinimalisticEvent &event) const
 {
     std::set<Int_t> usedTracks;
     Int_t specialID = fESDEvent->GetNumberOfTracks();
-    
+
     PopulateEventWithCascadeTracks(event, usedTracks, specialID);
     PopulateEventWithV0Tracks(event, usedTracks, specialID);
     PopulateEventWithKinkTracks(event, usedTracks);
@@ -214,6 +256,10 @@ void AliExternalFormatConverter::PopulateEvent(AliMinimalisticEvent &event) cons
     PopulateEventWithMuonTracks(event, specialID);
 }
 
+
+/// Extracts data from standard tracks. AliMinimalisticTracks and AliMinimalisticClusters are created and
+/// pushed back inside AliMinimalisticEvent to which the reference is passed.
+/// In order to keep track of the tracks that has been used reference to std::set is passed.
 void AliExternalFormatConverter::PopulateEventWithStandardTracks(
         AliMinimalisticEvent &event, std::set<Int_t> &usedTracks
         ) const
@@ -226,6 +272,12 @@ void AliExternalFormatConverter::PopulateEventWithStandardTracks(
     }
 }
 
+
+/// Extracts data from V0 tracks. AliMinimalisticTracks and AliMinimalisticClusters are created and
+/// pushed back inside AliMinimalisticEvent to which the reference is passed.
+/// Specialized polyline engine is called to create polylines for V0.
+/// In order to keep track of the tracks that has been used reference to std::set is passed.
+/// Reference to the specialID must be passed as it is an argument for specially generated parent tracks for V0s.
 void AliExternalFormatConverter::PopulateEventWithV0Tracks(
         AliMinimalisticEvent &event, std::set<Int_t> &usedTracks, Int_t &specialID) const
 {
@@ -239,6 +291,8 @@ void AliExternalFormatConverter::PopulateEventWithV0Tracks(
         if (usedTracks.find(positiveID) != usedTracks.end() || usedTracks.find(negativeID) != usedTracks.end())
             continue;
         Int_t v0ParentID = specialID++;
+        if (!fESDEvent->GetTrack(positiveID) || !fESDEvent->GetTrack(negativeID))
+            continue;
         AliMinimalisticTrack negative =
         GenerateMinimalisticTrack(negativeID, v0ParentID, kV0NegativeDaughter);
         AliMinimalisticTrack positive =
@@ -262,6 +316,12 @@ void AliExternalFormatConverter::PopulateEventWithV0Tracks(
     }
 }
 
+/// Extracts data from cascade tracks. AliMinimalisticTracks and AliMinimalisticClusters are created and
+/// pushed back inside AliMinimalisticEvent to which the reference is passed.
+/// Specialized polyline engine is called to create polylines for cascades.
+/// In order to keep track of the tracks that has been used reference to std::set is passed.
+/// Reference to the specialID must be passed as it is an argument for specially generated parent tracks for cascade
+/// and V0.
 void AliExternalFormatConverter::PopulateEventWithCascadeTracks(
         AliMinimalisticEvent &event, std::set<Int_t> &usedTracks, Int_t &specialID) const
 {
@@ -324,6 +384,10 @@ void AliExternalFormatConverter::PopulateEventWithCascadeTracks(
     }
 }
 
+
+/// Extracts data from V0 tracks. AliMinimalisticTracks and AliMinimalisticClusters are created and
+/// pushed back inside AliMinimalisticEvent to which the reference is passed.
+/// Specialized polyline engine is called to create polylines for Kinks.
 void AliExternalFormatConverter::PopulateEventWithKinkTracks(
         AliMinimalisticEvent &event, std::set<Int_t> &usedTracks) const
 {
@@ -334,7 +398,8 @@ void AliExternalFormatConverter::PopulateEventWithKinkTracks(
         Int_t daughterID = kink->GetIndex(1);
         if (usedTracks.find(motherID) != usedTracks.end() || usedTracks.find(daughterID) != usedTracks.end())
             continue;
-        
+        if (!(fESDEvent->GetTrack(motherID)) || !(fESDEvent->GetTrack(daughterID)))
+            continue;
         AliMinimalisticTrack daughter = GenerateMinimalisticTrack(
                 daughterID, motherID, kKinkDaughter
         );
@@ -394,7 +459,7 @@ AliMinimalisticTrack AliExternalFormatConverter::GenerateMinimalisticTrack(
         Int_t trackNumber, Int_t parentID, TrackType trackType) const
 {
     AliESDtrack *track = fESDEvent->GetTrack(trackNumber);
-    
+
     Double_t mass = track->GetMass();
     Int_t PID = AliPID::ParticleCode(track->GetPID());
     Double_t energy = track->E();

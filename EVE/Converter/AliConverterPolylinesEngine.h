@@ -1,6 +1,17 @@
+/// \class AliExternalFormatConverter
+/// Class for computing polylines. Used by ALiExternalFormatConverter during conversion from ESD to JSON/XML
+/// Usage:
+///     1) Create converter instance and initialize it by passing :
+///         AliESDEvent* event; // This should be initialized
+///         AliConverterPolylinesEngine fPolylineEngine;
+///         fPolylineEngine.InitializeEngine(event);
+///     2) Use one of the availabe methods e.g.:
+///         Int_t v0Entry = 1 // ID of the V0
+///         AliMinimalisticTrack negative;
+///         AliMinimalisticTrack positive;
+///         fPolylineEngine.AddPolyLinesToV0Track(v0Entry, negative, positive);
 //
-// Created by mgrochow on 9/2/15.
-//
+/// \author Maciej Grochowicz <maciej.aleksander.grochowicz@cern.ch>, Warsaw University of Technology
 
 #ifndef ALIROOT_ALICONVERTERPOLYLINESENGINE_H
 #define ALIROOT_ALICONVERTERPOLYLINESENGINE_H

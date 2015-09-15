@@ -284,22 +284,26 @@ void AliConverterPolylinesEngine::AddPolyLinesToKinkTrack(
 
     Double_t pbuf[3], vbuf[3];
 
+    if (!moth->GetTPCInnerParam())
+        return;
     rcMoth.fSign = moth->GetTPCInnerParam()->GetSign();
     moth->GetTPCInnerParam()->GetXYZ(vbuf); rcMoth.fV.Set(vbuf);
     moth->GetTPCInnerParam()->GetPxPyPz(pbuf); rcMoth.fP.Set(pbuf);
-
+    if (!daug->GetOuterParam())
+        return;
     rcDaug.fSign = daug->GetOuterParam()->GetSign();
     rcDaug.fV.Set(rcKink.fVKink);
     rcDaug.fP.Set(rcKink.fPDaughter);
 
     AliEveKink* myKink = new AliEveKink(&rcMoth, &rcDaug, &rcKink, rnrStyleMoth,rnrStyleDaugh);
+    if (!myKink)
+        return;
     myKink->SetESDKinkIndex(kinkID);
     gEve->AddElement(myKink, cont);
     cont->MakeKinks();
 
     std::vector<TEveVector4D> mPoints = rnrStyleMoth->GetPoints();
     std::vector<TEveVector4D> dPoints = rnrStyleDaugh->GetPoints();
-    std::cout << "Przed funkcja wielkosc: " << mPoints.size() << std::endl;
     InsertPolyPoints(mTrack, mPoints);
     InsertPolyPoints(dTrack, dPoints);
     delete myKink;

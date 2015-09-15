@@ -6,9 +6,8 @@
 ///
 /// Usage:
 ///     1) Create converter instance:
-///         const char* filePath = "Path/To/Your/File";
-///         const char* filenameFriends = "Path/To/Your/File/Friend";
-///         AliExternalFormatConverter Converter(filePath, filenameFriends);
+///         const char* dirPath = "Path/To/Directory/With/ESD/Files";
+///         AliExternalFormatConverter Converter(dirPath);
 ///     2) Convert it to external format:
 ///         Int_t entryNumber = #; //Number of entry in ESD file.
 ///         const char* jsonPath = "Path/To/Generated/file.json";
@@ -56,6 +55,8 @@ public:
     TString GenerateJSON(AliESDEvent *event);
     TString GenerateXML(Int_t eventEntry);
     TString GenerateXML(AliESDEvent *event);
+
+    void SerializeAllEvents(TString path);
 
 private:
     AliExternalFormatConverter(const AliExternalFormatConverter&) {/*Converter cannot be copied*/};
