@@ -164,7 +164,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCorrelationR =   new TH2F("fCorrelationR", ";R;p_{T,lead} (MC)", 200, 0, 2, 200, 0, 50);
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #varphi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 400, 0, 20, 20, -1, 1);
+  fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 40, 0, 20, 200, -10, 10);
   fInvYield2 = new TH2F("fInvYield2", ";centrality;pT;1/pT dNch/dpT", 100, 0, 100, 80, 0, 20);
 
   if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5") && !histogramsStr.Contains("6"))
