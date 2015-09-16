@@ -83,6 +83,10 @@ public:
 
   Double_t GetEntries() const {return fHistGainTime->GetEntries();}
 
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData();
+
 private:
   static Double_t fgMergeEntriesCut;  //maximal number of entries for merging  -can be modified via setter
 

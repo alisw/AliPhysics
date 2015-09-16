@@ -2302,4 +2302,20 @@ Double_t AliTPCcalibGainMult::GetTruncatedMeanPosition(Double_t q0, Double_t q1,
   return 0;
 }
 
+Bool_t AliTPCcalibGainMult::ResetOutputData()
+{
+  // Reset all calibration data
 
+  if (fHistNTracks)      fHistNTracks->Reset();
+  if (fHistClusterShape) fHistClusterShape->Reset();
+  if (fHistQA)           fHistQA->Reset();
+  if (fHistGainSector)   fHistGainSector->Reset();
+  if (fHistPadEqual)     fHistPadEqual->Reset();
+  if (fHistGainMult)     fHistGainMult->Reset();
+  if (fHistTopology)     fHistTopology->Reset();
+  if (fHistdEdxMap)      fHistdEdxMap->Reset();
+  if (fHistdEdxMax)      fHistdEdxMax->Reset();
+  if (fHistdEdxTot)      fHistdEdxTot->Reset();
+
+  return kTRUE;
+}

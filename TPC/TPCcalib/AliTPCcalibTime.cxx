@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -2369,4 +2370,61 @@ void        AliTPCcalibTime::FillResHistoTPCTOF(const AliExternalTrackParam * pT
     fResHistoTPCTOF[ihisto]->Fill(histoX);
   }
 
+}
+
+Bool_t AliTPCcalibTime::ResetOutputData()
+{
+  // Reset all calibration data
+  for (Int_t i=0;i<3;i++) {
+    if (fHistVdriftLaserA[i]) fHistVdriftLaserA[i]->Reset();
+    if (fHistVdriftLaserC[i]) fHistVdriftLaserC[i]->Reset();
+  }
+
+  for (Int_t i=0;i<5;i++) {
+    if (fResHistoTPCCE[i])     fResHistoTPCCE[i]    ->Reset();
+    if (fResHistoTPCITS[i])    fResHistoTPCITS[i]   ->Reset();
+    if (fResHistoTPCTRD[i])    fResHistoTPCTRD[i]   ->Reset();
+    if (fResHistoTPCTOF[i])    fResHistoTPCTOF[i]   ->Reset();
+    if (fResHistoTPCvertex[i]) fResHistoTPCvertex[i]->Reset();
+  }
+
+  for (Int_t i=0;i<12;i++) {
+    if (fTPCVertex[i]) fTPCVertex[i]->Reset();
+  }
+
+  for (Int_t i=0;i<5;i++) {
+    if (fTPCVertexCorrelation[i]) fTPCVertexCorrelation[i]->Reset();
+  }
+
+  for (Int_t i=0;i<10;i++) {
+    if (fCosmiMatchingHisto[i]) fCosmiMatchingHisto[i]->Reset();
+  }
+
+  if (fArrayDz) {
+    for (Int_t i=0; i<fArrayDz->GetEntriesFast(); ++i) {
+      ((THnSparseF*)fArrayDz->UncheckedAt(i))->Reset();
+    }
+  }
+
+  if (fAlignITSTPC){
+    fAlignITSTPC->SetOwner();
+    fAlignTRDTPC->SetOwner();
+    fAlignTOFTPC->SetOwner();
+
+    fAlignITSTPC->Delete();
+    fAlignTRDTPC->Delete();
+    fAlignTOFTPC->Delete();
+  }
+
+  if (fArrayLaserA) {
+    fArrayLaserA->SetOwner();
+    fArrayLaserA->Delete();
+  }
+
+  if (fArrayLaserA) {
+    fArrayLaserC->SetOwner();
+    fArrayLaserC->Delete();
+  }
+
+  return kTRUE;
 }

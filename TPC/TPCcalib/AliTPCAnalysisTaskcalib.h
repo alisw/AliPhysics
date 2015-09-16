@@ -32,6 +32,11 @@ public:
   virtual void Exec(Option_t *option);
   virtual void Terminate(Option_t *option);
   virtual void FinishTaskOutput();
+
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData();
+
   void         SetDebugOuputhPath(const char * name){fDebugOutputPath=name;}
 protected:
   virtual void     Process(AliVEvent *event);

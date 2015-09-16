@@ -102,6 +102,10 @@ public:
   static Double_t fgResHistoMergeCut;
   static void SetResHistoMergeCut(Double_t d) {fgResHistoMergeCut=d;}
 
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData();
+
 protected:
   void ResetCurrent();                  // reset current values
   Int_t              fMemoryMode;       // 0 -do not fill THnSparse with residuals  1- fill only important QA THn 2 - Fill all THnsparse for calibration

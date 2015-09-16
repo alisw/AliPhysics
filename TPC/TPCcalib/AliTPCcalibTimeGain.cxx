@@ -930,3 +930,15 @@ void AliTPCcalibTimeGain::CalculateBetheAlephParams(TH2F *hist, Double_t * ini) 
 
 
 }
+
+Bool_t AliTPCcalibTimeGain::ResetOutputData()
+{
+  // Reset all calibration data
+  fHistGainTime->Reset();
+  fHistDeDxTotal->Reset();
+
+  delete fGainVsTime;
+  fGainVsTime=0x0;
+
+  return kTRUE;
+}

@@ -278,3 +278,18 @@ void AliTPCAnalysisTaskcalib::RegisterDebugOutput(){
   TFile::Cp(dsName.Data(),dsName2.Data());
 
 }
+
+Bool_t AliTPCAnalysisTaskcalib::ResetOutputData()
+{
+  //
+  // Call the ResetOutputData function of all sub fCalibJobs
+  //
+  AliTPCcalibBase *job=0;
+  const Int_t njobs = fCalibJobs->GetEntriesFast();
+  Bool_t result=kTRUE;
+  for (Int_t i=0;i<njobs;i++){
+    job = (AliTPCcalibBase*)fCalibJobs->UncheckedAt(i);
+    if (job) result &= job->ResetOutputData();
+  }
+  return result;
+}

@@ -48,7 +48,11 @@ public:
   virtual void     UpdateEventInfo(AliVEvent * event);
   virtual Bool_t   AcceptTrigger();
   virtual void     SetTriggerMask(Int_t accept, Int_t reject, Bool_t rejectLaser){fTriggerMaskAccept=accept;fTriggerMaskReject=reject; fRejectLaser = rejectLaser;}
- 
+
+  // full reset: discard all statistics, zero histograms, start again.
+  // called in online mode (HLT) after sending output for merging.
+  virtual Bool_t            ResetOutputData() {return kFALSE;}
+
   //
   // debug streamer support
   TTreeSRedirector *GetDebugStreamer();
