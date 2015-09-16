@@ -77,6 +77,7 @@ Int_t AliFlatESDFriend::SetVZEROFriend( const AliESDVZEROfriend *vzero, size_t a
   if( allocatedVZEROMemory < sizeof(AliFlatESDVZEROFriend) ) return -1;
   fVZEROFriendPointer = fContentSize;
   AliFlatESDVZEROFriend *flatVZERO = reinterpret_cast<AliFlatESDVZEROFriend*> (fContent + fContentSize);
+  new (flatVZERO) AliFlatESDVZEROFriend ;
   flatVZERO->SetFromESDVZEROfriend( *vzero );
   fContentSize += flatVZERO->GetSize();
   return 0;
