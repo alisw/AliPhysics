@@ -544,7 +544,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     } // end of loop over blocks of clusters    
     
     
-        // fill event info
+    // fill event info
     {
       for( Int_t iSlice=0; iSlice<36; iSlice++ ){
 	int iSector = iSlice;
@@ -564,9 +564,20 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       }
     }
     
-    
-    
-  }
+    // fill VZERO info
+    {
+      const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO); 
+      if( pObject ){
+	const AliESDVZEROfriend *esdVZEROfriend = dynamic_cast<const AliESDVZEROfriend*>( pObject );
+	if (esdVZEROfriend) {
+	  pESDfriend->SetVZEROfriend( esdVZEROfriend );
+ 	} else {
+	  ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZEROfriend",
+			   DataType2Text(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO).c_str());
+	}
+      }
+    }
+  }    
 
   // 1) first read MC information (if present)
   std::map<int,int> mcLabelsTPC;

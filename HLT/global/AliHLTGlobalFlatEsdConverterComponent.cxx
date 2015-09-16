@@ -760,6 +760,23 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       }
     }
 
+    // fill VZERO info
+    {   
+      const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO); 
+      if( pObject ){
+	const AliESDVZEROfriend *esdVZEROfriend = dynamic_cast<const AliESDVZEROfriend*>( pObject );
+	if (esdVZEROfriend) {
+	  err = flatFriend->SetVZEROFriend( esdVZEROfriend, freeSpace );
+	  freeSpace = freeSpaceTotal - flatFriend->GetSize();
+ 	} else {
+	  ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZEROfriend",
+			   DataType2Text(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO).c_str());
+	}
+      }
+    }
+    
+    if( err ) break;
+
     // Fill track friends information to the flat ESD friend structure
 
     size_t trackSize = 0;

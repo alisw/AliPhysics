@@ -23,7 +23,7 @@ public:
   virtual const AliVfriendTrack *GetTrack(Int_t /*i*/) const = 0;
   virtual Int_t GetEntriesInTracks() const = 0;
 
-  AliVVZEROfriend* GetVZEROfriend() {return NULL;}
+  virtual AliVVZEROfriend* GetVVZEROfriend() = 0;
   // AliESDTZEROfriend *GetTZEROfriend();
 
   virtual void Ls() const = 0;

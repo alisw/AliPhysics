@@ -13,7 +13,8 @@
 #include "AliVMisc.h"
 #include "AliVfriendEvent.h"
 #include "AliFlatESDFriendTrack.h"
-
+#include "AliFlatESDVZEROFriend.h"
+#include "AliESDVZEROfriend.h"
 
 class AliESDfriend;
 //class AliESDVZEROfriend;
@@ -35,8 +36,9 @@ public:
   Int_t GetNumberOfTracks() const { return fNTracks; }
   const AliVfriendTrack* GetTrack(Int_t i) const {return GetFlatTrack(i); }
   Int_t GetEntriesInTracks() const { return fNTrackEntries; }
- 
-  //AliESDVZEROfriend *GetVZEROfriend(){ return NULL; }
+
+  AliVVZEROfriend* GetVVZEROfriend() { return GetFlatVZEROFriendNonConst(); }
+  
   //AliESDTZEROfriend *GetTZEROfriend(){ return NULL; }
 
   void Ls() const;
@@ -59,10 +61,16 @@ public:
   void SetNclustersTPC(UInt_t sector, Int_t occupancy ) { if (sector<72) fNclustersTPC[sector]=occupancy; }
   void SetNclustersTPCused(UInt_t sector, Int_t occupancy ) {if (sector<72) fNclustersTPCused[sector]=occupancy; }
 
+  Int_t  SetVZEROFriend( const AliESDVZEROfriend *v, size_t freeMem );
+
   Int_t SetTracksStart( AliFlatESDFriendTrack* &t, Long64_t* &table, Int_t nTracks, size_t freeMem );
   void  SetTracksEnd( Int_t nTracks, Int_t nTrackEntries, size_t tracksSize );
 
   // other methods
+
+ const AliFlatESDVZEROFriend *GetFlatVZEROFriend() const { return reinterpret_cast<const AliFlatESDVZEROFriend*>( fContent + fVZEROFriendPointer ); }
+ AliFlatESDVZEROFriend *GetFlatVZEROFriendNonConst()  { return reinterpret_cast<AliFlatESDVZEROFriend*>( fContent + fVZEROFriendPointer ); }
+ 
 
   const AliFlatESDFriendTrack  *GetFlatTrack( Int_t i ) const { 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
@@ -105,6 +113,7 @@ private:
  
   // Pointers to specific data in fContent
   
+  size_t fVZEROFriendPointer;     // position of flat VZERO friend in fContent
   size_t fTrackTablePointer;     // position of the first track in fContent
   size_t fTracksPointer;         // position of the first track in fContent
 
@@ -122,6 +131,7 @@ inline AliFlatESDFriend::AliFlatESDFriend()
   fBitFlags(0),
   fNTracks(0),
   fNTrackEntries(0),
+  fVZEROFriendPointer(0),
   fTrackTablePointer(0),
   fTracksPointer(0)
 {
@@ -134,6 +144,7 @@ inline void AliFlatESDFriend::Reset()
   fBitFlags = 0;
   fNTracks = 0;
   fNTrackEntries = 0; 
+  fVZEROFriendPointer = 0;
   fTrackTablePointer = 0;
   fTracksPointer = 0;
   for( int i=0; i<72; i++ ){
@@ -153,6 +164,14 @@ inline AliFlatESDFriend::AliFlatESDFriend(AliVConstructorReinitialisationFlag f)
   AliVfriendEvent(f)
 {
   //special constructor, used to restore the vtable pointer
+
+  // Reinitialise VZERO information  
+  {    
+    AliFlatESDVZEROFriend * vzero =  GetFlatVZEROFriendNonConst();
+    if( vzero ) vzero->Reinitialize();    
+  }
+
+  // track info
   AliFlatESDFriendTrack  *tr = GetFirstTrackEntryNonConst();
   for( int i=0; i<fNTrackEntries; i++ ){
     tr->Reinitialize();
