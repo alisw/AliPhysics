@@ -483,7 +483,7 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
   int rebin = dynamic_cast<TObjString*>(types->At(1))->GetString().Atoi();
   dir->cd();
   TH2D* hist = dynamic_cast<TH2D*>(histo->Clone("DPhi_1_DEta_12_SameSidecc"));
-  if(rebin>1)hist->RebinX(3);
+  if(rebin>1){hist->RebinX(3);hist->RebinY(2);}
   hist->Write("DPhi_1_DEta_12_SameSide");
 
   TH1D* deta12ss = hist->ProjectionX("DEta12");
@@ -774,6 +774,7 @@ void extractbinyield(TDirectory* dir, TDirectory* yielddir, Double_t etalimit){
   if(!dir||!yielddir)return;
   TDirectory * bindir = resultsdirectory(yielddir,"original_binning");
   TDirectory * binrebindir = resultsdirectory(yielddir,"Rebinned_3_to_1");
+  gkEtaFitRange = 1.4;
   // if(TString(dir->GetPath()).Contains("4_8_0_1"))gkEtaFitRange = 1.5;
   // if(TString(dir->GetPath()).Contains("4_8_1_2"))gkEtaFitRange = 1.5;
   // if(TString(dir->GetPath()).Contains("4_8_2_4"))gkEtaFitRange = 1.3;
