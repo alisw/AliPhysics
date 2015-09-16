@@ -243,7 +243,8 @@ inline const AliFlatESDTrack  *AliFlatESDEvent::GetFlatTrack( Int_t i ) const
 inline Int_t AliFlatESDEvent::SetTracksStart( AliFlatESDTrack* &t, Long64_t* &table, Int_t nTracks, size_t freeMem)
 {
   fNTracks = 0;
-  size_t memoryAlignment  = reinterpret_cast<size_t>(fContent+fContentSize) % 64;
+  size_t memoryAlignment = reinterpret_cast<size_t>(fContent+fContentSize) % 64;
+  if (memoryAlignment) memoryAlignment = 64 - memoryAlignment;
   if( nTracks*sizeof(Long64_t)  + memoryAlignment> freeMem ) return -1;
   fContentSize += memoryAlignment;
   fTrackTablePointer = fContentSize;  

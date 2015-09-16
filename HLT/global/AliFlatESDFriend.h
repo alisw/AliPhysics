@@ -166,7 +166,8 @@ inline Int_t AliFlatESDFriend::SetTracksStart( AliFlatESDFriendTrack* &t, Long64
 {
   fNTracks = 0;
   fNTrackEntries = 0;
-  size_t memoryAlignment  = reinterpret_cast<size_t>(fContent+fContentSize) % 64;
+  size_t memoryAlignment = reinterpret_cast<size_t>(fContent+fContentSize) % 64;
+  if (memoryAlignment) memoryAlignment = 64 - memoryAlignment;
   if( nTracks*sizeof(Long64_t)  + memoryAlignment> freeMem ) return -1;
   fContentSize += memoryAlignment;
   fTrackTablePointer = fContentSize;
