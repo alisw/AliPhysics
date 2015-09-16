@@ -745,7 +745,8 @@ AliAnaRandomTrigger* ConfigureRandomTriggerAnalysis(TString detector = "")
   if     (detector=="EMCAL")
   {
     ana->SetEtaCut(-0.27,0.27);
-    ana->SetPhiCut(103*TMath::DegToRad(), 157*TMath::DegToRad());
+    //ana->SetPhiCut(103*TMath::DegToRad(), 157*TMath::DegToRad());
+    ana->SetPhiCut(1.8, 2.75);
   }
   else if(detector=="PHOS")
   {
