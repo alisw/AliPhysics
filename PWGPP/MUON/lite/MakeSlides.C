@@ -238,7 +238,7 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   outFile << "  \\item Duration: at least 10 min" << endl;
   outFile << "  \\item GDC mStream Recording:	Yes" << endl;
   outFile << "  \\item Period: " << period.Data() << endl;
-  outFile << "  \\item Detectors: At least [ MUON\\_TRG \\& MUON\\_TRK \\& SPD ] as Readout" << endl;
+  outFile << "  \\item Detectors: At least [ MUON\\_TRG \\& MUON\\_TRK ] as Readout" << endl;
   outFile << "  \\item Quality: globaly GOOD and NOT BAD for readout Detectors" << endl;
   outFile << "  \\item Beam Mode: STABLE" << endl;
   outFile << " \\end{itemize}" << endl;
