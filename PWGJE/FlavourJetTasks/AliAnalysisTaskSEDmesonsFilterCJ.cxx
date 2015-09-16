@@ -1415,8 +1415,6 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(Int_t ipart, AliStack*
 
   if (!part) return -1;
 
-  Int_t absPdgPart = TMath::Abs(part->GetPdgCode());
-
   Int_t decay = kDecayOther;
 
   if (part->GetNDaughters() == 2) {
