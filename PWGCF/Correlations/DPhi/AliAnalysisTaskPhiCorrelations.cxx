@@ -1439,6 +1439,10 @@ TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tr
 {
   // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
   
+  // Check if we already have a reduced track list. In that case a simple Clone is enough
+  if (tracks->GetEntriesFast() == 0 || tracks->UncheckedAt(0)->InheritsFrom("AliDPhiBasicParticle"))
+    return (TObjArray*) tracks->Clone();
+  
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
   
@@ -1560,7 +1564,7 @@ void AliAnalysisTaskPhiCorrelations::RemoveWeakDecaysInMC(TObjArray* tracks, TOb
     
     for (Int_t j=0; j != kNWeakParticles; ++j) {
       if (kWeakParticles[j] == pdgcode) {
-	AliInfo(Form("Removing particle %d (pdg code %d; mother %d)", i, particle->GetPdgCode(), motherParticle->GetPdgCode()));
+	AliDebug(1, Form("Removing particle %d (pdg code %d; mother %d)", i, particle->GetPdgCode(), motherParticle->GetPdgCode()));
 	TObject* object = tracks->RemoveAt(i);
 	if (tracks->IsOwner())
 	  delete object;
