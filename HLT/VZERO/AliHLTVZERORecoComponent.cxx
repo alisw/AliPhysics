@@ -113,7 +113,7 @@ int AliHLTVZERORecoComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tg
 // #################################################################################
 void AliHLTVZERORecoComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 1000;
+  constBase = 1100;
   inputMultiplier = 0.5;
 }
 
