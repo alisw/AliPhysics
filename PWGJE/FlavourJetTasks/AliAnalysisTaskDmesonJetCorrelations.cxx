@@ -197,8 +197,8 @@ void AliAnalysisTaskDmesonJetCorrelations::UserCreateOutputObjects()
   // the TList fOutput is already defined in  AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
   if (fParticleLevel) {
-    if (fMatchingType == kConstituentMatching) {
-      AliWarning("Constituent matching not available at particle level. Switching to geometrical matching.");
+    if (fMatchingType == kDaughterConstituentMatching) {
+      AliWarning("Daughter constituent matching not available at particle level. Switching to geometrical matching.");
       fMatchingType = kGeometricalMatching;
     }
     if (fShowDaughterDistance) {
@@ -606,9 +606,12 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateMatchingLevel(EMatchingT
   if (matchType == kGeometricalMatching) {    
     m = CalculateGeometricalMatchingLevel(cand, jet);
   }
-  else if (matchType == kConstituentMatching) {
+  else if (matchType == kDaughterConstituentMatching) {
     AliAODRecoDecay* recoDecay = static_cast<AliAODRecoDecay*>(cand);
-    m = CalculateConstituentMatchingLevel(recoDecay, jet, reset);
+    m = CalculateDaughterConstituentMatchingLevel(recoDecay, jet, reset);
+  }
+  else if (matchType == kCandidateConstituentMatching) {
+    m = CalculateCandidateConstituentMatchingLevel(cand, jet);
   }
   else {
     AliWarning(Form("Matching algorithm type %d not implemented!", matchType));  
@@ -631,18 +634,18 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateGeometricalMatchingLevel
 }
 
 //_______________________________________________________________________________
-Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset)
+Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateDaughterConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset)
 {
   // Calculate the matching level using a constituent-based algorithm.
   // If the jet is not provided but reset==kTRUE then it only initializes the daughters list.
   // The matching level is the sum of the pt of the decay products contained in the jet.
-  
+
   if (!cand) return 1;
 
   static AliAODRecoDecay* prevCand = 0;
   static TObjArray daughters(5);
   static Double_t ptTot = 0;
-  
+
   if (prevCand != cand || reset) {
     daughters.Clear();
     ptTot = AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(cand, daughters);
@@ -677,7 +680,7 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel
   // To save computation time, if the jet is too far from the candidate, let's skip it
   Double_t mlg = CalculateGeometricalMatchingLevel(cand, jet);
   if (mlg >= 1.) return 1.;
-  
+
   Double_t pt = 0;
 
   for (Int_t it = 0; it < nt; it++) {
@@ -694,6 +697,45 @@ Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateConstituentMatchingLevel
   Double_t m = 1 - pt / ptTot;
   
   return m;
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskDmesonJetCorrelations::CalculateCandidateConstituentMatchingLevel(AliVParticle* cand, AliEmcalJet* jet)
+{
+  // Calculate the matching level using a constituent-based algorithm.
+  // If the jet is not provided but reset==kTRUE then it only initializes the daughters list.
+  // The matching level is the sum of the pt of the decay products contained in the jet.
+  
+  if (!cand) return 1.;
+  if (!jet) return 1.;
+
+  Bool_t emcalPart = kFALSE;
+
+  AliParticleContainer* tracks = GetParticleContainer(0);
+  if (!tracks) return 1;
+
+  TClonesArray* trkArray = tracks->GetArray();
+  if (!trkArray) return 1;
+
+  if (strcmp(trkArray->GetClass()->GetName(), "AliEmcalParticle") == 0) emcalPart = kTRUE;
+
+  // To save computation time, if the jet is too far from the candidate, let's skip it
+  Double_t mlg = CalculateGeometricalMatchingLevel(cand, jet);
+  if (mlg >= 1.) return 1.;
+  
+  Int_t nt = jet->GetNumberOfTracks();
+
+  for (Int_t it = 0; it < nt; it++) {
+    AliVParticle* part = jet->TrackAt(it, trkArray);
+    if (emcalPart) {
+      AliEmcalParticle* emcPart = static_cast<AliEmcalParticle*>(part);
+      part = emcPart->GetTrack();
+    }
+
+    if (part == cand) return 0.;
+  }
+
+  return 1.;
 }
 
 //_______________________________________________________________________________

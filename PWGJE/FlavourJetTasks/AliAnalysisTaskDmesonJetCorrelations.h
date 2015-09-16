@@ -38,7 +38,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
  public:
 
   enum ECandidateType  { kD0toKpi, kDstartoKpipi };
-  enum EMatchingType   { kGeometricalMatching, kConstituentMatching, kJetLoop };
+  enum EMatchingType   { kGeometricalMatching, kDaughterConstituentMatching, kCandidateConstituentMatching, kJetLoop };
   enum EMatchingStatus { kSingleMatch = 0, kMultipleMatches = 1, kJetNotAccepted = 2, kNotMatched = 3 };
    
   AliAnalysisTaskDmesonJetCorrelations();
@@ -90,7 +90,8 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Int_t                FindMatchedJet(EMatchingType matchType, AliVParticle* cand, TArrayD& matchingLevel, TList& matchedJets);
   Double_t             CalculateMatchingLevel(EMatchingType matchType, AliVParticle* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
   Double_t             CalculateGeometricalMatchingLevel(AliVParticle* cand, AliEmcalJet* jet);
-  Double_t             CalculateConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
+  Double_t             CalculateDaughterConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
+  Double_t             CalculateCandidateConstituentMatchingLevel(AliVParticle* cand, AliEmcalJet* jet);
 
   Bool_t                 ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
   Bool_t                 ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
