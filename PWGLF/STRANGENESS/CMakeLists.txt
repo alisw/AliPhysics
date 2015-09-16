@@ -77,6 +77,7 @@ set(SRCS
   Hypernuclei/NucleiPbPb2011/AliAnalysisTaskNucleiYield.cxx
   Hypernuclei/NucleiPbPb2011/Pythia/AliAnalysisTaskPythiaNuclei.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
+  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx
   Cascades/lightvertexers/AliLightCascadeVertexer.cxx
   )
