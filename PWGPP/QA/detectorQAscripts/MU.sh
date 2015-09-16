@@ -17,6 +17,16 @@ WriteMuonConfig()
   # and this function can be commented
   local cfgFilename="$1"
   if [ -e $cfgFilename ]; then
+
+    # Change previous configuration if needed
+    if [[ "$period" =~ ^LHC15[a-z]$ ]]; then
+      local hasFeature=$(grep -c "MUenablePhysSel=0" $cfgFilename)
+      if [ $hasFeature -gt 0 ]; then
+        local tmpCfgFile=${cfgFilename/".txt"/"_tmp.txt"}
+        sed 's/MUenablePhysSel=0/MUenablePhysSel=1/;' $cfgFilename > $tmpCfgFile
+        mv $tmpCfgFile $cfgFilename
+      fi
+    fi
     return
   fi
   local cfgDir=$(dirname "$cfgFilename")
@@ -24,9 +34,6 @@ WriteMuonConfig()
     mkdir "$cfgDir"
   fi
 
-  if [[ "$period" =~ ^LHC15[a-z]$ ]]; then
-    echo "MUenablePhysSel=0" >> $cfgFilename
-  fi
   if [ "$period" = "LHC15e" ]; then
     echo "MUcheckTrigScalers=0" >> $cfgFilename
   fi
