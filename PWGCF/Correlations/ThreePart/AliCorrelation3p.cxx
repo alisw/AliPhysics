@@ -293,7 +293,7 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, const AliVParticle* /*p
   if (doHistogram) {
     Double_t Weight = 1.0;
     if(fWeights&&fWeightshpT&&fhighpt){
-      if(p->Pt()<4.0){
+      if(p->Pt()<2.0){
 	Int_t indexpT1 = fWeights->GetZaxis()->FindBin(p->Pt());
 	Weight = fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
       }
@@ -362,7 +362,7 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
     //t:
     fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt()); 
     //a1:
-    if(p1->Pt()>4.0){
+    if(p1->Pt()>2.0){
       fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p1->Pt());      
     }
     else{
@@ -370,7 +370,7 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1,
       fillweight *= fWeights->GetBinContent(fMultWeightIndex,fVZWeightIndex,indexpT1);
     }
     //a2
-    if(p2->Pt()>4.0){
+    if(p2->Pt()>2.0){
       fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p2->Pt());      
     }
     else{
@@ -402,7 +402,7 @@ int AliCorrelation3p::Fill(const AliVParticle* ptrigger, const AliVParticle* p1)
     //t:
     fillweight =  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(ptrigger->Pt());    
     //a1:
-    if(p1->Pt()>4.0){
+    if(p1->Pt()>2.0){
       fillweight *=  fWeightshpT->GetBinContent(fMultWeightIndex,fVZWeightIndex)*fhighpt->Eval(p1->Pt());      
     }
     else{

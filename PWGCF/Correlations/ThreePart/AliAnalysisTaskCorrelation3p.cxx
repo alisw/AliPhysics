@@ -378,7 +378,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     AliVParticle* t=pEvent->GetTrack(i);
     if (!t) continue;
     if(fWeights&&false){
-      if(t->Pt()<4.0){
+      if(t->Pt()<2.0){
 	Int_t pTbin  = fWeights->GetZaxis()->FindBin(t->Pt());
 	Weight = fWeights->GetBinContent(MultBin,VZbin,pTbin);
       }
@@ -630,7 +630,7 @@ if(AODt->TestBit(AliAODTrack::kIsDCA)){
   DCAlong = AODt->ZAtDCA();
 }
 else{
-  if(fVertex){
+  if(fVertexobj){
     Double_t fBzkg = dynamic_cast<AliAODEvent*>(InputEvent())->GetMagneticField();
     Double_t* dca = new Double_t[2];
     Double_t* dcacov = new Double_t[3];
@@ -685,7 +685,8 @@ Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
   if(fCollisionType==PbPb){
     FillHistogram("centrality",fCentralityPercentile,0.25);
     FillHistogram("multiplicity",fMultiplicity,0.25);
-    FillHistogram("vertex",fVertex[2],0.25);    if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
+    FillHistogram("vertex",fVertex[2],0.25);    
+    if(!fVertexobj){AliError("Vertex object not found.");return kFALSE;}//Runs only after GetCentralityAndVertex().
     if(fVertexobj->GetNContributors()<1) return kFALSE; // no tracks go into reconstructed vertex
     if(abs(fVertex[2])>fMaxVz) return kFALSE;//Vertex is too far out
     if(!fCentrality){AliError("Centrality object not found.");return kFALSE;}//Centrality must be defined in the PbPb case.
