@@ -268,6 +268,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
 class AliDPhiBasicParticle : public AliVParticle
 {
   public:
+    AliDPhiBasicParticle() : fEta(0), fPhi(0), fpT(0), fCharge(0) {}
     AliDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
       : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
     {
