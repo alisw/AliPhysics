@@ -247,9 +247,9 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       HLTMessage(Form("send topic rc %i errno %s",rc,(rc<0)?strerror(errno):0));
       int flags = 0;
       if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
-      if (iSelectedBlock == (selectedBlockIdx.size()-1)) flags = ZMQ_SNDMORE;
+      if (iSelectedBlock < (selectedBlockIdx.size()-1)) flags = ZMQ_SNDMORE;
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, flags);
-      HLTMessage(Form("send data rc %i errno %s",rc,(rc<0)?strerror(errno):0));
+      HLTMessage(Form("send data rc %i errno, %s",rc,(rc<0)?strerror(errno):""));
     }
     
     //send an empty message if we really need a reply (ZMQ_REP mode)
