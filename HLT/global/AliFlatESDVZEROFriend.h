@@ -145,7 +145,7 @@ inline AliFlatESDVZEROFriend::AliFlatESDVZEROFriend() :
 inline AliFlatESDVZEROFriend::AliFlatESDVZEROFriend( AliVConstructorReinitialisationFlag ){}  // only sets virtual table pointer
 #pragma GCC diagnostic warning "-Weffc++" 
 
-inline void AliESDVZEROfriend::Reset()
+inline void AliFlatESDVZEROFriend::Reset()
 {
   // Reset the contents of the object
   fTrigger = 0;

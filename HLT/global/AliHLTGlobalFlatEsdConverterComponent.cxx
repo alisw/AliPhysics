@@ -68,6 +68,8 @@
 #include "AliSysInfo.h"
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
+#include "AliFlatESDVZERO.h"
+#include "AliFlatESDVZEROFriend.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalFlatEsdConverterComponent)
