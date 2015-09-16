@@ -109,14 +109,7 @@ class AliFlatESDVZEROFriend: public AliVVZEROfriend
       { fTrigger = inputs; }
     void              SetTriggerInputsMask(UShort_t mask)
       { fTriggerMask = mask; }
-    /*
-  enum EFlatESDVZEROfriendParams {
-    kNChannels = EVVZEROfriendParams::kNChannels, // number of electronic channels in V0 (FEE numbering)
-    kNEvOfInt  = EVVZEROfriendParams::kNEvOfInt, // number of events of interest
-    kNScalers  = EVVZEROfriendParams::kNScalers, // number of scalers
-    kNBunches  = EVVZEROfriendParams::kNBunches  // number of bunches used in Minimum Bias information 
-  };
-    */
+
 private: 
 
   ULong64_t     fBBScalers[kNChannels];        // 'Beam-Beam' scalers for all channels
