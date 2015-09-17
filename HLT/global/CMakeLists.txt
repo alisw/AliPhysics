@@ -66,6 +66,7 @@ set(SRCS
     AliHLTGlobalFlatEsdConverterComponent.cxx
     AliHLTGlobalEsdToFlatConverterComponent.cxx
     AliHLTGlobalFlatEsdTestComponent.cxx
+    AliHLTRootObjectMergerComponent.cxx
     AliFlatESDEvent.cxx
     AliFlatESDEvent.h
     AliFlatESDFriend.cxx

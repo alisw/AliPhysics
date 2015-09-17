@@ -5,6 +5,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliHLTRootObjectMergerComponent+;
 #pragma link C++ class AliHLTGlobalEsdConverterComponent+;
 #pragma link C++ class AliHLTGlobalTrackMergerComponent+;
 #pragma link C++ class AliHLTGlobalTrackMerger+;
