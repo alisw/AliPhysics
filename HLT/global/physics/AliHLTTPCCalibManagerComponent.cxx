@@ -103,6 +103,7 @@ AliHLTTPCCalibManagerComponent::AliHLTTPCCalibManagerComponent() :
   fResetAfterPush(kTRUE),
   fNEvents(0),
   fPushEventModulo(0),
+  fMinTracks(0),
   fQueueDepth(0),
   fAsyncProcessor()
 {
@@ -273,6 +274,7 @@ void* AliHLTTPCCalibManagerComponent::CalibManagerDoEvent(void* tmpEventData)
   if (fPushEventModulo == 0 || fNEvents % fPushEventModulo == 0)
   {
     retVal = fAnalysisManager->GetOutputs();
+	HLTImportant("TPC Calib Manager pusing output: %p", retVal);
   }
 
   return(retVal);
@@ -303,14 +305,14 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 	if (vEvent) {HLTInfo("----> event %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
 	if(vFriend) {HLTInfo("----> friend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
 	
-	if (vEvent->GetNumberOfTracks() >= 20)
+	if (vEvent->GetNumberOfTracks() >= fMinTracks)
 	{
+		HLTImportant("Event has %d tracks, running calibration", vEvent->GetNumberOfTracks());
 		CalibManagerQueueData* eventData = new CalibManagerQueueData;
 		eventData->fEvent = vEvent;
 		eventData->fFriend = vFriend;
 		
 		fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCCalibManagerComponent::CalibManagerDoEvent, eventData);
-		
 	}
   }
   
@@ -328,6 +330,13 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 			if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
 		}
 	}
+	
+  if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
+  {
+	PushBack(fAnalysisManager->GetOutputs(), kAliHLTDataTypeTObject|kAliHLTDataOriginHLT,fUID);
+	if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
+  }
+
 
   return iResult;
 }
@@ -452,6 +461,11 @@ int AliHLTTPCCalibManagerComponent::ProcessOption(TString option, TString value)
   {
     fPushEventModulo=atoi(value.Data());
     HLTInfo("fPushEventModulo=%d\n",fPushEventModulo);
+  }
+  else if (option.Contains("MinTracks"))
+  {
+    fMinTracks=atoi(value.Data());
+    HLTInfo("fMinTracks=%d\n",fMinTracks);
   }
   else if (option.Contains("QueueDepth"))
   {

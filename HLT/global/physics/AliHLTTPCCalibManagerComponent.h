@@ -261,6 +261,7 @@ private:
   Bool_t fResetAfterPush; //reset the calibration after pushing for merging
   Int_t fNEvents;		//Number of events processed
   Int_t fPushEventModulo; //Push every n-th event
+  Int_t fMinTracks;      //Min number of tracks to run AnalysisManager
   Int_t fQueueDepth;	//Depth of asynchronous Queue
   AliHLTAsyncMemberProcessor<AliHLTTPCCalibManagerComponent> fAsyncProcessor; //Processor for asynchronous processing
 

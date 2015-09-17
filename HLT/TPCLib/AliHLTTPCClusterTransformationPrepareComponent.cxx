@@ -262,16 +262,17 @@ Int_t AliHLTTPCClusterTransformationPrepareComponent::DoEvent(const AliHLTCompon
 		{
 			for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeTObject); iter != NULL; iter = GetNextInputObject() )
 			{
-				AliCDBEntry* tmpEntry = (AliCDBEntry*) dynamic_cast<const TObjArray*>(iter);
+				AliCDBEntry* tmpEntry = dynamic_cast<AliCDBEntry*>((TObject*) iter);
 				
 				if (tmpEntry)
 				{
+					RemoveInputObjectFromCleanupList(tmpEntry);
 					fNewCalibObject = tmpEntry;
 					break;
 				}
 				else
 				{
-					HLTImportant("Transformation Prepare component received object that is no AliAnalysisDataContainer!");
+					HLTImportant("Transformation Prepare component received object that is no CDBEntry!");
 				}
 			}
 			

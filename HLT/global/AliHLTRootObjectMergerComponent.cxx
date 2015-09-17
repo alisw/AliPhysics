@@ -222,11 +222,11 @@ int AliHLTRootObjectMergerComponent::DoEvent(const AliHLTComponentEventData& evt
 			if (fCumulative)
 			{
 				fTotalInputs += nInputs;
-				HLTImportant("Cluster tranformation map merged cumulatively: %d new inputs, %d total inputs", nInputs, fTotalInputs);
+				HLTImportant("Root objects merged cumulatively: %d new inputs, %d total inputs", nInputs, fTotalInputs);
 			}
 			else
 			{
-				HLTImportant("Cluster tranformation map merged from %d inputs", nInputs);
+				HLTImportant("Root objects merged from %d inputs", nInputs);
 			}
 			PushBack(dynamic_cast<TObject*>(returnObj), GetDataType());
 			char tmpType[100];

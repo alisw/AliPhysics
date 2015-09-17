@@ -100,6 +100,7 @@ AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAn
 	}
 	else
 	{
+		HLTImportant("TPC Offline Preprocessor preparing drift time cdb object");
 		AliCDBManager* cdbManager = AliCDBManager::Instance();
 		
 		static AliTPCPreprocessorOffline* preprocessor = new AliTPCPreprocessorOffline;
@@ -232,7 +233,7 @@ Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponen
 	while (fAsyncProcessor.IsQueuedTaskCompleted())
 	{
 		AliCDBEntry* retVal = (AliCDBEntry*) fAsyncProcessor.RetrieveQueuedTaskResult();
-		PushBack(dynamic_cast<TObject*>(retVal), kAliHLTDataTypeTObject | kAliHLTDataOriginTPC);
+		PushBack(dynamic_cast<TObject*>(retVal), kAliHLTDataTypeTObject | kAliHLTDataOriginHLT);
 		delete retVal;
 	}
 	
@@ -251,7 +252,7 @@ void AliHLTTPCOfflinePreprocessorWrapperComponent::GetOCDBObjectDescription( TMa
   // OCDB entries to be fetched by the TAXI (access via the AliTPCcalibDB class)
   targetMap->Add(new TObjString("TPC/Calib/Parameters"),    new TObjString("unknown content"));
   targetMap->Add(new TObjString("TPC/Calib/TimeDrift"),     new TObjString("drift velocity calibration"));
-  targetMap->Add(new TObjString("TPC/Calib/TimeGain"),     new TObjString("time gain  calibration"));
+  targetMap->Add(new TObjString("TPC/Calib/TimeGain"),      new TObjString("time gain  calibration"));
   targetMap->Add(new TObjString("TPC/Calib/Temperature"),   new TObjString("temperature map"));
   targetMap->Add(new TObjString("TPC/Calib/PadGainFactor"), new TObjString("gain factor pad by pad"));
   targetMap->Add(new TObjString("TPC/Calib/ClusterParam"),  new TObjString("cluster parameters"));

@@ -6,10 +6,10 @@ void testConfigOnlineCalib()
 
 	if (1)
 	{
-		AliHLTConfiguration calib1("myCalibration1", "HLTAnalysisManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3  -QueueDepth=0 AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C('TPCCalib:CalibTimeDrift')");
+		AliHLTConfiguration calib1("myCalibration1", "HLTAnalysisManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3  -MinTracks=5 -QueueDepth=0 AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C('TPCCalib:CalibTimeDrift')");
 //		AliHLTConfiguration calib2("myCalibration2", "TPCCalibManagerComponent", "GLOBAL-flat-esd-converter", "-fPushEventModulo=3");
 		AliHLTConfiguration calibmerge("myCalibrationMerger" , "RootObjectMerger" , "myCalibration1" , "-QueueDepth 0 -cumulative");
-		AliHLTConfiguration calibmerge("myTPCOfflinePreprocessor" , "TPCOfflinePreprocessorWrapper" , "myCalibrationMerger" , "-QueueDepth 0");
+		AliHLTConfiguration preproc("myTPCOfflinePreprocessor" , "TPCOfflinePreprocessorWrapper" , "myCalibrationMerger" , "-QueueDepth 0");
 
 		AliHLTConfiguration eventTrigger("myCustomTrigger", "Zero", "TPC-DP", "");
 
