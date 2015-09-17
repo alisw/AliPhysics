@@ -130,9 +130,9 @@ void AddTask_GammaConvFlow_PbPb2(
     task->SetRPCuts(cutsRP);
     
     AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
-    POIfilterVZERO->SetEtaMin(-0.8);
-    POIfilterVZERO->SetEtaMax(0.8);
-    POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
+//     POIfilterVZERO->SetEtaMin(-0.8);
+//     POIfilterVZERO->SetEtaMax(0.8);
+//     POIfilterVZERO->SetMassMin(263731); POIfilterVZERO->SetMassMax(263733);
     
     if(debug) cout << " === RECEIVED REQUEST FOR FLOW ANALYSIS === " << endl;
     AliAnalysisDataContainer *flowEvent = mgr->CreateContainer(Form("FlowContainer_%s",uniqueID.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
