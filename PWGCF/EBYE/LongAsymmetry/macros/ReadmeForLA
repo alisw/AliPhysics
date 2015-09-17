@@ -1,0 +1,34 @@
+A) ProcessingAOD:
+For readiing the AOD files to obtain the necessary information in a root file for local processing.
+
+AliAnalysisFBMultFluct.h
+AliAnalysisFBMultFluct.cxx
+CreateAlienHandler.C
+runGrid.C
+
+B) ANALYSIS:
+( within the subdirectories V0MCentrality and TrkCentrality)
+(i) For reading the local root files for obtaining the scaling parameters for
+each run 
+readAOD4QA.C
+GetEventWeightsv2.C
+(ii) For readiing the scaling parameters and obtaining the asymmetry for each event
+as well as dNdEta distributions for asymmetry bin 
+readAOD4dNdEta.C
+
+(iii) For obtain the dNdEtaRatio plots ( within dNdEtaRatios subdirectory)
+GetEtaRatioV0Trk.C
+
+(iv) Other macros are
+DrawFitResultsv4.C
+DrawDataSimuSmooth.C
+
+A few macros to generate and "tune" the glauber events is also included
+under tgaluber directory.
+
+
+
+
+
+
+
