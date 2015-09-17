@@ -1,4 +1,4 @@
-void testconfigCalib(const char* parent = "GLOBAL-esd-converter", const char* tpcConfig="fTPCcalibConfigString='TPCCalib TPCAlign' ")
+void testconfigCalib(const char* parent = "GLOBAL-esd-converter", const char* tpcConfig="AddTaskMacro=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/AddTaskTPCCalib.C AddTaskArgs=\"TPCCalib:CalibTimeDrift\" WriteAnalysisToFile=1")
 {
   //load the libraries needed by the calib code
   gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/LoadLibraries.C");
@@ -45,12 +45,12 @@ void testconfigCalib(const char* parent = "GLOBAL-esd-converter", const char* tp
 
 
   // writer configuration
-  AliHLTConfiguration calib("test" , "TPCCalibManagerComponent" , parent , tpcConfig);
+  AliHLTConfiguration calib("calib" , "HLTAnalysisManagerComponent" , parent , tpcConfig);
 
   TString writerArg(Form("-directory testDir -datafile test.root"));
 
   // -- The RootFileWriter 
-  AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "test", writerArg.Data() );
+  AliHLTConfiguration rootWriter("RootWriter", "ROOTFileWriter", "calib", writerArg.Data() );
 
   //pHLT->BuildTaskList("RootWriter");
   //pHLT->PrintTaskList();
