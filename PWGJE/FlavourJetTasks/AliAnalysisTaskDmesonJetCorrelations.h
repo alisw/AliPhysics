@@ -69,6 +69,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetNBinsMass(Int_t n)                    { fNBinsMass           = n   ; }
   void SetParticleLevel(Bool_t s)               { fParticleLevel       = s   ; }
   void SetAliEmcalParticleMode(Bool_t m)        { fAliEmcalParticleMode= m   ; }
+  void SetUseMCInfo(Bool_t m)                   { fUseMCInfo           = m   ; }
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
 
@@ -132,6 +133,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t           fParticleLevel         ; //  set particle level analysis
   Bool_t           fUseExchangeContainer  ; //  use exchange container for the D candidate list
   Bool_t           fAliEmcalParticleMode  ; //  use AliEmcalParticle objects in fCandidateArray
+  Bool_t           fUseMCInfo             ; //  use MC info
 
   AliAODEvent     *fAodEvent                  ; //! AOD event
   TClonesArray    *fCandidateArray            ; //! D meson candidate array

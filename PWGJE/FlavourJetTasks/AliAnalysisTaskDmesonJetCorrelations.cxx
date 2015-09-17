@@ -82,6 +82,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations() :
   fParticleLevel(kFALSE),
   fUseExchangeContainer(kTRUE),
   fAliEmcalParticleMode(kFALSE),
+  fUseMCInfo(kFALSE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
@@ -125,6 +126,7 @@ AliAnalysisTaskDmesonJetCorrelations::AliAnalysisTaskDmesonJetCorrelations(const
   fParticleLevel(kFALSE),
   fUseExchangeContainer(useExchCont),
   fAliEmcalParticleMode(kFALSE),
+  fUseMCInfo(kFALSE),
   fAodEvent(0),
   fCandidateArray(0),
   fHistRejectionReason(0),
@@ -309,39 +311,68 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractParticleLevelHFAttributes(Al
 Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i)
 {
   if (fCandidateType == kD0toKpi) {
+    Int_t MCtruthPdgCode = 0;
+
+    if (fUseMCInfo) {
+      Int_t pdg = 0;
+      if (fCandidateType == kD0toKpi) {
+        pdg = 421;
+      }
+      else {
+        pdg = 413;
+      }
+
+      AliParticleContainer* mcpartCont = GetParticleContainer(1);
+      TClonesArray* mcpartArray = mcpartCont->GetArray();
+      Int_t mcLab = Dcand->MatchToMC(pdg, mcpartArray);
+      if (mcLab >= 0) {
+        AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(mcpartCont->GetParticle(mcLab));
+        MCtruthPdgCode = aodMcPart->PdgCode();
+      }
+    }
+
     AliDebug(2,"Checking if D0 meson is selected");
     Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
-    if (isSelected == 1) {  // selected as a D0
+    if (isSelected == 1 && (MCtruthPdgCode == 0 || MCtruthPdgCode == 421)) {  // selected as a D0
       if (i > 0) return kFALSE;
       AliDebug(2,"Selected as D0");
       invMassD = Dcand->InvMassD0();
     }
-    else if (isSelected == 2) { // selected as a D0bar
+    else if (isSelected == 2 && (MCtruthPdgCode == 0 || MCtruthPdgCode == -421)) { // selected as a D0bar
       if (i > 0) return kFALSE;
       AliDebug(2,"Selected as D0bar");
       invMassD = Dcand->InvMassD0bar();
     }
-    else if (isSelected == 3) { // selected as a D0bar/D0 (PID on K and pi undecisive)
+    else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
       AliDebug(2,"Selected as either D0 or D0bar");
-      Double_t massD0 = Dcand->InvMassD0();
-      Double_t massD0bar = Dcand->InvMassD0bar();
 
-      TParticlePDG* D0part = TDatabasePDG::Instance()->GetParticle(TMath::Abs(421));
-      Float_t pdgMass = D0part->Mass();
-
-      AliDebug(2,Form("D0 inv mass = %.3f, D0bar inv mass = %.3f, PDG mass = %.3f", massD0, massD0bar, pdgMass));
-        
-      // Select D0 or D0bar depending on which one gives a mass closest to the PDG value
-      if (i == 0) {
-        AliDebug(2, "Mass closer to D0");
-        invMassD = massD0;
-      }
-      else if (i == 1) {
-        AliDebug(2, "Mass closer to D0bar");
-        invMassD = massD0bar;
+      if (MCtruthPdgCode == 0) {
+        // Select D0 or D0bar depending on the i-parameter
+        if (i == 0) {
+          AliDebug(2, "Returning invariant mass with D0 hypothesis");
+          invMassD = Dcand->InvMassD0();
+        }
+        else if (i == 1) {
+          AliDebug(2, "Returning invariant mass with D0bar hypothesis");
+          invMassD = Dcand->InvMassD0bar();
+        }
+        else {
+          return kFALSE;
+        }
       }
       else {
-        return kFALSE;
+        if (i > 0) return kFALSE;
+        if (MCtruthPdgCode == 421) {
+          AliDebug(2, "MC truth is D0");
+          invMassD = Dcand->InvMassD0();
+        }
+        else if (MCtruthPdgCode == -421) {
+          AliDebug(2, "MC truth is D0bar");
+          invMassD = Dcand->InvMassD0bar();
+        }
+        else {
+          return kFALSE;
+        }
       }
     }
   }
@@ -776,6 +807,19 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
     AliError(Form("%s: AliEmcalParticle mode is incompatible with using the exchange container.", GetName()));
     fInhibitTask = kTRUE;
     return;
+  }
+
+  if (fParticleLevel && fUseMCInfo) {
+    fUseMCInfo = kFALSE; // no point in specifing "use MC info" if the analysis is performed at particle level
+  }
+
+  if (fUseMCInfo) {
+    AliParticleContainer* mcPartCont = GetParticleContainer(1);
+    if (!mcPartCont) {
+      AliError(Form("%s: Could not find the MC particle container at position 1. The MC info won't be used in this analysis!", GetName()));
+      fUseMCInfo = kFALSE;
+    }
+    mcPartCont->SetClassName("AliAODMCParticle");
   }
 
   TString className;
