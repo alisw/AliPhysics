@@ -525,6 +525,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       for ( unsigned int i = 0; i < inPtrSP->fSpacePointCnt; i++ ) {
 	AliHLTTPCSpacePointData *chlt = &( inPtrSP->fSpacePoints[i] );
 	AliTPCclusterMI *c = fPartitionClusters[slicepartition]+i;
+	c->SetPad( chlt->GetPad() );
+	c->SetTimeBin( chlt->GetTime() );
 	c->SetX(chlt->fX);
 	c->SetY(chlt->fY);
 	c->SetZ(chlt->fZ);
@@ -536,11 +538,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	Int_t sector, row;
 	Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
 	AliHLTTPCTransform::Slice2Sector(slice,chlt->fPadRow, sector, row);
-	AliHLTTPCTransform::Local2Raw( padtime, sector, row);
 	c->SetDetector( sector );
 	c->SetRow( row );
-	c->SetPad( (Int_t) padtime[1] );
-	c->SetTimeBin( (Int_t) padtime[2] );
       }
     } // end of loop over blocks of clusters    
     

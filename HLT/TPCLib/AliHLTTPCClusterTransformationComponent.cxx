@@ -378,13 +378,14 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
       float sigmaZ2=cl.GetSigmaTime2();
       sigmaY2*=padpitch*padpitch;
       sigmaZ2*=zwidth*zwidth;
+      c.SetPad( cl.GetPad() );
+      c.SetTime( cl.GetTime() );
       c.SetPadRow(padrow);
       c.SetCharge(charge);
       c.SetSigmaY2(sigmaY2);
       c.SetSigmaZ2(sigmaZ2);
       c.SetQMax(cl.GetQMax());
-
-      Float_t xyz[3];
+        Float_t xyz[3];
       int err = fgTransform.Transform( minSlice, padrow, pad, time, xyz );	 
       if( err!=0 ){
 	HLTWarning(Form("Cannot transform the cluster, AliHLTTPCClusterTransformation returns error %d, %s",err, fgTransform.GetLastError()));

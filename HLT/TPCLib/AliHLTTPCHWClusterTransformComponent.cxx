@@ -287,6 +287,8 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 float sigmaZ2=cl.GetSigmaZ2();
 	 sigmaY2*=padpitch*padpitch;
 	 sigmaZ2*=zwidth*zwidth;
+	 c.SetPad( cl.GetPad() );
+	 c.SetTime( cl.GetTime() );
 	 c.SetPadRow(padrow);
 	 c.SetCharge(charge);
 	 c.SetSigmaY2(sigmaY2);
