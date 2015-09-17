@@ -715,9 +715,18 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
     // fit to charged pions for p-Pb @ 5.02TeV     
     switch (fgSelectedPtParamPi0){
     case kPichargedParam:
-      kc=235.5; ka=0.6903; kb=0.06864; kp0=2.289; kp1=0.5872; kd=0.6474; kn=7.842; 
+      //kc=235.5; ka=0.6903; kb=0.06864; kp0=2.289; kp1=0.5872; kd=0.6474; kn=7.842; 
+      kc = 80.718314; ka = 0.510550; kb = 0.081444; kp0 = 3.415777; kp1 = 0.722887; kd = 0.820271; kn = 7.140332;
       return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
       break;
+    case kPichargedParamlow:
+      kc = 62.548591; ka = 0.410163; kb = 0.111024; kp0 = 3.643849; kp1 = 0.734388; kd = 0.889554; kn = 6.741050;
+      return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
+      break;
+    case kPichargedParamhigh:
+      kc = 105.785183; ka = 0.598377; kb = 0.055882; kp0 = 3.751795; kp1 = 0.679347; kd = 0.767044; kn = 7.516741;
+      return PtModifiedHagedornExp2(*px,kc,ka,kb,kp0,kp1,kd,kn);
+      break;  
     default:
       return 0;
  
@@ -1208,6 +1217,25 @@ Double_t AliGenEMlib::PtPhi( const Double_t *px, const Double_t */*dummy*/ )
     default:
       return MtScal(*px,kPhi);
     }
+  case kpPb: 
+    switch(fgSelectedPtParamPhi){ 
+      // for pPb @ 5.02 TeV
+    case kPhiParamPPb:
+      km = 1.01946; kc = 0.13484191317 / (2*TMath::Pi()); kT = 0.44560169252; kn = 12.78215005772;
+      return PtTsallis(*px,km,kc,kT,kn);
+      break;
+    case kPhiParamPPblow:
+      km = 1.01946; kc = 0.12420303835 / (2*TMath::Pi()); kT = 0.45097611367; kn = 13.18917228630;
+      return PtTsallis(*px,km,kc,kT,kn);
+      break;
+    case kPhiParamPPbhigh:
+      km = 1.01946; kc = 0.14548654894 / (2*TMath::Pi()); kT = 0.44101775738; kn = 12.45359262330; 
+      return PtTsallis(*px,km,kc,kT,kn);
+      break;    
+    case kPhiMtScal:
+    default:
+      return MtScal(*px,kPhi);
+    } 
   default:
     return MtScal(*px,kPhi);
     break; 
@@ -1233,7 +1261,7 @@ Double_t AliGenEMlib::V2Phi( const Double_t *px, const Double_t */*dummy*/ )
 //--------------------------------------------------------------------------
 Int_t AliGenEMlib::IpJpsi(TRandom *)
 {
-  // Return phi pdg code
+  // Return jpsi pdg code
   return 443;
 }
 

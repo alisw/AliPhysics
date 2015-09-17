@@ -44,7 +44,7 @@ public:
 			  kOmegaParamPbPb, kOmegaParamPPb };
   
   enum PtParamSetPhi_t{ kPhiMtScal=0, kPhiParampp, kPhiParampplow, kPhiParampphigh,
-		        kPhiParamPbPb, kPhiParamPPb };
+		        kPhiParamPbPb, kPhiParamPPb, kPhiParamPPblow, kPhiParamPPbhigh };
   
   enum v2Sys_t{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
  
