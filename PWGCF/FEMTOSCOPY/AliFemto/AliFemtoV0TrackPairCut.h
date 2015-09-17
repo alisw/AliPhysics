@@ -34,6 +34,9 @@ public:
   void SetDataType(AliFemtoDataType type);
   void SetKstarCut(double kstar, AliFemtoParticleType firstParticle, AliFemtoParticleType secondParticle);
   void SetMinAvgSeparation(int type, double minSep);
+  void SetMinDEtaStar(Int_t type, Double_t minDEtaStar);
+  void SetMinDPhiStar(Int_t type, Double_t minDPhiStar);
+  void SetShiftPosition(Double_t rad);
 
 protected:
   long fNPairsPassed;  ///< Number of pairs considered that passed the cut
@@ -55,6 +58,11 @@ private:
   AliFemtoParticleType fSecondParticleType; ///< for kstar - second particle type (primary track)
   double fMinAvgSepTrackPos;
   double fMinAvgSepTrackNeg;
+  Double_t fMinDEtaStarPos; ///< Minimum allowed delta eta* between primary track and positive daughter
+  Double_t fMinDEtaStarNeg; ///< Minimum allowed delta eta* between primary track and negative daughter
+  Double_t fMinDPhiStarPos; ///< Minimum allowed delta phi* between primary track and positive daughter
+  Double_t fMinDPhiStarNeg; ///< Minimum allowed delta phi* between primary track and negative daughter
+  Double_t fMinRad;  ///< Radius at which the spatial position of the track in the shifted coordinate system is calculated
 
 #ifdef __ROOT__
   ClassDef(AliFemtoV0TrackPairCut, 0)
@@ -62,22 +70,27 @@ private:
 };
 
 inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairCut &c):
-  AliFemtoPairCut(c),
-  fNPairsPassed(c.fNPairsPassed),
-  fNPairsFailed(c.fNPairsFailed),
-  fV0Max(c.fV0Max),
-  fShareQualityMax(c.fShareQualityMax),
-  fShareFractionMax(c.fShareFractionMax),
-  fRemoveSameLabel(c.fRemoveSameLabel),
-  fTrackTPCOnly(c.fTrackTPCOnly),
-  fDataType(c.fDataType),
-  fDTPCMin(c.fDTPCMin),
-  fDTPCExitMin(c.fDTPCExitMin),
-  fKstarCut(c.fKstarCut),
-  fFirstParticleType(c.fFirstParticleType),
-  fSecondParticleType(c.fSecondParticleType),
-  fMinAvgSepTrackPos(c.fMinAvgSepTrackPos),
-  fMinAvgSepTrackNeg(c.fMinAvgSepTrackNeg)
+			      AliFemtoPairCut(c),
+			      fNPairsPassed(c.fNPairsPassed),
+			      fNPairsFailed(c.fNPairsFailed),
+			      fV0Max(c.fV0Max),
+			      fShareQualityMax(c.fShareQualityMax),
+			      fShareFractionMax(c.fShareFractionMax),
+			      fRemoveSameLabel(c.fRemoveSameLabel),
+			      fTrackTPCOnly(c.fTrackTPCOnly),
+			      fDataType(c.fDataType),
+			      fDTPCMin(c.fDTPCMin),
+			      fDTPCExitMin(c.fDTPCExitMin),
+			      fKstarCut(c.fKstarCut),
+			      fFirstParticleType(c.fFirstParticleType),
+			      fSecondParticleType(c.fSecondParticleType),
+			      fMinAvgSepTrackPos(c.fMinAvgSepTrackPos),
+			      fMinAvgSepTrackNeg(c.fMinAvgSepTrackNeg),
+			      fMinDEtaStarPos(c.fMinDEtaStarPos),
+			      fMinDEtaStarNeg(c.fMinDEtaStarNeg),
+			      fMinDPhiStarPos(c.fMinDPhiStarPos),
+			      fMinDPhiStarNeg(c.fMinDPhiStarNeg),
+			      fMinRad(c.fMinRad)
 {
   /* no-op */
 }

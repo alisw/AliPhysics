@@ -16,8 +16,8 @@ ClassImp(AliFemtoCorrFctnDPhiStarDEtaStar)
 AliFemtoCorrFctnDPhiStarDEtaStar::AliFemtoCorrFctnDPhiStarDEtaStar(char* title,
 								   double radius=1.2,
 								   const int& aEtaBins=50,
-								   double aEtaRangeLow=-0.1,
-								   double aEtaRangeUp=0.1,
+								   double aEtaRangeLow=0.0,
+								   double aEtaRangeUp=0.2,
 								   const int& aPhiStarBins=50,
 								   double aPhiStarRangeLow=0.0,
 								   double aPhiStarRangeUp=0.2):
@@ -364,8 +364,7 @@ static void StoreDPhiStarDEtaStarBetweenTracks(const AliFemtoTrack *track1,
   double thetas2 = TMath::Pi()/2. - TMath::ATan(track2->NominalTpcPointShifted().z()/(minRad*1e2));
   double etas1 = -TMath::Log( TMath::Tan(thetas1/2.) );
   double etas2 = -TMath::Log( TMath::Tan(thetas2/2.) );
-  double detas = etas1 - etas2;
-  double dthetas = thetas1 - thetas2;
+  double detas = TMath::Abs(etas1 - etas2);
   double distSft= TMath::Sqrt(TMath::Power(track1->NominalTpcPointShifted().x() -
 					   track2->NominalTpcPointShifted().x(),2) +
 			      TMath::Power(track1->NominalTpcPointShifted().y() -
@@ -387,8 +386,7 @@ static void StoreDPhiStarDEtaStarBetweenV0AndTrack(const AliFemtoV0 *V0,
   double thetas2_pos = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(minRad*1e2));
   double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) );
   double etas2_pos = -TMath::Log( TMath::Tan(thetas2_pos/2.) );
-  double detas_pos = etas1_pos - etas2_pos;
-  double dthetas_pos = thetas1_pos - thetas2_pos;
+  double detas_pos = TMath::Abs(etas1_pos - etas2_pos);
   double distSft_pos = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointPosShifted().x() -
 						track->NominalTpcPointShifted().x(),2) +
 				   TMath::Power(mut_V0->NominalTpcPointPosShifted().y() -
@@ -399,8 +397,7 @@ static void StoreDPhiStarDEtaStarBetweenV0AndTrack(const AliFemtoV0 *V0,
   double thetas2_neg = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(minRad*1e2));
   double etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) );
   double etas2_neg = -TMath::Log( TMath::Tan(thetas2_neg/2.) );
-  double detas_neg = etas1_neg - etas2_neg;
-  double dthetas_neg = thetas1_neg - thetas2_neg;
+  double detas_neg = TMath::Abs(etas1_neg - etas2_neg);
   double distSft_neg = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointNegShifted().x() -
 						track->NominalTpcPointShifted().x(),2) +
 				   TMath::Power(mut_V0->NominalTpcPointNegShifted().y() -
@@ -427,8 +424,7 @@ static void StoreDPhiStarDEtaStarBetweenV0s(const AliFemtoV0 *V0_1,
   double thetas2_pospos = TMath::Pi()/2. - TMath::ATan(mut_V0_2->NominalTpcPointPosShifted().z()/(minRad*1e2));
   double etas1_pospos = -TMath::Log( TMath::Tan(thetas1_pospos/2.) );
   double etas2_pospos = -TMath::Log( TMath::Tan(thetas2_pospos/2.) );
-  double detas_pospos = etas1_pospos - etas2_pospos;
-  double dthetas_pospos = thetas1_pospos - thetas2_pospos;
+  double detas_pospos = TMath::Abs(etas1_pospos - etas2_pospos);
   double distSft_pospos = TMath::Sqrt(TMath::Power(mut_V0_1->NominalTpcPointPosShifted().x() -
 						   mut_V0_2->NominalTpcPointPosShifted().x(),2) +
 				      TMath::Power(mut_V0_1->NominalTpcPointPosShifted().y() -
@@ -439,8 +435,7 @@ static void StoreDPhiStarDEtaStarBetweenV0s(const AliFemtoV0 *V0_1,
   double thetas2_posneg = TMath::Pi()/2. - TMath::ATan(mut_V0_2->NominalTpcPointNegShifted().z()/(minRad*1e2));
   double etas1_posneg = -TMath::Log( TMath::Tan(thetas1_posneg/2.) );
   double etas2_posneg = -TMath::Log( TMath::Tan(thetas2_posneg/2.) );
-  double detas_posneg = etas1_posneg - etas2_posneg;
-  double dthetas_posneg = thetas1_posneg - thetas2_posneg;
+  double detas_posneg = TMath::Abs(etas1_posneg - etas2_posneg);
   double distSft_posneg = TMath::Sqrt(TMath::Power(mut_V0_1->NominalTpcPointPosShifted().x() -
 						   mut_V0_2->NominalTpcPointNegShifted().x(),2) +
 				      TMath::Power(mut_V0_1->NominalTpcPointPosShifted().y() -
@@ -451,8 +446,7 @@ static void StoreDPhiStarDEtaStarBetweenV0s(const AliFemtoV0 *V0_1,
   double thetas2_negpos = TMath::Pi()/2. - TMath::ATan(mut_V0_2->NominalTpcPointPosShifted().z()/(minRad*1e2));
   double etas1_negpos = -TMath::Log( TMath::Tan(thetas1_negpos/2.) );
   double etas2_negpos = -TMath::Log( TMath::Tan(thetas2_negpos/2.) );
-  double detas_negpos = etas1_negpos - etas2_negpos;
-  double dthetas_negpos = thetas1_negpos - thetas2_negpos;
+  double detas_negpos = TMath::Abs(etas1_negpos - etas2_negpos);
   double distSft_negpos = TMath::Sqrt(TMath::Power(mut_V0_1->NominalTpcPointNegShifted().x() -
 						   mut_V0_2->NominalTpcPointPosShifted().x(),2) +
 				      TMath::Power(mut_V0_1->NominalTpcPointNegShifted().y() -
@@ -463,8 +457,7 @@ static void StoreDPhiStarDEtaStarBetweenV0s(const AliFemtoV0 *V0_1,
   double thetas2_negneg = TMath::Pi()/2. - TMath::ATan(mut_V0_2->NominalTpcPointNegShifted().z()/(minRad*1e2));
   double etas1_negneg = -TMath::Log( TMath::Tan(thetas1_negneg/2.) );
   double etas2_negneg = -TMath::Log( TMath::Tan(thetas2_negneg/2.) );
-  double detas_negneg = etas1_negneg - etas2_negneg;
-  double dthetas_negneg = thetas1_negneg - thetas2_negneg;
+  double detas_negneg = TMath::Abs(etas1_negneg - etas2_negneg);
   double distSft_negneg = TMath::Sqrt(TMath::Power(mut_V0_1->NominalTpcPointNegShifted().x() -
 						   mut_V0_2->NominalTpcPointNegShifted().x(),2) +
 				      TMath::Power(mut_V0_1->NominalTpcPointNegShifted().y() -
