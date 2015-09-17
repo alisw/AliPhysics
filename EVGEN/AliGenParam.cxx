@@ -700,10 +700,10 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	if (fGeometryAcceptance) 
 	  if (!CheckAcceptanceGeometry(np,particles)) continue;
 	Int_t ncsel=0;
-	Int_t* pFlag      = new Int_t[np];
-	Int_t* pParent    = new Int_t[np];
-	Int_t* pSelected  = new Int_t[np];
-	Int_t* trackIt    = new Int_t[np];
+	Int_t pFlag    [np];
+	Int_t pParent  [np];
+	Int_t pSelected[np];
+	Int_t trackIt  [np];
 
 	for (i=0; i<np; i++) {
 	  pFlag[i]     =  0;
@@ -829,10 +829,6 @@ PushTrack(0, -1, iPart, p[0],p[1],p[2],energy,origin0[0],origin0[1],origin0[2],t
 	  } // Particle loop 
 	}  // Decays by Lujet
 	particles->Clear();
-	if (pFlag)      delete[] pFlag;
-	if (pParent)    delete[] pParent;
-	if (pSelected)  delete[] pSelected;	   
-	if (trackIt)    delete[] trackIt;
       } // kinematic selection
       else  // nodecay option, so parent will be tracked by GEANT (pions, kaons, eta, omegas, baryons)
 	{
