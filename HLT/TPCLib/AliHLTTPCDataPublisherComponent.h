@@ -129,8 +129,8 @@ public:
       void SetPadRow(int row)          {if (fCluster) fCluster->SetPadRow(row);}
       void SetPad(float pad) 	       {if (fCluster) fCluster->SetPad(pad);}
       void SetTime(float time) 	       {if (fCluster) fCluster->SetTime(time);}
-      void SetSigmaY2(float sigmaY2)   {if (fCluster) fCluster->SetSigmaY2(sigmaY2);}
-      void SetSigmaZ2(float sigmaZ2)   {if (fCluster) fCluster->SetSigmaZ2(sigmaZ2);}
+      void SetSigmaY2(float sigmaY2)   {if (fCluster) fCluster->SetSigmaPad2(sigmaY2);}
+      void SetSigmaZ2(float sigmaZ2)   {if (fCluster) fCluster->SetSigmaTime2(sigmaZ2);}
       void SetCharge(unsigned charge)  {if (fCluster) fCluster->SetCharge(charge);}
       void SetQMax(unsigned qmax)      {if (fCluster) fCluster->SetQMax(qmax);}
       void SetMC(const AliHLTTPCClusterMCLabel* pMC) {

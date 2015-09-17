@@ -1245,8 +1245,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
 
       if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
-	fRawClusters[counter].SetSigmaY2(fSpacePointData[counter].fSigmaY2);
-	fRawClusters[counter].SetSigmaZ2(fSpacePointData[counter].fSigmaZ2);
+	fRawClusters[counter].SetSigmaPad2(fSpacePointData[counter].fSigmaY2);
+	fRawClusters[counter].SetSigmaTime2(fSpacePointData[counter].fSigmaZ2);
 	fRawClusters[counter].SetCharge(fSpacePointData[counter].fCharge);
 	fRawClusters[counter].SetQMax(fSpacePointData[counter].fQMax);
       }
@@ -1408,8 +1408,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
       fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
 
       if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
-	fRawClusters[counter].SetSigmaY2(fSpacePointData[counter].fSigmaY2);
-	fRawClusters[counter].SetSigmaZ2(fSpacePointData[counter].fSigmaZ2);
+	fRawClusters[counter].SetSigmaPad2(fSpacePointData[counter].fSigmaY2);
+	fRawClusters[counter].SetSigmaTime2(fSpacePointData[counter].fSigmaZ2);
 	fRawClusters[counter].SetCharge(fSpacePointData[counter].fCharge);
 	fRawClusters[counter].SetQMax(fSpacePointData[counter].fQMax);
       }

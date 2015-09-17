@@ -525,8 +525,8 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
     pCluster->SetRow(map[i].fCluster.GetPadRow());
     pCluster->SetPad(map[i].fCluster.GetPad());
     pCluster->SetTimeBin(map[i].fCluster.GetTime());
-    pCluster->SetSigmaY2(map[i].fCluster.GetSigmaY2());
-    pCluster->SetSigmaZ2(map[i].fCluster.GetSigmaZ2());
+    pCluster->SetSigmaY2(map[i].fCluster.GetSigmaPad2());
+    pCluster->SetSigmaZ2(map[i].fCluster.GetSigmaTime2());
     pCluster->SetQ(map[i].fCluster.GetCharge());
     pCluster->SetMax(map[i].fCluster.GetQMax());
 

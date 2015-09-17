@@ -375,8 +375,8 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   c.SetCharge(charge);
 	   c.SetPad(pad);  
 	   c.SetTime(time);
-	   c.SetSigmaY2(sigmaP2);
-	   c.SetSigmaZ2(sigmaT2);
+	   c.SetSigmaPad2(sigmaP2);
+	   c.SetSigmaTime2(sigmaT2);
 	   c.SetQMax(cl.GetQMax());
 
 	   // store cluster and continue

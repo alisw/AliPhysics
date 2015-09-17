@@ -374,8 +374,8 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 
       float pad=cl.GetPad();
       float time=cl.GetTime();
-      float sigmaY2=cl.GetSigmaY2();
-      float sigmaZ2=cl.GetSigmaZ2();
+      float sigmaY2=cl.GetSigmaPad2();
+      float sigmaZ2=cl.GetSigmaTime2();
       sigmaY2*=padpitch*padpitch;
       sigmaZ2*=zwidth*zwidth;
       c.SetPadRow(padrow);

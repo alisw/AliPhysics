@@ -941,7 +941,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillTime(float 
 void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaY2(float sigmaY2, AliHLTUInt32_t /*clusterId*/, int partition)
 {
   /// fill sigmaY2 histogram
-  fCurrentCluster.SetSigmaY2(sigmaY2);
+  fCurrentCluster.SetSigmaPad2(sigmaY2);
   unsigned index=kHistogramSigmaY2;
   /// take account for different pad widths
   float weight=AliHLTTPCTransform::GetPadPitchWidth(partition);
@@ -957,7 +957,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaY2(flo
 void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaZ2(float sigmaZ2, AliHLTUInt32_t /*clusterId*/)
 {
   /// fill sigmaZ2 histogram
-  fCurrentCluster.SetSigmaZ2(sigmaZ2);
+  fCurrentCluster.SetSigmaTime2(sigmaZ2);
   unsigned index=kHistogramSigmaZ2;
   // FIXME: this is just a fixed value, to be correct the values from the global
   // parameter block has to be used
@@ -1049,7 +1049,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Fill(int slice,
 	float sigma=fRawData->GetYWidth(clusterId)*factor;
 	if (sigma>fMaxSigmaY2Scaled) sigma=fMaxSigmaY2Scaled;
 	sigma/=factor;
-	fHistogramPointers[index]->Fill(fCurrentCluster.GetSigmaY2()-sigma);
+	fHistogramPointers[index]->Fill(fCurrentCluster.GetSigmaPad2()-sigma);
       }
     }
 
@@ -1060,7 +1060,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Fill(int slice,
 	float sigma=fRawData->GetZWidth(clusterId)*factor;
 	if (sigma>fMaxSigmaZ2Scaled) sigma=fMaxSigmaZ2Scaled;
 	sigma/=factor;
-	fHistogramPointers[index]->Fill(fCurrentCluster.GetSigmaZ2()-sigma);
+	fHistogramPointers[index]->Fill(fCurrentCluster.GetSigmaTime2()-sigma);
       }
     }
 

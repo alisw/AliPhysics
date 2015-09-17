@@ -208,8 +208,8 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
 					   short partitionrow,
 					   float pad,
 					   float time,
-					   float sigmaY2,
-					   float sigmaZ2,
+					   float sigmaPad2,
+					   float sigmaTime2,
 					   unsigned short charge,
 					   unsigned short qmax,
 					   AliHLTUInt32_t id,
@@ -250,8 +250,8 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
     
     if( iBorder>=0 ){
       float dPad = pad - fBorders[iBorder];
-      if( sigmaY2>1.e-4 ){
-	if( dPad*dPad > 12.*sigmaY2 ) iBorder = -1;
+      if( sigmaPad2>1.e-4 ){
+	if( dPad*dPad > 12.*sigmaPad2 ) iBorder = -1;
       } else {
 	if( fabs(dPad)>1. ) iBorder = -1;
       }    
@@ -260,7 +260,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   }
 
   fClusters.push_back(AliClusterRecord(slice, partition, iBorder, -1, id,
-				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax),
+				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaPad2, sigmaTime2, charge, qmax),
 				       mc!=NULL?*mc:AliHLTTPCClusterMCLabel() ));
 
   if( iBorder>=0 ){
@@ -394,12 +394,12 @@ sLeft+=n1;
       c1.Cluster().fCharge += c2.Cluster().fCharge;
       if( c1.Cluster().fQMax < c2.Cluster().fQMax ) c1.Cluster().fQMax = c2.Cluster().fQMax;
       
-      c1.Cluster().fSigmaY2 = 
-	w1*c1.Cluster().fSigmaY2 + w2*c2.Cluster().fSigmaY2
+      c1.Cluster().fSigmaPad2 = 
+	w1*c1.Cluster().fSigmaPad2 + w2*c2.Cluster().fSigmaPad2
 	+ (c1.Cluster().fPad - c2.Cluster().fPad)*(c1.Cluster().fPad - c2.Cluster().fPad)*w1*w2;
       
-      c1.Cluster().fSigmaZ2 = 
-	w1*c1.Cluster().fSigmaZ2 + w2*c2.Cluster().fSigmaZ2
+      c1.Cluster().fSigmaTime2 = 
+	w1*c1.Cluster().fSigmaTime2 + w2*c2.Cluster().fSigmaTime2
 	+ (c1.Cluster().fTime - c2.Cluster().fTime)*(c1.Cluster().fTime - c2.Cluster().fTime)*w1*w2;
       
       c1.Cluster().fPad  = w1*c1.Cluster().fPad + w2*c2.Cluster().fPad;

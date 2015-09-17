@@ -718,8 +718,8 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	c.SetCharge(input.GetCharge());
 	c.SetPad(pad);  
 	c.SetTime(time);
-	c.SetSigmaY2(sigmaY2);
-	c.SetSigmaZ2(sigmaZ2);
+	c.SetSigmaPad2(sigmaY2);
+	c.SetSigmaTime2(sigmaZ2);
 	c.SetQMax(input.GetQMax());
       } else {
 	AliHLTUInt64_t padrow64=input.GetPadRow();

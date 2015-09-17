@@ -262,8 +262,8 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 	  iBorder = fMapping[sliceRow*fNRowPads+iPad];    
 	  if( iBorder>=0 ){
 	    float dPad = pad - fBorders[iBorder].fPadPosition;
-	    if( cluster.GetSigmaY2()>1.e-4 ){
-	      if( dPad*dPad > 12.*cluster.GetSigmaY2() ) iBorder = -1;
+	    if( cluster.GetSigmaPad2()>1.e-4 ){
+	      if( dPad*dPad > 12.*cluster.GetSigmaPad2() ) iBorder = -1;
 	    } else {
 	      if( fabs(dPad)>1. ) iBorder = -1;
 	    }    
@@ -325,10 +325,10 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 	c1->SetCharge( c1->GetCharge() + c2->GetCharge() );
 	if( c1->GetQMax() < c2->GetQMax() ) c1->SetQMax( c2->GetQMax() );
 	
-	c1->SetSigmaY2(  w1*c1->GetSigmaY2() + w2*c2->GetSigmaY2()
+	c1->SetSigmaPad2(  w1*c1->GetSigmaPad2() + w2*c2->GetSigmaPad2()
 			 + (c1->GetPad() - c2->GetPad())*(c1->GetPad() - c2->GetPad())*w1*w2 );
 	
-	c1->SetSigmaZ2( w1*c1->GetSigmaZ2() + w2*c2->GetSigmaZ2()
+	c1->SetSigmaTime2( w1*c1->GetSigmaTime2() + w2*c2->GetSigmaTime2()
 			+ (c1->GetTime() - c2->GetTime())*(c1->GetTime() - c2->GetTime())*w1*w2 );
       
 	c1->SetPad( w1*c1->GetPad() + w2*c2->GetPad() );

@@ -40,7 +40,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   /// check if a cluster is a candidate for merging
   template<typename T> 
   bool CheckCandidate(int slice, int partition, const T& c) {
-    return CheckCandidate(slice, partition, c.GetPadRow(), c.GetPad(), c.GetTime(), c.GetSigmaY2() );
+    return CheckCandidate(slice, partition, c.GetPadRow(), c.GetPad(), c.GetTime(), c.GetSigmaPad2() );
   }
 
   /// check if a cluster is a candidate for merging
@@ -82,8 +82,8 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 			c.GetPadRow(),
 			c.GetPad(),
 			c.GetTime(),
-			c.GetSigmaY2(),
-			c.GetSigmaZ2(),
+			c.GetSigmaPad2(),
+			c.GetSigmaTime2(),
 			c.GetCharge(),
 			c.GetQMax(),
 			id,
