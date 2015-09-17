@@ -84,8 +84,8 @@ void AliMUONBusPatchEvolution::Augment()
 			GroupByDDL(tr);
 			GroupByChamber(tr);
 			GroupByStation(tr);
-			Normalize();
 		}
+		Normalize();
 	}
 }
 
