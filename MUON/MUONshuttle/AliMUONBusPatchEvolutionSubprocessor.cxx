@@ -31,7 +31,7 @@ namespace {
 //_____________________________________________________________________________
 AliMUONBusPatchEvolutionSubprocessor::AliMUONBusPatchEvolutionSubprocessor(AliMUONPreprocessor* master)
 : AliMUONVSubprocessor(master,"Occupancy","Upload MUON Tracker Bus Patch Evolution to OCDB"),
-  fBPEVO(0x0), fProductionMode(0)
+  fBPEVO(0x0), fProductionMode(1)
 {
   /// Default ctor
 }
