@@ -2583,12 +2583,12 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     fEmbeddedPtFraction.Reset(0);
 
     //matching that selects reconstructed jets from embedded+data events by matching to PYTHIA true jets, that have been embedded
-    if(fUseExtraTracks ==  1){
+   
       AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets, 
 						fJetsRecCuts, nRecJetsCuts, 
 						iEmbeddedMatchIndex, fEmbeddedPtFraction,
 						fDebug, fCutDeltaREmbedded);
-    }
+    
   }
   
   //____ fetch background clusters ___________________________________________________
@@ -3603,7 +3603,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	}
 	
 
-	if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets
+	//if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets, probably this works not yet, all jets are rejected with these cut values... to be checked again!
 
 	  
 	if(ptFractionEmbedded>=fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
@@ -3739,7 +3739,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    if(mclabelcheck == kFALSE)continue;
 	  }
 	  //=======
-	  //for embedding signal calculation and extraonly particle referenz
+	  //for embedding signal calculation and extraonly particle reference
 	  if(incrementJetPt==kTRUE){
 	    fh1IMK0EmbCone->Fill(jetPt);
 	  }//normalisation by number of selected jets
@@ -6041,13 +6041,11 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 
   //First the embedded v0s:########################################################################################################
 
-  if((tracktype==kTrackAODExtraonlyCuts)||(tracktype==kTrackAODExtraCuts)){
+  if((tracktype==kTrackAODExtraonlyCuts)||(tracktype==kTrackAODExtraCuts)){//carried out only when extra or extraonly tracks are requested
 
     TClonesArray *aodExtrav0s = 0x0;
-    
-    //aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraV0s"));
-    
-    if(particletype == kK0){aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraK0s"));}
+        
+    if(particletype == kK0){aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraK0s"));}//search for embedded V0s
 
     if(particletype == kLambda){aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraLa"));}
 
@@ -6119,7 +6117,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa)))continue; 
        
        //all other PYTHIA v0 particle cuts are already applied in AliAnalysisTaskFastEmbedding.cxx ->cut values are set in AddTask_aod_FastEmbedding.C! pay attention!  
-      
+       //since also pdg code check is applied before embedding, in principle no cuts are needed for the PYTHIA V0s
       list->Add(v0);
       iCount++;
       
