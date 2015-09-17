@@ -1,13 +1,13 @@
 // -*- Mode: C++ -*-
 
-#ifndef ALIHLTTPCCLUSTERTRANSFORMATIONPREPARECOMPONENT_H
-#define ALIHLTTPCCLUSTERTRANSFORMATIONPREPARECOMPONENT_H
+#ifndef ALIHLTTPCOFFLINEPREPROCESSORWRAPPERCOMPONENT_H
+#define ALIHLTTPCOFFLINEPREPROCESSORWRAPPERCOMPONENT_H
 
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCClusterTransformationPrepareComponent.h
+/** @file   AliHLTTPCOfflinePreprocessorWrapperComponent.h
     @author Sergey Gorbunov
     @date   
     @brief
@@ -22,24 +22,22 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTAsyncMemberProcessor.h"
 
-class AliHLTTPCClusterTransformation;
-class AliHLTTPCFastTransformObject;
 class AliAnalysisDataContainer;
 class AliCDBEntry;
 
 /**
- * @class AliHLTTPCClusterTransformationPrepareComponent
+ * @class AliHLTTPCOfflinePreprocessorWrapperComponent
  * @ingroup alihlt_tpc_components
  */
 
-class AliHLTTPCClusterTransformationPrepareComponent : public AliHLTProcessor {
+class AliHLTTPCOfflinePreprocessorWrapperComponent : public AliHLTProcessor {
     
 public:
 
   /** standard constructor */    
-  AliHLTTPCClusterTransformationPrepareComponent();           
+  AliHLTTPCOfflinePreprocessorWrapperComponent();           
   /** destructor */
-  virtual ~AliHLTTPCClusterTransformationPrepareComponent();
+  virtual ~AliHLTTPCOfflinePreprocessorWrapperComponent();
 
   // Public functions to implement AliHLTComponent's interface.
   // These functions are required for the registration process
@@ -76,28 +74,18 @@ private:
    
           
   /** copy constructor prohibited */
-  AliHLTTPCClusterTransformationPrepareComponent(const AliHLTTPCClusterTransformationPrepareComponent&);
+  AliHLTTPCOfflinePreprocessorWrapperComponent(const AliHLTTPCOfflinePreprocessorWrapperComponent&);
 
   /** assignment operator prohibited */
-  AliHLTTPCClusterTransformationPrepareComponent& operator=(const AliHLTTPCClusterTransformationPrepareComponent&);
+  AliHLTTPCOfflinePreprocessorWrapperComponent& operator=(const AliHLTTPCOfflinePreprocessorWrapperComponent&);
 
-  Int_t fMinInitSec;	//Min sector for parallel initialization
-  Int_t fMaxInitSec;	//Max sector for parallel initialization
-
-  static const char* fgkOCDBEntryClusterTransformation; //!transient
-  static AliHLTTPCClusterTransformation fgTransform; //!transient
-  static Bool_t fgTimeInitialisedFromEvent; //!transient
+  AliCDBEntry* RunPreprocessor(AliAnalysisDataContainer* dataContainer);
+  void* AsyncRunPreprocessor(void*);
   
-  AliHLTTPCFastTransformObject* fTmpFastTransformObject;
-  AliHLTTPCFastTransformObject* GenerateFastTransformObject();
-  void* AsyncGenerateFastTransformObject(void*);
-  
-  AliHLTAsyncMemberProcessor<AliHLTTPCClusterTransformationPrepareComponent> fAsyncProcessor;
+  AliHLTAsyncMemberProcessor<AliHLTTPCOfflinePreprocessorWrapperComponent> fAsyncProcessor;
   int fAsyncProcessorQueueDepth;
   
-  AliCDBEntry* fNewCalibObject;
-
-  ClassDef(AliHLTTPCClusterTransformationPrepareComponent, 0)
+  ClassDef(AliHLTTPCOfflinePreprocessorWrapperComponent, 0)
 };
 
 #endif

@@ -12,6 +12,7 @@
 #pragma link C++ class AliHLTTPCClusterTransformation+;
 #pragma link C++ class AliHLTTPCClusterTransformationComponent+;
 #pragma link C++ class AliHLTTPCClusterTransformationPrepareComponent+;
+#pragma link C++ class AliHLTTPCOfflinePreprocessorWrapperComponent+;
 #pragma link C++ class AliHLTTPCAgent+;
 #pragma link C++ class AliHLTTPCMemHandler+;
 #pragma link C++ class AliHLTTPCFileHandler+;

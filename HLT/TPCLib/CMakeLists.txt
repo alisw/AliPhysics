@@ -75,6 +75,7 @@ set(SRCS
     AliHLTTPCClusters.cxx
     AliHLTTPCClusterTransformationComponent.cxx
     AliHLTTPCClusterTransformationPrepareComponent.cxx
+    AliHLTTPCOfflinePreprocessorWrapperComponent.cxx
     AliHLTTPCClusterTransformation.cxx
     AliHLTTPCDataCheckerComponent.cxx
     AliHLTTPCDataPublisherComponent.cxx

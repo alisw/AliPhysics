@@ -15,15 +15,16 @@
 //* provided "as is" without express or implied warranty.                   *
 //***************************************************************************
 
-/** @file   AliHLTTPCClusterTransformationPrepareComponent.cxx
+/** @file   AliHLTTPCOfflinePreprocessorWrapperComponent.cxx
     @author Sergey Gorbunov
     @date   
     @brief 
 */
 
-#include "AliHLTTPCClusterTransformationPrepareComponent.h"
+#include "AliHLTTPCOfflinePreprocessorWrapperComponent.h"
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTErrorGuard.h"
@@ -31,7 +32,6 @@
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
-#include "AliTPCcalibDB.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCcalibTime.h"
@@ -47,111 +47,80 @@ class AliTPCcalibTime;
 
 using namespace std;
 
-ClassImp(AliHLTTPCClusterTransformationPrepareComponent) //ROOT macro for the implementation of ROOT specific class methods
+ClassImp(AliHLTTPCOfflinePreprocessorWrapperComponent) //ROOT macro for the implementation of ROOT specific class methods
 
-const char* AliHLTTPCClusterTransformationPrepareComponent::fgkOCDBEntryClusterTransformation="HLT/ConfigTPC/TPCClusterTransformation";
-
-AliHLTTPCClusterTransformation AliHLTTPCClusterTransformationPrepareComponent::fgTransform;
-Bool_t AliHLTTPCClusterTransformationPrepareComponent::fgTimeInitialisedFromEvent = 0;
-
-AliHLTTPCClusterTransformationPrepareComponent::AliHLTTPCClusterTransformationPrepareComponent() :
-  fMinInitSec(-1),
-  fMaxInitSec(-1),
-  fTmpFastTransformObject(NULL),
-  fAsyncProcessor(),
-  fAsyncProcessorQueueDepth(0),
-  fNewCalibObject(NULL)
+AliHLTTPCOfflinePreprocessorWrapperComponent::AliHLTTPCOfflinePreprocessorWrapperComponent() :
+  fAsyncProcessor()
   {}
 
-AliHLTTPCClusterTransformationPrepareComponent::~AliHLTTPCClusterTransformationPrepareComponent()
+AliHLTTPCOfflinePreprocessorWrapperComponent::~AliHLTTPCOfflinePreprocessorWrapperComponent()
 { 
   // destructor
 }
 
-const char* AliHLTTPCClusterTransformationPrepareComponent::GetComponentID() { 
+const char* AliHLTTPCOfflinePreprocessorWrapperComponent::GetComponentID() { 
 // see header file for class documentation
 
-  return "TPCClusterTransformationPrepare";
+  return "TPCOfflinePreprocessorWrapper";
 }
 
-void AliHLTTPCClusterTransformationPrepareComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) { 
+void AliHLTTPCOfflinePreprocessorWrapperComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) { 
   // see header file for class documentation
 
   list.clear(); 
   list.push_back( kAliHLTDataTypeTObject | kAliHLTDataOriginHLT );
 }
 
-AliHLTComponentDataType AliHLTTPCClusterTransformationPrepareComponent::GetOutputDataType() { 
+AliHLTComponentDataType AliHLTTPCOfflinePreprocessorWrapperComponent::GetOutputDataType() { 
   // see header file for class documentation
 
-  return AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType;
+  return kAliHLTDataTypeTObject;
 }
 
-void AliHLTTPCClusterTransformationPrepareComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
+void AliHLTTPCOfflinePreprocessorWrapperComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
   // see header file for class documentation
-  constBase = 18000000;
-  inputMultiplier = 0.0;
+  constBase = 1000000;
+  inputMultiplier = 1.0;
 }
 
-AliHLTComponent* AliHLTTPCClusterTransformationPrepareComponent::Spawn() { 
+AliHLTComponent* AliHLTTPCOfflinePreprocessorWrapperComponent::Spawn() { 
   // see header file for class documentation
 
-  return new AliHLTTPCClusterTransformationPrepareComponent();
+  return new AliHLTTPCOfflinePreprocessorWrapperComponent();
 }
 
-AliHLTTPCFastTransformObject* AliHLTTPCClusterTransformationPrepareComponent::GenerateFastTransformObject()
+AliCDBEntry* AliHLTTPCOfflinePreprocessorWrapperComponent::RunPreprocessor(AliAnalysisDataContainer* dataContainer)
 {
-	AliTPCcalibDB *calib=AliTPCcalibDB::Instance();
-	if (!calib)
-	{
-		HLTError("AliTPCcalibDB does not exist");
-		return(NULL);
-	}
-	
-	if (fNewCalibObject)
-	{
-		AliCDBManager* cdbManager = AliCDBManager::Instance();
-		cdbManager->PromptCacheEntry("TPC/Calib/TimeDrift", fNewCalibObject);
 
-		//TODO: Memory Leaks: We can NOT delete fNewCalibObject. The CDBEntry created by the Preprocessor contains a TObjArray that links to some data in fNewCalibObject.
-		//We have no control over where in AliRoot someone queries that CDBEntry and we do not know when it is no longer needed!
-		fNewCalibObject = NULL;
+	AliTPCcalibTime* timeObj = dynamic_cast<AliTPCcalibTime*>(dataContainer->GetData());
+	AliCDBEntry* retVal = NULL;
+	if (timeObj == NULL)
+	{
+		HLTError("Error obtaining AliTPCcalibTime Object from received calibration object, cannot reinitialize transformation map");
 	}
 	else
 	{
-		HLTImportant("No updated calibration data available, creating transformation map with last calibration data available.");
+		AliCDBManager* cdbManager = AliCDBManager::Instance();
+		
+		static AliTPCPreprocessorOffline* preprocessor = new AliTPCPreprocessorOffline;
+		preprocessor->CalibTimeVdrift(timeObj, GetRunNo(), GetRunNo());
+		preprocessor->CreateDriftCDBentryObject(GetRunNo(), GetRunNo());
+		retVal = preprocessor->GetDriftCDBentry();
+		preprocessor->TakeOwnershipDriftCDBEntry();
 	}
-
-	calib->SetRun(GetRunNo());
-	calib->UpdateRunInformations(GetRunNo());
-	calib->Update();
-
-	TStopwatch timer;
-	timer.Start();
-	//Workaround for offline simulation. In offline simulation there is one shared static instance of AliHLTTPCFastTransform, so we have to reset the sector borders every time.
-	if (fMinInitSec != -1 && fMaxInitSec != -1)
-	{
-		fgTransform.SetInitSec(fMinInitSec, fMaxInitSec);
-	}
-	int err = fgTransform.Init( GetBz(), GetTimeStamp() );
-
-	timer.Stop();
-	cout<<"\n\n Creation of fast transformation map: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
-   
-	AliHLTTPCFastTransformObject* obj = new AliHLTTPCFastTransformObject;
+	delete dataContainer;
+	//TODO: Memory Leaks: We can NOT delete fNewCalibObject. The CDBEntry created by the Preprocessor contains a TObjArray that links to some data in fNewCalibObject.
+	//We have no control over where in AliRoot someone queries that CDBEntry and we do not know when it is no longer needed!
 	
-	fgTransform.GetFastTransformNonConst().WriteToObject(*obj);
-	fgTransform.DeInit();
-	
-	return(obj);
+	return(retVal);
 }
 
-void* AliHLTTPCClusterTransformationPrepareComponent::AsyncGenerateFastTransformObject(void*)
+void* AliHLTTPCOfflinePreprocessorWrapperComponent::AsyncRunPreprocessor(void* obj)
 {
-	return((void*) GenerateFastTransformObject());
+	return((void*) RunPreprocessor((AliAnalysisDataContainer*) obj));
 }
 
-int AliHLTTPCClusterTransformationPrepareComponent::DoInit( int argc, const char** argv ) 
+int AliHLTTPCOfflinePreprocessorWrapperComponent::DoInit( int argc, const char** argv ) 
 { 
   // see header file for class documentation
   
@@ -161,26 +130,12 @@ int AliHLTTPCClusterTransformationPrepareComponent::DoInit( int argc, const char
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
   
-  if (fMinInitSec != -1 || fMaxInitSec != -1)
-  {
-    if (fMinInitSec != -1 && fMaxInitSec != -1)
-	{
-	  fgTransform.SetInitSec(fMinInitSec, fMaxInitSec);
-	}
-	else
-	{
-	  HLTError("Both MinSector and MaxSector must be provided!");
-	  return(1);
-	}
-  }
-
-  fTmpFastTransformObject = GenerateFastTransformObject();
   if (fAsyncProcessor.Initialize(fAsyncProcessorQueueDepth)) return(1);
 
   return iResult;
 } // end DoInit()
 
-int AliHLTTPCClusterTransformationPrepareComponent::DoDeinit() { 
+int AliHLTTPCOfflinePreprocessorWrapperComponent::DoDeinit() { 
   // see header file for class documentation
   if (fAsyncProcessor.GetNumberOfAsyncTasksInQueue())
   {
@@ -192,12 +147,12 @@ int AliHLTTPCClusterTransformationPrepareComponent::DoDeinit() {
   return 0;
 }
 
-int AliHLTTPCClusterTransformationPrepareComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
+int AliHLTTPCOfflinePreprocessorWrapperComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
   // see header file for class documentation
   return 0;//!! ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 }
 
-int AliHLTTPCClusterTransformationPrepareComponent::ScanConfigurationArgument(int argc, const char** argv){
+int AliHLTTPCOfflinePreprocessorWrapperComponent::ScanConfigurationArgument(int argc, const char** argv){
 
   // see header file for class documentation
 
@@ -214,26 +169,6 @@ int AliHLTTPCClusterTransformationPrepareComponent::ScanConfigurationArgument(in
 	  fAsyncProcessorQueueDepth = atoi(argv[i]);
       HLTInfo("Queue Depth set to %d.", fAsyncProcessorQueueDepth);
       iRet+=2;
-	}
-    else if (argument.CompareTo("-MinSector")==0){
-	  if (++i >= argc)
-	  {
-	    HLTError("Value missing for -MinSector parameter");
-		return(-EINVAL);
-	  }
-	  fMinInitSec = atoi(argv[i]);
-      HLTInfo("Min Sector set to %d.", fAsyncProcessorQueueDepth);
-      iRet+=2;
-	}
-    else if (argument.CompareTo("-MaxSector")==0){
-	  if (++i >= argc)
-	  {
-	    HLTError("Value missing for -MaxSector parameter");
-		return(-EINVAL);
-	  }
-	  fMaxInitSec = atoi(argv[i]) + 1; //If we want to process sector n, the for loop with < comparison has to go to n+1
-      HLTInfo("Max Sector set to %d.", fAsyncProcessorQueueDepth);
-      iRet+=2;
     } else {
       iRet = -EINVAL;
       HLTInfo("Unknown argument %s",argv[i]);     
@@ -243,63 +178,68 @@ int AliHLTTPCClusterTransformationPrepareComponent::ScanConfigurationArgument(in
 }
 
 
-Int_t AliHLTTPCClusterTransformationPrepareComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/) {
+Int_t AliHLTTPCOfflinePreprocessorWrapperComponent::DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& /*trigData*/) {
 	// see header file for class documentation
-
-	AliHLTTPCFastTransformObject* transformMap = NULL;
-	if (fTmpFastTransformObject)
-	{
-		HLTImportant("Shipping initial transformation map");
-		//If we have prepared a first transform map in DoInit, we ship this as soon as possible
-		transformMap = fTmpFastTransformObject;
-		fTmpFastTransformObject = NULL;
-	}
 
 	// -- Only use data event
 	if (IsDataEvent())
 	{
-		if (fNewCalibObject == NULL)
+		AliAnalysisDataContainer* tmpContainer = NULL;
+		for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeTObject); iter != NULL; iter = GetNextInputObject() )
 		{
-			for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeTObject); iter != NULL; iter = GetNextInputObject() )
+			TObjArray* tmpArray = (TObjArray*) dynamic_cast<const TObjArray*>(iter);
+			tmpContainer = tmpArray ? NULL : (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>(iter);
+			if (tmpContainer)
 			{
-				AliCDBEntry* tmpEntry = (AliCDBEntry*) dynamic_cast<const TObjArray*>(iter);
-				
-				if (tmpEntry)
+				RemoveInputObjectFromCleanupList(tmpContainer);
+			}
+			else if (tmpArray)
+			{
+				for (int i = 0;i <= tmpArray->GetLast();i++)
 				{
-					fNewCalibObject = tmpEntry;
-					break;
-				}
-				else
-				{
-					HLTImportant("Transformation Prepare component received object that is no AliAnalysisDataContainer!");
+					tmpContainer = (AliAnalysisDataContainer*) dynamic_cast<const AliAnalysisDataContainer*>((*tmpArray)[i]);
+					if (tmpContainer != NULL && strcmp(tmpContainer->GetName(), "calibTime") == 0)
+					{
+						RemoveInputObjectFromCleanupList(tmpArray);
+						tmpArray->Remove(tmpContainer);
+						break;
+					}
+					else
+					{
+						tmpContainer = NULL;
+					}
 				}
 			}
 			
-			if (fNewCalibObject)
+			if (!tmpContainer)
 			{
-				fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCClusterTransformationPrepareComponent::AsyncGenerateFastTransformObject, NULL);
+				HLTImportant("TPC Offline Preprocessor component received object that is no AliAnalysisDataContainer!");
 			}
 		}
 		
-		//If a new transform map is available from an async creation task, we ship the newest one.
-		while (fAsyncProcessor.IsQueuedTaskCompleted())
+		if (tmpContainer)
 		{
-			if (transformMap) delete transformMap;
-			transformMap = (AliHLTTPCFastTransformObject*) fAsyncProcessor.RetrieveQueuedTaskResult();
+			fAsyncProcessor.QueueAsyncMemberTask(this, &AliHLTTPCOfflinePreprocessorWrapperComponent::AsyncRunPreprocessor, tmpContainer);
 		}
 	}
 	
-	//If there is a new map, ship it
-	if (transformMap)
+	if (!IsDataEvent() && GetFirstInputBlock(kAliHLTDataTypeEOR | kAliHLTDataOriginAny))
 	{
-		PushBack(dynamic_cast<TObject*>(transformMap), AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType | kAliHLTDataOriginTPC);
-		delete transformMap;
+		fAsyncProcessor.WaitForTasks(0);
 	}
-
+	
+	//If a new transform map is available from an async creation task, we ship the newest one.
+	while (fAsyncProcessor.IsQueuedTaskCompleted())
+	{
+		AliCDBEntry* retVal = (AliCDBEntry*) fAsyncProcessor.RetrieveQueuedTaskResult();
+		PushBack(dynamic_cast<TObject*>(retVal), kAliHLTDataTypeTObject | kAliHLTDataOriginTPC);
+		delete retVal;
+	}
+	
 	return 0;
 }
 
-void AliHLTTPCClusterTransformationPrepareComponent::GetOCDBObjectDescription( TMap* const targetMap)
+void AliHLTTPCOfflinePreprocessorWrapperComponent::GetOCDBObjectDescription( TMap* const targetMap)
 {
   // Get a list of OCDB object description needed for the particular component
   if (!targetMap) return;
