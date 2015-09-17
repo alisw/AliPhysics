@@ -68,4 +68,6 @@
 
 #pragma link C++ class AliAnalysisTempFluc+;
 
+#pragma link C++ class AliAnalysisFBMultFluct+;
+
 #endif
