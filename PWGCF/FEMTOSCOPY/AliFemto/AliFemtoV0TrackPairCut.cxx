@@ -27,7 +27,12 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
   fFirstParticleType(kLambda),
   fSecondParticleType(kProton),
   fMinAvgSepTrackPos(0.0),
-  fMinAvgSepTrackNeg(0.0)
+  fMinAvgSepTrackNeg(0.0),
+  fMinDEtaStarPos(0.0),
+  fMinDEtaStarNeg(0.0),
+  fMinDPhiStarPos(0.0),
+  fMinDPhiStarNeg(0.0),
+  fMinRad(0.0)
 {
   /* no-op */
 }
@@ -57,6 +62,13 @@ AliFemtoV0TrackPairCut &AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackP
   fMinAvgSepTrackPos = cut.fMinAvgSepTrackPos;
   fMinAvgSepTrackNeg = cut.fMinAvgSepTrackNeg;
 
+  fMinDEtaStarPos = cut.fMinDEtaStarPos;
+  fMinDEtaStarNeg = cut.fMinDEtaStarNeg;
+  fMinDPhiStarPos = cut.fMinDPhiStarPos;
+  fMinDPhiStarNeg = cut.fMinDPhiStarNeg;
+
+  fMinRad = cut.fMinRad;
+  
   return *this;
 }
 //__________________
@@ -290,7 +302,44 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       return false;
     }
   }
+  
+  //
+  // Delta Eta* Delta Phi*cut
+  //
+  if (fMinRad > 0.0) {
+  
+    AliFemtoV0 *mut_V0 = const_cast<AliFemtoV0*>(V0);
+    double thetas1_pos = TMath::Pi()/2. - TMath::ATan(mut_V0->NominalTpcPointPosShifted().z()/(fMinRad*1e2));
+    double thetas2_pos = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
+    double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) );
+    double etas2_pos = -TMath::Log( TMath::Tan(thetas2_pos/2.) );
+    double detas_pos = etas1_pos - etas2_pos;
+    double distSft_pos = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointPosShifted().x() -
+						  track->NominalTpcPointShifted().x(),2) +
+				     TMath::Power(mut_V0->NominalTpcPointPosShifted().y() -
+						  track->NominalTpcPointShifted().y(),2));
+    double dPhiS_pos = 2.0 * TMath::ATan(distSft_pos/2./((fMinRad*1e2)));
 
+    double thetas1_neg = TMath::Pi()/2. - TMath::ATan(mut_V0->NominalTpcPointNegShifted().z()/(fMinRad*1e2));
+    double thetas2_neg = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
+    double etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) );
+    double etas2_neg = -TMath::Log( TMath::Tan(thetas2_neg/2.) );
+    double detas_neg = etas1_neg - etas2_neg;
+    double distSft_neg = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointNegShifted().x() -
+						  track->NominalTpcPointShifted().x(),2) +
+				     TMath::Power(mut_V0->NominalTpcPointNegShifted().y() -
+						  track->NominalTpcPointShifted().y(),2));
+    double dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
+				  
+    if ( (TMath::Abs(detas_pos) < fMinDEtaStarPos &&
+	  TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
+	 (TMath::Abs(detas_neg) < fMinDEtaStarNeg &&
+	  TMath::Abs(dPhiS_neg) < fMinDPhiStarNeg) ) {
+      fNPairsFailed++;     
+      return false;
+    }
+  }
+  
   fNPairsPassed++;
   return true;
 }
@@ -382,4 +431,25 @@ void AliFemtoV0TrackPairCut::SetMinAvgSeparation(int type, double minSep)
     fMinAvgSepTrackPos = minSep;
   else if (type == 1) //Track-Neg
     fMinAvgSepTrackNeg = minSep;
+}
+
+void AliFemtoV0TrackPairCut::SetMinDEtaStar(Int_t type, Double_t minDEtaStar)
+{
+  if (type == 0) //Track-Pos
+    fMinDEtaStarPos = minDEtaStar;
+  else if (type == 1) //Track-Neg
+    fMinDEtaStarNeg = minDEtaStar;
+}
+
+void AliFemtoV0TrackPairCut::SetMinDPhiStar(Int_t type, Double_t minDPhiStar)
+{
+  if (type == 0) //Track-Pos
+    fMinDPhiStarPos = minDPhiStar;
+  else if (type == 1) //Track-Neg
+    fMinDPhiStarNeg = minDPhiStar;
+}
+
+void AliFemtoV0TrackPairCut::SetShiftPosition(Double_t rad)
+{
+  fMinRad = rad;
 }
