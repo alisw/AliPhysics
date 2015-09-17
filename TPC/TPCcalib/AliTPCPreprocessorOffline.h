@@ -11,6 +11,8 @@
 
 
 #include "TNamed.h"
+#include "TVectorD.h"
+
 class TObjArray;
 class THnSparse;
 class TChain;
@@ -24,6 +26,9 @@ class TPad;
 class AliCDBRunRange;
 class AliCDBStorage;
 class AliCDBEntry;
+class TGraph;
+class TGraphErrors;
+class AliSplineFit;
 
 class AliTPCPreprocessorOffline:public TNamed { 
 public:
