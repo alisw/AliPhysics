@@ -136,7 +136,7 @@ AliHLTComponentDataType AliHLTAnalysisManagerComponent::GetOutputDataType() {
 // #################################################################################
 void AliHLTAnalysisManagerComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 150000; //fixed size output objects
+  constBase = 300000; //fixed size output objects
   inputMultiplier = 0; //do not scale with the input size
 }
 
@@ -215,7 +215,7 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
   TStopwatch stopwatch;
   stopwatch.Start();
   
-  HLTInfo("AliHLTAnalysisManagerComponent::DoEvent\n");
+  HLTInfo("AliHLTAnalysisManagerComponent::DoEvent");
   Int_t iResult=0;
 
   if( fUID == 0 ){
@@ -243,8 +243,8 @@ Int_t AliHLTAnalysisManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 
   if (!vEvent) {HLTInfo("no event!"); return -1;}
 
-  if (vEvent)  {HLTInfo("----> event %p has %d tracks: \n", vEvent, vEvent->GetNumberOfTracks());}
-  if (vFriend) {HLTInfo("----> friend %p has %d tracks: \n", vFriend, vFriend->GetNumberOfTracks());}
+  if (vEvent)  {HLTInfo("----> event %p has %d tracks: ", vEvent, vEvent->GetNumberOfTracks());}
+  if (vFriend) {HLTInfo("----> friend %p has %d tracks: ", vFriend, vFriend->GetNumberOfTracks());}
 
   //__Run the tasks__
   fInputHandler->InitTaskInputData(vEvent, vFriend, fAnalysisManager->GetTasks());
