@@ -48,6 +48,7 @@
 #include "AliHLTPrimaryVertexFinderComponent.h"
 #include "AliHLTV0FinderComponent.h"
 #include "AliHLTESDAnaManagerComponent.h"
+#include "AliHLTAnalysisManagerComponent.h"
 #include "AliHLTFlatAnaManagerComponent.h"
 #include "AliHLTTPCCalibManagerComponent.h"
 #include "AliHLTTPCCalibProcessor.h"
@@ -113,6 +114,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTESDAnaManagerComponent);
   pHandler->AddComponent(new AliHLTFlatAnaManagerComponent);
   pHandler->AddComponent(new AliHLTTPCCalibManagerComponent);
+  pHandler->AddComponent(new AliHLTAnalysisManagerComponent);
   pHandler->AddComponent(new AliHLTTPCCalibProcessor);
   pHandler->AddComponent(new AliHLTAsyncTestComponent);
   pHandler->AddComponent(new AliHLTAsyncCalibrationComponent);
