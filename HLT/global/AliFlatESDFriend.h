@@ -38,7 +38,9 @@ public:
   Int_t GetEntriesInTracks() const { return fNTrackEntries; }
 
   AliVVZEROfriend* GetVVZEROfriend() { return GetFlatVZEROFriendNonConst(); }
-  
+  Int_t GetESDVZEROfriend( AliESDVZEROfriend &v ) const;
+
+ 
   //AliESDTZEROfriend *GetTZEROfriend(){ return NULL; }
 
   void Ls() const;
@@ -205,6 +207,15 @@ inline void AliFlatESDFriend::SetTracksEnd( Int_t nTracks, Int_t nTrackEntries, 
   fNTracks = nTracks;
   fNTrackEntries = nTrackEntries;
   fContentSize += tracksSize;
+}
+
+
+inline Int_t AliFlatESDFriend::GetESDVZEROfriend( AliESDVZEROfriend &v ) const
+{
+  const AliFlatESDVZEROFriend* flatVZERO = GetFlatVZEROFriend();
+  if( !flatVZERO ) return -1;
+  flatVZERO->GetESDVZEROfriend( v );
+  return 0;
 }
 
 #endif

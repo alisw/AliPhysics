@@ -6,6 +6,7 @@
 #include "AliVMisc.h"
 class AliVfriendTrack;
 class AliVVZEROfriend;
+class AliESDVZEROfriend;
 
 //_____________________________________________________________________________
 class AliVfriendEvent: public TObject {
@@ -25,6 +26,8 @@ public:
 
   virtual AliVVZEROfriend* GetVVZEROfriend() = 0;
   // AliESDTZEROfriend *GetTZEROfriend();
+
+  virtual Int_t GetESDVZEROfriend( AliESDVZEROfriend & ) const = 0;
 
   virtual void Ls() const = 0;
   virtual void Reset() = 0;

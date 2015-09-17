@@ -54,6 +54,10 @@ public:
   AliESDVZEROfriend *GetVZEROfriend(){ return fESDVZEROfriend; }
   const AliESDVZEROfriend *GetVZEROfriendConst() const { return fESDVZEROfriend; }
   AliVVZEROfriend *GetVVZEROfriend(){ return fESDVZEROfriend; }
+  Int_t GetESDVZEROfriend( AliESDVZEROfriend &v ) const {
+    if( fESDVZEROfriend ){ v=*fESDVZEROfriend; return 0; }
+    return -1;
+  }
 
   void SetTZEROfriend(AliESDTZEROfriend * obj);
   AliESDTZEROfriend *GetTZEROfriend(){ return fESDTZEROfriend; }
