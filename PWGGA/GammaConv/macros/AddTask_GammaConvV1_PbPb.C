@@ -1,5 +1,5 @@
 void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change different set of cuts
-								Bool_t 		isMC   						= kFALSE, 							//run MC 
+								Int_t 		isMC   						= 0,								//run MC
 								Int_t 		enableQAMesonTask 			= 0, 								//enable QA in AliAnalysisTaskGammaConvV1
 								Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
 								TString		fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
@@ -8,7 +8,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 								TString 	periodName 					= "LHC13d2",  						// name of the period for added signals and weighting
 								Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 								Bool_t 		enableUseTHnSparse 			= kTRUE,							// enable THnSparse	for mixed event BG
-								Int_t 		enableV0EffiStudies 		= 0,							// enables V0finding efficiency histograms
+								Int_t 		enableV0EffiStudies 		= 0,								// enables V0finding efficiency histograms
 								TString		fileNameInputForCentFlattening 	= "InterpValuesAndFlattening.root",
 								Int_t 		doFlattening 				= 0,
 								Bool_t		enableChargedPrimary		= kTRUE
@@ -47,10 +47,12 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
+	Bool_t isMCForOtherSettings = 0;
+	if (isMC > 0) isMCForOtherSettings = 1;
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC);
+		AddTaskPIDResponse(isMCForOtherSettings);
 	}
 
 	//=========  Set Cutnumber for V0Reader ================================
