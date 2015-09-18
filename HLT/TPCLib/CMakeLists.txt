@@ -92,7 +92,6 @@ set(SRCS
     AliHLTTPCHWCFDataReverterComponent.cxx
     AliHLTTPCHWCFSpacePointContainer.cxx
     AliHLTTPCHWClusterDecoderComponent.cxx
-    AliHLTTPCHWClusterTransformComponent.cxx
     AliHLTTPCLog.cxx
     AliHLTTPCMapping.cxx
     AliHLTTPCMemHandler.cxx

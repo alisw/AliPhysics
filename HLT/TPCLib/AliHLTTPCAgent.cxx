@@ -53,7 +53,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCHistogramHandlerComponent.h"
 #include "AliHLTTPCTrackHistoComponent.h"
 #include "AliHLTTPCHWCFDataReverterComponent.h"
-#include "AliHLTTPCHWClusterTransformComponent.h"
 #include "AliHLTTPCCFComparisonComponent.h"
 #include "AliHLTTPCDataCheckerComponent.h"
 #include "AliHLTTPCHWCFEmulatorComponent.h"
@@ -157,16 +156,6 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	if (hwclustOutput.Length()>0) hwclustOutput+=" ";
 	hwclustOutput+=hwcfemu;
 	
-	TString hwcf;
-	hwcf.Form("TPC-HWCF_%02d_%d", slice, part);
-	handler->CreateConfiguration(hwcf.Data(), "TPCHWClusterTransform",hwcfemu.Data(), "-publish-raw");
-
-	//if (trackerInput.Length()>0) trackerInput+=" ";
-	//trackerInput+=hwcf;
-	//if (dEdXInput.Length()>0) dEdXInput+=" ";
-	//dEdXInput+=hwcf;
-	//if (sinkHWClusterInput.Length()>0) sinkHWClusterInput+=" ";
-	//sinkHWClusterInput+=hwcf;       
       }
     }
  
@@ -364,7 +353,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);
   pHandler->AddComponent(new AliHLTTPCTrackHistoComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFDataReverterComponent);
-  pHandler->AddComponent(new AliHLTTPCHWClusterTransformComponent);
   pHandler->AddComponent(new AliHLTTPCCFComparisonComponent);
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
