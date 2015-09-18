@@ -144,6 +144,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
 	fSecProdBoundary(1.0),
 	fMaxPtJetMC(0),
 	fMaxFacPtHard(2.5),
+	fMaxFacPtHardSingleParticle(1.5),
 	fMimicTrigger(kFALSE),
 	fRejectTriggerOverlap(kFALSE)
 {
@@ -233,6 +234,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fSecProdBoundary(ref.fSecProdBoundary),
 	fMaxPtJetMC(ref.fMaxPtJetMC),
 	fMaxFacPtHard(ref.fMaxFacPtHard),
+	fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
 	fMimicTrigger(kFALSE),
 	fRejectTriggerOverlap(kFALSE)
 {
