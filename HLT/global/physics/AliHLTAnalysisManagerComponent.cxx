@@ -78,7 +78,6 @@ AliHLTAnalysisManagerComponent::AliHLTAnalysisManagerComponent() :
   fAnalysisManager(NULL),
   fInputHandler(NULL),
   fAddTaskMacro(""),
-  fAddTaskArgs(""),
   fWriteAnalysisToFile(kFALSE),
   fEnableDebug(kFALSE),
   fResetAfterPush(kTRUE),
@@ -187,10 +186,11 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
   fInputHandler    = new AliHLTVEventInputHandler("HLTinputHandler","HLT input handler");
   fAnalysisManager->SetInputEventHandler(fInputHandler);
 
-  TString macro;
-  if (fAddTaskMacro.Length()>0) macro=fAddTaskMacro+"("+fAddTaskArgs+")";
-  HLTInfo("Intializing task: %s\n",macro.Data());
-  gROOT->Macro(macro);
+  if (fAddTaskMacro.Length()>0) 
+  {
+    HLTInfo("Intializing task: %s\n",macro.Data());
+    gROOT->Macro(macro);
+  }
 
   fAnalysisManager->InitAnalysis();
 
@@ -364,12 +364,7 @@ int AliHLTAnalysisManagerComponent::ProcessOption(TString option, TString value)
 {
   //process option
   //to be implemented by the user
-  if (option.Contains("AddTaskArgs")) 
-  {
-    fAddTaskArgs=value;
-    HLTInfo("fAddTaskArgs=%s\n",fAddTaskArgs.Data());
-  }
-  else if (option.Contains("WriteAnalysisToFile")) 
+  if (option.Contains("WriteAnalysisToFile")) 
   {
     fWriteAnalysisToFile=(value.Contains("0"))?kFALSE:kTRUE;
     HLTInfo("fWriteAnalysisToFile=%i\n",fWriteAnalysisToFile?1:0);
