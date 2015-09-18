@@ -105,7 +105,7 @@ int AliHLTTPCClusterTransformationComponent::GetOutputDataTypes(AliHLTComponentD
 void AliHLTTPCClusterTransformationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
   // see header file for class documentation
   constBase = 0;
-  inputMultiplier = 2.0;
+  inputMultiplier = 2.5;
 }
 
 AliHLTComponent* AliHLTTPCClusterTransformationComponent::Spawn() { 
