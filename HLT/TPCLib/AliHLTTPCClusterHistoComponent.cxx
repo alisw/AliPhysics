@@ -23,7 +23,6 @@
 #include "AliHLTTPCClusterHistoComponent.h"
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"

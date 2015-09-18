@@ -25,7 +25,6 @@
 #include "AliHLTTPCTrackHistoComponent.h"
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTGlobalBarrelTrack.h"

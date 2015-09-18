@@ -14,6 +14,7 @@
  *
  * @ingroup alihlt_tpc_datastructs
  */
+
 struct AliHLTTPCTrackletData
     {
 	AliHLTUInt32_t fTrackletCnt;

@@ -40,7 +40,6 @@
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
