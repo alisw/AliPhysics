@@ -562,7 +562,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
           continue;
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
-        if( (eta > 2.8 && eta < 5.1) || (eta > -1. && eta < 1.) )MultV0M++;
+        if( (eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7) )MultV0M++;
       }
       if(MultV0M==0)return;
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
