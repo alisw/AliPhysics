@@ -299,6 +299,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 	AliVEvent* vEvent=NULL;
 	AliVfriendEvent* vFriend=NULL;
 	iResult = ReadInput(vEvent,vFriend);
+	if (iResult != 0) return(iResult);
 
 	if (!vEvent) return -1;
 
@@ -337,8 +338,7 @@ Int_t AliHLTTPCCalibManagerComponent::DoEvent(const AliHLTComponentEventData& ev
 	if (fResetAfterPush) {fAnalysisManager->ResetOutputData();}
   }
 
-
-  return iResult;
+  return 0;
 }
 
 // #################################################################################
