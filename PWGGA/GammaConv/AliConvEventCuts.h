@@ -308,11 +308,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
 		Double_t					fSecProdBoundary;						// 3D radius of production (cm) for primary-secodary distinction
 		Float_t						fMaxPtJetMC;							// maximum jet pt in event
 		Float_t						fMaxFacPtHard;							// maximum factor between maximum jet pt and pt hard generated
+		Float_t						fMaxFacPtHardSingleParticle;			// maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
 		Bool_t						fMimicTrigger; 							// enable trigger mimiking
 		Bool_t						fRejectTriggerOverlap;					// enable trigger overlap rejections
 	private:
 
-		ClassDef(AliConvEventCuts,14)
+		ClassDef(AliConvEventCuts,15)
 };
 
 
