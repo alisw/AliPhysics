@@ -1,9 +1,9 @@
 void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change different set of cuts
-								Bool_t 		isMC   						= kFALSE, 							// run MC
+								Int_t 		isMC   						= 0,								// run MC
 								Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
 								Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
 								TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
-								Bool_t 		doWeightingPart 				= kFALSE,  							// enable Weighting
+								Bool_t 		doWeightingPart 			= kFALSE,  							// enable Weighting
 								TString 	generatorName 				= "DPMJET",							// generator Name	
 								TString 	cutnumberAODBranch 			= "800000006008400000001500000",	// cutnumber for AOD branch
 								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
@@ -43,10 +43,12 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 	
+	Bool_t isMCForOtherSettings = 0;
+	if (isMC > 0) isMCForOtherSettings = 1;
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC);
+		AddTaskPIDResponse(isMCForOtherSettings);
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
@@ -160,6 +162,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 MB Eta 
 	} else if (trainConfig == 18) {   
 		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009000000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, nodEdx, alpha 1 AddSignal Eta
+	} else if (trainConfig == 19) {
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162101500000000";   //standard, alpha 1
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -201,7 +205,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t 		trainConfig 				= 1,  								// change 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
-		if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 ){
+		if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
