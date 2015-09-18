@@ -149,7 +149,9 @@ class AliESDCaloCluster : public AliVCluster
   Bool_t      GetIsExotic() const                  { return fIsExotic         ; }
   void        SetIsExotic(Bool_t b)                { fIsExotic         = b    ; }
 
+  Double_t    GetUserDefEnergy(Int_t t)               const                     { return AliVCluster::GetUserDefEnergy(t); }
   Double_t    GetUserDefEnergy(VCluUserDefEnergy_t t) const                     { return E()*fUserDefEnergy[t]                   ; }
+  void        SetUserDefEnergy(Int_t t, Double_t e)                             { AliVCluster::SetUserDefEnergy(t,e);}
   void        SetUserDefEnergy(VCluUserDefEnergy_t t, Double_t e)               { fUserDefEnergy[t] = E() > 1e-6 ? e / E() : 1.  ; }
   void        SetUserDefEnergyCorrFactor(VCluUserDefEnergy_t t, Double_t f)     { fUserDefEnergy[t] = f                          ; }
   
