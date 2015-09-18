@@ -72,7 +72,7 @@ void AliFlatESDFriend::Ls() const
 Int_t AliFlatESDFriend::SetVZEROFriend( const AliESDVZEROfriend *vzero, size_t allocatedVZEROMemory )
 {
   // fill VZERO info
-  fVZEROFriendPointer = 0;
+  fVZEROFriendPointer = -1;
   if( !vzero ) return 0;
   if( allocatedVZEROMemory < sizeof(AliFlatESDVZEROFriend) ) return -1;
   fVZEROFriendPointer = fContentSize;

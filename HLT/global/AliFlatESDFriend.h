@@ -70,16 +70,20 @@ public:
 
   // other methods
 
- const AliFlatESDVZEROFriend *GetFlatVZEROFriend() const { return reinterpret_cast<const AliFlatESDVZEROFriend*>( fContent + fVZEROFriendPointer ); }
- AliFlatESDVZEROFriend *GetFlatVZEROFriendNonConst()  { return reinterpret_cast<AliFlatESDVZEROFriend*>( fContent + fVZEROFriendPointer ); }
- 
+  const AliFlatESDVZEROFriend *GetFlatVZEROFriend() const { 
+    return (fVZEROFriendPointer>0) ?reinterpret_cast<const AliFlatESDVZEROFriend*>( fContent + fVZEROFriendPointer ) :NULL; 
+  }
+
+  AliFlatESDVZEROFriend *GetFlatVZEROFriendNonConst()  { 
+    return (fVZEROFriendPointer>0) ?reinterpret_cast<AliFlatESDVZEROFriend*>( fContent + fVZEROFriendPointer ) :NULL; 
+  }
 
   const AliFlatESDFriendTrack  *GetFlatTrack( Int_t i ) const { 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
     if( i<0 || i>=fNTracks || table[i]<0 ) return NULL;
     return reinterpret_cast<const AliFlatESDFriendTrack*>( fContent + table[i] );
   }
- 
+  
   AliFlatESDFriendTrack  *GetFlatTrackNonConst( Int_t i ){ 
     const Long64_t *table = reinterpret_cast<const Long64_t*> (fContent + fTrackTablePointer);
     if( i<0 || i>=fNTracks || table[i]<0 ) return NULL;
@@ -115,7 +119,7 @@ private:
  
   // Pointers to specific data in fContent
   
-  size_t fVZEROFriendPointer;     // position of flat VZERO friend in fContent
+  Long_t fVZEROFriendPointer;     // position of flat VZERO friend in fContent
   size_t fTrackTablePointer;     // position of the first track in fContent
   size_t fTracksPointer;         // position of the first track in fContent
 
@@ -133,7 +137,7 @@ inline AliFlatESDFriend::AliFlatESDFriend()
   fBitFlags(0),
   fNTracks(0),
   fNTrackEntries(0),
-  fVZEROFriendPointer(0),
+  fVZEROFriendPointer(-1),
   fTrackTablePointer(0),
   fTracksPointer(0)
 {
@@ -146,7 +150,7 @@ inline void AliFlatESDFriend::Reset()
   fBitFlags = 0;
   fNTracks = 0;
   fNTrackEntries = 0; 
-  fVZEROFriendPointer = 0;
+  fVZEROFriendPointer = -1;
   fTrackTablePointer = 0;
   fTracksPointer = 0;
   for( int i=0; i<72; i++ ){
