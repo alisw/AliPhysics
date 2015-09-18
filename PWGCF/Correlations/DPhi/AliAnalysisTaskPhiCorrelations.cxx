@@ -113,6 +113,8 @@ fHistosMixed(0),
 fEfficiencyCorrectionTriggers(0),
 fEfficiencyCorrectionAssociated(0),
 fCentralityWeights(0),
+fCentralityMCGen_V0M(0),
+fCentralityMCGen_CL1(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -356,6 +358,10 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   
   if (fCentralityMethod == "ZNAC")
     fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
+  if (fCentralityMethod == "MCGen_V0M")
+    fListOfHistos->Add(new TH1D("Mult_MCGen_V0M", "Mult_MCGen_CL1", 4100, -100, 4000));
+  if (fCentralityMethod == "MCGen_CL1")
+    fListOfHistos->Add(new TH1D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 4100, -100, 4000));
 
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
@@ -510,6 +516,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   Double_t centrality = 0;
   
+  TObject* mc = fArrayMC;
+  if (!mc)
+    mc = fMcEvent;
+
   if (fCentralityMethod.Length() > 0)
   {
     if (fCentralityMethod == "MC_b")
@@ -541,6 +551,40 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
 	if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
 	else centrality = -1;
+      }
+    else if (fCentralityMethod == "MCGen_V0M")
+    {
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      Float_t MultV0M=0.;
+      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
+        if (!particle)
+          continue;
+        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
+        Float_t eta=particle->Eta();
+        if( (eta > 2.8 && eta < 5.1) || (eta > -1. && eta < 1.) )MultV0M++;
+      }
+      if(MultV0M==0)return;
+      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
+      if(fCentralityWeights)centrality = MultV0M/fCentralityWeights->GetMean();
+      else centrality=-1.;
+    }
+    else if (fCentralityMethod == "MCGen_CL1")
+    {
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      Float_t MultCL1=0.;
+      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
+        if (!particle)
+          continue;
+        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
+        Float_t eta=particle->Eta();
+        if( eta < -1 || eta > 1.)MultCL1++;
+      }
+      if(MultCL1==0)return;
+      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
+      if(fCentralityWeights)centrality = MultCL1/fCentralityWeights->GetMean();
+      else centrality=-1.;
     }
     else
     {
@@ -579,10 +623,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     fHistos->SetRunNumber(inputEvent->GetRunNumber());
     bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
   }
-    
-  TObject* mc = fArrayMC;
-  if (!mc)
-    mc = fMcEvent;
   
   // count all events
   fHistos->FillEvent(centrality, -1);
