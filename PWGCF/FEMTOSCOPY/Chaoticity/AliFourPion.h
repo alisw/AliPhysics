@@ -73,7 +73,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t GetNumCentBins() const {return AliFourPion::fCentBins;}
   Int_t GetNumEDBins() const {return AliFourPion::fEDbins;}
   
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH3F *histos2[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH3F *histos2[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH1F *histos1D[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
@@ -82,6 +82,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
   void SetInterpolationType(Short_t InterpType) {fInterpolationType = InterpType;}
+  void SetOneDInterpolation(Bool_t ODI) {fOneDInterpolation = ODI;}
   void SetCollisionType(Short_t ct) {fCollisionType = ct;}
   void SetGenerateSignal(Bool_t gen) {fGenerateSignal = gen;}
   void SetGeneratorOnly(Bool_t genOnly) {fGeneratorOnly = genOnly;}
@@ -279,6 +280,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
   Short_t fInterpolationType;
+  Bool_t fOneDInterpolation;
   Bool_t fMixedChargeCut;
   Int_t fRMax;
   Float_t fRstartMC;
@@ -353,6 +355,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Int_t fQoIndexL,fQoIndexH;
   Int_t fQsIndexL,fQsIndexH;
   Int_t fQlIndexL,fQlIndexH;
+  Int_t fQinvIndexL,fQinvIndexH;
 
   Bool_t fDummyB;
 
@@ -399,6 +402,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH1D *fFSIos[13];
   TH3F *fNormWeight[fKbinsT][fCentBins];
   TH3F *fNormWeight2[fKbinsT][fCentBins];
+  TH1F *fNormWeight1D[fKbinsT][fCentBins];
   TF1 *ExchangeAmp[7][50][2];
 
  
