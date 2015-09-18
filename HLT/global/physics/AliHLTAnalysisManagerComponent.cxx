@@ -188,8 +188,8 @@ Int_t AliHLTAnalysisManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*a
 
   if (fAddTaskMacro.Length()>0) 
   {
-    HLTInfo("Intializing task: %s\n",macro.Data());
-    gROOT->Macro(macro);
+    HLTInfo("Intializing task: %s\n",fAddTaskMacro.Data());
+    gROOT->Macro(fAddTaskMacro);
   }
 
   fAnalysisManager->InitAnalysis();
