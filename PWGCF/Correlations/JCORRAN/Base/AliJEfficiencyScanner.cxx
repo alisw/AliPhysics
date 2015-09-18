@@ -32,7 +32,11 @@ ClassImp(AliJEfficiencyScanner);
 //______________________________________________________________________________
 AliJEfficiencyScanner::AliJEfficiencyScanner() :   
     TNamed(),
-	fMBTriggMask(0),
+    fMBTriggMask(0),
+    fisIsolated(kFALSE),
+    fisRelative(kTRUE),
+    fisolParam(0.1),
+    fisolCone(0.4),
     fTrackList(0),
     fMCTrackList(0x0),
     fEventHeader(0x0),
@@ -82,7 +86,11 @@ AliJEfficiencyScanner::AliJEfficiencyScanner() :
 //______________________________________________________________________________
 AliJEfficiencyScanner::AliJEfficiencyScanner(const char *name):
     TNamed(name,name), 
-	fMBTriggMask(0),
+    fMBTriggMask(0),
+    fisIsolated(kFALSE),
+    fisRelative(kTRUE),
+    fisolParam(0.1),
+    fisolCone(0.4),
     fTrackList(0),
     fMCTrackList(0x0),
     fEventHeader(0x0),
@@ -129,7 +137,11 @@ AliJEfficiencyScanner::AliJEfficiencyScanner(const char *name):
 //____________________________________________________________________________
 AliJEfficiencyScanner::AliJEfficiencyScanner(const AliJEfficiencyScanner& ap) :
     TNamed(ap.GetName(), ap.GetTitle()),
-	fMBTriggMask(ap.fMBTriggMask),
+    fMBTriggMask(ap.fMBTriggMask),
+    fisIsolated(ap.fisIsolated),
+    fisRelative(ap.fisRelative),
+    fisolParam(ap.fisolParam),
+    fisolCone(ap.fisolCone),
     fTrackList(ap.fTrackList),
     fMCTrackList(ap.fMCTrackList),
     fEventHeader( ap.fEventHeader ),
@@ -317,9 +329,7 @@ void AliJEfficiencyScanner::UserCreateOutputObjects()
     fVtxRatioFunc = new TF1("VtxRatioFunc", "VtxReFunc/VtxMCFunc",v0,v1);
     fVtxRatioMax = fVtxRatioFunc->GetMaximum();
 
-
-
-    cout << "Add(fAliJRunHeader) in UserCreateObject() ======= " << endl;
+    //cout << "Add(fAliJRunHeader) in UserCreateObject() ======= " << endl;
     cout<<"DEBUG END AliJEfficiencyScanner::UserCreateOutputObjects() "<<endl;
 
 }
@@ -466,12 +476,33 @@ cout<<"Trigger"<<endl;
         if( !track->IsTrue( AliJMCTrack::kPrimary ) ) continue;
         // TODO need? if( ! track->IsFinal() ) continue;
         double eta = track->Eta();
-        double pt = track->Pt();
+         double pt = track->Pt();
         if( fabs(eta) > etaCut ) continue;
         if( ! track->IsCharged() ) continue;
-
-
-        nRawMultPri++;
+        
+        // Isolation check
+	if( fisIsolated ){
+	  // Isolated tracks must fullfill fiducial acceptance cut
+	  if( fabs(eta) > etaCut - fisolCone ) continue;
+	  double isolThreshold;
+	  if( fisRelative ) isolThreshold = fisolParam * pt;
+            else isolThreshold = fisolParam;
+	  
+          double isolSum = 0.0;
+          for(int ia = 0; ia < nMCTrks; ia++){
+            if ( ia == it ) continue;
+            AliJMCTrack * assTrack = GetJMCTrack( ia );
+            if( !assTrack ) continue;
+	    if( !assTrack->IsTrue( AliJMCTrack::kPrimary ) ) continue;
+	    if(!assTrack->IsCharged()) continue;
+	    double assEta = assTrack->Eta();
+            if( fabs(assEta) > etaCut ) continue;
+            if( track->DeltaR(*assTrack) < fisolCone ) isolSum += assTrack->Pt();
+          }
+          if ( isolSum > isolThreshold ) continue;
+	}
+	
+	nRawMultPri++;
         fhChargedPtMC[iVtx][iCent]->Fill(pt);     //ALL charged physical primaries
         if(triggeredEventMB){//triggered
             fhChargedPtMCTrigg[iVtx][iCent]->Fill(pt);
@@ -518,7 +549,28 @@ cout<<"Trigger"<<endl;
         int iPrimary = kJFake;
 
         //== Skip tracks with out of Eta
-        if( fabs(eta) > etaCut && fabs(etaTPC)>etaCut && fabs(etaGCG)>etaCut) continue;
+	// NOTE: Sami changed && to || on 5th August 2015!
+        if( fabs(eta) > etaCut || fabs(etaTPC)>etaCut || fabs(etaGCG)>etaCut) continue;
+
+        // ====== check isolation
+	if( fisIsolated ){
+	  // Isolated tracks must fullfill fiducial acceptance cut
+	  if( fabs(eta) > etaCut - fisolCone ) continue;
+	  double isolThreshold;
+	  if( fisRelative ) isolThreshold = fisolParam * ptRec;
+	    else isolThreshold = fisolParam;
+
+	    double isolSum = 0.0;
+	    for(int ia = 0; ia < nTrks; ia++){
+	      if ( ia == it ) continue;
+	      AliJTrack * assTrack = GetJTrack( ia );
+	      if( !assTrack ) continue;
+	      double assEta = assTrack->Eta();
+	      if( fabs(assEta) > etaCut ) continue;
+	      if( track->DeltaR(*assTrack) < fisolCone ) isolSum += assTrack->Pt();
+	    }
+	    if ( isolSum > isolThreshold ) continue;
+	}
 
         //== Find MC Info
         for( int imc=0;imc<nMCTrks;imc++ ){
