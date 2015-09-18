@@ -13,6 +13,7 @@
 
 #include <map>
 #include <vector>
+#include "TTimeStamp.h"
 
 class AliMergeableCollection;
 class TH1;
@@ -35,13 +36,17 @@ public:
 
     void ShrinkTimeAxis();
 
+    static TH1* ExpandTimeAxis(const TH1& h, Int_t expansionTime, Int_t timeResolution=-1);
+
+    static Bool_t GetTimeOffset(const TH1& h, TTimeStamp& origin);
+
 private:
 
    void ComputeNumberOfPads();
 
    Bool_t FillNumberOfPads();
 
-	int GetTimeResolution(TH1& h);
+	static int GetTimeResolution(const TH1& h);
 
    void GroupByStation(int timeResolution);
    void GroupByChamber(int timeResolution);

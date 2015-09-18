@@ -22,11 +22,11 @@ ClassImp(AliMUONBusPatchEvolution)
 ///\endcond
 
 #include "AliCDBManager.h"
-#include "AliMpCDB.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMergeableCollection.h"
 #include "AliMpBusPatch.h"
+#include "AliMpCDB.h"
 #include "AliMpDCSNamer.h"
 #include "AliMpDDL.h"
 #include "AliMpDDLStore.h"
@@ -35,10 +35,11 @@ ClassImp(AliMUONBusPatchEvolution)
 #include "AliMpDetElement.h"
 #include "TH1F.h"
 #include "TList.h"
-#include <cassert>
+#include "TMath.h"
 #include "TObjArray.h"
-#include "TString.h"
 #include "TObjString.h"
+#include "TString.h"
+#include <cassert>
 #include <set>
 
 //_________________________________________________________________________________________________
@@ -152,6 +153,62 @@ void AliMUONBusPatchEvolution::ComputeNumberOfPads()
 	}
 
 	assert(total==1064008);
+}
+
+//_________________________________________________________________________________________________
+TH1* AliMUONBusPatchEvolution::ExpandTimeAxis(const TH1& h, Int_t expansionTime, Int_t timeResolution)
+{
+	/// Extend (by increasing the number of bins) the time range of h by nbins
+	/// if expansion < 0 expansion is from before the start of x-axis, otherwise from the end.
+
+	if (timeResolution<0)
+	{
+		timeResolution=GetTimeResolution(h);
+	}
+
+	if ( timeResolution<=0) return 0x0;
+
+	TAxis* timeAxis = h.GetXaxis();
+
+	Int_t extraBins =  TMath::Nint(TMath::Abs(expansionTime)/timeResolution);
+
+	Int_t nbins = timeAxis->GetNbins() + extraBins;
+	Double_t xmin = timeAxis->GetXmin();
+	Double_t xmax = timeAxis->GetXmax();
+
+	if ( expansionTime < 0 )
+	{
+		xmin += expansionTime;
+	}
+	else
+	{
+		xmax += expansionTime;
+	}
+
+	TH1* hnew = new TH1F(h.GetName(),h.GetTitle(),nbins,xmin,xmax);
+	hnew->SetDirectory(0);
+	hnew->GetXaxis()->SetTimeDisplay(1);
+	hnew->GetXaxis()->SetTimeFormat(timeAxis->GetTimeFormat());
+
+	for ( Int_t i = 1; i <= timeAxis->GetNbins(); ++i )
+	{
+		hnew->SetBinContent(i+extraBins,h.GetBinContent(i));
+		hnew->SetBinError(i+extraBins,h.GetBinError(i));
+	}
+
+	if ( expansionTime < 0 )
+	{
+		/// Must update the time offset
+		TTimeStamp origin;
+		GetTimeOffset(h,origin);
+		UInt_t ot = origin.GetSec();
+		ot += expansionTime;
+		origin.SetSec(ot);
+		hnew->GetXaxis()->SetTimeOffset(origin.GetSec(),"gmt");
+		GetTimeOffset(*hnew,origin);
+	}
+
+	return hnew;
 }
 
 //_________________________________________________________________________________________________
@@ -275,7 +332,33 @@ Bool_t AliMUONBusPatchEvolution::FillNumberOfPads()
 
 
 //_________________________________________________________________________________________________
-int AliMUONBusPatchEvolution::GetTimeResolution(TH1& h)
+Bool_t AliMUONBusPatchEvolution::GetTimeOffset(const TH1& h, TTimeStamp& origin)
+{
+	/// Assuming histogram h has a time axis, fills origin with its time offset and returns
+	/// kTRUE. Otherwise returns kFALSE
+	/// Assumes that the time offset is indicated in GMT
+
+	TAxis* x = h.GetXaxis();
+
+	if ( x->GetTimeDisplay() )
+	{
+		TString tf = x->GetTimeFormat();
+		Int_t ix = tf.Index('F');
+		Int_t year,month,day;
+		Int_t hour,minute,second;
+		sscanf(tf(ix+1,tf.Length()-ix-1).Data(),"%4d-%02d-%02d %02d:%02d:%02d",&year,&month,&day,
+				&hour,&minute,&second);
+		origin.Set(year,month,day,hour,minute,second,0,kTRUE,0);
+		return kTRUE;
+	}
+	else
+	{
+		return kFALSE;
+	}
+}
+
+//_________________________________________________________________________________________________
+int AliMUONBusPatchEvolution::GetTimeResolution(const TH1& h)
 {
 	// we assume the title ends with "xxx s bins"
 	// and we try to find xxx ...

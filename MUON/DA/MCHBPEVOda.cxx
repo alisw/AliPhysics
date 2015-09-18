@@ -72,56 +72,101 @@
 #include "TTimeStamp.h"
 
 const char* OUTPUT_FILE = "mchbpevo.root";
-const char* DAVERSION = "MCHPBEVOda v0.1 ($Id$)";
-const char* DANAME = "MCH BusPatch Evolution DA ";
+const char* DAVERSION = "MCHPBEVOda v0.2 ($Id$)";
 const char* CONFIG_FILE = "mchbpevo.conf";
 int DEFAULT_MAX_DURATION = 5*60*60; // 5 hours, in seconds
 int DEFAULT_TIME_RESOLUTION = 60; // seconds
 int DEFAULT_NOF_EVENTS_REQUIRED_FOR_DECISION = 10000; // ten thousand events needed before any decision can be taken
 float DEFAULT_OCCUPANCY_THRESHOLD = 0.30; // by default a bus patch with more than 30% occupancy for the last 1000 is declared suspicious ;-)
 
-
 //_________________________________________________________________________________________________
-void AssertHistogramsRange(AliMergeableCollection& hc, Int_t timeFromRef, int timeResolution)
+Int_t AssertHistogramsRange(AliMergeableCollection& hc, Int_t timeFromRef,
+													  const std::vector<int>& timeResolutions,
+													  const std::map<int,int>& busPatches)
 {
 	/// Insure the histograms in hc are big enough to accomodate timeFromRef
+	/// timeFromRef can be negative or positive
+	/// Return 1 if a re-allocation has been performed, 0 otherwise
 
-	static TH1* h = hc.Histo(Form("/BUSPATCH/HITS/%ds/BP0001",timeResolution));
+	assert(timeResolutions.size()>=1);
+	assert(busPatches.size()==888);
 
-	assert(h!=0x0);
+	TH1* htest = hc.Histo(Form("/BUSPATCH/HITS/%ds/BP%04d",timeResolutions[0],1));
 
-	Int_t bin = h->GetXaxis()->FindBin(timeFromRef);
+	assert(htest!=0x0);
 
-	assert( bin > 0 ); // should not be possible to get time before timeRef
+	TAxis* axis = htest->GetXaxis();
 
-	Bool_t shouldResize(kFALSE);
+	Int_t expansionTime(0);
 
-	if ( bin >= h->GetXaxis()->GetNbins() )
+	if ( timeFromRef < axis->GetXmin() )
 	{
-		shouldResize = kTRUE;
-		if ( timeFromRef > 12*3600 )
+		expansionTime = timeFromRef - axis->GetXmin();
+	}
+
+	if ( timeFromRef > axis->GetXmax() )
+	{
+		expansionTime = timeFromRef - axis->GetXmax();
+	}
+
+	if ( TMath::Abs(expansionTime) < timeResolutions[0] )
+	{
+		// current binning is OK. Nothing to do.
+		return 0;
+	}
+
+	if ( TMath::Abs(expansionTime) > 12*3600 )
+	{
+		std::cout << DAVERSION << " ERROR : Time range expansion bigger than 12 hours. Not doing it." << std::endl;
+		return 0;
+	}
+
+	Int_t currentDuration = TMath::Nint(axis->GetXmax()-axis->GetXmin());
+
+	std::cout << Form("%s INFO : I will expand my time range by %10d s (current duration %10d s, new one %10d s)",
+			DAVERSION,expansionTime,currentDuration,currentDuration+TMath::Abs(expansionTime))<< std::endl;
+
+	// increase the time range by expansionTime, for all histograms
+
+	for ( std::vector<int>::size_type itr = 0; itr < timeResolutions.size(); ++itr )
+	{
+		int timeReso = timeResolutions[itr];
+
+		std::map<int,int>::const_iterator it;
+
+		for ( it = busPatches.begin(); it != busPatches.end(); ++it )
 		{
-			std::cout << DAVERSION << " Time range expansion would go above 24h. Not doing it." << std::endl;
-			shouldResize = kFALSE;
+			int busPatchId = it->first;
+
+			TString path;
+
+			path.Form("/BUSPATCH/HITS/%ds/BP%04d",timeReso,busPatchId);
+
+			TH1* h = hc.Histo(path.Data());
+
+			assert(h!=0x0);
+
+			TH1* hnew = AliMUONBusPatchEvolution::ExpandTimeAxis(*h,  expansionTime,  timeReso);
+
+			hc.Remove(path.Data());
+
+			hc.Adopt(hc.GetIdentifier(path),hnew);
 		}
 	}
 
-	if (!shouldResize) return;
 
-	std::cout << Form("%s :  I will expand my time range (current duration %10d s, requested %10d s)",
-			DAVERSION,TMath::Nint(h->GetXaxis()->GetXmax()),timeFromRef)<< std::endl;
-
-	// increase the time range by 1 hour, for all histograms
-	TIter next(hc.CreateIterator());
-	TObject* o;
-
-	while ( ( o = next() ) )
+	if  ( expansionTime < 0 )
 	{
-		if ( ! o->InheritsFrom("TH1") ) continue; // skip non-histogram objects
-		h = static_cast<TH1*>(o);
-		if ( !h->GetXaxis()->GetTimeDisplay() ) continue; // skip histograms with an axis that is not a time range
-		h->LabelsInflate("x");
+		TTimeStamp origin;
+
+		htest = hc.Histo(Form("/BUSPATCH/HITS/%ds/BP%04d",timeResolutions[0],1));
+
+		AliMUONBusPatchEvolution::GetTimeOffset(*htest,origin);
+
+		std::cout << DAVERSION << " INFO : New refTime = " << origin.AsString() << std::endl;
 	}
+
+	return 1;
 }
 
 //_________________________________________________________________________________________________
@@ -1034,7 +1079,11 @@ void FillCollection(AliMergeableCollection& hc, UInt_t timeOrigin, int maxDurati
 	/// Create the BusPatch and Event histograms
 	///
 
-	TDatime origin(timeOrigin);
+	assert(buspatches.size()==888);
+
+	TTimeStamp origin(static_cast<time_t>(timeOrigin),0);
+
+	std::cout << DAVERSION << " INFO : Using refTime = " << origin.AsString() << std::endl;
 
 	Double_t xmin =  0;
 	Double_t xmax = xmin + maxDuration*1.0;
@@ -1054,7 +1103,7 @@ void FillCollection(AliMergeableCollection& hc, UInt_t timeOrigin, int maxDurati
 
 		h->GetXaxis()->SetTimeDisplay(1);
 		h->GetXaxis()->SetTimeFormat("%d/%m/%y %H:%M");
-		h->GetXaxis()->SetTimeOffset(origin.Convert());
+		h->GetXaxis()->SetTimeOffset(timeOrigin,"gmt");
 		hc.Adopt(Form("/BUSPATCH/HITS/%ds",timeResolution),h);
 	}
 
@@ -1064,7 +1113,7 @@ void FillCollection(AliMergeableCollection& hc, UInt_t timeOrigin, int maxDurati
 
 	h->GetXaxis()->SetTimeDisplay(1);
 	h->GetXaxis()->SetTimeFormat("%d/%m/%y %H:%M");
-	h->GetXaxis()->SetTimeOffset(origin.Convert());
+	h->GetXaxis()->SetTimeOffset(timeOrigin,"gmt");
 
 	hc.Adopt("",h);
 }
@@ -1093,7 +1142,7 @@ void ReportFaultyBusPatches(AliMergeableCollection& hc,
 
 	if ( faultyBP.empty() ) return;
 
-	std::cout << Form("%s : %3d bus patches above occupancy threshold (of %7.2f %%) : ",DAVERSION,(int)faultyBP.size(),occupancyThreshold*100.0);
+	std::cout << Form("%s WARNING : %3d bus patches above occupancy threshold (of %7.2f %%) : ",DAVERSION,(int)faultyBP.size(),occupancyThreshold*100.0);
 
 	for ( it = faultyBP.begin(); it != faultyBP.end(); ++it )
 	{
@@ -1102,7 +1151,7 @@ void ReportFaultyBusPatches(AliMergeableCollection& hc,
 	}
 
 	std::cout << std::endl;
-	std::cout << Form("%s : Bus patches occupancies : ",DAVERSION);
+	std::cout << Form("%s INFO : Faulty bus patches occupancies : ",DAVERSION);
 
 
 	for ( it = faultyBP.begin(); it != faultyBP.end(); ++it )
@@ -1127,37 +1176,19 @@ int main(int argc, char **argv)
 
 	ios::sync_with_stdio();
 
-	cout << "Running " << DAVERSION << endl;
+	std::cout << "Running " << DAVERSION << std::endl;
 
-	if ( argc < 2 )
+	if ( argc != 2 )
 	{
-		cout << "Wrong number of arguments" << endl;
-		cout << "Usage : " << argv[0] << " datasource1 [datasource2] ..." << endl;
+		std::cout << "Wrong number of arguments" << std::endl;
+		std::cout << "Usage : " << argv[0] << " datasource" << std::endl;
 		return -1;
 	}
 
 	TString dataSource=argv[1];
 
-	UInt_t refTime;
-
-	refTime = time(0);
-
-	if ( argc > 2 )
-	{
-		TDatime dt(argv[2]);
-		refTime = dt.Convert();
-	}
-
+	UInt_t refTime = 0;
 	TString outputFileName = OUTPUT_FILE;
-
-	if ( argc > 3 )
-	{
-		outputFileName = argv[3];
-	}
-
-	std::cout << "Will use refTime=";
-	TDatime d(refTime);
-	std::cout << d.AsString() << std::endl;
 
 	// needed for streamer application
 	gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
@@ -1187,7 +1218,7 @@ int main(int argc, char **argv)
 
 	if (status)
 	{
-		std::cout << "Could not get configuration file " << CONFIG_FILE
+		std::cout << DAVERSION << " WARNING: Could not get configuration file " << CONFIG_FILE
 				<< " from DAQ detector database. Will use (hopefully sensible) defaults" << std::endl;
 
 		timeResolutions.push_back(DEFAULT_TIME_RESOLUTION);
@@ -1218,7 +1249,7 @@ int main(int argc, char **argv)
 
 		if ( timeResolutions.size() == 0 )
 		{
-			std::cout << "Configuration file " << CONFIG_FILE << " contains an incorrect timeResolutions setting. "
+			std::cout << DAVERSION << " WARNING : Configuration file " << CONFIG_FILE << " contains an incorrect timeResolutions setting. "
 					<< " Using default of " << DEFAULT_TIME_RESOLUTION << " s instead"
 					<< std::endl;
 			timeResolutions.push_back(DEFAULT_TIME_RESOLUTION);
@@ -1248,27 +1279,28 @@ int main(int argc, char **argv)
 
 		if (busPatches.size() != 888)
 		{
-			std::cout << "Configuration file is incorrect : wrong number of bus patches : "
+			std::cout << DAVERSION << " ERROR : Configuration file is incorrect : wrong number of bus patches : "
 					<< " got " << busPatches.size() << " but expected 888. Cannot work like that." << std::endl;
 			return -3;
 		}
 
 		if (busPatches.size() > 0 && total != 1064008)
 		{
-			std::cout << "Configuration file is incorrect : wrong total number of pads ! Got " << total
+			std::cout << DAVERSION << " ERROR : Configuration file is incorrect : wrong total number of pads ! Got " << total
 					<< " but expected 1064008. Cannot work like that." << std::endl;
 			return -2;
 		}
 
 		if ( busPatches.size() == 0 )
 		{
-			std::cout << "Configuration file " << CONFIG_FILE << " does not contain the list of buspath ids (and their "
+			std::cout << DAVERSION << " WARNING : Configuration file " << CONFIG_FILE << " does not contain the list of buspath ids (and their "
 					" corresponding number of pads). Using default values instead"
 					<< std::endl;
 			FillBusPatchesMap(busPatches);
 		}
 	}
 
+	/// We sort the time resolutions so the finer one will be used in AssertHistogramsRange
 	std::sort(timeResolutions.begin(),timeResolutions.end());
 
 	AliMergeableCollection* hc(0x0);
@@ -1279,7 +1311,7 @@ int main(int argc, char **argv)
 	status=monitorSetDataSource(dataSource.Data());
 	if (status!=0)
 	{
-		printf("%s ERROR: monitorSetDataSource() failed: %s\n", DANAME,monitorDecodeError(status));
+		std::cout << DAVERSION << " ERROR : monitorSetDataSource() failed: " << monitorDecodeError(status) << endl;
 		return -1;
 	}
 
@@ -1287,12 +1319,15 @@ int main(int argc, char **argv)
 	status=monitorDeclareMp("MUON_TRK_BPEVO");
 	if (status!=0)
 	{
-		printf("%s ERROR: monitorDeclareMp() failed: %s\n", DANAME,monitorDecodeError(status));
+		std::cout << DAVERSION << " ERROR : monitorDeclareMp() failed: " << monitorDecodeError(status) << endl;
 		return -1;
 	}
+
 	// Define wait event timeout - 1s max
 	monitorSetNowait();
 	monitorSetNoWaitNetworkTimeout(1000);
+
+	int nofRealloc(0);
 
 	for(;;)
 	{
@@ -1302,7 +1337,7 @@ int main(int argc, char **argv)
 		status=monitorGetEventDynamic((void **)&event);
 		if (status!=0)
 		{
-			printf("%s ERROR: %s\n", DANAME,monitorDecodeError(status));
+			std::cout << DAVERSION << " ERROR : " << monitorDecodeError(status) << std::endl;
 			delete event;
 			break;
 		}
@@ -1310,7 +1345,7 @@ int main(int argc, char **argv)
 		/* check shutdown condition */
 		if (daqDA_checkShutdown())
 		{
-			printf("%s WARNING: I am requested to stop, so I will stop...",DANAME);
+			std::cout << DAVERSION << " WARNING : I am requested to stop, so I will stop..." << std::endl;
 			delete event;
 			break;
 		}
@@ -1356,7 +1391,7 @@ int main(int argc, char **argv)
 		{
 			if ( runNumber != 0 )
 			{
-				cout << "Uh oh. That's bad... Changing of run number ???" << endl;
+				std::cout << DAVERSION << " ERROR : Uh oh. That's bad... Changing of run number ???" << std::endl;
 				delete event;
 				delete rawReader;
 				return -9999;
@@ -1397,11 +1432,6 @@ int main(int argc, char **argv)
 
 		rawReader->Reset();
 
-		if (hc)
-		{
-			AssertHistogramsRange(*hc,rawReader->GetTimestamp()-refTime,timeResolutions[0]);
-		}
-
 		// now do our real work with the MCH decoder
 
 		AliMUONRawStreamTrackerHP stream(rawReader);
@@ -1427,7 +1457,7 @@ int main(int argc, char **argv)
 
 			emptyevent++;
 
-			std::cout << "Empty event" << emptyevent << std::endl;
+			std::cout << DAVERSION << " WARNING : Empty event" << emptyevent << std::endl;
 		}
 
 		Bool_t badEvent = stream.HasPaddingError() || stream.HasGlitchError();
@@ -1438,10 +1468,19 @@ int main(int argc, char **argv)
 			{
 				hc = new AliMergeableCollection("bpevo");
 
+				assert(refTime==0);
+
+				refTime = rawReader->GetTimestamp();
+
 				for ( std::vector<int>::size_type is = 0; is < timeResolutions.size(); ++is )
 				{
 					FillCollection(*hc, refTime,maxDuration,timeResolutions[is],busPatches);
 				}
+			}
+			else
+			{
+				assert(refTime>0);
+				nofRealloc += AssertHistogramsRange(*hc,rawReader->GetTimestamp()-refTime,timeResolutions,busPatches);
 			}
 
 			++numberOfUsedEvents;
@@ -1463,11 +1502,14 @@ int main(int argc, char **argv)
 
 				for ( std::vector<int>::size_type is = 0; is < timeResolutions.size(); ++is )
 				{
-					TH1* h = hc->Histo(Form("/BUSPATCH/HITS/%ds/%s",timeResolutions[is],bpName.Data()));
+					TString hname;
+
+					hname.Form("/BUSPATCH/HITS/%ds/%s",timeResolutions[is],bpName.Data());
+					TH1* h = hc->Histo(hname.Data());
 
 					if (!h)
 					{
-						cout << "histogram not found" << endl;
+						std::cout << DAVERSION << " ERROR : histogram " << hname.Data() << " not found" << std::endl;
 						continue;
 					}
 
@@ -1477,11 +1519,14 @@ int main(int argc, char **argv)
 
 			for ( std::vector<int>::size_type is = 0; is < timeResolutions.size(); ++is )
 			{
-				TH1* h = hc->Histo(Form("Nevents%ds",timeResolutions[is]));
+				TString hname;
+
+				hname.Form("Nevents%ds",timeResolutions[is]);
+				TH1* h = hc->Histo(hname.Data());
 
 				if (!h)
 				{
-					cout << "histogram not found" << endl;
+					std::cout << DAVERSION << " ERROR : histogram " << hname.Data() << " not found" << std::endl;
 					continue;
 				}
 
@@ -1500,9 +1545,11 @@ int main(int argc, char **argv)
 	}
 
 
-	cout << Form("%12d events processed : %12d physics %d used ones %d bad ones [ %d with MCH information ] [ %d incomplet %d flushed ]",
+	std::cout << DAVERSION << Form(" INFO : %12d events processed : %12d physics %d used ones %d bad ones [ %d with MCH information ] [ %d incomplet %d flushed ]",
 			numberOfEvents,numberOfPhysicsEvent,numberOfUsedEvents,numberOfBadEvents,numberOfEventsWithMCH,
-			numberOfIncompleteEvents,numberOfFlushedEvents) << endl;
+			numberOfIncompleteEvents,numberOfFlushedEvents) << std::endl;
+
+	std::cout << DAVERSION << " INFO : Number of histogram re-allocation : " << nofRealloc << std::endl;
 
 	/* store the result file on FXS */
 	//  if (daqDA_FES_storeFile(OUTPUT_FILE,"BPEVO")) return -9;
@@ -1516,7 +1563,7 @@ int main(int argc, char **argv)
 
 	timers.Stop();
 
-	printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
+	std::cout << DAVERSION <<  Form(" INFO : Execution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime()) << std::endl;
 
 	return 0;
 }
