@@ -741,6 +741,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 
     Bool_t modified = kFALSE;
     Bool_t globalExported = kFALSE;
+    Bool_t storeOCDB = kTRUE;
 
     ofstream out;
     TString file;
@@ -768,7 +769,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetLocalMaskFileName());
-      out << cfg.GetLocalMaskFileName() << endl;
+      out << cfg.GetLocalMaskFileName() << "   " << storeOCDB << endl;
     }
 
     file = cfg.GetLocalLutFileName();
@@ -781,7 +782,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetLocalLutFileName());
-      out << cfg.GetLocalLutFileName() << endl;
+      out << cfg.GetLocalLutFileName() <<  "   " << storeOCDB << endl;
 
     }
 
@@ -796,7 +797,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
-      out << cfg.GetGlobalFileName() << endl;
+      out << cfg.GetGlobalFileName() <<  "   " << storeOCDB << endl;
     }
 
     file = cfg.GetRegionalFileName();
@@ -808,7 +809,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 	return kFALSE;
       }
       if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
-      out << cfg.GetRegionalFileName() << endl;
+      out << cfg.GetRegionalFileName() <<  "   " << storeOCDB << endl;
 
       // needed for the initialisation of the mapping
       if (!globalExported) {
@@ -820,7 +821,7 @@ Bool_t ExportFiles(AliDAConfig& cfg)
 	  return kFALSE;
 	}
 	if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
-	out << cfg.GetGlobalFileName() << endl;
+	out << cfg.GetGlobalFileName() <<  "   " << storeOCDB << endl;
       }
 
     }
@@ -842,6 +843,7 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
 
   TString file;
   Int_t status = 0;
+  Bool_t storeOCDB = kTRUE;
 
   ofstream out;
   out.open(fileExp.Data(), std::ofstream::app);
@@ -859,7 +861,8 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
     return kFALSE;
   }
   if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
-  out << cfg.GetGlobalFileName() << endl;
+  storeOCDB = kFALSE;
+  out << cfg.GetGlobalFileName() <<  "   " << storeOCDB << endl;
 
   // regional config
   file = cfg.GetRegionalFileName();
@@ -870,7 +873,8 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
     return kFALSE;
   }
   if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
-  out << cfg.GetRegionalFileName() << endl;
+  storeOCDB = kFALSE;
+  out << cfg.GetRegionalFileName() <<  "   " << storeOCDB << endl;
 
   // trigger scalers
   file = cfg.GetTrigScalFileName();  
@@ -881,7 +885,8 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
     return status;
   }
   if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetTrigScalFileName());
-  out << cfg.GetTrigScalFileName() << endl;
+  storeOCDB = kTRUE;
+  out << cfg.GetTrigScalFileName() <<  "   " << storeOCDB << endl;
 
   out.close();
 
@@ -1340,7 +1345,7 @@ int main(Int_t argc, Char_t **argv)
     // needed for streamer application
     gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo", "*", "TStreamerInfo", "RIO", "TStreamerInfo()"); 
 
-    printf("MTRda version v.06072015.01 \n");
+    printf("MTRda version v.18092015.01 \n");
   
     /* check that we got some arguments = list of files */
     if (argc<2) {
@@ -1655,7 +1660,7 @@ int main(Int_t argc, Char_t **argv)
 			
 		      } // end strip loop
 		    } // end skip copy cards
-		  } // env check overflow
+		  } // end check overflow
 		} // end scalers calib event
 	      } // end valid local
 	    } // end loc loop
