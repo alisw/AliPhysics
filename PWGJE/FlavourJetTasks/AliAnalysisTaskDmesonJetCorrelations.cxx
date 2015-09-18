@@ -426,11 +426,12 @@ void AliAnalysisTaskDmesonJetCorrelations::DoJetLoop()
   AliEmcalJet* jet = 0;
   while ((jet = jets->GetNextJet())) {
     Int_t ntrk = jet->GetNumberOfTracks();
+    AliDebug(2, Form("Jet n %d, pT = %.2f, eta = %.2f, phi = %.2f, nTrk = %d", jets->GetCurrentID(), jet->Pt(), jet->Eta(), jet->Phi(), ntrk));
     for (Int_t itrk = 0; itrk < ntrk; itrk++) {
       AliVParticle* part = jet->TrackAt(itrk, particles->GetArray());
       if (!part) continue;
       Bool_t matched = kFALSE;
-      
+
       if (fParticleLevel) {
         Int_t partPdg = TMath::Abs(part->PdgCode());
         if (partPdg == pdgCode) matched = kTRUE;
@@ -445,6 +446,8 @@ void AliAnalysisTaskDmesonJetCorrelations::DoJetLoop()
         jet->AddFlavourTag(ftag);
         jet->AddFlavourTrack(part);
       }
+
+      AliDebug(2, Form("%s: pT = %.2f, eta = %.2f, phi = %.2f", part->ClassName(), part->Pt(), part->Eta(), part->Phi()));
     }
   }
 }
