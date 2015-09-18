@@ -95,12 +95,8 @@ set(SRCS
     physics/AliHLTMultiplicityCorrelationsComponent.cxx
     physics/AliHLTMultiplicityCorrelations.cxx
     physics/AliHLTV0HistoComponent.cxx
-    physics/AliHLTFlatAnaManagerComponent.cxx
-    physics/AliHLTTPCCalibManagerComponent.cxx
-    physics/AliHLTESDAnaManagerComponent.cxx
     physics/AliHLTAnalysisManager.cxx
     physics/AliHLTAnalysisManagerComponent.cxx
-    physics/AliHLTTPCCalibProcessor.cxx
    )
 
 if(ZEROMQ_FOUND)
