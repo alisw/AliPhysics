@@ -25,6 +25,7 @@
 #include <TString.h>
 
 #include "AliAnalysisUtils.h"
+#include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
 #include "AliInputEventHandler.h"
@@ -45,6 +46,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     AliAnalysisTaskSE(),
     fAnalysisUtil(NULL),
     fHistos(NULL),
+    fGeometry(NULL),
     fClusterContainer(""),
     fTriggerStringFromPatches(kFALSE)
 {
@@ -58,7 +60,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *name) :
     AliAnalysisTaskSE(name),
     fAnalysisUtil(),
-    fHistos(),
+    fHistos(NULL),
+    fGeometry(NULL),
     fClusterContainer(""),
     fTriggerStringFromPatches(kFALSE)
 {
@@ -79,6 +82,9 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
 
   TArrayD energybinning;
   CreateEnergyBinning(energybinning);
+  TArrayD smbinning(14);
+  int ilimit = 0;
+  for(double borders = -0.5; borders < 13.5; borders +=1) smbinning[ilimit++] = borders;
   fHistos = new AliEMCalHistoContainer("Ref");
   TString triggers[17] = {
       "MB", "EMC7",
@@ -91,6 +97,8 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     fHistos->CreateTH1(Form("hClusterEnergy%s", trg->Data()), Form("Cluster energy for trigger class %s", trg->Data()), energybinning);
     fHistos->CreateTH1(Form("hClusterEnergyFired%s", trg->Data()), Form("Cluster energy for trigger class %s, firing the trigger", trg->Data()), energybinning);
+    fHistos->CreateTH2(Form("hClusterEnergySM%s", trg->Data()), Form("Cluster energy versus supermodule for trigger class %s", trg->Data()), smbinning, energybinning);
+    fHistos->CreateTH2(Form("hClusterEnergyFiredSM%s", trg->Data()), Form("Cluster energy versus supermodule for trigger class %s, firing the trigger", trg->Data()), smbinning, energybinning);
     for(int ien = 0; ien < 5; ien++){
       fHistos->CreateTH2(Form("hEtaPhi%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
       fHistos->CreateTH2(Form("hEtaPhiFired%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters fired the trigger with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
@@ -105,6 +113,9 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
  * @param
  */
 void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
+  if(!fGeometry){
+    fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+  }
   TString triggerstring = "";
   TClonesArray *triggerpatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
 
@@ -276,9 +287,15 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
 
 void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(TString triggerclass, double energy, double eta, double phi, TList *triggerpatches){
   Bool_t hasTriggerPatch = triggerpatches  ? CorrelateToTrigger(eta, phi, triggerpatches) : kFALSE;
+  Int_t supermoduleID = -1;
+  fGeometry->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
   fHistos->FillTH1(Form("hClusterEnergy%s", triggerclass.Data()), energy);
+  if(supermoduleID >= 0)
+    fHistos->FillTH2(Form("hClusterEnergySM%s", triggerclass.Data()), supermoduleID, energy);
   if(hasTriggerPatch){
     fHistos->FillTH1(Form("hClusterEnergyFired%s", triggerclass.Data()), energy);
+    if(supermoduleID >= 0)
+      fHistos->FillTH2(Form("hClusterEnergyFiredSM%s", triggerclass.Data()), supermoduleID, energy);
   }
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
   for(int ien = 0; ien < 5; ien++){
