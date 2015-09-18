@@ -86,7 +86,7 @@ AliFlatESDEvent::AliFlatESDEvent()
   fNTracks(0),
   fNV0s(0),
   fTriggerPointer(0),
-  fVZEROPointer(0),
+  fVZEROPointer(-1),
   fPrimaryVertexTracksPointer(0),
   fPrimaryVertexTPCPointer(0),
   fPrimaryVertexSPDPointer(0),
@@ -117,7 +117,7 @@ AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ )
 
   // Reinitialise VZERO information  
   {    
-    AliFlatESDVZERO * vzero =  reinterpret_cast< AliFlatESDVZERO*>( fContent + fVZEROPointer ); 
+    AliFlatESDVZERO * vzero =  GetFlatVZERONonConst();
     if( vzero ) vzero->Reinitialize();    
   }
 
@@ -194,7 +194,7 @@ void AliFlatESDEvent::Reset()
   fNTracks = 0;
   fNV0s = 0;
   fTriggerPointer = 0;
-  fVZEROPointer = 0;
+  fVZEROPointer = -1;
   fPrimaryVertexTracksPointer = 0;
   fPrimaryVertexTPCPointer = 0;
   fPrimaryVertexSPDPointer = 0;
@@ -222,11 +222,11 @@ void AliFlatESDEvent::Reset()
 Int_t AliFlatESDEvent::SetVZEROData( const AliESDVZERO *vzero, size_t allocatedVZEROMemory )
 {
   // fill VZERO info
-  fVZEROPointer = 0;
+  fVZEROPointer = -1;
   if( !vzero ) return 0;
   if( allocatedVZEROMemory < sizeof(AliFlatESDVZERO) ) return -1;
   fVZEROPointer = fContentSize;
-  AliFlatESDVZERO *flatVZERO = reinterpret_cast<AliFlatESDVZERO*> (fContent + fContentSize);
+  AliFlatESDVZERO *flatVZERO = reinterpret_cast<AliFlatESDVZERO*> (fContent + fVZEROPointer );
   flatVZERO->SetFromESDVZERO( *vzero );
   fContentSize += flatVZERO->GetSize();
   return 0;

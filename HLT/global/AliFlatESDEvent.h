@@ -119,8 +119,14 @@ class AliFlatESDEvent :public AliVEvent {
   // --------------------------------------------------------------------------------
   // -- Getter methods
 
-  const AliFlatESDVZERO *GetFlatVZERO() const { return reinterpret_cast<const AliFlatESDVZERO*>( fContent + fVZEROPointer ); }
- 
+  const AliFlatESDVZERO *GetFlatVZERO() const { 
+    return ( fVZEROPointer>=0 ) ?reinterpret_cast<const AliFlatESDVZERO*>( fContent + fVZEROPointer ) :NULL;
+  }
+  
+  AliFlatESDVZERO *GetFlatVZERONonConst() { 
+    return ( fVZEROPointer>=0 ) ?reinterpret_cast<AliFlatESDVZERO*>( fContent + fVZEROPointer ) :NULL;
+  }
+
   const AliFlatESDVertex* GetFlatPrimaryVertexSPD() const ;
   const AliFlatESDVertex* GetFlatPrimaryVertexTracks() const ;
   const AliFlatESDVertex* GetFlatPrimaryVertexTPC() const ;
@@ -203,7 +209,7 @@ class AliFlatESDEvent :public AliVEvent {
   // Pointers to specific data in fContent
   
   size_t fTriggerPointer;        // position of the first trigger description in fContent
-  size_t fVZEROPointer;        // position of the first trigger description in fContent
+  Long_t fVZEROPointer;        // position of the first trigger description in fContent
   size_t fPrimaryVertexTracksPointer; // position of primary vertex tracks in fContent
   size_t fPrimaryVertexTPCPointer; // position of primary vertex TPC in fContent
   size_t fPrimaryVertexSPDPointer;  // position of primary vertex SPD in fContent
