@@ -810,9 +810,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hNEvents[iCut]->Sumw2();
 			hNGoodESDTracks[iCut]->Sumw2();
 			hVertexZ[iCut]->Sumw2();
+			hCentrality[iCut]->Sumw2();
 			hNGammaCandidates[iCut]->Sumw2();
 			hNV0Tracks[iCut]->Sumw2();
 			hEtaShift[iCut]->Sumw2();
+			if(fDoPlotVsCentrality) hCentralityVsPrimaryTracks[iCut]->Sumw2();
 		}
 		
 		if (fDoPhotonQA == 2){
@@ -1507,6 +1509,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 			hNEvents[iCut]->Fill(eventQuality);
+			if(fIsMC==2) hNEventsWOWeight[iCut]->Fill(eventQuality);
 			if(fDoCentralityFlat > 0) hNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]);
 		}
 		return;
@@ -1564,6 +1567,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		}
 			
 		hNEvents[iCut]->Fill(eventQuality,fWeightJetJetMC); // Should be 0 here
+		if(fIsMC==2) hNEventsWOWeight[iCut]->Fill(eventQuality);
 		if(fDoCentralityFlat > 0) hNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]*fWeightJetJetMC); // Should be 0 here
 		
 		hNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fWeightJetJetMC);
@@ -1577,7 +1581,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 			else fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)));
 		}
 		
-		if(fDoPlotVsCentrality) hCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent));
+		if(fDoPlotVsCentrality) hCentrality[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fWeightJetJetMC);
 		if(fDoCentralityFlat > 0) hCentralityFlattened[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent), fWeightCentrality[iCut]*fWeightJetJetMC);
 		
 		if(fDoCentralityFlat > 0) hCentralityVsPrimaryTracks[iCut]->Fill(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightCentrality[iCut]*fWeightJetJetMC);
@@ -1794,7 +1798,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 				if(fIsFromMBHeader){
 					if(fIsMC != 2){
 						if(fDoCentralityFlat > 0) hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]); 
-						else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+						else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
 					} 
 					if (fDoPhotonQA > 0 && fIsMC != 2){
 						if(fDoCentralityFlat > 0){
@@ -1853,7 +1857,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 			if(fIsFromMBHeader){
 				if(fIsMC != 2){
 					if(fDoCentralityFlat > 0) hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightCentrality[fiCut]);
-					else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+					else hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
 				}
 				if (fDoPhotonQA > 0 && fIsMC != 2){
 					if(fDoCentralityFlat > 0){
