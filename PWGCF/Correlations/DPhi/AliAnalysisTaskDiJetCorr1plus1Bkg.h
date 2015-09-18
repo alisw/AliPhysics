@@ -120,8 +120,11 @@ class AliAnalysisTaskDiJetCorr1plus1Bkg : public AliAnalysisTaskSE {
         Int_t poolsize = 500;  // Maximum number of events
 
         
-        Int_t  NofCentBins  = 7;
-        Double_t MBins[]={0.,7.5, 10., 20., 30., 40., 50., 100.1};
+        Int_t  NofCentBins  = 12;
+        Double_t MBins[]={0., 1., 2., 3., 4., 5., 7.5, 10., 20., 30., 40., 50., 100.1};
+        
+       //  Int_t  NofCentBins  = 7;
+        //Double_t MBins[]={0., 7.5, 10., 20., 30., 40., 50., 100.1};
         Double_t * CentrORMultBins = MBins;
         
         Int_t NofZVrtxBins  = 10;
@@ -138,8 +141,8 @@ class AliAnalysisTaskDiJetCorr1plus1Bkg : public AliAnalysisTaskSE {
     Bool_t DefineMixedEventPoolpp(){
         
         Int_t poolsize = 500;  // Maximum number of events
-        Int_t  NofCentBins  = 1;
-        Double_t MBins[]={0, 250.};
+        Int_t  NofCentBins  = 2;
+        Double_t MBins[]={0, 35., 250.};
         Double_t * CentrORMultBins = MBins;
         
         Int_t NofZVrtxBins  = 10;
