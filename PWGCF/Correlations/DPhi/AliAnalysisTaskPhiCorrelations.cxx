@@ -564,7 +564,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         Float_t eta=particle->Eta();
         if( (eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7) )MultV0M++;
       }
-      if(MultV0M==0)return;
+//      if(MultV0M==0)return;
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
       if(fCentralityWeights)centrality = MultV0M/fCentralityWeights->GetMean();
       else centrality=-1.;
@@ -581,7 +581,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
         Float_t eta=particle->Eta();
         if( eta < -1 || eta > 1.)MultCL1++;
       }
-      if(MultCL1==0)return;
+//      if(MultCL1==0)return;
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
       if(fCentralityWeights)centrality = MultCL1/fCentralityWeights->GetMean();
       else centrality=-1.;
