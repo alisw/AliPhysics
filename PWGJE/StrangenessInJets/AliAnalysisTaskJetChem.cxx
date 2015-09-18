@@ -216,6 +216,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh2JetEtaPhi(0)
    ,fh1nEmbeddedJets(0)
    ,fh1IndexEmbedded(0)
+   ,fh1PtEmbBeforeMatch(0)
+   ,fh1PtEmbAfterMatch(0)
    ,fh1FractionPtEmbedded(0)
    ,fh1DeltaREmbedded(0)
    ,fh2TracksPerpCone(0)
@@ -507,6 +509,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh2JetEtaPhi(0)
   ,fh1nEmbeddedJets(0)
   ,fh1IndexEmbedded(0)
+  ,fh1PtEmbBeforeMatch(0)
+  ,fh1PtEmbAfterMatch(0)
   ,fh1FractionPtEmbedded(0)
   ,fh1DeltaREmbedded(0)
   ,fh2TracksPerpCone(0)
@@ -801,6 +805,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh2JetEtaPhi(copy.fh2JetEtaPhi)
   ,fh1nEmbeddedJets(copy.fh1nEmbeddedJets)
   ,fh1IndexEmbedded(copy.fh1IndexEmbedded)
+  ,fh1PtEmbBeforeMatch(fh1PtEmbBeforeMatch)
+  ,fh1PtEmbAfterMatch(fh1PtEmbAfterMatch)
   ,fh1FractionPtEmbedded(copy.fh1FractionPtEmbedded)
   ,fh1DeltaREmbedded(copy.fh1DeltaREmbedded)
   ,fh2TracksPerpCone(copy.fh2TracksPerpCone)
@@ -1090,6 +1096,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh2JetEtaPhi                    = o.fh2JetEtaPhi;
     fh1nEmbeddedJets                = o.fh1nEmbeddedJets;
     fh1IndexEmbedded                = o.fh1IndexEmbedded;
+    fh1PtEmbBeforeMatch             = o.fh1PtEmbBeforeMatch;
+    fh1PtEmbAfterMatch             = o.fh1PtEmbAfterMatch;
     fh1FractionPtEmbedded           = o.fh1FractionPtEmbedded;
     fh1DeltaREmbedded              = o.fh1DeltaREmbedded;
     fh2TracksPerpCone               = o.fh2TracksPerpCone;
@@ -1574,9 +1582,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   //embedding
   fh1nEmbeddedJets              = new TH1F("fh1nEmbeddedJets","Number of embedded jets",10,-0.5,9.5);
   fh2TracksPerpCone             = new TH2F("fh2TracksPerpCone","Charged tracks in 2 perp. cones;#it{p^{ch,jet}}_{T} (GeV/#it{c});#it{p^{ch}}_{T} (GeV/#it{c})",19,5.,100.,120,0.,12.);
-  fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1,10);
-  fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0,1.1);
-  fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0,0.5);
+  fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1.,10.);
+  fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
+  fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets after JetMatching cuts",19,5.,100.);
+  fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0.,1.1);
+  fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0.,0.5);
 
   fh1PerpCone                   = new TH1F("fh1PerpCone","Number of perp. cones for charged tracks in event",2.,0.5,1.5);
   fh1V0PtCandidate              = new TH1F("fh1V0PtCandidate","p_{T} distribution of all v0s candidates of PYTHIA",200,0.,200.);
@@ -2108,6 +2118,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh2JetEtaPhi);
     fCommonHistList->Add(fh1nEmbeddedJets);
     fCommonHistList->Add(fh1IndexEmbedded);
+    fCommonHistList->Add(fh1PtEmbBeforeMatch);
+    fCommonHistList->Add(fh1PtEmbAfterMatch);
     fCommonHistList->Add(fh1FractionPtEmbedded);
     fCommonHistList->Add(fh1DeltaREmbedded);
     fCommonHistList->Add(fh2TracksPerpCone);
@@ -2571,11 +2583,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     if(fDebug>2)Printf("%s:%d Selected Embedded jets: %d %d",(char*)__FILE__,__LINE__,nJEmbedded,nEmbeddedJets);
 
     if(nJEmbedded != nEmbeddedJets)Printf("%s:%d Mismatch Selected Embedded Jets: %d %d",(char*)__FILE__,__LINE__,nJEmbedded,nEmbeddedJets); 
+  
+    fh1nEmbeddedJets->Fill(nEmbeddedJets);//Number of jets before matching
 
-    //std::cout << "Check nEmbeddedJets: " <<nEmbeddedJets<<std::end;
+    for(Int_t in=0; in<nEmbeddedJets; ++in){//Pt spectrum of jets before JetMatching                         
+      AliAODJet* embeddedjet = (AliAODJet*) (fJetsEmbedded->At(in));
+      Double_t EmbJetPt = embeddedjet->Pt();
+      fh1PtEmbBeforeMatch->Fill(EmbJetPt);
+    } 
 
-    fh1nEmbeddedJets->Fill(nEmbeddedJets);
-    
     iEmbeddedMatchIndex.Set(nEmbeddedJets); 
     fEmbeddedPtFraction.Set(nEmbeddedJets); 
     
@@ -3604,7 +3620,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 
 	//if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets, probably this works not yet, all jets are rejected with these cut values... to be checked again!
-
 	  
 	if(ptFractionEmbedded>=fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
 	  
@@ -3624,6 +3639,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	    
+
+	    fh1PtEmbAfterMatch->Fill(jetPtEmb);
+
+
 	    fFFHistosRecCuts->FillFF(trackPt, jetPtEmb, incrementJetPt);//fill charged tracks into RecCuts histos
 	    
 	    delete trackV;

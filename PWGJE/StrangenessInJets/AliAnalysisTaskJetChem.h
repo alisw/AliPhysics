@@ -380,6 +380,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //embedding
   TH1F* fh1nEmbeddedJets;
   TH1F* fh1IndexEmbedded;              //! index embedded jet matching to leading rec jet 
+  TH1F* fh1PtEmbBeforeMatch;           // pt spectrum of embedded jets from extraonly particles before JetMatching
+  TH1F* fh1PtEmbAfterMatch;           // pt spectrum of embedded jets from extraonly particles before JetMatching
   TH1F* fh1FractionPtEmbedded;             //! ratio embedded pt in rec jet to embedded jet pt 
   TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet
 
