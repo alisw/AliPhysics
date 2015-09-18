@@ -11,6 +11,7 @@ class TClonesArray;
 
 class AliAnalysisUtils;
 class AliAODTrack;
+class AliEMCALGeometry;
 class AliESDtrack;
 class AliESDtrackCuts;
 class AliGenPythiaEventHeader;
@@ -70,6 +71,7 @@ protected:
   AliESDtrackCuts                 *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
   AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
+  AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
 
   // Monte-Carlo specific information
   Double_t                        fPtHard;                    ///< event pt hard

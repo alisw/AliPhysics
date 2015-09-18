@@ -22,6 +22,8 @@
 
 #include "AliAnalysisUtils.h"
 #include "AliAODTrack.h"
+#include "AliEMCALGeometry.h"
+#include "AliEMCALRecoUtils.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -46,6 +48,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fTrackCuts(NULL),
     fAnalysisUtil(NULL),
     fHistos(NULL),
+    fGeometry(NULL),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1)
@@ -66,6 +69,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fTrackCuts(NULL),
     fAnalysisUtil(NULL),
     fHistos(NULL),
+    fGeometry(NULL),
     fTriggerStringFromPatches(kFALSE),
     fYshift(0.465),
     fEtaSign(1)
@@ -208,6 +212,9 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
  * @param option Not used
  */
 void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
+  if(!fGeometry){
+    fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+  }
   // Select event
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
@@ -306,7 +313,9 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
     if(!checktrack) continue;
     if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    isEMCAL = (checktrack->Phi() > 1.5 && checktrack->Phi() < 3.1) ? kTRUE : kFALSE;
+    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(checktrack);
+    Int_t supermoduleID = -1;
+    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(checktrack->GetTrackEtaOnEMCal(), checktrack->GetTrackPhiOnEMCal(), supermoduleID);
 
     // Calculate eta in cms frame according
     // EPJC74 (2014) 3054:
