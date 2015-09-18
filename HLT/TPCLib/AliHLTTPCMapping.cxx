@@ -29,7 +29,7 @@
 
 #include <cassert>
 #include "AliHLTTPCMapping.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 
 using namespace std;
 
@@ -64,9 +64,9 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
   // - C: within a partition: the mappping class is designed to return the
   //   mapping within a partition.
   // The mapping files use scheme B. We have to subtract the first row.
-  // AliHLTTPCTransform::GetFirstRow returns first row in scheme A.
-  fNofRows=AliHLTTPCTransform::GetNRows(patch);
-  fRowOffset=AliHLTTPCTransform::GetFirstRow(patch);
+  // AliHLTTPCGeometry::GetFirstRow returns first row in scheme A.
+  fNofRows=AliHLTTPCGeometry::GetNRows(patch);
+  fRowOffset=AliHLTTPCGeometry::GetFirstRow(patch);
 
   if(!fgMappingIsDone[patch]){
     ReadArray(patch, fgkMappingSize[patch], fgRowMapping[patch], fgPadMapping[patch], fgkMappingHwaSize, fgHwaMapping[patch]);
@@ -362,10 +362,10 @@ Bool_t AliHLTTPCMapping::ReadArray(UInt_t patch, UInt_t arraySize, UInt_t rowArr
 	  break;
 	}
 	Int_t dummy=0;
-	// AliHLTTPCTransform::GetFirstRow returns first row in scheme A.
-	// We have to transform to scheme B by AliHLTTPCTransform::Slice2Sector.
+	// AliHLTTPCGeometry::GetFirstRow returns first row in scheme A.
+	// We have to transform to scheme B by AliHLTTPCGeometry::Slice2Sector.
 	Int_t offsetSchemeB=0;
-	AliHLTTPCTransform::Slice2Sector(0, fRowOffset, dummy, offsetSchemeB);
+	AliHLTTPCGeometry::Slice2Sector(0, fRowOffset, dummy, offsetSchemeB);
 	rowArray[hwAdd]=row-offsetSchemeB;
 	padArray[hwAdd]=pad;
 	UInt_t hwaIndex=(rowArray[hwAdd]<<fgkMappingHwaRowBitShift) + padArray[hwAdd];

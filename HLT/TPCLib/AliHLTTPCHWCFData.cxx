@@ -24,7 +24,7 @@
 #include "AliHLTTPCHWCFData.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTTPCHWCFEmulator.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTCDHWrapper.h"
 #include "TFile.h"
 #include <memory>
@@ -133,7 +133,7 @@ bool AliHLTTPCHWCFData::CheckAssumption(int format, const AliHLTUInt8_t* pData, 
     // cluster header starts with 11 in bit 30 and 31
     if ((header&0xc0000000)!=0xc0000000) return false;
     // check that the padrow is within bounds
-    if (((header >> 24) & 0x3f)>(unsigned)AliHLTTPCTransform::GetNRows(-1)) return false;
+    if (((header >> 24) & 0x3f)>(unsigned)AliHLTTPCGeometry::GetNRows(-1)) return false;
   }
   return true;
 }

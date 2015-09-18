@@ -29,7 +29,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCHWCFSpacePointContainer.h"
 #include "AliHLTErrorGuard.h"
@@ -736,7 +736,7 @@ AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::iterator& AliHLTTPCD
   /// iterator of remaining clusters block of specification
   AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(specification);
   AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(specification);
-  unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+  unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;
   if (index<fRemainingClusterIds.size())
     fCurrentClusterIds=&fRemainingClusterIds[index];
   else
@@ -786,10 +786,10 @@ int AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::AddClusterIds(co
   if (pDesc->fDataType==AliHLTTPCDefinitions::RemainingClusterIdsDataType()) {
     AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(pDesc->fSpecification);
     AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(pDesc->fSpecification);
-    unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+    unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;
     if (fRemainingClusterIds.size()<=index) {
-      if ((int)fRemainingClusterIds.size()<AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches()) {
-	fRemainingClusterIds.resize(AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches());
+      if ((int)fRemainingClusterIds.size()<AliHLTTPCGeometry::GetNSlice()*AliHLTTPCGeometry::GetNumberOfPatches()) {
+	fRemainingClusterIds.resize(AliHLTTPCGeometry::GetNSlice()*AliHLTTPCGeometry::GetNumberOfPatches());
       } else {
 	fRemainingClusterIds.resize(index+1);
       }
@@ -822,12 +822,12 @@ AliHLTUInt32_t AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FindN
   AliHLTUInt32_t clusterId=kAliHLTVoidDataSpec;
   // search a 4x4 matrix out of the 9x9 matrix around the cell addressed by
   // pad and time
-  float padrow=(float)cluster.GetPadRow()-AliHLTTPCTransform::GetFirstRow(partition);
+  float padrow=(float)cluster.GetPadRow()-AliHLTTPCGeometry::GetFirstRow(partition);
   float pad=cluster.GetPad();
   float time=cluster.GetTime();
   float minr2=-1.;
-  const float padpitch=AliHLTTPCTransform::GetPadPitchWidth(partition);
-  const float zwidth=AliHLTTPCTransform::GetZWidth();
+  const float padpitch=AliHLTTPCGeometry::GetPadPitchWidth(partition);
+  const float zwidth=AliHLTTPCGeometry::GetZWidth();
   float maxDeltaPad=AliHLTTPCDefinitions::GetMaxClusterDeltaPad();
   float maxDeltaTime=AliHLTTPCDefinitions::GetMaxClusterDeltaTime();
   int rowindex=pGrid->GetXIndex(padrow);
@@ -888,10 +888,10 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPadRow(int 
   fCurrentCluster.SetPadRow(row);
   // the inner sectors consist of readout partitions 0 and 1, if the row
   // is smaller than first row of readout partition 2, its an inner sector
-  if (row<AliHLTTPCTransform::GetFirstRow(2)) {
+  if (row<AliHLTTPCGeometry::GetFirstRow(2)) {
     fSector = slice;
   } else {
-    fSector = slice+AliHLTTPCTransform::GetNSlice();
+    fSector = slice+AliHLTTPCGeometry::GetNSlice();
   }
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
     fHistogramPointers[index]->Fill(row);
@@ -944,7 +944,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaY2(flo
   fCurrentCluster.SetSigmaPad2(sigmaY2);
   unsigned index=kHistogramSigmaY2;
   /// take account for different pad widths
-  float weight=AliHLTTPCTransform::GetPadPitchWidth(partition);
+  float weight=AliHLTTPCGeometry::GetPadPitchWidth(partition);
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
     fHistogramPointers[index]->Fill(sigmaY2*weight*weight);
 
@@ -961,7 +961,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaZ2(flo
   unsigned index=kHistogramSigmaZ2;
   // FIXME: this is just a fixed value, to be correct the values from the global
   // parameter block has to be used
-  float weight=AliHLTTPCTransform::GetZWidth();
+  float weight=AliHLTTPCGeometry::GetZWidth();
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
     fHistogramPointers[index]->Fill(sigmaZ2*weight*weight);
 

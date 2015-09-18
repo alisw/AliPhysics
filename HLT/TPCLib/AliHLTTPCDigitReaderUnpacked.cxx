@@ -27,7 +27,7 @@
 #include <cassert>
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitData.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTStdIncludes.h"
 #include "AliHLTTPCMapping.h"
 
@@ -111,8 +111,8 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   fBin = -1;
 
   int dummy=0;
-  AliHLTTPCTransform::Slice2Sector(slice, AliHLTTPCTransform::GetFirstRow(patch), dummy, fFirstRow);
-  AliHLTTPCTransform::Slice2Sector(slice, AliHLTTPCTransform::GetLastRow(patch), dummy, fLastRow);
+  AliHLTTPCGeometry::Slice2Sector(slice, AliHLTTPCGeometry::GetFirstRow(patch), dummy, fFirstRow);
+  AliHLTTPCGeometry::Slice2Sector(slice, AliHLTTPCGeometry::GetLastRow(patch), dummy, fLastRow);
 
   fRow = fFirstRow; 
 
@@ -240,9 +240,9 @@ int AliHLTTPCDigitReaderUnpacked::GetRow(){
     rrow = fRow;
   }
   else{
-   rrow = fRow-AliHLTTPCTransform::GetFirstRow(fPatch);
+   rrow = fRow-AliHLTTPCGeometry::GetFirstRow(fPatch);
    if(fPatch>1){
-    rrow += AliHLTTPCTransform::GetFirstRow(2);
+    rrow += AliHLTTPCGeometry::GetFirstRow(2);
    }
   }
 
@@ -332,9 +332,9 @@ Int_t AliHLTTPCDigitReaderUnpacked::GetSortedPad() const{
 int AliHLTTPCDigitReaderUnpacked::GetSortedRow() const {
   // see header file for class documentation
   int rrow;
-  rrow = fRow-AliHLTTPCTransform::GetFirstRow(fPatch);
+  rrow = fRow-AliHLTTPCGeometry::GetFirstRow(fPatch);
   if(fPatch>1){
-    rrow += AliHLTTPCTransform::GetFirstRow(2);
+    rrow += AliHLTTPCGeometry::GetFirstRow(2);
   }
   return rrow;
 }
@@ -447,5 +447,5 @@ const AliHLTTPCDigitData* AliHLTTPCDigitReaderUnpacked::GetBunchDigits()
 int AliHLTTPCDigitReaderUnpacked::GetRowOffset() const
 {
   // see header file for class documentation
-  return AliHLTTPCTransform::GetFirstRow(fPatch);
+  return AliHLTTPCGeometry::GetFirstRow(fPatch);
 }

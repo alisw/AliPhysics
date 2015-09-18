@@ -21,7 +21,7 @@
 ///
 
 #include "AliHLTTPCClusterHistoComponent.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
@@ -169,8 +169,8 @@ int AliHLTTPCClusterHistoComponent::DoEvent(const AliHLTComponentEventData& /*ev
     
     AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
     AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
-    row = AliHLTTPCTransform::GetFirstRow(patch); 
-    AliHLTTPCTransform::Slice2Sector(slice,row,thissector,thisrow);
+    row = AliHLTTPCGeometry::GetFirstRow(patch); 
+    AliHLTTPCGeometry::Slice2Sector(slice,row,thissector,thisrow);
     
     HLTDebug ( "Input Data - TPC cluster - Slice/Patch: %d/%d.", slice, patch );
     

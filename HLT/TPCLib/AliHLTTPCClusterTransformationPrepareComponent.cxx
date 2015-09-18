@@ -24,7 +24,6 @@
 #include "AliHLTTPCClusterTransformationPrepareComponent.h"
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTErrorGuard.h"

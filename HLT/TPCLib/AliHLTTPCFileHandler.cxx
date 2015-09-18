@@ -50,7 +50,7 @@
 #include "AliCDBEntry.h"
 
 #include "AliHLTTPCLogging.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDigitData.h"
 //#include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCSpacePointData.h"
@@ -116,8 +116,8 @@ AliHLTTPCFileHandler::AliHLTTPCFileHandler(Bool_t b)
 {
   //Default constructor
 
-  for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++)
-    for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++) 
+  for(Int_t i=0;i<AliHLTTPCGeometry::GetNSlice();i++)
+    for(Int_t j=0;j<AliHLTTPCGeometry::GetNRows();j++) 
       fIndex[i][j]=-1;
 
   if(fUseStaticIndex&&!fgStaticIndexCreated) CleanStaticIndex();
@@ -139,8 +139,8 @@ void AliHLTTPCFileHandler::CleanStaticIndex()
 { 
   // use this static call to clean static index after
   // running over one event
-  for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++){
-    for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++)
+  for(Int_t i=0;i<AliHLTTPCGeometry::GetNSlice();i++){
+    for(Int_t j=0;j<AliHLTTPCGeometry::GetNRows();j++)
       fgStaticIndex[i][j]=-1;
   }
   fgStaticIndexCreated=kFALSE;
@@ -161,8 +161,8 @@ Int_t AliHLTTPCFileHandler::SaveStaticIndex(Char_t *prefix,Int_t event)
   ofstream file(fname,ios::trunc);
   if(!file.good()) return -1;
 
-  for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++){
-    for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++)
+  for(Int_t i=0;i<AliHLTTPCGeometry::GetNSlice();i++){
+    for(Int_t j=0;j<AliHLTTPCGeometry::GetNRows();j++)
       file << fgStaticIndex[i][j] << " ";
     file << endl;
   }
@@ -189,8 +189,8 @@ Int_t AliHLTTPCFileHandler::LoadStaticIndex(Char_t *prefix,Int_t event)
   ifstream file(fname);
   if(!file.good()) return -1;
 
-  for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++){
-    for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++)
+  for(Int_t i=0;i<AliHLTTPCGeometry::GetNSlice();i++){
+    for(Int_t j=0;j<AliHLTTPCGeometry::GetNRows();j++)
       file >> fgStaticIndex[i][j];
   }
   file.close();
@@ -208,8 +208,8 @@ void AliHLTTPCFileHandler::FreeDigitsTree()
   fDigits=0;
   fDigitsTree=0;
 
-  for(Int_t i=0;i<AliHLTTPCTransform::GetNSlice();i++){
-    for(Int_t j=0;j<AliHLTTPCTransform::GetNRows();j++)
+  for(Int_t i=0;i<AliHLTTPCGeometry::GetNSlice();i++){
+    for(Int_t j=0;j<AliHLTTPCGeometry::GetNRows();j++)
       fIndex[i][j]=-1;
   }
   fIndexCreated=kFALSE;
@@ -281,7 +281,7 @@ Bool_t AliHLTTPCFileHandler::SetAliInput()
   }
   if(!fParam){ 
     LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::SetAliInput","File Open")
-      <<"No AliTPCParam "<<AliHLTTPCTransform::GetParamName()<<" in File "<<gFile->GetName()<<ENDLOG;
+      <<"No AliTPCParam "<<AliHLTTPCGeometry::GetParamName()<<" in File "<<gFile->GetName()<<ENDLOG;
     return kFALSE;
   }
 
@@ -411,26 +411,26 @@ Bool_t AliHLTTPCFileHandler::CreateIndex()
       Int_t lslice,lrow;
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      if(!AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row)){
+      if(!AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row)){
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::CreateIndex","Slice/Row")
 	  <<AliHLTTPCLog::kDec<<"Index could not be created. Wrong values "
 	  <<sector<<" "<<row<<ENDLOG;
 	return kFALSE;
       }
       // this is just to make sure the same array dimensions are
-      // used as in the AliHLTTPCTransform class. The check for
-      // correct bounds is done in AliHLTTPCTransform::Sector2Slice
+      // used as in the AliHLTTPCGeometry class. The check for
+      // correct bounds is done in AliHLTTPCGeometry::Sector2Slice
       assert(lslice>=0 && lslice<fgkNSlice);
       assert(lrow>=0 && lrow<fgkNRow);
       if(fIndex[lslice][lrow]==-1) {
 	fIndex[lslice][lrow]=n;
       }
     }
-    assert(AliHLTTPCTransform::GetNSlice()==fgkNSlice);
-    assert(AliHLTTPCTransform::GetNRows()==fgkNRow);
+    assert(AliHLTTPCGeometry::GetNSlice()==fgkNSlice);
+    assert(AliHLTTPCGeometry::GetNRows()==fgkNRow);
     if(fUseStaticIndex) { // create static index
-      for(Int_t islice=0;islice<AliHLTTPCTransform::GetNSlice() && islice<fgkNSlice;islice++){
-	for(Int_t irow=0;irow<AliHLTTPCTransform::GetNRows() && irow<fgkNRow;irow++)
+      for(Int_t islice=0;islice<AliHLTTPCGeometry::GetNSlice() && islice<fgkNSlice;islice++){
+	for(Int_t irow=0;irow<AliHLTTPCGeometry::GetNRows() && irow<fgkNRow;irow++)
 	  fgStaticIndex[islice][irow]=fIndex[islice][irow];
       }
       fgStaticIndexCreated=kTRUE; //remember that index has been created
@@ -440,8 +440,8 @@ Bool_t AliHLTTPCFileHandler::CreateIndex()
     <<"Index successfully created."<<ENDLOG;
 
   } else if(fUseStaticIndex) { //simply copy static index
-    for(Int_t islice=0;islice<AliHLTTPCTransform::GetNSlice() && islice<fgkNSlice;islice++){
-      for(Int_t irow=0;irow<AliHLTTPCTransform::GetNRows() && irow<fgkNRow;irow++)
+    for(Int_t islice=0;islice<AliHLTTPCGeometry::GetNSlice() && islice<fgkNSlice;islice++){
+      for(Int_t irow=0;irow<AliHLTTPCGeometry::GetNRows() && irow<fgkNRow;irow++)
 	fIndex[islice][irow]=fgStaticIndex[islice][irow];
     }
 
@@ -517,7 +517,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
       Int_t lslice,lrow;
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+      AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row);
 //       LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandler::AliDigits2Memory","Digits")
 // 	<< "Sector "<<sector<<" Row " << row << " Slice " << lslice << " lrow " << lrow<<ENDLOG;
 
@@ -535,12 +535,12 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	pad=fDigits->CurrentColumn();
 	dig = fDigits->GetDigit(time,pad);
 	if(dig <= fParam->GetZeroSup()) continue;
-	if(dig >= AliHLTTPCTransform::GetADCSat())
-	  dig = AliHLTTPCTransform::GetADCSat();
+	if(dig >= AliHLTTPCGeometry::GetADCSat())
+	  dig = AliHLTTPCGeometry::GetADCSat();
 
 	// if we switch to AliTPCTransform, this maybe needs to be 
 	// adjusted as well
-	AliHLTTPCTransform::Raw2Local(xyz,sector,row,pad,time);
+	AliHLTTPCGeometry::Raw2Local(xyz,sector,row,pad,time);
 	//	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
 	//	  continue; // why 230???
 
@@ -587,7 +587,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   for(Int_t r=fRowMin;r<=fRowMax && r<fgkNRow;r++){
     Int_t n=fIndex[fSlice][r];
 
-    AliHLTTPCTransform::Slice2Sector(fSlice,r,sector,row);
+    AliHLTTPCGeometry::Slice2Sector(fSlice,r,sector,row);
     tempPt->fRow = row;
     tempPt->fNDigit = 0;
 
@@ -595,7 +595,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
       Int_t lslice,lrow;
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+      AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row);
       if(lrow!=r){
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2Memory","Row")
 	  <<AliHLTTPCLog::kDec<<"Rows on slice " << fSlice << " dont match "<<lrow<<" "<<r<<ENDLOG;
@@ -614,11 +614,11 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	pad=fDigits->CurrentColumn();
 	dig = fDigits->GetDigit(time,pad);
 	if (dig <= fParam->GetZeroSup()) continue;
-	if(dig >= AliHLTTPCTransform::GetADCSat())
-	  dig = AliHLTTPCTransform::GetADCSat();
+	if(dig >= AliHLTTPCGeometry::GetADCSat())
+	  dig = AliHLTTPCGeometry::GetADCSat();
 
 	//Exclude data outside cone:
-	AliHLTTPCTransform::Raw2Local(xyz,sector,row,pad,time);
+	AliHLTTPCGeometry::Raw2Local(xyz,sector,row,pad,time);
 	//	if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
 	//	  continue; // why 230???
 
@@ -690,14 +690,14 @@ int AliHLTTPCFileHandler::AliDigits2Altro(Int_t event, Byte_t* tgtBuffer, UInt_t
 
     Int_t row=0;
     Int_t rowOffset=0;
-    AliHLTTPCTransform::Slice2Sector(fSlice,r,sector,row);
-    AliHLTTPCTransform::Slice2Sector(fSlice,AliHLTTPCTransform::GetFirstRow(fPatch),sector,rowOffset);
+    AliHLTTPCGeometry::Slice2Sector(fSlice,r,sector,row);
+    AliHLTTPCGeometry::Slice2Sector(fSlice,AliHLTTPCGeometry::GetFirstRow(fPatch),sector,rowOffset);
 
     if(n!=-1){//data on that row
       Int_t lslice,lrow;
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+      AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row);
       if(lrow!=r){
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2Altro","Row")
 	  <<AliHLTTPCLog::kDec<<"Rows on slice " << fSlice << " dont match "<<lrow<<" "<<r<<ENDLOG;
@@ -711,8 +711,8 @@ int AliHLTTPCFileHandler::AliDigits2Altro(Int_t event, Byte_t* tgtBuffer, UInt_t
 	pad=fDigits->CurrentColumn();
 	dig = fDigits->GetDigit(time,pad);
 	if (dig <= fParam->GetZeroSup()) continue;
-	if(dig >= AliHLTTPCTransform::GetADCSat())
-	  dig = AliHLTTPCTransform::GetADCSat();
+	if(dig >= AliHLTTPCGeometry::GetADCSat())
+	  dig = AliHLTTPCGeometry::GetADCSat();
 	
 	channelAddress=mapper.GetHwAddress(row-rowOffset, pad);
 	iResult=encoder.AddChannelSignal(dig, time, channelAddress);
@@ -780,7 +780,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
   }
   Int_t * ndigits = new Int_t[fRowMax+1];
   Int_t lslice,lrow;
-  Int_t zerosupval=AliHLTTPCTransform::GetZeroSup();
+  Int_t zerosupval=AliHLTTPCGeometry::GetZeroSup();
   Float_t xyz[3];
 
   for(Int_t r=fRowMin;r<=fRowMax && r<fgkNRow;r++){
@@ -791,7 +791,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
     if(n!=-1){//data on that row
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+      AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row);
       //cout << lslice << " " << fSlice << " " << lrow << " " << r << " " << sector << " " << row << endl;
       if((lslice!=fSlice)||(lrow!=r)){
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliAltroDigits2Memory","Row")
@@ -807,8 +807,8 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
 	  time=j;
 	  dig = fDigits->GetDigitFast(time,pad);
 	  if(dig <= zerosupval) continue;
-	  if(dig >= AliHLTTPCTransform::GetADCSat())
-	    dig = AliHLTTPCTransform::GetADCSat();
+	  if(dig >= AliHLTTPCGeometry::GetADCSat())
+	    dig = AliHLTTPCGeometry::GetADCSat();
 
 	  //Check for single timebins, and remove them because they are noise for sure.
 	  if(i>0 && i<fDigits->GetNCols()-1 && j>0 && j<fDigits->GetNRows()-1)
@@ -898,7 +898,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
 		}
 	    }
 
-	  AliHLTTPCTransform::Raw2Local(xyz,sector,row,pad,time);
+	  AliHLTTPCGeometry::Raw2Local(xyz,sector,row,pad,time);
 	  //	  if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
 	  //	  continue; 
 	      
@@ -927,7 +927,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
     if(n!=-1){ //no data on that row
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
-      AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+      AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row);
 
       if(lrow!=r){
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliAltroDigits2Memory","Row")
@@ -946,8 +946,8 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
 	  time=j;
 	  dig = fDigits->GetDigitFast(time,pad);
 	  if(dig <= zerosupval) continue;
-	  if(dig >= AliHLTTPCTransform::GetADCSat())
-	    dig = AliHLTTPCTransform::GetADCSat();
+	  if(dig >= AliHLTTPCGeometry::GetADCSat())
+	    dig = AliHLTTPCGeometry::GetADCSat();
 	      
 	  //Check for single timebins, and remove them because they are noise for sure.
 	  if(i>0 && i<fDigits->GetNCols()-1 && j>0 && j<fDigits->GetNRows()-1)
@@ -1036,7 +1036,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
 		}
 	    }
 	
-	  AliHLTTPCTransform::Raw2Local(xyz,sector,row,pad,time);
+	  AliHLTTPCGeometry::Raw2Local(xyz,sector,row,pad,time);
 	  //	  if(fParam->GetPadRowRadii(sector,row)<230./250.*fabs(xyz[2]))
 	  //	    continue;
 	  
@@ -1153,7 +1153,7 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
     rows[i] = row;
     sects[i] = sector;
     clusterrow[i] = 0;
-    AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+    AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row);
     if(fSlice != lslice || lrow<fRowMin || lrow>fRowMax) continue;
     clusterrow[i] = carray.GetRow(sector,row);
     if(clusterrow[i])
@@ -1174,7 +1174,7 @@ AliHLTTPCSpacePointData * AliHLTTPCFileHandler::AliPoints2Memory(UInt_t & npoint
     if(!clusterrow[i]) continue;
     Int_t row = rows[i];
     Int_t sector = sects[i];
-    AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+    AliHLTTPCGeometry::Sector2Slice(lslice,lrow,sector,row);
     Int_t entriesInRow = clusterrow[i]->GetArray()->GetEntriesFast();
     for(Int_t j = 0;j<entriesInRow;j++){
       AliTPCclusterMI *c = (AliTPCclusterMI*)(*clusterrow[i])[j];

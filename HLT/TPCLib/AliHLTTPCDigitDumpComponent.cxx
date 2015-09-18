@@ -29,7 +29,7 @@
 
 #include <cassert>
 #include "AliHLTTPCDigitDumpComponent.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitReader32Bit.h"
@@ -233,8 +233,8 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	assert(part==AliHLTTPCDefinitions::GetMaxPatchNr(*pDesc));
 	int slice=AliHLTTPCDefinitions::GetMinSliceNr(*pDesc);
 	assert(slice==AliHLTTPCDefinitions::GetMaxSliceNr(*pDesc));
-	int firstRow=AliHLTTPCTransform::GetFirstRow(part);
-	int lastRow=AliHLTTPCTransform::GetLastRow(part);
+	int firstRow=AliHLTTPCGeometry::GetFirstRow(part);
+	int lastRow=AliHLTTPCGeometry::GetLastRow(part);
 
 	iResult=pReader->InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
 

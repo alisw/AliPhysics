@@ -24,7 +24,7 @@
 
 #include "AliHLTTPCHWClusterTransformComponent.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"
@@ -238,11 +238,11 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     //UInt_t maxSlice     = AliHLTTPCDefinitions::GetMaxSliceNr(*iter); 
     //UInt_t maxPartition = AliHLTTPCDefinitions::GetMaxPatchNr(*iter);
     float padpitch=1.0;
-    if ((int)minPartition<AliHLTTPCTransform::GetNRowLow())
-      padpitch=AliHLTTPCTransform::GetPadPitchWidthLow();
+    if ((int)minPartition<AliHLTTPCGeometry::GetNRowLow())
+      padpitch=AliHLTTPCGeometry::GetPadPitchWidthLow();
     else
-      padpitch=AliHLTTPCTransform::GetPadPitchWidthUp();
-    float zwidth=AliHLTTPCTransform::GetZWidth();
+      padpitch=AliHLTTPCGeometry::GetPadPitchWidthUp();
+    float zwidth=AliHLTTPCGeometry::GetZWidth();
 
     fBenchmark.SetName(Form("HWClusterTransform slice %d patch %d",minSlice,minPartition));
 
@@ -278,7 +278,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	   ALIHLTERRORGUARD(1, "can not read cluster header word");
 	   break;
 	 }
-	 padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
+	 padrow+=AliHLTTPCGeometry::GetFirstRow(minPartition);
 	 AliHLTUInt32_t charge=cl.GetCharge();
 
 	 float pad=cl.GetPad();
@@ -366,7 +366,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	     // not recognized
 	     break;
 	   }
-	   padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
+	   padrow+=AliHLTTPCGeometry::GetFirstRow(minPartition);
 	   AliHLTUInt32_t charge= cl.GetCharge();
 
 	   float pad =cl.GetPad();

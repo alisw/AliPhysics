@@ -20,7 +20,7 @@
 // @brief  Map HLT cluster ID to offline index (sector,row,number) after HLT compression
 
 #include "AliHLTTPCDataCompressionIDMap.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawCluster.h"
@@ -152,10 +152,10 @@ void AliHLTTPCDataCompressionIDMap::FillHLTID( AliHLTUInt32_t hltID)
   }
   
   Int_t sliceRow = data->fClusters[number].GetPadRow();
-  sliceRow+=AliHLTTPCTransform::GetFirstRow(patch);
+  sliceRow+=AliHLTTPCGeometry::GetFirstRow(patch);
 
   Int_t sector=0, row=0;
-  Bool_t ok = AliHLTTPCTransform::Slice2Sector( slice, sliceRow, sector, row);  
+  Bool_t ok = AliHLTTPCGeometry::Slice2Sector( slice, sliceRow, sector, row);  
   if( !ok ) {
     HLTError("Can not transform HLT slice %d, row %d to offline numeration",slice,sliceRow);
     return;
@@ -185,9 +185,9 @@ void AliHLTTPCDataCompressionIDMap::EndFilling()
  
   for( unsigned int i=0; i<fkNPatchesTotal; i++ ) fPatchClusterBlocks[i] = NULL;
 
-  const int nSec = AliHLTTPCTransform::GetNSector();
-  int nRows = AliHLTTPCTransform::GetNRowUp1() + AliHLTTPCTransform::GetNRowUp2();
-  if( nRows < AliHLTTPCTransform::GetNRowLow() ) nRows = AliHLTTPCTransform::GetNRowLow();
+  const int nSec = AliHLTTPCGeometry::GetNSector();
+  int nRows = AliHLTTPCGeometry::GetNRowUp1() + AliHLTTPCGeometry::GetNRowUp2();
+  if( nRows < AliHLTTPCGeometry::GetNRowLow() ) nRows = AliHLTTPCGeometry::GetNRowLow();
   
   int nRowsTotal = nSec*nRows;
   AliHLTUInt32_t  *nRowClusters = new AliHLTUInt32_t  [nRowsTotal];

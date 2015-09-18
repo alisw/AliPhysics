@@ -62,7 +62,6 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterMCData.h"
-#include "AliHLTTPCTransform.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalFlatEsdTestComponent)

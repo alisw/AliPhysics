@@ -5,8 +5,8 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-#ifndef ALIHLTTPCTRANSFORM_H
-#define ALIHLTTPCTRANSFORM_H
+#ifndef ALIHLTTPCGEOMETRY_H
+#define ALIHLTTPCGEOMETRY_H
 
 #ifdef use_aliroot
   class AliRunLoader;
@@ -14,10 +14,10 @@
 
 #include "Rtypes.h"
 
-class AliHLTTPCTransform {
+class AliHLTTPCGeometry {
 
  public:
-    AliHLTTPCTransform();
+    AliHLTTPCGeometry();
   enum VersionType { kVdefault=0, kVdeprecated=1, kValiroot=10, kVcosmics=100};
 
  private:
@@ -74,7 +74,7 @@ class AliHLTTPCTransform {
   static Double_t fgSin[36]; //stores the sin value for local to global rotations  
 
  public:
-  virtual ~AliHLTTPCTransform() {}
+  virtual ~AliHLTTPCGeometry() {}
 
   //setters
   static void SetNPatches(Int_t i){fgNPatches = i;}
@@ -238,6 +238,6 @@ class AliHLTTPCTransform {
 
   static void PrintCompileOptions();
   
-  ClassDef(AliHLTTPCTransform,0)
+  ClassDef(AliHLTTPCGeometry,0)
 };
 #endif

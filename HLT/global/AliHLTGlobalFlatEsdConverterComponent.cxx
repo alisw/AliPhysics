@@ -64,7 +64,7 @@
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterMCData.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliSysInfo.h"
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
@@ -890,12 +890,12 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	cl.SetQ( chlt->fCharge );
 	cl.SetMax( chlt->fQMax );
 	Int_t sector, row;
-	AliHLTTPCTransform::Slice2Sector(iSlice,chlt->fPadRow, sector, row);
+	AliHLTTPCGeometry::Slice2Sector(iSlice,chlt->fPadRow, sector, row);
 	cl.SetDetector( sector );
 	cl.SetRow( row );
 	
 	int j=row;
-	if( sector>=36 ) j+=AliHLTTPCTransform::GetNRowLow();
+	if( sector>=36 ) j+=AliHLTTPCGeometry::GetNRowLow();
 	if( j<0 || j>=160 || clustersSet[j] ) continue;	
 		  	  	  
 	tpcTrack->Propagate( TMath::DegToRad()*(sector%18*20.+10.), cl.GetX(), GetBz() );

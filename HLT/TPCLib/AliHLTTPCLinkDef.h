@@ -6,7 +6,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliHLTTPCTransform+;
+#pragma link C++ class AliHLTTPCGeometry+;
 #pragma link C++ class AliHLTTPCSpline2D3D+;
 #pragma link C++ class AliHLTTPCFastTransform+;
 #pragma link C++ class AliHLTTPCClusterTransformation+;

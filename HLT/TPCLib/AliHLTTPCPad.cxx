@@ -29,7 +29,7 @@
 
 
 //added by kenneth
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusters.h"
 #include <sys/time.h>
 #include "TMath.h"
@@ -76,11 +76,11 @@ AliHLTTPCPad::AliHLTTPCPad()
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
   //  HLTInfo("Entering default constructor");
-  fDataSignals= new AliHLTTPCSignal_t[AliHLTTPCTransform::GetNTimeBins()];
-  memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+  fDataSignals= new AliHLTTPCSignal_t[AliHLTTPCGeometry::GetNTimeBins()];
+  memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCGeometry::GetNTimeBins()));
   
-  fSignalPositionArray= new Int_t[AliHLTTPCTransform::GetNTimeBins()];
-  memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+  fSignalPositionArray= new Int_t[AliHLTTPCGeometry::GetNTimeBins()];
+  memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCGeometry::GetNTimeBins()));
   fSizeOfSignalPositionArray=0;
 
 }
@@ -473,7 +473,7 @@ Float_t AliHLTTPCPad::GetAveragedOccupancy() const
 void AliHLTTPCPad::PrintRawData()
 {
   // see header file for class documentation
-  for(Int_t bin=0;bin<AliHLTTPCTransform::GetNTimeBins();bin++){
+  for(Int_t bin=0;bin<AliHLTTPCGeometry::GetNTimeBins();bin++){
     if(GetDataSignal(bin)>0)
       //This cout should be here since using logging produces output that is much more difficult to read
 	cout<<fRowNo<<"\t"<<fPadNo<<"\t"<<bin<<"\t"<<GetDataSignal(bin)<<endl;

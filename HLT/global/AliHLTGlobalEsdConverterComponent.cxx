@@ -42,7 +42,7 @@
 #include "AliITStrackV2.h"
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTErrorGuard.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -537,7 +537,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	c->SetMax( chlt->fQMax );
 	Int_t sector, row;
 	Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
-	AliHLTTPCTransform::Slice2Sector(slice,chlt->fPadRow, sector, row);
+	AliHLTTPCGeometry::Slice2Sector(slice,chlt->fPadRow, sector, row);
 	c->SetDetector( sector );
 	c->SetRow( row );
       }
@@ -759,7 +759,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	    AliTPCclusterMI *c = &(patchClusters[iCluster]);	  	
 	    int sec = c->GetDetector();
 	    int row = c->GetRow();
-	    if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
+	    if(sec >= 36) row = row + AliHLTTPCGeometry::GetNRowLow();
 	    
 	    if( tTPC.GetClusterPointer(row) ) continue;
 	    tTPC.SetClusterPointer(row, c);	

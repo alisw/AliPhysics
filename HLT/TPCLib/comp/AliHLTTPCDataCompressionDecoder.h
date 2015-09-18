@@ -18,7 +18,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTDataInflater.h"
 #include "AliHLTTPCHWClusterMerger.h"
@@ -148,18 +148,18 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 
   int slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
   int partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
-  if (slice<0 || slice>=AliHLTTPCTransform::GetNSlice()) {
+  if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice()) {
     HLTError("invalid slice %d decoded from specification 0x%08x", slice, specification);
     return -EINVAL;
   }
-  if (partition<0 || partition>=AliHLTTPCTransform::GetNumberOfPatches()) {
+  if (partition<0 || partition>=AliHLTTPCGeometry::GetNumberOfPatches()) {
     HLTError("invalid partition %d decoded from specification 0x%08x", partition, specification);
     return -EINVAL;
   }
   // the compressed format stores the difference of the local row number in
   // the partition to the row of the last cluster
   // add the first row in the partition to get global row number
-  int rowOffset=AliHLTTPCTransform::GetFirstRow(partition);
+  int rowOffset=AliHLTTPCGeometry::GetFirstRow(partition);
 
   int parameterId=pInflater->NextParameter();
   if (parameterId<0) return parameterId;
@@ -425,7 +425,7 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	currentTrackPoint=rawTrackPoints.begin();
 	bEscape=true;
       }
-      if (AliHLTTPCTransform::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId())) +
+      if (AliHLTTPCGeometry::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId())) +
 	  AliHLTTPCSpacePointData::GetNumber(currentTrackPoint->GetId()) == row) {
 	break;
       }

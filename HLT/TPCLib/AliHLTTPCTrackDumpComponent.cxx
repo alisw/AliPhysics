@@ -23,7 +23,6 @@
 
 #include <cassert>
 #include "AliHLTTPCTrackDumpComponent.h"
-#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include <TSystem.h>

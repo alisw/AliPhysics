@@ -27,7 +27,7 @@
 #include "AliHLTTPCHWClusterMergerV1.h"
 #include "AliHLTTPCHWCFSupport.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCRawCluster.h"
 #include <algorithm>
 
@@ -77,11 +77,11 @@ Int_t AliHLTTPCHWClusterMergerV1::Init()
 
   delete[] fMapping;
   fMapping = 0;
-  fNRows = AliHLTTPCTransform::GetNRows();
+  fNRows = AliHLTTPCGeometry::GetNRows();
   fNRowPads = 0;  
   fNBorders = 0;
   for( int i=0; i<fNRows; i++ ){
-    int nPads = AliHLTTPCTransform::GetNPads(i);	
+    int nPads = AliHLTTPCGeometry::GetNPads(i);	
     if( fNRowPads<nPads ) fNRowPads = nPads;
   }
   int nPadsTotal = fNRows*fNRowPads;
@@ -111,9 +111,9 @@ Int_t AliHLTTPCHWClusterMergerV1::Init()
       int pad =  configWord & 0xFF;
       bool border = (configWord>>14) & 0x1;
       if( !border ) continue;
-      row+=AliHLTTPCTransform::GetFirstRow(iPart);
+      row+=AliHLTTPCGeometry::GetFirstRow(iPart);
       if( row>fNRows ) continue;
-      if( pad>=AliHLTTPCTransform::GetNPads(iPart) ) continue;
+      if( pad>=AliHLTTPCGeometry::GetNPads(iPart) ) continue;
       fMapping[row*fNRowPads + pad] = -2-iPart;
     }
   }
@@ -252,7 +252,7 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 
 	// check if the cluster is at the branch border    
 	Int_t patchRow = cluster.GetPadRow();	
-	int sliceRow=patchRow+AliHLTTPCTransform::GetFirstRow(iPatch);
+	int sliceRow=patchRow+AliHLTTPCGeometry::GetFirstRow(iPatch);
  	float pad = cluster.GetPad();
 	int iPad = (int) pad;
 

@@ -22,7 +22,7 @@
 
 #include "Rtypes.h"
 #include "TString.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCFastTransform.h"
 
 class AliTPCParam;
@@ -115,7 +115,7 @@ inline Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, flo
 {
   // Convert row, pad, time to X Y Z   	   
   Int_t sector=-99, thisrow=-99;  
-  AliHLTTPCTransform::Slice2Sector( Slice, Row, sector, thisrow);
+  AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
   int err = fFastTransform.Transform(sector, thisrow, Pad, Time, XYZ);
   if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   return 0;
@@ -125,7 +125,7 @@ inline Int_t  AliHLTTPCClusterTransformation::ReverseAlignment( float XYZ[], int
 {
   // reverse the alignment correction
   Int_t sector=-99, thisrow=-99;
-  AliHLTTPCTransform::Slice2Sector( slice, padrow, sector, thisrow);
+  AliHLTTPCGeometry::Slice2Sector( slice, padrow, sector, thisrow);
   int err = fFastTransform.ReverseAlignment(sector, XYZ);
   if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::ReverseAlignment: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   return 0;

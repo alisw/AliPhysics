@@ -46,7 +46,7 @@
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTGlobalBarrelTrack.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 
 #include "TObjArray.h"
 #include "TString.h"
@@ -279,8 +279,8 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
           c->SetMax( chlt->fQMax );
           Int_t sector, row;
           Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
-          AliHLTTPCTransform::Slice2Sector(slice,chlt->fPadRow, sector, row);
-          AliHLTTPCTransform::Local2Raw( padtime, sector, row);
+          AliHLTTPCGeometry::Slice2Sector(slice,chlt->fPadRow, sector, row);
+          AliHLTTPCGeometry::Local2Raw( padtime, sector, row);
           c->SetDetector( sector );
           c->SetRow( row );
           c->SetPad( (Int_t) padtime[1] );
@@ -339,7 +339,7 @@ Int_t AliHLTTPCCalibTimeComponent::ProcessCalibration( const AliHLTComponentEven
 	      AliTPCclusterMI *c = &(partitionClusters[iCluster]);	  	
     	      int sec = c->GetDetector();
 	      int row = c->GetRow();
-	      if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
+	      if(sec >= 36) row = row + AliHLTTPCGeometry::GetNRowLow();
 	
 	      tTPC.SetClusterPointer(row, c);	
 	

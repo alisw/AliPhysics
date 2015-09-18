@@ -25,7 +25,7 @@
 #include <map>
 
 #include "AliHLTTPCCalibSeedMakerComponent.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCOfflineCluster.h"
 #include "AliHLTTPCSpacePointData.h"
@@ -208,8 +208,8 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
       c->SetMax( chlt->fQMax );
       Int_t sector, row;
       Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
-      AliHLTTPCTransform::Slice2Sector(slice,chlt->fPadRow, sector, row);
-      AliHLTTPCTransform::Local2Raw( padtime, sector, row);
+      AliHLTTPCGeometry::Slice2Sector(slice,chlt->fPadRow, sector, row);
+      AliHLTTPCGeometry::Local2Raw( padtime, sector, row);
       c->SetDetector( sector );
       c->SetRow( row );
       c->SetPad( (Int_t) padtime[1] );
@@ -296,7 +296,7 @@ int AliHLTTPCCalibSeedMakerComponent::DoEvent(const AliHLTComponentEventData& /*
 	     AliTPCclusterMI *c = &(patchClusters[iCluster]);	  	
 	     int sec = c->GetDetector();
 	     int row = c->GetRow();
-	     if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
+	     if(sec >= 36) row = row + AliHLTTPCGeometry::GetNRowLow();
 	
 	     tTPC.SetClusterPointer(row, c);	
 	

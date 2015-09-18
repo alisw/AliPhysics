@@ -27,7 +27,7 @@
 
 #include "AliFlatTPCseed.h"
 #include "AliTPCseed.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "Riostream.h"
 
 
@@ -64,7 +64,7 @@ void AliFlatTPCseed::GetTPCseed( AliTPCseed *p ) const
     const AliFlatTPCCluster &flatCluster = flatClusters[ic];
     int sec = flatCluster.GetSector();
     int row = flatCluster.GetPadRow();
-    if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
+    if(sec >= 36) row = row + AliHLTTPCGeometry::GetNRowLow();
     if( row<160 ){
       flatCluster.GetTPCCluster( &(clusters[ic]), seed.GetTrackPoint(row) );
       seed.SetClusterPointer( row , &(clusters[ic]) );

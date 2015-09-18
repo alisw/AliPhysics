@@ -26,7 +26,7 @@
 #include <algorithm>
 
 #include "AliHLTTPCHWClusterMerger.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCHWCFSupport.h"
 
@@ -82,11 +82,11 @@ void AliHLTTPCHWClusterMerger::Init()
   fBorderFirstCluster = 0;
   fBorderClusters = 0;
   fBorderNClustersTotal = 0;
-  fNRows = AliHLTTPCTransform::GetNRows();
+  fNRows = AliHLTTPCGeometry::GetNRows();
   fNRowPads = 0;  
   fNBorders = 0;
   for( int i=0; i<fNRows; i++ ){
-    int nPads = AliHLTTPCTransform::GetNPads(i);	
+    int nPads = AliHLTTPCGeometry::GetNPads(i);	
     if( fNRowPads<nPads ) fNRowPads = nPads;
   }
   int nPadsTotal = fNRows*fNRowPads;
@@ -111,9 +111,9 @@ void AliHLTTPCHWClusterMerger::Init()
       int pad =  configWord & 0xFF;
       bool border = (configWord>>14) & 0x1;
       if( !border ) continue;
-      row+=AliHLTTPCTransform::GetFirstRow(iPart);
+      row+=AliHLTTPCGeometry::GetFirstRow(iPart);
       if( row>fNRows ) continue;
-      if( pad>=AliHLTTPCTransform::GetNPads(iPart) ) continue;
+      if( pad>=AliHLTTPCGeometry::GetNPads(iPart) ) continue;
       fMapping[row*fNRowPads + pad] = -2;
     }
   }
@@ -185,7 +185,7 @@ bool AliHLTTPCHWClusterMerger::CheckCandidate(int /*slice*/, int partition, int 
 ) 
 {
   /// check cluster if it is a candidate for merging
-  int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
+  int slicerow=partitionrow+AliHLTTPCGeometry::GetFirstRow(partition);
   
   if( !fMapping ) Init();
   if( !fMapping ) return 0;
@@ -222,7 +222,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   int iPad = (int) pad;
   if( !fMapping ) Init();
  
-  int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
+  int slicerow=partitionrow+AliHLTTPCGeometry::GetFirstRow(partition);
  
   if (id!=~AliHLTUInt32_t(0)) {
     if (slice<0) {
