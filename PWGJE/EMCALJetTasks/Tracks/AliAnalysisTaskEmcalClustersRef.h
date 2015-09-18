@@ -6,6 +6,7 @@
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisUtils;
+class AliEMCALGeometry;
 
 class TArrayD;
 class TClonesArray;
@@ -39,6 +40,7 @@ protected:
 
   AliAnalysisUtils                    *fAnalysisUtil;
   AliEMCalHistoContainer              *fHistos;
+  AliEMCALGeometry                    *fGeometry;
   TString                             fClusterContainer;
 
   Bool_t                              fTriggerStringFromPatches;
