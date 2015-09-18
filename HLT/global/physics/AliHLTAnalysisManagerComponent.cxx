@@ -136,7 +136,7 @@ AliHLTComponentDataType AliHLTAnalysisManagerComponent::GetOutputDataType() {
 // #################################################################################
 void AliHLTAnalysisManagerComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 300000; //fixed size output objects
+  constBase = 600000; //fixed size output objects
   inputMultiplier = 0; //do not scale with the input size
 }
 
