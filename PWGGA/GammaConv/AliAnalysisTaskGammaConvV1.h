@@ -34,7 +34,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 			
 		}
 
-		void SetIsMC(Bool_t isMC){fIsMC=isMC;}
+		void SetIsMC(Int_t isMC){fIsMC=isMC;}
 		void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
 		void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
 		void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
@@ -149,7 +149,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hMCConvGammaR;									//!
 		TH1F 								**hMCConvGammaEta;									//!
 		TH1F 								**hMCPi0Pt;											//!
-		TH1F 								**hMCPi0WOWeightPt;									//!
+		TH1F 								**hMCPi0WOWeightPt;									//! array of histos with unweighted pi0, pT
+		TH1F 								**hMCPi0WOEvtWeightPt;								//! array of histos without event weights pi0, pT
+		TH1F 								**hMCEtaWOEvtWeightPt;								//! array of histos without event weights eta, pT
 		TH1F 								**hMCEtaPt;											//!
 		TH1F 								**hMCEtaWOWeightPt;									//!
 		TH1F 								**hMCPi0WOWeightInAccPt;							//!
@@ -168,6 +170,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hMCSecPi0Source;									//!
 		TH1F 								**hMCSecEtaPt;										//!
 		TH1F 								**hMCSecEtaSource;									//!
+		TH2F 								**hMCPi0PtJetPt;									//! array of histos with weighted pi0, pT, hardest jet pt
+		TH2F 								**hMCEtaPtJetPt;									//! array of histos with weighted eta, pT, hardest jet pt
 		TH1F 								**hMCPhysicalPrimariesPt;							//!
 		TH1F 								**hMCPrimaryPionPlusPt;								//!
 		TH1F 								**hMCPrimaryPionMinusPt;							//!
@@ -229,8 +233,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		map<Int_t,Int_t>					mapMultipleCountTruePi0s;							//! map containing pi0 labels that are counted at least twice
 		map<Int_t,Int_t>					mapMultipleCountTrueEtas;							//! map containing eta labels that are counted at least twice
 		map<Int_t,Int_t>					mapMultipleCountTrueConvGammas;						//! map containing photon labels that are counted at least twice
-		TH1I 								**hNEvents;											//!
-		TH1I 								**hNGoodESDTracks;									//!
+		TH1F 								**hNEvents;											//!
+		TH1F 								**hNEventsWOWeight;									//! array of histos with event information without event weights
+		TH1F 								**hNGoodESDTracks;									//!
 		TH1F								**hNEventsWeighted;									//!
 		TH1F 								**hNGoodESDTracksWeighted;							//!
 		TH1F								**hVertexZ;											//!
@@ -238,10 +243,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		TH1F 								**hCentrality;										//!
 		TH1F 								**hCentralityFlattened;								//!
 		TH2F								**hCentralityVsPrimaryTracks;						//!
-		TH1I 								**hNGammaCandidates;								//!
-		TH2F 								**hNGoodESDTracksVsNGammaCanditates;				//!
+		TH1F 								**hNGammaCandidates;								//!
+		TH2F 								**hNGoodESDTracksVsNGammaCandidates;				//!
 		TH2F								**fHistoSPDClusterTrackletBackground;				//! array of histos with SPD tracklets vs SPD clusters for background rejection
-		TH1I 								**hNV0Tracks;										//!
+		TH1F 								**hNV0Tracks;										//!
+		TProfile 							**fProfileEtaShift;									//! array of profiles with eta shift
+		TProfile							**fProfileJetJetXSection;							//! array of profiles with xsection for jetjet
+		TH1F								**fhJetJetNTrials;								//! array of histos with ntrials for jetjet
 		TProfile 							**hEtaShift;										//!
 		TTree 								**tESDMesonsInvMassPtDcazMinDcazMaxFlag;			//!
 		Float_t 							fInvMass;											//!
@@ -278,16 +286,17 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 		Bool_t 								fDoChargedPrimary;									//
 		Bool_t 								fDoPlotVsCentrality;
 		Bool_t 								fIsFromMBHeader;									//
-		Bool_t 								fIsMC;												//
+		Int_t 								fIsMC;												//
 		Bool_t                              fDoTHnSparse;                       				// flag for using THnSparses for background estimation
 		Int_t								fDoCentralityFlat;									//flag for centrality flattening
+		Double_t							fWeightJetJetMC;					// weight for Jet-Jet MC
 		Double_t							*fWeightCentrality;									//[fnCuts], weight for centrality flattening
 
 	private:
 
 		AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-		ClassDef(AliAnalysisTaskGammaConvV1, 24);
+		ClassDef(AliAnalysisTaskGammaConvV1, 25);
 };
 
 #endif
