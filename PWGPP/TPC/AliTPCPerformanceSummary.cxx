@@ -2822,7 +2822,11 @@ Int_t AliTPCPerformanceSummary::AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeS
  if (pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2")) {  
     h3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_clust_0_1_2"));
   }
-  
+  if(!h3D_1) {
+    printf("E-AliTPCPerformanceSummary::AnalyzeOcc: h_tpc_clust_0_1_2 not found");
+    return 4;
+  }
+
   //////////////////////////////////////////
   // normalization
   h3D_1->GetZaxis()->SetRangeUser(0.2,0.99); //A side
