@@ -30,6 +30,8 @@
 // Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
 // Reviewed: A.Gheata (19/02/10)
 
+using namespace std;
+
 ClassImp(AliAnalysisFBMultFluct)
 
 //________________________________________________________________________
