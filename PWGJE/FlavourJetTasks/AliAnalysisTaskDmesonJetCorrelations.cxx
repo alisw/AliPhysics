@@ -325,9 +325,11 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODRe
       AliParticleContainer* mcpartCont = GetParticleContainer(1);
       TClonesArray* mcpartArray = mcpartCont->GetArray();
       Int_t mcLab = Dcand->MatchToMC(pdg, mcpartArray);
+      AliDebug(2, Form("MC label is %d", mcLab));
       if (mcLab >= 0) {
         AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(mcpartCont->GetParticle(mcLab));
         MCtruthPdgCode = aodMcPart->PdgCode();
+        AliDebug(2, Form("MC truth pdg code is %d",MCtruthPdgCode));
       }
     }
 
@@ -822,7 +824,9 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
       AliError(Form("%s: Could not find the MC particle container at position 1. The MC info won't be used in this analysis!", GetName()));
       fUseMCInfo = kFALSE;
     }
-    mcPartCont->SetClassName("AliAODMCParticle");
+    else {
+      mcPartCont->SetClassName("AliAODMCParticle");
+    }
   }
 
   TString className;
