@@ -35,6 +35,8 @@
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
 #include "AliEmcalTriggerPatchInfo.h"
+#include "AliEMCALGeometry.h"
+#include "AliEMCALRecoUtils.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -60,6 +62,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fTrackCuts(NULL),
         fAnalysisUtil(NULL),
         fHistos(NULL),
+        fGeometry(NULL),
         fPtHard(0),
         fPtHardBin(0),
         fNTrials(0),
@@ -84,6 +87,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fTrackCuts(NULL),
         fAnalysisUtil(NULL),
         fHistos(NULL),
+        fGeometry(NULL),
         fPtHard(0),
         fPtHardBin(0),
         fNTrials(0),
@@ -219,6 +223,9 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
 
 void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select event
   if(!fMCEvent) return;
+  if(!fGeometry){
+    fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+  }
   AliGenPythiaEventHeader *pyheader = GetPythiaHeader();
   if(pyheader){
     FillTriggerJetHistograms(kFALSE, pyheader);
@@ -343,7 +350,6 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     if(!truepart->Charge()) continue;
 
     if(!IsPhysicalPrimary(truepart, fMCEvent)) continue;
-
     isEMCAL = (truepart->Phi() > 1.5 && truepart->Phi() < 3.1) ? kTRUE : kFALSE;
 
     // Calculate eta in cms frame according
@@ -381,7 +387,9 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     // Select only particles within ALICE acceptance
     if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    isEMCAL = (checktrack->Phi() > 1.5 && checktrack->Phi() < 3.1) ? kTRUE : kFALSE;
+    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(checktrack);
+    Int_t supermoduleID = -1;
+    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(checktrack->GetTrackEtaOnEMCal(), checktrack->GetTrackPhiOnEMCal(), supermoduleID);
 
     // Distinguish track selection for ESD and AOD tracks
     AliESDtrack *esdtrack(NULL);

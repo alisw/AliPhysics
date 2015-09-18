@@ -9,6 +9,7 @@ class TArrayD;
 class TString;
 class AliAnalysisUtils;
 class AliAODTrack;
+class AliEMCALGeometry;
 class AliESDtrackCuts;
 class AliESDtrack;
 
@@ -61,6 +62,7 @@ protected:
   AliESDtrackCuts                 *fTrackCuts;                ///< Standard track selection
   AliAnalysisUtils                *fAnalysisUtil;             ///< Event selection
   AliEMCalHistoContainer          *fHistos;                   ///< Histogram manager
+  AliEMCALGeometry                *fGeometry;                 ///< EMCAL geometry methods
 
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   Double_t                        fYshift;                    ///< Rapidity shift
