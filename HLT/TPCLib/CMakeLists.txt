@@ -67,8 +67,7 @@ ALICE_UseVc()
 set(SRCS
     AliHLTTPCAgent.cxx
     AliHLTTPCCFComparisonComponent.cxx
-    AliHLTTPCClusterAccessHLTOUT.cxx
-    AliHLTTPCClusterConverterComponent.cxx
+    AliHLTTPCClusterAccessHLTOUT.cxx    
     AliHLTTPCClusterDumpComponent.cxx
     AliHLTTPCClusterFinderComponent.cxx
     AliHLTTPCClusterFinder.cxx
@@ -100,7 +99,6 @@ set(SRCS
     AliHLTTPCPad.cxx
     AliHLTTPCRawSpacePointContainer.cxx
     AliHLTTPCSpacePointContainer.cxx
-    AliHLTTPCTrackDumpComponent.cxx
     AliHLTTPCTrackGeometry.cxx
     AliHLTTPCTrackHistoComponent.cxx
     AliHLTTPCTrackMCMarkerComponent.cxx
@@ -170,8 +168,6 @@ set(HDRS ${HDRS}
     AliHLTTPCLogging.h
     AliHLTTPCSpacePointData.h
     AliHLTTPCDigitData.h
-    AliHLTTPCTrackSegmentData.h
-    AliHLTTPCTrackletDataFormat.h
     AliHLTTPCClusterDataFormat.h
     AliHLTTPCClusterMCData.h
     HWCFemulator/AliHLTTPCHWCFDataTypes.h

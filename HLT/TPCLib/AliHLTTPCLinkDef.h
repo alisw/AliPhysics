@@ -37,7 +37,6 @@
 #pragma link C++ class AliHLTTPCHWClusterTransformComponent+;
 #pragma link C++ class AliHLTTPCCFComparisonComponent+;
 #pragma link C++ class AliHLTTPCHistogramHandlerComponent+;
-#pragma link C++ class AliHLTTPCClusterConverterComponent+;
 #pragma link C++ class AliHLTTPCClusterAccessHLTOUT+;
 #pragma link C++ class AliHLTTPCCATrack+;
 #pragma link C++ class AliHLTTPCCATracklet+;
@@ -81,7 +80,6 @@
 #pragma link C++ class AliHLTTPCDataPublisherComponent+;
 #pragma link C++ class AliHLTTPCClusterHistoComponent+;
 #pragma link C++ class AliHLTTPCTrackHistoComponent+;
-#pragma link C++ class AliHLTTPCTrackDumpComponent+;
 #pragma link C++ class AliHLTTPCClusterDumpComponent+;
 #pragma link C++ class AliHLTTPCHWCFDataReverterComponent+;
 #pragma link C++ class AliHLTTPCTrackMCMarkerComponent+;

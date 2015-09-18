@@ -29,7 +29,6 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCOfflineCluster.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTExternalTrackParam.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTTrackMCLabel.h"
