@@ -60,6 +60,9 @@
 
 #include "AliAnalysisTaskEmcalTriggerPatchJetMatch.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalTriggerPatchJetMatch)
 
 //________________________________________________________________________
@@ -1054,7 +1057,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
                 Double_t kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
                 Double_t kEnergyOffline = fMaxPatch->GetPatchE();
 
-                Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), jet->GetNumberOfTracks(), jet->MaxTrackPt(), jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOnline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};                
+                Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), (Double_t)jet->GetNumberOfTracks(), jet->MaxTrackPt(), (Double_t)jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOnline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};
                 fhnPatchMatchJetLeadClus->Fill(fill);
               }
             } // patch > 10 GeV
