@@ -4290,7 +4290,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   qSide = fabs(qSide);
   qLong = fabs(qLong);
   Float_t wd=0, xd=0, yd=0, zd=0;
-  Float_t qInvtemp=GetQinv(track1, track2);
+  //Float_t qInvtemp=GetQinv(track1, track2);
   
   //
   Int_t q2bin=0;
@@ -4310,13 +4310,16 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   //
   if(fOneDInterpolation){
     Float_t qInv=GetQinv(track1, track2);
-    if(qInv < fQmean[0]) {fQinvIndexL=0; fQinvIndexH=0; xd=0;}
-    else if(qInv >= fQmean[kQbinsWeights-1]) {fQinvIndexL=kQbinsWeights-1; fQinvIndexH=kQbinsWeights-1; xd=1;}
+    Int_t MaxBinsQinv=20;
+    if(fCollisionType!=0) MaxBinsQinv=100;
+    if(qInv < 0.0025) {fQinvIndexL=0; fQinvIndexH=0; xd=0;}
+    else if(qInv >= 0.1 && fCollisionType==0) {fQinvIndexL=19; fQinvIndexH=19; xd=1;}
+    else if(qInv >= 0.5 && fCollisionType!=0) {fQinvIndexL=99; fQinvIndexH=99; xd=1;}
     else {
-      for(Int_t i=0; i<kQbinsWeights-1; i++){
-	if((qInv >= fQmean[i]) && (qInv < fQmean[i+1])) {fQinvIndexL=i; fQinvIndexH=i+1; break;}
+      for(Int_t i=0; i<MaxBinsQinv-1; i++){
+	if((qInv >= (i+0.5)*0.005) && (qInv < (i+1.5)*0.005)) {fQinvIndexL=i; fQinvIndexH=i+1; break;}
       }
-      xd = (qInv-fQmean[fQinvIndexL])/(fQmean[fQinvIndexH]-fQmean[fQinvIndexL]);
+      xd = (qInv-(fQinvIndexL+0.5)*0.005)/(0.005);
     }
     if(fInterpolationType==0){// Linear Interpolation of qinv,kt
       Float_t c0 = fNormWeight1D[fKtIndexL][fMbin]->GetBinContent(fQinvIndexL+1)*(1-xd) + fNormWeight1D[fKtIndexL][fMbin]->GetBinContent(fQinvIndexH+1)*xd;
@@ -4329,15 +4332,15 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
       for(Int_t x=0; x<4; x++){
 	Int_t binInv = fQinvIndexL + x;
 	if(binInv<=0) binInv = 1;
-	if(binInv>kQbinsWeights) binInv = kQbinsWeights;
+	if(binInv>MaxBinsQinv) binInv = MaxBinsQinv;
 	fOneDarrP1[x] = fNormWeight1D[fKtIndexL][fMbin]->GetBinContent(binInv);
 	fOneDarrP2[x] = fNormWeight1D[fKtIndexH][fMbin]->GetBinContent(binInv);
       }
-    Float_t coord[3]={xd, yd, zd}; 
-    Float_t c0 = cubicInterpolate (fOneDarrP1, xd);
-    Float_t c1 = cubicInterpolate (fOneDarrP2, xd);
-    // kT interpolation
-    wgt = c0*(1-wd) + c1*wd;
+      Float_t coord[3]={xd, yd, zd}; 
+      Float_t c0 = cubicInterpolate (fOneDarrP1, xd);
+      Float_t c1 = cubicInterpolate (fOneDarrP2, xd);
+      // kT interpolation
+      wgt = c0*(1-wd) + c1*wd;
     }
   }else{
     //
