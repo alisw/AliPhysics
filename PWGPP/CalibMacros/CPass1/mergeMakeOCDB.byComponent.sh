@@ -9,7 +9,9 @@
 
 main()
 {
-  save_args=("$@")
+  maxChunksTOT=999999
+
+  save_args=("$@") 
   if [[ $# -eq 0 ]]; then
     echo arguments:
     echo  "  1 - directory on which to look for the files to be merged or local file list"
@@ -17,6 +19,8 @@ main()
     echo  "  3 - OCDB output path"
     echo
     echo  "  optionally set any of these"
+    echo  "  maxChunksTOT=<max number of chunks> (def: ${maxChunksTOT}, max number of chunks to process)"
+    echo  "                                       random selection will be done but 1st entr)"
     echo  "  runParallel={0,1}   (1 to run parallel merging and downloading)"
     echo  "  defaultOCDB=raw://  (or any other valid OCDB storage as input database)"
     echo  "  fileAccessMethod={alien_cp,tfilecp,nocopy}   (by default tfilecp)"
@@ -47,6 +51,7 @@ main()
   fileAccessMethod="tfilecp"
   numberOfFilesInAbunch=50
   maxChunksTPC=3000
+  maxChunksTOT=3000
   [[ -n ${ALIEN_JDL_TTL} ]] && maxTimeToLive=$(( ${ALIEN_JDL_TTL}-2000 ))
 
   parseConfig "$@"
@@ -119,8 +124,10 @@ main()
   fi
   #randomize the list
   #keep the first line intact (it is the largest file of the entire collection)
-  sed -n '1p' ${alienFileList} > ${alienFileList}.tmp
-  sed '1d' ${alienFileList} | while read x; do echo "${RANDOM} ${x}"; done|sort -n|cut -d" " -f2- >> ${alienFileList}.tmp
+  echo "randomizing $maxChunksTOT chunks of the list, preserving the 1st one "
+  nchAdd=$[maxChunksTOT-1]
+  head -n1 ${alienFileList} > ${alienFileList}.tmp
+  tail -n +2 ${alienFileList} | shuf -n $nchAdd >> ${alienFileList}.tmp 
   mv -f ${alienFileList}.tmp ${alienFileList}
 
   #split into sublists, each to be processed separately
