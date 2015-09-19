@@ -53,7 +53,7 @@ protected:
   void CreateNewPtBinning(TArrayD &binning) const;
 
   void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected);
-  void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal);
+  void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
 
   Bool_t TrackSelectionESD(AliESDtrack *track);
