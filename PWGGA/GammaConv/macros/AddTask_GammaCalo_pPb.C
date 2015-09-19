@@ -213,6 +213,7 @@ void AddTask_GammaCalo_pPb(
 		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032030000"; mesonCutArray[0] = "0163403100000050"; // min/max M02	0<M<0.5
 		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050032200000"; mesonCutArray[1] = "0163403100000050"; // min/max M02	0.1<M<100
 		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050031230000"; mesonCutArray[2] = "0163403100000050"; // min number of cells variation 1	1 cell
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1112381050032230000"; mesonCutArray[0] = "0163403100000050"; // TRD variation
 	} else if(trainConfig == 43){ // third set of variations MESON
 		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163303100000050"; // rapidity variation	y<0.6
 		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163103100000050"; // rapidity variation	y<0.8	
