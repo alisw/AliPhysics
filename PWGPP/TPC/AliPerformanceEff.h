@@ -6,6 +6,7 @@
 // reconstructed and MC particle tracks (TPC efficiency).   
 // 
 // Author: J.Otwinowski 04/02/2008 
+// Changes by J.Salzwedel 10/30/2014
 //------------------------------------------------------------------------------
 
 class TFile;
@@ -15,16 +16,13 @@ class TNamed;
 class THnSparse;
 class AliMCInfo;
 class AliESDRecInfo;
-class AliESDEvent; 
-class AliESDfriend; 
+class AliVEvent; 
+class AliVfriendEvent; 
 class AliMCEvent; 
-class AliESDEvent; 
 class AliMCParticle; 
-class AliESDtrack;
-class AliESD;
+class AliVtrack;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
-class AliESDVertex;
 
 #include "AliPerformanceObject.h"
 
@@ -37,7 +35,7 @@ public :
   virtual void Init();
 
   // Execute analysis 
-  virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+  virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
   virtual Long64_t Merge(TCollection* const list);
@@ -55,17 +53,17 @@ public :
   TFolder *ExportToFolder(TObjArray *array=0);
 
   // Process events
-  void ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
-  void ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
-  void ProcessConstrained(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
-  void ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent);
+  void ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const vEvent);
+  void ProcessTPCITS(AliMCEvent* const mcEvent, AliVEvent *const vEvent);
+  void ProcessConstrained(AliMCEvent* const mcEvent, AliVEvent *const vEvent);
+  void ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *const vEvent);
 
-  Bool_t IsRecTPC(AliESDtrack *track);
-  Bool_t IsRecTPCITS(AliESDtrack *track);
-  Bool_t IsRecConstrained(AliESDtrack *track);
+  Bool_t IsRecTPC(AliVTrack *track);
+  Bool_t IsRecTPCITS(AliVTrack *track);
+  Bool_t IsRecConstrained(AliVTrack *track);
 
   Bool_t IsFindable(const AliMCEvent *mcEvent, Int_t label);
-  Int_t TransformToPID(TParticle *particle);
+  Int_t TransformToPID(TParticle *mcPart);
 
   // Selection cuts
   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
@@ -84,6 +82,7 @@ private:
   
   // Helper Method
   TH1D* AddHistoEff(Int_t axis, const Char_t *name, const Char_t* vsTitle, const Int_t type, const Int_t secondary = 0);
+  TH1D* WeightedProjection(THnSparseF* src, Int_t axis, Int_t nWeights, Int_t* weightCoords);
 
   // Control histograms
   THnSparseF *fEffHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:charge

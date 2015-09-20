@@ -29,6 +29,7 @@
 //
 // Author: S.Schuchmann 11/13/2009 
 //         sschuchm@ikf.uni-frankfurt.de
+// Updated: J. Salzwedel 01/12/2014
 //------------------------------------------------------------------------------
 
 /*
@@ -63,10 +64,10 @@ fout.Close();
 #include "TMath.h"
 #include "TFolder.h"
 
-#include "AliESDEvent.h" 
-#include "AliESDtrack.h"
-#include "AliESDfriendTrack.h"
-#include "AliESDfriend.h"
+#include "AliVEvent.h" 
+#include "AliVTrack.h"
+#include "AliExternalTrackParam.h"
+#include "AliVfriendEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDpid.h"
 
@@ -266,7 +267,7 @@ void AliPerformancePtCalib::SetPtShift(const Double_t shiftVal ) {
 }
 
 //________________________________________________________________________
-void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *const esdEvent, AliESDfriend * const /*esdFriend*/, const Bool_t /*bUseMC*/, const Bool_t /*bUseESDfriend*/)
+void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliVEvent *const vEvent, AliVfriendEvent * const /*vfriendEvent*/, const Bool_t /*bUseMC*/, const Bool_t /*bUseVfriend*/)
 {
    //exec: read esd or tpc
 
@@ -275,33 +276,29 @@ void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *con
      return;
    }
    
-   if (!esdEvent) {
+   if (!vEvent) {
       Printf("ERROR: Event not available");
       return;
    }
 
-   if (!(esdEvent->GetNumberOfTracks()))  return;
+   if (!(vEvent->GetNumberOfTracks()))  return;
 
    
    //vertex info for cut
-   const AliESDVertex *vtx = esdEvent->GetPrimaryVertex();
-   if (!vtx->GetStatus()) return ;
+   const AliVVertex *vtx = vEvent->GetPrimaryVertex();
+   if (!vtx->GetStatus()) return; 
+
      
    //histo fo user defined shift in charge/pt 
    if(fShift) fHistUserPtShift->Fill(fDeltaInvP);
    
-   //trakc multiplicity
-   fHistTrackMultiplicity->Fill(esdEvent->GetNumberOfTracks());
+   //track multiplicity
+   fHistTrackMultiplicity->Fill(vEvent->GetNumberOfTracks());
 
 
    // read primary vertex info
    Double_t tPrimaryVtxPosition[3];
-   const AliESDVertex *primaryVtx = esdEvent->GetPrimaryVertexTPC();
- 
-   tPrimaryVtxPosition[0] = primaryVtx->GetX();
-   tPrimaryVtxPosition[1] = primaryVtx->GetY();
-   tPrimaryVtxPosition[2] = primaryVtx->GetZ();
-  
+   vtx->GetXYZ(tPrimaryVtxPosition);
    fHistPrimaryVertexPosX->Fill(tPrimaryVtxPosition[0]);
    fHistPrimaryVertexPosY->Fill(tPrimaryVtxPosition[1]);
    fHistPrimaryVertexPosZ->Fill(tPrimaryVtxPosition[2]);
@@ -310,89 +307,98 @@ void AliPerformancePtCalib::Exec(AliMCEvent* const /*mcEvent*/, AliESDEvent *con
    //_fill histos for pt spectra and shift of transverse momentum
    Int_t count=0;
  
-   for(Int_t j = 0;j<esdEvent->GetNumberOfTracks();j++){// track loop
-      AliESDtrack *esdTrack = esdEvent->GetTrack(j);
-      if(!esdTrack) continue;
-    
-    
-      if(fESDcuts){
-	 if(!fESDTrackCuts->AcceptTrack(esdTrack))continue;
-      }
-       
-      
-      // fill histos
-      if(fOptTPC){ //TPC tracks
-	 const AliExternalTrackParam *tpcTrack = esdTrack->GetTPCInnerParam(); 
-	 if(!tpcTrack) continue;
-	 if(fabs(tpcTrack->Eta())>= fEtaAcceptance) continue;
-      
-	 Double_t signedPt = tpcTrack->GetSignedPt();
+   for(Int_t j = 0;j<vEvent->GetNumberOfTracks();j++){// track loop
+     AliVTrack *vTrack = (AliVTrack*)vEvent->GetTrack(j);
+     if(!vTrack) continue;
 
-	 // pid
-	 if(fPions){
+     if(fESDcuts){
+       if(!fESDTrackCuts->AcceptVTrack(vTrack)) continue;
+     }
+      
+      
+     // fill histos
+     if(fOptTPC){ //TPC tracks
+
+       const AliExternalTrackParam *tpcTrack;
+
+       if(vTrack){
+	 tpcTrack = vTrack->GetTPCInnerParam(); 
+       }
+
+       if(!tpcTrack) continue;
+       if(fabs(tpcTrack->Eta())>= fEtaAcceptance) continue;
+      
+       Double_t signedPt = tpcTrack->GetSignedPt();
+
+       // pid
+       if(fPions){
 	  
-	   fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,2.63394e+01,5.04114e-11, 2.12543e+00,4.88663e+00);
-	   
-	   if( TMath::Abs(fESDpid->NumberOfSigmasTPC(esdTrack,AliPID::kPion)) >1) continue;
-	   fHistdedxPions->Fill(signedPt,esdTrack->GetTPCsignal());
-	 }
+	 fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,2.63394e+01,5.04114e-11, 2.12543e+00,4.88663e+00);
+
+	 if( TMath::Abs(fESDpid->NumberOfSigmasTPC(vTrack,AliPID::kPion)) >1) continue;
+	 fHistdedxPions->Fill(signedPt, vTrack->GetTPCsignal());
+       }
 	 
-	 Double_t invPt = 0.0;
-	 if(signedPt) {
-	    invPt = 1.0/signedPt;
+       Double_t invPt = 0.0;
+       if(signedPt) {
+	 invPt = 1.0/signedPt;
 
-	    fHistPtShift0->Fill(signedPt);
+	 fHistPtShift0->Fill(signedPt);
 	
-	    if(fShift){Printf("user shift of momentum SET to non zero value!");
-	       invPt += fDeltaInvP; //shift momentum for tests
-	       if(invPt) signedPt = 1.0/invPt;
-	       else continue;
-	    }
-	    Double_t theta = tpcTrack->Theta();
-	    Double_t phi = tpcTrack->Phi();
+	 if(fShift){Printf("user shift of momentum SET to non zero value!");
+	   invPt += fDeltaInvP; //shift momentum for tests
+	   if(invPt) signedPt = 1.0/invPt;
+	   else {
+	     continue;
+	   }
+	 }
+	 Double_t theta = tpcTrack->Theta();
+	 Double_t phi = tpcTrack->Phi();
 	    
-	    Double_t momAng[4] = {invPt,signedPt,theta,phi};
-	    fHistInvPtPtThetaPhi->Fill(momAng);
+	 Double_t momAng[4] = {invPt,signedPt,theta,phi};
+	 fHistInvPtPtThetaPhi->Fill(momAng);
 
-	    Double_t pTPC = tpcTrack->GetP();
-	    Double_t pESD = esdTrack->GetP();
-	    Double_t ptESD  = esdTrack->GetSignedPt();
+	 Double_t pTPC = tpcTrack->P();
+	 Double_t pESD = vTrack->P();
+	 Double_t ptESD  = vTrack->GetSignedPt();
 	
-	    if(esdTrack->GetSign()>0){
-	       //compare momenta ESD track and TPC track
-	       fHistTPCMomentaPosP->Fill(fabs(pESD),fabs(pTPC));
-	       fHistTPCMomentaPosPt->Fill(fabs(ptESD),fabs(signedPt));
-	    }
-	    else{
-	       fHistTPCMomentaNegP->Fill(fabs(pESD),fabs(pTPC));
-	       fHistTPCMomentaNegPt->Fill(fabs(ptESD),fabs(signedPt));
-	    }
-	    count++;
+	 if(vTrack->GetSign()>0){
+	   //compare momenta ESD track and TPC track
+	   fHistTPCMomentaPosP->Fill(fabs(pESD),fabs(pTPC));
+	   fHistTPCMomentaPosPt->Fill(fabs(ptESD),fabs(signedPt));
 	 }
-	 else continue;
-      }
-   
-      else{// ESD tracks
-	 if(fabs(esdTrack->Eta())> fEtaAcceptance) continue;
-	 Double_t invPt = 0.0;
-	 Double_t signedPt = esdTrack->GetSignedPt();
-	 if(signedPt){
-	    invPt = 1.0/signedPt; 
+	 else{
+	   fHistTPCMomentaNegP->Fill(fabs(pESD),fabs(pTPC));
+	   fHistTPCMomentaNegPt->Fill(fabs(ptESD),fabs(signedPt));
+	 }
+	 count++;
+       }
+       else {
+	 continue;
+       }
+     }
+      
+     else{// Global tracks
+       if(fabs(vTrack->Eta())> fEtaAcceptance) continue;
+       Double_t invPt = 0.0;
+       Double_t signedPt = vTrack->GetSignedPt();
+       if(signedPt){
+	 invPt = 1.0/signedPt; 
 
-	    fHistPtShift0->Fill(signedPt);
+	 fHistPtShift0->Fill(signedPt);
 	  
-	    if(fShift){Printf("user shift of momentum SET to non zero value!");
-	       invPt += fDeltaInvP;//shift momentum for tests
-	       if(invPt) signedPt = 1.0/invPt;
-	       else continue;
-	    }
-	    Double_t theta = esdTrack->Theta();
-	    Double_t phi = esdTrack->Phi();
-	    Double_t momAng[4] = {invPt,signedPt,theta,phi};
-	    fHistInvPtPtThetaPhi->Fill(momAng);
-	    count++;
+	 if(fShift){Printf("user shift of momentum SET to non zero value!");
+	   invPt += fDeltaInvP;//shift momentum for tests
+	   if(invPt) signedPt = 1.0/invPt;
+	   else continue;
 	 }
-      }
+	 Double_t theta = vTrack->Theta();
+	 Double_t phi = vTrack->Phi();
+	 Double_t momAng[4] = {invPt,signedPt,theta,phi};
+	 fHistInvPtPtThetaPhi->Fill(momAng);
+	 count++;
+       }
+     }
    }
     
    fHistTrackMultiplicityCuts->Fill(count);

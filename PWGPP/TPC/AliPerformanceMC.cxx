@@ -7,7 +7,8 @@
 // the analysis (histograms/graphs) are stored in the folder which is
 // a data member of AliPerformanceMC.
 //
-// Author: J.Otwinowski 04/02/2008 
+// Author: J.Otwinowski 04/02/2008
+// Changes by J.Salzwedel 5/11/2014
 //------------------------------------------------------------------------------
 
 /*
@@ -39,12 +40,11 @@
 #include "TAxis.h"
 #include "TF1.h"
 
-#include "AliPerformanceMC.h" 
-#include "AliESDEvent.h" 
+#include "AliPerformanceMC.h"
+#include "AliExternalTrackParam.h"
+#include "AliVEvent.h" 
 #include "AliESDVertex.h"
-#include "AliESDtrack.h"
-#include "AliESDfriendTrack.h"
-#include "AliESDfriend.h"
+#include "AliVfriendEvent.h"
 #include "AliLog.h" 
 #include "AliMCEvent.h" 
 #include "AliMCParticle.h" 
@@ -168,7 +168,7 @@ void AliPerformanceMC::Init(){
 }
 
 //_____________________________________________________________________________
-void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const /*esdEvent*/, AliESDfriend *const /*esdFriend*/, const Bool_t bUseMC, const Bool_t /*bUseESDfriend*/)
+void AliPerformanceMC::Exec(AliMCEvent* const mcEvent, AliVEvent *const /*vEvent*/, AliVfriendEvent *const /*vfriendEvent*/, const Bool_t bUseMC, const Bool_t /*bUseVfriend*/)
 {
   // Process pure MC information 
   //
