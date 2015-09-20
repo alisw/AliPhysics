@@ -326,7 +326,7 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
     isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(checktrack->GetTrackEtaOnEMCal(), checktrack->GetTrackPhiOnEMCal(), supermoduleID);
     // Exclude supermodules 10 and 11 as they did not participate in the trigger
     isEMCAL = isEMCAL && supermoduleID < 10;
-    hasTRD = isEMCAL && supermoduleID < 4;  // supermodules 0 - 3 have TRD in front in the 2012-2013 ALICE setup
+    hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
 
     // Calculate eta in cms frame according
     // EPJC74 (2014) 3054:
