@@ -101,7 +101,7 @@ void AliExternalFormatConverter::SerializeAllEvents(TString path)
 {
     for (Int_t eventNumber = 0; eventNumber < fESDTree->GetEntries(); eventNumber++){
         ofstream outfile;
-        outfile.open(path + "_" + eventNumber, std::ios::binary | std::ios::out);
+        outfile.open(Form("%s_%d",path.Data(), eventNumber), std::ios::binary | std::ios::out);
         if (!outfile){
             std::cerr<<"\n\nCouldn't create output file!\n\n"<<std::endl;
             continue;
