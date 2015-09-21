@@ -51,7 +51,6 @@ main()
   fileAccessMethod="tfilecp"
   numberOfFilesInAbunch=50
   maxChunksTPC=3000
-  maxChunksTOT=3000
   [[ -n ${ALIEN_JDL_TTL} ]] && maxTimeToLive=$(( ${ALIEN_JDL_TTL}-2000 ))
 
   parseConfig "$@"
