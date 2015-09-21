@@ -94,6 +94,8 @@ static const char *USAGE =
       "      Optimize basket size when merging TTree"
       "   -n <max number of file>\n"
       "      Specify how many files can be used at once. Defaults to system maximum if not specified.\n"
+      "   -s <max size of file>\n"
+      "      Specify the approximate size of an output file.\n"
       "   -v [<level>]\n"
       "      Set verbosity level to <level>. If <level> is not provided defaults to maximum verbosity (99).\n"
       "   -i <regex>\n"
@@ -108,7 +110,7 @@ static const char *USAGE =
       "      If Target and source files have different compression settings\n"
       "      a slower method is used\n";
 
-const char * OPT_STRING = ":hakTOi:n:v:f:";
+const char * OPT_STRING = ":hakTOi:n:s:v:f:";
 
 static int gVerbosity = 0;
 
@@ -134,6 +136,42 @@ void die(int exitCode, const char *fmt, ...)
   exit(exitCode);
 }
 
+struct MergeInput {
+  MergeInput(const std::string &f)
+  : filename(f)
+  {}
+  const std::string filename;
+  size_t cost;
+};
+
+inline bool ends_with(std::string const & value, std::string const & ending)
+{
+    if (ending.size() > value.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
+struct MergeJob {
+  MergeJob (const std::string &namePrefix, int maxJobs)
+  :output(namePrefix, 0, namePrefix.size() - (ends_with(namePrefix, ".root") ? 5 : 0))
+  {
+    // In case we only have one file, simply add back the .root extension.
+    // In case we have more than one file, add an incremental index to the filename.
+    if (maxJobs == 1)
+    {
+      output += ".root";
+      return;
+    }
+    static int count = 1;
+    char buf[16];
+    snprintf(buf, 10, "%i.root", count);
+    // Add numeric suffix when splitting.
+    output += buf;
+    count++;
+  }
+  std::string output;
+  std::vector<size_t> inputs;
+};
+
 //___________________________________________________________________________
 int main( int argc, char **argv )
 {
@@ -145,14 +183,15 @@ int main( int argc, char **argv )
   Bool_t keepCompressionAsIs = kFALSE;
   Bool_t useFirstInputCompression = kFALSE;
   std::vector<TRegexp *> gIncludeRE;
+  size_t gMaxFilesPerJob = SIZE_MAX;
+  size_t gCostLimit = SIZE_MAX;
+  std::vector<std::string> mergeableKeys;
 
   Int_t newcomp = -1;
 
   char ch;
   int intCand;
 
-  TFileMerger merger(kFALSE,kFALSE);
-  merger.SetMsgPrefix("hadd");
 
   while ((ch = getopt(argc, argv, OPT_STRING)) != -1) {
     switch (ch) {
@@ -171,7 +210,13 @@ int main( int argc, char **argv )
         intCand = atoi(optarg);
         if (intCand <= 0) 
           die(1, "Invalid -n argument \"%s\".", optarg);
-        merger.SetMaxOpenedFiles(intCand);
+        gMaxFilesPerJob = intCand;
+        break;
+      case 's':
+        intCand = atoi(optarg);
+        if (intCand <= 0) 
+          die(1, "Invalid -s argument \"%s\".", optarg);
+        gCostLimit = intCand;
         break;
       case 'v':
         char *end;
@@ -221,21 +266,23 @@ int main( int argc, char **argv )
         break;
     }
   }
-  log(1, "Verbosity level: %i\n", gVerbosity);
+  log(2, "Verbosity level: %i\n", gVerbosity);
 
   gSystem->Load("libTreePlayer");
 
   if (argc - optind < 2)
     die(1, "Please, specify more than one file as input.\n\n%s", USAGE);
-  merger.SetPrintLevel(gVerbosity - 1);
   
+  // Payloads to be processed.
+  std::vector<MergeJob> mergeJobs;
+  std::vector<MergeInput> mergeInputs;
+
   // First file is always the output.
-  const char *targetname = argv[optind];
-  log(1, "hadd Target file: %s\n", targetname);
+  const char *outputTemplate = argv[optind];
+  log(1, "hadd Target file: %s\n", outputTemplate);
   
   // Get all the files to merge. 
   // @<filename> should contain a list of files
-  std::vector<std::string> files;
   for (int i = 1; i < argc - optind ; ++i)
   {
     const char *cf = argv[optind + i];
@@ -243,7 +290,7 @@ int main( int argc, char **argv )
     if (*cf != '@')
     {
       log(1, "Adding file %s.\n", cf);
-      files.push_back(cf);
+      mergeInputs.push_back(MergeInput(cf));
       continue;
     }
     std::ifstream infile(cf+1);
@@ -251,20 +298,25 @@ int main( int argc, char **argv )
     while (std::getline(infile, line))
     {
       log(1, "Adding file %s.\n", line.c_str());
-      files.push_back(line);
+      mergeInputs.push_back(MergeInput(line));
     }
   }
 
-  assert(files.size() > 0);
+  assert(mergeInputs.size() > 0);
   // Get the list of all objects in all the files.
+  // Calculate the approximate "cost" of the file
   std::vector<std::string> objects;
-  for (size_t i = 0; i < files.size(); ++i)
+  std::vector<size_t> sizeCost;
+
+  for (size_t i = 0; i < mergeInputs.size(); ++i)
   {
-    const char *filename = files.front().c_str();
-    TFile *f = TFile::Open(filename);
+    MergeInput &input = mergeInputs[i];
+    TFile *f = TFile::Open(input.filename.c_str());
     if (!f || f->IsZombie())
     {
-      f->Close();
+      log(1, "Unable to open %s.\n", input.filename.c_str());
+      if (f) 
+        f->Close();
       continue;
     }
     std::vector<TIterator *> iterators;
@@ -279,12 +331,13 @@ int main( int argc, char **argv )
         if (key)
         {
           const char *keyName = key->GetName();
+          int cost  = key->GetNbytes();
           TString keyNameS(keyName); 
 
           if (gIncludeRE.empty())
           {
-            log(1, "Key %s will be merged.\n", keyName);
-            merger.AddObjectNames(keyName);
+            log(1, "Key %s will be merged with a cost of %i.\n", keyName, cost);
+            input.cost += cost;
             continue;
           }
           for (size_t rei = 0; rei < gIncludeRE.size(); ++rei)
@@ -294,20 +347,22 @@ int main( int argc, char **argv )
             if (status >= 0 && len == keyNameS.Length())
             {
               log(1, "Key %s will be merged.\n", keyName);
-              merger.AddObjectNames(keyName);
+              mergeableKeys.push_back(keyName);
+              input.cost += cost;
             }
           }
         }
         else
           continue;
       }
+      log(1, "Total cost for file %s is %i\n", input.filename.c_str(), input.cost);
       f->Close();
     }
   }
 
   if (useFirstInputCompression)
   {
-    const char *filename = files.front().c_str();
+    const char *filename = mergeInputs.front().filename.c_str();
     TFile *f = TFile::Open(filename);
     if (f && !f->IsZombie())
     {
@@ -321,54 +376,97 @@ int main( int argc, char **argv )
     }
     f->Close();
   }
+
+  // First calculate how many files we need per job.
+  size_t costAcc = 0;
+  std::vector<std::pair<size_t, size_t> > splitting;
+  splitting.push_back(std::make_pair<size_t, size_t>(0,0));
+  for (size_t mi = 0; mi < mergeInputs.size(); ++mi)
+  {
+    MergeInput &input = mergeInputs[mi];
+    std::pair<size_t, size_t> &range = splitting.back();
+    costAcc += input.cost;
+    // If we are below threshold, we carry on adding to the same job, otherwise
+    // we create a new MergeJob.
+    range.second += 1;
+    if ((costAcc < gCostLimit) 
+        || ((range.second - range.first) > gMaxFilesPerJob))
+      continue;
+
+    splitting.push_back(std::make_pair(range.second, range.second));
+  }
+
+  // Remove the last range in case it's empty.
+  if (splitting.back().second - splitting.back().first == 0)
+    splitting.pop_back();
+  
+  // Costruct the merge jobs using the splitting information.
+  for (size_t si = 0; si < splitting.size(); ++si)
+  {
+    MergeJob newJob(outputTemplate, splitting.size());
+    for(size_t ii = splitting[si].first ; ii < splitting[si].second; ++ii)
+      newJob.inputs.push_back(ii);
+    mergeJobs.push_back(newJob);
+  }
   
   // FIXME: handle the case in which we need to keep old compression
   // FIXME: handle the case in which we need to force the new
   //        compression levels.
-  if (keepCompressionAsIs && !reoptimize)
-    log(1, "hadd compression setting for meta data: %i\n", newcomp);
-  else
-    log(1, "hadd compression setting for all ouput: %i\n", newcomp);
+  log(1, keepCompressionAsIs && !reoptimize 
+         ? "hadd compression setting for meta data: %i\n"
+         : "hadd compression setting for all ouput: %i\n", newcomp);
 
-  // Set the output file.
-  if (append && !merger.OutputFile(targetname,"UPDATE",newcomp))
-    die(2, "hadd error opening target file for update : %s.\n", targetname);
-  else if (!merger.OutputFile(targetname, force, newcomp))
-    die(1, "hadd error opening target file (does %s exists?).\n%s", targetname, 
-           force ? "" : "Pass \"-f\" argument to force re-creation of output file.\n");
-
-  log(1, "Output file set");
-  for (size_t i = 0; i < files.size() ; ++i)
+  for (size_t i = 0; i < mergeJobs.size(); ++i)
   {
-    bool success = merger.AddFile(files[i].c_str());
-    if (!success && skip_errors)
-      std::cerr << "hadd skipping file with error: " << files[i] << std::endl;
-    else if (!success)
-      die(1, "hadd exiting due to error in %s.\n", files[i].c_str());
+    MergeJob &job = mergeJobs[i];
+
+    TFileMerger merger(kFALSE,kFALSE);
+    merger.SetMsgPrefix("hadd");
+    merger.SetPrintLevel(gVerbosity - 1);
+
+    // Make sure we merge only the keys we want.
+    for (size_t mk = 0; mk < mergeableKeys.size(); ++mk)
+      merger.AddObjectNames(mergeableKeys[mk].c_str());
+
+    // Set the output file.
+    if (append && !merger.OutputFile(job.output.c_str(),"UPDATE",newcomp))
+      die(2, "hadd error opening target file for update : %s.\n", job.output.c_str());
+    else if (!merger.OutputFile(job.output.c_str(), force, newcomp))
+      die(1, "hadd error opening target file (does %s exists?).\n%s", job.output.c_str(), 
+             force ? "" : "Pass \"-f\" argument to force re-creation of output file.\n");
+
+    log(1, "Output file set");
+    for (size_t i = 0; i < job.inputs.size() ; ++i)
+    {
+      MergeInput &input = mergeInputs[job.inputs[i]];
+      bool success = merger.AddFile(input.filename.c_str());
+      if (!success && skip_errors)
+        std::cerr << "hadd skipping file with error: " << input.filename << std::endl;
+      else if (!success)
+        die(1, "hadd exiting due to error in %s.\n", input.filename.c_str());
+    }
+
+    if (reoptimize)
+      merger.SetFastMethod(kFALSE);
+    else if (!keepCompressionAsIs && merger.HasCompressionChange())
+        // Don't warn if the user any request re-optimization.
+        log(0, "hadd Sources and Target have different compression levels\n"
+               "hadd merging will be slower\n");
+
+    merger.SetNotrees(noTrees);
+    Bool_t status;
+    int doAppend = append ? TFileMerger::kIncremental : TFileMerger::kRegular;
+    int doOnlyListed = gIncludeRE.empty() ? 0 : TFileMerger::kOnlyListed;
+    status = merger.PartialMerge(TFileMerger::kAll | doAppend | doOnlyListed);
+
+    if (!status) {
+      log(1, "hadd failure during the merge of %i input files in %s\n", 
+             merger.GetMergeList()->GetEntries(), job.output.c_str());
+      exit(1);
+    }
+    log(1, "hadd merged %i input files in %s\n",
+           merger.GetMergeList()->GetEntries(), 
+           job.output.c_str());
   }
-
-  if (reoptimize)
-    merger.SetFastMethod(kFALSE);
-  else if (!keepCompressionAsIs && merger.HasCompressionChange())
-      // Don't warn if the user any request re-optimization.
-      log(0, "hadd Sources and Target have different compression levels\n"
-             "hadd merging will be slower\n");
-
-  merger.SetNotrees(noTrees);
-  Bool_t status;
-  // FIXME: in case we do not have any regular expression, we should simply use kAll.
-  if (append)
-    status = merger.PartialMerge(TFileMerger::kIncremental | TFileMerger::kAll | TFileMerger::kOnlyListed);
-  else 
-    status = merger.PartialMerge(TFileMerger::kRegular | TFileMerger::kAll | TFileMerger::kOnlyListed);
-
-  if (!status) {
-    log(1, "hadd failure during the merge of %i input files in %s\n", 
-           merger.GetMergeList()->GetEntries(), targetname);
-    return 1;
-  }
-  log(1, "hadd merged %i input files in %s\n",
-         merger.GetMergeList()->GetEntries(), 
-         targetname);
   return 0;
 }
