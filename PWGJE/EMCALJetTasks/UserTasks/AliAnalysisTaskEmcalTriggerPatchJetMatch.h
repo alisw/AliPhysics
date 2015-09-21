@@ -83,6 +83,8 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
 
   //void              AddJetTrig(AliEmcalJet *trgjet) { if (!fTrgJet) fTrgJet = new TObjArray(); fTrgJet->Add(trgjet);               }
 
+  TH1*                   FillEventTriggerQA(TH1* h, UInt_t t); // filled event trigger QA plots
+
  protected:
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
@@ -172,6 +174,8 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   TH1F     *fHistClusEnergy; //!
   TH1F     *fHistClusofJetEnergy; //!
   TH2F     *fHistdPhidEtaPatchJetCluster[16]; //!
+
+  TH1F     *fHistEventSelectionQA; //!
 
   TClonesArray               *fJetTriggeredEvent;                       //!jets
   //TObjArray                  *fTrgJet;                                  //!jets

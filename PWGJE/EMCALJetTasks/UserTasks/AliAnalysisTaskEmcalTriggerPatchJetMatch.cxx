@@ -116,6 +116,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fh3EClusELeadingCellVsTime(0),
   fh3JetReacCent(0),
   fHistClusEnergy(0), fHistClusofJetEnergy(0), //new
+  fHistEventSelectionQA(0),
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEventname("JETthatTriggeredEvent"), fJetTriggeredEvent(0),//, fTrgJet(0)
@@ -179,6 +180,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fh3EClusELeadingCellVsTime(0),
   fh3JetReacCent(0),
   fHistClusEnergy(0), fHistClusofJetEnergy(0), // new
+  fHistEventSelectionQA(0),
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEventname("JETthatTriggeredEvent"), fJetTriggeredEvent(0),//, fTrgJet(0)
@@ -237,6 +239,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::SelectEvent() {
 
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
     //cout<<"fired trigger class: "<<firedTrigClass<<endl;
+/*
 
     if(fTriggerClass.Contains(trigType1.Data()) && fTriggerClass.Contains(trigType2.Data())) { //if events with J1&&J2 are requested
       if(!firedTrigClass.Contains(trigType1.Data()) || !firedTrigClass.Contains(trigType2.Data()) ) //check if both are fired
@@ -246,7 +249,9 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::SelectEvent() {
       else if(fTriggerClass.Contains(trigType1.Data()) && firedTrigClass.Contains(trigType2.Data())) //if J2 is requested also add triggers which have J1&&J2. Reject if J1 is requested and J2 is fired
 	    return kFALSE;
     }
+*/
   }
+
   fhNEvents->Fill(1.5);
 
   return kTRUE;
@@ -804,6 +809,11 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
   fhnPatchMatchJetLeadClus->GetAxis(17)->SetTitle("Max Patch Geometric Center in #eta");   // 17
   fOutput->Add(fhnPatchMatchJetLeadClus);
 
+  // Event Selection QA histo
+  fHistEventSelectionQA = new TH1F("fHistEventSelectionQA", "Trigger Selection Counter", 20, 0.5, 20.5);
+  //SetfHistEvtSelQALabels(fHistEventSelectionQA);
+  fOutput->Add(fHistEventSelectionQA);
+
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
@@ -850,6 +860,13 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
   // Fill histograms.
   // create pointer to list of input event
+
+  // check and fill a Event Selection QA histogram for different trigger selections
+  UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+
+  // fill Event Trigger QA
+  FillEventTriggerQA(fHistEventSelectionQA, trig);
+
   TList *list = InputEvent()->GetList();
   if(!list) {
     AliError(Form("ERROR: list not attached\n"));
@@ -961,13 +978,15 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
       AliEmcalJet* jet = GetAcceptJetFromArray(ij,fJetContainer);
       if (!jet) continue; //jet not selected
 
+//
       // method for filling collection output array of 'saved' jets
-      if(jet->Pt() > fJetPtCut) (*fJetTriggeredEvent)[jacc] = jet;
-      ++jacc;
-
+//      if(jet->Pt() > fJetPtCut) (*fJetTriggeredEvent)[jacc] = jet;
+//      ++jacc;
+//
       Double_t jetPt = jet->Pt() - GetRhoVal(fJetContainer)*jet->Area();
       if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
 
+      // fill histos
       Double_t dEPJet = RelativeEP(jet->Phi(), fEPV0);
       fh3JetReacCent->Fill(jet->E(),fCent,dEPJet);
       fh2CentPtJet->Fill(fCent,jetPt);
@@ -977,8 +996,9 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
       //count jets above certain pT threshold
       Int_t ptbin = fh2NJetsPt->GetYaxis()->FindBin(jetPt);
       for(Int_t iptbin = ptbin; iptbin<=fh2NJetsPt->GetNbinsY(); iptbin++)
-	    nJetsArr->AddAt(nJetsArr->At(iptbin)+1,iptbin);
-      
+        nJetsArr->AddAt(nJetsArr->At(iptbin)+1,iptbin);
+
+      // fill histos
       fh2PtNConstituentsCharged->Fill(jetPt,jet->GetNumberOfTracks());
       fh2PtNConstituents->Fill(jetPt,jet->GetNumberOfConstituents());
       fh2PtNEF->Fill(jetPt,jet->NEF());
@@ -1030,8 +1050,8 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
             }
 
             if(doComments) {
-              cout<<Form("Jet # = %i, Jet Pt = %f, Jet Phi =  %f, Jet Eta = %f", ij, jet->Pt(), jet->Phi(), jet->Eta())<<endl;
-              cout<<Form("NClus in jet = %i, MaxClusterPt = %f, MaxClusterE = %f, Phi = %f, Eta = %f", jet->GetNumberOfClusters(), maxClusterPt, maxClusterE, maxClusterPhi, maxClusterEta)<<endl;
+              //cout<<Form("Jet # = %i, Jet Pt = %f, Jet Phi =  %f, Jet Eta = %f", ij, jet->Pt(), jet->Phi(), jet->Eta())<<endl;
+              //cout<<Form("NClus in jet = %i, MaxClusterPt = %f, MaxClusterE = %f, Phi = %f, Eta = %f", jet->GetNumberOfClusters(), maxClusterPt, maxClusterE, maxClusterPhi, maxClusterEta)<<endl;
             }
 
             if(fMaxPatch->GetPatchE() > fPatchECut) {
@@ -1051,6 +1071,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
                 } // do comments
                 //hasfound = kTRUE;
                 //break;
+
                 Double_t dEPJet = RelativeEP(jet->Phi(), fEPV0);
                 Double_t kAmplitudeOnline = fMaxPatch->GetADCAmp();
                 Double_t kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
@@ -1059,7 +1080,12 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
 
                 Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), (Double_t)jet->GetNumberOfTracks(), jet->MaxTrackPt(), (Double_t)jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOnline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};
                 fhnPatchMatchJetLeadClus->Fill(fill);
-              }
+
+                // method for filling collection output array of 'saved' jets
+                (*fJetTriggeredEvent)[jacc] = jet;
+                ++jacc;
+
+              } // MATCH!
             } // patch > 10 GeV
           } // have max cluster
 
@@ -1344,4 +1370,56 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::CorrelateToTrigger(Double_t eta
     }
   }
   return hasfound;
+}
+
+TH1* AliAnalysisTaskEmcalTriggerPatchJetMatch::FillEventTriggerQA(TH1* h, UInt_t trig) {
+  // check and fill a Event Selection QA histogram for different trigger selections after cuts
+  if(trig == 0) h->Fill(1);
+  if(trig & AliVEvent::kAny) h->Fill(2);
+  if(trig & AliVEvent::kAnyINT) h->Fill(3);
+  if(trig & AliVEvent::kMB) h->Fill(4);
+  if(trig & AliVEvent::kINT7) h->Fill(5);
+  if(trig & AliVEvent::kEMC1) h->Fill(6);
+  if(trig & AliVEvent::kEMC7) h->Fill(7);
+  if(trig & AliVEvent::kEMC8) h->Fill(8);
+  if(trig & AliVEvent::kEMCEJE) h->Fill(9);
+  if(trig & AliVEvent::kEMCEGA) h->Fill(10);
+  if(trig & AliVEvent::kCentral) h->Fill(11);
+  if(trig & AliVEvent::kSemiCentral) h->Fill(12);
+  if(trig & AliVEvent::kINT8) h->Fill(13);
+
+  if(trig & (AliVEvent::kEMCEJE | AliVEvent::kMB)) h->Fill(14);
+  if(trig & (AliVEvent::kEMCEGA | AliVEvent::kMB)) h->Fill(15);
+  if(trig & (AliVEvent::kAnyINT | AliVEvent::kMB)) h->Fill(16);
+
+  if(trig & (AliVEvent::kEMCEJE & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral))) h->Fill(17);
+  if(trig & (AliVEvent::kEMCEGA & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral))) h->Fill(18);
+  if(trig & (AliVEvent::kAnyINT & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral))) h->Fill(19);
+
+  // label bins of the analysis trigger selection summary
+  h->GetXaxis()->SetBinLabel(1, "no trigger");
+  h->GetXaxis()->SetBinLabel(2, "kAny");
+  h->GetXaxis()->SetBinLabel(3, "kAnyINT");
+  h->GetXaxis()->SetBinLabel(4, "kMB");
+  h->GetXaxis()->SetBinLabel(5, "kINT7");
+  h->GetXaxis()->SetBinLabel(6, "kEMC1");
+  h->GetXaxis()->SetBinLabel(7, "kEMC7");
+  h->GetXaxis()->SetBinLabel(8, "kEMC8");
+  h->GetXaxis()->SetBinLabel(9, "kEMCEJE");
+  h->GetXaxis()->SetBinLabel(10, "kEMCEGA");
+  h->GetXaxis()->SetBinLabel(11, "kCentral");
+  h->GetXaxis()->SetBinLabel(12, "kSemiCentral");
+  h->GetXaxis()->SetBinLabel(13, "kINT8");
+  h->GetXaxis()->SetBinLabel(14, "kEMCEJE or kMB");
+  h->GetXaxis()->SetBinLabel(15, "kEMCEGA or kMB");
+  h->GetXaxis()->SetBinLabel(16, "kAnyINT or kMB");
+  h->GetXaxis()->SetBinLabel(17, "kEMCEJE & (kMB or kCentral or kSemiCentral)");
+  h->GetXaxis()->SetBinLabel(18, "kEMCEGA & (kMB or kCentral or kSemiCentral)");
+  h->GetXaxis()->SetBinLabel(19, "kAnyINT & (kMB or kCentral or kSemiCentral)");
+
+  // set x-axis labels vertically
+  h->LabelsOption("v");
+  //h->LabelsDeflate("X");
+
+  return h;
 }

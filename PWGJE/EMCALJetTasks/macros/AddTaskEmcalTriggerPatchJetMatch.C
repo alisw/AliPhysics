@@ -58,6 +58,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch* AddTaskEmcalTriggerPatchJetMatch(
 
   //Configure TriggerQA task
   AliAnalysisTaskEmcalTriggerPatchJetMatch *task = new AliAnalysisTaskEmcalTriggerPatchJetMatch(wagonName);
+
   AliParticleContainer *trackCont  = task->AddParticleContainer(kTracksName.Data());
   AliClusterContainer *clusterCont = task->AddClusterContainer(kClusName.Data());
 
