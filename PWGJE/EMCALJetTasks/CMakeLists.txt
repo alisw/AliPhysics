@@ -102,6 +102,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
+    Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
