@@ -765,16 +765,15 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		if(fDoPlotVsCentrality){
 			hCentrality[iCut] = new TH1F("Centrality","Centrality",400,0,100);
 			fESDList[iCut]->Add(hCentrality[iCut]);
+
+			hCentralityVsPrimaryTracks[iCut] = new TH2F("Centrality vs Primary Tracks","Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
+			if(fDoCentralityFlat > 0) hCentralityVsPrimaryTracks[iCut]->Sumw2();
+			fESDList[iCut]->Add(hCentralityVsPrimaryTracks[iCut]);
 		}
 		if(fDoCentralityFlat > 0){
 			hCentralityFlattened[iCut] = new TH1F("CentralityFlattened","CentralityFlattened",400,0,100);
 			hCentralityFlattened[iCut]->Sumw2();
 			fESDList[iCut]->Add(hCentralityFlattened[iCut]);
-		}
-		if(fDoPlotVsCentrality){
-			hCentralityVsPrimaryTracks[iCut] = new TH2F("Centrality vs Primary Tracks","Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
-			if(fDoCentralityFlat > 0) hCentralityVsPrimaryTracks[iCut]->Sumw2();
-			fESDList[iCut]->Add(hCentralityVsPrimaryTracks[iCut]);
 		}
 		
 		if(fIsHeavyIon == 1) hNGammaCandidates[iCut] = new TH1F("GammaCandidates","GammaCandidates",100,0,100);
@@ -810,11 +809,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hNEvents[iCut]->Sumw2();
 			hNGoodESDTracks[iCut]->Sumw2();
 			hVertexZ[iCut]->Sumw2();
-			hCentrality[iCut]->Sumw2();
 			hNGammaCandidates[iCut]->Sumw2();
 			hNV0Tracks[iCut]->Sumw2();
 			hEtaShift[iCut]->Sumw2();
-			if(fDoPlotVsCentrality) hCentralityVsPrimaryTracks[iCut]->Sumw2();
+			if(fDoPlotVsCentrality){
+				hCentralityVsPrimaryTracks[iCut]->Sumw2();
+				hCentrality[iCut]->Sumw2();
+			}
 		}
 		
 		if (fDoPhotonQA == 2){
