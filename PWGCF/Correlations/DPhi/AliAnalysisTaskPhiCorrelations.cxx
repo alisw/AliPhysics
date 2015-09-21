@@ -554,34 +554,40 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       }
     else if (fCentralityMethod == "MCGen_V0M")
     {
-      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
       Float_t MultV0M=0.;
       for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
         AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
         if (!particle)
           continue;
+        Int_t pdgabs=TMath::Abs(particle->PdgCode());
+        if(pdgabs==9902210)return; //no diffractive protons
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
         if( (eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7) )MultV0M++;
       }
-//      if(MultV0M==0)return;
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
       if(fCentralityMCGen_V0M)centrality = MultV0M/fCentralityMCGen_V0M->GetMean();
       else centrality=-1.;
     }
     else if (fCentralityMethod == "MCGen_CL1")
     {
-      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
       Float_t MultCL1=0.;
       for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
         AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
         if (!particle)
           continue;
+        Int_t pdgabs=TMath::Abs(particle->PdgCode());
+        if(pdgabs==9902210)return; //no diffractive protons
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
         if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
         Float_t eta=particle->Eta();
-        if( eta < -1 || eta > 1.)MultCL1++;
+        if( eta < -1. || eta > 1.)MultCL1++;
       }
-//      if(MultCL1==0)return;
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
       if(fCentralityMCGen_CL1)centrality = MultCL1/fCentralityMCGen_CL1->GetMean();
       else centrality=-1.;
