@@ -138,6 +138,7 @@ install(FILES
             AddD2HTrain.C
 	    AddGoodRuns.C
             ConfigVertexingHF.C
+            ConfigVertexingHF_pPbRHF.C
             ConfigVertexingHF_highmult.C
         DESTINATION 
             PWGHF/vertexingHF/)
