@@ -566,7 +566,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       }
 //      if(MultV0M==0)return;
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
-      if(fCentralityWeights)centrality = MultV0M/fCentralityWeights->GetMean();
+      if(fCentralityMCGen_V0M)centrality = MultV0M/fCentralityMCGen_V0M->GetMean();
       else centrality=-1.;
     }
     else if (fCentralityMethod == "MCGen_CL1")
@@ -583,7 +583,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       }
 //      if(MultCL1==0)return;
       ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
-      if(fCentralityWeights)centrality = MultCL1/fCentralityWeights->GetMean();
+      if(fCentralityMCGen_CL1)centrality = MultCL1/fCentralityMCGen_CL1->GetMean();
       else centrality=-1.;
     }
     else
