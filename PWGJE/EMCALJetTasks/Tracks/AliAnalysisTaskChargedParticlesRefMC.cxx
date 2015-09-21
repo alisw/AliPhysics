@@ -136,7 +136,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
   fHistos->CreateTH1("hTriggerJetPtNoCut", "pt of trigger jets wihtout cuts", 1000, 0., 500);
   fHistos->CreateTH1("hRatioPtJetPtHardNoCut", "Ratio of pt jet / pt hard without cut", 100, 0., 2.);
-  fHistos->CreateTH1("hTriggerJetPtNoWithCut", "pt of trigger jets after cuts", 1000, 0., 500);
+  fHistos->CreateTH1("hTriggerJetPtWithCut", "pt of trigger jets after cuts", 1000, 0., 500);
   fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 100, 0., 2.);
   TString triggers[15] = {"True", "MB", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
