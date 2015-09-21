@@ -762,10 +762,10 @@ void AddTask_GammaConvCalo_pp(  	Int_t 		trainConfig 				= 1,  								//change 
 	// ************************************* PHOS cuts ****************************************************
 	// LHC12
 	} else if (trainConfig == 131){ // PHOS clusters 8 TeV LHC12
-		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
+		eventCutArray[ 0] = "00011113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[0] = "0163103100000010"; // 400 MeV cluster min energy
 	} else if (trainConfig == 142){ // With/without Added Signals
-		eventCutArray[ 0] = "00000113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[0] = "0163103100000010"; //
-		eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[1] = "0163103100000010"; //
+		eventCutArray[ 0] = "00011113"; photonCutArray[ 0] = "00200009327000008250400000"; clusterCutArray[0] = "2444400048033200000"; mesonCutArray[0] = "0163103100000010"; //
+		eventCutArray[ 1] = "00011123"; photonCutArray[ 1] = "00200009327000008250400000"; clusterCutArray[1] = "2444400048033200000"; mesonCutArray[1] = "0163103100000010"; //
 
 	// ************************************* EMCAL cuts ****************************************************
 	// 7 TeV

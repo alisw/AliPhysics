@@ -135,7 +135,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		TList*			GetCutHistograms()												{return fHistograms;}
 		TList*			GetExtQAHistograms()											{return fHistExtQA;}
 		void 			FillClusterCutIndex(Int_t photoncut)							{if(fHistCutIndex)fHistCutIndex->Fill(photoncut); return;}
-		void 			InitializeRecUtils (AliVEvent *event);
+		void 			InitializeEMCAL(AliVEvent *event);
+		void			InitializePHOS(AliVEvent *event);
 
 		void 			SetExtendedMatchAndQA(Int_t extendedMatchAndQA)					{fExtendedMatchAndQA = extendedMatchAndQA; return;}
 		void			SetExtendedQA(Int_t extendedQA)									{if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
@@ -190,9 +191,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 		AliEMCALGeometry	*fGeomEMCAL;				// pointer to EMCAL geometry
 		AliEMCALRecoUtils	*fEMCALRecUtils;			// pointer to EMCAL recUtils
-		Bool_t 				fEMCALRecUtilsInitialized;	// flag for EMCal rec utils initialization
+		Bool_t 				fEMCALInitialized;			// flag for EMCal initialization
 		AliPHOSGeometry		*fGeomPHOS;					// pointer to PHOS geometry
+		Bool_t				fPHOSInitialized;			// flag for PHOS initialization
+		Int_t				fPHOSCurrentRun;			// PHOS: current processed run for bad channel map
 		TObjArray*			fEMCALBadChannelsMap;		// pointer to EMCAL bad channel map
+		TH2I**				fPHOSBadChannelsMap;		// pointer to PHOS bad channel map
 		TProfile*			fBadChannels;				// TProfile with bad channels
 		Int_t				fNMaxEMCalModules;			// max number of EMCal Modules
 		Int_t				fNMaxPHOSModules;			// max number of PHOS Modules
@@ -321,7 +325,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,10)
+		ClassDef(AliCaloPhotonCuts,11)
 };
 
 #endif
