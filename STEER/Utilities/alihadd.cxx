@@ -64,6 +64,8 @@
 #include <cstdlib>
 #include <cassert>
 #include <string>
+#include <cstdio>
+#include <cstddef>
 #include "RConfig.h"
 #include "TFile.h"
 #include "THashList.h"
