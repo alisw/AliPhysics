@@ -326,28 +326,40 @@ void AliEveMultiView::SetCenterMuon(Double_t x, Double_t y, Double_t z)
 void AliEveMultiView::DestroyAllGeometries()
 {
     // Destroy 3d, r-phi and rho-z geometries.
-    
-    fGeomGentle->DestroyElements();
-    gEve->RemoveElement(fGeomGentle,gEve->GetGlobalScene());
-    
-    fGeomGentleRPhi->DestroyElements();
-    gEve->RemoveElement(fGeomGentleRPhi,gEve->GetGlobalScene());
-    
-    fGeomGentleRhoZ->DestroyElements();
-    gEve->RemoveElement(fGeomGentleRhoZ,gEve->GetGlobalScene());
-    
-    fGeomGentleMuon->DestroyElements();
-    gEve->RemoveElement(fGeomGentleMuon,gEve->GetGlobalScene());
-    
-    fGeomGentleTrd->DestroyElements();
-    gEve->RemoveElement(fGeomGentleTrd,gEve->GetGlobalScene());
-    
-    fGeomGentleEmcal->DestroyElements();
-    gEve->RemoveElement(fGeomGentleEmcal,gEve->GetGlobalScene());
-
+    if(fGeomGentle){
+        fGeomGentle->DestroyElements();
+        gEve->RemoveElement(fGeomGentle,gEve->GetGlobalScene());
+        fGeomGentle = 0;
+    }
+    if(fGeomGentleRPhi){
+        fGeomGentleRPhi->DestroyElements();
+        gEve->RemoveElement(fGeomGentleRPhi,gEve->GetGlobalScene());
+        fGeomGentleRPhi = 0;
+    }
+    if(fGeomGentleRhoZ){
+        fGeomGentleRhoZ->DestroyElements();
+        gEve->RemoveElement(fGeomGentleRhoZ,gEve->GetGlobalScene());
+        fGeomGentleRhoZ = 0;
+    }
+    if(fGeomGentleMuon){
+        fGeomGentleMuon->DestroyElements();
+        gEve->RemoveElement(fGeomGentleMuon,gEve->GetGlobalScene());
+        fGeomGentleMuon = 0;
+    }
+    if(fGeomGentleTrd){
+        fGeomGentleTrd->DestroyElements();
+        gEve->RemoveElement(fGeomGentleTrd,gEve->GetGlobalScene());
+        fGeomGentleTrd = 0;
+    }
+    if(fGeomGentleEmcal){
+        fGeomGentleEmcal->DestroyElements();
+        gEve->RemoveElement(fGeomGentleEmcal,gEve->GetGlobalScene());
+        fGeomGentleEmcal = 0;
+    }
     if(fGeomGentleZdc){
         fGeomGentleZdc->DestroyElements();
         gEve->RemoveElement(fGeomGentleZdc,gEve->GetGlobalScene());
+        fGeomGentleZdc = 0;
     }
 //    if(fIsMuonView) fGeomGentleMuon->DestroyElements();
     
