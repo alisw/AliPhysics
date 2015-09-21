@@ -1024,6 +1024,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   } // verify existence of jets
 
 /////////////////////////////////////////////////
+/*
   TClonesArray *fTriggerJets = 0x0;
   fTriggerJets = dynamic_cast<TClonesArray*>(list->FindObject("JETthatTriggeredEvent"));
   if(!fTriggerJets) {
@@ -1040,6 +1041,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
     if(doComments) cout<<"NEW TASK: jet# = "<<ijt<<"  jetpt = "<<jtr->Pt()<<endl;
   } //full jet loop
+*/
 //////////////////////////////////////////////////
 
   fHistEventQA->Fill(7);  // events after track/jet pointer check
@@ -1047,8 +1049,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // get number of jets and tracks
   const Int_t Njets = jets->GetEntries(); 
   const Int_t Ntracks = tracks->GetEntries();
-  if(Ntracks<1)   return kTRUE;
-  if(Njets<1)	  return kTRUE;
+/////  if(Ntracks<1)   return kTRUE;
+/////  if(Njets<1)	  return kTRUE;
 
   fHistEventQA->Fill(8); // events after #track and jets < 1 check
 
@@ -1831,7 +1833,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     // PbPb collisions
     if(GetBeamType() == 1) {
       
-      // use only tracks from MB events
+      // use only tracks from MB and Central and Semi-Central events
       if(trigger && fMixingEventType) { //kMB) {
 
         // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
@@ -1840,7 +1842,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         // update pool if jet in event or not
         pool->UpdatePool(tracksClone);
 
-      } // MB events
+      } // MB and Central and Semi-Central events
     } // PbPb collisions
   } // end of event mixing
 
