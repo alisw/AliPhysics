@@ -107,27 +107,27 @@ void AddTask_GammaCaloMerged_pPb( 	Int_t 		trainConfig 				= 1,  								// chan
 	// 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinM20", 14 "MaxM20", 15 "MaximumDispersion", 16 "NLM"
 	
 	// ************************************* EMCAL cuts ****************************************************
-	// LHC11a
-	if (trainConfig == 1){ // 
-		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163103100000000"; //
-		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163103100000000"; //
-		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110001"; mesonCutArray[2] = "0163103100000000"; //
-		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110001"; mesonCutArray[3] = "0163103100000000"; //
-	} else if (trainConfig == 2){ // 
-		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110002"; mesonCutArray[0] = "0163103100000000"; //
-		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163103100000000"; //
-		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163103100000000"; //
-		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163103100000000"; //
-	} else if (trainConfig == 3){ // 
-		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032200000"; clusterMergedCutArray[0] = "1111181050022110001"; mesonCutArray[0] = "0163103100000000"; //
-		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032200000"; clusterMergedCutArray[1] = "1111181050022110001"; mesonCutArray[1] = "0163103100000000"; //
-		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032200000"; clusterMergedCutArray[2] = "1111181050022110001"; mesonCutArray[2] = "0163103100000000"; //
-		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032200000"; clusterMergedCutArray[3] = "1111181050022110001"; mesonCutArray[3] = "0163103100000000"; //
-	} else if (trainConfig == 4){ // 
-		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032200000"; clusterMergedCutArray[0] = "1111181050022110002"; mesonCutArray[0] = "0163103100000000"; //
-		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032200000"; clusterMergedCutArray[1] = "1111181050022110002"; mesonCutArray[1] = "0163103100000000"; //
-		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032200000"; clusterMergedCutArray[2] = "1111181050022110002"; mesonCutArray[2] = "0163103100000000"; //
-		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032200000"; clusterMergedCutArray[3] = "1111181050022110002"; mesonCutArray[3] = "0163103100000000"; //    
+	// LHC13b-d
+	if (trainConfig == 1){ // NLM 1 no non linearity
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110001"; mesonCutArray[0] = "0163100000000000"; //
+		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110001"; mesonCutArray[1] = "0163100000000000"; //
+		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110001"; mesonCutArray[2] = "0163100000000000"; //
+		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110001"; mesonCutArray[3] = "0163100000000000"; //
+	} else if (trainConfig == 2){ // NLM 2 no non linearity
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111100050032200000"; clusterMergedCutArray[0] = "1111100050022110002"; mesonCutArray[0] = "0163102200000000"; //
+		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111100050032200000"; clusterMergedCutArray[1] = "1111100050022110002"; mesonCutArray[1] = "0163102200000000"; //
+		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111100050032200000"; clusterMergedCutArray[2] = "1111100050022110002"; mesonCutArray[2] = "0163102200000000"; //
+		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111100050032200000"; clusterMergedCutArray[3] = "1111100050022110002"; mesonCutArray[3] = "0163102200000000"; //
+	} else if (trainConfig == 3){ // NLM 1 conv non linearity
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032200000"; clusterMergedCutArray[0] = "1111181050022110001"; mesonCutArray[0] = "0163100000000000"; //
+		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032200000"; clusterMergedCutArray[1] = "1111181050022110001"; mesonCutArray[1] = "0163100000000000"; //
+		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032200000"; clusterMergedCutArray[2] = "1111181050022110001"; mesonCutArray[2] = "0163100000000000"; //
+		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032200000"; clusterMergedCutArray[3] = "1111181050022110001"; mesonCutArray[3] = "0163100000000000"; //
+	} else if (trainConfig == 4){ // NLM 2 conv non linearity
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032200000"; clusterMergedCutArray[0] = "1111181050022110002"; mesonCutArray[0] = "0163102200000000"; //
+		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032200000"; clusterMergedCutArray[1] = "1111181050022110002"; mesonCutArray[1] = "0163102200000000"; //
+		eventCutArray[ 2] = "80085013"; clusterCutArray[2] = "1111181050032200000"; clusterMergedCutArray[2] = "1111181050022110002"; mesonCutArray[2] = "0163102200000000"; //
+		eventCutArray[ 3] = "80083013"; clusterCutArray[3] = "1111181050032200000"; clusterMergedCutArray[3] = "1111181050022110002"; mesonCutArray[3] = "0163102200000000"; //    
     // all the cut variations
 	} else {
 		Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
