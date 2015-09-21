@@ -345,9 +345,10 @@ void AliEveMultiView::DestroyAllGeometries()
     fGeomGentleEmcal->DestroyElements();
     gEve->RemoveElement(fGeomGentleEmcal,gEve->GetGlobalScene());
 
-    fGeomGentleZdc->DestroyElements();
-    gEve->RemoveElement(fGeomGentleZdc,gEve->GetGlobalScene());
-    
+    if(fGeomGentleZdc){
+        fGeomGentleZdc->DestroyElements();
+        gEve->RemoveElement(fGeomGentleZdc,gEve->GetGlobalScene());
+    }
 //    if(fIsMuonView) fGeomGentleMuon->DestroyElements();
     
 }
