@@ -217,6 +217,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1nEmbeddedJets(0)
    ,fh1IndexEmbedded(0)
    ,fh1PtEmbBeforeMatch(0)
+   ,fh1PtEmbExtraOnly(0)
    ,fh1PtEmbAfterMatch(0)
    ,fh1FractionPtEmbedded(0)
    ,fh1DeltaREmbedded(0)
@@ -510,6 +511,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh1nEmbeddedJets(0)
   ,fh1IndexEmbedded(0)
   ,fh1PtEmbBeforeMatch(0)
+  ,fh1PtEmbExtraOnly(0)
   ,fh1PtEmbAfterMatch(0)
   ,fh1FractionPtEmbedded(0)
   ,fh1DeltaREmbedded(0)
@@ -805,8 +807,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh2JetEtaPhi(copy.fh2JetEtaPhi)
   ,fh1nEmbeddedJets(copy.fh1nEmbeddedJets)
   ,fh1IndexEmbedded(copy.fh1IndexEmbedded)
-  ,fh1PtEmbBeforeMatch(fh1PtEmbBeforeMatch)
-  ,fh1PtEmbAfterMatch(fh1PtEmbAfterMatch)
+  ,fh1PtEmbBeforeMatch(copy.fh1PtEmbBeforeMatch)
+  ,fh1PtEmbExtraOnly(copy.fh1PtEmbExtraOnly)
+  ,fh1PtEmbAfterMatch(copy.fh1PtEmbAfterMatch)
   ,fh1FractionPtEmbedded(copy.fh1FractionPtEmbedded)
   ,fh1DeltaREmbedded(copy.fh1DeltaREmbedded)
   ,fh2TracksPerpCone(copy.fh2TracksPerpCone)
@@ -1097,6 +1100,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh1nEmbeddedJets                = o.fh1nEmbeddedJets;
     fh1IndexEmbedded                = o.fh1IndexEmbedded;
     fh1PtEmbBeforeMatch             = o.fh1PtEmbBeforeMatch;
+    fh1PtEmbExtraOnly               = o.fh1PtEmbExtraOnly;
     fh1PtEmbAfterMatch             = o.fh1PtEmbAfterMatch;
     fh1FractionPtEmbedded           = o.fh1FractionPtEmbedded;
     fh1DeltaREmbedded              = o.fh1DeltaREmbedded;
@@ -1584,7 +1588,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh2TracksPerpCone             = new TH2F("fh2TracksPerpCone","Charged tracks in 2 perp. cones;#it{p^{ch,jet}}_{T} (GeV/#it{c});#it{p^{ch}}_{T} (GeV/#it{c})",19,5.,100.,120,0.,12.);
   fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1.,10.);
   fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
-  fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets after JetMatching cuts",19,5.,100.);
+  fh1PtEmbExtraOnly             = new TH1F("fh1PtEmbExtraOnly","Pt spectrum of jets from ExtraOnly tracks (embedded truth)",19,5.,100.);
+
+  fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
   fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0.,1.1);
   fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0.,0.5);
 
@@ -2118,6 +2124,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh2JetEtaPhi);
     fCommonHistList->Add(fh1nEmbeddedJets);
     fCommonHistList->Add(fh1IndexEmbedded);
+    fCommonHistList->Add(fh1PtEmbExtraOnly);
     fCommonHistList->Add(fh1PtEmbBeforeMatch);
     fCommonHistList->Add(fh1PtEmbAfterMatch);
     fCommonHistList->Add(fh1FractionPtEmbedded);
@@ -2561,7 +2568,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
     //____ fetch jets _______________________________________________________________
 
-  Int_t nJCuts = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);//fetch list with jets that survived all jet cuts: fJetsRecCuts
+  Int_t nJCuts = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);//fetch list with jets that survived all jet cuts: fJetsRecCuts, still missing is leading constituent cut
 
   Int_t nRecJetsCuts = 0;                                        //number of reconstructed jets after jet cuts
   if(nJCuts>=0) nRecJetsCuts = fJetsRecCuts->GetEntries(); 
@@ -2586,11 +2593,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
     fh1nEmbeddedJets->Fill(nEmbeddedJets);//Number of jets before matching
 
-    for(Int_t in=0; in<nEmbeddedJets; ++in){//Pt spectrum of jets before JetMatching                         
+    for(Int_t in=0; in<nEmbeddedJets; ++in){//Pt spectrum of jets from ExtraOnly tracks (Embedded truth)                         
       AliAODJet* embeddedjet = (AliAODJet*) (fJetsEmbedded->At(in));
       Double_t EmbJetPt = embeddedjet->Pt();
-      fh1PtEmbBeforeMatch->Fill(EmbJetPt);
+      fh1PtEmbExtraOnly->Fill(EmbJetPt);
     } 
+
+    
 
     iEmbeddedMatchIndex.Set(nEmbeddedJets); 
     fEmbeddedPtFraction.Set(nEmbeddedJets); 
@@ -2600,10 +2609,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
     //matching that selects reconstructed jets from embedded+data events by matching to PYTHIA true jets, that have been embedded
    
-      AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets, 
+      AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets,          
 						fJetsRecCuts, nRecJetsCuts, 
 						iEmbeddedMatchIndex, fEmbeddedPtFraction,
-						fDebug, fCutDeltaREmbedded);
+						fDebug, fCutDeltaREmbedded); //needs list of embedded jets (from extraonly particles), number of embedded jets (from extraonly particles), list of reconstructed jets (from extra particles), their indices, the PtFraction, DeltaREmbedded -> these are cut values that have to select a pure sample inside the hybrid events (standard+embedded tracks) 
     
   }
   
@@ -3072,7 +3081,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if(GetFFRadius()<=0){
  	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
       } else {
- 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard) + Check of leading constituent condition (= minPtL) carried out by method implemented in class AliAnalysisTaskFragmentationFunction
       }
       
 
@@ -3414,7 +3423,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   }//no jet events
   
   //____ fill all jet related histos  ________________________________________________________________________________________________________________________
-  //##########################jet loop########################################################################################################################
+  //##########################################################################################################################################################
+  //##########################JET LOOP########################################################################################################################
+  //##########################################################################################################################################################
+  //##########################################################################################################################################################
 
   Int_t nSelJets = nRecJetsCuts; //init value
   Bool_t IsOCEvt = kFALSE; //init for this outside cones normalisation histo (total number of OC events)
@@ -3442,7 +3454,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if(GetFFRadius()<=0){
  	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
       } else {
- 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of charged hybrid tracks in cone around jet axis with cone Radius (= 0.4 standard), application of leading track cut
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of charged hybrid tracks in cone around jet axis with cone Radius (= 0.4 standard), check of leading track bias condition
       }
       
       //not applied at the moment:
@@ -3620,8 +3632,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 
 	//if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets, probably this works not yet, all jets are rejected with these cut values... to be checked again!
+	
+
+	Double_t JetPt = jet->Pt();//jet pt spectrum of all jets before jet matching is applied 
+	fh1PtEmbBeforeMatch->Fill(JetPt);
+	
+
 	  
-	if(ptFractionEmbedded>=fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
+	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
 	  
 	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	    
@@ -4158,24 +4176,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  }
 
 	  //==========
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
