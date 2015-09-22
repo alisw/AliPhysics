@@ -359,7 +359,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fCentralityMethod == "ZNAC")
     fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
   if (fCentralityMethod == "MCGen_V0M")
-    fListOfHistos->Add(new TH1D("Mult_MCGen_V0M", "Mult_MCGen_CL1", 4100, -100, 4000));
+    fListOfHistos->Add(new TH1D("Mult_MCGen_V0M", "Mult_MCGen_VMM", 4100, -100, 4000));
   if (fCentralityMethod == "MCGen_CL1")
     fListOfHistos->Add(new TH1D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 4100, -100, 4000));
 
