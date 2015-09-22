@@ -1,16 +1,16 @@
-void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change different set of cuts
-							  Int_t 	isMC   						= 0,								// run MC
-							  Int_t 	enableQAMesonTask 			= 0, 								// enable meson QA in AliAnalysisTaskGammaConvV1
-							  Int_t 	enableQAPhotonTask 			= 0, 								// enable photon QA in AliAnalysisTaskGammaConvV1
-							  TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
-							  TString 	cutnumberAODBranch 			= "000000006008400001001500000", 	// cutnumber for AOD branch
-							  TString 	periodname 					= "LHC12f1x", 						// period name
-							  Bool_t 	doWeighting 				= kFALSE,							// enables weighting
-							  Bool_t 	enableV0findingEffi 		= kFALSE,
-			                                  Bool_t 	enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
-					                  Bool_t 	enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
-					                  Float_t	maxFacPtHard			= 3.,							// enables V0finding efficiency histograms
-							  TString	periodNameV0Reader		= ""
+void AddTask_GammaConvV1_pp(	Int_t 	trainConfig 				= 1,  								// change different set of cuts
+								Int_t 	isMC   						= 0,								// run MC
+								Int_t 	enableQAMesonTask 			= 0, 								// enable meson QA in AliAnalysisTaskGammaConvV1
+								Int_t 	enableQAPhotonTask 			= 0, 								// enable photon QA in AliAnalysisTaskGammaConvV1
+								TString fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+								TString cutnumberAODBranch 			= "000000006008400001001500000", 	// cutnumber for AOD branch
+								TString periodname 					= "LHC12f1x", 						// period name
+								Bool_t 	doWeighting 				= kFALSE,							// enables weighting
+								Bool_t 	enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								Bool_t 	enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+								Bool_t 	enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+								Float_t	maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
+								TString	periodNameV0Reader			= ""
 							) {
 
 	// ================= Load Librariers =================================
