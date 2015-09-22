@@ -6,7 +6,8 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 							  TString 	cutnumberAODBranch 			= "000000006008400001001500000", 	// cutnumber for AOD branch
 							  TString 	periodname 					= "LHC12f1x", 						// period name
 							  Bool_t 	doWeighting 				= kFALSE,							// enables weighting
-							  Bool_t 	enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+							  Bool_t 	enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+							  TString	periodNameV0Reader			= ""
 							) {
 
 	// ================= Load Librariers =================================
@@ -57,7 +58,7 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
