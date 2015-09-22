@@ -66,7 +66,7 @@
 #include <string>
 #include <cstdio>
 #include <cstddef>
-#include <cstdint>
+#include <stdint.h>
 #include "RConfig.h"
 #include "TFile.h"
 #include "THashList.h"
