@@ -1,14 +1,17 @@
 void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change different set of cuts
-									Int_t 		isMC   						= 0,								// run MC
-									Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
-									Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
-									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
-									Int_t 		doWeightingPart 			= 0,  								// enable Weighting
-									TString 	generatorName 				= "DPMJET",							// generator Name	
-									TString 	cutnumberAODBranch 			= "800000016008400000001500000", 	// cutnumber for AOD branch
-									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
-									Bool_t		enablePlotVsCentrality		= kFALSE,
-									TString		periodNameV0Reader			= ""
+					Int_t 		isMC   						= 0,								// run MC
+					Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+					Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
+					TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+					Int_t 		doWeightingPart 			= 0,  								// enable Weighting
+					TString 	generatorName 				= "DPMJET",							// generator Name	
+					TString 	cutnumberAODBranch 			= "800000016008400000001500000", 	// cutnumber for AOD branch
+					Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+					Bool_t		enablePlotVsCentrality		= kFALSE,
+					Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+					Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+					Float_t		maxFacPtHard				= 3.,
+					TString		periodNameV0Reader			= ""
                            ) {
 
 	Int_t isHeavyIon = 2;
@@ -190,7 +193,9 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 			}
 			
 		}   
-	
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);

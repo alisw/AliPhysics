@@ -4,7 +4,10 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 								Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
 								TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
 								TString 	cutnumberAODBranch 			= "000000006008400001001500000", 	// cutnumber with which AODs have been filtered 
-								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								Bool_t 		enableV0findingEffi 		= kFALSE,
+				                                Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+					                        Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+					                        Float_t		maxFacPtHard				= 3.,							// enables V0finding efficiency histograms
 								TString		periodNameV0Reader			= ""
                            ) {
 
@@ -187,6 +190,9 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		analysisEventCuts[i] = new AliConvEventCuts();
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
