@@ -1346,9 +1346,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 3] = "52400023"; photonCutArray[ 3] = "00216609000002008250400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
 		eventCutArray[ 4] = "52500023"; photonCutArray[ 4] = "00216609000002008250400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
 	} else if ( trainConfig == 198){ // trainConfig for V0 finding efficiency - central classes
-		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0152503500000000"; // 0-10%
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0452503500000000"; // 0-10%
 	} else if ( trainConfig == 199){ // trainConfig for V0 finding efficiency - semicentral classes
-		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0152503500000000"; // 20-40%
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0452503500000000"; // 20-40%
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
