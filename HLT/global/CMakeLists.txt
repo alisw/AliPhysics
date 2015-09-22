@@ -86,6 +86,7 @@ set(SRCS
     AliFlatTPCCluster.h
     AliFlatTPCseed.cxx
     AliFlatTPCseed.h
+    AliHLTLumiRegComponent.cxx
     physics/AliHLTCaloHistoCellEnergy.cxx
     physics/AliHLTCaloHistoClusterEnergy.cxx
     physics/AliHLTCaloHistoComponent.cxx

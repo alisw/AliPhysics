@@ -44,6 +44,7 @@
 #pragma link C++ class AliHLTGlobalFlatEsdTestComponent+;
 #pragma link C++ class AliHLTAnalysisManager+;
 #pragma link C++ class AliHLTAnalysisManagerComponent+;
+#pragma link C++ class AliHLTLumiRegComponent+;
 #ifdef ZMQ
 #pragma link C++ class AliHLTZMQsink+;
 #pragma link C++ class AliHLTZMQsource+;
