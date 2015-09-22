@@ -2,12 +2,15 @@
 import zmq
 import sys
 
+header="INFO"
 request=b"ALIESD"
 endpoint="tcp://localhost:60200"
 if len(sys.argv)>1:
-  request=sys.argv[1];
+  header=sys.argv[1];
 if len(sys.argv)>2:
-  endpoint=sys.argv[2];
+  request=sys.argv[2];
+if len(sys.argv)>3:
+  endpoint=sys.argv[3];
 
 #  Prepare our context and sockets
 context = zmq.Context()
@@ -15,7 +18,7 @@ socket = context.socket(zmq.REQ)
 socket.connect(endpoint)
 
 #send request
-socket.send(request,zmq.SNDMORE)
+socket.send(header,zmq.SNDMORE)
 socket.send(request)
 print("sent request: "+request)
 
