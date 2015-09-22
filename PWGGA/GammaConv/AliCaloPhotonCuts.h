@@ -157,6 +157,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 									Int_t isMC, AliAODCaloCluster* cluster1, AliAODCaloCluster* cluster2);
 		Int_t 			FindLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
 		Int_t 			FindSecondLargestCellInCluster(AliVCluster* cluster, AliVEvent* event);
+		Bool_t			CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
 		
 		// Set Individual Cuts
 		Bool_t 			SetClusterTypeCut(Int_t);
@@ -215,7 +216,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Double_t 	fMaxPhiCut; 						// phi cut
 		Bool_t 		fUsePhiCut;							// flag for switching on phi cut
 		Double_t 	fMinDistanceToBadChannel; 			// minimum distance to bad channel
-		Bool_t 		fUseDistanceToBadChannel;			// flag for switching on distance to bad channel cut
+		Int_t 		fUseDistanceToBadChannel;			// flag for switching on distance to bad channel cut: 0 off, 1 on without corners, 2 on with corners included
 		Double_t 	fMaxTimeDiff; 						// maximum time difference to triggered collision
 		Double_t	fMinTimeDiff;						// minimum time difference to triggered collision
 		Bool_t 		fUseTimeDiff;						// flag for switching on time difference cut
@@ -325,7 +326,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,11)
+		ClassDef(AliCaloPhotonCuts,12)
 };
 
 #endif

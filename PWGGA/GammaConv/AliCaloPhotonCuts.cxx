@@ -1128,7 +1128,6 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event)
 //************************************************************************
 Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event){
 
-
 	const Int_t   nc = cluster->GetNCells();
 	
 	Int_t   absCellIdList[nc]; 
@@ -1178,7 +1177,7 @@ Int_t AliCaloPhotonCuts::FindLargestCellInCluster(AliVCluster* cluster, AliVEven
 
 	const Int_t nCells 		= cluster->GetNCells();
 	AliVCaloCells* cells	= NULL;
-	
+
 	if (fClusterType == 1 ) cells = event->GetEMCALCells();
 	else if (fClusterType ==2 ) cells = event->GetPHOSCells();
 	
@@ -1188,11 +1187,12 @@ Int_t AliCaloPhotonCuts::FindLargestCellInCluster(AliVCluster* cluster, AliVEven
 	
 	if (nCells < 1) return idMax;
 	for (Int_t iCell = 0; iCell < nCells; iCell++){
-		if (cells->GetCellAmplitude(cluster->GetCellAbsId(iCell))> eMax){
-			eMax 		= cells->GetCellAmplitude(cluster->GetCellAbsId(iCell));
-			idMax 		= cluster->GetCellAbsId(iCell);
-		}	
-	}	
+		Int_t cellAbsID = cluster->GetCellAbsId(iCell);
+		if (cells->GetCellAmplitude(cellAbsID)> eMax){
+			eMax 		= cells->GetCellAmplitude(cellAbsID);
+			idMax 		= cellAbsID;
+		}
+	}
 	return idMax;
 	
 }
@@ -1470,6 +1470,143 @@ void AliCaloPhotonCuts::SplitEnergy(Int_t absCellId1, Int_t absCellId2,
 	}
 }
 
+//________________________________________________________________________
+Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event)
+{
+	if(fUseDistanceToBadChannel != 1 && fUseDistanceToBadChannel != 2) return kFALSE;
+
+	//not yet fully implemented for PHOS:
+	if( fClusterType == 2) return kFALSE;
+
+	if( fClusterType == 1 && !fEMCALInitialized ) InitializeEMCAL(event);
+	if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
+
+	Int_t largestCellID = FindLargestCellInCluster(cluster,event);
+	if(largestCellID==-1) AliFatal("CheckDistanceToBadChannel: FindLargestCellInCluster found cluster with NCells<1?");
+
+	Int_t largestCellicol = -1, largestCellirow = -1;
+	Int_t rowdiff =  0, coldiff =  0;
+
+	Int_t largestCelliMod = GetModuleNumberAndCellPosition(largestCellID, largestCellicol, largestCellirow);
+	if(largestCelliMod < 0) AliFatal("CheckDistanceToBadChannel: GetModuleNumberAndCellPosition found SM with ID<0?");
+
+	Int_t nMinRows = 0, nMaxRows = 0;
+	Int_t nMinCols = 0, nMaxCols = 0;
+
+	Bool_t checkNextSM = kFALSE;
+	Int_t distanceForLoop = fMinDistanceToBadChannel+1;
+	if( fClusterType == 1 ){
+		nMinRows = largestCellirow - distanceForLoop;
+		nMaxRows = largestCellirow + distanceForLoop;
+		if(nMinRows < 0) nMinRows = 0;
+		if(nMaxRows > AliEMCALGeoParams::fgkEMCALRows) nMaxRows = AliEMCALGeoParams::fgkEMCALRows;
+
+		nMinCols = largestCellicol - distanceForLoop;
+		nMaxCols = largestCellicol + distanceForLoop;
+
+		if(largestCelliMod%2){
+			if(nMinCols < 0){
+				nMinCols = 0;
+				checkNextSM = kTRUE;
+			}
+			if(nMaxCols > AliEMCALGeoParams::fgkEMCALCols) nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
+		}else{
+			if(nMinCols < 0) nMinCols = 0;
+			if(nMaxCols > AliEMCALGeoParams::fgkEMCALCols){
+				nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
+				checkNextSM = kTRUE;
+			}
+		}
+	}else if( fClusterType == 2 ){
+//		nMaxRows = 64;
+//		nMaxCols = 56;
+	}
+
+//	cout << "Cluster: " << fClusterType << ",checkNextSM: " << checkNextSM << endl;
+//	cout << "largestCell: " << largestCellID << ",mod: " << largestCelliMod << ",col: " << largestCellicol << ",row: " << largestCellirow << endl;
+//	cout << "distanceForLoop: " << distanceForLoop << ",nMinRows: " << nMinRows << ",nMaxRows: " << nMaxRows << ",nMinCols: " << nMinCols << ",nMaxCols: " << nMaxCols << endl;
+
+	//check bad cells within respective SM
+	for (Int_t irow = nMinRows; irow < nMaxRows; irow++)
+	{
+		for (Int_t icol = nMinCols; icol < nMaxCols; icol++)
+		{
+			if(irow == largestCellirow && icol == largestCellicol) continue;
+
+			Int_t iBadCell = 0;
+			if( fClusterType == 1 && largestCelliMod<fEMCALBadChannelsMap->GetEntries()){
+				iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(largestCelliMod))->GetBinContent(icol,irow);
+			}else if( fClusterType == 2 && fPHOSBadChannelsMap[largestCelliMod+1]){
+				iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[largestCelliMod+1])->GetBinContent(icol,irow);
+			}
+			//cout << "largestCelliMod: " << largestCelliMod << ",iBadCell: " << iBadCell << ",icol: " << icol << ",irow: " << irow << endl;
+			if(iBadCell==0) continue;
+
+			rowdiff = TMath::Abs( largestCellirow - irow ) ;
+			coldiff = TMath::Abs( largestCellicol - icol ) ;
+			//cout << "rowdiff: " << rowdiff << ",coldiff: " << coldiff << endl;
+			if(fUseDistanceToBadChannel==1){
+				if ((coldiff + rowdiff <= fMinDistanceToBadChannel )) return kTRUE;
+			}else if(fUseDistanceToBadChannel==2){
+				if (( coldiff <= fMinDistanceToBadChannel )  && ( rowdiff <= fMinDistanceToBadChannel ) && (coldiff + rowdiff <= fMinDistanceToBadChannel*2)) return kTRUE;
+			}
+			//cout << "not within distanceToBadChannel!" << endl;
+		}
+	}
+
+	//check bad cells in neighboring SM only if within chosen distanceToBadChannel from maxEnergyCell the next SM could be reached
+	if(checkNextSM) {
+		// In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
+		// C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
+		if( fClusterType == 1 ){
+			if(largestCelliMod%2){
+				nMinCols = largestCellicol - distanceForLoop + AliEMCALGeoParams::fgkEMCALCols;
+				nMaxCols = AliEMCALGeoParams::fgkEMCALCols;
+
+				largestCelliMod -= 1;
+				largestCellicol += AliEMCALGeoParams::fgkEMCALCols;
+			}else{
+				nMinCols = 0;
+				nMaxCols = largestCellicol + distanceForLoop - AliEMCALGeoParams::fgkEMCALCols;
+
+				largestCelliMod += 1;
+				largestCellicol -= AliEMCALGeoParams::fgkEMCALCols;
+			}
+		}else if( fClusterType == 2 ){
+//			nMaxRows = 64;
+//			nMaxCols = 56;
+		}
+		//cout << "largestCell: " << largestCellID << ",mod: " << largestCelliMod << ",col: " << largestCellicol << ",row: " << largestCellirow << endl;
+		//cout << "distanceForLoop: " << distanceForLoop << ",nMinRows: " << nMinRows << ",nMaxRows: " << nMaxRows << ",nMinCols: " << nMinCols << ",nMaxCols: " << nMaxCols << endl;
+		for (Int_t irow = nMinRows; irow < nMaxRows; irow++)
+		{
+			for (Int_t icol = nMinCols; icol < nMaxCols; icol++)
+			{
+				Int_t iBadCell = 0;
+				if( fClusterType == 1 && largestCelliMod<fEMCALBadChannelsMap->GetEntries()){
+					iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(largestCelliMod))->GetBinContent(icol,irow);
+				}else if( fClusterType == 2 && fPHOSBadChannelsMap[largestCelliMod+1]){
+					iBadCell = (Int_t) ((TH2I*)fPHOSBadChannelsMap[largestCelliMod+1])->GetBinContent(icol,irow);
+				}
+				//cout << "largestCelliMod: " << largestCelliMod << ",iBadCell: " << iBadCell << ",icol: " << icol << ",irow: " << irow << endl;
+				if(iBadCell==0) continue;
+
+				rowdiff = TMath::Abs( largestCellirow - irow ) ;
+				coldiff = TMath::Abs( largestCellicol - icol ) ;
+				//cout << "rowdiff: " << rowdiff << ",coldiff: " << coldiff << endl;
+				if(fUseDistanceToBadChannel==1){
+					if ((coldiff + rowdiff <= fMinDistanceToBadChannel )) return kTRUE;
+				}else if(fUseDistanceToBadChannel==2){
+					if (( coldiff <= fMinDistanceToBadChannel )  && ( rowdiff <= fMinDistanceToBadChannel ) && (coldiff + rowdiff <= fMinDistanceToBadChannel*2)) return kTRUE;
+				}
+				//cout << "not within distanceToBadChannel!" << endl;
+			}
+		}
+	}
+
+	return kFALSE;
+}
+
 
 //________________________________________________________________________
 Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * event, Int_t isMC)
@@ -1536,13 +1673,11 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelected(AliVCluster *cluster, AliVEvent * ev
 Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event) 
 {
    // Exclude certain areas for photon reconstruction
-    if(event){} // suppress warning
 
 	Int_t cutIndex=0;
 	if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
 	cutIndex++;
 
-	
 //	Double_t vertex[3] = {0,0,0};
 // 	event->GetPrimaryVertex()->GetXYZ(vertex);
 	// TLorentzvector with cluster
@@ -1575,8 +1710,8 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event)
 	cutIndex++;
 	
 	// check distance to bad channel
-	if (fUseDistanceToBadChannel){
-		if (cluster->GetDistanceToBadChannel() < fMinDistanceToBadChannel){
+	if (fUseDistanceToBadChannel>0){
+		if (CheckDistanceToBadChannel(cluster,event)){
 			if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
 			return kFALSE;
 		}	
@@ -1948,7 +2083,7 @@ void AliCaloPhotonCuts::PrintCutsWithValues() {
 	if (fClusterType == 2) printf("\tPHOS calorimeter clusters are used\n");
 	if (fUseEtaCut) printf("\t%3.2f < eta_{cluster} < %3.2f\n", fMinEtaCut, fMaxEtaCut );
 	if (fUsePhiCut) printf("\t%3.2f < phi_{cluster} < %3.2f\n", fMinPhiCut, fMaxPhiCut );
-	if (fUseDistanceToBadChannel) printf("\tcut on exotics applied \n");
+	if (fUseDistanceToBadChannel>0) printf("\tdistance to bad channel used in mode '%i', distance in cells: %f \n",fUseDistanceToBadChannel, fMinDistanceToBadChannel);
 	
 	printf("Cluster Quality cuts: \n");
 	if (fUseTimeDiff) printf("\t %3.2f < time difference < %3.2f\n", fMinTimeDiff, fMaxTimeDiff );
@@ -2131,8 +2266,36 @@ Bool_t AliCaloPhotonCuts::SetDistanceToBadChannelCut(Int_t distanceToBadChannel)
 		fMinDistanceToBadChannel=0;
 		break;
 	case 1: 
-		if (!fUseDistanceToBadChannel) fUseDistanceToBadChannel=1;
-		fMinDistanceToBadChannel=5;
+		if(fUseDistanceToBadChannel!=1) fUseDistanceToBadChannel=1;
+		fMinDistanceToBadChannel=1;
+		break;
+	case 2:
+		if(fUseDistanceToBadChannel!=1) fUseDistanceToBadChannel=1;
+		fMinDistanceToBadChannel=2;
+		break;
+	case 3:
+		if(fUseDistanceToBadChannel!=1) fUseDistanceToBadChannel=1;
+		fMinDistanceToBadChannel=3;
+		break;
+	case 4:
+		if(fUseDistanceToBadChannel!=1) fUseDistanceToBadChannel=1;
+		fMinDistanceToBadChannel=4;
+		break;
+	case 5:
+		if(fUseDistanceToBadChannel!=2) fUseDistanceToBadChannel=2;
+		fMinDistanceToBadChannel=1;
+		break;
+	case 6:
+		if(fUseDistanceToBadChannel!=2) fUseDistanceToBadChannel=2;
+		fMinDistanceToBadChannel=2;
+		break;
+	case 7:
+		if(fUseDistanceToBadChannel!=2) fUseDistanceToBadChannel=2;
+		fMinDistanceToBadChannel=3;
+		break;
+	case 8:
+		if(fUseDistanceToBadChannel!=2) fUseDistanceToBadChannel=2;
+		fMinDistanceToBadChannel=4;
 		break;
 	default:
 		AliError(Form("minimum distance to bad channel Cut not defined %d",distanceToBadChannel));
