@@ -110,6 +110,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fDCApip(0.5),
   fDCAdpi(0.5),
   fAngledp(TMath::Pi()),
+  fAngledpi(TMath::Pi()),
   fMaxPMotherCM(999.),
   fLowCentrality(0.),
   fHighCentrality(80.),
@@ -1273,7 +1274,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistAngleCorr_dp_ppi->Fill(d1.Angle(p1),p1.Angle(pi1));
 	fHistAngleCorr_ppi_dpi->Fill(p1.Angle(pi1),d1.Angle(pi1));
   
-	
+	if(d1.Angle(p1) > fAngledp) continue;
+	if(d1.Angle(pi1) > fAngledpi) continue;
 	
 	//Momentum in the CM: Boost LAB-->CM
 	
@@ -1302,8 +1304,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistDecayMomCM->Fill(pTotHyperCM);
 
 	if(pTotHyperCM > fMaxPMotherCM) continue;
-
-	if(d1.Angle(p1) > fAngledp) continue;
 	
 	if(charge_d>0 && charge_p>0 && charge_pi<0)	fHistMassHypertriton->Fill(Hypertriton.M());
 	
