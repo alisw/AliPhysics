@@ -186,8 +186,8 @@ int main( int argc, char **argv )
   Bool_t keepCompressionAsIs = kFALSE;
   Bool_t useFirstInputCompression = kFALSE;
   std::vector<TRegexp *> gIncludeRE;
-  size_t gMaxFilesPerJob = SIZE_MAX;
-  size_t gCostLimit = SIZE_MAX;
+  size_t gMaxFilesPerJob = 18446744073709551615UL;
+  size_t gCostLimit = 18446744073709551615UL;
   std::vector<std::string> mergeableKeys;
 
   Int_t newcomp = -1;
