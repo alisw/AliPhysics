@@ -178,7 +178,6 @@ void AliMFTTrackFinder::LoadClusters( TClonesArray *clusterArrayFront[AliMFTCons
       AliMFTCluster * cluster = (AliMFTCluster *)clusterArrayFront[iPlane]->At(iCluster);
       caHit->SetPos(cluster->GetX(), cluster->GetY(), cluster->GetZ());
       caHit->SetTrackGID(cluster->GetMCLabel(0),iPlane*2,caLayer->GetNhits()-1,0);
-
     }
     // Treating BACK face of the plane
     caLayer = GetLayer(iPlane*2+1);
@@ -1824,13 +1823,14 @@ void AliMFTTrackFinder::FilterTracks() {
         zmin = -(x0*xS+y0*yS)/(xS*xS+yS*yS);
         track->SetTheta(trkThe);
         track->SetPhi(trkPhi);
-        track->SetZDCA(zmin);
         if (fCalcVertex) {
-          track->SetXatDCA(x0+xS*fZVertCalc);
-          track->SetYatDCA(y0+yS*fZVertCalc);
+          track->SetVertX(x0+xS*fZVertCalc);
+          track->SetVertY(y0+yS*fZVertCalc);
+	  track->SetVertZ(fZVertCalc);
         } else {
-          track->SetXatDCA(x0+xS*fZVertDet);
-          track->SetYatDCA(y0+yS*fZVertDet);
+          track->SetVertX(x0+xS*fZVertDet);
+          track->SetVertY(y0+yS*fZVertDet);
+	  track->SetVertZ(fZVertDet);
         }
         ndof = nptr-2;
         track->SetChiSqX(chisqx/(Double_t)ndof);

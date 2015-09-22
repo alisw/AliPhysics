@@ -31,6 +31,7 @@
 #include "TFile.h"
 #include "TROOT.h"
 #include "AliGenParamPionsKaons.h"
+#include "TVector3.h"
 
 ClassImp(AliGenParamPionsKaons)
 
@@ -85,6 +86,7 @@ void AliGenParamPionsKaons::Generate() {
   Double_t mass=0., pt=0., rap=0., mom=0., energy=0, mt=0., phi=0., time=0.;
   Int_t nt;
   Int_t pdgCode;
+  Double_t theta = 0.;
 
   for (Int_t j=0; j<3; j++) origin[j] = fOrigin[j];
   time = fTimeOrigin;
@@ -101,8 +103,6 @@ void AliGenParamPionsKaons::Generate() {
     pdgCode = TMath::Nint(fHistPdgCode->GetRandom());
     if (TMath::Abs(pdgCode)==321 && !fGenerateKaon) continue;
     if (TMath::Abs(pdgCode)==211 && !fGeneratePion) continue;
-	
-    mass = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
 
     switch (pdgCode) {
     case 211:
@@ -119,6 +119,8 @@ void AliGenParamPionsKaons::Generate() {
       break;
     }
 
+    mass = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
+
     mt = TMath::Sqrt(mass*mass + pt*pt);
     energy = mt * TMath::CosH(rap);
     mom = TMath::Sqrt(energy*energy - mass*mass);
@@ -132,6 +134,11 @@ void AliGenParamPionsKaons::Generate() {
     p[1] = pt*TMath::Sin(phi);
     p[2] = mt*TMath::SinH(rap);
     
+    TVector3 pv = TVector3(p);
+    theta = pv.Theta();
+    
+    if (TestBit(kThetaRange)) if (theta<fThetaMin || theta>fThetaMax) continue;
+
     PushTrack(1, -1, Int_t(pdgCode), 
 	      p[0],p[1],p[2],energy, 
 	      origin[0],origin[1],origin[2],Double_t(time), 

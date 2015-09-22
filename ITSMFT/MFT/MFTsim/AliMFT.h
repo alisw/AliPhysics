@@ -75,9 +75,9 @@ public:
   TObjArray*    GetRecPointsList()            const{return fRecPointsPerPlane;}    // get cluster list for all layers
   TClonesArray* GetRecPointsList(Int_t plane) const{return fRecPointsPerPlane ? (TClonesArray*) fRecPointsPerPlane->At(plane):0; }
   
-  void ResetSDigits()   { if(fSDigitsPerPlane)   for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fSDigitsPerPlane  ->At(iPlane))->Clear(); }   // reset sdigits list
-  void ResetDigits()    { if(fDigitsPerPlane)    for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fDigitsPerPlane   ->At(iPlane))->Clear(); }   // reset digits list
-  void ResetRecPoints() { if(fRecPointsPerPlane) for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fRecPointsPerPlane->At(iPlane))->Clear(); }   // reset recPoints list
+  void ResetSDigits()   { if(fSDigitsPerPlane)   for(int iPlane=0; iPlane<AliMFTConstants::kNDisks; iPlane++) ((TClonesArray*) fSDigitsPerPlane  ->At(iPlane))->Clear(); }   // reset sdigits list
+  void ResetDigits()    { if(fDigitsPerPlane)    for(int iPlane=0; iPlane<AliMFTConstants::kNDisks; iPlane++) ((TClonesArray*) fDigitsPerPlane   ->At(iPlane))->Clear(); }   // reset digits list
+  void ResetRecPoints() { if(fRecPointsPerPlane) for(int iPlane=0; iPlane<AliMFTConstants::kNDisks; iPlane++) ((TClonesArray*) fRecPointsPerPlane->At(iPlane))->Clear(); }   // reset recPoints list
   
   AliDigitizer* CreateDigitizer(AliDigitizationInput *digInp) const { return new AliMFTDigitizer(digInp); }
   

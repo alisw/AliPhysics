@@ -499,6 +499,7 @@ void AliMFT::Hits2SDigitsLocal(TClonesArray *hits, const TObjArray *pSDig, Int_t
   for (Int_t iHit=0; iHit<hits->GetEntries(); iHit++) {
 
     AliMFTHit *hit = (AliMFTHit*) hits->At(iHit);
+
 //    AliDebug(1,Form("\n--- New hit x,y,z %f %f %f  ",hit->X(), hit->Y(), hit->Z()));
 
     // Creating "main digit"
@@ -675,6 +676,8 @@ void AliMFT::SetGeometry() {
   //
   //  fNPlanes = fSegmentation->GetNPlanes();
   
+  fNPlanes = AliMFTConstants::kNDisks;
+
 }
 
 //====================================================================================================================================================

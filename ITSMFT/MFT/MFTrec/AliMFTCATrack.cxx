@@ -16,14 +16,15 @@ fNcells(0),
 fStartLayer(-1),
 fCellGIDarray(),
 fMCflag(0),
-fZDCA(0.),
-fXatDCA(0.),
-fYatDCA(0.),
+fVertX(0.),
+fVertY(0.),
+fVertZ(0.),
 fTheta(0.),
 fPhi(0.),
 fChiSqX(0.),
 fChiSqY(0.),
-fMCindex(-1)
+fMCindex(-1),
+fChargeSign(0.)
 {
   
   fCells = new TClonesArray("AliMFTCACell", fNDetMax);
@@ -38,14 +39,15 @@ fGID(track.fGID),
 fNcells(track.fNcells),
 fStartLayer(track.fStartLayer),
 fMCflag(track.fMCflag),
-fZDCA(track.fZDCA),
-fXatDCA(track.fXatDCA),
-fYatDCA(track.fYatDCA),
+fVertX(track.fVertX),
+fVertY(track.fVertY),
+fVertZ(track.fVertZ),
 fTheta(track.fTheta),
 fPhi(track.fPhi),
 fChiSqX(track.fChiSqX),
 fChiSqY(track.fChiSqY),
-fMCindex(track.fMCindex)
+fMCindex(track.fMCindex),
+fChargeSign(track.fChargeSign)
 {
   
   // copy constructor

@@ -31,14 +31,14 @@ public:
   void SetStartLayer(Int_t sl) { fStartLayer = sl; }
   void SetMCflag(UChar_t mcf) { fMCflag = mcf; }
   const UChar_t GetMCflag() { return fMCflag; }
-  void SetXatDCA(Double_t xdca) { fXatDCA = xdca; }
-  void SetYatDCA(Double_t ydca) { fYatDCA = ydca; }
-  void SetZDCA(Double_t zdca) { fZDCA = zdca; }
+  void SetVertX(Double_t x) { fVertX = x; }
+  void SetVertY(Double_t y) { fVertY = y; }
+  void SetVertZ(Double_t z) { fVertZ = z; }
   void SetTheta(Double_t the) { fTheta = the; }
   void SetPhi(Double_t phi) { fPhi = phi; }
-  const Double_t GetXatDCA() { return fXatDCA; }
-  const Double_t GetYatDCA() { return fYatDCA; }
-  const Double_t GetZDCA()   { return fZDCA; }
+  const Double_t GetVertX() { return fVertX; }
+  const Double_t GetVertY() { return fVertY; }
+  const Double_t GetVertZ() { return fVertZ; }
   const Double_t GetTheta() { return fTheta; }
   const Double_t GetPhi() { return fPhi; }
   void SetChiSqX(Double_t chisq) { fChiSqX = chisq; }
@@ -48,6 +48,8 @@ public:
   Double_t AddCellToChiSq(AliMFTCACell *cell);
   void SetMCindex(Int_t index) { fMCindex = index; }
   const Int_t GetMCindex() { return fMCindex; }
+  void SetChargeSign(Short_t sign) { fChargeSign = sign; }
+  const Short_t GetChargeSign() { return fChargeSign; }
   
 private:
   static const Int_t fNDetMax = AliMFTConstants::fNMaxPlanes;
@@ -66,17 +68,17 @@ private:
                                   // 3 = fake
                                   // 4 = noise
   
-  Double_t fZDCA;                 // z of the DCA between the track
-                                  // and the beam axis [cm]
-  Double_t fXatDCA;               // x at zDCA [cm]
-  Double_t fYatDCA;               // y at zDCA [cm]
+  Double_t fVertX;                // x at z vertex [cm]
+  Double_t fVertY;                // y at z vertex [cm]
+  Double_t fVertZ;                // z vertex [cm]
   Double_t fTheta;                // theta fit [deg]
   Double_t fPhi;                  // phi fit [deg]
   Double_t fChiSqX;               // reduced ChiSq en xz
   Double_t fChiSqY;               // reduced ChiSq en yz
   Int_t    fMCindex;              // MC track index for clean tracks
+  Short_t  fChargeSign;           // estimated sign of the charge
   
-  ClassDef(AliMFTCATrack,1);
+  ClassDef(AliMFTCATrack,2);
   
 };
 
