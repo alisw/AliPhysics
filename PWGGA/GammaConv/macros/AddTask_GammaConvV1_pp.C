@@ -6,8 +6,11 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 							  TString 	cutnumberAODBranch 			= "000000006008400001001500000", 	// cutnumber for AOD branch
 							  TString 	periodname 					= "LHC12f1x", 						// period name
 							  Bool_t 	doWeighting 				= kFALSE,							// enables weighting
-							  Bool_t 	enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
-							  TString	periodNameV0Reader			= ""
+							  Bool_t 	enableV0findingEffi 		= kFALSE,
+			                                  Bool_t 	enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+					                  Bool_t 	enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+					                  Float_t	maxFacPtHard			= 3.,							// enables V0finding efficiency histograms
+							  TString	periodNameV0Reader		= ""
 							) {
 
 	// ================= Load Librariers =================================
@@ -663,7 +666,11 @@ void AddTask_GammaConvV1_pp(  Int_t 	trainConfig 				= 1,  								// change dif
 		}	
 		//		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kFALSE, kFALSE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 		if (doWeighting) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
-		
+
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);

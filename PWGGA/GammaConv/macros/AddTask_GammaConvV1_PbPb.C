@@ -12,6 +12,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 								TString		fileNameInputForCentFlattening 	= "InterpValuesAndFlattening.root",
 								Int_t 		doFlattening 				= 0,
 								Bool_t		enableChargedPrimary		= kTRUE,
+				                                Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+					                        Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+					                        Float_t		maxFacPtHard				= 3.,
 								TString		periodNameV0Reader			= ""
                            ) {
 
@@ -1578,7 +1581,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 			}
 		}
 
-		
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
 			if (headerSelectionInt == 1) analysisEventCuts[i]->SetAddedSignalPDGCode(111);

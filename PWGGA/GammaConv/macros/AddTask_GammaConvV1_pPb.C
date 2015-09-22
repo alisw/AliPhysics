@@ -1,14 +1,17 @@
 void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change different set of cuts
-								Int_t	 	isMC   = 0,														// run MC
-								Int_t 		enableQAMesonTask = 0, 											// enable QA in AliAnalysisTaskGammaConvV1
-								Int_t 		enableQAPhotonTask = 0, 										// enable additional QA task
-								TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
-								Int_t 		doWeightingPart 			= 0, 			 					// enable Weighting
-								TString 	generatorName 				= "DPMJET",							// generator Name
-                                TString 	cutnumberAODBranch 			= "800000006008400000150000000", 	// cutnumber for AOD branch
-								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
-								Bool_t		enablePlotVsCentrality		= kFALSE,
-								TString		periodNameV0Reader			= ""
+				Int_t	 	isMC   = 0,														// run MC
+				Int_t 		enableQAMesonTask = 0, 											// enable QA in AliAnalysisTaskGammaConvV1
+				Int_t 		enableQAPhotonTask = 0, 										// enable additional QA task
+				TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+				Int_t 		doWeightingPart 			= 0, 			 					// enable Weighting
+				TString 	generatorName 				= "DPMJET",							// generator Name
+				TString 	cutnumberAODBranch 			= "800000006008400000150000000", 	// cutnumber for AOD branch
+				Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+				Bool_t		enablePlotVsCentrality		= kFALSE,
+				Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+				Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+				Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
+				TString		periodNameV0Reader			= ""
                            ) {
 
 	// ================= Load Librariers =================================
@@ -1148,6 +1151,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
+		
 		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17||
 		     trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 ||
 		     trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ||
@@ -1278,6 +1282,11 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 																			"Eta_Fit_Data_pPb_5023GeV_60100V0A");
 			}
 		}
+
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);
