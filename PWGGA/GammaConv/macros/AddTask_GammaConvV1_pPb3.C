@@ -10,7 +10,7 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 					Bool_t		enablePlotVsCentrality		= kFALSE,
 					Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 					Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
-					Float_t		maxFacPtHard				= 3.,
+					Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
 					TString		periodNameV0Reader			= ""
                            ) {
 

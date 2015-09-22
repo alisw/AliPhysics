@@ -5,10 +5,10 @@ void AddTask_GammaConvV1_PbPb2(  	Int_t 		trainConfig 				= 1,  								// chang
 									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
 									Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 									TString 	cutnumberAODBranch 			= "100000006008400000001500000", 	// cutnumber with which AODs have been filtered
-       									Bool_t 		enableV0findingEffi 		= kFALSE,
-        				                                Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
-	        				                        Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
-		        			                        Float_t		maxFacPtHard				= 3.,							// enables V0finding efficiency histograms
+									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+									Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+									Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+									Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
 									TString		periodNameV0Reader			= ""
                            ) {
 

@@ -12,9 +12,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 								TString		fileNameInputForCentFlattening 	= "InterpValuesAndFlattening.root",
 								Int_t 		doFlattening 				= 0,
 								Bool_t		enableChargedPrimary		= kTRUE,
-				                                Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
-					                        Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
-					                        Float_t		maxFacPtHard				= 3.,
+								Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+								Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+								Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
 								TString		periodNameV0Reader			= ""
                            ) {
 
