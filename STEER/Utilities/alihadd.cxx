@@ -66,6 +66,7 @@
 #include <string>
 #include <cstdio>
 #include <cstddef>
+#include <cstdint>
 #include "RConfig.h"
 #include "TFile.h"
 #include "THashList.h"
@@ -142,7 +143,7 @@ struct MergeInput {
   MergeInput(const std::string &f)
   : filename(f)
   {}
-  const std::string filename;
+  std::string filename;
   size_t cost;
 };
 
