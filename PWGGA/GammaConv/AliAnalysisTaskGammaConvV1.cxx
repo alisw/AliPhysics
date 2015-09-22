@@ -1536,7 +1536,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 		 if(fIsMC==2){
 			Float_t xsection = -1.; Float_t ntrials = -1.;
 			((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials);
-			if((xsection==-1.) || (ntrials==-1.)) AliFatal("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials");
+			if((xsection==-1.) || (ntrials==-1.)) AliFatal(Form("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials, periodName from V0Reader: '%s'",fV0Reader->GetPeriodName().Data()));
 			fProfileJetJetXSection[iCut]->Fill(0.,xsection);
 			fhJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
 		}
