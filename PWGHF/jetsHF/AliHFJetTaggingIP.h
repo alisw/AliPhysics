@@ -32,7 +32,7 @@ public:
   Bool_t GetJetDiscriminatorQualityClass(Int_t qtyclass, AliEmcalJet * jet,Double_t *discriminator,Bool_t * check_discr);
   Bool_t DoTagging(AliEmcalJet * jetrec,Double_t  &n0,Double_t  &n1,Double_t  &n2);
   void SetAnalysisTypeAOD(Bool_t IsAnaTypeAOD = kTRUE){fAnaTypeAOD=IsAnaTypeAOD;}
-
+  void SetUseSignDefinitionAtlas(Bool_t val = kTRUE){fUseSignAtlas=val;};
   
 private:
   Bool_t GetImpactParameter	(AliVTrack * bTrack, Double_t *bSign, Double_t *bIp2d);
@@ -41,12 +41,14 @@ private:
   Bool_t IsInQualityClass(AliAODTrack * track, int qclass);
   Double_t GetDecayLength 	(AliVTrack * bTrack);
   Double_t CalculateTrackProbability(AliVTrack * bTrack);
+  Double_t GetSignAtlasDefinition(Double_t *xDCA, Double_t *pDCA,Double_t *xVtx , Double_t *pJet);
   static bool mysort( const std::pair<Int_t, Double_t>& i, const  std::pair<Int_t, Double_t>& j );
 
   
   
   Bool_t        fUseThresholdFuction;
   Bool_t        fAnaTypeAOD;
+  Bool_t 		 fUseSignAtlas;
   Double_t      fSelectionCuts[7]; //[7]
   Double_t      fCurrentDCA ;
   Double_t      fThreshold;

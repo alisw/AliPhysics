@@ -50,7 +50,8 @@ public:
     void   SetEventSelectionMethod(int i = 0){fUseEventSelection=i;};
     void   SetJetSelectionMethod(int i = 0){fUseJetSelection=i;};
     void   SetJetTaggerMCMethod(int i = 0){fUseMCTagger=i;};
-    virtual AliRDHFJetsCuts * GetJetCutsHF();
+	void   SetUseAtlasSignTC(Bool_t val = kTRUE){fUseAtlasSignTCCalculation = kTRUE;};
+	virtual AliRDHFJetsCuts * GetJetCutsHF();
     virtual void SelectPtHardBin(const char * bin = "",const char * flavour = "",Bool_t val = kTRUE){fSelectPtHard=val;fPtHardBin=bin;fPtHardFlavour=flavour;};
     virtual void SetPtRelMomentumCuts(Double_t JetPt=5., Double_t ElectronPt=1.){fpTRelSoftElectronPt=JetPt;fpTRelSoftElectronPt=ElectronPt; };
 
@@ -111,6 +112,7 @@ private:
     Bool_t fDoRandomCones;//Get fluctuations
     Bool_t fVetexingMassFitTest; //
     Bool_t fVetexingPtRelTest; //
+	Bool_t fUseAtlasSignTCCalculation;//
     Bool_t fCalculateSoftElectronVtxInvariantMass;//Calculate inv. vtx mass for vertices with electrons
     Int_t  fUseEventSelection;// Event selection method
     Int_t  fUseJetSelection;// Jet selection method
