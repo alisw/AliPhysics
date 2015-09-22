@@ -5,7 +5,8 @@ void AddTask_GammaConvV1_PbPb2(  	Int_t 		trainConfig 				= 1,  								// chang
 									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
 									Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 									TString 	cutnumberAODBranch 			= "100000006008400000001500000", 	// cutnumber with which AODs have been filtered
-									Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+									TString		periodNameV0Reader			= ""
                            ) {
 
 	// ================= Load Librariers =================================
@@ -56,7 +57,7 @@ void AddTask_GammaConvV1_PbPb2(  	Int_t 		trainConfig 				= 1,  								// chang
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
