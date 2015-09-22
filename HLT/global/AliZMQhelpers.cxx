@@ -50,4 +50,31 @@ int alizmq_attach (void *self, const char *endpoints, bool serverish)
     return 0;
 }
 
+int alizmq_msg_recv(std::map<std::string,std::string>& message, void* socket, int flags)
+{
+  int rc = 0;
+  while (true)
+  {
+    zmq_msg_t requestTopicMsg;
+    rc = zmq_msg_init(&requestTopicMsg);
+    rc = zmq_msg_recv(&requestTopicMsg, socket, 0);
+    if (!zmq_msg_more(&requestTopicMsg)) break;
+
+    zmq_msg_t requestMsg;
+    rc = zmq_msg_init(&requestMsg);
+    rc = zmq_msg_recv(&requestMsg, socket, 0);
+    if (!zmq_msg_more(&requestMsg)) break;
+
+    std::string requestBody;
+    std::string requestTopic;
+    requestTopic.assign(static_cast<char*>(zmq_msg_data(&requestTopicMsg)), zmq_msg_size(&requestTopicMsg));
+    requestBody.assign(static_cast<char*>(zmq_msg_data(&requestMsg)), zmq_msg_size(&requestMsg));
+
+    message[requestTopic] = requestBody;
+
+    zmq_msg_close(&requestTopicMsg);
+    zmq_msg_close(&requestMsg);
+  }
+  return 0;
+}
 #endif
