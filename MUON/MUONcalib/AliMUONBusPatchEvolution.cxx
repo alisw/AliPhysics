@@ -168,7 +168,7 @@ TH1* AliMUONBusPatchEvolution::ExpandTimeAxis(const TH1& h, Int_t expansionTime,
 
 	if ( timeResolution<=0) return 0x0;
 
-	TAxis* timeAxis = h.GetXaxis();
+	const TAxis* timeAxis = h.GetXaxis();
 
 	Int_t extraBins =  TMath::Nint(TMath::Abs(expansionTime)/timeResolution);
 
@@ -338,7 +338,7 @@ Bool_t AliMUONBusPatchEvolution::GetTimeOffset(const TH1& h, TTimeStamp& origin)
 	/// kTRUE. Otherwise returns kFALSE
 	/// Assumes that the time offset is indicated in GMT
 
-	TAxis* x = h.GetXaxis();
+	const TAxis* x = h.GetXaxis();
 
 	if ( x->GetTimeDisplay() )
 	{
