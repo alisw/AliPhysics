@@ -228,6 +228,8 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::SelectEvent() {
   // Decide if event should be selected for analysis
   fhNEvents->Fill(3.5);
 
+  // this section isn't needed for LHC11h
+
   if(!fTriggerClass.IsNull()) {
     //Check if requested trigger was fired
     TString trigType1 = "J1";
@@ -240,7 +242,6 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::SelectEvent() {
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
     //cout<<"fired trigger class: "<<firedTrigClass<<endl;
 /*
-
     if(fTriggerClass.Contains(trigType1.Data()) && fTriggerClass.Contains(trigType2.Data())) { //if events with J1&&J2 are requested
       if(!firedTrigClass.Contains(trigType1.Data()) || !firedTrigClass.Contains(trigType2.Data()) ) //check if both are fired
         return kFALSE;
@@ -369,6 +370,11 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::ExtractMainPatch() {
   // see if event was selected
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
+  // check the Fired Trigger Classes
+  TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
+  //if(!firedTrigClass.Contains("EGA")) continue;
+  //cout<<"fired trigger class: "<<firedTrigClass<<endl;
+
   //extract main trigger patch
   AliEmcalTriggerPatchInfo *patch;
   Double_t emax = -1.;
@@ -388,6 +394,8 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::ExtractMainPatch() {
     if(patch->IsRecalcGamma()) { fhRecalcGammaPatchEnergy->Fill(patch->GetPatchE()); }
     if(patch->IsRecalcJet()) { fhRecalcJetPatchEnergy->Fill(patch->GetPatchE()); }
 
+    if(!firedTrigClass.Contains("EGA")) continue;
+
     // check that we have a Recalculated (OFFline) Gamma Patch
     if(!patch->IsRecalcGamma()) continue;
 
@@ -404,10 +412,15 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::ExtractMainPatch() {
   } // loop over patches
 
   // check on patch Energy
-  if(fMaxPatch->GetPatchE() > fPatchECut) {
+  if(firedTrigClass.Contains("EGA") && fMaxPatch && fMaxPatch->GetPatchE() > fPatchECut) {
     // get cluster container and find leading cluster
     AliClusterContainer  *clusContp = GetClusterContainer(0);
+    if(!clusContp) {
+      AliError(Form("ERROR: Cluster container doesn't exist\n"));
+      return;
+    }
     AliVCluster* leadclus = clusContp->GetLeadingCluster();
+    if(!leadclus) return;
 
     // initialize variables and get leading cluster parameters
     double leadclusEta = 0, leadclusPhi = 0, leadclusPt = 0, leadclusE = 0;
@@ -1021,8 +1034,9 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
       Double_t sumPtNe = 0.;
       Double_t maxClusterPt = 0., maxClusterEta = 0., maxClusterPhi = 0., maxClusterE = 0.;
 
+      TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
       //((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias))
-      if(jet->Pt() > fJetPtCut){ // && (jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {
+      if(jet->Pt() > fJetPtCut && fMaxPatch && firedTrigClass.Contains("EGA")){ // && (jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {
         AliVCluster* leadclus = clusCont->GetLeadingCluster();
         if(!leadclus) continue;
         //cout<<Form("#Clus in container = %i, NACCcluster = %i, LeadClusE = %f, isEMCal? = %s", clusCont->GetNClusters(), clusCont->GetNAcceptedClusters(), leadclus->E(), leadclus->IsEMCAL()? "true":"false")<<endl;
@@ -1060,6 +1074,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
               Double_t etamax = TMath::Max(fMaxPatch->GetEtaMin(), fMaxPatch->GetEtaMax());
               Double_t phimin = TMath::Min(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
               Double_t phimax = TMath::Max(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
+
               if(maxClusterEta > etamin && maxClusterEta < etamax && maxClusterPhi > phimin && maxClusterPhi < phimax){
                 if(doComments) {
                   cout<<"*********************************************"<<endl;

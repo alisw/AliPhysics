@@ -910,7 +910,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   }
   if(!fJets){
     AliError(Form("No fJets object!!\n"));
-    return kTRUE;
+    //return kTRUE;
   }
 
   fHistEventQA->Fill(2); // events after object check
@@ -1017,37 +1017,23 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   } // verify existence of tracks
 
   // get Jets object
-  jets = dynamic_cast<TClonesArray*>(list->FindObject(fJets));
-  if(!jets){
-    AliError(Form("Pointer to jets %s == 0", fJets->GetName()));
-    return kTRUE;
-  } // verify existence of jets
-
-/////////////////////////////////////////////////
-/*
-  TClonesArray *fTriggerJets = 0x0;
-  fTriggerJets = dynamic_cast<TClonesArray*>(list->FindObject("JETthatTriggeredEvent"));
-  if(!fTriggerJets) {
-    AliError(Form("Pointer to trigger jets %s == 0", "JETthatTriggeredEvent"));
-    return kFALSE;
+  Int_t Njets = 0;
+  if(fJets) {
+    jets = dynamic_cast<TClonesArray*>(list->FindObject(fJets));
+    if(!jets){
+      AliError(Form("Pointer to jets %s == 0", fJets->GetName()));
+      //return kTRUE;
+    } // verify existence of jets
+    Njets = jets->GetEntries();
   }
-
-  Int_t njets = fTriggerJets->GetEntries(); 
-
-  // loop over full jets
-  for (Int_t ijt = 0; ijt < njets; ijt++) {
-    AliEmcalJet* jtr = static_cast<AliEmcalJet*>(fTriggerJets->At(ijt));
-    if (!jtr) continue; //jet not selected
-
-    if(doComments) cout<<"NEW TASK: jet# = "<<ijt<<"  jetpt = "<<jtr->Pt()<<endl;
-  } //full jet loop
-*/
-//////////////////////////////////////////////////
 
   fHistEventQA->Fill(7);  // events after track/jet pointer check
 
   // get number of jets and tracks
-  const Int_t Njets = jets->GetEntries(); 
+//  Int_t Njets;
+//  if(!fJets) { Njets = 0; }
+//  else Njets = jets->GetEntries();
+  //const Int_t Njets = jets->GetEntries();
   const Int_t Ntracks = tracks->GetEntries();
 /////  if(Ntracks<1)   return kTRUE;
 /////  if(Njets<1)	  return kTRUE;
@@ -2991,6 +2977,7 @@ AliEmcalJet* AliAnalysisTaskEmcalJetHadEPpid::GetLeadingJet(AliLocalRhoParameter
     // return pointer to the highest pt jet (before background subtraction) within acceptance
     // only rudimentary cuts are applied on this level, hence the implementation outside of
     // the framework
+  if(fJets) {
     Int_t iJets(fJets->GetEntriesFast());
     Double_t pt(0);
     AliEmcalJet* leadingJet(0x0);
@@ -3020,7 +3007,9 @@ AliEmcalJet* AliAnalysisTaskEmcalJetHadEPpid::GetLeadingJet(AliLocalRhoParameter
         return leadingJet;
 
     }
-    return 0x0;
+  }
+
+  return 0x0;
 }
 
 //_____________________________________________________________________________
