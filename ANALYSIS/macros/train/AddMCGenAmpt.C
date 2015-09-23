@@ -48,14 +48,17 @@ AliGenerator *AddMCGenAmpt(
   // Collision system
   genAMPT->SetEnergyCMS(Energy);
   genAMPT->SetReferenceFrame("CMS");
-  if(ppcollisions)
-        genAMPT->SetProjectile("P", 1, 1);
-  else
+  if(ppcollisions) {
+    genAMPT->SetProjectile("P", 1, 1);
+    genAMPT->SetTarget("P", 1, 1);
+  }
+  else if (pAcollisions){
     genAMPT->SetProjectile("A", 208, 82);
-  if(pAcollisions)
-        genAMPT->SetTarget("P", 1, 1);
-  else
+    genAMPT->SetTarget("P", 1, 1);
+  } else {
+    genAMPT->SetProjectile("A", 208, 82);
     genAMPT->SetTarget("A", 208, 82);
+  }
   genAMPT->SetPtHardMin (ptHardMin);
   genAMPT->SetImpactParameterRange(bmin,bmax);
   //=========================================================================
