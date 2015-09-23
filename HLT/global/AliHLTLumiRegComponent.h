@@ -60,7 +60,7 @@ public:
   
 protected:
   int DoInit(int argc, const char** argv);
-  int DoDeinit();
+  int DoDeinit() {return 0;}
   
   int DoEvent(int argc, const char **argv);
   
@@ -97,7 +97,7 @@ private:
   
   Int_t fEventSpecie;
 
- 
+  ClassDef(AliHLTLumiRegComponent,1)
 };
 
 #endif /* defined(____AliHLTLumiRegComponent__) */
