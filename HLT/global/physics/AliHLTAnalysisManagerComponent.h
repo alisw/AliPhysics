@@ -8,9 +8,9 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file    AliHLTESDAnaManagerComponent.h
-    @author  Mikolaj Krzewicki, mkrzewic@cern.ch
-    @brief   Component for Multiplicty Correlations
+/** @file    AliHLTAnalysisManagerComponent.cxx
+    @author  David Rohr, Jens Wiechula, C. Zampolli, I. Vorobyev, M.Krzewicki
+    @brief   Runs AliAnalysisTasks in a HLT component
 */
 
 #include "AliHLTProcessor.h"
