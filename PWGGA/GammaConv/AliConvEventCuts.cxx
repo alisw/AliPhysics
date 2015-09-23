@@ -1726,6 +1726,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					}	
 					if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
 				}	
+				if (jet) delete jet;
+				
 				if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
 					Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
 														21,	28, 36, 45, 57, 
@@ -1783,7 +1785,31 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					eventAccepted= kFALSE;
 				}	
 				if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
+			}
+			if (fMCStack){
+				for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+					TParticle* particle = (TParticle *)fMCStack->Particle(i);
+					if (!particle) continue;
+					if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+						if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
+							eventAccepted= kFALSE;
+						}	
+					}	
+					
+				}
+			} else if (fMCStackAOD){
+				for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+					AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
+					if (!particle) continue;
+					if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+						if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
+							eventAccepted= kFALSE;
+						}	
+					}	
+
+				}	
 			}	
+			
 			if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
 				Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
 													21,	28, 36, 45, 57, 
