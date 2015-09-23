@@ -1,12 +1,13 @@
 AliGenerator *AddMCGenAmpt(
-			   Double_t Energy      = 2760.,   // CM energy 
-			   Double_t bmin        = 0.0,     // minimum impact parameter
-			   Double_t bmax        = 20.0,    // maximum impact parameter
-			   Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
-			   Bool_t stringMelting = kTRUE,   // string melting option 
-			   Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
-			   Bool_t pAcollisions  = kFALSE   // pA instead of AA collisions 
-			   )
+                          Double_t Energy      = 2760.,   // CM energy
+                          Double_t bmin        = 0.0,     // minimum impact parameter
+                          Double_t bmax        = 20.0,    // maximum impact parameter
+                          Double_t ptHardMin   = 3.0,     // minimum pt hard (was 3.0 in previous AMPT productions)
+                          Bool_t stringMelting = kTRUE,   // string melting option
+                          Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
+                          Bool_t pAcollisions  = kFALSE,  // pA instead of AA collisions
+                          Bool_t ppcollisions  = kFALSE   // pp instead of AA collisions
+                           )
 {
   // User defined generator
 
@@ -29,7 +30,7 @@ AliGenerator *AddMCGenAmpt(
                               // mu = 3.2 fm^-1 and alpha_s = 0.33 ==> sigma_{partonic} = 1.5mb
   if(!stringMelting)
     Flag_SM = 1;
-  
+
   if(!useART)
     NTmax = 3;
 
@@ -47,7 +48,10 @@ AliGenerator *AddMCGenAmpt(
   // Collision system
   genAMPT->SetEnergyCMS(Energy);
   genAMPT->SetReferenceFrame("CMS");
-  genAMPT->SetProjectile("A", 208, 82);
+  if(ppcollisions)
+        genAMPT->SetProjectile("P", 1, 1);
+  else
+    genAMPT->SetProjectile("A", 208, 82);
   if(pAcollisions)
         genAMPT->SetTarget("P", 1, 1);
   else
@@ -71,7 +75,7 @@ AliGenerator *AddMCGenAmpt(
 
   // Boost into LHC lab frame
   genAMPT->SetBoostLHC(1);
-  
+
   // randomize reaction plane
   genAMPT->SetRandomReactionPlane(kTRUE);
 
