@@ -121,9 +121,9 @@
   }"
 
 #pragma read sourceClass="AliHLTHuffmanNode" version="[1-]" targetClass="AliHLTHuffmanNode"\
-  source="" target=""\
+  source="float fWeight" target="fWeightDouble"\
   code="{\
-    newObj->fWeightDouble = newObj->fWeight;\
+    fWeightDouble = onfile.fWeight;\
   }"
 
 #pragma link C++ class AliHLTTriggerMenuSymbol+;
