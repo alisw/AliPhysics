@@ -38,6 +38,7 @@
 
 #include "AliMpArea.h"
 #include "AliMpArrayI.h"
+#include "AliMpBusPatch.h"
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
@@ -84,7 +85,8 @@ fStatus(new AliMUON2DMap(true)),
 fHV(0x0),
 fPedestals(calibData.Pedestals()),
 fGains(calibData.Gains()),
-fTrackerData(0x0)
+fTrackerData(0x0),
+fConfig(calibData.Config())
 {
   /// ctor
   if ( calibData.OccupancyMap() )
@@ -160,6 +162,8 @@ AliMUONPadStatusMaker::AsString(Int_t status)
   if ( occStatus & kDEOccupancyTooHigh ) s+="& DE occupancy too high ";
   if ( occStatus & kDEOccupancyTooLow ) s+="& DE occupancy too low ";
   
+  if ( occStatus & kBusPatchRemovedByPAR ) s+="& BusPatch removed during PAR";
+  
   if ( s[0] == '&' ) s[0] = ' ';
   
   return s;
@@ -190,6 +194,56 @@ AliMUONPadStatusMaker::BuildStatus(Int_t pedStatus,
   return ( hvStatus & 0xFF ) | ( ( pedStatus & 0xFF ) << 8 ) | 
   ( ( gainStatus & 0xFF ) << 16 ) |
   ( ( occStatus & 0xFF ) << 24 ) ;
+}
+
+//_____________________________________________________________________________
+Int_t AliMUONPadStatusMaker::CheckConfigConsistencyWithPedestalInformation(Int_t detElemId,
+                                                                           Int_t manuId) const
+{
+  /// Check the consistency between the information from the MUON/Calib/Config and
+  /// MUON/Calib/Pedestals objects.
+  
+  AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemId,manuId));
+
+  AliMUONVCalibParam* config = static_cast<AliMUONVCalibParam*>(fConfig->FindObject(detElemId,manuId));
+  
+  if ( pedestals == 0 && config == 0 )
+  {
+    /// manu missing both in config and pedestal run : that is expected
+    return 0;
+  }
+
+  if ( config == 0 && pedestals )
+  {
+    // a manu present in the pedestal run disappeared in the configuration
+    // that is happening if we removed a bus patch _during_ the run and then
+    // issued a PAR (Pause And Reconfigure) to change the readout configuration
+    //
+    // So, that's normal if all the manus of the same buspatch are in the same case.
+    // Let's check that...
+    AliMpBusPatch* busPatch = AliMpDDLStore::Instance()->GetBusPatch(detElemId,manuId);
+    Int_t n = busPatch->GetNofManus();
+    Int_t missing(0);
+    for ( Int_t i = 0; i < n; ++i )
+    {
+      Int_t manu = busPatch->GetManuId(i);
+      if ( fConfig->FindObject(detElemId,manuId) == 0x0 ) ++missing;
+    }
+    if ( missing != n )
+    {
+      AliError(Form("Got an inconsistent state between config and pedestal information for DE %4d MANU %4d BUSPATCH %4d : not all the manus from this bus patch are missing in the configuration ? ",detElemId,manuId,busPatch->GetId()));
+      return -1;
+    }
+    return 1;
+  }
+  
+  if ( pedestals == 0 && config != 0 )
+  {
+    AliError(Form("Got an inconsistent state between config and pedestal information for DE %4d MANU %4d : got a configuration but no pedestal values ???",detElemId,manuId));
+    return -2;
+  }
+  
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -606,6 +660,17 @@ AliMUONPadStatusMaker::OccupancyStatus(Int_t detElemId, Int_t manuId) const
       rv |= kManuOccupancyTooHigh;
     }
   }
+  
+  Int_t config = CheckConfigConsistencyWithPedestalInformation(detElemId,manuId);
+  
+  if (config==1)
+  {
+    Int_t bpid = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+
+    AliWarning(Form("BusPatchRemovedByPAR : BP %4d",bpid));
+    rv |= kBusPatchRemovedByPAR;
+  }
+  
   return rv;
 }
 

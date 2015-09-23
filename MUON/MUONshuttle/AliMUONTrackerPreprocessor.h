@@ -13,13 +13,8 @@
 //  Author Laurent Aphecetche
 
 #include "AliMUONPreprocessor.h"
-#include "AliMUONGainSubprocessor.h"
 
-class AliMUONPedestalSubprocessor;
-class AliMUONGMSSubprocessor;
-class AliMUONHVSubprocessor;
-class AliMUONOccupancySubprocessor;
-class AliMUONBusPatchEvolutionSubprocessor;
+class AliMUONVSubprocessor;
 
 class TObjArray;
 
@@ -38,14 +33,15 @@ private:
   AliMUONTrackerPreprocessor& operator=(const AliMUONTrackerPreprocessor& rhs);
   
 private:
-  AliMUONPedestalSubprocessor* fPedestalSubprocessor; ///< Pedestal subprocessor
-  AliMUONGMSSubprocessor*      fGMSSubprocessor;      ///< GMS subprocessor
-  AliMUONHVSubprocessor*       fHVSubprocessor;       ///< HV subprocessor
-  AliMUONGainSubprocessor* fGainSubprocessor; ///< Gain subprocessor
-  AliMUONOccupancySubprocessor* fOccupancySubprocessor; ///< Occupancy subprocessor
-  AliMUONBusPatchEvolutionSubprocessor* fBusPatchEvolutionSubprocessor; ///< Buspatch evolution subprocessor
+  AliMUONVSubprocessor* fPedestalSubprocessor; ///< Pedestal subprocessor
+  AliMUONVSubprocessor* fGMSSubprocessor; ///< GMS subprocessor
+  AliMUONVSubprocessor* fHVSubprocessor;  ///< HV subprocessor
+  AliMUONVSubprocessor* fGainSubprocessor; ///< Gain subprocessor
+  AliMUONVSubprocessor* fOccupancySubprocessor; ///< Occupancy subprocessor
+  AliMUONVSubprocessor* fBusPatchEvolutionSubprocessor; ///< Buspatch evolution subprocessor
+  AliMUONVSubprocessor* fConfigSubprocessor; ///< config subprocessor
   
-  ClassDef(AliMUONTrackerPreprocessor,4) // MUON Tracker Shuttle preprocessor
+  ClassDef(AliMUONTrackerPreprocessor,5) // MUON Tracker Shuttle preprocessor
 };
 
 #endif

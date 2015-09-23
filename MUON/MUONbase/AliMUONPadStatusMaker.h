@@ -144,6 +144,8 @@ private:
 
   void SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const;
 
+  Int_t CheckConfigConsistencyWithPedestalInformation(Int_t detElemId,Int_t manuId) const;
+
 private:
   /// General status
   enum EGeneralStatus
@@ -199,7 +201,9 @@ private:
     kBusPatchOccupancyTooLow = (1<<3),
     kBusPatchOccupancyTooHigh = (1<<4),
     kDEOccupancyTooLow = (1<<5),
-    kDEOccupancyTooHigh = (1<<6)
+    kDEOccupancyTooHigh = (1<<6),
+    kBusPatchRemovedByPAR = (1<<7),
+    
   };
   
   const AliMUONCalibrationData& fkCalibrationData; //!<! helper class to get data access (not owner)
@@ -223,6 +227,7 @@ private:
 
   AliMUONVStore* fPedestals; //!<! pedestal values
   AliMUONVStore* fGains; //!<! gain values
+  AliMUONVStore* fConfig; //!<! readout configuration
   
   AliMUONVTrackerData* fTrackerData; //!<! to get occupancies...
   

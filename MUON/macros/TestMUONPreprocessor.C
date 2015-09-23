@@ -32,6 +32,10 @@
 /// mkdir -p MUON/Calib/MappingData
 /// cd MUON/Calib/MappingData/
 /// ln -si $ALICE_ROOT/OCDB/MUON/Calib/MappingData/* .
+/// cd $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB
+/// mkdir -p MUON/Calib/Config
+/// cd MUON/Calib/Config
+/// ln -si $ALICE_ROOT/OCDB/MUON/Calib/Config/* .
 /// </pre>
 ///
 /// and Align/Baseline if you'd like to test GMS subprocessor :
