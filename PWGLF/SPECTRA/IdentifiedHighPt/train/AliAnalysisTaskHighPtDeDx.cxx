@@ -8,6 +8,7 @@ Comments:
   - MC track: pidCodeMC>10 = injected
   - track: pidCode>10 = injected
   - p_track and n_track: n/p_pidCode>10 = injected
+* 23 sep 2015: hardcoded trigger conditions, search for kSemiCentral
 
 */
 
@@ -370,33 +371,42 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
   
   // Get trigger decision
-  fTriggeredEventMB = 0; //init
-
-  // cout << " trigger " << ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())) ->IsEventSelected() << "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"<<endl;
-    if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  fTriggeredEventMB = 0; 
+  
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & ftrigBit1 ){
     fn1->Fill(1);
     fTriggeredEventMB = 1;  //event triggered as minimum bias
-  }
+  }//OLD (change back)
+  // if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+  //    ->IsEventSelected() & ftrigBit2 ){
+  //   // From AliVEvent:
+  //   //    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
+  //   fTriggeredEventMB += 2;  
+  //   fn2->Fill(1);
+  // }//NEW (remove -- especially for MC)
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-     ->IsEventSelected() & ftrigBit2 ){
+     ->IsEventSelected() & AliVEvent::kSemiCentral ){
     // From AliVEvent:
     //    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
     fTriggeredEventMB += 2;  
     fn2->Fill(1);
   }
+  if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+     ->IsEventSelected() & AliVEvent::kMB ){
+    // From AliVEvent:
+    //    kINT7         = BIT(1), // V0AND trigger, offline V0 selection
+    fTriggeredEventMB += 4;  
+    fn2->Fill(1);
+  }
  
-  //if(fTriggeredEventMB == 0) fTriggeredEventMB = 1; //ignore trigger //hljunggr
-  //std::cout << "trigger " << fTriggeredEventMB << " ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" << std::endl;
-  // Get process type for MC
+
+   // Get process type for MC
   fMcProcessType = 0; // -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
 
   // real data that are not triggered we skip
   if(!fAnalysisMC && !fTriggeredEventMB)
     return; 
-
-
-  //   std::cout << "trigger Martin: " << (bitset<20>) ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() << std::endl; print trigger
 
 
   if (fAnalysisMC) {
