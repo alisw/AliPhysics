@@ -32,6 +32,7 @@ AliHLTHuffmanNode::AliHLTHuffmanNode()
 	: TObject()
 	, fValue(-1)
 	, fWeight(0.)
+	, fWeightDouble(0.)
 {
         // nop
 }
@@ -40,6 +41,7 @@ AliHLTHuffmanNode::AliHLTHuffmanNode(const AliHLTHuffmanNode& other)
 	: TObject()
 	, fValue(other.GetValue())
 	, fWeight(other.GetWeight())
+	, fWeightDouble(other.GetWeight())
 {
 }
 
@@ -48,6 +50,7 @@ AliHLTHuffmanNode& AliHLTHuffmanNode::operator =(const AliHLTHuffmanNode& other)
         if (this==&other) return *this;
 	this->fValue = other.fValue;
 	this->fWeight = other.fWeight;
+	this->fWeightDouble = other.fWeightDouble;
 	return *this;
 }
 
