@@ -46,8 +46,10 @@ public:
   Bool_t FillAmplA0Histos(TClonesArray *digits);
   TList * GetQAHistos(){return fHistosList;}
   void CreateQAHistos();
+  void SetMinClustSize(Int_t a){fMinClustSize=a;}
 
  protected: 
+  Int_t fMinClustSize;//minimum cluster size
   AliPHOSGeometry * fGeom ;         //! PHOS geometry
   TH2I *fDeadMap[2*AliPHOSCpvParam::kNDDL]; //Dead Channel Map  
   TH2I *fEntriesMap[2*AliPHOSCpvParam::kNDDL];//entries map

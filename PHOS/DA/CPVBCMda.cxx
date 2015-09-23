@@ -65,6 +65,7 @@ int main( int argc, char **argv )
   Int_t sigcut=3;
   Int_t minAmpl = 10;//minimal amplitude for consideration, to be read from DAQ DB
   Int_t minOccupancy = 10;//min occupancy for publishing in OCDB, to be read from DAQ DB
+  Int_t minClustSize=4;//min cluster size to consider
   Bool_t turbo = kTRUE;
 
   if (argc!=2) {
@@ -293,25 +294,25 @@ int main( int argc, char **argv )
   //find noisy channels (i.e. channelOccupancy > 10*meanOccupancy)
   TFile *fSave = TFile::Open("CpvBadMap.root","RECREATE");
 
-  Double_t meanOccupancy = 0;
   setenv("AMORE_DA_NAME","CPV-DAs",1);
   amore::da::AmoreDA* myAmore = new amore::da::AmoreDA(amore::da::AmoreDA::kSender);
+  Bool_t isStatisticsEnough=kFALSE;
   for(int iDDL = 0; iDDL<2*AliPHOSCpvParam::kNDDL; iDDL+=2){
     if(hMapOfDig[iDDL]->GetEntries()>0) {
       Double_t Occupancy = FillNoisyMap(hMapOfDig[iDDL],hBadChMap[iDDL]);
-      if(meanOccupancy>0&&Occupancy<meanOccupancy) meanOccupancy = Occupancy;
-      if(meanOccupancy==0) meanOccupancy = Occupancy;
       if(Occupancy>minOccupancy) FillDeadMap(hPedMap[iDDL],hMapOfDig[iDDL],hBadChMap[iDDL],Occupancy);
       fSave->WriteObject(hMapOfDig[iDDL],Form("hMapOfDig%d",iDDL));
       //send digit maps to amore
       myAmore->Send(Form("hMapOfDig%d",iDDL),hMapOfDig[iDDL]);
       fSave->WriteObject(hBadChMap[iDDL],Form("hBadChMap%d",iDDL));
+      cout<< "meanOccupancy in DDL"<<iDDL<<" = "<<Occupancy<<"; minOccupancy = "<<minOccupancy<<endl;
+      if(Occupancy>minOccupancy)isStatisticsEnough=kTRUE;
     }
   }
   fSave->Close();
-  cout<< "meanOccupancy = "<<meanOccupancy<<"; minOccupancy = "<<minOccupancy<<endl;
   
-  if(meanOccupancy>minOccupancy){//send file to FES if only statistics is enough
+  
+  if(isStatisticsEnough){//send file to FES if only statistics is enough
     status = daqDA_FES_storeFile("CpvBadMap.root","CPVBADMAP");
     if(status) printf("Failed to store CpvBadMap.root in DAQ FXS!\n");
     //store dummy file in DAQ DB

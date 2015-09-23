@@ -64,6 +64,7 @@ int main( int argc, char **argv )
   Int_t sigcut=3;
   Int_t minAmpl = 10;//minimal amplitude for consideration, to be read from DAQ DB
   Int_t minOccupancy = 1000;//min occupancy for publishing in OCDB, to be read from DAQ DB
+  Int_t minClustSize=4;//min cluster size to consider
   Bool_t turbo = kTRUE;
 
   if (argc!=2) {
@@ -84,8 +85,18 @@ int main( int argc, char **argv )
     FILE * fConf = fopen("PHOSCPVGAINda.cfg","r");
     while(fgets(buf, 500, fConf)){
       if(buf[0]=='#') continue;//comment indicator
-      if(strstr(buf,"minOccupancy")) sscanf(buf,"%*s %d",&minOccupancy);
-      if(strstr(buf,"minAmpl")) sscanf(buf,"%*s %d",&minAmpl);
+      if(strstr(buf,"minOccupancy")) {
+	sscanf(buf,"%*s %d",&minOccupancy);
+	cout<<"I read minOccupancy="<<minOccupancy<<" from config file"<<endl;
+      }
+      if(strstr(buf,"minAmpl")) {
+	sscanf(buf,"%*s %d",&minAmpl);
+	cout<<"I read minAmpl="<<minAmpl<<" from config file"<<endl;
+      }
+      if(strstr(buf,"minClustSize")) {
+	sscanf(buf,"%*s %d",&minClustSize);
+	cout<<"I read minClustSize="<<minClustSize<<" from config file"<<endl;
+      }
     }
     fclose(fConf);
   }
@@ -174,6 +185,7 @@ int main( int argc, char **argv )
   if(!statusCalibrSupply) fCalibrSupplyRoot = TFile::Open("CpvCalibrSupply.root");
   fDA->InitCalibration(fCalibrSupplyRoot);
   if(!statusBadCh)fDA->SetDeadChannelMapFromFile("CpvBadMap.root");
+  fDA->SetMinClustSize(minClustSize);
 
   /* report progress */
   daqDA_progressReport(10);

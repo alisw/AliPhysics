@@ -26,6 +26,7 @@ using std::ofstream;
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliPHOSCpvGainCalibDA::AliPHOSCpvGainCalibDA():
   TObject(),
+  fMinClustSize(4),
   fGeom(0)
 {
   //
@@ -137,11 +138,11 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
   Int_t nExcludedPoints = 0;
   Bool_t *excludedPoints = new Bool_t[nDig];//points which already belongs to other clusters
   for(int i=0;i<nDig;i++)excludedPoints[i]=kFALSE;
-  Int_t clusterIndex[10][5][5];//10 clusters max; this array contains digit numbers which belongs to particular cluster
-  Int_t clusterDDL[10];// DDL number of particular cluster
-  Int_t clusterX[10]; //X coordinate of cluster 
-  Int_t clusterY[10]; //Y coordinate of cluster
-  Float_t clusterAmplitude[10][5][5];
+  Int_t clusterIndex[100][5][5];//100 clusters max; this array contains digit numbers which belongs to particular cluster
+  Int_t clusterDDL[100];// DDL number of particular cluster
+  Int_t clusterX[100]; //X coordinate of cluster 
+  Int_t clusterY[100]; //Y coordinate of cluster
+  Float_t clusterAmplitude[100][5][5];
   //=============================================================================
   //========================= C L U S T E R I S A T I O N =======================
   //=============================================================================
@@ -158,14 +159,14 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
 // y=4|   |   |   |   |   |
 //    |___|___|___|___|___|
   // initialize clusters array
-  for(Int_t iClus=0;iClus<10;iClus++)
+  for(Int_t iClus=0;iClus<100;iClus++)
     for(Int_t ix=0;ix<5;ix++)
       for(Int_t iy=0;iy<5;iy++)
 	clusterIndex[iClus][ix][iy]=-1;
   
   Int_t relId[4];
   Int_t cluNumber = 0;
-  while(!stop){//we are going to find 10 or less clusters
+  while(!stop){//we are going to find 100 or less clusters
     Float_t qMax = 0.;//local maximum value
     Int_t indMax = -1;//local maximum index
     for(Int_t iDig = 0; iDig<nDig;iDig++){//find a local maximum
@@ -227,7 +228,7 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
     }while (pointsFound!=0);
     //OK, we have finished with this cluster
     cluNumber++;
-    if(cluNumber>=10) stop=kTRUE; //we found enough clusters
+    if(cluNumber>=100) stop=kTRUE; //we found enough clusters
     if(nExcludedPoints>=nDig) stop=kTRUE;//we assigned all the digits
   }
   //cout<<"I found " <<cluNumber<<" clusters"<<endl;
@@ -239,6 +240,12 @@ Bool_t AliPHOSCpvGainCalibDA::FillAmplA0Histos(TClonesArray *digits){
   
   fhClusterMult->Fill(cluNumber);
   for (Int_t iClu = 0; iClu < cluNumber; iClu++){
+    //count cluster size
+    Int_t clustSize=0;
+    for(int i=0;i<5;i++)
+      for(int j=0;j<5;j++)
+	if(clusterIndex[iClu][i][j]>0)clustSize++;
+    if(clustSize<fMinClustSize)continue;//skip small cluster
     if(!fEntriesMap[clusterDDL[iClu]]) CreateA0Histos(clusterDDL[iClu]);
     // cout<<"iClu = "<<iClu<<
     fAmplA0Histo[clusterDDL[iClu]][clusterX[iClu]][clusterY[iClu]]->Fill(clusterAmplitude[iClu][2][2]);
