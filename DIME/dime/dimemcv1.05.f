@@ -386,7 +386,7 @@ c     initialise counters etc
 
 c      do hh=1,20
 
-      nhist=1
+c      nhist=1
       sum=0d0
       sum1=0d0
       ncut=0
@@ -395,9 +395,9 @@ c      do hh=1,20
 
 c     initialise histograms
 
-      do i=1,nhist
-         call histo3(i)
-      enddo
+c      do i=1,nhist
+c         call histo3(i)
+c      enddo
 
       num=0
 
@@ -515,10 +515,12 @@ ccc   HEPEVT
 c
 c
 c     1. generate weighted events first
+c        (to find out maximum weight for unweighted generation and to
+c         calculate integrated cross section)
 c ------------------------------------------------------------------------
       ll = 1 
-      ip=ntotal+1
-      write(6,*)'Generating weighted events...'
+c      ip=ntotal+1
+      write(6,*)'Generating ',ntotal,' weighted events...'
       do i=1, ntotal
          isuc = 0
          call dimegenerate(isuc)
@@ -545,12 +547,10 @@ c ------------------------------------------------------------------------
 c     3. prepare for unweighted generation
 c ------------------------------------------------------------------------      
       ll = 2
-      write(6,*)'Generating unweighted events...'
+      write(6,*)'Ready to generate unweighted events...'
 
       return
       end
-      
-
 
 
       subroutine dimegenerate(isuccess)
@@ -1047,72 +1047,87 @@ ccccccccccccccc
       
 cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
- 666  weight=weight
+c 666  weight=weight
 
+
+c     Save the maximum weight
+c     (This is also updated during unweighted
+c      generation for more precise asymptotics.
+c      The number of unweighted runs, where the first
+c      value for this is obtained, should be however
+c      still a large number (100k or more) of runs)
+c ---------------------------------------------------
       if(weightm.lt.weight)then
          weightm=weight
       endif
 
 
+c     Weighted events
+c ----------------------------------------------------
       if(ll.eq.1)then
          
          xwgtup=weight
 
-         wthist=weight/dfloat(ntotal)
-
-         call binit(wthist)
+c         wthist=weight/dfloat(ntotal)
+c         call binit(wthist)
          
       else
-         
+
+c     Unweighted events by: rand < weight/weight_max
+c ----------------------------------------------------
          call r2455(ranhist)
-         
+
          if(ranhist.lt.weight/weightm)then
+
+c            write(6,*) "Maximum weight: ", weightm
             isuccess = 1
-            xwgtup=1d0
-
-            num=num+1
-
+            xwgtup = 1d0
+            num = num+1
+            return
             
-c            call binit(sumt/nev)
+c            call binit(sumt/nev)c
 
-            write(35,302) num, nup
-            
-            if(output.eq.'lhe')then
-
-            do j=1,nup
-               write(35,300)j,istup(j),idup(j),mothup(1,j),mothup(2,j),
-     &              icolup(1,j),icolup(2,j),pup(1,j),pup(2,j),
-     &              pup(3,j),pup(4,j),pup(5,j),vtimup(j),spinup(j)
-            enddo
-            
-            else
-
-               do j=1,nup
-                  write(35,301)j,idhep(j),isthep(j),jmohep(1,j),
-     &                 jmohep(2,j),jdahep(1,j),jdahep(2,j),
-     &                 phep(1,j),phep(2,j),phep(3,j),phep(4,j),phep(5,j)
-     &                 ,vhep(1,j),vhep(2,j),vhep(3,j),vhep(4,j)
-               enddo
-
-            endif
-
+c            write(35,302) num, nup
+c            
+c            if(output.eq.'lhe')then
+c
+c            do j=1,nup
+c               write(35,300)j,istup(j),idup(j),mothup(1,j),mothup(2,j),
+c     &              icolup(1,j),icolup(2,j),pup(1,j),pup(2,j),
+c     &              pup(3,j),pup(4,j),pup(5,j),vtimup(j),spinup(j)
+c            enddo
+c            
+c            else
+c
+c               do j=1,nup
+c                  write(35,301)j,idhep(j),isthep(j),jmohep(1,j),
+c     &                 jmohep(2,j),jdahep(1,j),jdahep(2,j),
+c     &                 phep(1,j),phep(2,j),phep(3,j),phep(4,j),phep(5,j)
+c     &                 ,vhep(1,j),vhep(2,j),vhep(3,j),vhep(4,j)
+c               enddo
+c
+c            endif
 
          endif
 
       endif
 
 
-      if(ll.eq.2)then
-
-      if(num.gt.nev-1)then  ! exit loop once required no. of unweighted events generated
-         ntotal=i
-         return
-      endif
-      endif
-
+c For integrated cross section mean value and std
+c ---------------------------------------------------
  700  sum=sum+weight
       sum1=sum1+weight**2
 
+
+c 300  format(i4,1x,i4,1x,i8,1x,i4,1x,i4,1x,i4,1x,i4,1x,E13.6,1x,
+c     &E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6)
+c 301  format(i4,1x,i8,1x,i4,1x,i4,1x,i4,1x,i4,1x,i4,1x,E13.6,1x,E13.6
+c     &,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x
+c     &,E13.6)
+c 302  format(1x,i8,1x,i5,1x,E13.6)
+
+      return
+      end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c                                                                    c                                                                      
@@ -1120,15 +1135,8 @@ c     End of event loop                                              c
 c                                                                    c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
- 300  format(i4,1x,i4,1x,i8,1x,i4,1x,i4,1x,i4,1x,i4,1x,E13.6,1x,
-     &E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6)
- 301  format(i4,1x,i8,1x,i4,1x,i4,1x,i4,1x,i4,1x,i4,1x,E13.6,1x,E13.6
-     &,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x,E13.6,1x
-     &,E13.6)
- 302  format(1x,i8,1x,i5,1x,E13.6)
 
-      return
-      end
+
 
 ccccc Pomeron -- (off-shell) meson form factor
 
@@ -1238,30 +1246,30 @@ ccccccc  Pom Pom --> meson pair amplitude
        end
 
 c     binning subroutine
-
-      subroutine binit(wt)
-      implicit double precision(a-y)
-      double precision q(4,20),pt1(2),pt2(2),ptx(2)
-      common/mom/q
-      common/mompt/pt1,pt2,ptx     
-      common/vars/s,rts,mmes,yx, iin
-      common/vars1/ptgam,etagam,ptel2,ptel1,etael1,etael2
-      common/vars2/ptpi1,etapi1,ptpi2,etapi2 
-      common/ang/cost,costa,costb
-      common/hvars/sh,th,uh
-
-      ypisum=0.5d0*dlog((q(4,5)+q(4,6)+q(3,5)+q(3,6))
-     &     /(q(4,5)+q(4,6)-q(3,5)-q(3,6)))
-
-      ypi1=0.5d0*dlog((q(4,5)+q(3,5))
-     &     /(q(4,5)-q(3,5)))
-      ypi2=0.5d0*dlog((q(4,6)+q(3,6))
-     &     /(q(4,6)-q(3,6)))
-
-      call histo1(1,30,0d0,4.5d0,dsqrt(sh),wt)
-
-      return
-      end
+c
+c      subroutine binit(wt)
+c      implicit double precision(a-y)
+c      double precision q(4,20),pt1(2),pt2(2),ptx(2)
+c      common/mom/q
+c      common/mompt/pt1,pt2,ptx     
+c      common/vars/s,rts,mmes,yx, iin
+c      common/vars1/ptgam,etagam,ptel2,ptel1,etael1,etael2
+c      common/vars2/ptpi1,etapi1,ptpi2,etapi2 
+c      common/ang/cost,costa,costb
+c      common/hvars/sh,th,uh
+c
+c      ypisum=0.5d0*dlog((q(4,5)+q(4,6)+q(3,5)+q(3,6))
+c     &     /(q(4,5)+q(4,6)-q(3,5)-q(3,6)))
+c
+c      ypi1=0.5d0*dlog((q(4,5)+q(3,5))
+c     &     /(q(4,5)-q(3,5)))
+c      ypi2=0.5d0*dlog((q(4,6)+q(3,6))
+c     &     /(q(4,6)-q(3,6)))
+c
+c      call histo1(1,30,0d0,4.5d0,dsqrt(sh),wt)
+c
+c      return
+c      end
 
 ccccc Cutting subroutine
 ccccc
@@ -1332,74 +1340,74 @@ ccccccccc  Basic cuts described at start of code
       end
  
 c     prints histograms
-
-      subroutine histo1(ih,ib,x0,x1,x,w)
-      implicit real*8(a-h,o-z)
-      character*1 regel(30),blank,star
-      dimension h(20,100),hx(20),io(20),iu(20),ii(20)
-      dimension y0(20),y1(20),ic(20)
-      data regel / 30*' ' /,blank /' ' /,star /'*'/
-      save
-      open(10,file="output.dat")
-      y0(ih)=x0
-      y1(ih)=x1
-      ic(ih)=ib
-      if(x.lt.x0) goto 11
-      if(x.gt.x1) goto 12
-      ix=idint((x-x0)/(x1-x0)*dble(ib))+1
-      h(ih,ix)=h(ih,ix)+w
-      if(h(ih,ix).gt.hx(ih)) hx(ih)=h(ih,ix)
-      ii(ih)=ii(ih)+1
-      return
-   11 iu(ih)=iu(ih)+1
-      return
-   12 io(ih)=io(ih)+1
-      return
-      entry histo2(ih,il)
-      ib1=ic(ih)
-      x01=y0(ih)
-      x11=y1(ih)
-      bsize=(x11-x01)/dble(ib1)
-      hx(ih)=hx(ih)*(1.d0+1.d-06)
-      if(il.eq.0) write(6,21) ih,ii(ih),iu(ih),io(ih)
-      if(il.eq.1) write(6,22) ih,ii(ih),iu(ih),io(ih)
-   21 format(' no.',i3,' lin : inside,under,over ',3i6)
-   22 format(' no.',i3,' log : inside,under,over ',3i6)
-      if(ii(ih).eq.0) goto 28
-      write(6,23)
-   23 format(35(1h ),3(10h----+----i))
-      do 27 iv=1,ib1
-      z=(dble(iv)-0.5d0)/dble(ib1)*(x11-x01)+x01
-      if(il.eq.1) goto 24
-      iz=idint(h(ih,iv)/hx(ih)*30.)+1
-      goto 25
-   24 iz=-1
-      if(h(ih,iv).gt.0.d0)
-     .iz=idint(dlog(h(ih,iv))/dlog(hx(ih))*30.)+1
-   25 if(iz.gt.0.and.iz.le.30) regel(iz)=star
-      write(6,26) z,h(ih,iv)/bsize,(regel(i),i=1,30)
-c      write(10,*)z-0.125d0/2d0,h(ih,iv)/bsize        ! Print histogram to file
-      write(10,*)z,h(ih,iv)/bsize        ! Print histogram to file
+c
+c      subroutine histo1(ih,ib,x0,x1,x,w)
+c      implicit real*8(a-h,o-z)
+c      character*1 regel(30),blank,star
+c      dimension h(20,100),hx(20),io(20),iu(20),ii(20)
+c      dimension y0(20),y1(20),ic(20)
+c      data regel / 30*' ' /,blank /' ' /,star /'*'/
+c      save
+c      open(10,file="output.dat")
+c      y0(ih)=x0
+c      y1(ih)=x1
+c      ic(ih)=ib
+c      if(x.lt.x0) goto 11
+c      if(x.gt.x1) goto 12
+c      ix=idint((x-x0)/(x1-x0)*dble(ib))+1
+c      h(ih,ix)=h(ih,ix)+w
+c      if(h(ih,ix).gt.hx(ih)) hx(ih)=h(ih,ix)
+c      ii(ih)=ii(ih)+1
+c      return
+c   11 iu(ih)=iu(ih)+1
+c      return
+c   12 io(ih)=io(ih)+1
+c      return
+c      entry histo2(ih,il)
+c      ib1=ic(ih)
+c      x01=y0(ih)
+c      x11=y1(ih)
+c      bsize=(x11-x01)/dble(ib1)
+c      hx(ih)=hx(ih)*(1.d0+1.d-06)
+c      if(il.eq.0) write(6,21) ih,ii(ih),iu(ih),io(ih)
+c      if(il.eq.1) write(6,22) ih,ii(ih),iu(ih),io(ih)
+c   21 format(' no.',i3,' lin : inside,under,over ',3i6)
+c   22 format(' no.',i3,' log : inside,under,over ',3i6)
+c      if(ii(ih).eq.0) goto 28
+c      write(6,23)
+c   23 format(35(1h ),3(10h----+----i))
+c      do 27 iv=1,ib1
+c      z=(dble(iv)-0.5d0)/dble(ib1)*(x11-x01)+x01
+c      if(il.eq.1) goto 24
+c      iz=idint(h(ih,iv)/hx(ih)*30.)+1
+c      goto 25
+c   24 iz=-1
+c      if(h(ih,iv).gt.0.d0)
+c     .iz=idint(dlog(h(ih,iv))/dlog(hx(ih))*30.)+1
+c   25 if(iz.gt.0.and.iz.le.30) regel(iz)=star
+c      write(6,26) z,h(ih,iv)/bsize,(regel(i),i=1,30)
+cc      write(10,*)z-0.125d0/2d0,h(ih,iv)/bsize        ! Print histogram to file
 c      write(10,*)z,h(ih,iv)/bsize        ! Print histogram to file
-   26 format(1h ,2g15.6,4h   i,30a1,1hi)
-   36 format(1h ,2g15.6)
-      if(iz.gt.0.and.iz.le.30) regel(iz)=blank
-   27 continue
-      write(6,23)
-      return
-   28 write(6,29)
-   29 format('  no entries inside histogram')
-      return
-      entry histo3(ih)
-      do 31 i=1,100
-   31 h(ih,i)=0.
-      hx(ih)=0.
-      io(ih)=0
-      iu(ih)=0
-      ii(ih)=0
-      close(10)
-      return 
-      end
+cc      write(10,*)z,h(ih,iv)/bsize        ! Print histogram to file
+c   26 format(1h ,2g15.6,4h   i,30a1,1hi)
+c   36 format(1h ,2g15.6)
+c      if(iz.gt.0.and.iz.le.30) regel(iz)=blank
+c   27 continue
+c      write(6,23)
+c      return
+c   28 write(6,29)
+c   29 format('  no entries inside histogram')
+c      return
+c      entry histo3(ih)
+c      do 31 i=1,100
+c   31 h(ih,i)=0.
+c      hx(ih)=0.
+c      io(ih)=0
+c      iu(ih)=0
+c      ii(ih)=0
+c      close(10)
+c      return 
+c      end
 
 
 cccc  Initializes soft model parameters
@@ -1589,7 +1597,8 @@ ccccc Calculates proton opacity
                oph(i1,i2,ib,1)=bt
                oph(i1,i2,ib,2)=fr1
 
-               write(40,*)bt,fr,fr1
+c Print to ascii
+c               write(40,*)bt,fr,fr1
 
             enddo
          enddo
@@ -1960,59 +1969,7 @@ c     calculates lorentzian dot product for real 4-vectors
       end
 c
 
-*
-* subtractive mitchell-moore generator
-* ronald kleiss - october 2, 1987
-*
-* the algorithm is N(i)=[ N(i-24) - N(i-55) ]mod M,
-* implemented in a cirucular array with identifcation
-* of NR(i+55) and nr(i), such that effectively:
-*        N(1)   <---   N(32) - N(1)
-*        N(2)   <---   N(33) - N(2)  ....
-*   .... N(24)  <---   N(55) - N(24)
-*        N(25)  <---   N(1)  - N(25) ....
-*   .... N(54)  <---   N(30) - N(54)
-*        N(55)  <---   N(31) - N(55)
-*
-* in this version  M =2**30  and  RM=1/M=2.D0**(-30.D0)
-*
-* the array NR has been initialized by putting NR(i)=i
-* and subsequently running the algorithm 100,000 times.
-*
 
-      subroutine R2455(Ran)
-      IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION N(55)
-      DATA N/
-     . 980629335, 889272121, 422278310,1042669295, 531256381,
-     . 335028099,  47160432, 788808135, 660624592, 793263632,
-     . 998900570, 470796980, 327436767, 287473989, 119515078,
-     . 575143087, 922274831,  21914605, 923291707, 753782759,
-     . 254480986, 816423843, 931542684, 993691006, 343157264,
-     . 272972469, 733687879, 468941742, 444207473, 896089285,
-     . 629371118, 892845902, 163581912, 861580190,  85601059,
-     . 899226806, 438711780, 921057966, 794646776, 417139730,
-     . 343610085, 737162282,1024718389,  65196680, 954338580,
-     . 642649958, 240238978, 722544540, 281483031,1024570269,
-     . 602730138, 915220349, 651571385, 405259519, 145115737/
-      DATA M/1073741824/
-      DATA RM/0.9313225746154785D-09/
-      DATA K/55/,L/31/
-      IF(K.EQ.55) THEN
-         K=1
-      ELSE
-         K=K+1
-      ENDIF
-      IF(L.EQ.55) THEN
-         L=1
-      ELSE
-         L=L+1
-      ENDIF
-      J=N(L)-N(K)
-      IF(J.LT.0) J=J+M
-      N(K)=J
-      RAN=J*RM
-      END
 
       
 
@@ -2192,69 +2149,136 @@ C
       END
 C
 
-      function rn(idum)
-*
-* SUBTRACTIVE MITCHELL-MOORE GENERATOR
-* RONALD KLEISS - OCTOBER 2, 1987
-*
-* THE ALGORITHM IS N(I)=[ N(I-24) - N(I-55) ]MOD M,
-* IMPLEMENTED IN A CIRUCULAR ARRAY WITH IDENTIFCATION
-* OF NR(I+55) AND NR(I), SUCH THAT EFFECTIVELY:
-*        N(1)   <---   N(32) - N(1)
-*        N(2)   <---   N(33) - N(2)  ....
-*   .... N(24)  <---   N(55) - N(24)
-*        N(25)  <---   N(1)  - N(25) ....
-*   .... N(54)  <---   N(30) - N(54)
-*        N(55)  <---   N(31) - N(55)
-*
-* IN THIS VERSION  M =2**30  AND  RM=1/M=2.D0**(-30D0)
-*
-* THE ARRAY NR HAS BEEN INITIALIZED BY PUTTING NR(I)=I
-* AND SUBSEQUENTLY RUNNING THE ALGORITHM 100,000 TIMES.
-*
+c ------------------------------------------------------------
+c  This one calls AliDimeRndm implementation of rn(),
+c  which calls TRandom3 (Mersenne-Twister) from ROOT
+c  And the random seed is set through AliDimeRndm class
+c ------------------------------------------------------------
+      subroutine R2455(Ran)
+      IMPLICIT REAL*8(A-H,O-Z)
 
-      implicit none
-      double precision rn
-      integer idum
-      integer n(55)
-      data n/
-     . 980629335, 889272121, 422278310,1042669295, 531256381,
-     . 335028099,  47160432, 788808135, 660624592, 793263632,
-     . 998900570, 470796980, 327436767, 287473989, 119515078,
-     . 575143087, 922274831,  21914605, 923291707, 753782759,
-     . 254480986, 816423843, 931542684, 993691006, 343157264,
-     . 272972469, 733687879, 468941742, 444207473, 896089285,
-     . 629371118, 892845902, 163581912, 861580190,  85601059,
-     . 899226806, 438711780, 921057966, 794646776, 417139730,
-     . 343610085, 737162282,1024718389,  65196680, 954338580,
-     . 642649958, 240238978, 722544540, 281483031,1024570269,
-     . 602730138, 915220349, 651571385, 405259519, 145115737/
-      double precision eps
-      double precision rm
-      integer j,k,l,m
-
-      data eps/1D-9/
-      data m/1073741824/
-      data rm/0.9313225746154785D-09/
-      data k/55/,l/31/
-   
-
-  1   CONTINUE
-      IF(K.EQ.55) THEN
-         K=1
-      ELSE
-         K=K+1
-      ENDIF
-      IF(L.EQ.55) THEN
-         L=1
-      ELSE
-         L=L+1
-      ENDIF
-      J=N(L)-N(K)
-      IF(J.LT.0) J=J+M
-      N(K)=J
-      RN=J*RM
-      IF(RN.LT.EPS) GOTO 1
-      IF(RN.GT.1D0-EPS) GOTO 1
-      RETURN
+      RAN = rn(0);
       END
+
+
+c* subtractive mitchell-moore generator
+c* ronald kleiss - october 2, 1987
+c*
+c* the algorithm is N(i)=[ N(i-24) - N(i-55) ]mod M,
+c* implemented in a cirucular array with identifcation
+c* of NR(i+55) and nr(i), such that effectively:
+c*        N(1)   <---   N(32) - N(1)
+c*        N(2)   <---   N(33) - N(2)  ....
+c*   .... N(24)  <---   N(55) - N(24)
+c*        N(25)  <---   N(1)  - N(25) ....
+c*   .... N(54)  <---   N(30) - N(54)
+c*        N(55)  <---   N(31) - N(55)
+c*
+c* in this version  M =2**30  and  RM=1/M=2.D0**(-30.D0)
+c*
+c* the array NR has been initialized by putting NR(i)=i
+c* and subsequently running the algorithm 100,000 times.
+c*
+c
+c     subroutine R2455(Ran)
+c
+c      IMPLICIT REAL*8(A-H,O-Z)
+c      DIMENSION N(55)
+c      DATA N/
+c     . 980629335, 889272121, 422278310,1042669295, 531256381,
+c     . 335028099,  47160432, 788808135, 660624592, 793263632,
+c     . 998900570, 470796980, 327436767, 287473989, 119515078,
+c     . 575143087, 922274831,  21914605, 923291707, 753782759,
+c     . 254480986, 816423843, 931542684, 993691006, 343157264,
+c     . 272972469, 733687879, 468941742, 444207473, 896089285,
+c     . 629371118, 892845902, 163581912, 861580190,  85601059,
+c     . 899226806, 438711780, 921057966, 794646776, 417139730,
+c     . 343610085, 737162282,1024718389,  65196680, 954338580,
+c     . 642649958, 240238978, 722544540, 281483031,1024570269,
+c     . 602730138, 915220349, 651571385, 405259519, 145115737/
+c      DATA M/1073741824/
+c      DATA RM/0.9313225746154785D-09/
+c      DATA K/55/,L/31/
+c      IF(K.EQ.55) THEN
+c         K=1
+c      ELSE
+c         K=K+1
+c      ENDIF
+c      IF(L.EQ.55) THEN
+c         L=1
+c      ELSE
+c         L=L+1
+c      ENDIF
+c      J=N(L)-N(K)
+c      IF(J.LT.0) J=J+M
+c      N(K)=J
+c      RAN=J*RM
+c      END
+
+c      function rn(idum)
+c*
+c* SUBTRACTIVE MITCHELL-MOORE GENERATOR
+c* RONALD KLEISS - OCTOBER 2, 1987
+c*
+c* THE ALGORITHM IS N(I)=[ N(I-24) - N(I-55) ]MOD M,
+c* IMPLEMENTED IN A CIRUCULAR ARRAY WITH IDENTIFCATION
+c* OF NR(I+55) AND NR(I), SUCH THAT EFFECTIVELY:
+c*        N(1)   <---   N(32) - N(1)
+c*        N(2)   <---   N(33) - N(2)  ....
+c*   .... N(24)  <---   N(55) - N(24)
+c*        N(25)  <---   N(1)  - N(25) ....
+c*   .... N(54)  <---   N(30) - N(54)
+c*        N(55)  <---   N(31) - N(55)
+c*
+c* IN THIS VERSION  M =2**30  AND  RM=1/M=2.D0**(-30D0)
+c*
+c* THE ARRAY NR HAS BEEN INITIALIZED BY PUTTING NR(I)=I
+c* AND SUBSEQUENTLY RUNNING THE ALGORITHM 100,000 TIMES.
+c*
+c
+c     implicit none
+c      double precision rn
+c      integer idum
+c      integer n(55)
+c      data n/
+c     . 980629335, 889272121, 422278310,1042669295, 531256381,
+c     . 335028099,  47160432, 788808135, 660624592, 793263632,
+c     . 998900570, 470796980, 327436767, 287473989, 119515078,
+c     . 575143087, 922274831,  21914605, 923291707, 753782759,
+c     . 254480986, 816423843, 931542684, 993691006, 343157264,
+c     . 272972469, 733687879, 468941742, 444207473, 896089285,
+c     . 629371118, 892845902, 163581912, 861580190,  85601059,
+c     . 899226806, 438711780, 921057966, 794646776, 417139730,
+c     . 343610085, 737162282,1024718389,  65196680, 954338580,
+c     . 642649958, 240238978, 722544540, 281483031,1024570269,
+c     . 602730138, 915220349, 651571385, 405259519, 145115737/
+c      double precision eps
+c      double precision rm
+c      integer j,k,l,m
+c
+c      data eps/1D-9/
+c      data m/1073741824/
+c      data rm/0.9313225746154785D-09/
+c      data k/55/,l/31/
+c   
+c
+c  1   CONTINUE
+c      IF(K.EQ.55) THEN
+c         K=1
+c      ELSE
+c         K=K+1
+c      ENDIF
+c      IF(L.EQ.55) THEN
+c         L=1
+c      ELSE
+c         L=L+1
+c      ENDIF
+c      J=N(L)-N(K)
+c      IF(J.LT.0) J=J+M
+c      N(K)=J
+c      RN=J*RM
+c      IF(RN.LT.EPS) GOTO 1
+c      IF(RN.GT.1D0-EPS) GOTO 1
+c      RETURN
+c      END
+

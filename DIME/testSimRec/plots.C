@@ -1,67 +1,67 @@
-// Histograms and text file output check of DIME output from Sim run
+// Histogram check of DIME output of p+p -> p + X + p, X(rhorho) -> 4pi from the simulation after GEANT
+// Reads data using galice.root and goes through the kinematics tree, and selects generator level pions
 //
-// Mikael.Mieskolainen@cern.ch
+// Mikael.Mieskolainen@cern.ch, 22.9.2015
 
 #include "TMath.h"
 
 void plots() {
 
+  gSystem->Load("libEVGEN"); // Needs to be!
+
   AliRunLoader* rl = AliRunLoader::Open("galice.root");
   rl->LoadKinematics();
   rl->LoadHeader();
 
-  // (pi+pi-) histograms
-  TH1* hM    = new TH1D("hM",    "DIME;M_{#pi^{+}#pi^{-}} #(){GeV/#it{c}^{2}}", 100,  0.0, 20.0);
-  TH1* hPt   = new TH1D("hPt",   "DIME;p_{T}#(){#pi^{+}#pi^{-}} #(){GeV/#it{c}}", 100,  0.0, 3.0);
+  // 4pi histograms
+  TH1* hM    = new TH1D("hM",  "DIME #rho#rho;M_{4#pi} #(){GeV/#it{c}^{2}}", 100,  1.0, 3.0);
+  TH1* hPt   = new TH1D("hPt", "DIME #rho#rho;p_{T}#(){4#pi} #(){GeV/#it{c}}", 100,  0.0, 3.0);
 
   // pi+- histograms
-  TH1* hPt1   = new TH1D("hPt1",  "DIME;p_{T}#(){#pi^{#pm}} #(){Gev/#it{c}}",  100, 0.0, 5.0);
-
-  std::ofstream ofs("pipm.txt");
+  TH1* hPt1   = new TH1D("hPt1", "DIME #rho#rho;p_{T}#(){#pi^{#pm}} #(){Gev/#it{c}}",  100, 0.0, 3.0);
 
   AliStack* stack = NULL;
   TParticle* part = NULL;
-  TLorentzVector v[2];
+  TLorentzVector v[4];
   TLorentzVector vSum;
 
   // Loop over events
-  for (Int_t i = 0, n(rl->GetNumberOfEvents()); i < n; ++i) {
+  for (Int_t i = 0; i < rl->GetNumberOfEvents(); ++i) {
 
     rl->GetEvent(i);
     stack = rl->Stack();
-    Int_t nPrimary(0);
+    Int_t nPrimary = 0;
 
-    // Loop over tracks
-    for (Int_t j = 0, m(stack->GetNtrack()); j < m; ++j) {
-      part = stack->Particle(j);     // Get particle
-      if (part->IsPrimary()) {
-        part->Momentum(v[nPrimary]); // Set content of v
-        nPrimary++;
+    // Loop over all particles
+    for (Int_t j = 0; j < stack->GetNtrack(); ++j) {
+      part = stack->Particle(j);           // Get particle
+      part->Print();                       // Print contents
+
+      if (abs(part->GetPdgCode()) == 211   // Is pi+ or pi-
+          & part->GetStatusCode() == 1     // Is stable final state
+          & stack->IsPhysicalPrimary(j)) { // Is from generator level
+
+        part->Momentum(v[nPrimary]);       // Set content of v
+        ++nPrimary;
       }
     }
-    if (nPrimary != 2) {
-      Printf("Error: nPrimary=%d != 2", nPrimary);
+    if (nPrimary != 4) {
+      printf("Error: nPrimary=%d != 4 \n", nPrimary);
       continue;
     }
 
     // 4-vector sum
-    vSum = v[0] + v[1];
+    vSum = v[0] + v[1] + v[2] + v[3];
 
-    // Fill pi+pi- histograms
+    // Fill 4pi histograms
     hM->Fill(vSum.M());
     hPt->Fill(vSum.Perp());
 
-    // Fill pi(+-) histograms
-    for (Int_t k = 0; k < 2; ++k) {
+    // Fill pi+- histograms
+    for (Int_t k = 0; k < 4; ++k) {
       hPt1->Fill(v[k].Perp());
     }
-
-    // Text file output
-    ofs << std::fixed << std::setprecision(4)
-	<< vSum.M() << " " << vSum.Perp() << " " << vSum.Rapidity() << " "
-	<< v[0].Eta() << " " << v[0].Px() << " " << v[0].Py() << " " << v[0].Pz() << " "
-	<< v[1].Eta() << " " << v[1].Px() << " " << v[1].Py() << " " << v[1].Pz()
-	<< std::endl;
+    printf("\n");
   }
 
   // Save plots as pdf

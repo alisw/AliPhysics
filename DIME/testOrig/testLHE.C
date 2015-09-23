@@ -25,7 +25,7 @@ void testLHE() {
    Double_t empty = 0;
 
    // Mass histogram
-   TH1* hM = new TH1D("hM","DIME;M_{#pi^{+}#pi^{-}} #[]{GeV/#it{c}^{2}}", 100,  0.0, 4.0);
+   TH1* hM = new TH1D("hM","DIME #pi^{+}#pi^{-};M_{#pi^{+}#pi^{-}} #[]{GeV/#it{c}^{2}}", 100,  0.0, 4.0);
 
    // Event loop
    while (true) {

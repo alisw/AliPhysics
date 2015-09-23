@@ -14,6 +14,10 @@
  **************************************************************************/
 
 /* $Id:  $ */
+//
+// Author: Mikael.Mieskolainen@cern.ch
+
+
 #include <Riostream.h>
 #include "AliLog.h"
 #include "TDime.h"
@@ -35,6 +39,7 @@ AliGenDime::AliGenDime(Int_t npart)
   , fDMgenerator(new TDime())
 {
 //
+
 }
 
 //----------------------------------------------------------------------
@@ -62,48 +67,59 @@ void AliGenDime::Generate() {
 
   // Set collision vertex position
   if (fVertexSmear == kPerEvent) {
-      Vertex();
-      for (Int_t i = 0; i < 3; ++i) {
-        vpos[i] = fVertex[i];
-      }
-      vpos[3] = fTime;
+    Vertex();
+    for (Int_t i = 0; i < 3; ++i) {
+      vpos[i] = fVertex[i];
+    }
+    vpos[3] = fTime;
   }
 
-  Int_t nt = 0; // number of tracks
+  Int_t nt = 0;             // Number of tracks
+  Int_t kf = 0;             // PDG code
+  Int_t ks = 0;             // PDG status
+  Int_t imo = 0;            // Mother
+  Int_t fNprimaries = 0;
+  
+  const Int_t weight = 1.0; // Unweighted events
+
 
   // Generate events, store into fParticles
   fDMgenerator->GenerateEvent();
   fDMgenerator->ImportParticles(&fParticles, "All");
+  Int_t np = fParticles.GetEntriesFast();
 
-  const Int_t   iparent = -1;
-  const Float_t weight  = 1.0;
+  // Mother tracking array
+  Int_t* newPos = new Int_t[np];
+  for (Int_t i = 0; i < np; ++i) *(newPos+i) = -1;
 
-  fNprimaries = 0;
+  // Particle loop, all particles from DIME
+  for (Int_t i = 0; i < np; ++i) {
 
-  // Loop over particles
-  for (Int_t i = 0; i < fParticles.GetEntries(); ++i) {
+    TParticle* iparticle = (TParticle *) fParticles.At(i);
+    if (iparticle == NULL) {
+      AliFatal("AliGenDime::Generate(): part == NULL");
+      return;
+    }
 
-      const TParticle* part = (TParticle*)fParticles.At(i);
-      if (part == NULL) {
-        AliFatal("part == NULL");
-        return;
-      }
+    imo = iparticle->GetFirstMother();
+    kf  = iparticle->GetPdgCode();
+    ks  = iparticle->GetStatusCode();
 
-      if (part->GetStatusCode() == 1) { // Push final states only
+    Int_t iparent = (imo > -1) ? newPos[imo] : -1;
+    Int_t trackIt = (ks == 1) && fTrackIt;
 
-        PushTrack(fTrackIt, iparent, part->GetPdgCode(),
-                part->Px(), part->Py(), part->Pz(), part->Energy(),
-	        vpos[0],    vpos[1],    vpos[2],    vpos[3],
-	        polar[0],   polar[1],   polar[2],
-	        kPPrimary, nt, weight, part->GetStatusCode());
-
-        AliInfo(Form("weight=%.0f nt=%d fTrackIt=%d statusCode=%d",
-              weight, nt, fTrackIt, part->GetStatusCode()));
-        part->Print();
-        KeepTrack(nt);
-        ++fNprimaries;
-      }
+    // Push the track
+    PushTrack(trackIt, iparent, kf,
+	      iparticle->Px(), iparticle->Py(), iparticle->Pz(), iparticle->Energy(),
+	      vpos[0], vpos[1], vpos[2], vpos[3],
+	      polar[0], polar[1], polar[2],
+	      kPPrimary, nt, weight, ks);
+    KeepTrack(nt);
+    newPos[i] = nt;
+    ++fNprimaries;
   }
+  if (newPos) delete[] newPos;
+
   // Clear particles for the next event
   fParticles.Clear();
 
@@ -112,7 +128,7 @@ void AliGenDime::Generate() {
   const TArrayF vertexPosition(3, vpos);
   header->SetPrimaryVertex(vertexPosition);
   header->SetInteractionTime(vpos[3]);
-  header->SetNProduced(nt);
+  header->SetNProduced(fNprimaries);
 
   // Pass header
   AddHeader(header);

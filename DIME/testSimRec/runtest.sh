@@ -29,9 +29,11 @@ aliroot -b -q rec.C      2>&1 | tee rec.log
 mv syswatch.log recwatch.log
 printf "rec.C DONE in %6d SECONDS\n" ${SECONDS}
 
-SECONDS=0;
-aliroot -b -q ${ALICE_ROOT}/STEER/CheckESD.C 2>&1 | tee check.log
-printf "CheckESD.C DONE in %6d SECONDS\n" ${SECONDS}
+#SECONDS=0;
+#aliroot -b -q ${ALICE_ROOT}/STEER/CheckESD.C 2>&1 | tee check.log
+#printf "CheckESD.C DONE in %6d SECONDS\n" ${SECONDS}
+
+aliroot -b -q plots.C   2>&1 | tee plots.log
 
 exit
 

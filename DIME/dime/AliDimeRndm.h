@@ -5,6 +5,7 @@
 
 /* $Id$ */
 
+#include <TRandom3.h>
 #include <Rtypes.h>
 #include <TError.h>
 
@@ -30,12 +31,12 @@ class AliDimeRndm {
     return (*this);
   }
   
-  static void SetDimeRandom(TRandom *ran=0);
-  static TRandom * GetDimeRandom();
+  static void SetDimeRandom(TRandom3* ran = 0);
+  static TRandom3* GetDimeRandom();
 
 private:
 
-  static TRandom * fgDimeRandom; //! pointer to the random number generator
+  static TRandom3* fgDimeRandom; //! pointer to the random number generator
 
   ClassDef(AliDimeRndm,0)  //Random Number generator wrapper (non persistent)
 };

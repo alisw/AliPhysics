@@ -1,8 +1,8 @@
 // Simulation steering macro
 
-// mikael.mieskolainen@cern.ch
+// mikael.mieskolainen@cern.ch, 22.9.2015
 
-void sim(Int_t nev = 20) {
+void sim(Int_t nev = 3) {
 
   if (gSystem->Getenv("EVENT")) {
     nev = atoi(gSystem->Getenv("EVENT"));

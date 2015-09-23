@@ -24,9 +24,9 @@ static UInt_t seed = dt.Get();
 void Config() {
 
     gSystem->Load("libgeant321");
-    gSystem->Load("libEG.so");
-    gSystem->Load("libdime.so");
-    gSystem->Load("libTDime.so");
+    gSystem->Load("libEVGEN");
+    gSystem->Load("libTDime");
+    gSystem->Load("libdime");
 
     // =====================================================================
 
@@ -102,13 +102,18 @@ void Config() {
     //=========================//
     AliGenerator* gener = 0x0;
 
-    // 1. Create AliGenDime object
-    AliGenDime* dime = new AliGenDime(1000*1000);
+    // 0. Create AliGenDime object
+    AliGenDime* dime = new AliGenDime(1000);
+
+    // 1. Set seed of DIME
+    AliDimeRndm::GetDimeRandom()->SetSeed(seed);
+    cout<< "DIME Random Seed: "<< AliDimeRndm::GetDimeRandom()->GetSeed() << endl;
 
     // 2. Setup parameters of DIME MC
     dime->GetTDime()->SetEnergyCMS(energy);
-    dime->GetTDime()->SetProcess("pipm      ");
-    //dime->GetTDime()->SetProcess("rho       ");
+    //dime->GetTDime()->SetProcess("pipm");
+    dime->GetTDime()->SetProcess("rho");
+    dime->GetTDime()->SetYRange(-2.0, 2.0);
     dime->GetTDime()->SetMinPt(0.2);
 
     // 3. Create AliGenerator object and setup parameters
@@ -118,6 +123,8 @@ void Config() {
     gener->SetCutVertexZ(1.0);     // Truncate at 1 sigma
     gener->SetVertexSmear(kPerEvent);
     gener->SetTrackingFlag(1);
+
+    // 4. Initialize DIME, always last
     gener->Init();
 
     if (smag == AliMagF::k2kG) {
@@ -263,7 +270,7 @@ void Config() {
     if (iPHOS)
     {
         //=================== PHOS parameters ===========================
-        AliPHOS *PHOS = new AliPHOSv1("PHOS", "IHEP");
+        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
     }
 
     if (iPMD)

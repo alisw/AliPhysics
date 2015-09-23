@@ -1,8 +1,11 @@
 // Reconstruction steering macro
 
-// mikael.mieskolainen@cern.ch
+// mikael.mieskolainen@cern.ch, 22.9.2015
 
 void rec() {
+
+  gSystem->Load("libEVGEN"); // Needs to be!
+
   AliReconstruction reco;
 
   reco.SetWriteESDfriend();

@@ -17,7 +17,9 @@
 set (MODULE TDime)
 
 # Module include folder
-include_directories(${AliRoot_SOURCE_DIR}/DIME/${MODULE})
+include_directories(${AliRoot_SOURCE_DIR}/DIME/${MODULE}
+                    ${AliRoot_SOURCE_DIR}/DIME/dime
+                   )
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}

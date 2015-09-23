@@ -1,21 +1,23 @@
 // Test TDime class
 //
-// Mikael.Mieskolainen@cern.ch
+// Mikael.Mieskolainen@cern.ch, 22.9.2015
 
 //#include "TMath.h"
 
-void testTDime(Int_t nev = 500) {
+void testTDime(Int_t nev = 100) {
 
-  gSystem->Load("libEG.so");
-  gSystem->Load("libdime.so");
-  gSystem->Load("libTDime.so");
+  gSystem->Load("libEVGEN");
+  gSystem->Load("libTDime");
+  gSystem->Load("libdime");
 
   TDime* dime = new TDime();
   dime->SetEnergyCMS(7000.0);
+  dime->SetYRange(-2.0, 2.0);   // Set rapidity range of mesons
+  dime->SetMinPt(0.1);          // Minimum pT of mesons
   dime->Initialize();
 
   // (pi+pi-) histograms
-  TH1* hM = new TH1D("hM", "DIME;M_{#pi^{+}#pi^{-}} #[]{GeV/#it{c}^{2}}", 100,  0.0, 5.0);
+  TH1* hM = new TH1D("hM", "DIME #pi^{+}#pi^{-};M_{#pi^{+}#pi^{-}} #[]{GeV/#it{c}^{2}}", 100,  0.0, 5.0);
 
   TClonesArray* particles = new TClonesArray("TParticle", 6);
   TParticle* part = NULL;
@@ -23,7 +25,7 @@ void testTDime(Int_t nev = 500) {
   TLorentzVector vSum;
 
   // Event loop
-  for (Int_t i = 0; i < nev; i++) {
+  for (Int_t i = 0; i < nev; ++i) {
 
     dime->GenerateEvent();
     Int_t np = dime->ImportParticles(particles, "All");
@@ -37,10 +39,6 @@ void testTDime(Int_t nev = 500) {
       part->Print();
       part->Momentum(v[nPrimary]);          // Copy content to v
       nPrimary++;
-    }
-    if (nPrimary != 2) {
-      Printf("Error: nPrimary=%d != 2", nPrimary);
-      continue;
     }
     //particles.Clear();
 
