@@ -4312,9 +4312,9 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     Float_t qInv=GetQinv(track1, track2);
     Int_t MaxBinsQinv=20;
     if(fCollisionType!=0) MaxBinsQinv=100;
-    if(qInv < 0.0025) {fQinvIndexL=0; fQinvIndexH=0; xd=0;}
-    else if(qInv >= 0.1 && fCollisionType==0) {fQinvIndexL=19; fQinvIndexH=19; xd=1;}
-    else if(qInv >= 0.5 && fCollisionType!=0) {fQinvIndexL=99; fQinvIndexH=99; xd=1;}
+    if(qInv < 0.0075) {fQinvIndexL=1; fQinvIndexH=1; xd=0;}
+    else if(qInv >= 0.0975 && fCollisionType==0) {fQinvIndexL=19; fQinvIndexH=19; xd=1;}
+    else if(qInv >= 0.4975 && fCollisionType!=0) {fQinvIndexL=99; fQinvIndexH=99; xd=1;}
     else {
       for(Int_t i=0; i<MaxBinsQinv-1; i++){
 	if((qInv >= (i+0.5)*0.005) && (qInv < (i+1.5)*0.005)) {fQinvIndexL=i; fQinvIndexH=i+1; break;}
