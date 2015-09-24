@@ -63,6 +63,11 @@
 ///    LDC1.config
 ///    LDC2.config
 ///    LDC3.config
+/// CONFIGPAR/
+///    LDC0.config
+///    LDC1.config
+///    LDC2.config
+///    LDC3.config
 /// GAINS/
 ///    LDC0.gain
 ///    LDC1.gain
@@ -202,11 +207,24 @@ void TestMUONPreprocessor(Int_t runNumber=80,
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC3",Form("%s/PEDESTALS/LDC3.ped",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","PEDESTALS","LDC4",Form("%s/PEDESTALS/LDC4.ped",sourceDirectory));
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC0",Form("%s/CONFIG/LDC0.conf",sourceDirectory));
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC1",Form("%s/CONFIG/LDC1.conf",sourceDirectory));
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC2",Form("%s/CONFIG/LDC2.conf",sourceDirectory));
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC3",Form("%s/CONFIG/LDC3.conf",sourceDirectory));
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC4",Form("%s/CONFIG/LDC4.conf",sourceDirectory));
+  if ( rt.Contains("PHYSICS") )
+  {
+    // simulate a change of configuration during the run
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC0",Form("%s/CONFIGPAR/LDC0.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC1",Form("%s/CONFIGPAR/LDC1.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC2",Form("%s/CONFIGPAR/LDC2.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC3",Form("%s/CONFIGPAR/LDC3.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC4",Form("%s/CONFIGPAR/LDC4.conf",sourceDirectory));
+  }
+  else
+  {
+    // configuration as done by the pedestal run
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC0",Form("%s/CONFIG/LDC0.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC1",Form("%s/CONFIG/LDC1.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC2",Form("%s/CONFIG/LDC2.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC3",Form("%s/CONFIG/LDC3.conf",sourceDirectory));
+    shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","CONFIG","LDC4",Form("%s/CONFIG/LDC4.conf",sourceDirectory));
+  }
   
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC0",Form("%s/GAINS/LDC0.gain",sourceDirectory));
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MCH","GAINS","LDC1",Form("%s/GAINS/LDC1.gain",sourceDirectory));
