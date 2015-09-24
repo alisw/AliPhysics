@@ -88,8 +88,9 @@ set(SRCS
   AliFemtoPairCutMergedFraction.cxx
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
-  AliFemtoCorrFctnDYDPhiSimple.cxx	
-  )
+  AliFemtoCorrFctnDYDPhiSimple.cxx
+  AliFemtoAnalysisPionLambda.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -106,7 +107,7 @@ add_library(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Dependecies
 set(LIBDEPS ANALYSISalice PWGCFfemtoscopy)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
- 
+
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
