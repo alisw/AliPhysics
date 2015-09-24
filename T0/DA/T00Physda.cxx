@@ -221,7 +221,7 @@ int main(int argc, char **argv) {
       // Enable the following two lines in case of real-data
       reader->RequireHeader(kTRUE);
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
-      start->SetPrintout(kTRUE);
+      // start->SetPrintout(kFALSE);
       // Read raw data
       Int_t allData[107][5];
       for(Int_t i0=0;i0<107;i0++)
