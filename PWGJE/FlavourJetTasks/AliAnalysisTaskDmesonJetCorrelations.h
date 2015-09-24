@@ -40,6 +40,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   enum ECandidateType  { kD0toKpi, kDstartoKpipi };
   enum EMatchingType   { kGeometricalMatching, kDaughterConstituentMatching, kCandidateConstituentMatching, kJetLoop };
   enum EMatchingStatus { kSingleMatch = 0, kMultipleMatches = 1, kJetNotAccepted = 2, kNotMatched = 3 };
+  enum EBackgroundMode { kBackgroundAndSignal, kSignalOnly, kBackgroundOnly};
    
   AliAnalysisTaskDmesonJetCorrelations();
   AliAnalysisTaskDmesonJetCorrelations(const char* name, AliRDHFCuts* cuts, ECandidateType cand, Bool_t useExchCont=kFALSE);
@@ -69,7 +70,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetNBinsMass(Int_t n)                    { fNBinsMass           = n   ; }
   void SetParticleLevel(Bool_t s)               { fParticleLevel       = s   ; }
   void SetAliEmcalParticleMode(Bool_t m)        { fAliEmcalParticleMode= m   ; }
-  void SetUseMCInfo(Bool_t m)                   { fUseMCInfo           = m   ; }
+  void SetBackgroundMode(EBackgroundMode m)     { fBackgroundMode      = m   ; }
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
 
@@ -133,7 +134,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t           fParticleLevel         ; //  set particle level analysis
   Bool_t           fUseExchangeContainer  ; //  use exchange container for the D candidate list
   Bool_t           fAliEmcalParticleMode  ; //  use AliEmcalParticle objects in fCandidateArray
-  Bool_t           fUseMCInfo             ; //  use MC info
+  EBackgroundMode  fBackgroundMode        ; //  background mode: backgound-and-signal (data and MC), background-only (MC), signal-only (MC)
 
   AliAODEvent     *fAodEvent                  ; //! AOD event
   TClonesArray    *fCandidateArray            ; //! D meson candidate array
