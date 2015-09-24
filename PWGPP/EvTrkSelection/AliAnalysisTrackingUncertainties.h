@@ -21,13 +21,18 @@ class AliESDpid;
 #include "AliAnalysisUtils.h"
 #include "THn.h"
 
-// ITS->TPC matching constants
-const int kMaxMatch=5;
-const double kMaxChi2 = 200;
+
 
 
 class AliAnalysisTrackingUncertainties : public AliAnalysisTaskSE {
  public:
+  enum{
+    kMaxMatch = 5,
+    kNumberOfAxes = 5
+  };
+  // ITS->TPC matching constants
+  static const double kMaxChi2;
+
   AliAnalysisTrackingUncertainties(const char *name);
   AliAnalysisTrackingUncertainties();
   virtual ~AliAnalysisTrackingUncertainties() {}
@@ -77,6 +82,7 @@ class AliAnalysisTrackingUncertainties : public AliAnalysisTaskSE {
   //
   TList           * fListHist;      //! output list for histograms
   AliESDtrackCuts * fESDtrackCuts;  // cut set which is under study
+
   //
   // helper variables for ITS->TPC matching
   //

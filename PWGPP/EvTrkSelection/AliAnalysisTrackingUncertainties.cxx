@@ -52,7 +52,7 @@
 ClassImp(AliAnalysisTrackingUncertainties)
 
 // histogram constants
-const Int_t kNumberOfAxes = 5;
+const double AliAnalysisTrackingUncertainties::kMaxChi2 = 200;
 
 //________________________________________________________________________
 AliAnalysisTrackingUncertainties::AliAnalysisTrackingUncertainties() 
