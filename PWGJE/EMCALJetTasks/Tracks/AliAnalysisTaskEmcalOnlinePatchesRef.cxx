@@ -133,22 +133,33 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
     if(!(mypatch->IsGammaHigh() || mypatch->IsGammaLow() || mypatch->IsLevel0())) continue;
     fGeometry->SuperModuleNumberFromEtaPhi(mypatch->GetEtaCM(), mypatch->GetPhiCM(), supermoduleID);
     Int_t sector = 5 + supermoduleID / 2;
-    // Plots at global level:
-    // Energy vs. supermodule
-    // Energy vs. eta (all sectors)
-    // Energy vs. eta for sector
-    if(mypatch->IsLevel0()) patchname = "EL0";
-    else if(mypatch->IsGammaHigh()) patchname = "EG1";
-    else patchname = "EG2";
-    fHistos->FillTH2(Form("hPatchEnergy%s", patchname.Data()), supermoduleID, mypatch->GetPatchE());
-    fHistos->FillTH2(Form("hPatchADC%s", patchname.Data()), supermoduleID, mypatch->GetADCAmp());
-    fHistos->FillTH2(Form("hPatchEnergyEta%s", patchname.Data()), mypatch->GetEtaCM(), mypatch->GetPatchE());
-    fHistos->FillTH2(Form("hPatchADCEta%s", patchname.Data()), mypatch->GetEtaCM(), mypatch->GetADCAmp());
-    fHistos->FillTH2(Form("hPatchEnergyEta%sSector%d", patchname.Data(), sector), mypatch->GetEtaCM(), mypatch->GetPatchE());
-    fHistos->FillTH2(Form("hPatchADCEta%sSector%d", patchname.Data(), sector), mypatch->GetEtaCM(), mypatch->GetADCAmp());
+    if(mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector);
+    if(mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector);
+    if(mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector);
   }
 
   PostData(1, fHistos->GetListOfHistograms());
+}
+
+/**
+ * Fill trigger patch histograms for a given patchtype with relevant information.
+ * Information is also sorted according to sector and supermodule
+ * Plots at global level:
+ *  - Energy vs. supermodule
+ *  - Energy vs. eta (all sectors)
+ *  - Energy vs. eta for sector
+ * @param patchtype Type of the reconstructed trigger patch
+ * @param recpatch Reconstructed trigger patch with all information
+ * @param supermoduleID ID of the supermodule
+ * @param sector Sector in global numbering scheme
+ */
+void AliAnalysisTaskEmcalOnlinePatchesRef::FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermoduleID, Int_t sector){
+  fHistos->FillTH2(Form("hPatchEnergy%s", patchtype), supermoduleID, recpatch->GetPatchE());
+  fHistos->FillTH2(Form("hPatchADC%s", patchtype), supermoduleID, recpatch->GetADCAmp());
+  fHistos->FillTH2(Form("hPatchEnergyEta%s", patchtype), recpatch->GetEtaCM(), recpatch->GetPatchE());
+  fHistos->FillTH2(Form("hPatchADCEta%s", patchtype), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+  fHistos->FillTH2(Form("hPatchEnergyEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
+  fHistos->FillTH2(Form("hPatchADCEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
