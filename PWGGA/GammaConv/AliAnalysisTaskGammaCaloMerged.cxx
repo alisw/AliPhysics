@@ -1102,6 +1102,9 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 	// plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
 	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent);
 
+	// match tracks to clusters
+	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
+
 	// vertex
 	Double_t vertex[3] = {0};
 	InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -1187,7 +1190,6 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 			delete PhotonCandidate;
 			continue;
 		}
-		
 		
 		// check whether photon fullfill merged cluster cuts as well
 		if(!((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)){
