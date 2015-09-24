@@ -194,7 +194,7 @@ void AliT0Parameters::InitIfOnline()
       lookvalue->SetChannel(channel);
       lookkey->SetKey(ik);
       fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);
-      printf(" LookUp ik %i trm %i chain %i tdc %i  channel %i\n",ik, trm, chain, tdc, channel);	
+      //    printf(" LookUp ik %i trm %i chain %i tdc %i  channel %i\n",ik, trm, chain, tdc, channel);	
       if (channel<6) channel +=2;
       else {channel = 0; tdc++;}
       if (ik==104) {trm=7; chain=0; tdc=14; channel=2;}
