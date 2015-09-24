@@ -60,12 +60,12 @@ public:
  enum CorrelationWeights { kMultiplicity,
                            kUnit
                           };
-
+ 
  enum DataSet { k2010,
                 k2011,
                 kAny
                };
-
+ 
  // 0.) methods called in the constructor:
  virtual void InitializeArraysForIntFlow();
  virtual void InitializeArraysForDiffFlow();
@@ -824,7 +824,7 @@ public:
  TH2D* GetCMEZDCCovHist(Int_t const eg, Int_t const h) const {return this->fCMEZDCCovHist[eg][h];};
  void SetCMEZDCDistHist(TH1D* const TH, Int_t const eg, Int_t const h, Int_t const k) {this->fCMEZDCDistHist[eg][h][k] = TH;};
  TH1D* GetCMEZDCDistHist(Int_t const eg, Int_t const h, Int_t const k) const {return this->fCMEZDCDistHist[eg][h][k];};
-
+ 
  // 15.) Various
  void SetVariousList(TList* const Various) {this->fVariousList = Various;};
  void SetMultHist(TH1D* const TH) {this->fMultHist = TH;};
@@ -1317,7 +1317,7 @@ private:
  TProfile *fCMEZDCCorPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCMEZDCCovPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
  TProfile *fCMEZDCNUAPro[fCRCMaxnRun][fCMEnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
-
+ 
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
  TH1D *fMultHist; //! Multiplicity distribution
