@@ -153,6 +153,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fCutsDistr;    /// flag to activate cuts distr histos
   Bool_t fDoImpPar;    /// flag to activate impact paramter histos
   Bool_t fStepMCAcc;   /// flag to activate histos for StepMCAcc
+  Bool_t fUseQuarkTagInKine; /// flag for quark/hadron level identification of prompt and feeddown
   Int_t  fNImpParBins;   /// nunber of bins in impact parameter histos
   Float_t fLowerImpPar;  /// lower limit in impact parameter (um)
   Float_t fHigherImpPar; /// higher limit in impact parameter (um)
@@ -161,7 +162,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fSystem;   /// 0=pp,1=PbPb
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,22); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,23); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 
