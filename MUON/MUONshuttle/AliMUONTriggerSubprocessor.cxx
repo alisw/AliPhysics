@@ -335,32 +335,62 @@ AliMUONTriggerSubprocessor::WhichFilesToRead(const char* exportedFiles,
     if ( sline.Contains("REGIONAL") ) {
       regionalFile = kTRUE;
       oa = sline.Tokenize(" ");
-      os = (TObjString*)oa->At(1);
-      fRegionalConfigToOCDB |= (os->GetString()).Atoi();
+      if (oa->GetLast() >= 1) {
+	// new format, use the integer flag after the file name
+	os = (TObjString*)oa->At(1);
+	fRegionalConfigToOCDB |= (os->GetString()).Atoi();
+      } else {
+	// old format, transfer anyway
+	fRegionalConfigToOCDB |= 1;
+      }
     }
     if ( sline.Contains("LUT") ) {
       lutFile = kTRUE;
       oa = sline.Tokenize(" ");
-      os = (TObjString*)oa->At(1);
-      fLUTToOCDB |= (os->GetString()).Atoi();
+      if (oa->GetLast() >= 1) {
+	// new format, use the integer flag after the file name
+	os = (TObjString*)oa->At(1);
+	fLUTToOCDB |= (os->GetString()).Atoi();
+      } else {
+	// old format, transfer anyway
+	fLUTToOCDB |= 1;
+      }
     }
     if ( sline.Contains("LOCAL") && sline.Contains("MASK") ) {
       localFile = kTRUE;
       oa = sline.Tokenize(" ");
-      os = (TObjString*)oa->At(1);
-      fLocalMasksToOCDB |= (os->GetString()).Atoi();
+      if (oa->GetLast() >= 1) {
+	// new format, use the integer flag after the file name
+	os = (TObjString*)oa->At(1);
+	fLocalMasksToOCDB |= (os->GetString()).Atoi();
+      } else {
+	// old format, transfer anyway
+	fLocalMasksToOCDB |= 1;
+      }
     }
     if ( sline.Contains("GLOBAL") ) {
       globalFile = kTRUE;
       oa = sline.Tokenize(" ");
-      os = (TObjString*)oa->At(1);
-      fGlobalConfigToOCDB |= (os->GetString()).Atoi();
+      if (oa->GetLast() >= 1) {
+	// new format, use the integer flag after the file name
+	os = (TObjString*)oa->At(1);
+	fGlobalConfigToOCDB |= (os->GetString()).Atoi();
+      } else {
+	// old format, transfer anyway
+	fGlobalConfigToOCDB |= 1;
+      }
     }
     if ( sline.Contains("TRIGSCAL") ) {
       trigScalFile = kTRUE;
       oa = sline.Tokenize(" ");
-      os = (TObjString*)oa->At(1);
-      fTrigScalersToOCDB |= (os->GetString()).Atoi();
+      if (oa->GetLast() >= 1) {
+	// new format, use the integer flag after the file name
+	os = (TObjString*)oa->At(1);
+	fTrigScalersToOCDB |= (os->GetString()).Atoi();
+      } else {
+	// old format, transfer anyway
+	fTrigScalersToOCDB |= 1;
+      }
     }
 
   }
