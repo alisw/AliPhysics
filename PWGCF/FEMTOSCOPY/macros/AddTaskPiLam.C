@@ -19,11 +19,15 @@
 /// The output container name is fixed at the standard "femtolist".
 ///
 /// \param params A string forwarded to the ConfigFemtoAnalysis macro for
-///               parsing.
+///               parsing. This string is wrapped in double-quotes so escaping
+///               some to ensure results is a string is unneccessary.
 ///
 AliAnalysisTaskFemto* AddTaskPiLam(const TString params,
-                                   const TString subwagon_suffix="")
+                                   TString macro_filename="",
+                                   TString subwagon_suffix="")
 { // Adds a Pion-Lambda Femtoscopy task to the manager
+
+  const TString DEFAULT_MACRO = "$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionLambdaFemto/ConfigFemtoAnalysis.C";
 
   // Get the global manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -33,16 +37,32 @@ AliAnalysisTaskFemto* AddTaskPiLam(const TString params,
   }
 
   const TString default_name = "TaskPiLamFemto";
-  const TString config_macro = "$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/PionLambdaFemto/ConfigFemtoAnalysis.C";
+
+  // If the macro_filename was set, use it, else use the default
+  if (macro_filename == "") {
+    macro_filename = DEFAULT_MACRO;
+  }
+  // If subwagon_suffix was not set and there are no '/' characters in the
+  // macro's path, interpret path as the subwagon_suffix and set default path
+  if (subwagon_suffix == "" && !macro_filename.Contains("/")) {
+    subwagon_suffix = macro_filename;
+    macro_filename = DEFAULT_MACRO;
+  }
 
   // build analysis name out of provided suffix
   const TString task_name = (subwagon_suffix == "")
                           ? default_name
                           : TString::Format("%s_%s", default_name, subwagon_suffix);
 
+  // The analysis config macro for PionLambdaFemto accepts a single string
+  // argument, which it interprets.
+  // This line wraps that string in double quotes, ensuring that it's a string
+  // which is passed to the macro
+  const TString analysis_params = '"' + params + '"';
+
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto(task_name,
-                                                             config_macro,
-                                                             params,
+                                                             macro_filename,
+                                                             analysis_params,
                                                              kFALSE);
   mgr->AddTask(taskfemto);
 
