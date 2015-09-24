@@ -60,7 +60,8 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetUseOnlyPositiveEta(){fEtaSelection=1;}
   void SetUseOnlyNegativeEta(){fEtaSelection=-1;}
   void SetUseFullEta(){fEtaSelection=0;}
-  
+  void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
+
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
   Int_t GetNBinsPt(){return fNPtBins;}
