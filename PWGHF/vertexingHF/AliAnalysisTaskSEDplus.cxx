@@ -80,6 +80,7 @@ AliAnalysisTaskSE(),
   fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
   fStepMCAcc(kFALSE),
+  fUseQuarkTagInKine(kTRUE),
   fNImpParBins(400),
   fLowerImpPar(-1000.),
   fHigherImpPar(1000.),
@@ -164,6 +165,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
   fStepMCAcc(kFALSE),
+  fUseQuarkTagInKine(kTRUE),
   fNImpParBins(400),
   fLowerImpPar(-1000.),
   fHigherImpPar(1000.),
@@ -885,7 +887,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
       Double_t etaD=d->Eta();
       Double_t phiD=d->Phi();
-      Double_t ptB=-1.5;
       if(fEtaSelection!=0){
 	if(fEtaSelection==1 && etaD<0) continue;
 	if(fEtaSelection==-1 && etaD>0) continue;
@@ -909,18 +910,27 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       }
     
       Int_t labDp=-1;
-      Bool_t isPrimary=kTRUE;
+      Bool_t isPrimary=kFALSE;
+      Bool_t isFeeddown=kFALSE;
       Float_t pdgCode=-2;
       Float_t trueImpParXY=0.;
+      Double_t ptB=-1.5;
       if(fReadMC){
 	labDp = d->MatchToMC(411,arrayMC,3,pdgDgDplustoKpipi);
 	if(labDp>=0){
 	  AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-	  if(AliVertexingHFUtils::CheckOrigin(arrayMC,partDp,kFALSE)==5) isPrimary=kFALSE;
+	  Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,partDp,fUseQuarkTagInKine);//Prompt = 4, FeedDown = 5
 	  pdgCode=TMath::Abs(partDp->GetPdgCode());
-	  if(!isPrimary){
+	  if(orig==4){
+	    isPrimary=kTRUE;
+	    isFeeddown=kFALSE;
+	  }else if(orig==5){
+	    isPrimary=kFALSE;
+	    isFeeddown=kTRUE;
 	    trueImpParXY=GetTrueImpactParameter(mcHeader,arrayMC,partDp)*10000.;
 	    ptB=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,partDp);
+	  }else{
+	    pdgCode=-3;
 	  }
 	}else{
 	  pdgCode=-1;
@@ -970,7 +980,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Float_t tmp[31];
       if(fFillNtuple){
 	tmp[0]=pdgCode;
-	if(!isPrimary) tmp[0]+=5000.;
+	if(isFeeddown) tmp[0]+=5000.;
 	tmp[1]=d->Px();
 	tmp[2]=d->Py();
 	tmp[3]=d->Pz();
@@ -1049,7 +1059,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    index=GetSignalHistoIndex(iPtBin);
 	    if(passTightCuts&&fDoImpPar){
 	      if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
-	      else{
+	      else if(isFeeddown){
 		fHistMassPtImpParTC[2]->Fill(arrayForSparseFD);
 		fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue);
 	      }
@@ -1339,7 +1349,7 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iPart));
     if (TMath::Abs(mcPart->GetPdgCode()) == 411){
 	    
-      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,kTRUE);//Prompt = 4, FeedDown = 5
+      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,fUseQuarkTagInKine);//Prompt = 4, FeedDown = 5
 	    
       Int_t deca = 0;
       Bool_t isGoodDecay=kFALSE;
