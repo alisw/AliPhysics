@@ -81,10 +81,6 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
   Double_t GetZ(Double_t trkPx, Double_t trkPy, Double_t trkPz, Double_t jetPx, Double_t jetPy, Double_t jetPz) const;
 
-  //void              AddJetTrig(AliEmcalJet *trgjet) { if (!fTrgJet) fTrgJet = new TObjArray(); fTrgJet->Add(trgjet);               }
-
-  TH1*                   FillEventTriggerQA(TH1* h, UInt_t t); // filled event trigger QA plots
-
  protected:
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
@@ -94,13 +90,14 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
 
   // Trigger bit - do i need?????
   void                        ExtractMainPatch();//!
-  TH1*                        FillEventTriggerQA(TH1* h, UInt_t t, AliEmcalTriggerPatchInfo* fPatch); // filled event trigger QA plots
+  TH1*                        FillTriggerPatchQA(TH1* h, UInt_t t, AliEmcalTriggerPatchInfo* fPatch); // filled trigger patch QA
+  TH1*                        FillEventTriggerQA(TH1* h, UInt_t t); // fill event trigger QA
   Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
 
  private:
   Bool_t             fDebug;                 // debug level
   Bool_t             fAttachToEvent;         // attach local rho to the event
-  TString            fTriggerClass;          // trigger class to analyze EJ1 or EJ2    
+  TString            fTriggerClass;          // trigger class to analyze EJ or GA patches
   Int_t              fJetContainer;          // number of container of jets
   Double_t           fMaxPatchEnergy;        // energy of patch with largest energy (offline)
   Double_t           fMaxPatchADCEnergy;     // energy of patch with largest energy from online ADC
@@ -115,9 +112,7 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   Bool_t             doComments;             // summary (debugging comments)
   TString		     fJetTriggeredEventname; // name of jet that triggered event collection
 
-  // added
   AliEmcalTriggerPatchInfo      *fMaxPatch;//!                           main patch
-  AliEmcalTriggerPatchInfo      *fMaxPatchGA;//!                         main patch
   MainPatchType                 fMainPatchType;//!                       method to select main patch
 
   TH1F     *fhNEvents;                         //! Histo number of events
@@ -166,21 +161,19 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
   TH3F     *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
   TH3F     *fh3JetReacCent;                    //! jet energy vs cent vs dphi(jet,event plane)
 
-  TH1F     *fhQAinfoCounter; //!
-  TH1F     *fhQAmaxinfoCounter; //!
-  TH1F     *fhRecalcGammaPatchEnergy; //!
-  TH1F     *fhRecalcJetPatchEnergy; //!
+  TH1F     *fHistEventSelectionQA;             //! trigger event class QA
+  TH1F     *fhQAinfoCounter;                   //!
+  TH1F     *fhQAmaxinfoCounter;                //!
+  TH1F     *fhRecalcGammaPatchEnergy;          //! Recalculated Gamma Patch Energy distribution
+  TH1F     *fhRecalcJetPatchEnergy;            //! Recalculated Jet Patch Energy distribution
 
-  TH1F     *fHistClusEnergy; //!
-  TH1F     *fHistClusofJetEnergy; //!
-  TH2F     *fHistdPhidEtaPatchJetCluster[16]; //!
+  TH1F     *fHistClusEnergy;                   //!
+  TH1F     *fHistClusofJetEnergy;              //!
+  TH2F     *fHistdPhidEtaPatchJetCluster[16];  //!
 
-  TH1F     *fHistEventSelectionQA; //!
+  TClonesArray               *fJetTriggeredEvent;                    //!jets
 
-  TClonesArray               *fJetTriggeredEvent;                       //!jets
-  //TObjArray                  *fTrgJet;                                  //!jets
-
-  THnSparse                  *fhnPatchMatch;//!                      // patch matching sparse matrix
+  THnSparse                  *fhnPatchMatch;//!                      // patch sparse matrix
   THnSparse                  *fhnPatchMatchJetLeadClus;//!           // patch matching sparse matrix
 
   AliAnalysisTaskEmcalTriggerPatchJetMatch(const AliAnalysisTaskEmcalTriggerPatchJetMatch&);            // not implemented

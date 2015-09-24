@@ -132,6 +132,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fHistMult(0),
   fHistJetPhi(0), fHistTrackPhi(0),
   fHistLocalRhoJetpt(0),
+
   fHistJetHaddPhiIN(0), fHistJetHaddPhiOUT(0), fHistJetHaddPhiMID(0),
   fHistJetHaddPhiBias(0), fHistJetHaddPhiINBias(0), fHistJetHaddPhiOUTBias(0), fHistJetHaddPhiMIDBias(0),
   fHistMEdPHI(0),
@@ -2892,14 +2893,17 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneResolution(Double_t vze
 
    // combine x-y vectors for neg and pos Eta ranges
    Double_t tpca2(.5*TMath::ATan2(qy2a, qx2a));
-   Double_t tpca3((1./3.)*TMath::ATan2(qy3a, qx3a));
    Double_t tpcb2(.5*TMath::ATan2(qy2b, qx2b));
+
+   // not used, but can be for 3rd, 4th, and 5th order event planes
+/*
+   Double_t tpca3((1./3.)*TMath::ATan2(qy3a, qx3a));
    Double_t tpcb3((1./3.)*TMath::ATan2(qy3b, qx3b));
-   // not needed
    Double_t tpca4(.25*TMath::ATan2(qy4a, qx4a));
-   Double_t tpca5((.2)*TMath::ATan2(qy5a, qx5a));
    Double_t tpcb4(.25*TMath::ATan2(qy4b, qx4b));
+   Double_t tpca5((.2)*TMath::ATan2(qy5a, qx5a));
    Double_t tpcb5((.2)*TMath::ATan2(qy5b, qx5b));
+*/
 
    // R2 resolution for 2nd order event plane
    fProfV2Resolution[fInCentralitySelection]->Fill(8., TMath::Cos(2.*(vzeroComb[0] - tpca2)));
