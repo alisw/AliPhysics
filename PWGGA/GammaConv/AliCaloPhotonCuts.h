@@ -23,6 +23,8 @@
 #include "AliPHOSGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliAODCaloCluster.h"
+#include <vector>
+
 
 class AliESDEvent;
 class AliAODEvent;
@@ -141,14 +143,16 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		void 			SetExtendedMatchAndQA(Int_t extendedMatchAndQA)					{fExtendedMatchAndQA = extendedMatchAndQA; return;}
 		void			SetExtendedQA(Int_t extendedQA)									{if(extendedQA != 1 && extendedQA != 2)fExtendedMatchAndQA = extendedQA; return;}
 		void			FillHistogramsExtendedQA(AliVEvent *event);
-		void			SetIsMergedClusterCut(Bool_t merged)							{fIsMergedClusterCut = merged; return;}
-		Bool_t			GetIsMergedClusterCut()											{return fIsMergedClusterCut;}
-		
+		void			SetIsPureCaloCut(Int_t merged)									{fIsPureCalo = merged; return;}
+		Int_t			GetIsPureCaloCut()												{return fIsPureCalo;}
+
 		// Cut functions
 		Bool_t 			AcceptanceCuts(AliVCluster* cluster, AliVEvent *event);
 		Bool_t 			ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Int_t isMC);
 
 		Bool_t 			MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event);
+		void			MatchTracksToClusters(AliVEvent* event);
+		Bool_t			CheckClusterForTrackMatch(AliVCluster* cluster);
 		Int_t 			GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
 		Int_t 			GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
 		Bool_t 			AreNeighbours(Int_t absCellId1, Int_t absCellId2);
@@ -249,8 +253,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t		fNonLinearity2;						// selection of nonlinearity correction, part2
 		Int_t		fSwitchNonLinearity;				// selection (combined) of NonLinearity
 		Bool_t		fUseNonLinearity;					// flag for switching NonLinearity correction
-		Bool_t		fIsMergedClusterCut;				// flag for MergedCluster analysis
+		Int_t		fIsPureCalo;					// flag for MergedCluster analysis
 		
+		//vector
+		std::vector<Int_t> fVectorMatchedClusterIDs;		// vector with cluster IDs that have been matched to tracks in merged cluster analysis
+
 		// CutString
 		TObjString* fCutString; 							// cut number used for analysis
 		
@@ -326,7 +333,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 	private:
 
-		ClassDef(AliCaloPhotonCuts,12)
+		ClassDef(AliCaloPhotonCuts,13)
 };
 
 #endif
