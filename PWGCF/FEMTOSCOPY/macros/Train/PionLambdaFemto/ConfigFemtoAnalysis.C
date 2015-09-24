@@ -33,16 +33,16 @@ struct macro_params_s {
 MacroParams parse_arguments(const char*);
 
 AliFemtoManager*
-ConfigFemtoAnalysis(const char* param_str)
+ConfigFemtoAnalysis(const TString& param_str = "")
 {
   const double PionMass = 0.13956995,
              LambdaMass = 1.115683;
 
-  MacroParams params = parse_arguments(param_str);
+  // MacroParams params = parse_arguments(param_str);
 
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAODChain *rdr = new AliFemtoEventReaderAODChain();
+  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODChain();
   rdr->SetFilterBit(7);
   rdr->SetEPVZERO(kTRUE);
   rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
@@ -85,27 +85,26 @@ default_arguments()
 }
 
 void
-parse_argument(const TString& key, const TString* val, MacroParams& params)
+process_argument(const TString& key, const TString& val, MacroParams& params)
 {
   if (key == 'pion_pt_range') {
     params.pion_pt_range[0] = val.Atoi();
     params.pion_pt_range[1] = val.Atoi();
-
   }
 
 }
 
 MacroParams
-parse_arguments(const char *in)
+parse_arguments(const TString& in)
 {
   // Get default parameters
   MacroParams params = default_arguments();
 
-  TObjArray* tokens = TString(in).Tokenize(',');
+  TObjArray* tokens = in.Tokenize(',');
   TIter next_param(tokens);
-  TObject *obj = NULL;
-  while (obj = next_param()) {
-    const TString& key_val = ((TObjString*)obj)->String();
+  TObject *param_obj = NULL;
+  while (param_obj = next_param()) {
+    const TString& key_val = ((TObjString*)param_obj)->String();
     const size_t equal_position = key_val.First('='),
                       val_start = equal_position + 1,
                        val_stop = key_val.Length() - val_start;
@@ -113,7 +112,7 @@ parse_arguments(const char *in)
     const TString key = key_val(0, equal_position),
                   val = key_val(val_start, val_stop);
 
-    parse_argument(key, val, params);
+    process_argument(key, val, params);
   }
 
   return params;
