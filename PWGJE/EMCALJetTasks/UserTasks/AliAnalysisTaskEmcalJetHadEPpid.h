@@ -392,16 +392,6 @@ protected:
   TH2                   *fHistJetEtaPhi;//!
   TH2                   *fHistTrackEtaPhi[4][7];//!
 
-  TProfile              *fProfV2Resolution[10];//! resolution parameters for v2
-  TProfile              *fProfV3Resolution[10];//! resolution parameters for v3
-  TProfile              *fProfV4Resolution[10];//! resolution parameters for v4
-  TProfile              *fProfV5Resolution[10];//! resolution parameters for v5
-  TArrayD*              fChi2A;                         // chi vs cent for vzero A ep_2
-  TArrayD*              fChi2C;                         // chi vs cent for vzero C ep_2
-  TArrayD*              fChi3A;                         // chi vs cent for vzero A ep_3
-  TArrayD*              fChi3C;                         // chi vs cent for vzero C ep_3
-  Bool_t                fUseChiWeightForVZERO;          // use chi weight for vzero
-
   TH1		        	*fHistJetHadbindPhi[9];//! 
   TH1					*fHistJetHadbindPhiIN[9];//! 
   TH1					*fHistJetHadbindPhiMID[9];//! 
@@ -435,6 +425,17 @@ protected:
   THnSparse             *fhnMixedEvents;//!  // mixed events matrix
   THnSparse             *fhnJH;//!           // jet hadron events matrix
   THnSparse				*fhnCorr;//!		  // sparse to get # jet triggers
+
+  // EP resoltuion profiles and chi2 array
+  TProfile              *fProfV2Resolution[10];//! resolution parameters for v2
+  TProfile              *fProfV3Resolution[10];//! resolution parameters for v3
+  TProfile              *fProfV4Resolution[10];//! resolution parameters for v4
+  TProfile              *fProfV5Resolution[10];//! resolution parameters for v5
+  TArrayD*              fChi2A;                         // chi vs cent for vzero A ep_2
+  TArrayD*              fChi2C;                         // chi vs cent for vzero C ep_2
+  TArrayD*              fChi3A;                         // chi vs cent for vzero A ep_3
+  TArrayD*              fChi3C;                         // chi vs cent for vzero C ep_3
+  Bool_t                fUseChiWeightForVZERO;          // use chi weight for vzero
 
   // container objects
   AliJetContainer            *fJetsCont;                   //!Jets

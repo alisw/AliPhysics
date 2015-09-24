@@ -72,10 +72,6 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fTriggerClass(""),
   fJetContainer(0),
   fMaxPatchEnergy(0), fMaxPatchADCEnergy(0),
-  fJetPtCut(10.0), // jet pt cut at 10 by default
-  fPatchECut(10.0), // patch E cut at 10 by default
-  fTrkBias(0), fClusBias(0),
-  doComments(0),
   fTriggerType(1), //-1),
   fNFastOR(16),
   //fMainTrigCat(kTriggerLevel0),
@@ -84,8 +80,12 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   //fMainTrigCat(kTriggerRecalcJet),  // Recalculated max trigger patch; does not need to be above trigger threshold
   //fMainTrigCat(kTriggerRecalcGamma),
   fMainTrigSimple(kFALSE), // (kTRUE)
+  fJetPtCut(10.0), // jet pt cut at 10 by default
+  fPatchECut(10.0), // patch E cut at 10 by default
+  fTrkBias(0), fClusBias(0),
+  doComments(0),
+  fJetTriggeredEventname("JETthatTriggeredEvent"),
   fMaxPatch(0), // max patch object
-  fMaxPatchGA(0), // max patch GA object
   fMainPatchType(kManual), // (kEmcalJet)
   fhNEvents(0),
   fhTriggerbit(0), 
@@ -119,7 +119,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fHistEventSelectionQA(0),
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
-  fJetTriggeredEventname("JETthatTriggeredEvent"), fJetTriggeredEvent(0),//, fTrgJet(0)
+  fJetTriggeredEvent(0),
   fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Default constructor.
@@ -137,10 +137,6 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fTriggerClass(""),
   fJetContainer(0),
   fMaxPatchEnergy(0), fMaxPatchADCEnergy(0),
-  fJetPtCut(10.0), // jet pt cut at 10 by default
-  fPatchECut(10.0), // patch E cut at 10 by default
-  fTrkBias(0), fClusBias(0),
-  doComments(0),
   fTriggerType(1), //-1),
   fNFastOR(16),
   //fMainTrigCat(kTriggerLevel0),
@@ -149,7 +145,12 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   //fMainTrigCat(kTriggerRecalcJet),  // Recalculated max trigger patch; does not need to be above trigger threshold
   //fMainTrigCat(kTriggerRecalcGamma),
   fMainTrigSimple(kFALSE), // kTRUE
-  fMaxPatch(0), fMaxPatchGA(0),
+  fJetPtCut(10.0), // jet pt cut at 10 by default
+  fPatchECut(10.0), // patch E cut at 10 by default
+  fTrkBias(0), fClusBias(0),
+  doComments(0),
+  fJetTriggeredEventname("JETthatTriggeredEvent"),
+  fMaxPatch(0),
   fMainPatchType(kManual), //kEmcalJet
   fhNEvents(0),
   fhTriggerbit(0),
@@ -183,7 +184,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fHistEventSelectionQA(0),
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
-  fJetTriggeredEventname("JETthatTriggeredEvent"), fJetTriggeredEvent(0),//, fTrgJet(0)
+  fJetTriggeredEvent(0),
   fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Standard constructor.
@@ -263,10 +264,10 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::FillTriggerPatchHistos() {
   // Fill trigger patch histos for main trigger
   if(!fTriggerPatchInfo) {
     AliFatal(Form("%s: TriggerPatchInfo object %s does not exist. Aborting", GetName(), fJetTriggeredEventname.Data()));
-    //cout<<"don't have trigger patch info object"<<endl;
     return;
   } 
 
+  // see if event was selected
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
   if(fMainPatchType == kManual) ExtractMainPatch();
@@ -312,48 +313,10 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::FillTriggerPatchHistos() {
     } // GA
 
     // fill max patch counters 
-    FillEventTriggerQA(fhQAmaxinfoCounter, trig, fMaxPatch);
+    FillTriggerPatchQA(fhQAmaxinfoCounter, trig, fMaxPatch);
 
   } // have patch
 
-/*
-  AliEmcalTriggerPatchInfo *patch = GetMainTriggerPatch(fMainTrigCat,fMainTrigSimple);
-  if(patch) {
-    fMaxPatchEnergy = patch->GetPatchE();
-    fMaxPatchADCEnergy = patch->GetADCAmpGeVRough();
-    fh3PatchADCEnergyEtaPhiCenterAll->Fill(fMaxPatchADCEnergytest,patch->GetEtaGeo(),patch->GetPhiGeo());
-
-    // JET trigger
-    if(patch->IsJetLow() && !patch->IsJetHigh()) { //main patch only fired low threshold trigger
-      fh3PatchEnergyEtaPhiCenterJ2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterJ2->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
-    }
-    else if(patch->IsJetHigh() && !patch->IsJetLow()) { //main patch only fired high threshold trigger - should never happen
-      fh3PatchEnergyEtaPhiCenterJ1->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterJ1->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
-    }
-    else if(patch->IsJetHigh() && patch->IsJetLow()) { //main patch fired both triggers
-      fh3PatchEnergyEtaPhiCenterJ1J2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterJ1J2->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
-    } // JE
-
-    // GAMMA trigger
-    if(patch->IsGammaLow() && !patch->IsGammaHigh()) { //main patch only fired low threshold trigger
-      fh3PatchEnergyEtaPhiCenterG2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterG2->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
-    }
-    else if(patch->IsGammaHigh() && !patch->IsGammaLow()) { //main patch only fired high threshold trigger - should never happen
-      fh3PatchEnergyEtaPhiCenterG1->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterG1->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
-    }
-    else if(patch->IsGammaHigh() && patch->IsGammaLow()) { //main patch fired both triggers
-      fh3PatchEnergyEtaPhiCenterG1G2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
-      fh3PatchADCEnergyEtaPhiCenterG1G2->Fill(fMaxPatchADCEnergy,patch->GetEtaGeo(),patch->GetPhiGeo());
-    } // GA
-
-    FillEventTriggerQA(fhQAinfoCounter, trig, patch);
-  } // have patch
-*/
 }
 
 //_________________________________________________________________________________________
@@ -389,30 +352,29 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::ExtractMainPatch() {
     if (patch->IsJetLow())  nJ2++;
     if (patch->IsLevel0())  nL0++;
 
-// test
     // fill Energy spectra of recalculated Jet and GA patches
     if(patch->IsRecalcGamma()) { fhRecalcGammaPatchEnergy->Fill(patch->GetPatchE()); }
     if(patch->IsRecalcJet()) { fhRecalcJetPatchEnergy->Fill(patch->GetPatchE()); }
 
-    if(!firedTrigClass.Contains("EGA")) continue;
+    //if(!firedTrigClass.Contains("EGA")) continue;
+    if(!firedTrigClass.Contains(fTriggerClass)) continue;
 
     // check that we have a Recalculated (OFFline) Gamma Patch
     if(!patch->IsRecalcGamma()) continue;
 
     // fill QA counter histo for Recalculated GA patches
-    FillEventTriggerQA(fhQAinfoCounter, trig, patch);
+    FillTriggerPatchQA(fhQAinfoCounter, trig, patch);
 
-//    if (patch->IsRecalcGamma()){
-      if(patch->GetPatchE()>emax) {
-        fMaxPatch = patch;
-        emax = patch->GetPatchE();
-      } // max patch
-//    } // recalGamma
-
+    // find max patch energy
+    if(patch->GetPatchE()>emax) {
+      fMaxPatch = patch;
+      emax = patch->GetPatchE();
+    } // max patch
   } // loop over patches
 
   // check on patch Energy
-  if(firedTrigClass.Contains("EGA") && fMaxPatch && fMaxPatch->GetPatchE() > fPatchECut) {
+  //if(firedTrigClass.Contains("EGA") && fMaxPatch && fMaxPatch->GetPatchE() > fPatchECut) {
+  if(firedTrigClass.Contains(fTriggerClass) && fMaxPatch && fMaxPatch->GetPatchE() > fPatchECut) {
     // get cluster container and find leading cluster
     AliClusterContainer  *clusContp = GetClusterContainer(0);
     if(!clusContp) {
@@ -423,12 +385,12 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::ExtractMainPatch() {
     if(!leadclus) return;
 
     // initialize variables and get leading cluster parameters
-    double leadclusEta = 0, leadclusPhi = 0, leadclusPt = 0, leadclusE = 0;
+    double leadclusEta = 0, leadclusPhi = 0, leadclusE = 0;
     TLorentzVector clusvect;
     leadclus->GetMomentum(clusvect, const_cast<Double_t*>(fVertex));
+
     leadclusEta = clusvect.Eta();
     leadclusPhi = clusvect.Phi();
-    leadclusPt = clusvect.Pt();
     leadclusE = leadclus->E();
 
     // get patch variables
@@ -739,7 +701,6 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
 
   for(Int_t j=0; j<16; j++) {
     fHistdPhidEtaPatchJetCluster[j] = new TH2F(Form("fHistdPhidEtaPatchJetCluster_%d",j), "dPhi-dEta distribution between max recalculated Gamma patch and most energetic jet cluster", 144, 0, 1.8, 140, 0, 1.4);
-
     fOutput->Add(fHistdPhidEtaPatchJetCluster[j]);
   }
 
@@ -872,7 +833,6 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
   // Fill histograms.
-  // create pointer to list of input event
 
   // check and fill a Event Selection QA histogram for different trigger selections
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -880,6 +840,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
   // fill Event Trigger QA
   FillEventTriggerQA(fHistEventSelectionQA, trig);
 
+  // create pointer to list of input event
   TList *list = InputEvent()->GetList();
   if(!list) {
     AliError(Form("ERROR: list not attached\n"));
@@ -888,7 +849,6 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
 
 //  fJetTriggeredEvent->Delete();
   fJetTriggeredEvent->Clear();
-  //fTrgJet->Clear();
 
   //Tracks
   AliParticleContainer *partCont = GetParticleContainer(0);
@@ -899,6 +859,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
     while(track) {
       Double_t trkphi = track->Phi()*TMath::RadToDeg();
       fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
+
       //Select tracks which should be propagated
       if(track->Pt()>=0.350) {
         if (TMath::Abs(track->Eta())<=0.9 && trkphi > 10 && trkphi < 250) {
@@ -936,9 +897,6 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
         Double_t leadCellE = GetEnergyLeadingCell(cluster);
         Double_t leadCellT = cluster->GetTOF();
         fh3EClusELeadingCellVsTime->Fill(lp.E(),leadCellE,leadCellT*1e9);
-
-        // added for check
-        
       } // if calo cells exist
     } // cluster loop
   } // if cluster container exist
@@ -991,11 +949,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
       AliEmcalJet* jet = GetAcceptJetFromArray(ij,fJetContainer);
       if (!jet) continue; //jet not selected
 
-//
-      // method for filling collection output array of 'saved' jets
-//      if(jet->Pt() > fJetPtCut) (*fJetTriggeredEvent)[jacc] = jet;
-//      ++jacc;
-//
+      // get jetpt after background subtraction
       Double_t jetPt = jet->Pt() - GetRhoVal(fJetContainer)*jet->Area();
       if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
 
@@ -1019,6 +973,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
       fh2NEFNConstituentsCharged->Fill(jet->NEF(),jet->GetNumberOfTracks());
       fh2NEFNConstituentsNeutral->Fill(jet->NEF(),jet->GetNumberOfClusters());
 
+      // sum up charged pt of jet
       AliVParticle *vp;
       Double_t sumPtCh = 0.;
       for(Int_t icc=0; icc<jet->GetNumberOfTracks(); icc++) {
@@ -1032,11 +987,12 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
 
       AliVCluster *vc = 0x0;
       Double_t sumPtNe = 0.;
-      Double_t maxClusterPt = 0., maxClusterEta = 0., maxClusterPhi = 0., maxClusterE = 0.;
+      Double_t maxClusterEta = 0., maxClusterPhi = 0., maxClusterE = 0.;
 
       TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
       //((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias))
-      if(jet->Pt() > fJetPtCut && fMaxPatch && firedTrigClass.Contains("EGA")){ // && (jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {
+      //if(jet->Pt() > fJetPtCut && fMaxPatch && firedTrigClass.Contains("EGA")) {
+      if(jet->Pt() > fJetPtCut && fMaxPatch && firedTrigClass.Contains(fTriggerClass)) {
         AliVCluster* leadclus = clusCont->GetLeadingCluster();
         if(!leadclus) continue;
         //cout<<Form("#Clus in container = %i, NACCcluster = %i, LeadClusE = %f, isEMCal? = %s", clusCont->GetNClusters(), clusCont->GetNAcceptedClusters(), leadclus->E(), leadclus->IsEMCAL()? "true":"false")<<endl;
@@ -1045,15 +1001,15 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
         if (clusCont && clusCont->GetArray()) {
           // get leading cluster of jet
           AliVCluster *clustermax = jet->GetLeadingCluster(clusCont->GetArray());
-          if (clustermax) {
+          // check that we have a leading cluster and it is above a set bias
+          if(clustermax && clustermax->E() > fClusBias) {
             TLorentzVector nPart;
             clustermax->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
-
             maxClusterEta = nPart.Eta();
             maxClusterPhi = nPart.Phi();
-            maxClusterPt = nPart.Pt();
             maxClusterE = clustermax->E();
 
+            // get max patch location
             double fMaxPatchPhiGeo = fMaxPatch->GetPhiGeo();
             double fMaxPatchEtaGeo = fMaxPatch->GetEtaGeo();
             double dPhiPatchLeadCl = 1.0*TMath::Abs(fMaxPatchPhiGeo - nPart.Phi());
@@ -1063,11 +1019,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
                if(maxClusterE > maxbinE) fHistdPhidEtaPatchJetCluster[maxbinE]->Fill(dPhiPatchLeadCl, dEtaPatchLeadCl);
             }
 
-            if(doComments) {
-              //cout<<Form("Jet # = %i, Jet Pt = %f, Jet Phi =  %f, Jet Eta = %f", ij, jet->Pt(), jet->Phi(), jet->Eta())<<endl;
-              //cout<<Form("NClus in jet = %i, MaxClusterPt = %f, MaxClusterE = %f, Phi = %f, Eta = %f", jet->GetNumberOfClusters(), maxClusterPt, maxClusterE, maxClusterPhi, maxClusterEta)<<endl;
-            }
-
+            // patch meeting offline energy cut
             if(fMaxPatch->GetPatchE() > fPatchECut) {
               // get patch variables
               Double_t etamin = TMath::Min(fMaxPatch->GetEtaMin(), fMaxPatch->GetEtaMax());
@@ -1075,25 +1027,26 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
               Double_t phimin = TMath::Min(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
               Double_t phimax = TMath::Max(fMaxPatch->GetPhiMin(), fMaxPatch->GetPhiMax());
 
+              // look to geometrically match patch to leading cluster of jet
               if(maxClusterEta > etamin && maxClusterEta < etamax && maxClusterPhi > phimin && maxClusterPhi < phimax){
                 if(doComments) {
                   cout<<"*********************************************"<<endl;
-                  cout<<"Proper match....";
+                  cout<<"Proper match (cluster constituent of jet to fired max patch: ";
                   cout<<Form("Jet # = %i, Jet Pt = %f, Jet Phi =  %f, Jet Eta = %f", ij, jet->Pt(), jet->Phi(), jet->Eta())<<endl;
-                  cout<<Form("NClus in jet = %i, MaxClusterPt = %f, MaxClusterE = %f, Phi = %f, Eta = %f", jet->GetNumberOfClusters(), maxClusterPt, maxClusterE, maxClusterPhi, maxClusterEta)<<endl;
+                  cout<<Form("NClus in jet = %i, MaxClusterE = %f, Phi = %f, Eta = %f", jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta)<<endl;
                   cout<<Form("LeadClusE = %f, Phi = %f, Eta = %f", maxClusterE, maxClusterPhi, maxClusterEta)<<endl;
                   cout<<"*********************************************"<<endl;
                 } // do comments
-                //hasfound = kTRUE;
-                //break;
 
+                // get some info to fill in sparse
                 Double_t dEPJet = RelativeEP(jet->Phi(), fEPV0);
                 Double_t kAmplitudeOnline = fMaxPatch->GetADCAmp();
                 Double_t kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
                 Double_t kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
                 Double_t kEnergyOffline = fMaxPatch->GetPatchE();
 
-                Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), (Double_t)jet->GetNumberOfTracks(), jet->MaxTrackPt(), (Double_t)jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOnline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};
+                // fill sparse for match
+                Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), (Double_t)jet->GetNumberOfTracks(), jet->MaxTrackPt(), (Double_t)jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOffline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};
                 fhnPatchMatchJetLeadClus->Fill(fill);
 
                 // method for filling collection output array of 'saved' jets
@@ -1101,8 +1054,9 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
                 ++jacc;
 
               } // MATCH!
-            } // patch > 10 GeV
+            } // patch > Ecut GeV
           } // have max cluster
+
 
           AliClusterContainer* testclust = GetClusterContainer();
           for(int itest = 0; itest < testclust->GetNClusters(); itest++) {
@@ -1124,6 +1078,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
         } // have cluster container
       } // jet->pt() > cut
 
+      // sum up neutral energy of jet
       if (clusCont) {
 	    for(Int_t icc=0; icc<jet->GetNumberOfClusters(); icc++) {
 	      vc = static_cast<AliVCluster*>(clusCont->GetCluster(icc));
@@ -1155,7 +1110,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
 
   delete nJetsArr;
 
-  //Cells
+  //Cells - some QA plots
   if(fCaloCells) {
     const Short_t nCells   = fCaloCells->GetNumberOfCells();
 
@@ -1186,11 +1141,13 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::Run() {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
   fhTriggerbit->Fill(0.5,GetCollisionCandidates());
 
+  // just in case..
   fGeom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
 
   //Check if event is selected (vertex & pile-up)
   if(!SelectEvent()) return kFALSE;
 
+  // when we have the patch object, peform analysis
   if(fTriggerPatchInfo) FillTriggerPatchHistos();
 
   return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
@@ -1259,7 +1216,7 @@ Double_t AliAnalysisTaskEmcalTriggerPatchJetMatch::GetECross(Int_t absID) const 
   Int_t absID3 = -1;
   Int_t absID4 = -1;
 
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
+  Int_t imod = -1, iphi =-1, ieta=-1, iTower = -1, iIphi = -1, iIeta = -1;
   fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta);
   fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
 
@@ -1317,14 +1274,7 @@ Float_t AliAnalysisTaskEmcalTriggerPatchJetMatch::RelativeEP(Double_t objAng, Do
   return dphi;   // dphi in [0, Pi/2]
 }
 
-/*
-void AliAnalysisTaskEmcalTriggerPatchJetMatch::AddTrigJet(AliEmcalJet *jet) const {
-  if (!fTrgJet) fTrgJet = new TObjArray(); 
-  fTrgJet->Add(trgjet);
-}
-*/
-
-TH1* AliAnalysisTaskEmcalTriggerPatchJetMatch::FillEventTriggerQA(TH1* h, UInt_t trig, AliEmcalTriggerPatchInfo *fPatch) {
+TH1* AliAnalysisTaskEmcalTriggerPatchJetMatch::FillTriggerPatchQA(TH1* h, UInt_t trig, AliEmcalTriggerPatchInfo *fPatch) {
   // check and fill a QA histogram
   if(fPatch->IsLevel0()) h->Fill(1);
   if(fPatch->IsJetLow()) h->Fill(2);
