@@ -584,7 +584,7 @@ TObjArray *AliAnalysisTaskCfg::ExtractModulesFrom(const char *filename)
       } else if (cfg && line.BeginsWith("#Module.EndConfig")) {
          // Marker for the end of the config macro. EndConfig block is mandatory
          if (cfg && addConfig) {
-            addConfig->GetListOfLines()->AddFirst(new TObjString(Form("%s() {",gSystem->BaseName(addConfig->GetName()))));
+            addConfig->GetListOfLines()->AddFirst(new TObjString(Form("void %s() {",gSystem->BaseName(addConfig->GetName()))));
             addConfig->GetListOfLines()->AddLast(new TObjString("}"));
             cfg->SetConfigMacro(addConfig);
             addConfig = 0;
