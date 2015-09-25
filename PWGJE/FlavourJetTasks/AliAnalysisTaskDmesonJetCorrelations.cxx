@@ -870,12 +870,6 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
     }
   }
 
-  if (fAliEmcalParticleMode && fUseExchangeContainer) {
-    AliError(Form("%s: AliEmcalParticle mode is incompatible with using the exchange container.", GetName()));
-    fInhibitTask = kTRUE;
-    return;
-  }
-
   if (fBackgroundMode == kSignalOnly || fBackgroundMode == kBackgroundOnly) {
     AliParticleContainer* mcPartCont = GetParticleContainer(1);
     if (!mcPartCont) {
@@ -884,31 +878,6 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
     }
     else {
       mcPartCont->SetClassName("AliAODMCParticle");
-    }
-  }
-
-  TString className;
-  if (fAliEmcalParticleMode) {
-    className = "AliEmcalParticle";
-  }
-  else {
-    if (fParticleLevel) {
-      className = "AliAODMCParticle";
-    }
-    else {
-      if (fCandidateType == kD0toKpi) {
-        className = "AliAODRecoDecayHF2Prong";
-      }
-      else if (fCandidateType == kDstartoKpipi) {
-        className = "AliAODRecoCascadeHF";
-      }
-      else {
-        AliError(Form("%s: Candidate type %d not recognized!",
-                      GetName(), (Int_t)fCandidateType));
-        fCandidateArray = 0;
-        fInhibitTask = kTRUE;
-        return;
-      }
     }
   }
 
@@ -931,9 +900,42 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
     TString objname(fCandidateArray->GetClass()->GetName());
     TClass cls(objname);
 
-    if (!cls.InheritsFrom(className)) {
+    TString expectedClass;
+    Bool_t wrongClass = kFALSE;
+
+    if (fParticleLevel) {
+      expectedClass = "AliAODMCParticle";
+      if (!cls.InheritsFrom(expectedClass)) {
+        wrongClass = kTRUE;
+      }
+    }
+    else { // not particle level
+      if (cls.InheritsFrom("AliEmcalParticle")) {  // AliEmcalParticle always ok for reco level
+        fAliEmcalParticleMode = kTRUE;
+      }
+      else {
+        if (fCandidateType == kD0toKpi) {
+          expectedClass = "AliAODRecoDecayHF2Prong";
+        }
+        else if (fCandidateType == kDstartoKpipi) {
+          expectedClass = "AliAODRecoCascadeHF";
+        }
+        else {
+          AliError(Form("%s: Candidate type %d not recognized!",
+                        GetName(), (Int_t)fCandidateType));
+          fCandidateArray = 0;
+          fInhibitTask = kTRUE;
+          return;
+        }
+        if (!cls.InheritsFrom(expectedClass)) {
+          wrongClass = kTRUE;
+        }
+      }
+    }
+
+    if (wrongClass) {
       AliError(Form("%s: Objects of type %s in %s are not inherited from %s! Task will not run.",
-                    GetName(), cls.GetName(), fCandidateArray->GetName(), className.Data()));
+                    GetName(), cls.GetName(), fCandidateArray->GetName(), expectedClass.Data()));
       fCandidateArray = 0;
       fInhibitTask = kTRUE;
       return;
@@ -941,6 +943,12 @@ void AliAnalysisTaskDmesonJetCorrelations::ExecOnce()
   }
   else {
     AliError(Form("%s: Unable to find the candidate array.", GetName()));
+    fInhibitTask = kTRUE;
+    return;
+  }
+
+  if (fAliEmcalParticleMode && fUseExchangeContainer) {
+    AliError(Form("%s: AliEmcalParticle mode is incompatible with using the exchange container.", GetName()));
     fInhibitTask = kTRUE;
     return;
   }

@@ -70,7 +70,6 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetCheckTrackColl(Bool_t b)              { fCheckTrackColl      = b   ; }
   void SetNBinsMass(Int_t n)                    { fNBinsMass           = n   ; }
   void SetParticleLevel(Bool_t s)               { fParticleLevel       = s   ; }
-  void SetAliEmcalParticleMode(Bool_t m)        { fAliEmcalParticleMode= m   ; }
   void SetBackgroundMode(EBackgroundMode m)     { fBackgroundMode      = m   ; }
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
