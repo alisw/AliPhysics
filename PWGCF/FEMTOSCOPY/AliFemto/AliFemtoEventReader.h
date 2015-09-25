@@ -1,7 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
-/// AliFemtoEventReader - the pure virtual base class for the event reader   ///
-/// All event readers must inherit from this one                             ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoEventReader.h
+///
+
 #ifndef ALIFEMTOEVENTREADER_H
 #define ALIFEMTOEVENTREADER_H
 
@@ -14,36 +14,64 @@ class AliFemtoKinkCut;
 
 #include "AliFemtoString.h"
 #include <iostream>
-#include <fstream>
-#include <stdio.h>
 
 using namespace std;
 
+/// \class AliFemtoEventReader
+/// \brief The pure virtual base class for femto event readers.
+///
+/// All event readers must inherit from this one.
+///
 class AliFemtoEventReader {
-  
- public:
-  // even tho it's only a base class and never constructed, if you don't have an implementation,
-  // you get "AliFemtoEventReader type_info node" upon dynamical loading
-  AliFemtoEventReader() : fEventCut(0), fTrackCut(0), fV0Cut(0), fXiCut(0), fKinkCut(0), fReaderStatus(0), fDebug(1) { /* no-op */ };
+public:
+
+  /// Default Constuctor
+  ///
+  /// Even though it's only a base class and never constructed, if you don't
+  /// have an implementation, you get "AliFemtoEventReader type_info node" upon
+  /// dynamical loading
+  ///
+  /// All pointers are set to NULL, the status is set to 0 (good), and debug is
+  /// set to 1 (print debug information in methods which run once)
+  ///
+  AliFemtoEventReader();
+
+  /// Copy Constructor
+  ///
+  /// This performs a shallow copy, so both the origial and new event readers
+  /// point to the same cut objects.
   AliFemtoEventReader(const AliFemtoEventReader& aReader);
-  virtual ~AliFemtoEventReader(){/* no-op */}
-  
+
+  /// Destructor
+  ///
+  /// No members are deleted - it is up to the entity creating the cuts to
+  /// delete them after the event reader has run its course
+  virtual ~AliFemtoEventReader() { /* no-op */ };
+
+  /// Assignment Operator
+  /// Performs shallow copy of members
   AliFemtoEventReader& operator=(const AliFemtoEventReader& aReader);
-  
-  virtual AliFemtoEvent* ReturnHbtEvent() =0;
 
-  virtual AliFemtoString Report();    // user-written method to return string describing reader
-                                      // Including whatever "early" cuts are being done
+  /// Concrete subclasses MUST implement this method, which creates the
+  /// AliFemtoEvent.
+  virtual AliFemtoEvent* ReturnHbtEvent() = 0;
 
-  // this next method does NOT need to be implemented, in which case the 
-  // "default" method below is executed
-  virtual int WriteHbtEvent(AliFemtoEvent*){cout << "No WriteHbtEvent implemented\n"; return (0);}
+  /// A user-written method to return a string describing the reader,
+  /// including whatever "early" cuts are being done.
+  virtual AliFemtoString Report();
 
-  // these next two are optional but would make sense for, e.g., opening and closing a file
+  /// This next method does NOT need to be implemented, in which case the
+  /// "default" behavior is to print a not-implemented message to stdout.
+  virtual int WriteHbtEvent(AliFemtoEvent*);
+
+  /// Init and Finish are optional but would make sense for situations like
+  /// opening and closing a file
   virtual int Init(const char* ReadWrite, AliFemtoString& Message);
-  virtual void Finish(){/*no-op*/};
-  
-  int Status() const {return fReaderStatus;} // AliFemtoManager looks at this for guidance if it gets null pointer from ReturnHbtEvent
+  virtual void Finish() { /* no-op */ };
+
+  /// AliFemtoManager looks at this for guidance if it gets null pointer from
+  /// ReturnHbtEvent
+  int Status() const { return fReaderStatus; }
 
   virtual void SetEventCut(AliFemtoEventCut* ecut);
   virtual void SetTrackCut(AliFemtoTrackCut* pcut);
@@ -52,31 +80,45 @@ class AliFemtoEventReader {
   virtual void SetKinkCut(AliFemtoKinkCut* pcut);
   virtual AliFemtoEventCut* EventCut();
   virtual AliFemtoTrackCut* TrackCut();
-  virtual AliFemtoV0Cut*    V0Cut();
-  virtual AliFemtoXiCut*    XiCut();
-  virtual AliFemtoKinkCut*    KinkCut();
+  virtual AliFemtoV0Cut* V0Cut();
+  virtual AliFemtoXiCut* XiCut();
+  virtual AliFemtoKinkCut* KinkCut();
 
-  /* control of debug informations print out, my rule is: */
-  /* 0: no output at all                                  */
-  /* 1: once (e.g. in constructor, finsh                  */
-  /* 2: once per event                                    */
-  /* 3: once per track                                    */
-  /* 4: once per pair                                     */
-  int Debug() const {return fDebug;} 
-  void SetDebug(int d){fDebug=d;}
+  /**
+   * Controls the amount of debug information printed.
+   * The code indicates which functions should print debug statements:
+   *
+   * 0: no output at all
+   * 1: methods which run once (e.g. constructor, Finsh())
+   * 2: once per event
+   * 3: once per track
+   * 4: once per pair
+   */
+  int Debug() const { return fDebug; }
+  void SetDebug(int d) { fDebug = d; }
 
 protected:
-  AliFemtoEventCut* fEventCut;     //! link to the front-loaded event cut
-  AliFemtoTrackCut* fTrackCut;     //! link to the front-loaded track cut
-  AliFemtoV0Cut* fV0Cut;           //! link to the front-loaded V0 cut
-  AliFemtoXiCut* fXiCut;           //! link to the front-loaded Xi cut
-  AliFemtoKinkCut* fKinkCut;       //! link to the front-loaded Kink cut
-  int fReaderStatus;               // 0="good"
-  int fDebug;                      // Debug information level
+  AliFemtoEventCut* fEventCut;     //!<! link to the front-loaded event cut
+  AliFemtoTrackCut* fTrackCut;     //!<! link to the front-loaded track cut
+  AliFemtoV0Cut* fV0Cut;           //!<! link to the front-loaded V0 cut
+  AliFemtoXiCut* fXiCut;           //!<! link to the front-loaded Xi cut
+  AliFemtoKinkCut* fKinkCut;       //!<! link to the front-loaded Kink cut
+  int fReaderStatus;               ///< 0="good"
+  int fDebug;                      ///< Debug information level
+
 #ifdef __ROOT__
-  ClassDef(AliFemtoEventReader,0)
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoEventReader, 0);
+  /// \endcond
 #endif
 };
 
-#endif
+inline
+int AliFemtoEventReader::WriteHbtEvent(AliFemtoEvent*)
+{
+  cout << "No WriteHbtEvent implemented\n";
+  return 0;
+}
 
+
+#endif
