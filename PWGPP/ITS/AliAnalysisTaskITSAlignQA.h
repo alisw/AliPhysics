@@ -71,6 +71,10 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void SetUseITSstandaloneTracks(Bool_t use){
     fUseITSsaTracks=use;
   }
+
+  void SetUseTOFTiming(Double_t cut) { fUseTOFTiming = cut; }
+
+
   void SetLoadGeometryFromOCDB(Bool_t opt){
     fLoadGeometry=opt;
   }
@@ -98,6 +102,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
     fOCDBLocation=location;
   }
 
+  Double_t GetUseTPCTiming()                      const {return fUseTOFTiming;}
   Bool_t   GetUseTPCMomentum()                    const {return fUseTPCMomentum;}
   Bool_t   AcceptTrack(const AliESDtrack * track, const AliESDVertex* vtx=0);
   Bool_t   AcceptVertex(const AliESDVertex * vtx, const AliESDVertex * vtxSPD);
@@ -169,6 +174,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Bool_t   fUseVertex;        // Use the vertex as an extra point
   Bool_t   fUseVertexForZOnly; // Use the vertex for SDD Z residuals only
   Bool_t   fUseTPCMomentum;   // for the curv. constraint use TPC momentum rather than global
+  Double_t fUseTOFTiming;     // select only tracks with |TOF-Texp|>fUseTOFBC (if TPC is requested)
   Int_t    fMinVtxContributors; // min N contributors to accept vertex if fUseVertex is on
   Bool_t   fRemovePileupWithSPD; // Use/not use pileup rejection with SPD
   Int_t    fMinITSpts;        // Minimum number of ITS points per track
@@ -185,7 +191,8 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   TTree*   fTPTree;           // !output tree for trackpoints
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
-  ClassDef(AliAnalysisTaskITSAlignQA,6);
+
+  ClassDef(AliAnalysisTaskITSAlignQA,7);
 };
 
 
