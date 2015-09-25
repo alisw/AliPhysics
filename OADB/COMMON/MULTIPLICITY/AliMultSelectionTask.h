@@ -62,8 +62,9 @@ public:
     
     Bool_t IsEventSelected( AliESDEvent* lEvent );
     Int_t SetupRun( const AliVEvent* const esd );
-    
-    void SetAddInfo( Bool_t lVar ) { fkAddInfo = lVar; } ; 
+
+    void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
+    void SetAddInfo      ( Bool_t lVar ) { fkAddInfo = lVar; } ;
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
