@@ -23,4 +23,12 @@
 #pragma link C++ class AliCollisionNormalization+;
 #pragma link C++ class AliCollisionNormalizationTask+;
 
+#pragma link C++ class AliMultVariable+;
+#pragma link C++ class AliMultEstimator+;
+#pragma link C++ class AliMultInput+;
+#pragma link C++ class AliMultSelection+;
+#pragma link C++ class AliMultSelectionCuts+;
+#pragma link C++ class AliOADBMultSelection+;
+#pragma link C++ class AliMultSelectionTask+;
+
 #endif

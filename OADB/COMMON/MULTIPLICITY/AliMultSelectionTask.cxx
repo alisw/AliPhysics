@@ -760,13 +760,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
             lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( fSelection->GetEstimator(iEst)->GetValue() ));
             
             //cleanup: discard events
-            if ( !IsEventSelected( lESDevent ) ) lThisQuantile = 200; 
+            if(!IsEventSelected(lESDevent))lThisQuantile = 200;
             
             fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
         }
         
         //Add to AliVEvent
-        if (!(lESDevent->FindListObject("MultSelection"))) {
+        if(!(lESDevent->FindListObject("MultSelection"))){
             AliInfo("Adding object with properties: ");
             fSelection->PrintInfo();
             AliMultSelection *fSelectionContainer = new AliMultSelection( fSelection );
