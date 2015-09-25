@@ -1,7 +1,5 @@
 void aod(){
 
-  gROOT->Macro("loadlibs.C");
-
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");

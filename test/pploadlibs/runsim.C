@@ -1,6 +1,5 @@
 void runsim(){
-  gROOT->Macro("loadlibssim.C");
-
+  gSystem->Load("libpythia6");
   gSystem->Load("libgeant321");
 
   gROOT->Macro("sim.C");
