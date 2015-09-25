@@ -157,7 +157,7 @@ AliFlatESDEvent::AliFlatESDEvent( AliVConstructorReinitialisationFlag /*f*/ )
 #pragma GCC diagnostic warning "-Weffc++" 
 
 
-Bool_t AliFlatESDEvent::IsTriggerClassFired(const char* name)
+Bool_t AliFlatESDEvent::IsTriggerClassFired(const char* name) const
 {
   return GetFiredTriggerClasses().Contains(name);
 }

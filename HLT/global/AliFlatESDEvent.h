@@ -46,7 +46,7 @@ class AliFlatESDEvent :public AliVEvent {
   ULong64_t GetTriggerMask()      const { return fTriggerMask; }  
   ULong64_t GetTriggerMaskNext50()   const { return fTriggerMaskNext50; }  
   TString   GetFiredTriggerClasses() const ;
-  Bool_t IsTriggerClassFired(const char* name);
+  Bool_t IsTriggerClassFired(const char* name) const;
  
   Int_t GetNumberOfTracks() const { return fNTracks; }
   Int_t GetNumberOfV0s()    const { return fNV0s; }
