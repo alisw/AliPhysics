@@ -126,10 +126,10 @@ void AddTask_GammaCalo_pPb(
 	if (trainConfig == 14)
 		numberOfCuts = 3;
 	// change to 4 cuts per cutselection
-	if (		trainConfig == 9 	|| trainConfig == 10	|| trainConfig == 11	|| trainConfig == 12 	|| trainConfig == 13 || trainConfig == 15
-			|| trainConfig == 40	|| trainConfig == 41	|| trainConfig == 43	|| trainConfig == 50	|| trainConfig == 51
-			|| trainConfig == 53	|| trainConfig == 60	|| trainConfig == 61	|| trainConfig == 63	|| trainConfig == 70
-			|| trainConfig == 71	|| trainConfig == 73)
+	if ( 	trainConfig == 9 	|| trainConfig == 10	|| trainConfig == 11	|| trainConfig == 12 	|| trainConfig == 13 	|| trainConfig == 15
+		 || trainConfig == 40	|| trainConfig == 41	|| trainConfig == 43	|| trainConfig == 50	|| trainConfig == 51
+		 || trainConfig == 53	|| trainConfig == 60	|| trainConfig == 61	|| trainConfig == 63	|| trainConfig == 70
+		 || trainConfig == 71	|| trainConfig == 73)
 		numberOfCuts = 4;
 	// change to 5 cuts per cutselection
 	if (trainConfig == 5 	|| trainConfig == 6 	|| trainConfig == 42	|| trainConfig == 52	|| trainConfig == 62
