@@ -310,20 +310,29 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractParticleLevelHFAttributes(Al
 //_______________________________________________________________________________
 Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i)
 {
+  if (fCandidateType == kD0toKpi) { // D0 candidate
+    return ExtractD0Attributes(Dcand, Dvector, invMassD, softPionPtD, invMass2prong, i);
+  }
+  else if (fCandidateType == kDstartoKpipi) { // Dstar candidate
+    return ExtractDstarAttributes(static_cast<AliAODRecoCascadeHF*>(Dcand), Dvector, invMassD, softPionPtD, invMass2prong, i);
+  }
+  else {
+    return kFALSE;
+  }
+}
+
+//_______________________________________________________________________________
+Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractD0Attributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i)
+{
   Int_t MCtruthPdgCode = 0;
 
   if (fBackgroundMode == kBackgroundOnly || fBackgroundMode == kSignalOnly) {
-    Int_t pdg = 0;
-    if (fCandidateType == kD0toKpi) {
-      pdg = 421;
-    }
-    else {
-      pdg = 413;
-    }
+    const Int_t nProngs = 2;
+    Int_t pdgDgD0toKpi[nProngs] = { 211, 321 };      // K, pi
 
     AliParticleContainer* mcpartCont = GetParticleContainer(1);
     TClonesArray* mcpartArray = mcpartCont->GetArray();
-    Int_t mcLab = Dcand->MatchToMC(pdg, mcpartArray);
+    Int_t mcLab = Dcand->MatchToMC(421, mcpartArray, nProngs, pdgDgD0toKpi);
     AliDebug(2, Form("MC label is %d", mcLab));
     if (mcLab >= 0) {
       AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(mcpartCont->GetParticle(mcLab));
@@ -332,94 +341,114 @@ Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractRecoDecayAttributes(AliAODRe
     }
   }
 
-  if (fCandidateType == kD0toKpi) { // D0 candidate
-    AliDebug(2,"Checking if D0 meson is selected");
-    Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
-    if (isSelected == 1) { // selected as a D0
-      if (i > 0) return kFALSE; // only one mass hypothesis thanks to PID
+  AliDebug(2,"Checking if D0 meson is selected");
+  Int_t isSelected = fCuts->IsSelected(Dcand, AliRDHFCuts::kAll, fAodEvent);
+  if (isSelected == 1) { // selected as a D0
+    if (i > 0) return kFALSE; // only one mass hypothesis thanks to PID
 
-      if (fBackgroundMode == kBackgroundAndSignal ||
-          (MCtruthPdgCode == 421 && fBackgroundMode == kSignalOnly) ||
-          (MCtruthPdgCode != 421 && fBackgroundMode == kBackgroundOnly)) {
-        // both background and signal are requested OR (it is a true D0 AND signal is requested) OR (it is NOT a D0 and background is requested)
-        AliDebug(2,"Selected as D0");
-        invMassD = Dcand->InvMassD0();
-      }
-      else { // conditions above not passed, so return FALSE
-        return kFALSE;
-      }
-    }
-    else if (isSelected == 2) { // selected as a D0bar
-      if (i > 0) return kFALSE; // only one mass hypothesis thanks to PID
-
-      if (fBackgroundMode == kBackgroundAndSignal ||
-          (MCtruthPdgCode == -421 && fBackgroundMode == kSignalOnly) ||
-          (MCtruthPdgCode != -421 && fBackgroundMode == kBackgroundOnly)) {
-        // both background and signal are requested OR (it is a true D0bar AND signal is requested) OR (it is NOT a D0bar and background is requested)
-        AliDebug(2,"Selected as D0bar");
-        invMassD = Dcand->InvMassD0bar();
-      }
-      else {
-        return kFALSE;
-      }
-    }
-    else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
-      AliDebug(2,"Selected as either D0 or D0bar");
-
-      // Accept the correct mass hypothesis for signal-only and the wrong one for background-only
-      if ((MCtruthPdgCode == 421 && fBackgroundMode == kSignalOnly) ||
-          (MCtruthPdgCode == -421 && fBackgroundMode == kBackgroundOnly)) {
-        if (i > 0) return kFALSE;
-        AliDebug(2, "MC truth is D0");
-        invMassD = Dcand->InvMassD0();
-      }
-      else if ((MCtruthPdgCode == -421 && fBackgroundMode == kSignalOnly) ||
-               (MCtruthPdgCode == 421 && fBackgroundMode == kBackgroundOnly)) {
-        if (i > 0) return kFALSE;
-        AliDebug(2, "MC truth is D0bar");
-        invMassD = Dcand->InvMassD0bar();
-      }
-      else { // (This candidate is neither a D0 nor a D0bar) OR (background-and-signal was requested)
-
-        // Only accept it if background-only OR background-and-signal was requested
-        if (fBackgroundMode == kBackgroundOnly || fBackgroundMode == kBackgroundAndSignal) {
-          // Select D0 or D0bar depending on the i-parameter
-          if (i == 0) {
-            AliDebug(2, "Returning invariant mass with D0 hypothesis");
-            invMassD = Dcand->InvMassD0();
-          }
-          else if (i == 1) {
-            AliDebug(2, "Returning invariant mass with D0bar hypothesis");
-            invMassD = Dcand->InvMassD0bar();
-          }
-          else {
-            return kFALSE;
-          }
-        }
-        else {
-          return kFALSE;
-        }
-      }
-    }
-  }
-  else if (fCandidateType == kDstartoKpipi) {
-    if (i > 0) return kFALSE;
-    Int_t absMCtruthPdgCode = TMath::Abs(MCtruthPdgCode);
     if (fBackgroundMode == kBackgroundAndSignal ||
-        (absMCtruthPdgCode == 413 && fBackgroundMode == kSignalOnly) ||
-        (absMCtruthPdgCode != 413 && fBackgroundMode == kBackgroundOnly)) {
-      // both background and signal are requested OR (it is a true D*/D*bar AND signal is requested) OR (it is NOT a D*/D*bar and background is requested)
-      AliAODRecoCascadeHF* DstarCand = static_cast<AliAODRecoCascadeHF*>(Dcand);
-      invMassD = DstarCand->InvMassDstarKpipi();
-      softPionPtD = DstarCand->GetBachelor()->Pt();
-      invMass2prong = DstarCand->InvMassD0();
+        (MCtruthPdgCode == 421 && fBackgroundMode == kSignalOnly) ||
+        (MCtruthPdgCode != 421 && fBackgroundMode == kBackgroundOnly)) {
+      // both background and signal are requested OR (it is a true D0 AND signal is requested) OR (it is NOT a D0 and background is requested)
+      AliDebug(2,"Selected as D0");
+      invMassD = Dcand->InvMassD0();
     }
-    else {
+    else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
   }
+  else if (isSelected == 2) { // selected as a D0bar
+    if (i > 0) return kFALSE; // only one mass hypothesis thanks to PID
 
+    if (fBackgroundMode == kBackgroundAndSignal ||
+        (MCtruthPdgCode == -421 && fBackgroundMode == kSignalOnly) ||
+        (MCtruthPdgCode != -421 && fBackgroundMode == kBackgroundOnly)) {
+      // both background and signal are requested OR (it is a true D0bar AND signal is requested) OR (it is NOT a D0bar and background is requested)
+      AliDebug(2,"Selected as D0bar");
+      invMassD = Dcand->InvMassD0bar();
+    }
+    else { // conditions above not passed, so return FALSE
+      return kFALSE;
+    }
+  }
+  else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
+    AliDebug(2,"Selected as either D0 or D0bar");
+
+    // Accept the correct mass hypothesis for signal-only and the wrong one for background-only
+    if ((MCtruthPdgCode == 421 && fBackgroundMode == kSignalOnly) ||
+        (MCtruthPdgCode == -421 && fBackgroundMode == kBackgroundOnly)) {
+      if (i > 0) return kFALSE;
+      AliDebug(2, "MC truth is D0");
+      invMassD = Dcand->InvMassD0();
+    }
+    else if ((MCtruthPdgCode == -421 && fBackgroundMode == kSignalOnly) ||
+             (MCtruthPdgCode == 421 && fBackgroundMode == kBackgroundOnly)) {
+      if (i > 0) return kFALSE;
+      AliDebug(2, "MC truth is D0bar");
+      invMassD = Dcand->InvMassD0bar();
+    }
+    else { // (This candidate is neither a D0 nor a D0bar) OR (background-and-signal was requested)
+
+      // Only accept it if background-only OR background-and-signal was requested
+      if (fBackgroundMode == kBackgroundOnly || fBackgroundMode == kBackgroundAndSignal) {
+        // Select D0 or D0bar depending on the i-parameter
+        if (i == 0) {
+          AliDebug(2, "Returning invariant mass with D0 hypothesis");
+          invMassD = Dcand->InvMassD0();
+        }
+        else if (i == 1) {
+          AliDebug(2, "Returning invariant mass with D0bar hypothesis");
+          invMassD = Dcand->InvMassD0bar();
+        }
+        else {  // i > 1
+          return kFALSE;
+        }
+      }
+      else { // signal-only was requested but this is not a true D0
+        return kFALSE;
+      }
+    }
+  }
   Dvector.SetPtEtaPhiM(Dcand->Pt(), Dcand->Eta(), Dcand->Phi(), invMassD);
+  return kTRUE;
+}
+
+//_______________________________________________________________________________
+Bool_t AliAnalysisTaskDmesonJetCorrelations::ExtractDstarAttributes(AliAODRecoCascadeHF* DstarCand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i)
+{
+  if (i > 0) return kFALSE; // only one mass hypothesis for the D*
+
+  Int_t MCtruthPdgCode = 0;
+
+  if (fBackgroundMode == kBackgroundOnly || fBackgroundMode == kSignalOnly) {
+    Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
+    Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
+
+    AliParticleContainer* mcpartCont = GetParticleContainer(1);
+    TClonesArray* mcpartArray = mcpartCont->GetArray();
+    Int_t mcLab = DstarCand->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, mcpartArray);
+    AliDebug(2, Form("MC label is %d", mcLab));
+    if (mcLab >= 0) {
+      AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(mcpartCont->GetParticle(mcLab));
+      MCtruthPdgCode = aodMcPart->PdgCode();
+      AliDebug(2, Form("MC truth pdg code is %d",MCtruthPdgCode));
+    }
+  }
+
+  Int_t absMCtruthPdgCode = TMath::Abs(MCtruthPdgCode);
+  if (fBackgroundMode == kBackgroundAndSignal ||
+      (absMCtruthPdgCode == 413 && fBackgroundMode == kSignalOnly) ||
+      (absMCtruthPdgCode != 413 && fBackgroundMode == kBackgroundOnly)) {
+    // both background and signal are requested OR (it is a true D*/D*bar AND signal is requested) OR (it is NOT a D*/D*bar and background is requested)
+    invMassD = DstarCand->InvMassDstarKpipi();
+    softPionPtD = DstarCand->GetBachelor()->Pt();
+    invMass2prong = DstarCand->InvMassD0();
+  }
+  else { // conditions above not passed, so return FALSE
+    return kFALSE;
+  }
+
+  Dvector.SetPtEtaPhiM(DstarCand->Pt(), DstarCand->Eta(), DstarCand->Phi(), invMassD);
   return kTRUE;
 }
 
