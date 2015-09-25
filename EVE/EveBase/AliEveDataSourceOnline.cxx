@@ -82,10 +82,20 @@ void AliEveDataSourceOnline::GetNextEvent()
     AliESDEvent *tmpEvent;
     
     cout<<"Starting subscriber's loop"<<endl;
-    while(!fFinished)
+    int receiveStatus;
+    
+    while(1)
     {
         cout<<"Waiting for event from online reconstruction...";
-        if(eventManager->Get(tmpEvent,EVENTS_SERVER_SUB))
+        receiveStatus = eventManager->Get(tmpEvent,EVENTS_SERVER_SUB);
+        
+        if(receiveStatus == 0){ // timeout
+            continue;
+        }
+        else if(receiveStatus == -1){ // error, socket closed
+            break;
+        }
+        else if(receiveStatus == 1)
         {
             if(tmpEvent)
             {
@@ -139,28 +149,27 @@ void AliEveDataSourceOnline::CheckStorageStatus()
     request->messageType = REQUEST_CONNECTION;
     
     long response;
-    bool receiveStatus = false;
-    bool sendStatus = false;
+    int receiveStatus = 0;
+    int sendStatus = 0;
     
     StorageManagerDown();// assume that storage manager is down
     
-    while (!fFinished)
+    while (1)
     {
-        while(sendStatus==false)// send request message until success
-        {
-            sendStatus = eventManager->Send(request,socket);
-            if(sendStatus==false)
-            {
-                //eventManager->RecreateSocket(socket);
-                sleep(1);
-            }
+        sendStatus = eventManager->Send(request,socket);
+        if(sendStatus == 0){ // timeout
+            continue;
         }
+        else if(sendStatus == -1){ // error, socket closed
+            break;
+        }
+        
         cout<<"EVENT DISPLAY -- message sent to SM"<<endl;
         
         receiveStatus = eventManager->Get(&response,socket); // try to reveive response
-        if(receiveStatus == false) // if failed (or timeouted)
+        if(receiveStatus == 0) // timeout
         {
-            cout<<"EVENT DISPLAY -- failed to receive message from SM"<<endl;
+            cout<<"EVENT DISPLAY -- failed to receive message from SM, timeout"<<endl;
             eventManager->RecreateSocket(socket); // destroy and open socket again, to be able to send message (currently, as receive failed, socket is still in RECV state
             
             if(!fStorageDown) // if requires change
@@ -169,13 +178,17 @@ void AliEveDataSourceOnline::CheckStorageStatus()
                 StorageManagerDown();
             }
         }
+        else if(receiveStatus == -1){ // error, socket closed
+            cout<<"EVENT DISPLAY -- failed to receive message from SM, error"<<endl;
+            break;
+        }
         else if(fStorageDown) // if success and requires change
         {
             cout<<"EVENT DISPLAY -- storage OK"<<endl;
             StorageManagerOk();
         }
         sleep(1);
-        sendStatus=false;
+        sendStatus=0;
     }
     
     AliEveEventManager *manager = fEventManager;

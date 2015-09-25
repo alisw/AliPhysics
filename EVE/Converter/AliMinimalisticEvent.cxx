@@ -17,6 +17,11 @@ void AliMinimalisticEvent::AddCluster(const AliMinimalisticCluster &cluster)
     fClusters.push_back(cluster);
 }
 
+void AliMinimalisticEvent::AddCaloCluster(const AliMinimalisticCaloCluster &cluster)
+{
+    fCaloClusters.push_back(cluster);
+}
+
 AliMinimalisticEvent::AliMinimalisticEvent(
         Double_t energy,
         Int_t multiplicity,

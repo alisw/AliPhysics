@@ -7,7 +7,6 @@
 using namespace std;
 
 AliCommunicationThread::AliCommunicationThread(AliStorageClientThread *onlineReconstructionManager) :
-    fFinished(false),
     fManager(onlineReconstructionManager),
     fCommunicationThread(0)
 {
@@ -25,7 +24,6 @@ void AliCommunicationThread::Kill()
 {
     if(fCommunicationThread)
     {
-        fFinished=true;
         fCommunicationThread->Join();
         fCommunicationThread->Kill();
     }
@@ -43,18 +41,22 @@ void AliCommunicationThread::CommunicationHandle()
     cout<<"COMMUNICATION -- Communication stated"<<endl;
     
     // mutex mtx;
-    bool receiveStatus = false;
-    bool sendStatus = false;
+    int receiveStatus = false;
+    int sendStatus = false;
     
-    while(!fFinished)
+    while(1)
     {
         cout<<"COMMUNICATION -- waiting for requests"<<endl;
         
-        do { // try receive requests until success
-            receiveStatus = eventManager->Get(request,socket);
-//            sleep(1);
-        } while (receiveStatus == false);
-        
+        receiveStatus = eventManager->Get(request,socket);
+
+        if(receiveStatus == 0){ //timeout
+            continue;
+        }
+        else if(receiveStatus == -1){ // error, socket closed
+            break;
+        }
+
         cout<<"COMMUNICATION -- received request"<<endl;
         switch(request->messageType)
         {
@@ -96,13 +98,16 @@ void AliCommunicationThread::CommunicationHandle()
                 sendStatus = false;
                 break;
         }
-        if(sendStatus == false)
+        if(sendStatus == 0) // timeout
         {
             eventManager->RecreateSocket(socket);// if couldn't send, recreate socket to be able to receive messages (currently socket is in SEND state)
         }
+        else if(sendStatus == -1) // error, socket closed
+        {
+            break;
+        }
     
         delete request;
-
     }
 }
 

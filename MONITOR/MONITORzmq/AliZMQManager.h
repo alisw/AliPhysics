@@ -58,37 +58,38 @@ class AliZMQManager
 {
 public:
 	static AliZMQManager* GetInstance();
+    void Close();
     void CreateSocket(storageSockets socket);
     void RecreateSocket(storageSockets socket);
     
-    // methods to send data (true = success):
-	bool Send(std::vector<serverListStruct> list,storageSockets socket);
-    bool Send(std::vector<string100> list,storageSockets socket);
-	bool Send(struct serverRequestStruct *request,storageSockets socket);
-	bool Send(struct clientRequestStruct *request,storageSockets socket);
-	bool Send(AliESDEvent *event,storageSockets socket);
-	bool Send(long message,storageSockets socket);
-	bool Send(bool message,storageSockets socket);
-    bool SendAsXml(AliESDEvent *event,storageSockets socket);
+    // methods to send data (1 = success, 0 = timeout, -1 = socket closed):
+	int Send(std::vector<serverListStruct> list,storageSockets socket);
+    int Send(std::vector<string100> list,storageSockets socket);
+	int Send(struct serverRequestStruct *request,storageSockets socket);
+	int Send(struct clientRequestStruct *request,storageSockets socket);
+	int Send(AliESDEvent *event,storageSockets socket);
+	int Send(long message,storageSockets socket);
+	int Send(bool message,storageSockets socket);
+    int SendAsXml(AliESDEvent *event,storageSockets socket);
 	
-    // methods to receive data (true = success):
-    bool Get(std::vector<serverListStruct>* &result,storageSockets socket);
-    bool Get(std::vector<string100>* &result,storageSockets socket);
-    bool Get(AliESDEvent* &result, storageSockets socket);
-	bool Get(struct serverRequestStruct* &result, storageSockets socket);
-	bool Get(struct clientRequestStruct* &result, storageSockets socket);
-	bool Get(long *result, storageSockets socket);
-	bool Get(bool *result, storageSockets socket);
+    // methods to receive data (1 = success, 0 = timeout, -1 = socket closed):
+    int Get(std::vector<serverListStruct>* &result,storageSockets socket);
+    int Get(std::vector<string100>* &result,storageSockets socket);
+    int Get(AliESDEvent* &result, storageSockets socket);
+	int Get(struct serverRequestStruct* &result, storageSockets socket);
+	int Get(struct clientRequestStruct* &result, storageSockets socket);
+	int Get(long *result, storageSockets socket);
+	int Get(bool *result, storageSockets socket);
 
 private:
 	AliZMQManager();
 	~AliZMQManager();
 	static AliZMQManager *fManagerInstance; ///< single instance of AliZMQManager
     
-    // ZMQ methods wrappers:
+    // ZMQ methods wrappers (1 = success, 0 = timeout, -1 = socket closed):
     bool zmqInit(zmq_msg_t *msg,size_t size=0);
-    bool zmqSend(zmq_msg_t *msg,void *socket,int flags);
-    bool zmqRecv(zmq_msg_t *msg,void *socket,int flags);
+    int zmqSend(zmq_msg_t *msg,void *socket,int flags);
+    int zmqRecv(zmq_msg_t *msg,void *socket,int flags);
     
     // hostnames and ports read from config file:
 	std::string fStorageServer; ///< hostname for Storage Manager
@@ -99,7 +100,7 @@ private:
 	int fXmlServerPort;         ///< port for xml publisher
 	
     // ZMQ sockets and contexts:
-	void *fContexts[NUMBER_OF_SOCKETS]; ///< array of ZMQ contexts for all sockets
+	void *fContext; ///< single ZMQ context for all sockets
 	void *fSockets[NUMBER_OF_SOCKETS];  ///< array of all ZMQ sockets
 
     // copy constructor and assignment operator:

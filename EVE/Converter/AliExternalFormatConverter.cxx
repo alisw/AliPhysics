@@ -20,6 +20,8 @@
 #include <AliEveCascade.h>
 
 #include <AliMUONGeometryTransformer.h>
+#include <AliConverterCalorimetersEngine.h>
+
 
 /// Default constructor for the converter
 AliExternalFormatConverter::AliExternalFormatConverter()
@@ -254,6 +256,10 @@ void AliExternalFormatConverter::PopulateEvent(AliMinimalisticEvent &event) cons
     PopulateEventWithKinkTracks(event, usedTracks);
     PopulateEventWithStandardTracks(event, usedTracks);
     PopulateEventWithMuonTracks(event, specialID);
+    
+    
+    AliConverterCalorimetersEngine *caloEngine = new AliConverterCalorimetersEngine(fESDEvent);
+    caloEngine->PopulateEventWithCaloClusters(event);
 }
 
 
@@ -271,6 +277,25 @@ void AliExternalFormatConverter::PopulateEventWithStandardTracks(
         usedTracks.insert(standardEntry);
     }
 }
+
+//
+//void AliExternalFormatConverter::PopulateEventWithCaloClusters(AliMinimalisticEvent &event) const
+//{
+//    for (int clusterIter = 0; clusterIter < fESDEvent->GetNumberOfCaloClusters(); clusterIter++)
+//    {
+//        AliESDCaloCluster *esdCluster = fESDEvent->GetCaloCluster(clusterIter);
+//        float position[3];
+//        esdCluster->GetPosition(position);
+//        float r = sqrt(position[0]*position[0]+position[1]*position[1]);
+//        float zWidth = 10;
+//        float phi = acos(position[0]/r) * TMath::RadToDeg();
+//        float phiWidth = 3;
+//        float energy = esdCluster->E();
+//                
+//        AliMinimalisticCaloCluster cluster(r,position[2]-zWidth,2*zWidth,phi-phiWidth,2*phiWidth,energy);
+//        event.AddCaloCluster(cluster);
+//    }
+//}
 
 
 /// Extracts data from V0 tracks. AliMinimalisticTracks and AliMinimalisticClusters are created and

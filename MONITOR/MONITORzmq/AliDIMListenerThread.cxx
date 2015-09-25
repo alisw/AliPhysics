@@ -57,16 +57,8 @@ AliDIMListenerThread::~AliDIMListenerThread()
   if(fDimEORListener){delete fDimEORListener;fDimEORListener = 0;}
 
   // kill all running reconstructions (to be changed later)
-    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alionlinereco\"",fOnlineReconstructionUsername.c_str(),fOnlineReconstructionHostname.c_str()));
+//    gSystem->Exec(Form("ssh -n -f %s@%s \"killall alionlinereco\"",fOnlineReconstructionUsername.c_str(),fOnlineReconstructionHostname.c_str()));
 
-  /*
-    for (int i = 0; i < 5; ++i){
-        if(fDimSORListener[i]) delete fDimSORListener[i];
-        if(fDimEORListener[i]) delete fDimEORListener[i];
-        
-        fDimSORListener[i] = 0;
-        fDimEORListener[i] = 0;
-	}*/
   cout<<"OK"<<endl;
 }
 
@@ -74,24 +66,6 @@ void AliDIMListenerThread::InitDIMListeners()
 {
 
 #ifdef ALI_DATE
-  /*
-  for (int i = 0; i < 5; ++i)
-  {
-  
-  if (i == 0)
-        {
-            fDimSORListener[i] = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS");
-            fDimEORListener[i] = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS");
-        }
-        else
-        {
-            fDimSORListener[i] = new AliDimIntNotifier(Form("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS_%d", i));
-            fDimEORListener[i] = new AliDimIntNotifier(Form("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS_%d", i));
-        }
-        fDimSORListener[i]->Connect("DimMessage(int)", "AliDIMListenerThread", this, "StartOfRun(int)");
-        fDimEORListener[i]->Connect("DimMessage(int)", "AliDIMListenerThread", this, "EndOfRun(int)");
-}
-  */
   fDimSORListener = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_SOR_PHYSICS_1");
   fDimEORListener = new AliDimIntNotifier("/LOGBOOK/SUBSCRIBE/DAQ_EOR_PHYSICS_1");
   fDimSORListener->Connect("DimMessage(int)", "AliDIMListenerThread", this, "StartOfRun(int)");

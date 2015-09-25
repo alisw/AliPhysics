@@ -9,7 +9,9 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliConverterCalorimetersEngine+;
 #pragma link C++ class AliMinimalisticEvent+;
+#pragma link C++ class AliMinimalisticCaloCluster+;
 #pragma link C++ class AliMinimalisticCluster+;
 #pragma link C++ class AliMinimalisticTrack+;
 #pragma link C++ class AliExternalFormatConverter+;

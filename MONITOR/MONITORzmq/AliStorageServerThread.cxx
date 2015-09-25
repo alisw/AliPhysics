@@ -65,15 +65,21 @@ void AliStorageServerThread::StartCommunication()
     
     struct serverRequestStruct *request;
     
-    bool receiveStatus = false;
-    bool sendStatus = false;
+    int receiveStatus = false;
+    int sendStatus = false;
     
     while(1)
     {
         cout<<"Server waiting for requests"<<endl;
-        do{ // try to receive requests until success
-            receiveStatus = eventManager->Get(request,socket);
-        } while(receiveStatus == false);
+
+        receiveStatus = eventManager->Get(request,socket);
+        
+        if(receiveStatus == 0){ // timeout
+            continue;
+        }
+        else if(receiveStatus == -1){ // error, socket closed
+            break;
+        }
         
         cout<<"Server received request:"<<request->messageType<<endl;
         switch(request->messageType)
@@ -181,10 +187,15 @@ void AliStorageServerThread::StartCommunication()
                 break;
             }
         }
-        if(sendStatus == false)
+        if(sendStatus == 0) // timeout
         {
             eventManager->RecreateSocket(socket);// if couldn't send, recreate socket to be able to receive messages (currently socket is in SEND state)
         }
+        else if(sendStatus == -1){ // error, socket closed
+            break;
+        }
+            
+        
         delete request;
     }
 }

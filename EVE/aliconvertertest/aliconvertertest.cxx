@@ -3,7 +3,7 @@
 
 int main(int argv, char* argc[]){
     if (argv != 4){
-        std::cout << "Missing arguments" << std::endl;
+        std::cout << "Usage:\naliconvertertest <event_numer> <input_path> <output_path>" << std::endl;
         return(EXIT_FAILURE);
     }
     Int_t entry = atoi(argc[1]); // Event number
@@ -13,7 +13,8 @@ int main(int argv, char* argc[]){
     AliExternalFormatConverter Converter(dirPath);
     //Converter.LoadFiles(filePath, filenameFriends);
     // Converter.WriteCSVToFile(datFilePath, entry);
-    Converter.SerializeAllEvents(path);
+//    Converter.SerializeAllEvents(path);
 //    Converter.WriteXMLToFile(XMLPath, entry);
+    Converter.WriteJSONToFile(path, entry);
     return(EXIT_SUCCESS);
 }

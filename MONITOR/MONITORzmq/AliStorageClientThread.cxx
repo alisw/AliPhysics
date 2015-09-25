@@ -1,4 +1,5 @@
 #include "AliStorageClientThread.h"
+    #include "AliZMQManager.h"
 
 #include <signal.h>
 #include <fstream>
@@ -72,6 +73,8 @@ fRemoveEventsPercentage(0)
 AliStorageClientThread::~AliStorageClientThread()
 {
     while(!gClientQuit){sleep(1);}
+    cout<<"\n\nClosing\n\n"<<endl;
+    AliZMQManager::GetInstance()->Close();
     if(fDIMListenerThread){delete fDIMListenerThread;}
     fEventsCollectorThread->Kill();
     fCommunicationThread->Kill();
