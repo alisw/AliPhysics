@@ -41,8 +41,9 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
   if (computeBG)
     physSel->SetComputeBG(computeBG);
 
-  if(!deprecatedFlag) 
-    AliFatal("The BG ID flag is deprecated. Please use the OADB to configure the cuts");
+  if(!deprecatedFlag) {
+    Fatal("AddTaskPhysicsSelection", "The BG ID flag is deprecated. Please use the OADB to configure the cuts");
+  }
 
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cstatsout",
