@@ -126,7 +126,7 @@ void AddTask_GammaCalo_pPb(
 	if (trainConfig == 14)
 		numberOfCuts = 3;
 	// change to 4 cuts per cutselection
-	if (		trainConfig == 9 	|| trainConfig == 10	|| trainConfig == 11	|| trainConfig == 12 	|| trainConfig == 13
+	if (		trainConfig == 9 	|| trainConfig == 10	|| trainConfig == 11	|| trainConfig == 12 	|| trainConfig == 13 || trainConfig == 15
 			|| trainConfig == 40	|| trainConfig == 41	|| trainConfig == 43	|| trainConfig == 50	|| trainConfig == 51
 			|| trainConfig == 53	|| trainConfig == 60	|| trainConfig == 61	|| trainConfig == 63	|| trainConfig == 70
 			|| trainConfig == 71	|| trainConfig == 73)
@@ -202,6 +202,12 @@ void AddTask_GammaCalo_pPb(
 		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050022230000"; mesonCutArray[0] = "0163103100000050"; // standard
 		eventCutArray[ 1] = "80000013"; clusterCutArray[1] = "1111181050022230000"; mesonCutArray[1] = "0163103100000060"; // 2 EMCal cell diagonals
 		eventCutArray[ 2] = "80000013"; clusterCutArray[2] = "1111181050022230000"; mesonCutArray[2] = "0163103100000040"; // 0.75 EMCal cell diagonals
+
+	} else if(trainConfig == 15){
+		eventCutArray[ 0] = "80000013"; clusterCutArray[0] = "1111181050032230000"; mesonCutArray[0] = "0163403100000050"; // MB
+		eventCutArray[ 1] = "80052013"; clusterCutArray[1] = "1111181050032230000"; mesonCutArray[1] = "0163403100000050"; // EMC7
+		eventCutArray[ 2] = "80083013"; clusterCutArray[2] = "1111181050032230000"; mesonCutArray[2] = "0163403100000050"; // EG1
+		eventCutArray[ 3] = "80085013"; clusterCutArray[3] = "1111181050032230000"; mesonCutArray[3] = "0163403100000050"; // EG2
 
 	// SYSTEMATIC STUDY NEUTRAl MESON MEASUREMENTS MIKE SAS 10-09-2015
 	} else if(trainConfig == 40){ // default cutstring and first set of variations nonlinearity
