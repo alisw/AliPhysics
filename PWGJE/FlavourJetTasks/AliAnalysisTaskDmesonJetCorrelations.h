@@ -28,6 +28,7 @@ class AliRDHFCuts;
 class AliAODEvent;
 class AliAODRecoDecay;
 class AliAODRecoDecayHF2Prong;
+class AliAODRecoCascadeHF;
 class AliVParticle;
 class AliAODMCParticle;
 
@@ -98,6 +99,8 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t                 ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
   Bool_t                 ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
   Bool_t                 ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
+  Bool_t ExtractD0Attributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
+  Bool_t ExtractDstarAttributes(AliAODRecoCascadeHF* DstarCand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
 
   void                 DoJetLoop();
   void                 DoDmesonLoop();
