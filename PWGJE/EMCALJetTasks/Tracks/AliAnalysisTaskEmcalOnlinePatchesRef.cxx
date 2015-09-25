@@ -93,7 +93,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
     fHistos->CreateTH2(Form("hPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
     fHistos->CreateTH2(Form("hPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
     fHistos->CreateTH2(Form("hPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
-    for(int isec = 5; isec <= 10; isec++){
+    for(int isec = 4; isec <= 9; isec++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
       fHistos->CreateTH2(Form("hPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
       fHistos->CreateTH2(Form("hPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
     }
@@ -132,7 +132,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
     if(mypatch->IsOfflineSimple()) continue;
     if(!(mypatch->IsGammaHigh() || mypatch->IsGammaLow() || mypatch->IsLevel0())) continue;
     fGeometry->SuperModuleNumberFromEtaPhi(mypatch->GetEtaCM(), mypatch->GetPhiCM(), supermoduleID);
-    Int_t sector = 5 + supermoduleID / 2;
+    Int_t sector = 4 + supermoduleID / 2;
     if(mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector);
     if(mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector);
     if(mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector);
