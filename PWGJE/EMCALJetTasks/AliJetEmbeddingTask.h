@@ -10,8 +10,8 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   AliJetEmbeddingTask();
   AliJetEmbeddingTask(const char *name); 
   virtual ~AliJetEmbeddingTask();
-
   void           SetMasslessParticles(Bool_t b) { fMassless        = b ; }
+  void           SetMass(Double_t mass)         { fMass = mass ; }
   void           SetNeutralFraction(Double_t f) { fNeutralFraction = f ; }
   void           SetNeutralMass(Double_t m)     { fNeutralMass     = m ; }
 
@@ -22,7 +22,8 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   Bool_t         fMassless;               //make particles massless
   Double_t       fNeutralFraction;        //assign charge==0 to fraction of particles
   Double_t       fNeutralMass;            //assign this mass to neutral particles
-
+  Double_t       fMass;                   //assign this mass to particle
+  
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented
   AliJetEmbeddingTask &operator=(const AliJetEmbeddingTask&); // not implemented
 
