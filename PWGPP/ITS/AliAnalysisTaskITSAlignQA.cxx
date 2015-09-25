@@ -70,6 +70,7 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fUseVertex(kFALSE),
   fUseVertexForZOnly(kFALSE),
   fUseTPCMomentum(kFALSE),
+  fUseTOFTiming(15.),
   fMinVtxContributors(5),
   fRemovePileupWithSPD(kTRUE),
   fMinITSpts(3),
@@ -449,7 +450,10 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track, const A
   if(fUseITSsaTracks){ 
     if(track->GetNcls(1)>0) accept=kFALSE;
   }else{
-    if(track->GetNcls(1)<fMinTPCpts) accept=kFALSE;
+    if (!track->IsOn(AliESDtrack::kTPCrefit) || track->GetNcls(1)<fMinTPCpts) accept=kFALSE;
+    if (fUseTOFTiming>0) {
+      if (TMath::Abs(track->GetTOFExpTDiff())>fUseTOFTiming) accept=kFALSE;
+    }
   }
   if(track->GetNcls(0) < fMinITSpts) accept=kFALSE;
   Int_t trstatus=track->GetStatus();
