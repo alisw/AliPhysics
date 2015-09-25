@@ -14,6 +14,11 @@
 static const double LambdaMass = 1.115683,
                     PionMass = 0.139;
 
+const struct { unsigned int bin_count; float min; float max; }
+
+VertexBinning = {16, -10.0, 10.0},
+MultBinning = {30, 0, 10000};
+
 
 const float default_lambda_PtMin = 0.2,
             default_lambda_PtMax = 5.0,
@@ -76,7 +81,8 @@ AliFemtoAnalysisPionLambda::_Init()
 }
 
 AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda():
-  AliFemtoVertexMultAnalysis(),
+  AliFemtoVertexMultAnalysis(VertexBinning.bin_count, VertexBinning.min, VertexBinning.max,
+                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max),
   fPionType(kPiPlus),
   fLambdaType(kLambda)
 {
@@ -84,7 +90,8 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda():
 }
 
 AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda(const char *name):
-  AliFemtoVertexMultAnalysis(),
+  AliFemtoVertexMultAnalysis(VertexBinning.bin_count, VertexBinning.min, VertexBinning.max,
+                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max),
   fPionType(kPiPlus),
   fLambdaType(kLambda)
 {
@@ -96,7 +103,8 @@ AliFemtoAnalysisPionLambda::AliFemtoAnalysisPionLambda(const char *name,
                                                        PionType pion,
                                                        LambdaType lambda
 ):
-  AliFemtoVertexMultAnalysis(),
+  AliFemtoVertexMultAnalysis(VertexBinning.bin_count, VertexBinning.min, VertexBinning.max,
+                               MultBinning.bin_count,   MultBinning.min,   MultBinning.max),
   fPionType(pion),
   fLambdaType(lambda)
 {
