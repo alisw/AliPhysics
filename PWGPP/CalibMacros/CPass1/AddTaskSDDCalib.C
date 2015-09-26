@@ -1,4 +1,4 @@
-AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE, Float_t tofCut=15.0) 
+AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE, Float_t tofCut=10.0) 
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
