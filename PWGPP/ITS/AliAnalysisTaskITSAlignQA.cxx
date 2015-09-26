@@ -70,7 +70,7 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fUseVertex(kFALSE),
   fUseVertexForZOnly(kFALSE),
   fUseTPCMomentum(kFALSE),
-  fUseTOFTiming(15.),
+  fUseTOFTiming(10.),
   fMinVtxContributors(5),
   fRemovePileupWithSPD(kTRUE),
   fMinITSpts(3),
