@@ -84,7 +84,7 @@ ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0),
-fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkAttached(0),
+fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -142,7 +142,7 @@ fInput(0)
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0),
-fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkAttached(0),
+fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -733,7 +733,12 @@ void AliMultSelectionTask::UserExec(Option_t *)
     if ( fEvSel_nTrackletsEta10 >= 1 ) fEvSel_INELgtZERO = kTRUE;
 
     //Event-level fill
-    if ( fkCalibration ) fTreeEvent->Fill() ;
+    if ( fkCalibration ){
+        //Pre-filter on triggered (kMB) events for saving info
+        if( !fkFilterMB || (fkFilterMB && fEvSel_Triggered) ){
+            fTreeEvent->Fill() ;
+        }
+    }
 
     if ( fkAddInfo ){//Master switch for users
         //===============================================

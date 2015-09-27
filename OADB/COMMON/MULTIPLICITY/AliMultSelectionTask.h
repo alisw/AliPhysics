@@ -64,7 +64,8 @@ public:
     Int_t SetupRun( const AliVEvent* const esd );
 
     void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
-    void SetAddInfo      ( Bool_t lVar ) { fkAddInfo = lVar; } ;
+    void SetAddInfo      ( Bool_t lVar ) { fkAddInfo     = lVar; } ;
+    void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -82,7 +83,8 @@ private:
     //Objects Controlling Task Behaviour
     Bool_t fkCalibration; //if true, save Calibration object
     Bool_t fkAddInfo;     //if true, save info
-
+    Bool_t fkFilterMB;    //if true, save only kMB events
+    
     Bool_t fkAttached; //if true, has already attached to ESD (AOD)
     
     AliESDtrackCuts *fESDtrackCuts;
