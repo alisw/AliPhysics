@@ -831,7 +831,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     else
         fCurrentRun = esd->GetRunNumber();
     
-    TString fileName =(Form("%s/COMMON/CENTRALITY/data/OADB-test-01.root", AliAnalysisManager::GetOADBPath()));
+    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-01.root", AliAnalysisManager::GetOADBPath()));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s\n",fCurrentRun,fileName.Data()));
     
     AliOADBContainer *con = new AliOADBContainer("OADB");
