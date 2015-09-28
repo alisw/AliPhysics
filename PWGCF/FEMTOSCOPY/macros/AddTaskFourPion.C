@@ -85,7 +85,7 @@ AliFourPion *AddTaskFourPion(
 
     TH3F *weightHisto[ktbins][cbins];
     TH3F *weightHisto2[ktbins][cbins];
-    TH1F *weightHisto1D[ktbins][cbins];
+    TH2F *weightHistoOneD[cbins];
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
 	for(Int_t q2bin=0; q2bin<2; q2bin++){
@@ -95,24 +95,33 @@ AliFourPion *AddTaskFourPion(
 	  name += j;
 	  name += "_ED_";
 	  name += q2bin;
-	  TString name1D = name.Data();
-	  name1D.Append("_1D");
 	  if(q2bin==0) {
 	    if(FourPionTask->GetCollisionType()!=0 && j>0) {
 	      weightHisto[i][j] = (TH3F*)weightHisto[i][0]->Clone();
-	      weightHisto1D[i][j] = (TH1F*)weightHisto1D[i][0]->Clone();
 	    }else {
-	      weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
-	      weightHisto1D[i][j] = (TH1F*)inputFileWeight->Get(name1D);
+	      if(i<ktbins) weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
 	    }	  
 	  }else{
-	    if(FourPionTask->GetCollisionType()!=0 && j>0) weightHisto2[i][j] = (TH3F*)weightHisto2[i][0]->Clone();
-	    else weightHisto2[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    if(i<ktbins) {
+	      if(FourPionTask->GetCollisionType()!=0 && j>0) weightHisto2[i][j] = (TH3F*)weightHisto2[i][0]->Clone();
+	      else weightHisto2[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    }
 	  }
 	}
       }
     }
-    FourPionTask->SetWeightArrays( kTRUE, weightHisto, weightHisto2, weightHisto1D );
+    // Qinv weights
+    for(Int_t j=0; j<cbins; j++){
+      TString name = "Weight_M_";
+      name += j;
+      name.Append("_1D");
+      if(FourPionTask->GetCollisionType()!=0 && j>0) {
+	weightHistoOneD[j] = (TH2F*)weightHistoOneD[0]->Clone();
+      }else{
+	weightHistoOneD[j] = (TH2F*)inputFileWeight->Get(name);
+      }
+    }
+    FourPionTask->SetWeightArrays( kTRUE, weightHisto, weightHisto2, weightHistoOneD );
     cout<<"End AddTask WeightFile read"<<endl;
     //
     //
