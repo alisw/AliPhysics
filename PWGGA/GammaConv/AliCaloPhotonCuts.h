@@ -208,7 +208,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
 		//for NonLinearity correction
 		TString				fV0ReaderName;				// Name of V0Reader
-		TString				fPeriodName;					// PeriodName of MC
+		TString				fPeriodName;				// PeriodName of MC
 		MCSet				fCurrentMC;					// enum for current MC set being processed
 		
 		//cuts
@@ -253,7 +253,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 		Int_t		fNonLinearity2;						// selection of nonlinearity correction, part2
 		Int_t		fSwitchNonLinearity;				// selection (combined) of NonLinearity
 		Bool_t		fUseNonLinearity;					// flag for switching NonLinearity correction
-		Int_t		fIsPureCalo;					// flag for MergedCluster analysis
+		Int_t		fIsPureCalo;						// flag for MergedCluster analysis
 		
 		//vector
 		std::vector<Int_t> fVectorMatchedClusterIDs;		// vector with cluster IDs that have been matched to tracks in merged cluster analysis
