@@ -842,6 +842,18 @@ extern "C" {
       return description;
     }
 
+    std::string GetOrigin()
+    {
+      std::string origin(fTopic+kAliHLTComponentDataTypefIDsize, kAliHLTComponentDataTypefOriginSize);
+      return origin;
+    }
+
+    std::string GetID()
+    {
+      std::string id(fTopic, kAliHLTComponentDataTypefIDsize);
+      return id;
+    }
+
   };
 
   /**
