@@ -119,7 +119,7 @@ class AliESDVZEROfriend: public AliVVZEROfriend {
     UShort_t      fTrigger;        // VZERO trigger inputs
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask
 
-    ClassDef(AliESDVZEROfriend, 2) // container class for VZERO DDL raw data
+    ClassDef(AliESDVZEROfriend, 3) // container class for VZERO DDL raw data
 };
 
 #endif
