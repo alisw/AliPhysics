@@ -28,6 +28,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
+#include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliVCluster.h"
@@ -82,9 +83,8 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
 
   TArrayD energybinning;
   CreateEnergyBinning(energybinning);
-  TArrayD smbinning(14);
-  int ilimit = 0;
-  for(double borders = -0.5; borders < 13.5; borders +=1) smbinning[ilimit++] = borders;
+  TArrayD smbinning(14); CreateLinearBinning(smbinning, 14, -0.5, 13.5);
+  TArrayD etabinning; CreateLinearBinning(etabinning, 100, -0.7, 0.7);
   fHistos = new AliEMCalHistoContainer("Ref");
   TString triggers[17] = {
       "MB", "EMC7",
@@ -99,6 +99,16 @@ void AliAnalysisTaskEmcalClustersRef::UserCreateOutputObjects(){
     fHistos->CreateTH1(Form("hClusterEnergyFired%s", trg->Data()), Form("Cluster energy for trigger class %s, firing the trigger", trg->Data()), energybinning);
     fHistos->CreateTH2(Form("hClusterEnergySM%s", trg->Data()), Form("Cluster energy versus supermodule for trigger class %s", trg->Data()), smbinning, energybinning);
     fHistos->CreateTH2(Form("hClusterEnergyFiredSM%s", trg->Data()), Form("Cluster energy versus supermodule for trigger class %s, firing the trigger", trg->Data()), smbinning, energybinning);
+    fHistos->CreateTH2(Form("hEtaEnergy%s", trg->Data()), Form("Cluster energy vs. eta for trigger class %s", trg->Data()), etabinning, energybinning);
+    fHistos->CreateTH2(Form("hEtaEnergyFired%s", trg->Data()), Form("Cluster energy vs. eta for trigger class %s, firing the trigger", trg->Data()), etabinning, energybinning);
+    for(int ism = 0; ism < 12; ism++){
+      fHistos->CreateTH2(Form("hEtaEnergySM%d%s", ism, trg->Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s", ism, trg->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hEtaEnergyFiredSM%d%s", ism, trg->Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg->Data()), etabinning, energybinning);
+    }
+    for(int isec = 4; isec < 10; isec++){
+      fHistos->CreateTH2(Form("hEtaEnergySec%d%s", isec, trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s", isec, trg->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hEtaEnergyFiredSec%d%s", isec, trg->Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s, firing the trigger", isec, trg->Data()), etabinning, energybinning);
+    }
     for(int ien = 0; ien < 5; ien++){
       fHistos->CreateTH2(Form("hEtaPhi%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
       fHistos->CreateTH2(Form("hEtaPhiFired%dG%s", static_cast<int>(encuts[ien]), trg->Data()), Form("cluster #eta-#phi map for clusters fired the trigger with energy larger than %f GeV/c for trigger class %s", encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
@@ -140,6 +150,7 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
   // Fill reference distribution for the primary vertex before any z-cut
+  if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
   if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
   if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   // Apply vertex z cut
@@ -287,15 +298,24 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
 
 void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(TString triggerclass, double energy, double eta, double phi, TList *triggerpatches){
   Bool_t hasTriggerPatch = triggerpatches  ? CorrelateToTrigger(eta, phi, triggerpatches) : kFALSE;
-  Int_t supermoduleID = -1;
+  Int_t supermoduleID = -1, sector = -1;
   fGeometry->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
   fHistos->FillTH1(Form("hClusterEnergy%s", triggerclass.Data()), energy);
-  if(supermoduleID >= 0)
+  fHistos->FillTH2(Form("hEtaEnergy%s", triggerclass.Data()), eta, energy);
+  if(supermoduleID >= 0){
     fHistos->FillTH2(Form("hClusterEnergySM%s", triggerclass.Data()), supermoduleID, energy);
+    fHistos->FillTH2(Form("hEtaEnergySM%d%s", supermoduleID, triggerclass.Data()), eta, energy);
+    sector = 4 + int(supermoduleID/2);
+    fHistos->FillTH2(Form("hEtaEnergySec%d%s", sector, triggerclass.Data()), eta, energy);
+  }
   if(hasTriggerPatch){
     fHistos->FillTH1(Form("hClusterEnergyFired%s", triggerclass.Data()), energy);
-    if(supermoduleID >= 0)
+    fHistos->FillTH2(Form("hEtaEnergyFired%s", triggerclass.Data()), eta, energy);
+    if(supermoduleID >= 0){
       fHistos->FillTH2(Form("hClusterEnergyFiredSM%s", triggerclass.Data()), supermoduleID, energy);
+      fHistos->FillTH2(Form("hEtaEnergyFiredSM%d%s", supermoduleID, triggerclass.Data()), eta, energy);
+      fHistos->FillTH2(Form("hEtaEnergyFiredSec%d%s", sector, triggerclass.Data()), eta, energy);
+    }
   }
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
   for(int ien = 0; ien < 5; ien++){
@@ -338,6 +358,24 @@ void AliAnalysisTaskEmcalClustersRef::CreateEnergyBinning(TArrayD& binning) cons
   int ib = 0;
   for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
     binning[ib++] = *it;
+}
+
+/**
+ * Create any kind of linear binning from given ranges and stores it in the binning array.
+ * @param binning output array
+ * @param nbins Number of bins
+ * @param min lower range
+ * @param max upper range
+ */
+void AliAnalysisTaskEmcalClustersRef::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const {
+  double binwidth = (max-min)/static_cast<double>(nbins);
+  binning.Set(nbins+1);
+  binning[0] = min;
+  double currentlimit = min + binwidth;
+  for(int ibin = 0; ibin < nbins; ibin++){
+    binning[ibin+1] = currentlimit;
+    currentlimit += binwidth;
+  }
 }
 
 /**
