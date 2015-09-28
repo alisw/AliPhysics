@@ -50,19 +50,74 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
     timeMin = -1.;
     timeMax = 1e6;
   }
-  
+#ifdef __CLING__
+  // ROOT6 version of the Config macro. JIT cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
+  std::stringstream emcaltenderadd;
+  emcaltenderadd << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<"/PWG/EMCAL/macros/AddTaskEMCALTender.C(";
+  emcaltenderadd << (distBC ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (recalibClus ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (recalcClusPos ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (nonLinearCorr ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (remExoticCell ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (remExoticClus ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (fidRegion ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (calibEnergy ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (calibTime ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (remBC ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << nonLinFunct << ", ";
+  emcaltenderadd << (reclusterize ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << seedthresh << ", ";
+  emcaltenderadd << cellthresh << ", ";
+  emcaltenderadd << clusterizerT << ", ";
+  emcaltenderadd << (trackMatch ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << (updateCellOnly ? "kTRUE" : "kFALSE") << ", ";
+  emcaltenderadd << timeMin << ", ";
+  emcaltenderadd << timeMax << ", ";
+  emcaltenderadd << timeCut;// << ", ";
+  //emcaltenderadd << ((pass != NULL) ? pass : 0);
+  emcaltenderadd << ")";
+  std::string emcaltenderaddstring = emcaltenderadd.str();
+  std::cout << "Calling Add macro using command string " << emcaltenderaddstring << std::endl;
+  //gROOT->SetMacroPath(Form("%s", Form("%s/PWG/EMCAL/macros", gSystem->Getenv("ALICE_PHYSICS"))));
+  AliAnalysisTaskSE *tender = (AliAnalysisTaskSE *)gROOT->ProcessLine(emcaltenderaddstring.c_str());
+#else
+  // ROOT5 version, allows loading a macro
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
   AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus,
 						 fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh,
 						 cellthresh, clusterizerT, trackMatch, updateCellOnly, timeMin, timeMax, timeCut,pass);
+#endif
 
   //----------------------- Add clusterizer -------------------------------------------------------
   remExoticCell  = kTRUE;
   TString tmpClusters = "tmpCaloClusters";
+#ifdef __CLING__
+  // ROOT6 version of the Config macro. JIT cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
+  std::stringstream clusterizeradd;
+  clusterizeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskClusterizerFast.C(";
+  clusterizeradd << "\"ClusterizerFast\", ";
+  clusterizeradd << "\"\", ";
+  clusterizeradd << "\"" << tmpClusters << "\", ";
+  clusterizeradd << clusterizer << ", ";
+  clusterizeradd << cellthresh << ", ";
+  clusterizeradd << seedthresh << ", ";
+  clusterizeradd << timeMin << ", ";
+  clusterizeradd << timeMax << ", ";
+  clusterizeradd << timeCut << ", ";
+  clusterizeradd << (remExoticCell ? "kTRUE" : "kFALSE") << ", ";
+  clusterizeradd << (distBC ? "kTRUE" : "kFALSE") << ", ";
+  clusterizeradd << AliAnalysisTaskEMCALClusterizeFast::kFEEData;
+  clusterizeradd << ")";
+  std::string clusterizeraddstring = clusterizeradd.str();
+  std::cout << "Calling Add macro using command string " << clusterizeraddstring << std::endl;
+  AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = (AliAnalysisTaskEMCALClusterizeFast *)gROOT->ProcessLine(clusterizeraddstring.c_str());
+#else
+  // ROOT5 version, allows loading a macro
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
   AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","",tmpClusters.Data(),clusterizer,cellthresh,seedthresh,
       timeMin,timeMax,timeCut,remExoticCell,distBC,
       AliAnalysisTaskEMCALClusterizeFast::kFEEData);
+#endif
   
   if(isMC){
     if((period.Contains("lhc10") || period.Contains("lhc11") || period.Contains("lhc12a") 
@@ -79,8 +134,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   }
 
   //----------------------- Add cluster maker -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity, 
-  UInt_t nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
+  nonLinFunct = AliEMCALRecoUtils::kBeamTestCorrected;
   if(isMC) {
     if(period == "lhc12a15a") 
       nonLinFunct = AliEMCALRecoUtils::kPi0MCv2;
@@ -88,7 +142,25 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
       nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
   }
   remExoticClus  = kTRUE;
+#ifdef __CLING__
+  // ROOT6 version of the Config macro. JIT cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
+  std::stringstream clustermakeradd;
+  clustermakeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C(";
+  clustermakeradd << nonLinFunct << ", ";
+  clustermakeradd << (remExoticClus ? "kTRUE" : "kFALSE") << ", ";
+  clustermakeradd << "\"" << tmpClusters << "\", ";
+  clustermakeradd << "\"EmcCaloClusters\", ";
+  clustermakeradd << "0., ";
+  clustermakeradd << "kTRUE";
+  clustermakeradd << ")";
+  std::string clustermakeraddstring = clustermakeradd.str();
+  std::cout << "Calling Add macro using command string " << clustermakeraddstring << std::endl;
+  AliEmcalClusterMaker *clusMaker = (AliEmcalClusterMaker *)gROOT->ProcessLine(clustermakeraddstring.c_str());
+#else
+  // ROOT5 version, allows loading a macro
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusterMaker.C"); //cluster maker: non-linearity,
   AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,tmpClusters.Data(),"EmcCaloClusters",0.,kTRUE);
+#endif
 
   return clusterizerTask;
 
