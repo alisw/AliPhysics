@@ -52,6 +52,9 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   manager->SetEventReader(rdr);
 
   AliFemtoAnalysisPionLambda *analysis = new AliFemtoAnalysisPionLambda("PionLambda");
+    analysis->SetNumEventsToMix(10);
+    analysis->SetMinSizePartCollection(1);
+    analysis->SetVerboseMode(kFALSE);
 
   analysis->EventCut()->AddCutMonitor(new AliFemtoCutMonitorEventMult("EVPass"),
                                          new AliFemtoCutMonitorEventMult("EVFail"));
