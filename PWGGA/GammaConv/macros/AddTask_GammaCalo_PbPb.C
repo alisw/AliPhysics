@@ -8,8 +8,8 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 									TString 	periodName 					= "LHC13d2",  						// name of the period for added signals and weighting
                                     Bool_t 		doWeighting 				= kFALSE,  							// enable Weighting
 									Bool_t 		isUsingTHnSparse 			= kTRUE, 							// enable or disable usage of THnSparses for background estimation
-									Int_t 		enableExtQA			 		= 0,								// enable QA(3), disabled (0)
-									TString		periodNameV0Reader					= ""
+									Int_t 		enableExtMatchAndQA			= 0,								// enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+									TString		periodNameV0Reader			= ""
 								) {
 
 	// ================= Load Librariers =================================
@@ -237,7 +237,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 		analysisClusterCuts[i]->SetIsPureCaloCut(2);
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
-		analysisClusterCuts[i]->SetExtendedQA(enableExtQA);
+		analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 		
 		analysisMesonCuts[i] = new AliConversionMesonCuts();
@@ -253,7 +253,7 @@ void AddTask_GammaCalo_PbPb( 	  	Int_t 		trainConfig 				= 1,  								// change
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
     task->SetDoTHnSparse(isUsingTHnSparse);
-	if(enableExtQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+	if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 
 	//connect containers
 	AliAnalysisDataContainer *coutput =
