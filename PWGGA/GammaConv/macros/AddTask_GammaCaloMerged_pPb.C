@@ -6,7 +6,7 @@ void AddTask_GammaCaloMerged_pPb( 	Int_t 		trainConfig 				= 1,  								// chan
 									TString 	cutnumberAODBranch 			= "000000006008400001001500000",
 									TString 	periodname 					= "LHC12f1x", 						// period name
 									Int_t 		doWeightingPart 			= 0,								// enables weighting
-									Int_t 		enableExtQA					= 0,								// enable QA(3), disabled (0)
+									Int_t 		enableExtMatchAndQA			= 0,								// enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
 									Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
 									Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
 									Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
@@ -187,14 +187,14 @@ void AddTask_GammaCaloMerged_pPb( 	Int_t 		trainConfig 				= 1,  								// chan
 		analysisClusterCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
 		ClusterCutList->Add(analysisClusterCuts[i]);
-		analysisClusterCuts[i]->SetExtendedQA(enableExtQA);
+		analysisClusterCuts[i]->SetExtendedQA(enableExtMatchAndQA);
 		analysisClusterCuts[i]->SetFillCutHistograms("");
 
 		analysisClusterMergedCuts[i] = new AliCaloPhotonCuts();
 		analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
 		analysisClusterMergedCuts[i]->InitializeCutsFromCutString(clusterMergedCutArray[i].Data());
 		ClusterMergedCutList->Add(analysisClusterMergedCuts[i]);
-		analysisClusterMergedCuts[i]->SetExtendedQA(enableExtQA);
+		analysisClusterMergedCuts[i]->SetExtendedQA(enableExtMatchAndQA);
 		analysisClusterMergedCuts[i]->SetFillCutHistograms("");
 
 		
@@ -211,7 +211,7 @@ void AddTask_GammaCaloMerged_pPb( 	Int_t 		trainConfig 				= 1,  								// chan
 	task->SetMesonCutList(numberOfCuts,MesonCutList);
 	task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
 	task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
-	if(enableExtQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+	if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
 	
 	//connect containers
 	AliAnalysisDataContainer *coutput =
