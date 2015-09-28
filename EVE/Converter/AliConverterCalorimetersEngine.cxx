@@ -47,6 +47,8 @@ void AliConverterCalorimetersEngine::PopulateEventWithCaloClusters(AliMinimalist
     Float_t eMaxCell = 0,amp = -1,phi = 0 ,eta = 0;
     Double_t vertex[] = {0.,0.,0.}; /// Vertex container
     
+    TH2D *emcalHist = new TH2D("emcalHist","emcalHist",80,-TMath::Pi(),TMath::Pi(),100,-1.5,1.5);
+    
     for (Int_t iclus =  0; iclus < fESDEvent->GetNumberOfCaloClusters(); iclus++)
     {
         fCaloCluster = fESDEvent->GetCaloCluster(iclus);
@@ -69,6 +71,7 @@ void AliConverterCalorimetersEngine::PopulateEventWithCaloClusters(AliMinimalist
                 fGeomEM->EtaPhiFromIndex(id,eta,phi);
                 cout<<"Eta:"<<eta<<"\tPhi:"<<GetPhi(phi)<<"\tE:"<<amp<<endl;
                 AliMinimalisticCaloCluster cluster(fGeomEM->GetIPDistance(),GetPhi(phi),eta,TMath::Pi()/80.,3./200.,amp);
+                emcalHist->Fill(GetPhi(phi),eta,amp);
                 event.AddCaloCluster(cluster);
             }
         }
@@ -91,6 +94,8 @@ void AliConverterCalorimetersEngine::PopulateEventWithCaloClusters(AliMinimalist
             }
         }
     }
+    
+    emcalHist->SaveAs("/Users/Jerus/Desktop/emcalHist.root");
 }
 
 void AliConverterCalorimetersEngine::AssertGeometry()

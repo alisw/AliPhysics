@@ -175,7 +175,7 @@ AliEveMacroExecutorWindow::~AliEveMacroExecutorWindow()
 {
   // Destructor.
 	fBoxContents.clear();
-    AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded");/*()", this);*/
+//    AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded");/*()", this);*/
 }
 
 /******************************************************************************/

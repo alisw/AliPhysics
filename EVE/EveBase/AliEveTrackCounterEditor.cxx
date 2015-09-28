@@ -212,7 +212,7 @@ AliEveTrackCounterEditor::~AliEveTrackCounterEditor()
 {
   // Destructor.
 
-  AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded()", this);
+//  AliEveEventManager::GetMaster()->Disconnect("NewEventLoaded()", this);
 
   if (fScanSummaryFile) {
     fScanSummaryFile->close();

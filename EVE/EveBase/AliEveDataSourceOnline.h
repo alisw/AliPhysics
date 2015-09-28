@@ -20,7 +20,9 @@ class AliEveDataSourceOnline : public AliEveDataSource
 public:
     AliEveDataSourceOnline(bool storageManager=false);
     ~AliEveDataSourceOnline();
-        
+    
+    void SetEventFromStorageManager(AliESDEvent *event);
+    
     void StorageManagerOk();    // *SIGNAL*
     void StorageManagerDown();  // *SIGNAL*
     void EventServerOk();       // *SIGNAL*
@@ -49,6 +51,7 @@ private:
     Bool_t fStorageDown;            // Flag specifing if communication with Storage Manager is fine
     Bool_t fFinished;               // Will be set to true in destructor
     bool fStorageManager;           // Should Storage Manager's features be activated
+    bool fHasEventFromStorageManager;// There is an event from SM to be displayed
     AliEveEventManager *fEventManager; // Pointer to AliEveEventManager
     
     // dispatchers for threads' handlers:

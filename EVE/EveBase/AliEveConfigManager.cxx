@@ -1093,10 +1093,11 @@ void AliEveConfigManager::SetEventInEventManager()
     if(event)
     {
 	    cout<<"SETTING EVENT IN ED"<<endl;
-	    //fListEventsWindow->onExit();
+
         manager->SetAutoLoad(kFALSE);
-//        manager->PrepareForNewEvent(event);
-        cout<<"\n\nSetting new event should be implemented in AliEveConfigManager, but is not\n\n"<<endl;
+        AliEveDataSource *dataSource = manager->GetCurrentDataSource();
+        dataSource->SetEventFromStorageManager(event);
+        dataSource->NextEvent();
     }
 #endif
 }

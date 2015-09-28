@@ -278,26 +278,6 @@ void AliExternalFormatConverter::PopulateEventWithStandardTracks(
     }
 }
 
-//
-//void AliExternalFormatConverter::PopulateEventWithCaloClusters(AliMinimalisticEvent &event) const
-//{
-//    for (int clusterIter = 0; clusterIter < fESDEvent->GetNumberOfCaloClusters(); clusterIter++)
-//    {
-//        AliESDCaloCluster *esdCluster = fESDEvent->GetCaloCluster(clusterIter);
-//        float position[3];
-//        esdCluster->GetPosition(position);
-//        float r = sqrt(position[0]*position[0]+position[1]*position[1]);
-//        float zWidth = 10;
-//        float phi = acos(position[0]/r) * TMath::RadToDeg();
-//        float phiWidth = 3;
-//        float energy = esdCluster->E();
-//                
-//        AliMinimalisticCaloCluster cluster(r,position[2]-zWidth,2*zWidth,phi-phiWidth,2*phiWidth,energy);
-//        event.AddCaloCluster(cluster);
-//    }
-//}
-
-
 /// Extracts data from V0 tracks. AliMinimalisticTracks and AliMinimalisticClusters are created and
 /// pushed back inside AliMinimalisticEvent to which the reference is passed.
 /// Specialized polyline engine is called to create polylines for V0.

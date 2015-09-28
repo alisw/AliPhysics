@@ -744,7 +744,7 @@ int AliZMQManager::Get(struct serverRequestStruct* &result, storageSockets socke
 {
     zmq_msg_t buffer;
     if(!zmqInit(&buffer)){return 0;}
-    int recvStatus = !zmqRecv(&buffer,fSockets[socket],0);
+    int recvStatus = zmqRecv(&buffer,fSockets[socket],0);
     if(recvStatus == 1)
     {
         result = new struct serverRequestStruct(*(static_cast<struct serverRequestStruct*>(zmq_msg_data(&buffer))));
@@ -770,7 +770,7 @@ int AliZMQManager::Get(struct clientRequestStruct* &result, storageSockets socke
 {
     zmq_msg_t buffer;
     if(!zmqInit(&buffer)){return 0;}
-    int recvStatus = !zmqRecv(&buffer,fSockets[socket],0);
+    int recvStatus = zmqRecv(&buffer,fSockets[socket],0);
     if(recvStatus == 1)
     {
         result = new struct clientRequestStruct(*(static_cast<struct clientRequestStruct*>(zmq_msg_data(&buffer))));
@@ -790,7 +790,7 @@ int AliZMQManager::Get(long *result, storageSockets socket)
 {
     zmq_msg_t buffer;
     if(!zmqInit(&buffer)){return 0;}
-    int recvStatus = !zmqRecv(&buffer,fSockets[socket],0);
+    int recvStatus = zmqRecv(&buffer,fSockets[socket],0);
     if(recvStatus == 1)
     {
         memcpy(result,&buffer,sizeof(bool));

@@ -49,7 +49,7 @@ else()
   # No custom ZeroMQ specified. Searching for ZeroMQ system-wide.
   find_library(ZEROMQ_LIBRARIES NAMES zmq
                                 DOC "Path to libzmq.")
-  find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq.hpp zmq_utils.h
+  find_path(ZEROMQ_INCLUDE_DIR NAMES zmq.h zmq_utils.h
                                DOC "Path to ZeroMQ include header files.")
 endif()
 
