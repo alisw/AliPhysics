@@ -31,7 +31,7 @@ AliEmcalParticleMaker* AddTaskEmcalParticleMaker(
       clusName = "CaloClusters";
     } else {
       ::Info("AddTaskEmcalParticleMaker", "AOD analysis, clustersName = \"caloClusters\"");
-      clusName,"caloClusters");
+      clusName = "caloClusters";
     }
   }
   
