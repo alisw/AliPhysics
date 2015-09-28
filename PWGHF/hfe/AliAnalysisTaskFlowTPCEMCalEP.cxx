@@ -670,20 +670,21 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         if(particle){
           partPDG = particle->GetPdgCode();
           partPt = particle->Pt();
-          if (TMath::Abs(partPDG)!=11) continue;
-
+          
           MChijing = fMC->IsFromBGEvent(TMath::Abs(label));
           Int_t iHijing = 1;
           if(!MChijing) iHijing = 0; // 0 if enhanced sample
 
-	  GetWeightAndDecay(particle,iCent,iDecay,MCweight);
-	  
-	  fInclElec[iCent]->Fill(pt,(Double_t)iDecay,MCweight);
-	  
-	  Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,static_cast<Double_t>(iDecay)};
+          GetWeightAndDecay(particle,iCent,iDecay,MCweight);
+
+          Double_t corr[8]={cent,pt,fTPCnSigma,fEMCalnSigma,m02,dphi,cosdphi,static_cast<Double_t>(iDecay)};
           fCorr->Fill(corr,MCweight);
-	  
-	  SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
+            
+          if (TMath::Abs(partPDG)!=11) continue;
+
+	      fInclElec[iCent]->Fill(pt,(Double_t)iDecay,MCweight);
+	  	  
+          SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,fEMCalnSigma,fTPCnSigma);
 
         }// end particle
       }// end label
@@ -1158,71 +1159,74 @@ void AliAnalysisTaskFlowTPCEMCalEP::GetWeightAndDecay(TParticle *particle, Int_t
   Double_t w = 1.;
   Int_t d = 0;
   Int_t partPDG = particle->GetPdgCode();
-  Int_t idMother = particle->GetFirstMother();
-
-  if (idMother>0){
-    TParticle *mother = fStack->Particle(idMother);
-    Int_t motherPDG = mother->GetPdgCode();
-    Double_t motherPt = mother->Pt();
-
-    Bool_t isMotherPrimary = IsPrimary(mother);
-    Bool_t isMotherFromHF = IsFromHFdecay(mother);
-    Bool_t isMotherFromLM = IsFromLMdecay(mother);
-
-    if (motherPDG==111 && (isMotherPrimary || (!isMotherFromHF && !isMotherFromLM))){ // pi0 -> e 
-      d = 1;
-      w = GetPi0weight(motherPt,iCent);
-    }
     
-    if (motherPDG==221  && (isMotherPrimary || (!isMotherFromHF && !isMotherFromLM))){ // eta -> e
-      d = 2;
-      w = GetEtaweight(motherPt,iCent);
-    }
-
-    //Int_t idSecondMother = particle->GetSecondMother(); 
-    Int_t idSecondMother = mother->GetFirstMother();
-
-    if (idSecondMother>0){
-      TParticle *secondMother = fStack->Particle(idSecondMother);
-      Int_t secondMotherPDG = secondMother->GetPdgCode();
-      Double_t secondMotherPt = secondMother->Pt();
-    
-      Bool_t isSecondMotherPrimary = IsPrimary(secondMother);
-      Bool_t isSecondMotherFromHF = IsFromHFdecay(secondMother);
-      Bool_t isSecondMotherFromLM = IsFromLMdecay(secondMother);
-
-      if (motherPDG==22 && secondMotherPDG==111 && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //pi0 -> g -> e 
-        d = 3;
-        w = GetPi0weight(secondMotherPt,iCent);
-      }
-
-      if (motherPDG==22 && secondMotherPDG==221  && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //eta -> g -> e
-	d = 4;
-        w = GetEtaweight(secondMotherPt,iCent);
-      }
-
-      if (motherPDG==111 && secondMotherPDG==221  && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //eta -> pi0 -> e
-        d = 5;
-        w = GetEtaweight(secondMotherPt,iCent);
-      }
-
-      Int_t idThirdMother = secondMother->GetFirstMother();
-      if (idThirdMother>0){
-        TParticle *thirdMother = fStack->Particle(idThirdMother);
-        Int_t thirdMotherPDG = thirdMother->GetPdgCode();
-        Double_t thirdMotherPt = thirdMother->Pt();
-
-        Bool_t isThirdMotherPrimary = IsPrimary(thirdMother);
-        Bool_t isThirdMotherFromHF = IsFromHFdecay(thirdMother);
-        Bool_t isThirdMotherFromLM = IsFromLMdecay(thirdMother);
-
-        if (motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG==221 && (isThirdMotherPrimary || (!isThirdMotherFromHF && !isThirdMotherFromLM))){//eta->pi0->g-> e 
-          d = 6;
-          w = GetEtaweight(thirdMotherPt,iCent);
-        }
-      }//third mother      
-    }//second mother 
-  }//mother
+  if (TMath::Abs(partPDG)==11){
+      Int_t idMother = particle->GetFirstMother();
+      
+      if (idMother>0){
+          TParticle *mother = fStack->Particle(idMother);
+          Int_t motherPDG = mother->GetPdgCode();
+          Double_t motherPt = mother->Pt();
+          
+          Bool_t isMotherPrimary = IsPrimary(mother);
+          Bool_t isMotherFromHF = IsFromHFdecay(mother);
+          Bool_t isMotherFromLM = IsFromLMdecay(mother);
+          
+          if (motherPDG==111 && (isMotherPrimary || (!isMotherFromHF && !isMotherFromLM))){ // pi0 -> e
+              d = 1;
+              w = GetPi0weight(motherPt,iCent);
+          }
+          
+          if (motherPDG==221  && (isMotherPrimary || (!isMotherFromHF && !isMotherFromLM))){ // eta -> e
+              d = 2;
+              w = GetEtaweight(motherPt,iCent);
+          }
+          
+          //Int_t idSecondMother = particle->GetSecondMother();
+          Int_t idSecondMother = mother->GetFirstMother();
+          
+          if (idSecondMother>0){
+              TParticle *secondMother = fStack->Particle(idSecondMother);
+              Int_t secondMotherPDG = secondMother->GetPdgCode();
+              Double_t secondMotherPt = secondMother->Pt();
+              
+              Bool_t isSecondMotherPrimary = IsPrimary(secondMother);
+              Bool_t isSecondMotherFromHF = IsFromHFdecay(secondMother);
+              Bool_t isSecondMotherFromLM = IsFromLMdecay(secondMother);
+              
+              if (motherPDG==22 && secondMotherPDG==111 && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //pi0 -> g -> e
+                  d = 3;
+                  w = GetPi0weight(secondMotherPt,iCent);
+              }
+              
+              if (motherPDG==22 && secondMotherPDG==221  && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //eta -> g -> e
+                  d = 4;
+                  w = GetEtaweight(secondMotherPt,iCent);
+              }
+              
+              if (motherPDG==111 && secondMotherPDG==221  && (isSecondMotherPrimary || (!isSecondMotherFromHF && !isSecondMotherFromLM))){ //eta -> pi0 -> e
+                  d = 5;
+                  w = GetEtaweight(secondMotherPt,iCent);
+              }
+              
+              Int_t idThirdMother = secondMother->GetFirstMother();
+              if (idThirdMother>0){
+                  TParticle *thirdMother = fStack->Particle(idThirdMother);
+                  Int_t thirdMotherPDG = thirdMother->GetPdgCode();
+                  Double_t thirdMotherPt = thirdMother->Pt();
+                  
+                  Bool_t isThirdMotherPrimary = IsPrimary(thirdMother);
+                  Bool_t isThirdMotherFromHF = IsFromHFdecay(thirdMother);
+                  Bool_t isThirdMotherFromLM = IsFromLMdecay(thirdMother);
+                  
+                  if (motherPDG==22 && secondMotherPDG==111 && thirdMotherPDG==221 && (isThirdMotherPrimary || (!isThirdMotherFromHF && !isThirdMotherFromLM))){//eta->pi0->g-> e 
+                      d = 6;
+                      w = GetEtaweight(thirdMotherPt,iCent);
+                  }
+              }//third mother      
+          }//second mother 
+      }//mother
+  }// if electron
   decay = d;
   weight = w;
 }
