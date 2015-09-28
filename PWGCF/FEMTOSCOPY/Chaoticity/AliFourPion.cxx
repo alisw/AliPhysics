@@ -110,6 +110,7 @@ AliAnalysisTaskSE(),
   fKmeanY(),
   fKmiddleT(),
   fKmiddleY(),
+  fKmeanTOneD(),
   fQstep(0),
   fQstepWeights(0),
   fQmean(),
@@ -245,7 +246,7 @@ AliAnalysisTaskSE(),
     for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=0x0;
       fNormWeight2[i][j]=0x0;
-      fNormWeight1D[i][j]=0x0;
+      if(i==0) fNormWeightOneD[j]=0x0;
     }
   }
   
@@ -323,6 +324,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fKmeanY(),
   fKmiddleT(),
   fKmiddleY(),
+  fKmeanTOneD(),
   fQstep(0),
   fQstepWeights(0),
   fQmean(),
@@ -461,7 +463,7 @@ AliFourPion::AliFourPion(const Char_t *name)
     for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=0x0;
       fNormWeight2[i][j]=0x0;
-      fNormWeight1D[i][j]=0x0;
+      if(i==0) fNormWeightOneD[j]=0x0;
     }
   }
   
@@ -541,6 +543,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fKmeanY(),
     fKmiddleT(),
     fKmiddleY(),
+    fKmeanTOneD(),
     fQstep(obj.fQstep),
     fQstepWeights(obj.fQstepWeights),
     fQmean(),
@@ -623,7 +626,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=obj.fNormWeight[i][j];
       fNormWeight2[i][j]=obj.fNormWeight2[i][j];
-      fNormWeight1D[i][j]=obj.fNormWeight1D[i][j];
+      if(i==0) fNormWeightOneD[j]=obj.fNormWeightOneD[j];
     }
   }
   
@@ -755,7 +758,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
     for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       fNormWeight[i][j]=obj.fNormWeight[i][j];
       fNormWeight2[i][j]=obj.fNormWeight2[i][j];
-      fNormWeight1D[i][j]=obj.fNormWeight1D[i][j];
+      if(i==0) fNormWeightOneD[j]=obj.fNormWeightOneD[j];
     }
   }
   
@@ -886,7 +889,7 @@ AliFourPion::~AliFourPion()
     for(Int_t j=0; j<fCentBins; j++){// Mbin iterator
       if(fNormWeight[i][j]) delete fNormWeight[i][j];
       if(fNormWeight2[i][j]) delete fNormWeight2[i][j];
-      if(fNormWeight1D[i][j]) delete fNormWeight1D[i][j];
+      if(i==0) {if(fNormWeightOneD[j]) delete fNormWeightOneD[j];}
     }
   }
   
@@ -984,6 +987,12 @@ void AliFourPion::ParInit()
     fKmeanT[0] = 0.264; fKmeanT[1] = 0.500;
     fKmiddleT[0] = 0.175; fKmiddleT[1] = 0.675;
   }
+  //
+  // Qinv kT bins
+  for(Int_t i=0; i<fKbinsTOneD; i++){
+    fKmeanTOneD[i] = 0.16 + (i+0.5)*0.03;
+  }
+  
  
   //
   fQupperBoundQ2 = 2.0;
@@ -1114,7 +1123,7 @@ void AliFourPion::ParInit()
   fqLongFcn->FixParameter(4, -2.23316e-04);// rms
   fqLongFcn->FixParameter(5, 3.98127e-01);// rms
   
-  
+  cout<<"End ParInit"<<endl;
   /////////////////////////////////////////////
   /////////////////////////////////////////////
  
@@ -1127,7 +1136,7 @@ void AliFourPion::UserCreateOutputObjects()
   
   ParInit();// Initialize my settings
 
-
+  cout<<"Start histogram creation"<<endl;
   fOutputList = new TList();
   fOutputList->SetOwner();
   
@@ -1289,7 +1298,12 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fQ4AvgpTENsum3);
   TH3D* fQ4AvgpTENsum6 = new TH3D("fQ4AvgpTENsum6","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 180,0.1,1.0);
   fOutputList->Add(fQ4AvgpTENsum6);
-
+  //
+  TH3D* fQ4AvgkTENsum0 = new TH3D("fQ4AvgkTENsum0","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 100,0,1.0);
+  fOutputList->Add(fQ4AvgkTENsum0);
+  TH3D* fQ4AvgkTENsum6 = new TH3D("fQ4AvgkTENsum6","", 4,-0.5,3.5, fQbinsQ4,0,fQupperBoundQ4, 100,0,1.0);
+  fOutputList->Add(fQ4AvgkTENsum6);
+  //
   TH1D *fMCWeight3DTerm1SC = new TH1D("fMCWeight3DTerm1SC","", 20,0.,0.2);
   TH1D *fMCWeight3DTerm1SCden = new TH1D("fMCWeight3DTerm1SCden","", 20,0.,0.2);
   TH1D *fMCWeight3DTerm2SC = new TH1D("fMCWeight3DTerm2SC","", 20,0.,0.2);
@@ -1340,11 +1354,11 @@ void AliFourPion::UserCreateOutputObjects()
 	    if( (c1+c2)==1 ) {if(c1!=0) continue;}// skip degenerate histogram
 	    
 	    
-	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",20,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",100,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
 	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2);
 	    TString *nameEx2QW=new TString(nameEx2->Data());
 	    nameEx2QW->Append("_QW");
-	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",100,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
 	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW);
 	    TString *nameAvgP=new TString(nameEx2->Data());
 	    nameAvgP->Append("_AvgP");
@@ -1862,6 +1876,8 @@ void AliFourPion::UserCreateOutputObjects()
   TH2D *fkTDist = new TH2D("fkTDist","", fMbins,.5,fMbins+.5, 100,0.,1);
   fOutputList->Add(fkTDist);
 
+  
+  cout<<"End histogram creation"<<endl;
   ////////////////////////////////////
   ///////////////////////////////////  
   
@@ -2505,7 +2521,7 @@ void AliFourPion::UserExec(Option_t *)
   Float_t qout23=0, qside23=0, qlong23=0;
   Float_t qout24=0, qside24=0, qlong24=0;
   Float_t qout34=0, qside34=0, qlong34=0;
-  Float_t kT12=0;
+  Float_t kT12=0, kT13=0, kT14=0, kT23=0, kT24=0, kT34=0;
   Float_t q3=0, q3MC=0;
   Float_t q4=0, q4MC=0;
   Int_t ch1=0, ch2=0, ch3=0, ch4=0;
@@ -3896,11 +3912,23 @@ void AliFourPion::UserExec(Option_t *)
 		      }
 		    }
 		    if(fMbin==0){
+		      kT13 = sqrt(pow(pVect1[1]+pVect3[1],2) + pow(pVect1[2]+pVect3[2],2))/2.;
+		      kT14 = sqrt(pow(pVect1[1]+pVect4[1],2) + pow(pVect1[2]+pVect4[2],2))/2.;
+		      kT23 = sqrt(pow(pVect2[1]+pVect3[1],2) + pow(pVect2[2]+pVect3[2],2))/2.;
+		      kT24 = sqrt(pow(pVect2[1]+pVect4[1],2) + pow(pVect2[2]+pVect4[2],2))/2.;
+		      kT34 = sqrt(pow(pVect3[1]+pVect4[1],2) + pow(pVect3[2]+pVect4[2],2))/2.;
 		      if(ENsum==0){
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum0"))->Fill(EDindex4, q4, pt1);
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum0"))->Fill(EDindex4, q4, pt2);
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum0"))->Fill(EDindex4, q4, pt3);
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum0"))->Fill(EDindex4, q4, pt4);
+			//
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum0"))->Fill(EDindex4, q4, kT12);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum0"))->Fill(EDindex4, q4, kT13);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum0"))->Fill(EDindex4, q4, kT14);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum0"))->Fill(EDindex4, q4, kT23);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum0"))->Fill(EDindex4, q4, kT24);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum0"))->Fill(EDindex4, q4, kT34);
 		      }else if(ENsum==1){
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum1"))->Fill(EDindex4, q4, pt1);
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum1"))->Fill(EDindex4, q4, pt2);
@@ -3921,6 +3949,13 @@ void AliFourPion::UserExec(Option_t *)
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum6"))->Fill(EDindex4, q4, pt2);
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum6"))->Fill(EDindex4, q4, pt3);
 			((TH3D*)fOutputList->FindObject("fQ4AvgpTENsum6"))->Fill(EDindex4, q4, pt4);
+			//
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum6"))->Fill(EDindex4, q4, kT12);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum6"))->Fill(EDindex4, q4, kT13);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum6"))->Fill(EDindex4, q4, kT14);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum6"))->Fill(EDindex4, q4, kT23);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum6"))->Fill(EDindex4, q4, kT24);
+			((TH3D*)fOutputList->FindObject("fQ4AvgkTENsum6"))->Fill(EDindex4, q4, kT34);
 		      }
 		      
 		    }
@@ -4222,7 +4257,7 @@ void AliFourPion::GetQosl(Float_t track1[], Float_t track2[], Float_t& qout, Flo
   qlong = (p0*vz - pz*v0)/mt;
 }
 //________________________________________________________________________
-void AliFourPion::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins], TH3F *histos2[AliFourPion::fKbinsT][AliFourPion::fCentBins], TH1F *histos1D[AliFourPion::fKbinsT][AliFourPion::fCentBins]){
+void AliFourPion::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins], TH3F *histos2[AliFourPion::fKbinsT][AliFourPion::fCentBins], TH2F *histos1D[AliFourPion::fCentBins]){
   
   if(legoCase){
     cout<<"LEGO call to SetWeightArrays"<<endl;
@@ -4233,8 +4268,10 @@ void AliFourPion::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliFourPion::fKb
 	fNormWeight[tKbin][mb]->SetDirectory(0);
 	fNormWeight2[tKbin][mb] = (TH3F*)histos2[tKbin][mb]->Clone();
 	fNormWeight2[tKbin][mb]->SetDirectory(0);
-	fNormWeight1D[tKbin][mb] = (TH1F*)histos1D[tKbin][mb]->Clone();
-	fNormWeight1D[tKbin][mb]->SetDirectory(0);
+	if(tKbin==0){	
+	  fNormWeightOneD[mb] = (TH2F*)histos1D[mb]->Clone();
+	  fNormWeightOneD[mb]->SetDirectory(0);
+	}
       }
     }
     
@@ -4257,17 +4294,20 @@ void AliFourPion::SetWeightArrays(Bool_t legoCase, TH3F *histos[AliFourPion::fKb
 	  *name += mb;
 	  name->Append("_ED_");
 	  *name += q2bin;
-	  TString *name1D = new TString(name->Data());
-	  name1D->Append("_1D");
-
+	  
 	  if(q2bin==0) {
 	    fNormWeight[tKbin][mb] = (TH3F*)wFile->Get(name->Data());
 	    fNormWeight[tKbin][mb]->SetDirectory(0);
-	    fNormWeight1D[tKbin][mb] = (TH1F*)wFile->Get(name1D->Data());
-	    fNormWeight1D[tKbin][mb]->SetDirectory(0);
 	  }else{
 	    fNormWeight2[tKbin][mb] = (TH3F*)wFile->Get(name->Data());
 	    fNormWeight2[tKbin][mb]->SetDirectory(0);
+	  }
+	  if(tKbin==0 && q2bin==0){
+	    TString *name1D = new TString("Weight_M_");
+	    *name1D += mb;
+	    name1D->Append("_1D");
+	    fNormWeightOneD[mb] = (TH2F*)wFile->Get(name1D->Data());
+	    fNormWeightOneD[mb]->SetDirectory(0);
 	  }
 	}//q2bin
       }//mb
@@ -4309,6 +4349,16 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   if(fMinPt>0.249 && fKtIndexL==0) {fKtIndexL=1; wd=0;}
   //
   if(fOneDInterpolation){
+    // different kT binning for Qinv weights
+    if(kt < fKmeanTOneD[0]) {fKtIndexL=0; fKtIndexH=1;}
+    else if(kt >= fKmeanTOneD[fKbinsTOneD-1]) {fKtIndexL=fKbinsTOneD-2; fKtIndexH=fKbinsTOneD-1;}
+    else {
+      for(Int_t i=0; i<fKbinsTOneD-1; i++){
+	if((kt >= fKmeanTOneD[i]) && (kt < fKmeanTOneD[i+1])) {fKtIndexL=i; fKtIndexH=i+1; break;}
+      }
+    }
+    wd = (kt-fKmeanTOneD[fKtIndexL])/(fKmeanTOneD[fKtIndexH]-fKmeanTOneD[fKtIndexL]);
+    //
     Float_t qInv=GetQinv(track1, track2);
     Int_t MaxBinsQinv=20;
     if(fCollisionType!=0) MaxBinsQinv=100;
@@ -4322,8 +4372,8 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
       xd = (qInv-(fQinvIndexL+0.5)*0.005)/(0.005);
     }
     if(fInterpolationType==0){// Linear Interpolation of qinv,kt
-      Float_t c0 = fNormWeight1D[fKtIndexL][fMbin]->GetBinContent(fQinvIndexL+1)*(1-xd) + fNormWeight1D[fKtIndexL][fMbin]->GetBinContent(fQinvIndexH+1)*xd;
-      Float_t c1 = fNormWeight1D[fKtIndexH][fMbin]->GetBinContent(fQinvIndexL+1)*(1-xd) + fNormWeight1D[fKtIndexH][fMbin]->GetBinContent(fQinvIndexH+1)*xd;
+      Float_t c0 = fNormWeightOneD[fMbin]->GetBinContent(fKtIndexL+1, fQinvIndexL+1)*(1-xd) + fNormWeightOneD[fMbin]->GetBinContent(fKtIndexL+1, fQinvIndexH+1)*xd;
+      Float_t c1 = fNormWeightOneD[fMbin]->GetBinContent(fKtIndexH+1, fQinvIndexL+1)*(1-xd) + fNormWeightOneD[fMbin]->GetBinContent(fKtIndexH+1, fQinvIndexH+1)*xd;
       // kT interpolation
       wgt = (c0*(1-wd) + c1*wd);
     }else{// cubic Interpolation
@@ -4333,8 +4383,8 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
 	Int_t binInv = fQinvIndexL + x;
 	if(binInv<=0) binInv = 1;
 	if(binInv>MaxBinsQinv) binInv = MaxBinsQinv;
-	fOneDarrP1[x] = fNormWeight1D[fKtIndexL][fMbin]->GetBinContent(binInv);
-	fOneDarrP2[x] = fNormWeight1D[fKtIndexH][fMbin]->GetBinContent(binInv);
+	fOneDarrP1[x] = fNormWeightOneD[fMbin]->GetBinContent(fKtIndexL+1, binInv);
+	fOneDarrP2[x] = fNormWeightOneD[fMbin]->GetBinContent(fKtIndexH+1, binInv);
       }
       Float_t coord[3]={xd, yd, zd}; 
       Float_t c0 = cubicInterpolate (fOneDarrP1, xd);
@@ -4342,6 +4392,13 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
       // kT interpolation
       wgt = c0*(1-wd) + c1*wd;
     }
+    
+    // simplified stat error 
+    Float_t avgErr = fNormWeightOneD[fMbin]->GetBinError(fKtIndexL+1, fQinvIndexL+1);
+    avgErr += fNormWeightOneD[fMbin]->GetBinError(fKtIndexH+1, fQinvIndexH+1);
+    avgErr /= 2.;
+    //
+    wgtErr = avgErr;
   }else{
     //
   if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
@@ -4443,15 +4500,13 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     wgt = c0*(1-wd) + c1*wd;
     //
   }
-  }
-  ////
-  
   // simplified stat error 
   Float_t avgErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
   avgErr += fNormWeight[fKtIndexH][fMbin]->GetBinError(fQoIndexL+1,fQsIndexL+1,fQlIndexL+1);
   avgErr /= 2.;
   //
   wgtErr = avgErr;
+  }
   
 }
 //________________________________________________________________________

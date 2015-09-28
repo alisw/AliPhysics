@@ -60,20 +60,22 @@ class AliFourPion : public AliAnalysisTaskSE {
     kDENtypes = 179,// was 104
   };
 
-  static const Int_t fKbinsT   = 6;// Set fKstep as well !!!!
-  static const Int_t fKbinsY   = 1;// Set fKstep as well !!!!
-  static const Int_t fEDbins   = 4;
-  static const Int_t fCentBins = 10;// 0-50%
-  static const Int_t fMbinsMixing = 10;// 5% widths
-  static const Int_t fRVALUES  = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
+  static const Int_t fKbinsT     = 6;// Set fKstep as well !!!!
+  static const Int_t fKbinsTOneD = 28;// Set fKstep as well !!!!
+  static const Int_t fKbinsY     = 1;// Set fKstep as well !!!!
+  static const Int_t fEDbins     = 4;
+  static const Int_t fCentBins   = 10;// 0-50%
+  static const Int_t fMbinsMixing= 10;// 5% widths
+  static const Int_t fRVALUES    = 7;// 7 EW radii (5-11) , was 8 Gaussian radii (3-10fm)
   
 
   Int_t GetNumKtBins() const {return AliFourPion::fKbinsT;}
+  Int_t GetNumKtOneDBins() const {return AliFourPion::fKbinsTOneD;}
   Int_t GetNumRValues() const {return AliFourPion::fRVALUES;}
   Int_t GetNumCentBins() const {return AliFourPion::fCentBins;}
   Int_t GetNumEDBins() const {return AliFourPion::fEDbins;}
   
-  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH3F *histos2[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH1F *histos1D[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
+  void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH3F *histos2[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0, TH2F *histos1D[AliFourPion::fCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2DSC=0x0, TH2D *temp2DMC=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
   void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
@@ -326,6 +328,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fKmeanY[fKbinsY];
   Float_t fKmiddleT[fKbinsT];
   Float_t fKmiddleY[fKbinsY];
+  Float_t fKmeanTOneD[fKbinsTOneD];
   Float_t fQstep;
   Float_t fQstepWeights;
   Float_t fQmean[kQbinsWeights];
@@ -402,7 +405,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   TH1D *fFSIos[13];
   TH3F *fNormWeight[fKbinsT][fCentBins];
   TH3F *fNormWeight2[fKbinsT][fCentBins];
-  TH1F *fNormWeight1D[fKbinsT][fCentBins];
+  TH2F *fNormWeightOneD[fCentBins];
   TF1 *ExchangeAmp[7][50][2];
 
  
