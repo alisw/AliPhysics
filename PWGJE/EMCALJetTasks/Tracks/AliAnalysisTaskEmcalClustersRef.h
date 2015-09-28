@@ -33,6 +33,7 @@ public:
 protected:
 
   void CreateEnergyBinning(TArrayD& binning) const;
+  void CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const;
   void FillClusterHistograms(TString triggerclass, double energy, double eta, double phi, TList *triggerpatches);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
   void FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundpatches) const;

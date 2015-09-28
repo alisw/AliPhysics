@@ -20,6 +20,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEMCalHistoContainer.h"
+#include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
 #include "AliVVertex.h"
@@ -93,9 +94,13 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
     fHistos->CreateTH2(Form("hPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
     fHistos->CreateTH2(Form("hPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
     fHistos->CreateTH2(Form("hPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
+    for(int ism = 0; ism <= 9; ism++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
+      fHistos->CreateTH2(Form("hPatchEnergyEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hPatchADCEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 2100., 0., 2100.);
+    }
     for(int isec = 4; isec <= 9; isec++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
-      fHistos->CreateTH2(Form("hPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
-      fHistos->CreateTH2(Form("hPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
+      fHistos->CreateTH2(Form("hPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s, Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 2100., 0., 2100.);
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
@@ -116,6 +121,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
+  if(fInputEvent->IsA() == AliESDEvent::Class() && fAnalysisUtil->IsFirstEventInChunk(fInputEvent)) return;
   // Fill reference distribution for the primary vertex before any z-cut
   if(!fAnalysisUtil->IsVertexSelected2013pA(fInputEvent)) return;       // Apply new vertex cut
   if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
@@ -160,6 +166,8 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::FillTriggerPatchHistos(const char *pa
   fHistos->FillTH2(Form("hPatchADCEta%s", patchtype), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   fHistos->FillTH2(Form("hPatchEnergyEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
   fHistos->FillTH2(Form("hPatchADCEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+  fHistos->FillTH2(Form("hPatchEnergyEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetPatchE());
+  fHistos->FillTH2(Form("hPatchADCEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
