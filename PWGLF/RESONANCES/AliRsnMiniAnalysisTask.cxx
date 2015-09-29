@@ -9,6 +9,9 @@
 // add directly a new element in the task collections, and don't
 // need an external object to be passed to the task itself.
 //
+// Author: A. Pulvirenti
+// Developers: F. Bellini (fbellini@cern.ch)
+//
 
 #include <Riostream.h>
 
@@ -50,6 +53,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fTriggerMask(0),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
+   fRefMultiType("GLOBAL"),
    fUseAOD049CentralityPatch(kFALSE),
    fUseCentralityPatchPbPb2011(0),
    fContinuousMix(kTRUE),
@@ -63,8 +67,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fHEventStat(0x0),
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
-   fHAEventVz(0x0),
+   fHAEventVzCent(0x0),
    fHAEventMultiCent(0x0),
+   fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
@@ -99,8 +104,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fTriggerMask(AliVEvent::kMB),
    fUseCentrality(kFALSE),
    fCentralityType("QUALITY"),
+   fRefMultiType("GLOBAL"),
    fUseAOD049CentralityPatch(kFALSE),
-  fUseCentralityPatchPbPb2011(0),
+   fUseCentralityPatchPbPb2011(0),
    fContinuousMix(kTRUE),
    fNMix(0),
    fMaxDiffMult(10),
@@ -112,8 +118,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fHEventStat(0x0),
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
-   fHAEventVz(0x0),
+   fHAEventVzCent(0x0),
    fHAEventMultiCent(0x0),
+   fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(0x0),
    fTrackCuts(0),
@@ -153,6 +160,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fTriggerMask(copy.fTriggerMask),
    fUseCentrality(copy.fUseCentrality),
    fCentralityType(copy.fCentralityType),
+   fRefMultiType(copy.fRefMultiType),
    fUseAOD049CentralityPatch(copy.fUseAOD049CentralityPatch),
    fUseCentralityPatchPbPb2011(copy.fUseCentralityPatchPbPb2011),
    fContinuousMix(copy.fContinuousMix),
@@ -166,8 +174,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fHEventStat(0x0),
    fHAEventsVsMulti(0x0),
    fHAEventsVsTracklets(0x0),
-   fHAEventVz(0x0),
+   fHAEventVzCent(0x0),
    fHAEventMultiCent(0x0),
+   fHAEventRefMultiCent(0x0),
    fHAEventPlane(0x0),
    fEventCuts(copy.fEventCuts),
    fTrackCuts(copy.fTrackCuts),
@@ -213,6 +222,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fTriggerMask = copy.fTriggerMask;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
+   fRefMultiType = copy.fRefMultiType;
    fUseAOD049CentralityPatch = copy.fUseAOD049CentralityPatch;
    fUseCentralityPatchPbPb2011 = copy.fUseCentralityPatchPbPb2011;
    fContinuousMix = copy.fContinuousMix;
@@ -225,8 +235,9 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fHEventStat = copy.fHEventStat;
    fHAEventsVsMulti = copy.fHAEventsVsMulti;
    fHAEventsVsTracklets = copy.fHAEventsVsTracklets;
-   fHAEventVz = copy.fHAEventVz;
+   fHAEventVzCent = copy.fHAEventVzCent;
    fHAEventMultiCent = copy.fHAEventMultiCent;
+   fHAEventRefMultiCent = copy.fHAEventRefMultiCent;
    fHAEventPlane = copy.fHAEventPlane;
    fEventCuts = copy.fEventCuts;
    fTrackCuts = copy.fTrackCuts;
@@ -329,7 +340,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fOutput->Add(fHEventStat);
 
    if (fUseCentrality)
-      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Centrality", 100, 0, 100.0);
+      fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Centrality", 101, 0, 101.0);
    else
       fHAEventsVsMulti = new TH1F("hAEventsVsMulti", "Accepted events vs Multiplicity",1000, 0, 1000.0);
    fOutput->Add(fHAEventsVsMulti);
@@ -337,8 +348,9 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHAEventsVsTracklets = new TH1F("hAEventsVsTracklets", "Accepted events vs Tracklet Number",1000, 0, 1000.0);
    fOutput->Add(fHAEventsVsTracklets);
 
-   if(fHAEventVz) fOutput->Add(fHAEventVz);
+   if(fHAEventVzCent) fOutput->Add(fHAEventVzCent);
    if(fHAEventMultiCent) fOutput->Add(fHAEventMultiCent);
+   if(fHAEventRefMultiCent) fOutput->Add(fHAEventRefMultiCent);
    if(fHAEventPlane) fOutput->Add(fHAEventPlane);
 
    TIter next(&fTrackCuts);
@@ -765,10 +777,12 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
      fHEventStat->Fill(3.1);
      Double_t multi = ComputeCentrality((output == 'E'));
      Double_t tracklets = ComputeTracklets();
+     Double_t refmulti = ComputeReferenceMultiplicity((output == 'E'), fRefMultiType.Data());
      fHAEventsVsMulti->Fill(multi);
      fHAEventsVsTracklets->Fill(tracklets);
-     if(fHAEventVz) fHAEventVz->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
-     if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E',fHAEventMultiCent->GetYaxis()->GetTitle()));
+     if(fHAEventVzCent) fHAEventVzCent->Fill(multi,fInputEvent->GetPrimaryVertex()->GetZ());
+     if(fHAEventMultiCent) fHAEventMultiCent->Fill(multi,ComputeMultiplicity(output == 'E', fHAEventMultiCent->GetYaxis()->GetTitle()));
+     if(fHAEventRefMultiCent) fHAEventRefMultiCent->Fill(refmulti, ComputeReferenceMultiplicity(output == 'E', fHAEventRefMultiCent->GetYaxis()->GetTitle()));
      if(fHAEventPlane) fHAEventPlane->Fill(multi,ComputeAngle());
      return output;
    } else {
@@ -804,6 +818,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
+   fMiniEvent->RefMult()  = ComputeReferenceMultiplicity((evType == 'E'), fRefMultiType.Data());
    fMiniEvent->Tracklets() = ComputeTracklets();
    AliDebugClass(2, Form("Event %d: type = %c -- vz = %f -- mult = %f -- angle = %f", fEvNum, evType, fMiniEvent->Vz(), fMiniEvent->Mult(), fMiniEvent->Angle()));
 
@@ -920,13 +935,76 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
 }
 
 //__________________________________________________________________________________________________
+Double_t AliRsnMiniAnalysisTask::ComputeReferenceMultiplicity(Bool_t isESD,TString type)
+{
+//
+// Computes event reference multiplicity according to the strategy defined by the "type"
+// Implementation follows AliPPVsMultUtils::GetStandardReferenceMultiplicity(...)
+// type = "TRACKLETS" uses SPD tracklets only
+// type = "QUALITY" (default) uses global tracks unless in cases when the track vertex is not available. Then tracklets are used anyway.
+//
+  type.ToUpper();
+  Double_t computedRefMulti = -10.0;
+  if ( type.CompareTo("TRACKLETS") && type.CompareTo("GLOBAL") ) {
+    AliError(Form("String '%s' does not define a supported reference multiplicity computation", type.Data()));
+    return computedRefMulti;
+  }
+  
+  if (isESD) {
+    AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fInputEvent);
+    if (!esdevent) return kFALSE;
+    const AliESDVertex *lPrimaryVtxTracks = esdevent->GetPrimaryVertexTracks();
+    if ( (!lPrimaryVtxTracks->GetStatus()) || (!type.CompareTo("TRACKLETS")) ) {
+      /*If no track vertex available or if explicitly requested, use kTracklets
+	= number of tracklets in the SPD within the specified eta range
+      */
+      computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets, 0.8, 0.0);
+    } else {
+      /* If track vertex available, use combined estimator 
+	 = number of global tracks/event 
+	 + number of ITS standalone tracks complementary to TPC for a given event
+	 + number of SPD tracklets complementary to global/ITSSA tracks for a given events,
+	 all of them within the specified eta range
+      */
+      computedRefMulti = AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent *)fInputEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0.0);       
+    } 
+  } else {
+    AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if (!aodevent) return kFALSE;
+    AliAODHeader * header = dynamic_cast<AliAODHeader*>(aodevent->GetHeader());
+    Long_t lStoredRefMult = header->GetRefMultiplicityComb08();
+    // (-1) -> kept, user might discard, but will be killed anyhow by ev. sel.
+    // (-2) -> kept, user might discard, but will be killed anyhow by ev. sel.
+    // (-3) -> only if old AOD, but then -> recompute
+    // (-4) -> kept, user might discard, but will be killed anyhow by ev. sel.
+    //Hack: if this is -3, this is an old AOD filtering and we need to fall back on tracklets.
+    if( (lStoredRefMult == -3)||(!type.CompareTo("TRACKLETS")) ) { 
+      //(then -1 and -2 are NOT the case, -4 unchecked but impossible since no track vtx)
+      //Get Multiplicity object
+      AliAODTracklets *spdmult = aodevent->GetMultiplicity();
+      Long_t lNTracklets = 0;
+      for (Int_t i=0; i<spdmult->GetNumberOfTracklets(); ++i)
+	{
+	  if ( TMath::Abs(spdmult->GetEta(i)) < 0.8 ) lNTracklets++;
+	}
+      computedRefMulti = lNTracklets;
+    } else {
+      computedRefMulti = lStoredRefMult;
+    }
+  }
+  
+  return computedRefMulti;
+}
+
+//__________________________________________________________________________________________________
 Double_t AliRsnMiniAnalysisTask::ComputeMultiplicity(Bool_t isESD,TString type)
 {
 //
 // Computes event multiplicity according to the string defining
 // what criterion must be used for specific computation.
 //
-
+// Deprecated, better use ComputeReferenceMultiplicity instead
+//
    type.ToUpper();
 
    if (!type.CompareTo("TRACKS"))
@@ -1423,16 +1501,23 @@ void AliRsnMiniAnalysisTask::SetEventQAHist(TString type,TH2F *histo)
    }
 
    type.ToLower();
-
-   if(!type.CompareTo("vz")) fHAEventVz = histo;
+   TString multitype(histo->GetYaxis()->GetTitle());
+   multitype.ToUpper();
+   
+   if(!type.CompareTo("vz")) fHAEventVzCent = histo;
    else if(!type.CompareTo("multicent")) {
-      TString mtype(histo->GetYaxis()->GetTitle());
-      mtype.ToUpper();
-      if(mtype.CompareTo("QUALITY") && mtype.CompareTo("TRACKS") && mtype.CompareTo("TRACKLETS")) {
-         AliWarning(Form("multiplicity vs. centrality histogram y-axis %s unknown, setting to TRACKS",mtype.Data()));
+      if(multitype.CompareTo("QUALITY") && multitype.CompareTo("TRACKS") && multitype.CompareTo("TRACKLETS")) {
+         AliWarning(Form("multiplicity vs. centrality histogram y-axis %s unknown, setting to TRACKS",multitype.Data()));
          histo->GetYaxis()->SetTitle("TRACKS");
       }
       fHAEventMultiCent = histo;
+   }
+   else if(!type.CompareTo("refmulti")){
+     if ( multitype.CompareTo("GLOBAL") && multitype.CompareTo("TRACKLETS") ) {
+       AliWarning(Form("Reference multiplicity vs. centrality histogram y-axis %s unknown, setting to GLOBAL",multitype.Data()));
+       histo->GetYaxis()->SetTitle("GLOBAL");
+     }
+     fHAEventRefMultiCent = histo;     
    }
    else if(!type.CompareTo("eventplane")) fHAEventPlane = histo;
    else AliWarning(Form("event QA histogram slot %s undefined",type.Data()));

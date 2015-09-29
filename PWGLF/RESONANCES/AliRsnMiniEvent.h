@@ -22,6 +22,7 @@ public:
    Int_t              &ID()        {return fID;}
    Float_t            &Vz()        {return fVz;}
    Float_t            &Mult()      {return fMult;}
+   Float_t            &RefMult()   {return fRefMult;}
    Float_t            &Tracklets() {return fTracklets;}
    Float_t            &Angle()     {return fAngle;}
    TClonesArray       &Particles() {return fParticles;}
@@ -37,13 +38,14 @@ private:
    Int_t         fID;         // ID number
    Float_t       fVz;         // z-position of vertex
    Float_t       fMult;       // multiplicity or centrality
+   Float_t       fRefMult;    // reference multiplicity
    Float_t       fTracklets;  // tracklets
    Float_t       fAngle;      // angle of reaction plane to main reference frame
 
    Int_t         fLeading;    // index of leading particle
    TClonesArray  fParticles;  // list of selected particles
 
-   ClassDef(AliRsnMiniEvent,4)
+   ClassDef(AliRsnMiniEvent, 5)
 };
 
 #endif
