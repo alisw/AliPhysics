@@ -1345,7 +1345,7 @@ int main(Int_t argc, Char_t **argv)
     // needed for streamer application
     gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo", "*", "TStreamerInfo", "RIO", "TStreamerInfo()"); 
 
-    printf("MTRda version v.18092015.01 \n");
+    printf("MTRda version v.29092015.01 \n");
   
     /* check that we got some arguments = list of files */
     if (argc<2) {
@@ -1459,8 +1459,8 @@ int main(Int_t argc, Char_t **argv)
     cout << "MUONTRGda : Reading data from file " << inputFile <<endl;
 
     UInt_t nCalibEvents;
-    UInt_t elapsT;
-    UInt_t deltaT;
+    Double_t elapsT;
+    Double_t deltaT;
     UInt_t glSc[6];
     Bool_t overFlow, firstCalibEvent = kTRUE;
     const Int_t nTriChambers = AliMpConstants::NofTriggerChambers();
@@ -1603,7 +1603,7 @@ int main(Int_t argc, Char_t **argv)
 		firstCalibEvent = kFALSE;
 	      } else {
 		elapsT = darcHeaderHP->GetGlobalClock()/40e6; // [s]
-		if (elapsT > 50) {
+		if (elapsT > 50.) {
 		  //printf("Possible overflow: %x \n",darcHeaderHP->GetGlobalClock());
 		  overFlow = kTRUE;
 		} else {
@@ -1698,7 +1698,7 @@ int main(Int_t argc, Char_t **argv)
       } // NextDDL
 
       if (cfg.SaveScalers()) {
-	if (!overFlow && (deltaT > cfg.GetScalerRecTime())) {
+	if (!overFlow && (deltaT > (Double_t)cfg.GetScalerRecTime())) {
 	  //printf("Write scalers after %d events\n",nEvents);
 	  writeScalers = kTRUE;
 	  Int_t ibw = 0;
@@ -1707,11 +1707,11 @@ int main(Int_t argc, Char_t **argv)
 	  buffer[ibw++] = (nCalibEvents >> 16) & 0xff;
 	  buffer[ibw++] = (nCalibEvents >>  8) & 0xff;
 	  buffer[ibw++] = (nCalibEvents >>  0) & 0xff;
-	  buffer[ibw++] = (deltaT >> 24) & 0xff;
-	  buffer[ibw++] = (deltaT >> 16) & 0xff;
-	  buffer[ibw++] = (deltaT >>  8) & 0xff;
-	  buffer[ibw++] = (deltaT >>  0) & 0xff;
-	  //printf("nev %u time %u \n",nCalibEvents,deltaT);
+	  buffer[ibw++] = ((UInt_t)(deltaT+0.5) >> 24) & 0xff;
+	  buffer[ibw++] = ((UInt_t)(deltaT+0.5) >> 16) & 0xff;
+	  buffer[ibw++] = ((UInt_t)(deltaT+0.5) >>  8) & 0xff;
+	  buffer[ibw++] = ((UInt_t)(deltaT+0.5) >>  0) & 0xff;
+	  //printf("nev %u time %f \n",nCalibEvents,deltaT);
 	  for (Int_t bit = 0; bit < 6; bit++) {
 	    buffer[ibw++] = (glSc[bit] >> 24) & 0xff;
 	    buffer[ibw++] = (glSc[bit] >> 16) & 0xff;
