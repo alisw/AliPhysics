@@ -14,13 +14,13 @@
  **************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////
-// Class AliAnalysisTaskSED0MassCutVarFDSub                               //
-//                                                                        //
-// AliAnalysisTaskSE for the analysis of D0 candidates using the          //
-// cut-variation feed-down subtraction method                             //
-//                                                                        //
-// Andrea Rossi <Andrea.Rossi@cern.ch>                                    //
-// Felix Reidt  <Felix.Reidt@cern.ch>                                     //
+/// Class AliAnalysisTaskSED0MassCutVarFDSub                              //
+///                                                                       //
+/// AliAnalysisTaskSE for the analysis of D0 candidates using the         //
+/// cut-variation feed-down subtraction method                            //
+///                                                                       //
+/// Andrea Rossi <Andrea.Rossi@cern.ch>                                   //
+/// Felix Reidt  <Felix.Reidt@cern.ch>                                    //
 ////////////////////////////////////////////////////////////////////////////
 #include "AliAnalysisTaskSED0MassCutVarFDSub.h"
 

@@ -49,6 +49,9 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   void SetUseMultiplicity(EstEventMult aType);
   void CopyAODtoFemtoV0(TParticle *tv0, AliFemtoV0 *tFemtoV0 );
 
+  void ReadOnlyPrimaries(bool primaries);
+  void ReadOnlyPrimariesV0(bool primaries);
+
  protected:
 
  private:
@@ -61,6 +64,9 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   AliGenEventHeader *fGenHeader; // Link to the generator event header
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   short          fRotateToEventPlane; // Rotate the event so that event plane is at x=0
+
+  bool           fReadOnlyPrimaries; // read only primaries
+  bool           fReadOnlyPrimariesV0; // read only primaries, V0 analysis
 
   Float_t GetSigmaToVertex(double *impact, double *covar);
 

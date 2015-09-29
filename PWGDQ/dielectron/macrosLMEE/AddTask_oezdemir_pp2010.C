@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_oezdemir_pp2010(Bool_t getFromAlien=kFALSE,TString cFileName = "Configpp2010Oezdemir.C"){
+AliAnalysisTask *AddTask_oezdemir_pp2010(Bool_t getFromAlien=kFALSE,TString cFileName = "Configpp2010Oezdemir.C",Char_t* outputFileName="LMEE.root"){
 
 
   //get the current analysis manager
@@ -53,25 +53,25 @@ AliAnalysisTask *AddTask_oezdemir_pp2010(Bool_t getFromAlien=kFALSE,TString cFil
     mgr->CreateContainer("oezdemir_pp2010_tree",
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
-                         "LMEE_output");
+                         outputFileName);
   
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer("oezdemir_pp2010_out",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEE.root");
+                         outputFileName);
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer("oezdemir_pp2010_CF",
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEE.root");
+                         outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer("oezdemir_pp2010_EventStat",
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
-                         "LMEE.root");
+                         outputFileName);
 
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());

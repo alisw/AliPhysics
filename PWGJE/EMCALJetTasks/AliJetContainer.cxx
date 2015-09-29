@@ -656,12 +656,12 @@ void AliJetContainer::SetClassName(const char *clname)
 }
 
 //________________________________________________________________________
-Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1) const
+Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliParticleContainer *cont2) const
 {
   //
   // Get fraction of shared pT between matched jets
   // Uses ClosestJet() jet pT as baseline: fraction = \Sum_{const,jet1} pT,const,i / pT,jet,closest
-  // Only works if tracks array of both jets is the same
+  // Only works if tracks array of both jets is the same -> modifying this. if no container is given than is like this, otherwise the geomerical matching is applied
   //
 
   AliEmcalJet *jet2 = jet1->ClosestJet();
@@ -669,27 +669,63 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1) const
 
   Double_t fraction = 0.;
   Double_t jetPt2 = jet2->Pt();
- 
+  Int_t bgeom = kTRUE;
+  if(!cont2) bgeom = kFALSE;
+  //Printf("ptJetMatched %f", jetPt2);
   if(jetPt2>0) {
     Double_t sumPt = 0.;
     AliVParticle *vpf = 0x0;
     Int_t iFound = 0;
     for(Int_t icc=0; icc<jet2->GetNumberOfTracks(); icc++) {
       Int_t idx = (Int_t)jet2->TrackAt(icc);
+      //get particle
+      AliVParticle *p2 = 0x0;
+      if(bgeom) p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, cont2->GetArray()));
+      else p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, fParticleContainer->GetArray()));
       iFound = 0;
+      //Printf("Track j2 number %d", icc);
       for(Int_t icf=0; icf<jet1->GetNumberOfTracks(); icf++) {
-	if(idx == jet1->TrackAt(icf) && iFound==0 ) {
-	  iFound=1;
-	  vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
-	  if(vpf) sumPt += vpf->Pt();
-	  continue;
-	}
+      	 if(!bgeom && idx == jet1->TrackAt(icf) && iFound==0 ) {
+      	    //Printf("Mode ID, id = %d", idx);
+      	    iFound=1;
+      	    vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
+      	    if(vpf) sumPt += vpf->Pt();
+      	    continue;
+      	 }
+      	 if(bgeom){
+      	    //Printf("Track j1 number %d", icf);
+      	    vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
+      	    if(!vpf) continue;
+      	    if(!SamePart(vpf, p2, 1.e-4)) continue; //not the same particle
+      	    //else Printf("Same track!!!");
+      	    sumPt += vpf->Pt();
+      	 }
+      	 //Printf("Sum %d+%d tracks = %f", icc, icf, sumPt);
       }
     }
     fraction = sumPt/jetPt2;
   } else 
     fraction = -1;
-  
+  //Printf("Fraction = %f", fraction);
   return fraction;
+}
+
+//__________________________________________________________________________________________________
+Bool_t AliJetContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Int_t dist) const
+{
+  // Helper function to calculate the distance between two jets or a jet and a particle
+  if(!part1) return kFALSE;
+  if(!part2) return kFALSE;
+  Double_t dPhi = TMath::Abs(part1->Phi() - part2->Phi());
+  Double_t dEta = TMath::Abs(part1->Eta() - part2->Eta());
+  Double_t dpT  = TMath::Abs(part1->Pt() - part2->Pt());
+  dPhi = TVector2::Phi_mpi_pi(dPhi);
+  //Printf("phi: %f - %f = %f", part1->Phi(), part2->Phi(), dPhi);
+  //Printf("eta: %f - %f = %f", part1->Eta(), part2->Eta(), dEta);
+  //Printf("pT: %f - %f = %f", part1->Pt(), part2->Pt(), dpT);
+  if (dPhi > dist) return kFALSE;
+  if (dEta > dist) return kFALSE;
+  if (dpT  > dist) return kFALSE;
+  return kTRUE;
 }
 

@@ -29,6 +29,8 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
 
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag) {fReadMC=flag;}
+  void           SetFillTree(Bool_t flag) {fFillTree=flag;}
+  
   AliCounterCollection* GetCounter(){return fCounterPerRun;}
 
   void SetCutOnContribToSPDPileupVert(Int_t cutc) {fSPDContributorsCut=cutc;}
@@ -42,7 +44,9 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   void SetTriggerMask(Int_t mask) {fTriggerMask = mask;}
 
  protected:
-  Bool_t fReadMC;            // flag to read Monte Carlo information
+  Bool_t fReadMC;           // flag to read Monte Carlo information
+  Bool_t fFillTree;      // flag to switch off ntuple
+
   TList* fOutputPrimV;        //! 1st list of output histos
   TList* fOutputSPDPil;      //! 2nd list of output histos
   TList* fOutputMVPil;       //! 3rd list of output histos
@@ -53,6 +57,9 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   TH1F* fHistoXVertTRK;      // histogram
   TH1F* fHistoYVertTRK;      // histogram
   TH1F* fHistoZVertTRK;      // histogram
+  // Global histos
+  TH2F* fHistoTPCTracksVsTracklets; // histogram
+  TH2F* fHistoGloTracksVsTracklets; // histogram
   // SPD Vertex Pileup histos
   TH1F* fHistoNOfPileupVertSPD; // histogram
   TH1F* fHistoNtracklPilSPD;    // histogram
@@ -86,6 +93,12 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
 
   AliCounterCollection* fCounterPerRun; // counters
 
+  TTree* fTrackTree;    // track counters
+  UInt_t fTimeStamp;    // tree variables
+  UInt_t fNTracksTPC;    // tree variables
+  UInt_t fNTracksTPCITS; // tree variables
+  UInt_t fNTracklets;    // tree variables
+
   Int_t fSPDContributorsCut;  // cut on cotrtributors to SPD pileup vertex
   Double_t fSPDZDiffCut;      // cut on z diff of SPD pileup vertex
 
@@ -96,13 +109,13 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   Double_t fZDiamondCut; // cut on z of diamond
 
   Int_t  fTriggerMask;    //flag to select trigger type
-	
+
  private:    
 
   AliAnalysisTaskCheckPileup(const AliAnalysisTaskCheckPileup&); // not implemented
   AliAnalysisTaskCheckPileup& operator=(const AliAnalysisTaskCheckPileup&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPileup,1); // primary vertex analysis
+  ClassDef(AliAnalysisTaskCheckPileup,3); // primary vertex analysis
 };
 
 #endif

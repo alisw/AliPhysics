@@ -17,7 +17,9 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH1D.h>
 #include <TH2D.h>
+#include <TH2F.h>
 #include <TList.h>
 #include <TCanvas.h>
 #include <TGeoManager.h>
@@ -173,10 +175,10 @@ void AliAnalysisTaskEMCALTimeCalib::LoadReferenceHistos()
 	// connect ref run here
 	for(Int_t i = 0; i < kNBCmask; i++)
 	  {
-	    fhAllAverageBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvBC%d",i));
+	    fhAllAverageBC[i]=(TH1F*) myFile->Get(Form("hAllTimeAvBC%d",i));
 	    if(fhAllAverageBC[i]==0x0) AliFatal(Form("Reference histogram for BC%d does not exist",i));
 	    if(fhAllAverageBC[i]->GetEntries()==0)AliWarning(Form("fhAllAverageLGBC[%d]->GetEntries() = 0",i));
-	    fhAllAverageLGBC[i]=(TH1D*) myFile->Get(Form("hAllTimeAvLGBC%d",i));
+	    fhAllAverageLGBC[i]=(TH1F*) myFile->Get(Form("hAllTimeAvLGBC%d",i));
 	    if(fhAllAverageLGBC[i]==0x0) AliFatal(Form("Reference LG histogram for BC%d does not exist",i));
 	    if(fhAllAverageLGBC[i]->GetEntries()==0)AliFatal(Form("fhAllAverageLGBC[%d]->GetEntries() = 0",i));
 	  }

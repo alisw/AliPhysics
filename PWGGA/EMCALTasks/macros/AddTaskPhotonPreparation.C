@@ -10,20 +10,33 @@
 ///////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskSE* AddTaskPhotonPreparation(
-  const char*    periodstr          = "LHC11c",
-  const char*    pTracksName        = "PicoTracks",
-  const char*    usedMCParticles    = "MCParticlesSelected",
-  const char*    usedClusters       = "CaloClusters",
-  const UInt_t   pSel               = AliVEvent::kEMC7,
-  const Bool_t   doHistos           = kTRUE,
-  const Bool_t   makePicoTracks     = kTRUE,
-  const Bool_t   makeTrigger        = kTRUE,
-  const Bool_t   isEmcalTrain       = kFALSE,
-  const Double_t trackeff           = 1.0,
-  const Bool_t   doAODTrackProp     = kTRUE,
-  const Bool_t   modifyMatchObjs    = kFALSE,
-  const Bool_t   isMC               = kFALSE,
-  const Int_t	 iOutput	    = 0
+  const char*    periodstr                 = "LHC11c",
+  const char*    pTracksName               = "PicoTracks",
+  const char*    usedMCParticles           = "MCParticlesSelected",
+  const char*    usedClusters              = "CaloClusters",
+  const UInt_t   pSel                      =  AliVEvent::kEMC7,
+  const Bool_t   doHistos                  = kTRUE,
+  const Bool_t   makePicoTracks            = kTRUE,
+  const Bool_t   makeTrigger               = kTRUE,
+  const Bool_t   isEmcalTrain              = kFALSE,
+  const Double_t trackeff                  = 1.0,
+  const Bool_t   doAODTrackProp            = kTRUE,
+  const Bool_t   modifyMatchObjs           = kFALSE,
+  const Bool_t   isMC                      = kFALSE,
+  const Int_t	 iOutput	               = 0,
+  const Bool_t   bMCNormalization          = kFALSE,
+  const Bool_t   bNLMCut                   = kFALSE,
+  const Int_t    NLMCut                    = 0,
+  const Double_t minPtCutCluster           = 0.3,
+  const Double_t EtIso                     = 2.,
+  const Int_t    iIsoMethod                = 1,
+  const Int_t    iEtIsoMethod              = 0,
+  const Int_t    iUEMethod                 = 1,
+  const Bool_t   bUseofTPC                 = kFALSE,
+  const Double_t TMdeta                    = 0.02,
+  const Double_t TMdphi                    = 0.03,
+  const Bool_t   bTMClusterRejection       = kTRUE,
+  const Bool_t   bTMClusterRejectionInCone = kTRUE
 )
 {
 
@@ -103,7 +116,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
   //----------------------- Track Matching tasks ----------------------------------------------------
 
 
-  // Set trackcuts according to period. 
+  // Set trackcuts according to period.
   TString period(periodstr);
 
   // Here are defined all the name of branches used in analysis
@@ -132,7 +145,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
      esdfilter->SetTrackCuts(cutsp);
      esdfilter->SetHybridTrackCuts(0);
      //    cout << "on passe bien dans le cut normalement"<<endl;
- 
+
   esdfilter->SetTracksName(inputTracks.Data());
 
     esdfilter->SetDoPropagation(kTRUE);
@@ -189,7 +202,7 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
    else if (runPeriod.Contains("lhc12a15a") || runPeriod == "lhc12a15f" || runPeriod == "lhc12a15g") {
      aodfilter->SetAODfilterBits(256,16); // hybrid tracks
      includeNoITS = kTRUE;
-   } 
+   }
   else if (runPeriod.Contains("lhc11c") || runPeriod.Contains("lhc11d")){
    aodfilter->SetFilterBits(256,512);
    includeNoITS=kFALSE;
@@ -227,15 +240,15 @@ AliAnalysisTaskSE* AddTaskPhotonPreparation(
       // Final settings, pass to manager and set the containers
       //-------------------------------------------------------
     mgr->AddTask(aodfilter);
-    
+
       // Create containers for input/output
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
     mgr->ConnectInput(aodfilter, 0,  cinput1 );
-    
+
    }
 
   //----------------------- Produce EmcalParticles -----------------------------------------------------
-  // Produce objects (AliEmcalParticle) for tracks and clusters 
+  // Produce objects (AliEmcalParticle) for tracks and clusters
   // used for cluster-track matching
   TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
   // TString emctracksAna = Form("EmcalTracks_%s",inputTracksAna.Data());
@@ -260,7 +273,7 @@ gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C
 Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s emctracks Ana: %s",inputTracks.Data(),emctracks.Data(),emcclusters.Data());
 
 
-  
+
 // ------------------------------- end of trackk matching tasks ------------------------------
 
   TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
@@ -284,7 +297,7 @@ Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s emctracks Ana: %s",inp
 
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/EMCALTasks/macros/AddTaskEMCALPhotonIsolation.C");
 
-    AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation(periodstr,emctracks,emcclusters,pSel,dType,kTRUE, iOutput,isMC);
+    AliAnalysisTaskEMCALPhotonIsolation *task =AddTaskEMCALPhotonIsolation(periodstr,emctracks,emcclusters,pSel,dType,kTRUE, iOutput,isMC,bMCNormalization,bNLMCut,NLMCut,minPtCutCluster,EtIso,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC);
       task->SelectCollisionCandidates(pSel);
    if(isEmcalTrain)
     RequestMemory(task,500*1024);

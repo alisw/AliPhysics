@@ -15,7 +15,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
   AliJetModelBaseTask("AliJetEmbeddingTask"),
   fMassless(kFALSE),
   fNeutralFraction(0),
-  fNeutralMass(0.135)
+  fNeutralMass(0.135),
+  fMass(0.1396)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -26,7 +27,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) :
   AliJetModelBaseTask(name),
   fMassless(kFALSE),
   fNeutralFraction(0),
-  fNeutralMass(0.135)
+  fNeutralMass(0.135),
+  fMass(0.1396)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -55,7 +57,7 @@ void AliJetEmbeddingTask::Run()
     if (fCopyArray) 
       CopyTracks();
     for (Int_t i = 0; i < fNTracks; ++i) {
-      Double_t mass = 0.1396;
+      Double_t mass = fMass;
       Short_t charge = 1;
       if(fNeutralFraction>0.) {
 	Double_t rnd = gRandom->Rndm();

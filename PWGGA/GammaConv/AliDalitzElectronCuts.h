@@ -7,8 +7,6 @@
 
 
 #include "AliAODpidUtil.h"
-//#include "AliConversionPhotonBase.h"
-//#include "AliAODConversionMother.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
@@ -40,7 +38,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
 
   enum cutIds {
-	kgoodId=0, 
+	kMaxChi2TPCConstrainedGlobal,
         kededxSigmaITSCut,
         kededxSigmaTPCCut,
         kpidedxSigmaTPCCut,
@@ -53,8 +51,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 	ketaCut,
         kPsiPair,
         kRejectSharedElecGamma,
-        kBackgroundScheme,
-        kNumberOfRotations,
+        kMaxChi2PerClusterTPC,
+	kMaxChi2PerClusterITS,
         kptCut,
         kDCACut,
         kmassCut,
@@ -123,7 +121,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   // Event Cuts
 
   //Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg );
-
+  Bool_t SetMaxChi2TPCConstrainedGlobal(Int_t maxChi2);
   Bool_t SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut);
   Bool_t SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut);
   Bool_t SetITSdEdxCutElectronLine(Int_t ededxSigmaCut);
@@ -140,8 +138,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetTOFElectronPIDCut(Int_t TOFelectronPID);
   Bool_t SetPsiPairCut(Int_t psiCut);
   Bool_t SetRejectSharedElecGamma(Int_t RCut);
-  Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
-  Bool_t SetNumberOfRotations(Int_t NumberOfRotations);
+  Bool_t SetMaxChi2PerClusterTPC(Int_t maxChi2);
+  Bool_t SetMaxChi2PerClusterITS(Int_t maxChi2);
   Bool_t SetMassCut(Int_t massCut);
   Bool_t SetDoWeights(Int_t opc);
   Bool_t SetUseVPhotonMCPmearing(Int_t useMCPSmearing);
@@ -153,9 +151,6 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t DoRejectSharedElecGamma(){ return fDoRejectSharedElecGamma;}
   Double_t DoPsiPairCut(){return fDoPsiPairCut;}
   Double_t GetNFindableClustersTPC(AliESDtrack* lTrack);
-  Bool_t   UseTrackMultiplicity(){ return fUseTrackMultiplicityForBG;}
-  Int_t    GetBKGMethod(){ return fBKGMethod; }
-  Int_t    NumberOfRotationEvents(){return fnumberOfRotationEventsForBG;}
   Bool_t   DoMassCut(){return  fDoMassCut;}
   Bool_t   DoMassMinCut(){return fDoMassMinCut;}
   Double_t GetMassCutLowPt(){return fMassCutLowPt;}
@@ -213,9 +208,6 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   fUseCrossedRows;  //UseCrossedRows 2011
   Bool_t   fUseTOFpid; // flag to use tof pid
   Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
-  Bool_t   fUseTrackMultiplicityForBG; // use multiplicity
-  Int_t    fBKGMethod;
-  Int_t    fnumberOfRotationEventsForBG;
   Bool_t   fDoMassCut;
   Bool_t   fDoMassMinCut;
   Double_t fMassCutLowPt;

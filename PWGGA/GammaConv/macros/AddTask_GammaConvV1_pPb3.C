@@ -1,13 +1,17 @@
 void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change different set of cuts
-									Bool_t 		isMC   						= kFALSE, 							// run MC
-									Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
-									Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
-									TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
-									Int_t 		doWeightingPart 			= 0,  								// enable Weighting
-									TString 	generatorName 				= "DPMJET",							// generator Name	
-									TString 	cutnumberAODBranch 			= "800000016008400000001500000", 	// cutnumber for AOD branch
-									Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
-									Bool_t		enablePlotVsCentrality		= kFALSE
+					Int_t 		isMC   						= 0,								// run MC
+					Int_t 		enableQAMesonTask 			= 0, 								// enable QA in AliAnalysisTaskGammaConvV1
+					Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
+					TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+					Int_t 		doWeightingPart 			= 0,  								// enable Weighting
+					TString 	generatorName 				= "DPMJET",							// generator Name	
+					TString 	cutnumberAODBranch 			= "800000016008400000001500000", 	// cutnumber for AOD branch
+					Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+					Bool_t		enablePlotVsCentrality		= kFALSE,
+					Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+					Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+					Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
+					TString		periodNameV0Reader			= ""
                            ) {
 
 	Int_t isHeavyIon = 2;
@@ -43,10 +47,12 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
+	Bool_t isMCForOtherSettings = 0;
+	if (isMC > 0) isMCForOtherSettings = 1;
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC);
+		AddTaskPIDResponse(isMCForOtherSettings);
 	}
 
 	//=========  Set Cutnumber for V0Reader ================================
@@ -58,7 +64,7 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -187,7 +193,9 @@ void AddTask_GammaConvV1_pPb3(  	Int_t 		trainConfig 				= 1, 	 							// change
 			}
 			
 		}   
-	
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);

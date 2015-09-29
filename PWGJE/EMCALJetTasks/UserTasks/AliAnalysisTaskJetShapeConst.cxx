@@ -50,6 +50,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fResponseReference(kDet),
   fUseSumw2(0),
   fOverlap(0),
+  fRadius(0.4),
   fTreeJetBkg(),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -79,7 +80,9 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst() :
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
   fhpTTracksCont(0x0),
-  fhJet1vsJetTag(0x0)
+  fhJet1vsJetTag(0x0),
+  fhNconstit(0x0),
+  fhAreaJet(0x0)
 {
   // Default constructor.
 
@@ -123,6 +126,7 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fResponseReference(kDet),
   fUseSumw2(0),
   fOverlap(0),
+  fRadius(0.4),
   fTreeJetBkg(0),
   fJet1Vec(new TLorentzVector()),
   fJet2Vec(new TLorentzVector()),
@@ -152,7 +156,9 @@ AliAnalysisTaskJetShapeConst::AliAnalysisTaskJetShapeConst(const char *name) :
   fhpTTracksJet1(0x0),
   fhpTTracksJetO(0x0),
   fhpTTracksCont(0x0),
-  fhJet1vsJetTag(0x0)
+  fhJet1vsJetTag(0x0),
+  fhNconstit(0x0),
+  fhAreaJet(0x0)
 {
   // Standard constructor.
 
@@ -344,6 +350,12 @@ void AliAnalysisTaskJetShapeConst::UserCreateOutputObjects()
   fhJet1vsJetTag = new TH2F("fhJet1vsJetTag", "Number of jets vs tagged jets; #it{N}_{jet,Tot}; #it{N}_{jet,Tag}", 30, 1., 30., 30, 1., 30.);
   fOutput->Add(fhJet1vsJetTag);
   
+  fhNconstit = new TH1F("fhNconstit", "Number of constituents (matched jets); #it{N}_{constituents}", 21, 0., 20.);
+  fOutput->Add(fhNconstit);
+  
+  fhAreaJet = new TH1F("fhAreaJet", "Area (matched jets); Area", 400., 0., 4);
+  fOutput->Add(fhAreaJet);
+  
   if(fUseSumw2) {
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -446,7 +458,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
      ntagjet2++;
      //print constituents of different jet containers
      //jet1
-     
+          
      for(Int_t i=0; i<jet1->GetNumberOfTracks(); i++) {
      	AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
      	//    if (vp->TestBits(TObject::kBitMask) != (Int_t)(TObject::kBitMask) ) continue;
@@ -490,12 +502,14 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       Double_t fraction = 0.;
       fMatch = 0;
       fJet2Vec->SetPtEtaPhiM(0.,0.,0.,0.);
+      //Printf("EMB task: pT jet %d = %f", njet1, jet1->Pt());
       if(fSingleTrackEmb) {
       	 vpe = GetEmbeddedConstituent(jet1);
       	 if(vpe){
       	    Bool_t reject = kFALSE;
       	    ptjetSMinusEmbTrpt -= vpe->Pt();
       	    fhptjetSMinusSingleTrack->Fill(ptjetSMinusEmbTrpt);
+      	    //Printf("EMB task: pT jet matched = %f -> %f", jet1->Pt(), ptjetSMinusEmbTrpt);
       	    if(fOverlap){
       	       Int_t Njets = jetContO->GetNAcceptedJets();
       	       fhNJetsSelEv->Fill(Njets);
@@ -594,8 +608,8 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	 Double_t varsp2[8] = {var-var2, ptjetS-ptJetR, var, mUnsubjet1, ptjetS, ptUnsubjet1, fRho, fRhoM};
       	 fhnDeltaMassAndBkgInfo->Fill(varsp2);
       	 
-      	 
-
+      	 fhNconstit->Fill(jet1->GetNumberOfConstituents());
+      	 fhAreaJet ->Fill(jet1->Area());
       }
       
       if(fCreateTree) {      

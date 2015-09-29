@@ -229,11 +229,11 @@ void AliAnalysisTaskDiJetCorr1plus1Bkg::UserCreateOutputObjects()
         nBinsCentorMult = 12; fMinCentorMult = 0.0, fMaxCentorMult = 100.0;}
     
     if(!fSetSystemValue){
-         nBinsCentorMult = 3;  fMinCentorMult = 0.0;  fMaxCentorMult = 250.0;}
+         nBinsCentorMult = 2;  fMinCentorMult = 0.0;  fMaxCentorMult = 250.0;}
     
 
     const Int_t pTbinTrigger1plus1 = Int_t(fTriggerpTHighThr - fTriggerpTLowThr);
-    Int_t   fBinsTrg1plus1[3]   = {nBinsCentorMult,       5,   pTbinTrigger1plus1};
+    Int_t   fBinsTrg1plus1[3]   = {nBinsCentorMult,       10,   pTbinTrigger1plus1};
     Double_t fMinTrg1plus1[3]   = {fMinCentorMult,   -10.0,   fTriggerpTLowThr};
     Double_t fMaxTrg1plus1[3]   = {fMaxCentorMult,  10.0,   fTriggerpTHighThr};
     
@@ -242,9 +242,9 @@ void AliAnalysisTaskDiJetCorr1plus1Bkg::UserCreateOutputObjects()
    
     
     
-    Int_t   fBins121plus1[6] = {nBinsCentorMult,     5,   18,                36,  pTbinTrigger1plus1,  8};
+    Int_t   fBins121plus1[6] = {nBinsCentorMult,     10,   18,                36,  pTbinTrigger1plus1,  10};
     Double_t  fMin121plus1[6] = {fMinCentorMult,   -10., -1.8, -0.5*TMath::Pi(), fTriggerpTLowThr,  0.5};
-    Double_t  fMax121plus1[6] = {fMaxCentorMult,  10.,  1.8,  1.5*TMath::Pi(), fTriggerpTHighThr, 6};
+    Double_t  fMax121plus1[6] = {fMaxCentorMult,  10.,  1.8,  1.5*TMath::Pi(), fTriggerpTHighThr, 10};
     
     fTHnCentZvtxDEtaDPhi1SE = new THnSparseD("fTHnCentZvtxDEtaDPhi1SE","Cent-zVtx-DEta1-DPhi1-pTT-pTA",6, fBins121plus1, fMin121plus1, fMax121plus1);
     
@@ -296,8 +296,8 @@ void AliAnalysisTaskDiJetCorr1plus1Bkg::UserCreateOutputObjects()
         
         if(useVarBins){
             
-            const Int_t nvarBinsCent = 3;
-            Double_t varBinsCent[nvarBinsCent+1] = {0., 20., 50., 250.};
+            const Int_t nvarBinsCent = 2;
+            Double_t varBinsCent[nvarBinsCent+1] = {0., 35., 250.};
             
             fTHnCentZvtxDEtaDPhi1SE->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
             fTHnTrigCentZvtxpTtrig1SE->GetAxis(0)->Set(nvarBinsCent, varBinsCent);
@@ -419,10 +419,11 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
   Float_t zVertex = vertex->GetZ();
   const AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
   if(vtxSPD->GetNContributors()<=0) return;
+  TString vtxTyp = vtxSPD->GetTitle();
   Double_t cov[6] = {0};
   vtxSPD->GetCovarianceMatrix(cov);
   Double_t zRes = TMath::Sqrt(cov[5]);
-  if(vtxSPD->IsFromVertexerZ() && (zRes > 0.25)) return;
+  if(vtxTyp.Contains("vertexer:Z") && (zRes > 0.25)) return;
   if(TMath::Abs(vtxSPD->GetZ() - vertex->GetZ()) > 0.5) return;
   if (TMath::Abs(zVertex) > 10) return;
   //cout << "zvertex"<< zVertex << endl;
@@ -500,7 +501,7 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
             AliAODTrack* fAodTracksAS = (AliAODTrack*) obj2;
     
         
-            if (fAodTracksAS->Pt() > fAodTracksT->Pt()) continue;
+            if (fAodTracksAS->Pt() >= fAodTracksT->Pt()) continue;
 	  
 	//conversions
 	     if (fCutConversions && (fAodTracksAS->Charge() * fAodTracksT->Charge()) < 0)
@@ -611,10 +612,10 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
            
       Double_t deltaPhi1 = fAodTracksT->Phi() - fAodTracksAS->Phi();
       if (deltaPhi1 > 1.5 * TMath::Pi()) 
-	deltaPhi1 -= TMath::TwoPi();
+	  deltaPhi1 -= TMath::TwoPi();
       
       if (deltaPhi1 < -0.5 * TMath::Pi())
-	deltaPhi1 += TMath::TwoPi();
+	  deltaPhi1 += TMath::TwoPi();
             
 
       //fHistDphi1->Fill(deltaPhi1);
@@ -624,7 +625,7 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
      Double_t ptTrack1 = fAodTracksAS->Pt();
             
             
-     Double_t effvalueAS = GetTrackWeight( fAodTracksAS->Eta(), ptTrack1, fCentrOrMult, zVertex);
+     Double_t effvalueAS = GetTrackWeight(fAodTracksAS->Eta(), ptTrack1, fCentrOrMult, zVertex);
     
      Double_t effvalue = effvalueT1*effvalueAS;
             
@@ -638,6 +639,7 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
       // cout<<"Efficiency value = "<<effvalue<<endl;
             
            // cout<<"deltaeta SE:"<<" "<<deltaEta1<<" "<<"deltaphi3 SE:"<<" "<<deltaPhi1<<endl;
+   // cout<<"   centrality:"<<fCentrOrMult<<"   zvertex:"<<zVertex<<" "<<"  deltaEta1:"<<deltaEta1<<"  deltaPhi1"<<deltaPhi1<<"  trig pT S:"<<fAodTracksT->Pt()<<"  ass pT S:"<<ptTrack1<<"  effvalue:"<<effvalue<<endl;
       
      fTHnCentZvtxDEtaDPhi1SE->Fill(fCentzVtxDEtaDPhiSE1, effvalue);
         }
@@ -705,7 +707,9 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
                   
                   if(!fAodTracksASM) continue;
                   
-                  if (fAodTracksASM->Pt() > fAodTracksT3->Pt()) continue;
+                  if (fAodTracksASM->Pt() >= fAodTracksT3->Pt()) continue;
+                  
+                  
                       //conversions
                       if (fCutConversions && (fAodTracksASM->Charge() * fAodTracksT3->Charge()) < 0)
                       {
@@ -813,6 +817,8 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
                           
                       }
                       
+                   
+                   
                       Double_t deltaPhi3 = fAodTracksT3->Phi() - fAodTracksASM->Phi();
                       if (deltaPhi3 > 1.5 * TMath::Pi())
                           deltaPhi3 -= TMath::TwoPi();
@@ -837,7 +843,8 @@ void  AliAnalysisTaskDiJetCorr1plus1Bkg::UserExec(Option_t *)
                   fEffCheck->Fill(effvalue);
                   
                       Double_t fCentzVtxDEtaDPhiME1[6] = {fCentrOrMult, zVertex, deltaEta3, deltaPhi3, fAodTracksT3->Pt(), ptTrack1ME};
-                      
+                  
+                 // cout<<"  centrality:"<<fCentrOrMult<<"  zvertex:"<<zVertex<<"  deltaEta3:"<<deltaEta3<<"  deltaPhi3"<<deltaPhi3<<"  trig pT S:"<<fAodTracksT3->Pt()<<"  ass pT S:"<<ptTrack1ME<<"  effvalue:"<<effvalue<<endl;
                       //Double_t effvalue = 1.0;//GetTrackbyTrackEffValue(fAodTracksASM, fCentrOrMult);
                       fTHnCentZvtxDEtaDPhi1ME->Fill(fCentzVtxDEtaDPhiME1, effvalue);
                       

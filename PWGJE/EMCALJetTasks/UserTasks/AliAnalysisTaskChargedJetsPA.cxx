@@ -52,6 +52,8 @@ using std::min;
 using std::cout;
 using std::endl;
 
+const double AliAnalysisTaskChargedJetsPA::kMaxChi2 = 200;
+
 //TODO: FillHistogram can be done better with virtual TH1(?)
 ClassImp(AliAnalysisTaskChargedJetsPA)
 

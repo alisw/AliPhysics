@@ -28,6 +28,7 @@ class AliRDHFCuts;
 class AliAODEvent;
 class AliAODRecoDecay;
 class AliAODRecoDecayHF2Prong;
+class AliAODRecoCascadeHF;
 class AliVParticle;
 class AliAODMCParticle;
 
@@ -38,11 +39,12 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
  public:
 
   enum ECandidateType  { kD0toKpi, kDstartoKpipi };
-  enum EMatchingType   { kGeometricalMatching, kConstituentMatching, kJetLoop };
+  enum EMatchingType   { kGeometricalMatching, kDaughterConstituentMatching, kCandidateConstituentMatching, kJetLoop };
   enum EMatchingStatus { kSingleMatch = 0, kMultipleMatches = 1, kJetNotAccepted = 2, kNotMatched = 3 };
+  enum EBackgroundMode { kBackgroundAndSignal, kSignalOnly, kBackgroundOnly};
    
   AliAnalysisTaskDmesonJetCorrelations();
-  AliAnalysisTaskDmesonJetCorrelations(const char* name, AliRDHFCuts* cuts, ECandidateType cand);
+  AliAnalysisTaskDmesonJetCorrelations(const char* name, AliRDHFCuts* cuts, ECandidateType cand, Bool_t useExchCont=kFALSE);
   virtual ~AliAnalysisTaskDmesonJetCorrelations();
 
   void SetShowPositionD(Bool_t b = kTRUE)       { fShowPositionD       = b   ; }
@@ -68,6 +70,7 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   void SetCheckTrackColl(Bool_t b)              { fCheckTrackColl      = b   ; }
   void SetNBinsMass(Int_t n)                    { fNBinsMass           = n   ; }
   void SetParticleLevel(Bool_t s)               { fParticleLevel       = s   ; }
+  void SetBackgroundMode(EBackgroundMode m)     { fBackgroundMode      = m   ; }
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
 
@@ -89,11 +92,14 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Int_t                FindMatchedJet(EMatchingType matchType, AliVParticle* cand, TArrayD& matchingLevel, TList& matchedJets);
   Double_t             CalculateMatchingLevel(EMatchingType matchType, AliVParticle* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
   Double_t             CalculateGeometricalMatchingLevel(AliVParticle* cand, AliEmcalJet* jet);
-  Double_t             CalculateConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
+  Double_t             CalculateDaughterConstituentMatchingLevel(AliAODRecoDecay* cand, AliEmcalJet* jet, Bool_t reset=kFALSE);
+  Double_t             CalculateCandidateConstituentMatchingLevel(AliVParticle* cand, AliEmcalJet* jet);
 
-  void                 ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
-  void                 ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
-  void                 ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong);
+  Bool_t                 ExtractHFcandAttributes(AliVParticle* HFcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
+  Bool_t                 ExtractParticleLevelHFAttributes(AliAODMCParticle* part, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
+  Bool_t                 ExtractRecoDecayAttributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
+  Bool_t ExtractD0Attributes(AliAODRecoDecayHF2Prong* Dcand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
+  Bool_t ExtractDstarAttributes(AliAODRecoCascadeHF* DstarCand, TLorentzVector& Dvector, Double_t& invMassD, Double_t& softPionPtD, Double_t& invMass2prong, UInt_t i);
 
   void                 DoJetLoop();
   void                 DoDmesonLoop();
@@ -128,6 +134,9 @@ class AliAnalysisTaskDmesonJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t           fOnlySingleMatches     ; //  Only unambiguosly matched jets are plotted
   Bool_t           fCheckTrackColl        ; //  if true, makes histograms with tracks found in D meson candidates, that are NOT found in the track collection used for jet finding
   Bool_t           fParticleLevel         ; //  set particle level analysis
+  Bool_t           fUseExchangeContainer  ; //  use exchange container for the D candidate list
+  Bool_t           fAliEmcalParticleMode  ; //  use AliEmcalParticle objects in fCandidateArray
+  EBackgroundMode  fBackgroundMode        ; //  background mode: backgound-and-signal (data and MC), background-only (MC), signal-only (MC)
 
   AliAODEvent     *fAodEvent                  ; //! AOD event
   TClonesArray    *fCandidateArray            ; //! D meson candidate array

@@ -180,7 +180,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fNsigmaCut2(9),
   fPurityFunctionsFile(0),
   fPurityFunctionsList(0),
+  fCutITSclusterShared(kFALSE),
   fMaxITSclusterShared(0),
+  fCutITSChi2(kFALSE),
   fMaxITSChi2(0),
   fRun(0)
 {
@@ -304,7 +306,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fNsigmaCut2(9),
   fPurityFunctionsFile(0),
   fPurityFunctionsList(0),
+  fCutITSclusterShared(kFALSE),
   fMaxITSclusterShared(0),
+  fCutITSChi2(kFALSE),
   fMaxITSChi2(0),
   fRun(0)
 {
@@ -431,7 +435,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fNsigmaCut2(that.fNsigmaCut2),
   fPurityFunctionsFile(that.fPurityFunctionsFile),
   fPurityFunctionsList(that.fPurityFunctionsList),
+  fCutITSclusterShared(kFALSE),
   fMaxITSclusterShared(0),
+  fCutITSChi2(kFALSE),
   fMaxITSChi2(0),
   fRun(0)
 {
@@ -1280,7 +1286,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
 {
   //check cuts for AOD
   Bool_t pass = passedFid;
-  AliAODPid *pidObj = track->GetDetPid();
+//  AliAODPid *pidObj = track->GetDetPid();
 
   if (fCutNClustersTPC)
   {
@@ -1310,7 +1316,9 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (fCutDCAToVertexZ && TMath::Abs(track->ZAtDCA())>GetMaxDCAToVertexZ()) pass=kFALSE;
 
   Double_t dedx = track->GetTPCsignal();
-  if (dedx < fMinimalTPCdedx) pass=kFALSE;
+  if(fCutMinimalTPCdedx) {
+    if (dedx < fMinimalTPCdedx) pass=kFALSE;
+  }
   Double_t time[9];
   track->GetIntegratedTimes(time);
   if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
@@ -1327,8 +1335,19 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     QAbefore( 5)->Fill(track->Pt(),track->DCA());
     QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
     if (pass) QAafter( 1)->Fill(momTPC,dedx);
-    if (pass) QAafter( 5)->Fill(track->Pt(),track->DCA());
-    if (pass) QAafter( 6)->Fill(track->Pt(),track->ZAtDCA());
+    if (pass && fUseAODFilterBit && (fAODFilterBit == 1 || fAODFilterBit == 32)) {
+        // re-evaluate the dca as it seems to not be natively present
+        AliAODTrack copy(*track);       // stack copy
+        Double_t b[2] = {-99. -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
+        QAafter( 5)->Fill(track->Pt(),b[0]);
+        QAafter( 6)->Fill(track->Pt(),b[1]);
+        }
+    } else {
+      if (pass) QAafter( 5)->Fill(track->Pt(),track->DCA());
+      if (pass) QAafter( 6)->Fill(track->Pt(),track->ZAtDCA());
+    }
     QAbefore( 8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     if (pass) QAafter(  8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     QAbefore( 9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
@@ -1421,12 +1440,15 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     track->GetTPCpid(pidTPC);
     if (pidTPC[AliPID::kElectron]<fParticleProbability) pass=kFALSE;
   }
-    
-  Int_t counterForSharedCluster=MaxSharedITSClusterCuts(fMaxITSclusterShared, track);
-  if(counterForSharedCluster >= fMaxITSclusterShared) pass=kFALSE;
-    
-  Double_t chi2perClusterITS = MaxChi2perITSClusterCuts(fMaxITSChi2, track);
-  if(chi2perClusterITS >= fMaxITSChi2) pass=kFALSE;
+  if(fCutITSclusterShared) {  
+    Int_t counterForSharedCluster=MaxSharedITSClusterCuts(track);
+    if(counterForSharedCluster >= fMaxITSclusterShared) pass=kFALSE;
+  }
+  
+  if(fCutITSChi2) {  
+    Double_t chi2perClusterITS = MaxChi2perITSClusterCuts(track);
+    if(chi2perClusterITS >= fMaxITSChi2) pass=kFALSE;
+  }
     
   if (fQA)
   {
@@ -5171,12 +5193,12 @@ void AliFlowTrackCuts::SetTPCTOFNsigmaPIDPurityFunctions(Float_t PurityLevel)
     }
 }
 //__________________
-Int_t AliFlowTrackCuts::MaxSharedITSClusterCuts(Int_t maxITSclusterShared, AliESDtrack* track){
+Int_t AliFlowTrackCuts::MaxSharedITSClusterCuts(AliESDtrack* track){
     
     Int_t counterForSharedCluster = 0;
     for(int i =0;i<6;i++){
         Bool_t sharedITSCluster = track->HasSharedPointOnITSLayer(i);
-        Bool_t PointOnITSLayer = track->HasPointOnITSLayer(i);
+//        Bool_t PointOnITSLayer = track->HasPointOnITSLayer(i);
         //   cout << "has a point???    " << PointOnITSLayer << "     is it shared or not??? "  << sharedITSCluster << endl;
         if(sharedITSCluster == 1) counterForSharedCluster++;
     }
@@ -5186,9 +5208,10 @@ Int_t AliFlowTrackCuts::MaxSharedITSClusterCuts(Int_t maxITSclusterShared, AliES
 
 }
 //___________________
-Double_t AliFlowTrackCuts::MaxChi2perITSClusterCuts(Double_t maxITSChi2, AliESDtrack* track){
+Double_t AliFlowTrackCuts::MaxChi2perITSClusterCuts(AliESDtrack* track){
     
     // cout << "  Total Shared Cluster ==   "  <<counterForSharedCluster<< endl;
+    if(track->GetNcls(0) == 0) return 999.;
     Double_t chi2perClusterITS = track->GetITSchi2()/track->GetNcls(0);
     //  cout << "  chi2perClusterITS ==   "  <<chi2perClusterITS <<endl;
     

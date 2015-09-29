@@ -797,10 +797,13 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 		if(pdgCodePos==11 && pdgCodeNeg==11 && 
 			(posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) return 15; //direct Electron Combinatorial
 				
-		if(pdgCodePos==211 && pdgCodeNeg==211) return 11; //Pion Combinatorial
-		if((pdgCodePos==211 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==211))	return 12; //Pion, Proton Combinatorics
-		if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) return 13; //Pion, Electron Combinatorics
-		if(pdgCodePos==321 || pdgCodeNeg==321) return 14; //Kaon combinatorics
+		if(pdgCodePos==211 && pdgCodeNeg==211) kind = 11; //Pion Combinatorial
+		if((pdgCodePos==211 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==211))	kind = 12; //Pion, Proton Combinatorics
+		if((pdgCodePos==11 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==11))	kind = 16; //electron, Proton Combinatorics
+		if((pdgCodePos==11 && pdgCodeNeg==321) ||(pdgCodePos==321 && pdgCodeNeg==11))	kind = 17; //electron, kaon
+		if((pdgCodePos==211 && pdgCodeNeg==321) ||(pdgCodePos==321 && pdgCodeNeg==211))	kind = 18; //pion, kaon
+		if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
+		if(pdgCodePos==321 && pdgCodeNeg==321) kind = 14; //Kaon,Kaon combinatorics
 	}else{		
 		TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
 		pdgCodePos=posDaughter->GetPdgCode();
@@ -850,8 +853,11 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 					
 			if(pdgCodePos==211 && pdgCodeNeg==211) kind = 11; //Pion Combinatorial
 			if((pdgCodePos==211 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==211))	kind = 12; //Pion, Proton Combinatorics
+			if((pdgCodePos==11 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==11))	kind = 16; //electron, Proton Combinatorics
+			if((pdgCodePos==11 && pdgCodeNeg==321) ||(pdgCodePos==321 && pdgCodeNeg==11))	kind = 17; //electron, kaon
+			if((pdgCodePos==211 && pdgCodeNeg==321) ||(pdgCodePos==321 && pdgCodeNeg==211))	kind = 18; //pion, kaon
 			if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
-			if(pdgCodePos==321 || pdgCodeNeg==321) kind = 14; //Kaon combinatorics
+			if(pdgCodePos==321 && pdgCodeNeg==321) kind = 14; //Kaon,Kaon combinatorics
 		}else{		
 			AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
 			pdgCodePos=posDaughter->GetPdgCode();

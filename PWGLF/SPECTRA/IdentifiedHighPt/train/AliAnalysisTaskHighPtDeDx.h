@@ -4,7 +4,7 @@
 // ROOT includes
 #include <TList.h>
 #include <TH1.h>
-#include <TTreeStream.h>
+//#include <TTreeStream.h>
 #include <TRandom.h>
 #include <TObject.h>
 
@@ -74,10 +74,10 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void ProduceArrayTrksAOD(AliAODEvent* event, AnalysisMode anamode );
   virtual void ProduceArrayV0AOD(AliAODEvent* event, AnalysisMode anamode );
   Short_t   GetPidCode(Int_t pdgCode) const;
-  Float_t   GetSpherocity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack);
-  Float_t   GetSphericity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack);
-  Float_t   GetSpherocityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut);
-  Float_t   GetSphericityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut);
+  /* Float_t   GetSpherocity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack); */
+  /* Float_t   GetSphericity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack); */
+  /* Float_t   GetSpherocityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut); */
+  /* Float_t   GetSphericityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut); */
 
   void      ProcessMCTruthESD();
   void      ProcessMCTruthAOD(); 

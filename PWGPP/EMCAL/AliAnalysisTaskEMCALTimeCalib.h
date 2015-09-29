@@ -225,8 +225,8 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TH1F		*fhTimeLGSum  [kNBCmask]; //!<!  4
 
   // histos with reference values after the first iteration  
-  TH1D		*fhAllAverageBC   [kNBCmask]; ///< 4 BCmask High gain
-  TH1D		*fhAllAverageLGBC [kNBCmask]; ///< 4 BCmask Low gain
+  TH1F		*fhAllAverageBC   [kNBCmask]; ///> 4 BCmask High gain
+  TH1F		*fhAllAverageLGBC [kNBCmask]; ///> 4 BCmask Low gain
 
   // control histos
   TH2F		*fhTimeDsup  [kNSM];            //!<! 20 SM

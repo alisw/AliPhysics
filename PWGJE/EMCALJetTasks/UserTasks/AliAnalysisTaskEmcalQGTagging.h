@@ -25,7 +25,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
     kData   = 2,  // raw data 
     kDetEmb = 3,  //detector embedded jets
     kDetEmbPart=4,
-    kPythiaDef = 5
+    kPythiaDef = 5,
+    kDetEmbPartPythia=6
   };
   enum JetShapeSub {
     kNoSub = 0, 
@@ -35,6 +36,11 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   enum JetSelectionType {
     kInclusive = 0,
     kRecoil = 1
+  };
+  
+  enum DerivSubtrOrder {
+    kSecondOrder = 0,
+    kFirstOrder = 1
   };
 
   AliAnalysisTaskEmcalQGTagging();
@@ -57,11 +63,13 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
+  void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
   void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
   void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
+  void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -101,6 +109,9 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
+  Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
+  Int_t                               fDerivSubtrOrder;
+
   
   TH2F                                *fh2ResponseUW;
   TH2F                                *fh2ResponseW;
@@ -113,7 +124,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhpTjetpT; //control p[lot fo the recoil analysis
   TH1F                                *fhPt;
   TH1F                                *fhPhi;
-  
+  TH2F                                *fNbOfConstvspT;
 
   TTree           *fTreeObservableTagging;  //Tree with tagging variables subtracted MC or true MC or raw 
 
@@ -121,7 +132,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalQGTagging(const AliAnalysisTaskEmcalQGTagging&);            // not implemented
   AliAnalysisTaskEmcalQGTagging &operator=(const AliAnalysisTaskEmcalQGTagging&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalQGTagging, 4)
+  ClassDef(AliAnalysisTaskEmcalQGTagging, 5)
 };
 #endif
 

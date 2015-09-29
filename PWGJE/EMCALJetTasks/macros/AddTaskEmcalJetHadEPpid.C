@@ -84,6 +84,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetJetsName(nJets);
   correlationtask->SetTracksName(nTracks);
   correlationtask->SetTracksNameME(nTracksME);
+  correlationtask->SetCaloClustersName(nClusters);
   correlationtask->SetRhoName(nRho);
   if(colltype == "A-A") correlationtask->SetLocalRhoName(lrho);
   correlationtask->SetJetPhi(minPhi,maxPhi);

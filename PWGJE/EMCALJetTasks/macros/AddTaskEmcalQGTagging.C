@@ -18,7 +18,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
 						     AliAnalysisTaskEmcalQGTagging::JetShapeType jetShapeType,
 						     AliAnalysisTaskEmcalQGTagging::JetShapeSub jetShapeSub,
 						     AliAnalysisTaskEmcalQGTagging::JetSelectionType jetSelection,
-                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0. ) {
+                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskEmcalQGTagging::DerivSubtrOrder derivSubtrOrder = 0 ) {
  
 
   
@@ -48,6 +48,8 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
   task->SetJetShapeType(jetShapeType);
   task->SetJetShapeSub(jetShapeSub);
   task->SetJetSelection(jetSelection);
+  task->SetDerivativeSubtractionOrder(derivSubtrOrder);
+  
   if (jetSelection == AliAnalysisTaskEmcalQGTagging::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   TString thename(njetsBase);
@@ -128,7 +130,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
       jetContTrue->ConnectParticleContainer(trackContTrue);
       jetContTrue->SetPercAreaCut(0.6); 
       jetContTrue->SetPythiaInfoName("PythiaInfo");
-    }
+          }
     
     if(jetShapeSub==AliAnalysisTaskEmcalQGTagging::kConstSub){
       jetContUS=task->AddJetContainer(njetsUS,strType,R);
@@ -141,7 +143,7 @@ AliAnalysisTaskEmcalQGTagging* AddTaskEmcalQGTagging(const char * njetsBase,
     }
   }
 
-    if (jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmbPart){
+  if ((jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmbPart)||(jetShapeType==AliAnalysisTaskEmcalQGTagging::kDetEmbPartPythia)){
     jetContBase = task->AddJetContainer(njetsBase,strType,R);
     if(jetContBase) {
       jetContBase->SetRhoName(nrhoBase);

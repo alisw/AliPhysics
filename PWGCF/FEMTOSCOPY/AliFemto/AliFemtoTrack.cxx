@@ -62,6 +62,7 @@ AliFemtoTrack::AliFemtoTrack():
   fShared(159),
   fNominalTpcEntrancePoint(0,0,0),
   fNominalTpcExitPoint(0,0,0),
+  fNominalTpcPointShifted(0,0,0),
   fXatDCA(0.0),
   fYatDCA(0.0),
   fZatDCA(0.0),
@@ -70,7 +71,11 @@ AliFemtoTrack::AliFemtoTrack():
   fEmissionPoint(NULL),   // Emission point coordinates
   fPDGPid(0),             // True PID of the particle
   fMass(0.0),               // True particle mass
-  fGlobalEmissionPoint(NULL)
+  fGlobalEmissionPoint(NULL),
+  fCorrPi(0.0),
+  fCorrK(0.0),
+  fCorrP(0.0),
+  fCorrAll(0.0)
 {
   // Default constructor
   fHiddenInfo = NULL;
@@ -141,6 +146,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fShared(t.fShared),
   fNominalTpcEntrancePoint(t.fNominalTpcEntrancePoint),
   fNominalTpcExitPoint(t.fNominalTpcExitPoint),
+  fNominalTpcPointShifted(t.fNominalTpcPointShifted),
   fXatDCA(t.fXatDCA),
   fYatDCA(t.fYatDCA),
   fZatDCA(t.fZatDCA),
@@ -149,7 +155,11 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fEmissionPoint(NULL),     // Emission point coordinates
   fPDGPid(t.fPDGPid),       // True PID of the particle
   fMass(t.fMass),           // True particle mass
-  fGlobalEmissionPoint(0)
+  fGlobalEmissionPoint(0),
+  fCorrPi(t.fCorrPi),
+  fCorrK(t.fCorrK),
+  fCorrP(t.fCorrP),
+  fCorrAll(t.fCorrAll)
  {
    // copy constructor
   fHiddenInfo = t.ValidHiddenInfo() ? t.GetHiddenInfo()->Clone() : NULL;
@@ -224,6 +234,7 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fShared=aTrack.fShared;
   fNominalTpcEntrancePoint=aTrack.fNominalTpcEntrancePoint;
   fNominalTpcExitPoint=aTrack.fNominalTpcExitPoint;
+  fNominalTpcPointShifted=aTrack.fNominalTpcPointShifted;
 
   fMass = aTrack.fMass;
   fPDGPid = aTrack.fPDGPid;
@@ -231,6 +242,11 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fXatDCA=aTrack.fXatDCA;
   fYatDCA=aTrack.fYatDCA;
   fZatDCA=aTrack.fZatDCA;
+
+  fCorrPi = aTrack.fCorrPi;
+  fCorrK = aTrack.fCorrK;
+  fCorrP = aTrack.fCorrP;
+  fCorrAll = aTrack.fCorrAll;
 
   for (int i=0; i<6; i++) {
     fHasPointOnITS[i] = aTrack.fHasPointOnITS[i];
@@ -332,6 +348,11 @@ void AliFemtoTrack::SetYatDCA(const double& x) {fYatDCA=x;}
 void AliFemtoTrack::SetZatDCA(const double& x) {fZatDCA=x;}
 
 
+void AliFemtoTrack::SetCorrectionPion(const double& x){fCorrPi=x;}
+void AliFemtoTrack::SetCorrectionKaon(const double& x){fCorrK=x;}
+void AliFemtoTrack::SetCorrectionProton(const double& x){fCorrP=x;}
+void AliFemtoTrack::SetCorrectionAll(const double& x){fCorrAll=x;}
+
 short AliFemtoTrack::Charge() const {return fCharge;}
 AliFemtoThreeVector AliFemtoTrack::P() const {return fP;}
 float AliFemtoTrack::Pt() const {return fPt;}
@@ -371,6 +392,11 @@ float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;}
 float AliFemtoTrack::TOFpionTime() const{return fTofPionTime;}
 float AliFemtoTrack::TOFkaonTime() const{return fTofKaonTime;}
 float AliFemtoTrack::TOFprotonTime() const{return fTofProtonTime;}
+//corrections
+float AliFemtoTrack::CorrectionPion() const {return fCorrPi;}
+float AliFemtoTrack::CorrectionKaon() const {return fCorrK;}
+float AliFemtoTrack::CorrectionProton() const {return fCorrP;}
+float AliFemtoTrack::CorrectionAll() const {return fCorrAll;}
 
 double AliFemtoTrack::XatDCA() const {return fXatDCA;}
 double AliFemtoTrack::YatDCA() const {return fYatDCA;}
@@ -466,6 +492,11 @@ const AliFemtoThreeVector& AliFemtoTrack::NominalTpcExitPoint() const
   return fNominalTpcExitPoint;
 }
 
+const AliFemtoThreeVector& AliFemtoTrack::NominalTpcPointShifted() const
+{
+  return fNominalTpcPointShifted;
+}
+
 const AliFemtoThreeVector& AliFemtoTrack::NominalTpcPoint(int i) const
 {
   if(i<0)
@@ -515,6 +546,17 @@ void AliFemtoTrack::SetNominalTPCExitPoint(double *aXTPC)
   fNominalTpcExitPoint.SetZ(aXTPC[2]);
 }
 
+void AliFemtoTrack::SetNominalTPCPointShifted(const AliFemtoThreeVector& aXTPC)
+{
+  fNominalTpcPointShifted = aXTPC;
+}
+
+void AliFemtoTrack::SetNominalTPCPointShifted(double *aXTPC)
+{
+  fNominalTpcPointShifted.SetX(aXTPC[0]);
+  fNominalTpcPointShifted.SetY(aXTPC[1]);
+  fNominalTpcPointShifted.SetZ(aXTPC[2]);
+}
 
 
 

@@ -67,6 +67,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
+  fOneConstSelectOn(kFALSE),
+  fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
   fPhiJetCorr6(0x0), 
@@ -78,6 +80,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
 {
@@ -104,6 +107,8 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fCentSelectOn(kTRUE),
   fCentMin(0),
   fCentMax(10),
+  fOneConstSelectOn(kFALSE),
+  fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
   fPhiJetCorr6(0x0), 
@@ -115,6 +120,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fhpTjetpT(0x0),
   fhPt(0x0),
   fhPhi(0x0),
+  fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
   
 {
@@ -201,6 +207,9 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
   fOutput->Add(fhPhi);
   
+  fNbOfConstvspT=new TH2F("fNbOfConstvspT", "fNbOfConstvspT", 100, 0, 100, 200, 0, 200);
+  fOutput->Add(fNbOfConstvspT);
+  
   fOutput->Add(fTreeObservableTagging);
   TH1::AddDirectory(oldStatus);
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
@@ -276,7 +285,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
  
       if (!(fJetShapeType == kData)) {
         AliPythiaInfo *partonsInfo = 0x0;
-        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) || (fJetShapeType == kDetEmbPart) ){
+        if((fJetShapeType == kTrueDet) || (fJetShapeType == kDetEmb) || (fJetShapeType == kPythiaDef) || (fJetShapeType == kDetEmbPart) ||(fJetShapeType == kDetEmbPartPythia)){
           AliJetContainer *jetContTrue = GetJetContainer(1);
           AliJetContainer *jetContUS = GetJetContainer(2);
        
@@ -300,7 +309,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
             continue;
           }
           
-          if(fJetShapeType==kDetEmbPart){
+          if((fJetShapeType==kDetEmbPart) || (fJetShapeType==kDetEmbPartPythia)){
             AliJetContainer *jetContPart=GetJetContainer(3);
             jet3=jet2->ClosestJet();
            
@@ -317,10 +326,10 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(!(fJetShapeSub==kConstSub))  fraction = jetCont->GetFractionSharedPt(jet1);
           if(fJetShapeSub==kConstSub) fraction = jetContUS->GetFractionSharedPt(jetUS);
           //if (fraction > 0.1) cout<<"***** hey a jet matched with fraction"<<fraction<<"  "<<jet1->Pt()<<" "<<jet2->Pt()<<" "<<fCent<<endl;
-          
+	 
           if(fraction<fMinFractionShared) continue;
           //InputEvent()->Print();
-          if (!(fJetShapeType == kPythiaDef)) {
+          if ((fJetShapeType != kPythiaDef) && (fJetShapeType!=kDetEmbPartPythia)) {
             partonsInfo = (AliPythiaInfo*) jetContTrue->GetPythiaInfo();
             if(!partonsInfo) return 0;
           }
@@ -331,7 +340,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
           if(!partonsInfo) return 0;
         }
         
-        if (!(fJetShapeType == kPythiaDef)){
+        if ((fJetShapeType != kPythiaDef) && (fJetShapeType!=kDetEmbPartPythia)){
           Double_t jp1=RelativePhi(jet2->Phi(),partonsInfo->GetPartonPhi6());
           Double_t detap1=(jet2->Eta())-(partonsInfo->GetPartonEta6());
           kWeight=partonsInfo->GetPythiaEventWeight();
@@ -381,17 +390,19 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
-      if ((((fJetShapeType == kData) || (fJetShapeType == kDetEmb) || (fJetShapeType==kDetEmbPart)) && (fJetShapeSub == kConstSub))|| (fJetShapeType==kPythiaDef))
+      if ((((fJetShapeType == kData) || (fJetShapeType == kDetEmb) || (fJetShapeType==kDetEmbPart)||(fJetShapeType==kDetEmbPartPythia)) && (fJetShapeSub == kConstSub))|| (fJetShapeType==kPythiaDef))
         ptSubtracted = jet1->Pt();
       
       else ptSubtracted  = jet1->Pt() - GetRhoVal(0)*jet1->Area();
       
-      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef) || (fJetShapeType==kDetEmbPart))
+      if ((fJetShapeType == kData) || (fJetShapeType== kDetEmb)||(fJetShapeType==kTrueDet) || (fJetShapeType==kPythiaDef) || (fJetShapeType==kDetEmbPart) || (fJetShapeType==kDetEmbPartPythia))
         if (ptSubtracted < fPtThreshold) continue;
      
-     
-      if ((fCentSelectOn==kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
+     if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jet1,0), ptSubtracted);
       
+      if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
+
+    
       fShapesVar[1] = ptSubtracted;
       fShapesVar[2] = GetJetpTD(jet1,0);
       //fShapesVar[3] = GetJetMass(jet1,0);
@@ -416,7 +427,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         
       }
       
-       if (fJetShapeType == kDetEmbPart) {
+      if ((fJetShapeType == kDetEmbPart) || (fJetShapeType==kDetEmbPartPythia)) {
 	 if(fJetShapeSub==kConstSub) kMatched = 3;
          if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
@@ -467,7 +478,8 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetMass(AliEmcalJet *jet,Int_t jetContNb=0) {
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtracted();
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtracted();
+      else return jet->GetSecondOrderSubtracted();
   else 
     return jet->M();
 }
@@ -502,7 +514,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::Angularity(AliEmcalJet *jet, Int_t jetCon
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0) {
 
   if((fJetShapeSub==kDerivSub) && (jetContNb==0))
-    return jet->GetSecondOrderSubtractedAngularity();
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedAngularity();
+      else return jet->GetSecondOrderSubtractedAngularity();
   else
     return Angularity(jet, jetContNb);
  
@@ -536,7 +549,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 0
 Float_t AliAnalysisTaskEmcalQGTagging::GetJetpTD(AliEmcalJet *jet, Int_t jetContNb = 0) {
   //calc subtracted jet mass
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedpTD();
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedpTD();
+      else return jet->GetSecondOrderSubtractedpTD();
   else
     return PTD(jet, jetContNb);
  
@@ -630,7 +644,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetCircularity(AliEmcalJet *jet, Int_t
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedCircularity();
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedCircularity();
+      else return jet->GetSecondOrderSubtractedCircularity();
   else
     return Circularity(jet, jetContNb);
  
@@ -678,7 +693,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetLeSub(AliEmcalJet *jet, Int_t jetCo
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedLeSub();
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedLeSub();
+      else return jet->GetSecondOrderSubtractedLeSub();
   else
     return LeSub(jet, jetContNb);
  
@@ -689,7 +705,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetJetNumberOfConstituents(AliEmcalJet *j
   //calc subtracted jet mass
   
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedConstituent();
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedConstituent();
+      else return jet->GetSecondOrderSubtractedConstituent();
   else
     return jet->GetNumberOfTracks();
  
@@ -762,7 +779,8 @@ Float_t AliAnalysisTaskEmcalQGTagging::GetSigma2(AliEmcalJet *jet, Int_t jetCont
   //calc subtracted jet mass
  
   if((fJetShapeSub==kDerivSub)&&(jetContNb==0))
-    return jet->GetSecondOrderSubtractedSigma2();
+    if (fDerivSubtrOrder == 1) return jet->GetFirstOrderSubtractedSigma2();
+    else return jet->GetSecondOrderSubtractedSigma2();
   else
     return Sigma2(jet, jetContNb);
  

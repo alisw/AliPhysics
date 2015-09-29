@@ -5,13 +5,13 @@
  * See cxx source for full Copyright notice                               */
 
 ////////////////////////////////////////////////////////////////////////////
-/// \class Class AliAnalysisTaskSED0MassCutVarFDSub                        //
-///                                                                        //
-/// \brief AliAnalysisTaskSE for the analysis of D0 candidates using the    //
-/// cut-variation feed-down subtraction method                             //
-//                                                                        //
-/// \author Andrea Rossi <Andrea.Rossi@cern.ch>                            //
-/// \author Felix Reidt  <Felix.Reidt@cern.ch>                              //
+/// \class Class AliAnalysisTaskSED0MassCutVarFDSub                       //
+///                                                                       //
+/// \brief AliAnalysisTaskSE for the analysis of D0 candidates using the  //
+/// cut-variation feed-down subtraction method                            //
+///                                                                       //
+/// \author Andrea Rossi <Andrea.Rossi@cern.ch>                           //
+/// \author Felix Reidt  <Felix.Reidt@cern.ch>                            //
 ////////////////////////////////////////////////////////////////////////////
 
 #include "THnSparse.h"

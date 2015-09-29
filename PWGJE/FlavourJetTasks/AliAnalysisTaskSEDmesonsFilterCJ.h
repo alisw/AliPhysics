@@ -125,6 +125,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   TClonesArray   *fCandidateArray;         //! contains candidates selected by AliRDHFCuts
   TClonesArray   *fSideBandArray;          //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
   TClonesArray   *fCombinedDmesons;        //! contains candidates selected by AliRDHFCuts and the rest of the event tracks
+  TClonesArray   *fCombinedDmesonsBkg;     //! contains bkg candidates selected by AliRDHFCuts and the rest of the event tracks
   Int_t           fNCand;                  //! number of selected D candidates already added to fCandidateArray
   Int_t           fNSBCand;                //! number of selected side-band D candidates already added to fSideBandArray
   TH1            *fHistStat;               //!

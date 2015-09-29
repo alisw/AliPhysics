@@ -1,19 +1,21 @@
-AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(const char *ntracks            = "PicoTracks",
-								   const char *nclusters           = "",
-								   const char *njets              = "Jets",
-
-								   const char *nrho               = "Rho",
-								   Double_t jetradius =0.4,
-								   const char * type = "TPC",	   
-								   const char *taskname           = "AliAnalysisTaskEmcalJetBJetTaggingIP",
-								   Bool_t isMC = kFALSE,
-								   const char *njetsMC              = "Jets",
-								   const char *nrhoMC               = "RhoMC",
-								   Bool_t doTrackQAEvent =kTRUE,
-								   Bool_t doTrackQAJet =kTRUE,
-								   Bool_t doBackgroundFluctuations =kTRUE,
-                                   Bool_t doCorrectPt =kTRUE,
-                                   Bool_t IspPb=kFALSE)
+AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(
+        const char *ntracks            = "PicoTracks",
+        const char *nclusters           = "",
+        const char *njets              = "Jets",
+        const char *nrho               = "Rho",
+        Double_t jetradius =0.4,
+        const char * type = "TPC",
+        const char *taskname           = "AliAnalysisTaskEmcalJetBJetTaggingIP",
+        Bool_t isMC = kFALSE,
+        const char *njetsMC              = "Jets",
+        const char *nrhoMC               = "RhoMC",
+        Bool_t doTrackQAEvent =kTRUE,
+        Bool_t doTrackQAJet =kTRUE,
+        Bool_t doBackgroundFluctuations =kTRUE,
+        Bool_t doCorrectPt =kTRUE,
+        Bool_t IspPb=kFALSE,
+        const char* suffix = ""
+        )
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -46,9 +48,11 @@ AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(const char *n
     name += "_";
     name += type;
   }
+  TString combinedName;
+  combinedName.Form("%s%s", name.Data(),suffix);
 
   Printf("name: %s",name.Data());
-  AliAnalysisTaskEmcalJetBJetTaggingIP* jetTask = new AliAnalysisTaskEmcalJetBJetTaggingIP(taskname);
+  AliAnalysisTaskEmcalJetBJetTaggingIP* jetTask = new AliAnalysisTaskEmcalJetBJetTaggingIP(combinedName);
   AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
@@ -90,7 +94,7 @@ AliAnalysisTaskEmcalJetBJetTaggingIP* AddTaskEmcalJetBJetTaggingIP(const char *n
   
     // Create containers for input/output
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-    TString contname(name);
+    TString contname(combinedName);
     contname += "_histos";
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(), 
 							      TList::Class(),AliAnalysisManager::kOutputContainer,

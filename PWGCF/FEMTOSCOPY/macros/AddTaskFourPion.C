@@ -1,13 +1,14 @@
 AliFourPion *AddTaskFourPion(
-			         Bool_t MCcase=kFALSE,
-			         Bool_t TabulatePairs=kFALSE,
-				 Int_t CentBinLowLimit=0, 
-				 Int_t CentBinHighLimit=1,
-				 TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
-				 TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
-				 TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
-				 TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root",
-				 TString StEAName="alien:///alice/cern.ch/user/d/dgangadh/c3EAfile.root"
+			     Short_t CollisionType=0,
+			     Bool_t MCcase=kFALSE,
+			     Bool_t TabulatePairs=kFALSE,
+			     Int_t CentBinLowLimit=0, 
+			     Int_t CentBinHighLimit=1,
+			     TString StWeightName="alien:///alice/cern.ch/user/d/dgangadh/WeightFile_FourPion.root",
+			     TString StMomResName="alien:///alice/cern.ch/user/d/dgangadh/MomResFile_FourPion.root",
+			     TString StKName="alien:///alice/cern.ch/user/d/dgangadh/KFile_FourPion.root",
+			     TString StMuonName="alien:///alice/cern.ch/user/d/dgangadh/MuonCorrection_FourPion.root",
+			     TString StEAName="alien:///alice/cern.ch/user/d/dgangadh/c3EAfile.root"
 			     ) {
   
   //===========================================================================
@@ -24,7 +25,7 @@ AliFourPion *AddTaskFourPion(
   if(!FourPionTask) return NULL;
   FourPionTask->SetLEGOCase(kTRUE);
   FourPionTask->SetMCdecision(MCcase);
-  FourPionTask->SetCollisionType(0);
+  FourPionTask->SetCollisionType(CollisionType);
   FourPionTask->SetGenerateSignal(kFALSE);
   FourPionTask->SetTabulatePairs(TabulatePairs);
   FourPionTask->SetCentBinRange(CentBinLowLimit, CentBinHighLimit);
@@ -84,6 +85,7 @@ AliFourPion *AddTaskFourPion(
 
     TH3F *weightHisto[ktbins][cbins];
     TH3F *weightHisto2[ktbins][cbins];
+    TH2F *weightHistoOneD[cbins];
     for(Int_t i=0; i<ktbins; i++){
       for(Int_t j=0; j<cbins; j++){
 	for(Int_t q2bin=0; q2bin<2; q2bin++){
@@ -94,14 +96,32 @@ AliFourPion *AddTaskFourPion(
 	  name += "_ED_";
 	  name += q2bin;
 	  if(q2bin==0) {
-	    weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    if(FourPionTask->GetCollisionType()!=0 && j>0) {
+	      weightHisto[i][j] = (TH3F*)weightHisto[i][0]->Clone();
+	    }else {
+	      if(i<ktbins) weightHisto[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    }	  
 	  }else{
-	    weightHisto2[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    if(i<ktbins) {
+	      if(FourPionTask->GetCollisionType()!=0 && j>0) weightHisto2[i][j] = (TH3F*)weightHisto2[i][0]->Clone();
+	      else weightHisto2[i][j] = (TH3F*)inputFileWeight->Get(name);
+	    }
 	  }
 	}
       }
     }
-    FourPionTask->SetWeightArrays( kTRUE, weightHisto, weightHisto2 );
+    // Qinv weights
+    for(Int_t j=0; j<cbins; j++){
+      TString name = "Weight_M_";
+      name += j;
+      name.Append("_1D");
+      if(FourPionTask->GetCollisionType()!=0 && j>0) {
+	weightHistoOneD[j] = (TH2F*)weightHistoOneD[0]->Clone();
+      }else{
+	weightHistoOneD[j] = (TH2F*)inputFileWeight->Get(name);
+      }
+    }
+    FourPionTask->SetWeightArrays( kTRUE, weightHisto, weightHisto2, weightHistoOneD );
     cout<<"End AddTask WeightFile read"<<endl;
     //
     //

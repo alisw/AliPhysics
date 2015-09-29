@@ -65,7 +65,7 @@ void AddTask_GammaConvV1(TString mode){
    AliAnalysisAlien *alienHandler = CreateAlienHandler(mode);
    if (!alienHandler) return;
 
-   TString WorkingDir = "CentTest";
+   TString WorkingDir = "";
    //TString data = "/alice/sim/2014/LHC14a1a/";
    TString data = "/alice/data/2011/LHC11h_2/";
    TString period = "LHC11h_2";
@@ -121,19 +121,19 @@ void AddTask_GammaConvV1(TString mode){
    cout<<"Successfully connected to Alien"<<endl;
    cout<<"==============================="<<endl;
 
-//    AliAnalysisTask *taskA = AddTask_GammaConvV1_PbPb(190,  //change different set of cuts
-//                                                      isMC,
-//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-//                                                      kTRUE, // enable additional QA task
-//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-//                                                      "1000000060084000001500000",
-//                                                      "LHC11h_2",  //name of the period for added signals and weighting
-//                                                      kFALSE,  //enable Weighting
-//                                                      kFALSE,  //use THnSparse
-// 													 0,
-// 													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
-// 													 0); 
+   AliAnalysisTask *taskA = AddTask_GammaConvV1_PbPb(200,  //change different set of cuts
+                                                     isMC,
+                                                     kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
+                                                     kTRUE, // enable additional QA task
+                                                     "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
+                                                     0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+                                                     "1000000060084000001500000",
+                                                     "LHC11h_2",  //name of the period for added signals and weighting
+                                                     kFALSE,  //enable Weighting
+                                                     kFALSE,  //use THnSparse
+													 0,
+													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
+													 0); 
 //    AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(194,  //change different set of cuts
 //                                                      isMC,
 //                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
@@ -147,19 +147,19 @@ void AddTask_GammaConvV1(TString mode){
 // 													 0,
 // 													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
 // 													 0); 
-   AliAnalysisTask *taskC = AddTask_GammaConvV1_PbPb(182,  //change different set of cuts
-                                                     isMC,
-                                                     kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
-                                                     kTRUE, // enable additional QA task
-                                                     "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
-                                                     0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-                                                     "1000000060084000001500000",
-                                                     "LHC11h_2",  //name of the period for added signals and weighting
-                                                     kFALSE,  //enable Weighting
-                                                     kFALSE,  //use THnSparse
-													 0,
-													 "alien:///alice/cern.ch/user/l/lleardin/CentralityFlatFile20April.root",
-													 1); 
+//    AliAnalysisTask *taskC = AddTask_GammaConvV1_PbPb(182,  //change different set of cuts
+//                                                      isMC,
+//                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1
+//                                                      kTRUE, // enable additional QA task
+//                                                      "alien:///alice/cern.ch/user/f/fbock/MCSpectraInput.root", // path to file for weigting input
+//                                                      0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+//                                                      "1000000060084000001500000",
+//                                                      "LHC11h_2",  //name of the period for added signals and weighting
+//                                                      kFALSE,  //enable Weighting
+//                                                      kFALSE,  //use THnSparse
+// 													 0,
+// 													 "alien:///alice/cern.ch/user/l/lleardin/CentralityFlatFile20April.root",
+// 													 1); 
 //    AliAnalysisTask *taskC = AddTask_GammaConvV1_PbPb(125,  //change different set of cuts
 //                                                      isMC,
 //                                                      kTRUE, //enable QA in AliAnalysisTaskGammaConvV1

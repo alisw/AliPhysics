@@ -16,8 +16,6 @@ class AliJetContainer;
 #include "AliEmcalJetFinder.h"
 #include <vector>
 
-
-
 class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -53,6 +51,8 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
+  void SetJetPtMin(Float_t f)                               { fJetPtMin     = f   ; }
+  void SetTrackPtMin(Float_t f)                             { fTrackPtMin     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f;}
   void SetSubJetRadius(Float_t f)                           { fSubJetRadius = f;}
@@ -64,9 +64,9 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   void SetHTon(Bool_t t)                                    { fHTon = t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
-  void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
-  void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
-  void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
+  void SetSemigoodCorrect(Int_t yesno)                      {fSemigoodCorrect=yesno;}
+  void SetHolePos(Float_t poshole)                          { fHolePos = poshole; }
+  void SetHoleWidth(Float_t holewidth)                      { fHoleWidth = holewidth; }
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -79,10 +79,12 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetpTD(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            Circularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            TauDen(AliEmcalJet *mainJet, Int_t jetContNb);
-  Float_t                            Tau1Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, Int_t jetContNb); 
+  Float_t                            Tau1Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, Int_t jetContNb);
+  Float_t                            Tau1Num_full(AliEmcalJet *mainJet, AliEmcalJetFinder *finder, Int_t jetContNb);
   Float_t                            Tau2Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, AliEmcalJet *subJet2hardest, Int_t jetContNb);
   Float_t                            Tau3Num(AliEmcalJet *jet, AliEmcalJet *subJet1hardest, AliEmcalJet *subJet2hardest, AliEmcalJet *subJet3hardest, Int_t jetContNb);
   Int_t *                            JetHard(AliEmcalJetFinder *finder);
+  Float_t*                           N_subjettiness(AliEmcalJet *mainJet, Int_t jetContNb);
   Float_t                            GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            LeSub(AliEmcalJet *jet, Int_t jetContNb);
   Float_t                            GetJetLeSub(AliEmcalJet *jet, Int_t jetContNb);
@@ -105,12 +107,13 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  // Float_t                            *fShapesVar;                  // jet shapes used for the tagging
 
   Float_t                            *fSubstructureVar;                  // my observables for the substructure tree
   Float_t                            *fHadronTriggerVar;                  // my observables for the substructure tree
 
-  Float_t                             fPtThreshold;
+  Float_t                             fPtThreshold;                   
+  Float_t                             fJetPtMin;                          // Jet Pt min under consideration
+  Float_t                             fTrackPtMin;                        // track pt minimum as input to reclustering
   Float_t                             fRMatching;
 
   Float_t                             fJetRadius;                  // radius of the main jet finding
@@ -138,8 +141,10 @@ class AliAnalysisTaskEmcalMissingEnergy : public AliAnalysisTaskEmcalJet {
   TH1F                                *fPtJet;
   TH2F                                *fhpTjetpT; //control plot fo the recoil analysis
   TH1F                                *fhPt;
+  TH1F                                *fhCentrality;
   TH1F                                *fhPhi;
   TH1F                                *fhJetPt;
+  TH1F                                *fhJetPhi;
   TH1F                                *fhTrackPt;
   TH1F                                *fhTrackPt_JT;
   TH1F                                *fhTriggerPt;

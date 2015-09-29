@@ -203,19 +203,18 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   
   Int_t nCentBin = ( isHeavyIon ) ? kCentBinMax : 1;
   TString selectionCent;
-	       
-  Int_t *colorTab = new Int_t[triggersB->GetEntriesFast()];
+
+
+  TArrayI colorInd( triggersB->GetEntriesFast() );
   Int_t const colorNrFirst = 8;
   Int_t colorIndex = 0;
   Int_t colorTabFirst[colorNrFirst] = {kGray+2,kRed,kBlue,kGreen,kOrange,kCyan,kMagenta,kYellow};
   for ( Int_t i = 0; i < triggersB->GetEntriesFast(); i++ ) {
-    colorTab[i] = colorTabFirst[i] + colorIndex;
+    colorInd[i] = colorTabFirst[i%colorNrFirst] + colorIndex;
     if ( i%colorNrFirst == 0 ) colorIndex++;
   } 
-  TArrayI *colorInd = new TArrayI( triggersB->GetEntriesFast() );
 
-  for ( Int_t i = 0; i < triggersB->GetEntriesFast(); i++ ) colorInd->AddAt(colorTab[i],i); 
-  
+
   Int_t nTrig = triggersB->GetEntriesFast();
 
   TObjArray trigNoPS(nTrig*nCentBin);
@@ -239,7 +238,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TObjArray trackBeamGasMatched(nTrig*nCentBin);
   TObjArray trackBeamGasMatchedHighPt(nTrig*nCentBin);
 
-  cout<<Form("Processing for %d triggers...",triggersB->GetEntriesFast()-1)<<endl;
+  cout<<Form("Processing for %d triggers...",triggersB->GetEntriesFast())<<endl;
     
   //loop on centrality
   for ( Int_t iCentBin = 0; iCentBin < nCentBin; iCentBin++){
@@ -262,25 +261,25 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       // cout<<selection<<endl;
       histoName = histoNameBase;
       histoName += "BNoPS";
-      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/o Phys. Sel.", colorInd->At(iTrig));
+      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/o Phys. Sel.", colorInd[iTrig]);
       trigNoPS.AddAt(histo,index);
       // Histo trigger with Phys. Sel. 
       selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes", triggerName.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "BWithPS";
-      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel.", colorInd->At(iTrig));
+      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel.", colorInd[iTrig]);
       trigWithPS.AddAt(histo,index);
     // Histo trigger with Phys. Sel. and T0 pile up not flagged
       selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes/t0pileup:no", triggerName.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "BWithPST0Flag";
-      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel. and no pile up from T0 flag", colorInd->At(iTrig));
+      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel. and no pile up from T0 flag", colorInd[iTrig]);
       trigWithPST0Flag.AddAt(histo,index);
     // Histo trigger with Phys. Sel. and T0 + SPD pile up not flagged
       selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes/t0pileup:no/spdpileup:no", triggerName.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "BWithPST0SPDFlag";
-      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel. and no pile up from T0 and SPD flag", colorInd->At(iTrig));
+      histo = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel. and no pile up from T0 and SPD flag", colorInd[iTrig]);
       trigWithPST0SPDFlag.AddAt(histo,index);
 		
       // Histo tracking : Phys. Sel.  is selected or not depending on the macro arguments
@@ -346,8 +345,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   }
   if(count_trigger<=0) return;
 	
-  Int_t *NumOfBNoPS = new Int_t[nCentBin*nTrig];
-  Int_t *NumOfBWithPS = new Int_t[nCentBin*nTrig];
+  Double_t NumOfBNoPS[nCentBin*nTrig];
+  Double_t NumOfBWithPS[nCentBin*nTrig];
 	
   for ( Int_t iCentBin = 0; iCentBin < nCentBin; iCentBin++){
     for ( Int_t iTrig = 0; iTrig < nTrig; iTrig++){
@@ -659,12 +658,11 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       for(Int_t iTrig = 0; iTrig < triggersB->GetEntriesFast()-1; iTrig++){
 	TString triggerNameB = ( (TObjString*) triggersB->At(iTrig) )->GetString();
 			
-	Int_t	cutinpercent	=	0;
+	Double_t	cutinpercent	=	0;
 	printf("%10s\t",triggerNameB.Data());
 	Int_t index = GetIndex(triggersB,iTrig,centBinNr);
-	if(NumOfBNoPS[index]) cutinpercent = (Int_t) ((Double_t)(NumOfBNoPS[index]-NumOfBWithPS[index])/(NumOfBNoPS[index])*100.);
-	printf("%5.2e / %.2e (%d%%)\n", (Double_t) NumOfBNoPS[index],(Double_t) NumOfBWithPS[index],cutinpercent);
-	cutinpercent = 0;
+	if(NumOfBNoPS[index] > 0.) cutinpercent = (NumOfBNoPS[index]-NumOfBWithPS[index])/NumOfBNoPS[index]*100.;
+	printf("%g / %g (%g%%)\n", NumOfBNoPS[index],NumOfBWithPS[index],cutinpercent);
       }
     } 
   }
@@ -1353,7 +1351,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 
  delete runs;
  delete triggersB;
- delete colorInd;
+  delete triggersShortName;
 
  return;
  

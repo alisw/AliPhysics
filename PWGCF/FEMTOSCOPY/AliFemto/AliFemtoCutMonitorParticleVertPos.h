@@ -1,9 +1,11 @@
-////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoCutMonitorParticleVertPos - the cut monitor for particles to study  ///
-/// the difference between reconstructed and true momentum    ///
-///                                                                          ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCutMonitorParticleVertPos.h
+///
+/// \class AliFemtoCutMonitorParticleVertPos
+/// \brief A cut monitor for AliFemtoTracks, storing the true emission point
+///        from the track's hidden info
+///
+
 #ifndef AliFemtoCutMonitorParticleVertPos_hh
 #define AliFemtoCutMonitorParticleVertPos_hh
 
@@ -15,12 +17,12 @@ class AliFemtoPair; // Gael 12/04/02
 class TH1D;
 class TH2D;
 class TList;
+
 #include "AliFemtoString.h"
 #include "AliFemtoParticleCollection.h"
 #include "AliFemtoCutMonitor.h"
 
-class AliFemtoCutMonitorParticleVertPos : public AliFemtoCutMonitor{
-  
+class AliFemtoCutMonitorParticleVertPos : public AliFemtoCutMonitor {
 public:
   AliFemtoCutMonitorParticleVertPos();
   AliFemtoCutMonitorParticleVertPos(const char *aName);
@@ -33,6 +35,7 @@ public:
   virtual void Fill(const AliFemtoEvent* aEvent) {AliFemtoCutMonitor::Fill(aEvent);}
   virtual void Fill(const AliFemtoTrack* aTrack);
   virtual void Fill(const AliFemtoV0* aV0) {AliFemtoCutMonitor::Fill(aV0);}
+  virtual void Fill(const AliFemtoXi* aXi) {AliFemtoCutMonitor::Fill(aXi);}
   virtual void Fill(const AliFemtoKink* aKink) {AliFemtoCutMonitor::Fill(aKink);}
   virtual void Fill(const AliFemtoPair* aPair) {AliFemtoCutMonitor::Fill(aPair);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aCollection);}
@@ -46,14 +49,14 @@ public:
   virtual TList *GetOutputList();
 
 private:
-  TH2D *fVertPos;    // Vertex position x vs. y monitor
-  TH2D *fEtaZ;       // Vertex z position vs. eta monitor
-  TH1D *fRadPos;     // Radial position close to vertex
-  TH1D *fEmPointX;   // Emission point - x
-  TH1D *fEmPointY;   // Emission point - y
-  TH1D *fEmPointZ;   // Emission point - z
-  TH1D *fEmPointT;   // Emission point - t
-  
+  TH2D *fVertPos;    ///< Vertex position x vs. y monitor
+  TH2D *fEtaZ;       ///< Vertex z position vs. eta monitor
+  TH1D *fRadPos;     ///< Radial position close to vertex
+  TH1D *fEmPointX;   ///< Emission point - x
+  TH1D *fEmPointY;   ///< Emission point - y
+  TH1D *fEmPointZ;   ///< Emission point - z
+  TH1D *fEmPointT;   ///< Emission point - t
+
 };
 
 #endif

@@ -71,6 +71,7 @@ class AliUEHistograms : public TNamed
   Long64_t GetRunNumber() { return fRunNumber; }
   Int_t GetMergeCount() { return fMergeCount; }
   TH3F* GetTwoTrackDistance(Int_t i) { return fTwoTrackDistancePt[i]; }
+  TH2F* GetControlConvResoncances() { return fControlConvResoncances; }
   Bool_t GetWeightPerEvent() { return fWeightPerEvent; }
   
   void Correct(AliUEHistograms* corrections);
@@ -88,7 +89,7 @@ class AliUEHistograms : public TNamed
   void SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
-  void SetPairCuts(Bool_t conversions, Bool_t resonances) { fCutConversions = conversions; fCutResonances = resonances; }
+  void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
   void SetPtOrder(Bool_t flag) { fPtOrder = flag; }
@@ -147,8 +148,8 @@ protected:
   Int_t fAssociatedSelectCharge; // select charge of associated particle
   Float_t fTriggerRestrictEta;   // restrict eta range for trigger particle (default: -1 [off])
   Bool_t fEtaOrdering;           // activate eta ordering to prevent shape distortions. see FillCorrelation for the details
-  Bool_t fCutConversions;        // cut on conversions (inv mass)
-  Bool_t fCutResonances;         // cut on resonances (inv mass)
+  Float_t fCutConversionsV;        // cut on conversions (inv mass)
+  Float_t fCutResonancesV;         // cut on resonances (inv mass)
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
@@ -159,7 +160,7 @@ protected:
   
   Int_t fMergeCount;		// counts how many objects have been merged together
   
-  ClassDef(AliUEHistograms, 29)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 30)  // underlying event histogram container
 };
 
 Float_t AliUEHistograms::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign)

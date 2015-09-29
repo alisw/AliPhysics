@@ -1,13 +1,17 @@
 void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change different set of cuts
-								Bool_t	 	isMC   = kFALSE, 												// run MC
-								Int_t 		enableQAMesonTask = 0, 											// enable QA in AliAnalysisTaskGammaConvV1
-								Int_t 		enableQAPhotonTask = 0, 										// enable additional QA task
-								TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
-								Int_t 		doWeightingPart 			= 0, 			 					// enable Weighting
-								TString 	generatorName 				= "DPMJET",							// generator Name
-                                TString 	cutnumberAODBranch 			= "800000006008400000150000000", 	// cutnumber for AOD branch
-								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
-								Bool_t		enablePlotVsCentrality		= kFALSE
+				Int_t	 	isMC   = 0,														// run MC
+				Int_t 		enableQAMesonTask = 0, 											// enable QA in AliAnalysisTaskGammaConvV1
+				Int_t 		enableQAPhotonTask = 0, 										// enable additional QA task
+				TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
+				Int_t 		doWeightingPart 			= 0, 			 					// enable Weighting
+				TString 	generatorName 				= "DPMJET",							// generator Name
+				TString 	cutnumberAODBranch 			= "800000006008400000150000000", 	// cutnumber for AOD branch
+				Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+				Bool_t		enablePlotVsCentrality		= kFALSE,
+				Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+				Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+				Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
+				TString		periodNameV0Reader			= ""
                            ) {
 
 	// ================= Load Librariers =================================
@@ -43,10 +47,12 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
+	Bool_t isMCForOtherSettings = 0;
+	if (isMC > 0) isMCForOtherSettings = 1;
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC);
+		AddTaskPIDResponse(isMCForOtherSettings);
 	}
 
 	//=========  Set Cutnumber for V0Reader ================================
@@ -57,7 +63,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -1065,25 +1071,25 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		eventCutArray[ 2] = "80000123"; photonCutArray[ 2] = "00200009217000008260400000"; mesonCutArray[ 2] = "0162103500900000";  // min R =5 cm
 		eventCutArray[ 3] = "80000123"; photonCutArray[ 3] = "00900009217000008260400000"; mesonCutArray[ 3] = "0162103500900000";  // min R =7.5 cm 
 	} else if (trainConfig == 189) {
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // standard
-		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162103500900000";  // double counting cut case 4
-		eventCutArray[ 2] = "80000113"; photonCutArray[ 2] = "00200009217000008260405000"; mesonCutArray[ 2] = "0162103500900000";  // double counting cut case 5
-		eventCutArray[ 3] = "80000113"; photonCutArray[ 3] = "00200009217000008260406000"; mesonCutArray[ 3] = "0162103500900000";  // double counting cut case 6
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";  // standard dc cut 4
+		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500900000";  //  standard dc cut 4 alpha cut 1
+		eventCutArray[ 2] = "80000114"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500900000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
+		eventCutArray[ 3] = "80000115"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500900000";  //  standard dc cut 4 alpha cut 1 vertex cut 5 cm
 	} else if (trainConfig == 190) {
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500900000";  // standard 
-		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162103500900000";  // double counting cut case 4
-		eventCutArray[ 2] = "80000123"; photonCutArray[ 2] = "00200009217000008260405000"; mesonCutArray[ 2] = "0162103500900000";  // double counting cut case 5
-		eventCutArray[ 3] = "80000123"; photonCutArray[ 3] = "00200009217000008260406000"; mesonCutArray[ 3] = "0162103500900000";  // double counting cut case 6 
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";  // standard dc cut 4
+		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500900000";  // standard dc cut 4 alpha cut 1
+		eventCutArray[ 2] = "80000124"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500900000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
+		eventCutArray[ 3] = "80000125"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500900000";  // standard dc cut 4 alpha cut 1 vertex cut 5 cm
 	} else if (trainConfig == 191) {
-		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500000000";  // standard //eta meson
-		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162103500000000";  // double counting cut case 4
-		eventCutArray[ 2] = "80000113"; photonCutArray[ 2] = "00200009217000008260405000"; mesonCutArray[ 2] = "0162103500000000";  // double counting cut case 5
-		eventCutArray[ 3] = "80000113"; photonCutArray[ 3] = "00200009217000008260406000"; mesonCutArray[ 3] = "0162103500000000";  // double counting cut case 6
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";  // standard dc cut 4//eta meson
+		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500000000";  // standard dc cut 4 alpha cut 1
+		eventCutArray[ 2] = "80000114"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
+		eventCutArray[ 3] = "80000115"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 5 cm
 	} else if (trainConfig == 192) {
-		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260400000"; mesonCutArray[ 0] = "0162103500000000";  // standard //eta meson
-		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162103500000000";  // double counting cut case 4
-		eventCutArray[ 2] = "80000123"; photonCutArray[ 2] = "00200009217000008260405000"; mesonCutArray[ 2] = "0162103500000000";  // double counting cut case 5
-		eventCutArray[ 3] = "80000123"; photonCutArray[ 3] = "00200009217000008260406000"; mesonCutArray[ 3] = "0162103500000000";  // double counting cut case 6 
+		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";  // standard dc cut 4//eta meson
+		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500000000";  // standard dc cut 4 alpha cut 1
+		eventCutArray[ 2] = "80000124"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
+		eventCutArray[ 3] = "80000125"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 5 cm
 	} else if (trainConfig == 193) {
 		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";  // standard //pi0 dc cut4
 		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009000000008260404000"; mesonCutArray[ 1] = "0162103500900000";  // open dEdx Cut -10;10
@@ -1145,6 +1151,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisEventCuts[i] = new AliConvEventCuts();
+		
 		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17||
 		     trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 ||
 		     trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ||
@@ -1275,6 +1282,11 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 																			"Eta_Fit_Data_pPb_5023GeV_60100V0A");
 			}
 		}
+
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
+
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		if (doEtaShiftIndCuts) {
 			analysisEventCuts[i]->DoEtaShift(doEtaShiftIndCuts);

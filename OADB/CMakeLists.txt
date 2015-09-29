@@ -21,6 +21,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/${MODULE})
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                    )
 
 # Sources
@@ -40,7 +41,13 @@ set(SRCS
     AliOADBTrackFix.cxx
     AliOADBTriggerAnalysis.cxx
     AliPPVsMultUtils.cxx
-    AliMultSelectionTask.cxx
+    COMMON/MULTIPLICITY/AliMultVariable.cxx
+    COMMON/MULTIPLICITY/AliMultEstimator.cxx
+    COMMON/MULTIPLICITY/AliMultInput.cxx
+    COMMON/MULTIPLICITY/AliMultSelection.cxx
+    COMMON/MULTIPLICITY/AliMultSelectionCuts.cxx
+    COMMON/MULTIPLICITY/AliOADBMultSelection.cxx
+    COMMON/MULTIPLICITY/AliMultSelectionTask.cxx
 )
 
 # Headers from sources

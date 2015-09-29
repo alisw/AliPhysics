@@ -80,6 +80,14 @@
 #pragma link C++ class AliAnalysisTaskSELambdacTMVA+;
 #pragma link C++ class AliHFMultiTrials+;
 #pragma link C++ class AliHFMassFitterVAR+;
+#pragma link C++ class AliHFCutVarFDsubAnalysisManager+;
+#pragma link C++ class AliHFCutVarFDsubAnalysisManagerD0+;
+#pragma link C++ class AliHFCutVarFDsubAnalysisManagerDplus+;
+#pragma link C++ class AliHFCutVarFDsubAxis+;
+#pragma link C++ class AliHFCutVarFDsubCut+;
+#pragma link C++ class AliHFCutVarFDsubCutSet+;
+#pragma link C++ class AliHFCutVarFDsubEfficiency+;
+#pragma link C++ class AliHFCutVarFDsubMassFitter+;
+#pragma link C++ class AliHFCutVarFDsubMinimiser+;
+
 #endif
-
-

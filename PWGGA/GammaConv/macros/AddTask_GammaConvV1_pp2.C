@@ -1,10 +1,14 @@
 void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change different set of cuts
-								Bool_t 		isMC   						= kFALSE, 							//run MC 
+								Int_t 		isMC   						= 0,								//run MC
 								Int_t 		enableQAMesonTask 			= 0, 								//enable QA in AliAnalysisTaskGammaConvV1
 								Int_t 		enableQAPhotonTask 			= 0, 								// enable additional QA task
 								TString 	fileNameInputForWeighting 	= "MCSpectraInput.root", 			// path to file for weigting input
 								TString 	cutnumberAODBranch 			= "000000006008400001001500000", 	// cutnumber with which AODs have been filtered 
-								Bool_t 		enableV0findingEffi 		= kFALSE							// enables V0finding efficiency histograms
+								Bool_t 		enableV0findingEffi 		= kFALSE,							// enables V0finding efficiency histograms
+								Bool_t 		enableTriggerMimicking		= kFALSE,							// enable trigger mimicking
+								Bool_t 		enableTriggerOverlapRej		= kFALSE,							// enable trigger overlap rejection
+								Float_t		maxFacPtHard				= 3.,								// maximum factor between hardest jet and ptHard generated
+								TString		periodNameV0Reader			= ""
                            ) {
 
 	// ================= Load Librariers =================================
@@ -40,10 +44,12 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 	// ================== GetInputEventHandler =============================
 	AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 	
+	Bool_t isMCForOtherSettings = 0;
+	if (isMC > 0) isMCForOtherSettings = 1;
 	//========= Add PID Reponse to ANALYSIS manager ====
 	if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
 		gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-		AddTaskPIDResponse(isMC);
+		AddTaskPIDResponse(isMCForOtherSettings);
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
@@ -54,7 +60,7 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
 	if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
 		AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-		
+		if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 		fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
 		fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
 		fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -184,6 +190,9 @@ void AddTask_GammaConvV1_pp2(  	Int_t 		trainConfig 				= 1,  								//change d
 
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		analysisEventCuts[i] = new AliConvEventCuts();
+		analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+		analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
+		analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
 		analysisEventCuts[i]->InitializeCutsFromCutString(eventCutArray[i].Data());
 		EventCutList->Add(analysisEventCuts[i]);
 		analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);

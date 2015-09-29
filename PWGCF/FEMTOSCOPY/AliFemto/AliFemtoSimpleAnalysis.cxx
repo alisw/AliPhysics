@@ -6,6 +6,7 @@
 #include "AliFemtoTrackCut.h"
 #include "AliFemtoV0Cut.h"
 #include "AliFemtoKinkCut.h"
+#include "AliFemtoXiCut.h"
 
 #include <string>
 #include <iostream>
@@ -88,6 +89,35 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
       break;
     }
+
+
+
+  case hbtXi:          // cut is cutting on Xis
+    {
+      AliFemtoV0Cut* pCut = (AliFemtoV0Cut*) partCut;
+      AliFemtoXi* pParticle;
+      AliFemtoXiIterator pIter;
+
+      AliFemtoXiIterator startLoop = hbtEvent->XiCollection()->begin();
+      AliFemtoXiIterator endLoop   = hbtEvent->XiCollection()->end();
+      for (pIter=startLoop;pIter!=endLoop;pIter++) {
+	pParticle = *pIter;
+	bool tmpPassXi = pCut->Pass(pParticle);
+	pCut->FillCutMonitor(pParticle,tmpPassXi);
+	if(tmpPassXi) {
+	  AliFemtoParticle* particle = new AliFemtoParticle(pParticle,partCut->Mass());
+            partCollection->push_back(particle);
+	}
+      }
+      
+
+      pCut->FillCutMonitor(hbtEvent,partCollection);
+
+      break;
+    }
+
+
+
   case hbtKink:          // cut is cutting on Kinks  -- mal 25May2001
     {
       AliFemtoKinkCut* pCut = (AliFemtoKinkCut*) partCut;

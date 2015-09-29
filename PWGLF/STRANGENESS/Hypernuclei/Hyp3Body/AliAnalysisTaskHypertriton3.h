@@ -39,6 +39,7 @@ class TList;
 class TObjArray;
 class TTree;
 
+class AliAODVertex;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDVertex;
@@ -65,11 +66,17 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDCADeuteronPrimaryVtx(double dcadeuteronpv) {fDCADPVmin = dcadeuteronpv;}
   
   void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
-  void SetDecayLength(double maxdl) {fDecayLength = maxdl;}
+  void SetMaxDecayLength(double maxdl) {fMaxDecayLength = maxdl;}
   void SetMinDecayLength(double mindl) {fMinDecayLength = mindl;}
+  void SetMinNormalizedDecayLength(double min_norm_dl) {fMinNormalizedDecL = min_norm_dl;}
+  void SetMaxLifeTime(double max_ctau) {fMaxLifeTime = max_ctau;}
+  void SetMinLifeTime(double min_ctau) {fMinLifeTime = min_ctau;}
+
   void SetRapidity(double rapid) {fRapidity = rapid;}
+  
   void SetMaxPtMother(double maxpt) {fMaxPtMother = maxpt;}
   void SetMinPtMother(double minpt) {fMinPtMother = minpt;}
+  void SetMaxPMotherCM(double maxp_cm){fMaxPMotherCM = maxp_cm;}
   
   void SetDCAPioDecayVtxXY(double maxpixy) {fDCAPiSVxymax = maxpixy;}
   void SetDCAPioDecayVtxZ(double maxpiz) {fDCAPiSVzmax = maxpiz;}
@@ -81,10 +88,13 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetDCADeuteronPion(double maxdpi) {fDCAdpi = maxdpi;}
 
   void SetAngleDeuteronProton(double ang_dp) {fAngledp = ang_dp;}
+  void SetAngleDeuteronPion(double ang_dpi) {fAngledpi = ang_dpi;}
   
   void SetCentrPercentileLimits(double lowc, double highc) {fLowCentrality = lowc; fHighCentrality = highc;}
   
   Double_t GetDCAcut(Int_t part, Double_t dca) const;
+
+  void SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs) const;
 
  private:
 
@@ -95,6 +105,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   AliPIDResponse     *fPIDResponse;                //!<! PID response class
   AliVertexerTracks  *fVertexer;                   //!<! Secondary vertex reconstructed with three candidate tracks
 
+  AliAODVertex       *fVtx1;                       //!<! Primary vertex converted from ESD to AOD
+  AliAODVertex       *fVtx2;                       //!<! Secondary vertex converted from ESD to AOD
+  
   TObjArray          *fTrkArray;                   //!<! Array containing the three tracks candidated to the secondary vertex reconstruction
   
   //Variables
@@ -110,8 +123,11 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDCAPPVmin;                   ///< Cut on Min DCA of p from primary vertex
   Double_t           fDCADPVmin;                   ///< Cut on Min DCA of d from primary vertex
   Double_t           fCosPointingAngle;            ///< Cut on Cosine of the pointing angle
-  Double_t           fDecayLength;                 ///< Cut on Decay length
+  Double_t           fMaxDecayLength;              ///< Cut on maximum Decay length
   Double_t           fMinDecayLength;              ///< Cut on minimum Decay length
+  Double_t           fMinNormalizedDecL;           ///< Cut on minimum normalized decay length
+  Double_t           fMaxLifeTime;                 ///< Cut on maximum c*\f$\tau\f$
+  Double_t           fMinLifeTime;                 ///< Cut on minimum c*\f$\tau\f$
   Double_t           fRapidity;                    ///< Cut on absolute value of mother rapidity y
   Double_t           fMaxPtMother;                 ///< Cut on max mother reconstructed \f$p_{T}\f$
   Double_t           fMinPtMother;                 ///< Cut on min mother reconstructed \f$p_{T}\f$
@@ -122,7 +138,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Double_t           fDCAdp;                       ///< Cut DCA deuteron-proton
   Double_t           fDCApip;                      ///< Cut DCA pion-proton
   Double_t           fDCAdpi;                      ///< Cut DCA deuteron-pion
-  Double_t           fAngledp;
+  Double_t           fAngledp;                     ///< Cut on the angle between deuteron - proton
+  Double_t           fAngledpi;                    ///< Cut on the angle between deuteron - pion
+  Double_t           fMaxPMotherCM;                ///< Cut on max mother momentum in the CM
   Double_t           fLowCentrality;               ///< Cut on lower value of centrality class
   Double_t           fHighCentrality;              ///< Cut on high value of centrality class
   
@@ -186,6 +204,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDCAXYpionvtx;           //!<! \f$DCA_{xy}\f$ candidate pion-secondary vertex
   TH1F               *fHistDCAZpionvtx;            //!<! \f$DCA_{z}\f$ candidate pion-secondary vertex
   TH1F               *fHistDecayLengthH3L;         //!<! Decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistNormalizedDecayL;       //!<! Normalized decay length distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistLifetime;               //!<! c*tau distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistAngle_deu_pro;          //!<! Angle between deuteron and proton vectors
   TH1F               *fHistAngle_deu_pion;         //!<! Angle between deuteron and pion vectors

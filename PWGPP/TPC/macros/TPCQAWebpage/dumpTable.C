@@ -1,6 +1,6 @@
 /*
   .x $NOTES/aux/rootlogon.C
-  .L $NOTES/QA/ATO-177/code/dumpTable.C+
+  .L $ALICE_PHYSICS/../QA/ATO-177/code/dumpTable.C+
   //fname="/hera/alice/miranov/alice-tpc-notes/QA/ATO-102/data/production0604/output/TPC/data/2012/LHC12c/pass2/trending.root";
   fname="trending.root";
   treeName="tpcQA";
@@ -38,7 +38,8 @@ void dumpTable(const char *fname, const char * tableName){
   //
   //
   const char *treeName="tpcQA";
-  initTree(fname,treeName);
+  initTree(fname,"tpcQA");
+  if (!tree || tree->GetEntries()==0)  initTree(fname,"trending");
   initQuery();
   dumpWebRunTable(tree, tableName);
   dumpWebPeriodTable(tree, tableName);

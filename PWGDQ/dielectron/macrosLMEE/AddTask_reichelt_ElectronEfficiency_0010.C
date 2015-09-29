@@ -65,7 +65,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency_0010(Char_t* outputFileName
   std::cout << "hasMC = " << hasMC << std::endl;
 
   // Electron efficiency task
-  AliAnalysisTaskElectronEfficiency_0010 *task = new AliAnalysisTaskElectronEfficiency_0010("reichelt_ElectronEfficiency_0010");
+  AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("reichelt_ElectronEfficiency_0010");
   std::cout << "task created: " << task->GetName() << std::endl;
   //event related
   // Note: event cuts are identical for all analysis 'cutInstance's that run together!

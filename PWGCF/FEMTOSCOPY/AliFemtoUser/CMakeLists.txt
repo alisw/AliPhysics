@@ -84,8 +84,13 @@ set(SRCS
   AliFemtoCorrFctnGammaMonitorAlpha.cxx
   AliFemtoCorrFctn3DPRF.cxx
   AliFemtoPairCutRadialDistanceAsymmetric.cxx
+  AliFemtoPairCutGeneralizedRadialDistance.cxx
   AliFemtoPairCutMergedFraction.cxx
-  )
+  AliFemtoCorrFctnDEtaDPhiSimple.cxx
+  AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
+  AliFemtoCorrFctnDYDPhiSimple.cxx
+  AliFemtoAnalysisPionLambda.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

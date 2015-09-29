@@ -26,7 +26,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskHMTFMCMultEst.cxx
-  AliMultiplicityEstimators.cxx
+  AliMultiplicityEstimator.cxx
   MonteCarlo/AliAnalysisTaskHMTFMC.cxx
   )
 

@@ -17,9 +17,6 @@ class AliESDtrack;
 #include "AliESDtrackCuts.h"
 #include "THn.h"
 
-const int kMaxMatch=5;
-const double kMaxChi2 = 200;
-
 // Class for the hybrid track cuts
 class AliESDHybridTrackcuts {
  public:
@@ -61,6 +58,10 @@ class AliESDHybridTrackcuts {
 
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
+  enum{
+    kMaxMatch=5
+  };
+  static const double kMaxChi2;
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
   AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputLists(), fCurrentOutputList(0), fDoJetAnalysis(1), fAnalyzeJetProfile(0), fAnalyzeTrackcuts(0), fAnalyzeJetConstituents(1), fParticleLevel(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(), fTrackArrayName(), fBackgroundJetArrayName(), fRhoTaskName(), fRandConeRadius(0.4), fRandConeNumber(10), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fNumberExcludedJets(-1), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(5.0), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinNCrossedRows(70), fUsePtDepCrossedRowsCut(0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fMatchTr(), fMatchChi(), fPrimaryVertex(0), fFirstLeadingJet(0), fSecondLeadingJet(0), fFirstLeadingKTJet(0), fSecondLeadingKTJet(0), fNumberSignalJets(0), fNumberSignalJetsAbove5GeV(0), fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fIsDEBUG(0), fIsPA(1), fNoTerminate(1), fEventCounter(0), fTempExcludedRCs(0), fTempAllRCs(1), fTempOverlapCounter(0), fTempMeanExclusionProbability(0), fHybridESDtrackCuts(0), fHybridESDtrackCuts_variedPtDep(0), fHybridESDtrackCuts_variedPtDep2(0)
   {

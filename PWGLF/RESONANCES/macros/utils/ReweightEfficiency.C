@@ -1,6 +1,8 @@
-/* Author: Anders G. Knospe, The University of Texas at Austin
+int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int save=2,double tolerance=0.001){
+  /* Author: Anders G. Knospe, The University of Texas at Austin
      Created: 26 January 2014
-     
+     Last Modified: 22 September 2015
+
      This macro implements an iterative procedure to re-weight efficiencies.
      See the following analysis note for more information:
        ALICE-ANA-2012-300
@@ -9,27 +11,61 @@
        Section 7.1, pages 28-31
 
      Input Parameters:
-     M: histogram containing the (fully corrected) measured pT spectrum (d^2N/dpTdy)
-     F: fit of histogram M (do the fit before passing the function to this macro), see also important NOTE 6 below
-     G: the generated pT spectrum from simulation, i.e., the denominator of the efficiency calculation
-     R: the reconstructed pT spectrum from simulation, i.e., the numerator of the efficiency calculation
+     M: histogram containing the (fully corrected) measured pT spectrum (d^2N/dpTdy).  Its uncertainties should be the sum in quadrature of the statistical uncertainties and the systematic uncertainties.  (Check if you should exclude systematic uncertainties that are not correlated between pT bins.)
+     F: fit of histogram M (do the fit before passing the function to this macro, the fit to the input histogram M will not be redone inside this macro), see also important NOTE 6 below
+     G: the generated pT spectrum from simulation, i.e., the denominator of the efficiency calculation; see NOTE 4 below
+     R: the reconstructed pT spectrum from simulation, i.e., the numerator of the efficiency calculation; see NOTE 4 below
      file: file to which results may be saved (optional)
      test: run the macro in test mode (disables fit options M and E to speed the fitting procedure)
      save: 0: do not save anything, 1: save only the final results, 2: save input, intermediate steps, and final results
      tolerance: The macro stops when the fractional changes in the measured pT spectrum between consecutive iterations fall below this value.  2-3 iterations should be sufficient for this to happen if tolerance=0.001.
 
+     Saved Objects:
+     For each iteration (if save=1) or the last iteration (if save=2), the following objects are saved:
+     - The measured histogram, corrected to account for the reweighted efficiency
+     - The fit function (see NOTE 7)
+     - The correction factor (see NOTE 3)
+     - The generated and reconstructed histograms
+     - The generated and reconstructed histograms, rebinned
+
      NOTES:
-     1.) The histograms M, G, and R and the function F are all modified in this macro to contain the final results.
+     1.) The histograms M, G, and R and the function F are all modified in this macro to contain the final results (see also note 7).
      2.) If results are saved, each histogram or function name will contain the suffix "_iX" where X is an integer.  This gives the iteration that corresponds to the saved object.  "_i0" is iteration 0: the input objects.
-     3.) The histograms stored in the array c and named "[name of M]_correction_iX" is a correction factor: the ratio of M(iteration X) to M(iteration 0).  Multiplying M(iteration 0) by this correction factor gives the final version of M, adjusted for the re-weighted efficiency.  This can be useful if you store the separate uncertainties of M (statistical and systematic) in different TH1 or TGraph objects.
-     4.) The histograms G and R should have fine bins (100 MeV is probably OK).  They DO NOT need to have the same binning as histogram M: they will be rebinned.  You should, however, make sure that there are no bins in histograms G and R that span a bin boundary in histogram M.  Histograms G and R must have the same binning.
+     3.) The histograms stored in the array c and named "[name of M]_correction_iX" are correction factors: the ratio of M(iteration X) to M(iteration 0).  Multiplying M(iteration 0) by this correction factor gives the final version of M, adjusted for the re-weighted efficiency.  This can be useful if you store the separate uncertainties of M (statistical and systematic) in different TH1 or TGraph objects.  Alternatively, you can calculate the reweighted efficiency from the final iterations of G and R (see note 5).
+     4.) The histograms G and R should have fine bins (100 MeV is probably OK).  They SHOULD NOT have the same binning as histogram M; if the binning is the same, then the calculation will not work.  Instead, use finer binning than M.  You should, however, make sure that there are no bins in histograms G and R that span a bin boundary in histogram M.  Histogram R must have the same binning as histogram G.
      5.) This macro does not store the efficiency.  Of course, to get the efficiency, you just need to take the ratio of histograms R and G.  The output measured histogram (which will be stored in pointer M) is already corrected by the re-weighted efficiency.  Do not double-correct it.
-     6.) Some care must be taken with the fit function F.  You may not be able to use a function that has been saved to a file.  If the saved function does not contain the function's formula, it will not work properly with the ROOT fitter.  To check, do F->GetTitle().  If the result is the explicit mathematicl formula for the function, like "[0]*exp(x*[1])" (an exponential in pT), then the function should be OK.  If the result is some more abstract name, the function was probably defined using a pointer to a user-defined function (the standard implementation of the blast-wave function is such a case).  In this case, you cannot uses a function that has been saved to a file.  Instead, you must redefine the function in the macro that calls ReweightEfficiency.  When in doubt, do M->Fit(F,"R") and see if the fitter behaves as you would expect.  If you need to fix or constrain any parameters of function F, do so before passing the function to this macro, or modify the do_fit function at the bottom of this file.
+     6.) Some care must be taken with the fit function F.  You may not be able to use a function that has been saved to a file.  If the saved function does not contain the function's formula, it will not work properly with the ROOT fitter.  To check, do F->GetTitle().  If the result is the explicit mathematicl formula for the function, like "[0]*exp(x*[1])" (an exponential in pT), then the function should be OK.  If the result is some more abstract name, the function was probably defined using a pointer to a user-defined function (the standard implementation of the blast-wave function is such a case).  In this case, you cannot use a function that has been saved to a file.  Instead, you must redefine the function in the macro that calls ReweightEfficiency.  When in doubt, do M->Fit(F,"RI") and see if the fitter behaves as you would expect.  If you need to fix or constrain any parameters of function F, do so before passing the function to this macro, or modify the do_fit function at the bottom of this file.
      7.) The final saved version of F is not the fit to the final saved version of M.  It is a fit to the next-to-last version of M.  You must fit the final version of M yourself.
+
+    EXAMPLE: Here is some example code that may be useful:
+
+    TFile* f1=TFile::Open("measured_file.root");//open the file that contains your measured histogram
+    TH1D* M=(TH1D*) f1->Get("measured_histogram");//get your measured histogram, the systematic uncertainties should be the sum in quadrature of the statistical and systematic uncertainties (but you may want to exclude sources of systematic uncertainty that are correlated between pT bins)
+
+    TF1* F=new TF1(***);//define the fit function
+    F->SetParameter(*,1.23456);//fix the mass parameter of the function (assuming your function has a mass parameter)
+    F->FixParameter(*,1.23456);
+    F->SetParameter(*,*);//set the other parameters
+    //Note that you may not be able to use a TF1 stored in a file for this purpose.  Please read note 6 above.
+
+    TFile* f2=TFile::Open("simulated_file.root");//open the file that contains your simulated histograms
+    TH1D* G=(TH1D*) f2->Get("generated_histogram");//get your generated histogram
+    TH1D* R=(TH1D*) f2->Get("reconstructed_histogram");//get your reconstructed histogram
+
+    TFile* f3=new TFile("output_file.root","RECREATE","HistoFile");//open the new file that will contain your output
+
+    gROOT->LoadMacro("*path/PWGLF/RESONANCES/macros/utils/ReweightEfficiency.C");
+
+    ReweightEfficiency(M,F,G,R,f3,1);//run the macro
+
+    //Take the ratio R/G to get the reweighted efficiency; store it in f3.
+    //The other objects stored in f3 can be useful, especially for plotting, but are not required.
+
+    f1->Close();
+    f2->Close();
+    f3->Close();
   */
 
-int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int save=2,double tolerance=0.001)
-{
   if(!M){cerr<<"Error in ReweightEfficiency(): missing input: measured pT spectrum"<<endl; return 1;}
   if(!F){cerr<<"Error in ReweightEfficiency(): missing input: fit of measured pT spectrum"<<endl; return 1;}
   if(!G){cerr<<"Error in ReweightEfficiency(): missing input: generated pT spectrum from simulation"<<endl; return 1;}
@@ -58,7 +94,7 @@ int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int
 
   for(i=0;i<imax;i++){//iterate
     g[i][0]=(TH1D*) G->Clone(Form("%s_i%i",gname,i));
-    g[i][1]=(TH1D*) M->Clone(Form("%s_rebin_%i",gname,i));
+    g[i][1]=(TH1D*) M->Clone(Form("%s_rebin_i%i",gname,i));
     r[i][0]=(TH1D*) R->Clone(Form("%s_i%i",rname,i));
     r[i][1]=(TH1D*) M->Clone(Form("%s_rebin_i%i",rname,i));
     c[i]=(TH1D*) M->Clone(Form("%s_correction_i%i",mname,i));
@@ -126,11 +162,11 @@ int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int
       if(save==1 && j<i) continue;
       if(save==1 && j==i) F->Write();
       m[j]->Write();
-      c[j]->Write();
       g[j][0]->Write();
       g[j][1]->Write();
       r[j][0]->Write();
       r[j][1]->Write();
+      if(j) c[j]->Write();
     }
   }
 

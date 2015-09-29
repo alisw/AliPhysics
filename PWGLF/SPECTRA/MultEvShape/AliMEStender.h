@@ -107,10 +107,9 @@ private:
   TObjArray *fMCtracks;  //!
   AliMESeventInfo *fMCevInfo;  //!
 
-  AliPPVsMultUtils *fUtils;  //!
+  AliPPVsMultUtils *fUtils;
 
   ClassDef(AliMEStender, 5)          // Tender task for the Multi Event Shape
 };
 
 #endif
-

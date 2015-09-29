@@ -1,5 +1,19 @@
 // $Id$
 
+AliESDtrackCuts *CreateTrackCutsWrapper(Int_t cutmode){
+  AliESDtrackCuts *result = NULL;
+#ifdef __CLING__
+  std::stringstream cmd;
+  cmd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWGJE/macros/CreateTrackCutsPWGJE.C(" << cutmode << ")";
+  result = (AliESDtrackCuts *)gROOT->ProcessLine(cmd.str().c_str());
+#else
+  if(!gROOT->GetListOfGlobalFunctions()->FindObject("CreateTrackCutsPWGJE"))
+       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  result = CreateTrackCutsPWGJE(cutmode);
+#endif
+  return result;
+}
+
 AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   const char *name              = "TrackFilter",
   const char *trackCuts         = "Hybrid_LHC11h",
@@ -131,31 +145,30 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliEmcalEsdTrackFilterTask *eTask = new AliEmcalEsdTrackFilterTask(taskName); // default is no cut
   if ((dataSet == kLHC11c && cutsType == kHybrid) ||
       (dataSet == kLHC11d && cutsType == kHybrid) ||
       (dataSet == kLHC11h && cutsType == kHybrid)) {
     /* hybrid track cuts*/
-    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001008);       //1000 adds SPD any requirement
+    AliESDtrackCuts *cutsp = CreateTrackCutsWrapper(10001008);       //1000 adds SPD any requirement
     eTask->SetTrackCuts(cutsp);
-    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041008);       //1004 removes ITSrefit requirement from standard set   
+    AliESDtrackCuts *hybsp = CreateTrackCutsWrapper(10041008);       //1004 removes ITSrefit requirement from standard set
     hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     eTask->SetHybridTrackCuts(hybsp);
     eTask->SetIncludeNoITS(kFALSE);
   } else if ((dataSet == kLHC10h && cutsType == kHybrid) ||
 	     (dataSet == kLHC11a && cutsType == kHybrid)) {
     /* hybrid track cuts*/
-    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(10001006);       //1000 adds SPD any requirement
+    AliESDtrackCuts *cutsp = CreateTrackCutsWrapper(10001006);       //1000 adds SPD any requirement
     eTask->SetTrackCuts(cutsp);
-    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041006);       //1004 removes ITSrefit requirement from standard set    
+    AliESDtrackCuts *hybsp = CreateTrackCutsWrapper(10041006);       //1004 removes ITSrefit requirement from standard set
     hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     eTask->SetHybridTrackCuts(hybsp);
     eTask->SetIncludeNoITS(kTRUE);
   }
   else if (dataSet == kLHC11h && cutsType == kTpcOnly) {
     /* TPC-only constrained track cuts*/
-    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(2001);       //TPC-only loose track cuts
+    AliESDtrackCuts *cutsp = CreateTrackCutsWrapper(2001);       //TPC-only loose track cuts
     eTask->SetTrackCuts(cutsp);
     eTask->SetHybridTrackCuts(0);
   }
@@ -164,7 +177,7 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   }
   eTask->SetTracksName(name);
 
-  cout << " *** Track selector task configured to select " << cutsLabel  << " in dataset "<< dataSetLabel << " *** " << endl;
+  std::cout << " *** Track selector task configured to select " << cutsLabel  << " in dataset "<< dataSetLabel << " *** " << std::endl;
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

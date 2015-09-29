@@ -74,6 +74,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
+  fInit(0),
   fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
@@ -180,6 +181,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
+  fInit(0),
   fNVariables(26),
   fVariables(0x0),
   fITSClusterMap(0),
@@ -515,7 +517,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",350,-.5,349.5);
   fHistList->Add(fh1PtHardTrials);
 
-  fh1NTracksAll = new TH1F("fh1NTracksAll","fh1NTracksAll",1,-0.5,0.5);
+  fh1NTracksAll = new TH1F("fh1NTracksAll","fh1NTracksAll; N of ESD tracks",1,-0.5,0.5);
   fHistList->Add(fh1NTracksAll);
 
   fh1NTracksReject = new TH1F("fh1NTracksReject","fh1NTracksReject",1,-0.5,0.5);
@@ -531,177 +533,177 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
   fh1NTracksReject->Fill("chi2",0);
   fHistList->Add(fh1NTracksReject);
 
-  fh1NTracksSel = new TH1F("fh1NTracksSel","fh1NTracksSel",1,-0.5,0.5);
+  fh1NTracksSel = new TH1F("fh1NTracksSel","fh1NTracksSel;N of Selected ESD tracks",1,-0.5,0.5);
   fHistList->Add(fh1NTracksSel);
 
-  fPtAll = new TH1F("fPtAll","PtAll",fgkNPtBins, binsPt);
+  fPtAll = new TH1F("fPtAll","PtAll; #it{p}_{T, track}",fgkNPtBins, binsPt);
   fHistList->Add(fPtAll);
-  fPtSel = new TH1F("fPtSel","PtSel",fgkNPtBins, binsPt);
+  fPtSel = new TH1F("fPtSel","PtSel; #it{p}_{T, track}",fgkNPtBins, binsPt);
   fHistList->Add(fPtSel);
 
-  fPtPhi = new TH2F("fPtPhi","fPtPhi",fgkNPtBins,binsPt,fgkNPhiBins,binsPhi);
+  fPtPhi = new TH2F("fPtPhi","fPtPhi; #it{p}_{T, track}; #varphi",fgkNPtBins,binsPt,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtPhi);
  
-  fPtEta = new TH2F("fPtEta","fPtEta",fgkNPtBins,binsPt,fgkNEtaBins,binsEta);
+  fPtEta = new TH2F("fPtEta","fPtEta; #it{p}_{T, track}; #eta",fgkNPtBins,binsPt,fgkNEtaBins,binsEta);
   fHistList->Add(fPtEta);
 
-  fPtEtaPhi = new TH3F("fPtEtaPhi","fPtEtaPhi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fPtEtaPhi = new TH3F("fPtEtaPhi","fPtEtaPhi; #it{p}_{T, track}; #eta; #varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtEtaPhi);
  
-  fPtDCA2D = new TH2F("fPtDCA2D","fPtDCA2D",fgkNPtBins,binsPt,fgkNDCA2DBins,binsDCA2D);
+  fPtDCA2D = new TH2F("fPtDCA2D","fPtDCA2D; #it{p}_{T, track}; DCA_{xy}",fgkNPtBins,binsPt,fgkNDCA2DBins,binsDCA2D);
   fHistList->Add(fPtDCA2D);
  
-  fPtDCAZ = new TH2F("fPtDCAZ","fPtDCAZ",fgkNPtBins,binsPt,fgkNDCAZBins,binsDCAZ);
+  fPtDCAZ = new TH2F("fPtDCAZ","fPtDCAZ; #it{p}_{T, track}; DCA_{z}",fgkNPtBins,binsPt,fgkNDCAZBins,binsDCAZ);
   fHistList->Add(fPtDCAZ);
  
-  fPtNClustersTPC = new TH2F("fPtNClustersTPC","fPtNClustersTPC",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtNClustersTPC = new TH2F("fPtNClustersTPC","fPtNClustersTPC; #it{p}_{T, track}; N Clusters TPC",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPC);
 
-  fPtNClustersTPCPhi = new TH2F("fPtNClustersTPCPhi","fPtNClustersTPCPhi",fgkNPhiBins,binsPhi,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtNClustersTPCPhi = new TH2F("fPtNClustersTPCPhi","fPtNClustersTPCPhi; #it{p}_{T, track}; #varphi; N Clusters TPC (TPC only track)",fgkNPhiBins,binsPhi,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPCPhi);
 
-  fPtNClustersTPCIter1 = new TH2F("fPtNClustersTPCIter1","fPtNClustersTPCIter1",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtNClustersTPCIter1 = new TH2F("fPtNClustersTPCIter1","fPtNClustersTPCIter1; #it{p}_{T, track}; N Clusters TPC (TPC only track)",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPCIter1);
 
-  fPtNClustersTPCIter1Phi = new TH3F("fPtNClustersTPCIter1Phi","fPtNClustersTPCIter1Phi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
+  fPtNClustersTPCIter1Phi = new TH3F("fPtNClustersTPCIter1Phi","fPtNClustersTPCIter1Phi; #it{p}_{T, track}; N Clusters TPC (TPC only track); #varphi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNClustersTPCIter1Phi);
 
-  fPtNClustersTPCShared = new TH2F("fPtNClustersTPCShared","fPtNClustersTPCShared",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtNClustersTPCShared = new TH2F("fPtNClustersTPCShared","fPtNClustersTPCShared; #it{p}_{T, track}; N Clusters TPC Shared",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPCShared);
 
-  fPtNClustersTPCSharedFrac = new TH2F("fPtNClustersTPCSharedFrac","fPtNClustersTPCSharedFrac",fgkNPtBins,binsPt,fgkNSigma1Pt2Bins,binsSigma1Pt2);
+  fPtNClustersTPCSharedFrac = new TH2F("fPtNClustersTPCSharedFrac","fPtNClustersTPCSharedFrac; #it{p}_{T, track}; TPC Sharef Fraction",fgkNPtBins,binsPt,fgkNSigma1Pt2Bins,binsSigma1Pt2);
   fHistList->Add(fPtNClustersTPCSharedFrac);
  
-  fPtNPointITS = new TH2F("fPtNPointITS","fPtNPointITS",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS);
+  fPtNPointITS = new TH2F("fPtNPointITS","fPtNPointITS; #it{p}_{T, track}; N points ITS",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS);
   fHistList->Add(fPtNPointITS);
 
-  fPtNPointITSPhi = new TH3F("fPtNPointITSPhi","fPtNPointITSPhi",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS,fgkNPhiBins,binsPhi);
+  fPtNPointITSPhi = new TH3F("fPtNPointITSPhi","fPtNPointITSPhi; #it{p}_{T, track}; N points ITS; #varphi",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNPointITSPhi);
  
-  fPtChi2C = new TH2F("fPtChi2C","fPtChi2C",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
+  fPtChi2C = new TH2F("fPtChi2C","fPtChi2C; #it{p}_{T, track}; #chi^{2} Constrained TPC",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fPtChi2C);
  
-  fPtNSigmaToVertex = new TH2F("fPtNSigmaToVertex","fPtNSigmaToVertex",fgkNPtBins,binsPt,fgkNNSigmaToVertexBins,binsNSigmaToVertex);
+  fPtNSigmaToVertex = new TH2F("fPtNSigmaToVertex","fPtNSigmaToVertex; #it{p}_{T, track}; N #sigma to Vtx ",fgkNPtBins,binsPt,fgkNNSigmaToVertexBins,binsNSigmaToVertex);
   fHistList->Add(fPtNSigmaToVertex);
 
-  fPtRelUncertainty1Pt = new TH2F("fPtRelUncertainty1Pt","fPtRelUncertainty1Pt",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
+  fPtRelUncertainty1Pt = new TH2F("fPtRelUncertainty1Pt","fPtRelUncertainty1Pt; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track} ",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
   fHistList->Add(fPtRelUncertainty1Pt);
 
-  fPtRelUncertainty1PtNClus = new TH3F("fPtRelUncertainty1PtNClus","fPtRelUncertainty1PtNClus",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtRelUncertainty1PtNClus = new TH3F("fPtRelUncertainty1PtNClus","fPtRelUncertainty1PtNClus; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNClus);
 
-  fPtRelUncertainty1PtNClusIter1 = new TH3F("fPtRelUncertainty1PtNClusIter1","fPtRelUncertainty1PtNClusIter1",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtRelUncertainty1PtNClusIter1 = new TH3F("fPtRelUncertainty1PtNClusIter1","fPtRelUncertainty1PtNClusIter1; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNClusIter1);
 
-  fPtRelUncertainty1PtNPointITS = new TH3F("fPtRelUncertainty1PtNPointITS","fPtRelUncertainty1PtNPointITS",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNPointITSBins,binsNPointITS);
+  fPtRelUncertainty1PtNPointITS = new TH3F("fPtRelUncertainty1PtNPointITS","fPtRelUncertainty1PtNPointITS; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNPointITSBins,binsNPointITS);
   fHistList->Add(fPtRelUncertainty1PtNPointITS);
 
-  fPtRelUncertainty1PtITSClusterMap = new TH3F("fPtRelUncertainty1PtITSClusterMap","fPtRelUncertainty1PtITSClusterMap",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNITSClusterMapBins,binsITSClusterMap);
+  fPtRelUncertainty1PtITSClusterMap = new TH3F("fPtRelUncertainty1PtITSClusterMap","fPtRelUncertainty1PtITSClusterMap; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNITSClusterMapBins,binsITSClusterMap);
   fHistList->Add(fPtRelUncertainty1PtITSClusterMap);
 
-  fPtRelUncertainty1PtChi2 = new TH3F("fPtRelUncertainty1PtChi2","fPtRelUncertainty1PtChi2",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
+  fPtRelUncertainty1PtChi2 = new TH3F("fPtRelUncertainty1PtChi2","fPtRelUncertainty1PtChi2; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtRelUncertainty1PtChi2);
 
-  fPtRelUncertainty1PtChi2Iter1 = new TH3F("fPtRelUncertainty1PtChi2Iter1","fPtRelUncertainty1PtChi2Iter1",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
+  fPtRelUncertainty1PtChi2Iter1 = new TH3F("fPtRelUncertainty1PtChi2Iter1","fPtRelUncertainty1PtChi2Iter1; #it{p}_{T, track}; #sigma(#it{p}_{T, track})/#it{p}_{T, track}",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtRelUncertainty1PtChi2Iter1);
 
-  fPtRelUncertainty1PtPhi = new TH3F("fPtRelUncertainty1PtPhi","fPtRelUncertainty1PtPhi",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNPhiBins,binsPhi);
+  fPtRelUncertainty1PtPhi = new TH3F("fPtRelUncertainty1PtPhi","fPtRelUncertainty1PtPhi; #it{p}_{T, track};  #sigma(#it{p}_{T, track})/#it{p}_{T, track}",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtRelUncertainty1PtPhi);
 
-  fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC","fPtChi2PerClusterTPC",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
+  fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC","fPtChi2PerClusterTPC; #it{p}_{T, track}; ",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtChi2PerClusterTPC);
  
-  fPtChi2PerClusterTPCIter1 = new TH2F("fPtChi2PerClusterTPCIter1","fPtChi2PerClusterTPCIter1",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
+  fPtChi2PerClusterTPCIter1 = new TH2F("fPtChi2PerClusterTPCIter1","fPtChi2PerClusterTPCIter1; #it{p}_{T, track}; #chi^{2}",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtChi2PerClusterTPCIter1);
 
-  fPtNCrossedRows = new TH2F("fPtNCrossedRows","fPtNCrossedRows",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtNCrossedRows = new TH2F("fPtNCrossedRows","fPtNCrossedRows; #it{p}_{T, track}; N crossed rows",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNCrossedRows);
 
-  fPtNCrossedRowsPhi = new TH3F("fPtNCrossedRowsPhi","fPtNCrossedRowsPhi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
+  fPtNCrossedRowsPhi = new TH3F("fPtNCrossedRowsPhi","fPtNCrossedRowsPhi; #it{p}_{T, track}; N crossed rows ; #varphi ",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNCrossedRowsPhi);
 
-  fPtNCrossedRowsNClusFPhi = new TH3F("fPtNCrossedRowsNClusFPhi","fPtNCrossedRowsNClusFPhi",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF,fgkNPhiBins,binsPhi);
+  fPtNCrossedRowsNClusFPhi = new TH3F("fPtNCrossedRowsNClusFPhi","fPtNCrossedRowsNClusFPhi; #it{p}_{T, track}; N crossed raw / N findable clusters; #varphi",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF, fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNCrossedRowsNClusFPhi);
  
-  fPtNCrRNCrRNClusF = new TH3F("fPtNCrRNCrRNClusF","fPtNCrRNCrRNClusF",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
+  fPtNCrRNCrRNClusF = new TH3F("fPtNCrRNCrRNClusF","fPtNCrRNCrRNClusF; #it{p}_{T, track}; N Clusters TPC; N crossed raw / N findable clusters; ",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNCrossedRowsNClusFBins, binsNCrossedRowsNClusF);
   fHistList->Add(fPtNCrRNCrRNClusF);
 
-  fPtNCrossedRowsFit = new TH2F("fPtNCrossedRowsFit","fPtNCrossedRowsFit",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtNCrossedRowsFit = new TH2F("fPtNCrossedRowsFit","fPtNCrossedRowsFit; #it{p}_{T, track}; N crossed rows from fit map",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNCrossedRowsFit);
 
-  fPtNCrossedRowsFitPhi = new TH3F("fPtNCrossedRowsFitPhi","fPtNCrossedRowsFitPhi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
+  fPtNCrossedRowsFitPhi = new TH3F("fPtNCrossedRowsFitPhi","fPtNCrossedRowsFitPhi; #it{p}_{T, track}; N crossed rows from fit map; #varphi ",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNCrossedRowsFitPhi);
 
-  fPtNCrossedRowsNClusFFitPhi = new TH3F("fPtNCrossedRowsNClusFFitPhi","fPtNCrossedRowsNClusFFitPhi",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF,fgkNPhiBins,binsPhi);
+  fPtNCrossedRowsNClusFFitPhi = new TH3F("fPtNCrossedRowsNClusFFitPhi","fPtNCrossedRowsNClusFFitPhi; #it{p}_{T, track}; ",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNCrossedRowsNClusFFitPhi);
 
-  fNCrossedRowsNCrossedRowsFit = new TH2F("fNCrossedRowsNCrossedRowsFit","fNCrossedRowsNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fNCrossedRowsNCrossedRowsFit = new TH2F("fNCrossedRowsNCrossedRowsFit","fNCrossedRowsNCrossedRowsFit; N crossed rows; N crossed rows from fit map",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fNCrossedRowsNCrossedRowsFit);
 
-  fNClustersNCrossedRows = new TH2F("fNClustersNCrossedRows","fNClustersNCrossedRows",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fNClustersNCrossedRows = new TH2F("fNClustersNCrossedRows","fNClustersNCrossedRows; N clusters; N crossed rows",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fNClustersNCrossedRows);
 
-  fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit","fNClustersNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit","fNClustersNCrossedRowsFit; N clusters; N crossed rows from fit ",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fNClustersNCrossedRowsFit);
 
-  fPtNClustersNClustersFitMap = new TH3F("fPtNClustersNClustersFitMap","fPtNClustersNClustersFitMap;p_{T};N_{cls};N_{cls}^{fit map}",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtNClustersNClustersFitMap = new TH3F("fPtNClustersNClustersFitMap","fPtNClustersNClustersFitMap; #it{p}_{T, track}; N_{cls};N_{cls}^{fit map}",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersNClustersFitMap);
 
-  fPtRelUncertainty1PtNCrossedRows = new TH3F("fPtRelUncertainty1PtNCrossedRows","fPtRelUncertainty1PtNCrossedRows",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtRelUncertainty1PtNCrossedRows = new TH3F("fPtRelUncertainty1PtNCrossedRows","fPtRelUncertainty1PtNCrossedRows; #it{p}_{T, track}; N crossed rows", fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNCrossedRows);
 
-  fPtRelUncertainty1PtNCrossedRowsFit = new TH3F("fPtRelUncertainty1PtNCrossedRowsFit","fPtRelUncertainty1PtNCrossedRowsFit",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fPtRelUncertainty1PtNCrossedRowsFit = new TH3F("fPtRelUncertainty1PtNCrossedRowsFit","fPtRelUncertainty1PtNCrossedRowsFit; #it{p}_{T, track}; #sigma(1./#it{p}_{T, track}); N crossed rows from fit", fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty, fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNCrossedRowsFit);
 
-  fPtChi2Gold = new TH2F("fPtChi2Gold","fPtChi2Gold",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
+  fPtChi2Gold = new TH2F("fPtChi2Gold","fPtChi2Gold; #it{p}_{T, track}; #chi^{2} gold ",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fPtChi2Gold);
 
-  fPtChi2GGC = new TH2F("fPtChi2GGC","fPtChi2GGC",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
+  fPtChi2GGC = new TH2F("fPtChi2GGC","fPtChi2GGC; #it{p}_{T, track}; #chi^{2}_{ggc} ",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fPtChi2GGC);
 
-  fPtChi2GoldPhi = new TH3F("fPtChi2GoldPhi","fPtChi2GoldPhi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
+  fPtChi2GoldPhi = new TH3F("fPtChi2GoldPhi","fPtChi2GoldPhi; #it{p}_{T, track}; #chi^{2} gold ; #varphi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtChi2GoldPhi);
 
-  fPtChi2GGCPhi = new TH3F("fPtChi2GGCPhi","fPtChi2GGCPhi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
+  fPtChi2GGCPhi = new TH3F("fPtChi2GGCPhi","fPtChi2GGCPhi; #it{p}_{T, track};#chi^{2}_{ggc}; #varphi ",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtChi2GGCPhi);
 
   fChi2GoldChi2GGC = new TH2F("fChi2GoldChi2GGC","fChi2GoldChi2GGC;#chi^{2}_{gold};#chi^{2}_{ggc}",fgkNChi2CBins,binsChi2C,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fChi2GoldChi2GGC);
 
-  fPtChi2ITSPhi = new TH3F("fPtChi2ITSPhi","fPtChi2ITSPhi;p_{T};#chi^{2}_{ITS};#varphi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
+  fPtChi2ITSPhi = new TH3F("fPtChi2ITSPhi","fPtChi2ITSPhi; #it{p}_{T, track}; #chi^{2}_{ITS};#varphi",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtChi2ITSPhi);
 
-  fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2",fgkN1PtBins,bins1Pt,fgkNSigmaY2Bins,binsSigmaY2);
+  fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2; 1./#it{p}_{T, track}; #sigma y2 ",fgkN1PtBins,bins1Pt,fgkNSigmaY2Bins,binsSigmaY2);
   fHistList->Add(fPtSigmaY2);
 
-  fPtSigmaZ2 = new TH2F("fPtSigmaZ2","fPtSigmaZ2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaZ2);
+  fPtSigmaZ2 = new TH2F("fPtSigmaZ2","fPtSigmaZ2; #it{p}_{T, track}; #sigma z2 ",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaZ2);
   fHistList->Add(fPtSigmaZ2);
 
-  fPtSigmaSnp2 = new TH2F("fPtSigmaSnp2","fPtSigmaSnp2",fgkN1PtBins,bins1Pt,fgkNSigmaSnp2Bins,binsSigmaSnp2);
+  fPtSigmaSnp2 = new TH2F("fPtSigmaSnp2","fPtSigmaSnp2; 1./#it{p}_{T, track};  #sigma Snp2",fgkN1PtBins,bins1Pt,fgkNSigmaSnp2Bins,binsSigmaSnp2);
   fHistList->Add(fPtSigmaSnp2);
 
-  fPtSigmaTgl2 = new TH2F("fPtSigmaTgl2","fPtSigmaTgl2",fgkN1PtBins,bins1Pt,fgkNSigmaTgl2Bins,binsSigmaTgl2);
+  fPtSigmaTgl2 = new TH2F("fPtSigmaTgl2","fPtSigmaTgl2; 1./#it{p}_{T, track}; #sigma Tgl2 ",fgkN1PtBins,bins1Pt,fgkNSigmaTgl2Bins,binsSigmaTgl2);
   fHistList->Add(fPtSigmaTgl2);
 
-  fPtSigma1Pt2 = new TH2F("fPtSigma1Pt2","fPtSigma1Pt2",fgkN1PtBins,bins1Pt,fgkNSigma1Pt2Bins,binsSigma1Pt2);
+  fPtSigma1Pt2 = new TH2F("fPtSigma1Pt2","fPtSigma1Pt2; 1./#it{p}_{T, track}; #sigma(1./#it{p}_{T, track}); ",fgkN1PtBins,bins1Pt,fgkNSigma1Pt2Bins,binsSigma1Pt2);
   fHistList->Add(fPtSigma1Pt2);
 
-  fProfPtSigmaY2 = new TProfile("fProfPtSigmaY2","fProfPtSigmaY2",fgkN1PtBins,bins1Pt);
+  fProfPtSigmaY2 = new TProfile("fProfPtSigmaY2","fProfPtSigmaY2; 1./#it{p}_{T, track}; #sigma y2",fgkN1PtBins,bins1Pt);
   fHistList->Add(fProfPtSigmaY2);
 
-  fProfPtSigmaZ2 = new TProfile("fProfPtSigmaZ2","fProfPtSigmaZ2",fgkN1PtBins,bins1Pt);
+  fProfPtSigmaZ2 = new TProfile("fProfPtSigmaZ2","fProfPtSigmaZ2; 1./#it{p}_{T, track}; #sigma z2",fgkN1PtBins,bins1Pt);
   fHistList->Add(fProfPtSigmaZ2);
 
-  fProfPtSigmaSnp2 = new TProfile("fProfPtSigmaSnp2","fProfPtSigmaSnp2",fgkN1PtBins,bins1Pt);
+  fProfPtSigmaSnp2 = new TProfile("fProfPtSigmaSnp2","fProfPtSigmaSnp2; 1./#it{p}_{T, track}; #sigma Snp2",fgkN1PtBins,bins1Pt);
   fHistList->Add(fProfPtSigmaSnp2);
 
-  fProfPtSigmaTgl2 = new TProfile("fProfPtSigmaTgl2","fProfPtSigmaTgl2",fgkN1PtBins,bins1Pt);
+  fProfPtSigmaTgl2 = new TProfile("fProfPtSigmaTgl2","fProfPtSigmaTgl2; 1./#it{p}_{T, track}; #sigma Tgl2 ",fgkN1PtBins,bins1Pt);
   fHistList->Add(fProfPtSigmaTgl2);
 
   fProfPtSigma1Pt2 = new TProfile("fProfPtSigma1Pt2","fProfPtSigma1Pt2",fgkN1PtBins,bins1Pt);
   fHistList->Add(fProfPtSigma1Pt2);
 
-  fProfPtSigma1Pt = new TProfile("fProfPtSigma1Pt","fProfPtSigma1Pt;p_{T};#sigma(1/p_{T})",fgkNPtBins,binsPt);
+  fProfPtSigma1Pt = new TProfile("fProfPtSigma1Pt","fProfPtSigma1Pt;p_{T};#sigma(1/p_{T}); #sigma(1./#it{p}_{T, track});",fgkNPtBins,binsPt);
   fHistList->Add(fProfPtSigma1Pt);
 
   fProfPtPtSigma1Pt = new TProfile("fProfPtPtSigma1Pt","fProfPtPtSigma1Pt;p_{T};p_{T}#sigma(1/p_{T})",fgkNPtBins,binsPt);
@@ -923,14 +925,23 @@ Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const
   return 0;
 
 }
-
+//________________________________________________________________________
+void AliPWG4HighPtTrackQA::Init()
+{  
+   if(!fInit && fDataType==kESD) {
+      Printf("Init magnetic field ---------");
+      fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+      fESD->InitMagneticField();
+      fInit = kTRUE;
+   }
+}
 //________________________________________________________________________
 void AliPWG4HighPtTrackQA::UserExec(Option_t *)
 {  
   // Main loop
   // Called for each event
   AliDebug(2,Form(">> AliPWG4HighPtTrackQA::UserExec \n"));
-  
+  Init();
   fEvent = InputEvent();
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
 
@@ -1016,7 +1027,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD()
     15: SigmaSnp2
     16: SigmaTgl2
     17: Sigma1Pt2
-    18: NClustersTPCIter1
+    18: NClustersTPCIter1 (Iter1: first iteration of the tracking, from the outer wall of the TPC till the inner wall is reached. TPCNclsIter1 it the number of clusters of a TPConly track without the use of ITS information)
     19: Chi2TPCIter1
     20: nClustersTPCShared
     21: Golden Chi2 - global vs TPC constrained

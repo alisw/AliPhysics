@@ -411,19 +411,20 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
   //
   // important change: fill generated only after vertex cut in case of heavy-ions
   //
-  if ( fESD->GetEventSpecie() == 4) {
-    if (!vertex || !isVtxOk) {
+  // I think in the previous version there was a problem: in p-A this cut might not be effective and introduce the difference wrt to Natasha, because the event specy is not 4
+  //
+  if (!vertex || !isVtxOk) {
+    fHistMult->Fill(-1, processCode);
+    PostData(1, fListHist);
+    return;
+  } else {
+    if (TMath::Abs(vertex->GetZ()) > 10) {
       fHistMult->Fill(-1, processCode);
       PostData(1, fListHist);
       return;
-    } else {
-      if (TMath::Abs(vertex->GetZ()) > 10) {
-	fHistMult->Fill(-1, processCode);
-	PostData(1, fListHist);
-	return;
-      }
     }
   }
+  
   //
   if (fMCtrue) {
     //

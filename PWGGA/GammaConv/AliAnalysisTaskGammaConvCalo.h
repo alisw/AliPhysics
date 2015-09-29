@@ -165,8 +165,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TTree 								**tESDGammaERM02;					//! tree with E_gamma vs R_conv vs M02 vs M20
 		Float_t								tESDClusE;							//! energy of conv gamma for tree
 		Float_t								tESDGammaConvR;						//! conv R of conv gamma for tree
-		Float_t								tESDClusterM02;					//! M02 of matched cluster for tree
-		Float_t								tESDClusterM20;					//! M20 of matched cluster for tree
+		Float_t								tESDClusterM02;						//! M02 of matched cluster for tree
+		Float_t								tESDClusterM20;						//! M20 of matched cluster for tree
+		Float_t								tESDClusterEta;						//! Eta of matched cluster for tree
+		Float_t								tESDClusterPhi;						//! Phi of matched cluster for tree
+		Float_t								tESDClusterNCells;					//! NCells of matched cluster for tree
+		Float_t								tESDClusterMaxECell;			//! MaxEnergyCell of matched cluster for tree
+		Float_t								tESDClusterNLM;						//! NLM of matched cluster for tree
+
 		//histograms for mesons reconstructed quantities
 		TH2F 								**fHistoMotherInvMassPt;			//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
 		TH2F 								**fHistoMotherMatchedInvMassPt;		//! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -335,7 +341,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		map<Int_t,Int_t>					fMapMultipleCountTrueClusterGammas;				//! map containing cluster photon labels that are counted at least twice
 		TH2F								**fHistoTrueClusGammaEM02;						//! array of histos with TruePhotons: cluster E vs M02
 		TH2F								**fHistoTrueClusPi0EM02;						//! array of histos with TruePi0s: cluster E vs M02
-
+		TH2F								**fHistoTruePi0InvMassECalib;					//! array of histogram with pure pi0 signal inv Mass, energy of cluster
+		TH2F								**fHistoTruePi0PureGammaInvMassECalib;			//! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
 		// event histograms
 		TH1F 								**fHistoNEvents;								//! array of histos with event information
 		TH1F 								**fHistoNEventsWOWeight;						//! array of histos with event information without event weights
@@ -346,6 +353,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		TH2F								**fHistoSPDClusterTrackletBackground;			//! array of histos with SPD tracklets vs SPD clusters for background rejection
 		TH1F 								**fHistoNV0Tracks;								//! array of histos with V0 counts
 		TProfile 							**fProfileEtaShift;								//! array of profiles with eta shift
+		TProfile							**fProfileJetJetXSection;						//! array of profiles with xsection for jetjet
+		TH1F								**fHistoJetJetNTrials;							//! array of histos with ntrials for jetjet
 
 		// hists for nonlineartiy calibration
 		TH2F								**fHistoTruePi0NonLinearity;					//! E_truth/E_rec vs E_rec for TruePi0s
@@ -383,7 +392,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 		AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
 		AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-		ClassDef(AliAnalysisTaskGammaConvCalo, 16);
+		ClassDef(AliAnalysisTaskGammaConvCalo, 19);
 };
 
 #endif

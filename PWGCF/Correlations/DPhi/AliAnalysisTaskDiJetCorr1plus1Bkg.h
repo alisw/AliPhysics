@@ -101,6 +101,9 @@ class AliAnalysisTaskDiJetCorr1plus1Bkg : public AliAnalysisTaskSE {
   virtual void   SetFilterBit(Int_t filterbit){fBit=filterbit;}//
   virtual void   SetTriggerpTValue(Double_t pTmin1, Double_t pTmax1){fTriggerpTLowThr = pTmin1, fTriggerpTHighThr = pTmax1;}
           void   SetEfficiencyWeightMap(THnF* hEff){fThnEff = hEff;}
+          void    SetResonanceCut(Bool_t resCut){fCutResonances = resCut;}
+          void    SetConversionCut(Bool_t conversionCut){fCutConversions = conversionCut;}
+          void    SetTwoTrackEfficiencyCut(Bool_t TTRcut){twoTrackEfficiencyCut = TTRcut;}
   
  private:
   inline Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
@@ -117,8 +120,11 @@ class AliAnalysisTaskDiJetCorr1plus1Bkg : public AliAnalysisTaskSE {
         Int_t poolsize = 500;  // Maximum number of events
 
         
-        Int_t  NofCentBins  = 7;
-        Double_t MBins[]={0.,7.5, 10., 20., 30., 40., 50., 100.1};
+        Int_t  NofCentBins  = 12;
+        Double_t MBins[]={0., 1., 2., 3., 4., 5., 7.5, 10., 20., 30., 40., 50., 100.1};
+        
+       //  Int_t  NofCentBins  = 7;
+        //Double_t MBins[]={0., 7.5, 10., 20., 30., 40., 50., 100.1};
         Double_t * CentrORMultBins = MBins;
         
         Int_t NofZVrtxBins  = 10;
@@ -135,8 +141,8 @@ class AliAnalysisTaskDiJetCorr1plus1Bkg : public AliAnalysisTaskSE {
     Bool_t DefineMixedEventPoolpp(){
         
         Int_t poolsize = 500;  // Maximum number of events
-        Int_t  NofCentBins  = 1;
-        Double_t MBins[]={0, 250.};
+        Int_t  NofCentBins  = 2;
+        Double_t MBins[]={0, 35., 250.};
         Double_t * CentrORMultBins = MBins;
         
         Int_t NofZVrtxBins  = 10;

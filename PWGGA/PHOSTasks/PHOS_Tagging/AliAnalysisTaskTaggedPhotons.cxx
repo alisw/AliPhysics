@@ -78,7 +78,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fMinBCDistance(0.),
   fCentrality(0.),
   fCentBin(0), 
-  fIsMB(0),
+  fIsMB(kTRUE),
   fIsMC(0),
   fIsFastMC(0)
 {
@@ -145,7 +145,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fMinBCDistance(0.),  
   fCentrality(0.),
   fCentBin(0),
-  fIsMB(0),
+  fIsMB(kTRUE),
   fIsMC(0),
   fIsFastMC(0)
 {
@@ -713,7 +713,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
         p->SetTrig(fPHOSTrigUtils->IsFiredTrigger(clu)) ;    
     }
     
-    if(fIsMB || (!fIsMB && p->IsTrig()) ){
+    if(fIsMB || ((!fIsMB) && p->IsTrig()) ){
       FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
       FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
       if(fidArea>1){
@@ -728,7 +728,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
        //Check trigger efficiency
        FillHistogram(Form("hMCMinBiasPhot%d",mod),clu->E()) ;
        //CheckTrigBadMap
-       if(fPHOSTrigUtils->TestBadMap(mod, cellX,cellZ))
+       if((!fIsMB) && fPHOSTrigUtils->TestBadMap(mod, cellX,cellZ))
          FillHistogram(Form("hMCMinBiasPhotMap%d",mod),clu->E()) ;
        
        if(p->IsTrig())
@@ -770,37 +770,39 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
     p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;   
     
-    FillHistogram(Form("hPhotM%d_All",mod),p->Pt()) ;
-    if(fidArea>1){
-     FillHistogram(Form("hPhotM%dA2_All",mod),p->Pt()) ;
-      if(fidArea>2){
-        FillHistogram(Form("hPhotM%dA3_All",mod),p->Pt()) ;
-      }
-    }
-    if(p->IsDispOK()){
-      FillHistogram(Form("hPhotM%d_Disp",mod),p->Pt()) ;
+    if(fIsMB || (!fIsMB && p->IsTrig())){ 
+      FillHistogram(Form("hPhotM%d_All",mod),p->Pt()) ;
       if(fidArea>1){
-       FillHistogram(Form("hPhotM%dA2_Disp",mod),p->Pt()) ;
+       FillHistogram(Form("hPhotM%dA2_All",mod),p->Pt()) ;
         if(fidArea>2){
-          FillHistogram(Form("hPhotM%dA3_Disp",mod),p->Pt()) ;
+          FillHistogram(Form("hPhotM%dA3_All",mod),p->Pt()) ;
         }
       }
-      if(p->IsCPVOK()){
-        FillHistogram(Form("hPhotM%d_Both",mod),p->Pt()) ;
+      if(p->IsDispOK()){
+        FillHistogram(Form("hPhotM%d_Disp",mod),p->Pt()) ;
         if(fidArea>1){
-         FillHistogram(Form("hPhotM%dA2_Both",mod),p->Pt()) ;
+         FillHistogram(Form("hPhotM%dA2_Disp",mod),p->Pt()) ;
           if(fidArea>2){
-            FillHistogram(Form("hPhotM%dA3_Both",mod),p->Pt()) ;
+            FillHistogram(Form("hPhotM%dA3_Disp",mod),p->Pt()) ;
           }
         }
-      }
-    } 
-    if(p->IsCPVOK()){
-      FillHistogram(Form("hPhotM%d_CPV",mod),p->Pt()) ;
-      if(fidArea>1){
-       FillHistogram(Form("hPhotM%dA2_CPV",mod),p->Pt()) ;
-        if(fidArea>2){
-          FillHistogram(Form("hPhotM%dA3_CPV",mod),p->Pt()) ;
+        if(p->IsCPVOK()){
+          FillHistogram(Form("hPhotM%d_Both",mod),p->Pt()) ;
+          if(fidArea>1){
+            FillHistogram(Form("hPhotM%dA2_Both",mod),p->Pt()) ;
+            if(fidArea>2){
+              FillHistogram(Form("hPhotM%dA3_Both",mod),p->Pt()) ;
+            }
+          }
+        }
+      } 
+      if(p->IsCPVOK()){
+        FillHistogram(Form("hPhotM%d_CPV",mod),p->Pt()) ;
+        if(fidArea>1){
+         FillHistogram(Form("hPhotM%dA2_CPV",mod),p->Pt()) ;
+          if(fidArea>2){
+            FillHistogram(Form("hPhotM%dA3_CPV",mod),p->Pt()) ;
+          }
         }
       }
     }

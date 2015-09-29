@@ -27,6 +27,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Int_t ncentralitymax = 50,
                       Int_t maxITSCls = 7,
                       Int_t maxChi2ITSCls = 37,
+                      Int_t TPCMinNCls = 70,
                       Bool_t isPID = kTRUE,
                       Bool_t isVZERO = kFALSE, // use vzero sp method
                       Bool_t is2011 = kTRUE,
@@ -154,7 +155,6 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         }
         //SP_POI[icentr]->SetParamMix(poimix);
         SP_POI[icentr]->SetPtRange(0.2,6.);//
-        SP_POI[icentr]->SetMinNClustersTPC(70);
         
         
         if(!isVZERO && Qvector=="Qa"){
@@ -195,6 +195,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             SP_POI[icentr]->SetMaxChi2PerClusterTPC(Chi2TPCmax); // <------default 4.0
             SP_POI[icentr]->SetMaxDCAToVertexXY(DCAvtxXY);
             SP_POI[icentr]->SetMaxDCAToVertexZ(DCAvtxZ);
+            SP_POI[icentr]->SetMinNClustersTPC(TPCMinNCls);
         }
 
         SP_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);

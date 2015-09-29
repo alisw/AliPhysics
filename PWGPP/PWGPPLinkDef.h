@@ -156,9 +156,8 @@
 // AD
 #pragma link C++ class  AliAnalysisTaskADQA+;
 #pragma link C++ class  AliAnalysisTaskADPilot+;
-//Beam Gas Monitoring
-#pragma link C++ class  AliAnalysisMBVeto+;
-//HMTF
+//Beam Gas Monitoring HMTF
+//#pragma link C++ class  AliAnalysisMBVeto+;
 #pragma link C++ class  AliAnalysisMultCorrTaskQA+;
 #pragma link C++ class  AliAnalysisTaskLeadingPt+;
 #pragma link C++ class  AliAnalysisBGMonitorQA+;

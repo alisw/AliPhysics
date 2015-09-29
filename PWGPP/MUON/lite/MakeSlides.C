@@ -209,15 +209,16 @@ Bool_t MakeTriggerSlide ( TString filename, ofstream &outFile )
 }
 
 //_________________________________
-Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile )
+Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile, Bool_t outliers = kFALSE )
 {
-  BeginFrame("Trigger chamber efficiencies per RPC",outFile);
+  TString baseName = outliers ? "eff.-<eff.> for outliers" : "efficiency";
+  BeginFrame(Form("Trigger chamber %s per RPC",baseName.Data()),outFile);
   outFile << " \\begin{columns}[onlytextwidth]" << endl;
   outFile << "  \\column{\\textwidth}" << endl;
   outFile << "  \\centering" << endl;
   for ( Int_t ich=0; ich<4; ich++ ) {
     if ( ich%2 == 0 ) outFile << endl;
-    Int_t ipage = GetPage(Form("Trigger chamber efficiency vs run for chamber %i&RPC",11+ich),filename);
+    Int_t ipage = GetPage(Form("Trigger chamber %s vs run for chamber %i&RPC",baseName.Data(),11+ich),filename);
     outFile << "  \\includegraphics[width=0.37\\textwidth,page=" << ipage << "]{" << filename.Data() << "}" << endl;
   }
   outFile << " \\end{columns}" << endl;
@@ -233,12 +234,13 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   outFile << "\\begin{itemize}" << endl;
   outFile << " \\item Runs selected for MUON on ALICE logbook:" << endl;
   outFile << " \\begin{itemize}" << endl;
-  outFile << "  \\item Period: " << period.Data() << endl;
   outFile << "  \\item Run Type: PHYSICS" << endl;
-  outFile << "  \\item Beam: STABLE" << endl;
-  outFile << "  \\item At least [ MUON\\_TRG \\& MUON\\_TRK \\& SPD ] as Readout" << endl;
-  outFile << "  \\item Quality: globaly GOOD and NOT BAD for readout Detectors" << endl;
   outFile << "  \\item Duration: at least 10 min" << endl;
+  outFile << "  \\item GDC mStream Recording:	Yes" << endl;
+  outFile << "  \\item Period: " << period.Data() << endl;
+  outFile << "  \\item Detectors: At least [ MUON\\_TRG \\& MUON\\_TRK ] as Readout" << endl;
+  outFile << "  \\item Quality: globaly GOOD and NOT BAD for readout Detectors" << endl;
+  outFile << "  \\item Beam Mode: STABLE" << endl;
   outFile << " \\end{itemize}" << endl;
   outFile << "\\end{itemize}" << endl;
   outFile << endl;
@@ -273,33 +275,60 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   TString runList = GetRunList(trackerQA);
   TObjArray* runListArr = runList.Tokenize(",");
 
-  BeginFrame("Run summary",outFile);
-  outFile << " \\begin{columns}[onlytextwidth,T]" << endl;
-  outFile << "  \\footnotesize" << endl;
-  outFile << "  \\column{0.5\\textwidth}" << endl;
-  outFile << "  \\centering" << endl;
-  outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
-  outFile << "   \\hline" << endl;
-  if ( runListArr->GetEntries() == 0 ) {
-    outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
-  }
-  else {
-    for ( Int_t irun=0; irun<runListArr->GetEntries(); irun++ ) {
-      outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun))->GetString().Atoi() << "}{}" << endl;
+  TString romanNum[10] = {"I","II","III","IV","V","VI","VII","VIII","IX","X"};
+
+  Int_t nRuns = runListArr->GetEntries();
+  Int_t nRunsPerPage = 40;
+  Int_t nRunsPerColumn = nRunsPerPage/2;
+
+  Int_t nPages = nRuns/nRunsPerPage;
+  if ( nRuns%nRunsPerPage > 0 ) nPages++;
+
+  Int_t irun = 0;
+
+  for ( Int_t ipage=0; ipage<nPages; ipage++ ) {
+    TString title = "Run summary";
+    if ( nPages > 1 ) title += Form(" (%s)",romanNum[ipage].Data());
+    BeginFrame(title,outFile);
+    outFile << " \\begin{columns}[onlytextwidth,T]" << endl;
+    outFile << "  \\footnotesize" << endl;
+    outFile << "  \\column{0.5\\textwidth}" << endl;
+    outFile << "  \\centering" << endl;
+    outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
+    outFile << "   \\hline" << endl;
+    if ( nRuns == 0 ) {
+      outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
     }
+    else {
+      while ( irun<nRuns ) {
+        outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun++))->GetString().Atoi() << "}{}" << endl;
+        if ( irun%nRunsPerColumn == 0 ) break;
+      }
+    }
+
+    outFile << "   \\hline" << endl;
+    outFile << "  \\end{tabular}" << endl;
+    outFile << endl;
+    outFile << "  \\column{0.5\\textwidth}" << endl;
+    outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
+    Bool_t hasRuns = ( irun < nRuns );
+    if ( hasRuns ) outFile << "   \\hline" << endl;
+    while ( irun<nRuns ) {
+      outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun++))->GetString().Atoi() << "}{}" << endl;
+      if ( irun%nRunsPerColumn == 0 ) break;
+    }
+    if ( hasRuns ) outFile << "   \\hline" << endl;
+    if ( ipage == nPages -1 ) {
+      outFile << "   \\hline" << endl;
+      outFile << "   \\colorLegend" << endl;
+      outFile << "   \\hline" << endl;
+    }
+    outFile << "  \\end{tabular}" << endl;
+    outFile << " \\end{columns}" << endl;
+    EndFrame(outFile);
   }
+
   delete runListArr;
-  outFile << "   \\hline" << endl;
-  outFile << "  \\end{tabular}" << endl;
-  outFile << endl;
-  outFile << "  \\column{0.5\\textwidth}" << endl;
-  outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
-  outFile << "   \\hline" << endl;
-  outFile << "   \\colorLegend" << endl;
-  outFile << "   \\hline" << endl;
-  outFile << "  \\end{tabular}" << endl;
-  outFile << " \\end{columns}" << endl;
-  EndFrame(outFile);
 }
 
 //_________________________________
@@ -309,6 +338,7 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\mode<presentation>" << endl;
   outFile << "\\usepackage[T1]{fontenc}" << endl;
   outFile << "\\usepackage{lmodern}" << endl;
+  outFile << "\\usepackage{textcomp}" << endl;
   outFile << "\\usepackage{amsmath}" << endl;
   outFile << "\\usepackage{color,graphicx}" << endl;
   outFile << "\\usepackage{colortbl}" << endl;
@@ -352,8 +382,10 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\newcommand{\\warningColor}{orange!50!white}" << endl;
   outFile << "\\newcommand{\\pendingColor}{yellow!50!white}" << endl;
   outFile << "\\newcommand{\\newColor}{blue!20!white}" << endl;
+  outFile << "\\newcommand{\\notInLogColor}{black!20!white}" << endl;
   outFile << "\\newcommand{\\colorLegend}{" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\newColor}{~~} = newly analyzed}\\\\" << endl;
+  outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\notInLogColor}{~~} = non-selected from e-logbook}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\pendingColor}{~~} = pending statement}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\warningColor}{~~} = possible problem}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\errorColor}{~~} = problem spotted}\\\\}" << endl;
@@ -365,6 +397,8 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\newcommand{\\pt}{\\ensuremath{p_{\\mathrm{T}}}}" << endl;
   outFile << "\\newcommand{\\dd}{\\text{d}}" << endl;
   outFile << "\\newcommand{\\raa}{\\ensuremath{R_{AA}}}" << endl;
+  outFile << "\\newcommand{\\un}[1]{\\protect\\detokenize{#1}}" << endl;
+  outFile << endl;
 }
 
 //_________________________________
@@ -426,7 +460,23 @@ void StartAppendix ( ofstream &outFile )
 }
 
 //_________________________________
-void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.pdf", TString triggerQA = "QA_muon_trigger.pdf", TString  texFilename = "muonQA.tex" )
+void WriteRunList ( TString trackerQA, TString outFilename = "runListQA.txt" )
+{
+  TString runList = GetRunList(trackerQA);
+  TObjArray* runListArr = runList.Tokenize(",");
+
+  ofstream outFile(outFilename);
+  for ( Int_t irun=0; irun<runListArr->GetEntries(); irun++ ) {
+    outFile << static_cast<TObjString*>(runListArr->At(irun))->GetString().Atoi() << endl;
+  }
+  outFile.close();
+  delete runListArr;
+
+  PdfToTxt(trackerQA,kTRUE);
+}
+
+//_________________________________
+void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.pdf", TString triggerQA = "QA_muon_trigger.pdf", TString  texFilename = "muonQA.tex", TString outRunList = "" )
 {
   if ( gSystem->AccessPathName(texFilename.Data()) == 0 ) {
     printf("Output file %s already exists\nPlease remove it!\n", texFilename.Data());
@@ -471,6 +521,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
   MakeSingleFigureSlide("averaged normalized",trackerQA,"Tracking quality",outFile);
 
   MakeTriggerRPCslide(triggerQA,outFile);
+  MakeTriggerRPCslide(triggerQA,outFile,kTRUE);
   MakeSingleFigureSlide("Trigger Lpt cut per run",trackerQA,"Trigger \\pt\\ cut",outFile);
 
   BeginFrame("Hardware issues",outFile);
@@ -484,6 +535,8 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
   EndSlides(outFile);
 
   delete trigList;
+
+  if ( ! outRunList.IsNull() ) WriteRunList(trackerQA, outRunList);
 
   // Clean converted txt files
   TString filenames[2] = {trackerQA, triggerQA};

@@ -55,59 +55,12 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
 
   void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
   AliHFEpid *GetPID() const { return fPID; }
+  void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
+  void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
+  void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t iTracks,AliESDtrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma);
-  void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight); 
-
-  void SetP2_lowPtEta0010 (Double_t P2_lowPtEta0010){fP2_lowPtEta0010 = P2_lowPtEta0010;};
-  void SetP3_lowPtEta0010 (Double_t P3_lowPtEta0010){fP3_lowPtEta0010 = P3_lowPtEta0010;};
-  void SetP4_lowPtEta0010 (Double_t P4_lowPtEta0010){fP4_lowPtEta0010 = P4_lowPtEta0010;};
-
-  void SetP2_highPtEta0010 (Double_t P2_highPtEta0010){fP2_highPtEta0010 = P2_highPtEta0010;};
-  void SetP3_highPtEta0010 (Double_t P3_highPtEta0010){fP3_highPtEta0010 = P3_highPtEta0010;};
-  void SetP4_highPtEta0010 (Double_t P4_highPtEta0010){fP4_highPtEta0010 = P4_highPtEta0010;};
-
-  void SetP2_lowPtPi00010 (Double_t P2_lowPtPi00010){fP2_lowPtPi00010 = P2_lowPtPi00010;};
-  void SetP3_lowPtPi00010 (Double_t P3_lowPtPi00010){fP3_lowPtPi00010 = P3_lowPtPi00010;};
-  void SetP4_lowPtPi00010 (Double_t P4_lowPtPi00010){fP4_lowPtPi00010 = P4_lowPtPi00010;};
-
-  void SetP2_highPtPi00010 (Double_t P2_highPtPi00010){fP2_highPtPi00010 = P2_highPtPi00010;};
-  void SetP3_highPtPi00010 (Double_t P3_highPtPi00010){fP3_highPtPi00010 = P3_highPtPi00010;};
-  void SetP4_highPtPi00010 (Double_t P4_highPtPi00010){fP4_highPtPi00010 = P4_highPtPi00010;};
-
-  void SetP2_lowPtEta1020 (Double_t P2_lowPtEta1020){fP2_lowPtEta1020 = P2_lowPtEta1020;};
-  void SetP3_lowPtEta1020 (Double_t P3_lowPtEta1020){fP3_lowPtEta1020 = P3_lowPtEta1020;};
-  void SetP4_lowPtEta1020 (Double_t P4_lowPtEta1020){fP4_lowPtEta1020 = P4_lowPtEta1020;};
-
-  void SetP2_highPtEta1020 (Double_t P2_highPtEta1020){fP2_highPtEta1020 = P2_highPtEta1020;};
-  void SetP3_highPtEta1020 (Double_t P3_highPtEta1020){fP3_highPtEta1020 = P3_highPtEta1020;};
-  void SetP4_highPtEta1020 (Double_t P4_highPtEta1020){fP4_highPtEta1020 = P4_highPtEta1020;};
-
-  void SetP2_lowPtPi01020 (Double_t P2_lowPtPi01020){fP2_lowPtPi01020 = P2_lowPtPi01020;};
-  void SetP3_lowPtPi01020 (Double_t P3_lowPtPi01020){fP3_lowPtPi01020 = P3_lowPtPi01020;};
-  void SetP4_lowPtPi01020 (Double_t P4_lowPtPi01020){fP4_lowPtPi01020 = P4_lowPtPi01020;};
-
-  void SetP2_highPtPi01020 (Double_t P2_highPtPi01020){fP2_highPtPi01020 = P2_highPtPi01020;};
-  void SetP3_highPtPi01020 (Double_t P3_highPtPi01020){fP3_highPtPi01020 = P3_highPtPi01020;};
-  void SetP4_highPtPi01020 (Double_t P4_highPtPi01020){fP4_highPtPi01020 = P4_highPtPi01020;};
-
-  void SetP2_lowPtEta2040 (Double_t P2_lowPtEta2040){fP2_lowPtEta2040 = P2_lowPtEta2040;};
-  void SetP3_lowPtEta2040 (Double_t P3_lowPtEta2040){fP3_lowPtEta2040 = P3_lowPtEta2040;};
-  void SetP4_lowPtEta2040 (Double_t P4_lowPtEta2040){fP4_lowPtEta2040 = P4_lowPtEta2040;};
-
-  void SetP2_highPtEta2040 (Double_t P2_highPtEta2040){fP2_highPtEta2040 = P2_highPtEta2040;};
-  void SetP3_highPtEta2040 (Double_t P3_highPtEta2040){fP3_highPtEta2040 = P3_highPtEta2040;};
-  void SetP4_highPtEta2040 (Double_t P4_highPtEta2040){fP4_highPtEta2040 = P4_highPtEta2040;};
-
-  void SetP2_lowPtPi02040 (Double_t P2_lowPtPi02040){fP2_lowPtPi02040 = P2_lowPtPi02040;};
-  void SetP3_lowPtPi02040 (Double_t P3_lowPtPi02040){fP3_lowPtPi02040 = P3_lowPtPi02040;};
-  void SetP4_lowPtPi02040 (Double_t P4_lowPtPi02040){fP4_lowPtPi02040 = P4_lowPtPi02040;};
-
-  void SetP2_highPtPi02040 (Double_t P2_highPtPi02040){fP2_highPtPi02040 = P2_highPtPi02040;};
-  void SetP3_highPtPi02040 (Double_t P3_highPtPi02040){fP3_highPtPi02040 = P3_highPtPi02040;};
-  void SetP4_highPtPi02040 (Double_t P4_highPtPi02040){fP4_highPtPi02040 = P4_highPtPi02040;};
-
-  
+  void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
   
   void InitParameters();
 
@@ -131,57 +84,9 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   
   Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
   
-  Double_t 		fAssPtCut;		// pt cut for associated electron
-  Int_t 		fAssTPCnCut;		// TPC number of clusters for associated electron
-  Bool_t 		fAssITSrefitCut;	// ITS refir for associated electron
-
-  Double_t fP2_lowPtEta0010; 
-  Double_t fP3_lowPtEta0010; 
-  Double_t fP4_lowPtEta0010; 
-
-  Double_t fP2_highPtEta0010; 
-  Double_t fP3_highPtEta0010; 
-  Double_t fP4_highPtEta0010; 
-
-  Double_t fP2_lowPtPi00010; 
-  Double_t fP3_lowPtPi00010; 
-  Double_t fP4_lowPtPi00010; 
-
-  Double_t fP2_highPtPi00010; 
-  Double_t fP3_highPtPi00010; 
-  Double_t fP4_highPtPi00010; 
-
-  Double_t fP2_lowPtEta1020; 
-  Double_t fP3_lowPtEta1020; 
-  Double_t fP4_lowPtEta1020; 
-
-  Double_t fP2_highPtEta1020; 
-  Double_t fP3_highPtEta1020; 
-  Double_t fP4_highPtEta1020; 
-
-  Double_t fP2_lowPtPi01020; 
-  Double_t fP3_lowPtPi01020; 
-  Double_t fP4_lowPtPi01020; 
-
-  Double_t fP2_highPtPi01020; 
-  Double_t fP3_highPtPi01020; 
-  Double_t fP4_highPtPi01020; 
-
-  Double_t fP2_lowPtEta2040; 
-  Double_t fP3_lowPtEta2040; 
-  Double_t fP4_lowPtEta2040; 
-
-  Double_t fP2_highPtEta2040; 
-  Double_t fP3_highPtEta2040; 
-  Double_t fP4_highPtEta2040; 
-
-  Double_t fP2_lowPtPi02040; 
-  Double_t fP3_lowPtPi02040; 
-  Double_t fP4_lowPtPi02040; 
-
-  Double_t fP2_highPtPi02040; 
-  Double_t fP3_highPtPi02040; 
-  Double_t fP4_highPtPi02040; 
+  Double_t              fAssPtCut;		// pt cut for associated electron
+  Int_t                 fAssTPCnCut;		// TPC number of clusters for associated electron
+  Bool_t                fAssITSrefitCut;	// ITS refit for associated electron
   
   AliESDEvent        	*fESD;	            	 //! ESD object
   AliAODEvent           *fAOD;                  //! AOD object
@@ -189,91 +94,91 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   AliPIDResponse        *fpidResponse;          //! PID response
 
   AliMCEvent            *fMC;                   //! MC object
-  AliStack		*fStack;		//! stack
+  AliStack              *fStack;		//! stack
     
   TList              	*fOutputList;		 //! output list
   
   AliESDtrackCuts     	*fTrackCuts;      	 //! ESD track cuts
   AliESDtrackCuts     	*fAssTrackCuts;      	 //! ESD track cuts
-  AliHFEcuts 		*fCuts;                  //! Cut Collection
+  AliHFEcuts            *fCuts;                  //! Cut Collection
 
-  Bool_t 		fIdentifiedAsOutInz;    //! Out Of Range in z
-  Bool_t 		fPassTheEventCut;       //! Pass The Event Cut
-  Bool_t 		fRejectKinkMother;      //! Reject Kink Mother
-  Bool_t 		fIsMC;                  //! flag for MC analysis   
+  Bool_t                fIdentifiedAsOutInz;    //! Out Of Range in z
+  Bool_t                fPassTheEventCut;       //! Pass The Event Cut
+  Bool_t                fRejectKinkMother;      //! Reject Kink Mother
+  Bool_t                fIsMC;                  //! flag for MC analysis
   Bool_t                fIsAOD;                //! flag for AOD analysis
-  Bool_t		fSetMassConstraint;	//! set mass constraint
+  Bool_t                fSetMassConstraint;	//! set mass constraint
 
-  Double_t 		fVz;                    //! z position of the primary vertex
-  AliCFManager 		*fCFM;                  //! Correction Framework Manager
-  AliHFEpid 		*fPID;                  //! PID
+  Double_t              fVz;                    //! z position of the primary vertex
+  AliCFManager          *fCFM;                  //! Correction Framework Manager
+  AliHFEpid             *fPID;                  //! PID
   AliHFEpidQAmanager 	*fPIDqa;		//! PID QA manager
-  Double_t 		fOpeningAngleCut;	//! openingAngle cut for non-HFE selection
-  Double_t	        fInvmassCut;		//! invariant mass cut  for non-HFE selection
-  Double_t	        fChi2Cut;              //! Chi2 cut  for non-HFE selection
-  Double_t	        fDCAcut;               //! DCA cut  for non-HFE selection
+  Double_t              fOpeningAngleCut;	//! openingAngle cut for non-HFE selection
+  Double_t              fInvmassCut;		//! invariant mass cut  for non-HFE selection
+  Double_t              fChi2Cut;              //! Chi2 cut  for non-HFE selection
+  Double_t              fDCAcut;               //! DCA cut  for non-HFE selection
   
-  Int_t			fWhichDecay;		//! which decay
-  Double_t 		fPi0EtaWeight;		//! weight for pi0/eta in MC with enhanced signal
+  Int_t                 fWhichDecay;		//! which decay
+  Double_t              fPi0EtaWeight;		//! weight for pi0/eta in MC with enhanced signal
 
-  TH1F		        *fCentAftThr;		//! centrality for events with electron pt  > 8 GeV/c
-  TH1F		        *fevPlaneV0AftThr[3];	//! V0 event plane distribution for events with electron pt  > 8 GeV/c
+  TH1F                  *fCentAftThr;		//! centrality for events with electron pt  > 8 GeV/c
+  TH1F                  *fevPlaneV0AftThr[3];	//! V0 event plane distribution for events with electron pt  > 8 GeV/c
   
-  TH2F		        *fTrigger;		//! check trigger
-  TH1F		        *fNoEvents;		//! no of events
-  TH1F		        *fTrkpt;		//! track pt
-  TH2F		        *fTrkEovPBef;		//! track E/p before HFE pid
-  TH2F		        *fTrkEovPAft;		//! track E/p after HFE pid
-  TH2F		        *fdEdxBef;		//! track dEdx vs p before HFE pid
-  TH2F		        *fdEdxAft;		//! track dEdx vs p after HFE pid
-  TH2F		        *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
-  TH2F		        *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
-  TH2F		        *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
-  TH2F		        *fInclElec[3];   	 //! inclusive electron pt
+  TH2F                  *fTrigger;		//! check trigger
+  TH1F                  *fNoEvents;		//! no of events
+  TH1F                  *fTrkpt;		//! track pt
+  TH2F                  *fTrkEovPBef;		//! track E/p before HFE pid
+  TH2F                  *fTrkEovPAft;		//! track E/p after HFE pid
+  TH2F                  *fdEdxBef;		//! track dEdx vs p before HFE pid
+  TH2F                  *fdEdxAft;		//! track dEdx vs p after HFE pid
+  TH2F                  *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
+  TH2F                  *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
+  TH2F                  *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
+  TH2F                  *fInclElec[3];   	 //! inclusive electron pt
   
   TH2F                  *fInvmassLS[3];	//! Inv mass of LS (e,e)
   TH2F                  *fInvmassULS[3];	//! Inv mass of ULS (e,e)
   TH2F                  *fOpeningAngleLS[3];	//! opening angle for LS pairs
   TH2F                  *fOpeningAngleULS[3];	//! opening angle for ULS pairs
 
-  TH1F		        *fTrackPtBefTrkCuts;	//! Track pt before track cuts	
-  TH1F		        *fTrackPtAftTrkCuts;	//! Track pt after track cuts
-  TH2F		        *fTPCnsigma;		//! TPC n sigma vs p	
+  TH1F                  *fTrackPtBefTrkCuts;	//! Track pt before track cuts
+  TH1F                  *fTrackPtAftTrkCuts;	//! Track pt after track cuts
+  TH2F                  *fTPCnsigma;		//! TPC n sigma vs p
   
-  TH1F		        *fCent;			//! centrality distribution
-  TH1F		        *fCentAftFlt;		//! centrality distribution after centrality flattening
+  TH1F                  *fCent;			//! centrality distribution
+  TH1F                  *fCentAftFlt;		//! centrality distribution after centrality flattening
   
-  TH1F		        *fevPlaneV0[3];		//! V0 event plane distribution
-  TH1F		        *fTPCsubEPres;		//! TPC event plane resolution
-  TH2F		        *fEPres[3];		//! histograms for event plane resolution calculation
-  THnSparse	        *fCorr;			//! correlations
-  THnSparse	        *fElecMC;		//! electron background from MC 
-  TH2F		        *feTPCV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (only TPC PID)
-  TH2F		        *feV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (TPC + EMCAL PID)
-  TH2F		        *fChargPartV2[3];	//! CosDeltaPhi vs pt of charged particle for trigger correction
-  TH2F		        *fMtcPartV2[3];		//! CosDeltaPhi vs pt of matched particle for trigger correction
+  TH1F                  *fevPlaneV0[3];		//! V0 event plane distribution
+  TH1F                  *fTPCsubEPres;		//! TPC event plane resolution
+  TH2F                  *fEPres[3];		//! histograms for event plane resolution calculation
+  THnSparse             *fCorr;			//! correlations
+  THnSparse             *fElecMC;		//! electron background from MC
+  TH2F                  *feTPCV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (only TPC PID)
+  TH2F                  *feV2[3];		//! CosDeltaPhi vs pt of inclusive eletron (TPC + EMCAL PID)
+  TH2F                  *fChargPartV2[3];	//! CosDeltaPhi vs pt of charged particle for trigger correction
+  TH2F                  *fMtcPartV2[3];		//! CosDeltaPhi vs pt of matched particle for trigger correction
     
-  TH1F		        *fPi0Pt[3];		//! primary pi0 pt to compute the weight
-  TH1F		        *fEtaPt[3];		//! primary eta pt to compute the weight
+  TH1F                  *fPi0Pt[3];		//! primary pi0 pt to compute the weight
+  TH1F                  *fEtaPt[3];		//! primary eta pt to compute the weight
   
-  TH1F			*fEoverPsig[3][8][4];	//! E/p distribution for electrons
-  TH1F			*fEoverPuls[3][8][4];	//! E/p distribution for electrons from unlike-sign pairs
-  TH1F			*fEoverPls[3][8][4];	//! E/p distribution for electrons from like-sign pairs
-  TH1F			*fEoverPbcg[3][8][4];	//! E/p distribution for hadrons
+  TH1F                  *fEoverPsig[3][8][4];	//! E/p distribution for electrons
+  TH1F                  *fEoverPuls[3][8][4];	//! E/p distribution for electrons from unlike-sign pairs
+  TH1F                  *fEoverPls[3][8][4];	//! E/p distribution for electrons from like-sign pairs
+  TH1F                  *fEoverPbcg[3][8][4];	//! E/p distribution for hadrons
 
-  TH1F		        *fDe[6];
-  TH1F		        *fD0e[6];
-  TH1F		        *fDpluse[6];
-  TH1F		        *fDminuse[6];
+  TH1F                  *fDe[6];
+  TH1F                  *fD0e[6];
+  TH1F                  *fDpluse[6];
+  TH1F                  *fDminuse[6];
   
-  TH2F		        *fD0_e;
+  TH2F                  *fD0_e;
   
-  TH1F		        *fTot_pi0e;		//! inclusive electron
-  TH1F		        *fPhot_pi0e;		//! ULS pair 
-  TH1F		        *fPhotBCG_pi0e;		//! LS pair
-  TH1F		        *fTot_etae;		//! inclusive electron
-  TH1F		        *fPhot_etae;		//! ULS pair 
-  TH1F		        *fPhotBCG_etae;		//! LS pair
+  TH1F                  *fTot_pi0e;		//! inclusive electron
+  TH1F                  *fPhot_pi0e;		//! ULS pair
+  TH1F                  *fPhotBCG_pi0e;		//! LS pair
+  TH1F                  *fTot_etae;		//! inclusive electron
+  TH1F                  *fPhot_etae;		//! ULS pair
+  TH1F                  *fPhotBCG_etae;		//! LS pair
 
   TH1F                  *fInvMass;		//! Invariant mass of ULS pairs
   TH1F                  *fInvMassBack;		//! Invariant mass if LS pairs

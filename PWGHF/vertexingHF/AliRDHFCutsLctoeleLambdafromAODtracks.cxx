@@ -61,6 +61,7 @@ AliRDHFCuts(name),
   fProdTrackTPCNclsRatioMin(0.0),
   fProdUseAODFilterBit(kTRUE),
   fProdV0MassTolLambda(0.01),
+  fProdV0MassTolLambdaRough(0.01),
   fProdV0PtMin(0.5),
   fProdV0CosPointingAngleToPrimVtxMin(0.99),
   fProdV0DcaDaughtersMax(1.5),
@@ -90,6 +91,7 @@ AliRDHFCuts(name),
 	fSigmaElectronTPCMin(-9999.),
 	fSigmaElectronTPCPtDepPar0(-9999.),
 	fSigmaElectronTPCPtDepPar1(-9999.),
+	fSigmaElectronTPCPtDepPar2(0.),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
 	fSigmaElectronTOFMax(9999.)
@@ -132,6 +134,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
   fProdV0MassTolLambda(source.fProdV0MassTolLambda),
+  fProdV0MassTolLambdaRough(source.fProdV0MassTolLambdaRough),
   fProdV0PtMin(source.fProdV0PtMin),
   fProdV0CosPointingAngleToPrimVtxMin(source.fProdV0CosPointingAngleToPrimVtxMin),
   fProdV0DcaDaughtersMax(source.fProdV0DcaDaughtersMax),
@@ -161,6 +164,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
 	fSigmaElectronTPCMin(source.fSigmaElectronTPCMin),
 	fSigmaElectronTPCPtDepPar0(source.fSigmaElectronTPCPtDepPar0),
 	fSigmaElectronTPCPtDepPar1(source.fSigmaElectronTPCPtDepPar1),
+	fSigmaElectronTPCPtDepPar2(source.fSigmaElectronTPCPtDepPar2),
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
 	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax)
@@ -190,6 +194,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fProdV0MassTolLambda = source.fProdV0MassTolLambda;
+  fProdV0MassTolLambdaRough = source.fProdV0MassTolLambdaRough;
   fProdV0PtMin = source.fProdV0PtMin;
   fProdV0CosPointingAngleToPrimVtxMin = source.fProdV0CosPointingAngleToPrimVtxMin;
   fProdV0DcaDaughtersMax=source.fProdV0DcaDaughtersMax;
@@ -219,6 +224,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
 	fSigmaElectronTPCMin = source.fSigmaElectronTPCMin;
 	fSigmaElectronTPCPtDepPar0 = source.fSigmaElectronTPCPtDepPar0;
 	fSigmaElectronTPCPtDepPar1 = source.fSigmaElectronTPCPtDepPar1;
+	fSigmaElectronTPCPtDepPar2 = source.fSigmaElectronTPCPtDepPar2;
 	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
@@ -555,7 +561,8 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedPtDepeID(AliAO
 	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
 	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
 
-	if(nSigmaTPCele<fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*trk->Pt()) return kFALSE;
+	Double_t pte = trk->Pt();
+	if(nSigmaTPCele<fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
 
 	return kTRUE;
@@ -610,14 +617,14 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
   Double_t massAntiLambda = v0->MassAntiLambda();
   Double_t mlamPDG   = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t mk0sPDG   = TDatabasePDG::Instance()->GetParticle(310)->Mass();
-  if(!(fabs(massAntiLambda-mlamPDG)<fProdV0MassTolLambda) && !(fabs(massLambda-mlamPDG)<fProdV0MassTolLambda)) return kFALSE;
+  if(!(fabs(massAntiLambda-mlamPDG)<fProdV0MassTolLambdaRough) && !(fabs(massLambda-mlamPDG)<fProdV0MassTolLambdaRough)) return kFALSE;
 
   Double_t massK0s = v0->MassK0Short();
   if(TMath::Abs(massK0s-mk0sPDG)<fProdMassRejK0s)
     return kFALSE;
 
   Bool_t isparticle = kTRUE;
-  if(TMath::Abs(massAntiLambda-mlamPDG)<fProdV0MassTolLambda) isparticle = kFALSE;
+  if(TMath::Abs(massAntiLambda-mlamPDG)<fProdV0MassTolLambdaRough) isparticle = kFALSE;
 
 
   if(TMath::Abs(v0->DcaV0Daughters())>fProdV0DcaDaughtersMax) return kFALSE;
@@ -672,7 +679,7 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 
       Int_t isProton= -9999;
       Int_t isPion= -9999;
-			if(fabs(massLambda-mlamPDG)<0.02){
+			if(isparticle){
 				isProton=fPidObjProton->MakeRawPid(cptrack,4); 
 				isPion=fPidObjPion->MakeRawPid(cntrack,2); 
 			}else{
@@ -705,3 +712,52 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SelectWithRoughCuts(AliAODv0 *v0, 
 	return kTRUE;
 
 }
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsPeakRegion(AliAODv0 *v0)
+{
+  Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  Double_t massL = v0->MassLambda();
+  if(TMath::Abs(massL-mLPDG)>fProdV0MassTolLambdaRough)
+		massL = v0->MassAntiLambda();
+
+  if(TMath::Abs(massL-mLPDG)<fProdV0MassTolLambda)
+		return kTRUE;
+	return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsPeakRegion(TLorentzVector *v0)
+{
+  Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  Double_t massL = v0->M();
+  if(TMath::Abs(massL-mLPDG)<fProdV0MassTolLambda)
+		return kTRUE;
+	return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSideBand(AliAODv0 *v0)
+{
+  Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  Double_t massL = v0->MassLambda();
+  if(TMath::Abs(massL-mLPDG)>fProdV0MassTolLambdaRough)
+		massL = v0->MassAntiLambda();
+
+	Bool_t issideband = kFALSE;
+  if((massL-mLPDG)>fProdV0MassTolLambdaRough-fProdV0MassTolLambda) issideband = kTRUE;
+  if((massL-mLPDG)<-fProdV0MassTolLambdaRough+fProdV0MassTolLambda) issideband = kTRUE;
+	return issideband;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSideBand(TLorentzVector *v0)
+{
+  Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  Double_t massL = v0->M();
+	Bool_t issideband = kFALSE;
+  if((massL-mLPDG)>fProdV0MassTolLambdaRough-fProdV0MassTolLambda) issideband = kTRUE;
+  if((massL-mLPDG)<-fProdV0MassTolLambdaRough+fProdV0MassTolLambda) issideband = kTRUE;
+	return issideband;
+}
+

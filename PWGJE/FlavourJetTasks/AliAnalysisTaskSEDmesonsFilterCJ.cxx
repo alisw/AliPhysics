@@ -42,12 +42,13 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
-#include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 #include "AliEmcalParticle.h"
 #include "AliParticleContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliStack.h"
+
+#include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
 ClassImp(AliAnalysisTaskSEDmesonsFilterCJ)
 
@@ -75,6 +76,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
+  fCombinedDmesonsBkg(0),
   fNCand(0),
   fNSBCand(0),
   fHistStat(0),
@@ -107,14 +109,14 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fHistDeltaRDpiR(0),
   fHistDeltaRDKR(0)
 {
-   //
-   // Default constructor
-   //
-   
-   for (Int_t i=4; i--;) fPDGdaughters[i] = 0;
-   for (Int_t i=30; i--;) fSigmaD0[i] = 0.;
+  //
+  // Default constructor
+  //
 
-   fNeedEmcalGeom = kFALSE;
+  for (Int_t i=4; i--;) fPDGdaughters[i] = 0;
+  for (Int_t i=30; i--;) fSigmaD0[i] = 0.;
+
+  fNeedEmcalGeom = kFALSE;
 }
 
 //_______________________________________________________________________________
@@ -141,6 +143,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
+  fCombinedDmesonsBkg(0),
   fNCand(0),
   fNSBCand(0),
   fHistStat(0),
@@ -173,32 +176,32 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fHistDeltaRDpiR(0),
   fHistDeltaRDKR(0)
 {
-   //
-   // Constructor. Initialization of Inputs and Outputs
-   //
-  
-   Info("AliAnalysisTaskSEDmesonsFilterCJ","Calling Constructor");
+  //
+  // Constructor. Initialization of Inputs and Outputs
+  //
 
-   fNeedEmcalGeom = kFALSE;
-   
-   for (Int_t i=4; i--;) fPDGdaughters[i] = 0;
-   for (Int_t i=30; i--;) fSigmaD0[i] = 0.;
-   
-   const Int_t nptbins = fCuts->GetNPtBins();
-   Float_t defaultSigmaD013[13] = { 0.012, 0.012, 0.012, 0.015, 0.015, 0.018, 0.018, 0.020, 0.020, 0.030, 0.030, 0.037, 0.040 };
-   
-   switch (fCandidateType) {
-   case 0 :
+  Info("AliAnalysisTaskSEDmesonsFilterCJ","Calling Constructor");
+
+  fNeedEmcalGeom = kFALSE;
+
+  for (Int_t i=4; i--;) fPDGdaughters[i] = 0;
+  for (Int_t i=30; i--;) fSigmaD0[i] = 0.;
+
+  const Int_t nptbins = fCuts->GetNPtBins();
+  Float_t defaultSigmaD013[13] = { 0.012, 0.012, 0.012, 0.015, 0.015, 0.018, 0.018, 0.020, 0.020, 0.030, 0.030, 0.037, 0.040 };
+
+  switch (fCandidateType) {
+    case 0 :
       fCandidateName = "D0";
       fPDGmother = 421;
       fNProngs = 2;
-      fPDGdaughters[0] = 211;  // pi 
+      fPDGdaughters[0] = 211;  // pi
       fPDGdaughters[1] = 321;  // K
       fPDGdaughters[2] = 0;    // empty
       fPDGdaughters[3] = 0;    // empty
       fBranchName = "D0toKpi";
       break;
-   case 1 :
+    case 1 :
       fCandidateName = "DStar";
       fPDGmother = 413;
       fNProngs = 3;
@@ -207,7 +210,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
       fPDGdaughters[2] = 211; // pi fromD0
       fPDGdaughters[3] = 321; // K from D0
       fBranchName = "Dstar";
-      
+
       if (nptbins<=13) {
       	 for (Int_t ipt=0; ipt<nptbins;ipt++) fSigmaD0[ipt] = defaultSigmaD013[ipt];
       }
@@ -215,123 +218,147 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
       	 AliFatal(Form("Default sigma D0 not enough for %d pt bins, use SetSigmaD0ForDStar to set them",nptbins));
       }
       break;
-   default :
-     Warning("AliAnalysisTaskSEDmesonsFilterCJ", "%d not accepted!!", fCandidateType);
-     break;
-   }
-   
-   if (fCandidateType == kD0toKpi) SetMassLimits(0.15, fPDGmother);
-   if (fCandidateType == kDstartoKpipi) SetMassLimits(0.015, fPDGmother);
-   
-   DefineOutput(1, TList::Class());       // histos
-   DefineOutput(2, AliRDHFCuts::Class()); // my cuts
-   DefineOutput(3, TClonesArray::Class()); //array of candidates
-   DefineOutput(4, TClonesArray::Class()); //array of SB candidates
-   DefineOutput(5, TClonesArray::Class()); //array of candidates and event tracks
+    default :
+      Warning("AliAnalysisTaskSEDmesonsFilterCJ", "%d not accepted!!", fCandidateType);
+      break;
+  }
+
+  if (fCandidateType == kD0toKpi) SetMassLimits(0.15, fPDGmother);
+  if (fCandidateType == kDstartoKpipi) SetMassLimits(0.015, fPDGmother);
+
+  DefineOutput(1, TList::Class());       // histos
+  DefineOutput(2, AliRDHFCuts::Class()); // my cuts
+  DefineOutput(3, TClonesArray::Class()); //array of candidates
+  DefineOutput(4, TClonesArray::Class()); //array of SB candidates
+  DefineOutput(5, TClonesArray::Class()); //array of candidates and event tracks
+  DefineOutput(6, TClonesArray::Class()); //array of SB candidates and event tracks
 }
 
 //_______________________________________________________________________________
 AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
 {
-   //
-   // Destructor
-   //
-   
-   Info("~AliAnalysisTaskSEDmesonsFilterCJ","Calling Destructor");  
-   
-   if (fCuts)   { delete fCuts;   fCuts   = 0; }
-   if (fCandidateArray)  { delete fCandidateArray;  fCandidateArray = 0; }
-   if (fSideBandArray)  { delete fSideBandArray;  fSideBandArray = 0; }
-   if (fCombinedDmesons)  { delete fCombinedDmesons;  fCombinedDmesons = 0; }
+  //
+  // Destructor
+  //
+
+  Info("~AliAnalysisTaskSEDmesonsFilterCJ","Calling Destructor");
+
+  if (fCuts) {
+    delete fCuts;
+    fCuts   = 0;
+  }
+
+  if (fCandidateArray) {
+    delete fCandidateArray;
+    fCandidateArray = 0;
+  }
+
+  if (fSideBandArray) {
+    delete fSideBandArray;
+    fSideBandArray = 0;
+  }
+
+  if (fCombinedDmesons) {
+    delete fCombinedDmesons;
+    fCombinedDmesons = 0;
+  }
+
+  if (fCombinedDmesonsBkg) {
+    delete fCombinedDmesonsBkg;
+    fCombinedDmesonsBkg = 0;
+  }
 }
 
 //_______________________________________________________________________________
 void AliAnalysisTaskSEDmesonsFilterCJ::Init()
 {
-   //
-   // Initialization
-   //
-   
+  //
+  // Initialization
+  //
+
   Info("AnalysisTaskSEDmesonsForJetCorrelations::Init()", "Entering method");
-   
-   switch (fCandidateType) {
-   case 0: 
-      {
-   	 AliRDHFCutsD0toKpi* copyfCutsDzero = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
-   	 copyfCutsDzero->SetName("AnalysisCutsDzero");
-   	 PostData(2, copyfCutsDzero);  // Post the data
-      } break;
-   case 1: 
-      {
-      	 AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-      	 copyfCutsDstar->SetName("AnalysisCutsDStar");
-      	 PostData(2, copyfCutsDstar); // Post the cuts
-      } break;
-   default:
-     return;
-   }
-   
-   return;
+
+  switch (fCandidateType) {
+    case 0:
+    {
+      AliRDHFCutsD0toKpi* copyfCutsDzero = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
+      copyfCutsDzero->SetName("AnalysisCutsDzero");
+      PostData(2, copyfCutsDzero);  // Post the data
+    } break;
+    case 1:
+    {
+      AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
+      copyfCutsDstar->SetName("AnalysisCutsDStar");
+      PostData(2, copyfCutsDstar); // Post the cuts
+    } break;
+    default:
+      return;
+  }
+
+  return;
 }
 
 //_______________________________________________________________________________
 void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
-{ 
-   //
-   // Create output objects 
-   //
-   
-   Info("UserCreateOutputObjects","CreateOutputObjects of task %s", GetName());
-   
-   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+{
+  //
+  // Create output objects
+  //
 
-   DefineHistoForAnalysis(); // define histograms
+  Info("UserCreateOutputObjects","CreateOutputObjects of task %s", GetName());
 
-   if (fUseReco) {
-     if (fCandidateType == kD0toKpi){
-       fCandidateArray = new TClonesArray("AliAODRecoDecayHF2Prong",10);
-       fSideBandArray = new TClonesArray("AliAODRecoDecayHF2Prong",10); 
-     }
-     else if (fCandidateType == kDstartoKpipi) {
-       fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",10);
-       fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",10);
-     }
-     else {
-       AliWarning(Form("Candidate type %d not recognized!", fCandidateType));
-       return;
-     }
-   }
-   else {
-     fCandidateArray = new TClonesArray("AliAODMCParticle",10);
-     fSideBandArray = new TClonesArray("TObject",0); // not used
-   }
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-   if (fCombineDmesons) {
-     fCombinedDmesons = new TClonesArray("AliEmcalParticle",50);
-   }
-   else {
-     fCombinedDmesons = new TClonesArray("TObject",0); // not used
-   }
-   
-   fCandidateArray->SetOwner();
-   fCandidateArray->SetName(GetOutputSlot(3)->GetContainer()->GetName());
-   //fCandidateArray->SetName(Form("Dcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
-   
-   //this is used for the DStar side bands and MC!
-   fSideBandArray->SetOwner();
-   fSideBandArray->SetName(GetOutputSlot(4)->GetContainer()->GetName());
-   //fSideBandArray->SetName(Form("DSBcandidates%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+  DefineHistoForAnalysis(); // define histograms
 
-   fCombinedDmesons->SetOwner();
-   fCombinedDmesons->SetName(GetOutputSlot(5)->GetContainer()->GetName());
-   //fCombinedDmesons->SetName(Form("DcandidatesAndTracks%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
-  
-   PostData(1, fOutput);
-   PostData(3, fCandidateArray);
-   PostData(4, fSideBandArray);
-   PostData(5, fCombinedDmesons);
+  if (fUseReco) {
+    if (fCandidateType == kD0toKpi){
+      fCandidateArray = new TClonesArray("AliAODRecoDecayHF2Prong",10);
+      fSideBandArray = new TClonesArray("AliAODRecoDecayHF2Prong",10);
+    }
+    else if (fCandidateType == kDstartoKpipi) {
+      fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",10);
+      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",10);
+    }
+    else {
+      AliWarning(Form("Candidate type %d not recognized!", fCandidateType));
+      return;
+    }
+  }
+  else {
+    fCandidateArray = new TClonesArray("AliAODMCParticle",10);
+    fSideBandArray = new TClonesArray("TObject",0); // not used
+  }
 
-   Info("UserCreateOutputObjects","Data posted for task %s", GetName());
+  if (fCombineDmesons) {
+    fCombinedDmesons = new TClonesArray("AliEmcalParticle",50);
+    fCombinedDmesonsBkg = new TClonesArray("AliEmcalParticle",50);
+  }
+  else {
+    fCombinedDmesons = new TClonesArray("TObject",0); // not used
+    fCombinedDmesonsBkg = new TClonesArray("TObject",0); // not used
+  }
+
+  fCandidateArray->SetOwner();
+  fCandidateArray->SetName(GetOutputSlot(3)->GetContainer()->GetName());
+
+  //this is used for the DStar side bands and MC!
+  fSideBandArray->SetOwner();
+  fSideBandArray->SetName(GetOutputSlot(4)->GetContainer()->GetName());
+
+  fCombinedDmesons->SetOwner();
+  fCombinedDmesons->SetName(GetOutputSlot(5)->GetContainer()->GetName());
+
+  fCombinedDmesonsBkg->SetOwner();
+  fCombinedDmesonsBkg->SetName(GetOutputSlot(6)->GetContainer()->GetName());
+
+  PostData(1, fOutput);
+  PostData(3, fCandidateArray);
+  PostData(4, fSideBandArray);
+  PostData(5, fCombinedDmesons);
+  PostData(6, fCombinedDmesonsBkg);
+
+  Info("UserCreateOutputObjects","Data posted for task %s", GetName());
 }
 
 //_______________________________________________________________________________
@@ -342,7 +369,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
   //
 
   AliDebug(2, "Entering ExecOnce()");
-  
+
   if (fInhibitTask) return;
 
   // Load the event
@@ -353,11 +380,11 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
   }
   else {
     if (AODEvent() && IsStandardAOD()) {
-      
-      // In case there is an AOD handler writing a standard AOD, use the AOD 
-      // event in memory rather than the input (ESD) event.    
+
+      // In case there is an AOD handler writing a standard AOD, use the AOD
+      // event in memory rather than the input (ESD) event.
       fAodEvent = dynamic_cast<AliAODEvent*>(AODEvent());
-      
+
       // in this case the branches in the deltaAOD (AliAOD.VertexingHF.root)
       // have to taken from the AOD event hold by the AliAODExtension
       AliAODHandler *aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
@@ -378,7 +405,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
     TString objname(fArrayDStartoD0pi->GetClass()->GetName());
     TClass cls(objname);
     if (!cls.InheritsFrom("AliAODRecoDecayHF2Prong")) {
-      AliError(Form("%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!", 
+      AliError(Form("%s: Objects of type %s in %s are not inherited from AliAODRecoDecayHF2Prong! Task will be disabled!",
                     GetName(), cls.GetName(), fArrayDStartoD0pi->GetName()));
       fInhibitTask = kTRUE;
       fArrayDStartoD0pi = 0;
@@ -400,7 +427,10 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
     }
   }
 
-  if (fCombineDmesons) AddObjectToEvent(fCombinedDmesons);
+  if (fCombineDmesons) {
+    AddObjectToEvent(fCombinedDmesons);
+    AddObjectToEvent(fCombinedDmesonsBkg);
+  }
 
   AliAnalysisTaskEmcal::ExecOnce();
 }
@@ -411,7 +441,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   //
   // Analysis execution
   //
- 
+
   if (fInhibitTask) return kFALSE;
 
   AliDebug(2, "Entering Run()");
@@ -420,34 +450,35 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   fCandidateArray->Clear();
   fSideBandArray->Clear();
   fCombinedDmesons->Clear();
+  fCombinedDmesonsBkg->Clear();
   AliDebug(2, "TClonesArray cleared");
-  
+
   fHistStat->Fill(0);
-  
-  // fix for temporary bug in ESDfilter 
+
+  // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if (!fAodEvent->GetPrimaryVertex() || TMath::Abs(fAodEvent->GetMagneticField()) < 0.001) return kFALSE;
-   
+
   //Event selection
   Bool_t iseventselected = fCuts->IsEventSelected(fAodEvent);
   if (!iseventselected) return kFALSE;
   fHistStat->Fill(1);
 
   AliDebug(2, "Event selected");
-  
+
   const Int_t nD = fArrayDStartoD0pi->GetEntriesFast();
   AliDebug(2, Form("Found %d vertices", nD));
   if (!fUseMCInfo) fHistStat->Fill(2, nD);
 
   Int_t pdgMeson = 413;
   if (fCandidateType == kD0toKpi) pdgMeson = 421;
-  
+
   fNCand = 0;
   fNSBCand = 0;
-  
+
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     Int_t isSelected = 0;
-    
+
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
     if (!charmCand) continue;
 
@@ -466,7 +497,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
 
     // region of interest + cuts
     if (!fCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(pdgMeson))) continue;
-    
+
     if (!fUseMCInfo && fCandidateType == kDstartoKpipi) {
       FillDstarSideBands(dstar);
     }
@@ -475,7 +506,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
     isSelected = fCuts->IsSelected(charmCand, AliRDHFCuts::kAll, fAodEvent); //selected
 
     if (!isSelected) continue;
-    
+
     if (fCandidateType == kDstartoKpipi) {
       ProcessDstar(dstar, isSelected);
     }
@@ -486,10 +517,16 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
 
   AliDebug(2, "Loop done");
 
-  if (fCombineDmesons && fCombinedDmesons->GetEntriesFast() > 0) {
-    AddEventTracks(fCombinedDmesons, GetParticleContainer(0));
+  if (fCombineDmesons) {
+    if (fCombinedDmesons->GetEntriesFast() > 0) {
+      AddEventTracks(fCombinedDmesons, GetParticleContainer(0));
+    }
+
+    if (fCombinedDmesonsBkg->GetEntriesFast() > 0) {
+      AddEventTracks(fCombinedDmesonsBkg, GetParticleContainer(0));
+    }
   }
-  
+
   fHistNCandEv->Fill(fCandidateArray->GetEntriesFast());
   if (fCandidateType == kDstartoKpipi || fUseMCInfo) {
     Int_t nsbcand = fSideBandArray->GetEntriesFast();
@@ -501,6 +538,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   PostData(3, fCandidateArray);
   PostData(4, fSideBandArray);
   PostData(5, fCombinedDmesons);
+  PostData(6, fCombinedDmesonsBkg);
 
   AliDebug(2, "Exiting method");
 
@@ -516,17 +554,17 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   AliAODMCParticle* charmPart = 0;
   if (fUseMCInfo) {
     Int_t mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
-      
+
     if (mcLabel >= 0) {
       charmPart = static_cast<AliAODMCParticle*>(fMCarray->At(mcLabel));
     }
   }
 
   if (charmPart) {
-    
+
     Int_t origin = CheckOrigin(charmPart, fMCarray);
     if (origin < 0) return;
-    
+
     if (fRejectQuarkNotFound && origin == kQuarkNotFound) {
       fHistStat->Fill(6);
       return;
@@ -539,29 +577,34 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
       fHistStat->Fill(8);
       return;
     }
-    
+
     fHistStat->Fill(2);
   }
   else {
     fHistStat->Fill(5);
   }
-  
+
   // For MC background fill fSideBandArray
-  if (fUseMCInfo && !charmPart) { 
+  if (fUseMCInfo && !charmPart) {
     if (fUseReco) {
       new ((*fSideBandArray)[fNSBCand]) AliAODRecoDecayHF2Prong(*charmCand);
-      fNSBCand++;
+
+      if (fCombineDmesons) {
+        new ((*fCombinedDmesonsBkg)[fNSBCand]) AliEmcalParticle(charmCand);
+      }
 
       fHistImpParB->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
       fHistImpParB->Fill(charmCand->Getd0Prong(1), charmCand->PtProng(1));
       fHistInvMassB->Fill(charmCand->InvMassD0());
       fHistInvMassB->Fill(charmCand->InvMassD0bar());
+
+      fNSBCand++;
     }
   }
   // For data or MC signal fill fCandidateArray
   else {
-    // For data or MC with the requirement fUseReco fill with candidates	       
-    if (fUseReco) {      
+    // For data or MC with the requirement fUseReco fill with candidates
+    if (fUseReco) {
       new ((*fCandidateArray)[fNCand]) AliAODRecoDecayHF2Prong(*charmCand);
 
       if (fCombineDmesons) {
@@ -577,7 +620,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
     else {
       new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
     }
-    fHistStat->Fill(3);      	 
+    fHistStat->Fill(3);
     fNCand++;
   }
 
@@ -586,12 +629,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
   // mass vs pt
   if (isSelected == 1 || isSelected == 3) fHistInvMassPtD->Fill(charmCand->InvMassD0(), charmCand->Pt());
   if (isSelected >= 2) fHistInvMassPtD->Fill(charmCand->InvMassD0bar(), charmCand->Pt());
-  
+
   if (fUseMCInfo) {  //fill histograms of kinematics, using MC truth
     Int_t isD0 = 0;
     if (charmPart) {
       Int_t pdgCode = charmPart->GetPdgCode();
-        
+
       if (pdgCode ==  421)  {
         isD0 = 1;
       }
@@ -603,7 +646,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
         return;
       }
     }
-    
+
     FillD0MCTruthKinHistos(charmCand, isSelected, isD0);
   }
 }
@@ -614,7 +657,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
   // Process the D* candidate.
 
   AliDebug(2, "Entering method");
-  
+
   // For MC analysis look for the AOD MC particle associated with the charm candidate
   AliAODMCParticle* charmPart = 0;
   if (fUseMCInfo) {
@@ -623,14 +666,14 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
     Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
 
     Int_t mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
-  
+
     if (mcLabel >= 0) {
       charmPart = static_cast<AliAODMCParticle*>(fMCarray->At(mcLabel));
     }
   }
 
   if (charmPart) {
-    
+
     Int_t origin = CheckOrigin(charmPart, fMCarray);
     if (origin < 0) return;
 
@@ -646,43 +689,48 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
       fHistStat->Fill(8);
       return;
     }
-    
+
     fHistStat->Fill(2);
   }
   else {
     fHistStat->Fill(5);
   }
-  
+
   AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
 
   // For MC background fill fSideBandArray
   if (fUseMCInfo && !charmPart) {
     if (fUseReco) {
       new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
-      fNSBCand++;
-          
+
+      if (fCombineDmesons) {
+        new ((*fCombinedDmesonsBkg)[fNSBCand]) AliEmcalParticle(dstar);
+      }
+
       fHistInvMassB->Fill(dstar->DeltaInvMass());
       fHistImpParB->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
       fHistImpParB->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
       fHistImpParB->Fill(D0fromDstar->Getd0Prong(1), D0fromDstar->PtProng(1));
+
+      fNSBCand++;
     }
   }
   // For data and MC signal fill fCandidateArray
   else {
-    // For data or MC signal with the requirement fUseReco fill with candidates    
+    // For data or MC signal with the requirement fUseReco fill with candidates
     if (fUseReco) {
       new ((*fCandidateArray)[fNCand]) AliAODRecoCascadeHF(*dstar);
-      
+
       if (fCombineDmesons) {
-        new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(dstar);       
+        new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(dstar);
       }
-    } 
+    }
     // For MC signal with requirement particle level fill with AliAODMCParticle
     else {
       new ((*fCandidateArray)[fNCand]) AliAODMCParticle(*charmPart);
     }
     fNCand++;
-    
+
     fHistInvMassS->Fill(dstar->DeltaInvMass());
     fHistImpParS->Fill(dstar->Getd0Prong(0), dstar->PtProng(0)); //bachelor
     fHistImpParS->Fill(D0fromDstar->Getd0Prong(0), D0fromDstar->PtProng(0));
@@ -694,31 +742,31 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
 
   // select D* in the D0 window.
   // In the cut object window is loose to allow for side bands
-      
+
   // retrieve the corresponding pt bin for the candidate
   // and set the expected D0 width (x3)
-  
+
   Double_t mPDGD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t mPDGDstar = TDatabasePDG::Instance()->GetParticle(413)->Mass();
   Double_t invMassPDG = mPDGDstar - mPDGD0;
-  
+
   Double_t ptD = dstar->Pt();
   Int_t ptDbin = fCuts->PtBin(ptD);
   if (ptDbin < 0 || ptDbin >= fCuts->GetNPtBins()) {
     AliError(Form("Pt %.3f out of bounds", ptD));
     return;
   }
-      	 
+
   AliDebug(1, Form("Pt bin %d and sigma D0 %.4f", ptDbin, fSigmaD0[ptDbin]));
   //consider the D* candidates only if the mass of the D0 is in 3 sigma wrt the PDG value
   if ((dstar->InvMassD0()>=(mPDGD0-3.*fSigmaD0[ptDbin])) && (dstar->InvMassD0()<=(mPDGD0+3.*fSigmaD0[ptDbin]))) {
     AliDebug(2, "D0 mass within 3 sigma");
-      	    
+
     // D* delta mass
     AliDebug(2, "Filling invariant mass vs pt histogram");
     fHistInvMassPtD->Fill(dstar->DeltaInvMass(), ptD); // 2 D slice for pt bins
-      	    
-    // Soft pion pt for good candidates  	      	
+
+    // Soft pion pt for good candidates
     Double_t invmassDelta = dstar->DeltaInvMass();
     if (TMath::Abs(invmassDelta - invMassPDG) < 0.0021) {
       AliDebug(2, "Filling pion pt histogram");
@@ -740,27 +788,27 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
 void AliAnalysisTaskSEDmesonsFilterCJ::FillD0MCTruthKinHistos(AliAODRecoDecayHF2Prong* charmCand, Int_t isSelected, Int_t isD0)
 {
   // Fill some histogram with kinematic information of the D0 candidate.
-  
-  Double_t ptD = charmCand->Pt();  
+
+  Double_t ptD = charmCand->Pt();
   Double_t aD = charmCand->Phi();
   Double_t adaugh[2] = {charmCand->PhiProng(0), charmCand->PhiProng(1)};
   AliAODTrack* p0 = static_cast<AliAODTrack*>(charmCand->GetDaughter(0));
   AliAODTrack* p1 = static_cast<AliAODTrack*>(charmCand->GetDaughter(1));
   Float_t dR0 = DeltaR(charmCand, p0);
   Float_t dR1 = DeltaR(charmCand, p1);
-  
+
   if (isD0 == 0) {  //background
     if (isSelected == 1 || isSelected == 3) { // selected as D0
       fHistAlphaDKB->Fill(aD-adaugh[0],ptD);
       fHistAlphaDpiB->Fill(aD-adaugh[1],ptD);
 
       fHistDeltaRDKB->Fill(dR0,ptD);
-      fHistDeltaRDpiB->Fill(dR1,ptD);   
+      fHistDeltaRDpiB->Fill(dR1,ptD);
     }
     if (isSelected >= 2) { //selected as D0bar
       fHistAlphaDpiB->Fill(aD-adaugh[0],ptD);
       fHistAlphaDKB->Fill(aD-adaugh[1],ptD);
-            
+
       fHistDeltaRDpiB->Fill(dR0,ptD);
       fHistDeltaRDKB->Fill(dR1,ptD);
     }
@@ -771,7 +819,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillD0MCTruthKinHistos(AliAODRecoDecayHF2
 
     fHistDeltaRDKS->Fill(dR0,ptD);
     fHistDeltaRDpiS->Fill(dR1,ptD);
-            
+
     if (isSelected == 3) { // selected as both D0bar/D0
       fHistAlphaDpiR->Fill(aD-adaugh[0],ptD);
       fHistAlphaDKR->Fill(aD-adaugh[1],ptD);
@@ -796,17 +844,17 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillD0MCTruthKinHistos(AliAODRecoDecayHF2
     }
   }
 }
- 
+
 //_______________________________________________________________________________
 void AliAnalysisTaskSEDmesonsFilterCJ::FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar)
 {
   // Fill some histogram with kinematic information of the D0 candidate.
-  
+
   AliAODTrack *softPionTrack = static_cast<AliAODTrack*>(dstar->GetBachelor());
   Double_t ptD  = dstar->Pt();
   Double_t aD  = dstar->Phi();
   Double_t apis= softPionTrack->Phi();
-      	             
+
   AliAODRecoDecayHF2Prong* D0fromDstar = dstar->Get2Prong();
   Double_t aD0    = D0fromDstar->Phi();
   Int_t    isD0   = D0fromDstar->Charge()>0 ? kTRUE : kFALSE;
@@ -816,13 +864,13 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillDStarMCTruthKinHistos(AliAODRecoCasca
   Double_t dRDpis = DeltaR(dstar,softPionTrack);
   Double_t dRDpi  = DeltaR(dstar, isD0 ? static_cast<AliVParticle*>(D0fromDstar->GetDaughter(1)) : static_cast<AliVParticle*>(D0fromDstar->GetDaughter(0)));
   Double_t dRDK   = DeltaR(dstar, isD0 ? static_cast<AliVParticle*>(D0fromDstar->GetDaughter(0)) : static_cast<AliVParticle*>(D0fromDstar->GetDaughter(1)));
-  
+
   if (isDstar) {
     fHistAlphaDDS  ->Fill(aD-aD0, ptD);
     fHistAlphaDpisS->Fill(aD-apis, ptD);
     fHistAlphaDpiS ->Fill(aD-api, ptD);
     fHistAlphaDKS  ->Fill(aD-aK, ptD);
-      	    
+
     fHistDeltaRDDS  ->Fill(dRDD0, ptD);
     fHistDeltaRDpisS->Fill(dRDpis, ptD);
     fHistDeltaRDpiS ->Fill(dRDpi, ptD);
@@ -833,7 +881,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillDStarMCTruthKinHistos(AliAODRecoCasca
     fHistAlphaDpisB->Fill(aD-apis, ptD);
     fHistAlphaDpiB ->Fill(aD-api, ptD);
     fHistAlphaDKB  ->Fill(aD-aK, ptD);
-      	    
+
     fHistDeltaRDDB  ->Fill(dRDD0, ptD);
     fHistDeltaRDpisB->Fill(dRDpis, ptD);
     fHistDeltaRDpiB ->Fill(dRDpi, ptD);
@@ -847,9 +895,9 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillDstarSideBands(AliAODRecoCascadeHF* d
   // Fills the array of Dstar side band candidates.
 
   //select by track cuts the side band candidates (don't want mass cut)
-  Int_t isSelected = fCuts->IsSelected(dstar, AliRDHFCuts::kTracks, fAodEvent); 
+  Int_t isSelected = fCuts->IsSelected(dstar, AliRDHFCuts::kTracks, fAodEvent);
   if (!isSelected) return;
-  
+
   //add a reasonable cut on the invariant mass (e.g. (+-2\sigma, +-10 \sigma), with \sigma = fSigmaD0[bin])
   Int_t bin = fCuts->PtBin(dstar->Pt());
   if (bin < 0 || bin >= fCuts->GetNPtBins()) {
@@ -858,11 +906,11 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillDstarSideBands(AliAODRecoCascadeHF* d
   }
 
   const Double_t mPDGD0 = TDatabasePDG::Instance()->GetParticle(421)->Mass();
-      
+
   //if data and Dstar from D0 side band
   if (((dstar->InvMassD0() < (mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0() > (mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/   ||
-      ((dstar->InvMassD0() > (mPDGD0+3.*fSigmaD0[bin])) && (dstar->InvMassD0() < (mPDGD0+10.*fSigmaD0[bin]))) /*right side band*/) {	
-      	    
+      ((dstar->InvMassD0() > (mPDGD0+3.*fSigmaD0[bin])) && (dstar->InvMassD0() < (mPDGD0+10.*fSigmaD0[bin]))) /*right side band*/) {
+
     new ((*fSideBandArray)[fNSBCand]) AliAODRecoCascadeHF(*dstar);
     fNSBCand++;
   }
@@ -872,15 +920,15 @@ void AliAnalysisTaskSEDmesonsFilterCJ::FillDstarSideBands(AliAODRecoCascadeHF* d
 void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t range, Int_t pdg)
 {
   // Set the mass limits using the PDG code and the given range.
-   
+
   Float_t mass = TDatabasePDG::Instance()->GetParticle(TMath::Abs(pdg))->Mass();
-   
+
   // compute the Delta mass for the D*
   if (fCandidateType==kDstartoKpipi) mass -= TDatabasePDG::Instance()->GetParticle(421)->Mass();
-  
+
   fMinMass = mass - range;
   fMaxMass = mass + range;
-   
+
   AliInfo(Form("Setting mass limits to %f, %f", fMinMass, fMaxMass));
   if ((fMinMass<0.) || (fMaxMass<=0.) || (fMaxMass<fMinMass)) {
     AliError(Form("Wrong mass limits! Task '%s' will be disabled!", GetName()));
@@ -892,7 +940,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t range, Int_t pdg)
 void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t lowlimit, Double_t uplimit)
 {
   // Set the mass limits.
-   
+
   if (uplimit>lowlimit) {
     fMinMass = lowlimit;
     fMaxMass = uplimit;
@@ -908,15 +956,15 @@ void AliAnalysisTaskSEDmesonsFilterCJ::SetMassLimits(Double_t lowlimit, Double_t
 Bool_t AliAnalysisTaskSEDmesonsFilterCJ::SetD0WidthForDStar(Int_t nptbins, Float_t* width)
 {
   // Set the D0 width for the D* analysis.
-   
+
   if (nptbins > 30) {
     AliWarning("Maximum number of bins allowed is 30!");
     return kFALSE;
   }
-   
+
   if (!width) return kFALSE;
   for (Int_t ipt=0; ipt < nptbins; ipt++) fSigmaD0[ipt] = width[ipt];
-   
+
   return kTRUE;
 }
 
@@ -924,8 +972,8 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::SetD0WidthForDStar(Int_t nptbins, Float
 Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
 {
   // Allocate the histograms for the analysis.
-   
-  // Statistics 
+
+  // Statistics
   fHistStat = new TH1I("fHistStat", "Statistics", 9, -0.5, 8.5);
   fHistStat->GetXaxis()->SetBinLabel(1, "N ev anal");
   fHistStat->GetXaxis()->SetBinLabel(2, "N ev sel");
@@ -950,10 +998,10 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
     fHistStat->GetXaxis()->SetBinLabel(8, "N rej from B");
     fHistStat->GetXaxis()->SetBinLabel(9, "N rej from D");
   }
-  
+
   fHistStat->SetNdivisions(1);
   fOutput->Add(fHistStat);
-   
+
   fHistNCandEv = new TH1F("fHistNCandEv", "Number of candidates per event (after cuts);# cand/ev", 100, 0., 100.);
   fOutput->Add(fHistNCandEv);
 
@@ -996,19 +1044,19 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
   const Int_t nbinsdeltaR = 200;
   Float_t mindeltaR = 0.;
   Float_t maxdeltaR = 10.;
-  
+
   if (fUseMCInfo) {
     fHistImpParB = new TH2F("fHistImpParB", "Impact parameter of daughter tracks (Background); Getd0Prong();#it{p}^{daugh}_{T} (GeV/c)",200, -0.1,0.1,ptbinsD, ptmin, ptmax); //same range of pt of the D, but pt daughter used
     fOutput->Add(fHistImpParB);
-    
+
     fHistInvMassB = new TH1F("fHistInvMassB", "D invariant mass distribution", nbinsmass, fMinMass, fMaxMass);
     fHistInvMassB->SetStats(kTRUE);
     fHistInvMassB->GetXaxis()->SetTitle("mass (GeV/c)");
     fHistInvMassB->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     fOutput->Add(fHistInvMassB);
-    
+
     if (fCandidateType == kDstartoKpipi) {
-      
+
       fHistAlphaDDS    = new TH2F("fHistAlphaDDS","Angle D^{*}-D^{0} (Signal);#varphi (D^{*}) - #varphi (D0);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDpisS  = new TH2F("fHistAlphaDpisS","Angle D^{*}-#pi_{soft} (Signal);#varphi (D^{*}) - #varphi (#pi_{soft});p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDpiS   = new TH2F("fHistAlphaDpiS","Angle D^{*}-#pi (Signal);#varphi (D^{*}) - #varphi (#pi);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
@@ -1018,7 +1066,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       fHistAlphaDpisB  = new TH2F("fHistAlphaDpisB","Angle D^{*}-#pi_{soft} (Background);#varphi (D^{*}) - #varphi (#pi_{soft});p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDpiB   = new TH2F("fHistAlphaDpiB","Angle D^{*}-#pi (Background);#varphi (D^{*}) - #varphi (#pi);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDKB    = new TH2F("fHistAlphaDKB","Angle D^{*}-K (Background);#varphi (D^{*}) - #varphi (K);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
-      	 
+
       fHistDeltaRDDS   = new TH2F("fHistDeltaRDDS","Angle D^{*}-D^{0} (Signal);#varphi (D^{*}) - #varphi (D0);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
       fHistDeltaRDpisS = new TH2F("fHistDeltaRDpisS","Angle D^{*}-#pi_{soft} (Signal);#varphi (D^{*}) - #varphi (#pi_{soft});p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
       fHistDeltaRDpiS  = new TH2F("fHistDeltaRDpiS","Angle D^{*}-#pi (Signal);#varphi (D^{*}) - #varphi (#pi);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
@@ -1048,12 +1096,12 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       fOutput->Add(fHistDeltaRDKB);
     }
     else if (fCandidateType == kD0toKpi) {
-      	 
+
       fHistAlphaDpiS  = new TH2F("fHistAlphaDpiS","Angle D^{0}-#pi (Signal);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDKS   = new TH2F("fHistAlphaDKS","Angle D^{0}-K (Signal);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDpiR  = new TH2F("fHistAlphaDpiR","Angle D^{0}-#pi (Reflections);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDKR   = new TH2F("fHistAlphaDKR","Angle D^{0}-K (Reflections);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
-      	 
+
       fHistAlphaDpiB  = new TH2F("fHistAlphaDpiB","Angle D^{0}-#pi (Background);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
       fHistAlphaDKB   = new TH2F("fHistAlphaDKB","Angle D^{0}-K (Background);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
 
@@ -1061,7 +1109,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       fHistDeltaRDKS  = new TH2F("fHistDeltaRDKS","Angle D^{0}-K (Signal);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
       fHistDeltaRDpiR = new TH2F("fHistDeltaRDpiR","Angle D^{0}-#pi (Reflections);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
       fHistDeltaRDKR  = new TH2F("fHistDeltaRDKR","Angle D^{0}-K (Reflections);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
-      	 
+
       fHistDeltaRDpiB = new TH2F("fHistDeltaRDpiB","Angle D^{0}-#pi (Background);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
       fHistDeltaRDKB  = new TH2F("fHistDeltaRDKB","Angle D^{0}-K (Background);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
 
@@ -1080,7 +1128,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       fOutput->Add(fHistDeltaRDKB);
     }
   }
-  
+
   return kTRUE;
 }
 
@@ -1088,22 +1136,22 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
 Float_t AliAnalysisTaskSEDmesonsFilterCJ::DeltaR(AliVParticle *p1, AliVParticle *p2) const
 {
   // Calculate DeltaR between p1 and p2: DeltaR=sqrt(Delataphi^2+DeltaEta^2)
-   
+
   if (!p1 || !p2) return -1;
-  
+
   Double_t phi1 = p1->Phi();
   Double_t eta1 = p1->Eta();
   Double_t phi2 = p2->Phi();
   Double_t eta2 = p2->Eta();
-   
+
   Double_t dPhi = phi1 - phi2;
   if(dPhi < -(TMath::Pi())/2)    dPhi = dPhi + TMath::TwoPi();
   if(dPhi > (3*(TMath::Pi()))/2) dPhi = dPhi - TMath::TwoPi();
-   
+
   Double_t dEta = eta1 - eta2;
-  
+
   Double_t deltaR = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
-  
+
   return deltaR;
 }
 
@@ -1115,7 +1163,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliPar
   //
 
   if (!tracks) return;
-  
+
   TObjArray allDaughters(10);
   allDaughters.SetOwner(kFALSE);
 
@@ -1146,11 +1194,11 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliPar
 Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters)
 {
   // Add all the dauthers of cand in an array. Follows all the decay cascades.
-  
+
   Int_t n = cand->GetNDaughters();
 
   //Printf("AddDaughters: the number of dauhters is %d", n);
-  
+
   Int_t ntot = 0;
   Double_t pt = 0;
   for (Int_t i = 0; i < n; i++) {
@@ -1176,31 +1224,31 @@ Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(AliAODRecoDecay* cand, T
   }
 
   //Printf("Total pt of the daughters = %.3f", pt);
-  
+
   return pt;
 }
 
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray) 
-{		
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray)
+{
   // Checks whether the mother of the D meson candidate comes from a charm or a bottom quark.
 
   if (!mcArray) return -1;
-  
+
   Int_t labDau0 = static_cast<AliVTrack*>(cand->GetDaughter(0))->GetLabel();
   if (labDau0 < 0) return -1;
-  
+
   AliAODMCParticle* part = static_cast<AliAODMCParticle*>(mcArray->At(labDau0));
   return CheckOrigin(part, mcArray);
 }
 
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, AliStack* stack) 
-{		
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, AliStack* stack)
+{
   // Checks whether the mother of the D meson candidate comes from a charm or a bottom quark.
 
   if (!stack) return -1;
-  
+
   Int_t labDau0 = static_cast<AliVTrack*>(cand->GetDaughter(0))->GetLabel();
   if (labDau0 < 0) return -1;
 
@@ -1208,20 +1256,20 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, AliSt
 }
 
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray) 
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray)
 {
   // Checks whether the mother of the particle comes from a charm or a bottom quark.
 
   if (!part) return -1;
   if (!mcArray) return -1;
-  
+
   Int_t pdgGranma = 0;
   Int_t mother = part->GetMother();
   Int_t istep = 0;
   Int_t abspdgGranma = 0;
   Bool_t isFromB = kFALSE;
   Bool_t isQuarkFound = kFALSE;
-  
+
   while (mother >= 0) {
     istep++;
     AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
@@ -1231,7 +1279,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
         isFromB = kTRUE;
       }
-      
+
       if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
       mother = mcGranma->GetMother();
     }
@@ -1255,22 +1303,22 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
 }
 
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack) 
+Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack)
 {
   // Checks whether the mother of the particle comes from a charm or a bottom quark.
-  
+
   if (!stack) return -1;
 
   TParticle* part = stack->Particle(ipart);
   if (!part) return -1;
-  
+
   Int_t pdgGranma = 0;
   Int_t mother = part->GetFirstMother();
   Int_t istep = 0;
   Int_t abspdgGranma = 0;
   Bool_t isFromB = kFALSE;
   Bool_t isQuarkFound = kFALSE;
-  
+
   while (mother >= 0) {
     istep++;
     TParticle* mcGranma = stack->Particle(mother);
@@ -1280,7 +1328,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
         isFromB = kTRUE;
       }
-      
+
       if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
       mother = mcGranma->GetFirstMother();
     }
@@ -1314,7 +1362,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part
   Int_t decay = kDecayOther;
 
   Int_t absPdgPart = TMath::Abs(part->GetPdgCode());
-  
+
   if (part->GetNDaughters() == 2) {
 
     AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
@@ -1323,10 +1371,10 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part
     if (!d1 || !d2) {
       return decay;
     }
-    
+
     Int_t absPdg1 = TMath::Abs(d1->GetPdgCode());
     Int_t absPdg2 = TMath::Abs(d2->GetPdgCode());
-    
+
     if (absPdgPart == 421) { // D0 -> K pi
 
       if ((absPdg1 == 211 && absPdg2 == 321) || // pi K
@@ -1336,14 +1384,14 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part
     }
 
     if (absPdgPart == 413) { // D* -> D0 pi
-      
+
       if (absPdg1 == 421 && absPdg2 == 211) {  // D0 pi
         Int_t D0decay = CheckDecayChannel(d1, mcArray);
         if (D0decay == kDecayD0toKpi) {
           decay = kDecayDStartoKpipi;
         }
       }
-      
+
       if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
         Int_t D0decay = CheckDecayChannel(d2, mcArray);
         if (D0decay == kDecayD0toKpi) {
@@ -1360,33 +1408,31 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part
 Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(Int_t ipart, AliStack* stack)
 {
   // Determine the decay channel
-  
+
   if (!stack) return -1;
 
   TParticle* part = stack->Particle(ipart);
-  
+
   if (!part) return -1;
-  
-  Int_t absPdgPart = TMath::Abs(part->GetPdgCode());
-  
+
   Int_t decay = kDecayOther;
 
   if (part->GetNDaughters() == 2) {
 
     Int_t id1 = part->GetDaughter(0);
     Int_t id2 = part->GetDaughter(1);
-    
+
     TParticle* d1 = stack->Particle(id1);
     TParticle* d2 = stack->Particle(id2);
 
     if (!d1 || !d2) {
       return decay;
     }
-    
+
     Int_t absPdg1 = TMath::Abs(d1->GetPdgCode());
     Int_t absPdg2 = TMath::Abs(d2->GetPdgCode());
-    
-  
+
+
     if (part->GetPdgCode() == 421) { // D0 -> K pi
 
       if ((absPdg1 == 211 && absPdg2 == 321) || // pi K
@@ -1396,14 +1442,14 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(Int_t ipart, AliStack*
     }
 
     if (part->GetPdgCode() == 413) { // D* -> D0 pi
-      
+
       if (absPdg1 == 421 && absPdg2 == 211) {  // D0 pi
         Int_t D0decay = CheckDecayChannel(id1, stack);
         if (D0decay == kDecayD0toKpi) {
           decay = kDecayDStartoKpipi;
         }
       }
-      
+
       if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
         Int_t D0decay = CheckDecayChannel(id2, stack);
         if (D0decay == kDecayD0toKpi) {
@@ -1412,7 +1458,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(Int_t ipart, AliStack*
       }
     }
   }
-
+  
   return decay;
   
 }

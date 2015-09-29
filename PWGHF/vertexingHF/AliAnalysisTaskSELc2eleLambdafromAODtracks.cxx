@@ -107,6 +107,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fEleVariablesTree(0),
   fV0VariablesTree(0),
   fMCVariablesTree(0),
+  fMCEleVariablesTree(0),
+  fMCV0VariablesTree(0),
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
@@ -117,6 +119,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fCandidateEleVariables(),
   fCandidateV0Variables(),
   fCandidateMCVariables(),
+  fCandidateMCEleVariables(),
+  fCandidateMCV0Variables(),
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
@@ -131,10 +135,26 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassWS(0),
   fHistoEleLambdaMassRSMix(0),
   fHistoEleLambdaMassWSMix(0),
+  fHistoEleLambdaMassRSSide(0),
+  fHistoEleLambdaMassWSSide(0),
   fHistoEleLambdaMassvsElePtRS(0),
   fHistoEleLambdaMassvsElePtWS(0),
   fHistoEleLambdaMassvsElePtRSMix(0),
   fHistoEleLambdaMassvsElePtWSMix(0),
+  fHistoEleLambdaMassvsElePtRSSide(0),
+  fHistoEleLambdaMassvsElePtWSSide(0),
+  fHistoEleLambdaMassvsElePtRS1(0),
+  fHistoEleLambdaMassvsElePtWS1(0),
+  fHistoEleLambdaMassvsElePtRSMix1(0),
+  fHistoEleLambdaMassvsElePtWSMix1(0),
+  fHistoEleLambdaMassvsElePtRSSide1(0),
+  fHistoEleLambdaMassvsElePtWSSide1(0),
+  fHistoEleLambdaMassvsElePtRS2(0),
+  fHistoEleLambdaMassvsElePtWS2(0),
+  fHistoEleLambdaMassvsElePtRSMix2(0),
+  fHistoEleLambdaMassvsElePtWSMix2(0),
+  fHistoEleLambdaMassvsElePtRSSide2(0),
+  fHistoEleLambdaMassvsElePtWSSide2(0),
   fHistoElePtRS(0),
   fHistoElePtWS(0),
   fHistoElePtRSMix(0),
@@ -143,6 +163,10 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassMCGen(0),
   fHistoEleLambdaMassvsElePtMCS(0),
   fHistoEleLambdaMassvsElePtMCGen(0),
+  fHistoEleLambdaMassvsElePtMCS1(0),
+  fHistoEleLambdaMassvsElePtMCGen1(0),
+  fHistoEleLambdaMassvsElePtMCS2(0),
+  fHistoEleLambdaMassvsElePtMCGen2(0),
   fHistoElePtMCS(0),
   fHistoElePtMCGen(0),
   fHistoElePtvsEtaRS(0),
@@ -171,6 +195,10 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassFeeddownXic0MCGen(0),
   fHistoEleLambdaMassvsElePtFeeddownXic0MCS(0),
   fHistoEleLambdaMassvsElePtFeeddownXic0MCGen(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCS1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCS2(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2(0),
   fHistoElePtFeeddownXic0MCS(0),
   fHistoElePtFeeddownXic0MCGen(0),
   fHistoElePtvsEtaFeeddownXic0MCS(0),
@@ -181,6 +209,10 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassFeeddownXicPlusMCGen(0),
   fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS(0),
   fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2(0),
   fHistoElePtFeeddownXicPlusMCS(0),
   fHistoElePtFeeddownXicPlusMCGen(0),
   fHistoElePtvsEtaFeeddownXicPlusMCS(0),
@@ -204,6 +236,26 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElectronTPCPIDSelTOFLargeEta(0),
 	fHistoElectronQovPtvsPhi(0),
 	fHistoLambdaQovPtvsPhi(0),
+	fHistoLcMCGen(0),
+	fHistoLcMCGen1(0),
+	fHistoLcMCGen2(0),
+	fHistoFeedDownXic0MCGen(0),
+	fHistoFeedDownXic0MCGen1(0),
+	fHistoFeedDownXic0MCGen2(0),
+	fHistoFeedDownXicPlusMCGen(0),
+	fHistoFeedDownXicPlusMCGen1(0),
+	fHistoFeedDownXicPlusMCGen2(0),
+	fHistoLcElectronMCGen(0),
+	fHistoLcElectronMCGen1(0),
+	fHistoLcElectronMCGen2(0),
+	fHistoElectronFeedDownXic0MCGen(0),
+	fHistoElectronFeedDownXic0MCGen1(0),
+	fHistoElectronFeedDownXic0MCGen2(0),
+	fHistoElectronFeedDownXicPlusMCGen(0),
+	fHistoElectronFeedDownXicPlusMCGen1(0),
+	fHistoElectronFeedDownXicPlusMCGen2(0),
+	fHistoElectronMCGen(0),
+	fHistoLambdaMCGen(0),
 	fCounter(0),
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
@@ -215,7 +267,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fNOfPools(1),
 	fEventBuffer(0x0),
 	fEventInfo(0x0),
-	fElectronTracks(0x0)
+	fElectronTracks(0x0),
+	fV0Tracks1(0x0),
+	fV0Tracks2(0x0)
 {
   //
   /// Default Constructor.
@@ -251,6 +305,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fEleVariablesTree(0),
   fV0VariablesTree(0),
   fMCVariablesTree(0),
+  fMCEleVariablesTree(0),
+  fMCV0VariablesTree(0),
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
@@ -261,6 +317,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fCandidateEleVariables(),
   fCandidateV0Variables(),
   fCandidateMCVariables(),
+  fCandidateMCEleVariables(),
+  fCandidateMCV0Variables(),
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
@@ -275,10 +333,26 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassWS(0),
   fHistoEleLambdaMassRSMix(0),
   fHistoEleLambdaMassWSMix(0),
+  fHistoEleLambdaMassRSSide(0),
+  fHistoEleLambdaMassWSSide(0),
   fHistoEleLambdaMassvsElePtRS(0),
   fHistoEleLambdaMassvsElePtWS(0),
   fHistoEleLambdaMassvsElePtRSMix(0),
   fHistoEleLambdaMassvsElePtWSMix(0),
+  fHistoEleLambdaMassvsElePtRSSide(0),
+  fHistoEleLambdaMassvsElePtWSSide(0),
+  fHistoEleLambdaMassvsElePtRS1(0),
+  fHistoEleLambdaMassvsElePtWS1(0),
+  fHistoEleLambdaMassvsElePtRSMix1(0),
+  fHistoEleLambdaMassvsElePtWSMix1(0),
+  fHistoEleLambdaMassvsElePtRSSide1(0),
+  fHistoEleLambdaMassvsElePtWSSide1(0),
+  fHistoEleLambdaMassvsElePtRS2(0),
+  fHistoEleLambdaMassvsElePtWS2(0),
+  fHistoEleLambdaMassvsElePtRSMix2(0),
+  fHistoEleLambdaMassvsElePtWSMix2(0),
+  fHistoEleLambdaMassvsElePtRSSide2(0),
+  fHistoEleLambdaMassvsElePtWSSide2(0),
   fHistoElePtRS(0),
   fHistoElePtWS(0),
   fHistoElePtRSMix(0),
@@ -287,6 +361,10 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassMCGen(0),
   fHistoEleLambdaMassvsElePtMCS(0),
   fHistoEleLambdaMassvsElePtMCGen(0),
+  fHistoEleLambdaMassvsElePtMCS1(0),
+  fHistoEleLambdaMassvsElePtMCGen1(0),
+  fHistoEleLambdaMassvsElePtMCS2(0),
+  fHistoEleLambdaMassvsElePtMCGen2(0),
   fHistoElePtMCS(0),
   fHistoElePtMCGen(0),
   fHistoElePtvsEtaRS(0),
@@ -315,6 +393,10 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassFeeddownXic0MCGen(0),
   fHistoEleLambdaMassvsElePtFeeddownXic0MCS(0),
   fHistoEleLambdaMassvsElePtFeeddownXic0MCGen(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCS1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCS2(0),
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2(0),
   fHistoElePtFeeddownXic0MCS(0),
   fHistoElePtFeeddownXic0MCGen(0),
   fHistoElePtvsEtaFeeddownXic0MCS(0),
@@ -325,6 +407,10 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoEleLambdaMassFeeddownXicPlusMCGen(0),
   fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS(0),
   fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2(0),
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2(0),
   fHistoElePtFeeddownXicPlusMCS(0),
   fHistoElePtFeeddownXicPlusMCGen(0),
   fHistoElePtvsEtaFeeddownXicPlusMCS(0),
@@ -348,6 +434,26 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fHistoElectronTPCPIDSelTOFLargeEta(0),
 	fHistoElectronQovPtvsPhi(0),
 	fHistoLambdaQovPtvsPhi(0),
+	fHistoLcMCGen(0),
+	fHistoLcMCGen1(0),
+	fHistoLcMCGen2(0),
+	fHistoFeedDownXic0MCGen(0),
+	fHistoFeedDownXic0MCGen1(0),
+	fHistoFeedDownXic0MCGen2(0),
+	fHistoFeedDownXicPlusMCGen(0),
+	fHistoFeedDownXicPlusMCGen1(0),
+	fHistoFeedDownXicPlusMCGen2(0),
+	fHistoLcElectronMCGen(0),
+	fHistoLcElectronMCGen1(0),
+	fHistoLcElectronMCGen2(0),
+	fHistoElectronFeedDownXic0MCGen(0),
+	fHistoElectronFeedDownXic0MCGen1(0),
+	fHistoElectronFeedDownXic0MCGen2(0),
+	fHistoElectronFeedDownXicPlusMCGen(0),
+	fHistoElectronFeedDownXicPlusMCGen1(0),
+	fHistoElectronFeedDownXicPlusMCGen2(0),
+	fHistoElectronMCGen(0),
+	fHistoLambdaMCGen(0),
 	fCounter(0),
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
@@ -359,7 +465,9 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fNOfPools(1),
 	fEventBuffer(0x0),
 	fEventInfo(0x0),
-	fElectronTracks(0x0)
+	fElectronTracks(0x0),
+	fV0Tracks1(0x0),
+	fV0Tracks2(0x0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -383,6 +491,8 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   DefineOutput(6,TTree::Class());  //My private output
   DefineOutput(7,TTree::Class());  //My private output
   DefineOutput(8,AliNormalizationCounter::Class());
+  DefineOutput(9,TTree::Class());  //My private output
+  DefineOutput(10,TTree::Class());  //My private output
 }
 
 //___________________________________________________________________________
@@ -429,10 +539,30 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::~AliAnalysisTaskSELc2eleLambdafromAO
     delete fMCVariablesTree;
     fMCVariablesTree = 0;
   }
+  if (fMCEleVariablesTree) {
+    delete fMCEleVariablesTree;
+    fMCEleVariablesTree = 0;
+  }
+  if (fMCV0VariablesTree) {
+    delete fMCV0VariablesTree;
+    fMCV0VariablesTree = 0;
+  }
 	if(fCounter){
 		delete fCounter;
 		fCounter = 0;
 	}
+
+	if(fElectronTracks) fElectronTracks->Delete();
+	delete fElectronTracks;
+	if(fV0Tracks1) fV0Tracks1->Delete();
+	delete fV0Tracks1;
+	if(fV0Tracks2) fV0Tracks2->Delete();
+	delete fV0Tracks2;
+  if(fEventBuffer){
+    for(Int_t i=0; i<fNOfPools; i++) delete fEventBuffer[i];
+    delete fEventBuffer;
+  }
+  delete fEventInfo;
 }
 
 //_________________________________________________
@@ -468,6 +598,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   }
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   fCEvents->Fill(1);
+	fEvNumberCounter++;
 
   //------------------------------------------------
   // First check if the event has proper B
@@ -566,7 +697,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
 	}
   fHCentrality->Fill(fCentrality);
 	fRunNumber = aodEvent->GetRunNumber();
-	fEvNumberCounter++;
 
 	Int_t runnumber_offset = 0;
 	Int_t runnumber = aodEvent->GetRunNumber();
@@ -599,6 +729,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
   PostData(6,fV0VariablesTree);
   PostData(7,fMCVariablesTree);
   PostData(8,fCounter);    
+  PostData(9,fMCEleVariablesTree);
+  PostData(10,fMCV0VariablesTree);
 
   fIsEventSelected=kFALSE;
 
@@ -666,6 +798,12 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserCreateOutputObjects()
   DefineMCTreeVariables();
   PostData(7,fMCVariablesTree);
 
+  DefineMCEleTreeVariables();
+  PostData(9,fMCEleVariablesTree);
+
+  DefineMCV0TreeVariables();
+  PostData(10,fMCV0VariablesTree);
+
   //Counter for Normalization
   TString normName="NormalizationCounter";
   AliAnalysisDataContainer *cont = GetOutputSlot(8)->GetContainer();
@@ -677,6 +815,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserCreateOutputObjects()
 	if(fDoEventMixing){
 		fElectronTracks = new TObjArray();
 		fElectronTracks->SetOwner();
+		fV0Tracks1 = new TObjArray();
+		fV0Tracks1->SetOwner();
+		fV0Tracks2 = new TObjArray();
+		fV0Tracks2->SetOwner();
 
 		fNOfPools=fNCentBins*fNzVtxBins;
 		fEventBuffer = new TTree*[fNOfPools];
@@ -685,7 +827,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserCreateOutputObjects()
 			fEventBuffer[i]->Branch("zVertex", &fVtxZ);
 			fEventBuffer[i]->Branch("centrality", &fCentrality);
 			fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
-			fEventBuffer[i]->Branch("earray", "TObjArray", &fElectronTracks);
+			fEventBuffer[i]->Branch("v1array", "TObjArray", &fV0Tracks1);
+			fEventBuffer[i]->Branch("v2array", "TObjArray", &fV0Tracks2);
 		}
 	}
 
@@ -703,6 +846,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
   /// Main Analysis part
   //
 	if(fDoEventMixing && fElectronTracks) fElectronTracks->Delete();
+	if(fDoEventMixing && fV0Tracks1) fV0Tracks1->Delete();
+	if(fDoEventMixing && fV0Tracks2) fV0Tracks2->Delete();
 
   //------------------------------------------------
   // Select good track before hand to save time
@@ -760,12 +905,12 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
       AliAODVertex *secVert = ReconstructSecondaryVertex(v0,trk,aodEvent);//Fake, prim vertex is just used as secondary vertex. place holder for future
       if(!secVert) continue;
 
-      AliAODRecoCascadeHF *elobj = MakeCascadeHF(v0,trk,aodEvent,secVert,false);
+      AliAODRecoCascadeHF *elobj = MakeCascadeHF(v0,trk,aodEvent,secVert);
       if(!elobj) {
 	continue;
       }
 
-      FillROOTObjects(elobj, v0,trk,mcArray,false);
+      FillROOTObjects(elobj, v0,trk,mcArray);
 
       elobj->GetSecondaryVtx()->RemoveDaughters();
       elobj->UnsetOwnPrimaryVtx();
@@ -775,12 +920,14 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeAnalysis
   }
 
   if(fDoEventMixing){
-		fEventInfo->SetString(Form("Ev%d_esd%d_E%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fElectronTracks->GetEntries()));
+		fEventInfo->SetString(Form("Ev%d_esd%d_E%d_V%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fElectronTracks->GetEntries(),fV0Tracks1->GetEntries()+fV0Tracks2->GetEntries()));
     Int_t ind=GetPoolIndex(fVtxZ,fCentrality);
     if(ind>=0 && ind<fNOfPools){
       if(fEventBuffer[ind]->GetEntries() >= fNumberOfEventsForMixing){
-				DoEventMixingWithPools(ind,aodEvent,seleV0Flags);
-				//ResetPool(ind);
+				DoEventMixingWithPools(ind);
+				if(fEventBuffer[ind]->GetEntries() >= 20*fNumberOfEventsForMixing){
+					ResetPool(ind);
+				}
       }
       fEventBuffer[ind]->Fill();
     }
@@ -795,7 +942,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 69;
+  Int_t nVar = 74;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -865,12 +1012,18 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[62]="DcaV0daughters";
   fCandidateVariableNames[63]="V0CosPointingAngle";
   fCandidateVariableNames[64]="V0ProperDecayLength";
-  fCandidateVariableNames[65]="MassK0Short";
+  fCandidateVariableNames[65]="MassK0Short2";
 
   fCandidateVariableNames[66]="nSigmaTPCv0pi";
   fCandidateVariableNames[67]="nSigmaTOFv0pi";
 
-  fCandidateVariableNames[68]="EvNumber";
+	fCandidateVariableNames[68]= "EleITSMatch";
+	fCandidateVariableNames[69]= "V0PosITSMatch";
+	fCandidateVariableNames[70]= "V0NegITSMatch";
+	fCandidateVariableNames[71]= "IsV0PeakRegion";
+
+  fCandidateVariableNames[72]="EvNumber";
+  fCandidateVariableNames[73]="RunNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -880,7 +1033,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, TClonesArray *mcArray, Bool_t mixing_flag) 
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, TClonesArray *mcArray) 
 {
   ///
   /// Fill histograms or tree depending on fWriteVariableTree
@@ -888,12 +1041,12 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	if(!trk) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<67;i++){
+	for(Int_t i=0;i<74;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
 	Bool_t anti_lambda_flag = kFALSE;
-	if(fabs(v0->MassAntiLambda()-1.115683)<fAnalCuts->GetProdV0MassTolLambda()) anti_lambda_flag = kTRUE;
+	if(fabs(v0->MassAntiLambda()-1.115683)<fAnalCuts->GetProdV0MassTolLambdaRough()) anti_lambda_flag = kTRUE;
 
   AliAODTrack *cptrack =  (AliAODTrack*)(v0->GetDaughter(0));
   AliAODTrack *cntrack =  (AliAODTrack*)(v0->GetDaughter(1));
@@ -927,7 +1080,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
   Double_t nSigmaTOFv0pr=-9999.;
   Double_t nSigmaTPCv0pi=-9999.;
   Double_t nSigmaTOFv0pi=-9999.;
-  if(fAnalCuts->GetIsUsePID()&&!mixing_flag)
+  if(fAnalCuts->GetIsUsePID())
   {
 		nSigmaTPCele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
 		nSigmaTOFele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
@@ -935,7 +1088,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
     fCandidateVariables[18] = nSigmaTOFele;
   }
 
-	if(fAnalCuts->GetUseLambdaPID()&&!mixing_flag)
+	if(fAnalCuts->GetUseLambdaPID())
 	{
 		if(anti_lambda_flag){
 			nSigmaTPCv0pr = fAnalCuts->GetPidProton()->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kProton);
@@ -1018,9 +1171,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 		fCandidateVariables[41] = mcngen_ele;
 		fCandidateVariables[42] = mcngen_v0;
 	}
-	fCandidateVariables[32] = mixing_flag;
+	fCandidateVariables[32] = 0;
 
-  if(fAnalCuts->GetIsUsePID()&&!mixing_flag)
+  if(fAnalCuts->GetIsUsePID())
   {
 		Double_t nSigmaTPCpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kProton);
 		Double_t nSigmaTOFpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kProton);
@@ -1061,207 +1214,196 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
   fCandidateVariables[64] = v0->DecayLengthV0(posVtx)*1.1157/ptotlam;
   fCandidateVariables[65] = v0->MassK0Short();
 
-  fCandidateVariables[68] = fEvNumberCounter;
+	if(trk) fCandidateVariables[68] = trk->GetITSClusterMap();
+	if(cptrack) fCandidateVariables[69] = cptrack->GetITSClusterMap();
+	if(cntrack) fCandidateVariables[70] = cntrack->GetITSClusterMap();
+
+  fCandidateVariables[71] = fAnalCuts->IsPeakRegion(v0);
+  fCandidateVariables[72] = fEvNumberCounter;
+  fCandidateVariables[73] = fRunNumber;
 
 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
 
-	if(fAnalCuts->IsSelected(elobj,AliRDHFCuts::kCandidate))
+	Double_t cont[3];
+	cont[0] = elobj->InvMass(2,pdgdg);
+	cont[1] = elobj->Pt();
+	cont[2] = fCentrality;
+	fHistoEleLambdaMass->Fill(cont);
+	Double_t cont2[3];
+	cont2[0] = elobj->InvMass(2,pdgdg);
+	cont2[1] = trk->Pt();
+	cont2[2] = fCentrality;
+	Double_t cont_eleptvseta[3];
+	cont_eleptvseta[0] = trk->Pt();
+	cont_eleptvseta[1] = trk->Eta();
+	cont_eleptvseta[2] = fCentrality;
+
+	Double_t cont_eleptvslambdapt[3];
+	cont_eleptvslambdapt[0] = trk->Pt();
+	cont_eleptvslambdapt[1] = v0->Pt();
+	cont_eleptvslambdapt[2] = fCentrality;
+
+	Double_t cont_eleptvsd0[3];
+	cont_eleptvsd0[0] = trk->Pt();
+	cont_eleptvsd0[1] = elobj->Getd0Prong(0)*trk->Charge();
+	cont_eleptvsd0[2] = fCentrality;
+
+
+	if(fAnalCuts->IsSelected(elobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(v0))
 	{
-		Double_t cont[3];
-		cont[0] = elobj->InvMass(2,pdgdg);
-		cont[1] = elobj->Pt();
-		cont[2] = fCentrality;
-		fHistoEleLambdaMass->Fill(cont);
-		Double_t cont2[3];
-		cont2[0] = elobj->InvMass(2,pdgdg);
-		cont2[1] = trk->Pt();
-		cont2[2] = fCentrality;
-		Double_t cont_eleptvseta[3];
-		cont_eleptvseta[0] = trk->Pt();
-		cont_eleptvseta[1] = trk->Eta();
-		cont_eleptvseta[2] = fCentrality;
 
-		Double_t cont_eleptvslambdapt[3];
-		cont_eleptvslambdapt[0] = trk->Pt();
-		cont_eleptvslambdapt[1] = v0->Pt();
-		cont_eleptvslambdapt[2] = fCentrality;
+		if((trk->Charge()>0 && !anti_lambda_flag) || (trk->Charge()<0 && anti_lambda_flag)){
+			fHistoEleLambdaMassRS->Fill(cont);
+			fHistoEleLambdaMassvsElePtRS->Fill(cont2);
+			if(trk->Charge()>0) fHistoEleLambdaMassvsElePtRS1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtRS2->Fill(cont2);
+			if(cont[0]<2.3){
+				fHistoElePtRS->Fill(trk->Pt(),fCentrality);
+				fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
+				fHistoElePtvsLambdaPtRS->Fill(cont_eleptvslambdapt);
+				fHistoElePtvsd0RS->Fill(cont_eleptvsd0);
 
-		Double_t cont_eleptvsd0[3];
-		cont_eleptvsd0[0] = trk->Pt();
-		cont_eleptvsd0[1] = elobj->Getd0Prong(0)*trk->Charge();
-		cont_eleptvsd0[2] = fCentrality;
+				for(Int_t ih=0;ih<17;ih++){
+					Double_t cont_eleptvscutvars[3];
+					cont_eleptvscutvars[0] = trk->Pt();
+					cont_eleptvscutvars[2] = fCentrality;
 
+					if(ih==0){
+						cont_eleptvscutvars[1] = trk->GetTPCNcls();
+					}else if(ih==1){
+						cont_eleptvscutvars[1] = trk->GetTPCsignalN();
+					}else if(ih==2){
+						cont_eleptvscutvars[1] = nSigmaTPCele;
+					}else if(ih==3){
+						cont_eleptvscutvars[1] = nSigmaTOFele;
+					}else if(ih==4){
+						cont_eleptvscutvars[1] = trk->Eta();
+					}else if(ih==5){
+						cont_eleptvscutvars[1] = trk->GetITSNcls();
+					}else if(ih==6){
+						if(!anti_lambda_flag)
+							cont_eleptvscutvars[1] = v0->MassLambda();
+						else
+							cont_eleptvscutvars[1] = v0->MassAntiLambda();
+					}else if(ih==7){
+						Double_t lPosV0[3];
+						lPosV0[0] = v0->DecayVertexV0X();
+						lPosV0[1] = v0->DecayVertexV0Y();
+						lPosV0[2] = v0->DecayVertexV0Z();
+						cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+					}else if(ih==8){
+						cont_eleptvscutvars[1] = v0->DcaV0Daughters();
+					}else if(ih==9){
+						if(!anti_lambda_flag)
+							cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+						else
+							cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+					}else if(ih==10){
+						if(!anti_lambda_flag)
+							cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+						else
+							cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+					}else if(ih==11){
+						cont_eleptvscutvars[1] =  v0->CosPointingAngle(posVtx);
+					}else if(ih==12){
+						cont_eleptvscutvars[1] =  v0->MassK0Short();
+					}else if(ih==13){
+						cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
+					}else if(ih==14){
+						cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
+					}else if(ih==15){
+						cont_eleptvscutvars[1] =  v0->Eta();
+					}else if(ih==16){
+						Double_t v0px = elobj->PxProng(1);
+						Double_t v0py = elobj->PyProng(1);
+						Double_t v0pz = elobj->PzProng(1);
+						Double_t epx = elobj->PxProng(0);
+						Double_t epy = elobj->PyProng(0);
+						Double_t epz = elobj->PzProng(0);
+						cont_eleptvscutvars[1] = acos((v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz));
+					}else{
+						cont_eleptvscutvars[1] = -9999.;
+					}
 
-		if(mixing_flag){
-			if((trk->Charge()>0 && !anti_lambda_flag) || (trk->Charge()<0 && anti_lambda_flag)){
-				fHistoEleLambdaMassRSMix->Fill(cont);
-				fHistoEleLambdaMassvsElePtRSMix->Fill(cont2);
-				if(cont[0]<2.3){
-					fHistoElePtRSMix->Fill(trk->Pt(),fCentrality);
-					fHistoElePtvsEtaRSMix->Fill(cont_eleptvseta);
-					fHistoElePtvsLambdaPtRSMix->Fill(cont_eleptvslambdapt);
-					fHistoElePtvsd0RSMix->Fill(cont_eleptvsd0);
-				}
-			}else if((trk->Charge()<0 && !anti_lambda_flag) || (trk->Charge()>0 && anti_lambda_flag)){
-				fHistoEleLambdaMassWSMix->Fill(cont);
-				fHistoEleLambdaMassvsElePtWSMix->Fill(cont2);
-				if(cont[0]<2.3){
-					fHistoElePtWSMix->Fill(trk->Pt(),fCentrality);
-					fHistoElePtvsEtaWSMix->Fill(cont_eleptvseta);
-					fHistoElePtvsLambdaPtWSMix->Fill(cont_eleptvslambdapt);
-					fHistoElePtvsd0WSMix->Fill(cont_eleptvsd0);
+					fHistoElePtvsCutVarsRS[ih]->Fill(cont_eleptvscutvars);
 				}
 			}
-		}else{
-			if((trk->Charge()>0 && !anti_lambda_flag) || (trk->Charge()<0 && anti_lambda_flag)){
-				fHistoEleLambdaMassRS->Fill(cont);
-				fHistoEleLambdaMassvsElePtRS->Fill(cont2);
-				if(cont[0]<2.3){
-					fHistoElePtRS->Fill(trk->Pt(),fCentrality);
-					fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
-					fHistoElePtvsLambdaPtRS->Fill(cont_eleptvslambdapt);
-					fHistoElePtvsd0RS->Fill(cont_eleptvsd0);
+		}else if((trk->Charge()<0 && !anti_lambda_flag) || (trk->Charge()>0 && anti_lambda_flag)){
+			fHistoEleLambdaMassWS->Fill(cont);
+			fHistoEleLambdaMassvsElePtWS->Fill(cont2);
+			if(trk->Charge()>0) fHistoEleLambdaMassvsElePtWS1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtWS2->Fill(cont2);
+			if(cont[0]<2.3){
+				fHistoElePtWS->Fill(trk->Pt(),fCentrality);
+				fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
+				fHistoElePtvsLambdaPtWS->Fill(cont_eleptvslambdapt);
+				fHistoElePtvsd0WS->Fill(cont_eleptvsd0);
 
-					for(Int_t ih=0;ih<17;ih++){
-						Double_t cont_eleptvscutvars[3];
-						cont_eleptvscutvars[0] = trk->Pt();
-						cont_eleptvscutvars[2] = fCentrality;
+				for(Int_t ih=0;ih<17;ih++){
+					Double_t cont_eleptvscutvars[3];
+					cont_eleptvscutvars[0] = trk->Pt();
+					cont_eleptvscutvars[2] = fCentrality;
 
-						if(ih==0){
-							cont_eleptvscutvars[1] = trk->GetTPCNcls();
-						}else if(ih==1){
-							cont_eleptvscutvars[1] = trk->GetTPCsignalN();
-						}else if(ih==2){
-							cont_eleptvscutvars[1] = nSigmaTPCele;
-						}else if(ih==3){
-							cont_eleptvscutvars[1] = nSigmaTOFele;
-						}else if(ih==4){
-							cont_eleptvscutvars[1] = trk->Eta();
-						}else if(ih==5){
-							cont_eleptvscutvars[1] = trk->GetITSNcls();
-						}else if(ih==6){
-							if(!anti_lambda_flag)
-								cont_eleptvscutvars[1] = v0->MassLambda();
-							else
-								cont_eleptvscutvars[1] = v0->MassAntiLambda();
-						}else if(ih==7){
-							Double_t lPosV0[3];
-							lPosV0[0] = v0->DecayVertexV0X();
-							lPosV0[1] = v0->DecayVertexV0Y();
-							lPosV0[2] = v0->DecayVertexV0Z();
-							cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
-						}else if(ih==8){
-							cont_eleptvscutvars[1] = v0->DcaV0Daughters();
-						}else if(ih==9){
-							if(!anti_lambda_flag)
-								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
-							else
-								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
-						}else if(ih==10){
-							if(!anti_lambda_flag)
-								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
-							else
-								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
-						}else if(ih==11){
-							cont_eleptvscutvars[1] =  v0->CosPointingAngle(posVtx);
-						}else if(ih==12){
-							cont_eleptvscutvars[1] =  v0->MassK0Short();
-						}else if(ih==13){
-							cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
-						}else if(ih==14){
-							cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
-						}else if(ih==15){
-							cont_eleptvscutvars[1] =  v0->Eta();
-						}else if(ih==16){
-							Double_t v0px = elobj->PxProng(1);
-							Double_t v0py = elobj->PyProng(1);
-							Double_t v0pz = elobj->PzProng(1);
-							Double_t epx = elobj->PxProng(0);
-							Double_t epy = elobj->PyProng(0);
-							Double_t epz = elobj->PzProng(0);
-							cont_eleptvscutvars[1] = acos((v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz));
-						}else{
-							cont_eleptvscutvars[1] = -9999.;
-						}
-
-						fHistoElePtvsCutVarsRS[ih]->Fill(cont_eleptvscutvars);
+					if(ih==0){
+						cont_eleptvscutvars[1] = trk->GetTPCNcls();
+					}else if(ih==1){
+						cont_eleptvscutvars[1] = trk->GetTPCsignalN();
+					}else if(ih==2){
+						cont_eleptvscutvars[1] = nSigmaTPCele;
+					}else if(ih==3){
+						cont_eleptvscutvars[1] = nSigmaTOFele;
+					}else if(ih==4){
+						cont_eleptvscutvars[1] = trk->Eta();
+					}else if(ih==5){
+						cont_eleptvscutvars[1] = trk->GetITSNcls();
+					}else if(ih==6){
+						if(!anti_lambda_flag)
+							cont_eleptvscutvars[1] = v0->MassLambda();
+						else
+							cont_eleptvscutvars[1] = v0->MassAntiLambda();
+					}else if(ih==7){
+						Double_t lPosV0[3];
+						lPosV0[0] = v0->DecayVertexV0X();
+						lPosV0[1] = v0->DecayVertexV0Y();
+						lPosV0[2] = v0->DecayVertexV0Z();
+						cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
+					}else if(ih==8){
+						cont_eleptvscutvars[1] = v0->DcaV0Daughters();
+					}else if(ih==9){
+						if(!anti_lambda_flag)
+							cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+						else
+							cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+					}else if(ih==10){
+						if(!anti_lambda_flag)
+							cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
+						else
+							cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
+					}else if(ih==11){
+						cont_eleptvscutvars[1] =  v0->CosPointingAngle(posVtx);
+					}else if(ih==12){
+						cont_eleptvscutvars[1] =  v0->MassK0Short();
+					}else if(ih==13){
+						cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
+					}else if(ih==14){
+						cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
+					}else if(ih==15){
+						cont_eleptvscutvars[1] =  v0->Eta();
+					}else if(ih==16){
+						Double_t v0px = elobj->PxProng(1);
+						Double_t v0py = elobj->PyProng(1);
+						Double_t v0pz = elobj->PzProng(1);
+						Double_t epx = elobj->PxProng(0);
+						Double_t epy = elobj->PyProng(0);
+						Double_t epz = elobj->PzProng(0);
+						cont_eleptvscutvars[1] = acos((v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz));
+					}else{
+						cont_eleptvscutvars[1] = -9999.;
 					}
-				}
-			}else if((trk->Charge()<0 && !anti_lambda_flag) || (trk->Charge()>0 && anti_lambda_flag)){
-				fHistoEleLambdaMassWS->Fill(cont);
-				fHistoEleLambdaMassvsElePtWS->Fill(cont2);
-				if(cont[0]<2.3){
-					fHistoElePtWS->Fill(trk->Pt(),fCentrality);
-					fHistoElePtvsEtaWS->Fill(cont_eleptvseta);
-					fHistoElePtvsLambdaPtWS->Fill(cont_eleptvslambdapt);
-					fHistoElePtvsd0WS->Fill(cont_eleptvsd0);
 
-					for(Int_t ih=0;ih<17;ih++){
-						Double_t cont_eleptvscutvars[3];
-						cont_eleptvscutvars[0] = trk->Pt();
-						cont_eleptvscutvars[2] = fCentrality;
-
-						if(ih==0){
-							cont_eleptvscutvars[1] = trk->GetTPCNcls();
-						}else if(ih==1){
-							cont_eleptvscutvars[1] = trk->GetTPCsignalN();
-						}else if(ih==2){
-							cont_eleptvscutvars[1] = nSigmaTPCele;
-						}else if(ih==3){
-							cont_eleptvscutvars[1] = nSigmaTOFele;
-						}else if(ih==4){
-							cont_eleptvscutvars[1] = trk->Eta();
-						}else if(ih==5){
-							cont_eleptvscutvars[1] = trk->GetITSNcls();
-						}else if(ih==6){
-							if(!anti_lambda_flag)
-								cont_eleptvscutvars[1] = v0->MassLambda();
-							else
-								cont_eleptvscutvars[1] = v0->MassAntiLambda();
-						}else if(ih==7){
-							Double_t lPosV0[3];
-							lPosV0[0] = v0->DecayVertexV0X();
-							lPosV0[1] = v0->DecayVertexV0Y();
-							lPosV0[2] = v0->DecayVertexV0Z();
-							cont_eleptvscutvars[1] = TMath::Sqrt(lPosV0[0]*lPosV0[0]+lPosV0[1]*lPosV0[1]);
-						}else if(ih==8){
-							cont_eleptvscutvars[1] = v0->DcaV0Daughters();
-						}else if(ih==9){
-							if(!anti_lambda_flag)
-								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
-							else
-								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
-						}else if(ih==10){
-							if(!anti_lambda_flag)
-								cont_eleptvscutvars[1] = v0->DcaNegToPrimVertex();
-							else
-								cont_eleptvscutvars[1] = v0->DcaPosToPrimVertex();
-						}else if(ih==11){
-							cont_eleptvscutvars[1] =  v0->CosPointingAngle(posVtx);
-						}else if(ih==12){
-							cont_eleptvscutvars[1] =  v0->MassK0Short();
-						}else if(ih==13){
-							cont_eleptvscutvars[1] =  nSigmaTPCv0pr;
-						}else if(ih==14){
-							cont_eleptvscutvars[1] =  nSigmaTPCv0pi;
-						}else if(ih==15){
-							cont_eleptvscutvars[1] =  v0->Eta();
-						}else if(ih==16){
-							Double_t v0px = elobj->PxProng(1);
-							Double_t v0py = elobj->PyProng(1);
-							Double_t v0pz = elobj->PzProng(1);
-							Double_t epx = elobj->PxProng(0);
-							Double_t epy = elobj->PyProng(0);
-							Double_t epz = elobj->PzProng(0);
-							cont_eleptvscutvars[1] = acos((v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz));
-						}else{
-							cont_eleptvscutvars[1] = -9999.;
-						}
-
-						fHistoElePtvsCutVarsWS[ih]->Fill(cont_eleptvscutvars);
-					}
+					fHistoElePtvsCutVarsWS[ih]->Fill(cont_eleptvscutvars);
 				}
 			}
 		}
@@ -1270,8 +1412,11 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 			if(mclc){
 				Int_t pdgcode = mclc->GetPdgCode();
 				if(abs(pdgcode)==4122 && abs(mcpdgele_array[1])==4122 && abs(mcpdgv0_array[1])==4122){
+						cont2[1] = mcele->Pt();
 						fHistoEleLambdaMassMCS->Fill(cont);
 						fHistoEleLambdaMassvsElePtMCS->Fill(cont2);
+						if(trk->Charge()>0) fHistoEleLambdaMassvsElePtMCS1->Fill(cont2);
+						else fHistoEleLambdaMassvsElePtMCS2->Fill(cont2);
 						if(cont[0]<2.3){
 							fHistoElePtMCS->Fill(trk->Pt(),fCentrality);
 							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
@@ -1367,6 +1512,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 				if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgv0_array[1])==3312){
 						fHistoEleLambdaMassFeeddownXic0MCS->Fill(cont);
 						fHistoEleLambdaMassvsElePtFeeddownXic0MCS->Fill(cont2);
+						if(trk->Charge()>0) fHistoEleLambdaMassvsElePtFeeddownXic0MCS1->Fill(cont2);
+						else fHistoEleLambdaMassvsElePtFeeddownXic0MCS2->Fill(cont2);
 						if(cont[0]<2.3){
 							fHistoElePtFeeddownXic0MCS->Fill(trk->Pt(),fCentrality);
 							fHistoElePtvsEtaFeeddownXic0MCS->Fill(cont_eleptvseta);
@@ -1376,12 +1523,157 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 				if(abs(pdgcode)==4232 && abs(mcpdgele_array[1])==4232 && abs(mcpdgv0_array[1])==3322){
 						fHistoEleLambdaMassFeeddownXicPlusMCS->Fill(cont);
 						fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS->Fill(cont2);
+						if(trk->Charge()>0) fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1->Fill(cont2);
+						else fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2->Fill(cont2);
 						if(cont[0]<2.3){
 							fHistoElePtFeeddownXicPlusMCS->Fill(trk->Pt(),fCentrality);
 							fHistoElePtvsEtaFeeddownXicPlusMCS->Fill(cont_eleptvseta);
 							fHistoElePtvsLambdaPtFeeddownXicPlusMCS->Fill(cont_eleptvslambdapt);
 						}
 				}
+			}
+		}
+	}
+
+	if(fAnalCuts->IsSelected(elobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsSideBand(v0))
+	{
+		if((trk->Charge()>0 && !anti_lambda_flag) || (trk->Charge()<0 && anti_lambda_flag)){
+			fHistoEleLambdaMassRSSide->Fill(cont);
+			fHistoEleLambdaMassvsElePtRSSide->Fill(cont2);
+			if(trk->Charge()>0) fHistoEleLambdaMassvsElePtRSSide1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtRSSide2->Fill(cont2);
+		}else if((trk->Charge()<0 && !anti_lambda_flag) || (trk->Charge()>0 && anti_lambda_flag)){
+			fHistoEleLambdaMassWSSide->Fill(cont);
+			fHistoEleLambdaMassvsElePtWSSide->Fill(cont2);
+			if(trk->Charge()>0) fHistoEleLambdaMassvsElePtWSSide1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtWSSide2->Fill(cont2);
+		}
+	}
+
+  return;
+}
+
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVector *trke, TLorentzVector *v0, Int_t chargepr) 
+{
+  ///
+  /// Fill histograms or tree depending on fWriteVariableTree
+  ///
+	if(!trke) return;
+	if(!v0) return;
+
+	for(Int_t i=0;i<73;i++){
+		fCandidateVariables[i] = -9999.;
+	}
+
+
+	Double_t pxe = trke->Px();
+	Double_t pye = trke->Py();
+	Double_t pze = trke->Pz();
+	Double_t mome = sqrt(pxe*pxe+pye*pye+pze*pze);
+	Double_t Ee = sqrt(mome*mome+0.000510998928*0.000510998928);
+
+	Double_t pxv = v0->Px();
+	Double_t pyv = v0->Py();
+	Double_t pzv = v0->Pz();
+	Double_t momv = sqrt(pxv*pxv+pyv*pyv+pzv*pzv);
+	Double_t Ev = sqrt(momv*momv+1.115683*1.115683);
+
+	Double_t cosoa = (pxe*pxv+pye*pyv+pze*pzv)/mome/momv;
+
+	Double_t pxsum = pxe + pxv;
+	Double_t pysum = pye + pyv;
+	Double_t pzsum = pze + pzv;
+	Double_t Esum = Ee + Ev;
+
+	Double_t mel = sqrt(Esum*Esum-pxsum*pxsum-pysum*pysum-pzsum*pzsum);
+
+  fCandidateVariables[ 0] = fCentrality;
+	UInt_t pdgdg[2]={11,3122};
+  fCandidateVariables[ 1] = mel;
+  fCandidateVariables[ 2] = sqrt(pxsum*pxsum+pysum*pysum);
+  fCandidateVariables[ 3] = pxsum;
+  fCandidateVariables[ 4] = pysum;
+  fCandidateVariables[ 5] = pzsum;
+  fCandidateVariables[ 6] = pxe;
+  fCandidateVariables[ 7] = pye;
+  fCandidateVariables[ 8] = pze;
+  fCandidateVariables[ 9] = pxv;
+  fCandidateVariables[10] = pyv;
+  fCandidateVariables[11] = pzv;
+	if(chargepr>0){
+		fCandidateVariables[12] = 0;
+		fCandidateVariables[13] = v0->M();
+		fCandidateVariables[14] = 0.;
+	}else{
+		fCandidateVariables[12] = 1;
+		fCandidateVariables[13] = 0;
+		fCandidateVariables[14] = v0->M();
+	}
+
+  fCandidateVariables[21] = trke->T();
+
+	fCandidateVariables[32] = 1;
+
+  fCandidateVariables[54] = fVtx1->GetX();
+  fCandidateVariables[55] = fVtx1->GetY();
+  fCandidateVariables[56] = fVtx1->GetZ();
+
+  fCandidateVariables[71] = fEvNumberCounter;
+  fCandidateVariables[72] = fRunNumber;
+
+
+  if(fWriteVariableTree)
+    fVariablesTree->Fill();
+
+	if(cosoa>0. &&  fAnalCuts->IsPeakRegion(v0))
+	{
+		Double_t cont[3];
+		cont[0] = mel;
+		cont[1] = sqrt(pxsum*pxsum+pysum*pysum);
+		cont[2] = fCentrality;
+		fHistoEleLambdaMass->Fill(cont);
+		Double_t cont2[3];
+		cont2[0] = mel;
+		cont2[1] = sqrt(pxe*pxe+pye*pye);
+		cont2[2] = fCentrality;
+		Double_t cont_eleptvseta[3];
+		cont_eleptvseta[0] = trke->Pt();
+		cont_eleptvseta[1] = trke->Eta();
+		cont_eleptvseta[2] = fCentrality;
+
+		Double_t cont_eleptvslambdapt[3];
+		cont_eleptvslambdapt[0] = trke->Pt();
+		cont_eleptvslambdapt[1] = v0->Pt();
+		cont_eleptvslambdapt[2] = fCentrality;
+
+		Double_t cont_eleptvsd0[3];
+		cont_eleptvsd0[0] = trke->Pt();
+		cont_eleptvsd0[1] = 0.;
+		cont_eleptvsd0[2] = fCentrality;
+
+
+		if(((int)trke->T())*chargepr>0){
+			fHistoEleLambdaMassRSMix->Fill(cont);
+			fHistoEleLambdaMassvsElePtRSMix->Fill(cont2);
+			if(trke->T()>0) fHistoEleLambdaMassvsElePtRSMix1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtRSMix2->Fill(cont2);
+			if(cont[0]<2.3){
+				fHistoElePtRSMix->Fill(trke->Pt(),fCentrality);
+				fHistoElePtvsEtaRSMix->Fill(cont_eleptvseta);
+				fHistoElePtvsLambdaPtRSMix->Fill(cont_eleptvslambdapt);
+				fHistoElePtvsd0RSMix->Fill(cont_eleptvsd0);
+			}
+		}else{
+			fHistoEleLambdaMassWSMix->Fill(cont);
+			fHistoEleLambdaMassvsElePtWSMix->Fill(cont2);
+			if(trke->T()>0) fHistoEleLambdaMassvsElePtWSMix1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtWSMix2->Fill(cont2);
+			if(cont[0]<2.3){
+				fHistoElePtWSMix->Fill(trke->Pt(),fCentrality);
+				fHistoElePtvsEtaWSMix->Fill(cont_eleptvseta);
+				fHistoElePtvsLambdaPtWSMix->Fill(cont_eleptvslambdapt);
+				fHistoElePtvsd0WSMix->Fill(cont_eleptvsd0);
 			}
 		}
 	}
@@ -1397,7 +1689,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineEleTreeVariables()
 
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   fEleVariablesTree = new TTree(nameoutput,"electron variables tree");
-  Int_t nVar = 20;
+  Int_t nVar = 26;
   fCandidateEleVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1419,8 +1711,14 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineEleTreeVariables()
   fCandidateVariableNames[15]="nSigmaTPCpr";
   fCandidateVariableNames[16]="EvNumber";
   fCandidateVariableNames[17]="EleCharge";
-  fCandidateVariableNames[18]="Centrality";
-  fCandidateVariableNames[19]="RunNumber";
+  fCandidateVariableNames[18]="ElePdgCode";
+  fCandidateVariableNames[19]="EleMotherPdgCode";
+  fCandidateVariableNames[20]="mcelepx";
+  fCandidateVariableNames[21]="mcelepy";
+  fCandidateVariableNames[22]="mcelepz";
+  fCandidateVariableNames[23]="Centrality";
+  fCandidateVariableNames[24]="PrimVertZ";
+  fCandidateVariableNames[25]="RunNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fEleVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateEleVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1440,23 +1738,44 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
 	fHistoBachPt->Fill(trk->Pt());
 	fHistoElectronQovPtvsPhi->Fill(trk->Phi(),(Double_t)trk->Charge()/trk->Pt());
 
-	if(fUseMCInfo)
-	{
-		Int_t labEle = trk->GetLabel();
-		if(labEle>=0){
-			AliAODMCParticle *mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
-			if(mcetrk){
-				Int_t pdgEle = mcetrk->GetPdgCode();
-				if(abs(pdgEle)==11){
-					fHistoBachPtMCS->Fill(trk->Pt());
-				}
-			}
-		}
+	if(fDoEventMixing){
+		fElectronTracks->AddLast(new TLorentzVector(trk->Px(),trk->Py(),trk->Pz(),trk->Charge()));
 	}
 
 	if(!fWriteEachVariableTree) return;
 
-	for(Int_t i=0;i<20;i++){
+	Int_t pdgEle = -9999;
+	Int_t pdgEleMother = -9999;
+	Float_t mcelepx = -9999;
+	Float_t mcelepy = -9999;
+	Float_t mcelepz = -9999;
+	if(fUseMCInfo)
+	{
+		Int_t labEle = trk->GetLabel();
+		if(labEle<0) return;
+		AliAODMCParticle *mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
+		if(!mcetrk) return;
+		pdgEle = mcetrk->GetPdgCode();
+		if(abs(pdgEle)!=11) return;
+
+		fHistoBachPtMCS->Fill(trk->Pt());
+
+		Bool_t hfe_flag = kFALSE;
+		Int_t labemother = mcetrk->GetMother();
+		if(labemother>=0){
+			AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labemother);
+			pdgEleMother = motherele->GetPdgCode();
+			if(abs(pdgEleMother)>4000&&abs(pdgEleMother)<4400){
+				hfe_flag = kTRUE;
+			}
+		}
+		if(!hfe_flag) return;
+		mcelepx = mcetrk->Px();
+		mcelepy = mcetrk->Py();
+		mcelepz = mcetrk->Pz();
+	}
+
+	for(Int_t i=0;i<26;i++){
 		fCandidateEleVariables[i] = -9999.;
 	}
 
@@ -1497,8 +1816,14 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillElectronROOTObjects(AliAODT
   }
   fCandidateEleVariables[16] = fEvNumberCounter;
   fCandidateEleVariables[17] = trk->Charge();
-  fCandidateEleVariables[18] = fCentrality;
-  fCandidateEleVariables[19] = fRunNumber;
+  fCandidateEleVariables[18] = pdgEle;
+  fCandidateEleVariables[19] = pdgEleMother;
+  fCandidateEleVariables[20] = mcelepx;
+  fCandidateEleVariables[21] = mcelepy;
+  fCandidateEleVariables[22] = mcelepz;
+  fCandidateEleVariables[23] = fCentrality;
+  fCandidateEleVariables[24] = fVtxZ;
+  fCandidateEleVariables[25] = fRunNumber;
 
 	fHistod0Bach->Fill(d0z0[0]);
 
@@ -1513,7 +1838,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineV0TreeVariables()
 
   const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
   fV0VariablesTree = new TTree(nameoutput,"v0 variables tree");
-  Int_t nVar = 27;
+  Int_t nVar = 33;
   fCandidateV0Variables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1541,9 +1866,15 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineV0TreeVariables()
   fCandidateVariableNames[21]="TPCNCrossV0Pi";
   fCandidateVariableNames[22]="TPCNCrossRatioV0Pr";
   fCandidateVariableNames[23]="TPCNCrossRatioV0Pi";
-  fCandidateVariableNames[24]="EvNumber";
-  fCandidateVariableNames[25]="Centrality";
-  fCandidateVariableNames[26]="RunNumber";
+  fCandidateVariableNames[24]="V0PdgCode";
+  fCandidateVariableNames[25]="V0MotherPdgCode";
+  fCandidateVariableNames[26]="mcv0px";
+  fCandidateVariableNames[27]="mcv0py";
+  fCandidateVariableNames[28]="mcv0pz";
+  fCandidateVariableNames[29]="EvNumber";
+  fCandidateVariableNames[30]="Centrality";
+  fCandidateVariableNames[31]="PrimVertZ";
+  fCandidateVariableNames[32]="RunNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fV0VariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateV0Variables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1560,10 +1891,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
   //
 	if(!v0) return;
 
-	if(TMath::Abs(v0->MassLambda()-1.1156)<fAnalCuts->GetProdV0MassTolLambda()){
+	if(TMath::Abs(v0->MassLambda()-1.1156)<fAnalCuts->GetProdV0MassTolLambdaRough()){
 		fHistoLambdaMassvsPt->Fill(v0->MassLambda(),v0->Pt());
 	}
-	if(TMath::Abs(v0->MassAntiLambda()-1.1156)<fAnalCuts->GetProdV0MassTolLambda()){
+	if(TMath::Abs(v0->MassAntiLambda()-1.1156)<fAnalCuts->GetProdV0MassTolLambdaRough()){
 		fHistoLambdaMassvsPt->Fill(v0->MassAntiLambda(),v0->Pt());
 	}
 	fHistoK0sMassvsPt->Fill(v0->MassK0Short(),v0->Pt());
@@ -1574,6 +1905,11 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 	if(phi_alice<0.) phi_alice += 2 * M_PI;
 	fHistoLambdaQovPtvsPhi->Fill(phi_alice,1./sqrt(momv0x*momv0x+momv0y*momv0y));
 
+	Int_t v0pdgcode = -9999;
+	Int_t v0motherpdgcode = -9999;
+	Float_t mcv0px = -9999;
+	Float_t mcv0py = -9999;
+	Float_t mcv0pz = -9999;
 	if(fUseMCInfo)
 	{
 		Int_t pdgdgv0[2]={2212,211};
@@ -1586,11 +1922,43 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 				fHistoLambdaMassvsPtMCS->Fill(v0->MassAntiLambda(),v0->Pt());
 			}
 		}
+		if(labV0<0) return;
+		AliAODMCParticle *mcv0trk = (AliAODMCParticle*)mcArray->At(labV0);
+		if(!mcv0trk) return;
+
+		Bool_t hfv0_flag = kFALSE;
+		v0pdgcode = mcv0trk->GetPdgCode();
+		Int_t labv0mother = mcv0trk->GetMother();
+		if(labv0mother>=0){
+			AliAODMCParticle *motherv0 = (AliAODMCParticle*)mcArray->At(labv0mother);
+			if(motherv0){
+				v0motherpdgcode = motherv0->GetPdgCode();
+				if(abs(v0motherpdgcode)>4000&&abs(v0motherpdgcode)<4400){
+					hfv0_flag = kTRUE;
+				}
+			}
+		}
+		if(!hfv0_flag) return;
+		mcv0px = mcv0trk->Px();
+		mcv0py = mcv0trk->Py();
+		mcv0pz = mcv0trk->Pz();
 	}
+
+	if(fDoEventMixing){
+		TLorentzVector *lv = new TLorentzVector();
+		if(TMath::Abs(v0->MassLambda()-1.1156)<fAnalCuts->GetProdV0MassTolLambdaRough()){
+			lv->SetXYZM(v0->Px(),v0->Py(),v0->Pz(),v0->MassLambda());
+			fV0Tracks1->AddLast(lv);
+		}else{
+			lv->SetXYZM(v0->Px(),v0->Py(),v0->Pz(),v0->MassAntiLambda());
+			fV0Tracks2->AddLast(lv);
+		}
+	}
+
 
 	if(!fWriteEachVariableTree) return;
 
-	for(Int_t i=0;i<27;i++){
+	for(Int_t i=0;i<32;i++){
 		fCandidateV0Variables[i] = -9999.;
 	}
 
@@ -1611,7 +1979,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
   fCandidateV0Variables[ 4] = v0->MassAntiLambda();
 
 	Bool_t isparticle = kTRUE;
-	if(fabs(v0->MassAntiLambda()-mlamPDG)<fAnalCuts->GetProdV0MassTolLambda()) isparticle=kFALSE;
+	if(fabs(v0->MassAntiLambda()-mlamPDG)<fAnalCuts->GetProdV0MassTolLambdaRough()) isparticle=kFALSE;
 
 	if(isparticle){
 		fCandidateV0Variables[ 5] = cptrack->Px();
@@ -1682,9 +2050,15 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillV0ROOTObjects(AliAODv0 *v0,
 		if(cptrack->GetTPCNclsF()>0)
 			fCandidateV0Variables[23] = (Float_t) cptrack->GetTPCClusterInfo(2,1)/(Float_t)cptrack->GetTPCNclsF();
 	}
-	fCandidateV0Variables[24] = fEvNumberCounter;
-	fCandidateV0Variables[25] = fCentrality;
-	fCandidateV0Variables[26] = fRunNumber;
+	fCandidateV0Variables[24] = v0pdgcode;
+	fCandidateV0Variables[25] = v0motherpdgcode;
+	fCandidateV0Variables[26] = mcv0px;
+	fCandidateV0Variables[27] = mcv0py;
+	fCandidateV0Variables[28] = mcv0pz;
+	fCandidateV0Variables[29] = fEvNumberCounter;
+	fCandidateV0Variables[30] = fCentrality;
+	fCandidateV0Variables[31] = fVtxZ;
+	fCandidateV0Variables[32] = fRunNumber;
 
 
 		fV0VariablesTree->Fill();
@@ -1777,15 +2151,31 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 	cont_eleptvslambdaptvslcpt[1] = mcv0part->Pt();
 	cont_eleptvslambdaptvslcpt[2] = mcpart->Pt();
 	cont_eleptvslambdaptvslcpt[3] = fCentrality;
+	Double_t contmc[3];
+	contmc[0] = mcpart->Pt();
+	contmc[1] = mcpart->Y();
+	contmc[2] = fCentrality;
+	Double_t contmcele[3];
+	contmcele[0] = mcepart->Pt();
+	contmcele[1] = mcepart->Eta();
+	contmcele[2] = fCentrality;
 
 	AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
 	Float_t etamin, etamax;
 	esdcuts->GetEtaRange(etamin,etamax);
 
 	if(decaytype==0){
+		fHistoLcMCGen->Fill(contmc);
+		if(mcpart->GetPdgCode()>0) fHistoLcMCGen1->Fill(contmc);
+		if(mcpart->GetPdgCode()<0) fHistoLcMCGen2->Fill(contmc);
+		fHistoLcElectronMCGen->Fill(contmcele);
+		if(mcepart->GetPdgCode()<0) fHistoLcElectronMCGen1->Fill(contmcele);
+		if(mcepart->GetPdgCode()>0) fHistoLcElectronMCGen2->Fill(contmcele);
 		fHistoEleLambdaMassMCGen->Fill(cont);
 		if(fabs(mcepart->Eta())<etamax){
 			fHistoEleLambdaMassvsElePtMCGen->Fill(cont2);
+			if(mcepart->GetPdgCode()<0) fHistoEleLambdaMassvsElePtMCGen1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtMCGen2->Fill(cont2);
 			if(InvMassEleLambda<2.3){
 				fHistoElePtMCGen->Fill(mcepart->Pt(),fCentrality);
 				fHistoElePtvsEtaMCGen->Fill(cont_eleptvseta);
@@ -1799,9 +2189,17 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 			}
 		}
 	}else if(decaytype==1){
+		fHistoFeedDownXic0MCGen->Fill(contmc);
+		if(mcpart->GetPdgCode()>0) fHistoFeedDownXic0MCGen1->Fill(contmc);
+		if(mcpart->GetPdgCode()<0) fHistoFeedDownXic0MCGen2->Fill(contmc);
 		fHistoEleLambdaMassFeeddownXic0MCGen->Fill(cont);
+		fHistoElectronFeedDownXic0MCGen->Fill(contmcele);
+		if(mcepart->GetPdgCode()<0) fHistoElectronFeedDownXic0MCGen1->Fill(contmcele);
+		if(mcepart->GetPdgCode()>0) fHistoElectronFeedDownXic0MCGen2->Fill(contmcele);
 		if(fabs(mcepart->Eta())<etamax){
 			fHistoEleLambdaMassvsElePtFeeddownXic0MCGen->Fill(cont2);
+			if(mcepart->GetPdgCode()<0) fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2->Fill(cont2);
 			if(InvMassEleLambda<2.3){
 				fHistoElePtFeeddownXic0MCGen->Fill(mcepart->Pt(),fCentrality);
 				fHistoElePtvsEtaFeeddownXic0MCGen->Fill(cont_eleptvseta);
@@ -1809,9 +2207,17 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 			}
 		}
 	}else if(decaytype==2){
+		fHistoFeedDownXicPlusMCGen->Fill(contmc);
+		if(mcpart->GetPdgCode()>0) fHistoFeedDownXicPlusMCGen1->Fill(contmc);
+		if(mcpart->GetPdgCode()<0) fHistoFeedDownXicPlusMCGen2->Fill(contmc);
 		fHistoEleLambdaMassFeeddownXicPlusMCGen->Fill(cont);
+		fHistoElectronFeedDownXicPlusMCGen->Fill(contmcele);
+		if(mcepart->GetPdgCode()<0) fHistoElectronFeedDownXicPlusMCGen1->Fill(contmcele);
+		if(mcepart->GetPdgCode()>0) fHistoElectronFeedDownXicPlusMCGen2->Fill(contmcele);
 		if(fabs(mcepart->Eta())<etamax){
 			fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen->Fill(cont2);
+			if(mcepart->GetPdgCode()<0) fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1->Fill(cont2);
+			else fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2->Fill(cont2);
 			if(InvMassEleLambda<2.3){
 				fHistoElePtFeeddownXicPlusMCGen->Fill(mcepart->Pt(),fCentrality);
 				fHistoElePtvsEtaFeeddownXicPlusMCGen->Fill(cont_eleptvseta);
@@ -1823,7 +2229,147 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCROOTObjects(AliAODMCParti
 	if(fWriteMCVariableTree)
 		fMCVariablesTree->Fill();
 }
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineMCEleTreeVariables() 
+{
+  //
+  // Define electron tree variables
+  //
 
+  const char* nameoutput = GetOutputSlot(9)->GetContainer()->GetName();
+  fMCEleVariablesTree = new TTree(nameoutput,"MC Ele variables tree");
+  Int_t nVar = 8;
+  fCandidateMCEleVariables = new Float_t [nVar];
+  TString * fCandidateVariableNames = new TString[nVar];
+
+  fCandidateVariableNames[ 0]="Centrality";
+  fCandidateVariableNames[ 1]="ElePx";
+  fCandidateVariableNames[ 2]="ElePy";
+  fCandidateVariableNames[ 3]="ElePz";
+  fCandidateVariableNames[ 4]="ElePdgCode";
+  fCandidateVariableNames[ 5]="EleMotherPdgCode";
+  fCandidateVariableNames[ 6]="RunNumber";
+  fCandidateVariableNames[ 7]="EvNumber";
+
+  for (Int_t ivar=0; ivar<nVar; ivar++) {
+    fMCEleVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateMCEleVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+  }
+  return;
+}
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray) 
+{
+  //
+  // Fill tree depending on fWriteMCVariableTree 
+  //
+	if(!mcepart) return;
+
+	Bool_t hfe_flag = kFALSE;
+	Int_t labemother = mcepart->GetMother();
+	Int_t pdgmotherele = -9999;
+	if(labemother>=0){
+		AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labemother);
+		pdgmotherele = motherele->GetPdgCode();
+		if(abs(pdgmotherele)>4000&&abs(pdgmotherele)<4400){
+			hfe_flag = kTRUE;
+		}
+	}
+	if(!hfe_flag) return;
+
+	Double_t contmc[3];
+	contmc[0] = mcepart->Pt();
+	contmc[1] = mcepart->Eta();
+	contmc[2] = fCentrality;
+	fHistoElectronMCGen->Fill(contmc);
+
+	for(Int_t i=0;i<8;i++){
+		fCandidateMCEleVariables[i] = -9999.;
+	}
+
+	fCandidateMCEleVariables[ 0] = fCentrality;
+	fCandidateMCEleVariables[ 1] = mcepart->Px();
+	fCandidateMCEleVariables[ 2] = mcepart->Py();
+	fCandidateMCEleVariables[ 3] = mcepart->Pz();
+	fCandidateMCEleVariables[ 4] = mcepart->GetPdgCode();
+	fCandidateMCEleVariables[ 5] = pdgmotherele;
+	fCandidateMCEleVariables[ 6] = fRunNumber;
+	fCandidateMCEleVariables[ 7] = fEvNumberCounter;
+
+//	if(fWriteMCVariableTree && fWriteEachVariableTree && mcepart->Pt()>0.4 && fabs(mcepart->Eta())<1.0 )
+//		fMCEleVariablesTree->Fill();
+
+}
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineMCV0TreeVariables() 
+{
+  //
+  // Define Mc v0 tree variables
+  //
+
+  const char* nameoutput = GetOutputSlot(10)->GetContainer()->GetName();
+  fMCV0VariablesTree = new TTree(nameoutput,"MC v0 variables tree");
+  Int_t nVar = 8;
+  fCandidateMCV0Variables = new Float_t [nVar];
+  TString * fCandidateVariableNames = new TString[nVar];
+
+  fCandidateVariableNames[ 0]="Centrality";
+  fCandidateVariableNames[ 1]="V0Px";
+  fCandidateVariableNames[ 2]="V0Py";
+  fCandidateVariableNames[ 3]="V0Pz";
+  fCandidateVariableNames[ 4]="V0PdgCode";
+  fCandidateVariableNames[ 5]="V0MotherPdgCode";
+  fCandidateVariableNames[ 6]="RunNumber";
+  fCandidateVariableNames[ 7]="EvNumber";
+
+  for (Int_t ivar=0; ivar<nVar; ivar++) {
+    fMCV0VariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateMCV0Variables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+  }
+  return;
+}
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMCV0ROOTObjects(AliAODMCParticle *mcv0part, TClonesArray *mcArray) 
+{
+  //
+  // Fill histograms or tree depending on fWriteMCVariableTree 
+  //
+	if(!mcv0part) return;
+
+	for(Int_t i=0;i<8;i++){
+		fCandidateMCV0Variables[i] = -9999.;
+	}
+
+	Bool_t hfv0_flag = kFALSE;
+	Int_t labv0mother = mcv0part->GetMother();
+	Int_t pdgmotherv0 = -9999;
+	if(labv0mother>=0){
+		AliAODMCParticle *motherv0 = (AliAODMCParticle*)mcArray->At(labv0mother);
+		if(motherv0){
+			pdgmotherv0 = motherv0->GetPdgCode();
+			if(abs(pdgmotherv0)>4000&&abs(pdgmotherv0)<4400){
+				hfv0_flag = kTRUE;
+			}
+		}
+	}
+	if(!hfv0_flag) return;
+
+	Double_t contmc[3];
+	contmc[0] = mcv0part->Pt();
+	contmc[1] = mcv0part->Eta();
+	contmc[2] = fCentrality;
+	fHistoLambdaMCGen->Fill(contmc);
+
+	fCandidateMCV0Variables[ 0] = fCentrality;
+	fCandidateMCV0Variables[ 1] = mcv0part->Px();
+	fCandidateMCV0Variables[ 2] = mcv0part->Py();
+	fCandidateMCV0Variables[ 3] = mcv0part->Pz();
+	fCandidateMCV0Variables[ 4] = mcv0part->GetPdgCode();
+	fCandidateMCV0Variables[ 5] = pdgmotherv0;
+	fCandidateMCV0Variables[ 6] = fRunNumber;
+	fCandidateMCV0Variables[ 7] = fEvNumberCounter;
+
+	if(fWriteMCVariableTree && fWriteEachVariableTree && mcv0part->Pt()>0.4 && fabs(mcv0part->Eta())<1.0 )
+		fMCV0VariablesTree->Fill();
+}
 
 
 ////__________________________________________________________________________
@@ -1889,7 +2435,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   //------------------------------------------------
   // Basic histogram
   //------------------------------------------------
-  Int_t bins_base[3]=		{16,100		,10};
+  Int_t bins_base[3]=		{10,100		,10};
   Double_t xmin_base[3]={1.1,0		,0.00};
   Double_t xmax_base[3]={3.1,10.	,100};
   fHistoEleLambdaMass = new THnSparseF("fHistoEleLambdaMass","",3,bins_base,xmin_base,xmax_base);
@@ -1902,6 +2448,10 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoEleLambdaMassRSMix);
   fHistoEleLambdaMassWSMix = new THnSparseF("fHistoEleLambdaMassWSMix","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleLambdaMassWSMix);
+  fHistoEleLambdaMassRSSide = new THnSparseF("fHistoEleLambdaMassRSSide","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassRSSide);
+  fHistoEleLambdaMassWSSide = new THnSparseF("fHistoEleLambdaMassWSSide","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassWSSide);
   fHistoEleLambdaMassvsElePtRS = new THnSparseF("fHistoEleLambdaMassvsElePtRS","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleLambdaMassvsElePtRS);
   fHistoEleLambdaMassvsElePtWS = new THnSparseF("fHistoEleLambdaMassvsElePtWS","",3,bins_base,xmin_base,xmax_base);
@@ -1910,6 +2460,35 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoEleLambdaMassvsElePtRSMix);
   fHistoEleLambdaMassvsElePtWSMix = new THnSparseF("fHistoEleLambdaMassvsElePtWSMix","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleLambdaMassvsElePtWSMix);
+  fHistoEleLambdaMassvsElePtRSSide = new THnSparseF("fHistoEleLambdaMassvsElePtRSSide","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtRSSide);
+  fHistoEleLambdaMassvsElePtWSSide = new THnSparseF("fHistoEleLambdaMassvsElePtWSSide","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtWSSide);
+  fHistoEleLambdaMassvsElePtRS1 = new THnSparseF("fHistoEleLambdaMassvsElePtRS1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtRS1);
+  fHistoEleLambdaMassvsElePtWS1 = new THnSparseF("fHistoEleLambdaMassvsElePtWS1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtWS1);
+  fHistoEleLambdaMassvsElePtRSMix1 = new THnSparseF("fHistoEleLambdaMassvsElePtRSMix1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtRSMix1);
+  fHistoEleLambdaMassvsElePtWSMix1 = new THnSparseF("fHistoEleLambdaMassvsElePtWSMix1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtWSMix1);
+  fHistoEleLambdaMassvsElePtRSSide1 = new THnSparseF("fHistoEleLambdaMassvsElePtRSSide1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtRSSide1);
+  fHistoEleLambdaMassvsElePtWSSide1 = new THnSparseF("fHistoEleLambdaMassvsElePtWSSide1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtWSSide1);
+  fHistoEleLambdaMassvsElePtRS2 = new THnSparseF("fHistoEleLambdaMassvsElePtRS2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtRS2);
+  fHistoEleLambdaMassvsElePtWS2 = new THnSparseF("fHistoEleLambdaMassvsElePtWS2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtWS2);
+  fHistoEleLambdaMassvsElePtRSMix2 = new THnSparseF("fHistoEleLambdaMassvsElePtRSMix2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtRSMix2);
+  fHistoEleLambdaMassvsElePtWSMix2 = new THnSparseF("fHistoEleLambdaMassvsElePtWSMix2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtWSMix2);
+  fHistoEleLambdaMassvsElePtRSSide2 = new THnSparseF("fHistoEleLambdaMassvsElePtRSSide2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtRSSide2);
+  fHistoEleLambdaMassvsElePtWSSide2 = new THnSparseF("fHistoEleLambdaMassvsElePtWSSide2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtWSSide2);
+
   fHistoEleLambdaMassMCS = new THnSparseF("fHistoEleLambdaMassMCS","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleLambdaMassMCS);
   fHistoEleLambdaMassMCGen = new THnSparseF("fHistoEleLambdaMassMCGen","",3,bins_base,xmin_base,xmax_base);
@@ -1918,6 +2497,14 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoEleLambdaMassvsElePtMCS);
   fHistoEleLambdaMassvsElePtMCGen = new THnSparseF("fHistoEleLambdaMassvsElePtMCGen","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleLambdaMassvsElePtMCGen);
+  fHistoEleLambdaMassvsElePtMCS1 = new THnSparseF("fHistoEleLambdaMassvsElePtMCS1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtMCS1);
+  fHistoEleLambdaMassvsElePtMCGen1 = new THnSparseF("fHistoEleLambdaMassvsElePtMCGen1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtMCGen1);
+  fHistoEleLambdaMassvsElePtMCS2 = new THnSparseF("fHistoEleLambdaMassvsElePtMCS2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtMCS2);
+  fHistoEleLambdaMassvsElePtMCGen2 = new THnSparseF("fHistoEleLambdaMassvsElePtMCGen2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtMCGen2);
 
   fHistoElePtRS = new TH2F("fHistoElePtRS","",100,0,10,10,0,100);
   fOutputAll->Add(fHistoElePtRS);
@@ -2005,6 +2592,14 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXic0MCS);
   fHistoEleLambdaMassvsElePtFeeddownXic0MCGen = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXic0MCGen","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXic0MCGen);
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCS1 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXic0MCS1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXic0MCS1);
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXic0MCGen1);
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCS2 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXic0MCS2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXic0MCS2);
+  fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXic0MCGen2);
   fHistoElePtFeeddownXic0MCS = new TH2F("fHistoElePtFeeddownXic0MCS","",100,0,10,10,0,100);
   fOutputAll->Add(fHistoElePtFeeddownXic0MCS);
   fHistoElePtFeeddownXic0MCGen = new TH2F("fHistoElePtFeeddownXic0MCGen","",100,0,10,10,0,100);
@@ -2027,6 +2622,14 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS);
   fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen);
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1);
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen1);
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2);
+  fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2 = new THnSparseF("fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleLambdaMassvsElePtFeeddownXicPlusMCGen2);
   fHistoElePtFeeddownXicPlusMCS = new TH2F("fHistoElePtFeeddownXicPlusMCS","",100,0,10,10,0,100);
   fOutputAll->Add(fHistoElePtFeeddownXicPlusMCS);
   fHistoElePtFeeddownXicPlusMCGen = new TH2F("fHistoElePtFeeddownXicPlusMCGen","",100,0,10,10,0,100);
@@ -2083,6 +2686,58 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoElectronQovPtvsPhi);
   fHistoLambdaQovPtvsPhi=new TH2F("fHistoLambdaQovPtvsPhi","",70,0.,7.,50,-2.,2.);
   fOutputAll->Add(fHistoLambdaQovPtvsPhi);
+
+  Int_t bins_lcmcgen[3]=	{40 ,20	,10};
+  Double_t xmin_lcmcgen[3]={0.,-1.0	,0.0};
+  Double_t xmax_lcmcgen[3]={20.,1.0	,100};
+  fHistoLcMCGen = new THnSparseF("fHistoLcMCGen","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoLcMCGen);
+  fHistoLcMCGen1 = new THnSparseF("fHistoLcMCGen1","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoLcMCGen1);
+  fHistoLcMCGen2 = new THnSparseF("fHistoLcMCGen2","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoLcMCGen2);
+  fHistoFeedDownXic0MCGen = new THnSparseF("fHistoFeedDownXic0MCGen","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoFeedDownXic0MCGen);
+  fHistoFeedDownXic0MCGen1 = new THnSparseF("fHistoFeedDownXic0MCGen1","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoFeedDownXic0MCGen1);
+  fHistoFeedDownXic0MCGen2 = new THnSparseF("fHistoFeedDownXic0MCGen2","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoFeedDownXic0MCGen2);
+  fHistoFeedDownXicPlusMCGen = new THnSparseF("fHistoFeedDownXicPlusMCGen","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoFeedDownXicPlusMCGen);
+  fHistoFeedDownXicPlusMCGen1 = new THnSparseF("fHistoFeedDownXicPlusMCGen1","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoFeedDownXicPlusMCGen1);
+  fHistoFeedDownXicPlusMCGen2 = new THnSparseF("fHistoFeedDownXicPlusMCGen2","",3,bins_lcmcgen,xmin_lcmcgen,xmax_lcmcgen);
+  fOutputAll->Add(fHistoFeedDownXicPlusMCGen2);
+
+  Int_t bins_elemcgen[3]=	{100 ,20	,10};
+  Double_t xmin_elemcgen[3]={0.,-1.0	,0.0};
+  Double_t xmax_elemcgen[3]={10.,1.0	,100};
+  fHistoElectronMCGen = new THnSparseF("fHistoElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoElectronMCGen);
+  fHistoLcElectronMCGen = new THnSparseF("fHistoLcElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoLcElectronMCGen);
+  fHistoLcElectronMCGen1 = new THnSparseF("fHistoLcElectronMCGen1","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoLcElectronMCGen1);
+  fHistoLcElectronMCGen2 = new THnSparseF("fHistoLcElectronMCGen2","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoLcElectronMCGen2);
+  fHistoElectronFeedDownXic0MCGen = new THnSparseF("fHistoElectronFeedDownXic0MCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoElectronFeedDownXic0MCGen);
+  fHistoElectronFeedDownXic0MCGen1 = new THnSparseF("fHistoElectronFeedDownXic0MCGen1","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoElectronFeedDownXic0MCGen1);
+  fHistoElectronFeedDownXic0MCGen2 = new THnSparseF("fHistoElectronFeedDownXic0MCGen2","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoElectronFeedDownXic0MCGen2);
+  fHistoElectronFeedDownXicPlusMCGen = new THnSparseF("fHistoElectronFeedDownXicPlusMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoElectronFeedDownXicPlusMCGen);
+  fHistoElectronFeedDownXicPlusMCGen1 = new THnSparseF("fHistoElectronFeedDownXicPlusMCGen1","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoElectronFeedDownXicPlusMCGen1);
+  fHistoElectronFeedDownXicPlusMCGen2 = new THnSparseF("fHistoElectronFeedDownXicPlusMCGen2","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+  fOutputAll->Add(fHistoElectronFeedDownXicPlusMCGen2);
+
+  Int_t bins_lambdamcgen[3]=	{50 ,20	,10};
+  Double_t xmin_lambdamcgen[3]={0.,-1.0	,0.0};
+  Double_t xmax_lambdamcgen[3]={10.,1.0	,100};
+  fHistoLambdaMCGen = new THnSparseF("fHistoLambdaMCGen","",3,bins_lambdamcgen,xmin_lambdamcgen,xmax_lambdamcgen);
+  fOutputAll->Add(fHistoLambdaMCGen);
 
   fHistonEvtvsRunNumber=new TH1F("fHistonEvtvsRunNumber","",20000,-0.5,19999.5);
   fOutputAll->Add(fHistonEvtvsRunNumber);
@@ -2182,7 +2837,7 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
 }
 
 //________________________________________________________________________
-AliAODRecoCascadeHF* AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeCascadeHF(AliAODv0 *v0, AliAODTrack *part, AliAODEvent * aod, AliAODVertex *secVert, Bool_t mixing) 
+AliAODRecoCascadeHF* AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeCascadeHF(AliAODv0 *v0, AliAODTrack *part, AliAODEvent * aod, AliAODVertex *secVert) 
 {
   ///
   /// Create AliAODRecoCascadeHF object from the argument
@@ -2272,11 +2927,8 @@ AliAODRecoCascadeHF* AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeCascadeHF(A
   UShort_t id[2]={(UShort_t)part->GetID(),(UShort_t)trackV0->GetID()};
   theCascade->SetProngIDs(2,id);
 
-	if(!mixing){
-		//If I add daughters for mixing event, I had some error. 
-		theCascade->GetSecondaryVtx()->AddDaughter(part);
-		theCascade->GetSecondaryVtx()->AddDaughter(v0);
-	}
+	theCascade->GetSecondaryVtx()->AddDaughter(part);
+	theCascade->GetSecondaryVtx()->AddDaughter(v0);
 
   if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
   if(esdtrack) delete esdtrack;
@@ -2613,9 +3265,6 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::SelectTrack( const AliVEvent *e
 			fHistoElectronTPCSelPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFSelPID->Fill(aodt->Pt(),nsigma_tofele);
 			FillElectronROOTObjects(aodt,mcArray);
-			if(fDoEventMixing){
-				fElectronTracks->AddLast(new AliAODTrack(*aodt));
-			}
     }
 
   } // end loop on tracks
@@ -2666,12 +3315,13 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::ResetPool(Int_t poolIndex){
 	fEventBuffer[poolIndex]->Branch("zVertex", &fVtxZ);
 	fEventBuffer[poolIndex]->Branch("centrality", &fCentrality);
 	fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
-	fEventBuffer[poolIndex]->Branch("earray", "TObjArray", &fElectronTracks);
+	fEventBuffer[poolIndex]->Branch("v1array", "TObjArray", &fV0Tracks1);
+	fEventBuffer[poolIndex]->Branch("v2array", "TObjArray", &fV0Tracks2);
 
   return;
 }
 //_________________________________________________________________
-void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t poolIndex,AliAODEvent *aodEvent, Bool_t *seleFlags)
+void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t poolIndex)
 {
 	//
   // perform mixed event analysis
@@ -2680,60 +3330,47 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
   if(poolIndex<0 || poolIndex>fNzVtxBins*fNCentBins) return;
 	if(fEventBuffer[poolIndex]->GetEntries()<fNumberOfEventsForMixing) return;
 
+	Int_t nEle = fElectronTracks->GetEntries();
   Int_t nEvents=fEventBuffer[poolIndex]->GetEntries();
 
-  TObjArray* earray=0x0;
+  TObjArray* v1array=0x0;
+  TObjArray* v2array=0x0;
   Float_t zVertex,cent;
   TObjString* eventInfo=0x0;
-  fEventBuffer[poolIndex]->SetBranchAddress("earray", &earray);
   fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
   fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
   fEventBuffer[poolIndex]->SetBranchAddress("centrality", &cent);
-  for (Int_t i=0; i<aodEvent->GetNumberOfV0s(); i++)
+  fEventBuffer[poolIndex]->SetBranchAddress("v1array", &v1array);
+  fEventBuffer[poolIndex]->SetBranchAddress("v2array", &v2array);
+  for (Int_t i=0; i<nEle; i++)
   {
-    if(!seleFlags[i]) continue;
-    AliAODv0* v0 = aodEvent->GetV0(i);
-    if(!v0)continue;
+		TLorentzVector* trke=(TLorentzVector*) fElectronTracks->At(i);
+    if(!trke)continue;
 
 		for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
 			fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
-			TObjArray* earray1=(TObjArray*)earray->Clone();
-			//Float_t zVertex1=zVertex;
-			//Float_t mult1=cent;
-			Int_t nElectrons=earray1->GetEntries();
-			//Int_t evId1,esdId1,ne1;
-			//sscanf((eventInfo->String()).Data(),"Ev%d_esd%d_K%d",&evId1,&esdId1,&ne1);
-//			if(ne1!=nElectrons){ 
-//				printf("AliAnalysisTaskSELc2eleLambdafromAODtracks::DoMixingWithPools ERROR: read event does not match to the stored one\n");
-//				delete earray1;
-//				continue;
-//			}
-      for(Int_t iTr1=0; iTr1<nElectrons; iTr1++){
-				AliAODTrack* trk1=(AliAODTrack*)earray1->At(iTr1);
-				if(!trk1) continue;
 
-        //if(!fAnalCuts->SelectWithRoughCuts(v0,trk1)) continue;
-				AliAODVertex *secVert = ReconstructSecondaryVertex(v0,trk1,aodEvent);//Fake, prim vertex is just used as secondary vertex. place holder for future
-				if(!secVert) continue;
+			TObjArray* v1array1=(TObjArray*)v1array->Clone();
+			Int_t nV01=v1array1->GetEntries();
+      for(Int_t iTr1=0; iTr1<nV01; iTr1++){
+				TLorentzVector* v01=(TLorentzVector*)v1array1->At(iTr1);
+				if(!v01) continue;
+				FillMixROOTObjects(trke,v01,1);
+			}//v0 loop
 
-				AliAODRecoCascadeHF *elobj = MakeCascadeHF(v0,trk1,aodEvent,secVert,true);
-				if(!elobj) {
-						continue;
-				}
+			TObjArray* v2array1=(TObjArray*)v2array->Clone();
+			Int_t nV02=v2array1->GetEntries();
+      for(Int_t iTr2=0; iTr2<nV02; iTr2++){
+				TLorentzVector* v02=(TLorentzVector*)v2array1->At(iTr2);
+				if(!v02) continue;
+				FillMixROOTObjects(trke,v02,-1);
+			}//v0 loop
 
-				TClonesArray *fake = 0;
-				FillROOTObjects(elobj,v0,trk1,fake,true);
-
-				elobj->GetSecondaryVtx()->RemoveDaughters();
-				elobj->UnsetOwnPrimaryVtx();
-				delete elobj;elobj=NULL;
-				delete secVert;
-			}//track loop
-
-			delete earray1;
+			delete v1array1;
+			delete v2array1;
 		}//event loop
 		
-	}//v0 loop
+	}//track loop
 }
 //_________________________________________________________________
 void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
@@ -2851,16 +3488,20 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mc
 			AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
 			Float_t etamin, etamax;
 			esdcuts->GetEtaRange(etamin,etamax);
-			if(fabs(mcpart->Eta())<etamax)
+			if(fabs(mcpart->Eta())<etamax){
 				fHistoBachPtMCGen->Fill(mcpart->Pt());
+			}
+			FillMCEleROOTObjects(mcpart, mcArray);
 		}
 		if(TMath::Abs(mcpart->GetPdgCode())==3122){
 			Double_t etamin, etamax, rapmin, rapmax;
 			fAnalCuts->GetProdV0EtaRange(etamin,etamax);
 			fAnalCuts->GetProdV0RapRange(rapmin,rapmax);
 
-			if((fabs(mcpart->Y())<rapmax) && (fabs(mcpart->Eta())<etamax))
+			if((fabs(mcpart->Y())<rapmax) && (fabs(mcpart->Eta())<etamax)){
 				fHistoLambdaMassvsPtMCGen->Fill(1.115683, mcpart->Pt());
+			}
+			FillMCV0ROOTObjects(mcpart, mcArray);
 		}
 	}
 	return;

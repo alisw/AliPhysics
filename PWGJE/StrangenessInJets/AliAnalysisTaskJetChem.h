@@ -380,6 +380,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //embedding
   TH1F* fh1nEmbeddedJets;
   TH1F* fh1IndexEmbedded;              //! index embedded jet matching to leading rec jet 
+  TH1F* fh1PtEmbBeforeMatch;           // pt spectrum of embedded jets from extra particles before JetMatching
+  TH1F* fh1PtEmbExtraOnly;             // pt spectrum of embedded jets from extraonly particles (embedded truth) 
+  TH1F* fh1PtEmbAfterMatch;           // pt spectrum of embedded jets from extra particles after JetMatching
   TH1F* fh1FractionPtEmbedded;             //! ratio embedded pt in rec jet to embedded jet pt 
   TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet
 
@@ -479,12 +482,15 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   THnSparse* fhnK0sIncl;
   THnSparse* fhnK0sCone;
   THnSparse* fhnK0sEmbCone;
+  THnSparse* fhnK0sEmbConeRef;
   THnSparse* fhnLaIncl;
   THnSparse* fhnLaCone;
   THnSparse* fhnLaEmbCone;
+  THnSparse* fhnLaEmbConeRef;
   THnSparse* fhnALaIncl;
   THnSparse* fhnALaCone;
   THnSparse* fhnALaEmbCone;
+  THnSparse* fhnALaEmbConeRef;
   THnSparse* fhnK0sPC;
   THnSparse* fhnK0sEmbPC;
   THnSparse* fhnLaPC;

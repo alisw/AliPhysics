@@ -27,7 +27,12 @@ AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut():
   fFirstParticleType(kLambda),
   fSecondParticleType(kProton),
   fMinAvgSepTrackPos(0.0),
-  fMinAvgSepTrackNeg(0.0)
+  fMinAvgSepTrackNeg(0.0),
+  fMinDEtaStarPos(0.0),
+  fMinDEtaStarNeg(0.0),
+  fMinDPhiStarPos(0.0),
+  fMinDPhiStarNeg(0.0),
+  fMinRad(0.0)
 {
   /* no-op */
 }
@@ -57,6 +62,13 @@ AliFemtoV0TrackPairCut &AliFemtoV0TrackPairCut::operator=(const AliFemtoV0TrackP
   fMinAvgSepTrackPos = cut.fMinAvgSepTrackPos;
   fMinAvgSepTrackNeg = cut.fMinAvgSepTrackNeg;
 
+  fMinDEtaStarPos = cut.fMinDEtaStarPos;
+  fMinDEtaStarNeg = cut.fMinDEtaStarNeg;
+  fMinDPhiStarPos = cut.fMinDPhiStarPos;
+  fMinDPhiStarNeg = cut.fMinDPhiStarNeg;
+
+  fMinRad = cut.fMinRad;
+  
   return *this;
 }
 //__________________
@@ -123,7 +135,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
 
         number_of_cluster_hits += 2;
 
-        // Do they share it ?
+        // Do they share the cluster?
         if (pos_sharing.TestBitNumber(imap) && track_sharing.TestBitNumber(imap)) {
           an++;
           number_of_shared_hits += 2;
@@ -140,7 +152,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       }
     }
 
-    Float_t hsmval = (number_of_cluster_hits > 0) ? an * 1.0 / number_of_cluster_hits : 0.0,
+    Float_t hsmval = (number_of_cluster_hits > 0) ? float(an) / number_of_cluster_hits : 0.0,
             hsfval = (number_of_cluster_hits > 0) ? float(number_of_shared_hits) / number_of_cluster_hits : 0.0;
 
     if (((fShareQualityMax < 1.0) && (hsmval > fShareQualityMax)) || ((fShareFractionMax < 1.0) && (hsfval > fShareFractionMax))) {
@@ -158,7 +170,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
 
         number_of_cluster_hits += 2;
 
-        // Do they share it ?
+        // Do they share the cluster?
         if (neg_sharing.TestBitNumber(imap) && track_sharing.TestBitNumber(imap)) {
           an++;
           number_of_shared_hits += 2;
@@ -175,7 +187,7 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       }
     }
 
-    hsmval = (number_of_cluster_hits > 0) ? an * 1.0 / number_of_cluster_hits : 0.0;
+    hsmval = (number_of_cluster_hits > 0) ? float(an) / number_of_cluster_hits : 0.0;
     hsfval = (number_of_cluster_hits > 0) ? float(number_of_shared_hits) / number_of_cluster_hits : 0.0;
 
     if (((fShareQualityMax < 1.0) && (hsmval > fShareQualityMax)) || ((fShareFractionMax < 1.0) && (hsfval > fShareFractionMax))) {
@@ -188,27 +200,52 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   // Test the average separation between the track and each daughter in TPC
   //
   {
-    double avgSep = 0.0;
+    UInt_t pos_point_cnt = 0,
+           neg_point_cnt = 0;
+
+    Double_t pos_avgSep = 0.0,
+             neg_avgSep = 0.0;
 
     // create a mutable v0 pointer so we can use the NominalTpcPoint methods
     AliFemtoV0 *mut_V0 = const_cast<AliFemtoV0*>(V0);
 
+    // loop through NominalTpcPoints of the track and V0 daughters
     for (int i = 0; i < 8; i++) {
-      avgSep += (mut_V0->NominalTpcPointPos(i) - track->NominalTpcPoint(i)).Mag();
+      // Grab references to each of the i'th points
+      const AliFemtoThreeVector &pos_p = mut_V0->NominalTpcPointPos(i),
+                                &neg_p = mut_V0->NominalTpcPointNeg(i),
+                              &track_p = track->NominalTpcPoint(i);
+
+      // if any track points are outside the boundary - skip
+      if (track_p.x() < -9990.0 || track_p.y() < -9990.0 || track_p.z() < -9990.0) {
+        continue;
+      }
+
+      // If the positive daughter points are not bad, increment point count and
+      // increase the cumulative average separation
+      if (!(pos_p.x() < -9990.0 || pos_p.y() < -9990.0 || pos_p.z() < -9990.0)) {
+        pos_avgSep += (pos_p - track_p).Mag();
+        pos_point_cnt++;
+      }
+
+      // If the negative daughter points are not bad, increment point count and
+      // increase the cumulative average separation
+      if (!(neg_p.x() < -9990.0 || neg_p.y() < -9990.0 || neg_p.z() < -9990.0)) {
+        neg_avgSep += (neg_p - track_p).Mag();
+        neg_point_cnt++;
+      }
     }
-    if ((avgSep/8) < fMinAvgSepTrackPos) {
+
+    if (pos_point_cnt == 0 || pos_avgSep / pos_point_cnt < fMinAvgSepTrackPos) {
       fNPairsFailed++;
       return false;
     }
 
-    avgSep = 0.0;
-    for (int i = 0; i < 8; i++) {
-      avgSep += (mut_V0->NominalTpcPointNeg(i) - track->NominalTpcPoint(i)).Mag();
-    }
-    if ((avgSep/8) < fMinAvgSepTrackNeg) {
+    if (neg_point_cnt == 0 || neg_avgSep / neg_point_cnt < fMinAvgSepTrackNeg) {
       fNPairsFailed++;
       return false;
     }
+
   }
 
   //
@@ -226,23 +263,21 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
     const double ProtonMass = 0.938272;
     //double LambdaMass = 1.115683;
 
-    AliFemtoLorentzVector fourMomentum1; // Particle momentum
-    AliFemtoLorentzVector fourMomentum2; // Particle momentum
-
     AliFemtoThreeVector temp1;
-    double ener1=0;
+    double ener1 = 0.0;
 
     if (fFirstParticleType == kLambda && fSecondParticleType == kProton) {
       temp1 = pos_p;
-      ener1 = ::sqrt(temp1.Mag2()+ProtonMass*ProtonMass);
-    }
-    else if (fFirstParticleType == kAntiLambda && fSecondParticleType == kAntiProton) {
+      ener1 = ::sqrt(temp1.Mag2() + ProtonMass * ProtonMass);
+    } else if (fFirstParticleType == kAntiLambda && fSecondParticleType == kAntiProton) {
       temp1 = neg_p;
-      ener1 = ::sqrt(temp1.Mag2()+ProtonMass*ProtonMass);
+      ener1 = ::sqrt(temp1.Mag2() + ProtonMass * ProtonMass);
     }
 
-    fourMomentum1.SetVect(temp1);
-    fourMomentum1.SetE(ener1);
+    AliFemtoLorentzVector fourMomentum1(ener1, temp1); // Particle momentum
+
+    // fourMomentum1.SetVect(temp1);
+    // fourMomentum1.SetE(ener1);
 
     //AliFemtoLorentzVector fFourMomentum2; // Particle momentum
     AliFemtoThreeVector temp2 = track_p;
@@ -251,6 +286,8 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
     if (fSecondParticleType == kProton || fSecondParticleType == kAntiProton) {
       ener2 = ::sqrt(temp2.Mag2() + ProtonMass * ProtonMass);
     }
+    AliFemtoLorentzVector fourMomentum2; // Particle momentum
+
 
     fourMomentum2.SetVect(temp2);
     fourMomentum2.SetE(ener2);
@@ -265,7 +302,44 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       return false;
     }
   }
+  
+  //
+  // Delta Eta* Delta Phi*cut
+  //
+  if (fMinRad > 0.0) {
+  
+    AliFemtoV0 *mut_V0 = const_cast<AliFemtoV0*>(V0);
+    double thetas1_pos = TMath::Pi()/2. - TMath::ATan(mut_V0->NominalTpcPointPosShifted().z()/(fMinRad*1e2));
+    double thetas2_pos = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
+    double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) );
+    double etas2_pos = -TMath::Log( TMath::Tan(thetas2_pos/2.) );
+    double detas_pos = etas1_pos - etas2_pos;
+    double distSft_pos = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointPosShifted().x() -
+						  track->NominalTpcPointShifted().x(),2) +
+				     TMath::Power(mut_V0->NominalTpcPointPosShifted().y() -
+						  track->NominalTpcPointShifted().y(),2));
+    double dPhiS_pos = 2.0 * TMath::ATan(distSft_pos/2./((fMinRad*1e2)));
 
+    double thetas1_neg = TMath::Pi()/2. - TMath::ATan(mut_V0->NominalTpcPointNegShifted().z()/(fMinRad*1e2));
+    double thetas2_neg = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
+    double etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) );
+    double etas2_neg = -TMath::Log( TMath::Tan(thetas2_neg/2.) );
+    double detas_neg = etas1_neg - etas2_neg;
+    double distSft_neg = TMath::Sqrt(TMath::Power(mut_V0->NominalTpcPointNegShifted().x() -
+						  track->NominalTpcPointShifted().x(),2) +
+				     TMath::Power(mut_V0->NominalTpcPointNegShifted().y() -
+						  track->NominalTpcPointShifted().y(),2));
+    double dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
+				  
+    if ( (TMath::Abs(detas_pos) < fMinDEtaStarPos &&
+	  TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
+	 (TMath::Abs(detas_neg) < fMinDEtaStarNeg &&
+	  TMath::Abs(dPhiS_neg) < fMinDPhiStarNeg) ) {
+      fNPairsFailed++;     
+      return false;
+    }
+  }
+  
   fNPairsPassed++;
   return true;
 }
@@ -359,3 +433,23 @@ void AliFemtoV0TrackPairCut::SetMinAvgSeparation(int type, double minSep)
     fMinAvgSepTrackNeg = minSep;
 }
 
+void AliFemtoV0TrackPairCut::SetMinDEtaStar(Int_t type, Double_t minDEtaStar)
+{
+  if (type == 0) //Track-Pos
+    fMinDEtaStarPos = minDEtaStar;
+  else if (type == 1) //Track-Neg
+    fMinDEtaStarNeg = minDEtaStar;
+}
+
+void AliFemtoV0TrackPairCut::SetMinDPhiStar(Int_t type, Double_t minDPhiStar)
+{
+  if (type == 0) //Track-Pos
+    fMinDPhiStarPos = minDPhiStar;
+  else if (type == 1) //Track-Neg
+    fMinDPhiStarNeg = minDPhiStar;
+}
+
+void AliFemtoV0TrackPairCut::SetShiftPosition(Double_t rad)
+{
+  fMinRad = rad;
+}

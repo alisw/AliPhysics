@@ -63,6 +63,7 @@ AliRDHFJetsCutsVertex::AliRDHFJetsCutsVertex(const Char_t* name, const Char_t* t
   fMinPtHardestTrack(0),
   fImpPar(0),
   fDistPrimSec(0),
+  fCosp(0),
   fInvMassCut(0),
   fSigvert(1000),
   fChi2(1000),
@@ -127,60 +128,64 @@ AliRDHFJetsCutsVertex::~AliRDHFJetsCutsVertex() {
 Int_t AliRDHFJetsCutsVertex::IsVertexSelected(AliAODVertex* vert, AliAODEvent* aod, Double_t magzkG ,Double_t dispersion,Double_t massParticle){
 
   
-  Double_t chi2=vert->GetChi2perNDF();
+  Double_t chi2 = vert->GetChi2perNDF();
 
   //Int_t ncontr=vert->GetNContributors();
-  AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
-  Double_t declen=vert->DistanceToVertex(vtx1);
+  AliAODVertex *vtx1 = (AliAODVertex *)aod->GetPrimaryVertex();
+  Double_t declen = vert->DistanceToVertex(vtx1);
 
-  if(declen<fDistPrimSec)return 0; //minimum distance primary-secondary required
-  if(dispersion>fSigvert)return 0; //maximum dispersion of tracks around sec vertex required
-  if(chi2>fChi2)return 0; //maximum value of vertex chi2 required
-  Double_t maxpt=0;
+  if ( declen < fDistPrimSec ) return 0; //minimum distance primary-secondary required
+  if ( dispersion > fSigvert ) return 0; //maximum dispersion of tracks around sec vertex required
+  if ( chi2 > fChi2 ) return 0; //maximum value of vertex chi2 required
+
   Int_t d0cut=0;
+  Int_t sumCh = 0;
+
+  Double_t maxpt = 0;
   Double_t pxyz[3];
-  Double_t pxyzSum[4]={0.,0.,0.,0.};
-   Int_t sumCh = 0;
+  Double_t pxyzSum[4] = {0., 0., 0., 0.};
   Double_t pos[3];
   vtx1->GetPosition(pos);
+  
   Double_t cosp=CosPointingAngle(vert,pos);
-
-  if(cosp<fCosp)return 0; //cut on cos theta point required on sec vertex
-  for(Int_t jp=0;jp<vert->GetNDaughters();jp++){
-    AliAODTrack *tr=(AliAODTrack*)vert->GetDaughter(jp);
-
+  if ( cosp < fCosp ) return 0; //cut on cos theta point required on sec vertex
+  
+  for ( Int_t jp = 0; jp < vert->GetNDaughters(); jp++ ) {
+    AliAODTrack *tr = (AliAODTrack *)vert->GetDaughter(jp);
+    
     tr->GetPxPyPz(pxyz);
-    pxyzSum[1]+=pxyz[0];
-    pxyzSum[2]+=pxyz[1];
-    pxyzSum[3]+=pxyz[2];
-    pxyzSum[0]+=TMath::Sqrt(massParticle*massParticle+pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]+pxyz[2]*pxyz[2]);//pion mass assumed
+    pxyzSum[1] += pxyz[0];
+    pxyzSum[2] += pxyz[1];
+    pxyzSum[3] += pxyz[2];
+    pxyzSum[0] += TMath::Sqrt( massParticle*massParticle + pxyz[0]*pxyz[0] + pxyz[1]*pxyz[1] + pxyz[2]*pxyz[2] );//pion mass assumed
 
-   Int_t charge = tr->Charge();
-   sumCh += charge;
+    Int_t charge = tr->Charge();
+    sumCh += charge;
 
-    Double_t pt=tr->Pt();
-    if(pt>maxpt)maxpt=pt;
-    Double_t d0z0[2],covd0z0[3];
-    tr->PropagateToDCA(vtx1,magzkG,kVeryBig,d0z0,covd0z0);
-    if(TMath::Abs(d0z0[0])>fImpPar)d0cut++;//d0z0[0]=d0xy, d0z0[1]=d0z, 
+    Double_t pt = tr->Pt();
+    if ( pt > maxpt) maxpt = pt;
+    
+    Double_t d0z0[2], covd0z0[3];
+    tr->PropagateToDCA(vtx1, magzkG, kVeryBig, d0z0, covd0z0);
+    if ( TMath::Abs(d0z0[0]) > fImpPar ) d0cut++;//d0z0[0]=d0xy, d0z0[1]=d0z,
     
   }
 
   // sll 06.15 make sure the charge of the vertex does not sum -3 or 3
-  if (TMath::Abs(sumCh) > 2) return 0;
+  if ( TMath::Abs(sumCh) > 2 ) return 0;
   
-  Double_t invmass=TMath::Sqrt(pxyzSum[0]*pxyzSum[0]-pxyzSum[1]*pxyzSum[1]-pxyzSum[2]*pxyzSum[2]-pxyzSum[3]*pxyzSum[3]);
+  Double_t invmass = TMath::Sqrt( pxyzSum[0]*pxyzSum[0] - pxyzSum[1]*pxyzSum[1] - pxyzSum[2]*pxyzSum[2] - pxyzSum[3]*pxyzSum[3]);
  
-  if(d0cut<vert->GetNDaughters()-1)return 0;   //cut on d0xy required on *all tracks* in the vertex
+  if ( d0cut < vert->GetNDaughters() - 1 ) return 0;   //cut on d0xy required on *all tracks* in the vertex
  
-  if(invmass<fInvMassCut) return 0; //minimum value on inv mass of the vertex required
+  if ( invmass < fInvMassCut ) return 0; //minimum value on inv mass of the vertex required
 
-  if(maxpt<fMinPtHardestTrack) return 0; //minimum pt of the hardest track required
+  if ( maxpt < fMinPtHardestTrack ) return 0; //minimum pt of the hardest track required
     
   if (fIsElec) {
     Bool_t fFlagElec = kFALSE;
     IsElecInVert(aod, vert, fFlagElec);
-
+    
     if (!fFlagElec){
       printf("--> Jet vertex not selected --- no electron");
       return 0;
@@ -188,6 +193,7 @@ Int_t AliRDHFJetsCutsVertex::IsVertexSelected(AliAODVertex* vert, AliAODEvent* a
   }
   return 1;
 }
+
 //---------------------------------------------------------------------------
 void AliRDHFJetsCutsVertex::IsElecInVert(AliAODEvent *aod, AliAODVertex *jvert, Bool_t &fFlagElec){
   //
@@ -207,18 +213,19 @@ void AliRDHFJetsCutsVertex::IsElecInVert(AliAODEvent *aod, AliAODVertex *jvert, 
 
     if(fClsId >0) {
       AliVCluster *cluster = aod->GetCaloCluster(fClsId);
-      if(TMath::Abs(cluster->GetTrackDx())<0.05 && TMath::Abs(cluster->GetTrackDz())<0.05) {
-    
-	fClsE = cluster->E();
-	fEovp = fClsE/p;
-	fdEdx=esdTrack->GetTPCsignal();
-	// for the time being select dedx
-   
-	if ((fEovp > 0.8 && fEovp < 1.1) && (fdEdx > 75 && fdEdx < 105)  && !flagElec) flagElec=kTRUE;
+      if ( TMath::Abs( cluster->GetTrackDx() ) < 0.05 && TMath::Abs( cluster->GetTrackDz() ) < 0.05 ) {
+        
+        fClsE = cluster->E();
+        fEovp = fClsE/p;
+        fdEdx=esdTrack->GetTPCsignal();
+        // for the time being select dedx
+        
+        if ((fEovp > 0.8 && fEovp < 1.1) && (fdEdx > 75 && fdEdx < 105)  && !flagElec) flagElec=kTRUE;
       }
     }
   }
-  fFlagElec=flagElec; 
+  fFlagElec = flagElec;
+
 }
 
 //--------------------------------------------------------------------------

@@ -197,6 +197,7 @@ void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, TVec
   //
   // Add variable with the binning given in the TVectorD
   //
+  fUsedVars->SetBitNumber(type,kTRUE);
   if (!leg){
     if (!fVarBinLimits){
       fVarBinLimits=new TObjArray;
@@ -212,7 +213,6 @@ void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, TVec
     }
     fVarBinLimitsLeg->Add(binLimits);
     fVariablesLeg[fNVarsLeg]  = (UInt_t)type;
-    fUsedVars->SetBitNumber(type,kTRUE);
     ++fNVarsLeg;
   }
 }
