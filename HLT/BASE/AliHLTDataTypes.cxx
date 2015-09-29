@@ -355,6 +355,9 @@ const char kAliHLTDataOriginTRG[kAliHLTComponentDataTypefOriginSize]   = {'T','R
 /** AD */
 const char kAliHLTDataOriginAD[kAliHLTComponentDataTypefOriginSize]   = {'A','D',' ',' '};
 
+/** PTR */
+const char kAliHLTDataOriginPTR[kAliHLTComponentDataTypefOriginSize]  = {'P','T','R','.'};
+
 void AliHLTComponentDataType::PrintDataType(char* buffer, unsigned int bufferLen)
 {
 	if (bufferLen == 1) *buffer = 0;

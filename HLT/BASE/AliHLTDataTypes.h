@@ -79,8 +79,9 @@
  *  19       Added AD Component Data Types
  *  20       Add data type for ZMQ components and for internal custom triggers
  *  21       Add AliHLTDataTopic struct for ZMQ communication (as header).
+ *  22       Add kAliHLTDataOriginPTR for passing pointers between threads
  */
-#define ALIHLT_DATA_TYPES_VERSION 21
+#define ALIHLT_DATA_TYPES_VERSION 22
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -245,6 +246,12 @@ extern const char kAliHLTDataOriginTRG[kAliHLTComponentDataTypefOriginSize];
  * @ingroup alihlt_component_datatypes
  */
 extern const char kAliHLTDataOriginAD[kAliHLTComponentDataTypefOriginSize];
+
+/** Data origin pointer
+ * for inter thread communication
+ * @ingroup alihlt_component_datatypes
+ */
+extern const char kAliHLTDataOriginPTR[kAliHLTComponentDataTypefOriginSize];
 
 //////////////////////////////////////////////////////////////////////////
 //
