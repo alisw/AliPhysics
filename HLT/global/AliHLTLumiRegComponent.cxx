@@ -85,7 +85,7 @@ AliHLTLumiRegComponent::~AliHLTLumiRegComponent()
 AliHLTComponentDataType AliHLTLumiRegComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTMultipleDataType;
+  return kAliHLTDataTypeHistogram;
 }
 
 void AliHLTLumiRegComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list )
@@ -178,11 +178,15 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
   if (pBlock) {
    // fpBenchmark->AddInput(pBlock->fSize);
     vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
+    if (!vtxFlat) {
+      return 0;
+    }
     if (vtxFlat->GetNContributors()>0)
       vertexITSSATRKok=1;
     
     if (!vertexITSSATRKok) {
-      Printf("Vertex Tracks not found, trying the SPD one...");
+      HLTInfo("Vertex Tracks not found, trying the SPD one...");
+      return 0;
       //SPD vertex!!
     }
   }
@@ -225,7 +229,9 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
   
   if(fPushBackPeriodLHC>0) {
     TDatime time;
-    if ((fLastPushBackTime<0) || ((int)time.Get()-fLastPushBackTime < fPushBackPeriodLHC)) return 0; //how to go tho the next event?
+    if ((fLastPushBackTime<0) || ((int)time.Get()-fLastPushBackTime < fPushBackPeriodLHC)) {
+      return 0; 
+    }
     else {
       fLastPushBackTime = (int)time.Get();
       Float_t meanVtx[3] ={0.,0.,0.};
@@ -250,7 +256,9 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
   
   if(fPushBackPeriodDQM>0) {
     TDatime time;
-    if ((fLastPushBackTime<0) || ((int)time.Get()-fLastPushBackTime < fPushBackPeriodDQM)) return 0; //how to go tho the next event?
+    if ((fLastPushBackTime<0) || ((int)time.Get()-fLastPushBackTime < fPushBackPeriodDQM)) {
+      return 0; 
+    }
     else {
       fLastPushBackTime = (int)time.Get();
       Float_t meanVtx[3] ={0.,0.,0.};
@@ -274,7 +282,7 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
     }
   }
 
-  PushBack( (TH1F*) fPrimaryLHC[0], kAliHLTMultipleDataType);
+  PushBack( (TH1F*) fPrimaryLHC[0], kAliHLTDataTypeHistogram);
   // push results to LHC interface or DQM
   return 0;
   
@@ -304,7 +312,7 @@ Int_t AliHLTLumiRegComponent::LuminousRegionExtraction(TH1F* histos[], Float_t* 
   FitHistos(histos[1], meanLR[1], sigmaLR[1], -0.2, 0.7);
   
   if (AliHLTLumiRegComponent::kpp){
-    lumiregsquared = (meanLR[0]*meanLR[0] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+    lumiregsquared = (sigmaLR[0]*sigmaLR[0] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
     
     if (lumiregsquared < 0 || lumiregsquared < 1E-5){
       HLTWarning(Form("Difficult luminous region determination X, keep convoluted sigma"));
@@ -316,7 +324,7 @@ Int_t AliHLTLumiRegComponent::LuminousRegionExtraction(TH1F* histos[], Float_t* 
       return 1;
     }
     
-    lumiregsquared = (meanLR[1]*meanLR[1] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+    lumiregsquared = (sigmaLR[1]*sigmaLR[1] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
     
     if (lumiregsquared < 0 || lumiregsquared < 1E-5){
       HLTWarning(Form("Difficult luminous region determination Y, keep convoluted sigma"));
