@@ -284,10 +284,13 @@ protected:
     //  Enable spectators
     // and add a slow-nucleon model afterburner 
     Bool_t quench = opt.Contains("quench");
-    Bool_t spec   = (grp->IsPA() || grp->IsAP() || opt.Contains("spectators"));
-    Bool_t shadow = !spec && !opt.Contains("noshadow");
+    Bool_t spec   = ((grp->IsPA() || grp->IsAP() || opt.Contains("spectators"))
+		     && !opt.Contains("nospectators"));
+    Bool_t slow   = (grp->IsPA() || grp->IsAP()) && !opt.Contains("noslow");
+    Bool_t shadow = !spec && !slow && !opt.Contains("noshadow");
 
-    TString tit(Form("Hijing %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+    TString tit(Form("Hijing%s %s(%d,%d)+%s(%d,%d) @ %5d b in[%4.1f,%4.1f]",
+		     (slow ? "+SNM" : ""), 
 		     grp->beam1.Name(), grp->beam1.a, grp->beam1.z, 
 		     grp->beam2.Name(), grp->beam2.a, grp->beam2.z,
 		     Int_t(grp->energy), minB, maxB));
@@ -325,7 +328,7 @@ protected:
 
     
     // No need for cocktail
-    if (!grp->IsPA() || !grp->IsAP()) {
+    if (!grp->IsPA() && !grp->IsAP()) {
       gener->SetTitle(tit);
       return gener;
     }
@@ -335,7 +338,8 @@ protected:
     cocktail->SetTarget    (grp->beam1.Name(), grp->beam1.a, grp->beam1.z);
     cocktail->SetProjectile(grp->beam2.Name(), grp->beam2.a, grp->beam2.z);
     cocktail->SetEnergyCMS(grp->energy);
-
+    cocktail->SetName("HIJINGSNM");
+    
     AliGenSlowNucleons*     gray  = new AliGenSlowNucleons(1);
     AliCollisionGeometry*   coll  = gener->CollisionGeometry();
     AliSlowNucleonModelExp* model = new AliSlowNucleonModelExp();
@@ -382,6 +386,7 @@ protected:
     if (grp->IsPA() || grp->IsAP()) { 
       // dpmjet->SetTriggerParticle(3312, 1.2, 2.0);
       dpmjet->SetFragmentProd(false/*fragments*/); // Alwas disabled 
+      dpmjet->SetSpectators(true); // Spectators
     }
     else if (grp->IsPP()) { // PhoJet
       dpmjet->SetMomentumRange(0, 999999.);

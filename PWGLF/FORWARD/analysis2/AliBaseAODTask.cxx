@@ -32,7 +32,7 @@ AliBaseAODTask::AliBaseAODTask()
 }
 //____________________________________________________________________
 AliBaseAODTask::AliBaseAODTask(const char* name,
-             const char* title)
+			       const char* title)
   : AliAnalysisTaskSE(name),
     fTriggerMask(0xFFFFFFFF),
     fFilterMask(AliAODForwardMult::kDefaultFilter),
@@ -384,7 +384,7 @@ AliBaseAODTask::GetMultClass(const AliAODEvent& aod, Bool_t verb)
 //____________________________________________________________________
 Double_t
 AliBaseAODTask::GetCentrality(AliAODEvent&,
-            AliAODForwardMult* forward)
+			      AliAODForwardMult* forward)
 {
   Double_t cent = forward->GetCentrality();
   Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);

@@ -31,6 +31,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fSatelliteVertices(0),
     fEmpiricalCorrection(0),
     fMeanVsC(0),
+    fSeenCent(0),
+    fTakenCent(0),
     fCentMethod("default"),
     fAnaUtil(),
     fUseUtilPileup(false)
@@ -54,6 +56,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fSatelliteVertices(0),
     fEmpiricalCorrection(0),
     fMeanVsC(0),	
+    fSeenCent(0),
+    fTakenCent(0),
     fCentMethod("default"),
     fAnaUtil(),
     fUseUtilPileup(false)
@@ -347,6 +351,7 @@ AliBasedNdetaTask::InitializeCentBins()
     Int_t          nbin = fCentAxis.GetNbins(); 
     for (Int_t i = 0; i < nbin; i++) 
       AddCentralityBin(i+1,  (*bins)[i], (*bins)[i+1]);
+    AddCentralityBin(nbin+1, 0, 101);
   }
 }
 
@@ -360,6 +365,10 @@ AliBasedNdetaTask::Book()
   // This is called once per slave process 
   //
   DGUARD(fDebug,1,"Create user ouput object");
+
+  // Modify axis of centrality histograms 
+  fCent->SetXTitle(Form("Centrality (%s) [%%]", fCentMethod.Data()));
+  fAccCent->SetXTitle(Form("Centrality (%s) [%%]", fCentMethod.Data()));
 
   fSums->Add(AliForwardUtil::MakeParameter("empirical", 
 					   fEmpiricalCorrection != 0));
@@ -381,6 +390,39 @@ AliBasedNdetaTask::Book()
 		    "Mean absolute signal versus centrality",
 		    400, 0, 20, 100, 0, 100);
   fSums->Add(fMeanVsC);
+
+  if (HasCentrality()) {
+    if (fCentAxis.GetXbins()->GetArray()) {
+      Int_t nbin = fCentAxis.GetNbins();
+      TArrayD a(nbin+1, fCentAxis.GetXbins()->GetArray());
+      a.Set(nbin+2);
+      a[nbin+1] = fCentAxis.GetXmax()+fCentAxis.GetBinWidth(nbin+1);
+      
+      fSeenCent = new TH1D("centSeen", "Centralities seen",
+			    a.GetSize()-1, a.GetArray());
+    }
+    else
+      fSeenCent = new TH1D("centSeen", "Centralities seen",
+			    fCentAxis.GetNbins()+1,
+			    fCentAxis.GetXmin(),
+			    fCentAxis.GetXmax()+fCentAxis.GetBinWidth(1));      
+  }
+  else
+    fSeenCent = new TH1D("centSeen", "Null",1, 0, 100);
+  fSeenCent->SetDirectory(0);
+  fSeenCent->SetXTitle(Form("Centrality (%s) [%%]",fCentMethod.Data()));
+  fSeenCent->SetYTitle("Events");
+  fSeenCent->SetFillStyle(3004);
+  fSeenCent->SetFillColor(kYellow-2);
+  fTakenCent = static_cast<TH1D*>(fSeenCent->Clone("centTaken"));
+  fTakenCent->SetTitle("Centralities taken by bins");
+  fTakenCent->SetFillColor(kCyan-2);
+  fTakenCent->SetFillStyle(3005);
+  fTakenCent->SetDirectory(0);
+  
+  fSums->Add(fSeenCent);
+  fSums->Add(fTakenCent);
+
   // fSums->ls();
   return true;
 }
@@ -427,8 +469,12 @@ AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
     }
   }
   Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);
-  if (cent < 0)   cent = -.5;
-  if (cent > max) cent = TMath::Max(max+.1,100.5);
+  if (cent < 0)    cent = -.5;
+  if (cent >= max) {
+    Double_t tmp = (max >= 100. ? 100. : TMath::Max(max+.1,100.5));
+    // Info("GetCentrality", "Obtained %f >= %f -> %f", cent, max, tmp);
+    cent = tmp;
+  }
   return cent;
 
 }
@@ -473,15 +519,31 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   
   // Find this centrality bin
   if (HasCentrality()) {
+    taken                  = false;
     Double_t       cent    = GetCentrality(aod, forward);
-    Int_t          icent   = fCentAxis.FindBin(cent);
+    // fSeenCent->Fill(cent);
+    
+    Int_t          icent   = fCentAxis.FindBin(cent);    
+    if (icent == (fCentAxis.GetNbins()+1) &&
+	TMath::Abs(cent-fCentAxis.GetXmax()) < 1e-6)
+      // Make sure that upper edge is analysed 
+      icent = fCentAxis.GetNbins();
     CentralityBin* thisBin = 0;
     if (icent >= 1 && icent <= fCentAxis.GetNbins()) 
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
-    if (thisBin)
-      if (thisBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, 
-				fMaxIpZ, data, dataMC, fFilterMask)) 
-	taken = true;
+    if (thisBin && thisBin->ProcessEvent(forward, fTriggerMask,
+					 isZero, fMinIpZ,  fMaxIpZ,
+					 data, dataMC, fFilterMask)) 
+      taken = true;
+    if (taken) fTakenCent->Fill(cent);
+    
+    Int_t nbins = fCentAxis.GetNbins();
+    CentralityBin* fullBin = 
+      static_cast<CentralityBin*>(fListOfCentralities->At(nbins+1));
+    if (fullBin && fullBin->ProcessEvent(forward, fTriggerMask, isZero,
+					 fMinIpZ, fMaxIpZ, data, dataMC,
+					 fFilterMask))
+      fSeenCent->Fill(cent);
   }
   
   return taken;

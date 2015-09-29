@@ -983,6 +983,8 @@ protected:
   Bool_t          fSatelliteVertices; // satellite vertex flag
   TH2D*           fEmpiricalCorrection; // Empirical correction 
   TH2D* 	  fMeanVsC;         //mean signal per event vs cent
+  TH1D*           fSeenCent;      // The seen centrality 
+  TH1D*           fTakenCent;     // The taken centrality 
   TString         fCentMethod;    // Centrality estimator 
   AliAnalysisUtils fAnaUtil;      // Analysis utility 
   Bool_t          fUseUtilPileup; // Check for SPD outliers 

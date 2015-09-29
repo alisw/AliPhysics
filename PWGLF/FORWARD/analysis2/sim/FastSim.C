@@ -14,6 +14,7 @@
 # include "AliGenDPMjetEventHeader.h"
 # include "AliGenGeVSimEventHeader.h"
 # include "AliGenHerwigEventHeader.h"
+# include "AliGenCocktailEventHeader.h"
 # include "AliPDG.h"
 # include <TROOT.h>
 # include <TString.h>
@@ -35,9 +36,11 @@
 # include <TUrl.h>
 # include <TMacro.h>
 # include <TSystemDirectory.h>
+# include <TFileCollection.h>
 # include <TPRegexp.h>
 # include <fstream>
 # include <TLeaf.h>
+# include <algorithm>
 #else
 class AliGenerator;
 class AliRunLoader;
@@ -61,6 +64,12 @@ class TMacro;
 class TLeaf;
 #endif
 
+enum {
+  kNeutron = 2112,
+  kProton = 2212
+};
+
+  
 /** To get DPMJEt common block */
 typedef struct {
    Double_t	rproj;
@@ -76,6 +85,70 @@ typedef struct {
    Int_t        nct;
 } DtglcpCommon;
 DtglcpCommon* _dtglcp = 0;
+
+//====================================================================
+/** 
+ * Header structure 
+ */
+struct ShortHeader {
+  UInt_t   fRunNo;
+  UInt_t   fEventId;
+  UInt_t   fNtgt;
+  UInt_t   fNproj;
+  UInt_t   fNbin;
+  UInt_t   fType;
+  Double_t fIpX;
+  Double_t fIpY;
+  Double_t fIpZ;
+  Double_t fB;
+  Double_t fC;
+  Double_t fPhiR;
+  UInt_t   fNSpecNproj;  // # of spectator neutrons in projectile
+  UInt_t   fNSpecNtgt;   // # of spectator neutrons in target 
+  UInt_t   fNSpecPproj;  // # of spectator protons in projectile
+  UInt_t   fNSpecPtgt;   // # of spectator protons in target
+  
+  void Print()
+  {
+    Printf(" Run #/Event:          %9d/%9d", fRunNo, fEventId);
+    Printf(" Participants/binary:  %4d/%4d/%3d", fNtgt, fNproj, fNbin);
+    Printf(" Event type:           %7s%12s",(fType==1?"Non":
+					     fType==2?"Single":
+					     "Double"), "-diffractive");
+    Printf(" IP:                   (%-5.1f,%-5.1f,%-5.1f)",fIpX,fIpY,fIpZ);
+    Printf(" Impact par./cent.:    (%13f/%-3d)", fB, Int_t(fC));
+    Printf(" Reaction plane:       %19f", fPhiR);
+    Printf(" Specs (Nt,Np,Pt,Pp):  %4d/%4d/%4d/%4d",
+	   fNSpecNtgt, fNSpecNproj, fNSpecPtgt, fNSpecPproj);
+  }
+  void Reset(UInt_t runNo, UInt_t eventNo)
+  {
+    fRunNo      = runNo;
+    fEventId    = eventNo;
+    fIpX        = 1024;
+    fIpY        = 1024;
+    fIpZ        = 1024;
+    fNtgt       = -1;
+    fNproj      = -1;
+    fNbin       = -1;
+    fPhiR       = -1;
+    fB          = -1;
+    fC          = -1;
+    fNSpecNtgt  = -1;
+    fNSpecNproj = -1;
+    fNSpecPtgt  = -1;
+    fNSpecPproj = -1;
+    fEG         = kUnknown;
+  }
+
+  enum {
+    kUnknown = 0,
+    kPythia,
+    kHijing,
+    kDPMJet,
+    kEPOS,
+  } fEG;
+};
 
 //====================================================================
 /** 
@@ -321,7 +394,7 @@ struct FastMonitor : public TObject, public TQObject
   ClassDef(FastMonitor,1);
 };
 
-
+//====================================================================
 /** 
  * Base class for centrality estimators 
  */
@@ -364,6 +437,7 @@ struct FastCentEstimator : public TObject
    * 
    */
   virtual void PreEvent() {}
+  virtual void ProcessHeader(ShortHeader&) {}
   /** 
    * Called for each particle produced by the event generator.
    * Sub-classes should decide if they want to take the information
@@ -382,6 +456,10 @@ struct FastCentEstimator : public TObject
    * @param out Output list to add stuff to 
    */
   virtual void Terminate(TCollection* out) = 0;
+  virtual void Print(Option_t* option="") const
+  {
+    Printf("%s: %s", ClassName(), GetName());
+  }
   /** 
    * Get the particle polar angle 
    * 
@@ -407,9 +485,24 @@ struct FastCentEstimator : public TObject
   {
     Double_t theta = Theta(p);
     Double_t tanth = TMath::Tan(theta/2);
-    if (tanth < 1e-6) return 10000;
+    if (tanth < 1e-100) return +1e10;
+    if (tanth > 1e100)  return -1e10;
     Double_t eta   = -TMath::Log(tanth);
     return eta;
+  }
+  /** 
+   * Get the particle azimuth angle @f$\varphi@f$ 
+   * 
+   * @param p The particle 
+   * 
+   * @return Azimuth angle @f$\varphi@f$ 
+   */
+  static Double_t Phi(const TParticle* p)
+  {
+    Double_t px  = p->Px();
+    Double_t py  = p->Py();
+    Double_t phi = TMath::ATan2(px, py);
+    return phi;
   }
   /** 
    * Check if a particle is primary 
@@ -447,25 +540,27 @@ struct FastCentEstimator : public TObject
   ClassDef(FastCentEstimator,1);
 };
 
+//____________________________________________________________________
 /** 
  * A 1-dimensional centrality estimator 
  */
 struct Fast1DCentEstimator : public FastCentEstimator
 {
   /** Sum of signals for a given event */ 
-  Double_t fCache;
+  ULong64_t fCache;
   /** 
    * Our histogram. The Setup member function must be overridden to
    * define this member. 
    */
   TH1* fHistogram; //!
+  Bool_t fFromTop; 
   /** 
    * Constructor 
    * 
    * @param name Name of the estimator 
    */
   Fast1DCentEstimator(const char* name="")
-    : FastCentEstimator(name), fHistogram(0)
+    : FastCentEstimator(name), fHistogram(0), fFromTop(true)
   {}
   /** 
    * Destructor 
@@ -484,7 +579,7 @@ struct Fast1DCentEstimator : public FastCentEstimator
 	     Bool_t, Bool_t)
   {
     if (fHistogram && l) l->Add(fHistogram);
-    if (tree) tree->Branch(GetName(), &fCache, "value/D");
+    if (tree) tree->Branch(GetName(), &fCache, "value/l");
   }
   /** 
    * Called before each event.  Zeros the cache variable 
@@ -498,7 +593,8 @@ struct Fast1DCentEstimator : public FastCentEstimator
    */
   virtual void PostEvent()
   {
-    if (fVerbose) Info("PostEvent", " Got %f %s particles", fCache, GetName());
+    if (fVerbose) Info("PostEvent", " Got %lld %s particles",
+		       fCache, GetName());
     fHistogram->Fill(fCache);
   }
   virtual TH1* GetHistogram(TCollection* l) = 0;
@@ -520,14 +616,19 @@ struct Fast1DCentEstimator : public FastCentEstimator
     cent->SetTitle(Form("%s mapping", GetName()));
     cent->Reset();
     out->Add(cent);
-
+    
     Int_t    nX         = h->GetNbinsX();
     Double_t total      = h->Integral(1,nX);
+    Int_t    dBin       = (fFromTop ? -1 : 1);
+    Int_t    end        = (fFromTop ? 0  : nX+1);
+    Int_t    start      = (fFromTop ? nX : 1);
     if (fVerbose)
       Info("Teminate", "Integrating %s from bin %d to 1",
 	   h->GetName(), nX);
-    for (Int_t i = h->GetNbinsX(); i > 0; i--) {
-      Double_t curInt  = h->Integral(i, nX);
+    for (Int_t i = start; i != end; i += dBin) {
+      Double_t curInt  = (fFromTop ?
+			  h->Integral(i, start) :
+			  h->Integral(start,i));
       if (curInt < 0) continue;
       Double_t curCent = curInt / total * 100;
       cent->SetBinContent(i, curCent);
@@ -536,9 +637,24 @@ struct Fast1DCentEstimator : public FastCentEstimator
 	     i, curInt, total, curCent);
     }    
   }
+  virtual void Print(Option_t* option="nh") const
+  {
+    TString opt(option); opt.ToLower();
+    if (opt.Contains("n")) 
+      Printf("1D Estimator: %s (%screasing)",
+	     GetName(),(fFromTop ? "de" : "in"));
+    if (opt.Contains("h") && fHistogram) {
+      Int_t nBin = fHistogram->GetNbinsX();
+      Printf("  %d bins between %f and %f",nBin, 
+	     fHistogram->GetXaxis()->GetXmin(),
+	     fHistogram->GetXaxis()->GetXmax());
+    }
+  }
   ClassDef(Fast1DCentEstimator,1);
 };
 
+  
+//____________________________________________________________________
 /**
  * Centrality estimator using charged particles 
  */
@@ -575,16 +691,31 @@ struct FastNchCentEstimator : public Fast1DCentEstimator
    * @return true if we are to count this particle 
    */
   virtual Bool_t Accept(const TParticle* p) = 0;
+  virtual void Print(Option_t* option="nh") const
+  {
+    TString opt(option); opt.ToLower();
+    if (opt.Contains("n")) 
+      Printf("1D Nch Estimator: %s (%screasing)",
+	     GetName(),(fFromTop ? "de" : "in"));
+    opt.ReplaceAll("n", "");
+    Fast1DCentEstimator::Print(opt);
+  }
   ClassDef(FastNchCentEstimator,1);
 };
+
+//____________________________________________________________________
 /**
  * Centrality estimator using the V0 signal 
  */
 struct V0CentEstimator : public FastNchCentEstimator
 {
   /** Mode: Negative, use C side, positive use A side, otherwise sum */
-  Short_t fMode;
-  Bool_t fOnlyPrimary;
+  Short_t  fMode;
+  Bool_t   fOnlyPrimary;
+  Double_t fAEtaMin;
+  Double_t fAEtaMax;
+  Double_t fCEtaMin;
+  Double_t fCEtaMax;
   /** 
    * Constructor 
    * 
@@ -597,7 +728,29 @@ struct V0CentEstimator : public FastNchCentEstimator
 				(onlyPrimary ? "P" : ""))),
       fMode(mode),
       fOnlyPrimary(onlyPrimary)			   
-  {}
+  {
+    fAEtaMin = +2.8;
+    fAEtaMax = +5.1;
+    fCEtaMin = -3.7;
+    fCEtaMax = -1.7;
+  }
+  void Flip(Bool_t onlySign=true)
+  {
+    if (!onlySign) {
+      std::swap(fAEtaMin, fCEtaMax); // a=[-1.7,*] c=[*,+2.8]
+      std::swap(fAEtaMax, fCEtaMin); // a=[*,-3.7] c=[+5.1,*]
+    }
+    else {
+      std::swap(fAEtaMin, fAEtaMax);  // a=[+5.1,+2.8]
+      std::swap(fCEtaMin, fCEtaMax);  // c=[-1.7,-3.7]
+    }
+    //                 onlySign     !onlySign
+    fAEtaMin *= -1; // a=[-5.1,*]   a=[+1.7,*]
+    fAEtaMax *= -1; // a=[*,-2.8]   a=[*,+3.7]
+    fCEtaMin *= -1; // c=[+1.7,*]   c=[-5.1,*]
+    fCEtaMax *= -1; // c=[*,+3.7]   c=[*,-2.8]
+    Printf("Flipped %s", (onlySign ? "sign" : "acceptance"));
+  }
   /** 
    * Set-up this object.  Defines the internal histogram and add to
    * output
@@ -641,8 +794,8 @@ struct V0CentEstimator : public FastNchCentEstimator
   {
     if (fOnlyPrimary && !IsPrimary(p)) return false;
     Double_t eta = Eta(p);
-    Bool_t   v0A = ((eta >= +2.8) && (eta <= +5.1));
-    Bool_t   v0C = ((eta >= -3.7) && (eta <= -1.7));
+    Bool_t   v0A = ((eta >= fAEtaMin) && (eta <= fAEtaMax));
+    Bool_t   v0C = ((eta >= fCEtaMin) && (eta <= fCEtaMax));
     if (fMode < 0) return v0C;
     if (fMode > 0) return v0A;
     return v0A || v0C;
@@ -656,8 +809,21 @@ struct V0CentEstimator : public FastNchCentEstimator
   {
     return static_cast<TH1*>(l->FindObject(Form("raw%s",GetName())));
   }
+  virtual void Print(Option_t* option="nah") const
+  {
+    TString opt(option); opt.ToLower();
+    if (opt.Contains("n")) 
+      Printf("V0 Estimator: %s (%screasing) mode=%d",
+	     GetName(),(fFromTop ? "de" : "in"), fMode);
+    if (opt.Contains("a"))
+	Printf("  A: eta=[%f,%f], C: eta=[%f,%f]",
+	       fAEtaMin, fAEtaMax, fCEtaMin, fCEtaMax);
+    opt.ReplaceAll("n", "");
+    FastNchCentEstimator::Print(opt);
+  }
   ClassDef(V0CentEstimator,1);
 };
+//____________________________________________________________________
 /**
  * Centrality estimator using the V0 signal 
  */
@@ -730,6 +896,212 @@ struct RefMultEstimator : public FastNchCentEstimator
   }
   ClassDef(RefMultEstimator,1);
 };
+//____________________________________________________________________
+/**
+ * Centrality estimator using the V0 signal 
+ */
+struct ZNCentEstimator : public Fast1DCentEstimator
+{
+  // What to put in 
+  /** Mode: Negative, use C side, positive use A side, otherwise sum */
+  Short_t   fMode;
+  Bool_t    fNeutrons;
+  Bool_t    fSpectators;
+  Bool_t    fPrimary;
+  Double_t  fMinEta;
+  Double_t  fMaxEta;
+  Double_t  fMaxPhi;
+  ULong64_t fNSpec;
+  /** 
+   * Constructor 
+   * 
+   * @param mode Mode: Negative, use C side, positive use A side, otherwise sum 
+   */
+  ZNCentEstimator(Short_t mode=0,
+		  Bool_t neutrons=true,
+		  Bool_t spectators=false,
+		  Bool_t primary=false)
+    : Fast1DCentEstimator(Form("Z%c%c%c%c",
+			       (neutrons   ? 'N' : 'P'),
+			       (mode < 0   ? 'C' : (mode > 0 ? 'A' : 'M')),
+			       (spectators ? 'S' : 'E'),
+			       (primary    ? 'P' : 'A'))),
+      fMode(mode),
+      fNeutrons(neutrons),
+      fSpectators(spectators),
+      fPrimary(primary),
+      fMinEta(0),
+      fMaxEta(0),
+      fMaxPhi(-1)
+  {
+    fFromTop = (fSpectators ? false : true);
+    if (fNeutrons) {
+      const Double_t zN = 1161.3; // distance to ZN cm
+      const Double_t dN = 7;      // Area of ZN
+      const Double_t rN = TMath::Sqrt(2*dN*dN); // Radius of ZN
+      const Double_t tN = TMath::ATan2(rN,zN); // Largest angle ZN
+      fMinEta           = -TMath::Log(TMath::Tan(tN/2));
+      fMaxEta           = TMath::Infinity();
+      fMaxPhi           = -1;
+    }
+    else {
+      const Double_t  zP  = 1156.3; // distance to ZC cm
+      const Double_t  wP  = 20.8; // Width of cal
+      const Double_t  hP  = 12; // Width of cal
+      const Double_t  oP  = 19;
+      const Double_t  rO  = TMath::Sqrt(TMath::Power(oP+wP/2,2)+hP*hP/4);
+      const Double_t  rI  = TMath::Sqrt(TMath::Power(oP-wP/2,2)+hP*hP/4);
+      const Double_t  tO  = TMath::ATan2(rO, zP);
+      const Double_t  tI  = TMath::ATan2(rI, zP);
+      fMinEta             = -TMath::Log(TMath::Tan(tO/2));
+      fMaxEta             = -TMath::Log(TMath::Tan(tI/2));
+      fMaxPhi             = TMath::ATan2(hP/2,oP);
+    }
+  }
+  /** 
+   * Set-up this object.  Defines the internal histogram and add to
+   * output
+   * 
+   * @param l Output list
+   * @param tree Tree to add branch to 
+   * @param tgtA  True if target is a nucleus 
+   * @param projA True if projectile is a nucleus 
+   */
+  void Setup(TCollection* l, TTree* tree,
+	     Bool_t tgtA, Bool_t projA)
+  {
+    Bool_t  isAA  = (tgtA && projA);
+    Bool_t  isPA  = (tgtA ^ projA); // XOR
+    UInt_t  max   = (isAA ? 2000 : isPA ? 300 : 30);
+    UInt_t  dBin  = (isAA ? 10   : isPA ?   1 :  1);
+    Color_t color = (fMode < 0 ? kRed : fMode > 0 ? kBlue : kGreen)+2;
+
+    TString nTxt;
+    nTxt.Form("#it{N}_{%s%c} (%s)",
+	      fSpectators ? "spec," : "", fNeutrons ? 'n' : 'p',
+	      fPrimary ? "primary" : "all");
+    fHistogram = new TH1D(Form("raw%s",GetName()),
+			  Form("%s %s  distribution", GetName(), nTxt.Data()),
+			  max/dBin, 0, (fMode == 0 ? 2 : 1)*max);
+    fHistogram->SetXTitle(nTxt);
+    fHistogram->SetYTitle(Form("Raw #it{P}(%s)", nTxt.Data()));
+    fHistogram->SetDirectory(0);
+    fHistogram->SetLineColor(color);
+    fHistogram->SetFillColor(color);
+    fHistogram->SetMarkerColor(color);
+    fHistogram->SetMarkerStyle(20);
+    fHistogram->SetFillStyle(3002);
+
+    Fast1DCentEstimator::Setup(l, tree, tgtA, projA);
+  }
+  /** 
+   * Process a single particle. 
+   * 
+   * @param p Particle 
+   */
+  virtual void Process(const TParticle* p)
+  {
+    // Check if we should count emitted 
+    if (fSpectators) return;
+
+    // Check if we should count only primaries
+    if      (fPrimary && !IsPrimary(p)) return; 
+    else if (!fPrimary && p->GetStatusCode()==4) return; 
+    // if ((fFlags & kPrimary) != 0 && !IsPrimary(p)) return;
+
+    // Check if this is a spectator 
+    // Int_t status = p->GetStatusCode();
+    // if ((fFlags & kSpectators) == 0 && (status==13 || status==14)) return;
+
+    // Check particle type 
+    Int_t aPdg = TMath::Abs(p->GetPdgCode());
+    if (fNeutrons && aPdg != kNeutron)
+      // Looking for neutrons 
+      return;
+    if (!fNeutrons && aPdg != kProton)
+      // Looking for protons 
+      return;
+
+    // Check side
+    Double_t eta = Eta(p);
+    if (fMode < 0 && eta > 0) return; // Wrong side
+    if (fMode > 0 && eta < 0) return; // Wrong side
+
+    // Check acceptance 
+    Double_t aeta = TMath::Abs(eta);
+    if (aeta > fMaxEta || aeta < fMinEta) return; // Not acceptance
+
+    if (fMaxPhi > 0) { 
+      Double_t phi = TMath::Abs(Phi(p) - (eta < 0 ? 0 : TMath::Pi()));
+      if (phi > fMaxPhi) return; // Not acceptance 
+    }
+
+    // Decrement
+    fCache++;
+    // Printf("%s: increment from %d (%f) -> %lld",
+    //        GetName(), aPdg, eta, fCache);
+  }
+  void ProcessHeader(ShortHeader& h)
+  {
+    // In Ap (EPOS) we have many spec in the target, meaning they will
+    // be detected on the C side (p is the projectile, A is the target)
+    // if (!fSpectators) return;
+    fCache   = 0;
+    fNSpec   = 0;
+    Int_t nC = 0;
+    Int_t nA = 0;
+    if (fNeutrons) {
+      nC = h.fNSpecNtgt;
+      nA = h.fNSpecNproj;
+    }
+    else {
+      nC = h.fNSpecPtgt;
+      nA = h.fNSpecPproj;
+    }
+    if      (fMode < 0) fNSpec = nC;
+    else if (fMode > 0) fNSpec = nA;
+    else                fNSpec = nC + nA;
+    // Printf("%s: Initial cache value: %d", GetName(), fNSpec);
+  }
+  virtual void PostEvent()
+  {
+    Info(GetName(), "Nspec=%lld Nneu=%lld", fNSpec, fCache);
+    if (fSpectators) fCache = fNSpec;
+    else {
+      if (fNSpec > fCache) {
+	Warning("PostEvent", "Nspec (%d) > Nneu (%d)",
+		fNSpec, fCache);
+	fNSpec = fCache;
+      }
+      if (!fPrimary) fCache -= fNSpec;
+    }
+    Fast1DCentEstimator::PostEvent();
+  }
+  /** 
+   * Get the histogram to accumulate the observable in.  
+   * 
+   * @return Pointer to the histogram. 
+   */
+  virtual TH1* GetHistogram(TCollection* l)
+  {
+    return static_cast<TH1*>(l->FindObject(Form("raw%s",GetName())));
+  }
+  virtual void Print(Option_t* option="nah") const
+  {
+    TString opt(option); opt.ToLower();
+    if (opt.Contains("n")) 
+      Printf("ZN Estimator: %s (%screasing) mode=%d - %s %s",
+	     GetName(),(fFromTop ? "de" : "in"), fMode,
+	     (fSpectators ? "spectator" : "emitted"),
+	     (fPrimary    ? "primary"   : "all"),
+	     (fNeutrons   ? "neutrons"  : "protons"));
+    if (opt.Contains("a"))
+      Printf("  eta=[%f,%f], phi=%f", fMinEta, fMaxEta, fMaxPhi);
+    opt.ReplaceAll("n", "");
+    Fast1DCentEstimator::Print(opt);
+  }
+  ClassDef(ZNCentEstimator,1);
+};
   
 
 //====================================================================
@@ -801,6 +1173,14 @@ struct FastSim : public TSelector
 	  fn.Append(Form("_%s%s", tgt.Data(), proj.Data()));
 	  fn.Append(Form("_%05d", Int_t(fGenerator->GetEnergyCMS())));
 	}
+	else {
+	  Long_t en = gROOT->ProcessLine("grp->energy");
+	  // Bool_t a1 = gROOT->ProcessLine("(GRPData*)%p->beam1.IsA()",fGRP);
+	  // Bool_t a2 = gROOT->ProcessLine("(GRPData*)%p->beam2.IsA()",fGRP);
+	  fn.Append(Form("_%s%s", (fIsTgtA ? "A" : "p"),
+			 (fIsProjA ? "A" : "p")));
+	  fn.Append(Form("_%05ld", (fGRP ? en : 0)));
+	}
 
 	if (fNEvents > 0) {
 	  if (fNEvents >= 1000000)
@@ -859,16 +1239,19 @@ struct FastSim : public TSelector
 				 "T"));
     fParticles = new TClonesArray("TParticle");
     fTree->Branch("header", &fShortHead,
-		  "run/i:event:ntgt:nproj:nbin:type:ipx/D:ipy:ipz:b:c:phir");
+		  "run/i:event:ntgt:nproj:nbin:type:"
+		  "ipx/D:ipy:ipz:b:c:phir:"
+		  "nsnp/i:nsnt:nspp:nspt");
     fTree->Branch("particles", &fParticles);
-    fTree->AutoSave();
+    fTree->SetAutoSave(500); // Save every on every 100 events 
     fTree->SetDirectory(fFile);
     fTree->SetAlias("primary", "(particles.fBits&(1<<14))");
     fTree->SetAlias("weak",    "(particles.fBits&(1<<15))");
     fTree->SetAlias("charged", "(particles.fBits&(1<<16))");
     fTree->SetAlias("pt",      "(sqrt(pow(particles.fPx,2)+"
 		    /*       */"pow(particles.fPy,2)))");
-    fTree->SetAlias("eta",     "(pt<1e-10?1024:"
+    fTree->SetAlias("eta",     "(particles.Pt()<1e-100?"
+		    "(particles.fPz>0?100:-100):"
 		    "-log(tan(atan2(particles.Pt(),particles.fPz)/2)))");
     fTree->SetAlias("good",    "(primary&&charged&&abs(eta)<1000)");
     fTree->SetAlias("sd",      "(header.fType & 0x1)");
@@ -968,6 +1351,7 @@ struct FastSim : public TSelector
     while ((estimator = static_cast<FastCentEstimator*>(next()))) {
       estimator->Setup(estimators, fTree,fIsTgtA,fIsProjA);
       estimator->SetVerbose(fVerbose);
+      estimator->Print("nah");
     }
     
     if (fVerbose) Info("SetupOutput", "Adding list ot outputs");
@@ -992,12 +1376,7 @@ struct FastSim : public TSelector
 	   "========================================", seed);
     gRandom->SetSeed(seed);
   }
-  /** 
-   * Set-up the generator. 
-   * 
-   * @return true on success 
-   */
-  virtual Bool_t SetupGen()
+  virtual Bool_t SetupGRP()
   {
     Printf(" === Setup ==============================");
     Printf("  Run #:                          %6d", fRunNo);
@@ -1012,7 +1391,7 @@ struct FastSim : public TSelector
       std::ofstream* pout = new std::ofstream("grp.dat");
       if (pout) {
 	if (fVerbose) 
-	  Info("SetupGen", "Writing GRP line '%s' to \"grp.dat\"",
+	  Info("SetupGRP", "Writing GRP line '%s' to \"grp.dat\"",
 	       fGRP->GetTitle());
 	std::ostream& out = *pout;
 	out << fGRP->GetTitle() << std::endl;
@@ -1020,20 +1399,30 @@ struct FastSim : public TSelector
       }
     }
     if (fVerbose) 
-      Info("SetupGen", "Overrides: %p Input: %p", fOverrides, fInput);
+      Info("SetupGRP", "Overrides: %p Input: %p", fOverrides, fInput);
     if (!fOverrides && fInput) {
       fOverrides = static_cast<TList*>(fInput->FindObject("overrides"));
       if (!fOverrides && fVerbose)
-	Info("SetupGen", "No GRP overrides found in input:");
+	Info("SetupGRP", "No GRP overrides found in input:");
     }
     
     // --- Load our settings -----------------------------------------
-    if (fVerbose) Info("SetupGen", "Loading scripts");
+    if (fVerbose) Info("SetupGRP", "Loading scripts");
     // Check if we have the global "grp" already 
     if (gROOT->ProcessLine("grp") == 0) 
       gROOT->Macro(Form("GRP.C(%d)", fRunNo));
-    if (fVerbose) Info("SetupGen", "Perhaps override");
+    if (fVerbose) Info("SetupGRP", "Perhaps override");
     OverrideGRP();
+    gROOT->ProcessLine("grp->Print()");
+    return true;
+  }    
+  /** 
+   * Set-up the generator. 
+   * 
+   * @return true on success 
+   */
+  virtual Bool_t SetupGen()
+  {
     if (fVerbose) Info("SetupGen", "Load base config");
     gROOT->Macro("BaseConfig.C");
     if (fVerbose) Info("SetupGen", "Load EG config");
@@ -1215,14 +1604,14 @@ struct FastSim : public TSelector
    * Set up job 
    * 
    */
-  void Init(TTree*)
+  virtual void Init(TTree*)
   {
   }
   /** 
    * Set up job 
    * 
    */
-  void Begin(TTree*)
+  virtual void Begin(TTree*)
   {
     // Make a monitor
     // Info("Begin", "gProof=%p Nomonitor=%p",
@@ -1243,16 +1632,34 @@ struct FastSim : public TSelector
     }
     if (fVerbose) Info("Begin", "Perhaps override");
     OverrideGRP();
-     if (fVerbose) Info("Begin", "Defining centrality estimators");
+    if (fVerbose) Info("Begin", "Defining centrality estimators");
     fCentEstimators = new TList;
-    fCentEstimators->Add(new V0CentEstimator(-1));
-    fCentEstimators->Add(new V0CentEstimator( 0));
-    fCentEstimators->Add(new V0CentEstimator(+1));
-    fCentEstimators->Add(new V0CentEstimator(-1, true));
-    fCentEstimators->Add(new V0CentEstimator( 0, true));
-    fCentEstimators->Add(new V0CentEstimator(+1, true));
-    fCentEstimators->Add(new RefMultEstimator(0.8));
-    fCentEstimators->Add(new RefMultEstimator(0.5));
+    // fCentEstimators->Add(new V0CentEstimator(-1));           //V0C
+    // fCentEstimators->Add(new V0CentEstimator( 0));           //V0M
+    // fCentEstimators->Add(new V0CentEstimator(+1));           //V0A
+    fCentEstimators->Add(new V0CentEstimator(-1,true));      //V0CP
+    fCentEstimators->Add(new V0CentEstimator( 0,true));      //V0MP
+    fCentEstimators->Add(new V0CentEstimator(+1,true));      //V0AP
+    // fCentEstimators->Add(new ZNCentEstimator(-1,zN|zE));     //ZNCE
+    // fCentEstimators->Add(new ZNCentEstimator(+1,zN|zE));     //ZNAE 
+    fCentEstimators->Add(new ZNCentEstimator(-1,true,false)); //ZNCE
+    fCentEstimators->Add(new ZNCentEstimator(+1,true,false)); //ZNAE 
+    fCentEstimators->Add(new ZNCentEstimator(-1,true,false,true)); //ZNCEP
+    fCentEstimators->Add(new ZNCentEstimator(+1,true,false,true)); //ZNAE 
+    fCentEstimators->Add(new ZNCentEstimator(-1,true,true));  //ZNCS
+    fCentEstimators->Add(new ZNCentEstimator(+1,true,true));  //ZNAS
+    // fCentEstimators->Add(new ZNCentEstimator(-1,zE|zP));     //ZPCE
+    // fCentEstimators->Add(new ZNCentEstimator(+1,zE|zP));     //ZPAE
+    // fCentEstimators->Add(new ZNCentEstimator(-1,zS));        //ZPCS
+    // fCentEstimators->Add(new ZNCentEstimator(+1,zS));        //ZPAS
+    // fCentEstimators->Add(new RefMultEstimator(0.8));
+    // fCentEstimators->Add(new RefMultEstimator(0.5));
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next()))) {
+      estimator->Print("nah");
+    }
+    if (fVerbose) Info("Begin", "End of begin");
   }
   /** 
    * Set-up this sub-job 
@@ -1262,6 +1669,7 @@ struct FastSim : public TSelector
   {
      if (fVerbose) Info("SlavesBegin", "Called for FastSim");
     SetupSeed();
+    SetupGRP();
     SetupGen();
     SetupOutput();
     SetupRun();
@@ -1321,10 +1729,78 @@ struct FastSim : public TSelector
     else if (14.96 >= b && b < 15.67) { c=92.5; np=4.376; nc=3.181; }
     else if (15.67 >= b && b < 20.00) { c=97.5; np=3.064; nc=1.994; }
   }
+  void pPbNpartCent(Int_t nPart, Double_t& c) const
+  {
+    Double_t cm[33];
+    cm[0]       = -1;
+    cm[1]       = 1;
+    cm[2]	= 0.823203;
+    cm[3]	= 0.723342;
+    cm[4]	= 0.647615;
+    cm[5]	= 0.583512;
+    cm[6]	= 0.524967;
+    cm[7]	= 0.469422;
+    cm[8]	= 0.416093;
+    cm[9]	= 0.362399;
+    cm[10]	= 0.30997;
+    cm[11]	= 0.258351;
+    cm[12]	= 0.209152;
+    cm[13]	= 0.164198;
+    cm[14]	= 0.124642;
+    cm[15]	= 0.0912396;
+    cm[16]	= 0.0639762;
+    cm[17]	= 0.0432744;
+    cm[18]	= 0.0279033;
+    cm[19]	= 0.0174596;
+    cm[20]	= 0.010496;
+    cm[21]	= 0.00588846;
+    cm[22]	= 0.00319697;
+    cm[23]	= 0.00165676;
+    cm[24]	= 0.000807567;
+    cm[25]	= 0.000393674;
+    cm[26]	= 0.000177213;
+    cm[27]	= 7.96863e-05;
+    cm[28]	= 3.44911e-05;
+    cm[29]	= 1.42722e-05;
+    cm[30]	= 8.32543e-06;
+    cm[31]	= 3.56804e-06;
+    cm[32]	= 1.18935e-06;
+    Int_t n = TMath::Max(TMath::Min(32, nPart),0);
+    c = cm[n] * 100;
+  }
   void pPbCent(Double_t b, Double_t& c, Float_t&, Float_t&) const
   {
     // pPb/Pbp @ 5.02TeV 
+#if 1
+    // From Alberica
+    const Double_t cl[] = {   0,    5,   10,   20,   40,   60,   80, -1 };
+    const Double_t ch[] = {   5,   10,   20,   40,   60,   80,  100, -1 };
+    const Double_t bm[] = { 1.83675, 2.59375,  3.66875, 5.18625, 6.35475,
+			    7.40225, 13.8577, -1};
+    for (Int_t i = 0; i < 7; i++) {
+      if (b <= bm[i]) {
+	c = (ch[i]+cl[i]) / 2;
+	return;
+      }
+    }
+    c = 100;
+#elif 0 
     // From Glauber
+    const Double_t cl[] = {   0,    5,   10,   20,   40,   60,   80, -1 };
+    const Double_t ch[] = {   5,   10,   20,   40,   60,   80,  100, -1 };
+    const Double_t bm[] = {3.12, 3.50, 3.85, 4.54, 5.57, 6.63, 7.51, 15 };
+    const Double_t bs[] = {1.39, 1.48, 1.57, 1.69, 1.69, 1.45, 1.11, -1 };
+    static Double_t bl[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+    if (bl[0] == -1) {
+      for (Int_t i = 0; i < 7; i++)
+	bl[i] = bm[i] + (bm[i+1]-bm[i])/2;
+    }
+    
+    Double_t* t   = std::lower_bound(bl, bl+7, b);
+    Int_t     idx = t-bl;
+    if (idx < 0 || idx > 6) { c = ch[6]; return; }
+    c = (ch[idx]+cl[idx])/2;
+#else 
     // cern.ch/twiki/bin/viewauth/ALICE/PACentStudies
     //          #Ncoll_in_centrality_bins_from_CL
     Double_t ac[] = { 2.5, 7.5, 15., 30., 50., 70., 90. };
@@ -1338,6 +1814,7 @@ struct FastSim : public TSelector
 	break;
       }
     }
+#endif 
   }    
     
   /** 
@@ -1368,13 +1845,38 @@ struct FastSim : public TSelector
       dynamic_cast<AliGenGeVSimEventHeader*>(genHeader);
     AliGenHerwigEventHeader* herwig    = 
       dynamic_cast<AliGenHerwigEventHeader*>(genHeader);
-    if (geometry) {
-      fShortHead.fB     = geometry->ImpactParameter();
-      fShortHead.fNtgt  = geometry->TargetParticipants();
-      fShortHead.fNproj = geometry->ProjectileParticipants();
-      fShortHead.fNbin  = geometry->NN();
-      fShortHead.fPhiR  = geometry->ReactionPlaneAngle();
+    AliGenCocktailEventHeader* cocktail = 
+      dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
+    AliGenHijingEventHeader* hijing = 
+      dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+    if (cocktail) {
+      TList* headers = cocktail->GetHeaders();
+      if (!headers) Warning("", "No headers in cocktail!");
+      TIter next(headers);
+      AliGenEventHeader* header = 0;
+      AliCollisionGeometry* geom = 0;
+      while ((header = static_cast<AliGenEventHeader*>(next()))) {
+	AliCollisionGeometry* g = dynamic_cast<AliCollisionGeometry*>(header);
+	if (g) geom = g;
+	 hijing = dynamic_cast<AliGenHijingEventHeader*>(header);
+      }
+      if (geom) geometry = geom;
     }
+    if (hijing)   fShortHead.fEG = ShortHeader::kHijing;
+    if (dpm)      fShortHead.fEG = ShortHeader::kDPMJet;
+    if (pythia)   fShortHead.fEG = ShortHeader::kPythia;
+    
+    if (geometry) {
+      fShortHead.fB          = geometry->ImpactParameter();
+      fShortHead.fNtgt       = geometry->TargetParticipants();
+      fShortHead.fNproj      = geometry->ProjectileParticipants();
+      fShortHead.fNbin       = geometry->NN();
+      fShortHead.fPhiR       = geometry->ReactionPlaneAngle();
+      fShortHead.fNSpecNproj = geometry->ProjSpectatorsn(); 
+      fShortHead.fNSpecPproj = geometry->ProjSpectatorsp();
+      fShortHead.fNSpecNtgt  = geometry->TargSpectatorsn(); 
+      fShortHead.fNSpecPtgt  = geometry->TargSpectatorsp();
+   }
     // --- Determine diffraction flags -------------------------------
     Bool_t sd = false;
     Bool_t dd = false;
@@ -1398,6 +1900,35 @@ struct FastSim : public TSelector
       fShortHead.fNbin  = 1;
     }
     if (dpm) {
+      // Try to figure out number of spectators in either side 
+      UInt_t nSpecNproj = 0;
+      UInt_t nSpecNtgt  = 0;
+      UInt_t nSpecPproj = 0;
+      UInt_t nSpecPtgt  = 0;
+      Int_t  nPart      = fStack->GetNprimary();
+      for (Int_t iPart = 0; iPart < nPart; iPart++) {
+	TParticle*    particle  = fStack->Particle(iPart);
+	Int_t         ks        = particle->GetStatusCode();
+	Int_t         side      = 0;
+	if (ks == 13) side = -1;
+	if (ks == 14) side = +1;
+	if (side == 0) continue;
+	Int_t         kf        = particle->GetPdgCode();
+	if (kf == kNeutron) {
+	  if (side < 0) nSpecNproj++;
+	  else          nSpecNtgt++;
+	}
+	else if (kf == kProton) { 
+	  if (side < 0) nSpecPproj++;
+	  else          nSpecPtgt++;
+	}
+      }
+      fShortHead.fNSpecNtgt   = nSpecNtgt; 
+      fShortHead.fNSpecNproj  = nSpecNproj;
+      fShortHead.fNSpecPtgt   = nSpecPtgt;
+      fShortHead.fNSpecPproj  = nSpecPproj;
+      // fShortHead.Print();
+
       Int_t type = dpm->ProcessType();
 #ifndef NO_DPMJET_TYPE
       switch (type) {
@@ -1461,15 +1992,18 @@ struct FastSim : public TSelector
     Float_t  nc = -1;
     Double_t c  = -1;
     Double_t b  = fShortHead.fB;
-    // Info("ProcessHeader", "b=%f isProjA=%d isTgtA=%d cms=%f",
-    //      b, fIsProjA, fIsTgtA, fGenerator->GetEnergyCMS());
+    Info("ProcessHeader", "b=%f isProjA=%d isTgtA=%d cms=%f",
+	 b, fIsProjA, fIsTgtA, fGenerator ? fGenerator->GetEnergyCMS() : -1);
     if (b >= 0 && fIsProjA && fIsTgtA &&
 	TMath::Abs(fGenerator->GetEnergyCMS()-2760) < 10) {
       PbPbCent(b, c, np, nc);
     }
     else if (b >= 0 && (fIsTgtA || fIsProjA) &&
-	     TMath::Abs(fGenerator->GetEnergyCMS()-5023) < 10) {
+	     (fGenerator
+	      ? TMath::Abs(fGenerator->GetEnergyCMS()-5023) < 10
+	      : true)) {
       pPbCent(b, c, np, nc);
+      Info("", "Getting pPb centrality b=%f -> %f%%", b, c);
     }
     if (c >= 0) fShortHead.fC = c;
     Double_t nb   = nc/2;
@@ -1496,6 +2030,11 @@ struct FastSim : public TSelector
       fHCent->Fill(c);
       // fShortHead.Print();
     }
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next())))
+      estimator->ProcessHeader(fShortHead);
+    
     return selected;
   }
   /** 
@@ -1544,6 +2083,11 @@ struct FastSim : public TSelector
     fHeader->SetNprimary(fStack->GetNprimary());
     fHeader->SetNtrack(fStack->GetNtrack());
 
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next())))
+      estimator->PostEvent();
+
     fTree->Fill();
     
     fStack->FinishEvent();
@@ -1551,11 +2095,6 @@ struct FastSim : public TSelector
     
     fRunLoader->TreeE()->Fill();
     fRunLoader->WriteKinematics("OVERWRITE");
-
-    TIter next(fCentEstimators);
-    FastCentEstimator* estimator = 0;
-    while ((estimator = static_cast<FastCentEstimator*>(next())))
-      estimator->PostEvent();
   }
   virtual void Generate() { fGenerator->Generate(); }
  
@@ -1922,50 +2461,10 @@ struct FastSim : public TSelector
   mutable TString   fFileName;    //! Output file name 
   /* @} */
   Bool_t fVerbose; // Verbosity 
-  
-  // Hide from CINT 
-#ifndef __CINT__
-  struct ShortHeader {
-    UInt_t   fRunNo;
-    UInt_t   fEventId;
-    UInt_t   fNtgt;
-    UInt_t   fNproj;
-    UInt_t   fNbin;
-    UInt_t   fType;
-    Double_t fIpX;
-    Double_t fIpY;
-    Double_t fIpZ;
-    Double_t fB;
-    Double_t fC;
-    Double_t fPhiR;
 
-    void Print()
-    {
-      Printf(" Run #/Event:          %9d/%9d", fRunNo, fEventId);
-      Printf(" Participants/binary:  %4d/%4d/%3d", fNtgt, fNproj, fNbin);
-      Printf(" Event type:           %7s%12s",(fType==1?"Non":
-					       fType==2?"Single":
-					       "Double"), "-diffractive");
-      Printf(" IP:                   (%-5.1f,%-5.1f,%-5.1f)",fIpX,fIpY,fIpZ);
-      Printf(" Impact par./cent.:    (%13f/%-3d)", fB, Int_t(fC));
-      Printf(" Reaction plane:       %19f", fPhiR);
-    }
-    void Reset(UInt_t runNo, UInt_t eventNo)
-    {
-      fRunNo   = runNo;
-      fEventId = eventNo;
-      fIpX     = 1024;
-      fIpY     = 1024;
-      fIpZ     = 1024;
-      fNtgt    = -1;
-      fNproj   = -1;
-      fNbin    = -1;
-      fPhiR    = -1;
-      fB       = -1;
-      fC       = -1;
-    }
-  } fShortHead;
-#endif
+#ifndef __CINT__
+  ShortHeader fShortHead;
+#endif 
   /** 
    * Run this selector as a normal process
    * 
@@ -2294,7 +2793,7 @@ struct EPosSim : public FastSim
   EPosSim(UInt_t run=0)
     : FastSim("epos", run, 0, 20, 100000),
       fInTree(0),
-      fInNPart(0),
+      fInNTot(0),
       fInB(0),
       fInPDG(0),
       fInStatus(0),
@@ -2302,12 +2801,21 @@ struct EPosSim : public FastSim
       fInPy(0),
       fInPz(0),
       fInE(0),
-      fInM(0)
+      fInM(0),
+      fInNcollH(0),
+      fInNpartP(0),
+      fInNpartT(0),
+      fInNcoll(0),
+      fInNSpcPN(0),
+      fInNSpcTN(0),
+      fInNSpcPP(0),
+      fInNSpcTP(0),
+      fInPhiR(0)
   {
   }
   Bool_t SetupBranches()
   {
-    fInNPart  = fInTree->GetLeaf("nPart");
+    fInNTot   = fInTree->GetLeaf("nPart");
     fInB      = fInTree->GetLeaf("ImpactParameter");
     fInPDG    = fInTree->GetLeaf("pdgid");
     fInStatus = fInTree->GetLeaf("status");
@@ -2316,9 +2824,34 @@ struct EPosSim : public FastSim
     fInPz     = fInTree->GetLeaf("pz");
     fInE      = fInTree->GetLeaf("E");
     fInM      = fInTree->GetLeaf("m");
+    // These are probably EPOS-LHC specific 
+    fInNcollH = fInTree->GetLeaf("Ncoll_hard");
+    fInNpartP = fInTree->GetLeaf("Npart_proj");
+    fInNpartT = fInTree->GetLeaf("Npart_targ");
+    fInNcoll  = fInTree->GetLeaf("Ncoll");
+    fInNSpcPN = fInTree->GetLeaf("Nspec_proj_neut");
+    fInNSpcTN = fInTree->GetLeaf("Nspec_targ_neut");
+    fInNSpcPP = fInTree->GetLeaf("Nspec_proj_prot");
+    fInNSpcTP = fInTree->GetLeaf("Nspec_targ_prot");
+    fInPhiR   = fInTree->GetLeaf("phiR");
+    
+    
 
-    return (fInNPart && fInB && fInPDG && fInPx && fInPy && fInPz && fInE);
-  }  
+    return (fInNTot && fInB && fInPDG && fInPx && fInPy && fInPz && fInE);
+  }
+  void Begin(TTree* tree)
+  {
+    FastSim::Begin(tree);
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next()))) {
+      if (!estimator->IsA()->InheritsFrom(V0CentEstimator::Class()))
+	continue;
+      V0CentEstimator* v = static_cast<V0CentEstimator*>(estimator);
+      v->Flip(false); // Flip detector acceptance of V0A/C
+      // v->Print("nah");
+    }
+  }
   void Init(TTree* tree)
   {
     Info("Init", "Initializing with tree %p (%s)",
@@ -2357,7 +2890,12 @@ struct EPosSim : public FastSim
     return true;
   }
   void SetupSeed() {}
-  Bool_t SetupGen() { fIsTgtA = fIsProjA = true; return true; }
+  Bool_t SetupGen()
+  {
+    fIsTgtA  = gROOT->ProcessLine("grp->beam1.IsA()");
+    fIsProjA = gROOT->ProcessLine("grp->beam2.IsA()");
+    return true;
+  }
   Bool_t SetupRun() { return true; }
   Bool_t PreEvent(Long64_t iEv)
   {
@@ -2378,15 +2916,27 @@ struct EPosSim : public FastSim
   }
   Bool_t ProcessHeader()
   {
-    fShortHead.fIpX = 0;
-    fShortHead.fIpY = 0;
-    fShortHead.fIpZ = 0;
-    fShortHead.fB   = fInB->GetValue();
-
+    fShortHead.fIpX        = 0;
+    fShortHead.fIpY        = 0;
+    fShortHead.fIpZ        = 0;
+    fShortHead.fB          = fInB->GetValue();
+    fShortHead.fNtgt       = (fInNpartT ? fInNpartT->GetValue() : 0);
+    fShortHead.fNproj      = (fInNpartP ? fInNpartP->GetValue() : 0);
+    fShortHead.fNbin       = (fInNcoll  ? fInNcoll ->GetValue() : 0);
+    fShortHead.fPhiR       = (fInPhiR   ? fInPhiR  ->GetValue() : 0);
+    fShortHead.fNSpecNproj = (fInNSpcPN ? fInNSpcPN->GetValue() : 0);
+    fShortHead.fNSpecNtgt  = (fInNSpcTN ? fInNSpcTN->GetValue() : 0);
+    fShortHead.fNSpecPproj = (fInNSpcPP ? fInNSpcPP->GetValue() : 0);
+    fShortHead.fNSpecPtgt  = (fInNSpcTP ? fInNSpcTP->GetValue() : 0);
+    fShortHead.fEG         = ShortHeader::kEPOS;
+    
     Double_t c = -1;
     Float_t np = -1, nc = -1;
+    if (fIsProjA && fIsTgtA) 
+      PbPbCent(fShortHead.fB, c, np, nc);
+    else if (fIsProjA && !fIsTgtA)
+      pPbCent(fShortHead.fB, c, np, nc);
     
-    PbPbCent(fShortHead.fB, c, np, nc);
     if (c >= 0) fShortHead.fC = c;
     Double_t nb   = nc/2;
     // Be careful to round off
@@ -2409,17 +2959,22 @@ struct EPosSim : public FastSim
       fHCent->Fill(c);
       // fShortHead.Print();
     }
+    TIter next(fCentEstimators);
+    FastCentEstimator* estimator = 0;
+    while ((estimator = static_cast<FastCentEstimator*>(next())))
+      estimator->ProcessHeader(fShortHead);
     return selected;
   }
   virtual Bool_t ProcessParticles(Bool_t selected)
   {
-    Int_t nPart = fInNPart->GetValue();
-    for (Int_t iPart = 0; iPart < nPart; iPart++) {
+    Int_t nTot = fInNTot->GetValue();
+    for (Int_t iPart = 0; iPart < nTot; iPart++) {
       Int_t    status = fInStatus->GetValue(iPart);
       Int_t    pdg    = fInPDG->GetValue(iPart);
       Double_t px     = fInPx->GetValue(iPart);
       Double_t py     = fInPy->GetValue(iPart);
       Double_t pz     = fInPz->GetValue(iPart);
+      // Double_t pz     = -fInPz->GetValue(iPart); // flip sign on pZ
       Double_t e      = fInE->GetValue(iPart);
       // Double_t m      = fInM->GetValue(iPart);
 
@@ -2461,7 +3016,7 @@ struct EPosSim : public FastSim
   void Generate() {}
   void FinishRun() {}
   TTree* fInTree;   //!
-  TLeaf* fInNPart;  //!
+  TLeaf* fInNTot;   //!
   TLeaf* fInB;      //!
   TLeaf* fInPDG;    //!
   TLeaf* fInStatus; //! 
@@ -2470,7 +3025,16 @@ struct EPosSim : public FastSim
   TLeaf* fInPz;     //! 
   TLeaf* fInE;      //! 
   TLeaf* fInM;      //!
-
+  TLeaf* fInNcollH; //!
+  TLeaf* fInNpartP; //!
+  TLeaf* fInNpartT; //!
+  TLeaf* fInNcoll;  //!
+  TLeaf* fInNSpcPN; //!
+  TLeaf* fInNSpcTN; //!
+  TLeaf* fInNSpcPP; //!
+  TLeaf* fInNSpcTP; //!
+  TLeaf* fInPhiR;   //!
+  
   /** 
    * Run this selector as a normal process
    * 
@@ -2664,6 +3228,9 @@ struct EPosSim : public FastSim
       cret = chain->AddFile(u.GetFile());
     else if (o->IsA()->InheritsFrom(TCollection::Class()))
       cret = chain->AddFileInfoList(static_cast<TCollection*>(o));
+    else if (o->IsA()->InheritsFrom(TFileCollection::Class()))
+      cret = chain->AddFileInfoList(static_cast<TFileCollection*>(o)
+				    ->GetList());
     file->Close();
     if (cret <= 0 || chain->GetListOfFiles()->GetEntries() <= 0) {
       Printf("Error: FastAnalysis::Run: Failed to create chain");
