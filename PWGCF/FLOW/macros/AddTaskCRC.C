@@ -115,6 +115,8 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  // set the trigger selection
  if (EvTrigger == "Cen")
   taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+ else if (EvTrigger == "SemiCen")
+  taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
  else if (EvTrigger == "MB")
   taskFE->SelectCollisionCandidates(AliVEvent::kMB);
  else if (EvTrigger == "Any")
@@ -238,7 +240,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  mgr->ConnectOutput(taskFE,1,coutputFE);
  
  // QA OUTPUT CONTAINER
- if(bCutsQA) {
   TString taskFEQAname = file;
   taskFEQAname += ":CutsQA";
   taskFEQAname += CRCsuffix;
@@ -250,7 +251,6 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   // and connect the qa output container to the flow event.
   // this container will be written to the output file
   mgr->ConnectOutput(taskFE,2,coutputFEQA);
- }
 
  //TString ParticleWeightsFileName = "ParticleWeights2D_FullLHC10h_2030.root";
  
