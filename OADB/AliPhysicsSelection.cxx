@@ -106,9 +106,14 @@
 #include <TDirectory.h>
 #include <TObjArray.h>
 #include <TPRegexp.h>
-#include <TFormula.h>
 #include <TParameter.h>
 #include <TInterpreter.h>
+
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
+#include <v5/TFormula.h>
+#else
+#include <TFormula.h>
+#endif
 
 #include <AliPhysicsSelection.h>
 
@@ -400,11 +405,15 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTri
     }
   }
   
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,3,0)
+  // In case of ROOT6 it is necessary to stay for the moment with the v5 version of TFormula
+  // as the v6 version produces a large amount of warnings at runtime.
+  ROOT::v5::TFormula formula("formula",trigger);
+#else
   TFormula formula("formula", trigger);
-#if ROOT_VERSION_CODE < ROOT_VERSION(6,3,0)
+#endif
   if (formula.Compile() > 0)
     AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
-#endif
   Bool_t result = formula.Eval(0);
   
   AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
