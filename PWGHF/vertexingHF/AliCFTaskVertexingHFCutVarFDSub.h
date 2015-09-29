@@ -300,7 +300,7 @@ protected:
   TList* fQAHists;            /// List with QA histograms used to study the B hardon decays
 
   /// \cond CLASSIMP
-  ClassDef(AliCFTaskVertexingHFCutVarFDSub,8); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHFCutVarFDSub,9); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 
