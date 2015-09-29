@@ -113,6 +113,8 @@ fHistosMixed(0),
 fEfficiencyCorrectionTriggers(0),
 fEfficiencyCorrectionAssociated(0),
 fCentralityWeights(0),
+fCentralityMCGen_V0M(0),
+fCentralityMCGen_CL1(0),
 // handlers and events
 fAOD(0x0),
 fESD(0x0),
@@ -152,8 +154,8 @@ fTriggerSelectCharge(0),
 fAssociatedSelectCharge(0),
 fTriggerRestrictEta(-1),
 fEtaOrdering(kFALSE),
-fCutConversions(kFALSE),
-fCutResonances(kFALSE),
+fCutConversionsV(-1),
+fCutResonancesV(-1),
 fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
@@ -170,6 +172,8 @@ fAssociatedFromDetector(0),
 fMCUseUncheckedCentrality(kFALSE),
 fCheckCertainSpecies(-1),
 fRemoveWeakDecaysInMC(kFALSE),
+fFillYieldRapidity(kFALSE),
+fFillCorrelationsRapidity(kFALSE),
 fFillpT(kFALSE)
 {
   // Default constructor
@@ -296,8 +300,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetEtaOrdering(fEtaOrdering);
   fHistosMixed->SetEtaOrdering(fEtaOrdering);
 
-  fHistos->SetPairCuts(fCutConversions, fCutResonances);
-  fHistosMixed->SetPairCuts(fCutConversions, fCutResonances);
+  fHistos->SetPairCuts(fCutConversionsV, fCutResonancesV);
+  fHistosMixed->SetPairCuts(fCutConversionsV, fCutResonancesV);
   
   fHistos->SetRejectResonanceDaughters(fRejectResonanceDaughters);
   fHistosMixed->SetRejectResonanceDaughters(fRejectResonanceDaughters);
@@ -338,6 +342,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
   fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
+  fListOfHistos->Add(new TH2F("mixedDist2", ";centrality;events;events", 101, 0, 101, 100, -0.5, 99.5));
   fListOfHistos->Add(new TH2F("referenceMultiplicity", ";centrality;tracks;events", 101, 0, 101, 200, 0, 200));
   if (fCentralityMethod == "V0A_MANUAL")
   {
@@ -352,8 +357,27 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH2F("checkSpecies", ";eta;pt;particles", 20, -1, 1, 40, 0, 10));
   
   if (fCentralityMethod == "ZNAC")
-  {
     fListOfHistos->Add(new TH1D("ZNA+C_energy", "ZNA+C_energy", 4100, -100, 4000));
+  if (fCentralityMethod == "MCGen_V0M")
+    fListOfHistos->Add(new TH1D("Mult_MCGen_V0M", "Mult_MCGen_V0M", 4100, -100, 4000));
+  if (fCentralityMethod == "MCGen_CL1")
+    fListOfHistos->Add(new TH1D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 4100, -100, 4000));
+
+  Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
+  Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
+  
+  if (fFillYieldRapidity) {
+    const Int_t nPtBins = 400;
+    Double_t ptBins[nPtBins+1];
+    for (int i=0; i<=nPtBins; i++)
+      ptBins[i] = 20.0 / nPtBins * i;
+    
+    const Int_t nyBins = 20;
+    Double_t yBins[nyBins+1];
+    for (int i=0; i<=nyBins; i++)
+      yBins[i] = -1.0 + 2.0 / nyBins * i;
+
+    fListOfHistos->Add(new TH3F("yieldsRapidity", ";centrality;pT;y", nCentralityBins, centralityBins, nPtBins, ptBins, nyBins, yBins));
   }
 
   PostData(0,fListOfHistos);
@@ -364,9 +388,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // event mixing
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemention of AliEventPoolManager
    
-  Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
-  Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
-  
   const Int_t kNZvtxBins  = 10+(1+10)*4;
   // bins for further buffers are shifted by 100 cm
   Double_t vertexBins[kNZvtxBins+1] = { -10,   -8,  -6,  -4,  -2,   0,   2,   4,   6,   8,  10, 
@@ -454,8 +475,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fAssociatedSelectCharge", &fAssociatedSelectCharge,"fAssociatedSelectCharge/I");
   settingsTree->Branch("fTriggerRestrictEta", &fTriggerRestrictEta,"TriggerRestrictEta/D");
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
-  settingsTree->Branch("fCutConversions", &fCutConversions,"CutConversions/O");
-  settingsTree->Branch("fCutResonances", &fCutResonances,"CutResonances/O");
+  settingsTree->Branch("fCutConversionsV", &fCutConversionsV,"CutConversionsV/D");
+  settingsTree->Branch("fCutResonancesV", &fCutResonancesV,"CutResonancesV/D");
   settingsTree->Branch("fRejectResonanceDaughters", &fRejectResonanceDaughters,"RejectResonanceDaughters/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
@@ -474,6 +495,8 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
   settingsTree->Branch("fCheckCertainSpecies", &fCheckCertainSpecies,"fCheckCertainSpecies/I");
   settingsTree->Branch("fRemoveWeakDecaysInMC", &fRemoveWeakDecaysInMC,"RemoveWeakDecaysInMC/O");
+  settingsTree->Branch("fFillYieldRapidity", &fFillYieldRapidity,"fFillYieldRapidity/O");
+  settingsTree->Branch("fFillCorrelationsRapidity", &fFillYieldRapidity,"fFillCorrelationsRapidity/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
   
@@ -493,6 +516,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   Double_t centrality = 0;
   
+  TObject* mc = fArrayMC;
+  if (!mc)
+    mc = fMcEvent;
+
   if (fCentralityMethod.Length() > 0)
   {
     if (fCentralityMethod == "MC_b")
@@ -524,6 +551,46 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
 	if(fAnalysisUtils)centrality=fAnalysisUtils->GetMultiplicityPercentile((fAOD)?(AliVEvent*)fAOD:(AliVEvent*)fESD);
 	else centrality = -1;
+      }
+    else if (fCentralityMethod == "MCGen_V0M")
+    {
+//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      Float_t MultV0M=0.;
+      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
+        if (!particle)
+          continue;
+        Int_t pdgabs=TMath::Abs(particle->PdgCode());
+        if(pdgabs==9902210)return; //no diffractive protons
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
+        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
+        Float_t eta=particle->Eta();
+        if( (eta > 2.8 && eta < 5.1) || (eta > -3.7 && eta < -1.7) )MultV0M++;
+      }
+      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_V0M"))->Fill(MultV0M);
+      if(fCentralityMCGen_V0M)centrality = MultV0M/fCentralityMCGen_V0M->GetMean();
+      else centrality=-1.;
+    }
+    else if (fCentralityMethod == "MCGen_CL1")
+    {
+//      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kFALSE, -1, kFALSE, kFALSE, -999.,kTRUE);
+      Float_t MultCL1=0.;
+      for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+        AliMCParticle* particle = dynamic_cast<AliMCParticle*> (tmpList->UncheckedAt(i));
+        if (!particle)
+          continue;
+        Int_t pdgabs=TMath::Abs(particle->PdgCode());
+        if(pdgabs==9902210)return; //no diffractive protons
+        if(pdgabs!=211 && pdgabs!=321 && pdgabs!=2212)continue; //only pi+K=p
+        if( particle->Pt() < 0.001 || particle->Pt() > 50. )continue;
+        Float_t eta=particle->Eta();
+        if( eta < -1. || eta > 1.)MultCL1++;
+      }
+      ((TH1D*)fListOfHistos->FindObject("Mult_MCGen_CL1"))->Fill(MultCL1);
+      if(fCentralityMCGen_CL1)centrality = MultCL1/fCentralityMCGen_CL1->GetMean();
+      else centrality=-1.;
     }
     else
     {
@@ -562,10 +629,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
     fHistos->SetRunNumber(inputEvent->GetRunNumber());
     bSign = (inputEvent->GetMagneticField() > 0) ? 1 : -1;
   }
-    
-  TObject* mc = fArrayMC;
-  if (!mc)
-    mc = fMcEvent;
   
   // count all events
   fHistos->FillEvent(centrality, -1);
@@ -679,6 +742,14 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   // triggers
   TObjArray* tmpList = fAnalyseUE->GetAcceptedParticles(mc, 0, kTRUE, fParticleSpeciesTrigger, kTRUE, kTRUE, evtPlanePhi);
   CleanUp(tmpList, mc, skipParticlesAbove);
+  if (fFillYieldRapidity) {
+    for (Int_t i=0; i<tmpList->GetEntriesFast(); i++) {
+      AliVParticle* particle = dynamic_cast<AliVParticle*> (tmpList->UncheckedAt(i));
+      if (!particle)
+	continue;
+      ((TH3F*) fListOfHistos->FindObject("yieldsRapidity"))->Fill(centrality, particle->Pt(), particle->Y());
+    }
+  }
   TObjArray* tracksMC = CloneAndReduceTrackList(tmpList);
   delete tmpList;
   
@@ -724,8 +795,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (fFillMixed)
   {
     AliEventPool* pool = fPoolMgr->GetEventPool(centrality, zVtx);
-    if (fFillOnlyStep0)
+    if (fFillOnlyStep0) {
       ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool->GetCurrentNEvents());
+    }
     if (pool->IsReady())
       for (Int_t jMix=0; jMix<pool->GetCurrentNEvents(); jMix++) 
 	fHistosMixed->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, pool->GetEvent(jMix), 1.0 / pool->GetCurrentNEvents(), (jMix == 0));
@@ -912,6 +985,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       {
 	AliEventPool* pool2 = fPoolMgr->GetEventPool(centrality, zVtx + 100);
 	((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool2->NTracksInPool());
+	((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, pool2->GetCurrentNEvents());
 	if (pool2->IsReady())
 	{
 	  for (Int_t jMix=0; jMix<pool2->GetCurrentNEvents(); jMix++)
@@ -1368,14 +1442,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
      
     if (pool->IsReady()) 
     {
-      
       Int_t nMix = pool->GetCurrentNEvents();
 //       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
       
       ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+      ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3, nMix);
       ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
-      if (pool->IsReady())
-	((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
+      ((TH2F*) fListOfHistos->FindObject("mixedDist2"))->Fill(centrality, nMix);
     
       // Fill mixed-event histos here  
       for (Int_t jMix=0; jMix<nMix; jMix++) 
@@ -1412,13 +1485,21 @@ TObjArray* AliAnalysisTaskPhiCorrelations::CloneAndReduceTrackList(TObjArray* tr
 {
   // clones a track list by using AliDPhiBasicParticle which uses much less memory (used for event mixing)
   
+  // Check if we already have a reduced track list. In that case a simple Clone is enough
+  if (tracks->GetEntriesFast() == 0 || tracks->UncheckedAt(0)->InheritsFrom("AliDPhiBasicParticle"))
+    return (TObjArray*) tracks->Clone();
+  
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
   
   for (Int_t i=0; i<tracks->GetEntriesFast(); i++)
   {
     AliVParticle* particle = (AliVParticle*) tracks->UncheckedAt(i);
-    AliDPhiBasicParticle* copy = new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+    AliDPhiBasicParticle* copy = 0;
+    if (fFillCorrelationsRapidity)
+      copy = new AliDPhiBasicParticle(particle->Y(), particle->Phi(), particle->Pt(), particle->Charge());
+    else
+      copy = new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
     copy->SetUniqueID(particle->GetUniqueID());
     tracksClone->Add(copy);
   }
@@ -1529,7 +1610,7 @@ void AliAnalysisTaskPhiCorrelations::RemoveWeakDecaysInMC(TObjArray* tracks, TOb
     
     for (Int_t j=0; j != kNWeakParticles; ++j) {
       if (kWeakParticles[j] == pdgcode) {
-	AliInfo(Form("Removing particle %d (pdg code %d; mother %d)", i, particle->GetPdgCode(), motherParticle->GetPdgCode()));
+	AliDebug(1, Form("Removing particle %d (pdg code %d; mother %d)", i, particle->GetPdgCode(), motherParticle->GetPdgCode()));
 	TObject* object = tracks->RemoveAt(i);
 	if (tracks->IsOwner())
 	  delete object;

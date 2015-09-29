@@ -48,7 +48,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain():
   fStack(0x0),
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
-  fRotateToEventPlane(0)
+  fRotateToEventPlane(0),
+  fReadOnlyPrimaries(true),
+  fReadOnlyPrimariesV0(true)
 {
   //constructor with 0 parameters , look at default settings 
 }
@@ -64,7 +66,9 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fStack(0x0),
   fGenHeader(0x0),
   fEstEventMult(kGlobalCount),
-  fRotateToEventPlane(0)
+  fRotateToEventPlane(0),
+  fReadOnlyPrimaries(true),
+  fReadOnlyPrimariesV0(true)  
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -74,6 +78,8 @@ AliFemtoEventReaderKinematicsChain::AliFemtoEventReaderKinematicsChain(const Ali
   fStack = aReader.fStack;
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
+  fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
+  fReadOnlyPrimariesV0 = aReader.fReadOnlyPrimariesV0;
 }
 //__________________
 AliFemtoEventReaderKinematicsChain::~AliFemtoEventReaderKinematicsChain()
@@ -97,6 +103,8 @@ AliFemtoEventReaderKinematicsChain& AliFemtoEventReaderKinematicsChain::operator
   fGenHeader = aReader.fGenHeader;
   fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
+  fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
+  fReadOnlyPrimariesV0 = aReader.fReadOnlyPrimariesV0;
   return *this;
 }
 //__________________
@@ -119,6 +127,18 @@ bool AliFemtoEventReaderKinematicsChain::GetConstrained() const
   // Check whether we read constrained or not constrained momentum
   return fConstrained;
 }
+
+void AliFemtoEventReaderKinematicsChain::ReadOnlyPrimaries(bool primaries)
+{
+  fReadOnlyPrimaries = primaries;
+}
+
+void AliFemtoEventReaderKinematicsChain::ReadOnlyPrimariesV0(bool primaries)
+{
+  fReadOnlyPrimariesV0 = primaries;
+}
+
+
 //__________________
 AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 {
@@ -187,8 +207,11 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   int tV0direction = 0;
   for (int i=0;i<nofTracks;i++)
     {
-      //take only primaries
-      if(!fStack->IsPhysicalPrimary(i)) {continue;}
+      if(fReadOnlyPrimaries)
+	{
+	  //take only primaries
+	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	}
 	  	  
       AliFemtoTrack* trackCopy = new AliFemtoTrack();	
 	
@@ -241,6 +264,10 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       //muon
       else if(pdgcode==13 || pdgcode==-13)
         kinepid[1]=1000;
+      else if(pdgcode==3122 || pdgcode==-3122 || abs(pdgcode)==310 ) //Lambda, AntiLambda, K0
+	{; }
+      else if(pdgcode==3312 || pdgcode==-3312) //Xi-, Xi+
+	{; }
       else {
 	delete trackCopy; 
 	continue;
@@ -266,7 +293,7 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
       rxyz[2]=kinetrack->Vz();
 
       AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-      tInfo->SetPDGPid(kinetrack->GetPdgCode());
+      tInfo->SetPDGPid(pdgcode);
       tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
       tInfo->SetMass(kinetrack->GetMass());
       tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
@@ -299,7 +326,6 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 	//label
 	trackCopy->SetLabel(i);
 
-
 	hbtEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	//cout<<"Track added: "<<i<<endl;
 
@@ -319,8 +345,13 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
 
   for (int i=0;i<nofTracks;i++)
     {
-      //do not take primaries
-      if(!fStack->IsPhysicalPrimary(i)) {continue;}
+
+      if(fReadOnlyPrimariesV0)
+	{
+	  //take only primaries
+	  if(!fStack->IsPhysicalPrimary(i)) {continue;}
+	}
+
       //getting next track
       TParticle *kinetrack= fStack->Particle(i);
       if (!kinetrack) continue;

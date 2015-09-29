@@ -61,6 +61,8 @@ class AliEMCalTriggerAnaClassManager: public TNamed {
 public:
   AliEMCalTriggerAnaClassManager();
   AliEMCalTriggerAnaClassManager(const char *name);
+  AliEMCalTriggerAnaClassManager(const AliEMCalTriggerAnaClassManager &ref);
+  AliEMCalTriggerAnaClassManager &operator=(const AliEMCalTriggerAnaClassManager &ref);
   virtual ~AliEMCalTriggerAnaClassManager();
 
   void PerformEventSelection(AliEMCalTriggerEventData *trgevent);

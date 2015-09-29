@@ -158,12 +158,12 @@ void AliBalanceEbyE::InitHistograms() {
 
 
   // EbyE BF histograms
-  fHistPN = new TH2D("fHistPN","fHistPN",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fHistNP = new TH2D("fHistNP","fHistNP",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fHistPP = new TH2D("fHistPP","fHistPP",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fHistNN = new TH2D("fHistNN","fHistNN",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fHistBF = new TH2D("fHistBF","fHistBF",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
-  fHistBFSum = new TH3D("fHistBFSum","fHistBFSum",20,0,100,40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistPN = new TH2F("fHistPN","fHistPN",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistNP = new TH2F("fHistNP","fHistNP",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistPP = new TH2F("fHistPP","fHistPP",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistNN = new TH2F("fHistNN","fHistNN",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistBF = new TH2F("fHistBF","fHistBF",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
+  fHistBFSum = new TH3F("fHistBFSum","fHistBFSum",20,0,100,40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
   //fHistBFSum = new TH2D("fHistBFSum","fHistBFSum",40,-1.6,1.6,72,-0.5*TMath::Pi(),1.5*TMath::Pi());
 
 
@@ -472,13 +472,13 @@ void AliBalanceEbyE::CalculateBalance(Double_t gReactionPlane,
       for(Int_t iEta = 0; iEta < fHistBFSum->GetNbinsY(); iEta++){
 	for(Int_t iPhi = 0; iPhi < fHistBFSum->GetNbinsZ(); iPhi++){
 	  
-	  Double_t oldContent   = fHistBFSum->GetBinContent(iCent+1,iEta+1,iPhi+1);
-	  Double_t eventContent = fHistBF->GetBinContent(iEta+1,iPhi+1);
-	  Double_t newContent   = oldContent + eventContent;
+	  Float_t oldContent   = fHistBFSum->GetBinContent(iCent+1,iEta+1,iPhi+1);
+	  Float_t eventContent = fHistBF->GetBinContent(iEta+1,iPhi+1);
+	  Float_t newContent   = oldContent + eventContent;
 
-	  Double_t oldError     = fHistBFSum->GetBinError(iCent+1,iEta+1,iPhi+1);
-	  Double_t eventError   = fHistBF->GetBinError(iEta+1,iPhi+1);
-	  Double_t newError     = TMath::Sqrt(oldError*oldError + eventError*eventError);
+	  Float_t oldError     = fHistBFSum->GetBinError(iCent+1,iEta+1,iPhi+1);
+	  Float_t eventError   = fHistBF->GetBinError(iEta+1,iPhi+1);
+	  Float_t newError     = TMath::Sqrt(oldError*oldError + eventError*eventError);
 
 	  fHistBFSum->SetBinContent(iCent+1,iEta+1,iPhi+1,newContent);
 	  fHistBFSum->SetBinError(iCent+1,iEta+1,iPhi+1,newError);

@@ -8,6 +8,7 @@
 
 #include "AliFemtoTypes.h"
 #include "AliFemtoV0.h"
+#include "AliFemtoXi.h"
 #include "AliFemtoParticleCut.h"
 
 class AliFemtoV0Cut : public AliFemtoParticleCut {
@@ -20,6 +21,7 @@ public:
   AliFemtoV0Cut& operator=(const AliFemtoV0Cut& aCut);                 // copy constructor
 
   virtual bool Pass(const AliFemtoV0* aV0)=0;               // true if passes, false if not
+  virtual bool Pass(const AliFemtoXi* aXi)=0;               // true if passes, false if not
 
   virtual AliFemtoParticleType Type(){return hbtV0;}
   virtual AliFemtoV0Cut* Clone() { return 0;}

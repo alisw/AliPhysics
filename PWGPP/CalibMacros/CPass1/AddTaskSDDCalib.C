@@ -1,4 +1,4 @@
-AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE) 
+AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALSE, Bool_t useTPCcrv=kFALSE, Float_t tofCut=10.0) 
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -33,6 +33,7 @@ AliAnalysisTaskITSAlignQA *AddTaskSDDCalib(Int_t nrun=0, Bool_t writeITSTP=kFALS
   taskali->SetDoSDDDriftTime(kFALSE);
   taskali->SetMinMaxMult(20.,1070.);
   taskali->SetUseTPCMomentum(useTPCcrv);
+  taskali->SetUseTOFTiming(tofCut);
   //
   taskali->SetDoFillTPTree(writeITSTP);
   //

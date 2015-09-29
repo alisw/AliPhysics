@@ -286,12 +286,11 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
     if(!jet2) continue;
 
     Double_t ptJet2 =  jet2->Pt() - GetRhoVal(fContainerTag)*jet2->Area();
-    Double_t fraction = jetCont->GetFractionSharedPt(jet1);
+    Double_t fraction = jetCont->GetFractionSharedPt(jet1, GetParticleContainer(1));
     fh2PtJet2VsFraction[fCentBin]->Fill(ptJet2,fraction);
 
     if(fraction<fMinFractionShared && fJetTaggingType==kClosest)
       continue;
-
     fh2PtJet1VsLeadPtTagged[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
     fh2PtJet1VsPtJet2[fCentBin]->Fill(ptJet1,ptJet2);
     if(ptJet2>0.) fh2PtJet2VsRelPt[fCentBin]->Fill(ptJet2,(ptJet1-ptJet2)/ptJet2);

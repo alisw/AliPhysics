@@ -12,6 +12,7 @@
 
 
 #include "AliFemtoMCTrackCut.h"
+#include "AliFemtoModelHiddenInfo.h"
 #include <cstdio>
 
 #ifdef __ROOT__ 
@@ -31,7 +32,7 @@ AliFemtoMCTrackCut::AliFemtoMCTrackCut() :
   fCharge = 0;  // takes both charges 0
   fPt[0]=0.0;              fPt[1] = 100.0;//100
   fPDGcode = 0;
-  fRapidity[0]=-2;       fRapidity[1]=2;//-2 2
+  fRapidity[0]=-100;       fRapidity[1]=100;//-2 2
   fEta[0]=-2;       fEta[1]=2;//-2 2
   fLabel=false;
 }
@@ -42,7 +43,6 @@ AliFemtoMCTrackCut::~AliFemtoMCTrackCut(){
 //------------------------------
 bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
 {
-
   if (fLabel)
     {
       if(track->Label()<0)
@@ -51,14 +51,13 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
 	  return false;
 	}    
     }
-
-   if (fCharge!=0)
+  if (fCharge!=0)
     {               
-    if (fCharge==10)	
+      if (fCharge==10)	
 	{
-	if(track->Charge()==0){
-	  fNTracksFailed++;
-	  return false;
+	  if(track->Charge()==0){
+	    fNTracksFailed++;
+	    return false;
 	  }
 	} 
       else if (track->Charge()!= fCharge)	
@@ -67,52 +66,56 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
 	  return false;
 	}
     }
-
-   if (fPDGcode!=0)
-     {
+  if (fPDGcode!=0)
+    {
      
-     if(fPDGcode==11 || fPDGcode==-11 )
-     { if(!fMass) fMass=0.000511;
-	 if (track->PidProbElectron()!=1000)
-	   {
-	     fNTracksFailed++;
-	     return false;
-	   }
-	   }
-       if(fPDGcode==13 || fPDGcode==-13)
-       {
-	 if (track->PidProbMuon()!=1000)
-	   {if(!fMass) fMass=0.105658;
-	     fNTracksFailed++;
-	     return false;
-	   }
-	   }
-       if(fPDGcode==211 || fPDGcode==-211 )
-       {
-	 if (track->PidProbPion()!=1000)
-	   {if(!fMass) fMass= 0.1395699;
-	     fNTracksFailed++;
-	     return false;
-	   }
-	   }
-       if(fPDGcode==2212 || fPDGcode==-2212 )
-       { if(!fMass) fMass=0.938272013;
-	 if (track->PidProbProton()!=1000)
-	   {
-	     fNTracksFailed++;
-	     return false;
-	   }
-	   }
-      if(fPDGcode==321 || fPDGcode==-321 )
-      { if(!fMass) fMass=0.493677;
-	 if (track->PidProbKaon()!=1000)
-	   {
-	     fNTracksFailed++;
-	     return false;
-	   }
-	   }
+       if(fPDGcode==11 || fPDGcode==-11 )
+	 { if(!fMass) fMass=0.000511;
+	   if (track->PidProbElectron()!=1000)
+	     {
+	       fNTracksFailed++;
+	       return false;
+	     }
+	 }
+       else if(fPDGcode==13 || fPDGcode==-13)
+	 {
+	   if (track->PidProbMuon()!=1000)
+	     {if(!fMass) fMass=0.105658;
+	       fNTracksFailed++;
+	       return false;
+	     }
+	 }
+       else if(fPDGcode==211 || fPDGcode==-211 )
+	 {
+	   if (track->PidProbPion()!=1000)
+	     {if(!fMass) fMass= 0.1395699;
+	       fNTracksFailed++;
+	       return false;
+	     }
+	 }
+       else if(fPDGcode==2212 || fPDGcode==-2212 )
+	 { if(!fMass) fMass=0.938272013;
+	   if (track->PidProbProton()!=1000)
+	     {
+	       fNTracksFailed++;
+	       return false;
+	     }
+	 }
+       else if(fPDGcode==321 || fPDGcode==-321 )
+	 { if(!fMass) fMass=0.493677;
+	   if (track->PidProbKaon()!=1000)
+	     {
+	       fNTracksFailed++;
+	       return false;
+	     }
+	 }
+       else if(((AliFemtoModelHiddenInfo*)track->GetHiddenInfo())->GetPDGPid()!=fPDGcode)	 // checking particle PDG from hidden info 
+	 {
+	   fNTracksFailed++;
+	   return false;
+	 }
+	 
      }
-
   float tEnergy = ::sqrt(track->P().Mag2()+fMass*fMass);
   //cout<<"MCTrackCut: tEnergy: "<<tEnergy<<endl;
   //cout<<"MCTrackCut: track->P().z(): "<<track->P().z()<<endl;
@@ -132,7 +135,6 @@ bool AliFemtoMCTrackCut::Pass(const AliFemtoTrack* track)
     }
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
   float tEta = track->P().PseudoRapidity();
-
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
     {
       fNTracksFailed++;

@@ -43,8 +43,8 @@ void MRC_FourPion(){
   gStyle->SetOptDate(0);
   gStyle->SetOptFit(0111);
   
-  double MRCvariation = 1.0;// factor to increase/decrease MRC (1.1 = 10% increase)
-  bool PbPbcase=1;
+  double MRCvariation = 1.;// factor to increase/decrease MRC (1.1 = 10% increase)
+  bool PbPbcase=0;
 
   int COI_23=0;// 0=Same-charge, 1=Mixed-charge
   int COI_4=0;// 0=Same-charge, 1=(---+), 2=(--++)
@@ -57,23 +57,22 @@ void MRC_FourPion(){
   if(!PbPbcase) FourParticleRebin=6;
   
   TFile *_file0;
+  //TFile *_file0 = new TFile("MyOutput.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_noTTC.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_TTC_lam0p6.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_lam0p55.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_TTCweights.root","READ");
   //TFile *_file0= new TFile("Results/PDC_12a17a_pTSpectrumWeight.root","READ");
-  TFile *_file0= new TFile("Results/PDC_12a17a_10MeVcut.root","READ");
-  //if(PbPbcase) _file0= new TFile("Results/PDC_12a17a_Qweights.root","READ");// new default
-  //if(PbPbcase) _file0= new TFile("Results/PDC_12a17a_Q3greater0p015.root","READ");
-  //else _file0= new TFile("Results/PDC_13b2_p1234.root","READ");
+  //TFile *_file0= new TFile("Results/PDC_12a17a_10MeVcut.root","READ");
+  //TFile *_file0= new TFile("Results/PDC_12a17a_8MeVbins.root","READ");
+  //TFile *_file0= new TFile("Results/PDC_12a17a_Qweights.root","READ");
+  if(PbPbcase) _file0= new TFile("Results/PDC_12a17a_10MeVcut.root","READ");// new default
+  else _file0= new TFile("Results/PDC_13b2_p1234.root","READ");
 
   TList *MyList=(TList*)_file0->Get("MyList");
   _file0->Close();
 
-  double ScaleFactor_SC_3pion_term1[15]={1., 1.05462, 1.01325, 1.0062, 1.00246, 1.00098, 1.00097, 1.00051, 1.00047, 1.00028, 1.00026, 1.00012, 1.00018, 1.00018, 1.};
-  double ScaleFactor_SC_3pion_term2[15]={1., 1.0171, 1.0042, 1.00209, 1.00083, 1.00034, 1.00035, 1.00017, 1.00016, 1.0001, 1.00009, 1.00004, 1.00006, 1.00009, 1.};
-  double ScaleFactor_SC_3pion_term5[15]={0, 1.00208, 0.99989, 0.999912, 0.999935, 0.999986, 0.999999, 0.999977, 0.999998, 1, 0.999999, 0.999996, 1, 1.00005, 1.};
-
+ 
   //
   //
   TCanvas *can = new TCanvas("can", "can",800,0,800,800);// 11,53,700,500
@@ -169,6 +168,7 @@ void MRC_FourPion(){
       }
     }      
     //
+   
     if(ch<=1){
       for(int term=1; term<=5; term++){
 	TString *S3 = new TString("ThreeParticle_Charge1_");
@@ -221,17 +221,6 @@ void MRC_FourPion(){
 	    if(PbPbcase){
 	      if(MRC_3[ch][term-1]->GetYaxis()->GetBinCenter(binY) > 0.13) {
 		MRC_3[ch][term-1]->SetBinContent(binX, binY,  MRC_3[ch][term-1]->GetBinContent(binX, MRC_3[ch][term-1]->GetYaxis()->FindBin(0.13)));
-	      }else{// correct for low qinv triplet bias of MC wrt real data distribution
-		/*if(ch==0 && term==1){
-		  MRC_3[ch][term-1]->SetBinContent(binX, binY,  MRC_3[ch][term-1]->GetBinContent(binX, binY)*ScaleFactor_SC_3pion_term1[binY-1]);
-		}
-		if(ch==0 && term==2){
-		  MRC_3[ch][term-1]->SetBinContent(binX, binY,  MRC_3[ch][term-1]->GetBinContent(binX, binY)*ScaleFactor_SC_3pion_term2[binY-1]);
-		}
-		if(ch==0 && term==4){
-		  MRC_3[ch][term-1]->SetBinContent(binX, binY,  MRC_3[ch][term-1]->GetBinContent(binX, binY)*ScaleFactor_SC_3pion_term5[binY-1]);
-		  }*/
-		//if(ch==0 && binX==11 && binY<5) cout<<term<<"  "<<binY<<"  "<<MRC_3[ch][term-1]->GetBinContent(binX,binY)<<endl;
 	      }
 	    }
 	  }

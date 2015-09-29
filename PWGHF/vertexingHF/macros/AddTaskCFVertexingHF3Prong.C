@@ -573,6 +573,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 
 	// create the task
 	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsDplustoKpipi);
+	task->SetConfiguration(configuration);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetDecayChannel(31);
 	task->SetUseWeight(useWeight);

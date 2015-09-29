@@ -43,9 +43,9 @@ void GetEnvelopeForEachV2(){
     TString inputcorrelation = ""; // input data file (not needed here)
     TString outputfilename = ""; //  (not needed here)
     
-    Double_t Dpt[] = {3,5,8,16}; // set D meson pt bins
-    Double_t hadpt[]    = {0.3, 0.5, 0.3, 1};//03-05, 05-1, 03-1, 1-99
-    Double_t hadptMax[] = {0.5, 1.0, 1.0, 99.0};//03-05, 05-1, 03-1, 1-99
+    //    Double_t Dpt[] = {3,5,8,16}; // set D meson pt bins
+    //    Double_t hadpt[]    = {0.3, 0.5, 0.3, 1};//03-05, 05-1, 03-1, 1-99
+    //    Double_t hadptMax[] = {0.5, 1.0, 1.0, 99.0};//03-05, 05-1, 03-1, 1-99
     
 
     Double_t Dpt[] = {3,5,8,16}; // set D meson pt bins

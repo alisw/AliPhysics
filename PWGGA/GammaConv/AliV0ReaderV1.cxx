@@ -93,6 +93,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
 	fEventIsSelected(kFALSE),
 	fNumberOfPrimaryTracks(0),
 	fPeriodName(""),
+	fPtHardBin(0),
 	fUseMassToZero(kTRUE),
 	fProduceV0findingEffi(kFALSE),
 	fHistograms(NULL),
@@ -312,6 +313,7 @@ Bool_t AliV0ReaderV1::Notify()
 				TFile* file = (TFile*) tree->GetCurrentFile();
 				TString fileName(file->GetName());
 				TObjArray *arr = fileName.Tokenize("/");
+				fPtHardBin = -1;
 				for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
 					TObjString* testObjString = (TObjString*)arr->At(i);
 					if (testObjString->GetString().BeginsWith("LHC")){
@@ -328,20 +330,45 @@ Bool_t AliV0ReaderV1::Notify()
 							i = arr2->GetEntriesFast();
 						}
 					}	
-				}
+				}				
 			}
 		}
-		if(!fEventCuts->GetDoEtaShift()) return kTRUE; // No Eta Shift requested, continue
-		if(fEventCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
-			fEventCuts->GetCorrectEtaShiftFromPeriod(fPeriodName);
-			fEventCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
-			return kTRUE;
-		} else {
-			printf(" Gamma Conversion Reader %s_%s :: Eta Shift Manually Set to %f \n\n",
-					(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data(),fEventCuts->GetEtaShift());
-			fEventCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
+	}
+	if (fPeriodName.CompareTo("LHC15a3a") == 0	 	|| fPeriodName.CompareTo("LHC15a3a_plus") == 0 	|| fPeriodName.CompareTo("LHC15a3b") == 0	 ||
+		fPeriodName.CompareTo("LHC15g1a") == 0		|| fPeriodName.CompareTo("LHC15g1b") == 0		){
+		AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+		if(man) {
+			AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+			if (inputHandler){
+				TTree* tree = (TTree*) inputHandler->GetTree();
+				TFile* file = (TFile*) tree->GetCurrentFile();
+				TString fileName(file->GetName());
+				TObjArray *arr = fileName.Tokenize("/");
+				fPtHardBin = -1;
+				for (Int_t i = 0; i < arr->GetEntriesFast();i++ ){
+					TObjString* testObjString = (TObjString*)arr->At(i);
+					if (testObjString->GetString().BeginsWith("LHC")){
+						TObjString* testObjString2 = (TObjString*)arr->At(i+1);
+						fPtHardBin = testObjString2->GetString().Atoi();
+						i = arr->GetEntriesFast();
+					}
+				}
+			}	
 		}
 	}
+	
+	if(!fEventCuts->GetDoEtaShift()) return kTRUE; // No Eta Shift requested, continue
+	if(fEventCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
+		fEventCuts->GetCorrectEtaShiftFromPeriod(fPeriodName);
+		fEventCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
+		return kTRUE;
+	} else {
+		printf(" Gamma Conversion Reader %s_%s :: Eta Shift Manually Set to %f \n\n",
+				(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data(),fEventCuts->GetEtaShift());
+		fEventCuts->DoEtaShift(kFALSE); // Eta Shift Set, make sure that it is called only once
+	}
+
+	
 	return kTRUE;
 }
 //________________________________________________________________________

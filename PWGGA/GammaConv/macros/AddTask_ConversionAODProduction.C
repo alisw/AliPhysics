@@ -25,16 +25,16 @@ AliAnalysisTask *AddTask_ConversionAODProduction(Int_t dataset=0, Bool_t isMC = 
 
 	if(dataset == 1){
 		analysiscutEvent = "10000003";
-		analysiscut= "060000084000001500000000";
-		analysiscutB="160000084000001500000000";
+		analysiscut= "06000008400000001000000000";
+		analysiscutB="16000008400000001000000000";
 	} else if (dataset == 2){
 		analysiscutEvent = "80000003";
-		analysiscut= "060000084000001500000000";
-		analysiscutB="160000084000001500000000";
+		analysiscut= "06000008400000001000000000";
+		analysiscutB="16000008400000001000000000";
 	} else{
 		analysiscutEvent = "00000003";
-		analysiscut ="060000084001001500000000";
-		analysiscutB="160000084001001500000000";
+		analysiscut ="06000008400100001000000000";
+		analysiscutB="16000008400100001000000000";
 	}
 
 	//========= Add V0 Reader to  ANALYSIS manager =====

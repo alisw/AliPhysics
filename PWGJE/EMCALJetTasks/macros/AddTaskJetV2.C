@@ -23,7 +23,6 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
   Bool_t     LHC10h             = kFALSE,
   Bool_t     addEPweights       = kFALSE,
   Bool_t     baseClassHistos    = kTRUE,
-  Bool_t     setSigmaWeight     = kFALSE,
   Float_t    minEta             = -.7,
   Float_t    maxEta             = .7)
 {  
@@ -104,7 +103,7 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
           Double_t c[] = {0., 5., 10., 30., 50., 70., 90.};
           jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
       } else {
-          Double_t c[] = {0., 2., 4., 6., 8., 10., 30., 50., 90.};
+          Double_t c[] = {0., 5., 10., 30., 50., 70., 90.};
           jetTask->SetCentralityClasses(new TArrayD(sizeof(c)/sizeof(c[0]), c));
       }
   }  else jetTask->SetCentralityClasses(centralities);
@@ -359,58 +358,6 @@ AliAnalysisTaskJetV2* AddTaskJetV2(
       Double_t cw[] = {0., 2., 4., 6., 8., 10., 30., 50., 90.};
       jetTask->SetCentralityClasses(new TArrayD(sizeof(cw)/sizeof(cw[0]), cw));
   }
-
-
-  if(setSigmaWeight) {
-      // set as event plane merging weight the inverse of the square of the
-      // statistical uncertainty on the resolution (add standard binning for this)
-      // note that this is 1/sigma in these arrays, as in the code the weights will
-      // be squared before applying
-      Double_t cw[] = {0., 2., 4., 6., 8., 10., 30., 50., 90.};
-      jetTask->SetCentralityClasses(new TArrayD(sizeof(cw)/sizeof(cw[0]), cw));
-
-      double VZEROA2resolution[] = {1447.53,
-          1479.08,
-          1486.4,
-          1498.9,
-          1434.17,
-          2511.82,
-          2334.51,
-          1163.36
-      };
-      double VZEROA3resolution[] = {1450.44,
-          1476.46,
-          1470.91,
-          1467.58,
-          1390.71,
-          2365.65,
-          2231.88,
-          1155.62
-      };
-      double VZEROC2resolution[] = {1447.53,
-          1479.08,
-          1486.4,
-          1498.9,
-          1434.17,
-          2511.82,
-          2334.51,
-          1163.36
-      };
-      double VZEROC3resolution[] = {1450.44,
-          1476.46,
-          1470.91,
-          1467.58,
-          1390.71,
-          2365.65,
-          2231.88,
-          1155.62
-      };
-      jetTask->SetChi2VZEROA(new TArrayD(9, VZEROA2resolution));
-      jetTask->SetChi2VZEROC(new TArrayD(9, VZEROC2resolution));
-      jetTask->SetChi3VZEROA(new TArrayD(9, VZEROA3resolution));
-      jetTask->SetChi3VZEROC(new TArrayD(9, VZEROC3resolution));
-  }
-
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

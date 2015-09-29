@@ -40,7 +40,7 @@ using namespace std;
 
 // Fit Normalization is fixed to 1.0, explains why Chi2 higher here than in Three-pion radii paper
 //
-int CollisionType_def=2;// PbPb, pPb, pp
+int CollisionType_def=0;// PbPb, pPb, pp
 int FitType=0;// (0)Edgeworth, (1)Laguerre, (2)Levy
 bool FixNorm=0;// Fix Normalization for Pb-Pb only
 //
@@ -74,7 +74,7 @@ double NormQcutHigh_PbPb = .2;// was .175
 
 int TextFont=42;// 63, or 42
 float SizeLabel=0.06;// 20(63 font), 0.08(42 font)
-float SizeLegend=0.04;// .08
+float SizeLegend=0.06;// .08
 float SizeTitle=0.06;// 
 float SizeSpecif=0.045;// 
 float SF1=2/3.*0.95;
@@ -145,13 +145,13 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     //_file0 = new TFile("Results/PDC_13bc_kINT7_LowNorm.root","READ");
     _file0 = new TFile("Results/PDC_13bc_kINT7_LowNorm_HighNorm.root","READ");
   }else{// pp
-    _file0 = new TFile("Results/PDC_10bcde_kMB_3Dhisto_LowNorm_HighNorm.root","READ");// used for paper proposal
-    //_file0 = new TFile("Results/PDC_10bcde_kMB_NrecGreater10.root","READ");
+    //_file0 = new TFile("Results/PDC_10bcde_kMB_3Dhisto_LowNorm_HighNorm.root","READ");// used for paper proposal
+    _file0 = new TFile("Results/PDC_10bcde_kMB_4kappas_Norm0p9to1p2.root","READ");
   }
 
   TList *MyList;
   TDirectoryFile *tdir = (TDirectoryFile*)_file0->Get("PWGCF.outputFourPionAnalysis.root");
-  if(CollisionType==0) MyList=(TList*)tdir->Get("FourPionOutput_1");
+  if(CollisionType==0 || CollisionType==2) MyList=(TList*)tdir->Get("FourPionOutput_1");
   else MyList=(TList*)tdir->Get("FourPionOutput_2");
   //MyList=(TList*)_file0->Get("MyList");
 
@@ -161,7 +161,11 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   if(CollisionType==0) {Q3LimitLow = 0.01; Q3LimitHigh = 0.08;}// 0.01 and 0.08 
   else {Q3LimitLow = 0.01; Q3LimitHigh = 0.25;}// 0.01 and 0.25
   
-  
+  // Pb-Pb points from main analysis
+  double C3_pointsPbPb_accepted[10]={0, 3.82769, 2.82596, 2.10178, 1.66731, 1.42422, 1.28309, 1.19709, 1.14329, 1.10815};
+  double c3_pointsPbPb_accepted[10]={0, 1.86453, 1.46569, 1.2175, 1.08705, 1.03176, 1.00998, 1.00039, 0.99695, 0.995467};
+
+
   //
   OneFrac = sqrt(TwoFrac);
   ThreeFrac = pow(TwoFrac, 1.5);
@@ -215,7 +219,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   TString *KT=new TString("");
   if(EDbin==0) KT->Append("0.16<#font[12]{K}_{T3}<0.3 GeV/#font[12]{c}");
   else KT->Append("0.3<#font[12]{K}_{T3}<1.0 GeV/#font[12]{c}");
-  TLatex *KTspecif = new TLatex(0.64,0.8,KT->Data());
+  TLatex *KTspecif = new TLatex(0.64,0.5,KT->Data());
   KTspecif->SetNDC(1);
   KTspecif->SetTextFont(TextFont);
   KTspecif->SetTextSize(SizeSpecif);
@@ -363,7 +367,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   gPad->SetBottomMargin(0.01);
     
 
-  TLegend *legend1 = new TLegend(.6,.4, .9,.75,NULL,"brNDC");//.45 or .4 for x1
+  TLegend *legend1 = new TLegend(.65,.55, .85,.9,NULL,"brNDC");//.45 or .4 for x1
   legend1->SetBorderSize(0);
   legend1->SetFillColor(0);
   legend1->SetTextFont(42);
@@ -580,7 +584,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   
  
   c3_hist->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
-  c3_hist->GetYaxis()->SetTitle("Three Pion");
+  c3_hist->GetYaxis()->SetTitle("Three pion correlation");
   c3_hist->GetYaxis()->SetTitleSize(0.045); c3_hist->GetXaxis()->SetTitleSize(0.045);
   c3_hist->GetYaxis()->SetTitleOffset(1.1);
   c3_hist->GetXaxis()->SetRangeUser(0,Q3LimitHigh);
@@ -593,7 +597,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   //
 
   C3_hist->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
-  C3_hist->GetYaxis()->SetTitle("Three Pion");
+  C3_hist->GetYaxis()->SetTitle("Three pion correlation");
   C3_hist->GetXaxis()->SetTitleSize(SizeTitle);
   C3_hist->GetXaxis()->SetLabelSize(SizeLabel);
   C3_hist->GetYaxis()->SetTitleSize(SizeTitle);
@@ -626,10 +630,14 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     c3Fit1D_Expan[1]=new TF1("c3Fit1D_Expan2","[0]*(1+[1]*exp(-pow([2]*x/0.19733, [3])))",0,1);
   }
   
-  TF1 *testEq;
-  if(FitType==0) testEq = new TF1("testEq","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))",0,1);
-  else testEq = new TF1("testEq","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))",0,1);
-  
+  TF1 *testEq[2];
+  if(FitType==0) {
+    testEq[0] = new TF1("testEq_c3","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))",0,1);
+    testEq[1] = new TF1("testEq_C3","[0]*exp(-pow(x*[1]/0.19733,2)/2.) * ( 1 + [2]/(6.*pow(2.,1.5))*(8*pow(x*[1]/0.19733,3) - 12*pow(x*[1]/0.19733,1)) + [3]/(24.*pow(2.,2))*(16*pow(x*[1]/0.19733,4) -48*pow(x*[1]/0.19733,2) + 12) + [4]/(120.*pow(2.,2.5))*(32.*pow(x*[1]/0.19733,5) - 160.*pow(x*[1]/0.19733,3) + 120*x*[1]/0.19733))",0,1);
+  }else {
+    testEq[0] = new TF1("testEq_c3","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))",0,1);
+    testEq[1] = new TF1("testEq_C3","[0]*exp(-x*[1]/0.19733/2.) * ( 1 + [2]*(x*[1]/0.19733 - 1) + [3]/2.*(pow(x*[1]/0.19733,2) - 4*x*[1]/0.19733 + 2) + [4]/6.*(-pow(x*[1]/0.19733,3) + 9*pow(x*[1]/0.19733,2) - 18*x*[1]/0.19733 + 6))",0,1);
+  }
   
 
   for(int fitIt=0; fitIt<2; fitIt++){
@@ -712,7 +720,9 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   cout<<"End Three-d fit"<<endl;
   /////////////////////////////////////////////////////////////
   MyMinuit_c3.mnexcm("SHOw PARameters", &arglist_c3, 1, ierflg_c3);
-  cout<<"c3 Fit: Chi2 = "<<Chi2_c3<<"   NDF = "<<(NFitPoints_c3-MyMinuit_c3.GetNumFreePars())<<endl;
+  if(fitIt==0) cout<<"c3 Fit: Chi2 = ";
+  else cout<<"C3 Fit: Chi2 = ";
+  cout<<Chi2_c3<<"   NDF = "<<(NFitPoints_c3-MyMinuit_c3.GetNumFreePars())<<endl;
   cout<<" Chi2/NDF = "<<Chi2_c3 / (NFitPoints_c3-MyMinuit_c3.GetNumFreePars())<<endl;
 
   for(int i=0; i<npar_c3; i++){
@@ -736,8 +746,8 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   c3Fit1D_Expan[fitIt]->SetLineStyle(1);
   //c3Fit1D_Expan->Draw("same");
   
- for(int i=0; i<5; i++) testEq->SetParameter(i,OutputPar_c3[i+1]);
- cout<<"EA = "<<testEq->Eval(0.035)<<endl;
+  for(int i=0; i<5; i++) testEq[fitIt]->SetParameter(i,OutputPar_c3[i+1]);
+  cout<<"EA = "<<testEq[fitIt]->Eval(0.025)<<endl;
 
   // project 3D EW fit onto 1D histogram
   for(int i=2; i<=BINLIMIT_3; i++){// bin number
@@ -840,6 +850,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   for(int iii=0; iii<Npoints; iii++){
     if(CollisionType==0) xpoints[iii] = Q3Start + (iii+0.5)*0.01;
     else xpoints[iii] = Q3Start + (iii+0.5)*0.03;
+    //
     //ypoints[iii] = c3Fit1D_ExpanSpline->Eval(xpoints[iii]);// to skip spline
     splineOnly=kTRUE;// to skip 1D approximation
     //if(CollisionType==0) splineOnly=kTRUE;
@@ -849,6 +860,14 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
       if(c3Fit1D_Expan[fitIt]->Eval(xpoints[iii])<2. && fabs(c3Fit1D_Expan[fitIt]->Eval(xpoints[iii])-c3Fit1D_ExpanSpline->Eval(xpoints[iii])) < 0.01) splineOnly=kTRUE;
     }
     else {ypoints[iii] = c3Fit1D_ExpanSpline->Eval(xpoints[iii]); splineOnly=kTRUE;}
+    //
+    if(CollisionType==0){
+      int Q3Bin = int(xpoints[iii]/0.01) + 1;
+      if(Q3Bin<=10){// to fix the Q3 problem with offline 1D projections of 3D histo
+	if(fitIt==0) ypoints[iii] *= c3_pointsPbPb_accepted[Q3Bin-1] / c3_hist->GetBinContent(Q3Bin);
+	else ypoints[iii] *= C3_pointsPbPb_accepted[Q3Bin-1] / C3_hist->GetBinContent(Q3Bin);
+      }
+    } 
   }
   gr_c3Spline[fitIt] = new TGraph(Npoints,xpoints,ypoints);
   gr_c3Spline[fitIt]->SetLineWidth(2); 
@@ -862,7 +881,15 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   
   }// fitIt
 
-  
+  double CorrectionFactor[2][10]={{0}};
+  if(CollisionType==0){
+    for(int i=0; i<10; i++){
+      if(c3_hist->GetBinContent(i+1) > 0) CorrectionFactor[0][i] = c3_pointsPbPb_accepted[i] / c3_hist->GetBinContent(i+1);
+      if(C3_hist->GetBinContent(i+1) > 0) CorrectionFactor[1][i] = C3_pointsPbPb_accepted[i] / C3_hist->GetBinContent(i+1);
+      C3_hist->SetBinContent(i+1, C3_pointsPbPb_accepted[i]);
+      c3_hist->SetBinContent(i+1, c3_pointsPbPb_accepted[i]);
+    }
+  }
 
   if(CollisionType!=0){
     int binH=4;
@@ -928,6 +955,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   Ratio_C3->GetXaxis()->SetNdivisions(606);
   Ratio_C3->GetYaxis()->SetNdivisions(202);
   Ratio_C3->SetMinimum(0.9); Ratio_C3->SetMaximum(1.045);
+  if(CollisionType==2) Ratio_C3->SetMinimum(0.85);
   int BinKill=1;
   if(CollisionType!=0) BinKill=10;
   for(int bin=1; bin<=C3_hist->GetNbinsX()-BinKill; bin++){
@@ -939,6 +967,10 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     if(GenSignalExpected_num[1]->GetBinContent(bin) < 0.9) continue;
     value /= GenSignalExpected_num[0]->GetBinContent(bin);
     value_e /= GenSignalExpected_num[0]->GetBinContent(bin);
+    if(CorrectionFactor[0][bin-1]>0 && CollisionType==0) {
+      value /= CorrectionFactor[0][bin-1];
+      value_e /=  CorrectionFactor[0][bin-1];
+    }
     Ratio_c3->SetBinContent(bin, value);
     Ratio_c3->SetBinError(bin, value_e);
     //
@@ -946,6 +978,10 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
     value_e = Ratio_C3->GetBinError(bin);
     value /= GenSignalExpected_num[1]->GetBinContent(bin);
     value_e /= GenSignalExpected_num[1]->GetBinContent(bin);
+    if(CorrectionFactor[1][bin-1]>0 && CollisionType==0) {
+      value /= CorrectionFactor[1][bin-1];
+      value_e /=  CorrectionFactor[1][bin-1];
+    }
     Ratio_C3->SetBinContent(bin, value);
     Ratio_C3->SetBinError(bin, value_e);
   }
@@ -974,8 +1010,16 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   }
   cout<<"1D Chi2/NDF = "<<ChiSqSum_1D / (SumNDF_1D-5.)<<endl;
   */
-
   
+  TCanvas *can2 = new TCanvas("can2", "can2",800,0,700,700);// 11,53,700,500
+  can2->SetHighLightColor(2);
+  gStyle->SetOptFit(0111);
+  
+  if(CollisionType==0) testEq[0]->GetXaxis()->SetRangeUser(0,0.1);
+  else testEq[0]->GetXaxis()->SetRangeUser(0,0.5);
+  testEq[0]->Draw();
+  testEq[1]->SetLineColor(4);
+  testEq[1]->Draw("same");
 
   if(SaveToFile){
     TString *savefilename = new TString("FitFiles/");

@@ -40,15 +40,31 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
   if (dType == "ESD") {
     inputTracks = "ESDFilterTracks";
     TString trackCuts(Form("Hybrid_%s", period.Data()));   
+#ifdef __CLING__
+    std::stringstream esdfilteradd;
+    esdfilteradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C("
+        << "\"" << inputTracks << "\", \"" << trackCuts << "\")";
+    std::string esdfilteraddstring = esdfilteradd.str();
+    AliEmcalEsdTrackFilterTask *esdfilter = (AliEmcalEsdTrackFilterTask *)gROOT->ProcessLine(esdfilteraddstring.c_str());
+#else
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
     AliEmcalEsdTrackFilterTask *esdfilter = AddTaskEmcalEsdTrackFilter(inputTracks,trackCuts);
+#endif
     esdfilter->SetDoPropagation(kTRUE);
     esdfilter->SetDist(edist);
     esdfilter->SelectCollisionCandidates(pSel);
     esdfilter->SetTrackEfficiency(trackeff);
   } else if (dType == "AOD") {
+#ifdef __CLING__
+    std::stringstream aodfilteradd;
+    aodfilteradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C("
+        << "\"" << inputTracks << "\", \"tracks\", " << period << "\")";
+    std::string aodfilteraddstring = aodfilteradd.str();
+    AliEmcalAodTrackFilterTask *aodfilter = (AliEmcalAodTrackFilterTask *)gROOT->ProcessLine(aodfilteraddstring.c_str());
+#else
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
     AliEmcalAodTrackFilterTask *aodfilter = AddTaskEmcalAodTrackFilter(inputTracks,"tracks",period);
+#endif
     if (doAODTrackProp) {
       aodfilter->SetDist(edist);
       aodfilter->SetAttemptPropMatch(kTRUE);
@@ -63,13 +79,30 @@ AliAnalysisTaskSE * AddTaskMatchingChain(
   TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
   TString emcclusters = Form("EmcalClusters_%s",inputClus.Data());
   Printf("emctracks: %s  inputTracks: %s",emctracks.Data(),inputTracks.Data());
+#ifdef __CLING__
+  std::stringstream particlemakeradd;
+  particlemakeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C("
+      << "\"" << inputTracks << "\", \"" << inputClus << "\", \"" << emctracks << "\", \"" << emcclusters << "\")";
+  std::string particlemakeraddstring = particlemakeradd.str();
+  AliEmcalParticleMaker *emcalParts = (AliEmcalParticleMaker *)gROOT->ProcessLine(particlemakeraddstring.c_str());
+#else
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
   AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(inputTracks,inputClus,emctracks,emcclusters);
+#endif
   emcalParts->SelectCollisionCandidates(pSel);
   emcalParts->SetNCentBins(nCentBins);
   //----------------------- Cluster-Track matching -----------------------------------------------------
+#ifdef __CLING__
+  std::stringstream clustertrackmatcheradd;
+  clustertrackmatcheradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C("
+      << "\"" << emctracks << "\", \"" << emcclusters << "\", " << maxMatchR << ", " << (modifyMatchObjs ? "kTRUE" : "kFALSE")
+      << ", " << (doHistos ? "kTRUE" : "kFALSE") << ")";
+  std::string clustertrackmatcheraddstring = clustertrackmatcheradd.str();
+  AliEmcalClusTrackMatcherTask *emcalClus = (AliEmcalClusTrackMatcherTask *)gROOT->ProcessLine(clustertrackmatcheraddstring.c_str());
+#else
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,maxMatchR,modifyMatchObjs,doHistos);
+#endif
   emcalClus->SelectCollisionCandidates(pSel);
   emcalClus->SetNCentBins(nCentBins);
 

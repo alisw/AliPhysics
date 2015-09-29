@@ -48,7 +48,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   //Setters for controlling the Task through an AddTaskMacro:
   void SetOption(const char* opt) { fOption = opt; }
   //General setters:
-  enum Period {P10b,P10c,P10d,P10e,P10h,P11a,P11h, Nperiods = P10h};
+  enum Period {P10b,P10c,P10d,P10e,P10h,P11a,P11h, Nperiods = P11h};
   void SetPeriod(Period period){fperiod = period;}
   enum Trigger { pi0, tracks , pi0MC, tracksMC};
   void SetTrigger(Trigger trigger){ftrigger = trigger;}
@@ -73,14 +73,24 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   void Setphospi0s(bool phos) {fphospions = phos;}
   void Setemcalpi0s(bool emcal) {femcalpions = emcal;}
   void SetGenerate(){fgenerate=kTRUE;}
+  void SetQA(){fQA=kTRUE;}
   void SetWeights(const char* file){
     TFile* wfile = TFile::Open(file,"OLD");
     if(wfile){
       fWeights = dynamic_cast<TH3D*>(wfile->Get("hnWeight")->Clone("hnWeight_task"));
+      fWeights->SetTitle("Weight for low pT");
+      fWeights->GetXaxis()->SetTitle("Centrality [%]");
+      fWeights->GetYaxis()->SetTitle("Vertex [cm]");
+      fWeights->GetZaxis()->SetTitle("pT [GeV/c]");
       fWeights->SetDirectory(0x0);
-      fWeightshpt = dynamic_cast<TH3D*>(wfile->Get("hnWeight_highpt")->Clone("hnWeight_highpt_task"));
+      fWeightshpt = dynamic_cast<TH2D*>(wfile->Get("hnWeight_highpt")->Clone("hnWeight_highpt_task"));
+      fWeightshpt->SetTitle("Weight for high pT");
+      fWeightshpt->GetXaxis()->SetTitle("Centrality [%]");
+      fWeightshpt->GetYaxis()->SetTitle("Vertex [cm]");
       fWeightshpt->SetDirectory(0x0);
       fpTfunction= dynamic_cast<TF1*>(wfile->Get("pT_function")->Clone("pT_function_task"));
+      fpTfunction->SetTitle("Function dependence of the Weight in pT.");
+      fpTfunction->GetXaxis()->SetTitle("pT [GeV/c]");
     }
     else{fWeights = NULL;}
     
@@ -147,8 +157,9 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   Bool_t 	    fisESD;
   Bool_t 	    fisAOD;
   Bool_t 	    fgenerate;//if true, no event is opened and the particles are created on the fly.
+  Bool_t 	    fQA;//if true, correlations are not build.
   TH3D *            fWeights;//TH3D to hold the correction weights Axis: 0 = centrality, 1 = vertex,2 = pT. for pT<4GeV/c
-  TH3D * 	    fWeightshpt;//TH3D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex, 2 = eta
+  TH2D * 	    fWeightshpt;//TH2D to hold the correction weights for high pT>4GeV/c: 0 = centrality, 1 = vertex
   TF1  * 	    fpTfunction;//TF1 to hold the pT dependence over pT = 4GeV/c.
   TRandom3 *	    fRandom;//
   TClonesArray*     fMcArray;//
@@ -201,7 +212,7 @@ class AliAnalysisTaskCorrelation3p : public AliAnalysisTaskSE {
   static const Int_t fNRunsP11a = 58;
   static const Int_t fNRunsP11h = 108;
   //Class definition.
-  ClassDef(AliAnalysisTaskCorrelation3p, 3);
+  ClassDef(AliAnalysisTaskCorrelation3p, 4);
 };
 
 #endif

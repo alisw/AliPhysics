@@ -68,6 +68,7 @@ AliMuonEventCuts::AliMuonEventCuts() :
   fEventL0Inputs(0),
   fEventL1Inputs(0),
   fEventL2Inputs(0),
+  fEventPS(0),
   fSelectedTrigClassesInEvent(0x0)
 {
   /// Default ctor.
@@ -94,6 +95,7 @@ AliAnalysisCuts(name, title),
   fEventL0Inputs(0),
   fEventL1Inputs(0),
   fEventL2Inputs(0),
+  fEventPS(0),
   fSelectedTrigClassesInEvent(0x0)
 {
   /// Constructor
@@ -127,6 +129,7 @@ AliMuonEventCuts::AliMuonEventCuts(const AliMuonEventCuts& obj) :
   fEventL0Inputs(obj.fEventL0Inputs),
   fEventL1Inputs(obj.fEventL1Inputs),
   fEventL2Inputs(obj.fEventL2Inputs),
+  fEventPS(obj.fEventPS),
   fSelectedTrigClassesInEvent(( obj.fSelectedTrigClassesInEvent ) ? static_cast<TObjArray*>(obj.fSelectedTrigClassesInEvent->Clone() ) : 0x0)
 {
   /// Copy constructor
@@ -166,6 +169,7 @@ AliMuonEventCuts& AliMuonEventCuts::operator=(const AliMuonEventCuts& obj)
     fEventL0Inputs = obj.fEventL0Inputs;
     fEventL1Inputs = obj.fEventL1Inputs;
     fEventL2Inputs = obj.fEventL2Inputs;
+    fEventPS = obj.fEventPS;
     delete fSelectedTrigClassesInEvent;
     fSelectedTrigClassesInEvent = ( obj.fSelectedTrigClassesInEvent ) ? static_cast<TObjArray*>(obj.fSelectedTrigClassesInEvent->Clone() ) : 0x0;
   }
@@ -267,16 +271,17 @@ Bool_t AliMuonEventCuts::UpdateEvent ( const AliVEvent* event, UInt_t physicsSel
   UInt_t l0Inputs = event->GetHeader()->GetL0TriggerInputs();
   UInt_t l1Inputs = event->GetHeader()->GetL1TriggerInputs();
   UInt_t l2Inputs = event->GetHeader()->GetL2TriggerInputs();
-  
+
   if ( fSelectedTrigClassesInEvent && ( fEventTriggerMask == event->GetTriggerMask() ) &&
-      ( fEventL0Inputs == l0Inputs ) && ( fEventL1Inputs == l1Inputs ) && ( fEventL2Inputs == l2Inputs ) ) return kFALSE;
-  
+      ( fEventL0Inputs == l0Inputs ) && ( fEventL1Inputs == l1Inputs ) && ( fEventL2Inputs == l2Inputs ) && ( physicsSelection == fEventPS ) ) return kFALSE;
+
   BuildTriggerClasses(event->GetFiredTriggerClasses(), l0Inputs, l1Inputs, l2Inputs, physicsSelection);
 
   fEventTriggerMask = event->GetTriggerMask();
   fEventL0Inputs = l0Inputs;
   fEventL1Inputs = l1Inputs;
   fEventL2Inputs = l2Inputs;
+  fEventPS = physicsSelection;
 
   return kTRUE;
 }

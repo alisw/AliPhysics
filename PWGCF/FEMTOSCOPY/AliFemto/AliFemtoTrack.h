@@ -80,6 +80,11 @@ public:
   double YatDCA() const;
   double ZatDCA() const;
 
+  float CorrectionPion() const;
+  float CorrectionKaon() const;
+  float CorrectionProton() const;
+  float CorrectionAll() const;
+
   const TBits& TPCclusters() const;
   const TBits& TPCsharing()  const;
 
@@ -147,6 +152,7 @@ public:
   const AliFemtoThreeVector& NominalTpcExitPoint() const;
   const AliFemtoThreeVector& NominalTpcPoint(int i) const;
   const AliFemtoThreeVector& NominalTpcEntrancePoint() const;
+  const AliFemtoThreeVector& NominalTpcPointShifted() const;
 
   void SetNominalTPCEntrancePoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCEntrancePoint(double *aXTPC);
@@ -155,6 +161,10 @@ public:
 
   void SetNominalTPCExitPoint(const AliFemtoThreeVector& aXTPC);
   void SetNominalTPCExitPoint(double *aXTPC);
+
+  void SetNominalTPCPointShifted(const AliFemtoThreeVector& aXTPC);
+  void SetNominalTPCPointShifted(double *aXTPC);
+
   void SetSigmaToVertex(const float& Sigma);
   float SigmaToVertex() const;
 
@@ -162,6 +172,10 @@ public:
   void SetYatDCA(const double& x);
   void SetZatDCA(const double& x);
 
+  void SetCorrectionPion(const double& x);
+  void SetCorrectionKaon(const double& x);
+  void SetCorrectionProton(const double& x);
+  void SetCorrectionAll(const double& x);
 
   void SetTrueMomentum(AliFemtoThreeVector *aMom);
   void SetTrueMomentum(const AliFemtoThreeVector& aMom);
@@ -257,6 +271,7 @@ public:
   AliFemtoThreeVector fNominalTpcEntrancePoint; ///< Nominal track entrance point into TPC
   AliFemtoThreeVector fNominalTpcPoints[9];     ///< Nominal track points in TCP
   AliFemtoThreeVector fNominalTpcExitPoint;     ///< Nominal track exit point from TPC
+  AliFemtoThreeVector fNominalTpcPointShifted;     ///< Nominal track at given point from TPC
 
   int   fKinkIndexes[3];    ///< Kink Index list
   bool  fHasPointOnITS[6];  ///< if track has hit on the ITS layer (6 layers: 2 x 3 (SPD, SSD, SDD))
@@ -275,6 +290,12 @@ public:
 
   double fVertex[3];
 
+  //Corrections related information
+  float fCorrPi;     //corrections for pion hypothesis
+  float fCorrK;      //corrections for kaon hypothesis
+  float fCorrP;      //corrections for proton hypothesis
+  float fCorrAll;    //corrections for particles without PID
+
 };
 
 //inline const float* AliFemtoTrack::NSigma() const
@@ -284,5 +305,9 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
+
+
+
+
 
 #endif

@@ -1,9 +1,13 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoBPLCMS3DCorrFctn: a class to calculate 3D correlation         //
-// for pairs of identical particles.                                     //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \class AliFemtoBPLCMS3DCorrFctn
+/// \brief A class to calculate 3D correlation for pairs of identical particles.
+///
+/// It also stored the weighted qinv per bin histogram for the coulomb
+/// correction.
+/// In analysis the function should be first created in a macro, then
+/// added to the analysis, and at the end of the macro the procedure to
+/// write out histograms should be called.
+///
 
 #ifndef ALIFEMTOBPLCMS3DCORRFCTN_H
 #define ALIFEMTOBPLCMS3DCORRFCTN_H
@@ -34,7 +38,7 @@ public:
   TH3D* Ratio();
   TH3D* QinvHisto();
 
-  // here are get and set for the range over which the correlation function 
+  // here are get and set for the range over which the correlation function
   // is normalized (in Qinv).  The range is set to 0.15..0.18 in the constuctor
   // by default, but the Set's below override this
   void SetNormRangeLo(float qLo);
@@ -68,35 +72,37 @@ private:
 /*   TH3D* fCorrectionHisto;   // correction histogram */
 /*   TH3D* fCorrCFHisto;       // Corrected CF */
 
-  TH3D* fNumerator;         // numerator
-  TH3D* fDenominator;       // denominator
+  TH3D* fNumerator;         ///< numerator
+  TH3D* fDenominator;       ///< denominator
   //  TH3D* fUncorrectedDenominator;
-  TH3D* fRatio;             // ratio - the correlation function
-  TH3D* fQinvHisto;         // Qinv weights
+  TH3D* fRatio;             ///< ratio - the correlation function
+  TH3D* fQinvHisto;         ///< Qinv weights
 
   // for resolution correction
   //  AliFemtoSmearPair* fSmearPair; //!
-  double fLambda;           // lambda for smearing correction
-  double fRout2;            // Rout for smearing correction
-  double fRside2;           // Rside for smearing correction
-  double fRlong2;           // Rlong for smearing correction
+  double fLambda;           ///< lambda for smearing correction
+  double fRout2;            ///< Rout for smearing correction
+  double fRside2;           ///< Rside for smearing correction
+  double fRlong2;           ///< Rlong for smearing correction
 
   // upper and lower bounds of Qinv region where to do normalization
-  float fQinvNormLo;        // Lower bound of Qinv normalization range
-  float fQinvNormHi;        // Upper bound of Qinv normalization range
+  float fQinvNormLo;        ///< Lower bound of Qinv normalization range
+  float fQinvNormHi;        ///< Upper bound of Qinv normalization range
 
   // and here are the number of pairs in that region...
-  unsigned long int fNumRealsNorm; // pairs in numerator in Qinv normalization range
-  unsigned long int fNumMixedNorm; // pairs in denominator in Qinv normalization range
+  unsigned long int fNumRealsNorm; ///< pairs in numerator in Qinv normalization range
+  unsigned long int fNumMixedNorm; ///< pairs in denominator in Qinv normalization range
 
  protected:
-  unsigned short fUseRPSelection;  // The pair cut uses RP selection
+  unsigned short fUseRPSelection;  ///< The pair cut uses RP selection
 
   //  AliFemtoCoulomb* fCorrection; //!
-  
+
 
 #ifdef __ROOT__
+  /// \cond CLASSIMP
   ClassDef(AliFemtoBPLCMS3DCorrFctn, 1)
+  /// \endcond
 #endif
 };
 
@@ -118,4 +124,3 @@ inline  void AliFemtoBPLCMS3DCorrFctn::SetRlong(double r){fRlong2 = r*r;}
 inline  void AliFemtoBPLCMS3DCorrFctn::SetLambda(double l){fLambda = l;}
 
 #endif
-

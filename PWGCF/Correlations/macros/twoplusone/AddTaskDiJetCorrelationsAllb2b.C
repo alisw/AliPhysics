@@ -2,143 +2,149 @@
 // $Id: AddTaskDiJetCorrelationsAllb2b.C
 
 AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString suffixName="",
-                              
-                               Bool_t twoplus1 = kTRUE,
-							   Bool_t SEorME = kTRUE,
-							   Bool_t ppOrPbPb = kTRUE,
-							   Double_t pTrg1min = 12.0,
-							   Double_t pTrg1max = 16.0,
-							   Double_t pTrg2min = 5.0,
-							   Double_t pTrg2max = 8.0,
-                               Double_t bit = 272,
-                               TString fileTrackeff = "",
-                               //  Double_t alpha = TMath::Pi(),
-                              // Double_t alphaB2B = TMath::Pi(),
-							  // TString effLoc = "",
-                               Bool_t bkgSE = kFALSE)
+                                                                               
+                                                                               Bool_t twoplus1 = kTRUE,
+                                                                               Bool_t SEorME = kTRUE,
+                                                                               Bool_t ppOrPbPb = kTRUE,
+                                                                               Double_t pTrg1min = 12.0,
+                                                                               Double_t pTrg1max = 16.0,
+                                                                               Double_t pTrg2min = 5.0,
+                                                                               Double_t pTrg2max = 8.0,
+                                                                               Double_t bit = 272,
+                                                                               TString fileTrackeff = "",
+                                                                               //  Double_t alpha = TMath::Pi(),
+                                                                               // Double_t alphaB2B = TMath::Pi(),
+                                                                               // TString effLoc = "",
+                                                                               Bool_t bkgSE = kFALSE,
+                                                                               Bool_t resCut = kFALSE,
+                                                                               Bool_t conversionCut = kFALSE,
+                                                                               Bool_t TTRcut = kFALSE
+                                                                               )
 {
-  
-  Bool_t UseFbits = kTRUE;
+    
+    Bool_t UseFbits = kTRUE;
     
     
     
-//    Bool_t isTrackEff = kTRUE;
+    //    Bool_t isTrackEff = kTRUE;
     
-   
-  
-  //____________________________________| Correlation class setting..
-  AliAnalysisTaskDiJetCorrelationsAllb2b *dijetcorrelations = new AliAnalysisTaskDiJetCorrelationsAllb2b("");
-  dijetcorrelations->SelectCollisionCandidates(AliVEvent::kMB);
-  dijetcorrelations->SetCorr2plus1or1plus1(twoplus1);
-  dijetcorrelations->SetSystem(ppOrPbPb); //PbPb = kTRUE
-  dijetcorrelations->SetSEorME(SEorME); //kTRUE for mixed events
-  if(SEorME)dijetcorrelations->SetMESettings(1000, 50000, 5); //evt,track,minMixEvents
+    
+    
+    //____________________________________| Correlation class setting..
+    AliAnalysisTaskDiJetCorrelationsAllb2b *dijetcorrelations = new AliAnalysisTaskDiJetCorrelationsAllb2b("");
+    dijetcorrelations->SelectCollisionCandidates(AliVEvent::kMB);
+    dijetcorrelations->SetCorr2plus1or1plus1(twoplus1);
+    dijetcorrelations->SetSystem(ppOrPbPb); //PbPb = kTRUE
+    dijetcorrelations->SetSEorME(SEorME); //kTRUE for mixed events
+    if(SEorME)dijetcorrelations->SetMESettings(1000, 50000, 5); //evt,track,minMixEvents
     //if(SEorME)dijetcorrelations->SetMESettings(2, 10, 2); //evt,track,minMixEvents
-  dijetcorrelations->SetTrigger1PTValue(pTrg1min, pTrg1max); //GeV/c
-  dijetcorrelations->SetTrigger2PTValue(pTrg2min, pTrg2max); //GeV/c
-  dijetcorrelations->SetFilterBit(UseFbits);
-  if(UseFbits)dijetcorrelations->SetFilterType(bit);
-  if(ppOrPbPb)dijetcorrelations->SetCentralityRange(0., 100); // 0-100%
-  dijetcorrelations->SetDataType(kTRUE); //track Data/MC tracks=1 or MC Part=0?
-  dijetcorrelations->SetVarCentBin(kTRUE); // kTRUE have some trouble
-  dijetcorrelations->SetVarPtBin(kTRUE); // kTRUE have some trouble
- // dijetcorrelations->SetAlphaAngle(alphaB2B);
-  //if(effLoc!="")dijetcorrelations->SetEffCorrection(GetEfficiencyCorr(effLoc));
- // dijetcorrelations->SetAlphaAngle(alphaB2B);
-
-  dijetcorrelations->SetBkgSE(bkgSE);
+    dijetcorrelations->SetTrigger1PTValue(pTrg1min, pTrg1max); //GeV/c
+    dijetcorrelations->SetTrigger2PTValue(pTrg2min, pTrg2max); //GeV/c
+    dijetcorrelations->SetFilterBit(UseFbits);
+    if(UseFbits)dijetcorrelations->SetFilterType(bit);
+    if(ppOrPbPb)dijetcorrelations->SetCentralityRange(0., 100); // 0-100%
+    dijetcorrelations->SetDataType(kTRUE); //track Data/MC tracks=1 or MC Part=0?
+    dijetcorrelations->SetVarCentBin(kTRUE);
+    dijetcorrelations->SetVarPtBin(kTRUE);
+    dijetcorrelations->SetResonanceCut(resCut);
+    dijetcorrelations->SetConversionCut(conversionCut);
+    dijetcorrelations->SetTwoTrackEfficiencyCut(TTRcut);
+    // dijetcorrelations->SetAlphaAngle(alphaB2B);
+    //if(effLoc!="")dijetcorrelations->SetEffCorrection(GetEfficiencyCorr(effLoc));
     
-
+    dijetcorrelations->SetBkgSE(bkgSE);
+    
+    
     
     
     if(fileTrackeff!="")
         
-        {
+    {
+        
+        TFile* fAssoTracksEffMap;
+        THnF* hEff;
+        fAssoTracksEffMap=TFile::Open(fileTrackeff.Data());
+        
+        if(!fAssoTracksEffMap ||(fAssoTracksEffMap&& !fAssoTracksEffMap->IsOpen())){
             
-            TFile* fAssoTracksEffMap;
-            THnF* hEff;
-            fAssoTracksEffMap=TFile::Open(fileTrackeff.Data());
+            AliFatal("Input Associated Track Efficeincy Map object not found");
             
-            if(!fAssoTracksEffMap ||(fAssoTracksEffMap&& !fAssoTracksEffMap->IsOpen())){
-                
-                AliFatal("Input Associated Track Efficeincy Map object not found");
-                
-                return;
-                
-            }
-            
-            THnF *hEff = (THnF*)fAssoTracksEffMap->Get("correction");
-            if(!hEff){
-                Printf("%s%d Couldn't find correction",(char*)__FILE__,__LINE__);
-                return;
-            }
-            
-            
-            // hEff = dynamic_cast<THnF*>tmp1->Clone("hEff");
-            
-            dijetcorrelations->SetEfficiencyWeightMap(hEff);
+            return;
             
         }
+        
+        THnF *hEff = (THnF*)fAssoTracksEffMap->Get("correction");
+        if(!hEff){
+            Printf("%s%d Couldn't find correction",(char*)__FILE__,__LINE__);
+            return;
+        }
+        
+        
+        // hEff = dynamic_cast<THnF*>tmp1->Clone("hEff");
+        
+        dijetcorrelations->SetEfficiencyWeightMap(hEff);
+        
+    }
     
     
     
-  // Create containers for input/output        
-  TString finDirname         = "_DiJetMayCERN";
-  TString inname             = "cinputDiJetCorrelations";
-  TString outBasicname       = "coutputDiJetBasicPlots";
-  TString outCorrname        = "coutputDiJetCorrHistos";
-
-  finDirname += suffixName.Data();
-  inname            +=   finDirname.Data();
-  outBasicname      +=   finDirname.Data();
-  outCorrname       +=   finDirname.Data();
-  
-  
-  // Get the pointer to the existing analysis manager via the static access method.                                                     
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) {
-    cout<<"AddTaskDiJetCorrelationsAllb2b", "No analysis manager to connect to."<<endl;
-  }
-  
-  mgr->AddTask(dijetcorrelations);
-  
-  //Input and Output Slots:
-  AliAnalysisDataContainer *cinputDiJetCorrelations = mgr->CreateContainer(inname,TChain::Class(), AliAnalysisManager::kInputContainer);
-  //TString outputfile = AliAnalysisManager::GetCommonFileName();
-  //outputfile += ":PWGCF_Di_Jet_Corr";
-  TString outputfile = AliAnalysisManager::GetCommonFileName();//"resultsDiJetCorrelationsT112to16T25to8Dec8.root";
-
-  
-  AliAnalysisDataContainer *coutputDiJetCorrelations1 = mgr->CreateContainer(outBasicname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  AliAnalysisDataContainer *coutputDiJetCorrelations2 = mgr->CreateContainer(outCorrname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  
-  
-  mgr->ConnectInput(dijetcorrelations,0,mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(dijetcorrelations,1,coutputDiJetCorrelations1);
-  mgr->ConnectOutput(dijetcorrelations,2,coutputDiJetCorrelations2);
-  
-  return dijetcorrelations;
-  
+    // Create containers for input/output
+    TString finDirname         = "_DiJetMayCERN";
+    TString inname             = "cinputDiJetCorrelations";
+    TString outBasicname       = "coutputDiJetBasicPlots";
+    TString outCorrname        = "coutputDiJetCorrHistos";
+    
+    finDirname += suffixName.Data();
+    inname            +=   finDirname.Data();
+    outBasicname      +=   finDirname.Data();
+    outCorrname       +=   finDirname.Data();
+    
+    
+    // Get the pointer to the existing analysis manager via the static access method.
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr) {
+        cout<<"AddTaskDiJetCorrelationsAllb2b", "No analysis manager to connect to."<<endl;
+    }
+    
+    mgr->AddTask(dijetcorrelations);
+    
+    //Input and Output Slots:
+    AliAnalysisDataContainer *cinputDiJetCorrelations = mgr->CreateContainer(inname,TChain::Class(), AliAnalysisManager::kInputContainer);
+    //TString outputfile = AliAnalysisManager::GetCommonFileName();
+    //outputfile += ":PWGCF_Di_Jet_Corr";
+    TString outputfile = AliAnalysisManager::GetCommonFileName();//"resultsDiJetCorrelationsT112to16T25to8Dec8.root";
+    
+    
+    AliAnalysisDataContainer *coutputDiJetCorrelations1 = mgr->CreateContainer(outBasicname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    AliAnalysisDataContainer *coutputDiJetCorrelations2 = mgr->CreateContainer(outCorrname,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    
+    
+    mgr->ConnectInput(dijetcorrelations,0,mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(dijetcorrelations,1,coutputDiJetCorrelations1);
+    mgr->ConnectOutput(dijetcorrelations,2,coutputDiJetCorrelations2);
+    
+    return dijetcorrelations;
+    
 }
 
 
 /*
-//loads the efficiency correction
-TH3F *GetEfficiencyCorr(TString effLoc){
-
-  TFile* f = 0x0;
-  f = TFile::Open(effLoc.Data());
-  if(!f){
-    Printf("%s%d no input data",(char*)__FILE__,__LINE__);
-    return;
-  }
-  
-  TH3F *tmp1 = (TH3F*)f->Get("hpTetaCentRec");
-  if(!tmp1){
-    Printf("%s%d Couldn't find hpTetaCentRec",(char*)__FILE__,__LINE__);
-    return;
-  }
-  
-  return (TH3F*)tmp1->Clone("fEffHist3D");
-}
+ //loads the efficiency correction
+ TH3F *GetEfficiencyCorr(TString effLoc){
+ 
+ TFile* f = 0x0;
+ f = TFile::Open(effLoc.Data());
+ if(!f){
+ Printf("%s%d no input data",(char*)__FILE__,__LINE__);
+ return;
+ }
+ 
+ TH3F *tmp1 = (TH3F*)f->Get("hpTetaCentRec");
+ if(!tmp1){
+ Printf("%s%d Couldn't find hpTetaCentRec",(char*)__FILE__,__LINE__);
+ return;
+ }
+ 
+ return (TH3F*)tmp1->Clone("fEffHist3D");
+ }
  */

@@ -2,10 +2,10 @@ void      InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void      InitCF(AliDielectron* die, Int_t cutDefinition);
 TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD *GetVector(Int_t var);
-enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kPhi2D, kY3D, kSigmaEle, kSigmaOther, kTPCdEdx};
+enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kPhi2D, kY3D, kSigmaEle, kSigmaOther, kTPCdEdx, kPairDCAsigXY, kPairDCAabsXY, kPairLinDCAsigXY, kPairLinDCAabsXY};
 
 
-TString names=("ITSTPCTOFif_trkSPDfirst_1_PrefAllm40t80;ITSTPCTOFif_trkSPDfirst_1_PrefAllp236m40");
+TString names=("ITSTPCTOFif_trkSPDfirst_1_PrefAllm60t100");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 Bool_t MCenabled=kFALSE; //dont change!!!
@@ -49,23 +49,13 @@ AliDielectron* Config_reichelt_LMEEPbPb2011(Int_t cutDefinition, Bool_t hasMC=kF
     LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
     LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
     LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    LMcutlib->SetEtaCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    LMcutlib->SetITSSigmaEleCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    LMcutlib->SetTPCSigmaEleCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
     //prefilter settings:
     LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
     LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee40_theta80;
+    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_mee60_theta100;
     die->SetPreFilterAllSigns();   doRejectionStep=kTRUE; // will be deactivated in 'AliAnalysisTaskRandomRejection.cxx'
-  }
-  else if (cutDefinition==1) {
-    LMcutlib->selectedCentrality  = LMEECutLib::kPbPb2011_10to50;
-    LMcutlib->selectedPIDAna      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    LMcutlib->selectedTrackAna    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    LMcutlib->SetEtaCorrection(die, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
-    //prefilter settings:
-    LMcutlib->selectedPIDPre      = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    LMcutlib->selectedTrackPre    = LMEECutLib::kPbPb2011_pidITSTPCTOFif_trkSPDfirst_1;
-    LMcutlib->selectedPairCutsPre = LMEECutLib::kPairCut_phiv236_mee40;
-    die->SetPreFilterAllSigns();   doRejectionStep=kTRUE;
   }
   else {
     cout << " =============================== " << endl;
@@ -236,7 +226,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   if (isRandomRejTask)
   {
     //
-    // _____ histograms for AliAnalysisTaskMultiDielectronPR _____
+    // _____ histograms for AliAnalysisTaskRandomRejection _____
     //
     histos->AddClass("Rand_Pair");
     histos->AddClass("Rand_RejPair");
@@ -283,10 +273,19 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                         GetVector(kP2D), BinsToVector(700,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
   histos->UserHistogram("Track","ITSnSigmaEle_P",";p (GeV/c);n#sigma_{ele}^{ITS}",
                         GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle);
-  histos->UserHistogram("Track","ITSnSigmaPio_P",";p (GeV/c);n#sigma_{pion}^{ITS}",
-                        GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPio);
-  histos->UserHistogram("Track","ITSnSigmaKao_P",";p (GeV/c);n#sigma_{kaon}^{ITS}",
-                        GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao);
+  histos->UserHistogram("Track","ITSnSigmaEle_Eta",";Eta;n#sigma_{ele}^{ITS}",
+                        GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
+  // 3D
+  histos->UserHistogram("Track","ITSnSigmaEle_Eta_P",";Eta;n#sigma_{ele}^{ITS};p (GeV/c)",
+                        GetVector(kEta3D), GetVector(kSigmaEle), GetVector(kP2D),
+                        AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle,AliDielectronVarManager::kP);
+  histos->UserHistogram("Track","ITSnSigmaEle_Eta_RefMultTPConly",";Eta;n#sigma_{ele}^{ITS};N_{TPC ref}",
+                        GetVector(kEta3D), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
+                        AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle,AliDielectronVarManager::kRefMultTPConly);
+  //histos->UserHistogram("Track","ITSnSigmaPio_P",";p (GeV/c);n#sigma_{pion}^{ITS}",
+  //                      GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPio);
+  //histos->UserHistogram("Track","ITSnSigmaKao_P",";p (GeV/c);n#sigma_{kaon}^{ITS}",
+  //                      GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao);
   //histos->UserHistogram("Track","ITSnSigmaPro_P",";p (GeV/c);n#sigma_{proton}^{ITS}",
   //                      GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPro);
   // TPC
@@ -299,12 +298,12 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   // some histograms with SigmaEleRaw to benchmark the dEdx-eta-correction:
   histos->UserHistogram("Track","TPCnSigmaEleRaw_Eta",";Eta;n#sigma_{ele,Raw}^{TPC}",
                         GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEleRaw);
-  histos->UserHistogram("Track","TPCnSigmaEle_Nacc",";N_{acc}; n#sigma_{ele}^{TPC}",
-                        BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kNacc,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaEle_RefMultTPConly",";N_{TPC ref}; n#sigma_{ele}^{TPC}",
                         BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaEleRaw_RefMultTPConly",";N_{TPC ref}; n#sigma_{ele,Raw}^{TPC}",
                         BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEleRaw);
+  histos->UserHistogram("Track","TPCnSigmaEle_Nacc",";N_{acc}; n#sigma_{ele}^{TPC}",
+                        BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kNacc,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaEle_RunNumber",";run;n#sigma_{ele}^{TPC}",
                         GetVector(kRuns), GetVector(kSigmaEle), AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kTPCnSigmaEle);
   // 3D
@@ -472,6 +471,36 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           GetVector(kOpAng), GetVector(kPhiV), 
                           AliDielectronVarManager::kOpeningAngle, AliDielectronVarManager::kPhivPair);
     
+    // pair DCA
+    histos->UserHistogram("Pair","InvMass_PairDCAsigXY","",
+                          GetVector(kMee), GetVector(kPairDCAsigXY),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairDCAsigXY);
+    histos->UserHistogram("Pair","InvMass_PairDCAabsXY","",
+                          GetVector(kMee), GetVector(kPairDCAabsXY),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairDCAabsXY);
+    histos->UserHistogram("Pair","InvMass_PairLinDCAsigXY","",
+                          GetVector(kMee), GetVector(kPairLinDCAsigXY),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairLinDCAsigXY);
+    histos->UserHistogram("Pair","InvMass_PairLinDCAabsXY","",
+                          GetVector(kMee), GetVector(kPairLinDCAabsXY),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairLinDCAabsXY);
+    // 3D
+    histos->UserHistogram("Pair","InvMass_PairDCAsigXY_PairLinDCAsigXY","",
+                          GetVector(kMee), GetVector(kPairDCAsigXY), GetVector(kPairLinDCAsigXY), 
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairDCAsigXY, AliDielectronVarManager::kPairLinDCAsigXY);
+    histos->UserHistogram("Pair","InvMass_PairDCAsigXY_PairPt","",
+                          GetVector(kMee), GetVector(kPairDCAsigXY), GetVector(kPtee), 
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairDCAsigXY, AliDielectronVarManager::kPt);
+    histos->UserHistogram("Pair","InvMass_PairLinDCAsigXY_PairPt","",
+                          GetVector(kMee), GetVector(kPairLinDCAsigXY), GetVector(kPtee), 
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairLinDCAsigXY, AliDielectronVarManager::kPt);
+    histos->UserHistogram("Pair","InvMass_PairDCAsigXY_OpeningAngle","",
+                          GetVector(kMee), GetVector(kPairDCAsigXY), GetVector(kOpAng), 
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairDCAsigXY, AliDielectronVarManager::kOpeningAngle);
+    histos->UserHistogram("Pair","InvMass_PairLinDCAsigXY_OpeningAngle","",
+                          GetVector(kMee), GetVector(kPairLinDCAsigXY), GetVector(kOpAng), 
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPairLinDCAsigXY, AliDielectronVarManager::kOpeningAngle);
+    
     //centrality
     histos->UserHistogram("Pair","InvMass_Centrality",";Inv. Mass [GeV];Centrality;#pairs",
                           GetVector(kMee), BinsToVector(102,-1,101), 
@@ -569,6 +598,11 @@ TVectorD *GetVector(Int_t var)
       //2.00, 2.05, 2.10, 2.15, 2.20, 2.25, 2.30, 2.35, 2.40, 2.45, 
       //2.50, 2.55, 2.60, 2.65, 2.70, 2.75, 2.80, 2.85, 2.90, 2.95, 
       //3.00, 3.05, 3.10, 3.15, 3.20, 3.25, 3.30, 3.35, 3.40, 3.45, 
+      
+    case kPairDCAsigXY:
+    case kPairLinDCAsigXY: return AliDielectronHelper::MakeLinBinning(50, 0., 10.); // in sigma
+    case kPairDCAabsXY:
+    case kPairLinDCAabsXY: return AliDielectronHelper::MakeLogBinning(50, 0.0001, 1.); // in cm
       
     case kRuns:   return AliDielectronHelper::MakeArbitraryBinning("167900, 167987, 167988, 168310, 168311, 168322, 168325, 168341, 168342, 168361, 168362, 168458, 168460, 168464, 168467, 168511, 168512, 168514, 168777, 168826, 168988, 168992, 169035, 169040, 169044, 169045, 169091, 169094, 169099, 169138, 169144, 169145, 169148, 169156, 169160, 169167, 169238, 169411, 169415, 169417, 169418, 169419, 169420, 169475, 169498, 169504, 169506, 169512, 169515, 169550, 169553, 169554, 169555, 169557, 169586, 169587, 169588, 169590, 169591, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 170027, 170040, 170081, 170083, 170084, 170085, 170088, 170089, 170091, 170155, 170159, 170163, 170193, 170203, 170204, 170207, 170228, 170230, 170268, 170269, 170270, 170306, 170308, 170309, 170311, 170312, 170313, 170315, 170387, 170388, 170572, 170593, 170600");
       

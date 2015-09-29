@@ -216,6 +216,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh2JetEtaPhi(0)
    ,fh1nEmbeddedJets(0)
    ,fh1IndexEmbedded(0)
+   ,fh1PtEmbBeforeMatch(0)
+   ,fh1PtEmbExtraOnly(0)
+   ,fh1PtEmbAfterMatch(0)
    ,fh1FractionPtEmbedded(0)
    ,fh1DeltaREmbedded(0)
    ,fh2TracksPerpCone(0)
@@ -315,12 +318,15 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fhnK0sIncl(0)
    ,fhnK0sCone(0)
    ,fhnK0sEmbCone(0)
+   ,fhnK0sEmbConeRef(0)
    ,fhnLaIncl(0)
    ,fhnLaCone(0)
    ,fhnLaEmbCone(0)
+   ,fhnLaEmbConeRef(0)
    ,fhnALaIncl(0)
    ,fhnALaCone(0)
    ,fhnALaEmbCone(0)
+   ,fhnALaEmbConeRef(0)
    ,fhnK0sPC(0)
    ,fhnK0sEmbPC(0)
    ,fhnLaPC(0)
@@ -504,6 +510,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh2JetEtaPhi(0)
   ,fh1nEmbeddedJets(0)
   ,fh1IndexEmbedded(0)
+  ,fh1PtEmbBeforeMatch(0)
+  ,fh1PtEmbExtraOnly(0)
+  ,fh1PtEmbAfterMatch(0)
   ,fh1FractionPtEmbedded(0)
   ,fh1DeltaREmbedded(0)
   ,fh2TracksPerpCone(0)
@@ -603,12 +612,15 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fhnK0sIncl(0)
   ,fhnK0sCone(0)
   ,fhnK0sEmbCone(0)
+  ,fhnK0sEmbConeRef(0)
   ,fhnLaIncl(0)
   ,fhnLaCone(0)
   ,fhnLaEmbCone(0)
+  ,fhnLaEmbConeRef(0)
   ,fhnALaIncl(0)
   ,fhnALaCone(0)
   ,fhnALaEmbCone(0)
+  ,fhnALaEmbConeRef(0)
   ,fhnK0sPC(0)
   ,fhnK0sEmbPC(0)
   ,fhnLaPC(0)
@@ -795,6 +807,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh2JetEtaPhi(copy.fh2JetEtaPhi)
   ,fh1nEmbeddedJets(copy.fh1nEmbeddedJets)
   ,fh1IndexEmbedded(copy.fh1IndexEmbedded)
+  ,fh1PtEmbBeforeMatch(copy.fh1PtEmbBeforeMatch)
+  ,fh1PtEmbExtraOnly(copy.fh1PtEmbExtraOnly)
+  ,fh1PtEmbAfterMatch(copy.fh1PtEmbAfterMatch)
   ,fh1FractionPtEmbedded(copy.fh1FractionPtEmbedded)
   ,fh1DeltaREmbedded(copy.fh1DeltaREmbedded)
   ,fh2TracksPerpCone(copy.fh2TracksPerpCone)
@@ -894,12 +909,15 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fhnK0sIncl(copy.fhnK0sIncl)
   ,fhnK0sCone(copy.fhnK0sCone)
   ,fhnK0sEmbCone(copy.fhnK0sEmbCone)
+  ,fhnK0sEmbConeRef(copy.fhnK0sEmbConeRef)
   ,fhnLaIncl(copy.fhnLaIncl)
   ,fhnLaCone(copy.fhnLaCone)
   ,fhnLaEmbCone(copy.fhnLaEmbCone)
+  ,fhnLaEmbConeRef(copy.fhnLaEmbConeRef)
   ,fhnALaIncl(copy.fhnALaIncl)
   ,fhnALaCone(copy.fhnALaCone)
   ,fhnALaEmbCone(copy.fhnALaEmbCone)
+  ,fhnALaEmbConeRef(copy.fhnALaEmbConeRef)
   ,fhnK0sPC(copy.fhnK0sPC)
   ,fhnK0sEmbPC(copy.fhnK0sEmbPC)
   ,fhnLaPC(copy.fhnLaPC)
@@ -1081,6 +1099,9 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh2JetEtaPhi                    = o.fh2JetEtaPhi;
     fh1nEmbeddedJets                = o.fh1nEmbeddedJets;
     fh1IndexEmbedded                = o.fh1IndexEmbedded;
+    fh1PtEmbBeforeMatch             = o.fh1PtEmbBeforeMatch;
+    fh1PtEmbExtraOnly               = o.fh1PtEmbExtraOnly;
+    fh1PtEmbAfterMatch             = o.fh1PtEmbAfterMatch;
     fh1FractionPtEmbedded           = o.fh1FractionPtEmbedded;
     fh1DeltaREmbedded              = o.fh1DeltaREmbedded;
     fh2TracksPerpCone               = o.fh2TracksPerpCone;
@@ -1176,12 +1197,15 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fhnK0sIncl                      = o.fhnK0sIncl; 
     fhnK0sCone                      = o.fhnK0sCone;
     fhnK0sEmbCone                   = o.fhnK0sEmbCone;
+    fhnK0sEmbConeRef                = o.fhnK0sEmbConeRef;
     fhnLaIncl                       = o.fhnLaIncl;
     fhnLaCone                       = o.fhnLaCone;
     fhnLaEmbCone                    = o.fhnLaEmbCone;
+    fhnLaEmbConeRef                 = o.fhnLaEmbConeRef;
     fhnALaIncl                      = o.fhnALaIncl;
     fhnALaCone                      = o.fhnALaCone; 
     fhnALaEmbCone                   = o.fhnALaEmbCone;  
+    fhnALaEmbConeRef                = o.fhnALaEmbConeRef;
     fhnK0sPC                        = o.fhnK0sPC;
     fhnK0sEmbPC                     = o.fhnK0sEmbPC;
     fhnLaPC                         = o.fhnLaPC;
@@ -1562,9 +1586,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   //embedding
   fh1nEmbeddedJets              = new TH1F("fh1nEmbeddedJets","Number of embedded jets",10,-0.5,9.5);
   fh2TracksPerpCone             = new TH2F("fh2TracksPerpCone","Charged tracks in 2 perp. cones;#it{p^{ch,jet}}_{T} (GeV/#it{c});#it{p^{ch}}_{T} (GeV/#it{c})",19,5.,100.,120,0.,12.);
-  fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1,10);
-  fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0,1.1);
-  fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0,0.5);
+  fh1IndexEmbedded              = new TH1F("fh1IndexEmbedded","",11,-1.,10.);
+  fh1PtEmbBeforeMatch           = new TH1F("fh1PtEmbBeforeMatch","Pt spectrum of jets before JetMatching",19,5.,100.);
+  fh1PtEmbExtraOnly             = new TH1F("fh1PtEmbExtraOnly","Pt spectrum of jets from ExtraOnly tracks (embedded truth)",19,5.,100.);
+
+  fh1PtEmbAfterMatch            = new TH1F("fh1PtEmbAfterMatch","Pt spectrum of jets after JetMatching cuts and with leading constituent cut",19,5.,100.);
+  fh1FractionPtEmbedded         = new TH1F("fh1FractionPtEmbedded","",110,0.,1.1);
+  fh1DeltaREmbedded             = new TH1F("fh1DeltaREmbedded","",50,0.,0.5);
 
   fh1PerpCone                   = new TH1F("fh1PerpCone","Number of perp. cones for charged tracks in event",2.,0.5,1.5);
   fh1V0PtCandidate              = new TH1F("fh1V0PtCandidate","p_{T} distribution of all v0s candidates of PYTHIA",200,0.,200.);
@@ -1958,6 +1986,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   Double_t xmaxK0sEmbCone[4] = {100.,0.7, 12., 1.};
   fhnK0sEmbCone                    = new THnSparseF("fhnK0sEmbCone","emb jet pT; K0s inv. mass; particle pT; particle #eta",4,binsK0sEmbCone,xminK0sEmbCone,xmaxK0sEmbCone);
 
+
+  Int_t binsK0sEmbConeRef[4] = {19, 200, 120, 200};
+  Double_t xminK0sEmbConeRef[4] = {5.,0.3, 0., -1.};
+  Double_t xmaxK0sEmbConeRef[4] = {100.,0.7, 12., 1.};
+  fhnK0sEmbConeRef             = new THnSparseF("fhnK0sEmbConeRef","emb jet pT; K0s inv. mass, emb. flag; particle pT; particle #eta",4,binsK0sEmbConeRef,xminK0sEmbConeRef,xmaxK0sEmbConeRef);
+
+
   Int_t binsLaIncl[3] = {200, 120, 200};
   Double_t xminLaIncl[3] = {1.05, 0., -1.};
   Double_t xmaxLaIncl[3] = {1.25, 12., 1.};
@@ -1971,7 +2006,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   Int_t binsLaEmbCone[4] = {19, 200, 120, 200};
   Double_t xminLaEmbCone[4] = {5.,1.05, 0., -1.};
   Double_t xmaxLaEmbCone[4] = {100.,1.25, 12., 1.};
-  fhnLaEmbCone                  = new THnSparseF("fhnLaEmbCCone"," emb jet pT; La inv. mass; particle pT; particle #eta",4,binsLaEmbCone,xminLaEmbCone,xmaxLaEmbCone);
+  fhnLaEmbCone                  = new THnSparseF("fhnLaEmbCone"," emb jet pT; La inv. mass; particle pT; particle #eta",4,binsLaEmbCone,xminLaEmbCone,xmaxLaEmbCone);
+
+
+  Int_t binsLaEmbConeRef[4] = {19, 200, 120, 200};
+  Double_t xminLaEmbConeRef[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxLaEmbConeRef[4] = {100.,1.25, 12., 1.};
+  fhnLaEmbConeRef                  = new THnSparseF("fhnLaEmbConeRef"," emb jet pT; La inv. mass, emb. flags; particle pT; particle #eta",4,binsLaEmbConeRef,xminLaEmbConeRef,xmaxLaEmbConeRef);
 
   Int_t binsALaIncl[3] = {200, 120, 200};
   Double_t xminALaIncl[3] = {1.05, 0., -1.};
@@ -1987,6 +2028,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   Double_t xminALaEmbCone[4] = {5.,1.05, 0., -1.};
   Double_t xmaxALaEmbCone[4] = {100.,1.25, 12., 1.};
   fhnALaEmbCone                 = new THnSparseF("fhnALaEmbCone","emb jet pT; ALa inv. mass; particle pT; particle #eta",4,binsALaEmbCone,xminALaEmbCone,xmaxALaEmbCone);
+
+  Int_t binsALaEmbConeRef[4] = {19, 200, 120, 200};
+  Double_t xminALaEmbConeRef[4] = {5.,1.05, 0., -1.};
+  Double_t xmaxALaEmbConeRef[4] = {100.,1.25, 12., 1.};
+  fhnALaEmbConeRef                 = new THnSparseF("fhnALaEmbConeRef","emb jet pT; ALa inv. mass, emb. flags; particle pT; particle #eta",4,binsALaEmbConeRef,xminALaEmbConeRef,xmaxALaEmbConeRef);
 
   fh1MCMultiplicityPrimary      = new TH1F("fh1MCMultiplicityPrimary", "MC Primary Particles;NPrimary;Count", 201, -0.5, 200.5);
   fh1MCMultiplicityTracks       = new TH1F("h1MCMultiplicityTracks", "MC Tracks;Ntracks;Count", 201, -0.5, 200.5);
@@ -2078,6 +2124,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh2JetEtaPhi);
     fCommonHistList->Add(fh1nEmbeddedJets);
     fCommonHistList->Add(fh1IndexEmbedded);
+    fCommonHistList->Add(fh1PtEmbExtraOnly);
+    fCommonHistList->Add(fh1PtEmbBeforeMatch);
+    fCommonHistList->Add(fh1PtEmbAfterMatch);
     fCommonHistList->Add(fh1FractionPtEmbedded);
     fCommonHistList->Add(fh1DeltaREmbedded);
     fCommonHistList->Add(fh2TracksPerpCone);
@@ -2174,12 +2223,15 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fhnK0sIncl);
     fCommonHistList->Add(fhnK0sCone);
     fCommonHistList->Add(fhnK0sEmbCone);
+    fCommonHistList->Add(fhnK0sEmbConeRef);
     fCommonHistList->Add(fhnLaIncl);
     fCommonHistList->Add(fhnLaCone);
     fCommonHistList->Add(fhnLaEmbCone);
+    fCommonHistList->Add(fhnLaEmbConeRef);
     fCommonHistList->Add(fhnALaIncl);
     fCommonHistList->Add(fhnALaCone);
     fCommonHistList->Add(fhnALaEmbCone);
+    fCommonHistList->Add(fhnALaEmbConeRef);
     fCommonHistList->Add(fhnK0sPC);
     fCommonHistList->Add(fhnK0sEmbPC);
     fCommonHistList->Add(fhnLaPC);
@@ -2275,16 +2327,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   
+  if((fDebug > 1)&&(!inputHandler)){std::cout<<"AliAnalysisTaskJetChem::AliInputEventHandler does not exist!! "<<std::endl;}
 
   //for AliPIDResponse:
-  //AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  //AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
   if (!fPIDResponse){if(fDebug > 1) Printf("AliAnalysisTaskJetChem::UserExec(): fPIDResponse does not exist!"); return;}
 
-  //std::cout<<"inputHandler->IsEventSelected(): "<<inputHandler->IsEventSelected()<<std::endl;
-  //std::cout<<"fEvtSelectionMask: "<<fEvtSelectionMask<<std::endl;
+  if(fDebug > 1){std::cout<<"inputHandler->IsEventSelected(): "<<inputHandler->IsEventSelected()<<std::endl;}
+  if(fDebug > 1){std::cout<<"fEvtSelectionMask: "<<fEvtSelectionMask<<std::endl;}
   
   if(!(inputHandler->IsEventSelected() & fEvtSelectionMask)){
     //std::cout<<"########event rejected!!############"<<std::endl;
@@ -2424,28 +2475,40 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       centPercent = dynamic_cast<AliAODHeader*>(fAOD->GetHeader())->GetCentrality();
       cl = 1;
-      //std::cout<<"centPercent: "<<centPercent<<std::endl;
-      
+     
       fh1EvtAllCent->Fill(centPercent);
-      /*    
-      if(centPercent>10) cl = 2; //standard PWG-JE binning
-      if(centPercent>30) cl = 3;
-      if(centPercent>50) cl = 4;
-      */
-    
-  
-      if(centPercent < 0) cl = -1;
-      if(centPercent >= 0)  cl = 1;
-      if(centPercent > 10) cl = 2; //standard PWG-JE binning
-      if(centPercent > 30) cl = 3;
-      if(centPercent > 50) cl = 4;
-      if(centPercent > 80) cl = 5; //takes centralities higher than my upper edge of 80%, not to be used
       
+      //fEventClass set externally
+      if(fEventClass >= 11){//to analyse also 5% central events (PWG-LF choice)
+
+   	if(centPercent < 0) cl = -1;
+	if(centPercent >= 0) cl = 11;//exception for analysis of 5% event centrality (PWG-LF choice)
+	if(centPercent > 5)  cl = 12; 
+	if(centPercent > 10) cl = 13;
+	if(centPercent > 20) cl = 14;
+	if(centPercent > 40) cl = 15; 
+	if(centPercent > 60) cl = 16;
+	if(centPercent > 80) cl = 17;
+	if(centPercent > 90) cl = 18;
+
+      }
+      
+      if(fEventClass < 11){//standard centrality estimator used in PWGJE analyses
+	
+	if(centPercent < 0) cl = -1;
+	if(centPercent >= 0) cl = 1;
+	if(centPercent > 10) cl = 2; 
+	if(centPercent > 30) cl = 3;
+	if(centPercent > 50) cl = 4;
+	if(centPercent > 80) cl = 5; //takes centralities higher than my upper edge of 80%, not to be used
+	
+      }
     }
+
     else {
 
       cl = AliAnalysisHelperJetTasks::EventClass();
-
+      
       if(fESD) centPercent = fESD->GetCentrality()->GetCentralityPercentile("V0M"); //ESD JetServices Task has the centrality binning 0-10,10-30,30-50,50-80
       fh1EvtAllCent->Fill(centPercent);
     }
@@ -2505,7 +2568,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
     //____ fetch jets _______________________________________________________________
 
-  Int_t nJCuts = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);//fetch list with jets that survived all jet cuts: fJetsRecCuts
+  Int_t nJCuts = GetListOfJets(fJetsRecCuts, kJetsRecAcceptance);//fetch list with jets that survived all jet cuts: fJetsRecCuts, still missing is leading constituent cut
 
   Int_t nRecJetsCuts = 0;                                        //number of reconstructed jets after jet cuts
   if(nJCuts>=0) nRecJetsCuts = fJetsRecCuts->GetEntries(); 
@@ -2527,11 +2590,17 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     if(fDebug>2)Printf("%s:%d Selected Embedded jets: %d %d",(char*)__FILE__,__LINE__,nJEmbedded,nEmbeddedJets);
 
     if(nJEmbedded != nEmbeddedJets)Printf("%s:%d Mismatch Selected Embedded Jets: %d %d",(char*)__FILE__,__LINE__,nJEmbedded,nEmbeddedJets); 
+  
+    fh1nEmbeddedJets->Fill(nEmbeddedJets);//Number of jets before matching
 
-    //std::cout << "Check nEmbeddedJets: " <<nEmbeddedJets<<std::end;
+    for(Int_t in=0; in<nEmbeddedJets; ++in){//Pt spectrum of jets from ExtraOnly tracks (Embedded truth)                         
+      AliAODJet* embeddedjet = (AliAODJet*) (fJetsEmbedded->At(in));
+      Double_t EmbJetPt = embeddedjet->Pt();
+      fh1PtEmbExtraOnly->Fill(EmbJetPt);
+    } 
 
-    fh1nEmbeddedJets->Fill(nEmbeddedJets);
     
+
     iEmbeddedMatchIndex.Set(nEmbeddedJets); 
     fEmbeddedPtFraction.Set(nEmbeddedJets); 
     
@@ -2539,13 +2608,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
     fEmbeddedPtFraction.Reset(0);
 
     //matching that selects reconstructed jets from embedded+data events by matching to PYTHIA true jets, that have been embedded
-    AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets, 
-					      fJetsRecCuts, nRecJetsCuts, 
-					      iEmbeddedMatchIndex, fEmbeddedPtFraction,
-					      fDebug, fCutDeltaREmbedded);
+   
+      AliAnalysisHelperJetTasks::GetJetMatching(fJetsEmbedded, nEmbeddedJets,          
+						fJetsRecCuts, nRecJetsCuts, 
+						iEmbeddedMatchIndex, fEmbeddedPtFraction,
+						fDebug, fCutDeltaREmbedded); //needs list of embedded jets (from extraonly particles), number of embedded jets (from extraonly particles), list of reconstructed jets (from extra particles), their indices, the PtFraction, DeltaREmbedded -> these are cut values that have to select a pure sample inside the hybrid events (standard+embedded tracks) 
     
   }
-
+  
   //____ fetch background clusters ___________________________________________________
   if(fBranchRecBckgClusters.Length() != 0){
 
@@ -2759,7 +2829,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   for(Int_t in=0; in<fTracksRecCuts->GetEntries(); ++in){//loop over all charged tracks in event
     
     AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksRecCuts->At(in)); //inputlist is fListK0s, all reconstructed K0s in event
-    if(!track){std::cout<<"AliAnalysisTaskJetChem(): In random cones, charged track not found!!!"<<std::endl; continue;}
+    if(!track){std::cout<<"AliAnalysisTaskJetChem(): In outside cones, charged track not found!!!"<<std::endl; continue;}
     
     Double_t trackPt = track->Pt();
     Double_t trackEta = track->Eta();
@@ -2886,13 +2956,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(!jetConeK0Emblist)continue;
       
-      Bool_t isEmbinCone;
+      Bool_t isEmbinCone=kFALSE;
 
-      for(Int_t it=0; it<jetConeK0Emblist->GetSize(); ++it){ // loop for K0s in embedded jet cone, reject them from OCs
+      for(Int_t in=0; in<jetConeK0Emblist->GetSize(); ++in){ // loop for K0s in embedded jet cone, reject them from OCs
 	
 	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
 	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeK0Emblist->At(it));
+	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeK0Emblist->At(in));
 	if(!v0emb) continue;
 	
 	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
@@ -3011,7 +3081,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if(GetFFRadius()<=0){
  	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
       } else {
- 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard)
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of tracks in cone around jet axis with cone Radius (= 0.4 standard) + Check of leading constituent condition (= minPtL) carried out by method implemented in class AliAnalysisTaskFragmentationFunction
       }
       
 
@@ -3041,13 +3111,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(!jetConeLaEmblist)continue;
 
-      Bool_t isEmbinCone;
+      Bool_t isEmbinCone=kFALSE;
 
-      for(Int_t it=0; it<jetConeLaEmblist->GetSize(); ++it){ // loop for La in embedded jet cone, reject them from OCs
+      for(Int_t in=0; in<jetConeLaEmblist->GetSize(); ++in){ // loop for La in embedded jet cone, reject them from OCs
 	
 	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
 	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeLaEmblist->At(it));
+	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeLaEmblist->At(in));
 	if(!v0emb) continue;
 	
 	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
@@ -3204,13 +3274,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(!jetConeALaEmblist)continue;
       
-      Bool_t isEmbinCone;
+      Bool_t isEmbinCone=kFALSE;
       
-      for(Int_t it=0; it<jetConeALaEmblist->GetSize(); ++it){ // loop for ALa in embedded jet cone, reject them from OCs
+      for(Int_t in=0; in<jetConeALaEmblist->GetSize(); ++in){ // loop for ALa in embedded jet cone, reject them from OCs
 	
 	isEmbinCone = kFALSE;//to reject all v0s that are stemming from embedded PYTHIA jet
 	
-	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeALaEmblist->At(it));
+	AliAODv0* v0emb = dynamic_cast<AliAODv0*>(jetConeALaEmblist->At(in));
 	if(!v0emb) continue;
 	
 	if(v0emb == v0){isEmbinCone = kTRUE;}//v0 found in hybrid event is stemming from matched PYTHIA jet cone, will be rejected for OC method
@@ -3353,7 +3423,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   }//no jet events
   
   //____ fill all jet related histos  ________________________________________________________________________________________________________________________
-  //##########################jet loop########################################################################################################################
+  //##########################################################################################################################################################
+  //##########################JET LOOP########################################################################################################################
+  //##########################################################################################################################################################
+  //##########################################################################################################################################################
 
   Int_t nSelJets = nRecJetsCuts; //init value
   Bool_t IsOCEvt = kFALSE; //init for this outside cones normalisation histo (total number of OC events)
@@ -3381,7 +3454,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       if(GetFFRadius()<=0){
  	GetJetTracksTrackrefs(jettracklist, jet, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);// list of jet tracks from trackrefs
       } else {
- 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of charged hybrid tracks in cone around jet axis with cone Radius (= 0.4 standard), application of leading track cut
+ 	GetJetTracksPointing(fTracksRecCuts, jettracklist, jet, GetFFRadius(), sumPt, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJet);  // fill list of charged hybrid tracks in cone around jet axis with cone Radius (= 0.4 standard), check of leading track bias condition
       }
       
       //not applied at the moment:
@@ -3534,8 +3607,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
 	    fh1DeltaREmbedded->Fill(deltaREmbedded);
 
-	    //if((fDebug>10) && ptFractionEmbedded > 0.5)){
-	      if(ptFractionEmbedded > 0.){// for testing purposes
+	    if((fDebug>10) && (ptFractionEmbedded > 0.5)){
+	    //if(ptFractionEmbedded > 0.){// for testing purposes
 
 	      //cout<<" embeddedJet pt "<<embeddedJet->Pt()<<" fracPtEmbedded "<<ptFractionEmbedded<<" nConst "<<embeddedJet->GetRefTracks()->GetEntriesFast() <<endl;
 	      for(Int_t i=0; i<embeddedJet->GetRefTracks()->GetEntriesFast(); i++){
@@ -3558,8 +3631,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	}
 	
 
+	//if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets, probably this works not yet, all jets are rejected with these cut values... to be checked again!
+	
+
+	Double_t JetPt = jet->Pt();//jet pt spectrum of all jets before jet matching is applied 
+	fh1PtEmbBeforeMatch->Fill(JetPt);
+	
+
 	  
-	if(ptFractionEmbedded>=fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
+	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
 	  
 	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	    
@@ -3577,6 +3657,10 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	    
+
+	    fh1PtEmbAfterMatch->Fill(jetPtEmb);
+
+
 	    fFFHistosRecCuts->FillFF(trackPt, jetPtEmb, incrementJetPt);//fill charged tracks into RecCuts histos
 	    
 	    delete trackV;
@@ -3691,8 +3775,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    mclabelcheck = MCLabelCheck(v0, kK0, trackNeg, trackPos, listmc, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
 	    if(mclabelcheck == kFALSE)continue;
 	  }
-	  
-	  
+	  //=======
+	  //for embedding signal calculation and extraonly particle reference
 	  if(incrementJetPt==kTRUE){
 	    fh1IMK0EmbCone->Fill(jetPt);
 	  }//normalisation by number of selected jets
@@ -3705,11 +3789,43 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    fhnK0sEmbCone->Fill(vK0sEmbCone);
 	  }
 	  
+	  //=========
+	  //for particle referenz via embedding flags and using the extra particles
+	  if(fUseExtraTracks == 1){
+	    	    
+	    Int_t nnum;
+	    Int_t pnum;
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue;
+	    	    
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part embedding flag:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+
+	    Bool_t isEmbeddedNeg = (Bool_t) (trackNeg->GetFlags() & AliESDtrack::kEmbedded);//check whether daughter particles are stemming from embedded PYTHIA events
+            Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
+
+	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
+	          
+	      Double_t vK0sEmbConeRef[4] = {jetPt,invMK0s,trackPt,fEta};
+	      
+	      fhnK0sEmbConeRef->Fill(vK0sEmbConeRef);
+	    }	    
+	  }
+
+	  //==========
+
+
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 
-	    std::cout<<"MCPt :"<<MCPt<<std::endl;
+	    // std::cout<<"MCPt :"<<MCPt<<std::endl;
 
-	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s,MCPt,fEta};
+	    Double_t vK0sEmbCone[4] = {jetPt, invMK0s, trackPt, fEta};
 	    
 	    
 	    fhnK0sEmbCone->Fill(vK0sEmbCone);
@@ -3836,22 +3952,62 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    mclabelcheck = MCLabelCheck(v0, kLambda, trackNeg, trackPos, listmc, negDaughterpdg, posDaughterpdg, motherType, v0Label, MCPt, fPhysicalPrimary, MCv0PdgCode, generatorName, isinjected);
 	    if(mclabelcheck == kFALSE)continue;
 	  }
-	  
+
+
+	  //=======
+	  //for embedding signal calculation and extraonly particle referenz
+	  if(incrementJetPt==kTRUE){
+	    fh1IMLaEmbCone->Fill(jetPt);
+	  }//normalisation by number of selected jets
 	  
 
-	  if(incrementJetPt==kTRUE){
-	    fh1IMLaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
-	  
 	  if(fUseExtraTracks == 1){//only for extra particles used
-	    
 	    Double_t vLaEmbCone[4] = {jetPt, invMLa,trackPt,fEta};
-	    fhnLaEmbCone->Fill(vLaEmbCone);
 	    
+	    
+	    fhnLaEmbCone->Fill(vLaEmbCone);
 	  }
-	  
+	  	
+	  //=========
+	  //for particle referenz via embedding flags and using the extra particles
+	  if(fUseExtraTracks == 1){
+	    	    
+	    Int_t nnum;
+	    Int_t pnum;
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue;
+	    	    
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part embedding flag:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+
+	    Bool_t isEmbeddedNeg = (Bool_t) (trackNeg->GetFlags() & AliESDtrack::kEmbedded);//check whether daughter particles are stemming from embedded PYTHIA events
+            Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
+
+	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
+	          
+	      Double_t vLaEmbConeRef[4] = {jetPt,invMLa,trackPt,fEta};
+	      
+	      fhnLaEmbConeRef->Fill(vLaEmbConeRef);
+	    }	    
+	  }
+
+	  //==========
+
+
+
+
+
+
+
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 	   
-    	    Double_t vLaEmbCone[4] = {jetPt, invMLa,MCPt,fEta};
+    	    Double_t vLaEmbCone[4] = {jetPt, invMLa, trackPt, fEta};
 	    fhnLaEmbCone->Fill(vLaEmbCone);
 	    
 	  }
@@ -3974,21 +4130,57 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    if(mclabelcheck == kFALSE)continue;
 	  }
 	  
-	  
+	  //=======
+	  //for embedding signal calculation and extraonly particle referenz
+
 	  if(incrementJetPt==kTRUE){
-	    fh1IMALaEmbCone->Fill(jetPt);}//normalisation by number of selected jets
+	    fh1IMALaEmbCone->Fill(jetPt);
+	  }//normalisation by number of selected jets
 	  
 
 	  if(fUseExtraTracks == 1){//only for extra particles used
-	    
 	    Double_t vALaEmbCone[4] = {jetPt, invMALa,trackPt,fEta};
-	    fhnALaEmbCone->Fill(vALaEmbCone);
 	    
+	    
+	    fhnALaEmbCone->Fill(vALaEmbCone);
 	  }
 	  
+	  //=========
+	  //for particle referenz via embedding flags and using the extra particles
+	  if(fUseExtraTracks == 1){
+	    	    
+	    Int_t nnum;
+	    Int_t pnum;
+
+	    Bool_t daughtercheck = DaughterTrackCheck(v0, nnum, pnum);
+	    if(daughtercheck == kFALSE)continue;
+	    	    
+	    const AliAODTrack *trackNeg=(AliAODTrack *)(v0->GetDaughter(nnum));
+	    const AliAODTrack *trackPos=(AliAODTrack *)(v0->GetDaughter(pnum));
+
+	    if (!trackPos || !trackNeg) {
+	      if(fDebug > 1) Printf("AliAnalysisTaskJetChem::PYTHIAEmbedding part embedding flag:: Error:Could not retrieve one of the daughter tracks\n");
+	      continue;
+	    }
+
+	    Bool_t isEmbeddedNeg = (Bool_t) (trackNeg->GetFlags() & AliESDtrack::kEmbedded);//check whether daughter particles are stemming from embedded PYTHIA events
+            Bool_t isEmbeddedPos = (Bool_t) (trackPos->GetFlags() & AliESDtrack::kEmbedded);
+
+	    if (isEmbeddedNeg == kTRUE && isEmbeddedPos == kTRUE) {
+	      
+	    
+	      Double_t vALaEmbConeRef[4] = {jetPt,invMALa,trackPt,fEta};
+	      
+	      fhnALaEmbConeRef->Fill(vALaEmbConeRef);
+	    }	    
+	  }
+
+	  //==========
+
+
 	  if(fUseExtraTracks == -1){//only for extraonly particles used
 	    	    
-	    Double_t vALaEmbCone[4] = {jetPt, invMALa,MCPt,fEta};
+	    Double_t vALaEmbCone[4] = {jetPt, invMALa, trackPt, fEta};//should be MC generated pT?
 	    fhnALaEmbCone->Fill(vALaEmbCone);
 	    	    
 	  }
@@ -5868,13 +6060,11 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 
   //First the embedded v0s:########################################################################################################
 
-  if((tracktype==kTrackAODExtraonlyCuts)||(tracktype==kTrackAODExtraCuts)){
+  if((tracktype==kTrackAODExtraonlyCuts)||(tracktype==kTrackAODExtraCuts)){//carried out only when extra or extraonly tracks are requested
 
     TClonesArray *aodExtrav0s = 0x0;
-    
-    //aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraV0s"));
-    
-    if(particletype == kK0){aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraK0s"));}
+        
+    if(particletype == kK0){aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraK0s"));}//search for embedded V0s
 
     if(particletype == kLambda){aodExtrav0s = dynamic_cast<TClonesArray*>(fAOD->FindListObject("aodExtraLa"));}
 
@@ -5946,7 +6136,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa)))continue; 
        
        //all other PYTHIA v0 particle cuts are already applied in AliAnalysisTaskFastEmbedding.cxx ->cut values are set in AddTask_aod_FastEmbedding.C! pay attention!  
-      
+       //since also pdg code check is applied before embedding, in principle no cuts are needed for the PYTHIA V0s
       list->Add(v0);
       iCount++;
       

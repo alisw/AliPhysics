@@ -84,29 +84,6 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
   task->SetLaType(Latype); 
   task->SetALaType(ALatype); 
 
-  task->SetCuttrackPosEta(0.8);
-  task->SetCuttrackNegEta(0.8);
-  task->SetCutV0Eta(0.7); //pseudorapidity cut, dont use 0.5, because too many tracks would fall out of the acceptance; recommended cut for jet analysis of strange particles: 0.75
-  task->SetCosOfPointingAngle(0.97);//David:0.97//K0s, Lambda cut is stricter (0.995) and hardcoded inside task
-  task->SetAcceptKinkDaughters(kFALSE);//accept kink daughters -> dont use this cut anymore
-  task->SetRequireTPCRefit(kTRUE); 
-  task->SetCutV0DecayMin(0.);//multiples of ctau, cut on 2D decay distance over transverse mom. (for K0s, Lambda, Antilambda)
-  task->SetCutV0DecayMax(30.);//David: 20.(K0s), 30.(La)  //multiples of ctau (for K0s, Lambda, Antilambda) Lee Barnby uses 3.0, use 5.0!!!!!
-  task->SetCutDcaV0Daughters(1.);//cut value in multiples of sigma default: 1.
-  task->SetCutDcaPosToPrimVertex(0.06); //cut value in cm 
-  task->SetCutDcaNegToPrimVertex(0.06); //cut value in cm
-  task->SetCutV0RadiusMin(0.5);//0.5//in cm previous value was 0.9 cm
-  task->SetCutV0RadiusMax(1000.);//in cm
- 
-  //task->SetCutArmenteros(0.2);//not needed in pp data/MC
-
-
-
-
-
-
-
-
    mgr->AddTask(task);
 
    // ## create the output containers ##

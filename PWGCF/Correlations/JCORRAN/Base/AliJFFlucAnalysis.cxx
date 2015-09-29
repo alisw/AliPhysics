@@ -227,7 +227,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 
 	fHistCentBin .Set("CentBin","CentBin","Cent:%d",AliJBin::kSingle).SetBin(fNCent);
 	fVertexBin .Set("Vtx","Vtx","Vtx:%d", AliJBin::kSingle).SetBin(3);
-	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(14);
+	fCorrBin .Set("C", "C","C:%d", AliJBin::kSingle).SetBin(17);
 
 	fBin_Nptbins .Set("PtBin","PtBin", "Pt:%d", AliJBin::kSingle).SetBin(N_ptbins);
 
@@ -333,6 +333,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 */
 	//
 	// DO ANALYSIS WORK HERE // 
+	if (AnaEntry==0){ cout<< "start event loop " << endl; } ;
 	// find Centrality
 	double inputCent = fCent;
 	fCBin = -1;
@@ -456,9 +457,18 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex nV6V3star_2 = (QnA[6] * QnB_star[3] * QnB_star[3]) - (1/(NSubTracks[1]-1) * QnA[6] * QnB_star[6] );
 	// New correlattors (Modifed by Ante's correction term for self-correlations for SC result)
 	TComplex nV4V4V2V2 = (QnA[4]*QnB_star[4]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[6] * QnA[4] *QnA[2] )) 
-						- ((1/(NSubTracks[0]-1) * QnA[6]*QnB_star[4] * QnB_star[2])) - (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[6]*QnB_star[6] ); 
+						- ((1/(NSubTracks[0]-1) * QnA[6]*QnB_star[4] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[6]*QnB_star[6] ); 
 	TComplex nV3V3V2V2 = (QnA[3]*QnB_star[3]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[5] * QnA[3] *QnA[2] )) 
-						- ((1/(NSubTracks[0]-1) * QnA[5]*QnB_star[3] * QnB_star[2])) - (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[5]*QnB_star[5] ); 
+						- ((1/(NSubTracks[0]-1) * QnA[5]*QnB_star[3] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[5]*QnB_star[5] );
+	// add higher order SC results
+	TComplex nV5V5V2V2 = (QnA[5]*QnB_star[5]*QnA[2]*QnB_star[2]) - ((1/(NSubTracks[1]-1) * QnB_star[7] * QnA[5] *QnA[2] )) 
+						- ((1/(NSubTracks[0]-1) * QnA[7]*QnB_star[5] * QnB_star[2])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[7]*QnB_star[7] ); 
+	TComplex nV5V5V3V3 = (QnA[5]*QnB_star[5]*QnA[3]*QnB_star[3]) - ((1/(NSubTracks[1]-1) * QnB_star[8] * QnA[5] *QnA[3] )) 
+						- ((1/(NSubTracks[0]-1) * QnA[8]*QnB_star[5] * QnB_star[3])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[8]*QnB_star[8] ); 
+	TComplex nV4V4V3V3 = (QnA[4]*QnB_star[4]*QnA[3]*QnB_star[3]) - ((1/(NSubTracks[1]-1) * QnB_star[7] * QnA[4] *QnA[3] )) 
+						- ((1/(NSubTracks[0]-1) * QnA[7]*QnB_star[4] * QnB_star[3])) + (1/((NSubTracks[0]-1)*(NSubTracks[1]-1))*QnA[7]*QnB_star[7] ); 
+
+ 
 
 	fh_correlator[0][fCBin]->Fill( V4V2starv2_2.Re() );
 	fh_correlator[1][fCBin]->Fill( V4V2starv2_4.Re() );
@@ -477,12 +487,16 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	fh_correlator[12][fCBin]->Fill( nV4V4V2V2.Re() );
 	fh_correlator[13][fCBin]->Fill( nV3V3V2V2.Re() ) ;
 
+	fh_correlator[14][fCBin]->Fill( nV5V5V2V2.Re() );
+	fh_correlator[15][fCBin]->Fill( nV5V5V3V3.Re() );
+	fh_correlator[16][fCBin]->Fill( nV4V4V3V3.Re() );
+
 	//
 	//
 
 	if(IsSCptdep == kTRUE){
-		const int SCNH =5; // 0, 1, 2(v2), 3(v3), 4(v4)
-		double ptbin_borders[N_ptbins+1] = {0.2, 0.6, 1.0, 1.4, 1.8, 2.2, 3.0, 5.0};
+		const int SCNH =6; // 0, 1, 2(v2), 3(v3), 4(v4), 5(v5)
+		double ptbin_borders[N_ptbins+1] = {0.2, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 5.0};
 		//init
 		TComplex QnA_pt[SCNH][N_ptbins];
 		TComplex QnB_pt[SCNH][N_ptbins];
@@ -523,13 +537,25 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 		for(int ipt=0; ipt<N_ptbins; ipt++){
 			TComplex nV4V4V2V2_pt = (QnA_pt[4][ipt]*QnB_pt_star[4][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[6][ipt] * QnA_pt[4][ipt] *QnA_pt[2][ipt] )) 
-						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[6][ipt]*QnB_pt_star[4][ipt] * QnB_pt_star[2][ipt])) - (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[6][ipt]*QnB_pt_star[6][ipt] ); 
+						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[6][ipt]*QnB_pt_star[4][ipt] * QnB_pt_star[2][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[6][ipt]*QnB_pt_star[6][ipt] ); 
 			TComplex nV3V3V2V2_pt = (QnA_pt[3][ipt]*QnB_pt_star[3][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[5][ipt] * QnA_pt[3][ipt] *QnA_pt[2][ipt] )) 
-						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[5][ipt]*QnB_pt_star[3][ipt] * QnB_pt_star[2][ipt])) - (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[5][ipt]*QnB_pt_star[5][ipt] ); 
+						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[5][ipt]*QnB_pt_star[3][ipt] * QnB_pt_star[2][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[5][ipt]*QnB_pt_star[5][ipt] );
+
+			//add hihger order 5225, 5335, 4334
+			TComplex nV5V5V3V3_pt =  (QnA_pt[5][ipt]*QnB_pt_star[5][ipt]*QnA_pt[3][ipt]*QnB_pt_star[3][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[8][ipt] * QnA_pt[5][ipt] *QnA_pt[3][ipt] )) 
+						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[8][ipt]*QnB_pt_star[5][ipt] * QnB_pt_star[3][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[8][ipt]*QnB_pt_star[8][ipt] ); 
+			TComplex nV5V5V2V2_pt =  (QnA_pt[5][ipt]*QnB_pt_star[5][ipt]*QnA_pt[2][ipt]*QnB_pt_star[2][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[7][ipt] * QnA_pt[5][ipt] *QnA_pt[2][ipt] )) 
+						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[7][ipt]*QnB_pt_star[5][ipt] * QnB_pt_star[2][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[7][ipt]*QnB_pt_star[7][ipt] ); 
+			TComplex nV4V4V3V3_pt =  (QnA_pt[4][ipt]*QnB_pt_star[4][ipt]*QnA_pt[3][ipt]*QnB_pt_star[3][ipt]) - ((1/(NSubTracks_pt[1][ipt]-1) * QnB_pt_star[7][ipt] * QnA_pt[4][ipt] *QnA_pt[3][ipt] )) 
+						- ((1/(NSubTracks_pt[0][ipt]-1) * QnA_pt[7][ipt]*QnB_pt_star[4][ipt] * QnB_pt_star[3][ipt])) + (1/((NSubTracks_pt[0][ipt]-1)*(NSubTracks_pt[1][ipt]-1))*QnA_pt[7][ipt]*QnB_pt_star[7][ipt] ); 
+
 
 			int ik=1;
 			fh_SC_ptdep_4corr[2][1][4][1][fCBin][ipt]->Fill( nV4V4V2V2_pt.Re());
 			fh_SC_ptdep_4corr[2][1][3][1][fCBin][ipt]->Fill( nV3V3V2V2_pt.Re());
+			fh_SC_ptdep_4corr[2][1][5][1][fCBin][ipt]->Fill( nV5V5V2V2_pt.Re() );
+			fh_SC_ptdep_4corr[3][1][4][1][fCBin][ipt]->Fill( nV4V4V3V3_pt.Re() );
+			fh_SC_ptdep_4corr[3][1][5][1][fCBin][ipt]->Fill( nV5V5V3V3_pt.Re() ) ;
 
 		}	
 

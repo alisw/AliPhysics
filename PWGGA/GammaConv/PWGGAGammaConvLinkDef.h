@@ -32,6 +32,7 @@
 #pragma link C++ class AliAnalysisTaskMaterial+;
 #pragma link C++ class AliAnalysisTaskResolution+;
 #pragma link C++ class AliAnalysisTaskGammaCaloDalitzV1+;
+#pragma link C++ class AliAnalysisTaskGammaPureMC+;
 
 #pragma link C++ class AliAnaConvIsolation+;
 #pragma link C++ class AliAnaConvCorrBase+;
@@ -48,6 +49,7 @@
 #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero+;
 #pragma link C++ class AliAnalysisTaskGammaConvCalo+;
 #pragma link C++ class AliAnalysisTaskGammaCalo+;
+#pragma link C++ class AliAnalysisTaskGammaCaloMerged+;
 #pragma link C++ class AliAnalysisTaskGammaConvFlow+;
 
 #endif

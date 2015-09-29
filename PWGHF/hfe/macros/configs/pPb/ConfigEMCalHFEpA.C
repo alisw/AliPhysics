@@ -104,7 +104,7 @@ char* period = "b"
 				
 		if(configIndex==120)task->SetM20Cut(0.0,0.2);
 		else if(configIndex==121)task->SetM20Cut(0.0,0.4);
-		else if(configIndex==122)task->SetM20Cut(0.0,0.6);
+		else if(configIndex==122)task->SetM20Cut(0.01,0.3);
 		else if(configIndex==123)task->SetM20Cut(0.0,2);
 		else task->SetM20Cut(0.0,0.3);
 		
@@ -167,7 +167,7 @@ char* period = "b"
 	
 	if(isTender) task->SetUseTender();
 		
-	
+		//not used anymore  - using hfe package for this cut
 	if(configIndex==104)  task->SetdcaCut(2,3);//r,z
 	else if(configIndex==105)  task->SetdcaCut(1.5,2.5);//r,z
 	else if(configIndex==106)  task->SetdcaCut(0.5,1);//r,z

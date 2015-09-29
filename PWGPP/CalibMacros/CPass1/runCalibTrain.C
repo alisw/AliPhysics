@@ -112,7 +112,7 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   Bool_t writeITSTP = kFALSE;
   if (!okTPC) useTPCcrv = kFALSE;
   AliSysInfo::AddStamp("BeforeSDD");
-  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv);
+  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv,detStr.Contains("TOF") ? 10.0:-1);
   if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE);
   if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001); 
   //

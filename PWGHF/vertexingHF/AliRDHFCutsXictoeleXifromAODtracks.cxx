@@ -61,6 +61,7 @@ AliRDHFCuts(name),
   fProdTrackTPCNclsRatioMin(0.0),
   fProdUseAODFilterBit(kTRUE),
   fProdMassTolLambda(0.010),
+  fProdMassTolXiRough(0.020),
   fProdMassTolXi(0.008),
   fProdMassRejOmega(0.008),
   fProdRfidMinV0(0.6),
@@ -92,6 +93,7 @@ AliRDHFCuts(name),
 	fSigmaElectronTPCMin(-9999.),
 	fSigmaElectronTPCPtDepPar0(-9999.),
 	fSigmaElectronTPCPtDepPar1(-9999.),
+	fSigmaElectronTPCPtDepPar2(0.),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
 	fSigmaElectronTOFMax(9999.)
@@ -133,6 +135,7 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
   fProdMassTolLambda(source.fProdMassTolLambda),
+  fProdMassTolXiRough(source.fProdMassTolXiRough),
   fProdMassTolXi(source.fProdMassTolXi),
   fProdMassRejOmega(source.fProdMassRejOmega),
   fProdRfidMinV0(source.fProdRfidMinV0),
@@ -164,6 +167,7 @@ AliRDHFCutsXictoeleXifromAODtracks::AliRDHFCutsXictoeleXifromAODtracks(const Ali
 	fSigmaElectronTPCMin(source.fSigmaElectronTPCMin),
 	fSigmaElectronTPCPtDepPar0(source.fSigmaElectronTPCPtDepPar0),
 	fSigmaElectronTPCPtDepPar1(source.fSigmaElectronTPCPtDepPar1),
+	fSigmaElectronTPCPtDepPar2(source.fSigmaElectronTPCPtDepPar2),
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
 	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax)
@@ -192,6 +196,7 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fProdMassTolLambda = source.fProdMassTolLambda;
+  fProdMassTolXiRough = source.fProdMassTolXiRough;
   fProdMassTolXi = source.fProdMassTolXi;
   fProdMassRejOmega = source.fProdMassRejOmega;
   fProdRfidMinV0 = source.fProdRfidMinV0;
@@ -223,6 +228,7 @@ AliRDHFCutsXictoeleXifromAODtracks &AliRDHFCutsXictoeleXifromAODtracks::operator
 	fSigmaElectronTPCMin = source.fSigmaElectronTPCMin;
 	fSigmaElectronTPCPtDepPar0 = source.fSigmaElectronTPCPtDepPar0;
 	fSigmaElectronTPCPtDepPar1 = source.fSigmaElectronTPCPtDepPar1;
+	fSigmaElectronTPCPtDepPar2 = source.fSigmaElectronTPCPtDepPar2;
 	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
@@ -540,8 +546,10 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedeID(AliAODTrack *
 
 	if(nSigmaTPCele<fSigmaElectronTPCMin) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
-	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
-	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+	if(fabs(fSigmaElectronTOFMin)<10.&&fabs(fSigmaElectronTOFMax)<10.){
+		if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
+		if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+	}
 
 	return kTRUE;
 }
@@ -549,9 +557,8 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedeID(AliAODTrack *
 Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedPtDepeID(AliAODTrack *trk)
 {
   //
-  // electron ID first shot
+  // electron ID pt dependent
   //
-
 
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
@@ -559,7 +566,8 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSelectedCustomizedPtDepeID(AliAODTr
 	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
 	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
 
-	if(nSigmaTPCele<fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*trk->Pt()) return kFALSE;
+	Double_t pte = trk->Pt();
+	if(nSigmaTPCele<fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
 
 	return kTRUE;
@@ -610,10 +618,11 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SingleCascadeCuts(AliAODcascade *casc
     return kFALSE;
 
   Bool_t isparticle = kTRUE;
-  if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
+  //if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
+	if(casc->ChargeXi()>0) isparticle = kFALSE;
   
   Double_t massXi = casc->MassXi();
-  if(TMath::Abs(massXi-mxiPDG)>fProdMassTolXi)
+  if(TMath::Abs(massXi-mxiPDG)>fProdMassTolXiRough)
     return kFALSE;
 
   Double_t massOmega = casc->MassOmega();
@@ -715,5 +724,47 @@ Bool_t AliRDHFCutsXictoeleXifromAODtracks::SelectWithRoughCuts(AliAODcascade *ca
 	if(!part) return kFALSE;
 
 	return kTRUE;
-
 }
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsPeakRegion(AliAODcascade *casc)
+{
+  Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+  Double_t massXi = casc->MassXi();
+  if(TMath::Abs(massXi-mxiPDG)<fProdMassTolXi)
+		return kTRUE;
+	return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsPeakRegion(TLorentzVector *casc)
+{
+  Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+  Double_t massXi = casc->M();
+  if(TMath::Abs(massXi-mxiPDG)<fProdMassTolXi)
+		return kTRUE;
+	return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSideBand(AliAODcascade *casc)
+{
+  Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+  Double_t massXi = casc->MassXi();
+	Bool_t issideband = kFALSE;
+  if((massXi-mxiPDG)>fProdMassTolXiRough-fProdMassTolXi) issideband = kTRUE;
+  if((massXi-mxiPDG)<-fProdMassTolXiRough+fProdMassTolXi) issideband = kTRUE;
+	return issideband;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsXictoeleXifromAODtracks::IsSideBand(TLorentzVector *casc)
+{
+  Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+  Double_t massXi = casc->M();
+	Bool_t issideband = kFALSE;
+  if((massXi-mxiPDG)>fProdMassTolXiRough-fProdMassTolXi) issideband = kTRUE;
+  if((massXi-mxiPDG)<-fProdMassTolXiRough+fProdMassTolXi) issideband = kTRUE;
+	return issideband;
+}
+

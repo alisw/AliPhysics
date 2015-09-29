@@ -67,8 +67,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fAssociatedSelectCharge(0),
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
-  fCutConversions(kFALSE),
-  fCutResonances(kFALSE),
+  fCutConversionsV(-1),
+  fCutResonancesV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
@@ -164,7 +164,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCorrelationR =   new TH2F("fCorrelationR", ";R;p_{T,lead} (MC)", 200, 0, 2, 200, 0, 50);
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #varphi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
-  fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 400, 0, 20, 20, -1, 1);
+  fYields = new TH3F("fYields", ";centrality;pT;eta", 100, 0, 100, 40, 0, 20, 200, -10, 10);
   fInvYield2 = new TH2F("fInvYield2", ";centrality;pT;1/pT dNch/dpT", 100, 0, 100, 80, 0, 20);
 
   if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5") && !histogramsStr.Contains("6"))
@@ -227,8 +227,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fAssociatedSelectCharge(0),
   fTriggerRestrictEta(-1),
   fEtaOrdering(kFALSE),
-  fCutConversions(kFALSE),
-  fCutResonances(kFALSE),
+  fCutConversionsV(-1),
+  fCutResonancesV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
   fWeightPerEvent(kFALSE),
@@ -735,63 +735,63 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  }
 
 	// conversions
-	if (fCutConversions && particle->Charge() * triggerParticle->Charge() < 0)
+	if (fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	  
-	  if (mass < 0.1)
+	  if (mass < fCutConversionsV * 5)
 	  {
 	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	    
 	    fControlConvResoncances->Fill(0.0, mass);
 
-	    if (mass < 0.04*0.04) 
+	    if (mass < fCutConversionsV*fCutConversionsV) 
 	      continue;
 	  }
 	}
 	
 	// K0s
-	if (fCutResonances && particle->Charge() * triggerParticle->Charge() < 0)
+	if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
 	  const Float_t kK0smass = 0.4976;
 	  
-	  if (TMath::Abs(mass - kK0smass*kK0smass) < 0.1)
+	  if (TMath::Abs(mass - kK0smass*kK0smass) < fCutResonancesV * 5)
 	  {
 	    mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	    
 	    fControlConvResoncances->Fill(1, mass - kK0smass*kK0smass);
 
-	    if (mass > (kK0smass-0.02)*(kK0smass-0.02) && mass < (kK0smass+0.02)*(kK0smass+0.02))
+	    if (mass > (kK0smass-fCutResonancesV)*(kK0smass-fCutResonancesV) && mass < (kK0smass+fCutResonancesV)*(kK0smass+fCutResonancesV))
 	      continue;
 	  }
 	}
 	
 	// Lambda
-	if (fCutResonances && particle->Charge() * triggerParticle->Charge() < 0)
+	if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass1 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 	  Float_t mass2 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
 	  
 	  const Float_t kLambdaMass = 1.115;
 
-	  if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < 0.1)
+	  if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fCutResonancesV * 5)
 	  {
 	    mass1 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 
 	    fControlConvResoncances->Fill(2, mass1 - kLambdaMass*kLambdaMass);
 	    
-	    if (mass1 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass1 < (kLambdaMass+0.02)*(kLambdaMass+0.02))
+	    if (mass1 > (kLambdaMass-fCutResonancesV)*(kLambdaMass-fCutResonancesV) && mass1 < (kLambdaMass+fCutResonancesV)*(kLambdaMass+fCutResonancesV))
 	      continue;
 	  }
-	  if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < 0.1)
+	  if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fCutResonancesV * 5)
 	  {
 	    mass2 = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
 
 	    fControlConvResoncances->Fill(2, mass2 - kLambdaMass*kLambdaMass);
 
-	    if (mass2 > (kLambdaMass-0.02)*(kLambdaMass-0.02) && mass2 < (kLambdaMass+0.02)*(kLambdaMass+0.02))
+	    if (mass2 > (kLambdaMass-fCutResonancesV)*(kLambdaMass-fCutResonancesV) && mass2 < (kLambdaMass+fCutResonancesV)*(kLambdaMass+fCutResonancesV))
 	      continue;
 	  }
 	}
@@ -1233,8 +1233,8 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fAssociatedSelectCharge = fAssociatedSelectCharge;
   target.fTriggerRestrictEta = fTriggerRestrictEta;
   target.fEtaOrdering = fEtaOrdering;
-  target.fCutConversions = fCutConversions;
-  target.fCutResonances = fCutResonances;
+  target.fCutConversionsV = fCutConversionsV;
+  target.fCutResonancesV = fCutResonancesV;
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
   target.fWeightPerEvent = fWeightPerEvent;
   target.fRunNumber = fRunNumber;

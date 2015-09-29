@@ -86,7 +86,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 		Bool_t IsPhiModule;  
 
 // Histograms
-		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kNH}; //harmonics
+		enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kNH}; //harmonics
 		enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
 		double fEta_min;
 		double fEta_max;
@@ -124,7 +124,7 @@ class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 
 		// addtinal variables for ptbins(Standard Candles only)
 		Bool_t IsSCptdep;  // flag to check SC pt dep or not
-		enum{kPt0, kPt1, kPt2, kPt3, kPt4, kPt5, kPt6, N_ptbins};
+		enum{kPt0, kPt1, kPt2, kPt3, kPt4, kPt5, kPt6, kPt7, N_ptbins};
 		double NSubTracks_pt[2][N_ptbins];
 		AliJBin fBin_Nptbins;
 		AliJTH1D fh_SC_ptdep_4corr; // for < vn^2 vm^2 >

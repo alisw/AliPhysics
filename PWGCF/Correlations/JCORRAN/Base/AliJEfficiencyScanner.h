@@ -1,4 +1,4 @@
-// $Id: AliJEfficiencyScanner.h,v 1.5 2012/04/19 15:19:52 jkral Exp $
+//d: AliJEfficiencyScanner.h,v 1.5 2012/04/19 15:19:52 jkral Exp $
 
 //______________________________________________________________________________
 // Analysis task for high pt particle correlations 
@@ -10,8 +10,8 @@
 // Note: Adapted for AliAnalysisTaskSE
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALIJEFFCIENCYSCANNER_H
-#define ALIJEFFCIENCYSCANNER_H
+#ifndef ALIJEFFICIENCYSCANNER_H
+#define ALIJEFFICIENCYSCANNER_H
 
 #include <TNamed.h>
 #include "AliJRunHeader.h"
@@ -34,7 +34,7 @@ const int kMaxDimBuffer = 300;//max length of a line read to a buffe
 #endif
 
 class AliJEventHeader;
-class AliJRunHeader;
+//class AliJRunHeader;
 class AliJTrack;
 class AliAnalysisTaskSE;
 
@@ -66,7 +66,12 @@ class AliJEfficiencyScanner : public TNamed  {
   void SetJEventHeader( AliJEventHeader * h ){ fEventHeader = h ; }
   void SetJRunHeader( AliJRunHeader *h ){ fRunHeader = h; }
   void SetMBTriggMask(int mask ){ fMBTriggMask = mask; }
-
+  
+  void SetIsIsolated( Bool_t isIsolatedIn ) { fisIsolated = isIsolatedIn; }
+  void SetIsRelative( Bool_t isRelaticeIn ) { fisRelative = isRelaticeIn; }
+  void SetIsolParameter( double isolParamIn ) { fisolParam = isolParamIn; }
+  void SetIsolCone( double isolConeIn ) { fisolCone = isolConeIn; }
+  
   bool IsSelected( AliJTrack * track, int itrigger )const { return AliJTrackCut::GetInstance().IsSelected(track, itrigger); }
 
   AliJTrack * GetJTrack( int i ){ return (AliJTrack*) fTrackList->At(i); }
@@ -96,6 +101,11 @@ class AliJEfficiencyScanner : public TNamed  {
   void PrintOut() const;
 
   int fMBTriggMask;
+  
+  Bool_t fisIsolated; // weather one does isolated or normal efficiency, latter is the default
+  Bool_t fisRelative; // true for relative isolation criteria, else absolutive
+  double fisolParam;  // when true, isolation threshold = isolParam * pt, else isolParam
+  double fisolCone;   // particle is isolated if sum pT inside cone smaller than threshold
   
   TClonesArray *    fTrackList;   //! list of charged track objects
   TClonesArray *    fMCTrackList; //! list of charged track objects
@@ -144,3 +154,4 @@ class AliJEfficiencyScanner : public TNamed  {
   ClassDef(AliJEfficiencyScanner, 1); 
 };
 #endif // AliJEfficiencyScanner_H
+

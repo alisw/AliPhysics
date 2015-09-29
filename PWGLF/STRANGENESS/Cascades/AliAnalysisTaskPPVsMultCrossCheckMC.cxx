@@ -93,8 +93,9 @@ ClassImp(AliAnalysisTaskPPVsMultCrossCheckMC)
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC()
 : AliAnalysisTaskSE(), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
-fHistV0M_DataSelection(0), fHistV0M_MCSelection(0),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE), fSkipPS(kFALSE), fUseRecoVtxZ(kFALSE),
+fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
+fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
 fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
 {
@@ -117,8 +118,9 @@ fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCS
 
 AliAnalysisTaskPPVsMultCrossCheckMC::AliAnalysisTaskPPVsMultCrossCheckMC(const char *name)
 : AliAnalysisTaskSE(name), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fPPVsMultUtils(0), fUtils(0),
-fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE),
-fHistV0M_DataSelection(0), fHistV0M_MCSelection(0),
+fHistEventCounter(0),lPureMonteCarlo(kFALSE), fCheckVtxZMC(kTRUE), fAlternateMCSelection(kFALSE), fSkipPS(kFALSE), fUseRecoVtxZ(kFALSE),
+fHistV0M_DataSelection(0), fHistV0M_MCSelection(0), fHistV0MAmplitude_DataSelection(0), fHistV0MAmplitude_MCSelection(0),
+fHistV0MTrue_DataSelection(0), fHistV0MTrue_MCSelection(0),
 fHistV0MVsMidRapidityTrue_DataSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_DataSelection(0), fHistV0MTrueVsMidRapidityTrue_DataSelection(0),
 fHistV0MVsMidRapidityTrue_MCSelection(0), fHistV0MAmplitudeVsMidRapidityTrue_MCSelection(0), fHistV0MTrueVsMidRapidityTrue_MCSelection(0)
 {
@@ -214,11 +216,11 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     };
     
     //Settings for transverse momentum
-    Int_t lNPtBins = 3000; //10MeV/c precision
-    Double_t lMaxPt = 30.0;
+    Int_t lNPtBins = 300; //50MeV/c precision
+    Double_t lMaxPt = 15.0;
     
     //Settings for charged particle counters (integers!)
-    Int_t lNNchBins = 1000;
+    Int_t lNNchBins = 400;
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
     
@@ -542,14 +544,16 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     // (already exists, called "fEvSel_INELgtZEROStackPrimaries")
     //Beta: Vertex position
     Bool_t lIsAcceptedVertexPositionMC = (TMath::Abs(lVertexZMC)<10.0); //true if within desired range
+
+    if( fUseRecoVtxZ ) lIsAcceptedVertexPositionMC = lIsAcceptedVertexPosition; //override!
     
     //Merge all conditionals
     Bool_t lDataSelection = ( lEvSel_Triggered && lIsINELgtZEROtracklets && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
-    Bool_t lMCSelection   = ( lEvSel_Triggered && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPositionMC );
+    Bool_t lMCSelection   = ( ( fSkipPS ||lEvSel_Triggered ) && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPositionMC );
     
     //Alternate Selection: Factor out only INEL>0 selection (extra cross-check) 
     if ( fAlternateMCSelection ){
-        lMCSelection   = ( lEvSel_Triggered && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
+        lMCSelection   = ( ( fSkipPS ||lEvSel_Triggered ) && lEvSel_INELgtZEROStackPrimaries && lIsAcceptedVertexPosition && lIsNotPileupInMultBins && lConsistentVertices );
     }
     
     //------------------------------------------------
@@ -632,18 +636,18 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
                 //Fill Histograms
                 fHistPt_Generated     [ih] -> Fill(lThisPt);
                 fHistPtVsV0M_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                fHistPtVsV0MAmplitude_Generated[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                fHistPtVsV0MAmplitude_Generated[ih] -> Fill(lThisPt,fV0MAmplitude);
                 fHistPtVsV0MTrue_Generated     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 if( lDataSelection ){
                     fHistPt_DataSelection     [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                    fHistPtVsV0MAmplitude_DataSelection[ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsV0MAmplitude_DataSelection[ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_DataSelection     [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 }
                 if( lMCSelection   ){
                     fHistPt_MCSelection       [ih] -> Fill(lThisPt);
                     fHistPtVsV0M_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
-                    fHistPtVsV0MAmplitude_MCSelection  [ih] -> Fill(lThisPt,fCentrality_V0MUnselected);
+                    fHistPtVsV0MAmplitude_MCSelection  [ih] -> Fill(lThisPt,fV0MAmplitude);
                     fHistPtVsV0MTrue_MCSelection       [ih] -> Fill(lThisPt,lNchVZEROA+lNchVZEROC);
                 }
             }

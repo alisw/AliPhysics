@@ -160,6 +160,13 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMaxCellEPhi(0),
   fDetaDphiFromTM(0),
   fEoverPvsE(0),
+  fTrackDEtaDPhiPho(0),
+  fTrackDEtaDPhiPi(0),
+  fTrackDEtaDPhiPPho(0),
+  fTrackDzDxIM(0),
+  fTrackDzDxPhoSS(0),
+  fTrackDzDxIM_bg(0),
+  fTrackDzDxPhoSS_bg(0),
   fETrigg(0),
   fM02vsESoftPi0Kid(0),
   fM02vsEHardPi0Kid(0),
@@ -295,6 +302,13 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMaxCellEPhi(0),
   fDetaDphiFromTM(0),
   fEoverPvsE(0),
+  fTrackDEtaDPhiPho(0),
+  fTrackDEtaDPhiPi(0),
+  fTrackDEtaDPhiPPho(0),
+  fTrackDzDxIM(0),
+  fTrackDzDxPhoSS(0),
+  fTrackDzDxIM_bg(0),
+  fTrackDzDxPhoSS_bg(0),
   fETrigg(0),
   fM02vsESoftPi0Kid(0),
   fM02vsEHardPi0Kid(0),
@@ -520,6 +534,34 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fEoverPvsE = new TH2F("fEoverPvsE","E^{clus}/p^{track} vs E^{clus} (80<TPCsignal<100);E^{clus} [GeV];E^{clus}/p^{track} [c^{-1}]",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,100,0,2);
   fEoverPvsE->Sumw2();
   fQAList->Add(fEoverPvsE);
+
+  fTrackDEtaDPhiPho = new TH2F("fTrackDEtaDPhiPho","clusters from MC-truth #pi^{0}#rightarrow #gamma ;#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDEtaDPhiPho->Sumw2();
+  fQAList->Add(fTrackDEtaDPhiPho);
+
+  fTrackDEtaDPhiPi = new TH2F("fTrackDEtaDPhiPi","clusters from MC-truth #pi^{#pm};#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDEtaDPhiPi->Sumw2();
+  fQAList->Add(fTrackDEtaDPhiPi);
+
+  fTrackDEtaDPhiPPho = new TH2F("fTrackDEtaDPhiPPho","clusters from MC-truth prompt-#gamma ;#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDEtaDPhiPPho->Sumw2();
+  fQAList->Add(fTrackDEtaDPhiPPho);
+
+  fTrackDzDxIM = new TH2F("fTrackDzDxIM","cluster in #pi^{0} invariant mass range (inclusive energy);#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDzDxIM->Sumw2();
+  fQAList->Add(fTrackDzDxIM);
+
+  fTrackDzDxPhoSS = new TH2F("fTrackDzDxPhoSS","cluster in #pi^{0} #lambda_{0}^{2} range (inclusive energy);#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDzDxPhoSS->Sumw2();
+  fQAList->Add(fTrackDzDxPhoSS);
+
+  fTrackDzDxIM_bg = new TH2F("fTrackDzDxIM_bg","cluster in side bands of #pi^{0} mass (inclusive energy);#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDzDxIM_bg->Sumw2();
+  fQAList->Add(fTrackDzDxIM_bg);
+
+  fTrackDzDxPhoSS_bg =  new TH2F("fTrackDzDxPhoSS_bg","cluster in side bands of merged #pi^{0} #lambda_{0}^{2} (inclusive energy);#Delta#eta_{Tr-Cl};#Delta#phi_{Tr-Cl}",100,-0.05,0.05,200,-0.1,0.1);
+  fTrackDzDxPhoSS_bg->Sumw2();
+  fQAList->Add(fTrackDzDxPhoSS_bg);
 
   fETrigg = new TH1F("fETrigg","TrigPatchInfo->GetPatchE();E [GeV];entries/GeV",100,0,100);
   fETrigg->Sumw2();
@@ -1648,11 +1690,14 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
   return ptsum;
 }
 //________________________________________________________________________
-bool AliAnalysisTaskEMCALIsoPhoton::IsMcPi0(Int_t label)
+bool AliAnalysisTaskEMCALIsoPhoton::IsMcPDG(Int_t label, Int_t PDG)
 {
   bool foundpi0=false;
   if(!fStack && !fAODMCParticles)
     return false;
+  bool prompho = false;
+  if(PDG==22 && fMcIdFamily.Contains(Form("%d",label)))
+    prompho = true;
   int imother=label+1;
   int nmcp=0;
   //ESD
@@ -1663,10 +1708,12 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsMcPi0(Int_t label)
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(label));  
     if(!mcp)
       return false;
-    if(mcp->GetPdgCode()==111)
-      foundpi0=true;
+    if((mcp->GetPdgCode()==22) && prompho)
+      return prompho;
+    if(mcp->GetPdgCode()==TMath::Abs(PDG))
+      return true;
     imother = mcp->GetMother(0);
-    foundpi0 = IsMcPi0(imother);
+    foundpi0 = IsMcPDG(imother,PDG);
   }
   //AOD
   if(fAODMCParticles){
@@ -1676,10 +1723,12 @@ bool AliAnalysisTaskEMCALIsoPhoton::IsMcPi0(Int_t label)
     AliAODMCParticle *mcp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(label));
     if(!mcp)
       return false;
-    if(mcp->GetPdgCode()==111)
-      foundpi0 = true;
+    if((mcp->GetPdgCode()==22) && prompho)
+      return prompho;
+    if(mcp->GetPdgCode()==TMath::Abs(PDG))
+      return true;
     imother = mcp->GetMother();
-    foundpi0 = IsMcPi0(imother);
+    foundpi0 = IsMcPDG(imother,PDG);
   }
   return foundpi0;
 }
@@ -1766,12 +1815,31 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       fEmcClusETM2->Fill(c->E());
       fDetaDphiFromTM->Fill(c->GetTrackDz(),c->GetTrackDx());
     }
+    if(IsPi0M02(c->GetM02(),c->E()*TMath::Sin(clsVec.Theta())))
+      fTrackDzDxPhoSS->Fill(c->GetTrackDz(),c->GetTrackDx());
+    else{
+    if(IsPi0M02(c->GetM02()-0.1,c->E()*TMath::Sin(clsVec.Theta())))
+      fTrackDzDxPhoSS_bg->Fill(c->GetTrackDz(),c->GetTrackDx());
+    if(IsPi0M02(c->GetM02()+0.1,c->E()*TMath::Sin(clsVec.Theta())))
+      fTrackDzDxPhoSS_bg->Fill(c->GetTrackDz(),c->GetTrackDx());
+    }
+    if(fIsMc){
+      bool ispi0 = IsMcPDG(c->GetLabel(),111);
+      bool ispich = IsMcPDG(c->GetLabel(),211);
+      bool isprompho = IsMcPDG(c->GetLabel(),22);
+      if(ispi0)
+	fTrackDEtaDPhiPho->Fill(c->GetTrackDz(),c->GetTrackDx());
+      if(ispich)
+	fTrackDEtaDPhiPi->Fill(c->GetTrackDz(),c->GetTrackDx());
+      if(isprompho)
+	fTrackDEtaDPhiPPho->Fill(c->GetTrackDz(),c->GetTrackDx());
+    }
     if(TMath::Abs(c->GetTrackDx())<0.03 && TMath::Abs(c->GetTrackDz())<0.02){
       fEmcClusETM1->Fill(c->E());
       continue;
     }
     fEmcClusEClusCuts->Fill(c->E(),2);
-    if(TMath::Abs(maxt)>30e-9)
+    if(TMath::Abs(maxt)>30e-9 && !fIsMc)
       continue;
     fEmcClusEClusCuts->Fill(c->E(),3);
     if(c->GetM02()>0.1)
@@ -2121,8 +2189,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
 	continue;
       if(TMath::Abs(c->GetTrackDx())>0.03 || TMath::Abs(c->GetTrackDz())>0.02)
 	isCPV = kTRUE;
-      if(!isCPV)
-	continue;
+      /*      if(!isCPV)
+	      continue;*/
       Short_t idm1;
       Double_t Emax1 = GetMaxCellEnergy( c, idm1);
       Float_t ec1 = GetCrossEnergy(c,idm1);
@@ -2136,10 +2204,6 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
 	AliVCluster *c2 = static_cast<AliVCluster*>(clusters->At(jc));
 	if(!c2)
 	  continue;
-	if(TMath::Abs(c2->GetTrackDx())>0.03 || TMath::Abs(c2->GetTrackDz())>0.02)
-	  isCPV2 = kTRUE;
-	if(!isCPV2)
-	  continue;
 	Short_t idm2;
 	Double_t Emax2 = GetMaxCellEnergy( c2, idm2);
 	Float_t ec2 = GetCrossEnergy(c2,idm2);
@@ -2149,14 +2213,27 @@ void AliAnalysisTaskEMCALIsoPhoton::FillInvMass()
 	c2->GetPosition(clsPos2);
 	TVector3 clsVec2(clsPos2);
 	clsVec2 -= fVecPv;
+	if(TMath::Abs(c2->GetTrackDx())>0.03 || TMath::Abs(c2->GetTrackDz())>0.02)
+	  isCPV2 = kTRUE;
 	TLorentzVector lv1,lv2,lvm;
 	lv1.SetPtEtaPhiM(c->E()*TMath::Sin(clsVec.Theta()),clsVec.Eta(),clsVec.Phi(),0.0);
 	lv2.SetPtEtaPhiM(c2->E()*TMath::Sin(clsVec2.Theta()),clsVec2.Eta(),clsVec2.Phi(),0.0);
 	lvm = lv1 + lv2;
+	if(TMath::Abs(lvm.M()-0.135)<0.015){
+	  fTrackDzDxIM->Fill(c->GetTrackDz(),c->GetTrackDx());
+	  fTrackDzDxIM->Fill(c2->GetTrackDz(),c2->GetTrackDx());
+	}
+	if(TMath::Abs(lvm.M()-0.135)>0.015 && TMath::Abs(lvm.M()-0.135)<0.02){
+	  fTrackDzDxIM_bg->Fill(c->GetTrackDz(),c->GetTrackDx());
+	  fTrackDzDxIM_bg->Fill(c2->GetTrackDz(),c2->GetTrackDx());
+	}
+	if(!isCPV2 || !isCPV)
+	  continue;
 	fClusInvMassPairEt->Fill(lvm.Pt(),lvm.M());
 	if(TMath::Abs(lvm.M()-0.135)<0.015){
 	  GetEDistInClusCells(c,idm1);
 	  GetEDistInClusCells(c2,idm2);
+
 	  if(c->E()>c2->E()){
 	    fM02vsESoftPi0Kid->Fill(c2->E(),c2->GetM02());
 	    fM02vsEHardPi0Kid->Fill(c->E(),c->GetM02());
@@ -2231,6 +2308,23 @@ void AliAnalysisTaskEMCALIsoPhoton::GetEDistInClusCells(const AliVCluster *clust
     if(cluster->GetM02()>0.25 && cluster->GetM02()<0.30)
       fCellsPi0KidM024th->Fill(etadiff,phidiff,cells->GetCellAmplitude(cellAbsId));
   }
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALIsoPhoton::IsPi0M02(Double_t M02, Double_t Et)
+{
+    Double_t M02u;
+    if(Et<12)
+      M02u = 0.02486*Et*Et - 0.7289*Et + 6.266;
+    else
+      M02u = 14.32/Et - 0.09863;
+    if(M02u<0.65)
+      M02u = 0.65;
+    Double_t M02l = 12.88/Et - 0.3194;
+    if(M02l<0.4)
+      M02l = 0.4;
+    if(M02<M02u && M02>M02l)
+      return kTRUE;
+    return kFALSE;
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 

@@ -57,13 +57,11 @@ AliFemtoV0PairCut &AliFemtoV0PairCut::operator=(const AliFemtoV0PairCut &cut)
   return *this;
 }
 
-
 //__________________
 bool AliFemtoV0PairCut::Pass(const AliFemtoPair *pair)
 {
   const AliFemtoV0 *V0_1 = pair->Track1()->V0(),
                    *V0_2 = pair->Track2()->V0();
-
 
   // Assert pair is of two V0 particles
   if (V0_1 == NULL || V0_2 == NULL) {
@@ -164,7 +162,6 @@ Double_t AliFemtoV0PairCut::GetAliFemtoV0Max() const
   return fV0Max;
 }
 
-
 TList *AliFemtoV0PairCut::ListSettings()
 {
   // return a list of settings in a writable form
@@ -223,4 +220,3 @@ void AliFemtoV0PairCut::SetMinAvgSeparation(int type, double minSep)
   else if (type == 3) //Neg-Neg
     fMinAvgSepNegNeg = minSep;
 }
-

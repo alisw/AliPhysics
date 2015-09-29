@@ -10,20 +10,10 @@
 #include "AliFemtoVector.h" //same as in AliFemtoTrack.h
 #include "AliFemtoV0.h"
 
-#ifdef __ROOT__
-#ifndef __NO_STAR_DEPENDENCE_ALLOWED__
-#include "StStrangeMuDstMaker/StXiMuDst.h"
-#endif
-#endif
 
 class AliFemtoXi : public AliFemtoV0 {
 public:
   AliFemtoXi();
-#ifdef __ROOT__
-#ifndef __NO_STAR_DEPENDENCE_ALLOWED__
-  AliFemtoXi(StXiMuDst&); // from strangeness Xi micro dst structure
-#endif
-#endif
   virtual ~AliFemtoXi(){/* no-op */}
 
   void UpdateXi();
@@ -109,6 +99,57 @@ public:
   void SetkeyBac(const unsigned short& s);
 
 
+
+  //!!!!!!!!!!! new below 1.09.2015
+  void SetCosPointingAngleXi(double x);
+  void SetPhiXi(double x);
+  void SetEtaXi(double x);
+
+  void SetTPCNclsBac(int x);
+  void SetNdofBac(int x);
+  void SetStatusBac(unsigned long x);
+  void SetEtaBac(float x);
+
+  void SetBacNSigmaTPCK(float x);
+  void SetBacNSigmaTPCPi(float x);
+  void SetBacNSigmaTPCP(float x);
+
+  void SetBacNSigmaTOFK(float x);
+  void SetBacNSigmaTOFPi(float x);
+  void SetBacNSigmaTOFP(float x);
+
+  void SetTPCMomentumBac(double x);
+
+  void SetTOFProtonTimeBac(double x);
+  void SetTOFPionTimeBac(double x);
+  void SetTOFKaonTimeBac(double x);
+
+  void SetChargeXi(int x);
+
+
+
+  double CosPointingAngleXi() const;
+  double EtaXi() const;
+  double PhiXi() const;
+
+  int TPCNclsBac() const;
+  int NdofBac() const;
+  unsigned long StatusBac() const;
+  float EtaBac() const;
+
+  double GetTPCMomentumBac() const;
+
+  float BacNSigmaTPCK() const;
+  float BacNSigmaTPCPi() const;
+  float BacNSigmaTPCP() const;
+
+  float BacNSigmaTOFK() const;
+  float BacNSigmaTOFPi() const;
+  float BacNSigmaTOFP() const;
+
+  int ChargeXi() const;
+
+
 protected: 
   int   fCharge;                           // Charge                
   float fDecayLengthXi;                    // Decay Length of th Xi
@@ -151,7 +192,35 @@ protected:
   float fPtBac;		      // Transverse momentum of bac. daughter	     
   float fPtotBac;	      // Total momentum of bac. daughter		     
 
-  unsigned short   fKeyBac;   // Key of bac. track				     
+  unsigned short   fKeyBac;   // Key of bac. track
+
+
+  //!!!!!!!!! new below 1.09.2015
+  double fCosPointingAngleXi; // Cosine of Xi pointing angle
+  double fPhiXi;  //Phi angle of Xi
+  double fEtaXi;
+
+  //bachelor track properties
+  int fTPCNclsBac; //Bachelor number of TPC clusters
+  int   fNdofBac;
+  unsigned long fStatusBac; //Status (TPC refit, ITS refit, ...) of bachelor track
+  float fEtaBac; //Eta of bachelor track
+  int fIdBac; //id of bachelor track
+
+  float fBacNSigmaTPCK;
+  float fBacNSigmaTPCPi;
+  float fBacNSigmaTPCP;
+
+  float fBacNSigmaTOFK;
+  float fBacNSigmaTOFPi;
+  float fBacNSigmaTOFP;
+
+  double fTPCMomentumBac;
+
+  double fTOFProtonTimeBac;
+  double fTOFPionTimeBac;
+  double fTOFKaonTimeBac;
+  
 };
 
 inline float AliFemtoXi::DecayLengthXi() const { return fDecayLengthXi; }
@@ -232,6 +301,54 @@ inline void AliFemtoXi::SetidBac(const unsigned short& s){ fKeyBac= s;}
 inline void AliFemtoXi::SetkeyBac(const unsigned short& s){ fKeyBac= s;}
 inline void AliFemtoXi::SettpcHitsBac(const int& i){fTpcHitsBac=i;} 
 inline void AliFemtoXi::SetdedxBac(float x){fDedxBachelor=x;}
+
+//!!!!!!!!! new below 1.09.2015
+inline void AliFemtoXi::SetCosPointingAngleXi(double x) {fCosPointingAngleXi = x;}
+inline void AliFemtoXi::SetPhiXi(double x) {fPhiXi = x;}
+inline void AliFemtoXi::SetEtaXi(double x) {fEtaXi = x;}
+
+inline void AliFemtoXi::SetTPCNclsBac(int x) {fTPCNclsBac=x;}
+inline void AliFemtoXi::SetNdofBac(int x) {fNdofBac=x;}
+inline void AliFemtoXi::SetStatusBac(unsigned long x) {fStatusBac=x;}
+inline void AliFemtoXi::SetEtaBac(float x) {fEtaBac=x;}
+
+inline void AliFemtoXi::SetBacNSigmaTPCK(float x) {fBacNSigmaTPCK = x;}
+inline void AliFemtoXi::SetBacNSigmaTPCPi(float x) {fBacNSigmaTPCPi = x;}
+inline void AliFemtoXi::SetBacNSigmaTPCP(float x) {fBacNSigmaTPCP = x;}
+
+inline void AliFemtoXi::SetBacNSigmaTOFK(float x) {fBacNSigmaTOFK = x;}
+inline void AliFemtoXi::SetBacNSigmaTOFPi(float x) {fBacNSigmaTOFPi = x;}
+inline void AliFemtoXi::SetBacNSigmaTOFP(float x) {fBacNSigmaTOFP = x;}
+
+inline void AliFemtoXi::SetTPCMomentumBac(double x) {fTPCMomentumBac = x;}
+
+inline void AliFemtoXi::SetTOFProtonTimeBac(double x) {fTOFProtonTimeBac = x;}
+inline void AliFemtoXi::SetTOFPionTimeBac(double x) {fTOFPionTimeBac = x;}
+inline void AliFemtoXi::SetTOFKaonTimeBac(double x) {fTOFKaonTimeBac = x;}
+
+inline void AliFemtoXi::SetChargeXi(int x) {fCharge = x;}
+
+inline double AliFemtoXi::CosPointingAngleXi() const {return fCosPointingAngleXi;}
+inline double AliFemtoXi::EtaXi() const {return fEtaXi;}
+inline double AliFemtoXi::PhiXi() const {return fPhiXi;}
+
+inline int AliFemtoXi::TPCNclsBac() const {return fTPCNclsBac;}
+inline int AliFemtoXi::NdofBac() const {return fNdofBac;}
+inline unsigned long AliFemtoXi::StatusBac() const {return fStatusBac;}
+inline float AliFemtoXi::EtaBac() const {return fEtaBac;}
+
+inline double AliFemtoXi::GetTPCMomentumBac() const {return fTPCMomentumBac;}
+
+inline float AliFemtoXi::BacNSigmaTPCK() const {return fBacNSigmaTPCK;}
+inline float AliFemtoXi::BacNSigmaTPCPi() const {return fBacNSigmaTPCPi;}
+inline float AliFemtoXi::BacNSigmaTPCP() const {return fBacNSigmaTPCP;}
+
+inline float AliFemtoXi::BacNSigmaTOFK() const {return fBacNSigmaTOFK;}
+inline float AliFemtoXi::BacNSigmaTOFPi() const {return fBacNSigmaTOFPi;}
+inline float AliFemtoXi::BacNSigmaTOFP() const {return fBacNSigmaTOFP;}
+
+inline int AliFemtoXi::ChargeXi() const {return fCharge;}
+ 
 
 #endif
 

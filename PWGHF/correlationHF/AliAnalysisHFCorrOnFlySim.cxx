@@ -457,7 +457,9 @@ void AliAnalysisHFCorrOnFlySim::CalculateParticleProperties(TObject* obj){
             if(PDGv==11)    MCPartProperties[0] = 11.5;
             if(PDGv==13)    MCPartProperties[0] = 12.5;
             ((TH1F*)fOutputQA->FindObject(Form("fPhiDist")))->Fill(mcPartN->Phi());
-                
+            ((TH1F*)fOutputQA->FindObject(Form("fPhiEta")))->Fill(mcPartN->Eta());
+            ((TH1F*)fOutputQA->FindObject(Form("fPhiY")))->Fill(mcPartN->Y());
+
             }
             else {
                 if(PDGv==211)   MCPartProperties[0] = 13.5;
@@ -817,8 +819,8 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
     fHistEventsProcessed->GetXaxis()->SetBinLabel(6,"After Kine Cuts");
     fOutputQA->Add(fHistEventsProcessed);
     
-    TH1F        *HistogramQA[9];
-    for ( Int_t i = 0; i < 9; i++)HistogramQA[i] = NULL;
+    TH1F        *HistogramQA[11];
+    for ( Int_t i = 0; i < 11; i++)HistogramQA[i] = NULL;
     HistogramQA[0] = new TH1F("fHistZvtx", "ZVtx distribution", 30, -30., 30.);
     HistogramQA[0]->GetXaxis()->SetTitle("ZVtx");
     HistogramQA[0]->GetYaxis()->SetTitle("N_tot");
@@ -865,7 +867,18 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
     HistogramQA[8]->GetYaxis()->SetTitle("N_pri");
     HistogramQA[8]->SetMarkerStyle(kFullCircle);
     
-    for(Int_t i = 0; i <9; i++)
+    HistogramQA[9] = new TH1F("fPhiEta", "Eta Dist", 90, -9., 9.);
+    HistogramQA[9]->GetXaxis()->SetTitle("#eta");
+    HistogramQA[9]->GetYaxis()->SetTitle("N_pri");
+    HistogramQA[9]->SetMarkerStyle(kFullCircle);
+    
+    HistogramQA[10] = new TH1F("fPhiY", "Y Dist", 90, -9., 9.);
+    HistogramQA[10]->GetXaxis()->SetTitle("Y");
+    HistogramQA[10]->GetYaxis()->SetTitle("N_pri");
+    HistogramQA[10]->SetMarkerStyle(kFullCircle);
+    
+    
+    for(Int_t i = 0; i <11; i++)
     {
         HistogramQA[i]->Sumw2();
         fOutputQA->Add(HistogramQA[i]);

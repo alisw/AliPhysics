@@ -15,13 +15,17 @@ class AliPerformanceTPC;
 class AliPerformanceDEdx;
 class AliPerformanceDCA;
 class AliPerformanceMatch;
+#include "TVectorF.h"
+class TF1; 
 
 class AliTPCPerformanceSummary
 {
     public:
     AliTPCPerformanceSummary() {} // default contructor 
     virtual ~AliTPCPerformanceSummary() {} // destructor
-    
+    static Bool_t GetStatInfo(TH1 * histo, TVectorF &statInfo, Int_t axis=0); 
+    static Bool_t GetFitInfo(TF1 * fitFunction, TVectorF &statInfo); 
+
     static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, const AliPerformanceMatch* pTPCPull, const AliPerformanceMatch* pConstrain, TTreeSRedirector* const pcstream, Int_t run = -1); // called by WriteToFile
     
     static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,const AliPerformanceMatch* pPull, const AliPerformanceMatch* pConstrain, const Char_t* outfile, Int_t run = -1); // calles by MakeReport

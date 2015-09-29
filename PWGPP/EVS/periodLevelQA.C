@@ -63,7 +63,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   Int_t fill               = 0;
   Double_t run_duration    = 0;
   Int_t nBCsPerOrbit       = 0;
-  Double_t refl0b          = 0;
+  Double_t refCounts       = 0;
   Double_t mu              = 0;
   Double_t lumi_seen       = 0;
   Double_t interactionRate = 0;
@@ -83,6 +83,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   Double_t alias_lumi_recorded[NBITS]      = {0};
   Double_t alias_lumi_reconstructed[NBITS] = {0};
   Double_t alias_lumi_accepted[NBITS]      = {0};
+  Int_t timeStart = 0;
+  Int_t timeEnd = 0;
   
   t->SetBranchAddress("run",&run);
   t->SetBranchAddress("fill",&fill);
@@ -90,7 +92,7 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("run_duration",&run_duration);
   t->SetBranchAddress("mu",&mu);
   t->SetBranchAddress("interactionRate",&interactionRate);
-  t->SetBranchAddress("refl0b",&refl0b);
+  t->SetBranchAddress("refCounts",&refCounts);
   t->SetBranchAddress("lumi_seen",&lumi_seen);
   t->SetBranchAddress("classes",&classes);
   t->SetBranchAddress("class_l0b",&class_l0b);
@@ -110,6 +112,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("alias_lumi_reconstructed",&alias_lumi_reconstructed);
   t->SetBranchAddress("alias_lumi_accepted",&alias_lumi_accepted);
   t->SetBranchAddress("activeDetectors",&activeDetectors);
+  t->SetBranchAddress("timeStart",&timeStart);
+  t->SetBranchAddress("timeEnd",&timeEnd);
 
   Int_t nRuns = t->GetEntries();
   TH2D* hClassL0BvsRun      = new TH2D("hClassL0BVsRun","Class L0B vs run",nRuns,0,nRuns,1,0,1);
@@ -261,12 +265,12 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   gPad->Print("class_lifetime.pdf]");
   fclassLifetime->Close();
   
-//  TFile* fclassLumi = new TFile("class_lumi.root","recreate");
-//  TCanvas* cClassLumi = new TCanvas("cClassLumi","Luminosity class-by-class vs run",1800,900);
-//  gPad->SetMargin(0.15,0.01,0.08,0.06);
-//  SetHisto(hClassLumiVsRun);
-//  hClassLumiVsRun->Draw("col");
-//  gPad->Print("class_lumi.pdf(");
+  TFile* fclassLumi = new TFile("class_lumi.root","recreate");
+  TCanvas* cClassLumi = new TCanvas("cClassLumi","Luminosity class-by-class vs run",1800,900);
+  gPad->SetMargin(0.15,0.01,0.08,0.06);
+  SetHisto(hClassLumiVsRun);
+  hClassLumiVsRun->Draw("col");
+  gPad->Print("class_lumi.pdf(");
 //  TCanvas* clumi = new TCanvas("clumi","lumi vs run",1800,500);
 //  clumi->SetMargin(0.05,0.01,0.18,0.06);
 //
@@ -278,8 +282,8 @@ void periodLevelQA(TString inputFileName ="trending.root"){
 //    AddFillSeparationLines(h,fills);
 //    gPad->Print("class_lumi.pdf");
 //  }
-//  gPad->Print("class_lumi.pdf]");
-//  fclassLumi->Close();
+  gPad->Print("class_lumi.pdf]");
+  fclassLumi->Close();
   
   SetHisto(hActiveDetectors);
   SetHisto(hInteractionRate);

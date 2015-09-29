@@ -34,10 +34,12 @@ AliFemtoV0::AliFemtoV0():
   fKeyNeg(0),   fKeyPos(0),
   fNominalTpcEntrancePointPos(0,0,0),fNominalTpcExitPointPos(0,0,0),
   fNominalTpcEntrancePointNeg(0,0,0),fNominalTpcExitPointNeg(0,0,0),
+  fNominalTpcPointPosShifted(0,0,0),fNominalTpcPointNegShifted(0,0,0),
   fTPCMomentumPos(0), fTPCMomentumNeg(0),
   fTOFProtonTimePos(0), fTOFPionTimePos(0), fTOFKaonTimePos(0),
   fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
   fImpactDprimPos(-999), fImpactDweakPos(-999), fImpactDmatPos(-999), fImpactDprimNeg(-999), fImpactDweakNeg(-999), fImpactDmatNeg(-999),
+  fCorrLam(0.0),
   fHiddenInfo(NULL)
 {
   // Default empty constructor
@@ -97,12 +99,15 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fNominalTpcExitPointPos(v.fNominalTpcExitPointPos),
   fNominalTpcEntrancePointNeg(v.fNominalTpcEntrancePointNeg),
   fNominalTpcExitPointNeg(v.fNominalTpcExitPointNeg),
+  fNominalTpcPointPosShifted(v.fNominalTpcPointPosShifted),
+  fNominalTpcPointNegShifted(v.fNominalTpcPointNegShifted),
   fTPCMomentumPos(v.fTPCMomentumPos), fTPCMomentumNeg(v.fTPCMomentumNeg),
   fTOFProtonTimePos(v.fTOFProtonTimePos), fTOFPionTimePos(v.fTOFPionTimePos), fTOFKaonTimePos(v.fTOFKaonTimePos),
   fTOFProtonTimeNeg(v.fTOFProtonTimeNeg), fTOFPionTimeNeg(v.fTOFPionTimeNeg), fTOFKaonTimeNeg(v.fTOFKaonTimeNeg),
   fImpactDprimPos(v.fImpactDprimPos), fImpactDweakPos(v.fImpactDweakPos),
   fImpactDmatPos(v.fImpactDmatPos), fImpactDprimNeg(v.fImpactDprimNeg),
   fImpactDweakNeg(v.fImpactDweakNeg), fImpactDmatNeg(v.fImpactDmatNeg),
+  fCorrLam(v.fCorrLam),
   fHiddenInfo( v.fHiddenInfo ? v.fHiddenInfo->Clone() : NULL)  /***/
 {
   // copy constructor
@@ -200,6 +205,8 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
   fNominalTpcExitPointPos = aV0.fNominalTpcExitPointPos;
   fNominalTpcEntrancePointNeg = aV0.fNominalTpcEntrancePointNeg;
   fNominalTpcExitPointNeg = aV0.fNominalTpcExitPointNeg;
+  fNominalTpcPointPosShifted = aV0.fNominalTpcPointPosShifted;
+  fNominalTpcPointNegShifted = aV0.fNominalTpcPointNegShifted;
 
   fTPCMomentumPos = aV0.fTPCMomentumPos;
   fTPCMomentumNeg = aV0.fTPCMomentumNeg;
@@ -218,6 +225,8 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
   fImpactDprimNeg = aV0.fImpactDprimNeg;
   fImpactDweakNeg = aV0.fImpactDweakNeg;
   fImpactDmatNeg = aV0.fImpactDmatNeg;
+
+  fCorrLam =  aV0.fCorrLam;
 
   if (fHiddenInfo) delete fHiddenInfo;
   fHiddenInfo = aV0.fHiddenInfo? aV0.fHiddenInfo->Clone() : NULL;// GR 11 DEC 02
@@ -357,6 +366,9 @@ void AliFemtoV0::SetHelixPos(const AliFmPhysicalHelixD& h){fHelixPos = h;}// Gae
 const AliFmPhysicalHelixD& AliFemtoV0::HelixPos() const {return fHelixPos;}// Gael 12 Sept 02
 void AliFemtoV0::SetHelixNeg(const AliFmPhysicalHelixD& h){fHelixNeg = h;}// Gael 12 Sept 02
 const AliFmPhysicalHelixD& AliFemtoV0::HelixNeg() const {return fHelixNeg;}// Gael 12 Sept 02
+
+void AliFemtoV0::SetCorrectionLambdas(const double& x){fCorrLam=x;}
+float AliFemtoV0::CorrectionLambda() const {return fCorrLam;}
 
 void AliFemtoV0::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
 bool AliFemtoV0::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }

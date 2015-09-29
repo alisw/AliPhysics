@@ -179,14 +179,14 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Float_t   pxESD;
   Float_t   pyESD;
   Float_t   pzESD;
-  Float_t   pTPC;
+  Float_t   pTPC; // determined via GetTPCInnerParam()->P() or GetInnerParam()->P(), see .cxx file.
   Int_t     chargeT;
   Float_t   signalITS;
   Float_t   signalTPC;
   Float_t   beta;
   Float_t   kchi2ITS;
   Int_t     kNclsITS;
-  Float_t   kITSchi2Cl;//redundant
+  Float_t   kITSchi2Cl; // redundant
   Int_t     kNclsTPC;
   Float_t   kTPCchi2Cl;
   Int_t     kNclsTPCdEdx;

@@ -70,6 +70,7 @@
 #pragma link C++ class AliFemtoMCTrackCut+;
 #pragma link C++ class AliFemtoEventReaderKinematicsChain+;
 #pragma link C++ class AliFemtoEventReaderKinematicsChainESD+;
+#pragma link C++ class AliFemtoEventReaderAODKinematicsChain+;
 #pragma link C++ class AliFemtoV0TrackCut+;
 #pragma link C++ class AliFemtoV0PairCut+;
 #pragma link C++ class AliFemtoCutMonitorV0+;
@@ -77,6 +78,15 @@
 #pragma link C++ class AliFemtoCutMonitorCollections+;
 #pragma link C++ class AliFemtoV0SharedDaughterCut+;
 #pragma link C++ class AliFemtoCorrFctnDPhiStarDEta+;
+#pragma link C++ class AliFemtoCorrFctnDPhiStarDEtaStar+;
 #pragma link C++ class AliFemtoCorrFctnDPhiStarKStarMergedFraction+;
 #pragma link C++ class AliFemtoDeltaPtPairCut+;
+#pragma link C++ class AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction+;
+#pragma link C++ class AliFemtoXiTrackCut+;
+#pragma link C++ class AliFemtoXiPairCut+;
+#pragma link C++ class AliFemtoXiTrackPairCut+;
+#pragma link C++ class AliFemtoXiV0PairCut+;
+#pragma link C++ class AliFemtoBetaTPairCut+;
+#pragma link C++ class AliFemtoCutMonitorPairBetaT+;
+#pragma link C++ class AliFemtoCutMonitorXi+;
 #endif

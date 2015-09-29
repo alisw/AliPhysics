@@ -478,8 +478,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   //hNTrksEvent_cent->Fill(fESD->GetNumberOfTracks(),centralityF);
   
   Int_t Nacc = AliDielectronHelper::GetNacc(fESD);
-  Double_t sigmaEleITS_PIDresp;
-  Double_t sigmaEleTPC_PIDresp;
   Double_t sigmaEleITS_Raw;
   Double_t sigmaEleTPC_Raw;
   
@@ -638,13 +636,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
     sigmaEleTPC = values[AliDielectronVarManager::kTPCnSigmaEle];
     sigmaEleTOF = values[AliDielectronVarManager::kTOFnSigmaEle];
     //
-    // temporary, as cross-check:
-    sigmaEleITS_PIDresp = fPIDResponse->NumberOfSigmasITS(track,AliPID::kElectron);
-    sigmaEleTPC_PIDresp = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);
-    //sigmaEleTOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kElectron);
-    
     // TODO: which momentum is better?
-    //pTPC        = values[AliDielectronVarManager::kPIn]; // uses GetInnerParam() //Track parameters estimated at the inner wall of TPC
+    //pTPC        = values[AliDielectronVarManager::kPIn]; // uses GetInnerParam()->P() //Track parameters estimated at the inner wall of TPC
     pTPC        = ((AliESDtrack*)track)->GetTPCInnerParam()->P(); //Track parameters estimated at the inner wall of TPC using the TPC stand-alone
     kchi2ITS    = ((AliESDtrack*)track)->GetITSchi2();
     kNclsITS    = ((AliESDtrack*)track)->GetNcls(0);
@@ -681,15 +674,12 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(14)))->Fill(pTPC, signalTPC);
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(15)))->Fill(pTPC, sigmaEleTPC);
       (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(16)))->Fill(pTPC, sigmaEleTPC, signalTPC);
-      // old way, directly from fPIDResponse object.
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(20)))->Fill(pESD, sigmaEleITS_PIDresp);//hITSnSigmaElePIDresp_P
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(21)))->Fill(pTPC, sigmaEleTPC_PIDresp);//hTPCnSigmaElePIDresp_P
       // run dependency
       (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(22)))->Fill(pTPC, signalTPC, kRunNumber);//hTPC_dEdx_P_run
       (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(23)))->Fill(pTPC, sigmaEleTPC, kRunNumber);//hTPCnSigmaEle_P_run
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(24)))->Fill(pESD, sigmaEleITS, kRunNumber);
+      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(24)))->Fill(pESD, sigmaEleITS, kRunNumber);//hITSnSigmaEle_P_run
       // TOF
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(25)))->Fill(pTPC, sigmaEleTOF);
+      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(25)))->Fill(pTPC, sigmaEleTOF);//hTOFnSigmaEle_P
       //(dynamic_cast<TH2F *>(fOutputListSupportHistos->At(26)))->Fill(pTPC, );
       // Eta and Phi
       (dynamic_cast<TH1F *>(fOutputListSupportHistos->At(27)))->Fill(mcEta);
@@ -697,8 +687,8 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(29)))->Fill(mcEta, mcPhi);
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(30)))->Fill(mcEta, signalTPC);
       (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(31)))->Fill(mcEta, signalTPC, pTPC);
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(32)))->Fill(mcEta, sigmaEleTPC);
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(33)))->Fill(mcEta, sigmaEleTPC, pTPC);
+      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(32)))->Fill(mcEta, sigmaEleTPC);//hTPCnSigmaEle_Eta
+      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(33)))->Fill(mcEta, sigmaEleTPC, pTPC);//hTPCnSigmaEle_Eta_P
       //(dynamic_cast<TH3F *>(fOutputListSupportHistos->At(34)))->Fill(mcEta, sigmaEleTPC, );//hTPCnSigmaEle_Eta_RefMultTPConly
       (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(35)))->Fill(mcEta, sigmaEleTPC, Nacc);//hTPCnSigmaEle_Eta_Nacc
       // DCA
@@ -718,10 +708,10 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(49)))->Fill(kNclsTPC, kNFclsTPCr);
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(50)))->Fill(track->Pt(), kNFclsTPCr);
       
-      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(60)))->Fill(mcEta, sigmaEleTPC);
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(61)))->Fill(mcEta, sigmaEleTPC, pTPC);
-      //(dynamic_cast<TH3F *>(fOutputListSupportHistos->At(62)))->Fill(mcEta, sigmaEleTPC, );//hITSnSigmaEle_Eta_RefMultTPConly
-      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(63)))->Fill(mcEta, sigmaEleTPC, Nacc);//hITSnSigmaEle_Eta_Nacc
+      (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(60)))->Fill(mcEta, sigmaEleITS);//hITSnSigmaEle_Eta
+      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(61)))->Fill(mcEta, sigmaEleITS, pESD);//hITSnSigmaEle_Eta_P
+      //(dynamic_cast<TH3F *>(fOutputListSupportHistos->At(62)))->Fill(mcEta, sigmaEleITS, );//hITSnSigmaEle_Eta_RefMultTPConly
+      (dynamic_cast<TH3F *>(fOutputListSupportHistos->At(63)))->Fill(mcEta, sigmaEleITS, Nacc);//hITSnSigmaEle_Eta_Nacc
       
       // check of post PID correction. raw values from AliDielectronVarManager
       (dynamic_cast<TH2F *>(fOutputListSupportHistos->At(64)))->Fill(pESD, sigmaEleITS_Raw);//hITSnSigmaEleRaw_P
@@ -1199,17 +1189,17 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hVertexZ, 4);
   fOutputListSupportHistos->AddAt(hNvertexCtrb, 5);
   
-//  TH1F* hUseless06 = new TH1F("hUseless06","hUseless06", 1,0.,1.);
-//  fOutputListSupportHistos->AddAt(hUseless06, 6);
-  TH2F* hPInVarMgr_PInStandAlone = new TH2F("PInVarMgr_PInStandAlone","GetTPCInnerParam()->P() vs GetInnerParam->P() (VarMgr method); PIn global tracking [GeV]; PIn TPC standalone [GeV]",
+  TH2F* hPInVarMgr_PInStandAlone = new TH2F("PInVarMgr_PInStandAlone","GetTPCInnerParam()->P() vs GetInnerParam()->P() (VarMgr method); PIn global tracking (VarMgr method) (GeV/c); PIn TPC standalone (GeV/c)",
                                             160,0.,8.,160,0.,8.);
   fOutputListSupportHistos->AddAt(hPInVarMgr_PInStandAlone, 6);
+  //  TH1F* hUseless06 = new TH1F("hUseless06","hUseless06", 1,0.,1.);
+  //  fOutputListSupportHistos->AddAt(hUseless06, 6);
   
   // Track variables
   TH1F* hPt      = new TH1F("Pt","Pt;Pt [GeV];#tracks",200,0,10.);//,AliDielectronVarManager::kPt);
-  TH2F* hP_PIn   = new TH2F("P_PIn","TPC inner P vs P; P [GeV]; TPC inner P [GeV]",
+  TH2F* hP_PIn   = new TH2F("P_PIn","TPC inner P vs P;P [GeV/c];PIn (pTPC) [GeV/c]",
                         160,0.,8.,160,0.,8.);//,AliDielectronVarManager::kP,AliDielectronVarManager::kPIn);
-  TH2F* hP_Pgen  = new TH2F("P_Pgen","P gen vs P; P [GeV]; P gen [GeV]",
+  TH2F* hP_Pgen  = new TH2F("P_Pgen","P gen vs P;P [GeV/c];p_{gen} (GeV/c)",
                         160,0.,8.,160,0.,8.);//,AliDielectronVarManager::kP,AliDielectronVarManager::kPIn);
   fOutputListSupportHistos->AddAt(hPt,     7);
   fOutputListSupportHistos->AddAt(hP_PIn,  8);
@@ -1217,13 +1207,13 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   
   
   // ITS
-  TH2F* hITS_dEdx_P = new TH2F("ITS_dEdx_P","ITS dEdx;P [GeV];ITS signal (arb units)",
+  TH2F* hITS_dEdx_P = new TH2F("ITS_dEdx_P","ITS dEdx;P [GeV/c];ITS signal (arb units)",
                         160,0.,8.,700,0.,700.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal,makeLogx);
-  TH2F* hITSnSigmaEle_P = new TH2F("ITSnSigmaEle_P","ITS number of sigmas Electrons;P [GeV];ITS number of sigmas Electrons",
+  TH2F* hITSnSigmaEle_P = new TH2F("ITSnSigmaEle_P","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons",
                         160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
-  TH2F* hITSnSigmaPio_P = new TH2F("ITSnSigmaPio_P","ITS number of sigmas Pions;P [GeV];ITS number of sigmas Pions",
+  TH2F* hITSnSigmaPio_P = new TH2F("ITSnSigmaPio_P","ITS number of sigmas Pions;P [GeV/c];ITS number of sigmas Pions",
                         160,0.,8.,200,-10.,10.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPio,makeLogx);
-  TH2F* hITSnSigmaKao_P = new TH2F("ITSnSigmaKao_P","ITS number of sigmas Kaons;P [GeV];ITS number of sigmas Kaons",
+  TH2F* hITSnSigmaKao_P = new TH2F("ITSnSigmaKao_P","ITS number of sigmas Kaons;P [GeV/c];ITS number of sigmas Kaons",
                         160,0.,8.,200,-10.,10.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao,makeLogx);
   fOutputListSupportHistos->AddAt(hITS_dEdx_P, 10);
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_P, 11);
@@ -1231,17 +1221,17 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hITSnSigmaKao_P, 13);
   
   // TPC
-  TH2F* hTPC_dEdx_P = new TH2F("TPC_dEdx_P","TPC dEdx;P [GeV];TPC signal (arb units)",
+  TH2F* hTPC_dEdx_P = new TH2F("TPC_dEdx_P","TPC dEdx;PIn (pTPC) [GeV/c];TPC signal (arb units)",
                         160,0.,8.,120,0.,120.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,makeLogx);
-  TH2F* hTPCnSigmaEle_P = new TH2F("TPCnSigmaEle_P","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons",
+  TH2F* hTPCnSigmaEle_P = new TH2F("TPCnSigmaEle_P","TPC number of sigmas Electrons;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons",
                         160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
-  TH3F* hTPCnSigmaEle_P_dEdx = new TH3F("TPCnSigmaEle_P_dEdx","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;TPC signal (arb units)",
+  TH3F* hTPCnSigmaEle_P_dEdx = new TH3F("TPCnSigmaEle_P_dEdx","TPC number of sigmas Electrons;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons;TPC signal (arb units)",
                         80,0.,4.,80,-4.,4.,50,50.,100.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTPCsignal,makeLogx);
-  TH2F* hTPCnSigmaPio_P = new TH2F("TPCnSigmaPio_P","TPC number of sigmas Pions;P [GeV];TPC number of sigmas Pions",
+  TH2F* hTPCnSigmaPio_P = new TH2F("TPCnSigmaPio_P","TPC number of sigmas Pions;PIn (pTPC) [GeV/c];TPC number of sigmas Pions",
                         160,0.,8.,200,-10.,10.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio,makeLogx);
-  TH2F* hTPCnSigmaKao_P = new TH2F("TPCnSigmaKao_P","TPC number of sigmas Kaons;P [GeV];TPC number of sigmas Kaons",
+  TH2F* hTPCnSigmaKao_P = new TH2F("TPCnSigmaKao_P","TPC number of sigmas Kaons;PIn (pTPC) [GeV/c];TPC number of sigmas Kaons",
                         160,0.,8.,200,-10.,10.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao,makeLogx);
-  TH2F* hTPCnSigmaPro_P = new TH2F("TPCnSigmaPro_P","TPC number of sigmas Protons;P [GeV];TPC number of sigmas Protons",
+  TH2F* hTPCnSigmaPro_P = new TH2F("TPCnSigmaPro_P","TPC number of sigmas Protons;PIn (pTPC) [GeV/c];TPC number of sigmas Protons",
                         160,0.,8.,200,-10.,10.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro,makeLogx);
   fOutputListSupportHistos->AddAt(hTPC_dEdx_P, 14);
   fOutputListSupportHistos->AddAt(hTPCnSigmaEle_P, 15);
@@ -1250,12 +1240,10 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hTPCnSigmaKao_P, 18);
   fOutputListSupportHistos->AddAt(hTPCnSigmaPro_P, 19);
   
-  TH2F* hITSnSigmaElePIDresp_P = new TH2F("ITSnSigmaElePIDresp_P","ITS nSigmaEle from VarManager;P [GeV];ITS nSigmaEle from VarManager",
-                                         160,0.,8.,100,-5.,5.);
-  TH2F* hTPCnSigmaElePIDresp_P = new TH2F("TPCnSigmaElePIDresp_P","TPC nSigmaEle from VarManager;P [GeV];TPC nSigmaEle from VarManager",
-                                         160,0.,8.,100,-5.,5.);
-  fOutputListSupportHistos->AddAt(hITSnSigmaElePIDresp_P, 20);
-  fOutputListSupportHistos->AddAt(hTPCnSigmaElePIDresp_P, 21);
+  TH1F* hUseless20 = new TH1F("hUseless20","hUseless20", 1,0.,1.);
+  TH1F* hUseless21 = new TH1F("hUseless21","hUseless21", 1,0.,1.);
+  fOutputListSupportHistos->AddAt(hUseless20, 20);
+  fOutputListSupportHistos->AddAt(hUseless21, 21);
   
   // run dependency
   // run string "fsRunBins" must be sorted in increasing order!
@@ -1268,17 +1256,17 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   //for (int i=0; i<nRuns+1; i++) { cout << i << " \t " << dRunBinning[i] << " \t "; }
   
   Int_t nbinsPIn=80, nbinsTPCsig=50;
-  TH3F* hTPC_dEdx_P_run = new TH3F("TPC_dEdx_P_run","TPC dEdx;P [GeV];TPC signal (arb units);run number",
+  TH3F* hTPC_dEdx_P_run = new TH3F("TPC_dEdx_P_run","TPC dEdx;TPC inner PIn (pTPC) [GeV/c];TPC signal (arb units);run number",
                                    nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(), 
                                    nbinsTPCsig, (AliDielectronHelper::MakeLinBinning(nbinsTPCsig,50.,100.))->GetMatrixArray(), 
                                    nRuns      , dRunBinning
                                    );//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,AliDielectronVarManager::kRunNumber);
-  TH3F* hTPCnSigmaEle_P_run = new TH3F("TPCnSigmaEle_P_run","TPC number of sigmas Electrons;P [GeV];TPC number of sigmas Electrons;run number",
+  TH3F* hTPCnSigmaEle_P_run = new TH3F("TPCnSigmaEle_P_run","TPC number of sigmas Electrons;TPC inner PIn (pTPC) [GeV/c];TPC number of sigmas Electrons;run number",
                                        nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(), 
                                        50         , (AliDielectronHelper::MakeLinBinning(50         ,-5.,5.))->GetMatrixArray(), 
                                        nRuns      , dRunBinning
                                        );//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRunNumber);
-  TH3F* hITSnSigmaEle_P_run = new TH3F("ITSnSigmaEle_P_run","ITS number of sigmas Electrons;P [GeV];ITS number of sigmas Electrons;run number",
+  TH3F* hITSnSigmaEle_P_run = new TH3F("ITSnSigmaEle_P_run","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons;run number",
                                        nbinsPIn   , (AliDielectronHelper::MakeLinBinning(nbinsPIn   ,0.,4.))->GetMatrixArray(), 
                                        50         , (AliDielectronHelper::MakeLinBinning(50         ,-5.,5.))->GetMatrixArray(), 
                                        nRuns      , dRunBinning
@@ -1288,9 +1276,9 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_P_run, 24);
   
   // TOF
-  TH2F* hTOFnSigmaEle_P = new TH2F("TOFnSigmaEle_P","TOF number of sigmas Electrons;P [GeV];TOF number of sigmas Electrons",
+  TH2F* hTOFnSigmaEle_P = new TH2F("TOFnSigmaEle_P","TOF number of sigmas Electrons;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons",
                         160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
-  TH2F* hTOFbeta = new TH2F("TOFbeta","TOF beta;P [GeV];TOF beta",
+  TH2F* hTOFbeta = new TH2F("TOFbeta","TOF beta;PIn (pTPC) [GeV/c];TOF beta",
                         160,0.,8.,120,0.,1.2);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta,makeLogx);
   fOutputListSupportHistos->AddAt(hTOFnSigmaEle_P, 25);
   fOutputListSupportHistos->AddAt(hTOFbeta, 26);
@@ -1308,12 +1296,12 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   
   TH2F* hTPC_dEdx_Eta = new TH2F("TPC_dEdx_Eta","TPC dEdx;Eta;TPC signal (arb units)",
                         100,-1,1,120,0.,120.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal);
-  TH3F* hTPC_dEdx_Eta_P = new TH3F("TPC_dEdx_Eta_P","TPC dEdx;Eta;TPC signal (arb units); TPC inner P [GeV]",
+  TH3F* hTPC_dEdx_Eta_P = new TH3F("TPC_dEdx_Eta_P","TPC dEdx;Eta;TPC signal (arb units); PIn (pTPC) [GeV/c]",
                         100,-1,1,60,0.,120.,80,0.,4.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal,AliDielectronVarManager::kPIn);
   TH2F* hTPCnSigmaEle_Eta = new TH2F("TPCnSigmaEle_Eta","TPC number of sigmas Electrons; Eta; TPC number of sigmas Electrons",
                         100,-1,1,100,-5.,5.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);
   // 3D, may be used for dEdx eta correction
-  TH3F* hTPCnSigmaEle_Eta_P = new TH3F("TPCnSigmaEle_Eta_P","TPC number of sigmas Electrons; Eta; TPC number of sigmas Electrons; TPC inner P [GeV]",
+  TH3F* hTPCnSigmaEle_Eta_P = new TH3F("TPCnSigmaEle_Eta_P","TPC number of sigmas Electrons; Eta; TPC number of sigmas Electrons; PIn (pTPC) [GeV/c]",
                         50,-1,1, 50,-5.,5., 80,0.,4.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kPIn);
   TH3F* hTPCnSigmaEle_Eta_RefMultTPConly = new TH3F("TPCnSigmaEle_Eta_RefMultTPConly","TPC Ref Mult from AOD header';Eta;n#sigma_{ele}^{TPC};N_{TPC ref}",
                         50,-1,1, 50,-5.,5., 100,0.,5000.);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRefMultTPConly);
@@ -1327,7 +1315,7 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hTPCnSigmaEle_Eta_Nacc, 35);
 //  TH2F* hTPCnSigmaKao_Eta = new TH2F("TPCnSigmaKao_Eta","TPC number of sigmas Kaons; Eta; TPC number of sigmas Kaons",
 //                        100,-1,1,200,-10.,10.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaKao);
-//  TH3F* hTPCnSigmaKao_Eta_P = new TH3F("TPCnSigmaKao_Eta_P","TPC number of sigmas Kaons; Eta; TPC number of sigmas Kaons; TPC inner P [GeV]",
+//  TH3F* hTPCnSigmaKao_Eta_P = new TH3F("TPCnSigmaKao_Eta_P","TPC number of sigmas Kaons; Eta; TPC number of sigmas Kaons; PIn (pTPC) [GeV/c]",
 //                        50,-1,1,100,-10.,10.,80,0.,4.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaKao,AliDielectronVarManager::kPIn);
 //  fOutputListSupportHistos->AddAt(hTPCnSigmaKao_Eta, 34);
 //  fOutputListSupportHistos->AddAt(hTPCnSigmaKao_Eta_P, 35);
@@ -1410,8 +1398,8 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   TH2F* hITSnSigmaEle_Eta = new TH2F("ITSnSigmaEle_Eta","ITS number of sigmas Electrons; Eta; ITS number of sigmas Electrons",
                                      100,-1,1,100,-5.,5.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
   // 3D, may be used for dEdx eta correction
-  TH3F* hITSnSigmaEle_Eta_P = new TH3F("ITSnSigmaEle_Eta_P","ITS number of sigmas Electrons; Eta; ITS number of sigmas Electrons; ITS inner P [GeV]",
-                                       50,-1,1, 50,-5.,5., 80,0.,4.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle,AliDielectronVarManager::kPIn);
+  TH3F* hITSnSigmaEle_Eta_P = new TH3F("ITSnSigmaEle_Eta_P","ITS number of sigmas Electrons; Eta; ITS number of sigmas Electrons; P [GeV/c]",
+                                       50,-1,1, 50,-5.,5., 80,0.,4.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle,AliDielectronVarManager::kP);
   TH3F* hITSnSigmaEle_Eta_RefMultTPConly = new TH3F("ITSnSigmaEle_Eta_RefMultTPConly","TPC Ref Mult from AOD header';Eta;n#sigma_{ele}^{ITS};N_{TPC ref}",
                                                     50,-1,1, 50,-5.,5., 100,0.,5000.);//,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle,AliDielectronVarManager::kRefMultTPConly);
   TH3F* hITSnSigmaEle_Eta_Nacc = new TH3F("ITSnSigmaEle_Eta_Nacc","Nacc from 'AliDielectronHelper::GetNacc()';Eta;n#sigma_{ele}^{ITS};N_{acc}",
@@ -1422,9 +1410,9 @@ void AliAnalysisTaskElectronEfficiency::CreateSupportHistos()
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_Eta_Nacc, 63);
   
   // raw sigma Ele in ITS and TPC
-  TH2F* hITSnSigmaEleRaw_P = new TH2F("ITSnSigmaEleRaw_P","ITS number of sigmas Electrons (raw);P [GeV];ITS number of sigmas Electrons (raw)",
+  TH2F* hITSnSigmaEleRaw_P = new TH2F("ITSnSigmaEleRaw_P","ITS number of sigmas Electrons (raw);P [GeV/c];ITS number of sigmas Electrons (raw)",
                                       160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEleRaw);
-  TH2F* hTPCnSigmaEleRaw_P = new TH2F("TPCnSigmaEleRaw_P","TPC number of sigmas Electrons (raw);P [GeV];TPC number of sigmas Electrons (raw)",
+  TH2F* hTPCnSigmaEleRaw_P = new TH2F("TPCnSigmaEleRaw_P","TPC number of sigmas Electrons (raw);PIn (pTPC) [GeV/c];TPC number of sigmas Electrons (raw)",
                                       160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEleRaw);
   TH2F* hITSnSigmaEleRaw_Eta = new TH2F("ITSnSigmaEleRaw_Eta","ITS number of sigmas Electrons (raw); Eta; ITS number of sigmas Electrons (raw)",
                                         100,-1,1,100,-5.,5.);//.,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEleRaw);

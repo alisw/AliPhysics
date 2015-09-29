@@ -43,19 +43,52 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   AliAnalysisTaskSE *ana = 0;
   AliAnalysisDataContainer *coutput1 = 0;
 
-
+#ifdef __CLING__
+  // ROOT6 version of the Config macro. JIT cannot handle load and execute macro (compiler error) - need to call via gROOT->ProcessLine(...)
+  std::stringstream configbuilder;
+  configbuilder << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C(";
+  configbuilder << (distBC ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (recalibClus ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (recalcClusPos ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (nonLinearCorr ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (remExoticCell ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (remExoticClus ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (fidRegion ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (calibEnergy ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (calibTime ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << (remBC ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << nonLinFunct << ", ";
+  configbuilder << (reclusterize ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << seedthresh << ", ";
+  configbuilder << cellthresh << ", ";
+  configbuilder << clusterizer << ", ";
+  configbuilder << trackMatch << ", ";
+  configbuilder << (updateCellOnly ? "kTRUE" : "kFALSE") << ", ";
+  configbuilder << timeMin << ", ";
+  configbuilder << timeMax << ", ";
+  configbuilder << timeCut;
+  configbuilder << ")";
+  std::string configbuilderstring = configbuilder.str();
+  std::cout << "Running config macro " << configbuilderstring << std::endl;
+  AliEMCALTenderSupply *EMCALSupply = (AliEMCALTenderSupply *)gROOT->ProcessLine(configbuilderstring.c_str());
+#else
+  // ROOT5 version, allows loading a macro
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
   AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus, 
 							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
 							      cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut);
+#endif
 
   if (pass) 
     EMCALSupply->SetPass(pass);
 
   if (evhand->InheritsFrom("AliESDInputHandler")) {
-    AliTender* alitender = mgr->GetTopTasks()->FindObject("AliTender");
-    
+#ifdef __CLING__
+    AliTender* alitender = dynamic_cast<AliTender *>(mgr->GetTopTasks()->FindObject("AliTender"));
+#else
+    AliTender* alitender = (AliTender *)mgr->GetTopTasks()->FindObject("AliTender");
+#endif
     if (!alitender)
       alitender = new  AliTender("AliTender");
     
@@ -69,7 +102,11 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 				    AliAnalysisManager::kExchangeContainer, 
 				    "default_tender");
   } else if (evhand->InheritsFrom("AliAODInputHandler")) {
-    AliEmcalTenderTask* emcaltender = mgr->GetTopTasks()->FindObject("AliEmcalTenderTask"); 
+#ifdef __CLING__
+    AliEmcalTenderTask* emcaltender = dynamic_cast<AliEmcalTenderTask *>(mgr->GetTopTasks()->FindObject("AliEmcalTenderTask"));
+#else
+    AliEmcalTenderTask* emcaltender = (AliEmcalTenderTask *)mgr->GetTopTasks()->FindObject("AliEmcalTenderTask");
+#endif
     
     if (!emcaltender)
         emcaltender = new  AliEmcalTenderTask("AliEmcalTenderTask");

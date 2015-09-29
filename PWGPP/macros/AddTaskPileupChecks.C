@@ -1,11 +1,12 @@
 AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
 						Int_t nContribSPD=3,
 						Double_t zDiffSPD=0.8,
+						Bool_t doTree=kTRUE,
 						Int_t nContribMV=5,
 						Double_t zDiffMV=15.,
 						Double_t chi2MV=5.,
 						Bool_t flagBCMV=kFALSE,
-						Bool_t readMC=kFALSE,
+						Bool_t readMC=kFALSE
 						){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -40,6 +41,7 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
   printf("CREATE PILEUP TASK\n");
 
   AliAnalysisTaskCheckPileup *taskpil = new AliAnalysisTaskCheckPileup();
+  taskpil->SetFillTree(doTree);
   taskpil->SetCutOnContribToSPDPileupVert(nContribSPD);
   taskpil->SetCutOnSPDZDiff(zDiffSPD);
   taskpil->ConfigureMultiTrackVertexPileup(nContribMV,zDiffMV,chi2MV,flagBCMV);
@@ -68,10 +70,16 @@ AliAnalysisTaskCheckPileup *AddTaskPileupChecks(TString suffix="",
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName);
 
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(Form("cNtuple%s",suffix.Data()),
+							    TTree::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    outputFileName);
+
   mgr->ConnectInput(taskpil, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskpil, 1, coutput1);
   mgr->ConnectOutput(taskpil, 2, coutput2);
   mgr->ConnectOutput(taskpil, 3, coutput3);
   mgr->ConnectOutput(taskpil, 4, coutput4);
+  mgr->ConnectOutput(taskpil, 5, coutput5);
   return taskpil;
 }   

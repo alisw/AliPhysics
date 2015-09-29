@@ -101,7 +101,9 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Bool_t SetRCut(Int_t RCut);
 		Bool_t SetMesonKind(Int_t mesonKind);
 		Bool_t SetSelectionWindowCut(Int_t selectionCut);
+		Bool_t SetSelectionWindowMergedCut(Int_t selectionCut);
 		Bool_t SetAlphaMesonCut(Int_t alphaMesonCut);
+		Bool_t SetAlphaMesonMergedCut(Int_t alphaMesonCut);
 		Bool_t SetRapidityMesonCut(Int_t RapidityMesonCut);
 		Bool_t SetBackgroundScheme(Int_t BackgroundScheme);
 		Bool_t SetNDegreesForRotationMethod(Int_t DegreesForRotationMethod);
@@ -115,7 +117,13 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		void SetOpeningAngleCut(Float_t OpeningAngle){fOpeningAngle = OpeningAngle;} 
 		Bool_t SetMinOpanMesonCut(Int_t minOpanMesonCut);
 		Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
+		void SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
+		void			SetIsMergedClusterCut(Bool_t merged)							{fIsMergedClusterCut = merged; return;}
+		Bool_t			GetIsMergedClusterCut()											{return fIsMergedClusterCut;}
 
+		Float_t FunctionMinMassCut(Float_t e);
+		Float_t FunctionMaxMassCut(Float_t e);
+		
 		// Request Flags
 		Bool_t UseRotationMethod(){return fUseRotationMethodInBG;}
 		Bool_t UseTrackMultiplicity(){return fUseTrackMultiplicityForBG;}
@@ -134,9 +142,12 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		TList		*fHistograms;
 		//cuts
 		Int_t 		fMesonKind;
-		Double_t 	fMaxR; 						//r cut  
-		Double_t 	fSelectionLow; 				//lower meson inv mass window for further selection
-		Double_t 	fSelectionHigh; 			//higher meson inv mass window for further selection
+		Bool_t 		fIsMergedClusterCut;		//
+		Double_t 	fMaxR; 						// r cut  
+		Bool_t		fEnableMassCut;				// flag to enable mass cut
+		Double_t 	fSelectionLow; 				// lower meson inv mass window for further selection
+		Double_t 	fSelectionHigh; 			// higher meson inv mass window for further selection
+		Int_t 		fSelectionWindowCut; 		// selection window for merged ana in mass
 		Double_t 	fAlphaMinCutMeson; 			// min value for meson alpha cut
 		Double_t 	fAlphaCutMeson; 			// max value for meson alpha cut
 		Double_t 	fRapidityCutMeson; 			// max value for meson rapidity
@@ -147,6 +158,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		Int_t 		fnDegreeRotationPMForBG; 	//
 		Int_t 		fNumberOfBGEvents; 			//
 		Float_t 	fOpeningAngle; 				// min opening angle for meson
+		Bool_t 		fEnableMinOpeningAngleCut; 	// flag to enable min opening angle cut
 		Bool_t 		fDoToCloseV0sCut; 			//
 		Double_t 	fminV0Dist; 				//
 		Bool_t 		fDoSharedElecCut; 			//
@@ -176,18 +188,20 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 		
 		// Histograms
 		TObjString*	fCutString; 				// cut number used for analysis
-		TH1F*		hMesonCuts;					// bookkeeping for meson cuts
-		TH1F* 		hMesonBGCuts; 				// bookkeeping for meson bg cuts
-		TH1F* 		hDCAGammaGammaMesonBefore;	//
-		TH1F* 		hDCAZMesonPrimVtxBefore;	//
-		TH1F* 		hDCARMesonPrimVtxBefore;	//
-		TH1F* 		hDCAGammaGammaMesonAfter;	//
-		TH2F* 		hDCAZMesonPrimVtxAfter;		//
-		TH1F* 		hDCARMesonPrimVtxAfter;		//
+		TH1F*		fHistoMesonCuts;			// bookkeeping for meson cuts
+		TH1F* 		fHistoMesonBGCuts; 				// bookkeeping for meson bg cuts
+		TH1F* 		fHistoDCAGGMesonBefore;	//
+		TH1F* 		fHistoDCAZMesonPrimVtxBefore;	//
+		TH1F* 		fHistoDCARMesonPrimVtxBefore;	//
+		TH1F* 		fHistoDCAGGMesonAfter;	//
+		TH2F* 		fHistoDCAZMesonPrimVtxAfter;		//
+		TH1F* 		fHistoDCARMesonPrimVtxAfter;		//
+		TH1F* 		fHistoInvMassBefore;		//
+		TH1F* 		fHistoInvMassAfter;		//
 
 	private:
 
-		ClassDef(AliConversionMesonCuts,9)
+		ClassDef(AliConversionMesonCuts,12)
 };
 
 

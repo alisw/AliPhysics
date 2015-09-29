@@ -66,6 +66,7 @@ set(SRCS
   PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
   PIDFluctuation/task/AliEbyEPidTaskFastGen.cxx
   PIDFluctuation/task/AliEbyEPidTTask.cxx
+  PIDFluctuation/task/AliEbyEPidTTaskExPid.cxx
   PIDFluctuation/task/AliEbyEPidTTaskMC.cxx
   PIDFluctuation/task/AliEbyEPidRatioBase.cxx
   PIDFluctuation/task/AliEbyEPidRatioDCA.cxx
@@ -85,6 +86,7 @@ set(SRCS
   NetParticle/AliAnalysisTaskNetParticle.cxx
   NetParticle/AliAnalysisNetParticleQA.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
+  LongAsymmetry/AliAnalysisFBMultFluct.cxx
   )
 
 # Headers from sources
@@ -128,3 +130,4 @@ install(DIRECTORY macros DESTINATION PWGCF/EBYE)
 install(DIRECTORY PIDFluctuation/macros DESTINATION PWGCF/EBYE/PIDFluctuation)
 install(DIRECTORY NetParticle/macros DESTINATION PWGCF/EBYE/NetParticle)
 install(DIRECTORY TempFluctuations/macros DESTINATION PWGCF/EBYE/TempFluctuations)
+install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)

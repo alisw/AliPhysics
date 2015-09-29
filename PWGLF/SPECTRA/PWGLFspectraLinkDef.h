@@ -24,7 +24,7 @@
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra2MC+;
-#pragma link C++ class AliAnalysisTaskParticleEfficiency+;
+#pragma link C++ class AliAnalysisTaskParticleEfficiencyLF+;
 
 #pragma link C++ class AliAnalysisTaskSpectraAOD+;
 #pragma link C++ class AliAnalysisTaskSpectraAllChAOD+;
@@ -64,9 +64,6 @@
 #pragma link C++ class AliAnalysisDeuteronpA+;
 
 #pragma link C++ class AliXtAnalysis+;
-#pragma link C++ class AliJBaseTrack+;
-#pragma link C++ class AliJBaseCard+;
-#pragma link C++ class AliJCard+;
 #pragma link C++ class AliJXtHistos+;
 #pragma link C++ class AliAnalysisTaskHighPtDeDx+; 
 

@@ -5,9 +5,13 @@
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliMCEvent.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+
 
 #include "AliAnalysisTaskHMTFMCMultEst.h"
-#include "AliMultiplicityEstimators.h"
+#include "AliMultiplicityEstimator.h"
 
 using namespace std;
 
@@ -78,15 +82,18 @@ Bool_t IsPi0PhysicalPrimary(Int_t index, AliStack *stack)
 
 AliAnalysisTaskHMTFMCMultEst::AliAnalysisTaskHMTFMCMultEst()
   : AliAnalysisTaskSE(), fMyOut(0), fEstimatorsList(0), fEstimatorNames(0),
-    festimators(0), fRequireINELgt0(0), fRunconditions(0), fParticleCounter(0)
+    fReferenceEstimatorName(0), fReferenceEstimator(0),
+    festimators(0), fRequireINELgt0(0), fRunconditions(0), fEventVariables(0)
 {
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHMTFMCMultEst::AliAnalysisTaskHMTFMCMultEst(const char *name)
   : AliAnalysisTaskSE(name), fMyOut(0), fEstimatorsList(0), fEstimatorNames(0),
-    festimators(0), fRequireINELgt0(0), fRunconditions(0), fParticleCounter(0)
+    fReferenceEstimatorName(0), fReferenceEstimator(0),
+    festimators(0), fRequireINELgt0(0), fRunconditions(0), fEventVariables(0)
 {
+  cout << "init"  << "\n";
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
 }
@@ -95,6 +102,12 @@ void AliAnalysisTaskHMTFMCMultEst::AddEstimator(const char* n)
 {
   if (!fEstimatorNames.IsNull()) fEstimatorNames.Append(",");
   fEstimatorNames.Append(n);
+}
+
+void AliAnalysisTaskHMTFMCMultEst::SetReferenceEstimator(const char *n) {
+  if (!fReferenceEstimatorName.IsNull())
+    cout <<  "AliAnalysisTaskHMTFMCMultEst::SetReferenceEstimator: Reference estimator was previously set!" << endl;
+  fReferenceEstimatorName = n;
 }
 
 void AliAnalysisTaskHMTFMCMultEst::InitEstimators()
@@ -108,26 +121,42 @@ void AliAnalysisTaskHMTFMCMultEst::InitEstimators()
   TIter      next(arr);
   std::cout << "Init estimators... " << std::endl;
   while ((obj = next())) {
-    MultiplicityEstimatorBase* e = MakeEstimator(obj->GetName());
+    AliMultiplicityEstimator* e = MakeEstimator(obj->GetName());
     fEstimatorsList->Add(e);
   }
 }
 //________________________________________________________________________
-MultiplicityEstimatorBase*
+AliMultiplicityEstimator*
 AliAnalysisTaskHMTFMCMultEst::MakeEstimator(const TString& name)
 {
-  if (name.BeginsWith("Total")) return new EtaBase("Total", "full #eta coverage ");
-  if (name.BeginsWith("EtaLt05")) return new EtaBase("EtaLt05", "| #eta| #leq 0.5", -0.5, 0.0, 0.0, 0.5);
-  if (name.BeginsWith("EtaLt08")) return new EtaBase("EtaLt08", "| #eta| #leq 0.8", -0.8, 0.0, 0.0, 0.8);
-  if (name.BeginsWith("EtaLt15")) return new EtaBase("EtaLt15", "| #eta| #leq 1.5", -1.5, 0.0, 0.0, 1.5);
-  if (name.BeginsWith("Eta08_15")) return new EtaBase("Eta08_15", "0.8 #leq | #eta| #leq 1.5",
-						      -1.5, -0.8, 0.8, 1.5);
-  if (name.BeginsWith("V0A")) return new EtaBase("V0A", "2.8 #leq #eta #leq 5.1",
-						 0.0, 0.0, 2.8, 5.1);
-  if (name.BeginsWith("V0C")) return new EtaBase("V0C", "-3.7 #leq #eta #leq -1.7",
-						 -3.7, -1.7, 0.0, 0.0);
-  if (name.BeginsWith("V0M")) return new EtaBase("V0M", "-3.7 #leq #eta #leq -1.7 || 2.8 #leq #eta #leq 5.1",
-						 -3.7, -1.7, 2.8, 5.1);
+  if (name.BeginsWith("Total"))
+    return new AliMultiplicityEstimator("Total", "full #eta coverage ");
+  if (name.BeginsWith("EtaLt05"))
+    return new AliMultiplicityEstimator("EtaLt05", "| #eta| #leq 0.5", -0.5, 0.0, 0.0, 0.5);
+  if (name.BeginsWith("EtaLt08"))
+    return new AliMultiplicityEstimator("EtaLt08", "| #eta| #leq 0.8", -0.8, 0.0, 0.0, 0.8);
+  if (name.BeginsWith("EtaLt15"))
+    return new AliMultiplicityEstimator("EtaLt15", "| #eta| #leq 1.5", -1.5, 0.0, 0.0, 1.5);
+  if (name.BeginsWith("Eta08_15"))
+    return new AliMultiplicityEstimator("Eta08_15", "0.8 #leq | #eta| #leq 1.5",
+					    -1.5, -0.8, 0.8, 1.5);
+  if (name.BeginsWith("V0A"))
+    return new AliMultiplicityEstimator("V0A", "2.8 #leq #eta #leq 5.1",
+					    0.0, 0.0, 2.8, 5.1);
+  if (name.BeginsWith("V0C"))
+    return new AliMultiplicityEstimator("V0C", "-3.7 #leq #eta #leq -1.7",
+					    -3.7, -1.7, 0.0, 0.0);
+  if (name.BeginsWith("V0M"))
+    return new AliMultiplicityEstimator("V0M", "-3.7 #leq #eta #leq -1.7 || 2.8 #leq #eta #leq 5.1",
+					    -3.7, -1.7, 2.8, 5.1);
+  if (name.BeginsWith("ZDC")){
+    AliMultiplicityEstimator* zdc = new AliMultiplicityEstimator("ZDC", "|#eta| #geq 8.7",
+								 -8.7, 0.0, 0.0, 8.7);
+    zdc->SetMeasuresCharged(kFALSE);
+    zdc->SetNegateEstimatorRegion(kTRUE);
+    return zdc;
+  }
+
 
   return 0;
 }
@@ -139,15 +168,36 @@ void AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects()
   fMyOut->SetOwner();
 
   InitEstimators();
-
+  AliMultiplicityEstimator* e = 0;
   TIter next(fEstimatorsList);
-  MultiplicityEstimatorBase* e = 0;
-  while ((e = static_cast<MultiplicityEstimatorBase*>(next()))) {
+  // Find the reference estimator
+  while ((e = static_cast<AliMultiplicityEstimator*>(next()))) {
+    if (TString(e->GetName()) == fReferenceEstimatorName)
+      {
+	fReferenceEstimator = e;
+	Info("AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects",
+	     "Ref estimator set to %s",
+	     fReferenceEstimator->GetName());
+      }
+  }
+  if (!fReferenceEstimator) {
+    AliFatal("No Reference estimator was defined"); 
+  }
+  // Now we can set the ref estimator and register the histograms
+  next = TIter(fEstimatorsList);
+  while ((e = static_cast<AliMultiplicityEstimator*>(next()))) {
+    e->SetReferenceEstimator(fReferenceEstimator);
     e->RegisterHistograms(fMyOut);
     // putting estimators into a vector for easier looping in UserExec.
     // it is only available on the slaves
     festimators.push_back(e);
   }
+  
+  // Output not associated with one single estimator:
+  fEventVariables = new TNtuple("fEventVariables",
+				"Estimator independent variables",
+				"ev_weight:nmpi");
+  fMyOut->Add(fEventVariables);
 
   // Suppress annoying printout
   AliLog::SetGlobalLogLevel(AliLog::kError);
@@ -158,14 +208,42 @@ void AliAnalysisTaskHMTFMCMultEst::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
 {
+  // Event level variables:
+  Float_t nMPI = 0;
+  Float_t q2   = 0;
+  Float_t eventWeight = 0;
+
+  // Load event and header
   AliMCEvent* mcEvent = MCEvent();
   if (!mcEvent) {
-     Printf("ERROR: Could not retrieve MC event");
+     AliError("ERROR: Could not retrieve MC event");
      return;
   }
-  std::vector<MultiplicityEstimatorBase*>::iterator iter, end;
+
+  AliGenPythiaEventHeader * headPy  = 0;
+  AliGenDPMjetEventHeader * headPho = 0;
+  AliGenEventHeader * htmp = mcEvent->GenEventHeader();
+  if(!htmp) {
+    AliError("Cannot get MC Header.");
+    return;
+  }
+  if( TString(htmp->IsA()->GetName()) == "AliGenPythiaEventHeader") {
+    headPy =  (AliGenPythiaEventHeader*) htmp;
+    q2   = headPy->GetPtHard();
+    nMPI = headPy->GetNMPI();
+  } else if (TString(htmp->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
+    headPho = (AliGenDPMjetEventHeader*) htmp;
+  } else {
+    cout << "Unknown header" << endl;
+  }
+  eventWeight = htmp->EventWeight();
+
+  AliHeader *header = mcEvent->Header();
+  AliStack  *stack = mcEvent->Stack();
+  
+  std::vector<AliMultiplicityEstimator*>::iterator iter, end;
   for (iter =festimators.begin(), end = festimators.end(); iter != end; ++iter) {//estimator loop
-    (*iter)->PreEvent(mcEvent);
+    (*iter)->PreEvent(eventWeight);
   }//estimator loop
 
   // Track loop for establishing multiplicity and checking for INEL > 0
@@ -177,8 +255,8 @@ void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
       continue;
     }
     // Pass the particle on to the estimators if it is a primary. Extra check for pi0's is needed since they are unstable
-    if (mcEvent->Stack()->IsPhysicalPrimary(iTrack) ||
-	IsPi0PhysicalPrimary(iTrack, mcEvent->Stack())){
+    if (stack->IsPhysicalPrimary(iTrack) ||
+	IsPi0PhysicalPrimary(iTrack, stack)){
       if (TMath::Abs(track->Eta()) < 1) isINEL_gt_0 = kTRUE;
       for (iter =festimators.begin(), end = festimators.end(); iter != end; ++iter) { //estimator loop
 	(*iter)->ProcessTrackForMultiplicityEstimation(track);
@@ -195,8 +273,8 @@ void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
 	Printf("ERROR: Could not receive track %d", iTrack);
 	continue;
       }
-      if (mcEvent->Stack()->IsPhysicalPrimary(iTrack) ||
-	  IsPi0PhysicalPrimary(iTrack, mcEvent->Stack())){
+      if (stack->IsPhysicalPrimary(iTrack) ||
+	  IsPi0PhysicalPrimary(iTrack, stack)){
 	for (iter =festimators.begin(), end = festimators.end(); iter != end; ++iter) { //estimator loop
 	  (*iter)->ProcessTrackWithKnownMultiplicity(track);
 	}//estimator loop
@@ -205,8 +283,13 @@ void AliAnalysisTaskHMTFMCMultEst::UserExec(Option_t *)
 
     // Increment eventcounters etc.
     for (iter =festimators.begin(), end = festimators.end(); iter != end; ++iter) { //estimator loop
-      (*iter)->PostEvent();
+      (*iter)->PostEvent(nMPI, q2, fFillNtuple);
     }//estimator loop
+
+    if (fFillNtuple) {
+      const Float_t variables[2] = {eventWeight, nMPI};
+      fEventVariables->Fill(variables);
+    }
   }
   // Post output data.
   PostData(1, fMyOut);
@@ -228,9 +311,9 @@ void AliAnalysisTaskHMTFMCMultEst::Terminate(Option_t *)
   results->SetName("terminateResults");
 
   TIter nextEst(fEstimatorsList);
-  MultiplicityEstimatorBase* e = 0;
+  AliMultiplicityEstimator* e = 0;
   std::cout << "Terminating estimators..." << std::endl;
-  while ((e = static_cast<MultiplicityEstimatorBase*>(nextEst()))) {
+  while ((e = static_cast<AliMultiplicityEstimator*>(nextEst()))) {
     e->Terminate(fMyOut);
   }
   PostData(1, fMyOut);

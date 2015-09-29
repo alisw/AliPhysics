@@ -69,7 +69,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
 	task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
 	if(ispp){
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
-		task->SetNumberOfEventsForMixing(400);//pp
+		task->SetNumberOfEventsForMixing(1000);//pp
 	}else{
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
 		task->SetNumberOfEventsForMixing(30);//pPb
@@ -103,6 +103,10 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks *AddTaskLc2eleLambdafromAODtracks(TSt
   mgr->ConnectOutput(task,7,coutputLc7);
   AliAnalysisDataContainer *coutputLc8 = mgr->CreateContainer(Form("eleLambdaCounter%1d",nTour),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
   mgr->ConnectOutput(task,8,coutputLc8);
+  AliAnalysisDataContainer *coutputLc9 = mgr->CreateContainer(Form("eleLambda_mcelevariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  mgr->ConnectOutput(task,9,coutputLc9);
+  AliAnalysisDataContainer *coutputLc10 = mgr->CreateContainer(Form("eleLambda_mcv0variables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  mgr->ConnectOutput(task,10,coutputLc10);
 
   return task;
 

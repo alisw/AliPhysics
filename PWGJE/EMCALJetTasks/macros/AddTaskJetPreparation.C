@@ -56,7 +56,6 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   //----------------------- Trigger Maker -----------------------------------------------------
   if (makeTrigger) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
     /*
      * Parameters (with default values):
      *   triggersOutName      (const char *)       = "EmcalTriggers",
@@ -78,17 +77,38 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
      *   gammaHighC           (int)                = 0,
      *   doQA                 (bool)               = kFALSE
      */
+#ifdef __CLING__
+    std::stringstream triggermakeradd;
+    triggermakeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C(";
+    triggermakeradd << "\"EmcalTriggers\", \"EmcalTriggerSetup\", 0, 0, \"AliEmcalTriggerMaker\" 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ";
+    triggermakeradd << (useOldBitConfig ? "kTRUE" : "kFALSE") << ", ";
+    triggermakeradd << (doTriggerQA ? "kTRUE" : "kFALSE");
+    triggermakeradd << ")";
+    std::string triggermakeraddstring = triggermakeradd.str();
+    AliEmcalTriggerMaker *emcalTriggers = (AliEmcalTriggerMaker *) gROOT->ProcessLine(triggermakeraddstring.c_str());
+#else
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
     AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers", "EmcalTriggerSetup", 0, 0, "AliEmcalTriggerMaker", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, useOldBitConfig, doTriggerQA);
+#endif
     emcalTriggers->SelectCollisionCandidates(pSel);
   }
 
   //----------------------- Track Matching tasks -----------------------------------------------------
+#ifdef __CLING__
+  std::stringstream matchingchainadd;
+  matchingchainadd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskMatchingChain.C("
+      << "\"" << periodstr << "\", " << pSel << ", \"" << clusterColName << "\", " << trackeff << ", "
+      << (doAODTrackProp ? "kTRUE" : "kFALSE") << ", 0.1, " << (modifyMatchObjs ? "kTRUE" : "kFALSE") << ", "
+      << (doHistos ? "kTRUE" : "kFALSE") << ", " << nCentBins << ")";
+  std::string matchingchainaddstring = matchingchainadd.str();
+  AliEmcalClusTrackMatcherTask *emcalClus = (AliEmcalClusTrackMatcherTask *)gROOT->ProcessLine(matchingchainaddstring.c_str());
+#else
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMatchingChain.C");
   AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskMatchingChain(periodstr,pSel,
 								  clusterColName,
 								  trackeff,doAODTrackProp,
 								  0.1,modifyMatchObjs,doHistos,nCentBins);
-  
+#endif
   //hard coded names of AliEmcalParticle strings to coincide with AddTaskClusTrackMatching
   TString inputTracks = "AODFilterTracks";
   if (dType == "ESD") inputTracks = "ESDFilterTracks";
@@ -99,32 +119,58 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   
   // Produce MC particles
   if(!particleColName.IsNull()) {
+#ifdef __CLING__
+    std::stringstream mcparttaskadd;
+    mcparttaskadd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskMCTrackSelector.C("
+        << "\"" << particleColName << "\", kFALSE, kFALSE)";
+    std::string mcparttaskaddstring = mcparttaskadd.str();
+    AliEmcalMCTrackSelector *mcPartTask = (AliEmcalMCTrackSelector *)gROOT->ProcessLine(mcparttaskaddstring.c_str());
+#else
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
     AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName, kFALSE, kFALSE);
+#endif
     mcPartTask->SelectCollisionCandidates(pSel);
   }
 
   
   if(makePicoTracks) {
     //----------------------- Produce PicoTracks -----------------------------------------------------
+#ifdef __CLING__
+    std::stringstream picotrackmakeradd;
+    picotrackmakeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C("
+        << "\"" << picoTracksName << "\", \"" << inputTracks << "\")";
+    std::string picotrackmakeraddstring = picotrackmakeradd.str();
+    AliEmcalPicoTrackMaker *pTrackTask = (AliEmcalPicoTrackMaker *)gROOT->ProcessLine(picotrackmakeraddstring.c_str());
+#else
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
     AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(picoTracksName, inputTracks);
+#endif
     //    pTrackTask->SetTrackEfficiency(trackeff); //now done in Esd/AodFilter
     pTrackTask->SelectCollisionCandidates(pSel);
     if(!particleColName.IsNull()) pTrackTask->SetCopyMCFlag(kTRUE, usedMCParticles);
   }
 
   //----------------------- Hadronic Correction -----------------------------------------------------
+#ifdef __CLING__
+  std::stringstream hadcorradd;
+  hadcorradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskHadCorr.C("
+      << "\"" << emctracks << "\", \"" << emcclusters << "\", \"" << outClusName << "\", " << hadcorr << ", " << minPtEt << ", "
+      << phiMatch << ", " << etaMatch << ", " << Eexcl << ", " << (trackclus ? "kTRUE" : "kFALSE") << ", " << (doHistos ? "kTRUE" : "kFALSE") << ")";
+  std::string hadcorraddstring = hadcorradd.str();
+  AliHadCorrTask *hCorr = (AliHadCorrTask *)gROOT->ProcessLine(hadcorraddstring.c_str());
+#else
   gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskHadCorr.C");
   AliHadCorrTask *hCorr = AddTaskHadCorr(emctracks,emcclusters,outClusName,hadcorr,
                                          minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
+#endif
   hCorr->SelectCollisionCandidates(pSel);
   hCorr->SetNCentBins(nCentBins);
+#ifndef __CLING__
   if (isEmcalTrain) {
     if (doHistos)
       RequestMemory(hCorr,500*1024);
   }
-
+#endif
   
   // Return one task that represents the jet preparation on LEGO trains
   return hCorr;

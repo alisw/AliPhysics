@@ -103,11 +103,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                    };
 
   //setters (interface to AliESDtrackCuts)
-  Int_t MaxSharedITSClusterCuts(Int_t maxITSclusterShared, AliESDtrack* track);
-  Double_t MaxChi2perITSClusterCuts(Double_t maxITSChi2, AliESDtrack* track);
+  Int_t MaxSharedITSClusterCuts(AliESDtrack* track);
+  Double_t MaxChi2perITSClusterCuts(AliESDtrack* track);
 
-  void SetMaxSharedITSCluster(Int_t b){fMaxITSclusterShared = b;}
-  void SetMaxChi2perITSCluster(Double_t b){fMaxITSChi2 = b;}
+  void SetMaxSharedITSCluster(Int_t b){fCutITSclusterShared = kTRUE; fMaxITSclusterShared = b;}
+  void SetMaxChi2perITSCluster(Double_t b){fCutITSChi2 = kTRUE; fMaxITSChi2 = b;}
     
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
   void SetMinNClustersITS( Int_t a ) {fCutNClustersITS=kTRUE; fNClustersITSMin=a;}
@@ -484,7 +484,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
     
   TF2                   *fPurityFunction[180]; //TF2 purity functions
   
+  Bool_t fCutITSclusterShared;          // cut fMaxITSClusterShared
   Int_t  fMaxITSclusterShared;          // fMaxITSclusterShared 
+  Bool_t fCutITSChi2;                   // cut fMaxITSChi2
   Double_t  fMaxITSChi2;                // fMaxITSChi2
   
   Int_t         fRun;                   // run number

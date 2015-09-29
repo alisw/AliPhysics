@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_tbroeker_lowmasspPb(Bool_t getFromAlien=kFALSE,
                                              TString cFileName = "Config_tbroeker_lowmasspPb.C",
-                                             Char_t* outputFileName="LMEEoutput.root"
+                                             Char_t* outputFileName="LMEE.root"
                                              )
 {
 

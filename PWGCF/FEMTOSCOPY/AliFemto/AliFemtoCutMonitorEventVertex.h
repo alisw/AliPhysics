@@ -11,7 +11,7 @@ class AliFemtoEvent;
 class AliFemtoTrack;
 class AliFemtoV0;
 class AliFemtoKink;
-class AliFemtoPair; 
+class AliFemtoPair;
 class TH1D;
 class TH2D;
 class TList;
@@ -20,7 +20,7 @@ class TList;
 #include "AliFemtoCutMonitor.h"
 
 class AliFemtoCutMonitorEventVertex : public AliFemtoCutMonitor{
-  
+
 public:
   AliFemtoCutMonitorEventVertex();
   AliFemtoCutMonitorEventVertex(const char *aName);
@@ -33,6 +33,7 @@ public:
   virtual void Fill(const AliFemtoEvent* aEvent);
   virtual void Fill(const AliFemtoTrack* aTrack) {AliFemtoCutMonitor::Fill(aTrack);}
   virtual void Fill(const AliFemtoV0* aV0) {AliFemtoCutMonitor::Fill(aV0);}
+  virtual void Fill(const AliFemtoXi* aXi) {AliFemtoCutMonitor::Fill(aXi);}
   virtual void Fill(const AliFemtoKink* aKink) {AliFemtoCutMonitor::Fill(aKink);}
   virtual void Fill(const AliFemtoPair* aPair) {AliFemtoCutMonitor::Fill(aPair);}
   virtual void Fill(const AliFemtoParticleCollection* aCollection) {AliFemtoCutMonitor::Fill(aCollection);}

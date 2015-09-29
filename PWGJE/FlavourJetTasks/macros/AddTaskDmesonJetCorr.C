@@ -11,6 +11,8 @@ AliAnalysisTaskDmesonJetCorrelations* AddTaskDmesonJetCorr(AliAnalysisTaskDmeson
                                                            Double_t    jetareacut         = 0.557,
                                                            const char *cutType            = "TPC",
                                                            Int_t       leadhadtype        = 0,
+							   const char *DmesonCandName     = "Dcandidates",
+							   Bool_t      useExchCont        = kTRUE,
                                                            const char *taskname           = "AliAnalysisTaskDmesonJetCorrelations",
                                                            const char *suffix             = ""
 )
@@ -106,7 +108,7 @@ AliAnalysisTaskDmesonJetCorrelations* AddTaskDmesonJetCorr(AliAnalysisTaskDmeson
     analysiscuts->SetName(cutsname);
   }
 
-  AliAnalysisTaskDmesonJetCorrelations* jetTask = new AliAnalysisTaskDmesonJetCorrelations(name, analysiscuts, cand);
+  AliAnalysisTaskDmesonJetCorrelations* jetTask = new AliAnalysisTaskDmesonJetCorrelations(name, analysiscuts, cand, useExchCont);
   jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
@@ -143,30 +145,22 @@ AliAnalysisTaskDmesonJetCorrelations* AddTaskDmesonJetCorr(AliAnalysisTaskDmeson
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
                                                             AliRDHFCuts::Class(), AliAnalysisManager::kOutputContainer,
                                                             Form("%s:SA_DmesonJetCorr", AliAnalysisManager::GetCommonFileName()));
-  
-  TString nameContainerFC2("Dcandidates");
-  TString nameContainerFC3("DSBcandidates");
-
-  nameContainerFC2 += candname;
-  nameContainerFC3 += candname;
-  
-  nameContainerFC2 += suffix;
-  nameContainerFC3 += suffix;
-  
-  TObjArray* cnt = mgr->GetContainers();
-  AliAnalysisDataContainer* coutputFC2 = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nameContainerFC2));
-  if (!coutputFC2) {
-    ::Error("AddTaskDmesonJetCorr", "Could not find input container '%s'! This task needs the D meson filter task!", nameContainerFC2.Data());
-    return NULL;
-  }
-  AliAnalysisDataContainer* coutputFC3 = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nameContainerFC3));
-  if (!coutputFC3) {
-    ::Warning("AddTaskDmesonJetCorr", "Could not find input container '%s'! This task needs the D meson filter task!", nameContainerFC3.Data());
-  }
-
   mgr->ConnectInput(jetTask, 0, cinput1);
-  mgr->ConnectInput(jetTask, 1, coutputFC2);
-  if (coutputFC3) mgr->ConnectInput(jetTask, 2, coutputFC3);
+
+  if (useExchCont) {
+    TString nameContainerFC2(DmesonCandName);
+    if (!nameContainerFC2.IsNull()) {
+      nameContainerFC2 += candname;
+      nameContainerFC2 += suffix;
+  
+      TObjArray* cnt = mgr->GetContainers();
+      AliAnalysisDataContainer* coutputFC2 = static_cast<AliAnalysisDataContainer*>(cnt->FindObject(nameContainerFC2));
+      if (!coutputFC2) {
+	::Error("AddTaskDmesonJetCorr", "Could not find input container '%s'!", nameContainerFC2.Data());
+      }
+      mgr->ConnectInput(jetTask, 1, coutputFC2);
+    }
+  }
 
   mgr->ConnectOutput(jetTask, 1, coutput1);
   mgr->ConnectOutput(jetTask, 2, coutput2);

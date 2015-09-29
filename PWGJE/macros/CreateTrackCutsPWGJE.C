@@ -169,7 +169,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     trackCuts->SetRequireSigmaToVertex(kFALSE);
 
     trackCuts->SetEtaRange(-0.9,0.9);
-    trackCuts->SetPtRange(0.15, 1E+15.);
+    trackCuts->SetPtRange(0.15, 1E+15);
  
     tag = "Global tracks jet analysis with ITSrefit and NclsIter1=70, noSPD requirement, no upper pt cut";
 
@@ -201,7 +201,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     trackCuts->SetRequireSigmaToVertex(kFALSE);
 
     trackCuts->SetEtaRange(-0.9,0.9);
-    trackCuts->SetPtRange(0.15, 1E+15.);
+    trackCuts->SetPtRange(0.15, 1E+15);
  
     tag = "Global tracks jet analysis with ITSrefit and NclsIter1=PtDep, noSPD requirement, no upper pt cut, golden chi2";
 
@@ -221,7 +221,7 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
     trackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 
     trackCuts->SetEtaRange(-0.9,0.9);
-    trackCuts->SetPtRange(0.15, 1E+15.);
+    trackCuts->SetPtRange(0.15, 1E+15);
  
     tag = "Global tracks with AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE)";
 

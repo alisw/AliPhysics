@@ -1,12 +1,36 @@
 #ifndef AliAnalysisTaskEmcalJetHadEPpid_h
 #define AliAnalysisTaskEmcalJetHadEPpid_h
 
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//-------------------------------------------------------------------------
+// 1) Analysis Task to perform Jet-Hadron Correlations
+// 2) Event plane dependence task.
+// 3) performs event plane resolution calculation
+// 4) does PID of the associated pi/k/p hadrons
+//
+// Author: Joel Mazer (joel.mazer@cern.ch)
+//-------------------------------------------------------------------------
+
 // root classes
 class TClonesArray;
 class TF1;
-class TH1F;
-class TH2F;
-class TH3F;
+class TH1;
+class TH2;
+class TH3;
 class THnSparse;
 class TProfile;
 class TList;
@@ -99,7 +123,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void 					  SetdoPIDtrackBIAS(Bool_t PIDbias)     { doPIDtrackBIAS = PIDbias; } // do PID track bias switch
 
   // esd track cuts setters
-  void SetTrackCuts(AliESDtrackCuts *cuts)                      { fesdTrackCuts = cuts; }
+  void                    SetTrackCuts(AliESDtrackCuts *cuts)                      { fesdTrackCuts = cuts; }
 
   // reference of detector for event plane resolution
   void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
@@ -122,7 +146,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   AliEmcalJet*            GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
 
   // switch for Event Plane Resolution analysis
-  void            SetdoEventPlaneRes(Bool_t depr)       { doEventPlaneRes = depr; } // do EP res switch
+  void                    SetdoEventPlaneRes(Bool_t depr)       { doEventPlaneRes = depr; } // do EP res switch
 
   // give comments setter
   void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
@@ -142,6 +166,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual void            SetTracksName(const char *tn)         { fTracksName = tn; }
   virtual void			  SetTracksNameME(const char *MEtn)     { fTracksNameME = MEtn; }
   virtual void            SetJetsName(const char *jn)           { fJetsName = jn; }
+  virtual void            SetCaloClustersName(const char *cn)   {fCaloClustersName=cn; }
 
   // bias and cuts - setters
   virtual void            SetAreaCut(Double_t a)                { fAreacut    = a; }
@@ -202,6 +227,7 @@ protected:
   void                   CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
   void                   CalculateEventPlaneTPC(Double_t* tpc);
   void                   CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
+  TH1*                   FillEventTriggerQA(TH1* h, UInt_t t); // filled event trigger QA plots
 
   // parameters of detector to cut on for event
   Double_t               fPhimin;                  // phi min
@@ -282,9 +308,10 @@ protected:
   Double_t		 fLocalRhoVal;
 
   // object names
-  TString		 fTracksName;
-  TString		 fTracksNameME;
-  TString		 fJetsName;
+  TString		 fTracksName; // name of track collection (for signal events)
+  TString		 fTracksNameME; // name of mixed event track collection
+  TString		 fJetsName; // name of jet collection
+  TString        fCaloClustersName; // name of Calo Cluster collection
 
   // event counter
   Int_t			 event;
@@ -310,6 +337,7 @@ protected:
 
   TH1F				    *fHistEventQA;//!
   TH1F                  *fHistEventSelectionQA;//!
+  TH1F                  *fHistEventSelectionQAafterCuts;//!
 
   TH2F                  *fHistCentZvertGA;//!
   TH2F                  *fHistCentZvertJE;//!
@@ -323,7 +351,6 @@ protected:
   TH2F                  *fHistRhovsCent;//!
   TH2F                  *fHistNjetvsCent;//! number of jets versus Centrality
   TH2F                  *fHistJetPtvsTrackPt[6];//!
-  TH2F                  *fHistRawJetPtvsTrackPt[6];//!
   TH1F                  *fHistTrackPt[6];//!
   TH1F                  *fHistEP0[6];//!
   TH1F                  *fHistEP0A[6];//!
@@ -333,8 +360,8 @@ protected:
   TH2F                  *fHistJetPtvsdEP[6];//!
   TH2F                  *fHistJetPtvsdEPBias[6];//!
   TH2F                  *fHistRhovsdEP[6];//!
-  TH3F                  *fHistJetEtaPhiPt[6];//!
-  TH3F                  *fHistJetEtaPhiPtBias[6];//!
+  TH3                   *fHistJetEtaPhiPt[6];//!
+  TH3                   *fHistJetEtaPhiPtBias[6];//!
   TH2F                  *fHistJetPtArea[6];//!
   TH2F                  *fHistJetPtAreaBias[6];//!
   TH2F                  *fHistJetPtNcon[6];//!
@@ -347,8 +374,6 @@ protected:
   TH1F			        *fHistJetHaddPhiOUTcent[6];//!
   TH1F			        *fHistJetHaddPhiMIDcent[6];//!
 
-  TH1                   *fHistCentrality;//!
-  TH1                   *fHistZvtx;//!
   TH1                   *fHistMult;//!
   TH1		        	*fHistJetPhi;//!
   TH1		            *fHistTrackPhi;//!
@@ -364,18 +389,8 @@ protected:
   TH1                   *fHistMEdPHI;//! // phi distrubtion of mixed events
   TH1					*fHistTrackPtallcent;//!
 
-  TH2                   *fHistJetEtaPhi;//!  
+  TH2                   *fHistJetEtaPhi;//!
   TH2                   *fHistTrackEtaPhi[4][7];//!
-
-  TProfile              *fProfV2Resolution[10];//! resolution parameters for v2
-  TProfile              *fProfV3Resolution[10];//! resolution parameters for v3
-  TProfile              *fProfV4Resolution[10];//! resolution parameters for v4
-  TProfile              *fProfV5Resolution[10];//! resolution parameters for v5
-  TArrayD*              fChi2A;                         // chi vs cent for vzero A ep_2
-  TArrayD*              fChi2C;                         // chi vs cent for vzero C ep_2
-  TArrayD*              fChi3A;                         // chi vs cent for vzero A ep_3
-  TArrayD*              fChi3C;                         // chi vs cent for vzero C ep_3
-  Bool_t                fUseChiWeightForVZERO;          // use chi weight for vzero
 
   TH1		        	*fHistJetHadbindPhi[9];//! 
   TH1					*fHistJetHadbindPhiIN[9];//! 
@@ -394,6 +409,14 @@ protected:
   TH2F                  *fHistMEphieta;//! // mixed events phi-eta distributions
   TH1F					*fHistJetHaddPHI;//!
 
+  // more QA histos
+  TH3                   *fHistClusEtaPhiEnergy;//!
+  TH1                   *fHistClusEnergy;//!
+  TH1                   *fHistClusofJetEnergy;//!
+  TH1                   *fHistJetNClusterConstit;//!
+  TH1                   *fHistJetNTrackConstit;//!
+  TH1                   *fHistJetNConstit;//!
+
   // PID status histo's
   TH1					*fHistPID;//!
 
@@ -402,6 +425,17 @@ protected:
   THnSparse             *fhnMixedEvents;//!  // mixed events matrix
   THnSparse             *fhnJH;//!           // jet hadron events matrix
   THnSparse				*fhnCorr;//!		  // sparse to get # jet triggers
+
+  // EP resoltuion profiles and chi2 array
+  TProfile              *fProfV2Resolution[10];//! resolution parameters for v2
+  TProfile              *fProfV3Resolution[10];//! resolution parameters for v3
+  TProfile              *fProfV4Resolution[10];//! resolution parameters for v4
+  TProfile              *fProfV5Resolution[10];//! resolution parameters for v5
+  TArrayD*              fChi2A;                         // chi vs cent for vzero A ep_2
+  TArrayD*              fChi2C;                         // chi vs cent for vzero C ep_2
+  TArrayD*              fChi3A;                         // chi vs cent for vzero A ep_3
+  TArrayD*              fChi3C;                         // chi vs cent for vzero C ep_3
+  Bool_t                fUseChiWeightForVZERO;          // use chi weight for vzero
 
   // container objects
   AliJetContainer            *fJetsCont;                   //!Jets
@@ -412,6 +446,7 @@ protected:
   Int_t					fContainerAllJets;  // number of container with all full jets
   Int_t					fContainerPIDJets;  // number of container with full jets meeting Pt cut (for PID)
 
+  //TObjArray                  *fTrgJet;                       //!jets
 // ***********************************************************
    
   //Declare it private to avoid compilation warning

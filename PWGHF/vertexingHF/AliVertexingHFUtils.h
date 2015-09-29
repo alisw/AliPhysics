@@ -108,6 +108,7 @@ class AliVertexingHFUtils : public TObject{
 
   static Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
   static Int_t CheckOrigin(AliStack* stack, TParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
+  static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
   static Int_t CheckD0Decay(AliStack* stack, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
   static Int_t CheckDplusDecay(AliStack* stack, Int_t label, Int_t* arrayDauLab);

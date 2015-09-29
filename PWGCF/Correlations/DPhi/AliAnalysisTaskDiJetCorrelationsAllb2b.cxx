@@ -361,7 +361,7 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
   }}
       
       
-       if(!fSetSystemValue) {Bool_t DefPool = DefineMixedEventPoolpp();
+  if(!fSetSystemValue) {Bool_t DefPool = DefineMixedEventPoolpp();
   if(!DefPool){
     AliInfo("UserCreateOutput: Pool is not define properly");
     return;
@@ -508,6 +508,8 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     if(fAodTracks->Eta() < -0.9 || fAodTracks->Eta() > 0.9)continue;
     if (fAodTracks->Pt() < 0.5 || fAodTracks->Pt() > 20.)continue;
     
+     
+      
     fHistNEvents->Fill(5);
     fHistQA[1]->Fill(fAodTracks->GetTPCClusterInfo(2,1));
     fHistQA[3]->Fill(fAodTracks->DCA());
@@ -640,14 +642,16 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                    
                    
                    if(fAodTracksAS->Pt() < fAodTracksT1->Pt()){
-                       
+                       if(fCutConversions || fCutResonances){
                        Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
                        if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg1)continue;
+                        }
                        
+                       if(ftwoTrackEfficiencyCut){
                        Bool_t CutForTwoTrackEffiTrg1 = TwoTrackEfficiencyCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS, bSign);
                        if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg1)continue;
                        fHistT1CorrTrack->Fill(4);
-                       
+                       }
                        Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
   
@@ -663,12 +667,18 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                    
                    if (fAodTracksAS->Pt() < fAodTracksT2->Pt()){
                        
+                       if(fCutConversions || fCutResonances){
+
                        Bool_t CutForConversionResonanceTrg2 = ConversionResonanceCut(fAodTracksT2->Pt(), fAodTracksT2->Phi(), fAodTracksT2->Eta(), fAodTracksT2->Charge(), fAodTracksAS,fControlConvResT2, fHistT2CorrTrack);
                        if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg2)continue;
+                       }
                        
+                       if(ftwoTrackEfficiencyCut){
+
                        Bool_t CutForTwoTrackEffiTrg2 = TwoTrackEfficiencyCut(fAodTracksT2->Pt(), fAodTracksT2->Phi(), fAodTracksT2->Eta(), fAodTracksT2->Charge(), fAodTracksAS, bSign);
                        if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg2)continue;
                        fHistT2CorrTrack->Fill(4);
+                       }
                        
                        Double_t deltaPhi2 =  AssignCorrectPhiRange(fAodTracksT2->Phi() - fAodTracksAS->Phi());
                        Double_t deltaEta2 = fAodTracksT2->Eta() - fAodTracksAS->Eta();
@@ -770,19 +780,18 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                                                         
                                 if(fAodTracksAS->Pt() < fAodTracksT1->Pt()){
                                     
+                                    if(fCutConversions || fCutResonances){
                                     Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
-                                    if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg1)continue;
+                                    if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg1)continue;}
                                     
+                                    if(ftwoTrackEfficiencyCut){
                                     Bool_t CutForTwoTrackEffiTrg1 = TwoTrackEfficiencyCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS, bSign);
                                     if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg1)continue;
                                     fHistT1CorrTrack->Fill(4);
+                                    }
                                     
                                     Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                                     Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
-                                    
-                                  
-                                   
-                                    
                                     Double_t CentzVtxDEtaDPhiTrg1[6] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1,ptTrackT1,ptTrack1AS};
                                     
                                     ((THnSparseD*)fOutputCorr->FindObject(Form("ThnCentZvtxDEtaDPhipTTpTA1plus1_%s_%s",typeData.Data(), SEorME.Data())))->Fill(CentzVtxDEtaDPhiTrg1, effvalue);
@@ -1083,7 +1092,7 @@ if(ftwoplus1){
   //_____________________________________________Trigger-1
   const Int_t pTbinTrigger1 = Int_t(fTrigger1pTHighThr - fTrigger1pTLowThr)/2;
   const Int_t pTbinTrigger2 = Int_t(fTrigger2pTHighThr - fTrigger2pTLowThr);
-  Int_t   fBinsTrg1[4]   = {nBinsCentorMult,       10,        pTbinTrigger1, pTbinTrigger2};
+  Int_t   fBinsTrg1[4]   = {nBinsCentorMult,       5,        pTbinTrigger1, pTbinTrigger2};
   Double_t fMinTrg1[4]   = {fMinCentorMult,   -10.0,    fTrigger1pTLowThr, fTrigger2pTLowThr};
   Double_t fMaxTrg1[4]   = {fMaxCentorMult,  10.0,   fTrigger1pTHighThr, fTrigger2pTHighThr};
   THnTrig1CentZvtxpT = new THnSparseD(nameThnTrg1CentZvtxpT.Data(),"Cent-Zvtx-pTtr1",4, fBinsTrg1, fMinTrg1, fMaxTrg1);
@@ -1102,7 +1111,7 @@ if(ftwoplus1){
     
   //Catgry2: Correlations Plots for SE and ME (T1, T2)
  //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t    fBins12[7] = {nBinsCentorMult,     10,   18,               36, pTbinTrigger1, pTbinTrigger2, 10};
+  Int_t    fBins12[7] = {nBinsCentorMult,     5,   18,               36, pTbinTrigger1, pTbinTrigger2, 10};
   Double_t  fMin12[7] = {fMinCentorMult,   -10.0, -1.8, -0.5*TMath::Pi(), fTrigger1pTLowThr, fTrigger2pTLowThr, 0.5};
   Double_t  fMax12[7] = {fMaxCentorMult,  10.0,  1.8,  1.5*TMath::Pi(),fTrigger1pTHighThr, fTrigger2pTHighThr, 10};
   THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-T1-T2-Trk",7, fBins12, fMin12, fMax12);
@@ -1117,14 +1126,14 @@ if(ftwoplus1){
  //1plus1 correlation
  //----------------------------
   const Int_t pTbinTrigger1plus1 = Int_t(fTrigger1pTHighThr - fTrigger2pTLowThr);
-  Int_t   fBinsTrg1plus1[3]   = {nBinsCentorMult,       10,   pTbinTrigger1plus1};
+  Int_t   fBinsTrg1plus1[3]   = {nBinsCentorMult,       5,   pTbinTrigger1plus1};
   Double_t fMinTrg1plus1[3]   = {fMinCentorMult,   -10.0,   fTrigger2pTLowThr};
   Double_t fMaxTrg1plus1[3]   = {fMaxCentorMult,  10.0,   fTrigger1pTHighThr};
   THnCentZvtxpTT1plus1 = new THnSparseD(nameThnCentZvtxpTT1plus1.Data(),"Cent-Zvtx-pTtr1",3, fBinsTrg1plus1, fMinTrg1plus1, fMaxTrg1plus1);
   
    
   //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-  Int_t   fBins121plus1[6] = {nBinsCentorMult,     10,   18,                36,  pTbinTrigger1plus1,  10};
+  Int_t   fBins121plus1[6] = {nBinsCentorMult,     5,   18,                36,  pTbinTrigger1plus1,  10};
   Double_t  fMin121plus1[6] = {fMinCentorMult,   -10., -1.8, -0.5*TMath::Pi(), fTrigger2pTLowThr,  0.5};
   Double_t  fMax121plus1[6] = {fMaxCentorMult,  10.,  1.8,  1.5*TMath::Pi(), fTrigger1pTHighThr, 10};
   THnCentZvtxDEtaDPhipTTpTA1plus1   = new THnSparseD(nameThnCentZvtxDEtaDPhipTTpTA1plus1.Data(),"Cent-zVtx-DEta1-DPhi1-pTT-pTA",6, fBins121plus1, fMin121plus1, fMax121plus1);
