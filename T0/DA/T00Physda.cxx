@@ -235,10 +235,7 @@ int main(int argc, char **argv) {
 	  }
 	}
       }
-      if (allData[50][0] == 0) {
-        cout<<" no TVDC trigger "<<endl;
-        continue;
-      }
+      if (allData[50][0] == 0)     continue;
       hVertex->Fill(allData[50][0]);
       hOrA->Fill(allData[51][0]);
       hOrC->Fill(allData[52][0]);
