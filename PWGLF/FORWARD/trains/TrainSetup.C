@@ -443,7 +443,11 @@ struct TrainSetup
 	throw TString("No class name specified");
       if (name.IsNull()) 
 	throw TString("No train name specified");
-
+      TString mkLib = gSystem->GetMakeSharedLib();
+      mkLib.ReplaceAll("-std=c++14", "-std=c++98");
+      // mkLib.Append("-ffpe-trap=invalid,zero,overflow,underflow,inexact");
+      gSystem->SetMakeSharedLib(mkLib);
+  
       gROOT->ProcessLine("gSystem->RedirectOutput(\"build.log\",\"w\");");
       Int_t error = 0;
       Int_t r1 = gROOT->LoadMacro(Form("%s.C+g", cls.Data()), &error);
