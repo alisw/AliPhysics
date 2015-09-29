@@ -27,6 +27,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3.h"
+#include "THnBase.h"
 #include "TF1.h"
 #include "TTree.h"
 #include "TChain.h"
@@ -46,6 +47,7 @@
 #include "TRandom.h"
 #include "TStopwatch.h"
 #include "TTreeStream.h"
+#include "AliSysInfo.h"
 
 #include "TStatToolkit.h"
 
@@ -2285,3 +2287,148 @@ Double_t TStatToolkit::GetDistance(TTree * tree, const char* var, const char * s
   CombineArray(tree, values);
   return GetDistance(values, normType, normaliseToEntries, pvalue);
 }
+
+
+
+void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t verbose){
+  //
+  // Recursive function to calculate Distortion maps from the residual histograms
+  // Input:
+  //   iter     - ndim..0
+  //   histo    - THn histogram
+  //   pcstream -
+  //   projectionInfo  - TMatrix speicifiing distortion map cration setup
+  //     user specify columns:
+  //       0.) sequence of dimensions 
+  //       1.) grouping in dimensions (how many bins will be groupd in specific dimension - 0 means onl specified bin 1, curren +-1 bin ...)
+  //       2.) step in dimension ( in case >1 some n(projectionInfo(<dim>,2) bins will be not exported
+  //     internally used collumns (needed to pass current bin index and bin center to the recursive function) 
+  //       3.) current bin value  
+  //       4.) current bin center
+  //
+  //  Output:
+  //   pcstream - file with output distortion tree
+  //    1.) distortion characteristic: mean, rms, gaussian fit parameters, meang, rmsG chi2 ... at speciefied bin 
+  //    2.) specidfied bins (tree branches) are defined by the name of the histogram axis in input histograms
+  //  
+  //    
+  //   Example projection info
+  /*
+    TFile *f  = TFile::Open("/hera/alice/hellbaer/alice-tpc-notes/SpaceChargeDistortion/data/ATO-108/fullMerge/SCcalibMergeLHC12d.root");
+    THnF* histof= (THnF*) f->Get("deltaY_ClTPC_ITSTOF");
+    histof->SetName("deltaRPhiTPCTISTOF");
+    histof->GetAxis(4)->SetName("qpt");
+    TH1::SetDirectory(0);
+    TTreeSRedirector * pcstream = new TTreeSRedirector("distortion.root","recreate");
+    TMatrixD projectionInfo(5,5);
+    projectionInfo(0,0)=0;  projectionInfo(0,1)=0;  projectionInfo(0,2)=0;
+    projectionInfo(1,0)=4;  projectionInfo(1,1)=0;  projectionInfo(1,2)=1; 
+    projectionInfo(2,0)=3;  projectionInfo(2,1)=3;  projectionInfo(2,2)=2;
+    projectionInfo(3,0)=2;  projectionInfo(3,1)=0;  projectionInfo(3,2)=5;
+    projectionInfo(4,0)=1;  projectionInfo(4,1)=5;  projectionInfo(4,2)=20;
+    MakeDistortionMap(4, histof, pcstream, projectionInfo); 
+    delete pcstream;
+  */
+  //
+  static TF1 fgaus("fgaus","gaus",-10,10);
+  
+  Int_t ndim=histo->GetNdimensions();
+  Int_t axis[ndim];
+  Double_t meanVector[ndim];
+  Int_t binVector[ndim];
+  Double_t centerVector[ndim];
+  for (Int_t idim=0; idim<ndim; idim++) axis[idim]=idim;
+  //
+  if (iter==0){
+    char tname[100];
+    char aname[100];
+    char bname[100];
+    char cname[100];
+    
+    snprintf(tname, 100, "%sDist",histo->GetName());
+    //
+    //
+    // 1.) Calculate  properties   - mean, rms, gaus fit, chi2, entries
+    // 2.) Dump properties to tree 1D properties  - plus dimension descriptor f
+    Int_t axis1D[1]={0};
+    Int_t dimProject   = TMath::Nint(projectionInfo(iter,0));
+    axis1D[0]=dimProject;
+    TH1 *his1DFull = histo->Projection(dimProject);
+    Double_t mean= his1DFull->GetMean();
+    Double_t rms= his1DFull->GetRMS();
+    Int_t entries=  his1DFull->GetEntries();
+    TString hname="his_";
+    for (Int_t idim=0; idim<ndim; idim++) {hname+="_"; hname+=TMath::Nint(projectionInfo(idim,3));}
+    Double_t meanG=0, rmsG=0, chi2G=0;
+    if (entries>100){
+      fgaus.SetParameters(entries,mean,rms);
+      his1DFull->Fit(&fgaus,"qnr","qnr");
+      meanG = fgaus.GetParameter(1);
+      rmsG = fgaus.GetParameter(2);
+      chi2G = fgaus.GetChisquare()/fgaus.GetNumberFreeParameters();
+    }
+    his1DFull->Write(hname.Data());
+    delete his1DFull;
+    (*pcstream)<<tname<<
+    "entries="<<entries<< // number of entries
+    "mean="<<mean<<       // mean value of the last dimension
+    "rms="<<rms<<         // rms value of the last dimension
+    "meanG="<<meanG<<     // mean of the gaus fit
+    "rmsG="<<rmsG<<       // rms of the gaus fit
+    "chi2G="<<chi2G;      // chi2 of the gaus fit
+    
+    for (Int_t idim=0; idim<ndim; idim++){
+      axis1D[0]=idim;
+      TH1 *his1DAxis = histo->Projection(idim);
+      meanVector[idim] = his1DAxis->GetMean();
+      snprintf(aname, 100, "%sMean=",histo->GetAxis(idim)->GetName());
+      (*pcstream)<<tname<<
+      aname<<meanVector[idim];      // current bin means
+      delete his1DAxis;
+    }
+    for (Int_t iIter=0; iIter<ndim; iIter++){
+      Int_t idim = TMath::Nint(projectionInfo(iIter,0));
+      binVector[idim] = TMath::Nint(projectionInfo(iIter,3));
+      centerVector[idim] = projectionInfo(iIter,4);
+      snprintf(bname, 100, "%sBin=",histo->GetAxis(idim)->GetName());
+      snprintf(cname, 100, "%sCenter=",histo->GetAxis(idim)->GetName());
+      (*pcstream)<<tname<<
+      bname<<binVector[idim]<<      // current bin values
+      cname<<centerVector[idim];    // current bin centers
+    }
+    (*pcstream)<<tname<<"\n";
+  }else{
+    // loop over the diminsion of interest
+    //      project selecting bin+-deltabin histoProj
+    //      MakeDistortionMap(histoProj ...) 
+    //
+    Int_t dimProject   = TMath::Nint(projectionInfo(iter,0));
+    Int_t groupProject =  TMath::Nint(projectionInfo(iter,1));
+    Int_t stepProject =  TMath::Nint(projectionInfo(iter,2));
+    if (stepProject<1) stepProject=1;
+    Int_t nbins = histo->GetAxis(dimProject)->GetNbins();
+    
+    for (Int_t ibin=1; ibin<=nbins; ibin+=stepProject){
+      if (iter>1 && verbose){
+        for (Int_t idim=0; idim<ndim; idim++){
+          printf("\t%d(%d,%d)",TMath::Nint(projectionInfo(idim,3)),TMath::Nint(projectionInfo(idim,0)),TMath::Nint(projectionInfo(idim,1) ));
+        }
+        printf("\n");	    
+        AliSysInfo::AddStamp("xxx",iter, dimProject);
+      }
+      Int_t bin0=TMath::Max(ibin-groupProject,1);
+      Int_t bin1=TMath::Min(ibin+groupProject,nbins);
+      histo->GetAxis(dimProject)->SetRange(bin0,bin1);
+      projectionInfo(iter,3)=ibin;
+      projectionInfo(iter,4)=histo->GetAxis(dimProject)->GetBinCenter(ibin);
+      //
+      Int_t iterProject=iter-1;
+      if (iterProject<0){
+        printf("Errror\n");
+      }
+      MakeDistortionMap(iterProject, histo, pcstream, projectionInfo);
+    }
+  }
+  //
+}
+

@@ -30,7 +30,7 @@ class TGraphErrors;
 class TObjString;
 class TCut;
 class TTreeSRedirector;
-
+class THnBase;
 
 class TStatToolkit : public TObject
 {
@@ -91,6 +91,10 @@ class TStatToolkit : public TObject
   static TMultiGraph*  MakeStatusLines(TTree * tree, const char * expr, const char * cut, const char * alias);
   static void  MakeSummaryTree(TTree* treeIn, TTreeSRedirector *pcstream, TObjString& sumID, TCut &selection);
   static Double_t GetDefaultStat(TTree * tree, const char * var, const char * selection, TStatType statType);
+  //
+  //
+  static void MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=kFALSE);
+
   //
   // norm (distance) functions
   //
