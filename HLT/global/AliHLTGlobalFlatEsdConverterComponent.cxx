@@ -503,7 +503,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     if( err ) break;
 
     { // fill primary vertex SPD
-      primaryVertexSPD = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS ) );
+      primaryVertexSPD = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD ) );
       if( primaryVertexSPD ){
 	if( !primaryVertex ) primaryVertex = primaryVertexSPD;
 	err = flatEsd->SetPrimaryVertexSPD( primaryVertexSPD, freeSpace );
