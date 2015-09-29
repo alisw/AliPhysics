@@ -102,34 +102,34 @@ Int_t AliHLTZMQsink::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ )
   int rc = 0;
   //init ZMQ stuff
   fZMQcontext = zmq_ctx_new();
-  HLTMessage(Form("ctx create ptr %p errno %s",fZMQcontext,(rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("ctx create ptr %p %s",fZMQcontext,(rc<0)?zmq_strerror(errno):""));
   if (!fZMQcontext) return -1;
   fZMQout = zmq_socket(fZMQcontext, fZMQsocketType); 
-  HLTMessage(Form("socket create ptr %p errno %s",fZMQout,(rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("socket create ptr %p %s",fZMQout,(rc<0)?zmq_strerror(errno):""));
   if (!fZMQout) return -1;
 
   //set socket options
   int lingerValue = 10;
   rc = zmq_setsockopt(fZMQout, ZMQ_LINGER, &lingerValue, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i errno=%s", lingerValue, rc, (rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("setopt ZMQ_LINGER=%i   rc=%i %s", lingerValue, rc, (rc<0)?zmq_strerror(errno):""));
   int highWaterMarkSend = 100;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDHWM, &highWaterMarkSend, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i errno=%s",highWaterMarkSend, rc, (rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("setopt ZMQ_SNDHWM=%i   rc=%i %s",highWaterMarkSend, rc, (rc<0)?zmq_strerror(errno):""));
   int highWaterMarkRecv = 100;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVHWM, &highWaterMarkRecv, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i errno=%s",highWaterMarkRecv, rc, (rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("setopt ZMQ_RCVHWM=%i   rc=%i %s",highWaterMarkRecv, rc, (rc<0)?zmq_strerror(errno):""));
   int rcvtimeo = 0;
   rc = zmq_setsockopt(fZMQout, ZMQ_RCVTIMEO, &rcvtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i errno=%s",rcvtimeo, rc, (rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("setopt ZMQ_RCVTIMEO=%i rc=%i %s",rcvtimeo, rc, (rc<0)?zmq_strerror(errno):""));
   int sndtimeo = 0;
   rc = zmq_setsockopt(fZMQout, ZMQ_SNDTIMEO, &sndtimeo, sizeof(int));
-  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i errno=%s",sndtimeo, rc, (rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("setopt ZMQ_SNDTIMEO=%i rc=%i %s",sndtimeo, rc, (rc<0)?zmq_strerror(errno):""));
 
   //connect or bind, after setting socket options
   HLTMessage(Form("ZMQ connect to %s",fZMQendpoint.Data()));
   rc = alizmq_attach(fZMQout,fZMQendpoint.Data());
   if (rc==-1) retCode=-1;
-  HLTMessage(Form("connect rc %i errno %s",rc,(rc<0)?zmq_strerror(errno):0));
+  HLTMessage(Form("connect rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
   
   return retCode;
 }
@@ -244,12 +244,12 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
       //  first part : AliHLTComponentDataType in string format
       //  second part: Payload
       rc = zmq_send(fZMQout, &blockTopic, sizeof(blockTopic), ZMQ_SNDMORE);
-      HLTMessage(Form("send topic rc %i errno %s",rc,(rc<0)?zmq_strerror(errno):0));
+      HLTMessage(Form("send topic rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
       int flags = 0;
       if (fZMQneverBlock) flags = ZMQ_DONTWAIT;
       if (iSelectedBlock < (selectedBlockIdx.size()-1)) flags = ZMQ_SNDMORE;
       rc = zmq_send(fZMQout, inputBlock->fPtr, inputBlock->fSize, flags);
-      HLTMessage(Form("send data rc %i errno, %s",rc,(rc<0)?zmq_strerror(errno):""));
+      HLTMessage(Form("send data rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
     
     //send an empty message if we really need a reply (ZMQ_REP mode)
@@ -257,9 +257,9 @@ int AliHLTZMQsink::DoProcessing( const AliHLTComponentEventData& evtData,
     if (selectedBlockIdx.size() == 0 && fZMQsocketType==ZMQ_REP)
     { 
       rc = zmq_send(fZMQout, 0, 0, ZMQ_SNDMORE);
-      HLTMessage(Form("send endframe rc %i errno %s",rc,(rc<0)?zmq_strerror(errno):0));
+      HLTMessage(Form("send endframe rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
       rc = zmq_send(fZMQout, 0, 0, 0);
-      HLTMessage(Form("send endframe rc %i errno %s",rc,(rc<0)?zmq_strerror(errno):0));
+      HLTMessage(Form("send endframe rc %i %s",rc,(rc<0)?zmq_strerror(errno):""));
     }
   }
 
