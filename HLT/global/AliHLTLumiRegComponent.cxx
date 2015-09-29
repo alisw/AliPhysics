@@ -38,27 +38,27 @@
 using namespace std;
 
 ClassImp( AliHLTLumiRegComponent )
-AliHLTLumiRegComponent::AliHLTLumiRegComponent()
-:
-fPushBackPeriodLHC(60),
-fPushBackPeriodDQM(300),
-fLastPushBackTime(0),
+AliHLTLumiRegComponent::AliHLTLumiRegComponent():
+AliHLTProcessor(),
+fFitInternally(kFALSE),
+fResetOnNextEvent(kFALSE),
 fEventSpecie(0)
 {
   for(Int_t i=0; i<3; i++){
-    fPrimaryLHC[i] = 0x0;
-    fPrimaryDQM[i] = 0x0;
+    fPrimary[i] = 0x0;
   }
   
   for(Int_t i=0; i<2; i++){
-    fPrimaryDefMultLHC[i] = 0x0;
-    fPrimaryDefMultDQM[i] = 0x0;
+    fPrimaryDefMult[i] = 0x0;
   }
   
 }
 
-AliHLTLumiRegComponent::AliHLTLumiRegComponent( const AliHLTLumiRegComponent& )
-:AliHLTProcessor()
+AliHLTLumiRegComponent::AliHLTLumiRegComponent( const AliHLTLumiRegComponent& ):
+AliHLTProcessor(),
+fFitInternally(kFALSE),
+fResetOnNextEvent(kFALSE),
+fEventSpecie(0)
 {
     // see header file for class documentation
     HLTFatal( "copy constructor untested" );
@@ -76,8 +76,7 @@ AliHLTLumiRegComponent::~AliHLTLumiRegComponent()
   // see header file for class documentation
   
   for(Int_t i=0; i<3; i++){
-    delete fPrimaryLHC[i];
-    delete fPrimaryDQM[i];
+    delete fPrimary[i];
   }
 
 }
@@ -121,31 +120,23 @@ int AliHLTLumiRegComponent::DoInit(int argc, const char **argv){
     
     if (iHisto == 0) {
       strVtx = "X";
-      fPrimaryLHC[iHisto] = new TH1F(Form("h%sTRKVtxLHC", strVtx.Data()),Form("h%sTRKVtxLHC", strVtx.Data()), 200,-0.7,0.7);
-      fPrimaryDQM[iHisto] = new TH1F(Form("h%sTRKVtxDQM", strVtx.Data()),Form("h%sTRKVtxDQM", strVtx.Data()), 200,-0.7,0.7);
+      fPrimary[iHisto] = new TH1F(Form("h%sTRKVtx", strVtx.Data()),Form("h%sTRKVtx", strVtx.Data()), 200,-0.7,0.7);
       
-      fPrimaryDefMultLHC[iHisto] = new TH1F (Form("h%sTRKDefMultLHC", strVtx.Data()),Form("h%sTRKDefMultLHC", strVtx.Data()), 200,-0.7,0.7);
-      fPrimaryDefMultDQM[iHisto] = new TH1F (Form("h%sTRKDefMultDQM", strVtx.Data()),Form("h%sTRKDefMultDQM", strVtx.Data()), 200,-0.7,0.7);
+      fPrimaryDefMult[iHisto] = new TH1F (Form("h%sTRKDefMult", strVtx.Data()),Form("h%sTRKDefMult", strVtx.Data()), 200,-0.7,0.7);
     }
     
     if (iHisto == 1) {
       strVtx = "Y";
-      fPrimaryLHC[iHisto] = new TH1F(Form("h%sTRKVtxLHC", strVtx.Data()),Form("h%sTRKVtxLHC", strVtx.Data()), 200,-0.7,0.7);
-      fPrimaryDQM[iHisto] = new TH1F(Form("h%sTRKVtxDQM", strVtx.Data()),Form("h%sTRKVtxDQM", strVtx.Data()), 200,-0.7,0.7);
-      fPrimaryDefMultLHC[iHisto] = new TH1F (Form("h%sTRKDefMultLHC", strVtx.Data()),Form("h%sTRKDefMultLHC", strVtx.Data()), 200,-0.7,0.7);
-      fPrimaryDefMultDQM[iHisto] = new TH1F (Form("h%sTRKDefMultDQM", strVtx.Data()),Form("h%sTRKDefMultDQM", strVtx.Data()), 200,-0.7,0.7);
+      fPrimary[iHisto] = new TH1F(Form("h%sTRKVtx", strVtx.Data()),Form("h%sTRKVtx", strVtx.Data()), 200,-0.7,0.7);
+      fPrimaryDefMult[iHisto] = new TH1F (Form("h%sTRKDefMult", strVtx.Data()),Form("h%sTRKDefMult", strVtx.Data()), 200,-0.7,0.7);
     }
       
     if (iHisto == 2) {
       strVtx = "Z";
-      fPrimaryLHC[iHisto] = new TH1F(Form("h%sTRKVtxLHC", strVtx.Data()),Form("h%sTRKVtxLHC", strVtx.Data()), 200,-20,20);
-      fPrimaryDQM[iHisto] = new TH1F(Form("h%sTRKVtxDQM", strVtx.Data()),Form("h%sTRKVtxDQM", strVtx.Data()), 200,-20,20);
+      fPrimary[iHisto] = new TH1F(Form("h%sTRKVtx", strVtx.Data()),Form("h%sTRKVtx", strVtx.Data()), 200,-20,20);
+      fPrimaryDefMult[iHisto] = new TH1F (Form("h%sTRKDefMult", strVtx.Data()),Form("h%sTRKDefMult", strVtx.Data()), 200,-0.7,0.7);
     }
   }
-  
-  fPushBackPeriodLHC = 60;
-  fPushBackPeriodDQM = 300;
-  fLastPushBackTime = 0;
   
   AliCDBEntry *grpEntry = AliCDBManager::Instance()->Get("/GRP/GRP/Data/");
   if(!grpEntry) {
@@ -173,121 +164,106 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
   Int_t vertexITSSATRKok=0;
   AliESDVertex vertexTracks;
   AliFlatESDVertex *vtxFlat;
-  
+
+  if (!IsDataEvent())
+  {
+    //on EOR push unconditionally
+    const AliHLTComponentBlockData* pBlock =
+      GetFirstInputBlock(kAliHLTDataTypeEOR|kAliHLTDataOriginAny);
+    if (pBlock)
+    {
+      Push();
+    }
+    return 0;
+  }
+
   const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS);
-  if (pBlock) {
-   // fpBenchmark->AddInput(pBlock->fSize);
-    vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
-    if (!vtxFlat) {
-      return 0;
-    }
-    if (vtxFlat->GetNContributors()>0)
-      vertexITSSATRKok=1;
-    
-    if (!vertexITSSATRKok) {
-      HLTInfo("Vertex Tracks not found, trying the SPD one...");
-      return 0;
-      //SPD vertex!!
-    }
+  if (!pBlock) return 0;
+  
+  Reset();
+
+  // fpBenchmark->AddInput(pBlock->fSize);
+  vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
+  if (!vtxFlat) return 0;
+  int nContrib = vtxFlat->GetNContributors();
+  if (nContrib>0)
+    vertexITSSATRKok=1;
+
+  if (!vertexITSSATRKok) {
+    HLTInfo("Vertex Tracks not found, trying the SPD one...");
+    return 0;
+    //SPD vertex!!
   }
   
   Double_t vtxPos[3] = {0.,0.,0.};
-  Int_t nContrib = vtxFlat->GetNContributors();
   vtxFlat->GetXYZ(vtxPos);
   
   for (Int_t iCoord =0; iCoord<3; iCoord++){
-    fPrimaryLHC[iCoord]->Fill(vtxPos[iCoord]);
-    fPrimaryDQM[iCoord]->Fill(vtxPos[iCoord]);
+    fPrimary[iCoord]->Fill(vtxPos[iCoord]);
   }
   
   if (fEventSpecie == AliHLTLumiRegComponent::kpp){
     if ((nContrib>30) && (nContrib<50)){
-      for (Int_t iCoord =0; iCoord<2; iCoord++){
-        fPrimaryDefMultLHC[iCoord]->Fill(vtxPos[iCoord]);
-        fPrimaryDefMultDQM[iCoord]->Fill(vtxPos[iCoord]);
+      for (Int_t iCoord =0; iCoord<3; iCoord++){
+        fPrimaryDefMult[iCoord]->Fill(vtxPos[iCoord]);
       }
     }
   }
   
   if (fEventSpecie == AliHLTLumiRegComponent::kpPb) {
     if (nContrib>100){
-      for (Int_t iCoord =0; iCoord<2; iCoord++){
-        fPrimaryDefMultLHC[iCoord]->Fill(vtxPos[iCoord]);
-        fPrimaryDefMultDQM[iCoord]->Fill(vtxPos[iCoord]);
+      for (Int_t iCoord =0; iCoord<3; iCoord++){
+        fPrimaryDefMult[iCoord]->Fill(vtxPos[iCoord]);
       }
     }
   }
   
   if (fEventSpecie == AliHLTLumiRegComponent::kPbPb){
     if (nContrib>500){
-      for (Int_t iCoord =0; iCoord<2; iCoord++){
-        fPrimaryDefMultLHC[iCoord]->Fill(vtxPos[iCoord]);
-        fPrimaryDefMultDQM[iCoord]->Fill(vtxPos[iCoord]);
+      for (Int_t iCoord =0; iCoord<3; iCoord++){
+        fPrimaryDefMult[iCoord]->Fill(vtxPos[iCoord]);
       }
     }
   }
-  
-  if(fPushBackPeriodLHC>0) {
-    TDatime time;
-    if ((fLastPushBackTime<0) || ((int)time.Get()-fLastPushBackTime < fPushBackPeriodLHC)) {
-      return 0; 
-    }
-    else {
-      fLastPushBackTime = (int)time.Get();
+
+  if(fFitInternally) {
       Float_t meanVtx[3] ={0.,0.,0.};
       Float_t sigmaVtx[3] ={0.,0.,0.};
       Float_t meanLR[3] ={0.,0.,0.};
       Float_t sigmaLR[3] ={0.,0.,0.};
-      Int_t fitVtxResults = FitPositions(fPrimaryLHC, meanVtx, sigmaVtx);
-      Int_t lumiRegResults = LuminousRegionExtraction(fPrimaryDefMultLHC, meanLR, sigmaLR);
-      
-      if (lumiRegResults == 1) {
-        HLTWarning("Luminous Region determination ok");
-        for (Int_t iCoord =0; iCoord<3; iCoord++){
-          fPrimaryLHC[iCoord]->Reset();
-          if ((iCoord ==0)||(iCoord==1)) fPrimaryDefMultLHC[iCoord]->Reset();
-        }
-      }
-      
-      if (lumiRegResults == 2) HLTWarning("Problems in the luminous region fit, using unconvoluted sigma");
-       if (lumiRegResults == 0) HLTWarning("Problems in the luminous region fit, returning 0");
-    }
-  }
-  
-  if(fPushBackPeriodDQM>0) {
-    TDatime time;
-    if ((fLastPushBackTime<0) || ((int)time.Get()-fLastPushBackTime < fPushBackPeriodDQM)) {
-      return 0; 
-    }
-    else {
-      fLastPushBackTime = (int)time.Get();
-      Float_t meanVtx[3] ={0.,0.,0.};
-      Float_t sigmaVtx[3] ={0.,0.,0.};
-      Float_t meanLR[3] ={0.,0.,0.};
-      Float_t sigmaLR[3] ={0.,0.,0.};
-      Int_t fitVtxResults = FitPositions(fPrimaryDQM, meanVtx, sigmaVtx);
-      Int_t lumiRegResults = LuminousRegionExtraction(fPrimaryDefMultDQM, meanLR,sigmaLR);
-      
-      if (lumiRegResults == 1) {
-        HLTWarning("Luminous Region determination ok");
-        for (Int_t iCoord =0; iCoord<3; iCoord++){
-          fPrimaryDQM[iCoord]->Reset();
-          if ((iCoord ==0)||(iCoord==1)) fPrimaryDefMultDQM[iCoord]->Reset();
-        }
-      }
+      Int_t fitVtxResults = FitPositions(fPrimary, meanVtx, sigmaVtx);
+      Int_t lumiRegResults = LuminousRegionExtraction(fPrimaryDefMult, meanLR, sigmaLR);
       
       if (lumiRegResults == 2) HLTWarning("Problems in the luminous region fit, using unconvoluted sigma");
       if (lumiRegResults == 0) HLTWarning("Problems in the luminous region fit, returning 0");
-      
-    }
   }
-
-  PushBack( (TH1F*) fPrimaryLHC[0], kAliHLTDataTypeHistogram);
-  // push results to LHC interface or DQM
-  return 0;
   
+  Push();
+  return 0;
 }
 
+int AliHLTLumiRegComponent::Push()
+{
+  for (Int_t iCoord =0; iCoord<3; iCoord++){
+    PushBack(fPrimary[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny);
+    PushBack(fPrimaryDefMult[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny);
+  }
+  fResetOnNextEvent=kTRUE;
+  Printf("AliHLTLumiRegComponent: pushing!");
+  return 0;
+}
+
+int AliHLTLumiRegComponent::Reset()
+{
+  if (!fResetOnNextEvent) return 0;
+  Printf("AliHLTLumiRegComponent: resetting!");
+  for (Int_t iCoord =0; iCoord<3; iCoord++){
+    fPrimary[iCoord]->Reset();
+    fPrimaryDefMult[iCoord]->Reset();
+  }
+  fResetOnNextEvent=kFALSE;
+  return 0;
+}
 
 Int_t AliHLTLumiRegComponent::FitPositions(TH1F *histos[], Float_t* mean, Float_t* sigma){
   
@@ -315,7 +291,7 @@ Int_t AliHLTLumiRegComponent::LuminousRegionExtraction(TH1F* histos[], Float_t* 
     lumiregsquared = (sigmaLR[0]*sigmaLR[0] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
     
     if (lumiregsquared < 0 || lumiregsquared < 1E-5){
-      HLTWarning(Form("Difficult luminous region determination X, keep convoluted sigma"));
+      Printf("Difficult luminous region determination X, keep convoluted sigma");
       return 2;
     }
     
@@ -327,7 +303,7 @@ Int_t AliHLTLumiRegComponent::LuminousRegionExtraction(TH1F* histos[], Float_t* 
     lumiregsquared = (sigmaLR[1]*sigmaLR[1] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
     
     if (lumiregsquared < 0 || lumiregsquared < 1E-5){
-      HLTWarning(Form("Difficult luminous region determination Y, keep convoluted sigma"));
+      Printf("Difficult luminous region determination Y, keep convoluted sigma");
       return 2;
     }
     
@@ -346,14 +322,14 @@ Int_t AliHLTLumiRegComponent::FitHistos(TH1F *hVtx, Float_t &mean, Float_t &sigm
   Int_t isFitok = 1;
   Int_t nEntries =  hVtx->GetEntries();
   if (nEntries < 50) {
-    HLTWarning("too few entries for fitting");
+    Printf("too few entries for fitting");
     //do something!
   }
   
   hVtx->Fit("gaus", "M", "", rangelow, rangeup);
   TF1 *vtxFunct = hVtx->GetFunction("gaus");
   if (!vtxFunct) {
-    HLTError("No fit function!"); 
+    Printf("No fit function!"); 
     return 0;
   }
   mean = vtxFunct->GetParameter(1);

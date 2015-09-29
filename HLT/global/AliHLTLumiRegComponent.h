@@ -58,6 +58,9 @@ public:
 
   enum eventSpecie {kpp, kpPb, kPbPb};
   
+  int Push();
+  int Reset();
+  
 protected:
   int DoInit(int argc, const char** argv);
   int DoDeinit() {return 0;}
@@ -67,9 +70,9 @@ protected:
   
   using AliHLTProcessor::DoEvent;
  
-  Int_t FitPositions(TH1F *histos[], Float_t* mean, Float_t* sigma);
-  Int_t LuminousRegionExtraction(TH1F *histos[], Float_t* meanLR, Float_t* sigmaLR);
-  Int_t FitHistos(TH1F *hVtx, Float_t &mean,  Float_t &sigma, Float_t rangelow = -1 , Float_t rangeup = 1);
+  static Int_t FitPositions(TH1F *histos[], Float_t* mean, Float_t* sigma);
+  static Int_t LuminousRegionExtraction(TH1F *histos[], Float_t* meanLR, Float_t* sigmaLR);
+  static Int_t FitHistos(TH1F *hVtx, Float_t &mean,  Float_t &sigma, Float_t rangelow = -1 , Float_t rangeup = 1);
   
 private:
   /** copy constructor */
@@ -77,19 +80,15 @@ private:
   /** dummy assignment op */
   AliHLTLumiRegComponent& operator=( const AliHLTLumiRegComponent& );
   
-  Int_t fPushBackPeriodLHC;
-  Int_t fPushBackPeriodDQM;
-  Int_t fLastPushBackTime;
-  
  // TH1F *fPrimaryX[2];
  // TH1F *fPrimaryY[2];
  // TH1F *fPrimaryZ[2];
+ Bool_t fFitInternally;
+ Bool_t fResetOnNextEvent;
   
-  TH1F *fPrimaryLHC[3];
-  TH1F *fPrimaryDQM[3];
+  TH1F *fPrimary[3];
 
-  TH1F *fPrimaryDefMultLHC[2];
-  TH1F *fPrimaryDefMultDQM[2];
+  TH1F *fPrimaryDefMult[3];
   
   
 //  TH1F *fPrimaryXDefMult[2];
