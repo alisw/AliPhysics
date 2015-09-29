@@ -772,8 +772,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
         //Add to AliVEvent
         if(!(lESDevent->FindListObject("MultSelection"))){
-            AliInfo("Adding object with properties: ");
-            fSelection->PrintInfo();
+            //AliInfo("Adding object with properties: ");
+            //fSelection->PrintInfo();
             AliMultSelection *fSelectionContainer = new AliMultSelection( fSelection );
             fSelectionContainer->SetName("MultSelection");
             lESDevent->AddObject(fSelectionContainer);
