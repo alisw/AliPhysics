@@ -45,6 +45,7 @@ fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 fCuts(0x0),               fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
+fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
 fL0min(0.01),             fL0max(0.5),              
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
@@ -121,7 +122,7 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fhClusterTimeSM[iSM]             = 0;
     fhClusterPairDiffTimeSameSM[iSM] = 0;
   }
-  
+    
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
@@ -535,10 +536,28 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
 {
   Int_t runnumber = InputEvent()->GetRunNumber() ;
   
+  //
+  // Load default geo matrices if requested
+  if(fImportGeometryFromFile && !gGeoManager)
+  {
+    if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
+    {
+      // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
+      if     (runnumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
+      else if(runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+      else if(runnumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+      else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
+    }
+    
+    AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
+    
+    TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
+  }
+  
+  //
   if(fLoadMatrices)
   {
     AliInfo("Load user defined EMCAL geometry matrices");
-    
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
     
@@ -572,7 +591,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
       }
       else
       {
-        AliError(Form("Alignment atrix for SM %d is not available",mod));
+        AliError(Form("Alignment matrix for SM %d is not available",mod));
       }
     }//SM loop
   }//Load matrices
@@ -590,14 +609,26 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
       
       for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
       {
-        if(DebugLevel() > 1) 
-          InputEvent()->GetEMCALMatrix(mod)->Print();
-        
-        if(InputEvent()->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(InputEvent()->GetEMCALMatrix(mod),mod) ;
+        if(InputEvent()->GetEMCALMatrix(mod)) 
+        {
+          if(DebugLevel() > 1) 
+            InputEvent()->GetEMCALMatrix(mod)->Print();
+          
+          fEMCALGeo->SetMisalMatrix(InputEvent()->GetEMCALMatrix(mod),mod) ;
+        }
         
       }
     }// ESD
   }// Load matrices from Data
+  else if(gGeoManager) // Load default matrices
+  {
+    for(Int_t mod = 0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+    {
+      AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+      fEMCALGeo->SetMisalMatrix(fEMCALGeo->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+    }
+  } // gGeoManager matrices
+
 }
 
 ///
