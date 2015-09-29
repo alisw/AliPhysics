@@ -12,6 +12,10 @@ ProcessFast(const char* url,
 	    const char* out,
 	    const char* opt="g")
 {
+  TString mkLib = gSystem->GetMakeSharedLib();
+  mkLib.ReplaceAll("-std=c++14", "-std=c++98");
+  gSystem->SetMakeSharedLib(mkLib);
+
   TString fwd = ""; // gSystem->Getenv("ANA_SRC");
   if (fwd.IsNull()) 
     fwd = gSystem->ExpandPathName("${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2");

@@ -844,7 +844,9 @@ struct dNdetaDrawer
     if (!fCentMeth) 
       fCentMeth = results->FindObject("centEstimator");
     if (!fCentMeth && HasCent()) {
-      fCentMeth = new TNamed("centEstimator", "default");
+      TString tmp(fTitle);
+      tmp.Remove(0,tmp.Index("CENT")+4);
+      fCentMeth = new TNamed("centEstimator", tmp.Data()); // default");
       fCentMeth->SetUniqueID(1);
     }
 
@@ -1597,7 +1599,7 @@ struct dNdetaDrawer
     l->SetTextFont(kFont);
     l->SetTextColor(kAliceBlue);
 
-    TString centMeth(fCentMeth->GetTitle());
+    TString     centMeth(fCentMeth->GetTitle());
     Bool_t      isMult   = centMeth.EqualTo("MULT");
     Int_t       lowOff   = (isMult ? 1 : 0);
     Int_t       nextOff  = 0;
@@ -1756,7 +1758,8 @@ struct dNdetaDrawer
 	tS = "by N_{#lower[-.2]{ch}} |#it{#eta}|<0.8";
       else 
 	tS  = "by centrality";
-      if (fCentMeth) tS.Append(Form(" (%s)", fCentMeth->GetTitle()));
+      if (fCentMeth && fCentMeth->GetTitle()[0] != '\0')
+	tS.Append(Form(" (%s)", fCentMeth->GetTitle()));
 #if 0
       UShort_t trg = fTrigString->GetUniqueID();
       switch (trg) { 
@@ -3021,17 +3024,38 @@ struct dNdetaDrawer
 
     TString tgt(fRebin > 1 ? "rebin" : "full");
     TString clean(Form("sed -e 's/_[0-9a-f]\\{4\\}"
-		       "\\(\\|_\\{1,4\\}[0-9a-f]\\{1,4\\}\\)//g'"
+		       "\\(\\|_\\{1,4\\}[0-9a-f]\\{1,4\\}\\)\\b//g'"
 		       " -e 's/%s/%s/g' < %s > %s.C",
 		       bname.Data(), tgt.Data(), fname.Data(), tgt.Data()));
     Printf("Execute \"%s\"", clean.Data());
     gSystem->Exec(clean);
     TString trg(fTrigString->GetTitle());
-    if (HasCent()) trg = Form("CENT%s", fCentMeth->GetTitle());
+    TString mth;
+    if (HasCent()) {
+      trg = "CENT"; // Form("CENT%s", fCentMeth->GetTitle());
+      mth = fCentMeth->GetTitle();
+    }
     Printf("Copy %s.C to %s/%s/%05d/%s%s/%s.C",tgt.Data(),
 	   (fEmpirical.IsNull() ? "normal" : "nosec"),
-	   fSysString->GetTitle(), snn, trg.Data(),
+	   fSysString->GetTitle(), snn, trg.Data(), mth.Data(),
 	   tgt.Data());
+
+    TString a;
+    if      (trg.EqualTo("INEL") || trg.EqualTo("MBOR")) {
+      a = "INELAdder(s,e)";
+      trg = "INEL";
+    }
+    else if (trg.EqualTo("INEL>0") || trg.EqualTo("INELGt0")) {
+      trg = "INELGt0";
+      a = "INELGt0Adder(s,e)";
+    }
+    else if (trg.EqualTo("NSD") || trg.EqualTo("V0AND")) {
+      a = "NSDAdder(s,e)";
+      trg = "NSD";
+    }
+    else
+      a = "CENTAdder(s,e,c)";
+    
 
     std::ofstream outs("gse.C");
     if (!outs) { 
@@ -3040,23 +3064,24 @@ struct dNdetaDrawer
     }
     outs << "// \n"
 	 << "TList* gse() {\n"
-	 << "  gROOT->SetMacroPath(Form(\"${HOME}/GraphSysErr:${ALICE_PHYSICS}/PWGLF/FORWARD/analysis2/dndeta:%s\",gROOT->GetMacroPath()));\n"
-	 << "  gSystem->AddIncludePath(\"-I${HOME}/GraphSysErr\");\n"
+	 << "  TString mkLib = gSystem->GetMakeSharedLib();\n"
+	 << "  mkLib.ReplaceAll(\"-std=c++14\", \"-std=c++98\");\n"
+	 << "  gSystem->SetMakeSharedLib(mkLib);\n"      
+	 << "  TString gseDir(gSystem->ExpandPathName(\"${HOME}/GraphSysErr\"));\n"
+	 << "  TString phyDir(gSystem->ExpandPathName(\"${ALICE_PHYSICS}\"));\n"
+	 << "  gROOT->SetMacroPath(Form(\"%s:%s/PWGLF/FORWARD/analysis2/dndeta:%s\",gseDir.Data(),phyDir.Data(),gROOT->GetMacroPath()));\n"
+	 << "  gSystem->AddIncludePath(Form(\"-I%s\",gseDir.Data()));\n"
 	 << "  gROOT->LoadMacro(\"GraphSysErr.C+g\");\n"
 	 << "  gROOT->LoadMacro(\"SysErrorAdder.C+g\");\n"
-	 << "  TString  t = \"" << fTrigString->GetTitle() << "\";\n"
-	 << "  TString  c = \"" << (HasCent() ? fCentMeth->GetTitle():"") <<"\";\n"
+	 << "  TString  t = \"" << trg << "\";\n"
+	 << "  TString  c = \"" << mth <<"\";\n"
 	 << "  TString  s = \"" << fSysString->GetTitle() << "\";\n"
 	 << "  UShort_t e = " << snn << ";\n"
 	 << "  TString  m = \"" << tgt << ".C\";\n"
 	 << "  TList*   r = new TList;\n"
 	 << "  THStack* l = new THStack(\"l\",\"l\");\n"
 	 << "  gROOT->Macro(Form(\"%s((THStack*)%p,0,20)\",m.Data(),l));\n"
-	 << "  SysErrorAdder* a = 0;\n"
-	 << "  if      (t.EqualTo(\"INEL\"))    a = new INELAdder(s,e);\n"
-	 << "  else if (t.EqualTo(\"INELGt0\")) a = new INELGt0Adder(s,e);\n"
-	 << "  else if (t.EqualTo(\"V0AND\"))   a = new NSDAdder(s,e);\n"
-	 << "  else                           a = new CENTAdder(s,e,c);\n"
+	 << "  SysErrorAdder* a = new " << a << ";\n"
 	 << "  TIter  n(l->GetHists());\n"
 	 << "  TH1*   h = 0;\n"
 	 << "  Bool_t f = true;\n"
@@ -3068,7 +3093,6 @@ struct dNdetaDrawer
 	 << "    h->SetFillColor(kBlack);\n"
 	 << "    h->SetLineColor(kBlack);\n"
 	 << "    GraphSysErr* g = a->Make(h,0);\n"
-	 << "    g->SetName(\"data\");\n"
 	 << "    g->SetSumOption(GraphSysErr::kBox);\n"
 	 << "    g->SetSumFillColor(g->GetMarkerColor());\n"
 	 << "    g->SetSumFillStyle(3002);\n"
@@ -3080,6 +3104,9 @@ struct dNdetaDrawer
 	 << "    f = false;\n"
 	 << "    r->Add(g);\n"
 	 << "  }\n"
+	 << "  TFile* file = TFile::Open(Form(\"%s_%05d_%s%s.root\",s.Data(),e,t.Data(),c.Data()),\"RECREATE\");\n"
+	 << "  r->Write(\"container\",TObject::kSingleKey);\n"
+	 << "  file->Write();\n"
 	 << "  return r;\n"
 	 << "}\n"
 	 << "// EOF" << std::endl;

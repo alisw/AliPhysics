@@ -192,6 +192,7 @@ struct SysErrorAdder
     ModError(gse, id, kHadronFill, l);
     return id;
   }
+  virtual const char* MakeName() const { return GetTriggerString(); } 
   /** 
    * @return The systematic error from merging 
    */
@@ -237,6 +238,7 @@ struct SysErrorAdder
     reac.Append(" --> CHARGED X");
     
     GraphSysErr* gse = new GraphSysErr(10);
+    gse->SetName(MakeName());
     gse->SetSumLineColor(kRed+2);
     gse->SetSumLineWidth(2);
     gse->SetSumTitle("All errors");
@@ -246,8 +248,8 @@ struct SysErrorAdder
     gse->SetFillColor(h->GetFillColor());
     gse->SetMarkerStyle(h->GetMarkerStyle());
     gse->SetFillStyle(h->GetFillStyle());
-    gse->SetXTitle("#it{#eta}");
-    gse->SetYTitle("1/#it{N} d#it{N}_{ch}/d#it{#eta}");
+    gse->SetXTitle("\\mathit{\\eta}");
+    gse->SetYTitle("1/N \\hbox{d}N_{ch}/\\hbox{d}\\eta");
     gse->SetKey("laboratory", "CERN");
     gse->SetKey("accelerator", "LHC");
     gse->SetKey("detector", "FORWARD");
@@ -259,6 +261,9 @@ struct SysErrorAdder
     gse->SetKey("comment", "We present 1/N dNch/deta over widest "
 		"possible eta region at the LHC");
     gse->SetKey("dscomment", "The pseudo-rapidity density of charged particle");
+    gse->AddQualifier(Form("SQRT(S)%s IN GEV",
+			   fSys.EqualTo("pp",TString::kIgnoreCase) ?
+			   "" : "/NUCLEON"), Form("%d", fSNN));
     
     MakeTrigger(gse, l);
     Int_t idMerge = MakeMerging(gse, l); 
@@ -354,6 +359,7 @@ struct INELGt0Adder : public SysErrorAdder
   INELGt0Adder(const TString& sys, UShort_t sNN)
     : SysErrorAdder(sys, sNN, "INEL>0")
   {}
+  const char* MakeName() const { return "INELGt0"; }
   /** 
    * Get trigger systematic error 
    * 
@@ -424,8 +430,9 @@ struct CENTAdder : public SysErrorAdder
 {
   Double_t fCent;
   Double_t fValue;
-  Double_t fMin;
-  Double_t fMax;
+  // Double_t fMin;
+  // Double_t fMax;
+  TH1*     fLookup;
   Double_t fCMin;
   Double_t fCMax;
   /** 
@@ -436,17 +443,45 @@ struct CENTAdder : public SysErrorAdder
    * @param Method 
    */
   CENTAdder(const TString& sys, UShort_t sNN, const TString& method)
-    : SysErrorAdder(sys, sNN, method), fCent(0), fValue(0), fCMin(0), fCMax(0)
+    : SysErrorAdder(sys, sNN, method), fCent(0), fValue(0), fCMin(0), fCMax(0),
+      fLookup(0)
   {
-    if (fSys.EqualTo("pPb", TString::kIgnoreCase)) {
-      fMin = 0.02; fMax = 0.04;
-    }
-    else if (fSys.EqualTo("Pbp", TString::kIgnoreCase)) {
-      fMin = 0.04; fMax = 0.06;
+    Double_t off = .1;
+    if (fSys.EqualTo("pPb", TString::kIgnoreCase) ||
+	fSys.EqualTo("Pbp", TString::kIgnoreCase)) {
+      TString   m;
+      if (!method.BeginsWith("CENT")) m = "CENT";
+      m.Append(method);
+      Double_t  cent[] = { 0, 5, 10, 20, 40, 60, 80, 100+off };
+      Double_t  zna[]  = { 1.5, 1.5, 1.5, 1.5, 2., 2., 3. };
+      Double_t  v0a[]  = { 1.5, 1.5, 1.5, 1.5, 2., 2., 2. };
+      Double_t  v0m[]  = { 1.5, 1.5, 1.5, 1.5, 2., 2., 4. };
+      Double_t  cl1[]  = { 2.5, 2.5, 2.5, 4.0, 6., 10., 11. };
+      Double_t* est    = 0;
+      if      (m.Contains("CENTZNA") || m.Contains("CENTZNC")) est = zna;
+      else if (m.Contains("CENTV0A") || m.Contains("CENTV0C")) est = v0a;
+      else if (m.Contains("CENTV0M"))                          est = v0m;
+      else if (m.Contains("CENTCL1"))                          est = cl1;
+      if (!est) {
+	Warning("","Couldn't find estimator from %s", method.Data());
+	return;
+      }
+      fTrig   = m;
+      fLookup = new TH1D("lookup", "Centrality error lookup", 7, cent);
+      for (Int_t i = 1; i <= 7; i++) fLookup->SetBinContent(i,est[i-1]/100);
     }
     else {
-      fMin = 0.004; fMax = 0.062; // 0.02
+      fTrig = "CENT";
+      fLookup = new TH1D("lookup", "Centrality error lookup", 100, 0, 100);
+      Double_t min = 0.004, max = 0.062; // 0.02
+      for (Int_t i = 1; i <= 100; i++) {
+	Double_t c = fLookup->GetXaxis()->GetBinCenter(i);
+	Double_t e = max * TMath::Power(c/100,2)+min;
+	fLookup->SetBinContent(i, e);
+      }
     }
+    if (fLookup) fLookup->SetDirectory(0);
+    
   }
   const char* GetTriggerName() const 
   {
@@ -471,15 +506,14 @@ struct CENTAdder : public SysErrorAdder
    */
   virtual void GetTrigger(Double_t& low, Double_t& high) const
   {
-    Double_t    e = fMax*TMath::Power(fCent/100,2)+fMin;
-    // Double_t e = ((fCent-2.5)/100) * (fMax-fMin) + fMin;
-    low = high = e;
-    // Printf("Trigger error for centrality = %f -> %f", fCent, low);
+    if (!fLookup) { low = high = 0; return; }
+    Int_t bin = fLookup->FindBin(fCent);
+    low = high = fLookup->GetBinContent(bin);
   }
   Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
   {
     gse->AddQualifier("TRIGGER", fTrig);
-    gse->AddQualifier("CENTRALITY IN PCT", Form("%6.2f TO %6.2f", fCMin, fCMax));
+    gse->AddQualifier("CENTRALITY IN PCT", Form("%6.2f TO %6.2f",fCMin,fCMax));
     return SysErrorAdder::MakeTrigger(gse, l);
   }
   /** 
@@ -490,8 +524,9 @@ struct CENTAdder : public SysErrorAdder
    * @return Centrality 
    */
   Double_t GetCentrality(TH1* h) 
-  { 
+  {
     TString name(h->GetName());
+    Info("", "Extracting centrality from %s", name.Data());
     Int_t idx = name.Index("_cent");
     name.Remove(0,idx+5);
     name.ReplaceAll("d", ".");

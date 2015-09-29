@@ -52,70 +52,67 @@ class TUrl;
 class TVirtualPad;
 #endif
 
+
 //====================================================================
 /** 
  * Header in the EG tree 
  * 
  */
-struct Header {
-  /** The run number */
+struct ShortHeader {
   UInt_t   fRunNo;
-  /** Event number */
   UInt_t   fEventId;
-  /** Number of target participants */
   UInt_t   fNtgt;
-  /** Number of projectile participants */
   UInt_t   fNproj;
-  /** Number of binary collisions */
   UInt_t   fNbin;
-  /** Event type */
   UInt_t   fType;
-  /** Collision point X coordinate */
   Double_t fIpX;
-  /** Collision point Y coordinate */
   Double_t fIpY;
-  /** Collision point Z coordinate */
   Double_t fIpZ;
-  /** Impact parameter */
   Double_t fB;
-  /** Centratlity */
   Double_t fC;
-  /** Reaction plane angle */
   Double_t fPhiR;
-  /** 
-   * Clear the header 
-   */
-  void Clear(Option_t* ) {
-    fRunNo   = 0;
-    fEventId = 0;
-    fNtgt    = 0;
-    fNproj   = 0;
-    fNbin    = 0;
-    fType    = 0;
-    fIpX     = 0;
-    fIpY     = 0;
-    fIpZ     = 9999;
-    fB       = -1;
-    fC       = -1;
-    fPhiR    = -1;
+  UInt_t   fNSpecNproj;  // # of spectator neutrons in projectile
+  UInt_t   fNSpecNtgt;   // # of spectator neutrons in target 
+  UInt_t   fNSpecPproj;  // # of spectator protons in projectile
+  UInt_t   fNSpecPtgt;   // # of spectator protons in target
+  
+  void Print()
+  {
+    Printf(" Run #/Event:          %9d/%9d", fRunNo, fEventId);
+    Printf(" Participants/binary:  %4d/%4d/%3d", fNtgt, fNproj, fNbin);
+    Printf(" Event type:           %7s%12s",(fType==1?"Non":
+					     fType==2?"Single":
+					     "Double"), "-diffractive");
+    Printf(" IP:                   (%-5.1f,%-5.1f,%-5.1f)",fIpX,fIpY,fIpZ);
+    Printf(" Impact par./cent.:    (%13f/%-3d)", fB, Int_t(fC));
+    Printf(" Reaction plane:       %19f", fPhiR);
+    Printf(" Specs (Nt,Np,Pt,Pp):  %4d/%4d/%4d/%4d",
+	   fNSpecNtgt, fNSpecNproj, fNSpecPtgt, fNSpecPproj);
   }
-  /** 
-   * Print the header 
-   */
-  void Print() {
-    printf("Run No:          %9u\n"
-	   "Event Id:        %9u\n"
-	   "N_target:        %9u\n"
-	   "N_projectile:    %9u\n"
-	   "Type:            0x%07x\n"
-	   "IP:          (%3.1f,%3.1f,%3.1f)\n"
-	   "b:               %6f fm\n"
-	   "c:               %7f %%\n"
-	   "phi_R:           %9f\n",
-	   fRunNo, fEventId, fNtgt, fNproj, fType,
-	   fIpX, fIpY, fIpZ, fB, fC, fPhiR);
+  void Clear(Option_t* option="")
+  {
+    Reset(0,0);
+  }
+  void Reset(UInt_t runNo, UInt_t eventNo)
+  {
+    fRunNo      = runNo;
+    fEventId    = eventNo;
+    fIpX        = 1024;
+    fIpY        = 1024;
+    fIpZ        = 1024;
+    fNtgt       = -1;
+    fNproj      = -1;
+    fNbin       = -1;
+    fPhiR       = -1;
+    fB          = -1;
+    fC          = -1;
+    fNSpecNtgt  = -1;
+    fNSpecNproj = -1;
+    fNSpecPtgt  = -1;
+    fNSpecPproj = -1;
   }
 };
+
 //====================================================================
 struct FastAnaMonitor : public TObject, public TQObject 
 {
@@ -411,7 +408,7 @@ struct FastAnalysis : public TSelector
   /** Pointer to tree being analysed */
   TTree*        fTree; //! 
   /** Cache of our header */
-  Header*       fHeader;     //!
+  ShortHeader*  fHeader;     //!
   /** List of particles */
   TClonesArray* fParticles;  //!
   /** Whether to be verbose */
@@ -421,7 +418,7 @@ struct FastAnalysis : public TSelector
   /** Name */
   TString       fName;       //!
   /** Cache of event discriminator */
-  Double_t      fEventMult;
+  ULong64_t     fEventMult;
   /** The centrality method to use */
   TString       fCentMethod;
   /** The centrality histogram to use - if any */
@@ -533,7 +530,7 @@ struct FastAnalysis : public TSelector
    */
   Bool_t SetupBranches()
   {
-    fHeader = new Header;
+    fHeader = new ShortHeader;
     fParticles = new TClonesArray("TParticle");
     fTree->SetBranchAddress("header",    &(fHeader->fRunNo));
     fTree->SetBranchAddress("particles", &fParticles);
@@ -699,9 +696,13 @@ struct FastAnalysis : public TSelector
   Double_t GetCentrality() const
   {
     if (!fCentHist) return fHeader->fC;
-    Int_t bin = fCentHist->GetXaxis()->FindBin(fEventMult);
-    if (bin <= 0)                      return -1;
-    if (bin >= fCentHist->GetNbinsX()) return 1000;
+    Int_t nBin = fCentHist->GetNbinsX();
+    Int_t bin  = fCentHist->GetXaxis()->FindBin(fEventMult);
+    if (bin <= 0)    return -1;
+    if (bin-1 == nBin && fEventMult == fCentHist->GetXaxis()->GetXmax()) {
+      bin        =  nBin;
+    }
+    if (bin >  nBin) return 1000;
     return fCentHist->GetBinContent(bin);
   }
   /** 
@@ -912,7 +913,9 @@ struct FastAnalysis : public TSelector
    * 
    * @return newly created object, or null
    */
-  static FastAnalysis* Make(const char* type, Bool_t verbose, Int_t monitor);
+  static FastAnalysis* Make(const char* type,
+			    Bool_t verbose,
+			    Int_t monitor);
   /** 
    * Set-up PROOF 
    * 
@@ -933,6 +936,11 @@ struct FastAnalysis : public TSelector
     TString phy = gSystem->ExpandPathName("$(ALICE_PHYSICS)");
     TString ali = gSystem->ExpandPathName("$(ALICE_ROOT)");
     TString fwd = phy + "/PWGLF/FORWARD/analysis2";
+    TString mkLib = gSystem->GetMakeSharedLib();
+    mkLib.ReplaceAll("-std=c++14", "-std=c++98");
+
+    ProofExec(Form("Exec(\"gSystem->SetMakeSharedLib(\\\"%s\\\")\")",
+		   mkLib.Data()));
 
     ret = ProofExec(Form("Load(\"%s/sim/FastAnalysis.C+%s\",true)",
 			 fwd.Data(), opt));
@@ -990,7 +998,6 @@ struct FastAnalysis : public TSelector
       Printf("Error: FastAnalysis::Run: URL %s is invalid", u.GetUrl());
       return false;
     }
-
     FastAnalysis* analysis = Make(type,verbose,monitor);
     if (!analysis) return false;
 
@@ -1269,11 +1276,21 @@ struct CentAnalysis : public dNdetaAnalysis
       fCentAll(0),
       fCentAcc(0),
       fCentMult(0),
-      fCentB(0)
+      fCentNPart(0),
+      fCentNBin(0),
+      fCentB(0),
+      fBtoC(0)
   {
-    fCentMethod = method;
+    TString    axis("default");
+    TString    meth(method);
+    TObjArray* tokens = meth.Tokenize(":");
+    
+    fCentMethod = tokens->At(0)->GetName();
+    if (tokens->GetEntriesFast() > 1)
+      axis = tokens->At(1)->GetName();
+    
     if (fCentMethod.Contains("RefMult")) SetCentAxis("mult");
-    else                                 SetCentAxis("default");
+    else                                 SetCentAxis(axis);
   }
   /** 
    * Set the centrality axis (equi-distant)
@@ -1321,23 +1338,30 @@ struct CentAnalysis : public dNdetaAnalysis
    */
   void SetCentAxis(const char* spec)
   {
+    Info("SetCentAxis", "Setting centrality axis from %s", spec);
     TString    s(spec);
     s.ToLower();
     if (s.IsNull()) return;
     if (s.EqualTo("pbpb") || s.EqualTo("aa") || s.EqualTo("default")) {
+      Printf("Setting centrality axis Pb-Pb");
       Double_t aa[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
       SetCentAxis(11, aa);
+      fCentAxis->SetUniqueID(2);
       return;
     }
     if (s.EqualTo("ppb") || s.EqualTo("pbp") ||
 	s.EqualTo("pa") || s.EqualTo("ap")) {
+      Printf("Setting centrality axis p-Pb/Pb-p");
       Double_t pa[] = { 0, 5, 10, 20, 40, 60, 80, 100 };
       SetCentAxis(7, pa);
+      fCentAxis->SetUniqueID(3);
       return;
     }
     if (s.EqualTo("pp")) {
+      Printf("Setting centrality axis pp");
       Double_t pp[] = { 0, 0.01, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100 };
       SetCentAxis(12, pp);
+      fCentAxis->SetUniqueID(1);
       return;
     }
     
@@ -1530,39 +1554,67 @@ struct CentAnalysis : public dNdetaAnalysis
     fOutput->Add(fCentNBin);
     fOutput->Add(fCentB);
 
-    Double_t bin[25];
-    Double_t cent[24];
-    Int_t    i = 0;
-    bin[i] =  0.00; cent[i] = Double_t( 0+  1)/2; i++; //  0 -   1 ( 0.00 -  1.57)
-    bin[i] =  1.57; cent[i] = Double_t( 1+  2)/2; i++; //  1 -   2 ( 1.57 -  2.22)
-    bin[i] =  2.22; cent[i] = Double_t( 2+  3)/2; i++; //  2 -   3 ( 2.22 -  2.71)
-    bin[i] =  2.71; cent[i] = Double_t( 3+  4)/2; i++; //  3 -   4 ( 2.71 -  3.13)
-    bin[i] =  3.13; cent[i] = Double_t( 4+  5)/2; i++; //  4 -   5 ( 3.13 -  3.50)
-    bin[i] =  3.50; cent[i] = Double_t( 5+ 10)/2; i++; //  5 -  10 ( 3.50 -  4.94)
-    bin[i] =  4.94; cent[i] = Double_t(10+ 15)/2; i++; // 10 -  15 ( 4.94 -  6.05)
-    bin[i] =  6.05; cent[i] = Double_t(15+ 20)/2; i++; // 15 -  20 ( 6.05 -  6.98)
-    bin[i] =  6.98; cent[i] = Double_t(20+ 25)/2; i++; // 20 -  25 ( 6.98 -  7.81)
-    bin[i] =  7.81; cent[i] = Double_t(25+ 30)/2; i++; // 25 -  30 ( 7.81 -  8.55)
-    bin[i] =  8.55; cent[i] = Double_t(30+ 35)/2; i++; // 30 -  35 ( 8.55 -  9.23)
-    bin[i] =  9.23; cent[i] = Double_t(35+ 40)/2; i++; // 35 -  40 ( 9.23 -  9.88)
-    bin[i] =  9.88; cent[i] = Double_t(40+ 45)/2; i++; // 40 -  45 ( 9.88 - 10.47)
-    bin[i] = 10.47; cent[i] = Double_t(45+ 50)/2; i++; // 45 -  50 (10.47 - 11.04)
-    bin[i] = 11.04; cent[i] = Double_t(50+ 55)/2; i++; // 50 -  55 (11.04 - 11.58)
-    bin[i] = 11.58; cent[i] = Double_t(55+ 60)/2; i++; // 55 -  60 (11.58 - 12.09)
-    bin[i] = 12.09; cent[i] = Double_t(60+ 65)/2; i++; // 60 -  65 (12.09 - 12.58)
-    bin[i] = 12.58; cent[i] = Double_t(65+ 70)/2; i++; // 65 -  70 (12.58 - 13.05)
-    bin[i] = 13.05; cent[i] = Double_t(70+ 75)/2; i++; // 70 -  75 (13.05 - 13.52)
-    bin[i] = 13.52; cent[i] = Double_t(75+ 80)/2; i++; // 75 -  80 (13.52 - 13.97)
-    bin[i] = 13.97; cent[i] = Double_t(80+ 85)/2; i++; // 80 -  85 (13.97 - 14.43)
-    bin[i] = 14.43; cent[i] = Double_t(85+ 90)/2; i++; // 85 -  90 (14.43 - 14.96)
-    bin[i] = 14.96; cent[i] = Double_t(90+ 95)/2; i++; // 90 -  95 (14.96 - 15.67)
-    bin[i] = 15.67; cent[i] = Double_t(95+100)/2; i++; // 95 - 100 (15.67 - 20.00)
-    bin[i] = 20;
-    fBtoC  = new TH1D("bToC", "Centrality from b", 24, bin);
-    fBtoC->SetXTitle("b [fm]");
-    fBtoC->SetYTitle("Centrality [%]");
-    for (Int_t i = 0; i < 24; i++) fBtoC->SetBinContent(i+1, cent[i]);
-    fOutput->Add(fBtoC);
+    if (fCentAxis->GetUniqueID() == 2) {
+      Double_t bin[25];
+      Double_t cent[24];
+      Int_t    i = 0;
+      bin[i] =  0.00; cent[i] = Double_t( 0+  1)/2; i++; //  0 -   1 ( 0.00 -  1.57)
+      bin[i] =  1.57; cent[i] = Double_t( 1+  2)/2; i++; //  1 -   2 ( 1.57 -  2.22)
+      bin[i] =  2.22; cent[i] = Double_t( 2+  3)/2; i++; //  2 -   3 ( 2.22 -  2.71)
+      bin[i] =  2.71; cent[i] = Double_t( 3+  4)/2; i++; //  3 -   4 ( 2.71 -  3.13)
+      bin[i] =  3.13; cent[i] = Double_t( 4+  5)/2; i++; //  4 -   5 ( 3.13 -  3.50)
+      bin[i] =  3.50; cent[i] = Double_t( 5+ 10)/2; i++; //  5 -  10 ( 3.50 -  4.94)
+      bin[i] =  4.94; cent[i] = Double_t(10+ 15)/2; i++; // 10 -  15 ( 4.94 -  6.05)
+      bin[i] =  6.05; cent[i] = Double_t(15+ 20)/2; i++; // 15 -  20 ( 6.05 -  6.98)
+      bin[i] =  6.98; cent[i] = Double_t(20+ 25)/2; i++; // 20 -  25 ( 6.98 -  7.81)
+      bin[i] =  7.81; cent[i] = Double_t(25+ 30)/2; i++; // 25 -  30 ( 7.81 -  8.55)
+      bin[i] =  8.55; cent[i] = Double_t(30+ 35)/2; i++; // 30 -  35 ( 8.55 -  9.23)
+      bin[i] =  9.23; cent[i] = Double_t(35+ 40)/2; i++; // 35 -  40 ( 9.23 -  9.88)
+      bin[i] =  9.88; cent[i] = Double_t(40+ 45)/2; i++; // 40 -  45 ( 9.88 - 10.47)
+      bin[i] = 10.47; cent[i] = Double_t(45+ 50)/2; i++; // 45 -  50 (10.47 - 11.04)
+      bin[i] = 11.04; cent[i] = Double_t(50+ 55)/2; i++; // 50 -  55 (11.04 - 11.58)
+      bin[i] = 11.58; cent[i] = Double_t(55+ 60)/2; i++; // 55 -  60 (11.58 - 12.09)
+      bin[i] = 12.09; cent[i] = Double_t(60+ 65)/2; i++; // 60 -  65 (12.09 - 12.58)
+      bin[i] = 12.58; cent[i] = Double_t(65+ 70)/2; i++; // 65 -  70 (12.58 - 13.05)
+      bin[i] = 13.05; cent[i] = Double_t(70+ 75)/2; i++; // 70 -  75 (13.05 - 13.52)
+      bin[i] = 13.52; cent[i] = Double_t(75+ 80)/2; i++; // 75 -  80 (13.52 - 13.97)
+      bin[i] = 13.97; cent[i] = Double_t(80+ 85)/2; i++; // 80 -  85 (13.97 - 14.43)
+      bin[i] = 14.43; cent[i] = Double_t(85+ 90)/2; i++; // 85 -  90 (14.43 - 14.96)
+      bin[i] = 14.96; cent[i] = Double_t(90+ 95)/2; i++; // 90 -  95 (14.96 - 15.67)
+      bin[i] = 15.67; cent[i] = Double_t(95+100)/2; i++; // 95 - 100 (15.67 - 20.00)
+      bin[i] = 20;
+      fBtoC  = new TH1D("bToC", "Centrality from b", 24, bin);
+      fBtoC->SetXTitle("b [fm]");
+      fBtoC->SetYTitle("Centrality [%]");
+      for (Int_t i = 0; i < 24; i++) fBtoC->SetBinContent(i+1, cent[i]);
+      fOutput->Add(fBtoC);
+    }
+    else if (fCentAxis->GetUniqueID()) {
+#if 0
+      const Double_t cl[] = {   0,    5,   10,   20,   40,   60,   80, -1 };
+      const Double_t ch[] = {   5,   10,   20,   40,   60,   80,  100, -1 };
+      const Double_t bm[] = {3.12, 3.50, 3.85, 4.54, 5.57, 6.63, 7.51, 30 };
+      const Double_t bs[] = {1.39, 1.48, 1.57, 1.69, 1.69, 1.45, 1.11, -1 };
+      Double_t       bl[] = {   0,   -1,   -1,   -1,   -1,   -1,   -1, -1, -1 };
+      for (Int_t i = 1; i <= 7; i++) bl[i] = bm[i-1] + (bm[i]-bm[i-1])/2;
+      fBtoC  = new TH1D("bToC", "Centrality from b", 7, bl);
+      fBtoC->SetXTitle("b [fm]");
+      fBtoC->SetYTitle("Centrality [%]");
+      for (Int_t i = 0; i < 7; i++) fBtoC->SetBinContent(i+1, (ch[i]+cl[i])/2);
+#else 
+      const Double_t cl[] = {   0,    5,   10,   20,   40,   60,   80, -1 };
+      const Double_t ch[] = {   5,   10,   20,   40,   60,   80,  100, -1 };
+      const Double_t bm[] = { 0, 1.83675, 2.59375,  3.66875, 5.18625, 6.35475,
+			      7.40225, 13.8577, -1};
+      fBtoC  = new TH1D("bToC", "Centrality from b", 7, bm);
+      fBtoC->SetXTitle("b [fm]");
+      fBtoC->SetYTitle("Centrality [%]");
+      for (Int_t i = 1; i <= 7; i++) {
+	fBtoC->SetBinContent(i, (ch[i-1]+cl[i-1]) / 2);
+      }      
+#endif
+      fOutput->Add(fBtoC);
+    }
     
     if (!fCentHist) return true;
     if (fCentAxis->GetXbins()->GetArray()) {
@@ -1611,14 +1663,24 @@ struct CentAnalysis : public dNdetaAnalysis
     fCentAll->Fill(cent);
     if (fCentMult) fCentMult->Fill(fEventMult, cent);
     fCentB->Fill(cent, fHeader->fB);
-    if (cent < 0 || cent > 999) return false;
+    if (cent < 0 || cent > 999) {
+      Warning("ProcessHeader",
+	      "Centrality is unreasonable: %f -> %f",fEventMult, cent);
+      return false;
+    }
+    Int_t nBin = fCentAxis->GetNbins();
     fCentBin = fCentAxis->FindBin(cent);
-    if (fCentBin < 1 || fCentBin > fCentAxis->GetNbins()) {
+    if (fCentBin-1 == nBin && cent == fCentAxis->GetXmax())
+      fCentBin = nBin;
+    if (fCentBin < 1 || fCentBin > nBin) {
+      Warning("ProcessHeader", "Centrality %f -> %f -> bin # %d",
+	      fEventMult, cent, fCentBin);
       fCentBin = -1;
       return false;
     }
     fCentNPart->Fill(cent, fHeader->fNtgt+fHeader->fNproj);
     fCentNBin->Fill(cent, fHeader->fNbin);
+    if (fCentBin == nBin) cent -= 0.001;
     fCentAcc->Fill(cent);
     return true;
   }
@@ -1685,6 +1747,7 @@ struct CentAnalysis : public dNdetaAnalysis
     fCentMult  = static_cast<TH2*>(GetOutputObject("centMult",  TH2::Class()));
     fCentNPart = static_cast<TH2*>(GetOutputObject("centNPart", TH2::Class()));
     fCentNBin  = static_cast<TH2*>(GetOutputObject("centNBin",  TH2::Class()));
+	 
     // fCentStack = static_cast<THStack*>(GetOutputObject("stack",
     // THStack::Class()));
     fCentList = static_cast<TList*>(GetOutputObject("byCent",
@@ -1696,11 +1759,17 @@ struct CentAnalysis : public dNdetaAnalysis
     }
     // fCentAll->Scale(1./fOK, "width");
     // fCentAcc->Scale(1./fOK, "width");
+    Info("Terminate", "Accepted %d/%d=%6.2f%% events",
+	 int(fCentAcc->GetEntries()), int(fCentAll->GetEntries()),
+	 100*fCentAcc->GetEntries()/fCentAll->GetEntries());
 
     THStack*  stack = new THStack("all", "All");
     TList*    hists = fCentList; // ->GetHists();
     TObjLink* link  = hists->FirstLink();
     Int_t     bin   = 1;
+    Long64_t  sum   = 0;
+    Long64_t  total = 0;
+    Long64_t  all   = fCentAll->GetEntries();
     while (link) {
       TObject* o = link->GetObject();
       if (!o) {
@@ -1711,6 +1780,7 @@ struct CentAnalysis : public dNdetaAnalysis
       TH1*  h = static_cast<TH1*>(o);
       Int_t n = h->GetBinContent(0);
       Int_t m = fCentAcc->GetBinContent(bin);
+      total += m;
       h->SetBinContent(0,0);
       printf("%9d (%9d) events in bin %s ...", n, m, o->GetTitle());
       if (n < fMinEvents) {
@@ -1723,6 +1793,7 @@ struct CentAnalysis : public dNdetaAnalysis
 	bin++;
 	continue;
       }
+      sum += m;
       // Scale
       h->Scale(1. / n, "width");
       stack->Add(h);
@@ -1730,6 +1801,8 @@ struct CentAnalysis : public dNdetaAnalysis
       link = link->Next();
       bin++;
     }
+    Printf("ana/acc/all: %9lld/%9lld/%9lld [%6.2f%%/%6.2f%%]",
+	   sum, total, all, float(100*sum)/total, float(100*total)/all);
     fOutput->Add(stack);
   }
   /** 
@@ -1834,7 +1907,9 @@ struct MultAnalysis : public CentAnalysis
  * The function to make our analyser 
  */
 FastAnalysis*
-FastAnalysis::Make(const char* type, Bool_t verbose, Int_t monitor)
+FastAnalysis::Make(const char* type,
+		   Bool_t verbose,
+		   Int_t monitor)
 {
   TString t(type);
   if      (t.EqualTo("INEL"))    return new INELAnalysis(verbose,monitor);
@@ -1842,19 +1917,18 @@ FastAnalysis::Make(const char* type, Bool_t verbose, Int_t monitor)
   else if (t.EqualTo("INELGt0")) return new INELGt0Analysis(verbose,monitor);
   else if (t.BeginsWith("MULT") || t.BeginsWith("CENT")) {
     TString w(t(4, t.Length()-4));
-    if (!(w.EqualTo("RefMult00d80") ||
-	  w.EqualTo("RefMult00d50") ||
-	  w.EqualTo("V0M") ||
-	  w.EqualTo("V0A") ||
-	  w.EqualTo("V0C") ||
-	  w.EqualTo("V0MP") ||
-	  w.EqualTo("V0AP") ||
-	  w.EqualTo("V0CP") ||
-	  w.EqualTo("B"))) {
+    if (!(w.BeginsWith("RefMult") ||
+	  w.BeginsWith("ZNA") || 
+	  w.BeginsWith("ZNC") || 
+	  w.BeginsWith("ZPA") || 
+	  w.BeginsWith("ZPC") || 
+	  w.BeginsWith("V0M") ||
+	  w.BeginsWith("V0A") ||
+	  w.BeginsWith("V0C") ||
+	  w.BeginsWith("B"))) {
       Printf("Warning: FastAnalysis::Make: Unknown estimator: %s", w.Data());
       return 0;
     }
-      
     if (t.BeginsWith("MULT"))
       return new MultAnalysis(w, verbose, monitor);
     else
