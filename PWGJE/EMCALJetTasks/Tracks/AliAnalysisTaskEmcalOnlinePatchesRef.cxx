@@ -138,7 +138,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
     if(mypatch->IsOfflineSimple()) continue;
     if(!(mypatch->IsGammaHigh() || mypatch->IsGammaLow() || mypatch->IsLevel0())) continue;
     fGeometry->SuperModuleNumberFromEtaPhi(mypatch->GetEtaCM(), mypatch->GetPhiCM(), supermoduleID);
-    Int_t sector = 4 + supermoduleID / 2;
+    Int_t sector = 4 + int(supermoduleID / 2);
     if(mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector);
     if(mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector);
     if(mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector);
@@ -164,10 +164,14 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::FillTriggerPatchHistos(const char *pa
   fHistos->FillTH2(Form("hPatchADC%s", patchtype), supermoduleID, recpatch->GetADCAmp());
   fHistos->FillTH2(Form("hPatchEnergyEta%s", patchtype), recpatch->GetEtaCM(), recpatch->GetPatchE());
   fHistos->FillTH2(Form("hPatchADCEta%s", patchtype), recpatch->GetEtaCM(), recpatch->GetADCAmp());
-  fHistos->FillTH2(Form("hPatchEnergyEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
-  fHistos->FillTH2(Form("hPatchADCEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
-  fHistos->FillTH2(Form("hPatchEnergyEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetPatchE());
-  fHistos->FillTH2(Form("hPatchADCEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+  if(sector >= 4 && sector < 10){
+    fHistos->FillTH2(Form("hPatchEnergyEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
+    fHistos->FillTH2(Form("hPatchADCEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+  }
+  if(supermoduleID >= 0 && supermoduleID < 10){
+    fHistos->FillTH2(Form("hPatchEnergyEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetPatchE());
+    fHistos->FillTH2(Form("hPatchADCEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+  }
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
