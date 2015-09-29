@@ -245,7 +245,7 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
 	metaData.SetResponsible("MUON TRG");
 	metaData.SetComment("Computed by AliMUONTriggerSubprocessor $Id$");
   
-  Bool_t validToInfinity = kTRUE;
+  Bool_t validToInfinity = kFALSE;
 
   Bool_t result1(kTRUE);
   Bool_t result2(kTRUE);
