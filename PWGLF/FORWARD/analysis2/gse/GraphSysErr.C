@@ -32,10 +32,15 @@
 #  include <TList.h>
 #  include <TBrowser.h>
 #  include <TPRegexp.h>
+#  include <TClonesArray.h>
+#  include <TArrayL64.h>
+#  include <TLine.h>
 #  include <iostream>
 #  include <iomanip>
 #  include <fstream>
+#  include <sstream>
 // #  define TOKEN(C,I) static_cast<TObjString*>(C->At(I))->String()
+#  define INCOMPAT_CMN_AS_QUAL 1
 # else 
 # include <iosfwd>
 class TGraph;
@@ -46,6 +51,9 @@ class TFitResultPtr;
 class TF1;
 class TList;
 class TBrowser;
+class TArrayD;
+class TClonesArray;
+class TLine;
 # endif
 
 
@@ -134,7 +142,7 @@ class TBrowser;
  * 
  * @until gaus
  *
- * And then we draw nad finish
+ * And then we draw and finish
  *
  * @until }
  * 
@@ -168,7 +176,8 @@ public:
   enum { 
     kDraw    = 0x1,
     kImport  = 0x2, 
-    kExport  = 0x4, 
+    kExport  = 0x4,
+    kRatio   = 0x8,
     kVerbose = 0  // Set to OR of above to enable verbose/debug output 
   };
   /** A short-hand type definition */
@@ -177,17 +186,47 @@ public:
    * Drawing options.  We re-encode them here as distinct enums. 
    */
   enum EDrawOption_t { 
-    kNormal = 0, //     - Line with ticks
-    kNoTick = 1, // Z0  - Line with no ticks 
-    kArrow  = 2, // >0  - Linw with arrows 
-    kRect   = 3, // 20  - Rectangle w/fill
-    kBox    = 4, // 50  - Rectangle w/fill & line 
-    kFill   = 5, // 30  - Filled area 
-    kCurve  = 6, // 40  - Filled smoothed area 
-    kHat    = 7, // []0 - Hats 
-    kBar    = 8, // ||0 - A bar 
-    kNone   = 9, // XP  - No errors
-    kLine   = 10 // XC
+    kNormal  = 0, //     - Line with ticks
+    kNoTick  = 1, // Z0  - Line with no ticks 
+    kArrow   = 2, // >0  - Linw with arrows 
+    kRect    = 3, // 20  - Rectangle w/fill
+    kBox     = 4, // 50  - Rectangle w/fill & line 
+    kFill    = 5, // 30  - Filled area 
+    kCurve   = 6, // 40  - Filled smoothed area 
+    kHat     = 7, // []0 - Hats 
+    kBar     = 8, // ||0 - A bar 
+    kNone    = 9, // XP  - No errors
+    kLine    = 10, // XC
+    kConnect = 11 // XL
+  };
+  /** 
+   * Types of @f$\chi^2@f$ comparisons.  See also 
+   *
+   * https://root.cern.ch/root/htmldoc/TH1#TH1:Chi2Test
+   */
+  enum EChi2Type {
+    kExperimentExperiment, // Ignore errors on both
+    kExperimentModel,      // Ignore errors on second
+    kModelModel,           // Use errors on both
+    kExperimentTruth       // Use errors on first, take second to be exact.
+  };
+  /** 
+   * Options for ratios. 
+   *
+   * - kChi2 and kKolomogorov are mutally exclusive.  If none of them
+   *   are given, no test is calculated. 
+   * - kProp and kMax are mutually exclusive.  The default is kProp
+   *
+   */
+  enum ERatioOption {
+    kMax          = 0x00001, // Error is largest relative error
+    kMin          = 0x00002, // Error is largest relative error
+    kCancel       = 0x00004,
+    kRatioDefault = kCancel
+  };
+  enum {
+    kUsedBit = (1 << 18),
+    kOnlyWeightBit = (1 << 19)
   };
   /** 
    * @{ 
@@ -458,6 +497,8 @@ public:
     Bool_t sys  = all || opt.Contains("SYS");
     Bool_t cmn  = sys || opt.Contains("COMMON");
     Bool_t p2p  = sys || opt.Contains("P2P");
+    Bool_t poi  = all || opt.Contains("XY");
+    Bool_t sum  = opt.Contains("SUM");
     
     gROOT->IncreaseDirLevel();
     if (fMap && keys) {
@@ -516,7 +557,71 @@ public:
       // fPoint2Point.Print(option);
       gROOT->DecreaseDirLevel();
     }
-    
+    if (poi) {
+      // gROOT->IndentLevel();
+      gROOT->IndentLevel();
+      std::cout <<  "Points: " << std::endl;
+      gROOT->IncreaseDirLevel();
+      TString hs;
+      hs.Form(" %3s: %9s %9s %9s -> %9s %9s %9s",
+	      "#", "X", "-dX", "+dX", "Y", "-stat", "+stat");
+      gROOT->IndentLevel();
+      std::cout << hs;
+      if (sum) {
+	hs.Form(" %9s %9s", "-sys", "+sys");
+	std::cout << hs;
+      }
+      else {
+	TIter nextP(&fPoint2Point);
+	HolderP2P* p = 0;
+	while ((p = static_cast<HolderP2P*>(nextP()))) {
+	  Bool_t      rel  = p->IsRelative();
+	  const char* post = (rel ? "%" : " ");
+	  TString nm(p->GetTitle());
+	  if (nm.Length() > 7) {
+	    nm.Remove(4,nm.Length()-4);
+	    nm.Append("...");
+	  }
+	  hs.Form(" -%8s%s +%8s%s", nm.Data(), post, nm.Data(), post);
+	  std::cout << hs;	  
+	}
+      }
+      std::cout << std::endl;
+      for (Int_t i = 0; i < GetN(); i++) {
+	gROOT->IndentLevel();
+	Double_t eyl, eyh, wyl, wyh;
+	// point,stat,common,quad,nosqrt,eyl,eyh
+	Double_t y = GetYandError(i,false,false,true,false,eyl,eyh,wyl,wyh);
+	// Double_t y = GetY(i);
+	TString s;
+	s.Form(" %3d: %+8f -%7f +%7f -> %+8f -%7f +%7f",
+	       i, GetX(i), GetErrorXLeft(i), GetErrorXRight(i),
+	       y, GetStatErrorDown(i), GetStatErrorUp(i));
+	std::cout << s;
+	if (sum) {
+	  TString sSum;
+	  sSum.Form(" -%7f +%7f", eyl, eyh);
+	  std::cout << sSum;
+	}
+	// if (sum && p2p) std::cout << " [";
+	else if (p2p) {
+	  TIter nextP(&fPoint2Point);
+	  HolderP2P* p = 0;
+	  while ((p = static_cast<HolderP2P*>(nextP()))) {
+	    Bool_t      rel  = p->IsRelative();
+	    Double_t    fac  = (rel ? (TMath::Abs(y) > 1e-9 ? 100/y : 0) : 1);
+	    const char* post = (rel ? "%" : " ");
+	    s.Form(" -%7f%s +%7f%s",
+		   fac * p->GetYDown(i), post,
+		   fac * p->GetYUp(i)  , post);
+	    std::cout << s;
+	  }
+	}
+	// if (sum && p2p) std::cout << " ]";
+	std::cout << std::endl;
+      } // for i 
+      gROOT->DecreaseDirLevel();
+    } // if poi
     gROOT->DecreaseDirLevel();
   } //*MENU*
   /** 
@@ -567,17 +672,18 @@ public:
    *
    * @image html DrawStyles.png
    *
-   * @dontinclude tests/DrawStyles.C 
-   * @skip Drawer
+   * @dontinclude tests/TestMaker.C 
+   * @skip TestMaker
    * @until }
    *
    * A function to set-up an object
    *
-   * @skip Test1 
+   * @skip MakeGaus 
    * @until EndTest1
    *
    * A function to make a canvs 
    *
+   * @dontinclude tests/DrawStyles.C 
    * @skip MakeCanvas
    * @until EndMakeCanvas
    *
@@ -778,6 +884,72 @@ public:
    * @name Various operations 
    */
   /** 
+   * Scale graph by a constant 
+   * 
+   * @param f Function 
+   * @param s Constant for non-relative common errors
+   */
+  void Scale(TF1* f, Double_t s=1)
+  {
+    HolderCommon* cmn = 0;
+    TIter         cNext(&fCommon);
+    while ((cmn = static_cast<HolderCommon*>(cNext()))) {
+      if (!cmn->IsRelative())
+	// Do not scale relative errors - they scale by themselves
+	continue;
+      cmn->Set(cmn->GetYDown()/s, cmn->GetYUp()/s);
+    }
+    for (Int_t i = 0; i < GetN(); i++) {
+      Double_t x = GetX(i);
+      Double_t y = GetY(i);
+      Double_t g = f->Eval(x);
+      SetPoint(i, GetX(i), y/g);
+      SetStatError(i, GetStatErrorDown(i)/g,GetStatErrorUp(i)/g);
+      
+      HolderP2P* p2p = 0;
+      TIter      pNext(&fPoint2Point);
+      while ((p2p = static_cast<HolderP2P*>(pNext()))) {
+	Double_t fac = (p2p->IsRelative() ?
+			(TMath::Abs(y) < 1e-9) ? 0 : 1/y : 1/g);
+	SetSysError(p2p->GetUniqueID(), i,
+		    p2p->GetXLeft(i), p2p->GetXRight(i),
+		    fac*p2p->GetYDown(i), fac*p2p->GetYUp(i)); 		    
+      }
+    }
+  }
+  /** 
+   * Scale graph by a constant 
+   * 
+   * @param s 
+   */
+  void Scale(Double_t s)
+  {
+    HolderCommon* cmn = 0;
+    TIter         cNext(&fCommon);
+    while ((cmn = static_cast<HolderCommon*>(cNext()))) {
+      if (cmn->IsRelative())
+	// Do not scale relative errors - they scale by themselves
+	continue;
+      cmn->Set(s * cmn->GetYDown(), s * cmn->GetYUp());
+    }
+    for (Int_t i = 0; i < GetN(); i++) {
+      Double_t y = GetY(i);
+      SetPoint(i, GetX(i), s*y);
+      SetStatError(i, s*GetStatErrorDown(i),s*GetStatErrorUp(i));
+      
+      HolderP2P* p2p = 0;
+      TIter      pNext(&fPoint2Point);
+      while ((p2p = static_cast<HolderP2P*>(pNext()))) {
+	Double_t fac = (p2p->IsRelative() ?
+			(TMath::Abs(y) < 1e-9) ? 0 : 1/y :
+			s);
+	SetSysError(p2p->GetUniqueID(), i,
+		    p2p->GetXLeft(i), p2p->GetXRight(i),
+		    fac*p2p->GetYDown(i), fac*p2p->GetYUp(i)); 		    
+      }
+    }
+  }
+  /** 
    * Average one or more graphs. 
    *
    * The resulting graph is the weighted mean of the input graphs.
@@ -787,91 +959,279 @@ public:
    * All other errors are taken in to account and are propagated to
    * point-to-point errors.
    * 
-   * @param others 
+   * @param others  List of graphs
+   * @param sep     If true, then try to separate out point-to-point errors. 
    */
-  void Average(const TCollection* others)
+  Int_t Average(const TCollection* others, Bool_t sep=true)
   {
-    Int_t        id = DeclarePoint2Point("Sys.Err.", false, kBox);
-    TList        tmp; tmp.SetOwner();
-    TIter        oNext(others);
-    GraphSysErr* other = 0;
-    Double_t     xMin = +1e9;
-    Double_t     xMax = -1e9;
+    const Double_t tol = 1e-9;
+    TList          sharedC; sharedC.SetOwner();
+    TList          sharedP; 
+    TIter          oNext(others);
+    GraphSysErr*   other = 0;
+    Double_t       xMin  = +1e9;
+    Double_t       xMax  = -1e9;
+    Int_t          nX    = 0;
+    Bool_t         first = true;
+    Bool_t         nonSh = false;
+    Int_t          npS   = 0;
+    // Here, we do some initial investigations into the the passed
+    // graphs. We should find all common errors that are shared amoung
+    // the input graphs, and we need to check for the consistency of
+    // those.
     while ((other = static_cast<GraphSysErr*>(oNext()))) {
-      GraphSysErr*  cpy = new GraphSysErr(*other);
-      TIter         cNext(&fCommon);
-      HolderCommon* cmn = 0;
-      while ((cmn = static_cast<HolderCommon*>(cNext()))) {
-	Int_t oId = cpy->FindId(cmn->GetTitle());
-	if (oId <= 0) {
-	  // oId = cpy->FindId(Form("%s ()", cmn->GetTitle()));
-	  //  if (oId <= 0) {
-	  // oId = cpy->FindId(Form(" %s", cmn->GetTitle()));
-	  // if (oId <= 0) {
-	  Error("Average", "Common error %s not found in %s",
-		cmn->GetTitle(), cpy->GetName());
-	  cpy->Print("all");
-	  delete cpy;
-	  cpy = 0;
-	  break;
-	  // }
-	  // }
-	} // oId <= 0
-	// Zero this error here 
-	HolderCommon* oCmn = cpy->FindCommon(oId);
-	if (cmn->fEyl <= 0 && cmn->fEyh <= 0) {
-	  // Copy the error over 
-	  cmn->fEyl = oCmn->fEyl;
-	  cmn->fEyh = oCmn->fEyh;
+      Int_t n = other->GetN();
+      nX      = TMath::Max(nX,n);
+      xMin    = TMath::Min(xMin,other->GetX(0)  -2*other->GetErrorXLeft(0));
+      xMax    = TMath::Max(xMax,other->GetX(n-1)+2*other->GetErrorXRight(n-1));
+
+      if (first) { 
+	// For the first graph, we simply add the title of all the
+	// common systematics.
+	HolderCommon* cmn = 0;
+	TIter         cNext(&other->fCommon);
+	while ((cmn = static_cast<HolderCommon*>(cNext()))) {
+	  HolderCommon* o = static_cast<HolderCommon*>(cmn->Clone());
+	  sharedC.Add(o);
 	}
-	oCmn->Set(0,0);
-      }  // while cmn
-      if (cpy) tmp.Add(cpy);
-    }
-    if (tmp.GetEntries() < 2) {
-      Error("Average", "Nothing to average");
-      return;
-    }
-    TIter next(&tmp);
-    GraphSysErr* g = 0;
-    Bool_t first = true;
-    while ((g = static_cast<GraphSysErr*>(next()))) {
-      // Info("Average", "Resetting unique on %s", g->GetTitle());
-      g->SetUniqueID(0);
-      if (first) CopyKeys(g, "ar");
+	if (sep) {
+	  // and then the same for the point to point
+	  HolderP2P* p2p = 0;
+	  TIter      pNext(&other->fPoint2Point);
+	  while ((p2p = static_cast<HolderP2P*>(pNext()))) {
+	    sharedP.Add(p2p->Clone());
+	  }
+	}
+	
+	// We also copy the keys
+	CopyKeys(other, "ar");
+      }
+      else {
+	// Otherwise, we check that this graph has all the common
+	// errors in our temporary list, and if not, we remove that
+	// error from the list
+	TObjLink* cur  = sharedC.FirstLink();
+	while (cur) {
+	  HolderCommon* o  = static_cast<HolderCommon*>(cur->GetObject());
+	  HolderCommon* c  = other->FindCompat(o, tol, true);
+	  if (!c) {
+	    // This error not found in the graph we're looking at.
+	    // Remove it from the list
+	    Info("Average", "Common systematic %s not found in %s",
+		 o->GetTitle(), other->GetName());
+	    other->Print("sys");
+	    TObjLink* keep = cur->Next();
+	    TObject*  obj  = sharedC.Remove(cur);
+	    cur            = keep;
+	    nonSh          = true;
+	    if (obj) delete obj;
+	    continue;
+	  }
+	  cur = cur->Next();
+	} // while cur
+
+	// Now check the point-to-point errors 
+	cur = sharedP.FirstLink();
+	while (cur) {
+	  HolderP2P* o  = static_cast<HolderP2P*>(cur->GetObject());
+	  HolderP2P* p  = other->FindCompat(o);
+	  if (!p) {
+	    // This error not found in the graph we're looking at.
+	    // Remove it from the list
+	    Info("Average", "P2P systematic %s not found in %s",
+		 o->GetTitle(), other->GetName());
+	    TObjLink* keep = cur->Next();
+	    TObject*  obj  = sharedP.Remove(cur);
+	    cur            = keep;
+	    npS++;
+	    if (obj) delete obj;
+	    continue;
+	  }
+	  cur = cur->Next();
+	} // while cur	  
+      } // else
       first = false;
-      // Find least/largest X
-      Int_t oN = g->GetN();
-      xMin = TMath::Min(xMin, g->GetX(0)-2*g->GetErrorXLeft(0));
-      xMax = TMath::Max(xMax, g->GetX(oN-1)+2*g->GetErrorXRight(oN-1));
+    }   // while cmn
+    // Now we have the list of common errors that are shared amoung
+    // all the input graphs.  So we define those new common errors on
+    // this graph, and disable them on the inputs.
+    TIter          nextC(&sharedC);
+    HolderCommon*  com = 0;
+    while ((com = static_cast<HolderCommon*>(nextC()))) {
+      Int_t cId = DefineCommon(com->GetTitle(), com->IsRelative(),
+			       com->GetYDown(1), com->GetYUp(1), kBox);
+      HolderCommon* c = FindCommon(cId);
+      c->CopyAttr(com);
+      // Info("Average", "Shared common error %s +%7f%s -%7f%s",
+      // 	   c->GetTitle(),
+      // 	   c->GetYDown(1), (c->IsRelative() ? "%" : ""),
+      // 	   c->GetYUp(1),   (c->IsRelative() ? "%" : ""));
+
+      // Now loop over all input graphs, find the shared commons, and
+      // mark them as used.
+      oNext.Reset();
+      while ((other = static_cast<GraphSysErr*>(oNext()))) {
+	HolderCommon* oc = other->FindCompat(c, tol, true);
+	if (!oc) {
+	  Error("Average", "This should NOT happen");
+	  other->Print("sys");
+	  continue;
+	}
+	oc->SetBit(kUsedBit);
+      } // while other
+    } // while com
+    sharedC.Clear();
+    // If we found some common errors that are not shared, we need to
+    // make a point-to-point error for absorbing the remaining common
+    // errors.
+    Int_t bId = 0;
+    if (nonSh || !sep) {
+      bId = DeclarePoint2Point("Blob", false, kBox);
+      SetSysFillColor(bId, kRed+2);
+      SetSysLineColor(bId, kRed+2);
+      SetSysFillStyle(bId, 3004);
     }
+    
+    // At this point, we have found all the common shared errors and
+    // added those to ourselves. Those that are not shared go into the
+    // blob point-to-point error.
+    // 
+    // Next step, is to deal with the shared point-to-point errors.
+    // If we have shared point-to-point errors, we need to deal with
+    // them separately.  To do that, we make a list of identifiers
+    // that we should inspect at each X value.  The identifiers point
+    // to the p2p errors of each input graph.
+    //
+    TArrayL64     mp2p;
+    Int_t         dOf = 6;
+    if (sep) {
+      TIter       nextP(&sharedP);
+      HolderP2P*  p2p = 0;
+      Int_t       j   = 0;
+      mp2p.Set(100);
+      while ((p2p = static_cast<HolderP2P*>(nextP()))) {
+	// Info("Average", "Loop %d shared P2P %s", j,  p2p->GetTitle());
+	Int_t      pId = DeclarePoint2Point(p2p->GetTitle(),
+					  p2p->IsRelative(), kBox);
+	HolderP2P* p   = FindP2P(pId);
+	p->CopyAttr(p2p);
+	Info("Average", "Shared point-to-point error %s", p->GetTitle());
+	
+	// Now loop over all input graphs, find the shared commons, and
+	// mark them as used.
+	oNext.Reset();
+	Long64_t mask = 0;
+	Int_t    off  = 0;
+	while ((other = static_cast<GraphSysErr*>(oNext())) && off < 64) {
+	  HolderP2P* op = other->FindCompat(p, true);
+	  if (!op) {
+	    Error("Average", "This should NOT happen");
+	    continue;
+	  }
+	  mask |= ((op->GetUniqueID() & 0x3F) << off);
+	  off  += dOf;
+	  // Info("Average", "Mark %s as used", op->GetTitle());
+	  op->SetBit(kUsedBit);	
+	} // while other
+	if (off >= 64) {
+	  Warning("Average",
+		  "Some shared point-to-point errors could not be encoded "
+		  "becasue we have too many (%d>%d) input graphs",
+		  others->GetEntries(), 64/dOf);
+	}
+	mp2p[pId] = mask;
+	j++;
+      } // while p2p
+      // Info("Average", "Declared new shared P2P - mapping:");
+      // for (Int_t j = 1; j < mp2p.GetSize(); j++) {
+      //   if (mp2p[j] == 0) continue;
+      //   rintf("%3d/%3d", j, mp2p.GetSize());
+      //   for (Int_t k = 0; k < 64; k += dOf)
+      //     printf(" %3d", (mp2p[j] >> k) & 0x3f);
+      //   printf("\n");
+      // }
+      
+      // sharedP.Clear();
+      // Now we have all shared point-to-point errors defined, and we
+      // have the ids for each graph in the shar array (6bits each).
+      //
+      // Next, we will declare _all_ other our point-to-point errors
+      // separately on this graph.  That means that the point-to-point
+      // errors can be 0 in some ranges.
+      oNext.Reset();
+      Int_t       off  = 0;
+      while ((other = static_cast<GraphSysErr*>(oNext()))) {
+	Long64_t*   mask = 0;
+	TIter       oNextP(&(other->fPoint2Point));
+	HolderP2P*  p2p = 0;
+	while ((p2p = static_cast<HolderP2P*>(oNextP())) && off < 64) {
+	  if (p2p->TestBit(kUsedBit)) {
+	    // Info("Average", "%s marked as used", p2p->GetTitle());	
+	    continue; // Already in the shared part
+	  }
+	  
+	  // The point-to-point error should go into the weight, but not
+	  // in the result.
+	  p2p->SetBit(kOnlyWeightBit);
+	  Int_t      pId = 0;
+	  HolderP2P* p   = FindCompat(p2p);
+	  if (!p) {
+	    pId = DeclarePoint2Point(p2p->GetTitle(), p2p->IsRelative(), kBox);
+	    p   = FindP2P(pId);
+	    p->CopyAttr(p2p);
+	    mask =  &(mp2p[pId]);
+
+	  }
+	  *mask |= ((p2p->GetUniqueID() & 0x3F) << off);
+	}
+	off += dOf;
+      } // while other
+      if (off >= 64) {
+	Warning("Average",
+		"Some shared point-to-point errors could not be encoded "
+		"becasue we have too many (%d>%d) input graphs",
+		others->GetEntries(), 64/dOf);
+      }
+      // Info("Average", "Declared new shared P2P - mapping:");
+      // for (Int_t j = 0; j < mp2p.GetSize(); j++) {
+      // 	if (mp2p[j] == 0) continue;
+      // 	printf("%3d/%3d", j, mp2p.GetSize());
+      // 	for (Int_t k = 0; k < 64; k += dOf)
+      // 	  printf(" %3d", (mp2p[j] >> k) & 0x3f);
+      // 	printf("\n");
+      // }
+    }
+    
+    // Now search for the X values to evaluate at 
     Double_t x    = xMin;
     Double_t oldX = xMin;
     Int_t    cnt  = 0;
-    TArrayD  xa(100); // Assume no more than 100 points
-    TArrayD  exla(100);
-    TArrayD  exha(100);
+    TArrayD  xa(2*nX); // Assume no more than 100 points
+    TArrayD  exla(2*nX);
+    TArrayD  exha(2*nX);
     do {
       // Find the next X to evaluate at
-      next.Reset();
+      oNext.Reset();
       Double_t nextX = xMax;
       Double_t texl  = 0;
       Double_t texh  = 0;
-      while ((g = static_cast<GraphSysErr*>(next()))) {
-	for (Int_t i = g->GetUniqueID(); i < g->GetN(); i++) {
-	  if (g->GetX(i) <= x) {
+      // Info("Average", "nextX=%f xMax=%f", nextX, xMax);
+      while ((other = static_cast<GraphSysErr*>(oNext()))) {
+	for (Int_t i = other->GetUniqueID(); i < other->GetN(); i++) {
+	  if (other->GetX(i) <= x) {
 	    // Info("Average", "- x_i=%f < x=%f", g->GetX(i), x);
 	    continue;
 	  }
-	  if (g->GetX(i) < nextX) {
+	  if (other->GetX(i) < nextX) {
 	    // Info("Average", "Set x to %f (was %f)", g->GetX(i), nextX);
-	    nextX = g->GetX(i);
-	    texl  = TMath::Max(texl, g->GetErrorXLeft(i));
-	    texh  = TMath::Max(texh, g->GetErrorXRight(i));
+	    nextX = other->GetX(i);
+	    texl  = TMath::Max(texl, other->GetErrorXLeft(i));
+	    texh  = TMath::Max(texh, other->GetErrorXRight(i));
 	  }
 	  else {
 	    // g->SetUniqueID(i);
-	    // Info("Average", "No more here at x=%f", g->GetX(i));
+	    // Info("Average", "No more (%s) here at x=%f (next=%f)",
+	    //      g->GetName(), g->GetX(i), nextX);
 	    break;
 	  }
 	}
@@ -881,6 +1241,12 @@ public:
 	break;
       }
 
+      if (cnt >= xa.GetSize()) {
+	Warning("Average", "increasing size of X cache");
+	xa.Set(1.5*cnt);
+	exla.Set(1.5*cnt);
+	exha.Set(1.5*cnt);
+      }
       // Info("Average", "Set next x to %f +/- (%f,%f)", nextX, texl, texh);
       xa[cnt]     = nextX;
       exla[cnt]   = texl;
@@ -889,8 +1255,17 @@ public:
       oldX        = x;
       x           = nextX+dx/4;
       cnt++;
-    } while (cnt < xa.GetSize());
-
+    } while (cnt < 1000); // Do not go for more than 1000 points
+    // At this point we have
+    //
+    //  - All common errors defined, and we have set the shared ones
+    //  - All point-to-point errors defined, and we know which input
+    //    graph contributes to each.
+    //  - A list of X values to evaluate each graph at. 
+        
+    // Print("sys");
+    // Now we loop over the list of X values and evaluate each graph
+    // at that X value.
     for (Int_t i = 0; i < cnt; i++) {
       Double_t xi   = xa[i];
       Double_t texl = exla[i];
@@ -904,42 +1279,205 @@ public:
 
       
       // Now loop again - this time calculating our data point
-      Double_t sum = 0;
-      Double_t sumW = 0;
-      Double_t sumV = 0;
-      next.Reset();
-      while ((g = static_cast<GraphSysErr*>(next()))) {
-	Double_t y, eyl, eyh;
-	if (!g->FindYandError(xi, true, true, true, false, y, eyl, eyh))
-	  continue;
-	Double_t s  = 2*eyl*eyh/(eyh+eyl);
-	Double_t sp = (eyh-eyl)/(eyh+eyh);
-	Double_t w  = .5 * TMath::Power(s+y*sp, 3) / s;
-	sum  += y*w;
-	sumW += w;
-	sumV += w*w*s*s;
-      }
-      Double_t newY = sum / sumW;
-      Double_t newV = sumV / sumW / sumW;
+      Double_t sum   = 0;
+      Double_t sumW  = 0;
+      // Double_t sumWS = 0;
+      Double_t sumE  = 0;
+      Double_t sumES = 0;
+      oNext.Reset();
+
+      // Use our combiner framework for calculating the averaged
+      // result and errors.  Note, we define two combiners.  One that
+      // include all non-shared common and point-to-point errors
+      // (centroid), and one that doesn't have the non-shared common
+      // and point-to-point errors as well as the split point-to-point
+      // errors (error).  The first one is used to set the centroid of
+      // the data, while the second is used to set the combined error
+      LinearSigmaCombiner centroid;
+      LinearSigmaCombiner error;
+      LinearSigmaCombiner stats;
+      Int_t               j = 0;
+      TArrayI             ai1(others->GetEntries());
+      TArrayI             ai2(others->GetEntries());
+      TArrayD             ax(others->GetEntries());
+      while ((other = static_cast<GraphSysErr*>(oNext()))) {
+	Bool_t cmn    = true;   // Include the common errors
+	Bool_t stat   = false;  // Include the statistical errors
+	Bool_t quad   = true;   // Add in quadrature
+	Bool_t nosqrt = false;  // Do not return squared error 
+
+	Double_t y, eyl, eyh, wyl, wyh, syl, syh;
+
+	Int_t  fret   = other->FindPoint(xi, ai1[j], ai2[j]);
+	if (fret < -1) { j++; continue; } // Nothing here
+	if (fret >= 0) {
+	  y = other->GetYandError(fret,cmn,stat,quad,nosqrt,eyl, eyh, wyl, wyh);
+	  syl = other->GetStatErrorDown(fret);
+	  syh = other->GetStatErrorUp(fret);
+	}
+	else {
+	  Double_t eyl1, eyh1, wyl1, wyh1;
+	  Double_t eyl2, eyh2, wyl2, wyh2;
+	  Double_t x1  = other->GetX(ai1[j]);
+	  Double_t x2  = other->GetX(ai2[j]);
+	  Double_t y1  = other->GetYandError(ai1[j],cmn,stat,quad,nosqrt,
+					     eyl1,eyh1,wyl1,wyh1);
+	  Double_t y2  = other->GetYandError(ai2[j],cmn,stat,quad,nosqrt,
+					     eyl2,eyh2,wyl2,wyh2);
+	  Double_t syl1 = other->GetStatErrorDown(ai1[j]);
+	  Double_t syh1 = other->GetStatErrorUp(ai1[j]);
+	  Double_t syl2 = other->GetStatErrorDown(ai2[j]);
+	  Double_t syh2 = other->GetStatErrorUp(ai2[j]);
+	  Double_t dx = (x2-x1);
+	  ax[j]       = (xi-x1)/dx;
+	  y           = y1   + ax[j] * (y2-y1);
+	  eyl         = eyl1 + ax[j] * (eyh1-eyl1);
+	  eyh         = eyh2 + ax[j] * (eyh2-eyl2);
+	  wyl         = wyl1 + ax[j] * (wyh1-wyl1);
+	  wyh         = wyh2 + ax[j] * (wyh2-wyl2);
+	  syl         = syl1 + ax[j] * (syh1-syl1);
+	  syh         = syh2 + ax[j] * (syh2-syl2);
+	}
+	
+	centroid.Add(y, wyl, wyh);
+	error.Add(y, eyl, eyh);
+	stats.Add(y, syl, syh);
+	j++;
+      } // while (other)
+      centroid.Calculate();
+      // Info("Average", "Centroid");
+      // centroid.Print();
+      // centroid.fResult->Print();
+      Double_t newY = centroid.fResult->fX;
       SetPoint(i, xi, newY);
       SetPointError(i, exl, exh);
-      SetSysError(id, i, 0, TMath::Sqrt(newV));
-    }
+
+      stats.Calculate();
+      // Info("Average", "Stats");
+      // stats.Print();
+      // stats.fResult->Print();
+      stats.Calculate();
+      Double_t fac = IsStatRelative() ? 1/newY : 1;
+      SetStatError(i, fac*stats.fResult->fEl,fac*stats.fResult->fEh);
+
+      if (bId > 0) {
+      // Calculations for error
+	error.Calculate();
+	// Info("Average", "Error");
+	// error.Print();
+	// error.fResult->Print();
+
+	fac = IsRelative(bId) ? 1/newY : 1;
+	SetSysError(bId,i,0,0,fac*error.fResult->fEl,fac*error.fResult->fEh);
+      }
+
+      // Now, we have set the blob point-to-point error.  Next, we
+      // need to do the point-to-point erros that should be transfered
+      // to the output.  We have stored masks of IDs in mp2p, so we
+      // loop over that array first.  The lower 6 bits is the output
+      // Id, while the remaining bits (counting from the low side) are
+      // ids for each input graph.
+      for (Int_t j = 1; j < mp2p.GetSize(); j++) {
+	Long64_t mask = mp2p[j];
+	if (mask == 0) continue;
+	Int_t    tid  = j; // (mask & 0x3f);
+	HolderP2P* tp2p = FindP2P(tid);
+	if (!tp2p) {
+	  Warning("Average", "No target point-to-point error at %d for id=%d",
+		  j, tid);
+	  continue;
+	}
+	// Zero by default
+	SetSysError(tid, i, 0, 0);
+	Long64_t rem  = mask;
+	if (rem == 0) 
+	  // There's no IDs for this, explicitly set the value to 0
+	  continue;
+
+	// Now we should loop over all the input graphs and get the
+	// error and finally combine them into one.  Again, we use a
+	// linear sigma approximation from our combiner framework to
+	// do the calculations.
+	LinearSigmaCombiner sc;
+	Int_t k = 0; // Index into index array and for off set in mask
+	oNext.Reset();
+	while ((other = static_cast<GraphSysErr*>(oNext()))) {
+	  if (ai1[k] == -1 && ai2[k] == -1) {
+	    // This graph does not contribute at this point
+	    // Info("Average", "No contribution at %f (%d:%d,%d) for %s to %s",
+	    //      xi, k, ai1[k], ai2[k], other->GetName(), tp2p->GetTitle());
+	    k++;
+	    continue;
+	  }
+	  Int_t sid = ((rem >> dOf*k) & 0x3f);
+	  if (sid <= 0) {
+	    // This graph does not contribute to this error
+	    // Info("Average",
+	    //      "No contribution for %s to %s, not found [%d:%d,%d]",
+	    //      other->GetName(), tp2p->GetTitle(), k, ai1[k], ai2[k]);
+	    k++;
+	    continue;
+	  }
+	  HolderP2P* sp2p = other->FindP2P(sid);
+	  if (!sp2p) {
+	    Warning("Average", "Couldn't find point-to-point error %d (%s)"
+		    "in graph %d (%s) - should not happen",
+		    sid, tp2p->GetTitle(), k, other->GetName());
+	    k++;
+	  }
+	  Double_t sy   = 0;
+	  Double_t seyl = 0;
+	  Double_t seyh = 0;
+	  if (ai1[k] == ai2[k]) {
+	    // Exact point
+	    sy   = other->GetY(ai1[k]);
+	    seyl = other->GetSysErrorYDown(sid, ai1[k]);
+	    seyh = other->GetSysErrorYUp(sid, ai1[k]);
+	  }
+	  else {
+	    // Interpolate
+	    Double_t sy1   = other->GetY(ai1[k]);
+	    Double_t sy2   = other->GetY(ai2[k]);
+	    sy             = sy1 + ax[k] * (sy2-sy1);
+	    seyl           = sp2p->GetYDown(ai1[k],ai2[k],ax[k]);
+	    seyh           = sp2p->GetYUp(ai1[k],ai2[k],ax[k]);
+	  }
+	  //Info("Average", "Contribution (%d:%d-%d:%f,%f) to %s from %s",
+	  //     k,ai1[k],ai2[k],seyl,seyh,tp2p->GetTitle(),other->GetName());
+	  sc.Add(sy, seyl, seyh);
+	  k++;
+	} // while other
+	sc.Calculate();
+	// Info("Average", "%s", tp2p->GetTitle());
+	// sc.Print();
+	// sc.fResult->Print();
+	fac = IsRelative(tid) ? 1/newY : 1;
+	SetSysError(tid, i, 0, 0, fac*sc.fResult->fEl, fac*sc.fResult->fEh);
+      } // for j (# of p2p)
+    } // for i (points)
+
+    oNext.Reset();
+    while ((other = static_cast<GraphSysErr*>(oNext()))) 
+      other->ClearUsed();
+      
+    return bId;
   }
   /** 
-   * Take the ratio of 2 graphs.  
+   * Find the next point and for ratio 
    * 
-   * @param num    Numerator 
-   * @param denom  Denominator 
+   * @param i     Point numver 
+   * @param num   Numerator 
+   * @param denom Denominator 
+   * @param x     On return, the X value 
+   * @param dY    On return, the denominator Y
+   * @param dEyl  On return, the denominator lower error on Y
+   * @param dEyh  On return, the denominator upper error on Y
+   * @param nY    On return, the numerator Y		     
+   * @param nEyl  On return, the numerator lower error on Y
+   * @param nEyh  On return, the numerator upper error on Y
    * 
-   * @return Newly allocated graph 
+   * @return 
    */
-  static GraphSysErr* Ratio(const GraphSysErr* num,
-			    const GraphSysErr* denom)
-  {
-    Double_t sqRes = -1;
-    return Ratio(num, denom, sqRes);
-  }
   static Bool_t NextPoint(Int_t i,
 			  const GraphSysErr* num,
 			  const GraphSysErr* denom,
@@ -965,127 +1503,646 @@ public:
    * Take the ratio of 2 graphs.  
    * 
    * @param num    Numerator 
-   * @param denom  Denominator 
+   * @param den    Denominator 
+   * @param flags Flags for the ratio calculation.  See also
+   * ERatioOption.
    * 
    * @return Newly allocated graph 
    */
   static GraphSysErr* Ratio(const GraphSysErr* num,
-			    const GraphSysErr* denom,
-			    Double_t&          sqRes)
+			    const GraphSysErr* den,
+			    UInt_t             flags=kRatioDefault)
   {
     GraphSysErr* ret = new GraphSysErr(1);
+    ret->CopyAttr(num);
     ret->CopyKeys(num, "ar");
-    Double_t dSum  = 0;
-    Double_t nSum  = 0;
-    Double_t dWsum = 0;
-    Double_t nWsum = 0;
-    if (sqRes >= 0) {
-      sqRes = 0;
-      for (Int_t i = 0; i < num->GetN(); i++) {
-	Double_t x    = 0;
-	Double_t dY   = 0;
-	Double_t dEyl = 0;
-	Double_t dEyh = 0;
-	Double_t nEyl = 0;
-	Double_t nEyh = 0;
-	Double_t nY   = 0;
-	if (!NextPoint(i, num, denom, x, dY, dEyl, dEyh, nY, nEyl, nEyh))
-	  continue;
-	dSum  += dY;
-	nSum  += nY;
-	dWsum += TMath::Power(TMath::Max(dEyl,dEyh),2);
-	nWsum += TMath::Power(TMath::Max(nEyl,nEyh),2);
+    Bool_t   emax    = (flags & kMax);
+    Bool_t   cmin    = (flags & kMin);
+    Bool_t   cmax    = (flags & kMax);
+    Bool_t   cancc   = (flags & kCancel);
+    Int_t    id      = 0;
+    Int_t    notUsed = 0;
+    // Loop over all common errors in the numerator, and see if we
+    // have the same common error in the denominator.  If we do, we
+    // can (partially) cancel this common error.
+    //
+    // Technically, we mark each used common error as used, and create
+    // a new common error in the output graph.
+    //
+    // Common errors that are not shared by both the numerator and the
+    // denominator will not be cancelled.  Instead, if they are
+    // relative, they will be added to the output graph directly.
+    // Finally, common systematic errors that are not cancelled or are
+    // not relative, will go into the blob of point-to-point errors
+    TIter nextNC(&num->fCommon);
+    HolderCommon* comN = 0;
+    while ((comN = static_cast<HolderCommon*>(nextNC()))) {      
+      Bool_t        rel  = comN->IsRelative();
+      Double_t      eyl  = comN->GetYDown(1);
+      Double_t      eyh  = comN->GetYUp(1);
+      Int_t         idD  = den->FindId(comN->GetTitle());      
+      HolderCommon* comD = 0;
+      if (idD != 0 &&                       // Check it exists
+	  (comD = den->FindCommon(idD)) &&  // Check it is a common
+	  (rel == comD->IsRelative())) {    // Same as this
+	// We found the same error in the denominator, so we need to
+	// cancel errors here.
+	Double_t dEyl = comD->GetYDown(1);
+	Double_t dEyh = comD->GetYUp(1);
+	Double_t nEyl = comN->GetYDown(1);
+	Double_t nEyh = comN->GetYUp(1);
+	if (cmin) {
+	  eyl = TMath::Min(nEyl, dEyl);
+	  eyh = TMath::Min(nEyh, dEyh);
+	}
+	else if (cmax) {
+	  eyl = TMath::Min(nEyl, dEyl);
+	  eyh = TMath::Min(nEyh, dEyh);
+	}
+	else if (cancc) { 
+	  eyl  = TMath::Sqrt(TMath::Abs(dEyl*dEyl-nEyl*nEyl));
+	  eyh  = TMath::Sqrt(TMath::Abs(dEyh*dEyh-nEyh*nEyh));
+	}
+	const char* post = (rel ? "%" : "");
+	Double_t    fac  = (rel ? 100 : 1);
+			    
+	if (kVerbose & kRatio)
+	  ::Info("Ratio", "Cancelling the common systematic error %s "
+		 "between numerator (-%f%s +%f%s) "
+		 "and denominator (-%f%s +%f%s): -%f%s + %f%s",
+		 comD->GetTitle(),
+		 fac*nEyl, post, fac*nEyh, post,
+		 fac*dEyl, post, fac*dEyh, post,
+		 fac*eyl,  post, fac*eyh,  post);
+	       
+	// Flag the denominator error as used
+	comD->SetBit(kUsedBit);
       }
-      if (dSum <= 0 && nSum <= 0) {
-	::Warning("Ratio", "Empty graphs");
-	return 0;
+      else if (!rel) {
+	// We cannot cancel, and it is not relative, add to blob
+	if (kVerbose & kRatio)
+	  ::Info("Ratio",
+		 "Common numerator systematic %s will be added to blob",
+		 comN->GetTitle());
+	notUsed++; // Count how many we're not setting directly
+	continue;
       }
+      // Now we can define our common error. Which value we set depend
+      // on whether the error was cancelled with the denominator
+      Int_t        cId  = ret->DefineCommon(comN->GetTitle(),rel,
+					    eyl, eyh, kBox);
+      HolderCommon* c   = ret->FindCommon(cId);
+      c->CopyAttr(comN);
+      // Flag the numerator error as used
+      comN->SetBit(kUsedBit);
+    }
+    // Loop over all denominator common systematic errors.  If it is
+    // not cancelled with the numerator and is relative, we define a
+    // new error on the output ratio. Otherwise it will be absorbed in a blob 
+    TIter nextDC(&den->fCommon);
+    HolderCommon* comD = 0;
+    while ((comD = static_cast<HolderCommon*>(nextDC()))) {
+      if (comD->TestBit(kUsedBit)) continue;
+      if (!comD->IsRelative()) {
+	if (kVerbose & kRatio)
+	  ::Info("Ratio",
+		 "Common denominator systematic %s will be added to blob",
+		 comD->GetTitle());
+	notUsed++; // Count how many we're not setting directly
+	continue;
+      }
+      if (kVerbose & kRatio)
+	::Info("Ratio", "Propagating common sysmatic %s to ratio",
+	       comD->GetTitle());
+      // ret->Print("sys");
+      // Now we can define our common error. Which value we set depend
+      // on whether the error was cancelled with the denominator
+      Int_t        cId  = ret->DefineCommon(comD->GetTitle(),true,
+					    comD->GetYDown(1),
+					    comD->GetYUp(1),
+					    kBox);
+      HolderCommon* c   = ret->FindCommon(cId);
+      c->CopyAttr(comD);
+      // Flag the denominator error as used
+      comD->SetBit(kUsedBit);
+      // ret->Print("sys");
+    }
+    
+    // Loop over all point-to-point errors in the numerator, and see
+    // if we have the same point-to-point error in the denominator.
+    // If we do, we can (partially) cancel this point-to-point error.
+    //
+    // Technically, we mark each used point-to-point error as used.
+    //
+    // Point-to-point errors that are not shared by both the numerator
+    // and the denominator will not be cancelled.  Instead, they will
+    // be added in on the residual point-to-point sum (in quadrature)
+    // error.
+    //
+    // We encode the IDs of the
+    // errors in a single mask.
+    //
+    // 24 -------- 16 -------- 8 -------- 0
+    //  | Denom ID  | Num ID   | Ratio ID |
+    //  +-----------+----------+----------+
+    //
+    Int_t      sCnt = 0;
+    TArrayI    shared(num->fPoint2Point.GetEntries() +
+		      den->fPoint2Point.GetEntries());
+    TIter      nextNP(&num->fPoint2Point);
+    HolderP2P* p2pN = 0;
+    while ((p2pN = static_cast<HolderP2P*>(nextNP()))) {      
+      Bool_t     rel  = p2pN->IsRelative();
+      Int_t      idD  = den->FindId(p2pN->GetTitle());      
+      HolderP2P* p2pD = 0;
+      Int_t      mask = 0;
+      if (cancc &&
+	  idD != 0 &&                      // Check it exists
+	  (p2pD = den->FindP2P(idD))  &&   // Check it is a p2p
+	  (rel == p2pD->IsRelative())) {   // Same as this
+	// We found the same error in the denominator, so we need to
+	// cancel errors when looping.  
+	mask = ((p2pD->GetUniqueID() & 0xFF) << 16);
+	if (kVerbose & kRatio)
+	  ::Info("Ratio", "Cancelling the p2p systamtic error %s "
+		 "between numerator and denominator",
+		 p2pN->GetTitle());
+	// Flag the denominator error as used
+	p2pD->SetBit(kUsedBit);
+      }
+      Int_t      pId  = ret->DeclarePoint2Point(p2pN->GetTitle(),rel,
+						kBox);
+      HolderP2P* p    = ret->FindP2P(pId);
+      p->CopyAttr(p2pN);
+      // Flag the numerator error as used
+      p2pN->SetBit(kUsedBit);
+      mask |= (((p2pN->GetUniqueID() & 0xFF) << 8) |
+	       (pId & 0xFF));
+      shared[sCnt] = mask;
+      sCnt++;
+    }
+    // Loop over all denominator point-to-point systematic errors.  If
+    // it is not cancelled with the numerator, we define a new error
+    // on the output ratio
+    TIter      nextDP(&num->fPoint2Point);
+    HolderP2P* p2pD = 0;
+    while ((p2pD = static_cast<HolderP2P*>(nextDP()))) {      
+      if (p2pD->TestBit(kUsedBit)) continue;
+      Int_t      pId  = ret->DeclarePoint2Point(p2pD->GetTitle(),true,
+						kBox);
+      HolderP2P* p    = ret->FindP2P(pId);
+      p->CopyAttr(p2pD);
+      // Flag the numerator error as used
+      p2pD->SetBit(kUsedBit);
+      Int_t mask = (((p2pD->GetUniqueID() & 0xFF) << 16) |
+		    (pId & 0xFF));
+      shared[sCnt] = mask;
+      sCnt++;
+    }    
+    Int_t bId = 0;
+    if (notUsed > 0) {
+      // If we have some error that are not used - i.e., non-relative
+      // common errors in the numerator or denominator, we need to
+      // make a new point-to-point systematic error for those.
+      bId = ret->DeclarePoint2Point("Blob", false, kBox);
     }
 
-    Double_t dRsum = 0;
-    Double_t nRsum = 0;
-    Double_t dfMax = 0;
-    Int_t id = ret->DeclarePoint2Point("Errors", false, GraphSysErr::kBox);
-    Int_t cnt = 0;
+    // Now loop over all the points we have in the numerator and
+    // figure out what to do for each point.
+    Int_t cnt = 0; // Counter of output points
     for (Int_t i = 0; i < num->GetN(); i++) {
-      Double_t x    = 0;
+      Double_t x    = num->GetX(i);
+      Double_t nY   = num->GetY(i);
+      Double_t nEyl = 0;
+      Double_t nEyh = 0;
       Double_t dY   = 0;
       Double_t dEyl = 0;
       Double_t dEyh = 0;
-      Double_t nEyl = 0;
-      Double_t nEyh = 0;
-      Double_t nY   = 0;
-      if (!NextPoint(i, num, denom, x, dY, dEyl, dEyh, nY, nEyl, nEyh))
+      Int_t    di1, di2;
+      Int_t    di   = den->FindPoint(x, di1, di2);
+      Double_t daX  = 0; // Relative distance between interpolated points 
+      if (di < -1) {
+	if (kVerbose & kRatio)
+	  ::Warning("Ratio", "Next point %d (%f) not found in denominator",
+		    i, x);
 	continue;
-
-      Double_t eyl = TMath::Max(nEyl, dEyl);
-      Double_t eyh = TMath::Max(nEyh, dEyh);
-      if (nSum > 0 && dSum > 0) {
-	Double_t dE2   = TMath::Power(TMath::Max(dEyl,dEyh), 2);
-	Double_t nE2   = TMath::Power(TMath::Max(nEyl,nEyh), 2);	
-	Double_t sigma =  nSum * nSum * dE2 + dSum * dSum * nE2;
-	Double_t delta =  dSum * nY - nSum * dY;
-	// From TH1::Chi2Test
-	// sqRes          += delta * delta / sigma;
-	// Treating MC as thruth 
-	sqRes += TMath::Power((dY-nY),2)/dE2;
-
-	// KolmogorowvTest
-	dRsum += dY / dSum;
-	nRsum += nY / nSum;
-	dfMax =  TMath::Max(dfMax, TMath::Abs(dRsum-nRsum));
       }
-      eyl          /= dY;
-      eyh          /= dY;
-      ret->SetPoint(cnt, x, nY/dY);
+      Bool_t cmn    = true;  // Include the common errors
+      Bool_t stat   = false;  // Include the statistical errors
+      Bool_t quad   = true;  // Add in quadrature
+      Bool_t nosqrt = false; // Do not return squared error 
+      if (di >= 0) {
+	// Exact point
+	// point,common,stat,quadratic,nosqrt,
+	dY = den->GetYandError(di,cmn,stat,quad,nosqrt,dEyl,dEyh);
+	di1 = di;
+      }
+      else {
+	Double_t eyl1, eyl2, eyh1, eyh2;
+	Double_t x1 = den->GetX(di1);
+	Double_t x2 = den->GetX(di2);
+	Double_t y1 = den->GetYandError(di1,cmn,stat,quad,nosqrt,eyl1,eyh1);
+	Double_t y2 = den->GetYandError(di2,cmn,stat,quad,nosqrt,eyl2,eyh2);
+	// Linear interpolation
+	Double_t dx = (x2-x1);
+	daX         = (x-x1)/dx;
+	dY          = y1   + daX * (y2 - y1);
+	dEyl        = eyl1 + daX * (eyl2 - eyl1);
+	dEyh        = eyh1 + daX * (eyh2 - eyh1);
+      }
+      // At this point, we have the X and Y values, and the non-p2p
+      // and non-cancelled and non-relative-common errors calculated
+      // for numerator and denominator individually.
+      //
+      // We start by setting the point value.  Perhaps here, we should
+      // also set the statistics.
+      Double_t rY    = (dY != 0 ? nY/dY   : 0);
+      ret->SetPoint(cnt, x, rY);
       ret->SetPointError(cnt, num->GetErrorXLeft(i), num->GetErrorXRight(i));
-      ret->SetStatError(cnt, 0);
-      ret->SetSysError(id, cnt, eyl, eyh);
+
+      // We have not dealt with the statistical errors yet.  We do
+      // that here.
+      Double_t sEyl = 0;
+      Double_t sEyh = 0;
+      if (TMath::Abs(rY) > 1.e-9) {
+	Double_t snEyl = num->GetStatErrorDown(cnt);
+	Double_t snEyh = num->GetStatErrorUp  (cnt);
+	Double_t sdEyl = den->GetStatErrorDown(cnt);
+	Double_t sdEyh = den->GetStatErrorUp  (cnt);
+	// Statistical errors never cancel, and must be propagted. Note,
+	// despite it technically being wrong, we treat the lower and
+	// higher errors independently.
+	sEyl = TMath::Sqrt(rY*rY*(snEyl*snEyl/nY/nY+sdEyl*sdEyl/dY/dY));
+	sEyh = TMath::Sqrt(rY*rY*(snEyh*snEyh/nY/nY+sdEyh*sdEyh/dY/dY));
+      }
+      ret->SetStatError(cnt, sEyl, sEyh);
+      
+      // Next, we should update our blob systematic p2p error if it
+      // exists.
+      if (bId > 0) { 
+	Double_t eyl = 0, eyh = 0;
+	if (emax) {
+	  // Take the largest of the two errors, and divide by the
+	  // denominator. 
+	  eyl = TMath::Max(nEyl, dEyl);
+	  eyh = TMath::Max(nEyh, dEyh);
+	  eyl          /= dY;
+	  eyh          /= dY;
+	}
+	else if (cmin) {
+	  // Take the largest of the two errors, and divide by the
+	  // denominator. 
+	  eyl = TMath::Min(nEyl, dEyl);
+	  eyh = TMath::Min(nEyh, dEyh);
+	  eyl          /= dY;
+	  eyh          /= dY;
+	}
+	else {
+	  // Find the relative errors and add in quadrature 
+	  Double_t rnEyl = (nY != 0 ? nEyl/nY : 0);
+	  Double_t rnEyh = (nY != 0 ? nEyh/nY : 0);
+	  Double_t rdEyl = (dY != 0 ? dEyl/dY : 0);
+	  Double_t rdEyh = (dY != 0 ? dEyh/dY : 0);
+	  Double_t reyl  = TMath::Sqrt(rnEyl*rnEyl+rdEyl*rdEyl);
+	  Double_t reyh  = TMath::Sqrt(rnEyh*rnEyh+rdEyh*rdEyh);
+	  eyl            = reyl*rY;
+	  eyh            = reyh*rY;
+	}
+	ret->SetSysError(bId, cnt, eyl, eyh);
+      }
+
+      // Now we need to update our various point-to-point
+      // errors. We've stored a mask for each declared point-to-point
+      // error.  Each mask consist of three fields, corresponding to
+      // point-to-point errors in the denominator, numerator, and the
+      // ratio.  If all three fields are set, we shold cancel between
+      // numerator and denominator.  If only the ratio and either of
+      // the denominator or numerator fields are set, we simply need
+      // to copy that to the ratio point-to-point error - as a
+      // relative error of course.
+      for (Int_t im = 0; im < shared.GetSize(); im++) {
+	Int_t mask = shared[im];
+	if (mask <= 0) break;
+	Int_t rId = ((mask >>  0) & 0xFF);
+	Int_t nId = ((mask >>  8) & 0xFF);
+	Int_t dId = ((mask >> 16) & 0xFF);
+	if (nId == 0 && dId == 0) {
+	  ::Warning("Ratio", "Both numerator and denominator IDs are 0");
+	  break;
+	}
+	Bool_t   rel   = ret->IsRelative(rId);
+	Bool_t   crel  = true; // rel
+	Double_t pdEyl = 0;
+	Double_t pdEyh = 0;
+	Double_t pnEyl = 0;
+	Double_t pnEyh = 0;
+	if (dId != 0) {
+	  HolderP2P* pD  =  den->FindP2P(dId);
+	  Double_t   fac = (crel ? (TMath::Abs(dY) > 1e-9 ? 1/dY : 0) : 1);
+	  pdEyl          =  pD->GetYDown(di1, di2, daX) * fac;
+	  pdEyh          =  pD->GetYUp  (di1, di2, daX) * fac;
+	}
+	if (nId != 0) {
+	  HolderP2P* pN  =  num->FindP2P(nId);
+	  Double_t   fac = (crel ? (TMath::Abs(nY) > 1e-9 ? 1/nY : 0) : 1);
+	  pnEyl          =  pN->GetYDown(i) * fac;
+	  pnEyh          =  pN->GetYUp  (i) * fac;
+	}
+	Double_t peyl = 0;
+	Double_t peyh = 0;
+	Double_t fac  = (!crel ? (TMath::Abs(dY) > 1e-9 ? 1/dY : 0) : 1);
+	if (nId == 0) {
+	  // No numerator value - set directly
+	  peyl = pdEyl * fac;
+	  peyh = pdEyh * fac;
+	} // else if
+	else if (dId == 0) {
+	  // No denomenator value - set directly
+	  peyl = pnEyl * fac;
+	  peyh = pnEyh * fac;
+	} // else if 
+	else {
+	  // Cancel errors
+	  if (cmin) {
+	    peyl = TMath::Min(nEyl, dEyl) * fac;
+	    peyh = TMath::Min(nEyh, dEyh) * fac;
+	  }
+	  else {
+	    peyl = TMath::Sqrt(TMath::Abs(pnEyl*pnEyl-pdEyl*pdEyl)) * fac;
+	    peyh = TMath::Sqrt(TMath::Abs(pnEyh*pnEyh-pdEyh*pdEyh)) * fac;
+	    // ::Info("Ratio", "sqrt(|%8f^2 - %8f^2|)=%8f", pnEyl,pdEyl,peyl);
+	  }
+	} // Else
+	fac = (rel ? 1 : rY);
+	ret->SetSysError(rId, cnt, 0, 0, fac*peyl, fac*peyh);
+      }
+
+      // Finally, increment counter
       cnt++;
     }
+
+    // Reset the used case bits
+    num->ClearUsed();
+    den->ClearUsed();
+
     if (cnt <= 0) {
+      ::Warning("", "No common points found");
       delete ret;
       ret = 0;
       return 0;
     }
-#if 1
-    // chi^2/nu 
-    sqRes /= cnt;
-#else 
-    // K-F test
-    Double_t dEsum = dSum * dSum / dWsum;
-    Double_t nEsum = nSum * nSum / nWsum;
-    Double_t z     = dfMax*TMath::Sqrt(dEsum*nEsum/(dEsum+nEsum));
-
-    sqRes = TMath::KolmogorovProb(z);
-#endif 
-
-    ret->CopyAttr(num);
-    // ret->SetMarkerColor(num->GetMarkerColor());
-    // ret->SetMarkerStyle(num->GetMarkerStyle());
-    // ret->SetMarkerSize(num->GetMarkerSize());
-    // ret->SetLineColor(num->GetLineColor());
-    // ret->SetLineStyle(num->GetLineStyle());
-    // ret->SetLineWidth(num->GetLineWidth());
-    // ret->SetFillColor(num->GetFillColor());
-    // ret->SetFillStyle(num->GetFillStyle());
-    // ret->SetSumTitle(num->GetSumTitle());
-    // ret->fSumOption = num->fSumOption;
-    // ret->SetSumLineStyle(num->GetSumLineStyle());
-    // ret->SetSumLineColor(num->GetSumLineColor());
-    // ret->SetSumLineWidth(num->GetSumLineWidth());
-    // ret->SetSumFillStyle(num->GetSumFillStyle());
-    // ret->SetSumFillColor(num->GetSumFillColor());
-    // ret->SetCommonSumTitle(num->GetCommonSumTitle());
-    // ret->fCommonSumOption = num->fCommonSumOption;
-    // ret->SetCommonSumLineStyle(num->GetCommonSumLineStyle());
-    // ret->SetCommonSumLineColor(num->GetCommonSumLineColor());
-    // ret->SetCommonSumLineWidth(num->GetCommonSumLineWidth());
-    // ret->SetCommonSumFillStyle(num->GetCommonSumFillStyle());
-    // ret->SetCommonSumFillColor(num->GetCommonSumFillColor());
-    // ret->SetXTitle(num->GetXTitle());
-    // ret->SetYTitle(num->GetYTitle());
     return ret;
+  }
+  /** 
+   * Clear bit we set during the processing 
+   * 
+   */
+  void ClearUsed() const
+  {
+    // Reset the used case bits
+    TObject* oe = 0;
+    TIter nextC(&fCommon);
+    while ((oe = nextC())) {
+      oe->ResetBit(kUsedBit);
+      oe->ResetBit(kOnlyWeightBit);
+    }
+    TIter nextP(&fPoint2Point);
+    while ((oe = nextP())) {
+      oe->ResetBit(kUsedBit);
+      oe->ResetBit(kOnlyWeightBit);
+    }
+  }
+  /** 
+   * Perform a Kolomogorov-Smironov test.  See als 
+   *
+   * https://root.cern.ch/root/htmldoc/TH1#TH1:KolmogorovTest
+   *
+   * @param g1 First graph.
+   * @param g2 Second graph
+   * 
+   * @return Kolomogorov-Smirnov probability
+   */
+  static Double_t KolomogorovTest(const GraphSysErr* g1,
+				  const GraphSysErr* g2)
+  {
+    Double_t z;
+    return KolomogorovTest(g1, g2, z);
+  }
+  /** 
+   * Perform a Kolomogorov-Smironov test.  See als 
+   *
+   * https://root.cern.ch/root/htmldoc/TH1#TH1:KolmogorovTest
+   *
+   * @param g1 First graph.
+   * @param g2 Second graph
+   * @param z  On return, Kolomogorov-Smirnov test statistic
+   * 
+   * @return Kolomogorov-Smirnov probability
+   */
+  static Double_t KolomogorovTest(const GraphSysErr* g1,
+				  const GraphSysErr* g2,
+				  Double_t&          z)
+  {
+    TArrayD  a1y;
+    TArrayD  a2y;
+    TArrayD  a1e2;
+    TArrayD  a2e2;
+    Int_t    cnt   = CacheGraphs(g1, g2, a1y, a2y, a1e2, a2e2);
+    if (cnt <= 0) return -1;
+
+    Double_t s1    = a1y.GetSum();  // Summed content
+    Double_t s2    = a2y.GetSum();  // Summed content
+    Double_t sw1   = a1e2.GetSum(); // Summed weights
+    Double_t sw2   = a2e2.GetSum(); // Summed weights
+    if (a1e2.GetSum() <= 0 && a2e2.GetSum()) {
+      ::Warning("ChisquareTest", "No errors");
+      return -1;
+    }
+
+    Double_t sr1 = 0;
+    Double_t sr2 = 0;
+    Double_t dfMax = 0;
+    for (Int_t i = 0; i < cnt; i++) {
+      // KolmogorowvTest
+      sr1 += a1y[i] / s1;
+      sr2 += a2y[i] / s2;
+      dfMax =  TMath::Max(dfMax, TMath::Abs(sr1-sr2));
+    }
+    // K-S test
+    Double_t se1 = s1 * s1 / sw1;
+    Double_t se2 = s2 * s2 / sw2;
+    z   = dfMax * TMath::Sqrt(se1 * se2 / (se1 + se2));
+    return TMath::KolmogorovProb(z);
+  }
+  /** 
+   * Get the Y and error values for the two passed graphs.  The graphs
+   * are evaluated at the X values of Graph 1.  This is used for Chi
+   * square and Kolomogorov-Smirnov tests
+   * 
+   * @param g1    Graph 1
+   * @param g2    Graph 2
+   * @param a1y   Y values of Graph 1
+   * @param a2y   Y values of Graph 2 evaluated at X of Graph1 
+   * @param a1e2  Y-error values of Graph 1			       
+   * @param a2e2  Y-error values of Graph 2 evaluated at X of Graph1 
+   * 
+   * @return Count of points, or -1 on error 
+   */
+  static Int_t CacheGraphs(const GraphSysErr* g1,
+			   const GraphSysErr* g2,
+			   TArrayD&           a1y,
+			   TArrayD&           a2y,
+			   TArrayD&           a1e2,
+			   TArrayD&           a2e2)
+  {
+    Int_t    cnt    = 0;
+    Int_t    n      = g1->GetN();
+    a1y.Set(n);
+    a2y.Set(n);
+    a1e2.Set(n);
+    a2e2.Set(n);
+    for (Int_t i = 0; i < g1->GetN(); i++) {
+      Double_t x    = 0;
+      Double_t y1   = 0;
+      Double_t e1yl = 0;
+      Double_t e1yh = 0;
+      Double_t e2yl = 0;
+      Double_t e2yh = 0;
+      Double_t y2   = 0;
+      if (!NextPoint(i, g1, g2, x, y1, e1yl, e1yh, y2, e2yl, e2yh)) {
+	::Warning("ChisquareTest", "Next point - %d %f not found", i, x);
+	continue;
+      }
+
+      Double_t e1y2   = TMath::Power(TMath::Max(e1yl,e1yh), 2);
+      Double_t e2y2   = TMath::Power(TMath::Max(e2yl,e2yh), 2);	
+
+      // Cache the numbers 
+      a1y[cnt]  =  y1;   // Store value 
+      a2y[cnt]  =  y2;   // Store value 
+      a1e2[cnt] =  e1y2; // Store square error
+      a2e2[cnt] =  e2y2; // Store square error 
+      cnt++;
+    }
+    if (cnt <= 0) 
+      ::Warning("CacheGraphs", "No common points found");
+    
+    return cnt;
+  }
+  /** 
+   * Calculate the @f$ \chi^2@f$ test of equivilance between two
+   * graphs.  See also 
+   * 
+   *  https://root.cern.ch/root/htmldoc/TH1#TH1:Chi2Test
+   * 
+   * @param g1     First graph
+   * @param g2     Second graph
+   * @param type   Type 
+   * 
+   * @return reduced @f$\chi^2@f$ or -1 on error
+   */
+  static Double_t ChisquareTest(const GraphSysErr* g1,
+				const GraphSysErr* g2,
+				EChi2Type          type=kExperimentTruth)
+  {
+    Int_t ndf = 0;
+    return ChisquareTest(g1, g2, ndf, type);
+  }
+  /** 
+   * Calculate the @f$ \chi^2@f$ test of equivilance between two
+   * graphs.  See also 
+   * 
+   *  https://root.cern.ch/root/htmldoc/TH1#TH1:Chi2Test
+   * 
+   * @param g1     First graph
+   * @param g2     Second graph
+   * @param ndf    On return, number degrees of freedom 
+   * @param type   Type 
+   * 
+   * @return reduced @f$\chi^2@f$ or -1 on error
+   */
+  static Double_t ChisquareTest(const GraphSysErr* g1,
+				const GraphSysErr* g2,
+				Int_t&             ndf,
+				EChi2Type          type)
+  {
+    Double_t chi2   = 0;
+    ndf             = -1;
+    TArrayD  a1y;
+    TArrayD  a2y;
+    TArrayD  a1e2;
+    TArrayD  a2e2;
+    Int_t    cnt   = CacheGraphs(g1, g2, a1y, a2y, a1e2, a2e2);
+    if (cnt <= 0) return -1;
+
+    Double_t s1    = a1y.GetSum();  // Summed content
+    Double_t s2    = a2y.GetSum();  // Summed content
+    if (type == kModelModel && (a1e2.GetSum() <= 0 && a2e2.GetSum())) {
+      ::Warning("ChisquareTest", "No errors");
+      return -1;
+    }
+
+    ndf = cnt;
+    
+    // Now loop over cached points
+    Double_t s = s1 + s2;
+    for (Int_t i = 0; i < ndf; i++) {
+      switch (type) {
+      case kExperimentExperiment:  {
+	Double_t sum   = a1y[i]+a2y[i];
+	Double_t delta = s2 * a1y[i] - s1 * a2y[i];
+	chi2           += delta * delta / sum;
+      }
+	break;
+      case kExperimentModel: {
+	Double_t v1 =  s2 * a1y[i] - s1 * a2e2[i];
+	Double_t v2 =  v1 * v1 + 4 * s2 * s2 * a1y[i] * a2e2[i];
+	Double_t pp =  (v1 + v2) / (2 * s2 * s2);
+	Double_t p1 =  pp * s1;
+	Double_t p2 =  pp * s2;
+	Double_t d1 =  a1y[i] - p1;
+	Double_t d2 =  a1y[i] - p2;
+	chi2        += d1 * d1 / p1;
+	if (a2e2[i] > 0) chi2 += d2 * d2 / a2e2[i];
+      }
+	break;
+      case kModelModel: {
+	Double_t sigma =  s1 * s1 * a2e2[i] + s2 * s2 * a1e2[i];
+	Double_t delta =  s2 * a1y[i] - s1 * a2y[i];
+	chi2           += delta * delta / sigma;
+      }
+	break;
+      case kExperimentTruth: {
+	Double_t delta =  a2y[i] - a1y[i];
+	chi2           += delta * delta / a1e2[i];
+      }
+	break;
+      default:
+	::Warning("ChisquareTest", "Should not happen");
+	return -1;
+      }
+	
+    }
+    if      (type == kExperimentExperiment) chi2 /= s1 * s2;
+    else if (type == kExperimentTruth)      chi2 /= ndf;
+
+    return chi2;
+  }
+  
+  /** 
+   * Remove a point from the graph 
+   * 
+   * @param i Point to remove 
+   */
+  void RemovePoint(Int_t i)
+  {
+    if (i < 0 || i >= GetN()) return;
+    fData->RemovePoint(i);
+    TIter next(&fPoint2Point);
+    HolderP2P* p2p = 0;
+    while ((p2p = static_cast<HolderP2P*>(next()))) {
+      p2p->fGraph->RemovePoint(i);
+    }
   }
   /** 
    * Swap two points 
@@ -1119,10 +2176,17 @@ public:
     }
     return cpy;
   }
+  /** 
+   * Symmetrice the other graph and store result here. 
+   * 
+   * @param other Graph to summetrice 
+   * 
+   * @return true on success
+   */
   Bool_t Symmetrize(GraphSysErr* other)
   {
     GraphSysErr*  cpy = new GraphSysErr(*other);
-    Int_t         id  = DeclarePoint2Point("Sys.Err.", false, kBox);
+    Int_t         id  = DeclarePoint2Point("Syst.unc..", false, kBox);
     HolderCommon* cmn = 0;
     TIter         cNext(&fCommon);
     while ((cmn = static_cast<HolderCommon*>(cNext()))) {
@@ -1171,7 +2235,9 @@ public:
       Double_t exh1 = cpy->GetErrorXRight(i); 
       Double_t y1   = cpy->GetYandError(i,true,true,true,false,eyl1,eyh1);
       Double_t x1   = cpy->GetX(i);
-      Double_t y2, eyl2, eyh2;
+      Double_t y2   = 0;
+      Double_t eyl2 = 0;
+      Double_t eyh2 = 0;
       Int_t    i1, i2;
       Int_t    j  = cpy->FindPoint(-x1, i1, i2);
       if (j < -1) {
@@ -1217,6 +2283,8 @@ public:
       SetSysError(id, cnt, 0, newV);
       cnt++;
     }
+    // Info("", "After symmetrization:");
+    // Print("all");
     return true;
   }
   /* @} */
@@ -1361,28 +2429,34 @@ public:
    GraphSysErr* g = 0;
    Bool_t first = true;
    while ((g = static_cast<GraphSysErr*>(next()))) {
-     g->Export(out, (first ? "h" : ""));
-     first = false;
+   g->Export(out, (first ? "h" : ""));
+   first = false;
    }
    out.close();
    * @endcode 
    * 
    * @param out    Output stream to write to. 
    * @param option Options
+   * @param nsign  Number of significant digits on errors 
    *
    * - H Export file header 
    * - C Export file comment 
    * - S Export Point-to-point systematic names
+   * - T Export title as RE qual
    */
-  void Export(std::ostream& out=std::cout, Option_t* option="")
+  void Export(std::ostream& out=std::cout,
+	      Option_t*     option="",
+	      Int_t         nsign=2)
   {
+    // Info("Export", "Using %d significant digits on errors", nsign);
     TString opt(option);
     opt.ToLower();
     Bool_t header   = opt.Contains("h");
     Bool_t sysNames = opt.Contains("s");
     Bool_t comment  = opt.Contains("c");
+    Bool_t title    = opt.Contains("t");
     
-    ExportHeader(out, header, comment);
+    ExportHeader(out, header, comment, nsign);
     
     // --- Export qualifiers -----------------------------------------
     Bool_t hasTitle = false;
@@ -1397,16 +2471,16 @@ public:
 	    << q->GetTitle() << std::endl;
       }
     }
-    if (!hasTitle)
+    if (!hasTitle && title)
       out << FormatKey("qual") << "RE : " << GetTitle() << std::endl;
     
     // --- Export X/Y titles ----------------------------------------
-    const char* fill = "<please fill in>";    
-    out << FormatKey("xheader")
-	<< (fXTitle.IsNull() ? fill : fXTitle.Data())  << "\n"
-	<< FormatKey("yheader")
-	<< (fYTitle.IsNull() ? fill : fYTitle.Data())  
-	<< std::endl;
+    const char* fill = "<please fill in>";
+    TString xTit = fXTitle; EscapeLtx(xTit, "fill");
+    TString yTit = fYTitle; EscapeLtx(yTit, "fill");
+    
+    out << FormatKey("xheader") << xTit << "\n"
+	<< FormatKey("yheader") << yTit << std::endl;
 
     // --- Export common errors --------------------------------------
     TIter nextC(&fCommon);
@@ -1416,7 +2490,7 @@ public:
       Double_t up = holderCommon->GetYUp(rel ? 100 : 1);
       Double_t down = holderCommon->GetYDown(rel ? 100 : 1);
       out << FormatKey("dserror");
-      ExportError(out, down, up, true, rel);
+      ExportError(out, down, up, true, rel, nsign);
       out << ":" << holderCommon->GetTitle() << std::endl;
     }
 
@@ -1424,20 +2498,36 @@ public:
     out  << FormatKey("data") << " x : y" << std::endl;
     Int_t n = GetN();
     for (Int_t i = 0; i < n; i++) {
-      ExportPoint(out, i, true, sysNames);
+      ExportPoint(out, i, true, sysNames, nsign);
       out << std::endl;
     }
     out << "*dataend:\n" 
 	<< "# End of dataset\n" << std::endl;
   } //*MENU*
+    /** 
+     * Utility to escape out TLatex stuff, and put '$...$' around LaTeX 
+     * 
+     * @param val  String to modify 
+     * @param fill If val is null, use this value 
+     */
+  static void EscapeLtx(TString& val, const TString& fill="")
+  {
+    if (val.IsNull()) {val = fill; return; }
+    if (!val.Contains("#") && !val.Contains("\\")) return;
+
+    if (val[0]             !='$') val.Prepend("$");
+    if (val[val.Length()-1]!='$') val.Append("$");
+    val.ReplaceAll("#", "\\");
+  }
   /** 
    * Export a set of data sets to a single table.  All graphs must
    * have the same format.  The title of each graph is written as the
    * "qual" field.
    * 
-   * @param col       Collection of GraphSysErr objets 
-   * @param out       Output stream 
+   * @param col    Collection of GraphSysErr objets 
+   * @param out    Output stream 
    * @param option Options
+   * @param nsign  Number of significant digits  
    *
    * - H Export file header 
    * - C Export file comment 
@@ -1445,7 +2535,8 @@ public:
    */
   static void Export(const TSeqCollection* col,
 		     std::ostream& out,
-		     Option_t* option="H")
+		     Option_t* option="H",
+		     Int_t nsign=0)
   {
     if (col->GetEntries() < 1) return;
 
@@ -1455,6 +2546,7 @@ public:
     Bool_t alsoTop = opt.Contains("h");
     Bool_t alsoCmt = opt.Contains("c");
     Bool_t alsoNme = opt.Contains("s");
+    Bool_t alsoTit = opt.Contains("t");
 
     // --- some variables to use -------------------------------------
     const Double_t tol = 1e-10;
@@ -1508,7 +2600,7 @@ public:
 	if (!ok) continue;
       } // !first
 
-      // --- Get all possible qualifiers -----------------------------
+	// --- Get all possible qualifiers -----------------------------
       toExport.Add(gse);
       TIter    nextQ(gse->fQualifiers);
       TObject* q = 0;
@@ -1567,6 +2659,10 @@ public:
 	  // This graph does not have this common, flag it 
 	  found = false;
       } // while(gse)
+#if INCOMPAT_CMN_AS_QUAL
+#else 
+      found = true;
+#endif 
       oCmn->SetBit(BIT(14), found);
 
       // If we found the error in all graphs and they are all
@@ -1584,10 +2680,9 @@ public:
 	  Bool_t   rel = gse->IsRelative(gseId);
 	  Double_t ecl = gse->GetCommonErrorYDown(gseId);
 	  Double_t ech = gse->GetCommonErrorYUp(gseId);
-	  if (TMath::Abs(ech-ecl) < tol)
-	    val = Form("+- %f%s", ecl, (rel ? " PCT" : ""));
-	  else
-	    val = Form("+%f,-%f%s", ech, ecl, (rel ? " PCT" : ""));
+	  std::stringstream s;
+	  ExportError(s, ecl, ech, false, rel, nsign);
+	  val = s.str().c_str();
 	}
 	else {
 	  // This does not have the error, store empty string
@@ -1599,7 +2694,7 @@ public:
       } // while(gse)
     } // while common
 
-    // --- Sanity checks ---------------------------------------------
+      // --- Sanity checks ---------------------------------------------
     if (nPoints <= 0) {
       ::Error("Export", "No points to write");
       return;
@@ -1614,7 +2709,7 @@ public:
     }
 
     // --- Export header --------------------------------------------
-    first->ExportHeader(out, alsoTop, alsoCmt);
+    first->ExportHeader(out, alsoTop, alsoCmt, nsign);
 
     // --- Export qualifiers -----------------------------------------
     // quals.ls();
@@ -1634,7 +2729,7 @@ public:
       }
       out << std::endl;
     }
-    if (!hasTitle) {
+    if (!hasTitle && alsoTit) {
       out << FormatKey("qual") << "RE ";
       for (Int_t i = 0; i < toExport.GetEntries(); i++) 
 	out << ": " << toExport.At(i)->GetTitle();
@@ -1654,12 +2749,7 @@ public:
 	TString val;
 	if      ((*pfld)[0] == 'x') val = gse->fXTitle;
 	else if ((*pfld)[0] == 'y') val = gse->fYTitle;
-	if (val.Contains("#")) {
-	  val.Prepend("$");
-	  val.Append("$");
-	}
-	if (!val.IsNull()) val.ReplaceAll("#", "\\");
-	else               val = fill;
+	EscapeLtx(val, fill);
 	out << (one ? "" : ":") << val;
 	if ((*pfld)[0] == 'x') break;
 	one = false;
@@ -1671,25 +2761,36 @@ public:
     // --- Export common systematics ---------------------------------
     TIter    nextC(&commons);
     while ((oCmn = nextC())) {
+      TString tit(oCmn->GetName());
+      EscapeLtx(tit);
+      out << FormatKey("dserror");
+#if INCOMPAT_CMN_AS_QUAL
       if (!oCmn->TestBit(BIT(14))) {
 	::Warning("Export",
 		  "Common systematic error \"%s\" represented by qual",
 		  oCmn->GetName());
+	out << "- : " << tit << std::endl;
 	continue;
       }
-      out << FormatKey("dserror");
       UInt_t   id  = first->FindId(oCmn->GetName());
       Bool_t   rel = first->IsRelative(id);
       Double_t ecl = first->GetCommonErrorYDown(id);
       Double_t ech = first->GetCommonErrorYUp(id);
-      ExportError(out, ecl, ech, true, rel);
-      TString tit(oCmn->GetName());
-      if (tit.Contains("#")) {
-	tit.Prepend("$");
-	tit.Append("$");
-      }
-      tit.ReplaceAll("#", "\\");
+      ExportError(out, ecl, ech, true, rel, nsign);
       out << " : "<< tit << std::endl;
+#else 
+      out << tit << std::flush;
+      TIter  next(&toExport);
+      while ((gse = static_cast<GraphSysErr*>(next()))) {
+	UInt_t   id  = gse->FindId(oCmn->GetName());
+	Bool_t   rel = gse->IsRelative(id);
+	Double_t ecl = gse->GetCommonErrorYDown(id);
+	Double_t ech = gse->GetCommonErrorYUp(id);
+	out << " : ";
+	ExportError(out, ecl, ech, true, rel, nsign);
+      }
+      out << ":" << tit << std::endl;
+#endif
     }
 
     // --- Export points ---------------------------------------------
@@ -1698,7 +2799,7 @@ public:
       TIter  next(&toExport);
       Bool_t one = true;
       while ((gse = static_cast<GraphSysErr*>(next()))) {
-	gse->ExportPoint(out, i, one, alsoNme);
+	gse->ExportPoint(out, i, one, alsoNme, nsign);
 	one = false;
       }
       out << std::endl;
@@ -2026,25 +3127,35 @@ public:
       if (!rxtit.IsNull()) ret->SetXTitle(rxtit);
       if (!rytit.IsNull()) ret->SetYTitle(rytit);
 
+      Bool_t hasTitle = false;
       TIter nextQ(&quals);
       TObject* qual = 0;
       while ((qual = nextQ())) {
 	TString k = ExtractField(qual->GetName(), 0);
 	TString q = ExtractField(qual->GetName(), idx);
 	/*
-	::Info("LoopQ", "Qualifier string: %s -> %s,%s",
-	       qual->GetName(), k.Data(), q.Data());
+	  ::Info("LoopQ", "Qualifier string: %s -> %s,%s",
+	  qual->GetName(), k.Data(), q.Data());
 	*/
 	ret->AddQualifier(k, q);
-	if (k.EqualTo("RE") ||
-	    k.EqualTo("title", TString::kIgnoreCase))
+	if (!hasTitle &&
+	    (k.EqualTo("RE") ||
+	     k.EqualTo("title", TString::kIgnoreCase))) {
+	  hasTitle = true;
 	  ret->SetTitle(q);
+	}
       }
       TIter nextK(&keys);
       TObject* pair = 0;
       while ((pair = nextK())) {
 	ret->SetKey(pair->GetName(),pair->GetTitle());
+	TString k = pair->GetName();
+	if (!hasTitle && (k.EqualTo("location"))) {
+	  ret->SetTitle(pair->GetTitle());
+	  hasTitle = true;
+	}
       }
+      if (!hasTitle) ret->SetTitle("Title");
     }
     keys.SetOwner();
     keys.Delete();
@@ -2072,7 +3183,7 @@ public:
    * @until cm2
    */
   UInt_t DefineCommon(const char* title, Bool_t relative, 
-		     Double_t ey, EDrawOption_t option=kFill)
+		      Double_t ey, EDrawOption_t option=kFill)
   {
     return DefineCommon(title, relative, ey, ey, option);
   }
@@ -2145,7 +3256,7 @@ public:
    * 
    * @return ID or null
    */
-  UInt_t FindId(const char* title) 
+  UInt_t FindId(const char* title) const
   { 
     TString tit(title);
 
@@ -2245,9 +3356,15 @@ public:
       eyh *= fData->GetY()[i];
     }
     fData->SetPointError(i,
- 			 fData->GetErrorXlow(i),
+			 fData->GetErrorXlow(i),
 			 fData->GetErrorXhigh(i),
 			 eyl, eyh);
+  }
+  void SetSysError(Int_t id, Double_t eyl, Double_t eyh)
+  {
+    HolderCommon* h = FindCommon(id);
+    if (!h) return;
+    h->Set(eyl, eyh);
   }
   /** 
    * Set the systematic error identified by id on the ith data point 
@@ -2556,6 +3673,7 @@ public:
   {
     return fSumTitle.Data();
   }
+  UInt_t GetSumOption() const { return fSumOption; }
   /** 
    * Get fill style of sum systematic uncertainty 
    * 
@@ -2576,8 +3694,6 @@ public:
   }
   /** 
    * Get fill color of sum systematic uncertainty 
-   * 
-   * @param id Identifier 
    * 
    * @return color, or 0
    */
@@ -2612,6 +3728,7 @@ public:
   {
     return fCommonSumTitle.Data();
   }
+  UInt_t GetCommonSumOption() const { return fCommonSumOption; }
   /** 
    * Get fill style of sum systematic uncertainty 
    * 
@@ -2697,27 +3814,157 @@ public:
    * Get minimum and maximum 
    * 
    * @param option 
-   * @param min 
-   * @param max 
+   * @param ymin 
+   * @param ymax 
    */
-  void GetMinMax(Option_t* option, Double_t& min, Double_t& max)
+
+  void GetMinMax(Option_t* option,
+		 Double_t& ymin, Double_t& ymax) const
+  {
+    Double_t xmin, xmax;
+    Int_t    imin, imax;
+    GetMinMax(option, ymin, ymax, xmin, xmax, imin, imax);
+  }
+  /** 
+   * Get minimum and maximum 
+   * 
+   * @param option Options
+   * @param ymin   On return, lease Y value 
+   * @param ymax   On return, largest Y value 
+   * @param xmin   On return, X value corresponding to least Y value 
+   * @param xmax   On return, X value corresponding to largest Y value 
+   * @param imin   On return, point number corresponding to lesat Y value
+   * @param imax   On return, point number corresponding to largest Y value
+   */
+  void GetMinMax(Option_t* option,
+		 Double_t& ymin, Double_t& ymax,
+		 Double_t& xmin, Double_t& xmax,
+		 Int_t&    imin, Int_t&    imax) const
   {
     TString  opt(option); opt.ToUpper();
     Bool_t   cmn     = opt.Contains("COMMON");
     Bool_t   stat    = opt.Contains("STAT");
     Bool_t   quad    = opt.Contains("QUAD");
+    Bool_t   noerr   = opt.Contains("Y");
     quad             = !opt.Contains("DIRECT");
 
-    min = +1e9;
-    max = -1e9;
+    ymin = +1e9;
+    ymax = -1e9;
+    xmin = -1e9;
+    xmax = +1e9;
+    imin = -1;
+    imax = -1;
     for (Int_t i = 0; i < GetN(); i++) {
       Double_t eyl = 0;
       Double_t eyh = 0;
-      Double_t y   = GetYandError(i, cmn, stat, quad, false, eyl, eyh);
-      min          = TMath::Min(y-eyl, min);
-      max          = TMath::Max(y+eyh, max);
-    }      
+      Double_t y   = noerr ? GetY(i) : GetYandError(i, cmn, stat, quad, false, eyl, eyh);
+      Double_t yl  = y - eyl;
+      Double_t yh  = y + eyh;
+      if (yl < ymin) {
+	ymin = yl;
+	xmin = GetX(i);
+	imin = i;
+      }
+      if (yh > ymax) {
+	ymax = yh;
+	xmax = GetX(i);
+	imax = i;
+      }
+      // Printf("%3d: %f -> %f +%f -%f -> %f %f -> %f %f",
+      //        i, GetX(i), y, eyl, eyh, yl, yh, ymin, ymax);
+    }
+    // Printf("min=(%d,%f,%f) max=(%d,%f,%f)", imin, xmin, ymin, imax, xmax, ymax);
   }
+  void FindFwhm(Int_t start, Int_t dir, Double_t ymax, Bool_t cmn, Bool_t stat, Bool_t quad, Int_t& i1, Int_t& i2) const
+  {
+    Int_t lim = (dir < 0) ? -1 : GetN();
+    i1 = i2   = -1;
+    for (Int_t i = start+dir; i != lim; i += dir) {
+      Double_t eyl, eyh;
+      Double_t y = GetYandError(i, cmn, stat, quad, false, eyl, eyh);
+      // Printf("%3d: %2d %f -> %f -%f +%f (%f, %f, %f) -> %2d %2d",
+      //        i, dir, GetX(i), y, eyl, eyh, y-eyl, y+eyh, ymax/2,
+      //        i1, i2);
+      if (y-eyl > ymax/2) continue; // Still above
+      if (y+eyh < ymax/2) break; // Found lower limit
+      if (i1 < 0)  i1 = i2 = i;
+      else         i2 = i;
+    }
+    // Printf("Found %d,%d", i1, i2);
+  }
+  Double_t FWHM(Double_t& el, Double_t& eh) const
+  {
+    Double_t xl, xh;
+    return FWHM(el, eh, xl, xh);
+  }
+  Double_t FWHM(Double_t& el, Double_t& eh, Double_t& xl, Double_t& xh) const
+  {
+    Double_t ymin, ymax, xmin, xmax;
+    Int_t    imin, imax;
+    GetMinMax("quad stat", ymin, ymax, xmin, xmax, imin, imax);
+    if (ymin > ymax/2) {
+      Warning("FWHM", "Half of ymax=%f is out of reach [%f,%f]",
+	      ymax/2, ymin, ymax);
+      return -1;
+    }
+    
+    Int_t li1, li2, ri1, ri2;
+    FindFwhm(imax, -1, ymax, false, true, true, li1, li2);
+    FindFwhm(imax, +1, ymax, false, true, true, ri1, ri2);
+
+    Double_t lsign = 1;
+    if (li1 < 0 && li2 < 0) {
+      if (ri1 < 0 && ri2 < 0) {
+	Warning("FWHM", "No left and right point found");
+	return -1;
+      }
+      lsign = -1;
+      li2   = ri1;
+      li1   = ri2;
+    }
+    Double_t rsign = 1;
+    if (ri1 < 0 && ri2 < 0) {
+      if (li1 < 0 && li2 < 0) {
+	Warning("FWHM", "No right and left point found");
+	return -1;
+      }
+      rsign = -1;
+      ri2   = li1;
+      ri1   = li2;
+    }
+    // Printf("Points low=(%d,%d) high=(%d,%d)", li1, li2, ri1, ri2);
+ 
+    LinearSigmaCombiner scl;
+    scl.Add(lsign*GetX(li1), GetErrorXLeft(li1), GetErrorXRight(li1));
+    scl.Add(lsign*GetX(li2), GetErrorXLeft(li2), GetErrorXRight(li2));
+    Combiner::Result* lr = scl.Calculate();
+    scl.Print();
+    lr->Print();
+    
+    LinearSigmaCombiner scr;
+    scr.Add(GetX(ri1), GetErrorXLeft(ri1), GetErrorXRight(ri1));
+    scr.Add(GetX(ri2), GetErrorXLeft(ri2), GetErrorXRight(ri2));
+    Combiner::Result* rr = scr.Calculate();
+    scr.Print();
+    rr->Print();
+    
+    el            = lr->fEh+rr->fEl;
+    eh            = lr->fEl+rr->fEh;
+    if (el < 1e-9 && eh < 1e-9) {
+      xl   = (GetX(li2)+GetX(li1))/2;
+      xh   = (GetX(ri2)+GetX(ri1))/2;
+      el   = (GetX(li2)-GetX(li1))/2;
+      eh   = (GetX(ri2)-GetX(ri1))/2;
+    }
+    else {
+      xl   = lr->fX;
+      xh   = rr->fX;
+    }
+    Double_t fwhm = (xh - xl);
+    return fwhm; 
+  }
+    
+    
   /* @} */
 
   //__________________________________________________________________
@@ -2943,7 +4190,7 @@ public:
    g.SetKey("accelerator", "LHC");
    g.SetKey("detector",    "ALICE");
    g.SetKey("title",       "Pseudorapidity density of charged particles "
-                           "in p-Pb collisions at sqrt{s_{NN}}=5.02");
+   "in p-Pb collisions at sqrt{s_{NN}}=5.02");
    g.SetKey("author",      "ABELEV");
    // Data set specific keys 
    g.SetKey("reackey", "P PB --> CHARGED X");
@@ -3078,7 +4325,9 @@ public:
     TIter    nextQ(quals);
     TObject* qv = 0;
     while ((qv = nextQ())) {
-      AddQualifier(qv->GetName(), qv->GetTitle());
+      const char* test = GetQualifier(qv->GetName());
+      if (!test || test[0] == '\0')
+	AddQualifier(qv->GetName(), qv->GetTitle());
     }
   }
   void CopyAttr(const GraphSysErr* f)
@@ -3204,9 +4453,12 @@ public:
       // No valid point found 
       return false;
     if (ret >= 0) {
+      // Got exact point 
+      // Info("", "Get point %d (%f)", ret, x);
       y = GetYandError(ret, cmn, stat, quad, nosqrt, eyl, eyh);
       return true;
     }
+    // Interpolate between points 
     Double_t eyl1, eyl2, eyh1, eyh2;
     Double_t x1 = fData->GetX()[i1];
     Double_t x2 = fData->GetX()[i2];
@@ -3221,7 +4473,756 @@ public:
     return true;
   }
 
+  //__________________________________________________________________
+  /** 
+   * Combining measurements 
+   *
+   * From http://www.slac.stanford.edu/~barlow/java/
+   */
+  struct Combiner : public TObject
+  {
+    typedef Double_t (*Wrapper_t)(Double_t*,Double_t*);
+    /**
+     * An experimental observation 
+     */
+    struct Observation : public TObject 
+    {
+      /** Value @f$ x_i@f$ */
+      Double_t fX;
+      /** Low error @f$ \sigma_i^-@f$ */
+      Double_t fEl;
+      /** High error @f$ \sigma_i^+@f$ */
+      Double_t fEh;
+      /** 
+       * Create a single obersvation 
+       * 
+       * @param x  Value @f$ x_i@f$
+       * @param el Low error @f$ \sigma_i^-@f$ on @f$ x_i@f$ 
+       * @param eh High error @f$ \sigma_i^+@f$ on @f$ x_i@f$ 
+       */
+      Observation(Double_t x=0, Double_t el=0, Double_t eh=0)
+	: fX(x), fEl(el), fEh(eh)
+      {    
+      }
+      /** 
+       * Virtual destructor 
+       */
+      virtual ~Observation() {}
+      /** 
+       * Calculate 
+       * 
+       * @f[ 
+       *   s_i = \sigma_i^+ \sigma_i^- / (\sigma_i^+ + \sigma_i^-)
+       * @f]
+       * 
+       * 
+       * @return @f$ s_i@f$
+       */
+      Double_t S() const
+      {
+	if (fEl * fEh == 0) return 0;
+	return 2 * fEl * fEh / (fEl + fEh);
+      }
+      /** 
+       * Calculate 
+       * 
+       * @f[ 
+       *   s_i' = (\sigma_i^+ - \sigma_i^-) / (\sigma_i^+ + \sigma_i^-)
+       * @f]
+       * 
+       * 
+       * @return @f$ s_i'@f$
+       */
+      Double_t Sprime() const
+      {
+	if (TMath::Abs(fEh + fEl) < 1e-9) return 1;	
+	return (fEh - fEl) / (fEh + fEl);
+      }
+      Double_t Svar(Double_t guess=0) const
+      {
+	return  S() + Sprime() * (guess - fX);
+      }
+      /** 
+       * Calculate 
+       * 
+       * @f[ 
+       *   V_i = \sigma_i^+ \sigma_i^-
+       * @f]
+       * 
+       * 
+       * @return @f$ V_i@f$
+       */
+      Double_t V() const  { return fEl * fEh; }
+      /** 
+       * Calculate 
+       * 
+       * @f[ 
+       *   V_i' = \sigma_i^+ - \sigma_i^-
+       * @f]
+       * 
+       * 
+       * @return @f$ V_i'@f$
+       */
+      Double_t Vprime() const { return fEh - fEl;  }
+      /** 
+       * Lower bound 
+       * 
+       * @return @f$ x_i - 3\sigma_i^+@f$ 
+       */
+      virtual Double_t Low() const { return fX - 3 * fEl; }
+      /** 
+       * Upper bound 
+       * 
+       * @return @f$ x_i + 3\sigma_i^+@f$ 
+       */
+      virtual Double_t High() const { return fX + 3 * fEh; }
+      /** 
+       * Print to standard output 
+       *
+       * @param option Not used 
+       */
+      virtual void Print(Option_t* option="") const
+      {
+	Printf("%10.8f  -%10.8f +%10.8f", fX, fEl, fEh);
+      }
+      ClassDef(Observation,1); // An experimental observation 
+    };
+  
+    /**
+     * The final result 
+     */
+    struct Result : public Observation
+    {
+      /** The final @f$\chi^2 @f$ */
+      Double_t fChi2;
+      /** Lower bound to use */
+      Double_t fLower;
+      /** Upper bound to use */
+      Double_t fUpper;
+      /** 
+       * The final result 
+       * 
+       * @param x     Best estimate of @f$ x@f$ 
+       * @param el    Best estimate of @f$ \sigma^-@f$ 
+       * @param eh    Best estimate of @f$ \sigma^+@f$ 
+       * @param chi2  @f$\chi^2@f$ of best estimate 
+       * @param low   The lower bound of the source data
+       * @param high  The upper bound of the source data
+       */
+      Result(Double_t x=0, Double_t el=0, Double_t eh=0,
+	     Double_t chi2=0, Double_t low=0, Double_t high=0)
+	: Observation(x, el, eh),
+	  fChi2(chi2),
+	  fLower(low),
+	  fUpper(high)
+      {}
+      /** 
+       * Lower bound 
+       * 
+       * @return @f$ x_i - 3\sigma_i^+@f$ 
+       */
+      Double_t Low() const { return fLower; }
+      /** 
+       * Upper bound 
+       * 
+       * @return @f$ x_i + 3\sigma_i^+@f$ 
+       */
+      Double_t High() const { return fUpper; }
+      /** 
+       * Print to standard output 
+       *
+       * @param option Not used 
+       */
+      virtual void Print(Option_t* option="") const
+      {
+	Printf("%10.8f  -%10.8f +%10.8f  %5.2f", fX, fEl, fEh, fChi2);
+      }
+      ClassDef(Result,1); // Final result 
+    };
+    TClonesArray fData;   // Container of observations
+    Result*      fResult; // Result of combining
 
+    /** 
+     * Constructor 
+     */
+    Combiner()
+      : fData("GraphSysErr::Combiner::Observation"), fResult(0)
+    {
+      fData.SetOwner();
+    }
+    /** 
+     * Virtual destructor 
+     */
+    virtual ~Combiner() { fData.Clear(); if (fResult) delete fResult; }
+    /** 
+     * @{ 
+     * @name The data store 
+     */
+    /** 
+     * Clear the internal data 
+     * 
+     * @param option Not used
+     */
+    void Clear(Option_t* option="")
+    {
+      fData.Clear();
+      if (fResult) delete fResult;
+      fResult = 0;
+    }
+    /** 
+     * Add an obervation 
+     * 
+     * @param r Observation
+     */
+    void Add(const Observation& r)
+    {
+      Add(r.fX,r.fEl,r.fEh);
+    }
+    /** 
+     * Add an observation 
+     * 
+     * @param x  @f$ x_i@f$ 
+     * @param el @f$ \sigma_i^-@f$  
+     * @param eh @f$ \sigma_i^+@f$
+     */
+    void Add(Double_t x, Double_t el, Double_t eh)
+    {
+      // if (TMath::Abs(x)  < 1e-10 &&
+      //     TMath::Abs(el) < 1e-10 &&
+      //     TMath::Abs(eh) < 1e-10) return;
+      new (fData[fData.GetEntries()]) Observation(x,el,eh);
+    }
+    /** 
+     * Print content of the list 
+     * 
+     * @param option not used
+     */
+    void Print(Option_t* option="") const
+    {
+      TIter next(&fData);
+      Observation* r = 0;
+      while ((r = static_cast<Observation*>(next())))
+	r->Print(option);
+    }
+    /* @} */
+  
+    /** 
+     * Calculate the weight 
+     *
+     * @param r Observation
+     * 
+     * @return @f$ W@f$ 
+     */
+    virtual Double_t W(const Observation& r) const = 0;
+    /** 
+     * Calculate the weight based on a guess of best @f$ x'@f$ 
+     * 
+     * @param guess Current guess @f$ x'@f$ 
+     * @param r  	  Observation
+     * 
+     * @return @f$ W(x')@f$ 
+     */
+    virtual Double_t StepW(Double_t guess, const Observation& r) const = 0;
+    /** 
+     * Calculate the bias. 
+     * 
+     * @return @f$\delta(x')@f$ 
+     */
+    virtual Double_t StepOffset(Double_t guess, const Observation& r) const = 0;
+    /** 
+     * Calculate the contribution variance to the @f$\chi^2@f$ with
+     * the guess @f$x'@f$. 
+     *
+     * @return @f$ v(x')@f$ 
+     */
+    virtual Double_t VarTerm(Double_t guess, const Observation& r) const = 0;
+    /** 
+     * Calculate the contribution variance to the @f$\chi^2@f$ with
+     * the guess @f$ x'@f$. 
+     *
+     * @f[
+     *   t_i(x') = (x' - x_i)^2 / v_i(x')
+     * @f]
+     *
+     * where @f$ v_i(x')@f$ is the term variance
+     *
+     * @param guess @f$ x'@f$  
+     * @param r     Obersvation 
+     *
+     * @return @f$ t(x')@f$ 
+     */
+    Double_t ChiTerm(Double_t guess, const Observation& r) const
+    {
+      Double_t var = VarTerm(guess, r);
+      if (var <= 0) return -1000;
+
+      return TMath::Power(guess - r.fX, 2) / var;
+    }
+    /** 
+     * Calculate the @f$ \chi^2(x')@f$ where @f$ x'@f$ is current guess
+     * at the observation.  
+     * 
+     * @param guess   Current guess @f$ x'@f$ 
+     * @param chi2    Optional old @f$ \chi^2@f$ from best @f$ x@f$ value 
+     * 
+     * @return @f$ \chi^2(x')@f$
+     */
+    Double_t F(Double_t          guess,
+	       Double_t          chi2) const
+    {
+      if (fData.GetEntries() == 1) return 1;
+      Double_t s = -chi2;
+
+      TIter next(&fData);
+      Observation* r = 0;
+      while ((r = static_cast<Observation*>(next())))
+	s += ChiTerm(guess, *r);
+      return s;
+    }
+    /** 
+     * Try to find best error 
+     * 
+     * @param nIter Number of iterations 
+     * @param sign  Direction (-1 is low, +1 is high)
+     * @param best  Current best @f$ x@f$ value 
+     * @param chi2  @f$ \chi^2@f$ of current best @f$ x@f$ value 
+     * @param s     Summed weights in the direction 
+     * 
+     * @return The error in the chosen direction
+     */
+    Double_t E(UShort_t        nIter,
+	       Int_t           sign,
+	       Double_t        best,
+	       Double_t        chi2,
+	       Double_t        s)
+    {
+      if (fData.GetEntries() == 1) {
+	Observation* o = static_cast<Observation*>(fData[0]);
+	return (sign < 0 ? o->fEl : o->fEh);
+      }
+
+      // Step size 
+      Double_t delta = 0.1 * sign * s;
+
+      // Iterations 
+      for (UShort_t i = 0; i < nIter; i++) {
+	// Calculate chi^2 with current guess 
+	Double_t got = F(best + sign * s, chi2);
+
+	if (TMath::Abs(got-1) < 1e-7)
+	  // We're close to 1 so get out
+	  break;
+
+	// The next guess' chi^2 value e
+	Double_t guess = F(best + sign * s + delta, chi2);
+
+	// Where to search next 
+	if ((got - 1) * (guess - 1) > 0) {
+	  if ((got - 1) / (guess - 1) < 1)
+	    delta = -delta;
+	  else
+	    s += sign * delta;
+	  continue;
+	}
+
+	// Update error value and decrease step size 
+	s     += sign * delta * (1 - got) / (guess - got);
+	delta /= 2;
+      }
+      return s;
+    }
+    /** 
+     * Find best estimate of @f$ x@f$ 
+     * 
+     * @param nIter   Number of iterations 
+     * @param lowest  Lower bound 
+     * @param highest Upper bound 
+     * 
+     * @return  @f$ x@f$ 
+     */
+    Double_t X(UShort_t      nIter,
+	       Double_t      lowest,
+	       Double_t      highest)
+    {
+      // Starting values
+      if (fData.GetEntries() == 1)
+	return static_cast<Observation*>(fData[0])->fX;
+      Double_t x    = (highest+lowest)/2;
+      Double_t oldX = -1e33;
+      // Do the iterations 
+      for (UShort_t i = 0; i < nIter; i++) {
+	Double_t sum    = 0;
+	Double_t sumw   = 0;
+	Double_t offset = 0;
+
+	// Loop over observations
+	TIter next(&fData);
+	Observation* r = 0;
+	while ((r = static_cast<Observation*>(next()))) {
+	  Double_t w =  StepW(x, *r);
+	  offset     += StepOffset(x,  *r);
+	  sum  += r->fX * w;
+	  sumw += w;
+	}
+	x = (TMath::Abs(sumw) > 1e-9) ? (sum - offset) / sumw : 0;
+
+	if (TMath::Abs(x - oldX) < (highest-lowest) * 1e-9) break;
+	oldX = x;
+      }
+      return x;
+    }
+    /** 
+     * Do the calculation 
+     * 
+     * @param nIter How many iterations to do. 
+     * 
+     * @return The best estimate of @f$ x@f$ and associated errors 
+     */
+    Result* Calculate(UShort_t nIter=50)
+    {
+      Double_t lowest  = +1e33;
+      Double_t highest = -1e33;
+      Double_t sumLow  = 0;
+      Double_t sumHigh = 0;
+
+      // Find boundaries and sum weights
+      TIter next(&fData);
+      Observation* r = 0;
+      while ((r = static_cast<Observation*>(next()))) {
+	lowest  = TMath::Min(r->Low(),  lowest);
+	highest = TMath::Max(r->High(), highest);
+	if (r->fEl > 1e-10)  sumLow  += 1./TMath::Power(r->fEl, 2);
+	if (r->fEh > 1e-10)  sumHigh += 1./TMath::Power(r->fEh, 2);
+      }
+      // Summed weights 
+      Double_t sLow  = sumLow  > 1e-10 ? 1. / TMath::Sqrt(sumLow) : 0;
+      Double_t sHigh = sumHigh > 1e-10 ? 1. / TMath::Sqrt(sumHigh) : 0;
+    
+      // Now do the calculations
+      Double_t bestX    = X(nIter, lowest, highest);
+      Double_t bestChi2 = F(bestX, 0);
+      Double_t bestLow  = TMath::Abs(E(nIter,-1,bestX,bestChi2,sLow));
+      Double_t bestHigh = TMath::Abs(E(nIter,+1,bestX,bestChi2,sHigh));
+
+      fResult = new Result(bestX, bestLow, bestHigh, bestChi2, lowest, highest);
+      return fResult;
+    }
+    /** 
+     * Return function pointer to wrapper
+     * 
+     * @return Function pointer
+     */
+    virtual Wrapper_t Wrapper() const = 0;
+    
+    /** 
+     * Make a function that represents to Log-likehood for a given
+     * observation.
+     * 
+     * @param r Observation 
+     * @param j Serial number 
+     * 
+     * @return Pointer to newly allocated function object
+     */
+    TF1* MakeF(const Observation& r, Int_t j) const
+    {
+      TF1* f = new TF1(Form("f%02d", j), Wrapper(), r.Low(), r.High(), 3);
+      f->SetParNames("x", "#sigma^{-}", "#sigma^{+}");
+      f->SetParameters(r.fX, r.fEl, r.fEh);
+      f->SetLineStyle((j%3)+2);
+      f->SetLineColor(kBlack);
+      f->SetLineWidth(2);
+      return f;
+    }
+    /** 
+     * Make a line that represents the best found errors
+     * 
+     * @param f Log-likelyhood function to make it from 
+     * 
+     * @return 
+     */
+    TLine* MakeL(TF1* f) const
+    {
+      Double_t m = f->GetParameter(0);
+      TLine* l = new TLine(m-f->GetParameter(1), 1,
+			   m+f->GetParameter(2), 1);
+      l->SetLineColor(f->GetLineColor());
+      l->SetLineStyle(f->GetLineStyle());
+      l->SetLineWidth(f->GetLineWidth());
+      return l;
+    }
+    void Draw(Option_t* option="")
+    {
+      if (!fResult) return;
+      
+      TList fs; fs.SetOwner(false);
+      Int_t j = 0;
+      TIter next(&fData);
+      Observation* r = 0;
+      while ((r = static_cast<Observation*>(next()))) {
+	TF1* f = MakeF(*r, j);
+	f->SetRange(fResult->Low(), fResult->High());
+	fs.Add(f, j == 0 ? "" : "same");
+	fs.Add(MakeL(f));
+	j++;
+      }
+      TF1* fr = MakeF(*fResult, j);
+      fr->SetLineColor(kRed+2);
+      fr->SetLineStyle(1);
+      fs.Add(fr);
+      fs.Add(MakeL(fr));
+      TIter nextD(&fs);
+      TObject* o = 0;
+      j = 0;
+      while((o = nextD())) { o->Draw(j == 0 ? "" : "same"); j++; }
+      // fs.Draw();
+      static_cast<TF1*>(fs.First())->GetHistogram()
+	->GetYaxis()->SetRangeUser(-.1, 5.1);
+    }
+    ClassDef(Combiner,1); // Combine systematics 
+  };
+
+
+  /**
+   * A combiner that uses a linear @f$\sigma@f$ approximation 
+   */
+  struct LinearSigmaCombiner : public Combiner
+  {
+    /** 
+     * Calculate the weight 
+     * 
+     * @f[ 
+     *   w = 1/2 (s + x s')^3 / s
+     * @f]
+     *
+     * @param r Observation
+     * 
+     * @return @f$ W@f$ 
+     */
+    Double_t W(const Observation& r) const
+    {
+      // Double_t s = r.S();
+      // if (s < 1e-10) return 0;
+      // return .5 * TMath::Power(r.Svar(), 3) / s;
+      Double_t w = StepW(0,r);
+      return 1/w;
+    }
+    /** 
+     * Calculate the weight based on a guess of best @f$ x'@f$ 
+     * 
+     * @f[ 
+     *   w(x') = s / [s + s' (x' - x)]^3
+     * @f]
+     *
+     * @param guess Current guess @f$ x'@f$ 
+     * @param r	  Observation
+     * 
+     * @return @f$ W(x')@f$ 
+     */
+    Double_t StepW(Double_t guess, const Observation& r) const
+    {
+      Double_t s   = r.S();
+      Double_t t   = r.Svar(guess);
+      Double_t ret = s / TMath::Power(t,3);
+      return ret;
+    }
+    /** 
+     * Calculate the bias. 
+     * 
+     * @return 0
+     */
+    Double_t StepOffset(Double_t, const Observation&) const
+    {
+      return 0;
+    }
+    /** 
+     * Calculate the contribution variance to the @f$\chi^2@f$ with
+     * the guess @f$x'@f$. 
+     *
+     * @f[
+     *   v(x') = [s + s' (x' - x)]^2
+     * @f]
+     * 
+     * @param guess Current guess @f$ x'@f$ 
+     * @param r	  Observation
+     * 
+     * @return @f$ v(x')@f$ 
+     */
+    Double_t VarTerm(Double_t guess, const Observation& r) const
+    {
+      return TMath::Power(r.Svar(guess),2);
+    }
+    /** 
+     * Return the likely-hood function value at @f$ x'@f$:
+     *
+     * @f[
+     *   L(x') = \left[(x'-x) / (s + s'(x'-x))\right]^2
+     * @f] 
+     * 
+     * where 
+     * @f[
+     *   s = 2\sigma^+\sigma^-/(\sigma^++\sigma^-)
+     * @f]
+     * @f[
+     *   s' = (\sigma^+-\sigma^-)/(\sigma^++\sigma^-)
+     * @f]
+     * 
+     * @param guess @f$ x'@f$ 
+     * @param x     @f$ x@f$  
+     * @param el    @f$ \sigma^-@f$  
+     * @param eh    @f$ \sigma^+@f$  
+     * 
+     * @return 
+     */
+    static Double_t L(Double_t guess, Double_t x, Double_t el, Double_t eh)
+    {
+      Observation tmp(x,el,eh);
+      Double_t d  = (guess-x);
+      Double_t t  = tmp.Svar(guess); // (s+sp*d);
+      if (TMath::Abs(d) < 1e-10) return 0;
+      // if (TMath::Abs(t) < 1e-10) return DBL_MAX;
+      Double_t ret = TMath::Power(d/t, 2);
+      return ret;
+    }
+    /** 
+     * Wrap likely-hood function for ROOT 
+     * 
+     * @param xp Pointer to independent variables 
+     * @param pp Pointer to parameters 
+     * 
+     * @return Likely-hood function evaluate at @a xp
+     */
+    static Double_t WrapL(Double_t* xp, Double_t* pp)
+    {
+      return L(xp[0], pp[0], pp[1], pp[2]);
+    }
+    /** 
+     * Return function pointer to wrapper
+     * 
+     * @return Function pointer
+     */
+    Wrapper_t Wrapper() const { return WrapL; }
+    ClassDef(LinearSigmaCombiner,1); // Sigma combiner 
+  };
+  /**
+   * A combiner that uses a linear variance approximation 
+   */
+  struct LinearVarianceCombiner : public Combiner
+  {
+    /** 
+     * Calculate the weight 
+     * 
+     * @f[
+     *   w = (V + x V')^2 / (2 V + x V')
+     * @f] 
+     *
+     * @param r Observation
+     * 
+     * @return @f$ W@f$ 
+     */
+    Double_t W(const Observation& r) const
+    {
+      Double_t v  = r.V();
+      Double_t vp = r.Vprime();
+      return TMath::Power(v + r.fX * vp, 2) / (2 * v + r.fX * vp);
+    }
+    /** 
+     * Calculate the weight based on a guess of best @f$ x'@f$ 
+     * 
+     * @f[
+     *   W(x') = v / [V + V' (x' - x)]^2
+     * @f] 
+     *
+     * @param guess Current guess @f$ x'@f$ 
+     * @param r  	  Observation
+     * 
+     * @return @f$ W(x')@f$ 
+     */
+    Double_t StepW(Double_t guess, const Observation& r) const
+    {
+      Double_t v = r.V();
+      return v / TMath::Power(v+r.Vprime()*(guess - r.fX), 2);
+    }
+    /** 
+     * Calculate the bias. 
+     * 
+     * @f[
+     *   \delta(x') = 1/2 V' [(x'-x) / (V + V'(x' - x))]^2
+     * @f] 
+     * 
+     * @param guess Current guess @f$ x'@f$ 
+     * @param r	  Observation
+     * 
+     * @return @f$\delta(x')@f$ 
+     */
+    Double_t StepOffset(Double_t guess, const Observation& r) const
+    {
+      Double_t vp = r.Vprime();
+      return 0.5 * vp * TMath::Power((guess-r.fX)/(r.V()+vp*(guess-r.fX)),2);
+    }
+    /** 
+     * Calculate the contribution variance to the @f$\chi^2@f$ with
+     * the guess @f$x'@f$. 
+     *
+     * @f[ 
+     *   V(x') = V + V' (x' - x)
+     * @f] 
+     * 
+     * @param guess Current guess @f$ x'@f$ 
+     * @param r	  Observation
+     * 
+     * @return @f$ v(x')@f$ 
+     */
+    Double_t VarTerm(Double_t guess, const Observation& r) const
+    {
+      return r.V() + r.Vprime() * (guess - r.fX);
+    }
+    /** 
+     * Return the likely-hood function value at @f$ x'@f$:
+     *
+     * @f[
+     *   L(x') = (x'-x)^2 / (V + V'(x'-x))
+     * @f] 
+     * 
+     * where 
+     * @f[
+     *   V = \sigma^+\sigma^-\quad V' = \sigma^+-\sigma^-
+     * @f]
+     * 
+     * @param guess @f$ x'@f$ 
+     * @param x     @f$ x@f$  
+     * @param el    @f$ \sigma^-@f$  
+     * @param eh    @f$ \sigma^+@f$  
+     * 
+     * @return 
+     */
+    static Double_t L(Double_t guess, Double_t x, Double_t el, Double_t eh)
+    {
+      Double_t d  = (guess-x);
+      Double_t v  = eh * el;
+      Double_t vp = eh - el;
+      return TMath::Power(d,2) / (v+vp*d);
+    }
+    /** 
+     * Wrap likely-hood function for ROOT 
+     * 
+     * @param xp Pointer to independent variables 
+     * @param pp Pointer to parameters 
+     * 
+     * @return Likely-hood function evaluate at @a xp
+     */
+    static Double_t WrapL(Double_t* xp, Double_t* pp)
+    {
+      return L(xp[0], pp[0], pp[1], pp[2]);
+    }
+    /** 
+     * Return function pointer to wrapper
+     * 
+     * @return Function pointer
+     */
+    Wrapper_t Wrapper() const { return WrapL;  }
+    ClassDef(LinearVarianceCombiner,1); // Variance combiner 
+  };
+  
   //__________________________________________________________________
   /** 
    * Base class to hold systematic errors
@@ -3244,6 +5245,15 @@ public:
      * DTOR
      */
     virtual ~Holder() {}
+    void CopyAttr(Holder* h)
+    {
+      SetLineColor(h->GetLineColor());
+      SetLineStyle(h->GetLineStyle());
+      SetLineWidth(h->GetLineWidth());
+      SetFillColor(h->GetFillColor());
+      SetFillStyle(h->GetFillStyle());
+      fOption = h->fOption;
+    }
   protected:
     /** 
      * CTOR with name and title
@@ -3596,7 +5606,7 @@ public:
      * 
      * @param point Point
      * 
-     * @return Symmetric errors along Y at point
+     * @return Symmetric (absolute) errors along Y at point
      */
     Double_t GetY(Int_t point) const 
     {
@@ -3604,11 +5614,28 @@ public:
       return fGraph->GetErrorY(point);
     }
     /** 
+     * Get the errors downwards along Y between points @a i1 and @a i2 
+     * 
+     * @param i1 Left point
+     * @param i2 Right point
+     * @param ax Relative distance between the two points 
+     * 
+     * @return (Absolute) Errors downward along Y at point
+     */
+    Double_t GetYDown(Int_t i1, Int_t i2, Double_t ax) const 
+    {
+      if (!fGraph) return 0;
+      if (i1 == i2) return GetYDown(i1);
+      Double_t e1 = GetYDown(i1);
+      Double_t e2 = GetYDown(i2);
+      return e1 + ax * (e2-e1); // Linear interpolation
+    }
+    /** 
      * Get errors downward along Y at point
      * 
      * @param point Point
      * 
-     * @return Errors downward along Y at point
+     * @return (Absolute) Errors downward along Y at point
      */
     Double_t GetYDown(Int_t point) const 
     {
@@ -3616,11 +5643,28 @@ public:
       return fGraph->GetErrorYlow(point);
     }
     /** 
+     * Get the errors upwards along Y between points @a i1 and @a i2 
+     * 
+     * @param i1 Left point
+     * @param i2 Right point
+     * @param ax Relative distance between the two points 
+     * 
+     * @return (Absolute) Errors upward along Y at point
+     */
+    Double_t GetYUp(Int_t i1, Int_t i2, Double_t ax) const 
+    {
+      if (!fGraph) return 0;
+      if (i1 == i2) return GetYUp(i1);
+      Double_t e1 = GetYUp(i1);
+      Double_t e2 = GetYUp(i2);
+      return e1 + ax * (e2-e1); // Linear interpolation
+    }
+    /** 
      * Get errors upward along Y at point
      * 
      * @param point Point
      * 
-     * @return Errors upward along Y at point
+     * @return (Absolute) Errors upward along Y at point
      */
     Double_t GetYUp(Int_t point) const 
     {
@@ -3787,6 +5831,12 @@ public:
 	    << "    g->SetSysFillColor(id," << GetFillColor() << ");\n"
 	    << "    g->SetSysFillStyle(id," << GetFillStyle() << ");\n"
 	    << "  }\n";
+    }
+    virtual void Print(Option_t*) const
+    {
+      gROOT->IndentLevel();
+      Printf("%s/%s (ID # %d, %d points)", GetName(), GetTitle(), GetUniqueID(),
+	     (fGraph ? fGraph->GetN() : -1));
     }
     /** Our data */
     // Graph* fGraph;
@@ -4067,7 +6117,7 @@ public:
       if (option[0] == 'd' || option[0] == 'D')
 	out << " // Common systematic " << GetTitle() << "\n"
 	    << "  {\n"
-	  << "    Int_t id = g->DefineCommon(\"" << GetTitle() << "\","
+	    << "    Int_t id = g->DefineCommon(\"" << GetTitle() << "\","
 	    << fRelative << ',' << fEyl << ',' << fEyh << ','
 	    << fOption << ");\n"
 	    << "    g->SetSysLineColor(id," << GetLineColor() << ")\n;"
@@ -4077,6 +6127,16 @@ public:
 	    << "    g->SetSysFillStyle(id," << GetFillStyle() << ")\n;"
 	    << "  }\n";
     }
+    virtual void Print(Option_t*) const
+    {
+      Bool_t      rel = IsRelative();
+      Double_t    fac = (rel ? 100 : 1);
+      const char* pst = (rel ? "%" : "");
+      gROOT->IndentLevel();
+      Printf("%s/%s (ID # %d) -%f%s +%f%s",
+	     GetName(), GetTitle(), GetUniqueID(),
+	     fac*fEyl, pst, fac*fEyh, pst);
+    }
     /** Down errors */
     Double_t fEyl;
     /** Up errors */
@@ -4084,6 +6144,191 @@ public:
 
     ClassDef(HolderCommon,3);
   };
+  /** 
+   * Get the point value and low and high errors
+   * 
+   * @param i         Point number 
+   * @param cmn       Consider commons
+   * @param stat      Consider statistics 
+   * @param quad      Add in quadrature 
+   * @param nosqrt    Do not take square root in case quad=true
+   * @param eyl       Output: Low error
+   * @param eyh       Output: high error
+   * 
+   * @return 
+   */
+  Double_t GetYandError(Int_t     i,
+			Bool_t    cmn,
+			Bool_t    stat,
+			Bool_t    quad,
+			Bool_t    nosqrt,
+			Double_t& eyl,
+			Double_t& eyh) const
+  {
+    Double_t wyl = 0;
+    Double_t wyh = 0;
+    return GetYandError(i, cmn, stat, quad, nosqrt, eyl, eyh, wyl, wyh);
+  }
+  /** 
+   * Get the point value and low and high errors.  Errors that have
+   * been marked as used (kUsedBit) are not considered.  Errors marked
+   * as only for weights (kWeightsOnlyBit) are only factored in on the
+   * weights (@a weyl, @a weyh) calculation.  Statistical errors are
+   * always factored in on the calculation of weights.
+   * 
+   * @param i         Point number 
+   * @param cmn       Consider commons
+   * @param stat      Consider statistics 
+   * @param quad      Add in quadrature 
+   * @param nosqrt    Do not take square root in case quad=true
+   * @param eyl       Output: Low error
+   * @param eyh       Output: high error
+   * @param wyl       Output: Low weight
+   * @param wyh       Output: high weight
+   * 
+   * @return The graph value at point @a i
+   */
+  Double_t GetYandError(Int_t     i,
+			Bool_t    cmn,
+			Bool_t    stat,
+			Bool_t    quad,
+			Bool_t    nosqrt,
+			Double_t& eyl,
+			Double_t& eyh,
+			Double_t& wyl,
+			Double_t& wyh) const
+  {
+    // --- Find location for common errors ---------------------------
+    Int_t n = fData->GetN();
+    if (i >= n) {
+      eyl = -1;
+      eyh = -1;
+      return 0;
+    }
+    Double_t y   = fData->GetY()[i];
+    wyl = GetStatErrorDown(i);
+    wyh = GetStatErrorUp(i);
+    eyl = (stat ? wyl : 0);
+    eyh = (stat ? wyh : 0);
+    if (quad) {
+      wyl *= wyl;
+      wyh *= wyh;
+      eyl *= eyl;
+      eyh *= eyh;
+    }
+    Double_t exl = GetErrorXLeft(i);
+    Double_t exh = GetErrorXRight(i);
+
+    // Otherwise, we are adding all selected errors togethter 
+    // Graph* g = static_cast<Graph*>(fData->Clone("error"));
+    // g->SetTitle(fSumTitle);
+    Int_t xMode = -1;
+    if (cmn) { 
+      TIter nextC(&fCommon);
+      HolderCommon* hc = 0;
+      while ((hc = static_cast<HolderCommon*>(nextC()))) {
+	if (hc->TestBit(kUsedBit)) continue;
+	if (xMode < 0) xMode = hc->XMode(fSumOption);
+	hc->SumPointError(y, xMode, false, quad, exl, exh, wyl, wyh);
+	if (hc->TestBit(kOnlyWeightBit)) continue;
+	hc->SumPointError(y, xMode, false, quad, exl, exh, eyl, eyh);
+      }
+    }
+    TIter nextP(&fPoint2Point);
+    HolderP2P* hp = 0;
+    while ((hp = static_cast<HolderP2P*>(nextP()))) {
+      if (hp->TestBit(kUsedBit)) continue;
+      if (xMode < 0) xMode = hp->XMode(fSumOption);	
+      hp->SumPointError(i, xMode, false, quad, exl, exh, wyl, wyh);
+      if (hp->TestBit(kOnlyWeightBit)) continue;
+      hp->SumPointError(i, xMode, false, quad, exl, exh, eyl, eyh);
+    }
+    if (quad && !nosqrt) {
+      eyl = TMath::Sqrt(eyl);
+      eyh = TMath::Sqrt(eyh);
+      wyl = TMath::Sqrt(wyl);
+      wyh = TMath::Sqrt(wyh);
+    }
+    return y;
+  }
+  /** 
+   * Round number @a v to @a n significant digits.  It returns the
+   * mantisa and the exponent.  To calculate the number, do
+   *
+   * @code 
+   Int_t    e = 0;
+   Double_t m = Round(v,n,e);
+   Double_t x = m * TMath::Power(10,e);
+   @endcode 
+   *
+   * If one has a value @e x and and associated error @e dx, one can
+   * use this function to format the pair:
+   *
+   @code 
+   Int_t     e = 0;
+   Double_t  m = Round(dx,n,e);
+   Double_t  p = m * TMath::Power(10,e);
+   Int_t     o = TMath::Ceil(TMath::Log10(TMath::Abs(x)))-e;
+   std::cout << std::setprecision(o) << x << " +/- " 
+             << std::setprecision(n) << p << std::endl;
+   @endcode 
+   * 
+   * For asymmetric errors, this would be 
+   *
+   @code 
+   Int_t     el, eh;
+   Double_t  ml = Round(dxl,n,el);
+   Double_t  m2 = Round(dxh,n,eh);
+   Int_t     ne = TMath::Min(el, eh);
+   Double_t  pl = ml * TMath::Power(10,el);
+   Double_t  ph = mh * TMath::Power(10,eh);
+   Int_t     o  = TMath::Ceil(TMath::Log10(TMath::Abs(x)))-ne;
+   std::cout << std::setprecision(o) << x  << " -" 
+             << std::setprecision(n) << pl << " +"
+             << std::setprecision(n) << ph << std::endl;
+   @endcode 
+   * 
+   * @param v      Value to round
+   * @param p      Number of signficant digits  
+   * @param rexpo  On return, the exponent 
+   * 
+   * @return The "mantisa"
+   */
+  static Double_t Round(Double_t v, Int_t p, Int_t& rexpo)
+  {
+    if (v == 0) {
+      // ret.Form("%.*f", p-1, 0);
+      rexpo = 0;
+      return 0; // ret.Data();
+    }
+
+    // Get the sign, take absolute value, get exponent, get scalar, scale 
+    Bool_t   neg  = (v < 0);
+    Double_t tmp  = TMath::Abs(v);
+    Int_t    expo = Int_t(TMath::Log10(tmp));
+    Double_t tens = TMath::Power(10, expo - p + 1);
+    Double_t n    = RoundN(tens, tmp); // TMath::Ceil(tmp/tens);
+
+    if (n < TMath::Power(10, p-1)) {
+      // If scaled is less than 10 to our precision, take off one digit
+      expo--;
+      tens = TMath::Power(10, expo - p + 1);
+      n    = RoundN(tens,tmp); // TMath::Ceil(tmp/tens);
+    }
+
+    if (TMath::Abs((n+1) * tens) <= TMath::Abs(n * tens)) 
+      // If the value is not near original, add one
+      n++;
+
+    if (n >= TMath::Power(10,p)) {
+      // If value is larger than 10 to our precision, scale down one
+      n /= 10;
+      expo++;
+    }
+
+    rexpo = expo-p+1;
+    return (neg ? -1 : 1)*n;
+  }
 protected:
   static void SwapPoints(Graph* g, Int_t i, Int_t j, Bool_t reflect)
   {
@@ -4213,12 +6458,14 @@ protected:
    * @param out         Output stream
    * @param alsoTop     If true, export file header 
    * @param alsoComment If true, also write out comment 
+   * @param nsign  Number of significant digits  
    * 
    * @return output stream 
    */
   std::ostream& ExportHeader(std::ostream& out,
 			     Bool_t alsoTop=false,
-			     Bool_t alsoComment=false) const
+			     Bool_t alsoComment=false,
+			     Int_t  nsign=-1) const
   {
     if (alsoComment) {
       out << "# Generated by GraphSysErr\n"
@@ -4238,8 +6485,8 @@ protected:
       const char*  exper    = GetKey("detector");
       const char*  abs      = GetKey("abstract");
       const char*  months[] = {"JAN","FEB","MAR","APR",
-			      "MAY","JUN","JUL","AUG",
-			      "SEP","OCT","NOV","DEC"};
+			       "MAY","JUN","JUL","AUG",
+			       "SEP","OCT","NOV","DEC"};
       if (ref.IsNull()) 
 	out << "*reference: <journal/archive ref> : <year>" << std::endl;
       else {
@@ -4264,8 +6511,9 @@ protected:
 	  << (abs ? abs : "<abstract>") << "\n"
 	  << std::endl;
     }
-    out << "# Start of dataset\n"
-	<< FormatKey("dataset") << std::endl;
+    out << "# Start of dataset\n";
+    if (nsign >= 0) out << "# Using " << nsign << " significant digits\n";
+    out << FormatKey("dataset") << std::endl;
     // out << FormatKey("dscomment") << GetTitle() << std::endl;
     const char* fields[] = { "location",
 			     "reackey", 
@@ -4288,16 +6536,39 @@ protected:
    * @param high High error 
    * @param nopm If true, do not prefix symmetric errors with +/-
    * @param rel  IF true, the error is relative 
+   * @param nsign  Number of significant digits  
    * 
-   * @return Output stream 
+   * @return Least exponent used
    */
-  static std::ostream& ExportError(std::ostream& o, Double_t low,
-				   Double_t high, Bool_t nopm, Bool_t rel)
+  static Int_t ExportError(std::ostream& o,
+			   Double_t low,
+			   Double_t high,
+			   Bool_t   nopm,
+			   Bool_t   rel,
+			   Int_t    nsign)
   {
-    if (TMath::Abs(high-low) < 1e-12)
-      return o << (nopm ? "" : "+- ")
-	       << TMath::Abs(low) << (rel ? " PCT" : "");
-    return o << "+" << high << ",-" << low << (rel ? " PCT" : "");
+    Double_t l = low;
+    Double_t h = high;
+    Int_t    p = o.precision();
+    Int_t    e = 0;
+    if (nsign >= 0) {
+      Int_t    pp = nsign;
+      Int_t    le, he;
+      Double_t lm = Round(l, nsign, le);
+      Double_t hm = Round(h, nsign, he);
+      e           = TMath::Min(le,he);
+      l           = lm*TMath::Power(10,le);
+      h           = hm*TMath::Power(10,he);
+      o.precision(pp);
+    }
+    // ::Info("ExportError","Before (%2d) -%8f.+%8f After -%8f,+%8f",
+    //        nsign, low,high,l,h);
+    if (TMath::Abs(h-l) < 1e-12)
+      o << (nopm ? "" : "+- ") << TMath::Abs(l) << (rel ? " PCT" : "");
+    else
+      o << "+" << h << ",-" << l << (rel ? " PCT" : "");
+    o.precision(p);
+    return e;
   }
   /** 
    * Export a single point 
@@ -4306,58 +6577,135 @@ protected:
    * @param i       Point number
    * @param alsoX   If true, also export X coordinate 
    * @param sysName If true, export P2P names
+   * @param nsign  Number of significant digits  
    * 
    * @return output stream 
    */
-  std::ostream& ExportPoint(std::ostream& out, Int_t i,
-			    Bool_t alsoX=true, Bool_t sysName=true) const
+  std::ostream& ExportPoint(std::ostream& out,
+			    Int_t         i,
+			    Bool_t        alsoX=true,
+			    Bool_t        sysName=true,
+			    Int_t         nsign=0) const
   {
+    Int_t p = out.precision();
+    // out.setf(std::ios::fixed);
     if (alsoX) {
       Double_t x       = GetX(i);
       Double_t exl     = fData->GetErrorXlow(i);
       Double_t exh     = fData->GetErrorXhigh(i);
-      if (TMath::Abs(exl) < 1e-10 &&
-	  TMath::Abs(exh) < 1e-10)
+      Int_t    pp      = p;
+      Int_t    ppp     = p;
+      if (nsign > 0) {
+	Int_t    pxl, pxh;
+	Double_t mxl   = Round(exl,nsign,pxl);
+	Double_t mxh   = Round(exh,nsign,pxh);
+	exl            = mxl*TMath::Power(10, pxl);
+	exl            = mxh*TMath::Power(10, pxh);
+	Int_t    mp    = TMath::Min(pxl,pxh);
+	pp             = nsign;
+	ppp            = TMath::Ceil(TMath::Log10(TMath::Abs(x)))-mp;
+	// Info("","pxl=%d pxh=%d mp=%d ppp=%d", pxl, pxh, mp, ppp);
+      }
+      
+      if (TMath::Abs(exl) < 1e-10 && TMath::Abs(exh) < 1e-10)
 	out << ' ' << x;
-      else if (TMath::Abs(exh-exl) < 1e-10)
-	out << ' ' << x-exl << " TO " << x+exh;
-      else 
-	out << ' ' << x << ' '
-	    << '+' << exh << ",-" << exl;
-      // ExportError(out, exl, exh, false, false);
+      else {
+	if (TMath::Abs(exh-exl) < 1e-10) {
+	  out.precision(ppp);
+	  out << ' ' << x-exl << " TO " << x+exh;
+	}
+	else {
+	  out.precision(ppp);
+	  out << ' ' << x << ' ';
+	  out.precision(pp);
+	  out << '+' << exh << ",-" << exl;
+	}
+      }
+      out.precision(p);
       out << "; ";
     }
+    // out.unsetf(std::ios::fixed);
 	
     Bool_t   statRel = fStatRelative;
     Double_t y       = GetY(i);
     Double_t fy      = (statRel ? (y == 0 ? 0 : 100./y) : 1);
     Double_t eyl     = GetStatErrorDown(i) * fy;
     Double_t eyh     = GetStatErrorUp(i)   * fy;
-    out << y << ' ';
-    ExportError(out, eyl, eyh, false, statRel);
+    // out << y << ' ';
+    std::stringstream tmp;
+    // tmp.setf(std::ios::fixed);
+    Int_t le = ExportError(tmp, eyl, eyh, false, statRel, nsign);
       
     if (fPoint2Point.GetEntries() > 0) {
-      out  << " (" << std::flush;
+      tmp  << " (" << std::flush;
       TIter       nextP(&fPoint2Point);
       HolderP2P*  holderP2P = 0;
       Bool_t      first = true;
       while ((holderP2P = static_cast<HolderP2P*>(nextP()))) { 
 	Bool_t rel = holderP2P->IsRelative();
 	fy         = (rel ? (y == 0 ? 0 : 100./y) : 1);
-	if (!first) out << ',';
+	if (!first) tmp << ',';
 	Double_t esh = holderP2P->GetYUp(i)*fy;
 	Double_t esl = holderP2P->GetYDown(i)*fy;
-	out << "DSYS=";
-	ExportError(out, esl, esh, true, rel);
+	tmp << "DSYS=";
+	le = TMath::Min(le,ExportError(tmp, esl, esh, true, rel, nsign));
 	if (sysName) 
-	  out << ':'  << holderP2P->GetTitle() << std::flush;
+	  tmp << ':'  << holderP2P->GetTitle() << std::flush;
 	first = false;
       }
-      out << ')';
+      tmp << ')';
     }
-    out << ';';
+    if (nsign) {
+      Int_t nY = TMath::Ceil(TMath::Log10(TMath::Abs(y)))-le;
+      out.precision(nY);
+      out << y << ' ';
+      out.precision(p);
+    }
+    else
+      out << y << ' ';
+    out << tmp.str() << ';';
     return out;
   }
+  /** 
+   * Round number.  @a tens is the scaling divisor to convert @a tmp
+   * into an integer with @e n significant digits. 
+   *
+   * The algorightm looks at the @e n+1 significant digit @e d, and
+   * depending on the value of that, it does one of the following:
+   *
+   * - if @e d > 5, it rounds the number up 
+   * - if @e d < 5, it rounds the number down. 
+   * - if @e d = 5, then the @e n+2 significant digit @e dd is investigated. 
+   *   - if @e dd = 0 then the number is rounded up nearest even number
+   *   - if @e dd != 0 the the number is rounded down 
+   * 
+   * @param tens The scaling of the number to integer
+   * @param tmp  The absolute value of the number 
+   * 
+   * @return The rounded number 
+   */
+  static Double_t RoundN(Double_t tens, Double_t tmp)
+  {
+    // Add small number to not loose least digit if a 1
+    Double_t n     = TMath::Floor(100*tmp/tens+.00001);
+    Int_t    next  = int(n/10) % 10;
+    if (next > 5) 
+      // Round up 
+      return TMath::Ceil(n/100);
+    if (next < 5)
+      // Round down
+      return TMath::Floor(n/100);
+    Int_t nnext = int(n) % 10;
+    if (nnext != 0)
+      // Round up 
+      return TMath::Ceil(n/100);
+    Int_t last = int(n/100) % 10;
+    if (last % 2 == 0)
+      // Round down
+      return TMath::Floor(n/100);
+    // Round to nearest even
+    return TMath::Ceil(n/100);
+  }  
   /** 
    * Get the ith token from the array of tokens c. 
    *  
@@ -4477,7 +6825,7 @@ protected:
       eh          = (v2-v);            
     }
     else if (tok->GetEntriesFast() >= 3 && 
-	Token(tok,1).EqualTo("TO", TString::kIgnoreCase)) {
+	     Token(tok,1).EqualTo("TO", TString::kIgnoreCase)) {
       Double_t v1 = Token(tok,0).Atof();
       Double_t v2 = Token(tok,2).Atof();
       v           = (v1+v2)/2;
@@ -4566,17 +6914,18 @@ protected:
     static TString ret;
     ret = "";
     switch (opt) {
-    case kNormal: ret = "";     break; // Line with ticks
-    case kNoTick: ret = "Z0";	break; // Line with no ticks 
-    case kArrow:  ret = ">0";	break; // Linw with arrows 
-    case kRect:   ret = "20";	break; // Rectangle w/fill
-    case kBox:    ret = "50";	break; // Rectangle w/fill & line 
-    case kFill:   ret = "30";	break; // Filled area 
-    case kCurve:  ret = "40";	break; // Filled smoothed area 
-    case kHat:    ret = "[]0";	break; // Hats 
-    case kBar:    ret = "||0";	break; // A bar 
-    case kNone:   ret = "XP";	break; // No errors
-    case kLine:   ret = "CX";   break; 
+    case kNormal:  ret = "";     break; // Line with ticks
+    case kNoTick:  ret = "Z0";	break; // Line with no ticks 
+    case kArrow:   ret = ">0";	break; // Linw with arrows 
+    case kRect:    ret = "20";	break; // Rectangle w/fill
+    case kBox:     ret = "50";	break; // Rectangle w/fill & line 
+    case kFill:    ret = "30";	break; // Filled area 
+    case kCurve:   ret = "40";	break; // Filled smoothed area 
+    case kHat:     ret = "[]0";	break; // Hats 
+    case kBar:     ret = "||0";	break; // A bar 
+    case kNone:    ret = "XP";	break; // No errors
+    case kLine:    ret = "CX";   break;
+    case kConnect: ret = "LX";   break;
     }
     return ret.Data();
   }
@@ -4591,22 +6940,41 @@ protected:
     fData->SetName(Form("%s_data", fName.Data()));
     fData->SetTitle(GetTitle());
   }
+  /** 
+   * Find point (or possibly two points) that match X
+   * 
+   * @param x   X to mach 
+   * @param i1  On return, the two points
+   * @param i2  On return, the two points
+   * 
+   * @return 
+   */
   Int_t FindPoint(Double_t x, Int_t& i1, Int_t& i2) const
   {
     i1 = -1;
     i2 = -1;
-    if (x < GetX(0) || x > GetX(GetN()-1)) {
+    Int_t n = GetN();
+    if (x < GetX(0)-GetErrorXLeft(0) ||
+	x > GetX(n-1)+GetErrorXRight(n-1)) {
       // If we're out side the coverage, set return to -1
+      // Info("FindPoint", "X=%f Out of range [%f,%f]",
+      //      x,GetX(0),GetX(GetN()-1));
       i1 = i2 = -1;
       return -2;
     }
     const Double_t tol = 1e-9;
-    for (Int_t i=0; i < GetN(); i++) {
-      if (TMath::Abs(GetX(i)-x) < tol) {
+    for (Int_t i=0; i < n; i++) {
+      // if (TMath::Abs(GetX(i)-x) < tol) {
+      if (x <= GetX(i)+GetErrorXRight(i) &&
+	  x >= GetX(i)-GetErrorXLeft(i)) {
+	// if ((GetX(i)+GetErrorXRight(i)-x)<tol &&
+	//  (x - GetX(i) - GetErrorXLeft(i) <tol)) {
 	// Found matching point
 	i2 = i1 = i;
 	break;
       }
+      // Info("FindPoint", "Not @ %d (%f not in %f -%f +%f)",
+      //      i, x, GetX(i), GetErrorXLeft(i), GetErrorXRight(i));
       if (x > GetX(i)) {
 	// X still larger
 	i1 = i;
@@ -4624,74 +6992,23 @@ protected:
 		   (GetX(i2)-GetErrorXLeft(i2))) > 10*tol) {
       // If the two found points are not adjecent, we are in a hole
       // and we indicate that.
+      // Info("FindPoint","Found hole at i1=%d(%f+%f) i2=%d(%f-%f) (%f)",
+      //      i1, GetX(i1), GetErrorXRight(i1),
+      //      i2, GetX(i2), GetErrorXLeft(i2), x);
+      // Print("xy");
       i1 = i2 = -1;
       return -2;
     }
-    if (i2 > 0) 
+    if (i2 > 0) {
       // Otherwise return negative value to indicate we should look at
       // two points.
+      // Info("FindPoint","Found i1=%d i2=%d %f in [%f,%f]", i1, i2,
+      //      x, GetX(i1)-GetErrorXLeft(i1), GetX(i2)+GetErrorXRight(i2));
       return -1;
+    }
     // Return negative two to indicate nothing was found
     return -2;
 	
-  }
-  /** 
-   * Get the point value and low and high errors
-   * 
-   * @param i         Point number 
-   * @param cmn       Consider commons
-   * @param stat      Consider statistics 
-   * @param quad      Add in quadrature 
-   * @param nosqrt    Do not take square root in case quad=true
-   * @param eyl       Output: Low error
-   * @param eyh       Output: high error
-   * 
-   * @return 
-   */
-  Double_t GetYandError(Int_t     i,
-			Bool_t    cmn,
-			Bool_t    stat,
-			Bool_t    quad,
-			Bool_t    nosqrt,
-			Double_t& eyl,
-			Double_t& eyh) const
-  {
-    // --- Find location for common errors ---------------------------
-    Int_t n = fData->GetN();
-    if (i >= n) {
-      eyl = -1;
-      eyh = -1;
-      return 0;
-    }
-    Double_t y   = fData->GetY()[i];
-    eyl = (stat ? GetStatErrorDown(i) : 0);
-    eyh = (stat ? GetStatErrorUp(i)   : 0);
-    Double_t exl = GetErrorXLeft(i);
-    Double_t exh = GetErrorXRight(i);
-
-    // Otherwise, we are adding all selected errors togethter 
-    // Graph* g = static_cast<Graph*>(fData->Clone("error"));
-    // g->SetTitle(fSumTitle);
-    Int_t xMode = -1;
-    if (cmn) { 
-      TIter nextC(&fCommon);
-      HolderCommon* hc = 0;
-      while ((hc = static_cast<HolderCommon*>(nextC()))) {
-	if (xMode < 0) xMode = hc->XMode(fSumOption);
-	hc->SumPointError(y, xMode, false, quad, exl, exh, eyl, eyh);
-      }
-    }
-    TIter nextP(&fPoint2Point);
-    HolderP2P* hp = 0;
-    while ((hp = static_cast<HolderP2P*>(nextP()))) {
-      if (xMode < 0) xMode = hp->XMode(fSumOption);	
-      hp->SumPointError(i, xMode, false, quad, exl, exh, eyl, eyh);
-    }
-    if (quad && !nosqrt) {
-      eyl = TMath::Sqrt(eyl);
-      eyh = TMath::Sqrt(eyh);
-    }
-    return y;
   }
   /** 
    * Make our stack 
@@ -4957,6 +7274,108 @@ protected:
     return 0;
   }
   /** 
+   * Find an error in this graph that is compatible with the passed error 
+   * 
+   * @param o    Test 
+   * @param verb Be verbose
+   * @param tol  Relative error tolerance
+   * 
+   * @return Pointer to holder for found errror or null
+   */
+  HolderCommon* FindCompat(const HolderCommon* o,
+			   Double_t            tol=1e-6,
+			   bool                verb=false) const
+  {
+    if (!o) return 0;
+    Int_t id = FindId(o->GetTitle());
+    if (id <= 0) {
+      if (verb) 
+	Warning("FindCompat[C]", "Syst.unc. '%s' not found in %s",
+		o->GetTitle(), GetName());
+      return 0;
+    }
+    HolderCommon* c = FindCommon(id);
+    if (!c) {
+      if (verb)
+	Warning("FindCompat[C]", "Syst.unc. '%s' (%d) is not a common",
+		o->GetTitle(), id);
+      return 0;
+    }
+    if (o->IsRelative() != c->IsRelative()) {
+      if (verb)
+	Warning("FindCompat[C]", "Inconsistent value type (%s) of '%s' (%d)",
+		c->IsRelative() ? "relative" : "fixed",
+		c->GetTitle(), id);
+      return 0;
+    }
+    Double_t ltol = 0.01;
+    Double_t x1, x2, test;
+    x1   = o->GetYDown(1);
+    x2   = c->GetYDown(1);
+    test = TMath::Abs(x2-x1) / (1+TMath::Min(TMath::Abs(x1), TMath::Abs(x2)));
+    if (test > ltol) {
+      if (verb) {
+	Warning("FindCompat[C]","Lower value %10f of '%s' (%d) "
+		"incompatible with %10f (|%f|>%f [%g])",
+		c->GetYDown(1), c->GetTitle(), id, o->GetYDown(1),
+		test, ltol, tol);
+	c->Print("common");
+	o->Print("common");
+      }
+      return 0;
+    }
+    x1   = o->GetYDown(1);
+    x2   = c->GetYDown(1);
+    test = TMath::Abs(x2-x1) / (1+TMath::Min(TMath::Abs(x1), TMath::Abs(x2)));
+    if (TMath::Abs(o->GetYUp(1)-c->GetYUp(1)) > ltol) {
+      if (verb) {
+	Warning("FindCompat[C]","Upper value %10f of '%s' (%d) "
+		"incompatible with %10f (|%f|>%f [%g])",
+		c->GetYUp(1), c->GetTitle(), id, o->GetYUp(1),
+		test, ltol, tol);
+	c->Print("common");
+	o->Print("common");
+      }
+      return 0;
+    }
+    // All is good 
+    return c;
+  }
+  /** 
+   * Find an error in this graph that is compatible with the passed error 
+   * 
+   * @param o    Test 
+   * @param verb Be verbose
+   * 
+   * @return Pointer to holder for found errror or null
+   */
+  HolderP2P* FindCompat(const HolderP2P* o, Bool_t verb=false) const
+  {
+    if (!o) return 0;
+    Int_t id = FindId(o->GetTitle());
+    if (id <= 0) {
+      if (verb) 
+	Warning("FindCompat[P]", "Syst.unc. '%s' not found in %s",
+		o->GetTitle(), GetName());
+      return 0;
+    }
+    HolderP2P* p = FindP2P(id);
+    if (!p) {
+      if (verb)
+	Warning("FindCompat[P]", "Syst.unc. '%s' (%d) is not point-to-point",
+		o->GetTitle(), id);
+      return 0;
+    }
+    if (o->IsRelative() != p->IsRelative()) {
+      if (verb)
+	Warning("FindCompat[P]", "Inconsistent value type (%s) of '%s' (%d)",
+		p->IsRelative() ? "relative" : "fixed",
+		p->GetTitle(), id);
+      return 0;
+    }
+    return p;
+  }
+  /** 
    * Find any error
    * 
    * @param id Identifier
@@ -5031,6 +7450,11 @@ protected:
  * @example Example.C
  *
  * Example of using this class 
+ */
+/** 
+ * @example TestCombiner.C
+ *
+ * Example of linear combiner of observations 
  */
  
 

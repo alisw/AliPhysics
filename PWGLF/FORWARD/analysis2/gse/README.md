@@ -5,6 +5,23 @@
 The class _GraphSysErr_ lives in `GraphSysErr.C`.  The class is
 heavily commented and marked up for documentation using Doxygen.
 
+## Features
+
+- Support multiple types of systematic uncertainties
+  - Uncertainties common (correlated) between all points
+  - Uncertainties for each individual (uncorrelated) point 
+- Support statistical errors.
+- Uncertainties can be relative or absolute
+- Import data sets from HepData input format
+- Export data to HepData input format
+  - Sets of objects can be exported as tables
+  - Number of significant digits can be specified 
+- Visual representation in many ways 
+- Rigorous error propagation 
+- Ratios, scaling, etc. of graphs 
+- Combination (averages) of data sets.
+- ... 
+
 ## The tests
 
 - TestGSE.C runs an extensive test of the various plotting options.
@@ -300,16 +317,18 @@ paper, and where some of them are tables, then we could do
 
 
 ~~~{.cxx}
+    std::ofstream output("paper.input");
   	TIter next(allPlots);
   	TObject* o = 0;
   	Bool_t first = true;
   	while ((o = next())) {
+	  Option_t* option = (first ? "hc" : "");
   	  if (o->IsA()->InheritsFrom(GraphSysErr::Class())) {
-  	    GraphSysErr* g = static_cast<GraphSysError*>(o);
+  	    GraphSysErr* g = static_cast<GraphSysErr*>(o);
   	    g->Export(output, option);
   	  }
-  	  else if if (o->IsA()->InheritsFrom(TSeqCollection::Class())) {
-  	    TSeqCollection* c = static_cast<TSeqCollectionor*>(o);
+  	  else if (o->IsA()->InheritsFrom(TSeqCollection::Class())) {
+  	    TSeqCollection* c = static_cast<TSeqCollection*>(o);
   	    GraphSysErr::Export(c, output, option);
   	  }
       else
