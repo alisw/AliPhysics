@@ -62,8 +62,8 @@ protected:
   int DoInit(int argc, const char** argv);
   int DoDeinit() {return 0;}
   
-  int DoEvent(int argc, const char **argv);
-  
+  Int_t DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+
   
   using AliHLTProcessor::DoEvent;
  

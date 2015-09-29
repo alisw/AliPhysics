@@ -167,7 +167,7 @@ int AliHLTLumiRegComponent::DoInit(int argc, const char **argv){
   return 1;
 }
 
-int AliHLTLumiRegComponent::DoEvent(int argc, const char **argv){
+Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/){
 
   AliSysInfo::AddStamp("AliHLTLumiRegComponent::DoEvent.Start");
   Int_t vertexITSSATRKok=0;
@@ -344,6 +344,10 @@ Int_t AliHLTLumiRegComponent::FitHistos(TH1F *hVtx, Float_t &mean, Float_t &sigm
   
   hVtx->Fit("gaus", "M", "", rangelow, rangeup);
   TF1 *vtxFunct = hVtx->GetFunction("gaus");
+  if (!vtxFunct) {
+    HLTError("No fit function!"); 
+    return 0;
+  }
   mean = vtxFunct->GetParameter(1);
   sigma = vtxFunct->GetParameter(2);
   
