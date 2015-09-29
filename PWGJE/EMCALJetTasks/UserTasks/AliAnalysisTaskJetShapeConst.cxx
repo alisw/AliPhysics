@@ -514,7 +514,7 @@ Bool_t AliAnalysisTaskJetShapeConst::FillHistograms()
       	       Int_t Njets = jetContO->GetNAcceptedJets();
       	       fhNJetsSelEv->Fill(Njets);
       	       jetContO->ResetCurrentID();
-      	       while(jetO = jetContO->GetNextAcceptJet()){
+      	       while((jetO = jetContO->GetNextAcceptJet())){
       	       	  //print constituents of different jet containers
        	     	  //jetO
        	     	  //Printf("N particle %d",jetO->GetNumberOfTracks());
