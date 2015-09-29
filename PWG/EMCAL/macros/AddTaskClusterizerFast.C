@@ -39,7 +39,11 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   task->SetAttachClusters(kTRUE);
   task->SetCaloClustersName(clusName);
   task->SetCaloCellsName(cellsName);
+#ifdef __CLING__
   task->SetInputCellType(static_cast<AliAnalysisTaskEMCALClusterizeFast::InputCellType>(inputCellType));
+#else
+  task->SetInputCellType(inputCellType);
+#endif
   Printf("inputCellType: %d",inputCellType);
 
   task->SetClusterize(kTRUE);
