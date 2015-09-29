@@ -5,6 +5,7 @@ from logging import debug,error
 
 DEFAULT_PRE=""
 DEFAULT_POST="mv syswatch.log %(lower_name)swatch.log"
+DEFAULT_SETUP="cd %(cwd)s && rm -rf %(artifacts)s"
 
 
 def format(s, **kwds):
@@ -71,9 +72,7 @@ if __name__ == "__main__":
   currentCwd = ""
   for (n, test) in runnable:
     script = "# Running Test %s\n" % n
-    script += format("cd %(cwd)s\n"
-                    "rm -rf %(artifacts)s\n",
-                    **test)
+    script += format(test.get("setup", DEFAULT_SETUP), **test) + "\n"
     currentCwd = test["cwd"]
     for step in test["steps"]:
       script += "# Step: %s\n" % step["name"]
