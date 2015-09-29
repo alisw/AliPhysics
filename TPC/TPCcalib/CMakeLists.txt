@@ -59,6 +59,7 @@ set(SRCS
     AliTPCFitPad.cxx
     AliTPCkalmanAlign.cxx
     AliTPCMisAligner.cxx
+    AliTPCcalibAlignInterpolation.cxx
     AliTPCPreprocessorOffline.cxx
    )
 

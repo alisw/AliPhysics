@@ -22,6 +22,7 @@
                                                    //   Duplicted also (most probably) AliTPCCalPad --- to be cleaned up
 
 #pragma link C++ class AliTPCcalibCalib+;          // Re-applying calib on cluster level - refitting of the tracks
+#pragma link C++ class AliTPCcalibAlignInterpolation+; // time dependent TPC space point distortion calibration using external detector interpolation
 #pragma link C++ class AliTPCcalibAlign-;          // (Sector)-alignment calibration 
                                                    //   Histogram cluster to track residuals in order to create later on distortion maps
                                                    // --- update documentation (current documentation is obsolete)
