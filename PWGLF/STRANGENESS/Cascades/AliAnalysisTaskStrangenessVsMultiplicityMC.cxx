@@ -105,9 +105,12 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fkSaveAntiLambda( kTRUE ),
       fkSaveK0Short( kTRUE ),
       fkSaveExtendedRefMultInfo( kFALSE ),
+      fkSelectTriggerByName ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
-      fkApplyTrackletsVsClustersCut( kTRUE ),
+      fkApplyTrackletsVsClustersCut( kFALSE ),
+      fTrigType(AliVEvent::kMB),
+      fTrigName(""),
       //---> Variables for fTreeEvent
       fAmplitude_V0A   (0),
       fAmplitude_V0C   (0),
@@ -375,9 +378,12 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
       fkSaveAntiLambda( kTRUE ),
       fkSaveK0Short( kTRUE ),
       fkSaveExtendedRefMultInfo( kFALSE ),
+      fkSelectTriggerByName ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
-      fkApplyTrackletsVsClustersCut( kTRUE ),
+      fkApplyTrackletsVsClustersCut( kFALSE ),
+      fTrigType(AliVEvent::kMB),
+      fTrigName(""),
       //---> Variables for fTreeEvent
       fAmplitude_V0A (0),
       fAmplitude_V0C (0),
@@ -940,7 +946,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",7,0,7);
         fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
-        fHistEventCounter->GetXaxis()->SetBinLabel(2, "IsMinimumBias");
+        fHistEventCounter->GetXaxis()->SetBinLabel(2, "IsSelectedTrigger");
         fHistEventCounter->GetXaxis()->SetBinLabel(3, "IsINELgtZERO");
         fHistEventCounter->GetXaxis()->SetBinLabel(4, "IsAcceptedVertexPosition");
         fHistEventCounter->GetXaxis()->SetBinLabel(5, "IsNotPileupSPDInMultBins");
@@ -1535,27 +1541,50 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
     // double diffractive
     if (processtype == 94) fEvSel_MCType = 3;
 
-//------------------------------------------------
-// Event Selection ---
-//  --- Performed entirely via AliPPVsMultUtils
-//------------------------------------------------
+    //  --- Performed entirely via AliPPVsMultUtils 
+    // (except removal of incomplete events and SPDClusterVsTracklets cut) 
+    //------------------------------------------------
 
     //Copy-paste of steps done in AliAnalysisTaskSkeleton
+
     fHistEventCounter->Fill(0.5);
 
     //Test IsEventSelected (embeds all)
-    if( AliPPVsMultUtils::IsEventSelected (lESDevent) ) fHistEventCounter->Fill(6.5);
+    if(!fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigType) ) fHistEventCounter->Fill(6.5);
+    else if(fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigName) ) fHistEventCounter->Fill(6.5);
 
     //------------------------------------------------
-    //Step 1: Check for Min-Bias Trigger
+    //Step 1: Check for selected Trigger
     //------------------------------------------------
-    if( !AliPPVsMultUtils::IsMinimumBias( lESDevent ) && !fkSkipEventSelection) {
-        PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
-        PostData(4, fTreeCascade);
-        return;
+    if(!fkSelectTriggerByName){
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigType ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return;
+        }
+    }else{
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigName ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return;
+        }
     }
+
+    //------------------------------------------------
+    //Step 1a: Apply tracklets vs cluster cuts
+    //------------------------------------------------
+    if(fkApplyTrackletsVsClustersCut && fUtils->IsSPDClusterVsTrackletBG( lESDevent) && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return;
+    }
+
     fHistEventCounter->Fill(1.5);
 
     //------------------------------------------------

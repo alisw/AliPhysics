@@ -77,6 +77,12 @@ public:
     void SetSaveK0Short (Bool_t lSaveK0Short = kTRUE ) {
         fkSaveK0Short   = lSaveK0Short;
     }
+
+//---------------------------------------------------------------------------------------
+    //Task Configuration: trigger selection 
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+    void SetSelectedTriggerClass(TString trigName) { fkSelectTriggerByName = kTRUE; fTrigName = trigName;}
+
     
 //---------------------------------------------------------------------------------------
     //Task Configuration: Meant to enable quick re-execution of vertexer if needed
@@ -162,11 +168,14 @@ private:
     Bool_t fkSaveAntiLambda;        //if true, removes tree fill confirmation for antilambda mass window
     Bool_t fkSaveK0Short;           //if true, removes tree fill confirmation for k0short mass window 
     Bool_t fkSaveExtendedRefMultInfo; //if true, save 20 integers per event extra for eta-dependence of refmult
-
+    Bool_t fkSelectTriggerByName;  // to select trigger by name (if it's not availble in AliVEvent)
+ 
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change)
     Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
+    TString   fTrigName; // trigger name (if it's not available in AliVEvent)
 
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
