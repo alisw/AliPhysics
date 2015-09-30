@@ -41,7 +41,6 @@ ClassImp( AliHLTLumiRegComponent )
 AliHLTLumiRegComponent::AliHLTLumiRegComponent():
 AliHLTProcessor(),
 fFitInternally(kFALSE),
-fResetOnNextEvent(kFALSE),
 fEventSpecie(0)
 {
   for(Int_t i=0; i<3; i++){
@@ -57,7 +56,6 @@ fEventSpecie(0)
 AliHLTLumiRegComponent::AliHLTLumiRegComponent( const AliHLTLumiRegComponent& ):
 AliHLTProcessor(),
 fFitInternally(kFALSE),
-fResetOnNextEvent(kFALSE),
 fEventSpecie(0)
 {
     // see header file for class documentation
@@ -172,7 +170,7 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
       GetFirstInputBlock(kAliHLTDataTypeEOR|kAliHLTDataOriginAny);
     if (pBlock)
     {
-      Push();
+      PushAndReset();
     }
     return 0;
   }
@@ -180,8 +178,6 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
   const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS);
   if (!pBlock) return 0;
   
-  Reset();
-
   // fpBenchmark->AddInput(pBlock->fSize);
   vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
   if (!vtxFlat) return 0;
@@ -238,30 +234,21 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
       if (lumiRegResults == 0) HLTWarning("Problems in the luminous region fit, returning 0");
   }
   
-  Push();
+  PushAndReset();
+
   return 0;
 }
 
-int AliHLTLumiRegComponent::Push()
+int AliHLTLumiRegComponent::PushAndReset()
 {
+  HLTInfo("pushing and resetting");
   for (Int_t iCoord =0; iCoord<3; iCoord++){
     PushBack(fPrimary[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny);
     PushBack(fPrimaryDefMult[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny);
-  }
-  fResetOnNextEvent=kTRUE;
-  Printf("AliHLTLumiRegComponent: pushing!");
-  return 0;
-}
-
-int AliHLTLumiRegComponent::Reset()
-{
-  if (!fResetOnNextEvent) return 0;
-  Printf("AliHLTLumiRegComponent: resetting!");
-  for (Int_t iCoord =0; iCoord<3; iCoord++){
+    
     fPrimary[iCoord]->Reset();
     fPrimaryDefMult[iCoord]->Reset();
   }
-  fResetOnNextEvent=kFALSE;
   return 0;
 }
 

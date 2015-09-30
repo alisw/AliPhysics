@@ -58,8 +58,7 @@ public:
 
   enum eventSpecie {kpp, kpPb, kPbPb};
   
-  int Push();
-  int Reset();
+  int PushAndReset();
   
 protected:
   int DoInit(int argc, const char** argv);
@@ -84,7 +83,6 @@ private:
  // TH1F *fPrimaryY[2];
  // TH1F *fPrimaryZ[2];
  Bool_t fFitInternally;
- Bool_t fResetOnNextEvent;
   
   TH1F *fPrimary[3];
 
