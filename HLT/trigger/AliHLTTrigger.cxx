@@ -142,11 +142,11 @@ int AliHLTTrigger::TriggerEvent(
   AliHLTReadoutList readoutlist = result->ReadoutList();
   
   fTriggerEventResult = PushBack(result, type, spec);
-  if (fTriggerEventResult == 0) {
+  if (fTriggerEventResult >= 0) {
     fTriggerEventResult = PushBack(readoutlist.Buffer(), readoutlist.BufferSize(), kAliHLTDataTypeReadoutList, fReadoutListSpecBits);
   }
   
-  if (fTriggerEventResult == 0) fDecisionMade = true;
+  if (fTriggerEventResult >= 0) fDecisionMade = true;
   return fTriggerEventResult;
 }
 

@@ -1551,7 +1551,7 @@ int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, con
 				       const void* pHeader, int iHeaderSize)
 {
   // see header file for function documentation
-  int iResult=0;
+  int iResult=iBufferSize;
   int iBlkSize = iBufferSize + iHeaderSize;
 
   if ((pBuffer!=NULL && iBufferSize>0) || (pHeader!=NULL && iHeaderSize>0)) {

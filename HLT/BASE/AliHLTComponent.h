@@ -1697,6 +1697,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param spec        data specification
    * @param pHeader     pointer to header
    * @param iHeaderSize size of Header
+   * @return size of buffer
    * @return neg. error code if failed
    */
   int InsertOutputBlock(const void* pBuffer, int iBufferSize,
