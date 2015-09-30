@@ -43,6 +43,8 @@ class AliAnalysisTaskEMCALPi0CalibSelection : public AliAnalysisTaskSE
     
 public:
 
+  AliAnalysisTaskEMCALPi0CalibSelection();
+  
   AliAnalysisTaskEMCALPi0CalibSelection(const char* name);
     
   virtual ~AliAnalysisTaskEMCALPi0CalibSelection();
@@ -141,8 +143,8 @@ public:
 
   
   void    SetImportGeometryFromFile(Bool_t import, TString path = ""){
-    fImportGeometryFromFile = import    ;
-    fImportGeometryFilePath = path      ; } // EMCAL
+                                                           fImportGeometryFromFile = import ;
+                                                           fImportGeometryFilePath = path   ; } 
 
   // Mask clusters
   
@@ -188,9 +190,9 @@ private:
     
   Bool_t              fFilteredInput;    ///<  Read input produced with filter.
 
-  Bool_t             fImportGeometryFromFile;   ///<  Import geometry settings in geometry.root file.
+  Bool_t              fImportGeometryFromFile; ///<  Import geometry settings in geometry.root file.
   
-  TString            fImportGeometryFilePath;   ///<  Path fo geometry.root file.
+  TString             fImportGeometryFilePath; ///<  Path fo geometry.root file.
   
   // Analysis cuts
   
