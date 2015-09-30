@@ -735,15 +735,6 @@ void AliHLTComponent::DataType2Topic( const AliHLTComponentDataType type,
   memcpy( output+kAliHLTComponentDataTypefIDsize, type.fOrigin, kAliHLTComponentDataTypefOriginSize );
 }
 
-void AliHLTComponent::Topic2DataType( const char input[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize], 
-                                      AliHLTComponentDataType* type)
-{
-  //fill a AliHLTComponentDataType struct from a topic representation
-  //TODO: maybe validate the topic first?
-  memcpy( type->fID, &input[0], kAliHLTComponentDataTypefIDsize );
-  memcpy( type->fOrigin, &input[kAliHLTComponentDataTypefIDsize], kAliHLTComponentDataTypefOriginSize );
-}
-
 void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) const
 {
   // see header file for function documentation

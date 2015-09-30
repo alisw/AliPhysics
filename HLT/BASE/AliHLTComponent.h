@@ -655,7 +655,6 @@ class AliHLTComponent : public AliHLTLogging {
    * fID goes first (8 chars) then fOrigin (4 chars)
    **/
   static void DataType2Topic( const AliHLTComponentDataType type, char* output );
-  static void Topic2DataType( const char input[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize], AliHLTComponentDataType* type );
 
   /**
    * Calculate a CRC checksum of a data buffer.
