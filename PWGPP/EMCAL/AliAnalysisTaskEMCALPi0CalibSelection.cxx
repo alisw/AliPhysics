@@ -34,6 +34,105 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelection) ;
 ///
 /// Default constructor. Arrays initialization is done here.
 //______________________________________________________________________________________________
+AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection() :
+AliAnalysisTaskSE(),  
+fEMCALGeo(0x0),           fLoadMatrices(0),
+fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
+fTriggerName("EMC"),      
+fRecoUtils(new AliEMCALRecoUtils), 
+fOADBFilePath(""),        fCalibFilePath(""),
+fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
+fCaloClustersArr(0x0),    fEMCALCells(0x0),
+fCuts(0x0),               fOutputContainer(0x0),
+fVertex(),                fFilteredInput(kFALSE),
+fImportGeometryFromFile(1), fImportGeometryFilePath(""),
+fEmin(0.5),               fEmax(15.),      
+fL0min(0.01),             fL0max(0.5),              
+fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
+fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
+fLogWeight(4.5),          fSameSM(kFALSE),         
+fNMaskCellColumns(11),    fMaskCellColumns(0x0),
+fInvMassCutMin(110.),     fInvMassCutMax(160.),
+// Histograms binning
+fNbins(300),              
+fMinBin(0.),              fMaxBin(300.),   
+fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
+// Temporal
+fMomentum1(),             fMomentum2(),             fMomentum12(),
+// Histograms
+fHmgg(0x0),               fHmggDifferentSM(0x0), 
+fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0), 
+fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
+fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
+fhNEvents(0x0),
+fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
+{
+  for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++)
+  {
+    for(Int_t iX=0; iX<24; iX++)
+    {
+      for(Int_t iZ=0; iZ<48; iZ++)
+      {
+        fHmpi0[iMod][iZ][iX]   = 0 ;
+      }
+    } 
+  }
+  
+  fVertex[0]=fVertex[1]=fVertex[2]=-1000;
+  
+  fHTpi0[0]= 0 ;
+  fHTpi0[1]= 0 ;
+  fHTpi0[2]= 0 ;
+  fHTpi0[3]= 0 ;
+  
+  fMaskCellColumns = new Int_t[fNMaskCellColumns];
+  fMaskCellColumns[0] = 6 ;  fMaskCellColumns[1] = 7 ;  fMaskCellColumns[2] = 8 ; 
+  fMaskCellColumns[3] = 35;  fMaskCellColumns[4] = 36;  fMaskCellColumns[5] = 37; 
+  fMaskCellColumns[6] = 12+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[7] = 13+AliEMCALGeoParams::fgkEMCALCols;
+  fMaskCellColumns[8] = 40+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[9] = 41+AliEMCALGeoParams::fgkEMCALCols; 
+  fMaskCellColumns[10]= 42+AliEMCALGeoParams::fgkEMCALCols; 
+  
+  for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules/2; iSMPair++) 
+  {
+    fHmggPairSameSectorSM[iSMPair]          = 0;
+    fHmggPairSameSectorSMMaskFrame[iSMPair] = 0;
+    fhClusterPairDiffTimeSameSector[iSMPair]= 0;
+  }
+  
+  for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules-2; iSMPair++)
+  { 
+    fHmggPairSameSideSM[iSMPair]            = 0;
+    fHmggPairSameSideSMMaskFrame[iSMPair]   = 0;
+    fhClusterPairDiffTimeSameSide[iSMPair]  = 0;
+  }
+  
+  for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) 
+  {
+    fHmggSM[iSM]                     = 0;
+    fHmggSMMaskFrame[iSM]            = 0;
+    fHOpeningAngleSM[iSM]            = 0;
+    fHOpeningAnglePairSM[iSM]        = 0;
+    fHAsymmetrySM[iSM]               = 0;
+    fHAsymmetryPairSM[iSM]           = 0;
+    fhTowerDecayPhotonHit[iSM]       = 0;
+    fhTowerDecayPhotonEnergy[iSM]    = 0;
+    fhTowerDecayPhotonAsymmetry[iSM] = 0;
+    fhTowerDecayPhotonHitMaskFrame[iSM]= 0;
+    fMatrix[iSM]                     = 0x0;
+    fhClusterTimeSM[iSM]             = 0;
+    fhClusterPairDiffTimeSameSM[iSM] = 0;
+  }
+  
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());  // will contain cuts or local params
+}
+
+///
+/// Default constructor with name as option. Arrays initialization is done here.
+///
+/// \param name: Name of task.
+///
+//______________________________________________________________________________________________
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
 AliAnalysisTaskSE(name),  
 fEMCALGeo(0x0),           fLoadMatrices(0),
@@ -1111,7 +1210,6 @@ void AliAnalysisTaskEMCALPi0CalibSelection::SetMaskCellColumn(Int_t ipos, Int_t 
     if(ipos < fNMaskCellColumns) fMaskCellColumns[ipos] = icol            ;
     else AliWarning("Mask column not set, position larger than allocated set size first") ;
 }
-
 
 ///
 /// Create cuts/param objects and publish to slot
