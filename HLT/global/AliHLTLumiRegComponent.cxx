@@ -243,11 +243,11 @@ int AliHLTLumiRegComponent::PushAndReset()
 {
   HLTInfo("pushing and resetting");
   for (Int_t iCoord =0; iCoord<3; iCoord++){
-    PushBack(fPrimary[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny);
-    PushBack(fPrimaryDefMult[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny);
+    if (PushBack(fPrimary[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny) > 0)
+      fPrimary[iCoord]->Reset();
     
-    fPrimary[iCoord]->Reset();
-    fPrimaryDefMult[iCoord]->Reset();
+    if (PushBack(fPrimaryDefMult[iCoord], kAliHLTDataTypeHistogram | kAliHLTDataOriginAny) > 0)
+      fPrimaryDefMult[iCoord]->Reset();
   }
   return 0;
 }
