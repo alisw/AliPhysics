@@ -104,9 +104,12 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fkSaveK0Short( kTRUE ),
       fkPreselectDedx( kTRUE ), 
       fkSaveExtendedRefMultInfo ( kFALSE ) ,
+      fkSelectTriggerByName ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
-      fkApplyTrackletsVsClustersCut(kTRUE),
+      fkApplyTrackletsVsClustersCut(kFALSE),
+      fTrigType(AliVEvent::kMB),
+      fTrigName(""),
 //---> Variables for fTreeEvent
       fAmplitude_V0A   (0),
       fAmplitude_V0C   (0),
@@ -130,6 +133,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fRefMultEta5(0),
       fRefMultEta8(0),
       fRunNumber(0),
+      fBunchCrossNumber(0),
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
       fEvSel_IsNotPileup(0),
@@ -143,6 +147,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fEvSel_nTracklets(0),
       fEvSel_nTrackletsEta10(0),
       fEvSel_nSPDClusters(0),
+      fEvSel_nTPCtracks(0),
       fEvSel_VtxZ(0),
       fEvSel_nSPDPrimVertices(0),
       fEvSel_distZ(0),
@@ -252,9 +257,12 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fkSaveK0Short( kTRUE ),
       fkPreselectDedx( kTRUE ), 
       fkSaveExtendedRefMultInfo ( kFALSE ) ,
+      fkSelectTriggerByName ( kFALSE ) ,
       fkRunVertexers    ( kTRUE  ),
       fkSkipEventSelection( kFALSE ),
-      fkApplyTrackletsVsClustersCut(kTRUE),
+      fkApplyTrackletsVsClustersCut(kFALSE),
+      fTrigType(AliVEvent::kMB),
+      fTrigName(""),
 //---> Variables for fTreeEvent
       fAmplitude_V0A (0),
       fAmplitude_V0C (0),
@@ -278,6 +286,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fRefMultEta5(0),
       fRefMultEta8(0),
       fRunNumber(0),
+      fBunchCrossNumber(0),
       fEvSel_HasAtLeastSPDVertex(0),
       fEvSel_VtxZCut(0),
       fEvSel_IsNotPileup(0),
@@ -291,6 +300,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
       fEvSel_nTracklets(0),
       fEvSel_nTrackletsEta10(0),
       fEvSel_nSPDClusters(0),
+      fEvSel_nTPCtracks(0),
       fEvSel_VtxZ(0),
       fEvSel_nSPDPrimVertices(0),
       fEvSel_distZ(0),
@@ -505,6 +515,8 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
 
     //Run Number
     fTreeEvent->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+    //Bunch Cross Number 
+    fTreeEvent->Branch("fBunchCrossNumber", &fBunchCrossNumber, "fBunchCrossNumber/I");
 
     //Booleans for Event Selection
     fTreeEvent->Branch("fEvSel_HasAtLeastSPDVertex", &fEvSel_HasAtLeastSPDVertex, "fEvSel_HasAtLeastSPDVertex/O");
@@ -522,6 +534,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     fTreeEvent->Branch("fEvSel_nTracklets",      &fEvSel_nTracklets, "fEvSel_nTracklets/I");
     fTreeEvent->Branch("fEvSel_nTrackletsEta10", &fEvSel_nTrackletsEta10, "fEvSel_nTrackletsEta10/I");
     fTreeEvent->Branch("fEvSel_nSPDClusters", &fEvSel_nSPDClusters, "fEvSel_nSPDClusters/I");
+    fTreeEvent->Branch("fEvSel_nTPCtracks", &fEvSel_nTPCtracks, "fEvSel_nTPCtracks/I");
 
     fTreeEvent->Branch("fEvSel_VtxZ", &fEvSel_VtxZ, "fEvSel_VtxZ/F");
     fTreeEvent->Branch("fEvSel_nSPDPrimVertices", &fEvSel_nSPDPrimVertices, "fEvSel_nSPDPrimVertices/I");
@@ -579,6 +592,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     if ( fkSaveExtendedRefMultInfo )
         fTreeV0->Branch("fTreeVariableRefMultDiffEta",fTreeVariableRefMultDiffEta,"fTreeVariableRefMultDiffEta[20]/I");
     fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
+    fTreeV0->Branch("fTreeVariableBunchCrossNumber",&fTreeVariableBunchCrossNumber,"fTreeVariableBunchCrossNumber/I");
 
     //------------------------------------------------
 
@@ -631,6 +645,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
     if ( fkSaveExtendedRefMultInfo )
         fTreeCascade->Branch("fTreeCascVarRefMultDiffEta",fTreeCascVarRefMultDiffEta,"fTreeCascVarRefMultDiffEta[20]/I");
     fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
+    fTreeCascade->Branch("fTreeCascVarBunchCrossNumber",&fTreeCascVarBunchCrossNumber,"fTreeCascVarBunchCrossNumber/I");
     //-----------DECAY-LENGTH-INFO--------------------
     fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
     //------------------------------------------------
@@ -678,7 +693,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",7,0,7);
         fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
-        fHistEventCounter->GetXaxis()->SetBinLabel(2, "IsMinimumBias");
+        fHistEventCounter->GetXaxis()->SetBinLabel(2, "IsSelectedTrigger");
         fHistEventCounter->GetXaxis()->SetBinLabel(3, "IsINELgtZERO");
         fHistEventCounter->GetXaxis()->SetBinLabel(4, "IsAcceptedVertexPosition");
         fHistEventCounter->GetXaxis()->SetBinLabel(5, "IsNotPileupSPDInMultBins");
@@ -717,6 +732,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
 
     fEvSel_nTracklets   = -1;
     fEvSel_nSPDClusters = -1;
+    fEvSel_nTPCtracks = -1;
     fEvSel_nContributors = -1;
     fEvSel_nContributorsPileup = -1;
     fEvSel_nSPDPrimVertices = -1;
@@ -746,13 +762,15 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     }
 
     fRunNumber = lESDevent->GetRunNumber();
+    fBunchCrossNumber = lESDevent->GetBunchCrossNumber();
 
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
 
     //------------------------------------------------
     // Event Selection ---
-    //  --- Performed entirely via AliPPVsMultUtils
+    //  --- Performed entirely via AliPPVsMultUtils 
+    // (except removal of incomplete events and SPDClusterVsTracklets cut) 
     //------------------------------------------------
 
     //Copy-paste of steps done in AliAnalysisTaskSkeleton
@@ -760,18 +778,53 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     fHistEventCounter->Fill(0.5);
 
     //Test IsEventSelected (embeds all)
-    if( AliPPVsMultUtils::IsEventSelected (lESDevent) ) fHistEventCounter->Fill(6.5);
+    if(!fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigType) ) fHistEventCounter->Fill(6.5);
+    else if(fkSelectTriggerByName && AliPPVsMultUtils::IsEventSelected (lESDevent, fTrigName) ) fHistEventCounter->Fill(6.5);
 
     //------------------------------------------------
-    //Step 1: Check for Min-Bias Trigger
+    //Step 1: Check for selected Trigger
     //------------------------------------------------
-    if( !AliPPVsMultUtils::IsMinimumBias( lESDevent ) && !fkSkipEventSelection) {
-        PostData(1, fListHist);
-        PostData(2, fTreeEvent);
-        PostData(3, fTreeV0);
-        PostData(4, fTreeCascade);
-        return;
+    if(!fkSelectTriggerByName){
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigType ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return;
+        }
+    }else{
+       if( !AliPPVsMultUtils::IsSelectedTrigger( lESDevent, fTrigName ) && !fkSkipEventSelection) {
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return;
+        }
     }
+
+    //------------------------------------------------
+    //Step 1a: Discard incomplete events
+    //------------------------------------------------
+    if(lESDevent->IsIncompleteDAQ() && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return;
+    }
+
+    //------------------------------------------------
+    //Step 1b: Apply tracklets vs cluster cuts
+    //------------------------------------------------
+    if(fkApplyTrackletsVsClustersCut && fUtils->IsSPDClusterVsTrackletBG( lESDevent) && !fkSkipEventSelection){
+           PostData(1, fListHist);
+           PostData(2, fTreeEvent);
+           PostData(3, fTreeV0);
+           PostData(4, fTreeCascade);
+           return;     
+    } 
+
+
     fHistEventCounter->Fill(1.5);
 
     //------------------------------------------------
@@ -1016,6 +1069,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
     //Tracklets vs Clusters Exploratory data
     fEvSel_nTracklets     = lESDevent->GetMultiplicity()->GetNumberOfTracklets();
     fEvSel_nSPDClusters   = lESDevent->GetNumberOfITSClusters(0) + lESDevent->GetNumberOfITSClusters(1);
+    fEvSel_nTPCtracks   = GetNumberTPCtracks(lESDevent);
 
     //INEL > 0 check
     fEvSel_INELgtZERO          = IsINELgtZERO( lESDevent , "tracks"    );
@@ -1213,6 +1267,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
         fTreeVariableRefMultEta8 = fRefMultEta8;
         fTreeVariableRefMultEta5 = fRefMultEta5;
         fTreeVariableRunNumber = fRunNumber;
+        fTreeVariableBunchCrossNumber = fBunchCrossNumber;
         for(Int_t i=0; i<20; i++) fTreeVariableRefMultDiffEta[i] = fRefMultDiffEta[i];
 
         //------------------------------------------------
@@ -1609,6 +1664,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
         fTreeCascVarRefMultEta8 = fRefMultEta8;
         fTreeCascVarRefMultEta5 = fRefMultEta5;
         fTreeCascVarRunNumber = fRunNumber;
+        fTreeCascVarBunchCrossNumber = fBunchCrossNumber;
         for(Int_t i=0; i<20; i++) fTreeCascVarRefMultDiffEta[i] = fRefMultDiffEta[i];
 
         fTreeCascVarDistOverTotMom = TMath::Sqrt(
@@ -1734,3 +1790,17 @@ Bool_t AliAnalysisTaskStrangenessVsMultiplicity::IsINELgtZERO(AliESDEvent *lESDe
 
     return lReturnValue;
 }
+
+
+Int_t AliAnalysisTaskStrangenessVsMultiplicity::GetNumberTPCtracks(AliESDEvent *event) const
+{
+  // returns number of TPCtracks with default TPC cuts 
+  AliESDtrackCuts *tpcOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  tpcOnly->SetEtaRange(-0.8, 0.8);
+  tpcOnly->SetPtRange(0.15);
+  TObjArray* list = tpcOnly->GetAcceptedTracks(event, kTRUE);
+  Int_t nGoodTracks = list->GetEntries();
+  return nGoodTracks;
+}
+
+

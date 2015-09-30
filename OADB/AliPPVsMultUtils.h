@@ -2,6 +2,7 @@
 #define AliPPVsMultUtils_H
 
 #include "TObject.h"
+#include "AliVEvent.h"
 
 class AliVEvent;
 class AliVVertex;
@@ -27,12 +28,15 @@ public:
     Bool_t LoadCalibration(Int_t lLoadThisCalibration);
 
     //static EvSel Snippets
-    static Bool_t IsMinimumBias                        (AliVEvent *event);
+    static Bool_t IsMinimumBias(AliVEvent* event);
+    static Bool_t IsSelectedTrigger                        (AliVEvent* event, AliVEvent::EOfflineTriggerTypes trigType = AliVEvent::kMB);
+    static Bool_t IsSelectedTrigger                        (AliVEvent* event, TString trigName);
     static Bool_t IsINELgtZERO                         (AliVEvent *event);
     static Bool_t IsAcceptedVertexPosition             (AliVEvent *event);
     static Bool_t IsNotPileupSPDInMultBins             (AliVEvent *event);
     static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
-    static Bool_t IsEventSelected(AliVEvent *event);
+    static Bool_t IsEventSelected(AliVEvent *event,AliVEvent::EOfflineTriggerTypes trigType = AliVEvent::kMB);
+    static Bool_t IsEventSelected(AliVEvent *event, TString trigName);
     
     //Wrapper with fallback to tracklets
     static Int_t GetStandardReferenceMultiplicity (AliVEvent *event, Bool_t lEmbedEventSelection = kTRUE);

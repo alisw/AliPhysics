@@ -232,7 +232,7 @@ Float_t AliPPVsMultUtils::GetMultiplicityPercentile(AliVEvent *event, TString lM
             fBoundaryHisto_V0SB -> GetBinContent( fBoundaryHisto_V0SB->FindBin( MinVal( multV0Apartial / fAverageAmplitudes->GetBinContent(3) , multV0Cpartial / fAverageAmplitudes->GetBinContent(4) ) ) );
 
     if ( lEmbedEventSelection ) {
-        if(IsMinimumBias                        ( event ) == kFALSE ) lreturnval = -200;
+        if(IsSelectedTrigger                        ( event ) == kFALSE ) lreturnval = -200;
         if(IsINELgtZERO                         ( event ) == kFALSE ) lreturnval = -201;
         if(IsAcceptedVertexPosition             ( event ) == kFALSE ) lreturnval = -202;
         if(IsNotPileupSPDInMultBins             ( event ) == kFALSE ) lreturnval = -203;
@@ -514,6 +514,30 @@ Bool_t AliPPVsMultUtils::IsMinimumBias(AliVEvent* event)
 }
 
 //______________________________________________________________________
+Bool_t AliPPVsMultUtils::IsSelectedTrigger(AliVEvent* event, AliVEvent::EOfflineTriggerTypes trigType)
+// Function to check for a specific trigger class available in AliVEvent (default AliVEvent::kMB)
+{
+    //Code to reject events that aren't trigType
+    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t isSelected = 0;
+    isSelected = (maskIsSelected & trigType) == trigType;
+    return isSelected;
+}
+
+//______________________________________________________________________
+Bool_t AliPPVsMultUtils::IsSelectedTrigger(AliVEvent* event, TString trigName)
+// Function to check for a specific trigger class with name "trigName"
+{
+    //Code to reject events that aren't kMB
+    UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t isSelected = 0;
+    TString classTrigg = event->GetFiredTriggerClasses(); 
+    isSelected = maskIsSelected && classTrigg.Contains(trigName.Data());
+    return isSelected;
+}
+
+
+//______________________________________________________________________
 Bool_t AliPPVsMultUtils::IsINELgtZERO(AliVEvent *event)
 // Function to check for INEL > 0 condition
 // Makes use of tracklets and requires at least and SPD vertex
@@ -669,7 +693,7 @@ Int_t AliPPVsMultUtils::GetStandardReferenceMultiplicity(AliVEvent *event, Bool_
     }
 
     if ( lEmbedEventSelection ) {
-        if(IsMinimumBias                        ( event ) == kFALSE ) lReturnValue = -200;
+        if(IsSelectedTrigger                        ( event ) == kFALSE ) lReturnValue = -200;
         if(IsINELgtZERO                         ( event ) == kFALSE ) lReturnValue = -201;
         if(IsAcceptedVertexPosition             ( event ) == kFALSE ) lReturnValue = -202;
         if(IsNotPileupSPDInMultBins             ( event ) == kFALSE ) lReturnValue = -203;
@@ -700,7 +724,7 @@ Bool_t AliPPVsMultUtils::IsNotPileupSPDInMultBins(AliVEvent *event)
 }
 
 //______________________________________________________________________
-Bool_t AliPPVsMultUtils::IsEventSelected(AliVEvent *event)
+Bool_t AliPPVsMultUtils::IsEventSelected(AliVEvent *event, AliVEvent::EOfflineTriggerTypes trigType)
 // Single function which does a series of selections:
 //  1) kMB trigger selection
 //  2) INEL > 0 (with tracklets)
@@ -713,7 +737,26 @@ Bool_t AliPPVsMultUtils::IsEventSelected(AliVEvent *event)
             IsINELgtZERO                        ( event ) == kTRUE &&
             IsAcceptedVertexPosition            ( event ) == kTRUE &&
             HasNoInconsistentSPDandTrackVertices( event ) == kTRUE &&
-            IsMinimumBias                       ( event ) == kTRUE
+            IsSelectedTrigger                       ( event , trigType) == kTRUE
+       ) lReturnValue = kTRUE;
+    return lReturnValue;
+}
+
+//______________________________________________________________________
+Bool_t AliPPVsMultUtils::IsEventSelected(AliVEvent *event, TString trigName)
+// Single function which does a series of selections:
+//  1) kMB trigger selection
+//  2) INEL > 0 (with tracklets)
+//  3) Checks for accepted vertex position (|eta|<10cm)
+//  4) Checks for consistent SPD and track vertex (if track vertex exists)
+//  5) Rejects events tagged with IsPileupFromSPDInMultBins()
+{
+    Bool_t lReturnValue = kFALSE;
+    if ( IsNotPileupSPDInMultBins               ( event ) == kTRUE &&
+            IsINELgtZERO                        ( event ) == kTRUE &&
+            IsAcceptedVertexPosition            ( event ) == kTRUE &&
+            HasNoInconsistentSPDandTrackVertices( event ) == kTRUE &&
+            IsSelectedTrigger                       ( event , trigName) == kTRUE
        ) lReturnValue = kTRUE;
     return lReturnValue;
 }
