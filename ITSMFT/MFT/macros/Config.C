@@ -201,7 +201,7 @@ void Config() {
   Int_t iEMCAL = 0;
   Int_t iFMD   = 0;
   Int_t iFRAME = 0;
-  Int_t iITS   = 0;
+  Int_t iITS   = 1;
   Int_t iMAG   = 1;
   Int_t iPHOS  = 0;
   Int_t iPMD   = 0;
@@ -597,7 +597,7 @@ void LoadLibs() {
     gSystem->Load("libAliPythia6");     // ALICE specific implementations
   } 
   else {
-    gSystem->Load("libpythia6_4_21");   // Pythia 6.4
+    gSystem->Load("libpythia6_4_25");   // Pythia 6.4
     gSystem->Load("libAliPythia6");     // ALICE specific implementations	
   }
   
