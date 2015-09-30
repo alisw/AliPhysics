@@ -30,7 +30,8 @@
 ClassImp(AliMultSelectionCalibrator);
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
-    TNamed(), fInputFileName(""), fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
+    TNamed(), fInputFileName(""), fBufferFileName("buffer.root"), 
+    fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0)
 {
     // Constructor
@@ -49,7 +50,8 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
 }
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
-    TNamed(name,title), fInputFileName(""), fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
+    TNamed(name,title), fInputFileName(""), fBufferFileName("buffer.root"), 
+    fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0)
 {
     // Named Constructor
@@ -242,7 +244,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Int_t lThisRunIndex = -1;
     //Buffer file with run-by-run TTree objects needed for later processing
 
-    TFile *fOutput = new TFile ("buffer.root", "RECREATE");
+    TFile *fOutput = new TFile (fBufferFileName.Data(), "RECREATE");
     TTree *sTree[lMaxQuantiles];
     cout<<"Creating Trees..."<<endl;
     for(Int_t iRun=0; iRun<lMax; iRun++) {
