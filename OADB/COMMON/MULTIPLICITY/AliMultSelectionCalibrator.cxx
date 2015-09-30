@@ -203,9 +203,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     AliMultEstimator *fEstADC = new AliMultEstimator("ADC", "", "(fMultiplicity_ADC)");
     
     //Integer estimators
-    AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPD", "", "(fnSPDClusters)");
+    //AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPD", "", "(fnSPDClusters)");
     //Set special calibration mode for integers
-    fEstnSPDClusters->SetIsInteger(kTRUE);
+    //fEstnSPDClusters->SetIsInteger(kTRUE);
     
     fSelection -> AddEstimator( fEstV0M );
     fSelection -> AddEstimator( fEstV0A );
@@ -216,7 +216,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fSelection -> AddEstimator( fEstADM );
     fSelection -> AddEstimator( fEstADA );
     fSelection -> AddEstimator( fEstADC );
-    fSelection -> AddEstimator( fEstnSPDClusters );
+    //fSelection -> AddEstimator( fEstnSPDClusters );
     
     //============================================================
 

@@ -46,7 +46,9 @@ AliMultSelection::AliMultSelection(AliMultSelection *lCopyMe){
     }
 }
 AliMultSelection::~AliMultSelection(){
-  // destructor
+    // destructor: clean stuff up 
+    delete fEstimatorList;
+    fEstimatorList=0x0;
 }
 
 void AliMultSelection::PrintInfo()

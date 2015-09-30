@@ -13,6 +13,7 @@ public:
     AliMultSelection(const char * name, const char * title = "Mult Estimator");
     AliMultSelection(AliMultSelection *lCopyMe);
     ~AliMultSelection();
+    void Clear(Option_t* = "") {}; //dummy
 
     void     PrintInfo();
     

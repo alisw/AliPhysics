@@ -47,6 +47,7 @@ class AliESDAD; //AD
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TLegend.h"
+#include "TObjectTable.h"
 //#include "AliLog.h"
 
 #include "AliESDEvent.h"
@@ -380,6 +381,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
     // Main loop
     // Called for each event
 
+    //Debugging / Memory usage tests
+    //gObjectTable->Print();
+    
     AliESDEvent *lESDevent = 0x0;
 
     //Zero all booleans, etc: safe initialization per event
@@ -411,21 +415,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
         AliWarning("ERROR: lESDevent not available \n");
         return;
     }
-
+    
     //Get VZERO Information for multiplicity later
     AliVVZERO* esdV0 = lESDevent->GetVZEROData();
-    if (!esdV0) { 
+    if (!esdV0) {
         AliError("AliVVZERO not available");
         return;
     }
     //Get AD Multiplicity Information
-  AliESDAD*fesdAD = lESDevent->GetADData();  
-  if(!fesdAD){
-	  AliWarning("ERROR:fesdAD not available\n");
-	  
-	}
-	
-  	
+    AliESDAD *fesdAD = lESDevent->GetADData();
+    if(!fesdAD){
+        AliWarning("ERROR:fesdAD not available\n");
+        
+    }
+    
+    
     fRunNumber = lESDevent->GetRunNumber();
     Double_t lMagneticField = -10;
     lMagneticField = lESDevent->GetMagneticField( );
@@ -744,7 +748,6 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //===============================================
         // Compute Percentiles
         //===============================================
-        
         //Make sure OADB is loaded
         SetupRun( lESDevent );
         
@@ -771,12 +774,11 @@ void AliMultSelectionTask::UserExec(Option_t *)
         }
         
         //Add to AliVEvent
-        if(!(lESDevent->FindListObject("MultSelection"))){
-            //AliInfo("Adding object with properties: ");
-            //fSelection->PrintInfo();
-            AliMultSelection *fSelectionContainer = new AliMultSelection( fSelection );
-            fSelectionContainer->SetName("MultSelection");
-            lESDevent->AddObject(fSelectionContainer);
+        if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ){
+            InputEvent()->AddObject(fSelection);
+            fkAttached = kTRUE;
+        }else{
+            AliInfo("Already there!");
         }
     }
     // Post output data.
@@ -850,6 +852,6 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     fSelection = new AliMultSelection( oadbMultSelection->GetMultSelection() ); //allocate new
 
     //Make sure naming convention is followed!
-    fSelection->SetName("MultSelectionAlpha");
+    fSelection->SetName("MultSelection");
     return 0;
 }
