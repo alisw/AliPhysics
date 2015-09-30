@@ -7,6 +7,7 @@
 
 #include "AliReconstructor.h"
 #include "AliTPCRecoParam.h"
+#include <TString.h>
 
 class AliTPCParam;
 class AliTPCclusterer;
@@ -32,7 +33,9 @@ public:
 
   static const AliTPCRecoParam* GetRecoParam() { return dynamic_cast<const AliTPCRecoParam*>(AliReconstructor::GetRecoParam(1)); }
   virtual void                 GetPidSettings(AliESDpid *esdPID);
-  
+  //
+  static void        SetPIDRespnonsePath(const char* pth) {fgPIDRespnonsePath = pth;}
+  static const char* GetPIDRespnonsePath() {return fgPIDRespnonsePath.Data();}  
   //
   static Double_t GetCtgRange()     { return GetRecoParam()->GetCtgRange();}
   static Double_t GetMaxSnpTracker(){ return GetRecoParam()->GetMaxSnpTracker();}
@@ -54,7 +57,7 @@ private:
   static TTreeSRedirector    *fgDebugStreamer; // pointer to the streamer
   AliTPCclusterer*           fClusterer;   // TPC clusterer
   static AliTPCAltroEmulator * fAltroEmulator;    // ALTRO emulator
-
+  static TString             fgPIDRespnonsePath;           // path to PIDResponse
   TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);
