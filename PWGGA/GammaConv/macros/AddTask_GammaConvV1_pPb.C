@@ -1110,6 +1110,16 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "00200009000000008260404000"; mesonCutArray[ 1] = "0162103500000000";  //  open dEdx Cut -10;10
 		eventCutArray[ 2] = "80000123"; photonCutArray[ 2] = "00200009400000008260404000"; mesonCutArray[ 2] = "0162103500000000";  //  open dEdx cut; -6;7
 		eventCutArray[ 3] = "80000123"; photonCutArray[ 3] = "00200009000100008260404000"; mesonCutArray[ 3] = "0162103500000000";  //no dEdx Cut
+	} else if (trainConfig == 197) {
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162101500900000";  // standard // dc cut4 alpha1 
+		eventCutArray[ 1] = "80052113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500900000";  //  kEMC7
+		eventCutArray[ 2] = "80083113"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500900000";  //  kEMCEG1 based on INT7
+		eventCutArray[ 3] = "80085113"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500900000";  //  kEMCEG2 based on INT7 
+	} else if (trainConfig == 198) {
+		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162101500000000";  // standard //eta dc cut4 alpha1 
+		eventCutArray[ 1] = "80052113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500000000";  //  kEMC7
+		eventCutArray[ 2] = "80083113"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500000000";  //  kEMCEG1 based on INT7
+		eventCutArray[ 3] = "80085113"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500000000";  //  kEMCEG2 based on INT7
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -1155,7 +1165,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17||
 		     trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 ||
 		     trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ||
-		     trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187 || trainConfig == 189 || trainConfig == 191 || trainConfig == 193 || trainConfig == 195){
+		     trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187 || trainConfig == 189 || trainConfig == 191 || trainConfig == 193 || trainConfig == 195 || trainConfig == 197 || trainConfig == 198){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -1318,7 +1328,7 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 		analysisMesonCuts[i]->SetFillCutHistograms("");
 		analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
 	}
-	if (trainConfig == 189 || trainConfig == 190 || trainConfig == 191 || trainConfig == 192) {
+	if (trainConfig == 189 || trainConfig == 190 || trainConfig == 191 || trainConfig == 192 || trainConfig == 197 || trainConfig == 198) {
 	  task->SetDoTHnSparse(kFALSE);
 	}
 	task->SetEventCutList(numberOfCuts,EventCutList);
