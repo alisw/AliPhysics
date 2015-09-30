@@ -111,7 +111,7 @@ void AddTask_GammaCalo_pp(  Int_t 		trainConfig 				= 1,  								// change diff
 		numberOfCuts = 5;
 	if (trainConfig == 65	|| trainConfig == 66	|| trainConfig == 67	|| trainConfig == 68	|| trainConfig == 82	||
 		trainConfig == 83	|| trainConfig == 105)
-		numberOfcuts = 6;
+		numberOfCuts = 6;
 
 
   
