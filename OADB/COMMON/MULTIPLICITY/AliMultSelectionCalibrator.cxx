@@ -30,7 +30,7 @@ ClassImp(AliMultSelectionCalibrator);
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
 TNamed(), fInputFileName(""), fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-lNDesiredBoundaries(0)
+lNDesiredBoundaries(0), lDesiredBoundaries(0)
 {
     // Constructor
     
@@ -49,7 +49,7 @@ lNDesiredBoundaries(0)
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
 TNamed(name,title), fInputFileName(""), fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
-lNDesiredBoundaries(0)
+lNDesiredBoundaries(0), lDesiredBoundaries(0)
 {
     // Named Constructor
     
