@@ -61,7 +61,13 @@ void AliMultSelection::PrintInfo()
     }
 }
 
-
+Float_t AliMultSelection::GetMultiplicityPercentile(TString lName)
+{
+    Float_t lReturnValue = 200;
+    AliMultEstimator *lThis = GetEstimator(lName.Data());
+    if( lThis ) lReturnValue = lThis->GetPercentile(); 
+    return lReturnValue;
+}
 
 void AliMultSelection::Evaluate( AliMultInput *lInput )
 //Master function to evaluate all existing estimators based on
