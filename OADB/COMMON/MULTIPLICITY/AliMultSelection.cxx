@@ -91,7 +91,11 @@ void AliMultSelection::Evaluate( AliMultInput *lInput )
             TString lReplacement = lVar1->GetName();
             lReplacement.Append(")");
             lReplacement.Prepend("(");
-            lEvaluateMe.ReplaceAll( lReplacement, Form("%f",lVar1->GetValue() ) );
+            if( !lVar1->IsInteger() ){
+		lEvaluateMe.ReplaceAll( lReplacement, Form("%f",lVar1->GetValue() ) );
+	    }else{
+		lEvaluateMe.ReplaceAll( lReplacement, Form("%i",lVar1->GetValueInteger() ) );
+	    }
         }
         //cout<<"String to evaluate: "<<lEvaluateMe<<endl;
         //FIXME: Error Handling needs to improve here

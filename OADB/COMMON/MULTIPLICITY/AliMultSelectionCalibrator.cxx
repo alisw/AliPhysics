@@ -30,7 +30,7 @@
 ClassImp(AliMultSelectionCalibrator);
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
-    TNamed(), fInputFileName(""), fBufferFileName("buffer.root"), 
+    TNamed(), fInputFileName(""), fBufferFileName("buffer.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0)
 {
@@ -50,7 +50,7 @@ AliMultSelectionCalibrator::AliMultSelectionCalibrator() :
 }
 
 AliMultSelectionCalibrator::AliMultSelectionCalibrator(const char * name, const char * title):
-    TNamed(name,title), fInputFileName(""), fBufferFileName("buffer.root"), 
+    TNamed(name,title), fInputFileName(""), fBufferFileName("buffer.root"),
     fOutputFileName(""), fInput(0), fSelection(0), fMultSelectionCuts(0), fCalibHists(0),
     lNDesiredBoundaries(0), lDesiredBoundaries(0)
 {
@@ -206,9 +206,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     AliMultEstimator *fEstADC = new AliMultEstimator("ADC", "", "(fMultiplicity_ADC)");
 
     //Integer estimators
-    //AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPD", "", "(fnSPDClusters)");
+    AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPD", "", "(fnSPDClusters)");
     //Set special calibration mode for integers
-    //fEstnSPDClusters->SetIsInteger(kTRUE);
+    fEstnSPDClusters->SetIsInteger(kTRUE);
 
     fSelection -> AddEstimator( fEstV0M );
     fSelection -> AddEstimator( fEstV0A );
@@ -219,7 +219,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fSelection -> AddEstimator( fEstADM );
     fSelection -> AddEstimator( fEstADA );
     fSelection -> AddEstimator( fEstADC );
-    //fSelection -> AddEstimator( fEstnSPDClusters );
+    fSelection -> AddEstimator( fEstnSPDClusters );
 
     //============================================================
 
@@ -235,7 +235,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
 
     cout<<"(3) Creating buffer, computing averages"<<endl;
-    const int lMax = 1000;
+    const int lMax = 100;
     const int lMaxQuantiles = 10000;
     Int_t lRunNumbers[lMaxQuantiles];
     Long_t lRunStats[lMaxQuantiles];
@@ -328,6 +328,8 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
 
         if ( lSaveThisEvent ) {
             //Call Evaluate, please
+	    //This is too slow!
+	  /*
             fSelection->Evaluate( fInput );
             for( Long_t iEst=0; iEst<lNEstimators; iEst++) {
                 Float_t lThisVal = fSelection->GetEstimator(iEst)->GetValue();
@@ -339,25 +341,31 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     lMaxEst[iEst][lThisRunIndex] = lThisVal;
                 }
             }
+            */
             sTree [lThisRunIndex] -> Fill();
         }
         if(lNRuns>lMax) {
+            lNRuns = lMax;
             AliWarningF("Exceeded maximum allowed number of runs to quantile! (Nruns now = %i)",lNRuns );
             AliWarningF("Will continue using only %i runs.", lMax);
             break;
         }
     }
-
+/*
     cout<<"Inspect average estimator values: "<<endl;
     for(Long_t iRun=0; iRun<lNRuns; iRun++) {
         for(Long_t iEst=0; iEst<lNEstimators; iEst++) {
-            fSelection->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] / ((Double_t)sTree[iRun]->GetEntries()) );
+            cout<<"iRun: "<<iRun<<", iEst: "<<iEst<<", average = "<<lAvEst[iEst][iRun]/((Double_t)sTree[iRun]->GetEntries())<<endl;
+            if( sTree[iRun]->GetEntries() > 0 ) {
+                lAvEst[iEst][iRun] =  lAvEst[iEst][iRun] / ((Double_t)sTree[iRun]->GetEntries());
+            } else {
+                lAvEst[iEst][iRun] = -1;
+            }
         }
     }
-
+*/
     //Write buffer to file
     for(Int_t iRun=0; iRun<lNRuns; iRun++) sTree[iRun]->Write();
-
 
     cout<<"(4) Inspect List of Runs and their corresponding statistics passing cuts: "<<endl;
     for(Int_t iRun = 0; iRun<lNRuns; iRun++) {
@@ -376,10 +384,36 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
 
     // STEP 4: Actual determination of boundaries...
     Long64_t *index;
+    Double_t *lValues; 
 
     //Histograms to store calibration information
     TH1F *hCalib[1000][lNEstimators];
 
+    cout<<"(4bis) Look at average values"<<endl;
+    for(Int_t iRun=0; iRun<lNRuns; iRun++) {
+        const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
+        cout<<"--- Processing run number "<<lRunNumbers[iRun]<<", with "<<ntot<<" events..."<<endl;
+        sTree[iRun]->SetEstimate(ntot+1);
+        //Cast Run Number into drawing conditions
+        for(Int_t iEst=0; iEst<lNEstimators; iEst++) {
+            lRunStats[iRun] = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),"","goff");
+            lValues = sTree[iRun]->GetV1();
+            cout<<"--- Calculating averages: "<<flush;
+            for( Long64_t iEntry=0; iEntry<ntot; iEntry++) {
+                Float_t lThisVal = lValues[iEntry]; //Test
+                lAvEst[iEst][iRun] += lThisVal;
+                if( lThisVal < lMinEst[iEst][iRun] ) {
+                    lMinEst[iEst][iRun] = lThisVal;
+                }
+                if( lThisVal > lMaxEst[iEst][iRun] ) {
+                    lMaxEst[iEst][iRun] = lThisVal;
+                }
+            }
+            lAvEst[iEst][iRun] /= ( (Double_t) (sTree[iRun]->GetEntries()) );
+            cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl; 
+        }
+    }
+    
     cout<<"(5) Generate Boundaries through a loop in all desired estimators"<<endl;
     for(Int_t iRun=0; iRun<lNRuns; iRun++) {
         const Long64_t ntot = (Long64_t) sTree[iRun]->GetEntries();
@@ -421,23 +455,31 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 Float_t lLowEdge = lMinEst[iEst][iRun]-0.5;
                 Float_t lHighEdge= lMaxEst[iEst][iRun]+0.5;
                 cout<<"Inspect: "<<lNBins<<", low "<<lLowEdge<<", high "<<lHighEdge<<endl;
+                if( sTree[iRun]->GetEntries() < 1 ) {
+                    //Case of an empty run!
+                    hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",1,0,1);
+                    hCalib[iRun][iEst]->SetDirectory(0);
+                } else {
 
-                TH1F *hTemporary = new TH1F("hTemporary", "", lNBins, lMinEst[iEst][iRun]-0.5, lMaxEst[iEst][iRun]+0.5 );
-                lRunStats[iRun] = sTree[iRun]->Draw(Form("%s>>hTemporary",fSelection->GetEstimator(iEst)->GetDefinition().Data()),"","goff");
+                    TH1F *hTemporary = new TH1F("hTemporary", "", lNBins, lMinEst[iEst][iRun]-0.5, lMaxEst[iEst][iRun]+0.5 );
+                    lRunStats[iRun] = sTree[iRun]->Draw(Form("%s>>hTemporary",fSelection->GetEstimator(iEst)->GetDefinition().Data()),"","goff");
 
-                //In memory now: histogram with content, please normalize to unity
-                hTemporary->Scale(1./((double)(lRunStats[iRun])));
+                    //In memory now: histogram with content, please normalize to unity
+                    hTemporary->Scale(1./((double)(lRunStats[iRun])));
 
-                Float_t lBoundaries[lNBins+1]; //to store cumulative function
-                lBoundaries[0] = 0;
-                for(Long_t iB=1; iB<hTemporary->GetNbinsX()+1; iB++) {
-                    lBoundaries[iB] = lBoundaries[iB-1]+hTemporary->GetBinContent(iB);
+                    Float_t lBoundaries[lNBins+1]; //to store cumulative function
+                    lBoundaries[0] = 0;
+                    for(Long_t iB=1; iB<hTemporary->GetNbinsX()+1; iB++) {
+                        lBoundaries[iB] = lBoundaries[iB-1]+hTemporary->GetBinContent(iB);
+                    }
+                    //This won't follow what was requested (it cannot, mathematically)
+                    hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNBins,lLowEdge,lHighEdge);
+                    hCalib[iRun][iEst]->SetDirectory(0);
+                    for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++) hCalib[iRun][iEst] -> SetBinContent(ibin, 1.0-0.5*(lBoundaries[ibin-1]+lBoundaries[ibin]));
+                    //Enough info for calibration determined...
+		    delete hTemporary; 
+		    hTemporary = 0x0; 
                 }
-                //This won't follow what was requested (it cannot, mathematically)
-                hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNBins,lLowEdge,lHighEdge);
-                hCalib[iRun][iEst]->SetDirectory(0);
-                for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++) hCalib[iRun][iEst] -> SetBinContent(ibin, 1.0-0.5*(lBoundaries[ibin-1]+lBoundaries[ibin]));
-                //Enough info for calibration determined...
             }
         }
     }
@@ -453,8 +495,10 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     AliMultSelectionCuts * cuts              = new AliMultSelectionCuts;
     AliMultSelection     * fsels             = new AliMultSelection ( fSelection );
 
-    cout<<"Will save "<<endl;
+    cout<<"=================================================================================="<<endl; 
+    cout<<"AliMultSelection Object to be saved (DEFAULT)"<<endl;
     fsels->PrintInfo();
+    cout<<"=================================================================================="<<endl; 
 
     //Default Stuff
     TH1F * hDummy[lNEstimators];
@@ -477,25 +521,30 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         oadbMultSelection = new AliOADBMultSelection();
         cuts              = new AliMultSelectionCuts;
         fsels             = new AliMultSelection( fSelection );
-        cout<<"Dump"<<endl;
-        fsels->PrintInfo();
+        //cout<<"Dump"<<endl;
+        //fsels->PrintInfo();
         //TODO FIXME: Copy configurations
         //cuts = fMultSelectionCuts;
 
         oadbMultSelection->SetEventCuts    (cuts );
         oadbMultSelection->SetMultSelection(fsels);
         for ( Int_t iEst=0; iEst<lNEstimators; iEst++) {
+            //Average values
+            fsels->GetEstimator(iEst)->SetMean( lAvEst[iEst][iRun] );
+
             hCalibData[iEst] = (TH1F*) hCalib[iRun][iEst]->Clone(Form("hCalib_%i_%s",lRunNumbers[iRun], fSelection->GetEstimator(iEst)->GetName()) );
             oadbMultSelection->AddCalibHisto( hCalibData[iEst]);
             hCalibData[iEst]->SetDirectory(0);
         }
+        cout<<"=================================================================================="<<endl; 
+        cout<<"AliMultSelection Object to be saved for run "<<lRunNumbers[iRun]<<": "<<endl;
+        fsels->PrintInfo();
+	cout<<"=================================================================================="<<endl; 
         oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun] ,lRunNumbers[iRun] );
     }
     cout<<"Write OADB..."<<endl;
     //pre-write dump
-    fsels->PrintInfo();
-    cout<<"Double dump"<<endl;
-    oadbMultSelection->GetMultSelection()->PrintInfo();
+    //fsels->PrintInfo();
 
     oadbContMS->Write();
     cout<<" Done!"<<endl;
