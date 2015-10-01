@@ -27,6 +27,7 @@ class AliMFTSegmentation;
 class AliMuonForwardTrack;
 class AliMUONTrackParam;
 class AliMUONTrack;
+class AliMUONVCluster;
 
 //==============================================================================================
 
@@ -68,6 +69,7 @@ public:
   
   void LoadTracks();
   Bool_t LinearFit(AliMFTTrack * track);
+  Double_t RunKalmanFilter(AliMUONTrackParam &trackParam, AliMUONVCluster &cluster);
 
 protected:
 
