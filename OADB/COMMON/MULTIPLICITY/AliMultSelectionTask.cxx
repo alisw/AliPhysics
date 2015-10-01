@@ -84,7 +84,7 @@ using std::endl;
 ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
-: AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0),
+: AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0),
 fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -112,7 +112,17 @@ fAmplitude_V0AEq (0),
 fAmplitude_V0CEq (0),
 fAmplitude_OnlineV0A(0),
 fAmplitude_OnlineV0C(0),
+fAmplitude_V0A1(0),
+fAmplitude_V0A2(0),
+fAmplitude_V0A3(0),
+fAmplitude_V0A4(0),
+fAmplitude_V0C1(0),
+fAmplitude_V0C2(0),
+fAmplitude_V0C3(0),
+fAmplitude_V0C4(0),
 fnSPDClusters(0),
+fnSPDClusters0(0),
+fnSPDClusters1(0),
 fRefMultEta5(0),
 fRefMultEta8(0),
 fRunNumber(0),
@@ -142,7 +152,7 @@ fInput(0)
 }
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name)
-    : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0),
+    : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0),
 fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -170,7 +180,17 @@ fAmplitude_V0AEq (0),
 fAmplitude_V0CEq (0),
 fAmplitude_OnlineV0A(0),
 fAmplitude_OnlineV0C(0),
+fAmplitude_V0A1(0),
+fAmplitude_V0A2(0),
+fAmplitude_V0A3(0),
+fAmplitude_V0A4(0),
+fAmplitude_V0C1(0),
+fAmplitude_V0C2(0),
+fAmplitude_V0C3(0),
+fAmplitude_V0C4(0),
 fnSPDClusters(0),
+fnSPDClusters0(0),
+fnSPDClusters1(0),
 fRefMultEta5(0),
 fRefMultEta8(0),
 fRunNumber(0),
@@ -778,7 +798,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             InputEvent()->AddObject(fSelection);
             fkAttached = kTRUE;
         }else{
-            AliInfo("Already there!");
+            //AliInfo("Already there!"); //do nothing
         }
     }
     // Post output data.
