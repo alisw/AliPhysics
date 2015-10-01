@@ -409,8 +409,12 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     lMaxEst[iEst][iRun] = lThisVal;
                 }
             }
-            lAvEst[iEst][iRun] /= ( (Double_t) (sTree[iRun]->GetEntries()) );
-            cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl; 
+            if( sTree[iRun]->GetEntries() < 1 ) {
+                lAvEst[iEst][iRun] = -1;
+            } else {
+                lAvEst[iEst][iRun] /= ( (Double_t) (sTree[iRun]->GetEntries()) );
+            }
+            cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl;
         }
     }
     
