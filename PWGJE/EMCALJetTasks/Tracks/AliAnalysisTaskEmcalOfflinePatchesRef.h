@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKEMCALONLINEPATCHESREF_H
-#define ALIANALYSISTASKEMCALONLINEPATCHESREF_H
+#ifndef AliAnalysisTaskEmcalOfflinePatchesRef_H
+#define AliAnalysisTaskEmcalOfflinePatchesRef_H
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -13,11 +13,11 @@ namespace EMCalTriggerPtAnalysis {
 
 class AliEMCalHistoContainer;
 
-class AliAnalysisTaskEmcalOnlinePatchesRef: public AliAnalysisTaskSE {
+class AliAnalysisTaskEmcalOfflinePatchesRef: public AliAnalysisTaskSE {
 public:
-  AliAnalysisTaskEmcalOnlinePatchesRef();
-  AliAnalysisTaskEmcalOnlinePatchesRef(const char *name);
-  virtual ~AliAnalysisTaskEmcalOnlinePatchesRef();
+  AliAnalysisTaskEmcalOfflinePatchesRef();
+  AliAnalysisTaskEmcalOfflinePatchesRef(const char *name);
+  virtual ~AliAnalysisTaskEmcalOfflinePatchesRef();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -28,14 +28,14 @@ protected:
   AliEMCalHistoContainer                  *fHistos;
 
 private:
-  AliAnalysisTaskEmcalOnlinePatchesRef(const AliAnalysisTaskEmcalOnlinePatchesRef &);
-  AliAnalysisTaskEmcalOnlinePatchesRef &operator=(const AliAnalysisTaskEmcalOnlinePatchesRef &);
+  AliAnalysisTaskEmcalOfflinePatchesRef(const AliAnalysisTaskEmcalOfflinePatchesRef &);
+  AliAnalysisTaskEmcalOfflinePatchesRef &operator=(const AliAnalysisTaskEmcalOfflinePatchesRef &);
 
   void FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermodule, Int_t sector);
 
-  ClassDef(AliAnalysisTaskEmcalOnlinePatchesRef, 1);
+  ClassDef(AliAnalysisTaskEmcalOfflinePatchesRef, 1);
 };
 
 } /* namespace EMCalTriggerPtAnalysis */
 
-#endif /* ALIANALYSISTASKEMCALONLINEPATCHESREF_H */
+#endif /* AliAnalysisTaskEmcalOfflinePatchesRef_H */

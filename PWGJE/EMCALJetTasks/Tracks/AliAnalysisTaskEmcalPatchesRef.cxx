@@ -73,12 +73,12 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
   TArrayD energybinning;
   CreateEnergyBinning(energybinning);
   fHistos = new AliEMCalHistoContainer("Ref");
-  TString triggers[14] = {"MB", "EJ1", "EJ2", "EG1", "EG2", "EG2excl", "EJ2excl", "MBexcl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
-  TString patchtype[4] = {"EG1", "EG2", "EJ1", "EJ2"};
+  TString triggers[15] = {"MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "EG2excl", "EJ2excl", "MBexcl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
+  TString patchtype[5] = {"EG1", "EG2", "EJ1", "EJ2", "EMC7"};
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
-  for(TString *trg = triggers; trg < triggers+14; trg++){
+  for(TString *trg = triggers; trg < triggers+15; trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
-    for(int ipatch = 0; ipatch < 4; ipatch++){
+    for(int ipatch = 0; ipatch < 5; ipatch++){
       fHistos->CreateTH1(Form("h%sPatchEnergy%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning);
       for(int ien = 0; ien < 5; ien++){
         fHistos->CreateTH2(Form("h%sEtaPhi%dG%s", patchtype[ipatch].Data(), static_cast<int>(encuts[ien]), trg->Data()), Form("%s-patch #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", patchtype[ipatch].Data(), encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
@@ -103,11 +103,12 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   }
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("EMC7"),
       isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
       isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
       isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
       isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2");
-  if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
+  if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return;
@@ -124,6 +125,9 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
       fHistos->FillTH1("hEventCountMBexcl", 1);
     }
+  }
+  if(isEMC7){
+    fHistos->FillTH1("hEventCountEMC7", 1);
   }
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1);
@@ -178,8 +182,10 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
       patchnames.push_back("EJ2");
     if(patch->IsGammaHighSimple())
       patchnames.push_back("EG1");
-    if(patch->IsGammaLowSimple())
+    if(patch->IsGammaLowSimple()){
       patchnames.push_back("EG2");
+      patchnames.push_back("EMC7");   // Treat EG2 patch also as EMC7 patch (single shower);
+    }
     if(!patchnames.size()){
       // Undefined patch type - ignore
       continue;
@@ -198,6 +204,9 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
         if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
           FillPatchHistograms("MBexcl", *nameit, energy, eta, phi);
         }
+      }
+      if(isEMC7){
+        FillPatchHistograms("EMC7", *nameit, energy, eta, phi);
       }
       if(isEJ1){
         FillPatchHistograms("EJ1", *nameit, energy, eta, phi);
