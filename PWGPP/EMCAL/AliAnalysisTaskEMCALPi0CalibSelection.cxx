@@ -122,13 +122,10 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fhClusterTimeSM[iSM]             = 0;
     fhClusterPairDiffTimeSameSM[iSM] = 0;
   }
-  
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
 ///
-/// Default constructor with name as option. Arrays initialization is done here.
+/// Constructor with name as option. Arrays initialization is done here.
 ///
 /// \param name: Name of task.
 ///
