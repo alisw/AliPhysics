@@ -3,8 +3,6 @@
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
 
-#include "AliFemtoAnalysisPionLambda.h"
-
 ///
 /// \brief Adds an AliAnalysisTaskFemto analysis object to the global
 ///        AliAnalysisManager.
