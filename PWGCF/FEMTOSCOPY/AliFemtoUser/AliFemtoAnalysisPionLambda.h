@@ -13,19 +13,7 @@ class AliFemtoBasicTrackCut;
 class AliFemtoV0TrackPairCut;
 class AliFemtoBasicEventCut;
 
-
-
-struct AnalysisParams_Type {
-  struct {
-    UInt_t bins;
-    Float_t min;
-    Float_t max;
-  } vertex;
-
-  float pion_type;
-  float lambda_type;
-};
-
+class TList;
 
 
 /// \class AliFemtoAnalysisPionLambda
@@ -110,6 +98,8 @@ public:
   AliFemtoV0TrackPairCut* BuildPairCut(const CutParams&) const;
 
 
+  virtual TList *GetOutputList();
+
 protected:
 
   PionType fPionType;
@@ -147,72 +137,64 @@ struct AliFemtoAnalysisPionLambda::AnalysisParams {
 ///
 struct AliFemtoAnalysisPionLambda::CutParams {
   // EVENT
-  struct {
-    Float_t MultMin,
-            MultMax;
-    Float_t VertexZMin,
-            VertexZMax;
-    Float_t EP_VZeroMin,
-            EP_VZeroMax;
-    Int_t   TriggerSelection;
-    Bool_t  AcceptBadVertex;
-  } event;
+  Float_t event_MultMin,
+          event_MultMax;
+
+  Float_t event_VertexZMin,
+          event_VertexZMax;
+
+  Float_t event_EP_VZeroMin,
+          event_EP_VZeroMax;
+
+  Int_t   event_TriggerSelection;
+  Bool_t  event_AcceptBadVertex;
 
   // PION
-  struct {
-    Float_t PtMin,
-            PtMax;
+  Float_t pion_PtMin,
+          pion_PtMax;
 
-    Float_t EtaMin,
-            EtaMax;
+  Float_t pion_EtaMin,
+          pion_EtaMax;
 
-    Float_t DCAMin,
-            DCAMax;
+  Float_t pion_DCAMin,
+          pion_DCAMax;
 
-    Float_t NSigmaPionMin,
-            NSigmaPionMax;
-  } pion;
+  Float_t pion_NSigmaMin,
+          pion_NSigmaMax;
 
   //  LAMBDA
-  struct {
-    Float_t PtMin,
-            PtMax,
-            Eta,
-            MaxDCA,
-            MaxDecayLength,
-            MinCosPointingAngle;
+  Float_t lambda_PtMin,
+          lambda_PtMax,
+          lambda_Eta,
+          lambda_MaxDCA,
+          lambda_MaxDecayLength,
+          lambda_MinCosPointingAngle,
 
-    Float_t MassMin,
-            MassMax;
+          lambda_MassMin,
+          lambda_MassMax;
 
-    Bool_t OnFlyStatus;
+  Bool_t lambda_OnFlyStatus;
 
     /// Lambda daugther parameters
-    struct {
+    Float_t lambda_daughter_Eta,
+            lambda_daughter_TPCncls,
+            lambda_daughter_MaxDCA;
 
-      Float_t Eta,
-              TPCncls,
-              MaxDCA;
+    Int_t lambda_daughter_StatusDaughters,
+          lambda_daughter_Ndof;
 
-      Int_t StatusDaughters,
-            Ndof;
 
-      struct {
-        Float_t PtMin,
-                PtMax,
-                MinToPrimVertex;
-      } pion,
-        proton;
+      Float_t lambda_daughter_pion_PtMin,
+              lambda_daughter_pion_PtMax,
+              lambda_daughter_pion_MinToPrimVertex;
 
-    } daughter;
+      Float_t lambda_daughter_proton_PtMin,
+              lambda_daughter_proton_PtMax,
+              lambda_daughter_proton_MinToPrimVertex;
 
-  } lambda;
-
-  struct {
-    Bool_t TPCOnly;
-    Float_t TPCExitSepMin;
-  } pair;
-
+  // PAIR
+  Bool_t pair_TPCOnly;
+  Float_t pair_TPCExitSepMin;
 };
 
 

@@ -15,6 +15,9 @@
 #include <TROOT.h>
 #include <TInterpreter.h>
 
+
+#include <cassert>
+
 static const double LambdaMass = 1.115683,
                     PionMass = 0.139;
 
@@ -41,7 +44,7 @@ const float default_lambda_eta = 0.8,
             default_lambda_MaxDcaV0Daughters = 1.5,
 
             default_lambda_PtProtonMin = 0.5,
-            default_lambda_PtProtonMax = 0.4,
+            default_lambda_PtProtonMax = 4.0,
 
             default_lambda_PtPionMin = 0.5,
             default_lambda_PtPionMax = 4.0,
@@ -50,7 +53,7 @@ const float default_lambda_eta = 0.8,
             default_lambda_MinToPrimVertexPion = 0.3;
 
 
-const int   default_lambda_StatusDaughters = AliESDtrack::kTPCrefit,
+const int   default_lambda_StatusDaughters = AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit,
             default_lambda_NdofDaughters = 4;
 
 const bool  default_lambda_OnFlyStatus = kFALSE;
@@ -58,14 +61,14 @@ const bool  default_lambda_OnFlyStatus = kFALSE;
 const float default_pion_PtMin = 0.2,
             default_pion_PtMax = 2.0,
 
-            default_pion_EtaMin = 0.8,
-            default_pion_EtaMax = -0.8,
+            default_pion_EtaMin = -0.8,
+            default_pion_EtaMax = 0.8,
 
             default_pion_DCAMin = 0.5,
             default_pion_DCAMax = 4.0,
 
-            default_pion_NSigmaPionMin = -3.0,
-            default_pion_NSigmaPionMax = 3.0;
+            default_pion_NSigmaMin = -3.0,
+            default_pion_NSigmaMax = 3.0;
 
 
 
@@ -80,6 +83,10 @@ const float default_event_EventMultMin = 0,
 
 const  int  default_event_TriggerSelection = 0;
 const  bool default_event_AcceptBadVertex = kFALSE;
+
+const Bool_t  default_pair_TPCOnly = kTRUE;
+const Float_t default_pair_TPCExitSepMin = -1.0;
+
 
 const AliFemtoAnalysisPionLambda::PionType
   default_PionType = AliFemtoAnalysisPionLambda::kPiPlus;
@@ -164,7 +171,7 @@ AliFemtoAnalysisPionLambda
   fPionType(params.pion_type),
   fLambdaType(params.lambda_type)
 {
-  cout << "Created with : " <<
+  cout << "[AliFemtoAnalysisPionLambda] Constructed with : " <<
     params.vertex_bins <<
     " " << params.vertex_min <<
     " " << params.vertex_max <<
@@ -208,61 +215,68 @@ AliFemtoAnalysisPionLambda::DefaultCutConfig()
 {
   AliFemtoAnalysisPionLambda::CutParams params = {
     // Event
-    {
-      default_event_EventMultMin,
-      default_event_EventMultMax,
-      default_event_VertZPosMax,
-      default_event_VertZPosMin,
-      default_event_EPVZEROMin,
-      default_event_EPVZEROMax
-    },
+    default_event_EventMultMin,
+    default_event_EventMultMax,
+    default_event_VertZPosMin,
+    default_event_VertZPosMax,
+    default_event_EPVZEROMin,
+    default_event_EPVZEROMax,
+    default_event_TriggerSelection,
+    default_event_AcceptBadVertex,
+
     // Pion
-    {
-      default_pion_PtMin,
-      default_pion_PtMax,
-      default_pion_EtaMin,
-      default_pion_EtaMax,
-      default_pion_DCAMin,
-      default_pion_DCAMax
-    },
+    default_pion_PtMin,
+    default_pion_PtMax,
+    default_pion_EtaMin,
+    default_pion_EtaMax,
+    default_pion_DCAMin,
+    default_pion_DCAMax,
+
+    default_pion_NSigmaMin,
+    default_pion_NSigmaMax,
+
     // Lambda
-    {
-      default_lambda_PtMin,
-      default_lambda_PtMax,
-      default_lambda_Eta,
+    default_lambda_PtMin,
+    default_lambda_PtMax,
+    default_lambda_Eta,
 
-      default_lambda_MaxDCAV0,
-      default_lambda_MaxV0DecayLength,
-      default_lambda_MinCosPointingAngle,
+    default_lambda_MaxDCAV0,
+    default_lambda_MaxV0DecayLength,
+    default_lambda_MinCosPointingAngle,
 
-      default_lambda_InvariantMassMin,
-      default_lambda_InvariantMassMax,
+    default_lambda_InvariantMassMin,
+    default_lambda_InvariantMassMax,
 
-      default_lambda_OnFlyStatus,
+    default_lambda_OnFlyStatus,
 
-      // daughter params
-      {
-        default_lambda_EtaDaughters,
-        default_lambda_TPCnclsDaughters,
-        default_lambda_MaxDcaV0Daughters,
-        default_lambda_StatusDaughters,
-        default_lambda_NdofDaughters,
+    // daughter params
+    default_lambda_EtaDaughters,
+    default_lambda_TPCnclsDaughters,
+    default_lambda_MaxDcaV0Daughters,
 
-        // pion daughter
-        {
-          default_lambda_PtPionMin,
-          default_lambda_PtPionMax,
-          default_lambda_MinToPrimVertexPion
-        },
-        // proton daughter
-        {
-          default_lambda_PtProtonMin,
-          default_lambda_PtProtonMax,
-          default_lambda_MinToPrimVertexProton
-        }
-      }
-    }
+    default_lambda_StatusDaughters,
+    default_lambda_NdofDaughters,
+
+    // pion daughter
+    default_lambda_PtPionMin,
+    default_lambda_PtPionMax,
+    default_lambda_MinToPrimVertexPion,
+
+    // proton daughter
+    default_lambda_PtProtonMin,
+    default_lambda_PtProtonMax,
+    default_lambda_MinToPrimVertexProton,
+
+    // pair
+    default_pair_TPCOnly,
+    default_pair_TPCExitSepMin
   };
+
+  cout << ">> params.lambda_daughter_StatusDaughters " << params.lambda_daughter_StatusDaughters << "==" << default_lambda_StatusDaughters << "\n";
+  cout << ">> params.pair_TPCExitSepMin " << params.pair_TPCExitSepMin << "==" << default_pair_TPCExitSepMin << "\n";
+
+  assert(params.pair_TPCOnly == default_pair_TPCOnly);
+  assert(params.pair_TPCExitSepMin == default_pair_TPCExitSepMin);
   return params;
 }
 
@@ -273,39 +287,41 @@ AliFemtoAnalysisPionLambda::BuildLambdaCut(const CutParams &p) const
   AliFemtoV0TrackCut* cut = new AliFemtoV0TrackCut();
 
   cut->SetMass(LambdaMass);
-  cut->SetInvariantMassLambda(p.lambda.MassMin, p.lambda.MassMax);
-  cut->SetPt(p.lambda.PtMin, p.lambda.PtMax);
-  cut->SetEta(p.lambda.Eta);
+  cut->SetInvariantMassLambda(p.lambda_MassMin, p.lambda_MassMax);
+  cut->SetPt(p.lambda_PtMin, p.lambda_PtMax);
+  cut->SetEta(p.lambda_Eta);
 
-  cut->SetOnFlyStatus(p.lambda.OnFlyStatus);
-  cut->SetMaxDcaV0(p.lambda.MaxDCA);
-  cut->SetMaxV0DecayLength(p.lambda.MaxDecayLength);
-  cut->SetMinCosPointingAngle(p.lambda.MinCosPointingAngle);
+  cut->SetOnFlyStatus(p.lambda_OnFlyStatus);
+  cut->SetMaxDcaV0(p.lambda_MaxDCA);
+  cut->SetMaxV0DecayLength(p.lambda_MaxDecayLength);
+  cut->SetMinCosPointingAngle(p.lambda_MinCosPointingAngle);
 
-  cut->SetEtaDaughters(p.lambda.daughter.Eta);
-  cut->SetTPCnclsDaughters(p.lambda.daughter.TPCncls);
-  cut->SetNdofDaughters(p.lambda.daughter.Ndof);
-  cut->SetStatusDaughters(p.lambda.daughter.StatusDaughters);
-  cut->SetMaxDcaV0Daughters(p.lambda.daughter.MaxDCA);
+  cut->SetEtaDaughters(p.lambda_daughter_Eta);
+  cut->SetTPCnclsDaughters(p.lambda_daughter_TPCncls);
+  cut->SetNdofDaughters(p.lambda_daughter_Ndof);
+  cut->SetStatusDaughters(p.lambda_daughter_StatusDaughters);
+  cut->SetMaxDcaV0Daughters(p.lambda_daughter_MaxDCA);
 
   switch (fLambdaType) {
   case kLambda:
     cut->SetParticleType(AliFemtoV0TrackCut::kLambda);
-    cut->SetPtPosDaughter(p.lambda.daughter.proton.PtMin,
-                          p.lambda.daughter.proton.PtMax);
-    cut->SetPtNegDaughter(p.lambda.daughter.pion.PtMin,
-                          p.lambda.daughter.pion.PtMax);
-    cut->SetMinDaughtersToPrimVertex(p.lambda.daughter.pion.MinToPrimVertex,
-                                     p.lambda.daughter.proton.MinToPrimVertex);
+    cut->SetPtPosDaughter(p.lambda_daughter_proton_PtMin,
+                          p.lambda_daughter_proton_PtMax);
+    cut->SetPtNegDaughter(p.lambda_daughter_pion_PtMin,
+                          p.lambda_daughter_pion_PtMax);
+    cut->SetMinDaughtersToPrimVertex(p.lambda_daughter_pion_MinToPrimVertex,
+                                     p.lambda_daughter_proton_MinToPrimVertex);
+    break;
 
   case kAntiLambda:
     cut->SetParticleType(AliFemtoV0TrackCut::kAntiLambda);
-    cut->SetPtPosDaughter(p.lambda.daughter.pion.PtMin,
-                          p.lambda.daughter.pion.PtMax);
-    cut->SetPtNegDaughter(p.lambda.daughter.proton.PtMin,
-                          p.lambda.daughter.proton.PtMax);
-    cut->SetMinDaughtersToPrimVertex(p.lambda.daughter.proton.MinToPrimVertex,
-                                     p.lambda.daughter.pion.MinToPrimVertex);
+    cut->SetPtPosDaughter(p.lambda_daughter_pion_PtMin,
+                          p.lambda_daughter_pion_PtMax);
+    cut->SetPtNegDaughter(p.lambda_daughter_proton_PtMin,
+                          p.lambda_daughter_proton_PtMax);
+    cut->SetMinDaughtersToPrimVertex(p.lambda_daughter_proton_MinToPrimVertex,
+                                     p.lambda_daughter_pion_MinToPrimVertex);
+    break;
   }
 
   return cut;
@@ -326,44 +342,41 @@ AliFemtoAnalysisPionLambda::BuildPionCut(const CutParams &p) const
   cut->SetCharge(charge);
   cut->SetMass(PionMass);
 
-  cut->SetNSigmaPion(p.pion.NSigmaPionMin, p.pion.NSigmaPionMax);
-  cut->SetPt(p.pion.PtMin, p.pion.PtMax);
-  cut->SetRapidity(p.pion.EtaMin, p.pion.EtaMax);
-  cut->SetDCA(p.pion.DCAMin, p.pion.DCAMax);
+  cut->SetNSigmaPion(p.pion_NSigmaMin, p.pion_NSigmaMax);
+  cut->SetPt(p.pion_PtMin, p.pion_PtMax);
+  cut->SetRapidity(p.pion_EtaMin, p.pion_EtaMax);
+  cut->SetDCA(p.pion_DCAMin, p.pion_DCAMax);
 
   return cut;
 }
 
 AliFemtoBasicEventCut*
 AliFemtoAnalysisPionLambda::BuildEventCut(
-  const AliFemtoAnalysisPionLambda::CutParams& params
+  const AliFemtoAnalysisPionLambda::CutParams& p
 ) const
 {
   AliFemtoBasicEventCut* cut = new AliFemtoBasicEventCut();
 
-  cut->SetEventMult(params.event.MultMin,
-                    params.event.MultMax);
-  cut->SetVertZPos(params.event.VertexZMin,
-                   params.event.VertexZMax);
-  cut->SetEPVZERO(params.event.EP_VZeroMin,
-                  params.event.EP_VZeroMax);
-  cut->SetTriggerSelection(params.event.TriggerSelection);
-  cut->SetAcceptBadVertex(params.event.AcceptBadVertex);
+  cut->SetEventMult(p.event_MultMin,
+                    p.event_MultMax);
+  cut->SetVertZPos(p.event_VertexZMin,
+                   p.event_VertexZMax);
+  cut->SetEPVZERO(p.event_EP_VZeroMin,
+                  p.event_EP_VZeroMax);
+  cut->SetTriggerSelection(p.event_TriggerSelection);
+  cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
 
   return cut;
 }
 
-
-const Bool_t default_pair_TPCOnly = kTRUE;
-const Float_t default_pair_TPCExitSepMin = -1.0;
 
 AliFemtoV0TrackPairCut*
 AliFemtoAnalysisPionLambda::BuildPairCut(const CutParams &p) const
 {
   AliFemtoV0TrackPairCut *cut = new AliFemtoV0TrackPairCut();
 
-  cut->SetTPCOnly(p.pair.TPCOnly);
-  cut->SetTPCExitSepMinimum(p.pair.TPCExitSepMin);
+  cut->SetTPCOnly(p.pair_TPCOnly);
+  cut->SetTPCExitSepMinimum(p.pair_TPCExitSepMin);
 
   return cut;
 }
@@ -387,4 +400,13 @@ const AliFemtoV0TrackCut* AliFemtoAnalysisPionLambda::GetLambdaCut() const
 const AliFemtoTrackCut* AliFemtoAnalysisPionLambda::GetPionCut() const
 {
   return static_cast<const AliFemtoTrackCut*>(fSecondParticleCut);
+}
+
+
+
+TList* AliFemtoAnalysisPionLambda::GetOutputList()
+{
+  TList *outputlist = AliFemtoVertexMultAnalysis::GetOutputList();
+  outputlist->Add(new TObjString(TString(AliFemtoVertexMultAnalysis::Report())));
+  return outputlist;
 }

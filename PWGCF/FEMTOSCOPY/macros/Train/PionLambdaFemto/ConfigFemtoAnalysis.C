@@ -67,6 +67,8 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   analysis->GetLambdaCut()->AddCutMonitor(new AliFemtoCutMonitorV0("LambdaPass"),
                                           new AliFemtoCutMonitorV0("LambdaFail"));
 
+  analysis->AddCorrFctn(new AliFemtoCorrFctnKStar("CF", 600, 0, 2.0));
+
   manager->AddAnalysis(analysis);
 
   return manager;
@@ -76,7 +78,7 @@ void BuildConfiguration(const TString &text,
                         AliFemtoAnalysisPionLambda::AnalysisParams &a,
                         AliFemtoAnalysisPionLambda::CutParams &cut)
 {
-  std::cout << "[BuildAnalysisFromString]\n";
+  std::cout << "[BuildConfiguration]\n";
   std::cout << "   '" << text << "'\n";
 
   const TString analysis_varname = "a",
