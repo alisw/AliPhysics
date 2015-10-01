@@ -78,9 +78,12 @@ AliAnalysisTaskFemto* AddTaskPiLam(TString params,
 
   // The analysis config macro for PionLambdaFemto accepts a single string
   // argument, which it interprets.
-  // This line wraps that string in double quotes, ensuring that it's a string
-  // which is passed to the macro
-  const TString analysis_params = '"' + params + '"';
+  // This line escapes some escapable characters (backslash, newline, tab)
+  // and wraps that string in double quotes, ensuring that the interpreter
+  // reads a string when passing to the macro.
+  const TString analysis_params = '"' + params.ReplaceAll("\\", "\\\\")
+                                              .ReplaceAll("\n", "\\n")
+                                              .ReplaceAll("\t", "\\t") + '"';
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto(task_name,
                                                              macro_filename,

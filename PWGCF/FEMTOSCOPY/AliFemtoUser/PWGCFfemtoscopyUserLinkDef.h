@@ -70,3 +70,5 @@
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections+;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimple+;
 #pragma link C++ class AliFemtoAnalysisPionLambda+;
+#pragma link C++ class AliFemtoAnalysisPionLambda::AnalysisParams+;
+#pragma link C++ class AliFemtoAnalysisPionLambda::CutParams+;
