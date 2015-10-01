@@ -113,7 +113,9 @@ public:
   void SetDiamondProfileSPD(AliESDVertex *dp) {fDiamondProfileSPD=dp;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
   void SetDiamondProfileTPC(AliESDVertex *dp) {fDiamondProfileTPC=dp;}
-		   
+		
+  void SetSkipIncompleteDAQ(Bool_t v=kTRUE) { fSkipIncompleteDAQ = v; }
+  Bool_t GetSkipIncompleteDAQ() { return fSkipIncompleteDAQ; }
   void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
   void SetUseHLTData(const char* detectors){fUseHLTData=detectors;}
   void SetV0DCAmax(Float_t d) {fV0DCAmax=d;}
@@ -298,6 +300,7 @@ private:
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
 
   //*** Clean ESD flag and parameters *******************
+  Bool_t         fSkipIncompleteDAQ; // skip events with "incomplete DAQ" attribute
   Bool_t         fCleanESD;      // clean ESD flag
   Float_t        fV0DCAmax;      // max. allowed DCA between V0 daugthers 
   Float_t        fV0CsPmin;      // min. allowed cosine of V0 pointing angle 

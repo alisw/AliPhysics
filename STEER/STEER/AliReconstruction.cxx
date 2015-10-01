@@ -232,6 +232,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fWriteESDfriend(kFALSE),
   fFillTriggerESD(kTRUE),
 
+  fSkipIncompleteDAQ(kFALSE),
   fCleanESD(kTRUE),
   fV0DCAmax(3.),
   fV0CsPmin(0.),
@@ -372,6 +373,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fWriteESDfriend(rec.fWriteESDfriend),
   fFillTriggerESD(rec.fFillTriggerESD),
 
+  fSkipIncompleteDAQ(rec.fSkipIncompleteDAQ);
   fCleanESD(rec.fCleanESD),
   fV0DCAmax(rec.fV0DCAmax),
   fV0CsPmin(rec.fV0CsPmin),
@@ -530,6 +532,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fWriteESDfriend        = rec.fWriteESDfriend;
   fFillTriggerESD        = rec.fFillTriggerESD;
 
+  fSkipIncompleteDAQ = rec.fSkipIncompleteDAQ;
   fCleanESD  = rec.fCleanESD;
   fV0DCAmax  = rec.fV0DCAmax;
   fV0CsPmin  = rec.fV0CsPmin;
@@ -2098,6 +2101,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       // Store DAQ detector pattern and attributes
       fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
       fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
+      if (fest->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
+	AliInfo("Abandoning incomplete event reconstruction");
+	return kTRUE;
+      }
     }
 
     fesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
