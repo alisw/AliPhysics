@@ -30,6 +30,7 @@
 using std::cout;
 using std::setw;
 using std::endl;
+using std::dec;
 ClassImp(AliEMCALTriggerSTURawStream)
 
 //_____________________________________________________________________________
