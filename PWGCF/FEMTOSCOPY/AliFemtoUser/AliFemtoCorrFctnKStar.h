@@ -6,6 +6,7 @@
 #define ALIFEMTOCORRFCTN_KSTAR_H_
 
 class TH1D;
+
 #include "AliFemtoCorrFctn.h"
 
 /// \class AliFemtoCorrFctnKStar

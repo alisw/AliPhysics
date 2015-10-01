@@ -46,7 +46,7 @@ AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(unsigned int binsVertex, 
   }
 
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins, fVertexZ[0], fVertexZ[1],
-										        fMultBins,    fMult[0],    fMult[1]);
+										                                                                    fMultBins,    fMult[0],    fMult[1]);
 }
 //____________________________
 

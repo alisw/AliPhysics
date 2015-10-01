@@ -9,14 +9,14 @@
 AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
-  
+
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskFemto", "No analysis manager to connect to.");
     return NULL;
-  }  
+  }
 
   // B. Check the analysis type using the event handlers connected to the analysis
   //    manager. The availability of MC handler cann also be checked here.
@@ -40,7 +40,7 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
 //     }
 //     else
     gProof->Load(configMacroName);
-  }  
+  }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters);
@@ -49,11 +49,11 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
   //===========================================================================
-  
+
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  TString outputfile = AliAnalysisManager::GetCommonFileName();  
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
   AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
