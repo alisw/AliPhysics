@@ -1,5 +1,6 @@
 ///
-/// \file ConfigFemtoAnalysis.C
+/// \file PionLambdaFemto/ConfigFemtoAnalysis.C
+///
 /// \brief The configuration macro which sets up the pion-lambda analysis
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
 ///
@@ -19,18 +20,11 @@
 
 #endif
 
-typedef struct macro_params_s MacroParams;
+typedef AliFemtoAnalysisPionLambda AFAPL;
 
-struct macro_params_s {
-  int pion_charge;
-  float pion_pt_range[2];
-  float pion_eta_range[2];
-  float pion_DCA_range[2];
-  float pion_nsigma[2];
-
-};
-
-MacroParams parse_arguments(const char*);
+void BuildConfiguration(const TString&,
+                        AliFemtoAnalysisPionLambda::AnalysisParams&,
+                        AliFemtoAnalysisPionLambda::CutParams&);
 
 AliFemtoManager*
 ConfigFemtoAnalysis(const TString& param_str = "")
@@ -38,9 +32,8 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   const double PionMass = 0.13956995,
              LambdaMass = 1.115683;
 
-  // MacroParams params = parse_arguments(param_str);
-
   AliFemtoManager *manager = new AliFemtoManager();
+
 
   AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODChain();
   rdr->SetFilterBit(7);
@@ -51,13 +44,22 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
   manager->SetEventReader(rdr);
 
-  AliFemtoAnalysisPionLambda *analysis = new AliFemtoAnalysisPionLambda("PionLambda");
+  // Get the default configurations
+  AFAPL::AnalysisParams analysis_config = AFAPL::DefaultConfig();
+  AFAPL::CutParams cut_config = AFAPL::DefaultCutConfig();
+
+  // Read string and update configurations
+  BuildConfiguration(param_str, analysis_config, cut_config);
+
+  AliFemtoAnalysisPionLambda *analysis = new AliFemtoAnalysisPionLambda("PionLambda",
+                                                                        analysis_config,
+                                                                        cut_config);
     analysis->SetNumEventsToMix(10);
     analysis->SetMinSizePartCollection(1);
     analysis->SetVerboseMode(kFALSE);
 
   analysis->EventCut()->AddCutMonitor(new AliFemtoCutMonitorEventMult("EVPass"),
-                                         new AliFemtoCutMonitorEventMult("EVFail"));
+                                      new AliFemtoCutMonitorEventMult("EVFail"));
 
   analysis->GetPionCut()->AddCutMonitor(new AliFemtoCutMonitorParticleYPt("PionPass", PionMass),
                                         new AliFemtoCutMonitorParticleYPt("PionFail", PionMass));
@@ -70,53 +72,47 @@ ConfigFemtoAnalysis(const TString& param_str = "")
   return manager;
 }
 
-MacroParams
-default_arguments()
+void BuildConfiguration(const TString &text,
+                        AliFemtoAnalysisPionLambda::AnalysisParams &a,
+                        AliFemtoAnalysisPionLambda::CutParams &cut)
 {
-  MacroParams params;
-  params.pion_charge = -1;
-  params.pion_pt_range[0] = 0.2;
-  params.pion_pt_range[1] = 2.0;
-  params.pion_eta_range[0] = -0.8;
-  params.pion_eta_range[1] =  0.8;
-  params.pion_DCA_range[0] =  0.5;
-  params.pion_DCA_range[1] =  4.0;
-  params.pion_nsigma[0] = -0.2;
-  params.pion_nsigma[1] = 0.2;
+  std::cout << "[BuildAnalysisFromString]\n";
+  std::cout << "   '" << text << "'\n";
 
-  return params;
-}
+  const TString analysis_varname = "a",
+                     cut_varname = "cut";
 
-void
-process_argument(const TString& key, const TString& val, MacroParams& params)
-{
-  if (key == 'pion_pt_range') {
-    params.pion_pt_range[0] = val.Atoi();
-    params.pion_pt_range[1] = val.Atoi();
+
+  TObjArray* lines = text.Tokenize("\n;");
+
+  TIter next_line(lines);
+  TObject *line_obj = NULL;
+
+  while (line_obj = next_line()) {
+
+    const TString line = ((TObjString*)line_obj)->String().ReplaceAll(".", "_")
+                                                          .Strip(TString::kBoth, ' ');
+                                                          
+
+    TString cmd("");
+
+    switch (line[0]) {
+    case '$':
+      cmd = cut_varname + "." + line(1, line.Length() - 1);
+      break;
+
+    case '@':
+      cmd = analysis_varname + "." + line(1, line.Length() - 1);
+      break;
+
+    default:
+      continue;
+    }
+
+    cmd += ";";
+
+    cout << "CMD: `" << cmd << "`\n";
+
+    gROOT->ProcessLineFast(cmd);
   }
-
-}
-
-MacroParams
-parse_arguments(const TString& in)
-{
-  // Get default parameters
-  MacroParams params = default_arguments();
-
-  TObjArray* tokens = in.Tokenize(',');
-  TIter next_param(tokens);
-  TObject *param_obj = NULL;
-  while (param_obj = next_param()) {
-    const TString& key_val = ((TObjString*)param_obj)->String();
-    const size_t equal_position = key_val.First('='),
-                      val_start = equal_position + 1,
-                       val_stop = key_val.Length() - val_start;
-
-    const TString key = key_val(0, equal_position),
-                  val = key_val(val_start, val_stop);
-
-    process_argument(key, val, params);
-  }
-
-  return params;
 }

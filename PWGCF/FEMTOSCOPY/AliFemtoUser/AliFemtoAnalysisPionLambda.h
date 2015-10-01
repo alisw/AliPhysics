@@ -2,7 +2,6 @@
 /// \file AliFemtoAnalysisPionLambda.h
 ///
 
-#pragma once
 
 #ifndef ALIFEMTOANALYSIS_PION_LAMBDA_H_
 #define ALIFEMTOANALYSIS_PION_LAMBDA_H_
@@ -13,6 +12,21 @@ class AliFemtoV0TrackCut;
 class AliFemtoBasicTrackCut;
 class AliFemtoV0TrackPairCut;
 class AliFemtoBasicEventCut;
+
+
+
+struct AnalysisParams_Type {
+  struct {
+    UInt_t bins;
+    Float_t min;
+    Float_t max;
+  } vertex;
+
+  float pion_type;
+  float lambda_type;
+};
+
+
 
 /// \class AliFemtoAnalysisPionLambda
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
@@ -40,6 +54,7 @@ public:
   enum LambdaType {kLambda, kAntiLambda};
 
   struct CutParams;
+  struct AnalysisParams;
 
 public:
   /// default constructor
@@ -56,9 +71,32 @@ public:
    * to analyze.
    */
   AliFemtoAnalysisPionLambda(const char *name,
-                             PionType pion,
-                             LambdaType lambda);
+                             const PionType pion,
+                             const LambdaType lambda);
 
+  /**
+   * Construct the analysis with a name, the pion and lambda types, and
+   * cut-configuration object.
+   */
+  AliFemtoAnalysisPionLambda(const char *name,
+                             const PionType pion,
+                             const LambdaType lambda,
+                             const CutParams& params);
+
+
+  /**
+   * Construct the analysis with a name, the pion and lambda types, and
+   * cut-configuration object.
+   */
+  AliFemtoAnalysisPionLambda(const char *name,
+                             const AnalysisParams&,
+                             const CutParams&);
+
+  /**
+   * Create a Cut-Parameter object with default options.
+   */
+  static CutParams DefaultCutConfig();
+  static AnalysisParams DefaultConfig();
 
   AliFemtoV0TrackCut* GetLambdaCut();
   AliFemtoTrackCut* GetPionCut();
@@ -66,11 +104,10 @@ public:
   const AliFemtoV0TrackCut* GetLambdaCut() const;
   const AliFemtoTrackCut* GetPionCut() const;
 
-  AliFemtoV0TrackCut* BuildDefaultLambdaCut();
-  AliFemtoBasicTrackCut* BuildDefaultPionCut();
-  AliFemtoBasicEventCut* BuildDefaultEventCut();
-  AliFemtoV0TrackPairCut* BuildDefaultPairCut();
-
+  AliFemtoV0TrackCut* BuildLambdaCut(const CutParams&) const;
+  AliFemtoBasicTrackCut* BuildPionCut(const CutParams&) const ;
+  AliFemtoBasicEventCut* BuildEventCut(const CutParams&) const;
+  AliFemtoV0TrackPairCut* BuildPairCut(const CutParams&) const;
 
 
 protected:
@@ -80,7 +117,7 @@ protected:
 
 private:
 
-  void _Init();
+  void _Init(const CutParams& params);
 
 #ifndef __ROOT__
   /// \cond CLASSIMP
@@ -90,20 +127,92 @@ private:
 
 };
 
+/// \class AliFemtoAnalysisPionLambda::AnalysisParams
+struct AliFemtoAnalysisPionLambda::AnalysisParams {
+  UInt_t vertex_bins;
+  Float_t vertex_min;
+  Float_t vertex_max;
+
+  UInt_t mult_bins;
+  Float_t mult_min;
+  Float_t mult_max;
+
+  PionType pion_type;
+  LambdaType lambda_type;
+};
+
 /// \class AliFemtoAnalysisPionLambda::CutParams
 /// \brief *not yet implemented* Structure containing all fit parameters for
 ///        'easy' setting of custom fit parameters via one command.
 ///
 struct AliFemtoAnalysisPionLambda::CutParams {
+  // EVENT
   struct {
-    float PtMin;
-    float PtMax;
+    Float_t MultMin,
+            MultMax;
+    Float_t VertexZMin,
+            VertexZMax;
+    Float_t EP_VZeroMin,
+            EP_VZeroMax;
+    Int_t   TriggerSelection;
+    Bool_t  AcceptBadVertex;
+  } event;
+
+  // PION
+  struct {
+    Float_t PtMin,
+            PtMax;
+
+    Float_t EtaMin,
+            EtaMax;
+
+    Float_t DCAMin,
+            DCAMax;
+
+    Float_t NSigmaPionMin,
+            NSigmaPionMax;
+  } pion;
+
+  //  LAMBDA
+  struct {
+    Float_t PtMin,
+            PtMax,
+            Eta,
+            MaxDCA,
+            MaxDecayLength,
+            MinCosPointingAngle;
+
+    Float_t MassMin,
+            MassMax;
+
+    Bool_t OnFlyStatus;
+
+    /// Lambda daugther parameters
+    struct {
+
+      Float_t Eta,
+              TPCncls,
+              MaxDCA;
+
+      Int_t StatusDaughters,
+            Ndof;
+
+      struct {
+        Float_t PtMin,
+                PtMax,
+                MinToPrimVertex;
+      } pion,
+        proton;
+
+    } daughter;
+
   } lambda;
 
   struct {
-    float PtMin;
-    float PtMax;
-  } pion;
+    Bool_t TPCOnly;
+    Float_t TPCExitSepMin;
+  } pair;
+
 };
 
 
