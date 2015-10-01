@@ -22,19 +22,30 @@ public :
   virtual ~AliTPCcalibAlignInterpolation();
   void ProcessStandalone(const char * inputList);
   virtual void     Process(AliESDEvent *event);
-  void SetStreamLevel(Int_t streamLevel){fStreamLevel=streamLevel;}
+  void   SetStreamLevel(Int_t streamLevel){fStreamLevel=streamLevel;}
   Bool_t RefitITStrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackITS, Double_t &chi2, Double_t &npoints);
   Bool_t RefitTOFtrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackTOF, Double_t &chi2, Double_t &npoints);
   Bool_t RefitTRDtrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackTRD, Double_t &chi2, Double_t &npoints);
-  void CreateResidualHistosInterpolation();  
-  void CreateDistortionMapsFromFile(const char * inputFile, const char *outputFile);
+  void   CreateResidualHistosInterpolation(Double_t dy=5, Double_t dz=5);  
+  void   CreateDistortionMapsFromFile(const char * inputFile, const char *outputFile);
+  void   SetSyswatchStep(Int_t step){fSyswatchStep=step;} // step with which sys. usage is sampled
+  void   FillHistogramsFromChain(const char * residualList);
+  THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
+  THn * GetHisITSTRDDRPhi() const {return fHisITSTRDDRPhi;}
+  THn * GetHisITSTOFDRPhi() const {return fHisITSTOFDRPhi;}
+  THn * GetHisITSDZ() const {return fHisITSDZ;}
+  THn * GetHisITSTRDDZ() const {return fHisITSTRDDZ;}
+  THn * GetHisITSTOFDZ() const {return fHisITSTOFDZ;}
 protected:
   static Bool_t SortPointArray(AliTrackPointArray *pointarray, Int_t * sortedIndex);
   Bool_t fOnTheFlyFill;    // flag  - histogram filled on the fly?
   THn * fHisITSDRPhi;      // TPC-ITS residual histograms
   THn * fHisITSTRDDRPhi;   // TPC-ITS+TRD residual histograms
   THn * fHisITSTOFDRPhi;   // TPC-ITS_TOF residual histograms
-private:
+  THn * fHisITSDZ;         // TPC-ITS residual histograms
+  THn * fHisITSTRDDZ;      // TPC-ITS+TRD residual histograms
+  THn * fHisITSTOFDZ;      // TPC-ITS_TOF residual histograms
+public:
   TTreeSRedirector * fStreamer;  // calibration streamer 
   Int_t fStreamLevel;            // stream level - In mode 0 only basic information needed for calibration  stored (see EStreamFlags )
   Int_t fSyswatchStep;           // dump system resource information after  fSyswatchStep tracks
