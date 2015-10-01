@@ -24,10 +24,11 @@
 #include "AliHLTTPCClusterTransformationComponent.h"
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTErrorGuard.h"
+#include "AliHLTTPCFastTransformObject.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -50,6 +51,9 @@ Bool_t AliHLTTPCClusterTransformationComponent::fgTimeInitialisedFromEvent = 0;
 
 AliHLTTPCClusterTransformationComponent::AliHLTTPCClusterTransformationComponent()
 :
+fOfflineMode(0),
+fInitializeByObjectInDoEvent(0),
+fInitialized(0),
 fDataId(kFALSE),
 fBenchmark("ClusterTransformation")
 {
@@ -79,7 +83,8 @@ void AliHLTTPCClusterTransformationComponent::GetInputDataTypes( vector<AliHLTCo
 
   list.clear(); 
   list.push_back( AliHLTTPCDefinitions::fgkRawClustersDataType  | kAliHLTDataOriginTPC  );
-  list.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC );
+  list.push_back( AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType | kAliHLTDataOriginTPC );
 }
 
 AliHLTComponentDataType AliHLTTPCClusterTransformationComponent::GetOutputDataType() { 
@@ -100,7 +105,7 @@ int AliHLTTPCClusterTransformationComponent::GetOutputDataTypes(AliHLTComponentD
 void AliHLTTPCClusterTransformationComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) { 
   // see header file for class documentation
   constBase = 0;
-  inputMultiplier = 2.0;
+  inputMultiplier = 2.5;
 }
 
 AliHLTComponent* AliHLTTPCClusterTransformationComponent::Spawn() { 
@@ -113,6 +118,14 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 { 
   // see header file for class documentation
   
+  int iResult=0;
+  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
+
+  fOfflineMode = 0;
+
+  if (iResult>=0 && argc>0)
+    iResult=ConfigureFromArgumentString(argc, argv);
+
   AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
   if(!calib){
     HLTError("AliTPCcalibDB does not exist");
@@ -122,7 +135,40 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
   calib->UpdateRunInformations(GetRunNo());
   
   if( !fgTransform.IsInitialised() ){
-    int err = fgTransform.Init( GetBz(), GetTimeStamp() );
+    TStopwatch timer;
+    timer.Start();
+    int err = 0;
+	if ( fInitializeByObjectInDoEvent ) {
+	  HLTInfo( "Cluster Transformation will initialize on the fly in DoEvent loop via FastTransformation Data Object" );
+	}
+    else if( fOfflineMode ) {
+      err = fgTransform.Init( GetBz(), GetTimeStamp() );
+	  fInitialized = true;
+    } else {
+       const char* defaultNotify = "";
+       const char* cdbEntry = "HLT/ConfigTPC/TPCFastTransform";
+       defaultNotify = " (default)";
+       const char* chainId = 0;
+       
+       HLTInfo( "configure from entry \"%s\"%s, chain id %s", cdbEntry, defaultNotify, ( chainId != NULL && chainId[0] != 0 ) ? chainId : "<none>" );
+       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get( cdbEntry );//,GetRunNo());
+       if ( !pEntry ) {
+	 HLTError( "cannot fetch object \"%s\" from CDB", cdbEntry );
+	 return -EINVAL;
+       }
+       const AliHLTTPCFastTransformObject *configObj = dynamic_cast<const AliHLTTPCFastTransformObject *>( pEntry->GetObject() );
+
+       if ( !configObj ) {
+	 HLTError( "configuration object \"%s\" has wrong type, required TObjString", cdbEntry );
+	 return -EINVAL;
+       }
+
+       HLTInfo( "received configuration object." );
+       fgTransform.Init( *configObj );
+	   fInitialized = true;
+    }
+    timer.Stop();
+    cout<<"\n\n Initialisation: "<<timer.CpuTime()<<" / "<<timer.RealTime()<<" sec.\n\n"<<endl;
     if( err!=0 ){
       HLTError(Form("Cannot retrieve offline transform from AliTPCcalibDB, AliHLTTPCClusterTransformation returns %d",err));
       return -ENOENT;
@@ -131,18 +177,13 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 
   fDataId = kFALSE;
 
-  int iResult=0;
-  //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
-
-  if (iResult>=0 && argc>0)
-    iResult=ConfigureFromArgumentString(argc, argv);
-
   return iResult;
 } // end DoInit()
 
 int AliHLTTPCClusterTransformationComponent::DoDeinit() { 
   // see header file for class documentation   
-  fgTransform.DeInit();
+  if (fInitialized) fgTransform.DeInit();
+  fInitialized = false;
   return 0;
 }
 
@@ -157,19 +198,27 @@ int AliHLTTPCClusterTransformationComponent::ScanConfigurationArgument(int argc,
   // see header file for class documentation
 
   if (argc<=0) return 0;
-  int i=0;
-  TString argument=argv[i];
-
-  if (argument.CompareTo("-change-dataId")==0){
-    HLTDebug("Change data ID received.");
-    fDataId = kTRUE;
-    return 1;
-  }
-  
-  HLTInfo("Unknown argument %s",argv[i]);
-
-  // unknown argument
-  return -EINVAL;
+  int iRet = 0;
+  for( int i=0; i<argc; i++ ){
+    TString argument=argv[i];  
+    if (argument.CompareTo("-change-dataId")==0){
+      HLTDebug("Change data ID received.");
+      fDataId = kTRUE;
+      iRet++;
+    } else if (argument.CompareTo("-offline-mode")==0){
+      fOfflineMode = 1;
+      HLTDebug("Offline mode set.");
+      iRet++;
+    } else if (argument.CompareTo("-initialize-on-the-fly")==0){
+      fInitializeByObjectInDoEvent = 1;
+      HLTDebug("Initialize on the fly mode set.");
+      iRet++;
+    } else {
+      iRet = -EINVAL;
+      HLTInfo("Unknown argument %s",argv[i]);     
+    }
+  } 
+  return iRet;
 }
 
 
@@ -183,8 +232,42 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
   UInt_t maxOutSize = size;
   size = 0;
   int iResult = 0;
-  if(!IsDataEvent()) return 0;
 
+  if (fInitializeByObjectInDoEvent)
+  {
+	//Check first whether there is a new FastTransformation object
+	for ( const TObject *iter = GetFirstInputObject(AliHLTTPCDefinitions::fgkTPCFastTransformDataObjectDataType); iter != NULL; iter = GetNextInputObject() )
+	{
+		const AliHLTTPCFastTransformObject *configObj = dynamic_cast<const AliHLTTPCFastTransformObject *>(const_cast<TObject*>( iter ) );
+
+		if (!configObj)
+		{
+			HLTError( "Error getting configuration object" );
+			return -EINVAL;
+		}
+		if (fInitialized)
+		{
+			HLTImportant("Received updated cluster transformation map");
+			fgTransform.DeInit();
+		}
+		else
+		{
+			HLTImportant("Received initial cluster transformation map");
+		}
+
+		HLTInfo( "received configuration object." );
+		if (fgTransform.Init( *configObj ))
+		{
+			HLTError("Failed on-the-fly-initialization of transformation map. Error: %s", fgTransform.GetLastError());
+			return(-1);
+		}
+		fInitialized = true;
+		break;
+	}
+  }
+
+  if(!IsDataEvent()) return 0;
+  
   if( !fgTransform.IsInitialised() ){
     HLTError(" TPC Transformation is not initialised ");
     return -ENOENT;    
@@ -249,11 +332,11 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
     UInt_t minPartition = AliHLTTPCDefinitions::GetMinPatchNr(*iter);
 
     float padpitch=1.0;
-    if ((int)minPartition<AliHLTTPCTransform::GetNRowLow())
-      padpitch=AliHLTTPCTransform::GetPadPitchWidthLow();
+    if ((int)minPartition<AliHLTTPCGeometry::GetNRowLow())
+      padpitch=AliHLTTPCGeometry::GetPadPitchWidthLow();
     else
-      padpitch=AliHLTTPCTransform::GetPadPitchWidthUp();
-    float zwidth=AliHLTTPCTransform::GetZWidth();
+      padpitch=AliHLTTPCGeometry::GetPadPitchWidthUp();
+    float zwidth=AliHLTTPCGeometry::GetZWidth();
 
     fBenchmark.SetName(Form("ClusterTransform slice %d patch %d",minSlice,minPartition));
 
@@ -286,22 +369,23 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 	ALIHLTERRORGUARD(1, "can not read cluster header word");
 	break;
       }
-      padrow+=AliHLTTPCTransform::GetFirstRow(minPartition);
+      padrow+=AliHLTTPCGeometry::GetFirstRow(minPartition);
       AliHLTUInt32_t charge=cl.GetCharge();
 
       float pad=cl.GetPad();
       float time=cl.GetTime();
-      float sigmaY2=cl.GetSigmaY2();
-      float sigmaZ2=cl.GetSigmaZ2();
+      float sigmaY2=cl.GetSigmaPad2();
+      float sigmaZ2=cl.GetSigmaTime2();
       sigmaY2*=padpitch*padpitch;
       sigmaZ2*=zwidth*zwidth;
+      c.SetPad( cl.GetPad() );
+      c.SetTime( cl.GetTime() );
       c.SetPadRow(padrow);
       c.SetCharge(charge);
       c.SetSigmaY2(sigmaY2);
       c.SetSigmaZ2(sigmaZ2);
       c.SetQMax(cl.GetQMax());
-
-      Float_t xyz[3];
+        Float_t xyz[3];
       int err = fgTransform.Transform( minSlice, padrow, pad, time, xyz );	 
       if( err!=0 ){
 	HLTWarning(Form("Cannot transform the cluster, AliHLTTPCClusterTransformation returns error %d, %s",err, fgTransform.GetLastError()));

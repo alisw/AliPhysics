@@ -188,6 +188,16 @@ Int_t AliESDfriendTrack::GetTPCseed( AliTPCseed &seed) const {
   return -1;
 }
 
+void AliESDfriendTrack::ResetTPCseed( const AliTPCseed* seed )
+{
+  TObject* calibObject = NULL;
+  AliVTPCseed* seedP = NULL;
+  for (Int_t idx = 0; (calibObject = GetCalibObject(idx)); ++idx) {
+    if ((seedP = dynamic_cast<AliVTPCseed*>(calibObject))) break;
+  }
+  if (seedP) seedP->SetFromTPCseed(seed);
+}
+
 void AliESDfriendTrack::SetTPCOut(const AliExternalTrackParam &param) {
   // 
   // backup TPC out track

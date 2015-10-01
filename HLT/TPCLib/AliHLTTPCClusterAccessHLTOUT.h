@@ -152,8 +152,8 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       void SetPadRow(int row)          {if (fEntry ) fEntry->fCluster.SetPadRow(row-fRowOffset);}
       void SetPad(float pad) 	       {if (fEntry ) fEntry->fCluster.SetPad(pad);}
       void SetTime(float time) 	       {if (fEntry ) fEntry->fCluster.SetTime(time);}
-      void SetSigmaY2(float sigmaY2)   {if (fEntry ) fEntry->fCluster.SetSigmaY2(sigmaY2);}
-      void SetSigmaZ2(float sigmaZ2)   {if (fEntry ) fEntry->fCluster.SetSigmaZ2(sigmaZ2);}
+      void SetSigmaY2(float sigmaY2)   {if (fEntry ) fEntry->fCluster.SetSigmaPad2(sigmaY2);}
+      void SetSigmaZ2(float sigmaZ2)   {if (fEntry ) fEntry->fCluster.SetSigmaTime2(sigmaZ2);}
       void SetCharge(unsigned charge)  {if (fEntry ) fEntry->fCluster.SetCharge(charge);}
       void SetQMax(unsigned qmax)      {if (fEntry ) fEntry->fCluster.SetQMax(qmax);}
       iterator& operator=(const AliHLTTPCRawCluster& rawcluster) {if (fEntry ) {

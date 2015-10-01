@@ -25,7 +25,7 @@
 #include "AliHLTTPCSpacePointContainer.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
 #include "TMath.h"
@@ -125,8 +125,8 @@ int AliHLTTPCSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* 
       // consistency check for x and row number
       // UInt_t clusterSlice =AliHLTTPCSpacePointData::GetSlice(clusterID);
       // UInt_t clusterPart  =AliHLTTPCSpacePointData::GetPatch(clusterID);
-      // int row=AliHLTTPCTransform::GetPadRow(pClusterData->fSpacePoints[i].fX);
-      // if (row<AliHLTTPCTransform::GetFirstRow(clusterPart) || row>AliHLTTPCTransform::GetLastRow(clusterPart)) {
+      // int row=AliHLTTPCGeometry::GetPadRow(pClusterData->fSpacePoints[i].fX);
+      // if (row<AliHLTTPCGeometry::GetFirstRow(clusterPart) || row>AliHLTTPCGeometry::GetLastRow(clusterPart)) {
       // 	HLTError("row number %d calculated from x value %f is outside slice %d partition %d, expected row %d"
       // 		 , row, pClusterData->fSpacePoints[i].fX, clusterSlice, clusterPart, pClusterData->fSpacePoints[i].fPadRow);
       // }
@@ -176,8 +176,8 @@ const vector<AliHLTUInt32_t>* AliHLTTPCSpacePointContainer::GetClusterIDs(AliHLT
        cl!=fClusters.end(); cl++) {
     UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
     UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
-    if ((slice>=(unsigned)AliHLTTPCTransform::GetNSlice() || s==slice) && 
-	(partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches() || p==partition)) {
+    if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
+	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       selected->push_back(cl->first);
     }
   }
@@ -196,7 +196,7 @@ float AliHLTTPCSpacePointContainer::GetX(AliHLTUInt32_t clusterID) const
   // in principle, the clusterfinder only uses the mapping to set the x parameter.
   // now extracting the x value from the padrow no.
   //return fClusters.find(clusterID)->second.Data()->fX;
-  return AliHLTTPCTransform::Row2X(fClusters.find(clusterID)->second.Data()->fPadRow);
+  return AliHLTTPCGeometry::Row2X(fClusters.find(clusterID)->second.Data()->fPadRow);
 }
 
 float AliHLTTPCSpacePointContainer::GetXWidth(AliHLTUInt32_t clusterID) const
@@ -310,8 +310,8 @@ AliHLTSpacePointContainer* AliHLTTPCSpacePointContainer::SelectByMask(AliHLTUInt
        cl!=fClusters.end(); cl++) {
     UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
     UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
-    if ((slice>=(unsigned)AliHLTTPCTransform::GetNSlice() || s==slice) && 
-	(partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches() || p==partition)) {
+    if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
+	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       c->fClusters[cl->first]=cl->second;
     }
   }

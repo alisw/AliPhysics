@@ -35,6 +35,7 @@
 #include "AliFlatExternalTrackParam.h"
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
+#include "AliTPCseed.h"
 #include "Riostream.h"
 
 
@@ -58,12 +59,52 @@ Int_t AliFlatESDTrack::SetFromESDTrack(const AliESDtrack* track)
 					 track->GetInnerParam(),
 					 track->GetTPCInnerParam(),
 					 track->GetOuterParam(),
-					 track->GetConstrainedParam(), NULL );
+					 track->GetConstrainedParam() );
   fNTPCClusters = track->GetTPCNcls();
   fNITSClusters = track->GetITSNcls();
 
+  track->GetImpactParameters(fImp, fImp+2 );
+  fImp[5] = track->GetConstrainedChi2();
+
+  track->GetImpactParametersTPC(fImpTPC, fImpTPC+2 );
+  fImpTPC[5] = track->GetConstrainedChi2TPC();
+
   return iResult;
 }
+
+void  AliFlatESDTrack::GetESDTrack( AliESDtrack* esdTrack ) const
+{
+  // get esd track out of flat track
+
+  if( !esdTrack ) return;
+
+  AliTPCseed p;
+  p.SetNumberOfClusters( GetNumberOfTPCClusters() );
+
+  if( GetTrackParamOp( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCout );
+  }
+  if( GetTrackParamTPCInner( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCin );
+  }
+  if( GetTrackParamRefitted( p )>=0 ){
+    esdTrack->UpdateTrackParams( &p, AliESDtrack::kTPCrefit );
+  }
+  if( GetTrackParamIp( p )>=0 ){
+    p.SetNumberOfClusters( GetNumberOfITSClusters() );
+   esdTrack->UpdateTrackParams( &p, AliESDtrack::kITSin );
+  }
+
+ if( GetTrackParamCp( p )>=0 ){
+   esdTrack->SetImpactParameters( fImp, fImp+2, fImp[5], &p);
+ } else {
+   esdTrack->SetImpactParameters( fImp, fImp+2, fImp[5], NULL);
+ }
+ esdTrack->SetImpactParametersTPC( fImpTPC, fImpTPC+2, fImpTPC[5] );
+
+}
+
+
 
 // _______________________________________________________________________________________________________
 Int_t AliFlatESDTrack::SetExternalTrackParam( 
@@ -71,8 +112,7 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
 					     const AliExternalTrackParam* innerParam,
 					     const AliExternalTrackParam* innerTPC,
 					     const AliExternalTrackParam* outerParam,
-					     const AliExternalTrackParam* constrainedParam,
-					     const AliExternalTrackParam* outerITS
+					     const AliExternalTrackParam* constrainedParam
 					      ){
   // Fill external track parameters 
 
@@ -97,9 +137,6 @@ Int_t AliFlatESDTrack::SetExternalTrackParam(
   flag = 0x10;
   iResult = FillExternalTrackParam(constrainedParam, flag);
 
-  flag = 0x20;
-  iResult = FillExternalTrackParam(outerITS, flag);
-
   return iResult;
 }
 
@@ -122,10 +159,12 @@ Int_t AliFlatESDTrack::FillExternalTrackParam(const AliExternalTrackParam* param
 
 // _______________________________________________________________________________________________________
 Bool_t AliFlatESDTrack::GetXYZ(Double_t *p) const {
+  //return the global track position
   const AliFlatExternalTrackParam *f = GetFlatTrackParam();
   if (!f) { return kFALSE; }
+
   p[0]=f->GetX();
   p[1]=f->GetY();
   p[2]=f->GetZ();
-  return kTRUE;
+  return Local2GlobalPosition(p,f->GetAlpha());
 }

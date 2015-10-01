@@ -15,7 +15,7 @@
 
 #include "AliHLTLogging.h"
 #include <vector>
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCDigitReader.h"
 #include "AliTPCRecoParam.h"
@@ -183,7 +183,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetLastTimeBin(Int_t ltb){fLastTimeBin=ltb;}
   void SetFirstTimeBin(Int_t ftb){fFirstTimeBin=ftb;}
   void SetReleaseMemory( Bool_t v ){ fReleaseMemory = v;}
-  void UpdateLastTimeBin(){fLastTimeBin=AliHLTTPCTransform::GetNTimeBins();}
+  void UpdateLastTimeBin(){fLastTimeBin=AliHLTTPCGeometry::GetNTimeBins();}
 
 //---------------------------------- Under this line the old sorted clusterfinder functions can be found --------------------------------
   void Read(void* ptr,unsigned long size);

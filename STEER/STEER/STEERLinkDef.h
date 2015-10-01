@@ -166,7 +166,7 @@
 #pragma link C++ typedef AliLHCDipValC;
 
 #pragma link C++ class AliMCGenHandler+;
-#pragma link C++ class  AliHLTTestInputHandler+;
+#pragma link C++ class  AliHLTVEventInputHandler+;
 
 #pragma link C++ class AliHLTSimulation+;
 

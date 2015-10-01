@@ -23,7 +23,7 @@
 ///
 
 #include "AliHLTTPCTrackGeometry.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCSpacePointContainer.h"
@@ -91,8 +91,8 @@ float AliHLTTPCTrackGeometry::GetPlaneR(AliHLTUInt32_t planeId) const
   /// radial distance from global {0,0,0}
   UInt_t partition=AliHLTTPCSpacePointData::GetPatch(planeId);
   UInt_t number=AliHLTTPCSpacePointData::GetNumber(planeId);
-  Int_t row=AliHLTTPCTransform::GetFirstRow(partition)+number;
-  return AliHLTTPCTransform::Row2X(row);
+  Int_t row=AliHLTTPCGeometry::GetFirstRow(partition)+number;
+  return AliHLTTPCGeometry::Row2X(row);
 }
 
 float AliHLTTPCTrackGeometry::GetPlaneTheta(AliHLTUInt32_t /*planeId*/) const
@@ -105,7 +105,7 @@ bool AliHLTTPCTrackGeometry::CheckBounds(AliHLTUInt32_t planeId, float u, float 
 {
   /// check bounds in u and v coordinate
   float r=GetPlaneR(planeId);
-  if (r<AliHLTTPCTransform::GetFirstRow(0)) return false;
+  if (r<AliHLTTPCGeometry::GetFirstRow(0)) return false;
 
   // TODO: check if the pad width needs to be considered here
   return TMath::Abs(TMath::ASin(u/r))<=TMath::Pi()/18;
@@ -127,10 +127,10 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track)
   int iResult=0;
   int firstpadrow=0;
   for (;
-       firstpadrow<AliHLTTPCTransform::GetNRows() && 
-	 AliHLTTPCTransform::Row2X(firstpadrow)+AliHLTTPCTransform::GetPadLength(firstpadrow)<track.GetX();
+       firstpadrow<AliHLTTPCGeometry::GetNRows() && 
+	 AliHLTTPCGeometry::Row2X(firstpadrow)+AliHLTTPCGeometry::GetPadLength(firstpadrow)<track.GetX();
        firstpadrow++);
-  if (firstpadrow>=AliHLTTPCTransform::GetNRows()) return 0;
+  if (firstpadrow>=AliHLTTPCGeometry::GetNRows()) return 0;
   // first calculated outwards
   iResult=CalculateTrackPoints(track, firstpadrow, 1);
   if (iResult>=0 && firstpadrow>0)
@@ -143,8 +143,8 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
 {
   /// calculate the track points, expects the global magnetic field to be initialized
   float offsetAlpha=0.0;
-  for (int padrow=firstpadrow; padrow>=0 && padrow<AliHLTTPCTransform::GetNRows(); padrow+=step) {
-    float x=AliHLTTPCTransform::Row2X(padrow);
+  for (int padrow=firstpadrow; padrow>=0 && padrow<AliHLTTPCGeometry::GetNRows(); padrow+=step) {
+    float x=AliHLTTPCGeometry::Row2X(padrow);
     float y=0.0;
     float z=0.0;
 
@@ -171,15 +171,15 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     if (slice>=36) {
       HLTError("invalid slice %d calculated from alpha %f", slice, track.GetAlpha());
     }
-    int partition=AliHLTTPCTransform::GetPatch(padrow);
-    int row=padrow-AliHLTTPCTransform::GetFirstRow(partition);
+    int partition=AliHLTTPCGeometry::GetPatch(padrow);
+    int row=padrow-AliHLTTPCGeometry::GetFirstRow(partition);
     UInt_t id=AliHLTTPCSpacePointData::GetID(slice, partition, row);
     if (TMath::Abs(planealpha-GetPlaneAlpha(id))>0.0001) {
       HLTError("alpha missmatch for plane %08x (slice %d): alpha from id %f (%.0f deg), expected %f (%.0f deg)", id, slice, GetPlaneAlpha(id), 180*GetPlaneAlpha(id)/TMath::Pi(), planealpha, 180*planealpha/TMath::Pi());
     }
     if (AddTrackPoint(AliHLTTrackPoint(id, y, z), AliHLTTPCSpacePointData::GetID(slice, partition, 0))>=0) {
       Float_t rpt[3]={0.,y,z}; // row pad time
-      AliHLTTPCTransform::LocHLT2Raw(rpt, slice, padrow);
+      AliHLTTPCGeometry::LocHLT2Raw(rpt, slice, padrow);
       float m=fDriftTimeFactorA;
       float n=fDriftTimeOffsetA;
       if (slice>=18) {
@@ -219,9 +219,9 @@ int AliHLTTPCTrackGeometry::FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, 
   /// find the track point which can be associated to a spacepoint with coordinates and id
   UInt_t slice=AliHLTTPCSpacePointData::GetSlice(spacepointId);
   UInt_t partition=AliHLTTPCSpacePointData::GetPatch(spacepointId);
-  int row=AliHLTTPCTransform::GetPadRow(spacepoint[0]);
+  int row=AliHLTTPCGeometry::GetPadRow(spacepoint[0]);
   bool bSpecialRow=row==30 || row==90 || row==139;
-  if (row<AliHLTTPCTransform::GetFirstRow(partition) || row>AliHLTTPCTransform::GetLastRow(partition)) {
+  if (row<AliHLTTPCGeometry::GetFirstRow(partition) || row>AliHLTTPCGeometry::GetLastRow(partition)) {
     HLTError("row number %d calculated from x value %f is outside slice %d partition %d", row, spacepoint[0], slice, partition);
     return -EINVAL;
   }
@@ -229,7 +229,7 @@ int AliHLTTPCTrackGeometry::FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, 
   // find the crossing point of the track with the padrow plane where
   // the spacepoint is
   // 1) calculate plane id from slice, partition and row (within partition)
-  row-=AliHLTTPCTransform::GetFirstRow(partition);
+  row-=AliHLTTPCGeometry::GetFirstRow(partition);
   UInt_t id=AliHLTTPCSpacePointData::GetID(slice, partition, row);
   const AliHLTTrackPoint* point=GetTrackPoint(id);
   // track might be outside the partition and cross the central membrane
@@ -247,8 +247,8 @@ int AliHLTTPCTrackGeometry::FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, 
   // search in the neighboring partition, this takes account for rows
   // 30, 90, and 139 which are partly in one and the other partition
   if (!point && bSpecialRow) {
-    row+=AliHLTTPCTransform::GetFirstRow(partition);
-    row-=AliHLTTPCTransform::GetFirstRow(partition-1);
+    row+=AliHLTTPCGeometry::GetFirstRow(partition);
+    row-=AliHLTTPCGeometry::GetFirstRow(partition-1);
     id=AliHLTTPCSpacePointData::GetID(slice, partition-1, row);
     point=GetTrackPoint(id);
     if (!point && slice<18) {
@@ -356,7 +356,7 @@ AliHLTSpacePointContainer* AliHLTTPCTrackGeometry::ConvertToSpacePoints(bool bAs
       pClusters[pClusterData->fSpacePointCnt].fY=trackPoints[i].GetU();
       pClusters[pClusterData->fSpacePointCnt].fZ=trackPoints[i].GetV();
       pClusters[pClusterData->fSpacePointCnt].fID=planeId;
-      pClusters[pClusterData->fSpacePointCnt].fPadRow=AliHLTTPCTransform::GetFirstRow(partition)+number;
+      pClusters[pClusterData->fSpacePointCnt].fPadRow=AliHLTTPCGeometry::GetFirstRow(partition)+number;
       pClusters[pClusterData->fSpacePointCnt].fSigmaY2=0.;
       pClusters[pClusterData->fSpacePointCnt].fSigmaZ2=0.;
       pClusters[pClusterData->fSpacePointCnt].fCharge=0;
@@ -484,10 +484,10 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
     clrow--;
     AliHLTUInt32_t partition=AliHLTTPCSpacePointData::GetPatch(clrow->GetId());
     AliHLTUInt32_t partitionrow=AliHLTTPCSpacePointData::GetNumber(clrow->GetId());
-    partitionrow+=AliHLTTPCTransform::GetFirstRow(partition);
+    partitionrow+=AliHLTTPCGeometry::GetFirstRow(partition);
     AliHLTUInt32_t firstpartition=AliHLTTPCSpacePointData::GetPatch(fRawTrackPoints.begin()->GetId());
     AliHLTUInt32_t firstpartitionrow=AliHLTTPCSpacePointData::GetNumber(fRawTrackPoints.begin()->GetId());
-    firstpartitionrow+=AliHLTTPCTransform::GetFirstRow(firstpartition);
+    firstpartitionrow+=AliHLTTPCGeometry::GetFirstRow(firstpartition);
     if (partitionrow>=firstpartitionrow) {
       bReverse=false;
       clrow=fRawTrackPoints.begin();
@@ -499,7 +499,7 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
     if (clrow!=fRawTrackPoints.end()) {
       AliHLTUInt32_t thisPartition=AliHLTTPCSpacePointData::GetPatch(clrow->GetId());
       AliHLTUInt32_t thisTrackRow=AliHLTTPCSpacePointData::GetNumber(clrow->GetId());
-      thisTrackRow+=AliHLTTPCTransform::GetFirstRow(thisPartition);
+      thisTrackRow+=AliHLTTPCGeometry::GetFirstRow(thisPartition);
       if (thisTrackRow==row) {
 	// write clusters
 	const vector<AliHLTTrackSpacepoint>&  clusters=clrow->GetSpacepoints();
@@ -608,7 +608,7 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	  if (clrow!=fRawTrackPoints.begin()) {
 	    AliHLTUInt32_t nextPartition=AliHLTTPCSpacePointData::GetPatch((clrow-1)->GetId());
 	    AliHLTUInt32_t nextTrackRow=AliHLTTPCSpacePointData::GetNumber((clrow-1)->GetId());
-	    nextTrackRow+=AliHLTTPCTransform::GetFirstRow(nextPartition);
+	    nextTrackRow+=AliHLTTPCGeometry::GetFirstRow(nextPartition);
 	    if (thisTrackRow+1==nextTrackRow) {
 	      clrow--;
 	    } else {
@@ -628,7 +628,7 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	// sequence not ordered, search
 	// this has been fixed and the search is no longer necessary
 	// for (clrow=fRawTrackPoints.begin(); clrow!=fRawTrackPoints.end(); clrow++) {
-	//   if ((AliHLTTPCSpacePointData::GetNumber(clrow->GetId())+AliHLTTPCTransform::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(clrow->GetId())))==row) break;
+	//   if ((AliHLTTPCSpacePointData::GetNumber(clrow->GetId())+AliHLTTPCGeometry::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(clrow->GetId())))==row) break;
 	// }
 	// if (clrow==fRawTrackPoints.end()) {
 	//   clrow=fRawTrackPoints.begin();

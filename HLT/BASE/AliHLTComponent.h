@@ -649,6 +649,12 @@ class AliHLTComponent : public AliHLTLogging {
    *                    3 print 'type' 'origin' 
    */
   static string DataType2Text( const AliHLTComponentDataType& type, int mode=0);
+  
+  /**
+   * Helper functions to convert data type to a char array (ZMQ topic) and back
+   * fID goes first (8 chars) then fOrigin (4 chars)
+   **/
+  static void DataType2Topic( const AliHLTComponentDataType type, char* output );
 
   /**
    * Calculate a CRC checksum of a data buffer.
@@ -914,6 +920,11 @@ class AliHLTComponent : public AliHLTLogging {
 
   /// get the compression level for TObjects
   int GetCompressionLevel() const {return fCompressionLevel;}
+
+  /**
+   * get the full configuration string
+   */
+  string GetComponentArgs() const { return fComponentArgs; }
 
  protected:
 
@@ -1201,6 +1212,17 @@ class AliHLTComponent : public AliHLTLogging {
    * @return pointer to @ref TObject, NULL if no more objects available
    */
   const TObject* GetNextInputObject(int bForce=0);
+  
+  /**
+   * Removes a TObject from the list of objects automatically deleted
+   * after the event processing function DoEvent. Objects obtained via
+   * GetFirstInputObject etc. are placed there and cleaned up afterwards.
+   * With these function, the component "takes ownership" and has to make
+   * sure the object is cleaned up properly by itself. Returns a non-const
+   * pointer on success and NULL otherwise
+   */
+  
+  TObject* RemoveInputObjectFromCleanupList(const TObject* obj);
 
   /**
    * Get data type of an input block.
@@ -1305,7 +1327,7 @@ class AliHLTComponent : public AliHLTLogging {
    * default is no header.
    * The publishing can be downscaled by means of the -pushback-period
    * parameter. This is especially useful for histograms which do not
-   * need to be sent for every event.
+   * need to be sent for every event. At EOR data is always pushed.
    * @param pObject     pointer to root object
    * @param dt          data type of the object
    * @param spec        data specification
@@ -1323,7 +1345,7 @@ class AliHLTComponent : public AliHLTLogging {
    * default is no header.
    * The publishing can be downscaled by means of the -pushback-period
    * parameter. This is especially useful for histograms which do not
-   * need to be sent for every event.
+   * need to be sent for every event. At EOR data is always pushed.
    * @param pObject     pointer to root object
    * @param dtID        data type ID of the object
    * @param dtOrigin    data type origin of the object
@@ -1674,6 +1696,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param spec        data specification
    * @param pHeader     pointer to header
    * @param iHeaderSize size of Header
+   * @return size of buffer
    * @return neg. error code if failed
    */
   int InsertOutputBlock(const void* pBuffer, int iBufferSize,

@@ -18,7 +18,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTDataInflater.h"
 #include "AliHLTTPCHWClusterMerger.h"
@@ -148,18 +148,18 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 
   int slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
   int partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
-  if (slice<0 || slice>=AliHLTTPCTransform::GetNSlice()) {
+  if (slice<0 || slice>=AliHLTTPCGeometry::GetNSlice()) {
     HLTError("invalid slice %d decoded from specification 0x%08x", slice, specification);
     return -EINVAL;
   }
-  if (partition<0 || partition>=AliHLTTPCTransform::GetNumberOfPatches()) {
+  if (partition<0 || partition>=AliHLTTPCGeometry::GetNumberOfPatches()) {
     HLTError("invalid partition %d decoded from specification 0x%08x", partition, specification);
     return -EINVAL;
   }
   // the compressed format stores the difference of the local row number in
   // the partition to the row of the last cluster
   // add the first row in the partition to get global row number
-  int rowOffset=AliHLTTPCTransform::GetFirstRow(partition);
+  int rowOffset=AliHLTTPCGeometry::GetFirstRow(partition);
 
   int parameterId=pInflater->NextParameter();
   if (parameterId<0) return parameterId;
@@ -235,9 +235,9 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       break;
     }
     case AliHLTTPCDefinitions::kSigmaY2:
-      {float sigmaY2=value; sigmaY2/=parameter.fScale; rawCluster.SetSigmaY2(sigmaY2); break;}
+      {float sigmaY2=value; sigmaY2/=parameter.fScale; rawCluster.SetSigmaPad2(sigmaY2); break;}
     case AliHLTTPCDefinitions::kSigmaZ2:
-      {float sigmaZ2=value; sigmaZ2/=parameter.fScale; rawCluster.SetSigmaZ2(sigmaZ2); break;}
+      {float sigmaZ2=value; sigmaZ2/=parameter.fScale; rawCluster.SetSigmaTime2(sigmaZ2); break;}
     case AliHLTTPCDefinitions::kCharge:
       {rawCluster.SetCharge(value); break;}
     case AliHLTTPCDefinitions::kQMax:
@@ -253,8 +253,8 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       c.SetPadRow(rawCluster.GetPadRow()+rowOffset);
       c.SetPad(rawCluster.GetPad());
       c.SetTime(rawCluster.GetTime());
-      c.SetSigmaY2(rawCluster.GetSigmaY2());
-      c.SetSigmaZ2(rawCluster.GetSigmaZ2());
+      c.SetSigmaY2(rawCluster.GetSigmaPad2());
+      c.SetSigmaZ2(rawCluster.GetSigmaTime2());
       c.SetCharge(rawCluster.GetCharge());
       c.SetQMax(rawCluster.GetQMax());
       if (pMC) c.SetMC(pMC);
@@ -268,7 +268,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       // skip sigmaY for single pad clusters in format version 1
       parameterId=pInflater->NextParameter();
       isSinglePad=0;
-      rawCluster.SetSigmaY2(0.);
+      rawCluster.SetSigmaPad2(0.);
     }
   }
   pInflater->Pad8Bits();
@@ -290,8 +290,8 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 	c.SetPadRow(mergedCluster.GetPadRow()+rowOffset);
 	c.SetPad(mergedCluster.GetPad());
 	c.SetTime(mergedCluster.GetTime());
-	c.SetSigmaY2(mergedCluster.GetSigmaY2());
-	c.SetSigmaZ2(mergedCluster.GetSigmaZ2());
+	c.SetSigmaY2(mergedCluster.GetSigmaPad2());
+	c.SetSigmaZ2(mergedCluster.GetSigmaTime2());
 	c.SetCharge(mergedCluster.GetCharge());
 	c.SetQMax(mergedCluster.GetQMax());
 	c.SetMC(&mc);
@@ -425,7 +425,7 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	currentTrackPoint=rawTrackPoints.begin();
 	bEscape=true;
       }
-      if (AliHLTTPCTransform::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId())) +
+      if (AliHLTTPCGeometry::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId())) +
 	  AliHLTTPCSpacePointData::GetNumber(currentTrackPoint->GetId()) == row) {
 	break;
       }
@@ -569,8 +569,8 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
     c.SetPadRow(clusters[i].GetPadRow());
     c.SetPad(clusters[i].GetPad()+PadShift());
     c.SetTime(clusters[i].GetTime());
-    c.SetSigmaY2(clusters[i].GetSigmaY2());
-    c.SetSigmaZ2(clusters[i].GetSigmaZ2());
+    c.SetSigmaY2(clusters[i].GetSigmaPad2());
+    c.SetSigmaZ2(clusters[i].GetSigmaTime2());
     c.SetCharge(clusters[i].GetCharge());
     c.SetQMax(clusters[i].GetQMax());
     if (pMC) c.SetMC(pMC);

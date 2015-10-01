@@ -23,7 +23,6 @@
 */
 
 #include "AliHLTTPCOfflineCluster.h"
-#include "AliHLTTPCTransform.h"
 #include "TObjArray.h"
 #include <sys/time.h>
 

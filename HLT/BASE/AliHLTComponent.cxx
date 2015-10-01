@@ -201,10 +201,28 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
     pArguments=new const char*[argc];
     if (pArguments) {
       for (int i=0; i<argc && iResult>=0; i++) {
-	if (fComponentArgs.size()>0) fComponentArgs+=" ";
-	fComponentArgs+=argv[i];
 	argument=argv[i];
-	if (argument.IsNull()) continue;
+  if (argument.IsNull()) continue;
+ 
+  //reconstruct the argument string from argument array
+  if (fComponentArgs.size()>0) fComponentArgs+=" ";
+  //if an argument contains spaces it means it was single quoted
+  //if quotes were removed - restore them
+  if (argument.Contains(" ")) {
+    if (!argument.Contains("'")) {
+      fComponentArgs+="'";
+      fComponentArgs+=argv[i];
+      fComponentArgs+="'";
+    } else if (!argument.EndsWith("'") ) {
+      //**WORKAROUND:**
+      //if a single quote exists with spaces after it means the
+      //closing quote was removed - restore
+      fComponentArgs+=argv[i];
+      fComponentArgs+="'";
+    }
+  } else {
+    fComponentArgs+=argv[i];
+  }
 
 	// benchmark
 	if (argument.CompareTo("-benchmark")==0) {
@@ -705,6 +723,16 @@ int AliHLTComponent::CheckOCDBEntries(const TMap* const externList)
   }
 
   return iResult;
+}
+
+void AliHLTComponent::DataType2Topic( const AliHLTComponentDataType type, 
+                                      char *output ) 
+{
+  // this produces a fixed length string, first 8 chars are the data type id, 4 last are origin
+  // so for 
+  //memset( output, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize );
+  memcpy( output, type.fID, kAliHLTComponentDataTypefIDsize );
+  memcpy( output+kAliHLTComponentDataTypefIDsize, type.fOrigin, kAliHLTComponentDataTypefOriginSize );
 }
 
 void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char output[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2] ) const
@@ -1246,6 +1274,20 @@ int AliHLTComponent::CleanupInputObjects()
   return 0;
 }
 
+TObject* AliHLTComponent::RemoveInputObjectFromCleanupList(const TObject* obj)
+{
+  if (!fpInputObjects) return(NULL);
+  TObjArray* array=fpInputObjects;
+  for (int i=0; i<array->GetEntriesFast(); i++) {
+    if (array->At(i) == obj) {
+	  TObject* retVal = array->At(i);
+	  array->RemoveAt(i);
+	  return(retVal);
+	}
+  }
+  return(NULL);
+}
+
 AliHLTComponentDataType AliHLTComponent::GetDataType(const TObject* pObject)
 {
   // see header file for function documentation
@@ -1500,7 +1542,7 @@ int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, con
 				       const void* pHeader, int iHeaderSize)
 {
   // see header file for function documentation
-  int iResult=0;
+  int iResult=iBufferSize;
   int iBlkSize = iBufferSize + iHeaderSize;
 
   if ((pBuffer!=NULL && iBufferSize>0) || (pHeader!=NULL && iHeaderSize>0)) {

@@ -12,6 +12,9 @@
 
 #include "TNamed.h"
 class TObjArray;
+class THnSparse;
+class TChain;
+
 class AliTPCcalibTime;
 class AliTPCcalibTimeGain;
 class AliTPCcalibGainMult;
@@ -20,20 +23,25 @@ class AliTPCParam;
 class TPad;
 class AliCDBRunRange;
 class AliCDBStorage;
+class AliCDBEntry;
 
 class AliTPCPreprocessorOffline:public TNamed { 
 public:
   AliTPCPreprocessorOffline();
   virtual ~AliTPCPreprocessorOffline();
-  void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun, AliCDBStorage* storage);
   void UpdateOCDBGain(Int_t  startRunNumber, Int_t endRunNumber, AliCDBStorage* storage);
   void UpdateDriftParam(AliTPCParam *param, TObjArray *const arr, Int_t lstartRun);
 
   //
   // v drift part
   //
-  void GetRunRange(AliTPCcalibTime* const timeDrift);
+  Int_t CalibTimeVdrift(AliTPCcalibTime* timeDrift, Int_t ustartRun, Int_t uendRun);
   void CalibTimeVdrift(const Char_t* file, Int_t ustartRun, Int_t uendRun,AliCDBStorage* ocdbStorage=0x0);
+  AliCDBEntry* CreateDriftCDBentryObject(Int_t ustartRun, Int_t uendRun);
+  void UpdateOCDBDrift(Int_t ustartRun, Int_t uendRun, AliCDBStorage* storage);
+  void TakeOwnershipDriftCDBEntry();
+
+  void GetRunRange(AliTPCcalibTime* const timeDrift);
   void AddHistoGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift, Int_t minEntries);
   void AddAlignmentGraphs(  TObjArray * vdriftArray, AliTPCcalibTime * const timeDrift);
   void AddLaserGraphs(  TObjArray * vdriftArray, AliTPCcalibTime *timeDrift);
@@ -41,6 +49,8 @@ public:
   void MakeDefaultPlots(TObjArray * const arr, TObjArray *picArray);
   void SetMaxVDriftCorr(Double_t maxVDriftCorr=0.03) {fMaxVdriftCorr=maxVDriftCorr;};
   Bool_t ValidateTimeDrift();
+  AliCDBEntry* GetDriftCDBentry() const { return fDriftCDBentry; }
+  
   //
   // Gain part
   //
@@ -86,7 +96,7 @@ public:
   //
   static TGraphErrors* FilterGraphMedianAbs(TGraphErrors * graph, Float_t cut,Double_t &medianY);
   static TGraphErrors* FilterGraphDrift(TGraphErrors * graph, Float_t errSigmaCut, Float_t medianCutAbs);
-  static TGraphErrors * MakeGraphFilter0(THnSparse *hisN, Int_t itime, Int_t ival, Int_t minEntries, Double_t offset=0);
+  static TGraphErrors* MakeGraphFilter0(THnSparse *hisN, Int_t itime, Int_t ival, Int_t minEntries, Double_t offset=0);
 
   //
   void SwitchOnValidation(Bool_t val = kTRUE) {fSwitchOnValidation = val;} 
@@ -95,8 +105,8 @@ public:
   //
   Int_t GetStatus();
   enum ECalibStatusBit { kCalibFailedTimeDrift =0x0001,
-                         kCalibFailedTimeGain  =0x0002 ,
-			  kCalibFailedExport  =0x0004 
+                         kCalibFailedTimeGain  =0x0002,
+                         kCalibFailedExport  =0x0004
   };
 
 private:
@@ -131,10 +141,12 @@ private:
 
   Int_t fCalibrationStatus;       // status of calibration, each set bit signifies a failure in a component (see ECalibStatusBit)
 
+  AliCDBEntry* fDriftCDBentry;         //!the freshly produced CDB entry
+
 private:
   AliTPCPreprocessorOffline& operator=(const AliTPCPreprocessorOffline&); // not implemented
   AliTPCPreprocessorOffline(const AliTPCPreprocessorOffline&); // not implemented
-  ClassDef(AliTPCPreprocessorOffline,1)
+  ClassDef(AliTPCPreprocessorOffline,2)
 };
 
 #endif

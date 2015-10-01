@@ -12,6 +12,7 @@ class AliVTPCseed {
   AliVTPCseed() {}
   virtual ~AliVTPCseed() {}
   virtual void CopyToTPCseed( AliTPCseed &) const = 0;
+  virtual void SetFromTPCseed( const AliTPCseed*) = 0;
 };
 
 #endif

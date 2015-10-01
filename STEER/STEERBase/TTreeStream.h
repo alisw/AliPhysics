@@ -82,7 +82,6 @@ public:
 };
 
 
-
 class TTreeSRedirector: public TObject { 
 public:
   TTreeSRedirector(const char *fname="", const char * option="update");
@@ -100,6 +99,8 @@ public:
   void      SetDirectory(TDirectory *sfile); 
   void      SetFile(TFile *sfile) {SetDirectory(sfile);} 
   void SetExternalTree(const char* name, TTree* externalTree);
+  static void SetDisabled(Bool_t b=kTRUE) {fgDisabled=b;}
+  static Bool_t IsDisabled()        {return fgDisabled;}
  
 private:
 
@@ -109,6 +110,7 @@ private:
   TDirectory* fDirectory;        //file
   Bool_t      fDirectoryOwner;   //do we own the directory?
   TObjArray *fDataLayouts;   //array of data layouts
+  static Bool_t fgDisabled;  //disable - do not open any files
   ClassDef(TTreeSRedirector,2) 
 };
 

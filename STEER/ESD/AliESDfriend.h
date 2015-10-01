@@ -13,7 +13,8 @@
 #include "AliESDfriendTrack.h"
 #include "AliVfriendEvent.h"
 
-class AliESDVZEROfriend;
+#include "AliESDVZEROfriend.h"
+
 class AliESDTZEROfriend;
 class AliESDADfriend;
 
@@ -49,8 +50,15 @@ public:
      new(fTracks[i]) AliESDfriendTrack(*t);
   }
 
-  void SetVZEROfriend(AliESDVZEROfriend * obj);
+  void SetVZEROfriend(const AliESDVZEROfriend * obj);
   AliESDVZEROfriend *GetVZEROfriend(){ return fESDVZEROfriend; }
+  const AliESDVZEROfriend *GetVZEROfriendConst() const { return fESDVZEROfriend; }
+  AliVVZEROfriend *GetVVZEROfriend(){ return fESDVZEROfriend; }
+  Int_t GetESDVZEROfriend( AliESDVZEROfriend &v ) const {
+    if( fESDVZEROfriend ){ v=*fESDVZEROfriend; return 0; }
+    return -1;
+  }
+
   void SetTZEROfriend(AliESDTZEROfriend * obj);
   AliESDTZEROfriend *GetTZEROfriend(){ return fESDTZEROfriend; }
   void SetADfriend(AliESDADfriend * obj);

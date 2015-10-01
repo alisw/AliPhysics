@@ -29,7 +29,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTTPCMapping.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTCDHWrapper.h"
 #include "AliHLTTPCHWCFEmulator.h"
@@ -137,14 +137,14 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
      return 0;
   }
 
-  // AliHLTTPCTransform::GetFirstRow returns first row in scheme A.
-  // We have to transform to scheme B by AliHLTTPCTransform::Slice2Sector.
+  // AliHLTTPCGeometry::GetFirstRow returns first row in scheme A.
+  // We have to transform to scheme B by AliHLTTPCGeometry::Slice2Sector.
 
   UInt_t offsetSchemeB=0;
   Int_t sector = 0;
   {
     Int_t tmp=0;
-    AliHLTTPCTransform::Slice2Sector(slice, AliHLTTPCTransform::GetFirstRow(patch),
+    AliHLTTPCGeometry::Slice2Sector(slice, AliHLTTPCGeometry::GetFirstRow(patch),
 				     sector, tmp);
     offsetSchemeB = (UInt_t) tmp;
   }
@@ -392,11 +392,11 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
       }
       
       Int_t nPadsTotal = 0;
-      Int_t firstRow = AliHLTTPCTransform::GetFirstRow(patch);
-      Int_t nRows = AliHLTTPCTransform::GetNRows(patch);
+      Int_t firstRow = AliHLTTPCGeometry::GetFirstRow(patch);
+      Int_t nRows = AliHLTTPCGeometry::GetNRows(patch);
 
       for( int i=0; i<nRows; i++ ){
-	nPadsTotal += AliHLTTPCTransform::GetNPads(firstRow+i);	
+	nPadsTotal += AliHLTTPCGeometry::GetNPads(firstRow+i);	
       }
 
       AliHLTUInt32_t totalSize32 = (nDigitsTotal + nBunchesTotal*2)/3+2*nPadsTotal + 10;
@@ -454,7 +454,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
 
 	  Int_t time = digitReader.GetTime() + nSignals-1;
 	  
-	  if( time-nSignals+1<0 || time>=AliHLTTPCTransform::GetNTimeBins() ){
+	  if( time-nSignals+1<0 || time>=AliHLTTPCGeometry::GetNTimeBins() ){
 	    HLTWarning("Wrong time bins received: %d-%d for row %d pad %d", time-nSignals+1, time, row, pad);
 	    break;
 	  }

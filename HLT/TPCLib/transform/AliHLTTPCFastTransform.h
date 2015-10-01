@@ -21,6 +21,8 @@
 #include "TString.h"
 #include "AliHLTTPCSpline2D3D.h"
 
+class AliHLTTPCFastTransformObject;
+
 class AliTPCTransform;
 
 /**
@@ -44,9 +46,15 @@ class AliHLTTPCFastTransform{
   
   /** initialization */
   Int_t  Init( AliTPCTransform *transform=0, Long_t TimeStamp=-1 );
- 
+
   /** initialization */
-  Bool_t IsInitialised() const { return fOrigTransform!=NULL; }
+  Int_t ReadFromObject( const AliHLTTPCFastTransformObject &obj );
+
+  /** initialization */
+  Int_t WriteToObject( AliHLTTPCFastTransformObject &obj );
+
+  /** initialization */
+  Bool_t IsInitialised() const { return fInitialisationMode != -1; }
   
   /** deinitialization */
   void  DeInit();
@@ -58,7 +66,7 @@ class AliHLTTPCFastTransform{
   Long_t GetCurrentTimeStamp() const { return fLastTimeStamp; }
 
   /** Transformation: calibration + alignment */
-  Int_t  Transform( Int_t Sector, Int_t Row, Float_t Pad, Float_t Time, Float_t XYZ[] );
+  Int_t Transform( Int_t Sector, Int_t Row, Float_t Pad, Float_t Time, Float_t XYZ[] );
 
   /** Transformation: calibration + alignment in double*/
   Int_t Transform( Int_t Sector, Int_t Row, Float_t Pad, Float_t Time, Double_t XYZ[] );
@@ -90,6 +98,12 @@ class AliHLTTPCFastTransform{
   /** Print */
   void Print(const char* option=0) const;
 
+  static Int_t Version() { return 0; }
+  
+  Int_t MinInitSec() {return fMinInitSec;}
+  Int_t MaxInitSec() {return fMaxInitSec;}
+  void SetInitSec(Int_t min, Int_t max) {fMinInitSec = min;fMaxInitSec = max;if (min < 0) min = 0;if (max > fkNSec) max = fkNSec;}
+
  private:
 
   /** copy constructor prohibited */
@@ -113,8 +127,12 @@ class AliHLTTPCFastTransform{
 
   static const Int_t fkNSec = 72; //! transient
   static const Int_t fkNRows = 100; //! transient
-
+  
+  Int_t fMinInitSec;	//Min sector for parallel initialization
+  Int_t fMaxInitSec;	//Max sector for parallel initialization
+  
   TString fError; // error string
+  Int_t fInitialisationMode; // 0 == is initialised from pre-calculated OCDB object (online, no re-calculation in time) or 1== from TPC calib
   AliTPCTransform * fOrigTransform;                             //! transient
   Long_t fLastTimeStamp; // last time stamp
   Int_t fLastTimeBin; // last calibrated time bin

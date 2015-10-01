@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/global
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
+                    ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSISalice
                     ${AliRoot_SOURCE_DIR}/ITS/ITSrec
                     ${AliRoot_SOURCE_DIR}/HLT/BASE
@@ -57,15 +58,35 @@ set(SRCS
     AliHLTPrimaryVertexFinderComponent.cxx
     AliHLTV0FinderComponent.cxx
     AliHLTVertexFinderBase.cxx
+    AliHLTAsyncTestComponent.cxx
+    AliHLTAsyncCalibrationComponent.cxx
+    AliHLTZeroComponent.cxx
     AliHLTGlobalCompareFlatComponent.cxx
     AliHLTGlobalFlatEsdConverterComponent.cxx
-    AliFlatESDFriendTrack.cxx
-    AliFlatTPCseed.cxx
-    AliFlatESDEvent.cxx
     AliHLTGlobalEsdToFlatConverterComponent.cxx
-    AliFlatESDFriend.cxx
-    AliFlatESDTrack.cxx
     AliHLTGlobalFlatEsdTestComponent.cxx
+    AliFlatESDEvent.cxx
+    AliFlatESDEvent.h
+    AliFlatESDFriend.cxx
+    AliFlatESDFriend.h
+    AliFlatESDFriendTrack.cxx
+    AliFlatESDFriendTrack.h
+    AliFlatESDTrack.cxx
+    AliFlatESDTrack.h
+    AliFlatESDTrigger.cxx
+    AliFlatESDTrigger.h
+    AliFlatESDVZERO.cxx
+    AliFlatESDVZEROFriend.cxx
+    AliFlatESDV0.cxx
+    AliFlatESDV0.h
+    AliFlatESDVertex.cxx
+    AliFlatESDVertex.h
+    AliFlatExternalTrackParam.cxx
+    AliFlatExternalTrackParam.h
+    AliFlatTPCCluster.h
+    AliFlatTPCseed.cxx
+    AliFlatTPCseed.h
+    AliHLTLumiRegComponent.cxx
     physics/AliHLTCaloHistoCellEnergy.cxx
     physics/AliHLTCaloHistoClusterEnergy.cxx
     physics/AliHLTCaloHistoComponent.cxx
@@ -75,9 +96,19 @@ set(SRCS
     physics/AliHLTMultiplicityCorrelationsComponent.cxx
     physics/AliHLTMultiplicityCorrelations.cxx
     physics/AliHLTV0HistoComponent.cxx
-    physics/AliHLTFlatAnaManagerComponent.cxx
-    physics/AliHLTAnaManagerComponent.cxx
+    physics/AliHLTAnalysisManager.cxx
+    physics/AliHLTAnalysisManagerComponent.cxx
    )
+
+if(ZEROMQ_FOUND)
+  include_directories(${ZEROMQ_INCLUDE_DIR})
+  set(SRCS 
+      ${SRCS}
+      AliHLTZMQsink.cxx
+      AliHLTZMQsource.cxx
+      AliZMQhelpers.cxx
+     )
+endif(ZEROMQ_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -89,7 +120,10 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib)
+set(LIBDEPS STEERBase STEER ESD CDB ANALYSIS ANALYSISalice HLTbase AliHLTUtil AliHLTITS AliHLTTPC TPCrec ITSbase ITSrec TPCcalib)
+if(ZEROMQ_FOUND)
+  set(LIBDEPS ${LIBDEPS} ${ZEROMQ_LIBRARIES})
+endif(ZEROMQ_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files
@@ -110,3 +144,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+#install macros
+install(DIRECTORY macros DESTINATION HLT)
+install(DIRECTORY physics/macros DESTINATION HLT/global/physics/)

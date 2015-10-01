@@ -5,6 +5,8 @@
 #include "TObject.h"
 #include "AliVMisc.h"
 class AliVfriendTrack;
+class AliVVZEROfriend;
+class AliESDVZEROfriend;
 
 //_____________________________________________________________________________
 class AliVfriendEvent: public TObject {
@@ -22,8 +24,10 @@ public:
   virtual const AliVfriendTrack *GetTrack(Int_t /*i*/) const = 0;
   virtual Int_t GetEntriesInTracks() const = 0;
 
-  // AliESDVZEROfriend *GetVZEROfriend();
+  virtual AliVVZEROfriend* GetVVZEROfriend() = 0;
   // AliESDTZEROfriend *GetTZEROfriend();
+
+  virtual Int_t GetESDVZEROfriend( AliESDVZEROfriend & ) const = 0;
 
   virtual void Ls() const = 0;
   virtual void Reset() = 0;
@@ -35,6 +39,8 @@ public:
  //TPC cluster occupancy
   virtual Int_t GetNclustersTPC(UInt_t /*sector*/) const = 0;
   virtual Int_t GetNclustersTPCused(UInt_t /*sector*/) const = 0;
+  
+  virtual ULong64_t  GetSize()  const {return 0;}
 
 private: 
 

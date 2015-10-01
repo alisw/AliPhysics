@@ -22,7 +22,7 @@
 
 #include "Rtypes.h"
 #include "TString.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCFastTransform.h"
 
 class AliTPCParam;
@@ -48,6 +48,9 @@ class AliHLTTPCClusterTransformation{
 
   /** Initialisation  */
   Int_t  Init( double FieldBz, Long_t TimeStamp );
+ 
+  /** Initialisation  */
+  Int_t  Init( const AliHLTTPCFastTransformObject &obj );
 
   /** Initialised flag */
    Bool_t IsInitialised() const;
@@ -75,6 +78,12 @@ class AliHLTTPCClusterTransformation{
 
   /** total size of the object*/
   Int_t GetSize() const ;
+
+  const AliHLTTPCFastTransform& GetFastTransform(){ return fFastTransform; }
+  
+  AliHLTTPCFastTransform& GetFastTransformNonConst(){ return fFastTransform; }
+  
+  void SetInitSec(Int_t min, Int_t max) {fFastTransform.SetInitSec(min, max);}
 
  private:
 
@@ -106,7 +115,7 @@ inline Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, flo
 {
   // Convert row, pad, time to X Y Z   	   
   Int_t sector=-99, thisrow=-99;  
-  AliHLTTPCTransform::Slice2Sector( Slice, Row, sector, thisrow);
+  AliHLTTPCGeometry::Slice2Sector( Slice, Row, sector, thisrow);
   int err = fFastTransform.Transform(sector, thisrow, Pad, Time, XYZ);
   if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   return 0;
@@ -116,7 +125,7 @@ inline Int_t  AliHLTTPCClusterTransformation::ReverseAlignment( float XYZ[], int
 {
   // reverse the alignment correction
   Int_t sector=-99, thisrow=-99;
-  AliHLTTPCTransform::Slice2Sector( slice, padrow, sector, thisrow);
+  AliHLTTPCGeometry::Slice2Sector( slice, padrow, sector, thisrow);
   int err = fFastTransform.ReverseAlignment(sector, XYZ);
   if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::ReverseAlignment: Fast Transformation failed with error %d :%s",err,fFastTransform.GetLastError()) );
   return 0;

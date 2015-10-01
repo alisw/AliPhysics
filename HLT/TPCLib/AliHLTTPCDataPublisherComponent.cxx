@@ -22,7 +22,7 @@
 
 #include "AliHLTTPCDataPublisherComponent.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCDataCompressionDecoder.h"
 #include "AliHLTPluginBase.h"
@@ -276,7 +276,7 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
       else {
 	AliFatal(Form("processing of cluster block 0x%08x failed with error code %d", desc.fSpecification, iResult));
       }
-      unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+      unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;
       if (index>=bHavePartitionData.size()) bHavePartitionData.resize(index, false);
       if (bHavePartitionData[index]) {
 	AliFatal(Form("inconsistent cluster data: multiple data blocks of identical specification indicate a failure "
@@ -306,7 +306,7 @@ int AliHLTTPCDataPublisherComponent::ReadClusterFromHLTOUT(AliHLTTPCDataPublishe
 					    desc.fSize,
 					    desc.fSpecification);
       if (iResult>0) nExtractedClusters+=iResult;
-      unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+      unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;
       if (index>=bHavePartitionData.size()) bHavePartitionData.resize(index, false);
       if (bHavePartitionData[index]) {
 	AliFatal(Form("inconsistent cluster data: multiple data blocks of identical specification indicate a failure "

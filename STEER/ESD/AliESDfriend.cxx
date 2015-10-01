@@ -133,7 +133,7 @@ void AliESDfriend::Reset()
 }  
 
 
-void AliESDfriend::SetVZEROfriend(AliESDVZEROfriend * obj)
+void AliESDfriend::SetVZEROfriend(const AliESDVZEROfriend * obj)
 {
   //
   // Set the VZERO friend data object

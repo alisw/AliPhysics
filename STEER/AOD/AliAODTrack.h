@@ -511,6 +511,9 @@ class AliAODTrack : public AliVTrack {
   virtual Int_t GetTrackParamOp       ( AliExternalTrackParam &p ) const;
   virtual Int_t GetTrackParamCp       ( AliExternalTrackParam &p ) const;
   virtual Int_t GetTrackParamITSOut   ( AliExternalTrackParam &p ) const;
+  Int_t GetNumberOfITSClusters() const { return GetITSNcls();}
+  Int_t GetNumberOfTPCClusters() const { return GetTPCncls();}  
+  Int_t GetNumberOfTRDClusters() const { return GetTRDncls();}  
 
   ClassDef(AliAODTrack, 24);
 };

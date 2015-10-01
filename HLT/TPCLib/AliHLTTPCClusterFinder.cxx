@@ -78,7 +78,7 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fRowOfFirstCandidate(0),
   fDoPadSelection(kFALSE),
   fFirstTimeBin(0),
-  fLastTimeBin(AliHLTTPCTransform::GetNTimeBins()),
+  fLastTimeBin(AliHLTTPCGeometry::GetNTimeBins()),
   fTotalChargeOfPreviousClusterCandidate(0),
   fChargeOfCandidatesFalling(kFALSE),
   f32BitFormat(kFALSE),
@@ -133,8 +133,8 @@ void AliHLTTPCClusterFinder::InitSlice(Int_t slice,Int_t patch,Int_t nmaxpoints)
   fMaxNClusters = nmaxpoints;
   fCurrentSlice = slice;
   fCurrentPatch = patch;
-  fFirstRow=AliHLTTPCTransform::GetFirstRow(patch);
-  fLastRow=AliHLTTPCTransform::GetLastRow(patch);
+  fFirstRow=AliHLTTPCGeometry::GetFirstRow(patch);
+  fLastRow=AliHLTTPCGeometry::GetLastRow(patch);
 
   fClusters.clear();
   fClustersMCInfo.clear();
@@ -153,8 +153,8 @@ void AliHLTTPCClusterFinder::InitializePadArray(){
 
   HLTDebug("Patch number=%d",fCurrentPatch);
 
-  fFirstRow = AliHLTTPCTransform::GetFirstRow(fCurrentPatch);
-  fLastRow = AliHLTTPCTransform::GetLastRow(fCurrentPatch);
+  fFirstRow = AliHLTTPCGeometry::GetFirstRow(fCurrentPatch);
+  fLastRow = AliHLTTPCGeometry::GetLastRow(fCurrentPatch);
 
   fNumberOfRows=fLastRow-fFirstRow+1;
   fNumberOfPadsInRow= new UInt_t[fNumberOfRows];
@@ -164,7 +164,7 @@ void AliHLTTPCClusterFinder::InitializePadArray(){
   fRowPadVector.clear();
 
   for(UInt_t i=0;i<fNumberOfRows;i++){
-    fNumberOfPadsInRow[i]=AliHLTTPCTransform::GetNPads(i+fFirstRow);
+    fNumberOfPadsInRow[i]=AliHLTTPCGeometry::GetNPads(i+fFirstRow);
     AliHLTTPCPadVector tmpRow;
     for(UInt_t j=0;j<=fNumberOfPadsInRow[i];j++){
       AliHLTTPCPad *tmpPad = new AliHLTTPCPad(2);
@@ -768,7 +768,7 @@ void AliHLTTPCClusterFinder::ProcessDigits(){
   fCurrentRow = fDigitReader->GetRow();
 
   if ( fCurrentPatch >= 2 ) // Outer sector, patches 2, 3, 4, 5
-    rowOffset = AliHLTTPCTransform::GetFirstRow( 2 );
+    rowOffset = AliHLTTPCGeometry::GetFirstRow( 2 );
 
   fCurrentRow += rowOffset;
 
@@ -796,7 +796,7 @@ void AliHLTTPCClusterFinder::ProcessDigits(){
   if(fFirstTimeBin>0){
     gatingGridOffset=fFirstTimeBin;
   }
-  AliHLTTPCPad baseline(gatingGridOffset, AliHLTTPCTransform::GetNTimeBins());
+  AliHLTTPCPad baseline(gatingGridOffset, AliHLTTPCGeometry::GetNTimeBins());
   // just to make later conversion to a list of objects easier
   AliHLTTPCPad* pCurrentPad=NULL;
   /*
@@ -862,7 +862,7 @@ void AliHLTTPCClusterFinder::ProcessDigits(){
 	      //HLTDebug("set raw data to pad: bin %d charge %d", fDigitReader->GetTime(), fDigitReader->GetSignal());
 	    } while ((readValue = fDigitReader->Next())!=0);
 	  }
-	  pCurrentPad->CalculateBaseLine(AliHLTTPCTransform::GetNTimeBins()/2);
+	  pCurrentPad->CalculateBaseLine(AliHLTTPCGeometry::GetNTimeBins()/2);
 	  if (pCurrentPad->Next(kTRUE/*do zero suppression*/)==0) {
 	    //HLTDebug("no data available after zero suppression");
 	    pCurrentPad->StopEvent();
@@ -898,8 +898,8 @@ void AliHLTTPCClusterFinder::ProcessDigits(){
 
       }
 
-      if(time >= AliHLTTPCTransform::GetNTimeBins()){
-	HLTWarning("Pad %d: Timebin (%d) out of range (%d)", pad, time, AliHLTTPCTransform::GetNTimeBins());
+      if(time >= AliHLTTPCGeometry::GetNTimeBins()){
+	HLTWarning("Pad %d: Timebin (%d) out of range (%d)", pad, time, AliHLTTPCGeometry::GetNTimeBins());
 	iResult=-ERANGE;
       }
 
@@ -1053,8 +1053,8 @@ void AliHLTTPCClusterFinder::ProcessDigits(){
       if(newbin >= 0) goto redo;
   
     // to prevent endless loop  
-    if(time >= AliHLTTPCTransform::GetNTimeBins()){
-      HLTWarning("Timebin (%d) out of range (%d)", time, AliHLTTPCTransform::GetNTimeBins());
+    if(time >= AliHLTTPCGeometry::GetNTimeBins()){
+      HLTWarning("Timebin (%d) out of range (%d)", time, AliHLTTPCGeometry::GetNTimeBins());
       break;
     }
 
@@ -1137,7 +1137,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 
    
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
-	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);
+	Int_t patch = AliHLTTPCGeometry::GetPatch(fCurrentRow);
 	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
 	//	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
 	Float_t sy2=(Float_t)list[j].fPad2 * list[j].fTotalCharge - (Float_t)list[j].fPad * list[j].fPad;
@@ -1153,7 +1153,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	    continue;
 	} else {
 	  {
-	    fpad2 = (sy2 + 1./12)*AliHLTTPCTransform::GetPadPitchWidth(patch)*AliHLTTPCTransform::GetPadPitchWidth(patch);
+	    fpad2 = (sy2 + 1./12)*AliHLTTPCGeometry::GetPadPitchWidth(patch)*AliHLTTPCGeometry::GetPadPitchWidth(patch);
 	    if(sy2 != 0){
 	      fpad2*=0.108; //constants are from offline studies
 	      if(patch<2)
@@ -1170,7 +1170,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	  continue;
 	} else {
 	  {
-	    ftime2 = (sz2 + 1./12)*AliHLTTPCTransform::GetZWidth()*AliHLTTPCTransform::GetZWidth();
+	    ftime2 = (sz2 + 1./12)*AliHLTTPCGeometry::GetZWidth()*AliHLTTPCGeometry::GetZWidth();
 	    if(sz2 != 0) {
 	      ftime2 *= 0.169; //constants are from offline studies
 	      if(patch<2)
@@ -1188,10 +1188,10 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 	fRawClusters[counter].SetTime(ftime);
       }
       {
-	AliHLTTPCTransform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
+	AliHLTTPCGeometry::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
 
 	if(fOfflineTransform == NULL){
-	  AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
+	  AliHLTTPCGeometry::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
 	  
 	  if(xyz[0]==0) LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder","Cluster Finder")
 			  <<AliHLTTPCLog::kDec<<"Zero cluster"<<ENDLOG;
@@ -1245,8 +1245,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
 
       if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
-	fRawClusters[counter].SetSigmaY2(fSpacePointData[counter].fSigmaY2);
-	fRawClusters[counter].SetSigmaZ2(fSpacePointData[counter].fSigmaZ2);
+	fRawClusters[counter].SetSigmaPad2(fSpacePointData[counter].fSigmaY2);
+	fRawClusters[counter].SetSigmaTime2(fSpacePointData[counter].fSigmaZ2);
 	fRawClusters[counter].SetCharge(fSpacePointData[counter].fCharge);
 	fRawClusters[counter].SetQMax(fSpacePointData[counter].fQMax);
       }
@@ -1325,7 +1325,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 
 
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
-	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);
+	Int_t patch = AliHLTTPCGeometry::GetPatch(fCurrentRow);
 	UInt_t q2=list[j].fTotalCharge*list[j].fTotalCharge;
 	Float_t sy2=list[j].fPad2 * list[j].fTotalCharge - list[j].fPad * list[j].fPad;
 	sy2/=q2;
@@ -1335,7 +1335,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 	    continue;
 	} else {
 	  {
-	    fpad2 = (sy2 + 1./12)*AliHLTTPCTransform::GetPadPitchWidth(patch)*AliHLTTPCTransform::GetPadPitchWidth(patch);
+	    fpad2 = (sy2 + 1./12)*AliHLTTPCGeometry::GetPadPitchWidth(patch)*AliHLTTPCGeometry::GetPadPitchWidth(patch);
 	    if(sy2 != 0){
 	      fpad2*=0.108; //constants are from offline studies
 	      if(patch<2)
@@ -1351,7 +1351,7 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 	  continue;
 	} else {
 	  {
-	    ftime2 = (sz2 + 1./12)*AliHLTTPCTransform::GetZWidth()*AliHLTTPCTransform::GetZWidth();
+	    ftime2 = (sz2 + 1./12)*AliHLTTPCGeometry::GetZWidth()*AliHLTTPCGeometry::GetZWidth();
 	    if(sz2 != 0) {
 	      ftime2 *= 0.169; //constants are from offline studies
 	      if(patch<2)
@@ -1369,8 +1369,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
 	fRawClusters[counter].SetTime(ftime);
       }
       {
-	AliHLTTPCTransform::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
-	AliHLTTPCTransform::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
+	AliHLTTPCGeometry::Slice2Sector(fCurrentSlice,fCurrentRow,thissector,thisrow);
+	AliHLTTPCGeometry::Raw2Local(xyz,thissector,thisrow,fpad,ftime);
 	
 	if(xyz[0]==0) LOG(AliHLTTPCLog::kError,"AliHLTTPCClustFinder","Cluster Finder")
 	  <<AliHLTTPCLog::kDec<<"Zero cluster"<<ENDLOG;
@@ -1408,8 +1408,8 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *li
       fSpacePointData[counter].SetID( fCurrentSlice, patch, counter );
 
       if (fFillRawClusters && fRawClusters.size()>(unsigned)counter) {
-	fRawClusters[counter].SetSigmaY2(fSpacePointData[counter].fSigmaY2);
-	fRawClusters[counter].SetSigmaZ2(fSpacePointData[counter].fSigmaZ2);
+	fRawClusters[counter].SetSigmaPad2(fSpacePointData[counter].fSigmaY2);
+	fRawClusters[counter].SetSigmaTime2(fSpacePointData[counter].fSigmaZ2);
 	fRawClusters[counter].SetCharge(fSpacePointData[counter].fCharge);
 	fRawClusters[counter].SetQMax(fSpacePointData[counter].fQMax);
       }

@@ -29,7 +29,7 @@
 
 #include "AliHLTTPCHWCFDataReverterComponent.h"
 #include "AliHLTTPCDigitReader32Bit.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCMapping.h"
@@ -147,7 +147,7 @@ int AliHLTTPCHWCFDataReverterComponent::DoInit( int argc, const char** argv )
     // -- number of timebins
     if ( !strcmp( argv[i], "-timebins" )) {
       fNTimeBins = strtoul( argv[i+1], &cpErr ,0);
-      AliHLTTPCTransform::SetNTimeBins(fNTimeBins);
+      AliHLTTPCGeometry::SetNTimeBins(fNTimeBins);
       if ( *cpErr ) {
 	HLTError("Cannot convert ntimebins specifier '%s'.", argv[i+1]);
 	return EINVAL;
@@ -201,8 +201,8 @@ void AliHLTTPCHWCFDataReverterComponent::InitializePadArray(){
     return;
   }
 
-  fFirstRow = AliHLTTPCTransform::GetFirstRow(fCurrentPatch);
-  fLastRow = AliHLTTPCTransform::GetLastRow(fCurrentPatch);
+  fFirstRow = AliHLTTPCGeometry::GetFirstRow(fCurrentPatch);
+  fLastRow = AliHLTTPCGeometry::GetLastRow(fCurrentPatch);
 
   fNumberOfRows=fLastRow-fFirstRow+1;
   fNumberOfPadsInRow= new Int_t[fNumberOfRows];
@@ -212,7 +212,7 @@ void AliHLTTPCHWCFDataReverterComponent::InitializePadArray(){
   memset( fFirstPadHigh, 0, sizeof(Int_t)*(fNumberOfRows));
 
   for(Int_t i=0;i<fNumberOfRows;i++){
-    fNumberOfPadsInRow[i]=AliHLTTPCTransform::GetNPads(i+fFirstRow);
+    fNumberOfPadsInRow[i]=AliHLTTPCGeometry::GetNPads(i+fFirstRow);
     AliHLTTPCPadVector tmpRow;
     for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
       AliHLTTPCPad *tmpPad = new AliHLTTPCPad();
@@ -309,7 +309,7 @@ int AliHLTTPCHWCFDataReverterComponent::DoEvent( const AliHLTComponentEventData&
 	Int_t time=fDigitReader->GetTime();
 	for(Int_t i=0;i<fDigitReader->GetBunchSize();i++){
 	  if(bunchData[i]>0){// disregarding 0 data.
-	    if(time+i >= 0 && time+i < AliHLTTPCTransform::GetNTimeBins()){
+	    if(time+i >= 0 && time+i < AliHLTTPCGeometry::GetNTimeBins()){
 	      if (tmpPad){
 		tmpPad->SetDataSignal(time+i,bunchData[i]);
 	      }

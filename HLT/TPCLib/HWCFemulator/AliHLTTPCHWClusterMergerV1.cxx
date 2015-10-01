@@ -27,7 +27,7 @@
 #include "AliHLTTPCHWClusterMergerV1.h"
 #include "AliHLTTPCHWCFSupport.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCRawCluster.h"
 #include <algorithm>
 
@@ -77,11 +77,11 @@ Int_t AliHLTTPCHWClusterMergerV1::Init()
 
   delete[] fMapping;
   fMapping = 0;
-  fNRows = AliHLTTPCTransform::GetNRows();
+  fNRows = AliHLTTPCGeometry::GetNRows();
   fNRowPads = 0;  
   fNBorders = 0;
   for( int i=0; i<fNRows; i++ ){
-    int nPads = AliHLTTPCTransform::GetNPads(i);	
+    int nPads = AliHLTTPCGeometry::GetNPads(i);	
     if( fNRowPads<nPads ) fNRowPads = nPads;
   }
   int nPadsTotal = fNRows*fNRowPads;
@@ -111,9 +111,9 @@ Int_t AliHLTTPCHWClusterMergerV1::Init()
       int pad =  configWord & 0xFF;
       bool border = (configWord>>14) & 0x1;
       if( !border ) continue;
-      row+=AliHLTTPCTransform::GetFirstRow(iPart);
+      row+=AliHLTTPCGeometry::GetFirstRow(iPart);
       if( row>fNRows ) continue;
-      if( pad>=AliHLTTPCTransform::GetNPads(iPart) ) continue;
+      if( pad>=AliHLTTPCGeometry::GetNPads(iPart) ) continue;
       fMapping[row*fNRowPads + pad] = -2-iPart;
     }
   }
@@ -252,7 +252,7 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 
 	// check if the cluster is at the branch border    
 	Int_t patchRow = cluster.GetPadRow();	
-	int sliceRow=patchRow+AliHLTTPCTransform::GetFirstRow(iPatch);
+	int sliceRow=patchRow+AliHLTTPCGeometry::GetFirstRow(iPatch);
  	float pad = cluster.GetPad();
 	int iPad = (int) pad;
 
@@ -262,8 +262,8 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 	  iBorder = fMapping[sliceRow*fNRowPads+iPad];    
 	  if( iBorder>=0 ){
 	    float dPad = pad - fBorders[iBorder].fPadPosition;
-	    if( cluster.GetSigmaY2()>1.e-4 ){
-	      if( dPad*dPad > 12.*cluster.GetSigmaY2() ) iBorder = -1;
+	    if( cluster.GetSigmaPad2()>1.e-4 ){
+	      if( dPad*dPad > 12.*cluster.GetSigmaPad2() ) iBorder = -1;
 	    } else {
 	      if( fabs(dPad)>1. ) iBorder = -1;
 	    }    
@@ -325,10 +325,10 @@ int AliHLTTPCHWClusterMergerV1::Merge()
 	c1->SetCharge( c1->GetCharge() + c2->GetCharge() );
 	if( c1->GetQMax() < c2->GetQMax() ) c1->SetQMax( c2->GetQMax() );
 	
-	c1->SetSigmaY2(  w1*c1->GetSigmaY2() + w2*c2->GetSigmaY2()
+	c1->SetSigmaPad2(  w1*c1->GetSigmaPad2() + w2*c2->GetSigmaPad2()
 			 + (c1->GetPad() - c2->GetPad())*(c1->GetPad() - c2->GetPad())*w1*w2 );
 	
-	c1->SetSigmaZ2( w1*c1->GetSigmaZ2() + w2*c2->GetSigmaZ2()
+	c1->SetSigmaTime2( w1*c1->GetSigmaTime2() + w2*c2->GetSigmaTime2()
 			+ (c1->GetTime() - c2->GetTime())*(c1->GetTime() - c2->GetTime())*w1*w2 );
       
 	c1->SetPad( w1*c1->GetPad() + w2*c2->GetPad() );

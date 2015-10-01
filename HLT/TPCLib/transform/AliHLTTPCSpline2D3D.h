@@ -19,8 +19,7 @@
 
 #include"Rtypes.h"
 
-class AliTPCParam;
-class AliTPCTransform;
+class AliHLTTPCSpline2D3DObject;
 
 /**
  * @class AliHLTTPCSpline2D3D
@@ -70,6 +69,20 @@ class AliHLTTPCSpline2D3D{
 
   /**  Get N of point on the grid */
   Int_t GetNPoints() const ;
+
+  /** IO */
+
+  size_t EstimateBufferSize() const ;
+
+  Int_t WriteToBuffer( char *buf, size_t &size ) const;
+  
+  Int_t ReadFromBuffer( const char*buf, size_t &size );
+ 
+  void WriteToObject( AliHLTTPCSpline2D3DObject &obj );
+ 
+  void ReadFromObject( const AliHLTTPCSpline2D3DObject &obj );
+
+  static Int_t Version() { return 0; }
 
  private:
 
@@ -177,5 +190,12 @@ inline void AliHLTTPCSpline2D3D::GetValue(Float_t A, Float_t B, Double_t XYZ[]) 
   GetValue(A,B,fxyz);
   for( Int_t i=0; i<3; i++ ) XYZ[i] = fxyz[i];
 }
+
+inline  size_t AliHLTTPCSpline2D3D::EstimateBufferSize() const 
+{ 
+  return sizeof(Int_t)*3 + sizeof(Float_t)*(4+3*fN); 
+}
+
+
 
 #endif

@@ -6,11 +6,13 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliHLTTPCTransform+;
+#pragma link C++ class AliHLTTPCGeometry+;
 #pragma link C++ class AliHLTTPCSpline2D3D+;
 #pragma link C++ class AliHLTTPCFastTransform+;
 #pragma link C++ class AliHLTTPCClusterTransformation+;
 #pragma link C++ class AliHLTTPCClusterTransformationComponent+;
+#pragma link C++ class AliHLTTPCClusterTransformationMergerComponent+;
+#pragma link C++ class AliHLTTPCClusterTransformationPrepareComponent+;
 #pragma link C++ class AliHLTTPCAgent+;
 #pragma link C++ class AliHLTTPCMemHandler+;
 #pragma link C++ class AliHLTTPCFileHandler+;
@@ -32,10 +34,8 @@
 #pragma link C++ class AliHLTTPCPad+;
 #pragma link C++ class AliHLTTPCDefinitions+;
 #pragma link C++ class AliHLTTPCClusterFinderComponent+;
-#pragma link C++ class AliHLTTPCHWClusterTransformComponent+;
 #pragma link C++ class AliHLTTPCCFComparisonComponent+;
 #pragma link C++ class AliHLTTPCHistogramHandlerComponent+;
-#pragma link C++ class AliHLTTPCClusterConverterComponent+;
 #pragma link C++ class AliHLTTPCClusterAccessHLTOUT+;
 #pragma link C++ class AliHLTTPCCATrack+;
 #pragma link C++ class AliHLTTPCCATracklet+;
@@ -79,7 +79,6 @@
 #pragma link C++ class AliHLTTPCDataPublisherComponent+;
 #pragma link C++ class AliHLTTPCClusterHistoComponent+;
 #pragma link C++ class AliHLTTPCTrackHistoComponent+;
-#pragma link C++ class AliHLTTPCTrackDumpComponent+;
 #pragma link C++ class AliHLTTPCClusterDumpComponent+;
 #pragma link C++ class AliHLTTPCHWCFDataReverterComponent+;
 #pragma link C++ class AliHLTTPCTrackMCMarkerComponent+;
@@ -97,7 +96,8 @@
 #pragma link C++ class AliHLTTPCHWClusterMerger+;
 #pragma link C++ class AliHLTTPCHWClusterMergerV1+;
 #pragma link C++ class AliHLTTPCHWClusterDecoderComponent+;
-
+#pragma link C++ class AliHLTTPCSpline2D3DObject+;
+#pragma link C++ class AliHLTTPCFastTransformObject+;
 #endif // __CINT__
 //
 // EOF

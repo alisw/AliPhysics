@@ -49,7 +49,7 @@ AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerComponent()
   fNTracks(0),
   fTrackInfos(0),
   fPrimaryVtx(),   
-  fFitTracksToVertex(1),
+  fFitTracksToVertex(0),
   fConstrainedTrackDeviation(4.),
   fV0DaughterPrimDeviation( 2.5 ),
   fV0PrimDeviation( 3.5 ),
@@ -157,7 +157,7 @@ int AliHLTGlobalVertexerComponent::DoDeinit()
   if( fTrackInfos ) delete[] fTrackInfos;
 
   fTrackInfos = 0;
-  fFitTracksToVertex = 1;
+  fFitTracksToVertex = 0;
   fConstrainedTrackDeviation = 4.;
   fV0DaughterPrimDeviation = 2.5 ;
   fV0PrimDeviation =3.5;
@@ -287,7 +287,7 @@ int AliHLTGlobalVertexerComponent::DoEvent( const AliHLTComponentEventData& /*ev
 
   if( data) {  // fill the output structure
         
-    data->fFitTracksToVertex = fFitTracksToVertex;
+    data->fFitTracksToVertex = 0;//fFitTracksToVertex;
     for( int i=0; i<3; i++ ) data->fPrimP[i] = fPrimaryVtx.Parameters()[i];
     for( int i=0; i<6; i++ ) data->fPrimC[i] = fPrimaryVtx.CovarianceMatrix()[i];
     data->fPrimChi2 = fPrimaryVtx.GetChi2();
@@ -352,14 +352,15 @@ int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
       argument=((TObjString*)pTokens->At(i))->GetString();
       if (argument.IsNull()) continue;
-      
+      /*
       if (argument.CompareTo("-fitTracksToVertex")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("fitTracksToVertex is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fFitTracksToVertex=((TObjString*)pTokens->At(i))->GetString().Atoi();
 	continue;
       }
-      else if (argument.CompareTo("-constrainedTrackDeviation")==0) {
+      else */
+      if (argument.CompareTo("-constrainedTrackDeviation")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTInfo("constrainedTrackDeviation is set set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
 	fConstrainedTrackDeviation=((TObjString*)pTokens->At(i))->GetString().Atof();
@@ -664,11 +665,11 @@ void AliHLTGlobalVertexerComponent::FillESD( AliESDEvent *event, AliHLTGlobalVer
 
     AliESDVertex vESD( data->fPrimP, data->fPrimC, data->fPrimChi2, data->fPrimNContributors );
     event->SetPrimaryVertexTPC( &vESD );
-    event->SetPrimaryVertexTracks( &vESD );
+    //event->SetPrimaryVertexTracks( &vESD );
 
     // relate tracks to the primary vertex
 
-    if( data->fFitTracksToVertex ){
+    if( 0&& data->fFitTracksToVertex ){
       for( Int_t i = 0; i<data->fNPrimTracks; i++ ){
 	Int_t id = listPrim[ i ];
 	map<int,int>::iterator it = mapId.find(id);
@@ -699,14 +700,14 @@ void AliHLTGlobalVertexerComponent::FillESD( AliESDEvent *event, AliHLTGlobalVer
 
     // relate the tracks to the vertex  
 
-    if( data->fFitTracksToVertex ){
+    if( 0 && data->fFitTracksToVertex ){
       if( constrainedToVtx[iTr] || constrainedToVtx[jTr] ) continue;
       double pos[3];
       double sigma[3] = {.1,.1,.1};
       v0.XvYvZv(pos);
       AliESDVertex vESD(pos, sigma);
-      event->GetTrack(iTr)->RelateToVertex( &vESD, event->GetMagneticField(),100. );
-      event->GetTrack(jTr)->RelateToVertex( &vESD, event->GetMagneticField(),100. );
+      event->GetTrack(iTr)->RelateToVertexTPC( &vESD, event->GetMagneticField(),100. );
+      event->GetTrack(jTr)->RelateToVertexTPC( &vESD, event->GetMagneticField(),100. );
       constrainedToVtx[iTr] = 1;
       constrainedToVtx[jTr] = 1;    
     }

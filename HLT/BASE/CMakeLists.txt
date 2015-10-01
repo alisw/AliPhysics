@@ -51,6 +51,7 @@ endif(HLT_COMPONENT_STATISTICS)
 
 # Sources in alphabetical order
 set(SRCS
+    AliHLTAsyncProcessor.cxx
     AliHLTBlockDataCollection.cxx
     AliHLTCalibrationProcessor.cxx
     AliHLT_C_Component_WrapperInterface.cxx
@@ -86,6 +87,7 @@ set(SRCS
     AliHLTHOMERBlockDesc.cxx
     AliHLTHOMERLibManager.cxx
     AliHLTHOMERManager.cxx
+    AliHLTDirectHOMERManager.cxx
     AliHLTHOMERProxyHandler.cxx
     AliHLTHOMERSourceDesc.cxx
     AliHLTHuffman.cxx
@@ -171,7 +173,13 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
-install(FILES ${HDRS} AliHLTIndexGrid.h DESTINATION include)
+# Add header files to include directory here, so that they are not processed by CINT, because CINT cannot process these
+set(HDRS ${HDRS}
+    AliHLTAsyncMemberProcessor.h
+    AliHLTAsyncProcessorBackend.h
+    AliHLTIndexGrid.h
+)
+install(FILES ${HDRS} DESTINATION include)
 
 # Static version if DA enabled
 if(ALIROOT_STATIC)

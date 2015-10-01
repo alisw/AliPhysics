@@ -18,7 +18,7 @@ class AliFlatTPCCluster
 {
   public:
 
- AliFlatTPCCluster() : fX(0.), fY(0.), fZ(0.), fSector(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0), fTrackAngleY(0), fTrackAngleZ(0) {}
+ AliFlatTPCCluster() : fPad(0.), fTimeBin(0.), fX(0.), fY(0.), fZ(0.), fSector(0), fPadRow(0), fSigmaY2(0.), fSigmaZ2(0.), fCharge(0), fQMax(0), fTrackAngleY(0), fTrackAngleZ(0) {}
 
   AliFlatTPCCluster(AliVConstructorReinitialisationFlag ); // do nothing
  
@@ -26,6 +26,8 @@ class AliFlatTPCCluster
 
   ~AliFlatTPCCluster() {}
 
+  void SetPad(Float_t pad)         {fPad = pad;}
+  void SetTimeBin(Float_t time)    {fTimeBin = time;}
   void SetX(Float_t x)             {fX = x;}
   void SetY(Float_t y)             {fY = y;}
   void SetZ(Float_t z)             {fZ = z;}
@@ -38,6 +40,8 @@ class AliFlatTPCCluster
   void SetTrackAngleY( Float_t angY ) {fTrackAngleY = angY;}  
   void SetTrackAngleZ( Float_t angZ ) {fTrackAngleZ = angZ;}
  
+  Float_t  GetPad()     const      {return fPad;}
+  Float_t  GetTimeBin() const      {return fTimeBin;}
   Float_t  GetX()       const      {return fX;}
   Float_t  GetY()       const      {return fY;}
   Float_t  GetZ()       const      {return fZ;}
@@ -55,7 +59,9 @@ class AliFlatTPCCluster
   void GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoint *p  ) const;
 
   private:
-
+  
+  Float_t fPad;     // Pad coordinate in local coordinates  
+  Float_t fTimeBin; // Time coordinate in local coordinates  
   Float_t fX;       // X coordinate in local coordinates
   Float_t fY;       // Y coordinate in local coordinates
   Float_t fZ;       // Z coordinate in local coordinates
@@ -76,6 +82,8 @@ inline AliFlatTPCCluster::AliFlatTPCCluster(AliVConstructorReinitialisationFlag 
 inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c, const AliTPCTrackerPoint *p  )
 {
   if( !c ) return;
+  SetPad( c->GetPad() );
+  SetTimeBin( c->GetTimeBin() );
   SetX( c->GetX() );
   SetY( c->GetY() );
   SetZ( c->GetZ() );
@@ -97,6 +105,8 @@ inline void AliFlatTPCCluster::SetTPCCluster( const AliTPCclusterMI *c, const Al
 inline void AliFlatTPCCluster::GetTPCCluster( AliTPCclusterMI *c, AliTPCTrackerPoint *p ) const
 {
   if( c ){
+    c->SetPad( GetPad() );
+    c->SetTimeBin( GetTimeBin() );
     c->SetX( GetX() );
     c->SetY( GetY() );
     c->SetZ( GetZ() );

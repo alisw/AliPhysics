@@ -42,7 +42,7 @@
 #include "AliITStrackV2.h"
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTErrorGuard.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -121,7 +121,9 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	HLTWarning("argument -solenoidBz is deprecated, magnetic field set up globally (%f)", GetBz());
 	continue;
-      } else {
+      } else if (argument.CompareTo("-make-friends")==0) {
+	fMakeFriends = 1;
+      }	else {
 	HLTError("unknown argument %s", argument.Data());
 	iResult=-EINVAL;
 	break;
@@ -181,6 +183,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeKFVertex); // KFVertex object from vertexer
   list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
+  list.push_back(kAliHLTDataTypeESDFriendContent);
   list.push_back( AliHLTTPCDefinitions::fgkClustersDataType   );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
@@ -261,6 +264,8 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->String().Data());
 	HLTWarning("argument '-solenoidBz' is deprecated, solenoid field initiaized from CDB settings");
 	continue;
+      } else if (argument.CompareTo("-make-friends")==0) {
+	fMakeFriends = 1;      
       } else if (argument.Contains("-skipobject=")) {
 	argument.ReplaceAll("-skipobject=", "");
 	skipObjects=argument;
@@ -520,6 +525,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       for ( unsigned int i = 0; i < inPtrSP->fSpacePointCnt; i++ ) {
 	AliHLTTPCSpacePointData *chlt = &( inPtrSP->fSpacePoints[i] );
 	AliTPCclusterMI *c = fPartitionClusters[slicepartition]+i;
+	c->SetPad( chlt->GetPad() );
+	c->SetTimeBin( chlt->GetTime() );
 	c->SetX(chlt->fX);
 	c->SetY(chlt->fY);
 	c->SetZ(chlt->fZ);
@@ -530,17 +537,14 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	c->SetMax( chlt->fQMax );
 	Int_t sector, row;
 	Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
-	AliHLTTPCTransform::Slice2Sector(slice,chlt->fPadRow, sector, row);
-	AliHLTTPCTransform::Local2Raw( padtime, sector, row);
+	AliHLTTPCGeometry::Slice2Sector(slice,chlt->fPadRow, sector, row);
 	c->SetDetector( sector );
 	c->SetRow( row );
-	c->SetPad( (Int_t) padtime[1] );
-	c->SetTimeBin( (Int_t) padtime[2] );
       }
     } // end of loop over blocks of clusters    
     
     
-        // fill event info
+    // fill event info
     {
       for( Int_t iSlice=0; iSlice<36; iSlice++ ){
 	int iSector = iSlice;
@@ -560,9 +564,20 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       }
     }
     
-    
-    
-  }
+    // fill VZERO info
+    {
+      const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO); 
+      if( pObject ){
+	const AliESDVZEROfriend *esdVZEROfriend = dynamic_cast<const AliESDVZEROfriend*>( pObject );
+	if (esdVZEROfriend) {
+	  pESDfriend->SetVZEROfriend( esdVZEROfriend );
+ 	} else {
+	  ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZEROfriend",
+			   DataType2Text(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO).c_str());
+	}
+      }
+    }
+  }    
 
   // 1) first read MC information (if present)
   std::map<int,int> mcLabelsTPC;
@@ -617,6 +632,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
     ndEdxTPC = pBlock->fSize / (3*sizeof(AliHLTFloat32_t));
   }
 
+  
+  std::map<int,int> mapTpcId2esdId;
+
   // 2) convert the TPC tracks to ESD tracks
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
@@ -662,8 +680,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	// parameter again so this can be done only for ITS standalone tracks, meaning
 	// tracks in the ITS not associated with any TPC track
 	// HLT does not provide such standalone tracking
+	AliHLTGlobalBarrelTrack outPar(*element);	  
 	{
-	  AliHLTGlobalBarrelTrack outPar(*element);	  
 	  //outPar.AliExternalTrackParam::PropagateTo( element->GetLastPointX(), fSolenoidBz );
 	  const Int_t N=10; // number of steps.
 	  const Float_t xRange = element->GetLastPointX() - element->GetX();
@@ -696,7 +714,11 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  if( dEdxTPC ) HLTWarning("Wrong number of dEdx TPC labels");
 	}
 	iotrack.SetLabel(mcLabel);
+
+	mapTpcId2esdId[element->TrackID()] = pESD->GetNumberOfTracks();
+
 	pESD->AddTrack(&iotrack);
+
 	if (fVerbosity>0) element->Print();
 
 	if( pESDfriend ){ // create friend track
@@ -710,8 +732,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  UInt_t nClusters = element->GetNumberOfPoints();
 	  const UInt_t*clusterIDs = element->GetPoints();
 
-	  tTPC.SetNumberOfClusters(nClusters);
-
+	  int nClustersSet=0;
 	  for(UInt_t ic=0; ic<nClusters; ic++){	 
 
 	    UInt_t id      = clusterIDs[ic];	     
@@ -738,18 +759,22 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	    AliTPCclusterMI *c = &(patchClusters[iCluster]);	  	
 	    int sec = c->GetDetector();
 	    int row = c->GetRow();
-	    if(sec >= 36) row = row + AliHLTTPCTransform::GetNRowLow();
-	  
+	    if(sec >= 36) row = row + AliHLTTPCGeometry::GetNRowLow();
+	    
+	    if( tTPC.GetClusterPointer(row) ) continue;
 	    tTPC.SetClusterPointer(row, c);	
-	
+	    nClustersSet++;
+
 	    AliTPCTrackerPoint &point = *( tTPC.GetTrackPoint( row ) );
-	    //tTPC.Propagate( TMath::DegToRad()*(sec%18*20.+10.), c->GetX(), fSolenoidBz );
+	    tTPC.Propagate( TMath::DegToRad()*(sec%18*20.+10.), c->GetX(), fSolenoidBz );
 	    Double_t angle2 = tTPC.GetSnp()*tTPC.GetSnp();
 	    angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
 	    point.SetAngleY( angle2 );
 	    point.SetAngleZ( tTPC.GetTgl() );
 	  } // end of associated cluster loop
-	  
+
+	  tTPC.SetNumberOfClusters(nClustersSet);
+  
 	  // Cook dEdx
 	  
 	  //AliTPCseed *seed = &(tTPC);      
@@ -758,6 +783,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 	  AliESDfriendTrack friendTrack;
 	  friendTrack.AddCalibObject(&tTPC);
+	  friendTrack.SetTPCOut( outPar);
 	  pESDfriend->AddTrack(&friendTrack);
 	}
       }
@@ -791,12 +817,14 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	AliESDVertex vtx;
 	vtxFlat->GetESDVertex(vtx);
 	vtx.SetTitle("vertexITSSAP");
-	pESD->SetPrimaryVertexSPD( &vtx );
+	pESD->SetPrimaryVertexTracks( &vtx );
       }
     }
   }
+  
 
   // Get ITS Standalone primary (SAP) Tracks
+
   {
     const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
     if (pBlock) {
@@ -827,7 +855,6 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
 
 
-
   // 3.1. now update ESD tracks with the ITSOut info
   // updating track parameters with flag kITSout will overwrite parameter set above with flag kTPCout
   // TODO 2010-07-12 there are some issues with this updating sequence, for the moment update with
@@ -848,11 +875,17 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	int tpcID=element->TrackID();
 	// the ITS tracker assigns the TPC track used as seed for a certain track to
 	// the trackID
-	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
-	AliESDtrack *tESD = pESD->GetTrack( tpcID );
-	element->SetLabel(tESD->GetLabel());
+	Int_t esdID = -1;
+	if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];	
+	if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue;
+	//AliESDtrack *tESD = pESD->GetTrack( esdID );
+	//element->SetLabel(tESD->GetLabel());
 	// 2010-07-12 disabled, see above, bugfix https://savannah.cern.ch/bugs/index.php?69872
 	//if( tESD ) tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSout );
+	if( pESDfriend ) {
+	  AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
+	  if( friendTrack ) friendTrack->SetITSOut( (*element) );	  
+	}
       }
     }
   }
@@ -866,13 +899,19 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
 	   element!=tracks.end(); element++) {
 	int tpcID=element->TrackID();
+
+	Int_t esdID = -1;
+	if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];
+	
 	// the ITS tracker assigns the TPC track used as seed for a certain track to
 	// the trackID
-	if( tpcID<0 || tpcID>=pESD->GetNumberOfTracks()) continue;
+	if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue;
 	Int_t mcLabel = -1;
-	if( mcLabelsITS.find(element->TrackID())!=mcLabelsITS.end() )
-	  mcLabel = mcLabelsITS[element->TrackID()];
-	AliESDtrack *tESD = pESD->GetTrack( tpcID );
+	if( mcLabelsITS.find(tpcID)!=mcLabelsITS.end() )
+	  mcLabel = mcLabelsITS[tpcID];
+
+	AliESDtrack *tESD = pESD->GetTrack( esdID );
+	
 	if (!tESD) continue;
 	// the labels for the TPC and ITS tracking params can be different, e.g.
 	// there can be a decay. The ITS label should then be the better one, the
@@ -933,11 +972,15 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // TODO 2010-07-12 this propagates also the TPC inner param to beamline
   // sounds not very reasonable
   // https://savannah.cern.ch/bugs/index.php?69873
-  for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
-    if (!pESD->GetTrack(i) || 
-	!pESD->GetTrack(i)->GetTPCInnerParam() ) continue;
-    pESD->GetTrack(i)->RelateToVertexTPC(pESD->GetPrimaryVertexTracks(), fSolenoidBz, 1000 );    
+  if( pESD->GetPrimaryVertex() && pESD->GetPrimaryVertex()->GetStatus() ){
+    for (int i=0; i<pESD->GetNumberOfTracks(); i++) {
+      if (!pESD->GetTrack(i) || 
+	  !pESD->GetTrack(i)->GetTPCInnerParam() ) continue;
+      pESD->GetTrack(i)->RelateToVertexTPC(pESD->GetPrimaryVertex(), fSolenoidBz, 1000 );
+      pESD->GetTrack(i)->RelateToVertex(pESD->GetPrimaryVertex(), fSolenoidBz, 1000 );
+   }
   }
+
 
   // loop over all tracks and set the TPC refit flag by updating with the
   // original TPC inner parameter if not yet set
@@ -1022,10 +1065,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   for ( const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); 
 	pObject != NULL; pObject = GetNextInputObject() ) {
-    AliESDVZERO *esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( pObject ) );
+    AliESDVZERO *esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( pObject ) );  
     if (esdVZERO) {
       pESD->SetVZEROData( esdVZERO );
-      break;
+     break;
     } else {
       ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZERO",
 		       DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO).c_str());

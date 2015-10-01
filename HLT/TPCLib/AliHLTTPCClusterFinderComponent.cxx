@@ -29,7 +29,7 @@
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusters.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliGRPObject.h"
@@ -314,7 +314,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   if(fFirstTimeBin>0){
     fClusterFinder->SetFirstTimeBin(fFirstTimeBin);
   }
-  if(fLastTimeBin>0 && fLastTimeBin>fFirstTimeBin && fLastTimeBin<=AliHLTTPCTransform::GetNTimeBins()){
+  if(fLastTimeBin>0 && fLastTimeBin>fFirstTimeBin && fLastTimeBin<=AliHLTTPCGeometry::GetNTimeBins()){
     fClusterFinder->SetLastTimeBin(fLastTimeBin);
   }
   fBenchmark.Reset();
@@ -471,7 +471,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 
       Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Spacepoints", 
 	       "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
-	       realPoints, slice, patch,AliHLTTPCTransform::GetFirstRow( patch ) , AliHLTTPCTransform::GetLastRow( patch ) );
+	       realPoints, slice, patch,AliHLTTPCGeometry::GetFirstRow( patch ) , AliHLTTPCGeometry::GetLastRow( patch ) );
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;
@@ -631,9 +631,9 @@ int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const c
     /*
       if (++i>=argc) return -EPROTO;
       argument=argv[i];
-      AliHLTTPCTransform::SetNTimeBins(argument.Atoi());
+      AliHLTTPCGeometry::SetNTimeBins(argument.Atoi());
       fClusterFinder->UpdateLastTimeBin();
-      HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
+      HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCGeometry::GetNTimeBins(), AliHLTTPCGeometry::GetZWidth());
       return 2;
     */
     if(argument.CompareTo("timebins")==0){
@@ -660,11 +660,11 @@ int AliHLTTPCClusterFinderComponent::ScanConfigurationArgument(int argc, const c
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
     fLastTimeBin = argument.Atoi();
-    if(fLastTimeBin<AliHLTTPCTransform::GetNTimeBins()){
+    if(fLastTimeBin<AliHLTTPCGeometry::GetNTimeBins()){
       HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
     }
     else{
-      HLTError("fLastTimeBins is too big: %d. Maximum: %d",fLastTimeBin,AliHLTTPCTransform::GetNTimeBins());
+      HLTError("fLastTimeBins is too big: %d. Maximum: %d",fLastTimeBin,AliHLTTPCGeometry::GetNTimeBins());
     }
     return 2;
   }
@@ -824,9 +824,9 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
 	HLTWarning("Argument %s is depreciated after moving to the offline AliTPCTransform class for xyz calculations.",argument.Data());
 	/*
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	AliHLTTPCTransform::SetNTimeBins(((TObjString*)pTokens->At(i))->GetString().Atoi());
+	AliHLTTPCGeometry::SetNTimeBins(((TObjString*)pTokens->At(i))->GetString().Atoi());
 	fClusterFinder->UpdateLastTimeBin();
-	HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
+	HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCGeometry::GetNTimeBins(), AliHLTTPCGeometry::GetZWidth());
 	*/
 	if(argument.CompareTo("timebins")==0){
 	  HLTWarning("Argument 'timebins' is old, please switch to new argument naming convention (-timebins). The timebins argument will still work, but please change anyway.");
@@ -847,11 +847,11 @@ int AliHLTTPCClusterFinderComponent::Configure(const char* arguments){
       else if (argument.CompareTo("-last-timebin")==0){
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
 	fLastTimeBin = ((TObjString*)pTokens->At(i))->GetString().Atoi();
-	if(fLastTimeBin<AliHLTTPCTransform::GetNTimeBins()){
+	if(fLastTimeBin<AliHLTTPCGeometry::GetNTimeBins()){
 	  HLTDebug("fLastTimeBin set to %d",fLastTimeBin);
 	}
 	else{
-	  HLTError("fLastTimeBins is too big: %d. Maximum: %d",fLastTimeBin,AliHLTTPCTransform::GetNTimeBins());
+	  HLTError("fLastTimeBins is too big: %d. Maximum: %d",fLastTimeBin,AliHLTTPCGeometry::GetNTimeBins());
 	}
       }
       else if (argument.CompareTo("-sorted")==0) {

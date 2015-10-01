@@ -130,6 +130,7 @@ set(SRCS
     AliVTrdTracklet.cxx
     AliVVertex.cxx
     AliVVZERO.cxx
+    AliVVZEROfriend.cxx
     AliVZDC.cxx
     TTreeStream.cxx
    )

@@ -1,0 +1,12 @@
+In order to run the AliHLTTPCCalibProcessor (which is a calibration component, 
+that can push to the FXS) you simply need to run:
+
+rm galice.root
+aliroot -b -q calibTPCProcessor-config.C'()' $ALICE_CORE_SRC/HLT/exa/recraw-local.C'("filtered_highPt.root","alien://folder=/alice/data/2010/OCDB", 0, 5, "HLT", "chains=RootWriter ignore-hltout")' 2>&1| tee recraw-local.log
+
+where:
+
+filtered_highPt.root = raw data file
+
+Please, note that this is just an easy example of CalibrationProcessor!!!!
+

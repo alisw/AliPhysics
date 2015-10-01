@@ -26,17 +26,17 @@ public:
   void SetBGtriggerV0A(UInt_t BGtrigger) {fBGtriggerV0A=BGtrigger;}
   void SetBBtriggerV0C(UInt_t BBtrigger) {fBBtriggerV0C=BBtrigger;}
   void SetBGtriggerV0C(UInt_t BGtrigger) {fBGtriggerV0C=BGtrigger;}
-  void SetMultiplicity(Float_t Multiplicity[64])
+  void SetMultiplicity(const Float_t Multiplicity[64])
     {for(Int_t i=0;i<64;i++) fMultiplicity[i]=Multiplicity[i];}
-  void SetADC(Float_t adc[64])
+  void SetADC(const Float_t adc[64])
     {for(Int_t i=0;i<64;i++) fAdc[i]=adc[i];}
-  void SetTime(Float_t time[64])
+  void SetTime(const Float_t time[64])
     {for(Int_t i=0;i<64;i++) fTime[i]=time[i];}
-  void SetWidth(Float_t width[64])
+  void SetWidth(const Float_t width[64])
     {for(Int_t i=0;i<64;i++) fWidth[i]=width[i];}    
-  void SetBBFlag(Bool_t BBFlag[64])
+  void SetBBFlag(const Bool_t BBFlag[64])
     {for(Int_t i=0;i<64;i++) fBBFlag[i]=BBFlag[i];} 
-  void SetBGFlag(Bool_t BGFlag[64])
+  void SetBGFlag(const Bool_t BGFlag[64])
     {for(Int_t i=0;i<64;i++) fBGFlag[i]=BGFlag[i];}   
 
   void SetV0ATime(Float_t time) {fV0ATime = time;}
@@ -90,7 +90,12 @@ public:
   virtual UShort_t GetTriggerChargeC() const { return fTriggerChargeC; }
   virtual UShort_t GetTriggerBits() const { return fTriggerBits; }
   
-  AliESDVZERO &operator=(const AliESDVZERO& source);
+  virtual UInt_t   GetBBTriggerV0A() const { return fBBtriggerV0A; }
+  virtual UInt_t   GetBGTriggerV0A() const { return fBGtriggerV0A; }
+  virtual UInt_t   GetBBTriggerV0C() const { return fBBtriggerV0C; }
+  virtual UInt_t   GetBGTriggerV0C() const { return fBGtriggerV0C; }
+
+ AliESDVZERO &operator=(const AliESDVZERO& source);
     
 protected:
 

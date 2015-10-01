@@ -55,7 +55,6 @@
 #include "AliSysInfo.h"
 #include "AliAnalysisStatistics.h"
 #include "AliVEvent.h"
-//#include "AliHLTTestInputHandler.h"
 
 using std::ofstream;
 using std::ios;
@@ -3002,6 +3001,9 @@ void AliAnalysisManager::InitInputData(AliVEvent* esdEvent, AliVfriendEvent* esd
     TString classInputHandler = fInputEventHandler->ClassName();
     if (classInputHandler.Contains("HLT")){
       TObjArray* arrTasks = GetTasks();
+      //connect the friend to the event
+      esdEvent->SetFriendEvent(esdFriend);
+      //let all tasks know about the new event
       fInputEventHandler->InitTaskInputData(esdEvent, esdFriend, arrTasks);
     }
     else {

@@ -57,15 +57,19 @@
 //#include "AliHLTCaloClusterDataStruct.h"
 //#include "AliHLTCaloClusterReader.h"
 //#include "AliESDCaloCluster.h"
-//#include "AliESDVZERO.h"
+#include "AliESDVZERO.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTVertexFinderBase.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterMCData.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliSysInfo.h"
+#include "AliHLTSAPTrackerData.h"
+#include "AliFlatESDVertex.h"
+#include "AliFlatESDVZERO.h"
+#include "AliFlatESDVZEROFriend.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalFlatEsdConverterComponent)
@@ -161,14 +165,26 @@ void AliHLTGlobalFlatEsdConverterComponent::GetInputDataTypes(AliHLTComponentDat
   list.push_back(kAliHLTDataTypeKFVertex); // KFVertex object from vertexer
   list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
+  list.push_back(kAliHLTDataTypeESDFriendContent);
   list.push_back(AliHLTTPCDefinitions::fgkClustersDataType| kAliHLTDataOriginTPC);
   list.push_back(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo| kAliHLTDataOriginTPC);
+  list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
+  list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
 }
 
 AliHLTComponentDataType AliHLTGlobalFlatEsdConverterComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut;
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTGlobalFlatEsdConverterComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // see header file for class documentation
+  list.clear();
+  list.push_back(kAliHLTDataTypeFlatESD|kAliHLTDataOriginOut);
+  list.push_back(kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut);
+  return list.size();
 }
 
 void AliHLTGlobalFlatEsdConverterComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
@@ -242,7 +258,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   // see header file for class documentation
 
   AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Start");
-	
+  TStopwatch stopwatch;
+  stopwatch.Start();
+	Int_t outsizeEvent = 0, outsizeFriend = 0;
 	
   int iResult=0;
 	bool benchmark = true;
@@ -344,6 +362,19 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
   }
 
+  // ITS standalone tracks
+
+  int ntrITSSAP = 0;  
+  const AliHLTITSSAPTrackerDataContainer *dataSAP = NULL;
+  {
+    const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
+    if (pBlock) {
+      fBenchmark.AddInput(pBlock->fSize);
+      dataSAP = reinterpret_cast<const AliHLTITSSAPTrackerDataContainer*>(pBlock->fPtr);
+      ntrITSSAP = dataSAP->fCount;
+    }
+  }
+
 
   // ---------------------------------------------
   //
@@ -352,6 +383,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   Int_t err = 0;
   AliFlatESDEvent *flatEsd = reinterpret_cast<AliFlatESDEvent*>(outputPtr); 
+
+  int numberOfTracks=0;
 
   do{ // single loop for easy break in case of output buffer overflow
 
@@ -407,123 +440,207 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     }
  
     if( err ) break;
-    
-    const AliESDVertex *primaryVertex = 0;
-
-    { // fill primary vertex Tracks
-
-      const AliESDVertex *primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) );               
-      primaryVertex = primaryVertexTracks;
-      err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
-      freeSpace = maxOutputSize - flatEsd->GetSize();
+   
+    // FIXME: the size of all input blocks can be added in one loop
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      fBenchmark.AddInput(pBlock->fSize);
     }
 
+    {
+      const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); 
+      if( pObject ){
+	AliESDVZERO *esdVZERO = dynamic_cast<AliESDVZERO*>(const_cast<TObject*>( pObject ) );
+	//cout<<"\n\nVZero is set to flat ESD \n\n"<<endl;
+	if (esdVZERO) {
+	  //cout<<"V0 object ok, set flat VZERO.. "<<endl;
+	  err = flatEsd->SetVZEROData( esdVZERO, freeSpace );
+	  freeSpace = maxOutputSize - flatEsd->GetSize();
+	} else {
+	  ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZERO",
+			   DataType2Text(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO).c_str());
+	}
+      }
+    }
+    
+    if( err ) break;
+
+    const AliESDVertex *primaryVertex = 0;
+    const AliESDVertex *primaryVertexTracks = 0;
+    const AliESDVertex *primaryVertexSPD = 0;    
+    const AliESDVertex *primaryVertexTPC = 0;
+    AliESDVertex primaryVertexTracksTmp;
+   
+
+    { // fill ITS standalone primary vertex
+ 
+      const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS);
+      if (pBlock) { // Get ITS Standalone primaries (SAP) vertexTracks
+	fBenchmark.AddInput(pBlock->fSize);
+	AliFlatESDVertex *vtxFlat =  reinterpret_cast<AliFlatESDVertex*>( pBlock->fPtr );
+	if (vtxFlat->GetNContributors()>0) {
+	  //cout<<"\n\n ESD converter: input vertexTrackSAP with "<<vtxFlat->GetNContributors()<<" contributors"<<endl;
+	  vtxFlat->GetESDVertex( primaryVertexTracksTmp );
+	  primaryVertexTracksTmp.SetTitle("vertexITSSAP");
+	  primaryVertexTracks = &primaryVertexTracksTmp;
+	  primaryVertex = primaryVertexTracks;  
+	  err = flatEsd->SetPrimaryVertexTracks( primaryVertexTracks, freeSpace );
+	  freeSpace = maxOutputSize - flatEsd->GetSize();     
+	}
+      }
+    }
+ 
+    if( err ) break;
+   
+    { // fill primary vertex TPC
+
+      primaryVertexTPC = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) ); 
+      if( !primaryVertex ) primaryVertex = primaryVertexTPC;
+      err = flatEsd->SetPrimaryVertexTPC( primaryVertexTPC, freeSpace );
+      freeSpace = maxOutputSize - flatEsd->GetSize();
+    }
+    
     if( err ) break;
 
     { // fill primary vertex SPD
-    
-      const AliESDVertex *primaryVertexSPD = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS ) );
-      if( !primaryVertex ) primaryVertex = primaryVertexSPD;  
-      err = flatEsd->SetPrimaryVertexSPD( primaryVertexSPD, freeSpace );
-      freeSpace = maxOutputSize - flatEsd->GetSize();     
-    }  
+      primaryVertexSPD = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITSSPD ) );
+      if( primaryVertexSPD ){
+	if( !primaryVertex ) primaryVertex = primaryVertexSPD;
+	err = flatEsd->SetPrimaryVertexSPD( primaryVertexSPD, freeSpace );
+	freeSpace = maxOutputSize - flatEsd->GetSize();     
+      }    
+    } // SPD vertex
+
+    if( err ) break;
+
+    // Fill track information to the flat ESD structure
+
+    size_t trackSize = 0;
+    int nTracks = 0;
+    Long64_t *table = NULL;
+    AliFlatESDTrack *flatTrack = NULL;
+    err = flatEsd->SetTracksStart( flatTrack, table, ntrITSSAP + tracksTPC.size(), freeSpace );
+    freeSpace = maxOutputSize - flatEsd->GetSize();
+  
+    if( err ) break;
+     
+    // Fill TPC & TPC-ITS track information to the flat ESD structure       
+      
+    for( UInt_t tpcIter=0, itsIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {
+
+      // ----------------------------
+      // -- read track information
+      
+      // TPC track parameters
+      
+      AliHLTGlobalBarrelTrack *tpcTrack = &(tracksTPC[tpcIter]);
+      AliHLTGlobalBarrelTrack *tpcOutTrack = &(tracksTPCOut[tpcIter]);
+      int tpcID = tpcTrack->TrackID();
+      
+      // ITS track parameters
+      
+      AliHLTGlobalBarrelTrack *itsRefit=0;
+      
+      // ITS Refit track
+      
+      for(; itsIter< tracksITS.size() && tracksITS[itsIter].TrackID()< tpcID; itsIter++ );
+      
+      if( itsIter< tracksITS.size() && tracksITS[itsIter].TrackID() == tpcID ){
+	itsRefit = &(tracksITS[itsIter]);
+	itsIter++;
+      }
+      
+      
+      if (fVerbosity>0) tpcTrack->Print();  
+      
+      Float_t tpcDeDx[3]={0,0,0};
+      
+      if( ndEdxTPC>0 ){ 	
+	if( tpcID < ndEdxTPC ){
+	  AliHLTFloat32_t *val = &(dEdxTPC[3*tpcID]);
+	  tpcDeDx[0] = val[0];
+	  tpcDeDx[1] = val[1];
+	  tpcDeDx[2] = val[2];
+	} else {
+	  HLTWarning("Wrong number of dEdx TPC labels");
+	}
+      }
+      
+      // vertex-constrained parameters for TPC tracks	
+      
+      const AliExternalTrackParam *constrained=0;       
+      const AliExternalTrackParam *tpcInner=tpcTrack;       
+      float impParTPC[6] = {0.,0.,0.,0.,0.,0.};
+      float impPar[6] = {0.,0.,0.,0.,0.,0.};
+
+      AliESDtrack esdTrack;
+      if( primaryVertex ){
+	esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCin);
+	esdTrack.RelateToVertexTPC( primaryVertex, GetBz(), 1000 );
+	esdTrack.RelateToVertex( primaryVertex, GetBz(), 1000 );
+	tpcInner = esdTrack.GetTPCInnerParam();
+	constrained = esdTrack.GetConstrainedParam();	
+	esdTrack.GetImpactParametersTPC(impParTPC, impParTPC+2 );
+	impParTPC[5] = esdTrack.GetConstrainedChi2TPC();
+	esdTrack.GetImpactParameters(impPar, impPar+2 );
+	impPar[5] = esdTrack.GetConstrainedChi2();
+      }
+	
+      UInt_t nClustersTPC = tpcTrack->GetNumberOfPoints();
+      UInt_t nClustersITS = itsRefit ?itsRefit->GetNumberOfPoints() :0;
+      
+      // ----------------------------
+      // -- fill flat track structure
+      
+      table[nTracks] = trackSize;
+      err = ( freeSpace < flatTrack->EstimateSize() );
+      if( err ) break;
+      
+      new (flatTrack) AliFlatESDTrack;       
+      
+      flatTrack->SetExternalTrackParam( itsRefit, tpcTrack, tpcInner, tpcOutTrack, constrained );
+      flatTrack->SetNumberOfTPCClusters( nClustersTPC );
+      flatTrack->SetNumberOfITSClusters( nClustersITS );
+      flatTrack->SetImpactParameters( impPar, impPar+2,impPar[5] );
+      flatTrack->SetImpactParametersTPC( impParTPC, impParTPC+2,impParTPC[5] );
+
+      trackSize += flatTrack->GetSize();
+      freeSpace -= flatTrack->GetSize();
+      nTracks++;
+      flatTrack = flatTrack->GetNextTrackNonConst();    
+
+    } // TPC tracks
+
+    if( err ) break;
+
+    // Fill ITS Standalone primary (SAP) Tracks  
+      
+    for (int itr=0;itr<ntrITSSAP;itr++) {
+      const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];	  
+      AliExternalTrackParam itsRefit;
+      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex    
+
+      // -- fill flat track structure      
+      table[nTracks] = trackSize;
+      err = ( freeSpace < flatTrack->EstimateSize() );
+      if( err ) break;
+      new (flatTrack) AliFlatESDTrack;             
+      flatTrack->SetExternalTrackParam( &itsRefit, NULL, NULL, NULL, NULL );
+      //inpESDtrc.SetStatus( (AliESDtrack::kITSin|AliESDtrack::kITSout|AliESDtrack::kITSpureSA) );
+      //trcV2.SetLabel(trcFlatSAP.label);
+      //trcV2.SetChi2(trcFlatSAP.chi2);
+      flatTrack->SetNumberOfTPCClusters( 0 );
+      flatTrack->SetNumberOfITSClusters( trcFlatSAP.ncl );
+      trackSize += flatTrack->GetSize();
+      freeSpace -= flatTrack->GetSize();
+      nTracks++;
+      flatTrack = flatTrack->GetNextTrackNonConst();                      
+    } // ITS standalone tracks
     
     if( err ) break;
 
-    { // Fill track information to the flat ESD structure
-     
-      size_t trackSize = 0;
-      int nTracks = 0;
-      Long64_t *table = NULL;
-      AliFlatESDTrack *flatTrack = NULL;
-      err = flatEsd->SetTracksStart( flatTrack, table, tracksTPC.size(), freeSpace );
-      freeSpace = maxOutputSize - flatEsd->GetSize();
-    
-      if( err ) break;
-
-      for( UInt_t tpcIter=0, itsIter = 0, itsOutIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {
-
-	// ----------------------------
-	// -- read track information
-
-	// TPC track parameters
-	
-	AliHLTGlobalBarrelTrack *tpcTrack = &(tracksTPC[tpcIter]);
-	AliHLTGlobalBarrelTrack *tpcOutTrack = &(tracksTPCOut[tpcIter]);
-
-	// ITS track parameters
-	
-	AliHLTGlobalBarrelTrack *itsRefit=0;
-	AliHLTGlobalBarrelTrack *itsOut=0;
-	
-	// ITS Refit track
-	  
-	for(; itsIter< tracksITS.size() && tracksITS[itsIter].TrackID()<(int) tpcIter; itsIter++ );
-	
-	if( itsIter< tracksITS.size() && tracksITS[itsIter].TrackID() == (int) tpcIter ){
-	  itsRefit = &(tracksITS[itsIter]);
-	  itsIter++;
-	}
-	
-	// ITS Out track
-	  
-	for(; itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID()<(int) tpcIter; itsOutIter++ );
-	
-	if( itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID() == (int) tpcIter ){
-	  itsOut = &(tracksITSOut[itsOutIter]);
-	  itsOutIter++;
-	}	
-	
-	// 
-
-	if (fVerbosity>0) tpcTrack->Print();  
-
-	Float_t tpcDeDx[3]={0,0,0};
-	
-	if( ndEdxTPC>0 ){ 	
-	  if( tpcTrack->TrackID() < ndEdxTPC ){
-	    AliHLTFloat32_t *val = &(dEdxTPC[3*tpcTrack->TrackID()]);
-	    tpcDeDx[0] = val[0];
-	    tpcDeDx[1] = val[1];
-	    tpcDeDx[2] = val[2];
-	  } else {
-	    HLTWarning("Wrong number of dEdx TPC labels");
-	  }
-	}
-    
-	// vertex-constrained parameters for TPC tracks	
-
-	const AliExternalTrackParam *tpcConstrained=0;       
-	AliESDtrack esdTrack;
-	if( primaryVertex ){
-	  esdTrack.UpdateTrackParams(&(*tpcTrack),AliESDtrack::kTPCrefit);	  
-	  esdTrack.RelateToVertex( primaryVertex, GetBz(), 1000 );	
-	  tpcConstrained = esdTrack.GetConstrainedParam();	
-	}
-
-	UInt_t nClustersTPC = tpcTrack->GetNumberOfPoints();
-	UInt_t nClustersITS = itsRefit ?itsRefit->GetNumberOfPoints() :0;
-
-	
-	// ----------------------------
-	// -- fill flat track structure
-
-	table[tpcIter] = trackSize;
-	err = ( freeSpace < flatTrack->EstimateSize() );
-	if( err ) break;
-	
-	new (flatTrack) AliFlatESDTrack;       
-	
-	flatTrack->SetExternalTrackParam( itsRefit, itsRefit, tpcTrack, tpcOutTrack, tpcConstrained, itsOut );
-	flatTrack->SetNumberOfTPCClusters( nClustersTPC );
-	flatTrack->SetNumberOfITSClusters( nClustersITS );
-	trackSize += flatTrack->GetSize();
-	freeSpace -= flatTrack->GetSize();
-	nTracks++;
-	flatTrack = flatTrack->GetNextTrackNonConst();    
-      }
-      flatEsd->SetTracksEnd( nTracks, trackSize );
-    }       
+    flatEsd->SetTracksEnd( nTracks, trackSize );
+    numberOfTracks=nTracks;
 
     if( err ) break;
 
@@ -552,22 +669,18 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       } else {
 	HLTWarning("xxx No V0 data block");
       }
-
       flatEsd->SetV0sEnd( nV0s, v0size );
-      cout<<"\nxxxx Found "<<nV0s<<" V0's\n"<<endl;
     }
     
     if( err ) break;
 
-  }while(0);
+  }while(0);  // End of filling flat ESD structure
 
 
   if( err ){
     HLTWarning( "Output buffer size %d exceeded, flat ESD event is not stored", maxOutputSize );
   } else {
-
-    // set up the output block description
-    
+    // set up the output block description    
     AliHLTComponentBlockData outBlock;
     FillBlockData( outBlock );
     outBlock.fOffset = size;
@@ -576,13 +689,18 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     outputBlocks.push_back( outBlock );
     fBenchmark.AddOutput(outBlock.fSize);
     size += outBlock.fSize;
+			outsizeEvent = outBlock.fSize;
   }
   
+
+  // ====================================================================================================
+
   // ---------------------------------------------
   //
   // Fill the flat ESD friend structure
   //
   
+  HLTWarning("Using approximate time-pad coordinates for clusters, see jira ATO-146");
   while( !err && fProduceFriend ){ // single loop for easy break in case of output buffer overflow
 
     // ---------- Access to clusters --------------------
@@ -646,144 +764,192 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	//SG!!!flatFriend->SetNclustersTPCused( iSector, esdFriend->GetNclustersTPCused(iSector) );
       }
     }
-      
-    { // Fill track friends information to the flat ESD friend structure
+
+    // fill VZERO info
+    {   
+      const TObject *pObject = GetFirstInputObject(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO); 
+      if( pObject ){
+	const AliESDVZEROfriend *esdVZEROfriend = dynamic_cast<const AliESDVZEROfriend*>( pObject );
+	if (esdVZEROfriend) {
+	  err = flatFriend->SetVZEROFriend( esdVZEROfriend, freeSpace );
+	  freeSpace = freeSpaceTotal - flatFriend->GetSize();
+ 	} else {
+	  ALIHLTERRORGUARD(1, "input object of data type %s is not of class AliESDVZEROfriend",
+			   DataType2Text(kAliHLTDataTypeESDFriendContent|kAliHLTDataOriginVZERO).c_str());
+	}
+      }
+    }
+    
+    if( err ) break;
+
+    // Fill track friends information to the flat ESD friend structure
+
+    size_t trackSize = 0;
+    int nTracks = 0;
+    int nTrackEntries = 0;
+    Long64_t *table = NULL;
+    AliFlatESDFriendTrack *flatTrack = NULL;
+    err = flatFriend->SetTracksStart( flatTrack, table, ntrITSSAP + tracksTPC.size(), freeSpace );
+    if( err ) break;
+    freeSpace = freeSpaceTotal - flatFriend->GetSize();
+    
+    // Fill TPC track friends information to the flat ESD friend structure
      
-      size_t trackSize = 0;
-      int nTracks = 0;
-      int nTrackEntries = 0;
-      Long64_t *table = NULL;
-      AliFlatESDFriendTrack *flatTrack = NULL;
-      err = flatFriend->SetTracksStart( flatTrack, table, tracksTPC.size(), freeSpace );
+    for( UInt_t tpcIter=0, itsIter = 0, itsOutIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {       
+      
+      // TPC track parameters
+      
+      AliHLTGlobalBarrelTrack *tpcTrack = &(tracksTPC[tpcIter]);
+      AliHLTGlobalBarrelTrack *tpcOutTrack = &(tracksTPCOut[tpcIter]);
+      int tpcID = tpcTrack->TrackID();
+      
+      // ITS track parameters
+      
+      AliHLTGlobalBarrelTrack *itsRefit=0;
+      AliHLTGlobalBarrelTrack *itsOut=0;
+      
+      // ITS Refit track
+      
+      for(; itsIter< tracksITS.size() && tracksITS[itsIter].TrackID()<tpcID; itsIter++ );
+      
+      if( itsIter< tracksITS.size() && tracksITS[itsIter].TrackID() == tpcID ){
+	itsRefit = &(tracksITS[itsIter]);
+	itsIter++;
+      }
+      
+      // ITS Out track
+      
+      for(; itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID()<(int) tpcID; itsOutIter++ );
+      
+      if( itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID() == (int) tpcID ){
+	itsOut = &(tracksITSOut[itsOutIter]);
+	itsOutIter++;
+      }
+	
+      // fill track parameters
+      
+      table[nTracks] = trackSize;
+      err = ( freeSpace < flatTrack->EstimateSize() );
       if( err ) break;
+      new (flatTrack) AliFlatESDFriendTrack;
+      
       freeSpace = freeSpaceTotal - flatFriend->GetSize();
+      
+      flatTrack->SetSkipBit( 0 );
+      flatTrack->SetTrackParamTPCOut( tpcOutTrack );
+      flatTrack->SetTrackParamITSOut( itsOut );
+      // flatTrack->SetTrackParamTRDIn( track->GetTRDIn() );
 
-      for( UInt_t tpcIter=0, itsIter = 0, itsOutIter = 0; tpcIter < tracksTPC.size(); tpcIter++) {       
-	
-	// TPC track parameters
-	
-	AliHLTGlobalBarrelTrack *tpcTrack = &(tracksTPC[tpcIter]);
-	AliHLTGlobalBarrelTrack *tpcOutTrack = &(tracksTPCOut[tpcIter]);
+      // fill TPC seed
 
-	// ITS track parameters
+      AliFlatTPCseed* seed = flatTrack->SetTPCseedStart();
+      new( seed ) AliFlatTPCseed;
+      
+      seed->SetLabel( tpcTrack->GetLabel() );
+      seed->SetExternalTrackParam( tpcTrack );
+      
+      // clusters 
+
+      bool clustersSet[160];
+      for( int i=0; i<160; i++ ) clustersSet[i]=0;
+
+      UInt_t nClusters = tpcTrack->GetNumberOfPoints();	
+      const UInt_t*clusterIDs = tpcTrack->GetPoints();
+      for(UInt_t ic=0; ic<nClusters; ic++){	 
+	UInt_t id      = clusterIDs[ic];	     
+	int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
+	int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
+	int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
 	
-	AliHLTGlobalBarrelTrack *itsRefit=0;
-	AliHLTGlobalBarrelTrack *itsOut=0;
-	
-	// ITS Refit track
-	  
-	for(; itsIter< tracksITS.size() && tracksITS[itsIter].TrackID()<(int) tpcIter; itsIter++ );
-	
-	if( itsIter< tracksITS.size() && tracksITS[itsIter].TrackID() == (int) tpcIter ){
-	  itsRefit = &(tracksITS[itsIter]);
-	  itsIter++;
+	if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
+	  HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
+	  continue;
 	}
 	
-	// ITS Out track
-	  
-	for(; itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID()<(int) tpcIter; itsOutIter++ );
-	  
-	if( itsOutIter< tracksITSOut.size() && tracksITSOut[itsOutIter].TrackID() == (int) tpcIter ){
-	  itsOut = &(tracksITSOut[itsOutIter]);
-	  itsOutIter++;
+	const AliHLTTPCClusterData * clusterData = partitionClusters[iSlice*6 + iPartition];
+	if(!clusterData ){
+	  HLTError("Clusters are missed for slice %d, partition %d", iSlice, iPartition );
+	  continue;
 	}
 	
-	// fill track parameters
-		  
-	table[tpcIter] = trackSize;
-	err = ( freeSpace < flatTrack->EstimateSize() );	  
-	if( err ) break;
-	new (flatTrack) AliFlatESDFriendTrack;
-	  	  
-	freeSpace = freeSpaceTotal - flatFriend->GetSize();
-
-	flatTrack->SetSkipBit( 0 );
-	flatTrack->SetTrackParamTPCOut( tpcOutTrack );
-	flatTrack->SetTrackParamITSOut( itsOut );
-	// flatTrack->SetTrackParamTRDIn( track->GetTRDIn() );
-
-	// fill TPC seed
-
-	AliFlatTPCseed* seed = flatTrack->SetTPCseedStart();
-	new( seed ) AliFlatTPCseed;
-
-	seed->SetLabel( tpcTrack->GetLabel() );
-	seed->SetExternalTrackParam( tpcTrack );
+	if(iCluster >= partitionNClusters[iSlice*6 + iPartition]){
+	  HLTError("TPC slice %d, partition %d: ClusterID==%d >= N Cluaters==%d ", iSlice, iPartition,iCluster, partitionNClusters[iSlice*6 + iPartition] );
+	  continue;
+	}
+	    
+	const AliHLTTPCSpacePointData *chlt = &( clusterData->fSpacePoints[iCluster] );
+	AliTPCclusterMI cl;
+	cl.SetPad( chlt->GetPad() );
+	cl.SetTimeBin( chlt->GetTime() );
+	cl.SetX(chlt->fX);
+	cl.SetY(chlt->fY);
+	cl.SetZ(chlt->fZ);
+	cl.SetSigmaY2(chlt->fSigmaY2);
+	cl.SetSigmaYZ( 0 );
+	cl.SetSigmaZ2(chlt->fSigmaZ2);
+	cl.SetQ( chlt->fCharge );
+	cl.SetMax( chlt->fQMax );
+	Int_t sector, row;
+	AliHLTTPCGeometry::Slice2Sector(iSlice,chlt->fPadRow, sector, row);
+	cl.SetDetector( sector );
+	cl.SetRow( row );
 	
-	// clusters 
+	int j=row;
+	if( sector>=36 ) j+=AliHLTTPCGeometry::GetNRowLow();
+	if( j<0 || j>=160 || clustersSet[j] ) continue;	
+		  	  	  
+	tpcTrack->Propagate( TMath::DegToRad()*(sector%18*20.+10.), cl.GetX(), GetBz() );
+	Double_t angle2 = tpcTrack->GetSnp()*tpcTrack->GetSnp();
+	angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
+	AliTPCTrackerPoint point;
+	point.SetAngleY( angle2 );
+	point.SetAngleZ( tpcTrack->GetTgl() );
 
-	UInt_t nClusters = tpcTrack->GetNumberOfPoints();	
-	const UInt_t*clusterIDs = tpcTrack->GetPoints();
-	for(UInt_t ic=0; ic<nClusters; ic++){	 
-	  UInt_t id      = clusterIDs[ic];	     
-	  int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
-	  int iPartition = AliHLTTPCSpacePointData::GetPatch(id);
-	  int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
-	  
-	  if(iSlice<0 || iSlice>36 || iPartition<0 || iPartition>5){
-	    HLTError("Corrupted TPC cluster Id: slice %d, partition %d, cluster %d", iSlice, iPartition, iCluster);
-	    continue;
-	  }
-	  
-	  const AliHLTTPCClusterData * clusterData = partitionClusters[iSlice*6 + iPartition];
-	  if(!clusterData ){
-	    HLTError("Clusters are missed for slice %d, partition %d", iSlice, iPartition );
-	    continue;
-	  }
-	    
-	  if(iCluster >= partitionNClusters[iSlice*6 + iPartition]){
-	    HLTError("TPC slice %d, partition %d: ClusterID==%d >= N Cluaters==%d ", iSlice, iPartition,iCluster, partitionNClusters[iSlice*6 + iPartition] );
-	    continue;
-	  }
-
-	    
-	  const AliHLTTPCSpacePointData *chlt = &( clusterData->fSpacePoints[iCluster] );
-	  AliTPCclusterMI cl;
-	  cl.SetX(chlt->fX);
-	  cl.SetY(chlt->fY);
-	  cl.SetZ(chlt->fZ);
-	  cl.SetSigmaY2(chlt->fSigmaY2);
-	  cl.SetSigmaYZ( 0 );
-	  cl.SetSigmaZ2(chlt->fSigmaZ2);
-	  cl.SetQ( chlt->fCharge );
-	  cl.SetMax( chlt->fQMax );
-	  Int_t sector, row;
-	  AliHLTTPCTransform::Slice2Sector(iSlice,chlt->fPadRow, sector, row);
-	  cl.SetDetector( sector );
-	  cl.SetRow( row );
-	  //Float_t padtime[3] = {0,chlt->fY,chlt->fZ};
-	  //AliHLTTPCTransform::Local2Raw( padtime, sector, row);
-	  //cl.SetPad( (Int_t) padtime[1] );
-	  //cl.SetTimeBin( (Int_t) padtime[2] );
-	  
-	  	  
-	  tpcTrack->Propagate( TMath::DegToRad()*(sector%18*20.+10.), cl.GetX(), GetBz() );
-	  Double_t angle2 = tpcTrack->GetSnp()*tpcTrack->GetSnp();
-	  angle2 = (angle2<1) ?TMath::Sqrt(angle2/(1-angle2)) :10.; 
-	  AliTPCTrackerPoint point;
-	  point.SetAngleY( angle2 );
-	  point.SetAngleZ( tpcTrack->GetTgl() );
-
-	  seed->AddCluster(&cl, &point ); 
-	} // end of associated cluster loop
+	seed->AddCluster(&cl, &point ); 
+	clustersSet[j] = 1;
+      } // end of associated cluster loop
 	        
-	
-	flatTrack->SetTPCseedEnd( seed->GetSize() );	
-	  
-	trackSize += flatTrack->GetSize();
-	freeSpace -= flatTrack->GetSize();
-	nTrackEntries++;
-	nTracks++;
- 	flatTrack = flatTrack->GetNextTrackNonConst();	
-	
-      } // fill tracks
       
+      flatTrack->SetTPCseedEnd( seed->GetSize() );	
+      
+      trackSize += flatTrack->GetSize();
+      freeSpace -= flatTrack->GetSize();
+      nTrackEntries++;
+      nTracks++;
+      flatTrack = flatTrack->GetNextTrackNonConst();	
+      
+    } // fill TPC tracks
+    
+    if( err ) break;
+    
+    // Fill friends for ITS standalone tracks
 
-      flatFriend->SetTracksEnd( nTracks, nTrackEntries, trackSize );
+    for( int itr=0; itr< ntrITSSAP; itr++ ){
+      table[nTracks] = -1;
+      const AliHLTITSSAPTrackerData& trcFlatSAP = dataSAP->fTracks[itr];	  
+      AliExternalTrackParam itsRefit, itsOut;
+      trcFlatSAP.paramInw.GetExternalTrackParam(itsRefit); // track at the vertex
+      trcFlatSAP.paramOut.GetExternalTrackParam(itsOut); // track at the ITS out      
+
+      // -- fill flat friend track structure      
+      err = ( freeSpace < flatTrack->EstimateSize() );
+      if( err ) break;
+      new (flatTrack) AliFlatESDFriendTrack;
+
+      flatTrack->SetSkipBit( 0 );
+      flatTrack->SetTrackParamITSOut( &itsOut );      
       
-    }      
+      table[nTracks] = trackSize;
+      trackSize += flatTrack->GetSize();
+      freeSpace -= flatTrack->GetSize();
+      nTrackEntries++;
+      nTracks++;
+      flatTrack = flatTrack->GetNextTrackNonConst();
+    }
 
     if( err ) break;
+   
+    flatFriend->SetTracksEnd( nTracks, nTrackEntries, trackSize );      
 
     { // set up the output block description
     
@@ -793,7 +959,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
       outBlock.fSize = flatFriend->GetSize();
       outBlock.fDataType = kAliHLTDataTypeFlatESDFriend|kAliHLTDataOriginOut;
       outputBlocks.push_back( outBlock );
-      fBenchmark.AddOutput(outBlock.fSize);      
+      fBenchmark.AddOutput(outBlock.fSize);   
+			outsizeFriend = outBlock.fSize;
       size += outBlock.fSize;
     }
     
@@ -802,6 +969,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   fBenchmark.Stop(0);  
   //HLTWarning( fBenchmark.GetStatistics() );
+  stopwatch.Stop();
+  AliSysInfo::AddStamp("flatConverter",numberOfTracks,1000*stopwatch.RealTime(),1000*stopwatch.CpuTime());
   
   if( err ){
     HLTWarning( "Output buffer size %d exceeded, flat ESD friend event is not stored", maxOutputSize );
@@ -814,7 +983,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     TString names[10];
     fBenchmark.GetStatisticsData(statistics, names);
     fBenchmark.Reset();
-    AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), (int)(statistics[2]),flatEsd->GetNumberOfTracks(),flatEsd->GetNumberOfV0s() );
+    AliSysInfo::AddStamp("AliHLTGlobalFlatEsdConverterComponent::DoEvent.Stop", (int)(statistics[1]), outsizeEvent, outsizeFriend );
   }
 
   return 0;

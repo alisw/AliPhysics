@@ -27,7 +27,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTOUT.h"
 #include "AliHLTComponent.h"
 #include "AliHLTErrorGuard.h"
@@ -335,7 +335,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       else {
 	AliFatal(Form("processing of cluster block 0x%08x failed with error code %d", desc.fSpecification, iResult));
       }
-      unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+      unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;
       if (index>=bHavePartitionData.size()) bHavePartitionData.resize(index, false);
       if (bHavePartitionData[index]) {
 	AliFatal(Form("inconsistent cluster data: multiple data blocks of identical specification indicate a failure "
@@ -366,7 +366,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 					    desc.fSize,
 					    desc.fSpecification);
       if (iResult>0) nExtractedClusters+=iResult;
-      unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+      unsigned index=slice*AliHLTTPCGeometry::GetNumberOfPatches()+partition;
       if (index>=bHavePartitionData.size()) bHavePartitionData.resize(index, false);
       if (bHavePartitionData[index]) {
 	AliFatal(Form("inconsistent cluster data: multiple data blocks of identical specification indicate a failure "
@@ -525,8 +525,8 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
     pCluster->SetRow(map[i].fCluster.GetPadRow());
     pCluster->SetPad(map[i].fCluster.GetPad());
     pCluster->SetTimeBin(map[i].fCluster.GetTime());
-    pCluster->SetSigmaY2(map[i].fCluster.GetSigmaY2());
-    pCluster->SetSigmaZ2(map[i].fCluster.GetSigmaZ2());
+    pCluster->SetSigmaY2(map[i].fCluster.GetSigmaPad2());
+    pCluster->SetSigmaZ2(map[i].fCluster.GetSigmaTime2());
     pCluster->SetQ(map[i].fCluster.GetCharge());
     pCluster->SetMax(map[i].fCluster.GetQMax());
 
@@ -586,6 +586,6 @@ AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::iterator& AliHLTTPCCluster
 
   // offline uses row number in physical sector, inner sector consists of
   // partitions 0 and 1, outer sector of partition 2-5
-  fRowOffset=partition<2?0:AliHLTTPCTransform::GetFirstRow(2);
+  fRowOffset=partition<2?0:AliHLTTPCGeometry::GetFirstRow(2);
   return *this;
 }

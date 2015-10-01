@@ -15,8 +15,8 @@ struct AliHLTTPCRawCluster {
     : fPadRow(0)
     , fPad(0.)
     , fTime(0.)
-    , fSigmaY2(0.)
-    , fSigmaZ2(0.)
+    , fSigmaPad2(0.)
+    , fSigmaTime2(0.)
     , fCharge(0)
     , fQMax(0)
   {}
@@ -24,16 +24,16 @@ struct AliHLTTPCRawCluster {
   AliHLTTPCRawCluster(short PadRow,
 		      float Pad,
 		      float Time,
-		      float SigmaY2,
-		      float SigmaZ2,
+		      float SigmaPad2,
+		      float SigmaTime2,
 		      unsigned short Charge,
 		      unsigned short QMax
 		      )
     : fPadRow(PadRow)
     , fPad(Pad)
     , fTime(Time)
-    , fSigmaY2(SigmaY2)
-    , fSigmaZ2(SigmaZ2)
+    , fSigmaPad2(SigmaPad2)
+    , fSigmaTime2(SigmaTime2)
     , fCharge(Charge)
     , fQMax(QMax)
   {}
@@ -42,8 +42,8 @@ struct AliHLTTPCRawCluster {
     : fPadRow(other.fPadRow)
     , fPad(other.fPad)
     , fTime(other.fTime)
-    , fSigmaY2(other.fSigmaY2)
-    , fSigmaZ2(other.fSigmaZ2)
+    , fSigmaPad2(other.fSigmaPad2)
+    , fSigmaTime2(other.fSigmaTime2)
     , fCharge(other.fCharge)
     , fQMax(other.fQMax)
   {}
@@ -63,24 +63,24 @@ struct AliHLTTPCRawCluster {
   short fPadRow;
   float fPad;
   float fTime;
-  float fSigmaY2;
-  float fSigmaZ2;
+  float fSigmaPad2;
+  float fSigmaTime2;
   unsigned short fCharge;
   unsigned short fQMax;
 
   Int_t   GetPadRow()  const {return fPadRow;}
   Float_t GetPad()     const {return fPad;}
   Float_t GetTime()    const {return fTime;}
-  Float_t GetSigmaY2() const {return fSigmaY2;}
-  Float_t GetSigmaZ2() const {return fSigmaZ2;}
+  Float_t GetSigmaPad2() const {return fSigmaPad2;}
+  Float_t GetSigmaTime2() const {return fSigmaTime2;}
   Int_t   GetCharge()  const {return fCharge;}
   Int_t   GetQMax()    const {return fQMax;}
 
   void SetPadRow(Short_t padrow)  {fPadRow=padrow;}
   void SetPad(Float_t pad)     {fPad=pad;}
   void SetTime(Float_t time)    {fTime=time;}
-  void SetSigmaY2(Float_t sigmaY2) {fSigmaY2=sigmaY2;}
-  void SetSigmaZ2(Float_t sigmaZ2) {fSigmaZ2=sigmaZ2;}
+  void SetSigmaPad2(Float_t sigmaPad2) {fSigmaPad2=sigmaPad2;}
+  void SetSigmaTime2(Float_t sigmaTime2) {fSigmaTime2=sigmaTime2;}
   void SetCharge(UShort_t charge)  {fCharge=charge;}
   void SetQMax(UShort_t qmax)    {fQMax=qmax;}
 };

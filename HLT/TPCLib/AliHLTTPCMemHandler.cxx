@@ -27,7 +27,7 @@
 #include <cassert>
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCLogging.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCMemHandler.h"
 #include "TMath.h"
@@ -87,8 +87,8 @@ void AliHLTTPCMemHandler::Init(Int_t s,Int_t p, Int_t *r)
     fRowMin=r[0];
     fRowMax=r[1];
   }else{
-     fRowMin=AliHLTTPCTransform::GetFirstRow(p);
-     fRowMax=AliHLTTPCTransform::GetLastRow(p); 
+     fRowMin=AliHLTTPCGeometry::GetFirstRow(p);
+     fRowMax=AliHLTTPCGeometry::GetLastRow(p); 
   }
   ResetROI();
 }
@@ -99,7 +99,7 @@ void AliHLTTPCMemHandler::ResetROI()
   for(Int_t i=fRowMin; i<=fRowMax; i++)
     {
       fEtaMinTimeBin[i] = 0;
-      fEtaMaxTimeBin[i] = AliHLTTPCTransform::GetNTimeBins()-1;
+      fEtaMaxTimeBin[i] = AliHLTTPCGeometry::GetNTimeBins()-1;
     }
 }
 
@@ -133,11 +133,11 @@ void AliHLTTPCMemHandler::SetROI(const Float_t *eta,Int_t */*slice*/)
       
       Float_t thetamax = 2*atan(exp(-1.*eta[1]));
       
-      xyz[0] = AliHLTTPCTransform::Row2X(i);
+      xyz[0] = AliHLTTPCGeometry::Row2X(i);
       xyz[1]=0;
       xyz[2] = xyz[0]/tan(thetamax);
-      AliHLTTPCTransform::Slice2Sector(fSlice,i,sector,row);
-      AliHLTTPCTransform::Local2Raw(xyz,sector,row);
+      AliHLTTPCGeometry::Slice2Sector(fSlice,i,sector,row);
+      AliHLTTPCGeometry::Local2Raw(xyz,sector,row);
       
       fEtaMinTimeBin[i] = (Int_t)xyz[2];
       
@@ -146,11 +146,11 @@ void AliHLTTPCMemHandler::SetROI(const Float_t *eta,Int_t */*slice*/)
       else
 	{
 	  Float_t thetamin = 2*atan(exp(-1.*eta[0]));
-	  xyz[0] = AliHLTTPCTransform::Row2X(i);
-	  xyz[1] = AliHLTTPCTransform::GetMaxY(i);
+	  xyz[0] = AliHLTTPCGeometry::Row2X(i);
+	  xyz[1] = AliHLTTPCGeometry::GetMaxY(i);
 	  Float_t radii = sqrt(pow(xyz[0],2) + pow(xyz[1],2));
 	  xyz[2] = radii/tan(thetamin);
-	  AliHLTTPCTransform::Local2Raw(xyz,sector,row);
+	  AliHLTTPCGeometry::Local2Raw(xyz,sector,row);
 	  fEtaMaxTimeBin[i] = (Int_t)xyz[2];
 	}
     }
@@ -349,7 +349,7 @@ UInt_t AliHLTTPCMemHandler::GetRandomSize() const
   //get random size
   Int_t nrandom = 0;
   for(Int_t r=fRowMin;r<=fRowMax;r++){
-    Int_t npad=AliHLTTPCTransform::GetNPads(r);
+    Int_t npad=AliHLTTPCGeometry::GetNPads(r);
     nrandom  += Int_t (fNGenerate * ((Double_t) npad/141.));
   }
   return 9 * nrandom * sizeof(AliHLTTPCDigitData);
@@ -368,8 +368,8 @@ void AliHLTTPCMemHandler::DigitizePoint(Int_t row, Int_t pad,
       Int_t dpad  = j + pad;
       Int_t dtime = k + time;
       
-      if(dpad<0||dpad>=AliHLTTPCTransform::GetNPads(row))  continue;
-      if(dtime<0||dtime>=AliHLTTPCTransform::GetNTimeBins()) continue;
+      if(dpad<0||dpad>=AliHLTTPCGeometry::GetNPads(row))  continue;
+      if(dtime<0||dtime>=AliHLTTPCGeometry::GetNTimeBins()) continue;
       
       fRandomDigits[fNDigits].fCharge = dcharge;
       fRandomDigits[fNDigits].fRow = row;
@@ -443,7 +443,7 @@ void AliHLTTPCMemHandler::MergeDataRandom(AliHLTTPCDigitData *data, UInt_t & nda
   data[ndata].fCharge = charge;
   while(ComparePoints(row,pad,time)==0){
     Int_t ch = data[ndata].fCharge + fDPt[fNUsed]->fCharge;
-    if(charge>=AliHLTTPCTransform::GetADCSat()) ch = AliHLTTPCTransform::GetADCSat();
+    if(charge>=AliHLTTPCGeometry::GetADCSat()) ch = AliHLTTPCGeometry::GetADCSat();
     data[ndata].fCharge = ch;
     fNUsed++;
   }
@@ -803,7 +803,7 @@ Bool_t AliHLTTPCMemHandler::Transform(UInt_t npoint,AliHLTTPCSpacePointData *dat
     xyz[0] = data[i].fX;
     xyz[1] = data[i].fY;
     xyz[2] = data[i].fZ;
-    AliHLTTPCTransform::Local2Global(xyz,slice);
+    AliHLTTPCGeometry::Local2Global(xyz,slice);
     data[i].fX = xyz[0];
     data[i].fY = xyz[1];
     data[i].fZ = xyz[2];

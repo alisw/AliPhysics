@@ -23,9 +23,8 @@
 ///
 
 #include "AliHLTTPCCFComparisonComponent.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTGlobalBarrelTrack.h"
@@ -337,7 +336,7 @@ int AliHLTTPCCFComparisonComponent::DoEvent(const AliHLTComponentEventData& /*ev
 //            //xyz[1] = (fClustersArray[sliceTrack][patchTrack])[pos].fY;
 //            //xyz[2] = (fClustersArray[sliceTrack][patchTrack])[pos].fZ;
 //         
-//            //AliHLTTPCTransform::Local2Global(xyz,slice); 
+//            //AliHLTTPCGeometry::Local2Global(xyz,slice); 
 //       	   
 //       	   //Double_t p[2]   = { xyz[1], xyz[2] };
 //            //Double_t cov[3] = { (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaY2, 0., (fClustersArray[sliceTrack][patchTrack])[pos].fSigmaZ2};  

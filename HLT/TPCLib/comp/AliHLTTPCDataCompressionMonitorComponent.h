@@ -203,8 +203,8 @@ public:
 	  fData->FillPadRow(cluster.GetPadRow(), fSlice, fClusterId);
 	  fData->FillPad(cluster.GetPad(), fClusterId);
 	  fData->FillTime(cluster.GetTime(), fClusterId);
-	  fData->FillSigmaY2(cluster.GetSigmaY2(), fClusterId, fPartition);
-	  fData->FillSigmaZ2(cluster.GetSigmaZ2(), fClusterId);
+	  fData->FillSigmaY2(cluster.GetSigmaPad2(), fClusterId, fPartition);
+	  fData->FillSigmaZ2(cluster.GetSigmaTime2(), fClusterId);
 	  fData->FillCharge(cluster.GetCharge(), fClusterId);
 	  fData->FillQMax(cluster.GetQMax(), fClusterId);
 	  fData->Fill(fSlice, fPartition, fClusterId);

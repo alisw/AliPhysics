@@ -25,7 +25,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -247,8 +247,8 @@ int AliHLTTPCHistogramHandlerComponent::DoEvent(const AliHLTComponentEventData&/
 	
 	AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(GetSpecification(iter));
 	AliHLTUInt8_t patch = AliHLTTPCDefinitions::GetMinPatchNr(GetSpecification(iter));
-	row = AliHLTTPCTransform::GetFirstRow(patch); 
-	AliHLTTPCTransform::Slice2Sector(slice,row,thissector,thisrow);
+	row = AliHLTTPCGeometry::GetFirstRow(patch); 
+	AliHLTTPCGeometry::Slice2Sector(slice,row,thissector,thisrow);
 	
 	fHistTH1Tmp = (TH1F*)iter;   		
 	TString name = fHistTH1Tmp->GetName();

@@ -81,6 +81,13 @@ void recraw_local(const char *filename,
   // Set the CDB storage location
   AliCDBManager * man = AliCDBManager::Instance();
   man->SetDefaultStorage(cdbURI);
+  
+  //if found, configure any specific storages
+  //same logic as in CPassX and benchmark
+  if (gROOT->LoadMacro("localOCDBaccessConfig.C")==0) {
+    localOCDBaccessConfig();
+  }  
+
   if (struri.BeginsWith("local://")) {
     // set specific storage for GRP entry
     // search in the working directory and one level above, the latter

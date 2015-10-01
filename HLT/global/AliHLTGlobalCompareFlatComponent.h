@@ -28,7 +28,7 @@ class AliESDtrackCuts;
 class AliHLTCTPData;
 class AliHLTMultiplicityCorrelations;
 class AliHLTGlobalTriggerDecision;
-class AliHLTTestInputHandler;
+class AliHLTVEventInputHandler;
 
 
 class AliHLTGlobalCompareFlatComponent : public AliHLTProcessor {
@@ -131,7 +131,8 @@ private:
   /** assignment operator prohibited */
   AliHLTGlobalCompareFlatComponent& operator=(const AliHLTGlobalCompareFlatComponent&);
 void printDiff( string name, double val1, double val2);
-void printDiff( string name, int n , double* vals1, double* vals2 );
+void printDiff( string name, int n , Float_t* vals1, Float_t* vals2 );
+void printDiff( string name, int n , Double_t* vals1, Double_t* vals2 );
 void printDiff( string name, TString val1, TString val2);
 
   /*
@@ -154,6 +155,8 @@ void printDiff( string name, TString val1, TString val2);
 	static const	Int_t fDim = 14;
 	*/
 	ofstream outFile;
+	ofstream conflictsFile;
+	string fCurrentClass;
 	
 	
   ClassDef(AliHLTGlobalCompareFlatComponent, 0)

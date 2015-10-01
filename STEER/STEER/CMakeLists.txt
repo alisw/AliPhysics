@@ -74,7 +74,7 @@ set(SRCS
     AliHit.cxx
     AliHitMap.cxx
     AliHLTSimulation.cxx
-    AliHLTTestInputHandler.cxx
+    AliHLTVEventInputHandler.cxx
     AliKink.cxx
     AliLego.cxx
     AliLegoGenerator.cxx

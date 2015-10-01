@@ -127,6 +127,9 @@ public:
   /** vertex data structure */
   static const AliHLTComponentDataType fgkVertexDataType;               // see above
   static const AliHLTComponentDataType& VertexDataType();
+  
+  //Initialized Fast transform data object
+  static const AliHLTComponentDataType fgkTPCFastTransformDataObjectDataType;	//see above
 
   // Cluster & Tracks model data
   /** data compression descriptor*/

@@ -26,7 +26,7 @@ ClassImp(AliESDVZEROfriend)
 
 //_____________________________________________________________________________
 AliESDVZEROfriend::AliESDVZEROfriend():
-  TObject(),
+  AliVVZEROfriend(),
   fTrigger(0),
   fTriggerMask(0)
 {
@@ -65,7 +65,7 @@ AliESDVZEROfriend::~AliESDVZEROfriend()
 
 //_____________________________________________________________________________
 AliESDVZEROfriend::AliESDVZEROfriend(const AliESDVZEROfriend& vzerofriend):
-  TObject(vzerofriend),
+  AliVVZEROfriend(vzerofriend),
   fTrigger(vzerofriend.fTrigger),
   fTriggerMask(vzerofriend.fTriggerMask)
 {
@@ -101,7 +101,7 @@ AliESDVZEROfriend& AliESDVZEROfriend::operator = (const AliESDVZEROfriend& vzero
 {
   // assignment operator
   if(&vzerofriend == this) return *this;
-  TObject::operator=(vzerofriend);
+  AliVVZEROfriend::operator=(vzerofriend);
 
   fTrigger = vzerofriend.fTrigger;
   fTriggerMask = vzerofriend.fTriggerMask;

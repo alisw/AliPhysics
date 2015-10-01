@@ -26,6 +26,8 @@ class AliTPCcalibLaser;
 class TGraphErrors;
 class AliSplineFit;
 class AliESDfriendTrack;
+class AliESDfriend;
+class AliExternalTrackParam;
 
 class AliTPCcalibTime:public AliTPCcalibBase {
 public:

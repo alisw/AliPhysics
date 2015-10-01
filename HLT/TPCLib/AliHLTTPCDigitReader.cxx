@@ -31,7 +31,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTTPCDigitReader.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTStdIncludes.h"
 
 using namespace std;
@@ -59,17 +59,17 @@ AliHLTTPCDigitReader::~AliHLTTPCDigitReader()
 int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice)
 {
   // see header file for class documentation
-  if (patch<0 || patch>=AliHLTTPCTransform::GetNumberOfPatches()) {
+  if (patch<0 || patch>=AliHLTTPCGeometry::GetNumberOfPatches()) {
     HLTError("invalid readout partition number %d", patch);
     return -EINVAL;
   }
-  if (firstrow!=AliHLTTPCTransform::GetFirstRow(patch)) {
+  if (firstrow!=AliHLTTPCGeometry::GetFirstRow(patch)) {
     HLTWarning("The firstrow parameter does not match the layout of the readout partition %d "
-	       "(firstrow=%d). Parameter is ignored", patch, AliHLTTPCTransform::GetFirstRow(patch));
+	       "(firstrow=%d). Parameter is ignored", patch, AliHLTTPCGeometry::GetFirstRow(patch));
   }
-  if (lastrow!=AliHLTTPCTransform::GetLastRow(patch)) {
+  if (lastrow!=AliHLTTPCGeometry::GetLastRow(patch)) {
     HLTWarning("The lastrow parameter does not match the layout of the readout partition %d "
-	       "(lastrow=%d). Parameter is ignored", patch, AliHLTTPCTransform::GetLastRow(patch));
+	       "(lastrow=%d). Parameter is ignored", patch, AliHLTTPCGeometry::GetLastRow(patch));
   }
   return InitBlock(ptr, size, patch, slice);
 }

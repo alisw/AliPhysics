@@ -86,6 +86,9 @@ private:
   static const char* fgkOCDBEntryClusterTransformation; //!transient
   static AliHLTTPCClusterTransformation fgTransform; //!transient
   static Bool_t fgTimeInitialisedFromEvent; //!transient
+  bool fOfflineMode; //Run in offline mode (for hlt simulation in offline)
+  bool fInitializeByObjectInDoEvent;	//Do not initialize the transformation but wait for transformation objects arriving in DoEvent loop
+  bool fInitialized;	//Are we initialized?
 
   Bool_t fDataId; // change output data description
 

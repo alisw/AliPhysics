@@ -28,13 +28,14 @@ public:
   virtual TObject* GetCalibObject(Int_t /*index*/) const = 0;
 
   virtual const AliExternalTrackParam* GetTPCOut() const = 0;
-  virtual const AliExternalTrackParam * GetITSOut() const = 0;
-  
+  virtual const AliExternalTrackParam * GetITSOut() const = 0;  
 
   virtual Int_t GetTrackParamTPCOut( AliExternalTrackParam & ) const { return 0; }
   virtual Int_t GetTrackParamITSOut( AliExternalTrackParam & ) const { return 0; }
   //Int_t GetTrackParamTRDIn( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
 
+  virtual void ResetTrackParamTPCOut( const AliExternalTrackParam* ){ ; }
+  virtual void ResetTPCseed( const AliTPCseed* s){}
 
   virtual const AliTrackPointArray *GetTrackPointArray() const {return NULL ;}
 

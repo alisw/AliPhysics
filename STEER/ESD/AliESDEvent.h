@@ -272,7 +272,11 @@ public:
   // VZERO 
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
   void SetVZEROData(const AliESDVZERO * obj);
-	
+  Int_t GetVZEROData( AliESDVZERO &v ) const { 
+    if( fESDVZERO ){ v=*fESDVZERO; return 0; }
+    return -1;
+  }
+
  // ACORDE
   AliESDACORDE *GetACORDEData() const { return fESDACORDE;}
   void SetACORDEData(AliESDACORDE * obj);
@@ -553,6 +557,9 @@ public:
   void SetStdNames();
   void CopyFromOldESD();
   TList* GetList() const {return fESDObjects;}
+
+  //part of the hlt interface
+  void SetFriendEvent( AliVfriendEvent *f ) { AddObject(f); SetESDfriend(dynamic_cast<AliESDfriend*>(f));}
   
     //Following needed only for mixed event
   virtual Int_t        EventIndex(Int_t)       const {return 0;}

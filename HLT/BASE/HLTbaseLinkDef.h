@@ -3,6 +3,7 @@
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
+#pragma link C++ class AliHLTAsyncProcessor;
 #pragma link C++ class AliHLTComponent+;
 #pragma link C++ class AliHLTComponentHandler+;
 #pragma link C++ class AliHLTSystem+;
@@ -34,6 +35,7 @@
 #pragma link C++ class AliHLTDimServer+;
 #pragma link C++ class AliHLTHOMERLibManager+;
 #pragma link C++ class AliHLTHOMERManager+;
+#pragma link C++ class AliHLTDirectHOMERManager+;
 #pragma link C++ class AliHLTHOMERProxyHandler+;
 #pragma link C++ class AliHLTHOMERBlockDesc+;
 #pragma link C++ class AliHLTHOMERSourceDesc+;
@@ -155,6 +157,7 @@
 #pragma link C++ struct AliHLTRunDesc+;
 #pragma link C++ struct AliHLTComponentStatistics+;
 #pragma link C++ struct AliHLTComponentTableEntry;
+#pragma link C++ struct AliHLTDataTopic+;
 
 #pragma link C++ function operator==( const AliHLTComponentDataType&, const AliHLTComponentDataType&);
 #pragma link C++ function operator!=( const AliHLTComponentDataType&, const AliHLTComponentDataType&);

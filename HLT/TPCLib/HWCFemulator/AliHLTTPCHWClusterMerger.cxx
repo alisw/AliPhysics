@@ -26,7 +26,7 @@
 #include <algorithm>
 
 #include "AliHLTTPCHWClusterMerger.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCHWCFSupport.h"
 
@@ -82,11 +82,11 @@ void AliHLTTPCHWClusterMerger::Init()
   fBorderFirstCluster = 0;
   fBorderClusters = 0;
   fBorderNClustersTotal = 0;
-  fNRows = AliHLTTPCTransform::GetNRows();
+  fNRows = AliHLTTPCGeometry::GetNRows();
   fNRowPads = 0;  
   fNBorders = 0;
   for( int i=0; i<fNRows; i++ ){
-    int nPads = AliHLTTPCTransform::GetNPads(i);	
+    int nPads = AliHLTTPCGeometry::GetNPads(i);	
     if( fNRowPads<nPads ) fNRowPads = nPads;
   }
   int nPadsTotal = fNRows*fNRowPads;
@@ -111,9 +111,9 @@ void AliHLTTPCHWClusterMerger::Init()
       int pad =  configWord & 0xFF;
       bool border = (configWord>>14) & 0x1;
       if( !border ) continue;
-      row+=AliHLTTPCTransform::GetFirstRow(iPart);
+      row+=AliHLTTPCGeometry::GetFirstRow(iPart);
       if( row>fNRows ) continue;
-      if( pad>=AliHLTTPCTransform::GetNPads(iPart) ) continue;
+      if( pad>=AliHLTTPCGeometry::GetNPads(iPart) ) continue;
       fMapping[row*fNRowPads + pad] = -2;
     }
   }
@@ -185,7 +185,7 @@ bool AliHLTTPCHWClusterMerger::CheckCandidate(int /*slice*/, int partition, int 
 ) 
 {
   /// check cluster if it is a candidate for merging
-  int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
+  int slicerow=partitionrow+AliHLTTPCGeometry::GetFirstRow(partition);
   
   if( !fMapping ) Init();
   if( !fMapping ) return 0;
@@ -208,8 +208,8 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
 					   short partitionrow,
 					   float pad,
 					   float time,
-					   float sigmaY2,
-					   float sigmaZ2,
+					   float sigmaPad2,
+					   float sigmaTime2,
 					   unsigned short charge,
 					   unsigned short qmax,
 					   AliHLTUInt32_t id,
@@ -222,7 +222,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   int iPad = (int) pad;
   if( !fMapping ) Init();
  
-  int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
+  int slicerow=partitionrow+AliHLTTPCGeometry::GetFirstRow(partition);
  
   if (id!=~AliHLTUInt32_t(0)) {
     if (slice<0) {
@@ -250,8 +250,8 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
     
     if( iBorder>=0 ){
       float dPad = pad - fBorders[iBorder];
-      if( sigmaY2>1.e-4 ){
-	if( dPad*dPad > 12.*sigmaY2 ) iBorder = -1;
+      if( sigmaPad2>1.e-4 ){
+	if( dPad*dPad > 12.*sigmaPad2 ) iBorder = -1;
       } else {
 	if( fabs(dPad)>1. ) iBorder = -1;
       }    
@@ -260,7 +260,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   }
 
   fClusters.push_back(AliClusterRecord(slice, partition, iBorder, -1, id,
-				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax),
+				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaPad2, sigmaTime2, charge, qmax),
 				       mc!=NULL?*mc:AliHLTTPCClusterMCLabel() ));
 
   if( iBorder>=0 ){
@@ -394,12 +394,12 @@ sLeft+=n1;
       c1.Cluster().fCharge += c2.Cluster().fCharge;
       if( c1.Cluster().fQMax < c2.Cluster().fQMax ) c1.Cluster().fQMax = c2.Cluster().fQMax;
       
-      c1.Cluster().fSigmaY2 = 
-	w1*c1.Cluster().fSigmaY2 + w2*c2.Cluster().fSigmaY2
+      c1.Cluster().fSigmaPad2 = 
+	w1*c1.Cluster().fSigmaPad2 + w2*c2.Cluster().fSigmaPad2
 	+ (c1.Cluster().fPad - c2.Cluster().fPad)*(c1.Cluster().fPad - c2.Cluster().fPad)*w1*w2;
       
-      c1.Cluster().fSigmaZ2 = 
-	w1*c1.Cluster().fSigmaZ2 + w2*c2.Cluster().fSigmaZ2
+      c1.Cluster().fSigmaTime2 = 
+	w1*c1.Cluster().fSigmaTime2 + w2*c2.Cluster().fSigmaTime2
 	+ (c1.Cluster().fTime - c2.Cluster().fTime)*(c1.Cluster().fTime - c2.Cluster().fTime)*w1*w2;
       
       c1.Cluster().fPad  = w1*c1.Cluster().fPad + w2*c2.Cluster().fPad;

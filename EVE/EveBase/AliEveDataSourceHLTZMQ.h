@@ -36,16 +36,16 @@ private:
     ClassDef(AliEveDataSourceHLTZMQ, 0); // Interface for getting all event components in a uniform way.
 };
 
-const int kAliHLTComponentDataTypeTopicSize = kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize;
-
-inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
-{
-    for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
-    {
-        if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
-    }
-    return true;
-}
+//const int kAliHLTComponentDataTypeTopicSize = kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize;
+//
+//inline bool Topicncmp(const char* topic, const char* reference, int topicSize=kAliHLTComponentDataTypeTopicSize, int referenceSize=kAliHLTComponentDataTypeTopicSize)
+//{
+//    for (int i=0; i<((topicSize<referenceSize)?topicSize:referenceSize); i++)
+//    {
+//        if (!(topic[i]=='*' || reference[i]=='*' || topic[i]==reference[i])) {return false;}
+//    }
+//    return true;
+//}
 
 
 

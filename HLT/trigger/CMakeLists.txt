@@ -76,6 +76,7 @@ set(SRCS
     AliHLTTriggerPhosMip.cxx
     AliHLTTriggerTrdClusterMultiplicity.cxx
     AliHLTUpcTriggerComponent.cxx
+    AliHLTTriggerCTPRE.cxx
    )
 
 # TO DO : Check if this is really needed

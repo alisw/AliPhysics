@@ -158,6 +158,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
   // AliVVTPCseed interface
 
   void CopyToTPCseed( AliTPCseed &s) const { s = *this; }
+  void SetFromTPCseed( const AliTPCseed* seed ) { *this=*seed; }
 
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)

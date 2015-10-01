@@ -62,12 +62,26 @@ void AliFlatESDFriend::Ls() const
   // -> Added objects have to be added here as well
   if(esdFriend == NULL) return 0;
   ULong64_t size = sizeof(AliFlatESDFriend);
-	// one Long64_t per track for tracks table
+  size+= AliFlatESDVZEROFriend::GetSize();
+
+  // one Long64_t per track for tracks table
   size += esdFriend->GetNumberOfTracks() *  (AliFlatESDFriendTrack::EstimateSize() + sizeof(Long64_t) );
   return size;
 }
 
-
+Int_t AliFlatESDFriend::SetVZEROFriend( const AliESDVZEROfriend *vzero, size_t allocatedVZEROMemory )
+{
+  // fill VZERO info
+  fVZEROFriendPointer = -1;
+  if( !vzero ) return 0;
+  if( allocatedVZEROMemory < sizeof(AliFlatESDVZEROFriend) ) return -1;
+  fVZEROFriendPointer = fContentSize;
+  AliFlatESDVZEROFriend *flatVZERO = reinterpret_cast<AliFlatESDVZEROFriend*> (fContent + fContentSize);
+  new (flatVZERO) AliFlatESDVZEROFriend ;
+  flatVZERO->SetFromESDVZEROfriend( *vzero );
+  fContentSize += flatVZERO->GetSize();
+  return 0;
+}
 
 // _______________________________________________________________________________________________________
 
@@ -92,7 +106,18 @@ Int_t AliFlatESDFriend::SetFromESDfriend( const size_t allocatedMemorySize, cons
       SetNclustersTPCused( iSector, esdFriend->GetNclustersTPCused(iSector) );
     }
   }
- 
+
+  // fill VZERO info
+  {   
+    const AliESDVZEROfriend *esdVZEROfriend = esdFriend->GetVZEROfriendConst();
+    if (esdVZEROfriend) {
+      err = SetVZEROFriend( esdVZEROfriend, freeSpace );      
+      freeSpace = allocatedMemorySize - GetSize();
+    }
+  }
+   
+  if( err!=0 ) return err;
+
   // fill track friends
   {
    size_t trackSize = 0;

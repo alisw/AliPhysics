@@ -16,7 +16,7 @@
 # Other TPC libraries
 # Submodules have to be included before the main library otherwise
 # they will inherit parent folder properties
-add_subdirectory(calibration)
+
 if(ROOT_HASOPENGL)
     add_subdirectory(EVE)
 endif()
@@ -55,6 +55,7 @@ include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
+                    ${AliRoot_SOURCE_DIR}/TPC/TPCcalib
                     ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                     ${AliRoot_SOURCE_DIR}/TPC/TPCsim
                    )
@@ -66,14 +67,15 @@ ALICE_UseVc()
 set(SRCS
     AliHLTTPCAgent.cxx
     AliHLTTPCCFComparisonComponent.cxx
-    AliHLTTPCClusterAccessHLTOUT.cxx
-    AliHLTTPCClusterConverterComponent.cxx
+    AliHLTTPCClusterAccessHLTOUT.cxx    
     AliHLTTPCClusterDumpComponent.cxx
     AliHLTTPCClusterFinderComponent.cxx
     AliHLTTPCClusterFinder.cxx
     AliHLTTPCClusterHistoComponent.cxx
     AliHLTTPCClusters.cxx
     AliHLTTPCClusterTransformationComponent.cxx
+    AliHLTTPCClusterTransformationMergerComponent.cxx
+    AliHLTTPCClusterTransformationPrepareComponent.cxx
     AliHLTTPCClusterTransformation.cxx
     AliHLTTPCDataCheckerComponent.cxx
     AliHLTTPCDataPublisherComponent.cxx
@@ -90,18 +92,16 @@ set(SRCS
     AliHLTTPCHWCFDataReverterComponent.cxx
     AliHLTTPCHWCFSpacePointContainer.cxx
     AliHLTTPCHWClusterDecoderComponent.cxx
-    AliHLTTPCHWClusterTransformComponent.cxx
     AliHLTTPCLog.cxx
     AliHLTTPCMapping.cxx
     AliHLTTPCMemHandler.cxx
     AliHLTTPCPad.cxx
     AliHLTTPCRawSpacePointContainer.cxx
     AliHLTTPCSpacePointContainer.cxx
-    AliHLTTPCTrackDumpComponent.cxx
     AliHLTTPCTrackGeometry.cxx
     AliHLTTPCTrackHistoComponent.cxx
     AliHLTTPCTrackMCMarkerComponent.cxx
-    AliHLTTPCTransform.cxx
+    AliHLTTPCGeometry.cxx
     comp/AliHLTTPCDataCompressionComponent.cxx
     comp/AliHLTTPCDataCompressionDecoder.cxx
     comp/AliHLTTPCDataCompressionFilterComponent.cxx
@@ -156,6 +156,8 @@ set(SRCS
     tracking-ca/AliTPCtrackerCA.cxx
     transform/AliHLTTPCFastTransform.cxx
     transform/AliHLTTPCSpline2D3D.cxx
+    transform/AliHLTTPCSpline2D3DObject.cxx
+    transform/AliHLTTPCFastTransformObject.cxx
    )
 
 # Headers from sources
@@ -165,11 +167,11 @@ set(HDRS ${HDRS}
     AliHLTTPCLogging.h
     AliHLTTPCSpacePointData.h
     AliHLTTPCDigitData.h
-    AliHLTTPCTrackSegmentData.h
-    AliHLTTPCTrackletDataFormat.h
     AliHLTTPCClusterDataFormat.h
     AliHLTTPCClusterMCData.h
     HWCFemulator/AliHLTTPCHWCFDataTypes.h
+    tracking-ca/AliHLTTPCCADef.h
+    tracking-ca/AliHLTTPCCAMath.h
 )
 
 # Generate the dictionary
@@ -179,7 +181,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim Eve Graf Gpad Recorder)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim TPCcalib Eve Graf Gpad Recorder)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # NOTE: Vc should not stay in the rootmap!

@@ -37,6 +37,8 @@ public:
   
   static void SetVerbose(Bool_t v=kFALSE)   {fgVerbose = v;}
   static Bool_t GetVerbose()                {return fgVerbose;} 
+  static void SetDisabled(Bool_t v=kTRUE)   {fgDisabled = v; fgVerbose=kFALSE;}
+  static Bool_t IsDisabled()               {return fgDisabled;}
 
 private:
   AliSysInfo(const AliSysInfo& source);
@@ -49,6 +51,7 @@ private:
   StampCallback_t *fCallBackFunc; // call back functions
   Int_t           fNCallBack;        // number of call back functions
   static Bool_t   fgVerbose;      // do we want actually to write the stamps ?
+  static Bool_t   fgDisabled;      // do not even open the file
   ClassDef(AliSysInfo,0)
 };
 

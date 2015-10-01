@@ -49,6 +49,8 @@ class AliHLTGlobalFlatEsdConverterComponent : public AliHLTProcessor
   const char* GetComponentID() {return "GlobalFlatEsdConverter";};
   void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& list);
+
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
   AliHLTComponent* Spawn() {return new AliHLTGlobalFlatEsdConverterComponent;}
 

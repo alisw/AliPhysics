@@ -1038,6 +1038,53 @@ Float_t AliESDtrackCuts::GetSigmaToVertex(const AliESDtrack* const esdTrack)
   return nSigma;
 }
 
+
+//____________________________________________________________________
+Float_t AliESDtrackCuts::GetSigmaToVertexVTrack(const AliVTrack* const vTrack)
+{
+  // Calculates the number of sigma to the vertex.
+  // This method utilizes AliVTracks, so it can be used
+  // for ESDs or flat ESDs.
+
+  Float_t b[2] = {0.,0.};
+  Float_t bRes[2] = {0.,0.};
+  Float_t bCov[3] = {0.,0.,0.};
+  vTrack->GetImpactParameters(b,bCov);
+  
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    AliDebugClass(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+  }
+  bRes[0] = TMath::Sqrt(bCov[0]);
+  bRes[1] = TMath::Sqrt(bCov[2]);
+
+  // -----------------------------------
+  // How to get to a n-sigma cut?
+  //
+  // The accumulated statistics from 0 to d is
+  //
+  // ->  Erf(d/Sqrt(2)) for a 1-dim gauss (d = n_sigma)
+  // ->  1 - Exp(-d**2) for a 2-dim gauss (d*d = dx*dx + dy*dy != n_sigma)
+  //
+  // It means that for a 2-dim gauss: n_sigma(d) = Sqrt(2)*ErfInv(1 - Exp((-d**2)/2)
+  // Can this be expressed in a different way?
+
+  if (bRes[0] == 0 || bRes[1] ==0)
+    return -1;
+
+  Float_t d = TMath::Sqrt(TMath::Power(b[0]/bRes[0],2) + TMath::Power(b[1]/bRes[1],2));
+
+  // work around precision problem
+  // if d is too big, TMath::Exp(...) gets 0, and TMath::ErfInverse(1) that should be infinite, gets 0 :(
+  // 1e-15 corresponds to nsigma ~ 7.7
+  if (TMath::Exp(-d * d / 2) < 1e-15)
+    return 1000;
+
+  Float_t nSigma = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
+  return nSigma;
+}
+
+
 void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 {
   // enables the branches needed by AcceptTrack, for a list see comment of AcceptTrack
@@ -1495,6 +1542,474 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 }
 
 //____________________________________________________________________
+Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack) 
+{
+  // 
+  // figure out if the tracks survives all the track cuts defined
+  // Wrapper function designed to handle either AliESDtrack or
+  // AliFlatESDTrack objects using the AliVTrack interface as an
+  // intermediary. AliESDtracks will be shunted to AcceptTrack,
+  // while AliFlatESDtracks will continue in AcceptVTrack using
+  // a smaller subset of cuts (because many of the cuts can't be 
+  // tested using the limited members contained within
+  // AliFlatESDtrack)
+  //
+  // the different quality parameter and kinematic values are first
+  // retrieved from the track. then it is found out what cuts the
+  // track did not survive and finally the cuts are imposed.
+
+  // this function needs the following branches:
+  // fTracks.fFlags
+  // fTracks.fITSncls
+  // fTracks.fTPCncls
+  // fTracks.fITSchi2
+  // fTracks.fTPCchi2
+  // fTracks.fC   //GetExternalCovariance
+  // fTracks.fD   //GetImpactParameters
+  // fTracks.fZ   //GetImpactParameters
+  // fTracks.fCdd //GetImpactParameters
+  // fTracks.fCdz //GetImpactParameters
+  // fTracks.fCzz //GetImpactParameters
+  // fTracks.fP   //GetPxPyPz
+  // fTracks.fR   //GetMass
+  // fTracks.fP   //GetMass
+  // fTracks.fKinkIndexes
+  //
+  // esdEvent is only required for the MaxChi2TPCConstrainedVsGlobal
+
+  //Check if the track is an AliESDtrack.  If so, pass it to
+  //AcceptTrack() to use the full set of cuts
+  if(const AliESDtrack *esdTrack = dynamic_cast<const AliESDtrack*>(vTrack)){
+    return AcceptTrack(esdTrack);
+  }
+  
+  //The track is not an AliESDtrack.  Perform a more limited
+  //set of cuts
+
+  UInt_t status = vTrack->GetStatus();
+
+  // getting quality parameters from the ESD track
+  // Int_t nClustersITS = vTrack->GetITSclusters(0);
+  Int_t nClustersITS = vTrack->GetNumberOfITSClusters();
+  // Int_t nClustersTPC = -1;
+  // if(fCutRequireTPCStandAlone) {
+  //   nClustersTPC = vTrack->GetTPCNclsIter1();
+  // }
+  // else {
+  //   nClustersTPC = vTrack->GetTPCclusters(0);
+  // }
+  Int_t nClustersTPC = vTrack->GetTPCNcls();
+  
+  //Pt dependent NClusters Cut
+  if(f1CutMinNClustersTPCPtDep) {
+    if(vTrack->Pt()<fCutMaxPtDepNClustersTPC)
+      fCutMinNClusterTPC = (Int_t)(f1CutMinNClustersTPCPtDep->Eval(vTrack->Pt()));
+    else
+      fCutMinNClusterTPC = (Int_t)(f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC));
+  }
+
+  Float_t nCrossedRowsTPC = vTrack->GetTPCCrossedRows();
+  Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+  // if (vTrack->GetTPCNclsF()>0) {
+  //   ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / vTrack->GetTPCNclsF();
+  // }
+  
+  // Int_t nClustersTPCShared = vTrack->GetTPCnclsS();
+  Int_t nClustersTPCShared = -1;
+
+  // Float_t fracClustersTPCShared = -1.;
+
+  Float_t chi2PerClusterITS = -1;
+  Float_t chi2PerClusterTPC = -1;
+  // if (nClustersITS!=0)
+  // chi2PerClusterITS = vTrack->GetITSchi2()/Float_t(nClustersITS);
+  // if (nClustersTPC!=0) {
+  //   if(fCutRequireTPCStandAlone) {
+  //     chi2PerClusterTPC = vTrack->GetTPCchi2Iter1()/Float_t(nClustersTPC);
+  //   } else {
+  //     chi2PerClusterTPC = vTrack->GetTPCchi2()/Float_t(nClustersTPC);
+  //   }
+  //   // fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
+  // }
+
+  Double_t extCov[15];
+  for(int i=0; i<15; i++) extCov[i]=0.;
+  // vTrack->GetExternalCovariance(extCov);
+
+  Float_t b[2];
+  Float_t bCov[3];
+  vTrack->GetImpactParameters(b,bCov);
+  if (bCov[0]<=0 || bCov[2]<=0) {
+    AliDebug(1, "Estimated b resolution lower or equal zero!");
+    bCov[0]=0; bCov[2]=0;
+  }
+
+
+  // set pt-dependent DCA cuts, if requested
+  SetPtDepDCACuts(vTrack->Pt());
+
+
+  Float_t dcaToVertexXY = b[0];
+  Float_t dcaToVertexZ = b[1];
+
+  Float_t dcaToVertex = -1;
+  
+  if (fCutDCAToVertex2D)
+  {
+    dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY/fCutMaxDCAToVertexXY/fCutMaxDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutMaxDCAToVertexZ/fCutMaxDCAToVertexZ);
+  }
+  else
+    dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
+    
+  // getting the kinematic variables of the track
+  // (assuming the mass is known)
+  Double_t p[3];
+  // vTrack->GetPxPyPz(p);
+  vTrack->PxPyPz(p);
+
+  // Changed from float to double to prevent rounding errors leading to negative 
+  // log arguments (M.G.)
+  Double_t momentum = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+  Double_t pt       = TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
+  // Double_t mass     = vTrack->GetMass();
+  // Double_t energy   = TMath::Sqrt(mass*mass + momentum*momentum);
+
+  //y-eta related calculations
+  // Float_t eta = -100.;
+  // Float_t y   = -100.;
+  // if((momentum != TMath::Abs(p[2]))&&(momentum != 0))
+  //   eta = 0.5*TMath::Log((momentum + p[2])/(momentum - p[2]));
+  // if((energy != TMath::Abs(p[2]))&&(energy != 0))
+  //   y = 0.5*TMath::Log((energy + p[2])/(energy - p[2]));
+  Float_t eta = vTrack->Eta();
+  Float_t y   = vTrack->Y();
+    
+  // if (extCov[14] < 0) 
+  // {
+  //   AliWarning(Form("GetSigma1Pt2() returns negative value for external covariance matrix element fC[14]: %f. Corrupted track information, track will not be accepted!", extCov[14]));
+  //   return kFALSE;
+  // }
+  Float_t relUncertainty1Pt = TMath::Sqrt(extCov[14])*pt;
+  
+  //########################################################################
+  // cut the track?
+  
+  Bool_t cuts[kNCuts];
+  for (Int_t i=0; i<kNCuts; i++) cuts[i]=kFALSE;
+  
+  // track quality cuts
+  if (fCutRequireTPCRefit && (status&AliESDtrack::kTPCrefit)==0)
+    cuts[0]=kTRUE;
+  // if (fCutRequireTPCStandAlone && (status&AliESDtrack::kTPCin)==0)
+  //   cuts[1]=kTRUE;
+  if (fCutRequireITSRefit && (status&AliESDtrack::kITSrefit)==0)
+    cuts[2]=kTRUE;
+  if (nClustersTPC<fCutMinNClusterTPC)
+    cuts[3]=kTRUE;
+  if (nClustersITS<fCutMinNClusterITS) 
+    cuts[4]=kTRUE;
+  // if (chi2PerClusterTPC>fCutMaxChi2PerClusterTPC) 
+  //   cuts[5]=kTRUE; 
+  // if (chi2PerClusterITS>fCutMaxChi2PerClusterITS) 
+  //   cuts[6]=kTRUE;
+  // if (extCov[0]  > fCutMaxC11) 
+  //   cuts[7]=kTRUE;  
+  // if (extCov[2]  > fCutMaxC22) 
+  //   cuts[8]=kTRUE;  
+  // if (extCov[5]  > fCutMaxC33) 
+  //   cuts[9]=kTRUE;  
+  // if (extCov[9]  > fCutMaxC44) 
+  //   cuts[10]=kTRUE;  
+  // if (extCov[14]  > fCutMaxC55) 
+  //   cuts[11]=kTRUE;  
+  
+  // cut 12 and 13 see below
+  
+  // if (!fCutAcceptKinkDaughters && vTrack->GetKinkIndex(0)>0)
+  //   cuts[14]=kTRUE;
+  // track kinematics cut
+  if((momentum < fPMin) || (momentum > fPMax)) 
+    cuts[15]=kTRUE;
+  if((pt < fPtMin) || (pt > fPtMax)) 
+    cuts[16] = kTRUE;
+  if((p[0] < fPxMin) || (p[0] > fPxMax)) 
+    cuts[17] = kTRUE;
+  if((p[1] < fPyMin) || (p[1] > fPyMax)) 
+    cuts[18] = kTRUE;
+  if((p[2] < fPzMin) || (p[2] > fPzMax))
+    cuts[19] = kTRUE;
+  if((eta < fEtaMin) || (eta > fEtaMax))
+    cuts[20] = kTRUE;
+  if((y < fRapMin) || (y > fRapMax)) 
+    cuts[21] = kTRUE;
+  if (fCutDCAToVertex2D && dcaToVertex > 1)
+    cuts[22] = kTRUE;
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) > fCutMaxDCAToVertexXY)
+    cuts[23] = kTRUE;
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) > fCutMaxDCAToVertexZ)
+    cuts[24] = kTRUE;
+  if (fCutDCAToVertex2D && fCutMinDCAToVertexXY > 0 && fCutMinDCAToVertexZ > 0 && dcaToVertexXY*dcaToVertexXY/fCutMinDCAToVertexXY/fCutMinDCAToVertexXY + dcaToVertexZ*dcaToVertexZ/fCutMinDCAToVertexZ/fCutMinDCAToVertexZ < 1)
+    cuts[25] = kTRUE;
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexXY) < fCutMinDCAToVertexXY)
+    cuts[26] = kTRUE;
+  if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) < fCutMinDCAToVertexZ)
+    cuts[27] = kTRUE;
+  
+  // for (Int_t i = 0; i < 3; i++) {
+  //   if(!(vTrack->GetStatus()&AliESDtrack::kITSupg)) { // current ITS
+  //     cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], vTrack->HasPointOnITSLayer(i*2), vTrack->HasPointOnITSLayer(i*2+1));
+  //   } else { // upgraded ITS (7 layers)
+  //     // at the moment, for L012 the layers 12 are considered together
+  //     if(i==0) { // L012
+  // 	cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], vTrack->HasPointOnITSLayer(0), (vTrack->HasPointOnITSLayer(1))&(vTrack->HasPointOnITSLayer(2)));
+  //     } else { // L34 or L56
+  // 	cuts[28+i] = !CheckITSClusterRequirement(fCutClusterRequirementITS[i], vTrack->HasPointOnITSLayer(i*2+1), vTrack->HasPointOnITSLayer(i*2+2));
+  //     }
+  //   }
+  // }
+  
+  if(fCutRequireITSStandAlone || fCutRequireITSpureSA){
+    if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)){
+      // TPC tracks
+      cuts[31] = kTRUE; 
+    }else{
+      // ITS standalone tracks
+      if(fCutRequireITSStandAlone && !fCutRequireITSpureSA){
+	if(status & AliESDtrack::kITSpureSA) cuts[31] = kTRUE;
+      }else if(fCutRequireITSpureSA){
+	if(!(status & AliESDtrack::kITSpureSA)) cuts[31] = kTRUE;
+      }
+    }
+  }
+
+  // if (relUncertainty1Pt > fCutMaxRel1PtUncertainty)
+  //    cuts[32] = kTRUE;
+
+  // if (!fCutAcceptSharedTPCClusters && nClustersTPCShared!=0)
+  //   cuts[33] = kTRUE;
+
+  // if (fracClustersTPCShared > fCutMaxFractionSharedTPCClusters)
+  //   cuts[34] = kTRUE;  
+
+  Int_t nITSPointsForPid=0;
+  UChar_t clumap=vTrack->GetITSClusterMap();
+  for(Int_t i=2; i<6; i++){
+    if(clumap&(1<<i)) ++nITSPointsForPid;
+  }
+  if(fCutRequireITSPid && nITSPointsForPid<3) cuts[35] = kTRUE;
+  
+
+  if (nCrossedRowsTPC<fCutMinNCrossedRowsTPC)
+    cuts[36]=kTRUE;
+  // if (ratioCrossedRowsOverFindableClustersTPC<fCutMinRatioCrossedRowsOverFindableClustersTPC) 
+  //   cuts[37]=kTRUE;
+
+  Int_t nMissITSpts=0;
+  // Int_t idet,statusLay;
+  // Float_t xloc,zloc;
+  // for(Int_t iLay=0; iLay<6; iLay++){
+  //   Bool_t retc=vTrack->GetITSModuleIndexInfo(iLay,idet,statusLay,xloc,zloc);
+  //   if(retc && statusLay==5) ++nMissITSpts;
+  // }
+  // if(nMissITSpts>fCutMaxMissingITSPoints) cuts[38] = kTRUE;
+  
+  //kTOFout
+  // if (fCutRequireTOFout && (status&AliESDtrack::kTOFout)==0)
+  //   cuts[40]=kTRUE;
+
+  // TOF signal Dz cut
+  // Float_t dxTOF = vTrack->GetTOFsignalDx();
+  // Float_t dzTOF = vTrack->GetTOFsignalDz();
+  Float_t dxTOF = 0.;
+  Float_t dzTOF = 0.;
+  // if (fFlagCutTOFdistance && (vTrack->GetStatus() & AliESDtrack::kTOFout) == AliESDtrack::kTOFout){ // applying the TOF distance cut only if requested, and only on tracks that reached the TOF and where associated with a TOF hit 
+  //   if (fgBeamTypeFlag < 0) {  // the check on the beam type was not done yet
+  //     const AliESDEvent* event = vTrack->GetESDEvent();
+  //     if (event){
+  // 	TString beamTypeESD = event->GetBeamType();
+  // 	AliDebug(2,Form("Beam type from ESD event = %s",beamTypeESD.Data()));
+  // 	if (beamTypeESD.CompareTo("A-A",TString::kIgnoreCase) == 0){ // we are in PbPb collisions --> fgBeamTypeFlag will be set to 1, to apply the cut on TOF signal Dz
+  // 	  fgBeamTypeFlag = 1;
+  // 	}
+  // 	else { // we are NOT in PbPb collisions --> fgBeamTypeFlag will be set to 0, to NOT apply the cu6 on TOF signal Dz
+  // 	  fgBeamTypeFlag = 0;
+  // 	}				  
+  //     }
+  //     else{
+  // 	AliFatal("Beam type not available, but it is needed to apply the TOF cut!");
+  //     }
+  //   }
+
+  //   if (fgBeamTypeFlag == 1){ // we are in PbPb collisions --> apply the cut on TOF signal Dz
+  //     Float_t radiusTOF = TMath::Sqrt(dxTOF*dxTOF + dzTOF*dzTOF);
+  //     AliDebug(3,Form("TOF check (with fCutTOFdistance = %f) --> dx = %f, dz = %f, radius = %f", fCutTOFdistance, dxTOF, dzTOF, radiusTOF));
+  //     if (radiusTOF > fCutTOFdistance){
+  // 	AliDebug(2, Form("************* the radius is outside the range! %f > %f, the track will be skipped", radiusTOF, fCutTOFdistance));
+  // 	cuts[41] = kTRUE;
+  //     }
+  //   }
+  // }
+  
+  Bool_t cut=kFALSE;
+  for (Int_t i=0; i<kNCuts; i++) 
+    if (cuts[i]) {cut = kTRUE;}
+
+  // for performance evaluate the CPU intensive cuts only when the others have passed, and when they are requested
+  Double_t chi2TPCConstrainedVsGlobal = -2;
+  Float_t nSigmaToVertex = -2;
+  if (!cut)
+  {
+    // getting the track to vertex parameters
+    if (fCutSigmaToVertexRequired)
+    {
+      nSigmaToVertex = GetSigmaToVertexVTrack(vTrack);
+      if (nSigmaToVertex > fCutNsigmaToVertex && fCutSigmaToVertexRequired)
+      {
+	cuts[12] = kTRUE;
+	cut = kTRUE;
+      }
+      // if n sigma could not be calculated
+      if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
+      {
+	cuts[13] = kTRUE;
+	cut = kTRUE;
+      }
+    }
+      
+    // // max chi2 TPC constrained vs global track only if track passed the other cut
+    // if (fCutMaxChi2TPCConstrainedVsGlobal < 1e9)
+    // {
+    //   const AliESDEvent* esdEvent = vTrack->GetESDEvent();
+      
+    //   if (!esdEvent)
+    // 	AliFatal("fCutMaxChi2TPCConstrainedVsGlobal set but ESD event not set in AliESDTrack. Use AliESDTrack::SetESDEvent before calling AliESDtrackCuts.");
+      
+    //   // get vertex
+    //   const AliESDVertex* vertex = 0;
+    //   if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTracks)
+    // 	vertex = esdEvent->GetPrimaryVertexTracks();
+      
+    //   if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexSPD)
+    // 	vertex = esdEvent->GetPrimaryVertexSPD();
+	
+    //   if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTPC)
+    // 	vertex = esdEvent->GetPrimaryVertexTPC();
+
+    //   if (vertex->GetStatus())
+    // 	chi2TPCConstrainedVsGlobal = vTrack->GetChi2TPCConstrainedVsGlobal(vertex);
+      
+    //   if (chi2TPCConstrainedVsGlobal < 0 || chi2TPCConstrainedVsGlobal > fCutMaxChi2TPCConstrainedVsGlobal)
+    //   {
+    // 	cuts[39] = kTRUE;
+    // 	cut = kTRUE;
+    //   }
+    // }
+
+    // // max length in active volume
+    // Float_t lengthInActiveZoneTPC = -1;
+    // if (fCutMinLengthActiveVolumeTPC > 1.) { // do the calculation only if needed to save cpu-time
+    //   if (vTrack->GetESDEvent()) {
+    // 	if (vTrack->GetInnerParam()) lengthInActiveZoneTPC = vTrack->GetLengthInActiveZone(1, 1.8, 220, vTrack->GetESDEvent()->GetMagneticField()); 
+    // 	//
+    // 	if (lengthInActiveZoneTPC < fCutMinLengthActiveVolumeTPC ) {
+    // 	  cuts[42] = kTRUE;
+    // 	  cut = kTRUE;
+    // 	}
+    //   }
+    // }
+
+    
+  }
+
+  //########################################################################
+  // filling histograms
+  if (fHistogramsOn) {
+    fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n tracks")));
+    if (cut)
+      fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n cut tracks")));
+    
+    for (Int_t i=0; i<kNCuts; i++) {
+      if (fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i]) < 1)
+        AliFatal(Form("Inconsistency! Cut %d with name %s not found", i, fgkCutNames[i]));
+    
+      if (cuts[i])
+        fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i])));
+
+      for (Int_t j=i; j<kNCuts; j++) {
+        if (cuts[i] && cuts[j]) {
+          Float_t xC = fhCutCorrelation->GetXaxis()->GetBinCenter(fhCutCorrelation->GetXaxis()->FindBin(fgkCutNames[i]));
+          Float_t yC = fhCutCorrelation->GetYaxis()->GetBinCenter(fhCutCorrelation->GetYaxis()->FindBin(fgkCutNames[j]));
+          fhCutCorrelation->Fill(xC, yC);
+        }
+      }
+    }
+  }
+  
+  // now we loop over the filling of the histograms twice: once "before" the cut, once "after"
+  // the code is not in a function due to too many local variables that would need to be passed
+
+  for (Int_t id = 0; id < 2; id++)
+  {
+    // id = 0 --> before cut
+    // id = 1 --> after cut
+
+    if (fHistogramsOn)
+    {
+      fhNClustersITS[id]->Fill(nClustersITS);
+      fhNClustersTPC[id]->Fill(nClustersTPC);
+      fhNSharedClustersTPC[id]->Fill(nClustersTPCShared);
+      fhNCrossedRowsTPC[id]->Fill(nCrossedRowsTPC);
+      fhRatioCrossedRowsOverFindableClustersTPC[id]->Fill(ratioCrossedRowsOverFindableClustersTPC);
+      fhChi2PerClusterITS[id]->Fill(chi2PerClusterITS);
+      fhChi2PerClusterTPC[id]->Fill(chi2PerClusterTPC);
+      fhChi2TPCConstrainedVsGlobal[id]->Fill(chi2TPCConstrainedVsGlobal);
+      fhNClustersForITSPID[id]->Fill(nITSPointsForPid);
+      fhNMissingITSPoints[id]->Fill(nMissITSpts);
+
+      fhC11[id]->Fill(extCov[0]);
+      fhC22[id]->Fill(extCov[2]);
+      fhC33[id]->Fill(extCov[5]);
+      fhC44[id]->Fill(extCov[9]);
+      fhC55[id]->Fill(extCov[14]);
+
+      fhRel1PtUncertainty[id]->Fill(relUncertainty1Pt);
+
+      fhPt[id]->Fill(pt);
+      fhEta[id]->Fill(eta);
+      fhTOFdistance[id]->Fill(dxTOF, dzTOF);
+
+      Float_t bRes[2];
+      bRes[0] = TMath::Sqrt(bCov[0]);
+      bRes[1] = TMath::Sqrt(bCov[2]);
+
+      fhDZ[id]->Fill(b[1]);
+      fhDXY[id]->Fill(b[0]);
+      fhDXYDZ[id]->Fill(dcaToVertex);
+      fhDXYvsDZ[id]->Fill(b[1],b[0]);
+
+      if (bRes[0]!=0 && bRes[1]!=0) {
+        fhDZNormalized[id]->Fill(b[1]/bRes[1]);
+        fhDXYNormalized[id]->Fill(b[0]/bRes[0]);
+        fhDXYvsDZNormalized[id]->Fill(b[1]/bRes[1], b[0]/bRes[0]);
+        fhNSigmaToVertex[id]->Fill(nSigmaToVertex);
+      }
+    }
+
+    // cut the track
+    if (cut)
+      return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+
+
+
+
+
+
+//____________________________________________________________________
 Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2)
 {
   // checks if the cluster requirement is fullfilled (in this case: return kTRUE)
@@ -1541,6 +2056,43 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTra
 
   // only true if we have a tpc track
   if (!track->FillTPCOnlyTrack(*tpcTrack))
+  {
+    delete tpcTrack;
+    return 0;
+  }
+
+  return tpcTrack;
+}
+
+//____________________________________________________________________
+AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(const AliVEvent* vEvent, Int_t iTrack)
+{
+  // Utility function to create a TPC only track from the given track in a VEvent.  This will return 0 if the VEvent isnt an ESDEvent
+  // 
+  // IMPORTANT: The track has to be deleted by the user
+  //
+  // NB. most of the functionality to get a TPC only track from an ESD track is in AliESDtrack, where it should be
+  // there are only missing propagations here that are needed for old data
+  // this function will therefore become obsolete
+  //
+  // adapted from code provided by CKB
+
+  if (!vEvent->GetPrimaryVertexTPC())
+    return 0; // No TPC vertex no TPC tracks
+
+  if(!vEvent->GetPrimaryVertexTPC()->GetStatus())
+    return 0; // TPC Vertex is created by default in AliESDEvent, do not use in this case
+
+  AliVParticle* vParticle = vEvent->GetTrack(iTrack);
+  if (!vParticle) return 0;
+  
+  AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(vParticle);
+  if(!esdTrack) return 0;
+
+  AliESDtrack *tpcTrack = new AliESDtrack();
+
+  // only true if we have a tpc track
+  if (!esdTrack->FillTPCOnlyTrack(*tpcTrack))
   {
     delete tpcTrack;
     return 0;

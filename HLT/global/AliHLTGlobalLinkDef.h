@@ -31,7 +31,9 @@
 #pragma link C++ class AliHLTMultiplicityCorrelations+;
 #pragma link C++ class AliHLTMultiplicityCorrelationsComponent+;
 #pragma link C++ class AliHLTGlobalCompareFlatComponent+;
-#pragma link C++ class AliHLTFlatAnaManagerComponent+;
+#pragma link C++ class AliHLTAsyncTestComponent+;
+#pragma link C++ class AliHLTAsyncCalibrationComponent+;
+#pragma link C++ class AliHLTZeroComponent+;
 #pragma link C++ class AliHLTGlobalFlatEsdConverterComponent+;
 #pragma link C++ class AliFlatESDFriendTrack+;
 #pragma link C++ class AliFlatTPCseed+;
@@ -40,5 +42,11 @@
 #pragma link C++ class AliFlatESDFriend+;
 #pragma link C++ class AliFlatESDTrack+;
 #pragma link C++ class AliHLTGlobalFlatEsdTestComponent+;
-#pragma link C++ class AliHLTAnaManagerComponent+;
+#pragma link C++ class AliHLTAnalysisManager+;
+#pragma link C++ class AliHLTAnalysisManagerComponent+;
+#pragma link C++ class AliHLTLumiRegComponent+;
+#ifdef ZMQ
+#pragma link C++ class AliHLTZMQsink+;
+#pragma link C++ class AliHLTZMQsource+;
+#endif
 #endif // __CINT__

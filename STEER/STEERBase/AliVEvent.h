@@ -35,7 +35,9 @@ class AliVMFT;   // AU
 class AliESDkink;
 class AliESDv0;
 class AliESDVertex;
+class AliESDVZERO;
 class AliVTrack;
+class AliVAD;
 
 class AliVEvent : public TObject {
 
@@ -141,6 +143,7 @@ public:
   virtual ULong64_t GetTriggerMask() const = 0;
   virtual UChar_t   GetTriggerCluster() const = 0;
   virtual TString   GetFiredTriggerClasses() const = 0;
+  virtual Bool_t    IsTriggerClassFired(const char *name) const {return 0;}
   virtual Double_t  GetZDCN1Energy() const = 0;
   virtual Double_t  GetZDCP1Energy() const = 0;
   virtual Double_t  GetZDCN2Energy() const = 0;
@@ -206,6 +209,8 @@ public:
   virtual void           SetVZEROEqFactors(Float_t /* factors */[64]) const {return;}
   virtual AliVZDC   *GetZDCData() const = 0;
 
+  virtual AliVAD *GetADData() const { return NULL;}  
+
   virtual Int_t GetNumberOfTrdTracks() const { return 0; }
   virtual AliVTrdTrack* GetTrdTrack(Int_t /* iTrack */) const { return 0x0; }
 
@@ -216,9 +221,12 @@ public:
   virtual Int_t            GetV0(AliESDv0&, Int_t /*iv0*/) const {return 0;}
   virtual UInt_t           GetTimeStamp() const { return 0; }
   virtual AliVfriendEvent* FindFriend() const { return 0; }
+  virtual void             SetFriendEvent( AliVfriendEvent* ) {}
   virtual UInt_t           GetEventSpecie() const { return 0; }
   virtual AliESDkink*      GetKink(Int_t /*i*/) const { return NULL; }
   virtual Int_t            GetNumberOfKinks() const { return 0; }
+ 
+  virtual Int_t GetVZEROData( AliESDVZERO & ) const {return -1;}
 
   // Primary vertex
   virtual const AliVVertex   *GetPrimaryVertex() const {return 0x0;}
@@ -238,6 +246,7 @@ public:
   virtual void ConnectTracks() {}
   virtual EDataLayoutType GetDataLayoutType() const = 0;
   const char* Whoami();
+  virtual ULong64_t  GetSize()  const {return 0;}
 
   ClassDef(AliVEvent, 3)  // base class for AliEvent data
 };

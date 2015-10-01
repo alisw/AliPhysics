@@ -72,6 +72,11 @@ public:
       p=*GetITSOut();
       return 0;}
 
+  void ResetTrackParamTPCOut( const AliExternalTrackParam *p){
+    if (fTPCOut) delete fTPCOut;
+    fTPCOut=new AliExternalTrackParam(*p);
+  }
+
   void SetITSIndices(Int_t* indices, Int_t n);
   void SetTPCIndices(Int_t* indices, Int_t n);
   void SetTRDIndices(Int_t* indices, Int_t n);
@@ -87,6 +92,7 @@ public:
   // VfriendTrack interface
 
   Int_t GetTPCseed( AliTPCseed &) const;
+  void ResetTPCseed( const AliTPCseed* s );
 
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))

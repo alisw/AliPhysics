@@ -10,9 +10,9 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TObject.h>
+#include "AliVVZEROfriend.h"
 
-class AliESDVZEROfriend: public TObject {
+class AliESDVZEROfriend: public AliVVZEROfriend {
   public :
     AliESDVZEROfriend();
     virtual ~AliESDVZEROfriend();
@@ -98,13 +98,6 @@ class AliESDVZEROfriend: public TObject {
     void              SetTriggerInputsMask(UShort_t mask)
       { fTriggerMask = mask; }
 
-    enum EESDVZEROfriendParams {
-      kNChannels = 64, // number of electronic channels in V0 (FEE numbering)
-      kNEvOfInt  = 21, // number of events of interest
-      kNScalers  = 16, // number of scalers
-      kNBunches  = 10  // number of bunches used in Minimum Bias information 
-    };
-
   private:
 
     ULong64_t     fBBScalers[kNChannels];        // 'Beam-Beam' scalers for all channels
@@ -126,7 +119,7 @@ class AliESDVZEROfriend: public TObject {
     UShort_t      fTrigger;        // VZERO trigger inputs
     UShort_t      fTriggerMask;    // VZERO trigger inputs mask
 
-    ClassDef(AliESDVZEROfriend, 2) // container class for VZERO DDL raw data
+    ClassDef(AliESDVZEROfriend, 3) // container class for VZERO DDL raw data
 };
 
 #endif

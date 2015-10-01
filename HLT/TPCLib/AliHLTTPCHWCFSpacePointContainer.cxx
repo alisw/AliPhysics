@@ -29,7 +29,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTTPCTransform.h"
+#include "AliHLTTPCGeometry.h"
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
 #include "AliHLTDataDeflater.h"
@@ -315,16 +315,16 @@ const vector<AliHLTUInt32_t>* AliHLTTPCHWCFSpacePointContainer::GetClusterIDs(Al
   // the mask selects multiple partitions/slices
   std::map<AliHLTUInt32_t, AliHLTTPCHWCFSpacePointProperties>::const_iterator cl=fClusters.find(mask);
   bool bAll=false;
-  if (slice>=(unsigned)AliHLTTPCTransform::GetNSlice() ||
-      partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches()) {
+  if (slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() ||
+      partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches()) {
     cl=fClusters.begin();
     bAll=true;
   }
   for (; cl!=fClusters.end(); cl++) {
     UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
     UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
-    if ((slice>=(unsigned)AliHLTTPCTransform::GetNSlice() || s==slice) && 
-	(partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches() || p==partition)) {
+    if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
+	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       selected->push_back(cl->first);
     } else if (!bAll) {
       // no need to continue, we are out of the range
@@ -479,8 +479,8 @@ AliHLTSpacePointContainer* AliHLTTPCHWCFSpacePointContainer::SelectByMask(AliHLT
        cl!=fClusters.end(); cl++) {
     UInt_t s=AliHLTTPCSpacePointData::GetSlice(cl->first);
     UInt_t p=AliHLTTPCSpacePointData::GetPatch(cl->first);
-    if ((slice>=(unsigned)AliHLTTPCTransform::GetNSlice() || s==slice) && 
-	(partition>=(unsigned)AliHLTTPCTransform::GetNumberOfPatches() || p==partition)) {
+    if ((slice>=(unsigned)AliHLTTPCGeometry::GetNSlice() || s==slice) && 
+	(partition>=(unsigned)AliHLTTPCGeometry::GetNumberOfPatches() || p==partition)) {
       c->fClusters[cl->first]=cl->second;
     }
   }
@@ -713,13 +713,13 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       float sigmaZ2=input.GetSigmaZ2();
       if (!pDeflater) {
 	AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];
-	padrow+=AliHLTTPCTransform::GetFirstRow(part);
+	padrow+=AliHLTTPCGeometry::GetFirstRow(part);
 	c.SetPadRow(padrow);
 	c.SetCharge(input.GetCharge());
 	c.SetPad(pad);  
 	c.SetTime(time);
-	c.SetSigmaY2(sigmaY2);
-	c.SetSigmaZ2(sigmaZ2);
+	c.SetSigmaPad2(sigmaY2);
+	c.SetSigmaTime2(sigmaZ2);
 	c.SetQMax(input.GetQMax());
       } else {
 	AliHLTUInt64_t padrow64=input.GetPadRow();
