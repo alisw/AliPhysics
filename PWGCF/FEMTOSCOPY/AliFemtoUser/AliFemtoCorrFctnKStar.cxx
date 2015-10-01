@@ -7,9 +7,11 @@
 #include "TH1D.h"
 #include "AliFemtoCorrFctn.h"
 
+#ifdef __ROOT__
 /// \cond CLASSIMP
 ClassImp(AliFemtoCorrFctnKStar);
 /// \endcond
+#endif
 
 AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar():
   AliFemtoCorrFctn(),

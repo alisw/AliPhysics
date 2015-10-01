@@ -29,67 +29,69 @@ AliFemtoBasicEventCut::AliFemtoBasicEventCut():
   fPsiEP[1] = 1000.0;
 }
 //------------------------------
-AliFemtoBasicEventCut::~AliFemtoBasicEventCut(){
-  /// Default destructor
-
+AliFemtoBasicEventCut::~AliFemtoBasicEventCut()
+{ // Default destructor
 }
-//------------------------------
-bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
 
+//------------------------------
+bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event)
+{
   /// Pass events if they fall within the multiplicity and z-vertex
   /// position range. Fail otherwise
   ///  int mult =  event->NumberOfTracks();
 
-  int mult = (int) event->UncorrectedNumberOfPrimaries();
-  double vertexZPos = event->PrimVertPos().z();
+  const int mult = (int) event->UncorrectedNumberOfPrimaries();
+  const double vertexZPos = event->PrimVertPos().z();
 
   // Double_t qxEPVZERO = 0, qyEPVZERO = 0;
   // Double_t qVZERO = -999;
-  double epvzero = event->ReactionPlaneAngle();
+  const double epvzero = event->ReactionPlaneAngle();
 
-  // cout << "AliFemtoBasicEventCut:: epvzero:       " << fPsiEP[0] << " < " << epvzero << " < " << fPsiEP[1] << endl;
-//   cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << endl;
-//   cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << endl;
+  const bool passes_ep = (fPsiEP[0] < epvzero && epvzero < fPsiEP[1]),
+           passes_mult = (fEventMult[0] <= mult && mult <= fEventMult[1]),
+              passes_z = (fVertZPos[0] < vertexZPos && vertexZPos < fVertZPos[1]),
+            passes_zdc = ((!fAcceptBadVertex) || (event->ZDCParticipants() > 1.0)),
+        passes_trigger = ((!fSelectTrigger) || (event->TriggerCluster() == fSelectTrigger));
+
+//   cout << "AliFemtoBasicEventCut:: epvzero:       " << fPsiEP[0] << " < " << epvzero << " < " << fPsiEP[1] << " (" << passes_ep << ")\n";
+//   cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << " (" << passes_mult << ")\n";
+//   cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << " (" << passes_z << ")\n";
+//
 //   cout << "AliFemtoBasicEventCut:: VertexZErr: " << event->PrimVertCov()[4] << endl;
+//
+//   cout << "AliFemtoBasicEventCut:: MagneticField: " << event->MagneticField() << endl;
+//   cout << "AliFemtoBasicEventCut:: IsCollisionCandidate: " << event->IsCollisionCandidate() << endl;
+//   cout << "AliFemtoBasicEventCut:: TriggerCluster: " << (int)event->TriggerCluster() << " (" << passes_trigger << ")\n";
+//   cout << "AliFemtoBasicEventCut:: ZDCParticipants: " << event->ZDCParticipants() << " (" << passes_zdc << ")\n";
+//   cout << "AliFemtoBasicEventCut:: fSelectTrigger: " << fSelectTrigger << endl;
+//   cout << "AliFemtoBasicEventCut:: fAcceptBadVertex: " << fAcceptBadVertex << endl;
+//   cout << "AliFemtoBasicEventCut:: " << endl;
 
-  // cout << "AliFemtoBasicEventCut:: MagneticField: " << event->MagneticField() << endl;
-  // cout << "AliFemtoBasicEventCut:: IsCollisionCandidate: " << event->IsCollisionCandidate() << endl;
-  // cout << "AliFemtoBasicEventCut:: TriggerCluster: " << event->TriggerCluster() << endl;
-  // cout << "AliFemtoBasicEventCut:: fSelectTrigger: " << fSelectTrigger << endl;
-  // cout << "AliFemtoBasicEventCut:: " << endl;
-  bool goodEvent =
-    ((mult >= fEventMult[0]) &&
-     (mult <= fEventMult[1]) &&
-     (vertexZPos > fVertZPos[0]) &&
-     (vertexZPos < fVertZPos[1]) &&
-     (epvzero > fPsiEP[0]) &&
-     (epvzero < fPsiEP[1]) &&
-     ((!fAcceptBadVertex) || (event->ZDCParticipants() > 1.0)) &&
-      ((!fSelectTrigger) || (event->TriggerCluster() == fSelectTrigger))
-);
+  const bool goodEvent = passes_ep
+                      && passes_mult
+                      && passes_z
+                      && passes_zdc
+                      && passes_trigger;
 
-  // cout << "AliFemtoBasicEventCut:: goodEvent" <<goodEvent << endl;
+//   cout << "AliFemtoBasicEventCut:: goodEvent " << goodEvent << endl;
 
-  goodEvent ? fNEventsPassed++ : fNEventsFailed++ ;
+  goodEvent ? fNEventsPassed++ : fNEventsFailed++;
+
   // cout << "AliFemtoBasicEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
 
-  return (goodEvent);
+  return goodEvent;
 }
 //------------------------------
-AliFemtoString AliFemtoBasicEventCut::Report(){
+AliFemtoString AliFemtoBasicEventCut::Report()
+{
   /// Prepare report
+  TString report = TString::Format("Multiplicity:\t %d - %d\n", fEventMult[0], fEventMult[1]);
 
-  string stemp;
-  char ctemp[100];
-  snprintf(ctemp , 100, "\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
-  stemp = ctemp;
-  snprintf(ctemp , 100, "\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
-  stemp += ctemp;
-  snprintf(ctemp , 100, "\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+   report += TString::Format("Vertex Z-position:\t %E - %E\n", fVertZPos[0], fVertZPos[1])
+           + TString::Format("Number of events which passed:\t%ld  Number which failed:\t%ld\n", fNEventsPassed, fNEventsFailed);
+
+  return AliFemtoString(report);
 }
 void AliFemtoBasicEventCut::SetAcceptBadVertex(bool b)
 {
