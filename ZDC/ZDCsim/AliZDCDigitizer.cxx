@@ -667,7 +667,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents, Float_t p
   
   if(!fSpectatorData) fSpectatorData = TFile::Open("$ALICE_ROOT/ZDC/SpectatorSignal.root");
   if(!fSpectatorData || !fSpectatorData->IsOpen()) {
-    AliError((" Opening file $ALICE_ROOT/ZDC/SpectatorSignal.root failed\n"));
+    AliError((" No file $ALICE_ROOT/ZDC/SpectatorSignal.root found -> No spectators added!!!\n"));
     return;
   }
 
@@ -693,6 +693,27 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents, Float_t p
     }
     else if(SpecType == 4) { // --- Signal for target spectator protons
       fSpectatorData->GetObject("energy5500/ZPASignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
+    }
+  }
+  if(TMath::Abs(sqrtS-5000) < 100.){
+    AliInfo(" Extracting signal from SpectatorSignal/energy5020 ");
+    fSpectatorData->cd("energy5500");
+    //
+    if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
+      fSpectatorData->GetObject("energy5020/ZNCSignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
+    } 
+    else if(SpecType == 2) { // --- Signal for projectile spectator protons
+      fSpectatorData->GetObject("energy5020/ZPCSignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
+    }
+    else if(SpecType == 3) { // --- Signal for target spectator neutrons
+      fSpectatorData->GetObject("energy5020/ZNASignal;1",zdcSignal);
+      if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNASignal from SpectatorSignal.root file");
+    }
+    else if(SpecType == 4) { // --- Signal for target spectator protons
+      fSpectatorData->GetObject("energy5020/ZPASignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
     }
   }
