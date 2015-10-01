@@ -3,12 +3,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
-
-
-Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
-*/
-
 #ifndef ROOT_TObject
 #  include "TObject.h"
 #endif
@@ -24,12 +18,12 @@ class AliEMCALTriggerSTURawStream: public TObject
     virtual ~AliEMCALTriggerSTURawStream();
 
 
-    //virtual void    SetDetector(int det){fDetector = static_cast<fDetType>(det);}
+    virtual void    SetDetector(int det){fDetector = static_cast<fDetType>(det);}
     virtual Int_t   GetDetector(){return static_cast<Int_t>(fDetector) ;}
 
     virtual void    Reset();
     virtual Bool_t  ReadPayLoad();
-
+    
     virtual void    DumpPayLoad(const Option_t *option = "ALL") const;
 
     virtual void    GetADC(           Int_t iTRU, UInt_t ADC[]            );
@@ -76,14 +70,14 @@ class AliEMCALTriggerSTURawStream: public TObject
       V0Raw       =   1 ,
       V1          =   2 ,
       V1Raw       =   3 ,
-      //XXX
       V1_2        =   8 ,
       V1_2Raw     =   9 ,
 
       V2EMCAL     =   4 ,  
       V2EMCALRaw  =   5 ,
       V2DCAL      =   6 , 
-      V2DCALRaw   =   7 
+      V2DCALRaw   =   7 ,
+      def         =   8
     }; 
 
     fDetType      fDetector   ;//Set by function
@@ -105,8 +99,9 @@ class AliEMCALTriggerSTURawStream: public TObject
     static const Int_t kPayLoadSizeV2_DCAL        = 197   ;//21+11+11+42+ 56+ 56    
     static const Int_t kPayLoadSizeV2_DCAL_Raw    = 708   ;//96*14/2 +36               
 
-    //static const Int_t max_payload_size = kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw ;
-    static const Int_t max_payload_size = 1937 ;
+    //static const Int_t max_payload_size = kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw 
+    //                                    + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw ;
+    static const Int_t max_payload_size = 915 + 1937 ;
 
     static const Int_t max_L0GammaPatchIndex  = 3100 ;  // (48-1)*(64-1)  = 2961  (EMCAL)
                                                         // (48-1)*(40-1)  = 1833  (DCAL)
@@ -177,15 +172,6 @@ class AliEMCALTriggerSTURawStream: public TObject
     virtual void    DecodeL0GammaPatchIndexes(             UInt_t *word32, const int offset);
     virtual void    DecodeTRUADC(                          UInt_t *word32, const int offset);
     virtual void    DecodePHOSSubregion(                   UInt_t *word32, const int offset);
-
-
-
-
-
-
-
-
-
 
 
     ClassDef(AliEMCALTriggerSTURawStream,2)   // class for reading EMCAL STU DDL raw data
