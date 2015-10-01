@@ -60,6 +60,7 @@ set(SRCS
   AliFemtoCorrFctnDEtaDPhi.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
   AliFemtoCorrFctnDYDPhi.cxx
+  AliFemtoCorrFctnKStar.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx

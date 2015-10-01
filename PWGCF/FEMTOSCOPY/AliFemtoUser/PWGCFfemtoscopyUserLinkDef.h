@@ -39,6 +39,7 @@
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiCorrections;
 #pragma link C++ class AliFemtoCorrFctnDYDPhi;
+#pragma link C++ class AliFemtoCorrFctnKStar+;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDGV0;
 #pragma link C++ class AliFemtoCutMonitorParticleEtCorr;
