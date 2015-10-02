@@ -5,6 +5,8 @@
 // Author: S.Aiola, C.Loizides
 
 #include <TRandom3.h>
+#include <TFile.h>
+#include <AliLog.h>
 
 #include "AliJetEmbeddingTask.h"
 
@@ -14,9 +16,11 @@ ClassImp(AliJetEmbeddingTask)
 AliJetEmbeddingTask::AliJetEmbeddingTask() : 
   AliJetModelBaseTask("AliJetEmbeddingTask"),
   fMassless(kFALSE),
+  fMassFromDistr(kFALSE),
   fNeutralFraction(0),
   fNeutralMass(0.135),
-  fMass(0.1396)
+  fMass(0.1396),
+  fHMassDistrib(0)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -26,9 +30,11 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
 AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) : 
   AliJetModelBaseTask(name),
   fMassless(kFALSE),
+  fMassFromDistr(kFALSE),
   fNeutralFraction(0),
   fNeutralMass(0.135),
-  fMass(0.1396)
+  fMass(0.1396),
+  fHMassDistrib(0)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -67,7 +73,29 @@ void AliJetEmbeddingTask::Run()
 	}
       }
       if(fMassless) mass = 0.;
+      if(fMassFromDistr) {
+      	 if(fHMassDistrib)
+      	 mass = fHMassDistrib->GetRandom();
+      	 else {
+      	    AliError(Form("Template distribution for mass of track embedding not found, use %f", fMass));
+      	    mass = fMass;
+      	 }
+      }
       AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,charge,mass);
     }
   }
+}
+
+//________________________________________________________________________
+void AliJetEmbeddingTask::SetMassDistributionFromFile(TString filename, TString histoname){
+   TFile *f = TFile::Open(filename);
+   if(!f){
+      AliError(Form("File %s not found, cannot SetMassDistribution", filename.Data()));
+      return;
+   }
+   
+   TH1D* h = (TH1D*) f->Get(histoname);
+   SetMassDistribution(h);
+   return;
+
 }
