@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef *AddTaskEmcalOfflinePatchesRef(){
+EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef *AddTaskEmcalOfflinePatchesRef(){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef("emcalOnlinePatchQA");

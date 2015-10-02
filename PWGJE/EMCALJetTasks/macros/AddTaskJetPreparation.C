@@ -80,7 +80,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 #ifdef __CLING__
     std::stringstream triggermakeradd;
     triggermakeradd << ".x " << gSystem->Getenv("ALICE_PHYSICS") << "/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C(";
-    triggermakeradd << "\"EmcalTriggers\", \"EmcalTriggerSetup\", 0, 0, \"AliEmcalTriggerMaker\" 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ";
+    triggermakeradd << "\"EmcalTriggers\", \"EmcalTriggerSetup\", 0, 0, \"AliEmcalTriggerMaker\", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ";
     triggermakeradd << (useOldBitConfig ? "kTRUE" : "kFALSE") << ", ";
     triggermakeradd << (doTriggerQA ? "kTRUE" : "kFALSE");
     triggermakeradd << ")";
