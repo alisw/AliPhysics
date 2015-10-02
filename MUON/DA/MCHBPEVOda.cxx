@@ -1551,15 +1551,15 @@ int main(int argc, char **argv)
 
 	std::cout << DAVERSION << " INFO : Number of histogram re-allocation : " << nofRealloc << std::endl;
 
-	/* store the result file on FXS */
-	//  if (daqDA_FES_storeFile(OUTPUT_FILE,"BPEVO")) return -9;
-
-	if ( hc)
+	if ( hc )
 	{
 		TFile* f = TFile::Open(outputFileName,"RECREATE");
 		hc->Write();
 		delete f;
 	}
+
+  /* store the result file on FXS */
+  if (daqDA_FES_storeFile(outputFileName,"BPEVO")) return -9;
 
 	timers.Stop();
 
