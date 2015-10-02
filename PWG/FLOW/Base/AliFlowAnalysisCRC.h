@@ -1244,7 +1244,7 @@ private:
  const static Int_t fCRCVZnCR = 13;
  const static Int_t fCRCVZnEtaBin = 5;
  TList *fCRCVZRbRList; //! CRC list of histograms RbR
- AliFlowVector* fVZFlowVect[2][fCRCnHar]; //!
+ AliFlowVector fVZFlowVect[2][fCRCnHar];
  TList *fCRCVZRunsList[fCRCMaxnRun];  //! list of runs
  TProfile *fCRCVZCorrPro[fCRCMaxnRun][2][fCRCVZnEtaBin][fCRCMaxnCen]; //! correlation profile, [CRCBin][eg]
  TProfile *fCRCVZCorrProd2p2pHist[fCRCMaxnRun][2][fCRCVZnEtaBin][fCRCMaxnCen]; //! correlation weights histo, [CRCBin][eg]
@@ -1259,7 +1259,7 @@ private:
  const static Int_t fCRCZDCnCR = 13;
  const static Int_t fCRCZDCnEtaBin = 5;
  TList *fCRCZDCRbRList; //! CRC list of histograms RbR
- AliFlowVector* fZDCFlowVect; //!
+ AliFlowVector fZDCFlowVect[2];
  TH1D *fCRCZDCQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fCRCZDCQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
  TH1D *fCRCZDCMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
