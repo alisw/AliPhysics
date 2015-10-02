@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash -l
+# The settings come from ~/.bash_profile
 
 rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log *.inp GRP *.ps AliHLT*
 aliroot -b -q sim.C      2>&1 | tee sim.log

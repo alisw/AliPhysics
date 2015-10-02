@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash -l
+# The settings come from ~/.bash_profile
+
 rm -rf */*.root */*.log */*.dat
 cd ./gen
 aliroot -b -q rungen.C\(5\) 2>&1 | tee gen.log

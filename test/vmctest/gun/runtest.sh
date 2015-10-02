@@ -1,5 +1,5 @@
-#!/bin/sh
-# $Id$
+#!/bin/bash -l
+# The settings come from ~/.bash_profile
 
 # Before running this script, you should run rungen.sh first.
 

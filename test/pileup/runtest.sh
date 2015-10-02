@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash -l
+# The settings come from ~/.bash_profile
 
 rm -rf *.root *.dat *.log fort* hlt hough raw* *.inp *.o
 ln -s -f ../../DPMJET/nuclear.bin

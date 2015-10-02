@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash -l
+# The settings come from ~/.bash_profile
 
 if [ "$ALICE_TARGET" = "win32gcc" ]
     then

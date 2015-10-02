@@ -1,5 +1,5 @@
-#!/bin/sh
-# $Id $
+#!/bin/bash -l
+# The settings come from ~/.bash_profile
 
 NEVENTS=1
 G3CONFIG="$ALICE_ROOT/test/vmctest/lego/g3Config.C" 
