@@ -104,11 +104,31 @@ AliTPCcalibAlignInterpolation::~AliTPCcalibAlignInterpolation(){
     if (fHisITSTOFDRPhi) fHisITSTOFDRPhi->Write();
   }
   delete fStreamer;
+  fStreamer=0;
   delete fHisITSDRPhi;
   delete fHisITSTRDDRPhi;
   delete fHisITSTOFDRPhi;
 }
 
+
+void AliTPCcalibAlignInterpolation::Terminate(){
+  //
+  // Terminate function
+  // call base terminate + Eval of fitters
+  //
+  Info("AliTPCcalibAlignInterpolation","Terminate");
+  if (fStreamer){
+    // fStreamer->GetFile()->Close();
+    fStreamer->GetFile()->cd();
+    if (fHisITSDRPhi) fHisITSDRPhi->Write();
+    if (fHisITSTRDDRPhi) fHisITSTRDDRPhi->Write();
+    if (fHisITSTOFDRPhi) fHisITSTOFDRPhi->Write();
+  }
+  delete fStreamer;
+  fStreamer=0;
+
+  AliTPCcalibBase::Terminate();
+}
 
 
 Bool_t  AliTPCcalibAlignInterpolation::RefitITStrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackITS, Double_t &chi2, Double_t &npoints){
@@ -347,7 +367,9 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);
     AliESDfriendTrack *friendTrack = esdFriend->GetTrack(iTrack);
     if (!friendTrack) continue;      
-    Double_t mass = esdTrack->GetMass();  // particle mass      
+    Double_t mass = esdTrack->GetMass();  // particle mass    
+    Double_t tofBC=esdTrack->GetTOFBunchCrossing();
+   
     //
     // 1.) Start with AliExternalTrackParam *ITSOut and *TRDIn 
     //
@@ -366,6 +388,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     paramTOF=paramITS;
     RefitTOFtrack(friendTrack,mass,paramTOF, tofChi2, tofNCl );
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("Refitting",fTrackCounter,1,0,0);        
+    if ((trdNCl+tofNCl)==0) continue;
     //
     // 3.) Propagate to TPC volume, histogram residuals to TPC clusters and dump all information to TTree
     //
@@ -460,6 +483,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
           "itsChi2="<<itsChi2<<
           "trdChi2="<<trdChi2<<
           "tofChi2="<<tofChi2<<
+	  "tofBC="<<tofBC<<
           //
           "trackITS.="<<&trackArrayITS[sortedIndex[iPoint]]<<  // ITS fit
           "trackTRD.="<<&trackArrayTRD[sortedIndex[iPoint]]<<  // TRD fit
@@ -511,6 +535,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       "itsChi2="<<itsChi2<<
       "trdChi2="<<trdChi2<<
       "tofChi2="<<tofChi2<<
+      "tofBC="<<tofBC<<
       //
       "track.="<<ip<<
       "vecR.="<<&vecR<<
@@ -580,7 +605,7 @@ void AliTPCcalibAlignInterpolation::CreateResidualHistosInterpolation(Double_t d
   //
   axisName[0]="delta";   axisTitle[0]="#Delta (cm)";                 // to fill    local(clusterY-track.y)
   binsTrack[0]=90;       xminTrack[0]=-dy;        xmaxTrack[0]=dy; 
-  binsTrackITS[0]=90;    xminTrackITS[0]=-1.5;     xmaxTrackITS[0]=1.5; 
+  binsTrackITS[0]=90;    xminTrackITS[0]=-dy;     xmaxTrackITS[0]=dy; 
   //
   axisName[1]="sector";  axisTitle[1]="Sector Number";              // to fill:   9*atan2(gy,gx)/pi+ if (sector>0) sector+18
   binsTrack[1]=180;      xminTrack[1]=0;           xmaxTrack[1]=18; 
@@ -663,15 +688,19 @@ void  AliTPCcalibAlignInterpolation::CreateDistortionMapsFromFile(const char * i
   //
 }
 
-void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList="residual.list"){
+void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t downscale){
   /**
    * Trees with point-track residuals to residual histogram
    * @param residualList  text file with tree list
    * Output - ResidualHistograms.root file with hitogram within AliTPCcalibAlignInterpolation object
    */
+  //
+  //
+  // 
   const Int_t knPoints=159;
   AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
-  calibInterpolation->CreateResidualHistosInterpolation(5,5);
+  calibInterpolation->CreateResidualHistosInterpolation(dy,dz);
+  TString branches[6]={"its0.","trd0.","tof0.", "its1.","trd1.","tof1."};
   //
   TVectorF *vecDelta= 0;
   TVectorF *vecR=0;
@@ -683,20 +712,20 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   TObjArray *esdArray= esdList0.Tokenize("\n");  
   Int_t nesd = esdArray->GetEntriesFast();  
   //
-  THn *hisToFill[6]={calibInterpolation->fHisITSDRPhi, calibInterpolation->fHisITSTRDDRPhi,  calibInterpolation->fHisITSTOFDRPhi, calibInterpolation->fHisITSDZ, calibInterpolation->fHisITSTRDDZ,  calibInterpolation->fHisITSTOFDZ};
-  TString branches[6]={"its0.","trd0.","tof0.", "its1.","trd1.","tof1."};
+  THn *hisToFill[6]={calibInterpolation->GetHisITSDRPhi(), calibInterpolation->GetHisITSTRDDRPhi(),  calibInterpolation->GetHisITSTOFDRPhi(), calibInterpolation->GetHisITSDZ(), calibInterpolation->GetHisITSTRDDZ(),  calibInterpolation->GetHisITSTOFDZ()};
   Int_t currentTrack=0;
   for (Int_t ihis=0; ihis<6; ihis++){    
-    for (Int_t iesd=0; iesd<nesd; iesd++){
+    for (Int_t iesd=0; iesd<nesd; iesd+=downscale){
       TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
-      if (!esdFile) return;
-      TTree *tree = (TTree*)esdFile->Get("delta");    
+      if (!esdFile) continue;
+      TTree *tree = (TTree*)esdFile->Get("delta"); 
+      if (!tree) continue;
       AliSysInfo::AddStamp("xxx",ihis,iesd,currentTrack);
       tree->SetBranchAddress("vecR.",&vecR);
       tree->SetBranchAddress("vecPhi.",&vecPhi);
       tree->SetBranchAddress("vecZ.",&vecZ);
       tree->SetBranchAddress("track.",&param);
-      if (ihis==0)  tree->SetBranchAddress(branches[ihis],&vecDelta);
+      tree->SetBranchAddress(branches[ihis],&vecDelta);
       Int_t ntracks=tree->GetEntries();
       for (Int_t itrack=0; itrack<ntracks; itrack++){
 	tree->GetEntry(itrack);
@@ -713,8 +742,13 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
     }
   }
   TFile * fout = TFile::Open("ResidualHistograms.root","recreate");
-  calibInterpolation->Write();
+  calibInterpolation->GetHisITSDRPhi()->Write();
+  calibInterpolation->GetHisITSTRDDRPhi()->Write();
+  calibInterpolation->GetHisITSTOFDRPhi()->Write();
+  calibInterpolation->GetHisITSDZ()->Write();
+  calibInterpolation->GetHisITSTRDDZ()->Write();
+  calibInterpolation->GetHisITSTOFDZ()->Write();
+  //calibInterpolation->Write();
   delete fout;
-
 }
 
