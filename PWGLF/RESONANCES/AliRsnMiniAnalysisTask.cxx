@@ -325,7 +325,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fOutput->SetOwner();
 
    // initialize event statistics counter
-   fHEventStat = new TH1F("hEventStat", "Event statistics", 9, 0.0, 9.0);
+   fHEventStat = new TH1F("hEventStat", "Event statistics", 10, 0.0, 10.0);
    fHEventStat->GetXaxis()->SetBinLabel(1, "CINT1B");
    fHEventStat->GetXaxis()->SetBinLabel(2, "V0AND");
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
@@ -335,6 +335,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(7, "Not Accepted - Not Enough Contributors");
    fHEventStat->GetXaxis()->SetBinLabel(8, "Not Accepted - No Vertex inside |z| < 10 cm");
    fHEventStat->GetXaxis()->SetBinLabel(9, "Not Accepted - Pile Up Events");
+   fHEventStat->GetXaxis()->SetBinLabel(10, "Not Accepted - All local cuts");
    
    
    fOutput->Add(fHEventStat);
@@ -691,11 +692,11 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       fRsnEvent.SetRef(fInputEvent);
       // add MC if requested and available
       if (fUseMC) {
-         if (fMCEvent)
-            fRsnEvent.SetRefMC(fMCEvent);
+	if (fMCEvent)
+	   fRsnEvent.SetRefMC(fMCEvent);
          else {
-            AliWarning("MC event requested but not available");
-            fRsnEvent.SetRefMC(0x0);
+	   AliWarning("MC event requested but not available");
+	   fRsnEvent.SetRefMC(0x0);
          }
       }
    } else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
@@ -762,6 +763,8 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       if (!fEventCuts->IsSelected(&fRsnEvent)) {
          msg += " -- Local cuts = REJECTED";
          isSelected = kFALSE;
+	 // fill counter
+	 fHEventStat->Fill(10.1);
       } else {
          msg += " -- Local cuts = ACCEPTED";
          isSelected = kTRUE;
