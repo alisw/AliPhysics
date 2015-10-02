@@ -839,7 +839,7 @@ extern "C" {
       return *this;
     }
 
-    std::string Description()
+    std::string Description() const
     {
       std::string description(fTopic, kAliHLTComponentDataTypeTopicSize);
       description+=" spec:";
