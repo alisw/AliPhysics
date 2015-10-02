@@ -373,7 +373,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fWriteESDfriend(rec.fWriteESDfriend),
   fFillTriggerESD(rec.fFillTriggerESD),
 
-  fSkipIncompleteDAQ(rec.fSkipIncompleteDAQ);
+  fSkipIncompleteDAQ(rec.fSkipIncompleteDAQ),
   fCleanESD(rec.fCleanESD),
   fV0DCAmax(rec.fV0DCAmax),
   fV0CsPmin(rec.fV0CsPmin),
@@ -2094,18 +2094,18 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliSysInfo::AddStamp(Form("RawQA_%d",iEvent), 0,0,iEvent);
   }
 
-    // fill Event header information from the RawEventHeader
-    if (fRawReader){FillRawEventHeaderESD(fesd);}
-    if (fRawReader){FillRawEventHeaderESD(fhltesd);}
     if (fRawReader){
       // Store DAQ detector pattern and attributes
       fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
       fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
-      if (fest->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
+      if (fesd->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
 	AliInfo("Abandoning incomplete event reconstruction");
 	return kTRUE;
       }
     }
+    // fill Event header information from the RawEventHeader
+    if (fRawReader){FillRawEventHeaderESD(fesd);}
+    if (fRawReader){FillRawEventHeaderESD(fhltesd);}
 
     fesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
     fhltesd->SetRunNumber(fRunLoader->GetHeader()->GetRun());
