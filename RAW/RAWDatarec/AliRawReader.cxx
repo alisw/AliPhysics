@@ -434,11 +434,11 @@ void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
   if (fSelectTriggerExpr.IsNull()) return;
 
   fIsTriggerClassLoaded = kTRUE;
-
+  TString names = Form(" %s ",name);
   if (index >= 0)
-    fSelectTriggerExpr.ReplaceAll(name,Form("[%d]",index));
+    fSelectTriggerExpr.ReplaceAll(names,Form(" [%d] ",index));
   else
-    fSelectTriggerExpr.ReplaceAll(name,"0");
+    fSelectTriggerExpr.ReplaceAll(names," 0 ");
 }
 
 void AliRawReader::LoadTriggerAlias(const THashList *lst)
@@ -473,14 +473,11 @@ void AliRawReader::LoadTriggerAlias(const THashList *lst)
       // Find the current alias in the hash list. If it is not there, add TNamed entry
       TNamed * inlist = (TNamed*)alias2trig.FindObject((alias->GetString()).Data());
       if (!inlist) {
-	inlist = new TNamed((alias->GetString()).Data(),nmd->GetName());
+	inlist = new TNamed((alias->GetString()).Data(),Form(" %s ",nmd->GetName()));
 	alias2trig.Add(inlist);
       }
       else {
-	TString tt(inlist->GetTitle());
-	tt += " || ";
-	tt += nmd->GetName();
-	inlist->SetTitle(tt.Data());
+	inlist->SetTitle(Form("%s|| %s ",inlist->GetTitle(),nmd->GetName()));
       }
     }
     
@@ -493,6 +490,7 @@ void AliRawReader::LoadTriggerAlias(const THashList *lst)
   while((nmd = dynamic_cast<TNamed*>(iter1.Next()))){
     fSelectTriggerExpr.ReplaceAll(nmd->GetName(),nmd->GetTitle());
   }
+  printf("fSelectTriggerExpr: %s\n",fSelectTriggerExpr.Data()); //RS
 }
 
 Bool_t AliRawReader::IsSelected() const
@@ -539,16 +537,16 @@ Bool_t AliRawReader::IsEventSelected() const
     TString expr(fSelectTriggerExpr);
     ULong64_t mask   = GetClassMask();
     ULong64_t maskNext50 = GetClassMaskNext50();
-    if (mask) {
+    //    if (mask) {
       for(Int_t itrigger = 0; itrigger < 50; itrigger++) 
 	if (mask & (1ull << itrigger)) expr.ReplaceAll(Form("[%d]",itrigger),"1");
 	else       	               expr.ReplaceAll(Form("[%d]",itrigger),"0");
-    }
-    if (maskNext50) {
+      //    }
+      //    if (maskNext50) {
       for(Int_t itrigger = 0; itrigger < 50; itrigger++) 
 	if (maskNext50 & (1ull << itrigger)) expr.ReplaceAll(Form("[%d]",itrigger+50),"1");
 	else       	                     expr.ReplaceAll(Form("[%d]",itrigger+50),"0");
-    }
+      //    }
     // 
     // Possibility to introduce downscaling
     TPRegexp("(%\\s*\\d+)").Substitute(expr,Form("&& !(%d$1)",GetEventIndex()),"g");
