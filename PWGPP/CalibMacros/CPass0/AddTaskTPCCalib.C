@@ -249,6 +249,19 @@ void AddCalibAlign(TObject* task){
   myTask->AddJob(calibAlign);
 }
 
+void AddCalibAlignInterpolation(TObject* task){
+  //
+  // Responsible: Marian Ivanov
+  // Description:
+  //
+  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task; 
+  AliTPCcalibAlignInterpolation *calibAlign = new AliTPCcalibAlignInterpolation("alignTPCInterpolation","Space point distortion calibration using interpolation",0);
+  calibAlign->SetDebugLevel(debugLevel);
+  calibAlign->SetStreamLevel(streamLevel);
+  calibAlign->SetTriggerMask(-1,-1,kTRUE);        //accept everything
+  myTask->AddJob(calibAlign);
+}
+
 
 void AddCalibLaser(TObject* task){
   //
@@ -289,6 +302,7 @@ void SetupCalibTaskTrain1(TObject* task){
   AddCalibCalib(task);
   AddCalibTimeGain(task);
   AddCalibTime(task);
+  AddCalibAlignInterpolation(task);
 }
 
 void SetupCalibTaskTrainAlign(TObject* task){
