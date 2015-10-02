@@ -44,17 +44,17 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &
 {
   // Copy constructor
   if (aInfo.GetTrueMomentum())
-    SetTrueMomentumPos(aInfo.GetTrueMomentum());
+    SetTrueMomentum(aInfo.GetTrueMomentum());
   if (aInfo.GetEmissionPoint())
-    SetEmissionPointPos(aInfo.GetEmissionPoint());
+    SetEmissionPoint(aInfo.GetEmissionPoint());
   fPDGPid = aInfo.GetPDGPid();
   fMotherPdg = aInfo.GetMotherPdgCode();
   fMass = aInfo.GetMass();
 
   if (aInfo.GetTrueMomentumPos())
-    SetTrueMomentum(aInfo.GetTrueMomentumPos());
+    SetTrueMomentumPos(aInfo.GetTrueMomentumPos());
   if (aInfo.GetEmissionPointPos())
-    SetEmissionPoint(aInfo.GetEmissionPointPos());
+    SetEmissionPointPos(aInfo.GetEmissionPointPos());
   fPDGPidPos = aInfo.GetPDGPidPos();
   fMassPos = aInfo.GetMassPos();
 

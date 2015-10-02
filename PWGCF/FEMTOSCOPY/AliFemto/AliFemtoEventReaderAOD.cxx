@@ -706,11 +706,57 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
               AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
               AliAODMCParticle *v0 = (AliAODMCParticle *)mcP->At(motherOfPosID); //our V0 particle
 
-              tInfo->SetPDGPid(v0->GetPdgCode());
-              int v0MotherId = v0->GetMother();
-              if (v0MotherId > -1) { //V0 particle has a mother
-                AliAODMCParticle *motherOfV0 = (AliAODMCParticle *)mcP->At(v0MotherId);
-                tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
+              if(!v0)
+              {
+                tInfo->SetPDGPid(0);
+                tInfo->SetTrueMomentum(0.0, 0.0, 0.0);
+                tInfo->SetMass(0);
+              }
+
+              else
+              {
+                //-----v0 particle-----
+                tInfo->SetPDGPid(v0->GetPdgCode());
+                int v0MotherId = v0->GetMother();
+                if (v0MotherId > -1) { //V0 particle has a mother
+                  AliAODMCParticle *motherOfV0 = (AliAODMCParticle *)mcP->At(v0MotherId);
+                  tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
+                }
+
+                tInfo->SetTrueMomentum(v0->Px(), v0->Py(), v0->Pz());
+                Double_t mass2 = (v0->E() * v0->E()
+                                - v0->Px() * v0->Px()
+                                - v0->Py() * v0->Py()
+                                - v0->Pz() * v0->Pz());
+                if (mass2 > 0.0)
+                  tInfo->SetMass(TMath::Sqrt(mass2));
+                else
+                  tInfo->SetMass(0.0);
+
+                //-----Positive daughter of v0-----
+                tInfo->SetPDGPidPos(mcParticlePos->GetPdgCode());
+                tInfo->SetTrueMomentumPos(mcParticlePos->Px(), mcParticlePos->Py(), mcParticlePos->Pz());
+                Double_t mass2Pos = (mcParticlePos->E() * mcParticlePos->E()
+                                   - mcParticlePos->Px() * mcParticlePos->Px()
+                                   - mcParticlePos->Py() * mcParticlePos->Py()
+                                   - mcParticlePos->Pz() * mcParticlePos->Pz());
+                if (mass2Pos > 0.0)
+                  tInfo->SetMassPos(TMath::Sqrt(mass2Pos));
+                else
+                  tInfo->SetMassPos(0.0);
+
+                //-----Negative daughter of v0-----
+                tInfo->SetPDGPidNeg(mcParticleNeg->GetPdgCode());
+                tInfo->SetTrueMomentumNeg(mcParticleNeg->Px(), mcParticleNeg->Py(), mcParticleNeg->Pz());
+                Double_t mass2Neg = (mcParticleNeg->E() * mcParticleNeg->E()
+                                   - mcParticleNeg->Px() * mcParticleNeg->Px()
+                                   - mcParticleNeg->Py() * mcParticleNeg->Py()
+                                   - mcParticleNeg->Pz() * mcParticleNeg->Pz());
+                if (mass2Neg > 0.0)
+                  tInfo->SetMassNeg(TMath::Sqrt(mass2Neg));
+                else
+                  tInfo->SetMassNeg(0.0);
+
               }
               trackCopyV0->SetHiddenInfo(tInfo);
             }
@@ -767,6 +813,60 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
             }
           }
         }
+<<<<<<< 19969478434b2152e33c7a868dd0f1942adab5b9
+      }
+      tEvent->V0Collection()->push_back(trackCopyV0); 
+      count_pass++;
+    }
+  }
+
+
+  if (fReadCascade) {
+    int count_pass = 0;
+    for (Int_t i = 0; i < fEvent->GetNumberOfCascades(); i++) {
+      AliAODcascade *aodxi = fEvent->GetCascade(i);
+      if (!aodxi) continue;
+      //if (aodxi->GetNDaughters() > 2) continue;
+      //if (aodxi->GetNProngs() > 2) continue;
+      //if (aodxi->GetCharge() != 0) continue;
+      if (aodxi->ChargeProng(0) == aodxi->ChargeProng(1)) continue;
+      if (aodxi->CosPointingAngle(fV1) < 0.9) continue;
+      if (aodxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.98) continue;
+
+      AliAODTrack *daughterTrackPos = (AliAODTrack *)aodxi->GetDaughter(0); //getting positive daughter track
+      AliAODTrack *daughterTrackNeg = (AliAODTrack *)aodxi->GetDaughter(1); //getting negative daughter track
+      if (!daughterTrackPos) continue; //daughter tracks must exist
+      if (!daughterTrackNeg) continue;
+      if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue; //and have different charge
+
+      AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
+      //MC corresponding information from V0
+      /*if (mcP) {
+        daughterTrackPos->SetAODEvent(fEvent);
+        daughterTrackNeg->SetAODEvent(fEvent);
+        if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0) {
+          AliAODMCParticle *mcParticlePos = (AliAODMCParticle *)mcP->At(daughterTrackPos->GetLabel());
+          AliAODMCParticle *mcParticleNeg = (AliAODMCParticle *)mcP->At(daughterTrackNeg->GetLabel());
+          if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
+            int motherOfPosID = mcParticlePos->GetMother();
+            int motherOfNegID = mcParticleNeg->GetMother();
+            // Both daughter tracks refer to the same mother, we can continue
+            if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) {
+              AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+              AliAODMCParticle *xi = (AliAODMCParticle *)mcP->At(motherOfPosID); //our Xi particle
+
+              tInfo->SetPDGPid(xi->GetPdgCode());
+              int xiMotherId = xi->GetMother();
+              if (xiMotherId > -1) { //V0 particle has a mother
+                AliAODMCParticle *motherOfV0 = (AliAODMCParticle *)mcP->At(v0MotherId);
+                tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
+              }
+              trackCopyV0->SetHiddenInfo(tInfo);
+            }
+          }
+        }
+=======
+>>>>>>> PWGCF: Bug fix in AliFemtoModelHiddenInfo and new functionality in AliFemtoEventReaderAOD
       }*/
       tEvent->XiCollection()->push_back(trackCopyXi);
       count_pass++;
