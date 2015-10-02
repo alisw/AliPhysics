@@ -1,57 +1,48 @@
-////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoModelGlobalHiddenInfo - the hidden info for model calculations    //
-/// Stores information needed for the weight generation - the true           ///
-/// simulated momenta, freeze-out coordinates from model and particle PID    ///
-///                                                                          ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoModelGlobalHiddenInfo.cxx
+///
+
 #include "AliFemtoModelGlobalHiddenInfo.h"
 
 //_____________________________________________
-AliFemtoModelGlobalHiddenInfo::AliFemtoModelGlobalHiddenInfo() :
+AliFemtoModelGlobalHiddenInfo::AliFemtoModelGlobalHiddenInfo():
   AliFemtoModelHiddenInfo(),
-  fGlobalEmissionPoint(0)
-{
-  // Default constructor
+  fGlobalEmissionPoint(NULL)
+{ // Default constructor
 }
 //_____________________________________________
-AliFemtoModelGlobalHiddenInfo::AliFemtoModelGlobalHiddenInfo(const AliFemtoModelGlobalHiddenInfo &aInfo) :
+AliFemtoModelGlobalHiddenInfo::AliFemtoModelGlobalHiddenInfo(const AliFemtoModelGlobalHiddenInfo &aInfo):
   AliFemtoModelHiddenInfo(aInfo),
-  fGlobalEmissionPoint(0)
-{
-  // Copy constructor
-  if (aInfo.GetGlobalEmissionPoint())
-    SetGlobalEmissionPoint((*aInfo.GetGlobalEmissionPoint()));
+  fGlobalEmissionPoint(NULL)
+{ // Copy constructor
+
+  if (aInfo.GetGlobalEmissionPoint() != NULL) {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(*aInfo.GetGlobalEmissionPoint());
+  }
+
 }
 //_____________________________________________
 AliFemtoModelGlobalHiddenInfo::~AliFemtoModelGlobalHiddenInfo()
 {
   // Destructor
-//   if (fTrueMomentum) delete fTrueMomentum;
-//   if (fEmissionPoint) delete fEmissionPoint;
-  if (fGlobalEmissionPoint) delete fGlobalEmissionPoint;
+  delete fGlobalEmissionPoint;
 }
 //_____________________________________________
 AliFemtoModelGlobalHiddenInfo& AliFemtoModelGlobalHiddenInfo::operator=(const AliFemtoModelGlobalHiddenInfo& aInfo)
 {
   // assignment operator
-  if (this == &aInfo)
+  if (this == &aInfo) {
     return *this;
+  }
 
-  if (fTrueMomentum) delete fTrueMomentum;
-  if (aInfo.GetTrueMomentum())
-    SetTrueMomentum(aInfo.GetTrueMomentum());
-  else SetTrueMomentum(0);
-  if (fEmissionPoint) delete fEmissionPoint;
-  if (aInfo.GetEmissionPoint())
-    SetEmissionPoint(aInfo.GetEmissionPoint());
-  else SetEmissionPoint(0);
-  if (fGlobalEmissionPoint) delete fGlobalEmissionPoint;
-  if (aInfo.GetGlobalEmissionPoint())
+  AliFemtoModelHiddenInfo::operator=(aInfo);
+
+  if (aInfo.GetGlobalEmissionPoint() != NULL) {
     SetGlobalEmissionPoint(*aInfo.GetGlobalEmissionPoint());
-  else fGlobalEmissionPoint = 0;
-  fPDGPid = aInfo.GetPDGPid();
-  fMass = aInfo.GetMass();
+  } else {
+    delete fGlobalEmissionPoint;
+    fGlobalEmissionPoint = NULL;
+  }
 
   return *this;
 }
@@ -61,30 +52,25 @@ AliFemtoThreeVector *AliFemtoModelGlobalHiddenInfo::GetGlobalEmissionPoint() con
   return fGlobalEmissionPoint;
 }
 //_____________________________________________
-void                   AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(const AliFemtoThreeVector& aPos)
+void AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(const AliFemtoThreeVector& aPos)
 {
   // set position from vector
   if (fGlobalEmissionPoint) {
-    fGlobalEmissionPoint->SetX(aPos.x());
-    fGlobalEmissionPoint->SetY(aPos.y());
-    fGlobalEmissionPoint->SetZ(aPos.z());
-  }
-  else {
-    fGlobalEmissionPoint = new AliFemtoThreeVector();
     *fGlobalEmissionPoint = aPos;
+  } else {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(aPos);
   }
 }
 //_____________________________________________
-void                   AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz)
+void AliFemtoModelGlobalHiddenInfo::SetGlobalEmissionPoint(Double_t aRx, Double_t aRy, Double_t aRz)
 {
   // Set position from components
   if (fGlobalEmissionPoint) {
     fGlobalEmissionPoint->SetX(aRx);
     fGlobalEmissionPoint->SetY(aRy);
     fGlobalEmissionPoint->SetZ(aRz);
-  }
-  else {
-    fGlobalEmissionPoint = new AliFemtoThreeVector(aRx, aRy, aRz); 
+  } else {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(aRx, aRy, aRz);
   }
 }
 //_____________________________________________
