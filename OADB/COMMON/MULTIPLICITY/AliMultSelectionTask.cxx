@@ -133,6 +133,7 @@ fEvSel_IsNotPileupMV(0),
 fEvSel_IsNotPileupInMultBins(0),
 fEvSel_Triggered(0),
 fEvSel_INELgtZERO(0),
+fEvSel_HasNoInconsistentVertices(0), 
 fEvSel_nTracklets(0),
 fEvSel_nTrackletsEta10(0),
 fEvSel_VtxZ(0),
@@ -201,6 +202,7 @@ fEvSel_IsNotPileupMV(0),
 fEvSel_IsNotPileupInMultBins(0),
 fEvSel_Triggered(0),
 fEvSel_INELgtZERO(0),
+fEvSel_HasNoInconsistentVertices(0), 
 fEvSel_nTracklets(0),
 fEvSel_nTrackletsEta10(0),
 fEvSel_VtxZ(0),
@@ -313,6 +315,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fTreeEvent->Branch("fEvSel_IsNotPileupInMultBins", &fEvSel_IsNotPileupInMultBins, "fEvSel_IsNotPileupInMultBins/O");
     fTreeEvent->Branch("fEvSel_Triggered", &fEvSel_Triggered, "fEvSel_Triggered/O");
     fTreeEvent->Branch("fEvSel_INELgtZERO", &fEvSel_INELgtZERO, "fEvSel_INELgtZERO/O");
+    fTreeEvent->Branch("fEvSel_HasNoInconsistentVertices", &fEvSel_HasNoInconsistentVertices, "fEvSel_HasNoInconsistentVertices/O");
 
     //Tracklets vs clusters test
     fTreeEvent->Branch("fEvSel_nTracklets",      &fEvSel_nTracklets, "fEvSel_nTracklets/I");
@@ -756,6 +759,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fEvSel_nTrackletsEta10 = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTracklets, 1.0); 
     if ( fEvSel_nTrackletsEta10 >= 1 ) fEvSel_INELgtZERO = kTRUE;
 
+    //fEvSel_HasNoInconsistentVertices = fMultCuts->HasNoInconsistentSPDandTrackVertices( lESDevent ); 
+    
     //Event-level fill
     if ( fkCalibration ){
         //Pre-filter on triggered (kMB) events for saving info
@@ -786,15 +791,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
             lThisCalibHistoName = Form("hCalib_%i_%s",fRunNumber,fSelection->GetEstimator(iEst)->GetName());
             lThisCalibHisto = oadbMultSelection->GetCalibHisto( lThisCalibHistoName );
             lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( fSelection->GetEstimator(iEst)->GetValue() ));
-            
-            //cleanup: discard events
-            if(!IsEventSelected(lESDevent))lThisQuantile = 200;
-            
+
+            //cleanup: discard events according to criteria stored in OADB object
+            //Check Selections as they are in the fMultSelectionCuts Object
+            if( fMultCuts->GetTriggerCut()    && ! fEvSel_Triggered  ) lThisQuantile = 200;
+            if( fMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lThisQuantile = 201;
+            if( TMath::Abs(fEvSel_VtxZ) > fMultCuts->GetVzCut()      ) lThisQuantile = 202;
+            //ADD ME HERE: Tracklets Vs Clusters Cut?
+            if( fMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins ) lThisQuantile = 203;
+            if( fMultCuts->GetVertexConsistencyCut()      &&   fRefMultEta8 == -4           ) lThisQuantile = 204;
+
             fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
         }
-        
+
         //Add to AliVEvent
-        if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ){
+        if( (!(InputEvent()->FindListObject("MultSelection")) ) && !fkAttached ) {
             InputEvent()->AddObject(fSelection);
             fkAttached = kTRUE;
         }else{
@@ -875,3 +886,4 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     fSelection->SetName("MultSelection");
     return 0;
 }
+

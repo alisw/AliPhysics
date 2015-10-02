@@ -48,7 +48,7 @@ private:
     Bool_t IsVzCutSelected();
     Bool_t IsMinBias();
     Bool_t IsINELgtZERO();
-    Bool_t HasNoInconsistentSPDandTrackVertices();
+    Bool_t HasNoInconsistentSPDandTrackVertices(AliESDEvent * lESD);
     Float_t fVzCut;     // Cut based on vertex Z position
     Float_t fErrorCode; // Error Code used if the selection is not sucessful
     

@@ -132,6 +132,7 @@ private:
     Bool_t fEvSel_IsNotPileupInMultBins;    //!
     Bool_t fEvSel_Triggered;                //!
     Bool_t fEvSel_INELgtZERO;               //! //done with SPD tracklets
+    Bool_t fEvSel_HasNoInconsistentVertices;//! //done with helper function
 
     //Other Selections: more dedicated filtering to be studied!
     Int_t   fEvSel_nTracklets;              //!
