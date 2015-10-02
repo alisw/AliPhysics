@@ -479,7 +479,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     //This won't follow what was requested (it cannot, mathematically)
                     hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNBins,lLowEdge,lHighEdge);
                     hCalib[iRun][iEst]->SetDirectory(0);
-                    for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++) hCalib[iRun][iEst] -> SetBinContent(ibin, 1.0-0.5*(lBoundaries[ibin-1]+lBoundaries[ibin]));
+                    for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++) hCalib[iRun][iEst] -> SetBinContent(ibin, 100.0-50.0*(lBoundaries[ibin-1]+lBoundaries[ibin]));
                     //Enough info for calibration determined...
 		    delete hTemporary; 
 		    hTemporary = 0x0; 
