@@ -30,6 +30,7 @@ class AliRsnCutEventUtils : public AliRsnCut {
   void           SetAnalysisUtils(AliAnalysisUtils* utils){ fUtils = utils; }
   void           SetMinPlpContribMV(Int_t minPlpContribMV) { fMinPlpContribMV = minPlpContribMV;}
   void           SetMinPlpContribSPD(Int_t minPlpContribSPD) { fMinPlpContribSPD = minPlpContribSPD;}
+  void           SetFilterNSDeventsDPMJETpA2013(Bool_t doit = kFALSE) {fFilterNSDeventsDPMJETpA2013 = doit;}
 
  private:
   
@@ -40,10 +41,11 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Int_t               fMinPlpContribSPD; // min. n. of pile-up contributors from SPD
   Bool_t              fUseVertexSelection2013pA;// check and reject vertex of events for pA2013
   Double_t            fMaxVtxZ;//max selected z_vtx
- 
+  Bool_t              fFilterNSDeventsDPMJETpA2013;//enable filter for NSD events in DPMJET MC for pA
+
   AliAnalysisUtils  * fUtils; //pointer to the AliAnalysisUtils object
 
-  ClassDef(AliRsnCutEventUtils, 3)
+  ClassDef(AliRsnCutEventUtils, 4)
     
     };
 

@@ -10,6 +10,9 @@
 
 #include "AliRsnCutEventUtils.h"
 #include "AliAnalysisUtils.h"
+#include <AliHeader.h>
+#include <AliAODMCHeader.h>
+#include <AliGenDPMjetEventHeader.h>
 
 ClassImp(AliRsnCutEventUtils)
 
@@ -23,6 +26,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fMinPlpContribSPD(5),
   fUseVertexSelection2013pA(kFALSE),
   fMaxVtxZ(10.0),
+  fFilterNSDeventsDPMJETpA2013(kFALSE),
   fUtils(0x0)
 {
   //
@@ -46,6 +50,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fMinPlpContribSPD(copy.fMinPlpContribSPD),
   fUseVertexSelection2013pA(copy.fUseVertexSelection2013pA),
   fMaxVtxZ(copy.fMaxVtxZ),
+  fFilterNSDeventsDPMJETpA2013(copy.fFilterNSDeventsDPMJETpA2013),
   fUtils(copy.fUtils)
 {
   //
@@ -71,6 +76,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fMinPlpContribSPD=copy.fMinPlpContribSPD;
   fUseVertexSelection2013pA=copy.fUseVertexSelection2013pA;
   fMaxVtxZ=copy.fMaxVtxZ;
+  fFilterNSDeventsDPMJETpA2013=copy.fFilterNSDeventsDPMJETpA2013;
   fUtils=copy.fUtils;
 	
     return (*this);
@@ -84,9 +90,10 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    // coherence check
    // which also fills data member objects
    if (!TargetOK(object)) return kFALSE;
-
    // retrieve event
+
    AliVEvent *vevt = dynamic_cast<AliVEvent *>(fEvent->GetRef());
+   //set cuts in analysis utils
    fUtils = new AliAnalysisUtils();
    fUtils->SetUseMVPlpSelection(fUseMVPlpSelection);
    fUtils->SetMinPlpContribMV(fMinPlpContribMV);
@@ -104,6 +111,47 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
    //apply vertex selection - for 2013 pPb data
    if((fUseVertexSelection2013pA) && (!fUtils->IsVertexSelected2013pA(vevt)))
       return kFALSE;
- 
+
+   //apply filter for NSD events in DPMJET MC for pA
+   if (fFilterNSDeventsDPMJETpA2013){
+     //Adaptation of snippet received from David D. Chinellato on 07/09/2015 +
+     // this: http://svnweb.cern.ch/world/wsvn/AliRoot/trunk/PWGLF/SPECTRA/ChargedHadrons/dNdPt/AlidNdPtHelper.cxx?rev=61295
+     AliGenDPMjetEventHeader* dpmHeader;
+     
+     if (fEvent->IsAOD()){
+       AliAODEvent *aodEvt = (AliAODEvent*)(fEvent->GetRef());
+       AliAODMCHeader *aodMCheader = (AliAODMCHeader*)aodEvt->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+       if (!aodMCheader) {
+	 AliError("MC header branch in AOD not found!\n");
+	 return kFALSE;
+       }
+       dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(aodMCheader->GetCocktailHeader(0));
+     } 
+     else if (fEvent->IsESD()) {       
+       AliMCEvent *mcEvt = (AliMCEvent*)(fEvent->GetRefMC());
+       if (!mcEvt) {
+	 AliError("MC header branch in AOD not found!\n");
+	 return kFALSE;
+       }
+       AliHeader * header = mcEvt->Header();
+       dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(header->GenEventHeader());
+       if (!dpmHeader) {
+	 AliError("Invalid DPMJET event header.");
+	 return kFALSE;
+       }
+     } else 
+       return kFALSE;
+     
+     Int_t nsd1 = 0;
+     Int_t nsd2 = 0;
+     Int_t ndd  = 0;
+     dpmHeader->GetNDiffractive(nsd1, nsd2, ndd);
+     if ( ((dpmHeader->ProjectileParticipants()==nsd1) && (ndd==0)) || 
+	  ((dpmHeader->ProjectileParticipants()==nsd2) && (ndd==0))  ) {
+       Printf("fFilterNSDeventsDPMJETpA2013 just rejected a non-NSD event!");
+       return kFALSE;  
+     }
+   }
+   
    return kTRUE;
 }
