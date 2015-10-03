@@ -27,10 +27,10 @@
 #include "TString.h"
 #include "TH1.h"
 #include "AliHLTDimServer.h"
-#include "AliHLTHOMERReader.h"
 #include "AliHLTLogging.h"
 #include "AliHLTMessage.h"
 #include "AliHLTOUT.h"
+#include "AliZMQhelpers.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -100,7 +100,7 @@ public:
 	int Init(int argc, char** argv);
 	
 	/**
-	 * Implements the main server loop. Connects to the HOMER port specified
+	 * Implements the main server loop. Connects to the ZMQ port specified
 	 * and pushes the data from the chain via DIM to DCS.
 	 * \return  A status flag suitable for returning from main(), containing
 	 *      one of EXIT_SUCCESS, FATAL_ERROR or SYSTEM_ERROR.
@@ -127,11 +127,6 @@ private:
 	};
 	
 	/**
-	 * Tries to establish the HOMER connection if not already made.
-	 */
-	void MakeHOMERConnection();
-	
-	/**
 	 * Initialises the luminosity buffer with values indicating an invalid data point.
 	 */
 	void InitLumiRegionAsInvalid(AliLuminosityRegion& lumiRegion);
@@ -139,7 +134,7 @@ private:
 	/**
 	 * Fills the luminosity region structure.
 	 */
-	void SetLuminosityRegion(AliLuminosityRegion& lumiRegion);
+	int SetLuminosityRegion(AliLuminosityRegion& lumiRegion);
 	
 	/**
 	 * Prints the command line usage of this program to the HLT logging facility.
@@ -148,12 +143,13 @@ private:
 	 */
 	void PrintUsage(bool asError = true);
 	
-	TString fHomerSource;  /// Hostname of the server running the TCPDumpSubscriber for the HOMER connection.
-	unsigned short fHomerPort;   /// The TCP port number on which to connect for the HOMER connection.
+  void* fZMQcontext;
+  void* fZMQin;
+  int fZMQtimeout;
+	TString fZMQconfigIN;  /// ZMQ source coordinates
 	TString fDimDns;  /// The name of the DIM DNS to register with.
 	TString fServerName;  /// The server name to use for this DIM server.
 	TString fVertexServiceName;  /// The name of the vertex service to register.
-	AliHLTHOMERReader* fHomerReader;  /// HOMER reader to access HLT data.
 	UInt_t fPublishPeriod;  /// The period between publishing data points to DIM in milliseconds.
 	
 	virtual const char* Class_Name() { return "AliHLTDCSPublisherServer"; }
@@ -162,12 +158,13 @@ private:
 
 AliHLTDCSPublisherServer::AliHLTDCSPublisherServer() :
 	AliHLTLogging(),
-	fHomerSource(),
-	fHomerPort(0),
+  fZMQcontext(NULL),
+  fZMQin(NULL),
+  fZMQtimeout(10000),
+	fZMQconfigIN(),
 	fDimDns(DEFAULT_DIM_DNS),
 	fServerName(DEFAULT_SERVER_NAME),
 	fVertexServiceName(DEFAULT_VERTEX_SERVICE_NAME),
-	fHomerReader(NULL),
 	fPublishPeriod(1000)
 {
 	// Default constructor.
@@ -184,8 +181,7 @@ int AliHLTDCSPublisherServer::Init(int argc, char** argv)
 {
 	// Parses the command line and initialises the internal variables.
 	
-	const char* homerSource = NULL;
-	unsigned short homerPort = 0;
+	const char* zmqSource = NULL;
 	const char* dimdns = NULL;
 	const char* serverName = NULL;
 	const char* vertexServiceName = NULL;
@@ -201,34 +197,20 @@ int AliHLTDCSPublisherServer::Init(int argc, char** argv)
 		}
 		else if (strcmp(argv[i], "-source") == 0 or strcmp(argv[i], "-s") == 0)
 		{
-			if (homerSource != NULL)
+			if (zmqSource != NULL)
 			{
-				HLTWarning("Already used -source|-s with \"%s\" and port = %d before."
+				HLTWarning("Already used -source|-s with \"%s\""
 					   " Will override it with the last value specified with -source|-s.",
-					   homerSource, int(homerPort)
+					   zmqSource
 				);
 			}
 			if (++i >= argc)
 			{
-				HLTError("Missing the hostname for -source|-s option.");
+				HLTError("no value specified for -source|-s option.");
 				PrintUsage();
 				return CMDLINE_ERROR;
 			}
-			homerSource = argv[i];
-			if (++i >= argc)
-			{
-				HLTError("Missing the TCP port number for -source|-s option.");
-				PrintUsage();
-				return CMDLINE_ERROR;
-			}
-			char* cpErr = NULL;
-			long num = strtol(argv[i], &cpErr, 0);
-			if (cpErr == NULL or *cpErr != '\0' or num < 0 or num > 65535)
-			{
-				HLTError("Cannot convert \"%s\" to a valid port integer number in the range [0..65535].", argv[i]);
-				return CMDLINE_ERROR;
-			}
-			homerPort = (unsigned short)num;
+			zmqSource = argv[i];
 		}
 		else if (strcmp(argv[i], "-dimdns") == 0)
 		{
@@ -314,18 +296,22 @@ int AliHLTDCSPublisherServer::Init(int argc, char** argv)
 		}
 	}
 	
-	if (homerSource == NULL)
+	if (zmqSource == NULL)
 	{
 		HLTError("No HOMER source hostname or port was specified with the -source|-s option.");
 		PrintUsage();
 		return CMDLINE_ERROR;
 	}
 	
-	fHomerSource = homerSource;
-	fHomerPort = homerPort;
+	fZMQconfigIN = zmqSource;
 	if (dimdns != NULL) fDimDns = dimdns;
 	if (serverName != NULL) fServerName = serverName;
 	if (vertexServiceName != NULL) fVertexServiceName = vertexServiceName;
+
+  fZMQcontext = zmq_ctx_new();
+  if (alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data()) < 0)
+    return -1;
+
 	return EXIT_SUCCESS;
 }
 
@@ -366,42 +352,20 @@ int AliHLTDCSPublisherServer::Run()
 	
 	while (not AliHLTSignalHandler::TerminationSignaled())
 	{
-		MakeHOMERConnection();
-		if (fHomerReader != NULL)
-		{
-			int result = fHomerReader->ReadNextEvent(10000000); // timeout of 10 seconds.
-			if (result != ETIMEDOUT and result != 0)
-			{
-				// Do not show as error message since it is expected to loose
-				// HOMER connections as runs stop and start.
-				HLTDebug("Error occurred trying to read from HOMER connection to %s:%d",
-					fHomerSource.Data(), int(fHomerPort)
-				);
-				continue;
-			}
-			if (result != ETIMEDOUT)
-			{
-				SetLuminosityRegion(lumiRegion);
-				HLTDebug("Update luminosity region: Beam spot (x [um], y [um], z [mm]) = (%f, %f, %f);"
-					" size (x [um], y [um], z [mm]) = (%f, %f, %f); tilt (dx/dz [urad], dy/dz [urad]) = (%f, %f).",
-					lumiRegion.fX, lumiRegion.fY, lumiRegion.fZ,
-					lumiRegion.fSizeX, lumiRegion.fSizeY, lumiRegion.fSizeZ,
-					lumiRegion.fDxdz, lumiRegion.fDydz
-				);
-				service->Update();
-				gSystem->Sleep(fPublishPeriod);
-			}
-			else
-			{
-				InitLumiRegionAsInvalid(lumiRegion);
-				service->Update();
-			}
-		}
-		else
+    if (SetLuminosityRegion(lumiRegion))
+      HLTDebug("Update luminosity region: Beam spot (x [um], y [um], z [mm]) = (%f, %f, %f);"
+          " size (x [um], y [um], z [mm]) = (%f, %f, %f); tilt (dx/dz [urad], dy/dz [urad]) = (%f, %f).",
+          lumiRegion.fX, lumiRegion.fY, lumiRegion.fZ,
+          lumiRegion.fSizeX, lumiRegion.fSizeY, lumiRegion.fSizeZ,
+          lumiRegion.fDxdz, lumiRegion.fDydz
+          );
+      service->Update();
+      gSystem->Sleep(fPublishPeriod);
+    }
+    else
 		{
 			InitLumiRegionAsInvalid(lumiRegion);
 			service->Update();
-			gSystem->Sleep(10000);  // sleep for 10 seconds.
 		}
 	}
 	
@@ -434,101 +398,111 @@ void AliHLTDCSPublisherServer::InitLumiRegionAsInvalid(AliLuminosityRegion& lumi
 }
 
 
-void AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegion)
+int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegion)
 {
 	// Sets the values for the luminosity region.
-	
-	assert(fHomerReader != NULL);
-	
-	const char* histName[6] = {"primVertexX", "primVertexY", "primVertexZ", "spdVertexX", "spdVertexY", "spdVertexZ"};
-	TH1* hist[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
-	
-	// First find the histograms in the list of data blocks read from HOMER.
-	for (unsigned long i = 0; i < fHomerReader->GetBlockCnt(); ++i)
-	{
-		homer_uint64 type = fHomerReader->GetBlockDataType(i);
-		homer_uint32 origin = fHomerReader->GetBlockDataOrigin(i);
-		AliHLTComponentDataType dt;
-		AliHLTComponent::SetDataType(dt, AliHLTOUT::ByteSwap64(type), AliHLTOUT::ByteSwap32(origin));
-		HLTDebug("Received data block of type %s, specification = 0x%X",
-			 AliHLTComponent::DataType2Text(dt).c_str(), fHomerReader->GetBlockDataSpec(i)
-		);
-		
-		if (dt != (kAliHLTDataTypeHistogram | kAliHLTDataOriginAny)) continue;
-		
-		TObject* obj = AliHLTMessage::Extract(fHomerReader->GetBlockData(i), fHomerReader->GetBlockDataLength(i));
-		if (obj == NULL)
-		{
-			HLTWarning("Problem extracting object from data for event %ul (0x%Xl), from data block %u, type = %s",
-				   fHomerReader->GetEventID(), fHomerReader->GetEventID(), i,
-				   AliHLTComponent::DataType2Text(dt).c_str()
-			);
-			continue;
-		}
-		TH1* h = dynamic_cast<TH1*>(obj);
-		if (h == NULL)
-		{
-			delete obj;
-			continue;
-		}
-		HLTDebug("Found histogram object \"%s\".", h->GetName());
-		bool assigned = false;
-		for (int j = 0; j < 6; ++j)
-		{
-			if (TString(h->GetName()) == histName[j])
-			{
-				HLTDebug("Marking histogram \"%s\" as found in hist[%d].", h->GetName(), j);
-				// Note: This object will be marked for now and deleted later
-				// at the end of this method.
-				hist[j] = h;
-				assigned = true;
-				break;
-			}
-		}
-		if (not assigned) delete obj;
-	}
-	
-	// Now get the Mean and RMS values as the centroid and beam size values,
+	int rc = 0;
+  std::string primaryName[6] = {"hXTRKVtx", "hYTRKVtx", "hZTRKVtx" };
+  std::string primaryDefMultName[3] = {"hXTRKDefMult", "hYTRKDefMult", "hXTRKDefMult"};
+  TH1F* primary[3]; for(int i=0;i<3;i++){primary[i]=NULL;}
+  TH1F* primaryDefMult[3]; for(int i=0;i<3;i++){primaryDefMult[i]=NULL;}
+
+  //send a request if we are using REQ
+  int sockettype = alizmq_socket_type(fZMQin);
+  if (sockettype == ZMQ_REQ)
+  {
+    //here we send an empty request which will get us our data
+    //and a command to reset the merger after
+    if (fVerbose) Printf("sending request");
+    alizmq_msg_send("*","",fZMQin,ZMQ_SNDMORE);
+    alizmq_msg_send("CONFIG","reset",fZMQin,0);
+  }
+
+  //wait for the data
+  zmq_pollitem_t sockets[] = { { fZMQin, 0, ZMQ_POLLIN, 0 } };
+  rc = zmq_poll(sockets, 1, (sockettype == ZMQ_REQ) ? fZMQtimeout : -1);
+  if (rc<0)
+  {
+    //eternal interrupt - exit
+    return 0;
+  }
+  if (!sockets[0].revents & ZMQ_POLLIN)
+  {
+    //server died, reinit socket
+    fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
+    if (fZMQsocketModeIN < 0) return 1;
+    return 0;
+  }
+
+  aliZMQmsg message;
+  alizmq_msg_recv(&message, fZMQin, 0);
+
+  //sort incoming histograms into proper slots
+  for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
+  {
+    TObject* object;
+    alizmq_msg_iter_data(i, object);
+    if (!object) continue;
+    const char* name = object->GetName();
+    bool useful=false;
+    for (int i=0;i<3;i++){
+      if (primaryName[i].compare(name)==0) {
+        primary[i]=object;
+        useful=true;
+      }
+    }
+    for (int i=0;i<3;i++){
+      if (primaryDefMultName[i].compare(name)==0){
+        primaryDefMult[i]=object;
+        useful=true;
+      }
+    }
+    if (!useful) delete object;
+  }
+  alizmq_msg_close(&message);
+
+  // Now get the Mean and RMS values as the centroid and beam size values,
 	// Scale the values from centimetres to the required units of microns and mm.
 	InitLumiRegionAsInvalid(lumiRegion);
-	if (hist[3] != NULL)
-	{
-		lumiRegion.fX = hist[3]->GetMean() * 1e4;
-		lumiRegion.fSizeX = hist[3]->GetRMS() * 1e4;
-	}
-	if (hist[4] != NULL)
-	{
-		lumiRegion.fY = hist[4]->GetMean() * 1e4;
-		lumiRegion.fSizeY = hist[4]->GetRMS() * 1e4;
-	}
-	if (hist[5] != NULL)
-	{
-		lumiRegion.fZ = hist[5]->GetMean() * 10;
-		lumiRegion.fSizeZ = hist[5]->GetRMS() * 10;
-	}
+	
+  //do the fits
+  Float_t meanVtx[3] ={0.,0.,0.};
+  Float_t sigmaVtx[3] ={0.,0.,0.};
+  Float_t meanLR[3] ={0.,0.,0.};
+  Float_t sigmaLR[3] ={0.,0.,0.};
+  Int_t fitVtxResults = AliHLTLumiRegComponent::FitPositions(primary, meanVtx, sigmaVtx);
+  Int_t lumiRegResults = AliHLTLumiRegComponent::LuminousRegionExtraction(primaryDefMult, meanLR, sigmaLR);
+  if (lumiRegResults == 2) HLTWarning("Problems in the luminous region fit, using unconvoluted sigma");
+  if (lumiRegResults == 0) HLTWarning("Problems in the luminous region fit, returning 0");
+  
+  lumiRegion.fX = meanLR[0];
+  lumiRegion.fSizeX = sigmaLR[0];
+  lumiRegion.fY = meanLR[1];
+  lumiRegion.fSizeY = sigmaLR[1];
+  lumiRegion.fZ = meanLR[2];
+  lumiRegion.fSizeZ = meanLR[3];
 	
 	//TODO: for now just fill -999 into the tilt angles since they are not yet calculated.
 	lumiRegion.fDxdz = -999.;
 	lumiRegion.fDydz = -999.;
 	
-	for (int j = 0; j < 6; ++j)
-	{
-		if (hist[j] != NULL) delete hist[j];
-	}
 }
-
 
 void AliHLTDCSPublisherServer::PrintUsage(bool asError)
 {
 	// Prints the command line usage.
 	
 	std::stringstream os;
-	os << "Usage: hltdimserver -source|-s <hostname> <port> [-help|-h] [-dimdns <DIM-DNS-name>]" << endl;
+	os << "Usage: hltdimserver -source|-s <ZMQconfig> [-help|-h] [-dimdns <DIM-DNS-name>]" << endl;
 	os << "         [-servername <server-name>] [-vertexservicename <service-name>]" << endl;
 	os << "Options:" << endl;
-	os << " -source | -s <hostname> <port>" << endl;
-	os << "       Specifies the hostname and port to connect to via HOMER to extract data from" << endl;
-	os << "       the online chain from a TCPDumpSubscriber." << endl;
+	os << " -source | -s <ZMQmode><@|-><transport>://<endpoint>" << endl;
+	os << "       e.g. PULL@tcp://*:60201,>tcp://192.168.56.1:3456" << endl;
+	os << "            REQ@inproc://someSocket,>ipc:///tmp/somesocket" << endl;
+	os << "            SUB>ipc:///tmp/somesocket" << endl;
+	os << "            > connects, @ binds, multiple endpoints are allowed" << endl;
+	os << "            modes are any of: PULL,REQ,SUB (other ones dont make much sense here)" << endl;
+	os << "            see zeromq docs for details << endl;
 	os << " -help | -h" << endl;
 	os << "       Displays this message." << endl;
 	os << " -dimdns <DIM-DNS-name>" << endl;
