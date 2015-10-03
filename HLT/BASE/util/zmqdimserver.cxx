@@ -31,6 +31,8 @@
 #include "AliHLTMessage.h"
 #include "AliHLTOUT.h"
 #include "AliZMQhelpers.h"
+#include "zmq.h"
+#include "AliHLTLumiRegComponent.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -352,7 +354,7 @@ int AliHLTDCSPublisherServer::Run()
 	
 	while (not AliHLTSignalHandler::TerminationSignaled())
 	{
-    if (SetLuminosityRegion(lumiRegion))
+    if (SetLuminosityRegion(lumiRegion)){
       HLTDebug("Update luminosity region: Beam spot (x [um], y [um], z [mm]) = (%f, %f, %f);"
           " size (x [um], y [um], z [mm]) = (%f, %f, %f); tilt (dx/dz [urad], dy/dz [urad]) = (%f, %f).",
           lumiRegion.fX, lumiRegion.fY, lumiRegion.fZ,
@@ -413,7 +415,7 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
   {
     //here we send an empty request which will get us our data
     //and a command to reset the merger after
-    if (fVerbose) Printf("sending request");
+    HLTInfo("sending request");
     alizmq_msg_send("*","",fZMQin,ZMQ_SNDMORE);
     alizmq_msg_send("CONFIG","reset",fZMQin,0);
   }
@@ -429,8 +431,7 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
   if (!sockets[0].revents & ZMQ_POLLIN)
   {
     //server died, reinit socket
-    fZMQsocketModeIN = alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
-    if (fZMQsocketModeIN < 0) return 1;
+    alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
     return 0;
   }
 
@@ -443,21 +444,23 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
     TObject* object;
     alizmq_msg_iter_data(i, object);
     if (!object) continue;
-    const char* name = object->GetName();
+    TH1F* hist = dynamic_cast<TH1F*>(object);
+    if (!hist) {delete object; continue;}
+    const char* name = hist->GetName();
     bool useful=false;
     for (int i=0;i<3;i++){
       if (primaryName[i].compare(name)==0) {
-        primary[i]=object;
+        primary[i]=hist;
         useful=true;
       }
     }
     for (int i=0;i<3;i++){
       if (primaryDefMultName[i].compare(name)==0){
-        primaryDefMult[i]=object;
+        primaryDefMult[i]=hist;
         useful=true;
       }
     }
-    if (!useful) delete object;
+    if (!useful) delete hist;
   }
   alizmq_msg_close(&message);
 
@@ -502,7 +505,7 @@ void AliHLTDCSPublisherServer::PrintUsage(bool asError)
 	os << "            SUB>ipc:///tmp/somesocket" << endl;
 	os << "            > connects, @ binds, multiple endpoints are allowed" << endl;
 	os << "            modes are any of: PULL,REQ,SUB (other ones dont make much sense here)" << endl;
-	os << "            see zeromq docs for details << endl;
+	os << "            see zeromq docs for details << endl;" << endl;
 	os << " -help | -h" << endl;
 	os << "       Displays this message." << endl;
 	os << " -dimdns <DIM-DNS-name>" << endl;
