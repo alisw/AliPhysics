@@ -79,19 +79,8 @@ private:
   /** dummy assignment op */
   AliHLTLumiRegComponent& operator=( const AliHLTLumiRegComponent& );
   
- // TH1F *fPrimaryX[2];
- // TH1F *fPrimaryY[2];
- // TH1F *fPrimaryZ[2];
- Bool_t fFitInternally;
-  
   TH1F *fPrimary[3];
-
   TH1F *fPrimaryDefMult[3];
-  
-  
-//  TH1F *fPrimaryXDefMult[2];
-//  TH1F *fPrimaryYDefMult[2];
-  
   Int_t fEventSpecie;
 
   ClassDef(AliHLTLumiRegComponent,1)

@@ -40,7 +40,6 @@ using namespace std;
 ClassImp( AliHLTLumiRegComponent )
 AliHLTLumiRegComponent::AliHLTLumiRegComponent():
 AliHLTProcessor(),
-fFitInternally(kFALSE),
 fEventSpecie(0)
 {
   for(Int_t i=0; i<3; i++){
@@ -55,7 +54,6 @@ fEventSpecie(0)
 
 AliHLTLumiRegComponent::AliHLTLumiRegComponent( const AliHLTLumiRegComponent& ):
 AliHLTProcessor(),
-fFitInternally(kFALSE),
 fEventSpecie(0)
 {
     // see header file for class documentation
@@ -222,18 +220,6 @@ Int_t AliHLTLumiRegComponent::DoEvent( const AliHLTComponentEventData& /*evtData
     }
   }
 
-  if(fFitInternally) {
-      Float_t meanVtx[3] ={0.,0.,0.};
-      Float_t sigmaVtx[3] ={0.,0.,0.};
-      Float_t meanLR[3] ={0.,0.,0.};
-      Float_t sigmaLR[3] ={0.,0.,0.};
-      Int_t fitVtxResults = FitPositions(fPrimary, meanVtx, sigmaVtx);
-      Int_t lumiRegResults = LuminousRegionExtraction(fPrimaryDefMult, meanLR, sigmaLR);
-      
-      if (lumiRegResults == 2) HLTWarning("Problems in the luminous region fit, using unconvoluted sigma");
-      if (lumiRegResults == 0) HLTWarning("Problems in the luminous region fit, returning 0");
-  }
-  
   PushAndReset();
 
   return 0;
@@ -255,9 +241,9 @@ int AliHLTLumiRegComponent::PushAndReset()
 Int_t AliHLTLumiRegComponent::FitPositions(TH1F *histos[], Float_t* mean, Float_t* sigma){
   
   Int_t fitVtxResults1 = 0, fitVtxResults2 = 0,fitVtxResults3 = 0;
-  fitVtxResults1 = FitHistos(histos[0], mean[0], sigma[0], -1, 1);
-  fitVtxResults2 = FitHistos(histos[1], mean[1], sigma[1], -1, 1);
-  fitVtxResults3 = FitHistos(histos[2], mean[2], sigma[2], -12, 12);
+  fitVtxResults1 = AliHLTLumiRegComponent::FitHistos(histos[0], mean[0], sigma[0], -1, 1);
+  fitVtxResults2 = AliHLTLumiRegComponent::FitHistos(histos[1], mean[1], sigma[1], -1, 1);
+  fitVtxResults3 = AliHLTLumiRegComponent::FitHistos(histos[2], mean[2], sigma[2], -12, 12);
   
   return fitVtxResults1||fitVtxResults2||fitVtxResults3;
   
@@ -271,8 +257,8 @@ Int_t AliHLTLumiRegComponent::LuminousRegionExtraction(TH1F* histos[], Float_t* 
   Float_t resolVtx = 0.04;
   Float_t lumiregsquared = 0;
   
-  FitHistos(histos[0], meanLR[0], sigmaLR[0], -0.4, 0.4);
-  FitHistos(histos[1], meanLR[1], sigmaLR[1], -0.2, 0.7);
+  AliHLTLumiRegComponent::FitHistos(histos[0], meanLR[0], sigmaLR[0], -0.4, 0.4);
+  AliHLTLumiRegComponent::FitHistos(histos[1], meanLR[1], sigmaLR[1], -0.2, 0.7);
   
   if (AliHLTLumiRegComponent::kpp){
     lumiregsquared = (sigmaLR[0]*sigmaLR[0] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
