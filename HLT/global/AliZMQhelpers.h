@@ -21,7 +21,8 @@ typedef std::vector<std::pair<std::string, std::string> > aliZMQmsgStr;
 int alizmq_socket_init(void*& socket, void* context, std::string config, int timeout=-1);
 
 // extract the socket mode from a config string
-int alizmq_socket_mode(std::string config);
+int alizmq_socket_type(std::string config);
+int alizmq_socket_type(void* socket);
 
 //  --------------------------------------------------------------------------
 //  Attach a socket to zero or more endpoints. If endpoints is not null,

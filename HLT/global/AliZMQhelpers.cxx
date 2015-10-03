@@ -99,7 +99,19 @@ int alizmq_attach (void *self, const char *endpoints, bool serverish)
 }
 
 //_______________________________________________________________________________________
-int alizmq_socket_mode(std::string config)
+int alizmq_socket_type(void* socket)
+{
+  //get the type of the socket
+  int type=-1;
+  size_t typeLen=sizeof(type);
+  int rc=0;
+  rc = zmq_getsockopt(socket, ZMQ_TYPE, &type, &typeLen);
+  if (rc<0) return rc;
+  return type;
+}
+
+//_______________________________________________________________________________________
+int alizmq_socket_type(std::string config)
 {
   if (config.compare(0,3,"PUB")==0) return ZMQ_PUB;
   else if (config.compare(0,3,"SUB")==0) return ZMQ_SUB;
@@ -130,7 +142,7 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   if (found == std::string::npos || found == 0)
   {printf("misformed socket config string %s\n", config.c_str()); return 1;}
   
-  zmqSocketMode = alizmq_socket_mode(config);
+  zmqSocketMode = alizmq_socket_type(config);
   zmqEndpoints=config.substr(found,std::string::npos);
   Printf("socket mode: %i, endpoints: %s",zmqSocketMode, zmqEndpoints.c_str());
 
