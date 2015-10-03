@@ -60,6 +60,10 @@ public:
   
   int PushAndReset();
   
+  static Int_t FitPositions(TH1F *histos[], Float_t* mean, Float_t* sigma);
+  static Int_t LuminousRegionExtraction(TH1F *histos[], Float_t* meanLR, Float_t* sigmaLR);
+  static Int_t FitHistos(TH1F *hVtx, Float_t &mean,  Float_t &sigma, Float_t rangelow = -1 , Float_t rangeup = 1);
+  
 protected:
   int DoInit(int argc, const char** argv);
   int DoDeinit() {return 0;}
@@ -69,10 +73,6 @@ protected:
   
   using AliHLTProcessor::DoEvent;
  
-  static Int_t FitPositions(TH1F *histos[], Float_t* mean, Float_t* sigma);
-  static Int_t LuminousRegionExtraction(TH1F *histos[], Float_t* meanLR, Float_t* sigmaLR);
-  static Int_t FitHistos(TH1F *hVtx, Float_t &mean,  Float_t &sigma, Float_t rangelow = -1 , Float_t rangeup = 1);
-  
 private:
   /** copy constructor */
   AliHLTLumiRegComponent( const AliHLTLumiRegComponent& );
