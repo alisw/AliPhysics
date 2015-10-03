@@ -2287,6 +2287,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
         fTreeVariableCentV0M = fCentrality_V0M;
         fTreeVariableCentV0A = fCentrality_V0A;
         fTreeVariableCentV0C = fCentrality_V0C;
+        fTreeVariableCentOnlineV0M = fCentrality_OnlineV0M;
+        fTreeVariableCentOnlineV0A = fCentrality_OnlineV0A;
+        fTreeVariableCentOnlineV0C = fCentrality_OnlineV0C;
+        fTreeVariableCentADM = fCentrality_ADM;
+        fTreeVariableCentADA = fCentrality_ADA;
+        fTreeVariableCentADC = fCentrality_ADC;
         fTreeVariableCentV0MEq = fCentrality_V0MEq;
         fTreeVariableCentV0AEq = fCentrality_V0AEq;
         fTreeVariableCentV0CEq = fCentrality_V0CEq;
@@ -2789,6 +2795,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
         fTreeCascVarCentV0M = fCentrality_V0M;
         fTreeCascVarCentV0A = fCentrality_V0A;
         fTreeCascVarCentV0C = fCentrality_V0C;
+        fTreeCascVarCentOnlineV0M = fCentrality_OnlineV0M;
+        fTreeCascVarCentOnlineV0A = fCentrality_OnlineV0A;
+        fTreeCascVarCentOnlineV0C = fCentrality_OnlineV0C;
+        fTreeCascVarCentADM = fCentrality_ADM;
+        fTreeCascVarCentADA = fCentrality_ADA;
+        fTreeCascVarCentADC = fCentrality_ADC;
         fTreeCascVarCentV0MEq = fCentrality_V0MEq;
         fTreeCascVarCentV0AEq = fCentrality_V0AEq;
         fTreeCascVarCentV0CEq = fCentrality_V0CEq;
