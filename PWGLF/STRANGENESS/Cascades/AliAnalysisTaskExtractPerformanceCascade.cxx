@@ -213,32 +213,37 @@ fLowPtCutoff(0.0),
    fHistMultiplicityNoTPCOnlyNoPileup(0),
 
 //V0A Centrality
-fHistMultiplicityV0ABeforeTrigSel(0),
-fHistMultiplicityV0AForTrigEvt(0),
-fHistMultiplicityV0A(0),
-fHistMultiplicityV0ANoTPCOnly(0),
-fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
+  fHistMultiplicityV0ABeforeTrigSel(0),
+  fHistMultiplicityV0AForTrigEvt(0),
+  fHistMultiplicityV0AAfterPVSelection(0),
+  fHistMultiplicityV0A(0),
+  fHistMultiplicityV0ANoTPCOnly(0),
+  fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
 
 //ZNA Centrality
-fHistMultiplicityZNABeforeTrigSel(0),
-fHistMultiplicityZNAForTrigEvt(0),
-fHistMultiplicityZNA(0),
-fHistMultiplicityZNANoTPCOnly(0),
-fHistMultiplicityZNANoTPCOnlyNoPileup(0),
+  fHistMultiplicityZNABeforeTrigSel(0),
+  fHistMultiplicityZNAForTrigEvt(0),
+  fHistMultiplicityZNA(0),
+  fHistMultiplicityZNANoTPCOnly(0),
+  fHistMultiplicityZNANoTPCOnlyNoPileup(0),
 
 //TRK Centrality
-fHistMultiplicityTRKBeforeTrigSel(0),
-fHistMultiplicityTRKForTrigEvt(0),
-fHistMultiplicityTRK(0),
-fHistMultiplicityTRKNoTPCOnly(0),
-fHistMultiplicityTRKNoTPCOnlyNoPileup(0),
+  fHistMultiplicityTRKBeforeTrigSel(0),
+  fHistMultiplicityTRKForTrigEvt(0),
+  fHistMultiplicityTRK(0),
+  fHistMultiplicityTRKNoTPCOnly(0),
+  fHistMultiplicityTRKNoTPCOnlyNoPileup(0),
 
 //SPD Centrality
-fHistMultiplicitySPDBeforeTrigSel(0),
-fHistMultiplicitySPDForTrigEvt(0),
-fHistMultiplicitySPD(0),
-fHistMultiplicitySPDNoTPCOnly(0),
-fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
+  fHistMultiplicitySPDBeforeTrigSel(0),
+  fHistMultiplicitySPDForTrigEvt(0),
+  fHistMultiplicitySPD(0),
+  fHistMultiplicitySPDNoTPCOnly(0),
+  fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
+  
+//PV z position
+
+  fHistPVZDistribution(0),
 
 
 //------------------------------------------------
@@ -264,110 +269,120 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
 
 //MC Mult
 
-f3dHistGenPtVsYVsMultMCXiMinus(0),
-f3dHistGenPtVsYVsMultMCXiPlus(0),
-f3dHistGenPtVsYVsMultMCOmegaMinus(0),
-f3dHistGenPtVsYVsMultMCOmegaPlus(0),
-f3dHistGenSelectedPtVsYVsMultMCXiMinus(0),
-f3dHistGenSelectedPtVsYVsMultMCXiPlus(0),
-f3dHistGenSelectedPtVsYVsMultMCOmegaMinus(0),
-f3dHistGenSelectedPtVsYVsMultMCOmegaPlus(0),
-f3dHistGenPtVsYCMSVsMultMCXiMinus(0),
-f3dHistGenPtVsYCMSVsMultMCXiPlus(0),
-f3dHistGenPtVsYCMSVsMultMCOmegaMinus(0),
-f3dHistGenPtVsYCMSVsMultMCOmegaPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus(0),
-
+  f3dHistGenPtVsYVsMultMCXiMinus(0),
+  f3dHistGenPtVsYVsMultMCXiPlus(0),
+  f3dHistGenPtVsYVsMultMCOmegaMinus(0),
+  f3dHistGenPtVsYVsMultMCOmegaPlus(0),
+  f3dHistGenSelectedPtVsYVsMultMCXiMinus(0),
+  f3dHistGenSelectedPtVsYVsMultMCXiPlus(0),
+  f3dHistGenSelectedPtVsYVsMultMCOmegaMinus(0),
+  f3dHistGenSelectedPtVsYVsMultMCOmegaPlus(0),
+  f3dHistGenPtVsYCMSVsMultMCXiMinus(0),
+  f3dHistGenPtVsYCMSVsMultMCXiPlus(0),
+  f3dHistGenPtVsYCMSVsMultMCOmegaMinus(0),
+  f3dHistGenPtVsYCMSVsMultMCOmegaPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultMCXiMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultMCXiPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultMCOmegaMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultMCOmegaPlus(0),
+  
 //V0A
 
-f3dHistGenPtVsYVsMultV0AXiMinus(0),
-f3dHistGenPtVsYVsMultV0AXiPlus(0),
-f3dHistGenPtVsYVsMultV0AOmegaMinus(0),
-f3dHistGenPtVsYVsMultV0AOmegaPlus(0),
-f3dHistGenSelectedPtVsYVsMultV0AXiMinus(0),
-f3dHistGenSelectedPtVsYVsMultV0AXiPlus(0),
-f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus(0),
-f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus(0),
-f3dHistGenPtVsYCMSVsMultV0AXiMinus(0),
-f3dHistGenPtVsYCMSVsMultV0AXiPlus(0),
-f3dHistGenPtVsYCMSVsMultV0AOmegaMinus(0),
-f3dHistGenPtVsYCMSVsMultV0AOmegaPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus(0),
-f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus(0),
-f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus(0),
-f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus(0),
-f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus(0),
-
+  f3dHistGenPtVsYVsMultV0AXiMinus(0),
+  f3dHistGenPtVsYVsMultV0AXiPlus(0),
+  f3dHistGenPtVsYVsMultV0AOmegaMinus(0),
+  f3dHistGenPtVsYVsMultV0AOmegaPlus(0),
+  f3dHistGenSelectedPtVsYVsMultV0AXiMinus(0),
+  f3dHistGenSelectedPtVsYVsMultV0AXiPlus(0),
+  f3dHistGenSelectedPtVsYVsMultV0AOmegaMinus(0),
+  f3dHistGenSelectedPtVsYVsMultV0AOmegaPlus(0),
+  f3dHistGenPtVsYCMSVsMultV0AXiMinus(0),
+  f3dHistGenPtVsYCMSVsMultV0AXiPlus(0),
+  f3dHistGenPtVsYCMSVsMultV0AOmegaMinus(0),
+  f3dHistGenPtVsYCMSVsMultV0AOmegaPlus(0),
+  f3dHistGenTriggPtVsYCMSVsMultV0APiMinus(0),
+  f3dHistGenTriggPtVsYCMSVsMultV0APiPlus(0),
+  f3dHistGenTriggPtVsYCMSVsMultV0AXiMinus(0),
+  f3dHistGenTriggPtVsYCMSVsMultV0AXiPlus(0),
+  f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus(0),
+  f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AXiMinus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AXiPlus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus(0),
+  f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus(0),
+  f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus(0),
+  f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus(0),
+  f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus(0),
+  
 //ZNA
 
-f3dHistGenPtVsYVsMultZNAXiMinus(0),
-f3dHistGenPtVsYVsMultZNAXiPlus(0),
-f3dHistGenPtVsYVsMultZNAOmegaMinus(0),
-f3dHistGenPtVsYVsMultZNAOmegaPlus(0),
-f3dHistGenSelectedPtVsYVsMultZNAXiMinus(0),
-f3dHistGenSelectedPtVsYVsMultZNAXiPlus(0),
-f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus(0),
-f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus(0),
-f3dHistGenPtVsYCMSVsMultZNAXiMinus(0),
-f3dHistGenPtVsYCMSVsMultZNAXiPlus(0),
-f3dHistGenPtVsYCMSVsMultZNAOmegaMinus(0),
-f3dHistGenPtVsYCMSVsMultZNAOmegaPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus(0),
+  f3dHistGenPtVsYVsMultZNAXiMinus(0),
+  f3dHistGenPtVsYVsMultZNAXiPlus(0),
+  f3dHistGenPtVsYVsMultZNAOmegaMinus(0),
+  f3dHistGenPtVsYVsMultZNAOmegaPlus(0),
+  f3dHistGenSelectedPtVsYVsMultZNAXiMinus(0),
+  f3dHistGenSelectedPtVsYVsMultZNAXiPlus(0),
+  f3dHistGenSelectedPtVsYVsMultZNAOmegaMinus(0),
+  f3dHistGenSelectedPtVsYVsMultZNAOmegaPlus(0),
+  f3dHistGenPtVsYCMSVsMultZNAXiMinus(0),
+  f3dHistGenPtVsYCMSVsMultZNAXiPlus(0),
+  f3dHistGenPtVsYCMSVsMultZNAOmegaMinus(0),
+  f3dHistGenPtVsYCMSVsMultZNAOmegaPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultZNAXiMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultZNAXiPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultZNAOmegaPlus(0),
 
 //TRK
 
-f3dHistGenPtVsYVsMultTRKXiMinus(0),
-f3dHistGenPtVsYVsMultTRKXiPlus(0),
-f3dHistGenPtVsYVsMultTRKOmegaMinus(0),
-f3dHistGenPtVsYVsMultTRKOmegaPlus(0),
-f3dHistGenSelectedPtVsYVsMultTRKXiMinus(0),
-f3dHistGenSelectedPtVsYVsMultTRKXiPlus(0),
-f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus(0),
-f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus(0),
-f3dHistGenPtVsYCMSVsMultTRKXiMinus(0),
-f3dHistGenPtVsYCMSVsMultTRKXiPlus(0),
-f3dHistGenPtVsYCMSVsMultTRKOmegaMinus(0),
-f3dHistGenPtVsYCMSVsMultTRKOmegaPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus(0),
+  f3dHistGenPtVsYVsMultTRKXiMinus(0),
+  f3dHistGenPtVsYVsMultTRKXiPlus(0),
+  f3dHistGenPtVsYVsMultTRKOmegaMinus(0),
+  f3dHistGenPtVsYVsMultTRKOmegaPlus(0),
+  f3dHistGenSelectedPtVsYVsMultTRKXiMinus(0),
+  f3dHistGenSelectedPtVsYVsMultTRKXiPlus(0),
+  f3dHistGenSelectedPtVsYVsMultTRKOmegaMinus(0),
+  f3dHistGenSelectedPtVsYVsMultTRKOmegaPlus(0),
+  f3dHistGenPtVsYCMSVsMultTRKXiMinus(0),
+  f3dHistGenPtVsYCMSVsMultTRKXiPlus(0),
+  f3dHistGenPtVsYCMSVsMultTRKOmegaMinus(0),
+  f3dHistGenPtVsYCMSVsMultTRKOmegaPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultTRKXiMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultTRKXiPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultTRKOmegaPlus(0),
 
 //SPD
 
-f3dHistGenPtVsYVsMultSPDXiMinus(0),
-f3dHistGenPtVsYVsMultSPDXiPlus(0),
-f3dHistGenPtVsYVsMultSPDOmegaMinus(0),
-f3dHistGenPtVsYVsMultSPDOmegaPlus(0),
-f3dHistGenSelectedPtVsYVsMultSPDXiMinus(0),
-f3dHistGenSelectedPtVsYVsMultSPDXiPlus(0),
-f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus(0),
-f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus(0),
-f3dHistGenPtVsYCMSVsMultSPDXiMinus(0),
-f3dHistGenPtVsYCMSVsMultSPDXiPlus(0),
-f3dHistGenPtVsYCMSVsMultSPDOmegaMinus(0),
-f3dHistGenPtVsYCMSVsMultSPDOmegaPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus(0),
-f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus(0),
-f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus(0),
-
-
-   fHistPVx(0),
-   fHistPVy(0),
-   fHistPVz(0),
-   fHistPVxAnalysis(0),
-   fHistPVyAnalysis(0),
-   fHistPVzAnalysis(0)
+  f3dHistGenPtVsYVsMultSPDXiMinus(0),
+  f3dHistGenPtVsYVsMultSPDXiPlus(0),
+  f3dHistGenPtVsYVsMultSPDOmegaMinus(0),
+  f3dHistGenPtVsYVsMultSPDOmegaPlus(0),
+  f3dHistGenSelectedPtVsYVsMultSPDXiMinus(0),
+  f3dHistGenSelectedPtVsYVsMultSPDXiPlus(0),
+  f3dHistGenSelectedPtVsYVsMultSPDOmegaMinus(0),
+  f3dHistGenSelectedPtVsYVsMultSPDOmegaPlus(0),
+  f3dHistGenPtVsYCMSVsMultSPDXiMinus(0),
+  f3dHistGenPtVsYCMSVsMultSPDXiPlus(0),
+  f3dHistGenPtVsYCMSVsMultSPDOmegaMinus(0),
+  f3dHistGenPtVsYCMSVsMultSPDOmegaPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultSPDXiMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultSPDXiPlus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaMinus(0),
+  f3dHistGenSelectedPtVsYCMSVsMultSPDOmegaPlus(0),
+  
+  
+  fHistPVx(0),
+  fHistPVy(0),
+  fHistPVz(0),
+  fHistPVxAnalysis(0),
+  fHistPVyAnalysis(0),
+  fHistPVzAnalysis(0)
 {
   // Dummy Constructor
 }
@@ -490,12 +505,13 @@ fLowPtCutoff(0.0),
    fHistMultiplicityNoTPCOnlyNoPileup(0),
 
 //V0A Centrality
-fHistMultiplicityV0ABeforeTrigSel(0),
-fHistMultiplicityV0AForTrigEvt(0),
-fHistMultiplicityV0A(0),
-fHistMultiplicityV0ANoTPCOnly(0),
-fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
-
+   fHistMultiplicityV0ABeforeTrigSel(0),
+   fHistMultiplicityV0AForTrigEvt(0),
+   fHistMultiplicityV0AAfterPVSelection(0),
+   fHistMultiplicityV0A(0),
+   fHistMultiplicityV0ANoTPCOnly(0),
+   fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
+    
 //ZNA Centrality
 fHistMultiplicityZNABeforeTrigSel(0),
 fHistMultiplicityZNAForTrigEvt(0),
@@ -516,6 +532,8 @@ fHistMultiplicitySPDForTrigEvt(0),
 fHistMultiplicitySPD(0),
 fHistMultiplicitySPDNoTPCOnly(0),
 fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
+
+fHistPVZDistribution(0),
 
 //------------------------------------------------
 // PARTICLE HISTOGRAMS
@@ -571,6 +589,16 @@ f3dHistGenPtVsYCMSVsMultV0AXiMinus(0),
 f3dHistGenPtVsYCMSVsMultV0AXiPlus(0),
 f3dHistGenPtVsYCMSVsMultV0AOmegaMinus(0),
 f3dHistGenPtVsYCMSVsMultV0AOmegaPlus(0),
+f3dHistGenTriggPtVsYCMSVsMultV0APiMinus(0),
+f3dHistGenTriggPtVsYCMSVsMultV0APiPlus(0),
+f3dHistGenTriggPtVsYCMSVsMultV0AXiMinus(0),
+f3dHistGenTriggPtVsYCMSVsMultV0AXiPlus(0),
+f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus(0),
+f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AXiMinus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AXiPlus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus(0),
+  f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus(0),
@@ -925,6 +953,12 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
                                               200, 0, 200);
     fListHist->Add(fHistMultiplicityV0AForTrigEvt);
   }
+  if(! fHistMultiplicityV0AAfterPVSelection) {
+    fHistMultiplicityV0AAfterPVSelection = new TH1F("fHistMultiplicityV0AAfterPVSelection",
+                                              "Centrality Distribution: V0A;V0A Centrality;Events",
+                                              200, 0, 200);
+    fListHist->Add(fHistMultiplicityV0AAfterPVSelection);
+  }
   if(! fHistMultiplicityV0A) {
     fHistMultiplicityV0A = new TH1F("fHistMultiplicityV0A",
                                     "Centrality Distribution: V0A;V0A Centrality;Events",
@@ -1039,6 +1073,14 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
                                                      200, 0, 200);
     fListHist->Add(fHistMultiplicitySPDNoTPCOnlyNoPileup);
   }
+
+  if(! fHistPVZDistribution) {
+    fHistPVZDistribution = new TH1F("fHistPVZDistribution",
+                                                     "PV z-position; z[cm];Events",
+                                                     200, 0, 200);
+    fListHist->Add(fHistPVZDistribution);
+  }
+
   
 
   
@@ -1087,6 +1129,8 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
       f3dHistGenPtVsYCMSVsMultXiPlus = new TH3F( "f3dHistGenPtVsYCMSVsMultXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
       fListHist->Add(f3dHistGenPtVsYCMSVsMultXiPlus);
    }
+
+
 //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
 
    if(! f3dHistGenPtVsYCMSVsMultOmegaMinus) {
@@ -1099,7 +1143,8 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
    }
 
 
-//--------------------------------------------------------------------------------------
+
+   
 //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, at selected analysis evts
 
    if(! f3dHistGenSelectedPtVsYVsMultXiMinus) {
@@ -1142,6 +1187,12 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
       f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus = new TH3F( "f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
       fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultOmegaPlus);
    }
+
+
+
+
+
+
   
   //======================================================================================
   //--------------------------------------------------------------------------------------
@@ -1350,6 +1401,70 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
         f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus = new TH3F( "f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
         if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus);
     }
+
+
+
+     //
+
+       // pi, generated, in triggered events 
+
+   if(! f3dHistGenTriggPtVsYCMSVsMultV0APiMinus) {
+     f3dHistGenTriggPtVsYCMSVsMultV0APiMinus = new TH3F( "f3dHistGenTriggPtVsYCMSVsMultV0APiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Pi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+     fListHist->Add(f3dHistGenTriggPtVsYCMSVsMultV0APiMinus);
+   }
+   if(! f3dHistGenTriggPtVsYCMSVsMultV0APiPlus) {
+     f3dHistGenTriggPtVsYCMSVsMultV0APiPlus = new TH3F( "f3dHistGenTriggPtVsYCMSVsMultV0APiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Pi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+     fListHist->Add(f3dHistGenTriggPtVsYCMSVsMultV0APiPlus);
+   }
+
+//--------------------------------------------------------------------------------------
+   //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, in triggered evts
+
+
+   if(! f3dHistGenTriggPtVsYCMSVsMultV0AXiMinus) {
+     f3dHistGenTriggPtVsYCMSVsMultV0AXiMinus = new TH3F( "f3dHistGenTriggPtVsYCMSVsMultV0AXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+     fListHist->Add(f3dHistGenTriggPtVsYCMSVsMultV0AXiMinus);
+   }
+   if(! f3dHistGenTriggPtVsYCMSVsMultV0AXiPlus) {
+     f3dHistGenTriggPtVsYCMSVsMultV0AXiPlus = new TH3F( "f3dHistGenTriggPtVsYCMSVsMultV0AXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+     fListHist->Add(f3dHistGenTriggPtVsYCMSVsMultV0AXiPlus);
+   }
+//--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus in triggered evets
+
+   if(! f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus) {
+      f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus = new TH3F( "f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus);
+   }
+   if(! f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus) {
+      f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus = new TH3F( "f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus);
+   }
+
+
+
+   //--------------------------------------------------------------------------------------
+   //--- 3D Histo (Pt, Y, Multiplicity) for generated XiMinus/Plus, in PV evts
+
+
+   if(! f3dHistGenVtxPtVsYCMSVsMultV0AXiMinus) {
+     f3dHistGenVtxPtVsYCMSVsMultV0AXiMinus = new TH3F( "f3dHistGenVtxPtVsYCMSVsMultV0AXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+     fListHist->Add(f3dHistGenVtxPtVsYCMSVsMultV0AXiMinus);
+   }
+   if(! f3dHistGenVtxPtVsYCMSVsMultV0AXiPlus) {
+     f3dHistGenVtxPtVsYCMSVsMultV0AXiPlus = new TH3F( "f3dHistGenVtxPtVsYCMSVsMultV0AXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+     fListHist->Add(f3dHistGenVtxPtVsYCMSVsMultV0AXiPlus);
+   }
+//--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus in PV evets
+
+   if(! f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus) {
+      f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus = new TH3F( "f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus);
+   }
+   if(! f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus) {
+      f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus = new TH3F( "f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+      fListHist->Add(f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus);
+   }
+
   
   //======================================================================================
   //--------------------------------------------------------------------------------------
@@ -2018,6 +2133,90 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
    }
 
 //------------------------------------------------
+// After Trigger Selection
+//------------------------------------------------
+
+   lNumberOfV0s          = lESDevent->GetNumberOfV0s();
+  
+   //Set variable for filling tree afterwards!
+   fHistV0MultiplicityForTrigEvt->Fill(lNumberOfV0s);
+   fHistMultiplicityForTrigEvt->Fill ( lMultiplicity );
+   fHistMultiplicityV0AForTrigEvt       ->Fill( lMultiplicityV0A  );
+   fHistMultiplicityZNAForTrigEvt       ->Fill( lMultiplicityZNA  );
+   fHistMultiplicityTRKForTrigEvt       ->Fill( lMultiplicityTRK  );
+   fHistMultiplicitySPDForTrigEvt       ->Fill( lMultiplicitySPD  );
+
+
+   //----- Loop on primary pi, Xi, Omega --------------------------------------------------------------
+   for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary; iCurrentLabelStack++) 
+   {// This is the begining of the loop on primaries
+      
+      TParticle* lCurrentParticlePrimary = 0x0; 
+      lCurrentParticlePrimary = lMCstack->Particle( iCurrentLabelStack );
+      if(!lCurrentParticlePrimary){
+         Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+         continue;
+      }
+
+      if (TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 211) {
+	
+	Double_t lRapXiMCPrimary = -100;
+	if( (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) != 0 ) { 
+	  if ( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) !=0 ){
+	    lRapXiMCPrimary = 0.5*TMath::Log( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) );
+	  }
+	}
+
+      // Pi Histograms
+      if( lCurrentParticlePrimary->GetPdgCode() == -211 ){ 
+	lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+	//V0A
+	f3dHistGenTriggPtVsYCMSVsMultV0APiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+      }
+      if( lCurrentParticlePrimary->GetPdgCode() == 211 ){ 
+	lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+	//V0A
+	f3dHistGenTriggPtVsYCMSVsMultV0APiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+      }
+      
+      }
+      
+      if ( TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3312 || TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3334 ) { 
+         Double_t lRapXiMCPrimary = -100;
+         if( (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) != 0 ) { 
+           if ( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) !=0 ){
+             lRapXiMCPrimary = 0.5*TMath::Log( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) );
+           }
+         }
+
+	 // Xi Histograms
+         if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){ 
+	   lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+	   //V0A
+	   f3dHistGenTriggPtVsYCMSVsMultV0AXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+	 }
+	 if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){ 
+	   lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+	   //V0A
+	   f3dHistGenTriggPtVsYCMSVsMultV0AXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+	 }
+	 // Omega Histograms
+         if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
+           //V0A
+           f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+         }
+         if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
+           //V0A
+           f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+         }
+	 
+      }
+   }
+   
+      
+
+
+//------------------------------------------------
 // Rerun cascade vertexer! 
 //------------------------------------------------
 
@@ -2034,19 +2233,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
     lV0vtxer.Tracks2V0vertices(lESDevent);
     lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
   }
-//------------------------------------------------
-// After Trigger Selection
-//------------------------------------------------
 
-   lNumberOfV0s          = lESDevent->GetNumberOfV0s();
-  
-   //Set variable for filling tree afterwards!
-   fHistV0MultiplicityForTrigEvt->Fill(lNumberOfV0s);
-   fHistMultiplicityForTrigEvt->Fill ( lMultiplicity );
-  fHistMultiplicityV0AForTrigEvt       ->Fill( lMultiplicityV0A  );
-  fHistMultiplicityZNAForTrigEvt       ->Fill( lMultiplicityZNA  );
-  fHistMultiplicityTRKForTrigEvt       ->Fill( lMultiplicityTRK  );
-  fHistMultiplicitySPDForTrigEvt       ->Fill( lMultiplicitySPD  );
 
 //------------------------------------------------
 // Getting: Primary Vertex + MagField Info
@@ -2110,6 +2297,63 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
     PostData(2, fTreeCascade);
     return;
   }
+  
+  ///////////////////////////////
+  /// events after PV selection
+  ///////////////////////////////
+  
+  fHistMultiplicityV0AAfterPVSelection->Fill(lMultiplicityV0A); // V0A multiplicity
+  fHistPVZDistribution->Fill(lBestPrimaryVtxPos[2]);   // PV z distribution
+
+   //----- Loop on primary Xi, Omega --------------------------------------------------------------
+   for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary; iCurrentLabelStack++) 
+   {// This is the begining of the loop on primaries
+      
+      TParticle* lCurrentParticlePrimary = 0x0; 
+      lCurrentParticlePrimary = lMCstack->Particle( iCurrentLabelStack );
+      if(!lCurrentParticlePrimary){
+         Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+         continue;
+      }
+
+      if ( TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3312 || TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3334 ) { 
+         Double_t lRapXiMCPrimary = -100;
+         if( (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) != 0 ) { 
+           if ( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) !=0 ){
+             lRapXiMCPrimary = 0.5*TMath::Log( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) );
+           }
+         }
+
+	 // Xi Histograms
+         if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){ 
+	   lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+	   //V0A
+	   f3dHistGenVtxPtVsYCMSVsMultV0AXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+	 }
+	 if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){ 
+	   lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+	   //V0A
+	   f3dHistGenVtxPtVsYCMSVsMultV0AXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+	 }
+	 // Omega Histograms
+         if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
+           //V0A
+           f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+         }
+         if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
+           //V0A
+           f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+         }
+	 
+      }
+   }
+   
+      
+   //////////////////////////////////////////////////////////////
+   //////////////////////////////////////////////////////////////
+   //////////////////////////////////////////////////////////////
+  
+
   
   //17 April Fix: Always do primary vertex Z selection, after pA vertex selection from Roberto
   if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0) {
@@ -2175,6 +2419,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 // stack loop starts here
 //------------------------------------------------
 
+
 //----- Loop on primary Xi, Omega --------------------------------------------------------------
    for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary; iCurrentLabelStack++) 
    {// This is the begining of the loop on primaries
@@ -2192,6 +2437,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
              lRapXiMCPrimary = 0.5*TMath::Log( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) );
            }
          }
+
 
          //=================================================================================
          // Xi Histograms
