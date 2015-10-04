@@ -963,6 +963,12 @@ void AliFourPion::ParInit()
   fKmeanY[0] = 0;// central y
   fKmiddleY[0] = 0;
 
+  // 7x1 (Kt: 0-0.2, 0.2-0.25, 0.25-0.3, 0.3-0.35, 0.35-0.4, 0.4-0.45, 0.45-1.0)
+  if(fKbinsT==7){
+    fKstepT[0] = 0.2; fKstepT[1] = 0.05; fKstepT[2] = 0.05; fKstepT[3] = 0.05; fKstepT[4] = 0.05; fKstepT[5] = 0.05; fKstepT[6] = 0.55;
+    fKmeanT[0] = 0.188; fKmeanT[1] = 0.227; fKmeanT[2] = 0.275; fKmeanT[3] = 0.324; fKmeanT[4] = 0.374; fKmeanT[5] = 0.424; fKmeanT[6] = 0.552; 
+    fKmiddleT[0] = 0.1; fKmiddleT[1] = 0.225; fKmiddleT[2] = 0.275; fKmiddleT[3] = 0.325; fKmiddleT[4] = 0.375; fKmiddleT[5] = 0.425; fKmiddleT[6] = 0.725;
+  }
   // 6x1 (Kt: 0-0.2, 0.2-0.24, 0.24-0.3, 0.3-0.35, 0.35-0.45, 0.45-1.0)
   if(fKbinsT==6){
     fKstepT[0] = 0.2; fKstepT[1] = 0.04; fKstepT[2] = 0.06; fKstepT[3] = 0.05; fKstepT[4] = 0.1; fKstepT[5] = 0.55;
@@ -1354,11 +1360,11 @@ void AliFourPion::UserCreateOutputObjects()
 	    if( (c1+c2)==1 ) {if(c1!=0) continue;}// skip degenerate histogram
 	    
 	    
-	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",100,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",20,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
 	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2);
 	    TString *nameEx2QW=new TString(nameEx2->Data());
 	    nameEx2QW->Append("_QW");
-	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",100,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
+	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
 	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW);
 	    TString *nameAvgP=new TString(nameEx2->Data());
 	    nameAvgP->Append("_AvgP");
