@@ -134,7 +134,7 @@ class AliVCluster : public TObject
   virtual void        SetMCEnergyFraction(Double_t) {  ; }
 
   virtual Bool_t      GetIsExotic() const           { return kFALSE; }
-  virtual void        SetIsExotic(Bool_t b)         {  ; }
+  virtual void        SetIsExotic(Bool_t /*b*/)         {  ; }
   
   virtual Double_t    GetUserDefEnergy(VCluUserDefEnergy_t) const         { return 0.  ; }
   virtual void        SetUserDefEnergy(VCluUserDefEnergy_t, Double_t)     {  ; }

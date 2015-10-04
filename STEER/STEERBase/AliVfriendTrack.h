@@ -35,7 +35,7 @@ public:
   //Int_t GetTrackParamTRDIn( AliExternalTrackParam &p ) const { return GetExternalTrackParam( p, 0x0  ); }
 
   virtual void ResetTrackParamTPCOut( const AliExternalTrackParam* ){ ; }
-  virtual void ResetTPCseed( const AliTPCseed* s){}
+  virtual void ResetTPCseed( const AliTPCseed* /*s*/){}
 
   virtual const AliTrackPointArray *GetTrackPointArray() const {return NULL ;}
 

@@ -23,38 +23,38 @@ class AliVVZEROfriend: public TObject {
 
 // Getters of various scalers and Minimum Bias flags :
 
-   virtual ULong64_t          GetBBScalers(Int_t channel) const  
+   virtual ULong64_t          GetBBScalers(Int_t /*channel*/) const  
       { return        0; }
-   virtual ULong64_t          GetBGScalers(Int_t channel) const  
+   virtual ULong64_t          GetBGScalers(Int_t /*channel*/) const  
       { return        0; }
-   virtual UInt_t             GetTriggerScalers(Int_t num_scaler) const 
+   virtual UInt_t             GetTriggerScalers(Int_t /*num_scaler*/) const 
       { return        0; }
-   virtual UInt_t             GetBunchNumbersMB(Int_t num_bunch) const 
+   virtual UInt_t             GetBunchNumbersMB(Int_t /*num_bunch*/) const 
       { return        0; }
-   virtual UShort_t           GetChargeMB(Int_t channel, Int_t num_bunch) const  
+   virtual UShort_t           GetChargeMB(Int_t /*channel*/, Int_t /*num_bunch*/) const  
       { return        0; } 
-   virtual Bool_t             GetIntMBFlag(Int_t channel, Int_t num_bunch) const   
+   virtual Bool_t             GetIntMBFlag(Int_t /*channel*/, Int_t /*num_bunch*/) const   
       { return        0; } 
-   virtual Bool_t             GetBBMBFlag(Int_t channel, Int_t num_bunch) const   
+   virtual Bool_t             GetBBMBFlag(Int_t /*channel*/, Int_t /*num_bunch*/) const   
       { return        0; }  
-   virtual Bool_t             GetBGMBFlag(Int_t channel, Int_t num_bunch) const   
+   virtual Bool_t             GetBGMBFlag(Int_t /*channel*/, Int_t /*num_bunch*/) const   
       { return        0; }      
        
 // Getters of ADC signals, ADC pedestals, time information and corresponding flags :
 
-    virtual Float_t           GetADC(Int_t channel) const
+    virtual Float_t           GetADC(Int_t /*channel*/) const
       { return 0.; }
-    virtual Float_t           GetPedestal(Int_t channel, Int_t event) const
+    virtual Float_t           GetPedestal(Int_t /*channel*/, Int_t /*event*/) const
       { return 0.; }
-    virtual Bool_t            GetIntegratorFlag(Int_t channel, Int_t event) const
+    virtual Bool_t            GetIntegratorFlag(Int_t /*channel*/, Int_t /*event*/) const
       { return 0; }
-    virtual Bool_t            GetBBFlag(Int_t channel, Int_t event) const
+    virtual Bool_t            GetBBFlag(Int_t /*channel*/, Int_t /*event*/) const
       { return 0; } 
-    virtual Bool_t            GetBGFlag(Int_t channel, Int_t event) const
+    virtual Bool_t            GetBGFlag(Int_t /*channel*/, Int_t /*event*/) const
       { return 0; }   
-    virtual Float_t            GetTime(Int_t channel) const
+    virtual Float_t            GetTime(Int_t /*channel*/) const
       { return 0.; }
-    virtual Float_t            GetWidth(Int_t channel) const
+    virtual Float_t            GetWidth(Int_t /*channel*/) const
       { return 0.; }
 
     enum EVVZEROfriendParams {

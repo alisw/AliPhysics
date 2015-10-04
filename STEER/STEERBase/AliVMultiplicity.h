@@ -67,7 +67,7 @@ class AliVMultiplicity : public TNamed {
   //
   virtual void Print(Option_t *opt="")                const = 0;
   //
-  virtual UInt_t GetNumberOfITSClusters(Int_t layer) const { return 0; }
+  virtual UInt_t GetNumberOfITSClusters(Int_t /*layer*/) const { return 0; }
 
   ClassDef(AliVMultiplicity,1);
 };

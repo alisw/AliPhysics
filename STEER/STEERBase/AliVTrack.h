@@ -79,7 +79,7 @@ public:
   virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
-  virtual Bool_t   HasPointOnITSLayer(Int_t i) const { return kFALSE; }
+  virtual Bool_t   HasPointOnITSLayer(Int_t /*i*/) const { return kFALSE; }
   virtual void     GetITSdEdxSamples(Double_t s[4]) const {for (int i=4;i--;) s[i]=0;};
   virtual const TBits* GetTPCClusterMapPtr() const {return NULL;}
   virtual const TBits* GetTPCFitMapPtr()     const {return NULL;}
@@ -100,31 +100,31 @@ public:
 
   virtual Float_t GetTPCCrossedRows() const {return 0;}
 
-  virtual Bool_t RelateToVVertex(const AliVVertex *vtx,
-			Double_t b, Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
-  virtual Bool_t RelateToVVertexTPC(const AliVVertex *vtx,
-			Double_t b, Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
-  virtual Bool_t RelateToVVertexBxByBz(const AliVVertex *vtx,
-			Double_t b[3], Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
-  virtual Bool_t RelateToVVertexTPCBxByBz(const AliVVertex *vtx,
-			Double_t b[3], Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVVertex(const AliVVertex* /*vtx*/,
+			Double_t /*b*/, Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
+  virtual Bool_t RelateToVVertexTPC(const AliVVertex* /*vtx*/,
+			Double_t /*b*/, Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
+  virtual Bool_t RelateToVVertexBxByBz(const AliVVertex * /*vtx*/,
+			Double_t /*b*/[3], Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
+  virtual Bool_t RelateToVVertexTPCBxByBz(const AliVVertex * /*vtx*/,
+			Double_t /*b*/[3], Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
   
-  virtual Bool_t RelateToVertex(const AliESDVertex *vtx,
-			Double_t b, Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
-  virtual Bool_t RelateToVertexTPC(const AliESDVertex *vtx,
-			Double_t b, Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
-  virtual Bool_t RelateToVertexBxByBz(const AliESDVertex *vtx,
-			Double_t b[3], Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
-  virtual Bool_t RelateToVertexTPCBxByBz(const AliESDVertex *vtx,
-			Double_t b[3], Double_t maxd,
-			AliExternalTrackParam *cParam=0) {return kFALSE;}
+  virtual Bool_t RelateToVertex(const AliESDVertex * /*vtx*/,
+			Double_t /*b*/, Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
+  virtual Bool_t RelateToVertexTPC(const AliESDVertex * /*vtx*/,
+			Double_t /*b*/, Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
+  virtual Bool_t RelateToVertexBxByBz(const AliESDVertex * /*vtx*/,
+			Double_t /*b*/[3], Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
+  virtual Bool_t RelateToVertexTPCBxByBz(const AliESDVertex * /*vtx*/,
+			Double_t /*b*/[3], Double_t /*maxd*/,
+			AliExternalTrackParam* /*cParam*/=0) {return kFALSE;}
   
   virtual void GetImpactParameters(Float_t [], Float_t []) const {;}
   virtual void GetImpactParameters(Float_t &/*&xy*/,Float_t &/*&z*/) const {;}
@@ -201,7 +201,7 @@ public:
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
-  virtual Double_t GetTOFExpTDiff(Double_t b=0, Bool_t pidTPConly=kTRUE) const {return kTOFBCNA*25;}
+  virtual Double_t GetTOFExpTDiff(Double_t /*b*/=0, Bool_t /*pidTPConly*/=kTRUE) const {return kTOFBCNA*25;}
   virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
 
   //---------------------------------------------------------------------------

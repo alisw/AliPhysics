@@ -29,7 +29,7 @@ class AliVHeader : public TNamed {
   virtual UInt_t    GetEventType()          const = 0;
   virtual TList*    GetCocktailHeaders()    {return 0;}
   Long64_t GetEventIdAsLong() const;
-  virtual Bool_t    IsTriggerInputFired(const char *name) const {return kFALSE;}
+  virtual Bool_t    IsTriggerInputFired(const char* /*name*/) const {return kFALSE;}
       
   /*
   virtual void SetBunchCrossNumber(UShort_t nBx)   = 0;
