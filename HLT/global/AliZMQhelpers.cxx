@@ -291,27 +291,31 @@ int alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object)
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags)
 {
   int rc = -1;
-  int receiveStatus=-1;
+  int receiveStatus=0;
   while (true)
   {
     zmq_msg_t* topicMsg = new zmq_msg_t;
     rc = zmq_msg_init(topicMsg);
-    receiveStatus = zmq_msg_recv(topicMsg, socket, flags);
-    if (!zmq_msg_more(topicMsg) || receiveStatus<0)
+    rc = zmq_msg_recv(topicMsg, socket, flags);
+    if (!zmq_msg_more(topicMsg) || rc<0)
     {
       zmq_msg_close(topicMsg);
+      receiveStatus=-1;
       break;
     }
+    receiveStatus+=rc;
 
     zmq_msg_t* dataMsg = new zmq_msg_t;
     rc = zmq_msg_init(dataMsg);
-    receiveStatus = zmq_msg_recv(dataMsg, socket, flags);
-    if (receiveStatus<0)
+    rc = zmq_msg_recv(dataMsg, socket, flags);
+    if (rc<0)
     {
       zmq_msg_close(topicMsg);
       zmq_msg_close(dataMsg);
+      receiveStatus=-1;
       break;
     }
+    receiveStatus==rc;
 
     message->push_back(std::make_pair(topicMsg,dataMsg));
 
@@ -327,27 +331,31 @@ int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags)
 int alizmq_msg_recv(aliZMQmsgStr* message, void* socket, int flags)
 {
   int rc = -1;
-  int receiveStatus=-1;
+  int receiveStatus=0;
   while (true)
   {
     zmq_msg_t topicMsg;
     rc = zmq_msg_init(&topicMsg);
-    receiveStatus = zmq_msg_recv(&topicMsg, socket, flags);
+    rc = zmq_msg_recv(&topicMsg, socket, flags);
     if (!zmq_msg_more(&topicMsg) || receiveStatus<0)
     {
       zmq_msg_close(&topicMsg);
+      receiveStatus=-1;
       break;
     }
+    receiveStatus+=rc;
 
     zmq_msg_t dataMsg;
     rc = zmq_msg_init(&dataMsg);
-    receiveStatus = zmq_msg_recv(&dataMsg, socket, flags);
+    rc = zmq_msg_recv(&dataMsg, socket, flags);
     if (receiveStatus<0)
     {
       zmq_msg_close(&topicMsg);
       zmq_msg_close(&dataMsg);
+      receiveStatus=-1;
       break;
     }
+    receiveStatus+=rc;
 
     std::string data;
     std::string topic;
