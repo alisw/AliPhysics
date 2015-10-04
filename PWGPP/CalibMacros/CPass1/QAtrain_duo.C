@@ -460,7 +460,7 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   // TOF (Francesca Bellini)
   // 
 //  if (doTOF && (ibarrel || iall)) {
-//    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TOF/AddTaskTOFQA.C");
+//    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TOF/AddTaskTOFQA.C");
 //    AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA(kFALSE);
 //    tofQA->SelectCollisionCandidates(kTriggerMask);
   if (doTOF && (ibarrel || iall)) {
@@ -978,7 +978,7 @@ void mergeQAgroups(const char* lst, const char* out="QAresults.root")
   TString outS = out;
   if (lstS.IsNull()) exit(1);
   if (outS.IsNull()) exit(1);
-  gROOT->Macro("$ALICE_ROOT/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
+  gROOT->Macro("$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/LoadLibraries.C");
   gSystem->Load("libCORRFW.so");
   AliFileMerger fm;
   fm.IterTXT(lstS.Data(),outS.Data());

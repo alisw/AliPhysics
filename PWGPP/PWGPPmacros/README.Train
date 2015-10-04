@@ -1,4 +1,4 @@
-Macros and scripts to run PWGPP train in $ALICE_ROOT/PWGPP/PWGPPmacros
+Macros and scripts to run PWGPP train in $ALICE_PHYSICS/PWGPP/PWGPPmacros
 
 runPWGPPTrain.C  - Steerring macro
                 - Load configuration for all tasks from file  ConfigTask.txt 
@@ -15,7 +15,7 @@ Add<PWGPP>*.C    - Macros to configure user tasks
 
 
 
-User can commit to $ALICE_ROOT/PWGPP/PWGPPmacros/ConfigTask.txt once fullfill previous criteria.
+User can commit to $ALICE_PHYSICS/PWGPP/PWGPPmacros/ConfigTask.txt once fullfill previous criteria.
 Not all of the macros will be used for production.
 Only certified macros will be coppied to the production directory.
 

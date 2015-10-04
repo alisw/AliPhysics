@@ -33,7 +33,7 @@ gSystem->Load("libPWGPP");
  AliXRDPROOFtoolkit tool;
  TChain * chain = tool.MakeChain("cmp.txt","ESDcmpTracks",0,1000)
  chain->Lookup();
- .L $ALICE_ROOT/PWGPP/AliComparisonSelector.cxx+
+ .L $ALICE_PHYSICS/PWGPP/AliComparisonSelector.cxx+
 
  
 3. 
@@ -47,7 +47,7 @@ comp.SetTree(tree)
 
 b.) Or use Selector
 
-chain->Process("$ALICE_ROOT/PWGPP/AliComparisonSelector.cxx+")
+chain->Process("$ALICE_PHYSICS/PWGPP/AliComparisonSelector.cxx+")
 
 
 TFile f("Output.root");
