@@ -215,6 +215,7 @@ fHistMultiplicityNoTPCOnlyNoPileup(0),
 //V0A Centrality
 fHistMultiplicityV0ABeforeTrigSel(0),
 fHistMultiplicityV0AForTrigEvt(0),
+fHistMultiplicityV0AAfterPVSelection(0),
 fHistMultiplicityV0A(0),
 fHistMultiplicityV0ANoTPCOnly(0),
 fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
@@ -239,6 +240,9 @@ fHistMultiplicitySPDForTrigEvt(0),
 fHistMultiplicitySPD(0),
 fHistMultiplicitySPDNoTPCOnly(0),
 fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
+
+// PV z-distribution
+fHistPVZDistribution(0),
 
 fHistPVx(0),
 fHistPVy(0),
@@ -392,6 +396,7 @@ fHistMultiplicityNoTPCOnlyNoPileup(0),
 //V0A Centrality
 fHistMultiplicityV0ABeforeTrigSel(0),
 fHistMultiplicityV0AForTrigEvt(0),
+fHistMultiplicityV0AAfterPVSelection(0),
 fHistMultiplicityV0A(0),
 fHistMultiplicityV0ANoTPCOnly(0),
 fHistMultiplicityV0ANoTPCOnlyNoPileup(0),
@@ -416,6 +421,10 @@ fHistMultiplicitySPDForTrigEvt(0),
 fHistMultiplicitySPD(0),
 fHistMultiplicitySPDNoTPCOnly(0),
 fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
+
+//PV z-distribution
+fHistPVZDistribution(0),
+
 
 fHistPVx(0),
 fHistPVy(0),
@@ -718,6 +727,12 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
                                                   200, 0, 200);
         fListHist->Add(fHistMultiplicityV0AForTrigEvt);
     }
+    if(! fHistMultiplicityV0AAfterPVSelection) {
+        fHistMultiplicityV0AAfterPVSelection = new TH1F("fHistMultiplicityV0AAfterPVSelection",
+                                                  "Centrality Distribution: V0A;V0A Centrality;Events",
+                                                  200, 0, 200);
+        fListHist->Add(fHistMultiplicityV0AAfterPVSelection);
+    }
     if(! fHistMultiplicityV0A) {
         fHistMultiplicityV0A = new TH1F("fHistMultiplicityV0A",
                                         "Centrality Distribution: V0A;V0A Centrality;Events",
@@ -832,6 +847,15 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
                                                          200, 0, 200);
         fListHist->Add(fHistMultiplicitySPDNoTPCOnlyNoPileup);
     }
+
+    if(! fHistPVZDistribution) {
+        fHistPVZDistribution = new TH1F("fHistPVZDistribution",
+                                                         "PV z-position; z[cm];Events",
+                                                         200, 0, 200);
+        fListHist->Add(fHistPVZDistribution);
+    }
+
+    
     
     
     //----------------------------------
@@ -1018,6 +1042,21 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         PostData(2, fTreeCascade);
         return;
     }
+
+
+    //------------------------------------------------
+    // After Trigger Selection
+    //------------------------------------------------
+    
+    lNumberOfV0s          = lESDevent->GetNumberOfV0s();
+    
+    //Set variable for filling tree afterwards!
+    fHistV0MultiplicityForTrigEvt->Fill(lNumberOfV0s);
+    fHistMultiplicityForTrigEvt->Fill ( lMultiplicity );
+    fHistMultiplicityV0AForTrigEvt       ->Fill( lMultiplicityV0A  );
+    fHistMultiplicityZNAForTrigEvt       ->Fill( lMultiplicityZNA  );
+    fHistMultiplicityTRKForTrigEvt       ->Fill( lMultiplicityTRK  );
+    fHistMultiplicitySPDForTrigEvt       ->Fill( lMultiplicitySPD  );
     
     //------------------------------------------------
     // Rerun cascade vertexer!
@@ -1036,19 +1075,7 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         lV0vtxer.Tracks2V0vertices(lESDevent);
         lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
     }
-    //------------------------------------------------
-    // After Trigger Selection
-    //------------------------------------------------
-    
-    lNumberOfV0s          = lESDevent->GetNumberOfV0s();
-    
-    //Set variable for filling tree afterwards!
-    fHistV0MultiplicityForTrigEvt->Fill(lNumberOfV0s);
-    fHistMultiplicityForTrigEvt->Fill ( lMultiplicity );
-    fHistMultiplicityV0AForTrigEvt       ->Fill( lMultiplicityV0A  );
-    fHistMultiplicityZNAForTrigEvt       ->Fill( lMultiplicityZNA  );
-    fHistMultiplicityTRKForTrigEvt       ->Fill( lMultiplicityTRK  );
-    fHistMultiplicitySPDForTrigEvt       ->Fill( lMultiplicitySPD  );
+
     
     //------------------------------------------------
     // Getting: Primary Vertex + MagField Info
@@ -1112,6 +1139,10 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         PostData(2, fTreeCascade);
         return;
     }
+
+  // events after PV selection
+  fHistMultiplicityV0AAfterPVSelection->Fill(lMultiplicityV0A); // V0A multiplicity
+  fHistPVZDistribution->Fill(lBestPrimaryVtxPos[2]);   // PV z distribution
     
     //17 April Fix: Always do primary vertex Z selection, after pA vertex selection from Roberto
     if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0) {
