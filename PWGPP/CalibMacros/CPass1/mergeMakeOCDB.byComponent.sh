@@ -407,10 +407,10 @@ validateMerging()
 copyScripts()
 {
   [[ ! -f mergeByComponent.C ]] && \
-    cp -f $ALICE_ROOT/PWGPP/CalibMacros/CPass1/mergeByComponent.C $PWD && \
+    cp -f $ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/mergeByComponent.C $PWD && \
     echo "taking the default scripts from $ALICE_ROOT"
   [[ ! -f makeOCDB.C ]] && \
-    cp -f $ALICE_ROOT/PWGPP/CalibMacros/CPass1/makeOCDB.C $PWD && \
+    cp -f $ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/makeOCDB.C $PWD && \
     echo "taking the default scripts from $ALICE_ROOT"
 }
 

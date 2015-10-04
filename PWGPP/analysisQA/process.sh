@@ -5,7 +5,7 @@
 # Date:   Mon Dec  9 13:28:09 CET 2013 
 #
 #  Requirement: the macro paths need to be defined
-#  ex:  CODE=$ALICE_ROOT/PWGPP/analysisQA
+#  ex:  CODE=$ALICE_PHYSICS/PWGPP/analysisQA
 #
 #  Arguments for each macro should be change by
 #  collecting proper information from respective
