@@ -21,6 +21,7 @@ class AliADCalibData: public TNamed {
   virtual ~AliADCalibData();
   void Reset();
   void PrintConfig();
+  void PrintConfigShuttle();
   void FillDCSData(AliADDataDCS * data);
 
   Float_t  GetPedestal(Int_t channel)   const {return fPedestal[channel];}

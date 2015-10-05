@@ -154,14 +154,16 @@ UInt_t AliADPreprocessor::Process(TMap* dcsAliasMap)
   metaData.SetComment("This preprocessor fills an AliADCalibData object");
 
   resECal = Store("Calib", "Data", calibData, &metaData, 0, kTRUE);
+  
   }
   if(resECal==kFALSE ) result = 1;
+    
+  if(runType == "PHYSICS") ProcessTimeSlewing();
   
-
+  if(sourceList && sourceList->GetEntries()>0) calibData->PrintConfigShuttle();
+  
   delete calibData;
   delete sourceList; 
-  
-  if(runType == "PHYSICS") ProcessTimeSlewing();
  	
   return result;
 }

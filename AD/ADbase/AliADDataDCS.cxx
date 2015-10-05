@@ -151,6 +151,7 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 
     	while((aValue = (AliDCSValue*) iterarray.Next())) {
 			UInt_t currentTime = aValue->GetTimeStamp();
+			if(currentTime>fCtpEndTime) break;
 
    			values[iValue] = aValue->GetFloat();
    			times[iValue] = (Double_t) (currentTime);
@@ -160,7 +161,6 @@ Bool_t AliADDataDCS::ProcessData(TMap& aliasMap){
 				if(variation > 0.05) fDeadChannel[iAlias] = kTRUE;
 			}
 			fHv[iAlias]->Fill(values[iValue]);
-			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[iAlias]);
    			iValue++;
     	}      
     	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 
@@ -293,8 +293,6 @@ void AliADDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_t
 
    gr->GetXaxis()->SetTimeDisplay(1);
    gr->SetTitle(fAliasNames[i].Data());
-
-   AliInfo(Form("Array entries: %d",fGraphs.GetEntriesFast()));
 
 }
 
