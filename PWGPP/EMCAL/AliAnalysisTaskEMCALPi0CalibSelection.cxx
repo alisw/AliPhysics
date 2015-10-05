@@ -43,7 +43,8 @@ fRecoUtils(new AliEMCALRecoUtils),
 fOADBFilePath(""),        fCalibFilePath(""),
 fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
-fCuts(0x0),               fOutputContainer(0x0),
+//fCuts(0x0),               
+fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
@@ -139,7 +140,8 @@ fRecoUtils(new AliEMCALRecoUtils),
 fOADBFilePath(""),        fCalibFilePath(""),
 fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
-fCuts(0x0),               fOutputContainer(0x0),
+//fCuts(0x0),               
+fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
@@ -220,7 +222,7 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
   }
     
   DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());  // will contain cuts or local params
+//DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
 ///
@@ -1040,13 +1042,13 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     
   PostData(1,fOutputContainer);
   
-  // cuts container, set in terminate but init and post here
-  
-  fCuts = new TList();
-  
-  fCuts ->SetOwner(kTRUE);
-
-  PostData(2, fCuts);
+//  // cuts container, set in terminate but init and post here
+//  
+//  fCuts = new TList();
+//  
+//  fCuts ->SetOwner(kTRUE);
+//
+//  PostData(2, fCuts);
 }
 
 ///
@@ -1209,31 +1211,32 @@ void AliAnalysisTaskEMCALPi0CalibSelection::SetMaskCellColumn(Int_t ipos, Int_t 
 }
 
 ///
-/// Create cuts/param objects and publish to slot
+/// Create cuts/param objects and publish to slot. Comment out for the moment.
 //______________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::Terminate(Option_t*)
 {
-  const Int_t buffersize = 255;
-  char onePar[buffersize] ;
+  AliDebug(1,"Not implemented");
+//  const Int_t buffersize = 255;
+//  char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; %2.2f < Lambda0_2 < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f, time1-time2 < %2.2f; %2.2f < T < %2.2f ns; %3.1f < Mass < %3.1f", 
-           fEmin,fEmax, fL0min, fL0max, fMinNCells, fAsyCut, fDTimeCut, fTimeMin, fTimeMax, fInvMassCutMin, fInvMassCutMax) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Cluster maximal cell away from border at least %d cells;", fRecoUtils->GetNumberOfCellsFromEMCALBorder()) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Histograms, Mass bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Histograms, Time bins %d; energy range: %2.2f < E < %2.2f GeV;",fNTimeBins,fMinTimeBin,fMaxTimeBin) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d and their position? %d, Mass per channel same SM clusters? %d ",
-           fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fRecalPosition, fSameSM) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
-  fCuts->Add(new TObjString(onePar));
-    
-  // Post Data
-  PostData(2, fCuts);
+//  snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; %2.2f < Lambda0_2 < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f, time1-time2 < %2.2f; %2.2f < T < %2.2f ns; %3.1f < Mass < %3.1f", 
+//           fEmin,fEmax, fL0min, fL0max, fMinNCells, fAsyCut, fDTimeCut, fTimeMin, fTimeMax, fInvMassCutMin, fInvMassCutMax) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Cluster maximal cell away from border at least %d cells;", fRecoUtils->GetNumberOfCellsFromEMCALBorder()) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Histograms, Mass bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Histograms, Time bins %d; energy range: %2.2f < E < %2.2f GeV;",fNTimeBins,fMinTimeBin,fMaxTimeBin) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d and their position? %d, Mass per channel same SM clusters? %d ",
+//           fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fRecalPosition, fSameSM) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
+//  fCuts->Add(new TObjString(onePar));
+//    
+//  // Post Data
+//  PostData(2, fCuts);
 }
 
