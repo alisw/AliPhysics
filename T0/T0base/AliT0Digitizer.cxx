@@ -47,6 +47,9 @@
 #include <AliRunLoader.h>
 #include <stdlib.h>
 #include "AliT0Parameters.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliGRPObject.h"
 
 ClassImp(AliT0Digitizer)
 
@@ -86,6 +89,14 @@ AliT0Digitizer::AliT0Digitizer(AliDigitizationInput* digInput)
 // ctor which should be used
 
   AliDebug(1,"processed");
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
+  if (!grpData) {printf("Failed to get GRP data for run"); return;}
+  TString LHCperiod = grpData->GetLHCPeriod();
+  if(LHCperiod.Contains("LHC15")) fRun2=kTRUE;
+  else 
+    fRun2=kFALSE;
+
   fParam = AliT0Parameters::Instance();
   fParam->Init();
 
@@ -122,9 +133,10 @@ AliT0Digitizer::AliT0Digitizer(AliDigitizationInput* digInput)
       }
       TGraph *grInverseQTC = new TGraph(npq,y1q,x1q);
       fAmpQTC.AddAtAndExpand(grInverseQTC,i);
+
       if (x1q)  delete [] x1q;
       if (y1q)  delete [] y1q;
-
+      fAmpQTC.Print();
     }
   }
 }
@@ -320,8 +332,12 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
 	  TGraph* gr1 = ((TGraph*)fAmpQTC.At(i));
 	  if(gr1)  qtCh = gr1->Eval(qt);
 	  fADC0->AddAt(0,i);
-	  if(qtCh)
+	  if(qtCh>0) {
+	    if(fRun2)
+	    fADC->AddAt(Int_t(1000.*qt),i);
+	    else
 	    fADC->AddAt(Int_t(qtCh),i);
+	  }
 	  //	  sumMult += Int_t ((al*gain[i]/ph2Mip)*50) ;
 	  sumMult += Int_t (qtCh/sumMultCoeff)  ;
 	 
