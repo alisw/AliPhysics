@@ -182,7 +182,7 @@ private:
     
   AliVCaloCells     * fEMCALCells;       //!<! List of cells.
   
-  TList             * fCuts ;            //!<! List with analysis cuts.
+//  TList             * fCuts ;            //!<! List with analysis cuts.
     
   TList             * fOutputContainer;  //!<! Histogram container.
     
