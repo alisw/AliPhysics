@@ -139,7 +139,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
     useVtxCut2013pA = kTRUE;
   }
   
-  if (evtCutSetID==eventCutSet::kMCEvtDefault) {
+  if (evtCutSetID==eventCutSet::kMCEvtNSDdefault) {
     rmFirstEvtChunk = kFALSE;
     rejectPileUp = kFALSE;
     selectDPMJETevtNSDpA = kTRUE;
