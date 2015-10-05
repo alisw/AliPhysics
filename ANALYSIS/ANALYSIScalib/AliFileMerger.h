@@ -40,15 +40,20 @@ class AliFileMerger : public TNamed
   Bool_t IsNoTrees()               const {return fNoTrees;}
   void SetMaxFilesOpen(Int_t n)          {fMaxFilesOpen = n<3 ? 3 : n;}
   Int_t GetMaxFilesOpen()          const {return fMaxFilesOpen;}
+  Bool_t      GetCheckTitle()      const {return fCheckTitle;}
+  void        SetCheckTitle(Bool_t v=kTRUE) {fCheckTitle = v;}
+  //
 protected:
   int AddFile(TList* sourcelist, std::string entry);
   int MergeRootfile( TDirectory *target, TList *sourceNames, Bool_t nameFiltering=kTRUE);
   int OpenNextChunks(const TList* namesList, TList* filesList, Int_t from, Int_t to);
+  void CheckTitle(TObject* tgt, TObject* src);
 protected:
   TObjArray * fRejectMask;  // mask of the objects to be rejected
   TObjArray * fAcceptMask;    // mask of the objects to be accepted
   Int_t       fMaxFilesOpen;  // max number of open files
   Bool_t      fNoTrees;       // do we merge trees
+  Bool_t      fCheckTitle;    // if source obj. title is empty, override it by eventual valid title
 private:
   AliFileMerger(const AliFileMerger&);
   AliFileMerger& operator=(const AliFileMerger& other);

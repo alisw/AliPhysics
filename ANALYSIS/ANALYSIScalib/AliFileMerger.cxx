@@ -83,7 +83,8 @@ AliFileMerger::AliFileMerger():
   fRejectMask(0),
   fAcceptMask(0),
   fMaxFilesOpen(800),
-  fNoTrees(kFALSE)
+  fNoTrees(kFALSE),
+  fCheckTitle(kTRUE)
 {
   //
   // Default constructor
@@ -96,7 +97,8 @@ AliFileMerger::AliFileMerger(const char* name):
   fRejectMask(0),
   fAcceptMask(0),
   fMaxFilesOpen(800),
-  fNoTrees(kFALSE)
+  fNoTrees(kFALSE),
+  fCheckTitle(kTRUE)
 {
   //
   // 
@@ -325,6 +327,7 @@ void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
     callEnv.SetParam((Long_t) templist);
     callEnv.Execute(mergedObject);
     AliSysInfo::AddStamp(currentObject->GetName(),2,i,counter);  
+    if (fCheckTitle) CheckTitle(mergedObject,currentObject);
     delete templist;
   }
   carray->Delete();
@@ -549,18 +552,19 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist, Bool_t 
 	      listH.Add(hobj);
 	      Int_t error = 0;
 	      obj->Execute("Merge", listHargs.Data(), &error); // RS Probleme here
+	      if (fCheckTitle) CheckTitle(obj,hobj);
 	      if (error) {
 		cerr << "Error calling Merge() on " << obj->GetName()
 		     << " with the corresponding object in " << nextsource->GetName() << endl;
 	      }
 	      listH.Delete();
-        // get the number of processed entries to be put in the syswatch.log
-        Double_t numberOfEntries = -1;
-        if (obj->IsA()->GetMethodAllAny("GetEntries"))
-        {
-          TMethodCall getEntries(obj->IsA(), "GetEntries", "");
-          getEntries.Execute(obj, numberOfEntries);
-        }
+	      // get the number of processed entries to be put in the syswatch.log
+	      Double_t numberOfEntries = -1;
+	      if (obj->IsA()->GetMethodAllAny("GetEntries"))
+		{
+		  TMethodCall getEntries(obj->IsA(), "GetEntries", "");
+		  getEntries.Execute(obj, numberOfEntries);
+		}
 	      AliSysInfo::AddStamp(nameK.Data(),1,counterK,counterF++,numberOfEntries); 
 	    }
 	  }
@@ -705,4 +709,16 @@ int AliFileMerger::AddFile(TList* namesList, std::string entry)
   //  cout << "Source file " << (++count) << ": " << entry << endl;
   namesList->Add(new TNamed(entry,""));
   return 0;
+}
+
+//___________________________________________________________________________
+void AliFileMerger::CheckTitle(TObject* tgt, TObject* src)
+{
+  // if tgt has no title but src has, assign from src
+  if (!tgt->InheritsFrom(TNamed::Class())) return;
+  const char* ttl = tgt->GetTitle();
+  if (ttl && ttl[0]==0) {
+    const char* ttlS = src->GetTitle();
+    if (ttlS && ttlS[0]!=0) ((TNamed*)tgt)->SetTitle(ttlS);
+  }
 }
