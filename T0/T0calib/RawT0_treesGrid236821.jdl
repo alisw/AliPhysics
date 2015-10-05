@@ -1,0 +1,30 @@
+InputDataCollection = {"LF:/alice/cern.ch/user/a/afurs/TESTRawT0_LHC15i/input_xml/input236821.xml,nodownload"};
+
+OutputDir = "/alice/cern.ch/user/a/afurs/TESTRawT0_LHC15i/output_treesGrid/run236821/$2/#alien_counter_03i#";
+
+OutputFile = {"T0RAWtree.root"};
+
+Packages = {"VO_ALICE@AliRoot::v5-06-42-1","VO_ALICE@AliPhysics::vAN-20151004-1","VO_ALICE@ROOT::v5-34-30-alice3-5","VO_ALICE@APISCONFIG::V1.1x"};
+
+InputFile = {"LF:/alice/cern.ch/user/a/afurs/TESTRawT0_LHC15i/raw2treeGrid_collection.C"};
+
+Executable = "/alice/cern.ch/user/a/afurs/TESTRawT0_LHC15i/exec_scripts/RawT0treesGrid236821.sh";
+
+Split = "se";
+
+TTL = 30000;
+
+SplitMaxInputFileNumber = "2";
+
+InputDataList = "wn.xml";
+
+InputDataListFormat = "xml-single";
+
+Price = "1";
+
+Validationcommand = "/alice/cern.ch/user/a/afurs/TESTRawT0_LHC15i/TaskRawT0_validation.sh";
+
+
+User = "afurs";
+JDLVariables = {"Packages", "OutputDir"};
+Workdirectorysize = {"10000MB"};
