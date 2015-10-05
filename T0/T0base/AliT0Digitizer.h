@@ -47,7 +47,7 @@ private:
   TObjArray fAmpQTC;     // amplitude  QTC dependence #channel -> #MIPs
  
   AliT0Parameters  *fParam;           //pointer to T0 parameters class     
-
+  Bool_t fRun2;         // RUN2 or RUN1
 
   AliT0Digitizer(const AliT0Digitizer&);
   AliT0Digitizer& operator=(const AliT0Digitizer&);
