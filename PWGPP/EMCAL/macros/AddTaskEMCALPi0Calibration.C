@@ -148,9 +148,9 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
                                                            TList::Class(), AliAnalysisManager::kOutputContainer,  
                                                            outputFile.Data());
   
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("ParamsPi0Calibration_Trig%s",trigger.Data()), 
-                                                             TList::Class(), AliAnalysisManager::kOutputContainer, 
-                                                             "AnalysisParameters.root");
+//  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("ParamsPi0Calibration_Trig%s",trigger.Data()), 
+//                                                             TList::Class(), AliAnalysisManager::kOutputContainer, 
+//                                                             "AnalysisParameters.root");
   
   mgr->AddTask(pi0calib);
                                                              
