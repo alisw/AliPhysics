@@ -201,8 +201,7 @@ AliCDBPath::~AliCDBPath() {
 //_____________________________________________________________________________
 Bool_t AliCDBPath::IsWord(const TString& str) {
   // check if string is a word
-
-  TRegexp pattern("^[a-zA-Z0-9_.-]+$");
+  static const TRegexp pattern("^[a-zA-Z0-9_.-]+$");
 
   return str.Contains(pattern);	
 }
