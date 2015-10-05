@@ -47,13 +47,7 @@ public:
   void SetNPlanesMFT(Int_t nPlanesMFT) { fNPlanesMFT = nPlanesMFT; }
   void SeparateFrontBackClusters();
 
-  Int_t FindClusterInPlane(Int_t planeId);
-
   void SetMinResearchRadiusAtPlane(Int_t plane, Double_t radius) { if (plane>=0 && plane<fNMaxPlanes) fMinResearchRadiusAtPlane[plane] = radius; }
-
-  Double_t TryOneCluster(const AliMUONTrackParam &trackParam, AliMFTCluster *cluster);
-
-  Bool_t IsCorrectMatch(AliMFTCluster *cluster, Int_t labelMC);
 
   void GetVertexFromMC();
 
