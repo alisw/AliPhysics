@@ -106,7 +106,7 @@ AliMUONStringIntMap::Contains(const TString& first) const
   
   for (Int_t i=0; i<fNofItems; i++) 
   {
-    if ( ((TObjString*)fFirstArray.At(i))->GetString() == first )
+    if ( ((TObjString*)fFirstArray.At(i))->String() == first )
     {
       return i;
     }
