@@ -30,7 +30,7 @@
 
 using namespace std;
 
-bool SaveFiles=1;
+bool SaveFiles=0;
 //double G_Cent[10]={30, 29, 27, 27, 29, 29, 29, 25, 29, 22};
 //double G_stat_Cent[10]={2, 2, 2, 3, 3, 3, 5, 6, 6, 8};
 //double G_syst_Cent[10]={7, 7, 12, 16, 7, 8, 10, 6, 7, 19};
@@ -38,9 +38,9 @@ bool SaveFiles=1;
 //double G_Cent[10]={14, 21, 19, 21, 20, 28, 27, 28, 23, 25};
 //double G_stat_Cent[10]={3, 3, 6, 4, 5, 5, 9, 8, 13, 16};
 //double G_syst_Cent[10]={14, 8, 10, 18, 10, 6, 8, 5, 5, 18};
-const int CollisionType=2;// Pb-Pb(0), p-Pb(1), pp(2)
-const int ChProdBOI=2;// 0=SameCharge, 1=MixedCharge1, 2=MixedCharge2
-const int EDBin=1;// KT3,4 bin. 0=low KT bin.  1=high KT bin
+const int CollisionType=0;// Pb-Pb(0), p-Pb(1), pp(2)
+const int ChProdBOI=0;// 0=SameCharge, 1=MixedCharge1, 2=MixedCharge2
+const int EDBin=0;// KT3,4 bin. 0=low KT bin.  1=high KT bin
 const int MBOI=0;// Centrality bin: 0-9
 const int GValue = 30;// steps of 2
 bool ShortSameCharge=1;// Plot short version?
@@ -48,7 +48,7 @@ bool FitBuild=0;
 bool ReNormBuiltBaseline=1;
 //
 //
-const int Q3binChi2= 5;// 2-5
+const int Q3binChi2= 3;// 2-5
 const int Q4binChi2= 3;// 3-7
 const int MBins=10;
 const int EDBins=2;
@@ -64,7 +64,7 @@ float SizeTitle=0.06;//
 float SizeSpecif=0.045;// 
 float SF1=2/3.*0.95;
 float SF2=1/2.*0.95;
-
+float LeftMargin=0.11;
 
 
 double RightMargin=0.004;// 0.002
@@ -87,6 +87,9 @@ void Plot_plotsFourPion(){
   TString *Centname=new TString("");
   int CentStart = MBOI*5;
   int CentEnd = (MBOI+1)*5;
+  if(MBOI==2) CentEnd=20;
+  if(MBOI==4) CentEnd=35;
+  if(MBOI==7) CentEnd=50;
   *Centname += CentStart; Centname->Append("-"); *Centname += CentEnd; Centname->Append("%");
 
   TString *System=new TString("");
@@ -120,16 +123,19 @@ void Plot_plotsFourPion(){
   KT4specif->SetTextFont(TextFont);
   KT4specif->SetTextSize(SizeSpecif);
 
-  
-  TString *BuiltNameC2 = new TString("#font[12]{E}_{2} (G=");
-  TString *BuiltNameC3 = new TString("#font[12]{E}_{3} (G=");
-  TString *BuiltNamec3 = new TString("#font[12]{E'}_{3} (G=");
-  *BuiltNameC2 += GValue;
-  *BuiltNameC3 += GValue;
-  *BuiltNamec3 += GValue;
-  BuiltNameC2->Append("%)");
-  BuiltNameC3->Append("%)");
-  BuiltNamec3->Append("%)");
+
+  TString *BuiltNameE32 = new TString("#font[12]{E}_{3}(2) (G=");
+  TString *BuiltNameE42 = new TString("#font[12]{E}_{4}(2) (G=");
+  TString *BuiltNameE43 = new TString("#font[12]{E}_{4}(3) (G=");
+  TString *BuiltNamee43 = new TString("#font[12]{e}_{4}(3) (G=");
+  *BuiltNameE32 += GValue;
+  *BuiltNameE42 += GValue;
+  *BuiltNameE43 += GValue;
+  *BuiltNamee43 += GValue;
+  BuiltNameE32->Append("%)");
+  BuiltNameE42->Append("%)");
+  BuiltNameE43->Append("%)");
+  BuiltNamee43->Append("%)");
   
   TString *ChargeCombSt4 = new TString("");
   if(ChProdBOI==0) ChargeCombSt4->Append("#pi^{-}#pi^{-}#pi^{-}#pi^{-}");
@@ -844,7 +850,7 @@ void Plot_plotsFourPion(){
     pad1->Draw();
     if(ChProdBOI==0) pad1_2->Draw();
     pad1->cd();
-    gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+    gPad->SetLeftMargin(0.12); gPad->SetRightMargin(0.04);
     gPad->SetTopMargin(0.03); 
     gPad->SetBottomMargin(Xmarge);
     
@@ -855,7 +861,7 @@ void Plot_plotsFourPion(){
     legend1->SetTextFont(TextFont);
     legend1->SetTextSize(SizeLegend);
     TLegend *legend1_2=(TLegend*)legend1->Clone();
-    legend1_2->SetX1(0.62); legend1_2->SetX2(0.93); legend1_2->SetY1(0.34); legend1_2->SetY2(0.6); 
+    legend1_2->SetX1(0.6); legend1_2->SetX2(0.93); legend1_2->SetY1(0.34); legend1_2->SetY2(0.6); 
     legend1_2->SetTextSize(2.*SizeLegend);
     
     C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->SetTitleSize(SizeTitle);
@@ -863,7 +869,7 @@ void Plot_plotsFourPion(){
     C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetTitleSize(SizeTitle);
     C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetLabelSize(SizeLabel);
     C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->SetTitleOffset(1.05);
-    C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetTitleOffset(1.1);
+    C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetTitleOffset(0.9);
     C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->SetNdivisions(606);
     C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetNdivisions(505);
     if(CollisionType!=0) C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->SetRangeUser(0,0.35);
@@ -1014,8 +1020,8 @@ void Plot_plotsFourPion(){
     legend1->AddEntry(C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{C}_{3}^{QS}","p");
     if(!ShortSameCharge) legend1->AddEntry(c3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{c}}_{3}^{QS}","p");
     if(ChProdBOI==0) {
-      legend1->AddEntry(C3QSBuiltmerged[EDBin][MBOI][CollisionType],"#font[12]{E}_{2} (G=0%)","l");
-      if(ShortSameCharge) legend1->AddEntry(C3QSbuilt_G,BuiltNameC2->Data(),"l");
+      legend1->AddEntry(C3QSBuiltmerged[EDBin][MBOI][CollisionType],"#font[12]{E}_{3}(2) (G=0%)","l");
+      if(ShortSameCharge) legend1->AddEntry(C3QSbuilt_G,BuiltNameE32->Data(),"l");
       //legend1->AddEntry(C3QSBuilt_Syst,"#font[12]{E}_{3} systematic","l");
     }  
     //legend1->AddEntry(C3QS_Syst,"#font[12]{C}_{3}^{QS} systematic","l");
@@ -1031,7 +1037,7 @@ void Plot_plotsFourPion(){
     
     if(ChProdBOI==0){
       pad1_2->cd();
-      gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+      gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
       gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.32);
 
       TH1D *Ratio_3 = (TH1D*)C3QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Clone();
@@ -1040,7 +1046,7 @@ void Plot_plotsFourPion(){
       Ratio_3->GetYaxis()->SetTitleSize(2.2*SizeTitle);
       Ratio_3->GetYaxis()->SetLabelSize(2.2*SizeLabel);
       Ratio_3->GetXaxis()->SetTitleOffset(1.05);
-      Ratio_3->GetYaxis()->SetTitleOffset(0.5);
+      Ratio_3->GetYaxis()->SetTitleOffset(0.4);
       Ratio_3->GetXaxis()->SetNdivisions(606);
       Ratio_3->GetYaxis()->SetNdivisions(204);
       Ratio_3->GetYaxis()->SetTitle("Ratio");
@@ -1063,9 +1069,9 @@ void Plot_plotsFourPion(){
 
       Unity->Draw("same");
       
-      legend1_2->AddEntry(Ratio_3,"#font[12]{C}_{3}^{QS}/#font[12]{E}_{2} (G=0%)","p");
+      legend1_2->AddEntry(Ratio_3,"#font[12]{C}_{3}^{QS}/#font[12]{E}_{3}(2) (G=0%)","p");
       if(ShortSameCharge) {
-	TString *name = new TString("#font[12]{C}_{3}^{QS}/"); name->Append(BuiltNameC2->Data());
+	TString *name = new TString("#font[12]{C}_{3}^{QS}/"); name->Append(BuiltNameE32->Data());
 	legend1_2->AddEntry(Ratio_3_G,name->Data(),"p");
       }
       legend1_2->Draw("same");
@@ -1112,7 +1118,7 @@ void Plot_plotsFourPion(){
       pad2->SetBottomMargin(0.0);//0.12
       pad2->Draw();
       pad2->cd(1);
-      gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+      gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
       gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.14);
       TLegend *legend2 = new TLegend(.55,.75, .95,.95,NULL,"brNDC");//.45 or .4 for x1
       legend2->SetBorderSize(0);
@@ -1242,7 +1248,7 @@ void Plot_plotsFourPion(){
       pad2_2->SetBottomMargin(0.0);//0.12
       pad2_2->Draw();
       pad2_2->cd(1);
-      gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.05);
+      gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.05);
       gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.14);
       TLegend *legend2_2 = new TLegend(.15,.15, .35,.35,NULL,"brNDC");//.45 or .4 for x1
       legend2_2->SetBorderSize(0);
@@ -1336,7 +1342,7 @@ void Plot_plotsFourPion(){
       TPad *pad2_2 = new TPad("pad4","pad4",0.,0.,1.,1.);
       pad2_2->Draw();
       
-      gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+      gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
       gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.14);
 
       // G=0 points
@@ -1360,9 +1366,8 @@ void Plot_plotsFourPion(){
 	DoubleRatio3_G->SetBinContent(i, value);
 	DoubleRatio3_G->SetBinError(i, sqrt(pow(value_stat,2) + pow(value_syst,2)));
       }
-      cout<<"Max significance of Double ratio from 1.0 = "<<fabs(DoubleRatio3->GetBinContent(3)-1)/DoubleRatio3->GetBinError(3)<<endl;
-      cout<<"Max significance of Double ratio from 0.989 = "<<fabs(DoubleRatio3->GetBinContent(3)-0.989)/DoubleRatio3->GetBinError(3)<<endl;
-      cout<<"significance of G Double ratio from 0.989 = "<<fabs(DoubleRatio3_G->GetBinContent(3)-0.989)/DoubleRatio3_G->GetBinError(3)<<endl;
+      cout<<"Max significance of 3-pion Double ratio from 1.0 = "<<fabs(DoubleRatio3->GetBinContent(3)-1)/DoubleRatio3->GetBinError(3)<<endl;
+      
       DoubleRatio3->GetXaxis()->SetTitleSize(SizeTitle);
       DoubleRatio3->GetXaxis()->SetLabelSize(SizeLabel);
       DoubleRatio3->GetYaxis()->SetTitleSize(SizeTitle);
@@ -1408,7 +1413,7 @@ void Plot_plotsFourPion(){
   pad3->Draw();
   if(ChProdBOI==0) pad3_2->Draw();
   pad3->cd();
-  gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+  gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
   gPad->SetTopMargin(0.03); gPad->SetBottomMargin(Xmarge);
 
   TLegend *legend3= new TLegend(.65,.47, .85,.86,NULL,"brNDC");//.45 or .4 for x1
@@ -1418,8 +1423,9 @@ void Plot_plotsFourPion(){
   legend3->SetTextSize(SizeLegend);
   if(ChProdBOI!=0) {legend3->SetY1(0.55); legend3->SetY2(0.75);}
   TLegend *legend3_2=(TLegend*)legend3->Clone();
-  legend3_2->SetX1(0.65); legend3_2->SetX2(0.9); legend3_2->SetY1(0.34); legend3_2->SetY2(0.6); 
+  legend3_2->SetX1(0.6); legend3_2->SetX2(0.9); legend3_2->SetY1(0.34); legend3_2->SetY2(0.6); 
   if(CollisionType!=0) {legend3_2->SetX1(0.75);}
+  if(CollisionType==0 && FitBuild==1) legend3_2->SetX1(0.7);
   legend3_2->SetTextSize(2.*SizeLegend);
   TLegend *legend3_2_2=(TLegend*)legend3_2->Clone();
 
@@ -1428,9 +1434,10 @@ void Plot_plotsFourPion(){
   C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetTitleSize(SizeTitle);
   C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetLabelSize(SizeLabel);
   C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->SetTitleOffset(1.05);
-  C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetTitleOffset(1.1);
+  C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetTitleOffset(0.8);
   C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetXaxis()->SetNdivisions(606);
   C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetNdivisions(505);
+  if(CollisionType==0 && ChProdBOI==2) C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->GetYaxis()->SetNdivisions(504);
  
   //
  
@@ -1493,7 +1500,7 @@ void Plot_plotsFourPion(){
     else C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->SetMaximum(6);
   }
   if(ChProdBOI==2) {
-    if(CollisionType==0) C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->SetMaximum(2.9);
+    if(CollisionType==0) C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->SetMaximum(3.);
     else C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->SetMaximum(4);
   }
   if(CollisionType==0){
@@ -1711,14 +1718,14 @@ void Plot_plotsFourPion(){
   if(ChProdBOI==0 && !ShortSameCharge) legend3->AddEntry(b4QSmerged[EDBin][MBOI][CollisionType],"#font[12]{#bf{b}}_{4}^{QS}","p");
   if(!ShortSameCharge) legend3->AddEntry(c4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType],"#font[12]{#bf{c}}_{4}^{QS}","p");
   if(ChProdBOI==0 && !FitBuild) {
-    legend3->AddEntry(C4QSBuiltmerged[EDBin][MBOI][CollisionType],"#font[12]{E}_{2} (G=0%)","l");
-    if(ShortSameCharge) legend3->AddEntry(C4QSbuilt_G[MBOI], BuiltNameC2->Data(),"l");
+    legend3->AddEntry(C4QSBuiltmerged[EDBin][MBOI][CollisionType],"#font[12]{E}_{4}(2) (G=0%)","l");
+    if(ShortSameCharge) legend3->AddEntry(C4QSbuilt_G[MBOI], BuiltNameE42->Data(),"l");
     //legend3->AddEntry(C4QSBuilt_Syst,"Built #font[12]{C}_{4}^{QS} systematic","l");
   }
   if(ChProdBOI==0){
     if(FitBuild){
-      legend3->AddEntry(C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType], BuiltNamec3->Data(),"l");
-      legend3->AddEntry(C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType], BuiltNameC3->Data(),"l");
+      legend3->AddEntry(C4QSBuiltFromFitsmerged1[EDBin][MBOI][CollisionType], BuiltNamee43->Data(),"l");
+      legend3->AddEntry(C4QSBuiltFromFitsmerged2[EDBin][MBOI][CollisionType], BuiltNameE43->Data(),"l");
       //legend3->AddEntry(C4QSBuilt_Syst,"Built #font[12]{C}_{4}^{QS} systematic","l");
     }
   }
@@ -1772,7 +1779,7 @@ void Plot_plotsFourPion(){
   double y_ref_Syst[12]={0, 0, 0.0167026, 0.00971243, 0.00945824, 0.0121959, 0.014654, 0.0155188, 0.0147369, 0.0128801, 0.0109854, 0.0100858};// without MC1 residue
   if(ChProdBOI==0){
     pad3_2->cd();
-    gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+    gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
     gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.32);
     
     TH1D *Ratio_4=(TH1D*)C4QSmerged[ChProdBOI][EDBin][MBOI][CollisionType]->Clone();
@@ -1781,13 +1788,14 @@ void Plot_plotsFourPion(){
     Ratio_4->GetYaxis()->SetTitleSize(2.2*SizeTitle);
     Ratio_4->GetYaxis()->SetLabelSize(2.2*SizeLabel);
     Ratio_4->GetXaxis()->SetTitleOffset(1.05);
-    Ratio_4->GetYaxis()->SetTitleOffset(0.5);
+    Ratio_4->GetYaxis()->SetTitleOffset(0.4);
     Ratio_4->GetXaxis()->SetNdivisions(606);
     Ratio_4->GetYaxis()->SetNdivisions(204);
+    
     Ratio_4->GetYaxis()->SetTitle("Ratio ");
     if(CollisionType==0){
       Ratio_4->SetMinimum(0.9); 
-      if(FitBuild) Ratio_4->SetMaximum(1.07);
+      if(FitBuild) {Ratio_4->SetMinimum(0.86); Ratio_4->SetMaximum(1.12);}
       else Ratio_4->SetMaximum(1.03);
     }else {Ratio_4->SetMinimum(0.7); Ratio_4->SetMaximum(1.28);}
     TH1D *Ratio_4_2=(TH1D*)Ratio_4->Clone();
@@ -1813,16 +1821,16 @@ void Plot_plotsFourPion(){
     if(FitBuild==0){
       Ratio_4->Draw("same");
       if(ShortSameCharge) Ratio_4_G->Draw("same");
-      legend3_2->AddEntry(Ratio_4,"#font[12]{C}_{4}^{QS}/#font[12]{E}_{2} (G=0%)","p");
+      legend3_2->AddEntry(Ratio_4,"#font[12]{C}_{4}^{QS}/#font[12]{E}_{4}(2) (G=0%)","p");
       if(ShortSameCharge) {
-	TString *name = new TString("#font[12]{C}_{4}^{QS}/"); name->Append(BuiltNameC2->Data());
+	TString *name = new TString("#font[12]{C}_{4}^{QS}/"); name->Append(BuiltNameE42->Data());
 	legend3_2->AddEntry(Ratio_4_G,name->Data(),"p");
       }
     }else{
      Ratio_4->Draw("same");
      Ratio_4_2->Draw("same");
-     legend3_2->AddEntry(Ratio_4,"#font[12]{C}_{4}^{QS}/#font[12]{E}_{3}" ,"p");
-     legend3_2->AddEntry(Ratio_4_2,"#font[12]{C}_{4}^{QS}/#font[12]{E'}_{3}","p");
+     legend3_2->AddEntry(Ratio_4,"#font[12]{C}_{4}^{QS}/#font[12]{E}_{4}(3)" ,"p");
+     legend3_2->AddEntry(Ratio_4_2,"#font[12]{C}_{4}^{QS}/#font[12]{e}_{4}(3)","p");
     }
       
     legend3_2->Draw("same");
@@ -1879,7 +1887,7 @@ void Plot_plotsFourPion(){
       TPad *pad4 = new TPad("pad4","pad4",0.,0.,1.,1.);
       pad4->Draw();
       
-      gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+      gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
       gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.14);
       
       // G=0 points
@@ -1929,14 +1937,14 @@ void Plot_plotsFourPion(){
 	DoubleRatio_G->SetBinContent(i, value);
 	DoubleRatio_G->SetBinError(i, sqrt(pow(value_stat,2) + pow(value_syst,2)));
       }
-      cout<<"Max significance of Double ratio from 1.0 = "<<fabs(DoubleRatio->GetBinContent(4)-1)/DoubleRatio->GetBinError(4)<<endl;
-      cout<<"Max significance of Double ratio from 0.989 = "<<fabs(DoubleRatio->GetBinContent(4)-0.989)/DoubleRatio->GetBinError(4)<<endl;
-      cout<<"significance of G Double ratio from 0.989 = "<<fabs(DoubleRatio_G->GetBinContent(4)-0.989)/DoubleRatio_G->GetBinError(4)<<endl;
+      cout<<"Max significance of 4-pion Double ratio from 1.0 = "<<fabs(DoubleRatio->GetBinContent(4)-1)/DoubleRatio->GetBinError(4)<<endl;
+      
+
       DoubleRatio->GetXaxis()->SetTitleSize(SizeTitle);
       DoubleRatio->GetXaxis()->SetLabelSize(SizeLabel);
       DoubleRatio->GetYaxis()->SetTitleSize(SizeTitle);
       DoubleRatio->GetYaxis()->SetLabelSize(SizeLabel);
-      DoubleRatio->GetYaxis()->SetTitleOffset(1.0);
+      DoubleRatio->GetYaxis()->SetTitleOffset(0.8);
       DoubleRatio->SetMinimum(0.9); DoubleRatio->SetMaximum(1.06);
       DoubleRatio->GetYaxis()->SetNdivisions(303);
       DoubleRatio->GetYaxis()->SetTitle("Double ratio");
@@ -2090,7 +2098,7 @@ void Plot_plotsFourPion(){
     pad4->SetBottomMargin(0.0);//0.12
     pad4->Draw();
     pad4->cd(1);
-    gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+    gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
     gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.14);
 
     TLegend *legend4 = new TLegend(.15,.65, .4,.85,NULL,"brNDC");//.45 or .4 for x1
@@ -2297,7 +2305,7 @@ void Plot_plotsFourPion(){
     pad5->SetBottomMargin(0.0);//0.12
     pad5->Draw();
     pad5->cd(1);
-    gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+    gPad->SetLeftMargin(LeftMargin); gPad->SetRightMargin(0.04);
     gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.14);
 
     TLegend *legend5 = new TLegend(.15,.75, .3,.95,NULL,"brNDC");//.45 or .4 for x1
@@ -2399,13 +2407,13 @@ void Plot_plotsFourPion(){
       if(GversusQ4[1]->GetBinError(bin)==0) continue;
       if(GversusQ4[2]->GetBinError(bin)==0) continue;
       if(GversusQ4[0]->GetBinContent(bin)>100) continue;
-      double weight = /*C4QSBuiltmerged[EDBin][MBOI][CollisionType]->GetBinContent(bin)*/ 1 / GversusQ4[2]->GetBinError(bin);
+      double weight = 1 / GversusQ4[2]->GetBinError(bin);
       Avg_G += GversusQ4[2]->GetBinContent(bin) * weight;
       Avg_G_den += weight;
-      weight = /*C4QSBuiltmerged[EDBin][MBOI][CollisionType]->GetBinContent(bin)*/ 1 / GversusQ4[0]->GetBinError(bin);
+      weight = 1 / GversusQ4[0]->GetBinError(bin);
       Avg_G_stat += GversusQ4[0]->GetBinError(bin) * weight;
       Avg_G_stat_den += weight;
-      weight = /*C4QSBuiltmerged[EDBin][MBOI][CollisionType]->GetBinContent(bin)*/ 1 / GversusQ4[1]->GetBinError(bin);
+      weight = 1 / GversusQ4[1]->GetBinError(bin);
       Avg_G_syst += GversusQ4[1]->GetBinError(bin) * weight;
       Avg_G_syst_den += weight;
     }
