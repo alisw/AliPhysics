@@ -31,7 +31,7 @@ private:
   AliAnalysisTaskEmcalOnlinePatchesRef(const AliAnalysisTaskEmcalOnlinePatchesRef &);
   AliAnalysisTaskEmcalOnlinePatchesRef &operator=(const AliAnalysisTaskEmcalOnlinePatchesRef &);
 
-  void FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermodule, Int_t sector);
+  void FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermodule, Int_t sector, Bool_t evsel);
 
   ClassDef(AliAnalysisTaskEmcalOnlinePatchesRef, 1);
 };
