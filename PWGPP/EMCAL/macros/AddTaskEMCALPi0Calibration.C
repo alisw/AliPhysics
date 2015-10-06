@@ -156,7 +156,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
                                                              
   mgr->ConnectInput  (pi0calib, 0, cinput1);
   mgr->ConnectOutput (pi0calib, 1, coutput);
-  mgr->ConnectOutput (pi0calib, 2, cout_cuts);
+//  mgr->ConnectOutput (pi0calib, 2, cout_cuts);
 
   return pi0calib;
 }
