@@ -30,7 +30,6 @@
 using std::cout;
 using std::setw;
 using std::endl;
-using std::dec;
 ClassImp(AliEMCALTriggerSTURawStream)
 
 //_____________________________________________________________________________
@@ -189,12 +188,13 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
       eqSize = fRawReader->GetEquipmentSize();
     }
     word32[iword++] = w32;
-    //if(iword<905)cout<<dec<<iword+9    <<" , "<<hex<<w32<<endl;
-    //else         cout<<dec<<iword-905+9<<" , "<<hex<<w32<<endl;
+    //cout<<dec<<iword<<" , "<<hex<<w32<<endl;
 
   }
 
   Int_t   poffset = 0     ;
+  //firmware vesion confirmation (DCAL)
+  Bool_t  isDCALfirst = ((word32[20] & 0x0000f000) == 0x0000d000)? kTRUE : kFALSE ;//DCAL first
   
   //payload type selector
   if(false){}
@@ -228,22 +228,35 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
     fPayload        = V1_2Raw   ;
     fDetector       = kEMCAL    ;
   }
+  
   else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL                           )){
-    poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
+    //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
+    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
+    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
     fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCAL                                       ;
   }
+  
   else if(iword==(kPayLoadSizeV2_DCAL                            + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
-    poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
+    //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL                           ;
+    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL                              ;//DCAL  first
+    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
     fPayload  = (fDetector == kDCAL)? V2DCAL      : V2EMCALRaw                                    ;
   }
+  
   else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL                           )){
-    poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
+    //poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
+    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw    ;//DCAL  first
+    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL                             ;//EMCAL first
     fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCAL                                       ;
   }
+  
   else if(iword==(kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw + kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw)){
     poffset   = (fDetector == kDCAL)? 0           : kPayLoadSizeV2_DCAL + kPayLoadSizeV2_DCAL_Raw ;
+    if(isDCALfirst) poffset   = (fDetector == kDCAL )? 0 : kPayLoadSizeV2_DCAL  + kPayLoadSizeV2_DCAL_Raw   ;//DCAL  first
+    else            poffset   = (fDetector == kEMCAL)? 0 : kPayLoadSizeV2_EMCAL + kPayLoadSizeV2_EMCAL_Raw  ;//EMCAL first
     fPayload  = (fDetector == kDCAL)? V2DCALRaw   : V2EMCALRaw                                    ;
   }
+  
   else{
     AliError(Form("STU payload (eqId: %d, eqSize: %d) doesn't match expected size! %d word32", eqId, eqSize, iword));
     return kFALSE;
@@ -386,6 +399,15 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
     }
   }//end switch
   
+  //##############################
+  //firmware version confirmation    
+  if( 
+      (fDetector==kEMCAL && ((fFwVersion & 0xf000)!=0xb000) ) ||
+      (fDetector==kDCAL  && ((fFwVersion & 0xf000)!=0xd000) ) 
+    ){
+    return kFALSE;
+  }
+  //##############################
   
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // start decoding
