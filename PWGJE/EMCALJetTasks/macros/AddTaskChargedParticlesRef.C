@@ -8,7 +8,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef *AddTaskChargedPartic
   // Set Energy thresholds for additional patch selection:
   // These are events with offline patches of a given type where the trigger reached already the plateau
   // These numers are determined as:
-  // EMC7: 3.5 GeV
+  // EMC7: 5 GeV
   // EG1:  14 GeV
   // EG2:  8 GeV
   // EJ1:  22 GeV

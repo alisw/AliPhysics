@@ -90,17 +90,26 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
   for(std::vector<TString>::iterator mytrg = patchnames.begin(); mytrg != patchnames.end(); ++mytrg){
     triggername = *mytrg;
 #endif
+    fHistos->CreateTH1(Form("hEventCount%s", triggername.Data()), Form("Event counter for trigger type %s", triggername.Data()), 1, 0.5, 1.5);
     fHistos->CreateTH2(Form("hPatchEnergy%s", triggername.Data()), Form("Patch energy versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
     fHistos->CreateTH2(Form("hPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
     fHistos->CreateTH2(Form("hPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
     fHistos->CreateTH2(Form("hPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
+    fHistos->CreateTH2(Form("hEvSelPatchEnergy%s", triggername.Data()), Form("Patch energy versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
+    fHistos->CreateTH2(Form("hEvSelPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
+    fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s in selected events", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
+    fHistos->CreateTH2(Form("hEvSelPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s  in selected events", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
     for(int ism = 0; ism <= 9; ism++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
       fHistos->CreateTH2(Form("hPatchEnergyEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
       fHistos->CreateTH2(Form("hPatchADCEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 2100., 0., 2100.);
+      fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hEvSelPatchADCEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 2100., 0., 2100.);
     }
     for(int isec = 4; isec <= 9; isec++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
       fHistos->CreateTH2(Form("hPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
       fHistos->CreateTH2(Form("hPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s, Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 2100., 0., 2100.);
+      fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hEvSelPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s, Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 2100., 0., 2100.);
     }
   }
   PostData(1, fHistos->GetListOfHistograms());
@@ -127,6 +136,9 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
   if(fAnalysisUtil->IsPileUpEvent(fInputEvent)) return;       // Apply new vertex cut
   // Apply vertex z cut
   if(vtx->GetZ() < -10. || vtx->GetZ() > 10.) return;
+  if(isEMC7) fHistos->FillTH1("hEventCountEL0", 1);
+  if(isEG1) fHistos->FillTH1("hEventCountEG1", 1);
+  if(isEG2) fHistos->FillTH1("hEventCountEG2", 1);
 
   AliEmcalTriggerPatchInfo *mypatch(nullptr);
   Int_t supermoduleID = -1;
@@ -139,9 +151,14 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
     if(!(mypatch->IsGammaHigh() || mypatch->IsGammaLow() || mypatch->IsLevel0())) continue;
     fGeometry->SuperModuleNumberFromEtaPhi(mypatch->GetEtaCM(), mypatch->GetPhiCM(), supermoduleID);
     Int_t sector = 4 + int(supermoduleID / 2);
-    if(mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector);
-    if(mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector);
-    if(mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector);
+    if(mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kFALSE);
+    if(mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kFALSE);
+    if(mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kFALSE);
+
+    // correlate patches with real event classes selected
+    if(isEMC7 && mypatch->IsLevel0()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kTRUE);
+    if(isEG1 && mypatch->IsGammaHigh()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kTRUE);
+    if(isEG2 && mypatch->IsGammaLow()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kTRUE);
   }
 
   PostData(1, fHistos->GetListOfHistograms());
@@ -159,18 +176,19 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
  * @param supermoduleID ID of the supermodule
  * @param sector Sector in global numbering scheme
  */
-void AliAnalysisTaskEmcalOnlinePatchesRef::FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermoduleID, Int_t sector){
-  fHistos->FillTH2(Form("hPatchEnergy%s", patchtype), supermoduleID, recpatch->GetPatchE());
-  fHistos->FillTH2(Form("hPatchADC%s", patchtype), supermoduleID, recpatch->GetADCAmp());
-  fHistos->FillTH2(Form("hPatchEnergyEta%s", patchtype), recpatch->GetEtaCM(), recpatch->GetPatchE());
-  fHistos->FillTH2(Form("hPatchADCEta%s", patchtype), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+void AliAnalysisTaskEmcalOnlinePatchesRef::FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermoduleID, Int_t sector, Bool_t evsel){
+  TString fbase = evsel ? "hEvSel" : "h";
+  fHistos->FillTH2(Form("%sPatchEnergy%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetPatchE());
+  fHistos->FillTH2(Form("%sPatchADC%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetADCAmp());
+  fHistos->FillTH2(Form("%sPatchEnergyEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetPatchE());
+  fHistos->FillTH2(Form("%sPatchADCEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   if(sector >= 4 && sector < 10){
-    fHistos->FillTH2(Form("hPatchEnergyEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
-    fHistos->FillTH2(Form("hPatchADCEta%sSector%d", patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+    fHistos->FillTH2(Form("%sPatchEnergyEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
+    fHistos->FillTH2(Form("%sPatchADCEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   }
   if(supermoduleID >= 0 && supermoduleID < 10){
-    fHistos->FillTH2(Form("hPatchEnergyEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetPatchE());
-    fHistos->FillTH2(Form("hPatchADCEta%sSM%d", patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
+    fHistos->FillTH2(Form("%sPatchEnergyEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetPatchE());
+    fHistos->FillTH2(Form("%sPatchADCEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   }
 }
 
