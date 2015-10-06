@@ -3559,15 +3559,15 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
      
       if(!(fUseExtraTracks == 0)){//only for Embedding study used
     
-	TClonesArray *st = 0x0;//access MC stack to get MC truth information for V0 pT
+	//TClonesArray *st = 0x0;//access MC stack to get MC truth information for V0 pT
 	TList* listmc = fAOD->GetList();
-	if (!listmc)continue;
-	st = (TClonesArray*)listmc->FindObject(AliAODMCParticle::StdBranchName()); //get MCAOD branch in data
-	if (!st)continue;
+	if (!listmc){std::cout<<"listmc does not exist for Embedding study: "<<std::endl; continue;}
+	//st = (TClonesArray*)listmc->FindObject(AliAODMCParticle::StdBranchName()); //get MCAOD branch in data
+	//if (!st){std::cout<<"stack does not exist for Embedding study: "<<std::endl; continue;}
 	
 	
 	AliAODMCHeader *header=(AliAODMCHeader*)listmc->FindObject(AliAODMCHeader::StdBranchName());
-	if(!header)continue;
+	if(!header){std::cout<<"header does not exist for Embedding study: "<<std::endl; continue;}
 		
       	//std::cout<<"fCutFractionPtEmbedded: "<<fCutFractionPtEmbedded<<" fCutDeltaREmbedded: "<<fCutDeltaREmbedded<<std::endl;	
 
