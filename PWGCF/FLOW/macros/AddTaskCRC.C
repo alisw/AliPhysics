@@ -33,6 +33,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Double_t dDCAxy=2.4,
                              Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
+                             Bool_t bCalculateFlow=kFALSE,
                              const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -108,7 +109,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  // set the analysis type
  TString analysisType = "AUTOMATIC";
  if (analysisTypeUser != "") analysisType = analysisTypeUser;
- if (analysisTypeUser == "AOD" || analysisTypeUser == "ESD") analysisType = "AUTOMATIC";
+ if (analysisTypeUser == "AOD") analysisType = "AUTOMATIC";
  taskFE->SetAnalysisType(analysisType);
  // add the task to the manager
  mgr->AddTask(taskFE);
@@ -125,7 +126,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  // define the event cuts object
  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
  // configure some event cuts, starting with centrality
- if(analysisTypeUser == "MCkine") {
+ if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD") {
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetQA(kFALSE);
  }
@@ -180,7 +181,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetQA(bTrackCutsQA);
  }
- if (analysisTypeUser == "AOD") {
+ if (analysisTypeUser == "AOD" || analysisTypeUser == "MCAOD") {
   // Track cuts for RPs
   if(bUseVZERO) {
    if (sDataSet == "2011")
@@ -284,6 +285,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetCalculateCRC(kTRUE);
  taskQC->SetCalculateCRCPt(bCalculateCRCPt);
  taskQC->SetCalculateCME(bCalculateCME);
+ taskQC->SetCalculateFlow(bCalculateFlow);
  taskQC->SetUseVZERO(bUseVZERO);
  taskQC->SetUseZDC(bUseZDC);
  taskQC->SetRecenterZDC(bRecenterZDC);
