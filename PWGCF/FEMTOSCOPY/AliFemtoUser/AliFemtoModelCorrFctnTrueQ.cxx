@@ -10,12 +10,13 @@
   ClassImp(AliFemtoModelCorrFctnTrueQ, 1)
 #endif
 
+#include <TH1D.h>
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelCorrFctnTrueQ.h"
-    
+
 //_______________________
-AliFemtoModelCorrFctnTrueQ::AliFemtoModelCorrFctnTrueQ(): 
+AliFemtoModelCorrFctnTrueQ::AliFemtoModelCorrFctnTrueQ():
   AliFemtoModelCorrFctn(),
   fTrueNum(0),
   fTrueDen(0)
@@ -72,7 +73,7 @@ AliFemtoModelCorrFctnTrueQ::~AliFemtoModelCorrFctnTrueQ()
 AliFemtoModelCorrFctnTrueQ& AliFemtoModelCorrFctnTrueQ::operator=(const AliFemtoModelCorrFctnTrueQ& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn) 
+  if (this == &aCorrFctn)
     return *this;
   if (aCorrFctn.fTrueNum)
     fTrueNum = new TH1D (*aCorrFctn.fTrueNum);
@@ -113,7 +114,7 @@ void AliFemtoModelCorrFctnTrueQ::Write()
   // write out all the histograms
   fTrueNum->Write();
   fTrueDen->Write();
-  
+
   AliFemtoModelCorrFctn::Write();
 }
 //_______________________
@@ -122,8 +123,8 @@ TList* AliFemtoModelCorrFctnTrueQ::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = AliFemtoModelCorrFctn::GetOutputList();
 
-  tOutputList->Add(fTrueNum); 
-  tOutputList->Add(fTrueDen);  
+  tOutputList->Add(fTrueNum);
+  tOutputList->Add(fTrueDen);
 
   return tOutputList;
 }
@@ -132,7 +133,6 @@ AliFemtoModelCorrFctn* AliFemtoModelCorrFctnTrueQ::Clone()
 {
   // Clone the correlation function
   AliFemtoModelCorrFctnTrueQ *tCopy = new AliFemtoModelCorrFctnTrueQ(*this);
-  
+
   return tCopy;
 }
-

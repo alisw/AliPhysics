@@ -1,23 +1,22 @@
-////////////////////////////////////////////////////////////////////////////////
-///                                                                          ///
-/// AliFemtoModelHiddenInfo - the hidden info for model calculations         ///
-/// Stores information needed for the weight generation - the true           ///
-/// simulated momenta, freeze-out coordinates from model and particle PID    ///
-///                                                                          ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoModelHiddenInfo.h
+///
 
 #ifndef ALIFEMTOMODELHIDDENINFO_H
 #define ALIFEMTOMODELHIDDENINFO_H
 
-#include <TH1D.h>
-#include "AliFemtoTypes.h"
-#include "AliFemtoThreeVector.h"
-#include "AliFemtoLorentzVector.h"
 #include "AliFemtoHiddenInfo.h"
+#include "AliFemtoTypes.h"
 
-class AliFemtoModelHiddenInfo : public AliFemtoHiddenInfo{
-
+/// \class AliFemtoModelHiddenInfo
+/// \brief The hidden info for model calculations
+///
+/// Stores information needed for the weight generation - the true
+/// simulated momenta, freeze-out coordinates from model and particle PID
+///
+class AliFemtoModelHiddenInfo : public AliFemtoHiddenInfo {
 public:
+
   AliFemtoModelHiddenInfo();
   AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &aInfo);
   virtual ~AliFemtoModelHiddenInfo();
@@ -71,28 +70,29 @@ public:
 // --- Copy the hidden info from AliFemtoTrack to AliFemtoParticle
   virtual AliFemtoHiddenInfo* Clone() const;
 
- protected:
+protected:
   virtual AliFemtoHiddenInfo* GetParticleHiddenInfo() const;
 
-  AliFemtoThreeVector   *fTrueMomentum;  // True (simulated) momentum
-  AliFemtoLorentzVector *fEmissionPoint; // Emission point coordinates
-  Int_t                  fPDGPid;        // True PID of the particle
-  Int_t                  fMotherPdg;     // PDG code of particle's mother
-  Double_t               fMass;          // True particle mass
+  AliFemtoThreeVector   *fTrueMomentum;  ///< True (simulated) momentum
+  AliFemtoLorentzVector *fEmissionPoint; ///< Emission point coordinates
+  Int_t                  fPDGPid;        ///< True PID of the particle
+  Int_t                  fMotherPdg;     ///< PDG code of particle's mother
+  Double_t               fMass;          ///< True particle mass
 
   //daughter particles
-  AliFemtoThreeVector   *fTrueMomentumPos;  // True (simulated) momentum of positive daughter
-  AliFemtoLorentzVector *fEmissionPointPos; // Emission point coordinates of positive daughter
-  Int_t                  fPDGPidPos;        // True PID of positive daughter
-  Double_t               fMassPos;          // True particle mass of positive daughter
+  AliFemtoThreeVector   *fTrueMomentumPos;  ///< True (simulated) momentum of positive daughter
+  AliFemtoLorentzVector *fEmissionPointPos; ///< Emission point coordinates of positive daughter
+  Int_t                  fPDGPidPos;        ///< True PID of positive daughter
+  Double_t               fMassPos;          ///< True particle mass of positive daughter
 
-  AliFemtoThreeVector   *fTrueMomentumNeg;  // True (simulated) momentum of negative daughter
-  AliFemtoLorentzVector *fEmissionPointNeg; // Emission point coordinates of negative daughter
-  Int_t                  fPDGPidNeg;        // True PID of negative daughter
-  Double_t               fMassNeg;          // True particle mass of negative daughter
+  AliFemtoThreeVector   *fTrueMomentumNeg;  ///< True (simulated) momentum of negative daughter
+  AliFemtoLorentzVector *fEmissionPointNeg; ///< Emission point coordinates of negative daughter
+  Int_t                  fPDGPidNeg;        ///< True PID of negative daughter
+  Double_t               fMassNeg;          ///< True particle mass of negative daughter
 };
 //_______________________________________
-inline AliFemtoHiddenInfo* AliFemtoModelHiddenInfo::Clone() const{
+inline AliFemtoHiddenInfo* AliFemtoModelHiddenInfo::Clone() const
+{
   // return exact copy of this hidden info
   return GetParticleHiddenInfo();
 }
