@@ -86,6 +86,8 @@
 */
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
+
 #include <TF1.h>
 #include <TH1.h>
 #include <TH2F.h>
@@ -120,6 +122,14 @@ AliDielectronSignalExt::AliDielectronSignalExt(const char* name, const char* tit
   //
 }
 
+//______________________________________________
+AliDielectronSignalExt::AliDielectronSignalExt(const char* name, const char* title, bool enummaps) :
+  AliDielectronSignalBase(name, title, enummaps)
+{
+  //
+  // Named + set enum maps Constructor
+  //
+}
 //______________________________________________
 AliDielectronSignalExt::~AliDielectronSignalExt()
 {
@@ -161,12 +171,13 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
   //
   // signal subtraction 
   //
+
   fHistDataPP = (TH1*)(arrhist->At(AliDielectron::kEv1PP))->Clone("histPP");  // ++    SE
   fHistDataPM = (TH1*)(arrhist->At(AliDielectron::kEv1PM))->Clone("histPM");  // +-    SE
   fHistDataMM = (TH1*)(arrhist->At(AliDielectron::kEv1MM))->Clone("histMM");  // --    SE
-  fHistDataPP->Sumw2();
-  fHistDataPM->Sumw2();
-  fHistDataMM->Sumw2();
+  if(fHistDataPP->GetDefaultSumw2()) fHistDataPP->Sumw2();
+  if(fHistDataPM->GetDefaultSumw2()) fHistDataPM->Sumw2();
+  if(fHistDataMM->GetDefaultSumw2()) fHistDataMM->Sumw2();
   fHistDataPP->SetDirectory(0);
   fHistDataPM->SetDirectory(0);
   fHistDataMM->SetDirectory(0);
@@ -279,6 +290,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
     if (histMixPM) delete histMixPM;
   }
   
+
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
   if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
@@ -298,7 +310,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
 						 fErrors(1));
 
   // signal depending on peak description method
-  DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
+  DescribePeakShape(fPeakMethod, kTRUE, fHistSimPM); 
   //printf("%f  %f\n",fValues(0),fValues(1));
   // S/B and significance
   //  SetSignificanceAndSOB();
@@ -369,7 +381,7 @@ void AliDielectronSignalExt::ProcessEM(TObjArray* const arrhist)
                                                  fErrors(1));
 
   // signal depending on peak description method
-  DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
+  DescribePeakShape(fPeakMethod, kTRUE, fHistSimPM);
 
   fProcessed = kTRUE;
 }
@@ -421,7 +433,7 @@ void AliDielectronSignalExt::ProcessRotation(TObjArray* const arrhist)
                                                  fHistBackground->FindBin(fIntMax),
                                                  fErrors(1));
   // signal depending on peak description method
-  DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
+  DescribePeakShape(fPeakMethod, kTRUE, fHistSimPM);
   
   fProcessed = kTRUE;
   

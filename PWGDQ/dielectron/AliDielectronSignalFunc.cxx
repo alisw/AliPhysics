@@ -121,7 +121,6 @@
 
 ClassImp(AliDielectronSignalFunc)
 
-//TH1F* AliDielectronSignalFunc::fgHistSimPM=0x0;
 TF1*  AliDielectronSignalFunc::fFuncSignal=0x0;
 TF1*  AliDielectronSignalFunc::fFuncBackground=0x0;
 Int_t AliDielectronSignalFunc::fNparPeak=0;
@@ -216,7 +215,7 @@ Double_t AliDielectronSignalFunc::PeakFunMC(const Double_t *x, const Double_t *p
   
   Double_t xx  = x[0];
   
-  TH1F *hPeak = fgHistSimPM;
+  TH1F *hPeak = fHistSimPM;
   if (!hPeak) {
     printf("E-AliDielectronSignalFunc::PeakFun: No histogram for peak fit defined!\n");
     return 0.0;
@@ -246,12 +245,12 @@ Double_t AliDielectronSignalFunc::PeakFunCB(const Double_t *x, const Double_t *p
   Double_t b = n/TMath::Abs(alpha) - TMath::Abs(alpha);
   
   Double_t arg = (x[0] - meanx)/sigma;
-  Double_t fitval = 0;
+  Double_t fitval = 0.;
   
   if (arg > -1.*alpha) {
     fitval = nn * TMath::Exp(-.5*arg*arg);
   } else {
-    fitval = nn * a * TMath::Power((b-arg), (-1*n));
+    fitval = nn * a * TMath::Power((b-arg), (-1.*n));
   }
   
   return fitval;

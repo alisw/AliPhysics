@@ -31,6 +31,7 @@ resulting from single and mixed events, as defined in AliDielectron.cxx
 #include <TVectorT.h>
 #include <TPaveText.h>
 #include <TF1.h>
+#include <TMath.h>
 #include <TH1.h>
 #include <TDatabasePDG.h>
 
@@ -39,8 +40,6 @@ resulting from single and mixed events, as defined in AliDielectron.cxx
 
 ClassImp(AliDielectronSignalBase)
 
-TH1F* AliDielectronSignalBase::fgHistSimPM=0x0;
-TObject* AliDielectronSignalBase::fgPeakShape=0x0;
 const char* AliDielectronSignalBase::fgkValueNames[6] = {
   "Signal","Background","Significance","Signal/Background","Mass","MassWidth"};
 
@@ -53,6 +52,8 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fHistDataMM(0),
   fHistDataME(0),
   fHistRfactor(0),
+  fPeakShapeObj(0x0),
+  fHistSimPM(0x0),
   fValues(6),
   fErrors(6),
   fIntMin(0),
@@ -70,6 +71,7 @@ AliDielectronSignalBase::AliDielectronSignalBase() :
   fPeakMethod(kBinCounting),
   fProcessed(kFALSE),
   fPOIpdg(443)
+
 {
   //
   // Default Constructor
@@ -86,6 +88,8 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
   fHistDataMM(0),
   fHistDataME(0),
   fHistRfactor(0),
+  fPeakShapeObj(0x0),
+  fHistSimPM(0x0),
   fValues(6),
   fErrors(6),
   fIntMin(0),
@@ -110,6 +114,46 @@ AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* t
 }
 
 //______________________________________________
+AliDielectronSignalBase::AliDielectronSignalBase(const char* name, const char* title, bool enummaps) :
+  TNamed(name, title),
+  fHistSignal(0),
+  fHistBackground(0),
+  fHistDataPM(0),
+  fHistDataPP(0),
+  fHistDataMM(0),
+  fHistDataME(0),
+  fHistRfactor(0),
+  fPeakShapeObj(0x0),
+  fHistSimPM(0x0),
+  fValues(6),
+  fErrors(6),
+  fIntMin(0),
+  fIntMax(0),
+  fFitMin(0),
+  fFitMax(0),
+  fRebin(1),
+  fMethod(kLikeSign),
+  fScaleMin(0.),
+  fScaleMax(0.),
+  fScaleMin2(0.),
+  fScaleMax2(0.),
+  fScaleFactor(1.),
+  fMixingCorr(kFALSE),
+  fPeakMethod(kBinCounting),
+  fProcessed(kFALSE),
+  fPOIpdg(443),
+  MapBackgroundMethod(),
+  MapSignalExtractionMethod()
+{
+  if(enummaps){
+    AliDielectronSignalBase::SetBackgroundEnumMap();
+    AliDielectronSignalBase::SetSignalExtractionEnumMap();
+  }
+  //
+  // Named + set enum maps Constructor
+  //
+}
+//______________________________________________
 AliDielectronSignalBase::~AliDielectronSignalBase()
 {
   //
@@ -122,6 +166,8 @@ AliDielectronSignalBase::~AliDielectronSignalBase()
   if (fHistDataMM) delete fHistDataMM;
   if (fHistDataME) delete fHistDataME;
   if (fHistRfactor)delete fHistRfactor;  
+  if (fPeakShapeObj) delete fPeakShapeObj;
+  if (fHistSimPM) delete fHistSimPM;
 }
 
 //______________________________________________
@@ -233,6 +279,7 @@ TObject* AliDielectronSignalBase::DescribePeakShape(ESignalExtractionMethod meth
   //
   // Describe the extracted peak by the selected method and overwrite signal etc if needed
   //
+  AliDielectronSignalFunc* SignalFuncObj = new AliDielectronSignalFunc();
 
   fPeakMethod=method;
   Double_t data=0.;
@@ -266,15 +313,15 @@ TObject* AliDielectronSignalBase::DescribePeakShape(ESignalExtractionMethod meth
     break;
 
   case kMCFitted:
-    if(!mcShape && !fgHistSimPM) { printf(" ERROR: No MC histogram passed or set. Returning. \n"); return 0x0; }
-    if(!fgHistSimPM) fgHistSimPM=mcShape;
-    fit = new TF1("fitMC",AliDielectronSignalFunc::PeakFunMC,fFitMin,fFitMax,1);
+    if(!mcShape && !fHistSimPM) { printf(" ERROR: No MC histogram passed or set. Returning. \n"); return 0x0; }
+    if(!fHistSimPM) fHistSimPM=mcShape;
+    fit = new TF1("fitMC",SignalFuncObj,&AliDielectronSignalFunc::PeakFunMC,fFitMin,fFitMax,1);
     fit->SetParNames("N");
     fHistSignal->Fit(fit,"RNI0");
     break;
 
   case kCrystalBall:
-    fit = new TF1("fitCB",AliDielectronSignalFunc::PeakFunCB,fFitMin,fFitMax,5);
+    fit = new TF1("fitCB",SignalFuncObj,&AliDielectronSignalFunc::PeakFunCB,fFitMin,fFitMax,5);
     fit->SetParNames("alpha","n","meanx","sigma","N");
     //  fit->SetParameters(-.2,5.,gMjpsi,.06,20);
     //  fit->SetParameters(1.,3.6,gMjpsi,.08,700);
@@ -290,7 +337,7 @@ TObject* AliDielectronSignalBase::DescribePeakShape(ESignalExtractionMethod meth
     break;
 
   case kGaus:
-    fit = new TF1("fitGaus",AliDielectronSignalFunc::PeakFunGaus,fFitMin,fFitMax,3);
+    fit = new TF1("fitGaus",SignalFuncObj,&AliDielectronSignalFunc::PeakFunGaus,fFitMin,fFitMax,3);
     //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
     fit->SetParNames("N","meanx","sigma");
     fit->SetParameters(1.3*nPOI, massPOI, 0.025);
@@ -299,6 +346,7 @@ TObject* AliDielectronSignalBase::DescribePeakShape(ESignalExtractionMethod meth
     fit->SetParLimits(2, 0.001,         1.           );
     parMass=1;
     parSigma=2;
+//    fHistSignal->Fit(fit,"RNI0");
     fHistSignal->Fit(fit,"RNI0");
     break;
 
@@ -343,19 +391,19 @@ TObject* AliDielectronSignalBase::DescribePeakShape(ESignalExtractionMethod meth
   // set the peak method obj
   switch(fPeakMethod) {
   case kBinCounting:
-    fgPeakShape=(TH1F*)fHistSignal->Clone("BinCount");
+    fPeakShapeObj=(TH1F*)fHistSignal->Clone("BinCount");
     break;
   case kMCScaledMax:
   case kMCScaledInt:
-    fgPeakShape=mcShape;
+    fPeakShapeObj=mcShape;
     break;
   case kMCFitted:
   case kCrystalBall:
   case kGaus:
-    fgPeakShape=fit;
+    fPeakShapeObj=fit;
     break;
   }
 
-  return fgPeakShape;
+  return fPeakShapeObj;
 
 }

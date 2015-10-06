@@ -26,6 +26,8 @@
 #include <TMath.h>
 #include <TH1F.h>
 #include <TF1.h>
+#include <TExMap.h>
+
 
 class TObjArray;
 class TPaveText;
@@ -56,10 +58,14 @@ public:
 
   AliDielectronSignalBase();
   AliDielectronSignalBase(const char*name, const char* title);
+  AliDielectronSignalBase(const char*name, const char* title, bool enummaps);
   
   virtual ~AliDielectronSignalBase();
+  
+  TExMap MapBackgroundMethod;
+  TExMap MapSignalExtractionMethod;
 
-  void SetMCSignalShape(TH1F* hist) { fgHistSimPM=hist; }
+  void SetMCSignalShape(TH1F* hist) { fHistSimPM=hist; }
   void SetParticleOfInterest(Int_t pdgcode) { fPOIpdg=pdgcode; }
   void SetIntegralRange(Double_t min, Double_t max) {fIntMin=min;fIntMax=max;}
   void SetFitRange(Double_t min, Double_t max) {fFitMin=min; fFitMax=max;}
@@ -92,7 +98,7 @@ public:
   TH1* GetBackgroundHistogram()  const {return fHistBackground;}
   TH1* GetUnlikeSignHistogram()  const {return fHistDataPM;}
   TH1* GetRfactorHistogram()     const {return fHistRfactor;}
-  TObject* GetPeakShape()        const {return fgPeakShape;}
+  TObject* GetPeakShape()        const {return fPeakShapeObj;}
   
   void SetScaleRawToBackground(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
   void SetScaleRawToBackground(Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2) { fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2; }
@@ -120,6 +126,9 @@ public:
   */
   virtual void Process(TObjArray * const /*arrhist*/) = 0;
   TObject* DescribePeakShape(ESignalExtractionMethod method, Bool_t replaceValErr=kFALSE,  TH1F *mcShape=0x0);
+
+  TObject* fPeakShapeObj;       // histogram or function used to describe the extracted signal
+  TH1F* fHistSimPM;          // simulated peak shape
 
 protected: 
 
@@ -149,14 +158,13 @@ protected:
   Bool_t fMixingCorr;                // switch for bin by bin correction with R factor
 
   ESignalExtractionMethod fPeakMethod;  // method for peak description and signal extraction
-  static TObject *fgPeakShape;       // histogram or function used to describe the extracted signal
-
   Bool_t fProcessed;                 // flag
   Int_t  fPOIpdg;                    // pdg code particle of interest
-  static TH1F* fgHistSimPM;          // simulated peak shape
 
   void SetSignificanceAndSOB();      // calculate the significance and S/B
   void SetFWHM();                    // calculate the fwhm
+  void SetBackgroundEnumMap();	     // set enum string relations
+  void SetSignalExtractionEnumMap(); // set enum string relations
   static const char* fgkValueNames[6];  //value names
 
   TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
@@ -164,7 +172,7 @@ protected:
   AliDielectronSignalBase(const AliDielectronSignalBase &c);
   AliDielectronSignalBase &operator=(const AliDielectronSignalBase &c);
 
-  ClassDef(AliDielectronSignalBase,4)         // base and abstract class for signal extraction
+  ClassDef(AliDielectronSignalBase,5)         // base and abstract class for signal extraction
 };
 
 inline void AliDielectronSignalBase::SetSignificanceAndSOB()
@@ -188,11 +196,12 @@ inline void AliDielectronSignalBase::SetSignificanceAndSOB()
 inline void AliDielectronSignalBase::SetFWHM()
 {
   // calculate the fwhm
-  if(!fgPeakShape) return;
+  if(!fPeakShapeObj) return;
 
+  
   // case for TF1
-  if(fgPeakShape->IsA() == TF1::Class()) {
-    TF1* fit  = (TF1*) fgPeakShape->Clone("fit");
+  if(fPeakShapeObj->IsA() == TF1::Class()) {
+    TF1* fit  = (TF1*) fPeakShapeObj->Clone("fit");
     TF1* pfit = (TF1*) fit->Clone("pfit");
     TF1* mfit = (TF1*) fit->Clone("mfit");
     for (Int_t i=0; i<fit->GetNpar(); i++) {
@@ -218,16 +227,61 @@ inline void AliDielectronSignalBase::SetFWHM()
     delete pfit;
     delete mfit;
   }
-  else if(fgPeakShape->IsA() == TH1F::Class()) {
+  else if(fPeakShapeObj->IsA() == TH1F::Class()) {
     // th1 calculation
-    TH1F *hist = (TH1F*) fgPeakShape->Clone("hist");
+    TH1F *hist = (TH1F*) fPeakShapeObj->Clone("hist");
     Int_t bin1 = hist->FindFirstBinAbove(hist->GetMaximum()/2);
     Int_t bin2 = hist->FindLastBinAbove(hist->GetMaximum()/2);
     fValues(5) = hist->GetBinCenter(bin2) - hist->GetBinCenter(bin1);
     fErrors(5) = 0.0; // not defined
     delete hist;
   }
+}
 
+inline void AliDielectronSignalBase::SetBackgroundEnumMap(){
+
+  TString method;
+  
+  method = "FittedMC";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kFittedMC);
+  method = "Fitted";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kFitted);
+  method = "LikeSign";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kLikeSign);
+  method = "LikeSignArithm";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kLikeSignArithm);
+  method = "LikeSignRcorr";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kLikeSignRcorr);
+  method = "LikeSignArithmRcorr";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(),(Long64_t) AliDielectronSignalBase::kLikeSignArithmRcorr);
+  method = "LikeSignFit";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(),(Long64_t) AliDielectronSignalBase::kLikeSignFit);
+  method = "EventMixing";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(),(Long64_t) AliDielectronSignalBase::kEventMixing);
+  method = "EventMixingFit";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(),(Long64_t) AliDielectronSignalBase::kEventMixingFit);
+  method = "Rotation";
+  MapBackgroundMethod.Add((Long64_t) method.Hash(),(Long64_t) AliDielectronSignalBase::kRotation);
+
+}
+
+inline void AliDielectronSignalBase::SetSignalExtractionEnumMap(){
+
+  TString method;
+
+  method = "BinCounting";
+  MapSignalExtractionMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kBinCounting);
+  method = "MCScaledMax";
+  MapSignalExtractionMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kMCScaledMax);
+  method = "MCScaledInt";
+  MapSignalExtractionMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kMCScaledInt);
+  method = "MCFitted";
+  MapSignalExtractionMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kMCFitted);
+  method = "CrystalBall";
+  MapSignalExtractionMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kCrystalBall);
+  method = "Gaus";
+  MapSignalExtractionMethod.Add((Long64_t) method.Hash(), (Long64_t) AliDielectronSignalBase::kGaus);
+  
 }
 
 #endif

@@ -22,6 +22,8 @@
 #include <TVectorT.h>
 #include <TString.h>
 #include <TH1F.h>
+#include <TF1.h>
+#include <TMath.h>
 
 #include "AliDielectronSignalExt.h"
 
@@ -39,7 +41,6 @@ public:
   void ProcessFitLS(TObjArray * const arrhist);       // substract the fitted SE like-sign background
   void ProcessFitEM(TObjArray * const arrhist);       // substract the fitted SE+ME like-sign background
 
-  //  void SetMCSignalShape(TH1F* hist) { fgHistSimPM=hist; }
   void SetUseIntegral(Bool_t flag=kTRUE) {fUseIntegral = flag;};
   void SetFunctions(TF1 * const combined, TF1 * const sig=0, TF1 * const back=0, Int_t parM=1, Int_t parMres=2);
   void CombineFunc(TF1 * const peak=0, TF1 * const bgnd=0);
@@ -61,9 +62,9 @@ public:
   virtual void Draw(const Option_t* option = "");
 
   // peak functions
-  static Double_t PeakFunMC(const Double_t *x, const Double_t *par); // peak function from a mc histo
-  static Double_t PeakFunCB(const Double_t *x, const Double_t *par); // crystal ball function
-  static Double_t PeakFunGaus(const Double_t *x, const Double_t *par); // gaussian
+  Double_t PeakFunMC(const Double_t *x, const Double_t *par); // peak function from a mc histo
+  Double_t PeakFunCB(const Double_t *x, const Double_t *par); // crystal ball function
+  Double_t PeakFunGaus(const Double_t *x, const Double_t *par); // gaussian
 
 protected:
 
@@ -85,7 +86,6 @@ protected:
   static Int_t    fNparPeak;              // number of parameters for peak function
   static Int_t    fNparBgnd;              // number of parameters for background function
 
-  //  static TH1F* fgHistSimPM;         // simulated peak shape
   
   ClassDef(AliDielectronSignalFunc,3)         // class for signal extraction using a combined bgrd+signal fit
 };
