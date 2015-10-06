@@ -31,6 +31,7 @@ public:
  
   AliDielectronSignalExt();
   AliDielectronSignalExt(const char*name, const char* title);
+  AliDielectronSignalExt(const char*name, const char* title, bool enummaps);
 
   virtual ~AliDielectronSignalExt();
 
