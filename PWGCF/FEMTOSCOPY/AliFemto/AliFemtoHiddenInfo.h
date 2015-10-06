@@ -5,8 +5,6 @@
 #ifndef AliFemtoHiddenInfo_hh
 #define AliFemtoHiddenInfo_hh
 
-#include "AliFemtoTypes.h"
-
 /// \class AliFemtoHiddenInfo
 /// \brief A pure virtual base class for the hidden (Monte Carlo) data.
 ///
