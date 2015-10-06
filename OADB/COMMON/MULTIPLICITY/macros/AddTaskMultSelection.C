@@ -27,7 +27,7 @@ AliMultSelectionTask *AddTaskMultSelection( Bool_t lCalibration = kTRUE, const T
     
     Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
     
-    AliAnalysisDataContainer *coutputList = mgr->CreateContainer("cList",
+    AliAnalysisDataContainer *coutputList = mgr->CreateContainer("cListMultSelection",
                                                                  TList::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
