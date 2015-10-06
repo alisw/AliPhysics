@@ -1331,7 +1331,7 @@ UInt_t AliGRPPreprocessor::ProcessSPDMeanVertex()
 							AliCDBMetaData md;
 							md.SetResponsible("Cvetan Cheshkov");
 							md.SetComment("SPD Mean Vertex");					
-							storeResult = Store("Calib", "MeanVertexSPD", meanVtx, &md, 0, kTRUE); 
+							storeResult = Store("Calib", "MeanVertexSPD", meanVtx, &md, 0, 0); 
 						}
 						else{
 							AliWarning("No SPD Mean Vertex object found in file");
