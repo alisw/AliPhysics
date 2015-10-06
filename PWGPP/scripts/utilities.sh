@@ -777,6 +777,43 @@ generPWD(){
   echo $heslo;
 }
 
+reformatXMLCollection()
+{
+  #parse the xml collection on stdinput
+  #output a collection in format: file md5 ctime size
+  local nfields=""
+  local turl=""
+  local md5=""
+  local ctime=""
+  local size=""
+  local x=""
+  while read -a fields; do
+    nfields=${#fields[*]}
+    turl=""
+    md5=""
+    ctime=""
+    size=""
+    for ((x=1;x<=${nfields};x++)); do
+      field=${fields[${x}]}
+      if [[ "${field}" == "md5="* ]]; then
+        eval ${field}
+      fi
+      if [[ "${field}" == "turl="* ]]; then
+        eval ${field}
+      fi
+      if [[ "${field}" == "ctime="* ]]; then
+        eval "${field} ${fields[((x+1))]}"
+      fi
+      if [[ "${field}" == "size="* ]]; then
+        eval ${field}" "${fields[((x+1))]}
+      fi
+    done
+    ctime=$( date -d "${ctime}" +%s 2>/dev/null)
+    [[ -z $md5 ]] && md5="."
+    [[ -n "$turl" ]] && echo "${turl//"alien://"/} ${md5} ${ctime} ${size}"
+  done
+}
+
 #this makes debugging easier:
 #executes the command given as an argument in this environment
 #use case:
