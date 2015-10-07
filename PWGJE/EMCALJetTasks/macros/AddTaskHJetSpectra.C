@@ -4,7 +4,6 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
   Int_t               collisionSystem         = 0,  // 0=pp,  1=pPb, 2= PbPb  
   Int_t               typeOfData              = 0,  // 0 real data, 1=pythia 2=hijing trigger,if MC handler should be used
   Int_t               typeOfAnal              = 0,  // 0= Realdata, 1 = Eff with MC, 2 = delta pT Embedding, 3=pure kine
-  Double_t            perpConeR             = 0.4,    //perp cone for deltaPt + perp cone bg
   const char*         containerSuffix         = "",   //tag to the name of container
   const char*         centralityType          = "V0A",   //centrality
   Float_t             centMin                 = 0,      //lower centrality percentil 
@@ -35,6 +34,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    TString kClusName     = "CaloClusters";
    TString kCorrClusName = "CaloClustersCorr";
 
+   Double_t jetRadiusBg = 0.4;
+   Double_t jetEtaRange   = TMath::Abs(trackEtaWindow - jetRadius);
+   Double_t jetEtaRangeKT = TMath::Abs(trackEtaWindow - jetRadiusBg);
 
    // #### Detect the demanded trigger with its readable name
    TString triggerName(Form("Trigger_%i", trigger));
@@ -58,7 +60,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
 
   enum MyContainer {
      kContainerOne = 0,  
-     kContainerTwo   = 1  
+     kContainerTwo   = 1,  
+     kContainerThree = 2, 
+     kContainerFour  = 3 
   };
 
   enum MyDataType {
@@ -97,8 +101,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       TMath::Nint(10*dphi), ttType, TMath::Nint(ttLow), TMath::Nint(ttHigh));
 
    //_________________________________________________________________
-   TString recoTracks  = "";// kTracksName.Data();
-   TString mcParticles = "";
+   TString recoTracks  = ""; //DETECTOR LEVEL TRACKS NAME
+   TString mcParticles = ""; //GENERATOR LEVEL PARTICLE NAME
 
    if(typeOfAnal < kKine)                    recoTracks = kTracksName.Data();
    if(typeOfAnal==kEff || typeOfAnal==kKine) mcParticles = kTracksNameMC.Data();
@@ -110,7 +114,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    //typeOfAnal           0= Realdata, 1 = Eff with MC, 2 = delta pT Embedding, 3=pure kine
    //_________________________________________________________________
 
-   if(typeOfAnal == kEmb){ //EMBEDDING   to real data (or also to sim?)
+   if(typeOfAnal == kEmb){ //EMBEDDING   to real data 
 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbeddingFromGen.C");
       AliJetEmbeddingFromGenTask* embTask = AddTaskJetEmbeddingFromGen(
@@ -144,14 +148,14 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(typeOfAnal == kEmbSingl){ //EMBEDDING SINGLE TRACK  to real data 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
       AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", "SigleTrackEmb", 
-                                       5.,120., //min pT max pT
-                                       -0.5,0.5, //min Eta. max Eta`
+                                       ptHardMinEmb, ptHardMaxEmb, //min pT max pT
+                                       -jetEtaRange, jetEtaRange, //min Eta. max Eta  ???????????? What range
                                        0.,TMath::TwoPi(),//min phi max phi
                                        1, //ntracks
                                        0,kFALSE);
-      embSingle->SetMarkMC(99999);  //Set embedded MC track label
+      embSingle->SetMarkMC(99999);  //SET EMBEDDED MC TRACK LABEL
       if(trigger>0) embSingle->SelectCollisionCandidates(trigger);
-      //FK// embSingle->SetMasslessParticles(kTRUE);
+      //FK//?// embSingle->SetMasslessParticles(kTRUE);
    }
  
    if(typeOfAnal == kEmb || typeOfAnal == kEmbSingl){ 
@@ -174,78 +178,31 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    if(jetRadius < 0.1) return NULL;
  
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
+
    //REAL TRACKS - JET CLUSTERIZER 
    AliEmcalJetTask* jetFinderTask = 0x0;
-   AliEmcalJetTask* jetFinderRho   = 0x0; 
    AliEmcalJetTask* jetFinderRhoKT = 0x0; 
-   TString myRhoName="";
-   //Float_t jetPtThresholdRho = 100.; //GEV cut on jet pT to be excluded from bg median calculus 
-                               //??? HOW LARGE THIS CUT SHOULD BE ???
-                       //MULTUIPLE HARD SCATTERINGS MAY HAPPEN
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
 
-   if(typeOfAnal != kKine){ 
-      jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKT,jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme); //FK
-
-      //EXTERN CMS RHO TASK for real tracks
-      myRhoName = "ExternalRhoTask";
-      jetFinderRho   = AddTaskEmcalJet(recoTracks.Data(),"", kANTIKT, 0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetAKT"); // anti-kt
-      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKT,     0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKT",0.,0,0); // kt
+   if(typeOfAnal != kKine){
+       //ANTIKT  DETECTOR LEVEL 
+      jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKT,jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme); 
+      //KT DETECTOR LEVEL
+      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKT,   jetRadiusBg, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKT",0.,0,0);
       jetFinderRhoKT->SetMinJetPt(0);
-
-      AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), 
-                                                        jetFinderRho->GetName(), 
-                                                        recoTracks.Data(),   //pico trakcs
-                                                                "",   //calo clusters
-                                                        myRhoName.Data(), 
-                                                               0.4,  //jet radius
-                                                             "TPC",  //cut type
-                                                              0.01,  //minimum jet area cut
-                                                               0.0,  //jet pt cut ????????
-                                                                 0,  //enareacut 
-                                                                 0,  //sfunc
-                                                       nExclJetsBg,  //excl Jets  //FK// How many jets to exclude ????????
-                                                            kFALSE,   //no histo
-                                                   myRhoName.Data(),  //task name
-                                                             kTRUE); //claculate rho CMS
-
    }
-   // #### DEFINE EXTERN CMS RHO TASK for true MC particles 
-   AliEmcalJetTask* jetFinderTaskMC = NULL;
-   TString myRhoNameMC = "";
-   AliEmcalJetTask* jetFinderRhoMC   = NULL; 
-   AliEmcalJetTask* jetFinderRhoKTMC = NULL; 
-   AliAnalysisTaskRhoSparse* rhotaskMC =NULL; 
- 
-   if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl || typeOfAnal == kKine ){ //EFFICIENCY OR EMBEDDING ?????????? KINE 
-      //clusterizer for MC true particles
-      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetMC"); //FK
 
-   // #### DEFINE EXTERN CMS RHO TASK for real tracks
-      myRhoNameMC = "ExternalRhoTaskMC";
-      jetFinderRhoMC   = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, 0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetAKTMC"); // anti-kt
-      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKT,     0.4, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKTMC",0.,0,0); // kt
+   //____________________________________________________________________
+
+   AliEmcalJetTask* jetFinderTaskMC = NULL;
+   AliEmcalJetTask* jetFinderRhoKTMC = NULL; 
+ 
+   if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl || typeOfAnal == kKine ){ 
+      //ANTIKT GENERATOR LEVEL
+      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetMC"); 
+      //KT GENERATOR LEVEL
+      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKT,   jetRadiusBg, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKTMC",0.,0,0); 
       jetFinderRhoKTMC->SetMinJetPt(0);
 
-      //gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
-      rhotaskMC = AddTaskRhoSparse(jetFinderRhoKTMC->GetName(), 
-                                   jetFinderRhoMC->GetName(), 
-                                   mcParticles.Data(),   //pico trakcs
-                                   "",   //calo clusters
-                                   myRhoNameMC.Data(), 
-                                   0.4,  //jet radius
-                                  "TPC",  //cut type
-                                    0.,  //jet area cut
-                                    0.0,  //jet pt cut ????????
-                                     0,  //enareacut 
-                                     0,  //sfunc
-                           nExclJetsBg,  //excl Jets  //FK// ????????
-                                kFALSE,   //no histo
-                                   myRhoNameMC.Data(),  //task name
-                                kTRUE); //claculate rho CMS
-
-  
-      if(typeOfAnal == kKine) rhotaskMC->SetNeedEmcalGeom(kFALSE); //KINE
 
  
       if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl){ //EFFICIENCY OR EMBEDDING 
@@ -261,7 +218,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
                                                                      centralityType,  
                                                                      trigger,
                                                                      "",""  //trigClass, kEmcalTriggers
-                                                                     ); //FK
+                                                                     ); 
          
          
          tagr->SetJetTaggingType(AliAnalysisTaskEmcalJetTagger::kClosest); //GEN-REC JET MATCHING DONE HERE
@@ -274,27 +231,35 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          AliJetContainer *cont2 = tagr->GetJetContainer(kContainerTwo);//1
          cont->SetMaxTrackPt(1000);
          cont2->SetMaxTrackPt(1000);
-         cont->SetJetPhiLimits(0.,10.); //FK//
-         cont2->SetJetPhiLimits(0.,10.);//FK//
+         cont->SetJetPhiLimits(0.,10.); 
+         cont2->SetJetPhiLimits(0.,10.);
       }
    }
 
    //__________________________________________________________________________________
-   // #### DEFINE ANALYSIS TASK
+   // #### DEFINE MY ANALYSIS TASK
 
    TString tname = "";
    if(jetFinderTaskMC) tname = jetFinderTaskMC->GetName();
    if(jetFinderTask)   tname = jetFinderTask->GetName();
 
    AliAnalysisTaskHJetSpectra *task = new AliAnalysisTaskHJetSpectra(
-                                  Form("HJetSpectra_%s_%s_TT%d%d", tname.Data(), triggerName.Data(),TMath::Nint(ttLow),TMath::Nint(ttHigh))); //KINE
+                                  Form("HJetSpectra_%s_%s_An%d%d_TT%d%d", 
+                                  tname.Data(), triggerName.Data(), typeOfData, typeOfAnal,
+                                  TMath::Nint(ttLow),TMath::Nint(ttHigh)));
 
    if(typeOfAnal == kKine) task->SetNeedEmcalGeom(kFALSE); //KINE
+   if(typeOfAnal == kEff && typeOfData == kPythia){  //EFF with PYTHIA
+      task->SetIsPythia(kTRUE);  //NECESSARY IN ORDER TO FILL XSEC AND TRIALS
+      task->SetMakeGeneralHistograms(kTRUE); //NECESSARY IN ORDER TO FILL XSEC AND TRIALS
+   }   
+
    //inspired by AliAnalysisTaskEmcalQGTagging
    //_____________________________________________
    //TRACK/PARTICLE CONTAINTERS
    AliParticleContainer *trackCont      = 0x0; //reconstructed tracks
    AliParticleContainer *trackContTrue  = 0x0; //mc particles
+
    if(typeOfAnal != kKine){ //not filled when kine analyzed only
       trackCont   =  task->AddParticleContainer(recoTracks.Data());  //reconstructed tracks 
    }
@@ -303,27 +268,40 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    } 
    //_____________________________________________
    //JET CONTAINERS
-   AliJetContainer *jetContRec =0x0; //jets with reconstructed tracks
-   AliJetContainer *jetContTrue=0x0; //jets from mc particles
-   Double_t jetEtaRange = TMath::Abs(trackEtaWindow - jetRadius);
+   AliJetContainer *jetContRec    = 0x0; //jets with reconstructed tracks
+   AliJetContainer *jetContTrue   = 0x0; //jets from mc particles
+   AliJetContainer *jetContRecKT  = 0x0; //KT jets with reconstructed tracks
+   AliJetContainer *jetContTrueKT = 0x0; //KT jets from mc particles
+
    //typeOfData   // 0 real data, 1=pythia 2=hijing trigger,if MC handler should be used
    // typeOfAnal  // 0= Realdata, 1 = Eff with MC, 2 = delta pT Embedding, 3=pure kine
+
    if(typeOfAnal == kRec){
       //REAL DATA
-      jetContRec = task->AddJetContainer(jetFinderTask->GetName(),"TPC",jetRadius);
+      jetContRec   = task->AddJetContainer(jetFinderTask->GetName(),"TPC",jetRadius);
+
       if(jetContRec) {
-         jetContRec->SetRhoName(myRhoName.Data());
          jetContRec->ConnectParticleContainer(trackCont);
          jetContRec->SetPercAreaCut(acut);//0.6
          jetContRec->SetMaxTrackPt(1000);
          jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
+
+      jetContRecKT = task->AddJetContainer(jetFinderRhoKT->GetName(),"TPC",jetRadiusBg);
+      if(jetContRecKT){
+         jetContRecKT->ConnectParticleContainer(trackCont);
+         //?//jetContRecKT->SetPercAreaCut(acut);//0.6         ?????????   APPLY CUT FOR BG KT JETS
+         jetContRecKT->SetMaxTrackPt(1000);
+         jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);  // RANGE   
+      }
+
    }else if(typeOfAnal==kEff || typeOfAnal==kEmb || typeOfAnal == kEmbSingl){
       // MC TRUE+REC  OR  EMBEDDED
+      //AKT JET REC  ContainerOne 
       jetContRec = task->AddJetContainer(jetFinderTask->GetName(),"TPC",jetRadius);
       if(jetContRec) {
-         jetContRec->SetRhoName(myRhoName.Data());
          jetContRec->ConnectParticleContainer(trackCont);
          jetContRec->SetPercAreaCut(acut);//0.6
          jetContRec->SetPythiaInfoName("PythiaInfo");
@@ -331,10 +309,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          jetContRec->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContRec->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
-
+      //AKT JETS GEN ContainerTwo
       jetContTrue = task->AddJetContainer(jetFinderTaskMC->GetName(),"TPC",jetRadius);
       if(jetContTrue) {
-         jetContTrue->SetRhoName(myRhoNameMC.Data());
          jetContTrue->ConnectParticleContainer(trackContTrue);
          jetContTrue->SetPercAreaCut(acut);//0.6
          jetContTrue->SetPythiaInfoName("PythiaInfo");
@@ -342,17 +319,50 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
       }
+
+      //KT JET CONTAINERS FOR BG REC  ContainerThree
+      jetContRecKT = task->AddJetContainer(jetFinderRhoKT->GetName(),"TPC",jetRadius);
+      if(jetContRecKT) {
+         jetContRecKT->ConnectParticleContainer(trackCont);
+         //?//jetContRecKT->SetPercAreaCut(acut);//0.6
+         jetContRecKT->SetPythiaInfoName("PythiaInfo");
+         jetContRecKT->SetMaxTrackPt(1000);
+         jetContRecKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContRecKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
+      }
+      //KT JET CONTAINERS FOR BG GEN ContainerFour
+      jetContTrueKT = task->AddJetContainer(jetFinderRhoKTMC->GetName(),"TPC",jetRadius);
+      if(jetContTrueKT) {
+         jetContTrueKT->ConnectParticleContainer(trackContTrue);
+         //?//jetContTrueKT->SetPercAreaCut(acut);//0.6
+         jetContTrueKT->SetPythiaInfoName("PythiaInfo");
+         jetContTrueKT->SetMaxTrackPt(1000);
+         jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
+      }
+
+
    }else if(typeOfAnal == kKine){
       //ANALYZE KINE
+      //AKT JET CONTAINERS  GEN  ContainterOne
       jetContTrue = task->AddJetContainer(jetFinderTaskMC->GetName(),"TPC",jetRadius);
       if(jetContTrue){
-         jetContTrue->SetRhoName(myRhoNameMC.Data());
          jetContTrue->ConnectParticleContainer(trackContTrue);
          jetContTrue->SetPercAreaCut(acut);//0.6
          jetContTrue->SetPythiaInfoName("PythiaInfo");
          jetContTrue->SetMaxTrackPt(1000);
          jetContTrue->SetJetAcceptanceType(AliJetContainer::kUser);
          jetContTrue->SetJetEtaLimits(-jetEtaRange,jetEtaRange);
+      }
+      //KT JET CONTAINERS FOR BG GEN  ContainterTwo
+      jetContTrueKT = task->AddJetContainer(jetFinderRhoKTMC->GetName(),"TPC",jetRadius);
+      if(jetContTrueKT){
+         jetContTrueKT->ConnectParticleContainer(trackContTrue);
+         //?//jetContTrueKT->SetPercAreaCut(acut);//0.6
+         jetContTrueKT->SetPythiaInfoName("PythiaInfo");
+         jetContTrueKT->SetMaxTrackPt(1000);
+         jetContTrueKT->SetJetAcceptanceType(AliJetContainer::kUser);
+         jetContTrueKT->SetJetEtaLimits(-jetEtaRangeKT,jetEtaRangeKT);
       }
    }
  
@@ -360,14 +370,10 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetAnalysisType(collisionSystem,typeOfData,typeOfAnal);
    task->SetUsePileUpCut(usePileUpCut);
    task->SetUseDefaultVertexCut(useVertexCut);
-   task->SetPerpConeRadius(perpConeR);
    task->SetNofRandomCones(1);
    task->SetAcceptanceWindows(trackEtaWindow, jetRadius);
-   //task->SetSignalJetMinArea(acut*jetRadius*jetRadius*TMath::Pi()); //The same used by Mata
    task->SelectCollisionCandidates(trigger);
    task->SetCentralityType(centralityType,centMin,centMax); 
-   task->SetExternalRhoTaskName(myRhoName.Data());
-   task->SetExternalRhoTaskNameMC(myRhoNameMC.Data());
    if(typeOfAnal==kEff || typeOfAnal==kEmb || typeOfAnal == kEmbSingl){
       task->SetMinFractionShared(0.5);   //min pT fraction shared by  MC truth and rec jet
    }

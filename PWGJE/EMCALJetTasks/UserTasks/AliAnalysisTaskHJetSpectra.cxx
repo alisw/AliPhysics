@@ -63,15 +63,13 @@
 #include "AliAnalysisTaskEmcal.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisTaskHJetSpectra.h"
-#include "AliHeader.h" //KINE
-#include "AliRunLoader.h"   //KINE
+#include "AliHeader.h" 
+#include "AliRunLoader.h"   
 using namespace std;
 
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
-// Author Filip Krizek   (17.May. 2014)
+// Author Filip Krizek   (7.Oct. 2015)
 
-//TODO: Not accessing the particles when using MC
-//TODO: FillHistogram can be done better with virtual TH1(?)
 ClassImp(AliAnalysisTaskHJetSpectra)
 //________________________________________________________________________________________
 
@@ -80,21 +78,21 @@ AliAnalysisTaskEmcalJet("AliAnalysisTaskHJetSpectra", kTRUE),
  fCollisionSystem(0), fTypeOfData(0), fTypeOfAnal(0),
   fUseDefaultVertexCut(1), fUsePileUpCut(1),  
   fRhoTaskName(), fRhoTaskNameMC(),
-fPerpConeRadius(0.4),fPerpConeRadiusSquared(fPerpConeRadius*fPerpConeRadius),
  fSignalJetRadius(0.4), fSignalJetRadiusSquared(fSignalJetRadius*fSignalJetRadius),
 fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),  
 fCentralityType("V0A"), fCentPercMin(0.), fCentPercMax(100.), fMinFractionShared(0.5), 
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0),
 fTTlow(8.0), fTThigh(9.0), fTTtype(0), fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
-fHistEvtSelection(0x0), fh1Ntriggers(0x0), fh1NtriggersGen(0x0), 
+fHistEvtSelection(0x0), fh1Ntriggers(0x0), fh1TriggerMult(0x0), fh1NtriggersGen(0x0), fh1TriggerMultGen(0x0),
+fhKTAreaPt(0x0),
 fhJetPhi(0x0),  fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
  fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
-fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0), fhImpactParameter(0x0), fhImpactParameterTT(0x0),
+/*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
 fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
 fRhoRec(kRho),fRhoMC(kRho),
 fNofRandomCones(1),
-fZVertexCut(10.0),
+fZVertexCut(10.0),fCutPhi(0.6),
 fTrigTracksGen(),
 fTrigTracks()
 {
@@ -127,21 +125,21 @@ AliAnalysisTaskEmcalJet(name,kTRUE),
 fCollisionSystem(0), fTypeOfData(0), fTypeOfAnal(0),
   fUseDefaultVertexCut(1), fUsePileUpCut(1),
    fRhoTaskName(), fRhoTaskNameMC(),
-fPerpConeRadius(0.4),  fPerpConeRadiusSquared(fPerpConeRadius*fPerpConeRadius), 
 fSignalJetRadius(0.4), fSignalJetRadiusSquared(fSignalJetRadius*fSignalJetRadius), 
 fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),   
 fCentralityType("V0A"), fCentPercMin(0.), fCentPercMax(100.),  fMinFractionShared(0.5), 
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0), 
 fTTlow(8.0), fTThigh(9.0), fTTtype(0), fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
-fHistEvtSelection(0x0), fh1Ntriggers(0x0), fh1NtriggersGen(0x0), 
+fHistEvtSelection(0x0), fh1Ntriggers(0x0), fh1TriggerMult(0x0), fh1NtriggersGen(0x0), fh1TriggerMultGen(0x0),
+fhKTAreaPt(0x0), 
 fhJetPhi(0x0), fhJetPhiGen(0x0), fhTrackPhi(0x0), fhJetEta(0x0), fhJetEtaGen(0x0), fhTrackEta(0x0), fhTrackPt(0x0), fhTrackPtGen(0x0), fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
 fhDphiTriggerJetAccept(0x0),
 fhCentrality(0x0), fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
-fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0), fhImpactParameter(0x0), fhImpactParameterTT(0x0),
+/*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/ fhImpactParameter(0x0), fhImpactParameterTT(0x0),
  fhPtTrkTruePrimRec(0x0), fhPtTrkTruePrimGen(0x0), fhPtTrkSecOrFakeRec(0x0),
 fRhoRec(kRho),fRhoMC(kRho),
 fNofRandomCones(1),
-fZVertexCut(10.0),
+fZVertexCut(10.0),fCutPhi(0.6),
 fTrigTracksGen(),
 fTrigTracks()
 {
@@ -170,17 +168,18 @@ fTrigTracks()
 }
   
 //________________________________________________________________________
-Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi, Double_t radius, Int_t icont){
+Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi, Double_t radius, TClonesArray *trkArray, Bool_t isGen){
    //sum up pt inside a cone
    Double_t tmpConePt = 0.0;
 
-   TClonesArray *trkArray = GetParticleArray(icont); 
    if(!trkArray) return 0.0;
 
+   AliVParticle* tmpTrack=NULL; 
+
    for(Int_t i = 0; i < trkArray->GetEntries(); i++){
-      AliVParticle* tmpTrack = static_cast<AliVParticle*>(trkArray->At(i));
+      tmpTrack = static_cast<AliVParticle*>(trkArray->At(i));
       if(!tmpTrack) continue; 
-      if(IsTrackInAcceptance(tmpTrack, icont)){ 
+      if(IsTrackInAcceptance(tmpTrack, isGen)){ 
          if(GetDeltaR(tmpTrack->Phi(), phi, tmpTrack->Eta(), eta) < radius){
             tmpConePt = tmpConePt + tmpTrack->Pt();
          }
@@ -190,7 +189,7 @@ Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi, Doubl
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
+/*Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
 
    //Get pt hard from pythia header
    //Fill Xsection, trials histograms
@@ -225,39 +224,13 @@ Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
       }
       
       if(pythiaHeader){
-      
-         TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-      
-         if(tree){
-            TFile *curfile = tree->GetCurrentFile();
-            if(!curfile) {
-               Error("Notify","No current file");
-               return 0.0;
-            }
-            Float_t xsection = 0.0;
-            Float_t trials  = 1.0;
-      
-            AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,trials);
-      
-            fCrossSection = (Double_t) xsection;//pythiaHeader->GetXsection();
-      
-
-            if(fCrossSection > 0.){ //save cross-section and the number of trials
-               fTrials = (Double_t) trials; //pythiaHeader->Trials();
-               fh1Xsec->Fill("<#sigma>", fCrossSection);
-               fh1Trials->Fill("#sum{ntrials}", fTrials);
-            }
-         }
-
-         //if(fDebug>20)  Printf("XSECTION 1=%f   2=%f   TRIALS 1=%f  2=%f", 
-         //                       fCrossSection, pythiaHeader->GetXsection(), fTrials,  pythiaHeader->Trials());
 
          return pythiaHeader->GetPtHard();
       }
    }
    AliWarning(Form("In task %s: GetPtHard() failed!", GetName()));
    return -1.0;
-}
+}*/
 //________________________________________________________________________
 Double_t AliAnalysisTaskHJetSpectra::GetImpactParameter(){
    //get impact parameter from hijing
@@ -400,11 +373,11 @@ Bool_t AliAnalysisTaskHJetSpectra::IsEventInAcceptance(AliVEvent* event){
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* track, Int_t icont){
+Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* track, Bool_t isGen){
    // Check if the track pt and eta range 
    if(!track) return kFALSE;
 
-   if(fTypeOfAnal == kKine || icont == kContainerTwo){ //pure MC select charged primary tracks 
+   if(isGen){ //pure MC select charged primary tracks 
       //Apply only for kine level or MC containers   
       if((!track->Charge()) || (!(static_cast<AliAODMCParticle*>(track))->IsPhysicalPrimary()))
          return kFALSE;
@@ -419,12 +392,14 @@ Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* track, Int_
 
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskHJetSpectra::IsSignalJetInAcceptance(AliEmcalJet *jet){   
+Bool_t AliAnalysisTaskHJetSpectra::IsSignalJetInAcceptance(AliEmcalJet *jet, Bool_t suppressGhost){   
    //select jets in acceptance 
    if(!jet) return kFALSE;
    if(TMath::Abs(jet->Eta()) <= fSignalJetEtaWindow){
-      if(jet->Pt() >= fMinTrackPt){
-         if(jet->Area() >= fMinJetArea){
+      if(jet->Area() >= fMinJetArea){
+         if(suppressGhost){
+            if(jet->Pt() >= fMinTrackPt) return kTRUE;
+         }else{
             return kTRUE;
          }
       }
@@ -449,11 +424,11 @@ void AliAnalysisTaskHJetSpectra::ExecOnceLocal(){
 
 //________________________________________________________________________
 void  AliAnalysisTaskHJetSpectra::GetDeltaPt(Int_t nrho, TArrayD &rho, Double_t *dpt,
-                                           Double_t ttPhi, Double_t ttEta,
+                                           Double_t ttPhi, Double_t ttEta,  TClonesArray *trkArray, Bool_t isGen, 
                                            Double_t leadingJetExclusionProbability){
 
-   //delta pt = random cone - rho
-   // processes real reconstructed data
+   //delta pt = pT in random cone - rho * Area of random cone
+   // processes real reconstructed data. Exclude region around jet with TT   
 
    for(Int_t ir=0;ir<nrho;ir++){
       dpt[ir] = -10000.0;   // Set an invalid delta pt
@@ -464,8 +439,8 @@ void  AliAnalysisTaskHJetSpectra::GetDeltaPt(Int_t nrho, TArrayD &rho, Double_t 
    Double_t tmpRandConeEta = -fSignalJetEtaWindow  + fRandom->Rndm()*2*fSignalJetEtaWindow;
    Double_t tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
 
-   if(ttEta > -2.0){  //TT exists => make sure that one generates RC far away from the trigger track
-      while(GetDeltaR( tmpRandConePhi, ttPhi, tmpRandConeEta, ttEta)<fSignalJetRadius){
+   if(ttEta > -2.0){  //make sure that one generates RC far away from the trigger track jet
+      while(GetDeltaR( tmpRandConePhi, ttPhi, tmpRandConeEta, ttEta)<fSignalJetRadius+0.1){
          tmpRandConeEta = -fSignalJetEtaWindow  + fRandom->Rndm()*2*fSignalJetEtaWindow;
          tmpRandConePhi = fRandom->Rndm()*TMath::TwoPi();
       }
@@ -516,7 +491,7 @@ void  AliAnalysisTaskHJetSpectra::GetDeltaPt(Int_t nrho, TArrayD &rho, Double_t 
  
    // Get the cones' pt and calculate delta pt
    if(coneValid){
-      Double_t conePt = GetConePt(tmpRandConeEta,tmpRandConePhi, fSignalJetRadius, kContainerOne);
+      Double_t conePt = GetConePt(tmpRandConeEta,tmpRandConePhi, fSignalJetRadius, trkArray, isGen);
       for(Int_t ir=0; ir < nrho; ir++){
          dpt[ir] =  conePt - (rho[ir]*fSignalJetRadiusSquared*TMath::Pi());
       }
@@ -541,9 +516,9 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
   //_________________________________________________________________
    // fill MC information
 
-   if(fTypeOfData == kPythia){   //FK//How does this work with Embedding ?
-      fh1PtHard->Fill(GetPtHard());  //Fills cross section
-   }
+   //if(fTypeOfAnal == kKine && fTypeOfData == kPythia){   
+   //   fh1PtHard->Fill(GetPtHard());  //Fills cross section
+   //}
 
    if(fTypeOfData == kHijing){
       fImpParam = GetImpactParameter(); 
@@ -599,37 +574,135 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    fHistEvtSelection->Fill(0); //Count Accepted input event
 
    // END EVENT SELECTION
+
    //_________________________________________________________________
    // JET+TRACK CONTAINERS
-   AliJetContainer *jetContRec = NULL; //jet container from reconstruced tracks
-   AliJetContainer *jetContGen = NULL; // jet container from  MC particles
-   AliEmcalJet* jetGen = NULL;
-   AliEmcalJet* jetRec = NULL;
+   AliJetContainer *jetContRec   = NULL; //AKTjet container from reconstruced tracks
+   AliJetContainer *jetContGen   = NULL; //AKT jet container from  MC particles
+   AliJetContainer *jetContRecKT = NULL; //KT jet container from reconstruced tracks
+   AliJetContainer *jetContGenKT = NULL; //KT jet container from  MC particles
+
+   AliEmcalJet  *jetGen = NULL;
+   AliEmcalJet  *jetRec = NULL;
+
    TClonesArray *trkArrayRec = NULL; //track array of real reconstructed tracks 
    TClonesArray *trkArrayGen = NULL; //track array of MC particles
 
+   AliVParticle *constTrackRec = NULL; //jet constituent
+   AliVParticle *constTrackGen = NULL; //jet constituent
    //_________________________________________________________
    //READ JET TRACK CONTAINERS
    if(fTypeOfAnal == kRec){ 
-      jetContRec  = GetJetContainer(kContainerOne);
-      trkArrayRec = GetParticleArray(kContainerOne); //reconstructed particle container
+      jetContRec   = GetJetContainer(kContainerOne); //AKT jet
+      trkArrayRec  = GetParticleArray(kContainerOne); //reconstructed particle container
+      jetContRecKT = GetJetContainer(kContainerTwo);//KT jet
    }
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kEmb || fTypeOfAnal == kEmbSingl){
-      jetContRec  = GetJetContainer(kContainerOne);
+      jetContRec  = GetJetContainer(kContainerOne);  //AKT
       trkArrayRec = GetParticleArray(kContainerOne); //reconstructed particle container
-      jetContGen  = GetJetContainer(kContainerTwo); //GENERATOR LEVEL JETS
+      jetContGen  = GetJetContainer(kContainerTwo); //AKT generator level jets
       trkArrayGen = GetParticleArray(kContainerTwo); //true MC particle container
+
+      jetContRecKT = GetJetContainer(kContainerThree);  //KT  reconstructed jets
+      jetContGenKT = GetJetContainer(kContainerFour);   //KT generator level jets
    }
 
    if(fTypeOfAnal == kKine){   // Kine written to the 0th container !!!!!!!!!!!!!!!! 
-      jetContGen  = GetJetContainer(kContainerOne);
-      trkArrayGen = GetParticleArray(kContainerOne); //process kine particle container as reco???
+      jetContGen  = GetJetContainer(kContainerOne);  //AKT jets
+      trkArrayGen = GetParticleArray(kContainerOne); //kine particle container 
+
+      jetContGenKT =  GetJetContainer(kContainerTwo); //KT jets
    }
  
    //if(fDebug>20)  Printf("POINTER TO CONTAINERS   JETrec=%p  TRKrec=%p   JETgen=%p   TRKgen=%p", 
    //                       jetContRec,trkArrayRec,jetContGen, trkArrayGen);
 
+
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   //LOOP OVER TRACKS  SEARCH FOR TRIGGER CANDIDATES IN GEN TRACKS
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   Int_t indexSingleRndTrigGen = -1; //index of single random trigger
+   AliVParticle* trackTTGen    = NULL; //pointer to the trigger hadron
+   Int_t ntriggersGen = 0;
+ 
+   if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
+
+      fTrigTracksGen.clear(); //list of trigger particle indices true MC
+
+      if(trkArrayGen){ 
+         for(Int_t i = 0; i < trkArrayGen->GetEntries(); i++){ // loop over reconstructed tracks 
+            constTrackGen = static_cast<AliVParticle*>(trkArrayGen->At(i));
+
+            if(!constTrackGen) continue;
+       
+            if(IsTrackInAcceptance(constTrackGen, kTRUE)){  
+               fhTrackPtGen->Fill(constTrackGen->Pt());  //inclusive pT spectrum of tracks
+                
+               if((fTTlow <= constTrackGen->Pt()) && (constTrackGen->Pt() < fTThigh)){
+                  fTrigTracksGen.push_back(i);  //trigger candidates
+               }
+            }
+         }
+      }
+ 
+      ntriggersGen = (Int_t) fTrigTracksGen.size();
+      fh1TriggerMultGen->Fill(ntriggersGen);  
+ 
+      if(ntriggersGen>0){
+         indexSingleRndTrigGen = fRandom->Integer(ntriggersGen); //Integer 0 ... ntriggers-1
+         trackTTGen = static_cast<AliVParticle*>(trkArrayGen->At(fTrigTracksGen[indexSingleRndTrigGen]));
+      }
+   }
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   //LOOP OVER TRACKS  SEARCH FOR TRIGGER CANDIDATES IN REC TRACKS
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   Int_t indexSingleRndTrig = -1; //index of single random trigger
+   AliVParticle* trackTT = NULL;
+   Int_t ntriggers = 0;
+ 
+   if(fTypeOfAnal != kKine){
+      fTrigTracks.clear(); //list pf trigger particle indices
+      
+      if(trkArrayRec){ 
+         for(Int_t i = 0; i < trkArrayRec->GetEntries(); i++){ // loop over reconstructed tracks 
+            constTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(i));
+      
+            if(!constTrackRec) continue;
+      
+            if(fTypeOfAnal == kEmb || fTypeOfAnal == kEmbSingl){
+               //if(fDebug>99)  Printf("TRACK LABEL %d", track->GetLabel());
+               //in embed evts search for TT only among real tracks; do not consider embedded tracks as trigger
+               if(TMath::Abs(constTrackRec->GetLabel()) == 99999) continue;//9999 set in AddTaskHJetSpectra.C
+            }
+      
+      
+            if(IsTrackInAcceptance(constTrackRec, kFALSE)){  //rec   (Same analysis for gen level?)
+               //Fill some inclusive spectra
+               fhTrackPhi->Fill(constTrackRec->Pt(), RelativePhi(constTrackRec->Phi(),0.0)); // phi = -pi,pi
+               fhTrackEta->Fill(constTrackRec->Pt(), constTrackRec->Eta());
+               fhTrackPt->Fill(constTrackRec->Pt());
+      
+               if(fTTlow <= constTrackRec->Pt() && constTrackRec->Pt() < fTThigh){
+                  fTrigTracks.push_back(i);  //trigger candidates
+               }
+            }
+         }
+      }
+      
+      //   SELECT SINGLE INCLUSIVE REC LEVEL TRIGGER 
+      ntriggers = (Int_t) fTrigTracks.size();
+      fh1TriggerMult->Fill(ntriggers);  
+      
+      if(ntriggers>0){
+         indexSingleRndTrig = fRandom->Integer(ntriggers); //Integer 0 ... ntriggers-1
+         trackTT = static_cast<AliVParticle*>(trkArrayRec->At(fTrigTracks[indexSingleRndTrig]));
+         //if(fDebug>20)  Printf("TT index = %d   size =%d", indexSingleRndTrig, (int)fTrigTracks.size());
+      }
+   }
+ 
 
    //___________________________________________________________
    // CALCULATE RHO
@@ -637,44 +710,49 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    fRhoMC.Reset(0.);
 
    if(fTypeOfAnal == kRec || fTypeOfAnal == kEff || fTypeOfAnal == kEmb || fTypeOfAnal == kEmbSingl){
-      fRhoRec[kConeRho] = EstimateBgCone(kContainerOne); //container ID=0 reconstructed tracks
-      fRhoRec[kCMSRho]  = GetRhoVal(kContainerOne);   //funkce AliAnalysisTaskEmcalJet.h 
+      fRhoRec[kConeRho] = EstimateBgCone( jetContRec,   trkArrayRec, trackTT, kFALSE); //container ID=0 reconstructed tracks
+      fRhoRec[kCMSRho]  = EstimateBgKTcms(jetContRecKT, trkArrayRec, trackTT); 
+      fRhoRec[kKtRho]   = EstimateBgKT(   jetContRecKT, trkArrayRec, trackTT);
       fRhoRec[kZeroRho] = 0.0; 
    }
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kEmb){ //rho in MC events 
-      fRhoMC[kConeRho] = EstimateBgCone(kContainerTwo); //container ID=1 mc particles
-      fRhoMC[kCMSRho]  = GetRhoVal(kContainerTwo); //funkce AliAnalysisTaskEmcalJet.h
+      fRhoMC[kConeRho] = EstimateBgCone( jetContGen,   trkArrayGen, trackTTGen, kTRUE); //container ID=1 mc particles
+      fRhoMC[kCMSRho]  = EstimateBgKTcms(jetContGenKT, trkArrayGen, trackTTGen);
+      fRhoMC[kKtRho]   = EstimateBgKT(   jetContGenKT, trkArrayGen, trackTTGen);
       fRhoMC[kZeroRho] = 0.0;
    }
 
    if(fTypeOfAnal == kEmbSingl){ //embedding single track
       fRhoMC[kConeRho] = 0.0; 
       fRhoMC[kCMSRho]  = 0.0; 
+      fRhoMC[kKtRho]   = 0.0; 
       fRhoMC[kZeroRho] = 0.0;
    }
 
    if(fTypeOfAnal == kKine){ //rho in KINE MC events 
-      fRhoMC[kConeRho] = EstimateBgCone(kContainerOne); //container ID=1 mc particles
-      fRhoMC[kCMSRho]  = GetRhoVal(kContainerOne); //funkce AliAnalysisTaskEmcalJet.h
+      fRhoMC[kConeRho] = EstimateBgCone( jetContGen,   trkArrayGen, trackTTGen, kTRUE); //container ID=1 mc particles
+      fRhoMC[kCMSRho]  = EstimateBgKTcms(jetContGenKT, trkArrayGen, trackTTGen);
+      fRhoMC[kKtRho]   = EstimateBgKT(   jetContGenKT, trkArrayGen, trackTTGen);
       fRhoMC[kZeroRho] = 0.0;
    }
 
 
          
    //_________________________________________________________
-   //Evaluate Single particle Efficiency + Fill Response Matrix
+   //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
+
    if(fTypeOfAnal == kEff){
 
       //1) FILL HISTOS FOR SINGLE PARTICLE EFFICIENCY
       if(trkArrayGen){
 
          for(Int_t i = 0; i < trkArrayGen->GetEntries(); i++){
-            AliVParticle* tmpTrackGen = static_cast<AliVParticle*>(trkArrayGen->At(i));
-            if(!tmpTrackGen) continue;
-            if(IsTrackInAcceptance(tmpTrackGen, kContainerTwo)){
+            constTrackGen = static_cast<AliVParticle*>(trkArrayGen->At(i));
+            if(!constTrackGen) continue;
+            if(IsTrackInAcceptance(constTrackGen, kTRUE)){
                //pT spectrum of generator level particles
-               fhPtTrkTruePrimGen->Fill(tmpTrackGen->Pt(),tmpTrackGen->Eta()); 
+               fhPtTrkTruePrimGen->Fill(constTrackGen->Pt(),constTrackGen->Eta()); 
             }  
          }
 
@@ -683,24 +761,24 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          if(trkArrayRec && trkArrayGen){ 
 
             for(Int_t j = 0; j < trkArrayRec->GetEntries(); j++){ // loop over reconstructed tracks 
-               AliVParticle* tmpTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(j));
-               if(!tmpTrackRec) continue;
-               if(!IsTrackInAcceptance(tmpTrackRec, kContainerOne)) continue; //reconstructed level tracks
+               AliVParticle* constTrackRec = static_cast<AliVParticle*>(trkArrayRec->At(j));
+               if(!constTrackRec) continue;
+               if(!IsTrackInAcceptance(constTrackRec, kFALSE)) continue; //reconstructed level tracks
                bRecPrim = kFALSE; //not yet matched to generator level physical primary
 
                for(Int_t i = 0; i < trkArrayGen->GetEntries(); i++){
-                  AliVParticle* tmpTrackGen = static_cast<AliVParticle*>(trkArrayGen->At(i));
-                  if(!tmpTrackGen) continue;
-                  if(!IsTrackInAcceptance(tmpTrackGen, kContainerTwo)) continue; //gen level physical primary
-                  if(TMath::Abs(tmpTrackRec->GetLabel()) == TMath::Abs(tmpTrackGen->GetLabel())){ 
+                  constTrackGen = static_cast<AliVParticle*>(trkArrayGen->At(i));
+                  if(!constTrackGen) continue;
+                  if(!IsTrackInAcceptance(constTrackGen, kTRUE)) continue; //gen level physical primary
+                  if(TMath::Abs(constTrackRec->GetLabel()) == TMath::Abs(constTrackGen->GetLabel())){ 
                      //has the same label as reconstr track
  
                      bRecPrim = kTRUE;
-                     fhPtTrkTruePrimRec->Fill(tmpTrackGen->Pt(),tmpTrackGen->Eta()); //this is well recontr phys primary
+                     fhPtTrkTruePrimRec->Fill(constTrackGen->Pt(),constTrackGen->Eta()); //this is well recontr phys primary
                      break;
                   }//same label with rec particle
                }//loop over gen tracks
-               if(!bRecPrim) fhPtTrkSecOrFakeRec->Fill(tmpTrackRec->Pt(),tmpTrackRec->Eta()); //matchnig to phys primary not found, this is fake or second.
+               if(!bRecPrim) fhPtTrkSecOrFakeRec->Fill(constTrackRec->Pt(),constTrackRec->Eta()); //matchnig to phys primary not found, this is fake or second.
             }//loop over rec tracks
          }//rec track array exists
       }//gen particle array exists
@@ -716,7 +794,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          jetContGen->ResetCurrentID();
          while((jetGen = jetContGen->GetNextAcceptJet())){ 
             if(!jetGen) continue;
-            if(!IsSignalJetInAcceptance(jetGen)) continue; //cuts on eta, pT ,area
+            if(!IsSignalJetInAcceptance(jetGen,kTRUE)) continue; //cuts on eta, pT ,area
 
             //if(fDebug>20) Printf("GEN JET phi=%f  eta=%f  pt=%f", jetGen->Phi(), jetGen->Eta(), jetGen->Pt());
 
@@ -727,12 +805,12 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          }
       }
  
-      //Find closest gen level+rec level  jets ala AliAnalysisHelperJetTasks::GetClosestJets 
+      //Find closest gen level+rec level  jets
       if(jetContRec){
          jetContRec->ResetCurrentID();
          while((jetRec = jetContRec->GetNextAcceptJet())) {
             if(!jetRec) continue;
-            if(!IsSignalJetInAcceptance(jetRec)) continue; //cuts on eta, pT ,area
+            if(!IsSignalJetInAcceptance(jetRec,kTRUE)) continue; //cuts on eta, pT ,area
 
             //if(fDebug>20) Printf("REC JET phi=%f  eta=%f  pt=%f",jetRec->Phi(), jetRec->Eta(), jetRec->Pt());
 
@@ -751,12 +829,12 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             //corresponding generator level jet found
             //if(fDebug>20)  Printf("MATCHED WITH  phi=%f  eta=%f  pt=%f",jetGen->Phi(), jetGen->Eta(), jetGen->Pt());
             
-            if(!IsSignalJetInAcceptance(jetGen)) continue; //cuts on eta, pT ,area
+            if(!IsSignalJetInAcceptance(jetGen,kTRUE)) continue; //cuts on eta, pT ,area
 
             //check fraction of tracks from generator level jet in rec level jet
             //if(fDebug>20)  Printf("FRACTIONH SHARED = %f ", GetFractionSharedPt(jetRec,jetContRec,jetGen, jetContGen));
 
-            if(GetFractionSharedPt(jetRec,jetContRec,jetGen, jetContGen) < fMinFractionShared) continue;
+            if(GetFractionSharedPt(jetRec, jetContRec, jetGen, jetContGen) < fMinFractionShared) continue;
 
             //if(fDebug>20)  Printf("PASSED MIN FRACTION CRITERION ");
 
@@ -771,7 +849,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                }
             }
          } 
-      }//rec jet comtainer exists
+      }//rec jet container exists
    }//analyze efficiency mode (response matrix + single particle efficiency) 
 
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -779,46 +857,11 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Double_t tmpArray[3];              
    Double_t dphi, dfi;
    Bool_t bFirstCycle = kTRUE; 
-   Int_t  ic;  //container
 
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //H-JET CORRELATIONS IN MC TRUTH
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
-
-      //std::vector<Int_t> fTrigTracksGen is a list of trigger particle indices in true MC
-      fTrigTracksGen.clear(); //list of trigger particle indices true MC
-
-      if(trkArrayGen){ 
-         for(Int_t i = 0; i < trkArrayGen->GetEntries(); i++){ // loop over reconstructed tracks 
-            AliVParticle* track = static_cast<AliVParticle*>(trkArrayGen->At(i));
-
-            if(!track) continue;
-            ic = (fTypeOfAnal == kEff ) ? kContainerTwo : kContainerOne; 
-       
-            if(IsTrackInAcceptance(track, ic)){  
-               fhTrackPtGen->Fill(track->Pt());  //inclusive pT spectrum of tracks
-                
-               if((fTTlow <= track->Pt()) && (track->Pt() < fTThigh)){
-                  fTrigTracksGen.push_back(i);  //trigger candidates
-
-                  //if(fDebug>20)  Printf("GEN TT candidate  index = %d  phi=%f  eta=%f pT=%f ", 
-                  //            i, track->Phi(), track->Eta(), track->Pt());
-
-               }
-            }
-         }
-      }
- 
-      Int_t ntriggersGen = (Int_t) fTrigTracksGen.size();
-      Int_t indexSingleRndTrigGen = -1; //index of single random trigger
-   
-      if(ntriggersGen>0){
-         if(fTTtype==0){ //select single inclusive trigger
-            indexSingleRndTrigGen = fRandom->Integer(ntriggersGen); //Integer 0 ... ntriggers-1
-         }
-      }
-
       if(trkArrayGen){
          bFirstCycle = kTRUE; 
          for(Int_t it=0; it<ntriggersGen; it++){ //loop over trigger configurations
@@ -829,7 +872,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          
             AliVParticle* triggerHadronGen = static_cast<AliVParticle*>(trkArrayGen->At(fTrigTracksGen[it]));
             if(!triggerHadronGen) continue;
-          
+         
             fh1NtriggersGen->Fill((Float_t) triggerHadronGen->Pt()); //trigger pT gen 
          
             if( fTypeOfData == kHijing){ //impact parameter for triggered events
@@ -845,7 +888,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                      AliError(Form("%s: Could not receive gen jet", GetName()));
                      continue;
                   }
-                  if(!IsSignalJetInAcceptance(jetGen)) continue;
+                  if(!IsSignalJetInAcceptance(jetGen,kTRUE)) continue;
                  
                   areaJet = jetGen->Area();
                   pTJet   = jetGen->Pt();
@@ -882,60 +925,12 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    }
    
    //++++++++++++++++++++++++++++++++++++++++++++++++++++
-
    if(fTypeOfAnal == kKine) return kTRUE; 
+   //++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //LOOP OVER TRACKS  SEARCH FOR TRIGGER CANDIDATES IN REC TRACKS
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
 
-   //std::vector<Int_t> fTrigTracks; //list pf trigger particle indices
-   fTrigTracks.clear(); //list pf trigger particle indices
-
-   if(trkArrayRec){ 
-      for(Int_t i = 0; i < trkArrayRec->GetEntries(); i++){ // loop over reconstructed tracks 
-         AliVParticle* track = static_cast<AliVParticle*>(trkArrayRec->At(i));
-
-         if(!track) continue;
-
-         if(fTypeOfAnal == kEmb || fTypeOfAnal == kEmbSingl){
-            //if(fDebug>99)  Printf("TRACK LABEL %d", track->GetLabel());
-            //in embed evts search for TT only among real tracks; do not consider embedded tracks as trigger
-            if(TMath::Abs(track->GetLabel()) == 99999) continue;//9999 set in AddTaskHJetSpectra.C
-         }
-
-
-         if(IsTrackInAcceptance(track, kContainerOne)){  //rec   (Same analysis for gen level?)
-            //Fill some inclusive spectra
-            fhTrackPhi->Fill(track->Pt(), RelativePhi(track->Phi(),0.0)); // phi = -pi,pi
-            fhTrackEta->Fill(track->Pt(), track->Eta());
-            fhTrackPt->Fill(track->Pt());
-
-            if(fTTlow <= track->Pt() && track->Pt() < fTThigh){
-               fTrigTracks.push_back(i);  //trigger candidates
-
-               //if(fDebug>20)  Printf("REC TT candidate  index = %d  phi=%f  eta=%f pT=%f ", 
-               //               i, track->Phi(), track->Eta(), track->Pt());
-            }
-         }
-      }
-   }
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //   SELECT SINGLE INCLUSIVE TRIGGER 
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Int_t ntriggers = (Int_t) fTrigTracks.size();
-   Int_t indexSingleRndTrig = -1; //index of single random trigger
-
-   if(ntriggers>0){
-      if(fTTtype == 0){ //select single inclusive trigger
-         indexSingleRndTrig = fRandom->Integer(ntriggers); //Integer 0 ... ntriggers-1
-      }
-
-      //if(fDebug>20)  Printf("TT index = %d   size =%d", indexSingleRndTrig, (int)fTrigTracks.size());
-   }
-
-   //___________________________________________________________
-   if((fTypeOfAnal==kEmb || fTypeOfAnal == kEmbSingl) && indexSingleRndTrig > -1){ 
+   if((fTypeOfAnal==kEmb || fTypeOfAnal == kEmbSingl) && trackTT){ 
        //delta pT using embedded pythia events
        //delta pT analyzed only in events with REAL EVENT TT present  !!!!!!!!!!!  (condition above)
        // PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx
@@ -944,31 +939,29 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       //++++++++++++++++++++++++++++++++++++++++
       //ANALYZE DELTA PT FOR ALL EMB MC JETS
       //++++++++++++++++++++++++++++++++++++++++
-      AliVParticle* triggerHadron = static_cast<AliVParticle*>(trkArrayRec->At(fTrigTracks[indexSingleRndTrig]));
  
       AliEmcalJet  *jetEmb     = NULL;
-      AliVParticle *constTrack = NULL;
       Bool_t bEmbJetCloseToTT  = kFALSE;
 
-      if(jetContRec && triggerHadron){
+      if(jetContRec){
          jetContRec->ResetCurrentID();
          while((jetRec = jetContRec->GetNextAcceptJet())) { //loop over reconstructed jets
             if(!jetRec) continue;
-            if(!IsSignalJetInAcceptance(jetRec)) continue; //apply cuts on eta, pT ,area
+            if(!IsSignalJetInAcceptance(jetRec,kTRUE)) continue; //apply cuts on eta, pT ,area
 
             //skip the jet that contains TT 
             bEmbJetCloseToTT = kFALSE;
-            for(Int_t iq=0; iq < jetRec->GetNumberOfTracks(); iq++) {
-               constTrack = static_cast<AliVParticle*> (jetRec->TrackAt(iq,trkArrayRec)); //matched rec and emb tracks
-               if(!constTrack) continue;
-               if(constTrack != triggerHadron) continue;
-               /*if(TMath::Abs(constTrack->Pt()  - triggerHadron->Pt())>0.01) continue;
-               if(TMath::Abs(constTrack->Eta() - triggerHadron->Eta())>0.01) continue;
-               if(TMath::Abs(RelativePhi(constTrack->Phi(), triggerHadron->Phi()))>0.01) continue;*/
-               //if(fDebug>21)  Printf("EMB FIND TT COMPARE TRACK PT %f %f", constTrack->Pt(), triggerHadron->Pt());
-               bEmbJetCloseToTT = kTRUE;
-               break;   
-            }        
+
+            if(jetRec->Pt() > trackTT->Pt()*0.9){  // if jet contains TT it has to have at leat pT of TT
+               for(Int_t iq=0; iq < jetRec->GetNumberOfTracks(); iq++) {
+                  constTrackRec = static_cast<AliVParticle*> (jetRec->TrackAt(iq,trkArrayRec)); //matched rec and emb tracks
+                  if(!constTrackRec) continue;
+                  if(constTrackRec != trackTT) continue;
+                  //if(fDebug>21)  Printf("EMB FIND TT COMPARE TRACK PT %f %f", constTrack->Pt(), triggerHadron->Pt());
+                  bEmbJetCloseToTT = kTRUE;
+                  break;   
+               }       
+            } 
 
             if(bEmbJetCloseToTT) continue;//skip the jet that contains TT track 
 
@@ -982,13 +975,13 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                 //if(fDebug>21)  Printf("SKIP MATCH WITH EMBEDDED GHOST JET");
                 continue; 
             }
-            if((fTypeOfAnal==kEmb) &&  (jetEmb->Pt()<6.0))  continue; // some hard cut on pT of emb jet ???
+            //if((fTypeOfAnal==kEmb) &&  (jetEmb->Pt()<6.0))  continue; // some hard cut on pT of emb jet ???
     
-            if(!IsSignalJetInAcceptance(jetEmb)) continue; //apply cuts on eta, pT ,area on the embedded jet
+            if(!IsSignalJetInAcceptance(jetEmb,kTRUE)) continue; //apply cuts on eta, pT ,area on the embedded jet
           
            //Check fraction of tracks from generator level jet in rec level jet
             //At least 50% of embedded jet has to be in the reconstructed jet
-            if(GetFractionSharedPt(jetRec,jetContRec,jetEmb, jetContGen) < fMinFractionShared) continue;
+            if(GetFractionSharedPt(jetRec, jetContRec, jetEmb, jetContGen) < fMinFractionShared) continue;
  
             for(Int_t ir=0; ir < kRho-1; ir++){
                //1 Dim  distribution
@@ -1003,31 +996,65 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
        }
    }//end of embedding
 
-   if(fTypeOfAnal == kEmb || fTypeOfAnal == kEmbSingl) return kTRUE; 
 
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //   delta pT in reconstructed data
+   // RECONSTRUCTED DATA ANALYSIS
+
    for(Int_t ir=0; ir < kRho-1; ir++){
       fhRhoIncl[ir]->Fill((Float_t) fRhoRec[ir]); 
    }
+   if(ntriggers>0){
 
+      for(Int_t ir=0; ir < kRho-1; ir++){
+         //Estimate UE density in events with TT
+         //Fill once per event
+         fhRhoTT[ir]->Fill( (Float_t) fRhoRec[ir]); 
+      }
+   }
 
-   Double_t deltapt[kRho-1], phiTT = -1000., etaTT = -1000.;       
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   if(fTypeOfAnal == kEmb || fTypeOfAnal == kEmbSingl) return kTRUE; 
+   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
+
+   // CALCULATE  DELTA PT IN RECONSTRUCTED DATA WITH RANDOM CONES
+   Double_t deltapt[kRho-1], phiTT = 0., etaTT = -1000.;       
    Double_t ncoll = -1.0; 
    if(centralityPercentile>=0.)  ncoll = GetNcoll(centralityPercentile);
+   Bool_t  bRecJetCloseToTT = kFALSE;
+   //Exclude region around TT from delta pt calculation
 
-   if(indexSingleRndTrig > -1){ //get phi and eta of the TT
-      AliVParticle* hadronTT = static_cast<AliVParticle*>(trkArrayRec->At(fTrigTracks[indexSingleRndTrig]));
-      if(hadronTT){ 
-         phiTT = hadronTT->Phi();
-         etaTT = hadronTT->Eta();
+   if(trackTT){ //get phi and eta of the TT or the reconstructed jet that contains TT
+      phiTT = trackTT->Phi(); // TT is proxy for jet
+      etaTT = trackTT->Eta();
+
+      if(jetContRec){  //find jet that contains TT if it exists
+         jetContRec->ResetCurrentID();
+         while((jetRec = jetContRec->GetNextAcceptJet())) { //loop over reconstructed jets
+            if(!jetRec) continue;
+
+            //skip the jet that contains TT 
+            bRecJetCloseToTT = kFALSE;
+
+            if(jetRec->Pt() > trackTT->Pt()*0.9){  // if jet contains TT it has to have at leat pT of TT
+               for(Int_t iq=0; iq < jetRec->GetNumberOfTracks(); iq++){
+                  constTrackRec = static_cast<AliVParticle*> (jetRec->TrackAt(iq,trkArrayRec)); //matched rec and emb tracks
+                  if(!constTrackRec) continue;
+                  if(constTrackRec != trackTT) continue;
+                  phiTT = jetRec->Phi();
+                  etaTT = jetRec->Eta();
+                  bRecJetCloseToTT = kTRUE;
+                  break;
+               }
+            }
+            if(bRecJetCloseToTT) break;
+         }
       }
    }
 
    for(Int_t irc=0; irc<fNofRandomCones; irc++){ 
 
       //generate certain number of random cones per event
-      GetDeltaPt(kRho, fRhoRec, &deltapt[0], phiTT, etaTT, 1.0/ncoll); //FK//????? prob exlude RC ??? 1/Ncoll 
+      GetDeltaPt(kRho-1, fRhoRec, &deltapt[0], phiTT, etaTT, trkArrayRec, kFALSE, 1.0/ncoll);//FK//????? prob exlude RC ??? 1/Ncoll 
        
 
       for(Int_t ir=0; ir < kRho-1; ir++){
@@ -1042,17 +1069,10 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    }
 
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //  h+jet in reconstructed data  
+   //  H+JET IN RECONSTRUCTED DATA  
 
    if(ntriggers>0){
 
-      for(Int_t ir=0; ir < kRho-1; ir++){
-         //Estimate UE density in events with TT
-         //Fill once per event
-         fhRhoTT[ir]->Fill( (Float_t) fRhoRec[ir]); 
-      }
-
-      //TRIGGER PARTICLE LOOP
       bFirstCycle=kTRUE; 
       if(trkArrayRec){
 
@@ -1076,7 +1096,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                      AliError(Form("%s: Could not receive jet", GetName()));
                      continue;
                   }
-                  if(!IsSignalJetInAcceptance(jetRec)) continue;
+                  if(!IsSignalJetInAcceptance(jetRec,kTRUE)) continue;
                  
                   areaJet = jetRec->Area();
                   pTJet   = jetRec->Pt();
@@ -1172,15 +1192,14 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
   // called once to create user defined output objects like histograms, plots etc. 
   // and to put it on the output list.
   // Note: Saving to file with e.g. OpenFile(0) is must be before creating other objects.
+  //fOutput TList defined in the mother class
    AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
    //Label of background
-   TString bgtype[]={"Cone","CMS","Zero"};
+   TString bgtype[]={"Perp","CMS","KT","Zero"};
 
    fRandom = new TRandom3(0);
 
-   fOutput = new TList();
-   fOutput->SetOwner(); // otherwise it produces leaks in merging
    Bool_t oldStatus = TH1::AddDirectoryStatus();
    TH1::AddDirectory(kFALSE);
    TString name;
@@ -1202,6 +1221,9 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    // Hard trigger counter
    fh1Ntriggers = new TH1D("fh1Ntriggers","# of triggers",50,0.0,50.0);
    if(bHistRec)   fOutput->Add(fh1Ntriggers);
+
+   fh1TriggerMult = new TH1D("fh1TriggerMult","# of triggers",50,0.0,50.0);
+   if(bHistRec)   fOutput->Add(fh1TriggerMult);
 
    //___________________________________________________________
    // trigger associated jet spectra (jet pT not corrected for UE)
@@ -1228,11 +1250,11 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       //rho in events with TT 
       fhRhoTT[ir] = new TH1F(Form("fhRho%s",bgtype[ir].Data()),
                            Form("Rho%s",bgtype[ir].Data()),40, 0.0, 20.0);
-      if(bHistRec) fOutput->Add(fhRhoTT[ir]);
+      if(bNotKine) fOutput->Add(fhRhoTT[ir]);
 
       //rho in inclusive events
       fhRhoIncl[ir] = (TH1F*) fhRhoTT[ir]->Clone(Form("fhRhoIncl%s",bgtype[ir].Data()));
-      if(bHistRec) fOutput->Add(fhRhoIncl[ir]);
+      if(bNotKine) fOutput->Add(fhRhoIncl[ir]);
  
       // rho times area in events with TT 
       fARhoTT[ir] = new TH1F(Form("fARho%s",bgtype[ir].Data()),
@@ -1263,6 +1285,13 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       }
    }
 
+   //_______________________________________________________________________
+   //KT jets area versus PT
+   Double_t binsPt [] = {0, 0.05,0.15, 0.5, 1., 1.5, 2., 2.5, 3., 3.5, 4., 4.5, 5., 5.5, 6.,6.5, 7., 8., 9., 10.,15., 20., 50., 100.};
+   Int_t nbinsPt = sizeof(binsPt)/sizeof(Double_t)-1;
+ 
+   fhKTAreaPt  = new TH2F("fhKTAreaPt","KT jet Area vs Pt",nbinsPt, binsPt, 50,0,2);
+   if(fTypeOfAnal == kRec)  fOutput->Add(fhKTAreaPt);
 
    //_______________________________________________________________________
    //inclusive azimuthal and pseudorapidity histograms
@@ -1297,12 +1326,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    }
    //-------------------------
  
-   //fhContribVtx = new TH1F("fhContribVtx","contrib to vtx",200,0,200);
-   //fOutput->Add(fhContribVtx);
-   //-------------------------
-   //fhContribVtxAccept = new TH1F("fhContribVtxAccept","contrib to vtx after cut",200,0,200);
-   //fOutput->Add(fhContribVtxAccept);
-   //------------------------
+ 
    for(Int_t ir=0; ir < kRho; ir++){ //Rongrong's analysis
  
       fhDphiTriggerJet[ir] = new TH2F(Form("fhDphiTriggerJet%s",bgtype[ir].Data()),"Deltaphi trig-jet",75,-50,100, 100, -0.5*TMath::Pi(),1.5*TMath::Pi());
@@ -1327,8 +1351,8 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    //-------------------------
    fhCentralityZNA = new TH1F("hCentralityZNA","hCentralityZNA",100,0,100);
    if(bNotKine) fOutput->Add(fhCentralityZNA);
-
-   if(fTypeOfAnal > kRec){ 
+  /*
+   if(fTypeOfAnal == kKine){ 
       fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
       fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
       fOutput->Add(fh1Xsec);
@@ -1337,16 +1361,16 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
       fOutput->Add(fh1Trials);
       
-      fh1PtHard = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",500,0,500);
-      fOutput->Add(fh1PtHard);
-     
-      if(fTypeOfData == kHijing){ 
-         fhImpactParameter = new TH1D("fhImpactParameter","impact parameter distribution from HIJING",50,0,10);
-         fOutput->Add(fhImpactParameter);
+      //fh1PtHard = new TH1F("fh1PtHard","PYTHIA Pt hard;p_{T,hard}",1000,0,1000);
+      //fOutput->Add(fh1PtHard);
+   } 
+*/
+   if(fTypeOfData == kHijing){ 
+      fhImpactParameter = new TH1D("fhImpactParameter","impact parameter distribution from HIJING",50,0,10);
+      fOutput->Add(fhImpactParameter);
          
-         fhImpactParameterTT = new TH1D("fhImpactParameterTT","b versus TT",50,0,10);
-         fOutput->Add(fhImpactParameterTT);
-      }
+      fhImpactParameterTT = new TH1D("fhImpactParameterTT","b versus TT",50,0,10);
+      fOutput->Add(fhImpactParameterTT);
    }
 
    if(fTypeOfAnal== kEff ){
@@ -1380,6 +1404,10 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
       fh1NtriggersGen = (TH1D*) fh1Ntriggers->Clone("fh1NtriggersGen");
       fOutput->Add(fh1NtriggersGen);
+
+      fh1TriggerMultGen = (TH1D*) fh1TriggerMult->Clone("fh1TriggerMultGen");
+      fOutput->Add(fh1TriggerMultGen);
+
      //-------------------------
       for(Int_t ir=0; ir< kRho; ir++){
          fHJetSpecGen[ir] = (THnSparseF*)fHJetSpec[ir]->Clone(Form("fHJetSpecGen%s",bgtype[ir].Data()));
@@ -1456,50 +1484,211 @@ Double_t AliAnalysisTaskHJetSpectra::RelativePhi(Double_t mphi,Double_t vphi){
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskHJetSpectra::EstimateBgCone(Int_t icont){
-   //Estimate background rho by means of integrating track pT outside identified jet cones
-   Double_t rhoPerpCone = 0.0;
+Double_t AliAnalysisTaskHJetSpectra::EstimateBgCone(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* triggerHadron, Bool_t isGen){
+   //Estimate background rho by means of integrating track pT outside TT jet + recoil jet region 
+   //if TT exists find jet that containts TT and exclude  range +- phiCut around the TT/TTjet in azimuth
+
+   if(!trkArray) return 0.0; 
    
-   Double_t pTleading  = -1.0;
-   Double_t phiLeading = 1000.;
-   Double_t etaLeading = 1000.;
+   AliEmcalJet*  jet        = NULL;
+   AliVParticle* track      = NULL;
+   Double_t phiTT = fRandom->Rndm()*TMath::TwoPi(); //in case of no TT make random dice 
+   Double_t etaTT = -fTrackEtaWindow  + fRandom->Rndm()*2*fTrackEtaWindow;
+   Bool_t bTTJetFound = kFALSE;
 
-   AliEmcalJet* jet = NULL;
-   AliJetContainer *jetCont = GetJetContainer(icont);
+   if(triggerHadron){
 
-   if(!jetCont) return 0.0;
-   jetCont->ResetCurrentID(); //loop over jets
-   while((jet = jetCont->GetNextAcceptJet())) {
-      if(!jet) continue;
+      phiTT = triggerHadron->Phi();
+      etaTT = triggerHadron->Eta();
 
-      if(!IsSignalJetInAcceptance(jet)) continue;
-
-      if(pTleading < jet->Pt()){
-         pTleading  = jet->Pt();
-         phiLeading = jet->Phi();
-         etaLeading = jet->Eta();
-      }
-   } 
-   if(pTleading < 0.0) return 0.0;
-   Double_t etawin = fTrackEtaWindow - fPerpConeRadius;
-
-   if(TMath::Abs(etaLeading) > etawin){
-      //make sure that the perp cone will be in acceptance
-      etaLeading = (etaLeading>0) ? etawin : -etawin;
+      if(jetCont){
+         //find ANY jet that contains TT if it exists
+         jetCont->ResetCurrentID();
+         while((jet = jetCont->GetNextAcceptJet())){ //loop over reconstructed jets
+            if(!jet) continue;
+            if(jet->Pt() < triggerHadron->Pt()*0.9) continue;
+            //CUT ON JET ACCEPTANCE IS NOT NEEDED, WE SEARCH FOR ANY JET THAT CONTAINS TT
+      
+            for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++){
+               track = static_cast<AliVParticle*> (jet->TrackAt(iq,trkArray)); //matched rec and emb tracks
+               if(!track) continue;
+               if(track != triggerHadron) continue;
+      
+               phiTT = jet->Phi(); // used  phi,eta coordinates of the jet to exclude the TT jet
+               etaTT = jet->Eta();
+               bTTJetFound = kTRUE;
+               break;  
+            }
+            if(bTTJetFound) break; //skip the rest of jets when the jet with TT is found
+         }
+      } 
    }
 
-   Double_t phileftcone  = phiLeading + TMath::Pi()/2;
-   Double_t phirightcone = phiLeading - TMath::Pi()/2;
+   phiTT = RelativePhi(phiTT,0.); //convert phi TT to (-pi,pi)
 
-   rhoPerpCone +=  GetConePt(etaLeading, phileftcone,  fPerpConeRadius, icont);
-   rhoPerpCone +=  GetConePt(etaLeading, phirightcone, fPerpConeRadius, icont);
+   if(TMath::Abs(etaTT) > fTrackEtaWindow){
+        etaTT = (etaTT<0) ? -fTrackEtaWindow : fTrackEtaWindow;
+   }
+   //Sum pT outside TT+recoil jet region  
+   Double_t sumPt = 0.;
+ 
+   for(Int_t i = 0; i < trkArray->GetEntries(); i++){ // loop over tracks 
+      track = static_cast<AliVParticle*>(trkArray->At(i));
 
-   //normalize total pT by two times cone are 
-   rhoPerpCone = rhoPerpCone/(2*TMath::Pi()*fPerpConeRadiusSquared);
+      if(!track) continue;
+      if(!IsTrackInAcceptance(track, isGen)) continue;
+      
+      if(TMath::Abs(RelativePhi(phiTT+TMath::Pi(),track->Phi())) < fCutPhi)  continue; //exclude recoil region of TT 
+      if(GetDeltaR(phiTT, track->Phi(), etaTT, track->Eta()) < fCutPhi)  continue; //exclude region around TT 
+ 
+      if(fTypeOfAnal == kEmb ||  fTypeOfAnal == kEmbSingl){
+         if(TMath::Abs(track->GetLabel()) == 99999) continue;//reject embedded stuff 9999 set in AddTaskHJetSpectra.C
+      }
+ 
+      sumPt += track->Pt();
+   }
+  //Calculate area
+   Double_t area = 2*fTrackEtaWindow*2*TMath::Pi();
+   Double_t alpha; 
 
+   area -= 2*fTrackEtaWindow*2*fCutPhi;  // subtract area of the recoil region
 
-   return rhoPerpCone;
+   if(TMath::Abs(etaTT) < fTrackEtaWindow - fCutPhi){ //TT cicle fully inside acceptance
+      area -= fCutPhi*fCutPhi*TMath::Pi();  // subtract area of the trigger region 
+   }else{  //TT circle partly around acceptance
+      alpha = TMath::ACos((fTrackEtaWindow - TMath::Abs(etaTT))/fCutPhi);
+      area -= (fCutPhi*fCutPhi*(TMath::Pi()-alpha) + fCutPhi*TMath::Sin(alpha)*(fTrackEtaWindow - TMath::Abs(etaTT)));  
+   }
+
+   return  sumPt/area;
+
 }
+//________________________________________________________________________
+Double_t AliAnalysisTaskHJetSpectra::EstimateBgKT(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* triggerHadron){
+   //Estimate rho from KT jet median. Ignore jet that contains TT
+   Double_t rhoKT    = 0.0;
+ 
+   if(!jetCont) return rhoKT;   
+
+   AliEmcalJet*  jet        = NULL;
+   AliVParticle* constTrack = NULL;
+   Bool_t bKTJetCloseToTT = kFALSE;
+   static Double_t rhovec[999];
+   Int_t nJetAcc = 0;
+   Double_t jetpt;
+   Double_t sumEmbPt;
+
+   jetCont->ResetCurrentID();
+   while((jet = jetCont->GetNextAcceptJet())){ //loop over KT jets
+      if(!jet) continue;
+
+      bKTJetCloseToTT = kFALSE;
+
+      if(triggerHadron){ //identify the KT jet which contains TT 
+         if(jet->Pt() > triggerHadron->Pt()*0.9){ //jet containing TT has pT larger than pT of TT
+            for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++) {
+               constTrack = static_cast<AliVParticle*> (jet->TrackAt(iq,trkArray)); //matched rec and emb tracks
+               if(!constTrack) continue;
+               if(constTrack == triggerHadron){
+                  bKTJetCloseToTT = kTRUE; 
+                  break; 
+               }
+            }
+         }
+      }
+      if(bKTJetCloseToTT) continue; //skip the jet that contains TT 
+
+      sumEmbPt = 0.;//sum pt of embedded tracks in jet which is to be subtracted
+      if(fTypeOfAnal == kEmb ||  fTypeOfAnal == kEmbSingl){
+         for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++) {
+            constTrack = static_cast<AliVParticle*> (jet->TrackAt(iq,trkArray)); 
+            if(!constTrack) continue;
+            if(TMath::Abs(constTrack->GetLabel()) == 99999){
+               sumEmbPt += constTrack->Pt();
+            }
+         }
+      }
+ 
+      jetpt = jet->Pt()- sumEmbPt; //subtract embedded pt
+      if(triggerHadron) fhKTAreaPt->Fill(jetpt,jet->Area());
+
+      if(jetpt <0.005) jetpt = 0.; //set pt of ghost jets identical to zero
+      rhovec[nJetAcc] = jetpt/jet->Area();
+      nJetAcc++;
+   }
+
+   if(nJetAcc>0){
+      rhoKT = TMath::Median(nJetAcc, rhovec);
+   }
+ 
+  return rhoKT; 
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskHJetSpectra::EstimateBgKTcms(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* triggerHadron){
+   //Estimate rho from KT jet median ala CMS. Ignore jet that contains TT
+   Double_t rhoKTcms    = 0.0;
+ 
+   if(!jetCont) return rhoKTcms;   
+
+   AliEmcalJet*  jet        = NULL;
+   AliVParticle* constTrack = NULL;
+   Bool_t bKTJetCloseToTT = kFALSE;
+   static Double_t rhovec[999];
+   Int_t nJetAcc = 0;
+   Double_t areaPhysJets = 0.0;
+   Double_t areaAllJets  = 0.0;
+   Double_t jetpt;
+   Double_t sumEmbPt = 0.;
+
+   jetCont->ResetCurrentID();
+   while((jet = jetCont->GetNextAcceptJet())){ //loop over KT jets
+      if(!jet) continue;
+
+      bKTJetCloseToTT = kFALSE;
+
+      if(triggerHadron){ //identify the KT jet which contains TT 
+         if(jet->Pt() > triggerHadron->Pt()*0.9){ //jet containing TT has pT larger than pT of TT
+            for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++) {
+               constTrack = static_cast<AliVParticle*> (jet->TrackAt(iq,trkArray)); //matched rec and emb tracks
+               if(!constTrack) continue;
+               if(constTrack != triggerHadron) continue;
+               bKTJetCloseToTT = kTRUE; 
+               break;  
+            }
+         }
+      }
+      if(bKTJetCloseToTT) continue; //skip the jet that contains TT 
+
+      sumEmbPt = 0.;
+      if(fTypeOfAnal == kEmb ||  fTypeOfAnal == kEmbSingl){
+         for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++) {
+            constTrack = static_cast<AliVParticle*> (jet->TrackAt(iq,trkArray)); //matched rec and emb tracks
+            if(!constTrack) continue;
+            if(TMath::Abs(constTrack->GetLabel()) == 99999){
+               sumEmbPt += constTrack->Pt();
+            }
+         }
+      }
+ 
+
+      areaAllJets += jet->Area();
+
+      jetpt = jet->Pt()- sumEmbPt; //subtract pt of embedded tracks
+
+      if(jetpt > 0.1){
+         areaPhysJets += jet->Area();
+         rhovec[nJetAcc] = jetpt/jet->Area();
+         nJetAcc++;
+      }
+   }
+
+   if(nJetAcc>0){
+      rhoKTcms = TMath::Median(nJetAcc, rhovec)*(areaPhysJets/areaAllJets);
+   }
+ 
+  return rhoKTcms; 
+}
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskHJetSpectra::GetDeltaR(Double_t phi1, Double_t phi2, Double_t eta1, Double_t eta2){
    //angular distance between two jets
