@@ -51,6 +51,10 @@ public:
     void   SetJetSelectionMethod(int i = 0){fUseJetSelection=i;};
     void   SetJetTaggerMCMethod(int i = 0){fUseMCTagger=i;};
 	void   SetUseAtlasSignTC(Bool_t val = kTRUE){fUseAtlasSignTCCalculation = kTRUE;};
+	void   SetUseSignificance(Bool_t val = kTRUE){fUseSignificance = kTRUE;};
+	void   SetUse3DsIP(Bool_t val = kTRUE){fUse3DsIP = kTRUE;};
+	
+	
 	virtual AliRDHFJetsCuts * GetJetCutsHF();
     virtual void SelectPtHardBin(const char * bin = "",const char * flavour = "",Bool_t val = kTRUE){fSelectPtHard=val;fPtHardBin=bin;fPtHardFlavour=flavour;};
     virtual void SetPtRelMomentumCuts(Double_t JetPt=5., Double_t ElectronPt=1.){fpTRelSoftElectronPt=JetPt;fpTRelSoftElectronPt=ElectronPt; };
@@ -76,14 +80,14 @@ protected:
     virtual Double_t GetElectronPIDnSigmaTPC(const AliVTrack * track);
     virtual Double_t GetPionPIDnSigmaTPC(const AliVTrack * track);
     virtual Double_t GetPtRel(const AliVTrack * track, const AliEmcalJet * jet);
+    virtual Bool_t TrackIsFromConversion(const AliVTrack * track,Bool_t useMC);
 
     virtual TList * AddHistsPtRelTemplates();
     virtual TList * AddHistsVtxMassTemplates();
 
     virtual void ProcessPtRelTemplateAnalysis(const AliEmcalJet * jet,double corrected_jet_pt,int mcflavour=0, double n3value=-999.);
     virtual void ProcessVtxMassTemplateAnalysis(const AliEmcalJet * jet,double corrected_jet_pt,int mcflavour=0, double n3value=-999.);
-
-
+	
     virtual void JetTrackLoop(const AliEmcalJet * jet,  Double_t n3tag, Int_t MCtag);
 
     // Jet containers
@@ -113,10 +117,14 @@ private:
     Bool_t fVetexingMassFitTest; //
     Bool_t fVetexingPtRelTest; //
 	Bool_t fUseAtlasSignTCCalculation;//
+	Bool_t fUseSignificance;
+	Bool_t fUse3DsIP;
+
     Bool_t fCalculateSoftElectronVtxInvariantMass;//Calculate inv. vtx mass for vertices with electrons
     Int_t  fUseEventSelection;// Event selection method
     Int_t  fUseJetSelection;// Jet selection method
     Int_t  fUseMCTagger;// MC tagger method selection
+	Int_t  fNumberOfsIPBins;//
     Double_t fSigmaTPCElectronLow;//
     Double_t fSigmaTPCElectronHigh;//
     Double_t fSigmaITSElectronLow;//
@@ -143,7 +151,9 @@ private:
     TH2 * fhist_QualityClasses_sIP[4][2];//![4][2]] prim. vs sec. track sip
     TH2 * fhist_QualityClasses_Eta_Phi[4][2];//![4][2]] prim. vs sec. track eta phi
     TH2 * fhist_TC_sIP_Pt[3][4][5];//![3][4][5] Track counting output
-    TH2 * fhist_TC_Eta_Phi[3][4][5];//![3][4][5] Track counting eta phi
+    TH2 * fhist_TC_Eta_Phi[3][4][5];//![3][4][5] Track counting eta 
+	TH2 * fhist_TC_sIP_Pt_Conversions[3][4][5];//![3][4][5] Track counting output e+/- from conversions
+    TH2 * fhist_TC_Eta_Phi_Conversions[3][4][5];//![3][4][5] Track counting eta phi e+/- from conversions
     TH2 * fhist_Jet_Eta_Phi;//! Jet eta-phi  distribution
     TH2 * fhist_Jet_Nconst_Pt;//! Jet pT vs N constituents
     TH1 * fhist_Jet_Pt;//! Jet pT  distribution
