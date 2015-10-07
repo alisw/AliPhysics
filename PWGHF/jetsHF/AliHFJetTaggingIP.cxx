@@ -22,7 +22,6 @@
 #include "AliHFJetTaggingIP.h"
 #include "AliEmcalJet.h"
 #include "AliVEvent.h"
-#include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "TRefArray.h"
 #include "AliVertexerTracks.h"
@@ -48,6 +47,8 @@ ClassImp(AliHFJetTaggingIP)
     : fUseThresholdFuction(kFALSE)
     , fAnaTypeAOD(kFALSE)
     , fUseSignAtlas(kFALSE)
+    , fUseSignificance(kFALSE)
+    , fUse3DsIP(kFALSE)
     , fCurrentDCA(0.)
     , fThreshold(-99.)
     , fDiscriminators()
@@ -63,6 +64,7 @@ ClassImp(AliHFJetTaggingIP)
     // default constructor
     //========================================================================
     memset(fSelectionCuts, 0, sizeof fSelectionCuts);
+    memset(fCurrentTrack, 0, sizeof fCurrentTrack);
     fAnaTypeAOD = kFALSE;
     this->InitTrackSelectionParams(0x0);
 }
@@ -141,6 +143,7 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminator(AliEmcalJet* jet, Double_t* discri
     fJet = jet;
 
     AliVTrack* bTrack = 0x0;
+
     for(Int_t j = 0; j < fJet->GetNumberOfTracks(); ++j) {
 	Double_t bSign = 0.;
 	Double_t bIp2d = -999.;
@@ -170,14 +173,17 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminator(AliEmcalJet* jet, Double_t* discri
     std::sort(bSignedImpactParameter.begin(), bSignedImpactParameter.end(), AliHFJetTaggingIP::mysort);
     if(numoftracks > 2) {
 	discriminator[2] = bSignedImpactParameter.at(2).second;
+	fCurrentTrack[2] = bSignedImpactParameter.at(2).first;
 	check_discr[2] = kTRUE;
     }
     if(numoftracks > 1) {
 	discriminator[1] = bSignedImpactParameter.at(1).second;
+	fCurrentTrack[1] = bSignedImpactParameter.at(1).first;
 	check_discr[1] = kTRUE;
     }
     if(numoftracks > 0) {
 	discriminator[0] = bSignedImpactParameter.at(0).second;
+	fCurrentTrack[0] = bSignedImpactParameter.at(0).first;
 	check_discr[0] = kTRUE;
     }
     return kTRUE;
@@ -229,14 +235,17 @@ Bool_t AliHFJetTaggingIP::GetJetDiscriminatorQualityClass(Int_t qtyclass,
     std::sort(bSignedImpactParameter.begin(), bSignedImpactParameter.end(), AliHFJetTaggingIP::mysort);
     if(numoftracks > 2) {
 	discriminator[2] = bSignedImpactParameter.at(2).second;
+	fCurrentTrack[2] = bSignedImpactParameter.at(2).first;
 	check_discr[2] = kTRUE;
     }
     if(numoftracks > 1) {
 	discriminator[1] = bSignedImpactParameter.at(1).second;
+	fCurrentTrack[1] = bSignedImpactParameter.at(1).first;
 	check_discr[1] = kTRUE;
     }
     if(numoftracks > 0) {
 	discriminator[0] = bSignedImpactParameter.at(0).second;
+	fCurrentTrack[0] = bSignedImpactParameter.at(0).first;
 	check_discr[0] = kTRUE;
     }
     return kTRUE;
@@ -270,14 +279,14 @@ Bool_t AliHFJetTaggingIP::GetImpactParameter(AliVTrack* bTrack, Double_t* bSign,
     fEvent->GetDiamondCovXY(bDiamondcovxy);
 
     Double_t bpos[3] = { this->fEvent->GetDiamondX(), this->fEvent->GetDiamondY(), 0. };
-    Double_t bcov[6] = { bDiamondcovxy[0], bDiamondcovxy[1], bDiamondcovxy[2], 0., 0., 10. * 10. };
+    Double_t bcov[6] = { bDiamondcovxy[0], bDiamondcovxy[1], bDiamondcovxy[2], 0., 0., 10. };
     AliESDVertex* bDiamond = new AliESDVertex(bpos, bcov, 1., 1);
 
     bVertexer->SetVtxStart(bDiamond);
-    delete bDiamond;
-    bDiamond = 0x0;
 
     this->fVertexRecalculated = bVertexer->FindPrimaryVertex(fEvent);
+    delete bDiamond;
+    bDiamond = 0x0;
     delete bVertexer;
     bVertexer = NULL;
     if(this->fVertexRecalculated)
@@ -308,12 +317,27 @@ Bool_t AliHFJetTaggingIP::GetImpactParameter(AliVTrack* bTrack, Double_t* bSign,
 
     *bSign = bVar;
     Double_t ptrIP = fabs(bPosAtDCA[0]);
+    if(fUse3DsIP) {
+	ptrIP = TMath::Sqrt(bPosAtDCA[0] * bPosAtDCA[0] + bPosAtDCA[1] * bPosAtDCA[1]);
+    }
     Double_t pJetArray[3];
     fJet->PxPyPz(pJetArray);
-    if(fUseSignAtlas){
+    if(fUseSignAtlas) {
 	*bSign = GetSignAtlasDefinition(bpTrack, bpTrackP, bpV, pJetArray);
-	}
+    }
     *bIp2d = ptrIP;
+
+    if(fUseSignificance) {
+	if(!fUse3DsIP)
+	    *bIp2d = ptrIP / bCovar[0];
+	else {
+	    double v3derror = 0.;
+	    v3derror = bPosAtDCA[0] * (bCovar[0] * bCovar[0]) + bPosAtDCA[1] * (bCovar[2] * bCovar[2]) +
+	               2 * bPosAtDCA[0] * bPosAtDCA[1] * bCovar[1];
+	    *bIp2d = ptrIP / v3derror;
+	}
+    }
+
     return kTRUE;
 }
 Double_t AliHFJetTaggingIP::GetDecayLength(AliVTrack* bTrack)
@@ -359,11 +383,6 @@ Bool_t AliHFJetTaggingIP::PassedCuts(AliVTrack* bTrack, Double_t ip)
 	return kFALSE;
     if((status & AliAODTrack::kTPCrefit) == 0)
 	return kFALSE;
-    // if(fAnaTypeAOD){
-    // if(((AliAODTrack*)bTrack)->Chi2perNDF() > this->fSelectionCuts[AliHFJetTaggingIP::S_TRACKCHI2]) return kFALSE;
-    // } else{
-    //   if(((AliESDtrack*)bTrack)->Chi2perNDF() > this->fSelectionCuts[AliHFJetTaggingIP::S_TRACKCHI2]) return kFALSE;
-    // }
     if(fAnaTypeAOD) {
 	if(!((((AliAODTrack*)bTrack)->HasPointOnITSLayer(0)) || (((AliAODTrack*)bTrack)->HasPointOnITSLayer(1))))
 	    return kFALSE;
@@ -559,4 +578,11 @@ Double_t AliHFJetTaggingIP::GetSignAtlasDefinition(Double_t* xDCA, Double_t* pDC
     Double_t N = TMath::Abs(tmpVec4);
 
     return tmpVec4 / N;
+}
+
+AliVTrack* AliHFJetTaggingIP::GetCurrentTrack(int i)
+{
+    AliVTrack* res = 0x0;
+    res = (AliVTrack*)((AliPicoTrack*)fParticles->GetParticle(this->fCurrentTrack[i]))->GetTrack();
+    return res;
 }
