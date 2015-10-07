@@ -78,6 +78,9 @@ class AliVAODHeader : public AliVHeader {
   virtual UInt_t         GetOfflineTrigger()  = 0;
   virtual Int_t          GetRefMultiplicity()    const  =0;
   virtual Double_t       GetEventplane()         const =0;
+  //
+  virtual UInt_t  GetDAQAttributes()             const;
+  virtual void    SetDAQAttributes(UInt_t);
 
 
 };

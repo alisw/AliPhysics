@@ -1115,8 +1115,9 @@ void AliAODEvent::ConnectTracks() {
 Bool_t AliAODEvent::IsIncompleteDAQ() 
 {
   // check if DAQ has set the incomplete event attributes
-  return (fDAQAttributes&ATTR_2_B(ATTR_INCOMPLETE_EVENT))!=0 
-    ||   (fDAQAttributes&ATTR_2_B(ATTR_FLUSHED_EVENT))!=0;
+  UInt_t daqAttr = GetDAQAttributes();
+  return (daqAttr&ATTR_2_B(ATTR_INCOMPLETE_EVENT))!=0 
+    ||   (daqAttr&ATTR_2_B(ATTR_FLUSHED_EVENT))!=0;
     
 }
 

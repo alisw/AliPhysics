@@ -368,13 +368,13 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   // Convert header information
 
   AliCodeTimerAuto("",0);
-  AODEvent()->SetDAQAttributes(esd.GetDAQAttributes());
   AliAODHeader* header = dynamic_cast<AliAODHeader*>(AODEvent()->GetHeader());
   if(!header) AliFatal("Not a standard AOD");
   
   header->SetRunNumber(esd.GetRunNumber());
   header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
   header->SetNumberOfESDTracks(esd.GetNumberOfTracks());
+  header->SetDAQAttributes(esd.GetDAQAttributes());
 
   TTree* tree = fInputHandler->GetTree();
   if (tree) {
