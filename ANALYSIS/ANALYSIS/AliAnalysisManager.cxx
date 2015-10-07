@@ -2120,9 +2120,14 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    line.Form("gProof->AddInput((TObject*)%p);", this);
    gROOT->ProcessLine(line);
    Long_t retv;
-   cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
    line.Form("gProof->Process((const char *)%p, \"AliAnalysisSelector\", \"%s\", %lld, %lld);",
              dataset, proofProcessOpt.Data(), nentries, firstentry);
+   char *dispDataset = new char[101];
+   strncpy(dispDataset, dataset, 100);
+   strncpy(&dispDataset[97], "...", 3);
+   dispDataset[100] = '\0';
+   cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dispDataset << endl;
+   delete dispDataset;
    retv = (Long_t)gROOT->ProcessLine(line);
    return retv;
 }   
