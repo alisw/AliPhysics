@@ -13,10 +13,10 @@ requestHeader="INFO"
 requestBody=""
 if len(sys.argv)==1:
     print "Usage:"
-    print sys.argv[0]+"\"PULL@tcp://localhost:60202\""
-    print sys.argv[0]+"\"SUB>tcp://localhost:60202\" \"optional subscription\""
-    print sys.argv[0]+"\"REQ>tcp://localhost:60202\" INFO \"-reset someoption=value\""
-    print sys.argv[0]+"\"REP>tcp://localhost:60202\" INFO \"-reset someoption=value\""
+    print sys.argv[0]+" \"PULL@tcp://localhost:60202\""
+    print sys.argv[0]+" \"SUB>tcp://localhost:60202\" \"optional subscription\""
+    print sys.argv[0]+" \"REQ>tcp://localhost:60202\" INFO \"-reset someoption=value\""
+    print sys.argv[0]+" \"REP>tcp://localhost:60202\" INFO \"-reset someoption=value\""
     quit()
 if len(sys.argv)>1:
     endpoint=sys.argv[1]
