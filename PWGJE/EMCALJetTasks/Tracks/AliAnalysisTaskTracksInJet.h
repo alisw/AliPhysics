@@ -61,14 +61,17 @@ protected:
   Bool_t IsPhysicalPrimary(const AliVParticle* const part, AliMCEvent* const mcevent) const;
   AliGenPythiaEventHeader *GetPythiaHeader() const;
   Bool_t IsOutlier(AliGenPythiaEventHeader * const header) const;
-  Bool_t TrackSelectionESD(AliESDtrack* track) const;
-  Bool_t TrackSelectionAOD(AliAODTrack* track) const;
+  Bool_t TrackSelectionESDHybrid(AliESDtrack* track) const;
+  Bool_t TrackSelectionESDDefault(AliESDtrack* track) const;
+  Bool_t TrackSelectionAODHybrid(AliAODTrack* track) const;
+  Bool_t TrackSelectionAODDefault(AliAODTrack* track) const;
 
   JetData                   fJetStructure;
   TTree                     *fJetTree;
   AliAnalysisUtils          *fAnalysisUtils;
-  AliESDtrackCuts           *fTrackCuts;
-  AliESDtrackCuts           *fHybridCuts;
+  AliESDtrackCuts           *fTrackCutsDefault;
+  AliESDtrackCuts           *fHybridCutsCat1;
+  AliESDtrackCuts           *fHybridCutsCat2;
 
   Bool_t                    fIsMC;
   Double_t                  fFracPtHard;
