@@ -61,8 +61,9 @@ AliAnalysisTaskTracksInJet::AliAnalysisTaskTracksInJet() :
     fJetStructure(),
     fJetTree(NULL),
     fAnalysisUtils(NULL),
-    fTrackCuts(NULL),
-    fHybridCuts(NULL),
+    fTrackCutsDefault(NULL),
+    fHybridCutsCat1(NULL),
+    fHybridCutsCat2(NULL),
     fIsMC(kFALSE),
     fFracPtHard(-1),
     fHistosMC(NULL)
@@ -74,8 +75,9 @@ AliAnalysisTaskTracksInJet::AliAnalysisTaskTracksInJet(const char *taskname) :
     fJetStructure(),
     fJetTree(NULL),
     fAnalysisUtils(NULL),
-    fTrackCuts(NULL),
-    fHybridCuts(NULL),
+    fTrackCutsDefault(NULL),
+    fHybridCutsCat1(NULL),
+    fHybridCutsCat2(NULL),
     fIsMC(kFALSE),
     fFracPtHard(-1),
     fHistosMC(NULL)
@@ -99,24 +101,29 @@ void AliAnalysisTaskTracksInJet::UserCreateOutputObjects(){
 
   fAnalysisUtils = new AliAnalysisUtils;
 
-  // @TODO: Instance Hybrid track cuts for ESDs
-  fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-  fTrackCuts->SetMaxDCAToVertexXY(2.4);
-  fTrackCuts->SetMaxDCAToVertexZ(3.2);
-  fTrackCuts->SetDCAToVertex2D(kTRUE);
-  fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-  fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+  fTrackCutsDefault = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(true, 1);
+  fTrackCutsDefault->SetName("Standard Track cuts");
+  fTrackCutsDefault->SetMinNCrossedRowsTPC(120);
+  fTrackCutsDefault->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+
+  // First class of hybrid track cuts
+  fHybridCutsCat1 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+  fHybridCutsCat1->SetMaxDCAToVertexXY(2.4);
+  fHybridCutsCat1->SetMaxDCAToVertexZ(3.2);
+  fHybridCutsCat1->SetDCAToVertex2D(kTRUE);
+  fHybridCutsCat1->SetMaxChi2TPCConstrainedGlobal(36);
+  fHybridCutsCat1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+  fHybridCutsCat1->SetMaxFractionSharedTPCClusters(0.4);
 
   // Second class of hybrid track cuts
-  fHybridCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-  fHybridCuts->SetMaxDCAToVertexXY(2.4);
-  fHybridCuts->SetMaxDCAToVertexZ(3.2);
-  fHybridCuts->SetDCAToVertex2D(kTRUE);
-  fHybridCuts->SetMaxChi2TPCConstrainedGlobal(36);
-  fHybridCuts->SetMaxFractionSharedTPCClusters(0.4);
-  fHybridCuts->SetRequireITSRefit(kFALSE);
-  fHybridCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+  fHybridCutsCat2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+  fHybridCutsCat2->SetMaxDCAToVertexXY(2.4);
+  fHybridCutsCat2->SetMaxDCAToVertexZ(3.2);
+  fHybridCutsCat2->SetDCAToVertex2D(kTRUE);
+  fHybridCutsCat2->SetMaxChi2TPCConstrainedGlobal(36);
+  fHybridCutsCat2->SetMaxFractionSharedTPCClusters(0.4);
+  fHybridCutsCat2->SetRequireITSRefit(kFALSE);
+  fHybridCutsCat2->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
 
   PostData(1, fHistosMC->GetListOfHistograms());
   PostData(2, fJetTree);
@@ -241,27 +248,31 @@ void AliAnalysisTaskTracksInJet::UserExec(Option_t *){
   AliESDtrack *esdtrack(NULL);
   AliAODTrack *aodtrack(NULL);
   double mpion = TDatabasePDG::Instance()->GetParticle(kPiPlus)->Mass();
+  double mass(0);
   for(int ipart = 0; ipart < fInputEvent->GetNumberOfTracks(); ipart++){
     AliVParticle *recpart = fInputEvent->GetTrack(ipart);
     if(MCEvent()){
       AliVParticle *assocMC = fMCEvent->GetTrack(TMath::Abs(recpart->GetLabel()));
       if(!assocMC) continue;
       if(!IsPhysicalPrimary(assocMC, fMCEvent)) continue;
+      mass = TDatabasePDG::Instance()->GetParticle(assocMC->PdgCode())->Mass();
+    } else {
+      mass  = mpion;
     }
 
     // Select track
     if(TMath::Abs(recpart->Eta()) > 0.8) continue;
     if((esdtrack = dynamic_cast<AliESDtrack *>(recpart))){
       AliESDtrack copytrack(*esdtrack);
-      if(!TrackSelectionESD(&copytrack)) continue;
+      if(!TrackSelectionESDHybrid(&copytrack)) continue;
       pvectrack.SetXYZ(copytrack.Px(), copytrack.Py(), copytrack.Pz());
     } else if((aodtrack = dynamic_cast<AliAODTrack *>(recpart))){
-      if(!TrackSelectionAOD(aodtrack)) continue;
+      if(!TrackSelectionAODHybrid(aodtrack)) continue;
       pvectrack.SetXYZ(recpart->Px(), recpart->Py(), recpart->Pz());
     } else continue;
 
     // Create pseudojet under the assumption the particle is a pion
-    fastjet::PseudoJet inputparticle(pvectrack.Px(), pvectrack.Py(), pvectrack.Pz(), TMath::Sqrt(pvectrack.Perp()*pvectrack.Perp() + mpion * mpion));
+    fastjet::PseudoJet inputparticle(pvectrack.Px(), pvectrack.Py(), pvectrack.Pz(), TMath::Sqrt(pvectrack.Perp()*pvectrack.Perp() + mass * mass));
     inputparticle.set_user_index(ipart);
     datapseudo.push_back(inputparticle);
   }
@@ -282,6 +293,14 @@ void AliAnalysisTaskTracksInJet::UserExec(Option_t *){
     int icounter = 0;
     for(std::vector<fastjet::PseudoJet>::const_iterator cit = constituentssorted.begin(); cit != constituentssorted.end(); ++cit){
       AliVParticle *basepart = fInputEvent->GetTrack(cit->user_index());
+      // Now apply stronger selection: default track cuts
+      bool isSelected = false;
+      if(basepart->IsA() == AliESDtrack::Class()){
+        isSelected = TrackSelectionESDDefault(static_cast<AliESDtrack *>(basepart));
+      } else {
+        isSelected = TrackSelectionAODDefault(static_cast<AliAODTrack *>(basepart));
+      }
+      if(!isSelected) continue;
       if(icounter == 0) {
         basepart->PxPyPz(pveclead);
       } else if(icounter == 1) {
@@ -313,12 +332,12 @@ void AliAnalysisTaskTracksInJet::UserExec(Option_t *){
  * @param track The track to check
  * @return True if the track is selected, false otherwise
  */
-Bool_t AliAnalysisTaskTracksInJet::TrackSelectionESD(AliESDtrack* track) const {
-  if (fTrackCuts->AcceptTrack(track)) {
+Bool_t AliAnalysisTaskTracksInJet::TrackSelectionESDHybrid(AliESDtrack* track) const {
+  if (fHybridCutsCat1->AcceptTrack(track)) {
     track->SetBit(BIT(22),0);
     track->SetBit(BIT(23),0);
     return true;
-  } else if (fHybridCuts->AcceptTrack(track)) {
+  } else if (fHybridCutsCat2->AcceptTrack(track)) {
     if (!track->GetConstrainedParam())
       return false;
     UInt_t status = track->GetStatus();
@@ -343,13 +362,33 @@ Bool_t AliAnalysisTaskTracksInJet::TrackSelectionESD(AliESDtrack* track) const {
 }
 
 /**
- * Run track selection for AOD tracks
+ * Run track selection for ESD tracks. Does the default track selection.
  * @param track The track to check
  * @return True if the track is selected, false otherwise
  */
-Bool_t AliAnalysisTaskTracksInJet::TrackSelectionAOD(AliAODTrack* track) const {
+Bool_t AliAnalysisTaskTracksInJet::TrackSelectionESDDefault(AliESDtrack* track) const {
+  return fTrackCutsDefault->AcceptTrack(track);
+}
+
+/**
+ * Run hybrid track selection for AOD tracks
+ * @param track The track to check
+ * @return True if the track is selected, false otherwise
+ */
+Bool_t AliAnalysisTaskTracksInJet::TrackSelectionAODHybrid(AliAODTrack* track) const {
   // @TODO: Change to hybrid track cuts (256,512)
-  if(!(track->TestFilterBit(256) || track->TestFilterBit(256))) return false;
+  if(!(track->TestFilterBit(256) || track->TestFilterBit(512))) return false;
+  return true;
+}
+
+/**
+ * Run default track selection for AOD tracks
+ * @param track The track to check
+ * @return True if the track is selected, false otherwise
+ */
+Bool_t AliAnalysisTaskTracksInJet::TrackSelectionAODDefault(AliAODTrack* track) const {
+  if(!track->TestFilterBit(AliAODTrack::kTrkGlobal)) return false;
+  if(track->GetTPCNCrossedRows() < 120) return false;
   return true;
 }
 
