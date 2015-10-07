@@ -1,25 +1,37 @@
 #!/usr/bin/python
 import zmq,sys
+import signal
 
-mode="SUB"
-endpoint=">tcp://localhost:60202"
+def Exit_gracefully(signal, frame):
+  context.destroy()
+  print(" signal caught, exiting")
+  sys.exit(0)
+signal.signal(signal.SIGINT, Exit_gracefully)
+
+endpoint="SUB>tcp://localhost:60202"
 requestHeader="INFO"
 requestBody=""
 if len(sys.argv)==1:
     print "Usage:"
-    print sys.argv[0]+" PULL \"@tcp://localhost:60202\""
-    print sys.argv[0]+" SUB \">tcp://localhost:60202\" \"optional subscription\""
-    print sys.argv[0]+" REQ \">tcp://localhost:60202\" INFO \"-reset someoption=value\""
-    print sys.argv[0]+" REP \">tcp://localhost:60202\" INFO \"-reset someoption=value\""
+    print sys.argv[0]+"\"PULL@tcp://localhost:60202\""
+    print sys.argv[0]+"\"SUB>tcp://localhost:60202\" \"optional subscription\""
+    print sys.argv[0]+"\"REQ>tcp://localhost:60202\" INFO \"-reset someoption=value\""
+    print sys.argv[0]+"\"REP>tcp://localhost:60202\" INFO \"-reset someoption=value\""
     quit()
 if len(sys.argv)>1:
-    mode=sys.argv[1]
+    endpoint=sys.argv[1]
+    sepindex=endpoint.find('@')
+    if sepindex < 0:
+      sepindex=endpoint.find('>')
+    if sepindex < 0 or sepindex > 5:
+      print("error in endpoint syntax: "+endpoint)
+      quit()
+    mode=endpoint[0:sepindex]
+    endpoint=endpoint[sepindex:]
 if len(sys.argv)>2:
-    endpoint=sys.argv[2]
+    requestHeader=sys.argv[2]
 if len(sys.argv)>3:
-    requestHeader=sys.argv[3]
-if len(sys.argv)>4:
-    requestBody=sys.argv[4]
+    requestBody=sys.argv[3]
 
 print "mode: "+mode+" endpoint: "+endpoint
 
@@ -42,7 +54,7 @@ elif mode=="REP":
 else:
     print "not a valid mode"
     quit()
-
+socket.set(zmq.LINGER,10)
 if endpoint[0]=='>':
     print "connect to: "+endpoint[1:]
     socket.connect(str(endpoint[1:]))
