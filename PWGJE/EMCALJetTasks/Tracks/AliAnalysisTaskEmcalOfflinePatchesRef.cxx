@@ -31,7 +31,9 @@
 /*
  * Old C++
  */
+#ifndef nullptr
 #define nullptr NULL
+#endif
 #include <vector>
 #else
 #include <array>
