@@ -151,14 +151,16 @@ void AliAnalysisTaskEmcalOfflinePatchesRef::UserExec(Option_t *){
     if(!mypatch->IsGammaLowSimple()) continue;
     fGeometry->SuperModuleNumberFromEtaPhi(mypatch->GetEtaCM(), mypatch->GetPhiCM(), supermoduleID);
     Int_t sector = 4 + int(supermoduleID / 2);
-    if(mypatch->IsGammaLowSimple() && mypatch->GetPatchE() > 3) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kFALSE);
-    if(mypatch->IsGammaLowSimple() && mypatch->GetPatchE() > 11) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kFALSE);
-    if(mypatch->IsGammaLowSimple() && mypatch->GetPatchE() > 7) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kFALSE);
+    if(mypatch->IsGammaLowSimple() && mypatch->GetPatchE() > 3){
+      FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kFALSE);
+      FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kFALSE);
+      FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kFALSE);
+    }
 
     // correlate patches with real event classes selected
-    if(isEMC7 && mypatch->IsGammaLowSimple() && mypatch->GetPatchE() > 3) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kTRUE);
-    if(isEG1 && mypatch->IsGammaLowSimple() && mypatch->GetPatchE() > 11) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kTRUE);
-    if(isEG2 && mypatch->IsGammaLowSimple() && mypatch->GetPatchE() > 7) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kTRUE);
+    if(isEMC7 && mypatch->IsGammaLowSimple()) FillTriggerPatchHistos("EL0", mypatch, supermoduleID, sector, kTRUE);
+    if(isEG1 && mypatch->IsGammaLowSimple()) FillTriggerPatchHistos("EG1", mypatch, supermoduleID, sector, kTRUE);
+    if(isEG2 && mypatch->IsGammaLowSimple()) FillTriggerPatchHistos("EG2", mypatch, supermoduleID, sector, kTRUE);
   }
 
   PostData(1, fHistos->GetListOfHistograms());
