@@ -822,7 +822,7 @@ AliFourPion::~AliFourPion()
 	  for(Int_t term=0; term<2; term++){
 	    
 	    if(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2) delete Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2;
-	    
+	    if(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fBuild) delete Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fBuild;
 	    if(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fIdeal) delete Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fIdeal;
 	    if(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fSmeared) delete Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fSmeared;
 	    if(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSL) delete Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].OSL_ktbin[0].fTerms2OSL;
@@ -1362,6 +1362,13 @@ void AliFourPion::UserCreateOutputObjects()
 	    
 	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2 = new TH2D(nameEx2->Data(),"Two Particle Distribution",20,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
 	    fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2);
+	    //
+	    if(c1==c2 && term==1 ){
+	      TString *nameBuild=new TString(nameEx2->Data());
+	      nameBuild->Append("_Build");
+	      Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fBuild = new TH2D(nameBuild->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ2,0.,fQupperBoundQ2);
+	      fOutputList->Add(Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fBuild);
+	    }
 	    TString *nameEx2QW=new TString(nameEx2->Data());
 	    nameEx2QW->Append("_QW");
 	    Charge1[c1].Charge2[c2].MB[mb].EDB[edB].TwoPT[term].fTerms2QW = new TH2D(nameEx2QW->Data(),"Two Particle Distribution",20,0.,1., fQbinsQ2,0.,fQupperBoundQ2);
@@ -2662,7 +2669,19 @@ void AliFourPion::UserExec(Option_t *)
 	  
 	  }
 	  if( (en1+en2==1)) {
-	    if(!fGenerateSignal) Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
+	    if(!fGenerateSignal) {
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
+	      // Build 2-pion correlations from previous 2-pion tabulations
+	      if(bin1==bin2 && qinv12<0.1){
+		GetWeight(pVect1, pVect2, weight12, weight12Err);
+		Int_t kTIndexBuild=0;
+		if(kT12 < 0.25) kTIndexBuild=0;
+		if(kT12 > 0.3 && kT12 < 0.35) kTIndexBuild=1;
+		if(weight12<0) weight12=0;
+		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTIndexBuild].TwoPT[1].fBuild->Fill(4, qinv12, 1);
+		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTIndexBuild].TwoPT[1].fBuild->Fill(5, qinv12, pow(weight12,2));
+	      }
+	    }
 	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2QW->Fill(kT12, qinv12, qinv12);
 	    // osl frame
 	    if((kT12 > 0.2) && (kT12 < 0.3)){  

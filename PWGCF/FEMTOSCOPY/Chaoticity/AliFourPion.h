@@ -207,6 +207,8 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH1D *fMCqinvQW; //!
     TH2D *fPIDpurityDen; //!
     TH3D *fPIDpurityNum; //!
+    //
+    TH2D *fBuild; //!
     struct St7 OSL_ktbin[2];
   };
   struct StFourPT {
