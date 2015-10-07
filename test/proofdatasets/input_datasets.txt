@@ -1,0 +1,2 @@
+Find;BasePath=/alice/data/2013/LHC13e/000195949/ESDs/muon_pass2/AOD134/%/;FileName=root_archive.zip;Anchor=AliAOD.root;Tree=/aodTree;Mode=cache
+Find;BasePath=/alice/data/2013/LHC13e/000196203/ESDs/muon_pass2/AOD134/%/;FileName=root_archive.zip;Anchor=AliAOD.root;Tree=/aodTree;Mode=cache
