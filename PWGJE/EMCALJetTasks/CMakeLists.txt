@@ -104,6 +104,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
+    Tracks/AliAnalysisTaskEventSelectionRef.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
