@@ -57,7 +57,7 @@ AliDecayerExodus::AliDecayerExodus():
     fEPMassPhi(0),
     fEPMassPhiDalitz(0),
     fEPMassJPsi(0),
-    fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)), /* Polarization Function */
+    fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)), /* Polarization Function for resonances */
     fInit(0)
 
 {
@@ -377,6 +377,7 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
 
    //flat angular distributions
    Double_t costheta, sintheta, cosphi, sinphi, phi;
+   Double_t beta_square, lambda;
    costheta = (2.0 * gRandom->Rndm()) - 1.;
    sintheta = TMath::Sqrt((1. + costheta) * (1. - costheta));
    phi      = 2.0 * TMath::ACos(-1.) * gRandom->Rndm();
@@ -413,12 +414,27 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
         }else{ printf(" Exodus ERROR: Dalitz mass parametrization not found \n");
                return;
         }
-        if(pmass-realp_mass>epmass && epmass/2/2.>emass) break;
+        if(pmass-realp_mass>epmass && epmass/2.>emass) break;
    }
 
    // electron pair kinematics in virtual photon rest frame
    e1 = epmass / 2.;
    p1 = TMath::Sqrt((e1 + emass) * (e1 - emass));
+
+
+   //Polarization parameters (lambda) for Dalitz:
+   if ( realp_mass<0.01 ){
+    beta_square = 1.0 - 4.0*(emass*emass)/(epmass*epmass);
+    lambda      = beta_square/(2.0-beta_square);
+    do{
+     costheta = (2.0*gRandom->Rndm())-1.;
+    }
+    while ( (1.0+lambda*costheta*costheta)<(2.0*gRandom->Rndm()) );
+    sintheta = TMath::Sqrt((1. + costheta) * (1. - costheta));
+    phi      = 2.0 * TMath::ACos(-1.) * gRandom->Rndm();
+    sinphi   = TMath::Sin(phi);
+    cosphi   = TMath::Cos(phi); 
+   }
 
    // momentum vectors of electrons in virtual photon rest frame
    Double_t pProd1[3] = {p1 * sintheta * cosphi,
@@ -450,7 +466,6 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
    fProducts_dalitz[2].SetPy(p3 * sintheta * sinphi);
    fProducts_dalitz[2].SetPz(p3 * costheta);
    fProducts_dalitz[2].SetE(e3);
-   
 
    // boost the dielectron into the parent meson's rest frame
    Double_t eLPparent = TMath::Sqrt(p3*p3 + epmass*epmass);
@@ -514,19 +529,19 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
    for( ;; ) {
         if(idpart==idRho){
          epmass_res = fEPMassRho->GetRandom();
-PolPar=0.;
+	 PolPar=0.;
         }else if(idpart==idOmega){
- epmass_res = fEPMassOmega->GetRandom();
-PolPar=0.;
+	 epmass_res = fEPMassOmega->GetRandom();
+	 PolPar=0.;
         }else if(idpart==idPhi){
-   epmass_res = fEPMassPhi->GetRandom();
-PolPar=0.;
+	 epmass_res = fEPMassPhi->GetRandom();
+	 PolPar=0.;
         }else if(idpart==idPhi){
-   epmass_res = fEPMassPhi->GetRandom();
-PolPar=0.;
+	 epmass_res = fEPMassPhi->GetRandom();
+	 PolPar=0.;
         }else if(idpart==idJPsi){
-  epmass_res = fEPMassJPsi->GetRandom();
-PolPar=0.;
+	 epmass_res = fEPMassJPsi->GetRandom();
+	 PolPar=0.;
         }else{ printf(" Exodus ERROR: Resonance mass G-S parametrization not found \n");
                return;
         }
