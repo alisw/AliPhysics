@@ -3566,8 +3566,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	//if (!st){std::cout<<"stack does not exist for Embedding study: "<<std::endl; continue;}
 	
 	
-	AliAODMCHeader *header=(AliAODMCHeader*)listmc->FindObject(AliAODMCHeader::StdBranchName());
-	if(!header){std::cout<<"header does not exist for Embedding study: "<<std::endl; continue;}
+	//AliAODMCHeader *header=(AliAODMCHeader*)listmc->FindObject(AliAODMCHeader::StdBranchName());
+	//if(!header){std::cout<<"header does not exist for Embedding study: "<<std::endl; continue;}
 		
       	//std::cout<<"fCutFractionPtEmbedded: "<<fCutFractionPtEmbedded<<" fCutDeltaREmbedded: "<<fCutDeltaREmbedded<<std::endl;	
 
