@@ -8,7 +8,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef *AddTaskEventSelectionR
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  TString selectionstring = TString::Format("EMC7%dEG1%dEG2%dEJ1%dEJ2%d", enEMC7, enEG1, enEG2, enEJ1, enEJ2),
+  TString selectionstring = TString::Format("EMC7%dEG1%dEG2%dEJ1%dEJ2%d", int(enEMC7), int(enEG1), int(enEG2), int(enEJ1), int(enEJ2)),
       taskname = "EventSelectionQA_" + selectionstring,
       listname = "EventSelectionResults_" + selectionstring;
 
