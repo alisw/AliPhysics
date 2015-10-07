@@ -1,7 +1,7 @@
 #ifndef AliFJWrapper_H
 #define AliFJWrapper_H
 
-#if !defined(__CINT__) 
+#if !defined(__CINT__)
 
 #include <vector>
 #include <TString.h>
@@ -45,13 +45,15 @@ class AliFJWrapper
   Bool_t                                  GetDoFilterArea()          { return fDoFilterArea; }
 #ifdef FASTJET_VERSION
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass()        const {return fGenSubtractorInfoJetMass        ; }
-  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetAngularity()  const {return fGenSubtractorInfoJetAngularity  ; } 
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetAngularity()  const {return fGenSubtractorInfoJetAngularity  ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetpTD()         const {return fGenSubtractorInfoJetpTD         ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetCircularity() const {return fGenSubtractorInfoJetCircularity ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetSigma2()      const {return fGenSubtractorInfoJetSigma2      ; }
-  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetConstituent() const {return fGenSubtractorInfoJetConstituent ; } 
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetConstituent() const {return fGenSubtractorInfoJetConstituent ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetLeSub()       const {return fGenSubtractorInfoJetLeSub       ; }
   const std::vector<fastjet::PseudoJet>                      GetConstituentSubtrJets()            const {return fConstituentSubtrJets            ; }
+  Int_t CreateGenSub();          // fastjet::contrib::GenericSubtractor
+  Int_t CreateConstituentSub();  // fastjet::contrib::ConstituentSubtractor
 #endif
   virtual std::vector<double>                                GetGRNumerator()                     const { return fGRNumerator                    ; }
   virtual std::vector<double>                                GetGRDenominator()                   const { return fGRDenominator                  ; }
@@ -93,6 +95,7 @@ class AliFJWrapper
   void SetLegacyFJ();
   void SetUseExternalBkg(Bool_t b, Double_t rho, Double_t rhom) { fUseExternalBkg = b; fRho = rho; fRhom = rhom;}
   void SetRMaxAndStep(Double_t rmax, Double_t dr) {fRMax = rmax; fDRStep = dr; }
+  void SetRhoRhom (Double_t rho, Double_t rhom) { fUseExternalBkg = kTRUE; fRho = rho; fRhom = rhom;} // if using rho,rhom then fUseExternalBkg is true
 
  protected:
   TString                                fName;               //!
@@ -136,10 +139,11 @@ class AliFJWrapper
   fastjet::JetMedianBackgroundEstimator   *fBkrdEstimator;    //!
   //from contrib package
   fastjet::contrib::GenericSubtractor     *fGenSubtractor;    //!
+  fastjet::contrib::ConstituentSubtractor *fConstituentSubtractor;    //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetMass;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRNum;          //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRDen;          //!
-  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetAngularity;  //!  
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetAngularity;  //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetpTD;         //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetCircularity; //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetSigma2;      //!
@@ -169,7 +173,7 @@ class AliFJWrapper
 #endif
 
 #ifdef AliFJWrapper_CXX
-#undef AliFJWrapper_CXX 
+#undef AliFJWrapper_CXX
 
 #if defined __GNUC__
 #pragma GCC system_header
@@ -179,7 +183,7 @@ namespace fj = fastjet;
 
 //_________________________________________________________________________________________________
 AliFJWrapper::AliFJWrapper(const char *name, const char *title)
-  : 
+  :
     fName              (name)
   , fTitle             (title)
   , fInputVectors      ( )
@@ -214,6 +218,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
 #ifdef FASTJET_VERSION
   , fBkrdEstimator     (0)
   , fGenSubtractor     (0)
+  , fConstituentSubtractor (0)
   , fGenSubtractorInfoJetMass ( )
   , fGenSubtractorInfoGRNum ( )
   , fGenSubtractorInfoGRDen ( )
@@ -241,7 +246,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
 
 //_________________________________________________________________________________________________
 AliFJWrapper::~AliFJWrapper()
-{  
+{
   // Destructor.
 
   delete fAreaDef;
@@ -256,6 +261,7 @@ AliFJWrapper::~AliFJWrapper()
 #ifdef FASTJET_VERSION
   if (fBkrdEstimator)     delete fBkrdEstimator;
   if (fGenSubtractor)     delete fGenSubtractor;
+  if (fConstituentSubtractor)  delete fConstituentSubtractor;
 #endif
 }
 
@@ -263,7 +269,7 @@ AliFJWrapper::~AliFJWrapper()
 void AliFJWrapper::CopySettingsFrom(const AliFJWrapper& wrapper)
 {
   // Copy some settings.
-  // You very often want to keep most of the settings 
+  // You very often want to keep most of the settings
   // but change only the algorithm or R - do it after call to this function
 
   fStrategy         = wrapper.fStrategy;
@@ -299,7 +305,7 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   // for the moment brute force delete everything
   delete fAreaDef;         fAreaDef         = 0;
   delete fVorAreaSpec;     fVorAreaSpec     = 0;
-  delete fGhostedAreaSpec; fGhostedAreaSpec = 0; 
+  delete fGhostedAreaSpec; fGhostedAreaSpec = 0;
   delete fJetDef;          fJetDef          = 0;
   delete fPlugin;          fPlugin          = 0;
   delete fRange;           fRange           = 0;
@@ -309,6 +315,7 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
 #ifdef FASTJET_VERSION
   if (fBkrdEstimator)     delete fBkrdEstimator     ;  fBkrdEstimator     = 0;
   if (fGenSubtractor)     delete fGenSubtractor     ;  fGenSubtractor     = 0;
+  if (fConstituentSubtractor)     delete fConstituentSubtractor     ;  fConstituentSubtractor     = 0;
 #endif
 }
 
@@ -318,7 +325,7 @@ void AliFJWrapper::AddInputVector(Double_t px, Double_t py, Double_t pz, Double_
   // Make the input pseudojet.
 
   fastjet::PseudoJet inVec(px, py, pz, E);
-  
+
   if (index > -99999) {
     inVec.set_user_index(index);
   } else {
@@ -335,7 +342,7 @@ void AliFJWrapper::AddInputVector(const fj::PseudoJet& vec, Int_t index)
   // Add an input pseudojet.
 
   fj::PseudoJet inVec = vec;
-  
+
   if (index > -99999) {
     inVec.set_user_index(index);
   } else {
@@ -366,7 +373,7 @@ void AliFJWrapper::AddInputGhost(Double_t px, Double_t py, Double_t pz, Double_t
   // Make the input pseudojet.
 
   fastjet::PseudoJet inVec(px, py, pz, E);
-  
+
   if (index > -99999) {
     inVec.set_user_index(index);
   } else {
@@ -434,11 +441,11 @@ fastjet::PseudoJet AliFJWrapper::GetFilteredJetAreaVector(UInt_t idx) const
 
 //_________________________________________________________________________________________________
 std::vector<double> AliFJWrapper::GetSubtractedJetsPts(Double_t median_pt, Bool_t sorted)
-{ 
+{
   // Get subtracted jets pTs, returns vector.
 
   SubtractBackground(median_pt);
-  
+
   if (kTRUE == sorted) {
     std::sort(fSubtractedJetsPt.begin(), fSubtractedJetsPt.begin());
   }
@@ -464,13 +471,13 @@ AliFJWrapper::GetJetConstituents(UInt_t idx) const
   // Get jets constituents.
 
   std::vector<fastjet::PseudoJet> retval;
-  
+
   if ( idx < fInclusiveJets.size() ) {
     retval = fClustSeq->constituents(fInclusiveJets[idx]);
   } else {
     AliError(Form("[e] ::GetJetConstituents wrong index: %d",idx));
   }
-  
+
   return retval;
 }
 
@@ -481,14 +488,14 @@ AliFJWrapper::GetFilteredJetConstituents(UInt_t idx) const
   // Get jets constituents.
 
   std::vector<fastjet::PseudoJet> retval;
-  
+
   if ( idx < fFilteredJets.size() ) {
     if (fClustSeqSA)        retval = fClustSeqSA->constituents(fFilteredJets[idx]);
     if (fClustSeqActGhosts) retval = fClustSeqActGhosts->constituents(fFilteredJets[idx]);
   } else {
     AliError(Form("[e] ::GetFilteredJetConstituents wrong index: %d",idx));
   }
-  
+
   return retval;
 }
 
@@ -528,11 +535,11 @@ Int_t AliFJWrapper::Run()
   if (fAreaType == fj::voronoi_area) {
     // Rfact - check dependence - default is 1.
     // NOTE: hardcoded variable!
-    fVorAreaSpec = new fj::VoronoiAreaSpec(1.); 
-    fAreaDef     = new fj::AreaDefinition(*fVorAreaSpec);      
+    fVorAreaSpec = new fj::VoronoiAreaSpec(1.);
+    fAreaDef     = new fj::AreaDefinition(*fVorAreaSpec);
   } else {
     fGhostedAreaSpec = new fj::GhostedAreaSpec(fMaxRap,
-                                               fNGhostRepeats, 
+                                               fNGhostRepeats,
                                                fGhostArea,
                                                fGridScatter,
                                                fKtScatter,
@@ -540,7 +547,7 @@ Int_t AliFJWrapper::Run()
 
     fAreaDef = new fj::AreaDefinition(*fGhostedAreaSpec, fAreaType);
   }
-  
+
   // this is acceptable by fastjet:
 #ifndef FASTJET_VERSION
   fRange = new fj::RangeDefinition(fMaxRap - 0.95 * fR);
@@ -553,7 +560,7 @@ Int_t AliFJWrapper::Run()
       // SIS CONE ALGOR
       // NOTE: hardcoded split parameter
       Double_t overlap_threshold = 0.75; // NOTE: this actually splits a lot: thr/min(pt1,pt2)
-      fPlugin = new fj::SISConePlugin(fR, 
+      fPlugin = new fj::SISConePlugin(fR,
                                       overlap_threshold,
                                       0,    //search of stable cones - zero = until no more
                                       1.0); // this should be seed effectively for proto jets
@@ -562,7 +569,7 @@ Int_t AliFJWrapper::Run()
       // CDF cone
       // NOTE: hardcoded split parameter
       Double_t overlap_threshold = 0.75; // NOTE: this actually splits a lot: thr/min(pt1,pt2)
-      fPlugin = new fj::CDFMidPointPlugin(fR, 
+      fPlugin = new fj::CDFMidPointPlugin(fR,
                                       overlap_threshold,
                                       1.0,    //search of stable cones - zero = until no more
                                       1.0); // this should be seed effectively for proto jets
@@ -573,7 +580,7 @@ Int_t AliFJWrapper::Run()
   } else {
     fJetDef = new fj::JetDefinition(fAlgor, fR, fScheme, fStrategy);
   }
-  
+
   try {
     fClustSeq = new fj::ClusterSequenceArea(fInputVectors, *fJetDef, *fAreaDef);
   } catch (fj::Error) {
@@ -581,7 +588,7 @@ Int_t AliFJWrapper::Run()
     return -1;
   }
 
-  // FJ3 :: Define an JetMedianBackgroundEstimator just in case it will be used 
+  // FJ3 :: Define an JetMedianBackgroundEstimator just in case it will be used
 #ifdef FASTJET_VERSION
   fBkrdEstimator     = new fj::JetMedianBackgroundEstimator(fj::SelectorAbsRapMax(fMaxRap));
 #endif
@@ -590,7 +597,7 @@ Int_t AliFJWrapper::Run()
 
   // inclusive jets:
   fInclusiveJets.clear();
-  fInclusiveJets = fClustSeq->inclusive_jets(0.0); 
+  fInclusiveJets = fClustSeq->inclusive_jets(0.0);
 
   return 0;
 }
@@ -617,7 +624,7 @@ Int_t AliFJWrapper::Filter()
       }
 
       fFilteredJets.clear();
-      fFilteredJets =  fClustSeqActGhosts->inclusive_jets(0.0); 
+      fFilteredJets =  fClustSeqActGhosts->inclusive_jets(0.0);
     } else {
       return -1;
     }
@@ -646,7 +653,7 @@ void AliFJWrapper::SetLegacyFJ()
     if (fBkrdEstimator) {
       fBkrdEstimator->set_provide_fj2_sigma(kTRUE);
       fBkrdEstimator->set_use_area_4vector(kFALSE);
-    } 
+    }
 #endif
 }
 
@@ -712,8 +719,7 @@ void AliFJWrapper::SubtractBackground(Double_t median_pt)
 Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   // Define jet shape
   AliJetShapeMass shapeMass;
@@ -734,8 +740,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetMass() {
 Int_t AliFJWrapper::DoGenericSubtractionGR(Int_t ijet) {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   if(ijet>fInclusiveJets.size()) return 0;
 
@@ -772,8 +777,7 @@ Int_t AliFJWrapper::DoGenericSubtractionGR(Int_t ijet) {
 Int_t AliFJWrapper::DoGenericSubtractionJetAngularity() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   // Define jet shape
   AliJetShapeAngularity shapeAngularity;
@@ -793,8 +797,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetAngularity() {
 Int_t AliFJWrapper::DoGenericSubtractionJetpTD() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   // Define jet shape
   AliJetShapepTD shapepTD;
@@ -814,8 +817,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetpTD() {
 Int_t AliFJWrapper::DoGenericSubtractionJetCircularity() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   // Define jet shape
   AliJetShapeCircularity shapecircularity;
@@ -835,8 +837,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetCircularity() {
 Int_t AliFJWrapper::DoGenericSubtractionJetSigma2() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   // Define jet shape
   AliJetShapeSigma2 shapesigma2;
@@ -856,8 +857,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetSigma2() {
 Int_t AliFJWrapper::DoGenericSubtractionJetConstituent() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   // Define jet shape
   AliJetShapeConstituent shapeconst;
@@ -878,8 +878,7 @@ Int_t AliFJWrapper::DoGenericSubtractionJetConstituent() {
 Int_t AliFJWrapper::DoGenericSubtractionJetLeSub() {
   //Do generic subtraction for jet mass
 #ifdef FASTJET_VERSION
-  if(fUseExternalBkg)   fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom);
-  else                  fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+  CreateGenSub();
 
   // Define jet shape
   AliJetShapeLeSub shapeLeSub;
@@ -900,22 +899,56 @@ Int_t AliFJWrapper::DoGenericSubtractionJetLeSub() {
 Int_t AliFJWrapper::DoConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
-  fj::contrib::ConstituentSubtractor *subtractor;
-  if(fUseExternalBkg)
-    subtractor     = new fj::contrib::ConstituentSubtractor(fRho,fRhom,kFALSE,kTRUE);
-  else                 subtractor     = new fj::contrib::ConstituentSubtractor(fBkrdEstimator);
+  CreateConstituentSub();
+  // fConstituentSubtractor->set_alpha(/* double alpha */);
+  // fConstituentSubtractor->set_max_deltaR(/* double max_deltaR */);
 
   //clear constituent subtracted jets
   fConstituentSubtrJets.clear();
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
     fj::PseudoJet subtracted_jet(0.,0.,0.,0.);
     if(fInclusiveJets[i].perp()>0.)
-      subtracted_jet = (*subtractor)(fInclusiveJets[i]);
+      subtracted_jet = (*fConstituentSubtractor)(fInclusiveJets[i]);
     fConstituentSubtrJets.push_back(subtracted_jet);
   }
-  if(subtractor) delete subtractor;
+  if(fConstituentSubtractor) { delete fConstituentSubtractor; }
 
 #endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::CreateGenSub() {
+  //Do generic subtraction for jet mass
+  #ifdef FASTJET_VERSION
+  if (fGenSubtractor) { delete fGenSubtractor; } // protect against memory leaks
+
+  if (fUseExternalBkg)
+    { fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom); }
+  else
+    {
+    fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
+    #if FASTJET_VERSION_NUMBER >= 30100
+    fGenSubtractor->set_common_bge_for_rho_and_rhom(); // see contrib 1.020 GenericSubtractor.hh line 62
+    #endif
+    }
+
+  #endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::CreateConstituentSub() {
+  //Do generic subtraction for jet mass
+  #ifdef FASTJET_VERSION
+  if (fConstituentSubtractor) { delete fConstituentSubtractor; } // protect against memory leaks
+
+  // see ConstituentSubtractor.hh signatures
+  // ConstituentSubtractor(double rho, double rhom=0, double alpha=0, double maxDeltaR=-1)
+  if (fUseExternalBkg) { fConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fRho,fRhom); }
+  else                 { fConstituentSubtractor = new fj::contrib::ConstituentSubtractor(fBkrdEstimator); }
+
+  #endif
   return 0;
 }
 
@@ -925,7 +958,7 @@ void AliFJWrapper::SetupAlgorithmfromOpt(const char *option)
   // Setup algorithm from char.
 
   std::string opt(option);
-  
+
   if (!opt.compare("kt"))                fAlgor    = fj::kt_algorithm;
   if (!opt.compare("antikt"))            fAlgor    = fj::antikt_algorithm;
   if (!opt.compare("cambridge"))         fAlgor    = fj::cambridge_algorithm;
@@ -976,7 +1009,7 @@ void AliFJWrapper::SetupStrategyfromOpt(const char *option)
   // Setup strategy from char.
 
   std::string opt(option);
-  
+
   if (!opt.compare("Best"))            fStrategy = fj::Best;
   if (!opt.compare("N2MinHeapTiled"))  fStrategy = fj::N2MinHeapTiled;
   if (!opt.compare("N2Tiled"))         fStrategy = fj::N2Tiled;
