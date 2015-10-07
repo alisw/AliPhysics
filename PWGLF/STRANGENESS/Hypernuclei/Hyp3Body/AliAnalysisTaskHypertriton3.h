@@ -62,8 +62,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
-  void SetDCAProtonPrimaryVtx(double dcaprotonpv) {fDCAPPVmin = dcaprotonpv;}
-  void SetDCADeuteronPrimaryVtx(double dcadeuteronpv) {fDCADPVmin = dcadeuteronpv;}
+  void SetDCAzProtonPrimaryVtx(double dcaprotonpv) {fDCAzPPVmax = dcaprotonpv;}
+  void SetDCAzDeuteronPrimaryVtx(double dcadeuteronpv) {fDCAzDPVmax = dcadeuteronpv;}
   
   void SetCosinePointingAngle(double mincp) {fCosPointingAngle = mincp;}
   void SetMaxDecayLength(double maxdl) {fMaxDecayLength = maxdl;}
@@ -120,8 +120,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   //Cut variables
   Double_t           fDCAPiPVmin;                  ///< Cut on Min DCA of \f$\pi\f$ from primary vertex
-  Double_t           fDCAPPVmin;                   ///< Cut on Min DCA of p from primary vertex
-  Double_t           fDCADPVmin;                   ///< Cut on Min DCA of d from primary vertex
+  Double_t           fDCAzPPVmax;                  ///< Cut on Max DCAz of p from primary vertex
+  Double_t           fDCAzDPVmax;                  ///< Cut on Max DCAz of d from primary vertex
   Double_t           fCosPointingAngle;            ///< Cut on Cosine of the pointing angle
   Double_t           fMaxDecayLength;              ///< Cut on maximum Decay length
   Double_t           fMinDecayLength;              ///< Cut on minimum Decay length

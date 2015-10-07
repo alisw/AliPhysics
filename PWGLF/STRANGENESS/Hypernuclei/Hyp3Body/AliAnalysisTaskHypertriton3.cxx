@@ -91,8 +91,8 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTriggerConfig(1),
   fSideBand(kFALSE),
   fDCAPiPVmin(0.1),
-  fDCAPPVmin(0.),
-  fDCADPVmin(0.),
+  fDCAzPPVmax(999.),
+  fDCAzDPVmax(999.),
   fCosPointingAngle(0.998),
   fMaxDecayLength(15.),
   fMinDecayLength(0.),
@@ -1090,7 +1090,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     fHistDCAdprimary->Fill(dcadprim);
     //fHistCorrDCAdprimary->Fill(dprim[0],dprim[1]);
     
-    if(dcadprim < fDCADPVmin) continue;
+    if(TMath::Abs(dprim[1]) > fDCAzDPVmax) continue;
     
     charge_d = trackD->GetSign();
     
@@ -1109,7 +1109,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       fHistDCApprimary->Fill(dcapprim);
       //fHistCorrDCApprimary->Fill(pprim[0],pprim[1]);
 
-      if(dcapprim < fDCAPPVmin) continue;
+      if(TMath::Abs(pprim[1]) > fDCAzPPVmax) continue;
       
       dca_dp = trackD->GetDCA(trackP,bz,xthiss,xpp);
 
