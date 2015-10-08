@@ -6,15 +6,17 @@
 #ifndef ALIFEMTOANALYSIS_PION_LAMBDA_H_
 #define ALIFEMTOANALYSIS_PION_LAMBDA_H_
 
-#include "AliFemtoVertexMultAnalysis.h"
-
 class AliFemtoV0TrackCut;
 class AliFemtoBasicTrackCut;
 class AliFemtoV0TrackPairCut;
 class AliFemtoBasicEventCut;
 
+class AliFemtoCutMonitorPionLambda;
+
 class TList;
 
+#include "AliFemtoVertexMultAnalysis.h"
+#include "AliFemtoV0TrackPairCut.h"
 
 /// \class AliFemtoAnalysisPionLambda
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
@@ -26,8 +28,8 @@ class TList;
 /// of pions and lambdas.
 ///
 /// The 'first' and 'second' particle cuts are aliased to 'lambda' and 'pion'
-/// cuts with specific types :ref:AliFemtoV0TrackCut and :ref:AliFemtoTrackCut, instead
-/// of the general AliFemtoParticleCut. These are accessable by the
+/// cuts with specific types :ref:AliFemtoV0TrackCut and :ref:AliFemtoTrackCut,
+/// instead of the general AliFemtoParticleCut. These are accessable by the
 /// GetLambdaCut and GetPionCut.
 ///
 /// To remove the hassle of managing which daughter particle should be the
@@ -97,13 +99,28 @@ public:
   AliFemtoBasicEventCut* BuildEventCut(const CutParams&) const;
   AliFemtoV0TrackPairCut* BuildPairCut(const CutParams&) const;
 
+  // Adds a AliFemtoCutMonitorPionLambda to the cuts
+  void AddPionLambdaCutMonitor(AliFemtoCutMonitorPionLambda*);
+
+  void AddStanardCutMonitors();
 
   virtual TList *GetOutputList();
 
+  virtual TList *ListSettings();
+
 protected:
 
+  /// The name of the analysis to identify in the output list
+  TString fAnalysisName;
+  
+  /// The type of Pion particles this analysis will search for
   PionType fPionType;
+  
+  /// The type of Lambda particles this analysis will search for.
+  /// This determines which V0 daughter (pos or neg) will pass proton vs pion daughter cuts
   LambdaType fLambdaType;
+
+  Bool_t fGroupOutputObjects;
 
 private:
 
@@ -129,6 +146,8 @@ struct AliFemtoAnalysisPionLambda::AnalysisParams {
 
   PionType pion_type;
   LambdaType lambda_type;
+
+  Bool_t group_output_objects;
 };
 
 /// \class AliFemtoAnalysisPionLambda::CutParams
@@ -175,7 +194,7 @@ struct AliFemtoAnalysisPionLambda::CutParams {
 
   Bool_t lambda_OnFlyStatus;
 
-    /// Lambda daugther parameters
+    // Lambda daugther parameters
     Float_t lambda_daughter_Eta,
             lambda_daughter_TPCncls,
             lambda_daughter_MaxDCA;
