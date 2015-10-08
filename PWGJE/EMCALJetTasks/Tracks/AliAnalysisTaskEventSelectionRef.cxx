@@ -278,12 +278,12 @@ void AliAnalysisTaskEventSelectionRef::ProcessOfflinePatch(
   TString triggerstring(triggerclass);
   if(!triggerstring.CompareTo("MB")){
     if(isSingleShower){
-      fHistos->FillTH1("hPatchEnergyEMC7MB", patch->GetPatchE());
-      fHistos->FillTH1("hPatchEnergyEG1MB", patch->GetPatchE());
-      fHistos->FillTH1("hPatchEnergyEG2MB", patch->GetPatchE());
+      fHistos->FillTH1("hPatchEnergyEMC7MinBias", patch->GetPatchE());
+      fHistos->FillTH1("hPatchEnergyEG1MinBias", patch->GetPatchE());
+      fHistos->FillTH1("hPatchEnergyEG2MinBias", patch->GetPatchE());
     } else {
-      fHistos->FillTH1("hPatchEnergyEJ1MB", patch->GetPatchE());
-      fHistos->FillTH1("hPatchEnergyEJ2MB", patch->GetPatchE());
+      fHistos->FillTH1("hPatchEnergyEJ1MinBias", patch->GetPatchE());
+      fHistos->FillTH1("hPatchEnergyEJ2MinBias", patch->GetPatchE());
     }
   } else {
     bool singleShowerTrigger = !triggerstring.CompareTo("EMC7") || !triggerstring.CompareTo("EG1") || !triggerstring.CompareTo("EG2");
