@@ -16,4 +16,5 @@ UInt_t AliVAODHeader::GetDAQAttributes() const
 {
   // warn
   AliWarning("not implmented");
+  return 0;
 }
