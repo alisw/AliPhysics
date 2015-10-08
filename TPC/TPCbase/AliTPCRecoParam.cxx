@@ -109,6 +109,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fGainCorrectionHVandPTMode(0), // switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT
   fSkipTimeBins(5),              // number of time bins to be skiiped (corrupted signal druing gating opening)
   fUseTOFCorrection(kTRUE),
+  fUseCorrectionMap(kFALSE),
   fUseSystematicCorrelation(kTRUE)
 {
   /// constructor

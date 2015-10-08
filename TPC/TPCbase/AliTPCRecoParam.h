@@ -38,6 +38,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
   void     SetClusterMaxRange(Int_t index, Int_t value){ fClusterMaxRange[index]=value;}
   //
+  Bool_t   GetUseCorrectionMap()                 const {return fUseCorrectionMap;}
+  void     SetUseCorrectionMap(Bool_t v=kTRUE)         {fUseCorrectionMap = v;}
+  //
   // Outlier filtering configuration
   //
   Int_t   GetUseOulierClusterFilter() const { return fUseOulierClusterFilter;}  // swith to use outlier cluster filter
@@ -233,6 +236,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
 
   Bool_t fUseTOFCorrection;  ///< switch - kTRUE use TOF correction kFALSE - do not use
   //
+  Bool_t fUseCorrectionMap;  ///< flag to use parameterized correction map (AliTPCChebCorr)
+  
   //  misscalibration
   //
   Double_t fSystematicErrors[5];  ///< systematic errors in the track parameters - to be added to TPC covariance matrix
@@ -248,7 +253,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 22)
+  ClassDef(AliTPCRecoParam, 23)
   /// \endcond
 };
 
