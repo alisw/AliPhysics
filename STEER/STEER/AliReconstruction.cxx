@@ -232,7 +232,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fWriteESDfriend(kFALSE),
   fFillTriggerESD(kTRUE),
 
-  fSkipIncompleteDAQ(kFALSE),
+  fSkipIncompleteDAQ(kTRUE),
   fCleanESD(kTRUE),
   fV0DCAmax(3.),
   fV0CsPmin(0.),
@@ -2099,7 +2099,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       fesd->SetDAQDetectorPattern(fRawReader->GetDetectorPattern()[0]);
       fesd->SetDAQAttributes(fRawReader->GetAttributes()[2]);
       if (fesd->IsIncompleteDAQ() && fSkipIncompleteDAQ) {
-	AliInfo("Abandoning incomplete event reconstruction");
+	AliInfoF("Abandoning incomplete event reconstruction: DAQ attr: 0x%08x",fesd->IsIncompleteDAQ());
 	return kTRUE;
       }
     }
