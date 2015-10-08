@@ -8,6 +8,7 @@
 class TArrayD;
 class TClonesArray;
 class TObjArray;
+class TString;
 
 class AliAnalysisUtils;
 class AliAODTrack;
@@ -40,6 +41,7 @@ public:
   virtual void UserExec(Option_t *);
 
   void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
+  void SetClusterContainer(TString name) { fClusterContainerName = name; }
 
 protected:
   void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected, bool isOfflineSelected);
@@ -55,9 +57,10 @@ protected:
   void CreatePtBinning(TArrayD& binning) const;
   void CreateEnergyBinning(TArrayD& binning) const;
 
+  TString                       fClusterContainerName;
   AliAnalysisUtils              *fAnalysisUtils;
-  AliEMCalHistoContainer        *fHistos;                   //!
   AliESDtrackCuts               *fTrackCuts;
+  AliEMCalHistoContainer        *fHistos;                   //!
   AliEMCALGeometry              *fGeometry;                 //!
   TClonesArray                  *fTriggerPatchContainer;    //!
   TClonesArray                  *fClusterContainer;         //!
