@@ -432,15 +432,11 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     // tight global tracks
     trackCuts = CreateTrackCutsPWGJE(10041006);
     trackCutsReject = CreateTrackCutsPWGJE(1006);
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==4) {
     // tight global tracks +  NCrossedRowsCut>120 recommended in 2011
     trackCuts = CreateTrackCutsPWGJE(10041008);
     trackCutsReject = CreateTrackCutsPWGJE(1008);
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {
     // tight global tracks
@@ -454,15 +450,11 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     // no requirements on SPD and ITSrefit failed
     trackCuts = CreateTrackCutsPWGJE(10041006);       //no ITSrefit requirement filter 256
     trackCutsReject = CreateTrackCutsPWGJE(10001006); //ITSrefit requirement filter 16
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==6) {
     // no requirements on SPD and ITSrefit failed
     trackCuts = CreateTrackCutsPWGJE(10041008);       //no ITSrefit requirement filter 256
     trackCutsReject = CreateTrackCutsPWGJE(10001008); //ITSrefit requirement filter 16
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
 
   if(trackType==1 && cuts==0) {
@@ -496,16 +488,16 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trackCuts = CreateTrackCutsPWGJE(1003);
     trackCutsReject = CreateTrackCutsPWGJE(10021003); 
     trackCutsTPConly = CreateTrackCutsPWGJE(2002);
-
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
-    
-    trackCutsTPConly->SetEtaRange(-0.9,0.9);
-    trackCutsTPConly->SetPtRange(0.15, 1e10);
   }
 
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
+  if(trackCutsReject){
+     trackCutsReject->SetEtaRange(-0.9,0.9);
+     trackCutsReject->SetPtRange(0.15, 1e10);
+  }
+  trackCutsTPConly->SetEtaRange(-0.9,0.9);
+  trackCutsTPConly->SetPtRange(0.15, 1e10);
   
   TString trigName = "";
   if (iPhysicsSelectionFlag == AliVEvent::kAnyINT)
