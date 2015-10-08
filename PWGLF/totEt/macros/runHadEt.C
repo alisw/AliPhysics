@@ -4,7 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int_t test = 1, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0,Bool_t finecentbins = kFALSE) {
+void runHadEt(bool submit = false, bool data = false, Int_t dataset = 2015, Int_t test = 1, Int_t material = 0, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0,Bool_t finecentbins = kFALSE) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -32,14 +32,14 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
     }
     else{
       cout<<"Not using compiled version"<<endl;
-      gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisHadEt.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarlo.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisHadEtReconstructed.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
-      gROOT->ProcessLine(".L AliAnalysisTaskHadEt.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisEtCutsLocal.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisHadEtCorrectionsLocal.cxx+g");
+   gROOT->ProcessLine(".L AliAnalysisEtCommonLocal.cxx+g");
+  gROOT->ProcessLine(".L AliAnalysisHadEtLocal.cxx+g");
+     gROOT->ProcessLine(".L AliAnalysisHadEtMonteCarloLocal.cxx+g");
+     gROOT->ProcessLine(".L AliAnalysisHadEtReconstructedLocal.cxx+g");
+       gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergyLocal.cxx+g");
+       gROOT->ProcessLine(".L AliAnalysisTaskHadEtLocal.cxx+g");
     }
 
   char *kTreeName = "esdTree" ;
@@ -51,7 +51,7 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
     TGrid::Connect("alien://") ;
   }
   bool PbPb = false;
-  if(dataset ==20100 || dataset==2011){
+  if(dataset ==20100 || dataset==2011 || dataset==2015){
     bool PbPb = true;
     if(data){
       chain->Add("/data/LHC10h/pass2/10000137366041.860/AliESDs.root");//Data Pb+Pb
@@ -262,6 +262,18 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
 	 else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForSimulations.root","corrections.root",kTRUE);}
        }
      }
+     if(dataset==2015){//PbPb 2.76 TeV 2011
+       gSystem->CopyFile("ConfigHadEtMonteCarloPbPb2015.C","ConfigHadEtMonteCarlo.C",kTRUE);
+       gSystem->CopyFile("ConfigHadEtReconstructedPbPb2015.C","ConfigHadEtReconstructed.C",kTRUE);
+       if(finecentbins){
+	 if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.FineCentralityBins.PbPb.168464.ForData.root","corrections.root",kTRUE);}
+	 else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.FineCentralityBins.PbPb.168464.ForSimulations.root","corrections.root",kTRUE);}
+       }
+       else{
+	 if(data){gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForData.root","corrections.root",kTRUE);}
+	 else{gSystem->CopyFile("rootFiles/corrections/corrections.LHC13e1abc.PbPb.168464.ForSimulations.root","corrections.root",kTRUE);}
+       }
+     }
      if(dataset==2009){//pp 900 GeV
        gSystem->CopyFile("ConfigHadEtMonteCarlopp900GeV.C","ConfigHadEtMonteCarlo.C",kTRUE);
        gSystem->CopyFile("ConfigHadEtReconstructedpp900GeV.C","ConfigHadEtReconstructed.C",kTRUE);
@@ -311,22 +323,43 @@ void runHadEt(bool submit = false, bool data = false, Int_t dataset = 20100, Int
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
   //AddTaskPIDqa();
 
-   AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt",!data);//,recoFile,mcFile);
-   if(!data) task2->SetMcData();
-   //Add thing here to select collision type!!
-   if(dataset==2013){//pPb 5 TeV
-     //task2->SelectCollisionCandidates(AliVEvent::kAnyINT ) ;
-     task2->SelectCollisionCandidates(AliVEvent::kINT7 ) ;
-   }
-   else{   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}}
-   //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
-   mgr->AddTask(task2);
+  if(runCompiledVersion){
+    AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt",!data);
+    if(!data) task2->SetMcData();
+    //Add thing here to select collision type!!
+    if(dataset==2013){//pPb 5 TeV
+      //task2->SelectCollisionCandidates(AliVEvent::kAnyINT ) ;
+      task2->SelectCollisionCandidates(AliVEvent::kINT7 ) ;
+    }
+    else{   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}}
+    //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+    mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
-   mgr->ConnectInput(task2,0,cinput1);
-   mgr->ConnectOutput(task2,1,coutput2);
-   mgr->ConnectInput(task2,0,cinput1);
-   mgr->ConnectOutput(task2,1,coutput2);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
+  mgr->ConnectInput(task2,0,cinput1);
+  mgr->ConnectOutput(task2,1,coutput2);
+  mgr->ConnectInput(task2,0,cinput1);
+  mgr->ConnectOutput(task2,1,coutput2);
+
+  }
+  else{
+    AliAnalysisTaskHadEtLocal *task2 = new AliAnalysisTaskHadEtLocal("TaskHadEt",!data);
+    if(!data) task2->SetMcData();
+    //Add thing here to select collision type!!
+    if(dataset==2013){//pPb 5 TeV
+      //task2->SelectCollisionCandidates(AliVEvent::kAnyINT ) ;
+      task2->SelectCollisionCandidates(AliVEvent::kINT7 ) ;
+    }
+    else{   if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}}
+    //if(dataset!=20100){task2->SelectCollisionCandidates(AliVEvent::kMB ) ;}
+    mgr->AddTask(task2);
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
+  mgr->ConnectInput(task2,0,cinput1);
+  mgr->ConnectOutput(task2,1,coutput2);
+  mgr->ConnectInput(task2,0,cinput1);
+  mgr->ConnectOutput(task2,1,coutput2);
+  }
    
   mgr->SetDebugLevel(0);
   
