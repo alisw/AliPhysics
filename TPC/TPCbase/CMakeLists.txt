@@ -58,6 +58,7 @@ set(SRCS
     AliTPCCalibViewerGUItime.cxx
     AliTPCCalPad.cxx
     AliTPCCalROC.cxx
+    AliTPCChebCorr.cxx
     AliTPCclusterInfo.cxx
     AliTPCclusterMI.cxx
     AliTPCClusterParam.cxx
