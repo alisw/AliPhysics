@@ -30,6 +30,8 @@
 ///            modified loading of reference file
 ///            modified default parameters in AddTask
 /// 2015.07.17 additional selection criteria for clusters with low gain cell 
+/// 2015.10.09 Modification to be consistent with OADB. Info about calibration constant
+///            for cell with absId=0 is kept in 'underflow bin' 
 ///
 /// \author Hugues Delagrange+, SUBATECH
 /// \author Marie Germain <marie.germain@subatech.in2p3.fr>, SUBATECH
