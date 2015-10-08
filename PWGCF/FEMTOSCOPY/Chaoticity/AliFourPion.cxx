@@ -2672,14 +2672,14 @@ void AliFourPion::UserExec(Option_t *)
 	    if(!fGenerateSignal) {
 	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
 	      // Build 2-pion correlations from previous 2-pion tabulations
-	      if(bin1==bin2 && qinv12<0.1){
+	      if(!fTabulatePairs && bin1==bin2 && qinv12<0.1){
 		GetWeight(pVect1, pVect2, weight12, weight12Err);
 		Int_t kTIndexBuild=0;
 		if(kT12 < 0.25) kTIndexBuild=0;
 		if(kT12 > 0.3 && kT12 < 0.35) kTIndexBuild=1;
 		if(weight12<0) weight12=0;
 		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTIndexBuild].TwoPT[1].fBuild->Fill(4, qinv12, 1);
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTIndexBuild].TwoPT[1].fBuild->Fill(5, qinv12, pow(weight12,2));
+		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTIndexBuild].TwoPT[1].fBuild->Fill(5, qinv12, weight12);
 	      }
 	    }
 	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2QW->Fill(kT12, qinv12, qinv12);
