@@ -39,6 +39,7 @@ include_directories(${ROOT_INCLUDE_DIR}
 set(SRCS
     AliAnalysisTaskPt.cxx
     AliTPCAnalysisTaskcalib.cxx
+    AliTPCChebCorr.cxx
     AliTPCcalibAlign.cxx
     AliTPCcalibBase.cxx
     AliTPCcalibCalib.cxx

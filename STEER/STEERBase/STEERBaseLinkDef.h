@@ -77,6 +77,9 @@
 #pragma link C++ class  AliMagWrapCheb+;
 #pragma link C++ class  AliCheb3DCalc+;
 #pragma link C++ class  AliCheb3D+;
+#pragma link C++ class  AliCheb2DStack+;
+#pragma link C++ class  AliCheb2DStackF+;
+#pragma link C++ class  AliCheb2DStackS+;
 
 #pragma link C++ class  AliNeutralTrackParam+;
 
