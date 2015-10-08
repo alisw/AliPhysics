@@ -757,7 +757,7 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
   nbins2[13]=500; xmax2[13]=500.;
   nbins2[14]=300; xmax2[14]=300.;
   nbins2[15]=300; xmax2[15]=300.;
-  nbins2[16]=72; xmin[16]=1.4; xmax2[16]=3.2;
+  nbins2[16]=72; xmin2[16]=1.4; xmax2[16]=3.2;
   nbins2[17]=56; xmin2[17]=-0.7; xmax2[17]=0.7;
 
   //Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), jet->GetNumberOfTracks(), jet->MaxTrackPt(), jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOnline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};                
