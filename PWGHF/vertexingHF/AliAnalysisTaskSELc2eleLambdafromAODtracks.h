@@ -52,7 +52,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   void FillROOTObjects(AliAODRecoCascadeHF *elobj, AliAODv0 *v0, AliAODTrack *trk, TClonesArray *mcArray);
-  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Int_t charge);
+  void FillMixROOTObjects(TLorentzVector *et, TLorentzVector *ev, Double_t *v0info, Int_t charge);
   void FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray);
   void FillV0ROOTObjects(AliAODv0 *v0, TClonesArray *mcArray);
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
@@ -263,6 +263,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TH2F* fHistoLambdaMassvsPt;     //!<! Lambda mass vs pt histogram
   TH2F* fHistoLambdaMassvsPtMCS;     //!<! Lambda mass vs pt histogram
   TH2F* fHistoLambdaMassvsPtMCGen;     //!<! Lambda mass vs pt histogram
+  TH2F* fHistoLambdaPtvsDl;     //!<! Lambda pt vs decay length
+  TH2F* fHistoLambdaPtvsDlSide;     //!<! Lambda pt vs decay length
+  TH2F* fHistoLambdaPtvsDlMCS;     //!<! Lambda pt vs decay length
+  TH2F* fHistoLambdaPtvsDlFeeddownXi0MCS;    //!<! Lambda pt vs decay length
+  TH2F* fHistoLambdaPtvsDlFeeddownXiMinusMCS;    //!<! Lambda pt vs decay length
+  TH2F* fHistoLambdaPtvsDlFeeddownOmegaMCS;    //!<! Lambda pt vs decay length
   TH2F* fHistoK0sMassvsPt;     //!<! K0s mass vs pt histogram
   TH2F* fHistoElectronTPCPID;     //!<! TPC electron PID
   TH2F* fHistoElectronTOFPID;     //!<! TOF electron PID
@@ -280,23 +286,129 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoLcMCGen;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGen1;         //!<! Lc in mcArray
   THnSparse* fHistoLcMCGen2;         //!<! Lc in mcArray
+  THnSparse* fHistoLcMCS;         //!<! Lc in mcArray
+  THnSparse* fHistoLcMCS1;         //!<! Lc in mcArray
+  THnSparse* fHistoLcMCS2;         //!<! Lc in mcArray
   THnSparse* fHistoFeedDownXic0MCGen;     //!<! Xic0 in mcArray
   THnSparse* fHistoFeedDownXic0MCGen1;     //!<! Xic0 in mcArray
   THnSparse* fHistoFeedDownXic0MCGen2;     //!<! Xic0 in mcArray
+  THnSparse* fHistoFeedDownXic0MCS;     //!<! Xic0 in mcArray
+  THnSparse* fHistoFeedDownXic0MCS1;     //!<! Xic0 in mcArray
+  THnSparse* fHistoFeedDownXic0MCS2;     //!<! Xic0 in mcArray
   THnSparse* fHistoFeedDownXicPlusMCGen;     //!<! XicPlus in mcArray
   THnSparse* fHistoFeedDownXicPlusMCGen1;     //!<! XicPlus in mcArray
   THnSparse* fHistoFeedDownXicPlusMCGen2;     //!<! XicPlus in mcArray
+  THnSparse* fHistoFeedDownXicPlusMCS;     //!<! XicPlus in mcArray
+  THnSparse* fHistoFeedDownXicPlusMCS1;     //!<! XicPlus in mcArray
+  THnSparse* fHistoFeedDownXicPlusMCS2;     //!<! XicPlus in mcArray
   THnSparse* fHistoLcElectronMCGen;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCGen1;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCGen2;         //!<! Lc in mcArray
+  THnSparse* fHistoLcElectronMCS;         //!<! Lc in mcArray
+  THnSparse* fHistoLcElectronMCS1;         //!<! Lc in mcArray
+  THnSparse* fHistoLcElectronMCS2;         //!<! Lc in mcArray
   THnSparse* fHistoElectronFeedDownXic0MCGen;     //!<! Xic0 in mcArray
   THnSparse* fHistoElectronFeedDownXic0MCGen1;     //!<! Xic0 in mcArray
   THnSparse* fHistoElectronFeedDownXic0MCGen2;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXic0MCS;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXic0MCS1;     //!<! Xic0 in mcArray
+  THnSparse* fHistoElectronFeedDownXic0MCS2;     //!<! Xic0 in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCGen;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCGen1;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronFeedDownXicPlusMCGen2;     //!<! XicPlus in mcArray
+  THnSparse* fHistoElectronFeedDownXicPlusMCS;     //!<! XicPlus in mcArray
+  THnSparse* fHistoElectronFeedDownXicPlusMCS1;     //!<! XicPlus in mcArray
+  THnSparse* fHistoElectronFeedDownXicPlusMCS2;     //!<! XicPlus in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoLambdaMCGen;         //!<! Lambda in mcArray (only from charmed baryon)
+
+  THnSparse* fHistoElePtvsV0dlRS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRSSide;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRSSide1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRSSide2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRSMix;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRSMix1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlRSMix2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWSSide;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWSSide1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWSSide2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWSMix;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWSMix1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlWSMix2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlFeedDownXic0MCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlFeedDownXic0MCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlFeedDownXic0MCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlFeedDownXicPlusMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlFeedDownXicPlusMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dlFeedDownXicPlusMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+
+  THnSparse* fHistoElePtvsV0dcaRS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRSSide;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRSSide1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRSSide2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRSMix;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRSMix1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaRSMix2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWSSide;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWSSide1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWSSide2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWSMix;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWSMix1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaWSMix2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaFeedDownXic0MCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaFeedDownXic0MCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaFeedDownXic0MCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaFeedDownXicPlusMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaFeedDownXicPlusMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoElePtvsV0dcaFeedDownXicPlusMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+
+  THnSparse* fHistoEleLambdaPtvsV0dlRS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSSide;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSSide1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSSide2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSMix;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSMix1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlRSMix2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSSide;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSSide1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSSide2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSMix;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSMix1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlWSMix2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0MCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0MCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXic0MCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+
+	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+	TH2D *fHistoResponseEleLambdaPt; //!<! Response function e-Lambda pT <- XicPt
+  THnSparse* fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt;         //!<! pT correlation
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<! nevt vs runnumber
@@ -316,9 +428,13 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   TObjArray* fElectronTracks; /// array of electron-compatible tracks
   TObjArray* fV0Tracks1; /// array of lambda-compatible tracks
   TObjArray* fV0Tracks2; /// array of antilambda-compatible tracks
+	std::vector<Double_t> fV0dlArray1; /// array of lambda-compatible tracks' information
+  std::vector<Double_t> fV0dlArray2; /// array of antilambda-compatible tracks' information
+	std::vector<Double_t> fV0dcaArray1; /// array of lambda-compatible tracks' information
+  std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,10); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,11); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
