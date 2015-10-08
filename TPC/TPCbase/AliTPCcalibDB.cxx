@@ -177,6 +177,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fDistortionMap(0),
   fComposedCorrection(0),
   fComposedCorrectionArray(0),
+  fCorrectionMaps(0),
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),
@@ -240,6 +241,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fDistortionMap(0),
   fComposedCorrection(0),
   fComposedCorrectionArray(0),
+  fCorrectionMaps(0),
   fPadNoise(0),
   fPedestals(0),
   fCalibRaw(0),
@@ -356,12 +358,17 @@ void AliTPCcalibDB::SetRun(Long64_t run)
 void AliTPCcalibDB::Update(){
   /// cache the OCDB entries for simulation, reconstruction, calibration
 
+
   AliCDBEntry * entry=0x0;
   Bool_t cdbCache = AliCDBManager::Instance()->GetCacheFlag(); // save cache status
   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
   fDButil = new AliTPCcalibDButil;
   //
   fRun = AliCDBManager::Instance()->GetRun();
+
+  //RS: new TPC correction map (array of AliTPCChebCorr) will be loaded on demand
+  fCorrectionMaps = 0; // assuming that the object is managed by the OCDB
+  //
   
   entry          = GetCDBEntry("TPC/Calib/Parameters");
   if (entry){
@@ -562,6 +569,7 @@ void AliTPCcalibDB::Update(){
   }else{
     AliError("TPC - Missing calibration entry-  TPC/Calib/Correction");
   }
+
   //RCU trigger config mode
   fMode=GetRCUTriggerConfig();
   //
@@ -582,6 +590,19 @@ void AliTPCcalibDB::Update(){
 
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache
+}
+
+
+void AliTPCcalibDB::LoadCorrectionMaps()
+{
+  // TPC fast Chebyshev correction map, loaded on 1st demand
+  AliCDBEntry* entry = GetCDBEntry("TPC/Calib/CorrectionMaps");
+  if (entry) {
+    fCorrectionMaps = dynamic_cast<TObjArray*>(entry->GetObject());
+  }
+  else{
+    AliError("TPC - Missing calibration entry-  TPC/Calib/CorrectionMaps");
+  }
 }
 
 void AliTPCcalibDB::UpdateNonRec(){

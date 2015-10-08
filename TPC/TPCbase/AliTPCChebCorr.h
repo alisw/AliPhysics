@@ -64,6 +64,7 @@ class AliTPCChebCorr : public TNamed
   //
   UInt_t   GetTimeStampStart()                   const {return fTimeStampStart;}
   UInt_t   GetTimeStampEnd()                     const {return fTimeStampEnd;}
+  UInt_t   GetTimeStampCenter()                  const {return (fTimeStampStart>>1)+(fTimeStampEnd>>1);}
   void     SetTimeStampStart(UInt_t t=0)               {fTimeStampStart = t;}
   void     SetTimeStampEnd(UInt_t t=0xffffffff)        {fTimeStampEnd = t;}
   //

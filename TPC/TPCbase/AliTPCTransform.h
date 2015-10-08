@@ -13,6 +13,7 @@
 ///  rotated global (tracking) cooridnate frame (sector, lx,ly,lz)
 
 class AliTPCRecoParam;
+class AliTPCChebCorr;
 #include "AliTransform.h"
 
 class AliTPCTransform:public AliTransform {
@@ -37,18 +38,22 @@ public:
   //
   void SetCurrentRecoParam(AliTPCRecoParam* param){fCurrentRecoParam=param;}
   void SetCurrentRun(Int_t run){fCurrentRun=run;}
-  void SetCurrentTimeStamp(Int_t timeStamp){fCurrentTimeStamp=timeStamp;}
+  void SetCurrentTimeStamp(Int_t timeStamp);
   void ApplyTransformations(Double_t *xyz, Int_t volID);
+  //
+  void UpdateTimeDependentCache();
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
   Double_t fCoss[18];  ///< cache the transformation
   Double_t fSins[18];  ///< cache the transformation
   Double_t fPrimVtx[3];///< position of the primary vertex - needed for TOF correction
   AliTPCRecoParam * fCurrentRecoParam; //!<! current reconstruction parameters
+  AliTPCChebCorr* fCorrMapCache0;      //!<! current correction map0 (for 1st time bin if time-dependent)
+  AliTPCChebCorr* fCorrMapCache1;      //!<! current correction map1 (for 2nd time bin if time-dependent)
   Int_t    fCurrentRun;                //!<! current run
   UInt_t   fCurrentTimeStamp;          //!<! current time stamp
   /// \cond CLASSIMP
-  ClassDef(AliTPCTransform,1)
+  ClassDef(AliTPCTransform,2)
   /// \endcond
 };
 

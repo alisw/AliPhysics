@@ -68,6 +68,7 @@
 #include "TGeoGlobalMagField.h"
 #include "AliTracker.h"
 #include <AliCTPTimeParams.h>
+#include "AliTPCChebCorr.h"
 
 /// \cond CLASSIMP
 ClassImp(AliTPCTransform)
@@ -77,6 +78,8 @@ ClassImp(AliTPCTransform)
 AliTPCTransform::AliTPCTransform():
   AliTransform(),
   fCurrentRecoParam(0),       //! current reconstruction parameters
+  fCorrMapCache0(0),
+  fCorrMapCache1(0),
   fCurrentRun(0),             //! current run
   fCurrentTimeStamp(0)        //! current time stamp
 {
@@ -95,6 +98,8 @@ AliTPCTransform::AliTPCTransform():
 AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   AliTransform(transform),
   fCurrentRecoParam(transform.fCurrentRecoParam),       //! current reconstruction parameters
+  fCorrMapCache0(transform.fCorrMapCache0),
+  fCorrMapCache1(transform.fCorrMapCache1),
   fCurrentRun(transform.fCurrentRun),             //! current run
   fCurrentTimeStamp(transform.fCurrentTimeStamp)        //! current time stamp
 {
@@ -168,6 +173,25 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   Bool_t isInRotated = kTRUE;
   //
   //
+  if (fCurrentRecoParam->GetUseCorrectionMap()) {
+    const int kNInnerSectors=36, kInnerNRow=63;
+    float delta0[3], y2x=x[1]/x[0], z2x = fCorrMapCache0->GetUseZ2R() ? x[2]/x[0] : x[2];
+    int rowTot = sector<kNInnerSectors ? row : row+kInnerNRow;
+    int sectTot = sector%18;
+    fCorrMapCache0->Eval(rowTot,sectTot,y2x,z2x,delta0);
+    // 
+    // for time dependent correction need to evaluate 2 maps, assuming linear dependence
+    if (fCorrMapCache1) {
+      float delta1[3];
+      fCorrMapCache1->Eval(rowTot,sectTot,y2x,z2x,delta1);   
+      UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
+      UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
+      // possible division by 0 is checked at upload of maps
+      double dtScale = (t1-fCurrentTimeStamp)/double(t1-t0);
+      for (int i=3;i--;) delta0[i] += (delta1[i]-delta0[i])*dtScale;
+    }
+    for (int i=3;i--;) x[i] += delta0[i];
+  }
   // Alignment
   //TODO:  calib->GetParameters()->GetClusterMatrix(sector)->LocalToMaster(x,xx);
   //
@@ -176,9 +200,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     isInRotated = kFALSE;    
     Double_t xx[3];
     calib->GetExB()->Correct(x,xx);   // old ExB correction
-    xx[0] = x[0];
-    xx[1] = x[1];
-    xx[2] = x[2];
+    for (int i=3;i--;) xx[i] = x[i];
   }
 
   //
@@ -196,15 +218,11 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     if (correction) {
       Float_t distPoint[3]={static_cast<Float_t>(x[0]),static_cast<Float_t>(x[1]),static_cast<Float_t>(x[2])};
       correction->CorrectPoint(distPoint, sector);
-      x[0]=distPoint[0];
-      x[1]=distPoint[1];
-      x[2]=distPoint[2];
+      for (int i=3;i--;) x[i]=distPoint[i];
       if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
 	Float_t distPointDelta[3]={static_cast<Float_t>(x[0]),static_cast<Float_t>(x[1]),static_cast<Float_t>(x[2])};
 	correctionDelta->CorrectPoint(distPointDelta, sector);
-	x[0]=distPointDelta[0];
-	x[1]=distPointDelta[1];
-	x[2]=distPointDelta[2];
+	for (int i=3;i--;) x[i]=distPointDelta[i];
       }
     }
   }
@@ -437,4 +455,45 @@ void AliTPCTransform::ApplyTransformations(Double_t */*xyz*/, Int_t /*volID*/){
   /// xyz    - global xyz position
   /// volID  - volID of detector (sector number)
 
+}
+
+void AliTPCTransform::SetCurrentTimeStamp(Int_t timeStamp) 
+{
+  // set event time stamp and if needed, upload caches
+  fCurrentTimeStamp = timeStamp;
+  UpdateTimeDependentCache();
+}
+
+void AliTPCTransform::UpdateTimeDependentCache()
+{
+  // update cache for time-dependent parameters
+  //
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
+  //
+  // correction maps, potentially time dependent
+  while (fCurrentRecoParam->GetUseCorrectionMap()) {
+    //
+    Bool_t checkTime = kFALSE;
+    if (!fCorrMapCache0) { // 1st query
+      const TObjArray* mapsArr = calib->GetCorrectionMaps();
+      fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->At(0);
+      //
+      // 1: easy case: time-static map, fCorrMapCache1 is not neaded
+      if (!fCorrMapCache0->GetTimeDependent()) {
+	if (mapsArr->GetEntriesFast()>2) { 
+	  // time independent maps are field dependent!
+	  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+	  Double_t bz = magF->SolenoidField(); //field in kGaus
+	  if (bz>0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->At(1);
+	  else if (bz<-0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->At(2);  
+	}
+	else AliWarning("Time-independent corrections array must provide 1 map per field polarity");
+	break; 
+      } // done for static map
+    }
+    // need to scan whole array to find matching maps
+    // TODO
+  }
+  // other time dependent stuff if needed
+  
 }

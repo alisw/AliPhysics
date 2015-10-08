@@ -1950,7 +1950,7 @@ void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     AliFatal("Tranformations not in calibDB");
     return;
   }
-  transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
+  if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t i[1]={cluster->GetDetector()};
   transform->Transform(x,i,0,1);  
@@ -7007,6 +7007,7 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
   fEventHLT = hltEvent;
   if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;  
+  transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   transform->SetCurrentTimeStamp( esd->GetTimeStamp());
   transform->SetCurrentRun(esd->GetRunNumber());
   //
