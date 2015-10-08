@@ -34,6 +34,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
                              Double_t dDCAz=3.2,
                              Double_t dMinClusTPC=70,
                              Bool_t bCalculateFlow=kFALSE,
+                             Bool_t bSinTest=kFALSE,
                              const char* suffix="") {
  // load libraries
  gSystem->Load("libGeom");
@@ -294,6 +295,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic,
  taskQC->SetUseCRCRecenter(bUseCRCRecentering);
  taskQC->SetDivSigma(bDivSigma);
  taskQC->SetInvertZDC(bInvertZDC);
+ taskQC->SetTestSin(bSinTest);
  taskQC->SetCorrWeight(sCorrWeight);
  if(bUseCRCRecentering || bRecenterZDC) {
   TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");

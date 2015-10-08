@@ -94,6 +94,10 @@ fCalculateCME(kFALSE),
 fCalculateFlow(kFALSE),
 fUseVZERO(kFALSE),
 fUseZDC(kFALSE),
+fRecenterZDC(kFALSE),
+fDivSigma(kTRUE),
+fInvertZDC(kFALSE),
+fCRCTestSin(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -200,6 +204,7 @@ fUseZDC(kFALSE),
 fRecenterZDC(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
+fCRCTestSin(kFALSE),
 fUseNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fCRCEtaMin(0.),
@@ -281,6 +286,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
  fQC->SetRecenterZDC(fRecenterZDC);
  fQC->SetDivSigma(fDivSigma);
  fQC->SetInvertZDC(fInvertZDC);
+ fQC->SetTestSin(fCRCTestSin);
  fQC->SetNUAforCRC(fUseNUAforCRC);
  fQC->SetUseCRCRecenter(fUseCRCRecenter);
  fQC->SetCRCEtaRange(fCRCEtaMin,fCRCEtaMax);

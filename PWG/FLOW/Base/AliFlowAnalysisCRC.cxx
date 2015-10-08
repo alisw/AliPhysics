@@ -249,6 +249,7 @@ fNUAforCRC(kFALSE),
 fUseCRCRecenter(kFALSE),
 fDivSigma(kTRUE),
 fInvertZDC(kFALSE),
+fCRCTestSin(kFALSE),
 fCRCEtaMin(0.),
 fCRCEtaMax(0.),
 fRunNum(0),
@@ -18144,6 +18145,7 @@ void AliFlowAnalysisCRC::CalculateVZvsZDC()
 
 void AliFlowAnalysisCRC::CalculateCRCCorr()
 {
+ Int_t h = fHarmonic-1;
  // quantities:
  Double_t twoAB=0., dM2AB=0.;
  Double_t mp=0., p1n0kRe=0., p1n0kIm=0.;
@@ -18152,23 +18154,11 @@ void AliFlowAnalysisCRC::CalculateCRCCorr()
  Int_t CRCBin=0, EBinMin=0, EBinMax=0, EBinMin2=0, EBinMax2=0;
  Double_t e = 1E-5;
  
- // fill event plane
- for (Int_t c=0;c<2;c++) {
-  for(Int_t y=0; y<fCRCnEtaBins; y++) {
-   Int_t CRBin = GetCRCQVecBin(c,y);
-   Double_t QRe = fCRCQRe[c][0]->GetBinContent(y+1);
-   Double_t QIm = fCRCQIm[c][0]->GetBinContent(y+1);
-   Double_t M = fCRCMult[c][0]->GetBinContent(y+1);
-  } // end of for (Int_t c=0;c<2;c++)
- } // end of for(Int_t y=0; y<fCRCnEtaBins; y++)
- 
  for(Int_t eg=0; eg<fCRCnEtaGap; eg++) {
   
   Double_t dEtaGap = eg*0.1;
   Double_t dEtaRange = (((fCRCEtaMax-fCRCEtaMin)/2.)-dEtaGap)/2.;
   Double_t dEtaSymm = dEtaGap/2.;
-  
-  Int_t h = fHarmonic-1;
   
   for(Int_t c=0;c<2;c++) {
    for(Int_t y=0;y<2;y++) {
@@ -18214,6 +18204,9 @@ void AliFlowAnalysisCRC::CalculateCRCCorr()
       if(mp>1 && mR>1) {
        dM2AB = mp*mR;
        twoAB = (p1n0kRe*dReR1n+p1n0kIm*dImR1n) / dM2AB;
+       if(fCRCTestSin) {
+        twoAB = (-p1n0kRe*dImR1n+dReR1n*p1n0kIm) / dM2AB;
+       }
        
        fCRCCorrPro[fRunBin][0][eg][fCenBin]->Fill(CRCBin-e,twoAB,dM2AB);
        fCRCSumWeigHist[fRunBin][0][eg][fCenBin]->Fill(CRCBin-e,mp+mR);
@@ -21063,6 +21056,7 @@ void AliFlowAnalysisCRC::StoreCRCFlags()
  fCRCFlags->Fill(6.5,(Int_t)fRecenterZDC);
  fCRCFlags->Fill(7.5,(Int_t)fDivSigma);
  fCRCFlags->Fill(8.5,(Int_t)fInvertZDC);
+ fCRCFlags->Fill(9.5,(Int_t)fCRCTestSin);
  
 } // end of void AliFlowAnalysisCRC::StoreCRCFlags()
 
@@ -22510,6 +22504,7 @@ void AliFlowAnalysisCRC::GetPointersForCRC()
   fRecenterZDC = (Bool_t)fCRCFlags->GetBinContent(7);
   fDivSigma = (Bool_t)fCRCFlags->GetBinContent(8);
   fInvertZDC = (Bool_t)fCRCFlags->GetBinContent(9);
+  fCRCTestSin = (Bool_t)fCRCFlags->GetBinContent(10);
  } else {
   cout<<"WARNING: CRCFlags is NULL in AFAWQC::GPFCRC() !!!!"<<endl;
   exit(0);
@@ -22841,6 +22836,9 @@ void AliFlowAnalysisCRC::GetPointersForCME()
 
 void AliFlowAnalysisCRC::GetPointersForFlowSPZDC()
 {
+ if(!fCalculateFlow){return;}
+ if(!fUseZDC){return;}
+
  TList *FlowSPZDCList = dynamic_cast<TList*>(fHistList->FindObject("Flow SP ZDC"));
  if (FlowSPZDCList) {
   this->SetFlowSPZDCList(FlowSPZDCList);
@@ -22848,9 +22846,6 @@ void AliFlowAnalysisCRC::GetPointersForFlowSPZDC()
   cout<<"WARNING: FlowSPZDCList is NULL in AFAWQC::GPFCRCPt() !!!!"<<endl;
   exit(0);
  }
-
- if(!fCalculateFlow){return;}
- if(!fUseZDC){return;}
 
  for (Int_t h=0; h<fCRCnCen; h++) {
   for(Int_t i=0; i<4; i++) {
@@ -23483,7 +23478,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRCZDC()
 void AliFlowAnalysisCRC::BookEverythingForCRC()
 {
  // Profile to hold flags for CRC;
- fCRCFlags = new TProfile("fCRCFlags","fCRCFlags",9,0.,9.);
+ fCRCFlags = new TProfile("fCRCFlags","fCRCFlags",10,0.,10.);
  fCRCFlags->SetTickLength(-0.01,"Y");
  fCRCFlags->SetMarkerStyle(25);
  fCRCFlags->SetLabelSize(0.04);
@@ -23498,6 +23493,7 @@ void AliFlowAnalysisCRC::BookEverythingForCRC()
  fCRCFlags->GetXaxis()->SetBinLabel(7,"RecenterZDC");
  fCRCFlags->GetXaxis()->SetBinLabel(8,"DivSigma");
  fCRCFlags->GetXaxis()->SetBinLabel(9,"InvertZDC");
+ fCRCFlags->GetXaxis()->SetBinLabel(10,"fCRCTestSin");
  fCRCList->Add(fCRCFlags);
  
  // EbE quantities
