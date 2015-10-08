@@ -40,6 +40,9 @@ AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef():
   fAnalysisUtils(nullptr),
   fHistos(nullptr)
 {
+  for(int itrg = 0; itrg < kCPRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1;
+  }
 }
 
 AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef(const char *name):
@@ -47,6 +50,9 @@ AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef(const char *n
   fAnalysisUtils(nullptr),
   fHistos(nullptr)
 {
+  for(int itrg = 0; itrg < kCPRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1;
+  }
   DefineOutput(1, TList::Class());
 }
 
@@ -99,19 +105,19 @@ void AliAnalysisTaskEventSelectionRef::UserExec(Option_t *){
     FillEventCounterHists("MB", vtx->GetZ(), isSelected, true);
   }
   if(isEMC7){
-    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREJ1, triggerpatches));
+    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREL0, triggerpatches));
   }
   if(isEJ2){
     FillEventCounterHists("EJ2", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREJ2, triggerpatches));
   }
   if(isEJ1){
-    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREG1, triggerpatches));
+    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREJ1, triggerpatches));
   }
   if(isEG2){
     FillEventCounterHists("EG2", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREG2, triggerpatches));
   }
   if(isEG1){
-    FillEventCounterHists("EG1", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREL0, triggerpatches));
+    FillEventCounterHists("EG1", vtx->GetZ(), isSelected, IsOfflineSelected(kCPREG1, triggerpatches));
   }
 
   PostData(1, fHistos->GetListOfHistograms());

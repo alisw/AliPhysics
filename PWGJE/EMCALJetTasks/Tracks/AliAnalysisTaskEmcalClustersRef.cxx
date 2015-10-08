@@ -51,7 +51,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fClusterContainer(""),
     fTriggerStringFromPatches(kFALSE)
 {
-
+  for(int itrg = 0; itrg < kECRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1;
+  }
 }
 
 /**
@@ -66,6 +68,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fClusterContainer(""),
     fTriggerStringFromPatches(kFALSE)
 {
+  for(int itrg = 0; itrg < kECRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1;
+  }
   DefineOutput(1, TList::Class());
 }
 
@@ -140,11 +145,11 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   triggerdebug << "Offline bits: " << std::bitset<sizeof(UInt_t) * 8>(selectionstatus);
   AliDebug(2, triggerdebug.str().c_str());
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
-      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
+      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1") && IsOfflineSelected(kECREJ1, triggerpatches),
+      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2") && IsOfflineSelected(kECREJ2, triggerpatches),
+      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1") && IsOfflineSelected(kECREG1, triggerpatches),
+      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kECREG2, triggerpatches),
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7") && IsOfflineSelected(kECREL0, triggerpatches);
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
