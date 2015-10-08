@@ -33,6 +33,8 @@ AliTPCChebCorr::AliTPCChebCorr()
   ,fNStacks(0)
   ,fZMin(1)
   ,fZMax(-1)
+  ,fTimeStampStart(0)
+  ,fTimeStampEnd(0xffffffff)
   ,fZCen(0)
   ,fZScaleI(0)
   ,fY2XScaleI(0)
@@ -50,6 +52,8 @@ AliTPCChebCorr::AliTPCChebCorr(const char* name, const char* title,
   ,fNStacks(0)
   ,fZMin(1)
   ,fZMax(-1)
+  ,fTimeStampStart(0)
+  ,fTimeStampEnd(0xffffffff)
   ,fZCen(0)
   ,fZScaleI(0)
   ,fY2XScaleI(0)
@@ -171,9 +175,11 @@ void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr)
 void AliTPCChebCorr::Print(const Option_t* opt) const
 {
   // print itself
-  printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<Z<%+.1f %d per sector\n",
+  printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector\n",
 	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
-	 fNStacksZ,fZMin,fZMax,fNStacksSect);
+	 fNStacksZ,fZMin,GetUseZ2R() ? "Z/R":"Z",fZMax,fNStacksSect);
+  printf("Time span: %10d:%10d TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
+	 GetTimeDependent() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
   if (opts.Contains("p") && TestBit(kParamDone)) {
     for (int iz=0;iz<fNStacksZ;iz++) {

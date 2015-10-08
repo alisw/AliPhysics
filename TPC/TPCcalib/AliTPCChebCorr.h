@@ -35,7 +35,11 @@ class AliTPCChebCorr : public TNamed
 {
  public:
   enum {kNSectors=18,kNRows=159};
-  enum {kParamDone=BIT(14),kUseParF=BIT(15)};
+  enum {kParamDone=BIT(14), // parameterization done
+	kUseParF=BIT(15),   // if ON - internal FLOAT representation, otherwise - SHORT
+	kUseZ2R=BIT(16),    // 2nd dimension parameterizes Z/R
+	kTimeDependent=BIT(17) // flag to signal time-dependent objects to follow
+  };
   //
  public:
   //
@@ -48,11 +52,20 @@ class AliTPCChebCorr : public TNamed
   Bool_t   GetUseFloatPrec()                     const {return TestBit(kUseParF);}
   Bool_t   GetUseShortPrec()                     const {return !TestBit(kUseParF);}
   Bool_t   SetUseFloatPrec(Bool_t v)                   {SetBit(kUseParF,v);}
+  Bool_t   GetUseZ2R()                           const {return TestBit(kUseZ2R);}
+  void     SetUseZ2R(Bool_t v=kTRUE)                   {SetBit(kUseZ2R,v);}
+  Bool_t   GetTimeDependent()                    const {return TestBit(kTimeDependent);}
+  void     SetTimeDependent(Bool_t v=kTRUE)            {SetBit(kTimeDependent,v);}
   Float_t  GetZMin()                             const {return fZMin;}
   Float_t  GetZMax()                             const {return fZMax;}
   Int_t    GetNStacksZ()                         const {return fNStacksZ;}
   Int_t    GetNStacksSector()                    const {return fNStacksSect;}
   const AliCheb2DStack* GetParam(int id)         const {return (const AliCheb2DStack*) fParams ? fParams[id] : 0;}
+  //
+  UInt_t   GetTimeStampStart()                   const {return fTimeStampStart;}
+  UInt_t   GetTimeStampEnd()                     const {return fTimeStampEnd;}
+  void     SetTimeStampStart(UInt_t t=0)               {fTimeStampStart = t;}
+  void     SetTimeStampEnd(UInt_t t=0xffffffff)        {fTimeStampEnd = t;}
   //
   void     Print(const Option_t* opt="")         const;
   void     Eval(int sector, int row, float y2x, float z,float *corr);
@@ -68,8 +81,9 @@ class AliTPCChebCorr : public TNamed
   Int_t    fNStacks;                // total number of stacks
   Float_t  fZMin;                   // zmin
   Float_t  fZMax;                   // zmax
-  Float_t  fRMin;                   // r min
-  Float_t  fRMax;                   // r max
+  //
+  UInt_t   fTimeStampStart;         // time stamp for start of validity
+  UInt_t   fTimeStampEnd;           // time stamp for end of validity
   //
   // precalculated parameters
   Float_t  fZCen;                   // Z center
