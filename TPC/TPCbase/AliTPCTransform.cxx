@@ -139,56 +139,43 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   /// TOF of particle calculated assuming the speed-of-light and
   /// line approximation
 
-  if (!fCurrentRecoParam) {
-    return;
-  }
+  if (!fCurrentRecoParam) return;
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
   AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
   //
+  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  Double_t bzField = magF->SolenoidField(); //field in kGaus
+
   AliTPCCalPad * time0TPC = calib->GetPadTime0();
-  AliTPCCalPad * distortionMapY = calib->GetDistortionMap(0);
-  AliTPCCalPad * distortionMapZ = calib->GetDistortionMap(1);
-  AliTPCCalPad * distortionMapR = calib->GetDistortionMap(2);
   AliTPCParam  * param    = calib->GetParameters();
-  AliTPCCorrection * correction = calib->GetTPCComposedCorrection();   // first user defined correction  // if does not exist  try to get it from calibDB array
-  if (!correction) correction = calib->GetTPCComposedCorrection(AliTracker::GetBz());
-  if (!time0TPC){
-    AliFatal("Time unisochronity missing");
-    return ; // make coverity happy
-  }
-  AliTPCCorrection * correctionDelta = calib->GetTPCComposedCorrectionDelta();
 
   if (!param){
     AliFatal("Parameters missing");
     return; // make coverity happy
   }
-
-  Double_t xx[3];
-  //  Apply Time0 correction - Pad by pad fluctuation
-  //
+  if (!time0TPC){
+    AliFatal("Time unisochronity missing");
+    return ; // make coverity happy
+  }
+  
+  // Apply Time0 correction - Pad by pad fluctuation
   if (!calib->HasAlignmentOCDB()) x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
   //
   // Tranform from pad - time coordinate system to the rotated global (tracking) system
-  //
   Local2RotatedGlobal(sector,x);
-  //
+  Bool_t isInRotated = kTRUE;
   //
   //
   // Alignment
   //TODO:  calib->GetParameters()->GetClusterMatrix(sector)->LocalToMaster(x,xx);
-  RotatedGlobal2Global(sector,x);
-
-  //
-  // old ExB correction
   //
   if(fCurrentRecoParam->GetUseExBCorrection()) {
-
-    calib->GetExB()->Correct(x,xx);
-
-  } else {
-
+    RotatedGlobal2Global(sector,x);
+    isInRotated = kFALSE;    
+    Double_t xx[3];
+    calib->GetExB()->Correct(x,xx);   // old ExB correction
     xx[0] = x[0];
     xx[1] = x[1];
     xx[2] = x[2];
@@ -197,22 +184,31 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   // new composed  correction  - will replace soon ExB correction
   //
-  if(fCurrentRecoParam->GetUseComposedCorrection()&&correction) {
-    Float_t distPoint[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
-    correction->CorrectPoint(distPoint, sector);
-    xx[0]=distPoint[0];
-    xx[1]=distPoint[1];
-    xx[2]=distPoint[2];
-    if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
-      Float_t distPointDelta[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
-      correctionDelta->CorrectPoint(distPointDelta, sector);
-      xx[0]=distPointDelta[0];
-      xx[1]=distPointDelta[1];
-      xx[2]=distPointDelta[2];
+  if(fCurrentRecoParam->GetUseComposedCorrection()) {
+    //
+    if (isInRotated) {
+      RotatedGlobal2Global(sector,x);
+      isInRotated = kFALSE;          
+    }
+    AliTPCCorrection * correction = calib->GetTPCComposedCorrection();   // first user defined correction  // if does not exist  try to get it from calibDB array
+    if (!correction) correction = calib->GetTPCComposedCorrection(bzField);
+    AliTPCCorrection * correctionDelta = calib->GetTPCComposedCorrectionDelta();
+    if (correction) {
+      Float_t distPoint[3]={static_cast<Float_t>(x[0]),static_cast<Float_t>(x[1]),static_cast<Float_t>(x[2])};
+      correction->CorrectPoint(distPoint, sector);
+      x[0]=distPoint[0];
+      x[1]=distPoint[1];
+      x[2]=distPoint[2];
+      if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
+	Float_t distPointDelta[3]={static_cast<Float_t>(x[0]),static_cast<Float_t>(x[1]),static_cast<Float_t>(x[2])};
+	correctionDelta->CorrectPoint(distPointDelta, sector);
+	x[0]=distPointDelta[0];
+	x[1]=distPointDelta[1];
+	x[2]=distPointDelta[2];
+      }
     }
   }
-
-
+  
   //
   // Time of flight correction
   //
@@ -226,57 +222,53 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     }
     Float_t deltaDr =0;
     Float_t dist=0;
-    dist+=(fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]);
-    dist+=(fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
+    dist+=x[0]*x[0];  // (fPrimVtx[0]-x[0])*(fPrimVtx[0]-x[0]); // RS the vertex is anyway close to 0
+    dist+=x[1]*x[1];  // (fPrimVtx[1]-x[1])*(fPrimVtx[1]-x[1]);
     dist+=(fPrimVtx[2]-x[2])*(fPrimVtx[2]-x[2]);
     dist = TMath::Sqrt(dist);
     // drift length correction because of TOF
     // the drift velocity is in cm/s therefore multiplication by 0.01
     deltaDr = (dist*(0.01*param->GetDriftV()))/TMath::C();
-    xx[2]+=sign*deltaDr;
+    x[2]+=sign*deltaDr;
   }
   //
   //
-  //
-
-  //
-  Global2RotatedGlobal(sector,xx);
-
+  if (!isInRotated) {
+    Global2RotatedGlobal(sector,x);
+    isInRotated = kTRUE;
+  }
   //
   // Apply non linear distortion correction
   //
-  if (distortionMapY ){
+  int useFieldCorr = fCurrentRecoParam->GetUseFieldCorrection();
+  if (useFieldCorr&(0x2|0x4|0x8)) {
+    AliTPCCalPad * distortionMapY=0,*distortionMapZ=0,*distortionMapR=0;
+    //
     // wt - to get it form the OCDB
     // ignore T1 and T2
-    AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
-    Double_t bzField = magF->SolenoidField()/10.; //field in T
     Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
     Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
     if (sector%36<18) ezField*=-1;
-    Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
+    //    Double_t wt = -10.0 * (bzField*10) * vdrift / ezField ;
+    Double_t wt = -10.0 * (bzField) * vdrift / ezField ; // RS: field is already in kGauss
     Double_t c0=1./(1.+wt*wt);
     Double_t c1=wt/c0;
-
+    
     //can be switch on for each dimension separatelly
-    if (fCurrentRecoParam->GetUseFieldCorrection()&0x2)
-      if (distortionMapY){
-	xx[1]-= c0*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
-	xx[0]-= c1*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
-      }
-    if (fCurrentRecoParam->GetUseFieldCorrection()&0x4)
-      if (distortionMapZ)
-	xx[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
-    if (fCurrentRecoParam->GetUseFieldCorrection()&0x8)
-      if (distortionMapR){
-	xx[0]-= c0*distortionMapR->GetCalROC(sector)->GetValue(row,pad);
-	xx[1]-=-c1*distortionMapR->GetCalROC(sector)->GetValue(row,pad)*wt;
-      }
-
+    if (useFieldCorr&0x2 && (distortionMapY=calib->GetDistortionMap(0))) {
+      x[1]-= c0*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+      x[0]-= c1*distortionMapY->GetCalROC(sector)->GetValue(row,pad);
+    }
+    if (useFieldCorr&0x4 && (distortionMapZ=calib->GetDistortionMap(1))) {
+      x[2]-=distortionMapZ->GetCalROC(sector)->GetValue(row,pad);
+    }
+    if (useFieldCorr&0x8 && (distortionMapR=calib->GetDistortionMap(2))) {
+      x[0]-= c0*distortionMapR->GetCalROC(sector)->GetValue(row,pad);
+      x[1]-=-c1*distortionMapR->GetCalROC(sector)->GetValue(row,pad)*wt;
+    }
+    //
   }
   //
-
-  //
-  x[0]=xx[0];x[1]=xx[1];x[2]=xx[2];
 }
 
 void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
