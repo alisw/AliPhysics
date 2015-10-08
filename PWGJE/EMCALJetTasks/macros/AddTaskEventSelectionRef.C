@@ -1,4 +1,5 @@
 EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef *AddTaskEventSelectionRef(
+    const char *clustercontainername,
     Double_t enEMC7 = 5,
     Double_t enEG1 = 14,
     Double_t enEG2 = 8,
@@ -22,6 +23,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef *AddTaskEventSelectionR
   task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREG2, enEG2);
   task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREJ1, enEJ1);
   task->SetOfflineEnergyThreshold(EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef::kCPREJ2, enEJ2);
+  task->SetClusterContainer(clustercontainername);
 
   TString outfile(mgr->GetCommonFileName());
   outfile += ":" + taskname;

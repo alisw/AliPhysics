@@ -46,6 +46,7 @@ namespace EMCalTriggerPtAnalysis {
 
 AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef():
   AliAnalysisTaskSE(),
+  fClusterContainerName(""),
   fAnalysisUtils(nullptr),
   fHistos(nullptr),
   fTrackCuts(nullptr),
@@ -61,6 +62,7 @@ AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef():
 
 AliAnalysisTaskEventSelectionRef::AliAnalysisTaskEventSelectionRef(const char *name):
   AliAnalysisTaskSE(name),
+  fClusterContainerName(""),
   fAnalysisUtils(nullptr),
   fHistos(nullptr),
   fTrackCuts(nullptr),
@@ -127,7 +129,7 @@ void AliAnalysisTaskEventSelectionRef::UserExec(Option_t *){
     fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(fInputEvent->GetRunNumber());
   }
   fTriggerPatchContainer = static_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-  fClusterContainer = static_cast<TClonesArray *>(fInputEvent->FindListObject(""));
+  fClusterContainer = static_cast<TClonesArray *>(fInputEvent->FindListObject(fClusterContainerName.Data()));
   TString triggerstring = fInputEvent->GetFiredTriggerClasses();
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
@@ -222,8 +224,10 @@ void AliAnalysisTaskEventSelectionRef::FillEventCounterHists(
     }
 
     // ... clusters
-    for(TIter clsit = TIter(fClusterContainer).Begin(); clsit != TIter::End(); ++clsit){
-      ProcessCluster(triggerclass, static_cast<AliVCluster *>(*clsit), isOfflineSelected);
+    if(fClusterContainer){
+      for(TIter clsit = TIter(fClusterContainer).Begin(); clsit != TIter::End(); ++clsit){
+        ProcessCluster(triggerclass, static_cast<AliVCluster *>(*clsit), isOfflineSelected);
+      }
     }
 
     // ... patches
