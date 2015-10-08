@@ -70,7 +70,6 @@ private:
   UInt_t   fCurrentTimeStamp;          //!<! current time stamp
   Bool_t   fTimeDependentUpdated;      //!<! flag successful update of time dependent stuff
   /// \cond CLASSIMP
-  //
   static const Double_t fgkSin20;       // sin(20)
   static const Double_t fgkCos20;       // sin(20)
   static const Double_t fgkMaxY2X;      // tg(10)

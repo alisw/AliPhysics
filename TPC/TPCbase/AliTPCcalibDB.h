@@ -70,6 +70,7 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetDistortionMap(Int_t i) const;
   AliTPCCorrection * GetTPCComposedCorrection() const { return fComposedCorrection;}
   TObjArray * GetTPCComposedCorrectionArray() const { return fComposedCorrectionArray;}
+  TObjArray*  GetCorrectionMaps()             const {return fCorrectionMaps;}
   void          SetTPCComposedCorrection(AliTPCCorrection *compCorr) { fComposedCorrection=compCorr;}
   AliTPCCorrection * GetTPCComposedCorrection(Float_t field) const;
   AliTPCCorrection * GetTPCComposedCorrectionDelta() const;
@@ -77,6 +78,8 @@ class AliTPCcalibDB : public TObject
 
   AliTPCCalPad* GetPadNoise() const {return fPadNoise;}
   AliTPCCalPad* GetPedestals() const{return fPedestals;}
+
+  void LoadCorrectionMaps();
 
   // ===| ALTRO config data |===================================================
   TObjArray* GetAltroConfigData()  const {return fALTROConfigData;}
@@ -214,6 +217,7 @@ protected:
   TObjArray   *fDistortionMap;    ///< distortion map
   AliTPCCorrection *fComposedCorrection;  ///< general space point corrections
   TObjArray *      fComposedCorrectionArray; ///< space point corrections for different field setting
+  TObjArray*       fCorrectionMaps;          ///< RS: new fast Chebyshev parameterization maps
   AliTPCCalPad* fPadNoise;        ///< Noise calibration entry
   AliTPCCalPad* fPedestals;       ///< Pedestal calibration entry
   AliTPCCalibRaw *fCalibRaw;      ///< raw data calibration entry
