@@ -5,9 +5,18 @@
 
 #include "AliAnalysisTaskSE.h"
 
+class TArrayD;
 class TClonesArray;
+class TObjArray;
 
 class AliAnalysisUtils;
+class AliAODTrack;
+class AliESDtrack;
+class AliESDtrackCuts;
+class AliEmcalTriggerPatchInfo;
+class AliEMCALGeometry;
+class AliVCluster;
+class AliVTrack;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -36,8 +45,23 @@ protected:
   void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected, bool isOfflineSelected);
   Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
+  void ProcessTrack(const char *triggerclass, const AliVTrack * track, bool isOfflineSelected);
+  void ProcessCluster(const char *triggerclass, const AliVCluster *clust, bool isOfflineSelected);
+  void ProcessOfflinePatch(const char * triggerclass, const AliEmcalTriggerPatchInfo * patch, bool isOfflineSelected);
+
+  Bool_t TrackSelectionESD(AliESDtrack* track) ;
+  Bool_t TrackSelectionAOD(AliAODTrack* track);
+
+  void CreatePtBinning(TArrayD& binning) const;
+  void CreateEnergyBinning(TArrayD& binning) const;
+
   AliAnalysisUtils              *fAnalysisUtils;
-  AliEMCalHistoContainer        *fHistos;
+  AliEMCalHistoContainer        *fHistos;                   //!
+  AliESDtrackCuts               *fTrackCuts;
+  AliEMCALGeometry              *fGeometry;                 //!
+  TClonesArray                  *fTriggerPatchContainer;    //!
+  TClonesArray                  *fClusterContainer;         //!
+  TObjArray                     *fTrackContainer;           //!
   Double_t                      fOfflineEnergyThreshold[kCPRntrig];
 
   ClassDef(AliAnalysisTaskEventSelectionRef, 1);

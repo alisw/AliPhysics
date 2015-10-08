@@ -324,14 +324,25 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   AliVTrack *checktrack(NULL);
   int ptmin[5] = {1,2,5,10,20}; // for eta distributions
   Bool_t isEMCAL(kFALSE), hasTRD(kFALSE);
+  Double_t etaEMCAL(0.), phiEMCAL(0.);
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
     checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
     if(!checktrack) continue;
     if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(checktrack);
+    if(checktrack->IsA() == AliESDtrack::Class()){
+      AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    } else {
+      AliAODTrack copytrack(*(static_cast<AliAODTrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    }
     Int_t supermoduleID = -1;
-    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(checktrack->GetTrackEtaOnEMCal(), checktrack->GetTrackPhiOnEMCal(), supermoduleID);
+    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
     // Exclude supermodules 10 and 11 as they did not participate in the trigger
     isEMCAL = isEMCAL && supermoduleID < 10;
     hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
