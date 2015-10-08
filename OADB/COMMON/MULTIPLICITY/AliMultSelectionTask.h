@@ -60,19 +60,7 @@ public:
     AliMultSelectionTask(const char *name);
     virtual ~AliMultSelectionTask();
     
-    //Static Event Selection Functions 
-    static Bool_t IsSelectedTrigger                        (AliVEvent* event, AliVEvent::EOfflineTriggerTypes trigType = AliVEvent::kMB);
-    static Bool_t IsINELgtZERO                         (AliVEvent *event);
-    static Bool_t IsAcceptedVertexPosition             (AliVEvent *event);
-    static Bool_t IsNotPileupSPD                       (AliVEvent *event);
-    static Bool_t IsNotPileupSPDInMultBins             (AliVEvent *event);
-    static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
-    
-    //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
-    Bool_t IsNotPileupMV (AliVEvent *event);
-    Bool_t PassesTrackletVsCluster (AliVEvent *event);
-    
-    //Setup Run if needed (depends on run number!)     
+    Bool_t IsEventSelected( AliESDEvent* lEvent );
     Int_t SetupRun( const AliVEvent* const esd );
 
     void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
@@ -96,11 +84,11 @@ private:
     Bool_t fkCalibration; //if true, save Calibration object
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
+    
     Bool_t fkAttached; //if true, has already attached to ESD (AOD)
     
     AliESDtrackCuts *fESDtrackCuts;
-    AliAnalysisUtils *fUtils;         // analysis utils
-    
+
     //To perform event selection
     //AliMultSelectionCuts *fMultSelectionCuts; //To perform event selections
     
@@ -115,11 +103,8 @@ private:
     AliMultVariable *fAmplitude_V0CEq;
     AliMultVariable *fAmplitude_OnlineV0A;
     AliMultVariable *fAmplitude_OnlineV0C;
-    //Integer Variables 
+    //SPD Related
     AliMultVariable *fnSPDClusters;
-    AliMultVariable *fnTracklets; //tracklet estimator
-    AliMultVariable *fRefMultEta5; //tracklet estimator
-    AliMultVariable *fRefMultEta8; //tracklet estimator
     //AD Related
     AliMultVariable *fMultiplicity_ADA;
     AliMultVariable *fMultiplicity_ADC;
@@ -134,24 +119,32 @@ private:
     Float_t fAmplitude_V0C3;   //!
     Float_t fAmplitude_V0C4;   //!
 
-    Int_t fRunNumber;                    
+    Int_t fRefMultEta5;              //!
+    Int_t fRefMultEta8;              //!
+    Int_t fRunNumber;
+                    
 
     //Event Characterization Variables - optional
+    Bool_t fEvSel_HasAtLeastSPDVertex;      //!
     Bool_t fEvSel_VtxZCut;                  //!
     Bool_t fEvSel_IsNotPileup;              //!
     Bool_t fEvSel_IsNotPileupMV;            //!
     Bool_t fEvSel_IsNotPileupInMultBins;    //!
     Bool_t fEvSel_Triggered;                //!
     Bool_t fEvSel_INELgtZERO;               //! //done with SPD tracklets
-    Bool_t fEvSel_HasNoInconsistentVertices;//!
-    Bool_t fEvSel_PassesTrackletVsCluster;  //! 
+    Bool_t fEvSel_HasNoInconsistentVertices;//! //done with helper function
 
     //Other Selections: more dedicated filtering to be studied!
+    Int_t   fEvSel_nTracklets;              //!
+    Int_t   fEvSel_nTrackletsEta10; //!
 
     // A.T.
     Int_t   fnSPDClusters0;            //!
     Int_t   fnSPDClusters1;            //!
     Float_t fEvSel_VtxZ; //! the actual value
+    Int_t   fEvSel_nSPDPrimVertices; //! pileup vertices
+    Float_t fEvSel_distZ; //! distance between largest vertices
+    Int_t   fEvSel_nContributors; //!
 
     // A.T.
     AliESDtrackCuts* fTrackCuts;  //! optional track cuts
