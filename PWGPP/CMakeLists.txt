@@ -222,6 +222,7 @@ set ( SRCS19
 set ( SRCS20 
   HMTFqa/AliAnalysisMultCorrTaskQA.cxx  
   HMTFqa/AliAnalysisTaskLeadingPt.cxx  
+  HMTFqa/AliAnalysisMultCorrTaskQAPF.cxx
   )
 
 list ( APPEND SRCS 
