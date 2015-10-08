@@ -44,6 +44,7 @@ set(SRCS
   AliFemtoModelCorrFctn3DSpherical.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
+  AliFemtoPionLambdaCutMonitor.cxx
   AliFemtoModelAllHiddenInfo.cxx
   AliFemtoCutMonitorTrackTPCchiNdof.cxx
   AliFemtoQATrackCut.cxx
