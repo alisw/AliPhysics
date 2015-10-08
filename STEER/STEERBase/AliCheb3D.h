@@ -287,7 +287,7 @@ inline Float_t AliCheb3D::MapToInternal(Float_t  x,Int_t d) const
 {
   // map x to [-1:1]
 #ifdef _BRING_TO_BOUNDARY_
-  T res = (x-fBOffset[d])*fBScale[d];
+  float res = (x-fBOffset[d])*fBScale[d];
   if (res<-1) return -1;
   if (res> 1) return 1;
   return res;
@@ -301,7 +301,7 @@ inline Double_t AliCheb3D::MapToInternal(Double_t  x,Int_t d) const
 {
   // map x to [-1:1]
 #ifdef _BRING_TO_BOUNDARY_
-  T res = (x-fBOffset[d])*fBScale[d];
+  double res = (x-fBOffset[d])*fBScale[d];
   if (res<-1) return -1;
   if (res> 1) return 1;
   return res;
