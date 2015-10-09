@@ -42,7 +42,7 @@ AliESDTZERO::AliESDTZERO() :
 
 {
   for(int i = 0;i<24;i++) {
-    fT0time[i] = fT0amplitude[i] = 0;
+    fT0time[i] = fT0amplitude[i] = fT0NewAmplitude[i] = 0;
     for(Int_t iHit=0; iHit<5; iHit++) {
       fTimeFull[i][iHit] = -9999;   
       if (i==0) fOrA[iHit] = -9999; 
@@ -78,6 +78,7 @@ AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
   for(int i = 0;i<24;i++){
     fT0time[i] = tzero.fT0time[i]; 
     fT0amplitude[i] = tzero.fT0amplitude[i];
+    fT0NewAmplitude[i] = tzero.fT0NewAmplitude[i];
     for(Int_t iHit=0; iHit<5; iHit++) {
       fTimeFull[i][iHit] = tzero.fTimeFull[i][iHit];   
      if (i==0)  fOrA[iHit] = tzero.fOrA[iHit]; 
@@ -109,6 +110,7 @@ AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
     for(int i = 0;i<24;i++){
       fT0time[i] = tzero.fT0time[i]; 
       fT0amplitude[i] = tzero.fT0amplitude[i];
+      fT0NewAmplitude[i] = tzero.fT0NewAmplitude[i];
       for(Int_t iHit=0; iHit<5; iHit++) {
 	fTimeFull[i][iHit] = tzero.fTimeFull[i][iHit];   
 	if (i==0) 	fOrA[iHit] = tzero.fOrA[iHit]; 
@@ -142,7 +144,7 @@ void AliESDTZERO::Reset()
   fT0zVertex = -9999;  
   fT0timeStart = 0;
   for(int i = 0;i<24;i++) {
-    fT0time[i] = fT0amplitude[i] =  0;
+    fT0time[i] = fT0amplitude[i] =  fT0NewAmplitude[i] = 0;
     for(Int_t iHit=0; iHit<5; iHit++)  fTimeFull[i][iHit] = -9999;
   }
   for(Int_t iHit=0; iHit<5; iHit++) fOrA[iHit] = fOrC[iHit] = fTVDC[iHit] = -9999; 
@@ -162,5 +164,8 @@ void AliESDTZERO::Print(const Option_t *) const
   Bool_t tr[5];
   for (Int_t i=0; i<5; i++) tr[i] = fT0trig & (1<<i);
   AliInfo(Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4])); 
+
+  for (Int_t i=0; i<24; i++) 
+    printf(" AliESDTZERO::: new amp %f old amp %f \n", fT0NewAmplitude[i], fT0amplitude[i]);
 
 }
