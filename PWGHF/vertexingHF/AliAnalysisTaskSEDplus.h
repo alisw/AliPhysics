@@ -37,7 +37,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSEDplus();
-  AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplustoKpipi* analysiscuts,Bool_t fillNtuple=kFALSE);
+  AliAnalysisTaskSEDplus(const char *name, AliRDHFCutsDplustoKpipi* analysiscuts,Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDplus();
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
@@ -147,7 +147,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   AliRDHFCutsDplustoKpipi *fRDCutsAnalysis; /// Cuts for Analysis
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   Double_t fArrayBinLimits[kMaxPtBins+1]; /// limits for the Pt bins
-  Bool_t fFillNtuple;   /// flag for filling ntuple
+  Int_t fFillNtuple;   /// flag for filling ntuple 0 no NTuple 1 big Ntuple 2 small NTuple
   Bool_t fReadMC;    /// flag for access to MC
   Bool_t fUseStrangeness;/// flag to enhance strangeness in MC to fit to data
   Bool_t fUseBit;      /// flag to use bitmask
@@ -163,7 +163,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t fSystem;   /// 0=pp,1=PbPb
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,23); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,24); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

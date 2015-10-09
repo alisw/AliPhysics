@@ -18,7 +18,7 @@
 //*************************************************************************
 // Class AliAnalysisTaskSEDplus
 // AliAnalysisTaskSE for the D+ candidates Invariant Mass Histogram and 
-//comparison of heavy-flavour decay candidates
+// comparison of heavy-flavour decay candidates
 // to MC truth (kinematics stored in the AOD)
 // Authors: Renu Bala, bala@to.infn.it
 // F. Prino, prino@to.infn.it
@@ -73,7 +73,7 @@ AliAnalysisTaskSE(),
   fListCuts(0),
   fRDCutsAnalysis(0),
   fCounter(0),
-  fFillNtuple(kFALSE),
+  fFillNtuple(0),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
@@ -135,7 +135,7 @@ AliAnalysisTaskSE(),
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplustoKpipi *dpluscutsana,Bool_t fillNtuple):
+AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplustoKpipi *dpluscutsana,Int_t fillNtuple):
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
@@ -737,12 +737,20 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   if(fDoImpPar) CreateImpactParameterHistos();
   if(fReadMC && fStepMCAcc) CreateMCAcceptanceHistos();
 
-  if(fFillNtuple){
+  if(fFillNtuple==1){
     OpenFile(4); // 4 is the slot number of the ntuple
-   
-    
+        
+        
     fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:charge:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber:BadDau");
-
+        
+  }
+    
+  if(fFillNtuple==2){
+    OpenFile(4); // 4 is the slot number of the ntuple
+    
+        
+    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Pt:InvMass:d0:origin");
+    
   }
   
   return;
@@ -975,10 +983,13 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       //for THnSparse for FD
       Double_t arrayForSparseFD[7]={invMass,ptCand,impparXY,cxy,dxy,dlxy,ptB};
       Double_t arrayForSparseTrue[7]={invMass,ptCand,trueImpParXY,cxy,dxy,dlxy,ptB};
+      Double_t flagOrigin = 0;
 
       //Ntuple
-      Float_t tmp[31];
-      if(fFillNtuple){
+      if(fFillNtuple==1){
+          
+	Float_t tmp[31];
+
 	tmp[0]=pdgCode;
 	if(isFeeddown) tmp[0]+=5000.;
 	tmp[1]=d->Px();
@@ -1012,6 +1023,26 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	tmp[28]=fRDCutsAnalysis->GetCentrality(aod);
 	tmp[29]=runNumber;
 	tmp[30]=d->HasBadDaughters();
+	fNtupleDplus->Fill(tmp);
+	PostData(4,fNtupleDplus);
+      }
+        
+      if(fFillNtuple==2){
+	Float_t tmp[5];
+	tmp[0]=pdgCode;
+	if(isFeeddown) tmp[0]+=5000.;
+	tmp[1]=d->Pt();
+	tmp[2]=d->InvMassDplus();
+	tmp[3]=impparXY;
+	if(!fReadMC){flagOrigin=0;};
+	if(fReadMC){
+	  if(isPrimary&&labDp>=0)flagOrigin=1;
+	  if(isFeeddown&&labDp>=0)flagOrigin=2;
+	  if(!(labDp>=0))flagOrigin=3;
+          
+	}
+            
+	tmp[4]=flagOrigin;
 	fNtupleDplus->Fill(tmp);
 	PostData(4,fNtupleDplus);
       }
