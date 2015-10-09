@@ -173,7 +173,8 @@ class AliAnalysisTaskEmcalTriggerPatchJetMatch : public AliAnalysisTaskEmcalJet 
 
   TClonesArray               *fJetTriggeredEvent;                    //!jets
 
-  THnSparse                  *fhnPatchMatch;//!                      // patch sparse matrix
+  THnSparse                  *fhnPatchMaxClus;//!                    // patch-maxclus distributions sparse matrix
+  THnSparse                  *fhnPatchMatch;//!                      // QA before matching patch sparse matrix
   THnSparse                  *fhnPatchMatchJetLeadClus;//!           // patch matching sparse matrix
 
   AliAnalysisTaskEmcalTriggerPatchJetMatch(const AliAnalysisTaskEmcalTriggerPatchJetMatch&);            // not implemented
