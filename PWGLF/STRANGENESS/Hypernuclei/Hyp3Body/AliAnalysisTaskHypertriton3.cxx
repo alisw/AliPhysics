@@ -365,8 +365,11 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->SetOwner();
   fOutput->SetName("clistHypertriton");
 
-  fHistCount = new TH1F("fHistCount","Counter histogram",2,-0.5,1.5);
-  fHistCount->GetXaxis()->SetBinLabel(1,"Event");
+  fHistCount = new TH1F("fHistCount","Counter histogram",4,-0.5,3.5);
+  fHistCount->GetXaxis()->SetBinLabel(1,"Reco Event");
+  fHistCount->GetXaxis()->SetBinLabel(2,"Triggered sel");
+  fHistCount->GetXaxis()->SetBinLabel(3,"Centrality sel");
+  fHistCount->GetXaxis()->SetBinLabel(4,"Primary vtx sel");
   
   fHistCentralityClass = new TH1F("fHistCentralityClass","Centrality Class; centrality class; entries",11,-0.5,10.5);
   fHistCentralityPercentile = new TH1F("fHistCentralityPercentile","Centrality; centrality percentile; entries",101,-0.5,100.5);
@@ -773,7 +776,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
 
-  fHistCount->Fill(0);
+  fHistCount->Fill(0); // number of reco events opened
   
  //==========MC info==========
   AliStack *stack=0x0;
@@ -840,6 +843,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       return;
     }
   }
+
+  fHistCount->Fill(1); // number of events passing the Trigger Selection
   
   //==========Centrality==========
   if(fESDevent->GetEventSpecie() == 4){ // Event Specie == 4 == PbPb
@@ -855,7 +860,9 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     PostData(1,fOutput);
     return; //0 bis 80 %
   }
-   
+
+  fHistCount->Fill(2); // number of reco events passing Centrality Selection
+  
   //==========Multiplicity==========
   Int_t refMultTpc = AliESDtrackCuts::GetReferenceMultiplicity(fESDevent, kTRUE);
   fHistMultiplicity->Fill(refMultTpc);
@@ -877,6 +884,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     return;
   }
 
+  fHistCount->Fill(3); // number of reco events passing Primary Vertex Selection
+  
   fHistZPrimaryVtx->Fill(fPrimaryVertex->GetZ());
   fHistXPrimaryVtx->Fill(fPrimaryVertex->GetX());
   fHistYPrimaryVtx->Fill(fPrimaryVertex->GetY());
