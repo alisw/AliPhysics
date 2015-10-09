@@ -1,6 +1,6 @@
 AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Float_t minC=0, Float_t maxC=100,
-				     Bool_t storeNtuple=kFALSE,
+				     Int_t storeNtuple=0,
 				     Bool_t doSparse=kFALSE,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
