@@ -93,10 +93,10 @@ Int_t AliHFCutVarFDsubAnalysisManagerDplus::GetTHnSparses(const TString strFileM
 
 
 //_________________________________________________________________________________________________
-void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Int_t version/*=0*/, Int_t Rebin/*=1*/, Int_t fsig/*=0*/, Int_t fback/*=0*/) {
+void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Int_t version/*=0*/, Int_t Rebin/*=1*/, Int_t fsig/*=0*/, Int_t fbkg/*=0*/) {
   /// Preparte the cuts
 
-  Double_t massD = TDatabasePDG::Instance()->GetParticle(411)->Mass();
+  Double_t massD = -TDatabasePDG::Instance()->GetParticle(411)->Mass();
 
   if (fCuts) {
     delete fCuts;
@@ -110,310 +110,838 @@ void AliHFCutVarFDsubAnalysisManagerDplus::GetCuts(Int_t version/*=0*/, Int_t Re
   AliHFCutVarFDsubCutSet *cutset2 = 0x0;
   AliHFCutVarFDsubCutSet *cutset3 = 0x0;
 
-  //pT bin [1,2] GeV/c
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.12));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,7,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.4));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.09,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //______________________________________________________________________________________________________________//
-  
-  //pT bin [2,3] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.14));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
+  switch(version) {
+  case(0):
+    //pT bin [1,2] GeV/c
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.12));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,7,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
     
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.5));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.008,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.1,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [3,4] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.08,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [4,5] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [5,6] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.12,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [6,7] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,6.,7.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,6.,7.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,6.,7.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.12,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [7,8] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,7.,8.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,7.,8.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.009,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,7.,8.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.12,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [8,12] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,3,12));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.6));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.6,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,30,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [12,16] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.013,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.5,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,30,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  fCuts->Add((TObject*)ptBin);
-  
-  //_________________________________________________________________________________________________________//
-  
-  //pT bin [16,24] GeV/c
-  ptBin = new TList();
-  
-  //cut set 1 - Prompt enhanced
-  cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.014,Rebin,fsig,fback,0);
-  cutset1->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
-  cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
-  cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
-  ptBin->Add((TObject*)cutset1);
-  
-  //cut set 2 - mixed
-  cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.013,Rebin,fsig,fback,0);
-  cutset2->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
-  cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.996,1.));//cxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
-  cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
-  ptBin->Add((TObject*)cutset2);
-  
-  //cut set 3 - FD enhanced
-  cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.014,Rebin,fsig,fback,0);
-  cutset3->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
-  cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.5,1.1));//dlxy
-  cutset3->AddCut(new AliHFCutVarFDsubCut(3,28,31));//normdlxy
-  ptBin->Add((TObject*)cutset3);
-  fCuts->Add((TObject*)ptBin);
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.4));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.09,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //______________________________________________________________________________________________________________//
+    
+    //pT bin [2,3] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.14));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.5));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.1,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [3,4] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.08,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+
+    //pT bin [4,5] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,10,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [5,6] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.12,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [6,8] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.12,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [8,12] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,3,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.6,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,30,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [12,16] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.013,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.5,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,30,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [16,24] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.014,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.013,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.996,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.014,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.5,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,28,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    fCuts->Add((TObject*)ptBin);
+    break;
+    
+  //_______________________________________________________________________________________________//
+    
+  case(2):
+    //pT bin [1,2] GeV/c
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.12));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,7,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.4));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.09,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //______________________________________________________________________________________________________________//
+    
+    //pT bin [2,3] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.14));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.5));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.1,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [3,4] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.08,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+
+    //pT bin [4,5] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.04,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [5,6] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.12,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [6,8] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.25,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,20,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [8,12] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,3,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.4,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,24,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [12,16] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.013,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.4,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,24,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [16,24] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.014,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.013,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.996,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.014,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.4,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,24,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    fCuts->Add((TObject*)ptBin);
+    break;
+
+    //_________________________________________________________________________________________________________//
+    
+  case(1):
+    //pT bin [1,2] GeV/c
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.12));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,7,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.4));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,1.,2.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.15,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //______________________________________________________________________________________________________________//
+    
+    //pT bin [2,3] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.998,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.14));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.007,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.5));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,2.,3.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.15,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [3,4] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,6,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,3.,4.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.15,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+
+    //pT bin [4,5] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.008,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,4.,5.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.15,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [5,6] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,12,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,5.,6.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.998));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.15,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,8,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [6,8] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.1,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.009,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,6.,8.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,0.999));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.25,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,16,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [8,12] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.02,0.15));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,3,12));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.010,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.6));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,8.,12.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.65,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,30,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [12,16] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.012,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.997,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,0.013,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,12.,16.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.65,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,30,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    fCuts->Add((TObject*)ptBin);
+    
+    //_________________________________________________________________________________________________________//
+    
+    //pT bin [16,24] GeV/c
+    ptBin = new TList();
+    
+    //cut set 1 - Prompt enhanced
+    cutset1 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.014,Rebin,fbkg,fsig,0);
+    cutset1->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset1->AddCut(new AliHFCutVarFDsubCut(1,0.999,1.));//cxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(2,0.06,0.25));//dlxy
+    cutset1->AddCut(new AliHFCutVarFDsubCut(3,4,15));//normdlxy
+    ptBin->Add((TObject*)cutset1);
+    
+    //cut set 2 - mixed
+    cutset2 = new AliHFCutVarFDsubCutSet(1.72,2.05,-massD,-0.013,Rebin,fbkg,fsig,0);
+    cutset2->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset2->AddCut(new AliHFCutVarFDsubCut(1,0.996,1.));//cxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(2,0.06,1.1));//dlxy
+    cutset2->AddCut(new AliHFCutVarFDsubCut(3,14,31));//normdlxy
+    ptBin->Add((TObject*)cutset2);
+    
+    //cut set 3 - FD enhanced
+    cutset3 = new AliHFCutVarFDsubCutSet(1.72,2.05,massD,-0.014,Rebin,fbkg,fsig,0);
+    cutset3->AddCut(new AliHFCutVarFDsubCut(0,16.,24.));
+    cutset3->AddCut(new AliHFCutVarFDsubCut(1,0.95,1.));//cxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(2,0.65,1.1));//dlxy
+    cutset3->AddCut(new AliHFCutVarFDsubCut(3,30,31));//normdlxy
+    ptBin->Add((TObject*)cutset3);
+    fCuts->Add((TObject*)ptBin);
+    break;
+  }
 }
+
 
 //_________________________________________________________________________________________________
 void AliHFCutVarFDsubAnalysisManagerDplus::GetAxes(Int_t version) {

@@ -184,21 +184,27 @@ Bool_t AliHFCutVarFDsubMinimiser::MinimiseInCentre() {
 
   const Int_t nCutSets = fhRawYields->GetNbinsX();
 
-  Double_t Ncorr[2] = {0,0};
   Bool_t incentre = kFALSE;
 
   Double_t effPrompt[nCutSets];
   Double_t effFD[nCutSets];
   Double_t rawYield[nCutSets];
 
-  for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++)
-  {
+  Double_t Ncorr[2] = {0,0};
+  Double_t fprompt[nCutSets];
+  Double_t fpromptraw[nCutSets];
+  Double_t residuals[nCutSets];
+  
+  for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++) {
     effPrompt[iCutSet]=fhEffPrompt->GetBinContent(iCutSet+1);
     effFD[iCutSet]=fhEffFD->GetBinContent(iCutSet+1);
     rawYield[iCutSet]=fhRawYields->GetBinContent(iCutSet+1);
+    fprompt[iCutSet]=0;
+    fpromptraw[iCutSet]=0;
+    residuals[iCutSet]=0;
   }
 
-  incentre = InCentre(effPrompt,effFD,rawYield,Ncorr);
+  incentre = InCentre(effPrompt,effFD,rawYield,Ncorr,fprompt,fpromptraw,residuals);
 
   if(!incentre)
     return kFALSE;
@@ -220,47 +226,101 @@ Bool_t AliHFCutVarFDsubMinimiser::MinimiseInCentre() {
   fhIncDistError->GetXaxis()->SetTitle("N_{FD}");
   fhIncDistError->GetYaxis()->SetTitle("N_{Prompt}");
 
-  for(Int_t iSim=0; iSim<fnSim; iSim++)
-  {
-    for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++)
-    {
+  Double_t rndmfprompt[nCutSets];
+  Double_t rndmfpromptraw[nCutSets];
+  Double_t rndmresiduals[nCutSets];
+
+  TH1F** hFpromptDistError = new TH1F*[nCutSets]; 
+  TH1F** hFpromptRawDistError = new TH1F*[nCutSets];
+  TH1F** hResidualsDistError = new TH1F*[nCutSets];
+
+  Double_t resmin[nCutSets];
+  Double_t resmax[nCutSets];
+  
+  for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++) {
+    rndmfprompt[iCutSet] = 0;
+    rndmfpromptraw[iCutSet] = 0;
+    rndmresiduals[iCutSet] = 0;
+    
+    resmin[iCutSet] = residuals[iCutSet]-10*TMath::Abs(residuals[iCutSet]);
+    resmax[iCutSet] = residuals[iCutSet]+10*TMath::Abs(residuals[iCutSet]);
+
+    hFpromptDistError[iCutSet] = new TH1F("hFpromptDistError","",200,0,2);
+    hFpromptRawDistError[iCutSet] = new TH1F("hFpromptRawDistError","",200,0,2);
+    hResidualsDistError[iCutSet] = new TH1F("hResidualsDistError","",200,resmin[iCutSet],resmax[iCutSet]);
+  }
+  
+  for(Int_t iSim=0; iSim<fnSim; iSim++) {
+    for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++) {
       rndmEffPrompt[iCutSet]=gRandom->Gaus(fhEffPrompt->GetBinContent(iCutSet+1), fhEffPrompt->GetBinError(iCutSet+1));
       rndmEffFD[iCutSet]=gRandom->Gaus(fhEffFD->GetBinContent(iCutSet+1),fhEffFD->GetBinError(iCutSet+1));
       rndmRawYield[iCutSet]=gRandom->Gaus(fhRawYields->GetBinContent(iCutSet+1),fhRawYields->GetBinError(iCutSet+1));
     }
-
+    
     incentre = kFALSE;
-    incentre = InCentre(rndmEffPrompt,rndmEffFD,rndmRawYield,Ncorr);
-
-    if(incentre)
+    incentre = InCentre(rndmEffPrompt,rndmEffFD,rndmRawYield,Ncorr,rndmfprompt,rndmfpromptraw,rndmresiduals);
+    
+    if(incentre) {
       fhIncDistError->Fill(Ncorr[1],Ncorr[0]);
+      for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++) {
+        hFpromptDistError[iCutSet]->Fill(rndmfprompt[iCutSet]);
+        hFpromptRawDistError[iCutSet]->Fill(rndmfpromptraw[iCutSet]);
+        hResidualsDistError[iCutSet]->Fill(rndmresiduals[iCutSet]);
+      }
+    }
   }
-
+  
   TH1F *hProjX = (TH1F*)fhIncDistError->ProjectionX();
   TH1F *hProjY = (TH1F*)fhIncDistError->ProjectionY();
 
   fPromptYieldErr = hProjY->GetRMS();
   fFDYieldErr = hProjX->GetRMS();
 
-  //fPrompt, fPrompt* - temporary errors
-  for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++)
-  {
-    fhfPromptRaw->SetBinContent(iCutSet+1,fhEffPrompt->GetBinContent(iCutSet+1)*fPromptYield/fhRawYields->GetBinContent(iCutSet+1));
-    //approximation: error on efficiency and raw yield not taken into account (only temporary)
-    fhfPromptRaw->SetBinError(iCutSet+1,fhEffPrompt->GetBinContent(iCutSet+1)*fPromptYieldErr/fhRawYields->GetBinContent(iCutSet+1));
+  Double_t errfprompt[nCutSets];
+  Double_t errfpromptraw[nCutSets];
+  Double_t errresiduals[nCutSets];
+  
+  //fPrompt, fPrompt* - toy MC errors
+  for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++) {
+                        
+    errfprompt[iCutSet] = hFpromptDistError[iCutSet]->GetRMS();
+    errfpromptraw[iCutSet] = hFpromptRawDistError[iCutSet]->GetRMS();
+    errresiduals[iCutSet] = hResidualsDistError[iCutSet]->GetRMS();
+      
+    fhfPromptRaw->SetBinContent(iCutSet+1,fpromptraw[iCutSet]);
+    fhfPromptRaw->SetBinError(iCutSet+1,errfpromptraw[iCutSet]);
 
-    fhfPrompt->SetBinContent(iCutSet+1,fhEffPrompt->GetBinContent(iCutSet+1)*fPromptYield/(fhEffPrompt->GetBinContent(iCutSet+1)*fPromptYield+fhEffFD->GetBinContent(iCutSet+1)*fFDYield));
-    //approximation: errors on efficiency not taken into account (only temporary)
-    fhfPrompt->SetBinError(iCutSet+1,(fPromptYieldErr/fPromptYield+(fhEffPrompt->GetBinContent(iCutSet+1)*fPromptYieldErr+fhEffFD->GetBinContent(iCutSet+1)*fFDYieldErr)/(fhEffPrompt->GetBinContent(iCutSet+1)*fPromptYield+fhEffFD->GetBinContent(iCutSet+1)*fFDYield))*fhfPrompt->GetBinContent(iCutSet+1));
+    fhfPrompt->SetBinContent(iCutSet+1,fprompt[iCutSet]);
+    fhfPrompt->SetBinError(iCutSet+1,errfprompt[iCutSet]);
+
+    fhResiduals->SetBinContent(iCutSet+1,residuals[iCutSet]);
+    fhResiduals->SetBinError(iCutSet+1,errresiduals[iCutSet]);
+    
+    fhPulls->SetBinContent(iCutSet+1,residuals[iCutSet]/hResidualsDistError[iCutSet]->GetRMS());
+    
+    delete hFpromptDistError[iCutSet];
+    delete hFpromptRawDistError[iCutSet];
+    delete hResidualsDistError[iCutSet];
   }
 
+  delete[] hFpromptDistError;
+  delete[] hFpromptRawDistError;
+  delete[] hResidualsDistError;
+    
   delete hProjX;
   delete hProjY;
 
   return kTRUE;
+  
 }
 
-Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t *effPrompt, Double_t *effFD, Double_t *rawYield, Double_t *Ncorr) {
+Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t* effPrompt,
+                                           Double_t* effFD,
+                                           Double_t* rawYield,
+                                           Double_t* Ncorr,
+                                           Double_t* fprompt,
+                                           Double_t* fpromptraw,
+                                           Double_t* residuals) {
 
   Int_t nCutSets = fhRawYields->GetNbinsX();
 
@@ -272,8 +332,7 @@ Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t *effPrompt, Double_t *effFD,
 
   if(nCutSets == 2)//determinated system
   {
-    for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++)
-    {
+    for(Int_t iCutSet=0; iCutSet<nCutSets; iCutSet++) {
       mEff(iCutSet,0) = effPrompt[iCutSet];
       mEff(iCutSet,1) = effFD[iCutSet];
       mRaw(iCutSet,0) = rawYield[iCutSet];
@@ -281,21 +340,27 @@ Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t *effPrompt, Double_t *effFD,
 
     mEff.InvertFast(det);
 
-    if(det[0]==0)
-    {
+    if(det[0]==0) {
       Printf("The system has no solution");
       return kFALSE;
     }
 
     mInt = mEff*mRaw;
+
+    //calculate the incentre and relatives quantities
     Ncorr[0] = mInt(0,0);
     Ncorr[1] = mInt(1,0);
 
+    for(Int_t iCutSet=0; iCutSet<nCutSets; ++iCutSet) {
+      fprompt[iCutSet] = Ncorr[0]*effPrompt[iCutSet]/(Ncorr[0]*effPrompt[iCutSet]+Ncorr[1]*effFD[iCutSet]);
+      fpromptraw[iCutSet] = Ncorr[0]*effPrompt[iCutSet]/rawYield[iCutSet];
+      residuals[iCutSet] = Ncorr[0]*effPrompt[iCutSet]+Ncorr[1]*effFD[iCutSet]-rawYield[iCutSet];
+    }
+    
     return kTRUE;
   }
 
-  else if(nCutSets == 3)
-  {
+  else if(nCutSets == 3) {
     //calculate 3 intersections
     //intersection between line 1 and 2
     Double_t NFDInt12 = 0;
@@ -311,8 +376,7 @@ Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t *effPrompt, Double_t *effFD,
 
     mEff.InvertFast(det);
 
-    if(det[0]==0)
-    {
+    if(det[0]==0) {
       Printf("Line 1 and line 2 have no intersection");
       return kFALSE;
     }
@@ -332,8 +396,7 @@ Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t *effPrompt, Double_t *effFD,
 
     mEff.InvertFast(det);
 
-    if(det[0]==0)
-    {
+    if(det[0]==0) {
       Printf("Line 1 and line 3 have no intersection");
       return kFALSE;
     }
@@ -353,8 +416,7 @@ Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t *effPrompt, Double_t *effFD,
 
     mEff.InvertFast(det);
 
-    if(det[0]==0)
-    {
+    if(det[0]==0) {
       Printf("Line 2 and line 3 have no intersection");
       return kFALSE;
     }
@@ -368,14 +430,19 @@ Bool_t AliHFCutVarFDsubMinimiser::InCentre(Double_t *effPrompt, Double_t *effFD,
     Double_t side2 = TMath::Sqrt((NFDInt23-NFDInt12)*(NFDInt23-NFDInt12)+(NPromptInt23-NPromptInt12)*(NPromptInt23-NPromptInt12));
     Double_t side3 = TMath::Sqrt((NFDInt23-NFDInt13)*(NFDInt23-NFDInt13)+(NPromptInt23-NPromptInt13)*(NPromptInt23-NPromptInt13));
 
-    //calculate the incentre
+    //calculate the incentre and relatives quantities
     Ncorr[0] = (NPromptInt12*side3+NPromptInt23*side1+NPromptInt13*side2)/(side1+side2+side3); //0 -> NPROMPT
     Ncorr[1] = (NFDInt12*side3+NFDInt23*side1+NFDInt13*side2)/(side1+side2+side3); //1 -> NFD;
 
+    for(Int_t iCutSet=0; iCutSet<nCutSets; ++iCutSet) {
+      fprompt[iCutSet] = Ncorr[0]*effPrompt[iCutSet]/(Ncorr[0]*effPrompt[iCutSet]+Ncorr[1]*effFD[iCutSet]);
+      fpromptraw[iCutSet] = Ncorr[0]*effPrompt[iCutSet]/rawYield[iCutSet];
+      residuals[iCutSet] = Ncorr[0]*effPrompt[iCutSet]+Ncorr[1]*effFD[iCutSet]-rawYield[iCutSet];
+    }
+    
     return kTRUE;
   }
-  else
-  {
+  else {
     Printf("The number of sets it's different from 2 or 3, it's impossible to evaluate the incentre");
     return kFALSE;
   }
