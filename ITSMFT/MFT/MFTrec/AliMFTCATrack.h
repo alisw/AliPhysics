@@ -50,6 +50,7 @@ public:
   const Int_t GetMCindex() { return fMCindex; }
   void SetChargeSign(Short_t sign) { fChargeSign = sign; }
   const Short_t GetChargeSign() { return fChargeSign; }
+  void SetCellGID(Int_t index, Int_t gid) { fCellGIDarray[index] = gid; };
   
 private:
   static const Int_t fNDetMax = AliMFTConstants::fNMaxPlanes;
