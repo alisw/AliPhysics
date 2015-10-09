@@ -20,10 +20,10 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedPart
   mgr->AddTask(task);
 
   TString outfile(mgr->GetCommonFileName());
-  outfile += ":ChargedParticleQA";
+  outfile += TString::Format(":ChargedParticleQA_outlier%d", int(outliercut * 10));
 
   task->ConnectInput(0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer("TrackResults", TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_outlier%d", int(outliercut * 10)), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
 
   return task;
 }
