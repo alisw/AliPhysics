@@ -17,9 +17,11 @@
 #include <TSystem.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <THnSparse.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDstoKKpi.h"
+#include "AliLog.h"
 
 class AliNormalizationCounter;
 
@@ -37,10 +39,13 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     else AliError("fReadMC has to be kTRUE");
   }
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
+  void SetFillNSparse(Int_t fill=0){fFillSparse=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
-
+  Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
+  void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+  
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
@@ -100,7 +105,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t  fReadMC;                    ///  flag for access to MC
   Bool_t  fWriteOnlySignal;           ///  flag to control ntuple writing in MC
   Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
-  Bool_t  fUseSelectionBit;           /// flag for useage of HasSelectionBit
+  Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
+  Bool_t  fFillSparse;                /// flag for usage of THnSparse
   UChar_t fNPtBins;                   /// number of Pt bins
   TList *fListCuts; //list of cuts
   Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
@@ -110,8 +116,15 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
   
+  THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
+  THnSparseF *fnSparseMC[4];  ///!<!THnSparse for MC
+  ///[0]: Acc step prompt Ds
+  ///[1]: Acc step FD Ds
+  ///[2]: Selected prompt Ds
+  ///[3]: Selected FD Ds
+  
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,14);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,15);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

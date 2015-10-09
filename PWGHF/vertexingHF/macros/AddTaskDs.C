@@ -1,5 +1,5 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
-			       Int_t storeNtuple=0,Bool_t readMC=kFALSE,
+			       Int_t storeNtuple=0,Int_t storeNsparse=0,Bool_t readMC=kFALSE,
 			       TString filename="", TString postname="")
 {
   //
@@ -51,6 +51,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   dsTask->SetDebugLevel(0);
   dsTask->SetUseSelectionBit(kTRUE);
   //dsTask->SetMassLimits(0.2);
+  dsTask->SetFillNSparse(storeNsparse);
   mgr->AddTask(dsTask);
   
   // Create containers for input/output 
