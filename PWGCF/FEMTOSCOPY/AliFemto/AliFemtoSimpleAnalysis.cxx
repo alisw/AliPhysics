@@ -7,15 +7,16 @@
 #include "AliFemtoV0Cut.h"
 #include "AliFemtoKinkCut.h"
 #include "AliFemtoXiCut.h"
+#include "AliFemtoPicoEvent.h"
 
 #include <string>
 #include <iostream>
 #include <iterator>
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoSimpleAnalysis)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoSimpleAnalysis);
+  /// \endcond
 #endif
 
 AliFemtoEventCut*    copyTheCut(AliFemtoEventCut*);
@@ -109,7 +110,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
             partCollection->push_back(particle);
 	}
       }
-      
+
 
       pCut->FillCutMonitor(hbtEvent,partCollection);
 
@@ -158,9 +159,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fPerformSharedDaughterCut(kFALSE),
   fEnablePairMonitors(kFALSE)
 {
-  /// Default constructor
-  ///  mControlSwitch     = 0;
-
+  // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
 }
@@ -254,7 +253,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   }
 
   if (fVerbose) {
-      cout << TString::Format(msg_template, "analysis copied") << endl;
+    cout << TString::Format(msg_template, "analysis copied") << endl;
   }
 }
 //____________________________
@@ -276,7 +275,7 @@ AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis()
   delete fFirstParticleCut;
   delete fSecondParticleCut;
 
-  // now delete every CorrFunction in the Collection, and then the Collection itself
+  // delete every CorrFunction in the collection, then the collection
   if (fCorrFctnCollection) {
     for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); iter++) {
       delete *iter;
@@ -284,7 +283,7 @@ AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis()
     delete fCorrFctnCollection;
   }
 
-  // now delete every PicoEvent in the EventMixingBuffer and then the buffer itself
+  // delete every PicoEvent in the EventMixingBuffer followed by the buffer
   if (fMixingBuffer) {
     for (AliFemtoPicoEventIterator piter = fMixingBuffer->begin(); piter != fMixingBuffer->end(); ++piter) {
       delete *piter;
@@ -412,7 +411,7 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
   temp += "\nPair Cuts:\n";
   temp += fPairCut->Report();
   temp += "\nCorrelation Functions:\n";
-  
+
   if (fCorrFctnCollection->empty()) {
     cout << "AliFemtoSimpleAnalysis-Warning : no correlations functions in this analysis " << endl;
   }
@@ -425,7 +424,8 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
   return returnThis;
 }
 //_________________________
-void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
+void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
+{
   /// Add event to processed events
 
   fPicoEvent = NULL; // we will get a new pico event, if not prevent corr. fctn to access old pico event
@@ -627,84 +627,119 @@ void AliFemtoSimpleAnalysis::EventBegin(const AliFemtoEvent* ev)
   fFirstParticleCut->EventBegin(ev);
   fSecondParticleCut->EventBegin(ev);
   fPairCut->EventBegin(ev);
-  for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++) {
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                iter++) {
     (*iter)->EventBegin(ev);
   }
 }
 //_________________________
 void AliFemtoSimpleAnalysis::EventEnd(const AliFemtoEvent* ev)
 {
-  /// Fiinsh operations at the end of event processing
+  // Finish operations at the end of event processing
 
   fFirstParticleCut->EventEnd(ev);
   fSecondParticleCut->EventEnd(ev);
   fPairCut->EventEnd(ev);
-  for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++) {
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                iter++) {
     (*iter)->EventEnd(ev);
   }
 }
 //_________________________
 void AliFemtoSimpleAnalysis::Finish()
 {
-  /// Perform finishing operations after all events are processed
+  // Perform finishing operations after all events are processed
 
-  AliFemtoCorrFctnIterator iter;
-  for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++) {
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                iter++) {
     (*iter)->Finish();
   }
 }
 //_________________________
 void AliFemtoSimpleAnalysis::AddEventProcessed()
 {
-  /// Increase count of processed events
-
+  // Increase count of processed events
   fNeventsProcessed++;
 }
 //_________________________
 TList* AliFemtoSimpleAnalysis::ListSettings()
 {
-  /// Collect settings list
+  // Collect settings list
+
+  const TString setting_prefix = "AliFemtoSimpleAnalysis.";
 
   TList *tListSettings = new TList();
 
-  TList *p1Cut = fFirstParticleCut->ListSettings();
+  TList *event_cut_settings = fEventCut->ListSettings();
 
-  TListIter nextp1(p1Cut);
-  while (TObject *obj = nextp1.Next()) {
-    TString cuts(obj->GetName());
-    cuts.Prepend("AliFemtoSimpleAnalysis.");
-    tListSettings->Add(new TObjString(cuts.Data()));
+  if (event_cut_settings != NULL) {
+
+    TListIter next_event_setting(event_cut_settings);
+    while (TObject *obj = next_event_setting()) {
+      tListSettings->Add(new TObjString(
+        setting_prefix + obj->GetName()
+      ));
+    }
+
+    delete event_cut_settings;
   }
 
-  if (fSecondParticleCut != fFirstParticleCut) {
-    TList *p2Cut = fSecondParticleCut->ListSettings();
+  TList *p1_cut_settings = fFirstParticleCut->ListSettings();
 
-    TIter nextp2(p2Cut);
-    while (TObject *obj = nextp2()) {
-      TString cuts(obj->GetName());
-      cuts.Prepend("AliFemtoSimpleAnalysis.");
-      tListSettings->Add(new TObjString(cuts.Data()));
+  if (p1_cut_settings != NULL) {
+
+    TListIter next_p1_setting(p1_cut_settings);
+    while (TObject *obj = next_p1_setting()) {
+      tListSettings->Add(new TObjString(
+        setting_prefix + obj->GetName()
+      ));
+    }
+
+    delete p1_cut_settings;
+  }
+
+
+  if (fSecondParticleCut != fFirstParticleCut) {
+    TList *p2_cut_settings = fSecondParticleCut->ListSettings();
+
+    if (p2_cut_settings != NULL) {
+
+      TListIter next_p2_setting(p2_cut_settings);
+      while (TObject *obj = next_p2_setting()) {
+        tListSettings->Add(new TObjString(
+          setting_prefix + obj->GetName()
+        ));
+      }
+
+      delete p2_cut_settings;
     }
   }
 
-  TList *pairCut = fPairCut->ListSettings();
 
-  TIter nextpair(pairCut);
-  while (TObject *obj = nextpair()) {
-    TString cuts(obj->GetName());
-    cuts.Prepend("AliFemtoSimpleAnalysis.");
-    tListSettings->Add(new TObjString(cuts.Data()));
+  TList *pair_cut_settings = fPairCut->ListSettings();
+
+  if (pair_cut_settings != NULL) {
+
+    TListIter next_pair_setting(pair_cut_settings);
+    while (TObject *obj = next_pair_setting()) {
+      tListSettings->Add(new TObjString(
+        setting_prefix + obj->GetName()
+      ));
+    }
+
+    delete pair_cut_settings;
   }
 
   return tListSettings;
-
 }
 
 //_________________________
 TList* AliFemtoSimpleAnalysis::GetOutputList()
 {
-  /// Collect the list of output objects
-  /// to be written
+  // Collect the list of output objects to be written
 
   TList *tOutputList = new TList();
 
@@ -755,4 +790,3 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
 
   return tOutputList;
 }
-
