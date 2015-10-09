@@ -39,7 +39,7 @@ public:
                       const TString strListData,
                       Bool_t MConly);
   
-  void GetCuts(Int_t version=0, Int_t Rebin=1, Int_t fsig=0, Int_t fback=0); /// get the list of cuts
+  void GetCuts(Int_t version=0, Int_t Rebin=1, Int_t fsig=0, Int_t fbkg=0); /// get the list of cuts
   void GetAxes(Int_t version=0); /// get the axes of the THnSparses
 
   TH1F* GetCrossSecPrompt(const TString AccFilePath, const TString GenLimAccHistoName,const TString GenAccHistoName,const TString system) {
@@ -48,10 +48,14 @@ public:
   TH1F* GetCrossSecFD(const TString AccFilePath,const TString GenLimAccHistoName,const TString GenAccHistoName,const TString system) {
     return CalculateCrossSection(AccFilePath,GenLimAccHistoName,GenAccHistoName,system,"FD"); } /// get the FD cross section
 
+  //to be removed
   TH1F* GetYieldsPrompt() const {return fCorrYieldPrompt;}
   TH1F* GetYieldsFD() const {return fCorrYieldFD;}
   TList* GetPromptFraction() const {return fFprompt;}
   TList* GetPromptFractionRaw() const {return fFpromptRaw;}
+  TList* GetResiduals() const {return fResiduals;}
+  TList* GetPulls() const {return fPulls;}
+  //
   
   /// \cond CLASSDEF
   ClassDef(AliHFCutVarFDsubAnalysisManagerDplus, 1);
