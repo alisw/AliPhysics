@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #include benchmark.config
 
 # blame: Mikolaj Krzewicki, mkrzewic@cern.ch
