@@ -200,7 +200,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     isInRotated = kFALSE;    
     Double_t xx[3];
     calib->GetExB()->Correct(x,xx);   // old ExB correction
-    for (int i=3;i--;) xx[i] = x[i];
+    for (int i=3;i--;) x[i] = xx[i];
   }
 
   //
@@ -480,7 +480,7 @@ void AliTPCTransform::UpdateTimeDependentCache()
     }
     else  { // no map yet: 1st query
       const TObjArray* mapsArr = calib->GetCorrectionMaps();
-      fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->UncheckedAt(0);
+      fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(0);
       //
       // 2: easy case: time-static map, fCorrMapCache1 is not neaded
       if (!fCorrMapCache0->GetTimeDependent()) {
@@ -488,8 +488,8 @@ void AliTPCTransform::UpdateTimeDependentCache()
 	  // time independent maps are field dependent!
 	  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
 	  Double_t bz = magF->SolenoidField(); //field in kGaus
-	  if (bz>0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->UncheckedAt(1);
-	  else if (bz<-0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->UncheckedAt(2);  
+	  if (bz>0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(1);
+	  else if (bz<-0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(2);  
 	}
 	else AliWarning("Time-independent corrections array must provide 1 map per field polarity");
 	break; // done for static map, if needed, look for other stuff 

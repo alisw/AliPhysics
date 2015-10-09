@@ -33,6 +33,8 @@ public:
   const AliTPCRecoParam * GetCurrentRecoParam() const {return fCurrentRecoParam;}
   AliTPCRecoParam * GetCurrentRecoParamNonConst() const {return fCurrentRecoParam;}
   UInt_t GetCurrentRunNumber() const { return fCurrentRun;}
+  const AliTPCChebCorr* GetCorrMapCache0() const {return fCorrMapCache0;}
+  const AliTPCChebCorr* GetCorrMapCache1() const {return fCorrMapCache1;}
   //
   // set current values
   //
