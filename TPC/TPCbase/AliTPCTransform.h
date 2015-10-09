@@ -36,6 +36,7 @@ public:
   const AliTPCChebCorr* GetCorrMapCache0() const {return fCorrMapCache0;}
   const AliTPCChebCorr* GetCorrMapCache1() const {return fCorrMapCache1;}
   //
+  TObjArray* LoadCorrectionMaps() const;
   // set current values
   //
   void SetCurrentRecoParam(AliTPCRecoParam* param){fCurrentRecoParam=param;}

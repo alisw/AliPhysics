@@ -153,9 +153,11 @@ void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr) 
 {
   // calculate correction for point with x,y,z sector corrdinates
   int iz    = (z-fZMin)*fZScaleI;
-  int isect = (y2x+fgkY2XHSpan)*fY2XScaleI;
+  if (iz<0) iz=0; else if (iz==fNStacksZ) iz=fNStacksZ-1;
+  int is = (y2x+fgkY2XHSpan)*fY2XScaleI;
+  if (is<0) is=0; else if (is==fNStacksSect) is=fNStacksSect-1;
   float tz[2] = {y2x,z}; // params use row, Y/X, Z
-  GetParam(GetParID(iz,sector,isect))->Eval(row,tz,corr);
+  GetParam(GetParID(iz,sector,is))->Eval(row,tz,corr);
   //
 }
 
@@ -164,9 +166,9 @@ void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) const
 {
   // calculate correction for point with x,y,z sector corrdinates
   int iz = (tz[1]-fZMin)*fZScaleI; 
-  if (iz<0) iz=0; else if (iz==fNStacksZ) iz=fNStacksZ-1;
+  if (iz<0) iz=0; else if (iz>=fNStacksZ) iz=fNStacksZ-1;
   int is = (tz[0]+fgkY2XHSpan)*fY2XScaleI;
-  if (is<0) is=0; else if (is==fNStacksSect) is=fNStacksSect-1;
+  if (is<0) is=0; else if (is>=fNStacksSect) is=fNStacksSect-1;
   GetParam(GetParID(iz,sector,is))->Eval(row,tz,corr);
   //
 }
@@ -212,3 +214,4 @@ void AliTPCChebCorr::SetBinning(int nps,int nz,float zmn,float zmx)
   fY2XScaleI = nps/(2*TMath::Tan(TMath::Pi()/kNSectors));
   //
 }
+

@@ -69,6 +69,8 @@
 #include "AliTracker.h"
 #include <AliCTPTimeParams.h>
 #include "AliTPCChebCorr.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 /// \cond CLASSIMP
 ClassImp(AliTPCTransform)
@@ -468,21 +470,24 @@ void AliTPCTransform::UpdateTimeDependentCache()
 {
   // update cache for time-dependent parameters
   //
-  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
-  //
   // correction maps, potentially time dependent
+  TObjArray* mapsArr = 0;
   while (fCurrentRecoParam->GetUseCorrectionMap()) {
     //
     if (fCorrMapCache0) {
       // 1: easiest case: map is already cached, it is either time-static or there is 
       // no other map to follow
       if (!fCorrMapCache0->GetTimeDependent() || !fCorrMapCache1) break;
+      //
+      // 2: still easy: time dependent but we have in memory all what we need
+      if (fCorrMapCache1 && fCurrentTimeStamp<=fCorrMapCache1->GetTimeStampCenter()
+	  && fCurrentTimeStamp>=fCorrMapCache0->GetTimeStampStart()) break;
     }
     else  { // no map yet: 1st query
-      const TObjArray* mapsArr = calib->GetCorrectionMaps();
+      mapsArr = LoadCorrectionMaps();
       fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(0);
       //
-      // 2: easy case: time-static map, fCorrMapCache1 is not neaded
+      // 3: easy case: time-static map, fCorrMapCache1 is not neaded
       if (!fCorrMapCache0->GetTimeDependent()) {
 	if (mapsArr->GetEntriesFast()>2) { 
 	  // time independent maps are field dependent!
@@ -492,11 +497,11 @@ void AliTPCTransform::UpdateTimeDependentCache()
 	  else if (bz<-0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(2);  
 	}
 	else AliWarning("Time-independent corrections array must provide 1 map per field polarity");
-	break; // done for static map, if needed, look for other stuff 
       } 
+      break; // done for static map, if needed, look for other stuff 
     }
     // need to scan whole array to find matching maps
-    const TObjArray* mapsArr = calib->GetCorrectionMaps();
+    if (!mapsArr) mapsArr = LoadCorrectionMaps();
     int nmaps = mapsArr->GetEntriesFast();
     const AliTPCChebCorr* prv=0,*nxt=0;
     for (int i=0;i<nmaps;i++) { // maps are ordered in time
@@ -505,29 +510,50 @@ void AliTPCTransform::UpdateTimeDependentCache()
 	prv = fCorrMapCache0;
 	continue;
       }
-      else { // contains timestamp, look for neighbbour with nearest center
+      // we found a chunk which contain our time stamp
+      if (fCurrentTimeStamp <= fCorrMapCache0->GetTimeStampCenter()) { // we are in the 1st half
+	if (prv) { // previous chunk will be used
+	  fCorrMapCache1 = fCorrMapCache0;
+	  fCorrMapCache0 = prv;
+	  break;
+	}
+	// we are at the 1st chunk, read the next one
 	if (i<nmaps-1) fCorrMapCache1 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i+1);
-	else { // we are at the last time bin
+	else fCorrMapCache1 = 0;
+	break;
+      }
+      else { // we are in the 2nd half of cache0,  look for the next for cache1
+	if (i<nmaps-1) fCorrMapCache1 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i+1);
+	else { // no next one, do we have previous?
 	  if (prv) {
 	    fCorrMapCache1 = fCorrMapCache0;
 	    fCorrMapCache0 = prv;
 	  }
-	  fCorrMapCache1 = 0;   // just 1 time bin
-	  break;
+	  else fCorrMapCache1 = 0;
 	}
-	if (!prv) break;  // no previous one, cache0 is matching, cache1 is closest
-	//
-	// cache0 has time bins before and after
-	if (fCurrentTimeStamp-prv->GetTimeStampCenter() > 
-	    fCorrMapCache1->GetTimeStampCenter()-fCurrentTimeStamp) break; // cache1 is closer
-	else { // prv is closer than cache1
-	  fCorrMapCache1 = fCorrMapCache0;
-	  fCorrMapCache0 = prv;
-	}
-	break;
       }
+      break;
     }
-    // TODO
+  } // while
+  // clean unneaded object to save the memory
+  if (mapsArr) {
+    mapsArr->Remove((TObject*)fCorrMapCache0);
+    if (fCorrMapCache1) mapsArr->Remove((TObject*)fCorrMapCache1);
+    mapsArr->SetOwner(kTRUE);
+    delete mapsArr;
   }
   // other time dependent stuff if needed
+}
+
+//______________________________________________________
+TObjArray* AliTPCTransform::LoadCorrectionMaps() const
+{
+  // TPC fast Chebyshev correction map, loaded on demand, not handler by calibDB
+  AliCDBManager* man = AliCDBManager::Instance();
+  AliCDBEntry* entry = man->Get("TPC/Calib/CorrectionMaps");
+  TObjArray* correctionMaps = (TObjArray*)entry->GetObject();
+  entry->SetOwner(0);
+  man->UnloadFromCache("TPC/Calib/CorrectionMaps");
+  return correctionMaps;
+  //
 }

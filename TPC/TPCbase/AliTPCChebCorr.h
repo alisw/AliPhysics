@@ -73,8 +73,8 @@ class AliTPCChebCorr : public TNamed
   void     Eval(int sector, int row, float tz[2], float *corr) const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
   //
- protected:
   int      GetParID(int iz,int isect,int istack) const {return (iz*kNSectors+isect)*fNStacksSect+istack;}
+ protected:
   //
  protected:
   Int_t    fNStacksSect;            // number of stacks per sector in phi
