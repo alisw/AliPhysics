@@ -120,7 +120,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEvent(0),
-  fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
+  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Default constructor.
   for(Int_t j=0; j<16; j++) {
@@ -185,7 +185,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEvent(0),
-  fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
+  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Standard constructor.
   for(Int_t j=0; j<16; j++) {
@@ -421,7 +421,7 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::ExtractMainPatch() {
     }
 
     Double_t fill[7] = {dEtaGeo, dEtaCM, dPhiGeo, dPhiCM, maxPatchADC, maxPatchE, leadclusE};
-    fhnPatchMatch->Fill(fill);
+    fhnPatchMaxClus->Fill(fill);
 
   } // patch energy cut
 
@@ -714,21 +714,43 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
     xmax[i]=2.016;
   }
 
-  nbins[4]=100;
-  xmax[4]=100;
-  nbins[5]=100;
-  xmax[5]=100.;
-  nbins[6]=100;
-  xmax[6]=100.;
+  nbins[4]=100; xmax[4]=100;
+  nbins[5]=100; xmax[5]=100.;
+  nbins[6]=100; xmax[6]=100.;
 
-  fhnPatchMatch = new THnSparseF("fhnPatchMatch","fhn Patch Match", nDim, nbins,xmin,xmax);
-  fhnPatchMatch->GetAxis(0)->SetTitle("#Delta#etaGeo");          // 0
-  fhnPatchMatch->GetAxis(1)->SetTitle("#Delta#etaCM");           // 1
-  fhnPatchMatch->GetAxis(2)->SetTitle("#Delta#phiGeo");          // 2
-  fhnPatchMatch->GetAxis(3)->SetTitle("#Delta#phiCM");           // 3
-  fhnPatchMatch->GetAxis(4)->SetTitle("Max Patch ADC");          // 4
-  fhnPatchMatch->GetAxis(5)->SetTitle("Max Patch Energy");       // 5
-  fhnPatchMatch->GetAxis(6)->SetTitle("Leading Cluster Energy"); // 6
+  fhnPatchMaxClus = new THnSparseF("fhnPatchMaxClus","fhn Patch Max Cluster Distributions", nDim,nbins,xmin,xmax);
+  fhnPatchMaxClus->GetAxis(0)->SetTitle("#Delta#etaGeo");          // 0
+  fhnPatchMaxClus->GetAxis(1)->SetTitle("#Delta#etaCM");           // 1
+  fhnPatchMaxClus->GetAxis(2)->SetTitle("#Delta#phiGeo");          // 2
+  fhnPatchMaxClus->GetAxis(3)->SetTitle("#Delta#phiCM");           // 3
+  fhnPatchMaxClus->GetAxis(4)->SetTitle("Max Patch ADC");          // 4
+  fhnPatchMaxClus->GetAxis(5)->SetTitle("Max Patch Energy");       // 5
+  fhnPatchMaxClus->GetAxis(6)->SetTitle("Leading Cluster Energy"); // 6
+  fOutput->Add(fhnPatchMaxClus);
+
+  // QA before matching
+  Int_t nDim1=8;
+  Int_t *nbins1 = new Int_t[nDim1];
+  Double_t *xmin1 = new Double_t[nDim1];
+  Double_t *xmax1 = new Double_t[nDim1]; 
+  nbins1[0]=10; xmin1[0]=0.; xmax1[0]=100.;
+  nbins1[1]=250; xmin1[1]=0.; xmax1[1]=250.;
+  nbins1[2]=50; xmin1[2]=0.; xmax1[2]=50;
+  nbins1[3]=144; xmin1[3]=0.; xmax1[3]=2.016;
+  nbins1[4]=144; xmin1[4]=0.; xmax1[4]=2.016;
+  nbins1[5]=300; xmin1[5]=0.; xmax1[5]=300;
+  nbins1[6]=300; xmin1[6]=0.; xmax1[6]=500;
+  nbins1[7]=3; xmin1[7]=0.0; xmax1[7]=1.0*TMath::Pi()/2.0;
+
+  fhnPatchMatch = new THnSparseF("fhnPatchMatch","fhn Patch Match", nDim1,nbins1,xmin1,xmax1);
+  fhnPatchMatch->GetAxis(0)->SetTitle("Centrality %");              // 0
+  fhnPatchMatch->GetAxis(1)->SetTitle("Jet p_{T}");                 // 1
+  fhnPatchMatch->GetAxis(2)->SetTitle("Max Cluster Energy");        // 2
+  fhnPatchMatch->GetAxis(3)->SetTitle("#Delta#phi Geo");            // 3
+  fhnPatchMatch->GetAxis(4)->SetTitle("#Delta#Eta Geo");            // 4
+  fhnPatchMatch->GetAxis(5)->SetTitle("Max Patch Energy");          // 5
+  fhnPatchMatch->GetAxis(6)->SetTitle("Max Patch ADC");             // 6
+  fhnPatchMatch->GetAxis(7)->SetTitle("Event Plane - Jet Angle");   // 7
   fOutput->Add(fhnPatchMatch);
 
   // for jet cluster matched to patch
@@ -1015,9 +1037,19 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
             double dPhiPatchLeadCl = 1.0*TMath::Abs(fMaxPatchPhiGeo - nPart.Phi());
             double dEtaPatchLeadCl = 1.0*TMath::Abs(fMaxPatchEtaGeo - nPart.Eta());
 
+            // get some info to fill in sparse
+            double dEPJet = RelativeEP(jet->Phi(), fEPV0);
+            double kAmplitudeOnline = fMaxPatch->GetADCAmp();
+            double kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
+            double kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
+            double kEnergyOffline = fMaxPatch->GetPatchE();
+
             for(int maxbinE = 0; maxbinE<16; maxbinE++) {
                if(maxClusterE > maxbinE) fHistdPhidEtaPatchJetCluster[maxbinE]->Fill(dPhiPatchLeadCl, dEtaPatchLeadCl);
             }
+
+            Double_t fillarr[8] = {fCent, jet->Pt(), maxClusterE, dPhiPatchLeadCl, dEtaPatchLeadCl, kEnergyOffline, kAmplitudeOnline, dEPJet}
+            fhnPatchMatch->Fill(fillarr);
 
             // patch meeting offline energy cut
             if(fMaxPatch->GetPatchE() > fPatchECut) {
@@ -1037,13 +1069,6 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
                   cout<<Form("LeadClusE = %f, Phi = %f, Eta = %f", maxClusterE, maxClusterPhi, maxClusterEta)<<endl;
                   cout<<"*********************************************"<<endl;
                 } // do comments
-
-                // get some info to fill in sparse
-                Double_t dEPJet = RelativeEP(jet->Phi(), fEPV0);
-                Double_t kAmplitudeOnline = fMaxPatch->GetADCAmp();
-                Double_t kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
-                Double_t kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
-                Double_t kEnergyOffline = fMaxPatch->GetPatchE();
 
                 // fill sparse for match
                 Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), (Double_t)jet->GetNumberOfTracks(), jet->MaxTrackPt(), (Double_t)jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOffline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};
