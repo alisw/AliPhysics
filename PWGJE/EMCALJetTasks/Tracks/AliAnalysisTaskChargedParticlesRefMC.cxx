@@ -141,9 +141,9 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTProfile("hCrossSectionEvent", "PYTHIA cross section (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
   fHistos->CreateTH1("hTriggerJetPtNoCut", "pt of trigger jets wihtout cuts", 1000, 0., 500);
-  fHistos->CreateTH1("hRatioPtJetPtHardNoCut", "Ratio of pt jet / pt hard without cut", 100, 0., 2.);
+  fHistos->CreateTH1("hRatioPtJetPtHardNoCut", "Ratio of pt jet / pt hard without cut", 1000, 0., 20.);
   fHistos->CreateTH1("hTriggerJetPtWithCut", "pt of trigger jets after cuts", 1000, 0., 500);
-  fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 100, 0., 2.);
+  fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 1000, 0., 20.);
   TString triggers[16] = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
@@ -395,7 +395,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
   AliVTrack *checktrack(NULL);
   AliVParticle *assocMC(NULL);
-  double ptparticle(-1.), etaparticle(-100.);
+  double ptparticle(-1.), etaparticle(-100.), etaEMCAL(0.), phiEMCAL(0.);
   Bool_t hasTRD = kFALSE;
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
     checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
@@ -408,9 +408,19 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     // Select only particles within ALICE acceptance
     if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(checktrack);
+    if(checktrack->IsA() == AliESDtrack::Class()){
+      AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    } else {
+      AliAODTrack copytrack(*(static_cast<AliAODTrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    }
     Int_t supermoduleID = -1;
-    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(checktrack->GetTrackEtaOnEMCal(), checktrack->GetTrackPhiOnEMCal(), supermoduleID);
+    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
     // Exclude supermodules 10 and 11 as they did not participate in the trigger
     isEMCAL = isEMCAL && supermoduleID < 10;
     hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
