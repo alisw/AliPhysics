@@ -473,27 +473,61 @@ void AliTPCTransform::UpdateTimeDependentCache()
   // correction maps, potentially time dependent
   while (fCurrentRecoParam->GetUseCorrectionMap()) {
     //
-    Bool_t checkTime = kFALSE;
-    if (!fCorrMapCache0) { // 1st query
+    if (fCorrMapCache0) {
+      // 1: easiest case: map is already cached, it is either time-static or there is 
+      // no other map to follow
+      if (!fCorrMapCache0->GetTimeDependent() || !fCorrMapCache1) break;
+    }
+    else  { // no map yet: 1st query
       const TObjArray* mapsArr = calib->GetCorrectionMaps();
-      fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->At(0);
+      fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->UncheckedAt(0);
       //
-      // 1: easy case: time-static map, fCorrMapCache1 is not neaded
+      // 2: easy case: time-static map, fCorrMapCache1 is not neaded
       if (!fCorrMapCache0->GetTimeDependent()) {
 	if (mapsArr->GetEntriesFast()>2) { 
 	  // time independent maps are field dependent!
 	  AliMagF* magF= (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
 	  Double_t bz = magF->SolenoidField(); //field in kGaus
-	  if (bz>0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->At(1);
-	  else if (bz<-0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->At(2);  
+	  if (bz>0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->UncheckedAt(1);
+	  else if (bz<-0.1) fCorrMapCache0 = (AliTPCChebCorr*)mapsArr->UncheckedAt(2);  
 	}
 	else AliWarning("Time-independent corrections array must provide 1 map per field polarity");
-	break; 
-      } // done for static map
+	break; // done for static map, if needed, look for other stuff 
+      } 
     }
     // need to scan whole array to find matching maps
+    const TObjArray* mapsArr = calib->GetCorrectionMaps();
+    int nmaps = mapsArr->GetEntriesFast();
+    const AliTPCChebCorr* prv=0,*nxt=0;
+    for (int i=0;i<nmaps;i++) { // maps are ordered in time
+      fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i);
+      if (fCorrMapCache0->GetTimeStampEnd()<=fCurrentTimeStamp) {
+	prv = fCorrMapCache0;
+	continue;
+      }
+      else { // contains timestamp, look for neighbbour with nearest center
+	if (i<nmaps-1) fCorrMapCache1 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(i+1);
+	else { // we are at the last time bin
+	  if (prv) {
+	    fCorrMapCache1 = fCorrMapCache0;
+	    fCorrMapCache0 = prv;
+	  }
+	  fCorrMapCache1 = 0;   // just 1 time bin
+	  break;
+	}
+	if (!prv) break;  // no previous one, cache0 is matching, cache1 is closest
+	//
+	// cache0 has time bins before and after
+	if (fCurrentTimeStamp-prv->GetTimeStampCenter() > 
+	    fCorrMapCache1->GetTimeStampCenter()-fCurrentTimeStamp) break; // cache1 is closer
+	else { // prv is closer than cache1
+	  fCorrMapCache1 = fCorrMapCache0;
+	  fCorrMapCache0 = prv;
+	}
+	break;
+      }
+    }
     // TODO
   }
   // other time dependent stuff if needed
-  
 }

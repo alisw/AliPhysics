@@ -149,7 +149,7 @@ void AliTPCChebCorr::Parameterize(stFun_t fun,int dimOut,const int np[][2],const
 }
 
 //____________________________________________________________________
-void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr)
+void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr) const
 {
   // calculate correction for point with x,y,z sector corrdinates
   int iz    = (z-fZMin)*fZScaleI;
@@ -160,7 +160,7 @@ void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr)
 }
 
 //____________________________________________________________________
-void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr)
+void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) const
 {
   // calculate correction for point with x,y,z sector corrdinates
   int iz = (tz[1]-fZMin)*fZScaleI; 

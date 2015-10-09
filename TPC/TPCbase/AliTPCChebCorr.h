@@ -69,8 +69,8 @@ class AliTPCChebCorr : public TNamed
   void     SetTimeStampEnd(UInt_t t=0xffffffff)        {fTimeStampEnd = t;}
   //
   void     Print(const Option_t* opt="")         const;
-  void     Eval(int sector, int row, float y2x, float z,float *corr);
-  void     Eval(int sector, int row, float tz[2], float *corr);
+  void     Eval(int sector, int row, float y2x, float z,float *corr) const;
+  void     Eval(int sector, int row, float tz[2], float *corr) const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
   //
  protected:

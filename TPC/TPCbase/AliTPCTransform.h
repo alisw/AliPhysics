@@ -48,8 +48,8 @@ private:
   Double_t fSins[18];  ///< cache the transformation
   Double_t fPrimVtx[3];///< position of the primary vertex - needed for TOF correction
   AliTPCRecoParam * fCurrentRecoParam; //!<! current reconstruction parameters
-  AliTPCChebCorr* fCorrMapCache0;      //!<! current correction map0 (for 1st time bin if time-dependent)
-  AliTPCChebCorr* fCorrMapCache1;      //!<! current correction map1 (for 2nd time bin if time-dependent)
+  const AliTPCChebCorr* fCorrMapCache0;      //!<! current correction map0 (for 1st time bin if time-dependent)
+  const AliTPCChebCorr* fCorrMapCache1;      //!<! current correction map1 (for 2nd time bin if time-dependent)
   Int_t    fCurrentRun;                //!<! current run
   UInt_t   fCurrentTimeStamp;          //!<! current time stamp
   /// \cond CLASSIMP
