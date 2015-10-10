@@ -136,7 +136,7 @@ AliT0Digitizer::AliT0Digitizer(AliDigitizationInput* digInput)
 
       if (x1q)  delete [] x1q;
       if (y1q)  delete [] y1q;
-      fAmpQTC.Print();
+      // fAmpQTC.Print();
     }
   }
 }
