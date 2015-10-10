@@ -508,8 +508,8 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 	  else if (bz<-0.1) fCorrMapCache0 = (const AliTPCChebCorr*)mapsArr->UncheckedAt(2);  
 	}
 	else AliWarning("Time-independent corrections array must provide 1 map per field polarity");
+	break; // done for static map, if needed, look for other stuff 
       } 
-      break; // done for static map, if needed, look for other stuff 
     }
     // need to scan whole array to find matching maps
     if (!mapsArr) mapsArr = LoadCorrectionMaps();
@@ -563,6 +563,15 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
       fCorrMapCache1->Print();
     }
   }
+  if (fCorrMapCache0 && fCorrMapCache0->GetTimeStampStart()>fCurrentTimeStamp) {
+    AliWarningF("Event timestamp %d < map0 beginning %d",fCurrentTimeStamp,fCorrMapCache0->GetTimeStampStart());
+    fCorrMapCache0->Print();
+  }
+  if (fCorrMapCache1 && fCorrMapCache1->GetTimeStampEnd()<fCurrentTimeStamp) {
+    AliWarningF("Event timestamp %d > map1 end %d",fCurrentTimeStamp,fCorrMapCache1->GetTimeStampEnd());
+    fCorrMapCache0->Print();
+  }
+
   // other time dependent stuff if needed
   //
   fTimeDependentUpdated = kTRUE;
