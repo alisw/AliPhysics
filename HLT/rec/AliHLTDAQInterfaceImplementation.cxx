@@ -48,6 +48,12 @@ Int_t       AliHLTDAQInterfaceImplementation::VirtNumberOfDetectors()
   return AliDAQ::kNDetectors;
 }
 
+Int_t       AliHLTDAQInterfaceImplementation::VirtHLTId()
+{
+  // see header file for class documentation
+  return AliDAQ::kHLTId;
+}
+
 Int_t       AliHLTDAQInterfaceImplementation::VirtDetectorID(const char *detectorName)
 {
   // see header file for class documentation

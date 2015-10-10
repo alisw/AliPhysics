@@ -36,6 +36,7 @@ class AliHLTDAQInterfaceImplementation : public AliHLTDAQ {
 
   Int_t       VirtNumberOfDetectors();
 
+  Int_t       VirtHLTId();
   Int_t       VirtDetectorID(const char *detectorName);
   const char *VirtDetectorName(Int_t detectorID);
 

@@ -32,6 +32,7 @@ class AliHLTDAQ {
   static  Int_t       NumberOfDetectors();
 
   static  Int_t       DetectorID(const char *detectorName);
+  static  Int_t       HLTId();
   static  const char *DetectorName(Int_t detectorID);
   // Note: use specific number instead of kAliHLTComponentDataTypefOriginSize to avoid including AliHLTDataTypes.h
   static  Int_t       DetectorIDFromHLTOrigin(const char dataorigin[4]);
@@ -72,6 +73,7 @@ class AliHLTDAQ {
  private:
   virtual  Int_t       VirtNumberOfDetectors()=0;
 
+  virtual  Int_t       VirtHLTId()=0;
   virtual  Int_t       VirtDetectorID(const char *detectorName)=0;
   virtual  const char *VirtDetectorName(Int_t detectorID)=0;
 

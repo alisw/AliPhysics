@@ -81,6 +81,15 @@ Int_t       AliHLTDAQ::NumberOfDetectors()
   return -1;
 }
 
+Int_t       AliHLTDAQ::HLTId()
+{
+  // get the HLT ID
+  // returns AliDAQ::kHLTId
+  if (!fgpInstance) GetInstance();
+  if (fgpInstance) return fgpInstance->VirtHLTId();
+  return -1;
+}
+
 Int_t       AliHLTDAQ::DetectorID(const char *detectorName)
 {
   // get the detector ID from the detector name
