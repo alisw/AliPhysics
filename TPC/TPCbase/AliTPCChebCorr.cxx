@@ -22,8 +22,8 @@
 ClassImp(AliTPCChebCorr)
 
 
-
-const float AliTPCChebCorr::fgkY2XHSpan = TMath::Tan(TMath::Pi()/AliTPCChebCorr::kNSectors);
+const float AliTPCChebCorr::fgkAngGap = 5e-4; // allow some empty ang. space between sectors
+const float AliTPCChebCorr::fgkY2XHSpan = TMath::Tan(TMath::Pi()/AliTPCChebCorr::kNSectors - AliTPCChebCorr::fgkAngGap);
 
 //____________________________________________________________________
 AliTPCChebCorr::AliTPCChebCorr()

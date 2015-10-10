@@ -72,6 +72,7 @@ class AliTPCChebCorr : public TNamed
   void     Eval(int sector, int row, float y2x, float z,float *corr) const;
   void     Eval(int sector, int row, float tz[2], float *corr) const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
+  static   float GetAngGap()                    {return fgkAngGap;}
   //
   int      GetParID(int iz,int isect,int istack) const {return (iz*kNSectors+isect)*fNStacksSect+istack;}
  protected:
@@ -94,6 +95,7 @@ class AliTPCChebCorr : public TNamed
   AliCheb2DStack** fParams;         //[fNStacks] set of AliCheb2DStack parameterizations
   //
   static const float fgkY2XHSpan;   // half span of sector
+  static const float fgkAngGap;     // dead angular zone on each agde
  protected:
   //
   AliTPCChebCorr(const AliTPCChebCorr& src);            // dummy
