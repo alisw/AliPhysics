@@ -44,7 +44,7 @@ public:
   void SetCurrentTimeStamp(Int_t timeStamp);
   void ApplyTransformations(Double_t *xyz, Int_t volID);
   //
-  void UpdateTimeDependentCache();
+  Bool_t UpdateTimeDependentCache();
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
   Double_t fCoss[18];  ///< cache the transformation
@@ -55,6 +55,7 @@ private:
   const AliTPCChebCorr* fCorrMapCache1;      //!<! current correction map1 (for 2nd time bin if time-dependent)
   Int_t    fCurrentRun;                //!<! current run
   UInt_t   fCurrentTimeStamp;          //!<! current time stamp
+  Bool_t   fTimeDependentUpdated;      //!<! flag successful update of time dependent stuff
   /// \cond CLASSIMP
   ClassDef(AliTPCTransform,2)
   /// \endcond

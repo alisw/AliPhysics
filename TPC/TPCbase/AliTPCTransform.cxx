@@ -83,7 +83,8 @@ AliTPCTransform::AliTPCTransform():
   fCorrMapCache0(0),
   fCorrMapCache1(0),
   fCurrentRun(0),             //! current run
-  fCurrentTimeStamp(0)        //! current time stamp
+  fCurrentTimeStamp(0),       //! current time stamp
+  fTimeDependentUpdated(kFALSE)
 {
   //
   // Speed it up a bit!
@@ -103,7 +104,8 @@ AliTPCTransform::AliTPCTransform(const AliTPCTransform& transform):
   fCorrMapCache0(transform.fCorrMapCache0),
   fCorrMapCache1(transform.fCorrMapCache1),
   fCurrentRun(transform.fCurrentRun),             //! current run
-  fCurrentTimeStamp(transform.fCurrentTimeStamp)        //! current time stamp
+  fCurrentTimeStamp(transform.fCurrentTimeStamp),       //! current time stamp
+  fTimeDependentUpdated(transform.fTimeDependentUpdated)
 {
   /// Speed it up a bit!
 
@@ -176,6 +178,8 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   //
   //
   if (fCurrentRecoParam->GetUseCorrectionMap()) {
+    if (!fTimeDependentUpdated && !UpdateTimeDependentCache()) 
+      AliFatal("Failed to update time-dependent cache");
     const int kNInnerSectors=36, kInnerNRow=63;
     float delta0[3], y2x=x[1]/x[0], z2x = fCorrMapCache0->GetUseZ2R() ? x[2]/x[0] : x[2];
     int rowTot = sector<kNInnerSectors ? row : row+kInnerNRow;
@@ -463,15 +467,22 @@ void AliTPCTransform::SetCurrentTimeStamp(Int_t timeStamp)
 {
   // set event time stamp and if needed, upload caches
   fCurrentTimeStamp = timeStamp;
+  fTimeDependentUpdated = kFALSE;
   UpdateTimeDependentCache();
 }
 
-void AliTPCTransform::UpdateTimeDependentCache()
+Bool_t AliTPCTransform::UpdateTimeDependentCache()
 {
   // update cache for time-dependent parameters
   //
+  fTimeDependentUpdated = kFALSE;
+  //
   // correction maps, potentially time dependent
   TObjArray* mapsArr = 0;
+  if (!fCurrentRecoParam) {
+    AliWarning("RecoParam is not set, do nothing");
+    return fTimeDependentUpdated;
+  }
   while (fCurrentRecoParam->GetUseCorrectionMap()) {
     //
     if (fCorrMapCache0) {
@@ -553,6 +564,9 @@ void AliTPCTransform::UpdateTimeDependentCache()
     }
   }
   // other time dependent stuff if needed
+  //
+  fTimeDependentUpdated = kTRUE;
+  return fTimeDependentUpdated;
 }
 
 //______________________________________________________
