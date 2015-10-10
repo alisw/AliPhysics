@@ -166,7 +166,7 @@ void AliHLTTriggerDomain::Add(const AliHLTReadoutList& list)
   for (Int_t deti = 0; deti < (Int_t)AliHLTDAQ::NumberOfDetectors() ; deti++)
   {
     if (deti == AliHLTDAQ::NumberOfDetectors()-1){
-      deti==30; // HLT
+      deti=AliHLTDAQ::HLTId(); // HLT
     }
     if (list.DetectorEnabled(0x1<<deti))
     {
@@ -288,7 +288,7 @@ void AliHLTTriggerDomain::Remove(const AliHLTReadoutList& list)
   for (Int_t deti = 0; deti < (Int_t)AliHLTDAQ::NumberOfDetectors() ; deti++)
   {
     if (deti == AliHLTDAQ::NumberOfDetectors()-1){
-      deti==30; // HLT
+      deti=AliHLTDAQ::HLTId(); // HLT
     }
     if (list.DetectorEnabled(0x1 << deti))
     {
