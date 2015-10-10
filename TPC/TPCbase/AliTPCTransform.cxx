@@ -534,6 +534,7 @@ void AliTPCTransform::UpdateTimeDependentCache()
       }
       break;
     }
+    break;
   } // while
   // clean unneaded object to save the memory
   if (mapsArr) {
@@ -541,6 +542,15 @@ void AliTPCTransform::UpdateTimeDependentCache()
     if (fCorrMapCache1) mapsArr->Remove((TObject*)fCorrMapCache1);
     mapsArr->SetOwner(kTRUE);
     delete mapsArr;
+    if (!fCorrMapCache1) {
+      AliInfoF("Loaded static correction map for time stamp %d",fCurrentTimeStamp);
+      fCorrMapCache0->Print();
+    }
+    else {
+      AliInfoF("Switched to pair of time-dependent correction maps at time stamp %d",fCurrentTimeStamp);
+      fCorrMapCache0->Print();
+      fCorrMapCache1->Print();
+    }
   }
   // other time dependent stuff if needed
 }
