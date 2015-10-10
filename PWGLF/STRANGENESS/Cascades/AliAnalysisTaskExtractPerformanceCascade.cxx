@@ -2203,9 +2203,11 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	 // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
            //V0A
+             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
            f3dHistGenTriggPtVsYCMSVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
+             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
            //V0A
            f3dHistGenTriggPtVsYCMSVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
          }
@@ -2338,10 +2340,12 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	 // Omega Histograms
          if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){ 
            //V0A
+             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
            f3dHistGenVtxPtVsYCMSVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
          }
          if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
            //V0A
+             lPtCurrentPart    = lCurrentParticlePrimary->Pt();
            f3dHistGenVtxPtVsYCMSVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
          }
 	 
