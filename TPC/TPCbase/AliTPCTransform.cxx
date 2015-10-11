@@ -183,13 +183,12 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     const int kNInnerSectors=36, kInnerNRow=63;
     float delta0[3], y2x=x[1]/x[0], z2x = fCorrMapCache0->GetUseZ2R() ? x[2]/x[0] : x[2];
     int rowTot = sector<kNInnerSectors ? row : row+kInnerNRow;
-    int sectTot = sector%18;
-    fCorrMapCache0->Eval(sectTot,rowTot,y2x,z2x,delta0);
+    fCorrMapCache0->Eval(sector,rowTot,y2x,z2x,delta0);
     // 
     // for time dependent correction need to evaluate 2 maps, assuming linear dependence
     if (fCorrMapCache1) {
       float delta1[3];
-      fCorrMapCache1->Eval(sectTot,rowTot,y2x,z2x,delta1);   
+      fCorrMapCache1->Eval(sector,rowTot,y2x,z2x,delta1);   
       UInt_t t0 = fCorrMapCache0->GetTimeStampCenter();
       UInt_t t1 = fCorrMapCache1->GetTimeStampCenter();
       // possible division by 0 is checked at upload of maps

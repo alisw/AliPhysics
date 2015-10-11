@@ -44,11 +44,11 @@ class AliTPCChebCorr : public TNamed
  public:
   //
   AliTPCChebCorr();
-  AliTPCChebCorr(const char* name, const char* title, int nps=1,int nz=2, float zmin=-250, float zmax=250);
+  AliTPCChebCorr(const char* name, const char* title, int nps=1,int nzs=1, float zmaxAbs=250);
   virtual ~AliTPCChebCorr();
   void     Parameterize(stFun_t fun,int dimOut,const int np[2], const float *prec=0);
   void     Parameterize(stFun_t fun,int dimOut,const int np[][2], const float *prec=0);
-  void     SetBinning(int nps=1,int nz=2,float zmn=-250,float zmx=250);
+  void     SetBinning(int nps=1,int nzs=1, float zmxAbs=250);
   Bool_t   GetUseFloatPrec()                     const {return TestBit(kUseParF);}
   Bool_t   GetUseShortPrec()                     const {return !TestBit(kUseParF);}
   Bool_t   SetUseFloatPrec(Bool_t v)                   {SetBit(kUseParF,v);}
@@ -56,8 +56,8 @@ class AliTPCChebCorr : public TNamed
   void     SetUseZ2R(Bool_t v=kTRUE)                   {SetBit(kUseZ2R,v);}
   Bool_t   GetTimeDependent()                    const {return TestBit(kTimeDependent);}
   void     SetTimeDependent(Bool_t v=kTRUE)            {SetBit(kTimeDependent,v);}
-  Float_t  GetZMin()                             const {return fZMin;}
-  Float_t  GetZMax()                             const {return fZMax;}
+  Float_t  GetZMin()                             const {return -fZMaxAbs;}
+  Float_t  GetZMax()                             const {return fZMaxAbs;}
   Int_t    GetNStacksZ()                         const {return fNStacksZ;}
   Int_t    GetNStacksSector()                    const {return fNStacksSect;}
   const AliCheb2DStack* GetParam(int id)         const {return (const AliCheb2DStack*) fParams ?  fParams[id] : 0;}
@@ -79,16 +79,15 @@ class AliTPCChebCorr : public TNamed
   //
  protected:
   Int_t    fNStacksSect;            // number of stacks per sector in phi
+  Int_t    fNStacksZSect;           // number of stacks per sector (side) in Z 
   Int_t    fNStacksZ;               // number of stacks in Z
   Int_t    fNStacks;                // total number of stacks
-  Float_t  fZMin;                   // zmin
-  Float_t  fZMax;                   // zmax
+  Float_t  fZMaxAbs;                // zmax abs
   //
   UInt_t   fTimeStampStart;         // time stamp for start of validity
   UInt_t   fTimeStampEnd;           // time stamp for end of validity
   //
   // precalculated parameters
-  Float_t  fZCen;                   // Z center
   Float_t  fZScaleI;                // 1/Zspan of single stack
   Float_t  fY2XScaleI;              // 1/Y2Xspan of single stack
   //
@@ -101,7 +100,7 @@ class AliTPCChebCorr : public TNamed
   AliTPCChebCorr(const AliTPCChebCorr& src);            // dummy
   AliTPCChebCorr& operator=(const AliTPCChebCorr& rhs); // dummy
   //
-  ClassDef(AliTPCChebCorr,1)
+  ClassDef(AliTPCChebCorr,2)
 };
 
 #endif

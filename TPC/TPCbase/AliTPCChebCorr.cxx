@@ -29,13 +29,12 @@ const float AliTPCChebCorr::fgkY2XHSpan = TMath::Tan(TMath::Pi()/AliTPCChebCorr:
 AliTPCChebCorr::AliTPCChebCorr()
   : TNamed()
   ,fNStacksSect(0)
+  ,fNStacksZSect(0)
   ,fNStacksZ(0)
   ,fNStacks(0)
-  ,fZMin(1)
-  ,fZMax(-1)
+  ,fZMaxAbs(-1)
   ,fTimeStampStart(0)
   ,fTimeStampEnd(0xffffffff)
-  ,fZCen(0)
   ,fZScaleI(0)
   ,fY2XScaleI(0)
   ,fParams(0)
@@ -45,22 +44,21 @@ AliTPCChebCorr::AliTPCChebCorr()
 
 //____________________________________________________________________
 AliTPCChebCorr::AliTPCChebCorr(const char* name, const char* title, 
-			       int nps, int nz, float zmin, float zmax)
+			       int nps, int nzs, float zmaxAbs)
   : TNamed(name,title)
   ,fNStacksSect(0)
+  ,fNStacksZSect(0)
   ,fNStacksZ(0)
   ,fNStacks(0)
-  ,fZMin(1)
-  ,fZMax(-1)
+  ,fZMaxAbs(-1)
   ,fTimeStampStart(0)
   ,fTimeStampEnd(0xffffffff)
-  ,fZCen(0)
   ,fZScaleI(0)
   ,fY2XScaleI(0)
   ,fParams(0)
 {
   // c-tor
-  SetBinning(nps,nz,zmin,zmax);
+  SetBinning(nps,nzs,zmaxAbs);
   //
 }
 
@@ -83,15 +81,15 @@ void AliTPCChebCorr::Parameterize(stFun_t fun,int dimOut,const int np[2],const f
     return;
   }
   //
-  if (fZMin>fZMax) AliFatal("First the binning and Z limits should be set");
+  if (fZMaxAbs<0) AliFatal("First the binning and Z limits should be set");
   //
   float bmn[2],bmx[2];
   Bool_t useS = GetUseShortPrec();  // float or short representation for param
   fParams = new AliCheb2DStack*[fNStacks];
   //
   for (int iz=0;iz<fNStacksZ;iz++) {
-    bmn[1] = fZMin+iz/fZScaleI;     // boundaries in Z
-    bmx[1] = iz<fNStacksZ-1 ? fZMin+(iz+1)/fZScaleI : fZMax;
+    bmn[1] = iz/fZScaleI - fZMaxAbs;     // boundaries in Z
+    bmx[1] = iz<fNStacksZ-1 ? (iz+1)/fZScaleI - fZMaxAbs : fZMaxAbs;
     for (int isc=0;isc<kNSectors;isc++) {
       fun(isc,0,0);
       for (int isl=0;isl<fNStacksSect;isl++) {
@@ -128,8 +126,8 @@ void AliTPCChebCorr::Parameterize(stFun_t fun,int dimOut,const int np[][2],const
   Bool_t useS = GetUseShortPrec();  // float or short representation for param
   //
   for (int iz=0;iz<fNStacksZ;iz++) {
-    bmn[1] = fZMin+iz/fZScaleI;     // boundaries in Z
-    bmx[1] = iz<fNStacksZ-1 ? fZMin+(iz+1)/fZScaleI : fZMax;
+    bmn[1] = iz/fZScaleI-fZMaxAbs;     // boundaries in Z
+    bmx[1] = iz<fNStacksZ-1 ? (iz+1)/fZScaleI-fZMaxAbs : fZMaxAbs;
     for (int isc=0;isc<kNSectors;isc++) {
       fun(isc,0,0);
       for (int isl=0;isl<fNStacksSect;isl++) {
@@ -151,8 +149,13 @@ void AliTPCChebCorr::Parameterize(stFun_t fun,int dimOut,const int np[][2],const
 //____________________________________________________________________
 void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr) const
 {
-  // calculate correction for point with x,y,z sector corrdinates
-  int iz    = (z-fZMin)*fZScaleI;
+  // Calculate correction for point with x,y,z sector corrdinates
+  // If sector in 0-71 ROC convention, possible Z-outlying is checked
+  int iz = (z+fZMaxAbs)*fZScaleI, side = sector/18;
+  sector %= 18;
+  // correct for eventual Z calculated in wrong ROC
+  if (side)  {if (iz>=fNStacksZSect) iz = fNStacksZSect-1;} // C side
+  else       {if (iz<fNStacksZSect)  iz = fNStacksZSect;}   // A side
   if (iz<0) iz=0; else if (iz>=fNStacksZ) iz=fNStacksZ-1;
   int is = (y2x+fgkY2XHSpan)*fY2XScaleI;
   if (is<0) is=0; else if (is>=fNStacksSect) is=fNStacksSect-1;
@@ -164,8 +167,13 @@ void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr) 
 //____________________________________________________________________
 void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) const
 {
-  // calculate correction for point with x,y,z sector corrdinates
-  int iz = (tz[1]-fZMin)*fZScaleI; 
+  // Calculate correction for point with x,y,z sector corrdinates
+  // If sector in 0-71 ROC convention, possible Z-outlying is checked
+  int iz = (tz[1]+fZMaxAbs)*fZScaleI,  side = sector/18;
+  sector %= 18;
+  // correct for eventual Z calculated in wrong ROC
+  if (side)  {if (iz>=fNStacksZSect) iz = fNStacksZSect-1;} // C side
+  else       {if (iz<fNStacksZSect)  iz = fNStacksZSect;}   // A side
   if (iz<0) iz=0; else if (iz>=fNStacksZ) iz=fNStacksZ-1;
   int is = (tz[0]+fgkY2XHSpan)*fY2XScaleI;
   if (is<0) is=0; else if (is>=fNStacksSect) is=fNStacksSect-1;
@@ -179,7 +187,7 @@ void AliTPCChebCorr::Print(const Option_t* opt) const
   // print itself
   printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector\n",
 	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
-	 fNStacksZ,fZMin,GetUseZ2R() ? "Z/R":"Z",fZMax,fNStacksSect);
+	 fNStacksZ,-fZMaxAbs,GetUseZ2R() ? "Z/R":"Z",fZMaxAbs,fNStacksSect);
   printf("Time span: %10d:%10d TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
 	 GetTimeDependent() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
@@ -197,20 +205,18 @@ void AliTPCChebCorr::Print(const Option_t* opt) const
 }
 
 //____________________________________________________________________
-void AliTPCChebCorr::SetBinning(int nps,int nz,float zmn,float zmx)
+void AliTPCChebCorr::SetBinning(int nps,int nzs, float zmxAbs)
 {
   // set binning, limits
   fNStacksSect = nps;
-  fNStacksZ = nz;
-  fZMin = zmn;
-  fZMax = zmx;
-  fNStacks = nz*nps*kNSectors;
-  fZCen = (zmx-zmn)/2.;
+  fNStacksZSect = nzs;
+  fNStacksZ = nzs*2; // nzs is the number of bins per side!
+  fZMaxAbs  = zmxAbs;
+  fNStacks  = fNStacksZ*fNStacksSect*kNSectors;
   //  
-  double zspan = zmx-zmn;
-  if (zspan<1 || nz<1 || nps<1) AliFatalF("Wrong settings: Z:%f:%f Nz:%d Nphi:%d",
-					  zmn,zmx,nz,nps);
-  fZScaleI   = nz/(zmx-zmn);
+  if (zmxAbs<1e-8 || nzs<1 || nps<1) AliFatalF("Wrong settings: |Zmax|:%f Nz:%d Nphi:%d",
+					       zmxAbs,nzs,nps);
+  fZScaleI   = nzs/zmxAbs;
   fY2XScaleI = nps/(2*TMath::Tan(TMath::Pi()/kNSectors));
   //
 }
