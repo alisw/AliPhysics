@@ -585,6 +585,7 @@ TObjArray* AliTPCTransform::LoadCorrectionMaps() const
   AliCDBEntry* entry = man->Get("TPC/Calib/CorrectionMaps");
   TObjArray* correctionMaps = (TObjArray*)entry->GetObject();
   entry->SetOwner(0);
+  entry->SetObject(0);
   man->UnloadFromCache("TPC/Calib/CorrectionMaps");
   return correctionMaps;
   //
