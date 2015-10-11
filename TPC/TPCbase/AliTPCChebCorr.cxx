@@ -151,8 +151,8 @@ void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr) 
 {
   // Calculate correction for point with x,y,z sector corrdinates
   // If sector in 0-71 ROC convention, possible Z-outlying is checked
-  int iz = (z+fZMaxAbs)*fZScaleI, side = sector/18;
-  sector %= 18;
+  int iz = (z+fZMaxAbs)*fZScaleI, side = sector/kNSectors;
+  sector %= kNSectors;
   // correct for eventual Z calculated in wrong ROC
   if (side)  {if (iz>=fNStacksZSect) iz = fNStacksZSect-1;} // C side
   else       {if (iz<fNStacksZSect)  iz = fNStacksZSect;}   // A side
@@ -169,8 +169,8 @@ void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) const
 {
   // Calculate correction for point with x,y,z sector corrdinates
   // If sector in 0-71 ROC convention, possible Z-outlying is checked
-  int iz = (tz[1]+fZMaxAbs)*fZScaleI,  side = sector/18;
-  sector %= 18;
+  int iz = (tz[1]+fZMaxAbs)*fZScaleI,  side = sector/kNSectors;
+  sector %= kNSectors;
   // correct for eventual Z calculated in wrong ROC
   if (side)  {if (iz>=fNStacksZSect) iz = fNStacksZSect-1;} // C side
   else       {if (iz<fNStacksZSect)  iz = fNStacksZSect;}   // A side
