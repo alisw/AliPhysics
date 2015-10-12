@@ -47,7 +47,7 @@ protected:
   THn * fHisITSDZ;         // TPC-ITS residual histograms
   THn * fHisITSTRDDZ;      // TPC-ITS+TRD residual histograms
   THn * fHisITSTOFDZ;      // TPC-ITS_TOF residual histograms
-public:
+private:
   TTreeSRedirector * fStreamer;  // calibration streamer 
   Int_t fStreamLevel;            // stream level - In mode 0 only basic information needed for calibration  stored (see EStreamFlags )
   Int_t fSyswatchStep;           // dump system resource information after  fSyswatchStep tracks
