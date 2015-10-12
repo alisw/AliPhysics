@@ -69,8 +69,13 @@ void AliEveSaveViews::ChangeRun()
     // get entry from logbook:
     cout<<"creating sql server...";
     TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
-    cout<<"created"<<endl;
-    
+    if(!server){
+        cout<<"Server could not be created"<<endl;
+        return;
+    }
+    else{
+        cout<<"created"<<endl;
+    }
     TString sqlQuery;
     sqlQuery.Form("SELECT * FROM logbook_trigger_clusters WHERE run = %d",fRunNumber);
     
@@ -212,21 +217,27 @@ void AliEveSaveViews::SaveForAmore()
     if(fShowLiveBar)
     {
         TTimeStamp ts;
-        TString tNow = ts.AsString("s"); // display date & time
+        UInt_t year,month,day;
+        UInt_t hour,minute,second;
         
-        compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 75, 0, 239, 95);
-        compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 155, 60, 152, 26);
+        ts.GetDate(kTRUE, 0, &year, &month,&day);
+        ts.GetTime(kTRUE, 0, &hour, &minute,&second);
+        
+        TString gmtNow = TString::Format("%u-%.2u-%.2u %.2u:%.2u:%.2u GMT+2",year,month,day,hour+2,minute,second);
+        
+        compositeImg->Gradient( 90, "#EAEAEA #D2D2D2 #FFFFFF", 0, 45, 0, 299, 95);
+        compositeImg->Gradient( 90, "#D6D6D6 #242424 #000000", 0, 125, 60, 212, 26);
         compositeImg->BeginPaint();
-        compositeImg->DrawRectangle(50,0, 264, 94);
-        compositeImg->DrawText(162, 6, "LIVE", 70, "#FF2D00", "FreeSansBold.otf");
-        compositeImg->DrawText(162, 65, tNow, 16, "#FFFFFF", "arial.ttf");
+        compositeImg->DrawRectangle(20,0, 324, 94);
+        compositeImg->DrawText(152, 6, "LIVE", 75, "#FF2D00", "FreeSansBold.otf");
+        compositeImg->DrawText(132, 65, gmtNow, 16, "#FFFFFF", "arial.ttf");
         compositeImg->EndPaint();
         //include ALICE Logo
         TASImage *aliceLogo = new TASImage(Form("%s/EVE/macros/alice_logo.png",gSystem->Getenv("ALICE_ROOT")));
         if(aliceLogo)
         {
             aliceLogo->Scale(64,87);
-            compositeImg->Merge(aliceLogo, "alphablend", 82, 4);
+            compositeImg->Merge(aliceLogo, "alphablend", 52, 4);
             delete aliceLogo;aliceLogo=0;
         }
     }

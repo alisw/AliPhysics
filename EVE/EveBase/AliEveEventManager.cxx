@@ -579,7 +579,7 @@ void AliEveEventManager::AfterNewEventLoaded()
         AliESDMuonTrack *muonTrk;
         
         bool draw=true;
-        
+       /*
         for(int i=0;i<esd->GetNumberOfTracks();i++)
         {
             trk = esd->GetTrack(i);
@@ -596,7 +596,7 @@ void AliEveEventManager::AfterNewEventLoaded()
             v[2] = muonTrk->GetZ();
             if(fabs(v[0])>xMax || fabs(v[1])>yMax || fabs(v[2])>zMax)draw=false;
         }
-        
+        */
         if(fSaveViews  && fCurrentData->fESD->GetNumberOfTracks()>0 && draw)
         {
             fViewsSaver->SaveForAmore();
