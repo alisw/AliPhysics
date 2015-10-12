@@ -670,6 +670,16 @@ void AliMultSelectionTask::UserExec(Option_t *)
         //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
         fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.5) );
         fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTrackletsITSTPC,0.8) );
+        
+        //Use fallback in case of return value of -3 or -4
+        //This is what will happen in AODs: -3 will use fallback
+        //HOWEVER: -4 will not. Inconsistency requires use of "HasNoInconsistentSPDandTrackVertices"!
+        if ( fRefMultEta5 -> GetValueInteger() < -2 ){
+            fRefMultEta5 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.5) );
+        }
+        if ( fRefMultEta8 -> GetValueInteger() < -2 ){
+            fRefMultEta8 -> SetValueInteger ( fESDtrackCuts->GetReferenceMultiplicity(esdevent, AliESDtrackCuts::kTracklets,0.8) );
+        }
 
         //A.T.
         fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
