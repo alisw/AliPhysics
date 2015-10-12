@@ -18,7 +18,6 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliMergeableCollection.h"
-#include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "Riostream.h"
 #include "TCanvas.h"
@@ -210,11 +209,21 @@ void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerCl
   {
     TString estimator = r->Quantity();
     
-    Float_t fcent = Event()->GetCentrality()->GetCentralityPercentile(estimator.Data());
+    Float_t fcent = 0.0;
+    Bool_t isPP(kFALSE);
+    
+    if ( estimator.CompareTo("pp",TString::kIgnoreCase) )
+    {
+      isPP = kTRUE;
+    }
+    else
+    {
+      fcent = Event()->GetCentrality()->GetCentralityPercentile(estimator.Data());
+    }
     //      if ( fcent < 0.) FillHistos(eventSelection,triggerClassName,"MV0");
     //      if ( fcent == 0.) FillHistos(eventSelection,triggerClassName,"0V0");
     
-    if ( r->IsInRange(fcent) )
+    if ( isPP || r->IsInRange(fcent) )
     {
       FillHistos(eventSelection,triggerClassName,r->AsString());
     }
@@ -576,7 +585,7 @@ AliAnalysisTaskMuMu::Terminate(Option_t *)
   }
   else
   {
-    fEventCounters->Print("trigger/event");
+    fEventCounters->Print("trigger/event","centrality:all");
   }
   
   // post param container(s)
@@ -622,7 +631,7 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
 
 
   TString firedTriggerClasses(Event()->GetFiredTriggerClasses());
-    
+
   // first loop to count things not associated to a specific trigger
   TIter nextEventCutCombination(CutRegistry()->GetCutCombinations(AliAnalysisMuMuCutElement::kEvent));
   AliAnalysisMuMuCutCombination* cutCombination;
@@ -644,7 +653,7 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   TObjArray selectedTriggerClasses;
 
   GetSelectedTrigClassesInEvent(Event(),selectedTriggerClasses);
-  
+
   TIter next(&selectedTriggerClasses);
   TObjString* tname;
 
@@ -675,11 +684,11 @@ void AliAnalysisTaskMuMu::UserCreateOutputObjects()
   
   OpenFile(1);
   
-  AliInfo(Form("fCutRegistry=%p",fCutRegistry));
+  AliDebug(1,Form("fCutRegistry=%p",fCutRegistry));
   
   if ( fCutRegistry )
   {
-    fCutRegistry->Print();
+    StdoutToAliDebug(1,fCutRegistry->Print());
   }
   
   fHistogramCollection = new AliMergeableCollection("OC");
