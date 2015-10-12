@@ -154,7 +154,11 @@ _format_out_name()
 	x)  r=0
 	    ;;
     esac
-    sub=`printf %09d_%04d_%04d ${r} ${cur} ${max}`
+    if test "x$noserial" = "x" || test $noserial -gt 0 ; then
+	sub=`printf %09d ${r}`
+    else 
+	sub=`printf %09d_%04d_%04d ${r} ${cur} ${max}`
+    fi
     tmp=$file 
     if test $multi -le 0 ; then 
 	case $file in 
@@ -249,7 +253,7 @@ check_file()
 # $5: noact 
 submit_jobs()
 {
-    echo "submit_jobs out=$1 sta=$2 max=$3 maxf=$4 noact=$5"
+    mess 3 "submit_jobs out=$1 sta=$2 max=$3 maxf=$4 noact=$5"
     local out=$1 ; shift
     local sta=$1 ; shift 
     local max=$1 ; shift
@@ -264,15 +268,19 @@ submit_jobs()
 
 	local b=`echo $i | sed -e "s,${prx}/*,,"`
 	local r=
+	mess 10 "submit i=$i b=$b prx=${prx}" 
 	case $b in
 	    ESDs/*) r=`echo $b | sed -e 's,.*/\([0-9]*\)...\..*/.*,\1,'` ;;
 	    *)
 		sub=`dirname $b`
+		mess 10 "b=$b sub=$sub"
 		if test "x$sub" != "x" ; then
-		    case $sub in			
+		    case $sub in
+			[0-9]*/*) sub=`dirname $sub` ;; 
 			*/*) sub=`basename $sub`;;
 			*) ;;
 		    esac
+		    mess 10 "b=$b sub=$sub"
 		    r=`basename $sub | sed -e "s,/.*,," | sed 's/0*//'`
 		fi 
 		;;

@@ -372,7 +372,7 @@ protected:
 			     UShort_t&       value,
 			     Bool_t          verb=true)
   {
-    int v;
+    int v = 0;
     Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v); 
     value = v;
     return r;
@@ -391,7 +391,7 @@ protected:
 			     ULong_t&        value,
 			     Bool_t          verb=true)
   {
-    Long_t v;
+    Long_t v = 0;
     Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v); 
     value = v;
     return r;

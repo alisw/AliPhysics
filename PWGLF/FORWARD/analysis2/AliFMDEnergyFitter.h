@@ -320,8 +320,12 @@ public:
    * @param etaAxis The eta axis to use.  Note, that if the eta axis
    * has already been set (using SetEtaAxis), then this parameter will be 
    * ignored
+   *
+   * @param sys Collision system identifier.  If set, then it will
+   * define how many MIP peaks we will fit.  For pp we do 3, for pA,
+   * Ap, and AA we do 5.
    */
- virtual void SetupForData(const TAxis& etaAxis);
+  virtual void SetupForData(const TAxis& etaAxis, UShort_t sys=0);
   /** 
    * Fitter the input AliESDFMD object
    * 

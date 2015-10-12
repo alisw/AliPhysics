@@ -7,7 +7,7 @@
  */
 void Setup(Bool_t compile)
 {
-  const char* post = (compile ? "++g" : "");
+  const char* post = (compile ? "+g" : "");
   const char* fwd  = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliFMDCorrELossFit"))
     gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
@@ -113,7 +113,7 @@ DrawCorrELoss(Bool_t mc, Bool_t dummy,
   
   CorrDrawer* cd = new CorrDrawer;
   cd->fELossExtra = file;
-  cd->fMinQuality = 8;
+  cd->fMinQuality = AliFMDCorrELossFit::kDefaultQuality;
   // cd->fLandscape = true;
   cd->Summarize(const_cast<const AliFMDCorrELossFit*>(fits), true);
 }

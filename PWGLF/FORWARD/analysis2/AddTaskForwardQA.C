@@ -75,7 +75,11 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   task->GetEnergyFitter().SetFitRangeBinWidth(4);
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data
-  task->GetEnergyFitter().SetMinEntries(1000);
+  task->GetEnergyFitter().SetMinEntries(10000);
+  // Set reqularization cut 
+  task->GetEnergyFitter().SetRegularizationCut(1e8);
+  // Set the maximum number of landaus to try to fit (max 5)
+  task->GetEnergyFitter().SetNParticles(4);
 
   // --- Sharing filter ----------------------------------------------
   // Enable use of angle corrected signals in the algorithm 
@@ -93,7 +97,8 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
 
   // --- Density calculator ------------------------------------------
   // Least acceptable quality of ELoss fits
-  task->GetDensityCalculator().SetMinQuality(8);
+  task->GetDensityCalculator()
+    .SetMinQuality(AliFMDCorrELossFit::kDefaultQuality);
   // Set the maximum number of particle to try to reconstruct 
   task->GetDensityCalculator().SetMaxParticles(3);
   // Wet whether to use poisson statistics to estimate N_ch

@@ -153,7 +153,7 @@ AliFMDEnergyFitterTask::PreData(const TAxis& /*vertex*/, const TAxis& eta)
   //
   DGUARD(fDebug,1,"Initialize subs of AliFMDEnergyFitterTask");
 
-  fEnergyFitter.SetupForData(eta);
+  fEnergyFitter.SetupForData(eta,GetEventInspector().GetCollisionSystem());
 
   Print();
   return true;

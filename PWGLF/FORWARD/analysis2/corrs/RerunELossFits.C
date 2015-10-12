@@ -6,7 +6,8 @@
  * 
  * @return collection or null
  */
-TCollection* GetCollection(TDirectory* dir, const TString& name)
+TCollection* GetCollection(TDirectory* dir, const TString& name,
+			   Bool_t verbose=true)
 {
   if (!dir) { 
     Error("GetCollection", "No parent directory for %s", name.Data());
@@ -14,9 +15,10 @@ TCollection* GetCollection(TDirectory* dir, const TString& name)
   }
   TCollection* ret = 0;
   dir->GetObject(name, ret);
-  if (!ret) { 
-    Error("GetCollection", "Couldn't find %s in %s", 
-	  name.Data(), dir->GetName());
+  if (!ret) {
+    if (verbose) 
+      Error("GetCollection", "Couldn't find %s in %s", 
+	    name.Data(), dir->GetName());
     return 0;
   }
   return ret;
@@ -33,25 +35,42 @@ TCollection* GetCollection(TDirectory* dir, const TString& name)
  * @return Found object (possibly type-checked) or null
  */
 TObject* GetObject(const TCollection* parent, const TString& name, 
-		   const TClass* cls=0)
+		   const TClass* cls=0, Bool_t verbose=true)
 {
-  if (!parent) { 
-    Error("GetObject", "No parent collection for %s", name.Data());
+  if (!parent) {
+    if (verbose) 
+      Error("GetObject", "No parent collection for %s", name.Data());
     return 0;
   }
   TObject* ret = parent->FindObject(name);
   if (!ret) {
-    Error("GetObject", "Couldn't find %s in %s", 
-	  name.Data(), parent->GetName());
+    if (verbose) 
+      Error("GetObject", "Couldn't find %s in %s", 
+	    name.Data(), parent->GetName());
     return 0;
   }
   if (cls && !ret->IsA()->InheritsFrom(cls)) { 
-    Error("GetObject", "%s in %s is a %s, not a %s", name.Data(),
-	  parent->GetName(), ret->ClassName(), cls->GetName());
+    if (verbose) 
+      Error("GetObject", "%s in %s is a %s, not a %s", name.Data(),
+	    parent->GetName(), ret->ClassName(), cls->GetName());
     return 0;
   }
   return ret;
 }
+void RemoveObject(TCollection* parent, const TString& name)
+{
+  while (parent->GetEntries() > 0) {
+    TObject* o = GetObject(parent, name, 0, false);
+    if (!o) return;
+    Info("RemoveObject", "Removing %s from %s", name.Data(), parent->GetName());
+    TObject* ret = parent->Remove(o);
+    if (!ret || ret != o)
+      Warning("RemoveObject", "Failed to remove %s from %s (%p %p)",
+	      name.Data(), parent->GetName(), o, ret);
+    // delete o;
+  }
+}
+
 /** 
  * Get a collection contained in another collection
  * 
@@ -60,12 +79,45 @@ TObject* GetObject(const TCollection* parent, const TString& name,
  * 
  * @return Found collection or null
  */
-TCollection* GetCollection(const TCollection* parent, const TString& name)
+TCollection* GetCollection(const TCollection* parent, const TString& name,
+			   Bool_t verbose=true)
 {
-  TObject* o = GetObject(parent, name, TCollection::Class());
+  TObject* o = GetObject(parent, name, TCollection::Class(), verbose);
   if (!o) return 0;
   return static_cast<TCollection*>(o);
 }
+ 
+void CleanCollection(TCollection* c)
+{  
+  const char* other[] = { "fmdESDFixer",
+			  "fmdSharingFilter",
+			  "fmdDensityCalculator",
+			  0 };
+  const char** ptr = other;
+  while (*ptr) { RemoveObject(c, *ptr); ptr++; } 
+
+  TCollection* ef = GetCollection(c, "fmdEnergyFitter");
+  const char* stacks[] = { "chi2", "c", "delta", "xi", "sigma", "sigman",
+			   "a2", "a3", "a4", "a5", 0 };
+  ptr = stacks;
+  while (*ptr) { RemoveObject(ef, *ptr); ptr++; }
+
+  const char* dets[] = { "FMD1I", "FMD2I", "FMD2O", "FMD3I", "FMD3O", 0 };
+  ptr = dets;
+  while (*ptr) {
+    TCollection* det = GetCollection(ef, *ptr);
+    if (!det) {
+      ptr++;
+      continue;
+    }
+    const char* subs[] = { "elossDists", "elossResults", "elossResiduals", 0 };
+    const char** sub = subs;
+    while (*sub) { RemoveObject(det, *sub); sub++;  }
+    ptr++;
+  }
+  // c->ls();
+}
+
 /** 
  * Re-run the energy loss fitter on a merged output file 
  * 
@@ -104,32 +156,55 @@ void RerunELossFits(Bool_t forceSet=false,
       throw TString::Format("Failed to open %s", input.Data());
 
     // --- InFiled input collections --------------------------------------
-    TCollection* inFwdSum = GetCollection(inFile, "ForwardELossSums");
+    TCollection*   inFwdSum = GetCollection(inFile, "ForwardELossSums");
+    if (!inFwdSum) inFwdSum = GetCollection(inFile, "forwardQAResults");
     if (!inFwdSum) throw new TString("Cannot proceed without sums");
-
-    TCollection* inFwdRes = GetCollection(inFile, "ForwardELossResults");
+    inFwdSum->SetName("ForwardELossSums");
+    
+    TCollection*   inFwdRes = GetCollection(inFile, "ForwardELossResults");
+    if (!inFwdRes) inFwdRes = GetCollection(inFile, "forwardQAResults");
     if (!inFwdRes) {
       inFwdRes = 
 	static_cast<TCollection*>(inFwdSum->Clone("ForwardELossResults"));
       // throw new TString("Cannot proceed with merged list");
     }
-
+    inFwdRes->SetName("ForwardELossResults");
+  
     TCollection* inEFSum = GetCollection(inFwdRes, "fmdEnergyFitter");
     if (!inEFSum) throw new TString("Cannot proceed without accumulated data");
     
     TCollection* inEFRes = GetCollection(inFwdRes, "fmdEnergyFitter");
     if (!inEFRes) throw new TString("Cannot proceed without previous results");
 
+    TCollection* inESSum = GetCollection(inFwdRes, "fmdEventInspector");
+    Int_t  sys = 0;
+    Long_t nEvAcc = 0;
+    if (inESSum) {
+      TObject* oSys = GetObject(inESSum, "sys", TParameter<int>::Class());
+      if (oSys) sys = (static_cast<TParameter<int>*>(oSys))->GetVal();
+      TH1* oEvAcc = static_cast<TH1*>(GetObject(inESSum, "nEventsAccepted",
+						TH1::Class()));
+      if (oEvAcc) nEvAcc = oEvAcc->GetEntries();
+    }
+    if (nEvAcc > 0 && sys > 0) {
+      Long_t minEvents = 0;
+      switch (sys) {
+      case 1: minEvents = 1000000; break; // At least 1M
+      case 2: minEvents = 10000;   break; // At least 10k
+      case 3:                             // Fall-through
+      case 4: minEvents = 100000;  break; // At least 100k
+      }
+      if (nEvAcc < minEvents) {
+	Error("RerunELossFits", "Too few events (%ld<%ld) for %d",
+	      nEvAcc, minEvents, sys);
+	return;
+      }
+    }
     // --- Open output file --------------------------------------------
     outFile = TFile::Open(outName, "RECREATE");
-    if (!outFile)
+    if (!outFile) 
       throw TString::Format("Failed to open %s", outName.Data());
 
-    // --- Write copy of sum collection to output --------------------
-    TCollection* outFwdSum = static_cast<TCollection*>(inFwdSum->Clone());
-    outFile->cd();
-    outFwdSum->Write(inFwdSum->GetName(), TObject::kSingleKey);
-    
     // --- Make our fitter object ------------------------------------
     AliFMDEnergyFitter* fitter = new AliFMDEnergyFitter("energy");
     fitter->SetDoFits(true);
@@ -165,8 +240,11 @@ void RerunELossFits(Bool_t forceSet=false,
       // fitter->SetMaxChi2PerNDF(10);
       // Enable debug 
     }
-    if (flags & 0x2)
-      fitter->SetDebug(3);
+    // Set the maximum number of landaus to try to fit (max 5)
+    Int_t maxPart = sys == 1 ? 3 : 5;
+    fitter->SetNParticles(maxPart);
+    fitter->SetDoMakeObject(true);
+    if (flags & 0x2)  fitter->SetDebug(3);
     if (flags & 0x1)
       fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
     // fitter->SetRegularizationCut(1e8); // Lower by factor 3
@@ -176,21 +254,40 @@ void RerunELossFits(Bool_t forceSet=false,
     // Skip all of FMD2 and 3 
     // fitter->SetSkips(AliFMDEnergyFitter::kFMD2|AliFMDEnergyFitter::kFMD3);
 
+    // --- Write copy of sum collection to output --------------------
+    TCollection* outFwdSum = static_cast<TCollection*>(inFwdSum->Clone());
+    outFile->cd();
+    CleanCollection(outFwdSum);
+    TCollection* outEFSum = GetCollection(outFwdSum, "fmdEnergyFitter");
+    if (outEFSum) {
+      TObject* np = GetObject(outEFSum,"nParticles",TParameter<int>::Class());
+      if (np) (static_cast<TParameter<int>*>(np))->SetVal(maxPart);
+    }
+    outFwdSum->Write(inFwdSum->GetName(), TObject::kSingleKey);
+    
     // --- Now do the fits -------------------------------------------
     fitter->Print();
-    outFwdSum->ls("R");
+    TStopwatch timer;
+    timer.Start();
     fitter->Fit(static_cast<TList*>(outFwdSum));
-    
+    timer.Print();
+
     // --- Copy full result folder -----------------------------------
     TCollection* outFwdRes = static_cast<TCollection*>(inFwdRes->Clone());
-    // Remove old fits 
-    TCollection* outEFRes = GetCollection(outFwdRes, "fmdEnergyFitter");
-    outFwdRes->Remove(outEFRes);
+    CleanCollection(outFwdRes);
+    // Remove old fits
+    while (true) {
+      TCollection* outEFRes = GetCollection(outFwdRes,"fmdEnergyFitter",false);
+      if (!outEFRes) break;
+      outFwdRes->Remove(outEFRes);
+    } 
+    // outFwdRes->ls();
     // Make our new fit results folder, and add it to results folder
     TCollection* tmp = GetCollection(outFwdSum, "fmdEnergyFitter");
     outEFRes = static_cast<TCollection*>(tmp->Clone());
     outEFRes->Add(new TNamed("refitted", "Refit of the data"));
     outFwdRes->Add(outEFRes);
+    // outFwdRes->ls();
 
     // --- Write out new results folder ------------------------------
     outFile->cd();

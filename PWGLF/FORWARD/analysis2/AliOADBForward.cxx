@@ -973,9 +973,12 @@ AliOADBForward::GetTableFromFile(TFile*         file,
 	    file->GetName());
       return 0;
     }
+    TDirectory* savDir = gDirectory;
+    file->cd();
     // Create the tree in the file 
     t = new TTree(name, mode);
     t->SetDirectory(file);
+    if (savDir) savDir->cd();
     n = true;
   }
   else {

@@ -183,7 +183,8 @@ AliForwardQATask::PreData(const TAxis& /*vertex*/, const TAxis& eta)
   fHistos.Init(eta);
 
   // GetEventInspector().SetupForData(vertex);
-  GetEnergyFitter()     .SetupForData(eta);
+  GetEnergyFitter()     .SetupForData(eta,
+				      GetEventInspector().GetCollisionSystem());
   GetSharingFilter()    .SetupForData(eta);
   GetDensityCalculator().SetupForData(eta);
 

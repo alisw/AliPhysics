@@ -457,7 +457,10 @@ protected:
     Bool_t ret = false;
     try {
       TCollection* forward = GetCollection(fout, "ForwardELossSums");
-      if (!forward) throw false;
+      if (!forward) {
+	forward = GetCollection(fout, "forwardQAResults");
+	if (!forward) throw false;
+      }
       
       TCollection* eventInsp = GetCollection(forward, "fmdEventInspector");
       if (!eventInsp) throw false;
@@ -796,12 +799,14 @@ protected:
       TDirectory* savDir = gDirectory;
       if (!gSystem->AccessPathName(fELossExtra.Data())) {
 	hists = TFile::Open(fELossExtra, "READ");
-	Info("", "Opened forward_eloss.root -> %p", hists);
+	Info("", "Opened %s -> %p", fELossExtra, hists);
       }
       else 
 	Warning("", "Couldn't open %s", fELossExtra.Data());
       if (hists) {
 	TList* fr = static_cast<TList*>(hists->Get("ForwardELossResults"));
+	if (!fr)
+	  fr = static_cast<TList*>(hists->Get("forwardQAResults"));
 	// Info("", "Got forward results -> %p", fr);
 	if (fr) { 
 	  fitter = static_cast<TList*>(fr->FindObject("fmdEnergyFitter"));

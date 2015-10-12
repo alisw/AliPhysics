@@ -170,7 +170,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Recalculate phi taking (x,y) offset of IP into account 
   task->GetDensityCalculator().SetRecalculatePhi(true);
   // Least acceptable quality of ELoss fits
-  task->GetDensityCalculator().SetMinQuality(8);
+  task->GetDensityCalculator()
+    .SetMinQuality(AliFMDCorrELossFit::kDefaultQuality);
   // Set the maximum ratio of outlier bins to the total number of bins
   // task->GetDensityCalculator().SetMaxOutliers(.10);
   task->GetDensityCalculator().SetMaxOutliers(1.0);//Disable filter

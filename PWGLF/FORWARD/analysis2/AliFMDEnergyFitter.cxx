@@ -34,7 +34,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
     fRingHistos(),
     fLowCut(0.4),
     fNParticles(5),
-    fMinEntries(1000),
+    fMinEntries(10000),
     fFitRangeBinWidth(4),
     fDoFits(false),
     fDoMakeObject(false),
@@ -64,7 +64,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
     fRingHistos(), 
     fLowCut(0.4),
     fNParticles(5),
-    fMinEntries(1000),
+    fMinEntries(10000),
     fFitRangeBinWidth(4),
     fDoFits(false),
     fDoMakeObject(false),
@@ -217,7 +217,7 @@ AliFMDEnergyFitter::CreateOutputObjects(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::SetupForData(const TAxis& eAxis)
+AliFMDEnergyFitter::SetupForData(const TAxis& eAxis, UShort_t sys)
 {
   // 
   // Initialise the task - called at first event 
@@ -228,6 +228,14 @@ AliFMDEnergyFitter::SetupForData(const TAxis& eAxis)
   // ignored
   //
   DGUARD(fDebug, 1, "Initialize of AliFMDEnergyFitter");
+  switch (sys) {
+  case 1: fNParticles = 3; break; // pp 
+  case 2: // Fall through
+  case 3: // Fall through    
+  case 4: fNParticles = 5; break; // pA, Ap, AA
+  default: break; // Do nothing. 
+  }
+  
   if (fEtaAxis.GetNbins() == 0 || 
       TMath::Abs(fEtaAxis.GetXmax() - fEtaAxis.GetXmin()) < 1e-7) 
     SetEtaAxis(eAxis);
@@ -445,6 +453,7 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
     
     o->FindBestFits(d, *obj, fEtaAxis);
   }
+  obj->IsGood();
   d->Add(obj, "elossFits");
 }
 
@@ -1281,13 +1290,13 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*      dist,
   // Create a fitter object 
   AliLandauGausFitter f(lowCut, maxRange, minusBins); 
   f.Clear();
-  f.SetDebug(fDebug > 2); 
+  f.SetDebug(fDebug > 3); 
 
   // regularization cut - should be a parameter of the class 
   if (dist->GetEntries() > regCut) { 
     // We should rescale the errors 
     Double_t s = TMath::Sqrt(dist->GetEntries() / regCut);
-    if (fDebug > 0) printf("Error scale: %f ", s);
+    if (fDebug > 2) printf("Error scale: %f ", s);
     for (Int_t i = 1; i <= dist->GetNbinsX(); i++) {
       Double_t e = dist->GetBinError(i);
       dist->SetBinError(i, e * s);
@@ -1375,7 +1384,7 @@ AliFMDEnergyFitter::RingHistos::FindBestFit(const TH1* dist,
 
   // Sort all the found fit objects in increasing quality 
   fFits.Sort();
-  if (fDebug > 1) fFits.Print("s");
+  if (fDebug > 2) fFits.Print("s");
 
   // Get the top-most fit
   ELossFit_t* ret = static_cast<ELossFit_t*>(fFits.At(i-1));

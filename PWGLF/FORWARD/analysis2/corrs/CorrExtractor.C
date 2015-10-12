@@ -128,11 +128,16 @@ struct CorrExtractor
     }
     TCollection* c = FindCollection(Form("%s/fmdEventInspector", 
 					 sumFolder.Data()));
-    if (!c) { 
-      Error("CorrExtractor", "Couldn't get event inspector list from %s",
-	    fileName.Data());
-      Clear();
-      return false;
+    if (!c) {
+      // sumFolder = "forwardQAResults";
+      c = FindCollection(Form("%s/fmdEventInspector", 
+			      "forwardQAResults"));
+      if (!c) {
+	Error("CorrExtractor", "Couldn't get event inspector list from %s",
+	      fileName.Data());
+	Clear();
+	return false;
+      }
     }
     TObject* oSys        = c->FindObject("sys");
     TObject* oSNN        = c->FindObject("sNN");
@@ -190,6 +195,14 @@ struct CorrExtractor
     if (!o) { 
       Warning("Extract", "Object %s not found in collection %s", 
 	      objName.Data(), parent.Data());
+      return false;
+    }
+    if (o->TestBit(1<<15) && !o->TestBit(1<<16)) {
+      Warning("Extract", "Object %s is not good", objName.Data());
+      TFile* bad = TFile::Open("bad.root", "RECREATE");
+      (new TNamed("bad","BadCorrection"))->Write();
+      bad->Write();
+      bad->Close();
       return false;
     }
     return fManager->Store(o, 
