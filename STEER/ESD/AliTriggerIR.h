@@ -15,6 +15,8 @@
 //  The same IRs are propagated to the ESD (and AOD).
 //
 //  cvetan.cheshkov@cern.ch 10/07/2008
+//  Adding data for DDL2. 
+//  09/10/2015 roman.lietava@cern.ch
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +27,7 @@ class AliTriggerIR : public TObject {
 public:
   AliTriggerIR();
   AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t incomplete = kFALSE, Bool_t transerr = kFALSE);
+  AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words,Bool_t incomplete, Bool_t transerr,Bool_t run2flag);
 
   AliTriggerIR(const AliTriggerIR &rec);
   AliTriggerIR& operator= (const AliTriggerIR& rec);
@@ -39,11 +42,16 @@ public:
   //  Getters
   UInt_t GetOrbit() const {return fOrbit;}
   UInt_t GetNWord() const {return fNWord;}
+  UInt_t GetNWord2() const {return fNWord2;}
   Bool_t* GetInt1s() const {return fInt1;}
   Bool_t* GetInt2s() const {return fInt2;}
+  ULong64_t* GetIntsRun2() const {return fIntRun2;}
   UShort_t* GetBCs() const {return fBC;}
+  UShort_t* GetBC2s() const {return fBC2;}
   Bool_t GetIncomplete() const {return fIncomplete;}
+  Bool_t GetIncomplete2() const {return fIncomplete2;}
   Bool_t GetTransErr() const {return fTransErr;}
+  Bool_t GetTransErr2() const {return fTransErr2;}
   virtual void   Print( const Option_t* opt ="" ) const;
 
 private:
@@ -54,8 +62,13 @@ private:
   UShort_t *fBC;           //[fNWord] bunch-crossing number
   Bool_t    fIncomplete;   // flag which says if the IR is incomplete or not
   Bool_t    fTransErr;     // flag which says if there was a transmission error (gap) or not
+  UInt_t    fNWord2;
+  ULong64_t *fIntRun2;     // [fNWord2]
+  UShort_t  *fBC2;
+  Bool_t    fIncomplete2;   // flag which says if the IR is incomplete or not
+  Bool_t    fTransErr2;     // flag which says if there was a transmission error (gap) or not
 
-  ClassDef( AliTriggerIR, 1 )  // Trigger Interaction Record (one per orbit)
+  ClassDef( AliTriggerIR, 2 )  // Trigger Interaction Record (one per orbit)
 };
 
 #endif
