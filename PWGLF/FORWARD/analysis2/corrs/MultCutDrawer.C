@@ -34,7 +34,7 @@ struct MultCutDrawer : public SummaryDrawer
    * Constructor
    */
   MultCutDrawer() 
-    : fMinQuality(8),
+    : fMinQuality(AliFMDCorrELossFit::kDefaultQuality),
       fCuts(),
       fStacks(),
       fMultiGraphs(),

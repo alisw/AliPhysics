@@ -262,7 +262,7 @@ AliFMDCorrELossFit::ELossFit::~ELossFit()
 Int_t
 AliFMDCorrELossFit::ELossFit::FindMaxWeight(Double_t maxRelError, 
 					    Double_t leastWeight, 
-					    UShort_t  maxN) const
+					    UShort_t maxN) const
 {
   // 
   // Find the maximum weight to use.  The maximum weight is the
@@ -282,13 +282,17 @@ AliFMDCorrELossFit::ELossFit::FindMaxWeight(Double_t maxRelError,
   // conditions hold.  Will never return less than 1. 
   //
   if (fMaxWeight > 0) return fMaxWeight;
+  // Info("FindMaxWeight", "Maximum weight (fN=%d, maxN=%d)", fN, maxN);
   Int_t n = TMath::Min(maxN, UShort_t(fN-1));
   Int_t m = 1;
   // fN is one larger than we have data 
-  for (Int_t i = 0; i < n-1; i++, m++) { 
+  for (Int_t i = 0; i < n; i++, m++) {
+    // Info("FindMaxWeight", "Investigating fA[%d/%d]: %f +/- %f (>%g,%f/%f)",
+    //      i, n, fA[i], fEA[i], leastWeight, fEA[i] / fA[i], maxRelError);
     if (fA[i] < leastWeight)  break;
     if (fEA[i] / fA[i] > maxRelError) break;
   }
+  // Info("FindMaxWeight","Found %d",m);
   return fMaxWeight = m;
 }
 
@@ -381,6 +385,8 @@ AliFMDCorrELossFit::ELossFit::Compare(const TObject* o) const
   // - -1, if this quality is worse (smaller) than other objects quality
   // - +1, if this @f$|\chi^2/\nu-1|@f$ is smaller than the same for other
   // - -1, if this @f$|\chi^2/\nu-1|@f$ is larger than the same for other
+  // - +1, if this @f$ N_{peak}@f$ is larger than the the same for other
+  // - -1, if this @f$ N_{peak}@f$ is smaller than the the same for other
   // - 0 otherwise 
   // 
   // Parameters:
@@ -393,6 +399,8 @@ AliFMDCorrELossFit::ELossFit::Compare(const TObject* o) const
   Double_t oChi2nu = (other->fNu == 0 ? 1000 : other->fChi2 / other->fNu);
   if (TMath::Abs(chi2nu-1) < TMath::Abs(oChi2nu-1)) return +1;
   if (TMath::Abs(chi2nu-1) > TMath::Abs(oChi2nu-1)) return -1;
+  if (fN > other->fN)                               return +1;
+  if (fN < other->fN)                               return -1;
   return 0;
 }
 
@@ -738,6 +746,7 @@ AliFMDCorrELossFit::AliFMDCorrELossFit()
   fEtaAxis.SetTitle("#eta");
   fEtaAxis.SetName("etaAxis");
   fRings.SetName("rings");
+  SetBit(kIsGoodAsserted,false);
 }
 
 //____________________________________________________________________
@@ -756,6 +765,7 @@ AliFMDCorrELossFit::AliFMDCorrELossFit(const AliFMDCorrELossFit& o)
   //
   fEtaAxis.SetTitle("#eta");
   fEtaAxis.SetName("etaAxis");
+  SetBit(kIsGoodAsserted,false);
 }
 
 //____________________________________________________________________
@@ -1114,6 +1124,18 @@ AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Double_t eta,
   return FindFit(d, r, etabin, minQ);
 }
 //____________________________________________________________________
+Int_t
+AliFMDCorrELossFit::GetRingIndex(UShort_t d, Char_t r) const
+{
+  switch (d) { 
+  case 1:   return 0;
+  case 2:   return (r == 'i' || r == 'I') ? 1 : 2;
+  case 3:   return (r == 'i' || r == 'I') ? 3 : 4;
+  }
+  return -1;
+}
+  
+//____________________________________________________________________
 TObjArray*
 AliFMDCorrELossFit::GetRingArray(UShort_t d, Char_t r) const
 {
@@ -1127,13 +1149,8 @@ AliFMDCorrELossFit::GetRingArray(UShort_t d, Char_t r) const
   // Return:
   //    Pointer to ring array, or null in case of problems
   //
-  Int_t idx = -1;
-  switch (d) { 
-  case 1:   idx = 0; break;
-  case 2:   idx = (r == 'i' || r == 'I') ? 1 : 2; break;
-  case 3:   idx = (r == 'i' || r == 'I') ? 3 : 4; break;
-  }
-  if (idx < 0 || idx >= fRings.GetEntriesFast()) return 0;
+  Int_t idx = GetRingIndex(d, r);
+  if (idx < 0) return 0;
   return static_cast<TObjArray*>(fRings.At(idx));
 }
 //____________________________________________________________________
@@ -1150,12 +1167,7 @@ AliFMDCorrELossFit::GetOrMakeRingArray(UShort_t d, Char_t r)
   // Return:
   //    Pointer to ring array, or newly created container 
   //
-  Int_t idx = -1;
-  switch (d) { 
-  case 1:   idx = 0; break;
-  case 2:   idx = (r == 'i' || r == 'I') ? 1 : 2; break;
-  case 3:   idx = (r == 'o' || r == 'I') ? 3 : 4; break;
-  }
+  Int_t idx = GetRingIndex(d, r);
   if (idx < 0) return 0;
   if (idx >= fRings.GetEntriesFast() || !fRings.At(idx)) {
     TObjArray* a = new TObjArray(0);
@@ -1237,6 +1249,75 @@ AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
   return GetLowerBound(d, r, bin, f, showErrors, includeSigma);
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDCorrELossFit::IsGood(Bool_t   verbose,
+			   Double_t minRate, 
+			   Int_t    maxGap,			   
+			   Int_t    minInner,
+			   Int_t    minOuter,
+			   Int_t    minQuality)
+{
+  if (TestBit(kIsGoodAsserted)) return TestBit(kIsGood);
+  
+  TIter      nextRing(&fRings);
+  TObjArray* ringArray = 0;
+  Bool_t     isGood    = true; // Assume success 
+  while ((ringArray = static_cast<TObjArray*>(nextRing()))) {
+    Char_t r = ringArray->GetName()[4];
+
+    Int_t gap  = 0;
+    Int_t good = 0;
+    Int_t max  = 0;
+    Int_t len  = 0;
+    Bool_t first = true;
+    for (Int_t iEta = 1; iEta <= fEtaAxis.GetNbins(); iEta++) {
+      if (iEta > ringArray->GetEntriesFast()) {
+	max = TMath::Max(gap, max);
+	break;
+      }
+      TObject* o = ringArray->At(iEta);
+      if (!o) {
+	if (!first) { gap++; len++; }
+	continue;
+      }
+
+      len++;
+      first = false;
+      ELossFit* fit = static_cast<ELossFit*>(o);
+      if (fit->GetQuality() < minQuality) {
+	gap++;
+	continue;
+      }
+      good++;
+      max = TMath::Max(max, gap);
+      gap = 0;
+    }
+    Bool_t   thisGood = true; // Local result, assume success 
+    Int_t    min      = (r == 'I' ? minInner : minOuter);
+    Double_t rate     = len > 1 ? Double_t(good)/(len-1) : 0;
+    if (rate < minRate) thisGood = false;
+    if (len  < min)     thisGood = false;
+    if (max  > maxGap)  thisGood = false;
+    if (!thisGood)      isGood   = false; // Global result 
+    if (verbose) 
+      Printf("%s: %2d/%2d=%5.1f%%%-2s%5.1f%% good (%d) fits (%-2s %2d) "
+	     "max gap %2d (%-2s %2d) -> %s",
+	     ringArray->GetName(), good, len, 100*rate,
+	     (rate < minRate ? "<" : ">="), 100*minRate, 	     
+	     minQuality,
+	     (len <  min    ? "<" : ">="), min, max,
+	     (max >  maxGap ? ">" : "<="), maxGap,
+	     (thisGood ? "good" : "bad"));
+	
+  }
+  SetBit(kIsGoodAsserted,true);
+  SetBit(kIsGood,        isGood);
+  
+  return isGood;
+}
+
+				  
 //____________________________________________________________________
 namespace { 
   TH1D* MakeHist(const TAxis& axis, const char* name, const char* title, 

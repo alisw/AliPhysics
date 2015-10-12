@@ -38,9 +38,29 @@ class TBrowser;
 class AliFMDCorrELossFit : public TObject 
 {
 public:
-  enum { 
-    kHasShift = (1<<14)
+  /** 
+   * Flags set on the correction object 
+   */  
+  enum {
+    /** 
+     * Bit set if we use the delta shift 
+     */
+    kHasShift = (1<<14),
+    /** 
+     * Bit set if badness was asserted 
+     */
+    kIsGoodAsserted = (1<<15),
+    /**
+     * Bit set if the correction object is bad 
+     */
+    kIsGood = (1<<16)
   };
+  /** 
+   * Default least quality to use 
+   */
+  enum {
+    kDefaultQuality = 8
+  }; 
   /** 
    * POD structure to hold data from fits 
    * 
@@ -698,13 +718,46 @@ public:
   Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
 			 Double_t f, Bool_t showErrors,
 			 Bool_t includeSigma) const;
+  /** 
+   * Calculate and return the overall quality of this correction
+   * object. The quality is either good or bad.  The quality of the
+   * object is determined as, for each ring 
+   *
+   * - The ratio of successful to attempted fits (success rate) is
+   *   larger than @a minRate. A successful fit is one with a least
+   *   quality of @a minQuality
+   * 
+   * - The maximum distance between successful fits is no larger than
+   *   @a maxGap (default 3).
+   *
+   * - For inners, that at least @a minInner (default 25) fits were
+   *   attempted 
+   * 
+   * - For outers, that at least @a minOuter (default 15) fits were
+   *   attempted
+   * 
+   * @param verbose    Wether to print information 
+   * @param minRate    Least success rate 
+   * @param maxGap     Maximum gap to allow 
+   * @param minInner   Least number of attempted fits in inners 
+   * @param minOuter   Least number of attempted fits in outers 
+   * @param minQuality Least quality for good fits 
+   * 
+   * @return true if the correction object is good. 
+   */
+  Bool_t IsGood(Bool_t   verbose=true,
+		Double_t minRate=.7,
+		Int_t    maxGap=3,			   
+		Int_t    minInner=25,
+		Int_t    minOuter=15,
+		Int_t    minQuality=kDefaultQuality);
   /* @} */
   
   /**						
    * @{ 
    * @name Miscellaneous
    */
-  void CacheBins(UShort_t minQuality) const;
+  void CacheBins(UShort_t minQuality=kDefaultQuality) const;
   /** 
    * Get the ring array corresponding to the specified ring
    * 
@@ -760,6 +813,15 @@ public:
   TList* GetStacks(Bool_t err, Bool_t rel, Bool_t good, UShort_t maxN=5) const;
   /* @} */
 protected:
+  /** 
+   * Calculate the index of a ring. 
+   * 
+   * @param d Detector 
+   * @param r Ring
+   * 
+   * @return Index of the ring
+   */
+  Int_t GetRingIndex(UShort_t d, Char_t r) const;
   /** 
    * Get the ring array corresponding to the specified ring
    * 
