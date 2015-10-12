@@ -74,8 +74,10 @@ fRunList()
     }
   }
   
-  SetPackages("VO_ALICE@AliRoot::v5-04-Rev-20");
+  SetAliPhysicsVersion("VO_ALICE@AliPhysics::v5-06-30-01");
   
+  SetMapKeyValue("API","VO_ALICE@APISCONFIG::V1.1x");
+
   TString basedir = gSystem->ExpandPathName("$ALICE_PHYSICS/PWG/muondep");
   
   TString dir;
@@ -860,15 +862,38 @@ const std::vector<int>& AliMuonGridSubmitter::RunList() const
 }
 
 //______________________________________________________________________________
+void AliMuonGridSubmitter::SetAliPhysicsVersion(const char* aliphysics)
+{
+  /// Set the package to be used by the jobs
+  /// the corresponding aliroot, root, geant3 versions
+  /// should be set automatically by alien.
+  
+  SetMapKeyValue("AliPhysics",aliphysics);
+}
+
+//______________________________________________________________________________
+void AliMuonGridSubmitter::SetAliRootVersion(const char* aliphysics)
+{
+  /// Set the package to be used by the jobs
+  /// the corresponding root, geant3 versions
+  /// should be set automatically by alien.
+  
+  SetMapKeyValue("AliPhysics",aliphysics);
+}
+
+//______________________________________________________________________________
 void AliMuonGridSubmitter::SetPackages(const char* aliroot,
                                          const char* root,
                                          const char* geant3,
                                          const char* api)
 {
+  /// @deprecated
   /// Set the packages to be used by the jobs
   /// If root and geant3 are given (default is to let alien get the correct
   /// values for the requested aliroot version), then they must
   /// correspond to a valid combination, see http://alimonitor.cern.ch/packages/
+  
+  AliWarning("This method is deprecated and will disappear at some point. Please use SetAliRootVersion or SetAliPhysicsVersion instead");
   
   SetMapKeyValue("AliRoot",aliroot);
   SetMapKeyValue("Root",root);
