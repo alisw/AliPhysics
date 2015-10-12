@@ -88,6 +88,7 @@ set(SRCS
   Nuclei/masses/AliAnalysisNuclMult.cxx
   Nuclei/masses/AliAnalysisMCNuclMult.cxx
   Nuclei/deuteronpA/AliAnalysisDeuteronpA.cxx
+  Nuclei/deuteronpA/AliAnalysisDeuteronTree.cxx
   XtAnalysis/AliXtAnalysis.cxx
   XtAnalysis/AliJXtHistos.cxx
   IdentifiedHighPt/train/AliAnalysisTaskHighPtDeDx.cxx
@@ -134,7 +135,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 add_library(${MODULE} SHARED ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
-# Dependecies
+# Dependencies
 set(LIBDEPS ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
