@@ -32,7 +32,8 @@ class AliCheb2DStack : public TObject
   const Float_t*  GetBoundMin()       const {return fBMin;}
   const Float_t*  GetBoundMax()       const {return fBMax;}
   //
-  virtual void  Eval(int sliceID, const float *par, float *res) const = 0;
+  virtual void     Eval(int sliceID, const float *par, float *res) const = 0;
+  virtual Float_t  Eval(int sliceID, int dimOut, const float *par) const = 0;
   Bool_t        IsInside(const float *par) const;
   //
   void          Print(const Option_t* opt="")            const;

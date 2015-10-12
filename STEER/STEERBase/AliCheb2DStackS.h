@@ -31,6 +31,7 @@ class AliCheb2DStackS : public AliCheb2DStack
 		 const int np[][2], const float* precD=0);
   //
   void          Eval(int sliceID, const float *par, float *res) const;
+  Float_t       Eval(int sliceID, int dimOut, const float *par) const;
   void          Print(const Option_t* opt="")            const;
   void          PrintSlice(int isl, const Option_t* opt) const;
   //

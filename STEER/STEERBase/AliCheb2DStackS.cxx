@@ -119,6 +119,34 @@ void AliCheb2DStackS::Eval(int sliceID, const float  *par, float *res) const
 }
 
 //____________________________________________________________________
+Float_t AliCheb2DStackS::Eval(int sliceID, int dimOut, const float  *par) const
+{
+  // evaluate Chebyshev parameterization for requested output dimension only at requested sliceID
+  float p0,p1;
+  MapToInternal(par,p0,p1);
+  int pid = sliceID*fDimOut;
+  const UChar_t *rows = &fNRows[pid];                      // array of fDimOut rows for current slice
+  const UChar_t *cols = &fNCols[fColEntry[sliceID]];       // array of columns per row for current slice
+  const Short_t *cfs  = &fCoeffs[fCoeffsEntry[sliceID]];   // array of coefficients for current slice
+  const Float_t *scl  = &fParScale[pid];
+  const Float_t *hvr  = &fParHVar[pid];
+  while (dimOut) {
+    for (int ir=*rows++;ir--;) cfs += *cols++;  // go to the matrix of needed row
+    dimOut--;
+    scl++;
+    hvr++;
+  }
+  int nr = *rows++;                             // N rows in the matrix of coeffs for given dimension 
+  for (int ir=0;ir<nr;ir++) {
+    int nc = *cols++;                          // N of significant colums at this row
+    fWSpace[ir] = ChebEval1D(p1,cfs,nc); // interpolation of Cheb. coefs along row
+    cfs += nc;                                 // prepare coefs for the next row
+  }
+  return ChebEval1D(p0,fWSpace,nr) * (*scl) + (*hvr);
+   //
+}
+
+//____________________________________________________________________
 void AliCheb2DStackS::CreateParams(stFun_t fun, const int *np, const float* prc)
 {
   // create parameterizations
