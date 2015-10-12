@@ -151,49 +151,13 @@ void AliTPCChebCorr::Parameterize(stFun_t fun,int dimOut,const int np[][2],const
 }
 
 //____________________________________________________________________
-void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr) const
-{
-  // Calculate correction for point with x,y,z sector corrdinates
-  // Sector is in 0-71 ROC convention, to chec Zs outlying from the sector
-  int iz = (z+fZMaxAbs)*fZScaleI, side = (sector/kNSectors)&0x1;
-  sector %= kNSectors;
-  // correct for eventual Z calculated in wrong ROC
-  if (side)  {if (iz>=fNStacksZSect) iz = fNStacksZSect-1;} // C side
-  else       {if (iz<fNStacksZSect)  iz = fNStacksZSect;}   // A side
-  if (iz<0) iz=0; else if (iz>=fNStacksZ) iz=fNStacksZ-1;
-  int is = (y2x+fgkY2XHSpan)*fY2XScaleI;
-  if (is<0) is=0; else if (is>=fNStacksSect) is=fNStacksSect-1;
-  float tz[2] = {y2x,z}; // params use row, Y/X, Z
-  //printf("Side: %d Sect: %d z:%f -> iz %d | id:%d\n",side,sector,z, iz,GetParID(iz,sector,is));
-  GetParam(GetParID(iz,sector,is))->Eval(row,tz,corr);
-  //
-}
-
-//____________________________________________________________________
-void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) const
-{
-  // Calculate correction for point with x,y,z sector corrdinates
-  // Sector is in 0-71 ROC convention, to chec Zs outlying from the sector
-  int iz = (tz[1]+fZMaxAbs)*fZScaleI, side = (sector/kNSectors)&0x1;
-  sector %= kNSectors;
-  // correct for eventual Z calculated in wrong ROC
-  if (side)  {if (iz>=fNStacksZSect) iz = fNStacksZSect-1;} // C side
-  else       {if (iz<fNStacksZSect)  iz = fNStacksZSect;}   // A side
-  if (iz<0) iz=0; else if (iz>=fNStacksZ) iz=fNStacksZ-1;
-  int is = (tz[0]+fgkY2XHSpan)*fY2XScaleI;
-  if (is<0) is=0; else if (is>=fNStacksSect) is=fNStacksSect-1;
-  GetParam(GetParID(iz,sector,is))->Eval(row,tz,corr);
-  //
-}
-
-//____________________________________________________________________
 void AliTPCChebCorr::Print(const Option_t* opt) const
 {
   // print itself
   printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector\n",
 	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
 	 fNStacksZ,-fZMaxAbs,GetUseZ2R() ? "Z/R":"Z",fZMaxAbs,fNStacksSect);
-  printf("Time span: %10d:%10d TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
+  printf("Time span: %10u:%10u TimeDependent flag: %s\n",fTimeStampStart,fTimeStampEnd,
 	 GetTimeDependent() ? "ON":"OFF");
   TString opts = opt; opts.ToLower();
   if (opts.Contains("p") && TestBit(kParamDone)) {

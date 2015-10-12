@@ -34,7 +34,7 @@
 class AliTPCChebCorr : public TNamed
 {
  public:
-  enum {kNSectors=18,kNRows=159};
+  enum {kNSectors=18,kNSectorsIROC=2*kNSectors,kNRows=159,kNRowsIROC=63,kMaxIROCSector=kNSectorsIROC-1};
   enum {kParamDone=BIT(14), // parameterization done
 	kUseParF=BIT(15),   // if ON - internal FLOAT representation, otherwise - SHORT
 	kUseZ2R=BIT(16),    // 2nd dimension parameterizes Z/R
@@ -61,6 +61,7 @@ class AliTPCChebCorr : public TNamed
   Int_t    GetNStacksZ()                         const {return fNStacksZ;}
   Int_t    GetNStacksSector()                    const {return fNStacksSect;}
   const AliCheb2DStack* GetParam(int id)         const {return (const AliCheb2DStack*) fParams ?  fParams[id] : 0;}
+  const AliCheb2DStack* GetParam(int sector, float y2x, float z) const;
   //
   UInt_t   GetTimeStampStart()                   const {return fTimeStampStart;}
   UInt_t   GetTimeStampEnd()                     const {return fTimeStampEnd;}
@@ -70,12 +71,15 @@ class AliTPCChebCorr : public TNamed
   //
   void     Print(const Option_t* opt="")         const;
   void     Eval(int sector, int row, float y2x, float z,float *corr) const;
-  void     Eval(int sector, int row, float tz[2], float *corr) const;
+  void     Eval(int sector, int row, float tz[2], float *corr)       const;
+  Float_t  Eval(int sector, int row, float y2x, float z, int dimOut) const;
+  Float_t  Eval(int sector, int row, float tz[2], int dimOut)        const;
   static   float GetMaxY2X()                    {return fgkY2XHSpan;}
   static   float GetAngGap()                    {return fgkAngGap;}
   //
-  int      GetParID(int iz,int isect,int istack) const {return (iz*kNSectors+isect)*fNStacksSect+istack;}
  protected:
+  //
+  int      GetParID(int iz,int isect,int istack) const {return (iz*kNSectors+isect)*fNStacksSect+istack;}
   //
  protected:
   Int_t    fNStacksSect;            // number of stacks per sector in phi
@@ -102,5 +106,63 @@ class AliTPCChebCorr : public TNamed
   //
   ClassDef(AliTPCChebCorr,2)
 };
+
+//_________________________________________________________________
+inline const AliCheb2DStack* AliTPCChebCorr::GetParam(int sector, float y2x, float z) const
+{
+  // Find appropriate param. Sector is in ROC0-71 conventions
+  int iz = (z+fZMaxAbs)*fZScaleI, side = (sector/kNSectors)&0x1;
+  // correct for eventual Z calculated in wrong ROC
+  if (side)  {if (iz>=fNStacksZSect) iz = fNStacksZSect-1;} // C side
+  else       {if (iz<fNStacksZSect)  iz = fNStacksZSect;}   // A side
+  if (iz<0) iz=0; else if (iz>=fNStacksZ) iz=fNStacksZ-1;
+  int is = (y2x+fgkY2XHSpan)*fY2XScaleI;
+  if (is<0) is=0; else if (is>=fNStacksSect) is=fNStacksSect-1;
+  return GetParam(GetParID(iz,sector%kNSectors,is));
+  //
+}
+
+//____________________________________________________________________
+inline void AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, float *corr) const
+{
+  // Calculate correction for point with x,y,z sector corrdinates
+  // Sector/row is in 0-71 ROC convention, to check Zs outlying from the sector
+  if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
+  float tz[2] = {y2x,z}; // params use row, Y/X, Z
+  GetParam(sector,y2x,z)->Eval(row, tz, corr);
+  //
+}
+
+//____________________________________________________________________
+inline void AliTPCChebCorr::Eval(int sector, int row, float tz[2], float *corr) const
+{
+  // Calculate correction for point with x,y,z sector corrdinates
+  // Sector is in 0-71 ROC convention, to check Zs outlying from the sector
+  if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
+  GetParam(sector,tz[0],tz[1])->Eval(row, tz, corr);
+  //
+}
+
+//____________________________________________________________________
+inline Float_t AliTPCChebCorr::Eval(int sector, int row, float y2x, float z, int dimOut) const
+{
+  // Calculate dimOut-th correction for point with x,y,z sector corrdinates
+  // Sector/row is in 0-71 ROC convention, to check Zs outlying from the sector
+  if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
+  float tz[2] = {y2x,z}; // params use row, Y/X, Z
+  return GetParam(sector,y2x,z)->Eval(row, dimOut, tz);
+  //
+}
+
+//____________________________________________________________________
+inline Float_t AliTPCChebCorr::Eval(int sector, int row, float tz[2], int dimOut) const
+{
+  // Calculate correction for point with x,y,z sector corrdinates
+  // Sector is in 0-71 ROC convention, to check Zs outlying from the sector
+  if (sector>kMaxIROCSector) row += kNRowsIROC;   // we are in OROC
+  return GetParam(sector,tz[0],tz[1])->Eval(row, dimOut, tz);
+  //
+}
+
 
 #endif
