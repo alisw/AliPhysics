@@ -13,7 +13,7 @@
 ///  rotated global (tracking) cooridnate frame (sector, lx,ly,lz)
 
 class AliTPCRecoParam;
-class AliTPCChebCorr;
+#include "AliTPCChebCorr.h"
 #include "AliTransform.h"
 
 class AliTPCTransform:public AliTransform {
@@ -44,7 +44,11 @@ public:
   void SetCurrentTimeStamp(Int_t timeStamp);
   void ApplyTransformations(Double_t *xyz, Int_t volID);
   //
-  Bool_t UpdateTimeDependentCache();
+  // new correction maps
+  Bool_t  UpdateTimeDependentCache();
+  void    ApplyCorrectionMap(int roc, int row, double xyz[3]);
+  void    EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3]);
+  Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut);
 private:
   AliTPCTransform& operator=(const AliTPCTransform&); // not implemented
   Double_t fCoss[18];  ///< cache the transformation
@@ -60,5 +64,16 @@ private:
   ClassDef(AliTPCTransform,2)
   /// \endcond
 };
+
+//______________________________________________________
+inline void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyz[3])
+{
+  // apply correction from the map to a point at given ROC and row (IROC/OROC convention)
+  float res[3];
+  EvalCorrectionMap(roc, row, xyz, res);
+  for (int i=3;i--;) xyz[i] += res[i];
+  //
+}
+
 
 #endif
