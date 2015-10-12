@@ -75,8 +75,6 @@ public:
   int ProcessOption(TString option, TString value);
 
   /**  */
-  Int_t AddCalibTasks();
-  Int_t WriteAnalysisToFile();
   Int_t ReadInput(AliVEvent*& vEvent, AliVfriendEvent*& vFriend);
   Int_t PushAndReset(TObject* object);
 

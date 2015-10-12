@@ -54,8 +54,6 @@ public:
   /** @see component interface @ref AliHLTComponent::Spawn */
   AliHLTComponent* Spawn();
   
-  Int_t ReadInput(AliVEvent *& vEvent);
-
   enum eventSpecie {kpp, kpPb, kPbPb};
   
   int PushAndReset();
