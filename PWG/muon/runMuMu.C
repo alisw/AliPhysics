@@ -1,57 +1,98 @@
 ///
 /// Example macro to run the AliAnalysisTaskMuMu task
 ///
-/// \author L. Aphecetche
+/// Typical usage is :
+///
+/// > root
+/// root[] .x runMuMu.C(dataset,issimulation,"username@aaf.domain")
+///
+/// or
+///
+/// root[] .x runMuMu.C(dataset,issimulation,"pod://") on a VAF
+///
+/// Note that you must take care of the default Root version your packages use.
+/// If you need to change it you must use (from a separate session) :
+///
+/// TProof::Mgr(where)->SetROOTVersion("VO_ALICE@ROOT::[version]");
+///
+/// the list of available versions can be found with :
+///
+/// TProof::Mgr(where)->ShowROOTVersions();
+///
+/// You have to do this only once, as this Root version will be
+/// remembered by the AF until you change it
+///
+/// This example assumes that you are working with AliPhysics and 
+/// a custom PAR file for the PWGmuon library. If you just want to use
+/// PWGmuon from the AliPhysics version you chose, just comment out
+/// line 45 in SetupLibraries method.
+///
+/// You also have to change (or at least x-check) the list of triggers 
+/// used (see GetTriggerList method below)
+///
+/// @author L. Aphecetche
 ///
 
 //______________________________________________________________________________
-void LoadLocalLibs(Bool_t localAnalysis=kTRUE)
+Bool_t SetupLibraries(Bool_t local, Bool_t debug)
 {
-  gSystem->Load("libVMC");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libTree");
-  gSystem->Load("libProofPlayer");
-  gSystem->Load("libXMLParser");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-
-  if (!localAnalysis)
+  std::vector<std::string> packages;
+  
+  if (!local)
   {
-    gSystem->Load("libCORRFW");
+    packages.push_back("VO_ALICE@AliPhysics::v5-06-39-01");
   }
-  else
+  packages.push_back("PWGmuon"); // comment this line out to use the AliPhysics version of PWGmuon
+  
+  Bool_t ok(kTRUE);
+  
+  for ( std::vector<std::string>::size_type i = 0; i < packages.size(); ++i )
   {
-  	gROOT->LoadMacro("AliOADBMuonTrackCutsParam.cxx+g");
-  	gROOT->LoadMacro("AliAnalysisMuonUtility.cxx+g");
-  	gROOT->LoadMacro("AliMuonTrackCuts.cxx+g");
-  	gROOT->LoadMacro("AliMergeableCollection.cxx+g");
-  	gROOT->LoadMacro("AliAnalysisMuMuBinning.cxx+g");
-  	gROOT->LoadMacro("AliMuonEventCuts.cxx+g");
+    const std::string& package = packages[i];
     
-    gROOT->LoadMacro("AliAnalysisMuMuCutElement.cxx+g");
-    gROOT->LoadMacro("AliAnalysisMuMuCutCombination.cxx+g");
-    gROOT->LoadMacro("AliAnalysisMuMuCutRegistry.cxx+g");
-    gROOT->LoadMacro("AliAnalysisMuMuEventCutter.cxx+g");
-    gROOT->LoadMacro("AliAnalysisMuMuBase.cxx+g");
+    if (local)
+    {
+      if ( debug )
+      {
+        std::cout << "Loading local library lib" << package << std::endl;
+      }
+      if (gSystem->Load(Form("lib%s",package.c_str()))<0)
+      {
+        ok = kFALSE;
+      }
+    }
+    else
+    {
+      if ( debug )
+      {
+        std::cout << "Uploading/enabling PAR file " << package << std::endl;
+      }
 
-    gROOT->LoadMacro("AliAnalysisTaskMuMu.cxx+g");
-
-    gROOT->LoadMacro("AliAnalysisMuMuGlobal.cxx+g");
-
-    gROOT->LoadMacro("AliAnalysisMuMuMinv.cxx+g");
-    gROOT->LoadMacro("AliAnalysisMuMuSingle.cxx+g");
-    gROOT->LoadMacro("AliAnalysisMuMuNch.cxx+g");
-
+      if ( gProof->UploadPackage(Form("$ALICE_PHYSICS/PARfiles/%s",package.c_str())) )
+      {
+        ok = kFALSE;
+      }
+      
+      if ( gProof->EnablePackage(package.c_str(),"",kFALSE) )
+      {
+        ok = kFALSE;
+      }
+    }
+    
+    if (!ok)
+    {
+      std::cerr << "Problem with package " << package.c_str() << std::endl;
+      return kFALSE;
+    }
   }
+  
+  return kTRUE;
 }
 
 //______________________________________________________________________________
-TChain* CreateLocalChain(const char* filelist)
+TChain* CreateLocalChain(const char* filelist, const char* treeName)
 {
-	TChain* c = new TChain("aodTree");
+	TChain* c = new TChain(treeName);
 	
 	char line[1024];
 	
@@ -66,7 +107,27 @@ TChain* CreateLocalChain(const char* filelist)
 //______________________________________________________________________________
 TString GetInputType(const TString& sds, TProof* p)
 {
-   if (sds.Length()==0 ) return "AOD";
+  //
+  // Get the input type (AOD or ESD) from the dataset type
+  // Feel free to update this method to fits your needs !
+  //
+  
+   if (sds.Length()==0 ) 
+  {
+     if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
+     {
+       return "ESD";
+     }
+     else if ( gSystem->AccessPathName("list.aod.txt") == kFALSE )
+     {
+       return "AOD";
+     }
+     else 
+     {
+        std::cout << "Cannot work in local mode without list.esd.txt or list.aod.txt file... Aborting" << std::endl;
+        exit(1);
+     }
+  }
 
    if (sds.Contains("SIM_JPSI")) return "AOD";
    
@@ -115,219 +176,172 @@ TString GetInputType(const TString& sds, TProof* p)
 }
 
 //______________________________________________________________________________
-AliAnalysisTask* runMuMu(const char* dataset="SIM_JPSI_LHC13f_CynthiaTuneWithRejectList_000197388",
-                         Bool_t simulations=kTRUE,
-                         Bool_t baseline=kFALSE,
-                         const char* where="laphecet@nansafmaster.in2p3.fr/?N")
+AliInputEventHandler* GetInput(const TString& sds, TProof* p)
 {
-  // Create the analysis manager
+  // Get the input event handler depending on the type of dataset
   
-  Bool_t prooflite = (strlen(where)==0) || TString(where).Contains("workers");
-
-  TString sds(dataset);
-  
-//  if (!prooflite && sds.Length()>0) TProof::Mgr(where)->SetROOTVersion("VO_ALICE@ROOT::v5-34-05");
-  
-  TProof* p(0x0);
-  TString alirootMode("");
-  TString workers("workers=8x");
-
-  if (TString(where).Contains("alice-caf"))
-  {
-    workers="workers=1x";
-  }
-  if (TString(where).Contains("localhost:2093"))
-  {
-    workers="workers=8x";
-  }
-  
-  if (prooflite)
-  {
-    cout << "Will work in LITE mode" << endl;
-  }
-  
-  if ( sds.Length()>0 )
-  {
-    p = TProof::Open(where,workers.Data());
-    
-    if (!p)
-    {
-      cout << "Cannot connect to Proof : " << where << endl;
-      return 0;
-    }
-    
-    alirootMode.ToUpper();
-    
-    if ( alirootMode == "PAR" ) 
-    {
-      cout << "Will work with PAR files" << endl;
-      
-      std::vector<std::string> pars;
-      
-      pars.push_back("STEERBase");
-      pars.push_back("ESD");
-      pars.push_back("AOD");
-      pars.push_back("ANALYSIS");
-      pars.push_back("OADB");
-      pars.push_back("ANALYSISalice");
-      //       pars.push_back("CORRFW");
-      //       pars.push_back("PWGmuon");
-      
-      Bool_t ok(kTRUE);
-      
-      for ( std::vector<std::string>::size_type i = 0; i < pars.size(); ++i )
-      {
-        std::string package = pars[i];
-        
-        if ( gProof->UploadPackage(package.c_str()) ) 
-        {
-          ok = kFALSE;
-        }
-        
-        if ( gProof->EnablePackage(package.c_str(),"",kTRUE) ) 
-        {
-          ok = kFALSE;
-        }
-        
-        if (!ok) 
-        {
-          cout << "Problem with PAR " << package.c_str() << endl;
-          return 0;           
-        }
-      }
-    }
-    else 
-    {
-      TList* list = new TList();
-      
-      //       list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "PWG3base"));
-      //       list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "PWG3"));
-      //       list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "PWG3base"));//:CORRFW:PWG3muon"));
-      //       list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES", "PWG3/base"));//:PWG3/muon"));
-      
-      //    list->Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
-      
-      if (!alirootMode.IsNull())
-      {
-        list->Add(new TNamed("ALIROOT_MODE", alirootMode.Data()));  
-      }
-      else
-      {
-        list->Add(new TNamed("ALIROOT_MODE",""));
-      }
-      
-      if (!prooflite)
-      {
-//        p->SetParameter("PROOF_UseTreeCache", 0);
-        p->EnablePackage("VO_ALICE@AliRoot::v5-04-65-AN", list, kTRUE);
-      }
-      else
-      {
-        //      list->Add(new TNamed("ALIROOT_LOCAL_PATH",gSystem->Getenv("ALICE_ROOT")));       
-        p->UploadPackage("$ALICE_ROOT/ANALYSIS/macros/AliRootProofLite.par");
-        if (p->EnablePackage("AliRootProofLite",list)) return 0;
-      }
-    }
-    
-    // compile task on workers
-    if ( alirootMode != "PAR" )
-    {
-      p->Load("AliOADBMuonTrackCutsParam.cxx+");
-      p->Load("AliAnalysisMuonUtility.cxx+");
-      p->Load("AliMuonTrackCuts.cxx+");
-      p->Load("AliMergeableCollection.cxx+");
-      p->Load("AliAnalysisMuMuBinning.cxx+");
-      p->Load("AliMuonEventCuts.cxx+");
-       p->Load("AliAnalysisMuMuCutElement.cxx+");
-       p->Load("AliAnalysisMuMuCutCombination.cxx+");       
-       p->Load("AliAnalysisMuMuCutRegistry.cxx+");
-      p->Load("AliAnalysisMuMuBase.cxx+");      
-      p->Load("AliAnalysisTaskMuMu.cxx+");
-       p->Load("AliAnalysisMuMuEventCutter.cxx+");       
-     p->Load("AliAnalysisMuMuGlobal.cxx+");
-     p->Load("AliAnalysisMuMuNch.cxx+");
-     p->Load("AliAnalysisMuMuSingle.cxx+");
-     p->Load("AliAnalysisMuMuMinv.cxx+");
-	}
-  }
-  
-  LoadLocalLibs(kTRUE);
-  
-  AliAnalysisManager *mgr = new AliAnalysisManager("MuMu");
-  
-  AliInputEventHandler* input(0x0);
-
   TString inputType = GetInputType(sds,p);
   
-  if ( inputType == "AOD" ) 
+  AliInputEventHandler* input(0x0);
+  
+  if ( inputType == "AOD" )
   {
     input = new AliAODInputHandler;
   }
-  else if ( inputType == "ESD" ) 
+  else if ( inputType == "ESD" )
   {
     input = new AliESDInputHandler;
   }
+  return input;
+}
+
+//______________________________________________________________________________
+TString GetOutputName(const TString& sds)
+{
+  TString outputname = "test.MuMu.AOD.1.root";
+  
+  if ( sds.Length()>0 && sds.BeginsWith("Find") )
+  {
+    outputname = sds;
+    outputname.ReplaceAll(";Tree=/aodTree","");
+    outputname.ReplaceAll(";Tree=/esdTree","");
+    outputname.ReplaceAll("Find;","");
+    outputname.ReplaceAll("FileName=","");
+    outputname.ReplaceAll("BasePath=","");
+    outputname.ReplaceAll("/alice","alice");
+    outputname.ReplaceAll("/","_");
+    outputname.ReplaceAll(";","_");
+    outputname.ReplaceAll("*.*","");
+    outputname.ReplaceAll("Mode=cache","");
+    outputname.ReplaceAll("Mode=remote","");
+  }
+  else if ( sds.Length() > 0 )
+  {
+    TString af("local");
+    
+    if ( gProof )
+    {
+      af="unknown";
+      TString master(gProof->GetSessionTag());
+      if (master.Contains("nansaf")) af = "saf";
+      if (master.Contains("nansafmaster")) af = "saf3";
+      if (master.Contains("skaf")) af = "skaf";
+    }
+    outputname = Form("%s.%s.root",gSystem->BaseName(sds.Data()),af.Data());
+    outputname.ReplaceAll("|","-");
+  }
+  else if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
+  {
+       outputname.ReplaceAll("AOD","ESD");
+  }
+
+  cout << "outputname will be " << outputname << endl;
+  return outputname;
+}
+
+//______________________________________________________________________________
+void GetTriggerList(TList& triggers, Bool_t simulations)
+{
+  // Fill the list of triggers to be analyzed
+  //
+  // Here you can use class names and/or combinations of classes and input, e.g.
+  // triggers->Add(new TObjString("CINT7-B-NOPF-ALLNOTRD & 0MUL"));
+
+  if (!simulations)
+  {
+    triggers.Add(new TObjString("CMUL7-B-NOPF-MUFAST"));
+    triggers.Add(new TObjString("C0MUL-B-NOPF-MUFAST"));
+    triggers.Add(new TObjString("CINT7-B-NOPF-MUFAST"));
+  }
   else
   {
-  	std::cout << "Cannot get input type !" << std::endl;
-  	return 0;
+    // add here the MC-specific trigger you want to analyze (if any)
+
+    triggers.Add(new TObjString("CMULLO-B-NOPF-MUON"));
+    triggers.Add(new TObjString("CMSNGL-B-NOPF-MUON"));
+
+    triggers.Add(new TObjString("ANY"));
+    
+    // e.g. for dpmjet simulations (at least) we have the following "triggers" :
+    // C0T0A,C0T0C,MB1,MBBG1,V0L,V0R,MULow,EMPTY,MBBG3,MULL,MULU,MUHigh
+  }
+}
+
+//______________________________________________________________________________
+AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
+                         Bool_t simulations=kFALSE,
+                         const char* addtask="AddTaskMuMuMinv.C",
+                         const char* where="laphecet@nansafmaster2.in2p3.fr/?N")
+{
+  ///
+  /// @param dataset the name of either a dataset or a text file containing dataset names
+  /// @param simulations set it to true if the dataset contains MC information (and you want to analyze it)
+  /// @param where the connection string for an AF or 0 for local analysis
+  ///
+  
+  // below a few parameters that should be changed less often
+  TString workers("workers=8x");
+  TString sds(dataset);
+  Bool_t baseline(kFALSE); // set to kTRUE in order to debug the AF and/or package list
+  // without your analysis but with a baseline one (from the lego train)
+  Bool_t debug(kFALSE);
+  
+  Bool_t prooflite = (strlen(where)==0) || TString(where).Contains("workers");
+  Bool_t local = (sds.Length()==0);
+
+  TProof* p(0x0);
+
+  if (prooflite)
+  {
+    std::cout << "************* Will work in LITE mode *************" << std::endl;
+  }
+  
+  if ( local )
+  {
+    std::cout << "************* Will work in LOCAL mode *************" << std::endl;
+  }
+  
+  if ( !local )
+  {
+    p = TProof::Open(where,workers.Data());
+    if (!p)
+    {
+      std::cerr << "Cannot connect to Proof : " << where << std::endl;
+      return 0x0;
+    }
+  }
+   
+	if (!SetupLibraries(local,debug))
+  {
+    std::cerr << "Cannot setup libraries. Aborting" << std::endl;
+    return 0x0;
+  }
+  
+  AliAnalysisManager* mgr = new AliAnalysisManager("MuMu");
+  
+  AliInputEventHandler* input = GetInput(sds,p);
+
+  if (!input)
+  {
+  	std::cerr << "Cannot get input type !" << std::endl;
+  	return 0x0;
   }
 
   mgr->SetInputEventHandler(input);
   
   TList* triggers = new TList;
   triggers->SetOwner(kTRUE);
-
-  if (!simulations)
-  {
-    triggers->Add(new TObjString("CINT7-B-NOPF-ALLNOTRD"));
-
-//   triggers->Add(new TObjString("CINT7-B-NOPF-ALLNOTRD & 0MUL"));
-//   triggers->Add(new TObjString("CINT7-B-NOPF-ALLNOTRD & 0MSL"));
-//   triggers->Add(new TObjString("CINT7-B-NOPF-ALLNOTRD & 0MSH"));
-//   triggers->Add(new TObjString("CMSL7-B-NOPF-MUON & 0MUL"));
-//   triggers->Add(new TObjString("CMSL7-B-NOPF-MUON & 0MSH"));
-// 
-//   triggers->Add(new TObjString("CMSL7-B-NOPF-MUON"));
-//   triggers->Add(new TObjString("CMSH7-B-NOPF-MUON"));
-//    triggers->Add(new TObjString("CMUL7-B-NOPF-MUON"));
- 
-  // below for MB periods only
-//  triggers->Add(new TObjString("CMSL7-B-NOPF-ALLNOTRD"));
-//   triggers->Add(new TObjString("CMSH7-B-NOPF-ALLNOTRD"));
-  triggers->Add(new TObjString("CMUL7-B-NOPF-ALLNOTRD"));
-  triggers->Add(new TObjString("CMUL7-B-NOPF-MUON"));
-//   triggers->Add(new TObjString("CMSL7-B-NOPF-ALLNOTRD & 0MUL"));
-//   triggers->Add(new TObjString("CMSL7-B-NOPF-ALLNOTRD & 0MSH"));
-  }
-
-  TString outputname("test.MuMu.AOD.1.root");
   
-  if ( sds.Length()>0 ) 
-  {
-  	TString af("local");
-  	
-  	if ( gProof )
-  	{
-  	  af="unknown";
-  	  TString master(gProof->GetSessionTag());
-      if (master.Contains("lx")) af = "caf";
-      if (master.Contains("nansaf")) af = "saf";
-      if (master.Contains("skaf")) af = "skaf";
-      if (master.Contains("localhost:2093")) af="laf";
-  	}
-  	outputname = Form("%s.%s.root",gSystem->BaseName(sds.Data()),af.Data());
-    outputname.ReplaceAll("|","-");
-  	cout << outputname << endl;
-  }
-
+  GetTriggerList(*triggers,simulations);
+  
+  TString outputname = GetOutputName(sds);
+  
   AliAnalysisTask* task(0x0);
 
   if (!baseline)
   {  
-  	gROOT->LoadMacro("AddTaskMuMu.C");
-
-  	task = AddTaskMuMu(outputname.Data(),triggers,"pA",simulations);
+  	gROOT->LoadMacro(Form("$ALICE_PHYSICS/PWG/muon/%s",addtask));
+  	task = AddTaskMuMu(outputname.Data(),triggers,"pp",simulations);
   }
   else
   {
@@ -337,43 +351,44 @@ AliAnalysisTask* runMuMu(const char* dataset="SIM_JPSI_LHC13f_CynthiaTuneWithRej
   
   if (!mgr->InitAnalysis()) 
   {
-  	cout << "Could not InitAnalysis" << endl;
-    return 0;
+    std::cerr << "Could not InitAnalysis" << std::endl;
+    return 0x0;
   }
   
-  if ( sds.Length()>0 )
+  mgr->PrintStatus();
+  task->Print();
+
+  if ( !local )
   {
-    TStopwatch timer;
-    
     mgr->StartAnalysis("proof",sds.Data());
-    
-    timer.Print();
   }
   else
   {
-    mgr->PrintStatus();
-  
-   	task->Print();
-	
-//	return task;
-	
-    TChain* c = CreateLocalChain("list.aod.txt");
-//   	mgr->SetNSysInfo(10);
-    TStopwatch timer;
-//    mgr->SetDebugLevel(10);
+    TChain* c = 0x0;
+    if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
+    {
+      c = CreateLocalChain("list.esd.txt","esdTree");      
+    }
+    else if ( gSystem->AccessPathName("list.aod.txt") == kFALSE )
+    {
+      c = CreateLocalChain("list.aod.txt","aodTree");
+    }
+    if (!c)
+    {
+      std::cerr << "Cannot create input chain !" << std::endl;
+      return 0x0;
+    }
+    if (debug) mgr->SetNSysInfo(10);
+    if( debug) mgr->SetDebugLevel(10);
     mgr->StartAnalysis("local",c);
-    timer.Print();
-//    mgr->ProfileTask("AliAnalysisTaskMuMu");
-//    if (baseline) mgr->ProfileTask("baseline");
+    if (debug)
+    {
+      mgr->ProfileTask("AliAnalysisTaskMuMu");
+      if (baseline) mgr->ProfileTask("baseline");
+      AliCodeTimer::Instance()->Print();
+    }
   }
-  
-  AliCodeTimer::Instance()->Print();
-  
-  if (alirootMode=="PAR")
-  {
-    TProofLog *pl = TProof::Mgr(where)->GetSessionLogs(); pl->Save("*","aod.log");
-  }
-  
+    
   delete triggers;
   
   return task;
