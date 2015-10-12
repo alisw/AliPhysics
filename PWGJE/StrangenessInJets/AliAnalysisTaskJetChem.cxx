@@ -3641,6 +3641,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	  
 	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
 	  
+	  Float_t jetPtEmbAfterMatch = jet->Pt();
+	  
+	  fh1PtEmbAfterMatch->Fill(jetPtEmbAfterMatch);
+
+
 	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	    
 	    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
@@ -3657,10 +3662,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	    
-
-	    fh1PtEmbAfterMatch->Fill(jetPtEmb);
-
-
 	    fFFHistosRecCuts->FillFF(trackPt, jetPtEmb, incrementJetPt);//fill charged tracks into RecCuts histos
 	    
 	    delete trackV;
