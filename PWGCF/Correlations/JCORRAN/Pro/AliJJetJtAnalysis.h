@@ -17,6 +17,7 @@
 #include "AliJJet.h"
 #include "AliJHistManager.h"
 #include "AliJJetAnalysis.h"
+#include <TRandom3.h>  //FK//
 
 class AliJEfficiency;
 class TString;
@@ -66,6 +67,8 @@ class AliJJetJtAnalysis{
 
         void ClearBeforeEvent();
         void FillJtHistogram( TObjArray *Jets, int iContainer );
+        void FillRandomBackground(TObjArray *Jets , int iContainer);
+        void FillRandomBackground(double jetpT, double jetE, TObjArray *Jets , int iContainer);
 
         void FillBgJtWithSmallerR(const TClonesArray &Jets, 
             double nR, int iHist);
@@ -94,8 +97,11 @@ class AliJJetJtAnalysis{
         void SetCentrality( float cent) { fcent = cent;}
         void SetZVertex( float zvtx) { zVert = zvtx;}
         void SetZVertexBin( int zbin) { zBin = zbin;}
-		void SetNumberOfJetFinders( int njfinder ) { nJetContainer = njfinder;}
+	void SetNrandom(int nRndm) { Nrandom = nRndm;}
+	void SetMoveJet(int move) { moveJet = move;}
+	void SetNumberOfJetFinders( int njfinder ) { nJetContainer = njfinder;}
         AliJEfficiency* GetAliJEfficiency() { return fEfficiency;}
+
 
 
 
@@ -105,6 +111,7 @@ class AliJJetJtAnalysis{
         TObjArray fJetListOfList; // !comment needed
         vector<TClonesArray>      fJetBgListOfList;
         double fJetEtaCut;
+  	TRandom3 *frandom; // comment me
 
         TVector  *fJetTriggPtBorders;
         TVector  *fJetConstPtLowLimits;
@@ -124,6 +131,8 @@ class AliJJetJtAnalysis{
 		float zVert;
         TClonesArray *fTracks;
 
+	int Nrandom;
+	int moveJet;
         //Histograms
         AliJHistManager * fHMG;
 
@@ -153,48 +162,76 @@ class AliJJetJtAnalysis{
         AliJTH1D fhJtWeightBinLimBin;
         AliJTH1D fhLogJtWeightBinLimBin;
         AliJTH1D fhLogJtWeight2BinLimBin;
-        
-        
-        AliJTH1D fhJetBgPt ;
-        AliJTH1D fhJetBgPtBin;
-        AliJTH1D fhBgZ ;
-        AliJTH1D fhBgZBin;
-        AliJTH1D fhBgJt ;
-        AliJTH1D fhBgJtBin;
-        AliJTH1D fhBgJtWeightBin;
-        AliJTH1D fhBgLogJtWeightBin;
-        AliJTH1D fhBgLogJtWeight2Bin;
-        AliJTH1D fhBgJtWithPtCutWeightBinBin;
-        AliJTH1D fhBgLogJtWithPtCutWeightBinBin;
-        AliJTH1D fhBgLogJtWithPtCutWeight2BinBin;
-        AliJTH1D fhBgJtWithPtCutWeightBinBinSmallerR;
-        AliJTH1D fhBgLogJtWithPtCutWeightBinBinSmallerR;
-        AliJTH1D fhBgLogJtWithPtCutWeight2BinBinSmallerR;
-        AliJTH1D fhBgJtWithPtCutWeightBinBinDiffR;
-        AliJTH1D fhBgLogJtWithPtCutWeightBinBinDiffR;
-        AliJTH1D fhBgLogJtWithPtCutWeight2BinBinDiffR;
-        AliJTH1D fhBgJtBinLimBin;
-        AliJTH1D fhBgJtWeightBinLimBin;
-        AliJTH1D fhBgLogJtWeightBinLimBin;
-        AliJTH1D fhBgLogJtWeight2BinLimBin;
-        AliJTH1D fhTrkPt;
-        AliJTH1D fhTrkPtBin;
-        AliJTH1D fhTrkPtWeightBin;
-        AliJTH1D fhBgTrkPt;
-        AliJTH1D fhBgTrkPtBin;
-        AliJTH1D fhBgTrkPtWeightBin;
-        
-        AliJTH1D fhdeltaE;
-        AliJTH1D fhdeltaN;
-        AliJTH1D fhFullJetEChJetBin;
-        AliJTH1D fhFullChdRChJetBin;
-        AliJTH2D fh2DFullEvsChEdN0;
-        AliJTH2D fh2DFullEvsChEdNnot0;
-        AliJTH2D fhJetEtaPhi;
-        AliJTH2D fhTrackEtaPhi;
+
+	//Histograms for jt in cone
+	AliJTH1D fhJetConeTrkPt; //
+	AliJTH1D fhJetConeTrkPtBin; //
+	AliJTH1D fhJetConeTrkPtWeightBin; //
+	AliJTH1D fhJetConeZ;
+	AliJTH1D fhJetConeZBin;
+	AliJTH1D fhJetConeJt;
+	AliJTH1D fhJetConeJtBin;
+	AliJTH1D fhJetConeJtWeightBin;
+	AliJTH1D fhJetConeLogJtWeightBin;
+	AliJTH1D fhJetConeLogJtWeight2Bin;
+	AliJTH1D fhJetConeJtWithPtCutWeightBinBin;
+	AliJTH1D fhJetConeLogJtWithPtCutWeightBinBin;
+	AliJTH1D fhJetConeLogJtWithPtCutWeight2BinBin;
+
+	AliJTH1D fhJetBgPt ;
+	AliJTH1D fhJetBgPtBin;
+	AliJTH1D fhBgZ ;
+	AliJTH1D fhBgZBin;
+	AliJTH1D fhBgJt ;
+	AliJTH1D fhBgJtBin;
+	AliJTH1D fhBgJtWeightBin;
+	AliJTH1D fhBgLogJtWeightBin;
+	AliJTH1D fhBgLogJtWeight2Bin;
+	AliJTH1D fhBgJtWithPtCutWeightBinBin;
+	AliJTH1D fhBgLogJtWithPtCutWeightBinBin;
+	AliJTH1D fhBgLogJtWithPtCutWeight2BinBin;
+	AliJTH1D fhBgJtWithPtCutWeightBinBinSmallerR;
+	AliJTH1D fhBgLogJtWithPtCutWeightBinBinSmallerR;
+	AliJTH1D fhBgLogJtWithPtCutWeight2BinBinSmallerR;
+	AliJTH1D fhBgJtWithPtCutWeightBinBinDiffR;
+	AliJTH1D fhBgLogJtWithPtCutWeightBinBinDiffR;
+	AliJTH1D fhBgLogJtWithPtCutWeight2BinBinDiffR;
+	AliJTH1D fhBgJtBinLimBin;
+	AliJTH1D fhBgJtWeightBinLimBin;
+	AliJTH1D fhBgLogJtWeightBinLimBin;
+	AliJTH1D fhBgLogJtWeight2BinLimBin;
+	AliJTH1D fhTrkPt;
+	AliJTH1D fhTrkPtBin;
+	AliJTH1D fhTrkPtWeightBin;
+	AliJTH1D fhBgTrkPt;
+	AliJTH1D fhBgTrkPtBin;
+	AliJTH1D fhBgTrkPtWeightBin;
+	AliJTH1D fhBgTrkNumber;
+	AliJTH1D fhBgTrkNumberBin;
 
 
-		//double   fJetPtMinCut;
+	//Randomized background histograms
+	AliJTH1D fhBgRndmTrkPt;
+	AliJTH1D fhBgRndmZ;
+	AliJTH1D fhBgRndmJt;
+	AliJTH1D fhBgRndmLogJt;
+	AliJTH1D fhBgRndmJtWithPtCutWeightBin;
+	AliJTH1D fhBgRndmLogJtWithPtCutWeight2Bin;
+	AliJTH1D fhBgRndmJtWithPtCutWeightBinBin;
+	AliJTH1D fhBgRndmLogJtWithPtCutWeight2BinBin;
+	AliJTH1D fhBgRndmTrkNumber;
+
+	AliJTH1D fhdeltaE;
+	AliJTH1D fhdeltaN;
+	AliJTH1D fhFullJetEChJetBin;
+	AliJTH1D fhFullChdRChJetBin;
+	AliJTH2D fh2DFullEvsChEdN0;
+	AliJTH2D fh2DFullEvsChEdNnot0;
+	AliJTH2D fhJetEtaPhi;
+	AliJTH2D fhTrackEtaPhi;
+
+
+	//double   fJetPtMinCut;
 };
 
 #endif
