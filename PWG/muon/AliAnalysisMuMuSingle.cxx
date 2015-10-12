@@ -22,6 +22,7 @@
 #include "AliAnalysisMuMuCutCombination.h"
 #include "AliAnalysisMuMuCutRegistry.h"
 #include "AliMergeableCollection.h"
+#include "AliVEvent.h"
 
 ClassImp(AliAnalysisMuMuSingle)
 
@@ -227,6 +228,13 @@ void AliAnalysisMuMuSingle::DefineHistogramCollection(const char* eventSelection
   
   CreateTrackHisto(eventSelection,triggerClassName,centrality,"dcaPwPtCut310Mu","#mu DCA vs P for 3-10 degrees with Pt Cut;P (GeV);DCA (cm)",nbinsP,pMin,pMax,nbins,xmin,xmax,fShouldSeparatePlusAndMinus);
   
+  xmin = 0;
+  xmax = 3564;
+  nbins = GetNbins(xmin,xmax,1.0);
+  
+  CreateTrackHisto(eventSelection,triggerClassName,centrality,"BCX","bunch-crossing ids",nbins,xmin-0.5,xmax-0.5);
+
+  
 }
 
 //_____________________________________________________________________________
@@ -266,7 +274,12 @@ void AliAnalysisMuMuSingle::FillHistosForTrack(const char* eventSelection,
   Double_t dca = EAGetTrackDCA(track);
   
   Double_t theta = AliAnalysisMuonUtility::GetThetaAbsDeg(&track);
-  
+
+  if (!IsHistogramDisabled("BCX"))
+  {
+    Histo(eventSelection,triggerClassName,centrality,trackCutName,"BCX")->Fill(1.0*Event()->GetBunchCrossNumber());
+  }
+
   if (!IsHistogramDisabled("Chi2MatchTrigger"))
   {
     Histo(eventSelection,triggerClassName,centrality,trackCutName,"Chi2MatchTrigger")->Fill(AliAnalysisMuonUtility::GetChi2MatchTrigger(&track));
@@ -279,7 +292,20 @@ void AliAnalysisMuMuSingle::FillHistosForTrack(const char* eventSelection,
   
   if (!IsHistogramDisabled("PtEtaMu*"))
   {
-    Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PtEtaMu%s",charge.Data()))->Fill(p.Eta(),p.Pt());
+    TH1* h = Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PtEtaMu%s",charge.Data()));
+    
+    h->Fill(p.Eta(),p.Pt());
+    
+    if (!IsHistogramDisabled("BCX"))
+    {
+      TH1* hbcx = Histo(eventSelection,triggerClassName,centrality,trackCutName,Form("PtEtaMu%sBCX%d",charge.Data(),Event()->GetBunchCrossNumber()));
+    
+      if (!hbcx)
+      {
+        hbcx = static_cast<TH1*>(h->Clone(Form("PtEtaMu%sBCX%d",charge.Data(),Event()->GetBunchCrossNumber())));
+        HistogramCollection()->Adopt(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,centrality,trackCutName),hbcx);
+      }
+    }
   }
   
   if (!IsHistogramDisabled("PtRapidityMu*"))
