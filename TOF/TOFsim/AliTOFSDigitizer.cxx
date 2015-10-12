@@ -303,7 +303,9 @@ void AliTOFSDigitizer::InitParameters()
   fEffBoundary    = 0.833;
   fEff2Boundary   = 0.94;
   fEff3Boundary   = 0.1;
-  fAddTRes        = 68. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 50^2} (p-p)
+  fAddTRes        = TMath::Sqrt(TMath::Max(fTimeResolution*fTimeResolution - 60*60,Float_t(0.)));//68. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 50^2} (p-p)
+  if(fAddTRes < 10) fAddTRes = 10; 
+
   //fAddTRes      = 48. ; // \sqrt{2x20^2 + 15^2 + 2x10^2 + 30^2 + 15^2} (Pb-Pb)
   // 30^2+20^2+40^2+50^2+50^2+50^2 = 10400 ps^2 (very old value)
   fResCenter      = 35. ; //50. ; // OLD
@@ -311,7 +313,7 @@ void AliTOFSDigitizer::InitParameters()
   fResSlope       = 37. ; //40. ; // OLD
   fTimeWalkCenter = 0.  ;
   fTimeWalkBoundary=0.  ;
-  fTimeWalkSlope  = 0.  ;
+  fTimeWalkSlope  = 42.  ;
   fTimeDelayFlag  = 0   ;
   fPulseHeightSlope=2.0 ;
   fTimeDelaySlope =0.060;
@@ -934,6 +936,11 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 
 
   case 2:
+    if(z0 < 0) timeWalkZ = (AliTOFGeometry::ZPad()*0.5 + z)*fTimeWalkSlope;
+    else timeWalkZ = (AliTOFGeometry::ZPad()*0.5 - z)*fTimeWalkSlope;
+
+    timeWalkX = TMath::Abs(x)*fTimeWalkSlope;
+
     if(z < h) {
       if(z < h2) {
 	effZ = fEffBoundary + (fEff2Boundary - fEffBoundary) * z / h2;
@@ -941,12 +948,10 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	effZ = fEff2Boundary + (fEffCenter - fEff2Boundary) * (z - h2) / (h - h2);
       }
       resZ = fResBoundary + (fResCenter - fResBoundary) * z / h;
-      timeWalkZ = fTimeWalkBoundary + (fTimeWalkCenter - fTimeWalkBoundary) * z / h;
       nTail[nActivatedPads-1] = 1;
     } else {
       effZ = fEffCenter;
       resZ = fResCenter;
-      timeWalkZ = fTimeWalkCenter;
     }
     
     if(x < h) {
@@ -956,17 +961,16 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	effX = fEff2Boundary + (fEffCenter - fEff2Boundary) * (x - h2) / (h - h2);
       }
       resX = fResBoundary + (fResCenter - fResBoundary) * x / h;
-      timeWalkX = fTimeWalkBoundary + (fTimeWalkCenter - fTimeWalkBoundary) * x / h;
       nTail[nActivatedPads-1] = 1;
     } else {
       effX = fEffCenter;
       resX = fResCenter;
-      timeWalkX = fTimeWalkCenter;
     }
     
     (effZ<effX) ? eff[nActivatedPads-1] = effZ : eff[nActivatedPads-1] = effX;
     (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns
-    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 *  timeWalkZ : timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
+
+    timeWalk[nActivatedPads-1] = 0.001 *  (TMath::Sqrt(timeWalkZ*timeWalkZ + timeWalkX*timeWalkX) - AliTOFGeometry::ZPad()*0.5*fTimeWalkSlope); // time walk refered to pad centre
 
 
     ////// Pad B:
@@ -976,7 +980,6 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
       effZ = fEff3Boundary * (k - z) / (k - k2);
     }
     resZ = fResBoundary + fResSlope * z / k;
-    timeWalkZ = fTimeWalkBoundary + fTimeWalkSlope * z / k;
     
     if(z < k && z > 0) {
       if( (iz == 1 && dZ > 0) || (iz == 2 && dZ < 0) ) {
@@ -984,7 +987,8 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX();
 	eff[nActivatedPads-1] = effZ;
 	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns 
-	timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ; // ns
+	if(z0 < 0) timeWalk[nActivatedPads-1] = 0.001 * (1.5*AliTOFGeometry::ZPad() - z )*fTimeWalkSlope; // ns
+	else timeWalk[nActivatedPads-1] = 0.001 * (1.5*AliTOFGeometry::ZPad() + z )*fTimeWalkSlope; // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
 	  qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
@@ -1005,7 +1009,6 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
       effX = fEff3Boundary * (k - x) / (k - k2);
     }
     resX = fResBoundary + fResSlope*x/k;
-    timeWalkX = fTimeWalkBoundary + fTimeWalkSlope*x/k;
     
     if(x < k && x > 0) {
       //   C:
@@ -1014,7 +1017,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	nPlace[nActivatedPads-1] = nPlace[0] - 1;
 	eff[nActivatedPads-1] = effX;
 	res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX); // ns 
-	timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
+	timeWalk[nActivatedPads-1] = 0.001 * (AliTOFGeometry::XPad()*0.5*fTimeWalkSlope-timeWalkX + TMath::Sqrt(timeWalkZ*timeWalkZ + fTimeWalkSlope*fTimeWalkSlope*0.25*AliTOFGeometry::XPad()*AliTOFGeometry::XPad()) - AliTOFGeometry::ZPad()*0.5*fTimeWalkSlope); // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
 	  qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
@@ -1032,7 +1035,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	    nPlace[nActivatedPads-1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() - 1;
 	    eff[nActivatedPads-1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns
-	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
+	    timeWalk[nActivatedPads-1] = 0.001 * ((TMath::Sqrt(AliTOFGeometry::XPad()*AliTOFGeometry::XPad()*0.25 + AliTOFGeometry::ZPad()*AliTOFGeometry::ZPad())- AliTOFGeometry::ZPad()*0.5)*fTimeWalkSlope); // assuming the time to cover all the pad and the hit exactly in the corner
 	    
 	    nTail[nActivatedPads-1] = 2;
 	    if (fTimeDelayFlag) {
@@ -1058,7 +1061,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	nPlace[nActivatedPads-1] = nPlace[0] + 1;
 	eff[nActivatedPads-1] = effX;
 	res[nActivatedPads-1] = 0.001 * (TMath::Sqrt(fAddTRes*fAddTRes + resX * resX)); // ns
-	timeWalk[nActivatedPads-1] = 0.001 * timeWalkX; // ns
+	timeWalk[nActivatedPads-1] = 0.001 * (AliTOFGeometry::XPad()*0.5*fTimeWalkSlope-timeWalkX + TMath::Sqrt(timeWalkZ*timeWalkZ + fTimeWalkSlope*fTimeWalkSlope*0.25*AliTOFGeometry::XPad()*AliTOFGeometry::XPad()) - AliTOFGeometry::ZPad()*0.5*fTimeWalkSlope); // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
 	  qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
@@ -1077,8 +1080,9 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	    nPlace[nActivatedPads - 1] = nPlace[0] + (3 - 2 * iz) * AliTOFGeometry::NpadX() + 1;
 	    eff[nActivatedPads - 1] = effX * effZ;
 	    (resZ<resX) ? res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resX * resX) : res[nActivatedPads-1] = 0.001 * TMath::Sqrt(fAddTRes*fAddTRes + resZ * resZ); // ns
-	    (timeWalkZ<timeWalkX) ? timeWalk[nActivatedPads-1] = 0.001 * timeWalkZ : timeWalk[nActivatedPads-1] = 0.001*timeWalkX; // ns
+	    timeWalk[nActivatedPads-1] = 0.001 * ((TMath::Sqrt(AliTOFGeometry::XPad()*AliTOFGeometry::XPad()*0.25 + AliTOFGeometry::ZPad()*AliTOFGeometry::ZPad())- AliTOFGeometry::ZPad()*0.5)*fTimeWalkSlope); // assuming the time to cover all the pad and the hit exactly in the corner
 	    nTail[nActivatedPads-1] = 2;
+
 	    if (fTimeDelayFlag) {
 	      if (TMath::Abs(x) < TMath::Abs(z)) {
 		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
@@ -1099,7 +1103,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 
 
     for (Int_t iPad = 0; iPad < nActivatedPads; iPad++) {
-      if (res[iPad] < fTimeResolution) res[iPad] = fTimeResolution;
+      //if (res[iPad] < fTimeResolution*0.001) res[iPad] = fTimeResolution*0.001;
       if(gRandom->Rndm() < eff[iPad]) {
 	isFired[iPad] = kTRUE;
 	nFiredPads++;
@@ -1122,6 +1126,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	  averageTime += tofTime[iPad];
 	  weightsSum += 1.;
 	}
+
       }
     }
     if (weightsSum!=0) averageTime /= weightsSum;
