@@ -152,6 +152,10 @@ public:
  Bool_t GetCalculateCRCPt() const {return this->fCalculateCRCPt;};
  void SetCalculateCME(Bool_t const cCRC) {this->fCalculateCME = cCRC;};
  Bool_t GetCalculateCME() const {return this->fCalculateCME;};
+ void SetCalculateCRC2(Bool_t const cCRC) {this->fCalculateCRC2 = cCRC;};
+ Bool_t GetCalculateCRC2() const {return this->fCalculateCRC2;};
+ void SetCalculateFlow(Bool_t const cCRC) {this->fCalculateFlow = cCRC;};
+ Bool_t GetCalculateFlow() const {return this->fCalculateFlow;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
  Bool_t GetUseVZERO() const {return this->fUseVZERO;};
  void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -162,6 +166,8 @@ public:
  Bool_t GetDivSigma() const {return this->fDivSigma;};
  void SetInvertZDC(Bool_t const cCRC) {this->fInvertZDC = cCRC;};
  Bool_t GetInvertZDC() const {return this->fInvertZDC;};
+ void SetTestSin(Bool_t const cCRC) {this->fCRCTestSin = cCRC;};
+ Bool_t GetTestSin() const {return this->fCRCTestSin;};
  void SetNUAforCRC(Bool_t const cCRC) {this->fUseNUAforCRC = cCRC;};
  Bool_t GetNUAforCRC() const {return this->fUseNUAforCRC;};
  void SetUseCRCRecenter(Bool_t const cCRC) {this->fUseCRCRecenter = cCRC;};
@@ -239,11 +245,14 @@ private:
  Bool_t fCalculateCRC; // calculate CRC quantities
  Bool_t fCalculateCRCPt;
  Bool_t fCalculateCME;
+ Bool_t fCalculateCRC2;
+ Bool_t fCalculateFlow;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
  Bool_t fRecenterZDC;
  Bool_t fDivSigma;
  Bool_t fInvertZDC;
+ Bool_t fCRCTestSin;
  Bool_t fUseNUAforCRC;
  Bool_t fUseCRCRecenter;
  Double_t fCRCEtaMin;

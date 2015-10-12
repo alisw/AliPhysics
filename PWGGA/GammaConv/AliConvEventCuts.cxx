@@ -1727,6 +1727,28 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
 				}	
 				if (jet) delete jet;
+                if (fMCStack){
+                    for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+                        TParticle* particle = (TParticle *)fMCStack->Particle(i);
+                        if (!particle) continue;
+                        if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+                            if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
+                                eventAccepted= kFALSE;
+                            }   
+                        }   
+                        
+                    }
+                } else if (fMCStackAOD){
+                    for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+                        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
+                        if (!particle) continue;
+                        if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
+                            if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
+                                eventAccepted= kFALSE;
+                            }
+                        }
+                    }
+                }   
 				
 				if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
 					Double_t ptHardBinRanges[13] 	= {	5, 	7, 	9, 	12, 16, 
@@ -1738,20 +1760,42 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					Int_t bin = 0;
 					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 					if (bin < 12) weight = weightsBins[bin];
-				} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
-					Double_t ptHardBinRanges[20] 	= {	5, 		11, 	21, 	36, 	57, 
-														84,		117, 	152,	191, 	1000000, 
-														5, 		7, 		9, 		12,		16, 
-														21,		28,		36,		45,		57 };
-					Double_t weightsBins[19] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
-														6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
-														2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
-														3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};      
-					Int_t bin = 0;
-					Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
-					if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
-					while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-					if (bin < 19) weight = weightsBins[bin];
+                } else if ( periodName.CompareTo("LHC15g1a") == 0){
+                    Double_t ptHardBinRanges[20]    = { 5,      11,     21,     36,     57, 
+                                                        84,     117,    152,    191,    1000000, 
+                                                        5,      7,      9,      12,     16, 
+                                                        21,     28,     36,     45,     57 };
+    //                     Double_t weightsBins[19]        = { 4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+    //                                                         6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
+    //                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
+    //                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};      
+                    // LHC15g1a                                    
+                    Double_t weightsBins[19]        = { 4.43629 , 0.49523, 0.0394921, 0.00383174, 0.000446559,
+                                                        6.37374e-05, 1.03134e-05, 2.27012e-06, 7.59281e-07, 0,
+                                                        2.62906, 1.12884, 0.656873, 0.262822,  0.0876732, 
+                                                        0.0307759, 0.0087083, 0.0027664, 0.00106203};      
+                                                        
+                    Int_t bin = 0;
+                    Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+                    if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
+                    while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+                    if (bin < 19) weight = weightsBins[bin];
+                } else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ){    
+                    Double_t ptHardBinRanges[20]    = { 5,      11,     21,     36,     57, 
+                                                        84,     117,    152,    191,    1000000, 
+                                                        5,      7,      9,      12,     16, 
+                                                        21,     28,     36,     45,     57 };
+                    // LHC15a3a                                    
+                    Double_t weightsBins[19]        = { 4.43897 , 0.495766, 0.039486, 0.00383011, 0.000447104,
+                                                        6.37277e-05, 1.03166e-05, 2.26971e-06, 7.59023e-07, 0,
+                                                        2.63331, 1.12815, 0.657034, 0.262756,  0.0877227, 
+                                                        0.0307638, 0.00870635, 0.00276658, 0.00106229};      
+                    Int_t bin = 0;
+                    Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+                    if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
+                    while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+                    if (bin < 19) weight = weightsBins[bin];
+                
 				} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
 					Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
 														84,		117, 	152,	191,  	234,
@@ -1804,10 +1848,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 					if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
 						if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard){
 							eventAccepted= kFALSE;
-						}	
-					}	
-
-				}	
+						}
+					}
+				}
 			}	
 			
 			if (periodName.CompareTo("LHC15a3b") == 0 || periodName.CompareTo("LHC15g1b") == 0){
@@ -1820,14 +1863,42 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 				Int_t bin = 0;
 				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
 				if (bin < 12) weight = weightsBins[bin];
-			} else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ||  periodName.CompareTo("LHC15g1a") == 0){
-				Double_t ptHardBinRanges[10] 	= {	5, 		11, 	21, 	36, 	57, 
-													84,		117, 	152,	191, 	1000};
-				Double_t weightsBins[9] 		= {	4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
-													6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07};
-				Int_t bin = 0;
-				while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
-				if (bin < 9) weight = weightsBins[bin];
+			} else if ( periodName.CompareTo("LHC15g1a") == 0){
+                Double_t ptHardBinRanges[20]    = { 5,      11,     21,     36,     57, 
+                                                    84,     117,    152,    191,    1000000, 
+                                                    5,      7,      9,      12,     16, 
+                                                    21,     28,     36,     45,     57 };
+//                     Double_t weightsBins[19]        = { 4.407782 , 4.946649e-01, 3.890474e-02, 3.826300e-03, 4.429376e-04,
+//                                                         6.306745e-05, 1.031527e-05, 2.267429e-06, 7.552074e-07, 0,
+//                                                         2.4635e+00, 1.1483e+00, 6.5069e-01, 2.7130e-01,  8.1947e-02, 
+//                                                         3.1536e-02, 9.3139e-03, 2.9779e-03, 1.1252e-03};      
+                // LHC15g1a                                    
+                Double_t weightsBins[19]        = { 4.43629 , 0.49523, 0.0394921, 0.00383174, 0.000446559,
+                                                    6.37374e-05, 1.03134e-05, 2.27012e-06, 7.59281e-07, 0,
+                                                    2.62906, 1.12884, 0.656873, 0.262822,  0.0876732, 
+                                                    0.0307759, 0.0087083, 0.0027664, 0.00106203};      
+                                                    
+                Int_t bin = 0;
+                Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+                if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
+                while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+                if (bin < 19) weight = weightsBins[bin];
+            } else if (periodName.CompareTo("LHC15a3a") == 0 || periodName.CompareTo("LHC15a3a_plus") == 0 ){    
+                Double_t ptHardBinRanges[20]    = { 5,      11,     21,     36,     57, 
+                                                    84,     117,    152,    191,    1000000, 
+                                                    5,      7,      9,      12,     16, 
+                                                    21,     28,     36,     45,     57 };
+                // LHC15a3a                                    
+                Double_t weightsBins[19]        = { 4.43897 , 0.495766, 0.039486, 0.00383011, 0.000447104,
+                                                    6.37277e-05, 1.03166e-05, 2.26971e-06, 7.59023e-07, 0,
+                                                    2.63331, 1.12815, 0.657034, 0.262756,  0.0877227, 
+                                                    0.0307638, 0.00870635, 0.00276658, 0.00106229};      
+                Int_t bin = 0;
+                Int_t binFromFile = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPtHardFromFile();
+                if (binFromFile != -1 && binFromFile >9 && ptHard < 57) bin = 9;
+                while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+                if (bin < 19) weight = weightsBins[bin];
+                
 			} else if (periodName.CompareTo("LHC13b4_plus") == 0 || periodName.CompareTo("LHC13b4_fix") == 0 ){
 				Double_t ptHardBinRanges[11] 	= {	5, 		11, 	21, 	36, 	57, 
 													84,		117, 	152,	191,  	234,

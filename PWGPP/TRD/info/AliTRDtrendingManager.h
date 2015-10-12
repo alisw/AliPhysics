@@ -39,7 +39,7 @@ public:
   AliTRDtrendValue* GetValue(const Char_t *name);
   static AliTRDtrendingManager*	Instance();
   Bool_t            IsRelativeMeanSigma() const     { return TestBit(kRelative);}
-  void              Load(const char *fn = "$ALICE_ROOT/PWGPP/TRD/data/TRD.Trend.root");
+  void              Load(const char *fn = "$ALICE_PHYSICS/PWGPP/TRD/data/TRD.Trend.root");
   TH1*              MakeTrends(const char *fileList, TObjArray *dump=NULL);
   Bool_t            ModifyValue(const Char_t *name
                             ,const Char_t *title

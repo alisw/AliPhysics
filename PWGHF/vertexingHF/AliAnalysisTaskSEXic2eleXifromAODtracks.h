@@ -165,6 +165,18 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleXiMassWSMix;         //!<! e-Xi mass spectra (wrong-sign)
   THnSparse* fHistoEleXiMassRSSide;         //!<! e-Xi mass spectra (right-sign)
   THnSparse* fHistoEleXiMassWSSide;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRS1;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWS1;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMix1;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMix1;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSide1;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSide1;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRS2;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWS2;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMix2;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMix2;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSide2;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSide2;         //!<! e-Xi mass spectra (wrong-sign)
   THnSparse* fHistoEleXiMassvsElePtRS;         //!<! e-Xi mass spectra (right-sign)
   THnSparse* fHistoEleXiMassvsElePtWS;         //!<! e-Xi mass spectra (wrong-sign)
   THnSparse* fHistoEleXiMassvsElePtRSMix;         //!<! e-Xi mass-ept spectra (right-sign)
@@ -248,11 +260,24 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoXicMCGen;         //!<! electron in mcArray
   THnSparse* fHistoXicMCGen1;         //!<! electron in mcArray
   THnSparse* fHistoXicMCGen2;         //!<! electron in mcArray
+  THnSparse* fHistoXicMCS;         //!<! electron in mcArray
+  THnSparse* fHistoXicMCS1;         //!<! electron in mcArray
+  THnSparse* fHistoXicMCS2;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCGen;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCGen1;         //!<! electron in mcArray
   THnSparse* fHistoXicElectronMCGen2;         //!<! electron in mcArray
+  THnSparse* fHistoXicElectronMCS;         //!<! electron in mcArray
+  THnSparse* fHistoXicElectronMCS1;         //!<! electron in mcArray
+  THnSparse* fHistoXicElectronMCS2;         //!<! electron in mcArray
   THnSparse* fHistoElectronMCGen;         //!<! electron in mcArray (only from charmed baryon)
   THnSparse* fHistoXiMCGen;         //!<! Xi in mcArray (only from charmed baryon)
+
+	TH2F *fHistoLambdaPtvsDl; //!<! Lambda proper life time distribution
+	TH2F *fHistoLambdaPtvsDlSide; //!<! Lambda proper life time distribution (sideband)
+	TH2F *fHistoLambdaPtvsDlMCS; //!<! Lambda proper life time distribution (mc)
+
+	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
 	TH1F *fHistonEvtvsRunNumber;//!<!  evt vs runnumber
@@ -274,7 +299,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,10); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,11); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

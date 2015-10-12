@@ -138,10 +138,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fCentRange[1] = aReader.fCentRange[1];
 }
 //__________________
-//Destructor
 AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
-{
-  // destructor
+{ // destructor
   delete fTree;
   delete fEvent;
   delete fAodFile;
@@ -153,10 +151,10 @@ AliFemtoEventReaderAOD::~AliFemtoEventReaderAOD()
 
 //__________________
 AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventReaderAOD &aReader)
-{
-  // assignment operator
-  if (this == &aReader)
+{ // assignment operator
+  if (this == &aReader) {
     return *this;
+  }
 
   fInputFile = aReader.fInputFile;
   fNumberofEvent = aReader.fNumberofEvent;
@@ -685,39 +683,78 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (aodv0->ChargeProng(0) == aodv0->ChargeProng(1)) continue;
       if (aodv0->CosPointingAngle(fV1) < 0.998) continue;
 
-      AliAODTrack *daughterTrackPos = (AliAODTrack *)aodv0->GetDaughter(0); //getting positive daughter track
-      AliAODTrack *daughterTrackNeg = (AliAODTrack *)aodv0->GetDaughter(1); //getting negative daughter track
-      if (!daughterTrackPos) continue; //daughter tracks must exist
-      if (!daughterTrackNeg) continue;
-      if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue; //and have different charge
+      AliAODTrack *daughterTrackPos = (AliAODTrack *)aodv0->GetDaughter(0),   // getting positive daughter track
+                  *daughterTrackNeg = (AliAODTrack *)aodv0->GetDaughter(1);   // getting negative daughter track
+      if (daughterTrackPos == NULL || daughterTrackNeg == NULL) continue;     // daughter tracks must exist
+      if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue; // and have different charge
+
+      // ensure that pos and neg are pointing to the correct children
+      if (daughterTrackPos->Charge() < 0 && daughterTrackNeg->Charge() > 0) {
+        // std::swap(daughterTrackPos, daughterTrackNeg); // can we use this?
+        AliAODTrack *tmp = daughterTrackPos;
+        daughterTrackPos = daughterTrackNeg;
+        daughterTrackNeg = tmp;
+      }
 
       AliFemtoV0 *trackCopyV0 = CopyAODtoFemtoV0(aodv0);
       if (mcP) {
         daughterTrackPos->SetAODEvent(fEvent);
         daughterTrackNeg->SetAODEvent(fEvent);
         if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0) {
-          AliAODMCParticle *mcParticlePos = (AliAODMCParticle *)mcP->At(daughterTrackPos->GetLabel());
-          AliAODMCParticle *mcParticleNeg = (AliAODMCParticle *)mcP->At(daughterTrackNeg->GetLabel());
-          if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
-            int motherOfPosID = mcParticlePos->GetMother();
-            int motherOfNegID = mcParticleNeg->GetMother();
-            // Both daughter tracks refer to the same mother, we can continue
-            if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) {
-              AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-              AliAODMCParticle *v0 = (AliAODMCParticle *)mcP->At(motherOfPosID); //our V0 particle
 
-              tInfo->SetPDGPid(v0->GetPdgCode());
-              int v0MotherId = v0->GetMother();
-              if (v0MotherId > -1) { //V0 particle has a mother
-                AliAODMCParticle *motherOfV0 = (AliAODMCParticle *)mcP->At(v0MotherId);
-                tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
+          // get the MC data for the two daughter particles
+          const AliAODMCParticle *mcParticlePos = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackPos->GetLabel())),
+                                 *mcParticleNeg = static_cast<AliAODMCParticle*>(mcP->At(daughterTrackNeg->GetLabel()));
+
+          // They daughter info MUST exist for both
+          if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
+
+            // Get the mother ID of the two daughters
+            const int motherOfPosID = mcParticlePos->GetMother(),
+                      motherOfNegID = mcParticleNeg->GetMother();
+
+            // If both daughter tracks refer to the same mother, we can continue
+            if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) {
+              // Create the MC data store
+              AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+
+              // Our V0 particle
+              const AliAODMCParticle *v0 = static_cast<AliAODMCParticle*>(mcP->At(motherOfPosID));
+
+              if (v0 == NULL) {
+                tInfo->SetPDGPid(0);
+                tInfo->SetTrueMomentum(0.0, 0.0, 0.0);
+                tInfo->SetMass(0);
+              } else {
+                //-----v0 particle-----
+                const int v0MotherId = v0->GetMother();
+                if (v0MotherId > -1) { //V0 particle has a mother
+                  AliAODMCParticle *motherOfV0 = static_cast<AliAODMCParticle*>(mcP->At(v0MotherId));
+                  tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
+                }
+                tInfo->SetPDGPid(v0->GetPdgCode());
+                tInfo->SetMass(v0->GetCalcMass());
+                tInfo->SetTrueMomentum(v0->Px(), v0->Py(), v0->Pz());
+                tInfo->SetEmissionPoint(v0->Xv(), v0->Yv(), v0->Zv(), v0->T());
+
+                //-----Positive daughter of v0-----
+                tInfo->SetPDGPidPos(mcParticlePos->GetPdgCode());
+                tInfo->SetMassPos(mcParticlePos->GetCalcMass());
+                tInfo->SetTrueMomentumPos(mcParticlePos->Px(), mcParticlePos->Py(), mcParticlePos->Pz());
+                tInfo->SetEmissionPointPos(mcParticlePos->Xv(), mcParticlePos->Yv(), mcParticlePos->Zv(), mcParticlePos->T());
+
+                //-----Negative daughter of v0-----
+                tInfo->SetPDGPidNeg(mcParticleNeg->GetPdgCode());
+                tInfo->SetMassNeg(mcParticleNeg->GetCalcMass());
+                tInfo->SetTrueMomentumNeg(mcParticleNeg->Px(), mcParticleNeg->Py(), mcParticleNeg->Pz());
+                tInfo->SetEmissionPointNeg(mcParticleNeg->Xv(), mcParticleNeg->Yv(), mcParticleNeg->Zv(), mcParticleNeg->T());
               }
               trackCopyV0->SetHiddenInfo(tInfo);
             }
           }
         }
       }
-      tEvent->V0Collection()->push_back(trackCopyV0); 
+      tEvent->V0Collection()->push_back(trackCopyV0);
       count_pass++;
     }
   }
@@ -735,44 +772,16 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (aodxi->CosPointingAngle(fV1) < 0.9) continue;
       if (aodxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.98) continue;
 
-      AliAODTrack *daughterTrackPos = (AliAODTrack *)aodxi->GetDaughter(0); //getting positive daughter track
-      AliAODTrack *daughterTrackNeg = (AliAODTrack *)aodxi->GetDaughter(1); //getting negative daughter track
-      if (!daughterTrackPos) continue; //daughter tracks must exist
-      if (!daughterTrackNeg) continue;
-      if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue; //and have different charge
+      const AliAODTrack *daughterTrackPos = (AliAODTrack *)aodxi->GetDaughter(0), // getting positive daughter track
+                        *daughterTrackNeg = (AliAODTrack *)aodxi->GetDaughter(1); // getting negative daughter track
+      if (daughterTrackPos == NULL || daughterTrackNeg == NULL) continue;         // daughter tracks must exist
+      if (daughterTrackNeg->Charge() == daughterTrackPos->Charge()) continue;     // and have different charge
 
       AliFemtoXi *trackCopyXi = CopyAODtoFemtoXi(aodxi);
-      //MC corresponding information from V0
-      /*if (mcP) {
-        daughterTrackPos->SetAODEvent(fEvent);
-        daughterTrackNeg->SetAODEvent(fEvent);
-        if (daughterTrackPos->GetLabel() > 0 && daughterTrackNeg->GetLabel() > 0) {
-          AliAODMCParticle *mcParticlePos = (AliAODMCParticle *)mcP->At(daughterTrackPos->GetLabel());
-          AliAODMCParticle *mcParticleNeg = (AliAODMCParticle *)mcP->At(daughterTrackNeg->GetLabel());
-          if ((mcParticlePos != NULL) && (mcParticleNeg != NULL)) {
-            int motherOfPosID = mcParticlePos->GetMother();
-            int motherOfNegID = mcParticleNeg->GetMother();
-            // Both daughter tracks refer to the same mother, we can continue
-            if ((motherOfPosID > -1) && (motherOfPosID == motherOfNegID)) {
-              AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
-              AliAODMCParticle *xi = (AliAODMCParticle *)mcP->At(motherOfPosID); //our Xi particle
-
-              tInfo->SetPDGPid(xi->GetPdgCode());
-              int xiMotherId = xi->GetMother();
-              if (xiMotherId > -1) { //V0 particle has a mother
-                AliAODMCParticle *motherOfV0 = (AliAODMCParticle *)mcP->At(v0MotherId);
-                tInfo->SetMotherPdgCode(motherOfV0->GetPdgCode());
-              }
-              trackCopyV0->SetHiddenInfo(tInfo);
-            }
-          }
-        }
-      }*/
       tEvent->XiCollection()->push_back(trackCopyXi);
       count_pass++;
     }
   }
-  
 
   return tEvent;
 }
@@ -882,7 +891,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   }
   delete [] tpcPositions;
 
-  
+
   int indexes[3];
   for (int ik = 0; ik < 3; ik++) {
     indexes[ik] = 0;
@@ -1276,7 +1285,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   tFemtoXi->SetrapK0Short(tAODxi->RapK0Short());
   tFemtoXi->SetptV0(tAODxi->Pt());
   tFemtoXi->SetptotV0(::sqrt(tAODxi->Ptot2V0()));
-  
+
   //xi
   tFemtoXi->SetidBac(tAODxi->GetBachID());
   //v0
@@ -1286,7 +1295,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
 
   //xi
   tFemtoXi->SetEtaXi(tAODxi->Eta());
-  tFemtoXi->SetPhiXi(tAODxi->Phi()); 
+  tFemtoXi->SetPhiXi(tAODxi->Phi());
   tFemtoXi->SetCosPointingAngleXi(tAODxi->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]));
 
   //v0
@@ -1303,7 +1312,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
   //void SeterrdedxPos(float x);//Gael 04Fev2002
   //void SetlendedxPos(float x);//Gael 04Fev2002
 
-  
+
   AliAODTrack *trackpos = (AliAODTrack *)tAODxi->GetDaughter(0);
   AliAODTrack *trackneg = (AliAODTrack *)tAODxi->GetDaughter(1);
   AliAODTrack *trackbac = (AliAODTrack *)tAODxi->GetDecayVertexXi()->GetDaughter(0);
@@ -1333,7 +1342,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
     tFemtoXi->SetStatusBac(trackbac->GetStatus()); //bac!
 
     tFemtoXi->SetPosNSigmaTPCK(fAODpidUtil->NumberOfSigmasTPC(trackpos, AliPID::kKaon));
-    tFemtoXi->SetNegNSigmaTPCK(fAODpidUtil->NumberOfSigmasTPC(trackneg, AliPID::kKaon));    
+    tFemtoXi->SetNegNSigmaTPCK(fAODpidUtil->NumberOfSigmasTPC(trackneg, AliPID::kKaon));
     tFemtoXi->SetBacNSigmaTPCK(fAODpidUtil->NumberOfSigmasTPC(trackbac, AliPID::kKaon));
     tFemtoXi->SetPosNSigmaTPCP(fAODpidUtil->NumberOfSigmasTPC(trackpos, AliPID::kProton));
     tFemtoXi->SetNegNSigmaTPCP(fAODpidUtil->NumberOfSigmasTPC(trackneg, AliPID::kProton));
@@ -1342,7 +1351,7 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
     tFemtoXi->SetNegNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackneg, AliPID::kPion));
     tFemtoXi->SetBacNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackbac, AliPID::kPion));
 
-    
+
     float bfield = 5 * fMagFieldSign;
     float globalPositionsAtRadiiPos[9][3];
     GetGlobalPositionAtGlobalRadiiThroughTPC(trackpos, bfield, globalPositionsAtRadiiPos);
@@ -1524,9 +1533,9 @@ AliFemtoXi *AliFemtoEventReaderAOD::CopyAODtoFemtoXi(AliAODcascade *tAODxi)
     tFemtoXi->SetStatusBac(999);
     }
   }
-  
+
   tFemtoXi->SetOnFlyStatusV0(tAODxi->GetOnFlyStatus());
-  
+
   return tFemtoXi;
 }
 
@@ -1861,7 +1870,7 @@ void AliFemtoEventReaderAOD::SetShiftedPositions(const AliAODTrack *track
 						 ,Float_t posShifted[3]
 						 ,const Double_t radius) {
   // Sets the spatial position of the track at the radius R=1.25m in the shifted coordinate system, code adapted from Hans Beck analysis
- 
+
   // Initialize the array to something indicating there was no propagation
   posShifted[0]=-9999.; // THIS IS THE DATA MEMBER OF YOUR FEMTOTRACK
   posShifted[1]=-9999.;
@@ -1869,42 +1878,42 @@ void AliFemtoEventReaderAOD::SetShiftedPositions(const AliAODTrack *track
    // Make a copy of the track to not change parameters of the track
   AliExternalTrackParam etp;
   etp.CopyFromVTrack(track);
- 
+
   // The global position of the the track
-  Double_t xyz[3]={-9999.,-9999.,-9999.};  
- 
+  Double_t xyz[3]={-9999.,-9999.,-9999.};
+
   // The radius in cm we want to propagate to, squared
   const Float_t RSquaredWanted(radius*radius*1e4);
-  
+
   // Propagation is done in local x of the track
   for (Float_t x = 58.;x<247.;x+=1.){
     // Starts at 83 / Sqrt(2) and goes outwards. 85/Sqrt(2) is the smallest local x
     // for global radius 85 cm. x = 245 is the outer radial limit of the TPC when
-    // the track is straight, i.e. has inifinite pt and doesn't get bent. 
+    // the track is straight, i.e. has inifinite pt and doesn't get bent.
     // If the track's momentum is smaller than infinite, it will develop a y-component,
     // which adds to the global radius
- 
+
     // Stop if the propagation was not succesful. This can happen for low pt tracks
     // that don't reach outer radii
     if(!etp.PropagateTo(x,bfield))break;
     etp.GetXYZ(xyz); // GetXYZ returns global coordinates
- 
-    // Calculate the shifted radius we are at, squared. 
+
+    // Calculate the shifted radius we are at, squared.
     // Compare squared radii for faster code
     Float_t shiftedRadiusSquared = (xyz[0]-fV1[0])*(xyz[0]-fV1[0])
                                  + (xyz[1]-fV1[1])*(xyz[1]-fV1[1]);
- 
+
     // Roughly reached the radius we want
     if(shiftedRadiusSquared > RSquaredWanted){
- 
-      // Bigger loop has bad precision, we're nearly one centimeter too far, 
+
+      // Bigger loop has bad precision, we're nearly one centimeter too far,
       // go back in small steps.
       while (shiftedRadiusSquared>RSquaredWanted){
 	// Propagate a mm inwards
 	x-=.1;
 	if(!etp.PropagateTo(x,bfield)){
 	  // Propagation failed but we're already with a
-	  // cm precision at R=1.25m so we only break the 
+	  // cm precision at R=1.25m so we only break the
 	  // inner loop
 	  break;
 	}

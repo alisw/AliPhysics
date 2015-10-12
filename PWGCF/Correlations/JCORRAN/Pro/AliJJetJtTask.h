@@ -49,6 +49,8 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   void SetJetTaskName(TString name){ fJetTaskName=name; }
   void SetJJetJtAnalysis(AliJJetJtAnalysis * jco){ fJJetJtAnalysis=jco; }
   void SetCard( AliJCard * card ){ fCard=card; }
+  void SetNrandom( int Nrand) { NRandom = Nrand;}
+  void SetMoveJet( int move) { moveJet = move;}
 
  private:
   
@@ -61,6 +63,8 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
   Bool_t fFirstEvent;
   int cBin;
   int zBin;
+  int NRandom;
+  int moveJet;
   double zVert;
   AliAnalysisUtils *fAnaUtils;
   AliJRunTable *fRunTable;

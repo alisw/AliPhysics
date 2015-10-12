@@ -35,7 +35,8 @@ AliAnalysisMuMuMinv::AliAnalysisMuMuMinv(TH2* accEffHisto, Bool_t computeMeanPt,
 : AliAnalysisMuMuBase(),
 fcomputeMeanPt(computeMeanPt),
 fAccEffHisto(0x0),
-fsystLevel(systLevel)
+fsystLevel(systLevel),
+fMinvBinSeparator("+")
 {
   // FIXME : find the AccxEff histogram from HistogramCollection()->Histo("/EXCHANGE/JpsiAccEff")
   
@@ -1165,8 +1166,8 @@ void AliAnalysisMuMuMinv::FillHistosForMCEvent(const char* eventSelection,const 
 //_____________________________________________________________________________
 TString AliAnalysisMuMuMinv::GetMinvHistoName(const AliAnalysisMuMuBinning::Range& r, Bool_t accEffCorrected) const
 {
-  return TString::Format("MinvUS%s%s",r.AsString().Data(),
-                         accEffCorrected ? "_AccEffCorr" : "");
+  return TString::Format("MinvUS%s%s%s",
+                         accEffCorrected ? "_AccEffCorr" : "",fMinvBinSeparator.Data(),r.AsString().Data());
 }
 
 

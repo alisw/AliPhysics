@@ -531,6 +531,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 
 	// create the task
 	AliCFTaskVertexingHF *task = new AliCFTaskVertexingHF("AliCFTaskVertexingHF",cutsDstoKKpi);
+	task->SetConfiguration(configuration);
 	task->SetFillFromGenerated(kFALSE);
 	task->SetDecayChannel(33);
 	if(decayOption==AliCFVertexingHF3Prong::kCountAllDsKKpi) task->SetCountAllDs();

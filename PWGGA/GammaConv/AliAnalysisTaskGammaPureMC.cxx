@@ -437,7 +437,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 			abs(particle->GetPdgCode()) == 223 || abs(particle->GetPdgCode()) == 211 )  )
 			continue;
 		
-		if (!abs(particle->Energy()-particle->Pz())>0.) continue;
+		if (!(abs(particle->Energy()-particle->Pz())>0.)) continue;
 		Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
 // 		cout << i << "\t"<< particle->GetPdgCode() << "\t"<< particle->Pz() << "\t" << particle->Energy()<< "\t" << particle->Energy()-particle->Pz() << "\t"<< yPre << endl;
 		if (yPre == 0.) continue;
@@ -494,7 +494,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 		}
 		
 		// from here on, we are only intested in particles considered primaries in ALICE
-		if (particle->GetPdgCode()==111 || particle->GetPdgCode()==221 && hasMother){
+		if ((particle->GetPdgCode()==111 || particle->GetPdgCode()==221) && hasMother){
 			if (TMath::Abs(motherParticle->GetPdgCode()) == 310 ||  // K0s
 				TMath::Abs(motherParticle->GetPdgCode()) == 130	||	// K0l
 				TMath::Abs(motherParticle->GetPdgCode()) == 321	||	// K+/-

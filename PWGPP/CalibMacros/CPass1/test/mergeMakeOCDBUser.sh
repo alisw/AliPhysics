@@ -11,7 +11,7 @@
 # Example:
 # run=170572
 # AlienName=/m/miranov/
-# $ALICE_ROOT/PWGPP/CalibMacros/CPass1/test/mergeMakeOCDBUser.sh $AlienName /alice/data/2011/LHC11h/000$Run/cpass0_HLT/  $Run alien://folder=/alice/cern.ch/user/m/miranov/CPass1/$Run
+# $ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/test/mergeMakeOCDBUser.sh $AlienName /alice/data/2011/LHC11h/000$Run/cpass0_HLT/  $Run alien://folder=/alice/cern.ch/user/m/miranov/CPass1/$Run
 #
 # authors:   marian.ivanov#cern.ch, mikolaj.krzewicki@cern.ch 
 
@@ -19,7 +19,7 @@ AlienName=$1
 InputDataDir=$2
 Run=$3
 OCDBPath=$4
-InputMacros=$ALICE_ROOT/PWGPP/CalibMacros/CPass1/
+InputMacros=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/
 
 echo xxxxxxxxxxxxxxxxxxxxxxxxxx
 echo SETUP
@@ -27,7 +27,7 @@ echo AlienName=$1
 echo InputDataDir=$2
 echo Run=$3
 echo OCDBPath=$4
-echo InputMacros=$ALICE_ROOT/PWGPP/CalibMacros/CPass1/
+echo InputMacros=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/
 echo xxxxxxxxxxxxxxxxxxxxxxxxxx
 
 #

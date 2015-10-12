@@ -5,6 +5,7 @@
 // when doing analysis w.r. to multiplicity or event plane, for example.
 //
 // Author: A. Pulvirenti
+// Developers: F. Bellini (fbellini@cern.ch)
 //
 
 #include "AliRsnMiniParticle.h"

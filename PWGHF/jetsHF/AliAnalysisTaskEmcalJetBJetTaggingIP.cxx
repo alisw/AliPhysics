@@ -87,9 +87,12 @@ ClassImp(AliAnalysisTaskEmcalJetBJetTaggingIP)
     , fVetexingMassFitTest(kFALSE)
     , fVetexingPtRelTest(kFALSE)
     , fUseAtlasSignTCCalculation(kFALSE)
+    , fUseSignificance(kFALSE)
+    , fUse3DsIP(kFALSE)
     , fUseEventSelection(0)
     , fUseJetSelection(0)
     , fUseMCTagger(0)
+    , fNumberOfsIPBins(500)
     , fSigmaTPCElectronLow(-0.5)
     , fSigmaTPCElectronHigh(3.)
     , fSigmaTOFElectronLow(-3)
@@ -124,6 +127,8 @@ ClassImp(AliAnalysisTaskEmcalJetBJetTaggingIP)
     memset(fhist_TC_Eta_Phi, 0, sizeof fhist_TC_sIP_Pt);
     memset(fhist_QualityClasses_sIP, 0, sizeof fhist_QualityClasses_sIP);
     memset(fhist_QualityClasses_Eta_Phi, 0, sizeof fhist_QualityClasses_Eta_Phi);
+    memset(fhist_TC_sIP_Pt_Conversions, 0, sizeof fhist_TC_sIP_Pt_Conversions);
+    memset(fhist_TC_Eta_Phi_Conversions, 0, sizeof fhist_TC_Eta_Phi_Conversions);
     memset(fhist_momentum_response, 0, sizeof fhist_momentum_response);
     SetMakeGeneralHistograms(kTRUE);
 }
@@ -159,9 +164,12 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
     , fVetexingMassFitTest(kFALSE)
     , fVetexingPtRelTest(kFALSE)
     , fUseAtlasSignTCCalculation(kFALSE)
+    , fUseSignificance(kFALSE)
+    , fUse3DsIP(kFALSE)
     , fUseEventSelection(0)
     , fUseJetSelection(0)
     , fUseMCTagger(0)
+    , fNumberOfsIPBins(500)
     , fSigmaTPCElectronLow(-0.5)
     , fSigmaTPCElectronHigh(3.)
     , fSigmaTOFElectronLow(-3)
@@ -197,6 +205,9 @@ AliAnalysisTaskEmcalJetBJetTaggingIP::AliAnalysisTaskEmcalJetBJetTaggingIP(const
     memset(fhist_TC_Eta_Phi, 0, sizeof fhist_TC_sIP_Pt);
     memset(fhist_QualityClasses_sIP, 0, sizeof fhist_QualityClasses_sIP);
     memset(fhist_QualityClasses_Eta_Phi, 0, sizeof fhist_QualityClasses_Eta_Phi);
+    memset(fhist_QualityClasses_Eta_Phi, 0, sizeof fhist_QualityClasses_Eta_Phi);
+    memset(fhist_TC_sIP_Pt_Conversions, 0, sizeof fhist_TC_sIP_Pt_Conversions);
+    memset(fhist_TC_Eta_Phi_Conversions, 0, sizeof fhist_TC_Eta_Phi_Conversions);
     memset(fhist_momentum_response, 0, sizeof fhist_momentum_response);
     SetMakeGeneralHistograms(kTRUE);
 }
@@ -282,39 +293,70 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 	fhist_Jet_Nconst_Pt->Fill(jetPt, curjet->GetNumberOfTracks());
 
 	Double_t n3value = -9999.;
-
+	Bool_t isFromConversion = kFALSE;
 	if(fTrackCountingTagger->GetJetDiscriminator(curjet, tagvalue, istagged)) {
 	    if(istagged[0]) {
+		isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(0), this->fIsMC);
 		fhist_Jets->Fill("TaggingN1", jetPt, 1.);
 		fhist_TC_sIP_Pt[0][0][0]->Fill(tagvalue[0], jetPt);
 		fhist_TC_Eta_Phi[0][0][0]->Fill(curjet->Eta(), curjet->Phi());
+		if(isFromConversion) {
+		    fhist_TC_sIP_Pt_Conversions[0][0][0]->Fill(tagvalue[0], jetPt);
+		    fhist_TC_Eta_Phi_Conversions[0][0][0]->Fill(curjet->Eta(), curjet->Phi());
+		}
 		if(fIsMC)
 		    if(flavourtag > 0) {
 			fhist_TC_sIP_Pt[0][flavourtag][0]->Fill(tagvalue[0], jetPt);
 			fhist_TC_Eta_Phi[0][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi());
+			if(isFromConversion) {
+			    fhist_TC_sIP_Pt_Conversions[0][flavourtag][0]->Fill(tagvalue[0], jetPt);
+			    fhist_TC_Eta_Phi_Conversions[0][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi());
+			}
 		    }
+		isFromConversion = kFALSE;
 	    }
 	    if(istagged[1]) {
+		isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(1), this->fIsMC);
+
 		fhist_Jets->Fill("TaggingN2", jetPt, 1.);
 		fhist_TC_sIP_Pt[1][0][0]->Fill(tagvalue[1], jetPt);
 		fhist_TC_Eta_Phi[1][0][0]->Fill(curjet->Eta(), curjet->Phi());
+		if(isFromConversion) {
+		    fhist_TC_sIP_Pt_Conversions[1][0][0]->Fill(tagvalue[1], jetPt);
+		    fhist_TC_Eta_Phi_Conversions[1][0][0]->Fill(curjet->Eta(), curjet->Phi());
+		}
 		if(fIsMC)
 		    if(flavourtag > 0) {
 			fhist_TC_Eta_Phi[1][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi());
 			fhist_TC_sIP_Pt[1][flavourtag][0]->Fill(tagvalue[1], jetPt);
+			if(isFromConversion) {
+			    fhist_TC_sIP_Pt_Conversions[1][flavourtag][0]->Fill(tagvalue[1], jetPt);
+			    fhist_TC_Eta_Phi_Conversions[1][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi());
+			}
 		    }
+		isFromConversion = kFALSE;
 	    }
 	    if(istagged[2]) {
+		isFromConversion = this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(2), this->fIsMC);
+
 		n3value = tagvalue[2];
 		fhist_Jets->Fill("TaggingN3", jetPt, 1.);
 		fhist_TC_sIP_Pt[2][0][0]->Fill(tagvalue[2], jetPt);
 		fhist_TC_Eta_Phi[2][0][0]->Fill(curjet->Eta(), curjet->Phi());
-
+		if(isFromConversion) {
+		    fhist_TC_sIP_Pt_Conversions[2][0][0]->Fill(tagvalue[2], jetPt);
+		    fhist_TC_Eta_Phi_Conversions[2][0][0]->Fill(curjet->Eta(), curjet->Phi());
+		}
 		if(fIsMC)
 		    if(flavourtag > 0) {
 			fhist_TC_sIP_Pt[2][flavourtag][0]->Fill(tagvalue[2], jetPt);
 			fhist_TC_Eta_Phi[2][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi());
+			if(isFromConversion) {
+			    fhist_TC_sIP_Pt_Conversions[2][flavourtag][0]->Fill(tagvalue[2], jetPt);
+			    fhist_TC_Eta_Phi_Conversions[2][flavourtag][0]->Fill(curjet->Eta(), curjet->Phi());
+			}
 		    }
+		isFromConversion = kFALSE;
 	    }
 	}
 
@@ -327,35 +369,68 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::Run()
 	for(int i = 1; i < 5; ++i) {
 	    memset(tagvalue, 0, sizeof tagvalue);
 	    memset(istagged, 0, sizeof istagged);
-
+	    isFromConversion = kFALSE;
 	    if(fTrackCountingTagger->GetJetDiscriminatorQualityClass(i, curjet, tagvalue, istagged)) {
 		if(istagged[0]) {
+		    isFromConversion =
+		        this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(0), this->fIsMC);
+		    if(isFromConversion) {
+			fhist_TC_sIP_Pt_Conversions[0][0][i]->Fill(tagvalue[0], jetPt);
+			fhist_TC_Eta_Phi_Conversions[0][0][i]->Fill(curjet->Eta(), curjet->Phi());
+		    }
 		    fhist_TC_sIP_Pt[0][0][i]->Fill(tagvalue[0], jetPt);
 		    fhist_TC_Eta_Phi[0][0][i]->Fill(curjet->Eta(), curjet->Phi());
 		    if(fIsMC)
 			if(flavourtag > 0) {
 			    fhist_TC_sIP_Pt[0][flavourtag][i]->Fill(tagvalue[0], jetPt);
 			    fhist_TC_Eta_Phi[0][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi());
+			    if(isFromConversion) {
+				fhist_TC_sIP_Pt_Conversions[0][flavourtag][i]->Fill(tagvalue[0], jetPt);
+				fhist_TC_Eta_Phi_Conversions[0][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi());
+			    }
 			}
+		    isFromConversion = kFALSE;
 		}
 		if(istagged[1]) {
+		    isFromConversion =
+		        this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(1), this->fIsMC);
+		    if(isFromConversion) {
+			fhist_TC_sIP_Pt_Conversions[1][0][0]->Fill(tagvalue[1], jetPt);
+			fhist_TC_Eta_Phi_Conversions[1][0][0]->Fill(curjet->Eta(), curjet->Phi());
+		    }
 		    fhist_TC_sIP_Pt[1][0][i]->Fill(tagvalue[1], jetPt);
 		    fhist_TC_Eta_Phi[1][0][i]->Fill(curjet->Eta(), curjet->Phi());
 
 		    if(fIsMC)
 			if(flavourtag > 0) {
 			    fhist_TC_sIP_Pt[1][flavourtag][i]->Fill(tagvalue[1], jetPt);
-			    fhist_TC_Eta_Phi[0][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi());
+			    fhist_TC_Eta_Phi[1][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi());
+			    if(isFromConversion) {
+				fhist_TC_sIP_Pt_Conversions[1][flavourtag][i]->Fill(tagvalue[1], jetPt);
+				fhist_TC_Eta_Phi_Conversions[1][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi());
+			    }
 			}
+		    isFromConversion = kFALSE;
 		}
 		if(istagged[2]) {
+		    isFromConversion =
+		        this->TrackIsFromConversion(fTrackCountingTagger->GetCurrentTrack(2), this->fIsMC);
+		    if(isFromConversion) {
+			fhist_TC_sIP_Pt_Conversions[2][0][i]->Fill(tagvalue[2], jetPt);
+			fhist_TC_Eta_Phi_Conversions[2][0][i]->Fill(curjet->Eta(), curjet->Phi());
+		    }
 		    fhist_TC_sIP_Pt[2][0][i]->Fill(tagvalue[2], jetPt);
 		    fhist_TC_Eta_Phi[2][0][i]->Fill(curjet->Eta(), curjet->Phi());
 		    if(fIsMC)
 			if(flavourtag > 0) {
 			    fhist_TC_Eta_Phi[2][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi());
 			    fhist_TC_sIP_Pt[2][flavourtag][i]->Fill(tagvalue[2], jetPt);
+			    if(isFromConversion) {
+				fhist_TC_sIP_Pt_Conversions[2][flavourtag][i]->Fill(tagvalue[2], jetPt);
+				fhist_TC_Eta_Phi_Conversions[2][flavourtag][i]->Fill(curjet->Eta(), curjet->Phi());
+			    }
 			}
+		    isFromConversion = kFALSE;
 		}
 	    }
 	}
@@ -544,6 +619,7 @@ Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::IsEventSelectedLegacy(AliAODEvent* 
     UInt_t res = 0;
     if(aev)
 	res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+
     if((res & AliVEvent::kAny) == 0) {
 	return kFALSE;
     }
@@ -907,9 +983,17 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
     fPIDCombined->SetDefaultTPCPriors();
     fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC + AliPIDResponse::kDetTOF);
 
-    if(fUseAtlasSignTCCalculation) {
-	Printf("Use ATLAS sign!!!");
+    if(this->fUseAtlasSignTCCalculation) {
+	Printf("Use ATLAS sign!");
 	fTrackCountingTagger->SetUseSignDefinitionAtlas(kTRUE);
+    }
+    if(this->fUseSignificance) {
+	Printf("Use IP Significance !");
+	fTrackCountingTagger->SetUseSignificance(kTRUE);
+    }
+    if(this->fUse3DsIP) {
+	Printf("Use 3D sIP  !");
+	fTrackCountingTagger->SetUse3DIP(kTRUE);
     }
 
     Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -1058,7 +1142,6 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 	    if(!fIsMC && itcflavour > 0)
 		continue;
 	    for(int itcclass = 0; itcclass < 5; itcclass++) {
-
 		AddHistTH2(&(fhist_TC_sIP_Pt[itctrack][itcflavour][itcclass]),
 		           Form("fhist_TC_%s_%s_%s", tc_track[itctrack], tc_flavour[itcflavour], tc_classes[itcclass]),
 		           Form("Track Counting Output %s_%s_%s",
@@ -1067,9 +1150,9 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 		                tc_classes[itcclass]),
 		           "Signed impact parameter (cm)",
 		           "#it{p}^{Jet,rec}_{T}",
-		           1001,
-		           -0.5,
-		           0.5,
+		           500,
+		           -0.4,
+		           0.4,
 		           500,
 		           0.,
 		           250,
@@ -1092,6 +1175,45 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::UserCreateOutputObjects()
 		    2. * TMath::Pi(),
 		    kTRUE,
 		    glisttc);
+
+		AddHistTH2(&(fhist_TC_sIP_Pt_Conversions[itctrack][itcflavour][itcclass]),
+		           Form("fhist_TC_%s_%s_%s_Conversions",
+		                tc_track[itctrack],
+		                tc_flavour[itcflavour],
+		                tc_classes[itcclass]),
+		           Form("Track Counting Output %s_%s_%s",
+		                tc_track[itctrack],
+		                tc_flavour[itcflavour],
+		                tc_classes[itcclass]),
+		           "Signed impact parameter (cm)",
+		           "#it{p}^{Jet,rec}_{T}",
+		           500,
+		           -0.4,
+		           0.4,
+		           500,
+		           0.,
+		           250,
+		           kTRUE,
+		           glisttc);
+		AddHistTH2(&(fhist_TC_Eta_Phi_Conversions[itctrack][itcflavour][itcclass]),
+		           Form("fhist_TC_Eta_Phi_%s_%s_%s_Conversions",
+		                tc_track[itctrack],
+		                tc_flavour[itcflavour],
+		                tc_classes[itcclass]),
+		           Form("Track Counting #eta-#phi %s_%s_%s",
+		                tc_track[itctrack],
+		                tc_flavour[itcflavour],
+		                tc_classes[itcclass]),
+		           "#eta",
+		           "#phi",
+		           101,
+		           -0.9,
+		           0.9,
+		           100,
+		           0.,
+		           2. * TMath::Pi(),
+		           kTRUE,
+		           glisttc);
 	    }
 	}
     }
@@ -1771,4 +1893,24 @@ void AliAnalysisTaskEmcalJetBJetTaggingIP::ProcessVtxMassTemplateAnalysis(const 
 	}
     }
     return;
+}
+
+Bool_t AliAnalysisTaskEmcalJetBJetTaggingIP::TrackIsFromConversion(const AliVTrack* track, Bool_t useMC)
+{
+    AliAODMCParticle* part = 0x0;
+    AliAODMCParticle* partMother = 0x0;
+
+    if(useMC) {
+	part = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(track->GetLabel())));
+	if(!part)
+	    return kFALSE;
+	partMother = dynamic_cast<AliAODMCParticle*>(fMCparticles->At(TMath::Abs(part->GetMother())));
+	if(!partMother)
+	    return kFALSE;
+	if(abs(partMother->PdgCode()) == 22 && abs(part->PdgCode()) == 11)
+	    return kTRUE;
+    }
+    return kFALSE;
+
+    return kTRUE;
 }

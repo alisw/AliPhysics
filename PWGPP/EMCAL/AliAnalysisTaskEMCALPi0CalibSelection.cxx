@@ -34,8 +34,8 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelection) ;
 ///
 /// Default constructor. Arrays initialization is done here.
 //______________________________________________________________________________________________
-AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
-AliAnalysisTaskSE(name),  
+AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection() :
+AliAnalysisTaskSE(),  
 fEMCALGeo(0x0),           fLoadMatrices(0),
 fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
 fTriggerName("EMC"),      
@@ -43,8 +43,10 @@ fRecoUtils(new AliEMCALRecoUtils),
 fOADBFilePath(""),        fCalibFilePath(""),
 fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
-fCuts(0x0),               fOutputContainer(0x0),
+//fCuts(0x0),               
+fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
+fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
 fL0min(0.01),             fL0max(0.5),              
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
@@ -121,9 +123,106 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
     fhClusterTimeSM[iSM]             = 0;
     fhClusterPairDiffTimeSameSM[iSM] = 0;
   }
+}
+
+///
+/// Constructor with name as option. Arrays initialization is done here.
+///
+/// \param name: Name of task.
+///
+//______________________________________________________________________________________________
+AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
+AliAnalysisTaskSE(name),  
+fEMCALGeo(0x0),           fLoadMatrices(0),
+fEMCALGeoName("EMCAL_COMPLETE12SMV1_DCAL_8SM"),
+fTriggerName("EMC"),      
+fRecoUtils(new AliEMCALRecoUtils), 
+fOADBFilePath(""),        fCalibFilePath(""),
+fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
+fCaloClustersArr(0x0),    fEMCALCells(0x0),
+//fCuts(0x0),               
+fOutputContainer(0x0),
+fVertex(),                fFilteredInput(kFALSE),
+fImportGeometryFromFile(1), fImportGeometryFilePath(""),
+fEmin(0.5),               fEmax(15.),      
+fL0min(0.01),             fL0max(0.5),              
+fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
+fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
+fLogWeight(4.5),          fSameSM(kFALSE),         
+fNMaskCellColumns(11),    fMaskCellColumns(0x0),
+fInvMassCutMin(110.),     fInvMassCutMax(160.),
+// Histograms binning
+fNbins(300),              
+fMinBin(0.),              fMaxBin(300.),   
+fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),
+// Temporal
+fMomentum1(),             fMomentum2(),             fMomentum12(),
+// Histograms
+fHmgg(0x0),               fHmggDifferentSM(0x0), 
+fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0), 
+fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
+fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
+fhNEvents(0x0),
+fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
+{
+  for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++)
+  {
+    for(Int_t iX=0; iX<24; iX++)
+    {
+      for(Int_t iZ=0; iZ<48; iZ++)
+      {
+        fHmpi0[iMod][iZ][iX]   = 0 ;
+      }
+    } 
+  }
   
+  fVertex[0]=fVertex[1]=fVertex[2]=-1000;
+  
+  fHTpi0[0]= 0 ;
+  fHTpi0[1]= 0 ;
+  fHTpi0[2]= 0 ;
+  fHTpi0[3]= 0 ;
+  
+  fMaskCellColumns = new Int_t[fNMaskCellColumns];
+  fMaskCellColumns[0] = 6 ;  fMaskCellColumns[1] = 7 ;  fMaskCellColumns[2] = 8 ; 
+  fMaskCellColumns[3] = 35;  fMaskCellColumns[4] = 36;  fMaskCellColumns[5] = 37; 
+  fMaskCellColumns[6] = 12+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[7] = 13+AliEMCALGeoParams::fgkEMCALCols;
+  fMaskCellColumns[8] = 40+AliEMCALGeoParams::fgkEMCALCols; fMaskCellColumns[9] = 41+AliEMCALGeoParams::fgkEMCALCols; 
+  fMaskCellColumns[10]= 42+AliEMCALGeoParams::fgkEMCALCols; 
+  
+  for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules/2; iSMPair++) 
+  {
+    fHmggPairSameSectorSM[iSMPair]          = 0;
+    fHmggPairSameSectorSMMaskFrame[iSMPair] = 0;
+    fhClusterPairDiffTimeSameSector[iSMPair]= 0;
+  }
+  
+  for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules-2; iSMPair++)
+  { 
+    fHmggPairSameSideSM[iSMPair]            = 0;
+    fHmggPairSameSideSMMaskFrame[iSMPair]   = 0;
+    fhClusterPairDiffTimeSameSide[iSMPair]  = 0;
+  }
+  
+  for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) 
+  {
+    fHmggSM[iSM]                     = 0;
+    fHmggSMMaskFrame[iSM]            = 0;
+    fHOpeningAngleSM[iSM]            = 0;
+    fHOpeningAnglePairSM[iSM]        = 0;
+    fHAsymmetrySM[iSM]               = 0;
+    fHAsymmetryPairSM[iSM]           = 0;
+    fhTowerDecayPhotonHit[iSM]       = 0;
+    fhTowerDecayPhotonEnergy[iSM]    = 0;
+    fhTowerDecayPhotonAsymmetry[iSM] = 0;
+    fhTowerDecayPhotonHitMaskFrame[iSM]= 0;
+    fMatrix[iSM]                     = 0x0;
+    fhClusterTimeSM[iSM]             = 0;
+    fhClusterPairDiffTimeSameSM[iSM] = 0;
+  }
+    
   DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());  // will contain cuts or local params
+//DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
 ///
@@ -535,10 +634,28 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
 {
   Int_t runnumber = InputEvent()->GetRunNumber() ;
   
+  //
+  // Load default geo matrices if requested
+  if(fImportGeometryFromFile && !gGeoManager)
+  {
+    if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
+    {
+      // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
+      if     (runnumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
+      else if(runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
+      else if(runnumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
+      else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
+    }
+    
+    AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
+    
+    TGeoManager::Import(fImportGeometryFilePath) ; // default need file "geometry.root" in local dir!!!!
+  }
+  
+  //
   if(fLoadMatrices)
   {
     AliInfo("Load user defined EMCAL geometry matrices");
-    
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
     
@@ -572,7 +689,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
       }
       else
       {
-        AliError(Form("Alignment atrix for SM %d is not available",mod));
+        AliError(Form("Alignment matrix for SM %d is not available",mod));
       }
     }//SM loop
   }//Load matrices
@@ -590,14 +707,26 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
       
       for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
       {
-        if(DebugLevel() > 1) 
-          InputEvent()->GetEMCALMatrix(mod)->Print();
-        
-        if(InputEvent()->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(InputEvent()->GetEMCALMatrix(mod),mod) ;
+        if(InputEvent()->GetEMCALMatrix(mod)) 
+        {
+          if(DebugLevel() > 1) 
+            InputEvent()->GetEMCALMatrix(mod)->Print();
+          
+          fEMCALGeo->SetMisalMatrix(InputEvent()->GetEMCALMatrix(mod),mod) ;
+        }
         
       }
     }// ESD
   }// Load matrices from Data
+  else if(gGeoManager) // Load default matrices
+  {
+    for(Int_t mod = 0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
+    {
+      AliWarning(Form("Set matrix for SM %d from gGeoManager",mod));
+      fEMCALGeo->SetMisalMatrix(fEMCALGeo->GetMatrixForSuperModuleFromGeoManager(mod),mod) ;
+    }
+  } // gGeoManager matrices
+
 }
 
 ///
@@ -913,13 +1042,13 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     
   PostData(1,fOutputContainer);
   
-  // cuts container, set in terminate but init and post here
-  
-  fCuts = new TList();
-  
-  fCuts ->SetOwner(kTRUE);
-
-  PostData(2, fCuts);
+//  // cuts container, set in terminate but init and post here
+//  
+//  fCuts = new TList();
+//  
+//  fCuts ->SetOwner(kTRUE);
+//
+//  PostData(2, fCuts);
 }
 
 ///
@@ -1081,33 +1210,33 @@ void AliAnalysisTaskEMCALPi0CalibSelection::SetMaskCellColumn(Int_t ipos, Int_t 
     else AliWarning("Mask column not set, position larger than allocated set size first") ;
 }
 
-
 ///
-/// Create cuts/param objects and publish to slot
+/// Create cuts/param objects and publish to slot. Comment out for the moment.
 //______________________________________________________________
 void AliAnalysisTaskEMCALPi0CalibSelection::Terminate(Option_t*)
 {
-  const Int_t buffersize = 255;
-  char onePar[buffersize] ;
+  AliDebug(1,"Not implemented");
+//  const Int_t buffersize = 255;
+//  char onePar[buffersize] ;
   
-  snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; %2.2f < Lambda0_2 < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f, time1-time2 < %2.2f; %2.2f < T < %2.2f ns; %3.1f < Mass < %3.1f", 
-           fEmin,fEmax, fL0min, fL0max, fMinNCells, fAsyCut, fDTimeCut, fTimeMin, fTimeMax, fInvMassCutMin, fInvMassCutMax) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Cluster maximal cell away from border at least %d cells;", fRecoUtils->GetNumberOfCellsFromEMCALBorder()) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Histograms, Mass bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Histograms, Time bins %d; energy range: %2.2f < E < %2.2f GeV;",fNTimeBins,fMinTimeBin,fMaxTimeBin) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d and their position? %d, Mass per channel same SM clusters? %d ",
-           fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fRecalPosition, fSameSM) ;
-  fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
-  fCuts->Add(new TObjString(onePar));
-    
-  // Post Data
-  PostData(2, fCuts);
+//  snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; %2.2f < Lambda0_2 < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f, time1-time2 < %2.2f; %2.2f < T < %2.2f ns; %3.1f < Mass < %3.1f", 
+//           fEmin,fEmax, fL0min, fL0max, fMinNCells, fAsyCut, fDTimeCut, fTimeMin, fTimeMax, fInvMassCutMin, fInvMassCutMax) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Cluster maximal cell away from border at least %d cells;", fRecoUtils->GetNumberOfCellsFromEMCALBorder()) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Histograms, Mass bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Histograms, Time bins %d; energy range: %2.2f < E < %2.2f GeV;",fNTimeBins,fMinTimeBin,fMaxTimeBin) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d and their position? %d, Mass per channel same SM clusters? %d ",
+//           fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fRecalPosition, fSameSM) ;
+//  fCuts->Add(new TObjString(onePar));
+//  snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
+//  fCuts->Add(new TObjString(onePar));
+//    
+//  // Post Data
+//  PostData(2, fCuts);
 }
 

@@ -236,7 +236,7 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* what, const cha
 {
   /// Get the list of bins for a given what and given Quantity
   /// The returned array must be deleted by the user
-  /// Quantity can be a single Quantity or several Quantitys separated by comma
+  /// Quantity can be a single Quantity or several Quantities separated by comma
   
   TObjArray* a = new TObjArray;
   a->SetOwner(kTRUE);
@@ -280,6 +280,76 @@ TObjArray* AliAnalysisMuMuBinning::CreateBinObjArray(const char* what, const cha
   
   delete Quantitys;
   return a;
+}
+
+//______________________________________________________________________________
+TObjArray* AliAnalysisMuMuBinning::CreateBinStrArray() const
+{
+  /// Get the list of all the bin names
+  /// The returned array must be deleted by the user
+
+  TObjArray* a = CreateBinObjArray();
+  TObjArray* s = new TObjArray;
+  s->SetOwner(kTRUE);
+  
+  Range* r;
+  
+  TIter next(a);
+  while ( ( r = static_cast<Range*>(next())))
+  {
+    s->Add(new TObjString(r->AsString()));
+  }
+  
+  delete a;
+  
+  return s;
+}
+
+//______________________________________________________________________________
+TObjArray* AliAnalysisMuMuBinning::CreateBinStrArray(const char* what) const
+{
+  /// Get the list of bin names for a given what
+  /// The returned array must be deleted by the user
+
+  TObjArray* a = CreateBinObjArray(what);
+  TObjArray* s = new TObjArray;
+  s->SetOwner(kTRUE);
+  
+  Range* r;
+  
+  TIter next(a);
+  while ( ( r = static_cast<Range*>(next())))
+  {
+    s->Add(new TObjString(r->AsString()));
+  }
+  
+  delete a;
+  
+  return s;
+}
+
+//______________________________________________________________________________
+TObjArray* AliAnalysisMuMuBinning::CreateBinStrArray(const char* what, const char* quantity, const char* flavour) const
+{
+  /// Get the list of bin names, for a given what and given quantity
+  /// The returned array must be deleted by the user
+  /// Quantity can be a single Quantity or several Quantities separated by comma
+
+  TObjArray* a = CreateBinObjArray(what,quantity,flavour);
+  TObjArray* s = new TObjArray;
+  s->SetOwner(kTRUE);
+  
+  Range* r;
+  
+  TIter next(a);
+  while ( ( r = static_cast<Range*>(next())))
+  {
+    s->Add(new TObjString(r->AsString()));
+  }
+  
+  delete a;
+  
+  return s;
 }
 
 //______________________________________________________________________________

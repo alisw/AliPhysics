@@ -267,7 +267,7 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 0));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 1));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
-  //   fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
+    fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
     fOutput->Add(workertracktrigger);
     
     if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights,1);

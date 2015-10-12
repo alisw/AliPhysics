@@ -932,6 +932,12 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
     hnTracksInBinsMC = SumCent(50.0,100.0,hnTracksInBinsMCtmp,"hnTracksProduced");
     hnCentVsVertex = SumCent(50.0,100.0,hnCentVsVertextmp,"hnCentralityvsVertex");
   }
+  if(!filename.Contains("LHC")){
+    hnTracksInBins = SumCent(0.0,100.0,hnTracksInBinstmp,"hnTracksReconstruced");
+    hnTracksInBinsRecPP = SumCent(0.0,100.0,hnTracksInBinsRecPPtmp,"hnTracksReconstruced_PP");
+    hnTracksInBinsMC = SumCent(0.0,100.0,hnTracksInBinsMCtmp,"hnTracksProduced");
+    hnCentVsVertex = SumCent(0.0,100.0,hnCentVsVertextmp,"hnCentralityvsVertex");
+  }
   infile->Close();
   delete hnTracksInBinstmp; delete hnTracksInBinsMCtmp; delete hnTracksInBinsRecPPtmp;delete hnCentVsVertextmp;
 
@@ -1067,7 +1073,7 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   pTWeightRec->SetTitle(" produced MC particles divided by Reconstructed tracks");
   delete pTRec; delete pTRecPP; delete pTMC;delete pTEffRec;delete pTEffRecPP;
   
-  
+
   //2D projections
   TDirectory * dim2 = outfile->mkdir("Projections_2d");
   dim2->cd();
@@ -1255,7 +1261,6 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   etaptEffRec->Write();  
   delete etaptRec; delete etaptMC;delete etaptEffRec;
 
-
   //make more meaningful axes:
   outfile->cd();
   //mult: keep for now, unsure how it actually should look.
@@ -1269,8 +1274,8 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   //eta: same
 //   const Double_t * etabins = hnTracksInBins->GetAxis(3)->GetXbins()->GetArray();
   //pt: 0.1GeV/c up to 3 GeV/c = 25 bins, 0.5GeV/c up to 5 GeV/c = 4 bins, then 1 5GeV/c bin and one 6GeV/c bin: total 30 bins
-  Double_t  pTaxisArray[28] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0};
-  TArrayD * pTaxisA = new TArrayD(28,pTaxisArray);
+  Double_t  pTaxisArray[16] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+  TArrayD * pTaxisA = new TArrayD(16,pTaxisArray);
   
   TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
   histrec->Write();
@@ -1327,9 +1332,9 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   if(global){
     outfile2->cd();
     histhpTMC->Write("hnWeight_highpt");
-    ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*x*x*x",4,16);
+    ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*exp(-x)",2,16);
     pTWeightRec->Scale(nbins/content);
-    pTWeightRec->Fit(ptfunc,"","",4,16);
+    pTWeightRec->Fit(ptfunc,"","",2,16);
   }
   outfile->cd();
   pTWeightRec->Write();

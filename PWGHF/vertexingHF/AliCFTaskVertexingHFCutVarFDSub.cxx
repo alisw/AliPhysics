@@ -876,7 +876,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
     }
 
     // Obtain B0 pt spectrum
-    if ((((mcPart->GetPdgCode()%1000)/100==5||(mcPart->GetPdgCode()%1000)/100==-5)) &&
+    if ((((mcPart->GetPdgCode()%1000)/100==5||(mcPart->GetPdgCode()%1000)/100==-5)) &&  //||(mcPart->GetPdgCode()%10000)/1000==-5)||(mcPart->GetPdgCode()%10000)/1000==-5)) &&
         (mcPart->Y()<1.)&&(mcPart->Y()>-1.)) {
       fhBptCutVar->Fill(mcPart->Pt());
     }
@@ -955,7 +955,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
         fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepAcceptance, fWeight);
         AliDebug(3,"MC acceptance cut passed\n");
         icountAcc++;
-        if(fTHnGenerator){fObjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray);}
+        if(fTHnGenerator){fObjSpr->FillGenStep(mcPart, mcPart->Pt(), fWeight, mcArray, mcHeader);}
 
         //MC Vertex step
         if (fCuts->IsEventSelected(aodEvent)){
@@ -1214,7 +1214,7 @@ void AliCFTaskVertexingHFCutVarFDSub::UserExec(Option_t *)
 
                 AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)charmCandidate;
                 fObjSpr->SetFillMC(kTRUE);
-                fObjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray, aodEvent);
+                fObjSpr->FillSparses(d0toKpi, recoAnalysisCuts, d0toKpi->Pt(),d0toKpi->InvMassD0(), d0toKpi->InvMassD0bar(), fWeight*weigPID, mcArray, aodEvent, mcHeader);
 
                 icountRecoPID++;
                 AliDebug(3,"Reco PID cuts passed and container filled \n");

@@ -179,7 +179,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
-  if(fRecAnalysis->DataSet()==20100 || fRecAnalysis->DataSet()==2011){
+  if(fRecAnalysis->DataSet()==20100 || fRecAnalysis->DataSet()==2011 || fRecAnalysis->DataSet()==2015){
     cout<<"Setting track cuts for the 2010 Pb+Pb collisions at 2.76 TeV"<<endl;
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
@@ -238,7 +238,7 @@ if (!fESDEvent) {
   fMCAnalysis->SetIsOfflineMB(kIsOfflineMB);
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
-  if(fIsSim &&( fRecAnalysis->DataSet()!=20100 || fRecAnalysis->DataSet()!=2011) ) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());
+  if(fIsSim &&( fRecAnalysis->DataSet()!=20100 || fRecAnalysis->DataSet()!=2011) ||  fRecAnalysis->DataSet()!=2015) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());
   //only do the analysis if it meets the offline trigger cut
   if(kIsOfflineV0AND) fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
   //else{cout<<"Not analyzing this event!  Does not meet trigger condition!"<<endl;}
@@ -250,7 +250,7 @@ if (!fESDEvent) {
     }
     if (fESDEvent){
       ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
-    if( fRecAnalysis->DataSet()==20100 || AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND || fRecAnalysis->DataSet()==2013|| fRecAnalysis->DataSet()==2011){//either non-diffractive or Pb+Pb or p+Pb
+    if( fRecAnalysis->DataSet()==20100 ||  fRecAnalysis->DataSet()==2015 || AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND || fRecAnalysis->DataSet()==2013|| fRecAnalysis->DataSet()==2011){//either non-diffractive or Pb+Pb or p+Pb
       if(fMCAnalysis->Full()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceITS( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITS() );

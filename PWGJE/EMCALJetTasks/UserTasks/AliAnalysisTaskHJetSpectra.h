@@ -28,14 +28,16 @@ class AliClusterContainer;
 
 using std::vector;
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
-// Author Filip Krizek   (17.May. 2014)
+// Author Filip Krizek   (7.Oct. 2015)
 
 class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    public:
 
   enum MyContainer {
      kContainerOne = 0, //analyze real data 
-     kContainerTwo = 1  //analyze monte carlo
+     kContainerTwo = 1, //analyze monte carlo
+     kContainerThree,   //KT real 
+     kContainerFour    //KT MC
   };
 
   enum MyDataType {
@@ -54,9 +56,10 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
   enum MyRho {
     kConeRho=0, 
-    kCMSRho=1, 
-    kZeroRho=2,   //WITHOUT UE SUBTRACTION 
-    kRho=3
+    kCMSRho, 
+    kKtRho,
+    kZeroRho,   //WITHOUT UE SUBTRACTION 
+    kRho
   };
 
   enum MySystem {  //collision system
@@ -84,10 +87,6 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;} 
   void        SetSignalJetMinArea(Double_t minArea) {fMinJetArea = minArea;} 
 
-  void        SetPerpConeRadius(Double_t radius) {
-                 fPerpConeRadius        = radius;
-                 fPerpConeRadiusSquared = fPerpConeRadius*fPerpConeRadius;
-              }
 
   void        SetSignalJetRadius(Double_t radius) {
                  fSignalJetRadius        = radius;
@@ -131,26 +130,29 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
   // ######### MAIN CALCULATION FUNCTIONS
   void    GetDeltaPt(Int_t nrho,  TArrayD &rho, Double_t *dpt, 
-                     Double_t ttPhi, Double_t ttEta,
+                     Double_t ttPhi, Double_t ttEta, TClonesArray *trkArray, Bool_t isGen,
                      Double_t leadingJetExclusionProbability = 0); 
                      
 
 
-  Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius, Int_t icont); 
-  Double_t    GetPtHard();             
+  Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius, TClonesArray *trkArray, Bool_t isGen); 
+  //Double_t    GetPtHard();             
   Double_t    GetImpactParameter();   
   Double_t    GetSimPrimaryVertex(); 
 
 
   // ######### CHECK FUNCTIONS
-  Bool_t      IsTrackInAcceptance(AliVParticle* track, Int_t icont=0);  
+  Bool_t      IsTrackInAcceptance(AliVParticle* track, Bool_t isGen=0);  
   Bool_t      IsEventInAcceptance(AliVEvent* event);     
   Bool_t      IsMCEventInAcceptance(AliVEvent* event);   
-  Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet); 
+  Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet, Bool_t suppressGhost=1); 
   
 
    Double_t RelativePhi(Double_t mphi,Double_t vphi); 
-   Double_t EstimateBgCone(Int_t icont);  
+   Double_t EstimateBgCone(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* triggerHadron, Bool_t isGen=kFALSE);   
+   Double_t EstimateBgKT(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* trackTT);  // median p/A of kt jets
+   Double_t EstimateBgKTcms(AliJetContainer *jetCont, TClonesArray *trkArray, AliVParticle* triggerHadron); //CMS background
+   
 
 
   Double_t GetNcoll(Double_t centr);  //gen Ncoll for given centrality
@@ -173,8 +175,6 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   TString             fRhoTaskName;           // name of rho CMS bg task for this analysis
   TString             fRhoTaskNameMC;         // MC name of rho CMS bg task for this analysis
   // ########## JET/DIJET/RC PROPERTIES
-  Double_t            fPerpConeRadius;        //gc Radius for the random cones
-  Double_t            fPerpConeRadiusSquared; //gc Radius for the random cones squared
   Double_t            fSignalJetRadius;       // Radius for the signal jets
   Double_t            fSignalJetRadiusSquared;       // Radius for the signal jets
   // ########## CUTS 
@@ -206,7 +206,9 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
    TH1I               *fHistEvtSelection;     //! gc event statistics
    TH1D               *fh1Ntriggers;  //! trigger counter
+   TH1D               *fh1TriggerMult; //! tirgger multiplicity in event
    TH1D               *fh1NtriggersGen;  //! trigger counter
+   TH1D               *fh1TriggerMultGen;  //! trigger multiplicity in event
    THnSparse          *fHJetSpec[kRho];//!  TT associated spectrum of jets
    THnSparse          *fHJetSpecGen[kRho];//!TT associated spectrum of jets
 
@@ -221,7 +223,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D    *fhDeltaPtEmb2D[kRho-1]; //! embedded delta pT versus pT of the embedded jet 
    TH1D    *fhDeltaPtIncl[kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
-
+   TH2F    *fhKTAreaPt;//!KT jets area versus PT
 
    TH2F     *fhJetPhi;   //! gc jet phi vs jet pT
    TH2F     *fhJetPhiGen;   //! gc jet phi vs jet pT
@@ -246,9 +248,9 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhCentralityZNA;  //! centrality from ZNA
 
 
-   TProfile*     fh1Xsec;   //! gc pythia cross section and trials
-   TH1F*         fh1Trials; //! gc trials are added
-   TH1F*         fh1PtHard;  //! Pt har of the event...      
+   //TProfile*     fh1Xsec;   //! gc pythia cross section and trials
+   //TH1F*         fh1Trials; //! gc trials are added
+   //TH1F*         fh1PtHard;  //! Pt har of the event...      
    TH1D*         fhImpactParameter; //! impact parameter distribution hijing
    TH1D*         fhImpactParameterTT; //! impact parameter distribution hijing versus TT
 
@@ -266,7 +268,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
 
    Int_t  fNofRandomCones; // the number of random cones per event
  
-   Double_t fZVertexCut; //! vertex cut in z 
+   Double_t fZVertexCut; // vertex cut in z 
+   Double_t fCutPhi;     // azimuthal cat around TT  to exclude TTjet + recoil jet in perp rho estimate
 
    std::vector<int> fTrigTracksGen; //list of trigger particle indices true MC
    std::vector<int> fTrigTracks; //list pf trigger particle indices
@@ -274,7 +277,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 4); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 5); // Charged jet analysis for pA
 
 };
 #endif

@@ -39,6 +39,7 @@
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiCorrections;
 #pragma link C++ class AliFemtoCorrFctnDYDPhi;
+#pragma link C++ class AliFemtoCorrFctnKStar+;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDGV0;
 #pragma link C++ class AliFemtoCutMonitorParticleEtCorr;
@@ -69,3 +70,11 @@
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections+;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimple+;
 #pragma link C++ class AliFemtoAnalysisPionLambda+;
+#pragma link C++ class AliFemtoAnalysisPionLambda::AnalysisParams+;
+#pragma link C++ class AliFemtoAnalysisPionLambda::CutParams+;
+
+#pragma link C++ class AliFemtoPionLambdaCutMonitor+;
+#pragma link C++ class AliFemtoPionLambdaCutMonitor::Event+;
+#pragma link C++ class AliFemtoPionLambdaCutMonitor::Pion+;
+#pragma link C++ class AliFemtoPionLambdaCutMonitor::Lambda+;
+#pragma link C++ class AliFemtoPionLambdaCutMonitor::Pair+;

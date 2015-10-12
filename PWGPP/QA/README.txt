@@ -1,9 +1,9 @@
 ********************************************************
-$ALICE_ROOT/PWGPP/QA/README.txt
+$ALICE_PHYSICS/PWGPP/QA/README.txt
 has been created by fbellini@cern.ch on 09/01/2014    
 ********************************************************
 
-The $ALICE_ROOT/PWGPP/QA folder is dedicated to collect common code for QA purposes, eg. trending and central QA repository script.
+The $ALICE_PHYSICS/PWGPP/QA folder is dedicated to collect common code for QA purposes, eg. trending and central QA repository script.
 This README file contains additional general information. 
 
 1. Detector service accounts

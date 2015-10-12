@@ -55,7 +55,8 @@ public:
     virtual void   Terminate(Option_t *);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     Bool_t   IsINELgtZERO(AliESDEvent *lESDevent, TString lType) const;
-
+    Int_t GetNumberTPCtracks(AliESDEvent *event) const;
+ 
     void SetSaveV0s                (Bool_t lSaveV0s        = kTRUE ) {
         fkSaveV0Tree        = lSaveV0s;
     }
@@ -75,6 +76,15 @@ public:
     void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedx   = lPreselectDedx;
     }
+
+    void SetApplySPDClsVsTrackletsCut(Bool_t lSPDClsVsTrk = kTRUE) {
+        fkApplyTrackletsVsClustersCut = lSPDClsVsTrk;
+    }
+
+//---------------------------------------------------------------------------------------
+    //Task Configuration: trigger selection 
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+    void SetSelectedTriggerClass(TString trigName) { fkSelectTriggerByName = kTRUE; fTrigName = trigName;}
     
 //---------------------------------------------------------------------------------------
     //Task Configuration: Meant to enable quick re-execution of vertexer if needed
@@ -85,6 +95,11 @@ public:
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
     void SetSkipEventSelection ( Bool_t lSkipEventSelection = kTRUE) {
         fkSkipEventSelection = lSkipEventSelection;
+    }
+//---------------------------------------------------------------------------------------
+    //Task Configuration: Skip Event Selections after trigger (VZERO test)
+    void SetUseMultSelection ( Bool_t lUseMultSelection = kTRUE) {
+        fkMultSelection = lUseMultSelection;
     }
 //---------------------------------------------------------------------------------------
 //Setters for the V0 Vertexer Parameters
@@ -159,11 +174,15 @@ private:
     Bool_t fkSaveK0Short;           //if true, removes tree fill confirmation for k0short mass window
     Bool_t fkPreselectDedx;         //if true, applies a 7-sigma TPC dEdx band 
     Bool_t fkSaveExtendedRefMultInfo; //if true, save 20 integers per event extra for eta-dependence of refmult
+    Bool_t fkSelectTriggerByName;  // to select trigger by name (if it's not availble in AliVEvent)
+    Bool_t fkMultSelection; //if true, will use new multiplicity selection framework
 
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change)
     Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
+    TString   fTrigName; // trigger name (if it's not available in AliVEvent)
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
 
@@ -181,6 +200,12 @@ private:
     Float_t fCentrality_V0A;         //!
     Float_t fCentrality_V0C;         //!
     Float_t fCentrality_V0M;         //!
+    Float_t fCentrality_OnlineV0A;         //!
+    Float_t fCentrality_OnlineV0C;         //!
+    Float_t fCentrality_OnlineV0M;         //!
+    Float_t fCentrality_ADA;         //!
+    Float_t fCentrality_ADC;         //!
+    Float_t fCentrality_ADM;         //!
     Float_t fCentrality_V0AEq;       //!
     Float_t fCentrality_V0CEq;       //!
     Float_t fCentrality_V0MEq;       //!
@@ -192,6 +217,7 @@ private:
     Int_t fRefMultEta5;              //!
     Int_t fRefMultEta8;              //!
     Int_t fRunNumber;                //!
+    Int_t fBunchCrossNumber;         //!
 
     //Differential reference multiplicity
     Int_t  fRefMultDiffEta[20]; //!
@@ -218,6 +244,7 @@ private:
     Int_t   fEvSel_nTracklets;              //!
     Int_t   fEvSel_nTrackletsEta10; //!
     Int_t   fEvSel_nSPDClusters;            //!
+    Int_t   fEvSel_nTPCtracks;            //!
     Float_t fEvSel_VtxZ; //! the actual value
     Int_t   fEvSel_nSPDPrimVertices; //! pileup vertices
     Float_t fEvSel_distZ; //! distance between largest vertices
@@ -259,6 +286,13 @@ private:
     Float_t fTreeVariableCentV0M;    //!
     Float_t fTreeVariableCentV0A;    //!
     Float_t fTreeVariableCentV0C;    //!
+    Float_t fTreeVariableCentOnlineV0M;    //!
+    Float_t fTreeVariableCentOnlineV0A;    //!
+    Float_t fTreeVariableCentOnlineV0C;    //!
+    Float_t fTreeVariableCentADM;    //!
+    Float_t fTreeVariableCentADA;    //!
+    Float_t fTreeVariableCentADC;    //!
+    
     Float_t fTreeVariableCentV0MEq;  //!
     Float_t fTreeVariableCentV0AEq;  //!
     Float_t fTreeVariableCentV0CEq;  //!
@@ -270,6 +304,7 @@ private:
     Int_t   fTreeVariableRefMultEta8;  //!
     Int_t   fTreeVariableRefMultEta5;  //!
     Int_t   fTreeVariableRunNumber; //! //want to re-quantile per run? here's your ticket
+    Int_t   fTreeVariableBunchCrossNumber; //! bunch cross number to select candidates from trains / isolated BC
 
     //Differential reference multiplicity
     Int_t  fTreeVariableRefMultDiffEta[20]; //!
@@ -313,6 +348,12 @@ private:
     Float_t fTreeCascVarCentV0M;    //!
     Float_t fTreeCascVarCentV0A;    //!
     Float_t fTreeCascVarCentV0C;    //!
+    Float_t fTreeCascVarCentOnlineV0M;    //!
+    Float_t fTreeCascVarCentOnlineV0A;    //!
+    Float_t fTreeCascVarCentOnlineV0C;    //!
+    Float_t fTreeCascVarCentADM;    //!
+    Float_t fTreeCascVarCentADA;    //!
+    Float_t fTreeCascVarCentADC;    //!
     Float_t fTreeCascVarCentV0MEq;  //!
     Float_t fTreeCascVarCentV0AEq;  //!
     Float_t fTreeCascVarCentV0CEq;  //!
@@ -324,6 +365,7 @@ private:
     Int_t fTreeCascVarRefMultEta8;  //!
     Int_t fTreeCascVarRefMultEta5;  //!
     Int_t fTreeCascVarRunNumber;    //! //want to re-quantile per run? here's your ticket
+    Int_t fTreeCascVarBunchCrossNumber; //! bunch cross number to select candidates from trains / isolated BC
 
     //Differential reference multiplicity
     Int_t  fTreeCascVarRefMultDiffEta[20]; //!

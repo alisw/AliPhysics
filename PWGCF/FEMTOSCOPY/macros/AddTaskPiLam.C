@@ -22,7 +22,22 @@
 ///               parsing. This string is wrapped in double-quotes so escaping
 ///               some to ensure results is a string is unneccessary.
 ///
-AliAnalysisTaskFemto* AddTaskPiLam(const TString params,
+/// \param maco_filename The path to the femto-confuration macro, passed to the
+///                      created TaskFemto. If this parameter has no '/' characters,
+///                      and the subwagon_suffix is empty, this is reinterpreted
+///                      as the subwagon_suffix.
+///
+/// \param subwagon_suffix If this macro is run in a train with subwagons, this
+///                        will be set with the identifier. NOTE: This
+///                        parameter may be found in the macro_filename
+///                        variable as the  suffix is simply the last argument
+///                        passed. To keep from always having to explicitly set
+///                        the macro_filename if using the default, this code
+///                        will switch the two parameters if there is no '/'
+///                        characters in the macro_filename. As such, keep '/'
+///                        out of the subwagon_suffix!
+///
+AliAnalysisTaskFemto* AddTaskPiLam(TString params,
                                    TString macro_filename="",
                                    TString subwagon_suffix="")
 { // Adds a Pion-Lambda Femtoscopy task to the manager
@@ -54,11 +69,19 @@ AliAnalysisTaskFemto* AddTaskPiLam(const TString params,
                           ? default_name
                           : TString::Format("%s_%s", default_name, subwagon_suffix);
 
+
+  cout << "[AddTaskPiLam]\n";
+  cout << "   macro: '" << macro_filename << "'\n";
+  cout << "   params: '" << params << "'\n";
+
   // The analysis config macro for PionLambdaFemto accepts a single string
   // argument, which it interprets.
-  // This line wraps that string in double quotes, ensuring that it's a string
-  // which is passed to the macro
-  const TString analysis_params = '"' + params + '"';
+  // This line escapes some escapable characters (backslash, newline, tab)
+  // and wraps that string in double quotes, ensuring that the interpreter
+  // reads a string when passing to the macro.
+  const TString analysis_params = '"' + params.ReplaceAll("\\", "\\\\")
+                                              .ReplaceAll("\n", "\\n")
+                                              .ReplaceAll("\t", "\\t") + '"';
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto(task_name,
                                                              macro_filename,

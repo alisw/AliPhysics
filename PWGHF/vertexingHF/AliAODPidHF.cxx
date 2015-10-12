@@ -448,8 +448,6 @@ Bool_t AliAODPidHF::CheckTOFPIDStatus(AliAODTrack *track) const{
   if (status != AliPIDResponse::kDetPidOk) return kFALSE;
   Float_t probMis = fPidResponse->GetTOFMismatchProbability(track);
   if (probMis > fCutTOFmismatch) return kFALSE;
-  if ((track->GetStatus()&AliESDtrack::kTOFpid )==0 &&
-      track->GetStatus()&AliESDtrack::kITSrefit )   return kFALSE;
   return kTRUE;
 }
 //--------------------------------

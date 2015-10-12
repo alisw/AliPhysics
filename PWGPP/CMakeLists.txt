@@ -222,6 +222,7 @@ set ( SRCS19
 set ( SRCS20 
   HMTFqa/AliAnalysisMultCorrTaskQA.cxx  
   HMTFqa/AliAnalysisTaskLeadingPt.cxx  
+  HMTFqa/AliAnalysisMultCorrTaskQAPF.cxx
   )
 
 list ( APPEND SRCS 
@@ -291,6 +292,7 @@ install(DIRECTORY EMCAL/QA/macros DESTINATION PWGPP/EMCAL/QA USE_SOURCE_PERMISSI
 install(DIRECTORY EMCAL/macros DESTINATION PWGPP/EMCAL)
 
 install(DIRECTORY HMTFqa/macros DESTINATION PWGPP/HMTFqa)
+install(FILES HMTFqa/AddTaskMultCorrTaskQAPF.C DESTINATION PWGPP/HMTFqa)
 
 install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
 install(FILES HMPID/macros/copyHMPQAfiles.C

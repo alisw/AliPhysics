@@ -34,6 +34,7 @@
 //
 //  authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //           M. Vala (martin.vala@cern.ch)
+//  developers: F. Bellini (fbellini@cern.ch)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -98,6 +99,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
    switch (type) {
       case kVz:           return "EventVz";
       case kMult:         return "EventMult";
+      case kRefMult:      return "EventReferenceMult";
       case kTracklets:    return "EventTracklets";
       case kPlaneAngle:   return "EventPlane";
       case kLeadingPt:    return "EventLeadingPt";
@@ -153,6 +155,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return event->Vz();
       case kMult:
          return event->Mult();
+      case kRefMult:
+         return event->RefMult();
       case kTracklets:
          return event->Tracklets();	 
       case kPlaneAngle:

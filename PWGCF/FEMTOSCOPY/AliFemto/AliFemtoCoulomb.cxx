@@ -3,16 +3,21 @@
 ///
 
 #include "AliFemtoCoulomb.h"
-//#include "Stiostream.h"
-#include <stdio.h>
+#include "AliFemtoPair.h"
+#include "AliFemtoParticle.h"
+
+#include <TH1D.h>
+#include <TH3D.h>
+
+#include <cstdio>
 #include <cassert>
 //#include "PhysicalConstants.h"
-#define fine_structure_const 0.00729735
+const double fine_structure_const = 0.00729735;
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoCoulomb)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCoulomb);
+  /// \endcond
 #endif
 
 AliFemtoCoulomb::AliFemtoCoulomb():
@@ -47,13 +52,12 @@ AliFemtoCoulomb::AliFemtoCoulomb(const AliFemtoCoulomb& aCoul):
   CreateLookupTable(fRadius);
 }
 
-AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, const double& charge) :
+AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, const double& charge):
   fFile(readFile),
   fRadius(radius),
   fZ1Z2(0),
   fNLines(0)
-{
-  /// constructor with explicit filename
+{ // constructor with explicit filename
 
   fFile = readFile;
   fRadius = radius;
@@ -62,9 +66,8 @@ AliFemtoCoulomb::AliFemtoCoulomb(const char* readFile, const double& radius, con
   cout << "You have 1 Coulomb correction!" << endl;
 }
 
-AliFemtoCoulomb::~AliFemtoCoulomb() {
-  /// destructor
-
+AliFemtoCoulomb::~AliFemtoCoulomb()
+{ // destructor
 }
 
 AliFemtoCoulomb& AliFemtoCoulomb::operator=(const AliFemtoCoulomb& aCoul)
@@ -92,14 +95,14 @@ void AliFemtoCoulomb::SetRadius(const double& radius) {
   CreateLookupTable(fRadius);
 }
 
-double AliFemtoCoulomb::GetRadius() const {
-  /// return coulomb radius
-
-  return (fRadius);
+double AliFemtoCoulomb::GetRadius() const
+{
+  // return coulomb radius
+  return fRadius;
 }
 
-void AliFemtoCoulomb::SetFile(const char* readFile) {
-  /// set the filename with coulomb calculations
+void AliFemtoCoulomb::SetFile(const char* readFile)
+{ // set the filename with coulomb calculations
 
   cout << " AliFemtoCoulomb::SetFile() " << endl;
   fFile = readFile;
@@ -109,8 +112,8 @@ void AliFemtoCoulomb::SetFile(const char* readFile) {
   }
 }
 
-void AliFemtoCoulomb::SetChargeProduct(const double& charge) {
-  /// set pair charge
+void AliFemtoCoulomb::SetChargeProduct(const double& charge)
+{ // set pair charge
 
   cout << " AliFemtoCoulomb::SetChargeProduct() " << endl;
   if ( fZ1Z2 != charge ) {
@@ -125,8 +128,8 @@ void AliFemtoCoulomb::SetChargeProduct(const double& charge) {
   }
 }
 
-void AliFemtoCoulomb::CreateLookupTable(const double& radius) {
-  /// Read radii from fFile
+void AliFemtoCoulomb::CreateLookupTable(const double& radius)
+{ // Read radii from fFile
   /// Create array(pair) of linear interpolation between radii
 
   cout << " AliFemtoCoulomb::CreateLookupTable() " << endl;
@@ -401,14 +404,18 @@ double AliFemtoCoulomb::Eta(const AliFemtoPair* pair)
   return ( fZ1Z2*fine_structure_const/(dv) );
 }
 
-TH1D* AliFemtoCoulomb::CorrectionHistogram(const double& mass1, const double& mass2, const int& nBins, 
-						const double& low, const double& high) {
-  /// return correction histogram
+TH1D* AliFemtoCoulomb::CorrectionHistogram(const double& mass1,
+                                           const double& mass2,
+                                           const int& nBins,
+                                           const double& low,
+                                           const double& high)
+{ // return correction histogram
 
-  if ( mass1!=mass2 ) {
+  if (mass1 != mass2) {
     cout << "Masses not equal ... try again.  No histogram created." << endl;
     assert(0);
   }
+
   TH1D* correction = new TH1D("correction","Coulomb correction",nBins,low,high);
   const double kReducedMass = mass1*mass2/(mass1+mass2);
   double qInv = low;
@@ -432,7 +439,7 @@ TH1D* AliFemtoCoulomb::CorrectionHistogram(const TH1D* histo, const double mass)
   correction->Reset();
   correction->SetDirectory(0);
   int nBins = correction->GetXaxis()->GetNbins();
-  const double kReducedMass = 0.5*mass;
+  const double kReducedMass = 0.5 * mass;
   double qInv;
   double eta;
   for (int ii=1; ii<=nBins; ii++) {
@@ -450,20 +457,20 @@ TH3D* AliFemtoCoulomb::CorrectionHistogram(const TH3D* histo, const double mass)
   TH3D* correction = (TH3D*) ((TH3D*)histo)->Clone();
   correction->Reset();
   correction->SetDirectory(0);
-  int nBinsX = correction->GetXaxis()->GetNbins();
-  int nBinsY = correction->GetYaxis()->GetNbins();
-  int nBinsZ = correction->GetZaxis()->GetNbins();
-  const double kReducedMass = 0.5*mass;
+  const int nBinsX = correction->GetXaxis()->GetNbins(),
+            nBinsY = correction->GetYaxis()->GetNbins(),
+            nBinsZ = correction->GetZaxis()->GetNbins();
+  const double kReducedMass = 0.5 * mass;
   double eta;
   double qInv;
   int binNumber;
   for (int ii = 1; ii <= nBinsX; ii++) {
     for (int iii = 1; iii <= nBinsY; iii++) {
-      for (int iv  =1; iv <= nBinsZ; iv++) {
-	binNumber = histo->GetBin(ii,iii,iv);
-	qInv = histo->GetBinContent(binNumber);
-	eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/( qInv );
-	correction->SetBinContent(binNumber, CoulombCorrect(eta,fRadius) );
+      for (int iv = 1; iv <= nBinsZ; iv++) {
+        binNumber = histo->GetBin(ii,iii,iv);
+        qInv = histo->GetBinContent(binNumber);
+        eta = 2.0 * fZ1Z2 * kReducedMass * fine_structure_const / qInv;
+        correction->SetBinContent(binNumber, CoulombCorrect(eta, fRadius));
       }
     }
   }
@@ -471,13 +478,15 @@ TH3D* AliFemtoCoulomb::CorrectionHistogram(const TH3D* histo, const double mass)
 }
 #endif
 
-double AliFemtoCoulomb::CoulombCorrect(const double& mass, const double& charge, const double& radius, const double& qInv)
-{
-  /// return correction factor
+double AliFemtoCoulomb::CoulombCorrect(const double& mass,
+                                       const double& charge,
+                                       const double& radius,
+                                       const double& qInv)
+{ // return correction factor
 
   fRadius = radius;
   fZ1Z2 = charge;
-  const double kReducedMass = 0.5*mass; // must be same mass particles
-  double eta = 2.0*fZ1Z2*kReducedMass*fine_structure_const/qInv;
-  return CoulombCorrect(eta,fRadius);
+  const double kReducedMass = 0.5 * mass, // must be same mass particles
+               eta = 2.0 * fZ1Z2 * kReducedMass * fine_structure_const / qInv;
+  return CoulombCorrect(eta, fRadius);
 }

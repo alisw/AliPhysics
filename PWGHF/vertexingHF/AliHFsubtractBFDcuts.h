@@ -34,6 +34,7 @@
 
 class TList;
 class TClonesArray;
+class AliAODMCHeader;
 class AliAODEvent;
 class AliAODVertex;
 class AliNeutralTrackParam;
@@ -47,7 +48,7 @@ public:
 
   void InitHistos();
 
-  void FillGenStep(AliAODMCParticle* dzeroMC,Double_t pt=-1,Double_t weight=1.,TClonesArray* mcArray=0x0);
+  void FillGenStep(AliAODMCParticle* dzeroMC,Double_t pt=-1,Double_t weight=1.,TClonesArray* mcArray=0x0, AliAODMCHeader* mcHeader=0x0);
   THnSparseF* GetSparseData() const {return fTHnData;}
   THnSparseF* GetSparseMC()   const {return fTHnMC;}
   THnSparseF* GetSparseMCgen()     const {return fTHnGenStep;}
@@ -58,7 +59,7 @@ public:
 
   void SetFillMC (Bool_t fillMC = kTRUE) {fIsMC = fillMC;}
 
-  void FillSparses(AliAODRecoDecayHF2Prong* dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0, AliAODEvent* aodEvent=0x0);
+  void FillSparses(AliAODRecoDecayHF2Prong* dzeroPart,Int_t isSelected,Double_t pt=-1,Double_t massD0=-1,Double_t massD0bar=-1,Double_t weight=1.,TClonesArray* mcArray=0x0, AliAODEvent* aodEvent=0x0, AliAODMCHeader* mcHeader=0x0);
   TList* GetDecayStrings() { return fDecayStrList; }
   TList* GetQAhists() { return fQAhists; }
 
@@ -103,7 +104,7 @@ private:
   TList*             fDecayStrList;        //!<! List with all decay strings
 
   /// \cond CLASSIMP
-  ClassDef(AliHFsubtractBFDcuts,8);
+  ClassDef(AliHFsubtractBFDcuts,9);
   /// \endcond
 };
 

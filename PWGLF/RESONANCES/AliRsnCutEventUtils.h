@@ -24,12 +24,13 @@ class AliRsnCutEventUtils : public AliRsnCut {
   void           SetRemovePileUppA2013(Bool_t doit = kTRUE) {fCheckPileUppA2013 = doit;}
   void           SetRemoveFirstEvtInChunk(Bool_t doit = kTRUE) {fIsRmFirstEvInChunck = doit;}
   void           SetUseMVPlpSelection(Bool_t useMVPlpSelection = kFALSE) { fUseMVPlpSelection = useMVPlpSelection;}
-  void           SetUseVertexSelection2013pA(Bool_t zvtxpA2013 = kTRUE)   {fUseVertexSelection2013pA = zvtxpA2013;}
+  void           SetUseVertexSelection2013pA(Bool_t vtxpA2013 = kTRUE, Double_t maxVtxZ = 10.0) {fUseVertexSelection2013pA = vtxpA2013; fMaxVtxZ = maxVtxZ;}
   Bool_t         IsSelected(TObject *object);
   AliAnalysisUtils* GetAnalysisUtils() { return fUtils; }
   void           SetAnalysisUtils(AliAnalysisUtils* utils){ fUtils = utils; }
   void           SetMinPlpContribMV(Int_t minPlpContribMV) { fMinPlpContribMV = minPlpContribMV;}
   void           SetMinPlpContribSPD(Int_t minPlpContribSPD) { fMinPlpContribSPD = minPlpContribSPD;}
+  void           SetFilterNSDeventsDPMJETpA2013(Bool_t doit = kFALSE) {fFilterNSDeventsDPMJETpA2013 = doit;}
 
  private:
   
@@ -39,10 +40,12 @@ class AliRsnCutEventUtils : public AliRsnCut {
   Int_t               fMinPlpContribMV; // min. n. of MV pile-up contributors
   Int_t               fMinPlpContribSPD; // min. n. of pile-up contributors from SPD
   Bool_t              fUseVertexSelection2013pA;// check and reject vertex of events for pA2013
- 
+  Double_t            fMaxVtxZ;//max selected z_vtx
+  Bool_t              fFilterNSDeventsDPMJETpA2013;//enable filter for NSD events in DPMJET MC for pA
+
   AliAnalysisUtils  * fUtils; //pointer to the AliAnalysisUtils object
 
-  ClassDef(AliRsnCutEventUtils, 2)
+  ClassDef(AliRsnCutEventUtils, 4)
     
     };
 

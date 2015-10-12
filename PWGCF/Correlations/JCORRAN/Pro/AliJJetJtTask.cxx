@@ -44,6 +44,8 @@ AliJJetJtTask::AliJJetJtTask() :
     fFirstEvent(kTRUE),
     cBin(-1),
     zBin(-1),
+    NRandom(1),
+    moveJet(0),
     zVert(-999),
     fAnaUtils(NULL),
     fRunTable(NULL),
@@ -64,6 +66,8 @@ AliJJetJtTask::AliJJetJtTask(const char *name, TString inputformat):
     fFirstEvent(kTRUE),
     cBin(-1),
     zBin(-1),
+    NRandom(1),
+    moveJet(0),
     zVert(-999),
     fAnaUtils(NULL),
     fRunTable(NULL),
@@ -87,6 +91,8 @@ AliJJetJtTask::AliJJetJtTask(const AliJJetJtTask& ap) :
     fFirstEvent(ap.fFirstEvent),
     cBin(-1),
     zBin(-1),
+    NRandom(1),
+    moveJet(0),
     zVert(-999),
     fAnaUtils(ap.fAnaUtils),
     fRunTable(ap.fRunTable),
@@ -146,6 +152,8 @@ void AliJJetJtTask::UserCreateOutputObjects()
    fJJetJtAnalysis = new AliJJetJtAnalysis(fCard);
    fJJetJtAnalysis->SetJetFinderName(fJetTask->GetJetFinderString());
    fJJetJtAnalysis->SetNumberOfJetFinders(fJetTask->GetNumberOfJetCollections());
+   fJJetJtAnalysis->SetNrandom(NRandom);
+   fJJetJtAnalysis->SetMoveJet(moveJet);
    fJJetJtAnalysis->UserCreateOutputObjects();
 
    fCard->WriteCard(gDirectory);

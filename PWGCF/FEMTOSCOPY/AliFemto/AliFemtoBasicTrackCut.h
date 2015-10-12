@@ -64,7 +64,7 @@ protected:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoBasicTrackCut, 2)
+  ClassDef(AliFemtoBasicTrackCut, 2);
   /// \endcond
 #endif
 };

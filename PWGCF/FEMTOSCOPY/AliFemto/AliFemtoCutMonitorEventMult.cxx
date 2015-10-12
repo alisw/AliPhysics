@@ -1,9 +1,7 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCutMonitorEventMult - the cut monitor for particles to study    //
-// the difference between reconstructed and true momentum                     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCutMonitorEventMult.cxx
+///
+
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoEvent.h"
@@ -12,173 +10,165 @@
 #include <TList.h>
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
-  fEvMult(0),
-  fNormEvMult(0),
-  fSPDMult(0),
-  fMultSumPt(0),
+  fEvMult(NULL),
+  fNormEvMult(NULL),
+  fSPDMult(NULL),
+  fMultSumPt(NULL),
   freadMC(kFALSE),
   faddhists(kFALSE),
-  fEstimateITSTPC(0),
-  fEstimateTracklets(0),
-  fEstimateITSPure(0),
-  fEst1Est2(0),
-  fEst1Est3(0),
-  fEst2Est3(0),
-  fEst1Norm(0),
-  fEst2Norm(0),
-  fEst3Norm(0),
-  fPsiVZERO(0)
+  fEstimateITSTPC(NULL),
+  fEstimateTracklets(NULL),
+  fEstimateITSPure(NULL),
+  fEst1Est2(NULL),
+  fEst1Est3(NULL),
+  fEst2Est3(NULL),
+  fEst1Norm(NULL),
+  fEst2Norm(NULL),
+  fEst3Norm(NULL),
+  fPsiVZERO(NULL)
 {
   // Default constructor
   fEvMult = new TH1D("EvMult", "Event Multiplicity", 5001, -0.5, 5000.5);
-  fMultSumPt = new TH2D("EvMultSumPt","Event Multiplicity vs Total pT",5001,-0.5,5000.5,1000,0.0,100.0);
+  fMultSumPt = new TH2D("EvMultSumPt",
+                        "Event Multiplicity vs Total pT",
+                        5001, -0.5, 5000.5,
+                        1000, 0.0, 100.0);
 }
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int nBins):
   AliFemtoCutMonitor(),
-  fEvMult(0),
-  fNormEvMult(0),
-  fSPDMult(0),
-  fMultSumPt(0),
+  fEvMult(NULL),
+  fNormEvMult(NULL),
+  fSPDMult(NULL),
+  fMultSumPt(NULL),
   freadMC(kFALSE),
   faddhists(kFALSE),
-  fEstimateITSTPC(0),
-  fEstimateTracklets(0),
-  fEstimateITSPure(0),
-  fEst1Est2(0),
-  fEst1Est3(0),
-  fEst2Est3(0),
-  fEst1Norm(0),
-  fEst2Norm(0),
-  fEst3Norm(0),
-  fPsiVZERO(0)
-
+  fEstimateITSTPC(NULL),
+  fEstimateTracklets(NULL),
+  fEstimateITSPure(NULL),
+  fEst1Est2(NULL),
+  fEst1Est3(NULL),
+  fEst2Est3(NULL),
+  fEst1Norm(NULL),
+  fEst2Norm(NULL),
+  fEst3Norm(NULL),
+  fPsiVZERO(NULL)
 {
+  TString name(aName);
+
   // Normal constructor
-  char name[200];
-  snprintf(name, 200, "EvMult%s", aName);
-  fEvMult = new TH1D(name, "Event Multiplicity", nBins+1, -0.5, 5000.5);
+  fEvMult = new TH1D("EvMult" + name,
+                     "Event Multiplicity",
+                     nBins+1, -0.5, 5000.5);
 
-  snprintf(name, 200, "NormEvMult%s", aName);
-  fNormEvMult = new TH1D(name, "Normalized Event Multiplicity", nBins+1, -0.5, 5000.5);
+  fNormEvMult = new TH1D("NormEvMult" + name,
+                         "Normalized Event Multiplicity",
+                         nBins+1, -0.5, 5000.5);
 
-
-
-  if(!freadMC) {
-    snprintf(name, 200, "SPDEvMult%s", aName);
-    fSPDMult = new TH1D(name, "SPD Tracklet Multiplicity", nBins+1, -0.5,  5000.5);
+  if (!freadMC) {
+    fSPDMult = new TH1D("SPDEvMult" + name,
+                        "SPD Tracklet Multiplicity",
+                        nBins+1, -0.5,  5000.5);
   }
 
-  snprintf(name, 200, "EvMultTotPt%s", aName);
-  fMultSumPt = new TH2D(name,"Event Multiplicity vs Total pT",501,-0.5,500.5,1000,0.0,100.0);
+  fMultSumPt = new TH2D("EvMultTotPt" + name,
+                        "Event Multiplicity vs Total pT",
+                        501, -0.5, 500.5,
+                        1000, 0.0, 100.0);
 
 
 
-  if(faddhists)
-    {
-      snprintf(name, 200, "EvMultEstITSTPC%s", aName);
-      fEstimateITSTPC = new TH1D(name, "ITS+TPC Multiplicity Estimate", 5001, -0.5, 5000.5);
+  if (faddhists) {
+    fEstimateITSTPC = new TH1D("EvMultEstITSTPC" + name,
+                               "ITS+TPC Multiplicity Estimate",
+                               5001, -0.5, 5000.5);
 
-      snprintf(name, 200, "EvMultEstTracklets%s", aName);
-      fEstimateTracklets = new TH1D(name, "Tracklets Multiplicity Estimate", 5001, -0.5, 5000.5);
+    fEstimateTracklets = new TH1D("EvMultEstTracklets" + name,
+                                  "Tracklets Multiplicity Estimate",
+                                  5001, -0.5, 5000.5);
 
-      snprintf(name, 200, "EvMultEstITSPure%s", aName);
-      fEstimateITSPure = new TH1D(name, "ITS Pure Multiplicity Estimate", 8001, -0.5, 8000.5);
+    fEstimateITSPure = new TH1D("EvMultEstITSPure" + name,
+                                "ITS Pure Multiplicity Estimate",
+                                8001, -0.5, 8000.5);
 
-      snprintf(name, 200, "EstITSTPCEstTracklet%s", aName);
-      fEst1Est2 = new TH2D(name,"ITS+TPC vs Tracklets",501,-0.5,5000.5,501,-0.5,500.5);
+    fEst1Est2 = new TH2D("EstITSTPCEstTracklet" + name,
+                         "ITS+TPC vs Tracklets",
+                         501, -0.5, 5000.5,
+                         501, -0.5, 500.5);
 
-      snprintf(name, 200, "EstITSTPCEstITSPure%s", aName);
-      fEst1Est3 = new TH2D(name,"ITS+TPC vs ITS Pure",501,-0.5,5000.5,801,-0.5,8000.5);
+    fEst1Est3 = new TH2D("EstITSTPCEstITSPure" + name,
+                         "ITS+TPC vs ITS Pure",
+                         501, -0.5, 5000.5,
+                         801, -0.5, 8000.5);
 
-      snprintf(name, 200, "EstTrackletEstITSPure%s", aName);
-      fEst2Est3 = new TH2D(name,"Tracklets vs ITS Pure",501,-0.5,5000.5,801,-0.5,8000.5);
+    fEst2Est3 = new TH2D("EstTrackletEstITSPure" + name,
+                         "Tracklets vs ITS Pure",
+                         501, -0.5, 5000.5,
+                         801, -0.5, 8000.5);
 
-      snprintf(name, 200, "EstITSTPCNormMult%s", aName);
-      fEst1Norm = new TH2D(name,"ITS+TPC vs Normalized Mult",501,-0.5,5000.5,501,-0.5,5000.5);
+    fEst1Norm = new TH2D("EstITSTPCNormMult" + name,
+                         "ITS+TPC vs Normalized Mult",
+                         501, -0.5, 5000.5,
+                         501, -0.5, 5000.5);
 
-      snprintf(name, 200, "EstTrackletsNormMult%s", aName);
-      fEst2Norm = new TH2D(name,"Tracklets vs Normalized Mult",501,-0.5,5000.5,501,-0.5,5000.5);
+    fEst2Norm = new TH2D("EstTrackletsNormMult" + name,
+                         "Tracklets vs Normalized Mult",
+                         501, -0.5, 5000.5,
+                         501, -0.5, 5000.5);
 
-      snprintf(name, 200, "EstITSPureNormMult%s", aName);
-      fEst3Norm = new TH2D(name,"ITS Pure vs Normalized Mult",501,-0.5,5000.5,501,-0.5,5000.5);
-    }
+    fEst3Norm = new TH2D("EstITSPureNormMult" + name,
+                         "ITS Pure vs Normalized Mult",
+                         501, -0.5, 5000.5,
+                         501, -0.5, 5000.5);
+  }
 
-  snprintf(name, 200, "PsiEPVZERO%s", aName);
-  fPsiVZERO = new TH1D(name, "event plane angle from vzero", 157, -1.575, 1.565);
+  fPsiVZERO = new TH1D("PsiEPVZERO" + name,
+                       "event plane angle from vzero",
+                       157, -1.575, 1.565);
 }
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut):
-  AliFemtoCutMonitor(),
-  fEvMult(0),
-  fNormEvMult(0),
-  fSPDMult(0),
-  fMultSumPt(0),
-  freadMC(kFALSE),
-  faddhists(kFALSE),
-  fEstimateITSTPC(0),
-  fEstimateTracklets(0),
-  fEstimateITSPure(0),
-  fEst1Est2(0),
-  fEst1Est3(0),
-  fEst2Est3(0),
-  fEst1Norm(0),
-  fEst2Norm(0),
-  fEst3Norm(0),
-  fPsiVZERO(0)
-
+  AliFemtoCutMonitor(aCut),
+  fEvMult(NULL),
+  fNormEvMult(NULL),
+  fSPDMult(NULL),
+  fMultSumPt(NULL),
+  freadMC(aCut.freadMC),
+  faddhists(aCut.faddhists),
+  fEstimateITSTPC(NULL),
+  fEstimateTracklets(NULL),
+  fEstimateITSPure(NULL),
+  fEst1Est2(NULL),
+  fEst1Est3(NULL),
+  fEst2Est3(NULL),
+  fEst1Norm(NULL),
+  fEst2Norm(NULL),
+  fEst3Norm(NULL),
+  fPsiVZERO(NULL)
 {
   // copy constructor
-  if (fEvMult) delete fEvMult;
   fEvMult = new TH1D(*aCut.fEvMult);
-
-  if (fNormEvMult) delete fNormEvMult;
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
 
-
-
-  if(!freadMC){
-    if (fSPDMult) delete fSPDMult;
+  if(!freadMC) {
     fSPDMult = new TH1D(*aCut.fSPDMult);
   }
 
-  if (fMultSumPt) delete fMultSumPt;
   fMultSumPt = new TH2D(*aCut.fMultSumPt);
 
+  if (faddhists) {
+    fEstimateITSTPC = new TH1D(*aCut.fEstimateITSTPC);
+    fEstimateTracklets = new TH1D(*aCut.fEstimateTracklets);
+    fEstimateITSPure = new TH1D(*aCut.fEstimateITSPure);
+    fEst1Est2 = new TH2D(*aCut.fEst1Est2);
+    fEst1Est3 = new TH2D(*aCut.fEst1Est3);
+    fEst2Est3 = new TH2D(*aCut.fEst2Est3);
+    fEst1Norm = new TH2D(*aCut.fEst1Norm);
+    fEst2Norm = new TH2D(*aCut.fEst2Norm);
+    fEst3Norm = new TH2D(*aCut.fEst3Norm);
+  }
 
-  if(faddhists)
-    {
-      if (fEstimateITSTPC) delete fEstimateITSTPC;
-      fEstimateITSTPC = new TH1D(*aCut.fEstimateITSTPC);
-
-      if (fEstimateTracklets) delete fEstimateTracklets;
-      fEstimateTracklets = new TH1D(*aCut.fEstimateTracklets);
-
-      if (fEstimateITSPure) delete fEstimateITSPure;
-      fEstimateITSPure = new TH1D(*aCut.fEstimateITSPure);
-
-      if (fEst1Est2) delete fEst1Est2;
-      fEst1Est2 = new TH2D(*aCut.fEst1Est2);
-
-      if (fEst1Est3) delete fEst1Est3;
-      fEst1Est3 = new TH2D(*aCut.fEst1Est3);
-
-      if (fEst2Est3) delete fEst2Est3;
-      fEst2Est3 = new TH2D(*aCut.fEst2Est3);
-
-      if (fEst1Norm) delete fEst1Norm;
-      fEst1Norm = new TH2D(*aCut.fEst1Norm);
-
-      if (fEst2Norm) delete fEst2Norm;
-      fEst2Norm = new TH2D(*aCut.fEst2Norm);
-
-      if (fEst3Norm) delete fEst3Norm;
-      fEst3Norm = new TH2D(*aCut.fEst3Norm);
-    }
-
-  if (fPsiVZERO) delete fPsiVZERO;
   fPsiVZERO = new TH1D(*aCut.fPsiVZERO);
-
 }
 
 AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
@@ -187,26 +177,25 @@ AliFemtoCutMonitorEventMult::~AliFemtoCutMonitorEventMult()
   delete fEvMult;
   delete fNormEvMult;
 
-  if(!freadMC){
+  if (!freadMC) {
     delete fSPDMult;
   }
+
   delete fMultSumPt;
 
-  if(faddhists)
-    {
-      delete fEstimateITSTPC;
-      delete fEstimateTracklets;
-      delete fEstimateITSPure;
-      delete fEst1Est2;
-      delete fEst1Est3;
-      delete fEst2Est3;
-      delete fEst1Norm;
-      delete fEst2Norm;
-      delete fEst3Norm;
-    }
+  if (faddhists) {
+    delete fEstimateITSTPC;
+    delete fEstimateTracklets;
+    delete fEstimateITSPure;
+    delete fEst1Est2;
+    delete fEst1Est3;
+    delete fEst2Est3;
+    delete fEst1Norm;
+    delete fEst2Norm;
+    delete fEst3Norm;
+  }
 
   delete fPsiVZERO;
-
 }
 
 AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFemtoCutMonitorEventMult& aCut)
@@ -221,11 +210,10 @@ AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFem
   if (fNormEvMult) delete fNormEvMult;
   fNormEvMult = new TH1D(*aCut.fNormEvMult);
 
-
   if (fPsiVZERO) delete fPsiVZERO;
   fPsiVZERO = new TH1D(*aCut.fPsiVZERO);
 
-  if(!freadMC){
+  if (!freadMC) {
     if (fSPDMult) delete fSPDMult;
     fSPDMult = new TH1D(*aCut.fSPDMult);
   }
@@ -234,44 +222,43 @@ AliFemtoCutMonitorEventMult& AliFemtoCutMonitorEventMult::operator=(const AliFem
   fMultSumPt = new TH2D(*aCut.fMultSumPt);
 
 
-  if(faddhists)
-    {
-      if (fEstimateITSTPC) delete fEstimateITSTPC;
-      fEstimateITSTPC = new TH1D(*aCut.fEstimateITSTPC);
+  if (faddhists) {
+    if (fEstimateITSTPC) delete fEstimateITSTPC;
+    fEstimateITSTPC = new TH1D(*aCut.fEstimateITSTPC);
 
-      if (fEstimateTracklets) delete fEstimateTracklets;
-      fEstimateTracklets = new TH1D(*aCut.fEstimateTracklets);
+    if (fEstimateTracklets) delete fEstimateTracklets;
+    fEstimateTracklets = new TH1D(*aCut.fEstimateTracklets);
 
-      if (fEstimateITSPure) delete fEstimateITSPure;
-      fEstimateITSPure = new TH1D(*aCut.fEstimateITSPure);
+    if (fEstimateITSPure) delete fEstimateITSPure;
+    fEstimateITSPure = new TH1D(*aCut.fEstimateITSPure);
 
-      if (fEst1Est2) delete fEst1Est2;
-      fEst1Est2 = new TH2D(*aCut.fEst1Est2);
+    if (fEst1Est2) delete fEst1Est2;
+    fEst1Est2 = new TH2D(*aCut.fEst1Est2);
 
-      if (fEst1Est3) delete fEst1Est3;
-      fEst1Est3 = new TH2D(*aCut.fEst1Est3);
+    if (fEst1Est3) delete fEst1Est3;
+    fEst1Est3 = new TH2D(*aCut.fEst1Est3);
 
-      if (fEst2Est3) delete fEst2Est3;
-      fEst2Est3 = new TH2D(*aCut.fEst2Est3);
+    if (fEst2Est3) delete fEst2Est3;
+    fEst2Est3 = new TH2D(*aCut.fEst2Est3);
 
-      if (fEst1Norm) delete fEst1Norm;
-      fEst1Norm = new TH2D(*aCut.fEst1Norm);
+    if (fEst1Norm) delete fEst1Norm;
+    fEst1Norm = new TH2D(*aCut.fEst1Norm);
 
-      if (fEst2Norm) delete fEst2Norm;
-      fEst2Norm = new TH2D(*aCut.fEst2Norm);
+    if (fEst2Norm) delete fEst2Norm;
+    fEst2Norm = new TH2D(*aCut.fEst2Norm);
 
-      if (fEst3Norm) delete fEst3Norm;
-      fEst3Norm = new TH2D(*aCut.fEst3Norm);
-    }
+    if (fEst3Norm) delete fEst3Norm;
+    fEst3Norm = new TH2D(*aCut.fEst3Norm);
+  }
 
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorEventMult::Report(){
+AliFemtoString AliFemtoCutMonitorEventMult::Report()
+{
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorEventMult report";
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  TString report = "*** AliFemtoCutMonitorEventMult report";
+  return AliFemtoString(report);
 }
 
 void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)
@@ -358,11 +345,10 @@ TList *AliFemtoCutMonitorEventMult::GetOutputList()
 
 void AliFemtoCutMonitorEventMult::SetReadMC(Bool_t mc)
 {
-  freadMC=mc;
+  freadMC = mc;
 }
 
 void AliFemtoCutMonitorEventMult::AdditionalMultHistsOn(Bool_t addhists)
 {
-  faddhists=addhists;
+  faddhists = addhists;
 }
-

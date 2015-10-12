@@ -268,10 +268,11 @@ private:
     
     //V0A Centrality
     TH1F    *fHistMultiplicityV0ABeforeTrigSel; 	        //! multiplicity distribution
-	TH1F    *fHistMultiplicityV0AForTrigEvt;  		        //! multiplicity distribution
-	TH1F    *fHistMultiplicityV0A;     					        //! multiplicity distribution
-	TH1F    *fHistMultiplicityV0ANoTPCOnly;			        //! multiplicity distribution
-	TH1F    *fHistMultiplicityV0ANoTPCOnlyNoPileup;			//! multiplicity distribution
+    TH1F    *fHistMultiplicityV0AForTrigEvt;  		        //! multiplicity distribution
+    TH1F    *fHistMultiplicityV0AAfterPVSelection;     //! multiplicity distribution
+    TH1F    *fHistMultiplicityV0A;     					        //! multiplicity distribution
+    TH1F    *fHistMultiplicityV0ANoTPCOnly;			        //! multiplicity distribution
+    TH1F    *fHistMultiplicityV0ANoTPCOnlyNoPileup;			//! multiplicity distribution
     
     //ZNA Centrality
     TH1F    *fHistMultiplicityZNABeforeTrigSel; 	        //! multiplicity distribution
@@ -293,6 +294,9 @@ private:
 	TH1F    *fHistMultiplicitySPD;     					        //! multiplicity distribution
 	TH1F    *fHistMultiplicitySPDNoTPCOnly;			        //! multiplicity distribution
 	TH1F    *fHistMultiplicitySPDNoTPCOnlyNoPileup;			//! multiplicity distribution
+
+  //
+	TH1F*  fHistPVZDistribution;  // PV z-distribution
     
     //---> Generated Histograms
     
