@@ -46,7 +46,12 @@ AliTriggerIR::AliTriggerIR():
   fInt2(NULL),
   fBC(NULL),
   fIncomplete(kFALSE),
-  fTransErr(kFALSE)
+  fTransErr(kFALSE),
+  fNWord2(0),
+  fIntRun2(NULL),
+  fBC2(NULL),
+  fIncomplete2(kFALSE),
+  fTransErr2(kFALSE)
 {
   // Default constructor
 }
@@ -60,9 +65,14 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t in
   fInt2(NULL),
   fBC(NULL),
   fIncomplete(incomplete),
-  fTransErr(transerr)
+  fTransErr(transerr),
+  fNWord2(0),
+  fIntRun2(NULL),
+  fBC2(NULL),
+  fIncomplete2(kFALSE),
+  fTransErr2(kFALSE)
 {
-   //  Standard constructor
+   //  Standard constructor for DDL1 (run1)
    //
    //  It takes as an input the CTP raw-data payload (words)
    //  corresponding to the IRs
@@ -77,6 +87,35 @@ AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t in
      }
   }
 }
+//_____________________________________________________________________________
+AliTriggerIR::AliTriggerIR(UInt_t orbit, UInt_t nwords, UInt_t *words, Bool_t incomplete, Bool_t transerr,Bool_t run2flag):
+  TObject(),
+  fOrbit(orbit),
+  fNWord(0),
+  fInt1(NULL),
+  fInt2(NULL),
+  fBC(NULL),
+  fIncomplete(kFALSE),
+  fTransErr(kFALSE),
+  fNWord2(nwords),
+  fIntRun2(NULL),
+  fBC2(NULL),
+  fIncomplete2(incomplete),
+  fTransErr2(transerr)
+{
+   //  Standard constructor for DDL2
+   //
+   //  It takes as an input the CTP raw-data payload (words)
+   //  corresponding to the IRs
+   if(fNWord2){
+     fIntRun2 = new ULong64_t[fNWord2];
+     fBC2   = new UShort_t[fNWord2];
+     for(UInt_t i = 0; i < fNWord2; i++) {
+        fIntRun2[i] = words[i] & 0xffffffffffff;
+        fBC2[i] = words[i] & 0xFFF;
+     }
+  }
+}
 
 //______________________________________________________________________________
 AliTriggerIR::AliTriggerIR(const AliTriggerIR &rec):
@@ -87,7 +126,12 @@ AliTriggerIR::AliTriggerIR(const AliTriggerIR &rec):
   fInt2(NULL),
   fBC(NULL),
   fIncomplete(rec.fIncomplete),
-  fTransErr(rec.fTransErr)
+  fTransErr(rec.fTransErr),
+  fNWord2(rec.fNWord2),
+  fIntRun2(NULL),
+  fBC2(NULL),
+  fIncomplete2(rec.fIncomplete2),
+  fTransErr2(rec.fTransErr2)
 {
   // Copy constructor
   //
@@ -101,6 +145,15 @@ AliTriggerIR::AliTriggerIR(const AliTriggerIR &rec):
       fBC[i] = rec.fBC[i];
     }
   }
+  if(fNWord2){
+    fIntRun2 = new ULong64_t[fNWord2];
+    fBC2   = new UShort_t[fNWord2];
+    for (UInt_t i = 0; i < fNWord2; i++) {
+      fIntRun2[i] = rec.fIntRun2[i];
+      fBC2[i] = rec.fBC2[i];
+    }
+  }
+
 }
 //_____________________________________________________________________________
 AliTriggerIR &AliTriggerIR::operator =(const AliTriggerIR& rec)
@@ -127,6 +180,20 @@ AliTriggerIR &AliTriggerIR::operator =(const AliTriggerIR& rec)
   }  
   fIncomplete = rec.fIncomplete;
   fTransErr = rec.fTransErr;
+  fNWord2 = rec.fNWord2;
+  if(fNWord2){
+    if (fIntRun2) delete fIntRun2;
+    fIntRun2 = new ULong64_t[fNWord2];
+    if (fBC2) delete fBC2;
+    fBC2 = new UShort_t[fNWord2];
+    for (UInt_t i = 0; i < fNWord2; i++) {
+      fIntRun2[i] = rec.fIntRun2[i];
+      fBC2[i] = rec.fBC2[i];
+    }
+  }  
+  fIncomplete2 = rec.fIncomplete2;
+  fTransErr2 = rec.fTransErr2;
+
   return *this;
 }
 
@@ -138,6 +205,8 @@ AliTriggerIR::~AliTriggerIR()
   if (fInt1) delete [] fInt1;
   if (fInt2) delete [] fInt2;
   if (fBC) delete [] fBC;
+  if (fIntRun2) delete [] fIntRun2;
+  if (fBC2) delete [] fBC2;
 }
 
 //_____________________________________________________________________________
@@ -145,11 +214,18 @@ void AliTriggerIR::Print( const Option_t* ) const
 {
   // Print
   cout << "Trigger Interaction Record:" << endl; 
-  cout << "  Orbit:                0x" << hex << fOrbit << dec << endl;
-  cout << "  Number of signals:    " << fNWord << endl;
+  cout << " Orbit:                0x" << hex << fOrbit << dec << endl;
+  cout << "       Number of signals:    " << fNWord << endl;
   for (UInt_t i = 0; i < fNWord; i++)
     cout << "    BC: 0x" << hex << fBC[i] << dec << "  Interaction1: " << fInt1[i] << "  Interaction2: " << fInt2[i] << endl;
 
   cout << "  Record incomplete:    " << fIncomplete << endl;
   cout << "  Transmission Error:   " << fTransErr << endl;
+  cout << "IRRun2 Number of signals:    " << fNWord2 << endl;
+  for (UInt_t i = 0; i < fNWord2; i++)
+    cout << "    BC: 0x" << hex << fBC[i]  << "  Interaction1: 0x" << fIntRun2[i] << dec << endl;
+
+  cout << "  Record incomplete:    " << fIncomplete2 << endl;
+  cout << "  Transmission Error:   " << fTransErr2 << endl;
+
 }

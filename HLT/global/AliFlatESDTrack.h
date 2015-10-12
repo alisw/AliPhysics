@@ -57,7 +57,7 @@ class AliFlatESDTrack :public AliVTrack {
 
   void SetImpactParameters( const Float_t p[2], const Float_t cov[3], const Float_t chi2 ){
     fImp[0] = p[0];
-    fImp[1] = p[2];
+    fImp[1] = p[1];
     fImp[2] = cov[0];
     fImp[3] = cov[1];
     fImp[4] = cov[2];
@@ -66,7 +66,7 @@ class AliFlatESDTrack :public AliVTrack {
 
   void SetImpactParametersTPC( const Float_t p[2], const Float_t cov[3], const Float_t chi2){
     fImpTPC[0] = p[0];
-    fImpTPC[1] = p[2];
+    fImpTPC[1] = p[1];
     fImpTPC[2] = cov[0];
     fImpTPC[3] = cov[1];
     fImpTPC[4] = cov[2];
@@ -179,7 +179,7 @@ class AliFlatESDTrack :public AliVTrack {
   virtual Int_t    GetID() const {return 0;}
   virtual UChar_t  GetITSClusterMap() const {return 0;}
   virtual Bool_t   GetCovarianceXYZPxPyPz(Double_t cv[21]) const {if (cv[0]){}; return kFALSE;}
-  virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t dz[2], Double_t covar[3]) {if (dz[0]==covar[3]){}; return kFALSE;}
+  virtual Bool_t   PropagateToDCA(const AliVVertex* /*vtx*/, Double_t /*b*/, Double_t /*maxd*/, Double_t /*dz*/[2], Double_t /*covar*/[3]) { return kFALSE;}
 
  private:
 
