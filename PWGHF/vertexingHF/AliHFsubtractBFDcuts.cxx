@@ -36,6 +36,7 @@
 #include "TMath.h"
 
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
@@ -152,13 +153,13 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnData->GetAxis(5)->SetName("CosPoint");
   fTHnData->GetAxis(5)->SetTitle("Cos#theta_{point}");
   fTHnData->GetAxis(6)->SetName("DecLengthXY");
-  fTHnData->GetAxis(6)->SetTitle("XY decay length");
+  fTHnData->GetAxis(6)->SetTitle("XY decay length (cm)");
   fTHnData->GetAxis(7)->SetName("DecLength");
-  fTHnData->GetAxis(7)->SetTitle("Decay length");
+  fTHnData->GetAxis(7)->SetTitle("Decay length (cm)");
 
   // pt, normLXY, cosPointXY, #prongs, mother pt, normL, cosPoint, LXY, L
   Int_t dimAxesMC[9]={24 ,30 ,100   ,20 ,24 ,30 ,100   ,100  ,100  };
-  Double_t  minMC[9]={ 0., 0.,  0.96, 0., 0., 0.,  0.99,  0. ,  0. };
+  Double_t  minMC[9]={ 0., 0.,  0.99, 0., 0., 0.,  0.99,  0. ,  0. };
   Double_t  maxMC[9]={24.,30.,  1.  ,20.,24.,30.,  1.  ,  1.0,  1.0};
   fTHnMC=new THnSparseF("fCutsMCFD","fCutsMCFD",9,dimAxesMC,minMC,maxMC);
   fTHnMC->GetAxis(0)->SetName("pt");
@@ -176,41 +177,48 @@ void AliHFsubtractBFDcuts::InitHistos(){
   fTHnMC->GetAxis(6)->SetName("CosPoint");
   fTHnMC->GetAxis(6)->SetTitle("Cos#theta_{point}");
   fTHnMC->GetAxis(7)->SetName("DecLengthXY");
-  fTHnMC->GetAxis(7)->SetTitle("XY decay length");
+  fTHnMC->GetAxis(7)->SetTitle("XY decay length (cm)");
   fTHnMC->GetAxis(8)->SetName("DecLength");
-  fTHnMC->GetAxis(8)->SetTitle("Decay length");
+  fTHnMC->GetAxis(8)->SetTitle("Decay length (cm)");
 
-  Int_t dimAxesGen[3]={24 ,20 ,24 };
-  Double_t  minGen[3]={ 0., 0., 0.};
-  Double_t  maxGen[3]={24.,20.,24.};
-  fTHnGenStep=new THnSparseF("fPtMCGenStep","fPtMCGenStep",3,dimAxesGen,minGen,maxGen);
+  Int_t dimAxesGen[5]={24 ,20 ,24 ,100 ,100 };
+  Double_t  minGen[5]={ 0., 0., 0.,  0.,  0.};
+  Double_t  maxGen[5]={24.,20.,24.,  1.,  1.};
+  fTHnGenStep=new THnSparseF("fPtMCGenStep","fPtMCGenStep",5,dimAxesGen,minGen,maxGen);
   fTHnGenStep->GetAxis(0)->SetName("pt");
   fTHnGenStep->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fTHnGenStep->GetAxis(1)->SetName("nProngs");
   fTHnGenStep->GetAxis(1)->SetTitle("Number of Decay Prongs");
   fTHnGenStep->GetAxis(2)->SetName("Mother_pt");
   fTHnGenStep->GetAxis(2)->SetTitle("Mother #it{p}_{T} (GeV/#it{c})");
+  fTHnGenStep->GetAxis(3)->SetName("DecLengthXY");
+  fTHnGenStep->GetAxis(3)->SetTitle("XY decay length (cm)");
+  fTHnGenStep->GetAxis(4)->SetName("DecLength");
+  fTHnGenStep->GetAxis(4)->SetTitle("Decay length (cm)");
 
-  fQAhists->Add(new TH1F("hRapidityDist"           , "All Particles;y;Counts (a.u.)"                                                                                              ,800,-4., 4.                        )); //  0
-  fQAhists->Add(new TH1F("hRapidityDistStable"     , "All Stable Particles;y;Counts (a.u.)"                                                                                       ,800,-4., 4.                        )); //  1
-  fQAhists->Add(new TH2F("hDecayLengthB"           , ";D meson #it{p}_T;Decay Length B Meson (cm);counts (a.u.)"                                                                  , 24, 0.,24.,200,0.,2.0             )); //  2
-  fQAhists->Add(new TH2F("hDecayLengthBxy"         , ";D meson #it{p}_T;Decay Length B Meson in XY direction (cm);counts (a.u.)"                                                  , 24, 0.,24.,200,0.,2.0             )); //  3
-  fQAhists->Add(new TH3F("hDCABhypothesis"         , "All Particles;D meson #it{p}_T;Distance of Closest Approach (cm);Impact parameter of D0 x track (cm^{2})"                   , 24, 0.,24.,100,0.,1.0,100,0.,0.001)); //  4
-  fQAhists->Add(new TH3F("hDCABprongs"             , "Only Real B Decay Prongs;D meson #it{p}_T;Distance of Closest Approach (cm);Impact parameter of D0 x track (cm^{2})"        , 24, 0.,24.,100,0.,1.0,100,0.,0.001)); //  5
-  fQAhists->Add(new TH3F("hVtxDistBprongs"         , "Only Real B Decay Prongs;D meson #it{p}_T;Distance to Primary Vertex (cm);Error Distance to Primary Vertex (cm)"            , 24, 0.,24.,100,0.,1.0,100,0.,1.0  )); //  6
-  fQAhists->Add(new TH3F("hVtxDistXYBprongs"       , "Only Real B Decay Prongs;D meson #it{p}_T;Distance to Primary Vertex in XY (cm);Error Distance to Primary Vertex in XY (cm)", 24, 0.,24.,100,0.,1.0,100,0.,1.0  )); //  7
-  fQAhists->Add(new TH3F("hVtxDistBhypothesis"     , "All Particles;D meson #it{p}_T;Distance to Primary Vertex (cm);Error Distance to Primary Vertex (cm)"                       , 24, 0.,24.,100,0.,1.0,100,0.,1.0  )); //  8
-  fQAhists->Add(new TH3F("hVtxDistXYBhypthesis"    , "All Particles;D meson #it{p}_T;Distance to Primary Vertex in XY (cm);Error Distance to Primary Vertex in XY (cm)"           , 24, 0.,24.,100,0.,1.0,100,0.,1.0  )); //  9
-  fQAhists->Add(new TH2F("hNormVtxDistBprongs"     , "Only Real B Decay Prongs;D meson #it{p}_T;Distance to Primary Vertex (cm);counts (a.u.)"                                    , 24, 0.,24.,100,0.,1.0             )); // 10
-  fQAhists->Add(new TH2F("hNormVtxDistXYBprongs"   , "Only Real B Decay Prongs;D meson #it{p}_T;Distance to Primary Vertex in XY (cm);counts (a.u.)"                              , 24, 0.,24.,100,0.,1.0             )); // 11
-  fQAhists->Add(new TH2F("hNormVtxDistBhypothesis" , "All Particles;D meson #it{p}_T;Distance to Primary Vertex (cm);counts (a.u.)"                                               , 24, 0.,24.,100,0.,1.0             )); // 12
-  fQAhists->Add(new TH2F("hNormVtxDistXYBhypthesis", "All Particles;D meson #it{p}_T;Distance to Primary Vertex in XY (cm);counts (a.u.)"                                         , 24, 0.,24.,100,0.,1.0             )); // 13
+  fQAhists->Add(new TH1F("hRapidityDist"           , "All Particles;y;Counts (a.u.)"                                                                                                ,800,-4., 4.                            )); //  0
+  fQAhists->Add(new TH1F("hRapidityDistStable"     , "All Stable Particles;y;Counts (a.u.)"                                                                                         ,800,-4., 4.                            )); //  1
+  fQAhists->Add(new TH2F("hDecayLengthB"           , ";D meson #it{p}_{T};Decay Length B Meson (cm);counts (a.u.)"                                                                  , 24, 0.,24.  , 200,0.,2.0              )); //  2
+  fQAhists->Add(new TH2F("hDecayLengthBxy"         , ";D meson #it{p}_{T};Decay Length B Meson in XY direction (cm);counts (a.u.)"                                                  , 24, 0.,24.  , 200,0.,2.0              )); //  3
+  fQAhists->Add(new TH3F("hDCABhypothesis"         , "All Particles;D meson #it{p}_{T};Distance of Closest Approach (cm);Impact parameter of D0 x track (cm^{2})"                   , 24, 0.,24.  , 100,0.,1.0 ,100,0.,0.001)); //  4
+  fQAhists->Add(new TH3F("hDCABprongs"             , "Only Real B Decay Prongs;D meson #it{p}_{T};Distance of Closest Approach (cm);Impact parameter of D0 x track (cm^{2})"        , 24, 0.,24.  , 100,0.,1.0 ,100,0.,0.001)); //  5
+  fQAhists->Add(new TH3F("hVtxDistBprongs"         , "Only Real B Decay Prongs;D meson #it{p}_{T};Distance to Primary Vertex (cm);Error Distance to Primary Vertex (cm)"            , 24, 0.,24.  , 100,0.,1.0 ,100,0.,1.0  )); //  6
+  fQAhists->Add(new TH3F("hVtxDistXYBprongs"       , "Only Real B Decay Prongs;D meson #it{p}_{T};Distance to Primary Vertex in XY (cm);Error Distance to Primary Vertex in XY (cm)", 24, 0.,24.  , 100,0.,1.0 ,100,0.,1.0  )); //  7
+  fQAhists->Add(new TH3F("hVtxDistBhypothesis"     , "All Particles;D meson #it{p}_{T};Distance to Primary Vertex (cm);Error Distance to Primary Vertex (cm)"                       , 24, 0.,24.  , 100,0.,1.0 ,100,0.,1.0  )); //  8
+  fQAhists->Add(new TH3F("hVtxDistXYBhypthesis"    , "All Particles;D meson #it{p}_{T};Distance to Primary Vertex in XY (cm);Error Distance to Primary Vertex in XY (cm)"           , 24, 0.,24.  , 100,0.,1.0 ,100,0.,1.0  )); //  9
+  fQAhists->Add(new TH2F("hNormVtxDistBprongs"     , "Only Real B Decay Prongs;D meson #it{p}_{T};Distance to Primary Vertex (cm);counts (a.u.)"                                    , 24, 0.,24.  , 100,0.,1.0              )); // 10
+  fQAhists->Add(new TH2F("hNormVtxDistXYBprongs"   , "Only Real B Decay Prongs;D meson #it{p}_{T};Distance to Primary Vertex in XY (cm);counts (a.u.)"                              , 24, 0.,24.  , 100,0.,1.0              )); // 11
+  fQAhists->Add(new TH2F("hNormVtxDistBhypothesis" , "All Particles;D meson #it{p}_{T};Distance to Primary Vertex (cm);counts (a.u.)"                                               , 24, 0.,24.  , 100,0.,1.0              )); // 12
+  fQAhists->Add(new TH2F("hNormVtxDistXYBhypthesis", "All Particles;D meson #it{p}_{T};Distance to Primary Vertex in XY (cm);counts (a.u.)"                                         , 24, 0.,24.  , 100,0.,1.0              )); // 13
+  fQAhists->Add(new TH2F("hVtxPrecision"           , ";#it{d}_{z}^{Vertex} (cm);#it{d}_{xyz}^{Vertex} (cm);counts (a.u.)"                                                           ,100, 0., 0.05,1000,0.,0.05             )); // 14
+  fQAhists->Add(new TH2F("hDecayLengthPrecision"   , ";D meson #it{p}_{T};Decay Length Residual (cm);counts (a.u.)"                                                                 , 24, 0.,24.  ,1000,0.,0.05             )); // 15
+  fQAhists->Add(new TH2F("hDecayLengthXYPrecision" , ";D meson #it{p}_{T};XY decay Length Residual(cm);counts (a.u.)"                                                               , 24, 0.,24.  ,1000,0.,0.05             )); // 16
   fQAhists->ls();
 
   return;
 }
 
-void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle* dzeropart,Double_t pt/*=-1.*/,Double_t weight/*=1.*/,TClonesArray* mcArray/*=0x0*/){
+void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle* dzeropart,Double_t pt/*=-1.*/,Double_t weight/*=1.*/,TClonesArray* mcArray/*=0x0*/,AliAODMCHeader* mcHeader/*=0x0*/){
   fMCarray=mcArray;
   if (pt<0) {
     pt=dzeropart->Pt();
@@ -222,10 +230,15 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle* dzeropart,Double_t pt/*
     fMotherPt=pt;
     fLabCand=dzeropart->GetLabel();
     fPtCand=dzeropart->Pt();
+    Double_t vtxDist[]   = { mcHeader->GetVtxX()-((AliAODMCParticle*)mcArray->At(dzeropart->GetFirstDaughter()))->Xv(),
+                             mcHeader->GetVtxY()-((AliAODMCParticle*)mcArray->At(dzeropart->GetFirstDaughter()))->Yv(),
+                             mcHeader->GetVtxZ()-((AliAODMCParticle*)mcArray->At(dzeropart->GetFirstDaughter()))->Zv() };
+    Double_t decayLength   = TMath::Sqrt(vtxDist[0]*vtxDist[0]+vtxDist[1]*vtxDist[1]+vtxDist[2]*vtxDist[2]);
+    Double_t decayLengthXY = TMath::Sqrt(vtxDist[0]*vtxDist[0]+vtxDist[1]*vtxDist[1]);
     if (!AnalyseDecay(fGenerateDecayList, kTRUE)) {
       AliDebug(3, "Error during the decay type determination!");
     }
-    Double_t entry[] = {pt,(Double_t)fNprongsInAcc,fMotherPt};
+    Double_t entry[] = {pt,(Double_t)fNprongsInAcc,fMotherPt,decayLength,decayLengthXY};
     fTHnGenStep->Fill(entry,weight);
     // y distribution of all particles
     for (Int_t i=0; i<fMCarray->GetEntriesFast(); ++i) {
@@ -235,14 +248,14 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle* dzeropart,Double_t pt/*
     }
   }
   else {
-    Double_t entry[] = {pt,0.,-1.};
+    Double_t entry[] = {pt,0.,-1., 0., 0.};
     fTHnGenStep->Fill(entry,weight);
   }
   fMCarray=0x0;
   return;
 }
 
-void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong* dzerocand,Int_t isSelected,Double_t pt,Double_t massD0,Double_t massD0bar,Double_t weight,TClonesArray* mcArray,AliAODEvent* aodEvent){
+void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong* dzerocand,Int_t isSelected,Double_t pt,Double_t massD0,Double_t massD0bar,Double_t weight,TClonesArray* mcArray,AliAODEvent* aodEvent, AliAODMCHeader* mcHeader){
   fMCarray=mcArray;
   if (aodEvent) {
     fAODtracks=aodEvent->GetTracks();
@@ -290,6 +303,28 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong* dzerocand,Int_t 
     // pt, normLXY, cosPointXY, #prongs, mother pt, normL, cosPoint, LXY, L
     Double_t pointMC[9]={pt,normalDecayLengXY,cptangXY,(Double_t)fNprongsInAcc,fMotherPt,normalDecayLeng,cptang,decayLengXY,decayLeng};
     fTHnMC->Fill(pointMC, weight);
+
+    if (mcHeader) {
+      Double_t dist[] = { fPriVtx->GetX()-mcHeader->GetVtxX(),
+                          fPriVtx->GetY()-mcHeader->GetVtxY(),
+                          fPriVtx->GetZ()-mcHeader->GetVtxZ() };
+      Int_t labDau0=((AliAODTrack*)fD0Cand->GetDaughter(0))->GetLabel();
+      if (labDau0<0) {
+        labDau0 *= -1.;
+        AliDebug(1, "Negative Daughter label");
+      }
+      Double_t decLengMC3D[]   = { mcHeader->GetVtxX()-((AliAODMCParticle*)mcArray->At(labDau0))->Xv(),
+                                   mcHeader->GetVtxY()-((AliAODMCParticle*)mcArray->At(labDau0))->Yv(),
+                                   mcHeader->GetVtxZ()-((AliAODMCParticle*)mcArray->At(labDau0))->Zv() };
+      Double_t decayLengMC   = TMath::Sqrt(decLengMC3D[0]*decLengMC3D[0]+decLengMC3D[1]*decLengMC3D[1]+decLengMC3D[2]*decLengMC3D[2]);
+      Double_t decayLengXYMC = TMath::Sqrt(decLengMC3D[0]*decLengMC3D[0]+decLengMC3D[1]*decLengMC3D[1]);
+
+
+      ((TH2F*)fQAhists->At(14))->Fill(TMath::Sqrt(dist[2]*dist[2]),
+                                      TMath::Sqrt(dist[0]*dist[0]+dist[1]*dist[1]+dist[2]*dist[2]));
+      ((TH2F*)fQAhists->At(15))->Fill(pt, decayLengMC-decayLeng);
+      ((TH2F*)fQAhists->At(16))->Fill(pt, decayLengXYMC-decayLengXY);
+    }
   }
   fMCarray=0x0;
   fAODtracks=0x0;
@@ -301,7 +336,10 @@ void AliHFsubtractBFDcuts::FillSparses(AliAODRecoDecayHF2Prong* dzerocand,Int_t 
 Bool_t AliHFsubtractBFDcuts::GetCandidateLabel(){
   if (fD0Cand) {
     Int_t labDau0=((AliAODTrack*)fD0Cand->GetDaughter(0))->GetLabel();
-    if (labDau0<0) labDau0*=-1;
+    if (labDau0<0) {
+      labDau0 *= -1.;
+      AliDebug(1, "Negative Daughter label");
+    }
     AliAODMCParticle* firstDau=(AliAODMCParticle*)fMCarray->UncheckedAt(labDau0);
     fLabCand = firstDau->GetMother();
     return kTRUE;

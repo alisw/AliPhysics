@@ -336,12 +336,15 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
 AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_t isPbPb=kTRUE,Int_t iAODanalysis = 0, Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0, UInt_t iPhysicsSelectionFlag = AliVEvent::kMB)
 {
   /*
+  For ESDs: (AOD see bottom)
+-----------------
     trackType: 0 = global
                1 = TPC stand alone
                2 = TPC stand alone constrained to SPD vertex
                4 = TPC stand alone constrained to SPD vertex with QA track selection on global tracks
-	       5 = Hybrid tracks: constrained TPConly for which no tight ITS is available
-               6 = Hybrid tracks: constrained loose global for which no tight ITS is available
+	       5 = (Obsolete) TPConly with vtx constraint (cuts on global track)
+               6 = (Obsolete) Global track with vtx constraint
+               7 = Global tracks with vtx constraint (Hybrid tracks, complementary selection)
     cuts:      0 (global) = standard ITSTPC2010 a la RAA analysis
                1 (global) = ITSrefit, no SPD requirements -> standard for jet analysis
                2 (global) = ITSrefit + no hits in SPD
@@ -350,6 +353,26 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
                1 (TPC)    = standard TPC + NClusters>0 --> to study new TPC QA recommendations
                0 (hybrid 5) = constrained TPConly for which no tight ITS is available
                0 (hybrid 6) = constrained loose global for which no tight ITS is available
+
+  Hybrid Tracks in ESDs:
+-----------------
+    2010 definition:
+       Type 0 Cuts 1: w/ SPD req. & ITS refit
+       Type 7 Cuts 1: w/o SPD req. & w/ ITS refit
+       Type 7 Cuts 2: w/o SPD req. & w/o ITS refit
+    2011-> definition:
+       Type 0 Cuts 5: w/ SPD req. & ITS refit
+       Type 7 Cuts 5: w/o SPD req. & w/ ITS refit
+  For more extensive documentation on the hybrid track definitions, see https://twiki.cern.ch/twiki/bin/view/ALICE/HybridTracks
+
+  For AODs:
+-----------------
+    The tracktype and cuts numbers are there only for naming purposes. The 'real' work is done by setting the filtermask. The naming for the hybrid tracks is as follows
+      ESD labelling                                filterbit (old AODs)    filterbit (current)
+    tracktype 0 cuts 5 = constrained tracks       :  16              :   256
+    tracktype 7 cuts 5 = complementary tracks     :  256             :   512
+    tracktype 0 cuts 0 = sum of these two         :  272             :   768
+    Filterbit for complementary tracks in 2010 definition contains both the w/o SPD req. & w/o ITS refit. Filterbit are set in AddTaskPWG4HighPtTrackQAAOD based on production name (prodType)
    */
 
   //Load common track cut class
@@ -409,15 +432,11 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     // tight global tracks
     trackCuts = CreateTrackCutsPWGJE(10041006);
     trackCutsReject = CreateTrackCutsPWGJE(1006);
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==4) {
     // tight global tracks +  NCrossedRowsCut>120 recommended in 2011
     trackCuts = CreateTrackCutsPWGJE(10041008);
     trackCutsReject = CreateTrackCutsPWGJE(1008);
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {
     // tight global tracks
@@ -431,15 +450,11 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     // no requirements on SPD and ITSrefit failed
     trackCuts = CreateTrackCutsPWGJE(10041006);       //no ITSrefit requirement filter 256
     trackCutsReject = CreateTrackCutsPWGJE(10001006); //ITSrefit requirement filter 16
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==6) {
     // no requirements on SPD and ITSrefit failed
     trackCuts = CreateTrackCutsPWGJE(10041008);       //no ITSrefit requirement filter 256
     trackCutsReject = CreateTrackCutsPWGJE(10001008); //ITSrefit requirement filter 16
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
   }
 
   if(trackType==1 && cuts==0) {
@@ -473,16 +488,16 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trackCuts = CreateTrackCutsPWGJE(1003);
     trackCutsReject = CreateTrackCutsPWGJE(10021003); 
     trackCutsTPConly = CreateTrackCutsPWGJE(2002);
-
-    trackCutsReject->SetEtaRange(-0.9,0.9);
-    trackCutsReject->SetPtRange(0.15, 1e10);
-    
-    trackCutsTPConly->SetEtaRange(-0.9,0.9);
-    trackCutsTPConly->SetPtRange(0.15, 1e10);
   }
 
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
+  if(trackCutsReject){
+     trackCutsReject->SetEtaRange(-0.9,0.9);
+     trackCutsReject->SetPtRange(0.15, 1e10);
+  }
+  trackCutsTPConly->SetEtaRange(-0.9,0.9);
+  trackCutsTPConly->SetPtRange(0.15, 1e10);
   
   TString trigName = "";
   if (iPhysicsSelectionFlag == AliVEvent::kAnyINT)

@@ -32,6 +32,14 @@ public:
     kpPb = 1,
     kPbp = -1
   };
+  enum EmcalTriggerClass{
+    kCPREL0 = 0,
+    kCPREG1,
+    kCPREG2,
+    kCPREJ1,
+    kCPREJ2,
+    kCPRntrig
+  };
   AliAnalysisTaskChargedParticlesRef();
   AliAnalysisTaskChargedParticlesRef(const char *name);
   virtual ~AliAnalysisTaskChargedParticlesRef();
@@ -47,6 +55,7 @@ public:
   void SetEtaLabCut(double etamin, double etamax) { fEtaLabCut[0] = etamin; fEtaLabCut[1] = etamax; }
   void SetEtaCMSCut(double etamin, double etamax) { fEtaCmsCut[0] = etamin; fEtaCmsCut[1] = etamax; }
 
+  void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
 
 protected:
   void CreateOldPtBinning(TArrayD &binning) const;
@@ -55,6 +64,7 @@ protected:
   void FillEventCounterHists(const char *triggerclass, double vtxz, bool isSelected);
   void FillTrackHistos(const char *eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
+  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   Bool_t TrackSelectionESD(AliESDtrack *track);
   Bool_t TrackSelectionAOD(AliAODTrack *track);
@@ -70,6 +80,8 @@ protected:
 
   Double_t                        fEtaLabCut[2];              ///< Cut applied in Eta Lab frame
   Double_t                        fEtaCmsCut[2];              ///< Cut applied in Eta centre-of-mass frame
+
+  Double_t                        fOfflineEnergyThreshold[kCPRntrig];    ///< Threhold applied on offline patches
 
 private:
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);

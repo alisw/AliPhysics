@@ -103,6 +103,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
   //---------------------
   // Pass recalibration factors
   // Do it here or inside the task
+  // If previous pass not available (first) avoid recalculate clusters
   //---------------------
   
   pi0calib->SetCalibrationFilePath(calibPath); 
@@ -126,6 +127,15 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
       else  printf("Null histogram with calibration factors for SM%d, 1 will be used in the full SM\n",ism);
     }
   }
+  else
+  {
+    // First iteration, just fill histograms, switch off recalculation
+    reco->SwitchOffRecalibration();
+    reco->SwitchOffRunDepCorrection(); // Careful!!!, activate when T corrections are available.
+    pi0calib->SwitchOffLoadOwnGeometryMatrices();
+    pi0calib->SwitchOffRecalculatePosition();
+    printf("Pi0 Calibration: Do not recalculate the clusters! First iteration. \n");
+  }
   
   pi0calib->PrintInfo();
   
@@ -138,15 +148,15 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration(TString calib
                                                            TList::Class(), AliAnalysisManager::kOutputContainer,  
                                                            outputFile.Data());
   
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("ParamsPi0Calibration_Trig%s",trigger.Data()), 
-                                                             TList::Class(), AliAnalysisManager::kOutputContainer, 
-                                                             "AnalysisParameters.root");
+//  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("ParamsPi0Calibration_Trig%s",trigger.Data()), 
+//                                                             TList::Class(), AliAnalysisManager::kOutputContainer, 
+//                                                             "AnalysisParameters.root");
   
   mgr->AddTask(pi0calib);
                                                              
   mgr->ConnectInput  (pi0calib, 0, cinput1);
   mgr->ConnectOutput (pi0calib, 1, coutput);
-  mgr->ConnectOutput (pi0calib, 2, cout_cuts);
+//  mgr->ConnectOutput (pi0calib, 2, cout_cuts);
 
   return pi0calib;
 }

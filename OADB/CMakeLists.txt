@@ -48,6 +48,7 @@ set(SRCS
     COMMON/MULTIPLICITY/AliMultSelectionCuts.cxx
     COMMON/MULTIPLICITY/AliOADBMultSelection.cxx
     COMMON/MULTIPLICITY/AliMultSelectionTask.cxx
+    COMMON/MULTIPLICITY/AliMultSelectionCalibrator.cxx
 )
 
 # Headers from sources

@@ -10,15 +10,11 @@
 #ifndef ALIFEMTOCOULOMB_H
 #define ALIFEMTOCOULOMB_H
 
-#include <stdio.h>
-#include "AliFemtoTypes.h"
-#include "AliFemtoPair.h"
-#include "AliFemtoParticle.h"
-#include "TH1D.h"
-#include "TH3D.h"
+class TH1D;
+class TH3D;
+class AliFemtoPair;
 
 class AliFemtoCoulomb {
-
 public:
   AliFemtoCoulomb();
   AliFemtoCoulomb(const char *readFile, const double& radius, const double& charge);
@@ -37,10 +33,17 @@ public:
   double CoulombCorrect(const double& eta, const double& radius);
   double CoulombCorrect(const AliFemtoPair* pair);
   double CoulombCorrect(const AliFemtoPair* pair, const double& radius);
-  double CoulombCorrect(const double& mass, const double& charge,
-		        const double& radius, const double& qInv);
-  TH1D* CorrectionHistogram(const double& mass1, const double& mass2, const int& nBins,
-				    const double& low, const double& high);
+  double CoulombCorrect(const double& mass,
+                        const double& charge,
+                        const double& radius,
+                        const double& qInv);
+
+  TH1D* CorrectionHistogram(const double& mass1,
+                            const double& mass2,
+                            const int& nBins,
+                            const double& low,
+                            const double& high);
+
 #ifdef __ROOT__
   TH1D* CorrectionHistogram(const TH1D*, const double);
   TH3D* CorrectionHistogram(const TH3D*, const double);
@@ -57,7 +60,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoCoulomb, 0)
+  ClassDef(AliFemtoCoulomb, 0);
   /// \endcond
 #endif
 };

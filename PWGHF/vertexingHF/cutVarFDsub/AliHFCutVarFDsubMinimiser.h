@@ -45,7 +45,7 @@ protected:
   Bool_t MinimiseDefault(); ///
   Bool_t MinimiseInCentre(); ///
 
-  Bool_t InCentre(Double_t *effPrompt, Double_t *effFD, Double_t *rawYield, Double_t *Ncorr); /// calculates the incenter
+  Bool_t InCentre(Double_t *effPrompt, Double_t *effFD, Double_t *rawYield, Double_t *Ncorr, Double_t* fprompt, Double_t* fpromptraw,Double_t* residuals); /// calculates the incenter
 
   AliHFCutVarFDsubMinimiser(const AliHFCutVarFDsubMinimiser& m); /// Copy constructor
   AliHFCutVarFDsubMinimiser operator=(const AliHFCutVarFDsubMinimiser& m); /// Assignment operator

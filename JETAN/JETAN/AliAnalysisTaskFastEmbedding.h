@@ -96,8 +96,6 @@ public:
    //AZ
   
    virtual void SetK0Type(Int_t i){ fK0Type = i; }
-   Bool_t IsK0InvMass(Double_t mass) const; //La and ALa mass check
-   Bool_t IsLaInvMass(Double_t mass) const; //La and ALa mass check
    virtual void SetLaType(Int_t i){ fLaType = i; }
    virtual void SetALaType(Int_t i){ fALaType = i; }
    virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }

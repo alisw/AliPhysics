@@ -654,15 +654,16 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
       else {fhEneVsAbsIdLG->Fill(absId,amp);}
       
       fhTimeVsBC->Fill(1.*BunchCrossNumber,hkdtime-timeBCoffset);
+      //important remark: We use 'Underflow bin' for absid=0 in OADB for time calibration 
       if(isHighGain==kTRUE){
 	if(fhAllAverageBC[nBC]!=0) {//comming from file after the first iteration
-	  offset = (Float_t)(fhAllAverageBC[nBC]->GetBinContent(absId+1));//channel absId=0 has histogram bin=1
+	  offset = (Float_t)(fhAllAverageBC[nBC]->GetBinContent(absId));//channel absId=0 has histogram bin=0
 	} else if(fReferenceFileName.Length()!=0){//protection against missing reference histogram
 	  AliFatal(Form("Reference histogram for BC%d not properly loaded",nBC));
 	}
       } else {
 	if(fhAllAverageLGBC[nBC]!=0) {//comming from file after the first iteration
-	  offset = (Float_t)(fhAllAverageLGBC[nBC]->GetBinContent(absId+1));//channel absId=0 has histogram bin=1
+	  offset = (Float_t)(fhAllAverageLGBC[nBC]->GetBinContent(absId));//channel absId=0 has histogram bin=0
 	} else if(fReferenceFileName.Length()!=0){//protection against missing reference histogram
 	  AliFatal(Form("Reference LG histogram for BC%d not properly loaded",nBC));
 	}
@@ -928,23 +929,24 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
   
   //AliWarning("New histograms booked.");
 
+  //important remark: we use 'underflow bin' for absid=0 in OADB  . That's why there is j-1 below.
   for(Int_t i=0;i<4;i++){
     for(Int_t j=1;j<=h1[i]->GetNbinsX();j++){
       //high gain
       if(h2[i]->GetBinContent(j)!=0){
-	hAllTimeAvBC[i]->SetBinContent(j,h1[i]->GetBinContent(j)/h2[i]->GetBinContent(j));
-	hAllTimeRMSBC[i]->SetBinContent(j,TMath::Sqrt(h3[i]->GetBinContent(j)/h2[i]->GetBinContent(j)) );
+	hAllTimeAvBC[i]->SetBinContent(j-1,h1[i]->GetBinContent(j)/h2[i]->GetBinContent(j));
+	hAllTimeRMSBC[i]->SetBinContent(j-1,TMath::Sqrt(h3[i]->GetBinContent(j)/h2[i]->GetBinContent(j)) );
       } else {
-	hAllTimeAvBC[i]->SetBinContent(j,0.);
-	hAllTimeRMSBC[i]->SetBinContent(j,0.);
+	hAllTimeAvBC[i]->SetBinContent(j-1,0.);
+	hAllTimeRMSBC[i]->SetBinContent(j-1,0.);
       }
       //low gain
       if(h5[i]->GetBinContent(j)!=0){
-	hAllTimeAvLGBC[i]->SetBinContent(j,h4[i]->GetBinContent(j)/h5[i]->GetBinContent(j));
-	hAllTimeRMSLGBC[i]->SetBinContent(j,TMath::Sqrt(h6[i]->GetBinContent(j)/h5[i]->GetBinContent(j)) );
+	hAllTimeAvLGBC[i]->SetBinContent(j-1,h4[i]->GetBinContent(j)/h5[i]->GetBinContent(j));
+	hAllTimeRMSLGBC[i]->SetBinContent(j-1,TMath::Sqrt(h6[i]->GetBinContent(j)/h5[i]->GetBinContent(j)) );
       } else {
-	hAllTimeAvLGBC[i]->SetBinContent(j,0.);
-	hAllTimeRMSLGBC[i]->SetBinContent(j,0.);
+	hAllTimeAvLGBC[i]->SetBinContent(j-1,0.);
+	hAllTimeRMSLGBC[i]->SetBinContent(j-1,0.);
       }
 
     }

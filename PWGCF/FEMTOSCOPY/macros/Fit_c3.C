@@ -40,7 +40,7 @@ using namespace std;
 
 // Fit Normalization is fixed to 1.0, explains why Chi2 higher here than in Three-pion radii paper
 //
-int CollisionType_def=0;// PbPb, pPb, pp
+int CollisionType_def=2;// PbPb, pPb, pp
 int FitType=0;// (0)Edgeworth, (1)Laguerre, (2)Levy
 bool FixNorm=0;// Fix Normalization for Pb-Pb only
 //
@@ -362,7 +362,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   pad1->Draw();
   pad1_2->Draw();
   pad1->cd();
-  gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+  gPad->SetLeftMargin(0.11); gPad->SetRightMargin(0.04);
   gPad->SetTopMargin(0.03); 
   gPad->SetBottomMargin(0.01);
     
@@ -586,7 +586,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   c3_hist->GetXaxis()->SetTitle("#font[12]{Q}_{3} (GeV/#font[12]{c})");
   c3_hist->GetYaxis()->SetTitle("Three pion correlation");
   c3_hist->GetYaxis()->SetTitleSize(0.045); c3_hist->GetXaxis()->SetTitleSize(0.045);
-  c3_hist->GetYaxis()->SetTitleOffset(1.1);
+  c3_hist->GetYaxis()->SetTitleOffset(0.8);
   c3_hist->GetXaxis()->SetRangeUser(0,Q3LimitHigh);
   c3_hist->GetYaxis()->SetRangeUser(0.9,4);
   c3_hist->SetMarkerStyle(20);
@@ -603,7 +603,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   C3_hist->GetYaxis()->SetTitleSize(SizeTitle);
   C3_hist->GetYaxis()->SetLabelSize(SizeLabel);
   C3_hist->GetXaxis()->SetTitleOffset(1.05);
-  C3_hist->GetYaxis()->SetTitleOffset(1.1);
+  C3_hist->GetYaxis()->SetTitleOffset(0.8);
   C3_hist->GetXaxis()->SetNdivisions(606);
   C3_hist->GetYaxis()->SetNdivisions(505);
   C3_hist->GetXaxis()->SetRangeUser(0,Q3LimitHigh);
@@ -941,7 +941,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   //cout<<c3_hist->GetBinContent(3)<<"  "<<C3_hist->GetBinContent(3)<<endl;
   // Ratio plot
   pad1_2->cd();
-  gPad->SetLeftMargin(0.14); gPad->SetRightMargin(0.04);
+  gPad->SetLeftMargin(0.11); gPad->SetRightMargin(0.04);
   gPad->SetTopMargin(0.03); gPad->SetBottomMargin(0.32);
   TH1D *Ratio_C3 = (TH1D*)C3_hist->Clone();
   TH1D *Ratio_c3 = (TH1D*)c3_hist->Clone();
@@ -951,7 +951,7 @@ void Fit_c3(bool SaveToFile=SaveToFile_def, int CollisionType=CollisionType_def,
   Ratio_C3->GetYaxis()->SetTitleSize(2.2*SizeTitle);
   Ratio_C3->GetYaxis()->SetLabelSize(2.2*SizeLabel);
   Ratio_C3->GetXaxis()->SetTitleOffset(1.05);
-  Ratio_C3->GetYaxis()->SetTitleOffset(0.5);
+  Ratio_C3->GetYaxis()->SetTitleOffset(0.4);
   Ratio_C3->GetXaxis()->SetNdivisions(606);
   Ratio_C3->GetYaxis()->SetNdivisions(202);
   Ratio_C3->SetMinimum(0.9); Ratio_C3->SetMaximum(1.045);

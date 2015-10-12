@@ -530,6 +530,10 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
   prob->SetTitle("Probability of the fit as a function of #Delta#Phi");
   prob->SetYTitle("Probability ");
 
+  TH1D * etasigrange = dynamic_cast<TH1D*>(yield->Clone("detasigrange"));
+  etasigrange->SetTitle("etarange bin by bin");
+  etasigrange->SetYTitle("eta range ");
+  
   Double_t AvWidth = 1.0;
   if(dynamic_cast<TObjString*>(types->At(0))->GetString().CompareTo("fgauspol0")==0){
     typedir = resultsdirectory(dir,"GP0");    
@@ -712,6 +716,7 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
     removeconstant(deta12ssbinc,-1.0*fitbg->GetParameter(0),ErrBg);
     
     Double_t binerr;
+    etasigrange->SetBinContent(dphi,gEtasigRange);
     Double_t binc = deta12ssbinc->IntegralAndError(deta12ssbinc->FindBin(-gEtasigRange),deta12ssbinc->FindBin(gEtasigRange),binerr);
     Double_t rmsv = deta12ssbinc->GetRMS();
     yieldbc->SetBinContent(dphi,binc/deltaphi);
@@ -763,9 +768,10 @@ void fitwith(TDirectory * dir, const char* type, TH2D * histo,Double_t etalimit)
   peakpos->Write();
   chisq->Write();
   prob->Write();
+  etasigrange->Write();
   
   
-  delete types;delete yield; delete background;delete width; delete peakpos; delete chisq; delete prob;
+  delete types;delete yield; delete background;delete width; delete peakpos; delete chisq; delete prob;delete etasigrange;
 }
 
 

@@ -11,13 +11,18 @@ enum pairYCutSet { kPairDefault,
                  };
 
 enum eventCutSet { kOld = -1, 
-		   kEvtDefault, //=0
-		   kNoPileUpCut, //=1
-		   kPileUpMV, //=2
-		   kPileUpSPD3, //=3		      
-		   kDefaultVtx8, //=4
-		   kDefaultVtx5, //=5                    
-		   kMCEvtDefault //=6
+		   kEvtDefault,
+		   kNoPileUpCut,
+		   kPileUpMV,
+		   kPileUpSPD3,		      
+		   kDefaultVtx8,
+		   kDefaultVtx5,//5
+		   kMCEvt,
+		   kMCEvtpA2013,
+		   kMCEvtDefault,
+		   kMCEvtNSD,
+		   kMCEvtNSDpA2013, //10
+		   kMCEvtNSDdefault
 };
 
 enum eventMixConfig { kDisabled = -1,
@@ -62,6 +67,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
   Int_t       MinPlpContribMV = 5; //default value if used
   Bool_t      useVtxCut2013pA = kTRUE; //default use recommended 2013 pA vtx selection
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
+  Bool_t      selectDPMJETevtNSDpA = kFALSE; //cut to select in DPMJET true NSD events
   
   if (evtCutSetID==eventCutSet::kOld) {
     triggerMask = AliVEvent::kAnyINT;
@@ -93,9 +99,52 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
     vtxZcut = 5.0; //cm
   }
   
+  if (evtCutSetID==eventCutSet::kMCEvt) {
+    rmFirstEvtChunk = kFALSE;
+    rejectPileUp = kFALSE;
+    useVtxCut2013pA = kFALSE;
+    vtxZcut = 1.0e3; //cm
+    selectDPMJETevtNSDpA = kFALSE;
+  }
+
+  if (evtCutSetID==eventCutSet::kMCEvtpA2013) {
+    rmFirstEvtChunk = kFALSE;
+    rejectPileUp = kFALSE;
+    useVtxCut2013pA = kTRUE;
+    vtxZcut = 1.0e3; //cm
+    selectDPMJETevtNSDpA = kFALSE;
+  }
+  
   if (evtCutSetID==eventCutSet::kMCEvtDefault) {
     rmFirstEvtChunk = kFALSE;
     rejectPileUp = kFALSE;
+    useVtxCut2013pA = kTRUE;
+    vtxZcut = 10.0; //cm
+    selectDPMJETevtNSDpA = kFALSE;
+  }
+  
+  if (evtCutSetID>=eventCutSet::kMCEvtNSD) {
+    rmFirstEvtChunk = kFALSE;
+    rejectPileUp = kFALSE;
+    useVtxCut2013pA = kFALSE;
+    vtxZcut = 1.0e3; //cm
+    selectDPMJETevtNSDpA = kTRUE;
+  }
+  
+  if (evtCutSetID==eventCutSet::kMCEvtNSDpA2013) {
+    rmFirstEvtChunk = kFALSE;
+    rejectPileUp = kFALSE;
+    vtxZcut = 1.0e3; //cm
+    selectDPMJETevtNSDpA = kTRUE;
+    useVtxCut2013pA = kTRUE;
+  }
+  
+  if (evtCutSetID==eventCutSet::kMCEvtNSDdefault) {
+    rmFirstEvtChunk = kFALSE;
+    rejectPileUp = kFALSE;
+    selectDPMJETevtNSDpA = kTRUE;
+    useVtxCut2013pA = kTRUE;
+    vtxZcut = 10.0; //cm
   }
   
   //-------------------------------------------
@@ -153,7 +202,6 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
      task->UseCentrality("V0A");   
    // set event mixing options
    task->UseContinuousMix();
-   //task->UseBinnedMix();
    task->SetNMix(nmix);
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
@@ -172,19 +220,24 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    //if (isPP) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup 
    //set check for pileup in 2013
    AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
-   cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA);
-   ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Vertex cut as pA 2013: %s", (useVtxCut2013pA?"ON":"OFF")));   
+   cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA, vtxZcut);
+   ::Info("AddTaskKStarPPB", Form(":::::::::::::::::: Vertex cut as pA 2013 (max Vz = %4.2f cm): %s", vtxZcut, (useVtxCut2013pA?"ON":"OFF")));  
+   if (isMC) {
+     cutEventUtils->SetFilterNSDeventsDPMJETpA2013(selectDPMJETevtNSDpA);
+     ::Info("AddTaskKStarPPB", Form(":::::::::::::::::: NSD selection in DPMJET pA: %s", (selectDPMJETevtNSDpA?"ON":"OFF")));  
+   }
+ 
    if (useMVPileUpSelection){
      cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
      cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
      cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-     ::Info("AddAnalysisTaskTOFKStar", Form("Multiple-vtx Pile-up rejection settings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
+     ::Info("AddTaskKStarPPB", Form("Multiple-vtx Pile-up rejection settings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
    } else {
      cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-     ::Info("AddAnalysisTaskTOFKStar", Form("SPD Pile-up rejection settings: MinPlpContribSPD = %i", MinPlpContribSPD));
+     ::Info("AddTaskKStarPPB", Form("SPD Pile-up rejection settings: MinPlpContribSPD = %i", MinPlpContribSPD));
    }
-   ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
-   ::Info("AddAnalysisTaskTOFKStar", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
+   ::Info("AddTaskKStarPPB", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
+   ::Info("AddTaskKStarPPB", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
    
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -199,24 +252,37 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    //   
    //vertex
    Int_t vtxID = task->CreateValue(AliRsnMiniValue::kVz, kFALSE);
-   AliRsnMiniOutput *outVtx = task->CreateOutput("eventVtx", "HIST", "EVENT");
-   outVtx->AddAxis(vtxID, 240, -12.0, 12.0);
-   
    //multiplicity or centrality
    Int_t multID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+   //reference multiplicity (default with global tracks with good quality, if not available uses tracklets)
+   Int_t multRefID = task->CreateValue(AliRsnMiniValue::kRefMult, kFALSE);
+
+   AliRsnMiniOutput *outVtx = task->CreateOutput("eventVtx", "HIST", "EVENT");
+   outVtx->AddAxis(vtxID, 500, -50.0, 50.0);
+   
    AliRsnMiniOutput *outMult = task->CreateOutput("eventMult", "HIST", "EVENT");
    if (isPP) 
      outMult->AddAxis(multID, 400, 0.0, 400.0);
    else
-     outMult->AddAxis(multID, 100, 0.0, 100.0);
+     outMult->AddAxis(multID, 101, 0.0, 101.0);
    
-   TH2F* hvz=new TH2F("hVzVsCent","", 100, 0., 100., 240, -12.0, 12.0);
-   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
+   AliRsnMiniOutput *outRefMult = task->CreateOutput("eventRefMult", "HIST", "EVENT");
+   outRefMult->AddAxis(multRefID, 400, 0.0, 400.0);
+   
+   TH2F* hvz = new TH2F("hVzVsCent",Form("Vertex position vs centrality"), 101, 0., 101., 500, -50.0, 50.0);
+   hvz->GetXaxis()->SetTitle("V0A");
+   hvz->GetYaxis()->SetTitle("z_{vtx} (cm)");
+   task->SetEventQAHist("vz", hvz);//plugs this histogram into the fHAEventVz data member
 
-   TH2F* hmc=new TH2F("MultiVsCent","", 100, 0., 100., 400, 0., 400.);
-   hmc->GetYaxis()->SetTitle("QUALITY");
-   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
+   TH2F* hRefMultiVsCent = new TH2F("hRefMultiVsCent",Form("Reference multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
+   hRefMultiVsCent->GetXaxis()->SetTitle("V0A");
+   hRefMultiVsCent->GetYaxis()->SetTitle("GLOBAL");
+   task->SetEventQAHist("refmulti",hRefMultiVsCent);//plugs this histogram into the fHAEventRefMultiCent data member
 
+   TH2F* hMultiVsCent = new TH2F("hMultiVsCent",Form("Multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
+   hMultiVsCent->GetXaxis()->SetTitle("V0A");
+   hMultiVsCent->GetYaxis()->SetTitle("QUALITY");
+   task->SetEventQAHist("multicent",hMultiVsCent);//plugs this histogram into the fHAEventMultiCent data member
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
@@ -239,7 +305,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPPB
    //
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //  outputFileName += ":Rsn";
-   Printf("AddAnalysisTaskTOFKStar - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   Printf("AddTaskKStarPPB - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
 							   TList::Class(), 

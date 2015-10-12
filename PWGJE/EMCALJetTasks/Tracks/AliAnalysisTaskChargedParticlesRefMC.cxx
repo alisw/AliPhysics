@@ -76,6 +76,9 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
+  for(int itrg = 0; itrg < kCPRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1.;
+  }
 }
 
 /**
@@ -101,6 +104,9 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
+  for(int itrg = 0; itrg < kCPRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1.;
+  }
   DefineOutput(1, TList::Class());
 }
 
@@ -135,10 +141,10 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   fHistos->CreateTProfile("hCrossSectionEvent", "PYTHIA cross section (from header, after event selection)", 1, 0.5, 1.5);
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
   fHistos->CreateTH1("hTriggerJetPtNoCut", "pt of trigger jets wihtout cuts", 1000, 0., 500);
-  fHistos->CreateTH1("hRatioPtJetPtHardNoCut", "Ratio of pt jet / pt hard without cut", 100, 0., 2.);
+  fHistos->CreateTH1("hRatioPtJetPtHardNoCut", "Ratio of pt jet / pt hard without cut", 1000, 0., 20.);
   fHistos->CreateTH1("hTriggerJetPtWithCut", "pt of trigger jets after cuts", 1000, 0., 500);
-  fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 100, 0., 2.);
-  TString triggers[15] = {"True", "MB", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
+  fHistos->CreateTH1("hRatioPtJetPtHardWithCut", "Ratio of pt jet / pt hard with cut on this ratio", 1000, 0., 20.);
+  TString triggers[16] = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "MBexcl", "EJ2excl", "EG2excl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
@@ -248,12 +254,13 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   TClonesArray *fTriggerPatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   if(!fTriggerPatches) return;
 
-  TString triggerstring = GetFiredTriggerClasses(fTriggerPatches);
+  //TString triggerstring = GetFiredTriggerClasses(fTriggerPatches);
   Bool_t isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7,
-      isEJ1 = isMinBias && triggerstring.Contains("EJ1"),
-      isEJ2 = isMinBias && triggerstring.Contains("EJ2"),
-      isEG1 = isMinBias && triggerstring.Contains("EG1"),
-      isEG2 = isMinBias && triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
+      isEMC7 = isMinBias && IsOfflineSelected(kCPREL0, fTriggerPatches), // triggerstring.Contains("EMC7"),
+      isEJ1 = isMinBias && IsOfflineSelected(kCPREJ1, fTriggerPatches), // triggerstring.Contains("EJ1"),
+      isEJ2 = isMinBias && IsOfflineSelected(kCPREJ2, fTriggerPatches), // triggerstring.Contains("EJ2"),
+      isEG1 = isMinBias && IsOfflineSelected(kCPREG1, fTriggerPatches), // triggerstring.Contains("EG1"),
+      isEG2 = isMinBias && IsOfflineSelected(kCPREG2, fTriggerPatches); // triggerstring.Contains("EG2");               // In simulations triggered events are a subset of min. bias events
   if(!(isMinBias || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
@@ -261,6 +268,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   // Fill reference distribution for the primary vertex before any z-cut
   fHistos->FillTH1("hVertexBeforeTrue", vtx->GetZ());
   if(isMinBias) fHistos->FillTH1("hVertexBeforeMB", vtx->GetZ());
+  if(isEMC7) fHistos->FillTH1("hVertexBeforeEMC7", vtx->GetZ());
   if(isEJ1) fHistos->FillTH1("hVertexBeforeEJ1", vtx->GetZ());
   if(isEJ2) fHistos->FillTH1("hVertexBeforeEJ2", vtx->GetZ());
   if(isEG1) fHistos->FillTH1("hVertexBeforeEG1", vtx->GetZ());
@@ -281,6 +289,10 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
       fHistos->FillTH1("hEventCountMBexcl", 1);
       fHistos->FillTH1("hVertexAfterMBexcl", vtx->GetZ());
     }
+  }
+  if(isEMC7){
+    fHistos->FillTH1("hEventCountEMC7", 1);
+    fHistos->FillTH1("hVertexAfterEMC7", vtx->GetZ());
   }
   if(isEJ1){
     fHistos->FillTH1("hEventCountEJ1", 1);
@@ -383,7 +395,7 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
   // - Eta distribution for tracks above 1, 2, 5, 10 GeV/c with eta cut
   AliVTrack *checktrack(NULL);
   AliVParticle *assocMC(NULL);
-  double ptparticle(-1.), etaparticle(-100.);
+  double ptparticle(-1.), etaparticle(-100.), etaEMCAL(0.), phiEMCAL(0.);
   Bool_t hasTRD = kFALSE;
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
     checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
@@ -396,9 +408,19 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
     // Select only particles within ALICE acceptance
     if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(checktrack);
+    if(checktrack->IsA() == AliESDtrack::Class()){
+      AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    } else {
+      AliAODTrack copytrack(*(static_cast<AliAODTrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    }
     Int_t supermoduleID = -1;
-    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(checktrack->GetTrackEtaOnEMCal(), checktrack->GetTrackPhiOnEMCal(), supermoduleID);
+    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
     // Exclude supermodules 10 and 11 as they did not participate in the trigger
     isEMCAL = isEMCAL && supermoduleID < 10;
     hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
@@ -432,6 +454,9 @@ void AliAnalysisTaskChargedParticlesRefMC::UserExec(Option_t*) {  // Select even
       if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
         FillTrackHistos("MBexcl", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
       }
+    }
+    if(isEMC7){
+      FillTrackHistos("EMC7", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
     }
     if(isEJ1){
       FillTrackHistos("EJ1", ptparticle, checktrack->Eta() * fEtaSign, etacent, checktrack->Phi(), etacentcut, isEMCAL, hasTRD);
@@ -788,6 +813,32 @@ Bool_t AliAnalysisTaskChargedParticlesRefMC::TrackSelectionAOD(AliAODTrack* trac
   if(!track->TestFilterBit(AliAODTrack::kTrkGlobal)) return false;
   if(track->GetTPCNCrossedRows() < 120) return false;
   return true;
+}
+
+/**
+ * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
+ * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
+ * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
+ * @param trgcls Trigger class for which to apply additional offline patch selection
+ * @param triggerpatches Array of trigger patches
+ * @return True if at least on patch above threshold is found or no cut is applied
+ */
+Bool_t AliAnalysisTaskChargedParticlesRefMC::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
+  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
+  bool isSingleShower = ((trgcls == kCPREL0) || (trgcls == kCPREG1) || (trgcls == kCPREG2));
+  int nfound = 0;
+  AliEmcalTriggerPatchInfo *patch = NULL;
+  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
+    patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    if(!patch->IsOfflineSimple()) continue;
+    if(isSingleShower){
+     if(!patch->IsGammaLowSimple()) continue;
+    } else {
+      if(!patch->IsJetLowSimple()) continue;
+    }
+    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
+  }
+  return nfound > 0;
 }
 
 /**

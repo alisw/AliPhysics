@@ -26,11 +26,11 @@ TH1D *GetHistoCorrPtCut(float ptcut = 0.15, char *name, bool ispp = true, bool f
 
 TH1D *GetHistoCorrNotID(float etacut,char *name, bool TPC, bool eta, bool ispp = true, bool forSim = true);
 TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bool TPC, bool ispp = true, bool forSim = true);
-Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, bool ispp, bool forSim);
+Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, bool ispp, bool forSim, Int_t dataset);
 
 TH1D *GetHistoNoID(float etacut, char *name, bool eta, bool TPC, bool ispp, bool forSim);
 TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, bool ispp, bool forSim);
-Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, bool ispp, bool forSim);
+Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, bool ispp, bool forSim, Int_t dataset);
 
 TH1D* bayneseffdiv(TH1D* numerator, TH1D* denominator,Char_t* name);
 TH1D *GetHistoEfficiency(float cut, char *name, int mycase, int color, int marker,bool TPC, bool ITS, int cb = -1, int cblast = -1);
@@ -55,17 +55,17 @@ const char *reweightedYes = "Reweighted";
 
 //===========================================================================================
 
-void GetCorrections(char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", bool ispp = true, bool forSim = true, bool TPC = true, char *infilename="Et.ESD.new.sim.merged.root", int dataset = 2009){
+void GetCorrections(char *prodname = "Enter Production Name", char *shortprodname = "EnterProductionName", bool ispp = true, bool forSim = true, bool TPC = true, char *infilename="Et.ESD.new.sim.merged.root", int dataset = 2009, Int_t nCentBins = 21){
     TStopwatch timer;
     timer.Start();
-    gSystem->Load("libTree");
-    gSystem->Load("libGeom");
-    gSystem->Load("libVMC");
-    gSystem->Load("libXMLIO");
+    gSystem->Load("libTree.so");
+    gSystem->Load("libGeom.so");
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libXMLIO.so");
 
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
+    gSystem->Load("libSTEERBase.so");
+    gSystem->Load("libESD.so");
+    gSystem->Load("libAOD.so");
 
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
@@ -106,23 +106,23 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
-     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.014));
-     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.014));
+     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*0.7571/(0.7571+0.017));
+     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*0.7571/(0.7571-0.017));
    }
    else{
-     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.049));
-     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.049));
+     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*0.7571/(0.7571+0.017));
+     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*0.7571/(0.7571-0.017));
    }
 
    float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut,dataset);
    hadCorrectionEMCAL->SetNotHadronicCorrection(hadronicCorr);
    if(ispp){
-     hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(1.0-0.008));
-     hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(1.0+0.008));
+     hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(0.5665/(0.5665+0.009)));
+     hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(0.5665/(0.5665-0.009)));
    }
    else{
-     hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(1.0-0.023));
-     hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(1.0+0.023));
+     hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(0.5665/(0.5665+0.009)));
+     hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(0.5665/(0.5665-0.009)));
    }
    float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,ispp,forSim);
    hadCorrectionEMCAL->SetpTCutCorrectionITS(ptcutITS);
@@ -142,8 +142,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetNotIDCorrectionTPC(NotIDTPC);
    hadCorrectionEMCAL->SetNotIDCorrectionITS(NotIDITS);
 
-   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,ispp,forSim);
-   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,ispp,forSim);
+   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,ispp,forSim, dataset);
+   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDEMCALTPC2",prodname,shortprodname,true,ispp,forSim, dataset);
    hadCorrectionEMCAL->SetNotIDConstCorrectionTPC(1.0/NotIDConstTPC);
    hadCorrectionEMCAL->SetNotIDConstCorrectionITS(1.0/NotIDConstITS);
    if(ispp){
@@ -153,23 +153,37 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.010));
    }
    else{
-     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.022));
-     hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.022));
-     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.022));
-     hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.022));
+     if(dataset==2015){
+       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./(NotIDConstTPC*(1.0-0.01)));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./(NotIDConstITS*(1.0-0.1)));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./(NotIDConstTPC*(1.0+0.01)));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./(NotIDConstITS*(1.0+0.01)));
+     }
+     else{
+       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.0022));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.0022));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.0022));
+       hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.0022));
+     }
    }
 
    TH1D *NoID = CorrNoID(etacut,"CorrNoIDEMCAL",prodname,shortprodname,ispp,forSim);
    hadCorrectionEMCAL->SetNotIDCorrectionNoPID(NoID);
 
-   Float_t NoIDTPC = CorrNoIDConst(etacut,0.15,"CorrNoIDEMCAL2",prodname,shortprodname,ispp,forSim);
-   Float_t NoIDITS = CorrNoIDConst(etacut,0.1,"CorrNoIDEMCAL2",prodname,shortprodname,ispp,forSim);
+   Float_t NoIDTPC =0.989;// CorrNoIDConst(etacut,0.15,"CorrNoIDEMCAL2",prodname,shortprodname,ispp,forSim);
+   Float_t NoIDITS = 0.989;//CorrNoIDConst(etacut,0.1,"CorrNoIDEMCAL2",prodname,shortprodname,ispp,forSim);
+   Float_t NoIDErr = 0.005;
+   if(dataset==2015){
+     NoIDTPC =0.985;// CorrNoIDConst(etacut,0.15,"CorrNoIDEMCAL2",prodname,shortprodname,ispp,forSim);
+     NoIDITS = 0.985;//CorrNoIDConst(etacut,0.1,"CorrNoIDEMCAL2",prodname,shortprodname,ispp,forSim);
+     NoIDErr = 0.010;
+   }
    hadCorrectionEMCAL->SetNotIDConstCorrectionTPCNoID(1./NoIDTPC);
    hadCorrectionEMCAL->SetNotIDConstCorrectionITSNoID(1./NoIDITS);
-   hadCorrectionEMCAL->SetNotIDConstCorrectionTPCNoIDLowBound(1./NoIDTPC*.98);
-   hadCorrectionEMCAL->SetNotIDConstCorrectionITSNoIDLowBound(1./NoIDITS*.98);
-   hadCorrectionEMCAL->SetNotIDConstCorrectionTPCNoIDHighBound(1./NoIDTPC*1.02);
-   hadCorrectionEMCAL->SetNotIDConstCorrectionITSNoIDHighBound(1./NoIDITS*1.02);
+   hadCorrectionEMCAL->SetNotIDConstCorrectionTPCNoIDLowBound(1./(NoIDTPC*(1-NoIDErr)));
+   hadCorrectionEMCAL->SetNotIDConstCorrectionITSNoIDLowBound(1./(NoIDITS*(1-NoIDErr)));
+   hadCorrectionEMCAL->SetNotIDConstCorrectionTPCNoIDHighBound(1./(NoIDTPC*(1-NoIDErr)));
+   hadCorrectionEMCAL->SetNotIDConstCorrectionITSNoIDHighBound(1./(NoIDITS*(1-NoIDErr)));
  
    //Here we're going to do a bit of a cheat.  We want the efficiency for ITS standalone tracks + TPC+ITS tracks.  This is returned by the function for the efficiency function if I ask for ITS only efficiency.  Had I known how this worked I probably would have written the code differently...  but...
    //anyhow I left a switch for changing it back.
@@ -191,63 +205,68 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    TH1D *efficiencyHadronITS = GetHistoEfficiency(etacut,"hEfficiencyHadronITS",0,1,20,false,true);
    hadCorrectionEMCAL->SetEfficiencyHadronITS(efficiencyHadronITS);
 
+   Int_t binwidth = 5;
+   if(nCentBins>21){
+     binwidth = 10;//for 41 centrality bins
+     cout<<"Using fine centrality bins"<<endl;
+   }
    if(!ispp){
-     TH1D *efficiencyPionTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB0",1,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB5",1,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB10",1,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB10->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB0",1,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB5",1,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB10",1,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB10->Clone(Form("Test%i",i)),i);
 
-     TH1D *efficiencyKaonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB0",2,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB5",2,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB10",2,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB10->Clone(Form("Test%i",i)),i);//Kaon
+     TH1D *efficiencyKaonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB0",2,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB5",2,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB10",2,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB10->Clone(Form("Test%i",i)),i);//Kaon
 
-     TH1D *efficiencyProtonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB0",3,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB5",3,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB10",3,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB10->Clone(Form("Test%i",i)),i);//Proton
+     TH1D *efficiencyProtonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB0",3,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB5",3,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB10",3,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB10->Clone(Form("Test%i",i)),i);//Proton
 
-     TH1D *efficiencyHadronTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB0",0,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB5",0,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB10",0,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB10->Clone(Form("Test%i",i)),i);//Hadron
+     TH1D *efficiencyHadronTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB0",0,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB5",0,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB10",0,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB10->Clone(Form("Test%i",i)),i);//Hadron
 
 
-     TH1D *efficiencyPionITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB0",1,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB5",1,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB10",1,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB10->Clone(Form("Test%i",i)),i);//Pion
+     TH1D *efficiencyPionITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB0",1,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB5",1,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB10",1,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB10->Clone(Form("Test%i",i)),i);//Pion
 
-     TH1D *efficiencyKaonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB0",2,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB5",2,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB10",2,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB10->Clone(Form("Test%i",i)),i);//Kaon
+     TH1D *efficiencyKaonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB0",2,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB5",2,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB10",2,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB10->Clone(Form("Test%i",i)),i);//Kaon
 
-     TH1D *efficiencyProtonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB0",3,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB5",3,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB10",3,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB10->Clone(Form("Test%i",i)),i);//Proton
+     TH1D *efficiencyProtonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB0",3,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB5",3,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB10",3,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB10->Clone(Form("Test%i",i)),i);//Proton
 
-     TH1D *efficiencyHadronITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB0",0,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionEMCAL->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB5",0,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionEMCAL->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB10",0,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionEMCAL->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB10->Clone(Form("Test%i",i)),i);//Hadron
+     TH1D *efficiencyHadronITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB0",0,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB5",0,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionEMCAL->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB10",0,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionEMCAL->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB10->Clone(Form("Test%i",i)),i);//Hadron
    }//EMCAL
    hadCorrectionEMCAL->SetEfficiencyErrorLowBound(0.95);
    hadCorrectionEMCAL->SetEfficiencyErrorHighBound(1.05);
@@ -332,23 +351,23 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
-     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-.014));
-     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+.014));
+     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-.017));
+     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+.017));
    }
    else{
-     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.049));
-     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.049));
+     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.017));
+     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.017));
    }
 
    float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut,dataset);
    hadCorrectionPHOS->SetNotHadronicCorrection(hadronicCorr);
    if(ispp){
-     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.008));
-     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.008));
+     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.009));
+     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.009));
    }
    else{
-     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.023));
-     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.023));
+     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.009));
+     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.009));
    }
 
    float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,ispp,forSim);
@@ -370,8 +389,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNotIDCorrectionTPC(NotIDTPC);
    hadCorrectionPHOS->SetNotIDCorrectionITS(NotIDITS);
 
-   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,ispp,forSim);
-   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,ispp,forSim);
+   Float_t NotIDConstTPC = CorrNotIDConst(0.15,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,ispp,forSim,dataset);
+   Float_t NotIDConstITS = CorrNotIDConst(0.10,etacut,"CorrNotIDPHOSTPC2",prodname,shortprodname,true,ispp,forSim,dataset);
    hadCorrectionPHOS->SetNotIDConstCorrectionTPC(1./NotIDConstTPC);
    hadCorrectionPHOS->SetNotIDConstCorrectionITS(1./NotIDConstITS);
    if(ispp){
@@ -381,10 +400,18 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.010));
    }
    else{
-     hadCorrectionPHOS->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.022));
-     hadCorrectionPHOS->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.022));
-     hadCorrectionPHOS->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.022));
-     hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.022));
+     if(dataset==2015){
+       hadCorrectionPHOS->SetNotIDConstCorrectionTPCLowBound(1./(NotIDConstTPC*(1.0-0.01)));
+       hadCorrectionPHOS->SetNotIDConstCorrectionITSLowBound(1./(NotIDConstITS*(1.0-0.1)));
+       hadCorrectionPHOS->SetNotIDConstCorrectionTPCHighBound(1./(NotIDConstTPC*(1.0+0.01)));
+       hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./(NotIDConstITS*(1.0+0.01)));
+     }
+     else{
+       hadCorrectionPHOS->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.022));
+       hadCorrectionPHOS->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.022));
+       hadCorrectionPHOS->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.022));
+       hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.022));
+     }
    }
 
 
@@ -392,8 +419,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNotIDCorrectionNoPID(NoID);
 
 
-   Float_t NoIDTPC = CorrNoIDConst(etacut,0.15,"CorrNoIDPHOS2",prodname,shortprodname,ispp,forSim);
-   Float_t NoIDITS = CorrNoIDConst(etacut,0.1,"CorrNoIDPHOS2",prodname,shortprodname,ispp,forSim);
+   Float_t NoIDTPC = CorrNoIDConst(etacut,0.15,"CorrNoIDPHOS2",prodname,shortprodname,ispp,forSim, dataset);
+   Float_t NoIDITS = CorrNoIDConst(etacut,0.1,"CorrNoIDPHOS2",prodname,shortprodname,ispp,forSim, dataset);
    hadCorrectionPHOS->SetNotIDConstCorrectionTPCNoID(1./NoIDTPC);
    hadCorrectionPHOS->SetNotIDConstCorrectionITSNoID(1./NoIDITS);
    hadCorrectionPHOS->SetNotIDConstCorrectionTPCNoIDLowBound(1./NoIDTPC*.98);
@@ -422,65 +449,65 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
 
 
    if(!ispp){
-     TH1D *efficiencyPionTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB0",1,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB5",1,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB10",1,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB10->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB0",1,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB5",1,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionTPCCB10",1,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyPionTPC((TH1D*)efficiencyPionTPCCB10->Clone(Form("Test%i",i)),i);
 
-     TH1D *efficiencyKaonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB0",2,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB5",2,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB10",2,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB10->Clone(Form("Test%i",i)),i);//Kaon
+     TH1D *efficiencyKaonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB0",2,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB5",2,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonTPCCB10",2,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyKaonTPC((TH1D*)efficiencyKaonTPCCB10->Clone(Form("Test%i",i)),i);//Kaon
 
-     TH1D *efficiencyProtonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB0",3,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB5",3,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB10",3,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB10->Clone(Form("Test%i",i)),i);//Proton
+     TH1D *efficiencyProtonTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB0",3,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB5",3,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonTPCCB10",3,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyProtonTPC((TH1D*)efficiencyProtonTPCCB10->Clone(Form("Test%i",i)),i);//Proton
 
-     TH1D *efficiencyHadronTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB0",0,1,20,useITSStandalone,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB5",0,1,20,useITSStandalone,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB10",0,1,20,useITSStandalone,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB10->Clone(Form("Test%i",i)),i);//Hadron
+     TH1D *efficiencyHadronTPCCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB0",0,1,20,useITSStandalone,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronTPCCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB5",0,1,20,useITSStandalone,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronTPCCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronTPCCB10",0,1,20,useITSStandalone,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyHadronTPC((TH1D*)efficiencyHadronTPCCB10->Clone(Form("Test%i",i)),i);//Hadron
 
 
-     TH1D *efficiencyPionITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB0",1,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB5",1,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyPionITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB10",1,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB10->Clone(Form("Test%i",i)),i);//Pion
+     TH1D *efficiencyPionITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB0",1,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB5",1,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyPionITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyPionITSCB10",1,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyPionITS((TH1D*)efficiencyPionITSCB10->Clone(Form("Test%i",i)),i);//Pion
 
-     TH1D *efficiencyKaonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB0",2,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB5",2,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyKaonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB10",2,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB10->Clone(Form("Test%i",i)),i);//Kaon
+     TH1D *efficiencyKaonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB0",2,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB5",2,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyKaonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyKaonITSCB10",2,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyKaonITS((TH1D*)efficiencyKaonITSCB10->Clone(Form("Test%i",i)),i);//Kaon
 
-     TH1D *efficiencyProtonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB0",3,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB5",3,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyProtonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB10",3,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB10->Clone(Form("Test%i",i)),i);//Proton
+     TH1D *efficiencyProtonITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB0",3,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB5",3,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyProtonITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyProtonITSCB10",3,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyProtonITS((TH1D*)efficiencyProtonITSCB10->Clone(Form("Test%i",i)),i);//Proton
 
-     TH1D *efficiencyHadronITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB0",0,1,20,false,true,0,4);
-     for(int i=0;i<=4;i++) hadCorrectionPHOS->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB0->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB5",0,1,20,false,true,5,9);
-     for(int i=5;i<=9;i++) hadCorrectionPHOS->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB5->Clone(Form("Test%i",i)),i);
-     TH1D *efficiencyHadronITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB10",0,1,20,false,true,10,15);
-     for(int i=10;i<=20;i++) hadCorrectionPHOS->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB10->Clone(Form("Test%i",i)),i);//Hadron
+     TH1D *efficiencyHadronITSCB0 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB0",0,1,20,false,true,0,binwidth-1);
+     for(int i=0;i<=binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB0->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronITSCB5 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB5",0,1,20,false,true,binwidth,2*binwidth-1);
+     for(int i=binwidth;i<=2*binwidth-1;i++) hadCorrectionPHOS->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB5->Clone(Form("Test%i",i)),i);
+     TH1D *efficiencyHadronITSCB10 = GetHistoEfficiency(etacut,"hEfficiencyHadronITSCB10",0,1,20,false,true,2*binwidth,3*binwidth);
+     for(int i=2*binwidth;i<=nCentBins-1;i++) hadCorrectionPHOS->SetEfficiencyHadronITS((TH1D*)efficiencyHadronITSCB10->Clone(Form("Test%i",i)),i);//Hadron
    }//EMCAL
-   hadCorrectionPHOS->SetEfficiencyErrorLowBound(0.95);
-   hadCorrectionPHOS->SetEfficiencyErrorHighBound(1.05);
+   hadCorrectionPHOS->SetEfficiencyErrorLowBound(0.97);
+   hadCorrectionPHOS->SetEfficiencyErrorHighBound(1.03);
 
 
    TH1D *backgroundTPC;
@@ -1092,13 +1119,18 @@ TH1D *CorrNotID(float etacut,char *name, char *prodname, char *shortprodname, bo
   return PHOS;
 }
 
-Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, bool ispp, bool forSim){
+Float_t CorrNotIDConst(float ptcut, float etacut,char *name, char *prodname, char *shortprodname, bool TPC, bool ispp, bool forSim, Int_t dataset){
   if(!forSim){
     if(ispp){
       return 0.996;
     }
     else{
-      return 0.992;
+      if(dataset==2015){
+	return 0.99;
+      }
+      else{
+	return 0.992;
+      }
     }
   }
   gStyle->SetOptTitle(0);
@@ -1255,7 +1287,11 @@ TH1D *CorrNoID(float etacut,char *name, char *prodname, char *shortprodname, boo
 
 }
 
-Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, bool ispp, bool forSim){
+Float_t CorrNoIDConst(float etacut, float ptcut,char *name, char *prodname, char *shortprodname, bool ispp, bool forSim, Int_t dataset){
+
+  if(dataset==2015){
+    return 0.985;
+  }
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);

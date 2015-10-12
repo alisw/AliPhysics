@@ -457,15 +457,14 @@ Bool_t AliHFCutVarFDsubAnalysisManager::Minimise(UInt_t method/*=0*/,
     fCorrYieldPrompt->SetBinError(  iBin+1, (minimised) ? min->GetPromptYieldErr() : 0.);
     fCorrYieldFD->SetBinContent(iBin+1, (minimised) ? min->GetFDYield()    : 0.);
     fCorrYieldFD->SetBinError(  iBin+1, (minimised) ? min->GetFDYieldErr() : 0.);
-
-    if(method==0) {
-      fResiduals->Add( (minimised) ? min->GetResiduals()->Clone()  : (TObject*)0x0);
-      fPulls->Add(     (minimised) ? min->GetPulls()->Clone()      : (TObject*)0x0);
-    }
-    else {
+    
+    fResiduals->Add( (minimised) ? min->GetResiduals()->Clone()  : (TObject*)0x0);
+    fPulls->Add(     (minimised) ? min->GetPulls()->Clone()      : (TObject*)0x0);
+    
+    if(method==1) {
       fIncDistError->Add( (minimised) ? min->GetIncDistError()->Clone() : (TObject*)0x0);
     }
-
+    
     fFprompt->Add(   (minimised) ? min->GetFprompt()->Clone()    : (TObject*)0x0);
     fFpromptRaw->Add((minimised) ? min->GetFpromptRaw()->Clone() : (TObject*)0x0);
 

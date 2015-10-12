@@ -54,7 +54,11 @@ public:
   TObjArray* CreateBinObjArray() const;
   TObjArray* CreateBinObjArray(const char* what) const;
   TObjArray* CreateBinObjArray(const char* what, const char* quantity, const char* flavour) const;
-  
+
+  TObjArray* CreateBinStrArray() const;
+  TObjArray* CreateBinStrArray(const char* what) const;
+  TObjArray* CreateBinStrArray(const char* what, const char* quantity, const char* flavour) const;
+
   Int_t GetNBinsX() const;
   Int_t GetNBinsY() const;
   

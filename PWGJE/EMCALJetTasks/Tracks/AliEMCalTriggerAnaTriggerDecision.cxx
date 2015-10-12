@@ -139,6 +139,7 @@ Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trig
 		case kTAEMCJLow: selectPatchType = swapThresholds ? recpatch->IsJetHighSimple() :  recpatch->IsJetLowSimple(); break;
 		case kTAEMCGHigh: selectPatchType = swapThresholds ? recpatch->IsGammaLowSimple() :  recpatch->IsGammaHighSimple(); break;
 		case kTAEMCGLow: selectPatchType = swapThresholds ? recpatch->IsGammaHighSimple() :  recpatch->IsGammaLowSimple(); break;
+		case kTAUndef: break;
 		};
 	} else {
 	  if(recpatch->IsOfflineSimple()) return kFALSE;
@@ -147,6 +148,7 @@ Bool_t AliEMCalTriggerAnaTriggerDecision::SelectTriggerPatch(ETATriggerType trig
 		case kTAEMCJLow: selectPatchType = swapThresholds ? recpatch->IsJetHigh() :  recpatch->IsJetLow(); break;
 		case kTAEMCGHigh: selectPatchType = swapThresholds ? recpatch->IsGammaLow() :  recpatch->IsGammaHigh(); break;
 		case kTAEMCGLow: selectPatchType = swapThresholds ? recpatch->IsGammaHigh() :  recpatch->IsGammaLow(); break;
+    case kTAUndef: break;
 		};
 	}
 

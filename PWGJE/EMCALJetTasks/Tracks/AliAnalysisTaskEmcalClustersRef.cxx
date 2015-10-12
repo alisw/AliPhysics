@@ -51,7 +51,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fClusterContainer(""),
     fTriggerStringFromPatches(kFALSE)
 {
-
+  for(int itrg = 0; itrg < kECRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1;
+  }
 }
 
 /**
@@ -66,6 +68,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fClusterContainer(""),
     fTriggerStringFromPatches(kFALSE)
 {
+  for(int itrg = 0; itrg < kECRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1;
+  }
   DefineOutput(1, TList::Class());
 }
 
@@ -140,11 +145,11 @@ void AliAnalysisTaskEmcalClustersRef::UserExec(Option_t *){
   triggerdebug << "Offline bits: " << std::bitset<sizeof(UInt_t) * 8>(selectionstatus);
   AliDebug(2, triggerdebug.str().c_str());
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
-      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
+      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1") && IsOfflineSelected(kECREJ1, triggerpatches),
+      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2") && IsOfflineSelected(kECREJ2, triggerpatches),
+      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1") && IsOfflineSelected(kECREG1, triggerpatches),
+      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kECREG2, triggerpatches),
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7") && IsOfflineSelected(kECREL0, triggerpatches);
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
@@ -403,41 +408,58 @@ Bool_t AliAnalysisTaskEmcalClustersRef::CorrelateToTrigger(Double_t etaclust, Do
 
 /**
  * Find all patches in an event which could have fired the trigger
+ * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
+ * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
  * @param triggerclass EMCAL trigger class firing
  * @param triggerpatches Trigger patches found in the event
  * @return List of patches which could have fired the trigger
  */
 void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass, const TClonesArray * triggerpatches, TList &foundtriggers) const {
-  double  minADC_EJ1 = 260.,
-          minADC_EJ2 = 127.,
-          minADC_EG1 = 140.,
-          minADC_EG2 = 89.;
+  foundtriggers.Clear();
   if(!triggerpatches) return;
-  Bool_t isEG1 = (triggerclass == "EG1"),
-      isEG2 = (triggerclass == "EG2"),
-      isEJ1 = (triggerclass == "EJ1"),
-      isEJ2 = (triggerclass == "EJ2");
+  EmcalTriggerClass myclass = kECREL0;
+  if(triggerclass == "EG1") myclass = kECREG1;
+  if(triggerclass == "EG2") myclass = kECREG2;
+  if(triggerclass == "EJ1") myclass = kECREJ1;
+  if(triggerclass == "EJ2") myclass = kECREJ2;
+  bool isSingleShower = ((myclass == kECREG1) || (triggerclass == kECREG2) || (myclass == kECREL0));
   AliEmcalTriggerPatchInfo *mypatch = NULL;
   for(TIter patchiter = TIter(triggerpatches).Begin(); patchiter != TIter::End(); ++patchiter){
     mypatch = dynamic_cast<AliEmcalTriggerPatchInfo *>(*patchiter);
     if(!mypatch->IsOfflineSimple()) continue;
-    if(isEG1){
-      if(mypatch->IsGammaHighSimple() && mypatch->GetADCAmp() > minADC_EG1)
-        foundtriggers.Add(mypatch);
+    if(isSingleShower){
+     if(!mypatch->IsGammaLowSimple()) continue;
+    } else {
+      if(!mypatch->IsJetLowSimple()) continue;
     }
-    if(isEG2){
-      if(mypatch->IsGammaLowSimple() && mypatch->GetADCAmp() > minADC_EG2)
-        foundtriggers.Add(mypatch);
-    }
-    if(isEJ1){
-      if(mypatch->IsJetHighSimple() && mypatch->GetADCAmp() > minADC_EJ1)
-        foundtriggers.Add(mypatch);
-    }
-    if(isEJ2){
-      if(mypatch->IsJetLowSimple() && mypatch->GetADCAmp() > minADC_EJ2)
-        foundtriggers.Add(mypatch);
-    }
+    if(mypatch->GetPatchE() > fOfflineEnergyThreshold[myclass]) foundtriggers.Add(mypatch);
   }
+}
+
+/**
+ * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
+ * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
+ * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
+ * @param trgcls Trigger class for which to apply additional offline patch selection
+ * @param triggerpatches Array of trigger patches
+ * @return True if at least on patch above threshold is found or no cut is applied
+ */
+Bool_t AliAnalysisTaskEmcalClustersRef::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
+  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
+  bool isSingleShower = ((trgcls == kECREL0) || (trgcls == kECREG1) || (trgcls == kECREG2));
+  int nfound = 0;
+  AliEmcalTriggerPatchInfo *patch = NULL;
+  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
+    patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    if(!patch->IsOfflineSimple()) continue;
+    if(isSingleShower){
+     if(!patch->IsGammaLowSimple()) continue;
+    } else {
+      if(!patch->IsJetLowSimple()) continue;
+    }
+    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
+  }
+  return nfound > 0;
 }
 
 /**

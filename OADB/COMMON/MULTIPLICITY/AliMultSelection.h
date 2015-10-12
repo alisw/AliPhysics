@@ -13,6 +13,7 @@ public:
     AliMultSelection(const char * name, const char * title = "Mult Estimator");
     AliMultSelection(AliMultSelection *lCopyMe);
     ~AliMultSelection();
+    void Clear(Option_t* = "") {}; //dummy
 
     void     PrintInfo();
     
@@ -22,7 +23,7 @@ public:
     Long_t GetNEstimators () { return fNEsts; }
     
     //User Functions to get percentiles
-    Float_t GetMultiplicityPercentile(TString lName) { return GetEstimator(lName.Data())->GetPercentile(); }
+    Float_t GetMultiplicityPercentile(TString lName);
     Float_t GetZ(TString lName) { return GetEstimator(lName.Data())->GetZ(); }
     
     //Master "Evaluate"

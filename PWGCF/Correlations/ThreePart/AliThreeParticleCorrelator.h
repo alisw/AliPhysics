@@ -45,14 +45,14 @@ class AliThreeParticleCorrelator : public TNamed {
     : TNamed(name?name:"AliThreeParticleCorrelator", "")
     , fCorrelations()
     , fMECorrelations()
-//     , fMEAllCorrelations()
     , fMETriggerCorrelations()
     , fMETACorrelations()
+    , fMETA2Correlations()
     , factiveTriggers()
     , factiveTriggersME()
-//     , factiveTriggersMEAll()
     , factiveTriggersMETrigger()
     , factiveTriggersMETA()
+    , factiveTriggersMETA2()
     , fAssociated()
     , fAssociatedmixed1()
     , fAssociatedmixed2()
@@ -70,14 +70,14 @@ class AliThreeParticleCorrelator : public TNamed {
     : TNamed(other)
     , fCorrelations(other.fCorrelations)
     , fMECorrelations(other.fMECorrelations)
-//     , fMEAllCorrelations(other.fMEAllCorrelations)
     , fMETriggerCorrelations(other.fMETriggerCorrelations)
     , fMETACorrelations(other.fMETACorrelations)
+    , fMETA2Correlations(other.fMETA2Correlations)
     , factiveTriggers(other.factiveTriggers)
     , factiveTriggersME(other.factiveTriggersME)
-//     , factiveTriggersMEAll(other.factiveTriggersMEAll)
     , factiveTriggersMETrigger(other.factiveTriggersMETrigger)
     , factiveTriggersMETA(other.factiveTriggersMETA)
+    , factiveTriggersMETA2(other.factiveTriggersMETA2)
     , fAssociated(other.fAssociated)
     , fAssociatedmixed1(other.fAssociatedmixed1)
     , fAssociatedmixed2(other.fAssociatedmixed2)
@@ -174,16 +174,16 @@ class AliThreeParticleCorrelator : public TNamed {
 	fMECorrelations.back()->SetName(name);
 	fMECorrelations.back()->Init();
 	
-// 	fMEAllCorrelations.push_back(new C(*o));
-// 	name=fMEAllCorrelations.back()->GetName();
-// 	name+="MEAllfull";
-// 	fMEAllCorrelations.back()->SetName(name);
-// 	fMEAllCorrelations.back()->Init();
+	fMETA2Correlations.push_back(new C(*o));
+	name=fMETA2Correlations.back()->GetName();
+	name+="META2";
+	fMETA2Correlations.back()->SetName(name);
+	fMETA2Correlations.back()->Init();
 	
 	o->SetMixedEvent(fMECorrelations.back());
 	fMETriggerCorrelations.back()->SetMixedEvent(fMECorrelations.back());
 	fMETACorrelations.back()->SetMixedEvent(fMECorrelations.back());
-// 	fMEAllCorrelations.back()->SetMixedEvent(fMECorrelations.back());
+	fMETA2Correlations.back()->SetMixedEvent(fMECorrelations.back());
 	
       }
     }
@@ -207,6 +207,7 @@ class AliThreeParticleCorrelator : public TNamed {
       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
+      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETA2Correlations.begin(), e=fMETA2Correlations.end();o!=e; o++)(*o)->SetWeight(weights,type);
     }
   }
     
@@ -217,7 +218,7 @@ class AliThreeParticleCorrelator : public TNamed {
 	if (type==0 && fMECorrelations.size()>i) return fMECorrelations[i];
 	if (type==1 && fMETriggerCorrelations.size()>i) return fMETriggerCorrelations[i];
 	if (type==2 && fMETACorrelations.size()>i) return fMETACorrelations[i];
-// 	if (type==3 && fMEAllCorrelations.size()>i) return fMEAllCorrelations[i];
+	if (type==3 && fMETA2Correlations.size()>i) return fMETA2Correlations[i];
 
 	break;
       }
@@ -246,6 +247,7 @@ class AliThreeParticleCorrelator : public TNamed {
     if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetMultVZ(fMultiplicity,fVz);
     if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetMultVZ(fMultiplicity,fVz);
     if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetMultVZ(fMultiplicity,fVz);
+    if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETA2Correlations.begin(), e=fMETA2Correlations.end();o!=e; o++)(*o)->SetMultVZ(fMultiplicity,fVz);
     
     //Fill the vector for all objects in fCorrelations.
     MakeTriggers(arrayParticles, factiveTriggers,fCorrelations.begin(),fCorrelations.end());
@@ -272,13 +274,17 @@ class AliThreeParticleCorrelator : public TNamed {
 	  MakeTriggers(arrayParticles, factiveTriggersMETrigger,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
 	  //Fill the vector for all objects in fCorrelationsMETA.
 	  MakeTriggers(arrayParticles, factiveTriggersMETA,fMETACorrelations.begin(),fMETACorrelations.end());
+	  //Fill the vector for all objects in fCorrelationsMETA2.
+	  MakeTriggers(arrayParticles, factiveTriggersMETA2,fMETA2Correlations.begin(),fMETA2Correlations.end());	  
 	  for (int nEvent=0; nEvent<EventsInPool; nEvent++) {
 	    for(int mEvent=nEvent+1;mEvent<EventsInPool;mEvent++){
 	      // all particles from different events
 	      MakeAssociated(pool->GetEvent(nEvent), fAssociatedmixed1);
 	      MakeAssociated(pool->GetEvent(mEvent), fAssociatedmixed2);
 	      ProcessEvent(factiveTriggersME,fAssociatedmixed1,fAssociatedmixed2);
+	      ProcessEvent(factiveTriggersME,fAssociatedmixed2,fAssociatedmixed1,false,false);
 	      ProcessEvent(factiveTriggersMETA,fAssociated,fAssociatedmixed1);
+	      ProcessEvent(factiveTriggersMETA2,fAssociatedmixed1,fAssociated);
 	      // associated particles from same event (skips the last event)
 	      ProcessEvent(factiveTriggersMETrigger, fAssociatedmixed1);
 	    }//end inner loop
@@ -287,6 +293,7 @@ class AliThreeParticleCorrelator : public TNamed {
 	      MakeAssociated(pool->GetEvent(nEvent), fAssociatedmixed1);
 	      ProcessEvent(factiveTriggersMETrigger, fAssociatedmixed1);
 	      ProcessEvent(factiveTriggersMETA,fAssociated,fAssociatedmixed1);
+	      ProcessEvent(factiveTriggersMETA2,fAssociatedmixed1,fAssociated);
 	    }//end last event
 	  }//End mixed event loop
 	  
@@ -297,16 +304,20 @@ class AliThreeParticleCorrelator : public TNamed {
 	    MakeTriggers(pool->GetEvent(nEvent), factiveTriggersMETrigger,fMETriggerCorrelations.begin(),fMETriggerCorrelations.end());
 	    //Fill the vector for all objects in fCorrelationsMETA.
 	    MakeTriggers(pool->GetEvent(nEvent), factiveTriggersMETA,fMETACorrelations.begin(),fMETACorrelations.end());
+	    //Fill the vector for all objects in fCorrelationsMETA.
+	    MakeTriggers(pool->GetEvent(nEvent), factiveTriggersMETA2,fMETA2Correlations.begin(),fMETA2Correlations.end());	    
 	    MakeAssociated(pool->GetEvent(nEvent), fAssociatedmixed1);
+	    //Now factiveTriggersME* is the same event as fAssociatedmixed1.
+	    ProcessEvent(factiveTriggersMETA,fAssociatedmixed1,fAssociated);
+	    ProcessEvent(factiveTriggersMETA2,fAssociated,fAssociatedmixed1);
+	    // associated particles from same event (skips the last event)
+	    ProcessEvent(factiveTriggersMETrigger, fAssociated);
 	    for(int mEvent=0;mEvent<EventsInPool;mEvent++){
 	      if(nEvent==mEvent)continue;//dont double count
-	      //Now factiveTriggersME* is the same event as fAssociatedmixed1.
 	      // all particles from different events
 	      MakeAssociated(pool->GetEvent(mEvent), fAssociatedmixed2);
 	      ProcessEvent(factiveTriggersME,fAssociated,fAssociatedmixed2);
-	      ProcessEvent(factiveTriggersMETA,fAssociatedmixed1,fAssociatedmixed2);
-	      // associated particles from same event (skips the last event)
-	      ProcessEvent(factiveTriggersMETrigger, fAssociatedmixed2);
+	      ProcessEvent(factiveTriggersME,fAssociatedmixed2,fAssociated,false,false);
 	    }//end inner loop
 	  }//End mixed event loop
 	}//End poolisready
@@ -339,8 +350,10 @@ class AliThreeParticleCorrelator : public TNamed {
 	  if (!((*i)->CheckAssociated(*assoc)&& (*i)->CheckAssociated(*assoc2))){continue;}//do not fill if either is not an associated
 	  if(*assoc2==(*i)->GetTrigger()) {continue;}//Do not fill if they are the same or one is the trigger
 	  if(*assoc==*assoc2) continue;
-	  (*i)->Correlate(*assoc,*assoc2, NAssociated);
-	  (*i)->Correlate(*assoc2,*assoc, NAssociated);
+// 	  (*i)->Correlate(*assoc,*assoc2, NAssociated);
+// 	  (*i)->Correlate(*assoc2,*assoc, NAssociated);
+	  (*i)->Correlate(*assoc,*assoc2, 1.0);
+	  (*i)->Correlate(*assoc2,*assoc, 1.0);	  
 	}//loop over second associated
 	if ((*i)->CheckAssociated(*assoc)) (*i)->Correlate(*assoc);//2p correlation
       } // loop over first associated
@@ -349,7 +362,7 @@ class AliThreeParticleCorrelator : public TNamed {
   }
 
 //   template <class InputIterator>
-  int ProcessEvent(const std::vector<AliThreeParticleCorrelator::AliActiveTrigger*>& activeTriggers,const std::vector<AliVParticle*>& associated, const std::vector<AliVParticle*>& associatedmixed, bool pickone = false) {
+  int ProcessEvent(const std::vector<AliThreeParticleCorrelator::AliActiveTrigger*>& activeTriggers,const std::vector<AliVParticle*>& associated, const std::vector<AliVParticle*>& associatedmixed, bool pickone = false,bool twop = true) {
     /// Three particle correlation loop over array of AliVParticle objects
     /// Fill correlation objects of different properties 
     Double_t NAssociated1 = associated.size();
@@ -377,10 +390,11 @@ class AliThreeParticleCorrelator : public TNamed {
 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
 	  if (!((*i)->CheckAssociated(*assoc) && (*i)->CheckAssociated(*assoc2))) {continue;}//If either is not associated, do not fill.}
 	  if(*assoc==*assoc2||*assoc2 == (*i)->GetTrigger()) continue;//if associated are the samme or trigger is equal to the second associated.
-	  (*i)->Correlate(*assoc,*assoc2,(NAssociated1-1)/NAssociated2);//Fill with the number of associated in the other list.
-	  (*i)->Correlate(*assoc2,*assoc,(NAssociated1-1)/NAssociated2);//both need be considered
+// 	  (*i)->Correlate(*assoc,*assoc2,(NAssociated1-1)/NAssociated2);//Fill with the number of associated in the other list.
+// 	  (*i)->Correlate(*assoc2,*assoc,(NAssociated1-1)/NAssociated2);//both need be considered
+	  (*i)->Correlate(*assoc,*assoc2,1.0);//Fill with the number of associated in the other list.
 	}//loop over second associated
-	if ((*i)->CheckAssociated(*assoc))(*i)->Correlate(*assoc);//2p correlation
+	if ((*i)->CheckAssociated(*assoc)&&twop)(*i)->Correlate(*assoc);//2p correlation
 	} // loop over first associated
 // 	for (typename std::vector<AliVParticle*>::const_iterator assoc2=associatedmixed.begin(), eassoc2 = associatedmixed.end(); assoc2 !=eassoc2;assoc2++){
 // 	  if (dynamic_cast<AliVParticle*>(*assoc2)==i->GetTrigger()) continue;
@@ -448,10 +462,12 @@ class AliThreeParticleCorrelator : public TNamed {
   std::vector<C*> fMECorrelations; //! ME analysis clones of workers, all three particles different events, only one associated from each event
   std::vector<C*> fMETriggerCorrelations; //! ME analysis clones of workers, associated particles same events
   std::vector<C*> fMETACorrelations; //! ME analysis clones of workers, first associated particle from the same events as the trigger
+  std::vector<C*> fMETA2Correlations; //! ME analysis clones of workers, second associated particle from the same events as the trigger
   std::vector<AliActiveTrigger*> factiveTriggers; //Vector to contain the triggers.
   std::vector<AliActiveTrigger*> factiveTriggersME; //Vector to contain the triggers for mixed event.
   std::vector<AliActiveTrigger*> factiveTriggersMETrigger;//Vector to contain the triggers for mixed event with both associated from the same event.
-  std::vector<AliActiveTrigger*> factiveTriggersMETA;//Vector to contain the triggers for mixed event with both associated from the same event.
+  std::vector<AliActiveTrigger*> factiveTriggersMETA;//Vector to contain the triggers for mixed event with first associated particle from the same events as the trigger
+  std::vector<AliActiveTrigger*> factiveTriggersMETA2;//Vector to contain the triggers for mixed event with second associated particle from the same events as the trigger
   std::vector<AliVParticle*> fAssociated;//vector to contain the associated particles.
   std::vector<AliVParticle*> fAssociatedmixed1; //! buffer for Associated
   std::vector<AliVParticle*> fAssociatedmixed2; //! buffer for Associated

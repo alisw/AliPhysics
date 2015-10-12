@@ -43,6 +43,8 @@ class AliAnalysisTaskEMCALPi0CalibSelection : public AliAnalysisTaskSE
     
 public:
 
+  AliAnalysisTaskEMCALPi0CalibSelection();
+  
   AliAnalysisTaskEMCALPi0CalibSelection(const char* name);
     
   virtual ~AliAnalysisTaskEMCALPi0CalibSelection();
@@ -139,6 +141,10 @@ public:
   void    SetTimeHistoBinRange         (Int_t nBins, Float_t minbin, Float_t maxbin){
                                         fNTimeBins = nBins ; fMinTimeBin = minbin ; fMaxTimeBin = maxbin ; }
 
+  
+  void    SetImportGeometryFromFile(Bool_t import, TString path = ""){
+                                                           fImportGeometryFromFile = import ;
+                                                           fImportGeometryFilePath = path   ; } 
 
   // Mask clusters
   
@@ -176,7 +182,7 @@ private:
     
   AliVCaloCells     * fEMCALCells;       //!<! List of cells.
   
-  TList             * fCuts ;            //!<! List with analysis cuts.
+//  TList             * fCuts ;            //!<! List with analysis cuts.
     
   TList             * fOutputContainer;  //!<! Histogram container.
     
@@ -184,6 +190,10 @@ private:
     
   Bool_t              fFilteredInput;    ///<  Read input produced with filter.
 
+  Bool_t              fImportGeometryFromFile; ///<  Import geometry settings in geometry.root file.
+  
+  TString             fImportGeometryFilePath; ///<  Path fo geometry.root file.
+  
   // Analysis cuts
   
   Float_t             fEmin;             ///<  Minimum cluster energy (GeV).
@@ -279,7 +289,7 @@ private:
   AliAnalysisTaskEMCALPi0CalibSelection& operator=(const AliAnalysisTaskEMCALPi0CalibSelection&) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,22) ;
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,23) ;
   /// \endcond
 
 };

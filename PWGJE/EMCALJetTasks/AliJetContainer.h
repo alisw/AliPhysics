@@ -118,7 +118,7 @@ class AliJetContainer : public AliEmcalContainer {
   AliParticleContainer       *GetParticleContainer() const                   {return fParticleContainer;}
   AliClusterContainer        *GetClusterContainer() const                    {return fClusterContainer;}
   Double_t                    GetFractionSharedPt(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
-  Bool_t SamePart(const AliVParticle* part1, const AliVParticle* part2, Int_t dist = 1.e-4) const;
+  Bool_t SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4) const;
   
  protected:
   void SetEMCALGeometry();

@@ -67,6 +67,11 @@ public:
 
   Bool_t CopyTemplateFilesToLocal();
 
+
+  void SetAliPhysicsVersion(const char* aliphysics);
+
+  void SetAliRootVersion(const char* aliroot);
+  
   void SetPackages(const char* aliroot, const char* root="", const char* geant3="",
                    const char* api="VO_ALICE@APISCONFIG::V1.1x");
   

@@ -33,6 +33,8 @@ public:
   
   Bool_t ShouldCorrectDimuonForAccEff() { return (fAccEffHisto != 0x0); }
   
+  void SetLegacyBinNaming() { fMinvBinSeparator = ""; }
+  
 protected:
   
   void DefineHistogramCollection(const char* eventSelection, const char* triggerClassName,
@@ -63,10 +65,11 @@ private:
 private:
   Bool_t fcomputeMeanPt;
   TH2F* fAccEffHisto;
+  TString fMinvBinSeparator;
   
   Int_t fsystLevel;
   
-  ClassDef(AliAnalysisMuMuMinv,2) // implementation of AliAnalysisMuMuBase for muon pairs
+  ClassDef(AliAnalysisMuMuMinv,3) // implementation of AliAnalysisMuMuBase for muon pairs
 };
 
 #endif

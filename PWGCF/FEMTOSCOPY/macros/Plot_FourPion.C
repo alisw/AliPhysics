@@ -52,7 +52,7 @@ int Gbin = int( (0) /2. ) + 155;// + 5 + 25*RcohIndex: 5, 30, 55, 80, 105, 130, 
 int Ktbin_def=1;// 1(0.2-0.3),..., 6(0.7-0.8), 10 = Full Range
 bool FitBuild=0;
 //
-bool ReNormBuiltBaseline=1;// Re-normalize Built Baseline
+bool ReNormBuiltBaseline=0;// Re-normalize Built Baseline
 bool MRC=1;// Momentum Resolution Corrections?
 bool MuonCorrection=1;// correct for Muons?
 bool FSICorrection=1;// correct For Final-State-Interactions
@@ -61,7 +61,7 @@ bool InterpCorrection=1;// correct for finite bin interpolation
 int f_choice=0;// 0(Core/Halo), 1(60fm), 2(80fm), 3(100fm)
 //
 //
-bool SaveToFile_def=1;// Save outputs to file?
+bool SaveToFile_def=0;// Save outputs to file?
 bool GeneratedSignal=kFALSE;// Was the QS+FSI signal generated in MC? 
 //
 //
@@ -143,9 +143,11 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
   Mbin_def=Mbin;
   Ktbin_def=Ktbin;
   //
-  Ktlowbin=(Ktbin)*2+3;// kt bins are 0.5 GeV/c wide (0-0.5, 0.5-1.0 ...)
-  Kthighbin=(Ktbin)*2+4;
-  
+  //Ktlowbin=(Ktbin)*2+3;// kt bins are 0.5 GeV/c wide (0-0.05, 0.05-0.1 ...)
+  //Kthighbin=(Ktbin)*2+4;
+  //
+  Ktlowbin=(Ktbin)*10+15;// kt bins are 0.5 GeV/c wide (0-0.05, 0.05-0.1 ...)
+  Kthighbin=(Ktbin)*10+20;
   //
   if(FileSetting==1) TwoFrac=0.6;
   if(FileSetting==2) TwoFrac=0.8;
@@ -379,7 +381,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	//_file0 = new TFile("Results/PDC_11h_q2Binning_M3to10.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_81EMbins.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_LowPtMultBinning_M0to1.root","READ");
-	//_file0 = new TFile("Results/PDC_11h_Norm0p06to0p08_RawWeightFileLowpTBinningWithHighpTConstraint.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_0p06to0p08Norm_RawWeightFile100kTbins.root","READ");// Change kT Norm range too (5x more bins)!!
 	//_file0 = new TFile("Results/PDC_11h_LowPtMultBinningHighPtConstraint_M0to1.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_noMRCnoMuon.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_EWfitsWithNorm.root","READ");
@@ -394,8 +396,9 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
 	if(FileSetting==4) _file0 = new TFile("Results/PDC_11h_Cubic_Linear_Bplus.root","READ");
 	if(FileSetting==6) _file0 = new TFile("Results/PDC_10h_but11hWeights.root","READ");
 	if(FileSetting==7 || FileSetting==8) _file0 = new TFile("Results/PDC_11h_MRC10percIncrease_Muon92percent.root","READ");
-	//if(FileSetting==9) _file0 = new TFile("Results/PDC_11h_WeightFileFullyCorr_0p7.root","READ");
-	if(FileSetting==9) _file0 = new TFile("Results/PDC_11h_6kT.root","READ");
+	//if(FileSetting==9) _file0 = new TFile("Results/PDC_11h_6kT.root","READ");
+	_file0 = new TFile("Results/PDC_11h_QinvInterp_Cubic.root","READ");
+	//_file0 = new TFile("Results/PDC_11h_LinearInterp_6kT.root","READ");
       }else if(Mbin<=7){
 	//_file0 = new TFile("Results/PDC_11h_M3to10_ZvtxEM.root","READ");
 	//_file0 = new TFile("Results/PDC_11h_M2to10_6kT.root","READ");// problematic muon corrections
@@ -2012,7 +2015,7 @@ void Plot_FourPion(bool SaveToFile=SaveToFile_def, bool MCcase=MCcase_def, bool 
     //cout<<C4QS->GetBinContent(bin)<<", ";
     //cout<<c4QS->GetBinContent(bin)<<", ";
     //cout<<Build_FourParticle[ch1_4]->GetBinContent(bin)<<", ";
-    //cout<<Ratio->GetBinContent(bin)<<", ";
+    cout<<Ratio->GetBinContent(bin)<<", ";
     //cout<<C4raw->GetBinContent(bin)<<", ";
     //cout<<K4avg[ch1_4][ch2_4][ch3_4][ch4_4][0]->GetBinContent(bin)<<", ";
   }

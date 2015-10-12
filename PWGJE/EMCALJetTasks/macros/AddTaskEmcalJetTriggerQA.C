@@ -53,7 +53,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   }
   else { //full jets
     jetFinderTask1 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
-    jetFinderTask2 = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
+    jetFinderTask2 = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,1,"Jet",1.);
   }
   jetFinderTask1->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderTask2->SelectCollisionCandidates(AliVEvent::kAny);

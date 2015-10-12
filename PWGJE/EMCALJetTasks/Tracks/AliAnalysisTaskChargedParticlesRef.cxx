@@ -58,6 +58,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
+  for(int itrg = 0; itrg < kCPRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1.;
+  }
 }
 
 /**
@@ -79,6 +82,9 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
   fEtaLabCut[1] = 0.6;
   fEtaCmsCut[0] = -0.13;
   fEtaCmsCut[1] = 0.13;
+  for(int itrg = 0; itrg < kCPRntrig; itrg++){
+    fOfflineEnergyThreshold[itrg] = -1.;
+  }
   DefineOutput(1, TList::Class());
 }
 
@@ -224,19 +230,20 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
     fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
   }
   // Select event
+  TClonesArray *triggerpatches = static_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
-    triggerstring = GetFiredTriggerClassesFromPatches(dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers")));
+    triggerstring = GetFiredTriggerClassesFromPatches(triggerpatches);
   } else {
     triggerstring = fInputEvent->GetFiredTriggerClasses();
   }
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
-      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1"),
-      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2"),
-      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2"),
-      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
+      isEJ1 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1") && IsOfflineSelected(kCPREJ1, triggerpatches),
+      isEJ2 = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2") && IsOfflineSelected(kCPREJ2, triggerpatches),
+      isEG1 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1") && IsOfflineSelected(kCPREG1, triggerpatches),
+      isEG2 = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2") && IsOfflineSelected(kCPREG2, triggerpatches),
+      isEMC7 = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7") && IsOfflineSelected(kCPREL0, triggerpatches);
   if(!(isMinBias || isEMC7 || isEG1 || isEG2 || isEJ1 || isEJ2)) return;
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
@@ -317,14 +324,25 @@ void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   AliVTrack *checktrack(NULL);
   int ptmin[5] = {1,2,5,10,20}; // for eta distributions
   Bool_t isEMCAL(kFALSE), hasTRD(kFALSE);
+  Double_t etaEMCAL(0.), phiEMCAL(0.);
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); ++itrk){
     checktrack = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
     if(!checktrack) continue;
     if((checktrack->Eta() < fEtaLabCut[0]) || (checktrack->Eta() > fEtaLabCut[1])) continue;
     if(TMath::Abs(checktrack->Pt()) < 0.1) continue;
-    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(checktrack);
+    if(checktrack->IsA() == AliESDtrack::Class()){
+      AliESDtrack copytrack(*(static_cast<AliESDtrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    } else {
+      AliAODTrack copytrack(*(static_cast<AliAODTrack *>(checktrack)));
+      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&copytrack);
+      etaEMCAL = copytrack.GetTrackEtaOnEMCal();
+      phiEMCAL = copytrack.GetTrackPhiOnEMCal();
+    }
     Int_t supermoduleID = -1;
-    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(checktrack->GetTrackEtaOnEMCal(), checktrack->GetTrackPhiOnEMCal(), supermoduleID);
+    isEMCAL = fGeometry->SuperModuleNumberFromEtaPhi(etaEMCAL, phiEMCAL, supermoduleID);
     // Exclude supermodules 10 and 11 as they did not participate in the trigger
     isEMCAL = isEMCAL && supermoduleID < 10;
     hasTRD = isEMCAL && supermoduleID >= 4;  // supermodules 4 - 10 have TRD in front in the 2012-2013 ALICE setup
@@ -580,6 +598,32 @@ Bool_t AliAnalysisTaskChargedParticlesRef::TrackSelectionAOD(AliAODTrack* track)
   if(!track->TestFilterBit(AliAODTrack::kTrkGlobal)) return false;
   if(track->GetTPCNCrossedRows() < 120) return false;
   return true;
+}
+
+/**
+ * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
+ * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
+ * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
+ * @param trgcls Trigger class for which to apply additional offline patch selection
+ * @param triggerpatches Array of trigger patches
+ * @return True if at least on patch above threshold is found or no cut is applied
+ */
+Bool_t AliAnalysisTaskChargedParticlesRef::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
+  if(fOfflineEnergyThreshold[trgcls] < 0) return true;
+  bool isSingleShower = ((trgcls == kCPREL0) || (trgcls == kCPREG1) || (trgcls == kCPREG2));
+  int nfound = 0;
+  AliEmcalTriggerPatchInfo *patch = NULL;
+  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
+    patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
+    if(!patch->IsOfflineSimple()) continue;
+    if(isSingleShower){
+     if(!patch->IsGammaLowSimple()) continue;
+    } else {
+      if(!patch->IsJetLowSimple()) continue;
+    }
+    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
+  }
+  return nfound > 0;
 }
 
 /**

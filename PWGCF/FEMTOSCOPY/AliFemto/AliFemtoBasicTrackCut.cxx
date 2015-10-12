@@ -7,7 +7,7 @@
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassImp(AliFemtoBasicTrackCut)
+  ClassImp(AliFemtoBasicTrackCut);
   /// \endcond
 #endif
 
@@ -32,10 +32,10 @@ AliFemtoBasicTrackCut::AliFemtoBasicTrackCut():
   fNHits[1] = 180;
 
   fPt[0] = 0.0;
-  fPt[1] = 100.0;//100
+  fPt[1] = 100.0;  // 100
 
   fRapidity[0] = -2;
-  fRapidity[1] = 2; //-2 2
+  fRapidity[1] = 2;  //-2 2
 
   fDCA[0] = -1.0;
   fDCA[1] = 20.0;

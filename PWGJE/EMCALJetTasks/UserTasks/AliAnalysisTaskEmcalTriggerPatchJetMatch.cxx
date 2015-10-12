@@ -120,7 +120,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEvent(0),
-  fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
+  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Default constructor.
   for(Int_t j=0; j<16; j++) {
@@ -185,7 +185,7 @@ AliAnalysisTaskEmcalTriggerPatchJetMatch::AliAnalysisTaskEmcalTriggerPatchJetMat
   fhQAinfoCounter(0), fhQAmaxinfoCounter(0),
   fhRecalcGammaPatchEnergy(0), fhRecalcJetPatchEnergy(0),
   fJetTriggeredEvent(0),
-  fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
+  fhnPatchMaxClus(0x0), fhnPatchMatch(0x0), fhnPatchMatchJetLeadClus(0x0)
 {
   // Standard constructor.
   for(Int_t j=0; j<16; j++) {
@@ -421,7 +421,7 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::ExtractMainPatch() {
     }
 
     Double_t fill[7] = {dEtaGeo, dEtaCM, dPhiGeo, dPhiCM, maxPatchADC, maxPatchE, leadclusE};
-    fhnPatchMatch->Fill(fill);
+    fhnPatchMaxClus->Fill(fill);
 
   } // patch energy cut
 
@@ -700,7 +700,7 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
   fOutput->Add(fHistClusofJetEnergy);
 
   for(Int_t j=0; j<16; j++) {
-    fHistdPhidEtaPatchJetCluster[j] = new TH2F(Form("fHistdPhidEtaPatchJetCluster_%d",j), "dPhi-dEta distribution between max recalculated Gamma patch and most energetic jet cluster", 144, 0, 1.8, 140, 0, 1.4);
+    fHistdPhidEtaPatchJetCluster[j] = new TH2F(Form("fHistdPhidEtaPatchJetCluster_%d",j), "dPhi-dEta distribution between max recalculated Gamma patch and most energetic jet cluster", 144, 0, 2.016, 144, 0, 2.016);
     fOutput->Add(fHistdPhidEtaPatchJetCluster[j]);
   }
 
@@ -714,21 +714,43 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
     xmax[i]=2.016;
   }
 
-  nbins[4]=100;
-  xmax[4]=100;
-  nbins[5]=100;
-  xmax[5]=100.;
-  nbins[6]=100;
-  xmax[6]=100.;
+  nbins[4]=100; xmax[4]=100;
+  nbins[5]=100; xmax[5]=100.;
+  nbins[6]=100; xmax[6]=100.;
 
-  fhnPatchMatch = new THnSparseF("fhnPatchMatch","fhn Patch Match", nDim, nbins,xmin,xmax);
-  fhnPatchMatch->GetAxis(0)->SetTitle("#Delta#etaGeo");          // 0
-  fhnPatchMatch->GetAxis(1)->SetTitle("#Delta#etaCM");           // 1
-  fhnPatchMatch->GetAxis(2)->SetTitle("#Delta#phiGeo");          // 2
-  fhnPatchMatch->GetAxis(3)->SetTitle("#Delta#phiCM");           // 3
-  fhnPatchMatch->GetAxis(4)->SetTitle("Max Patch ADC");          // 4
-  fhnPatchMatch->GetAxis(5)->SetTitle("Max Patch Energy");       // 5
-  fhnPatchMatch->GetAxis(6)->SetTitle("Leading Cluster Energy"); // 6
+  fhnPatchMaxClus = new THnSparseF("fhnPatchMaxClus","fhn Patch Max Cluster Distributions", nDim,nbins,xmin,xmax);
+  fhnPatchMaxClus->GetAxis(0)->SetTitle("#Delta#etaGeo");          // 0
+  fhnPatchMaxClus->GetAxis(1)->SetTitle("#Delta#etaCM");           // 1
+  fhnPatchMaxClus->GetAxis(2)->SetTitle("#Delta#phiGeo");          // 2
+  fhnPatchMaxClus->GetAxis(3)->SetTitle("#Delta#phiCM");           // 3
+  fhnPatchMaxClus->GetAxis(4)->SetTitle("Max Patch ADC");          // 4
+  fhnPatchMaxClus->GetAxis(5)->SetTitle("Max Patch Energy");       // 5
+  fhnPatchMaxClus->GetAxis(6)->SetTitle("Leading Cluster Energy"); // 6
+  fOutput->Add(fhnPatchMaxClus);
+
+  // QA before matching
+  Int_t nDim1=8;
+  Int_t *nbins1 = new Int_t[nDim1];
+  Double_t *xmin1 = new Double_t[nDim1];
+  Double_t *xmax1 = new Double_t[nDim1]; 
+  nbins1[0]=10; xmin1[0]=0.; xmax1[0]=100.;
+  nbins1[1]=250; xmin1[1]=0.; xmax1[1]=250.;
+  nbins1[2]=50; xmin1[2]=0.; xmax1[2]=50;
+  nbins1[3]=144; xmin1[3]=0.; xmax1[3]=2.016;
+  nbins1[4]=144; xmin1[4]=0.; xmax1[4]=2.016;
+  nbins1[5]=300; xmin1[5]=0.; xmax1[5]=300;
+  nbins1[6]=300; xmin1[6]=0.; xmax1[6]=500;
+  nbins1[7]=3; xmin1[7]=0.0; xmax1[7]=1.0*TMath::Pi()/2.0;
+
+  fhnPatchMatch = new THnSparseF("fhnPatchMatch","fhn Patch Match", nDim1,nbins1,xmin1,xmax1);
+  fhnPatchMatch->GetAxis(0)->SetTitle("Centrality %");              // 0
+  fhnPatchMatch->GetAxis(1)->SetTitle("Jet p_{T}");                 // 1
+  fhnPatchMatch->GetAxis(2)->SetTitle("Max Cluster Energy");        // 2
+  fhnPatchMatch->GetAxis(3)->SetTitle("#Delta#phi Geo");            // 3
+  fhnPatchMatch->GetAxis(4)->SetTitle("#Delta#Eta Geo");            // 4
+  fhnPatchMatch->GetAxis(5)->SetTitle("Max Patch Energy");          // 5
+  fhnPatchMatch->GetAxis(6)->SetTitle("Max Patch ADC");             // 6
+  fhnPatchMatch->GetAxis(7)->SetTitle("Event Plane - Jet Angle");   // 7
   fOutput->Add(fhnPatchMatch);
 
   // for jet cluster matched to patch
@@ -743,24 +765,24 @@ void AliAnalysisTaskEmcalTriggerPatchJetMatch::UserCreateOutputObjects()
 
   nbins2[0]=10; xmax2[0]=100;
   nbins2[1]=3; xmax2[1]=1.0*TMath::Pi()/2.;
-  nbins2[2]=200; xmax2[2]=200; 
-  nbins2[3]=72; xmax2[3]=2.0*TMath::Pi();
+  nbins2[2]=250; xmax2[2]=250; 
+  nbins2[3]=72; xmin2[3]=1.2; xmax2[3]=3.4; //*TMath::Pi();
   nbins2[4]=56; xmin2[4]=-0.7; xmax2[4]=0.7;
-  nbins2[5]=50; xmax2[5]=5.;
+  nbins2[5]=40; xmax2[5]=2.;
   nbins2[6]=50; xmax2[6]=50;
   nbins2[7]=100; xmax2[7]=100.;
   nbins2[8]=50; xmax2[8]=50;
   nbins2[9]=100; xmax2[9]=100.;
-  nbins2[10]=72; xmax2[10]=2.0*TMath::Pi();
+  nbins2[10]=72; xmin2[10]=1.2; xmax2[10]=3.4; //2.0*TMath::Pi();
   nbins2[11]=56; xmin2[11]=-0.7; xmax2[11]=0.7;
   nbins2[12]=500; xmax2[12]=500.;
   nbins2[13]=500; xmax2[13]=500.;
-  nbins2[14]=250; xmax2[14]=250.;
-  nbins2[15]=250; xmax2[15]=250.;
-  nbins2[16]=72; xmax2[16]=0.7;
+  nbins2[14]=300; xmax2[14]=300.;
+  nbins2[15]=300; xmax2[15]=300.;
+  nbins2[16]=72; xmin2[16]=1.4; xmax2[16]=3.2;
   nbins2[17]=56; xmin2[17]=-0.7; xmax2[17]=0.7;
 
-                //Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), jet->GetNumberOfTracks(), jet->MaxTrackPt(), jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOnline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};                
+  //Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), jet->GetNumberOfTracks(), jet->MaxTrackPt(), jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOnline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};                
 
   fhnPatchMatchJetLeadClus = new THnSparseF("fhnPatchMatchJetLeadClus","fhn Patch Match to Jet Leading Cluster", nDim2, nbins2,xmin2,xmax2);
   fhnPatchMatchJetLeadClus->GetAxis(0)->SetTitle("Centrality %");                          // 0
@@ -977,10 +999,10 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
       AliVParticle *vp;
       Double_t sumPtCh = 0.;
       for(Int_t icc=0; icc<jet->GetNumberOfTracks(); icc++) {
-	    vp = static_cast<AliVParticle*>(jet->TrackAt(icc, fTracks));
-	    if(!vp) continue;
-	    fh2Ptz->Fill(jetPt,GetZ(vp,jet));
-	    sumPtCh+=vp->Pt();
+        vp = static_cast<AliVParticle*>(jet->TrackAt(icc, fTracks));
+        if(!vp) continue;
+        fh2Ptz->Fill(jetPt,GetZ(vp,jet));
+        sumPtCh+=vp->Pt();
       }
       
       if(jet->GetNumberOfTracks()>0) fh2PtMeanPtConstituentsCharged->Fill(jetPt,sumPtCh/(double)(jet->GetNumberOfTracks()) );
@@ -1015,9 +1037,19 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
             double dPhiPatchLeadCl = 1.0*TMath::Abs(fMaxPatchPhiGeo - nPart.Phi());
             double dEtaPatchLeadCl = 1.0*TMath::Abs(fMaxPatchEtaGeo - nPart.Eta());
 
+            // get some info to fill in sparse
+            double dEPJet = RelativeEP(jet->Phi(), fEPV0);
+            double kAmplitudeOnline = fMaxPatch->GetADCAmp();
+            double kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
+            double kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
+            double kEnergyOffline = fMaxPatch->GetPatchE();
+
             for(int maxbinE = 0; maxbinE<16; maxbinE++) {
                if(maxClusterE > maxbinE) fHistdPhidEtaPatchJetCluster[maxbinE]->Fill(dPhiPatchLeadCl, dEtaPatchLeadCl);
             }
+
+            Double_t fillarr[8] = {fCent, jet->Pt(), maxClusterE, dPhiPatchLeadCl, dEtaPatchLeadCl, kEnergyOffline, kAmplitudeOnline, dEPJet};
+            fhnPatchMatch->Fill(fillarr);
 
             // patch meeting offline energy cut
             if(fMaxPatch->GetPatchE() > fPatchECut) {
@@ -1038,13 +1070,6 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
                   cout<<"*********************************************"<<endl;
                 } // do comments
 
-                // get some info to fill in sparse
-                Double_t dEPJet = RelativeEP(jet->Phi(), fEPV0);
-                Double_t kAmplitudeOnline = fMaxPatch->GetADCAmp();
-                Double_t kAmplitudeOffline = fMaxPatch->GetADCOfflineAmp();
-                Double_t kEnergyOnline = fMaxPatch->GetADCAmpGeVRough();
-                Double_t kEnergyOffline = fMaxPatch->GetPatchE();
-
                 // fill sparse for match
                 Double_t fill[18] = {fCent, dEPJet, jet->Pt(), jet->Phi(), jet->Eta(), jet->Area(), (Double_t)jet->GetNumberOfTracks(), jet->MaxTrackPt(), (Double_t)jet->GetNumberOfClusters(), maxClusterE, maxClusterPhi, maxClusterEta, kAmplitudeOnline, kAmplitudeOffline, kEnergyOnline, kEnergyOffline, fMaxPatchPhiGeo, fMaxPatchEtaGeo};
                 fhnPatchMatchJetLeadClus->Fill(fill);
@@ -1056,7 +1081,6 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
               } // MATCH!
             } // patch > Ecut GeV
           } // have max cluster
-
 
           AliClusterContainer* testclust = GetClusterContainer();
           for(int itest = 0; itest < testclust->GetNClusters(); itest++) {
@@ -1080,13 +1104,13 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::FillHistograms() {
 
       // sum up neutral energy of jet
       if (clusCont) {
-	    for(Int_t icc=0; icc<jet->GetNumberOfClusters(); icc++) {
-	      vc = static_cast<AliVCluster*>(clusCont->GetCluster(icc));
-	      if(!vc) continue;
-	      TLorentzVector lp;
-	      vc->GetMomentum(lp, const_cast<Double_t*>(fVertex));
-	      sumPtNe+=lp.Pt();
-	    } // cluster loop
+        for(Int_t icc=0; icc<jet->GetNumberOfClusters(); icc++) {
+          vc = static_cast<AliVCluster*>(clusCont->GetCluster(icc));
+          if(!vc) continue;
+          TLorentzVector lp;
+          vc->GetMomentum(lp, const_cast<Double_t*>(fVertex));
+          sumPtNe+=lp.Pt();
+        } // cluster loop
 
         if(jet->GetNumberOfClusters()>0) fh2PtMeanPtConstituentsNeutral->Fill(jetPt,sumPtNe/(double)(jet->GetNumberOfClusters()) );
       } // cluster container exists
@@ -1147,7 +1171,7 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::Run() {
   //Check if event is selected (vertex & pile-up)
   if(!SelectEvent()) return kFALSE;
 
-  // when we have the patch object, peform analysis
+  // when we have the patch object to match, peform analysis
   if(fTriggerPatchInfo) FillTriggerPatchHistos();
 
   return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
@@ -1326,9 +1350,9 @@ Bool_t AliAnalysisTaskEmcalTriggerPatchJetMatch::CorrelateToTrigger(Double_t eta
   for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEmcalTriggerPatchInfo *mypatch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
     Double_t etamin = TMath::Min(mypatch->GetEtaMin(), mypatch->GetEtaMax()),
-        etamax = TMath::Max(mypatch->GetEtaMin(), mypatch->GetEtaMax()),
-        phimin = TMath::Min(mypatch->GetPhiMin(), mypatch->GetPhiMax()),
-        phimax = TMath::Max(mypatch->GetPhiMin(), mypatch->GetPhiMax());
+    etamax = TMath::Max(mypatch->GetEtaMin(), mypatch->GetEtaMax()),
+    phimin = TMath::Min(mypatch->GetPhiMin(), mypatch->GetPhiMax()),
+    phimax = TMath::Max(mypatch->GetPhiMin(), mypatch->GetPhiMax());
     if(etaclust > etamin && etaclust < etamax && phiclust > phimin && phiclust < phimax){
       hasfound = kTRUE;
       break;

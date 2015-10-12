@@ -49,12 +49,14 @@ AliMultSelectionCuts::~AliMultSelectionCuts(){
   
 }
 Bool_t AliMultSelectionCuts::IsEventSelected(AliESDEvent * esd) {
+//Possibly deprecated -> break down done inside AliMultSelectionTask 
   fESD = esd;
   Bool_t returnValue = kTRUE;
     if(!IsMinBias())       returnValue = kFALSE;
     if(!IsVzCutSelected()) returnValue = kFALSE;
     if(!IsINELgtZERO())    returnValue = kFALSE;
-    if(!HasNoInconsistentSPDandTrackVertices()) returnValue = kFALSE;
+    if(!HasNoInconsistentSPDandTrackVertices(esd)) returnValue = kFALSE;
+    if( fESD -> IsPileupFromSPDInMultBins() ) returnValue = kFALSE; 
     return returnValue;
 }
 
@@ -86,14 +88,14 @@ Bool_t AliMultSelectionCuts::IsINELgtZERO(){
     return returnValue;
 }
 
-Bool_t AliMultSelectionCuts::HasNoInconsistentSPDandTrackVertices()
+Bool_t AliMultSelectionCuts::HasNoInconsistentSPDandTrackVertices(AliESDEvent * lESD)
 {
     Bool_t returnValue = kTRUE;
     const AliESDVertex *lPrimaryVtxSPD    = NULL;
     const AliESDVertex *lPrimaryVtxTracks = NULL;
     
-    lPrimaryVtxSPD    = fESD->GetPrimaryVertexSPD   ();
-    lPrimaryVtxTracks = fESD->GetPrimaryVertexTracks();
+    lPrimaryVtxSPD    = lESD->GetPrimaryVertexSPD   ();
+    lPrimaryVtxTracks = lESD->GetPrimaryVertexTracks();
     
     //Only continue if track vertex defined
     if( lPrimaryVtxTracks->GetStatus() && lPrimaryVtxSPD->GetStatus() ){

@@ -711,7 +711,7 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
 }
 
 //__________________________________________________________________________________________________
-Bool_t AliJetContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Int_t dist) const
+Bool_t AliJetContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist) const
 {
   // Helper function to calculate the distance between two jets or a jet and a particle
   if(!part1) return kFALSE;

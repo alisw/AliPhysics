@@ -293,11 +293,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   << "# $2 = merging stage" << std::endl
   << "# Stage_<n>.xml made via: find <OutputDir> *Stage<n-1>/*root_archive.zip" << std::endl;
 
-  OutputToJDL(*os,"Packages",
-         GetMapValue("AliRoot"),
-         GetMapValue("Geant3"),
-         GetMapValue("Root"),
-         GetMapValue("API"));
+  OutputToJDL(*os,"Packages",GetMapValue("AliPhysics"),GetMapValue("AliRoot"),GetMapValue("API"));
   
   OutputToJDL(*os,"Executable","AOD_merge.sh");
   
@@ -360,11 +356,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
     return kFALSE;
   }
   
-  OutputToJDL(*os,"Packages",
-              GetMapValue("AliRoot"),
-              GetMapValue("Geant3"),
-              GetMapValue("Root"),
-              GetMapValue("API"));
+  OutputToJDL(*os,"Packages",GetMapValue("AliPhysics"),GetMapValue("AliRoot"),GetMapValue("API"));
               
   OutputToJDL(*os,"Jobtag","comment: AliMuonAccEffSubmitter RUN $1");
 

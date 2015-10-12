@@ -13,6 +13,14 @@ namespace EMCalTriggerPtAnalysis {
 
 class AliAnalysisTaskEmcalPatchesRef : public AliAnalysisTaskSE {
 public:
+  enum EmcalTriggerClass{
+    kEPREL0 = 0,
+    kEPREG1,
+    kEPREG2,
+    kEPREJ1,
+    kEPREJ2,
+    kEPRntrig
+  };
   AliAnalysisTaskEmcalPatchesRef();
   AliAnalysisTaskEmcalPatchesRef(const char *name);
   virtual ~AliAnalysisTaskEmcalPatchesRef();
@@ -22,16 +30,19 @@ public:
   void Terminate(Option_t *) {}
 
   void SetCreateTriggerStringFromPatches(Bool_t doUsePatches) { fTriggerStringFromPatches = doUsePatches; }
+  void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
 
 protected:
   void CreateEnergyBinning(TArrayD& binning) const;
   void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double eta, double phi);
   TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
+  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
   AliAnalysisUtils                    *fAnalysisUtil;
   AliEMCalHistoContainer              *fHistos;
 
   Bool_t                              fTriggerStringFromPatches;
+  Double_t                            fOfflineEnergyThreshold[kEPRntrig];
 
 private:
   AliAnalysisTaskEmcalPatchesRef(const AliAnalysisTaskEmcalPatchesRef &);

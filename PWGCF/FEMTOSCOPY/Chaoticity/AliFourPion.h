@@ -60,7 +60,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kDENtypes = 179,// was 104
   };
 
-  static const Int_t fKbinsT     = 6;// Set fKstep as well !!!!
+  static const Int_t fKbinsT     = 7;// Set fKstep as well !!!!
   static const Int_t fKbinsTOneD = 28;// Set fKstep as well !!!!
   static const Int_t fKbinsY     = 1;// Set fKstep as well !!!!
   static const Int_t fEDbins     = 4;
@@ -207,6 +207,8 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH1D *fMCqinvQW; //!
     TH2D *fPIDpurityDen; //!
     TH3D *fPIDpurityNum; //!
+    //
+    TH2D *fBuild; //!
     struct St7 OSL_ktbin[2];
   };
   struct StFourPT {

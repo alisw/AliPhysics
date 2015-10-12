@@ -46,7 +46,9 @@ AliMultSelection::AliMultSelection(AliMultSelection *lCopyMe){
     }
 }
 AliMultSelection::~AliMultSelection(){
-  // destructor
+    // destructor: clean stuff up 
+    delete fEstimatorList;
+    fEstimatorList=0x0;
 }
 
 void AliMultSelection::PrintInfo()
@@ -59,7 +61,13 @@ void AliMultSelection::PrintInfo()
     }
 }
 
-
+Float_t AliMultSelection::GetMultiplicityPercentile(TString lName)
+{
+    Float_t lReturnValue = 200;
+    AliMultEstimator *lThis = GetEstimator(lName.Data());
+    if( lThis ) lReturnValue = lThis->GetPercentile(); 
+    return lReturnValue;
+}
 
 void AliMultSelection::Evaluate( AliMultInput *lInput )
 //Master function to evaluate all existing estimators based on
@@ -83,7 +91,11 @@ void AliMultSelection::Evaluate( AliMultInput *lInput )
             TString lReplacement = lVar1->GetName();
             lReplacement.Append(")");
             lReplacement.Prepend("(");
-            lEvaluateMe.ReplaceAll( lReplacement, Form("%f",lVar1->GetValue() ) );
+            if( !lVar1->IsInteger() ){
+		lEvaluateMe.ReplaceAll( lReplacement, Form("%f",lVar1->GetValue() ) );
+	    }else{
+		lEvaluateMe.ReplaceAll( lReplacement, Form("%i",lVar1->GetValueInteger() ) );
+	    }
         }
         //cout<<"String to evaluate: "<<lEvaluateMe<<endl;
         //FIXME: Error Handling needs to improve here

@@ -6,6 +6,8 @@ AliJJetJtTask* AddTaskJJetJt(
 		TString  jetTaskName   = "AliJJetTask" ,
 		TString  cardName      = "card.input",
 		TString  cardSetting   = "",
+		Int_t	    Nrandom    =  1,
+		Int_t	    moveJet =  1,
 		Int_t       debug 		 = 1	
 		)
 {  
@@ -41,6 +43,8 @@ AliJJetJtTask* AddTaskJJetJt(
 	jtTask->SetJetTaskName(jetTaskName);
 	jtTask->SetCard( card );
 	jtTask->SelectCollisionCandidates(trigger);
+	jtTask->SetNrandom(Nrandom);
+	jtTask->SetMoveJet(moveJet);
 	mgr->AddTask(jtTask);
 
 	// Create containers for input/output

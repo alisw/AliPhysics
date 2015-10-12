@@ -7,15 +7,16 @@
 #include "AliFemtoV0Cut.h"
 #include "AliFemtoKinkCut.h"
 #include "AliFemtoXiCut.h"
+#include "AliFemtoPicoEvent.h"
 
 #include <string>
 #include <iostream>
 #include <iterator>
 
 #ifdef __ROOT__
-/// \cond CLASSIMP
-ClassImp(AliFemtoSimpleAnalysis)
-/// \endcond
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoSimpleAnalysis);
+  /// \endcond
 #endif
 
 AliFemtoEventCut*    copyTheCut(AliFemtoEventCut*);
@@ -23,123 +24,123 @@ AliFemtoParticleCut* copyTheCut(AliFemtoParticleCut*);
 AliFemtoPairCut*     copyTheCut(AliFemtoPairCut*);
 AliFemtoCorrFctn*    copyTheCorrFctn(AliFemtoCorrFctn*);
 
-// this little function used to apply ParticleCuts (TrackCuts or V0Cuts) and fill ParticleCollections of picoEvent
-//  it is called from AliFemtoSimpleAnalysis::ProcessEvent()
+
+/// Generalized particle collection filler function - called by
+/// FillParticleCollection()
+///
+/// This function loops over the track_collection, calling the cut's Pass
+/// method on each track. If it passes, a new AliFemtoParticle is constructed
+/// from the track's pointer (or more generally, the item returned by
+/// dereferencing the container's iterator) and the cut's expected mass.
+///
+/// This templated function accepts a track cut, track collection, and an
+/// AliFemtoParticleCollection (which points to the output) as input. The types
+/// of the tracks are determined by the template paramters, which should be
+/// automatically detected by argument inspection (you don't need to specify).
+///
+/// The original function also specified the iterator type, but since all
+/// containers are standard STL containers, it now infers the type as
+/// TrackCollectionType::iterator. If the track collections change to some
+/// other type, it is recommended to add TrackCollectionIterType to the
+/// template list, and add the appropriate type to the function calls in
+/// FillParticleCollection.
+template <class TrackCollectionType, class TrackCutType>
+void DoFillParticleCollection(TrackCutType *cut,
+                              TrackCollectionType *track_collection,
+                              AliFemtoParticleCollection *output)
+{
+  // lets's just name the iterator type
+  typedef typename TrackCollectionType::iterator TrackCollectionIterType;
+
+  for (TrackCollectionIterType pIter = track_collection->begin();
+                               pIter != track_collection->end();
+                               pIter++) {
+    if (!cut->Pass(*pIter)) {
+      continue;
+    }
+    output->push_back(new AliFemtoParticle(*pIter, cut->Mass()));
+  }
+}
+
+// This little function is used to apply ParticleCuts (TrackCuts or V0Cuts) and
+// fill ParticleCollections from tacks in picoEvent. It is called from
+// AliFemtoSimpleAnalysis::ProcessEvent().
+//
+// The actual loop implementation has been moved to the collection-generic
+// DoFillParticleCollection() function
 void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
                                AliFemtoEvent *hbtEvent,
                                AliFemtoParticleCollection *partCollection,
                                bool performSharedDaughterCut=kFALSE)
 {
-  /// Fill particle collections from the event
-  /// by the particles that pass all the cuts
+  /// Fill particle collection with all particles in the event which pass
+  /// the provided cut
 
+  // determine which track collection to use based on the particle type.
   switch (partCut->Type()) {
-  case hbtTrack:       // cut is cutting on Tracks
+
+  // cut is cutting on Tracks
+  case hbtTrack:
+
+    DoFillParticleCollection(
+      dynamic_cast<AliFemtoTrackCut*>(partCut),
+      hbtEvent->TrackCollection(),
+      partCollection
+    );
+
+    break;
+
+  // cut is cutting on V0s
+  case hbtV0:
   {
-    AliFemtoTrackCut *pCut = dynamic_cast<AliFemtoTrackCut*>(partCut);
-    AliFemtoTrackIterator pIter;
-    AliFemtoTrackIterator startLoop = hbtEvent->TrackCollection()->begin();
-    AliFemtoTrackIterator endLoop   = hbtEvent->TrackCollection()->end();
-    for (pIter=startLoop; pIter!=endLoop; pIter++) {
-      AliFemtoTrack *next_particle = *pIter;
-      bool tmpPassParticle = pCut->Pass(next_particle);
-      pCut->FillCutMonitor(next_particle, tmpPassParticle);
-      if (tmpPassParticle) {
-        AliFemtoParticle* particle = new AliFemtoParticle(next_particle, pCut->Mass());
-        partCollection->push_back(particle);
-      }
-    }
+    AliFemtoV0SharedDaughterCut shared_daughter_cut;
+    AliFemtoV0Cut *v0_cut = dynamic_cast<AliFemtoV0Cut*>(partCut);
+    const AliFemtoV0Collection &v0_coll = (!performSharedDaughterCut)
+                                        ? *hbtEvent->V0Collection()
+                                        : shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(
+                                            hbtEvent->V0Collection(),
+                                            v0_cut
+                                          );
+
+    DoFillParticleCollection(
+      v0_cut,
+      const_cast<AliFemtoV0Collection*>(&v0_coll),
+      partCollection
+    );
+
+    // should this be here or OUTSIDE the switch statement? (why is v0 special?)
+    partCut->FillCutMonitor(hbtEvent, partCollection);
+
     break;
   }
-  case hbtV0:          // cut is cutting on V0s
-    {
-      AliFemtoV0Cut* pCut = (AliFemtoV0Cut*) partCut;
-      AliFemtoV0* pParticle;
-      AliFemtoV0Iterator pIter;
 
-      if(performSharedDaughterCut) {
-        AliFemtoV0Collection V0CorrectedCollection;
-        AliFemtoV0SharedDaughterCut sharedDaughterCut;
-        V0CorrectedCollection = sharedDaughterCut.AliFemtoV0SharedDaughterCutCollection(hbtEvent->V0Collection(), pCut);
+  // cut is cutting on Xis
+  case hbtXi:
 
-        AliFemtoV0Iterator startLoop = V0CorrectedCollection.begin();
-        AliFemtoV0Iterator endLoop   = V0CorrectedCollection.end();
+    DoFillParticleCollection(
+      dynamic_cast<AliFemtoXiCut*>(partCut),
+      hbtEvent->XiCollection(),
+      partCollection
+    );
 
-        for (pIter=startLoop;pIter!=endLoop;pIter++) {
-          pParticle = *pIter;
-          AliFemtoParticle* particle = new AliFemtoParticle(pParticle,partCut->Mass());
-          partCollection->push_back(particle);
-        }
-      }
-      else { //previous, untouched loop:
-        AliFemtoV0Iterator startLoop = hbtEvent->V0Collection()->begin();
-        AliFemtoV0Iterator endLoop   = hbtEvent->V0Collection()->end();
-        for (pIter=startLoop;pIter!=endLoop;pIter++) {
-          pParticle = *pIter;
-          bool tmpPassV0 = pCut->Pass(pParticle);
-          pCut->FillCutMonitor(pParticle,tmpPassV0);
-          if(tmpPassV0) {
-            AliFemtoParticle* particle = new AliFemtoParticle(pParticle,partCut->Mass());
-            partCollection->push_back(particle);
-          }
-        }
-      }
+    break;
 
-      pCut->FillCutMonitor(hbtEvent,partCollection);// Gael 19/06/02
+  // cut is cutting on Kinks
+  case hbtKink:
 
-      break;
-    }
+    DoFillParticleCollection(
+      dynamic_cast<AliFemtoKinkCut*>(partCut),
+      hbtEvent->KinkCollection(),
+      partCollection
+    );
 
+    break;
 
-
-  case hbtXi:          // cut is cutting on Xis
-    {
-      AliFemtoV0Cut* pCut = (AliFemtoV0Cut*) partCut;
-      AliFemtoXi* pParticle;
-      AliFemtoXiIterator pIter;
-
-      AliFemtoXiIterator startLoop = hbtEvent->XiCollection()->begin();
-      AliFemtoXiIterator endLoop   = hbtEvent->XiCollection()->end();
-      for (pIter=startLoop;pIter!=endLoop;pIter++) {
-	pParticle = *pIter;
-	bool tmpPassXi = pCut->Pass(pParticle);
-	pCut->FillCutMonitor(pParticle,tmpPassXi);
-	if(tmpPassXi) {
-	  AliFemtoParticle* particle = new AliFemtoParticle(pParticle,partCut->Mass());
-            partCollection->push_back(particle);
-	}
-      }
-      
-
-      pCut->FillCutMonitor(hbtEvent,partCollection);
-
-      break;
-    }
-
-
-
-  case hbtKink:          // cut is cutting on Kinks  -- mal 25May2001
-    {
-      AliFemtoKinkCut* pCut = (AliFemtoKinkCut*) partCut;
-      AliFemtoKink* pParticle;
-      AliFemtoKinkIterator pIter;
-      AliFemtoKinkIterator startLoop = hbtEvent->KinkCollection()->begin();
-      AliFemtoKinkIterator endLoop   = hbtEvent->KinkCollection()->end();
-      // this following "for" loop is identical to the one above, but because of scoping, I can's see how to avoid repitition...
-      for (pIter=startLoop;pIter!=endLoop;pIter++) {
-	pParticle = *pIter;
-	bool tmpPass = pCut->Pass(pParticle);
-	pCut->FillCutMonitor(pParticle, tmpPass);
-	if (tmpPass) {
-	  AliFemtoParticle* particle = new AliFemtoParticle(pParticle, partCut->Mass());
-	  partCollection->push_back(particle);
-	}
-      }
-      break;
-    }
   default:
-    cout << "FillHbtParticleCollection function (in AliFemtoSimpleAnalysis.cxx) - undefined Particle Cut type!!! \n";
+    cout << "E-FillHbtParticleCollection function (in AliFemtoSimpleAnalysis.cxx): "
+            "Undefined Particle Cut type!!! (" << partCut->Type() << ")\n";
   }
+
 }
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
@@ -158,9 +159,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fPerformSharedDaughterCut(kFALSE),
   fEnablePairMonitors(kFALSE)
 {
-  /// Default constructor
-  ///  mControlSwitch     = 0;
-
+  // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
 }
@@ -254,7 +253,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   }
 
   if (fVerbose) {
-      cout << TString::Format(msg_template, "analysis copied") << endl;
+    cout << TString::Format(msg_template, "analysis copied") << endl;
   }
 }
 //____________________________
@@ -276,7 +275,7 @@ AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis()
   delete fFirstParticleCut;
   delete fSecondParticleCut;
 
-  // now delete every CorrFunction in the Collection, and then the Collection itself
+  // delete every CorrFunction in the collection, then the collection
   if (fCorrFctnCollection) {
     for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); iter++) {
       delete *iter;
@@ -284,7 +283,7 @@ AliFemtoSimpleAnalysis::~AliFemtoSimpleAnalysis()
     delete fCorrFctnCollection;
   }
 
-  // now delete every PicoEvent in the EventMixingBuffer and then the buffer itself
+  // delete every PicoEvent in the EventMixingBuffer followed by the buffer
   if (fMixingBuffer) {
     for (AliFemtoPicoEventIterator piter = fMixingBuffer->begin(); piter != fMixingBuffer->end(); ++piter) {
       delete *piter;
@@ -372,13 +371,9 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
 
 
   fNumEventsToMix = aAna.fNumEventsToMix;
-
   fMinSizePartCollection = aAna.fMinSizePartCollection;
-
   fVerbose = aAna.fVerbose;
-
   fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
-
   fEnablePairMonitors = aAna.fEnablePairMonitors;
 
   return *this;
@@ -412,7 +407,7 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
   temp += "\nPair Cuts:\n";
   temp += fPairCut->Report();
   temp += "\nCorrelation Functions:\n";
-  
+
   if (fCorrFctnCollection->empty()) {
     cout << "AliFemtoSimpleAnalysis-Warning : no correlations functions in this analysis " << endl;
   }
@@ -425,7 +420,8 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
   return returnThis;
 }
 //_________________________
-void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
+void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
+{
   /// Add event to processed events
 
   fPicoEvent = NULL; // we will get a new pico event, if not prevent corr. fctn to access old pico event
@@ -627,84 +623,119 @@ void AliFemtoSimpleAnalysis::EventBegin(const AliFemtoEvent* ev)
   fFirstParticleCut->EventBegin(ev);
   fSecondParticleCut->EventBegin(ev);
   fPairCut->EventBegin(ev);
-  for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++) {
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                iter++) {
     (*iter)->EventBegin(ev);
   }
 }
 //_________________________
 void AliFemtoSimpleAnalysis::EventEnd(const AliFemtoEvent* ev)
 {
-  /// Fiinsh operations at the end of event processing
+  // Finish operations at the end of event processing
 
   fFirstParticleCut->EventEnd(ev);
   fSecondParticleCut->EventEnd(ev);
   fPairCut->EventEnd(ev);
-  for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++) {
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                iter++) {
     (*iter)->EventEnd(ev);
   }
 }
 //_________________________
 void AliFemtoSimpleAnalysis::Finish()
 {
-  /// Perform finishing operations after all events are processed
+  // Perform finishing operations after all events are processed
 
-  AliFemtoCorrFctnIterator iter;
-  for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++) {
+  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
+                                iter != fCorrFctnCollection->end();
+                                iter++) {
     (*iter)->Finish();
   }
 }
 //_________________________
 void AliFemtoSimpleAnalysis::AddEventProcessed()
 {
-  /// Increase count of processed events
-
+  // Increase count of processed events
   fNeventsProcessed++;
 }
 //_________________________
 TList* AliFemtoSimpleAnalysis::ListSettings()
 {
-  /// Collect settings list
+  // Collect settings list
+
+  const TString setting_prefix = "AliFemtoSimpleAnalysis.";
 
   TList *tListSettings = new TList();
 
-  TList *p1Cut = fFirstParticleCut->ListSettings();
+  TList *event_cut_settings = fEventCut->ListSettings();
 
-  TListIter nextp1(p1Cut);
-  while (TObject *obj = nextp1.Next()) {
-    TString cuts(obj->GetName());
-    cuts.Prepend("AliFemtoSimpleAnalysis.");
-    tListSettings->Add(new TObjString(cuts.Data()));
+  if (event_cut_settings != NULL) {
+
+    TListIter next_event_setting(event_cut_settings);
+    while (TObject *obj = next_event_setting()) {
+      tListSettings->Add(new TObjString(
+        setting_prefix + obj->GetName()
+      ));
+    }
+
+    delete event_cut_settings;
   }
 
-  if (fSecondParticleCut != fFirstParticleCut) {
-    TList *p2Cut = fSecondParticleCut->ListSettings();
+  TList *p1_cut_settings = fFirstParticleCut->ListSettings();
 
-    TIter nextp2(p2Cut);
-    while (TObject *obj = nextp2()) {
-      TString cuts(obj->GetName());
-      cuts.Prepend("AliFemtoSimpleAnalysis.");
-      tListSettings->Add(new TObjString(cuts.Data()));
+  if (p1_cut_settings != NULL) {
+
+    TListIter next_p1_setting(p1_cut_settings);
+    while (TObject *obj = next_p1_setting()) {
+      tListSettings->Add(new TObjString(
+        setting_prefix + obj->GetName()
+      ));
+    }
+
+    delete p1_cut_settings;
+  }
+
+
+  if (fSecondParticleCut != fFirstParticleCut) {
+    TList *p2_cut_settings = fSecondParticleCut->ListSettings();
+
+    if (p2_cut_settings != NULL) {
+
+      TListIter next_p2_setting(p2_cut_settings);
+      while (TObject *obj = next_p2_setting()) {
+        tListSettings->Add(new TObjString(
+          setting_prefix + obj->GetName()
+        ));
+      }
+
+      delete p2_cut_settings;
     }
   }
 
-  TList *pairCut = fPairCut->ListSettings();
 
-  TIter nextpair(pairCut);
-  while (TObject *obj = nextpair()) {
-    TString cuts(obj->GetName());
-    cuts.Prepend("AliFemtoSimpleAnalysis.");
-    tListSettings->Add(new TObjString(cuts.Data()));
+  TList *pair_cut_settings = fPairCut->ListSettings();
+
+  if (pair_cut_settings != NULL) {
+
+    TListIter next_pair_setting(pair_cut_settings);
+    while (TObject *obj = next_pair_setting()) {
+      tListSettings->Add(new TObjString(
+        setting_prefix + obj->GetName()
+      ));
+    }
+
+    delete pair_cut_settings;
   }
 
   return tListSettings;
-
 }
 
 //_________________________
 TList* AliFemtoSimpleAnalysis::GetOutputList()
 {
-  /// Collect the list of output objects
-  /// to be written
+  // Collect the list of output objects to be written
 
   TList *tOutputList = new TList();
 
@@ -755,4 +786,3 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
 
   return tOutputList;
 }
-

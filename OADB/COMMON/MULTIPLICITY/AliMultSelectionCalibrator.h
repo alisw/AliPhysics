@@ -19,6 +19,7 @@ public:
     
     //Set Filenames
     void SetInputFile ( TString lFile ) { fInputFileName = lFile.Data(); } 
+    void SetBufferFile ( TString lFile ) { fBufferFileName = lFile.Data(); } 
     void SetOutputFile ( TString lFile ) { fOutputFileName = lFile.Data(); }
     //Set Boundaries to find
     void SetBoundaries ( Long_t lNB, Double_t *lB ){
@@ -45,6 +46,7 @@ private:
     Long_t   lNDesiredBoundaries;
     
     TString fInputFileName;  // Filename for TTree object for calibration purposes
+    TString fBufferFileName; // Filename for TTree object (buffer file)
     TString fOutputFileName; // Filename for calibration OADB output
     
     // Object for storing event selection configuration

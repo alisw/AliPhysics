@@ -10,21 +10,21 @@
 # RunNumber=146807
 # AlienName=/m/miranov/
 # RawPath=/alice/data/2011/LHC11a/
-# $ALICE_ROOT/PWGPP/CalibMacros/CPass0/test/runCPass0User.sh  $AlienName $RawPath  $RunNumber 
+# $ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/test/runCPass0User.sh  $AlienName $RawPath  $RunNumber 
 #
 # authors:   marian.ivanov#cern.ch, mikolaj.krzewicki@cern.ch 
 
 AlienName=$1
 RawPath=$2
 RunNumber=$3
-InputMacros=$ALICE_ROOT/PWGPP/CalibMacros/CPass0/
+InputMacros=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/
 
 echo xxxxxxxxxxxxxxxxxxxxxxxxxx
 echo SETUP
 echo AlienName=$1
 echo RawPath=$2
 echo RunNumber=$3
-echo InputMacros=$ALICE_ROOT/PWGPP/CalibMacros/CPass0/
+echo InputMacros=$ALICE_PHYSICS/PWGPP/CalibMacros/CPass0/
 echo xxxxxxxxxxxxxxxxxxxxxxxxxx
 
 #
