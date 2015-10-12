@@ -65,6 +65,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   void SetResonantPid(){fResPid=kTRUE;fRealPid=kTRUE;fMCPid=kFALSE;return;}
   void SetCutsKF(Float_t cutsKF[2]){for(Int_t i=0;i<2;i++){fCutsKF[i]=cutsKF[i];}return;}
   void SetUseKF(Bool_t useKF=kTRUE){fUseKF=useKF;}
+	void SetIsHijing(Bool_t isHijing=kTRUE){fIsHijing=isHijing;}
   void SetAnalysis(Bool_t analysis=kTRUE){fAnalysis=analysis;}
   void SetUseFilterBitCut(Bool_t setter)   { fLcCut = setter;	 return; }  
   void SetUseFilterBitPID(Bool_t setter)   { fLcPIDCut = setter; return; }
@@ -194,6 +195,7 @@ class AliAnalysisTaskSELambdacTMVA : public AliAnalysisTaskSE
   AliAnalysisVertexingHF *fVHF;  ///  Vertexer heavy flavour (used to pass the cuts)
   Bool_t fLcCut;  ///  flag for Lc filter bit cut
   Bool_t fLcPIDCut;  /// flag for Lc filter bit PID
+  Bool_t fIsHijing; /// flag for whether Lc is from Hijing 
   TH1F *fNentries;      /// histo with number of entries
   //AliAODpidUtil* fUtilPid;
   AliPIDResponse *fPIDResponse;     //!<! PID response object
