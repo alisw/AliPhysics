@@ -84,6 +84,7 @@ set(SRCS
   AliAnalysisMuMuNch.cxx
   AliAnalysisTaskNorm.cxx
   AliAnalysisCountTriggers.cxx
+  AliAnalysisMuMuMCGene.cxx
   )
 
 # Headers from sources
