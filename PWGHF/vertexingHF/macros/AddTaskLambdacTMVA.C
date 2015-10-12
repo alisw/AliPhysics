@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskLambdacTMVA(TString finname,Int_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t keepLcNoQuark,
+AliAnalysisTaskSE *AddTaskLambdacTMVA(TString finname,Int_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t keepLcNoQuark,Bool_t isHijing,
 Int_t syst=0, Int_t bit=0, TString postname="")
 {
   //==============================================================================                                                      
@@ -40,6 +40,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   if(MCPid) lambdacTask->SetMCPid();
   if(resPid) lambdacTask->SetResonantPid();
   if(realPid) lambdacTask->SetRealPid();
+	if(isHijing) lambdacTask->SetIsHijing();
   lambdacTask->SetAnalysis(kTRUE);
 
   //bit:0 nocut, 1:LcCut, 2:LcPID, 3: Both
@@ -60,7 +61,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   TString cutsname = "coutputLcCuts";
   TString normname = "coutputLcNorm";
   TString normnament = "coutputLcNormNt";
-  TString ntuplename = "coutputLc2";
+  TString ntuplename = "fNtupleLambdac";
   TString nev2 = "coutputNev";
   TString outname2 = "coutputLambdacMC";
   TString aPrioriname = "coutputAPriori";
@@ -70,7 +71,6 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   cutsname += finDirname.Data();
   normname += finDirname.Data();
   normnament += finDirname.Data();
-  ntuplename += finDirname.Data();
   nev2 += finDirname.Data();
   outname2 += finDirname.Data();
   aPrioriname += finDirname.Data();
@@ -110,7 +110,7 @@ Int_t syst=0, Int_t bit=0, TString postname="")
   mgr->ConnectOutput(lambdacTask,4,coutputLambdacNorm);
 
   if (storeNtuple) {
-		TString foutname = Form("InvMassLambdac_nt1_%s.root",postname.Data());
+		TString foutname = Form("InvMassLambdac_nt1.root",postname.Data());
     AliAnalysisDataContainer *coutputLambdac2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								     AliAnalysisManager::kOutputContainer,foutname);
     coutputLambdac2->SetSpecialOutput();

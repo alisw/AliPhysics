@@ -112,6 +112,7 @@ ClassImp(AliAnalysisTaskSELambdacTMVA);
 		fLcCut(kFALSE),
 		fLcPIDCut(kFALSE),    
 		fKeepLcNotFromQuark(kFALSE),
+		fIsHijing(kFALSE),
 		fSyst(2),
 		fNentries(0),
 		fPIDResponse(0),
@@ -224,6 +225,7 @@ AliAnalysisTaskSELambdacTMVA::AliAnalysisTaskSELambdacTMVA(const char *name,Int_
 	fLcCut(kFALSE),
 	fLcPIDCut(kFALSE),    
 	fKeepLcNotFromQuark(kFALSE),
+	fIsHijing(kFALSE),
 	fSyst(2),
 	fNentries(0),
 	fPIDResponse(0),
@@ -368,6 +370,7 @@ void AliAnalysisTaskSELambdacTMVA::Init()
 
 	fListCuts->Add(new AliRDHFCutsLctopKpi(*fRDCutsAnalysis));
 	PostData(2,fListCuts);
+
 	return;
 }
 
@@ -749,11 +752,14 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 	PostData(4,fCounter);
 	if (fFillNtuple) {
 		//basic ntuple
-		if(fFillNtuple==1)       fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp");
+		TString ntName="fNtupleLambdac";
+		AliAnalysisDataContainer *contnt = GetOutputSlot(5)->GetContainer();
+		if(contnt)ntName=(TString)contnt->GetName();
+		if(fFillNtuple==1)       fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp");
 		//NSigma PID
-		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap");
+		else if(fFillNtuple==2)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap");
 		//2 prong decay products
-		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple("fNtupleLambdac", "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
+		else if(fFillNtuple==3)  fNtupleLambdac = new TNtuple(ntName.Data(), "Lc", "isLcBkg:InvMasspKpi:InvMasspiKp:Charge:PtTr0:PtTr1:PtTr2:PtLc:CosP:DecayL:DecayLSig:Dist12:SigVert:DCA:DecayLXY:DecayLXYSig:isLcResonant:selectionPID:Tr0Ppi:Tr0PK:Tr0Pp:Tr1Ppi:Tr1PK:Tr1Pp:Tr2Ppi:Tr2PK:Tr2Pp:Tr0NSigmapi:Tr0NSigmaK:Tr0NSigmap:Tr1NSigmapi:Tr1NSigmaK:Tr1NSigmap:Tr2NSigmapi:Tr2NSigmaK:Tr2NSigmap:InvMasspK:InvMassKpi:InvMassppi:InvMassKp:InvMasspiK:InvMasspip");
 		else AliFatal("Invalid fill ntuple argument");
 		PostData(5,fNtupleLambdac);
 	}
@@ -816,6 +822,14 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 			AliError("AliAnalysisTaskSELambdacTMVA::UserExec: MC header branch not found!\n");
 			return;
 		}
+		//if(TString(AliAODMCHeader::StdBranchName()).Contains("LHC15f2")) {
+		//	AliInfo("LHC15f2 - fIsHijing==kTRUE");
+		//	fIsHijing=kTRUE;
+		//}
+		//else {
+		//	AliInfo("Not LHC15f2 - fIsHijing==kFALSE");
+		//	fIsHijing=kFALSE;
+		//}
 	}
 
 
@@ -888,7 +902,8 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 			fCandidateVars[1] = mcPart->Eta();
 			fCandidateVars[2] = mcPart->Y();
 			fCandidateVars[3] = mcPart->Phi();
-			Int_t imother=mcPart->GetMother();
+			Int_t imother = -1;
+			if(!fIsHijing) imother=mcPart->GetMother();
 			if(imother>0) { //found mother
 				AliAODMCParticle* mcPartMother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imother));
 				if(!mcPart){
@@ -899,7 +914,7 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 
 			//Check daughters
 			SetLambdacDaugh(mcPart,arrayMC,isInAcc);
-			if(fIsLcResonant>=1 && imother>0) {
+			if(fIsLcResonant>=1 && (fIsHijing || imother>0)) { //if signal, and is LHC15f2 or has mother
 				AliDebug(2,"Lc has p K pi in final state");
 				FillEffHists(kGeneratedAll);
 				fNentries->Fill(4);
@@ -1342,10 +1357,10 @@ void AliAnalysisTaskSELambdacTMVA::SetIsLcReco(AliAODRecoDecayHF3Prong *part,
 
 void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDecayHF3Prong *d, TClonesArray *arrayMC, Int_t selection, Int_t selectionProb) {
 	/// fill mass hists
-	Int_t IsInjected = -1;
+	Bool_t IsInjected = 0;
 	if(fReadMC) {
 		AliAODMCHeader *mcHeader2 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-		IsInjected = fVertUtil->IsCandidateInjected(d,mcHeader2,arrayMC)?1:0;
+		if(!fIsHijing) IsInjected = fVertUtil->IsCandidateInjected(d,mcHeader2,arrayMC); //for dedicated MC set to 0
 
 		//signal
 		if(fIsLc>=1) {
@@ -1390,7 +1405,7 @@ void AliAnalysisTaskSELambdacTMVA::FillMassHists(AliAODEvent *aod, AliAODRecoDec
 		}
 	}
 	//Bkg
-	if(!fReadMC || (fIsLc==0 && (IsInjected==0 || fSyst ==0))) { //data or non-injected background or pp background
+	if(!fReadMC || (fIsLc==0 && (!IsInjected || fSyst ==0))) { //data or non-injected background or pp background
 		//MC PID
 		if(fReadMC) fhMCmassLcPt->Fill(d->Pt(),IspKpiMC(d,arrayMC) ? d->InvMassLcpKpi() : d->InvMassLcpiKp());
 		//Real PID
@@ -1419,13 +1434,13 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	/// Function to fill NTuple with candidate's variables
 	//
 
-	Bool_t IsInjected   = -1;
+	Bool_t IsInjected   = 0;
 	Bool_t IsLc		= 0;
 	Bool_t IsLcfromLb	= 0;
 
 	if(fReadMC){ 
 		AliAODMCHeader *mcHeader3 = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-		IsInjected = fVertUtil->IsCandidateInjected(part,mcHeader3,arrayMC)?1:0;
+		if(!fIsHijing) IsInjected = fVertUtil->IsCandidateInjected(part,mcHeader3,arrayMC); //for dedicated MC set to 0
 	}
 	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
 	if(fIsLc==2) IsLcfromLb=kTRUE;
