@@ -337,6 +337,11 @@ Int_t AliAnalysisTriggerScalers::GetFillNumberFromRunNumber(Int_t runNumber)
       // manual hack because GRP info incorrect for this run ?
       fillNumber = 3135;
     }
+    if ( fillNumber == 0 && runNumber == 235423)
+    {
+      // manual hack because GRP info incorrect for this run ?
+      fillNumber = 4337;
+    }
 
     return fillNumber;
   }
@@ -456,6 +461,24 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
     if ( runNumber >= 229398 && ( runNumber != 229409 ) && ( runNumber != 229410 ))
     {
       lumiTriggerClassName = "C0TVX-B-NOPF-MUON";
+    }
+    if ( runNumber == 228939 )
+    {
+      lumiTriggerClassName = "C0TVX-B-NOPF-CENT";
+    }
+
+    if ( period.BeginsWith("LHC15h") )
+    {
+      lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+      if ( runNumber >= 233912 )
+      {
+        lumiTriggerClassName = "C0TVX-B-NOPF-ALLNOTRD";
+      }
+    }
+
+    if ( period.BeginsWith("LHC15i") || period.BeginsWith("LHC15j"))
+    {
+      lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
     }
   }
   else
@@ -1147,16 +1170,18 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
       lumiPerFillPerTrigger[currentFillNumber][muTriggerClassName.Data()] += ratio;
       
     }
-    
+
     lumiPerTrigger[lumiTriggerClassName.Data()] += lumiB->ValueCorrectedForDownscale()/lumiSigma;
     durationPerTrigger[lumiTriggerClassName.Data()] += duration;
     lumiPerFillPerTrigger[currentFillNumber][lumiTriggerClassName.Data()] += lumiB->ValueCorrectedForDownscale()/lumiSigma;
 
+    /*
     TString lumiPACCorrected(Form("%s(-PAC)",lumiTriggerClassName.Data()));
     
     lumiPerTrigger[lumiPACCorrected.Data()] += pacCorrection*lumiB->ValueCorrectedForDownscale()/lumiSigma;
     durationPerTrigger[lumiPACCorrected.Data()] += duration;
     lumiPerFillPerTrigger[currentFillNumber][lumiPACCorrected.Data()] += pacCorrection*lumiB->ValueCorrectedForDownscale()/lumiSigma;
+    */
 
     if (!atLeastOneTriggerFound && sTriggerList.Contains("CMUL") )
     {
@@ -1190,7 +1215,7 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
         (*out) << Form("%e",tit->second) << sep;
       }
       
-      (*out) << sep; // comment (empty)
+      (*out) << "NC" << sep; // comment (empty)
       
       for ( tit = fit->second.begin(); tit != fit->second.end(); ++tit )
       {
@@ -1198,7 +1223,7 @@ void AliAnalysisTriggerScalers::IntegratedLuminosity(const char* triggerList,
         
         (*out) <<  Form("%e",lumiPerTrigger[tit->first]) << sep;
       }
-      (*out) << sep << "0" << sep << "0" << sep << "0" << sep << "0" << sep << std::endl; // LHC per fill, LHC integrated, lumi tot muon , efficiency
+      (*out) << "0" << sep << "0" << sep << "0" << sep << "0" << sep << std::endl; // LHC per fill, LHC integrated, lumi tot muon , efficiency
     }
   }
   //
@@ -1304,9 +1329,19 @@ Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lh
   
   if ( mainSat )
   {
-    numberOfInteractingBunches = val->GetSizeTotal();
-    numberOfInteractingBunchesMeasured = valm->GetSizeTotal();
+    if (val)
+    {
+      numberOfInteractingBunches = val->GetSizeTotal();
+    }
+    if (valm)
+    {
+      numberOfInteractingBunchesMeasured = valm->GetSizeTotal();
+    }
     nIBM2 = numberOfInteractingBunches;
+    if (!val && !valm)
+    {
+      AliError(Form("Could not get bunch information for run %09d",runNumber));
+    }
   }
   else
   {
@@ -1330,9 +1365,12 @@ Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lh
   
   if (!numberOfInteractingBunches)
   {
-    return 0;
+    if (!numberOfInteractingBunchesMeasured) return 0;
+    AliDebug(1,Form("Declared bunch filling is empty, but measured one has %d interacting bunches, overriding to measurement",
+		    numberOfInteractingBunchesMeasured));
+    numberOfInteractingBunches = numberOfInteractingBunchesMeasured;
   }
-
+ 
   if ( numberOfInteractingBunches != numberOfInteractingBunchesMeasured ||
        numberOfInteractingBunches != nIBM2 )
   {
@@ -1511,7 +1549,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTrigger(const char* triggerClassName,
       c->SaveAs(Form("%s.png",title.Data()));
   }
 
-  return g;
+   return g;
 }
 
 //______________________________________________________________________________
@@ -1617,6 +1655,12 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
     
     GetCTPObjects(runNumber,tc,trs,lhc);
     
+    if (!tc || !trs || !lhc ) 
+    {
+      std::cout << Form("Could not get some data from OCDB for run %09d : TriggerConfiguration : %p TriggerRunScalers : %p LHCData : %p",runNumber,tc,trs,lhc) << std::endl;
+      continue;
+    }
+
     const TObjArray* scalers = trs->GetScalersRecords();
     
     const TObjArray& trClasses = tc->GetClasses();
@@ -1650,7 +1694,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         
         
         const AliTimeStamp* ats = record->GetTimeStamp();
-        
+       
         UInt_t seconds = ats->GetSeconds();// - TTimeStamp::GetZoneOffset();
         
         TTimeStamp ts(seconds,ats->GetMicroSecs());
@@ -1948,6 +1992,9 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerRatioEvolution(const char* trigger
 void AliAnalysisTriggerScalers::Print(Option_t* /* opt */) const
 {
   /// print our runlist
+
+  std::cout << "OCDB path = " << fOCDBPath.Data() << std::endl;
+
   AliAnalysisTriggerScalers::PrintIntegers(fRunList,',');
 }
 
@@ -1972,7 +2019,7 @@ void AliAnalysisTriggerScalers::ReadIntegers(const char* filename,
   /// Read integers from filename, where integers are either
   /// separated by "," or by return carriage
   
-  if ( gSystem->AccessPathName(filename)==kTRUE ) 
+  if ( gSystem->AccessPathName(gSystem->ExpandPathName(filename))==kTRUE )
   {
     return;
   }
@@ -2067,8 +2114,15 @@ void AliAnalysisTriggerScalers::SetOCDBPath(const char* path)
       }
     }
   }
-  
-  fOCDBPath = "raw://";
+  else if ( fOCDBPath.Contains("cvmfs"))
+  {
+    // assume the user knows what (s)he is doing
+    fOCDBPath = path;
+  }
+  else
+  {
+    fOCDBPath = "raw://";
+  }
 }
 
 //______________________________________________________________________________
