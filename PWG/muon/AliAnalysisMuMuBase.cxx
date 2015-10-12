@@ -144,8 +144,6 @@ AliAnalysisMuMuBase::CreateHistos(const TObjArray& paths,
   
   if ( IsHistogramDisabled(hname) ) return;
 
-  StdoutToAliDebug(1,paths.Print(););
-  
   TIter next(&paths);
   TObjString* pathName;
 
@@ -155,19 +153,16 @@ AliAnalysisMuMuBase::CreateHistos(const TObjArray& paths,
     
     if ( nbinsy > 0 )
     {
-      AliDebug(1,Form("Created TH2F %s/%s",pathName->String().Data(),hname));
       h = new TH2F(hname,htitle,nbinsx,xmin,xmax,nbinsy,ymin,ymax);
     }
     else if ( nbinsy == 0 )
     {
-      AliDebug(1,Form("Created TProfile %s/%s",pathName->String().Data(),hname));
       h = new TProfile(hname,htitle,nbinsx,xmin,xmax,ymin,ymax);
       h->Sumw2();
       static_cast<TProfile*>(h)->Approximate();
     }
     else
     {
-      AliDebug(1,Form("Created TH1F %s/%s",pathName->String().Data(),hname));
       h = new TH1F(hname,htitle,nbinsx,xmin,xmax);
       
       if ( nbinsy < -1 )
@@ -178,8 +173,18 @@ AliAnalysisMuMuBase::CreateHistos(const TObjArray& paths,
     
     HistogramCollection()->Adopt(pathName->String().Data(),h);
   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisMuMuBase::CreateSemaphoreHistogram(const char* eventSelection,
+                                                   const char* triggerClassName,
+                                                   const char* centrality)
+{
+  /// Create the semaphore histogram, a dummy histogram used
+  /// to check whether or not the DefineHistogramCollection has already been done `
+  /// for a tuple (eventSelection,triggerClassName,centrality)
   
-  StdoutToAliDebug(1,HistogramCollection()->Print("*"););
+  CreateEventHistos(kHistoForData | kHistoForMCInput,eventSelection,triggerClassName,centrality,ClassName(),ClassName(),1,0.0,1.0);
 }
 
 //_____________________________________________________________________________
@@ -277,6 +282,17 @@ void AliAnalysisMuMuBase::DisableHistograms(const char* pattern)
   }
   
   fHistogramToDisable->Add(new TObjString(spattern));
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMuBase::ExistSemaphoreHistogram(const char* eventSelection,
+                                                    const char* triggerClassName,
+                                                    const char* centrality) const
+{
+  /// Test for the existence of the semaphore histogram
+  /// @see CreateSemaphoreHistogram
+  
+  return ( HistogramCollection()->Histo(Form("/%s/%s/%s/%s",eventSelection,triggerClassName,centrality,ClassName())) != 0x0 );
 }
 
 //_____________________________________________________________________________

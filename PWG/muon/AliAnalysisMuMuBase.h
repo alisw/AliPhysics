@@ -122,7 +122,10 @@ protected:
                          Int_t nbinsx, Double_t xmin, Double_t xmax,
                          Int_t nbinsy=-1, Double_t ymin=0.0, Double_t ymax=0.0) const;
   
-  
+  void CreateSemaphoreHistogram( const char* eventSelection,
+                                const char* triggerClassName,
+                                const char* centrality);
+
   void CreateTrackHistos(UInt_t dataType,
                          const char* eventSelection,
                          const char* triggerClassName,
@@ -139,6 +142,10 @@ protected:
                         Int_t nbinsx, Double_t xmin, Double_t xmax,
                         Int_t nbinsy=-1, Double_t ymin=0.0, Double_t ymax=0.0) const;
 
+  Bool_t ExistSemaphoreHistogram(const char* eventSelection,
+                                 const char* triggerClassName,
+                                 const char* centrality) const;
+  
   TH1* Histo(const char* eventSelection, const char* histoname);
   TH1* Histo(const char* eventSelection, const char* triggerClassName, const char* histoname);
   TH1* Histo(const char* eventSelection, const char* triggerClassName, const char* cent, const char* histoname);
