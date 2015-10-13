@@ -119,7 +119,9 @@ void AliAnalysisTaskEmcalOfflinePatchesRef::UserCreateOutputObjects(){
 
 void AliAnalysisTaskEmcalOfflinePatchesRef::UserExec(Option_t *){
   if(!fGeometry){
-    fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+    fGeometry = AliEMCALGeometry::GetInstance();
+    if(!fGeometry)
+      fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
   }
   TClonesArray *patches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
   TString triggerstring = fInputEvent->GetFiredTriggerClasses();
