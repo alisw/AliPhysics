@@ -80,7 +80,7 @@ AliTPCtrack::AliTPCtrack(Double_t x, Double_t alpha, const Double_t p[5],
   //-----------------------------------------------------------------
   // This is the main track constructor.
   //-----------------------------------------------------------------
-  Double_t cnv=1./(AliTracker::GetBz()*kB2C);
+  Double_t cnv=1./(AliTracker::GetBz()*kB2C); // RS: avoid extra field calculations
 
   Double_t pp[5]={
     p[0],
@@ -315,7 +315,7 @@ Bool_t AliTPCtrack::PropagateTo(Double_t xk,Double_t rho,Double_t x0) {
   //  x0  - radiation length of the crossed material (g/cm^2) 
   //-----------------------------------------------------------------
   //
-  Double_t bz=GetBz();
+  Double_t bz=AliTracker::GetBz(); //RS: avoid extra field calculations for crude checks
   Double_t zat=0;
   if (!GetZAt(xk, bz,zat)) return kFALSE;
   if (TMath::Abs(zat)>250.){
