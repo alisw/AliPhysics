@@ -234,9 +234,9 @@ inline void AliFlatESDVZEROFriend::GetESDVZEROfriend( AliESDVZEROfriend &v ) con
     }
     for (Int_t iEv = 0; iEv < kNEvOfInt; iEv++) {
       v.SetPedestal( iChannel, iEv, fADC[iChannel][iEv] );
-      v.SetIntMBFlag( iChannel, iEv, fIsInt[iChannel][iEv] );
-      v.SetBBMBFlag( iChannel, iEv, fIsBB[iChannel][iEv] );
-      v.SetBGMBFlag( iChannel, iEv, fIsBG[iChannel][iEv] );
+      v.SetIntegratorFlag( iChannel, iEv, fIsInt[iChannel][iEv] );
+      v.SetBBFlag( iChannel, iEv, fIsBB[iChannel][iEv] );
+      v.SetBGFlag( iChannel, iEv, fIsBG[iChannel][iEv] );
     }
     v.SetTime( iChannel, fTime[iChannel] );
     v.SetWidth( iChannel, fWidth[iChannel] );
