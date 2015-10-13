@@ -62,6 +62,7 @@
 #pragma link C++ class AliAnalysisMCNuclMult+;
 
 #pragma link C++ class AliAnalysisDeuteronpA+;
+#pragma link C++ class AliAnalysisDeuteronTree+;
 
 #pragma link C++ class AliXtAnalysis+;
 #pragma link C++ class AliJXtHistos+;

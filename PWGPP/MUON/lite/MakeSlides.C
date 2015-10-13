@@ -239,7 +239,7 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   outFile << "  \\item GDC mStream Recording:	Yes" << endl;
   outFile << "  \\item Period: " << period.Data() << endl;
   outFile << "  \\item Detectors: At least [ MUON\\_TRG \\& MUON\\_TRK ] as Readout" << endl;
-  outFile << "  \\item Quality: globaly GOOD and NOT BAD for readout Detectors" << endl;
+  outFile << "  \\item Quality: globally GOOD and NOT BAD for readout Detectors" << endl;
   outFile << "  \\item Beam Mode: STABLE" << endl;
   outFile << " \\end{itemize}" << endl;
   outFile << "\\end{itemize}" << endl;
@@ -495,6 +495,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
   TObjArray* trigList = triggerList.Tokenize(",");
 
   ofstream outFile(texFilename);
+  outFile << "%TriggerList=" << triggerList.Data() << endl;
   MakePreamble(outFile);
   BeginSlides(period,pass,authors,outFile);
 

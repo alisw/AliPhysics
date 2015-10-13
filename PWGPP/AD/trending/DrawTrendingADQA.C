@@ -69,6 +69,7 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   Float_t ratePhysBGA = -1024, ratePhysBGC = -1024;
   Float_t channelTimeMean[16], channelTimeSigma[16];
   Float_t flagNoTimeFraction[16];
+  Float_t thresholdData[16], thresholdOCDB[16];
   
   ttree->SetBranchAddress("adReady",&adReady);
   ttree->SetBranchAddress("invalidInput",&invalidInput);
@@ -116,6 +117,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   ttree->SetBranchAddress("channelTimeMean", &channelTimeMean[0]);
   ttree->SetBranchAddress("channelTimeSigma", &channelTimeSigma[0]);
   ttree->SetBranchAddress("flagNoTimeFraction", &flagNoTimeFraction[0]);
+  ttree->SetBranchAddress("thresholdData", &thresholdData[0]);
+  ttree->SetBranchAddress("thresholdOCDB", &thresholdOCDB[0]);
   
   //----------------------Make trending histos------------------------------------
   ttree->GetEntry(0);
@@ -173,6 +176,8 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   TH1F *hRatePhysBGC = new TH1F("hRatePhysBGC","Physics selection rate BG;;Trigger rate",nRuns,-0.5,nRuns-0.5);
   
   TH2F *hFlagNoTime = new TH2F("hFlagNoTime","Fraction of events with BB/BG flag but not time;Channel;Fraction",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hThresholdData = new TH2F("hThresholdData","Threshold from data fit;Channel;Threshold",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
+  TH2F *hThresholdOCDB = new TH2F("hThresholdOCDB","Threshold from OCDB;Channel;Threshold",16,-0.5,15.5,nRuns,-0.5,nRuns-0.5);
   
   char ChannelInt[10];
   for(Int_t iPM=0; iPM<16; iPM++){
@@ -216,6 +221,9 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
   fListHist.Add(hRatePhysBGA);
   fListHist.Add(hRatePhysBGC);
   fListHist.Add(hFlagNoTime);
+  fListHist.Add(hThresholdData);
+  fListHist.Add(hThresholdOCDB);
+  
   
   //----------------------Loop over runs in tree------------------------------------
   char runlabel[6];      
@@ -415,6 +423,14 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
 	hFlagNoTime->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
 	for(Int_t i=0; i<16; i++) hFlagNoTime->SetBinContent(i+1,goodrun+1,flagNoTimeFraction[i]);
 	hFlagNoTime->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hThresholdData->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<16; i++) hThresholdData->SetBinContent(i+1,goodrun+1,thresholdData[i]);
+	hThresholdData->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
+	
+	hThresholdOCDB->SetBins(16,-0.5,15.5,goodrun+1,0,goodrun+1);
+	for(Int_t i=0; i<16; i++) hThresholdOCDB->SetBinContent(i+1,goodrun+1,thresholdOCDB[i]);
+	hThresholdOCDB->GetYaxis()->SetBinLabel(goodrun+1,runlabel);
 	
 	goodrun++;
         }
@@ -947,6 +963,44 @@ Int_t DrawTrendingADQA(TString mergedTrendFile ="trending.root")
       cBad6->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
       cBad6->SaveAs(Form("%s/ADQA__NoEntries.png",plotDir.Data()));
     }
+    
+  TCanvas *c16 = new TCanvas("Thresholds"," ",1200,800); 
+  c16->Draw();						
+  c16->cd();
+  TPad *myPad16 = new TPad("myPad16", "The pad",0,0,1,1);
+  myPad16->Divide(4,4);
+  myPad16->Draw();
+  
+  TH1D *hChannelSliceBlue;
+  TH1D *hChannelSliceRed;
+  for(Int_t i = 0; i<16; i++){
+  	myPadSetUp(myPad16->cd(i+1),0.15,0.00,0.05,0.15);
+  	myPad16->cd(i+1);
+  	gPad->SetGridy();
+	hChannelSliceRed = hThresholdData->ProjectionY("hChannelSliceRed",i+1,i+1);
+	myHistSetUp(hChannelSliceRed);
+	hChannelSliceRed->SetLineWidth(1);
+	hChannelSliceRed->SetLineColor(kRed);
+	hChannelSliceRed->GetXaxis()->SetTitle("");
+	hChannelSliceRed->GetYaxis()->SetTitle("Threshold [ADC counts]");
+	hChannelSliceRed->SetTitle(Form("Threshold, channel %d",i));
+	
+	hChannelSliceBlue = hThresholdOCDB->ProjectionY("hChannelSliceBlue",i+1,i+1);
+	myHistSetUp(hChannelSliceBlue);
+	hChannelSliceBlue->SetLineWidth(1);
+	hChannelSliceBlue->SetLineColor(kBlue);
+	myScaleSetUp(hChannelSliceRed,hChannelSliceBlue);
+	hChannelSliceRed->DrawCopy("HIST");
+	hChannelSliceBlue->DrawCopy("HISTSAME");
+	
+	TLegend *myLegend4 = new TLegend(0.36,0.62,0.62,0.84);
+        myLegendSetUp(myLegend4,0.08,1);
+        myLegend4->AddEntry(hChannelSliceRed,"Data","l");
+        myLegend4->AddEntry(hChannelSliceBlue,"OCDB","l");
+	myLegend4->Draw();
+	}
+ 
+  c16->Print(Form("%s/QA_Resume_%d_%d.pdf",plotDir.Data(),minRun,maxRun));
 
   TCanvas *c8 = new TCanvas("Pedestal mean"," ",1200,400); 
   c8->Draw();						
