@@ -976,8 +976,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       		delete trk_clone;
 				
-		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
-		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		//new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
+		//((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
 		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
 		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
@@ -1072,8 +1072,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       		delete trk_clone;
 		
-		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
-		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		//new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
+		//((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
 		
 		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
@@ -1128,6 +1128,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
 {
 
+  for(Int_t i=0; i<ntrg; i++) fTriggerInputsMC[i] = kFALSE;
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
   fTriggerInputsMC[0] = fL0inputs & (1 << 0);   //0VBA VZERO A
   fTriggerInputsMC[1] = fL0inputs & (1 << 1);   //0VBC VZERO C
@@ -1744,7 +1745,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
 {
-  
+  for(Int_t i=0; i<ntrg; i++) fTriggerInputsMC[i] = kFALSE;
   fTriggerInputsMC[0] = esd->GetHeader()->IsTriggerInputFired("0VBA"); //VZERO A
   fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0VBC"); //VZERO C
   fTriggerInputsMC[2] = esd->GetHeader()->IsTriggerInputFired("0OMU"); //TOF two hits with topology
