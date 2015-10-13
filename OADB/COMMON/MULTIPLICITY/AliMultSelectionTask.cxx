@@ -88,6 +88,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkTrigger(AliVEvent::kMB),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -153,6 +154,7 @@ fInput(0)
 AliMultSelectionTask::AliMultSelectionTask(const char *name)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
 fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkTrigger(AliVEvent::kMB),
 fZncEnergy(0),
 fZpcEnergy(0),
 fZnaEnergy(0),
@@ -475,7 +477,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     // (static if possible) 
     //------------------------------------------------
     
-    fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent);
+    fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent,fkTrigger);
     fEvSel_IsNotPileup               = IsNotPileupSPD                      (lVevent);
     fEvSel_IsNotPileupInMultBins     = IsNotPileupSPDInMultBins            (lVevent);
     fEvSel_IsNotPileupMV             = IsNotPileupMV                       (lVevent);
@@ -852,13 +854,13 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
 
 
 //______________________________________________________________________
-Bool_t AliMultSelectionTask::IsSelectedTrigger(AliVEvent* event, AliVEvent::EOfflineTriggerTypes trigType)
+Bool_t AliMultSelectionTask::IsSelectedTrigger(AliVEvent* event, AliVEvent::EOfflineTriggerTypes lCheckedTrig)
 // Function to check for a specific trigger class available in AliVEvent (default AliVEvent::kMB)
 {
     //Code to reject events that aren't trigType
     UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isSelected = 0;
-    isSelected = (maskIsSelected & trigType) == trigType;
+    isSelected = (maskIsSelected & lCheckedTrig) == lCheckedTrig;
     return isSelected;
 }
 

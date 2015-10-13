@@ -61,12 +61,14 @@ public:
     virtual ~AliMultSelectionTask();
     
     //Static Event Selection Functions 
-    static Bool_t IsSelectedTrigger                        (AliVEvent* event, AliVEvent::EOfflineTriggerTypes trigType = AliVEvent::kMB);
+    static Bool_t IsSelectedTrigger                    (AliVEvent* event, AliVEvent::EOfflineTriggerTypes lCheckedTrig);
     static Bool_t IsINELgtZERO                         (AliVEvent *event);
     static Bool_t IsAcceptedVertexPosition             (AliVEvent *event);
     static Bool_t IsNotPileupSPD                       (AliVEvent *event);
     static Bool_t IsNotPileupSPDInMultBins             (AliVEvent *event);
     static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
+    
+    void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
     Bool_t IsNotPileupMV (AliVEvent *event);
@@ -97,6 +99,9 @@ private:
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached; //if true, has already attached to ESD (AOD)
+    
+    //Trigger selection
+    AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
