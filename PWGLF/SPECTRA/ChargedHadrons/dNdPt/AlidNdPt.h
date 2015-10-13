@@ -52,12 +52,14 @@ public:
   void SetTrackCuts(AliESDtrackCuts* const cuts)                { fEsdTrackCuts = cuts; }
   void SetMultTrackCuts(AliESDtrackCuts* const cuts)            { fMultTrackCuts = cuts; }
   void SetUseMCInfo(const Bool_t info)                          { fUseMCInfo = info; }
+  void SetUsePileUpRejection(Bool_t pileup)			{ fUsePileUpRejection = pileup;}  
   void SetAnalysisMode(const AlidNdPtHelper::AnalysisMode mode) { fAnalysisMode = mode; }
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
   void SetTriggerClass(const Char_t *triggerClass)              { fTriggerClass = triggerClass; }
   void SetParticleMode(const AlidNdPtHelper::ParticleMode mode) { fParticleMode = mode; }
   void SetPhysicsTriggerSelection(AliPhysicsSelection* const selection)  { fPhysicsSelection = selection; }
   void SetBackgroundCuts(AlidNdPtBackgroundCuts* const cuts)    { fdNdPtBackgroundCuts = cuts; }
+
 
   AlidNdPtEventCuts* GetEventCuts() const                       { return fdNdPtEventCuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fdNdPtAcceptanceCuts; }
@@ -66,6 +68,7 @@ public:
   AliESDtrackCuts* GetTrackCuts() const                         { return fEsdTrackCuts; }
   AliESDtrackCuts* GetMultTrackCuts() const                     { return (fMultTrackCuts) ? fMultTrackCuts: fEsdTrackCuts; }  
   Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
+  Bool_t IsUsePileUpRejection() const				{ return fUsePileUpRejection;}
   AlidNdPtHelper::AnalysisMode GetAnalysisMode() const          { return fAnalysisMode; }
   AliTriggerAnalysis::Trigger GetTrigger() const                { return fTrigger; }
   const Char_t* GetTriggerClass() const                         { return fTriggerClass; }
@@ -100,6 +103,7 @@ private:
   AliESDtrackCuts *fMultTrackCuts;               // esd track cuts for multiplicity estimator
 
   Bool_t fUseMCInfo;                            // use MC information
+  Bool_t fUsePileUpRejection;			// use Pile up rejection (pp)
   AlidNdPtHelper::AnalysisMode fAnalysisMode;   // analysis mode TPC only, TPC + ITS
   AliTriggerAnalysis::Trigger fTrigger;         // trigger definition MB1, MB2 ...
   const Char_t * fTriggerClass;                 // trigger class
