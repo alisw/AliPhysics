@@ -27,7 +27,7 @@
 
 bool IsADReady(Int_t run);
 
-Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 226440,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE)
+Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 226444,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE)
 {
   
   TTree *ttree=new TTree("trending","tree of trending variables");
@@ -50,6 +50,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   Float_t ratePhysBGA = -1024, ratePhysBGC = -1024;
   Float_t channelTimeMean[16], channelTimeSigma[16];
   Float_t flagNoTimeFraction[16];
+  Float_t thresholdData[16], thresholdOCDB[16];
   
 
   TString treePostFileName="trending.root";
@@ -136,6 +137,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   ttree->Branch("channelTimeSigma", &channelTimeSigma[0], "channelTimeSigma[16]/F");
   ttree->Branch("channelTimeSigma", &channelTimeSigma[0], "channelTimeSigma[16]/F");
   ttree->Branch("flagNoTimeFraction", &flagNoTimeFraction[0], "flagNoTimeFraction[16]/F");
+  ttree->Branch("thresholdData", &thresholdData[0], "thresholdData[16]/F");
+  ttree->Branch("thresholdOCDB", &thresholdOCDB[0], "thresholdOCDB[16]/F");
   
 
   if(!QAfile)
@@ -253,18 +256,18 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 
   TH2F *fHistChargePerCoincidence = dynamic_cast<TH2F*> (flistQA->FindObject("fHistChargePerCoincidence"));
 
-  //TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADA"));
-  //TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADC"));
-  TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADA"));
-  TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADC"));
+  TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADA"));
+  TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeADC"));
+  //TH1F *fHistMeanTimeADA = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADA"));
+  //TH1F *fHistMeanTimeADC = dynamic_cast<TH1F*> (flistQA->FindObject("fHistRobustTimeADC"));
   TH1F *fHistMeanTimeDifference = dynamic_cast<TH1F*> (flistQA->FindObject("fHistMeanTimeDifference"));
 
   TH2F *fHistMeanTimeCorrelation = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMeanTimeCorrelation"));
   TH2F *fHistMeanTimeSumDiff = dynamic_cast<TH2F*> (flistQA->FindObject("fHistMeanTimeSumDiff"));
 
-  //TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecision"));
+  TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecision"));
   //TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecisionBasic"));
-  TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecisionRobust"));
+  //TH2F *fHistDecision = dynamic_cast<TH2F*> (flistQA->FindObject("fHistDecisionRobust"));
 
   TH1F *fHistTriggerMasked = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerMasked"));
   TH1F *fHistTriggerOthers = dynamic_cast<TH1F*> (flistQA->FindObject("fHistTriggerOthers"));
@@ -410,7 +413,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   TH1D *hChargeSliceAll[16];
   TH1D *hChargeSliceTime[16];
   TH1D *hChargeSliceBB[16];
-  TH1D *hChargeTimeEff[16];
+  TH1D *hThresholdShape[16];
   
   for(Int_t i = 0; i<16; i++){
   	TString channelNameAll = "hChargeSliceAll";
@@ -428,11 +431,29 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 	TString channelTitle = "Integrated charge, PM ";
 	channelTitle += i;
 	hChargeSliceAll[i]->SetTitle(channelTitle.Data());
-	}
 	
-  
+	TString thresholdShapeName = "hThresholdShape";
+	thresholdShapeName += i;
+	hThresholdShape[i] = (TH1D*)hChargeSliceTime[i]->Clone(thresholdShapeName.Data());
+	hThresholdShape[i]->Divide(hChargeSliceAll[i]);
+	
+	TString thresholdTitle = "Threshold shape, PM ";
+	thresholdTitle += i;
+	hThresholdShape[i]->SetTitle(thresholdTitle.Data());
+	}
+
   AliCDBEntry *entCD = man->Get("AD/Calib/Data");
   AliADCalibData *fCalibData = (AliADCalibData*)entCD->GetObject();
+	
+  TF1 *thrFit = new TF1("thrFit","1/(1+TMath::Exp(-x + [0]))",1,50);
+  for(Int_t i = 0; i<16; i++){
+  	thrFit->SetParameter(0,fCalibData->GetCalibDiscriThr(i));
+  	fitStatus = hThresholdShape[i]->Fit("thrFit","+R");
+	if(fitStatus == 0) thresholdData[i] = thrFit->GetParameter(0);
+	thresholdOCDB[i] = fCalibData->GetCalibDiscriThr(i);
+	cout<<"thr Fit = "<<thresholdData[i]<<" thr OCDB = "<<thresholdOCDB[i]<<endl; 
+  	}
+  
   for(Int_t i = 0; i<32; i++){
   	meanPedestal[i] = fCalibData->GetPedestal(i);
 	widthPedestal[i] = fCalibData->GetSigma(i);
@@ -629,6 +650,36 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
  
     c24->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
+    TCanvas *c25 = new TCanvas("ThresholdShape"," ",1500,800);
+    c25->Draw();
+    c25->cd();
+    TPad *myPad25 = new TPad("myPad25", "The pad",0,0,1,1);
+    myPad25->Divide(4,4);
+    myPad25->Draw();
+    
+    TF1 *thrModel = new TF1("thrModel","1/(1+TMath::Exp(-x + [0]))",1,50);
+    thrModel->SetLineColor(kGreen);
+    
+    TLegend *myLegend4 = new TLegend(0.48,0.26,0.73,0.47);
+    myLegendSetUp(myLegend4,0.08,1);
+    myLegend4->AddEntry(hThresholdShape[0],"With_Time/All","l");
+    myLegend4->AddEntry(thrModel,"Model","l");
+    
+    for(Int_t i=0; i<16; i++){
+    	myPadSetUp(myPad25->cd(i+1),0.00,0.00,0.00,0.15);
+    	myPad25->cd(i+1);
+    	gPad->SetLogy();
+	myHistSetUp(hThresholdShape[i]);
+    	hThresholdShape[i]->GetXaxis()->SetRangeUser(0,50);
+	hThresholdShape[i]->SetFillStyle(3001);
+	hThresholdShape[i]->SetFillColor(kYellow);
+	hThresholdShape[i]->Draw();
+	thrModel->SetParameter(0,fCalibData->GetCalibDiscriThr(i));
+	thrModel->DrawCopy("same");
+	myLegend4->Draw();
+	}
+ 
+    c25->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
     myHistSetUp(fHistTimePerPM_Corr);
     myHistSetUp(fHistTimePerPM_UnCorr);
@@ -653,7 +704,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
 
     c3->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
-    TCanvas *c31 = new TCanvas("ChargeLandau"," ",1500,800);
+    TCanvas *c31 = new TCanvas("TimeFitChannels"," ",1500,800);
     c31->Draw();
     c31->cd();
     TPad *myPad31 = new TPad("myPad31", "The pad",0,0,1,1);

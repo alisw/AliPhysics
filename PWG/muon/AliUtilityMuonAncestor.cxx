@@ -118,9 +118,9 @@ Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCE
   SETBIT(fMask,kIsID);
   
   Int_t recoPdg = mcParticle->PdgCode();
-  
-  // Track is not a muon
+
   if ( TMath::Abs(recoPdg) == 13 ) SETBIT(fMask,kIsMuon);
+  else return kTRUE; // Track is not a muon. Do not check ancestors
   
   Int_t imother = mcParticle->GetMother();
 

@@ -39,6 +39,7 @@ public:
     {
 	fAnaTypeAOD = IsAnaTypeAOD;
     }
+
     void SetUseSignDefinitionAtlas(Bool_t val = kTRUE)
     {
 	fUseSignAtlas = val;
@@ -52,10 +53,11 @@ public:
 	fUse3DsIP = val;
     };
 
-    virtual AliVTrack* GetCurrentTrack(int i =0 );
+    virtual AliVTrack* GetCurrentTrack(int i = 0);
+    virtual Double_t GetCurrentTrackDCAz(int i = 0);
 
 private:
-    Bool_t GetImpactParameter(AliVTrack* bTrack, Double_t* bSign, Double_t* bIp2d);
+    Bool_t GetImpactParameter(AliVTrack* bTrack, Double_t* bSign, Double_t* bIp2d, Double_t* zDCA);
     Bool_t PassedCuts(AliVTrack* bTrack, Double_t ip);
     Bool_t IsV0DaughterRadius(AliVTrack* track, Double_t& Radius);
     Bool_t IsInQualityClass(AliAODTrack* track, int qclass);
@@ -63,20 +65,22 @@ private:
     Double_t CalculateTrackProbability(AliVTrack* bTrack);
     Double_t GetSignAtlasDefinition(Double_t* xDCA, Double_t* pDCA, Double_t* xVtx, Double_t* pJet);
     static bool mysort(const std::pair<Int_t, Double_t>& i, const std::pair<Int_t, Double_t>& j);
-
+    void SetCurrentDCAz();
     Bool_t fUseThresholdFuction;
     Bool_t fAnaTypeAOD;
     Bool_t fUseSignAtlas;
     Bool_t fUseSignificance;
     Bool_t fUse3DsIP;
-    Int_t fCurrentTrack[3]; //[3];
+    Int_t fCurrentTrack[3];        //[3];
+    Double_t fCurrentTrackDCAz[3]; //[3];
 
     Double_t fSelectionCuts[7]; //[7]
     Double_t fCurrentDCA;
     Double_t fThreshold;
-    std::vector<Double_t> fDiscriminators; //
+    std::vector<Double_t> fDiscriminators;              //
+    std::vector<std::pair<Int_t, Double_t> > fTrackDCA; //
     std::vector<unsigned int> fJetIndices; // //Indices to get matched MC jet
-
+	
     TF1* fThresholdFuction;           //!
     AliVEvent* fEvent;                //!
     AliVVertex* fVertex;              //!
