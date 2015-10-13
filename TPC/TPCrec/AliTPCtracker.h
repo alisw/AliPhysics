@@ -171,6 +171,8 @@ public:
    void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void SumTracks(TObjArray *arr1,TObjArray *&arr2);
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
+   //
+   Double_t GetDistortionX(const AliTPCseed* seed, int row);
 
    //
    virtual Bool_t OwnsESDObjects() const {return kTRUE;} //RS TPC owns the seeds stored in the friends
@@ -280,7 +282,9 @@ private:
    Bool_t fClStatFound[kMaxRow];        //! cached info on found clusters of the seed   
    Bool_t fClStatShared[kMaxRow];       //! cached info on shared clusters of the seed   
    //
-   ClassDef(AliTPCtracker,4) 
+   Int_t fAccountDistortions;           //! flag to account for distortions. RS: to set!
+   //
+   ClassDef(AliTPCtracker,5) 
 };
 
 
