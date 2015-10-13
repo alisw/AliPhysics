@@ -2678,7 +2678,6 @@ void AliFourPion::UserExec(Option_t *)
 	      // Build 2-pion correlations from previous 2-pion tabulations
 	      if(!fTabulatePairs && bin1==bin2 && qinv12<0.1){
 		GetWeight(pVect1, pVect2, weight12, weight12Err);
-		if(weight12<0) weight12=0;
 		//
 		if(fCorrectWeights){
 		  momBin12 = fMomResC2SC->GetYaxis()->FindBin(qinv12);
@@ -2689,6 +2688,8 @@ void AliFourPion::UserExec(Option_t *)
 		  weight12CC[2] /= FSICorr12*ffcSq;
 		  weight12CC[2] *= MuonCorr12;
 		}else weight12CC[2] = weight12;
+
+		if(weight12CC[2]<0) weight12CC[2]=0;
 		
 		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fBuild->Fill(4, kT12, qinv12, 1);
 		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fBuild->Fill(5, kT12, qinv12, weight12CC[2]);
