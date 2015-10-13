@@ -143,6 +143,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetMassCut(Int_t massCut);
   Bool_t SetDoWeights(Int_t opc);
   Bool_t SetUseVPhotonMCPmearing(Int_t useMCPSmearing);
+  Bool_t SetUseCrossedRows(Bool_t opc){fUseCrossedRows = opc;};
   
   // Request Flags
 
