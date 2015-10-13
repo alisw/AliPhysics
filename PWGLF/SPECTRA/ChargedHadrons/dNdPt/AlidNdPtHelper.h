@@ -69,6 +69,7 @@ class AlidNdPtHelper : public TObject
 
     static Bool_t SelectEvent(const AliESDEvent* const aEsd, AliESDtrackCuts* const esdTrackCuts);
     static Bool_t SelectMCEvent(AliMCEvent* const mcEvent);
+    static Bool_t SelectMCEventINEL0(AliMCEvent* const mcEvent, Double_t ptmin = 0, Double_t etarange = 1.0);
 
     static TObjArray *GetAllChargedTracks(AliESDEvent *const esdEvent, AnalysisMode analysisMode);
 
