@@ -117,6 +117,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void Setq2CutLow(Float_t q2l) {fq2CutLow = q2l;}
   void Setq2CutHigh(Float_t q2h) {fq2CutHigh = q2h;}
   void SetQinvMin(Float_t qim) {fQLowerCut = qim;}
+  void SetOnlineCorrection(Bool_t FC) {fCorrectWeights = FC;}
   //
   Short_t GetCollisionType() {return fCollisionType;}
   
@@ -208,7 +209,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH2D *fPIDpurityDen; //!
     TH3D *fPIDpurityNum; //!
     //
-    TH2D *fBuild; //!
+    TH3D *fBuild; //!
     struct St7 OSL_ktbin[2];
   };
   struct StFourPT {
@@ -283,6 +284,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGenerateSignal;
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
+  Bool_t fCorrectWeights;
   Short_t fInterpolationType;
   Bool_t fOneDInterpolation;
   Bool_t fMixedChargeCut;
