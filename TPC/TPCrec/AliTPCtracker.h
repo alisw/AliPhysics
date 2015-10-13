@@ -172,7 +172,7 @@ public:
    void SumTracks(TObjArray *arr1,TObjArray *&arr2);
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
    //
-   Double_t GetDistortionX(const AliTPCseed* seed, int row);
+   Bool_t DistortX(const AliTPCseed* seed, double& x, int row);
 
    //
    virtual Bool_t OwnsESDObjects() const {return kTRUE;} //RS TPC owns the seeds stored in the friends

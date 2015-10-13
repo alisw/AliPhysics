@@ -2570,18 +2570,18 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
   //
   UInt_t index=0;
   //  if (TMath::Abs(t.GetSnp())>0.95 || TMath::Abs(x*t.GetC()-t.GetEta())>0.95) return 0;// patch 28 fev 06
+  //
+  if (fAccountDistortions && !DistortX(&t,x,nr)) {
+      if (fIteration==0) t.SetRemoval(10);
+      return 0;
+  }
   if (!t.PropagateTo(x)) {
     if (fIteration==0) t.SetRemoval(10);
     return 0;
   }
   //
-  if (fAccountDistortions) {
-    double xDist = GetDistortionX(&t, nr);
-    x += xDist;
-  }
-
   Double_t y = t.GetY(); 
-  if (TMath::Abs(y)>ymax){ //RS:? before changing sector check if there are shifted clusters?
+  if (TMath::Abs(y)>ymax){ //RS:? before changing sector check if there are shifted clusters? TODO
     if (y > ymax) {
       t.SetRelativeSector((t.GetRelativeSector()+1) % fN);
       if (!t.Rotate(fSectors->GetAlpha())) 
@@ -2590,6 +2590,11 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
       t.SetRelativeSector((t.GetRelativeSector()-1+fN) % fN);
       if (!t.Rotate(-fSectors->GetAlpha())) 
 	return 0;
+    }
+    x = GetXrow(nr);
+    if (fAccountDistortions && !DistortX(&t,x,nr)) {
+      if (fIteration==0) t.SetRemoval(10);
+      return 0;
     }
     if (!t.PropagateTo(x)) {
       if (fIteration==0) t.SetRemoval(10);
@@ -2600,7 +2605,6 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
   //
   Double_t z=t.GetZ();
   //
-
   if (!IsActive(t.GetRelativeSector(),nr)) {
     t.SetInDead(kTRUE);
     t.SetClusterIndex2(nr,-1); 
@@ -8700,6 +8704,79 @@ void AliTPCtracker::GetSeedClusterStatistic(const AliTPCseed* seed, Int_t first,
   }
 }
 
+Bool_t AliTPCtracker::DistortX(const AliTPCseed* seed, double& x, int row)
+{
+  // distort X by the distorion at track location on given row
+  //
+  //RS:? think to unset fAccountDistortions if no maps are used
+  if (!AliTPCReconstructor::GetRecoParam()->GetUseCorrectionMap()) return kTRUE;
+  double xyz[3]; 
+  int rowInp = row;//RS
+  if (!seed->GetYZAt(x,AliTracker::GetBz(),&xyz[1])) return kFALSE; //RS:? Think to cache fBz?
+  xyz[0] = x;
+  int roc = seed->GetRelativeSector();
+  if (seed->GetZ()<0) roc += 18;
+  if (row>62) {
+    roc += 36;
+    row -= 63;
+  }
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  AliTPCTransform *transform = calibDB->GetTransform();
+  if (!transform) AliFatal("Tranformations not in calibDB");
+  x += transform->EvalCorrectionMap(roc,row,xyz,0);
+  return kTRUE;
+}
+
+Double_t AliTPCtracker::GetDistortionX(double x, double y, double z, int sec, int row)
+{
+  // get X distortion at location on given row
+  //
+  if (!AliTPCReconstructor::GetRecoParam()->GetUseCorrectionMap()) return 0;
+  double xyz[3] = {x,y,z}; 
+  int rowInp = row;
+  int secInp = sec;
+  if (z<0) sec += 18;
+  if (row>62) {
+    sec += 36;
+    row -= 63;
+  }
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  AliTPCTransform *transform = calibDB->GetTransform() ;
+  if (!transform) AliFatal("Tranformations not in calibDB");
+  return transform->EvalCorrectionMap(sec,row,xyz,0);
+}
+
+Double_t AliTPCtracker::GetYSectEdgeDist(int sec, int row, double y, double z) 
+{
+  // get the signed  shift for maxY of the sector/row accounting for distortion
+  // Slow way, to speed up
+  if (!AliTPCReconstructor::GetRecoParam()->GetUseCorrectionMap()) return 0;
+  double ymax = 0.9*GetMaxY(row); // evaluate distortions at 5% of pad lenght from the edge
+  if (y<0) ymax = -ymax;
+  double xyz[3] = {GetXrow(row),ymax,z}; 
+  if (z<0) sec += 18;
+  if (row>62) {
+    sec += 36;
+    row -= 63;
+  }
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  AliTPCTransform *transform = calibDB->GetTransform();
+  if (!transform) AliFatal("Tranformations not in calibDB");
+  // change of distance from the edge due to the X shift 
+  double dxtg = transform->EvalCorrectionMap(sec,row,xyz,0)*AliTPCTransform::GetMaxY2X();
+  double dy = transform->EvalCorrectionMap(sec,row,xyz,1);
+  return dy + (y>0?dxtg:-dxtg);
+  //
+}
+
+Int_t AliTPCtracker::GetTrackSector(double alpha)
+{
+  //convert alpha to sector
+  if (alpha<0) alpha += TMath::Pi()*2;
+  int sec = alpha/(TMath::Pi()/9);
+  return sec;
+}
+
 void AliTPCtracker::CleanESDFriendsObjects(AliESDEvent* esd)
 {
   // RS: remove seeds stored in friend's calib object contained w/o changing its ownership
@@ -8719,24 +8796,6 @@ void AliTPCtracker::CleanESDFriendsObjects(AliESDEvent* esd)
     }
   }
   //
-
-Double_t AliTPCtracker::GetDistortionX(const AliTPCseed* seed, int row)
-{
-  // get distorion at track location on given row
-  //
-  //RS:? think to unset fAccountDistortions if no maps are used
-  if (!AliTPCReconstructor::GetRecoParam()->GetUseCorrectionMap()) return 0; 
-  int roc = seed->GetRelativeSector();
-  if (seed->GetZ()<0) roc += 18;
-  if (row>63) {
-    roc += 36;
-    row -= 63;
-  }
-  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
-  AliTPCTransform *transform = calibDB->GetTransform() ;
-  if (!transform) AliFatal("Tranformations not in calibDB");
-  double xyz[3]={seed->GetX(),seed->GetY(),seed->GetZ()};
-  return transform->EvalCorrectionMap(roc,row,xyz,0);
 }
 
 //__________________________________________________________________
