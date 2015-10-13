@@ -118,7 +118,7 @@ full_refit()
     local outd=$1 ; shift 
     local outf=$1 ; shift
     local reft="forward_eloss.root"
-    local corr="${outd}/fmd_corrections.root"
+    local corr="${top}/${outd}/fmd_corrections.root"
 
     # --- Check if we should refit -----------------------------------
     if test -f ${outd}/${outf} ; then
@@ -189,9 +189,9 @@ download_file()
     mess 10 "Will process $outd/${outf} ($1)"
 
     if test $refit -gt 0 ; then
-	full_refit "${outd}" "${outf}"
+	full_refit "${top}/${outd}" "${outf}"
     else 
-	extract "${outd}" "${outf}"
+	extract "${top}/${outd}" "${outf}"
     fi 
     
 }
@@ -291,6 +291,7 @@ if test $((${force} & 0x2)) -ne 0 ; then
 	 -name "bad.root" -or \
 	 -name "diagnostics.root" -or \
 	 -name "Upload.C" \
+	 -name "refit.log" \
 	| xargs rm -f
     force=$(($force | 0x4))
 fi
@@ -313,6 +314,16 @@ fi
 # --- Now get and analyse each run -----------------------------------
 download_files ${top}/ $numf $maxjobs $files
 
+# --- Merge all made corrections into a single file ------------------
+if test ! -d ${top} ; then exit 0 ; fi 
+corrs=`find ${top} -name "fmd_corrections.root"`  
+for c in ${corrs} ; do
+    mess 1 "Merging ${c}"
+    root -l -b -q ${fwd}/corrs/Upload.C\(\"${top}\",\"${c}\"\) \
+	 >> upload.log 2>&1 
+done
+
+    
 #
 # EOF
 #

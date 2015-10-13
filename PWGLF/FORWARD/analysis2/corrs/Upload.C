@@ -9,14 +9,16 @@ TString MakeDest(const TString& dest, const TString& fname)
   return tmp;
 }
 
-void Upload(const TString& dest="")
+void Upload(const TString& dest="", const TString& src="fmd_corrections.root")
 {
-  gROOT->Macro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/scripts/LoadLibs.C");
+  const char* fwd = "$ALICE_PHYSICS/PWGLF/FORWARD/analysis2";
+  if (gSystem->Getenv("ANA_SRC")) fwd = gSystem->Getenv("ANA_SRC");
+  gROOT->Macro(Form("%s/scripts/LoadLibs.C",fwd));
   
-  const char* fmdFile = "fmd_corrections.root";
-  TString fdest = MakeDest(dest, fmdFile);
+  const char* fmdFile = gSystem->BaseName(src.Data());
+  TString     fdest   = MakeDest(dest, fmdFile);
   
-  AliForwardCorrectionManager::Instance().Append(fmdFile, fdest);
+  AliForwardCorrectionManager::Instance().Append(src, fdest);
 }
 // EOF
 

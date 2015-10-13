@@ -31,7 +31,7 @@ public:
   CorrDrawer() 
   {
     fELossExtra = ""; // forward_eloss.root";
-    fMinQuality = 8;
+    fMinQuality = AliFMDCorrELossFit::kDefaultQuality;
   }
   /** 
    * Destructor.  Closes the PDF 
