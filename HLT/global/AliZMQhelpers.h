@@ -37,7 +37,9 @@ int alizmq_detach (void *self, const char *endpoints, bool serverish=false);
 
 //general multipart messages (aliZMQmsg)
 //to access, just iterate over it.
+int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src);
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags);
+int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags);
 int alizmq_msg_close(aliZMQmsg* message);
 //helpers for accessing data via iterators
 int alizmq_msg_iter_topic(aliZMQmsg::iterator it, AliHLTDataTopic& topic);

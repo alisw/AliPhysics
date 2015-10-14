@@ -138,6 +138,8 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
   int zmqSocketMode = 0;
   std::string zmqEndpoints = "";
 
+  if (config.empty()) return 0;
+
   std::size_t found = config.find_first_of("@>-");
   if (found == std::string::npos || found == 0)
   {printf("misformed socket config string %s\n", config.c_str()); return 1;}
@@ -188,6 +190,31 @@ int alizmq_socket_init(void*& socket, void* context, std::string config, int tim
 
   //reset the object containers
   return zmqSocketMode;
+}
+
+//_______________________________________________________________________________________
+int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags)
+{
+  int nBytes=0;
+  int rc = 0;
+  for (aliZMQmsg::iterator i=message->begin(); i!=message->end(); ++i)
+  {
+    zmq_msg_t* topic = i->first;
+    zmq_msg_t* data = i->second;
+
+    int flags = ZMQ_SNDMORE;
+    rc = zmq_msg_send(topic, socket, flags);
+    if (rc<0) break;
+    nBytes+=rc;
+
+    if (&*i == &*message->rbegin()) flags=0; //last frame
+    rc = zmq_msg_send(data, socket, flags);
+    if (rc<0) break;
+    nBytes+=rc;
+  }
+  if (rc>=0) alizmq_msg_close(message);
+  else nBytes=rc;
+  return nBytes;
 }
 
 //_______________________________________________________________________________________
@@ -288,6 +315,39 @@ int alizmq_msg_iter_data(aliZMQmsg::iterator it, TObject*& object)
 }
 
 //_______________________________________________________________________________________
+int alizmq_msg_copy(aliZMQmsg* dst, aliZMQmsg* src)
+{
+  //copy (append) src to dst
+  int numberOfMessages=0;
+  for (aliZMQmsg::iterator i=src->begin(); i!=src->end(); ++i)
+  {
+    int rc=0;
+    zmq_msg_t* topicMsg = new zmq_msg_t;
+    rc  = zmq_msg_init(topicMsg);
+    rc += zmq_msg_copy(topicMsg, i->first);
+    if (rc<0) numberOfMessages=-1;
+    
+    zmq_msg_t* dataMsg = new zmq_msg_t;
+    rc  = zmq_msg_init(dataMsg);
+    rc += zmq_msg_copy(dataMsg, i->second);
+    if (rc<0) numberOfMessages=-1;
+
+    if (numberOfMessages<0)
+    {
+      zmq_msg_close(topicMsg);
+      zmq_msg_close(dataMsg);
+      delete topicMsg;
+      delete dataMsg;
+      return -1;
+    }
+    
+    dst->push_back(std::make_pair(topicMsg, dataMsg));
+    numberOfMessages++;
+  }
+  return numberOfMessages;
+}
+
+//_______________________________________________________________________________________
 int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags)
 {
   int rc = -1;
@@ -315,7 +375,7 @@ int alizmq_msg_recv(aliZMQmsg* message, void* socket, int flags)
       receiveStatus=-1;
       break;
     }
-    receiveStatus==rc;
+    receiveStatus+=rc;
 
     message->push_back(std::make_pair(topicMsg,dataMsg));
 
