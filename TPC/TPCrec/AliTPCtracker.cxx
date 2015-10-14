@@ -1944,24 +1944,36 @@ void AliTPCtracker::FillClusterArray(TObjArray* array) const{
 }
 
 
-void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
+Int_t AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   //
   // transformation
+  // RS: return sector in which the cluster appears accounting for eventual distortions
+  const double kMaxY2X = AliTPCTransform::GetMaxY2X();  // tg of sector angular span
+  const double kSinSect = TMath::Sin(TMath::Pi()/9), kCosSect = TMath::Cos(TMath::Pi()/9);
   //
   AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
   AliTPCTransform *transform = calibDB->GetTransform() ;
   if (!transform) {
     AliFatal("Tranformations not in calibDB");
-    return;
+    return -1;
   }
   if (!transform->GetCurrentRecoParam()) transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
-  Int_t i[1]={cluster->GetDetector()};
-  transform->Transform(x,i,0,1);  
+  Int_t idROC = cluster->GetDetector();
+  transform->Transform(x,&idROC,0,1);  
   //  if (cluster->GetDetector()%36>17){
   //  x[1]*=-1;
   //}
-
+  //RS: Check if cluster goes outside of sector angular boundaries
+  float yMax = x[0]*kMaxY2X;
+  if (x[1]>yMax) {
+    cluster->SetSectorChanged(kTRUE);
+    AliTPCTransform::RotateToSectorUp(x,1,idROC);
+  }
+  else if (x[1]<-yMax) {
+    cluster->SetSectorChanged(kTRUE);
+    AliTPCTransform::RotateToSectorDown(x,-1,idROC);    
+  }
   //
   // in debug mode  check the transformation
   //
@@ -2002,6 +2014,7 @@ void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     cluster->SetY(posC[1]);
     cluster->SetZ(posC[2]);
   }
+  return idROC;
 }
 
 void  AliTPCtracker::ApplyXtalkCorrection(){
