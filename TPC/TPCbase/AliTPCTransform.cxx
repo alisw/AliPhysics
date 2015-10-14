@@ -79,7 +79,7 @@ ClassImp(AliTPCTransform)
 
 const Double_t AliTPCTransform::fgkSin20 = TMath::Sin(TMath::Pi()/9);       // sin(20)
 const Double_t AliTPCTransform::fgkCos20 = TMath::Cos(TMath::Pi()/9);       // cos(20)
-const Double_t AliTPCTransform::fgkMaxY2X = TMath::Cos(TMath::Pi()/9);       // cos(20)
+const Double_t AliTPCTransform::fgkMaxY2X = TMath::Cos(TMath::Pi()/20);      // tg(10)
 
 
 
