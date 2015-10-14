@@ -30,7 +30,7 @@ class AliGenEventHeader;
 class AliGenPythiaEventHeader;
 class AliGenHijingEventHeader;
 class AliFlowTrack;
-
+class AliAnalysisUtils;
 class TROOT;
 class TSystem;
 class TFile;
@@ -145,7 +145,8 @@ private:
  AliFlowTrackCuts* fCutsRP;        //cuts for RPs
  AliFlowTrackCuts* fCutsPOI;       //cuts for POIs
  TList*            fCutContainer;  //contains the cut objects
- TList*        fQAList;             // QA histogram list
+ TList*            fQAList;        // QA histogram list
+ AliAnalysisUtils* fAnalysisUtil;  ///< Event selection
  Int_t         fMinMult;           // Minimum multiplicity from tracks selected using CORRFW
  Int_t         fMaxMult;           // Maximum multiplicity from tracks selected using CORRFW
  Double_t      fMinA;              // Minimum of eta range for subevent A
