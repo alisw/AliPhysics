@@ -46,7 +46,6 @@
 #pragma link C++ class AliFemtoEventReaderESD+;
 #pragma link C++ class AliFemtoEventReaderESDChain+;
 #pragma link C++ class AliFemtoEventReaderESDChainKine+;
-#pragma link C++ class AliFemtoEventReaderESDChainKineKK+;
 #pragma link C++ class AliFemtoModelManager+;
 #pragma link C++ class AliFemtoModelWeightGenerator+;
 #pragma link C++ class AliFemtoModelWeightGeneratorBasic+;

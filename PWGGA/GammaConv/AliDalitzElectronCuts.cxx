@@ -1308,6 +1308,185 @@ return kTRUE;
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 {   // Set Cut
+
+	//Update function for systematics 2015-10-08
+	
+	switch(clsTPCCut){
+	  
+	case 0: // 0
+		fMinClsTPC= 0.;
+		fMinClsTPCToF = 0.;
+		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		break;
+		
+	case 1:  // 70
+		fMinClsTPC= 70.;
+		fMinClsTPCToF = 0.7;
+		 
+		if( fUseCrossedRows ){
+
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		}
+		break;
+	case 2:  // 80
+		fMinClsTPC = 70.;
+		fMinClsTPCToF = 0.9;
+		
+		if( fUseCrossedRows ){
+
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		  
+		}
+		break;
+	case 3:  // Changed 2014-02-04  before fMinClsTPC = 50.;
+		fMinClsTPC = 70;
+		fMinClsTPCToF = 0.8;
+		 
+		if( fUseCrossedRows ){
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		  
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		  
+		}
+		//fUseCrossedRows = kTRUE;
+		break;
+	case 4:  // 0% of findable clusters
+		fMinClsTPC = 90;
+		fMinClsTPCToF = 0.8;
+		
+	        if( fUseCrossedRows ){
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		  
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		  
+		}
+		break;
+	case 5:  // 35% of findable clusters
+		fMinClsTPC = 70;
+		fMinClsTPCToF = 0.35;
+		
+		if( fUseCrossedRows ){
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		  
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		  
+		}
+		break;
+	case 6:  // 60% of findable clusters
+		fMinClsTPC = 70;
+		fMinClsTPCToF = 0.60;
+
+		if( fUseCrossedRows ){
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		  
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		  
+		}
+		break;
+	case 7:  // 60% Changed 2014-02-04 before fMinClsTPC = 0.7 fUseCorrectedTPCClsInfo = 0
+		 // Changed 2014-02-04  before fMinClsTPC = 50.;
+		fMinClsTPC = 90;
+		fMinClsTPCToF = 0.35;
+
+		if( fUseCrossedRows ){
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		  
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		  
+		}
+		break;
+		
+	case 8: fMinClsTPC = 0;
+		fMinClsTPCToF = 0.35;
+
+		if( fUseCrossedRows ){
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		  
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=0;
+		  
+		}
+		break;
+		
+	case 9:  // 35% of findable clusters
+		fMinClsTPC = 70;
+		fMinClsTPCToF = 0.35;
+		
+		if( fUseCrossedRows ){
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+		  fesdTrackCuts->SetMinNClustersTPC(0);
+		  
+		} else {
+		  
+		  fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+		  fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+		  fUseCorrectedTPCClsInfo=1;
+		  
+		}
+		break;
+	  
+	default:
+		cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
+		return kFALSE;
+	}
+	return kTRUE;
+}
+
+/*
+///________________________________________________________________________
+Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
+{   // Set Cut
 	switch(clsTPCCut){
 	case 0: // 0
 		fMinClsTPC= 0.;
@@ -1369,7 +1548,7 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 		return kFALSE;
 	}
 	return kTRUE;
-}
+}*/
 
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::SetEtaCut(Int_t etaCut)
@@ -1722,6 +1901,12 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
         fPsiPairCut = 0.60;
         fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.06;
+	break;
+  case 6:
+	fDoPsiPairCut = kTRUE;
+        fPsiPairCut = 0.65;
+        fDeltaPhiCutMin = 0.0;
+        fDeltaPhiCutMax = 0.14;
 	break;
 	
     

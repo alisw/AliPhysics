@@ -227,7 +227,9 @@ void AliAnalysisTaskChargedParticlesRef::UserCreateOutputObjects() {
  */
 void AliAnalysisTaskChargedParticlesRef::UserExec(Option_t*) {
   if(!fGeometry){
-    fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+    fGeometry = AliEMCALGeometry::GetInstance();
+    if(!fGeometry)
+      fGeometry = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
   }
   // Select event
   TClonesArray *triggerpatches = static_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));

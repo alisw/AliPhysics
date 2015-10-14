@@ -17,19 +17,20 @@
 #include <THashList.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
-//#include "AliEMCALTriggerTypes.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliLog.h"
 #include "AliVCaloCells.h"
 #include "AliVCaloTrigger.h"
 #include "AliVVZERO.h"
+#include "AliEmcalTriggerDataGrid.h"
 #include "AliEmcalTriggerMaker.h"
 
 #include "THistManager.h"
 #include "TString.h"
 
 #include <bitset>
+#include <iostream>
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMaker)
@@ -38,6 +39,8 @@ ClassImp(AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer)
 /// \endcond
 
 using namespace std;
+
+const int AliEmcalTriggerMaker::kColsEta = 48;
 
 const TString AliEmcalTriggerMaker::fgkTriggerTypeNames[5] = {"EJE", "EGA", "EL0", "REJE", "REGA"};
 
@@ -55,10 +58,15 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fCaloTriggerSetupOut(0),
   fSimpleOfflineTriggers(0),
   fV0(0),
+  fPatchAmplitudes(NULL),
+  fPatchADCSimple(NULL),
+  fPatchADC(NULL),
+  fLevel0TimeMap(NULL),
   fITrigger(0),
   fRejectOffAcceptancePatches(kFALSE),
   fDoQA(kFALSE),
-  fQAHistos(NULL)
+  fQAHistos(NULL),
+  fDebugLevel(0)
 {
   fRunTriggerType[kTMEMCalJet] = kTRUE;
   fRunTriggerType[kTMEMCalGamma] = kTRUE;
@@ -66,10 +74,6 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker() :
   fRunTriggerType[kTMEMCalRecalcJet] = kTRUE;
   fRunTriggerType[kTMEMCalRecalcGamma] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
-  memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchCols * kPatchRows);
-  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-  memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
-  memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 }
 
 /**
@@ -88,10 +92,15 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fCaloTriggerSetupOut(0),
   fSimpleOfflineTriggers(0),
   fV0(0),
+  fPatchAmplitudes(NULL),
+  fPatchADCSimple(NULL),
+  fPatchADC(NULL),
+  fLevel0TimeMap(NULL),
   fITrigger(0),
   fRejectOffAcceptancePatches(kFALSE),
   fDoQA(doQA),
-  fQAHistos(NULL)
+  fQAHistos(NULL),
+  fDebugLevel(0)
 {
   // Constructor.
   fRunTriggerType[kTMEMCalJet] = kTRUE;
@@ -100,10 +109,6 @@ AliEmcalTriggerMaker::AliEmcalTriggerMaker(const char *name, Bool_t doQA) :
   fRunTriggerType[kTMEMCalRecalcJet] = kTRUE;
   fRunTriggerType[kTMEMCalRecalcGamma] = kTRUE;
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
-  memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
-  memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchCols * kPatchRows);
-  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-  memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
 }
 
 /**
@@ -167,6 +172,15 @@ void AliEmcalTriggerMaker::ExecOnce()
     fV0 = (AliVVZERO*)InputEvent()->FindListObject(fV0InName);
   }
 
+
+  // Allocate containers for the ADC values
+  int nrows = fGeom->GetNTotalTRU() * 2;
+  std::cout << "Allocating channel grid with 48 columns in eta and " << nrows << " rows in phi" << std::endl;
+  fPatchAmplitudes->Allocate(48, nrows);
+  fPatchADC->Allocate(48, nrows);
+  fPatchADCSimple->Allocate(48, nrows);
+  fLevel0TimeMap->Allocate(48, nrows);
+
   // container for simple offline trigger processing
   fSimpleOfflineTriggers = new AliAODCaloTrigger();
   fSimpleOfflineTriggers->Allocate(0);
@@ -179,14 +193,20 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
+  // Create data structure for energy measurements;
+  fPatchAmplitudes = new AliEmcalTriggerDataGrid<float>;
+  fPatchADC =  new AliEmcalTriggerDataGrid<int>;
+  fPatchADCSimple = new AliEmcalTriggerDataGrid<double>;
+  fLevel0TimeMap = new AliEmcalTriggerDataGrid<char>;
+
   if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
     const char *patchtypes[2] = {"Online", "Offline"};
 
     for(int itype = 0; itype < 5; itype++){
       for(const char **patchtype = patchtypes; patchtype < patchtypes + 2; ++patchtype){
-        fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", *patchtype, fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 64, -0.5, 63.5);
-        fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Center position of the %s %s trigger patches;#eta;#phi", *patchtype, fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 100, 1., 4.);
+        fQAHistos->CreateTH2(Form("RCPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", *patchtype, fgkTriggerTypeNames[itype].Data()), 48, -0.5, 47.5, 104, -0.5, 103.5);
+        fQAHistos->CreateTH2(Form("EPCentPos%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Center position of the %s %s trigger patches;#eta;#phi", *patchtype, fgkTriggerTypeNames[itype].Data()), 20, -0.8, 0.8, 700, 0., 7.);
         fQAHistos->CreateTH2(Form("PatchADCvsE%s%s", fgkTriggerTypeNames[itype].Data(), *patchtype), Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", *patchtype, fgkTriggerTypeNames[itype].Data()), 2000, 0., 2000, 200, 0., 200);
       }
     }
@@ -238,9 +258,10 @@ Bool_t AliEmcalTriggerMaker::Run()
   fCaloTriggers->Reset();
 
   // zero the arrays
-  memset(fPatchADC, 0, sizeof(Int_t) * kPatchCols * kPatchRows);
-  memset(fPatchAmplitudes, 0, sizeof(Float_t) * kPatchCols * kPatchRows);
-  memset(fLevel0TimeMap, 0, sizeof(Char_t) * kPatchCols * kPatchRows);
+  fPatchAmplitudes->Reset();
+  fPatchADC->Reset();
+  fPatchADCSimple->Reset();
+  fLevel0TimeMap->Reset();
 
   // first run over the patch array to compose a map of 2x2 patch energies
   // which is then needed to construct the full patch ADC energy
@@ -260,7 +281,7 @@ Bool_t AliEmcalTriggerMaker::Run()
       Int_t adcAmp=-1;
       fCaloTriggers->GetL1TimeSum(adcAmp);
       if (adcAmp>-1)
-	    fPatchADC[globCol][globRow] = adcAmp;
+	    (*fPatchADC)(globCol,globRow) = adcAmp;
 
       // Handling for L0 triggers
       // For the ADC value we use fCaloTriggers->GetAmplitude()
@@ -271,7 +292,7 @@ Bool_t AliEmcalTriggerMaker::Run()
       Float_t amplitude(0);
       fCaloTriggers->GetAmplitude(amplitude);
       if(amplitude < 0) amplitude = 0;
-      fPatchAmplitudes[globCol][globRow] = amplitude;
+      (*fPatchAmplitudes)(globCol,globRow) = amplitude;
       Int_t nl0times(0);
       fCaloTriggers->GetNL0Times(nl0times);
       if(nl0times){
@@ -279,7 +300,7 @@ Bool_t AliEmcalTriggerMaker::Run()
         fCaloTriggers->GetL0Times(l0times.GetArray());
         for(int itime = 0; itime < nl0times; itime++){
           if(l0times[itime] >7 && l0times[itime] < 10){
-            fLevel0TimeMap[globCol][globRow] = static_cast<Char_t>(l0times[itime]);
+            (*fLevel0TimeMap)(globCol,globRow) = static_cast<Char_t>(l0times[itime]);
             break;
           }
         }
@@ -287,10 +308,6 @@ Bool_t AliEmcalTriggerMaker::Run()
     } // patches
   } // array not empty
   
-  // fill the array for offline trigger processing
-  // using calibrated cell energies
-  memset(fPatchADCSimple, 0, sizeof(Double_t) * kPatchRows * kPatchCols); // This works, but in principle cannot assume that the representation for 0 in a double really consists of only zeros...
-
   // fill the patch ADCs from cells
   Int_t nCell = fCaloCells->GetNumberOfCells();
   for(Int_t iCell = 0; iCell < nCell; ++iCell) {
@@ -303,7 +320,7 @@ Bool_t AliEmcalTriggerMaker::Run()
     Int_t globCol=-1, globRow=-1;
     fGeom->GetPositionInEMCALFromAbsFastORIndex(absId, globCol, globRow);
     // add
-    fPatchADCSimple[globCol][globRow] += amp/kEMCL1ADCtoGeV;
+    (*fPatchADCSimple)(globCol,globRow) += amp/kEMCL1ADCtoGeV;
   }
 
   // dig out common data (thresholds)
@@ -400,9 +417,9 @@ Bool_t AliEmcalTriggerMaker::Run()
 
       // Recalculated triggers (max patches without threshold)
       if(fRunTriggerType[kTMEMCalRecalcJet])
-	ProcessPatch(kTMEMCalRecalcJet, isOfflineSimple);
+        ProcessPatch(kTMEMCalRecalcJet, isOfflineSimple);
       if(fRunTriggerType[kTMEMCalRecalcGamma])
-	ProcessPatch(kTMEMCalRecalcGamma, isOfflineSimple);
+        ProcessPatch(kTMEMCalRecalcGamma, isOfflineSimple);
     } // triggers
     
     // mark the most energetic patch as main
@@ -511,8 +528,9 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 
   if(fRejectOffAcceptancePatches){
     int patchsize = 2;
+    const int kRowsPhi = fGeom->GetNTotalTRU() * 2;
     if(type == kTMEMCalJet || type == kTMEMCalRecalcJet) patchsize = 16;
-    if((globCol + patchsize >= kPatchCols) || (globCol + patchsize >= kPatchRows)){
+    if((globCol + patchsize >= kColsEta) || (globCol + patchsize >= kRowsPhi)){
       AliError(Form("Invalid patch position for patch type %s: Col[%d], Row[%d] - patch rejected", fgkTriggerTypeNames[type].Data(), globCol, globRow));
       return NULL;
     }
@@ -541,25 +559,43 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   int nfastor = (type == kTMEMCalJet || type == kTMEMCalRecalcJet) ? 16 : 2; // 32x32 cell window for L1 Jet trigger, 4x4 for L1 Gamma or L0 trigger
   for (Int_t i = 0; i < nfastor; ++i) {
     for (Int_t j = 0; j < nfastor; ++j) {
-	  // get the 4 cells composing the trigger channel
-	  fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol+i, globRow+j, absId);
-	  fGeom->GetCellIndexFromFastORIndex(absId, cellAbsId);
-	  // add amplitudes and find patch edges
-	  for (Int_t k = 0; k < 4; ++k) {
-	    Float_t ca = fCaloCells->GetCellAmplitude(cellAbsId[k]);
-	    //fGeom->GetGlobal(cellAbsId[k], cellCoor);
-	    amp += ca;
-	    cmiCol += ca*(Float_t)i;
-	    cmiRow += ca*(Float_t)j;
-	  }
-	  // add the STU ADCs in the patch (in case of L1) or the TRU Amplitude (in case of L0)
-	  if(type == kTMEMCalLevel0){
-	    adcAmp += static_cast<Int_t>(fPatchAmplitudes[globCol+i][globRow+j] * 4); // precision loss in case of global integer field
-	  } else {
-	    adcAmp += fPatchADC[globCol+i][globRow+j];
-	  }
+      // get the 4 cells composing the trigger channel
+      fGeom->GetAbsFastORIndexFromPositionInEMCAL(globCol+i, globRow+j, absId);
+      fGeom->GetCellIndexFromFastORIndex(absId, cellAbsId);
+      // add amplitudes and find patch edges
+      for (Int_t k = 0; k < 4; ++k) {
+        Float_t ca = fCaloCells->GetCellAmplitude(cellAbsId[k]);
+        //fGeom->GetGlobal(cellAbsId[k], cellCoor);
+        amp += ca;
+        cmiCol += ca*(Float_t)i;
+        cmiRow += ca*(Float_t)j;
+      }
+      // add the STU ADCs in the patch (in case of L1) or the TRU Amplitude (in case of L0)
+      if(type == kTMEMCalLevel0){
+        try {
+          adcAmp += static_cast<Int_t>((*fPatchAmplitudes)(globCol+i,globRow+j) * 4); // precision loss in case of global integer field
+        } catch (const AliEmcalTriggerDataGrid<float>::OutOfBoundsException &e) {
+          if(fDebugLevel){
+            std::cerr << e.what() << std::endl;
+          }
+        }
+      } else {
+        try {
+          adcAmp += (*fPatchADC)(globCol+i,globRow+j);
+        } catch (AliEmcalTriggerDataGrid<int>::OutOfBoundsException &e){
+          if(fDebugLevel){
+            std::cerr << e.what() << std::endl;
+          }
+        }
+      }
 
-	  adcOfflineAmp += fPatchADCSimple[globCol+i][globRow+j];
+      try{
+        adcOfflineAmp += (*fPatchADCSimple)(globCol+i,globRow+j);
+      } catch (AliEmcalTriggerDataGrid<double>::OutOfBoundsException &e){
+        if(fDebugLevel){
+          std::cerr << e.what() << std::endl;
+        }
+      }
     }
   }
 
@@ -788,39 +824,39 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       // window
       for (Int_t k = 0; k < 16; ++k) {
         for (Int_t l = 0; l < 16; ++l) {
-	  tSumOffline += fPatchADCSimple[i+k][j+l];	  
-	  tSum += (ULong64_t)fPatchADC[i+k][j+l];
-	}
+          tSumOffline += (*fPatchADCSimple)(i+k,j+l);
+          tSum += static_cast<ULong64_t>((*fPatchADC)(i+k,j+l));
+        }
       }
 
       if (tSum > maxPatchADC) { // Mark highest Jet patch
-	maxPatchADC = tSum;
-	colArray[0] = i;
-	rowArray[0] = j;
+        maxPatchADC = tSum;
+        colArray[0] = i;
+        rowArray[0] = j;
       }
 
       if (tSumOffline > maxPatchADCoffline) { // Mark highest Jet patch
-	maxPatchADCoffline = tSumOffline;
-	colArray[1] = i;
-	rowArray[1] = j;
+        maxPatchADCoffline = tSumOffline;
+        colArray[1] = i;
+        rowArray[1] = j;
       }
 
       // check thresholds
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetLowSimple())
-	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetLowBit() ));
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdJetHighSimple())
-	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetJetHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
-	// add offline bit
-	tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum );
-	tBitsArray.Set( tBitsArray.GetSize() + 1 );
-	colArray.Set( colArray.GetSize() + 1 );
-	rowArray.Set( rowArray.GetSize() + 1 );
-	tBitsArray[tBitsArray.GetSize()-1] = tBits;
-	colArray[colArray.GetSize()-1] = i;
-	rowArray[rowArray.GetSize()-1] = j;
+        // add offline bit
+        tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum );
+        tBitsArray.Set( tBitsArray.GetSize() + 1 );
+        colArray.Set( colArray.GetSize() + 1 );
+        rowArray.Set( rowArray.GetSize() + 1 );
+        tBitsArray[tBitsArray.GetSize()-1] = tBits;
+        colArray[colArray.GetSize()-1] = i;
+        rowArray[rowArray.GetSize()-1] = j;
       }
     }
   } // trigger algo
@@ -838,38 +874,38 @@ void AliEmcalTriggerMaker::RunSimpleOfflineTrigger()
       // window
       for (Int_t k = 0; k < 2; ++k) {
         for (Int_t l = 0; l < 2; ++l) {
-	  tSumOffline += fPatchADCSimple[i+k][j+l];
-	  tSum += (ULong64_t)fPatchADC[i+k][j+l];
-	}
+          tSumOffline += (*fPatchADCSimple)(i+k,j+l);
+          tSum += static_cast<ULong64_t>((*fPatchADC)(i+k,j+l));
+        }
       }
 
       if (tSum > maxPatchADC) { // Mark highest Gamma patch
-	maxPatchADC = tSum;
-	colArray[2] = i;
-	rowArray[2] = j;
+        maxPatchADC = tSum;
+        colArray[2] = i;
+        rowArray[2] = j;
       }
       if (tSumOffline > maxPatchADCoffline) { // Mark highest Gamma patch
-	maxPatchADCoffline = tSumOffline;
-	colArray[3] = i;
-	rowArray[3] = j;
+        maxPatchADCoffline = tSumOffline;
+        colArray[3] = i;
+        rowArray[3] = j;
       }
 
       // check thresholds
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaLowSimple())
-	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaLowBit() ));
       if (tSumOffline > fCaloTriggerSetupOut->GetThresholdGammaHighSimple())
-	tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
+        tBits = tBits | ( 1 << ( bitOffSet + fTriggerBitConfig->GetGammaHighBit() ));
       
       // add trigger values
       if (tBits != 0) {
-	// add offline bit
-	tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum );
-	tBitsArray.Set( tBitsArray.GetSize() + 1 );
-	colArray.Set( colArray.GetSize() + 1 );
-	rowArray.Set( rowArray.GetSize() + 1 );
-	tBitsArray[tBitsArray.GetSize()-1] = tBits;
-	colArray[colArray.GetSize()-1] = i;
-	rowArray[rowArray.GetSize()-1] = j;
+        // add offline bit
+        tBits = tBits | ( 1 << AliEmcalTriggerPatchInfo::kSimpleOfflineBitNum );
+        tBitsArray.Set( tBitsArray.GetSize() + 1 );
+        colArray.Set( colArray.GetSize() + 1 );
+        rowArray.Set( rowArray.GetSize() + 1 );
+        tBitsArray[tBitsArray.GetSize()-1] = tBits;
+        colArray[colArray.GetSize()-1] = i;
+        rowArray[rowArray.GetSize()-1] = j;
       }
     }
   } // trigger algo
@@ -915,18 +951,19 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
   fGeom->GetAbsFastORIndexFromPositionInEMCAL(col, row, absFastor);
   fGeom->GetTRUFromAbsFastORIndex(absFastor, truref, adc);
   int nvalid(0);
+  const int kNRowsPhi = fGeom->GetNTotalTRU() * 2;
   for(int ipos = 0; ipos < 2; ipos++){
-    if(row + ipos >= kPatchRows) continue;    // boundary check
+    if(row + ipos >= kNRowsPhi) continue;    // boundary check
     for(int jpos = 0; jpos < 2; jpos++){
-      if(col + jpos >= kPatchCols) continue;  // boundary check
+      if(col + jpos >= kColsEta) continue;  // boundary check
       // Check whether we are in the same TRU
       trumod = -1;
       fGeom->GetAbsFastORIndexFromPositionInEMCAL(col+jpos, row+ipos, absFastor);
       fGeom->GetTRUFromAbsFastORIndex(absFastor, trumod, adc);
       if(trumod != truref) continue;
-      if(col + jpos >= kPatchCols) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
-      if(row + ipos >= kPatchRows) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
-      Char_t l0times = fLevel0TimeMap[col + jpos][row + ipos];
+      if(col + jpos >= kColsEta) AliError(Form("Boundary error in col [%d, %d + %d]", col + jpos, col, jpos));
+      if(row + ipos >= kNRowsPhi) AliError(Form("Boundary error in row [%d, %d + %d]", row + ipos, row, ipos));
+      Char_t l0times = (*fLevel0TimeMap)(col + jpos,row + ipos);
       if(l0times > 7 && l0times < 10) nvalid++;
     }
   }

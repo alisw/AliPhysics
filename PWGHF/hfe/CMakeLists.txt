@@ -84,6 +84,7 @@ set(SRCS
   AliAnalysisTaskFlowTPCEMCalEP.cxx
   AliAnalysisTaskHFECal.cxx 
   AliAnalysisTaskEMCalHFEpA.cxx 
+  AliAnalysisTaskHFEpACorrelation.cxx
   AliHFEdebugTreeTask.cxx
   AliHFEVZEROEventPlane.cxx
   AliAnalysisTaskFlowTPCTOFEPSP.cxx

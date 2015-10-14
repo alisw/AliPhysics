@@ -849,6 +849,46 @@ if(!stack) return kFALSE;
 return kFALSE;
 }
 
+
+//_____________________________________________________________________________
+Bool_t AlidNdPtHelper::SelectMCEventINEL0(AliMCEvent* const mcEvent, Double_t ptmin, Double_t etarange) {
+//
+// select INEL>0 events with at least
+// one prompt (MC primary) particle in acceptance
+// pT>0, |eta|<1.0 for normalization
+//
+
+if(!mcEvent) return kFALSE;
+AliStack* stack = mcEvent->Stack(); 
+if(!stack) return kFALSE;
+
+  Int_t count = 0;
+  for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
+  {
+    TParticle* particle = stack->Particle(iMc);
+    if (!particle) continue;
+
+    // only charged particles
+    if(!particle->GetPDG()) continue;
+    Double_t charge = particle->GetPDG()->Charge()/3.;
+    if(charge == 0) continue;
+
+    // physical primary
+    Bool_t prim = stack->IsPhysicalPrimary(iMc);
+    if(!prim) continue;
+
+    if(particle->Pt() < ptmin) continue;
+    if(TMath::Abs(particle->Eta()) > etarange) continue;
+
+    count++;
+  }
+
+  if(count > 0) return kTRUE;
+  else return kFALSE;
+
+return kFALSE;
+}
+
 //_____________________________________________________________________________
 Int_t AlidNdPtHelper::GetTPCMBTrackMult(const AliESDEvent *const esdEvent,const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts,const  AliESDtrackCuts *const trackCuts)
 {

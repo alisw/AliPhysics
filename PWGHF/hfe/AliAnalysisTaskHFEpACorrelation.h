@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskEMCalHFEpA_cxx
-#define AliAnalysisTaskEMCalHFEpA_cxx
+#ifndef AliAnalysisTaskHFEpACorrelation_cxx
+#define AliAnalysisTaskHFEpACorrelation_cxx
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -72,13 +72,13 @@ class AliEMCALGeometry;
 //______________________________________________________________________
 
 //______________________________________________________________________
-class AliAnalysisTaskEMCalHFEpA : public AliAnalysisTaskSE
+class AliAnalysisTaskHFEpACorrelation : public AliAnalysisTaskSE
 {
     //______________________________________________________________________
 public:
-    AliAnalysisTaskEMCalHFEpA();
-    AliAnalysisTaskEMCalHFEpA(const char *name);
-    virtual ~AliAnalysisTaskEMCalHFEpA();
+    AliAnalysisTaskHFEpACorrelation();
+    AliAnalysisTaskHFEpACorrelation(const char *name);
+    virtual ~AliAnalysisTaskHFEpACorrelation();
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -606,21 +606,21 @@ private:
     
     //______________________________________________________________________
     
-    AliAnalysisTaskEMCalHFEpA(const AliAnalysisTaskEMCalHFEpA&); 			// not implemented
-    AliAnalysisTaskEMCalHFEpA& operator=(const AliAnalysisTaskEMCalHFEpA&); 		// not implemented
+    AliAnalysisTaskHFEpACorrelation(const AliAnalysisTaskHFEpACorrelation&); 			// not implemented
+    AliAnalysisTaskHFEpACorrelation& operator=(const AliAnalysisTaskHFEpACorrelation&); 		// not implemented
     
-    ClassDef(AliAnalysisTaskEMCalHFEpA, 1); 								// example of analysis
+    ClassDef(AliAnalysisTaskHFEpACorrelation, 1); 								// example of analysis
     //______________________________________________________________________
 };
 
 ///_________________________________________________________________________________________________
 ///Class copied from : $ALICE_ROOT/PWGCF/Correlations/DPhi/AliAnalysisTaskLongRangeCorrelations.h
 ///Author: Christoph Mayer
-class AliEHCParticle : public TObject {
+class AliHFEHCParticle : public TObject {
 public:
-    AliEHCParticle(Double_t eta=0, Double_t phi=0, Double_t pt=0)
+    AliHFEHCParticle(Double_t eta=0, Double_t phi=0, Double_t pt=0)
     : fEta(eta), fPhi(phi), fPt(pt) {}
-    virtual ~AliEHCParticle() {}
+    virtual ~AliHFEHCParticle() {}
     
     Double_t Eta() const { return fEta; }
     Double_t Phi() const { return fPhi; }
@@ -628,8 +628,8 @@ public:
     
 protected:
 private:
-    AliEHCParticle(const AliEHCParticle&);
-    AliEHCParticle& operator=(const AliEHCParticle&);
+    AliHFEHCParticle(const AliHFEHCParticle&);
+    AliHFEHCParticle& operator=(const AliHFEHCParticle&);
     
     
     
@@ -637,9 +637,8 @@ private:
     Double_t fPhi;
     Double_t fPt;
     
-    ClassDef(AliEHCParticle, 1);
+    ClassDef(AliHFEHCParticle, 1);
 } ;
 ///_________________________________________________________________________________________________
 
 #endif
-

@@ -56,6 +56,7 @@ set(SRCS
   AliEmcalTrackingQATask.cxx
   AliEmcalTrackPropagatorTask.cxx
   AliEmcalTriggerBitConfig.cxx
+  AliEmcalTriggerDataGrid.cxx
   AliEmcalTriggerMaker.cxx
   AliEmcalTriggerPatchInfo.cxx
   AliEmcalTriggerSetupInfo.cxx
