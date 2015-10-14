@@ -131,8 +131,6 @@ void AddTask_GammaConvV1(TString mode){
                                                      "LHC11h_2",  //name of the period for added signals and weighting
                                                      kFALSE,  //enable Weighting
                                                      kFALSE,  //use THnSparse
-													 0,
-													 "alien:///alice/cern.ch/user/l/lleardin/InterpValuesAndFlattening.root",
 													 0); 
 //    AliAnalysisTask *taskB = AddTask_GammaConvV1_PbPb(194,  //change different set of cuts
 //                                                      isMC,
