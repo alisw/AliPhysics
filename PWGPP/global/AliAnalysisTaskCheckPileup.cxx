@@ -58,6 +58,8 @@ AliAnalysisTaskCheckPileup::AliAnalysisTaskCheckPileup() :
 AliAnalysisTaskSE("PileupTask"), 
   fReadMC(kFALSE),
   fFillTree(kFALSE),
+  fTrigOpt(0),
+  fUsePFProtection(kFALSE),
   fOutputPrimV(0), 
   fOutputSPDPil(0), 
   fOutputMVPil(0), 
@@ -69,6 +71,7 @@ AliAnalysisTaskSE("PileupTask"),
   fHistoZVertTRK(0x0),
   fHistoTPCTracksVsTracklets(0x0),
   fHistoGloTracksVsTracklets(0x0),
+  fHistoSPDvertVsFastOr(0x0),
   fHistoNOfPileupVertSPD(0x0),
   fHistoNtracklPilSPD(0x0),
   fHistoNtracklNoPilSPD(0x0),
@@ -103,6 +106,8 @@ AliAnalysisTaskSE("PileupTask"),
   fNTracksTPC(0),
   fNTracksTPCITS(0),
   fNTracklets(0),
+  fNContribSPD(0),
+  fNFastOr(0),
   fSPDContributorsCut(3),
   fSPDZDiffCut(0.8),
   fMVContributorsCut(5),
@@ -140,6 +145,7 @@ AliAnalysisTaskCheckPileup::~AliAnalysisTaskCheckPileup()
     delete fHistoZVertTRK;
     delete fHistoTPCTracksVsTracklets;
     delete fHistoGloTracksVsTracklets;
+    delete fHistoSPDvertVsFastOr;
   }
   if(fOutputSPDPil && !fOutputSPDPil->IsOwner()){
     delete fHistoNOfPileupVertSPD;
@@ -219,6 +225,8 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fOutputPrimV->Add(fHistoTPCTracksVsTracklets);
   fHistoGloTracksVsTracklets = new TH2F("hGloTracksVsTracklets","ITS+TPC Tracks-Tracklet correlation ; N_{tracklets} ; N_{GlobalTracks}",201,-0.5,200.5,201,-0.5,200.5);
   fOutputPrimV->Add(fHistoGloTracksVsTracklets);
+  fHistoSPDvertVsFastOr = new TH2F("hContribSPDvertVsFastOr","ContribSPD-FastOr correlation ; N_{FastOr bits L1} ; N_{contrib SPDvert}",201,-0.5,200.5,201,-0.5,200.5);
+  fOutputPrimV->Add(fHistoSPDvertVsFastOr);
 
   // SPD vertex pileup histos
   fHistoNOfPileupVertSPD = new TH1F("hNOfPileupVertSPD","",11,-0.5,10.5);
@@ -304,6 +312,8 @@ void AliAnalysisTaskCheckPileup::UserCreateOutputObjects()
   fTrackTree->Branch("nTracksTPC",&fNTracksTPC,"nTracksTPC/i");
   fTrackTree->Branch("nTracksTPCITS",&fNTracksTPCITS,"nTracksTPCITS/i");
   fTrackTree->Branch("nTracklets",&fNTracklets,"nTracklets/i");
+  fTrackTree->Branch("nContribSPD",&fNContribSPD,"nContribSPD/i");
+  fTrackTree->Branch("nFastOr",&fNFastOr,"nFastOr/i");
 
   PostData(1, fOutputPrimV);
   PostData(2, fOutputSPDPil);
@@ -326,11 +336,41 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
   }
 
   Int_t runNumber = esd->GetRunNumber();
-  fCounterPerRun->Count(Form("Event:Triggered/Run:%d",runNumber));
 
-  Bool_t isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+  Bool_t isPhysSel = kFALSE;
+  TString classes = esd->GetFiredTriggerClasses();
+
+  if(fTrigOpt==0){ 
+    if (classes.Contains("CINT7-B-")){
+      isPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
+    }else{
+      return;
+    }
+  }else if(fTrigOpt==1){
+    if (classes.Contains("CVHMV0M-B-")){
+      isPhysSel = ApplyPhysSel(esd);
+    }else{
+      return;
+    }
+  }else if(fTrigOpt==2){
+    if (classes.Contains("CVHMSH2-B-")){
+      isPhysSel = ApplyPhysSel(esd);
+    }else{
+      return;
+    }
+  }
+  fCounterPerRun->Count(Form("Event:Triggered/Run:%d",runNumber));
   if(!isPhysSel) return;
 
+  // Past future protection
+  if(fUsePFProtection){
+    TBits fIR1 =  esd->GetHeader()->GetIRInt1InteractionMap();         // IR1 contains V0 information (VIR)
+    TBits fIR2 =  esd->GetHeader()->GetIRInt2InteractionMap();         // IR2 contains T0 information 
+    Int_t isOutOfBunchPileup11BC = 0;
+    for (Int_t i=1;i<=11;i++) isOutOfBunchPileup11BC|=fIR1.TestBitNumber(90-i);
+    for (Int_t i=1;i<=11;i++) isOutOfBunchPileup11BC|=fIR1.TestBitNumber(90+i); 
+    if(isOutOfBunchPileup11BC!=0) return;
+  }
   fCounterPerRun->Count(Form("Event:PhysSel/Run:%d",runNumber));
 
   const AliESDVertex *spdv=esd->GetPrimaryVertexSPD();
@@ -346,6 +386,7 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
     fHistoYVertSPD->Fill(spdv->GetY());
     fHistoZVertSPD->Fill(spdv->GetZ());
   }
+  fNContribSPD=contribspd;
 
   Double_t zverttrk=0.;
   Int_t contribtrk=0.;
@@ -357,17 +398,27 @@ void AliAnalysisTaskCheckPileup::UserExec(Option_t *)
     fHistoYVertTRK->Fill(trkv->GetY());
     fHistoZVertTRK->Fill(trkv->GetZ());
   }
+  if(TMath::Abs(zvertspd)>10) return;
 
   const AliMultiplicity *alimult = esd->GetMultiplicity();
   Int_t ncl1=0;
   fNTracklets=0;
+  Int_t onlFastOrL1=0;
+  Int_t offlFastOrL1=0;
   if(alimult) {
     fNTracklets = alimult->GetNumberOfTracklets();
     for(Int_t l=0;l<alimult->GetNumberOfTracklets();l++){
       if(alimult->GetDeltaPhi(l)<-9998.) fNTracklets--;
     }
     ncl1 = alimult->GetNumberOfITSClusters(1);
+    // FASTOR Online (only layer 1)
+    TBits fastorbits = alimult->GetFastOrFiredChips();
+    onlFastOrL1 = fastorbits.CountBits(400);
+    // FASTOR offline (only layer 1)
+    offlFastOrL1 = alimult->GetNumberOfFiredChips(1);
   }
+  fHistoSPDvertVsFastOr->Fill(onlFastOrL1,contribspd);
+  fNFastOr=onlFastOrL1;
 
   fNTracksTPC=0;
   fNTracksTPCITS=0;
@@ -503,4 +554,24 @@ void AliAnalysisTaskCheckPileup::Terminate(Option_t *)
   return;
 }
 
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskCheckPileup::ApplyPhysSel(AliESDEvent* esd)
+{
+  // Phys sel by hand
+
+  Int_t fV0ADecision;
+  Int_t fV0CDecision;
+  AliVVZERO* vzero = esd->GetVZEROData();
+  fV0ADecision = vzero->GetV0ADecision();
+  fV0CDecision = vzero->GetV0CDecision();
+  if(fV0ADecision==1 && fV0CDecision==1) return kTRUE;
+  else return kFALSE;
+  
+  Int_t fNofTracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
+  Int_t fNofITSClusters0 = esd->GetNumberOfITSClusters(0);
+  Int_t fNofITSClusters1 = esd->GetNumberOfITSClusters(1);
+  if ( fNofITSClusters0+ fNofITSClusters1 > 65+4*fNofTracklets) return kFALSE;
+  else return kTRUE;
+}
 
