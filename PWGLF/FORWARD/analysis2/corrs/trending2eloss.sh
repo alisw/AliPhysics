@@ -139,7 +139,7 @@ full_refit()
 
     # --- If the refit failed, bail out ------------------------------
     if test ! -f ${outd}/${reft} ; then
-	echo "${outd}/${reft} does not exists"
+	mess 3 "${outd}/${reft} does not exists"
 	return;
     fi
 
@@ -147,7 +147,9 @@ full_refit()
     (cd $outd && root -l -b -q $fwd/corrs/ExtractELoss.C >> refit.log 2>&1)
     
     # --- If the extraction failed, go on ----------------------------
-    if test ! -f ${corr} ; then
+    if test ! -f ${corr} || test -f ${outd}/bad.root ; then
+	mess 1 "Missing correction or bad"
+	rm -rf ${corr}
 	return
     fi 
     plot=${outd}/forward_eloss.pdf
@@ -161,7 +163,7 @@ full_refit()
 	fi
     else
 	echo "$corr does not exists"
-    fi 
+    fi
 }
 
 # --- Download a single file -----------------------------------------
@@ -220,6 +222,7 @@ top=.
 dir=
 pattern=trending.root
 friends=0
+period=
 while test $# -gt 0 ; do 
     case $1 in 
 	-h|--help)       usage            ; exit 0 ;; 
@@ -233,10 +236,25 @@ while test $# -gt 0 ; do
 	-p|--pattern)    pattern=$2       ; shift ;;
 	-f|--force)      force=$2         ; shift ;;
 	-R|--refit)      refit=1          ; shift ;;
+	-L|--period)     period=$2        ; shift ;;
+	-P|--pass)       pass=$2          ; shift ;;
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
 done
+if test "x$dir" = "x" && test "x$period" != "x" ; then
+    year=`echo $period | sed 's/LHC\(..\).*/\1/'`
+    dir="/alice/data/20${year}/${period}"
+    pattern="/${pass}"
+    case $pass in
+	cpass*_pass*) pattern="${pattern}/trending_barrel.root" ;;
+	pass*)        pattern="${pattern}/trending.root" ;;
+	*)            pattern="${pattern}/trending.root" ;;
+    esac
+    top=${period}_${pass}
+fi 
+
+
 # --- Initial setup --------------------------------------------------
 # First, check we have a valid AliEn token, then retrieve the job 
 # information to parse out the location of the files we need, and 
