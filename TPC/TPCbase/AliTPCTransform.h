@@ -50,10 +50,12 @@ public:
   void    EvalCorrectionMap(int roc, int row, const double xyz[3], float res[3]);
   Float_t EvalCorrectionMap(int roc, int row, const double xyz[3], int dimOut);
   //
-  static void RotateToSectorUp(float *x, Bool_t up, int& idROC);
-  static void RotateToSectorDown(float *x, Bool_t up, int& idROC);
-  static void RotateToSectorUp(double *x, Bool_t up, int& idROC);
-  static void RotateToSectorDown(double *x, Bool_t up, int& idROC);
+  static void RotateToSectorUp(float *x, int& idROC);
+  static void RotateToSectorDown(float *x, int& idROC);
+  static void RotateToSectorUp(double *x, int& idROC);
+  static void RotateToSectorDown(double *x,  int& idROC);
+  static int  SectorUp(int idROC);
+  static int  SectorDown(int idROC);
   static double GetMaxY2X() {return fgkMaxY2X;}
   //
 private:
@@ -89,7 +91,7 @@ inline void AliTPCTransform::ApplyCorrectionMap(int roc, int row, double xyz[3])
 
 
 //_________________________________________________
-inline void AliTPCTransform::RotateToSectorUp(float *x, Bool_t up, int& idROC)
+inline void AliTPCTransform::RotateToSectorUp(float *x, int& idROC)
 {
   // rotate point in sector coordinates to sector+1
   idROC += ((idROC%18)==17) ? -17 : 1;
@@ -99,7 +101,7 @@ inline void AliTPCTransform::RotateToSectorUp(float *x, Bool_t up, int& idROC)
 }
 
 //_________________________________________________
-inline void AliTPCTransform::RotateToSectorDown(float *x, Bool_t up, int& idROC)
+inline void AliTPCTransform::RotateToSectorDown(float *x, int& idROC)
 {
   // rotate point in sector coordinates to sector-1
   idROC += ((idROC%18)== 0) ?  17 : -1; // change to the lower sector
@@ -109,7 +111,7 @@ inline void AliTPCTransform::RotateToSectorDown(float *x, Bool_t up, int& idROC)
 }
 
 //_________________________________________________
-inline void AliTPCTransform::RotateToSectorUp(double *x, Bool_t up, int& idROC)
+inline void AliTPCTransform::RotateToSectorUp(double *x, int& idROC)
 {
   // rotate point in sector coordinates to sector+1
   idROC += ((idROC%18)==17) ? -17 : 1;
@@ -119,7 +121,7 @@ inline void AliTPCTransform::RotateToSectorUp(double *x, Bool_t up, int& idROC)
 }
 
 //_________________________________________________
-inline void AliTPCTransform::RotateToSectorDown(double *x, Bool_t up, int& idROC)
+inline void AliTPCTransform::RotateToSectorDown(double *x, int& idROC)
 {
   // rotate point in sector coordinates to sector-1
   idROC += ((idROC%18)== 0) ?  17 : -1; // change to the lower sector
@@ -127,5 +129,20 @@ inline void AliTPCTransform::RotateToSectorDown(double *x, Bool_t up, int& idROC
   x[0] = fgkCos20*tmp + fgkSin20*x[1];
   x[1] =-fgkSin20*tmp + fgkCos20*x[1];
 }
+
+//_________________________________________________
+inline int AliTPCTransform::SectorUp(int idROC)
+{
+  // sector+1
+  return idROC + ((idROC%18)==17) ? -17 : 1;
+}
+
+//_________________________________________________
+inline int AliTPCTransform::SectorDown(int idROC)
+{
+  // sector-1
+  return idROC += ((idROC%18)== 0) ?  17 : -1; // change to the lower sector
+}
+
 
 #endif
