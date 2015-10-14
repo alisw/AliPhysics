@@ -2598,8 +2598,9 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
     return 0;
   }
   //
-  Double_t y = t.GetY(); 
-  if (TMath::Abs(y)>ymax){ //RS:? before changing sector check if there are shifted clusters? TODO
+  Double_t y = t.GetY();
+  ymax = x*AliTPCTransform::GetMaxY2X();
+  if (TMath::Abs(y)>ymax){ 
     if (y > ymax) {
       t.SetRelativeSector((t.GetRelativeSector()+1) % fN);
       if (!t.Rotate(fSectors->GetAlpha())) 
@@ -2614,22 +2615,23 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
       if (fIteration==0) t.SetRemoval(10);
       return 0;
     }
-    if (!t.PropagateTo(x)) {
+    if (!t.PropagateTo(x)) { //RS:? to check: here we may have back and forth prop. Use PropagateParamOnly?
       if (fIteration==0) t.SetRemoval(10);
       return 0;
     }
     y = t.GetY();
+    ymax = x*AliTPCTransform::GetMaxY2X();
   }
   //
   Double_t z=t.GetZ();
   //
-  if (!IsActive(t.GetRelativeSector(),nr)) {
+  if (!IsActive(t.GetRelativeSector(),nr)) { // RS:? How distortions affect this
     t.SetInDead(kTRUE);
     t.SetClusterIndex2(nr,-1); 
     return 0;
   }
   //AliInfo(Form("A - Sector%d phi %f - alpha %f", t.fRelativeSector,y/x, t.GetAlpha()));
-  Bool_t isActive  = IsActive(t.GetRelativeSector(),nr);
+  Bool_t isActive  = IsActive(t.GetRelativeSector(),nr); //RS:? Why do we check this again?
   Bool_t isActive2 = (nr>=fInnerSec->GetNRows()) ? 
     fOuterSec[t.GetRelativeSector()][nr-fInnerSec->GetNRows()].GetN()>0 : 
     fInnerSec[t.GetRelativeSector()][nr].GetN()>0;
@@ -2639,6 +2641,7 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
   const AliTPCtrackerRow &krow=GetRow(t.GetRelativeSector(),nr);
   if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
   //
+ // RS:? This check must be modified: with distortions the dead zone is not well defined
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.GetDeadZone()){
     t.SetInDead(kTRUE);
     t.SetClusterIndex2(nr,-1); 
