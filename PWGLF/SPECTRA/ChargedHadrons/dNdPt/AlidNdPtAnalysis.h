@@ -93,18 +93,21 @@ public :
   THnSparseF *GetGenDDEventMatrix() const {return fGenDDEventMatrix;}
   THnSparseF *GetGenNDEventMatrix() const {return fGenNDEventMatrix;}
   THnSparseF *GetGenNSDEventMatrix() const {return fGenNSDEventMatrix;}
+  THnSparseF *GetGenINEL0EventMatrix() const {return fGenINEL0EventMatrix;}
 
   THnSparseF *GetTriggerEventMatrix() const {return fTriggerEventMatrix;}
   THnSparseF *GetTriggerSDEventMatrix() const {return fTriggerSDEventMatrix;}
   THnSparseF *GetTriggerDDEventMatrix() const {return fTriggerDDEventMatrix;}
   THnSparseF *GetTriggerNDEventMatrix() const {return fTriggerNDEventMatrix;}
   THnSparseF *GetTriggerNSDEventMatrix() const {return fTriggerNSDEventMatrix;}
+  THnSparseF *GetTriggerINEL0EventMatrix() const {return fTriggerINEL0EventMatrix;}
 
   THnSparseF *GetRecEventMatrix() const {return fRecEventMatrix;}
   THnSparseF *GetRecSDEventMatrix() const {return fRecSDEventMatrix;}
   THnSparseF *GetRecDDEventMatrix() const {return fRecDDEventMatrix;}
   THnSparseF *GetRecNDEventMatrix() const {return fRecNDEventMatrix;}
   THnSparseF *GetRecNSDEventMatrix() const {return fRecNSDEventMatrix;}
+  THnSparseF *GetRecINEL0EventMatrix() const {return fRecINEL0EventMatrix;}
 
   //
   THnSparseF *GetRecCandleEventMatrix() const {return fRecCandleEventMatrix;}
@@ -115,18 +118,22 @@ public :
   THnSparseF *GetGenTrackDDEventMatrix() const {return fGenTrackDDEventMatrix;}
   THnSparseF *GetGenTrackNDEventMatrix() const {return fGenTrackNDEventMatrix;}
   THnSparseF *GetGenTrackNSDEventMatrix() const {return fGenTrackNSDEventMatrix;}
+  THnSparseF *GetGenTrackINEL0EventMatrix() const {return fGenTrackINEL0EventMatrix;}
 
   THnSparseF *GetTriggerTrackEventMatrix() const {return fTriggerTrackEventMatrix;}
   THnSparseF *GetTriggerTrackSDEventMatrix() const {return fTriggerTrackSDEventMatrix;}
   THnSparseF *GetTriggerTrackDDEventMatrix() const {return fTriggerTrackDDEventMatrix;}
   THnSparseF *GetTriggerTrackNDEventMatrix() const {return fTriggerTrackNDEventMatrix;}
   THnSparseF *GetTriggerTrackNSDEventMatrix() const {return fTriggerTrackNSDEventMatrix;}
+  THnSparseF *GetTriggerTrackINEL0EventMatrix() const {return fTriggerTrackINEL0EventMatrix;}
 
   THnSparseF *GetRecTrackEventMatrix() const {return fRecTrackEventMatrix;}
   THnSparseF *GetRecTrackSDEventMatrix() const {return fRecTrackSDEventMatrix;}
   THnSparseF *GetRecTrackDDEventMatrix() const {return fRecTrackDDEventMatrix;}
   THnSparseF *GetRecTrackNDEventMatrix() const {return fRecTrackNDEventMatrix;}
   THnSparseF *GetRecTrackNSDEventMatrix() const {return fRecTrackNSDEventMatrix;}
+  THnSparseF *GetRecTrackINEL0EventMatrix() const {return fRecTrackINEL0EventMatrix;}
+
 
   //
   THnSparseF *GetGenTrackMatrix() const {return fGenTrackMatrix;}
@@ -160,6 +167,7 @@ public :
 
   THnSparseF *GetRecTrackHist2() const {return fRecTrackHist2;}
   THnSparseF *GetEventCount() const {return fEventCount;}  
+  TH1D       *GetPileUpCount() const {return fPileUpCount;}
 
   //
   // Generic histograms to be corrected
@@ -194,6 +202,7 @@ private:
   THnSparseF *fGenDDEventMatrix; //-> mcZv:multTrueMC (single diffractive)
   THnSparseF *fGenNDEventMatrix; //-> mcZv:multTrueMC (non diffractive)
   THnSparseF *fGenNSDEventMatrix; //-> mcZv:multTrueMC (non single diffractive)
+  THnSparseF *fGenINEL0EventMatrix; //-> mcZv:multTrueMC (non single diffractive)
 
   // trigger bias corrections (fTriggerEventMatrix / fGenEventMatrix)
   THnSparseF *fTriggerEventMatrix; //-> mcZv:multTrueMC
@@ -201,6 +210,7 @@ private:
   THnSparseF *fTriggerDDEventMatrix; //-> mcZv:multTrueMC
   THnSparseF *fTriggerNDEventMatrix; //-> mcZv:multTrueMC
   THnSparseF *fTriggerNSDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fTriggerINEL0EventMatrix; //-> mcZv:multTrueMC
 
   // event vertex rec. eff correction (fRecEventMatrix / fTriggerEventMatrix)
   THnSparseF *fRecEventMatrix; //-> mcZv:multTrueMC 
@@ -208,6 +218,7 @@ private:
   THnSparseF *fRecDDEventMatrix; //-> mcZv:multTrueMC
   THnSparseF *fRecNDEventMatrix; //-> mcZv:multTrueMC
   THnSparseF *fRecNSDEventMatrix; //-> mcZv:multTrueMC
+  THnSparseF *fRecINEL0EventMatrix; //-> mcZv:multTrueMC
 
 
   //
@@ -219,6 +230,7 @@ private:
   THnSparseF *fGenTrackDDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
   THnSparseF *fGenTrackNDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
   THnSparseF *fGenTrackNSDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fGenTrackINEL0EventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
 
   // trigger bias corrections (fTriggerTrackEventMatrix / fGenTrackEventMatrix)
   THnSparseF *fTriggerTrackEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
@@ -226,6 +238,7 @@ private:
   THnSparseF *fTriggerTrackDDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
   THnSparseF *fTriggerTrackNDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
   THnSparseF *fTriggerTrackNSDEventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
+  THnSparseF *fTriggerTrackINEL0EventMatrix; //-> mcZv:mcPt:mcEta:multTrueMC
 
   // event vertex rec. corrections (fRecTrackEventMatrix / fTriggerTrackEventMatrix)
   THnSparseF *fRecTrackEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
@@ -233,6 +246,7 @@ private:
   THnSparseF *fRecTrackDDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
   THnSparseF *fRecTrackNDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
   THnSparseF *fRecTrackNSDEventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
+  THnSparseF *fRecTrackINEL0EventMatrix; //-> mcZv:Pt:mcEta:multTrueMC
 
   //
   // track level correction 
@@ -288,6 +302,7 @@ private:
   THnSparseF *fRecTrackHist; //-> Zv:pT:eta:multRecMult
   THnSparseF *fEventCount; //-> trig, trig + vertex, selected event
   THnSparseF *fMCPrimTrackHist; //-> Zv:mcpT:mceta:multTrueMC  
+  TH1D       *fPileUpCount; // if pileup x<0 
 
   //
   // candle events track corrections

@@ -30,6 +30,10 @@
 #pragma link C++ class AliEmcalTenderTask+;
 #pragma link C++ class AliEmcalTrackingQATask+;
 #pragma link C++ class AliEmcalTrackPropagatorTask+;
+#pragma link C++ class AliEmcalTriggerDataGrid<float>+;
+#pragma link C++ class AliEmcalTriggerDataGrid<double>+;
+#pragma link C++ class AliEmcalTriggerDataGrid<int>+;
+#pragma link C++ class AliEmcalTriggerDataGrid<char>+;
 #pragma link C++ class AliEmcalTriggerMaker+;
 #pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition+;
 #pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer+;
