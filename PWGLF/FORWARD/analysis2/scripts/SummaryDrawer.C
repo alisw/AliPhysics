@@ -1103,7 +1103,8 @@ protected:
     s << std::boolalpha << value;
     DrawParameter(y, name, s.str().c_str(), 0);
   }
-      
+
+#ifndef __CINT__
   //__________________________________________________________________
   /**
    * Structure to hold a dived pad 
@@ -1206,7 +1207,8 @@ protected:
       return GetPad(GetIdx(iCol, iRow));
     }
   };
-    
+#endif
+  
   //__________________________________________________________________
   void DivideForRings(Bool_t commonX, Bool_t commonY)
   {
