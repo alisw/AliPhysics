@@ -247,6 +247,7 @@ void RerunELossFits(Bool_t forceSet=false,
     Int_t maxPart = sys == 1 ? 3 : 5;
     fitter->SetNParticles(maxPart);
     fitter->SetDoMakeObject(true);
+    fitter->SetMinEntries(10000);
     if (flags & 0x2)  fitter->SetDebug(3);
     if (flags & 0x1)
       fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
