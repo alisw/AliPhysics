@@ -172,7 +172,6 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistAngleCorr_ppi_dpi(0x0),
   fHistHyperRapidity(0x0),
   fHistCosPointingAngle(0x0),
-  fHistDalitz_dp_dpi(0x0),
   fHistDecayMomCM_X(0x0),
   fHistDecayMomCM_Y(0x0),
   fHistDecayMomCM_Z(0x0),
@@ -187,6 +186,9 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistpTpionMCt(0x0),
   fHistpTproMCt(0x0),
   fHistpTdeuMCt(0x0),
+  fHistMompionMCt(0x0),
+  fHistMomproMCt(0x0),
+  fHistMomdeuMCt(0x0),
   fHistCorrDCAdprimaryMCt(0x0),
   fHistCorrDCApprimaryMCt(0x0),
   fHistCorrDCApiprimaryMCt(0x0),
@@ -205,14 +207,35 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fHistDCAZprovtxMCt(0x0),
   fHistDCAXYpionvtxMCt(0x0),
   fHistDCAZpionvtxMCt(0x0),
+  fHistNormalizedDecayL_MCt(0x0),
+  fHistLifetime_MCt(0x0),
+  fHistAngle_deu_pro_MCt(0x0),
+  fHistAngle_deu_pion_MCt(0x0),
+  fHistAngle_pro_pion_MCt(0x0),
+  fHistAngleCorr_dp_dpi_MCt(0x0),
+  fHistAngleCorr_dp_ppi_MCt(0x0),
+  fHistAngleCorr_ppi_dpi_MCt(0x0),
+  fHistDecayMomCM_X_MCt(0x0),
+  fHistDecayMomCM_Y_MCt(0x0),
+  fHistDecayMomCM_Z_MCt(0x0),
+  fHistDecayMomCM_XY_MCt(0x0),
+  fHistDecayMomCM_XZ_MCt(0x0),
+  fHistDecayMomCM_YZ_MCt(0x0),
+  fHistDecayMomCM_MCt(0x0),
+  fHistHypertritonMomMCt(0x0),
+  fHistHyperRapidityMCt(0x0),
   fHistMassHypertritonMCt(0x0),
+  fHistMassAntiHypertritonMCt(0x0),
   fTTree(0x0),
+  fTMCtruth(kFALSE),
+  fTCentralityPerc(0x0),
   fTchi2NDFdeu(0x0),
   fTPCclsdeu(0x0),
   fTPCclsPIDdeu(0x0),
   fTpTPCdeu(0x0),
-  fTpTdeu(0x0),
-  fTpdeu(0x0),
+  fTpXdeu(0x0),
+  fTpYdeu(0x0),
+  fTpZdeu(0x0),
   fTTPCnsigmadeu(0x0),
   fTTOFmassdeu(0x0),
   fTDCAXYdeuprvtx(0x0),
@@ -221,8 +244,9 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTPCclspro(0x0),
   fTPCclsPIDpro(0x0),
   fTpTPCpro(0x0),
-  fTpTpro(0x0),
-  fTppro(0x0),
+  fTpXpro(0x0),
+  fTpYpro(0x0),
+  fTpZpro(0x0),
   fTTPCnsigmapro(0x0),
   fTTOFmasspro(0x0),
   fTDCAXYproprvtx(0x0),
@@ -231,8 +255,9 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTPCclspion(0x0),
   fTPCclsPIDpion(0x0),
   fTpTPCpion(0x0),
-  fTpTpion(0x0),
-  fTppion(0x0),
+  fTpXpion(0x0),
+  fTpYpion(0x0),
+  fTpZpion(0x0),
   fTTPCnsigmapion(0x0),
   fTDCAXYpioprvtx(0x0),
   fTDCAZpioprvtx(0x0),
@@ -245,7 +270,33 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTDCAZpvtx(0x0),
   fTDCAXYpivtx(0x0),
   fTDCAZpivtx(0x0),
+  fTAngle_dp(0x0),
+  fTAngle_dpi(0x0),
+  fTAngle_ppi(0x0),
+  fTpdeu_CM_X(0x0),
+  fTpdeu_CM_Y(0x0),
+  fTpdeu_CM_Z(0x0),
+  fTppro_CM_X(0x0),
+  fTppro_CM_Y(0x0),
+  fTppro_CM_Z(0x0),
+  fTppio_CM_X(0x0),
+  fTppio_CM_Y(0x0),
+  fTppio_CM_Z(0x0),
+  fTp3HL_CM_X(0x0),
+  fTp3HL_CM_Y(0x0),
+  fTp3HL_CM_Z(0x0),
+  fTpdeu_gen_X(0x0),
+  fTpdeu_gen_Y(0x0),
+  fTpdeu_gen_Z(0x0),
+  fTppro_gen_X(0x0),
+  fTppro_gen_Y(0x0),
+  fTppro_gen_Z(0x0),
+  fTppio_gen_X(0x0),
+  fTppio_gen_Y(0x0),
+  fTppio_gen_Z(0x0),
+  fTRapidity(0x0),
   fTDecayLength(0x0),
+  fTDecayLengthError(0x0),
   fTCosPA(0x0),
   fTInvariantMass(0x0)
 {
@@ -367,7 +418,7 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
 
   fHistCount = new TH1F("fHistCount","Counter histogram",4,-0.5,3.5);
   fHistCount->GetXaxis()->SetBinLabel(1,"Reco Event");
-  fHistCount->GetXaxis()->SetBinLabel(2,"Triggered sel");
+  fHistCount->GetXaxis()->SetBinLabel(2,"Trigger sel");
   fHistCount->GetXaxis()->SetBinLabel(3,"Centrality sel");
   fHistCount->GetXaxis()->SetBinLabel(4,"Primary vtx sel");
   
@@ -481,7 +532,6 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fHistHyperRapidity = new TH1F("fHistHyperRapidity","rapidity distribution of ^{3}H_{#Lambda}; y; entries",400,-2.f,2.f);
 
   fHistCosPointingAngle= new TH1F("fHistCosPointingAngle", "Cos pointing angle distribution; cos point angle; entries", 220, -1.1, 1.1);
-  fHistDalitz_dp_dpi = new TH2F("fHistDalitz_dp_dpi","Dalitz plot: m^{2}_{d#pi} vs m^{2}_{dp}; m^{2}_{d#pi} (GeV^{2}/c^{4}); m^{2}_{dp} (GeV^{2}/c^{4})",250,4.,9.,350.,7.9,15.);
   fHistDecayMomCM_X = new TH1F("fHistDecayMomCM_X","p_{^{3}H_{#Lambda},X} in center-of-mass; p_{X} (GeV/c); entries/0.02",200.,-2.,2.);
   fHistDecayMomCM_Y = new TH1F("fHistDecayMomCM_Y","p_{^{3}H_{#Lambda},Y} in center-of-mass; p_{Y} (GeV/c); entries/0.02",200.,-2.,2.);
   fHistDecayMomCM_Z = new TH1F("fHistDecayMomCM_Z","p_{^{3}H_{#Lambda},Z} in center-of-mass; p_{Z} (GeV/c); entries/0.02",200.,-2.,2.);
@@ -520,6 +570,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistpTpionMCt = new TH1F("fHistpTpionMCt","pion p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
     fHistpTproMCt = new TH1F("fHistpTproMCt","proton p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
     fHistpTdeuMCt = new TH1F("fHistpTdeuMCt","deuteron p_{T} distribution; p_{T} (GeV/c);entries",800,0.,8.);
+    fHistMompionMCt = new TH1F("fHistMompionMCt","pion p distribution; p (GeV/c);entries",1000,0.,10.);
+    fHistMomproMCt = new TH1F("fHistMomproMCt","proton p distribution; p (GeV/c);entries",1000,0.,10.);
+    fHistMomdeuMCt = new TH1F("fHistMomdeuMCt","deuteron p distribution; p (GeV/c);entries",1000,0.,10.);
     fHistCorrDCAdprimaryMCt = new TH2F("fHistCorrDCAdprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - deuteron MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
     fHistCorrDCApprimaryMCt = new TH2F("fHistCorrDCApprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - proton MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
     fHistCorrDCApiprimaryMCt = new TH2F("fHistCorrDCApiprimaryMCt","DCA_{PV,xy} vs DCA_{PV,z} - pion MCtruth; DCA_{xy} (cm); DCA_{z} (cm)",320,-20.f,20.f,320,-20.f,20.f);
@@ -541,8 +594,30 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fHistDCAXYpionvtxMCt = new TH1F("fHistDCAXYpionvtxMCt","DCA candidate #pi^{-}-decay vertex - xy coordinate - MCtruth; DCA_{xy} (cm); entries",200,-5.,5.);
     fHistDCAZpionvtxMCt = new TH1F("fHistDCAZpionvtxMCt","DCA candidate #pi^{-}-decay vertex - z coordinate - MCtruth; DCA_{z} (cm); entries",200,-10.,10.);
     
+    fHistNormalizedDecayL_MCt = new TH1F("fHistNormalizedDecayL_MCt","normalized decay length - MCtruth; decL/#sigma_{dL}; entries",400,0.,100.);
+    fHistLifetime_MCt = new TH1F("fHistLifetime_MCt","ct ^{3}H_{#Lambda} - MCtruth; ct(cm); entries",400,0.,400.);
+    
+    fHistAngle_deu_pro_MCt = new TH1F("fHistAngle_deu_pro_MCt","Angle between d and p - MCtruth; #alpha_{d_p} (rad) - MCtruth; entries/(0.03 rad)",100,0.,TMath::Pi());
+    fHistAngle_deu_pion_MCt = new TH1F("fHistAngle_deu_pion_MCt","Angle between d and #pi - MCtruth; #beta_{d_#pi} (rad); entries/(0.03 rad)",100,0.,TMath::Pi());
+    fHistAngle_pro_pion_MCt = new TH1F("fHistAngle_pro_pion_MCt","Angle between p and #pi - MCtruth; #gamma_{p_#pi} (rad);entries/(0.03 rad)",100,0.,TMath::Pi());
+
+    fHistAngleCorr_dp_dpi_MCt = new TH2F("fHistAngleCorr_dp_dpi_MCt","Correlation: #alpha_{d_p} vs #beta_{d_#pi} - MCtruth;#alpha_{d_p};#beta_{d_#pi}",100,0.,TMath::Pi(),100,0.,TMath::Pi());
+    fHistAngleCorr_dp_ppi_MCt = new TH2F("fHistAngleCorr_dp_ppi_MCt","Correlation: #alpha_{d_p} vs #gamma_{p_#pi} - MCtruth;#alpha_{d_p};#gamma_{p_#pi}",100,0.,TMath::Pi(),100,0.,TMath::Pi());
+    fHistAngleCorr_ppi_dpi_MCt = new TH2F("fHistAngleCorr_ppi_dpi_MCt","Correlation: #gamma_{p_#pi} vs #beta_{d_#pi} - MCtruth;#gamma_{p_#pi};#beta_{d_#pi}",100,0.,TMath::Pi(),100,0.,TMath::Pi());
+
+    fHistDecayMomCM_X_MCt = new TH1F("fHistDecayMomCM_X_MCt","p_{^{3}H_{#Lambda},X} in center-of-mass - MCtruth; p_{X} (GeV/c); entries/0.02",200.,-2.,2.);
+    fHistDecayMomCM_Y_MCt = new TH1F("fHistDecayMomCM_Y_MCt","p_{^{3}H_{#Lambda},Y} in center-of-mass - MCtruth; p_{Y} (GeV/c); entries/0.02",200.,-2.,2.);
+    fHistDecayMomCM_Z_MCt = new TH1F("fHistDecayMomCM_Z_MCt","p_{^{3}H_{#Lambda},Z} in center-of-mass - MCtruth; p_{Z} (GeV/c); entries/0.02",200.,-2.,2.);
+    fHistDecayMomCM_XY_MCt = new TH2F("fHistDecayMomCM_XY_MCt","p_{^{3}H_{#Lambda},X} vs p_{^{3}H_{#Lambda},Y} in center-of-mass - Mctruth_{X} (GeV/c); p_{Y} (GeV/c)",200.,-2.,2.,200.,-2.,2.);
+    fHistDecayMomCM_XZ_MCt = new TH2F("fHistDecayMomCM_XZ_MCt","p_{^{3}H_{#Lambda},X} vs p_{^{3}H_{#Lambda},Z} in center-of-mass - MCtruth; p_{X} (GeV/c); p_{Z} (GeV/c)",200.,-2.,2.,200.,-2.,2.);
+    fHistDecayMomCM_YZ_MCt = new TH2F("fHistDecayMomCM_YZ_MCt","p_{^{3}H_{#Lambda},Y} vs p_{^{3}H_{#Lambda},Z} in center-of-mass - MCtruth; p_{Y} (GeV/c); p_{Z} (GeV/c)",200.,-2.,2.,200.,-2.,2.);
+    fHistDecayMomCM_MCt = new TH1F("fHistDecayMomCM_MCt","^{3}H_{#Lambda} momentum in center-of-mass - MCtruth; p_{^{3}H_{#Lambda}} (GeV/c); entries/0.01",150,0.,3.);
+    fHistHypertritonMomMCt = new TH1F("fHistHypertritonMomMCt","^{3}H_{#Lambda} momentum - MCtruth; p_{^{3}H_{#Lambda}} (GeV/c); entries/0.01",1100.,0.,11.);
+    
+    fHistHyperRapidityMCt =  new TH1F("fHistHyperRapidityMCt","rapidity distribution of ^{3}H_{#Lambda} - MC truth; y; entries",400,-2.f,2.f);
     
     fHistMassHypertritonMCt = new TH1F("fHistMassHypertritonMCt","^{3}H_{#Lambda} invariant mass - MCtruth; invariant mass d+p+#pi^{-} (GeV/c^{2}); entries", 400,2.9,3.1);
+    fHistMassAntiHypertritonMCt = new TH1F("fHistMassAntiHypertritonMCt","#bar{^{3}H_{#Lambda}} invariant mass - MCtruth; invariant mass #bar{d}+#bar{p}+#pi^{+} (GeV/c^{2}); entries", 400,2.9,3.1);
   }
   
   fOutput->Add(fHistCount);
@@ -602,7 +677,6 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput->Add(fHistAngleCorr_ppi_dpi);
   fOutput->Add(fHistHyperRapidity);
   fOutput->Add(fHistCosPointingAngle);
-  fOutput->Add(fHistDalitz_dp_dpi);
   fOutput->Add(fHistDecayMomCM_X);
   fOutput->Add(fHistDecayMomCM_Y);
   fOutput->Add(fHistDecayMomCM_Z);
@@ -619,6 +693,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fOutput->Add(fHistpTpionMCt);
     fOutput->Add(fHistpTproMCt);
     fOutput->Add(fHistpTdeuMCt);
+    fOutput->Add(fHistMompionMCt);
+    fOutput->Add(fHistMomproMCt);
+    fOutput->Add(fHistMomdeuMCt);
     fOutput->Add(fHistCorrDCAdprimaryMCt);
     fOutput->Add(fHistCorrDCApprimaryMCt);
     fOutput->Add(fHistCorrDCApiprimaryMCt);
@@ -637,7 +714,25 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
     fOutput->Add(fHistDCAZprovtxMCt);
     fOutput->Add(fHistDCAXYpionvtxMCt);
     fOutput->Add(fHistDCAZpionvtxMCt);
+    fOutput->Add(fHistNormalizedDecayL_MCt);
+    fOutput->Add(fHistLifetime_MCt);
+    fOutput->Add(fHistAngle_deu_pro_MCt);
+    fOutput->Add(fHistAngle_deu_pion_MCt);
+    fOutput->Add(fHistAngle_pro_pion_MCt);
+    fOutput->Add(fHistAngleCorr_dp_dpi_MCt);
+    fOutput->Add(fHistAngleCorr_dp_ppi_MCt);
+    fOutput->Add(fHistAngleCorr_ppi_dpi_MCt);
+    fOutput->Add(fHistDecayMomCM_X_MCt);
+    fOutput->Add(fHistDecayMomCM_Y_MCt);
+    fOutput->Add(fHistDecayMomCM_Z_MCt);
+    fOutput->Add(fHistDecayMomCM_XY_MCt);
+    fOutput->Add(fHistDecayMomCM_XZ_MCt);
+    fOutput->Add(fHistDecayMomCM_YZ_MCt);
+    fOutput->Add(fHistDecayMomCM_MCt);
+    fOutput->Add(fHistHypertritonMomMCt);
+    fOutput->Add(fHistHyperRapidityMCt);
     fOutput->Add(fHistMassHypertritonMCt);
+    fOutput->Add(fHistMassAntiHypertritonMCt);
   }
   
   // Post output data.
@@ -649,12 +744,15 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   if(fFillTree){
   OpenFile(2);
   fTTree = new TTree("hypertriton","hypertriton candidates");
+  fTTree->Branch("MCtruth",&fTMCtruth,"MCtruth/F");
+  fTTree->Branch("CentralityPerc",&fTCentralityPerc,"CentralityPerc/F");
   fTTree->Branch("Chi2NDFdeu",&fTchi2NDFdeu,"Chi2NDFdeu/F");
   fTTree->Branch("TPCclsdeu",&fTPCclsdeu,"TPCclsdeu/s");
   fTTree->Branch("TPCclsPIDdeu",&fTPCclsPIDdeu,"TPCclsPIDdeu/s");
   fTTree->Branch("pTPCdeu",&fTpTPCdeu,"pTPCdeu/F");
-  fTTree->Branch("pTdeu",&fTpTdeu,"pTdeu/F");
-  fTTree->Branch("pdeu",&fTpdeu,"pdeu/F");
+  fTTree->Branch("pdeu_x",&fTpXdeu,"pdeu_x/F");
+  fTTree->Branch("pdeu_y",&fTpYdeu,"pdeu_y/F");
+  fTTree->Branch("pdeu_z",&fTpZdeu,"pdeu_z/F");
   fTTree->Branch("TPCnsigmadeu",&fTTPCnsigmadeu,"TPCnsigmadeu/F");
   fTTree->Branch("TOFmassdeu",&fTTOFmassdeu,"TOFmassdeu/F");
   fTTree->Branch("DCAxydeuprim",&fTDCAXYdeuprvtx,"DCAxydeuprim/F");
@@ -663,8 +761,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fTTree->Branch("TPCclspro",&fTPCclspro,"TPCclspro/s");
   fTTree->Branch("TPCclsPIDpro",&fTPCclsPIDpro,"TPCclsPIDpro/s");
   fTTree->Branch("pTPCpro",&fTpTPCpro,"pTPCpro/F");
-  fTTree->Branch("pTpro",&fTpTpro,"pTpro/F");
-  fTTree->Branch("ppro",&fTppro,"ppro/F");
+  fTTree->Branch("ppro_x",&fTpXpro,"ppro_x/F");
+  fTTree->Branch("ppro_y",&fTpYpro,"ppro_y/F");
+  fTTree->Branch("ppro_z",&fTpZpro,"ppro_z/F");
   fTTree->Branch("TPCnsigmapro",&fTTPCnsigmapro,"TPCnsigmapro/F");
   fTTree->Branch("TOFmasspro",&fTTOFmasspro,"TOFmasspro/F");
   fTTree->Branch("DCAxyproprim",&fTDCAXYproprvtx,"DCAxyproprim/F");
@@ -673,8 +772,9 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fTTree->Branch("TPCclspion",&fTPCclspion,"TPCclspion/s");
   fTTree->Branch("TPCclsPIDpion",&fTPCclsPIDpion,"TPCclsPIDpion/s");
   fTTree->Branch("pTPCpion",&fTpTPCpion,"pTPCpion/F");
-  fTTree->Branch("pTpion",&fTpTpion,"pTpion/F");
-  fTTree->Branch("ppion",&fTppion,"ppion/F");
+  fTTree->Branch("ppion_x",&fTpXpion,"ppion_x/F");
+  fTTree->Branch("ppion_y",&fTpYpion,"ppion_y/F");
+  fTTree->Branch("ppion_z",&fTpZpion,"ppion_z/F");
   fTTree->Branch("TPCnsigmapion",&fTTPCnsigmapion,"TPCnsigmapion/F");
   fTTree->Branch("DCAxypioprim",&fTDCAXYpioprvtx,"DCAxypioprim/F");
   fTTree->Branch("DCAzpioprim",&fTDCAZpioprvtx,"DCAzpioprim/F");
@@ -687,7 +787,33 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fTTree->Branch("DCAZprovtx",&fTDCAZpvtx,"DCAZprovtx/F");
   fTTree->Branch("DCAXYpionvtx",&fTDCAXYpivtx,"DCAXYpionvtx/F");
   fTTree->Branch("DCAZpionvtx",&fTDCAZpivtx,"DCAZpionvtx/F");
+  fTTree->Branch("Angle_dp",&fTAngle_dp,"Angle_dp/F");
+  fTTree->Branch("Angle_dpi",&fTAngle_dpi,"Angle_dpi/F");
+  fTTree->Branch("Angle_ppi",&fTAngle_ppi,"Angle_ppi/F");
+  fTTree->Branch("pdeuCM_x",&fTpdeu_CM_X,"pdeuCM_x/F");
+  fTTree->Branch("pdeuCM_y",&fTpdeu_CM_Y,"pdeuCM_y/F");
+  fTTree->Branch("pdeuCM_z",&fTpdeu_CM_Z,"pdeuCM_z/F");
+  fTTree->Branch("pproCM_x",&fTppro_CM_X,"pproCM_x/F");
+  fTTree->Branch("pproCM_y",&fTppro_CM_Y,"pproCM_y/F");
+  fTTree->Branch("pproCM_z",&fTppro_CM_Z,"pproCM_z/F");
+  fTTree->Branch("ppioCM_x",&fTppio_CM_X,"ppioCM_x/F");
+  fTTree->Branch("ppioCM_y",&fTppio_CM_Y,"ppioCM_y/F");
+  fTTree->Branch("ppioCM_z",&fTppio_CM_Z,"ppioCM_z/F");
+  fTTree->Branch("pHyperCM_x",&fTp3HL_CM_X,"pHyperCM_x/F");
+  fTTree->Branch("pHyperCM_y",&fTp3HL_CM_Y,"pHyperCM_y/F");
+  fTTree->Branch("pHyperCM_z",&fTp3HL_CM_Z,"pHyperCM_z/F");
+  fTTree->Branch("pdeuGen_x",&fTpdeu_gen_X,"pdeuGen_x/F");
+  fTTree->Branch("pdeuGen_y",&fTpdeu_gen_Y,"pdeuGen_y/F");
+  fTTree->Branch("pdeuGen_z",&fTpdeu_gen_Z,"pdeuGen_z/F");
+  fTTree->Branch("pproGen_x",&fTppro_gen_X,"pproGen_x/F");
+  fTTree->Branch("pproGen_y",&fTppro_gen_Y,"pproGen_y/F");
+  fTTree->Branch("pproGen_z",&fTppro_gen_Z,"pproGen_z/F");
+  fTTree->Branch("ppioGen_x",&fTppio_gen_X,"ppioGen_x/F");
+  fTTree->Branch("ppioGen_y",&fTppio_gen_Y,"ppioGen_y/F");
+  fTTree->Branch("ppioGen_z",&fTppio_gen_Z,"ppioGen_z/F");
+  fTTree->Branch("Rapidity",&fTRapidity,"Rapidity/F");
   fTTree->Branch("DecayLength",&fTDecayLength,"DecayLength/F");
+  fTTree->Branch("DecayLengthError",&fTDecayLengthError,"DecayLengthError/F");
   fTTree->Branch("CosPA",&fTCosPA,"CosPA/F");
   fTTree->Branch("InvariantMass",&fTInvariantMass,"InvariantMass/F");
 
@@ -965,6 +1091,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    //fHistTOFdeusignal->Fill(p,beta);
 	    fHistTOFdeumass->Fill(mass);
 	  }
+	  cdeuteron[nDeuTPC++] = i;
 	  //cdeuteron.push_back(track);
 	  //cmassd.push_back(mass); // da spostare nel if length > 350.?
 	}
@@ -974,23 +1101,30 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	    //fHistTOFprosignal->Fill(p,beta);
 	    fHistTOFpromass->Fill(mass);
 	  }
+	  cproton[nProTPC++] = i;
 	  //cproton.push_back(track);
 	  //cmassp.push_back(mass); // da spostare nel if length > 350.?
 	}
-	else if (tparticleDaughter->GetPdgCode() == 211) fHistTPCpionplussignal->Fill(p, track->GetTPCsignal());
+	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && tparticleDaughter->GetPdgCode() == 211) { // pi+
+	  fHistTPCpionplussignal->Fill(p, track->GetTPCsignal());
+	  cpion[nPioTPC++] = i;
+	}
       } // end of "track sign +"
       else if(track->GetSign()<0){ // track sign -
-	if (tparticleDaughter->GetPdgCode() == -1000010020) { //anti-d
+	if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron)) <= 4 && tparticleDaughter->GetPdgCode() == -1000010020) { //anti-d
 	  fHistTPCantideusignal->Fill(p, track->GetTPCsignal());
 	  //if(track->GetIntegratedLength() > 350.) fHistTOFantideusignal->Fill(p,beta);
+	  cdeuteron[nDeuTPC++] = i;
 	}
-	else if (tparticleDaughter->GetPdgCode() == -2212) { //anti-p
+	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton)) <= 4 && tparticleDaughter->GetPdgCode() == -2212) { //anti-p
 	  fHistTPCantiprosignal->Fill(p, track->GetTPCsignal());
 	  //if(track->GetIntegratedLength() > 350.) fHistTOFantiprosignal->Fill(p,beta);
+	  cproton[nProTPC++] = i;
 	}
 	else if (TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion)) <= 4 && tparticleDaughter->GetPdgCode() == -211) { // pi-
 	  fHistTPCpionsignal->Fill(p, track->GetTPCsignal());
 	  //cpion.push_back(track);
+	  cpion[nPioTPC++] = i;
 	}
       } // end of "track sign -"
     } // end of MC PID
@@ -1086,9 +1220,12 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   Double_t pTotHyper = 0.;
   Double_t pTotHyperCM=0.;
   TLorentzRotation bet;
-  TLorentzVector p_dp,p_dpi;
   Int_t deuIdx, proIdx, pioIdx = 0.;
   Double_t charge_d, charge_p, charge_pi = 0.;
+
+  TParticle *tparticleD = 0x0;
+  TParticle *tparticleP = 0x0;
+  TParticle *tparticlePi = 0x0;
   
   for(UInt_t j=0; j<nDeuTPC; j++){ // candidate deuteron loop cdeuteron.size()
     
@@ -1104,13 +1241,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     charge_d = trackD->GetSign();
     
     for(UInt_t m=0; m<nProTPC; m++){ // candidate proton loop cproton.size()
-          
+      
       trackP = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cproton[m]));
-	  
+      
       if(fMC) {if(trackD->GetLabel() == trackP->GetLabel()) continue;}
-
+      
       charge_p = trackP->GetSign();
-
+      
       if((charge_d*charge_p)<0) continue; //avoid coupling d-pbar and dbar-p
       
       trackP->GetImpactParameters(pprim,pprimc);
@@ -1139,8 +1276,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	d1.Clear();
 	p1.Clear();
 	pi1.Clear();
-	p_dp.Clear();
-	p_dpi.Clear();
 	
 	trackNPi = dynamic_cast<AliESDtrack*>(fESDevent->GetTrack(cpion[s]));
 	brotherHood = kFALSE;
@@ -1155,14 +1290,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	if(!fESDtrackCutsV0->AcceptTrack(trackNPi)) continue;
 
 	if(fMC){
-	if(trackNPi->GetLabel() == trackP->GetLabel()) continue;
-	if(trackNPi->GetLabel() == trackD->GetLabel()) continue;
+	  if(trackNPi->GetLabel() == trackP->GetLabel()) continue;
+	  if(trackNPi->GetLabel() == trackD->GetLabel()) continue;
 	}
 
 	trackNPi->GetImpactParameters(piprim,piprimc);
 	
 	dcapiprim = TMath::Sqrt((piprim[0]*piprim[0])+(piprim[1]*piprim[1]));
-	       
+	
 	fHistDCApiprimary->Fill(dcapiprim);
 	//fHistCorrDCApiprimary->Fill(piprim[0],piprim[1]);
 	
@@ -1263,10 +1398,6 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	fHistCosPointingAngle->Fill(TMath::Cos(pointingAngleH));
 	if (TMath::Cos(pointingAngleH) < fCosPointingAngle) continue;
 
-	//	p_dp = posD + posP;
-	//	p_dpi = posD + negPi;
-	
-	//fHistDalitz_dp_dpi->Fill(p_dpi.M2(),p_dp.M2());
 	
 	d1.SetXYZ(trackD->Px(),trackD->Py(),trackD->Pz());  
 	p1.SetXYZ(trackP->Px(),trackP->Py(),trackP->Pz());
@@ -1322,57 +1453,109 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  lD = trackD->GetLabel();
 	  lP = trackP->GetLabel();
 	  lPi = trackNPi->GetLabel();
-	  TParticle *tparticleD = stack->Particle(TMath::Abs(lD));
+	  tparticleD = stack->Particle(TMath::Abs(lD));
+	  tparticleP = stack->Particle(TMath::Abs(lP));
+	  tparticlePi = stack->Particle(TMath::Abs(lPi));
 	  labelM = tparticleD->GetFirstMother();
 	  TParticle *tparticleMother = stack->Particle(TMath::Abs(labelM));
 	  ndau = tparticleMother->GetNDaughters();
 	  
-	  if(tparticleMother->GetPdgCode() == 1010010030 && ndau == 3){
+	  if(TMath::Abs(tparticleMother->GetPdgCode()) == 1010010030 && ndau == 3){
 	    Int_t labelFirstDau = tparticleMother->GetDaughter(0);
 	    Int_t labelSecondDau = labelFirstDau + 1;
 	    Int_t labelThirdDau = tparticleMother->GetDaughter(1);
 	    if(labelFirstDau == lD && labelSecondDau == lP && labelThirdDau == lPi){
-	      //signature of dca pion-primary in case of MCtruth
-	      dca_dp = -dca_dp;
-	      dca_dpi = -dca_dpi;
-	      dca_ppi = -dca_ppi;
+	      
 	      brotherHood = kTRUE;
+
+	      fHistpionTPCclsMCt->Fill(trackNPi->GetTPCclusters(0));
+	      fHistpTpionMCt->Fill(trackNPi->Pt());
+	      fHistpTproMCt->Fill(trackP->Pt());
+	      fHistpTdeuMCt->Fill(trackD->Pt());
+	      fHistMompionMCt->Fill(trackNPi->P());
+	      fHistMomproMCt->Fill(trackP->P());
+	      fHistMomdeuMCt->Fill(trackD->P());
+	      fHistDCAdeuproMCt->Fill(dca_dp);
+	      fHistDCApiondeuMCt->Fill(dca_dpi);
+	      fHistDCApionproMCt->Fill(dca_ppi);
+	      fHistCorrDCApiprimaryMCt->Fill(piprim[0],piprim[1]);
+	      fHistCorrDCApprimaryMCt->Fill(pprim[0],pprim[1]);
+	      fHistCorrDCAdprimaryMCt->Fill(dprim[0],dprim[1]);
+	      fHistDCApiprimaryMCt->Fill(dcapiprim);
+	      fHistDCApprimaryMCt->Fill(dcapprim);
+	      fHistDCAdprimaryMCt->Fill(dcadprim);
+	      fHistDCAXYdeuvtxMCt->Fill(dcad[0]);
+	      fHistDCAZdeuvtxMCt->Fill(dcad[1]);
+	      fHistDCAXYprovtxMCt->Fill(dcap[0]);
+	      fHistDCAZprovtxMCt->Fill(dcap[1]);
+	      fHistDCAXYpionvtxMCt->Fill(dcapi[0]);
+	      fHistDCAZpionvtxMCt->Fill(dcapi[1]);
+	      fHistZDecayVtxMCt->Fill(decVt[2]);
+	      fHistXDecayVtxMCt->Fill(decVt[0]);
+	      fHistYDecayVtxMCt->Fill(decVt[1]);
+	      fHistNormalizedDecayL_MCt->Fill(normalizedDecayL);
+	      fHistLifetime_MCt->Fill(ctau);
+	      fHistAngle_deu_pro_MCt->Fill(d1.Angle(p1));
+	      fHistAngle_deu_pion_MCt->Fill(d1.Angle(pi1));
+	      fHistAngle_pro_pion_MCt->Fill(p1.Angle(pi1));
+	      fHistAngleCorr_dp_dpi_MCt->Fill(d1.Angle(p1),d1.Angle(pi1));
+	      fHistAngleCorr_dp_ppi_MCt->Fill(d1.Angle(p1),p1.Angle(pi1));
+	      fHistAngleCorr_ppi_dpi_MCt->Fill(p1.Angle(pi1),d1.Angle(pi1));
+	      fHistDecayMomCM_X_MCt->Fill(HypertritonCM.Px());
+	      fHistDecayMomCM_Y_MCt->Fill(HypertritonCM.Py());
+	      fHistDecayMomCM_Z_MCt->Fill(HypertritonCM.Pz());
+	      fHistDecayMomCM_XY_MCt->Fill(HypertritonCM.Px(),HypertritonCM.Py());
+	      fHistDecayMomCM_XZ_MCt->Fill(HypertritonCM.Px(),HypertritonCM.Pz());
+	      fHistDecayMomCM_YZ_MCt->Fill(HypertritonCM.Py(),HypertritonCM.Pz());
+	      fHistDecayMomCM_MCt->Fill(pTotHyperCM);
+	      fHistHypertritonMomMCt->Fill(pTotHyper);
+	      fHistHyperRapidityMCt->Fill(rapidity);
+	      if(charge_pi<0) fHistMassHypertritonMCt->Fill(Hypertriton.M());
+	      if(charge_pi>0) fHistMassAntiHypertritonMCt->Fill(Hypertriton.M());
 	    }
-	    else brotherHood = kFALSE;
 	  }
-	  else brotherHood = kFALSE;
 	}
+
 	
 	if(fFillTree){
+	  fTMCtruth = brotherHood;
+	  fTCentralityPerc = fCentralityPercentile;
+	  //deuteron
 	  fTchi2NDFdeu = trackD->GetTPCchi2()/trackD->GetTPCclusters(0);
 	  fTPCclsdeu = trackD->GetTPCclusters(0);
 	  fTPCclsPIDdeu = trackD->GetTPCsignalN() ;
 	  fTpTPCdeu = trackD->GetTPCmomentum();
-	  fTpTdeu = trackD->Pt();
-	  fTpdeu = trackD->P();
+	  fTpXdeu = trackD->Px();
+	  fTpYdeu = trackD->Py();
+	  fTpZdeu = trackD->Pz();
 	  fTTPCnsigmadeu = fPIDResponse->NumberOfSigmasTPC(trackD,AliPID::kDeuteron);
 	  //fTTOFmassdeu = cmassd.at(j) ;
 	  fTDCAXYdeuprvtx = dprim[0];
 	  fTDCAZdeuprvtx = dprim[1];
+	  //proton
 	  fTchi2NDFpro = trackP->GetTPCchi2()/trackP->GetTPCclusters(0);
 	  fTPCclspro = trackP->GetTPCclusters(0);
 	  fTPCclsPIDpro = trackP->GetTPCsignalN();
 	  fTpTPCpro = trackP->GetTPCmomentum();
-	  fTpTpro = trackP->Pt();
-	  fTppro = trackP->P();
+	  fTpXpro = trackP->Px();
+	  fTpYpro = trackP->Py();
+	  fTpZpro = trackP->Pz();
 	  fTTPCnsigmapro = fPIDResponse->NumberOfSigmasTPC(trackP,AliPID::kProton);
 	  //fTTOFmasspro = cmassp.at(m);
 	  fTDCAXYproprvtx = pprim[0];
 	  fTDCAZproprvtx = pprim[1];
+	  //pion
 	  fTchi2NDFpion = trackNPi->GetTPCchi2()/trackNPi->GetTPCclusters(0);
 	  fTPCclspion = trackNPi->GetTPCclusters(0);
 	  fTPCclsPIDpion = trackNPi->GetTPCsignalN();
 	  fTpTPCpion = trackNPi->GetTPCmomentum();
-	  fTpTpion = trackNPi->Pt();
-	  fTppion = trackNPi->P();
+	  fTpXpion = trackNPi->Px();
+	  fTpYpion = trackNPi->Py();
+	  fTpZpion = trackNPi->Pz();
 	  fTTPCnsigmapion = fPIDResponse->NumberOfSigmasTPC(trackNPi,AliPID::kPion);
 	  fTDCAXYpioprvtx = piprim[0];
 	  fTDCAZpioprvtx = piprim[1];
+	  //triplets
 	  fTDCAdp = dca_dp;
 	  fTDCAdpi = dca_dpi;
 	  fTDCAppi = dca_ppi;
@@ -1382,43 +1565,44 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 	  fTDCAZpvtx = dcap[1];
 	  fTDCAXYpivtx = dcapi[0];
 	  fTDCAZpivtx = dcapi[1];
+	  fTAngle_dp = d1.Angle(p1);
+	  fTAngle_dpi = d1.Angle(pi1);
+	  fTAngle_ppi = p1.Angle(pi1);
+	  fTpdeu_CM_X = posDCM.Px();
+	  fTpdeu_CM_Y = posDCM.Py();
+	  fTpdeu_CM_Z = posDCM.Pz();
+	  fTppro_CM_X = posPCM.Px();
+	  fTppro_CM_Y = posPCM.Py();
+	  fTppro_CM_Z = posPCM.Pz();
+	  fTppio_CM_X = negPiCM.Px();
+	  fTppio_CM_Y = negPiCM.Py();
+	  fTppio_CM_Z = negPiCM.Pz();
+	  fTp3HL_CM_X = HypertritonCM.Px();
+	  fTp3HL_CM_Y = HypertritonCM.Py();
+	  fTp3HL_CM_Z = HypertritonCM.Pz();	  
+	  fTRapidity = Hypertriton.Rapidity();
 	  fTDecayLength = decayLengthH3L;
+	  fTDecayLengthError = fVtx2->ErrorDistanceToVertex(fVtx1);
 	  fTCosPA = TMath::Cos(pointingAngleH);
-	  fTInvariantMass = Hypertriton.M();
+
+	  if(fMC){	    
+	    fTpdeu_gen_X = tparticleD->Px();
+	    fTpdeu_gen_Y = tparticleD->Py();
+	    fTpdeu_gen_Z = tparticleD->Pz();
+	    fTppro_gen_X = tparticleP->Px();
+	    fTppro_gen_Y = tparticleP->Py();
+	    fTppro_gen_Z = tparticleP->Pz();
+	    fTppio_gen_X = tparticlePi->Px();
+	    fTppio_gen_Y = tparticlePi->Py();
+	    fTppio_gen_Z = tparticlePi->Pz();
+	  }
+	  
+	  if(charge_d<0 && charge_p<0 && charge_pi>0) fTInvariantMass = -Hypertriton.M();
+	  else fTInvariantMass = Hypertriton.M();
 
 	  fTTree->Fill();
 	  PostData(2,fTTree);
 	} //end of Fill Tree
-
-	//Pure MC part - Hypertriton truth
-
-	if(fMC){
-	  if(brotherHood) {// H3L --> d+p+pi 
-	    fHistpionTPCclsMCt->Fill(trackNPi->GetTPCclusters(0));
-	    fHistpTpionMCt->Fill(trackNPi->Pt());
-	    fHistpTproMCt->Fill(trackP->Pt());
-	    fHistpTdeuMCt->Fill(trackD->Pt());
-	    fHistDCAdeuproMCt->Fill(-dca_dp);
-	    fHistDCApiondeuMCt->Fill(-dca_dpi);
-	    fHistDCApionproMCt->Fill(-dca_ppi);
-	    fHistCorrDCApiprimaryMCt->Fill(piprim[0],piprim[1]);
-	    fHistCorrDCApprimaryMCt->Fill(pprim[0],pprim[1]);
-	    fHistCorrDCAdprimaryMCt->Fill(dprim[0],dprim[1]);
-	    fHistDCApiprimaryMCt->Fill(dcapiprim);
-	    fHistDCApprimaryMCt->Fill(dcapprim);
-	    fHistDCAdprimaryMCt->Fill(dcadprim);
-	    fHistDCAXYdeuvtxMCt->Fill(dcad[0]);
-	    fHistDCAZdeuvtxMCt->Fill(dcad[1]);
-	    fHistDCAXYprovtxMCt->Fill(dcap[0]);
-	    fHistDCAZprovtxMCt->Fill(dcap[1]);
-	    fHistDCAXYpionvtxMCt->Fill(dcapi[0]);
-	    fHistDCAZpionvtxMCt->Fill(dcapi[1]);
-	    fHistZDecayVtxMCt->Fill(decVt[2]);
-	    fHistXDecayVtxMCt->Fill(decVt[0]);
-	    fHistYDecayVtxMCt->Fill(decVt[1]);
-	    fHistMassHypertritonMCt->Fill(Hypertriton.M());
-	  }
-	} // end of Pure MC part
       } // end of candidate pion loop
     } // end of candidate proton loop
   }// end of candidate deuteron loop
@@ -1444,8 +1628,8 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
       if(pstack->GetPdgCode() == -1000020030) fHistParticle->Fill(13); // He3bar
       if(pstack->GetPdgCode() == 1000020040) fHistParticle->Fill(14); // He4
       if(pstack->GetPdgCode() == -1000020040) fHistParticle->Fill(15); // He4bar
-      if(pstack->GetPdgCode() == 1010010030) fHistParticle->Fill(16); // H3L
-      if(pstack->GetPdgCode() == -1010010030) fHistParticle->Fill(17); // H3Lbar
+      if(pstack->GetPdgCode() == 1010010030 && pstack->GetNDaughters() == 3) fHistParticle->Fill(16); // H3L
+      if(pstack->GetPdgCode() == -1010010030 && pstack->GetNDaughters() == 3) fHistParticle->Fill(17); // H3Lbar
       if(pstack->GetPdgCode() == 1010010030 && pstack->GetNDaughters() == 2) fHistParticle->Fill(18); // H3L
       if(pstack->GetPdgCode() == -1010010030 && pstack->GetNDaughters() == 2) fHistParticle->Fill(19); // H3Lbar
       if(pstack->GetPdgCode() == 3122 && pstack->GetNDaughters() == 2) fHistParticle->Fill(20); // Lambda

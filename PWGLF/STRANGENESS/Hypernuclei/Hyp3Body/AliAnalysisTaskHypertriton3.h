@@ -94,7 +94,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   
   Double_t GetDCAcut(Int_t part, Double_t dca) const;
 
-  void SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs) const;
+  void SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs) const; //!<! method to set the value for the converted AOD vertices
 
  private:
 
@@ -214,7 +214,6 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH2F               *fHistAngleCorr_ppi_dpi;      //!<! Correlation between angle_ppi vs angle_dpi
   TH1F               *fHistHyperRapidity;          //!<! Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistCosPointingAngle;       //!<! Cosine of pointing angle distribution of candidate mother particle
-  TH2F               *fHistDalitz_dp_dpi;          //!<! Dalitz plot\f$ m^{2}_{d#pi} vs m^{2}_{dp} \f$
   TH1F               *fHistDecayMomCM_X;           //!<! X momentum component of decaying hypertriton in center-of-mass
   TH1F               *fHistDecayMomCM_Y;           //!<! Y momentum component of decaying hypertriton in center-of-mass
   TH1F               *fHistDecayMomCM_Z;           //!<! Z momentum component of decaying hypertriton in center-of-mass
@@ -230,6 +229,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistpTpionMCt;              //!<! *(MC only)* \f$\p^{T}\f$ distribution of \f$\pi\f$ identified with PDGCode
   TH1F               *fHistpTproMCt;               //!<! *(MC only)* \f$\p^{T}\f$ distribution of proton identified with PDGCode
   TH1F               *fHistpTdeuMCt;               //!<! *(MC only)* \f$\p^{T}\f$ distribution of deuteron identified with PDGCode
+  TH1F               *fHistMompionMCt;             //!<! *(MC only)* \f$\p\f$ distribution of \f$\pi\f$ identified with PDGCode
+  TH1F               *fHistMomproMCt;              //!<! *(MC only)* \f$\p\f$ distribution of proton identified with PDGCode
+  TH1F               *fHistMomdeuMCt;              //!<! *(MC only)* \f$\p\f$ distribution of deuteron identified with PDGCode
   TH2F               *fHistCorrDCAdprimaryMCt;     //!<! *(MC only)* Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ deuteron(PDGCode identified)-primary vertex 
   TH2F               *fHistCorrDCApprimaryMCt;     //!<! *(MC only)* Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ proton(PDGCode identified)-primary vertex
   TH2F               *fHistCorrDCApiprimaryMCt;    //!<! *(MC only)* Correlation \f$DCA_{z}\f$ vs \f$DCA_{xy}\f$ pion(PDGCode identified)-primary vertex
@@ -248,17 +250,39 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistDCAZprovtxMCt;          //!<! *(MC only)* \f$DCA_{z}\f$ candidate proton(PDGCode identified)-secondary vertex
   TH1F               *fHistDCAXYpionvtxMCt;        //!<! *(MC only)* \f$DCA_{xy}\f$ candidate pion(PDGCode identified)-secondary vertex
   TH1F               *fHistDCAZpionvtxMCt;         //!<! *(MC only)* \f$DCA_{z}\f$ candidate pion(PDGCode identified)-secondary vertex
+  TH1F               *fHistNormalizedDecayL_MCt;   //!<! *(MC only)* normalized decay length of true hypertriton in 3 body decay
+  TH1F               *fHistLifetime_MCt;           //!<! *(MC only)* c*tau distribution of true \f$H^{3}_{\Lambda}\f$
+  TH1F               *fHistAngle_deu_pro_MCt;      //!<! *(MC only)* Angle between deuteron and proton vectors
+  TH1F               *fHistAngle_deu_pion_MCt;     //!<! *(MC only)* Angle between deuteron and pion vectors
+  TH1F               *fHistAngle_pro_pion_MCt;     //!<! *(MC only)* Angle between proton and pion vectors
+  
+  TH2F               *fHistAngleCorr_dp_dpi_MCt;   //!<! *(MC only)* Correlation between angle_dp vs angle_dpi
+  TH2F               *fHistAngleCorr_dp_ppi_MCt;   //!<! *(MC only)* Correlation between angle_dp vs angle_ppi
+  TH2F               *fHistAngleCorr_ppi_dpi_MCt;  //!<! *(MC only)* Correlation between angle_ppi vs angle_dpi
+  TH1F               *fHistDecayMomCM_X_MCt;       //!<! *(MC only)* X momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Y_MCt;       //!<! *(MC only)* Y momentum component of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_Z_MCt;       //!<! *(MC only)* Z momentum component of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XY_MCt;      //!<! *(MC only)* p_{X} vs p_{Y} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_XZ_MCt;      //!<! *(MC only)* p_{X} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH2F               *fHistDecayMomCM_YZ_MCt;      //!<! *(MC only)* p_{Y} vs p_{Z} of decaying hypertriton in center-of-mass
+  TH1F               *fHistDecayMomCM_MCt;         //!<! *(MC only)* hypertriton momentum in the center-of-mass
+  TH1F               *fHistHypertritonMomMCt;      //!<! *(MC only)* hypertriton momentum in the lab rest frame
+  TH1F               *fHistHyperRapidityMCt;       //!<! *(MC only)* Rapidity distribution of candidate \f$H^{3}_{\Lambda}\f$
   TH1F               *fHistMassHypertritonMCt;     //!<! *(MC only)* Invariant mass distribution of reconstructed \f$H^{3}_{\Lambda}\f$ - daughters particles identified with PDGCode
+  TH1F               *fHistMassAntiHypertritonMCt; //!<! *(MC only)* Invariant mass distribution of reconstructed \f$H^{3}_{\Lambda}\f$ - daughters particles identified with PDGCode
 
   //TTree
   TTree              *fTTree;                      //!<! Tree used for local tests and cross-check
+  Float_t            fTCentralityPerc;
+  Bool_t             fTMCtruth;
   // Deuteron
   Float_t            fTchi2NDFdeu;
   UShort_t           fTPCclsdeu;
   UShort_t           fTPCclsPIDdeu;
   Float_t            fTpTPCdeu;
-  Float_t            fTpTdeu;
-  Float_t            fTpdeu;
+  Float_t            fTpXdeu;
+  Float_t            fTpYdeu;
+  Float_t            fTpZdeu;
   Float_t            fTTPCnsigmadeu;
   Float_t            fTTOFmassdeu;
   Float_t            fTDCAXYdeuprvtx;
@@ -268,8 +292,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   UShort_t           fTPCclspro;
   UShort_t           fTPCclsPIDpro;
   Float_t            fTpTPCpro;
-  Float_t            fTpTpro;
-  Float_t            fTppro;
+  Float_t            fTpXpro;
+  Float_t            fTpYpro;
+  Float_t            fTpZpro;
   Float_t            fTTPCnsigmapro;
   Float_t            fTTOFmasspro;
   Float_t            fTDCAXYproprvtx;
@@ -279,8 +304,9 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   UShort_t           fTPCclspion;
   UShort_t           fTPCclsPIDpion;
   Float_t            fTpTPCpion;
-  Float_t            fTpTpion;
-  Float_t            fTppion;
+  Float_t            fTpXpion;
+  Float_t            fTpYpion;
+  Float_t            fTpZpion;
   Float_t            fTTPCnsigmapion;
   Float_t            fTDCAXYpioprvtx;
   Float_t            fTDCAZpioprvtx;
@@ -295,8 +321,38 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Float_t            fTDCAZpvtx;
   Float_t            fTDCAXYpivtx;
   Float_t            fTDCAZpivtx;
-   
+
+  Float_t            fTAngle_dp;
+  Float_t            fTAngle_dpi;
+  Float_t            fTAngle_ppi;
+
+  Float_t            fTpdeu_CM_X;
+  Float_t            fTpdeu_CM_Y;
+  Float_t            fTpdeu_CM_Z;
+  Float_t            fTppro_CM_X;
+  Float_t            fTppro_CM_Y;
+  Float_t            fTppro_CM_Z;
+  Float_t            fTppio_CM_X;
+  Float_t            fTppio_CM_Y;
+  Float_t            fTppio_CM_Z;
+  
+  Float_t            fTp3HL_CM_X;
+  Float_t            fTp3HL_CM_Y;
+  Float_t            fTp3HL_CM_Z;
+
+  Float_t            fTpdeu_gen_X;
+  Float_t            fTpdeu_gen_Y;
+  Float_t            fTpdeu_gen_Z;
+  Float_t            fTppro_gen_X;
+  Float_t            fTppro_gen_Y;
+  Float_t            fTppro_gen_Z;
+  Float_t            fTppio_gen_X;
+  Float_t            fTppio_gen_Y;
+  Float_t            fTppio_gen_Z;
+    
+  Float_t            fTRapidity; 
   Float_t            fTDecayLength;
+  Float_t            fTDecayLengthError;
   Float_t            fTCosPA;
   Float_t            fTInvariantMass;
  
