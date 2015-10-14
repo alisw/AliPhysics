@@ -141,6 +141,30 @@ class AliAnalysisTaskLambdaStar : public AliAnalysisTaskSE {
   TH3F        *fPriHistDCAxyYPtKPlus;             //! Pri: DCAxy vs (y,pt) for protons
   TH3F        *fPriHistDCAxyYPtKMinus;            //! Pri: DCAxy vs (y,pt) for anti-protons
 
+    
+    
+    // Primary particles
+    TH2D        *fPriHistTPCnsigmakaon_nocut;         // nsigma TPC vs pt for kaon
+    TH2D        *fPriHistTOFnsigmakaon_nocut;         // nsigma TOF vs pt for kaon
+    TH2D        *fPriHistTPCnsigmaproton_nocut;       // nsigma TPC vs pt for proton
+    TH2D        *fPriHistTOFnsigmaproton_nocut;       // nsigma TOF vs pt for proton
+    TH2D        *fPriHistTPCTOFnsigmakaon_nocut;      // nsigma TPC & TOFvs pt for kaon
+    TH2D        *fPriHistTPCTOFnsigmaproton_nocut;    // nsigma TPC & TOFvs pt for proton
+    
+    
+    
+    // Primary particles
+    TH2D        *fPriHistTPCnsigmakaon;         // nsigma TPC vs pt for kaon
+    TH2D        *fPriHistTOFnsigmakaon;         // nsigma TOF vs pt for kaon
+    TH2D        *fPriHistTPCnsigmaproton;       // nsigma TPC vs pt for proton
+    TH2D        *fPriHistTOFnsigmaproton;       // nsigma TOF vs pt for proton
+    TH2D        *fPriHistTPCTOFnsigmakaon;      // nsigma TPC & TOFvs pt for kaon
+    TH2D        *fPriHistTPCTOFnsigmaproton;    // nsigma TPC & TOFvs pt for proton
+    
+    
+    
+    
+    
  
  private:
   //  ------------------------------------
