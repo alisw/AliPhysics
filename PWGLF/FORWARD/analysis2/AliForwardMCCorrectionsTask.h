@@ -107,7 +107,8 @@ protected:
    */
   AliForwardMCCorrectionsTask& operator=(const AliForwardMCCorrectionsTask& o);
   /**
-   * A vertex bin 
+   * A vertex bin.   These are only used internally and are never
+   * streamed.
    * 
    */
   struct VtxBin : public AliBaseMCCorrectionsTask::VtxBin
@@ -167,7 +168,7 @@ protected:
 		AliFMDCorrSecondaryMap* map);
 
     AliForwardUtil::Histos fHists;    // Cache of per-ring histograms
-    ClassDef(VtxBin,2); // Vertex bin 
+    // ClassDef(VtxBin,2); // Vertex bin 
   };
   /** 
    * Create a vertex bin 

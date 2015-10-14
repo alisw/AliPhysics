@@ -173,7 +173,8 @@ public:
   virtual void Print(Option_t* option="") const;
 protected:
   /** 
-   * Internal data structure to keep track of the histograms
+   * Internal data structure to keep track of the histograms.  Never
+   * streamed.
    */
   struct RingHistos : public AliForwardUtil::RingHistos 
   { 
@@ -220,7 +221,7 @@ protected:
      */
     void Terminate(TList* dir, Int_t nEvents);
     TH2D*     fDensity;      // Distribution primary Nch
-    ClassDef(RingHistos,2);
+    // ClassDef(RingHistos,2);
   };
   /** 
    * Get the ring histogram container 

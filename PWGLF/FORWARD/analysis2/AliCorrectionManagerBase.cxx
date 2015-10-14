@@ -667,7 +667,10 @@ AliCorrectionManagerBase::Correction::ReadIt(AliOADBForward* db,
 
   // Ge the returned data
   TObject* o = e->fData;
-
+  if (!o) {
+    AliWarningF("Entry %p \"%s\" has no data! (%p)", e, e->GetTitle(), o);
+    return false;
+  }
   const TClass* cl = TheClass();
   // Check return class 
   if (!o->IsA()->InheritsFrom(cl)) { 

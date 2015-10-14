@@ -234,11 +234,13 @@ AliBasedNdetaTask::SetCentralityMethod(const TString& method)
   Int_t id = GetCentMethodID(method);
   if (id < -1) {
     AliErrorF("Unknown centrality estimator: %s", method.Data());
+    fCentMethod = "";
     return false;
   }
   if (id < 0) { 
     // Do not use any estimator 
     AliInfoF("No centrality estimator: \"%s\"", method.Data());
+    fCentMethod = "";
     return false;
   }
 
@@ -263,7 +265,8 @@ AliBasedNdetaTask::GetCentMethodID(const TString& meth)
   Int_t ret = -2;
   TString m(meth);
   m.ToUpper();
-  if (m.EqualTo("NONE") || m.EqualTo("NO") || m.EqualTo("FALSE")) ret = -1;
+  if (m.EqualTo("NONE") || m.EqualTo("NO") || m.EqualTo("FALSE"))
+    ret = kCentNone;
   else if (m.IsNull())               ret = kCentDefault;
   else if (m.BeginsWith("DEFAULT"))  ret = kCentDefault;
   else if (m.BeginsWith("ZEMVSZDC")) ret = kCentZEMvsZDC; 
@@ -346,6 +349,19 @@ AliBasedNdetaTask::InitializeCentBins()
 
   // Automatically add 'all' centrality bin if nothing has been defined. 
   AddCentralityBin(0, 0, 0);
+
+  // Check if the centrality method was set to none, and in that case
+  // remove the centrality axis.
+  if (fCentMethod.EqualTo("none", TString::kIgnoreCase)) {
+    fCentAxis.Set(0,0,0);
+    TH1* h = static_cast<TH1*>(fSums->FindObject(fCentAxis.GetName()));
+    if (h) {
+      Info("InitializeCentBins",
+	   "No centrality, forcing centrality axis to null");
+      h->GetXaxis()->Set(0,0,0);
+      h->Rebuild();
+    }
+  }
   if (HasCentrality()) { 
     const TArrayD* bins = fCentAxis.GetXbins();
     Int_t          nbin = fCentAxis.GetNbins(); 
@@ -892,13 +908,15 @@ AliBasedNdetaTask::Finalize()
   do {							\
     AliForwardUtil::PrintName(N);			\
     std::cout << (VALUE) << std::endl; } while(false)
+#if 0
 namespace {
   void appendBit(TString& str, const char* bit)
   {
     if (!str.IsNull()) str.Append("|");
     str.Append(bit);
-  }
+  }  
 }
+#endif
 
 //________________________________________________________________________
 void 
@@ -1322,6 +1340,7 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
 
   return *this;
 }
+#if 0
 namespace {
   Color_t Brighten(Color_t origNum, Int_t nTimes=2)
   {
@@ -1337,7 +1356,8 @@ namespace {
     Int_t newNum = TColor::GetColor(newR, newG, newB);
     return newNum;
   }
-}  
+}
+#endif
 //____________________________________________________________________
 Int_t
 AliBasedNdetaTask::CentralityBin::GetColor(Int_t fallback) const 

@@ -57,9 +57,9 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fMinQuality(AliFMDCorrELossFit::kDefaultQuality),
     fCache(),
     fDoTiming(false),
-  fHTiming(0), 
-  fMaxOutliers(0.05),
-  fOutlierCut(0.50)
+    fHTiming(0), 
+    fMaxOutliers(0.05),
+    fOutlierCut(0.50)
 {
   // 
   // Constructor 
@@ -95,8 +95,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fCache(),
     fDoTiming(false),
     fHTiming(0), 
-  fMaxOutliers(0.05),
-  fOutlierCut(0.50)
+    fMaxOutliers(0.05),
+    fOutlierCut(0.50)
 {
   // 
   // Constructor 
@@ -107,11 +107,6 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   DGUARD(fDebug, 3, "Named CTOR of FMD density calculator: %s", title);
   fRingHistos.SetName(GetName());
   fRingHistos.SetOwner();
-  fRingHistos.Add(new RingHistos(1, 'I'));
-  fRingHistos.Add(new RingHistos(2, 'I'));
-  fRingHistos.Add(new RingHistos(2, 'O'));
-  fRingHistos.Add(new RingHistos(3, 'I'));
-  fRingHistos.Add(new RingHistos(3, 'O'));
   fSumOfWeights = new TH1D("sumOfWeights", "Sum of Landau weights",
 			   200, 0, 20);
   fSumOfWeights->SetFillColor(kRed+1);
@@ -1036,6 +1031,11 @@ AliFMDDensityCalculator::Terminate(const TList* dir, TList* output,
   out->SetName(d->GetName());
   out->SetOwner();
   
+  fRingHistos.Add(new RingHistos(1, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'O'));
+  fRingHistos.Add(new RingHistos(3, 'I'));
+  fRingHistos.Add(new RingHistos(3, 'O'));
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   THStack* sums = new THStack("sums", "sums of ring signals");
@@ -1097,6 +1097,11 @@ AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
   // d->Add(nxi);
   fCuts.Output(d,"lCuts");
 
+  fRingHistos.Add(new RingHistos(1, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'O'));
+  fRingHistos.Add(new RingHistos(3, 'I'));
+  fRingHistos.Add(new RingHistos(3, 'O'));
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {

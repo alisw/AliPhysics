@@ -264,9 +264,10 @@ public:
    */
   virtual void SetDebug(Bool_t debug) { fDebug = debug; }
   /* @} */
-protected:
   /** 
-   * Correction registration
+   * Correction registration.  These objects are streamed, so we need
+   * to make them public.  That does _not_ mean that these objects
+   * should be used outside of this (or derived) classe.
    */
   struct Correction : public TNamed
   {
@@ -475,6 +476,7 @@ protected:
     TObject* fObject;    // The data 
     ClassDef(Correction,1) // Correction meta object
   };
+protected:
   /**
    * Constructor 
    */

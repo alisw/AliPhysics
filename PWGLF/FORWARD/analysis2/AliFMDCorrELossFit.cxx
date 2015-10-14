@@ -1259,10 +1259,12 @@ AliFMDCorrELossFit::IsGood(Bool_t   verbose,
 			   Int_t    minQuality)
 {
   if (TestBit(kIsGoodAsserted)) return TestBit(kIsGood);
-  
+
+  Bool_t     isGood    = true; // Assume success  
+
+  if (fRings.GetEntries() <= 0) isGood = false;
   TIter      nextRing(&fRings);
   TObjArray* ringArray = 0;
-  Bool_t     isGood    = true; // Assume success 
   while ((ringArray = static_cast<TObjArray*>(nextRing()))) {
     Char_t r = ringArray->GetName()[4];
 

@@ -632,12 +632,15 @@ protected:
      * @param option Not used
      */
     virtual void Print(Option_t* option="") const;
-    ClassDef(Sum,2); // Summed histograms
+    // ClassDef(Sum,2); // Summed histograms
   };
     
   //==================================================================
   /**
-   * Calculations done per centrality 
+   * Calculations done per centrality.  These objects are only used
+   * internally and are never streamed.  We do not make dictionaries
+   * for this (and derived) classes as they are constructed on the
+   * fly.
    * 
    */
   class CentralityBin : public TNamed
@@ -971,7 +974,7 @@ protected:
     Bool_t   fSatelliteVertices; // Satellite vertex flag
     Int_t    fDebug;    // Debug level 
 
-    ClassDef(CentralityBin,5); // A centrality bin 
+    // ClassDef(CentralityBin,5); // A centrality bin 
   };
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Bool_t          fUseROOTProj;  // Whether to use ROOT's ProjectionX

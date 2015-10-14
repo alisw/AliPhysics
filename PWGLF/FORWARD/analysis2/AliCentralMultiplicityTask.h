@@ -166,7 +166,8 @@ protected:
   /**
    * A vertex bin. 
    *
-   * Used to store and apply corrections and fiducial cuts
+   * Used to store and apply corrections and fiducial cuts. Never
+   * streamed.
    */
   struct VtxBin : public TObject
   {
@@ -234,7 +235,7 @@ protected:
     TH1*         fAcc;    // Our acceptance correction 
     mutable TH2* fHits;   // Diagnostics sum 
 
-    ClassDef(VtxBin,1);
+    // ClassDef(VtxBin,1);
   };
     
 protected: 

@@ -2844,7 +2844,7 @@ const Char_t* AliForwardFlowTaskQC::GetQCType(UShort_t flags, Bool_t prependUS)
   // 
   //  Return: QC calculation type
   //
-  TString type = "";
+  static TString type = "";
   if      ((flags & kStdQC))  type = "StdQC";
   else if ((flags & kEtaGap)) type = "EtaGap";
   else if ((flags & k3Cor))   type = "3Cor";

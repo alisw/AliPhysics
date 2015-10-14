@@ -97,7 +97,10 @@ protected:
   MakeCentralityBin(const char* name, Float_t l, Float_t h) const;
 
   /**
-   * Class that holds data for a single centrality bin 
+   * Class that holds data for a single centrality bin. These objects
+   * are only used internally and are never streamed.  We do not make
+   * dictionaries for this (and derived) classes as they are
+   * constructed on the fly.
    * 
    */
   class CentralityBin : public AliBasedNdetaTask::CentralityBin 
@@ -188,7 +191,7 @@ protected:
 		     TList*      truthlist);
   protected: 
     TH2D*           fSumTruth;    //  Sum of primary histograms
-    ClassDef(CentralityBin,3); // A centrality bin     
+    // ClassDef(CentralityBin,3); // A centrality bin     
   };
   Bool_t fHasData; // whether we actually have data or not 
   ClassDef(AliMCTruthdNdetaTask,3); // Determine multiplicity in forward region

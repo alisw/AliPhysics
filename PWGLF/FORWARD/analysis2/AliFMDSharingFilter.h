@@ -241,7 +241,8 @@ protected:
    */
   AliFMDSharingFilter& operator=(const AliFMDSharingFilter&){return *this;}
   /** 
-   * Internal data structure to keep track of the histograms
+   * Internal data structure to keep track of the histograms.  Objects
+   * of this class are never streamed.
    */
   struct RingHistos : public AliForwardUtil::RingHistos
   { 
@@ -313,7 +314,7 @@ protected:
     TH2D*     fSumESD;          // Summed ESD signal 
     TH2D*     fSum;             // Summed cluster signal 
     TH1D*     fNConsecutive;    // # consecutive strips with signal > low cut
-    ClassDef(RingHistos,4);
+    // ClassDef(RingHistos,4);
   };
   /** 
    * Get the ring histogram container 

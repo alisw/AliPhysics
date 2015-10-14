@@ -365,24 +365,13 @@ public:
    * @return true if the parameter where read 
    */
   Bool_t ReadParameters(const TCollection* list);
-protected:
+  //==================================================================
   /** 
-   * Copy constructor 
-   * 
-   * @param o Object to copy from 
-   */
-  AliFMDEnergyFitter(const AliFMDEnergyFitter& o);
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this 
-   */
-  AliFMDEnergyFitter& operator=(const AliFMDEnergyFitter& o);
-
-  /** 
-   * Internal data structure to keep track of the histograms
+   * Internal data structure to keep track of the histograms. Objects
+   * of this class are streamed, as we create the objects at task
+   * initialization time.  We must therefore create a dictionary for
+   * this class.  This does _not_ mean that one should actually use
+   * this class outside of this (or a derived) class.
    */
   struct RingHistos : public AliForwardUtil::RingHistos
   { 
@@ -691,6 +680,22 @@ protected:
     Int_t                fDebug;
     ClassDef(RingHistos,4);
   };
+protected:
+  /** 
+   * Copy constructor 
+   * 
+   * @param o Object to copy from 
+   */
+  AliFMDEnergyFitter(const AliFMDEnergyFitter& o);
+  /** 
+   * Assignment operator 
+   * 
+   * @param o Object to assign from 
+   * 
+   * @return Reference to this 
+   */
+  AliFMDEnergyFitter& operator=(const AliFMDEnergyFitter& o);
+
   virtual RingHistos* CreateRingHistos(UShort_t d, Char_t r) const;
   /** 
    * Get the ring histogram container 

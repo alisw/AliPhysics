@@ -182,29 +182,11 @@ public:
    * @param option Not used
    */
   void Print(Option_t* option="") const;
-protected:
   /** 
-   * Project a 2D histogram into a 1D histogram taking care to use
-   * either the @f$\phi@f$ acceptance stored in the overflow bins, or
-   * the @f$\eta@f$ coverage stored in the underflow bins.
-   * 
-   * @param input      2D histogram to project 
-   * @param cache      1D histogram to project into 
-   * @param usePhiAcc  If true, use the @f$\phi@f$ acceptance stored in
-   * the overflow bins, or if false the @f$\eta@f$ coverage stored in
-   * the underflow bins.
-   */
-  static void ProjectX(const TH2& input, TH1& cache, Bool_t usePhiAcc=true);
-  /** 
-   * Project on @f$\eta@f$ axis.  If any of the pointers passed is
-   * zero, do nothing.
-   * 
-   * @param input 
-   * @param cache 
-   */
-  static void ProjectX(const TH2* input, TH1* cache);
-  /** 
-   * An @f$\eta@f$ bin 
+   * An @f$\eta@f$ bin. Objects of this class are streamed and we
+   * should make a dictionary for them.  That means the class should
+   * be public.  That does _not_ mean that the class should be used
+   * outside of this (or a derived) class.
    */
   struct EtaBin : public TObject
   {
@@ -340,6 +322,27 @@ protected:
 
     ClassDef(EtaBin,2);
   };
+protected:
+  /** 
+   * Project a 2D histogram into a 1D histogram taking care to use
+   * either the @f$\phi@f$ acceptance stored in the overflow bins, or
+   * the @f$\eta@f$ coverage stored in the underflow bins.
+   * 
+   * @param input      2D histogram to project 
+   * @param cache      1D histogram to project into 
+   * @param usePhiAcc  If true, use the @f$\phi@f$ acceptance stored in
+   * the overflow bins, or if false the @f$\eta@f$ coverage stored in
+   * the underflow bins.
+   */
+  static void ProjectX(const TH2& input, TH1& cache, Bool_t usePhiAcc=true);
+  /** 
+   * Project on @f$\eta@f$ axis.  If any of the pointers passed is
+   * zero, do nothing.
+   * 
+   * @param input 
+   * @param cache 
+   */
+  static void ProjectX(const TH2* input, TH1* cache);
   /** 
    * Copy constructor
    *
