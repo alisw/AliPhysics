@@ -38,6 +38,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
   void     SetClusterMaxRange(Int_t index, Int_t value){ fClusterMaxRange[index]=value;}
   //
+  Int_t    GetAccountDistortions()               const {return fAccountDistortions;}
+  void     SetAccountDistortions(Int_t v)              {fAccountDistortions = v;}
   Bool_t   GetUseCorrectionMap()                 const {return fUseCorrectionMap;}
   void     SetUseCorrectionMap(Bool_t v=kTRUE)         {fUseCorrectionMap = v;}
   //
@@ -232,6 +234,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t fMaxFaction;            ///< truncated mean - upper threshold
   Int_t   fNeighborRowsDedx;      ///< number of neighboring rows to identify cluster below thres in dEdx calculation 0 -> switch off
   Int_t   fGainCorrectionHVandPTMode; ///< switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT
+  Int_t   fAccountDistortions;        ///< account for distortions in tracking
   Double_t fSkipTimeBins;        ///< number of time bins to be skiiped (corrupted signal druing gating opening)
 
   Bool_t fUseTOFCorrection;  ///< switch - kTRUE use TOF correction kFALSE - do not use
@@ -253,7 +256,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 23)
+  ClassDef(AliTPCRecoParam, 24)
   /// \endcond
 };
 

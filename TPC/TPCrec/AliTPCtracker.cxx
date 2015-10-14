@@ -7038,6 +7038,7 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
   else ResetSeedsPool();
   fEvent = esd; 
   fEventHLT = hltEvent;
+  fAccountDistortions = AliTPCReconstructor::GetRecoParam()->GetAccountDistortions();
   if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;  
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
