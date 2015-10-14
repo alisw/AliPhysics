@@ -382,7 +382,8 @@ protected:
 			      Double_t poisson,
 			      Double_t cut=0.5) const;
   /** 
-   * Internal data structure to keep track of the histograms
+   * Internal data structure to keep track of the histograms.  Never
+   * streamed.
    */
   struct RingHistos : public AliForwardUtil::RingHistos
   { 
@@ -455,7 +456,7 @@ protected:
     TH2D*     fPhiAcc;         // Phi acceptance vs IpZ
     TH1D*     fPhiBefore;      // Phi before re-calce 
     TH1D*     fPhiAfter;       // Phi after re-calc
-    ClassDef(RingHistos,10);
+    // ClassDef(RingHistos,10);
   };
   /** 
    * Get the ring histogram container 

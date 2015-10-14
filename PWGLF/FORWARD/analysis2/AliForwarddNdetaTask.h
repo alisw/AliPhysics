@@ -97,8 +97,10 @@ protected:
   MakeCentralityBin(const char* name, Float_t l, Float_t h) const;
 
   /**
-   * A structure holding the per-centrality bin information 
-   * 
+   * A structure holding the per-centrality bin information.  These
+   * objects are only used internally and are never streamed.  We do
+   * not make dictionaries for this (and derived) classes as they are
+   * constructed on the fly.
    */
   class CentralityBin : public AliBasedNdetaTask::CentralityBin 
   {
@@ -163,7 +165,7 @@ protected:
 		     TList*      mclist,
 		     TList*      truthlist);
   protected: 
-    ClassDef(CentralityBin,4); // A centrality bin     
+    // ClassDef(CentralityBin,4); // A centrality bin     
   };
 
   ClassDef(AliForwarddNdetaTask,4); // Determine multiplicity in forward region

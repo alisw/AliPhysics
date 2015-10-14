@@ -936,9 +936,9 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
     Bool_t v0Abb = (v0A == 1 || v0A == 3); // Include fake 
     Bool_t v0Cbb = (v0A == 1 || v0A == 3); // Include fake
     Bool_t isBg  = (v0Abg  || v0Cbg);
-    if (!isBg && v0Abb || v0Cbb || fso > 0) trgMask |= AliVEvent::kMB;
-    if (!isBg && v0Abb || v0Cbb)            trgMask |= AliVEvent::kCINT5; 
-    if (!isBg && v0Abb && v0Cbb)            trgMask |= AliVEvent::kINT7;
+    if (!isBg && (v0Abb || v0Cbb || fso > 0)) trgMask |= AliVEvent::kMB;
+    if (!isBg && (v0Abb || v0Cbb))            trgMask |= AliVEvent::kCINT5; 
+    if (!isBg && (v0Abb && v0Cbb))            trgMask |= AliVEvent::kINT7;
     DMSG(fDebug, 1, "HW replay: v0A=%d v0C=%d gfo=%d mask=0x%x",
 	 v0A, v0C, fso, trgMask);
   }

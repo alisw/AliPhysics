@@ -54,11 +54,6 @@ AliFMDCorrector::AliFMDCorrector(const char* title)
   //   title   Title
   DGUARD(fDebug, 3, "Named CTOR of AliFMDCorrector: %s", title);
   fRingHistos.SetName(GetName());
-  fRingHistos.Add(new RingHistos(1, 'I'));
-  fRingHistos.Add(new RingHistos(2, 'I'));
-  fRingHistos.Add(new RingHistos(2, 'O'));
-  fRingHistos.Add(new RingHistos(3, 'I'));
-  fRingHistos.Add(new RingHistos(3, 'O'));
 }
 
 //____________________________________________________________________
@@ -317,6 +312,11 @@ AliFMDCorrector::Terminate(const TList* dir, TList* output, Int_t nEvents)
   out->SetName(d->GetName());
   out->SetOwner();
 
+  fRingHistos.Add(new RingHistos(1, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'O'));
+  fRingHistos.Add(new RingHistos(3, 'I'));
+  fRingHistos.Add(new RingHistos(3, 'O'));
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   THStack* sums = new THStack("sums", "Sums of ring results");
@@ -358,6 +358,11 @@ AliFMDCorrector::CreateOutputObjects(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("merging", fUseMergingEfficiency));
   
 
+  fRingHistos.Add(new RingHistos(1, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'O'));
+  fRingHistos.Add(new RingHistos(3, 'I'));
+  fRingHistos.Add(new RingHistos(3, 'O'));
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {

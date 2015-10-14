@@ -101,12 +101,6 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   fRingHistos.SetName(GetName());
   fRingHistos.SetOwner();
   
-  fRingHistos.Add(new RingHistos(1, 'I'));
-  fRingHistos.Add(new RingHistos(2, 'I'));
-  fRingHistos.Add(new RingHistos(2, 'O'));
-  fRingHistos.Add(new RingHistos(3, 'I'));
-  fRingHistos.Add(new RingHistos(3, 'O'));
-
   fHCuts.Set(AliFMDMultCuts::kLandauSigmaWidth, 1);
   fLCuts.Set(AliFMDMultCuts::kFixed, .15);
 
@@ -600,6 +594,12 @@ AliFMDSharingFilter::Terminate(const TList* dir, TList* output, Int_t nEvents)
   else 
     AliWarning("high cuts histogram not found in input list");
   
+  fRingHistos.Add(new RingHistos(1, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'O'));
+  fRingHistos.Add(new RingHistos(3, 'I'));
+  fRingHistos.Add(new RingHistos(3, 'O'));
+
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   THStack* sums = new THStack("sums", "Sum of ring signals");
@@ -689,6 +689,12 @@ AliFMDSharingFilter::CreateOutputObjects(TList* dir)
 
   fLCuts.Output(d,"lCuts");
   fHCuts.Output(d,"hCuts");
+
+  fRingHistos.Add(new RingHistos(1, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'I'));
+  fRingHistos.Add(new RingHistos(2, 'O'));
+  fRingHistos.Add(new RingHistos(3, 'I'));
+  fRingHistos.Add(new RingHistos(3, 'O'));
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;

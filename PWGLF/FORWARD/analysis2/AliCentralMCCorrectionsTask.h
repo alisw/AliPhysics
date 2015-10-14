@@ -116,7 +116,8 @@ protected:
    */
   AliCentralMCCorrectionsTask& operator=(const AliCentralMCCorrectionsTask& o);
   /**
-   * A vertex bin 
+   * A vertex bin.  These are only used internally and are never
+   * streamed.
    * 
    */
   struct VtxBin : public AliBaseMCCorrectionsTask::VtxBin
@@ -178,7 +179,7 @@ protected:
     TH2D* fHits;     // Cache of MC-truth hits
     TH2D* fClusters; // Cache of reconstructed hits
 
-    ClassDef(VtxBin,3); // Vertex bin 
+    // ClassDef(VtxBin,3); // Vertex bin 
   };
   /** 
    * Define our vertex bins 

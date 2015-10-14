@@ -52,38 +52,50 @@
 
 // Correction managers 
 #pragma link C++ class AliCorrectionManagerBase+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
 #pragma link C++ class AliCorrectionManagerBase::Correction+;
-#endif
 // Note: custom streamer to ensure singleton consistency!
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliCentralCorrectionManager-;
+
+// Base tasks etc. 
+#pragma link C++ class AliBaseESDTask+;
+#pragma link C++ class AliBaseAODTask+;
+#pragma link C++ class AliBaseMCCorrectionsTask+;
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed. 
+#pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
+#endif
+#pragma link C++ class AliBasedNdetaTask+;
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed. 
+#pragma link C++ class AliBasedNdetaTask::CentralityBin+;
+// Used internally and never streamed. 
+#pragma link C++ class AliBasedNdetaTask::Sum+;
+#endif
+#pragma link C++ class AliBaseMCTrackDensity+;
 
 // Central (SPD) code 
 #pragma link C++ class AliCentralCorrAcceptance+;
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentraldNdetaTask+;
 #pragma link C++ class AliCentralMCCorrectionsTask+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed. 
 #pragma link C++ class AliCentralMCCorrectionsTask::VtxBin+;
 #endif
 #pragma link C++ class AliCentralMCMultiplicityTask+;
 #pragma link C++ class AliCentralMultiplicityTask+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed 
 #pragma link C++ class AliCentralMultiplicityTask::VtxBin+;
 #endif
 #pragma link C++ class AliSPDMCTrackDensity+;
 
 // Aux tasks and code 
 #pragma link C++ class AliCopyHeaderTask+;
-#pragma link C++ class AliBasedNdetaTask+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
-#pragma link C++ class AliBasedNdetaTask::CentralityBin+;
-#pragma link C++ class AliBasedNdetaTask::Sum+;
-#endif
-#pragma link C++ class AliBaseMCTrackDensity+;
 #pragma link C++ class AliMCTruthdNdetaTask+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed. 
 #pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
 #endif
 #pragma link C++ class AliDisplacedVertexSelection+;
@@ -98,15 +110,10 @@
 #pragma link C++ class AliForwardUtil+;
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
-// #pragma link C++ class AliForwardUtil::ELossFitter+;
 
 // FMD corrections
 #pragma link C++ class AliFMDCorrAcceptance+;
 #pragma link C++ class AliFMDCorrDoubleHit+;
-#pragma link C++ class AliFMDCorrector+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
-#pragma link C++ class AliFMDCorrector::RingHistos+;
-#endif
 #pragma link C++ class AliFMDCorrELossFit+;
 #pragma link C++ class AliFMDCorrELossFit::ELossFit+;
 #pragma link C++ class AliFMDCorrMergingEfficiency+;
@@ -115,21 +122,26 @@
 #pragma link C++ class AliFMDCorrNoiseGain+;
 
 // FMD algorithms 
-#pragma link C++ class AliFMDDensityCalculator+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
-#pragma link C++ class AliFMDDensityCalculator::RingHistos+;
-#endif
 #pragma link C++ class AliFMDEnergyFitter+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
 #pragma link C++ class AliFMDEnergyFitter::RingHistos+;
-#endif
 #pragma link C++ class AliFMDEventInspector+;
 #pragma link C++ class AliFMDEventPlaneFinder+;
 #pragma link C++ class AliFMDHistCollector+;
 #pragma link C++ class AliFMDESDFixer+;
 #pragma link C++ class AliFMDSharingFilter+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed 
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
+#endif
+#pragma link C++ class AliFMDDensityCalculator+;
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed 
+#pragma link C++ class AliFMDDensityCalculator::RingHistos+;
+#endif
+#pragma link C++ class AliFMDCorrector+;
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed 
+#pragma link C++ class AliFMDCorrector::RingHistos+;
 #endif
 #pragma link C++ class AliMultEventClassifier+;
 
@@ -148,27 +160,22 @@
 #pragma link C++ class AliFMDMCTrackInspectorTask+;
 
 // Forward (FMD) tasks 
-#pragma link C++ class AliBaseESDTask+;
-#pragma link C++ class AliBaseAODTask+;
-#pragma link C++ class AliBaseMCCorrectionsTask+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
-#pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
-#endif
 #pragma link C++ class AliFMDEnergyFitterTask+;
 #pragma link C++ class AliFMDEventPlaneTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed. 
 #pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
 #endif
 #pragma link C++ class AliForwardFlowTaskQC+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed. 
 #pragma link C++ class AliForwardFlowTaskQC::CumuHistos+;
-#endif
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
 #pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
 #endif
 #pragma link C++ class AliForwardMCCorrectionsTask+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
+#if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
+// Used internally and never streamed. 
 #pragma link C++ class AliForwardMCCorrectionsTask::VtxBin+;
 #endif
 #pragma link C++ class AliForwardMCFlowTaskQC+;
@@ -181,9 +188,7 @@
 #pragma link C++ class AliForwardMultiplicityDistribution+;
 #pragma link C++ class AliForwardMultiplicityDistribution::Bin+;
 #pragma link C++ class AliForwardMultDists+;
-#if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
 #pragma link C++ class AliForwardMultDists::EtaBin+;
-#endif
 #pragma link C++ class AliForwardMultDists::BinSpec+;
 
 //  MC Weights

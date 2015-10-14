@@ -168,7 +168,9 @@ protected:
    */
   AliBaseMCCorrectionsTask& operator=(const AliBaseMCCorrectionsTask& o);
   /**
-   * A vertex bin 
+   * A vertex bin.  These are only used internally and are not
+   * streamed. We can therefore leave them out of the streamer (i.e.,
+   * not define a dictionary for them).
    * 
    */
   struct VtxBin : public TNamed
@@ -219,7 +221,7 @@ protected:
     TH2D*                  fPrimary;  // Cache or primary 
     TH1D*                  fCounts;   // Event count 
 
-    ClassDef(VtxBin,1); // Vertex bin 
+    // ClassDef(VtxBin,1); // Vertex bin 
   };
   virtual TAxis* DefaultVertexAxis() const { return const_cast<TAxis*>(&fVtxAxis); }
   virtual TAxis* DefaultEtaAxis() const { return const_cast<TAxis*>(&fEtaAxis); }

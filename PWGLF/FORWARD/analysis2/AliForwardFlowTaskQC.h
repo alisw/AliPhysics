@@ -158,7 +158,8 @@ public:
     kHybrid  = 0x5000  // Use hybrid tracks
   };
   /**
-   * struct to handle cumulant calculations and control histograms
+   * struct to handle cumulant calculations and control histograms.
+   * Used internally and never streamed.
    */
   struct CumuHistos : public TObject
   {
@@ -264,7 +265,7 @@ public:
     TList* fDiffHists;  // List of diff hists
     UInt_t fNUA;        // NUA tracker
 
-    ClassDef(CumuHistos, 1);
+    // ClassDef(CumuHistos, 1);
   }; // End of struct
 
 protected:
@@ -293,7 +294,8 @@ protected:
   };
   // ----------------- Being nested class ---------------------
   /**
-   * Nested class to handle cumulant calculations in vertex bins
+   * Nested class to handle cumulant calculations in vertex bins.
+   * Used internally and never streamed.
    */
   class VertexBin : public TNamed
   {
@@ -534,7 +536,7 @@ protected:
     TH2F*      fOutliers;      // Sigma <M> histogram 
     UShort_t   fDebug;         // Debug flag
 
-    ClassDef(VertexBin, 4); // object for eta dependent cumulants ananlysis
+    // ClassDef(VertexBin, 4); // object for eta dependent cumulants ananlysis
   };
   // ---------- End of nested class -------------
   /** 

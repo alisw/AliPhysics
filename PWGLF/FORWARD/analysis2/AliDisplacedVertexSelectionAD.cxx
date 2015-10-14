@@ -175,7 +175,7 @@ AliDisplacedVertexSelectionAD::Process(const AliESDEvent* esd)
   fIPzSum->Fill(sumT, fIPz);
   
   Double_t r2 = 2*fSpacing/2*fSpacing/2;
-  Double_t r  = TMath::Sqrt(r2);
+  // Double_t r  = TMath::Sqrt(r2);
   Int_t    b  = -100;
   for (Int_t i = -fMaxBunch; i <= fMaxBunch; i++) {
     Double_t ir = i*fSpacing;
