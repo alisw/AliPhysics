@@ -55,7 +55,10 @@
 #endif
 
 //________________________________________________________________________
-AliFemtoManager* ConfigFemtoAnalysis() {
+AliFemtoManager* ConfigFemtoAnalysis(Int_t fAvgSep=0, Int_t fCosPAngle=0, Int_t fDCAdaughters=0, Int_t fDCAXYprotons=0,
+				     Int_t fDCAZprotons=0, Int_t fMaxDCAdaughters=0, Int_t fMaxDCAV0=0, Int_t fDecayLength=0, 
+				     Int_t fEtaDaughters=0, Int_t fEtaProtons=0, Int_t fEtaV0=0, Int_t fpTdaughters=0, 
+				     Int_t fpTprotons=0, Int_t fpTV0=0, Int_t fInvariantMass=0, Bool_t fSharedDaugher=kTRUE) {
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
@@ -82,7 +85,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int numOfkTBins = 2;
   int numOfEPvzero = 7;
 
-  bool performSharedDaughterCut = true;
+  bool performSharedDaughterCut = fSharedDaugher;
   bool enablePairMonitors = false;
 
   int runshlcms = 0;
@@ -196,42 +199,43 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      //V0 first particle cut -> Lambda ichg 0, 2, 6
 	      dtc1etaphitpc[aniter] = new AliFemtoV0TrackCut();
 	      dtc1etaphitpc[aniter]->SetMass(LambdaMass);
-	      dtc1etaphitpc[aniter]->SetEta(0.8); //0.8
-	      dtc1etaphitpc[aniter]->SetPt(0.5,5.0); //0.4,100
-	      dtc1etaphitpc[aniter]->SetEtaDaughters(0.8); //0.8
-	      dtc1etaphitpc[aniter]->SetPtPosDaughter(0.5,4.0); //0.5
-	      dtc1etaphitpc[aniter]->SetPtNegDaughter(0.16,4.0); //0.16
+	      dtc1etaphitpc[aniter]->SetEta(0.8 + 0.08*fEtaV0); //0.8
+	      dtc1etaphitpc[aniter]->SetPt(0.5 - 0.05*fpTV0 , 5.0 + 0.5*fpTV0); //0.4,100
+	      dtc1etaphitpc[aniter]->SetEtaDaughters(0.8 + 0.08*fEtaDaughters); //0.8
+	      dtc1etaphitpc[aniter]->SetPtPosDaughter(0.5 - 0.05*fpTdaughters, 4.0 + 0.4*fpTdaughters); //0.5
+	      dtc1etaphitpc[aniter]->SetPtNegDaughter(0.16 - 0.016*fpTdaughters, 4.0 + 0.4*fpTdaughters); //0.16
 	      dtc1etaphitpc[aniter]->SetTPCnclsDaughters(80); //80
 	      dtc1etaphitpc[aniter]->SetNdofDaughters(4.0); //4.0
 	      dtc1etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
 	      dtc1etaphitpc[aniter]->SetOnFlyStatus(kFALSE);
 	      dtc1etaphitpc[aniter]->SetParticleType(0); //0-Lambda
 	      dtc1etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.1, 0.3);
-	      dtc1etaphitpc[aniter]->SetMaxDcaV0Daughters(0.4); //1.5 Jai, 0.6 //0.4
-	      dtc1etaphitpc[aniter]->SetMaxDcaV0(0.5); //5.0
-	      dtc1etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
-	      dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai //0.998
-	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
+	      dtc1etaphitpc[aniter]->SetMaxDcaV0Daughters(0.4 + 0.04*fMaxDCAdaughters); //1.5 Jai, 0.6 //0.4
+	      dtc1etaphitpc[aniter]->SetMaxDcaV0(0.5 + 0.05*fMaxDCAV0); //5.0
+	      dtc1etaphitpc[aniter]->SetMaxV0DecayLength(60.0 + 6.0*fDecayLength);
+	      dtc1etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993 + 0.09993*fCosPAngle); //0.99 - Jai //0.998
+	      dtc1etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038 - 0.00038*fInvariantMass,LambdaMass+0.0043 + 
+							    0.00043*fInvariantMass);
 	      
 	      //V0 second particle cut -> AntiLambda ichg 1, 3, 4, 5
 	      dtc2etaphitpc[aniter] = new AliFemtoV0TrackCut();
 	      dtc2etaphitpc[aniter]->SetMass(LambdaMass);
-	      dtc2etaphitpc[aniter]->SetEta(0.8);
-	      dtc2etaphitpc[aniter]->SetPt(0.5,5.0);
-	      dtc2etaphitpc[aniter]->SetEtaDaughters(0.8);
-	      dtc2etaphitpc[aniter]->SetPtPosDaughter(0.16,4.0);
-	      dtc2etaphitpc[aniter]->SetPtNegDaughter(0.3,4.0);
+	      dtc2etaphitpc[aniter]->SetEta(0.8+fEtaV0);
+	      dtc1etaphitpc[aniter]->SetPt(0.5-fpTV0, 5.0+fpTV0);
+	      dtc1etaphitpc[aniter]->SetEtaDaughters(0.8+fEtaDaughters); 
+	      dtc2etaphitpc[aniter]->SetPtPosDaughter(0.16 - 0.016*fpTdaughters, 4.0 + 0.4*fpTdaughters);
+	      dtc2etaphitpc[aniter]->SetPtNegDaughter(0.3 - 0.03*fpTdaughters, 4.0 + 0.4*fpTdaughters);
 	      dtc2etaphitpc[aniter]->SetTPCnclsDaughters(80);
 	      dtc2etaphitpc[aniter]->SetNdofDaughters(4.0); //4.0
 	      dtc2etaphitpc[aniter]->SetStatusDaughters(AliESDtrack::kTPCrefit/* | AliESDtrack::kITSrefit*/);
 	      dtc2etaphitpc[aniter]->SetOnFlyStatus(kFALSE); //kTRUE
 	      dtc2etaphitpc[aniter]->SetParticleType(1);
-	      dtc2etaphitpc[aniter]->SetMaxDcaV0Daughters(0.4); //1.5 Jai, 0.6
-	      dtc2etaphitpc[aniter]->SetMaxDcaV0(0.5);
-	      dtc2etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.3, 0.1);
-	      dtc2etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993); //0.99 - Jai
-	      dtc2etaphitpc[aniter]->SetMaxV0DecayLength(60.0);
-	      dtc2etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0036,LambdaMass+0.0036);
+	      dtc2etaphitpc[aniter]->SetMaxDcaV0Daughters(0.4 + 0.04*fMaxDCAdaughters); //1.5 Jai, 0.6
+	      dtc2etaphitpc[aniter]->SetMaxDcaV0(0.5 + 0.05*fMaxDCAV0);
+	      dtc2etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.3 - 0.03*fDCAdaughters, 0.1 + 0.01*fDCAdaughters);
+	      dtc2etaphitpc[aniter]->SetMaxCosPointingAngle(0.9993 + 0.09993*fCosPAngle); //0.99 - Jai
+	      dtc2etaphitpc[aniter]->SetMaxV0DecayLength(60.0 + 6.0*fDecayLength);
+	      dtc2etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0036 - 0.00036*fInvariantMass,LambdaMass+0.0041 + 0.00041*fInvariantMass);
 	      
 	      
 	      //ESD first particle cut -> Proton 3, 5; AntiProton 4, 6, 7, 8
@@ -239,8 +243,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc3etaphitpc[aniter]->SetMostProbableProton();
 	      dtc3etaphitpc[aniter]->SetMass(ProtonMass);
 	      dtc3etaphitpc[aniter]->SetCharge(1.0);
-	      dtc3etaphitpc[aniter]->SetPt(0.7,4.0);
-	      dtc3etaphitpc[aniter]->SetEta(-0.8,0.8);
+	      dtc3etaphitpc[aniter]->SetPt(0.7 - 0.07*fpTprotons, 4.0 + 0.4*fpTprotons);
+	      dtc3etaphitpc[aniter]->SetEta(-0.8 - 0.08*fEtaProtons, 0.8 + 0.08*fEtaProtons);
 	      
 	      // Track quality cuts
 	      dtc3etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCin);
@@ -248,8 +252,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc3etaphitpc[aniter]->SetRemoveKinks(kTRUE);
 	      dtc3etaphitpc[aniter]->SetLabel(kFALSE);
 	      dtc3etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-	      dtc3etaphitpc[aniter]->SetMaxImpactXY(2.8);
-	      dtc3etaphitpc[aniter]->SetMaxImpactZ(3.2);
+	      dtc3etaphitpc[aniter]->SetMaxImpactXY(2.8 + 0.28*fDCAXYprotons);
+	      dtc3etaphitpc[aniter]->SetMaxImpactZ(3.2 + 0.32*fDCAZprotons);
 	      dtc3etaphitpc[aniter]->SetNsigma(3.0);
 	      dtc3etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 	      
@@ -258,8 +262,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc4etaphitpc[aniter]->SetMostProbableProton();
 	      dtc4etaphitpc[aniter]->SetMass(ProtonMass);
 	      dtc4etaphitpc[aniter]->SetCharge(-1.0);
-	      dtc4etaphitpc[aniter]->SetPt(0.7,5.0);
-	      dtc4etaphitpc[aniter]->SetEta(-0.8,0.8);
+	      dtc4etaphitpc[aniter]->SetPt(0.7 - 0.07*fpTprotons, 5.0 + 0.5*fpTprotons);
+	      dtc4etaphitpc[aniter]->SetEta(-0.8 - 0.08*fEtaProtons, 0.8 + 0.08*fEtaProtons);
 	  
 	      // Track quality cuts
 	      dtc4etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCin);
@@ -267,8 +271,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc4etaphitpc[aniter]->SetRemoveKinks(kTRUE);
 	      dtc4etaphitpc[aniter]->SetLabel(kFALSE);
 	      dtc4etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-	      dtc4etaphitpc[aniter]->SetMaxImpactXY(2.8);
-	      dtc4etaphitpc[aniter]->SetMaxImpactZ(3.2);
+	      dtc4etaphitpc[aniter]->SetMaxImpactXY(2.8 + 0.28*fDCAXYprotons);
+	      dtc4etaphitpc[aniter]->SetMaxImpactZ(3.2 + 0.32*fDCAZprotons);
 	      dtc4etaphitpc[aniter]->SetNsigma(3.0);
 	      dtc4etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 	      
@@ -303,10 +307,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      sqp1cetaphitpc[aniter]->SetDataType(AliFemtoPairCut::kAOD);
 	      sqp1cetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.00001);
 	      sqp1cetaphitpc[aniter]->SetTPCExitSepMinimum(-1.);
-	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(0, 12); //proton-pion+
-	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(1, 10); //proton-antiproton
-	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(2, 15); //pion- - pion+
-	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(3, 12); //antiproton - pion-
+	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(0, 5 + 0.5*fAvgSep); //proton-pion+
+	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(1, 5 + 0.5*fAvgSep); //proton-antiproton
+	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(2, 0); //pion- - pion+
+	      sqp1cetaphitpc[aniter]->SetMinAvgSeparation(3, 5 + 0.5*fAvgSep); //antiproton - pion-
 
 	      sqp2cetaphitpc[aniter] = new AliFemtoV0TrackPairCut(); //lambda-proton
 	      sqp2cetaphitpc[aniter]->SetShareQualityMax(1.0); //between V0 daughter and track
@@ -400,8 +404,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		}
 	      else if(ichg == 4) //V0APL
 		{
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0, 15); //0 - track-pos, 1 - track-neg
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1, 15);
+		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0, 5 + 0.5*fAvgSep);  // antiproton - proton
+		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1, 8 + 0.8*fAvgSep); // antiproton - pion-
 		  anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 		  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 		  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
@@ -411,8 +415,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 		}
 	      else if(ichg == 5) //V0PAL
 		{
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0, 15); //0 - track-pos, 1 - track-neg
-		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1, 15);
+		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(0, 8 + 0.8*fAvgSep); // proton - pion+
+		  sqp4cetaphitpc[aniter]->SetMinAvgSeparation(1, 5 + 0.5*fAvgSep); // proton - antiproton-
 		  anetaphitpc[aniter]->SetV0SharedDaughterCut(performSharedDaughterCut);
 		  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 		  anetaphitpc[aniter]->SetFirstParticleCut(dtc2etaphitpc[aniter]);
