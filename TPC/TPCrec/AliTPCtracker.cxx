@@ -1283,24 +1283,29 @@ Int_t  AliTPCtracker::LoadClusters(const TObjArray *arr)
 {
   //
   // load clusters to the memory
-  AliTPCClustersRow *clrow = 0; //RS new AliTPCClustersRow("AliTPCclusterMI");
+  AliTPCClustersRow *clrow = 0; //RS: why this new? new AliTPCClustersRow("AliTPCclusterMI");
   Int_t lower   = arr->LowerBound();
   Int_t entries = arr->GetEntriesFast();
-  
+
+  AliWarning("Sector Change ins not checked in LoadClusters(const TObjArray *arr)");
+
   for (Int_t i=lower; i<entries; i++) {
     clrow = (AliTPCClustersRow*) arr->At(i);
     if(!clrow) continue;
-    if(!clrow->GetArray()) continue;
-    
+    TClonesArray* arr = clrow->GetArray();
+    if(!arr) continue;
+    int ncl = arr->GetEntriesFast();
+    if (ncl<1) continue;
     //  
     Int_t sec,row;
     fkParam->AdjustSectorRow(clrow->GetID(),sec,row);
     
-    for (Int_t icl=0; icl<clrow->GetArray()->GetEntriesFast(); icl++){
-      Transform((AliTPCclusterMI*)(clrow->GetArray()->At(icl)));
+    for (Int_t icl=ncl; icl--;) {
+      Transform((AliTPCclusterMI*)(arr->At(icl)));
     }
     //
-    if (clrow->GetArray()->GetEntriesFast()<=0) continue;
+    // RS: Check for possible sector change due to the distortions: TODO
+    //
     AliTPCtrackerRow * tpcrow=0;
     Int_t left=0;
     if (sec<fkNIS*2){
@@ -1312,16 +1317,15 @@ Int_t  AliTPCtracker::LoadClusters(const TObjArray *arr)
       left = (sec-fkNIS*2)/fkNOS;
     }
     if (left ==0){
-      tpcrow->SetN1(clrow->GetArray()->GetEntriesFast());
-      for (Int_t j=0;j<tpcrow->GetN1();++j) 
-	tpcrow->SetCluster1(j, *(AliTPCclusterMI*)(clrow->GetArray()->At(j)));
+      tpcrow->SetN1(ncl);
+      for (Int_t j=0;j<ncl;++j) 
+	tpcrow->SetCluster1(j, *(AliTPCclusterMI*)(arr->At(j)));
     }
     if (left ==1){
-      tpcrow->SetN2(clrow->GetArray()->GetEntriesFast());
-      for (Int_t j=0;j<tpcrow->GetN2();++j) 
-	tpcrow->SetCluster2(j, *(AliTPCclusterMI*)(clrow->GetArray()->At(j)));
+      tpcrow->SetN2(ncl);
+      for (Int_t j=0;j<ncl;++j) 
+	tpcrow->SetCluster2(j, *(AliTPCclusterMI*)(arr->At(j)));
     }
-    //clrow->GetArray()->Clear("C");
     clrow->GetArray()->Clear(); // RS AliTPCclusterMI does not allocate memory
   }
   //
@@ -1336,6 +1340,10 @@ Int_t  AliTPCtracker::LoadClusters(const TClonesArray *arr)
   //
   // load clusters to the memory from one 
   // TClonesArray
+  //
+  // RS: Check for possible sector change due to the distortions: TODO
+  AliWarning("Sector Change ins not checked in LoadClusters(const TClonesArray *arr)");
+  //
   //
   AliTPCclusterMI *clust=0;
   Int_t count[72][96] = { {0} , {0} }; 
@@ -1403,9 +1411,6 @@ Int_t  AliTPCtracker::LoadClusters()
   TTree * tree = fInput;
   TBranch * br = tree->GetBranch("Segment");
   br->SetAddress(&clrow);
-
-  // Conversion of pad, row coordinates in local tracking coords.
-  // Could be skipped here; is already done in clusterfinder
 
   double cutZ2X = AliTPCReconstructor::GetPrimaryZ2XCut();
   double cutZOutSector = AliTPCReconstructor::GetZOutSectorCut();
@@ -1968,11 +1973,11 @@ Int_t AliTPCtracker::Transform(AliTPCclusterMI * cluster){
   float yMax = x[0]*kMaxY2X;
   if (x[1]>yMax) {
     cluster->SetSectorChanged(kTRUE);
-    AliTPCTransform::RotateToSectorUp(x,1,idROC);
+    AliTPCTransform::RotateToSectorUp(x,idROC);
   }
   else if (x[1]<-yMax) {
     cluster->SetSectorChanged(kTRUE);
-    AliTPCTransform::RotateToSectorDown(x,-1,idROC);    
+    AliTPCTransform::RotateToSectorDown(x,idROC);    
   }
   //
   // in debug mode  check the transformation
