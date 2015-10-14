@@ -113,6 +113,9 @@ void CleanCollection(TCollection* c)
     const char* subs[] = { "elossDists", "elossResults", "elossResiduals", 0 };
     const char** sub = subs;
     while (*sub) { RemoveObject(det, *sub); sub++;  }
+
+    // TH1* eloss = static_cast<TH1*>(GetObject(det,"eloss",TH1::Class()));
+    // if (eloss) Printf("%s %d entries", *ptr, eloss->GetEntries());
     ptr++;
   }
   // c->ls();
@@ -264,6 +267,7 @@ void RerunELossFits(Bool_t forceSet=false,
       if (np) (static_cast<TParameter<int>*>(np))->SetVal(maxPart);
     }
     outFwdSum->Write(inFwdSum->GetName(), TObject::kSingleKey);
+    outFwdSum->ls();
     
     // --- Now do the fits -------------------------------------------
     fitter->Print();
