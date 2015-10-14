@@ -19,18 +19,24 @@
 //_____________________________________________________________________________
 class AliTPCclusterMI : public AliCluster {
   enum Status{ kDisabled = 0x7F};
+  enum {
+    kSectorChanged=BIT(14)          // to flag sector change due to the distortions
+  };
 public:
   AliTPCclusterMI();
   AliTPCclusterMI(const AliTPCclusterMI & cluster);
   AliTPCclusterMI &operator = (const AliTPCclusterMI & cluster); //assignment operator
   AliTPCclusterMI(Int_t *lab, Float_t *hit);
   virtual ~AliTPCclusterMI();
-  virtual void	Clear(const Option_t*) { };//delete fInfo; fInfo=0;}
+  virtual void	Clear(const Option_t*) { ResetBit(0xffffffff);}
   virtual Bool_t IsSortable() const;
   virtual Int_t Compare(const TObject* obj) const;
   inline  void Use(Int_t inc=10);
   inline  void Disable(){fUsed=kDisabled;}
   inline  Bool_t IsDisabled() const {return (fUsed==kDisabled);}
+
+  Bool_t  IsSectorChanged()                const {TestBit(kSectorChanged);}
+  void    SetSectorChanged(Bool_t v=kTRUE)       {SetBit(kSectorChanged,v);}
 
   virtual Int_t GetDetector() const {return fDetector;}
   virtual Int_t GetRow() const {return fRow;}
