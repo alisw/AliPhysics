@@ -212,8 +212,7 @@ int alizmq_msg_send(aliZMQmsg* message, void* socket, int flags)
     if (rc<0) break;
     nBytes+=rc;
   }
-  if (rc>=0) alizmq_msg_close(message);
-  else nBytes=rc;
+  if (rc<0) nBytes=rc;
   return nBytes;
 }
 
@@ -288,9 +287,9 @@ int alizmq_msg_close(aliZMQmsg* message)
   for (aliZMQmsg::iterator i=message->begin(); i!=message->end(); ++i)
   {
     int rc1 = zmq_msg_close(i->first);
-    if (rc1==0) delete i->first; i->first=NULL;
+    delete i->first; i->first=NULL;
     int rc2 = zmq_msg_close(i->second);
-    if (rc2==0) delete (i->second); i->second=NULL;
+    delete (i->second); i->second=NULL;
   }
   return 0;
 }
