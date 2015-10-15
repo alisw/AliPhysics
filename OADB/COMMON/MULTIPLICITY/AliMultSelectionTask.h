@@ -167,10 +167,10 @@ private:
     Float_t  fZpaEnergy;          //!  ZPA Energy
     Float_t  fZem1Energy;         //!  ZEM1 Energy
     Float_t  fZem2Energy;         //!  ZEM2 Energy
-    Double_t fZnaTower;           //! common PMT of ZNA
-    Double_t fZncTower;           //! common PMT of ZNC
-    Double_t fZpaTower;           //! common PMT of ZPA
-    Double_t fZpcTower;           //! common PMT of ZPC
+    Float_t fZnaTower;           //! common PMT of ZNA
+    Float_t fZncTower;           //! common PMT of ZNC
+    Float_t fZpaTower;           //! common PMT of ZPA
+    Float_t fZpcTower;           //! common PMT of ZPC
     Bool_t   fZnaFired;
     Bool_t   fZncFired;
     Bool_t   fZpaFired;
