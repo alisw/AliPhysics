@@ -25,6 +25,7 @@
 #include "Riostream.h"
 #include "TRandom3.h"
 #include "TSystem.h"
+#include "TArrayI.h"
 #include "TGraphErrors.h"
 #include "TStopwatch.h"
 #include "AliFlowEventSimple.h"
@@ -302,6 +303,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   static void DumpPointsForDurham(TH1F *h);
   virtual void DumpThePoints(AliFlowEventSimple *anEvent);
   TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable, const char *production);
+  virtual Double_t CorrelationPsi2nPsi1n(Int_t n, Int_t k=0);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);

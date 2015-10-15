@@ -78,7 +78,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fCalculateDiffCorrelationsVsPt(kTRUE),
  fUseDefaultBinning(kTRUE),
  fnDiffBins(-44),
- fRangesDiffBins(NULL)
+ fRangesDiffBins(NULL),
+ fCalculateSymmetryPlanes(kFALSE)
  {
   // Constructor.
  
@@ -197,7 +198,8 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fCalculateDiffCorrelationsVsPt(kTRUE),
  fUseDefaultBinning(kTRUE),
  fnDiffBins(-44),
- fRangesDiffBins(NULL)
+ fRangesDiffBins(NULL),
+ fCalculateSymmetryPlanes(kFALSE)
  {
   // Dummy constructor.
  
@@ -312,6 +314,7 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  fMPC->SetUseDefaultBinning(fUseDefaultBinning);
  fMPC->SetnDiffBins(fnDiffBins);
  fMPC->SetRangesDiffBins(fRangesDiffBins);
+ fMPC->SetCalculateSymmetryPlanes(fCalculateSymmetryPlanes);
 
  // Weights:
  TString type[2] = {"RP","POI"};
@@ -610,6 +613,18 @@ void AliAnalysisTaskMultiparticleCorrelations::SetMaxMult(const char *type, Doub
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)
+{
+ // Set harmonics for all differential correlators.
+
+ TString sMethodName = "void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)";
+
+ // TBI to be finalized, along the same lines as it was done in void AliFlowAnalysisWithMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)
+ order = harmonics[0]; // TBI eliminating temporarily the warnings
+
+} // void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int_t *harmonics)
+
+//=======================================================================================================================
 
 
 

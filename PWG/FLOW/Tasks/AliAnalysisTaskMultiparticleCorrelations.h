@@ -137,7 +137,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   // Differential correlations:
   void SetCalculateDiffCorrelations(Bool_t cdc) {this->fCalculateDiffCorrelations = cdc;};
   Bool_t GetCalculateDiffCorrelations() const {return this->fCalculateDiffCorrelations;};
-  void SetDiffHarmonics(Int_t order, Int_t *harmonics){;} // not implemented 
+  void SetDiffHarmonics(Int_t order, Int_t *harmonics); // TBI only skeleton is implemented in .cxx file
   void SetCalculateDiffCos(Bool_t cdc) {this->fCalculateDiffCos = cdc;};
   Bool_t GetCalculateDiffCos() const {return this->fCalculateDiffCos;};
   void SetCalculateDiffSin(Bool_t cds) {this->fCalculateDiffSin = cds;};
@@ -150,6 +150,10 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Int_t GetnDiffBins() const {return this->fnDiffBins;};
   void SetRangesDiffBins(Double_t* const rdb) {this->fRangesDiffBins = rdb;};
   Double_t* GetRangesDiffBins() const {return this->fRangesDiffBins;};
+
+  // Symmetry plane correlations:
+  void SetCalculateSymmetryPlanes(Bool_t csp) {this->fCalculateSymmetryPlanes = csp;};
+  Bool_t GetCalculateSymmetryPlanes() const {return this->fCalculateSymmetryPlanes;};
 
  private:
   AliAnalysisTaskMultiparticleCorrelations(const AliAnalysisTaskMultiparticleCorrelations& aatqc);
@@ -229,7 +233,10 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Int_t fnDiffBins;                      // number of differential bins in pt or in eta (when non-default binning is used)
   Double_t *fRangesDiffBins;             // ranges for differential bins in pt or in eta (when non-default binning is used)
 
-  ClassDef(AliAnalysisTaskMultiparticleCorrelations,2); 
+  // Symmetry plane correlations:
+  Bool_t fCalculateSymmetryPlanes; // calculate correlations between symmetry planes
+
+  ClassDef(AliAnalysisTaskMultiparticleCorrelations,3);
 
 };
 

@@ -2678,15 +2678,23 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForSymmetryPlan
  if(!fCalculateSymmetryPlanes){return;}
 
  // b) Book TProfile *fSymmetryPlanesPro[?][?]: TBI check the exact dimensions in the header file
+ TString sTitle[1][2] = {"#LT#LTcos[4(#psi_{2}-#psi_{1})]#GT#GT","#LT#LTcos[4(#psi_{4}-#psi_{2})]#GT#GT"}; // TBI check h.w. harmonic 4, as well as h.w. indices on symmetry planes
+ TString sLabels[4] = {"k = 0","k = 1","k = 2","k = 3"};
  for(Int_t gc=0;gc<1;gc++) // 'generic correlator': [[0]:(Psi2n,Psi1n),[1]:...] TBI upper boundary will change
  {
   for(Int_t n=0;n<2;n++) // 'harmonic n for generic correlator': [[0]:n=1,[1]:n=2,...] TBI upper boundary will change
   {
-   fSymmetryPlanesPro[gc][n] = new TProfile(Form("%d,%d",gc,n),Form("%d,%d",gc,n),4,0.,4.); // TBI this is a landmine, introduce fnHighestOptimizerSPC eventually instead of '4'
+   fSymmetryPlanesPro[gc][n] = new TProfile(Form("%d,%d",gc,n),sTitle[gc][n].Data(),4,0.,4.); // TBI this is a landmine, introduce fnHighestOptimizerSPC eventually instead of '4'
    fSymmetryPlanesPro[gc][n]->Sumw2();
    fSymmetryPlanesPro[gc][n]->SetStats(kFALSE);
    fSymmetryPlanesPro[gc][n]->SetMarkerColor(kRed);
    fSymmetryPlanesPro[gc][n]->SetMarkerStyle(kFullSquare);
+   fSymmetryPlanesPro[gc][n]->SetLineColor(kBlack);
+   fSymmetryPlanesPro[gc][n]->SetLabelSize(0.0544);
+   for(Int_t o=0;o<4;o++) // TBI h.w. '4'
+   {
+    fSymmetryPlanesPro[gc][n]->GetXaxis()->SetBinLabel(o+1,sLabels[o].Data());
+   } // for(Int_t o=0;o<4;o++)
    fSymmetryPlanesList->Add(fSymmetryPlanesPro[gc][n]);
   }
  }
@@ -5060,29 +5068,122 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFl
 {
  // Calculate symmetry plane correlations from Q-vector components.
 
- // a) Calculate and store symmetry plane correlations.
+ // a) Insanity checks;
+ // b) Calculate and store symmetry plane correlations.
 
- // TBI ...
+ // a) Insanity checks:
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFlowEventSimple *anEvent)";
+ if(!anEvent){Fatal(sMethodName.Data(),"Sorry, anEvent is NULL.");}
+ Double_t dMultRP = anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member?
+ if(dMultRP<0.){Fatal(sMethodName.Data(),"Sorry, dMultRP is negative.");}
 
- // TEST
- //fSymmetryPlanesPro[0][0]->Fill(0.5+gRandom->Uniform(4),gRandom->Uniform(4));
- //fSymmetryPlanesPro[0][1]->Fill(0.5+gRandom->Uniform(4),10.+gRandom->Uniform(4));
-
-/*
-  TList *fSymmetryPlanesList;            // list to hold all correlations between symmetry planes
-  TProfile *fSymmetryPlanesFlagsPro;     // profile to hold all flags for symmetry plane correlations
-  Bool_t fCalculateSymmetryPlanes;       // calculate correlations between symmetry planes
-  //Bool_t ...
-  TProfile *fSymmetryPlanesPro[1][2]; // symmetry planes correlations [[0]:(Psi2n,Psi1n),[1]:...][[0]:n=1,[1]:n=2,...]
-*/
+ // b) Calculate and store symmetry plane correlations.
+ for(Int_t o=0;o<4;o++) // o = optimizer TBI this clearly will be generalized further, also 4 is h.w.
+ {
+  fSymmetryPlanesPro[0][0]->Fill(0.5+o,CorrelationPsi2nPsi1n(1,o));
+  fSymmetryPlanesPro[0][1]->Fill(0.5+o,CorrelationPsi2nPsi1n(2,o));
+ } // for(Int_t o=0;o<4;o++) // o = optimizer TBI this clearly will be generalized further, also 4 is h.w.
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::CalculateSymmetryPlanes(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
 
+Double_t AliFlowAnalysisWithMultiparticleCorrelations::CorrelationPsi2nPsi1n(Int_t n, Int_t k)
+{
+ // TBI Comment the weather here eventually...
 
+ // TBI the optimizer can have the non-trivial harmonic structure as well...
+ //     now it's hardwired to n=2
 
+ // a) Return value;
+ // b) Method name;
+ // c) Insanity checks;
 
+ // a) Return value:
+ Double_t ratio = -44.;
+
+ // b) Method name:
+ TString sMethodName = "Double_t AliFlowAnalysisWithMultiparticleCorrelations::CorrelationPsi2nPsi1n(Int_t n, Int_t k)";
+
+ // c) Insanity checks:
+ // TBI if n is this and that...
+ // TBI if k is this and that...
+
+ Int_t order = 6 + 2*k;
+ TArrayI harmonics0 = TArrayI(order); harmonics0.Reset(0);
+ TArrayI harmonics1 = TArrayI(order); harmonics1.Reset(0);
+ TArrayI harmonics2 = TArrayI(order); harmonics2.Reset(0);
+
+ // Harmonics for numerator:
+ harmonics1.AddAt(2*n,0);
+ harmonics1.AddAt(2*n,1);
+ harmonics1.AddAt(-n,2);
+ harmonics1.AddAt(-n,3);
+ harmonics1.AddAt(-n,4);
+ harmonics1.AddAt(-n,5);
+ // Harmonics for denominator:
+ harmonics2.AddAt(2*n,0);
+ harmonics2.AddAt(-2*n,1);
+ harmonics2.AddAt(n,2);
+ harmonics2.AddAt(-n,3);
+ harmonics2.AddAt(n,4);
+ harmonics2.AddAt(-n,5);
+
+ switch(k)
+ {
+  case 0:
+   // TBI ???
+  break;
+  case 1:
+   // Additional harmonics for numerator from the optimizer:
+   harmonics1.AddAt(2,6);
+   harmonics1.AddAt(-2,7);
+   // Additional harmonics for denominator from the optimizer:
+   harmonics2.AddAt(2,6);
+   harmonics2.AddAt(-2,7);
+  break;
+  case 2:
+   // Additional harmonics for numerator from the optimizer:
+   harmonics1.AddAt(2,6);
+   harmonics1.AddAt(-2,7);
+   harmonics1.AddAt(2,8);
+   harmonics1.AddAt(-2,9);
+   // Additional harmonics for denominator from the optimizer:
+   harmonics2.AddAt(2,6);
+   harmonics2.AddAt(-2,7);
+   harmonics2.AddAt(2,8);
+   harmonics2.AddAt(-2,9);
+  break;
+  case 3:
+   // Additional harmonics for numerator from the optimizer:
+   harmonics1.AddAt(2,6);
+   harmonics1.AddAt(-2,7);
+   harmonics1.AddAt(2,8);
+   harmonics1.AddAt(-2,9);
+   harmonics1.AddAt(2,10);
+   harmonics1.AddAt(-2,11);
+   // Additional harmonics for denominator from the optimizer:
+   harmonics2.AddAt(2,6);
+   harmonics2.AddAt(-2,7);
+   harmonics2.AddAt(2,8);
+   harmonics2.AddAt(-2,9);
+   harmonics2.AddAt(2,10);
+   harmonics2.AddAt(-2,11);
+  break;
+  default:
+   cout<<Form("And the fatal 'k' value is... %d. Congratulations!!",k)<<endl;
+   Fatal(sMethodName.Data(),"switch(k)"); // TBI
+ } // switch(k)
+
+ // Calculate weight and correlators:
+ Double_t dWeight = Recursion(order,harmonics0.GetArray()).Re(); // weight is 'number of combinations' by default
+ TComplex cNum1 = Recursion(order,harmonics1.GetArray())/dWeight;
+ TComplex cNum2 = Recursion(order,harmonics2.GetArray())/dWeight;
+ ratio = cNum1.Re()/cNum2.Re();
+
+ return ratio;
+
+} // Double_t CorrelationPsi2nPsi1n(Int_t n, Int_t k)
 
 
 
