@@ -133,6 +133,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     //(multiplicity related will be done automatically!)
     fTree->SetBranchAddress("fEvSel_IsNotPileupInMultBins",&fEvSel_IsNotPileupInMultBins);
     fTree->SetBranchAddress("fEvSel_PassesTrackletVsCluster",&fEvSel_PassesTrackletVsCluster);
+    fTree->SetBranchAddress("fEvSel_HasNoInconsistentVertices",&fEvSel_HasNoInconsistentVertices);
     fTree->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
     fTree->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
     fTree->SetBranchAddress("fEvSel_VtxZ",&fEvSel_VtxZ);
