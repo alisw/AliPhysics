@@ -2290,7 +2290,7 @@ Double_t TStatToolkit::GetDistance(TTree * tree, const char* var, const char * s
 
 
 
-void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t verbose){
+void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo,Int_t dumpHisto, Int_t verbose){
   //
   // Recursive function to calculate Distortion maps from the residual histograms
   // Input:
@@ -2331,7 +2331,7 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
   */
   //
   static TF1 fgaus("fgaus","gaus",-10,10);
-  
+  const Double_t kMinEntries=50;
   Int_t ndim=histo->GetNdimensions();
   Int_t axis[ndim];
   Double_t meanVector[ndim];
@@ -2360,14 +2360,18 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
     TString hname="his_";
     for (Int_t idim=0; idim<ndim; idim++) {hname+="_"; hname+=TMath::Nint(projectionInfo(idim,3));}
     Double_t meanG=0, rmsG=0, chi2G=0;
-    if (entries>100){
+    if (entries>kMinEntries){
       fgaus.SetParameters(entries,mean,rms);
       his1DFull->Fit(&fgaus,"qnr","qnr");
       meanG = fgaus.GetParameter(1);
       rmsG = fgaus.GetParameter(2);
       chi2G = fgaus.GetChisquare()/fgaus.GetNumberFreeParameters();
     }
-    his1DFull->Write(hname.Data());
+    if (dumpHisto>=0) {
+      static Int_t histoCounter=0;
+      if ((histoCounter%dumpHisto)==0) his1DFull->Write(hname.Data());
+      histoCounter++;
+    }
     delete his1DFull;
     (*pcstream)<<tname<<
     "entries="<<entries<< // number of entries
@@ -2421,11 +2425,7 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
       histo->GetAxis(dimProject)->SetRange(bin0,bin1);
       projectionInfo(iter,3)=ibin;
       projectionInfo(iter,4)=histo->GetAxis(dimProject)->GetBinCenter(ibin);
-      //
       Int_t iterProject=iter-1;
-      if (iterProject<0){
-        printf("Errror\n");
-      }
       MakeDistortionMap(iterProject, histo, pcstream, projectionInfo);
     }
   }

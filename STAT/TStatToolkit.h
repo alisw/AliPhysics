@@ -93,7 +93,7 @@ class TStatToolkit : public TObject
   static Double_t GetDefaultStat(TTree * tree, const char * var, const char * selection, TStatType statType);
   //
   //
-  static void MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t verbose=kFALSE);
+  static void MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirector *pcstream, TMatrixD &projectionInfo, Int_t dumpHisto=100,Int_t verbose=kFALSE);
 
   //
   // norm (distance) functions
