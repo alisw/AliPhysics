@@ -124,19 +124,19 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Bool_t fEvSel_IsNotPileupInMultBins      = kFALSE ;
     Bool_t fEvSel_Triggered                  = kFALSE ;
     Bool_t fEvSel_INELgtZERO                 = kFALSE ;
-
+    Bool_t fEvSel_PassesTrackletVsCluster    = kFALSE ;
+    Bool_t fEvSel_HasNoInconsistentVertices  = kFALSE ;
     Float_t fEvSel_VtxZ                      = 10.0 ;
-    Int_t fRefMultEta8;
     Int_t fRunNumber;
 
     //SetBranchAddresses for event Selection Variables
     //(multiplicity related will be done automatically!)
     fTree->SetBranchAddress("fEvSel_IsNotPileupInMultBins",&fEvSel_IsNotPileupInMultBins);
+    fTree->SetBranchAddress("fEvSel_PassesTrackletVsCluster",&fEvSel_PassesTrackletVsCluster);
     fTree->SetBranchAddress("fEvSel_Triggered",&fEvSel_Triggered);
     fTree->SetBranchAddress("fEvSel_INELgtZERO",&fEvSel_INELgtZERO);
     fTree->SetBranchAddress("fEvSel_VtxZ",&fEvSel_VtxZ);
     fTree->SetBranchAddress("fRunNumber",&fRunNumber);
-    fTree->SetBranchAddress("fRefMultEta8",&fRefMultEta8);
 
     //============================================================
     // --- Definition of Variables for estimators ---
@@ -162,6 +162,13 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     AliMultVariable *fMultiplicity_ADA     = new AliMultVariable("fMultiplicity_ADA");
     AliMultVariable *fMultiplicity_ADC     = new AliMultVariable("fMultiplicity_ADC");
 
+    AliMultVariable *fRefMultEta5     = new AliMultVariable("fRefMultEta5");
+    fRefMultEta5->SetIsInteger( kTRUE );
+    AliMultVariable *fRefMultEta8     = new AliMultVariable("fRefMultEta8");
+    fRefMultEta8->SetIsInteger( kTRUE );
+    AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
+    fnTracklets->SetIsInteger( kTRUE );
+    
     //Add to AliMultInput Object
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0C );
@@ -206,10 +213,15 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     AliMultEstimator *fEstADC = new AliMultEstimator("ADC", "", "(fMultiplicity_ADC)");
 
     //Integer estimators
-    AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPD", "", "(fnSPDClusters)");
-    //Set special calibration mode for integers
+    AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPDClusters", "", "(fnSPDClusters)");
     fEstnSPDClusters->SetIsInteger(kTRUE);
-
+    AliMultEstimator *fEstnSPDTracklets = new AliMultEstimator("SPDTracklets", "", "(fnTracklets)");
+    fEstnSPDTracklets->SetIsInteger(kTRUE);
+    AliMultEstimator *fEstRefMultEta5 = new AliMultEstimator("RefMult05", "", "(fRefMultEta5)");
+    fEstRefMultEta5->SetIsInteger(kTRUE);
+    AliMultEstimator *fEstRefMultEta8 = new AliMultEstimator("RefMult08", "", "(fRefMultEta8)");
+    fEstRefMultEta8->SetIsInteger(kTRUE);
+    
     fSelection -> AddEstimator( fEstV0M );
     fSelection -> AddEstimator( fEstV0A );
     fSelection -> AddEstimator( fEstV0C );
@@ -219,8 +231,11 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fSelection -> AddEstimator( fEstADM );
     fSelection -> AddEstimator( fEstADA );
     fSelection -> AddEstimator( fEstADC );
-    fSelection -> AddEstimator( fEstnSPDClusters );
-
+    fSelection -> AddEstimator( fEstnSPDClusters  );
+    fSelection -> AddEstimator( fEstnSPDTracklets );
+    fSelection -> AddEstimator( fEstRefMultEta5 );
+    fSelection -> AddEstimator( fEstRefMultEta8 );
+    
     //============================================================
 
     Long64_t lNEv = fTree->GetEntries();
@@ -323,25 +338,11 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         if( fMultSelectionCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO ) lSaveThisEvent = kFALSE;
         if( TMath::Abs(fEvSel_VtxZ) > fMultSelectionCuts->GetVzCut()      ) lSaveThisEvent = kFALSE;
         //ADD ME HERE: Tracklets Vs Clusters Cut?
-        if( fMultSelectionCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins ) lSaveThisEvent = kFALSE;
-        if( fMultSelectionCuts->GetVertexConsistencyCut()      &&   fRefMultEta8 == -4           ) lSaveThisEvent = kFALSE;
-
+        if( fMultSelectionCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins    ) lSaveThisEvent = kFALSE;
+        if( fMultSelectionCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster  ) lSaveThisEvent = kFALSE;
+        if( fMultSelectionCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices) lSaveThisEvent = kFALSE;
+        
         if ( lSaveThisEvent ) {
-            //Call Evaluate, please
-	    //This is too slow!
-	  /*
-            fSelection->Evaluate( fInput );
-            for( Long_t iEst=0; iEst<lNEstimators; iEst++) {
-                Float_t lThisVal = fSelection->GetEstimator(iEst)->GetValue();
-                lAvEst[iEst][lThisRunIndex] += lThisVal;
-                if( lThisVal < lMinEst[iEst][lThisRunIndex] ) {
-                    lMinEst[iEst][lThisRunIndex] = lThisVal;
-                }
-                if( lThisVal > lMaxEst[iEst][lThisRunIndex] ) {
-                    lMaxEst[iEst][lThisRunIndex] = lThisVal;
-                }
-            }
-            */
             sTree [lThisRunIndex] -> Fill();
         }
         if(lNRuns>lMax) {
