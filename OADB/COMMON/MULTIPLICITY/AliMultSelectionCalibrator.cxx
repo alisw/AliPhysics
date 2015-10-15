@@ -254,7 +254,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fMultSelectionCuts -> SetVertexConsistencyCut(kTRUE);
 
     cout<<"(3) Creating buffer, computing averages"<<endl;
-    const int lMax = 100;
+    const int lMax = 1000;
     const int lMaxQuantiles = 10000;
     Int_t lRunNumbers[lMaxQuantiles];
     Long_t lRunStats[lMaxQuantiles];
