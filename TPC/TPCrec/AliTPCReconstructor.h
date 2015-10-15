@@ -51,7 +51,10 @@ public:
   void ParseOptions(AliTPCtracker* tracker) const;
   static  const Double_t * GetSystematicError()  { return (fSystematicErrors)? fSystematicErrors->GetMatrixArray():0;}
   static  const Double_t * GetSystematicErrorCluster() { return (fSystematicErrorClusters) ? fSystematicErrorClusters->GetMatrixArray():0;}
+  static  void SetSystematicError( TVectorD *vec)  { fSystematicErrors=vec;}
+  static  void SetSystematicErrorCluster( TVectorD *vec ) { fSystematicErrorClusters=vec;}
   
+
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
   AliTPCReconstructor& operator=(const AliTPCReconstructor&); //Not implemented
