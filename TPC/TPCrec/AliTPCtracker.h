@@ -142,6 +142,7 @@ public:
    Double_t F3n(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2, 
                 Double_t c) const; 
    Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
+   Bool_t GetProlongationLine(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
    //
    void ResetSeedsPool();
    void MarkSeedFree( TObject* seed );
@@ -169,10 +170,12 @@ public:
    // public for ToyMC usage
    void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE); 
    void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
+   void MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void SumTracks(TObjArray *arr1,TObjArray *&arr2);
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
    //
    Bool_t DistortX(const AliTPCseed* seed, double& x, int row);
+   Float_t GetDistortionX(double x, double y, double z, int sec, int row);
 
    //
    virtual Bool_t OwnsESDObjects() const {return kTRUE;} //RS TPC owns the seeds stored in the friends
