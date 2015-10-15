@@ -178,9 +178,12 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     fInput->AddVariable( fAmplitude_V0CEq );
     fInput->AddVariable( fAmplitude_OnlineV0A );
     fInput->AddVariable( fAmplitude_OnlineV0C );
-    fInput->AddVariable( fnSPDClusters );
     fInput->AddVariable( fMultiplicity_ADA );
     fInput->AddVariable( fMultiplicity_ADC );
+    fInput->AddVariable( fnSPDClusters );
+    fInput->AddVariable( fnTracklets   );
+    fInput->AddVariable( fRefMultEta5  );
+    fInput->AddVariable( fRefMultEta8  );
 
     //============================================================
 
