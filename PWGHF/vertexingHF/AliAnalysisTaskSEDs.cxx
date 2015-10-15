@@ -808,9 +808,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
         fMassHistPhi[index]->Fill(invMass,weightKKpi);
         fPtVsMassPhi->Fill(invMass,ptCand,weightKKpi);
         if(!fReadMC && fFillSparse) {
-          if(index==0 || index==4 || index==8) {
-            fnSparse->Fill(var4nSparse);
-          }
+          fnSparse->Fill(var4nSparse);
         }
       }
       if(isK0starKKpi){
@@ -822,7 +820,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
         if(isPhiKKpi) {
           fMassHistPhi[indexMCKKpi]->Fill(invMass,weightKKpi);
           if(fFillSparse) {
-            if(indexMCKKpi==1 || indexMCKKpi==5 || indexMCKKpi==9) {
+            if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
               AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
               Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
               if(orig==4) fnSparseMC[2]->Fill(var4nSparse);
@@ -841,9 +839,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
         fMassHistPhi[index]->Fill(invMass,weightpiKK);
         fPtVsMassPhi->Fill(invMass,ptCand,weightpiKK);
         if(!fReadMC && fFillSparse) {
-          if(index==0 || index==4 || index==8) {
-            fnSparse->Fill(var4nSparse);
-          }
+          fnSparse->Fill(var4nSparse);
         }
       }
       if(isK0starpiKK){
@@ -855,7 +851,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
         if(isPhipiKK) {
          fMassHistPhi[indexMCpiKK]->Fill(invMass,weightpiKK);
           if(fFillSparse) {
-            if(indexMCpiKK==1 || indexMCpiKK==5 || indexMCpiKK==9) {
+            if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) {
               AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
               Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
               if(orig==4) fnSparseMC[2]->Fill(var4nSparse);
