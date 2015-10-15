@@ -691,6 +691,9 @@ void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all
   case 20100:
     cout<<"Pb+Pb collisions at 2.76 TeV"<<endl;
     break;
+  case 2015:
+    cout<<"Pb+Pb collisions at 5.0 TeV"<<endl;
+    break;
   default:
     cout<<"an undetermined collision system and energy"<<endl;
   }
@@ -747,7 +750,7 @@ void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all
   else{cout<<" set and has "<<fEfficiencyProtonTPC->GetEntries()<<" entries"<<endl;}
   cout<<endl;
 
-  if(fDataSet==20100){//if Pb+Pb
+  if(fDataSet==20100 ||fDataSet==2015 ){//if Pb+Pb
     cout<<"Efficiency histogram for TPC tracks for hadrons is set for centrality bins ";
     for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",i));

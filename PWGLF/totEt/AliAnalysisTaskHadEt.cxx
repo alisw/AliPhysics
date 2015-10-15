@@ -238,9 +238,11 @@ if (!fESDEvent) {
   fMCAnalysis->SetIsOfflineMB(kIsOfflineMB);
 
   Int_t eventtype = 	AliPWG0Helper::kInvalidProcess;
-  if(fIsSim &&( fRecAnalysis->DataSet()!=20100 || fRecAnalysis->DataSet()!=2011) ||  fRecAnalysis->DataSet()!=2015) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());
+  if(fIsSim &&( fRecAnalysis->DataSet()!=20100 || fRecAnalysis->DataSet()!=2011 ||  fRecAnalysis->DataSet()!=2015)) eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(MCEvent()->Header());
   //only do the analysis if it meets the offline trigger cut
-  if(kIsOfflineV0AND) fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
+  if(kIsOfflineV0AND){ 
+    fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
+  }
   //else{cout<<"Not analyzing this event!  Does not meet trigger condition!"<<endl;}
   if(fIsSim){
     AliMCEvent* mcEvent = MCEvent();
