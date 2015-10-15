@@ -388,7 +388,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     paramTOF=paramITS;
     RefitTOFtrack(friendTrack,mass,paramTOF, tofChi2, tofNCl );
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("Refitting",fTrackCounter,1,0,0);        
-    if ((trdNCl+tofNCl)==0) continue;
+    //if ((trdNCl+tofNCl)==0) continue; // - use ITS only tracks also  -should it be option?
     //
     // 3.) Propagate to TPC volume, histogram residuals to TPC clusters and dump all information to TTree
     //
@@ -510,6 +510,10 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       if (layerId !=AliGeomManager::kTPC1 && layerId !=AliGeomManager::kTPC2) continue;
       deltaITS0[counter]= Int_t(trackArrayITS[sortedIndex[iPoint]].GetY()*rounding)/rounding;
       deltaITS1[counter]= Int_t((spacepoint.GetZ()-trackArrayITS[sortedIndex[iPoint]].GetZ())*rounding)/rounding;
+      deltaTRD0[counter]=0;
+      deltaTRD1[counter]=0;
+      deltaTOF0[counter]=0;
+      deltaTOF1[counter]=0;
       if (trackArrayTRD[sortedIndex[iPoint]].GetUniqueID()>0){
 	deltaTRD0[counter]= Int_t(trackArrayITSTRD[sortedIndex[iPoint]].GetY()*rounding)/rounding;
 	deltaTRD1[counter]= Int_t((spacepoint.GetZ()-trackArrayITSTRD[sortedIndex[iPoint]].GetZ())*rounding)/rounding;
@@ -734,7 +738,9 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  if ((*vecR)[ipoint]<=0) continue;
 	  Double_t sector=9.*(*vecPhi)[ipoint]/TMath::Pi();
 	  if (sector<0) sector+=18;
-	  Double_t xxx[5]={(*vecDelta)[ipoint], sector, (*vecR)[ipoint],   (*vecZ)[ipoint]/(*vecR)[ipoint], param->GetParameter()[4] };
+	  Double_t deltaPhi=(*vecPhi)[ipoint]-TMath::Pi()*(sector+0.5)/9.;
+	  Double_t localX = TMath::Cos(deltaPhi)*(*vecR)[ipoint];
+	  Double_t xxx[5]={(*vecDelta)[ipoint], sector, localX,   (*vecZ)[ipoint]/(*vecR)[ipoint], param->GetParameter()[4] };
 	  if (xxx[0]==0) continue;
 	  hisToFill[ihis]->Fill(xxx);	  
 	}	
@@ -752,3 +758,27 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
   delete fout;
 }
 
+
+TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, const char * fname,  const char *treeName, const char *friendAlias){
+  //
+  //
+  //
+  TFile * fin = TFile::Open(fname);
+  if (fin==NULL) {
+    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistotionTree",TString::Format("file %s not readable", fname).Data());
+    return 0;
+  }
+  TTree * treeFriend = (TTree*) fin->Get(treeName);
+  
+  if (treeFriend==NULL){
+    ::Error("AliTPCcalibAlignInterpolation::AddFriendDistotionTree",TString::Format("file %s not readable", fname).Data());
+    return 0;
+  }
+  if (tree==NULL) {
+    tree = treeFriend;
+  }else{
+    tree->AddFriend(treeFriend,TString::Format("%s",friendAlias).Data());
+    tree->SetAlias(TString::Format("%sOK",friendAlias).Data(),TString::Format("%s.rms>0&&abs(%s.mean-%s.meanG)<2&&%s.chi2G>0&&%s.rmsG<2&&%s.rmsG/%s.rms<2",friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias,friendAlias).Data());
+  }
+  return tree;
+}

@@ -6,6 +6,9 @@
 
 class TTreeSRedirector;
 class THn; 
+class AliExternalTrackParam;
+class AliESDfriendTrack;
+class AliTrackPointArray;
 
 class AliTPCcalibAlignInterpolation : public AliTPCcalibBase {
 public :
@@ -38,6 +41,7 @@ public :
   THn * GetHisITSDZ() const {return fHisITSDZ;}
   THn * GetHisITSTRDDZ() const {return fHisITSTRDDZ;}
   THn * GetHisITSTOFDZ() const {return fHisITSTOFDZ;}
+  static TTree* AddFriendDistortionTree(TTree * tree, const char * fname, const char *treeName,  const char *friendAlias);
 protected:
   static Bool_t SortPointArray(AliTrackPointArray *pointarray, Int_t * sortedIndex);
   Bool_t fOnTheFlyFill;    // flag  - histogram filled on the fly?
