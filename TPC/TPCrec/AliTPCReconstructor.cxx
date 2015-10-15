@@ -66,6 +66,9 @@ AliTPCAltroEmulator *  AliTPCReconstructor::fAltroEmulator=0;    // ALTRO emulat
 TTreeSRedirector    *  AliTPCReconstructor::fgDebugStreamer=0;                          // NOTE -  AliTPCReconstructor is not an owner of the streamer
 TString                AliTPCReconstructor::fgPIDRespnonsePath="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponse.root";
  
+TVectorD *  AliTPCReconstructor::fSystematicErrors=0;
+TVectorD *  AliTPCReconstructor::fSystematicErrorClusters=0;
+
 AliTPCReconstructor::AliTPCReconstructor():
 AliReconstructor(),
 fClusterer(NULL),

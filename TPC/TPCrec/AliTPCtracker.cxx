@@ -742,7 +742,7 @@ Double_t AliTPCtracker::ErrY2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
   if (errInnerDeep[0]>0) addErr += errInnerDeep[0]*TMath::Exp(-dr/errInnerDeep[1]);
   erry2+=addErr*addErr;
-  const Double_t *errCluster = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
   erry2+=errCluster[0]*errCluster[0];
   seed->SetErrorY2(erry2);
   //
@@ -903,7 +903,8 @@ Double_t AliTPCtracker::ErrZ2(AliTPCseed* seed, const AliTPCclusterMI * cl){
   addErr=errInner[0]*TMath::Exp(-dr/errInner[1]);
   if (errInnerDeepZ[0]>0) addErr += errInnerDeepZ[0]*TMath::Exp(-dr/errInnerDeepZ[1]);
   errz2+=addErr*addErr;
-  const Double_t *errCluster = AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ? AliTPCReconstructor::GetSystematicErrorCluster() : AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+
   errz2+=errCluster[1]*errCluster[1];
   seed->SetErrorZ2(errz2);
   //
@@ -8457,10 +8458,11 @@ void AliTPCtracker::AddCovariance(AliTPCseed * seed){
   // Adding systematic error estimate to the covariance matrix
   //                !!!! the systematic error for element 4 is in 1/GeV 
   // 03.03.2012     MI changed in respect to the previous versions
-  const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
+  // in case systemtic errors defiend statically no correlation added (needed for CPass0)
+  const Double_t *param = AliTPCReconstructor::GetSystematicError()? AliTPCReconstructor::GetSystematicError():AliTPCReconstructor::GetRecoParam()->GetSystematicError();
   //
   // use only the diagonal part if not specified otherwise
-  if (!AliTPCReconstructor::GetRecoParam()->GetUseSystematicCorrelation()) return AddCovarianceAdd(seed);
+  if (!AliTPCReconstructor::GetRecoParam()->GetUseSystematicCorrelation() || AliTPCReconstructor::GetSystematicError()) return AddCovarianceAdd(seed);
   //
   Double_t *covarS= (Double_t*)seed->GetCovariance();
   Double_t factor[5]={1,1,1,1,1};

@@ -7,6 +7,7 @@
 
 #include "AliReconstructor.h"
 #include "AliTPCRecoParam.h"
+#include "TVector.h"
 #include <TString.h>
 
 class AliTPCParam;
@@ -48,6 +49,8 @@ public:
   static TTreeSRedirector    *GetDebugStreamer(){return fgDebugStreamer;}
   static void SetDebugStreamer(TTreeSRedirector    *debugStreamer){fgDebugStreamer=debugStreamer;}
   void ParseOptions(AliTPCtracker* tracker) const;
+  static  const Double_t * GetSystematicError()  { return (fSystematicErrors)? fSystematicErrors->GetMatrixArray():0;}
+  static  const Double_t * GetSystematicErrorCluster() { return (fSystematicErrorClusters) ? fSystematicErrorClusters->GetMatrixArray():0;}
   
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented
@@ -58,6 +61,10 @@ private:
   AliTPCclusterer*           fClusterer;   // TPC clusterer
   static AliTPCAltroEmulator * fAltroEmulator;    // ALTRO emulator
   static TString             fgPIDRespnonsePath;           // path to PIDResponse
+  //
+  // varaibles which overwrite content of the TPCRecoParam in case of custom recosntrcution (e.g CPass0 with imperfect calibration)
+  static TVectorD            * fSystematicErrors;    // systematic errors for the TPC tracks
+  static TVectorD            * fSystematicErrorClusters;    // systematic errors for the TPC tracks
   TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);
