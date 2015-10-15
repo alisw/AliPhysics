@@ -668,6 +668,20 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracks         = -10;
     
     //Set ZDC variables to defaults
+    fZncEnergy = -1;
+    fZpcEnergy = -1;
+    fZnaEnergy = -1;
+    fZpaEnergy = -1;
+    fZem1Energy = -1;
+    fZem2Energy = -1;
+    fZnaTower = -1;
+    fZncTower = -1;
+    fZpaTower = -1;
+    fZpcTower = -1;
+    fZnaFired = kFALSE;
+    fZncFired = kFALSE;
+    fZpaFired = kFALSE;
+    fZpcFired = kFALSE;
 
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
