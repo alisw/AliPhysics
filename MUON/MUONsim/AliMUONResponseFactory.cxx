@@ -34,6 +34,7 @@
 #include "AliMUONResponseV0.h"
 #include "AliMUONResponseTrigger.h"
 #include "AliMUONResponseTriggerV1.h"
+#include <iostream>
 
 using std::endl;
 /// \cond CLASSIMP

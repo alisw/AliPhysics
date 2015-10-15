@@ -55,6 +55,8 @@
 #include "AliDigitizationInput.h"
 
 #include "AliDAQ.h"
+#include <iostream>
+#include <fstream>
 
 using std::endl;
 using std::cout;

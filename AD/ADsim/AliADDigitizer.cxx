@@ -57,6 +57,7 @@
 #include "AliADDigitizer.h"
 #include "AliADSDigit.h"
 #include "AliADTriggerSimulator.h"
+#include "AliLog.h"
 
 ClassImp(AliADDigitizer)
 

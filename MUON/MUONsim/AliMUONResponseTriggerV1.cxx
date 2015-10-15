@@ -39,10 +39,12 @@
 
 #include "AliRun.h"
 #include "AliDCSValue.h"
+#include "AliLog.h"
 
 #include <TMath.h>
 #include <TRandom.h>
 #include <TMap.h>
+#include <iostream>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONResponseTriggerV1)

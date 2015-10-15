@@ -38,6 +38,8 @@
 #include "AliDAQ.h"
 #include "AliFstream.h"
 #include "AliITSFOSignalsSPD.h"
+#include <iostream>
+#include <fstream>
 
 using std::ofstream;
 using std::ios;

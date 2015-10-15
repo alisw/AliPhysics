@@ -13,8 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <AliITSUDigitPix.h>
+#include "AliITSUDigitPix.h"
 #include <TArrayI.h>
+#include <iostream>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //

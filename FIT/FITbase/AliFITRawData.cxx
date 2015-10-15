@@ -34,6 +34,8 @@
 #include "AliFstream.h"
 #include "AliRunLoader.h"
 #include "AliDAQ.h"
+#include "AliLog.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

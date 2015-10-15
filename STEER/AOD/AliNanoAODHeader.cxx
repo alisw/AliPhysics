@@ -1,5 +1,5 @@
 #include "AliNanoAODHeader.h"
-
+#include "AliLog.h"
 
 ClassImp(AliNanoAODHeader)
 
@@ -16,4 +16,8 @@ void  AliNanoAODHeader::Clear(Option_t * /*opt*/) {
   // empty storage
   fVars.clear();
   fNVars = 0;
+}
+
+void AliNanoAODHeader::NotImplemented(void) const {
+  AliError("Not implemented");
 }

@@ -41,6 +41,7 @@ ClassImp(AliMUONBusPatchEvolution)
 #include "TString.h"
 #include <cassert>
 #include <set>
+#include <iostream>
 
 //_________________________________________________________________________________________________
 AliMUONBusPatchEvolution::AliMUONBusPatchEvolution(AliMergeableCollection& hc)

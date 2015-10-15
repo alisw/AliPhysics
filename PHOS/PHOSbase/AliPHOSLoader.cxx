@@ -72,6 +72,7 @@
 #include "AliPHOSLoader.h"
 #include "AliPHOS.h"
 #include "AliPHOSHit.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

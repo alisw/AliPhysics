@@ -36,6 +36,8 @@
 #include "AliDAQ.h"
 #include "AliT0LookUpValue.h"
 #include "AliT0LookUpKey.h"
+#include "AliLog.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

@@ -30,7 +30,6 @@
 #ifndef ROOT_TFolder
 #  include "TFolder.h"
 #endif
-#include "Riostream.h"
 #include <map>
 #include <string>
 

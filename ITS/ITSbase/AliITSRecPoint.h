@@ -23,8 +23,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <AliCluster.h>
-#include <Riostream.h>
-#include <AliLog.h>
+#include <TMath.h>
+#include <iosfwd>
 
 using std::ostream;
 using std::istream;

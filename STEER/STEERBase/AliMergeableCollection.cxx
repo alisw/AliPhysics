@@ -25,6 +25,7 @@
 /// More helper functions might be added in the future (e.g. Project, etc...)
 
 #include "AliMergeableCollection.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

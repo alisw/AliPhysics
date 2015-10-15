@@ -16,6 +16,7 @@
 #include "AliITSU.h"
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUHit.h"
+#include "AliLog.h"
 
 ClassImp(AliITSUHit)
 

@@ -53,6 +53,8 @@
 #include "AliCDBEntry.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSQADataMakerRec.h"
+#include "AliLog.h"
+#include <iostream>
 
 class TGaxis;
 class TF1;

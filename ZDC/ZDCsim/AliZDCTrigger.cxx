@@ -29,6 +29,7 @@
 #include "AliZDC.h"
 #include "AliZDCDigit.h"
 #include "AliZDCTrigger.h"
+#include <iostream>
 
 //________________________________________________________________
 using std::cerr;

@@ -57,6 +57,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBPath.h"
 #include "AliCDBEntry.h"
+#include <iostream>
 
 using std::endl;
 using std::cout;

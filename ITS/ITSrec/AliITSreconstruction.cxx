@@ -27,6 +27,7 @@
 #include "AliITSLoader.h"
 #include "AliITSreconstruction.h"
 #include "AliITSgeom.h"
+#include <iostream>
 
 using std::endl;
 using std::cout;

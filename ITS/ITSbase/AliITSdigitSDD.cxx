@@ -17,6 +17,7 @@
 #include <AliITSCalibrationSDD.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
+#include <iostream>
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //

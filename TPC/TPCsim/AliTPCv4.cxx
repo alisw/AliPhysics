@@ -57,6 +57,9 @@ TPC version for the krypton runs (Marek)
 #include "TGeoHalfSpace.h"
 #include "TTreeStream.h"
 #include "TGeoArb8.h"
+#include "AliLog.h"
+#include <iostream>
+#include <fstream>
 
 using std::ifstream;
 using std::ios_base;

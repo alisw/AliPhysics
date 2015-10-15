@@ -23,10 +23,11 @@
 #include <TTree.h>
 #include <TClonesArray.h>
 
-#include <AliITSVertexer3DTapan.h>
-#include <AliITSRecPoint.h>
-#include <AliITSgeomTGeo.h>
-#include <AliESDVertex.h>
+#include "AliITSVertexer3DTapan.h"
+#include "AliITSRecPoint.h"
+#include "AliITSgeomTGeo.h"
+#include "AliESDVertex.h"
+#include "AliLog.h"
 
 ClassImp(AliITSVertexer3DTapan)
 

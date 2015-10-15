@@ -51,6 +51,7 @@
 #include "AliVZEROdigit.h"
 #include "AliVZERODigitizer.h"
 #include "AliVZEROSDigit.h"
+#include "AliLog.h"
 
 ClassImp(AliVZERODigitizer)
 

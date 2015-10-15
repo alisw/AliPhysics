@@ -47,6 +47,7 @@
 #include "AliZDCFragment.h"
 #include "AliZDCv3.h"
 #include "AliZDCDigitizer.h"
+#include "AliLog.h"
 
 class AliCDBStorage;
 class AliZDCPedestals;

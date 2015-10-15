@@ -23,6 +23,8 @@
 #include "AliITSRecPoint.h"
 #include "AliITSRecPointContainer.h"
 #include "AliITSZPoint.h"
+#include <iostream>
+#include "AliLog.h"
 
 /////////////////////////////////////////////////////////////////
 // this class implements a fast method to determine

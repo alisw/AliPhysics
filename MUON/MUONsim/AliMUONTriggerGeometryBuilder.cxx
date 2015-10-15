@@ -36,6 +36,7 @@
 #include "AliMUONConstants.h"
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
+#include <iostream>
 
 using std::endl;
 using std::cout;

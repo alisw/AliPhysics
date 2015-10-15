@@ -38,6 +38,7 @@
 #include "AliTRDCommonParam.h"
 #include "AliTRDsimTR.h"
 #include "AliTRDtestG4.h"
+#include "AliLog.h"
 
 ClassImp(AliTRDtestG4)
  
