@@ -245,7 +245,7 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
 	metaData.SetResponsible("MUON TRG");
 	metaData.SetComment("Computed by AliMUONTriggerSubprocessor $Id$");
   
-  Bool_t validToInfinity = kFALSE;
+  Bool_t validToInfinity = kTRUE;
 
   Bool_t result1(kTRUE);
   Bool_t result2(kTRUE);
@@ -280,7 +280,7 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
   if ( fTrigScalers && fTrigScalersToOCDB )
   {
     result5 = Master()->Store("Calib","TriggerScalers", fTrigScalers,
-			      &metaData, 0, validToInfinity);
+			      &metaData, 0, kFALSE);
   }
 
   return ( result1 != kTRUE || result2 != kTRUE || result3 != kTRUE || result4 != kTRUE || result5 != kTRUE); // return 0 if everything is ok.  
