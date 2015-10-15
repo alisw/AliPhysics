@@ -8459,7 +8459,7 @@ void AliTPCtracker::AddCovariance(AliTPCseed * seed){
   //                !!!! the systematic error for element 4 is in 1/GeV 
   // 03.03.2012     MI changed in respect to the previous versions
   // in case systemtic errors defiend statically no correlation added (needed for CPass0)
-  const Double_t *param = AliTPCReconstructor::GetSystematicError()? AliTPCReconstructor::GetSystematicError():AliTPCReconstructor::GetRecoParam()->GetSystematicError();
+  const Double_t *param = (AliTPCReconstructor::GetSystematicError()!=NULL) ? AliTPCReconstructor::GetSystematicError():AliTPCReconstructor::GetRecoParam()->GetSystematicError();
   //
   // use only the diagonal part if not specified otherwise
   if (!AliTPCReconstructor::GetRecoParam()->GetUseSystematicCorrelation() || AliTPCReconstructor::GetSystematicError()) return AddCovarianceAdd(seed);
@@ -8495,7 +8495,7 @@ void AliTPCtracker::AddCovarianceAdd(AliTPCseed * seed){
   //                !!!! the systematic error for element 4 is in 1/GeV 
   // 03.03.2012     MI changed in respect to the previous versions
 
-  const Double_t *param = AliTPCReconstructor::GetRecoParam()->GetSystematicError();
+  const Double_t *param = (AliTPCReconstructor::GetSystematicError()!=NULL) ? AliTPCReconstructor::GetSystematicError():AliTPCReconstructor::GetRecoParam()->GetSystematicError();
   Double_t *covarIn= (Double_t*)seed->GetCovariance();
   Double_t covar[15];
   for (Int_t i=0;i<15;i++) covar[i]=0;
