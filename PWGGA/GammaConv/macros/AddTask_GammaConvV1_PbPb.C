@@ -1623,7 +1623,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		
 		analysisCuts[i] = new AliConversionPhotonCuts();
 		analysisCuts[i]->InitializeCutsFromCutString(photonCutArray[i].Data());
-		if( trainConfig == 198 || trainConfig == 199 || trainConfig == 200 || trainConfig == 201 || trainConfig == 202 || trainConfig == 203 || trainConfig == 204 || trainConfig == 205 || trainConfig == 206 || trainConfig == 207 || trainConfig == 208 || trainConfig == 209){
+		if( trainConfig == 198 || trainConfig == 199 || trainConfig == 202 || trainConfig == 203){
 			analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
 		}
 		ConvCutList->Add(analysisCuts[i]);
