@@ -154,6 +154,8 @@ public:
  Bool_t GetCalculateCME() const {return this->fCalculateCME;};
  void SetCalculateCRC2(Bool_t const cCRC) {this->fCalculateCRC2 = cCRC;};
  Bool_t GetCalculateCRC2() const {return this->fCalculateCRC2;};
+ void SetCRC2nEtaBins(Int_t NB) {this->fCRC2nEtaBins = NB;};
+ Int_t GetCRC2nEtaBins() {return this->fCRC2nEtaBins;};
  void SetCalculateFlow(Bool_t const cCRC) {this->fCalculateFlow = cCRC;};
  Bool_t GetCalculateFlow() const {return this->fCalculateFlow;};
  void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
@@ -246,6 +248,7 @@ private:
  Bool_t fCalculateCRCPt;
  Bool_t fCalculateCME;
  Bool_t fCalculateCRC2;
+ Int_t fCRC2nEtaBins; // CRC2 n eta bins
  Bool_t fCalculateFlow;
  Bool_t fUseVZERO;
  Bool_t fUseZDC;
