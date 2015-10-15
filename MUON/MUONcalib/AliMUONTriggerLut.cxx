@@ -353,10 +353,10 @@ void AliMUONTriggerLut::PrintLutCode()
     AliInfo(" 1                 1.0 (a.k.a. Lpt)");
     AliInfo(" 2                 1.7 (a.k.a. Hpt)");
     AliInfo(" 3                 4.2 (a.k.a. infinity)");
-    AliInfo(" 4                 free");
-    AliInfo(" .");
-    AliInfo(" .");
-    AliInfo(" .");
+    AliInfo(" 4                 0 with extended \"undef\"");
+    AliInfo(" 5                 1 with extended \"undef\"");
+    AliInfo(" 6                 2 with extended \"undef\"");
+    AliInfo(" 7                 3 with extended \"undef\"");
     AliInfo("15 default (for backward compatibility)");
     AliInfo("---------------------------------------");
 
