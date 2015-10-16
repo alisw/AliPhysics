@@ -249,6 +249,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
   fRap(0),
   fEtaCutMCDaughters(0),
   fEtaCutMCDaughtersVal(0),
+  fEtaSignCut(0),  
   fUseXi0(0),
   fUseXiM(0),
   fUseOmega(0),
@@ -397,6 +398,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA()
 
   fEtaCutMCDaughters = kFALSE;
   fEtaCutMCDaughtersVal = 50.0;
+  fEtaSignCut = 0.0;
 
   fUseXi0= kTRUE;
   fUseXiM = kTRUE;
@@ -780,6 +782,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
   fRap(0),
   fEtaCutMCDaughters(0),
   fEtaCutMCDaughtersVal(0),
+  fEtaSignCut(0),    
   fUseXi0(0),
   fUseXiM(0),
   fUseOmega(0),
@@ -928,6 +931,7 @@ AliAnalysisTaskV0ForRAA::AliAnalysisTaskV0ForRAA(const char *name)
 
   fEtaCutMCDaughters = kFALSE;
   fEtaCutMCDaughtersVal = 50.0;
+  fEtaSignCut = 0.0;
 
   fUseXi0= kTRUE;
   fUseXiM = kTRUE;
@@ -3878,8 +3882,9 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
 	  Double_t px = v0K0.Px();
 	  Double_t py = v0K0.Py();
 	  Double_t phi  = TMath::Pi()+TMath::ATan2(-py, -px);
-	  Double_t eta =  v0K0.Eta();
+	  
     */
+    Double_t eta =  v0K0.Eta();
     /*     
     //introduce more histo
     Double_t errOnMassK0s = v0MIs->ChangeMassHypothesis(310);
@@ -3941,7 +3946,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     else  fHistPiPiMonitorCuts->Fill(32);     
     if(fArmCutK0 && ptbinokK0s && qt < fQtCut) cutOKK0s = kFALSE;
       
-    
+    if(fEtaSignCut *eta < 0.0) cutOKK0s = kFALSE; 
      
     //-------------------------- Lambda cuts -------------------------//
 
@@ -3986,7 +3991,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     else  fHistPiPMonitorCuts[isSecd]->Fill(32);
 
       
-
+    if(fEtaSignCut *eta < 0.0) cutOKLambda = kFALSE; 
     //--------------------------- ALambda cuts --------------------------//
 
     if(dcaV0ToPrimVertex > fDCAToVertexL) cutOKALambda = kFALSE;
@@ -4026,7 +4031,7 @@ void AliAnalysisTaskV0ForRAA::V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t 
     if((fArmCutL && qt>qtval) || alfa > -1.0*fAlfaCut) cutOKALambda = kFALSE;
     else  fHistPiAPMonitorCuts[isSecd]->Fill(32);
 
-
+    if(fEtaSignCut *eta < 0.0) cutOKALambda = kFALSE;
     //---------- check pdg codes of BG --------------------//
     
     Int_t pdgBG = 0;
