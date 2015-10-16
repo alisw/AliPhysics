@@ -8,7 +8,7 @@ fi
 # 3: year
 # 4: period
 # 5: pass 
-aliroot -l -b -q ${QA_FWD}/PeriodQA.C\(\"$1\",\"\",0,\"\",\"\"\)
+root -l -b -q ${QA_FWD}/PeriodQA.C\(\"$1\",\"\",0,\"\",\"\"\)
 cp ${QA_FWD}/style.css .
 cp ${QA_FWD}/script.js .
 cp ${QA_FWD}/fmd_favicon.png . 

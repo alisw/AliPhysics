@@ -721,7 +721,7 @@ public:
       if ((*psub)[0] != '\0') {
 	Int_t hash = fn.Index("#");
 	if (hash != kNPOS) 
-	  fn.Replace(hash+1,s.Length()-hash-1,*psub);
+	  fn.Replace(hash+1,fn.Length()-hash-1,*psub);
 	else 
 	  fn = gSystem->ConcatFileName(gSystem->DirName(filename),
 				       *psub);
