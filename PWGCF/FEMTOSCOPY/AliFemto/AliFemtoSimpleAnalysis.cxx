@@ -94,7 +94,8 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtV0:
   {
     AliFemtoV0SharedDaughterCut shared_daughter_cut;
-    AliFemtoV0Cut *v0_cut = dynamic_cast<AliFemtoV0Cut*>(partCut);
+    AliFemtoV0Cut *v0_cut = (AliFemtoV0Cut*)partCut; //dynamic_cast was creating a NULL pointer
+
     const AliFemtoV0Collection &v0_coll = (!performSharedDaughterCut)
                                         ? *hbtEvent->V0Collection()
                                         : shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(
