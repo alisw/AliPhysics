@@ -169,6 +169,7 @@ public:
 
    // public for ToyMC usage
    void MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE); 
+   void MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Bool_t bconstrain=kTRUE); 
    void MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1, Int_t ddsec=0); 
    void SumTracks(TObjArray *arr1,TObjArray *&arr2);
@@ -203,6 +204,7 @@ private:
    void ReadSeeds(const AliESDEvent *const event, Int_t direction);  //read seeds from the event
 
    void MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
+   void MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t cuts[4], Float_t deltay = -1);
   
 
    AliTPCseed *MakeSeed(AliTPCseed *const track, Float_t r0, Float_t r1, Float_t r2); //reseed

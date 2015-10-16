@@ -4944,6 +4944,282 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
   if (seed) MarkSeedFree(seed);
 }
 
+void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  Float_t cuts[4],
+				 Float_t deltay) {
+  
+
+
+  //-----------------------------------------------------------------
+  // This function creates track seeds, accounting for distortions
+  //-----------------------------------------------------------------
+  // cuts[0]   - fP4 cut
+  // cuts[1]   - tan(phi)  cut
+  // cuts[2]   - zvertex cut
+  // cuts[3]   - fP3 cut
+
+
+  Int_t nin0  = 0;
+  Int_t nin1  = 0;
+  Int_t nin2  = 0;
+  Int_t nin   = 0;
+  Int_t nout1 = 0;
+  Int_t nout2 = 0;
+  Int_t nout3 =0;
+  Double_t x[5], c[15];
+  //
+  // make temporary seed
+  AliTPCseed * seed = new( NextFreeSeed() ) AliTPCseed;
+  seed->SetPoolID(fLastSeedID);
+  Double_t alpha=fOuterSec->GetAlpha(), shift=fOuterSec->GetAlphaShift();
+  //  Double_t cs=cos(alpha), sn=sin(alpha);
+  //
+  //
+
+  // first 3 padrows
+  Double_t x1Def = GetXrow(i1-1);
+  const    AliTPCtrackerRow& kr1=GetRow(sec,i1-1);
+  Double_t y1max  = GetMaxY(i1-1)-kr1.GetDeadZone()-1.5;  
+  //
+  Double_t x1pDef = GetXrow(i1);
+  const    AliTPCtrackerRow& kr1p=GetRow(sec,i1);
+  //
+  Double_t x1mDef = GetXrow(i1-2);
+  const    AliTPCtrackerRow& kr1m=GetRow(sec,i1-2);
+
+  double dx11mDef = x1Def-x1mDef;
+  double dx11pDef = x1Def-x1pDef;
+  //
+  //last 3 padrow for seeding
+  AliTPCtrackerRow&  kr3  = GetRow((sec+fkNOS)%fkNOS,i1-7);
+  Double_t    x3Def   =  GetXrow(i1-7);
+  //  Double_t    y3max= GetMaxY(i1-7)-kr3.fDeadZone-1.5;  
+  //
+  AliTPCtrackerRow&  kr3p  = GetRow((sec+fkNOS)%fkNOS,i1-6);
+  Double_t    x3pDef   = GetXrow(i1-6);
+  //
+  AliTPCtrackerRow&  kr3m  = GetRow((sec+fkNOS)%fkNOS,i1-8);
+  Double_t    x3mDef   = GetXrow(i1-8);
+
+  //
+  double dx33mDef = x3Def-x3mDef;
+  double dx33pDef = x3Def-x3pDef;
+
+  //
+  // middle padrow
+  Int_t im = i1-4;                           //middle pad row index
+  Double_t xmDef         = GetXrow(im);         // radius of middle pad-row
+  const AliTPCtrackerRow& krm=GetRow(sec,im);   //middle pad -row
+  //  Double_t ymmax = GetMaxY(im)-kr1.fDeadZone-1.5;  
+  //
+  //
+  Double_t deltax  = x1Def-x3Def;
+  Double_t dymax   = deltax*cuts[1];
+  Double_t dzmax   = deltax*cuts[3];
+  //
+  // loop over clusters  
+  for (Int_t is=0; is < kr1; is++) {
+    //
+    if (kr1[is]->IsUsed(10)) continue;	
+    if (kr1[is]->IsDisabled()) {
+      continue;
+    }
+    const AliTPCclusterMI* clkr1 = kr1[is];
+    Double_t x1=clkr1->GetX(), y1=clkr1->GetY(), z1=clkr1->GetZ();    
+    //
+    if (deltay>0 && TMath::Abs(y1max-TMath::Abs(y1))> deltay ) continue;  // seed only at the edge  //RS:? dead zones?
+    // 
+    Int_t  index1 = TMath::Max(kr3.Find(z1-dzmax)-1,0);
+    Int_t  index2 = TMath::Min(kr3.Find(z1+dzmax)+1,kr3);
+    //    
+    Double_t x3,y3,z3;
+    //
+    //
+    UInt_t index;
+    for (Int_t js=index1; js < index2; js++) {
+      const AliTPCclusterMI *kcl = kr3[js];
+      if (kcl->IsDisabled()) {
+	continue;
+      }
+
+      if (kcl->IsUsed(10)) continue;
+      y3 = kcl->GetY(); 
+      // apply angular cuts
+      if (TMath::Abs(y1-y3)>dymax) continue;
+      //x3 = x3; 
+      z3 = kcl->GetZ();	
+      if (TMath::Abs(z1-z3)>dzmax) continue;
+      
+      x3 = kcl->GetX();
+      //
+      double dx13 = x1-x3;
+      Double_t angley = (y1-y3)/dx13;
+      Double_t anglez = (z1-z3)/dx13;
+      //
+      Double_t erry = TMath::Abs(angley)*dx11mDef*0.5+0.5; // RS: use ideal X differences assuming
+      Double_t errz = TMath::Abs(anglez)*dx11mDef*0.5+0.5; // that the distortions are ~same on close rows
+      //
+      Double_t yyym = angley*(xmDef-x1Def)+y1; // RS: idem, assume distortions cancels in the difference
+      Double_t zzzm = anglez*(xmDef-x1Def)+z1;
+
+      const AliTPCclusterMI *kcm = krm.FindNearest2(yyym,zzzm,erry,errz,index);
+      if (!kcm) continue;
+      if (kcm->IsUsed(10)) continue;
+      if (kcm->IsDisabled()) {
+	continue;
+      }
+
+      erry = TMath::Abs(angley)*dx11mDef*0.4+0.5;
+      errz = TMath::Abs(anglez)*dx11mDef*0.4+0.5;
+      //
+      //
+      //
+      Int_t used  =0;
+      Int_t found =0;
+      //
+      // look around first
+      const AliTPCclusterMI *kc1m = kr1m.FindNearest2(-angley*dx11mDef+y1, // RS: idem, assume distortions cancels in the difference
+						      -anglez*dx11mDef+z1,
+						      erry,errz,index);
+      //
+      if (kc1m){
+	found++;
+	if (kc1m->IsUsed(10)) used++;
+      }
+      const AliTPCclusterMI *kc1p = kr1p.FindNearest2(-angley*dx11pDef+y1, // RS: idem, assume distortions cancels in the difference
+						      -anglez*dx11pDef+z1,
+						      erry,errz,index);
+      //
+      if (kc1p){
+	found++;
+	if (kc1p->IsUsed(10)) used++;
+      }
+      if (used>1)  continue;
+      if (found<1) continue; 
+
+      //
+      // look around last
+      const AliTPCclusterMI *kc3m = kr3m.FindNearest2(-angley*dx33mDef+y3, // RS: idem, assume distortions cancels in the difference
+						      -anglez*dx33mDef+z3,
+						      erry,errz,index);
+      //
+      if (kc3m){
+	found++;
+	if (kc3m->IsUsed(10)) used++;
+      }
+      else 
+	continue;
+      const AliTPCclusterMI *kc3p = kr3p.FindNearest2(-angley*dx33pDef+y3, // RS: idem, assume distortions cancels in the difference
+						      -anglez*dx33pDef+z3,
+						      erry,errz,index);
+      //
+      if (kc3p){
+	found++;
+	if (kc3p->IsUsed(10)) used++;
+      }
+      else 
+	continue;
+      if (used>1)  continue;
+      if (found<3) continue;       
+      //
+      Double_t x2,y2,z2;
+      x2 = kcm->GetZ();
+      y2 = kcm->GetY();
+      z2 = kcm->GetZ();
+      //
+                  	
+      x[0]=y1;
+      x[1]=z1;
+      x[4]=F1(x1,y1,x2,y2,x3,y3);
+      //if (TMath::Abs(x[4]) >= cuts[0]) continue;
+      nin0++;
+      //
+      x[2]=F2(x1,y1,x2,y2,x3,y3);
+      nin1++;
+      //
+      x[3]=F3n(x1,y1,x2,y2,z1,z2,x[4]);
+      //if (TMath::Abs(x[3]) > cuts[3]) continue;
+      nin2++;
+      //
+      //
+      Double_t sy1=0.1,  sz1=0.1;
+      Double_t sy2=0.1,  sz2=0.1;
+      Double_t sy3=0.1,  sy=0.1, sz=0.1;
+      
+      Double_t f40=(F1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
+      Double_t f42=(F1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
+      Double_t f43=(F1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
+      Double_t f20=(F2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
+      Double_t f22=(F2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
+      Double_t f23=(F2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
+      
+      Double_t f30=(F3(x1,y1+sy,x2,y2,z1,z2)-x[3])/sy;
+      Double_t f31=(F3(x1,y1,x2,y2,z1+sz,z2)-x[3])/sz;
+      Double_t f32=(F3(x1,y1,x2,y2+sy,z1,z2)-x[3])/sy;
+      Double_t f34=(F3(x1,y1,x2,y2,z1,z2+sz)-x[3])/sz;
+      
+      c[0]=sy1;
+      c[1]=0.;       c[2]=sz1; 
+      c[3]=f20*sy1;  c[4]=0.;       c[5]=f20*sy1*f20+f22*sy2*f22+f23*sy3*f23;
+      c[6]=f30*sy1;  c[7]=f31*sz1;  c[8]=f30*sy1*f20+f32*sy2*f22;
+      c[9]=f30*sy1*f30+f31*sz1*f31+f32*sy2*f32+f34*sz2*f34;
+      c[10]=f40*sy1; c[11]=0.; c[12]=f40*sy1*f20+f42*sy2*f22+f43*sy3*f23;
+      c[13]=f30*sy1*f40+f32*sy2*f42;
+      c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
+      
+      //	if (!BuildSeed(kr1[is],kcl,0,x1,x2,x3,x,c)) continue;
+      
+      index=kr1.GetIndex(is);
+      if (seed) {MarkSeedFree( seed ); seed = 0;}
+      AliTPCseed *track = seed = new( NextFreeSeed() ) AliTPCseed(x1, sec*alpha+shift, x, c, index);
+      seed->SetPoolID(fLastSeedID);
+      
+      track->SetIsSeeding(kTRUE);
+
+      nin++;      
+      FollowProlongation(*track, i1-7,1);
+      if (track->GetNumberOfClusters() < track->GetNFoundable()*0.75 || 
+	  track->GetNShared()>0.6*track->GetNumberOfClusters() || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.6){
+	MarkSeedFree( seed ); seed = 0;
+	continue;
+      }
+      nout1++;
+      nout2++;	
+      //Int_t rc = 1;
+      FollowProlongation(*track, i2,1);
+      track->SetBConstrain(0);
+      track->SetLastPoint(i1+fInnerSec->GetNRows());  // first cluster in track position
+      track->SetFirstPoint(track->GetLastPoint());
+      
+      if (track->GetNumberOfClusters()<(i1-i2)*0.5 || 
+	  track->GetNumberOfClusters()<track->GetNFoundable()*0.7 || 
+	  track->GetNShared()>2. || track->GetChi2()/track->GetNumberOfClusters()>6 || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.5 ) {
+	MarkSeedFree( seed ); seed = 0;
+	continue;
+      }
+   
+      {
+	FollowProlongation(*track, TMath::Max(i2-10,0),1);
+	AliTPCseed * track2 = MakeSeed(track,0.2,0.5,0.9);
+	FollowProlongation(*track2, i2,1);
+	track2->SetBConstrain(kFALSE);
+	track2->SetSeedType(4);
+	arr->AddLast(track2);
+	MarkSeedFree( seed ); seed = 0;
+      }
+      
+   
+      //arr->AddLast(track); 
+      //seed = new AliTPCseed; 	
+      nout3++;
+    }
+  }
+  
+  if (fDebug>3){
+    Info("MakeSeeds5Dist","\nSeeding statiistic:\t%d\t%d\t%d\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin,nout1,nout2,nout3);
+  }
+  if (seed) MarkSeedFree(seed);
+}
+
 
 //_____________________________________________________________________________
 void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t */*cuts[4]*/,
@@ -5061,6 +5337,266 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
 	  if (TMath::Abs(yn)>ymax1) continue;
 	  nfoundable++;
 	  AliTPCclusterMI * cln = kr->FindNearest(yn,zn,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ);
+	  if (cln) {
+	    Float_t dist =  TMath::Sqrt(  (yn-cln->GetY())*(yn-cln->GetY())+(zn-cln->GetZ())*(zn-cln->GetZ()));
+	    if (dist<maxdist){
+	      /*
+	      erry = (dist+0.3)*cln->GetSigmaY2()/TMath::Sqrt(cln->GetQ())*(1.+1./(ddrow));	    
+	      errz = (dist+0.3)*cln->GetSigmaZ2()/TMath::Sqrt(cln->GetQ())*(1.+1./(ddrow));
+	      if (cln->IsUsed(10)) {
+		//	printf("used\n");
+		sumused++;
+		erry*=2;
+		errz*=2;
+	      }
+	      */
+	      erry=0.1;
+	      errz=0.1;
+	      polytrack.AddPoint(xn,cln->GetY(),cln->GetZ(),erry, errz);
+	      nfound++;
+	    }
+	  }
+	}
+	if ( (sumused>3) || (sumused>0.5*nfound) || (nfound<0.6*nfoundable))  break;     
+	polytrack.UpdateParameters();
+      }           
+    }
+    if ( (sumused>3) || (sumused>0.5*nfound))  {
+      //printf("sumused   %d\n",sumused);
+      continue;
+    }
+    nin1++;
+    Double_t dy,dz;
+    polytrack.GetFitDerivation(kr0.GetX(),dy,dz);
+    AliTPCpolyTrack track2;
+    
+    polytrack.Refit(track2,0.5+TMath::Abs(dy)*0.3,0.4+TMath::Abs(dz)*0.3);
+    if (track2.GetN()<0.5*nfoundable) continue;
+    nin2++;
+
+    if ((nfound>0.6*nfoundable) &&( nfoundable>0.4*(i1-i2))) {
+      //
+      // test seed with and without constrain
+      for (Int_t constrain=0; constrain<=0;constrain++){
+	// add polytrack candidate
+
+	Double_t x[5], c[15];
+	Double_t x1,x2,x3,y1,y2,y3,z1,z2,z3;
+	track2.GetBoundaries(x3,x1);	
+	x2 = (x1+x3)/2.;
+	track2.GetFitPoint(x1,y1,z1);
+	track2.GetFitPoint(x2,y2,z2);
+	track2.GetFitPoint(x3,y3,z3);
+	//
+	//is track pointing to the vertex ?
+	Double_t x0,y0,z0;
+	x0=0;
+	polytrack.GetFitPoint(x0,y0,z0);
+
+	if (constrain) {
+	  x2 = x3;
+	  y2 = y3;
+	  z2 = z3;
+	  
+	  x3 = 0;
+	  y3 = 0;
+	  z3 = 0;
+	}
+	x[0]=y1;
+	x[1]=z1;
+	x[4]=F1(x1,y1,x2,y2,x3,y3);
+		
+	//	if (TMath::Abs(x[4]) >= cuts[0]) continue;  //
+	x[2]=F2(x1,y1,x2,y2,x3,y3);
+	
+	//if (TMath::Abs(x[4]*x1-x[2]) >= cuts[1]) continue;
+	//x[3]=F3(x1,y1,x2,y2,z1,z2);
+	x[3]=F3n(x1,y1,x3,y3,z1,z3,x[4]);
+	//if (TMath::Abs(x[3]) > cuts[3]) continue;
+
+	
+	Double_t sy =0.1, sz =0.1;
+	Double_t sy1=0.02, sz1=0.02;
+	Double_t sy2=0.02, sz2=0.02;
+	Double_t sy3=0.02;
+
+	if (constrain){
+	  sy3=25000*x[4]*x[4]+0.1, sy=0.1, sz=0.1;
+	}
+	
+	Double_t f40=(F1(x1,y1+sy,x2,y2,x3,y3)-x[4])/sy;
+	Double_t f42=(F1(x1,y1,x2,y2+sy,x3,y3)-x[4])/sy;
+	Double_t f43=(F1(x1,y1,x2,y2,x3,y3+sy)-x[4])/sy;
+	Double_t f20=(F2(x1,y1+sy,x2,y2,x3,y3)-x[2])/sy;
+	Double_t f22=(F2(x1,y1,x2,y2+sy,x3,y3)-x[2])/sy;
+	Double_t f23=(F2(x1,y1,x2,y2,x3,y3+sy)-x[2])/sy;
+
+	Double_t f30=(F3(x1,y1+sy,x3,y3,z1,z3)-x[3])/sy;
+	Double_t f31=(F3(x1,y1,x3,y3,z1+sz,z3)-x[3])/sz;
+	Double_t f32=(F3(x1,y1,x3,y3+sy,z1,z3)-x[3])/sy;
+	Double_t f34=(F3(x1,y1,x3,y3,z1,z3+sz)-x[3])/sz;
+
+	
+	c[0]=sy1;
+	c[1]=0.;       c[2]=sz1;
+	c[3]=f20*sy1;  c[4]=0.;       c[5]=f20*sy1*f20+f22*sy2*f22+f23*sy3*f23;
+	c[6]=f30*sy1;  c[7]=f31*sz1;  c[8]=f30*sy1*f20+f32*sy2*f22;
+	c[9]=f30*sy1*f30+f31*sz1*f31+f32*sy2*f32+f34*sz2*f34;
+	c[10]=f40*sy1; c[11]=0.; c[12]=f40*sy1*f20+f42*sy2*f22+f43*sy3*f23;
+	c[13]=f30*sy1*f40+f32*sy2*f42;
+	c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
+	
+	//Int_t row1 = fSectors->GetRowNumber(x1);
+	Int_t row1 = GetRowNumber(x1);
+
+	UInt_t index=0;
+	//kr0.GetIndex(is);
+	if (seed) {MarkSeedFree( seed ); seed = 0;}
+	AliTPCseed *track = seed = new( NextFreeSeed() ) AliTPCseed(x1,sec*alpha+shift,x,c,index);
+	seed->SetPoolID(fLastSeedID);
+	track->SetIsSeeding(kTRUE);
+	Int_t rc=FollowProlongation(*track, i2);	
+	if (constrain) track->SetBConstrain(1);
+	else
+	  track->SetBConstrain(0);
+	track->SetLastPoint(row1+fInnerSec->GetNRows());  // first cluster in track position
+	track->SetFirstPoint(track->GetLastPoint());
+
+	if (rc==0 || track->GetNumberOfClusters()<(i1-i2)*0.5 || 
+	    track->GetNumberOfClusters() < track->GetNFoundable()*0.6 || 
+	    track->GetNShared()>0.4*track->GetNumberOfClusters()) {
+	  MarkSeedFree( seed ); seed = 0;
+	}
+	else {
+	  arr->AddLast(track); // track IS seed, don't free seed
+	  seed = new( NextFreeSeed() ) AliTPCseed;
+	  seed->SetPoolID(fLastSeedID);
+	}
+	nin3++;
+      }
+    }  // if accepted seed
+  }
+  if (fDebug>3){
+    Info("MakeSeeds2","\nSeeding statiistic:\t%d\t%d\t%d\t%d",nin0,nin1,nin2,nin3);
+  }
+  if (seed) MarkSeedFree( seed );
+}
+
+//_____________________________________________________________________________
+void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, Float_t */*cuts[4]*/,
+				 Float_t deltay, Bool_t /*bconstrain*/) {
+  //-----------------------------------------------------------------
+  // This function creates track seeds, accounting for distortions - without vertex constraint
+  //-----------------------------------------------------------------
+  // cuts[0]   - fP4 cut        - not applied
+  // cuts[1]   - tan(phi)  cut
+  // cuts[2]   - zvertex cut    - not applied 
+  // cuts[3]   - fP3 cut
+  Int_t nin0=0;
+  Int_t nin1=0;
+  Int_t nin2=0;
+  Int_t nin3=0;
+  //  Int_t nin4=0;
+  //Int_t nin5=0;
+
+
+  Double_t alpha=fOuterSec->GetAlpha(), shift=fOuterSec->GetAlphaShift();
+  //  Double_t cs=cos(alpha), sn=sin(alpha);
+  Int_t row0 = (i1+i2)/2;
+  Int_t drow = (i1-i2)/2;
+  const AliTPCtrackerRow& kr0=fSectors[sec][row0];
+  AliTPCtrackerRow * kr=0;
+
+  AliTPCpolyTrack polytrack;
+  Int_t nclusters=fSectors[sec][row0];
+  AliTPCseed * seed = new( NextFreeSeed() ) AliTPCseed;
+  seed->SetPoolID(fLastSeedID);
+
+  Int_t sumused=0;
+  Int_t cused=0;
+  Int_t cnused=0;
+  for (Int_t is=0; is < nclusters; is++) {  //LOOP over clusters
+    Int_t nfound =0;
+    Int_t nfoundable =0;
+    for (Int_t iter =1; iter<2; iter++){   //iterations
+      const AliTPCtrackerRow& krm=fSectors[sec][row0-iter];
+      const AliTPCtrackerRow& krp=fSectors[sec][row0+iter];      
+      const AliTPCclusterMI * cl= kr0[is];
+      if (cl->IsDisabled()) {
+	continue;
+      }
+
+      if (cl->IsUsed(10)) {
+	cused++;
+      }
+      else{
+	cnused++;
+      }
+      Double_t x = kr0.GetX();
+      // Initialization of the polytrack
+      nfound =0;
+      nfoundable =0;
+      polytrack.Reset();
+      //
+      Double_t y0= cl->GetY();
+      Double_t z0= cl->GetZ();
+      Float_t erry = 0;
+      Float_t errz = 0;
+      
+      Double_t ymax = fSectors->GetMaxY(row0)-kr0.GetDeadZone()-1.5;
+      if (deltay>0 && TMath::Abs(ymax-TMath::Abs(y0))> deltay ) continue;  // seed only at the edge
+      
+      erry = (0.5)*cl->GetSigmaY2()/TMath::Sqrt(cl->GetQ())*6;	    
+      errz = (0.5)*cl->GetSigmaZ2()/TMath::Sqrt(cl->GetQ())*6;      
+      polytrack.AddPoint(x,y0,z0,erry, errz);
+
+      sumused=0;
+      if (cl->IsUsed(10)) sumused++;
+
+
+      Float_t roady = (5*TMath::Sqrt(cl->GetSigmaY2()+0.2)+1.)*iter;
+      Float_t roadz = (5*TMath::Sqrt(cl->GetSigmaZ2()+0.2)+1.)*iter;
+      //
+      x = krm.GetX();
+      AliTPCclusterMI * cl1 = krm.FindNearest(y0,z0,roady,roadz);
+      if (cl1 && TMath::Abs(ymax-TMath::Abs(y0))) {
+	erry = (0.5)*cl1->GetSigmaY2()/TMath::Sqrt(cl1->GetQ())*3;	    
+	errz = (0.5)*cl1->GetSigmaZ2()/TMath::Sqrt(cl1->GetQ())*3;
+	if (cl1->IsUsed(10))  sumused++;
+	polytrack.AddPoint(x,cl1->GetY(),cl1->GetZ(),erry,errz);
+      }
+      //
+      x = krp.GetX();
+      AliTPCclusterMI * cl2 = krp.FindNearest(y0,z0,roady,roadz);
+      if (cl2) {
+	erry = (0.5)*cl2->GetSigmaY2()/TMath::Sqrt(cl2->GetQ())*3;	    
+	errz = (0.5)*cl2->GetSigmaZ2()/TMath::Sqrt(cl2->GetQ())*3;
+	if (cl2->IsUsed(10)) sumused++;	 
+	polytrack.AddPoint(x,cl2->GetY(),cl2->GetZ(),erry,errz);
+      }
+      //
+      if (sumused>0) continue;
+      nin0++;
+      polytrack.UpdateParameters();
+      // follow polytrack
+      roadz = 1.2;
+      roady = 1.2;
+      //
+      Double_t yn,zn;
+      nfoundable = polytrack.GetN();
+      nfound     = nfoundable; 
+      //
+      for (Int_t ddrow = iter+1; ddrow<drow;ddrow++){
+	Float_t maxdist = 0.8*(1.+3./(ddrow));
+	for (Int_t delta = -1;delta<=1;delta+=2){
+	  Int_t row = row0+ddrow*delta;
+	  kr = &(fSectors[sec][row]);
+	  Double_t xn = kr->GetX();
+	  Double_t ymax1 = fSectors->GetMaxY(row)-kr->GetDeadZone()-1.5;
+	  polytrack.GetFitPoint(xn,yn,zn);
+	  if (TMath::Abs(yn)>ymax1) continue;
+	  nfoundable++;
+	  AliTPCclusterMI * cln = kr->FindNearest(yn,zn,roady,roadz);
 	  if (cln) {
 	    Float_t dist =  TMath::Sqrt(  (yn-cln->GetY())*(yn-cln->GetY())+(zn-cln->GetZ())*(zn-cln->GetZ()));
 	    if (dist<maxdist){
@@ -7593,11 +8129,17 @@ TObjArray * AliTPCtracker::Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t 
   TStopwatch timer;
   timer.Start();
   for (Int_t sec=0;sec<fkNOS;sec++){
-    if (seedtype==3) fAccountDistortions ? 
-		       MakeSeeds3(arr,sec,i1,i2,cuts,dy, dsec) : 
-		       MakeSeeds3Dist(arr,sec,i1,i2,cuts,dy, dsec);
-    if (seedtype==4) MakeSeeds5(arr,sec,i1,i2,cuts,dy);    
-    if (seedtype==2) MakeSeeds2(arr,sec,i1,i2,cuts,dy);
+    if (fAccountDistortions) {
+      if (seedtype==3) MakeSeeds3Dist(arr,sec,i1,i2,cuts,dy, dsec);		     
+      if (seedtype==4) MakeSeeds5Dist(arr,sec,i1,i2,cuts,dy);    
+      if (seedtype==2) MakeSeeds2Dist(arr,sec,i1,i2,cuts,dy); //RS
+    }
+    else {
+      if (seedtype==3) MakeSeeds3(arr,sec,i1,i2,cuts,dy, dsec);		     
+      if (seedtype==4) MakeSeeds5(arr,sec,i1,i2,cuts,dy);    
+      if (seedtype==2) MakeSeeds2(arr,sec,i1,i2,cuts,dy); //RS
+    }
+    //
   }
   if (fDebug>0){
     Info("Tracking","\nSeeding - %d\t%d\t%d\t%d\n",seedtype,i1,i2,arr->GetEntriesFast());
