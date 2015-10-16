@@ -255,38 +255,39 @@ Int_t AliHLTLumiRegComponent::LuminousRegionExtraction(TH1F* histos[], Float_t* 
   Float_t meanMult = 38.;
   Float_t p2 = 1.3;
   Float_t resolVtx = 0.04;
-  Float_t lumiregsquared = 0;
+  Float_t lumiregsquaredX = 0;
+  Float_t lumiregsquaredY = 0;
+  int rc = 0;
   
   AliHLTLumiRegComponent::FitHistos(histos[0], meanLR[0], sigmaLR[0], -0.4, 0.4);
   AliHLTLumiRegComponent::FitHistos(histos[1], meanLR[1], sigmaLR[1], -0.2, 0.7);
   
   if (AliHLTLumiRegComponent::kpp){
-    lumiregsquared = (sigmaLR[0]*sigmaLR[0] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+    lumiregsquaredX = (sigmaLR[0]*sigmaLR[0] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
+    lumiregsquaredY = (sigmaLR[1]*sigmaLR[1] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
     
-    if (lumiregsquared < 0 || lumiregsquared < 1E-5){
+    if (lumiregsquaredX > 0 && lumiregsquaredX < 0.0005) {
+      sigmaLR[0] = TMath::Sqrt(lumiregsquaredX);
+    }
+    
+    if (lumiregsquaredY > 0 && lumiregsquaredY < 0.0005) {
+      sigmaLR[1] = TMath::Sqrt(lumiregsquaredY);
+    }
+    
+    if (lumiregsquaredX < 0 || lumiregsquaredX < 1E-5){
       Printf("Difficult luminous region determination X, keep convoluted sigma");
-      return 2;
+      rc = 1;
     }
     
-    if (lumiregsquared > 0 && lumiregsquared < 0.0005) {
-      sigmaLR[0] = TMath::Sqrt(lumiregsquared);
-      return 1;
-    }
-    
-    lumiregsquared = (sigmaLR[1]*sigmaLR[1] - ((resolVtx*resolVtx)/TMath::Power(meanMult, p2)));
-    
-    if (lumiregsquared < 0 || lumiregsquared < 1E-5){
+    if (lumiregsquaredY < 0 || lumiregsquaredY < 1E-5){
       Printf("Difficult luminous region determination Y, keep convoluted sigma");
-      return 2;
+      rc += 2;
     }
     
-    if (lumiregsquared > 0 && lumiregsquared < 0.0005) {
-      sigmaLR[1] = TMath::Sqrt(lumiregsquared);
-      return 1;
-    }
   }
   
-  return 2;
+  //rc: 0 on success, 1 on bad X fit, 2 on bad Y fit, 3 on both bad
+  return rc;
   
 }
 
@@ -303,7 +304,7 @@ Int_t AliHLTLumiRegComponent::FitHistos(TH1F *hVtx, Float_t &mean, Float_t &sigm
   TF1 *vtxFunct = hVtx->GetFunction("gaus");
   if (!vtxFunct) {
     Printf("No fit function!"); 
-    return 0;
+    return 1;
   }
   mean = vtxFunct->GetParameter(1);
   sigma = vtxFunct->GetParameter(2);
