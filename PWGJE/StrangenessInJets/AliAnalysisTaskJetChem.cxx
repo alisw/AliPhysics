@@ -3591,7 +3591,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	  //std::cout<<"ptFractionEmbedded :"<<ptFractionEmbedded<<std::endl;
 	 
-
 	  fh1IndexEmbedded->Fill(indexEmbedded);
 	  fh1FractionPtEmbedded->Fill(ptFractionEmbedded);
 	  
@@ -3633,19 +3632,21 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	//if(fUseExtraTracks == -1){ptFractionEmbedded = 1.; deltaREmbedded = 0.;}//set cut values loose for extraonly jets, probably this works not yet, all jets are rejected with these cut values... to be checked again!
 	
+	if(!embeddedJet)continue;
 
-	Double_t JetPt = jet->Pt();//jet pt spectrum of all jets before jet matching is applied 
-	fh1PtEmbBeforeMatch->Fill(JetPt);
-	
-
+	  Double_t JetPt = jet->Pt();//jet pt spectrum of all jets before jet matching is applied 
 	  
-	if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
+	  Double_t JetPtEmb = embeddedJet->Pt();
+	  fh1PtEmbBeforeMatch->Fill(JetPtEmb);
 	  
-	  Float_t jetPtEmbAfterMatch = jet->Pt();
+	  if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
+	    
+	    Float_t jetPtEmbAfterMatch = jet->Pt();
+	    Float_t jetPtEmbAfterMatchEmb = embeddedJet->Pt();
+
+	    fh1PtEmbAfterMatch->Fill(jetPtEmbAfterMatchEmb);
 	  
-	  fh1PtEmbAfterMatch->Fill(jetPtEmbAfterMatch);
-
-
+	  
 	  for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	    
 	    AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
@@ -3656,13 +3657,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 	    
-	    Float_t jetPtEmb = jet->Pt();
+	    Float_t jetPt = jet->Pt();
 	    
 	    Float_t trackPt = trackV->Pt();
 	    
 	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	    
-	    fFFHistosRecCuts->FillFF(trackPt, jetPtEmb, incrementJetPt);//fill charged tracks into RecCuts histos
+	    fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);//fill charged tracks into RecCuts histos
 	    
 	    delete trackV;
 	  }

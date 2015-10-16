@@ -292,6 +292,6 @@ bool AliJJetJtTask::IsGoodEvent(AliVEvent *event) {
 //______________________________________________________________________________
 void AliJJetJtTask::Terminate(Option_t *)
 {
-	fJJetJtAnalysis->WriteHistograms();
+	//fJJetJtAnalysis->WriteHistograms();
 
 }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 #  - script to sync a group of files on alien with a local cache
 #    downloads only new and updated files

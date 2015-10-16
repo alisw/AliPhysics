@@ -28,6 +28,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                       Int_t maxITSCls = 7,
                       Int_t maxChi2ITSCls = 37,
                       Int_t TPCMinNCls = 70,
+                      Bool_t isPbPb = kTRUE,
+                      Bool_t CheckPileup = kFALSE,
                       Bool_t isPID = kTRUE,
                       Bool_t isVZERO = kFALSE, // use vzero sp method
                       Bool_t is2011 = kTRUE,
@@ -52,21 +54,25 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     Double_t minB = +0.5*EtaGap;//
     Double_t maxB = etamax;//
     
-    if(!UsePurityPIDmethod){
-        int centrMin[16] = {0,1,2,3,4,5,6,7,8,9,10,20,30,40,60,70};
-        int centrMax[16] = {1,2,3,4,5,6,7,8,9,10,20,30,40,50,70,80};
-        for(int i=0;i<16;i++){
+    if(isPbPb && !UsePurityPIDmethod){
+        int centrMin[9] = {0,1,2,10,20,30,40,60,70};
+        int centrMax[9] = {1,2,10,20,30,40,50,70,80};
+        for(int i=0;i<9;i++){
             if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
             if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
         }
     }
-    if(UsePurityPIDmethod){
+    if(isPbPb && UsePurityPIDmethod){
         int centrMin[3] = {0,20,40};
         int centrMax[3] = {1,30,50};
         for(int i=0;i<3;i++){
             if(ncentralitymin == centrMin[i]) const int ncentrminlim = i;
             if(ncentralitymax == centrMax[i]) const int ncentrmaxlim = i;
         }
+    }
+    if(!isPbPb){
+        const int ncentrminlim = 0;
+        const int ncentrmaxlim = 0;
     }
     
     //---------Data selection---------- ESD only!!!
@@ -96,9 +102,14 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
     
     for(int icentr=0;icentr<ncentr;icentr++){
         cutsEvent[icentr] = new AliFlowEventCuts(Form("eventcuts_%d",icentr));
+        cutsEvent[icentr]->SetCheckPileup(CheckPileup);
         cutsEvent[icentr]->SetLHC11h(is2011);
-        cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
-        cutsEvent[icentr]->SetCentralityPercentileMethod(CentrMethodName);
+
+        if(isPbPb){
+            cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
+            cutsEvent[icentr]->SetCentralityPercentileMethod(CentrMethodName);
+        }
+
         cutsEvent[icentr]->SetPrimaryVertexZrange(-PvtxZ,PvtxZ); // <------//default -10.,10.
         cutsEvent[icentr]->SetQA(doQA);
         cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
@@ -154,6 +165,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             SP_POI[icentr]->SetMinimalTPCdedx(10.);
         }
         //SP_POI[icentr]->SetParamMix(poimix);
+        SP_POI[icentr]->SetMinNClustersTPC(70);
         SP_POI[icentr]->SetPtRange(0.2,6.);//
         
         
@@ -181,7 +193,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         if(isPID){
             SP_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
             
-            if(UsePurityPIDmethod){
+            if(UsePurityPIDmethod && isPbPb){
                 SP_POI[icentr]->SetCentralityPercentile(centrMin[icentr+ncentrminlim],centrMax[icentr+ncentrminlim]);
                 SP_POI[icentr]->SetTPCTOFNsigmaPIDPurityFunctions(PurityLevel);
             }
@@ -195,7 +207,7 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             SP_POI[icentr]->SetMaxChi2PerClusterTPC(Chi2TPCmax); // <------default 4.0
             SP_POI[icentr]->SetMaxDCAToVertexXY(DCAvtxXY);
             SP_POI[icentr]->SetMaxDCAToVertexZ(DCAvtxZ);
-            SP_POI[icentr]->SetMinNClustersTPC(TPCMinNCls);
+            //SP_POI[icentr]->SetMinNClustersTPC(TPCMinNCls);
         }
 
         SP_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
@@ -209,8 +221,10 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
         if(!isVZERO && Qvector=="Qb") suffixName[icentr] = "Qb";
         if(isVZERO) suffixName[icentr] = "vzero";
         suffixName[icentr] += "_flow_";
-        suffixName[icentr] += Form("%i_", centrMin[icentr+ncentrminlim]);
-        suffixName[icentr] += Form("%i_", centrMax[icentr+ncentrminlim]);
+        if(isPbPb){
+            suffixName[icentr] += Form("%i_", centrMin[icentr+ncentrminlim]);
+            suffixName[icentr] += Form("%i_", centrMax[icentr+ncentrminlim]);
+        }
         suffixName[icentr] += Form("%.f_", EtaGap*10);
         
         if(isPID){
@@ -234,10 +248,10 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
             //outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
             //outputSlotName[icentr][harmonic-2]+="_";
             //outputSlotName[icentr][harmonic-2]+=SP_POI[icentr]->GetName();
-            outputSlotName[icentr][harmonic-2]+=Form("%i-",centrMin[icentr+ncentrminlim]);
-            outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr+ncentrminlim]);
-            
-            
+            if(isPbPb){
+                outputSlotName[icentr][harmonic-2]+=Form("%i-",centrMin[icentr+ncentrminlim]);
+                outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr+ncentrminlim]);
+            }
             if(isPID){
                 outputSlotName[icentr][harmonic-2]+=AliFlowTrackCuts::PIDsourceName(sourcePID);//sourcePID
                 outputSlotName[icentr][harmonic-2]+="_";

@@ -61,7 +61,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetJetCuts(5., (-1)*jetEtaCut, jetEtaCut, 0., 2*TMath::Pi());//(jet pt Cut, jet acceptance, phi min max cuts)
   task->SetCuttrackPosEta(0.8);
   task->SetCuttrackNegEta(0.8);
-  task->SetCutV0Eta(V0EtaCut); //pseudorapidity cut, dont use 0.5, because too many tracks would fall out of the acceptance; recommended cut for jet analysis of strange particles: 0.75
+  task->SetCutV0Eta(V0EtaCut); //pseudorapidity cut, don't use 0.8, because too many tracks would fall out of the acceptance; recommended cut for jet analysis of strange particles: 0.75
   task->SetCosOfPointingAngle(0.998);
   task->SetAcceptKinkDaughters(kFALSE);//accept kink daughters -> dont use this cut anymore
   task->SetRequireTPCRefit(kTRUE);

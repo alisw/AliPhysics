@@ -674,8 +674,8 @@ Int_t AliCFSingleTrackEfficiencyTask::GetNumberOfTrackletsInEtaRange(Double_t mi
   Bool_t isAOD = fInputEvent->IsA()->InheritsFrom("AliAODEvent");
   if(!event && AODEvent() && IsStandardAOD()) {
    event  = dynamic_cast<AliAODEvent*> (AODEvent());
+   if (!event) return -1;
   }
-  if (!event) return -1;
   Int_t count=0;
 
   if(isAOD) {

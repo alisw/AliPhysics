@@ -30,7 +30,11 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   Bool_t         GetReadMC() const { return fReadMC; }
   void           SetReadMC(Bool_t flag) {fReadMC=flag;}
   void           SetFillTree(Bool_t flag) {fFillTree=flag;}
-  
+  void           SetTriggerMB(){fTrigOpt=0;}
+  void           SetTriggerHighMultV0(){fTrigOpt=1;}
+  void           SetTriggerHighMultSPD(){fTrigOpt=2;}
+  void           SetUsePFProtection(Bool_t opt){fUsePFProtection=opt;}
+
   AliCounterCollection* GetCounter(){return fCounterPerRun;}
 
   void SetCutOnContribToSPDPileupVert(Int_t cutc) {fSPDContributorsCut=cutc;}
@@ -42,11 +46,13 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   void SetZDiamondCut(Double_t zd){fZDiamondCut=zd;}
 
   void SetTriggerMask(Int_t mask) {fTriggerMask = mask;}
+  Bool_t ApplyPhysSel(AliESDEvent* esd);
 
  protected:
   Bool_t fReadMC;           // flag to read Monte Carlo information
   Bool_t fFillTree;      // flag to switch off ntuple
-
+  Int_t  fTrigOpt;      // trigger selection
+  Bool_t fUsePFProtection;    // flag to switch off ntuple
   TList* fOutputPrimV;        //! 1st list of output histos
   TList* fOutputSPDPil;      //! 2nd list of output histos
   TList* fOutputMVPil;       //! 3rd list of output histos
@@ -60,6 +66,7 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   // Global histos
   TH2F* fHistoTPCTracksVsTracklets; // histogram
   TH2F* fHistoGloTracksVsTracklets; // histogram
+  TH2F* fHistoSPDvertVsFastOr; // histogram
   // SPD Vertex Pileup histos
   TH1F* fHistoNOfPileupVertSPD; // histogram
   TH1F* fHistoNtracklPilSPD;    // histogram
@@ -98,6 +105,8 @@ class AliAnalysisTaskCheckPileup : public AliAnalysisTaskSE
   UInt_t fNTracksTPC;    // tree variables
   UInt_t fNTracksTPCITS; // tree variables
   UInt_t fNTracklets;    // tree variables
+  UInt_t fNContribSPD;   // tree variables
+  UInt_t fNFastOr;       // tree variables
 
   Int_t fSPDContributorsCut;  // cut on cotrtributors to SPD pileup vertex
   Double_t fSPDZDiffCut;      // cut on z diff of SPD pileup vertex

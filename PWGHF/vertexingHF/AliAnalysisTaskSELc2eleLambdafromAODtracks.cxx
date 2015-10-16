@@ -362,7 +362,17 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS1(0),
 	fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS2(0),
 	fHistoResponseElePt(0),
+	fHistoResponseElePt1(0),
+	fHistoResponseElePt2(0),
 	fHistoResponseEleLambdaPt(0),
+	fHistoResponseEleLambdaPt1(0),
+	fHistoResponseEleLambdaPt2(0),
+	fHistoResponseEleLambdaPtFeeddownXic0(0),
+	fHistoResponseEleLambdaPtFeeddownXic01(0),
+	fHistoResponseEleLambdaPtFeeddownXic02(0),
+	fHistoResponseEleLambdaPtFeeddownXicPlus(0),
+	fHistoResponseEleLambdaPtFeeddownXicPlus1(0),
+	fHistoResponseEleLambdaPtFeeddownXicPlus2(0),
 	fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt(0),
 	fCounter(0),
 	fHistonEvtvsRunNumber(0),
@@ -672,7 +682,17 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS1(0),
 	fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS2(0),
 	fHistoResponseElePt(0),
+	fHistoResponseElePt1(0),
+	fHistoResponseElePt2(0),
 	fHistoResponseEleLambdaPt(0),
+	fHistoResponseEleLambdaPt1(0),
+	fHistoResponseEleLambdaPt2(0),
+	fHistoResponseEleLambdaPtFeeddownXic0(0),
+	fHistoResponseEleLambdaPtFeeddownXic01(0),
+	fHistoResponseEleLambdaPtFeeddownXic02(0),
+	fHistoResponseEleLambdaPtFeeddownXicPlus(0),
+	fHistoResponseEleLambdaPtFeeddownXicPlus1(0),
+	fHistoResponseEleLambdaPtFeeddownXicPlus2(0),
 	fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt(0),
 	fCounter(0),
 	fHistonEvtvsRunNumber(0),
@@ -1727,7 +1747,11 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 							else fHistoLcElectronMCS2->Fill(cont_mcele);
 
 							fHistoResponseElePt->Fill(mcele->Pt(),trk->Pt());
+							if(trk->Charge()>0) fHistoResponseElePt1->Fill(mcele->Pt(),trk->Pt());
+							else fHistoResponseElePt2->Fill(mcele->Pt(),trk->Pt());
 							fHistoResponseEleLambdaPt->Fill(mclc->Pt(),elobj->Pt());
+							if(trk->Charge()>0) fHistoResponseEleLambdaPt1->Fill(mclc->Pt(),trk->Pt());
+							else fHistoResponseEleLambdaPt2->Fill(mclc->Pt(),trk->Pt());
 
 							Double_t cont_eleptvslambdaptvslcpt[4];
 							cont_eleptvslambdaptvslcpt[0] = cont_eleptvslambdapt[0];
@@ -1848,6 +1872,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 							if(trk->Charge()>0) fHistoElePtvsV0dcaFeedDownXic0MCS->Fill(cont_eleptvsv0dca);
 							else fHistoElePtvsV0dcaFeedDownXic0MCS->Fill(cont_eleptvsv0dca);
 
+							fHistoResponseEleLambdaPtFeeddownXic0->Fill(mclc->Pt(),elobj->Pt());
+							if(trk->Charge()>0) fHistoResponseEleLambdaPtFeeddownXic01->Fill(mclc->Pt(),trk->Pt());
+							else fHistoResponseEleLambdaPtFeeddownXic02->Fill(mclc->Pt(),trk->Pt());
+
 							fHistoElePtFeeddownXic0MCS->Fill(trk->Pt(),fCentrality);
 							fHistoElePtvsEtaFeeddownXic0MCS->Fill(cont_eleptvseta);
 							fHistoElePtvsLambdaPtFeeddownXic0MCS->Fill(cont_eleptvslambdapt);
@@ -1859,9 +1887,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 						if(trk->Charge()>0) fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS1->Fill(cont2);
 						else fHistoEleLambdaMassvsElePtFeeddownXicPlusMCS2->Fill(cont2);
 						if(cont[0]<2.3){
-							fHistoFeedDownXic0MCS->Fill(cont_mclc);
-							if(trk->Charge()>0) fHistoFeedDownXic0MCS1->Fill(cont_mclc);
-							else fHistoFeedDownXic0MCS2->Fill(cont_mclc);
+							fHistoFeedDownXicPlusMCS->Fill(cont_mclc);
+							if(trk->Charge()>0) fHistoFeedDownXicPlusMCS1->Fill(cont_mclc);
+							else fHistoFeedDownXicPlusMCS2->Fill(cont_mclc);
 
 							fHistoElectronFeedDownXicPlusMCS1->Fill(cont_mcele);
 							if(trk->Charge()>0) fHistoElectronFeedDownXicPlusMCS1->Fill(cont_mcele);
@@ -1878,6 +1906,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 							fHistoElePtvsV0dcaFeedDownXicPlusMCS->Fill(cont_eleptvsv0dca);
 							if(trk->Charge()>0) fHistoElePtvsV0dcaFeedDownXicPlusMCS->Fill(cont_eleptvsv0dca);
 							else fHistoElePtvsV0dcaFeedDownXicPlusMCS->Fill(cont_eleptvsv0dca);
+
+							fHistoResponseEleLambdaPtFeeddownXicPlus->Fill(mclc->Pt(),elobj->Pt());
+							if(trk->Charge()>0) fHistoResponseEleLambdaPtFeeddownXicPlus1->Fill(mclc->Pt(),trk->Pt());
+							else fHistoResponseEleLambdaPtFeeddownXicPlus2->Fill(mclc->Pt(),trk->Pt());
 
 							fHistoElePtFeeddownXicPlusMCS->Fill(trk->Pt(),fCentrality);
 							fHistoElePtvsEtaFeeddownXicPlusMCS->Fill(cont_eleptvseta);
@@ -3416,8 +3448,28 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
 
   fHistoResponseElePt = new TH2D("fHistoResponseElePt","",100,0.,10.,100,0.,10.);
   fOutputAll->Add(fHistoResponseElePt);
+  fHistoResponseElePt1 = new TH2D("fHistoResponseElePt1","",100,0.,10.,100,0.,10.);
+  fOutputAll->Add(fHistoResponseElePt1);
+  fHistoResponseElePt2 = new TH2D("fHistoResponseElePt2","",100,0.,10.,100,0.,10.);
+  fOutputAll->Add(fHistoResponseElePt2);
   fHistoResponseEleLambdaPt = new TH2D("fHistoResponseEleLambdaPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseEleLambdaPt);
+  fHistoResponseEleLambdaPt1 = new TH2D("fHistoResponseEleLambdaPt1","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPt1);
+  fHistoResponseEleLambdaPt2 = new TH2D("fHistoResponseEleLambdaPt2","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPt2);
+  fHistoResponseEleLambdaPtFeeddownXic0 = new TH2D("fHistoResponseEleLambdaPtFeeddownXic0","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownXic0);
+  fHistoResponseEleLambdaPtFeeddownXic01 = new TH2D("fHistoResponseEleLambdaPtFeeddownXic01","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownXic01);
+  fHistoResponseEleLambdaPtFeeddownXic02 = new TH2D("fHistoResponseEleLambdaPtFeeddownXic02","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownXic02);
+  fHistoResponseEleLambdaPtFeeddownXicPlus = new TH2D("fHistoResponseEleLambdaPtFeeddownXicPlus","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownXicPlus);
+  fHistoResponseEleLambdaPtFeeddownXicPlus1 = new TH2D("fHistoResponseEleLambdaPtFeeddownXicPlus1","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownXicPlus1);
+  fHistoResponseEleLambdaPtFeeddownXicPlus2 = new TH2D("fHistoResponseEleLambdaPtFeeddownXicPlus2","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleLambdaPtFeeddownXicPlus2);
 
   fHistonEvtvsRunNumber=new TH1F("fHistonEvtvsRunNumber","",20000,-0.5,19999.5);
   fOutputAll->Add(fHistonEvtvsRunNumber);
@@ -4042,15 +4094,15 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 		for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
 			fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
 
-			TObjArray* v1array1=(TObjArray*)v1array->Clone();
-			Int_t nV01=v1array1->GetEntries();
+			//TObjArray* v1array1=(TObjArray*)v1array->Clone();
+			Int_t nV01=v1array->GetEntries();
 			Int_t nV01_test=vdl1array->size();
 			if(nV01 != nV01_test){
 				cout<<"Something is wrong"<<endl;
 				exit(1);
 			}
       for(Int_t iTr1=0; iTr1<nV01; iTr1++){
-				TLorentzVector* v01=(TLorentzVector*)v1array1->At(iTr1);
+				TLorentzVector* v01=(TLorentzVector*)v1array->At(iTr1);
 				if(!v01 ) continue;
 				Double_t v0info1[2];
 				v0info1[0] = vdl1array->at(iTr1);
@@ -4058,15 +4110,15 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 				FillMixROOTObjects(trke,v01,v0info1,1);
 			}//v0 loop
 
-			TObjArray* v2array1=(TObjArray*)v2array->Clone();
-			Int_t nV02=v2array1->GetEntries();
+			//TObjArray* v2array1=(TObjArray*)v2array->Clone();
+			Int_t nV02=v2array->GetEntries();
 			Int_t nV02_test=vdl2array->size();
 			if(nV02 != nV02_test){
 				cout<<"Something is wrong"<<endl;
 				exit(1);
 			}
       for(Int_t iTr2=0; iTr2<nV02; iTr2++){
-				TLorentzVector* v02=(TLorentzVector*)v2array1->At(iTr2);
+				TLorentzVector* v02=(TLorentzVector*)v2array->At(iTr2);
 				if(!v02 ) continue;
 				Double_t v0info2[2];
 				v0info2[0] = vdl2array->at(iTr2);
@@ -4074,8 +4126,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 				FillMixROOTObjects(trke,v02,v0info2,-1);
 			}//v0 loop
 
-			delete v1array1;
-			delete v2array1;
+			//delete v1array1;
+			//delete v2array1;
 		}//event loop
 		
 	}//track loop

@@ -39,7 +39,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
     else AliError("fReadMC has to be kTRUE");
   }
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
-  void SetFillNSparse(Int_t fill=0){fFillSparse=fill;}
+  void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
