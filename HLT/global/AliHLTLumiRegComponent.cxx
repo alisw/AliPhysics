@@ -130,7 +130,7 @@ int AliHLTLumiRegComponent::DoInit(int argc, const char **argv){
     if (iHisto == 2) {
       strVtx = "Z";
       fPrimary[iHisto] = new TH1F(Form("h%sTRKVtx", strVtx.Data()),Form("h%sTRKVtx", strVtx.Data()), 200,-20,20);
-      fPrimaryDefMult[iHisto] = new TH1F (Form("h%sTRKDefMult", strVtx.Data()),Form("h%sTRKDefMult", strVtx.Data()), 200,-0.7,0.7);
+      fPrimaryDefMult[iHisto] = new TH1F (Form("h%sTRKDefMult", strVtx.Data()),Form("h%sTRKDefMult", strVtx.Data()), 200,-20.,20.);
     }
   }
   
