@@ -721,10 +721,10 @@ public:
       if ((*psub)[0] != '\0') {
 	Int_t hash = fn.Index("#");
 	if (hash != kNPOS) 
-	  fn.Replace(idx+1,s.Length()-idx-1,*psub);
+	  fn.Replace(hash+1,s.Length()-hash-1,*psub);
 	else 
-	  fn = gSystem->ConcateFileName(gSystem->DirName(filename),
-					*psub);
+	  fn = gSystem->ConcatFileName(gSystem->DirName(filename),
+				       *psub);
       }
       ret = GetInputLists(fn);
       if (ret) break;
