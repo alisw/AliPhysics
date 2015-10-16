@@ -16,6 +16,7 @@
 class AliVEvent;
 class AliMCEvent;
 class TBrowser;
+class AliAnalysisUtils;
 #include "TList.h"
 #include "TH1.h"
 #include "AliTriggerAnalysis.h"
@@ -91,7 +92,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   void SetUsedDataset(Bool_t b=kTRUE) {fData2011=b;}    // confusing name, better use different interface
   void SetLHC10h(Bool_t b=kTRUE) {fData2011=(!b);}      // TODO let cut object determine runnumber and period
   void SetLHC11h(Bool_t b=kTRUE) {fData2011=b;}         // use this only as 'manual override'
-  
+  void SetCheckPileup(Bool_t b=kFALSE) {fCheckPileUp = b;}  // In case a pile-up rejection is required
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);  
@@ -113,6 +114,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   AliFlowTrackCuts* fMeanPtCuts; //mean pt cuts
   AliFlowTrackCuts* fStandardTPCcuts; //Standard TPC cuts
   AliFlowTrackCuts* fStandardGlobalCuts; //StandardGlobalCuts
+  AliAnalysisUtils* fUtils;  //! analysis utils object
   Bool_t fCutPrimaryVertexX; //cut on x of prim vtx
   Double_t fPrimaryVertexXmax; //max x prim vtx
   Double_t fPrimaryVertexXmin; //min x prim vtx
@@ -141,7 +143,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   Double_t fImpactParameterMax; // max impact parameter
   TH2F *fhistTPCvsGlobalMult; //!correlation between TPCMult and GlobalMult
   Bool_t fData2011; //2011 data is used
-
+  Bool_t fCheckPileUp; //pile-up
   ClassDef(AliFlowEventCuts,6)
 };
 
