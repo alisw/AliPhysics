@@ -1,0 +1,135 @@
+AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALSE,
+                                                     Bool_t kusecontainer = kFALSE,
+                                                     Char_t *outfilename = "pXi",
+                                                     Bool_t bCentralTrigger = kTRUE,
+                                                     Int_t  fistpart = 1,
+                                                     Int_t  secondpart = 2,
+                                                     Bool_t kcascadesidebands = kFALSE,
+                                                     Bool_t kcascadetightcuts = kTRUE, 
+                                                     Float_t masswincasc = 0.003, // 0.003 2s 0.008 4s, this always for side bands!!!
+                                                     Float_t nsigmatpcpidfirst = 3.,
+                                                     Float_t nsigmatpctofpidfirst = 3.,
+                                                     Float_t nsigmatpcpidsecdau = 4.,
+                                                     Int_t  trackbuffersize = 20200,
+                                                     Int_t  multfirstpart = 3000, // 3000 for pions, 1000 ok for protons
+                                                     Int_t  multsecondpart= 20,
+
+                                                     Bool_t kapplyttc = kTRUE,
+                                                     Float_t dphismin = 0.06,    // 0.04 TPC 0.06 global // 0.045 for pi paper, 0.045 for protons, 0.015 for pi my cut
+                                                     Float_t detasmin = 0.15,    // 0.1 TPC  0.15 global
+
+                                                     short nevmixing = 7,
+
+						     Float_t momemtumlimitforTOFPID = 0.8,
+                                                     Bool_t kusecrrfindratiocut = kFALSE,
+                                                     Bool_t kusetpcip = kFALSE,
+                                                     Float_t cutipxy = 0.1,      // TPC 2.4 protons 1. pions GLOBAL 0.1 protons pions
+                                                     Float_t cutipz = 0.15,      // TPC 3.2 protons 1. pions GLOBAL 0.15 protons pions
+                                                     Float_t minptforprim = 0.7, // 0.7 protons  0.14 pions
+                                                     Float_t maxptforprim = 4.,  // 4.  proton s 2.   pions
+
+                                                     Float_t minptforcasc = 0.6, 
+                                                     Float_t maxptforcasc = 10.,  
+                                                     Float_t cutipbac = 0.1,     //0.03,
+                                                     Bool_t kapplyycutcasc = kFALSE,
+                                                     Bool_t kpropagateglobal = kTRUE
+                                                   ) {
+
+
+  // Get the current analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTaskHCascadeFemto", "No analysis manager found.");
+    return 0;
+  }
+
+
+  // Check the analysis type using the event handlers connected to the analysis
+  // manager. The availability of MC handler cann also be checked here.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskHCascadeFemto", "This task requires an input event handler");
+    return NULL;
+  }
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
+  //cout << "Found " <<type << " event handler" << endl;
+
+
+  // Create and configure the task, add it to manager.
+  //===========================================================================
+  AliAnalysisTaskhCascadeFemto *task = new AliAnalysisTaskhCascadeFemto("TaskhCascadeFemto");
+
+  if(bCentralTrigger)
+      task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  else
+      task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kMB);
+
+  task->SetAnalysisType (type);
+  task->SetReadMCTruth(krunMCtruth);
+  task->SetUseContainer(kusecontainer);
+
+  task->SetMassHist(500, 1.,1.5);
+  if (secondpart == 2) task->SetMassHistGrandmother (350,1.1,1.8);
+  else if (secondpart == 3) task->SetMassHistGrandmother (120,1.62, 1.74);
+ 
+  task->SetCentrality(0., 90.);
+
+  task->SetFirstParticle(fistpart);
+  task->SetSecondParticle(secondpart);
+  task->SetTrackBufferSize(trackbuffersize);
+  task->SetFirstPartMaxMult(multfirstpart);
+  task->SetSecondPartMaxMult(multsecondpart);
+  task->SetMassWindowCascades(masswincasc);
+  task->SetnSigmaTPCPIDfirstParticle(nsigmatpcpidfirst);
+  task->SetnSigmaTPCTOFPIDfirstParticle(nsigmatpctofpidfirst);
+  task->SetnSigmaTPCPIDsecondParticleDau(nsigmatpcpidsecdau);
+  task->SetApplyTtc(kapplyttc);
+  task->SetDphisMin(dphismin);
+  task->SetDetasMin(detasmin);
+  task->SetCascadeSideBands(kcascadesidebands);
+  task->SetCascadeTightCuts(kcascadetightcuts);
+  task->SetNEventsToMix(nevmixing);
+  task->SetMomentumLimitForTOFPID(momemtumlimitforTOFPID);
+  task->SetApplyRatioCrRnFindCut(kusecrrfindratiocut);
+  task->SetCutOnTPCIP(kusetpcip); 
+  task->SetIPCutxy(cutipxy); 
+  task->SetIPCutz(cutipz); 
+  task->SetMinPtPrim(minptforprim);
+  task->SetMaxPtPrim(maxptforprim);
+  task->SetMinPtCasc(minptforcasc);
+  task->SetMaxPtCasc(maxptforcasc);
+  task->SetIPCutBac(cutipbac);
+  task->SetApplyYcutCasc(kapplyycutcasc);
+  task->SetPropagateGlobal(kpropagateglobal);
+
+  mgr->AddTask(task);
+
+  // Create ONLY the output containers for the data produced by the task.
+  // Get and connect other common input/output containers via the manager as below
+  //==============================================================================
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+
+  outputfile += ":PWGCFFEMTO.outputHCascadeTask"; 
+  AliAnalysisDataContainer *cout_pXi  = mgr->CreateContainer(Form("list_%s",outfilename),  TList::Class(),
+                                                               AliAnalysisManager::kOutputContainer,outputfile);
+
+  AliAnalysisDataContainer *cout_pXi2 = mgr->CreateContainer("cfcontCutsXi",
+                                                              AliCFContainer::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              outputfile );
+
+
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, cout_pXi);
+  mgr->ConnectOutput(task, 2, cout_pXi2);
+
+  if(!task) {
+            Error("AddTaskhCascadeFemto","AliAnalysisTaskhCascadeFemto not created!");
+            return;
+  }
+
+  return task;
+
+
+}

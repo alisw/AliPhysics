@@ -58,6 +58,8 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	//=========  Set Cutnumber for V0Reader ================================
 	TString cutnumberPhoton = "06000008000100001500000000";
 	TString cutnumberEvent = "80000103";
+	if (trainConfig==189 || trainConfig==190 || trainConfig==191 || trainConfig==192) cutnumberEvent = "80000003";
+
 	Bool_t doEtaShift = kFALSE;
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	//========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -1073,23 +1075,23 @@ void AddTask_GammaConvV1_pPb( 	Int_t 		trainConfig = 1,  												// change d
 	} else if (trainConfig == 189) {
 		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";  // standard dc cut 4
 		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500900000";  //  standard dc cut 4 alpha cut 1
-		eventCutArray[ 2] = "80000114"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500900000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
-		eventCutArray[ 3] = "80000115"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500900000";  //  standard dc cut 4 alpha cut 1 vertex cut 5 cm
+		eventCutArray[ 2] = "80000013"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162103500900000";  // standard dc cut 4 no Pileup cut
+		eventCutArray[ 3] = "80000013"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500900000";  //  standard dc cut 4 alpha cut 1 no Pileup cut
 	} else if (trainConfig == 190) {
 		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";  // standard dc cut 4
 		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500900000";  // standard dc cut 4 alpha cut 1
-		eventCutArray[ 2] = "80000124"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500900000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
-		eventCutArray[ 3] = "80000125"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500900000";  // standard dc cut 4 alpha cut 1 vertex cut 5 cm
+		eventCutArray[ 2] = "80000023"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162103500900000";  // standard dc cut 4  no Pileup cut
+		eventCutArray[ 3] = "80000023"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500900000";  // standard dc cut 4 alpha cut 1 no Pileup cut
 	} else if (trainConfig == 191) {
 		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";  // standard dc cut 4//eta meson
 		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500000000";  // standard dc cut 4 alpha cut 1
-		eventCutArray[ 2] = "80000114"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
-		eventCutArray[ 3] = "80000115"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 5 cm
+		eventCutArray[ 2] = "80000013"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162103500000000";  // standard dc cut 4  no Pileup cut
+		eventCutArray[ 3] = "80000013"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500000000";  // standard dc cut 4 alpha cut 1 no Pileup cut
 	} else if (trainConfig == 192) {
 		eventCutArray[ 0] = "80000123"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500000000";  // standard dc cut 4//eta meson
 		eventCutArray[ 1] = "80000123"; photonCutArray[ 1] = "00200009217000008260404000"; mesonCutArray[ 1] = "0162101500000000";  // standard dc cut 4 alpha cut 1
-		eventCutArray[ 2] = "80000124"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 7.5 cm
-		eventCutArray[ 3] = "80000125"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500000000";  // standard dc cut 4 alpha cut 1 vertex cut 5 cm
+		eventCutArray[ 2] = "80000023"; photonCutArray[ 2] = "00200009217000008260404000"; mesonCutArray[ 2] = "0162103500000000";  // standard dc cut 4  no Pileup cut
+		eventCutArray[ 3] = "80000023"; photonCutArray[ 3] = "00200009217000008260404000"; mesonCutArray[ 3] = "0162101500000000";  // standard dc cut 4 alpha cut 1 no Pileup cut
 	} else if (trainConfig == 193) {
 		eventCutArray[ 0] = "80000113"; photonCutArray[ 0] = "00200009217000008260404000"; mesonCutArray[ 0] = "0162103500900000";  // standard //pi0 dc cut4
 		eventCutArray[ 1] = "80000113"; photonCutArray[ 1] = "00200009000000008260404000"; mesonCutArray[ 1] = "0162103500900000";  // open dEdx Cut -10;10

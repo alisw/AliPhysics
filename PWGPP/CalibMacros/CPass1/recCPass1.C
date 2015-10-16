@@ -17,6 +17,13 @@ void recCPass1(const char *filename="raw.root",Int_t nevents=-1, const char *ocd
     gSystem->ResetSignal(kSigFloatingException);
     gSystem->ResetSignal(kSigSegmentationViolation);
   }
+  // addopt errors to account for calibration imprefection before cpass0
+  Double_t tpcSystematicErrors[5]={1,1,1./100.,1./100.,0.1};
+  Double_t tpcSystematicErrorClusters[5]={1.5,1.5};
+  TVectorD *vectpcSystematicErrors=new TVectorD(5, tpcSystematicErrors);
+  TVectorD *vectpcSystematicErrorClusters=new TVectorD(5, tpcSystematicErrorClusters);
+  AliTPCReconstructor::SetSystematicError(vectpcSystematicErrors);
+  AliTPCReconstructor::SetSystematicErrorCluster(vectpcSystematicErrorClusters);
 
   // Load some system libs for Grid and monitoring
   // Set the CDB storage location

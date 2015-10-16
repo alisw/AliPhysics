@@ -92,7 +92,7 @@ void AliMultSelection::Evaluate( AliMultInput *lInput )
             lReplacement.Append(")");
             lReplacement.Prepend("(");
             if( !lVar1->IsInteger() ){
-		lEvaluateMe.ReplaceAll( lReplacement, Form("%f",lVar1->GetValue() ) );
+		lEvaluateMe.ReplaceAll( lReplacement, Form("%.10f",lVar1->GetValue() ) );
 	    }else{
 		lEvaluateMe.ReplaceAll( lReplacement, Form("%i",lVar1->GetValueInteger() ) );
 	    }

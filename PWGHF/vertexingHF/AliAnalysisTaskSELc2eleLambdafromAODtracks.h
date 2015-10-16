@@ -407,7 +407,17 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
 
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+	TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
+	TH2D *fHistoResponseElePt2; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseEleLambdaPt; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPt1; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPt2; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXic0; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXic01; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXic02; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus1; //!<! Response function e-Lambda pT <- XicPt
+	TH2D *fHistoResponseEleLambdaPtFeeddownXicPlus2; //!<! Response function e-Lambda pT <- XicPt
   THnSparse* fHistoLcPtvseleLambdaPtvsElePtvsLambdaPt;         //!<! pT correlation
 
   AliNormalizationCounter *fCounter;//!<! Counter for normalization
@@ -434,7 +444,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,11); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,12); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif

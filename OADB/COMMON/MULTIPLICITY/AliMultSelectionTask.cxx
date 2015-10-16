@@ -666,6 +666,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fRefMultEta5 -> SetValueInteger ( -5 ); //not acquired 
     fRefMultEta8 -> SetValueInteger ( -5 ); //not acquired 
     fNTracks         = -10;
+    
+    //Set ZDC variables to defaults
 
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);

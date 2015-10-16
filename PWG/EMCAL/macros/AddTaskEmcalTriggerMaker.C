@@ -49,22 +49,22 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   if(strTriggersName.IsNull()) {
     if (evhand->InheritsFrom("AliESDInputHandler")) {
       strTriggersName = "EMCALTrigger";
-      ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, triggersName = \"%s\"", strTriggersName.Data() ));
+      ::Info("AddTaskEmcalTriggerMaker", "ESD analysis, triggersName = \"%s\"", strTriggersName.Data());
     }
     else {
       strTriggersName = "emcalTrigger";
-      ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, triggersName = \"%s\"", strTriggersName.Data() ));
+      ::Info("AddTaskEmcalTriggerMaker", "AOD analysis, triggersName = \"%s\"", strTriggersName.Data());
     }
   }
 
   if(strCellsName.IsNull()) {
     if (evhand->InheritsFrom("AliESDInputHandler")) {
       strCellsName = "EMCALCells";
-      ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, cellsName = \"%s\"", strCellsName.Data() ));
+      ::Info("AddTaskEmcalTriggerMaker", "ESD analysis, cellsName = \"%s\"", strCellsName.Data());
     }
     else {
       strCellsName = "emcalCells";
-      ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, cellsName = \"%s\"", strCellsName.Data() ));
+      ::Info("AddTaskEmcalTriggerMaker", "AOD analysis, cellsName = \"%s\"", strCellsName.Data());
     }
   }
 
@@ -72,11 +72,11 @@ AliEmcalTriggerMaker* AddTaskEmcalTriggerMaker(
   v0Name = new char[100];
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     strcpy(v0Name,"AliESDVZERO");
-    ::Info("AddTaskEmcalTriggerMaker", Form( "ESD analysis, v0Name = \"%s\"", v0Name ));
+    ::Info("AddTaskEmcalTriggerMaker", "ESD analysis, v0Name = \"%s\"", v0Name);
   }
   else {
     strcpy(v0Name,"AliAODVZERO");
-    ::Info("AddTaskEmcalTriggerMaker", Form( "AOD analysis, v0Name = \"%s\"", v0Name ));
+    ::Info("AddTaskEmcalTriggerMaker", "AOD analysis, v0Name = \"%s\"", v0Name);
   }
  
    //-------------------------------------------------------

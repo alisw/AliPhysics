@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEMCALDCALTrigger2015 AddTaskEMCALDCALTrigger2015(TString clustercontainer){
+EMCalTriggerPtAnalysis::AliAnalysisTaskEMCALDCALTrigger2015 *AddTaskEMCALDCALTrigger2015(TString clustercontainer){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 

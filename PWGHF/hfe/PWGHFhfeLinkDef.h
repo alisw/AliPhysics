@@ -74,6 +74,7 @@
 #pragma link C++ class  AliAnalysisTaskEMCalHFEpA+;
 #pragma link C++ class  AliAnalysisTaskHFEpACorrelation+;
 #pragma link C++ class  AliEHCParticle+;
+#pragma link C++ class  AliHFEHCParticle+;
 
 #pragma link C++ class  AliHFEdebugTreeTask+;
 

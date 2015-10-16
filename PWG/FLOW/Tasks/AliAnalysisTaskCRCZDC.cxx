@@ -8,7 +8,7 @@
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
+ * appear in thce supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
@@ -44,7 +44,9 @@
 #include "AliESDInputHandler.h"
 #include "AliESDZDC.h"
 #include "AliMultiplicity.h"
+#include "AliAnalysisUtils.h"
 #include "AliAODHandler.h"
+#include "AliAODTrack.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODVertex.h"
@@ -110,6 +112,7 @@ fGenHeader(NULL),
 fPythiaGenHeader(NULL),
 fHijingGenHeader(NULL),
 fFlowTrack(NULL),
+fAnalysisUtil(NULL),
 fQAon(kFALSE),
 fLoadCandidates(kFALSE),
 fNbinsMult(10000),
@@ -320,7 +323,8 @@ fCRCnRun(0),
 fGenHeader(NULL),
 fPythiaGenHeader(NULL),
 fHijingGenHeader(NULL),
-fFlowTrack(NULL)
+fFlowTrack(NULL),
+fAnalysisUtil(NULL)
 {
  
  for(int i=0; i<5; i++){
@@ -371,6 +375,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  delete fFlowEvent;
  delete fFlowTrack;
  delete fCutsEvent;
+ if(fAnalysisUtil) delete fAnalysisUtil;
  if (fQAList) delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
  
@@ -392,9 +397,9 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 {
  // Create the output containers
  
- if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "AUTOMATIC"))
+ if (!(fAnalysisType == "AOD" || fAnalysisType == "MCkine" || fAnalysisType == "MCAOD" || fAnalysisType == "AUTOMATIC"))
  {
-  AliError("WRONG ANALYSIS TYPE! only MCkine, AOD and AUTOMATIC are allowed.");
+  AliError("WRONG ANALYSIS TYPE! only MCkine, MCAOD, AOD and AUTOMATIC are allowed.");
   exit(1);
  }
  
@@ -421,7 +426,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  cc->SetHistWeightvsPhiMax(fHistWeightvsPhiMax);
  cc->SetHistWeightvsPhiMin(fHistWeightvsPhiMin);
  
- fFlowEvent = new AliFlowEvent(10000);
+ fFlowEvent = new AliFlowEvent(20000);
  fFlowTrack = new AliFlowTrack();
  
  //printf("  AliAnalysisTaskCRCZDC::UserCreateOutputObjects()\n\n");
@@ -438,6 +443,8 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());      //2
   fOutput->Add(fQAList);
  }
+
+ fAnalysisUtil = new AliAnalysisUtils;
 
  for(int i=0; i<5; i++){
   char hname[20];
@@ -651,7 +658,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 {
  // Execute analysis for current event:
  AliMCEvent*  McEvent = MCEvent();
- AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
+ AliAODEvent *aod =  dynamic_cast<AliAODEvent*>(InputEvent());
 // AliMultiplicity* myTracklets = NULL;
 // AliESDPmdTrack* pmdtracks = NULL;
 // int availableINslot=1;
@@ -665,7 +672,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
  if (fAnalysisType == "AUTOMATIC") {
   
   //check event cuts
-  if (InputEvent() && !fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
+  if (InputEvent()) {
+   if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
+   if(fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+  }
   
   //first attach all possible information to the cuts
   fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
@@ -680,6 +690,79 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
  }
  
+ if (fAnalysisType == "MCAOD") {
+
+  AliAODMCHeader *mcHeader;
+  TClonesArray* mcArray;
+
+  mcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!mcArray){
+   AliError("Array of MC particles not found");
+   return;
+  }
+  mcHeader = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+  if (!mcHeader) {
+   AliError("Could not find MC Header in AOD");
+   return;
+  }
+
+  Int_t AODPOIs = 0;
+  for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
+   AliVParticle* AODPart = (AliVParticle*)aod->GetTrack(jTracks);
+   AliAODTrack *AODTrack = dynamic_cast<AliAODTrack*>(AODPart);
+   if (!AODPart) {
+    printf("ERROR: Could not receive AODPart %d\n", jTracks);
+    continue;
+   }
+   if (!AODTrack) {
+    printf("ERROR: Could not receive AODTrack %d\n", jTracks);
+    continue;
+   }
+   AliAODMCParticle *MCPart = (AliAODMCParticle*)mcArray->At(TMath::Abs(AODTrack->GetLabel()));
+   if (!MCPart) {
+    printf("ERROR: Could not receive AODMCPart for AODs %d\n", jTracks);
+    continue;
+   }
+   if(!MCPart->IsPrimary()) continue;
+   if(!fCutsPOI->PassesAODcuts(AODTrack)) continue;
+   fFlowTrack->Set(AODPart);
+   fFlowTrack->SetSource(AliFlowTrack::kFromAOD);
+   fFlowTrack->SetForRPSelection(kTRUE);
+   fFlowEvent->IncrementNumberOfPOIs(0);
+   fFlowTrack->SetForPOISelection(kTRUE);
+   fFlowEvent->IncrementNumberOfPOIs(1);
+   fFlowEvent->InsertTrack(fFlowTrack);
+   AODPOIs++;
+  }
+
+  Int_t MCPOIs = 0;
+  for(Int_t jTracks = 0; jTracks<mcArray->GetEntries(); jTracks++) {
+   AliAODMCParticle *AODMCPart = (AliAODMCParticle*)mcArray->At(jTracks);
+   if (!AODMCPart) {
+    printf("ERROR: Could not receive AODMCPart %d\n", jTracks);
+    continue;
+   }
+   if(!AODMCPart->IsPrimary()) continue;
+   if(!fCutsPOI->PassesCuts(AODMCPart)) continue;
+   fFlowTrack->Set(AODMCPart);
+   fFlowTrack->SetSource(AliFlowTrack::kFromMC);
+   fFlowTrack->SetForRPSelection(kTRUE);
+   fFlowEvent->IncrementNumberOfPOIs(0);
+   fFlowTrack->SetForPOISelection(kTRUE);
+   fFlowEvent->IncrementNumberOfPOIs(1);
+   fFlowEvent->InsertTrack(fFlowTrack);
+   MCPOIs++;
+  }
+
+  printf("#AODs : %d, #MC primaries : %d \n",AODPOIs,MCPOIs);
+
+  fFlowEvent->SetReferenceMultiplicity(aod->GetNumberOfTracks());
+  fFlowEvent->SetCentrality(aod->GetCentrality()->GetCentralityPercentile("V0M"));
+  if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
+  fFlowEvent->SetRun(aod->GetRunNumber());
+  printf("Run : %d, RefMult : %d, Cent : %f \n",fFlowEvent->GetRun(),fFlowEvent->GetReferenceMultiplicity(),fFlowEvent->GetCentrality());
+ }
+
  if(fAnalysisType ==  "MCkine") {
   
   fFlowEvent->ClearFast();
