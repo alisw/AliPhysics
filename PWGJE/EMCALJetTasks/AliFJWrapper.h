@@ -21,6 +21,7 @@ class AliFJWrapper
   virtual void  AddInputGhost  (Double_t px, Double_t py, Double_t pz, Double_t E, Int_t index = -99999);
   virtual const char *ClassName()                            const { return "AliFJWrapper";              }
   virtual void  Clear(const Option_t* /*opt*/ = "");
+  virtual void  ClearMemory();
   virtual void  CopySettingsFrom (const AliFJWrapper& wrapper);
   virtual void  GetMedianAndSigma(Double_t& median, Double_t& sigma, Int_t remove = 0) const;
   fastjet::ClusterSequenceArea*           GetClusterSequence() const   { return fClustSeq;                 }
@@ -248,21 +249,27 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
 AliFJWrapper::~AliFJWrapper()
 {
   // Destructor.
+  ClearMemory();
+}
 
-  delete fAreaDef;
-  delete fVorAreaSpec;
-  delete fGhostedAreaSpec;
-  delete fJetDef;
-  delete fPlugin;
-  delete fRange;
-  delete fClustSeq;
-  if (fClustSeqSA)        { delete fClustSeqSA;        fClustSeqSA        = 0; }
-  if (fClustSeqActGhosts) { delete fClustSeqActGhosts; fClustSeqActGhosts = 0; }
-#ifdef FASTJET_VERSION
-  if (fBkrdEstimator)     delete fBkrdEstimator;
-  if (fGenSubtractor)     delete fGenSubtractor;
-  if (fConstituentSubtractor)  delete fConstituentSubtractor;
-#endif
+//_________________________________________________________________________________________________
+void AliFJWrapper::ClearMemory()
+{
+  // Destructor.
+  if (fAreaDef)           { delete fAreaDef;           fAreaDef         = NULL; }
+  if (fVorAreaSpec)       { delete fVorAreaSpec;       fVorAreaSpec     = NULL; }
+  if (fGhostedAreaSpec)   { delete fGhostedAreaSpec;   fGhostedAreaSpec = NULL; }
+  if (fJetDef)            { delete fJetDef;            fJetDef          = NULL; }
+  if (fPlugin)            { delete fPlugin;            fPlugin          = NULL; }
+  if (fRange)             { delete fRange;             fRange           = NULL; }
+  if (fClustSeq)          { delete fClustSeq;          fClustSeq        = NULL; }
+  if (fClustSeqSA)        { delete fClustSeqSA;        fClustSeqSA        = NULL; }
+  if (fClustSeqActGhosts) { delete fClustSeqActGhosts; fClustSeqActGhosts = NULL; }
+  #ifdef FASTJET_VERSION
+  if (fBkrdEstimator)          { delete fBkrdEstimator; fBkrdEstimator = NULL; }
+  if (fGenSubtractor)          { delete fGenSubtractor; fGenSubtractor = NULL; }
+  if (fConstituentSubtractor)  { delete fConstituentSubtractor; fConstituentSubtractor = NULL; }
+  #endif
 }
 
 //_________________________________________________________________________________________________
@@ -303,20 +310,7 @@ void AliFJWrapper::Clear(const Option_t */*opt*/)
   fMedUsedForBgSub = 0;
 
   // for the moment brute force delete everything
-  delete fAreaDef;         fAreaDef         = 0;
-  delete fVorAreaSpec;     fVorAreaSpec     = 0;
-  delete fGhostedAreaSpec; fGhostedAreaSpec = 0;
-  delete fJetDef;          fJetDef          = 0;
-  delete fPlugin;          fPlugin          = 0;
-  delete fRange;           fRange           = 0;
-  delete fClustSeq;        fClustSeq        = 0;
-  if (fClustSeqSA)        { delete fClustSeqSA;        fClustSeqSA        = 0; }
-  if (fClustSeqActGhosts) { delete fClustSeqActGhosts; fClustSeqActGhosts = 0; }
-#ifdef FASTJET_VERSION
-  if (fBkrdEstimator)     delete fBkrdEstimator     ;  fBkrdEstimator     = 0;
-  if (fGenSubtractor)     delete fGenSubtractor     ;  fGenSubtractor     = 0;
-  if (fConstituentSubtractor)     delete fConstituentSubtractor     ;  fConstituentSubtractor     = 0;
-#endif
+  ClearMemory();
 }
 
 //_________________________________________________________________________________________________
@@ -911,7 +905,7 @@ Int_t AliFJWrapper::DoConstituentSubtraction() {
       subtracted_jet = (*fConstituentSubtractor)(fInclusiveJets[i]);
     fConstituentSubtrJets.push_back(subtracted_jet);
   }
-  if(fConstituentSubtractor) { delete fConstituentSubtractor; }
+  if(fConstituentSubtractor) { delete fConstituentSubtractor; fConstituentSubtractor = NULL; }
 
 #endif
   return 0;
@@ -924,7 +918,7 @@ Int_t AliFJWrapper::CreateGenSub() {
   if (fGenSubtractor) { delete fGenSubtractor; } // protect against memory leaks
 
   if (fUseExternalBkg)
-    { fGenSubtractor     = new fj::contrib::GenericSubtractor(fRho,fRhom); }
+    { fGenSubtractor   = new fj::contrib::GenericSubtractor(fRho,fRhom); }
   else
     {
     fGenSubtractor     = new fj::contrib::GenericSubtractor(fBkrdEstimator);
