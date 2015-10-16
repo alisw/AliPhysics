@@ -3252,7 +3252,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 81:
 			label_case_81:
 			if(isMC>0){
-				if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.976721, -3.60967, -0.43353); //v2
+				if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353); //v2
 					//energy /= FunctionNL_kSDM(energy, 0.977118, -3.46238, -0.575729); v0
 					//energy /= FunctionNL_kSDM(energy, 0.975357, -3.54572, -0.398501); v1
 
@@ -3264,7 +3264,7 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
 		case 82:
 			label_case_82:
 			if(isMC>0){
-				if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(2.0*energy, 0.974951, -2.56938, -0.863324); //v2
+				if( fCurrentMC==k13b2_efix ) energy /= FunctionNL_kSDM(2.0*energy, 0.9970*0.974951, -2.56938, -0.863324); //v2
 					//energy /= FunctionNL_kSDM(2.0*energy, 0.975467, -1.9989, -1.23208); v0
 					//energy /= FunctionNL_kSDM(2.0*energy, 0.974716, -2.56403, -0.85898); v1
 
