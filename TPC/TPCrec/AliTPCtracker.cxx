@@ -5515,6 +5515,8 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
   Int_t sumused=0;
   Int_t cused=0;
   Int_t cnused=0;
+  Int_t rowMax = -1;
+  //
   for (Int_t is=0; is < nclusters; is++) {  //LOOP over clusters
     Int_t nfound =0;
     Int_t nfoundable =0;
@@ -5532,7 +5534,8 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       else{
 	cnused++;
       }
-      Double_t x = kr0.GetX();
+      
+      Double_t x = cl->GetX(), xDist = x - kr0.GetX(); // approximate X distortion in proximity of cl
       // Initialization of the polytrack
       nfound =0;
       nfoundable =0;
@@ -5543,13 +5546,13 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       Float_t erry = 0;
       Float_t errz = 0;
       
-      Double_t ymax = fSectors->GetMaxY(row0)-kr0.GetDeadZone()-1.5;
+      Double_t ymax = fSectors->GetMaxY(row0)-kr0.GetDeadZone()-1.5; // RS: watch dead zones
       if (deltay>0 && TMath::Abs(ymax-TMath::Abs(y0))> deltay ) continue;  // seed only at the edge
       
       erry = (0.5)*cl->GetSigmaY2()/TMath::Sqrt(cl->GetQ())*6;	    
       errz = (0.5)*cl->GetSigmaZ2()/TMath::Sqrt(cl->GetQ())*6;      
       polytrack.AddPoint(x,y0,z0,erry, errz);
-
+      rowMax = row0;      
       sumused=0;
       if (cl->IsUsed(10)) sumused++;
 
@@ -5557,22 +5560,25 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       Float_t roady = (5*TMath::Sqrt(cl->GetSigmaY2()+0.2)+1.)*iter;
       Float_t roadz = (5*TMath::Sqrt(cl->GetSigmaZ2()+0.2)+1.)*iter;
       //
-      x = krm.GetX();
+      x = krm.GetX() + xDist; // RS: assume distortion at krm is similar to that at kr
       AliTPCclusterMI * cl1 = krm.FindNearest(y0,z0,roady,roadz);
       if (cl1 && TMath::Abs(ymax-TMath::Abs(y0))) {
 	erry = (0.5)*cl1->GetSigmaY2()/TMath::Sqrt(cl1->GetQ())*3;	    
 	errz = (0.5)*cl1->GetSigmaZ2()/TMath::Sqrt(cl1->GetQ())*3;
 	if (cl1->IsUsed(10))  sumused++;
-	polytrack.AddPoint(x,cl1->GetY(),cl1->GetZ(),erry,errz);
+	//RS: use real cluster X instead of approximately distorted
+	polytrack.AddPoint(cl1->GetX(),cl1->GetY(),cl1->GetZ(),erry,errz); 
       }
       //
-      x = krp.GetX();
+      x = krp.GetX() + xDist; // RS: assume distortion at krp is similar to that at kr
       AliTPCclusterMI * cl2 = krp.FindNearest(y0,z0,roady,roadz);
       if (cl2) {
 	erry = (0.5)*cl2->GetSigmaY2()/TMath::Sqrt(cl2->GetQ())*3;	    
 	errz = (0.5)*cl2->GetSigmaZ2()/TMath::Sqrt(cl2->GetQ())*3;
 	if (cl2->IsUsed(10)) sumused++;	 
-	polytrack.AddPoint(x,cl2->GetY(),cl2->GetZ(),erry,errz);
+	//RS: use real cluster X instead of approximately distorted
+	polytrack.AddPoint(cl2->GetX(),cl2->GetY(),cl2->GetZ(),erry,errz); 
+	rowMax = row0+iter;
       }
       //
       if (sumused>0) continue;
@@ -5591,10 +5597,16 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	for (Int_t delta = -1;delta<=1;delta+=2){
 	  Int_t row = row0+ddrow*delta;
 	  kr = &(fSectors[sec][row]);
-	  Double_t xn = kr->GetX();
-	  Double_t ymax1 = fSectors->GetMaxY(row)-kr->GetDeadZone()-1.5;
+	  Double_t xn = kr->GetX(); //RS: use row X as a first guess about distorted cluster x
+	  Double_t ymax1 = fSectors->GetMaxY(row)-kr->GetDeadZone()-1.5; // RS: watch dead zones
 	  polytrack.GetFitPoint(xn,yn,zn);
-	  if (TMath::Abs(yn)>ymax1) continue;
+	  double dxn = GetDistortionX(xn, yn, zn, sec, row);
+	  if (TMath::Abs(dxn)>0.1) {    //RS: account for distortion
+	    xn += dxn;	
+	    polytrack.GetFitPoint(xn,yn,zn);    
+	  }
+	  //
+	  if (TMath::Abs(yn)>ymax1) continue; // RS:? watch dead zones
 	  nfoundable++;
 	  AliTPCclusterMI * cln = kr->FindNearest(yn,zn,roady,roadz);
 	  if (cln) {
@@ -5613,6 +5625,7 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	      erry=0.1;
 	      errz=0.1;
 	      polytrack.AddPoint(xn,cln->GetY(),cln->GetZ(),erry, errz);
+	      if (row>rowMax) rowMax = row;
 	      nfound++;
 	    }
 	  }
@@ -5627,7 +5640,7 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
     }
     nin1++;
     Double_t dy,dz;
-    polytrack.GetFitDerivation(kr0.GetX(),dy,dz);
+    polytrack.GetFitDerivation(kr0.GetX(),dy,dz); // RS: Note: derivative is at ideal row X
     AliTPCpolyTrack track2;
     
     polytrack.Refit(track2,0.5+TMath::Abs(dy)*0.3,0.4+TMath::Abs(dz)*0.3);
@@ -5706,8 +5719,7 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	c[13]=f30*sy1*f40+f32*sy2*f42;
 	c[14]=f40*sy1*f40+f42*sy2*f42+f43*sy3*f43;
 	
-	//Int_t row1 = fSectors->GetRowNumber(x1);
-	Int_t row1 = GetRowNumber(x1);
+	//Int_t row1 = GetRowNumber(x1); // RS: this is now substituted by rowMax
 
 	UInt_t index=0;
 	//kr0.GetIndex(is);
@@ -5719,7 +5731,7 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	if (constrain) track->SetBConstrain(1);
 	else
 	  track->SetBConstrain(0);
-	track->SetLastPoint(row1+fInnerSec->GetNRows());  // first cluster in track position
+	track->SetLastPoint(rowMax); //row1+fInnerSec->GetNRows());  // first cluster in track position
 	track->SetFirstPoint(track->GetLastPoint());
 
 	if (rc==0 || track->GetNumberOfClusters()<(i1-i2)*0.5 || 
