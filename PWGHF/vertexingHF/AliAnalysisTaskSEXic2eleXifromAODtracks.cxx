@@ -168,6 +168,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElePtRSMix(0),
   fHistoElePtWSMix(0),
   fHistoEleXiMassMCS(0),
+  fHistoEleXiMassMCS1(0),
+  fHistoEleXiMassMCS2(0),
   fHistoEleXiMassMCGen(0),
   fHistoEleXiMassvsElePtMCS(0),
   fHistoEleXiMassvsElePtMCGen(0),
@@ -350,6 +352,8 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoElePtRSMix(0),
   fHistoElePtWSMix(0),
   fHistoEleXiMassMCS(0),
+  fHistoEleXiMassMCS1(0),
+  fHistoEleXiMassMCS2(0),
   fHistoEleXiMassMCGen(0),
   fHistoEleXiMassvsElePtMCS(0),
   fHistoEleXiMassvsElePtMCGen(0),
@@ -1447,6 +1451,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 				cont2[1] = mcele->Pt();
 				if(abs(pdgcode)==4132 && abs(mcpdgele_array[1])==4132 && abs(mcpdgcasc_array[1])==4132){
 						fHistoEleXiMassMCS->Fill(cont);
+						if(trk->Charge()>0) fHistoEleXiMassMCS1->Fill(cont);
+						else  fHistoEleXiMassMCS2->Fill(cont);
 						fHistoEleXiMassvsElePtMCS->Fill(cont2);
 						if(trk->Charge()>0) fHistoEleXiMassvsElePtMCS1->Fill(cont2);
 						else fHistoEleXiMassvsElePtMCS2->Fill(cont2);
@@ -2494,6 +2500,10 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
 
   fHistoEleXiMassMCS = new THnSparseF("fHistoEleXiMassMCS","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassMCS);
+  fHistoEleXiMassMCS1 = new THnSparseF("fHistoEleXiMassMCS1","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassMCS1);
+  fHistoEleXiMassMCS2 = new THnSparseF("fHistoEleXiMassMCS2","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassMCS2);
   fHistoEleXiMassMCGen = new THnSparseF("fHistoEleXiMassMCGen","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassMCGen);
   fHistoEleXiMassvsElePtMCS = new THnSparseF("fHistoEleXiMassvsElePtMCS","",3,bins_base_elept,xmin_base_elept,xmax_base_elept);
@@ -3361,8 +3371,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
 
 		for(Int_t iEv=0; iEv<fNumberOfEventsForMixing; iEv++){
 			fEventBuffer[poolIndex]->GetEvent(iEv + nEvents - fNumberOfEventsForMixing);
-			TObjArray* c1array1=(TObjArray*)c1array->Clone();
-			Int_t nCascs1=c1array1->GetEntries();
+			//TObjArray* c1array1=(TObjArray*)c1array->Clone();
+			Int_t nCascs1=c1array->GetEntries();
 			//Float_t zVertex1=zVertex;
 			//Float_t mult1=cent;
 //			Int_t evId1,esdId1,ne1,nv1;
@@ -3374,21 +3384,21 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
 //				continue;
 //			}
       for(Int_t iTr1=0; iTr1<nCascs1; iTr1++){
-				TLorentzVector* casc1=(TLorentzVector*) c1array1->At(iTr1);
+				TLorentzVector* casc1=(TLorentzVector*) c1array->At(iTr1);
 				if(!casc1) continue;
 				FillMixROOTObjects(trke,casc1,1);
 			}//casc loop
 
-			TObjArray* c2array1=(TObjArray*)c2array->Clone();
-			Int_t nCascs2=c2array1->GetEntries();
+			//TObjArray* c2array1=(TObjArray*)c2array->Clone();
+			Int_t nCascs2=c2array->GetEntries();
       for(Int_t iTr2=0; iTr2<nCascs2; iTr2++){
-				TLorentzVector* casc2=(TLorentzVector*) c2array1->At(iTr2);
+				TLorentzVector* casc2=(TLorentzVector*) c2array->At(iTr2);
 				if(!casc2) continue;
 				FillMixROOTObjects(trke,casc2,-1);
 			}//casc loop
 
-			delete c1array1;
-			delete c2array1;
+			//delete c1array1;
+			//delete c2array1;
 		}//event loop
 	}//track loop
 }
