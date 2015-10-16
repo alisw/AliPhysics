@@ -799,7 +799,7 @@ protected:
       TDirectory* savDir = gDirectory;
       if (!gSystem->AccessPathName(fELossExtra.Data())) {
 	hists = TFile::Open(fELossExtra, "READ");
-	Info("", "Opened %s -> %p", fELossExtra, hists);
+	Info("", "Opened %s -> %p", fELossExtra.Data(), hists);
       }
       else 
 	Warning("", "Couldn't open %s", fELossExtra.Data());
@@ -811,6 +811,8 @@ protected:
 	if (fr) { 
 	  fitter = static_cast<TList*>(fr->FindObject("fmdEnergyFitter"));
 	  // Info("", "Got fitter -> %p", fitter);
+	  // fr->ls();
+	  DrawEventInspector(fr);
 	}
 	hists->Close();
 	savDir->cd();
