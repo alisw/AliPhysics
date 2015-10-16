@@ -55,10 +55,11 @@ void DoFillParticleCollection(TrackCutType *cut,
   for (TrackCollectionIterType pIter = track_collection->begin();
                                pIter != track_collection->end();
                                pIter++) {
-    if (!cut->Pass(*pIter)) {
-      continue;
+    const Bool_t track_passes = cut->Pass(*pIter);
+    cut->FillCutMonitor(*pIter, track_passes);
+    if (track_passes) {
+      output->push_back(new AliFemtoParticle(*pIter, cut->Mass()));
     }
-    output->push_back(new AliFemtoParticle(*pIter, cut->Mass()));
   }
 }
 
@@ -83,7 +84,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtTrack:
 
     DoFillParticleCollection(
-      dynamic_cast<AliFemtoTrackCut*>(partCut),
+      (AliFemtoTrackCut*)partCut,
       hbtEvent->TrackCollection(),
       partCollection
     );
@@ -109,9 +110,6 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
       partCollection
     );
 
-    // should this be here or OUTSIDE the switch statement? (why is v0 special?)
-    partCut->FillCutMonitor(hbtEvent, partCollection);
-
     break;
   }
 
@@ -119,7 +117,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtXi:
 
     DoFillParticleCollection(
-      dynamic_cast<AliFemtoXiCut*>(partCut),
+      (AliFemtoXiCut*)partCut,
       hbtEvent->XiCollection(),
       partCollection
     );
@@ -130,7 +128,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtKink:
 
     DoFillParticleCollection(
-      dynamic_cast<AliFemtoKinkCut*>(partCut),
+      (AliFemtoKinkCut*)partCut,
       hbtEvent->KinkCollection(),
       partCollection
     );
@@ -142,6 +140,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
             "Undefined Particle Cut type!!! (" << partCut->Type() << ")\n";
   }
 
+  partCut->FillCutMonitor(hbtEvent, partCollection);
 }
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
@@ -821,7 +820,7 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
 
   for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
                                 iter != fCorrFctnCollection->end();
-                                iter++) {
+                                ++iter) {
 
     TList *tListCf = (*iter)->GetOutputList();
 
