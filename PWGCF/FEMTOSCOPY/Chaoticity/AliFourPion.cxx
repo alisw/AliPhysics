@@ -63,7 +63,7 @@ AliAnalysisTaskSE(),
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
-  fCorrectWeights(kTRUE),
+  fOnlineCorrection(kTRUE),
   fInterpolationType(1),
   fOneDInterpolation(0),
   fMixedChargeCut(kFALSE),
@@ -152,6 +152,8 @@ AliAnalysisTaskSE(),
   fKT4transition(0.3),
   farrP1(),
   farrP2(),
+  fIC_Offline(),
+  fIC_Online(),
   fDefaultsCharSwitch(),
   fLowQPairSwitch_E0E0(),
   fLowQPairSwitch_E0E1(),
@@ -278,7 +280,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fGenerateSignal(kFALSE),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
-  fCorrectWeights(kTRUE),
+  fOnlineCorrection(kTRUE),
   fInterpolationType(1),
   fOneDInterpolation(0),
   fMixedChargeCut(kFALSE),
@@ -367,6 +369,8 @@ AliFourPion::AliFourPion(const Char_t *name)
   fKT4transition(0.3),
   farrP1(),
   farrP2(),
+  fIC_Offline(),
+  fIC_Online(),
   fDefaultsCharSwitch(),
   fLowQPairSwitch_E0E0(),
   fLowQPairSwitch_E0E1(),
@@ -498,7 +502,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fGenerateSignal(obj.fGenerateSignal),
     fGeneratorOnly(obj.fGeneratorOnly),
     fTabulatePairs(obj.fTabulatePairs),
-    fCorrectWeights(obj.fCorrectWeights),
+    fOnlineCorrection(obj.fOnlineCorrection),
     fInterpolationType(obj.fInterpolationType),
     fOneDInterpolation(obj.fOneDInterpolation),
     fMixedChargeCut(obj.fMixedChargeCut),
@@ -587,6 +591,8 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fKT4transition(obj.fKT4transition),
     farrP1(),
     farrP2(),
+    fIC_Offline(),
+    fIC_Online(),
     fDefaultsCharSwitch(),
     fLowQPairSwitch_E0E0(),
     fLowQPairSwitch_E0E1(),
@@ -664,7 +670,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fGenerateSignal = obj.fGenerateSignal;
   fGeneratorOnly = obj.fGeneratorOnly;
   fTabulatePairs = obj.fTabulatePairs;
-  fCorrectWeights = obj.fCorrectWeights;
+  fOnlineCorrection = obj.fOnlineCorrection;
   fInterpolationType = obj.fInterpolationType;
   fOneDInterpolation = obj.fOneDInterpolation;
   fMixedChargeCut = obj.fMixedChargeCut;
@@ -1110,7 +1116,40 @@ void AliFourPion::ParInit()
     }
   }
 
- 
+  // Interpolation correction factors for 4D 7 kT binning scheme with cubic interpolation
+  Float_t fIC_tempK1_Offline[20]={1.15874, 1.15874, 1.02972, 0.983506, 0.978256, 0.978137, 0.99731, 0.988222, 0.976087, 1.01034, 1.00952, 1.05129, 1.33569, 1.57477, 3.00402, 7.37385, 20.8854, 79.9247, 466.958, 2362.59};
+  Float_t fIC_tempK2_Offline[20]={1.17498, 1.17498, 1.04839, 1.01326, 1.00137, 1.00125, 1.00243, 0.99748, 0.992767, 1.00106, 0.992621, 0.983214, 1.1318, 1.40818, 2.19906, 5.2095, 16.6987, 61.8091, 220.492, 1356.37};
+  Float_t fIC_tempK3_Offline[20]={1.19759, 1.19759, 1.07763, 1.0422, 1.03393, 1.02126, 1.02089, 1.02327, 1.0085, 1.00487, 0.971789, 0.993542, 1.0836, 1.44404, 2.5961, 6.18613, 23.6349, 92.2967, 423.414, 2252.86};
+  Float_t fIC_tempK4_Offline[20]={1.20016, 1.20016, 1.08142, 1.06597, 1.05223, 1.04274, 1.02726, 1.01956, 1.01569, 1.00886, 0.976751, 1.02217, 1.11237, 1.6687, 3.11013, 8.07875, 33.3551, 137.644, 776.742, 6874.55};
+  Float_t fIC_tempK5_Offline[20]={1.17724, 1.17724, 1.07073, 1.0894, 1.06995, 1.04995, 1.03323, 1.02118, 1.00556, 0.993756, 0.989652, 1.03069, 1.17341, 1.76291, 3.57525, 5.23737, 38.1559, 176.201, 837.799, 7824.81};
+  Float_t fIC_tempK6_Offline[20]={1.11908, 1.11908, 1.07268, 1.10707, 1.0777, 1.05077, 1.02427, 1.01298, 1.0043, 0.995263, 0.971299, 1.01614, 1.24185, 1.81242, 3.63278, 11.1267, 37.3259, 177.369, 913.754, 8618.34};
+  Float_t fIC_tempK7_Offline[20]={1.17818, 1.17818, 1.13705, 1.13692, 1.11537, 1.07695, 1.04205, 1.02878, 1.02658, 1.02337, 1.0331, 1.10945, 1.37393, 2.01098, 4.10517, 10.6846, 41.204, 196.267, 946.015, 10840.9};
+  //
+  Float_t fIC_tempK1_Online[20]={1.08977, 1.08977, 1.03018, 1.02195, 1.02445, 1.01626, 1.02466, 1.02598, 1.01903, 1.04232, 1.04898, 1.09417, 1.292, 1.72562, 3.46667, 9.12937, 31.0891, 147.542, 825.509, 6269.37};
+  Float_t fIC_tempK2_Online[20]={1.10279, 1.10279, 1.02865, 1.02268, 1.01911, 1.01757, 1.01651, 1.01223, 1.01343, 1.01847, 1.02396, 1.0222, 1.19166, 1.52826, 2.5289, 6.95869, 26.9192, 107.863, 505.356, 5256.24};
+  Float_t fIC_tempK3_Online[20]={1.13141, 1.13141, 1.02827, 1.00963, 1.00813, 0.999384, 1.00072, 0.997054, 0.97849, 0.970826, 0.940245, 0.951111, 1.01939, 1.35676, 2.32194, 5.87639, 22.3804, 86.5628, 482.493, 4202.39};
+  Float_t fIC_tempK4_Online[20]={1.14242, 1.14242, 1.01967, 1.00638, 0.999392, 0.996161, 0.984372, 0.97497, 0.966034, 0.929085, 0.901963, 0.928844, 0.961555, 1.30751, 2.1384, 5.31829, 19.8114, 78.2922, 396.502, 3743.63};
+  Float_t fIC_tempK5_Online[20]={1.15841, 1.15841, 0.999762, 1.0077, 0.99768, 0.992972, 0.989344, 0.972073, 0.951255, 0.935728, 0.907556, 0.907257, 0.976454, 1.23242, 2.19768, 5.22021, 18.728, 78.2627, 354.761, 3122.74};
+  Float_t fIC_tempK6_Online[20]={1.14786, 1.14786, 1.00226, 1.00958, 0.995811, 0.989573, 0.978303, 0.959762, 0.951294, 0.928133, 0.89688, 0.903638, 0.966431, 1.18643, 2.05014, 5.4632, 17.0296, 72.0803, 375.084, 3251.85};
+  Float_t fIC_tempK7_Online[20]={1.22518, 1.22518, 1.04616, 1.02128, 1.0144, 1.00255, 0.986872, 0.97028, 0.960213, 0.940531, 0.923523, 0.940603, 1.02054, 1.31177, 2.21925, 5.16703, 17.5741, 68.9239, 315.734, 2797.83};
+  //
+  for(Int_t i=0; i<20; i++){
+    fIC_Offline[0][i] = fIC_tempK1_Offline[i];
+    fIC_Offline[1][i] = fIC_tempK2_Offline[i];
+    fIC_Offline[2][i] = fIC_tempK3_Offline[i];
+    fIC_Offline[3][i] = fIC_tempK4_Offline[i];
+    fIC_Offline[4][i] = fIC_tempK5_Offline[i];
+    fIC_Offline[5][i] = fIC_tempK6_Offline[i];
+    fIC_Offline[6][i] = fIC_tempK7_Offline[i];
+    //
+    fIC_Online[0][i] = fIC_tempK1_Online[i];
+    fIC_Online[1][i] = fIC_tempK2_Online[i];
+    fIC_Online[2][i] = fIC_tempK3_Online[i];
+    fIC_Online[3][i] = fIC_tempK4_Online[i];
+    fIC_Online[4][i] = fIC_tempK5_Online[i];
+    fIC_Online[5][i] = fIC_tempK6_Online[i];
+    fIC_Online[6][i] = fIC_tempK7_Online[i];
+  }
   
   // mean +- RMS
   fqOutFcn = new TF1("fqOutFcn","[0] + [1]*x + ([2] + [3]*x)",0,1.0);
@@ -2679,7 +2718,7 @@ void AliFourPion::UserExec(Option_t *)
 	      if(!fTabulatePairs && bin1==bin2 && qinv12<0.1){
 		GetWeight(pVect1, pVect2, weight12, weight12Err);
 		//
-		if(fCorrectWeights){
+		if(fOnlineCorrection){
 		  momBin12 = fMomResC2SC->GetYaxis()->FindBin(qinv12);
 		  Float_t MuonCorr12 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin12);
 		  MomResCorr12 = fMomResC2SC->GetBinContent(rBinForTPNMomRes, momBin12);
@@ -3303,7 +3342,7 @@ void AliFourPion::UserExec(Option_t *)
 		    }
 		  }
 		  
-		  if(fCorrectWeights){
+		  if(fOnlineCorrection){
 		    Float_t MuonCorr12=1.0, MuonCorr13=1.0, MuonCorr23=1.0;
 		    if(!fGenerateSignal && !fMCcase) {
 		      MuonCorr12 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin12);
@@ -3706,7 +3745,7 @@ void AliFourPion::UserExec(Option_t *)
 		    GetWeight(pVect2, pVect4, weight24, weight24Err);
 		    GetWeight(pVect3, pVect4, weight34, weight34Err);
 		    
-		    if(fCorrectWeights){
+		    if(fOnlineCorrection){
 		      Float_t MuonCorr14=1.0, MuonCorr24=1.0, MuonCorr34=1.0;
 		      if(!fGenerateSignal && !fMCcase) {
 			MuonCorr14 = fWeightmuonCorrection->GetBinContent(rBinForTPNMomRes, momBin14);
@@ -4445,111 +4484,121 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
     wgtErr = avgErr;
   }else{
     //
-  if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
-  else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1; xd=1;}
-  else {
-    for(Int_t i=0; i<kQbinsWeights-1; i++){
-      if((qOut >= fQmean[i]) && (qOut < fQmean[i+1])) {fQoIndexL=i; fQoIndexH=i+1; break;}
+    if(qOut < fQmean[0]) {fQoIndexL=0; fQoIndexH=0; xd=0;}
+    else if(qOut >= fQmean[kQbinsWeights-1]) {fQoIndexL=kQbinsWeights-1; fQoIndexH=kQbinsWeights-1; xd=1;}
+    else {
+      for(Int_t i=0; i<kQbinsWeights-1; i++){
+	if((qOut >= fQmean[i]) && (qOut < fQmean[i+1])) {fQoIndexL=i; fQoIndexH=i+1; break;}
       }
-    xd = (qOut-fQmean[fQoIndexL])/(fQmean[fQoIndexH]-fQmean[fQoIndexL]);
-  }
-  //
-  if(qSide < fQmean[0]) {fQsIndexL=0; fQsIndexH=0; yd=0;}
-  else if(qSide >= fQmean[kQbinsWeights-1]) {fQsIndexL=kQbinsWeights-1; fQsIndexH=kQbinsWeights-1; yd=1;}
-  else {
-    for(Int_t i=0; i<kQbinsWeights-1; i++){
-      if((qSide >= fQmean[i]) && (qSide < fQmean[i+1])) {fQsIndexL=i; fQsIndexH=i+1; break;}
-    }
-    yd = (qSide-fQmean[fQsIndexL])/(fQmean[fQsIndexH]-fQmean[fQsIndexL]);
-  }
-  //
-  if(qLong < fQmean[0]) {fQlIndexL=0; fQlIndexH=0; zd=0;}
-  else if(qLong >= fQmean[kQbinsWeights-1]) {fQlIndexL=kQbinsWeights-1; fQlIndexH=kQbinsWeights-1; zd=1;}
-  else {
-    for(Int_t i=0; i<kQbinsWeights-1; i++){
-      if((qLong >= fQmean[i]) && (qLong < fQmean[i+1])) {fQlIndexL=i; fQlIndexH=i+1; break;}
-    }
-    zd = (qLong-fQmean[fQlIndexL])/(fQmean[fQlIndexH]-fQmean[fQlIndexL]);
-  }
-  
-  //
-  if(fInterpolationType==0){// Linear Interpolation of osl
-    // w interpolation (kt)
-    Float_t c000, c100, c010, c001, c110, c101, c011, c111;
-    if(q2bin==0){
-      c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
-      c100 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
-      c010 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
-      c001 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
-      c110 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
-      c101 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
-      c011 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
-      c111 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
-    }else{
-      c000 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
-      c100 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
-      c010 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
-      c001 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
-      c110 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
-      c101 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
-      c011 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
-      c111 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
+      xd = (qOut-fQmean[fQoIndexL])/(fQmean[fQoIndexH]-fQmean[fQoIndexL]);
     }
     //
+    if(qSide < fQmean[0]) {fQsIndexL=0; fQsIndexH=0; yd=0;}
+    else if(qSide >= fQmean[kQbinsWeights-1]) {fQsIndexL=kQbinsWeights-1; fQsIndexH=kQbinsWeights-1; yd=1;}
+    else {
+      for(Int_t i=0; i<kQbinsWeights-1; i++){
+	if((qSide >= fQmean[i]) && (qSide < fQmean[i+1])) {fQsIndexL=i; fQsIndexH=i+1; break;}
+      }
+      yd = (qSide-fQmean[fQsIndexL])/(fQmean[fQsIndexH]-fQmean[fQsIndexL]);
+    }
+    //
+    if(qLong < fQmean[0]) {fQlIndexL=0; fQlIndexH=0; zd=0;}
+    else if(qLong >= fQmean[kQbinsWeights-1]) {fQlIndexL=kQbinsWeights-1; fQlIndexH=kQbinsWeights-1; zd=1;}
+    else {
+      for(Int_t i=0; i<kQbinsWeights-1; i++){
+	if((qLong >= fQmean[i]) && (qLong < fQmean[i+1])) {fQlIndexL=i; fQlIndexH=i+1; break;}
+      }
+      zd = (qLong-fQmean[fQlIndexL])/(fQmean[fQlIndexH]-fQmean[fQlIndexL]);
+    }
     
-    // x interpolation (qOut)
-    Float_t c00 = c000*(1-xd) + c100*xd;
-    Float_t c10 = c010*(1-xd) + c110*xd;
-    Float_t c01 = c001*(1-xd) + c101*xd;
-    Float_t c11 = c011*(1-xd) + c111*xd;
-    // y interpolation (qSide)
-    Float_t c0 = c00*(1-yd) + c10*yd;
-    Float_t c1 = c01*(1-yd) + c11*yd;
-    // z interpolation (qLong)
-    wgt = (c0*(1-zd) + c1*zd);
-    // testing
-    //Float_t c0_2 = fNormWeight[fKtIndexL][fMbin]->Interpolate(qOut,qSide,qLong);
-    //Float_t c1_2 = fNormWeight[fKtIndexH][fMbin]->Interpolate(qOut,qSide,qLong);
-    //Float_t wgt_2 = c0_2*(1-wd) + c1_2*wd;
-    //if(qinvtemp<0.02) cout<<qinvtemp<<"  "<<wgt<<"  "<<wgt_2<<"  "<<ExceedsMeans<<"  "<<qOut<<" "<<qSide<<" "<<qLong<<endl;
-  }else{// cubic interpolation of osl
-    
-    for(Int_t x=0; x<4; x++){
-      for(Int_t y=0; y<4; y++){
-	for(Int_t z=0; z<4; z++){
-	  Int_t binO = fQoIndexL + x;
-	  Int_t binS = fQsIndexL + y;
-	  Int_t binL = fQlIndexL + z;
-	  if(binO<=0) binO = 1;
-	  if(binS<=0) binS = 1;
-	  if(binL<=0) binL = 1;
-	  if(binO>kQbinsWeights) binO = kQbinsWeights;
-	  if(binS>kQbinsWeights) binS = kQbinsWeights;
-	  if(binL>kQbinsWeights) binL = kQbinsWeights;
-	  if(q2bin==0) {
-	    farrP1[x][y][z] = fNormWeight[fKtIndexL][fMbin]->GetBinContent(binO,binS,binL);
-	    farrP2[x][y][z] = fNormWeight[fKtIndexH][fMbin]->GetBinContent(binO,binS,binL);
-	  }else{
-	    farrP1[x][y][z] = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(binO,binS,binL);
-	    farrP2[x][y][z] = fNormWeight2[fKtIndexH][fMbin]->GetBinContent(binO,binS,binL);
+    //
+    if(fInterpolationType==0){// Linear Interpolation of osl
+      // w interpolation (kt)
+      Float_t c000, c100, c010, c001, c110, c101, c011, c111;
+      if(q2bin==0){
+	c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
+	c100 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
+	c010 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
+	c001 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
+	c110 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
+	c101 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
+	c011 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
+	c111 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
+      }else{
+	c000 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
+	c100 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexL+1)*wd;
+	c010 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexL+1)*wd;
+	c001 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexH+1)*wd;
+	c110 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1)*wd;
+	c101 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1)*wd;
+	c011 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1)*wd;
+	c111 = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*(1-wd) + fNormWeight2[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1)*wd;
+      }
+      //
+      
+      // x interpolation (qOut)
+      Float_t c00 = c000*(1-xd) + c100*xd;
+      Float_t c10 = c010*(1-xd) + c110*xd;
+      Float_t c01 = c001*(1-xd) + c101*xd;
+      Float_t c11 = c011*(1-xd) + c111*xd;
+      // y interpolation (qSide)
+      Float_t c0 = c00*(1-yd) + c10*yd;
+      Float_t c1 = c01*(1-yd) + c11*yd;
+      // z interpolation (qLong)
+      wgt = (c0*(1-zd) + c1*zd);
+      // testing
+      //Float_t c0_2 = fNormWeight[fKtIndexL][fMbin]->Interpolate(qOut,qSide,qLong);
+      //Float_t c1_2 = fNormWeight[fKtIndexH][fMbin]->Interpolate(qOut,qSide,qLong);
+      //Float_t wgt_2 = c0_2*(1-wd) + c1_2*wd;
+      //if(qinvtemp<0.02) cout<<qinvtemp<<"  "<<wgt<<"  "<<wgt_2<<"  "<<ExceedsMeans<<"  "<<qOut<<" "<<qSide<<" "<<qLong<<endl;
+    }else{// cubic interpolation of osl
+      
+      for(Int_t x=0; x<4; x++){
+	for(Int_t y=0; y<4; y++){
+	  for(Int_t z=0; z<4; z++){
+	    Int_t binO = fQoIndexL + x;
+	    Int_t binS = fQsIndexL + y;
+	    Int_t binL = fQlIndexL + z;
+	    if(binO<=0) binO = 1;
+	    if(binS<=0) binS = 1;
+	    if(binL<=0) binL = 1;
+	    if(binO>kQbinsWeights) binO = kQbinsWeights;
+	    if(binS>kQbinsWeights) binS = kQbinsWeights;
+	    if(binL>kQbinsWeights) binL = kQbinsWeights;
+	    if(q2bin==0) {
+	      farrP1[x][y][z] = fNormWeight[fKtIndexL][fMbin]->GetBinContent(binO,binS,binL);
+	      farrP2[x][y][z] = fNormWeight[fKtIndexH][fMbin]->GetBinContent(binO,binS,binL);
+	    }else{
+	      farrP1[x][y][z] = fNormWeight2[fKtIndexL][fMbin]->GetBinContent(binO,binS,binL);
+	      farrP2[x][y][z] = fNormWeight2[fKtIndexH][fMbin]->GetBinContent(binO,binS,binL);
+	    }
+	    
 	  }
-	  
 	}
       }
+      Float_t coord[3]={xd, yd, zd}; 
+      Float_t c0 = nCubicInterpolate(3, (Float_t*) farrP1, coord);
+      Float_t c1 = nCubicInterpolate(3, (Float_t*) farrP2, coord);
+      // kT interpolation
+      wgt = c0*(1-wd) + c1*wd;
+      //
+      if(fCollisionType==0){
+	Float_t qInvtemp=GetQinv(track1, track2);
+	Int_t qInvIndex=int(qInvtemp/0.005);
+	if(qInvIndex>19) qInvIndex=19;
+	Int_t KtIndex = fKtIndexL;
+	if(kt > (fKmiddleT[fKtIndexL]+fKstepT[fKtIndexL]/2.)) KtIndex++;
+	//
+	if(fOnlineCorrection) wgt *= fIC_Online[KtIndex][qInvIndex];
+	else wgt *= fIC_Offline[KtIndex][qInvIndex];
+      }
     }
-    Float_t coord[3]={xd, yd, zd}; 
-    Float_t c0 = nCubicInterpolate(3, (Float_t*) farrP1, coord);
-    Float_t c1 = nCubicInterpolate(3, (Float_t*) farrP2, coord);
-    // kT interpolation
-    wgt = c0*(1-wd) + c1*wd;
+    // simplified stat error 
+    Float_t avgErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
+    avgErr += fNormWeight[fKtIndexH][fMbin]->GetBinError(fQoIndexL+1,fQsIndexL+1,fQlIndexL+1);
+    avgErr /= 2.;
     //
-  }
-  // simplified stat error 
-  Float_t avgErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
-  avgErr += fNormWeight[fKtIndexH][fMbin]->GetBinError(fQoIndexL+1,fQsIndexL+1,fQlIndexL+1);
-  avgErr /= 2.;
-  //
-  wgtErr = avgErr;
+    wgtErr = avgErr;
   }
   
 }
