@@ -94,21 +94,24 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   // cut is cutting on V0s
   case hbtV0:
   {
-    AliFemtoV0SharedDaughterCut shared_daughter_cut;
-    AliFemtoV0Cut *v0_cut = (AliFemtoV0Cut*)partCut; //dynamic_cast was creating a NULL pointer
+    AliFemtoV0Cut *v0_cut = (AliFemtoV0Cut*)partCut;
 
-    const AliFemtoV0Collection &v0_coll = (!performSharedDaughterCut)
-                                        ? *hbtEvent->V0Collection()
-                                        : shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(
-                                            hbtEvent->V0Collection(),
-                                            v0_cut
-                                          );
+    // shared daughter cut returns all passed v0s - add to particle collection
+    if (performSharedDaughterCut) {
+      AliFemtoV0SharedDaughterCut shared_daughter_cut;
+      AliFemtoV0Collection v0_coll = shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(hbtEvent->V0Collection(), v0_cut);
+      for (AliFemtoV0Iterator pIter = v0_coll.begin(); pIter != v0_coll.end(); ++pIter) {
+        partCollection->push_back(new AliFemtoParticle(*pIter, v0_cut->Mass()));
+      }
+    } else {
 
-    DoFillParticleCollection(
-      v0_cut,
-      const_cast<AliFemtoV0Collection*>(&v0_coll),
-      partCollection
-    );
+      DoFillParticleCollection(
+        v0_cut,
+        hbtEvent->V0Collection(),
+        partCollection
+      );
+
+    }
 
     break;
   }
