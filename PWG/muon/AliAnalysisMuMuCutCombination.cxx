@@ -287,10 +287,20 @@ Bool_t AliAnalysisMuMuCutCombination::Pass(const TString& firedTriggerClasses,
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuCutCombination::Print(Option_t* space) const
+void AliAnalysisMuMuCutCombination::Print(Option_t* opt) const
 {
   /// Printout of the cut combination
-  std::cout << Form("%s(%p) [",GetName(),this);
+  TString sopt(opt);
+  sopt.ToUpper();
+  
+  if ( sopt.Contains("PTR"))
+  {
+    std::cout << Form("%s(%p) [",GetName(),this);
+  }
+  else
+  {
+    std::cout << Form("%s [",GetName());
+  }
   if ( IsEventCutter() ) std::cout << " E";
   if ( IsEventHandlerCutter() ) std::cout << " EH";
   if ( IsTrackCutter() ) std::cout << " T";
@@ -303,7 +313,7 @@ void AliAnalysisMuMuCutCombination::Print(Option_t* space) const
   
   while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(next()) ) )
   {
-    std::cout << space;
-    ce->Print();
+    std::cout << "            ";
+    ce->Print(sopt.Data());
   }
 }

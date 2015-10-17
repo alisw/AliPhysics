@@ -404,7 +404,7 @@ void AliAnalysisMuMuCutRegistry::Print(Option_t* opt) const
     while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(next())) )
     {
       std::cout << Form("    %4d ",i);
-      cutCombination->Print("            ");
+      cutCombination->Print(sopt.Data());
       ++i;
     }
   }
@@ -423,7 +423,7 @@ void AliAnalysisMuMuCutRegistry::Print(Option_t* opt) const
       while ( ( ce = static_cast<AliAnalysisMuMuCutElement*>(nextCutRef()) ) )
       {
         std::cout << Form("%4d ",i);
-        ce->Print();
+        ce->Print(sopt.Data());
         ++i;
       }
     }
