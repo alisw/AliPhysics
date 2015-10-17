@@ -73,7 +73,29 @@ using std::ifstream;
 ClassImp(AliAnalysisMuMu)
 
 //_____________________________________________________________________________
-AliAnalysisMuMu::AliAnalysisMuMu(const char* filename, const char* associatedSimFileName, const char* associatedSimFileName2, const char* beamYear) : TObject(),
+AliAnalysisMuMu::AliAnalysisMuMu(const char* filename, AliAnalysisMuMuConfig& config) : TObject(),
+fFilename(gSystem->ExpandPathName(filename)),
+fCounterCollection(0x0),
+fBinning(0x0),
+fMergeableCollection(0x0),
+fRunNumbers(),
+fCorrectionPerRun(0x0),
+fAssociatedSimulation(0x0),
+fAssociatedSimulation2(0x0),
+fParticleName(""),
+fConfig(new AliAnalysisMuMuConfig(config))
+{
+  GetCollections(fFilename,fMergeableCollection,fCounterCollection,fBinning,fRunNumbers);
+  
+  if ( IsSimulation() )
+  {
+    SetParticleNameFromFileName(fFilename);
+  }
+}
+
+
+//_____________________________________________________________________________
+AliAnalysisMuMu::AliAnalysisMuMu(const char* filename, const char* associatedSimFileName, const char* associatedSimFileName2, const char* configurationFile) : TObject(),
 fFilename(filename),
 fCounterCollection(0x0),
 fBinning(0x0),
@@ -91,10 +113,7 @@ fConfig(0x0)
   
   if ( IsSimulation() )
   {
-    TString sFilename(filename);
-    if ( sFilename.Contains("JPSI",TString::kIgnoreCase) ) SetParticleName("JPsi"); //FIXME: DO a method for this
-    else if ( sFilename.Contains("PSIP",TString::kIgnoreCase) ) SetParticleName("PsiP");
-    else AliError("Unknown Particle Name in simulation");
+    SetParticleNameFromFileName(fFilename);
   }
   
   if ( fCounterCollection )
@@ -102,24 +121,16 @@ fConfig(0x0)
     if ( strlen(associatedSimFileName) )
     {
       fAssociatedSimulation = new AliAnalysisMuMu(associatedSimFileName);
-      
-      TString sAssociatedSimFileName(associatedSimFileName);
-      if ( sAssociatedSimFileName.Contains("JPSI",TString::kIgnoreCase) ) fAssociatedSimulation->SetParticleName("JPsi");
-      else if ( sAssociatedSimFileName.Contains("PSIP",TString::kIgnoreCase) ) fAssociatedSimulation->SetParticleName("PsiP");
-      else AliError("Unknown Particle Name in associated simulation");     
     }
     
     if ( strlen(associatedSimFileName2) )
     {
       fAssociatedSimulation2 = new AliAnalysisMuMu(associatedSimFileName2);
-      
-      TString sAssociatedSimFileName2(associatedSimFileName2);
-      if ( sAssociatedSimFileName2.Contains("JPSI",TString::kIgnoreCase) ) fAssociatedSimulation2->SetParticleName("JPsi");
-      else if ( sAssociatedSimFileName2.Contains("PSIP",TString::kIgnoreCase) ) fAssociatedSimulation2->SetParticleName("PsiP");
-      else AliError("Unknown Particle Name in associated simulation 2");
     }
     
-    fConfig = new AliAnalysisMuMuConfig(beamYear);
+    fConfig = new AliAnalysisMuMuConfig;
+    
+    fConfig->ReadFromFile(configurationFile);
   }
 }
 
@@ -154,16 +165,14 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
                                   ULong64_t* totalNmsl,
                                   ULong64_t* totalNmul)
 {
-  // Report of some basic numbers, like number of MB and MUON triggers, 
-  // both before and after physics selection, and comparison with 
-  // the total number of such triggers (taken from the OCDB scalers)
-  // if requested.
+  // Report of some basic trigger counts (for MB,MUL and MSL)
+  // both before and after physics selection.
   //
-  // filename is assumed to be a root filecontaining a list containing
-  //    an AliCounterCollection (or directly an AliCounterCollection)
+  // Amount all the triggers available in our counter collection,
+  // we only consider the triggers that are defined in the configuration
   //
-  // if detailTriggers is kTRUE, each kind of (MB,MUL,MSL) is counted separately
-  //
+  // If detailTriggers is kTRUE, will show the detail, including Physics Selection fraction,
+  // for each trigger found (as opposed to just showing info for MB,MSL and MUL triggers)
   
   if (!fMergeableCollection || !fCounterCollection) return;
   
@@ -204,42 +213,43 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
     while ( ( strigger = static_cast<TObjString*>(nextTrigger()) ) )
     {
       
-      if ( !Config()->GetList(AliAnalysisMuMuConfig::kMinbiasTriggerList,IsSimulation()).Contains(strigger->String().Data()) &&
-           !Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,IsSimulation()).Contains(strigger->String().Data()) &&
-           !Config()->GetList(AliAnalysisMuMuConfig::kMuonTriggerList,IsSimulation()).Contains(strigger->String().Data()) ) continue;
+      if ( !Config()->Has(Config()->MinbiasTriggerKey(),strigger->String().Data(),IsSimulation()) &&
+           !Config()->Has(Config()->DimuonTriggerKey(),strigger->String().Data(),IsSimulation()) &&
+           !Config()->Has(Config()->MuonTriggerKey(),strigger->String().Data(),IsSimulation()) ) continue;
           
-      ULong64_t n = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
+      ULong64_t n = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d/centrality:all",
                                                     strigger->String().Data(),"ALL",srun->String().Atoi())));
 
       details += TString::Format("\n%50s %10lld",strigger->String().Data(),n);
       
 
-      ULong64_t nps = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d",
-                                                      strigger->String().Data(),"PSALL",srun->String().Atoi())));
-
       if ( doPS )
       {
+        ULong64_t nps = TMath::Nint(fCounterCollection->GetSum(Form("trigger:%s/event:%s/run:%d/centrality:all",
+                                                                    strigger->String().Data(),"PSALL",srun->String().Atoi())));
+        
         details += TString::Format(" PS %5.1f %%",nps*100.0/n);
+
+        if (nps)
+        {
+          ++nofPS;
+        }
+
       }
 
-      if (nps)
-      {
-        ++nofPS;
-      }
-      
-      if ( Config()->GetList(AliAnalysisMuMuConfig::kMinbiasTriggerList,IsSimulation()).Contains(strigger->String()) )
+      if ( Config()->Has(Config()->MinbiasTriggerKey(),strigger->String(),IsSimulation() ) )
       {
         nmb += n;
         if ( totalNmb) (*totalNmb) += n;
         localNmb += n;
       }
-      else if ( Config()->GetList(AliAnalysisMuMuConfig::kMuonTriggerList,IsSimulation()).Contains(strigger->String()) )
+      else if ( Config()->Has(Config()->MuonTriggerKey(),strigger->String(),IsSimulation()))
       {
         nmsl += n;
         if ( totalNmsl) (*totalNmsl) += n;
         localNmsl += n;
       }
-      else if ( Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,IsSimulation()).Contains(strigger->String()) )
+      else if ( Config()->Has(Config()->DimuonTriggerKey(),strigger->String(),IsSimulation()) )
       {
         nmul += n;
         if ( totalNmul ) (*totalNmul) += n;
@@ -250,6 +260,7 @@ void AliAnalysisMuMu::BasicCounts(Bool_t detailTriggers,
     std::cout << Form("MB %10lld MSL %10lld MUL %10lld %s",
                  nmb,nmsl,nmul,(nofPS == 0 ? "(NO PS AVAIL)": ""));
     
+
     if ( detailTriggers )
     {
       std::cout << details.Data();
@@ -586,18 +597,15 @@ void AliAnalysisMuMu::DrawMinv(const char* type, const char* particle, const cha
     return;
   }
   
+  const AliAnalysisMuMuConfig& c = *(Config());
+  
   DrawMinv(type,particle,
-           First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,IsSimulation())),
-           First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,IsSimulation())),
-           First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,IsSimulation())),
-           First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,IsSimulation())),
+           c.First(c.DimuonTriggerKey(),IsSimulation()),
+           c.First(c.EventSelectionKey(),IsSimulation()),
+           c.First(c.PairSelectionKey(),IsSimulation()),
+           c.First(c.CentralitySelectionKey(),IsSimulation()),
            subresultname,
            flavour);
-//           First(Config()->kEventSelectionList()).Data(),
-//           First(Config()->kPairSelectionList()).Data(),
-//           First(Config()->kCentralitySelectionList()).Data(),
-//           subresultname,
-//           flavour);
 }
 
 //___________________________________________________________________
@@ -800,19 +808,6 @@ AliAnalysisMuMu::FileOpen(const char* file)
 }
 
 //_____________________________________________________________________________
-TString AliAnalysisMuMu::First(const TString& list) const
-{
-  TObjArray* a = list.Tokenize(",");
-  if ( a->GetLast() < 0 ) return "";
-  
-  TString rv = static_cast<TObjString*>(a->First())->String();
-  
-  delete a;
-  
-  return rv;
-}
-
-//_____________________________________________________________________________
 AliAnalysisMuMuSpectra*
 AliAnalysisMuMu::FitParticle(const char* particle,
                              const char* trigger,
@@ -880,7 +875,7 @@ AliAnalysisMuMu::FitParticle(const char* particle,
   AliAnalysisMuMuBinning::Range* bin;
   TIter next(bins);
   
-  TObjArray* fitTypeArray = Config()->GetList(AliAnalysisMuMuConfig::kFitTypeList,IsSimulation()).Tokenize(",");
+  TObjArray* fitTypeArray = Config()->GetListElements(Config()->FitTypeKey(),IsSimulation());
   TIter nextFitType(fitTypeArray);
   TObjString* fitType;
   TString flavour;
@@ -1407,8 +1402,8 @@ AliAnalysisMuMu::GetParametersFromMC(TString& fitType, const char* pathCentrPair
   
   TString spath(pathCentrPairCut);
   
-  spath.Prepend(Form("/%s",First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kTRUE)).Data()));//FIXME: Care with this when there is more than one selection in the list
-  spath.Prepend(Form("/%s",First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kTRUE)).Data()));
+  spath.Prepend(Form("/%s",Config()->First(Config()->DimuonTriggerKey(),kTRUE).Data()));//FIXME: Care with this when there is more than one selection in the list
+  spath.Prepend(Form("/%s",Config()->First(Config()->EventSelectionKey(),kTRUE).Data()));
   
   
   while ( (currentSIM = static_cast<AliAnalysisMuMu*>(nextSim())) )
@@ -1655,9 +1650,9 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::GetSpectra(const char* what, const char
   sflavour.ToUpper();
   
   TString spectraName(Form("/%s/%s/PP/%s/PSI-%s",
-                           First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,IsSimulation())).Data(),
-                           First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,IsSimulation())).Data(),
-                           First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,IsSimulation())).Data(),
+                           Config()->First(Config()->EventSelectionKey(),IsSimulation()).Data(),
+                           Config()->First(Config()->DimuonTriggerKey(),IsSimulation()).Data(),
+                           Config()->First(Config()->PairSelectionKey(),IsSimulation()).Data(),
                            swhat.Data()));
 
   if (sflavour.Length()>0)
@@ -1680,10 +1675,10 @@ TH1* AliAnalysisMuMu::PlotAccEfficiency(const char* whatever)
   }
   
   TString path(Form("/%s/%s/%s/%s",
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kTRUE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kTRUE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kTRUE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kTRUE)).Data()));
+                    Config()->First(Config()->EventSelectionKey(),kTRUE).Data(),
+                    Config()->First(Config()->DimuonTriggerKey(),kTRUE).Data(),
+                    Config()->First(Config()->CentralitySelectionKey(),kTRUE).Data(),
+                    Config()->First(Config()->PairSelectionKey(),kTRUE).Data()));
   
   AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("%s/%s",path.Data(),whatever)));
   if ( !s )
@@ -1730,17 +1725,23 @@ void AliAnalysisMuMu::ComputeRelativeValueAndSESystematics(const char* quantity,
     return;
   }
 
+  TString dimuonTriggerClassName = Config()->First(Config()->DimuonTriggerKey(),kFALSE);
+  TString centralitySelection = Config()->First(Config()->CentralitySelectionKey(),kFALSE);
+  TString pairSelection = Config()->First(Config()->PairSelectionKey(),kFALSE);
+  
+  //Path to get/store integrated results from Mergeable Collection
   TString intPath(Form("%s/%s/%s/%s",
                        sevSelInt.Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to get/store integrated results from Mergeable Collection
+                       dimuonTriggerClassName.Data(),
+                       centralitySelection.Data(),
+                       pairSelection.Data()));
 
+  //Path to get/store differential results from Mergeable Collection
   TString diffPath(Form("%s/%s/%s/%s",
                         sevSelDiff.Data(),
-                        First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                        First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                        First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to get/store differential results from Mergeable Collection
+                        dimuonTriggerClassName.Data(),
+                        centralitySelection.Data(),
+                        pairSelection.Data()));
 
   TString striggerCluster(triggerCluster);
   if ( striggerCluster.Contains("MUON") && !striggerCluster.Contains("ALLNOTRD") ) striggerCluster = "MUON";
@@ -2280,10 +2281,10 @@ TH1* AliAnalysisMuMu::PlotJpsiYield(const char* whatever)
   }
   
   TString path(Form("/%s/%s/%s/%s",
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data()));
+                    Config()->First(Config()->EventSelectionKey(),kFALSE).Data(),
+                    Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data(),
+                    Config()->First(Config()->CentralitySelectionKey(),kFALSE).Data(),
+                    Config()->First(Config()->PairSelectionKey(),kFALSE).Data()));
   
   AliAnalysisMuMuSpectra* s = static_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("%s/%s",path.Data(),whatever)));
   if ( !s )
@@ -2472,11 +2473,11 @@ AliAnalysisMuMu::Jpsi(const char* what, const char* binningFlavour, Bool_t fitmP
   
   Int_t nfits(0);
   
-  TObjArray* triggerArray = Config()->GetListElements(AliAnalysisMuMuConfig::kDimuonTriggerList,IsSimulation());
-  TObjArray* eventTypeArray = Config()->GetListElements(AliAnalysisMuMuConfig::kEventSelectionList,IsSimulation());
-  TObjArray* pairCutArray = Config()->GetListElements(AliAnalysisMuMuConfig::kPairSelectionList,IsSimulation());
+  TObjArray* triggerArray = Config()->GetListElements(Config()->DimuonTriggerKey(),IsSimulation());
+  TObjArray* eventTypeArray = Config()->GetListElements(Config()->EventSelectionKey(),IsSimulation());
+  TObjArray* pairCutArray = Config()->GetListElements(Config()->PairSelectionKey(),IsSimulation());
   TObjArray* whatArray = TString(what).Tokenize(",");
-  TObjArray* centralityArray = Config()->GetListElements(AliAnalysisMuMuConfig::kCentralitySelectionList,IsSimulation());
+  TObjArray* centralityArray = Config()->GetListElements(Config()->CentralitySelectionKey(),IsSimulation());
   
   TIter nextTrigger(triggerArray);
   TIter nextEventType(eventTypeArray);
@@ -3018,7 +3019,9 @@ void AliAnalysisMuMu::SetCentralitySelectionList(const char* centralitySelection
     }
   }
   
-  Config()->SetList(AliAnalysisMuMuConfig::kCentralitySelectionList,IsSimulation(),csl);
+  if ( IsSimulation() )  csl += " sim";
+  
+  Config()->Add(Config()->CentralitySelectionKey(),csl);
   
   delete centralities;
 }
@@ -3583,9 +3586,9 @@ void AliAnalysisMuMu::ComputeDiffFnormFromInt(const char* triggerCluster, const 
   }
   
   TString path(Form("%s/%s/%s",
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data()));
+                    Config()->First(Config()->EventSelectionKey(),kFALSE).Data(),
+                    Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data(),
+                    Config()->First(Config()->CentralitySelectionKey(),kFALSE).Data()));
   if ( !mc )
   {
     AliError("Error: No mergeable collection to get Nch histo");
@@ -3677,7 +3680,7 @@ void AliAnalysisMuMu::ComputeDiffFnormFromCounters(const char* filePileUpCorr, c
 
 
   //_______ Definitions for the triggers used to extract the counts from the counter collection:
-  TString colType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data());
+  TString colType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
   if ( colType.Contains("-B-") ) colType = "B";
   else if ( colType.Contains("-S-") ) colType = "S";
   else
@@ -3686,7 +3689,7 @@ void AliAnalysisMuMu::ComputeDiffFnormFromCounters(const char* filePileUpCorr, c
     return;
   }
   
-  TString triggerType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data());
+  TString triggerType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
   if ( triggerType.Contains("7-") ) triggerType = "7";
   else if ( triggerType.Contains("8-") ) triggerType = "8";
   else
@@ -3970,7 +3973,7 @@ void AliAnalysisMuMu::ComputeDiffFnormFromGlobal(const char* what, const char* q
   ///   -flavour: binning flavour. By default "D2H"
   ///   -printout: option to print the Fnorm results. By default is kTRUE.
 
-  TString colType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data());
+  TString colType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
   if ( colType.Contains("-B-") ) colType = "B";
   else if ( colType.Contains("-S-") ) colType = "S";
   else
@@ -3979,7 +3982,7 @@ void AliAnalysisMuMu::ComputeDiffFnormFromGlobal(const char* what, const char* q
     return;
   }
   
-  TString triggerType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data());
+  TString triggerType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
   if ( triggerType.Contains("7-") ) triggerType = "7";
   else if ( triggerType.Contains("8-") ) triggerType = "8";
   else
@@ -4132,7 +4135,7 @@ void AliAnalysisMuMu::ComputeMeanFnorm(const char* triggerCluster, const char* e
     return;
   }
   
-  TString triggerType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data());
+  TString triggerType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
   if ( triggerType.Contains("7-") ) triggerType = "7";
   else if ( triggerType.Contains("8-") ) triggerType = "8";
   else
@@ -4141,7 +4144,7 @@ void AliAnalysisMuMu::ComputeMeanFnorm(const char* triggerCluster, const char* e
     return;
   }
   
-  TString colType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data());
+  TString colType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data());
   if ( colType.Contains("-B-") ) colType = "B";
   else if ( colType.Contains("-S-") ) colType = "S";
   else
@@ -4308,7 +4311,7 @@ void AliAnalysisMuMu::ComputeIntFnormFromCounters(const char* filePileUpCorr, co
 
 
   //_______ Definitions for the triggers used to extract the counts from the counter collection:
-  TString colType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data()); // Let the method know if the collision is beam-beam of satellite.
+  TString colType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data()); // Let the method know if the collision is beam-beam of satellite.
   if ( colType.Contains("-B-") ) colType = "B";
   else if ( colType.Contains("-S-") ) colType = "S";
   else
@@ -4317,7 +4320,7 @@ void AliAnalysisMuMu::ComputeIntFnormFromCounters(const char* filePileUpCorr, co
     return;
   }
   
-  TString triggerType(First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data()); // Let the method know the MB trigger type (V0 or T0).
+  TString triggerType(Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data()); // Let the method know the MB trigger type (V0 or T0).
   if ( triggerType.Contains("7-") ) triggerType = "7";
   else if ( triggerType.Contains("8-") ) triggerType = "8";
   else
@@ -4563,10 +4566,10 @@ void AliAnalysisMuMu::PlotYiedWSyst(const char* triggerCluster)
   }
   
   TString path(Form("%s/%s/%s/%s",
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data()));
+                    Config()->First(Config()->EventSelectionKey(),kFALSE).Data(),
+                    Config()->First(Config()->DimuonTriggerKey(),kFALSE).Data(),
+                    Config()->First(Config()->CentralitySelectionKey(),kFALSE).Data(),
+                    Config()->First(Config()->PairSelectionKey(),kFALSE).Data()));
   
   TH1* hY = OC()->Histo(Form("/RESULTS-%s/%s",striggerCluster.Data(),path.Data()),"hJPsiYieldVSdNchdEtaRelative");
   if ( !hY )
@@ -4645,17 +4648,24 @@ void AliAnalysisMuMu::ComputeJpsiYield( Bool_t relative, const char* fNormType, 
     return;
   }
 
+  TString dimuonTriggerClassName = Config()->First(Config()->DimuonTriggerKey(),kFALSE);
+  TString centralitySelection = Config()->First(Config()->CentralitySelectionKey(),kFALSE);
+  TString pairSelection = Config()->First(Config()->PairSelectionKey(),kFALSE);
+  
+  //Path to get/store integrated results from Mergeable Collection
   TString intPath(Form("%s/%s/%s/%s",
-                    sevSelInt.Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                    First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to store integrated result in Mergeable Collection
-
+                       sevSelInt.Data(),
+                       dimuonTriggerClassName.Data(),
+                       centralitySelection.Data(),
+                       pairSelection.Data()));
+  
+  //Path to get/store differential results from Mergeable Collection
   TString diffPath(Form("%s/%s/%s/%s",
-                       sevSelDiff.Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to store differential result in Mergeable Collection
+                        sevSelDiff.Data(),
+                        dimuonTriggerClassName.Data(),
+                        centralitySelection.Data(),
+                        pairSelection.Data()));
+
 
   Double_t bR = 0.0593; // BR(JPsi->mu+mu-)
   Double_t bRerror = 0.0006 ;
@@ -4923,17 +4933,24 @@ void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* evSelInt, cons
     return;
   }
   
+  TString dimuonTriggerClassName = Config()->First(Config()->DimuonTriggerKey(),kFALSE);
+  TString centralitySelection = Config()->First(Config()->CentralitySelectionKey(),kFALSE);
+  TString pairSelection = Config()->First(Config()->PairSelectionKey(),kFALSE);
+  
+  //Path to get/store integrated results from Mergeable Collection
   TString intPath(Form("%s/%s/%s/%s",
                        sevSelInt.Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                       First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to store integrated result in Mergeable Collection
-
+                       dimuonTriggerClassName.Data(),
+                       centralitySelection.Data(),
+                       pairSelection.Data()));
+  
+  //Path to get/store differential results from Mergeable Collection
   TString diffPath(Form("%s/%s/%s/%s",
                         sevSelDiff.Data(),
-                        First(Config()->GetList(AliAnalysisMuMuConfig::kDimuonTriggerList,kFALSE)).Data(),
-                        First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data(),
-                        First(Config()->GetList(AliAnalysisMuMuConfig::kPairSelectionList,kFALSE)).Data())); //Path to store differential result in Mergeable Collection
+                        dimuonTriggerClassName.Data(),
+                        centralitySelection.Data(),
+                        pairSelection.Data()));
+  
   
   if ( relative ) AliWarning("The ratio is computed from the mean values of subresults (ymean/ymean_int) and is not the mean value of subresults ratios");
 
@@ -5005,21 +5022,9 @@ void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* evSelInt, cons
   TH1* hmPt;
   if ( relative )
   {
-//    TString path2(Form("/%s/%s/%s",
-//                       First(Config()->GetList(AliAnalysisMuMuConfig::kEventSelectionList,kFALSE)).Data(),
-//                       First(Config()->GetList(AliAnalysisMuMuConfig::kMinbiasTriggerList,kFALSE)).Data(),
-//                       First(Config()->GetList(AliAnalysisMuMuConfig::kCentralitySelectionList,kFALSE)).Data()));
-//
-//    TH1* hdNch = OC()->Histo(path2.Data(),swhat.Data());
-    
-    
     
     hmPt = new TH1D(Form("hJPsiMeanPtVS%sRelative",swhat.Data()),Form("Relative J/#psi mean p_{T} vs %s;%s;<p_{T}^{J/#psi}>/<p_{T}^{J/#psi}_{int}>",swhat.Data(),swhat.Data())
                     ,size-1,axis);
-
-    //
-    //    ptInt = result->GetValue("MeanPtJPsi",sres.Data());
-    //    ptIntError = result->GetErrorStat("MeanPtJPsi",sres.Data());
     
   }
   else
@@ -5027,10 +5032,6 @@ void AliAnalysisMuMu::ComputeJpsiMPt(Bool_t relative, const char* evSelInt, cons
     hmPt = new TH1D(Form("hJPsiMeanPtVS%s",swhat.Data()),Form("J/#psi <p_{T}> vs %s;%s;<p_{T}>^{J/#psi}",swhat.Data(),swhat.Data())
                     ,size-1,axis);
 
-    //    hmPt = static_cast<TH1D*>(hrmPt->Clone("hJPsiMeanPtVSdNchdEta"));
-    //    hmPt->SetTitle("J/#psi mean p_{T} vs dN_{ch}/d#eta");
-    //    hmPt->GetXaxis()->SetTitle("dN_{ch}/d#eta");
-    //    hmPt->GetYaxis()->SetTitle("<p_{T}^{J/#psi}>");
   }
   
   delete axis;
@@ -5586,5 +5587,28 @@ void AliAnalysisMuMu::SetConfig(const AliAnalysisMuMuConfig& config)
   /// (re)set the config
   delete fConfig;
   fConfig = new AliAnalysisMuMuConfig(config);
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisMuMu::SetParticleNameFromFileName(const char* filename)
+{
+  /// Try to get the simulated particle name from the filename
+  
+  TString sFilename(filename);
+  
+  if ( sFilename.Contains("JPSI",TString::kIgnoreCase) )
+  {
+    SetParticleName("JPsi");
+  }
+  else if ( sFilename.Contains("PSIP",TString::kIgnoreCase) )
+  {
+    SetParticleName("PsiP");
+  }
+  else
+  {
+    AliError("Unknown Particle Name in simulation");
+    return kFALSE;
+  }
+  return kTRUE;
 }
 

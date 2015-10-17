@@ -40,11 +40,13 @@ class AliAnalysisMuMu : public TObject, public TQObject
 {
 
 public:
-  
-  AliAnalysisMuMu(const char* filename="LHC12c_muons_AOD000_000179687.saf.root",
+
+  AliAnalysisMuMu(const char* filename, AliAnalysisMuMuConfig& config);
+
+  AliAnalysisMuMu(const char* filename,
                   const char* associatedSimFileName="",
                   const char* associatedSimFileName2="",
-                  const char* beamYear="pPb2013");
+                  const char* configurationFile="");
   
   virtual ~AliAnalysisMuMu();
   
@@ -221,13 +223,13 @@ public:
 private:
   AliAnalysisMuMu(const AliAnalysisMuMu& rhs); // not implemented on purpose
   AliAnalysisMuMu& operator=(const AliAnalysisMuMu& rhs); // not implemented on purpose
-  
+
+  Bool_t SetParticleNameFromFileName(const char* filename);
+
   void ShowList(const char* title, const TString& list, const char separator=',') const;
 
   TFile* ReOpen(const char* filename, const char* mode) const;
 
-  TString First(const TString& list) const;
-  
   void GetParametersFromMC(TString& fitType, const char* pathCentrPairCut, const char* spectraName, AliAnalysisMuMuBinning::Range* bin) const;
   void GetParametersFromResult(TString& fitType, AliAnalysisMuMuJpsiResult* minvResult) const;
 
