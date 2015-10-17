@@ -87,7 +87,7 @@ ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
-fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE), 
 fkTrigger(AliVEvent::kMB),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -139,6 +139,7 @@ fEvSel_INELgtZERO(0),
 fEvSel_HasNoInconsistentVertices(0), 
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
+fNDebug(13),
 //Histos
 fHistEventCounter(0),
 oadbMultSelection(0),
@@ -153,7 +154,7 @@ fInput(0)
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
-fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0),
+fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkTrigger(AliVEvent::kMB),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -205,6 +206,7 @@ fEvSel_INELgtZERO(0),
 fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
+fNDebug(13),
 //Histos
 fHistEventCounter(0),
 oadbMultSelection(0),
@@ -212,6 +214,9 @@ fMultCuts(0),
 fSelection(0),
 fInput(0)
 {
+    
+    for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
+    
     DefineOutput(1, TList::Class()); // Event Counter Histo
     if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
 }
@@ -359,6 +364,13 @@ void AliMultSelectionTask::UserCreateOutputObjects()
             fTreeEvent->Branch(fInput->GetVariable(iVar)->GetName(), &fInput->GetVariable(iVar)->GetRValueInteger(), Form("%s/I",fInput->GetVariable(iVar)->GetName()) );
         }
     }
+    
+    if( fkDebug ){
+        //Fixme: Save first 5 quantiles, should be enough for debugging
+        for ( Int_t iq=0; iq<5; iq++){
+            fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
+        }
+    }
 
     //------------------------------------------------
     // Set up objects
@@ -412,6 +424,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     // Main loop
     // Called for each event
 
+    Bool_t lVerbose = kFALSE ;
+    
     //Debugging / Memory usage tests
     //gObjectTable->Print();
     
@@ -439,25 +453,29 @@ void AliMultSelectionTask::UserExec(Option_t *)
     // Connect to the InputEvent
     // Appropriate for ESD analysis ..
 
+    if(lVerbose) Printf("Casting AliVEvent...");
+    
     lVevent = dynamic_cast<AliVEvent*>( InputEvent() );
     if (!lVevent) {
         AliWarning("ERROR: ESD / AOD event not available \n");
         return;
     }
-
+    if(lVerbose) Printf("Casting AliVVZERO...");
+    
     //Get VZERO Information for multiplicity later
     AliVVZERO* lVV0 = lVevent->GetVZEROData();
     if (!lVV0) {
         AliError("AliVVZERO not available");
         return;
     }
+    if(lVerbose) Printf("Casting AliVAD...");
     //Get AD Multiplicity Information
     AliVAD *lVAD = lVevent->GetADData();
     if(!lVAD) {
         AliWarning("ERROR:lVAD not available\n");
 
     }
-
+    if(lVerbose) Printf("Starting...");
     fRunNumber = lVevent->GetRunNumber();
     Double_t lMagneticField = -10;
     lMagneticField = lVevent->GetMagneticField( );
@@ -476,8 +494,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
     // Done Via one-line functions
     // (static if possible) 
     //------------------------------------------------
-    
-    fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent,fkTrigger);
+    if(lVerbose) Printf("Doing Event Selections...");
+    fEvSel_Triggered                 = IsSelectedTrigger                   (lVevent, fkTrigger);
     fEvSel_IsNotPileup               = IsNotPileupSPD                      (lVevent);
     fEvSel_IsNotPileupInMultBins     = IsNotPileupSPDInMultBins            (lVevent);
     fEvSel_IsNotPileupMV             = IsNotPileupMV                       (lVevent);
@@ -501,7 +519,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //===============================================
     // End Event Selection Variables Section
     //===============================================
-    
+    if(lVerbose) Printf("Doing Multiplicity Calculations...");
     //------------------------------------------------
     // Multiplicity Information from AD
     //------------------------------------------------
@@ -682,7 +700,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fZncFired = kFALSE;
     fZpaFired = kFALSE;
     fZpcFired = kFALSE;
-
+    if(lVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
         //Standard GetReferenceMultiplicity Estimator (0.5 and 0.8)
@@ -750,15 +768,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //===============================================
     // End part which requires AOD/ESD separation
     //===============================================
-
-    //Event-level fill
-    if ( fkCalibration ) {
-        //Pre-filter on triggered (kMB) events for saving info
-        if( !fkFilterMB || (fkFilterMB && fEvSel_Triggered) ) {
-            fTreeEvent->Fill() ;
-        }
-    }
-
+    if(lVerbose) Printf("Add info if asked...");
     if ( fkAddInfo ) { //Master switch for users
         //===============================================
         // Compute Percentiles
@@ -781,7 +791,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             lThisCalibHistoName = Form("hCalib_%i_%s",fRunNumber,fSelection->GetEstimator(iEst)->GetName());
             lThisCalibHisto = oadbMultSelection->GetCalibHisto( lThisCalibHistoName );
             lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( fSelection->GetEstimator(iEst)->GetValue() ));
-
+            
             //cleanup: discard events according to criteria stored in OADB object
             //Check Selections as they are in the fMultSelectionCuts Object
             if( fMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
@@ -792,6 +802,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
             if( fMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
 
             fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
+            
+            if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile; //Debug, please
         }
 
         //Add to AliVEvent
@@ -800,6 +812,15 @@ void AliMultSelectionTask::UserExec(Option_t *)
             fkAttached = kTRUE;
         }
     }
+    
+    //Event-level fill
+    if ( fkCalibration ) {
+        //Pre-filter on triggered (kMB) events for saving info
+        if( !fkFilterMB || (fkFilterMB && fEvSel_Triggered) ) {
+            fTreeEvent->Fill() ;
+        }
+    }
+    
     // Post output data.
     PostData(1, fListHist);
     if ( fkCalibration ) PostData(2, fTreeEvent);

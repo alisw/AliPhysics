@@ -80,6 +80,8 @@ public:
     void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
     void SetAddInfo      ( Bool_t lVar ) { fkAddInfo     = lVar; } ;
     void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
+    void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
+    void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
     
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -98,7 +100,8 @@ private:
     Bool_t fkCalibration; //if true, save Calibration object
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
-    Bool_t fkAttached; //if true, has already attached to ESD (AOD)
+    Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
     
     //Trigger selection
     AliVEvent::EOfflineTriggerTypes fkTrigger; //kMB, kINT7, etc as needed
@@ -177,7 +180,10 @@ private:
     Bool_t   fZpcFired;
     
     Int_t    fNTracks;             //!  no. tracks
-    Int_t fCurrentRun; 
+    Int_t fCurrentRun;
+    
+    Float_t fQuantiles[100]; //! percentiles
+    Int_t fNDebug; // number of percentiles
 
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!
