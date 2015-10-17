@@ -331,11 +331,13 @@ Int_t AliTPCtracker::GetRowNumber(const AliTPCseed* t) const
   // last row of the seed or row corresponding to x
   int row = t->GetRow();
   int rowX = GetRowNumber(t->GetX());
+  /*
   if (row!=rowX) {
     printf("MISMATCH\n");
     printf("GetROW: %d %d %f %s\n",row,rowX,t->GetX(),row==rowX ? "":"!!!!!!!!!**********!!!!!!!!!!!************!!!!!!!!!!!");
   }
-  return (row<0||row>=158) ? GetRowNumber(t->GetX()) : row;
+  */
+  return (row<0||row>158) ? GetRowNumber(t->GetX()) : row;
 }
 
 Double_t  AliTPCtracker::GetPadPitchLength(Double_t x) const
