@@ -21,7 +21,7 @@
 #include "AliTPCclusterMI.h"
 #include "AliTPCtrackerSector.h"
 #include "AliESDfriend.h"
-
+#include "AliTPCseed.h"
 
 
 class TFile;
@@ -195,6 +195,7 @@ private:
    inline Double_t  GetXrow(Int_t row) const;
    inline Double_t  GetMaxY(Int_t row) const;
    inline Int_t GetRowNumber(Double_t x) const;
+   inline Int_t GetRowNumber(const AliTPCseed* seed) const;
    Int_t GetRowNumber(Double_t x[3]) const;
    inline Double_t GetPadPitchLength(Double_t x) const;
    inline Double_t GetPadPitchLength(Int_t row) const;
@@ -321,7 +322,20 @@ Double_t  AliTPCtracker::GetMaxY(Int_t row) const {
 Int_t AliTPCtracker::GetRowNumber(Double_t x) const
 {
   //
-  return (x>133.) ? fOuterSec->GetRowNumber(x)+fInnerSec->GetNRows():fInnerSec->GetRowNumber(x);
+  if (x<133.) return TMath::Max(fInnerSec->GetRowNumber(x),0);
+  return TMath::Min(fOuterSec->GetRowNumber(x)+fInnerSec->GetNRows(),158);
+}
+
+Int_t AliTPCtracker::GetRowNumber(const AliTPCseed* t) const
+{
+  // last row of the seed or row corresponding to x
+  int row = t->GetRow();
+  int rowX = GetRowNumber(t->GetX());
+  if (row!=rowX) {
+    printf("MISMATCH\n");
+    printf("GetROW: %d %d %f %s\n",row,rowX,t->GetX(),row==rowX ? "":"!!!!!!!!!**********!!!!!!!!!!!************!!!!!!!!!!!");
+  }
+  return (row<0||row>=158) ? GetRowNumber(t->GetX()) : row;
 }
 
 Double_t  AliTPCtracker::GetPadPitchLength(Double_t x) const
