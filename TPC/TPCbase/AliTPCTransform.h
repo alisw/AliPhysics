@@ -134,14 +134,14 @@ inline void AliTPCTransform::RotateToSectorDown(double *x, int& idROC)
 inline int AliTPCTransform::SectorUp(int idROC)
 {
   // sector+1
-  return idROC + ((idROC%18)==17) ? -17 : 1;
+  return idROC + (((idROC%18)==17) ? -17 : 1);
 }
 
 //_________________________________________________
 inline int AliTPCTransform::SectorDown(int idROC)
 {
   // sector-1
-  return idROC += ((idROC%18)== 0) ?  17 : -1; // change to the lower sector
+  return idROC + (((idROC%18)== 0) ?  17 : -1); // change to the lower sector
 }
 
 
