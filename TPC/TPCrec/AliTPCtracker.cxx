@@ -211,15 +211,10 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
   UInt_t i = track->GetCurrentClusterIndex1();
 
   Int_t sec=(i&0xff000000)>>24; 
-  //Int_t row = (i&0x00ff0000)>>16; 
-  track->SetRow((i&0x00ff0000)>>16);
+  Int_t row = (i&0x00ff0000)>>16; 
+  if (sec>=fkParam->GetNInnerSector()) row += fkParam->GetNRowLow(); 
+  track->SetRow(row);
   track->SetSector(sec);
-  //  Int_t index = i&0xFFFF;
-  int row = track->GetRow();
-  if (sec>=fkParam->GetNInnerSector()) {
-    row += fkParam->GetNRowLow();
-    track->SetRow(row);
-  }
   track->SetClusterIndex2(row, i);  
   //track->fFirstPoint = row;
   //if ( track->fLastPoint<row) track->fLastPoint =row;
@@ -231,9 +226,6 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
   if (track->GetLastPoint()<row) 
     track->SetLastPoint(row);
   
-  //RS  track->SetClusterPointer(row,c);  
-  //
-
   Double_t angle2 = track->GetSnp()*track->GetSnp();
   //
   //SET NEW Track Point
@@ -610,6 +602,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       //      pt->PropagateTo(fkParam->GetInnerRadiusLow());
       if (pt->GetKinkIndex(0)<=0){  //don't propagate daughter tracks 
 	pt->PropagateTo(fkParam->GetInnerRadiusLow());
+	pt->SetRow(0); // RS: memorise row
       }
  
       if (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8){
@@ -2571,7 +2564,7 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
       }
       //
       t.SetCurrentCluster(cl); 
-      t.SetRow(nr);
+      t.SetRow(nr); // RS: memorise row
       Int_t accept = AcceptCluster(&t,t.GetCurrentCluster());
       if ((tpcindex&0x8000)==0) accept =0;
       if (accept<3) { 
@@ -2677,7 +2670,7 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
   }  
   if (cl) {
     t.SetCurrentCluster(cl); 
-    t.SetRow(nr);
+    //    t.SetRow(nr); //RS: memorise row | already set at propagation
     if (fIteration==2&&cl->IsUsed(10)) return 0; 
     Int_t accept = AcceptCluster(&t,t.GetCurrentCluster());
     if (fIteration==2&&cl->IsUsed(11)) {
@@ -2763,29 +2756,19 @@ Int_t AliTPCtracker::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   t.SetCurrentCluster(0);
   t.SetCurrentClusterIndex1(-3);   
    
-  Double_t xt=t.GetX();
-  Int_t     row = GetRowNumber(xt)-1; 
+  Int_t     row = (fAccountDistortions ? GetRowNumber(&t):GetRowNumber(t.GetX()))-1;  //RS: with distortions cannot rely on X
   Double_t  ymax= GetMaxY(nr);
 
   if (row < nr) return 1; // don't prolongate if not information until now -
-//   if (TMath::Abs(t.GetSnp())>0.9 && t.GetNumberOfClusters()>40. && fIteration!=2) {
-//     t.fRemoval =10;
-//     return 0;  // not prolongate strongly inclined tracks
-//   } 
-//   if (TMath::Abs(t.GetSnp())>0.95) {
-//     t.fRemoval =10;
-//     return 0;  // not prolongate strongly inclined tracks
-//   }// patch 28 fev 06
 
   const double kRoadY = 1., kRoadZ = 1.;
 
   Double_t x= GetXrow(nr);
+  if (fAccountDistortions && !DistortX(&t,x,nr)) return 0; // RS: if needed, account distortion
+  //
   Double_t y,z;
-  //t.PropagateTo(x+0.02);
-  //t.PropagateTo(x+0.01);
-  if (!t.PropagateTo(x)){
-    return 0;
-  }
+  if (!t.PropagateTo(x)) return 0;
+  t.SetRow(nr); //RS: memorise row
   //
   y=t.GetY();
   z=t.GetZ();
@@ -2800,11 +2783,8 @@ Int_t AliTPCtracker::UpdateClusters(AliTPCseed& t,  Int_t nr) {
       if (!t.Rotate(-fSectors->GetAlpha())) 
 	return 0;
     }
-    //    if (!t.PropagateTo(x)){
-    //  return 0;
-    //}
+    t.SetRow(-1); //RS: after rotation the row is not known 
     return 1;
-    //y = t.GetY();    
   }
   //
   if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;
@@ -2823,9 +2803,7 @@ Int_t AliTPCtracker::UpdateClusters(AliTPCseed& t,  Int_t nr) {
     t.SetClusterIndex2(nr,-1); 
     return 0;
   } 
-  else
-    {
-
+  else {
       //      if (TMath::Abs(t.GetZ())<(AliTPCReconstructor::GetCtgRange()*t.GetX()+10) && (TMath::Abs(t.GetSnp())<AliTPCReconstructor::GetMaxSnpTracker())) 
       if (IsFindable(t)) t.SetNFoundable(t.GetNFoundable()+1);
       else
@@ -2926,8 +2904,8 @@ Int_t AliTPCtracker::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step, Boo
   //
   t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha()+0.0001)%fN);
     
-  Int_t first = GetRowNumber(&t);  //RS: start from last row marked
-  //Int_t first = GetRowNumber(xt); //RS:
+  Int_t first = fAccountDistortions ? GetRowNumber(&t):GetRowNumber(t.GetX());  //RS: with distortions cannot rely on X
+  //Int_t first = GetRowNumber(xt);
   if (!fromSeeds)
     first -= step;
   if (first < 0)
@@ -3716,6 +3694,7 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
     }
 
     seed->PropagateTo(fkParam->GetInnerRadiusLow());
+    seed->SetRow(0);
     seed->UpdatePoints();
     AddCovariance(seed);
     MakeESDBitmaps(seed, esd);
@@ -4277,8 +4256,8 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
         UInt_t index=kr1.GetIndex(is);
 	if (seed) {MarkSeedFree(seed); seed = 0;}
 	AliTPCseed *track = seed = new( NextFreeSeed() ) AliTPCseed(x1, ns*alpha+shift, x, c, index);
-	seed->SetRow(i1); //RS: memorise current row
 	seed->SetPoolID(fLastSeedID);
+	seed->SetRow(i1); //RS: memorise current row
 	track->SetIsSeeding(kTRUE);
 	track->SetSeed1(i1);
 	track->SetSeed2(i2);
@@ -4603,8 +4582,8 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
         UInt_t index=kr1.GetIndex(is);
 	if (seed) {MarkSeedFree(seed); seed = 0;}
 	AliTPCseed *track = seed = new( NextFreeSeed() ) AliTPCseed(x1, ns*alpha+shift, x, c, index);
-	seed->SetRow(i1); //RS: memorise current row
 	seed->SetPoolID(fLastSeedID);
+	seed->SetRow(i1); //RS: memorise current row
 	track->SetIsSeeding(kTRUE);
 	track->SetSeed1(i1);
 	track->SetSeed2(i2);
@@ -4902,9 +4881,8 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       index=kr1.GetIndex(is);
       if (seed) {MarkSeedFree( seed ); seed = 0;}
       AliTPCseed *track = seed = new( NextFreeSeed() ) AliTPCseed(x1, sec*alpha+shift, x, c, index);
-      seed->SetRow(i1-1); //RS: memorise current row
       seed->SetPoolID(fLastSeedID);
-      
+      seed->SetRow(i1-1); //RS: memorise current row      
       track->SetIsSeeding(kTRUE);
 
       nin++;      
@@ -5130,7 +5108,7 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       if (found<3) continue;       
       //
       Double_t x2,y2,z2;
-      x2 = kcm->GetZ();
+      x2 = kcm->GetX();
       y2 = kcm->GetY();
       z2 = kcm->GetZ();
       //
@@ -5179,9 +5157,8 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       index=kr1.GetIndex(is);
       if (seed) {MarkSeedFree( seed ); seed = 0;}
       AliTPCseed *track = seed = new( NextFreeSeed() ) AliTPCseed(x1, sec*alpha+shift, x, c, index);
-      seed->SetRow(i1-1); // RS: memorise current row
       seed->SetPoolID(fLastSeedID);
-      
+      seed->SetRow(i1-1); // RS: memorise current row      
       track->SetIsSeeding(kTRUE);
 
       nin++;      
@@ -5734,8 +5711,8 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	//kr0.GetIndex(is);
 	if (seed) {MarkSeedFree( seed ); seed = 0;}
 	AliTPCseed *track = seed = new( NextFreeSeed() ) AliTPCseed(x1,sec*alpha+shift,x,c,index);
-	seed->SetRow(rowMax); //RS: memorise row of x1
 	seed->SetPoolID(fLastSeedID);
+	seed->SetRow(rowMax); //RS: memorise row of x1
 	track->SetIsSeeding(kTRUE);
 	Int_t rc=FollowProlongation(*track, i2);	
 	if (constrain) track->SetBConstrain(1);
@@ -5884,8 +5861,8 @@ AliTPCseed *AliTPCtracker::MakeSeed(AliTPCseed *const track, Float_t r0, Float_t
   
   //  Int_t row1 = fSectors->GetRowNumber(x2[0]);
   AliTPCseed *seed = new( NextFreeSeed() )  AliTPCseed(x2[0], sec2*fSectors->GetAlpha()+fSectors->GetAlphaShift(), x, c, 0);
-  seed->SetRow(pp2); //RS: memorise current row
   seed->SetPoolID(fLastSeedID);
+  seed->SetRow(pp2); //RS: memorise current row
   //  Double_t y0,z0,y1,z1, y2,z2;
   //seed->GetProlongation(x0[0],y0,z0);
   // seed->GetProlongation(x1[0],y1,z1);
@@ -6006,8 +5983,8 @@ AliTPCseed *AliTPCtracker::ReSeed(const AliTPCseed *track, Float_t r0, Float_t r
   
   //  Int_t row1 = fSectors->GetRowNumber(xyz[2][0]);
   AliTPCseed *seed=new( NextFreeSeed() ) AliTPCseed(xyz[2][0], sec[2]*fSectors->GetAlpha()+fSectors->GetAlphaShift(), x, c, 0);
-  seed->SetRow(row[2]); //RS: memorise row
   seed->SetPoolID(fLastSeedID);
+  seed->SetRow(row[2]); //RS: memorise row
   seed->SetLastPoint(row[2]);
   seed->SetFirstPoint(row[2]);  
   return seed;
@@ -6157,8 +6134,8 @@ AliTPCseed *AliTPCtracker::ReSeed(AliTPCseed *track,Int_t r0, Bool_t forward)
   
   //  Int_t row1 = fSectors->GetRowNumber(xyz[2][0]);
   AliTPCseed *seed=new( NextFreeSeed() )  AliTPCseed(xyz[2][0], sec[2]*fSectors->GetAlpha()+fSectors->GetAlphaShift(), x, c, 0);
-  seed->SetRow(row[2]); //RS: memorise row
   seed->SetPoolID(fLastSeedID);
+  seed->SetRow(row[2]); //RS: memorise row
   seed->SetLastPoint(row[2]);
   seed->SetFirstPoint(row[2]);  
   for (Int_t i=row[0];i<row[2];i++){
@@ -8135,11 +8112,11 @@ void AliTPCtracker::Tracking(TObjArray * arr)
   //
   // tracking of the seeds
   //
-
   fSectors = fOuterSec;
   ParallelTracking(arr,150,63);
   fSectors = fOuterSec;
   ParallelTracking(arr,63,0);
+
 }
 
 TObjArray * AliTPCtracker::Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy, Int_t dsec)
@@ -8150,6 +8127,9 @@ TObjArray * AliTPCtracker::Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t 
   static TObjArray arrTracks;
   TObjArray * arr = &arrTracks;
   // 
+  //  AliInfoF(">> %d | s:%d i1:%d i2:%d dy:%f dsec:%d",arr->GetEntriesFast(),seedtype,i1,i2,dy,dsec); // RSTMP
+
+
   fSectors = fOuterSec;
   TStopwatch timer;
   timer.Start();
@@ -8175,7 +8155,7 @@ TObjArray * AliTPCtracker::Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t 
   if (fDebug>0){
     timer.Print();
   }
-
+  //  AliInfoF("<< %d | s:%d i1:%d i2:%d dy:%f dsec:%d",arr->GetEntriesFast(),seedtype,i1,i2,dy,dsec); // RSTMP
   return arr;
 }
 
@@ -9317,7 +9297,7 @@ void  AliTPCtracker::TrackFollowingHLT(TObjArray *const arr )
 	    //cout<<"can't propagate to x="<<x<<endl; 
 	    break;
 	  }    
-
+	  t.SetRow(nr); // RS: memorise row
 	  if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()){
 	    //cout<<"Snp is too big: "<<t.GetSnp()<<endl; 
 	    break;
@@ -9389,7 +9369,7 @@ void  AliTPCtracker::TrackFollowingHLT(TObjArray *const arr )
 	    //cout<<"Snp is too big: "<<t.GetSnp()<<endl; 
 	    break;
 	  } 	
-	  
+	  t.SetRow(nr); //RS: memorise row
 	  //cout<<"fit: row "<<nr<<" ind = "<<clusterIndex[nr]<<endl;
 
 	  t.SetCurrentClusterIndex1(clusterIndex[nr]);
