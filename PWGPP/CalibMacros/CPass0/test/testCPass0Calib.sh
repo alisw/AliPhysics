@@ -1,5 +1,11 @@
 #
-# Input test sample defintion
+# This code should be in $ALICE_PHYSICS/../src/PWGPP/CalibMacros/CPass0/testCPass0Calib.sh
+# To test:
+#   a.) code is not crashing
+#   b.) CPU time and VM usage (using AliSysInfo.h)
+#   c.) some physic invariants (?)
+#
+# 0.) Input test sample defintion
 #
 inputESD="/alice/data/2015/LHC15f/000226495/pass2/15000226495029.919/AliESDs.root"
 inputFriend="/alice/data/2015/LHC15f/000226495/pass2/15000226495029.919/AliESDfriends.root"
