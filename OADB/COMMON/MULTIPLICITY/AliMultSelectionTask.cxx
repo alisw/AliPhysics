@@ -367,7 +367,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     
     if( fkDebug ){
         //Fixme: Save first 5 quantiles, should be enough for debugging
-        for ( Int_t iq=0; iq<5; iq++){
+        for ( Int_t iq=0; iq<fNDebug; iq++){
             fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
         }
     }
