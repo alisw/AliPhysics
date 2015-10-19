@@ -58,7 +58,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCV0ROOTObjects(AliAODMCParticle *mcv0part, TClonesArray *mcArray);
-  void MakeMCAnalysis(TClonesArray *mcArray);
+  Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   void SelectV0( const AliVEvent *event,Int_t nV0,Int_t &nSeleV0, Bool_t *seleV0Flags, TClonesArray *mcArray);
@@ -73,6 +73,8 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
   Bool_t GetWriteMCVariableTree() const {return fWriteMCVariableTree;}
+  void SetMCEventType(Int_t theevt) {fMCEventType = theevt;}
+  Bool_t GetMCEventType() const {return fMCEventType;}
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
@@ -154,6 +156,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
+	Int_t fMCEventType; /// MC eventtype to analyze 1: ccbar 2: bbbar (rest is assigned to 1 or 2  with 50% prob)
 
   //--------------------- My histograms ------------------
   THnSparse* fHistoEleLambdaMass;         //!<! e-Lambda mass spectra
@@ -424,6 +427,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistonEvtvsRunNumber;//!<! nevt vs runnumber
 	TH1F *fHistonElevsRunNumber;//!<! nele vs runnumber
 	TH1F *fHistonLambdavsRunNumber;//!<! nlambda vs runnumber
+	TH1F *fHistoMCEventType;//!<! MC even type
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -444,7 +448,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,12); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,13); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
