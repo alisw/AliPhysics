@@ -1,14 +1,11 @@
 ///
-/// Example macro to run the AliAnalysisTaskMuMu task
+/// Example macro to run the AliAnalysisTaskMuMu task.
+/// That's just an example. Feel free to use your own version of it...
 ///
 /// Typical usage is :
 ///
 /// > root
 /// root[] .x runMuMu.C(dataset,issimulation,"username@aaf.domain")
-///
-/// or
-///
-/// root[] .x runMuMu.C(dataset,issimulation,"pod://") on a VAF
 ///
 /// Note that you must take care of the default Root version your packages use.
 /// If you need to change it you must use (from a separate session) :
@@ -21,30 +18,48 @@
 ///
 /// You have to do this only once, as this Root version will be
 /// remembered by the AF until you change it
-///
-/// This example assumes that you are working with AliPhysics and 
-/// a custom PAR file for the PWGmuon library. If you just want to use
-/// PWGmuon from the AliPhysics version you chose, just comment out
-/// line 45 in SetupLibraries method.
-///
-/// You also have to change (or at least x-check) the list of triggers 
-/// used (see GetTriggerList method below)
+/// Before running it, please add/modify the triggers list in the GetTriggerList function,
+/// and, if running with your own version of some packages, the packages vector
+/// in the SetupLibraries function.
 ///
 /// @author L. Aphecetche
 ///
 
 //______________________________________________________________________________
-Bool_t SetupLibraries(Bool_t local, Bool_t debug)
+Bool_t SetupLibraries(Bool_t local, Bool_t debug, const char* mainPackage)
 {
   std::vector<std::string> packages;
   
+  // packages.push_back("PWGmuon"); // uncomment this if you want to use your version of that package
+  
   if (!local)
   {
-    packages.push_back("VO_ALICE@AliPhysics::v5-06-39-01");
+    TList list;
+    
+    list->Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
+    list.Add(new TNamed("ALIROOT_MODE","base"));
+    
+    TString extraLibs;
+    
+    if ( !packages.empty() )
+    {
+      for ( std::vector<std::string>::size_type i = 0; i < packages.size(); ++i )
+      {
+        extraLibs += packages[i];
+        extraLibs += ":";
+      }
+    }
+    
+    extraLibs.RemoveAll(TString::kBoth,':');
+    
+    list.Add(new TNamed("ALIROOT_EXTRA_LIBS",extraLibs.Data()));
+    
+    if (gProof->EnablePackage(mainPackage,&list))
+    {
+      std::cout << "Enable of main package failed" << std::endl;
+      return kFALSE;
+    }
   }
-  packages.push_back("PWGmuon"); // comment this line out to use the AliPhysics version of PWGmuon
-  
-  Bool_t ok(kTRUE);
   
   for ( std::vector<std::string>::size_type i = 0; i < packages.size(); ++i )
   {
@@ -58,31 +73,37 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug)
       }
       if (gSystem->Load(Form("lib%s",package.c_str()))<0)
       {
-        ok = kFALSE;
+        return kFALSE;
       }
     }
     else
     {
       if ( debug )
       {
-        std::cout << "Uploading/enabling PAR file " << package << std::endl;
-      }
-
-      if ( gProof->UploadPackage(Form("$ALICE_PHYSICS/PARfiles/%s",package.c_str())) )
-      {
-        ok = kFALSE;
+        std::cout << "Uploading PAR file " << package << std::endl;
       }
       
-      if ( gProof->EnablePackage(package.c_str(),"",kFALSE) )
+      if (gProof->UploadPackage(Form("$ALICE_PHYSICS/PARfiles/%s",package.c_str())))
       {
-        ok = kFALSE;
+        std::cout << "Upload failed" << std::endl;
+        return kFALSE;
       }
-    }
-    
-    if (!ok)
-    {
-      std::cerr << "Problem with package " << package.c_str() << std::endl;
-      return kFALSE;
+      
+      
+      
+      
+      if ( debug )
+      {
+        std::cout << "Enabling PAR file " << package << std::endl;
+      }
+      
+      Int_t rv = gProof->EnablePackage(package.c_str(),(TList*)(0x0),kFALSE);
+      
+      if (rv)
+      {
+        std::cout << "Enable failed" << std::endl;
+        return kFALSE;
+      }
     }
   }
   
@@ -92,16 +113,16 @@ Bool_t SetupLibraries(Bool_t local, Bool_t debug)
 //______________________________________________________________________________
 TChain* CreateLocalChain(const char* filelist, const char* treeName)
 {
-	TChain* c = new TChain(treeName);
-	
-	char line[1024];
-	
-	ifstream in(filelist);
-	while ( in.getline(line,1024,'\n') )
-	{
-		c->Add(line);
-	}
-	return c;
+  TChain* c = new TChain(treeName);
+  
+  char line[1024];
+  
+  ifstream in(filelist);
+  while ( in.getline(line,1024,'\n') )
+  {
+    c->Add(line);
+  }
+  return c;
 }
 
 //______________________________________________________________________________
@@ -112,34 +133,34 @@ TString GetInputType(const TString& sds, TProof* p)
   // Feel free to update this method to fits your needs !
   //
   
-   if (sds.Length()==0 ) 
+  if (sds.Length()==0 )
   {
-     if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
-     {
-       return "ESD";
-     }
-     else if ( gSystem->AccessPathName("list.aod.txt") == kFALSE )
-     {
-       return "AOD";
-     }
-     else 
-     {
-        std::cout << "Cannot work in local mode without list.esd.txt or list.aod.txt file... Aborting" << std::endl;
-        exit(1);
-     }
+    if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
+    {
+      return "ESD";
+    }
+    else if ( gSystem->AccessPathName("list.aod.txt") == kFALSE )
+    {
+      return "AOD";
+    }
+    else
+    {
+      std::cout << "Cannot work in local mode without list.esd.txt or list.aod.txt file... Aborting" << std::endl;
+      exit(1);
+    }
   }
-
-   if (sds.Contains("SIM_JPSI")) return "AOD";
-   
-   if (sds.Contains("AOD")) return "AOD";
-   if (sds.Contains("ESD")) return "ESD";
-   
-   if ( gSystem->AccessPathName(gSystem->ExpandPathName(sds.Data())) )
-   {
-   	// dataset is not a local file so it must be a dataset name
-   	if (!p) return "NOPROOF";
-   	
-   	TFileCollection* fc = p->GetDataSet(sds.Data());
+  
+  if (sds.Contains("SIM_JPSI")) return "AOD";
+  
+  if (sds.Contains("AOD")) return "AOD";
+  if (sds.Contains("ESD")) return "ESD";
+  
+  if ( gSystem->AccessPathName(gSystem->ExpandPathName(sds.Data())) )
+  {
+    // dataset is not a local file so it must be a dataset name
+    if (!p) return "NOPROOF";
+    
+    TFileCollection* fc = p->GetDataSet(sds.Data());
     if (!fc) return "NODATASET";
     
     TIter next(fc->GetList());
@@ -147,32 +168,32 @@ TString GetInputType(const TString& sds, TProof* p)
     while ( ( fi = static_cast<TFileInfo*>(next()) ) )
     {
       TUrl url(*(fi->GetFirstUrl()));
-	  TString surl(url.GetUrl());
-	  
-	  if (surl.Contains("AOD")) return "AOD";
-	  if (surl.Contains("AliESD")) return "ESD";      
-    }      
-
-   }
-   else
-   {
-   std::cout << "Will use datasets from file " << sds.Data() << std::endl;
-   
-   // dataset is a local text file containing a list of dataset names
-   	std::ifstream in(sds.Data());
-   	char line[1014];
-   
-   	while (in.getline(line,1023,'\n'))
-   	{
-    	  TString sline(line);
-      	sline.ToUpper();
-    	if ( sline.Contains("SIM_JPSI") ) return "AOD";
-      	if ( sline.Contains("AOD") ) return "AOD";
-      	if ( sline.Contains("ESD") ) return "ESD";
-   	}
-   }
-   
-   return "BUG";   
+      TString surl(url.GetUrl());
+      
+      if (surl.Contains("AOD")) return "AOD";
+      if (surl.Contains("AliESD")) return "ESD";
+    }
+    
+  }
+  else
+  {
+    std::cout << "Will use datasets from file " << sds.Data() << std::endl;
+    
+    // dataset is a local text file containing a list of dataset names
+    std::ifstream in(sds.Data());
+    char line[1014];
+    
+    while (in.getline(line,1023,'\n'))
+    {
+      TString sline(line);
+      sline.ToUpper();
+      if ( sline.Contains("SIM_JPSI") ) return "AOD";
+      if ( sline.Contains("AOD") ) return "AOD";
+      if ( sline.Contains("ESD") ) return "ESD";
+    }
+  }
+  
+  return "BUG";
 }
 
 //______________________________________________________________________________
@@ -212,6 +233,7 @@ TString GetOutputName(const TString& sds)
     outputname.ReplaceAll("/","_");
     outputname.ReplaceAll(";","_");
     outputname.ReplaceAll("*.*","");
+    outputname.ReplaceAll("*","");
     outputname.ReplaceAll("Mode=cache","");
     outputname.ReplaceAll("Mode=remote","");
   }
@@ -223,8 +245,8 @@ TString GetOutputName(const TString& sds)
     {
       af="unknown";
       TString master(gProof->GetSessionTag());
-      if (master.Contains("nansaf")) af = "saf";
-      if (master.Contains("nansafmaster")) af = "saf3";
+      if (master.Contains("nansafmaster2")) af = "saf2";
+      if (master.Contains("nansafmaster3")) af = "saf3";
       if (master.Contains("skaf")) af = "skaf";
     }
     outputname = Form("%s.%s.root",gSystem->BaseName(sds.Data()),af.Data());
@@ -232,9 +254,9 @@ TString GetOutputName(const TString& sds)
   }
   else if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
   {
-       outputname.ReplaceAll("AOD","ESD");
+    outputname.ReplaceAll("AOD","ESD");
   }
-
+  
   cout << "outputname will be " << outputname << endl;
   return outputname;
 }
@@ -246,20 +268,25 @@ void GetTriggerList(TList& triggers, Bool_t simulations)
   //
   // Here you can use class names and/or combinations of classes and input, e.g.
   // triggers->Add(new TObjString("CINT7-B-NOPF-ALLNOTRD & 0MUL"));
-
+  
   if (!simulations)
   {
     triggers.Add(new TObjString("CMUL7-B-NOPF-MUFAST"));
-    triggers.Add(new TObjString("C0MUL-B-NOPF-MUFAST"));
-    triggers.Add(new TObjString("CINT7-B-NOPF-MUFAST"));
+    // triggers.Add(new TObjString("CMSH7-B-NOPF-MUFAST"));
+    // triggers.Add(new TObjString("C0MUL-B-NOPF-MUON"));
+    // triggers.Add(new TObjString("CINT7-B-NOPF-MUFAST"));
+    // triggers.Add(new TObjString("CMSL7-B-NOPF-MUFAST"));
+    // triggers.Add(new TObjString("CMUL7-B-NOPF-MUFAST & 0MUL"));
+    // triggers.Add(new TObjString("CMSL7-B-NOPF-MUFAST & 0MUL"));
+    // triggers.Add(new TObjString("CINT7-B-NOPF-MUFAST & 0MUL"));
   }
   else
   {
     // add here the MC-specific trigger you want to analyze (if any)
-
+    
     triggers.Add(new TObjString("CMULLO-B-NOPF-MUON"));
     triggers.Add(new TObjString("CMSNGL-B-NOPF-MUON"));
-
+    
     triggers.Add(new TObjString("ANY"));
     
     // e.g. for dpmjet simulations (at least) we have the following "triggers" :
@@ -268,7 +295,7 @@ void GetTriggerList(TList& triggers, Bool_t simulations)
 }
 
 //______________________________________________________________________________
-AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
+AliAnalysisTask* runMuMu(const char* dataset="Find;BasePath=/alice/data/2015/LHC15i/000235839/muon_calo_pass1/AOD/;FileName=AliAOD.Muons.root;Tree=/aodTree",
                          Bool_t simulations=kFALSE,
                          const char* addtask="AddTaskMuMuMinv.C",
                          const char* where="laphecet@nansafmaster2.in2p3.fr/?N")
@@ -280,17 +307,26 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
   ///
   
   // below a few parameters that should be changed less often
-  TString workers("workers=8x");
+  TString workers;
+  
+  if ( !TString(where).Contains("pod") )
+  {
+    workers = "workers=8x";
+  }
+  
+  TString saf2Package("VO_ALICE@AliPhysics::v5-06-39-01"); // only care about this if you run on SAF2
+  
   TString sds(dataset);
+  
   Bool_t baseline(kFALSE); // set to kTRUE in order to debug the AF and/or package list
   // without your analysis but with a baseline one (from the lego train)
   Bool_t debug(kFALSE);
   
   Bool_t prooflite = (strlen(where)==0) || TString(where).Contains("workers");
   Bool_t local = (sds.Length()==0);
-
+  
   TProof* p(0x0);
-
+  
   if (prooflite)
   {
     std::cout << "************* Will work in LITE mode *************" << std::endl;
@@ -301,6 +337,8 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
     std::cout << "************* Will work in LOCAL mode *************" << std::endl;
   }
   
+  TString mainPackage = saf2Package;
+  
   if ( !local )
   {
     p = TProof::Open(where,workers.Data());
@@ -309,9 +347,20 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
       std::cerr << "Cannot connect to Proof : " << where << std::endl;
       return 0x0;
     }
+    
+    TString master(gProof->GetSessionTag());
+    if (master.Contains("nansafmaster2") )
+    {
+      // dealing with a VAF, main package is the same regardless of the aliphysics version you asked
+      mainPackage = "/opt/SAF3/etc/vaf/AliceVaf.par";
+    }
+    if (master.Contains("alivaf") )
+    {
+      mainPackage = "/afs/cern.ch/alice/offline/vaf/AliceVaf.par";
+    }
   }
-   
-	if (!SetupLibraries(local,debug))
+  
+  if (!SetupLibraries(local,debug,mainPackage.Data()))
   {
     std::cerr << "Cannot setup libraries. Aborting" << std::endl;
     return 0x0;
@@ -320,13 +369,13 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
   AliAnalysisManager* mgr = new AliAnalysisManager("MuMu");
   
   AliInputEventHandler* input = GetInput(sds,p);
-
+  
   if (!input)
   {
-  	std::cerr << "Cannot get input type !" << std::endl;
-  	return 0x0;
+    std::cerr << "Cannot get input type !" << std::endl;
+    return 0x0;
   }
-
+  
   mgr->SetInputEventHandler(input);
   
   TList* triggers = new TList;
@@ -336,20 +385,25 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
   
   TString outputname = GetOutputName(sds);
   
+  TString saddtask(addtask);
+  saddtask.ReplaceAll("AddTaskMuMu","");
+  saddtask.ReplaceAll(".C","");
+  outputname.ReplaceAll(".root",Form(".%s.root",saddtask.Data()));
+  
   AliAnalysisTask* task(0x0);
-
+  
   if (!baseline)
-  {  
-  	gROOT->LoadMacro(Form("$ALICE_PHYSICS/PWG/muon/%s",addtask));
-  	task = AddTaskMuMu(outputname.Data(),triggers,"pp",simulations);
+  {
+    gROOT->LoadMacro(Form("%s",addtask));
+    task = AddTaskMuMu(outputname.Data(),triggers,"pp",simulations);
   }
   else
   {
-  	gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddTaskBaseLine.C");
-  	task = AddTaskBaseLine();
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddTaskBaseLine.C");
+    task = AddTaskBaseLine();
   }
   
-  if (!mgr->InitAnalysis()) 
+  if (!mgr->InitAnalysis())
   {
     std::cerr << "Could not InitAnalysis" << std::endl;
     return 0x0;
@@ -357,7 +411,9 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
   
   mgr->PrintStatus();
   task->Print();
-
+  
+  //  return task;
+  
   if ( !local )
   {
     mgr->StartAnalysis("proof",sds.Data());
@@ -367,7 +423,7 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
     TChain* c = 0x0;
     if ( gSystem->AccessPathName("list.esd.txt") == kFALSE )
     {
-      c = CreateLocalChain("list.esd.txt","esdTree");      
+      c = CreateLocalChain("list.esd.txt","esdTree");
     }
     else if ( gSystem->AccessPathName("list.aod.txt") == kFALSE )
     {
@@ -379,16 +435,19 @@ AliAnalysisTask* runMuMu(const char* dataset="ds.txt",
       return 0x0;
     }
     if (debug) mgr->SetNSysInfo(10);
-    if( debug) mgr->SetDebugLevel(10);
+    //    if( debug) mgr->SetDebugLevel(10);
+    TStopwatch timer;
     mgr->StartAnalysis("local",c);
+    timer.Print();
     if (debug)
     {
       mgr->ProfileTask("AliAnalysisTaskMuMu");
       if (baseline) mgr->ProfileTask("baseline");
-      AliCodeTimer::Instance()->Print();
     }
   }
-    
+  
+  AliCodeTimer::Instance()->Print();
+  
   delete triggers;
   
   return task;
