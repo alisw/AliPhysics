@@ -49,7 +49,9 @@
 #include "TStatToolkit.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCseed.h"
-
+#include "AliTPCcalibDB.h"
+#include "AliTPCTransform.h"
+#include "AliTPCRecoParam.h"
 #include "AliTPCcalibAlignInterpolation.h"
 
 const Int_t AliTPCcalibAlignInterpolation_kMaxPoints=500;
@@ -67,7 +69,7 @@ AliTPCcalibAlignInterpolation::AliTPCcalibAlignInterpolation() :
   fHisITSTRDDZ(0),   // TPC-ITS+TRD residual histograms
   fHisITSTOFDZ(0),   // TPC-ITS_TOF residual histograms
   fStreamer(0),         // calibration streamer 
-  fStreamLevel(0),      // stream level - In mode 0 only basic information needed for calibration  stored (see EStream
+  fStreamLevelTrack(0),      // stream level - In mode 0 only basic information needed for calibration  stored (see EStream
   fSyswatchStep(100),      // dump system resource information after  fSyswatchStep tracks
   fTrackCounter(0)           // processed track counter
 {
@@ -83,7 +85,7 @@ AliTPCcalibAlignInterpolation::AliTPCcalibAlignInterpolation(const Text_t *name,
   fHisITSTRDDZ(0),   // TPC-ITS+TRD residual histograms
   fHisITSTOFDZ(0),   // TPC-ITS_TOF residual histograms
   fStreamer(0),         // calibration streamer 
-  fStreamLevel(0),      // stream level - In mode 0 only basic information needed for calibration  stored (see EStream
+  fStreamLevelTrack(0),      // stream level - In mode 0 only basic information needed for calibration  stored (see EStream
   fSyswatchStep(100),      // dump system resource information after  fSyswatchStep tracks  
   fTrackCounter(0)           // processed track counter
 {
@@ -345,6 +347,9 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   // Create distortion maps out of residual histograms of ITS-TRD interpolation and TPC space points
   // JIRA ticket: https://alice.its.cern.ch/jira/browse/ATO-108
   //
+  const Double_t kMaxChi2=10;         // max track/track chi2 
+  const Double_t kMaxAlignTolerance=0.1;   // max track/track chi2 
+  
   AliESDfriend *esdFriend=static_cast<AliESDfriend*>(esdEvent->FindListObject("AliESDfriend"));
   if (!esdFriend) return;
   if (esdFriend->TestSkipBit()) return;
@@ -352,6 +357,9 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   Int_t nTracks = esdEvent->GetNumberOfTracks();  // Get number of tracks in ESD
   if (nTracks==0) return;
   if (!fStreamer) fStreamer = new TTreeSRedirector("ResidualHistos.root","recreate");
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  
+
   //
   const Int_t nPointsAlloc=AliTPCcalibAlignInterpolation_kMaxPoints; 
   const Int_t kMaxLayer=159;
@@ -360,6 +368,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   AliExternalTrackParam trackArrayTOF[kMaxLayer];
   AliExternalTrackParam trackArrayITSTRD[kMaxLayer];
   AliExternalTrackParam trackArrayITSTOF[kMaxLayer];
+  AliTPCclusterMI clusterArray[kMaxLayer];
   //
   //MakeResidualHistosInterpolation();
   //
@@ -402,7 +411,7 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     paramTOF=paramITS;
     RefitTOFtrack(friendTrack,mass,paramTOF, tofChi2, tofNCl );
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("Refitting",fTrackCounter,1,0,0);        
-    //if ((trdNCl+tofNCl)==0) continue; // - use ITS only tracks also  -should it be option?
+    if ((trdNCl+tofNCl+itsNCl)<5) continue; // - use ITS only tracks also  -should it be option?
     //
     // 3.) Propagate to TPC volume, histogram residuals to TPC clusters and dump all information to TTree
     //
@@ -414,16 +423,37 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     SortPointArray(pointarray, sortedIndex);  // space point indices sorted by radius in increasing order
     fTrackCounter++; // increase total track number
     //
+    // 3.a) Make a local copy of clusters and apply transformation
+    //
+    //
+    Bool_t backupUseComposedCorrection = transform->GetCurrentRecoParam()->GetUseComposedCorrection();
+    transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(kFALSE);
+    for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){	
+      const AliTPCclusterMI *cluster=seed->GetClusterPointer(iPoint);
+      if (!cluster){
+	clusterArray[iPoint].SetVolumeId(0);
+	continue;
+      }
+      clusterArray[iPoint]=*cluster;
+      Int_t i[1]={cluster->GetDetector()};
+      Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
+      transform->Transform(x,i,0,1);
+      clusterArray[iPoint].SetX(x[0]);
+      clusterArray[iPoint].SetY(x[1]);
+      clusterArray[iPoint].SetZ(x[2]);
+    }
+    transform->GetCurrentRecoParamNonConst()->SetUseComposedCorrection(backupUseComposedCorrection);
+    //
     // 4.) Propagate  ITS tracks outward
     // 
     //  
     Bool_t itsOK=kTRUE;
     for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){	
       trackArrayITS[iPoint].SetUniqueID(0);
-      AliTPCclusterMI *cluster=seed->GetClusterPointer(iPoint);
-      if (cluster==NULL) continue;
+      AliTPCclusterMI &cluster=clusterArray[iPoint];
+      if (cluster.GetDetector()==0) continue;
       Float_t fxyz[3] = {0};
-      cluster->GetGlobalXYZ(fxyz);
+      cluster.GetGlobalXYZ(fxyz);
       Double_t xyz[3]={fxyz[0],fxyz[1],fxyz[2]};
       Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
       paramITS.Global2LocalPosition(xyz,alpha);	
@@ -446,10 +476,11 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       trackArrayTOF[iPoint].SetUniqueID(0);
       trackArrayITSTOF[iPoint].SetUniqueID(0);
 
-      AliTPCclusterMI *cluster=seed->GetClusterPointer(iPoint);
-      if (cluster==NULL) continue;
+      AliTPCclusterMI &cluster=clusterArray[iPoint];
+      //      if (cluster==NULL) continue;
+      if (cluster.GetDetector()==0) continue;
       Float_t fxyz[3] = {0};
-      cluster->GetGlobalXYZ(fxyz);
+      cluster.GetGlobalXYZ(fxyz);
       Double_t alpha = TMath::ATan2(fxyz[1],fxyz[0]);            
 
       if (trdOK){
@@ -462,7 +493,11 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
 	  trackArrayITSTRD[iPoint]=paramTRD;
 	  trackArrayTRD[iPoint].SetUniqueID(1);
 	  trackArrayITSTRD[iPoint].SetUniqueID(1);
-	  AliTrackerBase::UpdateTrack(trackArrayITSTRD[iPoint], trackArrayITS[iPoint]);	  
+	  AliTrackerBase::UpdateTrack(trackArrayITSTRD[iPoint], trackArrayITS[iPoint]);	 
+	  Double_t chi2=trackArrayITSTRD[iPoint].GetY()-trackArrayITS[iPoint].GetY();
+	  chi2*=chi2;
+	  chi2/=trackArrayITSTRD[iPoint].GetSigmaY2()+trackArrayITS[iPoint].GetSigmaY2()+kMaxAlignTolerance;
+	  if (chi2>kMaxChi2)  trackArrayITSTRD[iPoint].SetUniqueID(0);
 	}
       }
       if (tofOK>0){
@@ -475,20 +510,27 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
 	  trackArrayITSTOF[iPoint]=paramTOF;
 	  trackArrayTOF[iPoint].SetUniqueID(1);
 	  trackArrayITSTOF[iPoint].SetUniqueID(1);
-	  AliTrackerBase::UpdateTrack(trackArrayITSTOF[iPoint], trackArrayITS[iPoint]);	  
+	  AliTrackerBase::UpdateTrack(trackArrayITSTOF[iPoint], trackArrayITS[iPoint]);	
+	  Double_t chi2=trackArrayITSTOF[iPoint].GetY()-trackArrayITS[iPoint].GetY();
+	  chi2*=chi2;
+	  chi2/=trackArrayITSTOF[iPoint].GetSigmaY2()+trackArrayITS[iPoint].GetSigmaY2()+kMaxAlignTolerance;
+	  if (chi2>kMaxChi2)  trackArrayITSTOF[iPoint].SetUniqueID(0);
+
 	}
       }
     }
     if (fTrackCounter%fSyswatchStep==0) AliSysInfo::AddStamp("InterpolateTRD",fTrackCounter,3,0,0);  
 
-    if ( ((fStreamLevel&kStremInterpolation)>0)&&(fTrackCounter%fSyswatchStep==0)){
-      // if ((fTrackCounter%fSyswatchStep==0)){
+    if ( ((fStreamLevelTrack&kStremInterpolation)>0)&&(fTrackCounter%fSyswatchStep==0)){
+      //if ((fTrackCounter%fSyswatchStep==0)){
       for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){
-	AliTPCclusterMI *cluster=seed->GetClusterPointer(iPoint);
-	if (cluster==NULL) continue;
+	AliTPCclusterMI &cluster=clusterArray[iPoint];
+	//if (cluster==NULL) continue;
+	if (cluster.GetDetector()==0) continue;
+
 	(*fStreamer)<<"interpolation"<<
           "itrack="<<fTrackCounter<<  // total track #
-          "cluster.="<<cluster<<  // space points                                    //
+          "cluster.="<<&cluster<<  // space points                                    //
           "itsNCl="<<itsNCl<<
           "trdNCl="<<trdNCl<<
           "tofNCl="<<tofNCl<<
@@ -519,23 +561,23 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     memset( deltaTOF1.GetMatrixArray(), 0,kMaxLayer*sizeof(Float_t));
     
     for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){      
-      AliTPCclusterMI *cluster=seed->GetClusterPointer(iPoint);
-      if (cluster==NULL) continue; 
+      AliTPCclusterMI &cluster=clusterArray[iPoint];
+      if (cluster.GetDetector()==0) continue;
       if (trackArrayITS[iPoint].GetUniqueID()>0){
 	deltaITS0[counter]= Int_t(trackArrayITS[iPoint].GetY()*rounding)/rounding;
-	deltaITS1[counter]= Int_t((cluster->GetZ()-trackArrayITS[iPoint].GetZ())*rounding)/rounding;
+	deltaITS1[counter]= Int_t((cluster.GetZ()-trackArrayITS[iPoint].GetZ())*rounding)/rounding;
       }
       deltaTRD0[counter]=0;
       deltaTRD1[counter]=0;
       deltaTOF0[counter]=0;
       deltaTOF1[counter]=0;
-      if (trackArrayTRD[iPoint].GetUniqueID()>0){
+      if (trackArrayITSTRD[iPoint].GetUniqueID()>0){
 	deltaTRD0[counter]= Int_t(trackArrayITSTRD[iPoint].GetY()*rounding)/rounding;
-	deltaTRD1[counter]= Int_t((cluster->GetZ()-trackArrayITSTRD[iPoint].GetZ())*rounding)/rounding;
+	deltaTRD1[counter]= Int_t((cluster.GetZ()-trackArrayITSTRD[iPoint].GetZ())*rounding)/rounding;
       }
-      if (trackArrayTOF[iPoint].GetUniqueID()>0){
+      if (trackArrayITSTOF[iPoint].GetUniqueID()>0){
 	deltaTOF0[counter]= Int_t(trackArrayITSTOF[iPoint].GetY()*rounding)/rounding;
-	deltaTOF1[counter]= Int_t((cluster->GetZ()-trackArrayITSTOF[iPoint].GetZ())*rounding)/rounding;
+	deltaTOF1[counter]= Int_t((cluster.GetZ()-trackArrayITSTOF[iPoint].GetZ())*rounding)/rounding;
       }
       //      vecR(kMaxLayer), vecPhi(kMaxLayer), vecZ(kMaxLayer);
       vecR[counter]=trackArrayITS[iPoint].GetX();
