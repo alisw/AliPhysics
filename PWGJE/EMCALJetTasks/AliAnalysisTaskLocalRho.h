@@ -3,6 +3,9 @@
 
 // $Id$
 
+// uncomment of define externally to enable debug information
+//#define ALIANALYSISTASKLOCALRHO_DEBUG_FLAG_0
+
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
@@ -58,7 +61,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   // the cdf of the chisquare distribution is the normalized lower incomplete gamma function
   /* inline */    Double_t ChiSquareCDF(Int_t ndf, Double_t x) const { return TMath::Gamma(ndf/2., x/2.); }
   // setters - setup how to run
-  void                    SetDebugMode(Int_t d)                           {fDebug = d;}
   void                    SetCentralityClasses(TArrayI* c)                {fCentralityClasses = c;}
   void                    SetAttachToEvent(Bool_t a)                      {fAttachToEvent = a;}
   void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s;}
@@ -107,7 +109,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   virtual void            Terminate(Option_t* option);
 
  private: 
-  Int_t                   fDebug;                 // debug level (0 none, 1 fcn calls, 2 verbose)
   Bool_t                  fInitialized;           //! is the analysis initialized?
   Bool_t                  fAttachToEvent;         // attach local rho to the event
   Bool_t                  fFillHistograms;        // fill qa histograms
@@ -163,6 +164,6 @@ class AliAnalysisTaskLocalRho : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskLocalRho(const AliAnalysisTaskLocalRho&);                  // not implemented
   AliAnalysisTaskLocalRho& operator=(const AliAnalysisTaskLocalRho&);       // not implemented
 
-  ClassDef(AliAnalysisTaskLocalRho, 5);
+  ClassDef(AliAnalysisTaskLocalRho, 6);
 };
 #endif
