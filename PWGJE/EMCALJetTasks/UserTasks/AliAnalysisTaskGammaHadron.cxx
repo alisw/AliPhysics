@@ -208,8 +208,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	for(Int_t i=1; i<nbins[0]+1; i++)
 	{
 
-		change that so that the first histogram is
-		also filled. the I_nt =1 was probably done for the binwidth/center function ??
+		//change that so that the first histogram is
+		//also filled. the I_nt =1 was probably done for the binwidth/center function ??
 		//check whether the max is the
 		//same as the histogram size
 		Double_t BinWidth = fHistNoClus_ptH->GetBinWidth(i);
