@@ -64,6 +64,7 @@ AliAnalysisTaskSE(),
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
   fOnlineCorrection(kTRUE),
+  fCorrectWeights(kFALSE),
   fInterpolationType(1),
   fOneDInterpolation(0),
   fMixedChargeCut(kFALSE),
@@ -281,6 +282,7 @@ AliFourPion::AliFourPion(const Char_t *name)
   fGeneratorOnly(kFALSE),
   fTabulatePairs(kFALSE),
   fOnlineCorrection(kTRUE),
+  fCorrectWeights(kFALSE),
   fInterpolationType(1),
   fOneDInterpolation(0),
   fMixedChargeCut(kFALSE),
@@ -503,6 +505,7 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fGeneratorOnly(obj.fGeneratorOnly),
     fTabulatePairs(obj.fTabulatePairs),
     fOnlineCorrection(obj.fOnlineCorrection),
+    fCorrectWeights(obj.fCorrectWeights),
     fInterpolationType(obj.fInterpolationType),
     fOneDInterpolation(obj.fOneDInterpolation),
     fMixedChargeCut(obj.fMixedChargeCut),
@@ -671,6 +674,7 @@ AliFourPion &AliFourPion::operator=(const AliFourPion &obj)
   fGeneratorOnly = obj.fGeneratorOnly;
   fTabulatePairs = obj.fTabulatePairs;
   fOnlineCorrection = obj.fOnlineCorrection;
+  fCorrectWeights = obj.fCorrectWeights;
   fInterpolationType = obj.fInterpolationType;
   fOneDInterpolation = obj.fOneDInterpolation;
   fMixedChargeCut = obj.fMixedChargeCut;
@@ -4582,7 +4586,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
       // kT interpolation
       wgt = c0*(1-wd) + c1*wd;
       //
-      if(fCollisionType==0){
+      if(fCollisionType==0 && fCorrectWeights){
 	Float_t qInvtemp=GetQinv(track1, track2);
 	Int_t qInvIndex=int(qInvtemp/0.005);
 	if(qInvIndex>19) qInvIndex=19;

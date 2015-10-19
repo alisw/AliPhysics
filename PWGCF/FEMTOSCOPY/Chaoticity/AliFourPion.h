@@ -118,6 +118,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void Setq2CutHigh(Float_t q2h) {fq2CutHigh = q2h;}
   void SetQinvMin(Float_t qim) {fQLowerCut = qim;}
   void SetOnlineCorrection(Bool_t FC) {fOnlineCorrection = FC;}
+  void SetWeightCorrection(Bool_t wc) {fCorrectWeights = wc;}
   //
   Short_t GetCollisionType() {return fCollisionType;}
   
@@ -285,6 +286,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Bool_t fGeneratorOnly;
   Bool_t fTabulatePairs;
   Bool_t fOnlineCorrection;
+  Bool_t fCorrectWeights;
   Short_t fInterpolationType;
   Bool_t fOneDInterpolation;
   Bool_t fMixedChargeCut;
