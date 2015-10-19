@@ -84,6 +84,7 @@ public:
  virtual void InitializeArraysForCME();
  virtual void InitializeArraysForCRC2();
  virtual void InitializeArraysForFlowSPZDC();
+ virtual void InitializeArraysForFlowSPVZ();
  
  // 1.) method Init() and methods called within Init():
  virtual void Init();
@@ -112,6 +113,7 @@ public:
  virtual void BookEverythingForCME();
  virtual void BookEverythingForCRC2();
  virtual void BookEverythingForFlowSPZDC();
+ virtual void BookEverythingForFlowSPVZ();
  virtual void StoreIntFlowFlags();
  virtual void StoreDiffFlowFlags();
  virtual void StoreFlagsForDistributions();
@@ -186,6 +188,7 @@ public:
  virtual void CalculateCMEZDC();
  virtual void CalculateCRC2Cor();
  virtual void CalculateFlowSPZDC();
+ virtual void CalculateFlowSPVZ();
  // 2h.) Various
  virtual void FillVarious();
  
@@ -237,6 +240,7 @@ public:
  virtual void FinalizeCMEZDC();
  virtual void FinalizeCRC2Cor();
  virtual void FinalizeFlowSPZDC();
+ virtual void FinalizeFlowSPVZ();
  // 3h.) Various:
  virtual void FinalizeVarious();
  
@@ -260,6 +264,7 @@ public:
  virtual void GetPointersForQVec();
  virtual void GetPointersForCME();
  virtual void GetPointersForFlowSPZDC();
+ virtual void GetPointersForFlowSPVZ();
  virtual void GetPointersForVarious();
  
  // 5.) other methods:
@@ -819,6 +824,14 @@ public:
  TProfile* GetFlowSPZDCNUAPro(Int_t const c, Int_t const eg, Int_t const h, Int_t const k) const {return this->fFlowSPZDCNUAPro[c][eg][h][k];};
  void SetFlowSPZDCCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPZDCCorHist[c][eg][h] = TH;};
  TH1D* GetFlowSPZDCCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPZDCCorHist[c][eg][h];};
+ // Flow SP VZ
+ void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
+ void SetFlowSPVZCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPVZCorPro[c][eg][h] = TP;};
+ TProfile* GetFlowSPVZCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPVZCorPro[c][eg][h];};
+ void SetFlowSPVZNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h, Int_t const k) {this->fFlowSPVZNUAPro[c][eg][h][k] = TP;};
+ TProfile* GetFlowSPVZNUAPro(Int_t const c, Int_t const eg, Int_t const h, Int_t const k) const {return this->fFlowSPVZNUAPro[c][eg][h][k];};
+ void SetFlowSPVZCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowSPVZCorHist[c][eg][h] = TH;};
+ TH1D* GetFlowSPVZCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowSPVZCorHist[c][eg][h];};
 
  Int_t GetnRun() const {return this->fCRCnRun;};
  Int_t GetCRCPtnCen() const {return this->fCRCPtnCenBin;};
@@ -1377,7 +1390,7 @@ private:
 
  // Flow SP ZDC
  const static Int_t fPtDiffNBins = 20;
- const static Int_t fFlowNHarm = 5;
+ const static Int_t fFlowNHarm = 4;
  Double_t fPtDiffMinPt;
  Double_t fPtDiffMaxPt;
  TH1D *fPtDiffQRe[fFlowNHarm]; //! real part [0=pos,1=neg][0=back,1=forw][m]
@@ -1387,6 +1400,12 @@ private:
  TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][5]; //! correlation profile, [CRCBin][eg]
  TProfile *fFlowSPZDCNUAPro[fCRCMaxnCen][fFlowNHarm][5][4]; //! NUA profile, [CRCBin][eg]
  TH1D *fFlowSPZDCCorHist[fCRCMaxnCen][fFlowNHarm][5]; //! <<2'>>, [CRCBin][eg]
+
+ // Flow SP VZ
+ TList *fFlowSPVZList;    //! SPVZ List
+ TProfile *fFlowSPVZCorPro[fCRCMaxnCen][fFlowNHarm][5]; //! correlation profile, [CRCBin][eg]
+ TProfile *fFlowSPVZNUAPro[fCRCMaxnCen][fFlowNHarm][5][4]; //! NUA profile, [CRCBin][eg]
+ TH1D *fFlowSPVZCorHist[fCRCMaxnCen][fFlowNHarm][5]; //! <<2'>>, [CRCBin][eg]
 
  // Various:
  TList *fVariousList; //! list to hold various unclassified objects
