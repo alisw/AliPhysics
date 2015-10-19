@@ -47,6 +47,10 @@ class AliT0CalibTimeEq: public TNamed {
   Float_t GetOrA () {return fCFDvalue[0][2];};
   void SetOrC(Float_t mean=0) {  fCFDvalue[1][2] = mean; };
   Float_t GetOrC () {return fCFDvalue[1][2];};
+ 
+  void SetPedestalOld(Int_t channel,  Float_t val) {fCFDvalue[channel][3]=val;}
+  Float_t  GetPedestalOld(Int_t channel)  const {return fCFDvalue[channel][3];}
+  
 
  
  protected:
@@ -57,7 +61,6 @@ class AliT0CalibTimeEq: public TNamed {
   Float_t     fTimeEqRms[24];	      // RMS of Time Equalized for OCDB	 
   Float_t     fMeanVertex;            // mean of vertex distribution   
   Float_t     fRmsVertex;            // RMS of vertex distribution   
- 
  //
   ClassDef(AliT0CalibTimeEq,4)    // T0 Sensor Calibration data
 };

@@ -27,13 +27,15 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual  void   Reconstruct(TTree* fdigits, TTree * frecpoints) const;
   virtual  void   Reconstruct(AliRawReader*rawReader , TTree* recTree) const;
   
-  virtual void     FillESD( AliRawReader*/*rawReader*/,  TTree*clustersTree, AliESDEvent*esd ) const
+  virtual void     FillESD( AliRawReader* /*rawReader*/,  TTree*clustersTree, AliESDEvent*esd ) const
   {FillESD((TTree*)NULL,clustersTree,esd);}
   virtual void     FillESD( TTree* digitsTree,  TTree*clustersTree, AliESDEvent*esd ) const;
 
   virtual Bool_t   HasDigitConversion() const {return kFALSE;}
   static const AliT0RecoParam* GetRecoParam()
     { return dynamic_cast<const AliT0RecoParam*>(AliReconstructor::GetRecoParam(11)); } // getting RecoParam obj
+  void  ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26]) const;
+  void ReadOldQTC( Int_t alldata[220][5], Int_t amplitude[26]) const;
 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!
   Bool_t  PileupFlag() const;
@@ -59,11 +61,13 @@ class AliT0Reconstructor: public AliReconstructor {
   Float_t *fTimeMeanShift; //time adjust
   Float_t *fTimeSigmaShift;  // time adjust
 
-  Float_t fMeanOrA;
-  Float_t fMeanOrC;
-  Float_t fMeanTVDC;
-  Float_t fQT1mean[24];
-
+  Float_t fMeanOrA;      //mean from DA 
+  Float_t fMeanOrC;      //mean from DA 
+  Float_t fMeanTVDC;     //mean from DA 
+  Float_t fQT1mean[24];  //mean QT1 (start) from DA 
+  Float_t fPedestal[24];  //mean old pedestal from DA 
+  
+ 
   AliESDTZEROfriend*  fESDTZEROfriend; // ESD friend object 
   AliESDTZERO*        fESDTZERO;       // ESD output object 
  
@@ -72,7 +76,7 @@ class AliT0Reconstructor: public AliReconstructor {
   AliT0Reconstructor( const AliT0Reconstructor&r ); //Not implemented
   AliT0Reconstructor& operator=(const AliT0Reconstructor&r); //Not implemented
 
-  ClassDef(AliT0Reconstructor, 10)   // class for the T0 reconstruction
+  ClassDef(AliT0Reconstructor, 11)   // class for the T0 reconstruction
 
 };
 

@@ -21,6 +21,7 @@ class AliT0PreprocessorOffline: public TNamed
   void  Process(TString FileName, Int_t ustartRun, Int_t uendRun, AliCDBStorage* ocdbStorage);
   void setDArun(Int_t runnumber) {fNewDArun = runnumber; };
   Int_t GetStatus() const;
+
   private:
   AliT0PreprocessorOffline(const AliT0PreprocessorOffline & proc); // copy constructor	
   AliT0PreprocessorOffline& operator=(const AliT0PreprocessorOffline&); //operator
@@ -32,7 +33,7 @@ class AliT0PreprocessorOffline: public TNamed
   Int_t fNewDArun;                         // run number with new DA
   Int_t fStatusDelay;                     //status time delay calibration  
   Int_t fStatusAdjust;                   // status time adjust calibration
- 
+
   ClassDef(AliT0PreprocessorOffline, 3)
 };
 

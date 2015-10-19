@@ -156,12 +156,13 @@ int main(int argc, char **argv) {
   // Allocation of histograms - start
 
   TH1F *hCFD1minCFD[24];  
-  TH1F *hCFD[24], *hQT1[24];  
+  TH1F *hCFD[24], *hQT1[24], *hPed[24];  
    
   for(Int_t ic=0; ic<24; ic++) {
     hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",kcbx,kclx,kcmx);
     hCFD[ic] = new TH1F(Form("CFD%d",ic+1),"CFD",kcfdbx,kcfdlx,kcfdhx);
     hQT1[ic] = new TH1F(Form("QT1%d",ic+1),"QT1",kt0bx,kt0lx,kt0hx);
+    hPed[ic] = new TH1F(Form("hPed%d",ic+1),"pedestal",500,500,2000);
   }
   TH1F *hVertex = new TH1F("hVertex","TVDC",kt0bx,kt0lx,kt0hx);
   TH1F *hOrA = new TH1F("hOrA","OrA",kcfdbx,kcfdlx,kcfdhx);
@@ -223,13 +224,13 @@ int main(int argc, char **argv) {
       AliT0RawReader *start = new AliT0RawReader(reader, kTRUE);
       // start->SetPrintout(kFALSE);
       // Read raw data
-      Int_t allData[107][5];
-      for(Int_t i0=0;i0<107;i0++)
+      Int_t allData[220][5];
+      for(Int_t i0=0;i0<220;i0++)
       	for(Int_t j0=0;j0<5;j0++)
 	  allData[i0][j0] = 0;
       
       if(start->Next()){
-	for (Int_t i=0; i<107; i++) {
+	for (Int_t i=0; i<211; i++) {
 	  for(Int_t iHit=0;iHit<5;iHit++){
 	    allData[i][iHit]= start->GetData(i,iHit);
 	  }
@@ -259,9 +260,9 @@ int main(int argc, char **argv) {
 	    adc = chargeQT0[ik] - chargeQT1[ik];
 	    //	cout<<ik <<"  "<<adc<<endl;
 	  }
-	  if(gr[ik]) 
+	  if(gr[ik] && adc>0) 
 	    walk = Int_t(gr[ik]->Eval(Double_t(adc) ) );
-	  
+	  //	  cout<<ik<<" walk "<<walk<<" "<<allData[ik+1][0]<<endl; 
 	  if(ik<12 && allData[ik+1][0]>0  ){
 	    if( walk >-100) hCFD[ik]->Fill(allData[ik+1][0] - walk);
 	    hQT1[ik]->Fill(chargeQT1[ik]);
@@ -276,6 +277,9 @@ int main(int argc, char **argv) {
 	       if (allData[56+knpmtA][0]>0)
 		 hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
 	    }
+	  if(ik<12 && allData[ik+1][0]==0 && adc>0 ) hPed[ik]->Fill(adc);
+	  if(ik>11 && allData[ik+45][0]==0 && adc>0 ) hPed[ik]->Fill(adc);
+
 	}
 	   
      delete start;
@@ -306,6 +310,7 @@ int main(int argc, char **argv) {
     hCFD1minCFD[j]->Write();
     hCFD[j]->Write();
     hQT1[j]->Write();
+    hPed[j]->Write();
   }
   hVertex->Write();
   hOrA->Write();

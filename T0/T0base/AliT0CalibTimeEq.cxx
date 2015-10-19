@@ -125,7 +125,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   // compute online equalized time
   Float_t meandiff, sigmadiff, meanver, meancfdtime, sigmacfdtime;
   Float_t ora,orc, meanqt, sigmaor,sigmaver, meanEstimate;
-;
+  
   meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime = ora = orc = meanqt =0;
   meanEstimate=sigmaver=sigmaor = 0;
   Int_t maxBin=0;
@@ -147,6 +147,8 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  TH1F *hcfd     = (TH1F*) gFile->Get(Form("CFD1minCFD%d",i+1));
 	  TH1F *hcfdtime = (TH1F*) gFile->Get(Form("CFD%d",i+1));
 	  TH1F *hqt1 = (TH1F*) gFile->Get(Form("QT1%d",i+1));
+	  TH1F *hPedOld = (TH1F*) gFile->Get(Form("hPed%i",i+1));
+	  
 	  if(!hcfd) {
 	    AliWarning(Form("no Diff histograms collected by PHYS DA for channel %i", i));
 	    okdiff++;
@@ -224,8 +226,10 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		}
 	    }
 	    if(hqt1) 	GetMeanAndSigma(hqt1,meanqt, sigmaor);
-	      
-
+	    //Pedestals
+	    Float_t meanpedold=0, sigmaped=0;
+	    if(hPedOld )   GetMeanAndSigma(hPedOld ,meanpedold, sigmaped);
+	    SetPedestalOld(i,meanpedold);       
 	  } //cycle 24 PMT
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
@@ -234,6 +238,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  if (hcfd) delete hcfd;
 	  if (hcfdtime) delete hcfdtime;
 	  if(hqt1) delete hqt1;
+	  if(hPedOld) delete hPedOld;
 	}
       TH1F *hver = (TH1F*) gFile->Get("hVertex") ;
       TH1F *hora = (TH1F*) gFile->Get("hOrA") ;
@@ -245,6 +250,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
       SetRmsVertex(sigmaver);
       SetOrA(ora);
       SetOrC(orc);
+  
       gFile->Close();
       delete gFile;
     }
@@ -273,7 +279,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
   TH1F *cfddiff = NULL; 
   TH1F *cfdtime = NULL;
   TObjArray * tzeroObj = NULL;
-  Float_t qt1[24], orA, orC, tvdc;
+  Float_t qt1[24], ped[24], orA, orC, tvdc;
 
   gFile = TFile::Open(filePhys);
   if(!gFile) {
@@ -281,8 +287,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
     ok = 1000;
     return ok;
   }
-  else
-    {
+  else {
       meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
       //      TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
       tzeroObj = dynamic_cast<TObjArray*>(gFile->Get("T0Calib"));
@@ -402,6 +407,9 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 	  SetCFDvalue(i,0, meancfdtime );
 	  qt1[i]=cfdvalue[24+i];
 	  SetCFDvalue(i,1,qt1[i]);
+	  ped[i]=cfdvalue[52+i];
+	  SetCFDvalue(i,3,ped[i]);
+	  printf(" !!! AliT0CalibTimeEq pmt %i pedestal %f \n ", i, ped[i]);
 	  if (cfddiff) cfddiff->Reset();
 	  if (cfdtime) cfdtime->Reset();
 	  } //bad pmt
@@ -421,7 +429,7 @@ Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *time
 void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
   
   printf(" @@histo %s \n",hist->GetName() );
-  const double window = 5.;  //fit window 
+  const double window = 3.;  //fit window 
   double meanEstimate, sigmaEstimate; 
   int maxBin;
   maxBin        =  hist->GetMaximumBin(); //position of maximum
