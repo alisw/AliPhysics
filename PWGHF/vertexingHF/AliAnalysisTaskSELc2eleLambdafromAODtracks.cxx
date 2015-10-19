@@ -42,6 +42,7 @@
 #include <THnSparse.h>
 #include <TLorentzVector.h>
 #include <TTree.h>
+#include <TRandom.h>
 #include "TROOT.h"
 #include <TDatabasePDG.h>
 #include <AliAnalysisDataSlot.h>
@@ -130,6 +131,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fEvNumberCounter(0),
+  fMCEventType(-9999),
   fHistoEleLambdaMass(0),
   fHistoEleLambdaMassRS(0),
   fHistoEleLambdaMassWS(0),
@@ -378,6 +380,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
 	fHistonLambdavsRunNumber(0),
+	fHistoMCEventType(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -450,6 +453,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fEvNumberCounter(0),
+  fMCEventType(-9999),
   fHistoEleLambdaMass(0),
   fHistoEleLambdaMassRS(0),
   fHistoEleLambdaMassWS(0),
@@ -698,6 +702,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
 	fHistonLambdavsRunNumber(0),
+	fHistoMCEventType(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -888,7 +893,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
       fCEvents->Fill(17); // in case of MC events
     }
     if ((TMath::Abs(zMCVertex) < fAnalCuts->GetMaxVtxZ()) && (!fAnalCuts->IsEventRejectedDuePhysicsSelection()) && (!fAnalCuts->IsEventRejectedDueToTrigger())) {
-			MakeMCAnalysis(mcArray);
+			Bool_t selevt = MakeMCAnalysis(mcArray);
+			if(!selevt) return;
 		}
   }
 
@@ -3477,6 +3483,8 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistonElevsRunNumber);
   fHistonLambdavsRunNumber=new TH1F("fHistonLambdavsRunNumber","",20000,-0.5,19999.5);
   fOutputAll->Add(fHistonLambdavsRunNumber);
+  fHistoMCEventType=new TH1F("fHistoMCEventType","",4,-0.5,3.5);
+  fOutputAll->Add(fHistoMCEventType);
 
 	for(Int_t ih=0;ih<17;ih++){
 		Int_t bins_eleptvscutvars[3];
@@ -4133,13 +4141,57 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 	}//track loop
 }
 //_________________________________________________________________
-void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
+Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
 {
 	//
   // Analyze AliAODmcparticle
 	//
 
 	Int_t nmcpart = mcArray->GetEntriesFast();
+
+	Int_t mcevttype = 0;
+	if(fMCEventType==1 || fMCEventType==2){
+		for(Int_t i=0;i<nmcpart;i++)
+		{
+			AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
+			if(TMath::Abs(mcpart->GetPdgCode())==4){
+				if(fabs(mcpart->Y())<1.5){
+					if(mcevttype==0){
+						mcevttype = 1;
+					}else if(mcevttype==1){
+						mcevttype = 1;
+					}else if(mcevttype==2){
+						mcevttype = 3;
+					}else if(mcevttype==3){
+						mcevttype = 3;
+					}
+				}
+			}
+			if(TMath::Abs(mcpart->GetPdgCode())==5){
+				if(fabs(mcpart->Y())<1.5){
+					if(mcevttype==0){
+						mcevttype = 2;
+					}else if(mcevttype==1){
+						mcevttype = 3;
+					}else if(mcevttype==2){
+						mcevttype = 2;
+					}else if(mcevttype==3){
+						mcevttype = 3;
+					}
+				}
+			}
+		}
+		fHistoMCEventType->Fill(mcevttype);
+		if(fMCEventType==1){
+			if(mcevttype==2) return kFALSE;
+			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
+			if(mcevttype==3 && gRandom->Rndm()<0.5) return kFALSE;
+		}else if(fMCEventType==2){
+			if(mcevttype==1) return kFALSE;
+			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
+		}
+	}
+
 	for(Int_t i=0;i<nmcpart;i++)
 	{
 		AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
@@ -4264,5 +4316,5 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mc
 			FillMCV0ROOTObjects(mcpart, mcArray);
 		}
 	}
-	return;
+	return kTRUE;
 }

@@ -39,6 +39,7 @@
 #include <TLorentzVector.h>
 #include <TTree.h>
 #include "TROOT.h"
+#include <TRandom.h>
 #include <TDatabasePDG.h>
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
@@ -126,6 +127,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fEvNumberCounter(0),
+  fMCEventType(-9999),
   fHistoEleXiMass(0),
   fHistoEleXiMassRS(0),
   fHistoEleXiMassWS(0),
@@ -242,6 +244,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
 	fHistonXivsRunNumber(0),
+	fHistoMCEventType(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -310,6 +313,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fEvNumberCounter(0),
+  fMCEventType(-9999),
   fHistoEleXiMass(0),
   fHistoEleXiMassRS(0),
   fHistoEleXiMassWS(0),
@@ -426,6 +430,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
 	fHistonXivsRunNumber(0),
+	fHistoMCEventType(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -612,7 +617,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::UserExec(Option_t *)
       fCEvents->Fill(17); // in case of MC events
     }
     if ((TMath::Abs(zMCVertex) < fAnalCuts->GetMaxVtxZ()) && (!fAnalCuts->IsEventRejectedDuePhysicsSelection()) && (!fAnalCuts->IsEventRejectedDueToTrigger())) {
-			MakeMCAnalysis(mcArray);
+			Bool_t selevt = MakeMCAnalysis(mcArray);
+			if(!selevt) return;
 		}
   }
 
@@ -2692,6 +2698,8 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistonElevsRunNumber);
   fHistonXivsRunNumber=new TH1F("fHistonXivsRunNumber","",20000,-0.5,19999.5);
   fOutputAll->Add(fHistonXivsRunNumber);
+  fHistoMCEventType=new TH1F("fHistoMCEventType","",4,-0.5,3.5);
+  fOutputAll->Add(fHistoMCEventType);
 
 	for(Int_t ih=0;ih<23;ih++){
 		Int_t bins_eleptvscutvars[3];
@@ -3403,13 +3411,58 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DoEventMixingWithPools(Int_t poolI
 	}//track loop
 }
 //_________________________________________________________________
-void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
+Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
 {
 	//
   // Analyze AliAODmcparticle
 	//
 
 	Int_t nmcpart = mcArray->GetEntriesFast();
+
+	Int_t mcevttype = 0;
+	if(fMCEventType==1 || fMCEventType==2){
+		for(Int_t i=0;i<nmcpart;i++)
+		{
+			AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
+			if(TMath::Abs(mcpart->GetPdgCode())==4){
+				if(fabs(mcpart->Y())<1.5){
+					if(mcevttype==0){
+						mcevttype = 1;
+					}else if(mcevttype==1){
+						mcevttype = 1;
+					}else if(mcevttype==2){
+						mcevttype = 3;
+					}else if(mcevttype==3){
+						mcevttype = 3;
+					}
+				}
+			}
+			if(TMath::Abs(mcpart->GetPdgCode())==5){
+				if(fabs(mcpart->Y())<1.5){
+					if(mcevttype==0){
+						mcevttype = 2;
+					}else if(mcevttype==1){
+						mcevttype = 3;
+					}else if(mcevttype==2){
+						mcevttype = 2;
+					}else if(mcevttype==3){
+						mcevttype = 3;
+					}
+				}
+			}
+		}
+		fHistoMCEventType->Fill(mcevttype);
+
+		if(fMCEventType==1){
+			if(mcevttype==2) return kFALSE;
+			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
+			if(mcevttype==3 && gRandom->Rndm()<0.5) return kFALSE;
+		}else if(fMCEventType==2){
+			if(mcevttype==1) return kFALSE;
+			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
+		}
+	}
+
 	for(Int_t i=0;i<nmcpart;i++)
 	{
 		AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
@@ -3458,5 +3511,5 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcArr
 			FillMCCascROOTObjects(mcpart, mcArray);
 		}
 	}
-	return;
+	return kTRUE;
 }
