@@ -221,7 +221,10 @@ AliFlowEventCuts::~AliFlowEventCuts()
   delete fRefMultCuts;
   delete fStandardGlobalCuts;
   delete fStandardTPCcuts;
-  //delete fUtils;
+  if(fUtils) {
+      delete fUtils;
+      fUtils = NULL;
+  }
   if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
