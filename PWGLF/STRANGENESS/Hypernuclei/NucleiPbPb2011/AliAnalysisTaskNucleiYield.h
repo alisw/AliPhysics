@@ -140,8 +140,8 @@ private:
   Float_t               fRequireMinEnergyLoss;  ///<  Cut on the minimum energy loss counts in TPC
   Int_t                 fRequireMagneticField;  ///<  {0 : any magnetic field is fine, -1 : only negative magnetic field, 1 : only positive}
   Bool_t                fRequireVetoSPD;        ///<  Cut away all the tracks with at least 1 SPD cluster
+  Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Bool_t                fFixForLHC14a6;         ///<  Cut away all the tracks with at least 1 SPD cluster
-
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
