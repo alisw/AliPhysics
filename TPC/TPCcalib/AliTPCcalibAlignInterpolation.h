@@ -26,7 +26,7 @@ public :
   void ProcessStandalone(const char * inputList);
   virtual void     Process(AliESDEvent *event);
   virtual void     Terminate();
-  void   SetStreamLevel(Int_t streamLevel){fStreamLevel=streamLevel;}
+  void   SetStreamLevelTrack(Int_t streamLevelTrack){fStreamLevelTrack=streamLevelTrack;}
   Bool_t RefitITStrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackITS, Double_t &chi2, Double_t &npoints);
   Bool_t RefitTOFtrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackTOF, Double_t &chi2, Double_t &npoints);
   Bool_t RefitTRDtrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackTRD, Double_t &chi2, Double_t &npoints);
@@ -53,7 +53,7 @@ protected:
   THn * fHisITSTOFDZ;      // TPC-ITS_TOF residual histograms
 private:
   TTreeSRedirector * fStreamer;  // calibration streamer 
-  Int_t fStreamLevel;            // stream level - In mode 0 only basic information needed for calibration  stored (see EStreamFlags )
+  Int_t fStreamLevelTrack;            // stream level - In mode 0 only basic information needed for calibration  stored (see EStreamFlags )
   Int_t fSyswatchStep;           // dump system resource information after  fSyswatchStep tracks
   Int_t fTrackCounter;           // processed track counter
   AliTPCcalibAlignInterpolation(const AliTPCcalibAlignInterpolation&); // Not implemented
