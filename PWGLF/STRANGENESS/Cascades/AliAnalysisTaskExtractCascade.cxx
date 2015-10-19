@@ -960,6 +960,14 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
         return;
     }
     
+    //Is First event in chunk rejection: Still present!
+    if(fkpAVertexSelection==kTRUE && fUtils->IsFirstEventInChunk(lESDevent)) {
+        AliWarning("Pb / | This is the first event in the chunk!");
+        PostData(1, fListHist);
+        PostData(2, fTreeCascade);
+        return;
+    }
+    
     //--- Acquisition of exact event ID
     fTreeCascVarRunNumber = lESDevent->GetRunNumber();
     fTreeCascVarEventNumber =
@@ -1127,14 +1135,6 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
     //Is First event in chunk rejection: Still present!
     if(fkpAVertexSelection==kTRUE && fHasVertex == kFALSE) {
         AliWarning("Pb / | PV does not satisfy selection criteria!");
-        PostData(1, fListHist);
-        PostData(2, fTreeCascade);
-        return;
-    }
-    
-    //Is First event in chunk rejection: Still present!
-    if(fkpAVertexSelection==kTRUE && fUtils->IsFirstEventInChunk(lESDevent)) {
-        AliWarning("Pb / | This is the first event in the chunk!");
         PostData(1, fListHist);
         PostData(2, fTreeCascade);
         return;
