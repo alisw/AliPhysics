@@ -1,6 +1,7 @@
 AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALSE,
                                                      Bool_t kusecontainer = kFALSE,
-                                                     Char_t *outfilename = "pXi",
+                                                     const char* outfoldersuffix = "pXi",
+                                                     const char* outlistsuffix = "wttc",
                                                      Bool_t bCentralTrigger = kTRUE,
                                                      Int_t  fistpart = 1,
                                                      Int_t  secondpart = 2,
@@ -32,7 +33,8 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
                                                      Float_t maxptforcasc = 10.,  
                                                      Float_t cutipbac = 0.1,     //0.03,
                                                      Bool_t kapplyycutcasc = kFALSE,
-                                                     Bool_t kpropagateglobal = kTRUE
+                                                     Bool_t kpropagateglobal = kTRUE,
+                                                     const char* outlistsubwagon = ""  // "pXi"
                                                    ) {
 
 
@@ -58,7 +60,9 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
 
   // Create and configure the task, add it to manager.
   //===========================================================================
-  AliAnalysisTaskhCascadeFemto *task = new AliAnalysisTaskhCascadeFemto("TaskhCascadeFemto");
+  TString combinedName;
+  combinedName.Form("TaskhCascadeFemto%s%s", outlistsuffix, outlistsubwagon);
+  AliAnalysisTaskhCascadeFemto *task = new AliAnalysisTaskhCascadeFemto(combinedName);
 
   if(bCentralTrigger)
       task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
@@ -110,8 +114,8 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
 
-  outputfile += ":PWGCFFEMTO.outputHCascadeTask"; 
-  AliAnalysisDataContainer *cout_pXi  = mgr->CreateContainer(Form("list_%s",outfilename),  TList::Class(),
+  outputfile += Form(":PWGCFFEMTO_outputHCascadeTask_%s",outfoldersuffix); 
+  AliAnalysisDataContainer *cout_pXi  = mgr->CreateContainer(combinedName,  TList::Class(),
                                                                AliAnalysisManager::kOutputContainer,outputfile);
 
   AliAnalysisDataContainer *cout_pXi2 = mgr->CreateContainer("cfcontCutsXi",
