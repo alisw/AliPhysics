@@ -62,6 +62,7 @@ public:
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
   void SetRequireMagneticField (int cut) { fRequireMagneticField = cut; }
   void SetRequireVetoSPD (bool veto) { fRequireVetoSPD = veto; }
+  void SetRequireMaxMomentum (float p) { fRequireMaxMomentum = p; }
   void SetEnablePerformancePlot (bool cut) { fEnablePerformance = cut; }
   void SetEnablePtCorrection (bool cut) { fEnablePtCorrection = cut; }
   void SetDisableITSatHighPt (float pt) { fDisableITSatHighPt = pt; }
