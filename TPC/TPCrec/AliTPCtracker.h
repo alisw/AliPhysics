@@ -176,13 +176,15 @@ public:
    void SignClusters(const TObjArray * arr, Float_t fnumber=3., Float_t fdensity=2.);  
    //
    Bool_t DistortX(const AliTPCseed* seed, double& x, int row);
-   Float_t GetDistortionX(double x, double y, double z, int sec, int row);
-
    //
    virtual Bool_t OwnsESDObjects() const {return kTRUE;} //RS TPC owns the seeds stored in the friends
    virtual void   CleanESDFriendsObjects(AliESDEvent* esd);
    virtual void   CleanESDTracksObjects(TObjArray* trcList);
    //
+   Double_t GetDistortionX(double x, double y, double z, int sec, int row);
+   Double_t GetYSectEdgeDist(int sec, int row, double ymax, double z);
+   static Int_t GetTrackSector(double alpha);
+
 private:
   Bool_t IsFindable(AliTPCseed & t);
   AliTPCtracker(const AliTPCtracker& r);           //dummy copy constructor
@@ -289,6 +291,7 @@ private:
    Bool_t fClStatShared[kMaxRow];       //! cached info on shared clusters of the seed   
    //
    Int_t fAccountDistortions;           //! flag to account for distortions. RS: to set!
+   Int_t fAccountSectorChange;          //! flag to move distorted clusters to sector of their corrected position
    //
    ClassDef(AliTPCtracker,5) 
 };
