@@ -36,14 +36,17 @@
 
 class TMap;
 class AliMergeableCollectionIterator;
+class AliMergeableCollectionProxy;
 class TH1;
 class TH2;
 class TProfile;
+class THashList;
 
 class AliMergeableCollection : public TFolder
 {
   friend class AliMergeableCollectionIterator; // our iterator class
-
+  friend class AliMergeableCollectionProxy; // out proxy class
+  
 public:
 
   AliMergeableCollection(const char* name="", const char* title="");
@@ -85,6 +88,8 @@ public:
   TProfile* Prof(const char* fullIdentifier) const;
   TProfile* Prof(const char* identifier, const char* objectName) const;
 
+  virtual AliMergeableCollectionProxy* CreateProxy(const char* identifier);
+  
   virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
   
   virtual TList* CreateListOfKeys(Int_t index) const;
@@ -185,6 +190,38 @@ private:
   AliMergeableCollectionIterator(const AliMergeableCollectionIterator &iter);
     
   ClassDef(AliMergeableCollectionIterator,0)  // Mergeable object collection iterator
+};
+
+class AliMergeableCollectionProxy : public TFolder
+{
+  friend class AliMergeableCollection;
+  
+protected:
+  AliMergeableCollectionProxy(AliMergeableCollection& oc, THashList& list);
+  
+public:
+  TObject* GetObject(const char* objectName) const;
+  
+  TH1* Histo(const char* objectName) const;
+  
+  TH1* H1(const char* objectName) const { return Histo(objectName); }
+  
+  TH2* H2(const char* objectName) const;
+  
+  TProfile* Prof(const char* objectName) const;
+
+  void Print(Option_t* opt="") const;
+  
+  Bool_t Adopt(TObject* obj);
+  
+  virtual TIterator* CreateIterator(Bool_t dir = kIterForward) const;
+
+private:
+  AliMergeableCollection& fOC;
+  THashList& fList;
+
+  ClassDef(AliMergeableCollectionProxy,0)  // Mergeable object collection proxy
+
 };
 
 #endif

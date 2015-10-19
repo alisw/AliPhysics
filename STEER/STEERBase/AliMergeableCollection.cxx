@@ -208,6 +208,16 @@ AliMergeableCollection::CreateIterator(Bool_t direction) const
 }
 
 //_____________________________________________________________________________
+AliMergeableCollectionProxy*
+AliMergeableCollection::CreateProxy(const char* identifier)
+{
+  /// Create a proxy starting at identified
+  THashList* list = static_cast<THashList*>(Map()->GetValue(identifier));
+  if (!list) return 0x0;
+  return new AliMergeableCollectionProxy(*this,*list);
+}
+
+//_____________________________________________________________________________
 AliMergeableCollection*
 AliMergeableCollection::Clone(const char* name) const
 {
@@ -228,9 +238,12 @@ void
 AliMergeableCollection::Delete(Option_t*)
 {
   /// Delete all the objects
-  fMap->DeleteAll();
-  delete fMap;
-  fMap=0x0;
+  if (fMap)
+  {
+    fMap->DeleteAll();
+    delete fMap;
+    fMap=0x0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -422,18 +435,28 @@ AliMergeableCollection::Histo(const char* identifier,
   
   TObject* o = GetObject(identifier,objectName);
   
-  TObjArray* arr = TString(objectName).Tokenize(":");
   TString action;
-  
-  if ( arr->GetLast() > 0 )
+
+  if ( strchr(objectName,':') )
   {
-    action = static_cast<TObjString*>(arr->At(1))->String();
-    action.ToUpper();
+    TObjArray* arr = TString(objectName).Tokenize(":");
+  
+    if ( arr->GetLast() > 0 )
+    {
+      action = static_cast<TObjString*>(arr->At(1))->String();
+      action.ToUpper();
+    }
+  
+    delete arr;
+
+    return HistoWithAction(identifier,o,action);
   }
   
-  delete arr;
-
-  return HistoWithAction(identifier,o,action);
+  if (o && o->IsA()->InheritsFrom(TH1::Class()))
+  {
+    return static_cast<TH1*>(o);
+  }
+  return 0x0;
 }
 
 
@@ -860,7 +883,7 @@ AliMergeableCollection::Merge(TCollection* list)
   TIter next(list);
   TObject* currObj;
   TList mapList;
-  Int_t count(0);
+  Long64_t count(0);
   
   while ( ( currObj = next() ) )
   {
@@ -892,8 +915,6 @@ AliMergeableCollection::Merge(TCollection* list)
         
         if (!thisObject)
         {
-          AliDebug(1,Form("Adopting a new object = %s%s",identifier->String().Data(),obj->GetName()));
-          
           Bool_t ok = Adopt(identifier->String(), obj->Clone());
           
           if (!ok)
@@ -904,18 +925,12 @@ AliMergeableCollection::Merge(TCollection* list)
         else
         {
           // add it...
-          AliDebug(1,Form("Merging object = %s%s",
-                          identifier->String().Data(),
-                          obj->GetName()));
-          
           MergeObject(thisObject, obj);
         }
       } // loop on objects in map
     } // loop on identifiers
   } // loop on collections in list
          
-  AliDebug(1,Form("count=%d",count));
-  
   return count+1;
 }
 
@@ -1496,4 +1511,103 @@ void AliMergeableCollectionIterator::Reset()
   /// Reset the iterator
   delete fHashListIterator;
   delete fMapIterator;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// AliMergeableCollectionProxy
+//
+///////////////////////////////////////////////////////////////////////////////
+
+class AliMergeableCollectionProxy;
+
+//_____________________________________________________________________________
+AliMergeableCollectionProxy::AliMergeableCollectionProxy(AliMergeableCollection& oc,
+                                                         THashList& list)
+: fOC(oc), fList(list)
+{
+  
+}
+
+//_____________________________________________________________________________
+Bool_t AliMergeableCollectionProxy::Adopt(TObject* obj)
+{
+  return fOC.Adopt(fList.GetName(),obj);
+}
+
+//_____________________________________________________________________________
+TObject* AliMergeableCollectionProxy::GetObject(const char* objectName) const
+{
+  return fList.FindObject(objectName);
+}
+
+//_____________________________________________________________________________
+TH1* AliMergeableCollectionProxy::Histo(const char* objectName) const
+{
+  if ( strchr(objectName,':') )
+  {
+    TString action;
+    
+    TObjArray* arr = TString(objectName).Tokenize(":");
+    
+    if ( arr->GetLast() > 0 )
+    {
+      action = static_cast<TObjString*>(arr->At(1))->String();
+      action.ToUpper();
+    }
+    
+    TString oname = static_cast<TObjString*>(arr->At(0))->String();
+    
+    delete arr;
+
+    TObject* o = GetObject(oname);
+    
+    return fOC.HistoWithAction("",o,action);
+  }
+
+  TObject* o = GetObject(objectName);
+
+  if (o && o->IsA()->InheritsFrom(TH1::Class()))
+  {
+    return static_cast<TH1*>(o);
+  }
+  
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+TH2* AliMergeableCollectionProxy::H2(const char* objectName) const
+{
+  TObject* o = GetObject(objectName);
+  
+  if (o->IsA()->InheritsFrom(TH2::Class()))
+  {
+    return static_cast<TH2*>(o);
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+TProfile* AliMergeableCollectionProxy::Prof(const char* objectName) const
+{
+  TObject* o = GetObject(objectName);
+  
+  if (o->IsA()->InheritsFrom(TProfile::Class()))
+  {
+    return static_cast<TProfile*>(o);
+  }
+  return 0x0;
+}
+
+//_____________________________________________________________________________
+void AliMergeableCollectionProxy::Print(Option_t* opt) const
+{
+  fList.Print(opt);
+}
+
+//_____________________________________________________________________________
+TIterator* AliMergeableCollectionProxy::CreateIterator(Bool_t dir) const
+{
+  return fList.MakeIterator(dir);
 }
