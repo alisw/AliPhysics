@@ -106,7 +106,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 			fCuts= new AliConversionPhotonCuts(cutnumberPhoton.Data(),cutnumberPhoton.Data());
 			fCuts->SetPreSelectionCutFlag(kTRUE);
 			fCuts->SetIsHeavyIon(isHeavyIon);
-			if( trainConfig == 198 || trainConfig == 199 || trainConfig == 200 || trainConfig == 201 || trainConfig == 202 || trainConfig == 203 || trainConfig == 204 || trainConfig == 205 || trainConfig == 206 || trainConfig == 207 || trainConfig == 208 || trainConfig == 209){
+			if( trainConfig >= 198 && trainConfig < 220){
 				fCuts->SetDodEdxSigmaCut(kFALSE);
 			}
 			if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
@@ -139,7 +139,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts;
 	if (trainConfig == 176 || trainConfig == 177 || trainConfig == 178 || trainConfig == 179 || trainConfig == 180 || trainConfig == 181) numberOfCuts = 7;
-	else if( trainConfig == 198 || trainConfig == 199 || trainConfig == 200 || trainConfig == 201 || trainConfig == 202 || trainConfig == 203 || trainConfig == 204 || trainConfig == 205 || trainConfig == 206 || trainConfig == 207 || trainConfig == 208 || trainConfig == 209) numberOfCuts = 1; 
+	else if( trainConfig >= 198 && trainConfig < 220) numberOfCuts = 1; 
 	else numberOfCuts = 5; 
 
 	TString *eventCutArray = new TString[numberOfCuts];
@@ -1349,29 +1349,49 @@ void AddTask_GammaConvV1_PbPb(  Int_t 		trainConfig 				= 1,  								//change d
 		eventCutArray[ 3] = "52400023"; photonCutArray[ 3] = "00216609000002008250400000"; mesonCutArray[ 3] = "0152501500000000"; // 20-40%
 		eventCutArray[ 4] = "52500023"; photonCutArray[ 4] = "00216609000002008250400000"; mesonCutArray[ 4] = "0152501500000000"; // 20-50%
 	} else if ( trainConfig == 198){ // V0 f. eff., open cut//00200009247602008250400000
-		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0142501500000000"; // 0-10%
-	} else if ( trainConfig == 199){ // V0 f. eff., open cut - semicentral classes
-		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0142501500000000"; // 20-50%
-	} else if ( trainConfig == 200){ // V0 f. eff., el. dEdx - central classes
-		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070200000000500004000"; mesonCutArray[ 0] = "0142501500000000"; // 0-10%
-	} else if ( trainConfig == 201){ // V0 f. eff., el. dEdx - semicentral classes
-		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070200000000500004000"; mesonCutArray[ 0] = "0142501500000000"; // 20-40%
-	} else if ( trainConfig == 202){ // V0 f. eff., chi2/psi pair - central classes
-		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070000000000250004000"; mesonCutArray[ 0] = "0142501500000000"; // 0-10%
-	} else if ( trainConfig == 203){ // V0 f. eff., chi2/psi pair - semicentral classes
-		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070000000000250004000"; mesonCutArray[ 0] = "0142501500000000"; // 20-40%
-	} else if ( trainConfig == 204){ // V0 f. eff., el. dEdx and chi2/psi pair - central classes
-		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070200000000250004000"; mesonCutArray[ 0] = "0142501500000000"; // 0-10%
-	} else if ( trainConfig == 205){ // V0 f. eff., el. dEdx and chi2/psi pair - semicentral classes
-		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070200000000250004000"; mesonCutArray[ 0] = "0142501500000000"; // 20-40%
-	} else if ( trainConfig == 206){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair - central classes
-		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000000200000000250004000"; mesonCutArray[ 0] = "0142501500000000"; // 0-10%
-	} else if ( trainConfig == 207){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair - semicentral classes
-		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000000200000000250004000"; mesonCutArray[ 0] = "0142501500000000"; // 20-40%
-	} else if ( trainConfig == 208){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair, cosPA - central classes
-		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000000200000000250404000"; mesonCutArray[ 0] = "0142501500000000"; // 0-10%
-	} else if ( trainConfig == 209){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair, cosPA - semicentral classes
-		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000000200000000250404000"; mesonCutArray[ 0] = "0142501500000000"; // 20-40%
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 199){ // V0 f. eff., open cut
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070000000000500004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 200){ // V0 f. eff., el. dEdx
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070200000000500004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 201){ // V0 f. eff., el. dEdx
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070200000000500004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 202){ // V0 f. eff., chi2/psi pair
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070000000000250004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 203){ // V0 f. eff., chi2/psi pair
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070000000000250004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 204){ // V0 f. eff., el. dEdx and chi2/psi pair
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000070200000000250004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 205){ // V0 f. eff., el. dEdx and chi2/psi pair
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000070200000000250004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 206){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000000200000000250004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 207){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000000200000000250004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 208){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair, cosPA
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000000200000000250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 209){ // V0 f. eff., single pt, el. dEdx and chi2/psi pair, cosPA
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000000200000000250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 210){ // V0 f. eff., ... plus qt cut  
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000000200000008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 211){ // V0 f. eff., ... plus qt cut 
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000000200000008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 212){ // V0 f. eff., ... plus pion dedx
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00000000247600008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 213){ // V0 f. eff., ... plus pion dedx 
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00000000247600008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 214){ // V0 f. eff., ... plus R min
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00200000247600008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 215){ // V0 f. eff., ... plus R min 
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00200000247600008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 216){ // V0 f. eff., ... plus phi cut
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00216600247600008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 217){ // V0 f. eff., ... plus phi cut 
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00216600247600008250404000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 218){ // V0 f. eff., only phi cut
+		eventCutArray[ 0] = "50100013"; photonCutArray[ 0] = "00016670000000000500004000"; mesonCutArray[ 0] = "0142501500000000";
+	} else if ( trainConfig == 219){ // V0 f. eff., only phi cut 
+		eventCutArray[ 0] = "52500013"; photonCutArray[ 0] = "00016670000000000500004000"; mesonCutArray[ 0] = "0142501500000000";
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
