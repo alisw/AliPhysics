@@ -346,7 +346,6 @@ TObject* AliDielectronSignalBase::DescribePeakShape(ESignalExtractionMethod meth
     fit->SetParLimits(2, 0.001,         1.           );
     parMass=1;
     parSigma=2;
-//    fHistSignal->Fit(fit,"RNI0");
     fHistSignal->Fit(fit,"RNI0");
     break;
 

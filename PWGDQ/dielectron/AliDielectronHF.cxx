@@ -273,7 +273,7 @@ void AliDielectronHF::UserSparse(const char* histClass, Int_t ndim, TObjArray *l
   //
 
   THnSparseF *hist=0;
-  Int_t bins[ndim];
+  Int_t *bins=new Int_t[ndim];
   // get number of bins
   for(Int_t idim=0 ;idim<ndim; idim++) {
     TVectorD *vec = (TVectorD*) limits->At(idim);
@@ -281,6 +281,7 @@ void AliDielectronHF::UserSparse(const char* histClass, Int_t ndim, TObjArray *l
   }
 
   hist=new THnSparseF("",histClass, ndim, bins, 0x0, 0x0);
+  delete [] bins;
 
   // set binning
   for(Int_t idim=0 ;idim<ndim; idim++) {

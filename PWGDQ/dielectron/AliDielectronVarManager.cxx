@@ -142,6 +142,20 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"OneOverEffLeg",          "(A#times#varepsilon)^{-1}",                             ""},
   {"V0Index0",               "V0Index0",                                           ""},
   {"KinkIndex0",             "KinkIndex0",                                         ""},
+  
+  {"TRDonlineA",             "trans. offset from nominal pr. vtx.",           "(cm?)"},
+  {"TRDonlineLayerMask",     "TRD online Layer Mask",                              ""},
+  {"TRDonlineFirstLayer",    "1st tracklet layer assoc. to online trk.",     "(layer)"},
+  {"TRDonlinePID",           "TRD online PID",                              "(0-256)"},
+  {"TRDonlinePt",            "TRD online Pt",                               "(GeV/c)"},
+  {"TRDonlineStack",         "Stack number of matched GTU track",                  ""},
+  {"TRDonlineSector",        "Sector number of matched GTU track",                 ""},
+  {"TRDonlineTrackInTime",   "Time-out Flag for GTU track",                "(boolean)"},
+  {"TRDolineFlagsTiming",    "TRD online timing flags",                            ""},
+  {"TRDonlineLabel",         "TRD online track label",                              ""},
+  {"TRDonlineNTracklets",    "N. of tracklets assoc. to TRD online trk.",           ""},
+ 
+
   //
   {"Chi2NDF",                "#chi^{2}/^{}ndf",                                    ""},
   {"DecayLength",            "l_{decay}",                                          "(cm)"},
@@ -449,7 +463,7 @@ AliPIDResponse* AliDielectronVarManager::fgPIDResponse      = 0x0;
 AliVEvent*      AliDielectronVarManager::fgEvent            = 0x0;
 AliEventplane*  AliDielectronVarManager::fgTPCEventPlane    = 0x0;
 AliKFVertex*    AliDielectronVarManager::fgKFVertex         = 0x0;
-TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[4][9] = {{0x0}};
+TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[6][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
 TObject*        AliDielectronVarManager::fgLegEffMap           = 0x0;
 TObject*        AliDielectronVarManager::fgPairEffMap          = 0x0;
@@ -470,7 +484,7 @@ AliDielectronVarManager::AliDielectronVarManager() :
   //
   // Default constructor
   //
-  for(Int_t i=0; i<4; ++i)
+  for(Int_t i=0; i<6; ++i)
     for(Int_t j=0; j<9; ++j)
       fgMultEstimatorAvg[i][j] = 0x0;
   for(Int_t i=0; i<10; ++i)
@@ -493,7 +507,7 @@ AliDielectronVarManager::AliDielectronVarManager(const char* name, const char* t
   //
   // Named constructor
   //
-  for(Int_t i=0; i<4; ++i)
+  for(Int_t i=0; i<6; ++i)
     for(Int_t j=0; j<9; ++j)
       fgMultEstimatorAvg[i][j] = 0x0;
   for(Int_t i=0; i<10; ++i)
@@ -516,7 +530,7 @@ AliDielectronVarManager::~AliDielectronVarManager()
   //
   // Default destructor
   //
-  for(Int_t i=0; i<4; ++i)
+  for(Int_t i=0; i<6; ++i)
     for(Int_t j=0; j<9; ++j)
       if(fgMultEstimatorAvg[i][j]) delete fgMultEstimatorAvg[i][j];
   for(Int_t i=0; i<10; ++i)

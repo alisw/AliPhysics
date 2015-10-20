@@ -463,7 +463,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjA
   isOk&=IsHistogramOk(histClass,name);
 
   THnD *hist;
-  Int_t bins[ndim];
+  Int_t *bins=new Int_t[ndim];
   if (isOk) {
     // get number of bins
     for(Int_t idim=0 ;idim<ndim; idim++) {
@@ -472,6 +472,7 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjA
     }
 
     hist=new THnD(name.Data(),"", ndim, bins, 0x0, 0x0);
+    delete [] bins;
 
     // set binning
     for(Int_t idim=0 ;idim<ndim; idim++) {
@@ -555,7 +556,7 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
   isOk&=IsHistogramOk(histClass,name);
 
   THnSparseD *hist;
-  Int_t bins[ndim];
+  Int_t *bins=new Int_t[ndim];
   if (isOk) {
     // get number of bins
     for(Int_t idim=0 ;idim<ndim; idim++) {
@@ -564,6 +565,7 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
     }
 
     hist=new THnSparseD(name.Data(),"", ndim, bins, 0x0, 0x0);
+    delete [] bins;
 
     // set binning
     for(Int_t idim=0 ;idim<ndim; idim++) {
@@ -1289,11 +1291,11 @@ void AliDielectronHistos::FillValues(THnBase *obj, const Double_t *values)
 
   UInt_t value4=obj->GetUniqueID();            // weight variable
 
-  Double_t fill[dim];
+  Double_t *fill=new Double_t[dim];
   for(Int_t it=0; it<dim; it++)   fill[it] = values[obj->GetAxis(it)->GetUniqueID()];
   if(!weight) obj->Fill(fill);
   else obj->Fill(fill, values[value4]);
-
+  delete [] fill;
 
   return;
 }
