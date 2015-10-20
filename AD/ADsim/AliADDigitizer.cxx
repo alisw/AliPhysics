@@ -438,8 +438,6 @@ void AliADDigitizer::DigitizeSDigits()
     if(gRandom->Rndm() > fThresholdShape->Eval(adcSignal)) fMCTime[j] = -1024.0;
     if(fThresholdShape->Eval(adcSignal)<1e-2) fMCTime[j] = -1024.0;
     fLeadingTime[j] = UnCorrectLeadingTime(j,fMCTime[j],adcSignal);
-    if(j<8)fLeadingTime[j] += gRandom->Gaus(1.3,0.15); //windth of TS spline
-    else   fLeadingTime[j] += gRandom->Gaus(1.0,0.45);
     
   }
   //Fill BB and BG flags in trigger simulator
@@ -663,6 +661,23 @@ Float_t AliADDigitizer::UnCorrectLeadingTime(Int_t i, Float_t time, Float_t adc)
   else time += fTimeSlewingSpline[i]->Eval(TMath::Log10(1/adc))*fCalibData->GetTimeResolution(board);
   //std::cout<<"Charge: "<<adc<<std::endl;
   //std::cout<<"Leading time: "<<time<<std::endl;
+  
+  Float_t smearedTime = SmearLeadingTime(i,time);
+
+  return smearedTime;
+}
+//____________________________________________________________________________
+Float_t AliADDigitizer::SmearLeadingTime(Int_t i, Float_t time) const
+{
+
+  Int_t runNumber = AliCDBManager::Instance()->GetRun();
+  Float_t sigmaADA = 0, sigmaADC = 0;
+  if(runNumber < 225753){sigmaADA = 0.45; sigmaADC = 0.15;}
+  if(runNumber > 225753 && runNumber < 226501){sigmaADA = 1.0; sigmaADC = 0.15;}
+  if(runNumber > 226501){sigmaADA = 0.50; sigmaADC = 0.15;}
+  
+  if(i<8)time += gRandom->Gaus(1.25,sigmaADC);
+  else   time += gRandom->Gaus(1.05,sigmaADA);
 
   return time;
 }

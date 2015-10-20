@@ -58,6 +58,7 @@ public:
    void GetTimeSlewingSplines();
    void ExtrapolateSplines();
    Float_t UnCorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
+   Float_t SmearLeadingTime(Int_t i, Float_t time) const;
 
    TF1*   GetChargeSignalShape() const { return fChargeSignalShape; }
    TF1*   GetTimeSignalShape() const { return fTimeSignalShape; }
