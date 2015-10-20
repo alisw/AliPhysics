@@ -108,6 +108,35 @@ void AliAnalysisMuMuCutCombination::Add(AliAnalysisMuMuCutElement* ce)
 }
 
 //_____________________________________________________________________________
+Bool_t AliAnalysisMuMuCutCombination::IsEqualForTrackCutter(const AliAnalysisMuMuCutCombination& other) const
+{
+  /// whether or not we are the same combination as other, only considering the cuts
+  /// or the given type
+  
+  for ( Int_t i = 0; i <= fCuts->GetLast(); ++i )
+  {
+    AliAnalysisMuMuCutElement* thisCuti = static_cast<AliAnalysisMuMuCutElement*>(fCuts->At(i));
+    
+    if ( thisCuti->IsTrackCutter() && !other.fCuts->FindObject(thisCuti)  )
+    {
+      return kFALSE;
+    }
+  }
+  
+  for ( Int_t i = 0; i <= other.fCuts->GetLast(); ++i )
+  {
+    AliAnalysisMuMuCutElement* otherCuti = static_cast<AliAnalysisMuMuCutElement*>(other.fCuts->At(i));
+    
+    if ( otherCuti->IsTrackCutter() && !fCuts->FindObject(otherCuti)  )
+    {
+      return kFALSE;
+    }
+  }
+  
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t AliAnalysisMuMuCutCombination::IsEqual(const TObject* obj) const
 {
   /// Whether or not we are the same cut combination as obj

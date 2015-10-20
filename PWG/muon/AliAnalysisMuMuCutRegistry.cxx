@@ -90,7 +90,23 @@ Int_t AliAnalysisMuMuCutRegistry::AddCutCombination(const TObjArray& cutElements
 
   if ( cutCombination->IsTrackCutter() )
   {
-    GetCutCombinations(AliAnalysisMuMuCutElement::kTrack)->Add(cutCombination);
+    TObjArray* a = GetCutCombinations(AliAnalysisMuMuCutElement::kTrack);
+    TIter nextCutComb(a);
+    AliAnalysisMuMuCutCombination* other;
+    Bool_t alreadyThere(kFALSE);
+    
+    while ( ( other = static_cast<AliAnalysisMuMuCutCombination*>(nextCutComb())) && !alreadyThere )
+    {
+        if ( cutCombination->IsEqualForTrackCutter(*other) )
+        {
+          alreadyThere = kTRUE;
+        }
+    }
+    
+    if (!alreadyThere)
+    {
+      a->Add(cutCombination);
+    }
   }
 
   if ( cutCombination->IsTrackPairCutter() )
