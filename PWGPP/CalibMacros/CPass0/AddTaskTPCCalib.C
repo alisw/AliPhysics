@@ -397,7 +397,7 @@ void ConfigOCDB(Int_t run){
   //
   tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
   tpcRecoParam->SetUseAlignmentTime(kFALSE);
-  tpcRecoParam->SetUseComposedCorrection(kFALSE);
+  tpcRecoParam->SetUseComposedCorrection(kTRUE);
   //
   tpcRecoParam->SetCorrectionHVandPTMode(1);
 
