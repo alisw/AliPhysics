@@ -50,7 +50,7 @@
 #include "AliBackgroundSelection.h"
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
-#include "AliAnalysisTaskZDCpppp.h"
+#include "AliAnalysisTaskZDCpp.h"
 
 ClassImp(AliAnalysisTaskZDCpp)
 
