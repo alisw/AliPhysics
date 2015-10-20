@@ -46,8 +46,12 @@ class AliGRPPreprocessor: public AliPreprocessor {
 		 kL3bkf8H1, kL3bkf8H2, kL3bkf8H3, kL3bkf8Temperature,
 		 kDipoleInsideH1, kDipoleInsideH2, kDipoleInsideH3, kDipoleInsideTemperature,
 		 kDipoleOutsideH1, kDipoleOutsideH2, kDipoleOutsideH3, kDipoleOutsideTemperature,
-                 kCavernTemperature, kCavernAtmosPressure, kSurfaceAtmosPressure, 
-		 kCavernAtmosPressure2};
+                 kCavernTemperature, 
+                 kL3Polarity_Redu, kDipolePolarity_Redu,  
+		 kL3Current_Redu, kDipoleCurrent_Redu,
+                 kCavernTemperature_Redu, 
+		 kCavernAtmosPressure, kSurfaceAtmosPressure, kCavernAtmosPressure2,
+		 kCavernAtmosPressure_Redu, kSurfaceAtmosPressure_Redu, kCavernAtmosPressure2_Redu};
 
 	enum DPHallProbes { 
 		 khpL3bsf17H1=0, khpL3bsf17H2, khpL3bsf17H3, khpL3bsf17Temperature, 
@@ -119,6 +123,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
   static const char*   fgkDCSDataPoints[];      //! names of dcs dps
   static const char*   fgkDCSDataPointsHallProbes[];      //! names of dcs dps for Hall Probes
   static const Int_t   fgknDCSDPHallProbes;           //! number of Hall Probes
+  static const Int_t   fgknDCSDP_Redu;               //! number of redundant dcs dps
 
   AliDCSSensorArray*   fPressure; //pressure array
 

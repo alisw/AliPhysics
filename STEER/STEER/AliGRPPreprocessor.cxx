@@ -82,61 +82,70 @@ const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fit
 //_______________________________________________________________
 
   const Int_t AliGRPPreprocessor::fgknDAQLbPar = 6; // num parameters in the logbook used to fill the GRP object
-  const Int_t AliGRPPreprocessor::fgknDCSDP = 48;   // number of dcs dps
+  const Int_t AliGRPPreprocessor::fgknDCSDP = 56;   // number of dcs dps
   const Int_t AliGRPPreprocessor::fgknDCSDPHallProbes = 40;   // number of dcs dps
+  const Int_t AliGRPPreprocessor::fgknDCSDP_Redu = 8;   // number of redundant dcs dps
   const Int_t AliGRPPreprocessor::fgknLHCDP = 9;   // number of dcs dps from LHC data
   const Int_t AliGRPPreprocessor::fgkDCSDPHallTopShift = 4;   // shift from the top to get tp the Hall Probes names in the list of DCS DPs
   const Int_t AliGRPPreprocessor::fgkDCSDPNonWorking = 2; // number of non working DCS DPs
   const char* AliGRPPreprocessor::fgkDCSDataPoints[AliGRPPreprocessor::fgknDCSDP] = {
-                   "L3Polarity",
-                   "DipolePolarity",
-                   "L3Current",
-                   "DipoleCurrent",
-		   "L3_BSF17_H1",
-		   "L3_BSF17_H2",
-		   "L3_BSF17_H3",
-		   "L3_BSF17_Temperature",
-		   "L3_BSF4_H1",
-		   "L3_BSF4_H2",
-		   "L3_BSF4_H3",
-		   "L3_BSF4_Temperature",
-		   "L3_BKF17_H1",
-		   "L3_BKF17_H2",
-		   "L3_BKF17_H3",
-		   "L3_BKF17_Temperature",
-		   "L3_BKF4_H1",
-		   "L3_BKF4_H2",
-		   "L3_BKF4_H3",
-		   "L3_BKF4_Temperature",
-		   "L3_BSF13_H1",
-		   "L3_BSF13_H2",
-		   "L3_BSF13_H3",
-		   "L3_BSF13_Temperature",
-		   "L3_BSF8_H1",
-		   "L3_BSF8_H2",
-		   "L3_BSF8_H3",
-		   "L3_BSF8_Temperature",
-		   "L3_BKF13_H1",
-		   "L3_BKF13_H2",
-		   "L3_BKF13_H3",
-		   "L3_BKF13_Temperature",
-		   "L3_BKF8_H1",
-		   "L3_BKF8_H2",
-		   "L3_BKF8_H3",
-		   "L3_BKF8_Temperature",
-		   "Dipole_Inside_H1",
-		   "Dipole_Inside_H2",
-		   "Dipole_Inside_H3",
-		   "Dipole_Inside_Temperature",
-		   "Dipole_Outside_H1",
-		   "Dipole_Outside_H2",
-		   "Dipole_Outside_H3",
-		   "Dipole_Outside_Temperature",
-                   "CavernTemperature",
-                   "CavernAtmosPressure",
-                   "SurfaceAtmosPressure",
-                   "CavernAtmosPressure2"
-                 };
+	  "L3Polarity",                //0 
+	  "DipolePolarity",            //1
+	  "L3Current",                 //2
+	  "DipoleCurrent",             //3
+	  "L3_BSF17_H1",               //4
+	  "L3_BSF17_H2",               //5
+	  "L3_BSF17_H3",               //6
+	  "L3_BSF17_Temperature",      //7
+	  "L3_BSF4_H1",                //8
+	  "L3_BSF4_H2",                //9
+	  "L3_BSF4_H3",                //10
+	  "L3_BSF4_Temperature",       //11
+	  "L3_BKF17_H1",               //12
+	  "L3_BKF17_H2",               //13
+	  "L3_BKF17_H3",               //14
+	  "L3_BKF17_Temperature",      //15
+	  "L3_BKF4_H1",                //16
+	  "L3_BKF4_H2",                //17
+	  "L3_BKF4_H3",                //18
+	  "L3_BKF4_Temperature",       //19
+	  "L3_BSF13_H1",               //20
+	  "L3_BSF13_H2",               //21
+	  "L3_BSF13_H3",               //22
+	  "L3_BSF13_Temperature",      //23
+	  "L3_BSF8_H1",                //24
+	  "L3_BSF8_H2",                //25
+	  "L3_BSF8_H3",                //26
+	  "L3_BSF8_Temperature",       //27
+	  "L3_BKF13_H1",               //28
+	  "L3_BKF13_H2",               //29
+	  "L3_BKF13_H3",               //30
+	  "L3_BKF13_Temperature",      //31
+	  "L3_BKF8_H1",                //32
+	  "L3_BKF8_H2",                //33
+	  "L3_BKF8_H3",                //34
+	  "L3_BKF8_Temperature",       //35
+	  "Dipole_Inside_H1",          //36
+	  "Dipole_Inside_H2",          //37
+	  "Dipole_Inside_H3",          //38
+	  "Dipole_Inside_Temperature", //39
+	  "Dipole_Outside_H1",         //40
+	  "Dipole_Outside_H2",         //41
+	  "Dipole_Outside_H3",         //42
+	  "Dipole_Outside_Temperature",//43
+	  "CavernTemperature",         //44
+	  "L3Polarity_Redu",           //45
+	  "DipolePolarity_Redu",       //46
+	  "L3Current_Redu",            //47
+	  "DipoleCurrent_Redu",        //48
+	  "CavernTemperature_Redu",    //49
+	  "CavernAtmosPressure",       //50
+	  "SurfaceAtmosPressure",      //51
+	  "CavernAtmosPressure2",      //52
+	  "CavernAtmosPressure_Redu",  //53
+	  "SurfaceAtmosPressure_Redu", //54
+	  "CavernAtmosPressure2_Redu"  //55
+  };
 
   const char* AliGRPPreprocessor::fgkDCSDataPointsHallProbes[AliGRPPreprocessor::fgknDCSDPHallProbes] = {
 		   "L3_BSF17_H1",
@@ -181,8 +190,8 @@ const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fit
 		   "Dipole_Outside_Temperature"
                  };
                  
-  const Short_t kSensors = 45; // start index position of sensor in DCS DPs
-  const Short_t kNumSensors = 3; // Number of sensors in DCS DPs (CavernAtmosPressure, SurfaceAtmosPressure, CavernAtmosPressure2)
+  const Short_t kSensors = 50; // start index position of sensor in DCS DPs
+  const Short_t kNumSensors = 6; // Number of sensors in DCS DPs (CavernAtmosPressure, SurfaceAtmosPressure, CavernAtmosPressure2, CavernAtmosPressure_Redu, SurfaceAtmosPressure_Redu, CavernAtmosPressure2_Redu)
 
 
   const char* AliGRPPreprocessor::fgkLHCDataPoints[AliGRPPreprocessor::fgknLHCDP] = {
@@ -319,7 +328,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// DAQ logbook     //
 	//=================//
 
-	Log("*************** Processing DAQ logbook");
+	Log("\n\n*************** Processing DAQ logbook");
 
 	UInt_t error = 0;
 	
@@ -354,7 +363,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// DCS FXS         //
 	//=================//
 
-	Log("*************** Processing DCS FXS");
+	Log("\n\n*************** Processing DCS FXS");
 
 	UInt_t iDcsFxs = ProcessDcsFxs(partition, detector);
 	if( iDcsFxs == 0 ) {
@@ -374,23 +383,25 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// DCS data points //
 	//=================//
 
-	Log("*************** Processing DCS DPs");
+	Log("\n\n*************** Processing DCS DPs");
 
 	Log(Form("Starting DCS Query at %d and finishing at %d",GetStartTimeDCSQuery(),GetEndTimeDCSQuery()));
 	Int_t entries = ProcessDcsDPs( valueMap, grpobj );
 	//Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-fgkDCSDPNonWorking));
-	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-fgknDCSDPHallProbes)); // Hall Probes DPs not used
+	Log(Form("\n\n--------------- Summary of DCS DPs Processing ---------------"));
+	Log(Form("entries found = %d (should be %d)",entries, fgknDCSDP-fgknDCSDPHallProbes-fgknDCSDP_Redu)); // Hall Probes DPs not used, and we also don't count twice the DPs with the redundant copy
 	if (fdaqStartEndTimeOk){
 	  //if( entries < fgknDCSDP - fgkDCSDPNonWorking ) { // L3_BSF4_H3, L3_BSF17_H1, L3_BSF17_H2, L3_BSF17_H3, L3_BSF17_Temperature are not working yet...  
-		if( entries < fgknDCSDP - fgknDCSDPHallProbes ) { // Hall Probes not considered
+		if( entries < fgknDCSDP - fgknDCSDPHallProbes -fgknDCSDP_Redu) { // Hall Probes not considered
 		  //Log(Form("Possible problem with the DCS data points!!! Only %d/%d entries found - Please read further for more details",entries,fgknDCSDP-fgkDCSDPNonWorking));
-			Log(Form("Possible problem with the DCS data points!!! Only %d/%d entries found - Please read further for more details",entries,fgknDCSDP-fgknDCSDPHallProbes));
+			Log(Form("Possible problem with the DCS data points!!! Only %d/%d entries found - Please read further for more details",entries,fgknDCSDP-fgknDCSDPHallProbes-fgknDCSDP_Redu));
 			Log(Form("The DPs giving problems were:"));
 			for (Int_t iDP = 0; iDP < fgknDCSDP; iDP++){
 				TObjString *dpString = (TObjString*)ffailedDPs->At(iDP);
 				if (dpString){
 					TString name = dpString->String();
 					if (iDP >= fgkDCSDPHallTopShift && iDP < fgkDCSDPHallTopShift+fgknDCSDPHallProbes) continue; // skipping Hall Probes, since they are not processed anymore
+					Log(Form("******** %s ******** not present, but foreseen --> causing an ERROR",name.Data()));
 					/* //now we skip the Hall Probes completely, so this is useless
 					   if (name != "L3_BSF4_H3" && name != "L3_BSF17_H1" && name != "L3_BSF17_H2" && name != "L3_BSF17_H3" && name != "L3_BSF17_Temperature" ){
 						Log(Form("******** %s ******** not present, but foreseen --> causing an ERROR",name.Data()));
@@ -411,7 +422,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// Trigger Configuration //
 	//=======================//
 
-	Log("*************** Processing Trigger Configuration");
+	Log("\n\n*************** Processing Trigger Configuration");
 
 	const char * triggerConf = GetTriggerConfiguration();
 
@@ -480,7 +491,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// Trigger Timing Parameters //
         //===========================//
 
-	Log("*************** Processing Trigger Time Params");
+	Log("\n\n*************** Processing Trigger Time Params");
 	
 	const char * triggerCTPtiming = GetCTPTimeParams();
 
@@ -550,7 +561,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// LTU Configuration         //
         //===========================//
 
-	Log("*************** Processing LTU Configuration");
+	Log("\n\n*************** Processing LTU Configuration");
 	
 	if (partition.IsNull() && !detector.IsNull()){ // standalone partition
 		Log("STANDALONE partition for current run, using LTU configuration dummy value");
@@ -636,7 +647,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	//=================//
 
 	if (runType == "PHYSICS"){  // processing the LHC file only in PHYSICS runs
-		Log("*************** Processing LHC Data");
+		Log("\n\n*************** Processing LHC Data");
 
 		UInt_t iLHCData = ProcessLHCData(grpobj);
 		
@@ -665,7 +676,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// SPD Mean Vertex  //
 	//==================//
 
-	Log("*************** Processing SPD Mean Vertex");
+	Log("\n\n*************** Processing SPD Mean Vertex");
 
 	if (runType == "PHYSICS"){
 		UInt_t iSPDMeanVertex = ProcessSPDMeanVertex();
@@ -684,7 +695,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 	// DQM FXS         //
 	//=================//
 
-	Log("*************** Processing DQM FXS");
+	Log("\n\n*************** Processing DQM FXS");
 
 	UInt_t iDqmFxs = ProcessDqmFxs();
 	if( iDqmFxs == 1 ) {
@@ -761,7 +772,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		// Processing data to be put in AliGRPObject
 
 		// Energy
-		Log("*************Energy ");
+		Log("\n   ************* Energy ");
 		TObjArray* energyArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[0]);
 		if (energyArray){			
 			Float_t energy = ProcessEnergy(energyArray,timeStart);
@@ -805,7 +816,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		                                                       // arrayTimes[4] --> BeamType2 (when written separate)
 
 		// BeamMode
-		Log("*************BeamMode (LHCState) ");
+		Log("\n   ************* BeamMode (LHCState) ");
 		Bool_t forceStableBeam = (Bool_t)(((TString)GetRunParameter("forceLHCReco")).Atoi());
 		AliInfoF("Query forceLHCReco logbook flag: %s",forceStableBeam ? "ON":"OFF");
 		TObjArray* beamModeArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[2]);		
@@ -878,7 +889,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		}
 		
 		// MachineMode
-		Log("*************MachineMode ");
+		Log("\n   ************* MachineMode ");
 		TObjArray* machineModeArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[1]);
 		Int_t nMachineMode = -1;
 		if (machineModeArray){
@@ -936,7 +947,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		}
 		
 		// BeamType1 and BeamType2 - both put in the same string
-		Log("*************BeamType ");
+		Log("\n   ************* BeamType ");
 		TObjArray* beamArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[3]);
 		if (beamArray){			
 			Int_t nBeam = beamArray->GetEntries();
@@ -1009,7 +1020,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		}		
 
 		// BeamType1 and BeamType2 - in separete string
-		Log("*************BeamType, 1 and 2 ");
+		Log("\n   ************* BeamType, 1 and 2 ");
 		Int_t indexBeamTypeString = 6;  // index of the string with the alias of BeanType1 in the array fgkLHCDataPoints
 		TString combinedBeamType = "-";  // combined beam type, built from beam type 1 and beam type 2
 		TString combinedBeamTypeFromLHC = "-";  // combined beam type, built from beam type 1 and beam type 2 AS SENT FROM LHC
@@ -1135,7 +1146,7 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		*/
 		
 		// Data Quality Flag --> storing start and end values of periods within the run during which the value was found to be FALSE
-		Log("*************Data Quality Flag ");
+		Log("\n   ************* Data Quality Flag ");
 		TObjArray* dataQualityArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[8]);
 		Int_t nDataQuality = -1;
 		Double_t timeDataQualityStart = -1; // min validity for Data Quality Flag
@@ -1919,68 +1930,86 @@ Int_t AliGRPPreprocessor::ProcessL3DPs(const TMap* valueMap, AliGRPObject* grpOb
 
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
+	Int_t indexDP_Redu = -1;
+	Int_t indexDP_Processed = -1;
 	Bool_t isZero = kTRUE; // flag to monitor L3Current. If set to true, the magnet is OFF, and the polarity can change
 
-	AliInfo(Form("==========L3Current==========="));
+	Log(Form("\n   ========== L3Current ==========="));
 	Bool_t outOfRange = kFALSE;  // flag to monitor if any value collected by DCS is out of range
 	indexDP = kL3Current;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
+	indexDP_Redu = kL3Current_Redu;
+	indexDP_Processed = indexDP;
+	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
 	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
+   	        Log(Form("%s not found in the map!!! We will now check the corresponding redundant entry (%s)",fgkDCSDataPoints[indexDP], fgkDCSDataPoints[indexDP_Redu]));
+		indexDP_Processed = indexDP_Redu;
+                array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
+	}       
+	if(!array) {
+	  Log(Form("Also the redundant point %s is not found in the map!!!", fgkDCSDataPoints[indexDP_Redu]));
+	}
 	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Float_t *floatDCS = ProcessFloatAllMagnet(array, indexDP, isZero);
-			if (floatDCS != NULL){
-				grpObj->SetL3Current(floatDCS);
-			}
-			else{
-				outOfRange = kTRUE;
-			}	
-			if (floatDCS){
-				delete[] floatDCS;
-				floatDCS = 0x0;
-			}
-		}
-		if (!outOfRange) {
-			nL3Entries++;
-			ffailedDPs->RemoveAt(indexDP);
-		}
+	  if (array->GetEntries() == 0){
+	    AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+	  }
+	  else {
+	    Float_t *floatDCS = ProcessFloatAllMagnet(array, indexDP_Processed, isZero);
+	    if (floatDCS != NULL){
+	      grpObj->SetL3Current(floatDCS);
+	      delete[] floatDCS;
+	      floatDCS = 0x0;
+	    }
+	    else{
+	      outOfRange = kTRUE;
+	    }	
+	  }
+	  if (!outOfRange) {
+	    nL3Entries++;
+	    ffailedDPs->RemoveAt(indexDP);
+	    ffailedDPs->RemoveAt(indexDP_Redu);
+	  }
+	
 	}
 
 	if (array) array = 0x0;
 
-	AliInfo(Form("==========L3Polarity==========="));
+	Log(Form("\n   ========== L3Polarity ==========="));
 	indexDP = kL3Polarity;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
+	indexDP_Redu = kL3Polarity_Redu;
+	indexDP_Processed = indexDP;
+	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
 	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
+   	        Log(Form("%s not found in the map!!! We will now check the corresponding redundant entry (%s)",fgkDCSDataPoints[indexDP], fgkDCSDataPoints[indexDP_Redu]));
+		indexDP_Processed = indexDP_Redu;
+                array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
+	}        
+        if(!array) {
+	  Log(Form("Also the redundant point %s is not found in the map!!!", fgkDCSDataPoints[indexDP_Redu]));
+	}
 	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s Polarity to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Bool_t change = kFALSE;
-			Char_t charDCS = ProcessBool(array,change);
-			if (change == kFALSE){
-				grpObj->SetL3Polarity(charDCS);
-				AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetL3Polarity())));
-				ffailedDPs->RemoveAt(indexDP);
-				nL3Entries++;
-			}
-			else if (isZero){
-				AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
-				ffailedDPs->RemoveAt(indexDP);
-				nL3Entries++;
-			}
-			else {
-				AliError(Form("%s value changed within the run, while the magnet was ON (according to the current), setting it to invalid and considering the DP as wrong",fgkDCSDataPoints[indexDP]));
-			}
-		}
+	  if (array->GetEntries() == 0){
+	    AliError(Form("No entries found in array! setting %s Polarity to invalid...",fgkDCSDataPoints[indexDP]));
+	  }
+	  else {
+	    Bool_t change = kFALSE;
+	    Char_t charDCS = ProcessBool(array, change);
+	    if (change == kFALSE){
+	      grpObj->SetL3Polarity(charDCS);
+	      AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetL3Polarity())));
+	      ffailedDPs->RemoveAt(indexDP);
+	      ffailedDPs->RemoveAt(indexDP_Redu);
+	      nL3Entries++;
+	    }
+	    else if (isZero){
+	      AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
+	      ffailedDPs->RemoveAt(indexDP);
+	      ffailedDPs->RemoveAt(indexDP_Redu);
+	      nL3Entries++;
+	    }
+	    else {
+	      AliError(Form("%s value changed within the run, while the magnet was ON (according to the current), setting it to invalid and considering the DP as wrong",fgkDCSDataPoints[indexDP]));
+	    }
+	  }
 	}
 
 	return nL3Entries;
@@ -1997,68 +2026,86 @@ Int_t AliGRPPreprocessor::ProcessDipoleDPs(const TMap* valueMap, AliGRPObject* g
 	Int_t nDipoleEntries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
+	Int_t indexDP_Redu = -1;
+	Int_t indexDP_Processed = -1;
 	Bool_t isZero = kTRUE; // flag to monitor L3Current. If set to true, the magnet is OFF, and the polarity can change
 
-	AliInfo(Form("==========DipoleCurrent==========="));
+	Log(Form("\n   ========== DipoleCurrent ==========="));
 	Bool_t outOfRange = kFALSE;  // flag to monitor if any value collected by DCS is out of range
 	indexDP = kDipoleCurrent;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
+	indexDP_Redu = kDipoleCurrent_Redu;
+	indexDP_Processed = indexDP;
+	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
 	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
-	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Float_t *floatDCS = ProcessFloatAllMagnet(array, indexDP, isZero);
-			if (floatDCS != NULL){
-				grpObj->SetDipoleCurrent(floatDCS);
-			} 
-			else{
-				outOfRange=kTRUE;
-			}
-			if (floatDCS){
-				delete[] floatDCS;
-				floatDCS = 0x0;
-			}
-		}
-		if (!outOfRange) {
-			nDipoleEntries++;
-			ffailedDPs->RemoveAt(indexDP);
-		}
+   	        Log(Form("%s not found in the map!!! We will now check the corresponding redundant entry (%s)",fgkDCSDataPoints[indexDP], fgkDCSDataPoints[indexDP_Redu]));
+		indexDP_Processed = indexDP_Redu;
+                array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
 	}
+	if(!array) {
+	  Log(Form("Also the redundant point %s is not found in the map!!!", fgkDCSDataPoints[indexDP_Redu]));
+	}
+	else {
+	  if (array->GetEntries() == 0){
+	    AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+	  }
+	  else {
+	    Float_t *floatDCS = ProcessFloatAllMagnet(array, indexDP_Processed, isZero);
+	    if (floatDCS != NULL){
+	      grpObj->SetDipoleCurrent(floatDCS);
+	      delete[] floatDCS;
+	      floatDCS = 0x0;
+	    } 
+	    else{
+	      outOfRange=kTRUE;
+	    }
+	  }
+	  if (!outOfRange) {
+	    nDipoleEntries++;
+	    ffailedDPs->RemoveAt(indexDP);
+	    ffailedDPs->RemoveAt(indexDP_Redu);
+	  }
+	}
+
 
 	if (array) array = 0x0;
 
-	AliInfo(Form("==========DipolePolarity==========="));
+	Log(Form("\n   ========== DipolePolarity ==========="));
 	indexDP = kDipolePolarity;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
+	indexDP_Redu = kDipolePolarity_Redu;
+	indexDP_Processed = indexDP;
+	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
 	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
+   	        Log(Form("%s not found in the map!!! We will now check the corresponding redundant entry (%s)",fgkDCSDataPoints[indexDP], fgkDCSDataPoints[indexDP_Redu]));
+		indexDP_Processed = indexDP_Redu;
+                array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
+	}
+	if(!array) {
+	  Log(Form("Also the redundant point %s is not found in the map!!!", fgkDCSDataPoints[indexDP_Redu]));
+	}
 	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Bool_t change = kFALSE;
-			Char_t charDCS = ProcessBool(array,change);
-			if (!change){
-				grpObj->SetDipolePolarity(charDCS);
-				AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetDipolePolarity())));
-				ffailedDPs->RemoveAt(indexDP);
-				nDipoleEntries++;
-			}
-			else if (isZero){
-				AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
-				ffailedDPs->RemoveAt(indexDP);
-				nDipoleEntries++;
-			}
-			else{
-				AliError(Form("%s value changed within the run while the magnet was ON (according to the current), setting it to invalid and considering the DP as wrong", fgkDCSDataPoints[indexDP]));
-			}
-		}
+	  if (array->GetEntries() == 0){
+	    AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+	  }
+	  else {
+	    Bool_t change = kFALSE;
+	    Char_t charDCS = ProcessBool(array, change);
+	    if (!change){
+	      grpObj->SetDipolePolarity(charDCS);
+	      AliInfo(Form("%s set to %d",fgkDCSDataPoints[indexDP],(Int_t)(grpObj->GetDipolePolarity())));
+	      ffailedDPs->RemoveAt(indexDP);
+	      ffailedDPs->RemoveAt(indexDP_Redu);
+	      nDipoleEntries++;
+	    }
+	    else if (isZero){
+	      AliInfo(Form("%s set to invalid, but magnet was OFF (according to the current), DP not considered wrong",fgkDCSDataPoints[indexDP]));
+	      ffailedDPs->RemoveAt(indexDP);
+	      ffailedDPs->RemoveAt(indexDP_Redu);
+	      nDipoleEntries++;
+	    }
+	    else{
+	      AliError(Form("%s value changed within the run while the magnet was ON (according to the current), setting it to invalid and considering the DP as wrong", fgkDCSDataPoints[indexDP]));
+	    }
+	  }
 	}
 
 	return nDipoleEntries;
@@ -2075,40 +2122,48 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	Int_t nEnvEntries = 0;
 	TObjArray *array = 0x0;
 	Int_t indexDP = -1;
+	Int_t indexDP_Redu = -1;
+	Int_t indexDP_Processed = -1;
 
-	AliInfo(Form("==========CavernTemperature==========="));
+	Log(Form("\n   ========== CavernTemperature ==========="));
 	Bool_t outOfRange = kFALSE;  // flag to monitor if any value collected by DCS is out of range
 	indexDP = kCavernTemperature;
-	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP]);
+	indexDP_Redu = kCavernTemperature_Redu;
+	indexDP_Processed = indexDP;
+	array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
 	if(!array) {
-		Log(Form("%s not found in the map!!!",fgkDCSDataPoints[indexDP]));
-	} 
+   	        Log(Form("%s not found in the map!!! We will now check the corresponding redundant entry (%s)",fgkDCSDataPoints[indexDP], fgkDCSDataPoints[indexDP_Redu]));
+		indexDP_Processed = indexDP_Redu;
+                array = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[indexDP_Processed]);
+	}
+	if(!array) {
+	  Log(Form("Also the redundant point %s is not found in the map!!!", fgkDCSDataPoints[indexDP_Redu]));
+	}
 	else {
-		if (array->GetEntries() == 0){
-			AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
-		}
-		else {
-			Float_t *floatDCS = ProcessFloatAll(array);
-			if (floatDCS != NULL){
-				grpObj->SetCavernTemperature(floatDCS);
-			}
-			else{
-				outOfRange = kTRUE;
-			}
-			if (floatDCS){
-				delete[] floatDCS;
-				floatDCS = 0x0;
-			}
-		}
-		if (!outOfRange) {
-			ffailedDPs->RemoveAt(indexDP);
-			nEnvEntries++;
-		}
+	  if (array->GetEntries() == 0){
+	    AliError(Form("No entries found in array! setting %s to invalid...",fgkDCSDataPoints[indexDP]));
+	  }
+	  else {
+	    Float_t *floatDCS = ProcessFloatAll(array);
+	    if (floatDCS != NULL){
+	      grpObj->SetCavernTemperature(floatDCS);
+	      delete[] floatDCS;
+	      floatDCS = 0x0;
+	    }
+	    else{
+	      outOfRange = kTRUE;
+	    }
+	  }
+	  if (!outOfRange) {
+	    ffailedDPs->RemoveAt(indexDP);
+	    ffailedDPs->RemoveAt(indexDP_Redu);
+	    nEnvEntries++;
+	  }
 	}
 
 	if (array) array = 0x0;
 
-	AliInfo(Form("========== AtmosPressures (Cavern + Surface + Cavern2) ==========="));
+	Log(Form("\n   ========== AtmosPressures (Cavern + Surface + Cavern2) ==========="));
 	AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap);
 	//dcsSensorArray->Print();
 	if( fPressure->NumFits()<kNumSensors ) {
@@ -2116,15 +2171,27 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 	} 
 	Log(Form("Number of fits performed = %d",fPressure->NumFits()));
 
-	AliInfo(Form("==========CavernAtmosPressure==========="));
+	Log(Form("\n   ========== CavernAtmosPressure ==========="));
 	indexDP = kCavernAtmosPressure;
+	indexDP_Redu = kCavernAtmosPressure_Redu;
 	AliDCSSensor* sensorCavernP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-	TGraph* graph = sensorCavernP2->GetGraph();
+	AliDCSSensor* sensorCavernP2_Redu = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP_Redu]);
+	TGraph* graph = 0x0;
+	TGraph* graph_Redu = 0x0;
+
+	if (sensorCavernP2) graph = sensorCavernP2->GetGraph();
 	AliDebug(3,Form("index = %d",indexDP));
 	AliDebug(3,Form("name = %s",fgkDCSDataPoints[indexDP]));
 	AliDebug(2,Form("graph = %p",graph));
 	AliDebug(3,Form("sensorCavernP2 = %p", sensorCavernP2));
-	if(sensorCavernP2->GetFit() || graph) {
+
+	if (sensorCavernP2_Redu) graph_Redu = sensorCavernP2_Redu->GetGraph();
+	AliDebug(3,Form("index_Redu = %d",indexDP_Redu));
+	AliDebug(3,Form("name_Redu = %s",fgkDCSDataPoints[indexDP_Redu]));
+	AliDebug(2,Form("graph_Redu = %p",graph_Redu));
+	AliDebug(3,Form("sensorCavernP2_Redu = %p", sensorCavernP2_Redu));
+
+	if(sensorCavernP2 && (sensorCavernP2->GetFit() || graph)) {
 		if (sensorCavernP2->GetFit()){
 			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP]));
 		}
@@ -2133,22 +2200,46 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		}
 		grpObj->SetCavernAtmosPressure(sensorCavernP2);
 		ffailedDPs->RemoveAt(indexDP);
+		ffailedDPs->RemoveAt(indexDP_Redu);
+		nEnvEntries++;
+	} 
+	else if(sensorCavernP2_Redu && (sensorCavernP2_Redu->GetFit() || graph_Redu)) {
+	  Log(Form("Neither graph nor fit found for sensor %s, we are using the redundant entry now",fgkDCSDataPoints[indexDP]));
+		if (sensorCavernP2_Redu->GetFit()){
+			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP_Redu]));
+		}
+		else {
+			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP_Redu]));
+		}
+		grpObj->SetCavernAtmosPressure(sensorCavernP2_Redu);
+		ffailedDPs->RemoveAt(indexDP);
+		ffailedDPs->RemoveAt(indexDP_Redu);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
 	else {
-		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
+		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s (we tried also the redundant copy) - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 	}
 	
-	AliInfo(Form("==========SurfaceAtmosPressure==========="));
+	Log(Form("\n   ========== SurfaceAtmosPressure ==========="));
 	indexDP = kSurfaceAtmosPressure;
+	indexDP_Redu = kSurfaceAtmosPressure_Redu;
 	AliDCSSensor* sensorP2 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-	graph = sensorP2->GetGraph();
+	AliDCSSensor* sensorP2_Redu = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP_Redu]);
+
+	if (sensorP2) graph = sensorP2->GetGraph();
 	AliDebug(3,Form("index = %d",indexDP));
 	AliDebug(3,Form("name = %s",fgkDCSDataPoints[indexDP]));
 	AliDebug(2,Form("graph = %p",graph));	
 	AliDebug(3,Form("sensorP2 = %p", sensorP2));
-	if(sensorP2->GetFit() || graph) {
+
+	if (sensorP2_Redu) graph_Redu = sensorP2_Redu->GetGraph();
+	AliDebug(3,Form("index_Redu = %d",indexDP_Redu));
+	AliDebug(3,Form("name_Redu = %s",fgkDCSDataPoints[indexDP_Redu]));
+	AliDebug(2,Form("graph_Redu = %p",graph_Redu));	
+	AliDebug(3,Form("sensorP2_Redu = %p", sensorP2_Redu));
+
+	if(sensorP2 && (sensorP2->GetFit() || graph)) {
 		if (sensorP2->GetFit()){
 			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP]));
 		}
@@ -2157,22 +2248,46 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		}
 		grpObj->SetSurfaceAtmosPressure(sensorP2);
 		ffailedDPs->RemoveAt(indexDP);
+		ffailedDPs->RemoveAt(indexDP_Redu);
+		nEnvEntries++;
+	} 
+	else if(sensorP2_Redu && (sensorP2_Redu->GetFit() || graph_Redu)) {
+       	        Log(Form("Neither graph nor fit found for sensor %s, we are using the redundant entry now",fgkDCSDataPoints[indexDP]));
+		if (sensorP2_Redu->GetFit()){
+			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP_Redu]));
+		}
+		else {
+			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP_Redu]));
+		}
+		grpObj->SetSurfaceAtmosPressure(sensorP2_Redu);
+		ffailedDPs->RemoveAt(indexDP);
+		ffailedDPs->RemoveAt(indexDP_Redu);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
 	else {
-		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
+		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s (we tried also the redundant copy) - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 	}
 
-	AliInfo(Form("==========CavernAtmosPressure2==========="));
+	Log(Form("\n   ========== CavernAtmosPressure2 ==========="));
 	indexDP = kCavernAtmosPressure2;
+	indexDP_Redu = kCavernAtmosPressure2_Redu;
 	AliDCSSensor* sensorCavernP22 = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP]);
-	graph = sensorCavernP22->GetGraph();
+	AliDCSSensor* sensorCavernP22_Redu = dcsSensorArray->GetSensor(fgkDCSDataPoints[indexDP_Redu]);
+
+	if (sensorCavernP22) graph = sensorCavernP22->GetGraph();
 	AliDebug(3,Form("index = %d",indexDP));
 	AliDebug(3,Form("name = %s",fgkDCSDataPoints[indexDP]));
 	AliDebug(2,Form("graph = %p",graph));	
 	AliDebug(3,Form("sensorCavernP2_2 = %p", sensorCavernP22));
-	if(sensorCavernP22->GetFit() || graph) {
+
+	if (sensorCavernP22_Redu) graph_Redu = sensorCavernP22_Redu->GetGraph();
+	AliDebug(3,Form("index_Redu = %d",indexDP_Redu));
+	AliDebug(3,Form("name_Redu = %s",fgkDCSDataPoints[indexDP_Redu]));
+	AliDebug(2,Form("graph_Redu = %p",graph_Redu));	
+	AliDebug(3,Form("sensorCavernP2_2_Redu = %p", sensorCavernP22_Redu));
+
+	if(sensorCavernP22 && (sensorCavernP22->GetFit() || graph)) {
 		if (sensorCavernP22->GetFit()){
 			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP]));
 		}
@@ -2181,11 +2296,25 @@ Int_t AliGRPPreprocessor::ProcessEnvDPs(TMap* valueMap, AliGRPObject* grpObj)
 		}
 		grpObj->SetCavernAtmosPressure2(sensorCavernP22);
 		ffailedDPs->RemoveAt(indexDP);
+		ffailedDPs->RemoveAt(indexDP_Redu);
+		nEnvEntries++;
+	} 
+	else if(sensorCavernP22_Redu && (sensorCavernP22_Redu->GetFit() || graph_Redu)) {
+	        Log(Form("Neither graph nor fit found for sensor %s, we are using the redundant entry now",fgkDCSDataPoints[indexDP]));
+		if (sensorCavernP22_Redu->GetFit()){
+			Log(Form("Fit for sensor %s found",fgkDCSDataPoints[indexDP_Redu]));
+		}
+		else {
+			Log(Form("Fit for sensor %s not found, but the graph is there - NOT going into error",fgkDCSDataPoints[indexDP_Redu]));
+		}
+		grpObj->SetCavernAtmosPressure2(sensorCavernP22_Redu);
+		ffailedDPs->RemoveAt(indexDP);
+		ffailedDPs->RemoveAt(indexDP_Redu);
 		nEnvEntries++;
 	} 
 	//if (sensorP2) delete sensorP2;
 	else {
-		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
+		Log(Form("ERROR!!! Neither graph nor fit found for sensor %s (we tried also the redundant copy) - this will not increase the number of found DCS DPs and will cause an error", fgkDCSDataPoints[indexDP] ));
 	}
 	
 	
