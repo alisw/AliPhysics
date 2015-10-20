@@ -145,7 +145,12 @@ AliNDLocalRegression::~AliNDLocalRegression(){
   delete fLocalFitParam;         // local fit parameters 
   delete fLocalFitQuality;       // local fit quality
   delete fLocalFitCovar;         // local fit covariance matrix
-
+  //
+  delete fLocalRobustStat;
+  //
+  delete[] fBinIndex;
+  delete[] fBinCenter;
+  delete[] fBinDelta;
 }
 
 void AliNDLocalRegression::SetHistogram(THn* histo ){
@@ -158,8 +163,12 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
   }
   fHistPoints=histo;
   fLocalFitParam = new TObjArray(fHistPoints->GetNbins());
+  fLocalFitParam->SetOwner(kTRUE);
   fLocalFitQuality = new TObjArray(fHistPoints->GetNbins());
+  fLocalFitQuality->SetOwner(kTRUE);
   fLocalFitCovar = new TObjArray(fHistPoints->GetNbins());
+  fLocalFitCovar->SetOwner(kTRUE);
+  
   //
   // Check histogram
   //
