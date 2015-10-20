@@ -185,7 +185,6 @@ set ( SRCS12
   )
 #file ( GLOB SRCS13 "ZDC/*.cxx" )
 set ( SRCS13
-  ZDC/AliAnalysisTaskZDC.cxx
   ZDC/AliAnalysisTaskZDCpA.cxx
   )
 #file ( GLOB SRCS14 "T0/*.cxx" )
