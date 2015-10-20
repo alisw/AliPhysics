@@ -202,7 +202,21 @@ public:
     kOneOverLegEff,          // 1 / single electron efficiency (correction factor)
     kV0Index0,               // v0 index 0
     kKinkIndex0,             // kink index 0
-      
+
+    //TRD online trackinfo
+    kTRDonlineA,             //transverse offset from nominal primary vertex
+    kTRDonlineLayerMask,     //tracklet map for given TRD online track
+    kTRDonlineFirstLayer,    //First layer having a tracklet associated to the track
+    kTRDonlinePID,           //TRD online track PID (number between 0-256, 2013 trigger threshols SE: 144, QU: 164)
+    kTRDonlinePt,            //TRD online track pt estimate (via ->Pt())
+    kTRDonlineStack,         //TRD online track Stack number (0-89), unique due to stack-wise tracking
+    kTRDonlineSector,        //TRD online track Sector number
+    kTRDonlineTrackInTime,   //TRD online track boolean, if in time window
+    kTRDonlineFlagsTiming,   //TRD online timing flags
+    kTRDonlineLabel,         //TRD online track label
+    kTRDonlineNTracklets,     //TRD online: number of contributing online tracklets
+   
+
     kParticleMax,             //
     // TODO: kRNClusters ??
     // AliDielectronPair specific variables
@@ -514,10 +528,11 @@ private:
   static Bool_t Req(ValueTypes var) { return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
   static void FillVarESDtrack(const AliESDtrack *particle,           Double_t * const values);
   static void FillVarAODTrack(const AliAODTrack *particle,           Double_t * const values);
+  static void FillVarVTrdTrack(const AliVParticle *particle,         Double_t * const values);
   static void FillVarMCParticle(const AliMCParticle *particle,       Double_t * const values);
   static void FillVarAODMCParticle(const AliAODMCParticle *particle, Double_t * const values);
   static void FillVarDielectronPair(const AliDielectronPair *pair,   Double_t * const values);
-  static void FillVarKFParticle(const AliKFParticle *pair,   Double_t * const values);
+  static void FillVarKFParticle(const AliKFParticle *pair,           Double_t * const values);
   
   static void FillVarVEvent(const AliVEvent *event,                  Double_t * const values);
   static void FillVarESDEvent(const AliESDEvent *event,              Double_t * const values);
@@ -533,7 +548,7 @@ private:
   static AliVEvent       *fgEvent;              // current event pointer
   static AliEventplane   *fgTPCEventPlane;      // current event tpc plane pointer
   static AliKFVertex     *fgKFVertex;           // kf vertex
-  static TProfile        *fgMultEstimatorAvg[4][9];  // multiplicity estimator averages (4 periods x 9 estimators)
+  static TProfile        *fgMultEstimatorAvg[6][9];  // multiplicity estimator averages (6 periods x 18 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
   static TObject         *fgLegEffMap;             // single electron efficiencies
@@ -840,6 +855,12 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
   //restore TPC signal if it was changed
   if (esdTrack) esdTrack->SetTPCsignal(origdEdx,esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
+
+  //fill info from AliVTrdTrack
+  if(Req(kTRDonlineA)||Req(kTRDonlineLayerMask)||Req(kTRDonlinePID)||Req(kTRDonlinePt)||Req(kTRDonlineStack)||Req(kTRDonlineTrackInTime)||Req(kTRDonlineSector)||Req(kTRDonlineFlagsTiming)||Req(kTRDonlineLabel)||Req(kTRDonlineNTracklets)||Req(kTRDonlineFirstLayer))
+    FillVarVTrdTrack(particle,values);
+
+
 }
 
 inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle, Double_t * const values)
@@ -1088,6 +1109,71 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kLegEff] = GetSingleLegEff(values);
     values[AliDielectronVarManager::kOneOverLegEff] = (values[AliDielectronVarManager::kLegEff]>0.0 ? 1./values[AliDielectronVarManager::kLegEff] : 0.0);
   }
+
+  //fill info from AliVTrdTrack
+  if(Req(kTRDonlineA)||Req(kTRDonlineLayerMask)||Req(kTRDonlinePID)||Req(kTRDonlinePt)||Req(kTRDonlineStack)||Req(kTRDonlineSector)||Req(kTRDonlineTrackInTime)||Req(kTRDonlineFlagsTiming)||Req(kTRDonlineLabel)||Req(kTRDonlineNTracklets)||Req(kTRDonlineFirstLayer))
+    FillVarVTrdTrack(particle,values);
+}
+
+inline void AliDielectronVarManager::FillVarVTrdTrack(const AliVParticle *particle, Double_t * const values)
+{
+  
+
+  //Initialisation of values
+  values[AliDielectronVarManager::kTRDonlineLayerMask] = -1.0;
+  values[AliDielectronVarManager::kTRDonlinePID] = -1.0 ;
+  values[AliDielectronVarManager::kTRDonlinePt] = 0;
+  values[AliDielectronVarManager::kTRDonlineStack] = -1.0;
+  values[AliDielectronVarManager::kTRDonlineSector] = -1.0;
+  values[AliDielectronVarManager::kTRDonlineTrackInTime] = -1.0;
+  values[AliDielectronVarManager::kTRDonlineFlagsTiming] = -1.0;
+  //	if(Req(kTRDonlineLabel))values[AliDielectronVarManager::kTRDonlineLabel] = ; ???
+  values[AliDielectronVarManager::kTRDonlineNTracklets]= -1.0;
+  values[AliDielectronVarManager::kTRDonlineFirstLayer] = -1.;
+
+
+  AliESDtrack *esdtrack = 0x0;
+  AliAODTrack *aodtrack = 0x0;
+  AliVEvent* ev = 0x0;
+  
+  if(particle->IsA() == AliESDtrack::Class()){
+    esdtrack=(AliESDtrack*)(particle);
+    ev =  (AliVEvent*) (esdtrack->GetESDEvent());
+  }
+  if(particle->IsA() == AliAODTrack::Class()){
+    aodtrack= (AliAODTrack*)(particle);
+    ev= (AliVEvent*) (aodtrack->GetAODEvent());
+  }
+ 
+  Int_t ngtutrk=ev->GetNumberOfTrdTracks();
+  AliVTrdTrack* gtutrk=0x0;
+  //loop over gtu track in order to find right matched track for offline
+  for(Int_t i=0;i<ngtutrk;i++){
+      
+    gtutrk = ev->GetTrdTrack(i);
+    if(gtutrk->GetTrackMatch()==particle){
+
+	  values[AliDielectronVarManager::kTRDonlineA] = gtutrk->GetA();
+
+      values[AliDielectronVarManager::kTRDonlineLayerMask] = gtutrk->GetLayerMask();
+      values[AliDielectronVarManager::kTRDonlinePID] = gtutrk->GetPID() ;
+      values[AliDielectronVarManager::kTRDonlinePt] = gtutrk->Pt();
+      values[AliDielectronVarManager::kTRDonlineStack] = gtutrk->GetStack();
+      values[AliDielectronVarManager::kTRDonlineSector] = gtutrk->GetSector();
+      values[AliDielectronVarManager::kTRDonlineTrackInTime] = gtutrk->GetTrackInTime();
+      values[AliDielectronVarManager::kTRDonlineFlagsTiming] = gtutrk->GetFlagsTiming();
+      values[AliDielectronVarManager::kTRDonlineLabel] = gtutrk->GetLabel();
+      values[AliDielectronVarManager::kTRDonlineNTracklets]= gtutrk->GetNTracklets();
+
+      for (Int_t iC=0; iC<6; iC++) {
+	    if (((gtutrk->GetLayerMask()) & (1<<(iC))) > 0) {
+	      values[AliDielectronVarManager::kTRDonlineFirstLayer] = iC;
+	      break;
+	    }
+	  }
+      }//if matching
+      //TO DO: what is the initialising value, if no match? -1? is this a problem?, is the PT-signed?
+  }//for loop over gtutracks
 
 }
 
@@ -2390,11 +2476,11 @@ inline void AliDielectronVarManager::InitEstimatorAvg(const Char_t* filename) //
   const Char_t* estimatorNames[9] = {"SPDmult05","SPDmult10","SPDmult16",
 				     "ITSTPC05", "ITSTPC10", "ITSTPC16", 
 				     "ITSSA05",  "ITSSA10",  "ITSSA16"};
-  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+  const Char_t* periodNames[6] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e", "LHC13b", "LHC13c"};
   TFile* file=TFile::Open(filename);
   if(!file) return;
   
-  for(Int_t ip=0; ip<4; ++ip) {
+  for(Int_t ip=0; ip<6; ++ip) {
     for(Int_t ie=0; ie<9; ++ie) {
       fgMultEstimatorAvg[ip][ie] = (TProfile*)(file->Get(Form("%s_%s",estimatorNames[ie],periodNames[ip]))->Clone(Form("%s_%s_clone",estimatorNames[ie],periodNames[ip])));
     }
@@ -2493,14 +2579,16 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   if(fgLegEffMap->IsA()== THnBase::Class()) {
     THnBase *eff = static_cast<THnBase*>(fgLegEffMap);
     Int_t dim=eff->GetNdimensions();
-    Int_t idx[dim];
+    Int_t *idx=new Int_t[dim];
     for(Int_t idim=0; idim<dim; idim++) {
       UInt_t var = GetValueType(eff->GetAxis(idim)->GetName());
-    idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
-    if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
+      idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
+      if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
     }
     //  printf(" bin content %f+-%f \n",eff->GetBinContent(idx), eff->GetBinError(idx));
-    return (eff->GetBinContent(idx));
+    const Double_t ret=(eff->GetBinContent(idx));
+    delete [] idx;
+    return ret;
   }
   return -1.;
 }
@@ -2514,14 +2602,16 @@ inline Double_t AliDielectronVarManager::GetPairEff(Double_t * const values) {
   if(fgPairEffMap->IsA()== THnBase::Class()) {
     THnBase *eff = static_cast<THnBase*>(fgPairEffMap);
     Int_t dim=eff->GetNdimensions();
-    Int_t idx[dim];
+    Int_t *idx=new Int_t[dim];
     for(Int_t idim=0; idim<dim; idim++) {
       UInt_t var = GetValueType(eff->GetAxis(idim)->GetName());
     idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
     if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
     }
     //  printf(" bin content %f+-%f \n",eff->GetBinContent(idx), eff->GetBinError(idx));
-    return (eff->GetBinContent(idx));
+    const Double_t ret=(eff->GetBinContent(idx));
+    delete [] idx;
+    return ret;
   }
   if(fgPairEffMap->IsA()== TSpline3::Class()) {
     TSpline3 *eff = static_cast<TSpline3*>(fgPairEffMap);
