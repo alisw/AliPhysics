@@ -2773,7 +2773,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       //MC gen Antilambdas                  
       
-      //Double_t fRapCurrentPart   = MyRapidity(mcp0->E(),mcp0->Pz());
+      // Double_t fRapCurrentPart   = MyRapidity(mcp0->E(),mcp0->Pz());
       Double_t fEtaCurrentPart   = mcp0->Eta();
       Double_t fPtCurrentPart    = mcp0->Pt();
       TString generatorName;
@@ -3634,14 +3634,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(!embeddedJet)continue;
 
-	  Double_t JetPt = jet->Pt();//jet pt spectrum of all jets before jet matching is applied 
+	//Double_t JetPt = jet->Pt();//jet pt spectrum of all jets before jet matching is applied 
 	  
 	  Double_t JetPtEmb = embeddedJet->Pt();
 	  fh1PtEmbBeforeMatch->Fill(JetPtEmb);
 	  
 	  if(ptFractionEmbedded >= fCutFractionPtEmbedded && deltaREmbedded <= fCutDeltaREmbedded){
 	    
-	    Float_t jetPtEmbAfterMatch = jet->Pt();
+	    //Float_t jetPtEmbAfterMatch = jet->Pt();
 	    Float_t jetPtEmbAfterMatchEmb = embeddedJet->Pt();
 
 	    fh1PtEmbAfterMatch->Fill(jetPtEmbAfterMatchEmb);
@@ -3657,13 +3657,13 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 	    
-	    Float_t jetPt = jet->Pt();
+	    Float_t jetpt = jet->Pt();
 	    
 	    Float_t trackPt = trackV->Pt();
 	    
 	    Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	    
-	    fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);//fill charged tracks into RecCuts histos
+	    fFFHistosRecCuts->FillFF(trackPt, jetpt, incrementJetPt);//fill charged tracks into RecCuts histos
 	    
 	    delete trackV;
 	  }
@@ -6263,11 +6263,11 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        Float_t fMROverPtLambda = fMassLambda*fROverPt; // m*R/pT
        
        //___________________
-       //Double_t fRap = -999;//init values
+      
        Double_t fEta = -999;
        Double_t fV0cosPointAngle = -999;
        Double_t fV0DecayLength = v0->DecayLengthV0(lPrimaryVtxPosition);
-       
+       Double_t fV0Rap = -999;
        Double_t fV0mom[3];
        
        fV0mom[0]=v0->MomV0X();
@@ -6405,8 +6405,12 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
        if((TMath::Abs(PosEta)>fCutPostrackEta) || (TMath::Abs(NegEta)>fCutNegtrackEta))continue;   //Daughters pseudorapidity cut
        if (fV0cosPointAngle < fCutV0cosPointAngle)	continue;                                       //cospointangle cut
        
-       //if(TMath::Abs(fRap) > fCutRap)continue;                                                     //V0 Rapidity Cut
-       if(TMath::Abs(fEta) > fCutEta) continue;                                                  //V0 Eta Cut
+       fV0Rap   = MyRapidity(v0->E(),v0->Pz());
+
+       if ((fCutRap > 0) && (TMath::Abs(fV0Rap) > fCutRap))continue;      //V0 Rapidity Cut
+
+       if ((fCutEta > 0) && (TMath::Abs(fEta) > fCutEta))continue;     //V0 Eta Cut
+                                                    
        if (fDcaV0Daughters > fCutDcaV0Daughters)continue;
        if ((fDcaPosToPrimVertex < fCutDcaPosToPrimVertex) || (fDcaNegToPrimVertex < fCutDcaNegToPrimVertex))continue;
        if ((fV0Radius < fCutV0RadiusMin) || (fV0Radius > fCutV0RadiusMax))continue;
@@ -6660,7 +6664,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfMCParticles(TList *outputlist, const Int_
   // get MC generated particles
 
   Int_t fPdgcodeCurrentPart = 0; //pdg code current particle
-  //Double_t fRapCurrentPart  = 0; //get rapidity
+  Double_t fRapCurrentPart  = 0; //get rapidity
   //Double_t fPtCurrentPart   = 0; //get transverse momentum
   Double_t fEtaCurrentPart = 0;  //get pseudorapidity 
 
@@ -6805,13 +6809,16 @@ Int_t AliAnalysisTaskJetChem::GetListOfMCParticles(TList *outputlist, const Int_
  
       //Is close enough to primary vertex to be considered as primary-like?
       
-      //fRapCurrentPart   = MyRapidity(p0->E(),p0->Pz());
+      fRapCurrentPart   = MyRapidity(p0->E(),p0->Pz());
       fEtaCurrentPart   = p0->Eta();
       //fPtCurrentPart    = p0->Pt();
             
-      if (TMath::Abs(fEtaCurrentPart) < fCutEta){
-	// if (TMath::Abs(fRapCurrentPart) > fCutRap)continue;	  //rap cut for crosschecks
-	
+
+      if ((fCutRap > 0) && (TMath::Abs(fRapCurrentPart) >= fCutRap))continue;
+
+
+      if ((fCutEta > 0) && (TMath::Abs(fEtaCurrentPart) >= fCutEta))continue;
+      	
 	if(particletype == kK0){                                      //MC gen. K0s  
 	  if (fPdgcodeCurrentPart==310){                       
 	    outputlist->Add(p0);
@@ -6829,7 +6836,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfMCParticles(TList *outputlist, const Int_
 	outputlist->Add(p0);
       }
     }
-  }
+  
   
   }//end  loop over MC generated particle
   
