@@ -142,6 +142,9 @@ AliNDLocalRegression::~AliNDLocalRegression(){
   delete fKernelWidthFormula;    //: separated  - kernel width for the regression
   delete fPolDimensionFormula;   //: separated  - polynom for the regression
   //
+  if (fLocalFitParam) fLocalFitParam->Delete();
+  if (fLocalFitQuality) fLocalFitQuality->Delete();
+  if (fLocalFitCovar) fLocalFitCovar->Delete();
   delete fLocalFitParam;         // local fit parameters 
   delete fLocalFitQuality;       // local fit quality
   delete fLocalFitCovar;         // local fit covariance matrix
