@@ -47,7 +47,8 @@ AliESDVZERO::AliESDVZERO()
       fTime[j]  = 0.0; 
       fWidth[j] = 0.0; 
       fBBFlag[j]= kFALSE;
-      fBGFlag[j]= kFALSE;  
+      fBGFlag[j]= kFALSE;
+      for(Int_t k = 0; k < 21; ++k) fIsBB[j][k] = fIsBG[j][k] = kFALSE;
    }
 }
 
@@ -76,6 +77,10 @@ AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
        fWidth[j]  = o.fWidth[j];
        fBBFlag[j] = o.fBBFlag[j];
        fBGFlag[j] = o.fBGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) {
+	 fIsBB[j][k] = o.fIsBB[j][k];
+	 fIsBG[j][k] = o.fIsBG[j][k];
+       }
    }
 }
 
@@ -107,6 +112,7 @@ AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
        fWidth[j]  = Width[j];
        fBBFlag[j] = BBFlag[j];
        fBGFlag[j] = BGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) fIsBB[j][k] = fIsBG[j][k] = kFALSE;
    }
 }
 
@@ -139,6 +145,10 @@ AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
        fWidth[j]  = o.fWidth[j];
        fBBFlag[j] = o.fBBFlag[j];
        fBGFlag[j] = o.fBGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) {
+	 fIsBB[j][k] = o.fIsBB[j][k];
+	 fIsBG[j][k] = o.fIsBG[j][k];
+       }
    }
   return *this;
 }

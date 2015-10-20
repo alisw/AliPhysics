@@ -51,6 +51,9 @@ public:
   virtual UShort_t GetTriggerChargeA() const { return fTriggerChargeA; }
   virtual UShort_t GetTriggerChargeC() const { return fTriggerChargeC; }
   virtual UShort_t GetTriggerBits() const { return fTriggerBits; }
+
+  virtual Bool_t   GetPFBBFlag(Int_t channel, Int_t clock) const { return fIsBB[channel][clock]; } 
+  virtual Bool_t   GetPFBGFlag(Int_t channel, Int_t clock) const { return fIsBG[channel][clock]; }   
   
 protected:
 
@@ -74,7 +77,10 @@ protected:
   UShort_t fTriggerChargeC;  // Sum of the trigger (clock=10) charge on C side
   UShort_t fTriggerBits;     // V0 trigger bits as defined in the firmware
 
-  ClassDef(AliAODVZERO,2)
+  Bool_t   fIsBB[64][21];  // 'Beam-Beam' flag for all channels and 21 clocks
+  Bool_t   fIsBG[64][21];  // 'Beam-Gas' flag for all channels and 21 clocks
+
+  ClassDef(AliAODVZERO,3)
 };
 
 #endif

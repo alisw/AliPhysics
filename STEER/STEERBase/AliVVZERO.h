@@ -26,7 +26,8 @@ public:
     kOnlineBitsFilled = BIT(17),
     kCorrectedForSaturation = BIT(18),
     kRobustMeanTime = BIT(19),
-    kTriggerChargeBitsFilled = BIT(20)
+    kTriggerChargeBitsFilled = BIT(20),
+    kPastFutureFlagsFilled = BIT(21)
   };
   enum Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
   enum TriggerBits {
@@ -76,6 +77,9 @@ public:
   virtual UShort_t GetTriggerChargeC() const = 0;
   virtual UShort_t GetTriggerBits() const = 0;
 
+  virtual Bool_t   GetPFBBFlag(Int_t channel, Int_t clock) const  = 0;
+  virtual Bool_t   GetPFBGFlag(Int_t channel, Int_t clock) const  = 0;
+
   static Float_t GetVZEROAvgPhi(Int_t channel)
   { return TMath::Pi() / 8 + TMath::Pi() / 4 * (channel%8); }
   static Float_t GetVZEROEtaMin(Int_t channel);
@@ -85,7 +89,7 @@ protected:
 
   Bool_t OutOfRange(Int_t i, const char *s, Int_t upper) const;
     
-  ClassDef(AliVVZERO,2)
+  ClassDef(AliVVZERO,3)
 };
 
 #endif

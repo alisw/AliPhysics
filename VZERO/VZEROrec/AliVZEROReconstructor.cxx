@@ -453,6 +453,15 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     triggerMask.FillMasks(fESDVZERO, fCalibData, fTimeSlewing);
   }
 
+  // Fill BB and BG flags for all channel in 21 clocks (called past-future flags)
+  for(Int_t i = 0; i < 64; ++i) {
+    for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {
+      fESDVZERO->SetPFBBFlag(i,iEv,fESDVZEROfriend->GetBBFlag(i,iEv));
+      fESDVZERO->SetPFBGFlag(i,iEv,fESDVZEROfriend->GetBGFlag(i,iEv));
+    }
+  }
+  fESDVZERO->SetBit(AliESDVZERO::kPastFutureFlagsFilled,kTRUE);
+
   if (esd) { 
      AliDebug(1, Form("Writing VZERO data to ESD tree"));
      esd->SetVZEROData(fESDVZERO);
