@@ -861,7 +861,7 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
     return kFALSE;
   }
   if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
-  storeOCDB = kFALSE;
+  //storeOCDB = kFALSE;
   out << cfg.GetGlobalFileName() <<  "   " << storeOCDB << endl;
 
   // regional config
@@ -873,7 +873,7 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
     return kFALSE;
   }
   if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
-  storeOCDB = kFALSE;
+  //storeOCDB = kFALSE;
   out << cfg.GetRegionalFileName() <<  "   " << storeOCDB << endl;
 
   // trigger scalers
@@ -1345,7 +1345,7 @@ int main(Int_t argc, Char_t **argv)
     // needed for streamer application
     gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo", "*", "TStreamerInfo", "RIO", "TStreamerInfo()"); 
 
-    printf("MTRda version v.15102015.01 \n");
+    printf("MTRda version v.20102015.01 \n");
   
     /* check that we got some arguments = list of files */
     if (argc<2) {
@@ -1704,7 +1704,7 @@ int main(Int_t argc, Char_t **argv)
 
       if (cfg.SaveScalers()) {
 	if (!overFlow && (deltaT > (Double_t)cfg.GetScalerRecTime())) {
-	  //printf("Write scalers after %d events\n",nEvents);
+	  printf("MTRda: write scalers after %d events\n",nEvents);
 	  writeScalers = kTRUE;
 	  Int_t ibw = 0;
 	  // global
@@ -1716,7 +1716,7 @@ int main(Int_t argc, Char_t **argv)
 	  buffer[ibw++] = ((UInt_t)(deltaT+0.5) >> 16) & 0xff;
 	  buffer[ibw++] = ((UInt_t)(deltaT+0.5) >>  8) & 0xff;
 	  buffer[ibw++] = ((UInt_t)(deltaT+0.5) >>  0) & 0xff;
-	  //printf("nev %u time %f \n",nCalibEvents,deltaT);
+	  printf("MTRda: calib events %u time %f \n",nCalibEvents,deltaT);
 	  for (Int_t bit = 0; bit < 6; bit++) {
 	    buffer[ibw++] = (glSc[bit] >> 24) & 0xff;
 	    buffer[ibw++] = (glSc[bit] >> 16) & 0xff;
@@ -1750,7 +1750,7 @@ int main(Int_t argc, Char_t **argv)
 	      }
 	    }
 	  }
-	  //printf("Write to buffer %d bytes.\n",ibw);
+	  printf("MTRda: write to buffer %d bytes.\n",ibw);
 	  fwrite(&buffer,ibw,1,fsc);
 	  // reset
 	  deltaT = 0.;
