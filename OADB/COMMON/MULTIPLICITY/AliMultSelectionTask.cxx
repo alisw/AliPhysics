@@ -784,26 +784,31 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fSelection -> Evaluate (fInput);
 
         //Determine Quantiles from calibration histogram
-        TH1F *lThisCalibHisto;
+        TH1F *lThisCalibHisto = 0x0;
         TString lThisCalibHistoName;
         Float_t lThisQuantile = -1;
         for(Long_t iEst=0; iEst<fSelection->GetNEstimators(); iEst++) {
             lThisCalibHistoName = Form("hCalib_%i_%s",fRunNumber,fSelection->GetEstimator(iEst)->GetName());
+            lThisCalibHisto = 0x0;
             lThisCalibHisto = oadbMultSelection->GetCalibHisto( lThisCalibHistoName );
-            lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( fSelection->GetEstimator(iEst)->GetValue() ));
-            
-            //cleanup: discard events according to criteria stored in OADB object
-            //Check Selections as they are in the fMultSelectionCuts Object
-            if( fMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
-            if( fMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lThisQuantile = 201;
-            if( TMath::Abs(fEvSel_VtxZ)          > fMultCuts->GetVzCut()      ) lThisQuantile = 202;
-            if( fMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
-            if( fMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
-            if( fMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
-
-            fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
-            
-            if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile; //Debug, please
+            if ( ! lThisCalibHisto ){
+                lThisQuantile = 199;
+                if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile;
+                fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
+                continue;
+            }else{
+                lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( fSelection->GetEstimator(iEst)->GetValue() ));
+                //cleanup: discard events according to criteria stored in OADB object
+                //Check Selections as they are in the fMultSelectionCuts Object
+                if( fMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           ) lThisQuantile = 200;
+                if( fMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          ) lThisQuantile = 201;
+                if( TMath::Abs(fEvSel_VtxZ)          > fMultCuts->GetVzCut()      ) lThisQuantile = 202;
+                if( fMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      ) lThisQuantile = 203;
+                if( fMultCuts->GetVertexConsistencyCut()      && ! fEvSel_HasNoInconsistentVertices  ) lThisQuantile = 204;
+                if( fMultCuts->GetTrackletsVsClustersCut()    && ! fEvSel_PassesTrackletVsCluster    ) lThisQuantile = 205;
+                if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile; //Debug, please
+                fSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
+            }
         }
 
         //Add to AliVEvent
