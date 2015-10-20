@@ -321,7 +321,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 {
   // T0 raw ->
   //
-  Float_t meanOrA, meanOrC, meanTVDC, meanQT1[24];
+  Float_t meanOrA=0, meanOrC=0, meanTVDC=0, meanQT1[24]={0};
   if (fMeanOrA==0)  meanOrA = fTime0vertex[0] + 587;
   else 
     meanOrA=fMeanOrA;
@@ -556,7 +556,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       Bool_t tr[5];
        Int_t trchan[5] = {50,51,52,55,56};
        for (Int_t i=0; i<5; i++) tr[i] = false; 
-       Int_t triggername[3] = {(Int_t)meanTVDC, (Int_t)meanOrA, (Int_t)meanOrC}; //20ns around 0
+       Int_t triggername[3];//20ns around 0
+       triggername[0] = (TMath::Abs(meanTVDC)<2147483647)?(Int_t)meanTVDC:0;
+       triggername[1] = (TMath::Abs(meanOrA) <2147483647)?(Int_t)meanOrA:0;
+       triggername[2] = (TMath::Abs(meanOrC) <2147483647)?(Int_t)meanOrC:0;
+
        for (Int_t itr=0; itr<5; itr++) {
          for (Int_t iHit=0; iHit<5; iHit++) 
            {
