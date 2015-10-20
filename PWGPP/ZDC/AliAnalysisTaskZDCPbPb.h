@@ -56,15 +56,13 @@ class AliAnalysisTaskZDCPbPb : public AliAnalysisTaskSE {
   TH1F    *fhZPApmc;		//! ZPA PMCs
   TH2F    *fhZNCCentroid;       //! ZNC centroid
   TH2F    *fhZNACentroid;       //! ZNA centroid
-  TH1F    *fhZNCemd;	     	//! ZNC sum low gain chain
-  TH1F    *fhZNAemd;	     	//! ZNA sum gain chain
   TH1F    *fhPMCZNCemd;      	//! ZNC PMC low gain chain
   TH1F    *fhPMCZNAemd;      	//! ZNA PMC low gain chain
   TH2F    *fDebunch;            //! TDC sum vs. diff
   TH1F    *fhTDCZNC;		//! ZNC TDC 
   TH1F    *fhTDCZNA;		//! ZNC TDC 
  
-  ClassDef(AliAnalysisTaskZDCPbPb,2); 
+  ClassDef(AliAnalysisTaskZDCPbPb,3); 
 
 };
 
