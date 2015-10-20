@@ -265,6 +265,18 @@ char* period = "b"
 	if(centralityIndex==3) task->SetCentrality(60,80);
 	if(centralityIndex==4) task->SetCentrality(80,100);
 	if(centralityIndex==5) task->SetCentrality(0,100);
+	
+	if(centralityIndex==6) task->SetCentrality(0,10);
+	if(centralityIndex==7) task->SetCentrality(10,20);
+	if(centralityIndex==8) task->SetCentrality(20,30);
+	if(centralityIndex==9) task->SetCentrality(30,40);
+	if(centralityIndex==10) task->SetCentrality(40,50);
+	if(centralityIndex==11) task->SetCentrality(50,60);
+	if(centralityIndex==12) task->SetCentrality(60,70);
+	if(centralityIndex==13) task->SetCentrality(70,80);
+	if(centralityIndex==14) task->SetCentrality(80,90);
+	if(centralityIndex==15) task->SetCentrality(90,100);
+	
 ///_______________________________________________________________________________________________________________
 
 ///_______________________________________________________________________________________________________________
