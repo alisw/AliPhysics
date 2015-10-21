@@ -94,23 +94,31 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
 #endif
     fHistos->CreateTH1(Form("hEventCount%s", triggername.Data()), Form("Event counter for trigger type %s", triggername.Data()), 1, 0.5, 1.5);
     fHistos->CreateTH2(Form("hPatchEnergy%s", triggername.Data()), Form("Patch energy versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
+    fHistos->CreateTH2(Form("hPatchET%s", triggername.Data()), Form("Patch transverse energy versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
     fHistos->CreateTH2(Form("hPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
     fHistos->CreateTH2(Form("hPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
+    fHistos->CreateTH2(Form("hPatchETEta%s", triggername.Data()), Form("Patch transverse energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
     fHistos->CreateTH2(Form("hPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
     fHistos->CreateTH2(Form("hEvSelPatchEnergy%s", triggername.Data()), Form("Patch energy versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
+    fHistos->CreateTH2(Form("hEvSelPatchET%s", triggername.Data()), Form("Patch transverse energy versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
     fHistos->CreateTH2(Form("hEvSelPatchADC%s", triggername.Data()), Form("Patch online ADC versus supermodule for trigger %s in selected events", triggername.Data()), 12, -0.5, 11.5, 2100, 0., 2100.);
     fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s in selected events", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
+    fHistos->CreateTH2(Form("hEvSelPatchETEta%s", triggername.Data()), Form("Patch transverse energy versus eta for trigger %s in selected events", triggername.Data()), 100, -0.7, 0.7, 200., 0., 200.);
     fHistos->CreateTH2(Form("hEvSelPatchADCEta%s", triggername.Data()), Form("Patch energy versus eta for trigger %s  in selected events", triggername.Data()), 100, -0.7, 0.7, 2100., 0., 2100.);
     for(int ism = 0; ism <= 9; ism++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
       fHistos->CreateTH2(Form("hPatchEnergyEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hPatchETEta%sSM%d", triggername.Data(), ism), Form("Patch transverse energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
       fHistos->CreateTH2(Form("hPatchADCEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d", triggername.Data(), ism), 100, -0.7, 0.7, 2100., 0., 2100.);
       fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hEvSelPatchETEta%sSM%d", triggername.Data(), ism), Form("Patch transverse energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 200., 0., 200.);
       fHistos->CreateTH2(Form("hEvSelPatchADCEta%sSM%d", triggername.Data(), ism), Form("Patch energy versus eta for trigger %s, Supermodule %d in selected events", triggername.Data(), ism), 100, -0.7, 0.7, 2100., 0., 2100.);
     }
     for(int isec = 4; isec <= 9; isec++){ // small sectors do not yet contribute to trigger decision, thus they are in here for the future
       fHistos->CreateTH2(Form("hPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hPatchETEta%sSector%d", triggername.Data(), isec), Form("Patch transverse energy versus eta for trigger %s Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
       fHistos->CreateTH2(Form("hPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s, Sector %d", triggername.Data(), isec), 100, -0.7, 0.7, 2100., 0., 2100.);
       fHistos->CreateTH2(Form("hEvSelPatchEnergyEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
+      fHistos->CreateTH2(Form("hEvSelPatchETEta%sSector%d", triggername.Data(), isec), Form("Patch transverse energy versus eta for trigger %s Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 200., 0., 200.);
       fHistos->CreateTH2(Form("hEvSelPatchADCEta%sSector%d", triggername.Data(), isec), Form("Patch energy versus eta for trigger %s, Sector %d in selectedEvents", triggername.Data(), isec), 100, -0.7, 0.7, 2100., 0., 2100.);
     }
   }
@@ -183,15 +191,19 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserExec(Option_t *){
 void AliAnalysisTaskEmcalOnlinePatchesRef::FillTriggerPatchHistos(const char *patchtype, const AliEmcalTriggerPatchInfo * const recpatch, Int_t supermoduleID, Int_t sector, Bool_t evsel){
   TString fbase = evsel ? "hEvSel" : "h";
   fHistos->FillTH2(Form("%sPatchEnergy%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetPatchE());
+  fHistos->FillTH2(Form("%sPatchET%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetLorentzVectorCenterGeo().Et());
   fHistos->FillTH2(Form("%sPatchADC%s", fbase.Data(), patchtype), supermoduleID, recpatch->GetADCAmp());
   fHistos->FillTH2(Form("%sPatchEnergyEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetPatchE());
+  fHistos->FillTH2(Form("%sPatchETEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetLorentzVectorCenterGeo().Et());
   fHistos->FillTH2(Form("%sPatchADCEta%s", fbase.Data(), patchtype), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   if(sector >= 4 && sector < 10){
     fHistos->FillTH2(Form("%sPatchEnergyEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetPatchE());
+    fHistos->FillTH2(Form("%sPatchETEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetLorentzVectorCenterGeo().Et());
     fHistos->FillTH2(Form("%sPatchADCEta%sSector%d", fbase.Data(), patchtype, sector), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   }
   if(supermoduleID >= 0 && supermoduleID < 10){
     fHistos->FillTH2(Form("%sPatchEnergyEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetPatchE());
+    fHistos->FillTH2(Form("%sPatchETEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetLorentzVectorCenterGeo().Et());
     fHistos->FillTH2(Form("%sPatchADCEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   }
 }
