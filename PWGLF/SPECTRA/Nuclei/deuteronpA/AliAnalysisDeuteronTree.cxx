@@ -346,27 +346,29 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
         fhNsigmaTPCvsMom->Fill(ptot,fNsigmaTPCd);
         fhNsigmaTOFvsMom->Fill(track->GetP(),fNsigmaTOFd);
         
-        // Eventually need some selections here to stop the tree getting too big (because of all the non-deuterons)
-        if (fNsigmaTPCd < fNsigmaTPCdMin || fNsigmaTPCd > fNsigmaTPCdMax) continue; // within TPC dEd/dx
-        if (fPt > fMinPtTOFCut && (fNsigmaTOFd > fNsigmaTOFdMin && fNsigmaTOFd < fNsigmaTOFdMax)) {
-            // Greater than a certain pt, must also satisfy TOF Nsigma
-            lNpion = 0;
-            // Only in this case loop to get pions
-            for (Int_t j=0; j<lESDevent->GetNumberOfTracks();++j) {
-                if (i!=j) { // The deuteron candidate should not be used as the pion
-                    AliESDtrack *pion = lESDevent->GetTrack(j);
-                    if (!fESDtrackCuts->AcceptTrack(pion)) continue;
-                    if (!pion->GetInnerParam()) continue;
-                    lETPCStatus = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, pion, AliPID::kPion, lTPCNsigma);
-                    if (TMath::Abs(lTPCNsigma)<3.5) {
-                        lNpion++;
-                    }
-                }
+        // Need some selections here to stop the tree getting too big (because of all the non-deuterons)
+        // outside TPC dEd/dx band
+        if (fNsigmaTPCd < fNsigmaTPCdMin || fNsigmaTPCd > fNsigmaTPCdMax) continue;
+        // over TOF pt threshold and outside TOF band
+        if ((fPt > fMinPtTOFCut && (fNsigmaTOFd < fNsigmaTOFdMin || fNsigmaTOFd > fNsigmaTOFdMax))) continue;
 
+        // Only in this case loop to get pions
+        lNpion = 0;
+        for (Int_t j=0; j<lESDevent->GetNumberOfTracks();++j) {
+            if (i!=j) { // The deuteron candidate should not be used as the pion
+                AliESDtrack *pion = lESDevent->GetTrack(j);
+                if (!fESDtrackCuts->AcceptTrack(pion)) continue;
+                if (!pion->GetInnerParam()) continue;
+                lETPCStatus = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, pion, AliPID::kPion, lTPCNsigma);
+                if (TMath::Abs(lTPCNsigma)<3.5) {
+                    lNpion++;
+                }
             }
-            fNpion = lNpion;
-            fTree->Fill();
+
         }
+        fNpion = lNpion;
+        fTree->Fill();
+        
         
     } // End track loop
     
