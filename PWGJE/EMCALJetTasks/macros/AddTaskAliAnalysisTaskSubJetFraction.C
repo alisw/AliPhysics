@@ -1,27 +1,32 @@
-AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char * njetsBase,
-                                                     const char * njetsUS,
-						     const char * njetsTrue,
-						     const Double_t R,
-						     const char * nrhoBase, 
-						     const char * ntracks, 
-                                                     const char * ntracksUS,
-						     const char * nclusters,
-						     const char * ntracksTrue,
-						     const char *type,				      
-						     const char *CentEst,
-						     Int_t SubJetAlgorithm,
-						     Float_t SubJetRadius,
-						     Float_t SubJetMinPt,
-						     Int_t       pSel,
-						     TString     trigClass      = "",
-						     TString     kEmcalTriggers = "",
-						     TString     tag            = "",
-						     AliAnalysisTaskSubJetFraction::JetShapeType jetShapeType,
-						     AliAnalysisTaskSubJetFraction::JetShapeSub jetShapeSub,
-						     AliAnalysisTaskSubJetFraction::JetSelectionType jetSelection,
-                 Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0. ) {
- 
-
+AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char * njetsData, //data jets
+								    const char * njetsTrue, //Pyhthia Particle Level
+								    const char * njetsDet,
+								    const char * njetsHybridUs,
+								    const char * njetsHybridS,
+								    const Double_t R,
+								    const char * nrhoBase, 
+								    const char * ntracksData,
+                                                                    const char * ntracksTrue,
+                                                                    const char * ntracksDet, 
+								    const char * ntracksHybridUs,
+								    const char * ntracksHybridS,
+								    const char * nclusters,
+								    const char *type,				      
+								    const char *CentEst,
+								    Double_t fSharedFractionPtMin,
+								    Int_t SubJetAlgorithm,
+								    Float_t SubJetRadius,
+								    Float_t SubJetMinPt,
+								    Int_t       pSel,
+								    TString     trigClass      = "",
+								    TString     kEmcalTriggers = "",
+								    TString     tag            = "",
+								    AliAnalysisTaskSubJetFraction::JetShapeType jetShapeType,
+								    AliAnalysisTaskSubJetFraction::JetShapeSub jetShapeSub,
+								    AliAnalysisTaskSubJetFraction::JetSelectionType jetSelection,
+								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0. ) {
+  
+  
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -40,7 +45,9 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       return NULL;
     }
 
-  TString wagonName = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
+  if (jetShapeType==AliAnalysisTaskSubJetFraction::kData) TString wagonName = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
+  if (jetShapeType==AliAnalysisTaskSubJetFraction::kTrue || jetShapeType==AliAnalysisTaskSubJetFraction::kTrueDet) TString wagonName = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
+  if (jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmbPart) TString wagonName = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
   //Configure jet tagger task
   AliAnalysisTaskSubJetFraction *task = new AliAnalysisTaskSubJetFraction(wagonName.Data());
 
@@ -52,93 +59,103 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   task->SetSubJetRadius(SubJetRadius);
   task->SetSubJetMinPt(SubJetMinPt);
   task->SetJetRadius(R);
+  task->SetSharedFractionPtMin(fSharedFractionPtMin);
   if (jetSelection == AliAnalysisTaskSubJetFraction::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
-  TString thename(njetsBase);
+  // TString thename(njetsBase);
   //if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
   //task->SetVzRange(-10.,10.);
 
-  AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
-   AliParticleContainer *trackContUS  = task->AddParticleContainer(ntracksUS);
+  AliParticleContainer *trackContData  = task->AddParticleContainer(ntracksData);
   AliParticleContainer *trackContTrue  = task->AddParticleContainer(ntracksTrue);
+  AliParticleContainer *trackContDet  = task->AddParticleContainer(ntracksDet);
+  AliParticleContainer *trackContHybridUs  = task->AddParticleContainer(ntracksHybridUs);
+  AliParticleContainer *trackContHybridS  = task->AddParticleContainer(ntracksHybridS);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
-
-  AliJetContainer *jetContBase=0x0;
-   AliJetContainer *jetContUS=0x0;
-  AliJetContainer *jetContTrue=0x0;
+  
+  AliJetContainer *JetContData=0x0;
+  AliJetContainer *JetContTrue=0x0;
+  AliJetContainer *JetContDet=0x0;
+  AliJetContainer *JetContHybridUs=0x0;
+  AliJetContainer *JetContHybridS=0x0;
 
   TString strType(type);
 
   if (jetShapeType==AliAnalysisTaskSubJetFraction::kTrue) {
-    jetContBase = task->AddJetContainer(njetsBase,strType,R);
-    if(jetContBase) {
-      jetContBase->SetRhoName(nrhoBase);
-      jetContBase->ConnectParticleContainer(trackCont);
-      jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
-      jetContBase->SetPythiaInfoName("PythiaInfo");
+    JetContTrue = task->AddJetContainer(njetsTrue,strType,R);
+    if(JetContTrue) {
+      JetContBase->SetRhoName(nrhoBase);
+      JetContBase->ConnectParticleContainer(trackContTrue);
+      JetContBase->ConnectClusterContainer(clusterCont);
+      JetContBase->SetPercAreaCut(0.6);
+      JetContBase->SetPythiaInfoName("PythiaInfo");
     }
   }
   
   if (jetShapeType==AliAnalysisTaskSubJetFraction::kTrueDet){
     
-    jetContBase = task->AddJetContainer(njetsBase,strType,R);
-    if(jetContBase) {
-      jetContBase->SetRhoName(nrhoBase);
-      jetContBase->ConnectParticleContainer(trackCont);
-      jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
-      jetContBase->SetPythiaInfoName("PythiaInfo");
+    JetContDet = task->AddJetContainer(njetsDet,strType,R);  //detector level MC
+    if(JetContDet) {
+      JetContDet->SetRhoName(nrhoBase);
+      JetContDet->ConnectParticleContainer(trackContDet);
+      JetContDet->ConnectClusterContainer(clusterCont);
+      JetContDet->SetPercAreaCut(0.6);
+      JetContDet->SetPythiaInfoName("PythiaInfo");
     }
 
-    jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
-    if(jetContTrue) {
-      jetContTrue->SetRhoName(nrhoBase);
-      jetContTrue->ConnectParticleContainer(trackContTrue);
-      jetContTrue->SetPercAreaCut(0.6); 
-      jetContTrue->SetPythiaInfoName("PythiaInfo");
+    JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //Particle Level MC
+    if(JetContTrue) {
+      JetContTrue->SetRhoName(nrhoBase);
+      JetContTrue->ConnectParticleContainer(trackContTrue);
+      JetContTrue->SetPercAreaCut(0.6); 
+      JetContTrue->SetPythiaInfoName("PythiaInfo");
     }
   }  
 
   if (jetShapeType==AliAnalysisTaskSubJetFraction::kData){
-    jetContBase = task->AddJetContainer(njetsBase,strType,R);
-    if(jetContBase) {
-      jetContBase->SetRhoName(nrhoBase);
-      jetContBase->ConnectParticleContainer(trackCont);
-      jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
-      if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) jetContBase->SetAreaEmcCut(-2);
+    JetContData = task->AddJetContainer(njetsData,strType,R); //Data
+    if(JetContData) {
+      JetContData->SetRhoName(nrhoBase);
+      JetContData->ConnectParticleContainer(trackContData);
+      JetContData->ConnectClusterContainer(clusterCont);
+      JetContData->SetPercAreaCut(0.6);
+      if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) JetContData->SetAreaEmcCut(-2);
     }    
   }
   
-  if (jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmb){
-    jetContBase = task->AddJetContainer(njetsBase,strType,R);
-    if(jetContBase) {
-      jetContBase->SetRhoName(nrhoBase);
-      jetContBase->ConnectParticleContainer(trackCont);
-      jetContBase->ConnectClusterContainer(clusterCont);
-      jetContBase->SetPercAreaCut(0.6);
-      jetContBase->SetPythiaInfoName("PythiaInfo");
-      if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) jetContBase->SetAreaEmcCut(-2);
+  if (jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmbPart){
+    JetContHybridS = task->AddJetContainer(njetsHybridS,strType,R);  //Subtracted Hybrid (Pb+Pyhthia Det Level)                                                               
+    if(JetContHybridS) {
+      JetContHybridS->SetRhoName(nrhoBase);
+      JetContHybridS->ConnectParticleContainer(trackContHybridS);
+      JetContHybridS->ConnectClusterContainer(clusterCont);
+      JetContHybridS->SetPercAreaCut(0.6);
+      JetContHybridS->SetPythiaInfoName("PythiaInfo");
+      if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) JetContHybridS->SetAreaEmcCut(-2); //??????????                                                             
     }
-
-    jetContTrue = task->AddJetContainer(njetsTrue,strType,R);
-    if(jetContTrue) {
-      jetContTrue->SetRhoName(nrhoBase);
-      jetContTrue->ConnectParticleContainer(trackContTrue);
-      jetContTrue->SetPercAreaCut(0.6); 
-      jetContTrue->SetPythiaInfoName("PythiaInfo");
-    }
-    if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){
-     jetContUS=task->AddJetContainer(njetsUS,strType,R);
-      if(jetContUS) {
-        jetContUS->SetRhoName(nrhoBase);
-        jetContUS->ConnectParticleContainer(trackContUS);
-        jetContUS->SetPercAreaCut(0.6);
-        jetContUS->SetPythiaInfoName("PythiaInfo");
+    if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){ //??????????????????????????                                                                                  
+      JetContHybridUs=task->AddJetContainer(njetsHybridUs,strType,R);     //Unsubtracted Hybrid                                                                              
+      if(JetContHybridUs) {
+        JetContHybridUs->SetRhoName(nrhoBase);
+        JetContHybridUs->ConnectParticleContainer(trackContHybridUs);
+        JetContHybridUs->SetPercAreaCut(0.6);
+        JetContHybridUs->SetPythiaInfoName("PythiaInfo");
       }
     }
-    
+    JetContDet = task->AddJetContainer(njetsDet,strType,R); //Pythia Detector Level                                                                                        
+    if(JetContDet) {
+      JetContDet->SetRhoName(nrhoBase);
+      JetContDet->ConnectParticleContainer(trackContDet);
+      JetContDet->SetPercAreaCut(0.6);
+      JetContDet->SetPythiaInfoName("PythiaInfo");
+    }
+    JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //Pyhthia Particle Level                                                                                
+    if(JetContTrue) {
+      JetContTrue->SetRhoName(nrhoBase);
+      JetContTrue->ConnectParticleContainer(trackContTrue);
+      JetContTrue->SetPercAreaCut(0.6);
+      JetContTrue->SetPythiaInfoName("PythiaInfo");
+    }
   }
   
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
@@ -156,8 +173,8 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
 
   if (jetShapeType == AliAnalysisTaskSubJetFraction::kTrue) contName1 += "_True"; 
   if (jetShapeType == AliAnalysisTaskSubJetFraction::kTrueDet) contName1 += "_TrueDet"; 
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kData) contName1 += "_Data"; 
-  if (jetShapeType == AliAnalysisTaskSubJetFraction::kDetEmb) contName1 += "_DetEmb"; 
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kData) contName1 += "_Data";  
+  if (jetShapeType == AliAnalysisTaskSubJetFraction::kDetEmbPart) contName1 += "_DetEmbPart";
  
   if (jetShapeSub == AliAnalysisTaskSubJetFraction::kNoSub) contName1 += "_NoSub"; 
   if (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub) contName1 += "_ConstSub"; 
