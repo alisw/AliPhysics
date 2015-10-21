@@ -35,8 +35,11 @@
 #pragma link C++ class AliEmcalTriggerDataGrid<int>+;
 #pragma link C++ class AliEmcalTriggerDataGrid<char>+;
 #pragma link C++ class AliEmcalTriggerMaker+;
-#pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition+;
-#pragma link C++ class AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer+;
+#pragma link C++ class AliEmcalTriggerMakerKernel+;
+#pragma link C++ class AliEmcalTriggerMakerTask+;
+#pragma link C++ class AliEmcalTriggerRawPatch+;
+#pragma link C++ class AliEmcalTriggerChannelContainer+;
+#pragma link C++ class AliEmcalTriggerChannelContainer::AliEmcalTriggerChannelPosition+;
 #pragma link C++ class AliEmcalTriggerPatchInfo+;
 #pragma link C++ class AliEmcalTriggerSetupInfo+;
 #pragma link C++ class AliEsdSkimTask+;

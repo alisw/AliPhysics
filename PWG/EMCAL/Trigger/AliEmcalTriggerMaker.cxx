@@ -34,8 +34,7 @@
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalTriggerMaker)
-ClassImp(AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition)
-ClassImp(AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer)
+
 /// \endcond
 
 using namespace std;
@@ -756,6 +755,8 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
   trigger->SetADCOfflineAmp(Int_t(adcOfflineAmp));
   trigger->SetTriggerBits(tBits);
   trigger->SetOffSet(offSet);
+  trigger->SetCol0(globCol);
+  trigger->SetRowStart(globRow);
   trigger->SetEdgeCell(globCol*2, globRow*2); // from triggers to cells
   //if(isOfflineSimple)trigger->SetOfflineSimple();
   if(fDoQA){
@@ -969,27 +970,4 @@ Bool_t AliEmcalTriggerMaker::CheckForL0(const AliVCaloTrigger& trg) const {
   }
   if (nvalid != 4) return false;
   return true;
-}
-
-/**
- * Add a new channel with the postion in column and row to the container, In case the channel
- * is already listed in the trigger channel container we don't add it again.
- * \param col Column of the channel
- * \param row Row of the channel
- */
-void AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer::AddChannel(int col, int row){
-  if(HasChannel(col, row)) return;
-  fChannels.Add(new AliEmcalTriggerChannelPosition(col, row));
-}
-
-/**
- * Check whether channel with the position (col, row) is listed in the trigger channel container
- * \param col Column of the channel
- * \param row Row of the channel
- * \return True if the channel is listed, false otherwise
- */
-Bool_t AliEmcalTriggerMaker::AliEmcalTriggerChannelContainer::HasChannel(int col, int row){
-  AliEmcalTriggerChannelPosition refChannel;
-  if(fChannels.FindObject(&refChannel)) return true;
-  return false;
 }

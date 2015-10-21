@@ -131,6 +131,18 @@ class AliEmcalTriggerPatchInfo: public TObject {
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
   /**
+   * Get the starting row of the patch
+   * @return Starting row of the patch
+   */
+  Int_t GetRowStart() const { return fRow0; }
+
+  /**
+   * Get the starting column of the patch
+   * @return Starting column of the patch
+   */
+  Int_t GetColStart() const { return fCol0; }
+
+  /**
    * Check whether patch is an EMCAL Level0 patch
    * @return True if patch is an EMCAL Level0 patch, false otherwise
    */
@@ -223,6 +235,18 @@ class AliEmcalTriggerPatchInfo: public TObject {
    * @return True if the patch is a recalculated gamma patch, false otherwise
    */
   Bool_t   IsRecalcGamma() const { return (Bool_t) ((fTriggerBits >> kRecalcGammaBitNum)&1); }
+
+  /**
+   * Set the starting row
+   * @param row0 Starting row of the patch
+   */
+  void SetRowStart(int row0) { fRow0 = row0; }
+
+  /**
+   * Set the starting column
+   * @param col0 Starting column of the patch
+   */
+  void SetCol0(int col0) { fCol0 = col0; }
 
  /**
   * Set the geometric center position of the patch
@@ -328,6 +352,8 @@ class AliEmcalTriggerPatchInfo: public TObject {
   Int_t             fTriggerBits;                   ///< trigger bit mask, see definitions in AliEmcalTriggerType and TriggerMakerBits_t (above)
   Int_t             fEdgeCell[2];                   ///< cell "bottom lower" edge (min phi, max eta)
   Int_t             fOffSet;                        ///< offset of bit (different in data and MC)
+  Int_t             fCol0;                          ///< Start column
+  Int_t             fRow0;                          ///< Start row
   AliEmcalTriggerBitConfig   fTriggerBitConfig;     ///< Trigger bit configuration
 
   /// \cond CLASSIMP

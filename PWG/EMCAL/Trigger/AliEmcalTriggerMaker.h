@@ -34,9 +34,9 @@ class THistManager;
 
 template<class T> class AliEmcalTriggerDataGrid;
 
-#include <TSortedList.h>
 #include "AliLog.h"
 #include "AliEmcalTriggerBitConfig.h"
+#include "AliEmcalTriggerChannelContainer.h"
 #include "AliAnalysisTaskEmcal.h"
 
 /**
@@ -87,94 +87,6 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   enum TriggerMakerBitConfig_t {
     kOldConfig = 0,///< Old configuration, no distinction between high and low threshold
     kNewConfig = 1 ///< New configuration, distiction between high and low threshold
-  };
-
-  /**
-   * \struct AliEmcalTriggerChannelPosition
-   * \brief 2D position of a trigger channel on the EMCAL surface
-   *
-   * This class represents the position of a trigger channel in a 2D coordinate
-   * system consisting of column and row.
-   */
-  struct AliEmcalTriggerChannelPosition : public TObject{
-  public:
-    /**
-     * Dummy (I/O) constructor, not to be used
-     */
-    AliEmcalTriggerChannelPosition(): fCol(-1), fRow(-1) { }
-    /**
-     * Main constuctor, setting the position in column and row
-     * \param col Column of the trigger channel
-     * \param row Row of the trigger channel
-     */
-    AliEmcalTriggerChannelPosition(int col, int row): fCol(col), fRow(row) { }
-    /**
-     * Destructor, nothing to do
-     */
-    virtual ~AliEmcalTriggerChannelPosition() {}
-
-    /**
-     * Get the column of the channel
-     * \return  The column of the channel
-     */
-    int GetCol() const { return fCol; }
-    /**
-     * Get the row of the channel
-     * \return The row of the channel
-     */
-    int GetRow() const { return fRow; }
-
-    /**
-     * Set the colummn of the channel
-     * \param col The column of the channel
-     */
-    void SetCol(int col) { fCol = col; }
-    /**
-     * Set the row of the channel
-     * \param row The row of the channel
-     */
-    void SetRow(int row) { fRow = row; }
-
-    inline virtual Bool_t IsEqual(const TObject *ref);
-    inline virtual Int_t Compare(const TObject *ref);
-  private:
-    Int_t                    fCol;            ///< Column of the trigger channel
-    Int_t                    fRow;            ///< Row of the trigger channel
-
-    /// \cond CLASSIMP
-    ClassDef(AliEmcalTriggerChannelPosition, 1);
-    /// \endcond
-  };
-
-  /**
-   * \struct AliEmcalTriggerChannelContainer
-   * \brief Structure for position of trigger channels
-   *
-   * This structure is a container for trigger channels in col-row space with
-   * a given mask. Channels can only be added to the container, or it can be
-   * checked whether the channel is listed in the container.
-   */
-  struct AliEmcalTriggerChannelContainer : public TObject {
-  public:
-    /**
-     * Constructor
-     */
-    AliEmcalTriggerChannelContainer(): fChannels() {}
-
-    /**
-     * Destructor, cleans up the container
-     */
-    virtual ~AliEmcalTriggerChannelContainer(){}
-
-    void AddChannel(int col, int row);
-    bool HasChannel(int col, int row);
-
-  private:
-    TSortedList             fChannels;      ///< Container for listed channels
-
-    /// \cond CLASSIMP
-    ClassDef(AliEmcalTriggerChannelContainer, 1);
-    /// \endcond
   };
 
   AliEmcalTriggerMaker();
@@ -229,10 +141,10 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   AliEmcalTriggerSetupInfo                  *fCaloTriggerSetupOut;        //!<! trigger setup
   AliAODCaloTrigger                         *fSimpleOfflineTriggers;      //!<! simple offline trigger
   AliVVZERO                                 *fV0;                         //!<! V0 object
-  AliEmcalTriggerDataGrid<float>          *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
-  AliEmcalTriggerDataGrid<double>         *fPatchADCSimple;             //!<! patch map for simple offline trigger
-  AliEmcalTriggerDataGrid<int>            *fPatchADC;                   //!<! ADC values map
-  AliEmcalTriggerDataGrid<char>           *fLevel0TimeMap;              //!<! Map needed to store the level0 times
+  AliEmcalTriggerDataGrid<float>            *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEmcalTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
+  AliEmcalTriggerDataGrid<int>              *fPatchADC;                   //!<! ADC values map
+  AliEmcalTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
   Int_t                                     fITrigger;                    //!<! trigger counter
   Bool_t                                    fRunTriggerType[5];           ///< Run patch maker for a given trigger type
   Bool_t                                    fDoQA;                        ///< Fill QA histograms
@@ -249,37 +161,6 @@ class AliEmcalTriggerMaker : public AliAnalysisTaskEmcal {
   ClassDef(AliEmcalTriggerMaker, 6) // Task to make array of EMCAL trigger patches
   /// \endcond
 };
-
-/**
- * Check if the object is equal to object ref. Object can only be equal if ref is of
- * the same type (AliEmcalTrigger channel position). If this is the case, col and row
- * of the two objects have to match.
- * \param ref The object to check
- * \return True if objects are equal, false otherwise
- */
-Bool_t AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition::IsEqual(const TObject *ref){
-  const AliEmcalTriggerChannelPosition *refpos = dynamic_cast<const AliEmcalTriggerChannelPosition *>(ref);
-  if(!refpos) return false;
-  return fCol == refpos->fCol && fRow == refpos->fRow;
-}
-
-/**
- * Compare objects. If objects differ, return always greater (+1). Otherwise compare col and
- * row of the object. Col has priority with respect to row.
- * \param ref The object ot comparte to
- * \return 0 if objects are equal, -1 if this object is smaller, +1 if this object is larger.
- */
-Int_t AliEmcalTriggerMaker::AliEmcalTriggerChannelPosition::Compare(const TObject *ref){
-  const AliEmcalTriggerChannelPosition *refpos = dynamic_cast<const AliEmcalTriggerChannelPosition *>(ref);
-  if(!refpos) return 1;
-  if(fCol == refpos->fCol){
-    if(fRow == refpos->fRow) return 0;
-    else if(fRow < refpos->fRow) return -1;
-    else return 1;
-  }
-  else if(fCol < refpos->fCol) return -1;
-  else return 1;
-}
 
 /**
  * Check whehter trigger is jet patch trigger according to trigger bits
