@@ -151,14 +151,15 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
   // cout_hist = mgr->CreateContainer(Form("output_%1.0f_%1.0f",minc,maxc), TList::Class(), AliAnalysisManager::kOutputContainer, outFileName);
   
   //suggestion by Ramona:  
+  //        TString outputFileName = AliAnalysisManager::GetCommonFileName();    
   TString outputFileName = Form("%s", AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *cout_hist = mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
  
-
   mgr->ConnectInput (taskHighPtDeDx, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskHighPtDeDx, 1, cout_hist);
-    
-  // Return task pointer at the end
+
+
+ // Return task pointer at the end
   return taskHighPtDeDx;
 }
 if(typerun==3){//pp analysis
