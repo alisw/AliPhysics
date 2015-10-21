@@ -24,7 +24,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
     kTrue = 0,   // generated jets only 
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
-    kDetEmb = 3  //detector embedded jets 
+    kDetEmbPart = 3  //detector embedded jets    
   };
   enum JetShapeSub {
     kNoSub = 0, 
@@ -66,6 +66,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetSubJetRadius(Float_t SubJetRadius)            {fSubJetRadius=SubJetRadius;}
   void SetSubJetMinPt(Float_t SubJetMinPt)              {fSubJetMinPt=SubJetMinPt;}
   void SetRMatched(Double_t RMatched)                     {fRMatched=RMatched;}
+  void SetSharedFractionPtMin(Double_t SharedFractionPtMin) {fSharedFractionPtMin=SharedFractionPtMin;}
+
  protected:
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
@@ -104,6 +106,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Float_t                             fSubJetMinPt; 
   Double_t                            fJetRadius;
   Double_t                            fRMatched; 
+  Double_t                            fSharedFractionPtMin;
   Double_t                            Background_Median;
   Double_t                            Background_Fluc;
   
@@ -193,6 +196,12 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhSubJetiness2JetPt_1;
   TH2F                                *fhSubJetiness2JetPt_2;
   TH1F                                *fh2to1SubJetinessRatio;
+  TH1F                                *fh4to3SubJetinessRatio;
+  TH1F                                *fh4to2SubJetinessRatio;
+  TH1F                                *fh4to1SubJetinessRatio;
+  TH1F                                *fh3to2SubJetinessRatio;
+  TH1F                                *fh3to1SubJetinessRatio;
+  TH1F                                *fhTest;
   TH1F                                *fh2to1SubJetinessRatio_1;
   TH1F                                *fh2to1SubJetinessRatio_2;
   TH2F                                *fh2to1SubJetinessRatioJetPt;
