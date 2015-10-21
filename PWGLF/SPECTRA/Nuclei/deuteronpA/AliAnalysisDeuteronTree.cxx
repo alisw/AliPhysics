@@ -56,7 +56,9 @@ AliAnalysisDeuteronTree::AliAnalysisDeuteronTree()
 fMCtrue(0),
 fRapCMSpA(0),
 fUtils(0),
+fTimeStamp(0),
 fCentrality(0),
+fPtCor(0),
 fPt(0),
 fMom(0),
 fRapd(0),
@@ -64,11 +66,20 @@ fNsigmaTPCd(0),
 fNsigmaTOFd(0),
 fDcaXYd(0),
 fMcCode(0),
+fNpion(0),
 fhZVertex(0),
 fhCentrality(0),
+fhNsigmaTPCvsMom(0),
+fhNsigmaTOFvsMom(0),
 fMomCorrConstA(0),
 fMomCorrConstB(0),
-fMomCorrPower(0)
+fMomCorrPower(0),
+fMinPtCut(0),
+fMinPtTOFCut(0),
+fNsigmaTOFdMax(0),
+fNsigmaTOFdMin(0),
+fNsigmaTPCdMax(0),
+fNsigmaTPCdMin(0)
 {
     //Default constructor
 }
@@ -79,7 +90,9 @@ AliAnalysisDeuteronTree::AliAnalysisDeuteronTree(const char *name)
 fMCtrue(0),
 fRapCMSpA(0),
 fUtils(0),
+fTimeStamp(0),
 fCentrality(0),
+fPtCor(0),
 fPt(0),
 fMom(0),
 fRapd(0),
@@ -87,11 +100,20 @@ fNsigmaTPCd(0),
 fNsigmaTOFd(0),
 fDcaXYd(0),
 fMcCode(0),
+fNpion(0),
 fhZVertex(0),
 fhCentrality(0),
+fhNsigmaTPCvsMom(0),
+fhNsigmaTOFvsMom(0),
 fMomCorrConstA(0),
 fMomCorrConstB(0),
-fMomCorrPower(0)
+fMomCorrPower(0),
+fMinPtCut(0),
+fMinPtTOFCut(0),
+fNsigmaTOFdMax(0),
+fNsigmaTOFdMin(0),
+fNsigmaTPCdMax(0),
+fNsigmaTPCdMin(0)
 {
     //Standard constructor
     fMCtrue = kFALSE;
@@ -134,6 +156,13 @@ void AliAnalysisDeuteronTree::Initialize()
     fMomCorrConstB = 0.651111;
     fMomCorrPower = 5.27268;
     
+    fMinPtCut = 0.5;
+    fMinPtTOFCut = 1.0;
+    fNsigmaTOFdMax = 5.0;
+    fNsigmaTOFdMin = -5.0;
+    fNsigmaTPCdMax = 5.0;
+    fNsigmaTPCdMin = -5.0;
+
     AliInfo("Initialization complete");
 }
 
@@ -199,8 +228,15 @@ void AliAnalysisDeuteronTree::UserCreateOutputObjects()
     fhCentrality = new TH1F("hCentrality",";Centrality(V0A) %;Counts/1%",100,0,100);
     fListHist->Add(fhCentrality);
 
+    fhNsigmaTPCvsMom = new TH2F("hNsigmaTPCvsMom","n_{#sigma} TPC distribution;p (GeV/#it{c});n_{#sigma}^deuteron",300,0.0,6.0,200,-15.0,5);
+    fListHist->Add(fhNsigmaTPCvsMom);
+
+    fhNsigmaTOFvsMom = new TH2F("hNsigmaTOFvsMom","n_{#sigma} TOF distribution;p (GeV/#it{c});n_{#sigma}^deuteron",300,0.0,6.0,200,-15.0,5);
+    fListHist->Add(fhNsigmaTOFvsMom);
+
     // fTree Branch definitions
     fTree->Branch("fCentrality",&fCentrality,"fCentrality/F");
+    fTree->Branch("fPtCor",&fPtCor,"fPtCor/F");
     fTree->Branch("fPt",&fPt,"fPt/F");
     fTree->Branch("fMom",&fMom,"fMom/F");
     fTree->Branch("fRapd",&fRapd,"fRapd/F");
@@ -208,7 +244,7 @@ void AliAnalysisDeuteronTree::UserCreateOutputObjects()
     fTree->Branch("fNsigmaTOFd",&fNsigmaTOFd,"fNsigmaTOFd/F");
     fTree->Branch("fDcaXYd",&fDcaXYd,"fDcaXYd/F");
     fTree->Branch("fMcCode",&fMcCode,"fMcCode/I");
-
+    fTree->Branch("fNpion",&fNpion,"fNpion/I");
     PostData(1, fListHist);
     PostData(2, fTree);
 
@@ -264,8 +300,12 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
     fCentrality = centrality->GetCentralityPercentile("V0A");
     fhCentrality->Fill(fCentrality);
     
+    fTimeStamp = lESDevent->GetTimeStamp();
+    
     Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
     Double_t lTOFNsigma, lTPCNsigma, lEnergyDeuteron, lPz;
+    Int_t lNpion;
+    
     for (Int_t i=0;i<lESDevent->GetNumberOfTracks();++i) {
         //
         AliESDtrack *track = lESDevent->GetTrack(i);
@@ -273,22 +313,26 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
         if (!track->GetInnerParam()) continue;
         
         Double_t ptot = track->GetInnerParam()->GetP(); // momentum for dEdx determination
-        fMom=ptot; // Shouldn't this be corrected for the different mass assumption as below
+        fMom=ptot*track->Charge(); // Shouldn't this be corrected for the different mass assumption as below
         // i.e find uncorrected pz, correct pt and then recombine to get corrected ptot?
         
         //
         // momentum correction for different mass assumption in tracking
         //
-        fPt = track->Pt()/(1 - fMomCorrConstA/TMath::Power(track->Pt() + fMomCorrConstB, fMomCorrPower));
+        fPt = track->Pt();
+        fPtCor = track->Pt()/(1 - fMomCorrConstA/TMath::Power(track->Pt() + fMomCorrConstB, fMomCorrPower));
         
         track->GetImpactParameters(dca, cov);
         if (!fESDtrackCuts->AcceptTrack(track)) continue;
-
+        if (track->Pt()< fMinPtCut) continue;
+        
         AliPIDResponse::EDetPidStatus lETOFStatus, lETPCStatus;
         lETOFStatus = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kDeuteron, lTOFNsigma);
+        fNsigmaTOFd = -999;
         if(lETOFStatus==AliPIDResponse::kDetPidOk) fNsigmaTOFd = lTOFNsigma;
         
         lETPCStatus = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron, lTPCNsigma);
+        fNsigmaTPCd = -999;
         if(lETPCStatus==AliPIDResponse::kDetPidOk) fNsigmaTPCd = lTPCNsigma;
         
         fDcaXYd = dca[0];
@@ -299,8 +343,31 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
         fRapd = 0.5*TMath::Log((lEnergyDeuteron + lPz)/(lEnergyDeuteron - lPz));
         fMcCode = 0;
         
+        fhNsigmaTPCvsMom->Fill(ptot,fNsigmaTPCd);
+        fhNsigmaTOFvsMom->Fill(track->GetP(),fNsigmaTOFd);
+        
         // Eventually need some selections here to stop the tree getting too big (because of all the non-deuterons)
-        fTree->Fill();
+        if (fNsigmaTPCd < fNsigmaTPCdMin || fNsigmaTPCd > fNsigmaTPCdMax) continue; // within TPC dEd/dx
+        if (fPt > fMinPtTOFCut && (fNsigmaTOFd > fNsigmaTOFdMin && fNsigmaTOFd < fNsigmaTOFdMax)) {
+            // Greater than a certain pt, must also satisfy TOF Nsigma
+            lNpion = 0;
+            // Only in this case loop to get pions
+            for (Int_t j=0; j<lESDevent->GetNumberOfTracks();++j) {
+                if (i!=j) { // The deuteron candidate should not be used as the pion
+                    AliESDtrack *pion = lESDevent->GetTrack(j);
+                    if (!fESDtrackCuts->AcceptTrack(pion)) continue;
+                    if (!pion->GetInnerParam()) continue;
+                    lETPCStatus = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, pion, AliPID::kPion, lTPCNsigma);
+                    if (TMath::Abs(lTPCNsigma)<3.5) {
+                        lNpion++;
+                    }
+                }
+
+            }
+            fNpion = lNpion;
+            fTree->Fill();
+        }
+        
     } // End track loop
     
     // Output data
