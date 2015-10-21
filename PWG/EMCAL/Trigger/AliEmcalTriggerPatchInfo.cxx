@@ -30,6 +30,8 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo() :
   fADCOfflineAmp(0),
   fTriggerBits(0),
   fOffSet(0),            // To be set explictly by the trigger maker in order to avoid hard coding
+  fRow0(-1),
+  fCol0(-1),
   fTriggerBitConfig()
 {
   fEdgeCell[0] = -1;
@@ -51,6 +53,8 @@ AliEmcalTriggerPatchInfo::AliEmcalTriggerPatchInfo(const AliEmcalTriggerPatchInf
   fADCOfflineAmp(p.fADCOfflineAmp),
   fTriggerBits(p.fTriggerBits),
   fOffSet(p.fOffSet),
+  fRow0(p.fRow0),
+  fCol0(p.fCol0),
   fTriggerBitConfig(p.fTriggerBitConfig)
 {
   // .
