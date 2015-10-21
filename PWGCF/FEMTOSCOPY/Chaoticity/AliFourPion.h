@@ -374,8 +374,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t farrP1[4][4][4];
   Float_t farrP2[4][4][4];
   
-  Float_t fIC_Offline[7][20];
-  Float_t fIC_Online[7][20];
+  Float_t fIC[5][7][20];
   
   //
   Char_t fDefaultsCharSwitch[kMultLimitPbPb];//!
