@@ -270,7 +270,7 @@ main()
 
     # if we didn't download remove the destination in case we tried to redownload 
     # a corrupted file
-    [[ ! -f $tmpdestination ]] && echo "file not downloaded" && rm -f ${destination} && continue
+    [[ ! -f $tmpdestination ]] && echo "file ${alienFile} not downloaded"
 
     downloadOK=0
     #verify the downloaded md5 if available, validate otherwise...
