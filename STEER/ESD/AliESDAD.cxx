@@ -15,7 +15,7 @@
 
 //-------------------------------------------------------------------------
 //     Container class for ESD AD data
-//     Author: Brigitte Cheynis & Cvetan Cheshkov
+//     Author: Michal Broz
 //-------------------------------------------------------------------------
 
 #include "AliESDAD.h"
@@ -47,7 +47,8 @@ AliESDAD::AliESDAD()
       fTime[j]  = 0.0; 
       fWidth[j] = 0.0; 
       fBBFlag[j]= kFALSE;
-      fBGFlag[j]= kFALSE;  
+      fBGFlag[j]= kFALSE;
+      for(Int_t k = 0; k < 21; ++k) fIsBB[j][k] = fIsBG[j][k] = kFALSE;  
    }
 }
 
@@ -76,6 +77,10 @@ AliESDAD::AliESDAD(const AliESDAD &o)
        fWidth[j]  = o.fWidth[j];
        fBBFlag[j] = o.fBBFlag[j];
        fBGFlag[j] = o.fBGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) {
+	 fIsBB[j][k] = o.fIsBB[j][k];
+	 fIsBG[j][k] = o.fIsBG[j][k];
+       }
    }
 }
 
@@ -107,6 +112,7 @@ AliESDAD::AliESDAD(UInt_t BBtriggerADA, UInt_t BGtriggerADA,
        fWidth[j]  = Width[j];
        fBBFlag[j] = BBFlag[j];
        fBGFlag[j] = BGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) fIsBB[j][k] = fIsBG[j][k] = kFALSE;
    }
 }
 
@@ -139,6 +145,10 @@ AliESDAD& AliESDAD::operator=(const AliESDAD& o)
        fWidth[j]  = o.fWidth[j];
        fBBFlag[j] = o.fBBFlag[j];
        fBGFlag[j] = o.fBGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) {
+	 fIsBB[j][k] = o.fIsBB[j][k];
+	 fIsBG[j][k] = o.fIsBG[j][k];
+       }
    }
   return *this;
 }

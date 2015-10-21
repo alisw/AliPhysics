@@ -26,7 +26,8 @@ public:
     kOnlineBitsFilled = BIT(17),
     kCorrectedForSaturation = BIT(18),
     kRobustMeanTime = BIT(19),
-    kTriggerChargeBitsFilled = BIT(20)
+    kTriggerChargeBitsFilled = BIT(20),
+    kPastFutureFlagsFilled = BIT(21)
   };
   enum Decision { kADInvalid = -1, kADEmpty = 0, kADBB, kADBG, kADFake };
   enum TriggerBits {
@@ -73,12 +74,15 @@ public:
   virtual UShort_t GetTriggerChargeA() const = 0;
   virtual UShort_t GetTriggerChargeC() const = 0;
   virtual UShort_t GetTriggerBits() const = 0;
+  
+  virtual Bool_t   GetPFBBFlag(Int_t channel, Int_t clock) const  = 0;
+  virtual Bool_t   GetPFBGFlag(Int_t channel, Int_t clock) const  = 0;
 
 protected:  
 
   Bool_t OutOfRange(Int_t i, const char *s, Int_t upper) const;
     
-  ClassDef(AliVAD,2)
+  ClassDef(AliVAD,3)
 };
 
 #endif

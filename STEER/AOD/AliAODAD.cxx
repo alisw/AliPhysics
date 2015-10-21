@@ -43,7 +43,8 @@ AliAODAD::AliAODAD()
    for(Int_t j=0; j<16; j++){ 
       fMultiplicity[j] = 0.0;   
       fBBFlag[j]= kFALSE;
-      fBGFlag[j]= kFALSE;  
+      fBGFlag[j]= kFALSE;
+      for(Int_t k = 0; k < 21; ++k) fIsBB[j][k] = fIsBG[j][k] = kFALSE;  
    }
 }
 
@@ -67,6 +68,10 @@ AliAODAD::AliAODAD(const AliAODAD &source)
        fMultiplicity[j] = source.fMultiplicity[j];
        fBBFlag[j] = source.fBBFlag[j];
        fBGFlag[j] = source.fBGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) {
+	 fIsBB[j][k] = source.fIsBB[j][k];
+	 fIsBG[j][k] = source.fIsBG[j][k];
+       }
    }
 }
 
@@ -90,6 +95,10 @@ AliAODAD::AliAODAD(const AliVAD &source)
      fMultiplicity[j] = source.GetMultiplicity(j);
      fBBFlag[j] = source.GetBBFlag(j);
      fBGFlag[j] = source.GetBGFlag(j);
+     for(Int_t k = 0; k < 21; ++k) {
+       fIsBB[j][k] = source.GetPFBBFlag(j,k);
+       fIsBG[j][k] = source.GetPFBGFlag(j,k);
+     }
    }
 
    for(Int_t j=0; j<8; j++) {
@@ -125,6 +134,10 @@ AliAODAD& AliAODAD::operator=(const AliAODAD& source)
        fMultiplicity[j] = source.fMultiplicity[j];
        fBBFlag[j] = source.fBBFlag[j];
        fBGFlag[j] = source.fBGFlag[j];
+       for(Int_t k = 0; k < 21; ++k) {
+	 fIsBB[j][k] = source.fIsBB[j][k];
+	 fIsBG[j][k] = source.fIsBG[j][k];
+       }
    }
   return *this;
 }
@@ -149,6 +162,11 @@ AliAODAD& AliAODAD::operator=(const AliVAD& source)
     fMultiplicity[j] = source.GetMultiplicity(j);
     fBBFlag[j] = source.GetBBFlag(j);
     fBGFlag[j] = source.GetBGFlag(j);
+    for(Int_t k = 0; k < 21; ++k) {
+       fIsBB[j][k] = source.GetPFBBFlag(j,k);
+       fIsBG[j][k] = source.GetPFBGFlag(j,k);
+     }
+    
   }
 
   fBBtriggerADA = fBGtriggerADA = fBBtriggerADC = fBGtriggerADC = 0;

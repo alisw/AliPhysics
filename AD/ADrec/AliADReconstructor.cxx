@@ -380,6 +380,15 @@ void AliADReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,AliE
   fESDAD->SetWidth(width);
   fESDAD->SetBBFlag(aBBflag);
   fESDAD->SetBGFlag(aBGflag);
+  
+  // Fill BB and BG flags for all channel in 21 clocks (called past-future flags)
+  for(Int_t i = 0; i < 16; ++i) {
+    for (Int_t iClock=0; iClock < kADNClocks; ++iClock) {
+      fESDAD->SetPFBBFlag(i,iClock,fESDADfriend->GetBBFlag(i,iClock));
+      fESDAD->SetPFBGFlag(i,iClock,fESDADfriend->GetBGFlag(i,iClock));
+    }
+  }
+  fESDAD->SetBit(AliESDAD::kPastFutureFlagsFilled,kTRUE);
    
   Int_t	pBBmulADA = 0;
   Int_t	pBBmulADC = 0;

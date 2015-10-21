@@ -47,6 +47,9 @@ public:
   virtual UShort_t GetTriggerChargeC() const { return fTriggerChargeC; }
   virtual UShort_t GetTriggerBits() const { return fTriggerBits; }
   
+  virtual Bool_t   GetPFBBFlag(Int_t channel, Int_t clock) const { return fIsBB[channel][clock]; } 
+  virtual Bool_t   GetPFBGFlag(Int_t channel, Int_t clock) const { return fIsBG[channel][clock]; }  
+  
 protected:
 
   UInt_t  fBBtriggerADA;     // bit mask for Beam-Beam trigger in ADA
@@ -68,8 +71,11 @@ protected:
   UShort_t fTriggerChargeA;  // Sum of the trigger (clock=10) charge on A side
   UShort_t fTriggerChargeC;  // Sum of the trigger (clock=10) charge on C side
   UShort_t fTriggerBits;     // AD trigger bits as defined in the firmware
+  
+  Bool_t   fIsBB[16][21];  // BB flag for all channels and 21 clocks
+  Bool_t   fIsBG[16][21];  // BG flag for all channels and 21 clocks
 
-  ClassDef(AliAODAD,1)
+  ClassDef(AliAODAD,2)
 };
 
 #endif
