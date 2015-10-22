@@ -37,6 +37,7 @@ public:
 		 "ForwardAODConfig.C");
     fOptions.Add("central-config", "FILE", "Central configuration", 
 		 "CentralAODConfig.C");
+    fOptions.Add("no-central","Do not at SPD cluster task",false);
     fOptions.Add("cent",  "Use centrality");
     fOptions.Add("tpc-ep", "Use TPC event plane");
     fOptions.Add("satelitte", "Use satelitte interactions");
@@ -107,11 +108,14 @@ protected:
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
 
     // --- Add the task ----------------------------------------------
-    TString cenConfig = fOptions.Get("central-config");
-    AliAnalysisTask* cen = CoupleCar("AddTaskCentralMult.C",
-				   Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
-					  mc, run, sys, sNN, fld, 
-					  cenConfig.Data(), cor.Data()));
+    Bool_t noCentral = fOptions.Has("no-central");
+    if (!noCentral) { 
+      TString cenConfig = fOptions.Get("central-config");
+      AliAnalysisTask* cen = CoupleCar("AddTaskCentralMult.C",
+				       Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+					    mc, run, sys, sNN, fld, 
+					    cenConfig.Data(), cor.Data()));
+    }
     if (cen)
       fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);
 
@@ -177,10 +181,11 @@ protected:
     opts.Remove("sys");
     opts.Remove("snn");
     opts.Remove("field");
-    opts.Remove("bare-ps");
     opts.Remove("tpc-ep");
     opts.Remove("corr");
     opts.Remove("max-strips");
+    opts.Remove("mc-tracks");
+    opts.Remove("secmap");
     opts.Add("centBins", "BINS", "Centrality bins", "");
     opts.Add("satellite", "Restrict analysis to satellite events", false);
     opts.Add("trig", "TRIGGER", "Trigger type", "INEL");
@@ -192,6 +197,8 @@ protected:
     opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
     opts.Add("mc", "Also analyse MC truth", fRailway->IsMC());
     opts.Add("truth-config", "FILE", "MC-Truth configuration", "");
+    opts.Add("mean-ipz", "MU", "Mean of IPz dist.", 0);
+    opts.Add("var-ipz", "SIGMA", "Variance of IPz dist.", -1);
     
     // Rewrite our URL 
     TString outString = fRailway->OutputLocation();
@@ -200,7 +207,7 @@ protected:
     
     if (uopts.Find("pattern")) // && outString.EndsWith("AliAOD.root")) 
       uopts.Set("pattern", "*/AliAOD.root");
-    if (uopts.Find("concat")) uopts.Set("concat", true);
+    // if (uopts.Find("concat")) uopts.Set("concat", true);
     if (uopts.Find("par")) uopts.Set("par", "task");
 
     std::stringstream s;
