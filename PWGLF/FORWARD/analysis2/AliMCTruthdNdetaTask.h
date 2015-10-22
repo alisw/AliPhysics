@@ -152,6 +152,7 @@ protected:
      * @param data        Data histogram 
      * @param mc          MC histogram
      * @param filter      If true, check for pile-up (global flag)
+     * @param weight      Event weight 
      */
     virtual Bool_t ProcessEvent(const AliAODForwardMult* forward, 
 				UInt_t                   triggerMask,
@@ -160,7 +161,8 @@ protected:
 				Double_t                 vzMax, 
 				const TH2D*              data, 
 				const TH2D*              mc,
-				UInt_t                   filter);
+				UInt_t                   filter,
+				Double_t                 weight);
     /** 
      * End of processing 
      * 
