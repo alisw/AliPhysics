@@ -110,6 +110,13 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
   for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) 
   {
     fHmggSM[iSM]                     = 0;
+    fHmggSM_Zone1[iSM]               = 0;
+    fHmggSM_Zone2[iSM]               = 0;
+    fHmggSM_Zone3[iSM]               = 0;
+    fHmggSM_Zone4[iSM]               = 0;
+    fHmggSM_Zone5[iSM]               = 0;
+    fHmggSM_Zone6[iSM]               = 0;
+    fHmggSM_Zone7[iSM]               = 0;
     fHmggSMMaskFrame[iSM]            = 0;
     fHOpeningAngleSM[iSM]            = 0;
     fHOpeningAnglePairSM[iSM]        = 0;
@@ -207,6 +214,13 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
   for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) 
   {
     fHmggSM[iSM]                     = 0;
+    fHmggSM_Zone1[iSM]               = 0;
+    fHmggSM_Zone2[iSM]               = 0;
+    fHmggSM_Zone3[iSM]               = 0;
+    fHmggSM_Zone4[iSM]               = 0;
+    fHmggSM_Zone5[iSM]               = 0;
+    fHmggSM_Zone6[iSM]               = 0;
+    fHmggSM_Zone7[iSM]               = 0;
     fHmggSMMaskFrame[iSM]            = 0;
     fHOpeningAngleSM[iSM]            = 0;
     fHOpeningAnglePairSM[iSM]        = 0;
@@ -423,6 +437,25 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
           {
             fHmggSM[iSupMod1]->Fill(invmass,fMomentum12.Pt()); 
             fhClusterPairDiffTimeSameSM[iSupMod1]->Fill(fMomentum12.E(),time1-time2);
+            
+            //Is in zone number i
+            Bool_t zone1 = IsInZone1(iSupMod1,ieta1,iphi1);
+            Bool_t zone2 = IsInZone2(iSupMod1,ieta1,iphi1);
+            Bool_t zone3 = IsInZone3(iSupMod1,ieta1,iphi1);
+            Bool_t zone4 = IsInZone4(iSupMod1,ieta1,iphi1);
+            Bool_t zone5 = IsInZone5(iSupMod1,ieta1,iphi1);
+            Bool_t zone6 = IsInZone6(iSupMod1,ieta1,iphi1);
+            Bool_t zone7 = IsInZone7(iSupMod1,ieta1,iphi1);
+            
+            
+            if(zone1) fHmggSM_Zone1[iSupMod1]->Fill(invmass,fMomentum12.Pt());
+            if(zone2) fHmggSM_Zone2[iSupMod1]->Fill(invmass,fMomentum12.Pt());
+            if(zone3) fHmggSM_Zone3[iSupMod1]->Fill(invmass,fMomentum12.Pt());
+            if(zone4) fHmggSM_Zone4[iSupMod1]->Fill(invmass,fMomentum12.Pt());
+            if(zone5) fHmggSM_Zone5[iSupMod1]->Fill(invmass,fMomentum12.Pt());
+            if(zone6) fHmggSM_Zone6[iSupMod1]->Fill(invmass,fMomentum12.Pt());
+            if(zone7) fHmggSM_Zone7[iSupMod1]->Fill(invmass,fMomentum12.Pt());
+            
           }
           else                   
             fHmggDifferentSM ->Fill(invmass,fMomentum12.Pt());
@@ -884,6 +917,55 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fHmggSMMaskFrame[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
     fOutputContainer->Add(fHmggSMMaskFrame[iSM]);
     
+    snprintf(hname, buffersize, "hmgg_SM%d_Zone1",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d in zone 1",iSM);
+    fHmggSM_Zone1[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM_Zone1[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM_Zone1[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggSM_Zone1[iSM]);
+    
+    snprintf(hname, buffersize, "hmgg_SM%d_Zone2",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d in zone 2",iSM);
+    fHmggSM_Zone2[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM_Zone2[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM_Zone2[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggSM_Zone2[iSM]);
+    
+    snprintf(hname, buffersize, "hmgg_SM%d_Zone3",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d in zone 3",iSM);
+    fHmggSM_Zone3[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM_Zone3[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM_Zone3[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggSM_Zone3[iSM]);
+    
+    snprintf(hname, buffersize, "hmgg_SM%d_Zone4",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d in zone 4",iSM);
+    fHmggSM_Zone4[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM_Zone4[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM_Zone4[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggSM_Zone4[iSM]);
+    
+    snprintf(hname, buffersize, "hmgg_SM%d_Zone5",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d in zone 5",iSM);
+    fHmggSM_Zone5[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM_Zone5[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM_Zone5[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggSM_Zone5[iSM]);
+    
+    snprintf(hname, buffersize, "hmgg_SM%d_Zone6",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d in zone 6",iSM);
+    fHmggSM_Zone6[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM_Zone6[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM_Zone6[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggSM_Zone6[iSM]);
+    
+    snprintf(hname, buffersize, "hmgg_SM%d_Zone7",iSM);
+    snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d in zone 7",iSM);
+    fHmggSM_Zone7[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+    fHmggSM_Zone7[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+    fHmggSM_Zone7[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+    fOutputContainer->Add(fHmggSM_Zone7[iSM]);
+    
     if(iSM < nSM/2)
     {
       snprintf(hname,buffersize, "hmgg_PairSameSectorSM%d",iSM);
@@ -1072,6 +1154,300 @@ Bool_t AliAnalysisTaskEMCALPi0CalibSelection::MaskFrameCluster(Int_t iSM, Int_t 
   
   return kFALSE;
 }
+
+
+///
+/// Check if cell is in zone 1 defined regardind Pi0 calibration first plots. rows 2-3 et 20-21. In all zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// \return True if this cell is in zone 1
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+/// \param iphi: row index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone1(Int_t iSupMod, Int_t ieta, Int_t iphi)
+{
+  Int_t icol = ieta;
+  Int_t irow = iphi;
+  
+  printf("SM = %i\n",iSupMod);
+  printf("icol = %i\n",icol);
+  printf("irow = %i\n",irow);
+  
+  if(iSupMod%2) //Odd SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 42 && icol <= 46) || (icol >= 13 && icol <= 37) || (icol >= 1 && icol <= 9)))
+    {
+      if((irow >= 2 && irow <= 3) || (irow >= 20 && irow <= 21))
+      {
+        printf("zone 1\n");
+        return kTRUE;
+      }
+      else
+      {
+        return kFALSE;
+      }
+    }
+  }
+  else      //Even SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 1 && icol <= 5) || (icol >= 10 && icol <= 34) || (icol >= 38 && icol <= 46)))
+    {
+      if((irow >= 2 && irow <= 3) || (irow >= 20 && irow <= 21))
+      {
+        printf("zone 1\n");
+        return kTRUE;
+      }
+      else
+      {
+        return kFALSE;
+      }
+    }
+  }
+}
+
+
+///
+/// Check if cell is in zone 2 defined regardind Pi0 calibration first plots. Zone 2 other rows. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// \return True if this cell is in zone 1
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+/// \param iphi: row index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone2(Int_t iSupMod, Int_t ieta, Int_t iphi)
+{
+  Int_t icol = ieta;
+  Int_t irow = iphi;
+  
+  printf("SM = %i\n",iSupMod);
+  printf("icol = %i\n",icol);
+  printf("irow = %i\n",irow);
+  
+  if(iSupMod%2) //Odd SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 42 && icol <= 46) || (icol >= 13 && icol <= 37) || (icol >= 1 && icol <= 9)))
+    {
+      if((irow >= 2 && irow <= 3) || (irow >= 20 && irow <= 21))
+      {
+        return kFALSE;
+      }
+      else
+      {
+        printf("zone 2\n");
+        return kTRUE;
+      }
+    }
+  }
+  else      //Even SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 1 && icol <= 5) || (icol >= 10 && icol <= 34) || (icol >= 38 && icol <= 46)))
+    {
+      if((irow >= 2 && irow <= 3) || (irow >= 20 && irow <= 21))
+      {
+        return kFALSE;
+      }
+      else
+      {
+        printf("zone 2\n");
+        return kTRUE;
+      }
+    }
+  }
+}
+
+
+///
+/// Check if cell is in zone 3 defined regardind Pi0 calibration first plots. Zone 3 cols 1-2-3 et 44-45-46. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// \return True if this cell is in zone 1
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+/// \param iphi: row index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone3(Int_t iSupMod, Int_t ieta, Int_t iphi)
+{
+  Int_t icol = ieta;
+  Int_t irow = iphi;
+  
+  printf("SM = %i\n",iSupMod);
+  printf("icol = %i\n",icol);
+  printf("irow = %i\n",irow);
+  
+  if(iSupMod%2) //Odd SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 42 && icol <= 46) || (icol >= 13 && icol <= 37) || (icol >= 1 && icol <= 9)))
+    {
+      if((icol >= 1 && icol <= 3) || (icol >= 44 && icol <= 46))
+      {
+        printf("zone 3\n");
+        return kTRUE;
+      }
+      else
+      {
+        return kFALSE;
+      }
+    }
+  }
+  else      //Even SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 1 && icol <= 5) || (icol >= 10 && icol <= 34) || (icol >= 38 && icol <= 46)))
+    {
+      if((icol >= 1 && icol <= 3) || (icol >= 44 && icol <= 46))
+      {
+        printf("zone 3\n");
+        return kTRUE;
+      }
+      else
+      {
+        return kFALSE;
+      }
+    }
+  }
+}
+
+
+///
+/// Check if cell is in zone 4 defined regardind Pi0 calibration first plots. Zone 4 other cols. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// \return True if this cell is in zone 1
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+/// \param iphi: row index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone4(Int_t iSupMod, Int_t ieta, Int_t iphi)
+{
+  Int_t icol = ieta;
+  Int_t irow = iphi;
+  
+  printf("SM = %i\n",iSupMod);
+  printf("icol = %i\n",icol);
+  printf("irow = %i\n",irow);
+  
+  if(iSupMod%2) //Odd SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 42 && icol <= 46) || (icol >= 13 && icol <= 37) || (icol >= 1 && icol <= 9)))
+    {
+      if((icol >= 1 && icol <= 3) || (icol >= 44 && icol <= 46))
+      {
+        return kFALSE;
+      }
+      else
+      {
+        printf("zone 4\n");
+        return kTRUE;
+      }
+    }
+  }
+  else      //Even SM
+  {
+    if((irow >= 2 && irow <= 21) && ((icol >= 1 && icol <= 5) || (icol >= 10 && icol <= 34) || (icol >= 38 && icol <= 46)))
+    {
+      if((icol >= 1 && icol <= 3) || (icol >= 44 && icol <= 46))
+      {
+        return kFALSE;
+      }
+      else
+      {
+        printf("zone 4\n");
+        return kTRUE;
+      }
+    }
+  }
+}
+
+
+///
+/// Check if cell is in zone 5 defined regardind Pi0 calibration first plots. Outside of the biggest ellipse where there is little statisitc. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// \return True if this cell is in zone 1
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+/// \param iphi: row index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone5(Int_t iSupMod, Int_t ieta, Int_t iphi)
+{
+  Int_t icol = ieta;
+  Int_t irow = iphi;
+  
+  //Center of ellipse
+  Float_t col0 = 47/2;
+  Float_t row0 = 23/2;
+  
+  //Paramters
+  Float_t a = 3-col0;
+  Float_t b = 2-row0;
+  
+  if(((icol-col0)*(icol-col0)) / (a*a) + ((irow-row0)*(irow-row0) / (b*b)) > 1)
+  {
+    return kTRUE;
+  }
+  else
+  {
+    return kFALSE;
+  }
+}
+
+
+///
+/// Check if cell is in zone 6 defined regardind Pi0 calibration first plots. Between the two ellipses where there average statisitc. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// \return True if this cell is in zone 1
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+/// \param iphi: row index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone6(Int_t iSupMod, Int_t ieta, Int_t iphi)
+{
+  Int_t icol = ieta;
+  Int_t irow = iphi;
+  
+  //Center of ellipse
+  Float_t col0 = 47/2;
+  Float_t row0 = 23/2;
+  
+  //Paramters
+  Float_t aLarge = 3-col0;
+  Float_t bLarge = 2-row0;
+  Float_t aSmall = 16-col0;
+  Float_t bSmall = 7-row0;
+  
+  if((((icol-col0)*(icol-col0)) / (aLarge*aLarge) + ((irow-row0)*(irow-row0) / (bLarge*bLarge)) < 1) &&  (((icol-col0)*(icol-col0)) / (aSmall*aSmall) + ((irow-row0)*(irow-row0) / (bSmall*bSmall)) > 1))
+  {
+    return kTRUE;
+  }
+  else
+  {
+    return kFALSE;
+  }
+  
+}
+
+
+///
+/// Check if cell is in zone 7 defined regardind Pi0 calibration first plots. Inside the smallest ellipse where there is large statisitc. In all these zones we include only rows 2->21 inclues, col 1->46 exept cols 6->9 et 35->37 for even SM (carreful when transfer to odd SM)
+/// \return True if this cell is in zone 1
+/// \param iSM: supermodule number of the cell.
+/// \param ieta: column index of the cell.
+/// \param iphi: row index of the cell.
+//______________________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0CalibSelection::IsInZone7(Int_t iSupMod, Int_t ieta, Int_t iphi)
+{
+  Int_t icol = ieta;
+  Int_t irow = iphi;
+  
+  //Center of ellipse
+  Float_t col0 = 47/2;
+  Float_t row0 = 23/2;
+  
+  //Paramters
+  Float_t a = 16-col0;
+  Float_t b = 7-row0;
+  
+  if(((icol-col0)*(icol-col0)) / (a*a) + ((irow-row0)*(irow-row0) / (b*b)) < 1)
+  {
+    return kTRUE;
+  }
+  else
+  {
+    return kFALSE;
+  }
+  
+}
+
 
 ///
 /// Main method, do the analysis per event:
