@@ -10,6 +10,7 @@
  */
 
 #include "TrainSetup.C"
+#include <TF1.h>
 
 //====================================================================
 /**
@@ -47,6 +48,9 @@ public:
 		 "dNdetaConfig.C");
     fOptions.Add("truth-config", "FILE", "MC-Truth configuration", 
 		 "dNdetaConfig.C");
+    fOptions.Add("mean-ipz", "MU", "Mean of IPz dist.", 0);
+    fOptions.Add("var-ipz", "SIGMA", "Variance of IPz dist.", -1);
+    
   }
 protected:
   Bool_t CoupledNdetaCar(const char* which,
@@ -68,6 +72,25 @@ protected:
     FromOption(tsk, "CentralityMethod",    "cent",     "");
     FromOption(tsk, "CentralityAxis",      "centBins", "default");
     FromOption(tsk, "SatelliteVertices",   "satellite", false);
+
+    if (!TString(which).BeginsWith("forward",TString::kIgnoreCase)) return true;
+
+    Double_t muIpz    = fOptions.AsDouble("mean-ipz",0);
+    Double_t sigmaIpz = fOptions.AsDouble("var-ipz",-1);
+    if (sigmaIpz <= 0) return true;
+
+    TF1* f = new TF1("ipZw","TMath::Gaus(x,[0],[1],1)/TMath::Gaus(x,[2],[3],1)",
+		     fOptions.AsDouble("vzMin"),fOptions.AsDouble("vzMax"));
+    f->SetParNames("#mu_{emp}","#sigma_{emp}","#mu_{this}","#sigma_{this}");
+    f->SetParameters(0.592,6.836,muIpz,sigmaIpz);
+    // f->SetParErrors(0.023,0.029,eMuIpz,eSigmaIpz);
+
+    Printf("Created re-weight function");
+    f->Print();
+
+    gROOT
+      ->ProcessLine(Form("((AliBasedNdetaTask*)%p)->SetIpzReweight((TF1*)%p);",
+			 tsk, f));
     return true;
 
   }
@@ -227,11 +250,12 @@ protected:
     o << "void Draw(const TString& title=\"" << fName << "\",\n"
       << "          UShort_t       rebin=5,\n"
       << "          UShort_t       others=0xf,\n"
-      << "          UInt_t         flags=0x3C487,\n"
+      << "          UInt_t         flags=0x20487,\n"
+      << "          UShort_t       fmts=0,\n"
+      << "          Float_t        eff=0,\n"
       << "          UShort_t       sNN=0,\n"
       << "          UShort_t       sys=0,\n"
       << "          UShort_t       trg=0,\n"
-      << "          Float_t        eff=0,\n"
       << "          UShort_t       centMin=0,\n"
       << "          UShort_t       centMax=100,\n"
       << "          Float_t        vzMin=999,\n"
@@ -251,7 +275,8 @@ protected:
       << "             centMax,\n"
       << "             vzMin,\n"
       << "             vzMax,\n"
-      << "              \"dNdeta_<trig>\");\n"
+      << "             \"dNdeta_<trig>\",\n"
+      << "             fmts);\n"
       << "}\n"
       << std::endl;
     o << "// Alternative using strings\n"
