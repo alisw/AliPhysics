@@ -221,6 +221,20 @@ public:
   static Double_t GetEtaFromStrip(UShort_t det, Char_t ring, 
 				  UShort_t sec, UShort_t strip, Double_t zvtx);
   /** 
+   * Recalculate the eta of a strip.  This will correct for an off-set IP
+   * 
+   * @param r      Ring identifier 
+   * @param strip  Strip number 
+   * @param eta    Nominal eta, on return corrected
+   * @param phi    Nominal phi, on return corrected
+   * @param ipX    IP X coordinate 
+   * @param ipY    IP Y coordinate 
+   * 
+   */
+  static void GetEtaPhiFromStrip(Char_t r, UShort_t strip,
+				 Double_t& eta, Double_t& phi , 
+				 Double_t ipX,  Double_t ipY);
+  /** 
    * Get the azimuthal angle of a strip
    * 
    * @param ring  Ring identifier 'I' or 'O'

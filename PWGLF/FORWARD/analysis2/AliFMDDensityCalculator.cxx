@@ -387,6 +387,9 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
   Double_t copyTime   = 0;
   Double_t poissonTime= 0;
   Double_t diagTime   = 0;
+  // Double_t ipPhi      = TMath::ATan2(ip.Y(),ip.X());
+  // Double_t ipR        = TMath::Sqrt(TMath::Power(ip.X(),2)+
+  //                       TMath::Power(ip.Y(),2));
   START_TIMER(totalT);
   
   Double_t etaCache[20*512]; // Same number of strips per ring 
@@ -428,13 +431,22 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	for (UShort_t t=0; t<nt; t++) {
 	  
 	  Float_t  mult   = fmd.Multiplicity(d,r,s,t);
-	  Float_t  phi    = fmd.Phi(d,r,s,t) * TMath::DegToRad();
-	  Float_t  eta    = fmd.Eta(d,r,s,t);
+	  Double_t phi    = fmd.Phi(d,r,s,t) * TMath::DegToRad();
+	  Double_t eta    = fmd.Eta(d,r,s,t);
 	  Double_t oldPhi = phi;
-
-	  // --- Re-calculate eta - needed for satelittes ------------
+	  Double_t oldEta = eta;
+	  START_TIMER(timer);
+	  if (fRecalculatePhi) {
+	    // Correct for (x,y) off set of the interaction point 
+	    AliForwardUtil::GetEtaPhiFromStrip(r,t,eta,phi,ip.X(),ip.Y());
+	    DMSG(fDebug, 10, "IP(x,y)=%f,%f Eta=%f -> %f Phi=%f -> %f",
+		 ip.X(), ip.Y(), oldEta, eta, oldPhi, phi);
+	    
+	  }
+	  ADD_TIMER(timer,rePhiTime);
 	  START_TIMER(timer);
 	  etaCache[s*nt+t] = eta;
+	  phiCache[s*nt+t] = phi;
 
 	  // --- Check this strip ------------------------------------
 	  rh->fTotal->Fill(eta);
@@ -452,13 +464,13 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  rh->fGood->Fill(eta);
 
 	  // --- If we asked to re-calculate phi for (x,y) IP --------
-	  START_TIMER(timer);
-	  if (fRecalculatePhi) {
-	    oldPhi = phi;
-	    phi = AliForwardUtil::GetPhiFromStrip(r, t, phi, ip.X(), ip.Y());
-	  }
-	  phiCache[s*nt+t] = phi;
-	  ADD_TIMER(timer,rePhiTime);
+	  // START_TIMER(timer);
+	  // if (fRecalculatePhi) {
+	  // oldPhi = phi;
+	  //  phi = AliForwardUtil::GetPhiFromStrip(r, t, phi, ip.X(), ip.Y());
+	  // }
+	  // phiCache[s*nt+t] = phi;
+	  // ADD_TIMER(timer,rePhiTime);
 
 	  // --- Apply phi corner correction to eloss ----------------
 	  if (fUsePhiAcceptance == kPhiCorrectELoss) 
@@ -500,6 +512,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	    if (fRecalculatePhi) {
 	      rh->fPhiBefore->Fill(oldPhi);
 	      rh->fPhiAfter->Fill(phi);
+	      rh->fEtaBefore->Fill(oldEta);
+	      rh->fEtaAfter->Fill(oldEta);	      
 	    }
 	  }
 	  rh->fPoisson.Fill(t,s,hit,1./c);
@@ -1232,7 +1246,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
     fGood(0),
     fPhiAcc(0), 
     fPhiBefore(0),
-    fPhiAfter(0)
+    fPhiAfter(0),
+    fEtaBefore(0),
+    fEtaAfter(0)
 {
   // 
   // Default CTOR
@@ -1262,7 +1278,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     fGood(0),
     fPhiAcc(0), 
     fPhiBefore(0),
-    fPhiAfter(0)
+    fPhiAfter(0),
+    fEtaBefore(0),
+    fEtaAfter(0)
 {
   // 
   // Constructor
@@ -1400,7 +1418,22 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fPhiAfter = static_cast<TH1D*>(fPhiBefore->Clone("phiAfter"));
   fPhiAfter->SetTitle("#phi distribution (after re-calc)");
   fPhiAfter->SetDirectory(0);
-  
+
+  fEtaBefore = new TH1D("etaBefore", "#eta distribution (before recalc)",
+			200, -4, 6);
+  fEtaBefore->SetDirectory(0);
+  fEtaBefore->SetXTitle("#eta");
+  fEtaBefore->SetYTitle("Events");
+  fEtaBefore->SetMarkerColor(Color());
+  fEtaBefore->SetLineColor(Color());
+  fEtaBefore->SetFillColor(Color());
+  fEtaBefore->SetFillStyle(3001);
+  fEtaBefore->SetMarkerStyle(20);
+
+  fEtaAfter = static_cast<TH1D*>(fEtaBefore->Clone("etaAfter"));
+  fEtaAfter->SetTitle("#eta distribution (after re-calc)");
+  fEtaAfter->SetDirectory(0);
+
 }
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
@@ -1425,7 +1458,9 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
     fGood(o.fGood),
     fPhiAcc(o.fPhiAcc), 
     fPhiBefore(o.fPhiBefore),
-    fPhiAfter(o.fPhiAfter)
+    fPhiAfter(o.fPhiAfter),
+    fEtaBefore(o.fEtaBefore),
+    fEtaAfter(o.fEtaAfter)
 {
   // 
   // Copy constructor 
@@ -1464,6 +1499,8 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   if (fPhiAcc)           delete fPhiAcc;
   if (fPhiBefore)        delete fPhiBefore;
   if (fPhiAfter)         delete fPhiAfter;
+  if (fEtaBefore)        delete fEtaBefore;
+  if (fEtaAfter)         delete fEtaAfter;
 
   // fEvsN             = static_cast<TH2D*>(o.fEvsN->Clone());
   // fEvsM             = static_cast<TH2D*>(o.fEvsM->Clone());
@@ -1484,6 +1521,8 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   fPhiAcc           = static_cast<TH2D*>(o.fPhiAcc->Clone());
   fPhiBefore        = static_cast<TH1D*>(o.fPhiBefore->Clone());
   fPhiAfter         = static_cast<TH1D*>(o.fPhiAfter->Clone());
+  fEtaBefore        = static_cast<TH1D*>(o.fEtaBefore->Clone());
+  fEtaAfter         = static_cast<TH1D*>(o.fEtaAfter->Clone());
   return *this;
 }
 //____________________________________________________________________
@@ -1552,6 +1591,8 @@ AliFMDDensityCalculator::RingHistos::CreateOutputObjects(TList* dir)
   d->Add(fELossUsed);
   d->Add(fPhiBefore);
   d->Add(fPhiAfter);
+  d->Add(fEtaBefore);
+  d->Add(fEtaAfter);
 
   TAxis x(NStrip(), -.5, NStrip()-.5);
   TAxis y(NSector(), -.5, NSector()-.5);

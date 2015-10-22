@@ -456,6 +456,8 @@ protected:
     TH2D*     fPhiAcc;         // Phi acceptance vs IpZ
     TH1D*     fPhiBefore;      // Phi before re-calce 
     TH1D*     fPhiAfter;       // Phi after re-calc
+    TH1D*     fEtaBefore;      // Phi before re-calce 
+    TH1D*     fEtaAfter;       // Phi after re-calc
     // ClassDef(RingHistos,10);
   };
   /** 

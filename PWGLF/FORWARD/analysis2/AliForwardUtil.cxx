@@ -541,6 +541,25 @@ Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring,
   
   return eta;
 }
+void AliForwardUtil::GetEtaPhiFromStrip(Char_t    r,
+					UShort_t  strip,
+					Double_t& eta, Double_t& phi , 
+					Double_t  ipX, Double_t  ipY)
+{
+  Double_t rs  = GetStripR(r, strip);
+  Double_t sx  = rs*TMath::Cos(phi);
+  Double_t sy  = rs*TMath::Sin(phi);
+  Double_t dx  = sx-ipX;
+  Double_t dy  = sy-ipY;
+  Double_t rv  = TMath::Sqrt(TMath::Power(dx,2) + TMath::Power(dy,2));
+  Double_t the = 2*TMath::ATan(TMath::Exp(-eta));
+  Double_t z   = rs / TMath::Tan(the);
+  // Printf("IP(x,y)=%f,%f S(x,y)=%f,%f D(x,y)=%f,%f R=%f theta=%f tan(theta)=%f z=%f", ipX, ipY, sx, sy, dx, dy, rv, the, TMath::Tan(the), z);
+  eta          = -TMath::Log(TMath::Tan(TMath::ATan2(rv,z)/2));
+  phi          = TMath::ATan2(dy,dx);
+  if (phi < 0) phi += TMath::TwoPi();
+}
+
 #else
 //_____________________________________________________________________
 Double_t AliForwardUtil::GetEtaFromStrip(UShort_t det, Char_t ring, 
