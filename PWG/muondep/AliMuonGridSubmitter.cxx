@@ -872,13 +872,13 @@ void AliMuonGridSubmitter::SetAliPhysicsVersion(const char* aliphysics)
 }
 
 //______________________________________________________________________________
-void AliMuonGridSubmitter::SetAliRootVersion(const char* aliphysics)
+void AliMuonGridSubmitter::SetAliRootVersion(const char* aliroot)
 {
   /// Set the package to be used by the jobs
   /// the corresponding root, geant3 versions
   /// should be set automatically by alien.
   
-  SetMapKeyValue("AliPhysics",aliphysics);
+  SetMapKeyValue("AliRoot",aliroot);
 }
 
 //______________________________________________________________________________
