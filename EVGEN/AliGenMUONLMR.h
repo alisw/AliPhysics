@@ -11,7 +11,9 @@
 class AliGenMUONLMR : public AliGenMC { 
  public:
   enum parttype_t {kPionLMR, kKaonLMR, kEtaLMR, kRhoLMR, kOmegaLMR, kPhiLMR, kEtaPrimeLMR};
-  enum CMSEnergies { kCMS2760GeV, kCMS7000GeV, kCMS8000GeV, kCMS5020GeVpPb, kCMS5020GeVPbp, kNCMSEnergies };    
+  enum CMSEnergies {kCMS2760GeV, kCMS7000GeV, kCMS8000GeV, kCMS5020GeVpPb, kCMS5020GeVPbp, kNCMSEnergies};    
+  enum process_t {kEtaDalitz, kOmegaDalitz, kEtaPrimeDalitz, kEta2Body, kRho2Body, kOmega2Body, kPhi2Body, kPionSemiMuonic, kKaonSemiMuonic, kNProcess}; 
+  enum thetaOpt_t {kFlat, kPolarized};
   AliGenMUONLMR(); 
   AliGenMUONLMR(AliGenMUONLMR &gen); 
   AliGenMUONLMR &operator=(const AliGenMUONLMR &gen);  
@@ -35,26 +37,29 @@ class AliGenMUONLMR : public AliGenMC {
   virtual TF1* GetPt(Int_t iproc) { return fPt[iproc]; }
   void SetCMSEnergy(CMSEnergies energy);
   virtual void SetCMSRapidity(Double_t ycm) { fYCM = ycm; } 
+  virtual void SetThetaOptionForDalitz(process_t proc, thetaOpt_t opt) { fThetaOptForDalitz[proc] = opt; }
+  virtual thetaOpt_t GetThetaOptionForDalitz(process_t proc) { return fThetaOptForDalitz[proc]; }
  private: 
-  static const Int_t fgkNpart = 7; // number of particles to be generated 
-  Int_t fNMuMin;                   // min. number of muons to accept the event for writing
-  CMSEnergies fCMSEnergy;          // CMS Energy 
-  Int_t fGenSingleProc;            // flag to generate a single process (1) or the whole cocktail (0)
-  Double_t fYCM;                   // center of mass rapidity (def. 0) 
-  Int_t fPDG[7];                   // pdg code of particle to be generated 
-  Double_t fScaleMult[7];          // multiplicity scaling factor (w.r.t. pythia@7TeV)
-  TF1 *fPt[7];                     // pt distribution
-  TF1 *fY[7];                      // rapidity distribution
-  TF1 *fMult[7];                   // multiplicity distribution 
-  TF1 *fDecay[2];                  // fDecay[0] = pion, fDecay[1] = kaon
-  TH1F *fDalitz[3];                // Dalitz decay form factor for eta, omega, etaprime
-  TF1 *fCosTheta;                  // function for polarized theta distributions
-  TF1 *fRhoLineShape;              // rho line shape 
-  TParticle* fParticle[7];         // TPaticle object for the particles to be generated
-  TParticle* fMu[2];               // fMu[0] = mu+    fMu[1] = mu-
-  TH1D *fHMultMu;                  // muon multiplicity 
-  TH1D *fHNProc;                   // number of events generated per process
-  ClassDef(AliGenMUONLMR, 1)       // low mass dimuons parametric generator
+  static const Int_t fgkNpart = 7;  // number of particles to be generated 
+  Int_t fNMuMin;                    // min. number of muons to accept the event for writing
+  CMSEnergies fCMSEnergy;           // CMS Energy 
+  Int_t fGenSingleProc;             // flag to generate a single process (1) or the whole cocktail (0)
+  Double_t fYCM;                    // center of mass rapidity (def. 0) 
+  Int_t fPDG[7];                    // pdg code of particle to be generated 
+  Double_t fScaleMult[7];           // multiplicity scaling factor (w.r.t. pythia@7TeV)
+  TF1 *fPt[7];                      // pt distribution
+  TF1 *fY[7];                       // rapidity distribution
+  TF1 *fMult[7];                    // multiplicity distribution 
+  TF1 *fDecay[2];                   // fDecay[0] = pion, fDecay[1] = kaon
+  TH1F *fDalitz[3];                 // Dalitz decay form factor for eta, omega, etaprime
+  TF1 *fCosTheta;                   // function for polarized theta distributions
+  TF1 *fRhoLineShape;               // rho line shape 
+  TParticle* fParticle[7];          // TPaticle object for the particles to be generated
+  TParticle* fMu[2];                // fMu[0] = mu+    fMu[1] = mu-
+  TH1D *fHMultMu;                   // muon multiplicity 
+  TH1D *fHNProc;                    // number of events generated per process
+  thetaOpt_t fThetaOptForDalitz[3]; // option for the cos(theta) distribution of the Dalitz decays
+  ClassDef(AliGenMUONLMR, 1)        // low mass dimuons parametric generator
 }; 
 
 #endif
