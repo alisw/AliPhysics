@@ -61,6 +61,7 @@ set(SRCS
     AliLocalRhoParameter.cxx
     AliPythiaInfo.cxx
     AliRhoParameter.cxx
+    Tracks/AliAnalysisTaskLEDCheck.cxx
     Tracks/AliAnalysisTaskPtEMCalTrigger.cxx
     Tracks/AliAnalysisTaskPtEMCalTriggerV1.cxx
     Tracks/AliCutValueRange.cxx
