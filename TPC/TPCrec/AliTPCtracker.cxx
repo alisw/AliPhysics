@@ -141,39 +141,6 @@ using std::cerr;
 using std::endl;
 ClassImp(AliTPCtracker)
 
-
-
-class AliTPCFastMath {
-public:
-  AliTPCFastMath();  
-  static Double_t FastAsin(Double_t x);   
- private: 
-  static Double_t fgFastAsin[20000];  //lookup table for fast asin computation
-};
-
-Double_t AliTPCFastMath::fgFastAsin[20000];
-AliTPCFastMath gAliTPCFastMath; // needed to fill the LUT
-
-AliTPCFastMath::AliTPCFastMath(){
-  //
-  // initialized lookup table;
-  for (Int_t i=0;i<10000;i++){
-    fgFastAsin[2*i] = TMath::ASin(i/10000.);
-    fgFastAsin[2*i+1] = (TMath::ASin((i+1)/10000.)-fgFastAsin[2*i]);
-  }
-}
-
-Double_t AliTPCFastMath::FastAsin(Double_t x){
-  //
-  // return asin using lookup table
-  if (x>0){
-    Int_t index = int(x*10000);
-    return fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1];
-  }
-  x*=-1;
-  Int_t index = int(x*10000);
-  return -(fgFastAsin[2*index]+(x*10000.-index)*fgFastAsin[2*index+1]);
-}
 //__________________________________________________________________
 AliTPCtracker::AliTPCtracker()
                 :AliTracker(),
@@ -1191,9 +1158,7 @@ Double_t AliTPCtracker::F3n(Double_t x1,Double_t y1,
   //
   Double_t d  =  TMath::Sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
   if (TMath::Abs(d*c*0.5)>1) return 0;
-  //  Double_t   angle2    =  TMath::ASin(d*c*0.5);
-  //  Double_t   angle2    =  AliTPCFastMath::FastAsin(d*c*0.5);
-  Double_t   angle2    = (d*c*0.5>0.1)? TMath::ASin(d*c*0.5): AliTPCFastMath::FastAsin(d*c*0.5);
+  Double_t   angle2    = TMath::ASin(d*c*0.5);
 
   angle2  = (z1-z2)*c/(angle2*2.);
   return angle2;
@@ -1220,14 +1185,8 @@ Bool_t   AliTPCtracker::GetProlongation(Double_t x1, Double_t x2, Double_t x[5],
   //
   Double_t delta = x[4]*dx*(c1+c2)/(c1*r2 + c2*r1);
   
-  if (TMath::Abs(delta)>0.01){
-    dz = x[3]*TMath::ASin(delta)/x[4];
-  }else{
-    dz = x[3]*AliTPCFastMath::FastAsin(delta)/x[4];
-  }
+  dz = x[3]*TMath::ASin(delta)/x[4];
   
-  //dz = x[3]*AliTPCFastMath::FastAsin(delta)/x[4];
-
   y+=dy;
   z+=dz;
   
@@ -3951,8 +3910,8 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
        
 	//Double_t dfi0   = 2.*TMath::ASin(dvertex*c0*0.5);
 	//Double_t dfi1   = 2.*TMath::ASin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);
-	Double_t dfi0   = 2.*AliTPCFastMath::FastAsin(dvertex*c0*0.5);
-	Double_t dfi1   = 2.*AliTPCFastMath::FastAsin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
+	Double_t dfi0   = 2.*TMath::ASin(dvertex*c0*0.5);
+	Double_t dfi1   = 2.*TMath::ASin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
 	//
 	//
 	Double_t z0  =  kcl->GetZ();  
