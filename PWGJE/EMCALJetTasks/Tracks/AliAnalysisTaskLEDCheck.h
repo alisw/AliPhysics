@@ -4,6 +4,7 @@
 #include "AliAnalysisTaskSE.h"
 
 class THistManager;
+class AliEMCALGeometry;
 
 class AliAnalysisTaskLEDCheck: public AliAnalysisTaskSE {
 public:
@@ -16,6 +17,7 @@ public:
 
 protected:
   THistManager              *fHistos;
+  AliEMCALGeometry          *fGeometry;
 
 private:
   AliAnalysisTaskLEDCheck(const AliAnalysisTaskLEDCheck &ref);
