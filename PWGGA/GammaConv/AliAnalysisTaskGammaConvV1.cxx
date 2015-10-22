@@ -674,7 +674,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		else hNEvents[iCut] = new TH1F("NEvents","NEvents",11,-0.5,10.5);
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
 		if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
 			TString TriggerNames = "Not Trigger: ";
 			TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
@@ -694,7 +694,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hNEventsWOWeight[iCut] = new TH1F("NEventsWOWeight","NEventsWOWeight",11,-0.5,10.5);
 			hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 			hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-			hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+			hNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
 			if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){ 
 				TString TriggerNames = "Not Trigger: ";
 				TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
@@ -722,7 +722,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 			hNEventsWeighted[iCut]->Sumw2();
 			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+			hNEventsWeighted[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
 			if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
 				TString TriggerNames = "Not Trigger: ";
 				TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
@@ -1507,7 +1507,8 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 	} 
 	
 	Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
+	if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
+	if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or because it is incomplere or  wrong trigger for V0ReaderV1
 		for(Int_t iCut = 0; iCut<fnCuts; iCut++){
 			hNEvents[iCut]->Fill(eventQuality);
 			if(fIsMC==2) hNEventsWOWeight[iCut]->Fill(eventQuality);
