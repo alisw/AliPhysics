@@ -304,6 +304,12 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoFeedDownXicPlusMCS;     //!<! XicPlus in mcArray
   THnSparse* fHistoFeedDownXicPlusMCS1;     //!<! XicPlus in mcArray
   THnSparse* fHistoFeedDownXicPlusMCS2;     //!<! XicPlus in mcArray
+  THnSparse* fHistoFeedDownSigmaMCGen;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCGen1;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCGen2;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCS;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCS1;     //!<! Sigma in mcArray
+  THnSparse* fHistoFeedDownSigmaMCS2;     //!<! Sigma in mcArray
   THnSparse* fHistoLcElectronMCGen;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCGen1;         //!<! Lc in mcArray
   THnSparse* fHistoLcElectronMCGen2;         //!<! Lc in mcArray
@@ -408,6 +414,9 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
   THnSparse* fHistoEleLambdaPtvsV0dlFeedDownXicPlusMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS1;         //!<! Feeddown subtraction using Lambda vertex distribution
+  THnSparse* fHistoEleLambdaPtvsV0dlFeedDownSigmaMCS2;         //!<! Feeddown subtraction using Lambda vertex distribution
 
 	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
 	TH2D *fHistoResponseElePt1; //!<! Response function electron pT <- True ept
@@ -448,7 +457,7 @@ class AliAnalysisTaskSELc2eleLambdafromAODtracks : public AliAnalysisTaskSE
   std::vector<Double_t> fV0dcaArray2; /// array of antilambda-compatible tracks' information
 
   /// \cond CLASSIMP 
-  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,13); /// class for Lc->e Lambda
+  ClassDef(AliAnalysisTaskSELc2eleLambdafromAODtracks,14); /// class for Lc->e Lambda
   /// \endcond 
 };
 #endif
