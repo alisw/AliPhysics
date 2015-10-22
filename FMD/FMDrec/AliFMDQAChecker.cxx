@@ -263,6 +263,9 @@ AliFMDQAChecker::AliFMDQAChecker()
     fROErrorsFkup(0.5),
     fMaxNProblem(10),
     fMaxNBad(10),
+    fMinMPV(.2),
+    fMaxXi(.3),
+    fMaxSigma(.6),
     fNoFits(false)
 {
 }          
@@ -294,6 +297,10 @@ AliFMDQAChecker::ProcessExternalParams()
   ProcessExternalParam("NoFits", tmp);
   fNoFits = tmp > 0; tmp = 0;
 
+  ProcessExternalParam("ELossMinMPV",   fMinMPV);
+  ProcessExternalParam("ELossMaxXi",    fMaxXi);
+  ProcessExternalParam("ELossMaxSigma", fMaxSigma);
+  
   GetThresholds();
 
   fDidExternal = true;
@@ -353,6 +360,10 @@ AliFMDQAChecker::GetThresholds()
     else if (name.EqualTo("ROErrorsFkup"))       fROErrorsFkup      = val;    
     else if (name.EqualTo("MaxNProblem"))        fMaxNProblem       = val;
     else if (name.EqualTo("MaxNBad"))            fMaxNBad           = val;
+    else if (name.EqualTo("ELossMinMPV"))	 fMinMPV	    = val;
+    else if (name.EqualTo("ELossMaxXi"))	 fMaxXi		    = val;
+    else if (name.EqualTo("ELossMaxSigma"))	 fMaxSigma	    = val;
+
     AliDebugF(3, "Threshold %s=%f", name.Data(), val);
   }
 }
@@ -551,6 +562,12 @@ AliFMDQAChecker::CheckFit(TH1* hist, const TFitResultPtr& res,
     Double_t pe  = res->ParError(i);
     Double_t rel = (pv == 0 ? 100 : pe / pv);
     Bool_t   ok  = (i == 3) || (rel < thr);
+    if (i == 1 && pv < fMinMPV) { // Low peak
+      ok = false; ret++; }   // Double penalty 
+    if (i == 2 && pv > fMaxXi) { // Large xi
+      ok = false; ret++; }   // Double penalty 
+    if (i == 3 && pv > fMaxSigma) { // Large sigma
+      ok = false; ret++; }   // Double penalty 
     if (lines) {
       y -= dy;
       AddLine(lines, x, x2, x3, y, dy,Form("#delta%s/%s", 

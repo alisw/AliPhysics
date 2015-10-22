@@ -212,6 +212,9 @@ protected:
   Double_t fROErrorsFkup;      // Cut on read-out errors 
   Int_t    fMaxNProblem;       // Maximum number of problematic fits
   Int_t    fMaxNBad;           // Maximum number of bad fits
+  Double_t fMinMPV;            // Least MPV 
+  Double_t fMaxXi;             // Largest Landau width
+  Double_t fMaxSigma;          // Largest gaussian width
   Bool_t   fNoFits;            // If true, do not fit at all 
 private:
   /** 
