@@ -285,3 +285,8 @@ void AliAnalysisTaskSEMuonsHF::NotifyRun()
 
   return;
 }
+
+void AliAnalysisTaskSEMuonsHF::SetEvsHCuts(Double_t cuts[5])  const
+{
+  AliMuonsHFHeader::SetSelectionCuts(cuts);
+}

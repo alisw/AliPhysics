@@ -517,22 +517,28 @@ void MakeTestHists(){
 
 }
 
-void MakeEffHistspp(){
-    //open the input file:
-
-  TFile * infile = TFile::Open("AnalysisResults.root","READ");
+void MakeEffHistspp(const char* file = "AnalysisResults.root"){
+   //open the input file:
+  TString filename = TString(file);
+  //test if local or global
+  bool global = false;
+  if(filename.CompareTo("AnalysisResults.root")==0) global = true;
+  TFile * infile = TFile::Open(filename.Data(),"READ");
   THnF * hnTracksInBins;
   THnF * hnTracksInBinsRecPP;
   THnF * hnTracksInBinsMC;
-  TList * dir = dynamic_cast<TList*>(infile->GetDirectory("AddTaskThreePartTrackEfficiencies_0_16")->Get("AddTaskThreePartTrackEfficiencies_0_16Coutput1"));
-  for(int i=0;i<dir->GetEntries();i++){
-    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBins")==0)     hnTracksInBins = dynamic_cast<THnF*>(dir->At(i));
-    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsRecPP")==0)hnTracksInBinsRecPP = dynamic_cast<THnF*>(dir->At(i));
-    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsMC")==0)   hnTracksInBinsMC = dynamic_cast<THnF*>(dir->At(i));
-  }
-  //Axis: 0 - Centrality or multiplicity, 1 - Vertex , 2 - phi , 3 - eta , 4 - pT
+  TH2D * hnCentVsVertex;
+  TList * dir = dynamic_cast<TList*>(infile->GetDirectory("AddTaskThreePartTrackEfficiencies_0_100")->Get("AddTaskThreePartTrackEfficiencies_0_100Coutput1"));
   TFile* outfile = TFile::Open("eff.root","RECREATE");
-
+  outfile->cd();
+  for(int i=0;i<dir->GetEntries();i++){
+    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBins")==0)     hnTracksInBins = dynamic_cast<THnF*>(dir->At(i)->Clone("hnTracksinBins_eff"));
+    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsRecPP")==0)hnTracksInBinsRecPP = dynamic_cast<THnF*>(dir->At(i)->Clone("hnTracksinBinsRecPP_eff"));
+    if(TString(dir->At(i)->GetName()).CompareTo("hnTracksinBinsMC")==0)   hnTracksInBinsMC = dynamic_cast<THnF*>(dir->At(i)->Clone("hnTracksinBinsMC_eff"));
+    if(TString(dir->At(i)->GetName()).CompareTo("centVsZVertex")==0) hnCentVsVertex = dynamic_cast<TH2D*>(dir->At(i)->Clone("centVsZVertex_eff"));
+  }
+  infile->Close();
+  //Axis: 0 - Centrality or multiplicity, 1 - Vertex , 2 - phi , 3 - eta , 4 - pT
   TAxis * multaxis = hnTracksInBins->GetAxis(0);
   multaxis->SetTitle("Centrality [%]");
   hnTracksInBinsRecPP->GetAxis(0)->SetTitle("Centrality [%]");
@@ -553,8 +559,17 @@ void MakeEffHistspp(){
   pTaxis->SetTitle("pT [GeV/c]");    
   hnTracksInBinsRecPP->GetAxis(4)->SetTitle("pT [GeV/c]");
   hnTracksInBinsMC->GetAxis(4)->SetTitle("pT [GeV/c]");
+  outfile->cd();
+  hnTracksInBins->Write();
+  hnTracksInBinsMC->Write();
+  Errors(hnTracksInBins,"Errorsraw")->Write();
+  Errors(hnTracksInBinsMC,"ErrorsMC")->Write();
+  hnCentVsVertex->Write();
   
-
+  //1D projections
+  TDirectory * dim1 = outfile->mkdir("Projections_1d");
+  dim1->cd();
+  
   TH1D * multRec = hnTracksInBins->Projection(0);
   TH1D * multRecPP = hnTracksInBinsRecPP->Projection(0);
   TH1D * multMC = hnTracksInBinsMC->Projection(0);
@@ -564,7 +579,6 @@ void MakeEffHistspp(){
   multRecPP->Write("Multiplicity_Reconstructed_from_Physical_Primary");  
   multMC->Sumw2();
   multMC->Write("Multiplicity_All_Produced");
-  
   TH1D * multEffRec = dynamic_cast<TH1D*>(multRec->Clone("Efficiency_Mult_Rec"));
   multEffRec->Divide(multMC);
   multEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
@@ -573,6 +587,7 @@ void MakeEffHistspp(){
   multEffRecPP->Divide(multMC);
   multEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   multEffRecPP->Write();
+  delete multRec;delete multRecPP; delete multMC; delete multEffRec; delete multEffRecPP;
 
   TH1D * vzRec = hnTracksInBins->Projection(1);
   TH1D * vzRecPP = hnTracksInBinsRecPP->Projection(1);
@@ -583,7 +598,6 @@ void MakeEffHistspp(){
   vzRecPP->Write("VZ_Reconstructed_from_Physical_Primary");  
   vzMC->Sumw2();
   vzMC->Write("VZ_All_Produced");
-  
   TH1D * vzEffRec = dynamic_cast<TH1D*>(vzRec->Clone("Efficiency_VZ_Rec"));
   vzEffRec->Divide(vzMC);
   vzEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
@@ -592,7 +606,8 @@ void MakeEffHistspp(){
   vzEffRecPP->Divide(vzMC);
   vzEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   vzEffRecPP->Write();
-  
+  delete vzRec; delete vzRecPP; delete vzMC;delete vzEffRec;delete vzEffRecPP;
+
   TH1D * phiRec = hnTracksInBins->Projection(2);
   TH1D * phiRecPP = hnTracksInBinsRecPP->Projection(2);
   TH1D * phiMC = hnTracksInBinsMC->Projection(2);
@@ -602,7 +617,6 @@ void MakeEffHistspp(){
   phiRecPP->Write("phi_Reconstructed_from_Physical_Primary");  
   phiMC->Sumw2();
   phiMC->Write("phi_All_Produced");
-  
   TH1D * phiEffRec = dynamic_cast<TH1D*>(phiRec->Clone("Efficiency_phi_Rec"));
   phiEffRec->Divide(phiMC);
   phiEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
@@ -611,7 +625,8 @@ void MakeEffHistspp(){
   phiEffRecPP->Divide(phiMC);
   phiEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   phiEffRecPP->Write();
-  
+  delete phiRec; delete phiRecPP; delete phiMC;delete phiEffRec;delete phiEffRecPP;
+
   TH1D * etaRec = hnTracksInBins->Projection(3);
   TH1D * etaRecPP = hnTracksInBinsRecPP->Projection(3);
   TH1D * etaMC = hnTracksInBinsMC->Projection(3);
@@ -621,7 +636,6 @@ void MakeEffHistspp(){
   etaRecPP->Write("eta_Reconstructed_from_Physical_Primary");  
   etaMC->Sumw2();
   etaMC->Write("eta_All_Produced");
-  
   TH1D * etaEffRec = dynamic_cast<TH1D*>(etaRec->Clone("Efficiency_eta_Rec"));
   etaEffRec->Divide(etaMC);
   etaEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
@@ -630,6 +644,7 @@ void MakeEffHistspp(){
   etaEffRecPP->Divide(etaMC);
   etaEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   etaEffRecPP->Write();
+  delete etaRec; delete etaRecPP; delete etaMC;delete etaEffRec;delete etaEffRecPP;
 
   TH1D * pTRec = hnTracksInBins->Projection(4);
   TH1D * pTRecPP = hnTracksInBinsRecPP->Projection(4);
@@ -640,7 +655,6 @@ void MakeEffHistspp(){
   pTRecPP->Write("pT_Reconstructed_from_Physical_Primary");  
   pTMC->Sumw2();
   pTMC->Write("pT_All_Produced");
-  
   TH1D * pTEffRec = dynamic_cast<TH1D*>(pTRec->Clone("Efficiency_pT_Rec"));
   pTEffRec->Divide(pTMC);
   pTEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
@@ -649,12 +663,172 @@ void MakeEffHistspp(){
   pTEffRecPP->Divide(pTMC);
   pTEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   pTEffRecPP->Write();
-  
   TH1D * pTWeightRec = dynamic_cast<TH1D*>(pTMC->Clone("Weight_pT_Rec"));
   pTWeightRec->Divide(pTRec);
   pTWeightRec->SetTitle(" produced MC particles divided by Reconstructed tracks");
+  delete pTRec; delete pTRecPP; delete pTMC;delete pTEffRec;delete pTEffRecPP;
+
   
-  //2d projections in correlated variables:
+  //2D projections
+  TDirectory * dim2 = outfile->mkdir("Projections_2d");
+  dim2->cd();
+  TCanvas * can2d = new TCanvas("canvas");
+  
+  TH2D * multvzrec = hnTracksInBins->Projection(1,0);
+  multvzrec->Sumw2();
+  multvzrec->Write("mult_VZ_All_Reconstructed");
+  can2d->cd();
+  multvzrec->Draw("colz");
+  can2d->Write("mult_VZ_All_Reconstructed_can");
+  can2d->Clear();
+  TH2D * multvzrecPP = hnTracksInBinsRecPP->Projection(1,0);
+  multvzrecPP->Sumw2();
+  multvzrecPP->Write("mult_VZ_All_Reconstructed_from_Physical_Primary");  
+  TH2D * multvzMC = hnTracksInBinsMC->Projection(1,0);
+  multvzMC->Sumw2();
+  multvzMC->Write("mult_VZ_All_Produced");    
+  can2d->cd();
+  multvzMC->Draw("colz");
+  can2d->Write("mult_VZ_All_Produced_can");
+  can2d->Clear();
+  TH2D * multvzeffrec = dynamic_cast<TH2D*>(multvzrec->Clone("Efficiency_mult_vz_Rec"));
+  multvzeffrec->Divide(multvzMC);
+  multvzeffrec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  multvzeffrec->Write();
+  can2d->cd();
+  multvzeffrec->Draw("colz");
+  can2d->Write("Efficiency_mult_vz_Rec_can");
+  can2d->Clear();
+  TH2D * multvzeffrecPP = dynamic_cast<TH2D*>(multvzrecPP->Clone("Efficiency_mult_vz_Rec_pp"));
+  multvzeffrecPP->Divide(multvzMC);
+  multvzeffrecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  multvzeffrecPP->Write();
+  delete multvzrec; delete multvzrecPP; delete multvzMC;delete multvzeffrec;delete multvzeffrecPP;
+
+  TH2D * multphirec = hnTracksInBins->Projection(2,0);
+  multphirec->Sumw2();
+  multphirec->Write("mult_phi_All_Reconstructed");
+  can2d->cd();
+  multphirec->Draw("colz");
+  can2d->Write("mult_phi_All_Reconstructed_can");
+  can2d->Clear();
+  TH2D * multphirecPP = hnTracksInBinsRecPP->Projection(2,0);
+  multphirecPP->Sumw2();
+  multphirecPP->Write("mult_phi_All_Reconstructed_from_Physical_Primary");  
+  TH2D * multphiMC = hnTracksInBinsMC->Projection(2,0);
+  multphiMC->Sumw2();
+  multphiMC->Write("mult_phi_All_Produced");    
+  can2d->cd();
+  multphiMC->Draw("colz");
+  can2d->Write("mult_phi_All_Produced_can");
+  can2d->Clear();
+  TH2D * multphieffrec = dynamic_cast<TH2D*>(multphirec->Clone("Efficiency_mult_phi_Rec"));
+  multphieffrec->Divide(multphiMC);
+  multphieffrec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  multphieffrec->Write();
+  can2d->cd();
+  multphieffrec->Draw("colz");
+  can2d->Write("Efficiency_mult_phi_Rec_can");
+  can2d->Clear();
+  TH2D * multphieffrecPP = dynamic_cast<TH2D*>(multphirecPP->Clone("Efficiency_mult_phi_Rec_pp"));
+  multphieffrecPP->Divide(multphiMC);
+  multphieffrecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  multphieffrecPP->Write();
+  delete multphirec; delete multphirecPP; delete multphiMC;delete multphieffrec;delete multphieffrecPP;
+
+  TH2D * multetarec = hnTracksInBins->Projection(3,0);
+  multetarec->Sumw2();
+  multetarec->Write("mult_eta_All_Reconstructed");
+  can2d->cd();
+  multetarec->Draw("colz");
+  can2d->Write("mult_eta_All_Reconstructed_can");
+  can2d->Clear();
+  TH2D * multetarecPP = hnTracksInBinsRecPP->Projection(3,0);
+  multetarecPP->Sumw2();
+  multetarecPP->Write("mult_eta_All_Reconstructed_from_Physical_Primary");  
+  TH2D * multetaMC = hnTracksInBinsMC->Projection(3,0);
+  multetaMC->Sumw2();
+  multetaMC->Write("mult_eta_All_Produced");    
+  can2d->cd();
+  multetaMC->Draw("colz");
+  can2d->Write("mult_eta_All_Produced_can");
+  can2d->Clear();
+  TH2D * multetaeffrec = dynamic_cast<TH2D*>(multetarec->Clone("Efficiency_mult_eta_Rec"));
+  multetaeffrec->Divide(multetaMC);
+  multetaeffrec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  multetaeffrec->Write();
+  can2d->cd();
+  multetaeffrec->Draw("colz");
+  can2d->Write("Efficiency_mult_eta_Rec_can");
+  can2d->Clear();
+  TH2D * multetaeffrecPP = dynamic_cast<TH2D*>(multetarecPP->Clone("Efficiency_mult_eta_Rec_pp"));
+  multetaeffrecPP->Divide(multetaMC);
+  multetaeffrecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  multetaeffrecPP->Write();
+  delete multetarec; delete multetarecPP; delete multetaMC;delete multetaeffrec;delete multetaeffrecPP;
+
+  TH2D * multptRec = hnTracksInBins->Projection(4,0);
+  multptRec->Sumw2();
+  multptRec->Write("mult_pT_All_Reconstructed");
+  can2d->cd();
+  multptRec->Draw("colz");
+  can2d->Write("mult_pT_All_Reconstructed_can");
+  can2d->Clear();
+  TH2D * multptRecPP = hnTracksInBinsRecPP->Projection(4,0);
+  multptRecPP->Sumw2();
+  multptRecPP->Write("mult_pT_All_Reconstructed_from_Physical_Primary");  
+  TH2D * multptMC = hnTracksInBinsMC->Projection(4,0);
+  multptMC->Sumw2();
+  multptMC->Write("mult_pT_All_Produced");
+  can2d->cd();
+  multptMC->Draw("colz");
+  can2d->Write("mult_pT_All_Produced_can");
+  can2d->Clear();
+  TH2D * multptEffRec = dynamic_cast<TH2D*>(multptRec->Clone("Efficiency_mult_pT_Rec"));
+  multptEffRec->Divide(multptMC);
+  multptEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  multptEffRec->Write();
+  can2d->cd();
+  multptEffRec->Draw("colz");
+  can2d->Write("Efficiency_mult_pT_Rec_can");
+  can2d->Clear();
+  TH2D * multptEffRecPP = dynamic_cast<TH2D*>(multptRecPP->Clone("Efficiency_mult_pT_Rec_pp"));
+  multptEffRecPP->Divide(multptMC);
+  multptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  multptEffRecPP->Write();
+  delete multptRec; delete multptRecPP; delete multptMC;delete multptEffRec;delete multptEffRecPP;
+
+  TH2D * vzphiRec = hnTracksInBins->Projection(2,1);
+  vzphiRec->Sumw2();
+  vzphiRec->Write("VZ_phi_All_Reconstructed");
+  can2d->cd();
+  vzphiRec->Draw("colz");
+  can2d->Write("VZ_phi_All_Reconstructed_can");
+  can2d->Clear();
+  TH2D * vzphiRecPP = hnTracksInBinsRecPP->Projection(2,1);
+  vzphiRecPP->Sumw2();
+  vzphiRecPP->Write("VZ_phi_All_Reconstructed_from_Physical_Primary");  
+  TH2D * vzphiMC = hnTracksInBinsMC->Projection(2,1);
+  vzphiMC->Sumw2();
+  vzphiMC->Write("VZ_phi_All_Produced");
+  can2d->cd();
+  vzphiMC->Draw("colz");
+  can2d->Write("VZ_phi_All_Produced_can");
+  can2d->Clear();
+  TH2D * vzphiEffRec = dynamic_cast<TH2D*>(vzphiRec->Clone("Efficiency_vz_phi_Rec"));
+  vzphiEffRec->Divide(vzphiMC);
+  vzphiEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  vzphiEffRec->Write();
+  can2d->cd();
+  vzphiEffRec->Draw("colz");
+  can2d->Write("Efficiency_vz_phi_Rec_can");
+  can2d->Clear();
+  TH2D * vzphiEffRecPP = dynamic_cast<TH2D*>(vzphiRecPP->Clone("Efficiency_vz_phi_Rec_pp"));
+  vzphiEffRecPP->Divide(vzphiMC);
+  vzphiEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  vzphiEffRecPP->Write();  
+  delete vzphiRec; delete vzphiRecPP; delete vzphiMC;delete vzphiEffRec;delete vzphiEffRecPP;
+  
   TH2D * vzetaRec = hnTracksInBins->Projection(3,1);
   vzetaRec->Sumw2();
   vzetaRec->Write("VZ_Eta_All_Reconstructed");
@@ -664,7 +838,6 @@ void MakeEffHistspp(){
   TH2D * vzetaMC = hnTracksInBinsMC->Projection(3,1);
   vzetaMC->Sumw2();
   vzetaMC->Write("VZ_Eta_All_Produced");    
-  
   TH2D * vzetaEffRec = dynamic_cast<TH2D*>(vzetaRec->Clone("Efficiency_vz_eta_Rec"));
   vzetaEffRec->Divide(vzetaMC);
   vzetaEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
@@ -673,25 +846,64 @@ void MakeEffHistspp(){
   vzetaEffRecPP->Divide(vzetaMC);
   vzetaEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
   vzetaEffRecPP->Write();
+  delete vzetaRec; delete vzetaRecPP; delete vzetaMC;delete vzetaEffRec;delete vzetaEffRecPP;
   
-  TH2D * multptRec = hnTracksInBins->Projection(4,0);
-  multptRec->Sumw2();
-  multptRec->Write("mult_pT_All_Reconstructed");
-  TH2D * multptRecPP = hnTracksInBinsRecPP->Projection(4,0);
-  multptRecPP->Sumw2();
-  multptRecPP->Write("mult_pT_All_Reconstructed_from_Physical_Primary");  
-  TH2D * multptMC = hnTracksInBinsMC->Projection(4,0);
-  multptMC->Sumw2();
-  multptMC->Write("mult_pT_All_Produced");    
-  
-  TH2D * multptEffRec = dynamic_cast<TH2D*>(multptRec->Clone("Efficiency_mult_pT_Rec"));
-  multptEffRec->Divide(multptMC);
-  multptEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
-  multptEffRec->Write();
-  TH2D * multptEffRecPP = dynamic_cast<TH2D*>(multptRecPP->Clone("Efficiency_mult_pT_Rec_pp"));
-  multptEffRecPP->Divide(multptMC);
-  multptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
-  multptEffRecPP->Write();
+  TH2D * vzptRec = hnTracksInBins->Projection(4,1);
+  vzptRec->Sumw2();
+  vzptRec->Write("VZ_pT_All_Reconstructed");
+  TH2D * vzptRecPP = hnTracksInBinsRecPP->Projection(4,1);
+  vzptRecPP->Sumw2();
+  vzptRecPP->Write("VZ_pT_All_Reconstructed_from_Physical_Primary");  
+  TH2D * vzptMC = hnTracksInBinsMC->Projection(4,1);
+  vzptMC->Sumw2();
+  vzptMC->Write("VZ_pT_All_Produced");    
+  TH2D * vzptEffRec = dynamic_cast<TH2D*>(vzptRec->Clone("Efficiency_vz_pT_Rec"));
+  vzptEffRec->Divide(vzptMC);
+  vzptEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  vzptEffRec->Write();
+  TH2D * vzptEffRecPP = dynamic_cast<TH2D*>(vzptRecPP->Clone("Efficiency_vz_pT_Rec_pp"));
+  vzptEffRecPP->Divide(vzptMC);
+  vzptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  vzptEffRecPP->Write();
+  delete vzptRec; delete vzptRecPP; delete vzptMC;delete vzptEffRec;delete vzptEffRecPP;
+
+  TH2D * phietaRec = hnTracksInBins->Projection(3,2);
+  phietaRec->Sumw2();
+  phietaRec->Write("phi_Eta_All_Reconstructed");
+  TH2D * phietaRecPP = hnTracksInBinsRecPP->Projection(3,2);
+  phietaRecPP->Sumw2();
+  phietaRecPP->Write("phi_Eta_All_Reconstructed_from_Physical_Primary");  
+  TH2D * phietaMC = hnTracksInBinsMC->Projection(3,2);
+  phietaMC->Sumw2();
+  phietaMC->Write("phi_Eta_All_Produced");    
+  TH2D * phietaEffRec = dynamic_cast<TH2D*>(phietaRec->Clone("Efficiency_phi_eta_Rec"));
+  phietaEffRec->Divide(phietaMC);
+  phietaEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  phietaEffRec->Write();
+  TH2D * phietaEffRecPP = dynamic_cast<TH2D*>(phietaRecPP->Clone("Efficiency_phi_eta_Rec_pp"));
+  phietaEffRecPP->Divide(phietaMC);
+  phietaEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  phietaEffRecPP->Write();
+  delete phietaRec; delete phietaRecPP; delete phietaMC;delete phietaEffRec;delete phietaEffRecPP;
+
+  TH2D * phiptRec = hnTracksInBins->Projection(4,2);
+  phiptRec->Sumw2();
+  phiptRec->Write("phi_pT_All_Reconstructed");
+  TH2D * phiptRecPP = hnTracksInBinsRecPP->Projection(4,2);
+  phiptRecPP->Sumw2();
+  phiptRecPP->Write("phi_pT_All_Reconstructed_from_Physical_Primary");  
+  TH2D * phiptMC = hnTracksInBinsMC->Projection(4,2);
+  phiptMC->Sumw2();
+  phiptMC->Write("phi_pT_All_Produced");    
+  TH2D * phiptEffRec = dynamic_cast<TH2D*>(phiptRec->Clone("Efficiency_phi_pT_Rec"));
+  phiptEffRec->Divide(phiptMC);
+  phiptEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
+  phiptEffRec->Write();
+  TH2D * phiptEffRecPP = dynamic_cast<TH2D*>(phiptRecPP->Clone("Efficiency_phi_pT_Rec_pp"));
+  phiptEffRecPP->Divide(phiptMC);
+  phiptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
+  phiptEffRecPP->Write();
+  delete phiptRec; delete phiptRecPP; delete phiptMC;delete phiptEffRec;delete phiptEffRecPP;
   
   TH2D * etaptRec = hnTracksInBins->Projection(4,3);
   etaptRec->Sumw2();
@@ -699,62 +911,33 @@ void MakeEffHistspp(){
   TH2D * etaptMC = hnTracksInBinsMC->Projection(4,3);
   etaptMC->Sumw2();
   etaptMC->Write("eta_pT_All_Produced");    
-  
   TH2D * etaptEffRec = dynamic_cast<TH2D*>(etaptRec->Clone("Efficiency_eta_pT_Rec"));
   etaptEffRec->Divide(etaptMC);
   etaptEffRec->SetTitle("Reconstructed tracks divided by produced MC particles");
-  etaptEffRec->Write();
-  TH2D * etaptEffRecPP = dynamic_cast<TH2D*>(multptRecPP->Clone("Efficiency_mult_pT_Rec_pp"));
-  etaptEffRecPP->Divide(etaptMC);
-  etaptEffRecPP->SetTitle("Reconstructed tracks that come from a Physical Primary divided by produced MC particles");  
-  etaptEffRecPP->Write();
-  
-  //make more meaningful axes:
-  //mult: keep for now, unsure how it actually should look.
-  Double_t multaxisArray[6] = {0.0,33,66,99,133,165};
-  TArrayD * multaxisA = new TArrayD(6,multaxisArray);
-  //vz: 4 cm bins from -6 to 6,6-8,8-10 and the same on the other side:
-  Double_t  vzaxisArray[8] = {-10.0,-8.0,-6.0,-2.0,2.0,6.0,8.0,10.0};
-  TArrayD * vzaxisA = new TArrayD(8,vzaxisArray);
-  //phi need all the bins I can get... 
-//   const Double_t * phibins = hnTracksInBins->GetAxis(2)->GetXbins()->GetArray();
-  //eta: same
-//   const Double_t * etabins = hnTracksInBins->GetAxis(3)->GetXbins()->GetArray();
-  //pt: 0.1GeV/c up to 3 GeV/c = 25 bins, 0.5GeV/c up to 5 GeV/c = 4 bins, then 1 5GeV/c bin and one 6GeV/c bin: total 30 bins
-  Double_t  pTaxisArray[28] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.5,4.0};
-  TArrayD * pTaxisA = new TArrayD(28,pTaxisArray);
+  etaptEffRec->Write();  
+  delete etaptRec; delete etaptMC;delete etaptEffRec;
 
-//   TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
-//   histrec->Write();
-//   TH3D * histMC = Rebin(hnTracksInBinsMC,"hist3dMC",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
-//   histMC->Write();
-//   histMC->Divide(histrec);
-//   histMC->Write("Eff3d");
-//   TFile* outfile2 = TFile::Open("LHC10dWeight.root","RECREATE");
-//   outfile2->cd();
-//   histMC->Write("hnWeight");
-//   outfile2->Close();
-//   outfile->cd();
-//   TH1D * err = new TH1D("err","Errors in the 3d histogram",100,0.0,20.0);
-//   for(int x=1;x<=histrec->GetNbinsX();x++){
-//     for(int y=1;y<=histrec->GetNbinsY();y++){
-//       for(int z=1;z<=histrec->GetNbinsZ();z++){
-// 	if(histrec->GetBinContent(x,y,z)>1.0e-10)err->Fill(100*histrec->GetBinError(x,y,z)/histrec->GetBinContent(x,y,z));
-//       }
-//     }
-//   }
-//   err->Write();
-  
-  
+  //make more meaningful axes:
+  outfile->cd();
+  //mult: keep for now, unsure how it actually should look.
+  Double_t multaxisArray[2] = {0.0,300};
+  TArrayD * multaxisA = new TArrayD(2,multaxisArray);
+  //vz: 4 cm bins from -6 to 6,6-8,8-10 and the same on the other side:
+  Double_t  vzaxisArray[8] = {-10.0,-7.5,-5.0,-2.0,2.0,5.0,7.5,10.0};
+  TArrayD * vzaxisA = new TArrayD(8,vzaxisArray);//   //make more meaningful axes:
+  Double_t  pTaxisArray[16] = {0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+  TArrayD * pTaxisA = new TArrayD(16,pTaxisArray);
+
   TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
   histrec->Write();
   TH3D * histMC = Rebin(hnTracksInBinsMC,"hist3dMC",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
   histMC->Write();
   histMC->Divide(histrec);
   histMC->Write("Eff3d");
-  TFile* outfile2 = TFile::Open("LHC10dWeight.root","RECREATE");
+  TFile* outfile2 = TFile::Open("LHC11aWeight.root","RECREATE");
   outfile2->cd();
   histMC->Write("hnWeight");
+//   outfile2->Close();
   outfile->cd();
   TH1D * err = new TH1D("err","Errors in the 3d histogram",100,0.0,20.0);
   for(int x=1;x<=histrec->GetNbinsX();x++){
@@ -765,44 +948,96 @@ void MakeEffHistspp(){
     }
   }
   err->Write();
-  Double_t etamin = Etaaxis->GetBinLowEdge(1);
-  Double_t etamax = Etaaxis->GetBinUpEdge(Etaaxis->GetNbins());
-  Double_t deta = (etamax - etamin)/Etaaxis->GetNbins();
-  TArrayD * etaaxisAD = new TArrayD(Etaaxis->GetNbins()/3.0+1);
-  for(int i = 0; i<=Etaaxis->GetNbins()/3.0;i++){
-    etaaxisAD->AddAt(etamin+i*3.0*deta,i);
-  }
-//   const TArrayD * etabins = hnTracksInBins->GetAxis(3)->GetXbins();
-//   cout << etabins->GetSize()<<endl;
-  TH3D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+  TH2D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,2,4,2.0);
   histrechpT->Write();
-  TH3D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+  TH2D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,2,4,2.0);
   histhpTMC->Write();  
   histhpTMC->Divide(histrechpT);
   Double_t nbins = 0.0;
   Double_t content = 0.0;
   for(int x = 1;x<=histhpTMC->GetXaxis()->GetNbins();x++){
      for(int y = 1;y<=histhpTMC->GetYaxis()->GetNbins();y++){
-      for(int z = 1;z<=histhpTMC->GetZaxis()->GetNbins();z++){
-	if(histhpTMC->GetBinContent(x,y,z)>1.0E-10){
+	if(histhpTMC->GetBinContent(x,y)>1.0E-10){
 	  nbins +=1.0;
-	  content+=histhpTMC->GetBinContent(x,y,z);
+	  content+=histhpTMC->GetBinContent(x,y);       
 	}
       }
     }
-  }
-  cout << content/nbins<<endl;
-  histhpTMC->Write("Eff3dhpT");
+  histhpTMC->Write("Eff2dhpT");
+  TF1* ptfunc;
   outfile2->cd();
   histhpTMC->Write("hnWeight_highpt");
-  TF1* ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*x*x*x",4,16);
+  ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*exp(-x)",2,100);
   pTWeightRec->Scale(nbins/content);
-  pTWeightRec->Fit(ptfunc,"","",4,16);
+  pTWeightRec->Fit(ptfunc,"","",2,100);
   outfile->cd();
   pTWeightRec->Write();
   outfile2->cd();
   ptfunc->Write();
-  outfile2->Close();
+  outfile2->Close();  
+  delete hnTracksInBins; delete hnTracksInBinsMC; delete hnTracksInBinsRecPP;delete hnCentVsVertex;    
+  delete pTWeightRec;
+  delete histrec; delete histMC;delete err;delete histrechpT;delete histhpTMC;
+  delete ptfunc;
+  delete multaxisA; delete vzaxisA; delete pTaxisA;  //   
+//   
+//   TH3D * histrec = Rebin(hnTracksInBins,"hist3drec",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
+//   histrec->Write();
+//   TH3D * histMC = Rebin(hnTracksInBinsMC,"hist3dMC",0,multaxisA,1,vzaxisA,4,pTaxisA,2,3);
+//   histMC->Write();
+//   histMC->Divide(histrec);
+//   histMC->Write("Eff3d");
+//   TFile* outfile2 = TFile::Open("LHC10dWeight.root","RECREATE");
+//   outfile2->cd();
+//   histMC->Write("hnWeight");
+//   outfile->cd();
+//   TH1D * err = new TH1D("err","Errors in the 3d histogram",100,0.0,20.0);
+//   for(int x=1;x<=histrec->GetNbinsX();x++){
+//     for(int y=1;y<=histrec->GetNbinsY();y++){
+//       for(int z=1;z<=histrec->GetNbinsZ();z++){
+// 	if(histrec->GetBinContent(x,y,z)>1.0e-10)err->Fill(100*histrec->GetBinError(x,y,z)/histrec->GetBinContent(x,y,z));
+//       }
+//     }
+//   }
+//   err->Write();
+//   Double_t etamin = Etaaxis->GetBinLowEdge(1);
+//   Double_t etamax = Etaaxis->GetBinUpEdge(Etaaxis->GetNbins());
+//   Double_t deta = (etamax - etamin)/Etaaxis->GetNbins();
+//   TArrayD * etaaxisAD = new TArrayD(Etaaxis->GetNbins()/3.0+1);
+//   for(int i = 0; i<=Etaaxis->GetNbins()/3.0;i++){
+//     etaaxisAD->AddAt(etamin+i*3.0*deta,i);
+//   }
+// //   const TArrayD * etabins = hnTracksInBins->GetAxis(3)->GetXbins();
+// //   cout << etabins->GetSize()<<endl;
+//   TH3D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+//   histrechpT->Write();
+//   TH3D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,etaaxisAD,4,4.0,2);
+//   histhpTMC->Write();  
+//   histhpTMC->Divide(histrechpT);
+//   Double_t nbins = 0.0;
+//   Double_t content = 0.0;
+//   for(int x = 1;x<=histhpTMC->GetXaxis()->GetNbins();x++){
+//      for(int y = 1;y<=histhpTMC->GetYaxis()->GetNbins();y++){
+//       for(int z = 1;z<=histhpTMC->GetZaxis()->GetNbins();z++){
+// 	if(histhpTMC->GetBinContent(x,y,z)>1.0E-10){
+// 	  nbins +=1.0;
+// 	  content+=histhpTMC->GetBinContent(x,y,z);
+// 	}
+//       }
+//     }
+//   }
+//   cout << content/nbins<<endl;
+//   histhpTMC->Write("Eff3dhpT");
+//   outfile2->cd();
+//   histhpTMC->Write("hnWeight_highpt");
+//   TF1* ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*x*x*x",4,16);
+//   pTWeightRec->Scale(nbins/content);
+//   pTWeightRec->Fit(ptfunc,"","",4,16);
+//   outfile->cd();
+//   pTWeightRec->Write();
+//   outfile2->cd();
+//   ptfunc->Write();
+//   outfile2->Close();
   
   
   
@@ -886,7 +1121,7 @@ void MakeEffHistspp(){
   outfile->Close();
 
   
-  infile->Close();
+//   infile->Close();
 // //   delete multEffRec;delete multEffRecPP;
 }
 
@@ -1309,9 +1544,9 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
 //   }
 //   const TArrayD * etabins = hnTracksInBins->GetAxis(3)->GetXbins();
 //   cout << etabins->GetSize()<<endl;
-  TH2D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,2,4,4.0);
+  TH2D * histrechpT = Rebin(hnTracksInBins,"hist3drechpT",0,multaxisA,1,vzaxisA,3,2,4,2.0);
   histrechpT->Write();
-  TH2D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,2,4,4.0);
+  TH2D * histhpTMC = Rebin(hnTracksInBinsMC,"hist3dMChpT",0,multaxisA,1,vzaxisA,3,2,4,2.0);
   histhpTMC->Write();  
   histhpTMC->Divide(histrechpT);
   Double_t nbins = 0.0;
@@ -1332,9 +1567,9 @@ void MakeEffHistsPbPb(const char* file = "AnalysisResults.root"){
   if(global){
     outfile2->cd();
     histhpTMC->Write("hnWeight_highpt");
-    ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*exp(-x)",2,16);
+    ptfunc = new TF1("pT_function","[0]+[1]*x+[2]*x*x+[3]*exp(-x)",2,100);
     pTWeightRec->Scale(nbins/content);
-    pTWeightRec->Fit(ptfunc,"","",2,16);
+    pTWeightRec->Fit(ptfunc,"","",2,100);
   }
   outfile->cd();
   pTWeightRec->Write();

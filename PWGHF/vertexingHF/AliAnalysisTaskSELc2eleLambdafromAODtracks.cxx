@@ -130,6 +130,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fEvNumberCounter(0),
+  fMCEventType(-9999),
   fHistoEleLambdaMass(0),
   fHistoEleLambdaMassRS(0),
   fHistoEleLambdaMassWS(0),
@@ -378,6 +379,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
 	fHistonLambdavsRunNumber(0),
+	fHistoMCEventType(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -450,6 +452,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
   fTriggerCheck(0),
   fUseCentralityV0M(kFALSE),
   fEvNumberCounter(0),
+  fMCEventType(-9999),
   fHistoEleLambdaMass(0),
   fHistoEleLambdaMassRS(0),
   fHistoEleLambdaMassWS(0),
@@ -698,6 +701,7 @@ AliAnalysisTaskSELc2eleLambdafromAODtracks::AliAnalysisTaskSELc2eleLambdafromAOD
 	fHistonEvtvsRunNumber(0),
 	fHistonElevsRunNumber(0),
 	fHistonLambdavsRunNumber(0),
+	fHistoMCEventType(0),
   fDoEventMixing(0),
 	fNumberOfEventsForMixing		(5),
 	fNzVtxBins					(0), 
@@ -888,7 +892,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::UserExec(Option_t *)
       fCEvents->Fill(17); // in case of MC events
     }
     if ((TMath::Abs(zMCVertex) < fAnalCuts->GetMaxVtxZ()) && (!fAnalCuts->IsEventRejectedDuePhysicsSelection()) && (!fAnalCuts->IsEventRejectedDueToTrigger())) {
-			MakeMCAnalysis(mcArray);
+			Bool_t selevt = MakeMCAnalysis(mcArray);
+			if(!selevt) return;
 		}
   }
 
@@ -1196,7 +1201,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 74;
+  Int_t nVar = 75;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1275,9 +1280,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 	fCandidateVariableNames[69]= "V0PosITSMatch";
 	fCandidateVariableNames[70]= "V0NegITSMatch";
 	fCandidateVariableNames[71]= "IsV0PeakRegion";
+	fCandidateVariableNames[72]= "mcpdgv0";
 
-  fCandidateVariableNames[72]="EvNumber";
-  fCandidateVariableNames[73]="RunNumber";
+  fCandidateVariableNames[73]="EvNumber";
+  fCandidateVariableNames[74]="RunNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1295,7 +1301,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	if(!trk) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<74;i++){
+	for(Int_t i=0;i<75;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -1473,8 +1479,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	if(cntrack) fCandidateVariables[70] = cntrack->GetITSClusterMap();
 
   fCandidateVariables[71] = fAnalCuts->IsPeakRegion(v0);
-  fCandidateVariables[72] = fEvNumberCounter;
-  fCandidateVariables[73] = fRunNumber;
+	fCandidateVariables[72] = mcpdgv0_array[0];
+  fCandidateVariables[73] = fEvNumberCounter;
+  fCandidateVariables[74] = fRunNumber;
 
 
   if(fWriteVariableTree)
@@ -1972,7 +1979,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 	if(!trke) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<73;i++){
+	for(Int_t i=0;i<75;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -2030,8 +2037,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
   fCandidateVariables[56] = fVtx1->GetZ();
   fCandidateVariables[64] = v0info[0];
 
-  fCandidateVariables[71] = fEvNumberCounter;
-  fCandidateVariables[72] = fRunNumber;
+  fCandidateVariables[73] = fEvNumberCounter;
+  fCandidateVariables[74] = fRunNumber;
 
 
   if(fWriteVariableTree)
@@ -3477,6 +3484,8 @@ void  AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistonElevsRunNumber);
   fHistonLambdavsRunNumber=new TH1F("fHistonLambdavsRunNumber","",20000,-0.5,19999.5);
   fOutputAll->Add(fHistonLambdavsRunNumber);
+  fHistoMCEventType=new TH1F("fHistoMCEventType","",4,-0.5,3.5);
+  fOutputAll->Add(fHistoMCEventType);
 
 	for(Int_t ih=0;ih<17;ih++){
 		Int_t bins_eleptvscutvars[3];
@@ -4133,13 +4142,84 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DoEventMixingWithPools(Int_t po
 	}//track loop
 }
 //_________________________________________________________________
-void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
+Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
 {
 	//
   // Analyze AliAODmcparticle
 	//
 
 	Int_t nmcpart = mcArray->GetEntriesFast();
+
+	Int_t mcevttype = 0;
+	Bool_t sigmaevent = kFALSE;
+	if(fMCEventType==1 || fMCEventType==2 || fMCEventType==11){
+		for(Int_t i=0;i<nmcpart;i++)
+		{
+			AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
+			if(TMath::Abs(mcpart->GetPdgCode())==4){
+				if(fabs(mcpart->Y())<1.5){
+					if(mcevttype==0){
+						mcevttype = 1;
+					}else if(mcevttype==1){
+						mcevttype = 1;
+					}else if(mcevttype==2){
+						mcevttype = 3;
+					}else if(mcevttype==3){
+						mcevttype = 3;
+					}
+				}
+			}
+			if(TMath::Abs(mcpart->GetPdgCode())==5){
+				if(fabs(mcpart->Y())<1.5){
+					if(mcevttype==0){
+						mcevttype = 2;
+					}else if(mcevttype==1){
+						mcevttype = 3;
+					}else if(mcevttype==2){
+						mcevttype = 2;
+					}else if(mcevttype==3){
+						mcevttype = 3;
+					}
+				}
+			}
+
+			if(TMath::Abs(mcpart->GetPdgCode())==4122){
+				Bool_t e_flag = kFALSE;
+				Bool_t sigma_flag = kFALSE;
+				for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+				{
+					if(idau<0) break;
+					AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+					if(!mcdau) continue;
+					if(TMath::Abs(mcdau->GetPdgCode())==11){
+						e_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3212){
+						sigma_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3214){
+						sigma_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3224){
+						sigma_flag = kTRUE;
+					}
+				}
+				if(e_flag && sigma_flag) sigmaevent = kTRUE;
+			}
+		}
+
+		if(fMCEventType==1){
+			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
+		}else if(fMCEventType==2){
+			if((mcevttype==1)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
+		}else if(fMCEventType==11){
+			if(sigmaevent) return kFALSE;
+			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
+		}
+
+		fHistoMCEventType->Fill(mcevttype);
+	}
+
 	for(Int_t i=0;i<nmcpart;i++)
 	{
 		AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
@@ -4264,5 +4344,5 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *mc
 			FillMCV0ROOTObjects(mcpart, mcArray);
 		}
 	}
-	return;
+	return kTRUE;
 }

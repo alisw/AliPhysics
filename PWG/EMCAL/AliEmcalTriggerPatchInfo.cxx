@@ -132,7 +132,7 @@ void AliEmcalTriggerPatchInfo::GetCellIndices( AliEMCALGeometry *geom, TArrayI *
  * @param v Patch vector position
  * @param e Patch energy
  */
-void AliEmcalTriggerPatchInfo::SetLorentzVector( TLorentzVector &lv, TVector3 &v, Double_t e ){
+void AliEmcalTriggerPatchInfo::SetLorentzVector( TLorentzVector &lv, const TVector3 &v, Double_t e ){
   // sets the vector
   Double_t r = TMath::Sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2] ) ; 
   

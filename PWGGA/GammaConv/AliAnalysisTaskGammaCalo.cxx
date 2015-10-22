@@ -1639,7 +1639,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent);
 
 	// match tracks to clusters
-	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
+	((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC);
 
 	// vertex
 	Double_t vertex[3] = {0};
@@ -1652,8 +1652,8 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 		if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
 		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
 
-		if (!clus) continue;
-		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)){ delete clus; continue;}
+		if(!clus) continue;
+		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC,fWeightJetJetMC)){ delete clus; continue;}
 		// TLorentzvector with cluster
 		TLorentzVector clusterVector;
 		clus->GetMomentum(clusterVector,vertex);

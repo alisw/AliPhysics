@@ -209,14 +209,14 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::UserExec(Option_t* /*option*/
   FillHistogram("EventsperRun", fRunFillValue);
   FillHistogram("NEventsVertex",fRunFillValue,fVertex[2]);
   FillHistogram("NEventsCent",fRunFillValue,fCentralityPercentile);
-  //To fill with tracks and pions:
+//   //To fill with tracks and pions:
   TObjArray allrelevantParticles;
-  //Fill all the tracks
+//   //Fill all the tracks
   FillHistogram("centVsNofTracks",fCentralityPercentile, GetTracks(&allrelevantParticles, pEvent));
-  FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
-  FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);  
-  if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
-  //If VZERO data, fill the Multiplicity histograms.
+// //   FillHistogram("NTriggersperRun",fRunFillValue,fNTriggers);
+// //   FillHistogram("NAssociatedperRun",fRunFillValue,fNAssociated);  
+//   if(fNTriggers>=1)FillHistogram("NAssociatedETriggered",fNAssociated);
+//   //If VZERO data, fill the Multiplicity histograms.
   PostData(1, fOutput);  
 }
 
@@ -247,11 +247,11 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
     FillHistogram("trackUnselectedPhi",t->Phi());
     FillHistogram("trackUnselectedTheta",t->Theta());
     if (!IsSelected(t)) continue;
-    if(fRemoveSignals){
-
-      if(IsAddedSignal(t)){ 	FillHistogram("ptrejected",t->Pt()); continue;}
-      else{			FillHistogram("ptaccepted",t->Pt());}
-    }
+//     if(fRemoveSignals){
+// 
+//       if(IsAddedSignal(t)){ 	FillHistogram("ptrejected",t->Pt()); continue;}
+//       else{			FillHistogram("ptaccepted",t->Pt());}
+//     }
 
     allrelevantParticles->Add(t);
     if(fCollisionType==AliAnalysisTaskCorrelation3p_lightefficiency::pp){
@@ -280,7 +280,7 @@ Int_t AliAnalysisTaskCorrelation3p_lightefficiency::GetTracks(TObjArray* allrele
       AliVParticle* t =  (AliVParticle *) fMcArray->At(i);
       if (!t) continue;
 //       if(dynamic_cast<AliAODMCParticle*>(t)->GetGeneratorIndex()==1&&dynamic_cast<AliAODMCParticle*>(t)->GetMother()==-1)cout <<" In MCarray loop"<< i <<endl;
-      GeneratorStat(t);
+//       if(fRemoveSignals) GeneratorStat(t);
       if( t->Charge()!=0){//check if they are physical primary particles
 	if (!IsSelected(t)) continue;
 // 	if (IsAddedSignal(t)) continue;
@@ -639,7 +639,7 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeQAhistograms()
   fOutput->Add(new TH1D("trackPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
   fOutput->Add(new TH1D("trackUnselectedTheta", "trackTheta",  180, 0, TMath::Pi()));
   fOutput->Add(new TH1D("trackTheta", "trackTheta",  180, 0.0, TMath::Pi()));
-  fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",50,-0.5,49.5));
+//   fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",50,-0.5,49.5));
   
   fOutput->Add(new TH1D("centrality", "Centrality",  100,  0, 100));
   fOutput->Add(new TH1D("multiplicity", "Multiplicity of tracklets",  100,  0, fMaxNumberOfTracksInPPConsidered));
@@ -758,20 +758,44 @@ void AliAnalysisTaskCorrelation3p_lightefficiency::InitializeEffHistograms()
   Double_t EtaMax =  0.9;
   Double_t pTmin = fMinPt;
   Double_t pTmax = fMaxPt;
+  Int_t nextra = 0;
+  if(pTmax > 16.0){
+    pTmax = 16.0;
+    nextra = 2 + (fMaxPt-20.0)/10.0 ;//rounding up, one bin 16 - 20, rest 10 GeV/c bins
+  }
+  
   Int_t npT = (pTmax-pTmin)/0.1 - 0.5;//rounding up
+  pTmax = fMaxPt;
+  Double_t pTbins[npT+nextra+1];
+  Double_t nowpT = pTmin;
+  for (int i = 0;i<=npT+nextra;i++){
+    pTbins[i] = nowpT;
+    if(nowpT<16.0){
+      nowpT+=0.1;
+    }
+    if(nowpT>=20.0){
+      nowpT +=10.0;
+    }
+    if(nowpT >= 16.0 && nowpT<20.0){
+      nowpT=20.0;
+    }
 
-  Int_t  bins[5]   = {nofMBins, nofZBins,nphi,nEta,npT};
+  }  
+  Int_t  bins[5]   = {nofMBins, nofZBins,nphi,nEta,npT+nextra};
   Double_t xmin[5] = {MBinmined,ZBinmined,phimin,EtaMin,pTmin};
   Double_t xmax[5] = {MBinmaxed,ZBinmaxed,phimax,EtaMax,pTmax};
   fOutput->Add(new THnF("hnTracksinBins","Tracks in different bins.",5,bins,xmin,xmax));
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBins"))->GetAxis(0)->Set(nofMBins,Mbins);
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBins"))->GetAxis(1)->Set(nofZBins,Zbins);
+  dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBins"))->GetAxis(4)->Set(npT+nextra,pTbins);
   fOutput->Add(new THnF("hnTracksinBinsRecPP","Tracks in different bins from reconstruction that originate from a PhysicalPrimary MC particle.",5,bins,xmin,xmax));
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsRecPP"))->GetAxis(0)->Set(nofMBins,Mbins);
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsRecPP"))->GetAxis(1)->Set(nofZBins,Zbins);
+  dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsRecPP"))->GetAxis(4)->Set(npT+nextra,pTbins);
   fOutput->Add(new THnF("hnTracksinBinsMC","Tracks in different bins, MC truth for charged particles.",5,bins,xmin,xmax));
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsMC"))->GetAxis(0)->Set(nofMBins,Mbins);
   dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsMC"))->GetAxis(1)->Set(nofZBins,Zbins);
+  dynamic_cast<THnF*>(fOutput->FindObject("hnTracksinBinsMC"))->GetAxis(4)->Set(npT+nextra,pTbins);
 }
 
 

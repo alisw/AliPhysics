@@ -476,7 +476,7 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
       }
     }
 
-    if ( period.BeginsWith("LHC15i") || period.BeginsWith("LHC15j"))
+    if ( period.BeginsWith("LHC15i") || period.BeginsWith("LHC15j") || period.BeginsWith("LHC15k") || period.BeginsWith("LHC15") )
     {
       lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
     }

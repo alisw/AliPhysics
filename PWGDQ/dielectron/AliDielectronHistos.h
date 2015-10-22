@@ -191,7 +191,6 @@ private:
 
   void FillVarArray(TObject *obj, UInt_t *valType);
 
-  
   THashList fHistoList;             //-> list of histograms
   TList    *fList;                  //! List of list of histograms
 	TBits     *fUsedVars;            // list of used variables

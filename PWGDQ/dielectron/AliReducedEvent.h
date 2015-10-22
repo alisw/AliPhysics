@@ -491,8 +491,8 @@ class AliReducedEvent : public TObject {
   UShort_t  fL2TriggerInputs;       // L2 trigger inputs
   Int_t     fRunNo;                 // run number
   UShort_t  fBC;                    // bunch crossing
-  UInt_t    fTimeStamp;             // time stamp of the event                (NEW)
-  UInt_t    fEventType;             // event type                             (NEW)
+  UInt_t    fTimeStamp;             // time stamp of the event                
+  UInt_t    fEventType;             // event type                             
   ULong64_t fTriggerMask;           // trigger mask
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
@@ -503,11 +503,11 @@ class AliReducedEvent : public TObject {
   Int_t     fNVtxContributors;      // global event vertex contributors
   Float_t   fVtxTPC[3];             // TPC only event vertex           
   Int_t     fNVtxTPCContributors;   // TPC only event vertex contributors
-  Int_t     fNpileupSPD;            // number of pileup vertices from SPD     (NEW)
-  Int_t     fNpileupTracks;         // number of pileup vertices from tracks  (NEW)
-  Int_t     fNPMDtracks;            // number of PMD tracks                   (NEW)
-  Int_t     fNTRDtracks;            // number of TRD tracks                   (NEW)
-  Int_t     fNTRDtracklets;         // number of TRD tracklets                (NEW)
+  Int_t     fNpileupSPD;            // number of pileup vertices from SPD     
+  Int_t     fNpileupTracks;         // number of pileup vertices from tracks  
+  Int_t     fNPMDtracks;            // number of PMD tracks                   
+  Int_t     fNTRDtracks;            // number of TRD tracks                   
+  Int_t     fNTRDtracklets;         // number of TRD tracklets                
   Float_t   fCentrality[4];         // centrality; 0-VZERO, 1-SPD, 2-TPC, 3-ZEMvsZDC 
   Int_t     fCentQuality;           // quality flag for the centrality 
   Int_t     fNV0candidates[2];      // number of V0 candidates, [0]-total, [1]-selected for the tree

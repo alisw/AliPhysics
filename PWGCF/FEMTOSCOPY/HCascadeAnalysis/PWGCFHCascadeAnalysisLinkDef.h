@@ -4,4 +4,6 @@
 
 #pragma link C++ class AliAnalysisTaskhCascadeFemto+;
 #pragma link C++ class AliAnalysishCascadeEventCollection+;
-
+#pragma link C++ class AliReconstructedProton+;
+#pragma link C++ class AliReconstructedXi+;
+#pragma link C++ class AliAnalysishCascadeEvent+;

@@ -191,6 +191,27 @@ class AliEmcalTriggerPatchInfo: public TObject {
    */
   Bool_t   IsOfflineSimple() const { return (Bool_t)((fTriggerBits >> kSimpleOfflineBitNum)&1); }
 
+  /**
+   * Access to Lorentz Vector of the centre-of-mass of the trigger patch
+   * @return Lorentz Vector of the centre-of-mass of the trigger patch
+   */
+  const TLorentzVector &GetLorentzVectorCM() const { return fCenterMass; }
+  /**
+   * Access to Lorentz Vector of the geometrical centre of the trigger patch
+   * @return Lorentz Vector of the geometrical centre of the trigger patch
+   */
+  const TLorentzVector &GetLorentzVectorCenterGeo() const { return fCenterGeo; }
+  /**
+   * Access to Lorentz Vector of the lower left edge of the trigger patch
+   * @return Lorentz Vector of the lower left edge of the trigger patch
+   */
+  const TLorentzVector &GetLorentzVectorEdge1() const { return fEdge1; }
+  /**
+   * Access to Lorentz Vector of the upper right edge of the trigger patch
+   * @return Lorentz Vector of the upper right edge of the trigger patch
+   */
+  const TLorentzVector &GetLorentzVectorEdge2() const { return fEdge2; }
+
   // Recalculated max patches
   /**
    * Check if the patch is a recalculated jet patch
@@ -208,45 +229,45 @@ class AliEmcalTriggerPatchInfo: public TObject {
   * @param v Position 3-vector
   * @param e Patch energy
   */
-  void SetCenterGeo( TVector3 &v, Double_t e ) { SetLorentzVector( fCenterGeo, v, e ); }
+  void SetCenterGeo( const TVector3 &v, Double_t e ) { SetLorentzVector( fCenterGeo, v, e ); }
   /**
    * Set the geometric center position of the patch
    * @param v Position Lorentz vector
    */
-  void SetCenterGeo( TLorentzVector &v ) { fCenterGeo = v; }
+  void SetCenterGeo( const TLorentzVector &v ) { fCenterGeo = v; }
   /**
    * Set the center-of-mass position of the trigger patch
    * @param v Position Lorentz vector
    */
-  void SetCenterMass( TLorentzVector &v ) { fCenterMass = v; }
+  void SetCenterMass( const TLorentzVector &v ) { fCenterMass = v; }
   /**
    * Set the center-of-mass position of the trigger patch
    * @param v Position 3-vector
    * @param e Patch energy
    */
-  void SetCenterMass( TVector3 &v, Double_t e ) { SetLorentzVector( fCenterMass, v, e ); }
+  void SetCenterMass( const TVector3 &v, Double_t e ) { SetLorentzVector( fCenterMass, v, e ); }
   /**
    * Set lower edge position of the trigger patch
    * @param v Position Lorentz vector
    */
-  void SetEdge1( TLorentzVector &v ) { fEdge1 = v; }
+  void SetEdge1( const TLorentzVector &v ) { fEdge1 = v; }
   /**
    * Set lower edge position of the trigger patch
    * @param v Position 3-vector
    * @param e Patch energy
    */
-  void SetEdge1( TVector3 &v, Double_t e ) { SetLorentzVector( fEdge1, v, e ); }
+  void SetEdge1( const TVector3 &v, Double_t e ) { SetLorentzVector( fEdge1, v, e ); }
   /**
    * Set upper edge position of the trigger patch
    * @param v Lorentz-vector of the upper edge position of the trigger patch
    */
-  void SetEdge2( TLorentzVector &v ) { fEdge2 = v; }
+  void SetEdge2( const TLorentzVector &v ) { fEdge2 = v; }
   /**
    * Set upper edge position of the trigger patch
    * @param v Position 3-vector
    * @param e Patch Energy
    */
-  void SetEdge2( TVector3 &v, Double_t e ) { SetLorentzVector( fEdge2, v, e ); }
+  void SetEdge2( const TVector3 &v, Double_t e ) { SetLorentzVector( fEdge2, v, e ); }
   /**
    * Set online ADC amplitude
    * @param a Online ADC amplitude
@@ -268,7 +289,7 @@ class AliEmcalTriggerPatchInfo: public TObject {
    */
   void SetOfflineSimple() { fTriggerBits |= 1 << kSimpleOfflineBitNum; }
 
-  void SetLorentzVector( TLorentzVector &lv, TVector3 &v, Double_t e );
+  void SetLorentzVector( TLorentzVector &lv, const TVector3 &v, Double_t e );
 
   /**
    * Set the trigger bits

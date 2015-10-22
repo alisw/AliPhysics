@@ -274,7 +274,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
   
-    analysisClusterCuts[i] = new AliCaloPhotonCuts();
+	analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);

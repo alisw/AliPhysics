@@ -2165,7 +2165,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
 		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
 
 		if (!clus) continue;
-		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC)){ delete clus; continue;}
+		if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC,fWeightJetJetMC)){ delete clus; continue;}
 
 		// TLorentzvector with cluster
 		TLorentzVector clusterVector;
@@ -3162,7 +3162,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
 				
 				if (gamma1->GetIsCaloPhoton()){
 					AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
-					matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent );
+					matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent, fWeightJetJetMC);
 					if(doConvGammaShowerShapeTree && matched){
 						Float_t clusPos[3]={0,0,0};
 						cluster->GetPosition(clusPos);

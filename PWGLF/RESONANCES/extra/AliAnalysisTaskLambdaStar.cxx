@@ -493,8 +493,9 @@ void AliAnalysisTaskLambdaStar::ProcessTPC(AliAODTrack* track, Double_t nsig, Bo
   if(strong){ 
     if(( TMath::Abs(nsigmakaon)==TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmakaon)==TMath::Abs(nsigmaproton) )) return ;
     }
-  //  cout<<"NSigma on TPC Loop = "<<nsig; 
-  if( TMath::Abs(nsigmakaon) <= nsig ){
+
+  if( (TMath::Abs(nsigmakaon) < TMath::Abs(nsigmapion)) && (TMath::Abs(nsigmakaon) < TMath::Abs(nsigmaproton)) && (TMath::Abs(nsigmakaon) <= nsig) ){
+
       fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
     if (track->Charge()>0){
       
@@ -518,7 +519,7 @@ void AliAnalysisTaskLambdaStar::ProcessTPC(AliAODTrack* track, Double_t nsig, Bo
    if(strong){
    if( ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmakaon) )) return ;
    }
-     if( TMath::Abs(nsigmaproton)   <= nsig ){
+     if(  (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmapion)) && (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmakaon))  && (TMath::Abs(nsigmaproton)   <= nsig) ){
          fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
        if (track->Charge()>0){
 
@@ -621,7 +622,7 @@ void AliAnalysisTaskLambdaStar::ProcessHybridPro(AliAODTrack *track, Bool_t circ
   if(!circ)     {
     if(fHasTOFPID){
       
-      if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && ( TMath::Abs(nsigmakaon) <= 5.0 ) ){
+      if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && ( TMath::Abs(nsigmakaon) <= nsig ) ){
           fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
           fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
           fPriHistTPCTOFnsigmakaon->Fill(nsigmakaonTOF,nsigmakaon);
@@ -705,7 +706,7 @@ void AliAnalysisTaskLambdaStar::ProcessHybridPro(AliAODTrack *track, Bool_t circ
     if( ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmapion) ) && ( TMath::Abs(nsigmaproton)==TMath::Abs(nsigmakaon) )) return ;
   }
   
-  if( TMath::Abs(nsigmaproton)   <= nsig ){
+  if(  (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmapion)) && (TMath::Abs(nsigmaproton) <  TMath::Abs(nsigmakaon)) && (TMath::Abs(nsigmaproton)   <= nsig) ){
       fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);
 
     
@@ -819,7 +820,7 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
   if(!circ){
     if(fHasTOFPID){
       
-      if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && ( TMath::Abs(nsigmakaon) <= 5.0 ) ){
+      if( ( TMath::Abs(nsigmaTPCTOFkKaon)   <= nsig ) && ( TMath::Abs(nsigmakaon) <= nsig ) ){
           
           fPriHistTPCnsigmakaon->Fill(TMom,nsigmakaon);
               fPriHistTOFnsigmakaon->Fill(TMom,nsigmakaonTOF);
@@ -914,7 +915,7 @@ void AliAnalysisTaskLambdaStar::ProcessHybrid(AliAODTrack *track, Bool_t circ,Do
   if(!circ){
     if(fHasTOFPID){
       
-      if( ( TMath::Abs(nsigmaTPCTOFkProton)   <= nsig ) && ( TMath::Abs(nsigmaproton) <= 5.0 ) ){
+      if( ( TMath::Abs(nsigmaTPCTOFkProton)   <= nsig ) && ( TMath::Abs(nsigmaproton) <= nsig ) ){
 	
           
               fPriHistTPCnsigmaproton->Fill(TMom,nsigmaproton);

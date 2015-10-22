@@ -358,7 +358,7 @@ void AddTask_GammaCalo_pPb(
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
       
-    analysisClusterCuts[i] = new AliCaloPhotonCuts();
+	analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString(clusterCutArray[i].Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
