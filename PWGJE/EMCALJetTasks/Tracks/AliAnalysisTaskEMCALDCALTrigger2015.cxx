@@ -12,6 +12,7 @@
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
+#include "AliVTrack.h"
 
 #include "AliAnalysisTaskEMCALDCALTrigger2015.h"
 
@@ -112,7 +113,15 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
     fHistos->FillTH1(Form("hVertexDistBefore%s", trgit->Data()), spdvertex->GetZ());
   }
   if(spdvertex->GetNContributors() < 1) return;
+  if(InputEvent()->IsPileupFromSPD(5, 0.8, 3., 2., 5.)) return;
   if(TMath::Abs(spdvertex->GetZ()) > 10) return;
+  int ntrack(0);
+  for(int itrk = 0; itrk < InputEvent()->GetNumberOfTracks(); itrk++){
+    AliVTrack *trk = static_cast<AliVTrack *>(InputEvent()->GetTrack(itrk));
+    if(!(trk->GetStatus() & AliVTrack::kITSpureSA)) continue;
+    if(TMath::Abs(trk->Pt()) > 1.) ntrack++;
+  }
+  if(ntrack < 3) return;
 
   for(std::vector<TString>::iterator trgit = triggerclassesSelected.begin(); trgit < triggerclassesSelected.end(); ++trgit){
     fHistos->FillTH1(Form("hEventCount%s", trgit->Data()), 1.);
