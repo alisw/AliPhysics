@@ -154,6 +154,24 @@ public:
   
   Bool_t  MaskFrameCluster(Int_t iSM, Int_t ieta) const;
   
+  
+  // Define zones for clusters for pT dependance in Pi0 calibration study
+  
+//  Int_t IsInWhichZone(Int_t iSupMod, Int_t ieta, Int_t iphi);
+  Bool_t IsInZone1(Int_t iSupMod, Int_t ieta, Int_t iphi);
+  
+  Bool_t IsInZone2(Int_t iSupMod, Int_t ieta, Int_t iphi);
+  
+  Bool_t IsInZone3(Int_t iSupMod, Int_t ieta, Int_t iphi);
+  
+  Bool_t IsInZone4(Int_t iSupMod, Int_t ieta, Int_t iphi);
+  
+  Bool_t IsInZone5(Int_t iSupMod, Int_t ieta, Int_t iphi);
+
+  Bool_t IsInZone6(Int_t iSupMod, Int_t ieta, Int_t iphi);
+  
+  Bool_t IsInZone7(Int_t iSupMod, Int_t ieta, Int_t iphi);
+  
 private:
 
   AliEMCALGeometry  * fEMCALGeo;         //!<! EMCAL geometry pointer.
@@ -247,6 +265,13 @@ private:
   TH2F*     fHmgg;                                                                 //!<! Two-cluster invariant mass vs pt of pair.
   TH2F*     fHmggDifferentSM;                                                      //!<! Two-cluster invariant mass vs pt of pair, each cluster in different SM.
   TH2F*     fHmggSM[AliEMCALGeoParams::fgkEMCALModules];                           //!<! Two-cluster invariant mass per SM.
+  TH2F*     fHmggSM_Zone1[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 1.
+  TH2F*     fHmggSM_Zone2[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 2.
+  TH2F*     fHmggSM_Zone3[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 3.
+  TH2F*     fHmggSM_Zone4[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 4.
+  TH2F*     fHmggSM_Zone5[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 5.
+  TH2F*     fHmggSM_Zone6[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 6.
+  TH2F*     fHmggSM_Zone7[AliEMCALGeoParams::fgkEMCALModules];                     //!<! Two-cluster invariant mass per SM in zone 7.
   TH2F*     fHmggPairSameSectorSM[AliEMCALGeoParams::fgkEMCALModules/2];           //!<! Two-cluster invariant mass per Pair.
   TH2F*     fHmggPairSameSideSM  [AliEMCALGeoParams::fgkEMCALModules-2];           //!<! Two-cluster invariant mass per Pair.
   
