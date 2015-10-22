@@ -26,7 +26,7 @@
 #  include <sys/socket.h>
 #  include <netinet/in.h>
 #  include <netinet/ip.h>
-#  include <unistd/ip.h>
+#  include <unistd.h>
 # endif
 #else
 class TString;
@@ -179,7 +179,7 @@ struct OutputUtilities
     // Get host, current directory, and user name for unique name
     TString host(gSystem->HostName());
     TString dir(gSystem->WorkingDirectory());
-    TString name(gSystem->UserInfo()->fUser.Data());
+    TString name(gSystem->GetUserInfo()->fUser.Data());
 
     // Form the command line.  Note, we put the PID file one level up,
     // so we know where to look for it. Otherwise it would be put in a
