@@ -424,7 +424,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
         fOutput->Add(fOutputTHnS);
         
         Int_t binsMC[] = {binTrackMult, binPT, binETiso, binETUE, 200*binMCMotherPDG ,binetacl,binphicl,binlabel};
-        Int_t binsSMC[] = {binPT, binM02, 60*binMCMotherPDG, 60*binMCMotherPDG, binPT, bindx, bindz, binETiso,2};
+        Int_t binsSMC[] = {binPT, binM02, 60*binMCMotherPDG, 60*binMCMotherPDG, binPT, bindx, bindz, binETiso,10};
         
         if(fIsMC){
           
@@ -452,7 +452,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
           
           fMCQAdim = sizeof(binsSMC)/sizeof(Int_t);
           Double_t xminbismix[] = {0.,  0., -3000, -4000,  0.,-1., -1., -10,    0.};
-          Double_t xmaxbismix[] = {70., 2.,  3000,  4000, 70., 1.,  1., 100.,   2.};
+          Double_t xmaxbismix[] = {70., 2.,  3000,  4000, 70., 1.,  1., 100.,  10.};
           
           fOutClustMC = new THnSparseF ("fOutClustMC", "E_{T}^{clust}, M02, PDG, MOM PDG, E_{T}^{true}, #Deltax, #Deltaz, E_{T}^{iso},Label;E_{T}^{reco} (GeV/c); M02;PDG Code; PDG Code; E_{T}^{MCtrue} (GeV/c); #Delta#phi; #Delta#eta; E_{T}^{iso} (Gev/c);Label",9,binsSMC,xminbismix,xmaxbismix);
           fOutClustMC->Sumw2();
@@ -2046,9 +2046,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   Int_t clustPDG, p2clabel;
   Double_t enTrue,phiTrue, etaTrue;
   Double_t dPhi,dEta ;
-  Bool_t clusterFromPromptPhoton=kFALSE;
-  particle2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(clusterlabel));
+  Int_t clusterFromPromptPhoton=-1;
   
+  particle2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(clusterlabel));
   clustPDG=particle2Check->GetPdgCode();
   int mom2checkidx = particle2Check->GetMother();
   MomP2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mom2checkidx));
@@ -2057,77 +2057,108 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
   if(clustPDG==22 || (TMath::Abs(clustPDG) == 11 && MomP2Check->GetPdgCode() == 22)){
     phiTrue = particle2Check->Phi(); //
     etaTrue = particle2Check->Eta(); //Basic quantities from MCtruth.
-    enTrue = particle2Check->E()*TMath::Sin(particle2Check->Theta()); // Now let's check if we need corrections to the Energy.
+    enTrue  = particle2Check->E()*TMath::Sin(particle2Check->Theta()); // Now let's check if we need corrections to the Energy.
     
       //Checking if the Photon is a decay product of pi0 or eta meson. //Maybe include omega?
     if(clustPDG==22){
-      if( MomP2Check->GetPdgCode()==111 || MomP2Check->GetPdgCode()==221 ){
-        clusterFromPromptPhoton=kFALSE;
-        
-        Int_t idxdaug1 = MomP2Check->GetFirstDaughter();
-        Int_t idxdaug2 = MomP2Check->GetLastDaughter();
-        if ( idxdaug1 == clusterlabel ){ //Cluster associated with the 1st daughter? Then look if also the 2nd daughter contributes to the cluster Energy
-          if ( idxdaug2 < npart ){//2nd daughter within List of Particles.
+      if( MomP2Check->GetPdgCode()!=22){
+        if (MomP2Check->GetPdgCode()==111 || MomP2Check->GetPdgCode()==221) {
+          
+          clusterFromPromptPhoton=5;
+          
+          Int_t idxdaug1 = MomP2Check->GetFirstDaughter();
+          Int_t idxdaug2 = MomP2Check->GetLastDaughter();
+          if ( idxdaug1 == clusterlabel ){ //Cluster associated with the 1st daughter? Then look if also the 2nd daughter contributes to the cluster Energy
+            if ( idxdaug2 < npart ){//2nd daughter within List of Particles.
+              
+              AliAODMCParticle *daug2 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug2));
+              if ( daug2->GetPdgCode() == 22 && ( daug2->Phi() - phiTrue )< 0.01 && ( daug2->Eta() - etaTrue )< 0.01 ){//very tight cut because they are photons
+                enTrue += daug2->E()*TMath::Sin(daug2->Theta());
+                clusterFromPromptPhoton=7;//contribution from both daughters
+              }
+              else
+                clusterFromPromptPhoton=6;//contribution from one daughter
+            }
+          }
+          else{//then the Cluster MUST BE associated with the 2nd daughter!! look if also the 1st daughter contributes to the cluster Energy
             
-            AliAODMCParticle *daug2 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug2));
-            if ( daug2->GetPdgCode() == 22 && ( daug2->Phi() - phiTrue )< 0.01 && ( daug2->Eta() - etaTrue )< 0.01 )//very tight cut because they are photons
-              enTrue += daug2->E()*TMath::Sin(daug2->Theta());
+            AliAODMCParticle *daug1 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug1));
+            if ( daug1->GetPdgCode() == 22 && ( daug1->Phi()-phiTrue )< 0.01 && ( daug1->Eta()-etaTrue )< 0.01 ){//very tight cut because they are photons
+              enTrue += daug1->E()*TMath::Sin(daug1->Theta());
+              clusterFromPromptPhoton=6;//contribution from both daughters
+            }
+            else
+              clusterFromPromptPhoton=7;//contribution from one daughter
           }
         }
-        else{//then the Cluster MUST BE associated with the 2nd daughter!! look if also the 1st daughter contributes to the cluster Energy
-          
-          AliAODMCParticle *daug1 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug1));
-          if ( daug1->GetPdgCode() == 22 && ( daug1->Phi()-phiTrue )< 0.01 && ( daug1->Eta()-etaTrue )< 0.01 )//very tight cut because they are photons
-            enTrue += daug1->E()*TMath::Sin(daug1->Theta());
-        }
+        else
+          clusterFromPromptPhoton=8;//Undefined
       }
       else
-        clusterFromPromptPhoton=kTRUE;
+        clusterFromPromptPhoton=1;//TruePromptPhoton
     }
     else{//Cluster created by e+/e- from Photon Conversion
       if ( mom2checkidx == 8 )
-        clusterFromPromptPhoton=kTRUE; //e+/e- from Converted Prompt Photon
+        clusterFromPromptPhoton=1; //e+/e- from Converted Prompt Photon
       else
-        clusterFromPromptPhoton=kFALSE; //cluster created by a Photon but not a prompt one
+        clusterFromPromptPhoton=5; //cluster created by a Photon but not a prompt one
       
       Int_t firstidx=MomP2Check->GetFirstDaughter();
       Int_t lastidx=MomP2Check->GetLastDaughter();
-      
-      if( firstidx == clusterlabel ){//Cluster associated with the 1st electron? Then look if also the 2nd electron contributes to the cluster Energy
-        if( lastidx < npart ){//2nd daughter within List of Particles.
+      if(clusterFromPromptPhoton==1){
+        if( firstidx == clusterlabel ){//Cluster associated with the 1st electron? Then look if also the 2nd electron contributes to the cluster Energy
+          if( lastidx < npart ){//2nd daughter within List of Particles.
+            
+            AliAODMCParticle *last=static_cast<AliAODMCParticle*>(fAODMCParticles->At(lastidx));
+            if(( last->Phi() - phiTrue ) < 0.03 && ( last->Eta() - etaTrue ) < 0.02 ){ //same Proximity cut as the CPV
+              enTrue += last->E()*TMath::Sin(last->Theta());
+              clusterFromPromptPhoton=3; //contribution from both daughters
+            }
+            else clusterFromPromptPhoton=2; //contribution from one daughter
+          }
+        }
+        else{ //Cluster associated to 2nd daughter!! look if also the 1st daughter contributes to the cluster Energy
           
-          AliAODMCParticle *last=static_cast<AliAODMCParticle*>(fAODMCParticles->At(lastidx));
-          if(( last->Phi() - phiTrue ) < 0.03 && ( last->Eta() - etaTrue ) < 0.02 ) //same Proximity cut as the CPV
-            enTrue += last->E()*TMath::Sin(last->Theta());
+          AliAODMCParticle *first=static_cast<AliAODMCParticle*>(fAODMCParticles->At(firstidx));
+          if(( first->Phi() - phiTrue ) < 0.03 && ( first->Eta() - etaTrue ) < 0.02 ){//same Proximity cut as the CPV
+            enTrue += first->E()*TMath::Sin(first->Theta());
+            clusterFromPromptPhoton=3;//contribution from both daughters
+          }
+          else
+            clusterFromPromptPhoton=2;//contribution from one daughter
         }
       }
-      else{ //Cluster associated to 2nd daughter!! look if also the 1st daughter contributes to the cluster Energy
-        
-        AliAODMCParticle *first=static_cast<AliAODMCParticle*>(fAODMCParticles->At(firstidx));
-        if(( first->Phi() - phiTrue ) < 0.03 && ( first->Eta() - etaTrue ) < 0.02 )//same Proximity cut as the CPV
-          enTrue += first->E()*TMath::Sin(first->Theta());
-      }
-      if(!clusterFromPromptPhoton){//Check on wheter also the 2nd gamma from pi0/eta decay contributes to the Energy of the cluster
-                                   //This Further check is implemented to take care of very asymmetric decays.
+      if(clusterFromPromptPhoton >= 5){//Check on wheter also the 2nd gamma from pi0/eta decay contributes to the Energy of the cluster
+                                       //This Further check is implemented to take care of very asymmetric decays.
         Int_t idxgrandma = MomP2Check->GetMother();
         AliAODMCParticle *grandma=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxgrandma));
-        if( grandma->GetPdgCode() == 111 || MomP2Check->GetPdgCode() == 221 ){
+        if( grandma->GetPdgCode() == 111 || MomP2Check->GetPdgCode() == 221 ){ //Add also omega mesons, Lambda barion, neutral Kaons?
           
           Int_t idxaunt1 = grandma->GetFirstDaughter();
           Int_t idxaunt2 = grandma->GetLastDaughter();
           if( idxaunt1 ==  mom2checkidx ){ //the 1st daughter of the pi0/eta is the mother of the electron that produced the Cluster.
                                            //Check if the 2nd pi0/eta daughter contributes to the cluster energy.
             AliAODMCParticle *aunt=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxaunt2));
-            if(( aunt->Phi() - phiTrue ) < 0.01 && ( aunt->Eta() - etaTrue ) < 0.01 )
+            if(( aunt->Phi() - phiTrue ) < 0.01 && ( aunt->Eta() - etaTrue ) < 0.01 ){
               enTrue += aunt->E()*TMath::Sin(aunt->Theta());
+              clusterFromPromptPhoton=7;//contribution from both daughters
+            }
+            else
+              clusterFromPromptPhoton=6;//contribution from one daughter
           }
           else{//the 2nd daughter of the pi0/eta is the mother of the electron that produced the Cluster.
                //Check if the 1st pi0/eta daughter contributes to the cluster energy.
             AliAODMCParticle *aunt=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxaunt1));
-            if(( aunt->Phi() - phiTrue ) < 0.01 && ( aunt->Eta() - etaTrue ) < 0.01 )
+            if(( aunt->Phi() - phiTrue ) < 0.01 && ( aunt->Eta() - etaTrue ) < 0.01 ){
               enTrue += aunt->E()*TMath::Sin(aunt->Theta());
+              clusterFromPromptPhoton=7;//contribution from both daughters
+            }
+            else
+              clusterFromPromptPhoton=6;//contribution from one daughter
           }
         }
+        else
+          clusterFromPromptPhoton=8;//Undefined
       }
       
       dPhi = phiCLS-phiTrue;
@@ -2142,230 +2173,236 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
       outputvalueMCmix[6] = dEta;
       outputvalueMCmix[7] = isolation;
       outputvalueMCmix[8] = clusterFromPromptPhoton;
+        //clusterFromPP=1 ->clusterlabel = 8TruePromptPhoton;
+        //clusterFromPP=2 ->clusterlabel = indexe+/e- with 1 contribution to the Energy;
+        //clusterFromPP=3 ->clusterlabel = indexe+/e- with 2 contributions to the Energy;
+        //clusterFromPP=6 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with contribution from max 2 electrons to the Energy;
+        //clusterFromPP=7 -> clusterlabel= indexgamma1/2 (or e1e2e3e4) with 4 contribution to the energy;
+        //clusterFromPP=8 -> clusterlabel= Gamma decay NOT from pi0/eta decay.
       
       fOutClustMC->Fill(outputvalueMCmix);
     }
   }
   return;
 }
-//
-//  //_________________________________________________________________________
-//void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Double_t energyCLS, Double_t phiCLS, Double_t etaCLS, Double_t /*time*/, Double_t ss, Double_t isolation){
-//  cout<<"\n\n\n\n\n\n\nInside Look4Particle \n For Cluster %d"<<clusterlabel<<"\t\t%f"<<energyCLS<<"\t\t%f"<<etaCLS<<"\t\t%f"<<phiCLS<<"\t\t%f"<<ss<<"\t\t%f"<<isolation<<"\n\n\n\n"<<endl;
-//  
-//  if (!fIsMC)
-//  {
-//    cout<<"not a montecarlo run!!!!!!"<<endl;
-//    return;
-//  } //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
-//  if(!fStack && !fAODMCParticles){
-//    cout<<"No Particle Stack !!!!!"<<endl;
-//    return;
-//  }
-//    //AliInfo("there's a List of particles");
-//    //DO THIS ALSO FOR ESDs
-//  
-//  if(fAODMCParticles->GetEntries() < 1){
-//    cout<<"number of tracks insufficient"<<endl;
-//    return;
-//  }
-//  
-//  
-//  Int_t ndimsMCmix = fMCQAdim;
-//  
-//  
-//  Double_t outputvalueMCmix[ndimsMCmix];
-//    //cout<<"dimensions of the array: "<<ndimsMCmix<<endl;
-//  
-//  
-//  Int_t npart=fAODMCParticles->GetEntries();
-//    //cout<<"Number of particles in the event: "<<npart<<endl;
-//  
-//  AliAODMCParticle *particle2Check, *MomP2Check;
-//  
-//  Int_t clustPDG, p2clabel;
-//  Double_t enTrue,phiTrue, etaTrue;
-//  Double_t dPhi,dEta ;
-//  bool found=kFALSE;
-//  for(int b=0; b<npart && found!= kTRUE ;b++){
-//    particle2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(b));
-//    p2clabel = particle2Check->Label();
-//    
-//    if(clusterlabel==p2clabel){
-//      found=kTRUE;
-//      clustPDG = particle2Check->GetPdgCode();
-//      int mom2checkidx = particle2Check->GetMother();
-//      MomP2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mom2checkidx));
-//        //if(energyCLS>=40.)
-//        //cout<<"PDG associated: "<<clustPDG<<" Mother PDG: "<<MomP2Check->GetPdgCode()<<endl;
-//      if(clustPDG==22 || (TMath::Abs(clustPDG)==11 && MomP2Check->GetPdgCode()==22)) //continue;
-//      {
-//        phiTrue = particle2Check->Phi();
-//        etaTrue = particle2Check->Eta();
-//        enTrue = particle2Check->E()*TMath::Sin(particle2Check->Theta());
-//          //if(energyCLS>=40.)
-//          //cout<<"Energy of the single particle associated with the cluster: "<<enTrue<<endl;
-//        if(clustPDG==22){
-//          if( MomP2Check->GetPdgCode()==111 || MomP2Check->GetPdgCode()==221){
-//            
-//            Int_t idxdaug1 = MomP2Check->GetFirstDaughter();
-//            if (idxdaug1<npart){
-//              if(idxdaug1==clusterlabel){
-//                Int_t idxdaug2 = MomP2Check->GetLastDaughter();
-//                if(idxdaug2<npart){
-//                  AliAODMCParticle *daug2 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug2));
-//                  if(daug2->GetPdgCode()==22 && (daug2->Phi()-phiTrue)<0.2 && (daug2->Eta()-etaTrue)<0.2){
-//                      //if(energyCLS >= 40.){
-//                      //cout<<"CASE1\nPDG of the other particle VERY close: "<<daug2->GetPdgCode()<<" with Label: "<<daug2->Label();
-//                      //cout<<" Energy of the other particle VERY close: "<<daug2->E()*TMath::Sin(daug2->Theta())<<endl;
-//                      //}
-//                    enTrue += daug2->E()*TMath::Sin(daug2->Theta());
-//                  }
-//                }
-//              }
-//              else{
-//                AliAODMCParticle *daug1 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug1));
-//                
-//                if(daug1->GetPdgCode()==22 && (daug1->Phi()-phiTrue)<0.2 && (daug1->Eta()-etaTrue)<0.2){
-//                    //if(energyCLS >= 40.){
-//                    //cout<<"CASE2\nPDG of the other particle VERY close: "<<daug1->GetPdgCode()<<" with Label: "<<daug1->Label();
-//                    //cout<<" Energy of the other particle VERY close: "<<daug1->E()*TMath::Sin(daug1->Theta())<<endl;
-//                    //}
-//                  enTrue += daug1->E()*TMath::Sin(daug1->Theta());
-//                }
-//              }
-//            }
-//          }
-//        }
-//        else{
-//          Int_t firstidx=MomP2Check->GetFirstDaughter();
-//          if(firstidx< npart){
-//            if(firstidx==clusterlabel){
-//              Int_t lastidx=MomP2Check->GetLastDaughter();
-//              if(lastidx<npart){
-//                AliAODMCParticle *last=static_cast<AliAODMCParticle*>(fAODMCParticles->At(lastidx));
-//                if((last->Phi()-phiTrue)<0.03 && (last->Eta()-etaTrue)<0.02){
-//                    //if(energyCLS >= 40.){
-//                    //cout<<"CASE3\nPDG of the other particle VERY close: "<<last->GetPdgCode()<<" with Label: "<<last->Label();
-//                    //cout<<" Energy of the other particle VERY close: "<<last->E()*TMath::Sin(last->Theta())<<endl;
-//                    //}
-//                  enTrue += last->E()*TMath::Sin(last->Theta());
-//                }
-//              }
-//            }
-//            else{
-//              AliAODMCParticle *first=static_cast<AliAODMCParticle*>(fAODMCParticles->At(firstidx));
-//              if((first->Phi()-phiTrue)<0.03 && (first->Eta()-etaTrue)<0.02){
-//                  //if(energyCLS >= 40.){
-//                  //cout<<"CASE4\nPDG of the other particle VERY close: "<<first->GetPdgCode()<<" with Label: "<<first->Label();
-//                  //cout<<" Energy of the other particle VERY close: "<<first->E()*TMath::Sin(first->Theta())<<endl;
-//                  //}
-//                enTrue += first->E()*TMath::Sin(first->Theta());
-//              }
-//            }
-//          }
-//          Int_t idxgrandma = MomP2Check->GetMother();
-//          AliAODMCParticle *grandma=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxgrandma));
-//          if(grandma->GetPdgCode()==111 || MomP2Check->GetPdgCode()==221){
-//              //if(energyCLS >= 40.){
-//              //cout<<"Energy of the pi0 grandmother: "<<grandma->E()*TMath::Sin(grandma->Theta())<<endl;
-//              //}
-//            Int_t idxaunt = grandma->GetFirstDaughter();
-//            if(idxaunt<npart){
-//              if(idxaunt == mom2checkidx){
-//                Int_t auntid = grandma->GetLastDaughter();
-//                if(auntid<npart){
-//                  AliAODMCParticle *lastaunt=static_cast<AliAODMCParticle*>(fAODMCParticles->At(auntid));
-//                  if((lastaunt->Phi()-phiTrue)<0.03 && (lastaunt->Eta()-etaTrue)<0.02){
-//                      //if(energyCLS >= 40.){
-//                      //cout<<"CASE5\nPDG of the other particle VERY close: "<<lastaunt->GetPdgCode()<<" with Label: "<<lastaunt->Label();
-//                      //cout<<" Energy of the other particle VERY close: "<<lastaunt->E()*TMath::Sin(lastaunt->Theta())<<endl;
-//                      //}
-//                    enTrue += lastaunt->E()*TMath::Sin(lastaunt->Theta());
-//                  }
-//                }
-//              }
-//              else{
-//                AliAODMCParticle *aunt =static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxaunt));
-//                if(aunt->GetPdgCode()==22 && (aunt->Phi()-phiTrue)<0.03 && (aunt->Eta()-etaTrue)<0.02){
-//                    //if(energyCLS >= 40.){
-//                    //cout<<"CASE6\nPDG of the other particle VERY close: "<<aunt->GetPdgCode()<<" with Label: "<<aunt->Label();
-//                    //cout<<" Energy of the other particle VERY close: "<<aunt->E()*TMath::Sin(aunt->Theta())<<endl;
-//                    //}
-//                  enTrue += aunt->E()*TMath::Sin(aunt->Theta());
-//                }
-//              }
-//            }
-//          }
-//        }
-//        
-//        dPhi = phiCLS-phiTrue;
-//        dEta = etaCLS-etaTrue;
-//        
-//          //      if(fcount==388)
-//          //        AliInfo(Form("Found Particle with same label as cluster !!!! at position %d",b));
-//          //      if(fcount==388){
-//          //        AliInfo(Form(""));
-//          //        particle2Check->Print();
-//          //        cout<<"Energy of the Particle: "<<enTrue<<"  Mother PDG: "<<MomP2Check->GetPdgCode()<<"  Eta: "<<etaTrue<<"  Phi: "<<phiTrue<<endl;
-//          //if(energyCLS >= 40.){
-//          //cout<<"Transverse Energy of all the Particle VERY CLOSE TO THe ClusterLabel Particle: "<<enTrue<<endl;
-//          //cout<<endl;
-//          //}
-//        outputvalueMCmix[0] = energyCLS;
-//        outputvalueMCmix[1] = ss;
-//        outputvalueMCmix[2] = clustPDG;
-//        outputvalueMCmix[3] = MomP2Check->GetPdgCode();
-//        outputvalueMCmix[4] = enTrue;
-//        outputvalueMCmix[5] = dPhi;
-//        outputvalueMCmix[6] = dEta;
-//        outputvalueMCmix[7] = isolation;
-//        outputvalueMCmix[8] = p2clabel;
-//        
-//          //	AliError(Form("Fill something in look for particle"));
-//        fOutClustMC->Fill(outputvalueMCmix);
-//      }
-//        //      }
-//        //fPDGM02->Fill(clustPDG);
-//        //fEtrueEclustM02->Fill(energyCLS,enTrue);
-//        //fDphiDetaM02->Fill(dEta,dPhi);
-//        //fMomPDGM02->Fill(MomP2Check->GetPdgCode());
-//      
-//        //if(TMath::Abs(enTrue-energyCLS)>0.2){
-//        //cout<<"Time of the cluster with energy mismatch: "<<time<<" energy of the cluster: "<<energyCLS<<" true energy: "<<enTrue<<" PDG "<<clustPDG<<" mother of the particle: "<<MomP2Check->GetPdgCode()<<endl;
-//        //fTvsE_MismatchEM02->Fill(enTrue,time);
-//        //break;
-//        //}
-//    }
-//  }
-//  if(!found){
-//    Printf("Cluster with Label NOT FOUND in Stack!!! Look DOWN HERE!!!!\n\n");
-//    /*clustPDG=0;
-//     dPhi=5.;
-//     dEta=5.;
-//     enTrue = -1.;*/
-//    for(int b=0; b<npart; b++){
-//      
-//     AliAODMCParticle *partMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(b));
-//      cout<<"particle "<<b<<"\t\tLabel "<<partMC->GetLabel()<<endl;
-//      partMC->Print();
-//      
-//    }
-//  }/*
-//    fPDGM02->Fill(clustPDG);
-//    fEtrueEclustM02->Fill(energyCLS,enTrue);
-//    fDphiDetaM02->Fill(dEta,dPhi);
-//    return;
-//    }*/
-//  
-//  
-//  
-//    //cout<<"EnergyT: "<<particle2Check->E()*TMath::Sin(particle2Check->Theta())<<"\tPDGCode: "<<particle2Check->GetPdgCode()<<"\tMotherPDG: "<<MomP2Check->GetPdgCode()<<"\tEta: "<<particle2Check->Eta()<<"\tPhi: "<<particle2Check->Phi()<<endl;
-//    //cout<<"\n\n";
-//  
-//  
-//  return;
-//}
+  //
+  //  //_________________________________________________________________________
+  //void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Double_t energyCLS, Double_t phiCLS, Double_t etaCLS, Double_t /*time*/, Double_t ss, Double_t isolation){
+  //  cout<<"\n\n\n\n\n\n\nInside Look4Particle \n For Cluster %d"<<clusterlabel<<"\t\t%f"<<energyCLS<<"\t\t%f"<<etaCLS<<"\t\t%f"<<phiCLS<<"\t\t%f"<<ss<<"\t\t%f"<<isolation<<"\n\n\n\n"<<endl;
+  //
+  //  if (!fIsMC)
+  //  {
+  //    cout<<"not a montecarlo run!!!!!!"<<endl;
+  //    return;
+  //  } //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
+  //  if(!fStack && !fAODMCParticles){
+  //    cout<<"No Particle Stack !!!!!"<<endl;
+  //    return;
+  //  }
+  //    //AliInfo("there's a List of particles");
+  //    //DO THIS ALSO FOR ESDs
+  //
+  //  if(fAODMCParticles->GetEntries() < 1){
+  //    cout<<"number of tracks insufficient"<<endl;
+  //    return;
+  //  }
+  //
+  //
+  //  Int_t ndimsMCmix = fMCQAdim;
+  //
+  //
+  //  Double_t outputvalueMCmix[ndimsMCmix];
+  //    //cout<<"dimensions of the array: "<<ndimsMCmix<<endl;
+  //
+  //
+  //  Int_t npart=fAODMCParticles->GetEntries();
+  //    //cout<<"Number of particles in the event: "<<npart<<endl;
+  //
+  //  AliAODMCParticle *particle2Check, *MomP2Check;
+  //
+  //  Int_t clustPDG, p2clabel;
+  //  Double_t enTrue,phiTrue, etaTrue;
+  //  Double_t dPhi,dEta ;
+  //  bool found=kFALSE;
+  //  for(int b=0; b<npart && found!= kTRUE ;b++){
+  //    particle2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(b));
+  //    p2clabel = particle2Check->Label();
+  //
+  //    if(clusterlabel==p2clabel){
+  //      found=kTRUE;
+  //      clustPDG = particle2Check->GetPdgCode();
+  //      int mom2checkidx = particle2Check->GetMother();
+  //      MomP2Check = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mom2checkidx));
+  //        //if(energyCLS>=40.)
+  //        //cout<<"PDG associated: "<<clustPDG<<" Mother PDG: "<<MomP2Check->GetPdgCode()<<endl;
+  //      if(clustPDG==22 || (TMath::Abs(clustPDG)==11 && MomP2Check->GetPdgCode()==22)) //continue;
+  //      {
+  //        phiTrue = particle2Check->Phi();
+  //        etaTrue = particle2Check->Eta();
+  //        enTrue = particle2Check->E()*TMath::Sin(particle2Check->Theta());
+  //          //if(energyCLS>=40.)
+  //          //cout<<"Energy of the single particle associated with the cluster: "<<enTrue<<endl;
+  //        if(clustPDG==22){
+  //          if( MomP2Check->GetPdgCode()==111 || MomP2Check->GetPdgCode()==221){
+  //
+  //            Int_t idxdaug1 = MomP2Check->GetFirstDaughter();
+  //            if (idxdaug1<npart){
+  //              if(idxdaug1==clusterlabel){
+  //                Int_t idxdaug2 = MomP2Check->GetLastDaughter();
+  //                if(idxdaug2<npart){
+  //                  AliAODMCParticle *daug2 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug2));
+  //                  if(daug2->GetPdgCode()==22 && (daug2->Phi()-phiTrue)<0.2 && (daug2->Eta()-etaTrue)<0.2){
+  //                      //if(energyCLS >= 40.){
+  //                      //cout<<"CASE1\nPDG of the other particle VERY close: "<<daug2->GetPdgCode()<<" with Label: "<<daug2->Label();
+  //                      //cout<<" Energy of the other particle VERY close: "<<daug2->E()*TMath::Sin(daug2->Theta())<<endl;
+  //                      //}
+  //                    enTrue += daug2->E()*TMath::Sin(daug2->Theta());
+  //                  }
+  //                }
+  //              }
+  //              else{
+  //                AliAODMCParticle *daug1 = static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxdaug1));
+  //
+  //                if(daug1->GetPdgCode()==22 && (daug1->Phi()-phiTrue)<0.2 && (daug1->Eta()-etaTrue)<0.2){
+  //                    //if(energyCLS >= 40.){
+  //                    //cout<<"CASE2\nPDG of the other particle VERY close: "<<daug1->GetPdgCode()<<" with Label: "<<daug1->Label();
+  //                    //cout<<" Energy of the other particle VERY close: "<<daug1->E()*TMath::Sin(daug1->Theta())<<endl;
+  //                    //}
+  //                  enTrue += daug1->E()*TMath::Sin(daug1->Theta());
+  //                }
+  //              }
+  //            }
+  //          }
+  //        }
+  //        else{
+  //          Int_t firstidx=MomP2Check->GetFirstDaughter();
+  //          if(firstidx< npart){
+  //            if(firstidx==clusterlabel){
+  //              Int_t lastidx=MomP2Check->GetLastDaughter();
+  //              if(lastidx<npart){
+  //                AliAODMCParticle *last=static_cast<AliAODMCParticle*>(fAODMCParticles->At(lastidx));
+  //                if((last->Phi()-phiTrue)<0.03 && (last->Eta()-etaTrue)<0.02){
+  //                    //if(energyCLS >= 40.){
+  //                    //cout<<"CASE3\nPDG of the other particle VERY close: "<<last->GetPdgCode()<<" with Label: "<<last->Label();
+  //                    //cout<<" Energy of the other particle VERY close: "<<last->E()*TMath::Sin(last->Theta())<<endl;
+  //                    //}
+  //                  enTrue += last->E()*TMath::Sin(last->Theta());
+  //                }
+  //              }
+  //            }
+  //            else{
+  //              AliAODMCParticle *first=static_cast<AliAODMCParticle*>(fAODMCParticles->At(firstidx));
+  //              if((first->Phi()-phiTrue)<0.03 && (first->Eta()-etaTrue)<0.02){
+  //                  //if(energyCLS >= 40.){
+  //                  //cout<<"CASE4\nPDG of the other particle VERY close: "<<first->GetPdgCode()<<" with Label: "<<first->Label();
+  //                  //cout<<" Energy of the other particle VERY close: "<<first->E()*TMath::Sin(first->Theta())<<endl;
+  //                  //}
+  //                enTrue += first->E()*TMath::Sin(first->Theta());
+  //              }
+  //            }
+  //          }
+  //          Int_t idxgrandma = MomP2Check->GetMother();
+  //          AliAODMCParticle *grandma=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxgrandma));
+  //          if(grandma->GetPdgCode()==111 || MomP2Check->GetPdgCode()==221){
+  //              //if(energyCLS >= 40.){
+  //              //cout<<"Energy of the pi0 grandmother: "<<grandma->E()*TMath::Sin(grandma->Theta())<<endl;
+  //              //}
+  //            Int_t idxaunt = grandma->GetFirstDaughter();
+  //            if(idxaunt<npart){
+  //              if(idxaunt == mom2checkidx){
+  //                Int_t auntid = grandma->GetLastDaughter();
+  //                if(auntid<npart){
+  //                  AliAODMCParticle *lastaunt=static_cast<AliAODMCParticle*>(fAODMCParticles->At(auntid));
+  //                  if((lastaunt->Phi()-phiTrue)<0.03 && (lastaunt->Eta()-etaTrue)<0.02){
+  //                      //if(energyCLS >= 40.){
+  //                      //cout<<"CASE5\nPDG of the other particle VERY close: "<<lastaunt->GetPdgCode()<<" with Label: "<<lastaunt->Label();
+  //                      //cout<<" Energy of the other particle VERY close: "<<lastaunt->E()*TMath::Sin(lastaunt->Theta())<<endl;
+  //                      //}
+  //                    enTrue += lastaunt->E()*TMath::Sin(lastaunt->Theta());
+  //                  }
+  //                }
+  //              }
+  //              else{
+  //                AliAODMCParticle *aunt =static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxaunt));
+  //                if(aunt->GetPdgCode()==22 && (aunt->Phi()-phiTrue)<0.03 && (aunt->Eta()-etaTrue)<0.02){
+  //                    //if(energyCLS >= 40.){
+  //                    //cout<<"CASE6\nPDG of the other particle VERY close: "<<aunt->GetPdgCode()<<" with Label: "<<aunt->Label();
+  //                    //cout<<" Energy of the other particle VERY close: "<<aunt->E()*TMath::Sin(aunt->Theta())<<endl;
+  //                    //}
+  //                  enTrue += aunt->E()*TMath::Sin(aunt->Theta());
+  //                }
+  //              }
+  //            }
+  //          }
+  //        }
+  //
+  //        dPhi = phiCLS-phiTrue;
+  //        dEta = etaCLS-etaTrue;
+  //
+  //          //      if(fcount==388)
+  //          //        AliInfo(Form("Found Particle with same label as cluster !!!! at position %d",b));
+  //          //      if(fcount==388){
+  //          //        AliInfo(Form(""));
+  //          //        particle2Check->Print();
+  //          //        cout<<"Energy of the Particle: "<<enTrue<<"  Mother PDG: "<<MomP2Check->GetPdgCode()<<"  Eta: "<<etaTrue<<"  Phi: "<<phiTrue<<endl;
+  //          //if(energyCLS >= 40.){
+  //          //cout<<"Transverse Energy of all the Particle VERY CLOSE TO THe ClusterLabel Particle: "<<enTrue<<endl;
+  //          //cout<<endl;
+  //          //}
+  //        outputvalueMCmix[0] = energyCLS;
+  //        outputvalueMCmix[1] = ss;
+  //        outputvalueMCmix[2] = clustPDG;
+  //        outputvalueMCmix[3] = MomP2Check->GetPdgCode();
+  //        outputvalueMCmix[4] = enTrue;
+  //        outputvalueMCmix[5] = dPhi;
+  //        outputvalueMCmix[6] = dEta;
+  //        outputvalueMCmix[7] = isolation;
+  //        outputvalueMCmix[8] = p2clabel;
+  //
+  //          //	AliError(Form("Fill something in look for particle"));
+  //        fOutClustMC->Fill(outputvalueMCmix);
+  //      }
+  //        //      }
+  //        //fPDGM02->Fill(clustPDG);
+  //        //fEtrueEclustM02->Fill(energyCLS,enTrue);
+  //        //fDphiDetaM02->Fill(dEta,dPhi);
+  //        //fMomPDGM02->Fill(MomP2Check->GetPdgCode());
+  //
+  //        //if(TMath::Abs(enTrue-energyCLS)>0.2){
+  //        //cout<<"Time of the cluster with energy mismatch: "<<time<<" energy of the cluster: "<<energyCLS<<" true energy: "<<enTrue<<" PDG "<<clustPDG<<" mother of the particle: "<<MomP2Check->GetPdgCode()<<endl;
+  //        //fTvsE_MismatchEM02->Fill(enTrue,time);
+  //        //break;
+  //        //}
+  //    }
+  //  }
+  //  if(!found){
+  //    Printf("Cluster with Label NOT FOUND in Stack!!! Look DOWN HERE!!!!\n\n");
+  //    /*clustPDG=0;
+  //     dPhi=5.;
+  //     dEta=5.;
+  //     enTrue = -1.;*/
+  //    for(int b=0; b<npart; b++){
+  //
+  //     AliAODMCParticle *partMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(b));
+  //      cout<<"particle "<<b<<"\t\tLabel "<<partMC->GetLabel()<<endl;
+  //      partMC->Print();
+  //
+  //    }
+  //  }/*
+  //    fPDGM02->Fill(clustPDG);
+  //    fEtrueEclustM02->Fill(energyCLS,enTrue);
+  //    fDphiDetaM02->Fill(dEta,dPhi);
+  //    return;
+  //    }*/
+  //
+  //
+  //
+  //    //cout<<"EnergyT: "<<particle2Check->E()*TMath::Sin(particle2Check->Theta())<<"\tPDGCode: "<<particle2Check->GetPdgCode()<<"\tMotherPDG: "<<MomP2Check->GetPdgCode()<<"\tEta: "<<particle2Check->Eta()<<"\tPhi: "<<particle2Check->Phi()<<endl;
+  //    //cout<<"\n\n";
+  //
+  //
+  //  return;
+  //}
 
   //__________________________________________________________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index)
