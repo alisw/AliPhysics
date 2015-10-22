@@ -47,6 +47,11 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   // setting geometry and B-field from GRP
   printf("runNumber from runCalibTrain = %d\n",runNumber);
   printf("ocdb from runCalibTrain = %s\n",ocdb);
+  if (gSystem->AccessPathName("OCDB.root", kFileExists)==0) {        
+    AliCDBManager::Instance()->SetSnapshotMode("OCDB.root");
+    printf("ocdb from snapshot\n");
+  }
+
   AliSysInfo::AddStamp("BeforeConfiguringCalibTrain");
   ConfigCalibTrain(runNumber, ocdb);
   AliSysInfo::AddStamp("AfterConfiguringCalibTrain");  

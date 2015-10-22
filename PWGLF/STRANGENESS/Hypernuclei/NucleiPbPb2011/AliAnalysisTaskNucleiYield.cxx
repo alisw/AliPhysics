@@ -112,6 +112,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ,fRequireMinEnergyLoss(0.)
 ,fRequireMagneticField(0)
 ,fRequireVetoSPD(kFALSE)
+,fRequireMaxMomentum(-1.)
 ,fFixForLHC14a6(kTRUE)
 ,fParticle(AliPID::kUnknown)
 ,fCentBins(0x0)
@@ -391,7 +392,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       return;
     }
 
-    /// Making the list of deuterons in acceptance
+    /// Making the list of the deuterons we want to measure
     fMmc.SetOwner(kFALSE);
     fAmc.SetOwner(kFALSE);
     for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
@@ -506,7 +507,8 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return kFALSE;
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
-
+  if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return kFALSE;
+  
   /// ITS related cuts
   dca[0] = 0.;
   dca[1] = 0.;

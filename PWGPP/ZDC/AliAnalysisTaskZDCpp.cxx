@@ -50,13 +50,13 @@
 #include "AliBackgroundSelection.h"
 #include "AliTriggerAnalysis.h"
 #include "AliCentrality.h"
-#include "AliAnalysisTaskZDC.h"
+#include "AliAnalysisTaskZDCpp.h"
 
-ClassImp(AliAnalysisTaskZDC)
+ClassImp(AliAnalysisTaskZDCpp)
 
 
 //________________________________________________________________________
-AliAnalysisTaskZDC::AliAnalysisTaskZDC():
+AliAnalysisTaskZDCpp::AliAnalysisTaskZDCpp():
   AliAnalysisTaskSE(),
     fDebug(0),
     fIsMCInput(kFALSE),
@@ -75,10 +75,6 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC():
     fhZPApmc(0x0),	 
     fhZNCCentroid(0x0), 
     fhZNACentroid(0x0), 
-    fhZNCemd(0x0),	   
-    fhZNAemd(0x0),
-    fhPMCZNCemd(0x0), 
-    fhPMCZNAemd(0x0),
     fDebunch(0x0),
     fhTDCZNC(0x0),
     fhTDCZNA(0x0)
@@ -87,7 +83,7 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC():
 }   
 
 //________________________________________________________________________
-AliAnalysisTaskZDC::AliAnalysisTaskZDC(const char *name):
+AliAnalysisTaskZDCpp::AliAnalysisTaskZDCpp(const char *name):
   AliAnalysisTaskSE(name),
     fDebug(0),
     fIsMCInput(kFALSE),
@@ -106,10 +102,6 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const char *name):
     fhZPApmc(0x0),	 
     fhZNCCentroid(0x0), 
     fhZNACentroid(0x0), 
-    fhZNCemd(0x0),	   
-    fhZNAemd(0x0),
-    fhPMCZNCemd(0x0), 
-    fhPMCZNAemd(0x0),
     fDebunch(0x0) ,
     fhTDCZNC(0x0),
     fhTDCZNA(0x0)
@@ -120,7 +112,7 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const char *name):
 }
 
 //________________________________________________________________________
-AliAnalysisTaskZDC& AliAnalysisTaskZDC::operator=(const AliAnalysisTaskZDC& c)
+AliAnalysisTaskZDCpp& AliAnalysisTaskZDCpp::operator=(const AliAnalysisTaskZDCpp& c)
 {
   //
   // Assignment operator
@@ -132,7 +124,7 @@ AliAnalysisTaskZDC& AliAnalysisTaskZDC::operator=(const AliAnalysisTaskZDC& c)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskZDC::AliAnalysisTaskZDC(const AliAnalysisTaskZDC& ana):
+AliAnalysisTaskZDCpp::AliAnalysisTaskZDCpp(const AliAnalysisTaskZDCpp& ana):
   AliAnalysisTaskSE(ana),
   fDebug(ana.fDebug),	  
   fIsMCInput(ana.fIsMCInput),
@@ -151,10 +143,6 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const AliAnalysisTaskZDC& ana):
   fhZPApmc(ana.fhZPApmc),       
   fhZNCCentroid(ana.fhZNCCentroid), 
   fhZNACentroid(ana.fhZNACentroid), 
-  fhZNCemd(ana.fhZNCemd),	 
-  fhZNAemd(ana.fhZNAemd),
-  fhPMCZNCemd(ana.fhPMCZNCemd), 
-  fhPMCZNAemd(ana.fhPMCZNAemd),
   fDebunch(ana.fDebunch),
   fhTDCZNC(ana.fhTDCZNC),
   fhTDCZNA(ana.fhTDCZNA)
@@ -165,7 +153,7 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const AliAnalysisTaskZDC& ana):
 }
  
 //________________________________________________________________________
-AliAnalysisTaskZDC::~AliAnalysisTaskZDC()
+AliAnalysisTaskZDCpp::~AliAnalysisTaskZDCpp()
 {
   // Destructor
   if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
@@ -175,7 +163,7 @@ AliAnalysisTaskZDC::~AliAnalysisTaskZDC()
 }  
 
 //________________________________________________________________________
-void AliAnalysisTaskZDC::UserCreateOutputObjects()
+void AliAnalysisTaskZDCpp::UserCreateOutputObjects()
 {
   // Create the output containers
 
@@ -191,42 +179,33 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   fhTDCZNDiff->GetXaxis()->SetTitle("TDC_{ZNC}-TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNDiff);     
   
-  fhZNCSpectrum = new TH1F("fhZNCSpectrum", "ZNC signal", 200,0., 140000.);
+  fhZNCSpectrum = new TH1F("fhZNCSpectrum", "ZNC signal", 200,0., 2000.);
   fOutput->Add(fhZNCSpectrum);      
-  fhZNASpectrum = new TH1F("fhZNASpectrum", "ZNA signal", 200,0., 140000.) ;
+  fhZNASpectrum = new TH1F("fhZNASpectrum", "ZNA signal", 200,0., 2000.) ;
   fOutput->Add(fhZNASpectrum);      
-  fhZPCSpectrum = new TH1F("fhZPCSpectrum", "ZPC signal", 200,0., 50000.) ;
+  fhZPCSpectrum = new TH1F("fhZPCSpectrum", "ZPC signal", 140,0., 1400.) ;
   fOutput->Add(fhZPCSpectrum);      
-  fhZPASpectrum = new TH1F("fhZPASpectrum", "ZPA signal", 200,0., 50000.) ;
+  fhZPASpectrum = new TH1F("fhZPASpectrum", "ZPA signal", 140,0., 1400.) ;
   fOutput->Add(fhZPASpectrum);      
-  fhZEM1Spectrum = new TH1F("fhZEM1Spectrum", "ZEM1 signal", 100,0., 2500.);
+  fhZEM1Spectrum = new TH1F("fhZEM1Spectrum", "ZEM1 signal", 200,0., 2500.);
   fOutput->Add(fhZEM1Spectrum);      
-  fhZEM2Spectrum = new TH1F("fhZEM2Spectrum", "ZEM2 signal", 100,0., 2500.);
+  fhZEM2Spectrum = new TH1F("fhZEM2Spectrum", "ZEM2 signal", 200,0., 2500.);
   fOutput->Add(fhZEM2Spectrum);      
   
-  fhZNCpmc = new TH1F("fhZNCpmc","ZNC PMC",200, 0., 160000.);
+  fhZNCpmc = new TH1F("fhZNCpmc","ZNC PMC",200, 0., 2000.);
   fOutput->Add(fhZNCpmc);      
-  fhZNApmc = new TH1F("fhZNApmc","ZNA PMC",200, 0., 160000.); 
+  fhZNApmc = new TH1F("fhZNApmc","ZNA PMC",200, 0., 2000.); 
   fOutput->Add(fhZNApmc);      
-  fhZPCpmc = new TH1F("fhZPCpmc","ZPC PMC",200, 0., 40000.); 
+  fhZPCpmc = new TH1F("fhZPCpmc","ZPC PMC",140, 0., 1400.); 
   fOutput->Add(fhZPCpmc);      
-  fhZPApmc = new TH1F("fhZPApmc","ZPA PMC",200, 0., 40000.); 
+  fhZPApmc = new TH1F("fhZPApmc","ZPA PMC",140, 0., 1400.); 
   fOutput->Add(fhZPApmc);      
   
   fhZNCCentroid = new TH2F("fhZNCCentroid","Centroid over ZNC",70,-3.5,3.5,70,-3.5,3.5); 
   fOutput->Add(fhZNCCentroid);      
   fhZNACentroid = new TH2F("fhZNACentroid","Centroid over ZNA",70,-3.5,3.5,70,-3.5,3.5); 
   fOutput->Add(fhZNACentroid);      
-  
-  fhZNCemd = new TH1F("fhZNCemd","ZNC signal lg",200,0.,6000.);	 
-  fOutput->Add(fhZNCemd);      
-  fhZNAemd = new TH1F("fhZNAemd","ZNA signal lg",200,0.,6000.);	 
-  fOutput->Add(fhZNAemd);      
-  fhPMCZNCemd = new TH1F("fhPMCZNCemd","ZNC PMC lg",200, 10., 6000.);   
-  fOutput->Add(fhPMCZNCemd);      
-  fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 10., 6000.);   
-  fOutput->Add(fhPMCZNAemd);     
-  
+   
   fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,30);
   fOutput->Add(fDebunch);     
   
@@ -242,10 +221,10 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
+void AliAnalysisTaskZDCpp::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
-  if(fDebug>1) printf(" **** AliAnalysisTaskZDC::UserExec() \n");
+  if(fDebug>1) printf(" **** AliAnalysisTaskZDCpp::UserExec() \n");
   
   if (!InputEvent()) {
     Printf("ERROR: InputEvent not available");
@@ -300,7 +279,6 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     fhZPApmc->Fill(towZPA[0]);    
   
     Double_t xyZNC[2]={-99.,-99.}, xyZNA[2]={-99.,-99.};
-    //esdZDC->GetZNCentroidInPbPb(1380., xyZNC, xyZNA);
     esdZDC->GetZNCentroidInpp(xyZNC, xyZNA);
     
     fhZNCCentroid->Fill(xyZNC[0], xyZNC[1]); 
@@ -312,23 +290,18 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     for(Int_t iq=0; iq<5; iq++){
        znclg += towZNCLG[iq];
        znalg += towZNALG[iq];
-    }
-    fhZNCemd->Fill(znclg/2.);	 
-    fhZNAemd->Fill(znalg/2.);	 
-    fhPMCZNCemd->Fill(towZNCLG[0]);   
-    fhPMCZNAemd->Fill(towZNALG[0]);   
-  
+    }  
   }
     
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;
   for(int i=0; i<4; i++){
-    if(esdZDC->GetZDCTDCData(16,i) != 0.){
-      tdcC = esdZDC->GetZDCTDCCorrected(16,i);
-      fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(16,i));
-      if(esdZDC->GetZDCTDCData(18,i) != 0.){
-        tdcA = esdZDC->GetZDCTDCCorrected(18,i);
-        fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(18,i));
+    if(esdZDC->GetZDCTDCData(esdZDC->GetZNCTDCChannel() ,i) != 0.){
+      tdcC = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i);
+      fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i));
+      if(esdZDC->GetZDCTDCData(esdZDC->GetZNATDCChannel(),i) != 0.){
+        tdcA = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i);
+        fhTDCZNC->Fill(esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i));
         tdcSum = tdcC+tdcA;
         tdcDiff = tdcC-tdcA;
       }
@@ -345,7 +318,7 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
 
 
 //________________________________________________________________________
-void AliAnalysisTaskZDC::Terminate(Option_t */*option*/)
+void AliAnalysisTaskZDCpp::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   //

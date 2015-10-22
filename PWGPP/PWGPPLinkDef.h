@@ -149,8 +149,9 @@
 #pragma link C++ class  AliMultiplicityCorrelations+;
 #pragma link C++ class  AliAnalysisTaskHIMultCorr+;
 // ZDC
-#pragma link C++ class  AliAnalysisTaskZDC+;
+#pragma link C++ class  AliAnalysisTaskZDCpp+;
 #pragma link C++ class  AliAnalysisTaskZDCpA+;
+#pragma link C++ class  AliAnalysisTaskZDCPbPb+;
 // T0
 #pragma link C++ class  AliT0AnalysisTaskQA+;
 // AD

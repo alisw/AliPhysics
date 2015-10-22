@@ -55,10 +55,11 @@ void DoFillParticleCollection(TrackCutType *cut,
   for (TrackCollectionIterType pIter = track_collection->begin();
                                pIter != track_collection->end();
                                pIter++) {
-    if (!cut->Pass(*pIter)) {
-      continue;
+    const Bool_t track_passes = cut->Pass(*pIter);
+    cut->FillCutMonitor(*pIter, track_passes);
+    if (track_passes) {
+      output->push_back(new AliFemtoParticle(*pIter, cut->Mass()));
     }
-    output->push_back(new AliFemtoParticle(*pIter, cut->Mass()));
   }
 }
 
@@ -83,7 +84,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtTrack:
 
     DoFillParticleCollection(
-      dynamic_cast<AliFemtoTrackCut*>(partCut),
+      (AliFemtoTrackCut*)partCut,
       hbtEvent->TrackCollection(),
       partCollection
     );
@@ -93,24 +94,24 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   // cut is cutting on V0s
   case hbtV0:
   {
-    AliFemtoV0SharedDaughterCut shared_daughter_cut;
-    AliFemtoV0Cut *v0_cut = (AliFemtoV0Cut*)partCut; //dynamic_cast was creating a NULL pointer
+    AliFemtoV0Cut *v0_cut = (AliFemtoV0Cut*)partCut;
 
-    const AliFemtoV0Collection &v0_coll = (!performSharedDaughterCut)
-                                        ? *hbtEvent->V0Collection()
-                                        : shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(
-                                            hbtEvent->V0Collection(),
-                                            v0_cut
-                                          );
+    // shared daughter cut returns all passed v0s - add to particle collection
+    if (performSharedDaughterCut) {
+      AliFemtoV0SharedDaughterCut shared_daughter_cut;
+      AliFemtoV0Collection v0_coll = shared_daughter_cut.AliFemtoV0SharedDaughterCutCollection(hbtEvent->V0Collection(), v0_cut);
+      for (AliFemtoV0Iterator pIter = v0_coll.begin(); pIter != v0_coll.end(); ++pIter) {
+        partCollection->push_back(new AliFemtoParticle(*pIter, v0_cut->Mass()));
+      }
+    } else {
 
-    DoFillParticleCollection(
-      v0_cut,
-      const_cast<AliFemtoV0Collection*>(&v0_coll),
-      partCollection
-    );
+      DoFillParticleCollection(
+        v0_cut,
+        hbtEvent->V0Collection(),
+        partCollection
+      );
 
-    // should this be here or OUTSIDE the switch statement? (why is v0 special?)
-    partCut->FillCutMonitor(hbtEvent, partCollection);
+    }
 
     break;
   }
@@ -119,7 +120,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtXi:
 
     DoFillParticleCollection(
-      dynamic_cast<AliFemtoXiCut*>(partCut),
+      (AliFemtoXiCut*)partCut,
       hbtEvent->XiCollection(),
       partCollection
     );
@@ -130,7 +131,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
   case hbtKink:
 
     DoFillParticleCollection(
-      dynamic_cast<AliFemtoKinkCut*>(partCut),
+      (AliFemtoKinkCut*)partCut,
       hbtEvent->KinkCollection(),
       partCollection
     );
@@ -142,6 +143,7 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
             "Undefined Particle Cut type!!! (" << partCut->Type() << ")\n";
   }
 
+  partCut->FillCutMonitor(hbtEvent, partCollection);
 }
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
@@ -821,7 +823,7 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
 
   for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin();
                                 iter != fCorrFctnCollection->end();
-                                iter++) {
+                                ++iter) {
 
     TList *tListCf = (*iter)->GetOutputList();
 

@@ -13,7 +13,7 @@ typedef enum {kMultSelTrigger = -200,
     kMultSelTrackletsVsClusters = -203,
     kMultSelRejectPileupInMultBins = -204,
     kMultSelCheckConsistencySPDandTrackVertices = -205
-} CutType_t; // FIXEM Is an enum the best choiche here? we return floats in the end...
+} CutType_t; // FIXEM Is an enum the best choice here? we return floats in the end...
 
 class AliESDEvent;
 
@@ -30,16 +30,16 @@ public:
     Float_t GetVzCut()                  { return fVzCut;      }
     void    SetVzCut (Float_t var)      { fVzCut = var;       }
     
-    Bool_t GetTriggerCut() { return fEvSel_Trig_kMB; }
-    void   SetTriggerCut(Bool_t lSetting) { fEvSel_Trig_kMB = lSetting; }
-    Bool_t GetINELgtZEROCut() { return fEvSel_INELgtZERO; }
-    void   SetINELgtZEROCut(Bool_t lSetting) { fEvSel_INELgtZERO = lSetting; }
-    Bool_t GetTrackletsVsClustersCut() { return fEvSel_TrackletsVsClusters; }
-    void   SetTrackletsVsClustersCut(Bool_t lSetting) { fEvSel_TrackletsVsClusters = lSetting; }
-    Bool_t GetRejectPileupInMultBinsCut() { return fEvSel_RejectPileupInMultBins; }
-    void   SetRejectPileupInMultBinsCut(Bool_t lSetting) { fEvSel_RejectPileupInMultBins = lSetting; }
-    Bool_t GetVertexConsistencyCut() { return fEvSel_CheckConsistencySPDandTrackVertices; }
-    void   SetVertexConsistencyCut(Bool_t lSetting) { fEvSel_CheckConsistencySPDandTrackVertices = lSetting; }
+    Bool_t GetTriggerCut()                      { return fEvSel_Trig_kMB;       }
+    void   SetTriggerCut(Bool_t lSetting)       { fEvSel_Trig_kMB = lSetting;   }
+    Bool_t GetINELgtZEROCut()                   { return fEvSel_INELgtZERO; }
+    void   SetINELgtZEROCut(Bool_t lSetting)    { fEvSel_INELgtZERO = lSetting; }
+    Bool_t GetTrackletsVsClustersCut()          { return fEvSel_TrackletsVsClusters; }
+    void   SetTrackletsVsClustersCut(Bool_t lSetting)       { fEvSel_TrackletsVsClusters = lSetting; }
+    Bool_t GetRejectPileupInMultBinsCut()                   { return fEvSel_RejectPileupInMultBins; }
+    void   SetRejectPileupInMultBinsCut(Bool_t lSetting)    { fEvSel_RejectPileupInMultBins = lSetting; }
+    Bool_t GetVertexConsistencyCut()                        { return fEvSel_CheckConsistencySPDandTrackVertices; }
+    void   SetVertexConsistencyCut(Bool_t lSetting)         { fEvSel_CheckConsistencySPDandTrackVertices = lSetting; }
     
     Float_t GetErrorCode()              { return fErrorCode; }
     
@@ -59,8 +59,5 @@ private:
     Bool_t fEvSel_CheckConsistencySPDandTrackVertices; //Check consistency
     
     ClassDef(AliMultSelectionCuts, 1)
-    
-    
 };
-
 #endif

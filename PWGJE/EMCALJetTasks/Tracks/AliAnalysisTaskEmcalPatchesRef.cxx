@@ -76,8 +76,9 @@ AliAnalysisTaskEmcalPatchesRef::~AliAnalysisTaskEmcalPatchesRef() {
 void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
   fAnalysisUtil = new AliAnalysisUtils;
 
-  TArrayD energybinning;
+  TArrayD energybinning, etabinning;
   CreateEnergyBinning(energybinning);
+  CreateLinearBinning(etabinning, 100, -0.7, 0.7);
   fHistos = new AliEMCalHistoContainer("Ref");
   TString triggers[15] = {"MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "EG2excl", "EJ2excl", "MBexcl", "E1combined", "E1Jonly", "E1Gonly", "E2combined", "E2Jonly", "E2Gonly"};
   TString patchtype[5] = {"EG1", "EG2", "EJ1", "EJ2", "EMC7"};
@@ -86,6 +87,9 @@ void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
     fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event count for trigger class %s", trg->Data()), 1, 0.5, 1.5);
     for(int ipatch = 0; ipatch < 5; ipatch++){
       fHistos->CreateTH1(Form("h%sPatchEnergy%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning);
+      fHistos->CreateTH1(Form("h%sPatchET%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch transverse energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning);
+      fHistos->CreateTH2(Form("h%sPatchEnergyEta%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning, etabinning);
+      fHistos->CreateTH2(Form("h%sPatchETEta%s", patchtype[ipatch].Data(), trg->Data()), Form("%s-patch transverse energy for trigger class %s", patchtype[ipatch].Data(), trg->Data()), energybinning, etabinning);
       for(int ien = 0; ien < 5; ien++){
         fHistos->CreateTH2(Form("h%sEtaPhi%dG%s", patchtype[ipatch].Data(), static_cast<int>(encuts[ien]), trg->Data()), Form("%s-patch #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", patchtype[ipatch].Data(), encuts[ien], trg->Data()), 100, -0.7, 0.7, 100, 1.4, 3.2);
       }
@@ -176,7 +180,7 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
   Double_t vertexpos[3];
   fInputEvent->GetPrimaryVertex()->GetXYZ(vertexpos);
 
-  Double_t energy, eta, phi;
+  Double_t energy, eta, phi, et;
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
     AliEmcalTriggerPatchInfo *patch = static_cast<AliEmcalTriggerPatchInfo *>(*patchIter);
     if(!patch->IsOfflineSimple()) continue;
@@ -201,53 +205,54 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
     energy = patch->GetPatchE();
     eta = patch->GetEtaGeo();
     phi = patch->GetPhiGeo();
+    et = patch->GetLorentzVectorCenterGeo().Et();
 
     // fill histograms allEta
     for(std::vector<TString>::iterator nameit = patchnames.begin(); nameit != patchnames.end(); ++nameit){
       if(isMinBias){
-        FillPatchHistograms("MB", *nameit, energy, eta, phi);
+        FillPatchHistograms("MB", *nameit, energy, et, eta, phi);
         // check for exclusive classes
         if(!(isEG1 || isEG2 || isEJ1 || isEJ2)){
-          FillPatchHistograms("MBexcl", *nameit, energy, eta, phi);
+          FillPatchHistograms("MBexcl", *nameit, energy, et, eta, phi);
         }
       }
       if(isEMC7){
-        FillPatchHistograms("EMC7", *nameit, energy, eta, phi);
+        FillPatchHistograms("EMC7", *nameit, energy, et, eta, phi);
       }
       if(isEJ1){
-        FillPatchHistograms("EJ1", *nameit, energy, eta, phi);
+        FillPatchHistograms("EJ1", *nameit, energy, et, eta, phi);
         if(isEG1 || isEG2) {
-          FillPatchHistograms("E1combined", *nameit, energy, eta, phi);
+          FillPatchHistograms("E1combined", *nameit, energy, et, eta, phi);
         } else {
-          FillPatchHistograms("E1Jonly", *nameit, energy, eta, phi);
+          FillPatchHistograms("E1Jonly", *nameit, energy, et, eta, phi);
         }
       }
       if(isEJ2){
-        FillPatchHistograms("EJ2", *nameit, energy, eta, phi);
+        FillPatchHistograms("EJ2", *nameit, energy, et, eta, phi);
         // check for exclusive classes
         if(!isEJ1){
-          FillPatchHistograms("EJ2excl", *nameit, energy, eta, phi);
+          FillPatchHistograms("EJ2excl", *nameit, energy, et, eta, phi);
         }
         if(isEG1 || isEG2){
-          FillPatchHistograms("E2combined", *nameit, energy, eta, phi);
+          FillPatchHistograms("E2combined", *nameit, energy, et, eta, phi);
         } else {
-          FillPatchHistograms("E2Jonly", *nameit, energy, eta, phi);
+          FillPatchHistograms("E2Jonly", *nameit, energy, et, eta, phi);
         }
       }
       if(isEG1){
-        FillPatchHistograms("EG1", *nameit, energy, eta, phi);
+        FillPatchHistograms("EG1", *nameit, energy, et, eta, phi);
         if(!(isEJ1 || isEJ2)){
-          FillPatchHistograms("E1Gonly", *nameit, energy, eta, phi);
+          FillPatchHistograms("E1Gonly", *nameit, energy, et, eta, phi);
         }
       }
       if(isEG2){
-        FillPatchHistograms("EG2", *nameit, energy, eta, phi);
+        FillPatchHistograms("EG2", *nameit, energy, et, eta, phi);
         // check for exclusive classes
         if(!isEG1){
-          FillPatchHistograms("EG2excl", *nameit, energy, eta, phi);
+          FillPatchHistograms("EG2excl", *nameit, energy, et, eta, phi);
         }
         if(!(isEJ2 || isEJ1)){
-          FillPatchHistograms("E2Gonly", *nameit, energy, eta, phi);
+          FillPatchHistograms("E2Gonly", *nameit, energy, et, eta, phi);
         }
       }
     }
@@ -263,8 +268,11 @@ void AliAnalysisTaskEmcalPatchesRef::UserExec(Option_t *){
  * @param eta Patch eta at the geometrical center
  * @param phi Patch phi at the geometrical center
  */
-void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double eta, double phi){
+void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi){
   fHistos->FillTH1(Form("h%sPatchEnergy%s", patchname.Data(), triggerclass.Data()), energy);
+  fHistos->FillTH1(Form("h%sPatchET%s", patchname.Data(), triggerclass.Data()), transverseenergy);
+  fHistos->FillTH2(Form("h%sPatchEnergyEta%s", patchname.Data(), triggerclass.Data()), eta, energy);
+  fHistos->FillTH2(Form("h%sPatchETEta%s", patchname.Data(), triggerclass.Data()), eta, transverseenergy);
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
   for(int ien = 0; ien < 5; ien++){
     if(energy > encuts[ien]){
@@ -303,6 +311,24 @@ void AliAnalysisTaskEmcalPatchesRef::CreateEnergyBinning(TArrayD& binning) const
   int ib = 0;
   for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
     binning[ib++] = *it;
+}
+
+/**
+ * Create any kind of linear binning from given ranges and stores it in the binning array.
+ * @param binning output array
+ * @param nbins Number of bins
+ * @param min lower range
+ * @param max upper range
+ */
+void AliAnalysisTaskEmcalPatchesRef::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max) const {
+  double binwidth = (max-min)/static_cast<double>(nbins);
+  binning.Set(nbins+1);
+  binning[0] = min;
+  double currentlimit = min + binwidth;
+  for(int ibin = 0; ibin < nbins; ibin++){
+    binning[ibin+1] = currentlimit;
+    currentlimit += binwidth;
+  }
 }
 
 /**

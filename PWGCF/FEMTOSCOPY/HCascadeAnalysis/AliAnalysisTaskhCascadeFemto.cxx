@@ -870,13 +870,13 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
       lMCevent = MCEvent();
       if (!lMCevent) {
         Printf("ERROR: Could not retrieve MC event \n");
-        cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
+        //cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
         return;
       }
       lMCstack = lMCevent->Stack();
       if (!lMCstack) {
         Printf("ERROR: Could not retrieve MC stack \n");
-        cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
+        //cout << "Name of the file with pb :" <<  CurrentFileName() << endl;
         return;
       }
     }
@@ -1235,7 +1235,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
 
     fHistyptProtons->Fill(track->Pt(),rapidity,lcentrality);
     fHistphietaProtons->Fill(track->Phi(),track->Eta());
-    if (track->TestBit(AliAODTrack::kIsDCA)) { fHistIPtoPVxyzTPC->Fill(dz[0],dz[1]); } else {cout<<"Bit is not DCA!!!!!!!!!!!"<<endl;}
+    if (track->TestBit(AliAODTrack::kIsDCA)) { fHistIPtoPVxyzTPC->Fill(dz[0],dz[1]); } else { /*cout<<"Bit is not DCA!!!!!!!!!!!"<<endl;*/ }
     fHistIPtoPVxyzGlobal->Fill(dzg[0],dzg[1]);
    
 //       cout<<"TOF signal "<<globaltrack->GetTOFsignal()<<endl; 
@@ -1541,8 +1541,8 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         aodnTrackXi = dynamic_cast<AliAODTrack*>(nTrackXi);
         aodbachTrackXi = dynamic_cast<AliAODTrack*>(bachTrackXi);
 
-        if (aodpTrackXi->Charge()<0) cout<<"Wrong Sign for pos!!!!!!!!!!!!"<<endl;
-        if (aodnTrackXi->Charge()>0) cout<<"Wrong Sign for neg!!!!!!!!!!!!"<<endl;
+        //if (aodpTrackXi->Charge()<0) cout<<"Wrong Sign for pos!!!!!!!!!!!!"<<endl;
+        //if (aodnTrackXi->Charge()>0) cout<<"Wrong Sign for neg!!!!!!!!!!!!"<<endl;
 
         lChargeXi = xiaod->ChargeXi();
         if ( lChargeXi < 0 )  { lInvMassXiMinus = xiaod->MassXi(); lInvMassLambdaAsCascDghter = xiaod->MassLambda(); lInvMassOmegaMinus = xiaod->MassOmega();}
@@ -1886,7 +1886,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         //cout<<"Checking bac dau ! "<<endl;
         nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt, checkeddaughters);
         if (nXiWithXiMass>0.&& nXiWithSharedDaughtersWithXiMass!=-1) fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass); // check on nXiWithXiMass is redundant we cannot be here if this number is zero
-        if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal bac "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
+        //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal bac "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
         if (nXiWithSharedDaughtersWithXiMass!=-1) {
           checkeddaughters[ncheckeddaughters] = daughterIndex; 
           ncheckeddaughters++;
@@ -1903,7 +1903,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt,checkeddaughters);
 
         if (nXiWithXiMass>0. && nXiWithSharedDaughtersWithXiMass!=-1) fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
-        if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal p "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
+        //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal p "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
         if (nXiWithSharedDaughtersWithXiMass!=-1) {
           checkeddaughters[ncheckeddaughters] = daughterIndex;
           ncheckeddaughters++;
@@ -1917,7 +1917,7 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         daughterIndex = fEvt->fReconstructedXi[i].indexN;
         nXiWithSharedDaughtersWithXiMass = CheckDaughterTrack ( i, daughterIndex, fEvt, checkeddaughters);
         if (nXiWithXiMass>0. && nXiWithSharedDaughtersWithXiMass!=-1) fHistFractionOfXiWithSharedDaughters->Fill(nXiWithXiMass, nXiWithSharedDaughtersWithXiMass/(Float_t)  nXiWithXiMass);
-        if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal n "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
+        //if (nXiWithSharedDaughtersWithXiMass>nXiWithXiMass) cout<<"Problem xitot<xishared anal n "<<nXiWithXiMass<<" "<<nXiWithSharedDaughtersWithXiMass<<endl;
         if (nXiWithSharedDaughtersWithXiMass!=-1) {
           checkeddaughters[ncheckeddaughters] = daughterIndex;
           ncheckeddaughters++;

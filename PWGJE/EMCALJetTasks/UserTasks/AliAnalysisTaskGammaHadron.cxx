@@ -202,11 +202,14 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//Initiate the delta phi and p_t associated hadron histograms for each p_t bin of the gamma!
 	//Later you can summ the histograms according to the expected statistic!
 
-	fHistpt_assHadron    = new TH1*[nbins[0]]; // make a p_t histogram of the associated hadron for each p_T bin of the gamma
+	fHistpt_assHadron    = new TH1*[nbins[0]]; //make a p_t histogram of the associated hadron for each p_T bin of the gamma
 	fHistpt_assHadron_tr = new TH1*[nbins[0]]; // make a p_t histogram of the associated hadron for each p_T bin of the trigger-gamma
 	//
 	for(Int_t i=1; i<nbins[0]+1; i++)
 	{
+
+		//change that so that the first histogram is
+		//also filled. the I_nt =1 was probably done for the binwidth/center function ??
 		//check whether the max is the
 		//same as the histogram size
 		Double_t BinWidth = fHistNoClus_ptH->GetBinWidth(i);

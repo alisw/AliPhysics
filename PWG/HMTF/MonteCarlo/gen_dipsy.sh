@@ -11,6 +11,6 @@ echo "running in `pwd`, writing HepMC to $1"
 # force path to requested output
 sed -e "s/^\([[:space:]]*set HepMCFile:Filename\) .*$/\1 $1/" ${ALICE_PHYSICS}/PWG/HMTF/MonteCarlo/DIPSYpp_HepMC.in > thepeg.in
 # setup DIPSY
-setupThePEG -r ${THEPEG_BASEDIR}/lib/ThePEG/ThePEGDefaults.rpo -I ${THEPEG_BASEDIR}/share/Ariadne thepeg.in > setup.log 2>&1
+setupThePEG -r ${THEPEG_ROOT}/lib/ThePEG/ThePEGDefaults.rpo -I ${THEPEG_ROOT}/share/Ariadne thepeg.in > setup.log 2>&1
 # run DIPSY
-runThePEG DIPSYpp.run -N 2147483647
+runThePEG DIPSYpp.run -N 2147483647 --seed ${ALIEN_PROC_ID:=0}

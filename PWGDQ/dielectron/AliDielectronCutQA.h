@@ -36,7 +36,7 @@ public:
   //
   void Init();
   void AddTrackFilter(     AliAnalysisFilter *trkFilter);
-  /*  void AddPrePairFilter(   AliAnalysisFilter *prePairFilter);*/
+  /* void AddPrePairFilter(   AliAnalysisFilter *prePairFilter); */
   /* void AddPrePairLegFilter(AliAnalysisFilter *prePairLegFilter); */
   void AddPairFilter(      AliAnalysisFilter *pairFilter);
   void AddEventFilter(     AliAnalysisFilter *eventFilter);

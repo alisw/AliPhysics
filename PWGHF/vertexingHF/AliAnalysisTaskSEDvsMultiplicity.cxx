@@ -804,6 +804,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   }
   
   if(!isEvSel)return;
+  fHistNEvents->Fill(2);
   if(fKeepCorrPlots){
     fHistNtrEta16vsNtrEta1EvSel->Fill(countTreta1,countTreta16);
     fHistNtrEta05vsNtrEta1EvSel->Fill(countTreta1,countTreta05);

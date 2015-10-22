@@ -47,6 +47,8 @@ public:
   
   Bool_t IsEqual(const TObject* obj) const;
   
+  Bool_t IsEqualForTrackCutter(const AliAnalysisMuMuCutCombination& other) const;
+
 private:
   /// not implemented on purpose
   AliAnalysisMuMuCutCombination(const AliAnalysisMuMuCutCombination& rhs);

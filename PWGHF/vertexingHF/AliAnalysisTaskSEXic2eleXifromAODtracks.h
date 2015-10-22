@@ -59,7 +59,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void FillMCROOTObjects(AliAODMCParticle *part, AliAODMCParticle *mcepart, AliAODMCParticle *mcv0part, Int_t decaytype);
   void FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray);
   void FillMCCascROOTObjects(AliAODMCParticle *mccpart, TClonesArray *mcArray);
-  void MakeMCAnalysis(TClonesArray *mcArray);
+  Bool_t MakeMCAnalysis(TClonesArray *mcArray);
   void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
 
   void SelectCascade( const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray);
@@ -74,6 +74,8 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Bool_t GetWriteEachVariableTree() const {return fWriteEachVariableTree;}
   void SetWriteMCVariableTree(Bool_t a) {fWriteMCVariableTree = a;}
   Bool_t GetWriteMCVariableTree() const {return fWriteMCVariableTree;}
+  void SetMCEventType(Int_t theevt) {fMCEventType = theevt;}
+  Bool_t GetMCEventType() const {return fMCEventType;}
 
   void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
 
@@ -156,6 +158,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   Float_t  fTriggerCheck;         /// Stores trigger information
   Bool_t  fUseCentralityV0M;         /// Stores trigger information
   Int_t  fEvNumberCounter;         /// EvNumber counter
+	Int_t fMCEventType; ///MC eventtype to analyze 1: ccbar 2: bbbar (rest is assigned to 1 or 2  with 50% prob)
 
   //--------------------- My histograms ------------------
   THnSparse* fHistoEleXiMass;         //!<! e-Xi mass spectra
@@ -285,6 +288,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
 	TH1F *fHistonEvtvsRunNumber;//!<!  evt vs runnumber
 	TH1F *fHistonElevsRunNumber;//!<!  nele vs runnumber
 	TH1F *fHistonXivsRunNumber;//!<!  nxi vs runnumber
+	TH1F *fHistoMCEventType;//!<!  MC Event Type
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
@@ -301,7 +305,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,12); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,13); /// class for Xic->e Xi
   /// \endcond
 };
 #endif
