@@ -149,6 +149,7 @@
 #pragma link C++ class HighPtTracks::AliReducedHighPtEventCreator+;
 #pragma link C++ class HighPtTracks::AliReducedTrackSelectionContainer+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
+#pragma link C++ class AliAnalysisTaskLEDCheck+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetUtility+;
