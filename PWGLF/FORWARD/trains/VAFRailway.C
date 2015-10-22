@@ -27,12 +27,14 @@ class TUrl;
  * This helper is triggered by a URL of the form 
  *
  * @code
- * pod:///<datadir>[?<options>][#<treename>]
+ * proof://host/<datadir>[?<options>][#<treename>]
  * @endcode 
- * where &lt;host@&t; is a known AAF (e.g., <tt>alice-caf.cern.ch</tt>)
+ * where &lt;host@&t; is a known AAF (e.g., <tt>alivafh</tt>)
  * <dl>
  *   <dt>&lt;datadir&gt;</dt>
  *   <dd>Base directory to search for data</dd>
+ *   <dt>&lt;pattern&gt;</dt>
+ *   <dd>Filename pattern to search for. '%' is a wild-card</dd>
  *   <dt>&lt;treename&gt;</dt>
  *   <dd>Optional tree name in data set, often <tt>esdTree</tt> or
  *   <tt>aodTree</tt></dd>
@@ -75,6 +77,8 @@ struct VAFRailway : public ProofRailway
     : ProofRailway(url, verbose)
   {
     fOptions.Add("nocache", "Disable tree cache");
+    fOptions.Add("pattern","SEARCH","Search pattern", "");
+    fOptions.Add("alien","Enable ALIEN file access",true); //MUST be true
   }
   virtual ~VAFRailway() {}
   /** 
@@ -104,6 +108,7 @@ struct VAFRailway : public ProofRailway
     else
       Info("VAFRailway::LoadAliROOT", "Using AliPhysics=%s", aliPhys.Data());
 
+    fOptions.Set("alien");
     return ProofRailway::LoadAliROOT();
   }        
   /** 
@@ -170,7 +175,7 @@ struct VAFRailway : public ProofRailway
     }
     else
       dsName.Append(Form("FileName=%s;",pat.Data()));
-    dsName.Append(Form("Tree=/%s", fUrl.GetAnchor()));
+    dsName.Append(Form("Tree=/%s;", fUrl.GetAnchor()));
     dsName.Append("Mode=remote;");
       
   }
