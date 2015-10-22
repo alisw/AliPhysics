@@ -32,7 +32,7 @@ t->Exec();
 
 */
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#include <iostream>
 #include <stdio.h>
 #include <string.h>
 //ROOT includes
@@ -58,7 +58,6 @@ t->Exec();
 #include "AliTPCParamSR.h"
 #include "AliTrackPointArray.h"
 
-#endif
 #include "AliMCInfo.h" 
 #include "AliGenV0Info.h" 
 #include "AliGenKinkInfo.h" 
