@@ -39,7 +39,6 @@
 #include <TLorentzVector.h>
 #include <TTree.h>
 #include "TROOT.h"
-#include <TRandom.h>
 #include <TDatabasePDG.h>
 #include <AliAnalysisDataSlot.h>
 #include <AliAnalysisDataContainer.h>
@@ -1899,7 +1898,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCascTreeVariables()
 
   const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
   fCascVariablesTree = new TTree(nameoutput,"cascade variables tree");
-  Int_t nVar = 25;
+  Int_t nVar = 26;
   fCandidateCascVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1925,9 +1924,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCascTreeVariables()
   fCandidateVariableNames[19]="mcxipx";
   fCandidateVariableNames[20]="mcxipy";
   fCandidateVariableNames[21]="mcxipz";
-  fCandidateVariableNames[22]="RunNumber";
-  fCandidateVariableNames[23]="PrimVertZ";
-  fCandidateVariableNames[24]="EvNumber";
+  fCandidateVariableNames[22]="labcasc";
+  fCandidateVariableNames[23]="RunNumber";
+  fCandidateVariableNames[24]="PrimVertZ";
+  fCandidateVariableNames[25]="EvNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fCascVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateCascVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1968,10 +1968,11 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
 	Float_t mcxipx = -9999.;
 	Float_t mcxipy = -9999.;
 	Float_t mcxipz = -9999.;
+	Int_t labcasc = -9999.;
 	if(fUseMCInfo){
 		Int_t pdgDgcasc[2]={211,3122};
 		Int_t pdgDgv0[2]={2212,211};
-		Int_t labcasc = MatchToMCCascade(casc,3312,pdgDgcasc,pdgDgv0,mcArray); // the cascade
+		labcasc = MatchToMCCascade(casc,3312,pdgDgcasc,pdgDgv0,mcArray); // the cascade
 		if(labcasc<0) return;
 
 		fHistoXiMassvsPtMCS->Fill(casc->MassXi(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
@@ -2025,7 +2026,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
 
 	if(!fWriteEachVariableTree) return;
 
-	for(Int_t i=0;i<25;i++){
+	for(Int_t i=0;i<26;i++){
 		fCandidateCascVariables[i] = -9999.;
 	}
 
@@ -2055,9 +2056,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillCascROOTObjects(AliAODcascade 
   fCandidateCascVariables[19] = mcxipx;
   fCandidateCascVariables[20] = mcxipy;
   fCandidateCascVariables[21] = mcxipz;
-  fCandidateCascVariables[22] = fRunNumber;
-  fCandidateCascVariables[23] = fVtxZ;
-  fCandidateCascVariables[24] = fEvNumberCounter;
+  fCandidateCascVariables[22] = labcasc;
+  fCandidateCascVariables[23] = fRunNumber;
+  fCandidateCascVariables[24] = fVtxZ;
+  fCandidateCascVariables[25] = fEvNumberCounter;
 
 
 	fCascVariablesTree->Fill();
@@ -3188,7 +3190,7 @@ Int_t AliAnalysisTaskSEXic2eleXifromAODtracks::MatchToMCCascade(AliAODcascade *t
 	AliAODTrack *cbtrack = (AliAODTrack*) theCascade->GetDecayVertexXi()->GetDaughter(0);
 	if(!cbtrack) return -1;
 
-	Int_t label_b = cbtrack->GetLabel();
+	Int_t label_b = TMath::Abs(cbtrack->GetLabel());
 	if(label_b<0) return -1;
 
 	AliAODMCParticle *mcpartb= (AliAODMCParticle*) mcArray->At(label_b);
@@ -3420,7 +3422,8 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 	Int_t nmcpart = mcArray->GetEntriesFast();
 
 	Int_t mcevttype = 0;
-	if(fMCEventType==1 || fMCEventType==2){
+	Bool_t sigmaevent = kFALSE;
+	if(fMCEventType==1 || fMCEventType==2 || fMCEventType == 11){
 		for(Int_t i=0;i<nmcpart;i++)
 		{
 			AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
@@ -3450,17 +3453,41 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 					}
 				}
 			}
+			if(TMath::Abs(mcpart->GetPdgCode())==4122){
+				Bool_t e_flag = kFALSE;
+				Bool_t sigma_flag = kFALSE;
+				for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+				{
+					if(idau<0) break;
+					AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+					if(!mcdau) continue;
+					if(TMath::Abs(mcdau->GetPdgCode())==11){
+						e_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3212){
+						sigma_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3214){
+						sigma_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3224){
+						sigma_flag = kTRUE;
+					}
+				}
+				if(e_flag && sigma_flag) sigmaevent = kTRUE;
+			}
 		}
-		fHistoMCEventType->Fill(mcevttype);
 
 		if(fMCEventType==1){
-			if(mcevttype==2) return kFALSE;
-			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
-			if(mcevttype==3 && gRandom->Rndm()<0.5) return kFALSE;
+			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
 		}else if(fMCEventType==2){
-			if(mcevttype==1) return kFALSE;
-			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
+			if((mcevttype==1)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
+		}else if(fMCEventType==11){
+			if(sigmaevent) return kFALSE;
+			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
 		}
+
+		fHistoMCEventType->Fill(mcevttype);
 	}
 
 	for(Int_t i=0;i<nmcpart;i++)
