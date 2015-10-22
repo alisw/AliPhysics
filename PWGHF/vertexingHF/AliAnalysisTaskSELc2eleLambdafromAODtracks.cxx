@@ -42,7 +42,6 @@
 #include <THnSparse.h>
 #include <TLorentzVector.h>
 #include <TTree.h>
-#include <TRandom.h>
 #include "TROOT.h"
 #include <TDatabasePDG.h>
 #include <AliAnalysisDataSlot.h>
@@ -1202,7 +1201,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 74;
+  Int_t nVar = 75;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1281,9 +1280,10 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::DefineTreeVariables()
 	fCandidateVariableNames[69]= "V0PosITSMatch";
 	fCandidateVariableNames[70]= "V0NegITSMatch";
 	fCandidateVariableNames[71]= "IsV0PeakRegion";
+	fCandidateVariableNames[72]= "mcpdgv0";
 
-  fCandidateVariableNames[72]="EvNumber";
-  fCandidateVariableNames[73]="RunNumber";
+  fCandidateVariableNames[73]="EvNumber";
+  fCandidateVariableNames[74]="RunNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1301,7 +1301,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	if(!trk) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<74;i++){
+	for(Int_t i=0;i<75;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -1479,8 +1479,9 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillROOTObjects(AliAODRecoCasca
 	if(cntrack) fCandidateVariables[70] = cntrack->GetITSClusterMap();
 
   fCandidateVariables[71] = fAnalCuts->IsPeakRegion(v0);
-  fCandidateVariables[72] = fEvNumberCounter;
-  fCandidateVariables[73] = fRunNumber;
+	fCandidateVariables[72] = mcpdgv0_array[0];
+  fCandidateVariables[73] = fEvNumberCounter;
+  fCandidateVariables[74] = fRunNumber;
 
 
   if(fWriteVariableTree)
@@ -1978,7 +1979,7 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
 	if(!trke) return;
 	if(!v0) return;
 
-	for(Int_t i=0;i<73;i++){
+	for(Int_t i=0;i<75;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -2036,8 +2037,8 @@ void AliAnalysisTaskSELc2eleLambdafromAODtracks::FillMixROOTObjects(TLorentzVect
   fCandidateVariables[56] = fVtx1->GetZ();
   fCandidateVariables[64] = v0info[0];
 
-  fCandidateVariables[71] = fEvNumberCounter;
-  fCandidateVariables[72] = fRunNumber;
+  fCandidateVariables[73] = fEvNumberCounter;
+  fCandidateVariables[74] = fRunNumber;
 
 
   if(fWriteVariableTree)
@@ -4150,7 +4151,8 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 	Int_t nmcpart = mcArray->GetEntriesFast();
 
 	Int_t mcevttype = 0;
-	if(fMCEventType==1 || fMCEventType==2){
+	Bool_t sigmaevent = kFALSE;
+	if(fMCEventType==1 || fMCEventType==2 || fMCEventType==11){
 		for(Int_t i=0;i<nmcpart;i++)
 		{
 			AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
@@ -4180,16 +4182,42 @@ Bool_t AliAnalysisTaskSELc2eleLambdafromAODtracks::MakeMCAnalysis(TClonesArray *
 					}
 				}
 			}
+
+			if(TMath::Abs(mcpart->GetPdgCode())==4122){
+				Bool_t e_flag = kFALSE;
+				Bool_t sigma_flag = kFALSE;
+				for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+				{
+					if(idau<0) break;
+					AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+					if(!mcdau) continue;
+					if(TMath::Abs(mcdau->GetPdgCode())==11){
+						e_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3212){
+						sigma_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3214){
+						sigma_flag = kTRUE;
+					}
+					if(TMath::Abs(mcdau->GetPdgCode())==3224){
+						sigma_flag = kTRUE;
+					}
+				}
+				if(e_flag && sigma_flag) sigmaevent = kTRUE;
+			}
 		}
-		fHistoMCEventType->Fill(mcevttype);
+
 		if(fMCEventType==1){
-			if(mcevttype==2) return kFALSE;
-			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
-			if(mcevttype==3 && gRandom->Rndm()<0.5) return kFALSE;
+			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
 		}else if(fMCEventType==2){
-			if(mcevttype==1) return kFALSE;
-			if(( (mcevttype==0) || (mcevttype==3) ) && gRandom->Rndm()<0.5) return kFALSE;
+			if((mcevttype==1)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
+		}else if(fMCEventType==11){
+			if(sigmaevent) return kFALSE;
+			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
 		}
+
+		fHistoMCEventType->Fill(mcevttype);
 	}
 
 	for(Int_t i=0;i<nmcpart;i++)
