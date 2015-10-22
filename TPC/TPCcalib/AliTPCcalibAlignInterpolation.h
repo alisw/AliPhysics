@@ -32,7 +32,7 @@ public :
   Bool_t RefitTRDtrack(AliESDfriendTrack *friendTrack, Double_t mass, AliExternalTrackParam &trackTRD, Double_t &chi2, Double_t &npoints);
   void   CreateResidualHistosInterpolation(Double_t dy=5, Double_t dz=5);  
   void   CreateDistortionMapsFromFile(const char * inputFile, const char *outputFile);
-  void   SetSyswatchStep(Int_t step){fSyswatchStep=step;} // step with which sys. usage is sampled
+  void   SetSyswatchStep(Int_t step){fSyswatchStep=(step==0)?1:step;} // step with which sys. usage is sampled
   //
   static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
   THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
