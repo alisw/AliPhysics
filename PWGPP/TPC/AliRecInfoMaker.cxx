@@ -175,6 +175,7 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "AliESDRecV0Info.h"
 #include "AliESDRecKinkInfo.h"
 #include "AliRecInfoMaker.h"
+#include <iostream>
 
 
 
@@ -711,7 +712,7 @@ Int_t AliRecInfoMaker::TreeTLoop()
   //
   for (Int_t i=0; i<nV0MIs;i++){
     //AliV0 * v0MI = 
-    (AliV0*)fEvent->GetV0(i);
+    fEvent->GetV0(i);
     fSignedV0[i]=0;
   }
   

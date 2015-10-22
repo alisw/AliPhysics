@@ -44,7 +44,7 @@ ClassImp(AliHFEV0taginfo::AliHFEV0tag)
 //___________________________________________________________________
 AliHFEV0taginfo::AliHFEV0taginfo():
     TNamed(), 
-    fIsAODana(NULL),
+    fIsAODana(false),
     fTaggedTracks(NULL),
     fV0finder(NULL),
     fAODV0finder(NULL)
