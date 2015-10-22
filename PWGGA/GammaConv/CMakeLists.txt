@@ -24,6 +24,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Tasks # what target here
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/Trigger
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
 		    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
