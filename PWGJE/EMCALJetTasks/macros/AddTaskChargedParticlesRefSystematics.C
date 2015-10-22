@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRefSystematics(const char *suffix){
+EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRefSystematics(const char *dummy, const char *suffix){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 

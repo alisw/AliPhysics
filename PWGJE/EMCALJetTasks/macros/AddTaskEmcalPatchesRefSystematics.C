@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRefSystematics(const char *suffix){
+EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRefSystematics(const char *dummy, const char *suffix){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
