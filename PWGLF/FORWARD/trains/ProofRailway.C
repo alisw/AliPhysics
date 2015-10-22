@@ -831,6 +831,10 @@ struct ProofRailway : public Railway
       return 0;
     }
     Long64_t ret = mgr->StartAnalysis(fUrl.GetProtocol(), dsName, nEvents, off);
+
+    TString store = fOptions.Get("storage");
+    if (!store.IsNull() && store.EqualTo("auto",TString::kIgnoreCase))
+      OutputUtilities::StopXrootd();
     
     if (fVerbose > 10) 
       TProof::Mgr(fUrl.GetUrl())->GetSessionLogs()->Save("*","proof.log");
