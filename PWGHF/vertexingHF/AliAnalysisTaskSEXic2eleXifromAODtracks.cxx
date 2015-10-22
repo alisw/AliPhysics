@@ -3423,7 +3423,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 
 	Int_t mcevttype = 0;
 	Bool_t sigmaevent = kFALSE;
-	if(fMCEventType==1 || fMCEventType==2 || fMCEventType == 11){
+	if(fMCEventType==1 || fMCEventType==2){
 		for(Int_t i=0;i<nmcpart;i++)
 		{
 			AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
@@ -3453,38 +3453,12 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 					}
 				}
 			}
-			if(TMath::Abs(mcpart->GetPdgCode())==4122){
-				Bool_t e_flag = kFALSE;
-				Bool_t sigma_flag = kFALSE;
-				for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
-				{
-					if(idau<0) break;
-					AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
-					if(!mcdau) continue;
-					if(TMath::Abs(mcdau->GetPdgCode())==11){
-						e_flag = kTRUE;
-					}
-					if(TMath::Abs(mcdau->GetPdgCode())==3212){
-						sigma_flag = kTRUE;
-					}
-					if(TMath::Abs(mcdau->GetPdgCode())==3214){
-						sigma_flag = kTRUE;
-					}
-					if(TMath::Abs(mcdau->GetPdgCode())==3224){
-						sigma_flag = kTRUE;
-					}
-				}
-				if(e_flag && sigma_flag) sigmaevent = kTRUE;
-			}
 		}
 
 		if(fMCEventType==1){
 			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
 		}else if(fMCEventType==2){
 			if((mcevttype==1)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
-		}else if(fMCEventType==11){
-			if(sigmaevent) return kFALSE;
-			if((mcevttype==2)||(mcevttype==0)||(mcevttype==3)) return kFALSE;
 		}
 
 		fHistoMCEventType->Fill(mcevttype);
