@@ -118,7 +118,7 @@ AliAnalysisTaskhCascadeFemto *AddTaskHCascadeFemto ( Bool_t krunMCtruth  = kFALS
   AliAnalysisDataContainer *cout_pXi  = mgr->CreateContainer(combinedName,  TList::Class(),
                                                                AliAnalysisManager::kOutputContainer,outputfile);
 
-  AliAnalysisDataContainer *cout_pXi2 = mgr->CreateContainer("cfcontCutsXi",
+  AliAnalysisDataContainer *cout_pXi2 = mgr->CreateContainer(Form("cfcontCutsXi_%s",combinedName),
                                                               AliCFContainer::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               outputfile );
