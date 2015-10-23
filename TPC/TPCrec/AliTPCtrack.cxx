@@ -436,16 +436,16 @@ void  AliTPCtrack::UpdatePoints()
   //--------------------------------------------------
   //calculates first ,amx dens and last points
   //--------------------------------------------------
-  Float_t density[160];
-  for (Int_t i=0;i<160;i++) density[i]=-1.;
-  fPoints[0]= 160;
+  Float_t density[159];
+  for (Int_t i=0;i<159;i++) density[i]=-1.;
+  fPoints[0]= 159;
   fPoints[1] = -1;
   //
   Int_t ngood=0;
   Int_t undeff=0;
   Int_t nall =0;
   Int_t range=20;
-  for (Int_t i=0;i<160;i++){
+  for (Int_t i=0;i<159;i++){
     Int_t last = i-range;
     if (nall<range) nall++;
     if (last>=0){
@@ -458,7 +458,7 @@ void  AliTPCtrack::UpdatePoints()
   }
   Float_t maxdens=0;
   Int_t indexmax =0;
-  for (Int_t i=0;i<160;i++){
+  for (Int_t i=0;i<159;i++){
     if (density[i]<0) continue;
     if (density[i]>maxdens){
       maxdens=density[i];
@@ -471,7 +471,7 @@ void  AliTPCtrack::UpdatePoints()
   fPoints[1] = indexmax;
   //
   // last point
-  for (Int_t i=indexmax;i<160;i++){
+  for (Int_t i=indexmax;i<159;i++){
     if (density[i]<0) continue;
     if (density[i]<maxdens/2.) {
       break;

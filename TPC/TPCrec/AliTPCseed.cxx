@@ -63,21 +63,18 @@ AliTPCseed::AliTPCseed():
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
-  fInDead(kFALSE),
-  fIsSeeding(kFALSE),
   fNoCluster(0),
   fSort(0),
-  fBSigned(kFALSE),
   fSeedType(0),
   fSeed1(-1),
   fSeed2(-1),
-  fMAngular(0),
   fCircular(0),
+  fMAngular(0),
   fPoolID(-1)
 {
   //
-  for (Int_t i=0;i<160;i++) SetClusterIndex2(i,-3);
-  for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
+  for (Int_t i=0;i<159;i++) SetClusterIndex2(i,-3);
+  for (Int_t i=0;i<159;i++) fClusterPointer[i]=0;
   for (Int_t i=0;i<3;i++)   fKinkIndexes[i]=0;
   for (Int_t i=0;i<AliPID::kSPECIES;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<4;i++) {
@@ -88,6 +85,7 @@ AliTPCseed::AliTPCseed():
   }
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
@@ -107,22 +105,19 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
-  fInDead(kFALSE),
-  fIsSeeding(kFALSE),
   fNoCluster(0),
   fSort(0),
-  fBSigned(kFALSE),
   fSeedType(0),
   fSeed1(-1),
   fSeed2(-1),
-  fMAngular(0),
   fCircular(0),
+  fMAngular(0),
   fPoolID(-1)
 {
   //---------------------
   // dummy copy constructor
   //-------------------------
-  for (Int_t i=0;i<160;i++) {
+  for (Int_t i=0;i<159;i++) {
     fClusterPointer[i]=0;
     if (fClusterOwner){
       if (s.fClusterPointer[i])
@@ -132,7 +127,7 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
     }
     fTrackPoints[i] = s.fTrackPoints[i];
   }
-  for (Int_t i=0;i<160;i++) fIndex[i] = s.fIndex[i];
+  for (Int_t i=0;i<159;i++) fIndex[i] = s.fIndex[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++)   fTPCr[i]=s.fTPCr[i];
   for (Int_t i=0;i<4;i++) {
     fDEDX[i] = s.fDEDX[i];
@@ -143,7 +138,7 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = s.fOverlapLabels[i];
-
+  memcpy(fShared,s.fShared,20*sizeof(UChar_t));
 }
 
 
@@ -164,16 +159,13 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
-  fInDead(kFALSE),
-  fIsSeeding(kFALSE),
   fNoCluster(0),
   fSort(0),
-  fBSigned(kFALSE),
   fSeedType(0),
   fSeed1(-1),
   fSeed2(-1),
-  fMAngular(0),
   fCircular(0),
+  fMAngular(0),
   fPoolID(-1)
 {
   //
@@ -181,7 +173,7 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   //
   fFirstPoint =0;
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
-  for (Int_t i=0;i<160;i++) {
+  for (Int_t i=0;i<159;i++) {
     fClusterPointer[i] = 0;
     Int_t index = t.GetClusterIndex(i);
     if (index>=-1){ 
@@ -200,6 +192,7 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   for (Int_t i=0;i<9;i++) fDEDX[i] = fDEDX[i];
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
@@ -220,24 +213,21 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fErrorZ2(1e10),
   fCurrentCluster(0x0),
   fCurrentClusterIndex1(-1),
-  fInDead(kFALSE),
-  fIsSeeding(kFALSE),
   fNoCluster(0),
   fSort(0),
-  fBSigned(kFALSE),
   fSeedType(0),
   fSeed1(-1),
   fSeed2(-1),
-  fMAngular(0),
   fCircular(0),
+  fMAngular(0),
   fPoolID(-1)
 {
   //
   // Constructor
   //
   fFirstPoint =0;
-  for (Int_t i=0;i<160;i++) SetClusterIndex2(i,-3);
-  for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
+  for (Int_t i=0;i<159;i++) SetClusterIndex2(i,-3);
+  for (Int_t i=0;i<159;i++) fClusterPointer[i]=0;
   for (Int_t i=0;i<5;i++)   fTPCr[i]=0.2;
   for (Int_t i=0;i<4;i++) {
     fDEDX[i] = 0.;
@@ -248,6 +238,7 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  memset(fShared,0,20*sizeof(UChar_t));
 }
 
 AliTPCseed::~AliTPCseed(){
@@ -256,7 +247,7 @@ AliTPCseed::~AliTPCseed(){
   AliDebug(5,"Destruct AliTPCseed - Begin");
   fNoCluster =0;
   if (fClusterOwner){
-    for (Int_t icluster=0; icluster<160; icluster++){
+    for (Int_t icluster=0; icluster<159; icluster++){
       if(fClusterPointer[icluster])
 	delete fClusterPointer[icluster];
       fClusterPointer[icluster]=0;
@@ -275,8 +266,8 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     AliTPCtrack::operator=(param);
     fEsd =param.fEsd; 
     fClusterOwner = param.fClusterOwner;
-    if (!fClusterOwner) for(Int_t i = 0;i<160;++i)fClusterPointer[i] = param.fClusterPointer[i];
-    else                for(Int_t i = 0;i<160;++i) {
+    if (!fClusterOwner) for(Int_t i = 0;i<159;++i)fClusterPointer[i] = param.fClusterPointer[i];
+    else                for(Int_t i = 0;i<159;++i) {
 	delete fClusterPointer[i];
 	if (param.fClusterPointer[i]) { 
 	  fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
@@ -300,12 +291,8 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     fErrorZ2        = param.fErrorZ2;
     fCurrentCluster = param.fCurrentCluster; // this is not allocated by AliTPCSeed
     fCurrentClusterIndex1 = param.fCurrentClusterIndex1; 
-    fInDead         = param.fInDead;
-    fIsSeeding      = param.fIsSeeding;
     fNoCluster      = param.fNoCluster;
     fSort           = param.fSort;
-    fBSigned        = param.fBSigned;
-    for (Int_t i=0;i<9;i++) fDEDX[i] = param.fDEDX[i];
     for(Int_t i = 0;i<4;++i){
       fSDEDX[i]  = param.fSDEDX[i];
       fNCDEDX[i] = param.fNCDEDX[i];
@@ -320,8 +307,9 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     for(Int_t i = 0;i<12;++i)fOverlapLabels[i] = param.fOverlapLabels[i];
     fMAngular = param.fMAngular;
     fCircular = param.fCircular;
-    for(int i = 0;i<160;++i)fTrackPoints[i] =  param.fTrackPoints[i];
+    for(int i = 0;i<159;++i)fTrackPoints[i] =  param.fTrackPoints[i];
   }
+  memcpy(fShared,param.fShared,20*sizeof(UChar_t));
   return (*this);
 }
 //____________________________________________________
@@ -418,8 +406,8 @@ void AliTPCseed::Reset(Bool_t all)
 
   if (all){   
     for (Int_t i=200;i--;) SetClusterIndex2(i,-3);
-    if (!fClusterOwner) for (Int_t i=160;i--;) fClusterPointer[i]=0;
-    else                for (Int_t i=160;i--;) {delete fClusterPointer[i]; fClusterPointer[i]=0;}
+    if (!fClusterOwner) for (Int_t i=159;i--;) fClusterPointer[i]=0;
+    else                for (Int_t i=159;i--;) {delete fClusterPointer[i]; fClusterPointer[i]=0;}
   }
 
 }
@@ -444,7 +432,7 @@ void AliTPCseed::Modify(Double_t factor)
   fCurrentSigmaY2 = 0.000005;
   fCurrentSigmaZ2 = 0.000005;
   fNoCluster     = 0;
-  //fFirstPoint = 160;
+  //fFirstPoint = 159;
   //fLastPoint  = 0;
 }
 
@@ -986,8 +974,8 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   Int_t row0 = param->GetNRowLow();
   Int_t row1 = row0+param->GetNRowUp1();
 
-  Float_t amp[160];
-  Int_t   indexes[160];
+  Float_t amp[159];
+  Int_t   indexes[159];
   Int_t   ncl=0;
   //
   //
@@ -1188,8 +1176,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Int_t row0 = param->GetNRowLow();
   Int_t row1 = row0+param->GetNRowUp1();
 
-  Float_t amp[160];
-  Int_t   indexes[160];
+  Float_t amp[159];
+  Int_t   indexes[159];
   Int_t   ncl=0;
   Int_t   nclBelowThr = 0; // counts number of clusters below threshold
   //
@@ -1545,7 +1533,7 @@ Float_t  AliTPCseed::CookShape(Int_t type){
   //-----------------------------------------------------------------
   Float_t means=0;
   Float_t meanc=0;
-  for (Int_t i =0; i<160;i++)    {
+  for (Int_t i =0; i<159;i++)    {
     AliTPCTrackerPoint * point = GetTrackPoint(i);
     if (point==0) continue;
 
@@ -1588,7 +1576,7 @@ Int_t  AliTPCseed::RefitTrack(AliTPCseed *seed, AliExternalTrackParam * parin, A
 
   Float_t xmin=1000, xmax=-10000;
   Int_t imin=158, imax=0;
-  for (Int_t i=0;i<160;i++) {
+  for (Int_t i=0;i<159;i++) {
     AliTPCclusterMI *c=track->GetClusterPointer(i);
     if (!c || (track->GetClusterIndex(i) & 0x8000)) continue; 
     if (sector<0) sector = c->GetDetector();
@@ -1879,7 +1867,7 @@ Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, I
 //_______________________________________________________________________
 Int_t AliTPCseed::GetNumberOfClustersIndices() {
   Int_t ncls = 0;
-  for (int i=0; i < 160; i++) {
+  for (int i=0; i < 159; i++) {
     if ((fIndex[i] & 0x8000) == 0)
       ncls++;
   }
@@ -1891,7 +1879,9 @@ void AliTPCseed::Clear(Option_t*)
 {
   // formally seed may allocate memory for clusters (althought this should not happen for 
   // the seeds in the pool). Hence we need this method for fwd. compatibility
-  if (fClusterOwner) for (int i=160;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
+  if (fClusterOwner) for (int i=159;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
+  memset(fShared,0,20*sizeof(UChar_t));
+  ResetBit(0xffffffff);
 }
 
 TObject* AliTPCseed::Clone(const char* /*newname*/) const

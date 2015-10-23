@@ -112,7 +112,7 @@ protected:
   Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
   Int_t    fV0Indexes[3];     // kink indexes - minus = mother + daughter
 
-  ClassDef(AliTPCtrack,4)   // Time Projection Chamber reconstructed tracks
+  ClassDef(AliTPCtrack,5)   // Time Projection Chamber reconstructed tracks
 };
 
 #endif

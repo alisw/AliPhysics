@@ -83,7 +83,7 @@ Bool_t AliComplexCluster::IsSortable() const
 
 ClassImp(AliTPCExactPoint)
 ClassImp(AliTPCClusterPoint)
-ClassImp(AliTPCTrackerPoint)
+//ClassImp(AliTPCTrackerPoint)
 
 AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
   if(this!=&o){
@@ -96,7 +96,7 @@ AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
     fSigmaY = o.fSigmaY;
     fErrZ   = o.fErrZ;
     fErrY   = o.fErrY;
-    fIsShared = o.fIsShared;
+    //    fIsShared = o.fIsShared;
   }
   return *this;
 }

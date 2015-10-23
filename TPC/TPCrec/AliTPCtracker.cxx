@@ -208,20 +208,21 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
   track->SetRow((i&0x00ff0000)>>16);
   track->SetSector(sec);
   //  Int_t index = i&0xFFFF;
-  if (sec>=fkParam->GetNInnerSector()) track->SetRow(track->GetRow()+fkParam->GetNRowLow()); 
-  track->SetClusterIndex2(track->GetRow(), i);  
+  int row = track->GetRow();
+  if (sec>=fkParam->GetNInnerSector()) track->SetRow(row+fkParam->GetNRowLow()); 
+  track->SetClusterIndex2(row, i);  
   //track->fFirstPoint = row;
   //if ( track->fLastPoint<row) track->fLastPoint =row;
-  //  if (track->fRow<0 || track->fRow>160) {
+  //  if (track->fRow<0 || track->fRow>=kMaxRow) {
   //  printf("problem\n");
   //}
-  if (track->GetFirstPoint()>track->GetRow()) 
-    track->SetFirstPoint(track->GetRow());
-  if (track->GetLastPoint()<track->GetRow()) 
-    track->SetLastPoint(track->GetRow());
+  if (track->GetFirstPoint()>row) 
+    track->SetFirstPoint(row);
+  if (track->GetLastPoint()<row) 
+    track->SetLastPoint(row);
   
 
-  track->SetClusterPointer(track->GetRow(),c);  
+  track->SetClusterPointer(row,c);  
   //
 
   Double_t angle2 = track->GetSnp()*track->GetSnp();
@@ -230,8 +231,8 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
   //
   if (angle2<1) //PH sometimes angle2 is very big. To be investigated...
   {
-    angle2 = TMath::Sqrt(angle2/(1-angle2)); 
-    AliTPCTrackerPoint   &point =*(track->GetTrackPoint(track->GetRow()));
+    angle2 = TMath::Sqrt(angle2/(1-angle2));
+    AliTPCTrackerPoint   &point =*(track->GetTrackPoint(row));
     //
     point.SetSigmaY(c->GetSigmaY2()/track->GetCurrentSigmaY2());
     point.SetSigmaZ(c->GetSigmaZ2()/track->GetCurrentSigmaZ2());
@@ -243,7 +244,7 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     point.SetZ(track->GetZ());
     point.SetAngleY(angle2);
     point.SetAngleZ(track->GetTgl());
-    if (point.IsShared()){
+    if (track->IsShared(row)){
       track->SetErrorY2(track->GetErrorY2()*4);
       track->SetErrorZ2(track->GetErrorZ2()*4);
     }
@@ -2897,13 +2898,13 @@ Float_t AliTPCtracker::OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &su
   //  Int_t offset =0;
   Int_t firstpoint = TMath::Min(s1->GetFirstPoint(),s2->GetFirstPoint());
   Int_t lastpoint = TMath::Max(s1->GetLastPoint(),s2->GetLastPoint());
-  if (lastpoint>160) 
-    lastpoint =160;
+  if (lastpoint>=kMaxRow) 
+    lastpoint = kMaxRow-1;
   if (firstpoint<0) 
     firstpoint = 0;
   if (firstpoint>lastpoint) {
     firstpoint =lastpoint;
-    //    lastpoint  =160;
+    //    lastpoint  = kMaxRow-1;
   }
     
   
@@ -2936,7 +2937,7 @@ void  AliTPCtracker::SignShared(AliTPCseed * s1, AliTPCseed * s2)
   //Int_t firstpoint = TMath::Max(s1->GetFirstPoint(),s2->GetFirstPoint());
   //Int_t lastpoint = TMath::Min(s1->GetLastPoint(),s2->GetLastPoint());
   Int_t firstpoint = 0;
-  Int_t lastpoint = 160;
+  Int_t lastpoint = kMaxRow;
   //
   //  if (firstpoint>=lastpoint-5) return;;
 
@@ -2955,8 +2956,8 @@ void  AliTPCtracker::SignShared(AliTPCseed * s1, AliTPCseed * s2)
 	AliTPCTrackerPoint *p1  = s1->GetTrackPoint(i);
 	AliTPCTrackerPoint *p2  = s2->GetTrackPoint(i);; 
 	if (s1->IsActive()&&s2->IsActive()){
-	  p1->SetShared(kTRUE);
-	  p2->SetShared(kTRUE);
+	  s1->SetShared(i);
+	  s2->SetShared(i);
 	}	
       }
     }
@@ -3104,7 +3105,7 @@ void AliTPCtracker::RemoveUsed2(TObjArray * arr, Float_t factor1,  Float_t facto
     //
     Int_t found,foundable,shared;
     pt->GetClusterStatistic(first,last, found, foundable,shared,kFALSE); // better to get statistic in "high-dens"  region do't use full track as in line bellow
-    //    pt->GetClusterStatistic(0,160, found, foundable,shared,kFALSE);
+    //    pt->GetClusterStatistic(0,kMaxRow, found, foundable,shared,kFALSE);
     Bool_t itsgold =kFALSE;
     if (pt->GetESD()){
       Int_t dummy[12];
@@ -3177,7 +3178,7 @@ void AliTPCtracker::DumpClusters(Int_t iter, TObjArray *trackArray)
       continue;
     }    
     Bool_t isKink=pt->GetKinkIndex(0)!=0;
-    for (Int_t j=0; j<160; ++j) {
+    for (Int_t j=0; j<kMaxRow; ++j) {
       Int_t index=pt->GetClusterIndex2(j);
       if (index<0) continue;
       AliTPCclusterMI *c= pt->GetClusterPointer(j);
@@ -3376,7 +3377,7 @@ void AliTPCtracker::SignClusters(const TObjArray * arr, Float_t fnumber, Float_t
     //if (!(pt->IsActive())) continue;
     /*
     Int_t found,foundable,shared;    
-    pt->GetClusterStatistic(0,160,found, foundable,shared);
+    pt->GetClusterStatistic(0,kMaxRow,found, foundable,shared);
     if (shared/float(found)>0.3) {
       if (shared/float(found)>0.9 ){
 	//MarkSeedFree( arr->RemoveAt(i) );
@@ -3395,7 +3396,7 @@ void AliTPCtracker::SignClusters(const TObjArray * arr, Float_t fnumber, Float_t
       isok =kTRUE;
     
     if (isok)     
-      for (Int_t j=0; j<160; ++j) {	
+      for (Int_t j=0; j<kMaxRow; ++j) {	
 	Int_t index=pt->GetClusterIndex2(j);
 	if (index<0) continue;
 	AliTPCclusterMI *c= pt->GetClusterPointer(j);
@@ -3437,7 +3438,7 @@ void AliTPCtracker::SignClusters(const TObjArray * arr, Float_t fnumber, Float_t
     if ((dens>mindens && pt->GetNumberOfClusters()>minn) && chi<maxchi ){
       //Int_t noc=pt->GetNumberOfClusters();
       pt->SetBSigned(kTRUE);
-      for (Int_t j=0; j<160; ++j) {
+      for (Int_t j=0; j<kMaxRow; ++j) {
 
 	Int_t index=pt->GetClusterIndex2(j);
 	if (index<0) continue;
@@ -3793,7 +3794,7 @@ void AliTPCtracker::ReadSeeds(const AliESDEvent *const event, Int_t direction)
     seed->SetESD(esd);
     // sign clusters
     if (esd->GetKinkIndex(0)<=0){
-      for (Int_t irow=0;irow<160;irow++){
+      for (Int_t irow=0;irow<kMaxRow;irow++){
 	Int_t index = seed->GetClusterIndex2(irow);    
 	if (index >= 0){ 
 	  //
@@ -4700,7 +4701,7 @@ AliTPCseed *AliTPCtracker::MakeSeed(AliTPCseed *const track, Float_t r0, Float_t
   Int_t  sec0=0, sec1=0, sec2=0;
   Int_t index=-1;
   Int_t clindex;
-  for (Int_t i=0;i<160;i++){
+  for (Int_t i=0;i<kMaxRow;i++){
     if (track->GetClusterPointer(i)){
       index++;
       AliTPCTrackerPoint   *trpoint =track->GetTrackPoint(i);
@@ -4821,7 +4822,7 @@ AliTPCseed *AliTPCtracker::ReSeed(const AliTPCseed *track, Float_t r0, Float_t r
   //
   // Find the number of clusters
   Int_t nclusters = 0;
-  for (Int_t irow=0;irow<160;irow++){
+  for (Int_t irow=0;irow<kMaxRow;irow++){
     if (track->GetClusterIndex(irow)>0) nclusters++;
   }
   //
@@ -4836,7 +4837,7 @@ AliTPCseed *AliTPCtracker::ReSeed(const AliTPCseed *track, Float_t r0, Float_t r
   //
   // find track row position at given ratio of the length
   Int_t index=-1;
-  for (Int_t irow=0;irow<160;irow++){    
+  for (Int_t irow=0;irow<kMaxRow;irow++){    
     if (track->GetClusterIndex2(irow)<0) continue;
     index++;
     for (Int_t ipoint=0;ipoint<3;ipoint++){
@@ -4939,13 +4940,13 @@ AliTPCseed *AliTPCtracker::ReSeed(AliTPCseed *track,Int_t r0, Bool_t forward)
   //
   // forward direction
   if (forward){
-    for (Int_t irow=r0;irow<160;irow++){
+    for (Int_t irow=r0;irow<kMaxRow;irow++){
       if (track->GetClusterIndex(irow)>0){
 	row[0] = irow;
 	break;
       }
     }
-    for (Int_t irow=160;irow>r0;irow--){
+    for (Int_t irow=kMaxRow;irow>r0;irow--){
       if (track->GetClusterIndex(irow)>0){
 	row[2] = irow;
 	break;
@@ -5142,7 +5143,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
     track->GetDZ(GetX(),GetY(),GetZ(),GetBz(),dz);
     dz0[i]=dz[0];
     dz1[i]=dz[1];
-    for (Int_t icl=0; icl<160; icl++){
+    for (Int_t icl=0; icl<kMaxRow; icl++){
       AliTPCclusterMI * cl =  track->GetClusterPointer(icl);
       if (cl) {
 	xm[i]+=cl->GetX();
@@ -5202,7 +5203,7 @@ void  AliTPCtracker::FindMultiMC(const TObjArray * array, AliESDEvent */*esd*/, 
       
       Float_t sum =0;
       Float_t sums=0;
-      for (Int_t icl=0; icl<160; icl++){
+      for (Int_t icl=0; icl<kMaxRow; icl++){
 	AliTPCclusterMI * cl0 =  track0->GetClusterPointer(icl);
 	AliTPCclusterMI * cl1 =  track1->GetClusterPointer(icl);
 	if (cl0&&cl1) {
@@ -5281,7 +5282,7 @@ void  AliTPCtracker::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int_t
   const Double_t kCutP3=0.15;     // delta tgl(theta) cut 0.15
   const Double_t kCutAlpha=0.15;  // delta alpha cut
   Int_t firstpoint = 0;
-  Int_t lastpoint = 160;
+  Int_t lastpoint = kMaxRow;
   //
   Int_t nentries = array->GetEntriesFast();  
   AliExternalTrackParam *params      = new AliExternalTrackParam[nentries];
@@ -5953,7 +5954,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       }
       
       kink->SetLabel(CookLabel(ktrack0,0.4,0,row0),0);
-      kink->SetLabel(CookLabel(ktrack1,0.4,row0,160),1);
+      kink->SetLabel(CookLabel(ktrack1,0.4,row0,kMaxRow),1);
       if (dens00>dens10){
 	kink->SetTPCDensity(dens00,0,0);
 	kink->SetTPCDensity(dens01,0,1);
@@ -6675,7 +6676,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       }
       
       kink->SetLabel(CookLabel(ktrack0,0.4,0,row0),0);
-      kink->SetLabel(CookLabel(ktrack1,0.4,row0,160),1);
+      kink->SetLabel(CookLabel(ktrack1,0.4,row0,kMaxRow),1);
       if (dens00>dens10){
 	kink->SetTPCDensity(dens00,0,0);
 	kink->SetTPCDensity(dens01,0,1);
@@ -7147,7 +7148,7 @@ Int_t AliTPCtracker::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, const A
   kink.SetTPCncls(param0[index].GetNumberOfClusters(),0);
   kink.SetTPCncls(param1[index].GetNumberOfClusters(),1);
   kink.SetLabel(CookLabel(&mother,0.4, 0,kink.GetTPCRow0()),0);
-  kink.SetLabel(CookLabel(&daughter,0.4, kink.GetTPCRow0(),160),1);
+  kink.SetLabel(CookLabel(&daughter,0.4, kink.GetTPCRow0(),kMaxRow),1);
   mother.SetLabel(kink.GetLabel(0));
   daughter.SetLabel(kink.GetLabel(1));
 
@@ -8269,18 +8270,18 @@ void AliTPCtracker::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
     //t->Dump();
     return ;
   }
-  Int_t lb[160];
-  Int_t mx[160];
-  AliTPCclusterMI *clusters[160];
+  Int_t lb[kMaxRow];
+  Int_t mx[kMaxRow];
+  AliTPCclusterMI *clusters[kMaxRow];
   //
-  for (Int_t i=0;i<160;i++) {
+  for (Int_t i=0;i<kMaxRow;i++) {
     clusters[i]=0;
     lb[i]=mx[i]=0;
   }
 
   Int_t i;
   Int_t current=0;
-  for (i=0; i<160 && current<noc; i++) {
+  for (i=0; i<kMaxRow && current<noc; i++) {
      
      Int_t index=t->GetClusterIndex2(i);
      if (index<=0) continue; 
@@ -8321,7 +8322,7 @@ void AliTPCtracker::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
      Int_t tail=Int_t(0.10*noc);
      max=0;
      Int_t ind=0;
-     for (i=1; i<160&&ind<tail; i++) {
+     for (i=1; i<kMaxRow&&ind<tail; i++) {
        //       AliTPCclusterMI *c=clusters[noc-i];
        AliTPCclusterMI *c=clusters[i];
        if (!c) continue;
@@ -8352,18 +8353,18 @@ Int_t AliTPCtracker::CookLabel(AliTPCseed *const t, Float_t wrong,Int_t first, I
     //t->Dump();
     return -1;
   }
-  Int_t lb[160];
-  Int_t mx[160];
-  AliTPCclusterMI *clusters[160];
+  Int_t lb[kMaxRow];
+  Int_t mx[kMaxRow];
+  AliTPCclusterMI *clusters[kMaxRow];
   //
-  for (Int_t i=0;i<160;i++) {
+  for (Int_t i=0;i<kMaxRow;i++) {
     clusters[i]=0;
     lb[i]=mx[i]=0;
   }
 
   Int_t i;
   Int_t current=0;
-  for (i=0; i<160 && current<noc; i++) {
+  for (i=0; i<kMaxRow && current<noc; i++) {
     if (i<first) continue;
     if (i>last)  continue;
      Int_t index=t->GetClusterIndex2(i);
@@ -8405,7 +8406,7 @@ Int_t AliTPCtracker::CookLabel(AliTPCseed *const t, Float_t wrong,Int_t first, I
      Int_t tail=Int_t(0.10*noc);
      max=0;
      Int_t ind=0;
-     for (i=1; i<160&&ind<tail; i++) {
+     for (i=1; i<kMaxRow&&ind<tail; i++) {
        //       AliTPCclusterMI *c=clusters[noc-i];
        AliTPCclusterMI *c=clusters[i];
        if (!c) continue;
@@ -8460,9 +8461,9 @@ void AliTPCtracker::MakeESDBitmaps(AliTPCseed *t, AliESDtrack *esd)
     cluster = t->GetClusterPointer(iter);
     if (cluster) {
       clusterMap.SetBitNumber(iter, kTRUE);
-      point = t->GetTrackPoint(iter);
-      if (point->IsShared())
-	sharedMap.SetBitNumber(iter,kTRUE);
+      //RS      point = t->GetTrackPoint(iter);
+      //RS      if (point->IsShared()) sharedMap.SetBitNumber(iter,kTRUE);
+      if (t->IsShared(iter)) sharedMap.SetBitNumber(iter,kTRUE); // RS shared flag moved to seed
     }
     if (t->GetClusterIndex(iter) >= 0 && (t->GetClusterIndex(iter) & 0x8000) == 0) {
       fitMap.SetBitNumber(iter, kTRUE);
@@ -8707,8 +8708,8 @@ void  AliTPCtracker::TrackFollowingHLT(TObjArray *const arr )
 
   Int_t nseed=arr->GetEntriesFast();
   //cout<<"Parallel tracking My.."<<endl;
-  double shapeY2[160], shapeZ2[160];
-  Int_t clusterIndex[160];
+  double shapeY2[kMaxRow], shapeZ2[kMaxRow];
+  Int_t clusterIndex[kMaxRow];
  
   for (Int_t iSeed=0; iSeed<nseed; iSeed++) {
     //if( iSeed!=1 ) continue;

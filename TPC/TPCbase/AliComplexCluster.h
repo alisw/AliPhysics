@@ -61,9 +61,10 @@ class AliTPCTrackerPoint  {
     fSigmaZ(0),
     fSigmaY(0),
     fErrZ(0),
-    fErrY(0),
-    fIsShared(0){}
-  virtual ~AliTPCTrackerPoint(){}
+    fErrY(0)
+      // ,fIsShared(0)
+    {}
+    ~AliTPCTrackerPoint(){}
   AliTPCTrackerPoint &operator=(const AliTPCTrackerPoint& o);
   Float_t  GetX() const  {return (fTX*0.01);}
   Float_t  GetZ() const {return (fTZ*0.01);}
@@ -86,8 +87,8 @@ class AliTPCTrackerPoint  {
   void     SetSigmaZ(Float_t sigmaz) {fSigmaZ = UChar_t(TMath::Nint(sigmaz*50.));}
   void     SetSigmaY(Float_t sigmay) {fSigmaY = UChar_t(TMath::Nint(sigmay*50.));}
 
-  Char_t   IsShared() const {return fIsShared;}
-  void     SetShared(Char_t s) {fIsShared=s;}
+  //  Char_t   IsShared() const {return fIsShared;}
+  //  void     SetShared(Char_t s) {fIsShared=s;}
 
   //
  private:
@@ -96,14 +97,14 @@ class AliTPCTrackerPoint  {
   Short_t   fTY;        ///< current prolongation in Y  in cm - 10 mum prec.
   Char_t    fTAngleZ;    ///< angle
   Char_t    fTAngleY;    ///< angle
-  UShort_t  fSigmaZ;     ///< shape  Z - normalised shape - normaliziation 1 - precision 2 percent
-  UShort_t  fSigmaY;     ///< shape  Y - normalised shape - normaliziation 1 - precision 2 percent
-  UShort_t  fErrZ;       ///< z error estimate - in  mm - 50 mum precision
-  UShort_t  fErrY;       ///< y error estimate - in  mm - 50 mum precision
-  Char_t   fIsShared;     ///< indicate sharing of the point between several tracks
+  UChar_t   fSigmaZ;     ///< shape  Z - normalised shape - normaliziation 1 - precision 2 percent
+  UChar_t   fSigmaY;     ///< shape  Y - normalised shape - normaliziation 1 - precision 2 percent
+  UChar_t   fErrZ;       ///< z error estimate - in  mm - 50 mum precision
+  UChar_t   fErrY;       ///< y error estimate - in  mm - 50 mum precision
+  //  Char_t   fIsShared;     ///< indicate sharing of the point between several tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliTPCTrackerPoint, 2);
+  //  ClassDef(AliTPCTrackerPoint, 2);
   /// \endcond  
 };
 
