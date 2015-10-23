@@ -94,21 +94,29 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
- install(FILES ${HDRS} DESTINATION include)
+install(FILES ${HDRS} DESTINATION include)
 
- # dHLTdumpraw executable
-# Additional include folders in alphabetical order except ROOT
-include_directories(
-                    ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
-                   )
+if(ZEROMQ_FOUND) 
 
- 
-set(SRCS
-    hltdimserver.cxx
-   )
+  # Additional include folders in alphabetical order except ROOT
+  include_directories(
+                      ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
+                      ${AliRoot_SOURCE_DIR}/HLT/global
+                      )
 
-add_executable(hltdimserver ${SRCS})
-target_link_libraries(hltdimserver HLTbase AliHLTHOMER RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
-
-# Installation of hltdimserver
-install(TARGETS hltdimserver RUNTIME DESTINATION bin)
+  add_executable(ZMQDIMlumiregServer ZMQDIMlumiregServer.cxx)
+  target_link_libraries(ZMQDIMlumiregServer HLTbase AliHLTHOMER AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  add_executable(ZMQHOMERproxy ZMQHOMERproxy.cxx)
+  target_link_libraries(ZMQHOMERproxy HLTbase AliHLTHOMER AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  add_executable(ZMQROOTmerger ZMQROOTmerger.cxx)
+  target_link_libraries(ZMQROOTmerger HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  add_executable(ZMQhistSource ZMQhistSource.cxx)
+  target_link_libraries(ZMQhistSource HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  add_executable(ZMQhistViewer ZMQhistViewer.cxx)
+  target_link_libraries(ZMQhistViewer HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  add_executable(ZMQproxy ZMQproxy.cxx)
+  target_link_libraries(ZMQproxy HLTbase AliHLTGlobal RAWDatabase Geom Graf MathCore Net Tree EG Gpad Matrix Minuit Physics VMC Thread STEERBase XMLParser Graf3d RIO Hist Core)
+  
+  # Installation of 
+  install(TARGETS ZMQHOMERproxy ZMQROOTmerger ZMQhistSource ZMQhistViewer ZMQproxy RUNTIME DESTINATION bin)
+endif(ZEROMQ_FOUND)

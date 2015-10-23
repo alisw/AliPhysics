@@ -153,6 +153,10 @@ private:
 	TString fServerName;  /// The server name to use for this DIM server.
 	TString fVertexServiceName;  /// The name of the vertex service to register.
 	UInt_t fPublishPeriod;  /// The period between publishing data points to DIM in milliseconds.
+  
+  //hold histograms
+  TH1F* fPrimary[3]; 
+  TH1F* fPrimaryDefMult[3]; 
 	
 	virtual const char* Class_Name() { return "AliHLTDCSPublisherServer"; }
 };
@@ -162,12 +166,14 @@ AliHLTDCSPublisherServer::AliHLTDCSPublisherServer() :
 	AliHLTLogging(),
   fZMQcontext(NULL),
   fZMQin(NULL),
-  fZMQtimeout(10000),
+  fZMQtimeout(1000),
 	fZMQconfigIN(),
 	fDimDns(DEFAULT_DIM_DNS),
 	fServerName(DEFAULT_SERVER_NAME),
 	fVertexServiceName(DEFAULT_VERTEX_SERVICE_NAME),
-	fPublishPeriod(1000)
+	fPublishPeriod(1000),
+  fPrimary(),
+  fPrimaryDefMult()
 {
 	// Default constructor.
 }
@@ -300,7 +306,7 @@ int AliHLTDCSPublisherServer::Init(int argc, char** argv)
 	
 	if (zmqSource == NULL)
 	{
-		HLTError("No HOMER source hostname or port was specified with the -source|-s option.");
+		HLTError("No ZMQ source was specified with the -source|-s option.");
 		PrintUsage();
 		return CMDLINE_ERROR;
 	}
@@ -313,6 +319,9 @@ int AliHLTDCSPublisherServer::Init(int argc, char** argv)
   fZMQcontext = zmq_ctx_new();
   if (alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data()) < 0)
     return -1;
+  
+  for(int i=0;i<3;i++){fPrimary[i]=NULL;}
+  for(int i=0;i<3;i++){fPrimaryDefMult[i]=NULL;}
 
 	return EXIT_SUCCESS;
 }
@@ -324,7 +333,10 @@ int AliHLTDCSPublisherServer::Run()
 	
 	HLTImportant("Starting HLT DCS publishing server");
 	
-	// Create and register the DIM server instance.
+	AliLuminosityRegion lumiRegion;
+	InitLumiRegionAsInvalid(lumiRegion);
+
+	//Create and register the DIM server instance.
 	AliHLTDimServer dimServer(fServerName.Data());
 	if (dimServer.Init(fDimDns.Data()) != 0)
 	{
@@ -334,8 +346,6 @@ int AliHLTDCSPublisherServer::Run()
 	HLTInfo("Registered DIM server with DNS \"%s\"", fDimDns.Data());
 	
 	// Create and register the service.
-	AliLuminosityRegion lumiRegion;
-	InitLumiRegionAsInvalid(lumiRegion);
 	AliHLTDimServer::AliHLTDimService* service = new AliHLTDimServer::AliHLTDimService("F:8", &lumiRegion, sizeof(lumiRegion), fVertexServiceName.Data());
 	if (dimServer.RegisterService(service) != 0)
 	{
@@ -354,8 +364,8 @@ int AliHLTDCSPublisherServer::Run()
 	
 	while (not AliHLTSignalHandler::TerminationSignaled())
 	{
-    if (SetLuminosityRegion(lumiRegion)){
-      HLTDebug("Update luminosity region: Beam spot (x [um], y [um], z [mm]) = (%f, %f, %f);"
+    if (SetLuminosityRegion(lumiRegion)==0){
+      HLTInfo("Update luminosity region: Beam spot (x [um], y [um], z [mm]) = (%f, %f, %f);"
           " size (x [um], y [um], z [mm]) = (%f, %f, %f); tilt (dx/dz [urad], dy/dz [urad]) = (%f, %f).",
           lumiRegion.fX, lumiRegion.fY, lumiRegion.fZ,
           lumiRegion.fSizeX, lumiRegion.fSizeY, lumiRegion.fSizeZ,
@@ -367,7 +377,14 @@ int AliHLTDCSPublisherServer::Run()
     else
 		{
 			InitLumiRegionAsInvalid(lumiRegion);
+      HLTInfo("Update luminosity region: Beam spot (x [um], y [um], z [mm]) = (%f, %f, %f);"
+          " size (x [um], y [um], z [mm]) = (%f, %f, %f); tilt (dx/dz [urad], dy/dz [urad]) = (%f, %f).",
+          lumiRegion.fX, lumiRegion.fY, lumiRegion.fZ,
+          lumiRegion.fSizeX, lumiRegion.fSizeY, lumiRegion.fSizeZ,
+          lumiRegion.fDxdz, lumiRegion.fDydz
+          );
 			service->Update();
+      gSystem->Sleep(fPublishPeriod);
 		}
 	}
 	
@@ -388,6 +405,14 @@ void AliHLTDCSPublisherServer::InitLumiRegionAsInvalid(AliLuminosityRegion& lumi
 {
 	// Initialises the luminosity regions with values indicating an invalid data point.
 	
+  //reset the histograms
+  for (int i=0;i<3;i++){
+      delete fPrimary[i]; fPrimary[i]=NULL;
+  }
+  for (int i=0;i<3;i++){
+      delete fPrimaryDefMult[i]; fPrimaryDefMult[i]=NULL;
+  }
+
 	memset(&lumiRegion, 0x0, sizeof(lumiRegion));
 	lumiRegion.fX = -999.;
 	lumiRegion.fY = -999.;
@@ -404,10 +429,12 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
 {
 	// Sets the values for the luminosity region.
 	int rc = 0;
-  std::string primaryName[6] = {"hXTRKVtx", "hYTRKVtx", "hZTRKVtx" };
-  std::string primaryDefMultName[3] = {"hXTRKDefMult", "hYTRKDefMult", "hXTRKDefMult"};
-  TH1F* primary[3]; for(int i=0;i<3;i++){primary[i]=NULL;}
-  TH1F* primaryDefMult[3]; for(int i=0;i<3;i++){primaryDefMult[i]=NULL;}
+  std::string primaryName[3] = {"hXTRKVtx", "hYTRKVtx", "hZTRKVtx" };
+  std::string primaryDefMultName[3] = {"hXTRKDefMult", "hYTRKDefMult", "hZTRKDefMult"};
+
+  //invalidate previous values
+	InitLumiRegionAsInvalid(lumiRegion);
+
 
   //send a request if we are using REQ
   int sockettype = alizmq_socket_type(fZMQin);
@@ -431,6 +458,7 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
   if (!sockets[0].revents & ZMQ_POLLIN)
   {
     //server died, reinit socket
+    HLTInfo("server not responding...");
     alizmq_socket_init(fZMQin, fZMQcontext, fZMQconfigIN.Data());
     return 0;
   }
@@ -439,56 +467,73 @@ int AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegio
   alizmq_msg_recv(&message, fZMQin, 0);
 
   //sort incoming histograms into proper slots
+  int numberOfUsefulHistograms=0;
   for (aliZMQmsg::iterator i=message.begin(); i!=message.end(); ++i)
   {
+    //Printf("have some data!");
     TObject* object;
     alizmq_msg_iter_data(i, object);
-    if (!object) continue;
+    if (!object) {
+      //Printf("no tobject!");
+      continue;
+    }
+    //Printf("have an TObject");
     TH1F* hist = dynamic_cast<TH1F*>(object);
     if (!hist) {delete object; continue;}
     const char* name = hist->GetName();
+    //Printf("is a TH1F named: %s",name);
     bool useful=false;
     for (int i=0;i<3;i++){
       if (primaryName[i].compare(name)==0) {
-        primary[i]=hist;
+        delete fPrimary[i]; fPrimary[i]=NULL;
+        //Printf("matched name: %s, i: %i",name,i);
+        fPrimary[i]=hist;
         useful=true;
+        numberOfUsefulHistograms++;
       }
     }
     for (int i=0;i<3;i++){
       if (primaryDefMultName[i].compare(name)==0){
-        primaryDefMult[i]=hist;
+        delete fPrimaryDefMult[i]; fPrimaryDefMult[i]=NULL;
+        //Printf("matched name: %s, i: %i",name,i);
+        fPrimaryDefMult[i]=hist;
         useful=true;
+        numberOfUsefulHistograms++;
       }
     }
-    if (!useful) delete hist;
+    if (!useful) delete object;
   }
+  
   alizmq_msg_close(&message);
 
-  // Now get the Mean and RMS values as the centroid and beam size values,
-	// Scale the values from centimetres to the required units of microns and mm.
-	InitLumiRegionAsInvalid(lumiRegion);
-	
+  if (numberOfUsefulHistograms!=6) {
+    Printf("received %i histograms!, should be 6",numberOfUsefulHistograms);
+    return 1;
+  }
+
+  Printf("%p %p %p %p %p %p", fPrimary[0],fPrimary[1],fPrimary[2],fPrimaryDefMult[0],fPrimaryDefMult[1],fPrimaryDefMult[2]);
+  if (!(fPrimary[0] && fPrimary[1] && fPrimary[2] && fPrimaryDefMult[0] && fPrimaryDefMult[1] && fPrimaryDefMult[2]))
+    return 0;
+  Printf("starting fit");
+
   //do the fits
   Float_t meanVtx[3] ={0.,0.,0.};
   Float_t sigmaVtx[3] ={0.,0.,0.};
+  /*Int_t fitVtxResults =*/ AliHLTLumiRegComponent::FitPositions(fPrimary, meanVtx, sigmaVtx);
   Float_t meanLR[3] ={0.,0.,0.};
   Float_t sigmaLR[3] ={0.,0.,0.};
-  Int_t fitVtxResults = AliHLTLumiRegComponent::FitPositions(primary, meanVtx, sigmaVtx);
-  Int_t lumiRegResults = AliHLTLumiRegComponent::LuminousRegionExtraction(primaryDefMult, meanLR, sigmaLR);
-  if (lumiRegResults == 2) HLTWarning("Problems in the luminous region fit, using unconvoluted sigma");
-  if (lumiRegResults == 0) HLTWarning("Problems in the luminous region fit, returning 0");
-  
-  lumiRegion.fX = meanLR[0];
-  lumiRegion.fSizeX = sigmaLR[0];
-  lumiRegion.fY = meanLR[1];
-  lumiRegion.fSizeY = sigmaLR[1];
-  lumiRegion.fZ = meanLR[2];
-  lumiRegion.fSizeZ = meanLR[3];
-	
+  Int_t lumiRegResults = AliHLTLumiRegComponent::LuminousRegionExtraction(fPrimaryDefMult, meanLR, sigmaLR);
+
+  lumiRegion.fX = meanVtx[0];
+  lumiRegion.fSizeX = (lumiRegResults==1 || lumiRegResults==3) ? sigmaVtx[0] : sigmaLR[0];
+  lumiRegion.fY = meanVtx[1];
+  lumiRegion.fSizeY = (lumiRegResults==2 || lumiRegResults==3) ? sigmaVtx[1] : sigmaLR[1];
+  lumiRegion.fZ = meanVtx[2];
+  lumiRegion.fSizeZ = sigmaVtx[2];
 	//TODO: for now just fill -999 into the tilt angles since they are not yet calculated.
 	lumiRegion.fDxdz = -999.;
 	lumiRegion.fDydz = -999.;
-	
+  return 0;
 }
 
 void AliHLTDCSPublisherServer::PrintUsage(bool asError)
