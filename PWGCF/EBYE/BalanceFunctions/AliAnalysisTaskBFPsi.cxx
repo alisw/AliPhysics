@@ -44,6 +44,8 @@
 #include "AliBalanceEbyE.h"
 #include "AliBalancePsi.h"
 #include "AliAnalysisTaskTriggeredBF.h"
+#include "TFile.h"
+#include <iostream>
 
 
 // Analysis task for the BF vs Psi code
