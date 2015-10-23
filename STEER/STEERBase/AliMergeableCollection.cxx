@@ -75,15 +75,28 @@ AliMergeableCollection::Adopt(TObject* obj)
 }
 
 //_____________________________________________________________________________
+void
+AliMergeableCollection::CorrectIdentifier(TString& sidentifier)
+{
+  /// Insure identifier has the right number of slashes...
+  
+  if ( ! sidentifier.IsNull() )
+  {
+    if ( ! sidentifier.EndsWith("/") ) sidentifier.Append("/");
+    if ( ! sidentifier.BeginsWith("/") ) sidentifier.Prepend("/");
+    sidentifier.ReplaceAll("//","/");
+  }
+}
+
+//_____________________________________________________________________________
 Bool_t 
 AliMergeableCollection::Adopt(const char* identifier, TObject* obj)
 {
   /// Adopt a given object, and associate it with pair key
   TString sidentifier(identifier);
-  if ( ! sidentifier.IsNull() ){
-    if ( ! sidentifier.EndsWith("/") ) sidentifier.Append("/");
-    if ( ! sidentifier.BeginsWith("/") ) sidentifier.Prepend("/");
-  }
+  
+  CorrectIdentifier(sidentifier);
+  
   return InternalAdopt(sidentifier.Data(),obj);
 }
 
@@ -210,11 +223,30 @@ AliMergeableCollection::CreateIterator(Bool_t direction) const
 
 //_____________________________________________________________________________
 AliMergeableCollectionProxy*
-AliMergeableCollection::CreateProxy(const char* identifier)
+AliMergeableCollection::CreateProxy(const char* identifier, Bool_t createIfNeeded)
 {
-  /// Create a proxy starting at identified
-  THashList* list = static_cast<THashList*>(Map()->GetValue(identifier));
-  if (!list) return 0x0;
+  /// Create a proxy starting at identifier.
+  /// If createIfNeeded is true, then the identifier is inserted into
+  /// the collection if it does not exist yet (in which case this method always
+  /// returns a non null proxy)
+  
+  TString sidentifier(identifier);
+  CorrectIdentifier(sidentifier);
+
+  THashList* list = static_cast<THashList*>(Map()->GetValue(sidentifier));
+  if (!list)
+  {
+    if (!createIfNeeded)
+    {
+      return 0x0;
+    }
+    
+    list = new THashList;
+    list->SetOwner(kTRUE);
+
+    Map()->Add(new TObjString(sidentifier),list);
+    list->SetName(sidentifier);
+  }
   return new AliMergeableCollectionProxy(*this,*list);
 }
 
@@ -1528,13 +1560,24 @@ AliMergeableCollectionProxy::AliMergeableCollectionProxy(AliMergeableCollection&
                                                          THashList& list)
 : fOC(oc), fList(list)
 {
-  
+  fName = fList.GetName();
 }
 
 //_____________________________________________________________________________
 Bool_t AliMergeableCollectionProxy::Adopt(TObject* obj)
 {
   return fOC.Adopt(fList.GetName(),obj);
+}
+
+//_____________________________________________________________________________
+Bool_t
+AliMergeableCollectionProxy::Adopt(const char* identifier, TObject* obj)
+{
+  /// Adopt a given object, and associate it with pair key
+  
+  TString path;
+  path.Form("%s%s",fList.GetName(),identifier);
+  return fOC.Adopt(path,obj);
 }
 
 //_____________________________________________________________________________
