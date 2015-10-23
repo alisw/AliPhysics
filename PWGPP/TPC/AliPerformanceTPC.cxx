@@ -212,8 +212,6 @@ void AliPerformanceTPC::Init()
   //
     fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
     if(!fUseSparse) fFolderObj = new TObjArray;
- 
-    
   // set pt bins
   Int_t nPtBins = 50;
   Double_t ptMin = 1.e-2, ptMax = 20.;
@@ -331,7 +329,7 @@ void AliPerformanceTPC::Init()
   
     if(fUseSparse){
         fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
-        fTPCTrackHisto->SetBinEdges(7,binsPt);
+        //fTPCTrackHisto->SetBinEdges(7,binsPt);
         fTPCTrackHisto->GetAxis(0)->SetTitle("nClust");
         fTPCTrackHisto->GetAxis(1)->SetTitle("chi2PerClust");
         fTPCTrackHisto->GetAxis(2)->SetTitle("nClust/nFindableClust");
@@ -751,6 +749,7 @@ void AliPerformanceTPC::Analyse()
     //
     TH1::AddDirectory(kFALSE);
     TH1::SetDefaultSumw2(kFALSE);
+    TH1::StatOverflows(kFALSE);
     TObjArray *aFolderObj = new TObjArray;
 
     if(fUseSparse){
@@ -850,6 +849,24 @@ void AliPerformanceTPC::Analyse()
         aFolderObj=0;
     }
     else{
+        h_tpc_event_recvertex_0->GetXaxis()->SetRange(1,h_tpc_event_recvertex_0->GetXaxis()->GetNbins());
+        h_tpc_event_recvertex_1->GetXaxis()->SetRange(1,h_tpc_event_recvertex_1->GetXaxis()->GetNbins());
+        h_tpc_event_recvertex_2->GetXaxis()->SetRange(1,h_tpc_event_recvertex_2->GetXaxis()->GetNbins());
+        h_tpc_event_recvertex_3->GetXaxis()->SetRange(1,h_tpc_event_recvertex_3->GetXaxis()->GetNbins());
+        h_tpc_event_recvertex_4->GetXaxis()->SetRange(1,h_tpc_event_recvertex_4->GetXaxis()->GetNbins());
+        h_tpc_event_recvertex_5->GetXaxis()->SetRange(1,h_tpc_event_recvertex_5->GetXaxis()->GetNbins());
+        h_tpc_event_6->GetXaxis()->SetRange(1,h_tpc_event_6->GetXaxis()->GetNbins());
+        
+        h_tpc_track_all_recvertex_3_5_7->GetXaxis()->SetRange(1,h_tpc_track_all_recvertex_3_5_7->GetXaxis()->GetNbins());
+        h_tpc_track_all_recvertex_3_5_7->GetYaxis()->SetRange(1,h_tpc_track_all_recvertex_3_5_7->GetYaxis()->GetNbins());
+        h_tpc_track_all_recvertex_3_5_7->GetZaxis()->SetRange(1,h_tpc_track_all_recvertex_3_5_7->GetZaxis()->GetNbins());
+        h_tpc_track_pos_recvertex_3_5_7->GetXaxis()->SetRange(1,h_tpc_track_pos_recvertex_3_5_7->GetXaxis()->GetNbins());
+        h_tpc_track_pos_recvertex_3_5_7->GetYaxis()->SetRange(1,h_tpc_track_pos_recvertex_3_5_7->GetYaxis()->GetNbins());
+        h_tpc_track_pos_recvertex_3_5_7->GetZaxis()->SetRange(1,h_tpc_track_pos_recvertex_3_5_7->GetZaxis()->GetNbins());
+        h_tpc_track_neg_recvertex_3_5_7->GetXaxis()->SetRange(1,h_tpc_track_neg_recvertex_3_5_7->GetXaxis()->GetNbins());
+        h_tpc_track_neg_recvertex_3_5_7->GetYaxis()->SetRange(1,h_tpc_track_neg_recvertex_3_5_7->GetYaxis()->GetNbins());
+        h_tpc_track_neg_recvertex_3_5_7->GetZaxis()->SetRange(1,h_tpc_track_neg_recvertex_3_5_7->GetZaxis()->GetNbins());
+        
         printf("exportToFolder\n");
         fAnalysisFolder = ExportToFolder(fFolderObj);
     }
@@ -955,8 +972,7 @@ TTree* AliPerformanceTPC::CreateSummary()
 
 void AliPerformanceTPC::FillEventHistogram(double *vTPCEvent){
 
-    h_tpc_event_6->Fill(vTPCEvent[6]);
-    if(vTPCEvent[6]>0.001){
+    if(vTPCEvent[6] > 0.999){
         h_tpc_event_recvertex_0->Fill(vTPCEvent[0]);
         h_tpc_event_recvertex_1->Fill(vTPCEvent[1]);
         h_tpc_event_recvertex_2->Fill(vTPCEvent[2]);
@@ -964,16 +980,20 @@ void AliPerformanceTPC::FillEventHistogram(double *vTPCEvent){
         h_tpc_event_recvertex_4->Fill(vTPCEvent[4]);
         h_tpc_event_recvertex_5->Fill(vTPCEvent[5]);
     }
+    h_tpc_event_6->Fill(vTPCEvent[6]);
 
 }
 
 void AliPerformanceTPC::FillTrackHistogram(double *vTPCTrackHisto){
 
+    if(vTPCTrackHisto[8] < -1.5 || vTPCTrackHisto[8] > 1.5) return;
+    if(vTPCTrackHisto[9] < 0.5 || vTPCTrackHisto[9] > 1.5) return;
+
+    double q = vTPCTrackHisto[8];
+
     h_tpc_track_all_recvertex_5_8->Fill(vTPCTrackHisto[5],vTPCTrackHisto[8]);
     h_tpc_track_all_recvertex_1_5_7->Fill(vTPCTrackHisto[1],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     h_tpc_track_all_recvertex_2_5_7->Fill(vTPCTrackHisto[2],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    
-    double q = vTPCTrackHisto[8];
     
     h_tpc_track_all_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     if(q > 0) h_tpc_track_pos_recvertex_0_5_7->Fill(vTPCTrackHisto[0],vTPCTrackHisto[5],vTPCTrackHisto[7]);
@@ -986,9 +1006,10 @@ void AliPerformanceTPC::FillTrackHistogram(double *vTPCTrackHisto){
     h_tpc_track_all_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     if(q > 0) h_tpc_track_pos_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
     else h_tpc_track_neg_recvertex_4_5_7->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[7]);
-    
+
     if(q > 0)h_tpc_track_pos_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
     else h_tpc_track_neg_recvertex_3_5_6->Fill(vTPCTrackHisto[3],vTPCTrackHisto[5],vTPCTrackHisto[6]);
+    
     if(q > 0)h_tpc_track_pos_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
     else h_tpc_track_neg_recvertex_4_5_6->Fill(vTPCTrackHisto[4],vTPCTrackHisto[5],vTPCTrackHisto[6]);
     

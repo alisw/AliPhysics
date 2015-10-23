@@ -107,13 +107,24 @@ AliPerformanceMatch::~AliPerformanceMatch()
 {
   // destructor
    
-  if(fResolHisto) delete fResolHisto; fResolHisto=0;     
-  if(fPullHisto)  delete fPullHisto;  fPullHisto=0;
-  if(fTrackingEffHisto) delete fTrackingEffHisto; fTrackingEffHisto = 0x0;
-  if(fTPCConstrain) delete fTPCConstrain; fTPCConstrain = 0x0;
+    if(fResolHisto) delete fResolHisto; fResolHisto=0;
+    if(fPullHisto)  delete fPullHisto;  fPullHisto=0;
+    if(fTrackingEffHisto) delete fTrackingEffHisto; fTrackingEffHisto = 0x0;
+    if(fTPCConstrain) delete fTPCConstrain; fTPCConstrain = 0x0;
   
-  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
-  if(fFolderObj) delete fFolderObj; fFolderObj=0;
+    if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+    if(fFolderObj) delete fFolderObj; fFolderObj=0;
+    
+    if(h_tpc_match_trackingeff_all_2_3) delete h_tpc_match_trackingeff_all_2_3; h_tpc_match_trackingeff_all_2_3=0;
+    if(h_tpc_match_trackingeff_tpc_2_3) delete h_tpc_match_trackingeff_tpc_2_3; h_tpc_match_trackingeff_tpc_2_3=0;
+    if(h_tpc_match_pull_2_7) delete h_tpc_match_pull_2_7; h_tpc_match_pull_2_7=0;
+    if(h_tpc_match_pull_4_7) delete h_tpc_match_pull_4_7; h_tpc_match_pull_4_7 = 0;
+    if(h_tpc_match_pull_0_7) delete h_tpc_match_pull_0_7; h_tpc_match_pull_0_7 = 0;
+    if(h_tpc_match_pull_0_7) delete h_tpc_match_pull_0_7; h_tpc_match_pull_0_7=0;
+    if(h_tpc_match_pull_1_7) delete h_tpc_match_pull_1_7; h_tpc_match_pull_1_7 = 0;
+    if(h_tpc_match_pull_3_7) delete h_tpc_match_pull_3_7; h_tpc_match_pull_3_7 = 0;
+    if(h_tpc_constrain_tpc_0_2_3) delete h_tpc_constrain_tpc_0_2_3; h_tpc_constrain_tpc_0_2_3 = 0;
+    
 }
 
 //_____________________________________________________________________________
@@ -155,7 +166,7 @@ void AliPerformanceMatch::Init(){
     Double_t maxResolHisto[9]={ 1., 1., 0.03, 0.03, 0.2, 2.*TMath::Pi(), 1.5, ptMax,2};
     
     fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_pt:phi:eta:pt:isRec",9,binsResolHisto,minResolHisto,maxResolHisto);
-    fResolHisto->SetBinEdges(7,binsPt);
+    //fResolHisto->SetBinEdges(7,binsPt);
     
     fResolHisto->GetAxis(0)->SetTitle("y-y_{ref} (cm)");
     fResolHisto->GetAxis(1)->SetTitle("z-z_{ref} (cm)");
@@ -210,7 +221,7 @@ void AliPerformanceMatch::Init(){
     Double_t maxTrackingEffHisto[5]  = { 1.5, 2*TMath::Pi(), ptMax, 1.5,  6.5 };
       if(fUseSparse){
         fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:phi:pt:eta:ITSclusters",5,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
-        fTrackingEffHisto->SetBinEdges(2,binsPt);
+        //fTrackingEffHisto->SetBinEdges(2,binsPt);
         fTrackingEffHisto->GetAxis(0)->SetTitle("IsMatching");
         fTrackingEffHisto->GetAxis(1)->SetTitle("phi (rad)");
         fTrackingEffHisto->GetAxis(2)->SetTitle("p_{T}");
@@ -219,8 +230,8 @@ void AliPerformanceMatch::Init(){
               fTrackingEffHisto->Sumw2();
       }
       else{
-          h_tpc_match_trackingeff_all_2_3 = new TH2D("h_tpc_match_trackingeff_all_2_3","",binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2],binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3]);
-          h_tpc_match_trackingeff_tpc_2_3 = new TH2D("h_tpc_match_trackingeff_all_2_3","",binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2],binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3]);
+          h_tpc_match_trackingeff_all_2_3 = new TH2D("h_tpc_match_trackingeff_all_2_3","",binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3],binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2]);
+          h_tpc_match_trackingeff_tpc_2_3 = new TH2D("h_tpc_match_trackingeff_tpc_2_3","",binsTrackingEffHisto[3],minTrackingEffHisto[3],maxTrackingEffHisto[3],binsTrackingEffHisto[2],minTrackingEffHisto[2],maxTrackingEffHisto[2]);
           fFolderObj->Add(h_tpc_match_trackingeff_all_2_3);
           fFolderObj->Add(h_tpc_match_trackingeff_tpc_2_3);
       }
@@ -238,7 +249,7 @@ void AliPerformanceMatch::Init(){
     if(fUseSparse){
       
         fTPCConstrain = new THnSparseF("fTPCConstrain","pull_phi:phi:pt:eta",4, binsTPCConstrain,minTPCConstrain,maxTPCConstrain);
-        fTPCConstrain->SetBinEdges(2,binsPt);
+   //     fTPCConstrain->SetBinEdges(2,binsPt);
         fTPCConstrain->GetAxis(0)->SetTitle("(#phi-#phi_{ref})/#sigma");
         fTPCConstrain->GetAxis(1)->SetTitle("phi (rad)");
         fTPCConstrain->GetAxis(2)->SetTitle("p_{T}");
@@ -339,8 +350,10 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliVTrack *co
     Double_t vecTrackingEff[5] = { static_cast<Double_t>(isMatch),vTrack->Phi(), vTrack->Pt(),vTrack->Eta(),static_cast<Double_t>(vTrack->GetITSclusters(0)) };
     if(fUseSparse) fTrackingEffHisto->Fill(vecTrackingEff);
     else{
-        if(vecTrackingEff[0] > -0.5) h_tpc_match_trackingeff_all_2_3->Fill(vecTrackingEff[2],vecTrackingEff[3]);
-        if(vecTrackingEff[0] > 0.5) h_tpc_match_trackingeff_tpc_2_3->Fill(vecTrackingEff[2],vecTrackingEff[3]);
+        if(vecTrackingEff[0] > -0.5) h_tpc_match_trackingeff_all_2_3->Fill(vecTrackingEff[3],vecTrackingEff[2]);
+        if(vecTrackingEff[0] > 0.5) h_tpc_match_trackingeff_tpc_2_3->Fill(vecTrackingEff[3],vecTrackingEff[2]);
+        //std::cout<<" mean "<<h_tpc_match_trackingeff_all_2_3->GetMean(1)<<endl;
+    
     }
       
   }

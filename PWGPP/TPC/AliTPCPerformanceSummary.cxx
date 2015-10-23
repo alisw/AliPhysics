@@ -1749,7 +1749,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
        his1D = pTPC->GetTPCEventHisto()->Projection(0);
     }
     if(!his1D) return 1;
-    entriesVertX = his1D->GetEntries(); 
+    entriesVertX = his1D->GetEntries();
     meanVertX = his1D->GetMean();    
     rmsVertX    = his1D->GetRMS();
     delete his1D;
@@ -1882,7 +1882,8 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
 
       his3D1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7"));
       if(!his3D1) return 256;
-	
+        his3D1->GetXaxis()->SetRangeUser(-3,3);
+
       his3D1->GetYaxis()->SetRangeUser(0.1,0.8);
       
       his3D1->GetZaxis()->SetRangeUser(0.25,10);
@@ -1910,8 +1911,9 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
 
       his3D2 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7"));
       if(!his3D2) return 256;
-	
-      his3D2->GetYaxis()->SetRangeUser(0.1,0.8);
+        his3D2->GetXaxis()->SetRangeUser(-3,3);
+    
+        his3D2->GetYaxis()->SetRangeUser(0.1,0.8);
 
       his3D2->GetZaxis()->SetRangeUser(0.25,10);
       meanPtANeg = his3D2->GetMean(3);
@@ -1981,11 +1983,19 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
     TF1 *fp2 = new TF1("fp2","pol2",-1.0,1.0);
     TF1 *fp3 = new TF1("fp3","pol2",-1.0,1.0);
     
-    if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_5_8")) {
-
-      his2D = dynamic_cast<TH2*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_5_8"));
-      if(!his2D) return 512;
-
+    if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_5_8") && !fgForceTHnSparse){
+        his2D = dynamic_cast<TH2*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_5_8"));
+    }
+    else {
+        pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRange(2,2);
+        his2D = pTPC->GetTPCTrackHisto()->Projection(5,8);
+        pTPC->GetTPCTrackHisto()->GetAxis(9)->SetRange(1,2);
+    }
+    std::cout<<" pt his2D is "<<his2D<<std::endl;
+    if(!his2D) return 512;
+    his2D->GetXaxis()->SetRange(1,his2D->GetNbinsX());
+    his2D->GetYaxis()->SetRange(1,his2D->GetNbinsY());
+    
       his1D1 = his2D->ProjectionX();
       his1D1->Fit(fp1,"R");
       if(fp1->GetParameter(2)!=0){
@@ -2011,8 +2021,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
        delete his1D3;
        
       his2D->GetYaxis()->SetRangeUser(-1.0,1.0);
-    }
-    
+
+
+
     
     (*pcstream)<<"tpcQA"<<
       "qOverPt="<< qOverPt<<

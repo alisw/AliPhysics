@@ -120,9 +120,13 @@ void AliPerformanceDEdx::Init()
     // Init histograms
   // TPC dEdx
   // set p bins
-  Int_t nPBins = 50;
-  Double_t pMin = 1.e-2, pMax = 20.;
+ // Int_t nPBins = 50;
+ // Double_t pMin = 1.e-2, pMax = 20.;
 
+    Int_t nPBins = 53;
+    Double_t pMin = 0.02, pMax = 0.55;
+
+    
   Double_t *binsP = 0;
 
   if (IsHptGenerator())  { 
@@ -152,7 +156,7 @@ void AliPerformanceDEdx::Init()
 
     if(fUseSparse){
         fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:clsF",10,binsQA,xminQA,xmaxQA);
-        fDeDxHisto->SetBinEdges(7,binsP);
+//        fDeDxHisto->SetBinEdges(7,binsP);
 
         fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
         fDeDxHisto->GetAxis(1)->SetTitle("#phi (rad)");
@@ -645,6 +649,7 @@ TTree* AliPerformanceDEdx::CreateSummary()
 
 void AliPerformanceDEdx::FilldEdxHisotgram(double *vDeDxHisto){
     
+    //dedx for mip
     if(vDeDxHisto[0] >= 35 && vDeDxHisto[0] < 60)
     if(vDeDxHisto[2] >= -20 && vDeDxHisto[2] < 20)
     if(vDeDxHisto[3] >= -250 && vDeDxHisto[3] < 250)
@@ -653,23 +658,22 @@ void AliPerformanceDEdx::FilldEdxHisotgram(double *vDeDxHisto){
     if(vDeDxHisto[7] >= 0.4 && vDeDxHisto[7] < 0.55)
     if(vDeDxHisto[8] >= 80 && vDeDxHisto[8] < 160)
     if(vDeDxHisto[9] >= 0.5 && vDeDxHisto[9] < 1.){
-        if(vDeDxHisto[5] > -1 && vDeDxHisto[5] < 1) h_tpc_dedx_mips_0->Fill(vDeDxHisto[0]);
-        if(vDeDxHisto[5] > -3 && vDeDxHisto[5] < 0){
-            
+        if(vDeDxHisto[5] >= -1 && vDeDxHisto[5] < 1) h_tpc_dedx_mips_0->Fill(vDeDxHisto[0]);
+        if(vDeDxHisto[5] >= -3 && vDeDxHisto[5] < 0){
            h_tpc_dedx_mips_c_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
            h_tpc_dedx_mips_c_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
         }
-        else if(vDeDxHisto[5] > 0 && vDeDxHisto[5] < 3){
+        if(vDeDxHisto[5] >= 0 && vDeDxHisto[5] < 3){
             h_tpc_dedx_mips_a_0_5->Fill(vDeDxHisto[0],vDeDxHisto[5]);
             h_tpc_dedx_mips_a_0_1->Fill(vDeDxHisto[0],vDeDxHisto[1]);
-
         }
     }
+    //dedx for electron mip
     if(vDeDxHisto[0] >= 70 && vDeDxHisto[0] < 100) /*dedx for electrons*/
-    if(vDeDxHisto[2] >= -20 && vDeDxHisto[2] < 19.999)
-    if(vDeDxHisto[3] >= -250 && vDeDxHisto[3] < 249.999)
-    if(vDeDxHisto[4] >= -1 && vDeDxHisto[4] < 0.99)
-    if(vDeDxHisto[5] >= -1 && vDeDxHisto[5] < 0.99)
+    if(vDeDxHisto[2] >= -20 && vDeDxHisto[2] < 20)
+    if(vDeDxHisto[3] >= -250 && vDeDxHisto[3] < 250)
+    if(vDeDxHisto[4] >= -1 && vDeDxHisto[4] < 1)
+    if(vDeDxHisto[5] >= -1 && vDeDxHisto[5] < 1)
     if(vDeDxHisto[6] >= 80 && vDeDxHisto[6] < 160)
     if(vDeDxHisto[7] >= 0.32 && vDeDxHisto[7] < 0.38)  /*momenta for electrons*/
     if(vDeDxHisto[8] >= 80 && vDeDxHisto[8] < 160)
