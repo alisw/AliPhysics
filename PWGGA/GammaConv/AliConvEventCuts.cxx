@@ -223,7 +223,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 	fNSpecialSubTriggerOptions(ref.fNSpecialSubTriggerOptions),
 	hSPDClusterTrackletBackground(NULL),
 	fV0ReaderName(ref.fV0ReaderName),
-   	fCaloTriggers(NULL),
+  fCaloTriggers(NULL),
 	fTriggerPatchInfo(NULL),
 	fMainTriggerPatchEMCAL(NULL),
 	fCaloTriggersName(ref.fCaloTriggersName),
@@ -788,6 +788,9 @@ void AliConvEventCuts::PrintCutsWithValues() {
 			printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
 			if (fRejectTriggerOverlap) printf("\t        reject trigger overlaps\n\n");
 		}
+		if ( !(fCentralityMin == 0 && fCentralityMax == 0) && !(fCentralityMax < fCentralityMin) ){
+      printf("\t Multiplicity cut %d - %d \n", fCentralityMin, fCentralityMax);
+    }
 	} else if (fIsHeavyIon == 1){ 
 		printf("Running in PbPb mode \n");
 		if (fDetectorCentrality == 0){
@@ -1476,8 +1479,22 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 //_____________________________________________________________________________________
 Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCEvent)
 {   // Centrality Selection
-	if(!fIsHeavyIon)return kTRUE;
-
+	if(!fIsHeavyIon){
+    if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) ){
+      return kTRUE;
+    } else {
+      Int_t primaryTracksPP[9] = { 0,   2,   5,    10,   15, 
+                                   30,  50,  100,  1000 
+                                  };
+      Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+      if ( nprimaryTracks >= primaryTracksPP[fCentralityMin] && nprimaryTracks < primaryTracksPP[fCentralityMax]){
+        return kTRUE;
+      } else {
+        return kFALSE;
+      }
+      return kFALSE;
+    }
+  }
 	if(fCentralityMin == fCentralityMax ) return kTRUE;//0-100%
 	else if ( fCentralityMax==0) fCentralityMax=10; //CentralityRange = fCentralityMin-10*multfactor
 	Double_t centrality=GetCentrality(event);
@@ -2800,7 +2817,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
 	if ( !IsTriggerSelected(InputEvent, isMC) )
 		return 3;
 
-	if(isHeavyIon != 0 && !(IsCentralitySelected(InputEvent,MCEvent)))
+	if( !(IsCentralitySelected(InputEvent,MCEvent)))
 		return 1; // Check Centrality --> Not Accepted => eventQuality = 1
 		
 	if(isHeavyIon == 0 && GetIsFromPileup()){

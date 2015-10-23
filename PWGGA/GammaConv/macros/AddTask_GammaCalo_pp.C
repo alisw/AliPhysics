@@ -111,7 +111,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig               = 1,            
       trainConfig == 81   || trainConfig == 102    || trainConfig == 110  || trainConfig == 8)
       numberOfCuts = 4;
   if (trainConfig == 2   || trainConfig == 3    || trainConfig == 84  || trainConfig == 85  || trainConfig == 86  ||
-      trainConfig == 87  || trainConfig == 88  || trainConfig == 89  || trainConfig == 103  || trainConfig == 104  )
+      trainConfig == 87  || trainConfig == 88  || trainConfig == 89  ||  trainConfig == 98  || trainConfig == 99  ||
+      trainConfig == 103  || trainConfig == 104  )
       numberOfCuts = 5;
   if (trainConfig == 65  || trainConfig == 66  || trainConfig == 67  || trainConfig == 68  || trainConfig == 82  ||
       trainConfig == 83  || trainConfig == 105)
@@ -423,6 +424,20 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig               = 1,            
     eventCutArray[ 2] = "00083113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; //0.4 GeV/c default
     eventCutArray[ 3] = "00083113"; clusterCutArray[3] = "1111121050042220000"; mesonCutArray[3] = "0163103100000050"; //0.5 GeV/c
     eventCutArray[ 4] = "00083113"; clusterCutArray[4] = "1111121050052220000"; mesonCutArray[4] = "0163103100000050"; //0.6 GeV/c
+    
+  } else if (trainConfig == 98){ // MB - with multiplicity bins
+    eventCutArray[ 0] = "00103113"; clusterCutArray[0] = "1111121050032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
+    eventCutArray[ 1] = "01203113"; clusterCutArray[1] = "1111121050032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
+    eventCutArray[ 2] = "02303113"; clusterCutArray[2] = "1111121050032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
+    eventCutArray[ 3] = "03503113"; clusterCutArray[3] = "1111121050032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
+    eventCutArray[ 4] = "05703113"; clusterCutArray[4] = "1111121050032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
+  } else if (trainConfig == 99){ // INT7 - with multiplicity bins
+    eventCutArray[ 0] = "00100113"; clusterCutArray[0] = "1111121060032220000"; mesonCutArray[0] = "0163103100000050"; // 0 -2
+    eventCutArray[ 1] = "01200113"; clusterCutArray[1] = "1111121060032220000"; mesonCutArray[1] = "0163103100000050"; // 2 -5
+    eventCutArray[ 2] = "02300113"; clusterCutArray[2] = "1111121060032220000"; mesonCutArray[2] = "0163103100000050"; // 5 -10
+    eventCutArray[ 3] = "03500113"; clusterCutArray[3] = "1111121060032220000"; mesonCutArray[3] = "0163103100000050"; // 10 -30
+    eventCutArray[ 4] = "05700113"; clusterCutArray[4] = "1111121060032220000"; mesonCutArray[4] = "0163103100000050"; // 30 -100
+    
     
 // 8 TeV configs
 
