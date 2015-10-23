@@ -40,6 +40,7 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TCut.h"
+#include "THashList.h"
 //
 // includes neccessary for test functions
 //
@@ -1539,6 +1540,30 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   TObjArray *charray = chstring.Tokenize(":");
   graphNew->GetXaxis()->SetTitle(charray->At(1)->GetName());
   graphNew->GetYaxis()->SetTitle(charray->At(0)->GetName());
+
+  THashList * metaData = (THashList*) tree->GetUserInfo()->FindObject("metaTable");
+  if (!metaData == 0){    
+    TNamed *nmdTitle0 = 0x0;
+    TNamed *nmdTitle1 = 0x0;
+    TNamed *nmdYAxis = 0x0;
+    TNamed *nmdXAxis = 0x0;
+    nmdTitle0 =(TNamed *) metaData ->FindObject(Form("%s.title",charray->At(0)->GetName()));  
+    nmdTitle1 =(TNamed *) metaData ->FindObject(Form("%s.title",charray->At(1)->GetName())); 
+    nmdYAxis =(TNamed *) metaData ->FindObject(Form("%s.axis",charray->At(0)->GetName()));
+    nmdXAxis =(TNamed *) metaData ->FindObject(Form("%s.axis",charray->At(1)->GetName()));  
+    //
+    TString grTitle=charray->At(0)->GetName();
+    if (nmdTitle0)  grTitle=nmdTitle0->GetTitle();
+    if (nmdTitle1)  {
+      grTitle+=":";
+      grTitle+=nmdTitle1->GetTitle();
+    }else{
+      grTitle+=":";
+      grTitle+=charray->At(1)->GetName();
+    }
+    if (nmdYAxis) {graphNew->GetYaxis()->SetTitle(nmdYAxis->GetTitle());}
+    if (nmdXAxis) {graphNew->GetXaxis()->SetTitle(nmdXAxis->GetTitle());}            
+  }
   delete charray;
   return graphNew;
 }
