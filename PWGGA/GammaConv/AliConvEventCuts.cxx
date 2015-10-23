@@ -48,6 +48,7 @@
 #include "AliVCaloCells.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
+#include "AliEmcalTriggerPatchInfo.h"
 
 class iostream;
 

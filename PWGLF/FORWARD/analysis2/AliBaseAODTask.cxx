@@ -9,6 +9,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
+#include <iostream>
 
 //____________________________________________________________________
 AliBaseAODTask::AliBaseAODTask()

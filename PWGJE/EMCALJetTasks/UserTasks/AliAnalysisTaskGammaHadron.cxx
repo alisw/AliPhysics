@@ -34,6 +34,7 @@
 //#include "AliCaloTrackReader.h"
 
 #include "AliAnalysisTaskGammaHadron.h"
+#include <iostream>
 
 ClassImp(AliAnalysisTaskGammaHadron)
 

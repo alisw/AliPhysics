@@ -42,6 +42,7 @@
 #include "AliCentrality.h"
 #include "AliEventplane.h"
 #include "AliOADBContainer.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;
