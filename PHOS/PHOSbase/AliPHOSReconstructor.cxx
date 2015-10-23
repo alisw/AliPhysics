@@ -59,6 +59,7 @@
 #include "AliPHOSTriggerRawDigit.h"
 #include "AliPHOSTriggerRawDigiProducer.h"
 #include "AliPHOSTriggerParameters.h"
+#include <fstream>
 
 ClassImp(AliPHOSReconstructor)
 

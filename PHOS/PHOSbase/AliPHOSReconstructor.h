@@ -45,7 +45,6 @@
 
 // --- ROOT system ---
 
-#include <Riostream.h>
 #include "AliReconstructor.h" 
 #include "AliPHOSRecoParam.h"
 class AliPHOSDigitizer ;

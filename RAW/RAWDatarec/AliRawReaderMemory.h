@@ -12,11 +12,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReader.h"
-#ifdef __CINT__
-class fstream;
-#else
-#include <Riostream.h>
-#endif
 #include <vector>
 
 using std::vector;

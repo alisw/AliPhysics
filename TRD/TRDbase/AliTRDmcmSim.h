@@ -11,7 +11,7 @@
 //                                                   //
 ///////////////////////////////////////////////////////
 
-#include <iostream>
+#include <iosfwd>
 
 class TObject;
 class TClonesArray;
