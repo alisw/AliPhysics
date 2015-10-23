@@ -4,17 +4,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
-#include <TChain.h>
-#include <TNamed.h>
-
-
-#include <TObjArray.h>
-#include <TH2D.h>
-#include <TVectorD.h>
-#include <TMatrixD.h>
-
-#include <iostream>
-#include <TH1F.h>
+#include <TVectorDfwd.h>
+#include <TMatrixDfwd.h>
 
 #include <AliTPCcalibBase.h>
 

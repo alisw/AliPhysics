@@ -18,18 +18,11 @@
 //  Class for emulation of the ALTRO chip (Altro digital Chain) in C++       //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TSystem.h"
+#include "TNamed.h"
 
-
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <AliRawReader.h>
-#include <AliTPCRawStreamV3.h>
-
-
-using namespace std;
+class AliRawReader;
+class AliTPCRawStreamV3;
+class AliRawVEvent;
 
 class AliTPCAltroEmulator : public TNamed {
 

@@ -10,13 +10,8 @@
 ///  TPC calibration class for parameters which are saved per pad
 
 #include "TNamed.h"
-//#include <TMath.h>
-//#include <AliTPCROC.h>
-#include "TLinearFitter.h"
-#include "TVectorD.h"
-//#include <iostream>
-
-
+#include "TVectorDfwd.h"
+#include "TMatrixDfwd.h"
 
 class AliTPCCalROC;
 class AliTPCCalDet;

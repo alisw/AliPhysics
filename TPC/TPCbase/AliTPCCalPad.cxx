@@ -28,6 +28,7 @@
 #include <TGraph2D.h>
 #include <TH2F.h>
 #include "TTreeStream.h"
+#include "TLinearFitter.h"
 #include "TFile.h"
 #include "TKey.h"
 #include <TFormula.h>
@@ -45,6 +46,8 @@
 #include <TVirtualPad.h>
 #include "AliTPCPreprocessorOnline.h"
 #include "AliTPCCalibViewer.h"
+#include "TVectorD.h"
+
 /// \cond CLASSIMP
 ClassImp(AliTPCCalPad)
 /// \endcond

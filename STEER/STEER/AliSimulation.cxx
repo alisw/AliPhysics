@@ -163,6 +163,7 @@
 #include "AliSimulation.h"
 #include "AliSysInfo.h"
 #include "AliVertexGenFile.h"
+#include <fstream>
 
 using std::ofstream;
 ClassImp(AliSimulation)

@@ -18,18 +18,10 @@
 ///
 /// \author Diego Stocco
 
-#ifndef ROOT_TNamed
-#  include "TNamed.h"
-#endif
-#ifndef ROOT_TString
-#  include "TString.h"
-#endif
-#ifndef ROOT_TCollection
-#  include "TCollection.h"
-#endif
-#ifndef ROOT_TFolder
-#  include "TFolder.h"
-#endif
+#include "TString.h"
+#include "TFolder.h"
+#include "TIterator.h"
+#include "TCollection.h"
 #include <map>
 #include <string>
 
@@ -40,6 +32,7 @@ class TH1;
 class TH2;
 class TProfile;
 class THashList;
+class TCollection;
 
 class AliMergeableCollection : public TFolder
 {

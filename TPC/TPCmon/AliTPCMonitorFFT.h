@@ -21,10 +21,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 
-
-#include <iostream> 
 #include "TNamed.h"
-#include <math.h>
 #define  REAL(a,stride,i) ((a)[2*(stride)*(i)])
 #define  IMAG(a,stride,i) ((a)[2*(stride)*(i)+1])
 using namespace std; 

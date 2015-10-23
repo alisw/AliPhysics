@@ -12,11 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReader.h"
-#ifdef __CINT__
-class fstream;
-#else
-#include <Riostream.h>
-#endif
+#include <iosfwd>
 #include <TString.h>
 using std::fstream;
 

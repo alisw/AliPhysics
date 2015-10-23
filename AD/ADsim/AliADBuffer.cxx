@@ -27,6 +27,7 @@
 #include "AliADBuffer.h"
 #include "AliADdigit.h"
 #include "AliADConst.h"
+#include "AliFstream.h"
 
 ClassImp(AliADBuffer)
 

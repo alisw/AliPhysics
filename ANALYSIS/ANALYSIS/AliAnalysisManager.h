@@ -19,9 +19,6 @@
 #ifndef ROOT_THashTable
 #include <THashTable.h>
 #endif
-#ifndef ROOT_Riostream
-#include <Riostream.h>
-#endif
 
 class TClass;
 class TTree;

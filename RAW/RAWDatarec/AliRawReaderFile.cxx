@@ -35,6 +35,7 @@
 #include "AliDAQ.h"
 #include <TSystem.h>
 #include <TArrayC.h>
+#include <fstream>
 
 
 using std::ios;

@@ -42,6 +42,7 @@ Using  that the code will be more modular.
 #include <TCanvas.h>
 #include <AliRawDataHeader.h>
 #include <AliRawDataHeaderV3.h>
+#include <cassert>
 
 /**	@brief Constroctor of SAMPA Class
  *
@@ -100,6 +101,7 @@ Bool_t   AliTPCSAMPAEmulator::DigitalFilterFloat(Int_t npoints, Double_t *dataAr
   //
   if (fDigitFilterType==2) return  BC3SlopeFilterMI(npoints,dataArray,baseline);
   //
+  assert(false);
 }
 
 void AliTPCSAMPAEmulator::SetBC3Parameters(Double_t slopeDown, Double_t slopeUp, Double_t round){
@@ -246,6 +248,7 @@ Bool_t  AliTPCSAMPAEmulator::MovingAverageFilter(Int_t npoints, Double_t *dataAr
       dataArray[iTimeBin]=baseline;
     }
   }
+  assert(false);
 }
 
 

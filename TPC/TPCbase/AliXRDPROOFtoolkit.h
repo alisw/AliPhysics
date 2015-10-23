@@ -6,18 +6,11 @@
 #include <TObject.h>
 #include <TString.h>
 
-#include <iostream>
-#include <vector>
-#include <TSystem.h>
-
-using namespace std;
-
 class TObjArray;
 class TTree;
 class TChain;
 class TDSet;
-
-
+class UserGroup_t;
 
 class AliXRDPROOFtoolkit : public TObject
 {
