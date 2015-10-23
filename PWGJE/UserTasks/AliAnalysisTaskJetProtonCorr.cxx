@@ -47,6 +47,7 @@
 #include "AliAnalysisTaskJetProtonCorr.h"
 
 #include <iostream>
+#include <iomanip>
 #include <cmath>
 
 AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :

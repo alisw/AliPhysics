@@ -32,9 +32,8 @@
 #include <TRandom3.h>
 #include "THn.h"
 
+
 using std::vector;
-using std::cout;
-using std::endl;
 
 class TMethod;
 template <class C>
@@ -451,7 +450,6 @@ class AliThreeParticleCorrelator : public TNamed {
   void Print(Option_t */*option*/) const
   {
     /// overloaded from TObject: print info
-    /* cout << "====================================================================" << endl; */
     TObject::Print();
   }
 
