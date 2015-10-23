@@ -1,9 +1,8 @@
 #ifndef ALIITSUSUZE02_H
 #define ALIITSUSUZE02_H
 
-#include <Riostream.h>
-#include <TMatrixF.h>
-#include <TH1F.h>
+#include "TMatrixFfwd.h"
+class TH1F;
 
 //*******************************************************************
 //

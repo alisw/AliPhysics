@@ -8,9 +8,9 @@
 /////////////////////////////////////////////////////////////////////////////
  
 #include <TObject.h>
-#include <Riostream.h>
-#include "AliStrLine.h"
 #include <vector>
+
+class AliStrLine;
 
 using std::vector;
 

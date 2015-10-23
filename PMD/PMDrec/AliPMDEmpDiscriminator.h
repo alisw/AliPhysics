@@ -10,7 +10,6 @@
 //-----------------------------------------------------//
 
 #include "AliPMDDiscriminator.h"
-#include "Riostream.h"
 class TClonesArray;
 class TFile;
 class TObjArray;

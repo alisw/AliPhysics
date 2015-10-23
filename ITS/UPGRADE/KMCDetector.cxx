@@ -13,6 +13,10 @@
 #include <TRandom3.h>
 #include <TGraphErrors.h>
 #include <TStopwatch.h>
+#include <TH2.h>
+#include <TH1.h>
+#include <TArrayI.h>
+#include <AliLog.h>
 
 /***********************************************************
 

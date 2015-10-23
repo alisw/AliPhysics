@@ -50,14 +50,13 @@
 ////////////////////////////////////////////////////////////
 
 #include "AliGenerator.h"
+#include <iosfwd>
 
 class TH3D;
 class AliStack;
 class TParticle;
 class TVector3;
 using std::ofstream;
-
-#include <Riostream.h>
 
 class AliGenHBTosl: public AliGenerator
 {

@@ -1,11 +1,10 @@
 #ifndef TOPOLOGY_H
 #define TOPOLOGY_H
 #include "TObject.h"
-#include "TBits.h"
-#include "AliITSUClusterPix.h"
-#include "TH2F.h"
-#include "TH1F.h"
-#include <Riostream.h>
+
+class TH2F;
+class TBits;
+class AliITSUClusterPix;
 
 class Topology :public TObject {
 

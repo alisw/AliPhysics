@@ -1,6 +1,8 @@
 #include <Riostream.h>
 #include "TMath.h"
 #include "AliITSUSuze02.h"
+#include "TMatrixF.h"
+#include "TH1F.h"
 
 //*******************************************************************
 //

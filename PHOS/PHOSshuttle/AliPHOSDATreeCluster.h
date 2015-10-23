@@ -13,8 +13,8 @@
 // -- Author: Hisayuki Torii (Hiroshima Univ.)
 // --
 
-#include <iostream>
 #include "AliPHOSDATreeDigit.h"
+#include <iosfwd>
 
 class AliPHOSDATreeCluster{
 
@@ -30,7 +30,7 @@ class AliPHOSDATreeCluster{
   //float GetZ(){ return fZ; };
   AliPHOSDATreeCluster():fEnergy(0),fRow(-100),fCol(-100),fNDigits(0),fDigits(0){/**/};
   AliPHOSDATreeCluster(float energy,float row,float col):fEnergy(energy),fRow(row),fCol(col),fNDigits(0),fDigits(0){/**/};
-  virtual ~AliPHOSDATreeCluster(){ if(fNDigits>0) delete[] fDigits; };
+  virtual ~AliPHOSDATreeCluster(){ delete[] fDigits; };
   AliPHOSDATreeCluster(const AliPHOSDATreeCluster& cluster);
   AliPHOSDATreeCluster& operator=(const AliPHOSDATreeCluster& cluster);
   void Set(float energy,float row,float col){fEnergy=energy; fRow=row; fCol=col; };

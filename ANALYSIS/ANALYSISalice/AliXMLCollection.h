@@ -13,10 +13,9 @@
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
-#include <TObject.h>
-#include "TGridCollection.h"
-#include <Riostream.h>
 #include <TString.h>
+#include <TGridCollection.h>
+#include <fstream>
 
 class TMap;
 class TIter;

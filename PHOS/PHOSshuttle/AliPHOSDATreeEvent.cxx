@@ -24,6 +24,9 @@
 
 #include <iostream>
 #include "AliPHOSDATreeEvent.h"
+#include "AliPHOSDATreeCluster.h"
+#include "AliPHOSDATreeDigit.h"
+
 ClassImp(AliPHOSDATreeEvent)
 //------------------------------------------------------------------------
 AliPHOSDATreeEvent::AliPHOSDATreeEvent(const AliPHOSDATreeEvent& evt)
@@ -57,6 +60,12 @@ AliPHOSDATreeEvent::AliPHOSDATreeEvent(const AliPHOSDATreeEvent& evt)
     fClusters = 0;
   }
 }
+
+AliPHOSDATreeEvent::~AliPHOSDATreeEvent(){
+  delete[] fDigits;
+  delete[] fClusters;
+};
+
 //------------------------------------------------------------------------
 AliPHOSDATreeEvent& AliPHOSDATreeEvent::operator=(const AliPHOSDATreeEvent& evt){
   // Copy Operator

@@ -1,14 +1,10 @@
 #ifndef TOPDATABASE_H
 #define TOPDATABASE_H
 #include "TObject.h"
-#include "TBits.h"
-#include "./Topology.h"
-#include <Riostream.h>
-#include "TArrayI.h"
-#include "TArrayF.h"
 #include "TObjArray.h"
-#include "AliITSUClusterPix.h"
 
+class AliITSUClusterPix;
+class TBits;
 
 class TopDatabase : public TObject {
 
