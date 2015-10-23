@@ -791,6 +791,73 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 }
 
 
+void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char * residualList, Double_t dy, Double_t dz, Int_t downscale){
+  /**
+   * Input list of ErrParam trees as defined in the AliTPCtracker in debug mode 
+   * @param residualList  text file with tree list
+   * Output - ResidualHistograms.root file with hitogram within AliTPCcalibAlignInterpolation object
+   residualList="residual.list"
+   dy=1; dz=1
+   */
+  //
+  //
+  // 
+  AliTPCcalibAlignInterpolation * calibInterpolation = new  AliTPCcalibAlignInterpolation("calibInterpolation","calibInterpolation",kFALSE);
+  calibInterpolation->CreateResidualHistosInterpolation(dy,dz);
+  TString  esdList0 = gSystem->GetFromPipe(TString::Format("cat %s",residualList).Data());
+  TObjArray *esdArray= esdList0.Tokenize("\n");  
+  Int_t nesd = esdArray->GetEntriesFast();  
+  //
+  THn *hisToFill[6]={calibInterpolation->GetHisITSDRPhi(), calibInterpolation->GetHisITSTRDDRPhi(),  calibInterpolation->GetHisITSTOFDRPhi(), calibInterpolation->GetHisITSDZ(), calibInterpolation->GetHisITSTRDDZ(),  calibInterpolation->GetHisITSTOFDZ()};
+  //
+  //
+  AliExternalTrackParam * param=0;
+  AliTPCclusterMI * cl=0;
+  Int_t iter=0;
+  Int_t currentCl=0;
+  for (Int_t iesd=0; iesd<nesd; iesd++){
+    TFile *esdFile = TFile::Open(esdArray->At(iesd)->GetName(),"read");
+    if (!esdFile) continue;
+    TTree *tree = (TTree*)esdFile->Get("ErrParam"); 
+    if (!tree) continue;
+    tree->SetBranchAddress("Cl.",&cl);
+    tree->SetBranchAddress("T.",&param);    
+    tree->SetBranchAddress("iter",&iter);    
+    Int_t nCl=tree->GetEntries();
+    for (Int_t iCl=0; iCl<nCl; iCl+=downscale){
+      tree->GetEntry(iCl);
+      if (iCl%100000==0) printf("%d\n",iCl);
+      currentCl++;
+      Double_t xyz[3]={0};
+      param->GetXYZ(xyz);
+      Double_t phi = TMath::ATan2(xyz[1],xyz[0]);
+      Double_t radius=TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0]);
+      param->Rotate(phi);
+      param->PropagateTo(radius,0.); // for big distortion we should query field, for small deltas we are using straight approximtion 
+      Double_t sector=9*phi/TMath::Pi();
+      if (sector<0) sector+=18;
+      Double_t deltaY=param->GetY();
+      Double_t deltaZ=param->GetZ()-cl->GetZ();      
+      Double_t localX = cl->GetX();
+      Double_t xxx[5]={deltaY, sector, localX,   cl->GetZ()/cl->GetX(), param->GetParameter()[4] };
+      hisToFill[iter]->Fill(xxx);	  
+      xxx[0]=deltaZ;
+      hisToFill[3+iter]->Fill(xxx);	  
+    }
+  }
+  TFile * fout = TFile::Open("ResidualHistograms.root","recreate");
+  calibInterpolation->GetHisITSDRPhi()->Write("deltaYIter0");
+  calibInterpolation->GetHisITSTRDDRPhi()->Write("deltaYIter1");
+  calibInterpolation->GetHisITSTOFDRPhi()->Write("deltaYIter2");
+  calibInterpolation->GetHisITSDZ()->Write("deltaZIter0");
+  calibInterpolation->GetHisITSTRDDZ()->Write("deltaZIter1");
+  calibInterpolation->GetHisITSTOFDZ()->Write("deltaZIter2");
+  delete fout;
+}
+
+
+
+
 TTree*  AliTPCcalibAlignInterpolation::AddFriendDistortionTree(TTree * tree, const char * fname,  const char *treeName, const char *friendAlias){
   //
   //

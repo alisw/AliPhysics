@@ -35,6 +35,7 @@ public :
   void   SetSyswatchStep(Int_t step){fSyswatchStep=(step==0)?1:step;} // step with which sys. usage is sampled
   //
   static void   FillHistogramsFromChain(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
+  static void    FillHistogramsFromStreamers(const char * residualList, Double_t dy, Double_t dz, Int_t downscale);
   THn * GetHisITSDRPhi() const {return fHisITSDRPhi;}
   THn * GetHisITSTRDDRPhi() const {return fHisITSTRDDRPhi;}
   THn * GetHisITSTOFDRPhi() const {return fHisITSTOFDRPhi;}
