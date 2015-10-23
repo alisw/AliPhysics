@@ -123,7 +123,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
          ptHardMaxEmb,//ptHardMax
          ecmsGeVEmb,//Double_t        ecms 
          kGenPartices.Data(),//tracksName
-         "JetEmbeddingFromGenTask",//taskName
+         Form("JetEmbeddingFromGenTask_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),//taskName
          0.15, //const Double_t  minPt 
          1000.,//const Double_t  maxPt          
         -0.9, //const Double_t  minEta 
@@ -147,7 +147,8 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
 
    if(typeOfAnal == kEmbSingl){ //EMBEDDING SINGLE TRACK  to real data 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskJetEmbedding.C");
-      AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", "SigleTrackEmb", 
+      AliJetEmbeddingTask *embSingle = AddTaskJetEmbedding(kGenPartices.Data(), "", 
+                           Form("SigleTrackEmb_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal), 
                                        ptHardMinEmb, ptHardMaxEmb, //min pT max pT
                                        -jetEtaRange, jetEtaRange, //min Eta. max Eta  ???????????? What range
                                        0.,TMath::TwoPi(),//min phi max phi
@@ -162,18 +163,19 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
       //__________________________________________________ 
       // Branch merger  merge reconstructed tracks with embedded pythia generated 
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/AddTaskMergeBranches.C");
-      AliJetModelMergeBranches* brmergTask = AddTaskMergeBranches(kTracksName.Data(),kGenPartices.Data(),"Emb","");
+      AliJetModelMergeBranches* brmergTask = AddTaskMergeBranches(kTracksName.Data(),kGenPartices.Data(),
+      Form("Emb_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),"");
       brmergTask->SetCopyArray(kTRUE);
       brmergTask->SelectCollisionCandidates(trigger);
 
-      recoTracks.Append("Emb");          //reconstructed level are  tracks +ebeded tracks
+      recoTracks.Append(Form("Emb_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal)); //reconstructed level are  tracks +ebeded tracks
       mcParticles = kGenPartices.Data(); //generator level are embedded particles
    }
 
    //_________________________________________________________
    //  JET FINDER TASKS
-   enum AlgoType {kKT, kANTIKT};
-   enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
+   enum AlgoType {kKTxx, kANTIKTxx};
+   enum JetType  {kFULLJETSxx, kCHARGEDJETSxx, kNEUTRALJETSxx};
 
    if(jetRadius < 0.1) return NULL;
  
@@ -185,9 +187,10 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
 
    if(typeOfAnal != kKine){
        //ANTIKT  DETECTOR LEVEL 
-      jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKT,jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme); 
+      jetFinderTask = AddTaskEmcalJet(recoTracks.Data(),"",kANTIKTxx,jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,
+       Form("JetAKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal)); 
       //KT DETECTOR LEVEL
-      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKT,   jetRadiusBg, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKT",0.,0,0);
+      jetFinderRhoKT = AddTaskEmcalJet(recoTracks.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme,       Form("JetKT_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,0,0);
       jetFinderRhoKT->SetMinJetPt(0);
    }
 
@@ -198,9 +201,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
  
    if( typeOfAnal == kEff || typeOfAnal == kEmb || typeOfAnal == kEmbSingl || typeOfAnal == kKine ){ 
       //ANTIKT GENERATOR LEVEL
-      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKT, jetRadius,  kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetMC"); 
+      jetFinderTaskMC = AddTaskEmcalJet(mcParticles.Data(),"", kANTIKTxx, jetRadius,  kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetAKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal)); 
       //KT GENERATOR LEVEL
-      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKT,   jetRadiusBg, kCHARGEDJETS,0.150,0.300,0.005,recombscheme,"JetKTMC",0.,0,0); 
+      jetFinderRhoKTMC = AddTaskEmcalJet(mcParticles.Data(),"", kKTxx,   jetRadiusBg, kCHARGEDJETSxx,0.150,0.300,0.005,recombscheme, Form("JetKTMC_TT%d%d_AN%d%d",TMath::Nint(ttLow), TMath::Nint(ttHigh),typeOfData, typeOfAnal),0.,0,0); 
       jetFinderRhoKTMC->SetMinJetPt(0);
 
 
