@@ -1,5 +1,5 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
-			       Int_t storeNtuple=0,Int_t storeNsparse=0,Bool_t readMC=kFALSE,
+			       Int_t storeNtuple=0,Bool_t storeNsparse=kFALSE,Bool_t readMC=kFALSE,
 			       TString filename="", TString postname="")
 {
   //

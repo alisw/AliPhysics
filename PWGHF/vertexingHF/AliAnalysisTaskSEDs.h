@@ -117,6 +117,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
   
   THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
+  THnSparseF *fnSparseIP;       ///!<!THnSparse for topomatic variable
   THnSparseF *fnSparseMC[4];  ///!<!THnSparse for MC
   ///[0]: Acc step prompt Ds
   ///[1]: Acc step FD Ds
@@ -124,7 +125,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[3]: Selected FD Ds
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,15);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,16);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

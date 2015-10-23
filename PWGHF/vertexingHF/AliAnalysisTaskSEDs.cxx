@@ -30,6 +30,7 @@
 #include <TMath.h>
 #include <THnSparse.h>
 #include <TDatabasePDG.h>
+#include <Riostream.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
@@ -38,6 +39,7 @@
 #include "AliAODTrack.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
+#include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliRDHFCutsDstoKKpi.h"
@@ -73,7 +75,8 @@ fMassRange(0.8),
 fMassBinSize(0.002),
 fCounter(0),
 fAnalysisCuts(0),
-fnSparse(0)
+fnSparse(0),
+fnSparseIP(0)
 {
   /// Default constructor
   
@@ -137,7 +140,8 @@ fMassRange(0.8),
 fMassBinSize(0.002),
 fCounter(0),
 fAnalysisCuts(analysiscuts),
-fnSparse(0)
+fnSparse(0),
+fnSparseIP(0)
 {
   /// Default constructor
   /// Output slot #1 writes into a TList container
@@ -260,6 +264,7 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     }
     
     delete fnSparse;
+    delete fnSparseIP;
     for (Int_t i=0; i<4; i++) {
       delete fnSparseMC[i];
     }
@@ -468,18 +473,25 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSig);
   
-  const Int_t nvarsReco = 12;
+  const Int_t nvarsReco = 13;
   const Int_t nvarsAcc  = 2;
-  Int_t nBinsReco[nvarsReco] = {500,20,60,1000,1000,500,500,50,50,100,100,100};
+  Int_t nBinsReco[nvarsReco] = {500,20,60,1000,1000,500,500,50,50,100,100,100,40};
   Int_t nBinsAcc[nvarsAcc]   = {100,20};
   Double_t xminAcc[nvarsAcc] = {0.,-1.};
   Double_t xmaxAcc[nvarsAcc] = {100.,1.};
-  Double_t xminReco[nvarsReco] = {1.5,0.,0.,0.,0.,0.,0.,0.5,0.5,0.,0.,0.};
-  Double_t xmaxReco[nvarsReco] = {2.5,20.,0.03,5.,5.,500.,500.,1.,1.,0.1,1.,1.};
+  Double_t xminReco[nvarsReco] = {1.5,0.,0.,0.,0.,0.,0.,0.5,0.5,0.,0.,0.,-10.};
+  Double_t xmaxReco[nvarsReco] = {2.5,20.,0.03,5.,5.,500.,500.,1.,1.,0.1,1.,1.,10.};
   TString axis[nvarsReco] = {"invMassAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl","normdl_{xy}","cosP","cosP_{xy}",
-                             "sigVert","cosPiDs","|cosPiKPhi^{3}|"};
+                             "sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP"};
+ 
+  const Int_t nvarsIP = 3;
+  Int_t nBinsIP[nvarsIP]   = {20,40,3};
+  Double_t xminIP[nvarsIP] = {0.,-10.,0.};
+  Double_t xmaxIP[nvarsIP] = {20.,10.,3.};
+  TString axisIP[nvarsIP]  = {"motherPt","maxNormImp","candType"};
   
   if(fFillSparse) {
+    
     if(fReadMC) {
       TString label[nvarsAcc] = {"fromC","fromB"};
       for (Int_t i=0; i<2; i++) {
@@ -497,6 +509,12 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
         }
         fOutput->Add(fnSparseMC[i]);
       }
+      fnSparseIP = new THnSparseF("fnSparseIP","nSparseIP", nvarsIP, nBinsIP, xminIP, xmaxIP);
+      for (Int_t j=0; j<nvarsIP; j++) {
+        fnSparseIP->GetAxis(j)->SetTitle(Form("%s",axisIP[j].Data()));
+      }
+      fnSparseIP->GetAxis(2)->SetTitle("candType (0.5=bkg; 1.5=prompt; 2.5=FD)");
+      fOutput->Add(fnSparseIP);
     }
     else {
       fnSparse = new THnSparseF("fnSparse","nSparse", nvarsReco, nBinsReco, xminReco, xmaxReco);
@@ -758,11 +776,26 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     if(isKKpi) cosPiKPhi = d->CosPiKPhiRFrameKKpi();
     else cosPiKPhi = d->CosPiKPhiRFramepiKK();
     cosPiKPhi = TMath::Abs(cosPiKPhi*cosPiKPhi*cosPiKPhi);
-    Double_t var4nSparse[12] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
-      sigvert,cosPiDs,cosPiKPhi};
+ 
+    Double_t candType = 0.5;             //0.5=bkg,1.5=prompt,2.5=feeddw
+    Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
     
-    
+    if(isPhipiKK || isPhiKKpi) {
+      const Int_t nProng = 3;
+      Double_t tmpNormIP[nProng];
+      for(Int_t ip=0; ip<nProng; ip++) {
+        Double_t diffIP, errdiffIP;
+        d->Getd0MeasMinusExpProng(ip,aod->GetMagneticField(),diffIP,errdiffIP);
+        tmpNormIP[ip] = diffIP/errdiffIP;
+        if(ip==0) normIP = tmpNormIP[ip];
+        else if(TMath::Abs(tmpNormIP[ip])>TMath::Abs(tmpNormIP[ip-1])) normIP = tmpNormIP[ip];
+      }
+    }
+    Double_t var4nSparse[13] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
+      sigvert,cosPiDs,cosPiKPhi,normIP};
+  
     if(fReadMC){
+      
       labDs = d->MatchToMC(431,arrayMC,3,pdgDstoKKpi);
       if(labDs>=0){
         Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
@@ -823,9 +856,17 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
             if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
               AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
               Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
-              if(orig==4) fnSparseMC[2]->Fill(var4nSparse);
-              if(orig==5) fnSparseMC[3]->Fill(var4nSparse);
+              if(orig==4) {
+                fnSparseMC[2]->Fill(var4nSparse);
+                candType = 1.5;
+              }
+              if(orig==5) {
+                fnSparseMC[3]->Fill(var4nSparse);
+                candType = 2.5;
+              }
             }
+            Double_t var[3] = {ptCand,normIP,candType};
+            fnSparseIP->Fill(var);
           }
         }
         if(isK0starKKpi) fMassHistK0st[indexMCKKpi]->Fill(invMass,weightKKpi);
@@ -854,9 +895,17 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
             if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) {
               AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
               Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
-              if(orig==4) fnSparseMC[2]->Fill(var4nSparse);
-              if(orig==5) fnSparseMC[3]->Fill(var4nSparse);
+              if(orig==4) {
+                fnSparseMC[2]->Fill(var4nSparse);
+                candType = 1.5;
+              }
+              if(orig==5) {
+                fnSparseMC[3]->Fill(var4nSparse);
+                candType = 2.5;
+              }
             }
+            Double_t var[3] = {ptCand,normIP,candType};
+            fnSparseIP->Fill(var);
           }
         }
         if(isK0starpiKK) fMassHistK0st[indexMCpiKK]->Fill(invMass,weightpiKK);
