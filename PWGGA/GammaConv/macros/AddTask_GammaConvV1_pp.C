@@ -121,7 +121,8 @@ void AddTask_GammaConvV1_pp(	Int_t 	trainConfig 				= 1,  								// change diff
 	// Cut Numbers to use in Analysis
 	Int_t numberOfCuts = 4;
 	if ( trainConfig == 70) numberOfCuts = 2;
-
+  if ( trainConfig == 100) numberOfCuts = 5;
+  
 	TString *eventCutArray = new TString[numberOfCuts];
 	TString *photonCutArray = new TString[numberOfCuts];
 	TString *mesonCutArray = new TString[numberOfCuts];
@@ -591,7 +592,14 @@ void AddTask_GammaConvV1_pp(	Int_t 	trainConfig 				= 1,  								// change diff
 		eventCutArray[ 1] = "00000123"; photonCutArray[ 1] = "00200009617302008250404000"; mesonCutArray[1] = "0152101500000000"; //dEdx variation
 		eventCutArray[ 2] = "00000123"; photonCutArray[ 2] = "00200009215302008250404000"; mesonCutArray[2] = "0152101500000000"; //dEdx variation
 		eventCutArray[ 3] = "00000123"; photonCutArray[ 3] = "00200009210302008250404000"; mesonCutArray[3] = "0152101500000000"; //dEdx variation
-	}	else {
+  } else if (trainConfig == 100) { // MB
+    eventCutArray[ 0] = "00100113"; photonCutArray[ 0] = "00200009227302008250400000"; mesonCutArray[0] = "0152103500000000"; // 0 -2
+    eventCutArray[ 1] = "01200113"; photonCutArray[ 1] = "00200009227302008250400000"; mesonCutArray[1] = "0152103500000000"; // 2 -5
+    eventCutArray[ 2] = "02300113"; photonCutArray[ 2] = "00200009227302008250400000"; mesonCutArray[2] = "0152103500000000"; // 5 -10
+    eventCutArray[ 3] = "03500113"; photonCutArray[ 3] = "00200009227302008250400000"; mesonCutArray[3] = "0152103500000000"; // 10-30
+    eventCutArray[ 4] = "05700113"; photonCutArray[ 4] = "00200009227302008250400000"; mesonCutArray[4] = "0152103500000000"; // 30-100
+
+  }	else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
 	}
