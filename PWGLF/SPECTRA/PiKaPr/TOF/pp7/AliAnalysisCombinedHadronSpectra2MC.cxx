@@ -97,6 +97,7 @@
 #include "AliESDUtils.h"
 
 #include "AliAnalysisCombinedHadronSpectra2MC.h"
+#include <iostream>
 
 
 ClassImp(AliAnalysisCombinedHadronSpectra2MC)

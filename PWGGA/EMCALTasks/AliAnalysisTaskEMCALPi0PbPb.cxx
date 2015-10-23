@@ -47,6 +47,7 @@
 #include "AliStack.h"
 #include "AliTrackerBase.h"
 #include "AliTriggerAnalysis.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;

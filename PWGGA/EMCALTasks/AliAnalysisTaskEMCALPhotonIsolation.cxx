@@ -36,7 +36,7 @@
 #include "AliAODMCHeader.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliLog.h"
-
+#include <iostream>
 
 
 #include "AliAnalysisTaskEMCALPhotonIsolation.h"

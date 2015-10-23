@@ -80,6 +80,7 @@
 #include "AliMuonTrackCuts.h"
 #include "AliAnalysisMuonUtility.h"
 
+#include <fstream>
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskFlowSingleMu) // Class implementation in ROOT context

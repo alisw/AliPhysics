@@ -25,6 +25,7 @@
 #include "AliCollisionGeometry.h"
 
 #include "AliEventPoolManager.h"
+#include <iostream>
 
 ClassImp( AliAnalysisTaskTwoPlusOne )
 
