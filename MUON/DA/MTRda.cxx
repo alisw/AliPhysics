@@ -37,8 +37,6 @@ extern "C" {
 #include "monitor.h"
 
 #include <Riostream.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "AliRawReaderDate.h"
 
@@ -861,7 +859,7 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
     return kFALSE;
   }
   if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetGlobalFileName());
-  //storeOCDB = kFALSE;
+  storeOCDB = kFALSE;
   out << cfg.GetGlobalFileName() <<  "   " << storeOCDB << endl;
 
   // regional config
@@ -873,7 +871,7 @@ Bool_t ExportTRIGSCAL(AliDAConfig& cfg)
     return kFALSE;
   }
   if(cfg.GetPrintLevel()) printf("Export file: %s\n",cfg.GetRegionalFileName());
-  //storeOCDB = kFALSE;
+  storeOCDB = kFALSE;
   out << cfg.GetRegionalFileName() <<  "   " << storeOCDB << endl;
 
   // trigger scalers
@@ -1345,7 +1343,7 @@ int main(Int_t argc, Char_t **argv)
     // needed for streamer application
     gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo", "*", "TStreamerInfo", "RIO", "TStreamerInfo()"); 
 
-    printf("MTRda version v.20102015.01 \n");
+    printf("MTRda version v.23102015.01 \n");
   
     /* check that we got some arguments = list of files */
     if (argc<2) {
@@ -1494,7 +1492,7 @@ int main(Int_t argc, Char_t **argv)
       }
     }
 
-    FILE* fsc = fopen(cfg.GetTrigScalFileName(),"wb");
+    std::ofstream ofile(cfg.GetTrigScalFileName(), std::ofstream::binary);
     Bool_t writeScalers = kFALSE;
 
     UInt_t *globalInput = new UInt_t[4];
@@ -1751,7 +1749,7 @@ int main(Int_t argc, Char_t **argv)
 	    }
 	  }
 	  printf("MTRda: write to buffer %d bytes.\n",ibw);
-	  fwrite(&buffer,ibw,1,fsc);
+	  ofile.write((const char*)buffer,ibw);
 	  // reset
 	  deltaT = 0.;
 	  nCalibEvents = 0;
@@ -1785,7 +1783,7 @@ int main(Int_t argc, Char_t **argv)
       }
     }
 
-    fclose(fsc);
+    ofile.close();
 
     if (cfg.SaveScalers()) {
       if (writeScalers) {
