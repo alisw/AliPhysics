@@ -227,7 +227,7 @@ fInput(0)
     for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
     
     DefineOutput(1, TList::Class()); // Event Counter Histo
-    if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
+    DefineOutput(2, TTree::Class()); // Event Tree
 }
 
 
@@ -425,7 +425,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
 
     //TTree Object: Saved to base directory. Should cache to disk while saving.
     //(Important to avoid excessive memory usage, particularly when merging)
-    if ( fkCalibration ) PostData(2, fTreeEvent);
+    PostData(2, fTreeEvent);
 }// end UserCreateOutputObjects
 
 
@@ -874,7 +874,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
     
     // Post output data.
     PostData(1, fListHist);
-    if ( fkCalibration ) PostData(2, fTreeEvent);
+    PostData(2, fTreeEvent);
 }
 
 //________________________________________________________________________
