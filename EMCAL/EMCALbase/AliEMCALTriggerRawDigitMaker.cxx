@@ -370,7 +370,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		{
 			if (AliDebugLevel()) printf("| STU => TRU raw data are there!\n");
 			
-			Int_t nTRU = fGeometry->GetNTotalTRU();
+			Int_t nTRU = 32;//fGeometry->GetNTotalTRU();
 			for (Int_t i = 0; i < nTRU; i++)
 			{
 			  iTRU = fGeometry->GetTRUIndexFromSTUIndex(i, 0);
