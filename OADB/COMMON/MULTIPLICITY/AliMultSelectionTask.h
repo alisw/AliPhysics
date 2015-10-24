@@ -184,6 +184,10 @@ private:
     
     Float_t fQuantiles[100]; //! percentiles
     Int_t fNDebug; // number of percentiles
+    
+    //Data needed for Monte Carlo
+    Int_t fMC_NColl;
+    Int_t fMC_NPart;
 
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!

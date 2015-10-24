@@ -57,8 +57,14 @@ class AliESDAD; //AD
 #include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliGenEventHeader.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliMCParticle.h"
+
 #include "AliESDAD.h" //AD
 #include "AliVZDC.h" //AD
 
@@ -66,7 +72,6 @@ class AliESDAD; //AD
 #include "AliMultiplicity.h"
 #include "AliESDUtils.h"
 #include "AliAnalysisUtils.h"
-#include "AliGenEventHeader.h"
 #include "AliAnalysisTaskSE.h"
 
 //For MultSelection Framework
@@ -140,6 +145,8 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fNDebug(13),
+fMC_NColl(-1),
+fMC_NPart(-1),
 //Histos
 fHistEventCounter(0),
 oadbMultSelection(0),
@@ -207,6 +214,8 @@ fEvSel_HasNoInconsistentVertices(0),
 fEvSel_PassesTrackletVsCluster(0), 
 fEvSel_VtxZ(0),
 fNDebug(13),
+fMC_NColl(-1),
+fMC_NPart(-1),
 //Histos
 fHistEventCounter(0),
 oadbMultSelection(0),
@@ -338,7 +347,9 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     //fTreeEvent->Branch("fnSPDClusters0", &nSPDClusters0, "fnSPDClusters0/I");
     //fTreeEvent->Branch("fnSPDClusters1", &nSPDClusters1, "fnSPDClusters1/I");
     fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
-    
+
+    fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
+    fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
     //A.T. FIXME change into AliMultVariable
     //ZDC info
     fTreeEvent->Branch("fZncEnergy", &fZncEnergy, "fZncEnergy/F");
@@ -473,8 +484,43 @@ void AliMultSelectionTask::UserExec(Option_t *)
     AliVAD *lVAD = lVevent->GetADData();
     if(!lVAD) {
         AliWarning("ERROR:lVAD not available\n");
-
     }
+    
+    //------------------------------------------------
+    //Information from MC (thanks to Alberica)
+    //Don't forget to set: some of the "ifs" may not be there
+    fMC_NColl = -1;
+    fMC_NPart = -1;
+    AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+    AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+    AliStack*    stack=0;
+    AliMCEvent*  mcEvent=0;
+    if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+        AliGenHijingEventHeader* hHijing=0;
+        AliGenDPMjetEventHeader* dpmHeader=0;
+        AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
+        if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+            hHijing = (AliGenHijingEventHeader*)mcGenH;
+        else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+            TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+            hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+            if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
+            if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
+        }
+        else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+            dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+        }
+        if(hHijing)   {
+            fMC_NPart = hHijing->ProjectileParticipants()+hHijing->TargetParticipants();
+            fMC_NColl = hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw();
+        }
+        if(dpmHeader) {
+            fMC_NPart =dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants();
+            fMC_NColl =dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw();
+        }
+    }
+    //------------------------------------------------
+    
     if(lVerbose) Printf("Starting...");
     fRunNumber = lVevent->GetRunNumber();
     Double_t lMagneticField = -10;
