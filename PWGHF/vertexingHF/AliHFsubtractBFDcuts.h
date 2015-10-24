@@ -71,7 +71,7 @@ private:
   Bool_t AnalyseDecay(Bool_t generateString, Bool_t mcOnly);  /// check in which decay process a particle was created
   void   CountProngs(Int_t labCurrMother, Int_t labCurrExcl, Bool_t generateString, Bool_t mConly);
   /// counting the prongs of labCurrMother, labCurrExcl is assumed to be a stable particle
-  Bool_t IsStable(Int_t labProng) const;       /// Is that prong a stable particle?
+  Bool_t IsStable(Int_t labProng);             /// Is that prong a stable particle?
   Bool_t IsInAcceptance(Int_t labProng) const; /// Is that prong within the fiducial acceptance
   AliAODVertex* RecBvtx(TObjArray* tracks) const; /// Reconstruct a secondary vertex with the supplied tracks
   Bool_t CheckBhypothesis(Int_t iAODtrack, Bool_t Bprong); /// Method to check Whether the current D0 candidate and the track originate from a B decay
@@ -96,6 +96,7 @@ private:
   Int_t                     fLabMother;    /// Label of the mother of the candidate D0 (or charmed hadron)
   UInt_t                    fNprongs;      /// Number of prongs, counting the first charmed hadron as one particle (simulation cuts can lead to loss of prongs!)
   UInt_t                    fNprongsInAcc; /// Number of prongs, counting only the particles within acceptance
+  Bool_t                    fFoundElectron;/// Does the B meson decay contain an electron?
   Bool_t                    fDecayChain;   /// Chained decay of charmed hadrons
   Double_t                  fMotherPt;     /// Transverse momentum of the mother particle (B hadron in case of feed-down,
                                            /// the charmed hadron itsself in case of prompt production)
@@ -104,7 +105,7 @@ private:
   TList*             fDecayStrList;        //!<! List with all decay strings
 
   /// \cond CLASSIMP
-  ClassDef(AliHFsubtractBFDcuts,9);
+  ClassDef(AliHFsubtractBFDcuts,10);
   /// \endcond
 };
 

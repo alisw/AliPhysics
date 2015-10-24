@@ -82,7 +82,8 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
                                                                  Bool_t isPPData=kFALSE,
                                                                  Bool_t isPPbData=kFALSE,
                                                                  Double_t refMult = 9.26,
-                                                                 Bool_t isFineNtrkBin=kFALSE)
+                                                                 Bool_t isFineNtrkBin=kFALSE,
+                                                                 Bool_t upgrade=kFALSE)
 {
   printf("Adding CF task using cuts from file %s\n",cutFile);
   if (configuration == AliCFTaskVertexingHFCutVarFDSub::kSnail){
@@ -435,6 +436,7 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
     nameContainer="CFHFccontainer0allD";
   }
   nameContainer += suffix;
+  if (upgrade) nameContainer += "Upgrade";
   //Setting up the container grid...
 
   AliCFContainer* container;
@@ -851,6 +853,19 @@ AliCFTaskVertexingHFCutVarFDSub *AddTaskCFVertexingHFCutVarFDSub(const char* cut
     output8name+="_all";
     output9name+="_all";
     output10name+="_all";
+  }
+
+  if (upgrade) {
+    outputfile += "Upgrade";
+    output1name+="Upgrade";
+    output3name+="Upgrade";
+    output4name+="Upgrade";
+    output5name+="Upgrade";
+    output6name+="Upgrade";
+    output7name+="Upgrade";
+    output8name+="Upgrade";
+    output9name+="Upgrade";
+    output10name+="Upgrade";
   }
 
   outputfile += suffix;
