@@ -87,7 +87,7 @@ ClassImp(AliMultSelectionTask)
 
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
-fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE), 
+fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkTrigger(AliVEvent::kMB),
 fZncEnergy(0),
 fZpcEnergy(0),
@@ -154,7 +154,7 @@ fInput(0)
 
 AliMultSelectionTask::AliMultSelectionTask(const char *name)
     : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0), fESDtrackCuts(0), fTrackCuts(0), fUtils(0), 
-fkCalibration ( kTRUE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
+fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkDebug(kTRUE),
 fkTrigger(AliVEvent::kMB),
 fZncEnergy(0),
 fZpcEnergy(0),
