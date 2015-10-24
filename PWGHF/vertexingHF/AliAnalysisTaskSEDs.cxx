@@ -788,7 +788,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
         d->Getd0MeasMinusExpProng(ip,aod->GetMagneticField(),diffIP,errdiffIP);
         tmpNormIP[ip] = diffIP/errdiffIP;
         if(ip==0) normIP = tmpNormIP[ip];
-        else if(TMath::Abs(tmpNormIP[ip])>TMath::Abs(tmpNormIP[ip-1])) normIP = tmpNormIP[ip];
+        else if(TMath::Abs(tmpNormIP[ip])>TMath::Abs(normIP)) normIP = tmpNormIP[ip];
       }
     }
     Double_t var4nSparse[13] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
