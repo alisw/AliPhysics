@@ -209,7 +209,10 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
   track->SetSector(sec);
   //  Int_t index = i&0xFFFF;
   int row = track->GetRow();
-  if (sec>=fkParam->GetNInnerSector()) track->SetRow(row+fkParam->GetNRowLow()); 
+  if (sec>=fkParam->GetNInnerSector()) {
+    row += fkParam->GetNRowLow();
+    track->SetRow(row);
+  }
   track->SetClusterIndex2(row, i);  
   //track->fFirstPoint = row;
   //if ( track->fLastPoint<row) track->fLastPoint =row;
@@ -1417,6 +1420,23 @@ Int_t  AliTPCtracker::LoadClusters()
   if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) CalculateXtalkCorrection();
   if (AliTPCReconstructor::GetRecoParam()->GetCrosstalkCorrection()!=0.) ApplyXtalkCorrection();
   //if (AliTPCReconstructor::GetRecoParam()->GetUseOulierClusterFilter()) FilterOutlierClusters();  
+
+
+  static int maxClus[18][2][kMaxRow]={0};
+  int maxAcc=0,nclEv=0, capacity=0;
+  for (int isec=0;isec<18;isec++) {
+    for (int irow=0;irow<kMaxRow;irow++) {
+      AliTPCtrackerRow * tpcrow = irow>62 ?  &(fOuterSec[isec][irow-63]) : &(fInnerSec[isec][irow]);
+      maxClus[isec][0][irow] = TMath::Max(maxClus[isec][0][irow], tpcrow->GetN1());
+      maxClus[isec][1][irow] = TMath::Max(maxClus[isec][1][irow], tpcrow->GetN2());
+      maxAcc += maxClus[isec][0][irow]+maxClus[isec][1][irow];
+      nclEv += tpcrow->GetN();
+      capacity += tpcrow->GetClusters1()->Capacity();
+      capacity += tpcrow->GetClusters2()->Capacity();
+    }
+  }
+  printf("RS:AccumulatedSpace: %d for %d | pointers: %d\n",maxAcc,nclEv,capacity);
+
   return 0;
 }
 
@@ -2835,8 +2855,8 @@ Int_t AliTPCtracker::FollowBackProlongation(AliTPCseed& t, Int_t rf, Bool_t from
     
   Int_t first = t.GetFirstPoint();
   Int_t ri = GetRowNumber(xt); 
-  if (!fromSeeds)
-    ri += 1;
+  //  if (!fromSeeds)  ri += 1; 
+  if (xt<0)   ri += 1; // RS
 
   if (first<ri) first = ri;
   //
@@ -8447,14 +8467,14 @@ void AliTPCtracker::MakeESDBitmaps(AliTPCseed *t, AliESDtrack *esd)
   //-----------------------------------------------------------------------
 
   Int_t firstpoint = 0;
-  Int_t lastpoint = 159;
+  Int_t lastpoint = kMaxRow;
   AliTPCTrackerPoint *point;
   AliTPCclusterMI    *cluster;
   
   Int_t nclsf = 0;
-  TBits clusterMap(159);
-  TBits sharedMap(159);
-  TBits fitMap(159);
+  TBits clusterMap(kMaxRow);
+  TBits sharedMap(kMaxRow);
+  TBits fitMap(kMaxRow);
   for (int iter=firstpoint; iter<lastpoint; iter++) {
     // Change to cluster pointers to see if we have a cluster at given padrow
 
@@ -8748,7 +8768,7 @@ void  AliTPCtracker::TrackFollowingHLT(TObjArray *const arr )
       {
 	t0.SetRelativeSector(t.GetRelativeSector());
 	t0.SetLastPoint(0);  // first cluster in track position
-	t0.SetFirstPoint(159);
+	t0.SetFirstPoint(kMaxRow);
 	for (Int_t nr=0; nr<nRows; nr++){ 
 	  if( nr<fInnerSec->GetNRows() ) fSectors=fInnerSec;
 	  else fSectors=fOuterSec;

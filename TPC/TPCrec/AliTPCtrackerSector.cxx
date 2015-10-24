@@ -230,15 +230,19 @@ Int_t  AliTPCtrackerSector::GetRowNumber(Double_t x) const
   Double_t r;
   if (fN < 64){
     r=fRow[fN-1].GetX();
-    if (x > r) return fN;
+    //    if (x > r) return fN;
+    if (x > r) return fN-1; // RS
     r=fRow[0].GetX();
-    if (x < r) return -1;
+    //    if (x < r) return -1;
+    if (x < r) return 0; // RS
     return Int_t((x-r)/fPadPitchLength + 0.5);}
   else{    
     r=fRow[fN-1].GetX();
-    if (x > r) return fN;
+    //    if (x > r) return fN;
+    if (x > r) return fN-1;
     r=fRow[0].GetX();
-    if (x < r) return -1;
+    //    if (x < r) return -1;
+    if (x < r) return 0;
     Double_t r1=fRow[64].GetX();
     if(x<r1){       
       return Int_t((x-r)/f1PadPitchLength + 0.5);}

@@ -21,6 +21,7 @@
 #include "AliComplexCluster.h"
 #include "AliPID.h"
 #include "AliVTPCseed.h"
+#include "AliTPCreco.h"
 
 class TFile;
 class AliTPCParam;
@@ -84,7 +85,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
 
      void SetErrorY2(Float_t sy2){fErrorY2=sy2;}
      void SetErrorZ2(Float_t sz2){fErrorZ2=sz2;}
-     Float_t  CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=159, Bool_t onlyused = kFALSE);
+     Float_t  CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=kMaxRow, Bool_t onlyused = kFALSE);
      Float_t  CookShape(Int_t type);
      //  Float_t CookShape2(Int_t type,Bool_t withQ);
      void CookPID();
@@ -144,9 +145,9 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      //
      //
 
-  Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Bool_t shapeNorm=kTRUE, Int_t posNorm=0, Int_t padNorm=0,Int_t returnVal=0);
+  Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=kMaxRow, Bool_t shapeNorm=kTRUE, Int_t posNorm=0, Int_t padNorm=0,Int_t returnVal=0);
 
-  Float_t  CookdEdxAnalytical(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Int_t returnVal=0, Int_t rowThres = 2, Int_t mode=0, TVectorT<float> *returnVec = NULL);
+  Float_t  CookdEdxAnalytical(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=kMaxRow, Int_t returnVal=0, Int_t rowThres = 2, Int_t mode=0, TVectorT<float> *returnVec = NULL);
 
  static   void GetError(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
 			 Double_t& erry, Double_t &errz);
@@ -172,7 +173,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
      AliESDtrack * fEsd; //!
-     AliTPCclusterMI*   fClusterPointer[159];  // array of cluster pointers  - 
+     AliTPCclusterMI*   fClusterPointer[kMaxRow];  // array of cluster pointers  - 
      Bool_t             fClusterOwner;         // indicates the track is owner of cluster
      //---CURRENT VALUES
      Short_t fRow;               // current row number  
@@ -205,7 +206,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      UChar_t fShared[20];         // shared map
      Int_t   fOverlapLabels[12];  //track labels and the length of the  overlap     
      Float_t fMAngular;           // mean angular factor
-     AliTPCTrackerPoint  fTrackPoints[159];  //track points - array track points
+     AliTPCTrackerPoint  fTrackPoints[kMaxRow];  //track points - array track points
      Int_t   fPoolID;              //! id in the pool
      ClassDef(AliTPCseed,9)
 };

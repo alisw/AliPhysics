@@ -104,7 +104,7 @@ class AliTPCTrackerPoint  {
   //  Char_t   fIsShared;     ///< indicate sharing of the point between several tracks
 
   /// \cond CLASSIMP
-  //  ClassDef(AliTPCTrackerPoint, 2);
+  //    ClassDef(AliTPCTrackerPoint, 2);
   /// \endcond  
 };
 
