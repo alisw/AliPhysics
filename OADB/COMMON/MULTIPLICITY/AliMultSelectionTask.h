@@ -70,6 +70,9 @@ public:
     
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
+    //Get Period name (can be static)
+    static TString GetPeriodName(); //no input required, will have all info in globals...
+    
     //Cannot be static: requires AliAnalysisUtils Object (why not static?) 
     Bool_t IsNotPileupMV (AliVEvent *event);
     Bool_t PassesTrackletVsCluster (AliVEvent *event);

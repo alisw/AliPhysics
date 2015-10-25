@@ -1110,3 +1110,46 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
     return lReturnValue;
 }
 
+//______________________________________________________________________
+TString AliMultSelectionTask::GetPeriodName() 
+{
+    //==================================
+    // Setup initial Info
+    Bool_t lLocated = kFALSE;
+    TString lTag = "LPMProductionTag";
+    TString lProductionName = "";
+
+    //==================================
+    // Get alirootVersion object title
+    AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if (!handler) return lProductionName; //failed!
+    TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+    TString lAlirootVersion(prodInfoData->GetTitle());
+    
+    //==================================
+    // Get Production name
+    TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+    if(lArrStr->GetEntriesFast()) {
+        TIter iString(lArrStr);
+        TObjString* os=0;
+        Int_t j=0;
+        while ((os=(TObjString*)iString())) {
+            if( os->GetString().Contains(lTag.Data()) ){
+                lLocated = kTRUE;
+                lProductionName = os->GetString().Data();
+                //Remove Label
+                lProductionName.ReplaceAll(lTag.Data(),"");
+                //Remove any remaining whitespace (just in case)
+                lProductionName.ReplaceAll("=","");
+                lProductionName.ReplaceAll(" ","");
+            }
+            j++;
+        }
+    }
+    //Memory cleanup
+    delete lArrStr;
+    //Return production name
+    return lProductionName;
+}
+
+
