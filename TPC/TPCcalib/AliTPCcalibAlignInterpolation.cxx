@@ -564,9 +564,12 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
     for (Int_t iPoint=0;iPoint<kMaxLayer;iPoint++){      
       AliTPCclusterMI &cluster=clusterArray[iPoint];
       if (cluster.GetDetector()==0) continue;
+      Bool_t   zsignSector=((cluster.GetDetector()%36)<18) ? 1.:-1.;
+      if (zsignSector*cluster.GetZ()<0.) continue;
+
       if (trackArrayITS[iPoint].GetUniqueID()>0){
 	deltaITS0[counter]= Int_t(trackArrayITS[iPoint].GetY()*rounding)/rounding;
-	deltaITS1[counter]= Int_t((cluster.GetZ()-trackArrayITS[iPoint].GetZ())*rounding)/rounding;
+	deltaITS1[counter]= Int_t((trackArrayITS[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
       }
       deltaTRD0[counter]=0;
       deltaTRD1[counter]=0;
@@ -574,11 +577,11 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
       deltaTOF1[counter]=0;
       if (trackArrayITSTRD[iPoint].GetUniqueID()>0){
 	deltaTRD0[counter]= Int_t(trackArrayITSTRD[iPoint].GetY()*rounding)/rounding;
-	deltaTRD1[counter]= Int_t((cluster.GetZ()-trackArrayITSTRD[iPoint].GetZ())*rounding)/rounding;
+	deltaTRD1[counter]= Int_t((trackArrayITSTRD[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
       }
       if (trackArrayITSTOF[iPoint].GetUniqueID()>0){
 	deltaTOF0[counter]= Int_t(trackArrayITSTOF[iPoint].GetY()*rounding)/rounding;
-	deltaTOF1[counter]= Int_t((cluster.GetZ()-trackArrayITSTOF[iPoint].GetZ())*rounding)/rounding;
+	deltaTOF1[counter]= Int_t((trackArrayITSTOF[iPoint].GetZ()-cluster.GetZ())*rounding)/rounding;
       }
       //      vecR(kMaxLayer), vecPhi(kMaxLayer), vecZ(kMaxLayer);
       vecR[counter]=trackArrayITS[iPoint].GetX();
@@ -772,7 +775,7 @@ void    AliTPCcalibAlignInterpolation::FillHistogramsFromChain(const char * resi
 	  if (sector<0) sector+=18;
 	  Double_t deltaPhi=(*vecPhi)[ipoint]-TMath::Pi()*(sector+0.5)/9.;
 	  Double_t localX = TMath::Cos(deltaPhi)*(*vecR)[ipoint];
-	  Double_t xxx[5]={(*vecDelta)[ipoint], sector, localX,   (*vecZ)[ipoint]/(*vecR)[ipoint], param->GetParameter()[4] };
+	  Double_t xxx[5]={(*vecDelta)[ipoint], sector, localX,   (*vecZ)[ipoint]/localX, param->GetParameter()[4] };
 	  if (xxx[0]==0) continue;
 	  hisToFill[ihis]->Fill(xxx);	  
 	}	
@@ -837,8 +840,10 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
       Double_t sector=9*phi/TMath::Pi();
       if (sector<0) sector+=18;
       Double_t deltaY=param->GetY();
-      Double_t deltaZ=param->GetZ()-cl->GetZ();      
+      Double_t deltaZ=param->GetZ()-cl->GetZ();
       Double_t localX = cl->GetX();
+      Bool_t   zsignSector=((cl->GetDetector()%36)<18) ? 1.:-1.;
+      if (zsignSector*cl->GetZ()<0.) continue;
       Double_t xxx[5]={deltaY, sector, localX,   cl->GetZ()/cl->GetX(), param->GetParameter()[4] };
       hisToFill[iter]->Fill(xxx);	  
       xxx[0]=deltaZ;
