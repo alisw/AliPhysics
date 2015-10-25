@@ -4461,10 +4461,10 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	Double_t c0  = 1/TMath::Sqrt(r02);
 	if (yy0>0) c0*=-1.;	
        
-	//Double_t dfi0   = 2.*TMath::ASin(dvertex*c0*0.5);
-	//Double_t dfi1   = 2.*TMath::ASin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);
-	Double_t dfi0   = 2.*AliTPCFastMath::FastAsin(dvertex*c0*0.5);
-	Double_t dfi1   = 2.*AliTPCFastMath::FastAsin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
+	Double_t dfi0   = 2.*TMath::ASin(dvertex*c0*0.5);
+	Double_t dfi1   = 2.*TMath::ASin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);
+	//	Double_t dfi0   = 2.*AliTPCFastMath::FastAsin(dvertex*c0*0.5);
+	//	Double_t dfi1   = 2.*AliTPCFastMath::FastAsin(TMath::Sqrt(yy0*yy0+(1-xx0)*(1-xx0))*dvertex*c0*0.5);  
 	//
 	Double_t zzzz2    = z1-dz13*dfi1/dfi0;
 	if (TMath::Abs(zzzz2-z2)>0.5) continue;       
