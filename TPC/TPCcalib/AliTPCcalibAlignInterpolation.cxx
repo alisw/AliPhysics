@@ -831,8 +831,8 @@ void     AliTPCcalibAlignInterpolation::FillHistogramsFromStreamers(const char *
       tree->GetEntry(iCl);
       if (iCl%100000==0) printf("%d\n",iCl);
       currentCl++;
-      Double_t xyz[3]={0};
-      param->GetXYZ(xyz);
+      Float_t xyz[3]={0};
+      cl->GetGlobalXYZ(xyz);
       Double_t phi = TMath::ATan2(xyz[1],xyz[0]);
       Double_t radius=TMath::Sqrt(xyz[1]*xyz[1]+xyz[0]*xyz[0]);
       param->Rotate(phi);
