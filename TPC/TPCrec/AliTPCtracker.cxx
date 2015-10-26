@@ -2651,7 +2651,7 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
     else                return 0;
   }   
   //calculate 
-  if (krow && (cl=krow.FindNearest2(y,z,roady,roadz,index)) ) t.SetCurrentClusterIndex1(krow.GetIndex(index));       
+  if (krow && (cl=krow.FindNearest2(y,z,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,index)) ) t.SetCurrentClusterIndex1(krow.GetIndex(index));
   if (cl) {
     t.SetCurrentCluster(cl); 
     //    t.SetRow(nr); //RS: memorise row | already set at propagation
