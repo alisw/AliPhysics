@@ -6,29 +6,43 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
 						      const char* centrality = "V0M",
 						      const Double_t MinTriggerPt = 4.0,
 						      const Double_t MaxTriggerPt = 8.0,
-						      const Double_t MinAssociatedPt = 2.0,
+						      const Double_t MinAssociatedPt = 3.0,
 						      const Double_t MaxAssociatedPt = 4.0,
 						      const Double_t Acceptancecut = 0.8,
-						      const char* period = "10h",
+						      const char* period = "11h",
 						      UInt_t offlineTriggerMask = AliVEvent::kMB,
 						      const Int_t MaxNEventsMix = 10,
 						      const Int_t MinNTracksMix = 2000,
-						      const Int_t NMBins = 7,
-						      const Int_t NZBins = 5,
+						      const Int_t NMBins = 6,
+						      const Int_t NZBins = 19,
 						      const Double_t Mbin0 = 0.,
 						      const Double_t Mbin1 = 5.,
 						      const Double_t Mbin2 = 10.,
 						      const Double_t Mbin3 = 20.,
 						      const Double_t Mbin4 = 40.,
 						      const Double_t Mbin5 = 60.,
-						      const Double_t Mbin6 = 80.,
+						      const Double_t Mbin6 = 90.,
 						      const Double_t Mbin7 = 90.,
 						      const Double_t Zbin0 = -10.,
-						      const Double_t Zbin1 = -5.,
-						      const Double_t Zbin2 = -2.0.,
-						      const Double_t Zbin3 = 2.0.,
-						      const Double_t Zbin4 = 5.,
-						      const Double_t Zbin5 = 10.,
+						      const Double_t Zbin1 = -8.5,
+						      const Double_t Zbin2 = -7.5,
+						      const Double_t Zbin3 = -6.5,
+						      const Double_t Zbin4 = -5.5,
+						      const Double_t Zbin5 = -4.5,
+						      const Double_t Zbin6 = -3.5,
+						      const Double_t Zbin7 = -2.5,
+						      const Double_t Zbin8 = -1.5,
+						      const Double_t Zbin9 = -0.5,
+						      const Double_t Zbin10 = 0.5,
+						      const Double_t Zbin11 = 1.5,						      
+						      const Double_t Zbin12 = 2.5,						      
+						      const Double_t Zbin13 = 3.5,						      
+						      const Double_t Zbin14 = 4.5,						      
+						      const Double_t Zbin15 = 5.5,						      
+						      const Double_t Zbin16 = 6.5,						      
+						      const Double_t Zbin17 = 7.5,						      
+						      const Double_t Zbin18 = 8.5,						      
+						      const Double_t Zbin19 = 10.0,	
 						      const char * file = "",
 						      const char * cutmask = "GlobalHybrid"
 							 )
@@ -59,8 +73,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   task->SetMaxAssociatedPt(MaxAssociatedPt);
   task->SetAcceptanceCut(Acceptancecut);
   task->SetTrackCut(cutmask);
-  if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
-//   if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("%s",file));
+ if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
+//    if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("%s",file));
 
   //Mixing scheme:
   Double_t *Mbin = new Double_t[NMBins+1];
@@ -81,6 +95,20 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   if(NZBins>2) Zbin[3] = Zbin3;
   if(NZBins>3) Zbin[4] = Zbin4;
   if(NZBins>4) Zbin[5] = Zbin5;
+  if(NZBins>5) Zbin[6] = Zbin6;
+  if(NZBins>6) Zbin[7] = Zbin7;
+  if(NZBins>7) Zbin[8] = Zbin8;
+  if(NZBins>8) Zbin[9] = Zbin9;
+  if(NZBins>9) Zbin[10] = Zbin10;
+  if(NZBins>10) Zbin[11] = Zbin11;
+  if(NZBins>11) Zbin[12] = Zbin12;
+  if(NZBins>12) Zbin[13] = Zbin13;
+  if(NZBins>13) Zbin[14] = Zbin14;
+  if(NZBins>14) Zbin[15] = Zbin15;
+  if(NZBins>15) Zbin[16] = Zbin16;
+  if(NZBins>16) Zbin[17] = Zbin17;
+  if(NZBins>17) Zbin[18] = Zbin18;
+  if(NZBins>18) Zbin[19] = Zbin19;
   TArrayD tZbin(NZBins+1, Zbin);  
   task->SetMixingScheme(MaxNEventsMix,MinNTracksMix,tMbin,tZbin);
   

@@ -119,8 +119,7 @@ class AliThreeParticleCorrelator : public TNamed {
     bool CheckAssociated(AliVParticle* p, bool doHistogram=false) const {
       // check the conditions for an associated particle
       if (!fCorrelation) return false;
-      if (!fTrigger) return false;
-      return fCorrelation->CheckAssociated(p, fTrigger, doHistogram);
+      return fCorrelation->CheckAssociated(p, doHistogram);
     }
 
     int Incrementtrigger() const {
@@ -198,17 +197,17 @@ class AliThreeParticleCorrelator : public TNamed {
     fMultiplicity = m;
   }
   
-  /// Set the efficiency weights.
-  void SetWeights(TObject* weights, int type){
-    for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
-      (*o)->SetWeight(weights,type);
-      //And for all ME workers.
-      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-      if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETA2Correlations.begin(), e=fMETA2Correlations.end();o!=e; o++)(*o)->SetWeight(weights,type);
-    }
-  }
+//   /// Set the efficiency weights.
+//   void SetWeights(TObject* weights, int type){
+//     for (typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();o!=e; o++)  {
+//       (*o)->SetWeight(weights,type);
+//       //And for all ME workers.
+//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMECorrelations.begin(), e=fMECorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
+//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETriggerCorrelations.begin(), e=fMETriggerCorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
+//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETACorrelations.begin(), e=fMETACorrelations.end();o!=e; o++)(*o)->SetWeight(weights,type);
+//       if(fEventPoolMgr)for (typename vector<C*>::iterator o=fMETA2Correlations.begin(), e=fMETA2Correlations.end();o!=e; o++)(*o)->SetWeight(weights,type);
+//     }
+//   }
     
   /// get ME analysis object corresponding to parameter
   C* GetCorrespondingME(C* o, int type=0) {
@@ -434,7 +433,7 @@ class AliThreeParticleCorrelator : public TNamed {
       if (!associatedp) continue;
       // scope for local iterators
       typename vector<C*>::iterator o=fCorrelations.begin(), e=fCorrelations.end();//fine, since mixed events has the same function for ass selection as at least one signal.
-      for (;o!=e; o++) if ((*o)->CheckAssociated(associatedp, NULL, false)) break;
+      for (;o!=e; o++) if ((*o)->CheckAssociated(associatedp, false)) break;
       if (o==e) continue;// next particle if current one does not pass cuts (no break anywhere).
       associated.push_back(associatedp);	
     } // loop over particle
