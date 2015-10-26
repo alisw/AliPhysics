@@ -48,11 +48,11 @@ class AliCorrelation3p : public TNamed {
   // check trigger particle cuts
   bool CheckTrigger( AliVParticle* trigger, bool doHistogram=false);
   // check associated particle cuts
-  bool CheckAssociated( AliVParticle* p, const AliVParticle* trigger=NULL, bool doHistogram=false);
+  bool CheckAssociated( AliVParticle* p, bool doHistogram=false);
   /// fill histograms from particles
-  int Fill(const AliVParticle* trigger		,const AliVParticle* p1	,const AliVParticle* p2	, const double weight=1.0);
-  int Fill(const AliVParticle* trigger		,const AliVParticle* p1				);
-  int FillTrigger(const AliVParticle*ptrigger);
+  int Fill( AliVParticle* trigger		, AliVParticle* p1	, AliVParticle* p2	, const double weight=1.0);
+  int Fill( AliVParticle* trigger		, AliVParticle* p1				);
+  int FillTrigger( AliVParticle*ptrigger);
   int MakeResultsFile(const char* scalingmethod, bool recreate=false, bool all=false);
   /// overloaded from TObject: cleanup
   virtual void Clear(Option_t * option ="");
@@ -70,13 +70,7 @@ class AliCorrelation3p : public TNamed {
   AliCorrelation3p& operator+=(const AliCorrelation3p& other);
   void SetMixedEvent(AliCorrelation3p* pME) {fMixedEvent=pME;}
   void SetAcceptanceCut(float AccCut){fAcceptanceCut = AccCut;}
-  void SetWeight(TObject*weight,int type){
-    if(type == 1)fWeights = dynamic_cast<TH3D*>(weight);
-    if(type == 2)fWeightshpT = dynamic_cast<TH2D*>(weight);
-    if(type == 3)fhighpt = dynamic_cast<TF1*>(weight);
-    
-    
-  }
+
   TH1 * GetHistogram(Int_t khist, Int_t Mbin, Int_t ZBin, const char* histname){return PrepareHist(GetNumberHist(khist,Mbin,ZBin),histname,"","","");}
   enum {
     kHistpT,  // TH1F
@@ -145,12 +139,7 @@ class AliCorrelation3p : public TNamed {
   float fhPhiEtaDeltaPhi12Cut1; // phi vs. eta plots: cut on phi between associated particles 
   float fhPhiEtaDeltaPhi12Cut2; // phi vs. eta plots: cut on phi between associated particles 
   float fAcceptanceCut;
-  TH3D * fWeights;//!
-  TH2D * fWeightshpT;//!
-  TF1  * fhighpt;//!
 
-  Int_t fMultWeightIndex;//
-  Int_t fVZWeightIndex;//
   AliCorrelation3p* fMixedEvent; // mixed event analysis
   TArrayD 	fMBinEdges; //Contains bin edges in centrality.
   TArrayD 	fZBinEdges; //Edges for vZ binning.
@@ -162,6 +151,6 @@ class AliCorrelation3p : public TNamed {
   TriggerType fTriggerType;
 
   //Class definition.
-  ClassDef(AliCorrelation3p, 4)
+  ClassDef(AliCorrelation3p, 5)
 };
 #endif

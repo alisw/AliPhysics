@@ -17,6 +17,7 @@
 #include "AliThreeParticleCorrelator.h"
 #include "AliCorrelation3p.h"
 #include "AliCFPI0.h"
+#include "AliFilteredTrack.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "AliEventPoolManager.h"
@@ -269,10 +270,6 @@ void AliAnalysisTaskCorrelation3p::UserCreateOutputObjects()
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 2));
     fOutput->Add(correlator->GetCorrespondingME(workertracktrigger, 3));
     fOutput->Add(workertracktrigger);
-    
-    if(fWeights)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeights,1);
-    if(fWeightshpt)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fWeightshpt,2);
-    if(fpTfunction)dynamic_cast<AliThreeParticleCorrelator<AliCorrelation3p>*>(fCorrelator)->SetWeights(fpTfunction,3);
 }
   else{
     InitializeQAhistograms();
@@ -393,7 +390,11 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     FillHistogram("trackUnselectedPhi",t->Phi(),Weight);
     FillHistogram("trackUnselectedTheta",t->Theta(),Weight);
     if (!IsSelected(t)) continue;
-    if(allrelevantParticles) allrelevantParticles->Add(new AliFilteredTrack(*t));
+    if(allrelevantParticles){
+	AliFilteredTrack * filp = new AliFilteredTrack(*t);
+	filp->SetEff(Weight);      
+      allrelevantParticles->Add(filp);
+    }
     if(fQA){
       FillHistogram("selectedTracksperRun",fRunFillValue);
       FillHistogram("NTracksVertex",fRunFillValue,fVertex[2]);
@@ -728,7 +729,7 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
 //   fOutput->Add(new TH3D("TrackDCAandonITSselected","DCA tangential vs DCA longitudinal vs Is in the first two ITS layers for selected events",50,-2,2,50,-5,5,2,-0.5,1.5));
 //   fOutput->Add(new TH3D("Eventbeforeselection","Vertex vs Multiplicity vs Centrality before event selection.", 50,-15,15,50,0,4000,50,0,100));
 //   fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
-  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 4000));
+  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 15000));
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
   fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 20));
   fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 20));
