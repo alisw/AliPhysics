@@ -5463,6 +5463,8 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
   // cuts[1]   - tan(phi)  cut
   // cuts[2]   - zvertex cut    - not applied 
   // cuts[3]   - fP3 cut
+  const double kRoadZ = 1.2, kRoadY = 1.2;
+
   Int_t nin0=0;
   Int_t nin1=0;
   Int_t nin2=0;
@@ -5532,7 +5534,7 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       Float_t roadz = (5*TMath::Sqrt(cl->GetSigmaZ2()+0.2)+1.)*iter;
       //
       x = krm.GetX() + xDist; // RS: assume distortion at krm is similar to that at kr
-      AliTPCclusterMI * cl1 = krm.FindNearest(y0,z0,roady,roadz);
+      AliTPCclusterMI * cl1 = krm.FindNearest(y0,z0,roady+fClExtraRoadY,roadz+fClExtraRoadZ);
       if (cl1 && TMath::Abs(ymax-TMath::Abs(y0))) {
 	erry = (0.5)*cl1->GetSigmaY2()/TMath::Sqrt(cl1->GetQ())*3;	    
 	errz = (0.5)*cl1->GetSigmaZ2()/TMath::Sqrt(cl1->GetQ())*3;
@@ -5542,7 +5544,7 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       }
       //
       x = krp.GetX() + xDist; // RS: assume distortion at krp is similar to that at kr
-      AliTPCclusterMI * cl2 = krp.FindNearest(y0,z0,roady,roadz);
+      AliTPCclusterMI * cl2 = krp.FindNearest(y0,z0,roady+fClExtraRoadY,roadz+fClExtraRoadZ);
       if (cl2) {
 	erry = (0.5)*cl2->GetSigmaY2()/TMath::Sqrt(cl2->GetQ())*3;	    
 	errz = (0.5)*cl2->GetSigmaZ2()/TMath::Sqrt(cl2->GetQ())*3;
@@ -5556,8 +5558,6 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       nin0++;
       polytrack.UpdateParameters();
       // follow polytrack
-      roadz = 1.2;
-      roady = 1.2;
       //
       Double_t yn,zn;
       nfoundable = polytrack.GetN();
@@ -5579,7 +5579,7 @@ void AliTPCtracker::MakeSeeds2Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	  //
 	  if (TMath::Abs(yn)>ymax1) continue; // RS:? watch dead zones
 	  nfoundable++;
-	  AliTPCclusterMI * cln = kr->FindNearest(yn,zn,roady,roadz);
+	  AliTPCclusterMI * cln = kr->FindNearest(yn,zn,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ);
 	  if (cln) {
 	    Float_t dist =  TMath::Sqrt(  (yn-cln->GetY())*(yn-cln->GetY())+(zn-cln->GetZ())*(zn-cln->GetZ()));
 	    if (dist<maxdist){
