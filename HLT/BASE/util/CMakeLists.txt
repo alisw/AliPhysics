@@ -102,6 +102,7 @@ if(ZEROMQ_FOUND)
   include_directories(
                       ${AliRoot_SOURCE_DIR}/HLT/BASE/HOMER
                       ${AliRoot_SOURCE_DIR}/HLT/global
+                      ${ZEROMQ_INCLUDE_DIR}
                       )
 
   add_executable(ZMQDIMlumiregServer ZMQDIMlumiregServer.cxx)
