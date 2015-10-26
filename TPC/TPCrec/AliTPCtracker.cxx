@@ -4337,6 +4337,8 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
   // cuts[1]   - tan(phi)  cut
   // cuts[2]   - zvertex cut
   // cuts[3]   - fP3 cut
+  const double kRoadY = 1., kRoadZ = 0.6;
+
   Int_t nin0  = 0;
   Int_t nin1  = 0;
   Int_t nin2  = 0;
@@ -4498,7 +4500,7 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	double ymEdgeDist = ym;
 	if (fAccountDistortions) ymEdgeDist -= GetYSectEdgeDist(sec,imiddle,ym,zm); // ym shifted by edge distortion
 	if ( (ym>0&&ymEdgeDist<ymaxm) || (ym<=0&&ymEdgeDist>-ymaxm) ) { //RS  //	if (TMath::Abs(ym)-ymaxm<0){
-	  cm = krm.FindNearest2(ym,zm,1.0,0.6,dummy);
+	  cm = krm.FindNearest2(ym,zm,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,dummy);
 	  if ((!cm) || (cm->IsUsed(10))) continue;
 	}
 	else{	  
@@ -4515,7 +4517,7 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	  ymEdgeDist = ym;
 	  if (fAccountDistortions) ymEdgeDist -= GetYSectEdgeDist(sec2,imiddle,ym,zm); // ym shifted by edge distortion
 	  if ( (ym>0&&ymEdgeDist<ymaxm) || (ym<=0&&ymEdgeDist>-ymaxm) ) { //RS //if (TMath::Abs(ym)-ymaxm<0){
-	    cm = kr2m.FindNearest2(ym,zm,1.0,0.6,dummy);
+	    cm = kr2m.FindNearest2(ym,zm,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,dummy);
 	    if ((!cm) || (cm->IsUsed(10))) continue;
 	  }
 	}
@@ -5032,7 +5034,7 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       Double_t yyym = angley*(xmDef-x1Def)+y1; // RS: idem, assume distortions cancels in the difference
       Double_t zzzm = anglez*(xmDef-x1Def)+z1;
 
-      const AliTPCclusterMI *kcm = krm.FindNearest2(yyym,zzzm,erry,errz,index);
+      const AliTPCclusterMI *kcm = krm.FindNearest2(yyym,zzzm,erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       if (!kcm) continue;
       if (kcm->IsUsed(10)) continue;
       if (kcm->IsDisabled()) {
@@ -5050,7 +5052,7 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       // look around first
       const AliTPCclusterMI *kc1m = kr1m.FindNearest2(-angley*dx11mDef+y1, // RS: idem, assume distortions cancels in the difference
 						      -anglez*dx11mDef+z1,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc1m){
 	found++;
@@ -5058,7 +5060,7 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       }
       const AliTPCclusterMI *kc1p = kr1p.FindNearest2(-angley*dx11pDef+y1, // RS: idem, assume distortions cancels in the difference
 						      -anglez*dx11pDef+z1,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc1p){
 	found++;
@@ -5071,7 +5073,7 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       // look around last
       const AliTPCclusterMI *kc3m = kr3m.FindNearest2(-angley*dx33mDef+y3, // RS: idem, assume distortions cancels in the difference
 						      -anglez*dx33mDef+z3,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc3m){
 	found++;
@@ -5081,7 +5083,7 @@ void AliTPCtracker::MakeSeeds5Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	continue;
       const AliTPCclusterMI *kc3p = kr3p.FindNearest2(-angley*dx33pDef+y3, // RS: idem, assume distortions cancels in the difference
 						      -anglez*dx33pDef+z3,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc3p){
 	found++;
