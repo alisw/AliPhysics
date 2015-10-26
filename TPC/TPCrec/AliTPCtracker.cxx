@@ -164,6 +164,8 @@ AliTPCtracker::AliTPCtracker()
 		 fkParam(0),
 		 fDebugStreamer(0),
 		 fUseHLTClusters(4),
+  fClExtraRoadY(0.),
+  fClExtraRoadZ(0.),  
          fCrossTalkSignalArray(0),
 		 fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -396,6 +398,8 @@ AliTracker(),
 		 fkParam(0),
          fDebugStreamer(0),
          fUseHLTClusters(4),
+  fClExtraRoadY(0.),
+  fClExtraRoadZ(0.),  
          fCrossTalkSignalArray(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -476,6 +480,8 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
 		 fkParam(0),
          fDebugStreamer(0),
          fUseHLTClusters(4),
+  fClExtraRoadY(0.),
+  fClExtraRoadZ(0.),  
          fCrossTalkSignalArray(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -2350,6 +2356,7 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
   // This function tries to find a track prolongation to next pad row
   //-----------------------------------------------------------------
   //
+  const double kRoadY = 1., kRoadZ = 1.;
   Double_t  x= GetXrow(nr), ymax=GetMaxY(nr);
   //
   //
@@ -2459,12 +2466,6 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
 
   const AliTPCtrackerRow &krow=GetRow(t.GetRelativeSector(),nr);
   if ( (t.GetSigmaY2()<0) || t.GetSigmaZ2()<0) return 0;
-  Double_t  roady  =2.; 
-  Double_t  roadz = 2.;
-  if (AliTPCReconstructor::GetExtendedRoads()){
-    roady+=AliTPCReconstructor::GetExtendedRoads()[0];
-    roadz+=AliTPCReconstructor::GetExtendedRoads()[1];
-  }
   //
   if (TMath::Abs(TMath::Abs(y)-ymax)<krow.GetDeadZone()){
     t.SetInDead(kTRUE);
@@ -2482,7 +2483,7 @@ Int_t AliTPCtracker::FollowToNext(AliTPCseed& t, Int_t nr) {
   //calculate 
   if (krow) {
     //    cl = krow.FindNearest2(y+10.,z,roady,roadz,index);    
-    cl = krow.FindNearest2(y,z,roady,roadz,index);    
+    cl = krow.FindNearest2(y,z,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,index);    
     if (cl) t.SetCurrentClusterIndex1(krow.GetIndex(index));       
   }  
   if (cl) {
@@ -2587,6 +2588,8 @@ Int_t AliTPCtracker::UpdateClusters(AliTPCseed& t,  Int_t nr) {
 //     return 0;  // not prolongate strongly inclined tracks
 //   }// patch 28 fev 06
 
+  const double kRoadY = 1., kRoadZ = 1.;
+
   Double_t x= GetXrow(nr);
   Double_t y,z;
   //t.PropagateTo(x+0.02);
@@ -2672,7 +2675,7 @@ Int_t AliTPCtracker::UpdateClusters(AliTPCseed& t,  Int_t nr) {
 
   if (krow) {    
     //cl = krow.FindNearest2(y+10,z,roady,roadz,uindex);      
-    cl = krow.FindNearest2(y,z,roady,roadz,uindex);      
+    cl = krow.FindNearest2(y,z,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,uindex);      
   }
 
   if (cl) t.SetCurrentClusterIndex1(krow.GetIndex(uindex));   
@@ -3787,6 +3790,9 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
   // cuts[1]   - tan(phi)  cut
   // cuts[2]   - zvertex cut
   // cuts[3]   - fP3 cut
+
+  const double kRoadY = 1., kRoadZ = 0.6;
+
   Int_t nin0  = 0;
   Int_t nin1  = 0;
   Int_t nin2  = 0;
@@ -3952,7 +3958,7 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	UInt_t dummy; 
 	AliTPCclusterMI * cm=0;
 	if (TMath::Abs(ym)-ymaxm<0){	  
-	  cm = krm.FindNearest2(ym,zm,1.0,0.6,dummy);
+	  cm = krm.FindNearest2(ym,zm,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,dummy);
 	  if ((!cm) || (cm->IsUsed(10))) {	  
 	    continue;
 	  }
@@ -3966,7 +3972,7 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	  //
 	  GetProlongation(xx2,xm,xr,ym,zm);
 	  if (TMath::Abs(ym)-ymaxm<0){
-	    cm = kr2m.FindNearest2(ym,zm,1.0,0.6,dummy);
+	    cm = kr2m.FindNearest2(ym,zm,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ,dummy);
 	    if ((!cm) || (cm->IsUsed(10))) {	  
 	      continue;
 	    }
@@ -4205,7 +4211,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       Double_t yyym = angley*(xm-x1)+y1;
       Double_t zzzm = anglez*(xm-x1)+z1;
 
-      const AliTPCclusterMI *kcm = krm.FindNearest2(yyym,zzzm,erry,errz,index);
+      const AliTPCclusterMI *kcm = krm.FindNearest2(yyym,zzzm,erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       if (!kcm) continue;
       if (kcm->IsUsed(10)) continue;
       if (kcm->IsDisabled()) {
@@ -4223,7 +4229,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       // look around first
       const AliTPCclusterMI *kc1m = kr1m.FindNearest2(angley*(x1m-x1)+y1,
 						      anglez*(x1m-x1)+z1,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc1m){
 	found++;
@@ -4231,7 +4237,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       }
       const AliTPCclusterMI *kc1p = kr1p.FindNearest2(angley*(x1p-x1)+y1,
 						      anglez*(x1p-x1)+z1,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc1p){
 	found++;
@@ -4244,7 +4250,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       // look around last
       const AliTPCclusterMI *kc3m = kr3m.FindNearest2(angley*(x3m-x3)+y3,
 						      anglez*(x3m-x3)+z3,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc3m){
 	found++;
@@ -4254,7 +4260,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	continue;
       const AliTPCclusterMI *kc3p = kr3p.FindNearest2(angley*(x3p-x3)+y3,
 						      anglez*(x3p-x3)+z3,
-						      erry,errz,index);
+						      erry+fClExtraRoadY,errz+fClExtraRoadZ,index);
       //
       if (kc3p){
 	found++;
@@ -4375,6 +4381,8 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
   // cuts[1]   - tan(phi)  cut
   // cuts[2]   - zvertex cut    - not applied 
   // cuts[3]   - fP3 cut
+  const double kRoadZ = 1.2, kRoadY = 1.2;
+
   Int_t nin0=0;
   Int_t nin1=0;
   Int_t nin2=0;
@@ -4442,7 +4450,7 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
       Float_t roadz = (5*TMath::Sqrt(cl->GetSigmaZ2()+0.2)+1.)*iter;
       //
       x = krm.GetX();
-      AliTPCclusterMI * cl1 = krm.FindNearest(y0,z0,roady,roadz);
+      AliTPCclusterMI * cl1 = krm.FindNearest(y0,z0,roady+fClExtraRoadY,roadz+fClExtraRoadZ);
       if (cl1 && TMath::Abs(ymax-TMath::Abs(y0))) {
 	erry = (0.5)*cl1->GetSigmaY2()/TMath::Sqrt(cl1->GetQ())*3;	    
 	errz = (0.5)*cl1->GetSigmaZ2()/TMath::Sqrt(cl1->GetQ())*3;
@@ -4451,7 +4459,7 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
       }
       //
       x = krp.GetX();
-      AliTPCclusterMI * cl2 = krp.FindNearest(y0,z0,roady,roadz);
+      AliTPCclusterMI * cl2 = krp.FindNearest(y0,z0,roady+fClExtraRoadY,roadz+fClExtraRoadZ);
       if (cl2) {
 	erry = (0.5)*cl2->GetSigmaY2()/TMath::Sqrt(cl2->GetQ())*3;	    
 	errz = (0.5)*cl2->GetSigmaZ2()/TMath::Sqrt(cl2->GetQ())*3;
@@ -4463,8 +4471,6 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
       nin0++;
       polytrack.UpdateParameters();
       // follow polytrack
-      roadz = 1.2;
-      roady = 1.2;
       //
       Double_t yn,zn;
       nfoundable = polytrack.GetN();
@@ -4480,7 +4486,7 @@ void AliTPCtracker::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2, F
 	  polytrack.GetFitPoint(xn,yn,zn);
 	  if (TMath::Abs(yn)>ymax1) continue;
 	  nfoundable++;
-	  AliTPCclusterMI * cln = kr->FindNearest(yn,zn,roady,roadz);
+	  AliTPCclusterMI * cln = kr->FindNearest(yn,zn,kRoadY+fClExtraRoadY,kRoadZ+fClExtraRoadZ);
 	  if (cln) {
 	    Float_t dist =  TMath::Sqrt(  (yn-cln->GetY())*(yn-cln->GetY())+(zn-cln->GetZ())*(zn-cln->GetZ()));
 	    if (dist<maxdist){
@@ -7427,8 +7433,14 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;  
   transform->SetCurrentTimeStamp( esd->GetTimeStamp());
   transform->SetCurrentRun(esd->GetRunNumber());
+  //
+  if (AliTPCReconstructor::GetExtendedRoads()){
+    fClExtraRoadY = AliTPCReconstructor::GetExtendedRoads()[0];
+    fClExtraRoadZ = AliTPCReconstructor::GetExtendedRoads()[1];
+    AliInfoF("Additional errors for roads: Y:%f Z:%f",fClExtraRoadY,fClExtraRoadZ);
+  }
 
-  
+  //
   Clusters2Tracks();
   fEventHLT = 0;
   if (!fSeeds) return 1;
@@ -8700,7 +8712,7 @@ void  AliTPCtracker::TrackFollowingHLT(TObjArray *const arr )
 
 	  AliTPCclusterMI *cl=0;
 	  UInt_t uindex = 0;
-	  cl = krow.FindNearest2(t0.GetY(),t0.GetZ(),roady,roadz,uindex); 
+	  cl = krow.FindNearest2(t0.GetY(),t0.GetZ(),roady+fClExtraRoadY,roadz+fClExtraRoadZ,uindex); 
 	  if (!cl ) continue;
 	  double dy = cl->GetY()-t0.GetY();
 	  double dz = cl->GetZ()-t0.GetZ();

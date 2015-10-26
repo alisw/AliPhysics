@@ -247,6 +247,8 @@ private:
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
    Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
    //
+   Double_t fClExtraRoadY;              //! extra additiom to Y road for FindCluster
+   Double_t fClExtraRoadZ;              //! extra addition Z road for FindCluster
   
    TObjArray * fCrossTalkSignalArray;  // for 36 sectors    
    TClonesArray* fSeedsPool;            //! pool of seeds
