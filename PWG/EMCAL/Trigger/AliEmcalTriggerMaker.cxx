@@ -17,13 +17,13 @@
 #include <THashList.h>
 #include "AliAODCaloTrigger.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalTriggerDataGridAP.h"
 #include "AliEmcalTriggerPatchInfo.h"
 #include "AliEmcalTriggerSetupInfo.h"
 #include "AliLog.h"
 #include "AliVCaloCells.h"
 #include "AliVCaloTrigger.h"
 #include "AliVVZERO.h"
-#include "AliEmcalTriggerDataGrid.h"
 #include "AliEmcalTriggerMaker.h"
 
 #include "THistManager.h"
@@ -193,10 +193,10 @@ void AliEmcalTriggerMaker::UserCreateOutputObjects()
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   // Create data structure for energy measurements;
-  fPatchAmplitudes = new AliEmcalTriggerDataGrid<float>;
-  fPatchADC =  new AliEmcalTriggerDataGrid<int>;
-  fPatchADCSimple = new AliEmcalTriggerDataGrid<double>;
-  fLevel0TimeMap = new AliEmcalTriggerDataGrid<char>;
+  fPatchAmplitudes = new AliEmcalTriggerDataGridAP<float>;
+  fPatchADC =  new AliEmcalTriggerDataGridAP<int>;
+  fPatchADCSimple = new AliEmcalTriggerDataGridAP<double>;
+  fLevel0TimeMap = new AliEmcalTriggerDataGridAP<char>;
 
   if(fDoQA && fOutput){
     fQAHistos = new THistManager("TriggerQA");
@@ -573,7 +573,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
       if(type == kTMEMCalLevel0){
         try {
           adcAmp += static_cast<Int_t>((*fPatchAmplitudes)(globCol+i,globRow+j) * 4); // precision loss in case of global integer field
-        } catch (const AliEmcalTriggerDataGrid<float>::OutOfBoundsException &e) {
+        } catch (const AliEmcalTriggerDataGridAP<float>::OutOfBoundsException &e) {
           if(fDebugLevel){
             std::cerr << e.what() << std::endl;
           }
@@ -581,7 +581,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
       } else {
         try {
           adcAmp += (*fPatchADC)(globCol+i,globRow+j);
-        } catch (AliEmcalTriggerDataGrid<int>::OutOfBoundsException &e){
+        } catch (AliEmcalTriggerDataGridAP<int>::OutOfBoundsException &e){
           if(fDebugLevel){
             std::cerr << e.what() << std::endl;
           }
@@ -590,7 +590,7 @@ AliEmcalTriggerPatchInfo* AliEmcalTriggerMaker::ProcessPatch(TriggerMakerTrigger
 
       try{
         adcOfflineAmp += (*fPatchADCSimple)(globCol+i,globRow+j);
-      } catch (AliEmcalTriggerDataGrid<double>::OutOfBoundsException &e){
+      } catch (AliEmcalTriggerDataGridAP<double>::OutOfBoundsException &e){
         if(fDebugLevel){
           std::cerr << e.what() << std::endl;
         }

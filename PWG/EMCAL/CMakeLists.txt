@@ -66,18 +66,20 @@ set(SRCS
   AliEMCALConfigurationMatcher.cxx
   AliAnalysisTaskEmcalTriggerSelection.cxx
   Trigger/AliEmcalTriggerBitConfig.cxx
-  Trigger/AliEmcalTriggerDataGrid.cxx
-  Trigger/AliEmcalTriggerChannelContainer.cxx
   Trigger/AliEmcalTriggerMaker.cxx
   Trigger/AliEmcalTriggerMakerKernel.cxx
   Trigger/AliEmcalTriggerMakerTask.cxx
-  Trigger/AliEmcalTriggerRawPatch.cxx
   Trigger/AliEmcalTriggerPatchInfo.cxx
   Trigger/AliEmcalTriggerSetupInfo.cxx
   Trigger/AliEmcalTriggerDecision.cxx
   Trigger/AliEmcalTriggerDecisionContainer.cxx
   Trigger/AliEmcalTriggerSelectionCuts.cxx
   Trigger/AliEmcalTriggerSelection.cxx
+  Trigger/AliEmcalTriggerDataGridAP.cxx
+  Trigger/AliEmcalTriggerChannelContainerAP.cxx
+  Trigger/AliEmcalTriggerRawPatchAP.cxx
+  Trigger/AliEmcalTriggerPatchFinderAP.cxx
+  Trigger/AliEmcalTriggerAlgorithmAP.cxx
   )
 
 # Headers from sources
@@ -93,7 +95,7 @@ add_library(${MODULE} SHARED  ${SRCS} ${HDRS} ${MODULE}LinkDef.h G__${MODULE}.cx
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils ESD PWGTools STEER STEERBase Tender)
+set(LIBDEPS ANALYSIS ANALYSISalice AOD OADB CDB EMCALrec EMCALUtils EMCALTriggerBase ESD PWGTools STEER STEERBase Tender)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
