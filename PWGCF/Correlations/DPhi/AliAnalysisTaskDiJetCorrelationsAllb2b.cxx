@@ -36,6 +36,7 @@
 #include "AliEventPoolManager.h"
 
 #include "AliAnalysisTaskDiJetCorrelationsAllb2b.h"
+#include <Riostream.h>
 
 using std::cout;
 using std::endl;
