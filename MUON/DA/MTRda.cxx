@@ -37,6 +37,7 @@ extern "C" {
 #include "monitor.h"
 
 #include <Riostream.h>
+#include <stdio.h>
 
 #include "AliRawReaderDate.h"
 
@@ -1492,7 +1493,7 @@ int main(Int_t argc, Char_t **argv)
       }
     }
 
-    std::ofstream ofile(cfg.GetTrigScalFileName(), std::ofstream::binary);
+    FILE* fsc = fopen(cfg.GetTrigScalFileName(),"wb");
     Bool_t writeScalers = kFALSE;
 
     UInt_t *globalInput = new UInt_t[4];
@@ -1749,7 +1750,7 @@ int main(Int_t argc, Char_t **argv)
 	    }
 	  }
 	  printf("MTRda: write to buffer %d bytes.\n",ibw);
-	  ofile.write((const char*)buffer,ibw);
+	  fwrite(buffer,ibw,1,fsc);
 	  // reset
 	  deltaT = 0.;
 	  nCalibEvents = 0;
@@ -1783,7 +1784,7 @@ int main(Int_t argc, Char_t **argv)
       }
     }
 
-    ofile.close();
+    fclose(fsc);
 
     if (cfg.SaveScalers()) {
       if (writeScalers) {
