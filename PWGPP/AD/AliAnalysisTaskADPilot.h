@@ -108,6 +108,9 @@ private:
   TH3F	      *fHistTimeVsChargePerPM_UnCorr;
   
   /*Experimental gain monitoring*/
+  TH2F	      *fHistChargeTriggerPerChannel;
+  TH2F	      *fHistChargeTriggerPerChannel_ADAND;
+  TH2F	      *fHistChargeTriggerPerChannel_PF;
   TH1F	      *fHistChargeTriggerADA;
   TH1F	      *fHistChargeTriggerADA_ADAND;
   TH1F	      *fHistChargeTriggerADA_PF;

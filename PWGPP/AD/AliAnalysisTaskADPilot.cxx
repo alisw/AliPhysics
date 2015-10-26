@@ -58,6 +58,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot()
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
+    fHistChargeTriggerPerChannel(0),fHistChargeTriggerPerChannel_ADAND(0),fHistChargeTriggerPerChannel_PF(0),
     fHistChargeTriggerADA(0),fHistChargeTriggerADA_ADAND(0),fHistChargeTriggerADA_PF(0),fHistChargeTriggerADC(0),fHistChargeTriggerADC_ADAND(0),fHistChargeTriggerADC_PF(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
     fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),
@@ -83,6 +84,7 @@ AliAnalysisTaskADPilot::AliAnalysisTaskADPilot(const char *name)
     fHistChargeVsClockInt0(0),fHistChargeVsClockInt1(0),fHistBBFlagVsClock(0),fHistBGFlagVsClock(0),fHistBBFlagPerChannel(0),fHistBGFlagPerChannel(0),fHistMaxChargeClock(0),
     fHistMaxChargeValueInt0(0),fHistMaxChargeValueInt1(0),
     fHistTimeVsChargePerPM_UnCorr(0),
+    fHistChargeTriggerPerChannel(0),fHistChargeTriggerPerChannel_ADAND(0),fHistChargeTriggerPerChannel_PF(0),
     fHistChargeTriggerADA(0),fHistChargeTriggerADA_ADAND(0),fHistChargeTriggerADA_PF(0),fHistChargeTriggerADC(0),fHistChargeTriggerADC_ADAND(0),fHistChargeTriggerADC_PF(0),
     fHistMedianTimeADA(0),fHistMedianTimeADC(0),fHistNTimesMedianADA(0),fHistNTimesMedianADC(0),fHistRobustTimeADA(0),fHistRobustTimeADC(0),fHistNTimesRobustADA(0),fHistNTimesRobustADC(0),
     fHistMedianIndDiffVsChargeADA(0),fHistMedianIndDiffVsChargeADC(0),
@@ -495,6 +497,18 @@ if (!fHistTimeVsChargeADC_Ex) {
   }
   
 //---------------------------------------------  
+if (!fHistChargeTriggerPerChannel) {
+    fHistChargeTriggerPerChannel = CreateHist2D("fHistChargeTriggerPerChannel","Trigger charge per chanel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+    fListHist->Add(fHistChargeTriggerPerChannel);
+  }
+if (!fHistChargeTriggerPerChannel_ADAND) {
+    fHistChargeTriggerPerChannel_ADAND = CreateHist2D("fHistChargeTriggerPerChannel_ADAND","Trigger charge per chanel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+    fListHist->Add(fHistChargeTriggerPerChannel_ADAND);
+  }
+if (!fHistChargeTriggerPerChannel_PF) {
+    fHistChargeTriggerPerChannel_PF = CreateHist2D("fHistChargeTriggerPerChannel_PF","Trigger charge per chanel",kNChannelBins, kChannelMin, kChannelMax,1024,0,1024,"ADC counts");
+    fListHist->Add(fHistChargeTriggerPerChannel_PF);
+  }
 if (!fHistChargeTriggerADA) {
     fHistChargeTriggerADA = CreateHist1D("fHistChargeTriggerADA","Trigger charge ADA",kNChargeChannelBins,kChargeChannelMin,kChargeChannelMax,"ADC counts");
     fListHist->Add(fHistChargeTriggerADA);
@@ -615,7 +629,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   Int_t nBGflagsADA = 0;
   Int_t nBGflagsADC = 0;
   Float_t fCharges[16];
-  Bool_t emptyPF = kTRUE;
+  Bool_t globalPF = kTRUE;
   Float_t chargeADA   = 0.;
   Float_t chargeADC   = 0.;
   
@@ -657,6 +671,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 		Int_t nbbFlag = 0;
       		Int_t nbgFlag = 0;
 		Int_t charge[21];
+		Bool_t localPF = kTRUE;
 		
 		for(Int_t iClock=0; iClock<21; iClock++){
 			charge[iClock] = esdADfriend->GetPedestal(i,iClock);
@@ -665,7 +680,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 			Bool_t bgFlag = esdADfriend->GetBGFlag(i,iClock);
 			if(bbFlag) nbbFlag++;
 			if(bgFlag) nbgFlag++;
-			if((bbFlag || bgFlag) && iClock!=11) emptyPF = kFALSE;
+			if((bbFlag || bgFlag) && iClock < 10){globalPF = kFALSE; localPF = kFALSE;}
 	
 			if(!intgr)fHistChargeVsClockInt0->Fill(i,iClock-10,charge[iClock]);
 			if(intgr)fHistChargeVsClockInt1->Fill(i,iClock-10,charge[iClock]);
@@ -674,7 +689,13 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
 			}
 		//Gain monitoring
 	  	Int_t k = i + 16*esdADfriend->GetIntegratorFlag(i,11);
-		fCharges[i] = esdADfriend->GetPedestal(i,11) - fCalibData->GetPedestal(k);	
+		fCharges[i] = esdADfriend->GetPedestal(i,11) - fCalibData->GetPedestal(k);
+		fHistChargeTriggerPerChannel->Fill(i,fCharges[i]);
+		UShort_t fTriggerBC = esdAD->GetTriggerBits();
+  		if(fTriggerBC & (1 << 0)){
+			fHistChargeTriggerPerChannel_ADAND->Fill(i,fCharges[i]);
+			if(localPF)fHistChargeTriggerPerChannel_PF->Fill(i,fCharges[i]);
+			}	
 
 		fHistBBFlagPerChannel->Fill(i,nbbFlag);
 		fHistBGFlagPerChannel->Fill(i,nbgFlag);
@@ -694,7 +715,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   if(fTriggerBC & (1 << 0) ? kTRUE : kFALSE){
 	fHistChargeTriggerADA_ADAND->Fill(chargeADA);
   	fHistChargeTriggerADC_ADAND->Fill(chargeADC);
-	if(emptyPF){
+	if(globalPF){
 		fHistChargeTriggerADA_PF->Fill(chargeADA);
   		fHistChargeTriggerADC_PF->Fill(chargeADC);
 		}
