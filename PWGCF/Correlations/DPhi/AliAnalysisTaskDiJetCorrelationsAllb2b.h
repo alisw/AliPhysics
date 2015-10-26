@@ -79,6 +79,7 @@ public:
     void    SetResonanceCut(Bool_t resCut){fCutResonances = resCut;}
     void    SetConversionCut(Bool_t conversionCut){fCutConversions = conversionCut;}
     void    SetTwoTrackEfficiencyCut(Bool_t TTRcut){ftwoTrackEfficiencyCut = TTRcut;}
+    void    SetEqualT1T2Demand(Bool_t T1T2eQ){fEqualT1T2 = T1T2eQ;}
     
     
     
@@ -193,7 +194,7 @@ private:
         Double_t *ZVrtxBins = ZBins;
         
         fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
-        fPoolMgr->SetTargetValues(fMEMinTracks, 0.05, 5);
+        fPoolMgr->SetTargetValues(fMEMinTracks, 0.1, 5);
         if(!fPoolMgr) return kFALSE;
         return kTRUE;
     }
@@ -209,7 +210,7 @@ private:
         Double_t *ZVrtxBins = ZBins;
         
         fPoolMgr = new AliEventPoolManager(fMEMaxPoolEvent, fMEMinTracks, NofCentBins, CentrORMultBins, NofZVrtxBins, ZVrtxBins);
-        fPoolMgr->SetTargetValues(fMEMinTracks, 0.05, 5);
+        fPoolMgr->SetTargetValues(fMEMinTracks, 0.1, 5);
         if(!fPoolMgr) return kFALSE;
         return kTRUE;
     }
@@ -225,6 +226,7 @@ private:
     
     //______________________________| All Used Ojects
     Bool_t    ftwoplus1;
+    Bool_t    fEqualT1T2;
     Bool_t    fSetSystemValue;
     Bool_t    fRecoOrMontecarlo;
     Bool_t    fReadMC;
