@@ -5,17 +5,17 @@
 
 #include <TObject.h>
 
-#include "AliEmcalTriggerChannelContainer.h"
+#include "AliEmcalTriggerChannelContainerAP.h"
 
 class TObjArray;
 class AliEmcalTriggerPatchInfo;
-class AliEmcalTriggerRawPatch;
+class AliEmcalTriggerRawPatchAP;
 class AliEMCALGeometry;
 class AliVCaloCells;
 class AliVCaloTrigger;
 class AliVEvent;
 class AliVVZERO;
-template<class T> class AliEmcalTriggerDataGrid;
+template<class T> class AliEmcalTriggerDataGridAP;
 
 class AliEmcalTriggerMakerKernel : public TObject {
 public:
@@ -71,7 +71,7 @@ public:
 
   static const TString &GetTriggerTypeName(int index) { return fgkTriggerTypeNames[index]; }
 
-  AliEmcalTriggerPatchInfo *ConvertRawPatch(const AliEmcalTriggerRawPatch *patch) const;
+  AliEmcalTriggerPatchInfo *ConvertRawPatch(const AliEmcalTriggerRawPatchAP *patch) const;
 
 protected:
   static const TString                      fgkTriggerTypeNames[5];       ///< Histogram name tags
@@ -82,15 +82,15 @@ protected:
   AliEmcalTriggerPatchInfo*                 ProcessPatch(TriggerMakerTriggerType_t type, Bool_t isOfflineSimple);
   Bool_t                                    CheckForL0(const AliVCaloTrigger &trg) const;
 
-  AliEmcalTriggerChannelContainer           fBadChannels;                 ///< Container of bad channels
+  AliEmcalTriggerChannelContainerAP         fBadChannels;                 ///< Container of bad channels
   const AliEmcalTriggerBitConfig            *fTriggerBitConfig;           ///< Trigger bit configuration, aliroot-dependent
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
   AliEmcalTriggerSetupInfo                  *fCaloTriggerSetupOut;        //!<! trigger setup
 
-  AliEmcalTriggerDataGrid<float>            *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
-  AliEmcalTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
-  AliEmcalTriggerDataGrid<int>              *fPatchADC;                   //!<! ADC values map
-  AliEmcalTriggerDataGrid<char>             *fLevel0TimeMap;              //!<! Map needed to store the level0 times
+  AliEmcalTriggerDataGridAP<float>          *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEmcalTriggerDataGridAP<double>         *fPatchADCSimple;             //!<! patch map for simple offline trigger
+  AliEmcalTriggerDataGridAP<int>            *fPatchADC;                   //!<! ADC values map
+  AliEmcalTriggerDataGridAP<char>           *fLevel0TimeMap;              //!<! Map needed to store the level0 times
 
   // Temporary objects from AliAnalysisTaskEmcal - will be refactored
   AliVCaloCells                             *fCaloCells;

@@ -1,6 +1,11 @@
-#ifndef ALIEMCALTRIGGERDATAGRID_H
-#define ALIEMCALTRIGGERDATAGRID_H
-/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
+/**
+ * @file AliEmcalTriggerDataGridAP.h
+ * @since
+ * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ */
+#ifndef AliEmcalTriggerDataGridAPAP_H
+#define AliEmcalTriggerDataGridAPAP_H
+/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
@@ -9,26 +14,29 @@
 #include <string>
 
 /**
- * \class AliEmcalTriggerDataGrid
- * \brief Container for ADC / Amplitudes from the EMCAL triggers
+ * @class AliEmcalTriggerDataGridAP
+ * @brief Container for ADC / Amplitudes from the EMCAL triggers
  *
  * Dynamical-size container for ADC values from the FASTOR
  */
 template<typename T>
-class AliEmcalTriggerDataGrid : public TObject {
+class AliEmcalTriggerDataGridAP : public TObject {
 public:
+
   /**
-   * \class UninitException
-   * \brief Error handling for uninitialized grid
+   * @class UninitException
+   * @brief Error handling for uninitialized grid
    */
   class UninitException : public std::exception{
   public:
+
     /**
      * Constructor
      */
     UninitException():
       std::exception()
     {}
+
     /**
      * Destructor, nothing to do
      */
@@ -42,11 +50,12 @@ public:
   };
 
   /**
-   * \class OutOfBoundsException
-   * \brief Exception class handling access to non-existing container element
+   * @class OutOfBoundsException
+   * @brief Exception class handling access to non-existing container element
    */
   class OutOfBoundsException : public std::exception{
   public:
+
     /**
      * Definition of directions
      */
@@ -55,6 +64,7 @@ public:
       kRowDir     = 1,///< Row direction (phi)
       kUndef      = 2 ///< Not defined
     };
+
     /**
      * Dumny constructor
      */
@@ -66,6 +76,7 @@ public:
       fIndex()
     {
     }
+
     /**
      * Regular constructor, to be called when exception is thrown
      * @param dir Direction (col or row)
@@ -83,6 +94,7 @@ public:
       errormessage << "Out-of-bounds access in " << fDir << "Direction: Element " << fIndex << ", Size " << fSize;
       fMessage = errormessage.str();
     }
+
     /**
      * Destructor
      */
@@ -122,7 +134,7 @@ public:
   /**
    * Dummy constructor, does not allocate anything
    */
-  AliEmcalTriggerDataGrid();
+  AliEmcalTriggerDataGridAP();
 
   /**
    * Constructror
@@ -130,7 +142,7 @@ public:
    * @param cols Number of cols
    * @param rows Number of rows
    */
-  AliEmcalTriggerDataGrid(Int_t cols, Int_t rows);
+  AliEmcalTriggerDataGridAP(Int_t cols, Int_t rows);
 
   /**
    * Copy constructor
@@ -138,7 +150,7 @@ public:
    * of the ref storage will be copied into this storage
    * @param ref Reference for the copy
    */
-  AliEmcalTriggerDataGrid(const AliEmcalTriggerDataGrid<T> &ref);
+  AliEmcalTriggerDataGridAP(const AliEmcalTriggerDataGridAP<T> &ref);
 
   /**
    * Assignment operator
@@ -147,7 +159,7 @@ public:
    * @param ref Reference for the copy
    * @return This channel map
    */
-  AliEmcalTriggerDataGrid<T> &operator=(const AliEmcalTriggerDataGrid<T> &ref);
+  AliEmcalTriggerDataGridAP<T> &operator=(const AliEmcalTriggerDataGridAP<T> &ref);
 
   /**
    * Constant acces operator at position (col, row)
@@ -168,7 +180,7 @@ public:
   /**
    * Destructor
    */
-  virtual ~AliEmcalTriggerDataGrid();
+  virtual ~AliEmcalTriggerDataGridAP();
 
   /**
    * Set the ADC values stored in the 2D map again to 0
@@ -226,7 +238,7 @@ protected:
   T                         *fValues;         ///< Array of Trigger ADC values
 
   /// \cond
-  ClassDef(AliEmcalTriggerDataGrid, 1);
+  ClassDef(AliEmcalTriggerDataGridAP, 1);
   /// \endcond
 };
 
