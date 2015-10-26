@@ -51,8 +51,11 @@ public:
   void ParseOptions(AliTPCtracker* tracker) const;
   static  const Double_t * GetSystematicError()  { return (fSystematicErrors)? fSystematicErrors->GetMatrixArray():0;}
   static  const Double_t * GetSystematicErrorCluster() { return (fSystematicErrorClusters) ? fSystematicErrorClusters->GetMatrixArray():0;}
+  static  const Double_t * GetExtendedRoads()  { return (fExtendedRoads)? fExtendedRoads->GetMatrixArray():0; }
+
   static  void SetSystematicError( TVectorD *vec)  { fSystematicErrors=vec;}
   static  void SetSystematicErrorCluster( TVectorD *vec ) { fSystematicErrorClusters=vec;}
+  static  void SetExtendedRoads( TVectorD *extendedRoads ) { fExtendedRoads=extendedRoads;}
   
 
 private:
@@ -68,6 +71,7 @@ private:
   // varaibles which overwrite content of the TPCRecoParam in case of custom recosntrcution (e.g CPass0 with imperfect calibration)
   static TVectorD            * fSystematicErrors;    // systematic errors for the TPC tracks
   static TVectorD            * fSystematicErrorClusters;    // systematic errors for the TPC tracks
+  static TVectorD            * fExtendedRoads;       // extended roads for clusters
   TObjArray *fArrSplines;                  // array of pid splines
 
   void SetSplinesFromOADB(const char* tmplt, AliESDpid *esdPID);
