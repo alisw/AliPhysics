@@ -211,6 +211,7 @@ set ( SRCS17
 #file ( GLOB SRCS18 "AD/*.cxx" )
 set ( SRCS18
   AD/AliAnalysisTaskADQA.cxx
+  AD/AliAnalysisTaskADVVQA.cxx
   AD/AliAnalysisTaskADPilot.cxx
   )  
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
@@ -325,7 +326,8 @@ install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C
 	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C 	   
 	      ZDC/macros/MakeTrendZDC.C	         
 	      DESTINATION PWGPP/ZDC/macros)
-install(FILES AD/AddTaskADQA.C 
+install(FILES AD/AddTaskADQA.C
+	      AD/AddTaskADVVQA.C 
 	      AD/AddTaskADPilot.C
 	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C 

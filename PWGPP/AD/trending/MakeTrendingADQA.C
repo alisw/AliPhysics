@@ -333,7 +333,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
   minFitRange = 62;
   maxFitRange = 68;
   
-  fHistMeanTimeADC->Fit("gaus","R+","",minFitRange,maxFitRange);
+  fitStatus = fHistMeanTimeADC->Fit("gaus","R+","",minFitRange,maxFitRange);
   if(fitStatus ==0){
   	TF1 *fitTimeADC = (TF1*) fHistMeanTimeADC->GetFunction("gaus");
   	meanTimeADC = fitTimeADC->GetParameter(1);
