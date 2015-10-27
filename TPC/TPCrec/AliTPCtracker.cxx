@@ -4434,7 +4434,6 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
       Double_t cs13r     = cos(-angle13+dsec*alpha)/dvertex, sn13r = sin(-angle13+dsec*alpha)/dvertex;            
       //
       //      Double_t dymax = maxangle*TMath::Abs(x1-xx2);
-
       //
       for (Int_t js=index1; js < index2; js++) {
 	const AliTPCclusterMI *kcl = kr2[js];
