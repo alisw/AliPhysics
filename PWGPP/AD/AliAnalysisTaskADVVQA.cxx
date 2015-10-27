@@ -475,10 +475,10 @@ void AliAnalysisTaskADVVQA::UserExec(Option_t *)
   UShort_t fTriggerVZERO = esdVZERO->GetTriggerBits();
   //std::cout << "Triggers " << std::bitset<16>(fTriggerVZERO)<<std::endl;
   
-  if(!(fTriggerVZERO & (1 << 12)) && !(fTriggerVZERO & (1 << 13))) FillHistos(fList_NoVBA_NoVBC);
-  if( (fTriggerVZERO & (1 << 12)) && !(fTriggerVZERO & (1 << 13))) FillHistos(fList_VBA_NoVBC);
-  if(!(fTriggerVZERO & (1 << 12)) &&  (fTriggerVZERO & (1 << 13))) FillHistos(fList_NoVBA_VBC);
-  if( (fTriggerVZERO & (1 << 12)) &&  (fTriggerVZERO & (1 << 13))) FillHistos(fList_VBA_VBC); 
+  if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_NoVBC);
+  if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) && !(fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_NoVBC);
+  if(!(fESD->GetHeader()->IsTriggerInputFired("0VBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_NoVBA_VBC);
+  if( (fESD->GetHeader()->IsTriggerInputFired("0VBA")) &&  (fESD->GetHeader()->IsTriggerInputFired("0VBC"))) FillHistos(fList_VBA_VBC); 
 
   // Post output data.
   PostData(1, fListHist);
