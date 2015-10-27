@@ -26,8 +26,9 @@ AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectEvent = kTRUE, Bool_t selectMa
   task->SelectMatched(selectMatched);
   task->ApplyAccCut(applyAccCut);
   task->SelectCharge(selectCharge);
-  ((AliMuonEventCuts*) task->GetEventCuts())->SetFilterMask( AliMuonEventCuts::kSelectedTrig|AliMuonEventCuts::kPhysicsSelected );
-  ((AliMuonEventCuts*) task->GetEventCuts())->SetTrigClassPatterns("ANY,C*,!*-E-*,!*-A-*,!*-C-*,!*WU*,!*UP*,!*SPI*,!*PHI*,!*EMC*,!*ZED*,!*TRUE*,!*TPC*,!*BEAM*,!*1A*,!*1C*,!*VB*,!*VG*,!*UB*,!*AD*,!*UG*,!*TVX*,!*T0*,!*TS*");
+  task->GetEventCuts()->SetFilterMask( AliMuonEventCuts::kSelectedTrig|AliMuonEventCuts::kPhysicsSelected );
+//  ((AliMuonEventCuts*) task->GetEventCuts())->SetTrigClassPatterns("ANY,C*,!*-E-*,!*-A-*,!*-C-*,!*WU*,!*UP*,!*SPI*,!*PHI*,!*EMC*,!*ZED*,!*TRUE*,!*TPC*,!*BEAM*,!*1A*,!*1C*,!*VB*,!*VG*,!*UB*,!*AD*,!*UG*,!*TVX*,!*T0*,!*TS*,!*TEST*,!*DMC*,!*LSR*");
+  task->GetEventCuts()->SetTrigClassPatterns("ANY,CINT*,CM*,C0M*,CPBI*,CCENT*,CSEMI*,CVLN*,CVHN*,CVHMV0MMSL*,!*-A-*,!*-C-*,!*-E-*,!*-ACE-*,!*WU*,!*UP*,!*EJE-*,!*PHS-*,!*EGA-*");
   // Add task to analysis manager
   mgr->AddTask(task);
   
