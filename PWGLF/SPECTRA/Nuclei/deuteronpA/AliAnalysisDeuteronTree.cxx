@@ -62,6 +62,9 @@ fPtCor(0),
 fPt(0),
 fMom(0),
 fRapd(0),
+fPxd(0),
+fPyd(0),
+fPzd(0),
 fNsigmaTPCd(0),
 fNsigmaTOFd(0),
 fDcaXYd(0),
@@ -79,7 +82,8 @@ fMinPtTOFCut(0),
 fNsigmaTOFdMax(0),
 fNsigmaTOFdMin(0),
 fNsigmaTPCdMax(0),
-fNsigmaTPCdMin(0)
+fNsigmaTPCdMin(0),
+fNsigmaTPCpiAbsCut(0)
 {
     //Default constructor
 }
@@ -96,6 +100,9 @@ fPtCor(0),
 fPt(0),
 fMom(0),
 fRapd(0),
+fPxd(0),
+fPyd(0),
+fPzd(0),
 fNsigmaTPCd(0),
 fNsigmaTOFd(0),
 fDcaXYd(0),
@@ -113,12 +120,21 @@ fMinPtTOFCut(0),
 fNsigmaTOFdMax(0),
 fNsigmaTOFdMin(0),
 fNsigmaTPCdMax(0),
-fNsigmaTPCdMin(0)
+fNsigmaTPCdMin(0),
+fNsigmaTPCpiAbsCut(0)
 {
     //Standard constructor
     fMCtrue = kFALSE;
     fRapCMSpA = kTRUE;
 
+    // The array size would be better as a const Int_t type but this wouldn't compile
+    for (Int_t t=0; t<400; t++) {
+        fPx[t]=0;
+        fPy[t]=0;
+        fPz[t]=0;
+        fNsigmaTPCpi[t]=0;
+        fCharge[t]=0;
+    }
     //fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
     Initialize();
     
@@ -162,6 +178,8 @@ void AliAnalysisDeuteronTree::Initialize()
     fNsigmaTOFdMin = -5.0;
     fNsigmaTPCdMax = 5.0;
     fNsigmaTPCdMin = -5.0;
+
+    fNsigmaTPCpiAbsCut = 3.0;
 
     AliInfo("Initialization complete");
 }
@@ -236,15 +254,26 @@ void AliAnalysisDeuteronTree::UserCreateOutputObjects()
 
     // fTree Branch definitions
     fTree->Branch("fCentrality",&fCentrality,"fCentrality/F");
+    fTree->Branch("fTimeStamp",&fTimeStamp,"fTimeStamp/F");
     fTree->Branch("fPtCor",&fPtCor,"fPtCor/F");
     fTree->Branch("fPt",&fPt,"fPt/F");
     fTree->Branch("fMom",&fMom,"fMom/F");
     fTree->Branch("fRapd",&fRapd,"fRapd/F");
+    fTree->Branch("fPxd",&fPxd,"fPxd/F");
+    fTree->Branch("fPyd",&fPyd,"fPyd/F");
+    fTree->Branch("fPzd",&fPzd,"fPzd/F");
     fTree->Branch("fNsigmaTPCd",&fNsigmaTPCd,"fNsigmaTPCd/F");
     fTree->Branch("fNsigmaTOFd",&fNsigmaTOFd,"fNsigmaTOFd/F");
     fTree->Branch("fDcaXYd",&fDcaXYd,"fDcaXYd/F");
     fTree->Branch("fMcCode",&fMcCode,"fMcCode/I");
     fTree->Branch("fNpion",&fNpion,"fNpion/I");
+    // Pion branches
+    fTree->Branch("fPx",&fPx,"fPx[fNpion]/F");
+    fTree->Branch("fPy",&fPy,"fPy[fNpion]/F");
+    fTree->Branch("fPz",&fPz,"fPz[fNpion]/F");
+    fTree->Branch("fNsigmaTPCpi",&fNsigmaTPCpi,"fNsigmaTPCpi[fNpion]/F");
+    fTree->Branch("fCharge",&fCharge,"fCharge[fNpion]/I");
+
     PostData(1, fListHist);
     PostData(2, fTree);
 
@@ -304,6 +333,7 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
     
     Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
     Double_t lTOFNsigma, lTPCNsigma, lEnergyDeuteron, lPz;
+    Double_t p[3], pd[3];
     Int_t lNpion;
     
     for (Int_t i=0;i<lESDevent->GetNumberOfTracks();++i) {
@@ -325,6 +355,11 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
         track->GetImpactParameters(dca, cov);
         if (!fESDtrackCuts->AcceptTrack(track)) continue;
         if (track->Pt()< fMinPtCut) continue;
+        
+        track->GetPxPyPz(pd);
+        fPxd=pd[0];
+        fPyd=pd[1];
+        fPzd=pd[2];
         
         AliPIDResponse::EDetPidStatus lETOFStatus, lETPCStatus;
         lETOFStatus = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, AliPID::kDeuteron, lTOFNsigma);
@@ -360,7 +395,13 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
                 if (!fESDtrackCuts->AcceptTrack(pion)) continue;
                 if (!pion->GetInnerParam()) continue;
                 lETPCStatus = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, pion, AliPID::kPion, lTPCNsigma);
-                if (TMath::Abs(lTPCNsigma)<3.5) {
+                if (TMath::Abs(lTPCNsigma)<fNsigmaTPCpiAbsCut) {
+                    pion->GetPxPyPz(p);
+                    fPx[lNpion] = p[0];
+                    fPy[lNpion] = p[1];
+                    fPz[lNpion] = p[2];
+                    fNsigmaTPCpi[lNpion] = lTPCNsigma;
+                    fCharge[lNpion] = pion->Charge();
                     lNpion++;
                 }
             }
