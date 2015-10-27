@@ -1223,7 +1223,7 @@ Bool_t AliReconstruction::InitGRP() {
     AliDebug(1, Form("Detector List = %s", fRunLocalReconstruction.Data()));
     fRunTracking = MatchDetectorList(fRunTracking,detMask);
     fFillESD = MatchDetectorList(fFillESD,detMask);
-    fQADetectors = MatchDetectorList(fQADetectors,detMask);
+    if (fRunQA || fRunGlobalQA) fQADetectors = MatchDetectorList(fQADetectors,detMask);
     AliInfo(Form("fQADetectors=%s",fQADetectors.Data()));
     fDeleteRecPoints = MatchDetectorList(fDeleteRecPoints,detMask);
     fDeleteDigits    = MatchDetectorList(fDeleteDigits,detMask);
@@ -4035,7 +4035,7 @@ Bool_t AliReconstruction::SetRunQA(TString detAndAction)
 	}
 	Int_t colon = detAndAction.Index(":") ; 
 	fQADetectors = detAndAction(0, colon) ; 
-	fQATasks   = detAndAction(colon+1, detAndAction.Sizeof() ) ; 
+	fQATasks   = detAndAction(colon+1, detAndAction.Length() ) ; 
 	if (fQATasks.Contains("ALL") ) {
 		fQATasks = Form("%d %d %d %d", AliQAv1::kRAWS, AliQAv1::kDIGITSR, AliQAv1::kRECPOINTS, AliQAv1::kESDS) ; 
 	} else {
