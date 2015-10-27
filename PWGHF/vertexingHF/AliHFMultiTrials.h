@@ -43,6 +43,11 @@ class AliHFMultiTrials : public TNamed {
     for(Int_t ib=0; ib<fNumOfnSigmaBinCSteps; ib++) fnSigmaBinCSteps[ib]=values[ib];
   }
 
+  void GetGlobalMinMaxYield(Double_t& min, Double_t& max) {
+    min = fMinYieldGlob;
+    max = fMaxYieldGlob;
+  }
+
   void SetMass(Double_t mass){fMassD=mass;}
   void SetSigmaGaussMC(Double_t sig){fSigmaGausMC=sig;}
   void SetSigmaMCVariation(Double_t var=0.15){fSigmaMCVariation=var;}
