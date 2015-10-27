@@ -196,12 +196,6 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhSubJetiness2JetPt_1;
   TH2F                                *fhSubJetiness2JetPt_2;
   TH1F                                *fh2to1SubJetinessRatio;
-  TH1F                                *fh4to3SubJetinessRatio;
-  TH1F                                *fh4to2SubJetinessRatio;
-  TH1F                                *fh4to1SubJetinessRatio;
-  TH1F                                *fh3to2SubJetinessRatio;
-  TH1F                                *fh3to1SubJetinessRatio;
-  TH1F                                *fhTest;
   TH1F                                *fh2to1SubJetinessRatio_1;
   TH1F                                *fh2to1SubJetinessRatio_2;
   TH2F                                *fh2to1SubJetinessRatioJetPt;

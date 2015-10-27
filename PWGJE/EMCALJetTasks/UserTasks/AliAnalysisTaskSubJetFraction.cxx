@@ -443,18 +443,6 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fOutput->Add(fh2to1SubJetinessRatio);
     fh2to1SubJetinessRatioJetPt= new TH2F("fh2to1SubJetinessRatioJetPt", "Ratio of #tau 1 to #tau 2 vs Jet Pt", 1500, -0.5, 149.5, 200, -0.5,1.5);
     fOutput->Add(fh2to1SubJetinessRatioJetPt);
-    fh4to3SubJetinessRatio= new TH1F("fh4to3SubJetinessRatio", "Ratio of #tau 4 to #tau 3",200, -0.5,1.5);
-    fOutput->Add(fh4to3SubJetinessRatio);
-    fh4to2SubJetinessRatio= new TH1F("fh4to2SubJetinessRatio", "Ratio of #tau 4 to #tau 2",200, -0.5,1.5);
-    fOutput->Add(fh4to2SubJetinessRatio);
-    fh4to1SubJetinessRatio= new TH1F("fh4to1SubJetinessRatio", "Ratio of #tau 4 to #tau 1",200, -0.5,1.5);
-    fOutput->Add(fh4to1SubJetinessRatio);
-    fh3to2SubJetinessRatio= new TH1F("fh3to2SubJetinessRatio", "Ratio of #tau 3 to #tau 2",200, -0.5,1.5);
-    fOutput->Add(fh3to2SubJetinessRatio);
-    fh3to1SubJetinessRatio= new TH1F("fh3to1SubJetinessRatio", "Ratio of #tau 3 to #tau 1",200, -0.5,1.5);
-    fOutput->Add(fh3to1SubJetinessRatio);
-    fhTest = new TH1F("fhTest", "SubJet Counter",50, -0.5,49.5);
-    fOutput->Add(fhTest);
     fhJetPtJetEta = new TH2F("fhJetPtJetEta", "Jet Pt vs Jet Eta", 1500,-0.5,150,Eta_Bins, Eta_Low, Eta_Up);
     fOutput->Add(fhJetPtJetEta);
     fhSubJetiness2Distance = new TH2F("fhSubJetiness2Distance", "#tau 2 as a function of distance between subject axis",100,0,10,101,-0.05,1.05);
@@ -704,7 +692,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    Jet4=Jet3->ClosestJet();
 	    if(!Jet4) continue;
 	    JetsMatched=kTRUE;
-	    Reclusterer4 = Recluster(Jet4, 3, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder_4");  
+	    Reclusterer4 = Recluster(Jet4, 3, fSubJetRadius, 0, fSubJetAlgorithm, "SubJetFinder_4");  
 	    if (Reclusterer4->GetNumberOfJets()>=2){
 	      Two_Hardest_SubJet_Distance4=TMath::Sqrt(TMath::Power(Reclusterer4->GetJet(SubJetOrdering(Jet4, Reclusterer4, 1, 0, kTRUE))->Phi()-Reclusterer4->GetJet(SubJetOrdering(Jet4,Reclusterer4, 2, 0, kTRUE))->Phi(),2)+TMath::Power(Reclusterer4->GetJet(SubJetOrdering(Jet4, Reclusterer4, 1, 0, kTRUE))->Eta()-Reclusterer4->GetJet(SubJetOrdering(Jet4, Reclusterer4, 2, 0, kTRUE))->Eta(),2));
 	      if (Two_Hardest_SubJet_Distance4>(2*fJetRadius)){
@@ -909,7 +897,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    fhJetAngularityJetPt_2->Fill(Jet2->Pt(),Angularity(Jet2,1));
 	    fhJetPTD_2->Fill(PTD(Jet2,1)); //PTD Jet Shape                                                                                                                   
 	    fhJetPTDJetPt_2->Fill(Jet2->Pt(),PTD(Jet2,1));
-	    Reclusterer2 = Recluster(Jet2, 1, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder_2");
+	    Reclusterer2 = Recluster(Jet2, 1, fSubJetRadius, 0, fSubJetAlgorithm, "SubJetFinder_2");
 	    fhSubJetCounter_2->Fill(Reclusterer2->GetNumberOfJets());
 	    for (Int_t i= 0; i<Reclusterer2->GetNumberOfJets(); i++){
 	      fhEventCounter_2->Fill(6); //Number of overall subjets in all events                                                                                          
@@ -1068,27 +1056,6 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
           fhSubJetiness1JetPt->Fill(Jet1->Pt(),SubJettiness1);
           fhSubJetiness2->Fill(SubJettiness2);
           fhSubJetiness2JetPt->Fill(Jet1->Pt(),SubJettiness2);
-	  if(Reclusterer->GetNumberOfJets()==4){
-	    fhTest->Fill(Jet1->GetNumberOfTracks());
-	    if (NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 4, 0, 1)==0){
-	      fh4to3SubJetinessRatio->Fill(-0.2);
-	      fh4to2SubJetinessRatio->Fill(-0.2);
-	      fh4to1SubJetinessRatio->Fill(-0.2);
-	    }
-	    else{
-	      fh4to3SubJetinessRatio->Fill(NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 4, 0, 1)/NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 3, 0, 1));
-	      fh4to2SubJetinessRatio->Fill(NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 4, 0, 1)/NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 2, 0, 1));
-	      fh4to1SubJetinessRatio->Fill(NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 4, 0, 1)/NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 1, 0, 1));
-	    }
-	    if (NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 3, 0, 1)==0){
-	      fh3to2SubJetinessRatio->Fill(-0.2);
-	      fh3to1SubJetinessRatio->Fill(-0.2);
-	    }
-	    else{
-	      fh3to2SubJetinessRatio->Fill(NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 3, 0, 1)/NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 2, 0, 1));
-	      fh3to1SubJetinessRatio->Fill(NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 3, 0, 1)/NSubJettiness(Jet1, 0, fJetRadius, Reclusterer, 1, 0, 1));
-	    }	
-	  }
 	  if(SubJettiness1!=-2 && SubJettiness2!=-2){ //have to be careful on ratios
 	    fh2to1SubJetinessRatio->Fill(SubJettiness2/SubJettiness1);
             fh2to1SubJetinessRatioJetPt->Fill(Jet1->Pt(),SubJettiness2/SubJettiness1);
