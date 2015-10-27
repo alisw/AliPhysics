@@ -166,6 +166,9 @@ AliTPCtracker::AliTPCtracker()
 		 fUseHLTClusters(4),
   fClExtraRoadY(0.),
   fClExtraRoadZ(0.),  
+  fExtraClErrYZ2(0),
+  fExtraClErrY2(0),
+  fExtraClErrZ2(0),
          fCrossTalkSignalArray(0),
 		 fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -400,6 +403,9 @@ AliTracker(),
          fUseHLTClusters(4),
   fClExtraRoadY(0.),
   fClExtraRoadZ(0.),  
+  fExtraClErrYZ2(0),
+  fExtraClErrY2(0),
+  fExtraClErrZ2(0),
          fCrossTalkSignalArray(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -482,6 +488,9 @@ AliTPCtracker::AliTPCtracker(const AliTPCtracker &t):
          fUseHLTClusters(4),
   fClExtraRoadY(0.),
   fClExtraRoadZ(0.),  
+  fExtraClErrYZ2(0),
+  fExtraClErrY2(0),
+  fExtraClErrZ2(0),
          fCrossTalkSignalArray(0),
          fSeedsPool(0),
 		 fFreeSeedsID(500),
@@ -2712,7 +2721,7 @@ Int_t AliTPCtracker::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
  
   } else {
     if (fIteration==0){
-      if ( t.GetNumberOfClusters()>18 && ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16)) t.SetRemoval(10);      
+      if ( t.GetNumberOfClusters()>18 && ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16 + fExtraClErrYZ2 )) t.SetRemoval(10);      
       if ( t.GetNumberOfClusters()>18 && t.GetChi2()/t.GetNumberOfClusters()>6 ) t.SetRemoval(10);      
 
       if (( (t.GetNFoundable()*0.5 > t.GetNumberOfClusters()) || t.GetNoCluster()>15)) t.SetRemoval(10);
@@ -4034,7 +4043,7 @@ void AliTPCtracker::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
 	  FollowProlongation(*track, (i1+i2)/2,1);
 	  Int_t foundable,found,shared;
 	  track->GetClusterStatistic((i1+i2)/2,i1, found, foundable, shared, kTRUE);
-	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5){
+	  if ((found<0.55*foundable)  || shared>0.5*found || (track->GetSigmaY2()+track->GetSigmaZ2())>0.5+fExtraClErrYZ2){
 	    MarkSeedFree(seed); seed = 0;
 	    continue;
 	  }
@@ -4328,7 +4337,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       nin++;      
       FollowProlongation(*track, i1-7,1);
       if (track->GetNumberOfClusters() < track->GetNFoundable()*0.75 || 
-	  track->GetNShared()>0.6*track->GetNumberOfClusters() || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.6){
+	  track->GetNShared()>0.6*track->GetNumberOfClusters() || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.6+fExtraClErrYZ2){
 	MarkSeedFree( seed ); seed = 0;
 	continue;
       }
@@ -4342,7 +4351,7 @@ void AliTPCtracker::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,  
       
       if (track->GetNumberOfClusters()<(i1-i2)*0.5 || 
 	  track->GetNumberOfClusters()<track->GetNFoundable()*0.7 || 
-	  track->GetNShared()>2. || track->GetChi2()/track->GetNumberOfClusters()>6 || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.5 ) {
+	  track->GetNShared()>2. || track->GetChi2()/track->GetNumberOfClusters()>6 || ( track->GetSigmaY2()+ track->GetSigmaZ2())>0.5+fExtraClErrYZ2) {
 	MarkSeedFree( seed ); seed = 0;
 	continue;
       }
@@ -7439,7 +7448,14 @@ Int_t AliTPCtracker::Clusters2TracksHLT (AliESDEvent *const esd, const AliESDEve
     fClExtraRoadZ = AliTPCReconstructor::GetExtendedRoads()[1];
     AliInfoF("Additional errors for roads: Y:%f Z:%f",fClExtraRoadY,fClExtraRoadZ);
   }
-
+  const Double_t *errCluster = (AliTPCReconstructor::GetSystematicErrorCluster()) ?  
+    AliTPCReconstructor::GetSystematicErrorCluster() : 
+    AliTPCReconstructor::GetRecoParam()->GetSystematicErrorCluster();
+  //
+  fExtraClErrY2 = errCluster[0]*errCluster[0];
+  fExtraClErrZ2 = errCluster[1]*errCluster[1];
+  fExtraClErrYZ2 = fExtraClErrY2 + fExtraClErrZ2;
+  AliInfoF("Additional errors for clusters: Y:%f Z:%f",errCluster[0],errCluster[1]);
   //
   Clusters2Tracks();
   fEventHLT = 0;
