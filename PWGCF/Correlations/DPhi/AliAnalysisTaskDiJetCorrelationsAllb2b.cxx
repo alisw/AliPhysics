@@ -36,7 +36,6 @@
 #include "AliEventPoolManager.h"
 
 #include "AliAnalysisTaskDiJetCorrelationsAllb2b.h"
-#include <Riostream.h>
 
 using std::cout;
 using std::endl;
@@ -623,7 +622,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                     }
                     
                     for (Int_t jMix =0; jMix < NofEventsinPool; jMix++){
-                        if (!fMixedEvent)SEMEEvtTracks = (TObjArray*)fTrackArray->Clone("SE");
+                        if (!fMixedEvent)SEMEEvtTracks = (TObjArray*)fTrackArray;
                         else if(fMixedEvent)SEMEEvtTracks = fPool->GetEvent(jMix); // replacing from pool
                         
                         if(!SEMEEvtTracks)continue;
@@ -643,6 +642,19 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                             fEffCheck->Fill(effvalue);
                             
                             if(isOnlyT1 && fAodTracksAS->Pt() < fAodTracksT1->Pt() ){
+                                
+                                if(fCutConversions || fCutResonances){
+                                    Bool_t CutForConversionResonanceTrg1 = ConversionResonanceCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS,fControlConvResT1, fHistT1CorrTrack);
+                                    if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg1)continue;
+                                }
+                                
+                                if(ftwoTrackEfficiencyCut){
+                                    Bool_t CutForTwoTrackEffiTrg1 = TwoTrackEfficiencyCut(fAodTracksT1->Pt(), fAodTracksT1->Phi(), fAodTracksT1->Eta(), fAodTracksT1->Charge(), fAodTracksAS, bSign);
+                                    if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg1)continue;
+                                    fHistT1CorrTrack->Fill(4);
+                                }
+
+                                
                                 Double_t deltaPhi1 = AssignCorrectPhiRange(fAodTracksT1->Phi() - fAodTracksAS->Phi());
                                 Double_t deltaEta1  = fAodTracksT1->Eta() - fAodTracksAS->Eta();
                                 Double_t CentzVtxDEtaDPhiTrg1[5] = {fCentrOrMult, zVertex, deltaEta1, deltaPhi1, fAodTracksAS->Pt()};
@@ -650,6 +662,20 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                             }
                             if(ftwoplus1){
                                 if (fAodTracksAS->Pt() < fAodTracksT2->Pt()){
+                                    
+                                    if(fCutConversions || fCutResonances){
+                                        
+                                        Bool_t CutForConversionResonanceTrg2 = ConversionResonanceCut(fAodTracksT2->Pt(), fAodTracksT2->Phi(), fAodTracksT2->Eta(), fAodTracksT2->Charge(), fAodTracksAS,fControlConvResT2, fHistT2CorrTrack);
+                                        if(fCutConversions || fCutResonances)if(!CutForConversionResonanceTrg2)continue;
+                                    }
+                                    
+                                    if(ftwoTrackEfficiencyCut){
+                                        
+                                        Bool_t CutForTwoTrackEffiTrg2 = TwoTrackEfficiencyCut(fAodTracksT2->Pt(), fAodTracksT2->Phi(), fAodTracksT2->Eta(), fAodTracksT2->Charge(), fAodTracksAS, bSign);
+                                        if(ftwoTrackEfficiencyCut)if(!CutForTwoTrackEffiTrg2)continue;
+                                        fHistT2CorrTrack->Fill(4);
+                                    }
+                                    
                                     Double_t deltaPhi2 =  AssignCorrectPhiRange(fAodTracksT2->Phi() - fAodTracksAS->Phi());
                                     Double_t deltaEta2 = fAodTracksT2->Eta() - fAodTracksAS->Eta();
                                     Double_t CentzVtxDEtaDPhiTrg2[5] = {fCentrOrMult, zVertex, deltaEta2, deltaPhi2, fAodTracksAS->Pt()};
@@ -674,7 +700,6 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     if(!fMixedEvent){
         
         delete fTrackArray;
-        delete SEMEEvtTracks;
         
         
     }
