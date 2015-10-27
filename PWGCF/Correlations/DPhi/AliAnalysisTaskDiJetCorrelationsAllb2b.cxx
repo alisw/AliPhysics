@@ -36,6 +36,7 @@
 #include "AliEventPoolManager.h"
 
 #include "AliAnalysisTaskDiJetCorrelationsAllb2b.h"
+#include <iostream>
 
 using std::cout;
 using std::endl;
@@ -437,7 +438,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         
         
         
-        if((abs(fCentrOrMult)) < 0. || (abs(fCentrOrMult)) > 100.00)return;
+        if((std::abs(fCentrOrMult)) < 0. || (std::abs(fCentrOrMult)) > 100.00)return;
     }
     else if(!fSetSystemValue){ // pp, pPb
         Double_t count = -1, mineta = -1.0, maxeta = 1.0;
