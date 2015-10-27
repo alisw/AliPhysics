@@ -76,6 +76,7 @@
 #include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliAnalysisMuonUtility.h"
+#include "AliMuonAnalysisOutput.h"
 
 
 /// \cond CLASSIMP
@@ -365,6 +366,8 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   AliVAnalysisMuon::Terminate("");
   
   if ( ! fMergeableCollection ) return;
+
+  AliMuonAnalysisOutput muonOut(fOutputList);
   
   TString physSel = fTerminateOptions->At(0)->GetName();
   TString trigClassName = fTerminateOptions->At(1)->GetName();
@@ -383,7 +386,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   furtherOpt.ToUpper();
   Bool_t plotChargeAsymmetry = furtherOpt.Contains("ASYM");
   
-  AliCFContainer* inContainer = static_cast<AliCFContainer*> ( GetSum(physSel,trigClassName,centralityRange,"SingleMuContainer") );
+  AliCFContainer* inContainer = static_cast<AliCFContainer*> ( muonOut.GetSum(physSel,trigClassName,centralityRange,"SingleMuContainer") );
   if ( ! inContainer ) return;
   
   AliCFContainer* cfContainer = inContainer;
@@ -404,7 +407,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     // The following code sets the generated muons as the one in the class ANY.
     // The feature is the default. If you want the generated muons in the same
     // trigger class as the generated tracks, use option "GENINTRIGCLASS"
-    AliCFContainer* fullMCcontainer = static_cast<AliCFContainer*> ( GetSum(physSel,"ANY",centralityRange,"SingleMuContainer") );
+    AliCFContainer* fullMCcontainer = static_cast<AliCFContainer*> ( muonOut.GetSum(physSel,"ANY",centralityRange,"SingleMuContainer") );
     if ( fullMCcontainer ) {
       cfContainer = static_cast<AliCFContainer*>(cfContainer->Clone("SingleMuContainerCombo"));
       cfContainer->SetGrid(kStepGeneratedMC,fullMCcontainer->GetGrid(kStepGeneratedMC));
@@ -571,10 +574,10 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   //////////////////////
   printf("\nTotal analyzed events:\n");
   TString evtSel = Form("trigger:%s", trigClassName.Data());
-  fEventCounters->PrintSum(evtSel.Data());
+  muonOut.GetCounterCollection()->PrintSum(evtSel.Data());
   printf("Physics selected analyzed events:\n");
   evtSel = Form("trigger:%s/selected:yes", trigClassName.Data());
-  fEventCounters->PrintSum(evtSel.Data());
+  muonOut.GetCounterCollection()->PrintSum(evtSel.Data());
   
   TString countPhysSel = "any";
   if ( physSel.Contains(fPhysSelKeys->At(kPhysSelPass)->GetName()) ) countPhysSel = "yes";
@@ -582,7 +585,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   countPhysSel.Prepend("selected:");
   printf("Analyzed events vs. centrality:\n");
   evtSel = Form("trigger:%s/%s", trigClassName.Data(), countPhysSel.Data());
-  fEventCounters->Print("centrality",evtSel.Data(),kTRUE);
+  muonOut.GetCounterCollection()->Print("centrality",evtSel.Data(),kTRUE);
   
   TString outFilename = Form("/tmp/out%s.root", GetName());
   printf("\nCreating file %s\n", outFilename.Data());
@@ -598,7 +601,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   ///////////////////
   if ( ! furtherOpt.Contains("VERTEX") ) return;
   igroup1++;
-  TH1* eventVertex = (TH1*)GetSum(physSel, minBiasTrig, centralityRange, "hIpVtx");
+  TH1* eventVertex = static_cast<TH1*>(muonOut.GetSum(physSel, minBiasTrig, centralityRange, "hIpVtx"));
   if ( ! eventVertex ) return;
   Double_t minZ = -9.99, maxZ = 9.99;
   Double_t meanZ = 0., sigmaZ = 4.;

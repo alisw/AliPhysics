@@ -38,6 +38,7 @@
 #pragma link C++ class AliMuonTriggerCombo+;
 #pragma link C++ class AliMuonTrackCuts+;
 #pragma link C++ class AliMuonPairCuts+;
+#pragma link C++ class AliMuonAnalysisOutput+;
 #pragma link C++ class AliVAnalysisMuon+;
 #pragma link C++ class AliAnalysisTaskFlowSingleMu+;
 #pragma link C++ class AliAnalysisMuonUtility+;

@@ -64,6 +64,7 @@
 #include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliAnalysisMuonUtility.h"
+#include "AliMuonAnalysisOutput.h"
 
 
 /// \cond CLASSIMP
@@ -288,6 +289,8 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
 
   if ( ! fMergeableCollection ) return;
 
+  AliMuonAnalysisOutput muonOut(fOutputList);
+
   TString physSel = fTerminateOptions->At(0)->GetName();
   TString trigClassName = fTerminateOptions->At(1)->GetName();
   TString centralityRange = fTerminateOptions->At(2)->GetName();
@@ -339,7 +342,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
       TH2* histo = 0x0;
       histoPattern = "";
       histoPattern = Form("%s%s*", fHistoTypeKeys->At(recoDcaHisto[ihisto])->GetName(), fThetaAbsKeys->At(itheta)->GetName());
-      histo = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
+      histo = static_cast<TH2*>(muonOut.GetSum(physSel, trigClassName, centralityRange, histoPattern));
       if ( ! histo ) continue;
 
       TH1* meanDcaVsP = histo->ProjectionX(Form("mean%sVsP_%s", dcaName[ihisto].Data(), fThetaAbsKeys->At(itheta)->GetName()));
@@ -452,7 +455,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
     leg->SetBorderSize(1);
     for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
       histoPattern = GetHistoName(kPdcaVsP, itheta, isrc);
-      TH2* histo = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
+      TH2* histo = static_cast<TH2*>(muonOut.GetSum(physSel, trigClassName, centralityRange, histoPattern));
       if ( ! histo ) continue;
       if ( histo->Integral() < 200 ) {
         delete histo;
@@ -551,7 +554,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
     for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
       for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
         histoPattern = GetHistoName(hDraw, itheta, isrc);
-        TH2* histoCheck = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
+        TH2* histoCheck = static_cast<TH2*>(muonOut.GetSum(physSel, trigClassName, centralityRange, histoPattern));
         if ( ! histoCheck ) continue;
         currName = histoCheck->GetName();
         currName.Append("_plotCut");
@@ -587,7 +590,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
   for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
     for ( Int_t isrc=0; isrc<kNtrackSources; ++isrc ) {
       histoPattern = GetHistoName(kChiProbVsP, itheta, isrc);
-      TH2* histo = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
+      TH2* histo = static_cast<TH2*>(muonOut.GetSum(physSel, trigClassName, centralityRange, histoPattern));
       if ( ! histo ) continue;
 
       Int_t nPbins = histo->GetXaxis()->GetNbins();
@@ -644,7 +647,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
       can = 0x0;
       for ( Int_t itheta=0; itheta<kNthetaAbs; ++itheta ) {
         histoPattern = GetHistoName(checkHistos[ihisto], itheta, isrc);
-        TH2* histo = (TH2*)GetSum(physSel, trigClassName, centralityRange, histoPattern);
+        TH2* histo = static_cast<TH2*>(muonOut.GetSum(physSel, trigClassName, centralityRange, histoPattern));
         if ( ! histo ) continue;
         if ( histo->Integral() == 0. ) {
           delete histo;
@@ -768,7 +771,7 @@ void AliAnalysisTaskMuonCuts::Terminate(Option_t *) {
         TLegend* leg = 0x0;
         histoName = GetHistoName(kSigmaVsPt, itheta, isrc);
         for ( Int_t icent=1; icent<=GetCentralityClasses()->GetNbins(); ++icent ) {
-          TH2* histo = (TH2*)GetSum(physSel, trigClassName, GetCentralityClasses()->GetBinLabel(icent), histoName);
+          TH2* histo = static_cast<TH2*>(muonOut.GetSum(physSel, trigClassName, GetCentralityClasses()->GetBinLabel(icent), histoName));
           if ( ! histo ) continue;
           Int_t ptMinBin = histo->GetXaxis()->FindBin(ptMin[iptmin]);
           Int_t ptMaxBin = histo->GetXaxis()->GetNbins()+1;

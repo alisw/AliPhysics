@@ -76,11 +76,12 @@ set(SRCS
   AliESDMuonTrackCuts.cxx 
   AliEventPoolMuon.cxx 
   AliHistogramCollection.cxx
-  AliMuonEventCuts.cxx 
+  AliMuonAnalysisOutput.cxx
+  AliMuonEventCuts.cxx
   AliMuonInfoStoreMC.cxx 
   AliMuonInfoStoreRD.cxx 
   AliMuonPairCuts.cxx 
-  AliMuonsHFHeader.cxx 
+  AliMuonsHFHeader.cxx
   AliMuonTrackCuts.cxx
   AliMuonTriggerCombo.cxx
   AliOADBMuonTrackCutsParam.cxx

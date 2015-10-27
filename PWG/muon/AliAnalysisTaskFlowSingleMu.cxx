@@ -79,6 +79,7 @@
 #include "AliMuonEventCuts.h"
 #include "AliMuonTrackCuts.h"
 #include "AliAnalysisMuonUtility.h"
+#include "AliMuonAnalysisOutput.h"
 
 #include <fstream>
 
@@ -355,6 +356,8 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   AliVAnalysisMuon::Terminate("");
 
   if ( ! fMergeableCollection ) return;
+
+  AliMuonAnalysisOutput muonOut(fOutputList);
   
   TString physSel = fTerminateOptions->At(0)->GetName();
   TString trigClassName = fTerminateOptions->At(1)->GetName();
@@ -476,7 +479,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
             TString hName = "hResoSub3";
             resoDet = ( icomb == 0 ) ? resoDet1 + resoDet2 : resoDet2 + resoDet1;
             hName += resoDet;
-            histo = static_cast<TH1*>(GetSum(physSel,trigClassName,resoCentrality.At(icent)->GetName(),hName));
+            histo = static_cast<TH1*>(muonOut.GetSum(physSel,trigClassName,resoCentrality.At(icent)->GetName(),hName));
             if ( histo ) break;
           }
           if ( ! histo || histo->Integral() == 0 ) continue;
@@ -522,7 +525,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
       gridSparseArray[istep*kNresoCentr+icent] = 0x0;
     }
 
-    AliCFContainer* cfContainer = static_cast<AliCFContainer*> ( GetSum(physSel,trigClassName,resoCentrality.At(icent)->GetName(),Form("FlowSingleMuContainer%s", selectEP.Data())) );
+    AliCFContainer* cfContainer = static_cast<AliCFContainer*> ( muonOut.GetSum(physSel,trigClassName,resoCentrality.At(icent)->GetName(),Form("FlowSingleMuContainer%s", selectEP.Data())) );
     if ( ! cfContainer ) continue;
     for ( Int_t istep=0; istep<kNsteps; istep++ ) {
       stepName[istep] = cfContainer->GetStepTitle(istep);
@@ -816,7 +819,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
 //    epCheck[itype]->SetTitle(histoName.Data());
   }
   for ( Int_t icent=0; icent<centralityClasses->GetEntries(); icent++ ) {
-    TH1* histo = static_cast<TH1*> ( GetSum(physSel,trigClassName,centralityClasses->At(icent)->GetName(),Form("hEventPlane%s", selectEP.Data())) );
+    TH1* histo = static_cast<TH1*> ( muonOut.GetSum(physSel,trigClassName,centralityClasses->At(icent)->GetName(),Form("hEventPlane%s", selectEP.Data())) );
     if ( ! histo ) continue;
     histo->SetName(Form("%s_%s", histo->GetName(), centralityClasses->At(icent)->GetName()));
     if ( histo->Integral() < 50. ) continue;
@@ -969,10 +972,10 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   //////////////////////
   printf("\nTotal analyzed events:\n");
   TString evtSel = Form("trigger:%s", trigClassName.Data());
-  fEventCounters->PrintSum(evtSel.Data());
+  muonOut.GetCounterCollection()->PrintSum(evtSel.Data());
   printf("Physics selected analyzed events:\n");
   evtSel = Form("trigger:%s/selected:yes", trigClassName.Data());
-  fEventCounters->PrintSum(evtSel.Data());
+  muonOut.GetCounterCollection()->PrintSum(evtSel.Data());
   
   TString countPhysSel = "any";
   if ( physSel.Contains(fPhysSelKeys->At(kPhysSelPass)->GetName()) ) countPhysSel = "yes";
@@ -980,7 +983,7 @@ void AliAnalysisTaskFlowSingleMu::Terminate(Option_t *) {
   countPhysSel.Prepend("selected:");
   printf("Analyzed events vs. centrality:\n");
   evtSel = Form("trigger:%s/%s", trigClassName.Data(), countPhysSel.Data());
-  fEventCounters->Print("centrality",evtSel.Data(),kTRUE);
+  muonOut.GetCounterCollection()->Print("centrality",evtSel.Data(),kTRUE);
 
   if ( ! outFilename.IsNull() ) {
     printf("\nWriting output file %s\n", outFilename.Data());
