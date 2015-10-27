@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 // MUON/lite
+#pragma link C++ class AliTrigChEffOutput+;
 #pragma link C++ class AliAnalysisTaskTrigChEff+;
 #pragma link C++ class AliAnalysisTaskMuonQA+;
 #pragma link C++ class AliAnalysisTaskMuonCuts+;

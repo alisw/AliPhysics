@@ -46,7 +46,7 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
 
   void SetCentralityClasses(Int_t nCentralityBins = -1, Double_t* centralityBins = 0x0);
   TAxis* GetCentralityClasses() const;
-  Bool_t SetCentralityClassesFromOutput();
+//  Bool_t SetCentralityClassesFromOutput();
 
   void SetTrigClassPatterns(const TString pattern);
   TString GetDefaultTrigClassPatterns() const;
@@ -119,8 +119,8 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   // Methods for mergeable object collections
   Bool_t AddObjectToCollection(TObject* object, Int_t index = -1);
   TObject* GetMergeableObject(TString physSel, TString trigClassName, TString centrality, TString objectName);
-  TObject* GetSum(TString physSel, TString trigClassNames, TString centrality, TString objectPattern);
-  
+//  TObject* GetSum(TString physSel, TString trigClassNames, TString centrality, TString objectPattern);
+
     
   AliMuonEventCuts* fMuonEventCuts; ///< Muon event cuts
   AliMuonTrackCuts* fMuonTrackCuts; ///< Muon track cuts
@@ -133,10 +133,10 @@ class AliVAnalysisMuon : public AliAnalysisTaskSE {
   TObjArray* fPhysSelKeys;     ///< Physics selection names
   THashList* fWeights;         ///< List of objects to weight histograms
   AliUtilityMuonAncestor* fUtilityMuonAncestor; ///< Utility to get the muon ancestor
-  
+
   AliCounterCollection* fEventCounters;  //!< event counters
   AliMergeableCollection* fMergeableCollection; //!< collection of mergeable objects
-  TObjArray* fOutputList;  //!< List of outputs  
+  TObjArray* fOutputList;  //!< List of outputs
 
  private:
   AliVAnalysisMuon(const AliVAnalysisMuon&);

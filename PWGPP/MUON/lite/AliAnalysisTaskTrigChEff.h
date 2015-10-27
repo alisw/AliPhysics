@@ -13,11 +13,10 @@
 #include "AliVAnalysisMuon.h"
 
 class AliMuonTrackCuts;
-class AliVParticle;
 class TList;
 class TObjArray;
 class TString;
-class TH1;
+class AliTrigChEffOutput;
 
 class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
  public:
@@ -31,67 +30,15 @@ class AliAnalysisTaskTrigChEff : public AliVAnalysisMuon {
   void MyUserCreateOutputObjects();
   void ProcessEvent(TString physSel, const TObjArray& selectTrigClasses, TString centrality);
 
-  TList* GetEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection);
-
-//  /// Use ghost tracks in calculations
-//  void SetUseGhostTracks(Bool_t useGhosts = kTRUE) { fUseGhosts = useGhosts; }
-
  private:
 
   AliAnalysisTaskTrigChEff(const AliAnalysisTaskTrigChEff&);
   AliAnalysisTaskTrigChEff& operator=(const AliAnalysisTaskTrigChEff&);
 
-  enum {
-    kBendingEff,     ///< Bending plane fired
-    kNonBendingEff,  ///< Non-bending plane fired
-    kBothPlanesEff,  ///< Both planes fired
-    kAllTracks,      ///< tracks used for calculation
-    kNcounts         ///< Number of count type
-  };
+  AliTrigChEffOutput* fAnalysisOutput; //!<! Output handler
+  TList*  fList;     //!<! TList output object
 
-  enum {
-    kHchamberEff,    ///< Counts per cathode histogram index
-    kHslatEff,       ///< Counts per slat histogram index
-    kHboardEff,      ///< Counts per board histogram index
-    kHcheckBoard,    ///< Check rejected tracks per board
-    kNhistoTypes     ///< Check rejected tracks per board
-  };
-
-  enum {
-    kNoMatch,       ///< No match with trigger
-    kMatchApt,      ///< Match All Pt
-    kMatchLpt,      ///< Match Low Pt
-    kMatchHpt,      ///< Match High Pt
-    kNtrigMatch     ///< Total number of matched types
-  };
-  
-  enum {
-    kSelectTrack,   ///< Selected track
-    kNoSelectTrack, ///< Non selected tracks (includes ghosts)
-    kNtrackSel      ///< Total number of track selection
-  };
-  
-  enum {
-    kEffFromTrack,  ///< Hit pattern from tracker track extrapolation
-    kEffFromTrig,   ///< Hit pattern from trigger
-    kNeffMethods    ///< Total number of efficiency methods
-  };
-
-  TString GetHistoName(Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod);
-  Bool_t FillEffHistoList(TString physSel, TString trigClassNames, TString centrality, TString trackSelection, TList* outList );
-  void InitLocalKeys();
-  TH1* GetCountHisto ( Int_t itype, Int_t icount, Int_t ichamber, Int_t itrackSel, Int_t imatch, Int_t imethod );
- 
-  TObjArray* fTrackSelKeys;   ///< Selection names
-  TObjArray* fCountTypeKeys;  ///< Count type keys
-  TObjArray* fHistoTypeKeys;  ///< Base histogram name
-  TObjArray* fEffMethodKeys;  ///< Efficiency methods keys
-  TObjArray* fMatchTrigKeys;  ///< Match trigger names
-
-//  Bool_t fUseGhosts; ///< Flag to use also the trigger tracks not matching the tracker in eff. calculation
-  TList*  fList;     //!<TList output object
-
-  ClassDef(AliAnalysisTaskTrigChEff, 4); // Trigger chamber efficiencies
+  ClassDef(AliAnalysisTaskTrigChEff, 5); // Trigger chamber efficiencies
 };
 
 #endif
