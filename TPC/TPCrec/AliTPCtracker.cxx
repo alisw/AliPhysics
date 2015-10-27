@@ -4599,9 +4599,18 @@ void AliTPCtracker::MakeSeeds3Dist(TObjArray * arr, Int_t sec, Int_t i1, Int_t i
 	  continue;
 	}
 	nout1++;
-        // Z VERTEX CONDITION
 	Double_t zv, bz=GetBz();
-        if ( !track->GetZAt(0.,bz,zv) ) continue;
+        if ( !track->GetZAt(0.,bz,zv) )       { MarkSeedFree( seed ); seed = 0; continue; }
+	//
+	if (fDisableSecondaries) {
+	  if (TMath::Abs(zv)>fPrimaryDCAZCut) { MarkSeedFree( seed ); seed = 0; continue; }
+	  double yv; 
+	  if ( !track->GetZAt(0.,bz,yv) )     { MarkSeedFree( seed ); seed = 0; continue; }
+	  if (TMath::Abs(zv)>fPrimaryDCAZCut) { MarkSeedFree( seed ); seed = 0; continue; }
+	}
+	
+	//
+        // Z VERTEX CONDITION
 	if (TMath::Abs(zv-z3)>cuts[2]) {
 	  FollowProlongation(*track, TMath::Max(i2-20,0));
           if ( !track->GetZAt(0.,bz,zv) ) continue;
