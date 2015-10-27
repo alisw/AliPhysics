@@ -745,16 +745,16 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracks         = -10;
     
     //Set ZDC variables to defaults
-    fZncEnergy->SetValue(0);
-    fZpcEnergy->SetValue(0);
-    fZnaEnergy->SetValue(0);
-    fZpaEnergy->SetValue(0);
-    fZem1Energy->SetValue(0);
-    fZem2Energy->SetValue(0);
-    fZnaTower->SetValue(0);
-    fZncTower->SetValue(0);
-    fZpaTower->SetValue(0);
-    fZpcTower->SetValue(0);
+    fZncEnergy->SetValue(-1e6);
+    fZpcEnergy->SetValue(-1e6);
+    fZnaEnergy->SetValue(-1e6);
+    fZpaEnergy->SetValue(-1e6);
+    fZem1Energy->SetValue(-1e6);
+    fZem2Energy->SetValue(-1e6);
+    fZnaTower->SetValue(-1e6);
+    fZncTower->SetValue(-1e6);
+    fZpaTower->SetValue(-1e6);
+    fZpcTower->SetValue(-1e6);
     fZnaFired = kFALSE;
     fZncFired = kFALSE;
     fZpaFired = kFALSE;
@@ -930,11 +930,15 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     else
         fCurrentRun = esd->GetRunNumber();
     
-    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-01.root", AliAnalysisManager::GetOADBPath()));
-    AliInfo(Form("Setup Multiplicity Selection for run %d with file %s\n",fCurrentRun,fileName.Data()));
+    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), GetPeriodName().Data() ));
+    AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),GetPeriodName().Data()));
     
     AliOADBContainer *con = new AliOADBContainer("OADB");
-    con->InitFromFile(fileName,"MultSel");
+    Int_t lFoundFile = con->InitFromFile(fileName,"MultSel");
+    
+    //FIXME: Here one should open an empty file instead...
+    TString fileNameDef =(Form("%s/COMMON/MULTIPLICITY/data/OADB-LHC15f.root", AliAnalysisManager::GetOADBPath() ));
+    if ( lFoundFile == 1 ) con->InitFromFile(fileNameDef,"MultSel");
     
     //Get Object for this run!
     oadbMultSelection = (AliOADBMultSelection* )con->GetObject(fCurrentRun, "Default");
