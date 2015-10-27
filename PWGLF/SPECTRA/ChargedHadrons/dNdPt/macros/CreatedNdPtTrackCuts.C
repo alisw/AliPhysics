@@ -2,9 +2,8 @@
 
 // this macro creates the track and event cuts used in this analysis
 
-// last modified: 2013-06-13 
-// m.l.knichel@gsi.de
-
+// last modified: 2015-Oct-27
+// eperezle@cern.ch j.gronefeld@cern.ch
 
 AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 {
@@ -622,6 +621,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     TString tag = "TPC-only tracking (2011)";
   }  
+  // TPC-only (no pt cut, no eta cut) updated 2011 for matching eff
+  
 
   // TPC multiplicity cuts (test 2013)
   if (cutMode == 203) 
@@ -1392,7 +1393,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC+ITS combine tracking + DCAr(pt) + Chi2TPCcc + Chi2ITS";
   }  
   
-  
+   
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) 4-sigma
   if (cutMode == 75) 
@@ -1857,7 +1858,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
 
   // TPC+ITS combine tracking + DCAr(pt) (2011)
-  if ((cutMode >= 2000) && (cutMode <= 2100))
+  if ((cutMode >= 2000) && (cutMode <= 2099))
   {
     //Int_t    minclsTPC=70;
     Float_t minNCrossedRowsTPC = 120; 
@@ -1902,7 +1903,35 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
 
     TString tag = "for cut/efficiency studies)";
   }
+  if ((cutMode >= 2100) && (cutMode <= 2199))
+  {
+    
+    Float_t minNCrossedRowsTPC = 120; 
+    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8; 
+    Float_t maxFractionSharedTPCCluster = 0.4;    
+    maxChi2PerClusterTPC = 4.0;
+    maxDCAtoVertexXY = 2.4; // cm
+    maxDCAtoVertexZ  = 3.2; // cm
+
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+
+    esdTrackCuts->SetMinNCrossedRowsTPC(minNCrossedRowsTPC);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(minRatioCrossedRowsOverFindableClustersTPC);
+    esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
   
+    esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
+    TString tag = "Calculate matching efficiency: TPC only";
+     
+    if (cutMode==2101){
+      esdTrackCuts->SetRequireITSRefit(kTRUE); 
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
+      TString tag = "Calculate matching efficiency: TPC + ITS";
+    }
+    
+   
+  } 
   if ((cutMode >= 3000) && (cutMode <= 3100))
   {
     //Int_t    minclsTPC=70;
@@ -1948,8 +1977,11 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "for cut/efficiency studies (version 3)";
   }
 
-  if ((cutMode >= 4000) && (cutMode <= 4400))
+ 
+  if ((cutMode >= 5000) && (cutMode <= 5400))
   {
+    //According to 222 for study of systematic uncertanties. 
+    //Easier to use. 
     //
     // TPC
     //
@@ -1978,29 +2010,71 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     //
     // Swich Low/High for study of systematics
     //
-    if(cutMode==4010){esdTrackCuts->SetMaxChi2PerClusterITS(25.);}						//	Low		1
-    if(cutMode==4011){esdTrackCuts->SetMaxChi2PerClusterITS(49.);}						//	High		2
-    if(cutMode==4020){esdTrackCuts->SetMaxChi2PerClusterTPC(3); }						//	Low		3
-    if(cutMode==4021){esdTrackCuts->SetMaxChi2PerClusterTPC(5); }						//	High		4
-    if(cutMode==4030){esdTrackCuts->SetMinNCrossedRowsTPC(100);}						//	Low		5
-    if(cutMode==4031){esdTrackCuts->SetMinNCrossedRowsTPC(130);}						//	High		6
-    if(cutMode==4040){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}			//	Low 		7
-    if(cutMode==4041){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}			//	High		8
-    if(cutMode==4050){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}					//	Low		9
-    if(cutMode==4051){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}					//	High		10
-    if(cutMode==4060){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.); }					//	LoW		11
-    if(cutMode==4061){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.); }					//	High		12
-    if(cutMode==4070){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}			//	Low		13
-    if(cutMode==4071){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}			//	High		14
-    if(cutMode==4080){esdTrackCuts->SetMaxDCAToVertexZ(1.0); }						//	Low		15
-    if(cutMode==4081){esdTrackCuts->SetMaxDCAToVertexZ(5.0); }						//	High		16
-    if(cutMode==4090){esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); }//	17
+    if(cutMode==5001){esdTrackCuts->SetMaxChi2PerClusterITS(25.);}						//	Low		1
+    if(cutMode==5002){esdTrackCuts->SetMaxChi2PerClusterITS(49.);}						//	High		2
+    if(cutMode==5003){esdTrackCuts->SetMaxChi2PerClusterTPC(3); }						//	Low		3
+    if(cutMode==5004){esdTrackCuts->SetMaxChi2PerClusterTPC(5); }						//	High		4
+    if(cutMode==5005){esdTrackCuts->SetMinNCrossedRowsTPC(100);}						//	Low		5
+    if(cutMode==5006){esdTrackCuts->SetMinNCrossedRowsTPC(130);}						//	High		6
+    if(cutMode==5007){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}			//	Low 		7
+    if(cutMode==5008){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}			//	High		8
+    if(cutMode==5009){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}					//	Low		9
+    if(cutMode==5010){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}					//	High		10
+    if(cutMode==5011){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.); }					//	LoW		11
+    if(cutMode==5012){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.); }					//	High		12
+    if(cutMode==5013){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0104+0.0200/pt^1.01");}				//	Low		13
+    if(cutMode==5014){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0260+0.0500/pt^1.01");}				//	High		14
+    if(cutMode==5015){esdTrackCuts->SetMaxDCAToVertexZ(1.0); }							//	Low		15
+    if(cutMode==5016){esdTrackCuts->SetMaxDCAToVertexZ(5.0); }							//	High		16
+    if(cutMode==5017){esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); }	//			17
   
     TString tag = "Study of systematic uncertanties JGronef";
 
-}    
+}
 
+  if ((cutMode >= 6000) && (cutMode <= 6100))
+  {
+    //According to 222 now with Marians Golden cut in 5 different versions. 
+    // Implemented acording to https://alice.its.cern.ch/jira/browse/ATO-233
+ 
+    Float_t maxFractionSharedTPCCluster = 0.4;
+    Double_t maxchi2perTPCcl=4.;
+    Double_t maxdcazITSTPC=2.0;
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+        esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(maxFractionSharedTPCCluster);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    esdTrackCuts->SetMaxChi2PerClusterITS(36.);
+    //
+    // primary selection
+    //
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
 
+    // DCArphi parametrization (LHC10c pass2)
+    // 7*(0.0026+0.0050/pt^1.01)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    
+    // tpcc cut
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);    
+    
+    
+    if(cutMode==6000){esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);}	//Set base cut :
+    if(cutMode==6001){esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.80,0.65);}	//Make a variation of cut Nc,Ncl
+    if(cutMode==6002){esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.9,0.75);}	//Make a variation of cut Nc,Ncl
+    if(cutMode==6003){esdTrackCuts->SetCutGeoNcrNcl(2.5,130,1.5,0.85,0.7);}	//Make a varaition of cut on the width of the dead zone
+    if(cutMode==6004){esdTrackCuts->SetCutGeoNcrNcl(1.5,130,1.5,0.85,0.7);}	// Make a varaition of cut on the width of the dead zone
+    TString tag = "TPC+ITS combine tracking + DCAr(pt) + Chi2TPCcc + Chi2ITS + GOLDEN CUT";
+  }  
 
   // cuts for data without field
   if (!fieldOn)
