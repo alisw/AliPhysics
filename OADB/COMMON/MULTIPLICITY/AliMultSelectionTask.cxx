@@ -800,16 +800,16 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Int_t detCh_ZPC = 0; //lESDZDC->GetZPCTDCChannel();
 
         for (Int_t j = 0; j < 4; ++j) {
-            if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0) 	fZnaFired = kTRUE;
-            if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0) 	fZncFired = kTRUE;
-            if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0) 	fZpaFired = kTRUE;
-            if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0) 	fZpcFired = kTRUE;
+            if ( lESDZDC->IsZNAhit() ) 	fZnaFired = kTRUE;
+            if ( lESDZDC->IsZNChit() ) 	fZncFired = kTRUE;
+            if ( lESDZDC->IsZPAhit() ) 	fZpaFired = kTRUE;
+            if ( lESDZDC->IsZPChit() ) 	fZpcFired = kTRUE;
         }
 
-        const Double_t *ZNAtower = lESDZDC->GetZN2TowerEnergy();
-        const Double_t *ZNCtower = lESDZDC->GetZN1TowerEnergy();
-        const Double_t *ZPAtower = lESDZDC->GetZP2TowerEnergy();
-        const Double_t *ZPCtower = lESDZDC->GetZP1TowerEnergy();
+        const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
+        const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
+        const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
+        const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
         if (fZnaFired) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
         if (fZncFired) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
         if (fZpaFired) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
