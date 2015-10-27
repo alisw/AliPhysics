@@ -67,7 +67,7 @@ void AliAnalysisTaskMeanPtRaw::UserCreateOutputObjects()
   fPtVsMultRaw = new THnSparseF("fPtVsMultRaw", "raw <pT> vs mult",3, binsMultPtCuts, minMultPtCuts, maxMultPtCuts);
   fPtVsMultRaw->SetBinEdges(1, binsPtDefault);
   fPtVsMultRaw->GetAxis(0)->SetTitle("n_{acc} (raw)");
-  fPtVsMultRaw->GetAxis(1)->SetTitle("#LT p_{T} #GT (raw) (GeV/c)");
+  fPtVsMultRaw->GetAxis(1)->SetTitle("p_{T} (raw) (GeV/c)");
   fPtVsMultRaw->GetAxis(2)->SetTitle("cut setting");
   
   fTrackCutName = new TH1I("fTrackCutName","fTrackCutName",10,0,10);
