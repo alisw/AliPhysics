@@ -56,28 +56,32 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserCreateOutputObjects(){
   CreateLinearBinning(etabinning, 100, -1, 1);
   CreateLinearBinning(supermodulebinning, 20, -0.5, 19.5);
 
+  const TString beamdirs[4] = {"B", "A", "C", "E"};
+
   fHistos = new AliEMCalHistoContainer("histos");
   for(const TString *trgit = fkTriggerClasses; trgit < fkTriggerClasses + sizeof(fkTriggerClasses)/sizeof(const TString); ++trgit){
-    fHistos->CreateTH1(Form("hEventCount%s", trgit->Data()), Form("Event counter for trigger class %s", trgit->Data()), 1, 0.5, 1.5);
-    fHistos->CreateTH1(Form("hVertexDistBefore%s", trgit->Data()), Form("Vertex distribution in trigger class %s before event selection", trgit->Data()), 100, -40., 40.);
-    fHistos->CreateTH1(Form("hVertexDistAfter%s", trgit->Data()), Form("Vertex distribution in trigger class %s after event selection", trgit->Data()), 100, -40., 40.);
-    fHistos->CreateTH1(Form("hClusterEnergyUncalib%s", trgit->Data()), Form("(Uncalibrated) cluster energy distribution in trigger class %s", trgit->Data()), energybinning);
-    fHistos->CreateTH1(Form("hClusterEnergyCalib%s", trgit->Data()), Form("(Calibrated) cluster energy distribution in trigger class %s", trgit->Data()), energybinning);
-    fHistos->CreateTH2(Form("hClusterEnergyEtaUncalib%s", trgit->Data()), Form("(Uncalibrated) cluster energy vs eta distribution in trigger class %s", trgit->Data()), etabinning, energybinning);
-    fHistos->CreateTH2(Form("hClusterEnergyEtaCalib%s", trgit->Data()), Form("(Calibrated) cluster energy vs eta distribution in trigger class %s", trgit->Data()), etabinning, energybinning);
-    fHistos->CreateTH2(Form("hClusterEnergySupermoduleUncalib%s", trgit->Data()), Form("(Uncalibrated) cluster energy vs sm distribution in trigger class %s", trgit->Data()), supermodulebinning, energybinning);
-    fHistos->CreateTH2(Form("hClusterEnergySupermoduleCalib%s", trgit->Data()), Form("(Calibrated) cluster energy vs sm distribution in trigger class %s", trgit->Data()), supermodulebinning, energybinning);
-    fHistos->CreateTH1(Form("hPatchEnergyOnline%s", trgit->Data()), Form("(Online) patch energy distribution in trigger class %s", trgit->Data()), energybinning);
-    fHistos->CreateTH1(Form("hPatchEnergyOffline%s", trgit->Data()), Form("(Offline) patch energy distribution in trigger class %s", trgit->Data()), energybinning);
-    fHistos->CreateTH2(Form("hPatchEnergyEtaOnline%s", trgit->Data()), Form("(Online) patch energy vs eta distribution in trigger class %s", trgit->Data()), etabinning, energybinning);
-    fHistos->CreateTH2(Form("hPatchEnergyEtaOffline%s", trgit->Data()), Form("(Offline) patch energy vs eta distribution in trigger class %s", trgit->Data()), etabinning, energybinning);
-    fHistos->CreateTH2(Form("hPatchEnergySupermoduleOnline%s", trgit->Data()), Form("(Online) patch energy vs sm distribution in trigger class %s", trgit->Data()), supermodulebinning, energybinning);
-    fHistos->CreateTH2(Form("hPatchEnergySupermoduleOffline%s", trgit->Data()), Form("(Offline) patch energy vs sm distribution in trigger class %s", trgit->Data()), supermodulebinning, energybinning);
-    for(int ism = 0; ism < 20; ism++){
-      fHistos->CreateTH2(Form("hClusterEnergyEtaSupermodule%dCalib%s", ism, trgit->Data()), Form("(Calibrated) cluster energy vs eta for sm %d in trigger %s", ism, trgit->Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hClusterEnergyEtaSupermodule%dUncalib%s", ism, trgit->Data()), Form("(Uncalibrated) cluster energy vs eta for sm %d in trigger %s", ism, trgit->Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hPatchEnergyEtaSupermodule%dOnline%s", ism, trgit->Data()), Form("(Online) patch energy vs eta for sm %d in trigger %s", ism, trgit->Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hPatchEnergyEtaSupermodule%dOffline%s", ism, trgit->Data()), Form("(Offline) patch energy vs eta for sm %d in trigger %s", ism, trgit->Data()), etabinning, energybinning);
+    for(const TString *beamit = beamdirs; beamit < beamdirs + sizeof(beamdirs)/sizeof(const TString); ++beamit){
+      fHistos->CreateTH1(Form("hEventCount%s%s", trgit->Data(), beamit->Data()), Form("Event counter for trigger class %s-%s", trgit->Data(), beamit->Data()), 1, 0.5, 1.5);
+      fHistos->CreateTH1(Form("hVertexDistBefore%s%s", trgit->Data(), beamit->Data()), Form("Vertex distribution in trigger class %s-%s before event selection", trgit->Data(), beamit->Data()), 100, -40., 40.);
+      fHistos->CreateTH1(Form("hVertexDistAfter%s%s", trgit->Data(), beamit->Data()), Form("Vertex distribution in trigger class %s-%s after event selection", trgit->Data(), beamit->Data()), 100, -40., 40.);
+      fHistos->CreateTH1(Form("hClusterEnergyUncalib%s%s", trgit->Data(), beamit->Data()), Form("(Uncalibrated) cluster energy distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), energybinning);
+      fHistos->CreateTH1(Form("hClusterEnergyCalib%s%s", trgit->Data(), beamit->Data()), Form("(Calibrated) cluster energy distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), energybinning);
+      fHistos->CreateTH2(Form("hClusterEnergyEtaUncalib%s%s", trgit->Data(), beamit->Data()), Form("(Uncalibrated) cluster energy vs eta distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hClusterEnergyEtaCalib%s%s", trgit->Data(), beamit->Data()), Form("(Calibrated) cluster energy vs eta distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hClusterEnergySupermoduleUncalib%s%s", trgit->Data(), beamit->Data()), Form("(Uncalibrated) cluster energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
+      fHistos->CreateTH2(Form("hClusterEnergySupermoduleCalib%s%s", trgit->Data(), beamit->Data()), Form("(Calibrated) cluster energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
+      fHistos->CreateTH1(Form("hPatchEnergyOnline%s%s", trgit->Data(), beamit->Data()), Form("(Online) patch energy distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), energybinning);
+      fHistos->CreateTH1(Form("hPatchEnergyOffline%s%s", trgit->Data(), beamit->Data()), Form("(Offline) patch energy distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), energybinning);
+      fHistos->CreateTH2(Form("hPatchEnergyEtaOnline%s%s", trgit->Data(), beamit->Data()), Form("(Online) patch energy vs eta distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hPatchEnergyEtaOffline%s%s", trgit->Data(), beamit->Data()), Form("(Offline) patch energy vs eta distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hPatchEnergySupermoduleOnline%s%s", trgit->Data(), beamit->Data()), Form("(Online) patch energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
+      fHistos->CreateTH2(Form("hPatchEnergySupermoduleOffline%s%s", trgit->Data(), beamit->Data()), Form("(Offline) patch energy vs sm distribution in trigger class %s-%s", trgit->Data(), beamit->Data()), supermodulebinning, energybinning);
+      for(int ism = 0; ism < 20; ism++){
+        fHistos->CreateTH2(Form("hClusterEnergyEtaSupermodule%dCalib%s%s", ism, trgit->Data(), beamit->Data()), Form("(Calibrated) cluster energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
+        fHistos->CreateTH2(Form("hClusterEnergyEtaSupermodule%dUncalib%s%s", ism, trgit->Data(), beamit->Data()), Form("(Uncalibrated) cluster energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
+        fHistos->CreateTH2(Form("hPatchEnergyEtaSupermodule%dOnline%s%s", ism, trgit->Data(), beamit->Data()), Form("(Online) patch energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
+        fHistos->CreateTH2(Form("hPatchEnergyEtaSupermodule%dOffline%s%s", ism, trgit->Data(), beamit->Data()), Form("(Offline) patch energy vs eta for sm %d in trigger %s-%s", ism, trgit->Data(), beamit->Data()), etabinning, energybinning);
+      }
     }
   }
 
@@ -98,12 +102,15 @@ void AliAnalysisTaskEMCALDCALTrigger2015::UserExec(Option_t * /*option*/){
 
   TString classes = fInputEvent->GetFiredTriggerClasses();
 
-  if(classes.Contains("CINT7-B-NOPF-CENT")) triggerclassesSelected.push_back("INT7");
-  if(classes.Contains("CINT8-B-NOPF-CENT")) triggerclassesSelected.push_back("INT8");
-  if(classes.Contains("CEMC7-B-NOPF-CENT")) triggerclassesSelected.push_back("EMC7");
-  if(classes.Contains("CEMC8-B-NOPF-CENT")) triggerclassesSelected.push_back("EMC8");
-  if(classes.Contains("CDMC7-B-NOPF-CENT")) triggerclassesSelected.push_back("DMC7");
-  if(classes.Contains("CDMC8-B-NOPF-CENT")) triggerclassesSelected.push_back("DMC8");
+  TString beamdirs[4] = {"B", "A", "C", "E"},
+      triggerclasses[6] = {"INT7", "INT8", "EMC7", "EMC8", "DMC7", "DMC8"};
+  for(TString *trgit = triggerclasses; trgit < triggerclasses + sizeof(triggerclasses)/sizeof(TString); ++ trgit){
+    for(TString *beamit = beamdirs; beamit < beamdirs + sizeof(beamdirs)/sizeof(TString); ++beamit){
+      if(classes.Contains(Form("C%s-%s-NOPF-CENT", trgit->Data(), beamit->Data())))
+        triggerclassesSelected.push_back(Form("%s%s", trgit->Data(), beamit->Data()));
+
+    }
+  }
 
   if(!triggerclassesSelected.size()) return;
 
