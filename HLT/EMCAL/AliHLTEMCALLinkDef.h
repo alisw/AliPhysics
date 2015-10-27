@@ -20,5 +20,7 @@
 #pragma link C++ class AliHLTEMCALClusterMonitorComponent+;
 #pragma link C++ class AliHLTEMCALClusterMonitor+;
 #pragma link C++ class AliHLTEMCALAgent+;
+#pragma link C++ class AliHLTEMCALRawHistoMaker+;
+#pragma link C++ class AliHLTEMCALRawHistoMakerComponent+;
 
 #endif // __CINT__
