@@ -21,12 +21,14 @@
 #include <TVectorF.h>
 #include <TObjArray.h>
 #include <TF1.h>
+#include <TString.h>
 
 #include "AliPID.h"
 #include "AliVTrack.h"
 
 class TH2D;
 class TSpline3;
+class AliOADBContainer;
 
 class AliTPCPIDResponse: public TNamed {
 public:
@@ -225,7 +227,7 @@ public:
   Double_t EvaldEdxSpline(Double_t bg,Int_t entry);
   static   Double_t SEvaldEdx(Double_t bg,Int_t entry){ return (fgInstance!=0)? fgInstance->EvaldEdxSpline(bg,entry):0;};
 
-  //=== dEdx type functions =====================================================
+  //===| dEdx type functions |==================================================
   void SetdEdxType(ETPCdEdxType dEdxType, Int_t dEdxChargeType=0, Int_t dEdxWeightType=0, Double_t dEdxIROCweight=1., Double_t dEdxOROCmedWeight=1., Double_t dEdxOROClongWeight=1.) {
     fdEdxType=dEdxType; fdEdxChargeType=dEdxChargeType; fdEdxWeightType=dEdxWeightType; fIROCweight=dEdxIROCweight; fOROCmedWeight=dEdxOROCmedWeight; fOROClongWeight=dEdxOROClongWeight; }
   ETPCdEdxType      GetdEdxType()        const { return fdEdxType;       }
@@ -236,6 +238,18 @@ public:
   Double_t          GetOROClongWeight()  const { return fOROClongWeight; }
 
   Double_t GetTrackdEdx(const AliVTrack* track) const;
+
+  //===| Initialisation |=======================================================
+  Bool_t InitFromOADB(const Int_t run, const char* pass, const char* oadbFile="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root");
+
+  Bool_t SetSplinesFromArray                (const TObjArray* arrSplines);
+  Bool_t SetMultiplicityCorrectionFromString(const TString& multiplicityData);
+  Bool_t SetdEdxTypeFromString              (const TString& dEdxTypeSet);
+  Bool_t SetdEdxResolutionFromString        (const TString& dEdxTypeSet);
+
+  //===| Helpers |==============================================================
+  static TString GetChecksum(const TObject* obj);
+  static TObjArray* GetMultiplicityCorrectionArrayFromString(const TString& corrections);
 
 protected:
   Double_t GetExpectedSignal(const AliVTrack* track,
@@ -270,6 +284,7 @@ private:
   Bool_t fUseDatabase; // flag if fine-tuned database-response or simple ALEPH BB should be used
   
   TObjArray fResponseFunctions; //! ObjArray of response functions individually for each particle
+  AliOADBContainer* fOADBContainer; //! OADB container with response functions
   TVectorF fVoltageMap; //!stores a map of voltages wrt nominal for all chambers
   Float_t fLowGainIROCthreshold;  //voltage threshold below which the IROC is considered low gain
   Float_t fBadIROCthreshhold;     //voltage threshold for bad IROCS

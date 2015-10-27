@@ -73,6 +73,7 @@ fIsMC(isMC),
 fCachePID(kFALSE),
 fOADBPath(),
 fCustomTPCpidResponse(),
+fCustomTPCpidResponseOADBFile(),
 fCustomTPCetaMaps(),
 fBeamType("PP"),
 fLHCperiod(),
@@ -87,11 +88,13 @@ fOldRun(-1),
 fResT0A(75.),
 fResT0C(65.),
 fResT0AC(55.),
+fTPCPIDResponseArray(NULL),
 fArrPidResponseMaster(NULL),
 fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(kFALSE),
 fUseTPCMultiplicityCorrection(kFALSE),
+fUseTPCNewResponse(kTRUE),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
 fTOFtail(0.9),
@@ -119,6 +122,7 @@ AliPIDResponse::~AliPIDResponse()
   //
   // dtor
   //
+  delete fTPCPIDResponseArray;
   delete fArrPidResponseMaster;
   delete fTRDPIDResponseObject;
   delete fTRDdEdxParams;
@@ -142,6 +146,7 @@ fIsMC(other.fIsMC),
 fCachePID(other.fCachePID),
 fOADBPath(other.fOADBPath),
 fCustomTPCpidResponse(other.fCustomTPCpidResponse),
+fCustomTPCpidResponseOADBFile(other.fCustomTPCpidResponseOADBFile),
 fCustomTPCetaMaps(other.fCustomTPCetaMaps),
 fBeamType("PP"),
 fLHCperiod(),
@@ -156,11 +161,13 @@ fOldRun(-1),
 fResT0A(75.),
 fResT0C(65.),
 fResT0AC(55.),
+fTPCPIDResponseArray(NULL),
 fArrPidResponseMaster(NULL),
 fResolutionCorrection(NULL),
 fOADBvoltageMaps(NULL),
 fUseTPCEtaCorrection(other.fUseTPCEtaCorrection),
 fUseTPCMultiplicityCorrection(other.fUseTPCMultiplicityCorrection),
+fUseTPCNewResponse(other.fUseTPCNewResponse),
 fTRDPIDResponseObject(NULL),
 fTRDdEdxParams(NULL),
 fTOFtail(0.9),
@@ -197,6 +204,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fITSPIDmethod=other.fITSPIDmethod;
     fOADBPath=other.fOADBPath;
     fCustomTPCpidResponse=other.fCustomTPCpidResponse;
+    fCustomTPCpidResponseOADBFile=other.fCustomTPCpidResponseOADBFile;
     fCustomTPCetaMaps=other.fCustomTPCetaMaps;
     fTuneMConData=other.fTuneMConData;
     fTuneMConDataMask=other.fTuneMConDataMask;
@@ -216,11 +224,13 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fResT0A=75.;
     fResT0C=65.;
     fResT0AC=55.;
+    fTPCPIDResponseArray=NULL;
     fArrPidResponseMaster=NULL;
     fResolutionCorrection=NULL;
     fOADBvoltageMaps=NULL;
     fUseTPCEtaCorrection=other.fUseTPCEtaCorrection;
     fUseTPCMultiplicityCorrection=other.fUseTPCMultiplicityCorrection;
+    fUseTPCNewResponse=other.fUseTPCNewResponse;
     fTRDPIDResponseObject=NULL;
     fTRDdEdxParams=NULL;
     fEMCALPIDParams=NULL;
@@ -632,23 +642,42 @@ void AliPIDResponse::ExecNewRun()
   //
   SetRecoInfo();
 
+  // ===| ITS part |============================================================
   SetITSParametrisation();
 
-  SetTPCPidResponseMaster();
-  SetTPCParametrisation();
+  // ===| TPC part |============================================================
+  // new treatment for loading the TPC PID response if requested
+  // for the moment fall back to old method if no PID response array is found
+  // by the new method for backward compatibility
+  Bool_t doOldTPCPID=kTRUE;
+  if (fUseTPCNewResponse) {
+    doOldTPCPID =! InitializeTPCResponse();
+    if (doOldTPCPID) {
+      AliWarning("No TPC response parametrisations found using the new method. Falling back to the old method.");
+    }
+  }
+
+  if (doOldTPCPID) {
+    SetTPCPidResponseMaster();
+    SetTPCParametrisation();
+  }
   SetTPCEtaMaps();
 
+  // ===| TRD part |============================================================
   SetTRDPidResponseMaster();
   //has to precede InitializeTRDResponse(), otherwise the read-out fTRDdEdxParams is not pased in TRDResponse!
   SetTRDdEdxParams();
   InitializeTRDResponse();
 
-  SetEMCALPidResponseMaster();
-  InitializeEMCALResponse();
-
+  // ===| TOF part |============================================================
   SetTOFPidResponseMaster();
   InitializeTOFResponse();
 
+  // ===| EMCAL part |==========================================================
+  SetEMCALPidResponseMaster();
+  InitializeEMCALResponse();
+
+  // ===| HMPID part |==========================================================
   SetHMPIDPidResponseMaster();
   InitializeHMPIDResponse();
 
@@ -1109,7 +1138,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
         else {
           AliInfo(Form("Loaded TPC eta correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s)",
                        refineFactorMapX, refineFactorMapY, fileNameMaps.Data(), fTPCResponse.GetEtaCorrMap()->GetTitle(),
-                       GetChecksum(fTPCResponse.GetEtaCorrMap()).Data()));
+                       AliTPCPIDResponse::GetChecksum(fTPCResponse.GetEtaCorrMap()).Data()));
         }
 
         delete etaMapRefined;
@@ -1179,7 +1208,7 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
         else {
           AliInfo(Form("Loaded TPC sigma correction map (refine factors %.2f/%.2f) from %s: %s (MD5(map) = %s, sigmaPar0 = %f)",
                        refineFactorSigmaMapX, refineFactorSigmaMapY, fileNameMaps.Data(), fTPCResponse.GetSigmaPar1Map()->GetTitle(),
-                       GetChecksum(fTPCResponse.GetSigmaPar1Map()).Data(), sigmaPar0));
+                       AliTPCPIDResponse::GetChecksum(fTPCResponse.GetSigmaPar1Map()).Data(), sigmaPar0));
         }
 
         delete etaSigmaPar1MapRefined;
@@ -1190,6 +1219,58 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
       }
     }
   }
+}
+
+
+//______________________________________________________________________________
+Bool_t AliPIDResponse::InitializeTPCResponse()
+{
+  // Load the Array with TPC PID response information
+  // This is the new method which will completely replace the old one at some point
+
+  //
+  // Setup old resolution parametrisation
+  // TODO: This should be moved to the initialisation and vanish completely at some point
+
+  //default
+  fTPCResponse.SetSigma(3.79301e-03, 2.21280e+04);
+
+  if (fRun>=122195){ //LHC10d
+    fTPCResponse.SetSigma(2.30176e-02, 5.60422e+02);
+  }
+
+  if (fRun>=170719){ // LHC12a
+    fTPCResponse.SetSigma(2.95714e-03, 1.01953e+05);
+  }
+
+  if (fRun>=177312){ // LHC12b
+    fTPCResponse.SetSigma(3.74633e-03, 7.11829e+04 );
+  }
+
+  if (fRun>=186346){ // LHC12e
+    fTPCResponse.SetSigma(8.62022e-04, 9.08156e+05);
+  }
+
+  
+  AliInfo("---------------------------- TPC Response Configuration (New) ----------------------------");
+  // ===| load TPC response array from OADB |===================================
+  TString fileNamePIDresponse(Form("%s/COMMON/PID/data/TPCPIDResponseOADB.root", fOADBPath.Data()));
+  if (!fCustomTPCpidResponseOADBFile.IsNull()) fileNamePIDresponse=fCustomTPCpidResponseOADBFile;
+
+
+  // ---| In case of MC and NO tune on data fall back to old method |-----------
+  if (fIsMC) {
+    if(!(fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC))) return kFALSE;
+  }
+
+  // ---| set reco pass |-------------------------------------------------------
+  Int_t recopass = fRecoPass;
+  if(fIsMC && fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) recopass = fRecoPassUser;
+
+  const Bool_t returnValue = fTPCResponse.InitFromOADB(fRun, TString::Format("%d", recopass), fileNamePIDresponse);
+  AliInfo("------------------------------------------------------------------------------------------");
+
+  return returnValue;
 }
 
 //______________________________________________________________________________
@@ -1245,6 +1326,8 @@ void AliPIDResponse::SetTPCParametrisation()
   // Change BB parametrisation for current run
   //
 
+  AliInfo("---------------------------- TPC Response Configuration (Old) ----------------------------");
+
   //
   //reset old splines
   //
@@ -1252,6 +1335,7 @@ void AliPIDResponse::SetTPCParametrisation()
 
   if (fLHCperiod.IsNull()) {
     AliError("No period set, not changing parametrisation");
+    AliInfo("------------------------------------------------------------------------------------------");
     return;
   }
 
@@ -1271,6 +1355,7 @@ void AliPIDResponse::SetTPCParametrisation()
       AliError("******** Risk for unreliable TPC PID detected               **********");
       AliError("         no proper reco pass was set, no splines can be set");
       AliError("         an outdate Bethe Bloch parametrisation will be used");
+      AliInfo("------------------------------------------------------------------------------------------");
       return;
     }
   }
@@ -1332,7 +1417,7 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunction->GetName(),
-                           GetChecksum((TSpline3*)responseFunction).Data()));
+                           AliTPCPIDResponse::GetChecksum((TSpline3*)responseFunction).Data()));
               found=kTRUE;
               break;
             }
@@ -1360,7 +1445,7 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionPion->GetName(),
-                           GetChecksum((TSpline3*)responseFunctionPion).Data()));
+                           AliTPCPIDResponse::GetChecksum((TSpline3*)responseFunctionPion).Data()));
               found=kTRUE;
             }
             else if (grAll) {
@@ -1369,7 +1454,7 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,grAll->GetName(),
-                           GetChecksum((TSpline3*)grAll).Data()));
+                           AliTPCPIDResponse::GetChecksum((TSpline3*)grAll).Data()));
               found=kTRUE;
             }
             //else
@@ -1382,7 +1467,7 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,responseFunctionProton->GetName(),
-                           GetChecksum((TSpline3*)responseFunctionProton).Data()));
+                           AliTPCPIDResponse::GetChecksum((TSpline3*)responseFunctionProton).Data()));
               found=kTRUE;
             }
             else if (grAll) {
@@ -1391,7 +1476,7 @@ void AliPIDResponse::SetTPCParametrisation()
                                                 (AliTPCPIDResponse::ETPCgainScenario)igainScenario );
               fTPCResponse.SetUseDatabase(kTRUE);
               AliInfo(Form("Adding graph: %d %d - %s (MD5(spline) = %s)",ispec,igainScenario,grAll->GetName(),
-                           GetChecksum((TSpline3*)grAll).Data()));
+                           AliTPCPIDResponse::GetChecksum((TSpline3*)grAll).Data()));
               found=kTRUE;
             }
             //else
@@ -1577,7 +1662,7 @@ void AliPIDResponse::SetTPCParametrisation()
   fResolutionCorrection=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_SIGMA",datatype.Data(),period.Data(),recopass,fBeamType.Data()));
 
   if (fResolutionCorrection) AliInfo(Form("Setting multiplicity correction function: %s  (MD5(corr function) = %s)",
-                                          fResolutionCorrection->GetName(), GetChecksum(fResolutionCorrection).Data()));
+                                          fResolutionCorrection->GetName(), AliTPCPIDResponse::GetChecksum(fResolutionCorrection).Data()));
 
   //read in the voltage map
   TVectorF* gsm = 0x0;
@@ -1597,6 +1682,7 @@ void AliPIDResponse::SetTPCParametrisation()
     AliInfo(vals.Data());
   }
   else AliInfo("no voltage map, ideal default assumed");
+  AliInfo("------------------------------------------------------------------------------------------");
 }
 
 //______________________________________________________________________________
@@ -2823,55 +2909,6 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetPIDStatus(EDetector detector, c
   }
   return kDetNoSignal;
 
-}
-
-//______________________________________________________________________________
-TString AliPIDResponse::GetChecksum(const TObject* obj) const
-{
-  // Return the checksum for an object obj (tested to work properly at least for histograms and TSplines).
-
-  TString fileName = Form("tempChecksum.C"); // File name must be fixed for data type "TSpline3", since the file name will end up in the file content!
-
-  // For parallel processing, a unique file pathname is required. Uniqueness can be guaranteed by using a unique directory name
-  UInt_t index = 0;
-  TString uniquePathName = Form("tempChecksum_%u", index);
-
-  // To get a unique path name, increase the index until no directory
-  // of such a name exists.
-  // NOTE: gSystem->AccessPathName(...) returns kTRUE, if the access FAILED!
-  while (!gSystem->AccessPathName(uniquePathName.Data()))
-    uniquePathName = Form("tempChecksum_%u", ++index);
-
-  if (gSystem->mkdir(uniquePathName.Data()) < 0) {
-    AliError("Could not create temporary directory to store temp file for checksum determination!");
-    return "ERROR";
-  }
-
-  TString option = "";
-
-  // Save object as a macro, which will be deleted immediately after the checksum has been computed
-  // (does not work for desired data types if saved as *.root for some reason) - one only wants to compare the content, not
-  // the modification time etc. ...
-  if (dynamic_cast<const TH1*>(obj))
-    option = "colz"; // Histos need this option, since w/o this option, a counter is added to the filename
-
-
-  // SaveAs must be called with the fixed fileName only, since the first argument goes into the file content
-  // for some object types. Thus, change the directory, save the file and then go back
-  TString oldDir = gSystem->pwd();
-  gSystem->cd(uniquePathName.Data());
-  obj->SaveAs(fileName.Data(), option.Data());
-  gSystem->cd(oldDir.Data());
-
-  // Use the file to calculate the MD5 checksum
-  TMD5* md5 = TMD5::FileChecksum(Form("%s/%s", uniquePathName.Data(), fileName.Data()));
-  TString checksum = md5->AsString();
-
-  // Clean up
-  delete md5;
-  gSystem->Exec(Form("rm -rf %s", uniquePathName.Data()));
-
-  return checksum;
 }
 
 //_________________________________________________________________________

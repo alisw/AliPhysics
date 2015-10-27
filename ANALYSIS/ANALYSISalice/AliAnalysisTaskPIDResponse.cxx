@@ -121,6 +121,11 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
         fPIDResponse->SetCustomTPCpidResponse(resp.Data());
         AliInfo(Form("Setting custom TPC response file: '%s'",resp.Data()));
       }
+      else if (resp.BeginsWith("TPC-OADB:")){
+        resp.ReplaceAll("TPC-OADB:","");
+        fPIDResponse->SetCustomTPCpidResponseOADBFile(resp.Data());
+        AliInfo(Form("Setting custom TPC response OADB file: '%s'",resp.Data()));
+      }
       else if (resp.BeginsWith("TPC-Maps:")){
         resp.ReplaceAll("TPC-Maps:","");
         fPIDResponse->SetCustomTPCetaMaps(resp.Data());
@@ -128,20 +133,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
       }
       else if (resp.BeginsWith("TPC-dEdxType:")){
         resp.ReplaceAll("TPC-dEdxType:","");
-        TObjArray *arrParams = resp.Tokenize(",");
-        if (arrParams->GetEntriesFast() == 6) {
-          Int_t    dEdxType           = ((TObjString*)arrParams->At(0))->String().Atoi();
-          Int_t    dEdxChargeType     = ((TObjString*)arrParams->At(1))->String().Atoi();
-          Int_t    dEdxWeightType     = ((TObjString*)arrParams->At(2))->String().Atoi();
-          Double_t dEdxIROCweight     = ((TObjString*)arrParams->At(3))->String().Atof();
-          Double_t dEdxOROCmedWeight  = ((TObjString*)arrParams->At(4))->String().Atof();
-          Double_t dEdxOROClongWeight = ((TObjString*)arrParams->At(5))->String().Atof();
-          fPIDResponse->GetTPCResponse().SetdEdxType((AliTPCPIDResponse::ETPCdEdxType)dEdxType, dEdxChargeType, dEdxWeightType, dEdxIROCweight, dEdxOROCmedWeight, dEdxOROClongWeight);
-          AliInfo(TString::Format("Setting custom TPC dEdxType: %d, %d, %d, %.2f, %.2f, %.2f", dEdxType, dEdxChargeType, dEdxWeightType, dEdxIROCweight, dEdxOROCmedWeight, dEdxOROClongWeight));
-        } else {
-          AliError("Wrong number of parameters for custom TPC dEdxType");
-        }
-        delete arrParams;
+        fPIDResponse->GetTPCResponse().SetdEdxTypeFromString(resp);
       }
     }
     delete arr;

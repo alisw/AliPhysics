@@ -140,6 +140,9 @@ public:
   void SetCustomTPCpidResponse(const char* tpcpid) { fCustomTPCpidResponse = tpcpid; }
   const char* GetCustomTPCpidResponse() const { return fCustomTPCpidResponse.Data(); }
 
+  void SetCustomTPCpidResponseOADBFile(const char* tpcpid) { fCustomTPCpidResponseOADBFile = tpcpid; }
+  const char* GetCustomTPCpidResponseOADBFile() const { return fCustomTPCpidResponseOADBFile.Data(); }
+
   void SetCustomTPCetaMaps(const char* tpcEtaMaps) { fCustomTPCetaMaps = tpcEtaMaps; }
   const char* GetCustomTPCetaMaps() const { return fCustomTPCetaMaps.Data(); }
 
@@ -188,7 +191,6 @@ public:
   void SetTunedOnDataMask(Int_t detMask) {fTuneMConDataMask = detMask;}
 
   // Utilities
-  TString GetChecksum(const TObject* obj) const;
 
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
@@ -228,6 +230,7 @@ private:
 
   TString fOADBPath;                   // OADB path to use
   TString fCustomTPCpidResponse;       // Custom TPC Pid Response file for debugging purposes
+  TString fCustomTPCpidResponseOADBFile;// Custom TPC Pid Response file for debugging purposes using the new OADB method
   TString fCustomTPCetaMaps;           // Custom TPC eta map file for debugging purposes
 
   TString fBeamType;                   //! beam type (PP) or (PBPB)
@@ -244,11 +247,13 @@ private:
   Float_t fResT0C;                     //! T0C resolution in current run
   Float_t fResT0AC;                    //! T0A.and.T0C resolution in current run
 
-  TObjArray *fArrPidResponseMaster;     //!  TPC pid splines
+  TObjArray *fTPCPIDResponseArray;      //! Array with PID response parametrisations (new object)
+  TObjArray *fArrPidResponseMaster;     //! TPC pid splines (old object)
   TF1       *fResolutionCorrection;     //! TPC resolution correction
   AliOADBContainer* fOADBvoltageMaps;   //! container with the voltage maps
   Bool_t fUseTPCEtaCorrection;          // Use TPC eta correction
   Bool_t fUseTPCMultiplicityCorrection; // Use TPC multiplicity correction
+  Bool_t fUseTPCNewResponse;            // Use new method for TPC PID response
 
   AliTRDPIDResponseObject *fTRDPIDResponseObject; //! TRD PID Response Object
   AliTRDdEdxParams * fTRDdEdxParams; //! TRD dEdx Response for truncated mean signal
@@ -281,6 +286,7 @@ private:
   //TPC
   void SetTPCEtaMaps(Double_t refineFactorMapX = 6.0, Double_t refineFactorMapY = 6.0, Double_t refineFactorSigmaMapX = 6.0,
                      Double_t refineFactorSigmaMapY = 6.0);
+  Bool_t InitializeTPCResponse();
   void SetTPCPidResponseMaster();
   void SetTPCParametrisation();
   Double_t GetTPCMultiplicityBin(const AliVEvent * const event);
