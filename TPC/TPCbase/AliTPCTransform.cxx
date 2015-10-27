@@ -619,4 +619,3 @@ Float_t AliTPCTransform::EvalCorrectionMap(int roc, int row, const double xyz[3]
   //
   return corr;
 }
-
