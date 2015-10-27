@@ -2,7 +2,6 @@
 #include "AliAnalysisTaskCorrelation3p.h"
 #endif
 AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "ThreePartTracksPbPb",
-						      const char* options = "",
 						      const char* centrality = "V0M",
 						      const Double_t MinTriggerPt = 4.0,
 						      const Double_t MaxTriggerPt = 8.0,
@@ -14,7 +13,6 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
 						      const Int_t MaxNEventsMix = 10,
 						      const Int_t MinNTracksMix = 2000,
 						      const Int_t NMBins = 6,
-						      const Int_t NZBins = 19,
 						      const Double_t Mbin0 = 0.,
 						      const Double_t Mbin1 = 5.,
 						      const Double_t Mbin2 = 10.,
@@ -23,26 +21,6 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
 						      const Double_t Mbin5 = 60.,
 						      const Double_t Mbin6 = 90.,
 						      const Double_t Mbin7 = 90.,
-						      const Double_t Zbin0 = -10.,
-						      const Double_t Zbin1 = -8.5,
-						      const Double_t Zbin2 = -7.5,
-						      const Double_t Zbin3 = -6.5,
-						      const Double_t Zbin4 = -5.5,
-						      const Double_t Zbin5 = -4.5,
-						      const Double_t Zbin6 = -3.5,
-						      const Double_t Zbin7 = -2.5,
-						      const Double_t Zbin8 = -1.5,
-						      const Double_t Zbin9 = -0.5,
-						      const Double_t Zbin10 = 0.5,
-						      const Double_t Zbin11 = 1.5,						      
-						      const Double_t Zbin12 = 2.5,						      
-						      const Double_t Zbin13 = 3.5,						      
-						      const Double_t Zbin14 = 4.5,						      
-						      const Double_t Zbin15 = 5.5,						      
-						      const Double_t Zbin16 = 6.5,						      
-						      const Double_t Zbin17 = 7.5,						      
-						      const Double_t Zbin18 = 8.5,						      
-						      const Double_t Zbin19 = 10.0,	
 						      const char * file = "",
 						      const char * cutmask = "GlobalHybrid"
 							 )
@@ -63,7 +41,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   
   const char* fname = Form("%s_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
   const char* tname = Form("%s_%1.0f_%1.0f_%1.0f_%1.0f",name,MinTriggerPt,MaxTriggerPt,MinAssociatedPt,MaxAssociatedPt);
-  AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", tname), options);
+  AliAnalysisTaskCorrelation3p* task = new AliAnalysisTaskCorrelation3p(Form("%sTask", tname), "");
 
   task->SetCentralityEstimator(centrality);
   task->SetTrigger(AliAnalysisTaskCorrelation3p::tracks);
@@ -86,8 +64,29 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   if(NMBins>4) Mbin[5] = Mbin5;
   if(NMBins>5) Mbin[6] = Mbin6;
   if(NMBins>6) Mbin[7] = Mbin7;
-
   TArrayD tMbin(NMBins+1, Mbin);
+  //z vertex binning.
+  const Int_t NZBins   =   19;
+  const Double_t Zbin0 = -10.;
+  const Double_t Zbin1 = -8.5;
+  const Double_t Zbin2 = -7.5;
+  const Double_t Zbin3 = -6.5;
+  const Double_t Zbin4 = -5.5;
+  const Double_t Zbin5 = -4.5;
+  const Double_t Zbin6 = -3.5;
+  const Double_t Zbin7 = -2.5;
+  const Double_t Zbin8 = -1.5;
+  const Double_t Zbin9 = -0.5;
+  const Double_t Zbin10 = 0.5;
+  const Double_t Zbin11 = 1.5;						      
+  const Double_t Zbin12 = 2.5;						      
+  const Double_t Zbin13 = 3.5;						      
+  const Double_t Zbin14 = 4.5;						      
+  const Double_t Zbin15 = 5.5;						      
+  const Double_t Zbin16 = 6.5;						      
+  const Double_t Zbin17 = 7.5;						      
+  const Double_t Zbin18 = 8.5;						      
+  const Double_t Zbin19 = 10.;  
   Double_t *Zbin = new Double_t[NZBins+1];
   Zbin[0] = Zbin0;
   Zbin[1] = Zbin1;
