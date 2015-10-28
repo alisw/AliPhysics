@@ -473,22 +473,22 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSig);
   
-  const Int_t nvarsReco = 13;
+  const Int_t nvarsReco = 16;
   const Int_t nvarsAcc  = 2;
-  Int_t nBinsReco[nvarsReco] = {500,20,60,1000,1000,500,500,50,50,100,100,100,40};
+  Int_t nBinsReco[nvarsReco] = {500,20,60,1000,1000,500,500,50,50,100,100,100,400,400,400,400};
   Int_t nBinsAcc[nvarsAcc]   = {100,20};
   Double_t xminAcc[nvarsAcc] = {0.,-1.};
   Double_t xmaxAcc[nvarsAcc] = {100.,1.};
-  Double_t xminReco[nvarsReco] = {1.5,0.,0.,0.,0.,0.,0.,0.5,0.5,0.,0.,0.,-10.};
-  Double_t xmaxReco[nvarsReco] = {2.5,20.,0.03,5.,5.,500.,500.,1.,1.,0.1,1.,1.,10.};
+  Double_t xminReco[nvarsReco] = {1.5,0.,0.,0.,0.,0.,0.,0.5,0.5,0.,0.,0.,-10.,-10.,-10.,-10.};
+  Double_t xmaxReco[nvarsReco] = {2.5,20.,0.03,5.,5.,500.,500.,1.,1.,0.1,1.,1.,10.,10.,10.,10.};
   TString axis[nvarsReco] = {"invMassAllPhi","p_{T}","#Delta Mass(KK)","dlen","dlen_{xy}","normdl","normdl_{xy}","cosP","cosP_{xy}",
-                             "sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP"};
+                             "sigVert","cosPiDs","|cosPiKPhi^{3}|","normIP","normIP_kaon1","normIP_kaon2","normIP_pion"};
  
-  const Int_t nvarsIP = 3;
-  Int_t nBinsIP[nvarsIP]   = {20,40,3};
-  Double_t xminIP[nvarsIP] = {0.,-10.,0.};
-  Double_t xmaxIP[nvarsIP] = {20.,10.,3.};
-  TString axisIP[nvarsIP]  = {"motherPt","maxNormImp","candType"};
+  const Int_t nvarsIP = 6;
+  Int_t nBinsIP[nvarsIP]   = {20,400,400,400,400,3};
+  Double_t xminIP[nvarsIP] = {0.,-10.,-10.,-10.,-10.,0.};
+  Double_t xmaxIP[nvarsIP] = {20.,10.,10.,10.,10.,3.};
+  TString axisIP[nvarsIP]  = {"motherPt","maxNormImp","IP0","IP1","IP2","candType"};
   
   if(fFillSparse) {
     
@@ -509,11 +509,12 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
         }
         fOutput->Add(fnSparseMC[i]);
       }
+      
       fnSparseIP = new THnSparseF("fnSparseIP","nSparseIP", nvarsIP, nBinsIP, xminIP, xmaxIP);
       for (Int_t j=0; j<nvarsIP; j++) {
         fnSparseIP->GetAxis(j)->SetTitle(Form("%s",axisIP[j].Data()));
       }
-      fnSparseIP->GetAxis(2)->SetTitle("candType (0.5=bkg; 1.5=prompt; 2.5=FD)");
+      fnSparseIP->GetAxis(5)->SetTitle("candType (0.5=bkg; 1.5=prompt; 2.5=FD)");
       fOutput->Add(fnSparseIP);
     }
     else {
@@ -681,7 +682,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     Bool_t recVtx=kFALSE;
     AliAODVertex *origownvtx=0x0;
     
-    
     Double_t ptCand = d->Pt();
     Int_t iPtBin=TMath::BinarySearch(fNPtBins,fPtLimits,(Float_t)ptCand);
     Double_t rapid=d->YDs();
@@ -720,12 +720,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     Int_t isK0starKKpi=retCodeAnalysisCuts&16;
     Int_t isK0starpiKK=retCodeAnalysisCuts&32;
     
-    Double_t invMass = 0.;
-    if(isPhiKKpi) invMass=d->InvMassDsKKpi();
-    if(isPhipiKK) invMass=d->InvMassDspiKK();
-
     if(retCodeAnalysisCuts<=0) continue;
-    
     if(fAnalysisCuts->GetIsPrimaryWithoutDaughters()){
       if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
       if(fAnalysisCuts->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
@@ -751,49 +746,15 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     
     fChanHist[0]->Fill(retCodeAnalysisCuts);
     
+
+    Double_t invMass = 0.;
     Int_t indexMCKKpi=-1;
     Int_t indexMCpiKK=-1;
     Int_t labDs=-1;
     Int_t pdgCode0=-999;
     Int_t isMCSignal=-1;
     
-    Double_t deltaMassKK=TMath::Abs(massKK-massPhi);
-    Double_t dlen=d->DecayLength();
-    Double_t dlenxy=d->DecayLengthXY();
-    Double_t normdl=d->NormalizedDecayLength();
-    Double_t normdlxy=d->NormalizedDecayLengthXY();
-    Double_t cosp=d->CosPointingAngle();
-    Double_t cospxy=d->CosPointingAngleXY();
-    Double_t pt0=d->PtProng(0);
-    Double_t pt1=d->PtProng(1);
-    Double_t pt2=d->PtProng(2);
-    Double_t sigvert=d->GetSigmaVert();
-    Double_t cosPiDs=-99.;
-    Double_t cosPiKPhi=-99.;
-    if(isKKpi) cosPiDs = d->CosPiDsLabFrameKKpi();
-    else cosPiDs = d->CosPiDsLabFramepiKK();
-    cosPiDs = TMath::Abs(cosPiDs*cosPiDs*cosPiDs);
-    if(isKKpi) cosPiKPhi = d->CosPiKPhiRFrameKKpi();
-    else cosPiKPhi = d->CosPiKPhiRFramepiKK();
-    cosPiKPhi = TMath::Abs(cosPiKPhi*cosPiKPhi*cosPiKPhi);
- 
-    Double_t candType = 0.5;             //0.5=bkg,1.5=prompt,2.5=feeddw
-    Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
     
-    if(isPhipiKK || isPhiKKpi) {
-      const Int_t nProng = 3;
-      Double_t tmpNormIP[nProng];
-      for(Int_t ip=0; ip<nProng; ip++) {
-        Double_t diffIP, errdiffIP;
-        d->Getd0MeasMinusExpProng(ip,aod->GetMagneticField(),diffIP,errdiffIP);
-        tmpNormIP[ip] = diffIP/errdiffIP;
-        if(ip==0) normIP = tmpNormIP[ip];
-        else if(TMath::Abs(tmpNormIP[ip])>TMath::Abs(normIP)) normIP = tmpNormIP[ip];
-      }
-    }
-    Double_t var4nSparse[13] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
-      sigvert,cosPiDs,cosPiKPhi,normIP};
-  
     if(fReadMC){
       
       labDs = d->MatchToMC(431,arrayMC,3,pdgDstoKKpi);
@@ -833,6 +794,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       }
     }
 
+    Double_t candType = 0.5; //for bkg
+    
     if(isKKpi){
       invMass=d->InvMassDsKKpi();
       fMassHist[index]->Fill(invMass,weightKKpi);
@@ -840,9 +803,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       if(isPhiKKpi){
         fMassHistPhi[index]->Fill(invMass,weightKKpi);
         fPtVsMassPhi->Fill(invMass,ptCand,weightKKpi);
-        if(!fReadMC && fFillSparse) {
-          fnSparse->Fill(var4nSparse);
-        }
       }
       if(isK0starKKpi){
         fMassHistK0st[index]->Fill(invMass,weightKKpi);
@@ -857,16 +817,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
               AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
               Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
               if(orig==4) {
-                fnSparseMC[2]->Fill(var4nSparse);
                 candType = 1.5;
               }
               if(orig==5) {
-                fnSparseMC[3]->Fill(var4nSparse);
                 candType = 2.5;
               }
             }
-            Double_t var[3] = {ptCand,normIP,candType};
-            fnSparseIP->Fill(var);
           }
         }
         if(isK0starKKpi) fMassHistK0st[indexMCKKpi]->Fill(invMass,weightKKpi);
@@ -879,9 +835,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       if(isPhipiKK){
         fMassHistPhi[index]->Fill(invMass,weightpiKK);
         fPtVsMassPhi->Fill(invMass,ptCand,weightpiKK);
-        if(!fReadMC && fFillSparse) {
-          fnSparse->Fill(var4nSparse);
-        }
       }
       if(isK0starpiKK){
         fMassHistK0st[index]->Fill(invMass,weightpiKK);
@@ -896,21 +849,115 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
               AliAODMCParticle *partDs = (AliAODMCParticle*)arrayMC->At(labDs);
               Int_t orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partDs,kTRUE);
               if(orig==4) {
-                fnSparseMC[2]->Fill(var4nSparse);
                 candType = 1.5;
               }
               if(orig==5) {
-                fnSparseMC[3]->Fill(var4nSparse);
                 candType = 2.5;
               }
             }
-            Double_t var[3] = {ptCand,normIP,candType};
-            fnSparseIP->Fill(var);
           }
         }
         if(isK0starpiKK) fMassHistK0st[indexMCpiKK]->Fill(invMass,weightpiKK);
       }
     }
+    
+    
+    ///////////////////// CODE FOR NSPARSE /////////////////////////
+    
+    if(fFillSparse) {
+      
+      const Int_t nProng = 3;
+      Double_t deltaMassKK=999.;
+      Double_t dlen=d->DecayLength();
+      Double_t dlenxy=d->DecayLengthXY();
+      Double_t normdl=d->NormalizedDecayLength();
+      Double_t normdlxy=d->NormalizedDecayLengthXY();
+      Double_t cosp=d->CosPointingAngle();
+      Double_t cospxy=d->CosPointingAngleXY();
+      Double_t pt0=d->PtProng(0);
+      Double_t pt1=d->PtProng(1);
+      Double_t pt2=d->PtProng(2);
+      Double_t sigvert=d->GetSigmaVert();
+      Double_t cosPiDs=-99.;
+      Double_t cosPiKPhi=-99.;
+      Double_t normIP;                     //to store the maximum topomatic var. among the 3 prongs
+      Double_t normIPprong[nProng];        //to store IP of k,k,pi
+      if(isPhiKKpi) {
+        Double_t tmpNormIP[nProng];
+        
+        invMass     = d->InvMassDsKKpi();
+        massKK      = d->InvMass2Prongs(0,1,321,321);
+        deltaMassKK = TMath::Abs(massKK-massPhi);
+        cosPiDs     = d->CosPiDsLabFrameKKpi();
+        cosPiKPhi   = d->CosPiKPhiRFrameKKpi();
+        cosPiKPhi   = TMath::Abs(cosPiKPhi*cosPiKPhi*cosPiKPhi);
+        
+        for(Int_t ip=0; ip<nProng; ip++) {
+          Double_t diffIP, errdiffIP;
+          d->Getd0MeasMinusExpProng(ip,aod->GetMagneticField(),diffIP,errdiffIP);
+          tmpNormIP[ip] = diffIP/errdiffIP;
+          if(ip==0) normIP = tmpNormIP[ip];
+          else if(TMath::Abs(tmpNormIP[ip])>TMath::Abs(normIP)) normIP = tmpNormIP[ip];
+        }
+        normIPprong[0] = tmpNormIP[0];
+        normIPprong[1] = tmpNormIP[1];
+        normIPprong[2] = tmpNormIP[2];
+        
+        Double_t var4nSparse[16] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
+          sigvert,cosPiDs,cosPiKPhi,normIP,normIPprong[0],normIPprong[1],normIPprong[2]};
+        
+        if(!fReadMC) {
+          fnSparse->Fill(var4nSparse);
+        }
+        else {
+          if(indexMCKKpi==GetSignalHistoIndex(iPtBin)) {
+            if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
+            if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
+          }
+        }
+      }
+      if(isPhipiKK) {
+        Double_t tmpNormIP[nProng];
+        
+        invMass     = d->InvMassDspiKK();
+        massKK      = d->InvMass2Prongs(1,2,321,321);
+        deltaMassKK = TMath::Abs(massKK-massPhi);
+        cosPiDs     = d->CosPiDsLabFramepiKK();
+        cosPiKPhi   = d->CosPiKPhiRFramepiKK();
+        cosPiKPhi   = TMath::Abs(cosPiKPhi*cosPiKPhi*cosPiKPhi);
+        
+        for(Int_t ip=0; ip<nProng; ip++) {
+          Double_t diffIP, errdiffIP;
+          d->Getd0MeasMinusExpProng(ip,aod->GetMagneticField(),diffIP,errdiffIP);
+          tmpNormIP[ip] = diffIP/errdiffIP;
+          if(ip==0) normIP = tmpNormIP[ip];
+          else if(TMath::Abs(tmpNormIP[ip])>TMath::Abs(normIP)) normIP = tmpNormIP[ip];
+        }
+        
+        normIPprong[0] = tmpNormIP[2];
+        normIPprong[1] = tmpNormIP[1];
+        normIPprong[2] = tmpNormIP[0];
+        
+        Double_t var4nSparse[16] = {invMass,ptCand,deltaMassKK,dlen,dlenxy,normdl,normdlxy,cosp,cospxy,
+          sigvert,cosPiDs,cosPiKPhi,normIP,normIPprong[0],normIPprong[1],normIPprong[2]};
+        
+        if(!fReadMC) {
+          fnSparse->Fill(var4nSparse);
+        }
+        else {
+          if(indexMCpiKK==GetSignalHistoIndex(iPtBin)) {
+            if(candType==1.5) fnSparseMC[2]->Fill(var4nSparse);
+            if(candType==2.5) fnSparseMC[3]->Fill(var4nSparse);
+          }
+        }
+      }
+      
+      if(fReadMC && (isPhiKKpi || isPhiKKpi)) {
+        Double_t var[6] = {ptCand,normIP,normIPprong[0],normIPprong[1],normIPprong[2],candType};
+        fnSparseIP->Fill(var);
+      }
+    }
+    ////////////////////////////////////////////////////////////////
     
     if(fDoCutVarHistos){
       Double_t dlen=d->DecayLength();
