@@ -1,0 +1,14 @@
+NJOB 0
+NEVENT 100
+LOGFILE out-simple.log
+HEPMCFILE out-simple.hepmc
+SPLITINTFILE splitint-simple.dat
+PDFFILE pdfs-simple.dat
+XSECFILE xsec-simple.dat
+SQRTS 200.
+PTMIN 3.
+ETAMAX 1.
+WEIGHTED .TRUE.
+WEXPO 7.
+MASS 197.
+MEDIUMPARAMS params.medium-simple.dat
