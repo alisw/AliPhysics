@@ -1365,7 +1365,12 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
   c2->SaveAs(pngName.Data());
 
   TString outFileName = filename;
-  if(kProjectInEta) outFileName.ReplaceAll(".root","_DeltaEtaProjection.root");
+  if(kProjectInEta && binMin == 1 && binMax == 72) 
+    outFileName.ReplaceAll(".root","_DeltaEtaProjection_Full.root");
+  else if(kProjectInEta && binMin == 37 && binMax == 72)
+    outFileName.ReplaceAll(".root","_DeltaEtaProjection_AS.root");
+  else if(kProjectInEta)
+    outFileName.ReplaceAll(".root","_DeltaEtaProjection.root");
   else              outFileName.ReplaceAll(".root","_DeltaPhiProjection.root");
   TFile *fProjection = TFile::Open(outFileName.Data(),"recreate");  
   gHistBalanceFunctionSubtracted->Write();
@@ -1822,7 +1827,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 					 Double_t ptAssociatedMax = -1.,
 					 TString eventClass = "Multiplicity",
 					 Bool_t bRootMoments = kFALSE,
-					 Bool_t bFullPhiForEtaProjection = kFALSE,
+					 Int_t iFullPhiForEtaProjection = 0,
 					 Bool_t bReduceRangeForMoments = kFALSE,
 					 Bool_t bFWHM = kFALSE) {
   //Macro that draws the BF distributions for each centrality bin
@@ -1959,7 +1964,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   c0->SaveAs(pngName.Data());
 
  // do the full range for the projection on eta (for cross checking with published results)
- if(bFullPhiForEtaProjection){
+ if(iFullPhiForEtaProjection == 1){
    
    drawProjections(gHistBalanceFunction2D,
 		   kTRUE,
@@ -1975,6 +1980,25 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
 		   bReduceRangeForMoments,
 		   bFWHM);
  }
+ // just use away side for eta projection
+ else if(iFullPhiForEtaProjection == 2){
+
+   drawProjections(gHistBalanceFunction2D,
+		   kTRUE,
+		   37,72,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   bRootMoments,
+		   kFALSE,
+		   bReduceRangeForMoments,
+		   bFWHM);
+
+ }
+ // just use near side for eta projection (default, iFullPhiForEtaProjection = 0)
  else{
    drawProjections(gHistBalanceFunction2D,
 		   kTRUE,
@@ -2240,7 +2264,8 @@ void mergeBFPsi2D(TString momDirectory = "./",
 		  Double_t ptAssociatedMin = -1.,
 		  Double_t ptAssociatedMax = -1.,
 		  Bool_t bReduceRangeForMoments = kFALSE,
-		  Bool_t bFWHM = kFALSE
+		  Bool_t bFWHM = kFALSE,
+		  Int_t iFullPhiForEtaProjection = 0
 ) {
   //Macro that draws the BF distributions for each centrality bin
   //for reaction plane dependent analysis
@@ -2369,19 +2394,58 @@ sFileName[iDir] += momDirectory;
    else hBFOut->Add(hBF[iDir]); 
  }
 
- drawProjections(hBFOut,
-		 kTRUE,
-		 1,36,
-		 gCentrality,
-		 psiMin,psiMax,
-		 ptTriggerMin,ptTriggerMax,
-		 ptAssociatedMin,ptAssociatedMax,
-		 kTRUE,
-		 eventClass,
-		 kTRUE,
-		 kFALSE,
-		 bReduceRangeForMoments,
-		 bFWHM);
+ // do the full range for the projection on eta (for cross checking with published results)
+ if(iFullPhiForEtaProjection == 1){
+   
+   drawProjections(hBFOut,
+		   kTRUE,
+		   1,72,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   kTRUE,
+		   kFALSE,
+		   bReduceRangeForMoments,
+		   bFWHM);
+ }
+ // just use away side for eta projection
+ else if(iFullPhiForEtaProjection == 2){
+
+   drawProjections(hBFOut,
+		   kTRUE,
+		   37,72,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   kTRUE,
+		   kFALSE,
+		   bReduceRangeForMoments,
+		   bFWHM);
+
+ }
+ // just use near side for eta projection (default, iFullPhiForEtaProjection = 0)
+ else{
+
+   drawProjections(hBFOut,
+		   kTRUE,
+		   1,36,
+		   gCentrality,
+		   psiMin,psiMax,
+		   ptTriggerMin,ptTriggerMax,
+		   ptAssociatedMin,ptAssociatedMax,
+		   kTRUE,
+		   eventClass.Data(),
+		   kTRUE,
+		   kFALSE,
+		   bReduceRangeForMoments,
+		   bFWHM);
+ }
 
   drawProjections(hBFOut,
   		  kFALSE,

@@ -144,6 +144,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   TString nameContainerFC3="DSBcandidates";
     
   TString nameContainerFC4 = "DcandidatesAndTracks";
+  TString nameContainerFC5 = "DSBcandidatesAndTracks";
 
   nameContainerF0  += candname;
   nameContainerF1  += candname;
@@ -152,6 +153,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   nameContainerFC2 += candname;
   nameContainerFC3 += candname;
   nameContainerFC4 += candname;
+  nameContainerFC5 += candname;
   
   nameContainerF0  += suffix;
   nameContainerF1  += suffix;
@@ -160,6 +162,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   nameContainerFC2 += suffix;
   nameContainerFC3 += suffix;
   nameContainerFC4 += suffix;
+  nameContainerFC5 += suffix;
   
   nameContainerC0+=sR;
   nameContainerC1+=sR;
@@ -173,7 +176,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
-  cinput0->SetName(Form("in%s%s",candname.Data(),suffix.Data()));
+  //cinput0->SetName(Form("in%s%s",candname.Data(),suffix.Data()));
   
   // ----- output data -----
   AliAnalysisDataContainer *coutputF0;
@@ -181,6 +184,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   AliAnalysisDataContainer *coutputFC2;
   AliAnalysisDataContainer *coutputFC3;
   AliAnalysisDataContainer *coutputFC4;
+  AliAnalysisDataContainer *coutputFC5;
   
   if(!bTaskFilter){
   coutputF0 = mgr->CreateContainer(nameContainerF0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfileF.Data());
@@ -193,6 +197,8 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
 
   coutputFC4 = mgr->CreateContainer(nameContainerFC4, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
       
+  coutputFC5 = mgr->CreateContainer(nameContainerFC5, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
+
   } else {
      TObjArray * cnt = mgr->GetContainers();
      coutputF0 = (AliAnalysisDataContainer*)cnt->FindObject(nameContainerF0);
@@ -200,6 +206,7 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
      coutputFC2= (AliAnalysisDataContainer*)cnt->FindObject(nameContainerFC2);
      coutputFC3= (AliAnalysisDataContainer*)cnt->FindObject(nameContainerFC3);
      coutputFC4= (AliAnalysisDataContainer*)cnt->FindObject(nameContainerFC4);
+     coutputFC5= (AliAnalysisDataContainer*)cnt->FindObject(nameContainerFC5);
   }
   
   AliAnalysisDataContainer *coutputC0 = mgr->CreateContainer(nameContainerC0, TList::Class(),AliAnalysisManager::kOutputContainer,outputfileC.Data());
@@ -215,11 +222,12 @@ AliAnalysisTaskSE *AddTaskDFilterAndCorrelations(
   mgr->ConnectOutput(taskFilter,3,coutputFC2);
   mgr->ConnectOutput(taskFilter,4,coutputFC3);
   mgr->ConnectOutput(taskFilter,5,coutputFC4);
-  
+  mgr->ConnectOutput(taskFilter,6,coutputFC5);
   
   mgr->ConnectInput(taskCorr,1,coutputFC2);
   mgr->ConnectInput(taskCorr,2,coutputFC3);
   mgr->ConnectInput(taskCorr,3,coutputFC4);
+  mgr->ConnectInput(taskCorr,4,coutputFC5);
   mgr->ConnectOutput(taskCorr,1,coutputC0);
   mgr->ConnectOutput(taskCorr,2,coutputC1);
   //if(cand==1) mgr->ConnectOutput(task,4,coutput4);

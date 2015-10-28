@@ -3,8 +3,15 @@
 ///
 /// This macro draws the output of AliAnalysisTaskMeanPtRaw. The first argument is the file, which should be used to plot, 
 /// the second argument contains additional information, which are put on the plot.
-/// This second argument can contain pT cuts in the form lowerPt<pT<higherPt
+/// This second argument can contain pT cuts and other informations.
 /// All different information need to be seperated by ; and are then parsed in this macro.
+/// The pT cuts have to be in the form lowerPt<pT<higherPt with pT being in GeV/c.
+/// In the end, all information except the pT cuts are put to a legend beside the plot, while the pT cuts are put seperatly there.
+/// If the additional information contains an entry with plot= in the beginning, the information is added to the name of the plot.
+///
+/// A example call for this macro is
+/// root -l -b -q "$ALICE_PHYSICS/../src/PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw/macros/drawMeanPtRaw.C++(\"AnalysisResults.root\",\"#sqrt{s} = 13 TeV;LHC15f_pass2;0.5<pT<4.0;0.15<pT<10;2<pT<6;plot=LHC15f_pass2\")"
+/// 
 ///
 /// \author Philipp Luettig <philipp.luettig@cern.ch>, University of Frankfurt, Germany
 /// \date May 12th, 2015
@@ -42,7 +49,7 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
   TString sAdditionalInfo(cInformation);
   TObjArray *oAddInfo = sAdditionalInfo.Tokenize(";");
   
-  TObjString *osPlot = 0x0;
+  TObjString *osPlot = new TObjString("default");
   std::vector<Bool_t> bDrawEntry;
   std::vector<Double_t> dVecPtMin;
   std::vector<Double_t> dVecPtMax;
@@ -75,6 +82,13 @@ void drawMeanPtRaw(const char *fInput = "AnalysisResults.root", const char * cIn
 	  bDrawEntry.at(iEntry) = kFALSE;
 	  //Printf("%s" ,osPlot->GetString().Data());
 	}	  
+  }
+  
+  if(dVecPtMin.size() < 1) 
+  {
+	dVecPtMin.push_back(0.15);
+	dVecPtMax.push_back(4);
+	nPtCuts++;
   }
   
   std::vector<std::vector<TProfile> > pVecMpt;

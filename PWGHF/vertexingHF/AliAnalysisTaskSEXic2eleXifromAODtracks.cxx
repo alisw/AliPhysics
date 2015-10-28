@@ -146,6 +146,25 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoEleXiMassWSMix2(0),
   fHistoEleXiMassRSSide2(0),
   fHistoEleXiMassWSSide2(0),
+  fHistoEleXiMassAway(0),
+  fHistoEleXiMassRSAway(0),
+  fHistoEleXiMassWSAway(0),
+  fHistoEleXiMassRSMixAway(0),
+  fHistoEleXiMassWSMixAway(0),
+  fHistoEleXiMassRSSideAway(0),
+  fHistoEleXiMassWSSideAway(0),
+  fHistoEleXiMassRS1Away(0),
+  fHistoEleXiMassWS1Away(0),
+  fHistoEleXiMassRSMix1Away(0),
+  fHistoEleXiMassWSMix1Away(0),
+  fHistoEleXiMassRSSide1Away(0),
+  fHistoEleXiMassWSSide1Away(0),
+  fHistoEleXiMassRS2Away(0),
+  fHistoEleXiMassWS2Away(0),
+  fHistoEleXiMassRSMix2Away(0),
+  fHistoEleXiMassWSMix2Away(0),
+  fHistoEleXiMassRSSide2Away(0),
+  fHistoEleXiMassWSSide2Away(0),
   fHistoEleXiMassvsElePtRS(0),
   fHistoEleXiMassvsElePtWS(0),
   fHistoEleXiMassvsElePtRSMix(0),
@@ -332,6 +351,25 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistoEleXiMassWSMix2(0),
   fHistoEleXiMassRSSide2(0),
   fHistoEleXiMassWSSide2(0),
+  fHistoEleXiMassAway(0),
+  fHistoEleXiMassRSAway(0),
+  fHistoEleXiMassWSAway(0),
+  fHistoEleXiMassRSMixAway(0),
+  fHistoEleXiMassWSMixAway(0),
+  fHistoEleXiMassRSSideAway(0),
+  fHistoEleXiMassWSSideAway(0),
+  fHistoEleXiMassRS1Away(0),
+  fHistoEleXiMassWS1Away(0),
+  fHistoEleXiMassRSMix1Away(0),
+  fHistoEleXiMassWSMix1Away(0),
+  fHistoEleXiMassRSSide1Away(0),
+  fHistoEleXiMassWSSide1Away(0),
+  fHistoEleXiMassRS2Away(0),
+  fHistoEleXiMassWS2Away(0),
+  fHistoEleXiMassRSMix2Away(0),
+  fHistoEleXiMassWSMix2Away(0),
+  fHistoEleXiMassRSSide2Away(0),
+  fHistoEleXiMassWSSide2Away(0),
   fHistoEleXiMassvsElePtRS(0),
   fHistoEleXiMassvsElePtWS(0),
   fHistoEleXiMassvsElePtRSMix(0),
@@ -1057,6 +1095,32 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 //  cntrack->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0,covd0z0);//propagate to primary vertex for debugging
 //  cbtrack->PropagateToDCA(fVtx1,fBzkG,kVeryBig,d0z0,covd0z0);//propagate to primary vertex for debugging
 
+	Double_t pxe = exobj->PxProng(0);
+	Double_t pye = exobj->PyProng(0);
+	Double_t pze = exobj->PzProng(0);
+	Double_t mome = sqrt(pxe*pxe+pye*pye+pze*pze);
+	Double_t Ee = sqrt(mome*mome+0.000510998928*0.000510998928);
+	Double_t pxv = exobj->PxProng(1);
+	Double_t pyv = exobj->PyProng(1);
+	Double_t pzv = exobj->PzProng(1);
+	Double_t momv = sqrt(pxv*pxv+pyv*pyv+pzv*pzv);
+	Double_t Ev = sqrt(momv*momv+1.32171*1.32171);
+	Double_t cosoa = (pxe*pxv+pye*pyv+pze*pzv)/mome/momv;
+	Double_t Esum = Ee + Ev;
+
+	Double_t uxe = pxe/mome;
+	Double_t uye = pye/mome;
+	Double_t uze = pze/mome;
+	Double_t lf = -2.*(pxv*uxe+pyv*uye+pzv*uze);
+	Double_t pxv_flip = pxv + lf * uxe;
+	Double_t pyv_flip = pyv + lf * uye;
+	Double_t pzv_flip = pzv + lf * uze;
+	Double_t pxsum_flip = pxe + pxv_flip;
+	Double_t pysum_flip = pye + pyv_flip;
+	Double_t pzsum_flip = pze + pzv_flip;
+	Double_t mexi_flip = sqrt(Esum*Esum-pxsum_flip*pxsum_flip-pysum_flip*pysum_flip-pzsum_flip*pzsum_flip);
+	Double_t ptexi_flip = sqrt(pxsum_flip*pxsum_flip+pysum_flip*pysum_flip);
+
   Double_t posVtx[3] = {0.,0.,0.};
   fVtx1->GetXYZ(posVtx);
 
@@ -1238,6 +1302,11 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 	cont[1] = exobj->Pt();
 	cont[2] = fCentrality;
 	fHistoEleXiMass->Fill(cont);
+
+	Double_t cont_flip[3];
+	cont_flip[0] = mexi_flip;
+	cont_flip[1] = ptexi_flip;
+	cont_flip[2] = fCentrality;
 
 	Double_t cont2[3];
 	cont2[0] = exobj->InvMass(2,pdgdg);
@@ -1592,6 +1661,20 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 		}
 	}
 
+	//if( exobj->InvMass(2,pdgdg)<10. && cosoa < 0. && fAnalCuts->IsPeakRegion(casc))
+	if( mexi_flip <10. && cosoa < 0. && fAnalCuts->IsPeakRegion(casc))
+	{
+		if(trk->Charge()*casc->ChargeXi()<0){
+			fHistoEleXiMassRSAway->Fill(cont_flip);
+			if(trk->Charge()>0) fHistoEleXiMassRS1Away->Fill(cont_flip);
+			else  fHistoEleXiMassRS2Away->Fill(cont_flip);
+		}else{
+			fHistoEleXiMassWSAway->Fill(cont_flip);
+			if(trk->Charge()>0) fHistoEleXiMassWS1Away->Fill(cont_flip);
+			else  fHistoEleXiMassWS2Away->Fill(cont_flip);
+		}
+	}
+
 	if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsSideBand(casc))
 	{
 		if(trk->Charge()*casc->ChargeXi()<0){
@@ -1611,6 +1694,20 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 		}
 	}
 
+	//if( exobj->InvMass(2,pdgdg)<10. && cosoa < 0. && fAnalCuts->IsSideBand(casc))
+	if( mexi_flip< 10. && cosoa < 0. && fAnalCuts->IsSideBand(casc))
+	{
+		if(trk->Charge()*casc->ChargeXi()<0){
+			fHistoEleXiMassRSSideAway->Fill(cont_flip);
+			if(trk->Charge()>0) fHistoEleXiMassRSSide1Away->Fill(cont_flip);
+			else  fHistoEleXiMassRSSide2Away->Fill(cont_flip);
+		}else{
+			fHistoEleXiMassWSSideAway->Fill(cont_flip);
+			if(trk->Charge()>0) fHistoEleXiMassWSSide1Away->Fill(cont_flip);
+			else  fHistoEleXiMassWSSide2Away->Fill(cont_flip);
+		}
+	}
+
   return;
 }
 
@@ -1624,7 +1721,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
 	if(!casc) return;
 
 
-	for(Int_t i=0;i<89;i++){
+	for(Int_t i=0;i<90;i++){
 		fCandidateVariables[i] = -9999.;
 	}
 
@@ -1646,8 +1743,20 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
 	Double_t pysum = pye + pyv;
 	Double_t pzsum = pze + pzv;
 	Double_t Esum = Ee + Ev;
-
 	Double_t mexi = sqrt(Esum*Esum-pxsum*pxsum-pysum*pysum-pzsum*pzsum);
+
+	Double_t uxe = pxe/mome;
+	Double_t uye = pye/mome;
+	Double_t uze = pze/mome;
+	Double_t lf = -2.*(pxv*uxe+pyv*uye+pzv*uze);
+	Double_t pxv_flip = pxv + lf * uxe;
+	Double_t pyv_flip = pyv + lf * uye;
+	Double_t pzv_flip = pzv + lf * uze;
+	Double_t pxsum_flip = pxe + pxv_flip;
+	Double_t pysum_flip = pye + pyv_flip;
+	Double_t pzsum_flip = pze + pzv_flip;
+	Double_t mexi_flip = sqrt(Esum*Esum-pxsum_flip*pxsum_flip-pysum_flip*pysum_flip-pzsum_flip*pzsum_flip);
+	Double_t ptexi_flip = sqrt(pxsum_flip*pxsum_flip+pysum_flip*pysum_flip);
 
   Double_t posVtx[3] = {0.,0.,0.};
   fVtx1->GetXYZ(posVtx);
@@ -1677,35 +1786,39 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   if(fWriteVariableTree)
     fVariablesTree->Fill();
 
+	Double_t cont[3];
+	cont[0] = mexi;
+	cont[1] = sqrt(pxsum*pxsum+pysum*pysum);
+	cont[2] = fCentrality;
+	fHistoEleXiMass->Fill(cont);
 
-	if(cosoa>0. && fAnalCuts->IsPeakRegion(casc))
+	Double_t cont_flip[3];
+	cont_flip[0] = mexi_flip;
+	cont_flip[1] = ptexi_flip;
+	cont_flip[2] = fCentrality;
+
+	Double_t cont2[3];
+	cont2[0] = mexi;
+	cont2[1] = sqrt(pxe*pxe+pye*pye);
+	cont2[2] = fCentrality;
+
+	Double_t cont_eleptvseta[3];
+	cont_eleptvseta[0] = trke->Pt();
+	cont_eleptvseta[1] = trke->Eta();
+	cont_eleptvseta[2] = fCentrality;
+
+	Double_t cont_eleptvsxipt[3];
+	cont_eleptvsxipt[0] = trke->Pt();
+	cont_eleptvsxipt[1] = casc->Pt();
+	cont_eleptvsxipt[2] = fCentrality;
+
+	Double_t cont_eleptvsd0[3];
+	cont_eleptvsd0[0] = trke->Pt();
+	cont_eleptvsd0[1] = 0.;
+	cont_eleptvsd0[2] = fCentrality;
+
+	if(mexi<10. && cosoa>0. && fAnalCuts->IsPeakRegion(casc))
 	{
-		Double_t cont[3];
-		cont[0] = mexi;
-		cont[1] = sqrt(pxsum*pxsum+pysum*pysum);
-		cont[2] = fCentrality;
-		fHistoEleXiMass->Fill(cont);
-
-		Double_t cont2[3];
-		cont2[0] = mexi;
-		cont2[1] = sqrt(pxe*pxe+pye*pye);
-		cont2[2] = fCentrality;
-
-		Double_t cont_eleptvseta[3];
-		cont_eleptvseta[0] = trke->Pt();
-		cont_eleptvseta[1] = trke->Eta();
-		cont_eleptvseta[2] = fCentrality;
-
-		Double_t cont_eleptvsxipt[3];
-		cont_eleptvsxipt[0] = trke->Pt();
-		cont_eleptvsxipt[1] = casc->Pt();
-		cont_eleptvsxipt[2] = fCentrality;
-
-		Double_t cont_eleptvsd0[3];
-		cont_eleptvsd0[0] = trke->Pt();
-		cont_eleptvsd0[1] = 0.;
-		cont_eleptvsd0[2] = fCentrality;
-
 		if(((int)trke->T())*chargexi<0){
 			fHistoEleXiMassRSMix->Fill(cont);
 			if(trke->T()>0) fHistoEleXiMassRSMix1->Fill(cont);
@@ -1732,6 +1845,20 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
 				fHistoElePtvsXiPtWSMix->Fill(cont_eleptvsxipt);
 				fHistoElePtvsd0WSMix->Fill(cont_eleptvsd0);
 			}
+		}
+	}
+
+	//if(mexi < 10. && cosoa<0. && fAnalCuts->IsPeakRegion(casc))
+	if(mexi_flip < 10. && cosoa<0. && fAnalCuts->IsPeakRegion(casc))
+	{
+		if(((int)trke->T())*chargexi<0){
+			fHistoEleXiMassRSMixAway->Fill(cont_flip);
+			if(trke->T()>0) fHistoEleXiMassRSMix1Away->Fill(cont_flip);
+			else  fHistoEleXiMassRSMix2Away->Fill(cont_flip);
+		}else{
+			fHistoEleXiMassWSMixAway->Fill(cont_flip);
+			if(trke->T()>0) fHistoEleXiMassWSMix1Away->Fill(cont_flip);
+			else  fHistoEleXiMassWSMix2Away->Fill(cont_flip);
 		}
 	}
 
@@ -2455,6 +2582,43 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoEleXiMassRSSide2);
   fHistoEleXiMassWSSide2 = new THnSparseF("fHistoEleXiMassWSSide2","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleXiMassWSSide2);
+
+  fHistoEleXiMassRSAway = new THnSparseF("fHistoEleXiMassRSAway","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRSAway);
+  fHistoEleXiMassWSAway = new THnSparseF("fHistoEleXiMassWSAway","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWSAway);
+  fHistoEleXiMassRSMixAway = new THnSparseF("fHistoEleXiMassRSMixAway","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRSMixAway);
+  fHistoEleXiMassWSMixAway = new THnSparseF("fHistoEleXiMassWSMixAway","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWSMixAway);
+  fHistoEleXiMassRSSideAway = new THnSparseF("fHistoEleXiMassRSSideAway","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRSSideAway);
+  fHistoEleXiMassWSSideAway = new THnSparseF("fHistoEleXiMassWSSideAway","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWSSideAway);
+  fHistoEleXiMassRS1Away = new THnSparseF("fHistoEleXiMassRS1Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRS1Away);
+  fHistoEleXiMassWS1Away = new THnSparseF("fHistoEleXiMassWS1Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWS1Away);
+  fHistoEleXiMassRSMix1Away = new THnSparseF("fHistoEleXiMassRSMix1Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRSMix1Away);
+  fHistoEleXiMassWSMix1Away = new THnSparseF("fHistoEleXiMassWSMix1Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWSMix1Away);
+  fHistoEleXiMassRSSide1Away = new THnSparseF("fHistoEleXiMassRSSide1Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRSSide1Away);
+  fHistoEleXiMassWSSide1Away = new THnSparseF("fHistoEleXiMassWSSide1Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWSSide1Away);
+  fHistoEleXiMassRS2Away = new THnSparseF("fHistoEleXiMassRS2Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRS2Away);
+  fHistoEleXiMassWS2Away = new THnSparseF("fHistoEleXiMassWS2Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWS2Away);
+  fHistoEleXiMassRSMix2Away = new THnSparseF("fHistoEleXiMassRSMix2Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRSMix2Away);
+  fHistoEleXiMassWSMix2Away = new THnSparseF("fHistoEleXiMassWSMix2Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWSMix2Away);
+  fHistoEleXiMassRSSide2Away = new THnSparseF("fHistoEleXiMassRSSide2Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassRSSide2Away);
+  fHistoEleXiMassWSSide2Away = new THnSparseF("fHistoEleXiMassWSSide2Away","",3,bins_base,xmin_base,xmax_base);
+  fOutputAll->Add(fHistoEleXiMassWSSide2Away);
 
   Int_t bins_base_elept[3]=		{10	,100		,10};
   Double_t xmin_base_elept[3]={1.3,0		,0.00};

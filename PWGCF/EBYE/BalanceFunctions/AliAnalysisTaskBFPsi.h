@@ -109,6 +109,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseFlowAfterBurner = kTRUE;
   }
 
+  void ExcludeSecondariesInMC()  {fExcludeSecondariesInMC = kTRUE;}
   void ExcludeWeakDecaysInMC() {fExcludeWeakDecaysInMC = kTRUE;}
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
   void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
@@ -372,6 +373,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TF1 *fDifferentialV2;//pt-differential v2 (from real data)
   Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
 
+  Bool_t fExcludeSecondariesInMC;//flag to exclude the secondaries from material and weak decays in the MCAODrec analysis
   Bool_t fExcludeWeakDecaysInMC;//flag to exclude the weak decay products (if not done by IsPhysicalPrimary) from the MC analysis
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
