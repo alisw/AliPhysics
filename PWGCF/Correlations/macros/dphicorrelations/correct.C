@@ -930,7 +930,7 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   SetupRanges(hMixed);
   
   TH1* hist1 = 0;
-  GetDistAndFlow(h, 0, &hist1,  0, step, 0,  80, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+  GetDistAndFlow(h, 0, &hist1,  0, step, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
   
 //   ((TH2*) hist1)->Rebin2D(2, 2);
 //   hist1->Scale(0.25);
@@ -952,7 +952,7 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   c->cd(1);
   gPad->SetLeftMargin(0.15);
   hist1->SetTitle("");
-  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59);
   hist1->GetZaxis()->SetTitleOffset(1.8);
   hist1->GetXaxis()->SetTitleOffset(1.5);
   hist1->GetYaxis()->SetTitleOffset(2);
@@ -960,11 +960,11 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");
   
-  DrawALICELogo(kFALSE, 0.2, 0.7, 0.4, 0.9);
+//   DrawALICELogo(kFALSE, 0.2, 0.7, 0.4, 0.9);
   
   hist2 = hist1;
   
-  GetDistAndFlow(hMixed, 0, &hist1,  0, step, 0,  80, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
+  GetDistAndFlow(hMixed, 0, &hist1,  0, step, 0,  10, 2.01, 3.99, 1, kTRUE, 0, kTRUE); 
   
 //   ((TH2*) hist1)->Rebin2D(2, 2);
   NormalizeToBinWidth(hist1);
@@ -983,7 +983,7 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   c->cd(2);
   gPad->SetLeftMargin(0.15);
   hist1->SetTitle("");
-  hist1->GetYaxis()->SetRangeUser(-1.79, 1.79);
+  hist1->GetYaxis()->SetRangeUser(-1.59, 1.59);
   hist1->GetZaxis()->SetTitleOffset(1.8);
   hist1->GetXaxis()->SetTitleOffset(1.5);
   hist1->GetYaxis()->SetTitleOffset(2);
@@ -991,7 +991,7 @@ void DrawSameMixed(const char* fileName, const char* fileNamePbPbMix = 0, Int_t 
   hist1->SetStats(kFALSE);
   hist1->DrawCopy("SURF1");
   
-  DrawALICELogo(kFALSE, 0.2, 0.7, 0.4, 0.9);
+//   DrawALICELogo(kFALSE, 0.2, 0.7, 0.4, 0.9);
 
   c->SaveAs(Form("samemixed_%d.eps", step));
   c->SaveAs(Form("samemixed_%d.png", step));
@@ -7121,6 +7121,7 @@ void GetSumOfRatios(void* hVoid, void* hMixedVoid, TH1** hist, Int_t step, Int_t
     (*hist)->SetTitle(newTitle);
 }
  
+const char* gTag = "";
 void PlotDeltaPhiDistributions(const char* fileName1, const char* fileName2, Float_t yMax = 0.1, Int_t twoD = 0, Int_t centrBegin = 1, Int_t centrEnd = 1)
 {
   loadlibs();
@@ -7849,9 +7850,21 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
   }
   
   TList* list = 0;
-  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNamePbPb, &list);
-  hMixed = (AliUEHistograms*) GetUEHistogram(fileNamePbPbMix, 0, kTRUE);
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNamePbPb, &list, kFALSE, gTag);
+  hMixed = (AliUEHistograms*) GetUEHistogram(fileNamePbPbMix, 0, kTRUE, gTag);
 //   hMixed3 = (AliUEHistograms*) hMixed->Clone();
+  
+  if (h->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetNbins() == 0)
+  {
+    ((AliTHn*) h->GetUEHist(2)->GetTrackHist(0))->FillParent();
+    ((AliTHn*) h->GetUEHist(2)->GetTrackHist(0))->DeleteContainers();
+  }
+  
+  if (hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetNbins() == 0)
+  {
+    ((AliTHn*) hMixed->GetUEHist(2)->GetTrackHist(0))->FillParent();
+    ((AliTHn*) hMixed->GetUEHist(2)->GetTrackHist(0))->DeleteContainers();
+  }
   
   if (symmetrizePt)
   {
@@ -7904,9 +7917,13 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix = 
   }
 
   tree = (TTree*) list->FindObject("UEAnalysisSettings");
-  Double_t etaCut = GetEtaCut(tree);
-  Printf("Setting eta cut to %f", etaCut);
-  h->SetTrackEtaCut(etaCut);
+  
+  if (h->GetUEHist(2)->GetTrackEtaCut() == 0) 
+  {
+    Double_t etaCut = GetEtaCut(tree);
+    Printf("Setting eta cut to %f", etaCut);
+    h->SetTrackEtaCut(etaCut);
+  }
 
   if (list2)
   {
@@ -8323,28 +8340,28 @@ void ExtractNSPeakShapesMC(const char* fileNamePbPb, const char* fileNamepp = 0,
 	// PbPb, MC, impact parameter binning
 	Int_t step = 0;
 	
-	GetDistAndFlow(h, hMixed, &hist1,  0, step, 1,   6,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist5,  0, step, 7,  7, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist4,  0, step, 8,  8, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist6,  0, step, 9,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist2,  0, step, 11,  13, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE);
+	GetSumOfRatios(h, hMixed, &hist1,  step, 1,   6, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist5,  step, 7,   7, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist4,  step, 8,   8, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist6,  step, 9,  10, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist2,  step, 11, 13, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
 
 	if (h2)
-	  GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+	  GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,   -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
       }
       else if (gMCBinning == 2) // AMPT
       {
 	// PbPb, MC, impact parameter binning
 	Int_t step = 0;
 	
-	GetDistAndFlow(h, hMixed, &hist1,  0, step, 1,   2,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist5,  0, step, 3,  3, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist4,  0, step, 4,  4, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist6,  0, step, 5,  6, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE); 
-	GetDistAndFlow(h, hMixed, &hist2,  0, step, 7,  9, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs, -1, kTRUE);
+	GetSumOfRatios(h, hMixed, &hist1,  step, 1,   2, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist5,  step, 3,   3, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist4,  step, 4,   4, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist6,  step, 5,   6, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
+	GetSumOfRatios(h, hMixed, &hist2,  step, 7,   9, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
 
 	if (h2)
-	  GetDistAndFlow(h2, hMixed2, &hist3,  0, step, 0, -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
+	  GetSumOfRatios(h2, hMixed2, &hist3,  step, 0,   -1, leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, kTRUE, kTRUE); 
       }
       
       file = TFile::Open(outputFile, "UPDATE");
@@ -8456,7 +8473,7 @@ void MergeDPhiFiles(const char* fileName, const char* fileName2, const char* tar
 	  TH2* hist2 = (TH2*) ((file2) ? file2->Get(Form("dphi_%d_%d_%d", i, j, histId)) : 0);
 	  if (hist2 && triggers2) 
 	  {
-	    if (histId != 1 && histId != 5) // don't merge 60-80% and 40-60%
+	    if (histId != 1) // don't merge 50-80%
 	    {
 	      hist->Add(hist2);
 	      nTriggers2 = triggers2->Integral(triggers2->FindBin(centralityBegin + 0.001), triggers2->FindBin(centralityEnd - 0.001));
@@ -8469,6 +8486,91 @@ void MergeDPhiFiles(const char* fileName, const char* fileName2, const char* tar
 	    hist->Scale(1.0 / (nTriggers + nTriggers2));
 
 	  Printf("%s %f %f %f %f", hist->GetTitle(), centralityBegin, centralityEnd, nTriggers, nTriggers2);
+	}
+
+	fileTarget = TFile::Open(target, "UPDATE");
+	hist->Write();
+	fileTarget->Close();
+      }
+    }
+  }
+}
+
+void Merge4DPhiFiles(const char* fileName, const char* fileName2, const char* fileName3, const char* fileName4, const char* target)
+{
+  // merges the dphi histograms (except the pp histogram at index "2") as well as the triggers
+  // then divides the dphi histograms by the respective number of triggers
+ 
+  file = TFile::Open(fileName);
+  file2 = TFile::Open(fileName2);
+  file3 = TFile::Open(fileName3);
+  file4 = TFile::Open(fileName4);
+
+  fileTarget = TFile::Open(target, "RECREATE");
+  fileTarget->Close();
+  
+  Int_t maxLeadingPt = 10;
+  Int_t maxAssocPt = 11;
+
+  Int_t nHists = 8;
+  for (Int_t i=0; i<maxLeadingPt; i++)
+  {
+    TH1* triggers = (TH1*) file->Get(Form("triggers_%d", i));
+    if (!triggers)
+      continue;
+    
+    TH1* triggers2 = (TH1*) ((file2) ? file2->Get(Form("triggers_%d", i)) : 0);
+    if (!triggers2)
+      Printf("WARNING: trigger %d missing", i);
+    
+    TH1* triggers3 = (TH1*) file3->Get(Form("triggers_%d", i));
+    TH1* triggers4 = (TH1*) file4->Get(Form("triggers_%d", i));
+    
+    for (Int_t j=0; j<maxAssocPt; j++)
+    {
+      for (Int_t histId = 0; histId < nHists; histId++)
+      {
+	TH2* hist = (TH2*) file->Get(Form("dphi_%d_%d_%d", i, j, histId));
+	if (!hist)
+	{
+	  TH2* hist2 = (TH2*) ((file2) ? file2->Get(Form("dphi_%d_%d_%d", i, j, histId)) : 0);
+	  if (hist2)
+	    Printf("WARNING: %d %d %d exists only in file2, not copied!");
+	  continue;
+	}
+	
+	if (histId != 2) // don't merge pp
+	{
+	  TString title(hist->GetTitle());
+	  title.ReplaceAll("%", "");
+	  tokens = title.Tokenize("-");
+	  
+	  Float_t centralityBegin = ((TObjString*) tokens->At(2))->String().Atoi();
+	  Float_t centralityEnd = ((TObjString*) tokens->At(3))->String().Atoi();
+	  
+	  Double_t nTriggers = triggers->Integral(triggers->FindBin(centralityBegin + 0.001), triggers->FindBin(centralityEnd - 0.001));
+	  Double_t nTriggers2 = triggers2->Integral(triggers2->FindBin(centralityBegin + 0.001), triggers2->FindBin(centralityEnd - 0.001));
+	  Double_t nTriggers3 = 0;
+	  Double_t nTriggers4 = 0;
+
+	  TH2* hist2 = (TH2*) ((file2) ? file2->Get(Form("dphi_%d_%d_%d", i, j, histId)) : 0);
+	  hist->Add(hist2);
+	  
+	  if (histId != 1) // don't merge 50-80%
+	  {
+	    TH2* hist3 = (TH2*) file3->Get(Form("dphi_%d_%d_%d", i, j, histId));
+	    TH2* hist4 = (TH2*) file4->Get(Form("dphi_%d_%d_%d", i, j, histId));
+	    hist->Add(hist3);
+	    hist->Add(hist4);
+	    
+	    nTriggers3 = triggers3->Integral(triggers3->FindBin(centralityBegin + 0.001), triggers3->FindBin(centralityEnd - 0.001));
+	    nTriggers4 = triggers4->Integral(triggers4->FindBin(centralityBegin + 0.001), triggers4->FindBin(centralityEnd - 0.001));
+	  }
+	  
+	  if (nTriggers + nTriggers2 + nTriggers3 + nTriggers4 > 0)
+	    hist->Scale(1.0 / (nTriggers + nTriggers2 + nTriggers3 + nTriggers4));
+
+	  Printf("%s %f %f %f %f %f %f", hist->GetTitle(), centralityBegin, centralityEnd, nTriggers, nTriggers2, nTriggers3, nTriggers4 );
 	}
 
 	fileTarget = TFile::Open(target, "UPDATE");
@@ -8833,23 +8935,12 @@ void CheckWing(const char* fileName)
 void CheckWing()
 {
   Int_t maxLeadingPt = 3;
-  Int_t maxAssocPt = 3;
+  Int_t maxAssocPt = 2;
 
   TCanvas* canvas = new TCanvas("DeltaPhi", "DeltaPhi", 1000, 700);
   canvas->Divide(maxAssocPt, maxLeadingPt);
 
-//   const char* fileNames[] = { "dphi_corr_allpt_zcentral_01.root", "dphi_corr_allpt_01.root" };
-//   const char* fileNames[] = { "dphi_corr_allpt_zcentral.root", "dphi_corr_allpt.root" };
-//   const char* fileNames[] = { "dphi_corr_allpt_zcentral.root", "dphi_corr.root" };
-//   const char* fileNames[] = { "dphi_corr_allpt_01_zcentral.root", "dphi_corr_allpt_01_zsumofratios.root" };
-//   const char* fileNames[] = { "dphi_corr_allpt_cfct_01_zcentral.root", "dphi_corr_allpt_cfct_01_zsumofratios.root" };
-//   const char* fileNames[] = { "dphi_corr_2d.root", "dphi_corr.root" };
-//   const char* fileNames[] = { "dphi_corr_2d_01.root", "dphi_corr.root" };
-//   const char* fileNames[] = { "dphi_corr_2d.root", "dphi_corr_2d_vtxzcentral.root" };
-//   const char* fileNames[] = { "dphi_corr_2d_01.root", , "dphi_corr_2d_01centr_zvtxcentral.root" }; 
-//   const char* fileNames[] = { "dphi_corr_10k.root", "dphi_corr_50k.root" }; 
-//   const char* fileNames[] = { "wing1.root", "wing2.root" }; 
-  const char* fileNames[] = { "dphi_corr_2d_120112.root", "dphi_corr_2d_p2_111105.root" }; 
+  const char* fileNames[] = { "def6_eta08/dphi_corr_norm.root", "def6_eta07/dphi_corr_norm.root", "def6_eta05/dphi_corr_norm.root" }; 
   
   for (Int_t i=0; i<maxLeadingPt; i++)
     for (Int_t j=0; j<maxAssocPt; j++)
@@ -8861,36 +8952,39 @@ void CheckWing()
       gPad->SetRightMargin(0.01);
 
       TH1* first = 0;
-      for (Int_t fileId = 0; fileId < 2; fileId++)
+      for (Int_t fileId = 0; fileId < 3; fileId++)
       {
 	TFile::Open(fileNames[fileId]);
   
-	hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j, 3));
+	hist1 = (TH1*) gFile->Get(Form("dphi_%d_%d_%d", i, j+2, 0));
 	
 	if (!hist1)
 	  continue;
 	
   //       hist1->Draw("COLZ");
 
-	Float_t width = 0.5;
+	Float_t width = 1.5;
 	
-	for (Int_t areaId = 0; areaId < 3; areaId++)
+	for (Int_t areaId = 2; areaId < 3; areaId++)
 	{
 	  Float_t center = TMath::Pi() / 2 * areaId;
 	  proj = ((TH2*) hist1)->ProjectionY(Form("%s_%d_%d_projx", hist1->GetName(), fileId, areaId), hist1->GetXaxis()->FindBin(center - width), hist1->GetXaxis()->FindBin(center + width));
-  // 	proj->Rebin(2); proj->Scale(0.5);
+	  proj->Scale(1.0 / (hist1->GetXaxis()->FindBin(center + width) - hist1->GetXaxis()->FindBin(center - width) + 1));
 	  
-	  proj->GetXaxis()->SetRangeUser(-1.79, 1.79);
+	  proj->GetXaxis()->SetRangeUser(-1.59, 1.59);
 	  proj->SetStats(kFALSE);
-	  proj->SetLineColor(fileId + 1 + areaId * 2);
-	  proj->Draw((fileId == 0 && areaId == 0) ? "" : "SAME");
+// 	  proj->SetLineColor(fileId + 1 + areaId * 2);
+	  proj->SetLineColor(fileId + 1);
+	  proj->Draw((fileId == 0 && areaId == 2) ? "" : "SAME");
+	  
 	  if (!first)
 	    first = proj;
+	  else 
+	    proj->Scale(first->Integral(first->FindBin(-0.09), first->FindBin(0.09), "width") / proj->Integral(proj->FindBin(-0.09), proj->FindBin(0.09), "width"));
+	    //proj->Divide(first);
 	  
-	  proj->Scale(1. / 12);
-	  
-	  first->SetMinimum(0.999 * TMath::Min(first->GetMinimum() / 0.999, proj->GetMinimum()));
-	  first->SetMaximum(1.001 * TMath::Max(first->GetMaximum() / 1.001, proj->GetMaximum()));
+// 	  first->SetMinimum(0.999 * TMath::Min(first->GetMinimum() / 0.999, proj->GetMinimum()));
+// 	  first->SetMaximum(1.001 * TMath::Max(first->GetMaximum() / 1.001, proj->GetMaximum()));
 	}
       }
   }
@@ -9180,10 +9274,41 @@ void AnalyzeDeltaPhiEtaGap2D(const char* fileName, Int_t method)
 }
 */
 
-void RemoveWing(const char* fileName, const char* outputFile)
+TH2* SubtractEtaGap(TH2* hist, Float_t etaLimit, Float_t outerLimit)
 {
-  // remove wing by flattening using the ratio of a flat line to the corr fct at phi = pi +- 1.5 as fct of delta eta
+  TString histName(hist->GetName());
+  Int_t etaBins = 0;
 
+  TH1D* etaGap = hist->ProjectionX(histName + "_1", TMath::Max(1, hist->GetYaxis()->FindBin(-outerLimit + 0.01)), hist->GetYaxis()->FindBin(-etaLimit - 0.01));
+//   Printf("%f", etaGap->GetEntries());
+  if (etaGap->GetEntries() > 0)
+    etaBins += hist->GetYaxis()->FindBin(-etaLimit - 0.01) - TMath::Max(1, hist->GetYaxis()->FindBin(-outerLimit + 0.01)) + 1;
+
+  TH1D* tracksTmp = hist->ProjectionX(histName + "_2", hist->GetYaxis()->FindBin(etaLimit + 0.01), TMath::Min(hist->GetYaxis()->GetNbins(), hist->GetYaxis()->FindBin(outerLimit - 0.01)));
+//   Printf("%f", tracksTmp->GetEntries());
+  if (tracksTmp->GetEntries() > 0)
+    etaBins += TMath::Min(hist->GetYaxis()->GetNbins(), hist->GetYaxis()->FindBin(outerLimit - 0.01)) - hist->GetYaxis()->FindBin(etaLimit + 0.01) + 1;
+  
+  etaGap->Add(tracksTmp);
+
+  // get per bin result
+  if (etaBins > 0)
+    etaGap->Scale(1.0 / etaBins);
+ 
+  TH2* histTmp2D = (TH2*) hist->Clone("histTmp2D");
+  histTmp2D->Reset();
+  
+  for (Int_t xbin=1; xbin<=histTmp2D->GetNbinsX(); xbin++)
+    for (Int_t y=1; y<=histTmp2D->GetNbinsY(); y++)
+      histTmp2D->SetBinContent(xbin, y, etaGap->GetBinContent(xbin));
+    
+  hist->Add(histTmp2D, -1);  
+  return histTmp2D;
+}
+
+void SubtractEtaGap(const char* fileName, const char* outputFile)
+{
+  // apply eta gap and write to new file
   file = TFile::Open(fileName);
   file2 = TFile::Open(outputFile, "RECREATE");
   file2->Close();
@@ -9209,11 +9334,57 @@ void RemoveWing(const char* fileName, const char* outputFile)
 	if (!hist)
 	  continue;
 	
+	SubtractEtaGap(hist, 1.0, 1.6);
+
+	file2 = TFile::Open(outputFile, "UPDATE");
+	hist->Write();
+	file2->Close();
+      }
+    }
+  }  
+}
+
+void RemoveWing(const char* fileName, const char* outputFile)
+{
+  // remove wing by flattening using the ratio of a flat line to the corr fct at phi = pi +- 1.5 as fct of delta eta
+
+  file = TFile::Open(fileName);
+  file2 = TFile::Open(outputFile, "RECREATE");
+  file2->Close();
+  
+  Int_t maxLeadingPt = 10;
+  Int_t maxAssocPt = 11;
+
+//   TF1* systFunc = new TF1("func", "1.0 + 5.3e-4 * abs(x)", -2, 2);
+  TF1* systFunc = new TF1("func", "1.0 + (abs(x) > 0.5) * (abs(x)-0.5) * 9e-4", -2, 2);
+  
+  Int_t nHists = 6;
+  for (Int_t i=0; i<maxLeadingPt; i++)
+  {
+    triggers = (TH1*) file->Get(Form("triggers_%d", i));
+    if (triggers)
+    {
+      file2 = TFile::Open(outputFile, "UPDATE");
+      triggers->Write();
+      file2->Close();
+    }
+    for (Int_t j=0; j<maxAssocPt; j++)
+    {
+      for (Int_t histId = 0; histId < nHists; histId++)
+      {
+	hist = (TH2*) file->Get(Form("dphi_%d_%d_%d", i, j, histId));
+	if (!hist)
+	  continue;
+	
 	Float_t width = 1.5;
 	TH1* proj = hist->ProjectionY(Form("projx", hist->GetName()), hist->GetXaxis()->FindBin(TMath::Pi() - width), hist->GetXaxis()->FindBin(TMath::Pi()+ width));
 	proj->Fit("pol0", "0");
 	//new TCanvas; proj->DrawCopy();
 	proj->Divide(proj->GetFunction("pol0"));
+	
+	if (0)
+	  proj->Multiply(systFunc);
+	
 	//new TCanvas; proj->DrawCopy();
 	//new TCanvas; hist->DrawCopy("SURF1");
 	for (Int_t x=1; x<=hist->GetNbinsX(); x++)
@@ -9221,8 +9392,10 @@ void RemoveWing(const char* fileName, const char* outputFile)
 	  {
 	    if (proj->GetBinContent(y) <= 0)
 	      continue;
-	    hist->SetBinContent(x, y, hist->GetBinContent(x, y) / proj->GetBinContent(y));
-	    hist->SetBinError(x, y, hist->GetBinError(x, y) / proj->GetBinContent(y));
+	    Double_t divisor = proj->GetBinContent(y);
+	    
+	    hist->SetBinContent(x, y, hist->GetBinContent(x, y) / divisor);
+	    hist->SetBinError(x, y, hist->GetBinError(x, y) / divisor);
 	  }
 	//new TCanvas; hist->DrawCopy("SURF1");
 
@@ -12342,10 +12515,18 @@ void PlotQA(const char* fileName, const char* tag = "")
 {
   loadlibs();
   
-  if (!gGrid && TString(fileName).BeginsWith("alien://"))
+  TString fileNameStr(fileName);
+  if (fileNameStr.BeginsWith("/alice"))
+  {
+    fileNameStr = Form("alien://%s", fileNameStr.Data());
+    if (fileNameStr.EndsWith("merge") || fileNameStr.EndsWith("merge_runlist_1"))
+      fileNameStr += "/AnalysisResults.root";
+  }
+
+  if (!gGrid && TString(fileNameStr).BeginsWith("alien://"))
     TGrid::Connect("alien://");
   
-  TFile::Open(fileName);
+  TFile::Open(fileNameStr);
   
   // phys sel
   Int_t runNumber = 0;
@@ -12356,7 +12537,7 @@ void PlotQA(const char* fileName, const char* tag = "")
 //     runNumber = physSel->GetCurrentRun();
   }
   
-  TString tmp(fileName);
+  TString tmp(fileNameStr);
   tmp.ReplaceAll("alien:///alice/cern.ch/user/j/jgrosseo/gridjob/dir_", "");
   tmp.ReplaceAll(".root", ".png");
   tmp.ReplaceAll("/", "-");
@@ -12435,7 +12616,7 @@ void PlotQA(const char* fileName, const char* tag = "")
   }
   
   // phi corr task
-  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName, 0, kFALSE, tag);
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNameStr, 0, kFALSE, tag);
   
   if (h->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetNbins() == 0)
   {
@@ -12446,7 +12627,7 @@ void PlotQA(const char* fileName, const char* tag = "")
     ((AliTHn*) h->GetUEHist(2)->GetTrackHist(0))->DeleteContainers();
   }
   centr = h->GetCentralityDistribution();
-  NormalizeToBinWidth(centr);
+//   NormalizeToBinWidth(centr);
   Int_t events = (Int_t) h->GetEventCount()->ProjectionX()->GetBinContent(3);
   Int_t mergeCount = h->GetMergeCount();
   
@@ -12457,7 +12638,7 @@ void PlotQA(const char* fileName, const char* tag = "")
   if (dphi_corr->GetEntries() == 0)
     dphi_corr = h->GetUEHist(2)->GetUEHist(AliUEHist::kCFStepAll, 0, 1.01, 14.99, 1, 8);
   
-  AliUEHistograms* hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE, tag);
+  AliUEHistograms* hMixed = (AliUEHistograms*) GetUEHistogram(fileNameStr, 0, kTRUE, tag);
   if (hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetNbins() == 0)
   {
 //     ((AliTHn*) hMixed->GetUEHist(2)->GetTrackHist(0))->ReduceAxis();
@@ -12503,20 +12684,23 @@ void PlotQA(const char* fileName, const char* tag = "")
   
   //h->GetUEHist(2)->SetSkipScaleMixedEvent(kTRUE);
   
-  if (h->GetUEHist(2)->GetTrackHist(0)->GetNVar() > 5)
-  {
-    Int_t step = 8;
-    
+  Int_t step = 0;
+  
+  Int_t centralityBegin = 0;
+  Int_t centralityEnd = 20;
+  
     c->cd(3);
-    GetDistAndFlow(h, 0, &hist1,  0, step, 0, 20, 2.01, 2.99, 1);
+    GetDistAndFlow(h, 0, &hist1,  0, step, centralityBegin, centralityEnd, 2.01, 2.99, 1);
     hist1->DrawCopy("SURF1");
 
     c->cd(6);
-    GetDistAndFlow(hMixed, 0, &hist1,  0, step, 0, 20, 2.01, 2.99, 1);
+    GetDistAndFlow(hMixed, 0, &hist1,  0, step, centralityBegin, centralityEnd, 2.01, 2.99, 1);
     hist1->DrawCopy("SURF1");
     
+  if (h->GetUEHist(2)->GetTrackHist(0)->GetNVar() > 5)
+  {
     c->cd(9);
-    GetSumOfRatios(h, hMixed, &hist1, step, 0, 20, 2.01, 2.99, kTRUE); 
+    GetSumOfRatios(h, hMixed, &hist1, step, centralityBegin, centralityEnd, 2.01, 2.99, kTRUE); 
     if (hist1)
       hist1->DrawCopy("SURF1");  
   }
@@ -12723,8 +12907,10 @@ void RAA(const char* fileName, const char* fileName2)
   raa_central->Draw("PSAME");
 }
 
-void PtComparison(const char* fileName, const char* fileName2 = 0, const char* tag = 0)
+void PtComparison(const char* fileName, const char* fileName2 = 0, const char* tag = "")
 {
+  gSystem->Unlink("out.root");
+  
   loadlibs();
 
   c = new TCanvas;
@@ -12756,6 +12942,7 @@ void PtComparison(const char* fileName, const char* fileName2 = 0, const char* t
     c->cd();
     ptHist3->SetLineStyle(j+1);
     ptHist3->DrawCopy((j == 0) ? "HIST" : "HISTSAME")->SetLineColor(1);
+    TFile::Open("out.root", "UPDATE"); ptHist3->Write("0_5"); gFile->Close();
     
     centralPt = (TH1*) ptHist3->Clone();
   
@@ -12770,6 +12957,7 @@ void PtComparison(const char* fileName, const char* fileName2 = 0, const char* t
     
       ptHist3->SetLineStyle(j+1);
       ptHist3->DrawCopy("HISTSAME")->SetLineColor(2);
+      TFile::Open("out.root", "UPDATE"); ptHist3->Write("70_80"); gFile->Close();
     }
     peripheralPt = (TH1*) ptHist3->Clone();
 
@@ -12784,6 +12972,7 @@ void PtComparison(const char* fileName, const char* fileName2 = 0, const char* t
     
       ptHist3->SetLineStyle(j+1);
       ptHist3->DrawCopy("HISTSAME")->SetLineColor(4);
+      TFile::Open("out.root", "UPDATE"); ptHist3->Write("20_30"); gFile->Close();
     }
     
     if (0)
@@ -13153,7 +13342,7 @@ void FillParentTHnSparse(const char* fileName, Bool_t reduce = kFALSE, const cha
   if (fileNameStr.BeginsWith("/alice"))
   {
     fileNameStr = Form("alien://%s", fileNameStr.Data());
-    if (fileNameStr.EndsWith("merge"))
+    if (fileNameStr.EndsWith("merge") || fileNameStr.EndsWith("merge_runlist_1") || fileNameStr.EndsWith("merge_runlist_2") || fileNameStr.EndsWith("merge_runlist_3"))
       fileNameStr += "/AnalysisResults.root";
   }
   
@@ -13188,6 +13377,58 @@ void FillParentTHnSparse(const char* fileName, Bool_t reduce = kFALSE, const cha
     newFileName += "_.root";
   else
     newFileName += "_zvtx.root";
+
+  file3 = TFile::Open(newFileName, "RECREATE");
+  file3->mkdir("PWG4_PhiCorrelations");
+  file3->cd("PWG4_PhiCorrelations");
+  list->Write("histosPhiCorrelations", TObject::kSingleKey);
+  file3->Close();
+}
+
+void RebinAnalysisOutput(const char* fileName)
+{
+  loadlibs();
+
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  
+  TString histType;
+  TString customBinning = "delta_phi: -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0, 0.087266, 0.174533, 0.261799, 0.349066, 0.436332, 0.523599, 0.610865, 0.698132, 0.785398, 0.872665, 0.959931, 1.047198, 1.134464, 1.221730, 1.308997, 1.396263, 1.483530, 1.570796, 1.658063, 1.745329, 1.832596, 1.919862, 2.007129, 2.094395, 2.181662, 2.268928, 2.356194, 2.443461, 2.530727, 2.617994, 2.705260, 2.792527, 2.879793, 2.967060, 3.054326, 3.141593, 3.228859, 3.316126, 3.403392, 3.490659, 3.577925, 3.665191, 3.752458, 3.839724, 3.926991, 4.014257, 4.101524, 4.188790, 4.276057, 4.363323, 4.450590, 4.537856, 4.625123, 4.712389\n"
+    "p_t_assoc: 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0\np_t_leading_course: 0.5, 1.0, 2.0, 3.0, 4.0, 8.0, 15.0\n";
+  
+  if (gMCBinning == 2) { // AMPT
+    customBinning += "multiplicity: 0.0, 3.72, 5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.51, 30.00\n";
+    customBinning += "delta_eta: -3.2, -3.1, -3.0, -2.9, -2.8, -2.7, -2.6, -2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2\n";
+    histType = "4R";
+  }
+  else if (gMCBinning == 11) { // Data
+    customBinning += "multiplicity: 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1\n";
+    customBinning += "delta_eta: -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0\n";
+    histType = "5R";
+  }
+  else {
+    Printf("ERROR: Please set gMCBinning.");
+    return;
+  }
+
+  AliUEHistograms* hNew = new AliUEHistograms(h->GetName(), histType, customBinning);
+  hNew->DeepCopy(h);
+  hNew->SetTrackEtaCut(h->GetUEHist(2)->GetTrackEtaCut());
+  delete h;
+  
+  AliUEHistograms* hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);  
+  AliUEHistograms* hMixedNew = new AliUEHistograms(hMixed->GetName(), histType, customBinning);
+  hMixedNew->DeepCopy(hMixed);
+  hMixedNew->SetTrackEtaCut(hMixed->GetUEHist(2)->GetTrackEtaCut());
+  delete hMixed;
+  
+  
+  TString newFileName(fileName);
+  newFileName.ReplaceAll(".root", "");
+  newFileName += "_rebinned.root";
+
+  list = new TList;
+  list->Add(hNew);
+  list->Add(hMixedNew);
 
   file3 = TFile::Open(newFileName, "RECREATE");
   file3->mkdir("PWG4_PhiCorrelations");
@@ -13269,11 +13510,11 @@ void DrawZRanges(Float_t min, Float_t max)
   legend->Draw();
 }
 
-void PlotTrackingEfficiency(const char* fileName)
+void PlotTrackingEfficiency(const char* fileName, const char* tag)
 {
   loadlibs();
   
-  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName, 0, kFALSE, tag);
   
   c = new TCanvas("c", "c", 600, 600);
   gPad->SetLeftMargin(0.15);
@@ -13423,7 +13664,30 @@ void PlotCorrections(const char* fileName, const char* tag = "")
     proj->SetLineColor(i+1);
     proj->DrawClone((i == 0) ? "" : "SAME");
   }
+  h->SetPartSpecies(-1);
+
+  c2->cd(6);
+
+  gSystem->Unlink("eff.root");
+  h->SetEtaRange(-0.79, 0.79);
   
+  h->GetUEHist(2)->SetCentralityRange(0.1, 4.9);
+  proj = h->GetUEHist(2)->GetTrackingCorrection(1);
+  proj->Draw("");  
+  TFile::Open("eff.root", "UPDATE"); proj->Write("0_5"); gFile->Close();
+  
+  h->GetUEHist(2)->SetCentralityRange(20.1, 29.9);
+  proj = h->GetUEHist(2)->GetTrackingCorrection(1);
+  proj->SetLineColor(2);
+  proj->Draw("SAME");  
+  TFile::Open("eff.root", "UPDATE"); proj->Write("20_30"); gFile->Close();
+
+  h->GetUEHist(2)->SetCentralityRange(70.1, 79.9);
+  proj = h->GetUEHist(2)->GetTrackingCorrection(1);
+  proj->SetLineColor(4);
+  proj->Draw("SAME");  
+  TFile::Open("eff.root", "UPDATE"); proj->Write("70_80"); gFile->Close();
+
   return;
   
 /*  c->cd(9);
@@ -13647,12 +13911,14 @@ void CompareEfficiencyCorrection(const char* fileName1, const char* fileName2, I
   file2 = TFile::Open(fileName2);
   corr2 = (THnBase*) file2->Get("correction");
   
-  corr1->GetAxis(0)->SetRangeUser(-1.19, 1.19);
-  corr2->GetAxis(0)->SetRangeUser(-1.19, 1.19);
+//   corr1->GetAxis(0)->SetRangeUser(-1.19, 1.19);
+//   corr2->GetAxis(0)->SetRangeUser(-1.19, 1.19);
+  corr1->GetAxis(0)->SetRangeUser(-0.89, 0.89);
+  corr2->GetAxis(0)->SetRangeUser(-0.89, 0.89);
   corr1->GetAxis(1)->SetRangeUser(0.51, 3.99);
   corr2->GetAxis(1)->SetRangeUser(0.51, 3.99);
-  corr1->GetAxis(3)->SetRangeUser(0.01, 0.01);
-  corr2->GetAxis(3)->SetRangeUser(0.01, 0.01);
+  corr1->GetAxis(3)->SetRangeUser(-6.99, 6.99);
+  corr2->GetAxis(3)->SetRangeUser(-6.99, 6.99);
   
   proj1 = (TH1*) corr1->Projection(axis1, axis2)->Clone("proj1");
   new TCanvas; proj1->DrawCopy("COLZ");
@@ -15228,10 +15494,18 @@ void Browse(const char* fileName)
 {
   loadlibs();
 
-  if (!gGrid && TString(fileName).BeginsWith("alien://"))
+  TString fileNameStr(fileName);
+  if (fileNameStr.BeginsWith("/alice"))
+  {
+    fileNameStr = Form("alien://%s", fileNameStr.Data());
+    if (fileNameStr.EndsWith("merge") || fileNameStr.EndsWith("merge_runlist_1"))
+      fileNameStr += "/AnalysisResults.root";
+  }
+  
+  if (!gGrid && fileNameStr.BeginsWith("alien://"))
     TGrid::Connect("alien://");
   
-  TFile::Open(fileName);
+  TFile::Open(fileNameStr);
 
   new TBrowser;
 }
@@ -15383,4 +15657,455 @@ void correction_gauss()
   gauss_one(0.5, 1.0);
   
   gFile->Close();
+}
+
+void CheckEmptyBinsInCorrection(const char* fileName)
+{
+  TFile::Open(fileName);
+  
+  effCorr = (THnF*) gFile->Get("correction");
+  
+  int nBins[4];
+  for (Int_t bin0 = effCorr->GetAxis(0)->FindBin(-0.79); bin0<=effCorr->GetAxis(0)->FindBin(0.79); bin0++)
+    for (Int_t bin1 = 1; bin1<=effCorr->GetAxis(1)->GetNbins(); bin1++)
+      for (Int_t bin2 = 1; bin2<=effCorr->GetAxis(2)->GetNbins(); bin2++)
+	for (Int_t bin3 = effCorr->GetAxis(3)->FindBin(-6.99); bin3<=effCorr->GetAxis(3)->FindBin(6.99); bin3++)
+	{
+	  nBins[0] = bin0;
+	  nBins[1] = bin1;
+	  nBins[2] = bin2;
+	  nBins[3] = bin3;
+
+	  if (effCorr->GetBinContent(nBins) <= 0.01)
+	    Printf("%d %d (%f) %d %d --> %f", bin0, bin1, effCorr->GetAxis(1)->GetBinCenter(bin1), bin2, bin3, effCorr->GetBinContent(nBins));
+	}
+}
+
+RemoveOneOverPt(TGraphAsymmErrors* graph)
+{  
+  for (int i=0; i<graph->GetN(); i++) {
+    graph->GetY()[i]      *= graph->GetX()[i] * TMath::TwoPi();
+    graph->GetEYlow()[i]  *= graph->GetX()[i] * TMath::TwoPi();
+    graph->GetEYhigh()[i] *= graph->GetX()[i] * TMath::TwoPi();
+  }
+}
+  
+void PlotSpecies()
+{
+  loadlibs();
+  
+  const char* tags[] = { "_pi", "_K", "_p" };
+  const char* files[] = { "HIJING_150706.root", "PYTHIA8_150707.root" };
+  const char* title[] = { "HIJING" , "PYTHIA8", "PbPb 0-5%", "PbPb 60-80%" };
+  
+  legend = new TLegend(0.61, 0.67, 0.97, 0.97);
+  legend->SetFillColor(0);
+  legend->SetNColumns(3);
+  legend->SetHeader("#pi   K   p");
+  
+  TH1* species[4];
+  for (int m = 0; m < 4; m++)  {
+    for (int n = 0; n < 3; n++) {
+      if (m < 2) {
+	lastFileName = 0; // prevent caching
+	AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(files[m], 0, kFALSE, tags[n]);
+	TH3* yield1 = h->GetYield();
+	Float_t events1 = h->GetCentralityDistribution()->Integral();
+	TH1* proj = yield1->Project3D(Form("y_%d_%d", m, n));
+	proj->Scale(1.0 / events1);
+	proj->Rebin(4);
+	proj->Scale(1.0 / proj->GetBinWidth(1));
+	
+	species[n] = proj;
+      }
+      else
+      {
+	if (n == 0) {
+	  // http://hepdata.cedar.ac.uk/view/ins1276299/d1/root
+	  // first graph (pi, PbPb 0-5%)
+	  double p8681_d1x1y1_xval[] = { 0.11, 0.13, 0.15, 0.17, 0.19, 0.225, 0.275, 0.325, 0.375, 
+	    0.425, 0.475, 0.525, 0.575, 0.625, 0.675, 0.725, 0.775, 0.825, 0.875, 
+	    0.925, 0.975, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55, 1.65, 1.75, 
+	    1.85, 1.95, 2.05, 2.15, 2.25, 2.35, 2.45, 2.55, 2.65, 2.75, 
+	    2.85, 2.95, 3.1, 3.3, 3.5, 3.7, 3.9, 4.25, 4.75, 5.25, 
+	    5.75, 6.25, 6.75, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 
+	    14.5, 15.5, 17.0, 19.0 };
+	  double p8681_d1x1y1_xerrminus[] = { 0.009999999999999995, 0.010000000000000009, 0.009999999999999981, 0.010000000000000009, 0.010000000000000009, 0.024999999999999994, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 
+	    0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 
+	    0.050000000000000266, 0.050000000000000266, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 0.25, 0.25, 0.25, 
+	    0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	    0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d1x1y1_xerrplus[] = { 0.009999999999999995, 0.010000000000000009, 0.010000000000000009, 0.009999999999999981, 0.010000000000000009, 0.024999999999999994, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.02499999999999991, 0.025000000000000022, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 
+	    0.04999999999999982, 0.050000000000000044, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 
+	    0.04999999999999982, 0.04999999999999982, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 0.25, 0.25, 0.25, 
+	    0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	    0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d1x1y1_yval[] = { 3047.0, 2769.0, 2487.0, 2229.0, 2017.0, 1607.0, 1235.0, 964.8, 760.7, 
+	    606.1, 482.8, 388.1, 315.9, 259.6, 213.9, 176.0, 147.0, 122.2, 102.1, 
+	    86.24, 72.84, 56.13, 40.2, 29.49, 21.49, 15.46, 11.31, 8.319, 6.176, 
+	    4.572, 3.455, 2.592, 1.954, 1.477, 1.154, 0.8785, 0.6725, 0.5316, 0.4162, 
+	    0.3318, 0.2606, 0.1809, 0.1139, 0.07505, 0.05089, 0.03483, 0.01865, 0.008399, 0.004204, 
+	    0.002322, 0.001369, 8.605E-4, 4.668E-4, 2.299E-4, 1.228E-4, 6.904E-5, 4.116E-5, 2.491E-5, 1.652E-5, 
+	    1.1E-5, 7.567E-6, 4.545E-6, 2.544E-6 };
+	  double p8681_d1x1y1_yerrminus[] = { 410.0608857230838, 349.2799365838238, 312.72204542692543, 279.788734791092, 253.2699239961192, 120.12081291766219, 92.61571376391805, 75.1626145700108, 54.96147404318775, 
+	    42.71051107455869, 33.42972750352596, 19.692250512574738, 15.331961069934923, 13.192445353686328, 11.051672309655222, 9.069022714714084, 7.732802723463208, 6.444084251466611, 5.485683333915658, 
+	    4.669381804907369, 3.8844179087734627, 3.100516939157082, 2.199165998736794, 1.7885168499346045, 1.3103295806780828, 0.9503494081652285, 0.6775497324920142, 0.50536508595272, 0.380031954051235, 
+	    0.287194523624668, 0.22210132394922819, 0.16974763297318757, 0.12998760864020847, 0.09984365778555992, 0.07956912014720284, 0.06186878049549708, 0.04767243333416074, 0.037970300235842226, 0.029658262339523535, 
+	    0.02403359575677348, 0.01923480129868775, 0.012533000378600489, 0.007627938355807551, 0.0051439907659326135, 0.0034718139120638366, 0.002453819718316731, 0.0016741969261708733, 7.581439987891483E-4, 3.807038493369879E-4, 
+	    2.1171665593429346E-4, 1.2627735386837972E-4, 7.931541338226763E-5, 4.3274532741555974E-5, 2.13980485325181E-5, 1.1527735076761611E-5, 6.585871240769896E-6, 4.008194730798393E-6, 2.49617291268053E-6, 1.7073716525701133E-6, 
+	    1.1726614004050786E-6, 8.394913995985903E-7, 4.991423143753693E-7, 2.9836119050573585E-7 };
+	  double p8681_d1x1y1_yerrplus[] = { 410.0608857230838, 349.2799365838238, 312.72204542692543, 279.788734791092, 253.2699239961192, 120.12081291766219, 92.61571376391805, 75.1626145700108, 54.96147404318775, 
+	    42.71051107455869, 33.42972750352596, 19.692250512574738, 15.331961069934923, 13.192445353686328, 11.051672309655222, 9.069022714714084, 7.732802723463208, 6.444084251466611, 5.485683333915658, 
+	    4.669381804907369, 3.8844179087734627, 3.100516939157082, 2.199165998736794, 1.7885168499346045, 1.3103295806780828, 0.9503494081652285, 0.6775497324920142, 0.50536508595272, 0.380031954051235, 
+	    0.287194523624668, 0.22210132394922819, 0.16974763297318757, 0.12998760864020847, 0.09984365778555992, 0.07956912014720284, 0.06186878049549708, 0.04767243333416074, 0.037970300235842226, 0.029658262339523535, 
+	    0.02403359575677348, 0.01923480129868775, 0.012533000378600489, 0.007627938355807551, 0.0051439907659326135, 0.0034718139120638366, 0.002453819718316731, 0.0016741969261708733, 7.581439987891483E-4, 3.807038493369879E-4, 
+	    2.1171665593429346E-4, 1.2627735386837972E-4, 7.931541338226763E-5, 4.3274532741555974E-5, 2.13980485325181E-5, 1.1527735076761611E-5, 6.585871240769896E-6, 4.008194730798393E-6, 2.49617291268053E-6, 1.7073716525701133E-6, 
+	    1.1726614004050786E-6, 8.394913995985903E-7, 4.991423143753693E-7, 2.9836119050573585E-7 };
+	  double p8681_d1x1y1_ystatminus[] = { 17.2, 11.21, 8.736, 7.046, 5.951, 2.236, 1.706, 1.377, 1.123, 
+	    0.9475, 0.8064, 0.6945, 0.6055, 0.5729, 0.5078, 0.447, 0.4086, 0.3778, 0.3258, 
+	    0.3112, 0.2843, 0.1673, 0.1353, 0.09485, 0.0781, 0.05926, 0.0458, 0.04099, 0.02931, 
+	    0.02388, 0.02491, 0.01883, 0.01678, 0.01078, 0.008809, 0.01068, 0.0078, 0.00731, 0.004125, 
+	    0.002965, 0.003059, 5.707E-4, 4.266E-4, 3.04E-4, 2.328E-4, 1.689E-4, 8.574E-5, 4.677E-5, 2.897E-5, 
+	    1.968E-5, 1.399E-5, 1.048E-5, 5.528E-6, 3.559E-6, 2.424E-6, 1.71E-6, 1.275E-6, 9.361E-7, 7.414E-7, 
+	    5.624E-7, 4.425E-7, 2.521E-7, 1.734E-7 };
+	  double p8681_d1x1y1_ystatplus[] = { 17.2, 11.21, 8.736, 7.046, 5.951, 2.236, 1.706, 1.377, 1.123, 
+	    0.9475, 0.8064, 0.6945, 0.6055, 0.5729, 0.5078, 0.447, 0.4086, 0.3778, 0.3258, 
+	    0.3112, 0.2843, 0.1673, 0.1353, 0.09485, 0.0781, 0.05926, 0.0458, 0.04099, 0.02931, 
+	    0.02388, 0.02491, 0.01883, 0.01678, 0.01078, 0.008809, 0.01068, 0.0078, 0.00731, 0.004125, 
+	    0.002965, 0.003059, 5.707E-4, 4.266E-4, 3.04E-4, 2.328E-4, 1.689E-4, 8.574E-5, 4.677E-5, 2.897E-5, 
+	    1.968E-5, 1.399E-5, 1.048E-5, 5.528E-6, 3.559E-6, 2.424E-6, 1.71E-6, 1.275E-6, 9.361E-7, 7.414E-7, 
+	    5.624E-7, 4.425E-7, 2.521E-7, 1.734E-7 };
+	  int p8681_d1x1y1_numpoints = 63;
+	  graphCentral = new TGraphAsymmErrors(p8681_d1x1y1_numpoints, p8681_d1x1y1_xval, p8681_d1x1y1_yval, p8681_d1x1y1_xerrminus, p8681_d1x1y1_xerrplus, p8681_d1x1y1_yerrminus, p8681_d1x1y1_yerrplus);
+	  
+	  // second graph (pi, PbPb 60-80%)
+	  double p8681_d1x1y2_xval[] = { 0.11, 0.13, 0.15, 0.17, 0.19, 0.225, 0.275, 0.325, 0.375, 
+	    0.425, 0.475, 0.525, 0.575, 0.625, 0.675, 0.725, 0.775, 0.825, 0.875, 
+	    0.925, 0.975, 1.05, 1.15, 1.25, 1.35, 1.45, 1.55, 1.65, 1.75, 
+	    1.85, 1.95, 2.05, 2.15, 2.25, 2.35, 2.45, 2.55, 2.65, 2.75, 
+	    2.85, 2.95, 3.1, 3.3, 3.5, 3.7, 3.9, 4.25, 4.75, 5.25, 
+	    5.75, 6.25, 6.75, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 
+	    14.5, 15.5, 17.0, 19.0 };
+	  double p8681_d1x1y2_xerrminus[] = { 0.009999999999999995, 0.010000000000000009, 0.009999999999999981, 0.010000000000000009, 0.010000000000000009, 0.024999999999999994, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 
+	    0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 
+	    0.050000000000000266, 0.050000000000000266, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 0.25, 0.25, 0.25, 
+	    0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	    0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d1x1y2_xerrplus[] = { 0.009999999999999995, 0.010000000000000009, 0.010000000000000009, 0.009999999999999981, 0.010000000000000009, 0.024999999999999994, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.02499999999999991, 0.025000000000000022, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 
+	    0.04999999999999982, 0.050000000000000044, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 
+	    0.04999999999999982, 0.04999999999999982, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 0.25, 0.25, 0.25, 
+	    0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 
+	    0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d1x1y2_yval[] = { 138.6, 123.9, 108.3, 96.25, 85.65, 67.45, 49.85, 37.4, 28.29, 
+	    21.81, 16.82, 13.05, 10.34, 8.324, 6.731, 5.473, 4.413, 3.668, 3.018, 
+	    2.505, 2.09, 1.585, 1.128, 0.8086, 0.5905, 0.4285, 0.3172, 0.239, 0.1755, 
+	    0.1365, 0.1046, 0.07917, 0.06271, 0.04837, 0.03865, 0.03059, 0.02454, 0.01979, 0.01565, 
+	    0.01256, 0.01083, 0.007594, 0.005238, 0.003701, 0.002654, 0.001932, 0.001133, 5.682E-4, 3.012E-4, 
+	    1.729E-4, 1.024E-4, 6.456E-5, 3.346E-5, 1.545E-5, 7.38E-6, 3.954E-6, 2.276E-6, 1.511E-6, 9.291E-7, 
+	    5.714E-7, 3.374E-7, 2.163E-7, 1.01E-7 };
+	  double p8681_d1x1y2_yerrminus[] = { 13.843314979079253, 10.921913751719522, 9.483334395137609, 8.407565512084934, 7.486419173409942, 4.170275942908335, 3.0533364193943644, 2.4054212541673445, 1.7163060110597994, 
+	    1.2971228439897278, 1.0038966193787087, 0.5906145637384842, 0.4656155908042599, 0.417370243309223, 0.3378441417281051, 0.27464811013367635, 0.22126618562265676, 0.18743758667887292, 0.14879266144538178, 
+	    0.12745564561838757, 0.10473513689302173, 0.07904820880956127, 0.055605773297383435, 0.04910376547679414, 0.036055359046887885, 0.026398322314116856, 0.019783703621920744, 0.015150941092882645, 0.011339689766479505, 
+	    0.009031745456997779, 0.007110882505005972, 0.005540056407655071, 0.004538967310964026, 0.0036183519784564904, 0.0029996256033045193, 0.0024921032402370493, 0.0020859283305041908, 0.00176594293226027, 0.0014492498059340908, 
+	    0.001213665888949673, 0.001106133192703302, 7.983418275400581E-4, 5.50084011856371E-4, 3.8794447141311344E-4, 2.7782349000759457E-4, 2.020087859475424E-4, 1.184469792776498E-4, 5.955850918214794E-5, 3.165417387960077E-5, 
+	    1.82463318231364E-5, 1.0884760401589003E-5, 6.947639095405E-6, 3.6122828017750774E-6, 1.6957960048307695E-6, 8.327243541532816E-7, 4.6533399832808264E-7, 2.827309852138601E-7, 1.990056531860339E-7, 1.3280636279937797E-7, 
+	    8.897932344089833E-8, 5.960536888569687E-8, 3.665760494085777E-8, 2.0701932276963906E-8 };
+	  double p8681_d1x1y2_yerrplus[] = { 13.843314979079253, 10.921913751719522, 9.483334395137609, 8.407565512084934, 7.486419173409942, 4.170275942908335, 3.0533364193943644, 2.4054212541673445, 1.7163060110597994, 
+	    1.2971228439897278, 1.0038966193787087, 0.5906145637384842, 0.4656155908042599, 0.417370243309223, 0.3378441417281051, 0.27464811013367635, 0.22126618562265676, 0.18743758667887292, 0.14879266144538178, 
+	    0.12745564561838757, 0.10473513689302173, 0.07904820880956127, 0.055605773297383435, 0.04910376547679414, 0.036055359046887885, 0.026398322314116856, 0.019783703621920744, 0.015150941092882645, 0.011339689766479505, 
+	    0.009031745456997779, 0.007110882505005972, 0.005540056407655071, 0.004538967310964026, 0.0036183519784564904, 0.0029996256033045193, 0.0024921032402370493, 0.0020859283305041908, 0.00176594293226027, 0.0014492498059340908, 
+	    0.001213665888949673, 0.001106133192703302, 7.983418275400581E-4, 5.50084011856371E-4, 3.8794447141311344E-4, 2.7782349000759457E-4, 2.020087859475424E-4, 1.184469792776498E-4, 5.955850918214794E-5, 3.165417387960077E-5, 
+	    1.82463318231364E-5, 1.0884760401589003E-5, 6.947639095405E-6, 3.6122828017750774E-6, 1.6957960048307695E-6, 8.327243541532816E-7, 4.6533399832808264E-7, 2.827309852138601E-7, 1.990056531860339E-7, 1.3280636279937797E-7, 
+	    8.897932344089833E-8, 5.960536888569687E-8, 3.665760494085777E-8, 2.0701932276963906E-8 };
+	  double p8681_d1x1y2_ystatminus[] = { 0.8031, 0.51, 0.3975, 0.3322, 0.2848, 0.1888, 0.1427, 0.1079, 0.08894, 
+	    0.07418, 0.06168, 0.04227, 0.03628, 0.0384, 0.03329, 0.02912, 0.02543, 0.02317, 0.02031, 
+	    0.01854, 0.01667, 0.009946, 0.008118, 0.003622, 0.003004, 0.002389, 0.002023, 0.001746, 0.001342, 
+	    0.001205, 0.001089, 8.72E-4, 7.995E-4, 6.248E-4, 5.324E-4, 5.616E-4, 4.84E-4, 4.562E-4, 3.35E-4, 
+	    2.667E-4, 2.842E-4, 5.844E-5, 4.301E-5, 3.227E-5, 2.496E-5, 1.914E-5, 1.137E-5, 6.704E-6, 4.232E-6, 
+	    2.865E-6, 1.997E-6, 1.517E-6, 7.848E-7, 4.747E-7, 2.924E-7, 2.018E-7, 1.48E-7, 1.182E-7, 8.83E-8, 
+	    6.44E-8, 4.72E-8, 2.83E-8, 1.76E-8 };
+	  double p8681_d1x1y2_ystatplus[] = { 0.8031, 0.51, 0.3975, 0.3322, 0.2848, 0.1888, 0.1427, 0.1079, 0.08894, 
+	    0.07418, 0.06168, 0.04227, 0.03628, 0.0384, 0.03329, 0.02912, 0.02543, 0.02317, 0.02031, 
+	    0.01854, 0.01667, 0.009946, 0.008118, 0.003622, 0.003004, 0.002389, 0.002023, 0.001746, 0.001342, 
+	    0.001205, 0.001089, 8.72E-4, 7.995E-4, 6.248E-4, 5.324E-4, 5.616E-4, 4.84E-4, 4.562E-4, 3.35E-4, 
+	    2.667E-4, 2.842E-4, 5.844E-5, 4.301E-5, 3.227E-5, 2.496E-5, 1.914E-5, 1.137E-5, 6.704E-6, 4.232E-6, 
+	    2.865E-6, 1.997E-6, 1.517E-6, 7.848E-7, 4.747E-7, 2.924E-7, 2.018E-7, 1.48E-7, 1.182E-7, 8.83E-8, 
+	    6.44E-8, 4.72E-8, 2.83E-8, 1.76E-8 };
+	  int p8681_d1x1y2_numpoints = 63;
+	  graphPeripheral = new TGraphAsymmErrors(p8681_d1x1y2_numpoints, p8681_d1x1y2_xval, p8681_d1x1y2_yval, p8681_d1x1y2_xerrminus, p8681_d1x1y2_xerrplus, p8681_d1x1y2_yerrminus, p8681_d1x1y2_yerrplus);
+	} else if (n == 1) {
+	  // http://hepdata.cedar.ac.uk/view/ins1276299/d2/root
+	  // Plot: p8681_d2x1y3
+	  double p8681_d2x1y1_xval[] = { 0.225, 0.275, 0.325, 0.375, 0.425, 0.475, 0.525, 0.575, 0.625, 
+	    0.675, 0.725, 0.775, 0.825, 0.875, 0.925, 0.975, 1.05, 1.15, 1.25, 
+	    1.35, 1.45, 1.55, 1.65, 1.75, 1.85, 1.95, 2.05, 2.15, 2.25, 
+	    2.35, 2.45, 2.55, 2.65, 2.75, 2.85, 2.95, 3.1, 3.3, 3.5, 
+	    3.7, 3.9, 4.25, 4.75, 5.25, 5.75, 6.25, 6.75, 7.5, 8.5, 
+	    9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 17.0, 19.0 };
+	  double p8681_d2x1y1_xerrminus[] = { 0.024999999999999994, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 
+	    0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 
+	    0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 
+	    0.10000000000000009, 0.10000000000000009, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 
+	    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d2x1y1_xerrplus[] = { 0.024999999999999994, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 
+	    0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 
+	    0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 
+	    0.09999999999999964, 0.10000000000000009, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 
+	    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d2x1y1_yval[] = { 91.08, 80.42, 79.26, 75.75, 70.49, 63.93, 57.08, 50.91, 46.6, 
+	    42.79, 39.34, 35.68, 31.56, 28.78, 25.28, 22.45, 18.38, 14.28, 11.23, 
+	    8.771, 6.677, 5.187, 4.011, 3.056, 2.303, 1.745, 1.371, 1.031, 0.8458, 
+	    0.6599, 0.4977, 0.4, 0.3189, 0.2505, 0.1961, 0.1529, 0.09989, 0.06221, 0.04019, 
+	    0.02762, 0.01889, 0.009194, 0.00398, 0.001927, 0.001052, 6.186E-4, 3.874E-4, 2.085E-4, 1.034E-4, 
+	    5.52E-5, 3.039E-5, 1.931E-5, 1.298E-5, 7.8E-6, 5.202E-6, 3.881E-6, 2.217E-6, 1.419E-6 };
+	  double p8681_d2x1y1_yerrminus[] = { 12.232301050906162, 8.015187556133668, 6.229754630802083, 5.890487182737944, 6.082517653077548, 8.17451482107654, 3.4672975124727903, 3.4871059003133245, 2.963501477981747, 
+	    2.758639521575808, 2.5736856839948423, 2.2233926688734047, 1.992475518042819, 1.7463406426009789, 1.5195118327936774, 1.3697101737228938, 1.1223711507340164, 0.8697021674113501, 0.9751953289469756, 
+	    0.7730463895523993, 0.6007849512096655, 0.3719542450355957, 0.2883300409253257, 0.22018616691336448, 0.1695144430424735, 0.12926123974339718, 0.10258315731151971, 0.07440532833070491, 0.061452800880024985, 
+	    0.04620521711884925, 0.03494074539845995, 0.02819613086932319, 0.022564170470017283, 0.017777674791715593, 0.014024477494723287, 0.011276467576329033, 0.007657754454799396, 0.004669729054238586, 0.0031065389165436186, 
+	    0.002230805345609518, 0.001560756870880279, 0.0012554353769111337, 5.256949233157954E-4, 2.48971498167963E-4, 1.3706785764722523E-4, 8.365187206512476E-5, 4.6958776698291444E-5, 2.6152291371885562E-5, 1.2893630055186165E-5, 
+	    6.921397546738665E-6, 3.898458413270558E-6, 2.487484584876859E-6, 1.6813119877048401E-6, 1.1009174537629967E-6, 7.532672965156525E-7, 5.664400056493185E-7, 3.411751749468299E-7, 2.1536863745680337E-7 };
+	  double p8681_d2x1y1_yerrplus[] = { 12.232301050906162, 8.015187556133668, 6.229754630802083, 5.890487182737944, 6.082517653077548, 8.17451482107654, 3.4672975124727903, 3.4871059003133245, 2.963501477981747, 
+	    2.758639521575808, 2.5736856839948423, 2.2233926688734047, 1.992475518042819, 1.7463406426009789, 1.5195118327936774, 1.3697101737228938, 1.1223711507340164, 0.8697021674113501, 0.9751953289469756, 
+	    0.7730463895523993, 0.6007849512096655, 0.3719542450355957, 0.2883300409253257, 0.22018616691336448, 0.1695144430424735, 0.12926123974339718, 0.10258315731151971, 0.07440532833070491, 0.061452800880024985, 
+	    0.04620521711884925, 0.03494074539845995, 0.02819613086932319, 0.022564170470017283, 0.017777674791715593, 0.014024477494723287, 0.011276467576329033, 0.007657754454799396, 0.004669729054238586, 0.0031065389165436186, 
+	    0.002230805345609518, 0.001560756870880279, 0.0012554353769111337, 5.256949233157954E-4, 2.48971498167963E-4, 1.3706785764722523E-4, 8.365187206512476E-5, 4.6958776698291444E-5, 2.6152291371885562E-5, 1.2893630055186165E-5, 
+	    6.921397546738665E-6, 3.898458413270558E-6, 2.487484584876859E-6, 1.6813119877048401E-6, 1.1009174537629967E-6, 7.532672965156525E-7, 5.664400056493185E-7, 3.411751749468299E-7, 2.1536863745680337E-7 };
+	  double p8681_d2x1y1_ystatminus[] = { 1.233, 0.6834, 0.5874, 0.5255, 0.93, 0.5034, 0.6848, 0.5466, 0.5001, 
+	    0.4601, 0.433, 0.4114, 0.3637, 0.3592, 0.3311, 0.3064, 0.191, 0.1619, 0.09036, 
+	    0.07702, 0.06274, 0.03052, 0.02435, 0.01859, 0.01442, 0.01091, 0.008858, 0.006278, 0.005344, 
+	    0.004133, 0.003133, 0.002664, 0.002267, 0.001861, 0.001537, 0.001311, 6.027E-4, 4.288E-4, 3.002E-4, 
+	    2.193E-4, 1.651E-4, 7.816E-5, 4.218E-5, 2.513E-5, 1.626E-5, 1.089E-5, 7.897E-6, 4.338E-6, 2.736E-6, 
+	    1.812E-6, 1.237E-6, 9.666E-7, 7.77E-7, 5.92E-7, 4.291E-7, 3.398E-7, 2.155E-7, 1.418E-7 };
+	  double p8681_d2x1y1_ystatplus[] = { 1.233, 0.6834, 0.5874, 0.5255, 0.93, 0.5034, 0.6848, 0.5466, 0.5001, 
+	    0.4601, 0.433, 0.4114, 0.3637, 0.3592, 0.3311, 0.3064, 0.191, 0.1619, 0.09036, 
+	    0.07702, 0.06274, 0.03052, 0.02435, 0.01859, 0.01442, 0.01091, 0.008858, 0.006278, 0.005344, 
+	    0.004133, 0.003133, 0.002664, 0.002267, 0.001861, 0.001537, 0.001311, 6.027E-4, 4.288E-4, 3.002E-4, 
+	    2.193E-4, 1.651E-4, 7.816E-5, 4.218E-5, 2.513E-5, 1.626E-5, 1.089E-5, 7.897E-6, 4.338E-6, 2.736E-6, 
+	    1.812E-6, 1.237E-6, 9.666E-7, 7.77E-7, 5.92E-7, 4.291E-7, 3.398E-7, 2.155E-7, 1.418E-7 };
+	  int p8681_d2x1y1_numpoints = 58;
+	  graphCentral = new TGraphAsymmErrors(p8681_d2x1y1_numpoints, p8681_d2x1y1_xval, p8681_d2x1y1_yval, p8681_d2x1y1_xerrminus, p8681_d2x1y1_xerrplus, p8681_d2x1y1_yerrminus, p8681_d2x1y1_yerrplus);
+
+	  double p8681_d2x1y2_xval[] = { 0.225, 0.275, 0.325, 0.375, 0.425, 0.475, 0.525, 0.575, 0.625, 
+	    0.675, 0.725, 0.775, 0.825, 0.875, 0.925, 0.975, 1.05, 1.15, 1.25, 
+	    1.35, 1.45, 1.55, 1.65, 1.75, 1.85, 1.95, 2.05, 2.15, 2.25, 
+	    2.35, 2.45, 2.55, 2.65, 2.75, 2.85, 2.95, 3.1, 3.3, 3.5, 
+	    3.7, 3.9, 4.25, 4.75, 5.25, 5.75, 6.25, 6.75, 7.5, 8.5, 
+	    9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 17.0, 19.0 };
+	  double p8681_d2x1y2_xerrminus[] = { 0.024999999999999994, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 
+	    0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 
+	    0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 
+	    0.10000000000000009, 0.10000000000000009, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 
+	    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d2x1y2_xerrplus[] = { 0.024999999999999994, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 
+	    0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 
+	    0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 
+	    0.09999999999999964, 0.10000000000000009, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 
+	    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0, 1.0 };
+	  double p8681_d2x1y2_yval[] = { 4.562, 4.107, 3.772, 3.378, 2.976, 2.614, 2.212, 1.905, 1.604, 
+	    1.401, 1.188, 1.025, 0.9268, 0.8075, 0.6841, 0.6168, 0.5011, 0.3653, 0.2731, 
+	    0.2023, 0.162, 0.1229, 0.09426, 0.07289, 0.05395, 0.04449, 0.03508, 0.02716, 0.02279, 
+	    0.01675, 0.01394, 0.01085, 0.00821, 0.006854, 0.005771, 0.004528, 0.003602, 0.002504, 0.001762, 
+	    0.001255, 9.172E-4, 5.559E-4, 2.785E-4, 1.539E-4, 8.802E-5, 5.073E-5, 3.175E-5, 1.791E-5, 8.514E-6, 
+	    4.364E-6, 2.512E-6, 1.067E-6, 5.523E-7, 3.808E-7, 2.836E-7, 1.834E-7, 1.104E-7, 2.9E-8 };
+	  double p8681_d2x1y2_yerrminus[] = { 0.4574234393863087, 0.30423048433712224, 0.25048798853438065, 0.2174373935182263, 0.21909086790644652, 0.24450057259646651, 0.13612112841142626, 0.13467780849122843, 0.1035571822714388, 
+	    0.0923994832236631, 0.07820775664855757, 0.07273229956491133, 0.06101843983583979, 0.056144983747437316, 0.04857073707490962, 0.03927339302886879, 0.03156359645224226, 0.023507528602556248, 0.023812536278187586, 
+	    0.01790920255064418, 0.014667601064932194, 0.011429457554932342, 0.009058227751607927, 0.00727436547060979, 0.00562232644374195, 0.0048669812245374445, 0.004029130074842459, 0.003277139002239606, 0.0029149899502399663, 
+	    0.002265563879037623, 0.0020017039965988977, 0.001649521251757612, 0.0013296404927648677, 0.0011774400197037639, 0.0010515340650687451, 8.739854975913503E-4, 7.148101740322391E-4, 4.211278494709178E-4, 2.709355797971171E-4, 
+	    1.8228298439514315E-4, 1.2912507928361557E-4, 7.604391260317949E-5, 3.6804036803046486E-5, 1.980623134268607E-5, 1.1198330232673084E-5, 6.582150408491134E-6, 4.3800365295280355E-6, 2.452620249855244E-6, 1.1613993111759624E-6, 
+	    6.012443762730759E-7, 3.5326354184942434E-7, 1.7802991321685241E-7, 1.1184565257532364E-7, 7.476556694093879E-8, 5.839058143228238E-8, 4.152493226966181E-8, 2.4620519897028982E-8, 1.0567875850898325E-8 };
+	  double p8681_d2x1y2_yerrplus[] = { 0.4574234393863087, 0.30423048433712224, 0.25048798853438065, 0.2174373935182263, 0.21909086790644652, 0.24450057259646651, 0.13612112841142626, 0.13467780849122843, 0.1035571822714388, 
+	    0.0923994832236631, 0.07820775664855757, 0.07273229956491133, 0.06101843983583979, 0.056144983747437316, 0.04857073707490962, 0.03927339302886879, 0.03156359645224226, 0.023507528602556248, 0.023812536278187586, 
+	    0.01790920255064418, 0.014667601064932194, 0.011429457554932342, 0.009058227751607927, 0.00727436547060979, 0.00562232644374195, 0.0048669812245374445, 0.004029130074842459, 0.003277139002239606, 0.0029149899502399663, 
+	    0.002265563879037623, 0.0020017039965988977, 0.001649521251757612, 0.0013296404927648677, 0.0011774400197037639, 0.0010515340650687451, 8.739854975913503E-4, 7.148101740322391E-4, 4.211278494709178E-4, 2.709355797971171E-4, 
+	    1.8228298439514315E-4, 1.2912507928361557E-4, 7.604391260317949E-5, 3.6804036803046486E-5, 1.980623134268607E-5, 1.1198330232673084E-5, 6.582150408491134E-6, 4.3800365295280355E-6, 2.452620249855244E-6, 1.1613993111759624E-6, 
+	    6.012443762730759E-7, 3.5326354184942434E-7, 1.7802991321685241E-7, 1.1184565257532364E-7, 7.476556694093879E-8, 5.839058143228238E-8, 4.152493226966181E-8, 2.4620519897028982E-8, 1.0567875850898325E-8 };
+	  double p8681_d2x1y2_ystatminus[] = { 0.08477, 0.05826, 0.04668, 0.03851, 0.06178, 0.0242, 0.04404, 0.03289, 0.028, 
+	    0.02494, 0.02134, 0.01957, 0.01788, 0.01684, 0.01502, 0.01437, 0.009011, 0.007099, 0.003022, 
+	    0.002456, 0.002211, 0.00178, 0.001501, 0.001268, 9.758E-4, 9.468E-4, 7.946E-4, 6.648E-4, 6.121E-4, 
+	    4.713E-4, 4.433E-4, 3.544E-4, 2.972E-4, 2.66E-4, 2.433E-4, 2.004E-4, 5.357E-5, 3.584E-5, 2.478E-5, 
+	    1.792E-5, 1.269E-5, 8.112E-6, 5.505E-6, 3.58E-6, 2.15E-6, 1.452E-6, 1.144E-6, 6.953E-7, 3.606E-7, 
+	    2.234E-7, 1.603E-7, 1.013E-7, 7.43E-8, 5.15E-8, 4.39E-8, 3.36E-8, 1.96E-8, 9.2E-9 };
+	  double p8681_d2x1y2_ystatplus[] = { 0.08477, 0.05826, 0.04668, 0.03851, 0.06178, 0.0242, 0.04404, 0.03289, 0.028, 
+	    0.02494, 0.02134, 0.01957, 0.01788, 0.01684, 0.01502, 0.01437, 0.009011, 0.007099, 0.003022, 
+	    0.002456, 0.002211, 0.00178, 0.001501, 0.001268, 9.758E-4, 9.468E-4, 7.946E-4, 6.648E-4, 6.121E-4, 
+	    4.713E-4, 4.433E-4, 3.544E-4, 2.972E-4, 2.66E-4, 2.433E-4, 2.004E-4, 5.357E-5, 3.584E-5, 2.478E-5, 
+	    1.792E-5, 1.269E-5, 8.112E-6, 5.505E-6, 3.58E-6, 2.15E-6, 1.452E-6, 1.144E-6, 6.953E-7, 3.606E-7, 
+	    2.234E-7, 1.603E-7, 1.013E-7, 7.43E-8, 5.15E-8, 4.39E-8, 3.36E-8, 1.96E-8, 9.2E-9 };
+	  int p8681_d2x1y2_numpoints = 58;
+	  graphPeripheral = new TGraphAsymmErrors(p8681_d2x1y2_numpoints, p8681_d2x1y2_xval, p8681_d2x1y2_yval, p8681_d2x1y2_xerrminus, p8681_d2x1y2_xerrplus, p8681_d2x1y2_yerrminus, p8681_d2x1y2_yerrplus);
+	} else if (n == 2) {
+	  // http://hepdata.cedar.ac.uk/view/ins1276299/d3/root
+	  // Plot: p8681_d3x1y3
+	  double p8681_d3x1y1_xval[] = { 0.325, 0.375, 0.425, 0.475, 0.525, 0.575, 0.625, 0.675, 0.725, 
+	    0.775, 0.825, 0.875, 0.925, 0.975, 1.05, 1.15, 1.25, 1.35, 1.45, 
+	    1.55, 1.65, 1.75, 1.85, 1.95, 2.05, 2.15, 2.25, 2.35, 2.45, 
+	    2.55, 2.65, 2.75, 2.85, 2.95, 3.1, 3.3, 3.5, 3.7, 3.9, 
+	    4.25, 4.75, 5.25, 5.75, 6.5, 7.5, 9.0, 11.0, 13.5, 17.5 };
+	  double p8681_d3x1y1_xerrminus[] = { 0.025000000000000022, 0.025000000000000022, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 
+	    0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 
+	    0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 
+	    0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 1.0, 1.0, 1.5, 2.5 };
+	  double p8681_d3x1y1_xerrplus[] = { 0.024999999999999967, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 
+	    0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 
+	    0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 
+	    0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 1.0, 1.0, 1.5, 2.5 };
+	  double p8681_d3x1y1_yval[] = { 9.017, 8.804, 8.649, 8.072, 8.395, 8.372, 7.994, 7.776, 7.605, 
+	    7.344, 7.134, 6.835, 6.584, 6.304, 5.859, 5.372, 4.823, 4.298, 3.75, 
+	    3.206, 2.755, 2.375, 1.986, 1.697, 1.368, 1.148, 0.9421, 0.7591, 0.6458, 
+	    0.5065, 0.4103, 0.3327, 0.2645, 0.2172, 0.1491, 0.09627, 0.06215, 0.03995, 0.02594, 
+	    0.01196, 0.004443, 0.001771, 7.624E-4, 2.678E-4, 7.942E-5, 2.135E-5, 4.617E-6, 1.361E-6, 3.14E-7 };
+	  double p8681_d3x1y1_yerrminus[] = { 1.3515825132044288, 1.2739798310805395, 1.2296111417842632, 0.8876270036451122, 0.7691813169857936, 0.7616571197724078, 0.7385862335570573, 0.6624024725195401, 0.6066864363903317, 
+	    0.5472767512876826, 0.5033400958596483, 0.4638121073236446, 0.43655467801868764, 0.41426139682572405, 0.368396321914321, 0.3332906126790852, 0.29523023286919653, 0.2650236547933033, 0.23314985331327145, 
+	    0.1742452581851225, 0.15667664663248318, 0.13310058189204133, 0.12510371737082795, 0.1063716978335873, 0.08585536209230032, 0.06993224094793474, 0.05763394771313171, 0.045265238859416176, 0.038715595875564154, 
+	    0.03050457423076087, 0.02489276047367989, 0.02036033057197255, 0.016365749723126037, 0.01359378979534405, 0.009025208132780096, 0.005683957410114893, 0.003766910868337609, 0.002422004799747515, 0.0016135925755902572, 
+	    0.001266223124097803, 4.723615637411664E-4, 1.9318014908369856E-4, 8.844163103425896E-5, 3.33676945712466E-5, 1.0780239746870197E-5, 3.5323249015343987E-6, 1.0422202886146478E-6, 3.7046751544501173E-7, 1.1030439701117993E-7 };
+	  double p8681_d3x1y1_yerrplus[] = { 1.3515825132044288, 1.2739798310805395, 1.2296111417842632, 0.8876270036451122, 0.7691813169857936, 0.7616571197724078, 0.7385862335570573, 0.6624024725195401, 0.6066864363903317, 
+	    0.5472767512876826, 0.5033400958596483, 0.4638121073236446, 0.43655467801868764, 0.41426139682572405, 0.368396321914321, 0.3332906126790852, 0.29523023286919653, 0.2650236547933033, 0.23314985331327145, 
+	    0.1742452581851225, 0.15667664663248318, 0.13310058189204133, 0.12510371737082795, 0.1063716978335873, 0.08585536209230032, 0.06993224094793474, 0.05763394771313171, 0.045265238859416176, 0.038715595875564154, 
+	    0.03050457423076087, 0.02489276047367989, 0.02036033057197255, 0.016365749723126037, 0.01359378979534405, 0.009025208132780096, 0.005683957410114893, 0.003766910868337609, 0.002422004799747515, 0.0016135925755902572, 
+	    0.001266223124097803, 4.723615637411664E-4, 1.9318014908369856E-4, 8.844163103425896E-5, 3.33676945712466E-5, 1.0780239746870197E-5, 3.5323249015343987E-6, 1.0422202886146478E-6, 3.7046751544501173E-7, 1.1030439701117993E-7 };
+	  double p8681_d3x1y1_ystatminus[] = { 0.2173, 0.1669, 0.1366, 0.06824, 0.06878, 0.06591, 0.04988, 0.05866, 0.05911, 
+	    0.05795, 0.05789, 0.05697, 0.05637, 0.05643, 0.0383, 0.03815, 0.03702, 0.03576, 0.03371, 
+	    0.0246, 0.02146, 0.01993, 0.01501, 0.01359, 0.01106, 0.009082, 0.007827, 0.005893, 0.005308, 
+	    0.004157, 0.003468, 0.002919, 0.002392, 0.002039, 8.922E-4, 5.828E-4, 4.057E-4, 2.865E-4, 2.09E-4, 
+	    7.5E-5, 3.713E-5, 2.04E-5, 1.21E-5, 4.521E-6, 2.687E-6, 9.289E-7, 4.123E-7, 2.113E-7, 7.09E-8 };
+	  double p8681_d3x1y1_ystatplus[] = { 0.2173, 0.1669, 0.1366, 0.06824, 0.06878, 0.06591, 0.04988, 0.05866, 0.05911, 
+	    0.05795, 0.05789, 0.05697, 0.05637, 0.05643, 0.0383, 0.03815, 0.03702, 0.03576, 0.03371, 
+	    0.0246, 0.02146, 0.01993, 0.01501, 0.01359, 0.01106, 0.009082, 0.007827, 0.005893, 0.005308, 
+	    0.004157, 0.003468, 0.002919, 0.002392, 0.002039, 8.922E-4, 5.828E-4, 4.057E-4, 2.865E-4, 2.09E-4, 
+	    7.5E-5, 3.713E-5, 2.04E-5, 1.21E-5, 4.521E-6, 2.687E-6, 9.289E-7, 4.123E-7, 2.113E-7, 7.09E-8 };
+	  int p8681_d3x1y1_numpoints = 49;
+	  graphCentral = new TGraphAsymmErrors(p8681_d3x1y1_numpoints, p8681_d3x1y1_xval, p8681_d3x1y1_yval, p8681_d3x1y1_xerrminus, p8681_d3x1y1_xerrplus, p8681_d3x1y1_yerrminus, p8681_d3x1y1_yerrplus);
+
+	  double p8681_d3x1y2_xval[] = { 0.325, 0.375, 0.425, 0.475, 0.525, 0.575, 0.625, 0.675, 0.725, 
+	    0.775, 0.825, 0.875, 0.925, 0.975, 1.05, 1.15, 1.25, 1.35, 1.45, 
+	    1.55, 1.65, 1.75, 1.85, 1.95, 2.05, 2.15, 2.25, 2.35, 2.45, 
+	    2.55, 2.65, 2.75, 2.85, 2.95, 3.1, 3.3, 3.5, 3.7, 3.9, 
+	    4.25, 4.75, 5.25, 5.75, 6.5, 7.5, 9.0, 11.0, 13.5, 17.5 };
+	  double p8681_d3x1y2_xerrminus[] = { 0.025000000000000022, 0.025000000000000022, 0.024999999999999967, 0.024999999999999967, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 
+	    0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 
+	    0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 
+	    0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.050000000000000266, 0.050000000000000266, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 
+	    0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 1.0, 1.0, 1.5, 2.5 };
+	  double p8681_d3x1y2_xerrplus[] = { 0.024999999999999967, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 
+	    0.025000000000000022, 0.025000000000000022, 0.025000000000000022, 0.02499999999999991, 0.025000000000000022, 0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 
+	    0.050000000000000044, 0.050000000000000044, 0.050000000000000044, 0.04999999999999982, 0.050000000000000044, 0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 
+	    0.050000000000000266, 0.050000000000000266, 0.04999999999999982, 0.04999999999999982, 0.04999999999999982, 0.10000000000000009, 0.10000000000000009, 0.10000000000000009, 0.09999999999999964, 0.10000000000000009, 
+	    0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 1.0, 1.0, 1.5, 2.5 };
+	  double p8681_d3x1y2_yval[] = { 0.7966, 0.7275, 0.7114, 0.608, 0.5949, 0.5725, 0.5298, 0.4954, 0.4782, 
+	    0.4411, 0.4061, 0.3697, 0.3391, 0.3107, 0.2678, 0.2123, 0.1726, 0.1427, 0.1113, 
+	    0.0898, 0.07044, 0.05523, 0.04385, 0.03362, 0.02916, 0.02259, 0.01769, 0.01406, 0.01226, 
+	    0.009541, 0.00724, 0.005543, 0.005215, 0.00374, 0.002839, 0.001747, 0.001249, 8.518E-4, 6.129E-4, 
+	    2.89E-4, 1.24E-4, 5.903E-5, 2.968E-5, 1.317E-5, 4.054E-6, 1.114E-6, 2.626E-7, 9.72E-8, 1.77E-8 };
+	  double p8681_d3x1y2_yerrminus[] = { 0.09753426526098405, 0.08316022186117591, 0.07880885737022203, 0.08167269448842741, 0.060791253326444916, 0.052007296180439914, 0.04538711574885542, 0.039871021105559866, 0.037269779983251844, 
+	    0.03246903318548306, 0.029777152046493633, 0.025399501884879553, 0.02437632098984586, 0.020629183818076758, 0.017734752352373012, 0.013874307225948256, 0.010766249857773134, 0.009123840529075462, 0.00700224856742461, 
+	    0.005801023444186379, 0.004677497835381648, 0.0037064027034309156, 0.0033470766722619306, 0.0025975679182650836, 0.002308510145093584, 0.001825164650106943, 0.0014675430521793901, 0.0011972462946278012, 0.001074367949075176, 
+	    8.771510531259709E-4, 6.837475703795955E-4, 5.442994763914439E-4, 5.356769548897917E-4, 3.994385684933292E-4, 2.873335511213405E-4, 1.7882614490057096E-4, 1.3219078976993822E-4, 9.219100281480835E-5, 6.984454166218001E-5, 
+	    4.43794189349072E-5, 1.888284483334013E-5, 9.03966647614833E-6, 4.696650934442541E-6, 2.149005642151737E-6, 8.783346571780029E-7, 2.76608767033874E-7, 8.070811607267264E-8, 2.7022398117117584E-8, 7.528612089887483E-9 };
+	  double p8681_d3x1y2_yerrplus[] = { 0.09753426526098405, 0.08316022186117591, 0.07880885737022203, 0.08167269448842741, 0.060791253326444916, 0.052007296180439914, 0.04538711574885542, 0.039871021105559866, 0.037269779983251844, 
+	    0.03246903318548306, 0.029777152046493633, 0.025399501884879553, 0.02437632098984586, 0.020629183818076758, 0.017734752352373012, 0.013874307225948256, 0.010766249857773134, 0.009123840529075462, 0.00700224856742461, 
+	    0.005801023444186379, 0.004677497835381648, 0.0037064027034309156, 0.0033470766722619306, 0.0025975679182650836, 0.002308510145093584, 0.001825164650106943, 0.0014675430521793901, 0.0011972462946278012, 0.001074367949075176, 
+	    8.771510531259709E-4, 6.837475703795955E-4, 5.442994763914439E-4, 5.356769548897917E-4, 3.994385684933292E-4, 2.873335511213405E-4, 1.7882614490057096E-4, 1.3219078976993822E-4, 9.219100281480835E-5, 6.984454166218001E-5, 
+	    4.43794189349072E-5, 1.888284483334013E-5, 9.03966647614833E-6, 4.696650934442541E-6, 2.149005642151737E-6, 8.783346571780029E-7, 2.76608767033874E-7, 8.070811607267264E-8, 2.7022398117117584E-8, 7.528612089887483E-9 };
+	  double p8681_d3x1y2_ystatminus[] = { 0.02673, 0.01896, 0.01594, 0.009655, 0.009009, 0.008366, 0.007026, 0.008382, 0.00814, 
+	    0.007504, 0.006928, 0.006514, 0.006025, 0.005925, 0.003721, 0.003201, 0.002894, 0.002655, 0.002229, 
+	    0.001968, 0.001681, 0.00145, 7.585E-4, 6.097E-4, 6.153E-4, 5.15E-4, 4.369E-4, 3.563E-4, 3.493E-4, 
+	    3.151E-4, 2.425E-4, 1.944E-4, 2.062E-4, 1.539E-4, 7.264E-5, 4.251E-5, 3.143E-5, 2.199E-5, 1.586E-5, 
+	    5.315E-6, 3.423E-6, 2.147E-6, 1.229E-6, 5.125E-7, 3.661E-7, 9.55E-8, 4.12E-8, 1.65E-8, 5.8E-9 };
+	  double p8681_d3x1y2_ystatplus[] = { 0.02673, 0.01896, 0.01594, 0.009655, 0.009009, 0.008366, 0.007026, 0.008382, 0.00814, 
+	    0.007504, 0.006928, 0.006514, 0.006025, 0.005925, 0.003721, 0.003201, 0.002894, 0.002655, 0.002229, 
+	    0.001968, 0.001681, 0.00145, 7.585E-4, 6.097E-4, 6.153E-4, 5.15E-4, 4.369E-4, 3.563E-4, 3.493E-4, 
+	    3.151E-4, 2.425E-4, 1.944E-4, 2.062E-4, 1.539E-4, 7.264E-5, 4.251E-5, 3.143E-5, 2.199E-5, 1.586E-5, 
+	    5.315E-6, 3.423E-6, 2.147E-6, 1.229E-6, 5.125E-7, 3.661E-7, 9.55E-8, 4.12E-8, 1.65E-8, 5.8E-9 };
+	  int p8681_d3x1y2_numpoints = 49;
+	  graphPeripheral = new TGraphAsymmErrors(p8681_d3x1y2_numpoints, p8681_d3x1y2_xval, p8681_d3x1y2_yval, p8681_d3x1y2_xerrminus, p8681_d3x1y2_xerrplus, p8681_d3x1y2_yerrminus, p8681_d3x1y2_yerrplus);
+	}
+	
+	RemoveOneOverPt(graphCentral);
+	RemoveOneOverPt(graphPeripheral);
+	
+	TGraphAsymmErrors* graph = graphCentral;
+	if (m == 3)
+	  graph = graphPeripheral;
+	
+	species[n]->Reset();
+	for (int i=1; i<=species[n]->GetNbinsX(); i++)
+	  species[n]->SetBinContent(i, graph->Eval(species[n]->GetBinCenter(i)));
+      }
+    }
+    
+    species[3] = (TH1*) species[0]->Clone(Form("sum_%d", m));
+    species[3]->Add(species[1]);
+    species[3]->Add(species[2]);
+    
+    // ratio
+    for (int n = 0; n < 3; n++)
+      species[n]->Divide(species[3]);
+    
+    // stack
+  //   species[1]->Add(species[0]);
+  //   species[2]->Add(species[1]);
+      
+    for (int n = 0; n < 3; n++) {
+      species[n]->GetXaxis()->SetRangeUser(0.5, 10);
+      species[n]->GetYaxis()->SetRangeUser(0, 1);
+      species[n]->SetStats(kFALSE);
+      species[n]->SetYTitle("Fraction");
+      species[n]->SetTitle("");
+      if (m < 2) {
+	species[n]->SetLineColor(n+1);
+	species[n]->SetLineStyle(m+1);
+	species[n]->SetLineWidth(2);
+	species[n]->DrawClone((n == 0 && m == 0) ? "" : "SAME");
+      } else {
+	species[n]->SetMarkerStyle(24+m-2);
+	species[n]->SetLineStyle(1);
+	species[n]->SetLineColor(n+1);
+	species[n]->SetMarkerColor(n+1);
+	species[n]->DrawClone("PSAME");
+      }
+      legend->AddEntry(species[n]->Clone(), (n == 2) ? title[m] : " "), (m < 2) ? "L" : "P");
+    }
+  }
+  
+  legend->Draw();
+}
+
+void CheckConversionsResonanceCut(const char* fileName, int bin)
+{
+  loadlibs();
+  
+  AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);
+  
+  h1 = h->GetControlConvResoncances();
+  h1proj = h1->ProjectionY("h1proj", bin, bin);
+  
+  h2 = hMixed->GetControlConvResoncances();
+  h2proj = h2->ProjectionY("h2proj", bin, bin);
+  h2proj->SetLineColor(2);
+
+//   h1proj->Scale(1.0 / h1proj->GetBinContent(h1proj->GetNbinsX()));
+  h2proj->Scale(1.0 / h2proj->GetBinContent(h2proj->FindBin(0)));
+  
+  h1proj->Divide(h2proj);
+  
+  new TCanvas;
+  
+  h1proj->DrawCopy();
+//   h2proj->Draw("SAME");
 }
