@@ -180,6 +180,26 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoEleXiMassWSMix2;         //!<! e-Xi mass spectra (wrong-sign)
   THnSparse* fHistoEleXiMassRSSide2;         //!<! e-Xi mass spectra (right-sign)
   THnSparse* fHistoEleXiMassWSSide2;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassAway;         //!<! e-Xi mass spectra
+  THnSparse* fHistoEleXiMassRSAway;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSAway;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMixAway;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMixAway;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSideAway;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSideAway;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRS1Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWS1Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMix1Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMix1Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSide1Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSide1Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRS2Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWS2Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSMix2Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSMix2Away;         //!<! e-Xi mass spectra (wrong-sign)
+  THnSparse* fHistoEleXiMassRSSide2Away;         //!<! e-Xi mass spectra (right-sign)
+  THnSparse* fHistoEleXiMassWSSide2Away;         //!<! e-Xi mass spectra (wrong-sign)
+
   THnSparse* fHistoEleXiMassvsElePtRS;         //!<! e-Xi mass spectra (right-sign)
   THnSparse* fHistoEleXiMassvsElePtWS;         //!<! e-Xi mass spectra (wrong-sign)
   THnSparse* fHistoEleXiMassvsElePtRSMix;         //!<! e-Xi mass-ept spectra (right-sign)
@@ -305,7 +325,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TObjArray* fCascadeTracks2; /// array of xi-compatible tracks
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,13); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,14); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

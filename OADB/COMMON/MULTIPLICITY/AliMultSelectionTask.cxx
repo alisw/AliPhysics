@@ -295,6 +295,19 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fRefMultEta8 = new AliMultVariable("fRefMultEta8");
     fRefMultEta8 ->SetIsInteger( kTRUE );
     
+    //ZDC Related
+    fZncEnergy = new AliMultVariable("fZncEnergy");
+    fZpcEnergy = new AliMultVariable("fZpcEnergy");
+    fZnaEnergy = new AliMultVariable("fZnaEnergy");
+    fZpaEnergy = new AliMultVariable("fZpaEnergy");
+    fZem1Energy = new AliMultVariable("fZem1Energy");
+    fZem2Energy = new AliMultVariable("fZem2Energy");
+
+    fZnaTower = new AliMultVariable("fZnaTower");
+    fZncTower = new AliMultVariable("fZncTower");
+    fZpaTower = new AliMultVariable("fZpaTower");
+    fZpcTower = new AliMultVariable("fZpcTower");
+    
     //Add to AliMultInput Object, will later bind to TTree object in a loop
     fInput->AddVariable( fAmplitude_V0A );
     fInput->AddVariable( fAmplitude_V0C );
@@ -310,6 +323,16 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fRefMultEta8 );
     fInput->AddVariable( fMultiplicity_ADA );
     fInput->AddVariable( fMultiplicity_ADC );
+    fInput->AddVariable( fZncEnergy );
+    fInput->AddVariable( fZpcEnergy );
+    fInput->AddVariable( fZnaEnergy );
+    fInput->AddVariable( fZpaEnergy );
+    fInput->AddVariable( fZem1Energy );
+    fInput->AddVariable( fZem2Energy );
+    fInput->AddVariable( fZnaTower );
+    fInput->AddVariable( fZncTower );
+    fInput->AddVariable( fZpaTower );
+    fInput->AddVariable( fZpcTower );
     
     fTreeEvent = new TTree("fTreeEvent","Event");
 
@@ -351,17 +374,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
     fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
     //A.T. FIXME change into AliMultVariable
-    //ZDC info
-    fTreeEvent->Branch("fZncEnergy", &fZncEnergy, "fZncEnergy/F");
-    fTreeEvent->Branch("fZpcEnergy", &fZpcEnergy, "fZpcEnergy/F");
-    fTreeEvent->Branch("fZnaEnergy", &fZnaEnergy, "fZnaEnergy/F");
-    fTreeEvent->Branch("fZpaEnergy", &fZpaEnergy, "fZpaEnergy/F");
-    fTreeEvent->Branch("fZem1Energy", &fZem1Energy, "fZem1Energy/F");
-    fTreeEvent->Branch("fZem2Energy", &fZem2Energy, "fZem2Energy/F");
-    fTreeEvent->Branch("fZnaTower", &fZnaTower, "fZnaTower/F");
-    fTreeEvent->Branch("fZncTower", &fZncTower, "fZncTower/F");
-    fTreeEvent->Branch("fZpaTower", &fZpaTower, "fZpaTower/F");
-    fTreeEvent->Branch("fZpcTower", &fZpcTower, "fZpcTower/F");
+    //ZDC info (only booleans: the rest will be done in the loop automatically)
     fTreeEvent->Branch("fZnaFired", &fZnaFired, "fZnaFired/O");    //Booleans for Event Selection
     fTreeEvent->Branch("fZncFired", &fZncFired, "fZncFired/O");    //Booleans for Event Selection
     fTreeEvent->Branch("fZpaFired", &fZpaFired, "fZpaFired/O");    //Booleans for Event Selection
@@ -732,16 +745,16 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fNTracks         = -10;
     
     //Set ZDC variables to defaults
-    fZncEnergy = -1;
-    fZpcEnergy = -1;
-    fZnaEnergy = -1;
-    fZpaEnergy = -1;
-    fZem1Energy = -1;
-    fZem2Energy = -1;
-    fZnaTower = -1;
-    fZncTower = -1;
-    fZpaTower = -1;
-    fZpcTower = -1;
+    fZncEnergy->SetValue(-1e6);
+    fZpcEnergy->SetValue(-1e6);
+    fZnaEnergy->SetValue(-1e6);
+    fZpaEnergy->SetValue(-1e6);
+    fZem1Energy->SetValue(-1e6);
+    fZem2Energy->SetValue(-1e6);
+    fZnaTower->SetValue(-1e6);
+    fZncTower->SetValue(-1e6);
+    fZpaTower->SetValue(-1e6);
+    fZpcTower->SetValue(-1e6);
     fZnaFired = kFALSE;
     fZncFired = kFALSE;
     fZpaFired = kFALSE;
@@ -773,13 +786,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if (lESDZDC->AliESDZDC::TestBit(AliESDZDC::kEnergyCalibratedSignal))  CalF=1.0; //! if zdc is calibrated (in pass2)
         else CalF=8.0;
 
-        fZncEnergy = (Float_t) (lESDZDC->GetZDCN1Energy())/CalF;
-        fZpcEnergy = (Float_t) (lESDZDC->GetZDCP1Energy())/CalF;
-        fZnaEnergy = (Float_t) (lESDZDC->GetZDCN2Energy())/CalF;
-        fZpaEnergy = (Float_t) (lESDZDC->GetZDCP2Energy())/CalF;
+        fZncEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN1Energy())/CalF );
+        fZpcEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP1Energy())/CalF );
+        fZnaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCN2Energy())/CalF );
+        fZpaEnergy -> SetValue ( (Float_t) (lESDZDC->GetZDCP2Energy())/CalF );
 
-        fZem1Energy = (Float_t) (lESDZDC->GetZDCEMEnergy(0))/CalF;
-        fZem2Energy = (Float_t) (lESDZDC->GetZDCEMEnergy(1))/CalF;
+        fZem1Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(0))/CalF );
+        fZem2Energy -> SetValue ( (Float_t) (lESDZDC->GetZDCEMEnergy(1))/CalF );
 
         Int_t detCh_ZNA = 0; //lESDZDC->GetZNATDCChannel();
         Int_t detCh_ZNC = 0; //lESDZDC->GetZNCTDCChannel();
@@ -787,20 +800,20 @@ void AliMultSelectionTask::UserExec(Option_t *)
         Int_t detCh_ZPC = 0; //lESDZDC->GetZPCTDCChannel();
 
         for (Int_t j = 0; j < 4; ++j) {
-            if (lESDZDC->GetZDCTDCData(detCh_ZNA,j) != 0) 	fZnaFired = kTRUE;
-            if (lESDZDC->GetZDCTDCData(detCh_ZNC,j) != 0) 	fZncFired = kTRUE;
-            if (lESDZDC->GetZDCTDCData(detCh_ZPA,j) != 0) 	fZpaFired = kTRUE;
-            if (lESDZDC->GetZDCTDCData(detCh_ZPC,j) != 0) 	fZpcFired = kTRUE;
+            if ( lESDZDC->IsZNAhit() ) 	fZnaFired = kTRUE;
+            if ( lESDZDC->IsZNChit() ) 	fZncFired = kTRUE;
+            if ( lESDZDC->IsZPAhit() ) 	fZpaFired = kTRUE;
+            if ( lESDZDC->IsZPChit() ) 	fZpcFired = kTRUE;
         }
 
-        const Double_t *ZNAtower = lESDZDC->GetZN2TowerEnergy();
-        const Double_t *ZNCtower = lESDZDC->GetZN1TowerEnergy();
-        const Double_t *ZPAtower = lESDZDC->GetZP2TowerEnergy();
-        const Double_t *ZPCtower = lESDZDC->GetZP1TowerEnergy();
-        if (fZnaFired) fZnaTower = ZNAtower[0];
-        if (fZncFired) fZncTower = ZNCtower[0];
-        if (fZpaFired) fZpaTower = ZPAtower[0];
-        if (fZpcFired) fZpcTower = ZPCtower[0];
+        const Double_t *ZNAtower = lESDZDC->GetZNATowerEnergy();
+        const Double_t *ZNCtower = lESDZDC->GetZNCTowerEnergy();
+        const Double_t *ZPAtower = lESDZDC->GetZPATowerEnergy();
+        const Double_t *ZPCtower = lESDZDC->GetZPCTowerEnergy();
+        if (fZnaFired) fZnaTower -> SetValue ( (Float_t) ZNAtower[0] );
+        if (fZncFired) fZncTower -> SetValue ( (Float_t) ZNCtower[0] );
+        if (fZpaFired) fZpaTower -> SetValue ( (Float_t) ZPAtower[0] );
+        if (fZpcFired) fZpcTower -> SetValue ( (Float_t) ZPCtower[0] );
 
     } else if (lVevent->InheritsFrom("AliAODEvent")) {
         AliAODEvent *aodevent = dynamic_cast<AliAODEvent *>(lVevent);
@@ -917,11 +930,15 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     else
         fCurrentRun = esd->GetRunNumber();
     
-    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-01.root", AliAnalysisManager::GetOADBPath()));
-    AliInfo(Form("Setup Multiplicity Selection for run %d with file %s\n",fCurrentRun,fileName.Data()));
+    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), GetPeriodName().Data() ));
+    AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),GetPeriodName().Data()));
     
     AliOADBContainer *con = new AliOADBContainer("OADB");
-    con->InitFromFile(fileName,"MultSel");
+    Int_t lFoundFile = con->InitFromFile(fileName,"MultSel");
+    
+    //FIXME: Here one should open an empty file instead...
+    TString fileNameDef =(Form("%s/COMMON/MULTIPLICITY/data/OADB-LHC15f.root", AliAnalysisManager::GetOADBPath() ));
+    if ( lFoundFile == 1 ) con->InitFromFile(fileNameDef,"MultSel");
     
     //Get Object for this run!
     oadbMultSelection = (AliOADBMultSelection* )con->GetObject(fCurrentRun, "Default");
@@ -1111,7 +1128,7 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
 }
 
 //______________________________________________________________________
-TString AliMultSelectionTask::GetPeriodName() 
+TString AliMultSelectionTask::GetPeriodName()
 {
     //==================================
     // Setup initial Info

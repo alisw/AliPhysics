@@ -3285,7 +3285,8 @@ void correct(const char* options)
     TObjArray * BinDirAr = new TObjArray();
     for(int i = 0;i<dirs->GetEntries();i++)
     {
-      if(TString(dirs->At(i)->GetName()).BeginsWith("BinM")&&!TString(dirs->At(i)->GetName()).Contains("Z")&&isPbPb){
+//       if(TString(dirs->At(i)->GetName()).BeginsWith("BinM")&&!TString(dirs->At(i)->GetName()).Contains("Z")&&isPbPb){
+      if(TString(dirs->At(i)->GetName()).BeginsWith("BinM")&&isPbPb){
 	BinDirs * dir = new BinDirs(folderdir,dirs->At(i)->GetName(),false);
 	BinDirAr->Add(dir);
       }

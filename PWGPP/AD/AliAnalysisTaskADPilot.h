@@ -108,23 +108,15 @@ private:
   TH3F	      *fHistTimeVsChargePerPM_UnCorr;
   
   /*Experimental gain monitoring*/
+  TH2F	      *fHistChargeTriggerPerChannel;
+  TH2F	      *fHistChargeTriggerPerChannel_ADAND;
+  TH2F	      *fHistChargeTriggerPerChannel_PF;
   TH1F	      *fHistChargeTriggerADA;
   TH1F	      *fHistChargeTriggerADA_ADAND;
   TH1F	      *fHistChargeTriggerADA_PF;
   TH1F	      *fHistChargeTriggerADC;
   TH1F	      *fHistChargeTriggerADC_ADAND;
   TH1F	      *fHistChargeTriggerADC_PF;
-  
-  /*VZERO veto events*/
-  TH1F	      *fHistMeanTimeADA_VV;
-  TH1F	      *fHistMeanTimeADC_VV;
-  TH2F	      *fHistNBBCoincidencesADAVsADC_VV;
-  TH2F        *fHistChargePerPM_All_VV;
-  TH2F	      *fHistTimeVsChargeADA_UnCorr_VV;
-  TH2F	      *fHistTimeVsChargeADC_UnCorr_VV;
-  TH2F	      *fHistTimeVsChargeADA_Corr_VV;
-  TH2F	      *fHistTimeVsChargeADC_Corr_VV;
-  TH2F	      *fHistDecision_VV;
   
   /*Robust time testing*/
   TH1F	      *fHistMedianTimeADA;
@@ -156,7 +148,7 @@ private:
   AliAnalysisTaskADPilot(const AliAnalysisTaskADPilot&);            // not implemented
   AliAnalysisTaskADPilot& operator=(const AliAnalysisTaskADPilot&); // not implemented
   
-  ClassDef(AliAnalysisTaskADPilot, 2);
+  ClassDef(AliAnalysisTaskADPilot, 3);
 };
 
 #endif

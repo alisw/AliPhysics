@@ -8,7 +8,8 @@ AliAnalysisTaskLEDCheck *AddTaskLEDCheck(){
   TString outputfile = mgr->GetCommonFileName();
   outputfile += ":LEDCheck";
 
-  mgr->ConnectOutput(ledtask, 0, mgr->CreateContainer("LEDCheck", TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
+  mgr->ConnectInput(ledtask, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(ledtask, 1, mgr->CreateContainer("LEDCheck", TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
 
   return ledtask;
 }

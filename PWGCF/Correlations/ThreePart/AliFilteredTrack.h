@@ -112,7 +112,9 @@ class AliFilteredTrack : public AliVTrack {
   template<typename T> void Set(const T p[kNofDim]);
   void Set(const AliVParticle& track);
   void SetCharge(const AliVParticle& track);
-
+  void SetEff(float eff){feff = eff;}
+  float GetEff(){return feff;}
+  
   void Calculate(bool bCalculateMommentumComponents=true);
 
  protected:
@@ -122,7 +124,7 @@ class AliFilteredTrack : public AliVTrack {
   float fPt;        // transverse momentum
   float fPhi;       // phi
   float fTheta;     // theta
-
+  float feff;	    //efficiency
   // all other members are transient and calculated from the
   // momentum vector
   float fP[3];      //! momentum vector

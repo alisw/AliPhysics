@@ -134,6 +134,18 @@ private:
     //AD Related
     AliMultVariable *fMultiplicity_ADA;
     AliMultVariable *fMultiplicity_ADC;
+    //ZDC Related
+    AliMultVariable *fZncEnergy;
+    AliMultVariable *fZpcEnergy;
+    AliMultVariable *fZnaEnergy;
+    AliMultVariable *fZpaEnergy;
+    AliMultVariable *fZem1Energy;
+    AliMultVariable *fZem2Energy;
+    //ZDC Tower info
+    AliMultVariable *fZnaTower;
+    AliMultVariable *fZncTower;
+    AliMultVariable *fZpaTower;
+    AliMultVariable *fZpcTower;
     
     // A.T.
     Float_t fAmplitude_V0A1;   //!
@@ -166,17 +178,7 @@ private:
 
     // A.T.
     AliESDtrackCuts* fTrackCuts;  //! optional track cuts
-
-    Float_t  fZncEnergy;          //!  ZNC Energy
-    Float_t  fZpcEnergy;          //!  ZPC Energy
-    Float_t  fZnaEnergy;          //!  ZNA Energy
-    Float_t  fZpaEnergy;          //!  ZPA Energy
-    Float_t  fZem1Energy;         //!  ZEM1 Energy
-    Float_t  fZem2Energy;         //!  ZEM2 Energy
-    Float_t fZnaTower;           //! common PMT of ZNA
-    Float_t fZncTower;           //! common PMT of ZNC
-    Float_t fZpaTower;           //! common PMT of ZPA
-    Float_t fZpcTower;           //! common PMT of ZPC
+    
     Bool_t   fZnaFired;
     Bool_t   fZncFired;
     Bool_t   fZpaFired;

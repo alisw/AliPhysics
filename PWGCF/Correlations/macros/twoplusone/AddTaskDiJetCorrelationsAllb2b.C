@@ -2,20 +2,17 @@
 // $Id: AddTaskDiJetCorrelationsAllb2b.C
 
 AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString suffixName="",
-                                                                               
-                                                                               Bool_t twoplus1 = kTRUE,
-                                                                               Bool_t SEorME = kTRUE,
                                                                                Bool_t ppOrPbPb = kTRUE,
+                                                                               Bool_t SEorME = kTRUE,
+                                                                               Bool_t twoplus1 = kTRUE,
+                                                                               Bool_t bkgSE = kFALSE,
                                                                                Double_t pTrg1min = 12.0,
                                                                                Double_t pTrg1max = 16.0,
                                                                                Double_t pTrg2min = 5.0,
                                                                                Double_t pTrg2max = 8.0,
+                                                                               Bool_t T1T2Equal = kFALSE,
                                                                                Double_t bit = 272,
                                                                                TString fileTrackeff = "",
-                                                                               //  Double_t alpha = TMath::Pi(),
-                                                                               // Double_t alphaB2B = TMath::Pi(),
-                                                                               // TString effLoc = "",
-                                                                               Bool_t bkgSE = kFALSE,
                                                                                Bool_t resCut = kFALSE,
                                                                                Bool_t conversionCut = kFALSE,
                                                                                Bool_t TTRcut = kFALSE
@@ -26,7 +23,6 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
     
     
     
-    //    Bool_t isTrackEff = kTRUE;
     
     
     
@@ -49,6 +45,8 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
     dijetcorrelations->SetResonanceCut(resCut);
     dijetcorrelations->SetConversionCut(conversionCut);
     dijetcorrelations->SetTwoTrackEfficiencyCut(TTRcut);
+    dijetcorrelations->SetEqualT1T2Demand(T1T2Equal);
+    
     // dijetcorrelations->SetAlphaAngle(alphaB2B);
     //if(effLoc!="")dijetcorrelations->SetEffCorrection(GetEfficiencyCorr(effLoc));
     
@@ -67,7 +65,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
         
         if(!fAssoTracksEffMap ||(fAssoTracksEffMap&& !fAssoTracksEffMap->IsOpen())){
             
-            AliFatal("Input Associated Track Efficeincy Map object not found");
+            Printf("Input Associated Track Efficeincy Map object not found");
             
             return;
             
@@ -80,7 +78,6 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
         }
         
         
-        // hEff = dynamic_cast<THnF*>tmp1->Clone("hEff");
         
         dijetcorrelations->SetEfficiencyWeightMap(hEff);
         
@@ -89,9 +86,9 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
     
     
     // Create containers for input/output
-    TString finDirname         = "_DiJetMayCERN";
+    TString finDirname         = "_DiJet";
     TString inname             = "cinputDiJetCorrelations";
-    TString outBasicname       = "coutputDiJetBasicPlots";
+    TString outBasicname       = "coutputDiJetBase";
     TString outCorrname        = "coutputDiJetCorrHistos";
     
     finDirname += suffixName.Data();
@@ -126,25 +123,3 @@ AliAnalysisTaskDiJetCorrelationsAllb2b *AddTaskDiJetCorrelationsAllb2b(TString s
     return dijetcorrelations;
     
 }
-
-
-/*
- //loads the efficiency correction
- TH3F *GetEfficiencyCorr(TString effLoc){
- 
- TFile* f = 0x0;
- f = TFile::Open(effLoc.Data());
- if(!f){
- Printf("%s%d no input data",(char*)__FILE__,__LINE__);
- return;
- }
- 
- TH3F *tmp1 = (TH3F*)f->Get("hpTetaCentRec");
- if(!tmp1){
- Printf("%s%d Couldn't find hpTetaCentRec",(char*)__FILE__,__LINE__);
- return;
- }
- 
- return (TH3F*)tmp1->Clone("fEffHist3D");
- }
- */

@@ -976,8 +976,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       		delete trk_clone;
 				
-		//new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
-		//((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
+		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
 		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
 		fPIDTPCElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
@@ -1072,8 +1072,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       		if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       		delete trk_clone;
 		
-		//new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
-		//((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
+		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
 		
 		fPIDTPCMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
@@ -1491,6 +1491,10 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   fPerNum = esd->GetPeriodNumber();
   fOrbNum = esd->GetOrbitNumber();
   fBCrossNum = esd->GetBunchCrossNumber();
+
+  //TOF trigger mask
+  const AliTOFHeader *tofH = esd->GetTOFHeader();
+  fTOFmask = tofH->GetTriggerMask();
 
   //primary vertex
   AliESDVertex *fESDVertex = (AliESDVertex*) esd->GetPrimaryVertex();

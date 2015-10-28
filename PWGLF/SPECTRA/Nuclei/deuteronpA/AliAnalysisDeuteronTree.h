@@ -42,7 +42,8 @@ class AliAnalysisDeuteronTree : public AliAnalysisTaskSE {
     void           SetTOFNsigmaCutdMin(Float_t nSigma = -5.0){fNsigmaTOFdMin = nSigma;};
     void           SetTOFNsigmaCutdMax(Float_t nSigma =  5.0){fNsigmaTOFdMax = nSigma;};
     void           SetTPCNsigmaCutdMin(Float_t nSigma = -5.0){fNsigmaTPCdMin = nSigma;};
-    void           SetTPcNsigmaCutdMax(Float_t nSigma =  5.0){fNsigmaTPCdMax = nSigma;};
+    void           SetTPCNsigmaCutdMax(Float_t nSigma =  5.0){fNsigmaTPCdMax = nSigma;};
+    void           SetTPCNsigmaCutpiAbs(Float_t nSigma = 3.0){fNsigmaTPCpiAbsCut = nSigma;};
     //
     void           Initialize();
     //
@@ -76,11 +77,22 @@ private:
     Float_t fPt; //
     Float_t fMom; // Momentum multiplied by charge (saves using one more variable)
     Float_t fRapd; //
-    Float_t fNsigmaTPCd; // 
+    Float_t fPxd; //
+    Float_t fPyd; //
+    Float_t fPzd; //
+    Float_t fNsigmaTPCd; //
     Float_t fNsigmaTOFd; //
     Float_t fDcaXYd; //
     Float_t fMcCode; //
     Int_t fNpion; //
+    // Pion tree variables
+//    const Int_t maxPions = 400; // array size with const variable didn't work
+    Float_t fPx[400];
+    Float_t fPz[400];
+    Float_t fPy[400];
+    Float_t fNsigmaTPCpi[400]; //
+    Int_t fCharge[400]; //!
+
     
     //Variables for empirical momentum correction
     Float_t fMomCorrConstA;
@@ -95,7 +107,7 @@ private:
 
     Float_t fNsigmaTOFdMin;
     Float_t fNsigmaTOFdMax;
-    
+    Float_t fNsigmaTPCpiAbsCut;
     
     AliAnalysisDeuteronTree(const AliAnalysisDeuteronTree&);            // not implemented
     AliAnalysisDeuteronTree& operator=(const AliAnalysisDeuteronTree&); // not implemented
