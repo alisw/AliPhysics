@@ -839,9 +839,12 @@ Float_t AliForwardUtil::GetCentrality(const AliVEvent& event,
     qual = 6;
     return GetCentralityCompat(event, method, qual, verbose);
   }
+  // Int_t oldQual = 0;
+  // Float_t old = GetCentralityCompat(event, method, oldQual, verbose);
   if (verbose)
-    ::Info("AliForwardUtil::GetCentrality","Got centrality %5.1f%% (%d)",
-	   cent, qual);
+    ::Info("AliForwardUtil::GetCentrality",
+	   "Got centrality %5.1f%% (%d)", /*" - old %5.1f%% (%d)",*/
+	   cent, qual/*, old, oldQual*/);
   return cent;
 }
 //====================================================================
