@@ -22,7 +22,8 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
 						      const Double_t Mbin6 = 90.,
 						      const Double_t Mbin7 = 90.,
 						      const char * file = "",
-						      const char * cutmask = "GlobalHybrid"
+						      const char * cutmask = "GlobalHybrid",
+						      const Int_t binver = 1
 							 )
 {
   //Add a task AliAnalysisTaskCorrelation3p to the analysis train in charged track analysis, for PbPb data 
@@ -51,6 +52,7 @@ AliAnalysisTaskCorrelation3p* AddTaskThreePartTracksPbPb (const char* name = "Th
   task->SetMaxAssociatedPt(MaxAssociatedPt);
   task->SetAcceptanceCut(Acceptancecut);
   task->SetTrackCut(cutmask);
+  task->SetBinVer(binver);
  if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("alien:///alice/cern.ch/user/p/pbatzing/efficiencies/%s",file));
 //    if(TString(file).CompareTo("")!=0)   task->SetWeights(Form("%s",file));
 

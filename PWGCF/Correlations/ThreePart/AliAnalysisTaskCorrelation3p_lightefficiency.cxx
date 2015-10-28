@@ -84,6 +84,7 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fMinPt(3.0)
   , fMaxPt(8.0)
   , fMinNClustersTPC(70)
+  , fCutMask(0)
 {
   // default constructor
   // 
@@ -130,6 +131,7 @@ AliAnalysisTaskCorrelation3p_lightefficiency::AliAnalysisTaskCorrelation3p_light
   , fMinPt(3.0)
   , fMaxPt(8.0)
   , fMinNClustersTPC(70)
+  , fCutMask(0)
   {
   // constructor with options
   //
@@ -381,7 +383,11 @@ Bool_t AliAnalysisTaskCorrelation3p_lightefficiency::IsSelectedTrackAOD(AliVPart
 //   isselected = isselected&&(abs(DCAlong)<3);//cm. DCA less then 3 cm in the longitudinal direction.
 // //   if(isselected) cout << "DCA long passed"<<endl;
   //Hybrid tracks give flat distributions
-  isselected = AODt->IsHybridGlobalConstrainedGlobal();
+  if(fCutMask == 0) isselected = AODt->IsHybridGlobalConstrainedGlobal();
+  else if(fCutMask == 1) isselected = AODt->TestFilterBit(BIT(4));
+  else if(fCutMask == 2) isselected = AODt->TestFilterBit(BIT(5));
+  else if(fCutMask == 3) isselected = AODt->TestFilterBit(BIT(6));
+  else isselected = AODt->IsHybridGlobalConstrainedGlobal(); // defaults to global hybrid.  
   if( (AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,1);
   if(!(AODt->HasPointOnITSLayer(1)||AODt->HasPointOnITSLayer(2))&&isselected)   FillHistogram("TrackDCAandonITSselected",DCAtang,DCAlong,0);
   return isselected; 
