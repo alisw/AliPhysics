@@ -12,6 +12,8 @@
 // Author: andreas.morsch@cern.ch
 //---------------------------------------------------------------------
 
+#include <map>
+#include <string>
 #include <TNamed.h>
 #include <TArrayF.h>
 
@@ -31,15 +33,24 @@ class AliGenEventHeader : public TNamed
   virtual void   SetNProduced(Int_t nprod)         {fNProduced = nprod;}
   virtual void   SetPrimaryVertex(const TArrayF &o);
   virtual void   SetInteractionTime(Float_t t)     {fInteractionTime = t;}
-  virtual void   SetEventWeight(Float_t w)         {fEventWeight = w;}
-        
+  virtual void   SetEventWeight(Float_t w)         {AddEventWeight(fEventWeightNameGenerator, w);}
+
+  // named event weights
+  virtual void    AddEventWeight(const TString &name, Float_t w);
+  virtual Float_t GetEventWeight(const TString &name);
+  virtual const std::map<std::string, Float_t>& GetEventWeights() const
+    { return fEventWeights; }
 	  
 protected:
   Int_t     fNProduced;                 // Number stable or undecayed particles
   TArrayF   fVertex;                    // Primary Vertex Position
   Float_t   fInteractionTime;           // Time of the interaction
   Float_t   fEventWeight;               // Event weight
-  ClassDef(AliGenEventHeader, 4)        // Event header for primary event
+
+  std::map<std::string, Float_t> fEventWeights; // named event weights
+  const TString fEventWeightNameGenerator;      //! name for generator level weight
+
+  ClassDef(AliGenEventHeader, 5)        // Event header for primary event
 };
 
 #endif
