@@ -132,6 +132,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH2D *fHistPsi2sMassVsPt;
   TH1D *fHistPsi2sMassCoherent;
   
+  TH1D *fHistZDCCuts;
+  
   TList *fListSystematics;
   TList *fListJPsiLoose;
   TList *fListJPsiTight;
