@@ -677,6 +677,9 @@ protected:
 
     if (opt.EqualTo("NONE",TString::kIgnoreCase)) return;
 
+    // Possibly load as PAR
+    fRailway->LoadLibrary("OADB");
+
     AliPhysicsSelection* ps = 0;
     AliInputEventHandler* input = 
       dynamic_cast<AliInputEventHandler*> (mgr->GetInputEventHandler());
@@ -726,8 +729,7 @@ protected:
       // --- that we get offline+(A,C,E) events too ------------------
       Info("CreatePhysicsSelection", "Skipping trigger selection");
       ps->SetSkipTriggerClassSelection(true);
-    }
-      
+    }      
   }
   /** 
    * Create centrality selection, and add to manager
@@ -736,7 +738,26 @@ protected:
    */
   virtual void CreateCentralitySelection(Bool_t mc)
   {
-    AliAnalysisTask* task = CoupleCar("AddTaskCentrality.C","true");
+    AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+    AliVEventHandler*   inp = mgr->GetInputEventHandler();
+    if (!inp) return;
+
+    // Possibly load as PAR
+    fRailway->LoadLibrary("OADB");
+
+    Bool_t mult = true; // true;
+    AliAnalysisTask* task = 0;
+    if (mult) {
+      gROOT->SetMacroPath(Form("%s:"
+			       "$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros",
+			       gROOT->GetMacroPath()));
+      CoupleCar("AddTaskMultSelection.C","false,true");
+    }
+    Bool_t isAOD = inp->IsA()->InheritsFrom(AliAODInputHandler::Class());
+    if (isAOD) return;
+    
+    task = CoupleCar("AddTaskCentrality.C",
+		     Form("true,%s", isAOD ? "true" : "false"));
     AliCentralitySelectionTask* ctask = 
       dynamic_cast<AliCentralitySelectionTask*>(task);
     if (!ctask) return;
