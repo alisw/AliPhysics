@@ -385,7 +385,7 @@ AliFMDEventPlaneFinder::CalcQVectors(TH2D* h, TH1D* eHist)
   //
   // Calculate the Q vectors
   //
-  DGUARD(fDebug,2,"Calculate Q-vectors in AliFMDEventPlaneFinder");
+  DGUARD(fDebug,5,"Calculate Q-vectors in AliFMDEventPlaneFinder");
   Double_t phi = 0, eta = 0, weight = 0;
   for (Int_t e = 1; e <= h->GetNbinsX(); e++) {
     Double_t qx = 0, qy = 0;
@@ -429,7 +429,7 @@ AliFMDEventPlaneFinder::CalcEventplane(const TVector2& v) const
   //
   // Calculate the eventplane
   //
-  DGUARD(fDebug,2,"Calculate Event plane in AliFMDEventPlaneFinder");
+  DGUARD(fDebug,6,"Calculate Event plane in AliFMDEventPlaneFinder");
   Double_t ep = -1;
  
   if (v.Mod() == 0.) return ep;

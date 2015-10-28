@@ -468,32 +468,17 @@ Double_t
 AliBasedNdetaTask::GetCentrality(AliAODEvent& event,
 				 AliAODForwardMult* forward)
 {
-  Double_t       cent    = forward->GetCentrality();
-  if (!fCentMethod.IsNull()) {
-    if (fCentMethod.BeginsWith("MULT")) {
-      AliAODMultEventClass* mult = GetMultClass(event);
-      if (mult) 
-	cent = mult->GetCentrality(fCentMethod);
-    }
-    else {
-      AliAODHeader* hdr = dynamic_cast<AliAODHeader*>(event.GetHeader());
-      if(!hdr) AliFatal("Not a standard AOD");
-      if (hdr) { 
-	AliCentrality* cP = hdr->GetCentralityP();
-	if (cP) { 
-	  cent = cP->GetCentralityPercentile(fCentMethod);
-	  // Info("GetCentrality", "Got %f%% centrality from %s",
-	  //      cent, fCentMethod.Data());
-	}
-      }
-    }
-  }
-  Double_t max  = (HasCentrality() ? fCentAxis.GetXmax() : 100);
+  DGUARD(fDebug,1,"Getting centrality from event of object: %s",
+	 fCentMethod.Data());
+  Int_t   qual    = 0;
+  Float_t cent    = forward->GetCentrality();
+  DMSG(fDebug,2,"Centrality stored in AOD forward: %5.1f%%", cent);
+  if (!fCentMethod.IsNull()) 
+    cent = AliForwardUtil::GetCentrality(event,fCentMethod,qual,(fDebug > 1));
+  
   if (cent < 0)    cent = -.5;
-  if (cent >= max) {
-    Double_t tmp = (max >= 100. ? 100. : TMath::Max(max+.1,100.5));
-    // Info("GetCentrality", "Obtained %f >= %f -> %f", cent, max, tmp);
-    cent = tmp;
+  if (qual <= 0) {// OK centrality 
+    if (TMath::Abs(cent-100) < 1.1) cent = 100; // Special centralities
   }
   return cent;
 
@@ -544,9 +529,10 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   
   // Find this centrality bin
   if (HasCentrality()) {
-    taken                  = false;
+    taken                  = false;    
     Double_t       cent    = GetCentrality(aod, forward);
     // fSeenCent->Fill(cent);
+    DMSG(fDebug,1,"Got event centrality %f", cent);
     
     Int_t          icent   = fCentAxis.FindBin(cent);    
     if (icent == (fCentAxis.GetNbins()+1) &&
@@ -1518,8 +1504,10 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
 
   DGUARD(fDebug,2,"Check the event");
   // We do not check for centrality here - it's already done 
-  return forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, 
-			     fTriggers, fStatus, filter);
+  Bool_t ret = forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, 
+				   fTriggers, fStatus, filter);
+  DMSG(fDebug, 2, "%s", (ret ? "Accepted" : "Rejected"));
+  return ret;
 }
   
 
@@ -1547,8 +1535,8 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
   //    mc          MC histogram
   //    weight      Event weight 
   //
-  DGUARD(fDebug,1,"Process one event for %s a given centrality bin", 
-	 data ? data->GetName() : "(null)");
+  DGUARD(fDebug,1,"Process one event for %s a given centrality bin " 
+	 "[%5.1f%%,%5.1f%%)", data ? data->GetName() : "(null)", fLow, fHigh);
   if (!CheckEvent(forward, triggerMask, vzMin, vzMax, filter)) 
     return false;
   if (!data) return false;
