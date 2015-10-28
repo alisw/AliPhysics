@@ -427,7 +427,7 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetEnableOpeningAngleCut(kFALSE);
-    analysisMesonCuts[i]->SetIsMergedClusterCut(kTRUE);
+    analysisMesonCuts[i]->SetIsMergedClusterCut(1);
     analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
