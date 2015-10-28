@@ -862,7 +862,7 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[220][5], Int_t amplitude[26])
      a[i] = GetRecoParam() -> GetLow(i+130);
      b[i] = GetRecoParam() -> GetLow(i+156);
     
-     qt11mean[i] =qt01mean[i] =fTime0vertex[i] + 15500;
+     qt11mean[i] =qt01mean[i] = 18500;
      if(i<26) amplitude[i]=0;
      //    printf(":ReadNewQT pmt %i Qt01mean %i QT11mean %i \n",i, qt01mean[i],   qt11mean[i]); 
   }
