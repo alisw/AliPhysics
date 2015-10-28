@@ -1130,6 +1130,13 @@ Bool_t AliMultSelectionTask::PassesTrackletVsCluster(AliVEvent* event)
 //______________________________________________________________________
 TString AliMultSelectionTask::GetPeriodName()
 {
+    //============================================================
+    //This function is meant to get the period name.
+    //IMPORTANT: this cannot solely depend on run number.
+    //This has to load different settings in case the period name
+    //refers to a Monte Carlo production.
+    //============================================================
+    
     //==================================
     // Setup initial Info
     Bool_t lLocated = kFALSE;
@@ -1152,13 +1159,13 @@ TString AliMultSelectionTask::GetPeriodName()
         Int_t j=0;
         while ((os=(TObjString*)iString())) {
             if( os->GetString().Contains(lTag.Data()) ){
-                lLocated = kTRUE;
                 lProductionName = os->GetString().Data();
                 //Remove Label
                 lProductionName.ReplaceAll(lTag.Data(),"");
                 //Remove any remaining whitespace (just in case)
                 lProductionName.ReplaceAll("=","");
                 lProductionName.ReplaceAll(" ","");
+                break; //stop, found
             }
             j++;
         }
