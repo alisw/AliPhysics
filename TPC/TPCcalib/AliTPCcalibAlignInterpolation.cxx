@@ -38,7 +38,7 @@
 #include "AliXRDPROOFtoolkit.h"
 #include "AliTrackerBase.h"
 #include "AliGeomManager.h"
-//#include "THnSparse.h"
+#include "TVectorF.h"
 //#include "THnBase.h"
 #include "THn.h"
 #include "AliSysInfo.h"
@@ -355,10 +355,25 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   if (!esdFriend) return;
   if (esdFriend->TestSkipBit()) return;
   Int_t nPrimTracks= (esdEvent->GetPrimaryVertex()!=NULL)? esdEvent->GetPrimaryVertex()->GetNContributors():0;
+  Int_t nPrimTracksSPD= (esdEvent->GetPrimaryVertexSPD()!=NULL)? esdEvent->GetPrimaryVertexSPD()->GetNContributors():0;
   Int_t nTracks = esdEvent->GetNumberOfTracks();  // Get number of tracks in ESD
   if (nTracks==0) return;
   if (!fStreamer) fStreamer = new TTreeSRedirector("ResidualHistos.root","recreate");
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  TVectorF vecNClTPC(72);
+  TVectorF vecNClTPCused(72);
+  for (Int_t isec=0; isec<72;isec++){
+    vecNClTPC=esdFriend->GetNclustersTPC(isec);
+    vecNClTPCused=esdFriend->GetNclustersTPCused(isec);
+  }
+  Long64_t gid = esdEvent->GetHeader()->GetEventIdAsLong();
+  (*fStreamer)<<"eventInfo"<< // store event info - used to calculate per sector currents
+    "nPrimTrack="<<nPrimTracks<<
+    "nPrimTrackSPD="<<nPrimTracksSPD<<
+    "nTracks="<<nTracks<<
+    "vecNClTPC.="<<&vecNClTPC<<
+    "vecNClTPCused.="<<&vecNClTPCused<<
+    "\n";
   
 
   //
