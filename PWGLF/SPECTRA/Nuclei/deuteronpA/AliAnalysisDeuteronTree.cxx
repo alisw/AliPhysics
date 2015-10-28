@@ -372,10 +372,9 @@ void AliAnalysisDeuteronTree::UserExec(Option_t *option){
         
         fDcaXYd = dca[0];
         
-        lPz = TMath::Sqrt(ptot*ptot - fPt*fPt);
-        lEnergyDeuteron = TMath::Sqrt(fPt*fPt + lPz*lPz +
+        lEnergyDeuteron = TMath::Sqrt(fPt*fPt + fPzd*fPzd +
                                       AliPID::ParticleMass(AliPID::kDeuteron)*AliPID::ParticleMass(AliPID::kDeuteron));
-        fRapd = 0.5*TMath::Log((lEnergyDeuteron + lPz)/(lEnergyDeuteron - lPz));
+        fRapd = 0.5*TMath::Log((lEnergyDeuteron + fPzd)/(lEnergyDeuteron - fPzd));
         fMcCode = 0;
         
         fhNsigmaTPCvsMom->Fill(ptot,fNsigmaTPCd);
