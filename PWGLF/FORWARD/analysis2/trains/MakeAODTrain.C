@@ -109,12 +109,14 @@ protected:
 
     // --- Add the task ----------------------------------------------
     Bool_t noCentral = fOptions.Has("no-central");
+    AliAnalysisTask* cen = 0;
+    TString cenConfig = "";
     if (!noCentral) { 
-      TString cenConfig = fOptions.Get("central-config");
-      AliAnalysisTask* cen = CoupleCar("AddTaskCentralMult.C",
-				       Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
-					    mc, run, sys, sNN, fld, 
-					    cenConfig.Data(), cor.Data()));
+      cenConfig = fOptions.Get("central-config");
+      cen = CoupleCar("AddTaskCentralMult.C",
+		      Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
+			   mc, run, sys, sNN, fld, 
+			   cenConfig.Data(), cor.Data()));
     }
     if (cen)
       fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), cenConfig), true);

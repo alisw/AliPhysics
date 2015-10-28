@@ -16,6 +16,10 @@
 #include <AliPhysicsSelection.h>
 #include <AliTriggerAnalysis.h>
 #include <AliMultiplicity.h>
+#include "AliMultEstimator.h" // <-- Sigh, needed by AliMultSelection
+#include "AliMultVariable.h"  // <-- Sigh, needed by AliMultSelection
+#include "AliMultInput.h"     // <-- Sigh, needed by AliMultSelection
+#include "AliMultSelection.h"
 #include <TParameter.h>
 #include <TH2D.h>
 #include <TH1I.h>
@@ -214,6 +218,7 @@ namespace {
     if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
     if (TMath::Abs(energy - 5000.)  < 10)  return 5000;
     if (TMath::Abs(energy - 5022.)  < 10)  return 5023;
+    if (TMath::Abs(energy - 5125.)  < 30)  return 5100;
     if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
     if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
     if (TMath::Abs(energy - 8000.)  < 10)  return 8000;
@@ -723,6 +728,122 @@ AliForwardUtil::PrintField(const char* name, const char* value, ...)
   std::cout << buf << std::endl;
 }
 
+
+//====================================================================
+Float_t AliForwardUtil::GetCentralityCompat(const AliVEvent& event,
+					    const TString&   method,
+					    Int_t&           qual,
+					    Bool_t           verbose)
+{
+  if (event.IsA()->InheritsFrom(AliESDEvent::Class()))
+    return GetCentralityCompat(static_cast<const AliESDEvent&>(event),
+			       method,qual,verbose);
+  if (event.IsA()->InheritsFrom(AliAODEvent::Class()))
+    return GetCentralityCompat(static_cast<const AliAODEvent&>(event),
+			       method,qual,verbose);
+  return -1;
+}
+//____________________________________________________________________
+Float_t AliForwardUtil::GetCentralityCompat(const AliESDEvent& event,
+					    const TString&     method,
+					    Int_t&             qual,
+					    Bool_t             verbose)
+{
+  AliCentrality* centObj = const_cast<AliESDEvent&>(event).GetCentrality();
+  if (!centObj) { 
+    if (verbose) 
+      ::Warning("AliForwardUtil::GetCentralityCompat",
+		"No centrality object found in ESD");
+    return -1;
+  }
+  Float_t cent = centObj->GetCentralityPercentile(method);  
+  qual         = centObj->GetQuality();
+  if (verbose)
+    ::Info("AliForwardUtil::GetCentralityCompat<ESD>",
+	   "Got centrality %5.1f%% (%d)", cent, qual);  
+  return cent;
+}
+//____________________________________________________________________
+Float_t AliForwardUtil::GetCentralityCompat(const AliAODEvent& event,
+					    const TString&     method,
+					    Int_t&             qual,
+					    Bool_t             verbose)
+{
+  AliAODHeader* hdr = dynamic_cast<AliAODHeader*>(event.GetHeader());
+  if (!hdr) {
+    if (verbose)
+      ::Warning("AliForwardUtil::GetCentralityCompat","Not a standard AOD");
+    return -1;
+  }
+  AliCentrality* cP = hdr->GetCentralityP();
+  if (!cP) {
+    if (verbose)
+      ::Warning("AliForwardUtil::GetCentralityCompat",
+		"No centrality found in AOD");
+    return -1;
+  }
+  Float_t cent = cP->GetCentralityPercentile(method);
+  qual         = cP->GetQuality();
+  if (verbose)
+    ::Info("AliForwardUtil::GetCentralityCompat<AOD>",
+	   "Got centrality %5.1f%% (%d)", cent, qual);
+  return cent;
+}
+//____________________________________________________________________
+Float_t AliForwardUtil::GetCentrality(const AliVEvent& event, 
+				      const TString&   method, 
+				      Int_t&           qual, 
+				      Bool_t           verbose)
+{
+  // 200: not desired trigger
+  // 201: not INEL>0 with tracklets
+  // 202: vertex Z not within 10cm
+  // 203: tagged as pileup (SPD)
+  // 204: inconsistent SPD/tracking vertex
+  // 205: rejected by tracklets-vs-clusters
+  qual = 6;
+  TObject* o = event.FindListObject("MultSelection");
+  if (!o) {
+    if (verbose) 
+      ::Warning("AliForwardUtil::GetCentrality",
+		"No MultSelection object found in event");
+    return GetCentralityCompat(event, method, qual, verbose);
+  }
+  AliMultSelection* sel = static_cast<AliMultSelection*>(o);
+  if (!sel->GetEstimatorList() ||
+      sel->GetEstimatorList()->GetEntries() <= 0){
+    if (verbose) {
+      ::Warning("AliForwardUtil::GetCentrality",
+		"No list of estimators, falling back to compat");
+      sel->PrintInfo();
+    }
+    return GetCentralityCompat(event, method, qual, verbose);
+  }
+  AliMultEstimator* est = sel->GetEstimator(method);
+  // if (verbose) sel->GetEstimatorList()->ls();
+  if (!est) {
+    if (verbose) {
+      ::Warning("AliForwardUtil::GetCentrality",
+		"Unknown estimator: %s", method.Data());
+      sel->GetEstimatorList()->Print();
+    }
+    return -1;
+  }
+  Float_t cent = est->GetPercentile();
+  qual         = Int_t(TMath::Max(0.F, cent-199));
+  if (TMath::Abs(cent-199) < 1e-6) {
+    if (verbose)
+      ::Warning("AliForwardUtil::GetCentrality",
+		"No calibration for \"%s\", falling back to compat mode",
+		method.Data());
+    qual = 6;
+    return GetCentralityCompat(event, method, qual, verbose);
+  }
+  if (verbose)
+    ::Info("AliForwardUtil::GetCentrality","Got centrality %5.1f%% (%d)",
+	   cent, qual);
+  return cent;
+}
 //====================================================================
 AliForwardUtil::Histos::~Histos()
 {

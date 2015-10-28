@@ -855,14 +855,9 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent& esd,
   //
   DGUARD(fDebug,2,"Read the centrality in AliFMDEventInspector");
 
-  cent = -1;
-  qual = 1;
-  AliCentrality* centObj = const_cast<AliESDEvent&>(esd).GetCentrality();
-  if (centObj) {
-    cent = centObj->GetCentralityPercentile(fCentMethod);  
-    qual = centObj->GetQuality();
-  }
-
+  Int_t iqual;
+  cent = AliForwardUtil::GetCentrality(esd, "V0M", iqual, (fDebug>1));
+  qual = iqual;
   // We overwrite with satellite events, so we can be sure to get the
   // centrality determination from the satellite vertex selection
   if (AllowDisplaced() && fDisplacedVertex.IsSatellite()) {

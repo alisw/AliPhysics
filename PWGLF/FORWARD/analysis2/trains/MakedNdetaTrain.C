@@ -131,7 +131,7 @@ protected:
    * Do not the centrality selection
    */
   //__________________________________________________________________
-  void CreateCentralitySelection(Bool_t) {}
+  // void CreateCentralitySelection(Bool_t) {}
   /** 
    * Do not create MC input handler 
    * 
