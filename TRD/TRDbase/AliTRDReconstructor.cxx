@@ -53,7 +53,7 @@
 
 ClassImp(AliTRDReconstructor)
 
-Int_t    AliTRDReconstructor::fgStreamLevel     = 1;        // stream (debug) level
+Int_t    AliTRDReconstructor::fgStreamLevel     = 0;        // stream (debug) level
 
 
 AliESDTrdTrigger AliTRDReconstructor::fgTriggerFlags;
